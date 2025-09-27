@@ -130,8 +130,9 @@
 
 // Hotel HUDs
 #define SECHUD_HOTEL_STAFF "hudhotelstaff"
-#define SECHUD_HOTEL_SECURITY "hudhotelsec"
+#define SECHUD_HOTEL_SECURITY "hudhotelsecurity"
 #define SECHUD_HOTEL_MANAGER "hudhotelmanager"
+#define SECHUD_HOTEL_TOURIST "hudhoteltourist"
 
 #define SECHUD_EMERGENCY_RESPONSE_TEAM_COMMANDER "hudemergencyresponseteamcommander"
 #define SECHUD_SECURITY_RESPONSE_OFFICER "hudsecurityresponseofficer"
@@ -142,13 +143,16 @@
 #define SECHUD_ENTERTAINMENT_RESPONSE_OFFICER "hudentertainmentresponseofficer"
 
 //SR DS2
-#define SECHUD_DS2_DOCTOR "hud_ds2doctor"
-#define SECHUD_DS2_RESEARCHER "hud_ds2researcher"
-#define SECHUD_DS2_ENGINETECH "hud_ds2enginetech"
-#define SECHUD_DS2_CORPLIAISON "hud_ds2corpliaison"
-#define SECHUD_DS2_ADMIRAL "hud_ds2captain"
-#define SECHUD_DS2_MASTERATARMS "hud_ds2maa"
-#define SECHUD_DS2_BRIGOFFICER "hud_ds2brigofficer"
-#define SECHUD_DS2_MININGOFFICER "hud_ds2miningofficer"
-#define SECHUD_DS2_GENSTAFF "hud_ds2generalstaff"
-#define SECHUD_DS2_PRISONER "hud_ds2prisoner"
+#define SECHUD_DS2_DOCTOR "hudds2medicalofficer"
+#define SECHUD_DS2_RESEARCHER "hudds2researcher"
+#define SECHUD_DS2_ENGINETECHNICIAN "hudds2enginetechnician"
+#define SECHUD_DS2_CORPLIAISON "hudds2corporateliaison"
+#define SECHUD_DS2_ADMIRAL "hudds2admiral"
+#define SECHUD_DS2_MASTERATARMS "hudds2masteratarms"
+#define SECHUD_DS2_BRIGOFFICER "hudds2brigofficer"
+#define SECHUD_DS2_MININGOFFICER "hudds2miningofficer"
+#define SECHUD_DS2_GENSTAFF "hudds2generalstaff"
+#define SECHUD_DS2_PRISONER "hudds2hostage"
+
+//SR DS 1
+#define SECHUD_DS1_NUKETECH "hudds1nuketech"

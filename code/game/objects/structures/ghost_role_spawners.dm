@@ -1318,8 +1318,10 @@
 /obj/effect/mob_spawn/human/ds2
 	name = "DS-2 personnel"
 	mob_name = "DS-2 personnel"
-	short_desc = "Вы Специалист Синдиката, работающий на Общем Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием 'Благославлённый' под Начальством Адмирала одной из Сторон и изучающий аномальное поле Системы Синих Лун."
-	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за операциями NT и Кордоном. Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
+	short_desc = "Вы Специалист Синдиката, работающий на Общем Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием \
+	'Благославлённый' под Начальством Адмирала одной из Сторон и изучающий аномальное поле Системы Синих Лун."
+	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за \
+	операциями NT и Кордоном. Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
 	important_info = "Вы не антагонист."
 	roundstart = FALSE
 	death = FALSE
@@ -1336,8 +1338,10 @@
 	name = "Syndicate Prisoner"
 	mob_name = "a Syndicate prisoner"
 	short_desc = "По какой-то причине вы оказались в тюремной части Корабля 'Благославлённый' с неизвестным сроком."
-	flavour_text = "Не осознавая, где вы находитесь, вы знаете только то, что вы в плену. Вы были высокопоставленным лицом Nanotrasen или же серьёзно нарушили кодекс Синдиката, или являетесь кем бы то не было другим и это единственная информация, которая таится в вашей голове. Что касается того, почему вы здесь? Ваша голова раскалывается и вы просто не помните..."
-	important_info = "Вы все еще подчиняетесь стандартной политике заключенных и должны обратиться к администратору, прежде чем враждовать с DS2."
+	flavour_text = "Не осознавая, где вы находитесь, вы знаете только то, что вы в плену. Вы были высокопоставленным лицом \
+	Nanotrasen или же серьёзно нарушили кодекс Синдиката, или являетесь кем бы то не было другим и это единственная информация, \
+	которая таится в вашей голове. Что касается того, почему вы здесь? Ваша голова раскалывается и вы просто не помните..."
+	important_info = "Вы все еще подчиняетесь стандартной политике заключенных и должны обратиться к администратору, прежде чем враждовать с DS-2."
 	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "sleeper_s"
 	outfit = /datum/outfit/ds2/prisoner
@@ -1348,8 +1352,10 @@
 	mob_name = "a Syndicate operative"
 	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "sleeper_s"
-	short_desc = "Вы Специалист Синдиката, работающий на Оперативной Базе Синдиката из формирования 'Глубокий Космос Два' под названием 'Благославлённый' под Начальством Адмирала одной из Сторон и изучающий аномальное поле Системы Синих Лун."
-	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за операциями NT и Кордоном. Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
+	short_desc = "Вы Специалист Синдиката, работающий на Оперативной Базе Синдиката из формирования 'Глубокий Космос Два' под названием \
+	'Благославлённый' под Начальством Адмирала одной из Сторон и изучающий аномальное поле Системы Синих Лун."
+	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за операциями NT и Кордоном. \
+	Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
 	important_info = "Вы не антагонист."
 	outfit = /datum/outfit/ds2/syndicate
 	starting_money = 1000 // BLUEMOON ADD
@@ -1359,8 +1365,10 @@
 	mob_name = "a Syndicate leader"
 	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "sleeper_s"
-	short_desc = "Вы Адмирал одной из ячеек Синдиката, работающий на Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием 'Благославлённый'. Приведите Объект под вашей ответственностью к успеху, который планировался, либо умрите - стараясь."
-	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за операциями NT и Кордоном. Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
+	short_desc = "Вы Адмирал одной из ячеек Синдиката, работающий на Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием 'Благославлённый'. \
+	Приведите Объект под вашей ответственностью к успеху, который планировался, либо умрите - стараясь."
+	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за операциями NT и Кордоном. \
+	Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
 	important_info = "Вы не антагонист."
 	outfit = /datum/outfit/ds2/syndicate_command
 	starting_money = 5000 // BLUEMOON ADD
@@ -1385,7 +1393,6 @@
 
 /obj/effect/mob_spawn/human/ds2/syndicate/miner
 	mob_name = "a Donk Co mining worker"
-
 	outfit = /datum/outfit/ds2/syndicate/miner
 
 /obj/effect/mob_spawn/human/ds2/syndicate/enginetech
@@ -1438,7 +1445,7 @@
 	name = "Syndicate Prisoner"
 	uniform = /obj/item/clothing/under/rank/prisoner/syndicate
 	shoes = /obj/item/clothing/shoes/sneakers/crimson
-	id = /obj/item/card/id/syndicate/advanced/prisoner
+	id = /obj/item/card/id/syndicate/advanced/ds/prisoner
 	id_trim = /datum/id_trim/syndicom/ds2/prisoner
 
 //DS-2 Crew
@@ -1452,7 +1459,7 @@
 		/obj/item/storage/box/survival = 1,
 		/obj/item/crowbar/red = 1,
 		)
-	id = /obj/item/card/id/syndicate/advanced/black
+	id = /obj/item/card/id/syndicate/advanced/ds
 	id_trim = /datum/id_trim/syndicom/ds2
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/deathrattle/deepspacecrew)
 
@@ -1471,12 +1478,12 @@
 	l_pocket = /obj/item/card/mining_point_card
 	r_pocket = /obj/item/mining_voucher
 	head = /obj/item/clothing/head/soft/black
-	id = /obj/item/card/id/syndicate/advanced/black/mining
+	id = /obj/item/card/id/syndicate/advanced/ds/mining
 	id_trim = /datum/id_trim/syndicom/ds2/miner
 
-/obj/item/card/id/syndicate/advanced/black/mining
+/obj/item/card/id/syndicate/advanced/ds/mining
 	assignment = "DS-2 Mining Officer"
-	icon_state = "card_black"
+	icon_state = "id_dsblack"
 
 /datum/outfit/ds2/syndicate/service
 	name = "DS-2 General Staff"
@@ -1484,12 +1491,11 @@
 	back = /obj/item/storage/backpack/duffelbag/syndie
 	suit = /obj/item/clothing/suit/apron/chef
 	head = /obj/item/clothing/head/soft/mime
-	id = /obj/item/card/id/syndicate/advanced/black/general
+	id = /obj/item/card/id/syndicate/advanced/ds/general
 	id_trim = /datum/id_trim/syndicom/ds2/syndicatestaff
 
-/obj/item/card/id/syndicate/advanced/black/general
+/obj/item/card/id/syndicate/advanced/ds/general
 	assignment = "DS-2 General Staff"
-	icon_state = "card_black"
 
 /datum/outfit/ds2/syndicate/enginetech
 	name = "DS-2 Engine Technician"
@@ -1504,12 +1510,11 @@
 	glasses = /obj/item/clothing/glasses/welding
 	belt = /obj/item/storage/belt/utility/syndicate
 	gloves = /obj/item/clothing/gloves/combat
-	id = /obj/item/card/id/syndicate/advanced/black/engine
+	id = /obj/item/card/id/syndicate/advanced/ds/enginetech
 	id_trim = /datum/id_trim/syndicom/ds2/enginetechnician
 
-/obj/item/card/id/syndicate/advanced/black/engine
+/obj/item/card/id/syndicate/advanced/ds/enginetech
 	assignment = "DS-2 Engine Technician"
-	icon_state = "card_black"
 
 /datum/outfit/ds2/syndicate/researcher
 	name = "DS-2 Researcher"
@@ -1518,12 +1523,11 @@
 	glasses = /obj/item/clothing/glasses/science
 	gloves = /obj/item/clothing/gloves/color/black
 	back = /obj/item/storage/backpack/duffelbag/syndie
-	id = /obj/item/card/id/syndicate/advanced/black/researcher
+	id = /obj/item/card/id/syndicate/advanced/ds/researcher
 	id_trim = /datum/id_trim/syndicom/ds2/researcher
 
-/obj/item/card/id/syndicate/advanced/black/researcher
+/obj/item/card/id/syndicate/advanced/ds/researcher
 	assignment = "DS-2 Researcher"
-	icon_state = "card_black"
 
 /datum/outfit/ds2/syndicate/stationmed
 	name = "DS-2 Medical Officer"
@@ -1532,6 +1536,7 @@
 	belt = /obj/item/storage/belt/medolier/full
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
 	back = /obj/item/storage/backpack/duffelbag/syndie
+	id = /obj/item/card/id/syndicate/advanced/ds/stationmed
 	id_trim = /datum/id_trim/syndicom/ds2/medicalofficer
 	backpack_contents = list(
 		/obj/item/storage/box/survival = 1,
@@ -1539,9 +1544,8 @@
 		/obj/item/storage/firstaid/tactical = 1,
 		)
 
-/obj/item/card/id/syndicate/advanced/black/stationmed
+/obj/item/card/id/syndicate/advanced/ds/stationmed
 	assignment = "DS-2 Medical Officer"
-	icon_state = "card_black"
 
 /datum/outfit/ds2/syndicate/brigoff
 	name = "DS-2 Brig Officer"
@@ -1554,12 +1558,12 @@
 	r_pocket = /obj/item/flashlight/seclite
 	mask = /obj/item/clothing/mask/gas/syndicate
 	ears = /obj/item/radio/headset/ds2
-	id = /obj/item/card/id/syndicate/advanced/black/command/brigoff
+	id = /obj/item/card/id/syndicate/advanced/ds/command/brigoff
 	id_trim = /datum/id_trim/syndicom/ds2/brigofficer
 
-/obj/item/card/id/syndicate/advanced/black/command/brigoff
+/obj/item/card/id/syndicate/advanced/ds/command/brigoff
 	assignment = "DS-2 Brig Officer"
-	icon_state = "card_black"
+	icon_state = "id_dsblack"
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate/post_equip(mob/living/carbon/human/syndicate)
@@ -1577,13 +1581,13 @@
 		/obj/item/storage/box/survival = 1,
 		/obj/item/crowbar/red = 1,
 		/obj/item/lighter/gonzofist = 1)
-	id = /obj/item/card/id/syndicate/advanced/black/command
+	id = /obj/item/card/id/syndicate/advanced/ds/gold/command
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/deathrattle/deepspacecrew)
 	id_trim = /datum/id_trim/syndicom/ds2
 
-/obj/item/card/id/syndicate/advanced/black/command
+/obj/item/card/id/syndicate/advanced/ds/gold/command
 	assignment = "DS-2 Command Operative"
-	icon_state = "card_black"
+	icon_state = "id_dsgold"
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate_command/masteratarms
@@ -1600,12 +1604,11 @@
 		/obj/item/implant/krav_maga,
 		/obj/item/implant/deathrattle/deepspacecrew
 		)
-	id = /obj/item/card/id/syndicate/advanced/black/command/masteratarms
+	id = /obj/item/card/id/syndicate/advanced/ds/gold/command/masteratarms
 	id_trim = /datum/id_trim/syndicom/ds2/masteratarms
 
-/obj/item/card/id/syndicate/advanced/black/command/masteratarms
+/obj/item/card/id/syndicate/advanced/ds/gold/command/masteratarms
 	assignment = "DS-2 Master At Arms"
-	icon_state = "card_black"
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate_command/corporateliaison
@@ -1615,11 +1618,10 @@
 	shoes = /obj/item/clothing/shoes/laceup
 	back = /obj/item/storage/backpack/duffelbag/syndie
 	id_trim = /datum/id_trim/syndicom/ds2/corporateliasion
-	id = /obj/item/card/id/syndicate/advanced/black/command/corporateliaison
+	id = /obj/item/card/id/syndicate/advanced/ds/gold/command/corporateliaison
 
-/obj/item/card/id/syndicate/advanced/black/command/corporateliaison
+/obj/item/card/id/syndicate/advanced/ds/gold/command/corporateliaison
 	assignment = "DS-2 Corporate Liasion"
-	icon_state = "card_black"
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate_command/comms
@@ -1633,10 +1635,10 @@
 	l_pocket = /obj/item/melee/transforming/energy/sword/saber
 	r_pocket = /obj/item/gun/ballistic/automatic/pistol
 	implants = list(/obj/item/implant/weapons_auth)
-	id = /obj/item/card/id/syndicate/advanced/black/comms
+	id = /obj/item/card/id/syndicate/advanced/ds/comms
 	id_trim = /datum/id_trim/syndicom/ds2/comms
 
-/obj/item/card/id/syndicate/advanced/black/comms
+/obj/item/card/id/syndicate/advanced/ds/comms
 	assignment = "Space Syndicate Comms Agent"
 	icon_state = "card_black"
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
@@ -1649,12 +1651,11 @@
 	back = /obj/item/storage/backpack/duffelbag/syndie
 	belt = /obj/item/gun/ballistic/automatic/pistol/APS
 	head = /obj/item/clothing/head/HoS/syndicate
-	id = /obj/item/card/id/syndicate/advanced/black/gold
+	id = /obj/item/card/id/syndicate/advanced/ds/gold/admiral
 	id_trim = /datum/id_trim/syndicom/ds2/stationadmiral
 
-/obj/item/card/id/syndicate/advanced/black/gold
+/obj/item/card/id/syndicate/advanced/ds/gold/admiral
 	assignment = "DS-2 Admiral"
-	icon_state = "gold"
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate_command/post_equip(mob/living/carbon/human/syndicate)
@@ -1665,70 +1666,70 @@
 
 /datum/id_trim/syndicom/ds2
 	assignment = "DS-2 Operative"
-	trim_state = "trim_unknown"
+	trim_state = "idunknown"
 	department_color = COLOR_ASSEMBLY_BLACK
 	subdepartment_color = COLOR_SYNDIE_RED
 
 /datum/id_trim/syndicom/ds2/prisoner
 	assignment = "DS-2 Hostage"
-	trim_state = "trim_ds2prisoner"
+	trim_state = "idds2hostage"
 	subdepartment_color = COLOR_MAROON
 	sechud_icon_state = SECHUD_DS2_PRISONER
 	access = list()
 
 /datum/id_trim/syndicom/ds2/miner
 	assignment = "DS-2 Mining Officer"
-	trim_state = "trim_ds2miningofficer"
+	trim_state = "idds2miningofficer"
 	sechud_icon_state = SECHUD_DS2_MININGOFFICER
 
 /datum/id_trim/syndicom/ds2/syndicatestaff
 	assignment = "DS-2 General Staff"
-	trim_state = "trim_ds2generalstaff"
+	trim_state = "idds2generalstaff"
 	sechud_icon_state = SECHUD_DS2_GENSTAFF
 
 /datum/id_trim/syndicom/ds2/researcher
 	assignment = "DS-2 Researcher"
-	trim_state = "trim_ds2researcher"
+	trim_state = "idds2researcher"
 	sechud_icon_state = SECHUD_DS2_RESEARCHER
 	access = list(ACCESS_SYNDICATE, ACCESS_ROBOTICS)
 
 /datum/id_trim/syndicom/ds2/enginetechnician
 	assignment = "DS-2 Engine Technician"
-	trim_state = "trim_ds2enginetech"
-	sechud_icon_state = SECHUD_DS2_ENGINETECH
+	trim_state = "idds2enginetechnician"
+	sechud_icon_state = SECHUD_DS2_ENGINETECHNICIAN
 
 /datum/id_trim/syndicom/ds2/medicalofficer
 	assignment = "DS-2 Medical Officer"
-	trim_state = "trim_ds2medicalofficer"
+	trim_state = "idds2medicalofficer"
 	sechud_icon_state = SECHUD_DS2_DOCTOR
 
 /datum/id_trim/syndicom/ds2/masteratarms
 	assignment = "DS-2 Master At Arms"
-	trim_state = "trim_ds2masteratarms"
+	trim_state = "idds2masteratarms"
 	sechud_icon_state = SECHUD_DS2_MASTERATARMS
 	access = list(ACCESS_SYNDICATE, ACCESS_ROBOTICS, ACCESS_SYNDICATE_LEADER)
 
 /datum/id_trim/syndicom/ds2/brigofficer
 	assignment = "DS-2 Brig Officer"
-	trim_state = "trim_ds2brigofficer"
+	trim_state = "idds2brigofficer"
 	sechud_icon_state = SECHUD_DS2_BRIGOFFICER
 	access = list(ACCESS_SYNDICATE, ACCESS_ROBOTICS, ACCESS_SYNDICATE_LEADER)
 
 /datum/id_trim/syndicom/ds2/corporateliasion // DS2 HoP
 	assignment = "DS-2 Corporate Liaison"
-	trim_state = "trim_ds2corporateliaison"
+	trim_state = "idds2corporateliaison"
 	sechud_icon_state = SECHUD_DS2_CORPLIAISON
 	access = list(ACCESS_SYNDICATE, ACCESS_ROBOTICS, ACCESS_SYNDICATE_LEADER)
 
 /datum/id_trim/syndicom/ds2/comms
 	assignment = "Space Syndicate Comms Agent"
-	trim_state = "trim_syndicate"
+	trim_state = "idsyndicate"
 	sechud_icon_state = SECHUD_SYNDICATE
 	access = list(ACCESS_SYNDICATE, ACCESS_ROBOTICS, ACCESS_SYNDICATE_LEADER)
 
 /datum/id_trim/syndicom/ds2/stationadmiral
 	assignment = "DS-2 Admiral"
-	trim_state = "trim_ds2admiral"
+	trim_state = "idds2admiral"
 	sechud_icon_state = SECHUD_DS2_ADMIRAL
 	access = list(ACCESS_SYNDICATE, ACCESS_ROBOTICS, ACCESS_SYNDICATE_LEADER)
 
@@ -1740,23 +1741,33 @@
 	icon_state = "card_ds2prisoner"
 	access = list()
 
-/obj/item/card/id/syndicate/advanced/black
-	name = "Agent Card"
-	icon_state = "card_black"
+/obj/item/card/id/syndicate/advanced/ds/prisoner // Карта выше - объект для новых заключённых, эта - для заключённых-ролей
+	name = "Prisoner"
+	assignment = "DS-2 Hostage"
+	access = list()
+
+/obj/item/card/id/syndicate/advanced/ds
+	name = "Deep Space Card"
+	icon_state = "id_ds"
+	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE)
+
+/obj/item/card/id/syndicate/advanced/ds/gold
+	name = "Deep Space Gold Card"
+	icon_state = "id_dsgold"
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE)
 
 //CRYO CONSOLES
 /obj/machinery/computer/cryopod/ds1
 	radio = /obj/item/radio/headset/ds1
 	announcement_channel = RADIO_CHANNEL_DS1
-	req_one_access = list("syndicate_leader")
+	req_one_access = list(ACCESS_SYNDICATE_LEADER)
 
 /obj/machinery/computer/cryopod/ds2
 	radio = /obj/item/radio/headset/ds2
 	announcement_channel = RADIO_CHANNEL_DS2
-	req_one_access = list("syndicate_leader")
+	req_one_access = list(ACCESS_SYNDICATE_LEADER)
 
 /obj/machinery/computer/cryopod/tarkoff
 	radio = /obj/item/radio/headset/tarkoff
 	announcement_channel = RADIO_CHANNEL_TARKOFF
-	req_one_access = list("tarkoff")
+	req_one_access = list(ACCESS_TARKOFF)

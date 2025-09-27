@@ -3,3 +3,4 @@
 	desc = "A Bluespace Technician ID card. Complete access."
 	icon_state = "ert_commander"
 	assignment = "Bluespace Technician"
+	special_assignment = "scrambled"

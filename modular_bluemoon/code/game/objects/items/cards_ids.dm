@@ -107,6 +107,7 @@
 	registered_name = "NRI"
 	assignment = "NRI"
 	uses_overlays = FALSE
+	special_assignment = "nri"
 
 /obj/item/card/id/nri/Initialize(mapload)
 	access = get_all_accesses()+get_ert_access("commander")-ACCESS_CHANGE_IDS
@@ -119,6 +120,7 @@
 	registered_name = "Sol"
 	assignment = "Sol"
 	uses_overlays = FALSE
+	special_assignment = "sol"
 
 /obj/item/card/id/sol/Initialize(mapload)
 	access = get_all_accesses()+get_ert_access("commander")-ACCESS_CHANGE_IDS
@@ -132,6 +134,7 @@
 	assignment = "Herecit"
 	uses_overlays = FALSE
 	card_sticker = TRUE
+	special_assignment = "heresy"
 
 /obj/item/card/id/lust
 	icon = 'modular_bluemoon/icons/obj/card.dmi'
@@ -141,6 +144,7 @@
 	assignment = "Sex worker"
 	uses_overlays = FALSE
 	card_sticker = TRUE
+	special_assignment = "lust"
 
 /obj/item/card/id/agony
 	icon = 'modular_bluemoon/icons/obj/card.dmi'
@@ -150,6 +154,7 @@
 	assignment = "Ravenheart Resident"
 	uses_overlays = FALSE
 	card_sticker = TRUE
+	special_assignment = "agony"
 
 /obj/item/card/id/muck
 	icon = 'modular_bluemoon/icons/obj/card.dmi'
@@ -159,3 +164,4 @@
 	assignment = "Mucker"
 	uses_overlays = FALSE
 	card_sticker = TRUE
+	special_assignment = "muck"

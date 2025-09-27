@@ -169,7 +169,7 @@
 	flavour_text = "Вы заплатили кучу денег за пребывание в этом месте и вы ДОЛЖНЫ оторваться по полной!!"
 	job_description = "Hotel Tourist"
 	id_job = "Hotel Tourist"
-	id = /obj/item/card/id/away
+	id = /obj/item/card/id/away/hotel/splurt/tourist
 	ears = /obj/item/radio/headset
 	uniform = /obj/item/clothing/under/rank/civilian/util
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default

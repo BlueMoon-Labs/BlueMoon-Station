@@ -385,28 +385,12 @@
 	return SSjob.real_job_name[jobName] || "Unknown"
 
 /obj/item/proc/get_job_name() //Used in secHUD icon generation
-	if (istype(src, /obj/item/card/id/debug/bst))
-		return "scrambled"
-	if (istype(src, /obj/item/card/id/nri))
-		return "nri"
-	if (istype(src, /obj/item/card/id/nri_citizen))
-		return "nri"
-	if (istype(src, /obj/item/card/id/sol))
-		return "sol"
-	if (istype(src, /obj/item/card/id/sol_citizen))
-		return "sol"
-	if (istype(src, /obj/item/card/id/heresy))
-		return "heresy"
-	if (istype(src, /obj/item/card/id/lust))
-		return "lust"
-	if (istype(src, /obj/item/card/id/agony))
-		return "agony"
-	if (istype(src, /obj/item/card/id/muck))
-		return "muck"
-	if (istype(src, /obj/item/card/id/blumenland_citizen))
-		return "bmland"
-	if (istype(src, /obj/item/card/id/death))
-		return "deathcommando"
+	var/obj/item/card/id/I = GetID()
+	if(!I)
+		return
+	if(istype(src, /obj/item/card/id))
+		if(I.special_assignment)
+			return "[I.special_assignment]"
 	if (istype(src, /obj/item/card/id/syndicate) & src.icon_state == "card_black")
 		var/obj/item/card/id/card = src
 		if (card.assignment == initial(card.assignment))
@@ -415,14 +399,10 @@
 		var/obj/item/card/id/card = src
 		if (card.assignment == initial(card.assignment))
 			return "inteq"
-	if (istype(src, /obj/item/card/id/away/hotel/splurt)) // Чтобы не проверяло все карты одну за одной, если она и так не отеля
-		if (src.type == /obj/item/card/id/away/hotel/splurt) // Чтобы не подтягивало первый родительский для остальных карт
-			return "hotelstaff"
-		else if (istype(src, /obj/item/card/id/away/hotel/splurt/security))
-			return "hotelsec"
-		else if (istype(src, /obj/item/card/id/away/hotel/splurt/manager))
-			return "hotelmanager"
-	var/obj/item/card/id/I = GetID()
-	if(!I)
-		return
+	if (istype(src, /obj/item/card/id/syndicate/advanced/ds)) // Карты DS гостроли
+		var/obj/item/card/id/syndicate/advanced/ds/dscard = src
+		return "[dscard.assignment]"
+	if (istype(src, /obj/item/card/id/away/hotel/splurt)) // Карты отельной гостроли
+		var/obj/item/card/id/away/hotel/splurt/hotelcard = src
+		return "[hotelcard.assignment]"
 	return GetJobName(I.assignment)
