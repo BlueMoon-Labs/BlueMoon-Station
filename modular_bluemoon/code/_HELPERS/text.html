@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>modular_bluemoon/code/_HELPERS/text.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="modular_bluemoon/code/_HELPERS/text.html#define">Define Details</a></header><main><h1>modular_bluemoon/code/_HELPERS/text.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/6f3332dcb079dbdeb4f20b453f8523e61a616ebf/modular_bluemoon/code/_HELPERS/text.dm0"><img src="git.png" width="16" height="16" title="modular_bluemoon/code/_HELPERS/text.dm0"></a></h1><table class="summary" cellspacing="0"><tr><th>/proc/<a href="global.html#proc/jaro_similarity">jaro_similarity</a></th><td>Calculate Jaro similarity between two strings.</td></tr><tr><th>/proc/<a href="global.html#proc/jaro_winkler_similarity">jaro_winkler_similarity</a></th><td>Calculate Jaro-Winkler similarity between two strings.</td></tr><tr><th><a href="modular_bluemoon/code/_HELPERS/text.html#define/jaro_winkler_distance">jaro_winkler_distance</a></th><td>Calculate Jaro-Winkler distance between two strings.</td></tr></table><h2 id="define">Define Details</h2><h3 id="define/jaro_winkler_distance"><aside class="declaration">#define </aside>jaro_winkler_distance<aside>(text_a, text_b, scaling_factor)</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/6f3332dcb079dbdeb4f20b453f8523e61a616ebf/modular_bluemoon/code/_HELPERS/text.dm#L114"><img src="git.png" width="16" height="16" title="modular_bluemoon/code/_HELPERS/text.dm 114"></a></h3><p>Calculate Jaro-Winkler distance between two strings.</p>
+<p>Arguments:</p>
+<ul>
+<li>text_a, text_b - Strings to compare.</li>
+<li>scaling_factor - A factor that increases the similarity value when
+the beginnings of strings match. <em>Only the first 4 characters are
+taken into account.</em></li>
+</ul>
+<p>Returns a number between 0 and 1, where</p>
+<ul>
+<li>0 - exact match</li>
+<li>1 - strings do not match at all</li>
+</ul>
+<p>Reference: https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/6f3332dcb079dbdeb4f20b453f8523e61a616ebf">6f3332d</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.9.0</a></footer></body></html>
