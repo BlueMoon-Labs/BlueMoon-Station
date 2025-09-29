@@ -70,7 +70,7 @@
 
 		var/P = show_radial_menu(user, get_turf(M), choices, require_near = TRUE, radius = 20)
 		if(!P)
-			return
+			return TRUE // cancel = don't try to attack
 
 		// get mutable_appearance for available_surgeries
 		choices = list()
@@ -101,10 +101,15 @@
 			sorted[key] = choices[key]
 		choices = sorted
 
-		P = show_radial_menu(user, M, choices, require_near = TRUE, radius = 27, tooltips = TRUE)
+		var/radial_radius = 27 + min(max(choices.len - 5, 0), 3) * 3 // 6 = 30, 7 = 33, 8+ = 36
+
+		P = show_radial_menu(user, M, choices, require_near = TRUE, radius = radial_radius, tooltips = TRUE)
+
+		if(!P)
+			return TRUE // cancel = don't try to attack
 		// BLUEMOON ADD END
 
-		if(P && user && user.Adjacent(M) && (I in user))
+		if(user && user.Adjacent(M) && (I in user))
 			var/datum/surgery/S = available_surgeries[P]
 
 			for(var/datum/surgery/other in M.surgeries)

@@ -165,13 +165,13 @@
 	var/freq = rand(24750, 26550)
 	playsound(src, 'sound/effects/spray.ogg', 5, TRUE, 2, frequency = freq)
 	target.apply_status_effect(/datum/status_effect/grouped/stasis, STASIS_MACHINE_EFFECT)
-	ADD_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_MORPHINE)
+	ADD_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_STASIS)
 	target.throw_alert("painkiller", /atom/movable/screen/alert/painkiller)
 	target.ExtinguishMob()
 
 /obj/structure/bed/roller/stasis/proc/thaw_them(mob/living/target)
 	target.remove_status_effect(/datum/status_effect/grouped/stasis, STASIS_MACHINE_EFFECT)
-	REMOVE_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_MORPHINE)
+	REMOVE_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_STASIS)
 	target.clear_alert("painkiller", /atom/movable/screen/alert/painkiller)
 
 /obj/item/roller/stasis

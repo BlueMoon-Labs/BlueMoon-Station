@@ -11,4 +11,6 @@
 // BLUEMOON ADD START
 /// Painkiller trait - Virfruit version
 #define PAINKILLER_VITFRUIT 	"PAINKILLER - FRUIT VITAMINS"
+/// Painkiller trait - Stasis version
+#define PAINKILLER_STASIS 		"PAINKILLER - STASIS"
 // BLUEMOON ADD END

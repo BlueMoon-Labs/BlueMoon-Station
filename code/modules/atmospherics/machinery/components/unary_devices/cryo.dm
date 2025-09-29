@@ -313,10 +313,10 @@
 	if(INTERACTING_WITH(user, src))
 		return
 	if(user.stat != CONSCIOUS)
+		to_chat(user, "Ты активируешь программу экстренного высвобождения из [src]... (это займет примерно [DisplayTimeText(breakout_time_unconscious)].)")
 		user.visible_message(\
 			span_notice("Вы видите, как [user] активирует программу высвобождения из [src]!"), \
-			span_notice("Ты активируешь программу экстренного высвобождения из [src]... (это займет примерно [DisplayTimeText(breakout_time_unconscious)].)"), \
-			"<span class='italics'>Вы слышите как [src] начинает сливать жидкость.</span>")
+			blind_message = "<span class='italics'>Вы слышите как [src] начинает сливать жидкость.</span>")
 		playsound(src, 'sound/rig/beep.ogg',80,TRUE)
 	else
 		user.visible_message(\

@@ -104,14 +104,14 @@
 	var/freq = rand(24750, 26550)
 	playsound(src, 'sound/effects/spray.ogg', 5, TRUE, 2, frequency = freq)
 	target.apply_status_effect(/datum/status_effect/grouped/stasis, STASIS_MACHINE_EFFECT)
-	ADD_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_MORPHINE) //SKYRAT EDIT, Painkiller.
+	ADD_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_STASIS) //SKYRAT EDIT, Painkiller.
 	target.throw_alert("painkiller", /atom/movable/screen/alert/painkiller) // BLUEMOON ADD
 	target.ExtinguishMob()
 	use_power = ACTIVE_POWER_USE
 
 /obj/machinery/stasis/proc/thaw_them(mob/living/target)
 	target.remove_status_effect(/datum/status_effect/grouped/stasis, STASIS_MACHINE_EFFECT)
-	REMOVE_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_MORPHINE) //SKYRAT EDIT, Painkiller.
+	REMOVE_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_STASIS) //SKYRAT EDIT, Painkiller.
 	target.clear_alert("painkiller", /atom/movable/screen/alert/painkiller) // BLUEMOON ADD
 	if(target == occupant)
 		use_power = IDLE_POWER_USE

@@ -19,6 +19,7 @@
 	icon_state = "dispenser"
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 40
+	active_power_usage = 1000
 	interaction_flags_machine = INTERACT_MACHINE_OPEN | INTERACT_MACHINE_ALLOW_SILICON | INTERACT_MACHINE_OFFLINE
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	circuit = /obj/item/circuitboard/machine/chem_dispenser
@@ -126,10 +127,14 @@
 /obj/machinery/chem_dispenser/process()
 	if (recharge_counter >= 4)
 		if(!is_operational())
+			if(use_power == ACTIVE_POWER_USE)
+				use_power = IDLE_POWER_USE
 			return
 		var/usedpower = cell.give(recharge_amount)
 		if(usedpower)
-			use_power(250*recharge_amount)
+			use_power = ACTIVE_POWER_USE
+		else
+			use_power = IDLE_POWER_USE
 		recharge_counter = 0
 		return
 	recharge_counter++

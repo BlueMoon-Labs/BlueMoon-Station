@@ -51,6 +51,7 @@
 	name = "Восстановить Сломанную Кость (Костоправ/Костный Гель/Хирургическая Лента)"
 	implements = list(/obj/item/bonesetter = 100, /obj/item/stack/medical/bone_gel = 100, /obj/item/stack/sticky_tape/surgical = 100, /obj/item/stack/sticky_tape/super = 50, /obj/item/stack/sticky_tape = 30)
 	time = 40
+	stop_implements = TRUE
 
 /datum/surgery_step/repair_bone_hairline/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	if(surgery.operated_wound)
@@ -121,6 +122,7 @@
 	name = "Восстановить Сломанную Кость (Костный Гель/Хирургическая Лента)"
 	implements = list(/obj/item/stack/medical/bone_gel = 100, /obj/item/stack/sticky_tape/surgical = 100, /obj/item/stack/sticky_tape/super = 50, /obj/item/stack/sticky_tape = 30)
 	time = 40
+	stop_implements = TRUE
 
 /datum/surgery_step/repair_bone_compound/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	if(surgery.operated_wound)

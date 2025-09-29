@@ -19,7 +19,7 @@
 	special_surgery_traits = list(OPERATION_NEED_FULL_ANESTHETIC) // BLUEMOON ADD - операция требует, чтобы пациент находился без сознания
 	icon = 'icons/mob/human_parts_greyscale.dmi'
 	icon_state = "human_chest_m"
-	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_ADDITIONAL
+	//radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_ADDITIONAL // in end of list
 
 //repair organs
 /datum/surgery_step/graft_synthtissue

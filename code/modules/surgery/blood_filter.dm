@@ -3,8 +3,7 @@
 	desc = "Процедура, направленная на очистку крови пациента от посторонних веществ."
 	possible_locs = list(BODY_ZONE_CHEST)
 	icon_state = "bloodfilter"
-	is_healing = FALSE
-	radial_priority = SURGERY_RADIAL_PRIORITY_OTHER_FIRST
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_ADDITIONAL
 	steps = list(
 		/datum/surgery_step/incise,
 		/datum/surgery_step/retract_skin,
