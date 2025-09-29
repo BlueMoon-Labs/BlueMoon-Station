@@ -5,7 +5,7 @@
 	blacklisted = 0
 	sexes = 0
 	meat = /obj/item/reagent_containers/food/snacks/meat/slab/human/mutant/skeleton
-	species_traits = list(NOBLOOD,NOGENITALS,NOAROUSAL,HAS_BONE,NOTRANSSTING)
+	species_traits = list(NOBLOOD,HAS_BONE,NOTRANSSTING)
 	inherent_traits = list(TRAIT_NOPULSE,TRAIT_STABLEHEART,TRAIT_NOBREATH,,TRAIT_RESISTHIGHPRESSURE,TRAIT_RESISTLOWPRESSURE,TRAIT_NOHUNGER,TRAIT_NOTHIRST,TRAIT_RADIMMUNE,TRAIT_EASYDISMEMBER,TRAIT_LIMBATTACHMENT,TRAIT_NOSOFTCRIT,TRAIT_FAKEDEATH)
 	inherent_biotypes = MOB_MINERAL|MOB_HUMANOID //BLUEMOON EDIT кости без кожи, чистый кальций без плоти, поэтому и MOB_MINERAL
 	mutanttongue = /obj/item/organ/tongue/bone

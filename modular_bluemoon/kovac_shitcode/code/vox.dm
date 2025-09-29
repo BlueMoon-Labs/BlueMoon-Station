@@ -127,7 +127,7 @@
 	no_equip = list(ITEM_SLOT_GLOVES) // Запрещаем носить перчатки - ручища не позволяют
 	species_language_holder = /datum/language_holder/vox // Воксы изначально знают свой язык
 
-	species_traits = list(NOGENITALS,HAS_BONE,HAS_FLESH,EYECOLOR,LIPS,HAIR) // Фактически воксы бесполые
+	species_traits = list(HAS_BONE,HAS_FLESH,EYECOLOR,LIPS,HAIR)
 	inherent_traits = list(TRAIT_RESISTCOLD,TRAIT_STABLEHEART,TRAIT_STABLELIVER,TRAIT_EASYDISMEMBER,TRAIT_SILENT_STEP,TRAIT_DNC_ORDER) //Сердце и печень не гниют, устойчивость к холоду, тихий шаг. Вдобавок к минусам выше - конечности проще отрываются
 ///25.08.2023 - убрана защита от космоса, но не баланса ради - воксов тупо невозможно содержать в местах навроде пермабрига. В компенсанцию снижены множителя урона по воксам.
 
