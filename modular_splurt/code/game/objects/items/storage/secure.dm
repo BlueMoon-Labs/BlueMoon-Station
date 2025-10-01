@@ -5,14 +5,14 @@
 
 /obj/item/storage/secure/briefcase/hos/hos_e45_pack/PopulateContents()
 	new /obj/item/gun/ballistic/automatic/pistol/enforcerred(src)
-	new /obj/item/ammo_box/magazine/e45/lethal(src)
-	new /obj/item/ammo_box/magazine/e45/lethal(src)
-	new /obj/item/ammo_box/magazine/e45(src)
-	new /obj/item/ammo_box/magazine/e45(src)
-	new /obj/item/ammo_box/magazine/e45(src)
-	new /obj/item/ammo_box/magazine/e45/taser(src)
-	new /obj/item/ammo_box/magazine/e45/taser(src)
-	new /obj/item/ammo_box/magazine/e45/taser(src)
+	new /obj/item/ammo_box/magazine/e45/e45_drum/lethal(src)
+	new /obj/item/ammo_box/magazine/e45/e45_drum/lethal(src)
+	new /obj/item/ammo_box/magazine/e45/e45_drum(src)
+	new /obj/item/ammo_box/magazine/e45/e45_drum(src)
+	new /obj/item/ammo_box/magazine/e45/e45_drum(src)
+	new /obj/item/ammo_box/magazine/e45/e45_drum/taser(src)
+	new /obj/item/ammo_box/magazine/e45/e45_drum/taser(src)
+	new /obj/item/ammo_box/magazine/e45/e45_drum/taser(src)
 
 // Sec Officer Boxes
 

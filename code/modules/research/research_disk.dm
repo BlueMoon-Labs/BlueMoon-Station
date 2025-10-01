@@ -48,3 +48,14 @@
 /obj/item/disk/tech_disk/abductor/Initialize(mapload)
 	. = ..()
 	stored_research = new /datum/techweb/abductor
+
+// Bluemoon add - добовляю диск с иследованиями для продвинутого оружия
+
+/obj/item/disk/tech_disk/upgraded
+	name = "NT upgraded weaponry disk"
+	desc = "A technology disk containing schematics for improved NT equipment."
+	custom_materials = null
+
+/obj/item/disk/tech_disk/upgraded/Initialize(mapload)
+	. = ..()
+	stored_research = new /datum/techweb/upgraded
