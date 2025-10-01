@@ -705,11 +705,8 @@
 	..()
 
 /datum/reagent/consumable/honey/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	if(iscarbon(M) && (method in list(TOUCH, VAPOR, PATCH)))
-		var/mob/living/carbon/C = M
-		for(var/s in C.surgeries)
-			var/datum/surgery/S = s
-			S.success_multiplier = max(0.6, S.success_multiplier) // +60% success probability on each step, compared to bacchus' blessing's ~46%
+	if(method in list(TOUCH, VAPOR, PATCH))
+		M.sterilize(60, 1 MINUTES * reac_volume/5) // +60% success probability on each step, compared to bacchus' blessing's ~46%
 	..()
 
 /datum/reagent/consumable/mayonnaise

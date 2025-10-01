@@ -111,22 +111,27 @@
 				var/alternative_step
 				var/alt_chems_needed = ""
 				var/list/next_step_tools = surgery_step.get_max_chance_implements()
+				var/next_step_chance = "[clamp(surgery_step.get_chance(patient, user, user.get_active_held_item(), procedure, TRUE),0,100)] %"
 				var/list/alternative_step_tools = list()
+				var/alternative_step_chance = 0
 				if(surgery_step.repeatable)
 					var/datum/surgery_step/next_step = procedure.get_surgery_next_step()
 					if(next_step)
 						alternative_step = capitalize(next_step.name)
 						alt_chems_needed = next_step.get_chem_list()
 						alternative_step_tools = next_step.get_max_chance_implements()
+						alternative_step_chance = "[clamp(next_step.get_chance(patient, user, user.get_active_held_item(), procedure, TRUE),0,100)] %"
 					else
 						alternative_step = "Finish operation"
 				data["procedures"] += list(list(
 					"name" = capitalize("[parse_zone(procedure.location)] - [procedure.name]"),
 					"next_step" = capitalize(surgery_step.name),
 					"next_step_tools" = next_step_tools,
+					"next_step_chance" = next_step_chance,
 					"chems_needed" = chems_needed,
 					"alternative_step" = alternative_step,
 					"alternative_step_tools" = alternative_step_tools,
+					"alternative_step_chance" = alternative_step_chance,
 					"alt_chems_needed" = alt_chems_needed
 				))
 	return data

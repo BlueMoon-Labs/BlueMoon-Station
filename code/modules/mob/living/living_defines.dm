@@ -77,6 +77,10 @@
 
 	var/list/surgeries = list()	//a list of surgery datums. generally empty, they're added when the player wants them.
 
+	var/_sterilize_timer_id // BLUEMOON ADD timer for desterilize()
+	var/sterilize_power = 0 // BLUEMOON ADD get buff to chance surg. operations in percent
+	var/_sterilize_expire = 0 // BLUEMOON ADD for cumulative timer effect
+
 	var/now_pushing = null //used by living/Bump() and living/PushAM() to prevent potential infinite loop.
 
 	var/cameraFollow = null

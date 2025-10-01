@@ -19,7 +19,8 @@
 	var/can_fill_from_container = TRUE
 	var/apply_type = PATCH
 	var/apply_method = "spray"
-	var/self_delay = 3 SECONDS
+	var/self_delay = 1.5 SECONDS
+	var/other_delay = 1 SECONDS
 	var/squirt_mode = FALSE
 	var/squirt_amount = 5
 
@@ -65,7 +66,7 @@
 		log_combat(user, L, "attempted to apply", src, reagents.log_list())
 		L.visible_message("<span class='danger'>[user] attempts to [apply_method] [src] on [L].</span>", \
 							"<span class='userdanger'>[user] attempts to [apply_method] [src] on [L].</span>")
-		if(!do_mob(user, L))
+		if(!do_mob(user, L, other_delay))
 			return
 		if(!reagents || !reagents.total_volume)
 			return

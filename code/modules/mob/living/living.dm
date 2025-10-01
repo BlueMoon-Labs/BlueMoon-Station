@@ -1466,3 +1466,52 @@
 		healing_amount = max(0, healing_amount - fire_healing)
 
 	revive(FALSE, FALSE, excess_healing=max(healing_amount, 0)) // and any excess healing is passed along
+
+/**
+ * Called to give mob buff to surg. operations
+ * Triggered at the end of the effect of sterilization from reagents.
+ */
+/mob/living/proc/sterilize(power, time)
+	time = round(time)
+	if(!isnum(time) || time < 1 SECONDS)
+		return
+	if(!isnum(power) || power <= 0)
+		if(_sterilize_timer_id)
+			deltimer(_sterilize_timer_id)
+			_sterilize_timer_id = null
+		desterilize()
+		return
+
+	// We dont want to prolong the effects by using a weak antiseptic
+	if(power < sterilize_power)
+		return
+
+	// Only the maximum effect
+	sterilize_power = max(sterilize_power, power)
+
+	// Timer extension
+	if(_sterilize_expire > world.time)
+		_sterilize_expire += time
+	else
+		_sterilize_expire = world.time + time
+
+	// Recreating timer
+	if(_sterilize_timer_id)
+		deltimer(_sterilize_timer_id)
+		_sterilize_timer_id = null
+
+	var/remaining = min(_sterilize_expire - world.time, 12 MINUTES)
+	if(remaining <= 0)
+		desterilize()
+		return
+
+	_sterilize_timer_id = addtimer(CALLBACK(src, PROC_REF(desterilize)), remaining, TIMER_STOPPABLE)
+
+/**
+ * Called by _sterilize_timer_id
+ * Triggered at the end of the effect of sterilization from reagents.
+ */
+/mob/living/proc/desterilize()
+	sterilize_power = 0
+	_sterilize_expire = 0
+	_sterilize_timer_id = null

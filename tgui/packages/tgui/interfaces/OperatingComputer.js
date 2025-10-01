@@ -105,8 +105,8 @@ const PatientStateView = (props, context) => {
             ))}
           </LabeledList>
         ) || (
-          'Пациент не обнаружен'
-        )}
+            'Пациент не обнаружен'
+          )}
       </Section>
       {procedures.length === 0 && (
         <Section>
@@ -131,6 +131,9 @@ const PatientStateView = (props, context) => {
                 {procedure.chems_needed}
               </LabeledList.Item>
             )}
+            <LabeledList.Item label="Шанс успеха">
+              {procedure.next_step_chance}
+            </LabeledList.Item>
             {procedure.alternative_step && (
               <Fragment>
                 <Divider />
@@ -147,6 +150,9 @@ const PatientStateView = (props, context) => {
                     {procedure.alt_chems_needed}
                   </LabeledList.Item>
                 )}
+                <LabeledList.Item label="Шанс успеха">
+                  {procedure.alternative_step_chance}
+                </LabeledList.Item>
               </Fragment>
             )}
           </LabeledList>

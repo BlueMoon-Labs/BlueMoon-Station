@@ -77,14 +77,9 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	if(method in list(TOUCH, VAPOR, PATCH))
 		M.adjust_fire_stacks(reac_volume / 15)
 
-		if(iscarbon(M))
-			var/mob/living/carbon/C = M
-			var/power_multiplier = boozepwr / 65 // Weak alcohol has less sterilizing power
+		// +10% success propability on each step, useful while operating in less-than-perfect conditions
+		M.sterilize(boozepwr / 6.5, 1 MINUTES * reac_volume/5) // Weak alcohol has less sterilizing power
 
-			for(var/s in C.surgeries)
-				var/datum/surgery/S = s
-				S.success_multiplier = max(0.1*power_multiplier, S.success_multiplier)
-				// +10% success propability on each step, useful while operating in less-than-perfect conditions
 	return ..()
 
 /datum/reagent/consumable/ethanol/define_gas() // So that all alcohols have the same gas, i.e. "ethanol"

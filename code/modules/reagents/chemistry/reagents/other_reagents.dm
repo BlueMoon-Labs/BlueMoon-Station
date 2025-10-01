@@ -1199,11 +1199,8 @@
 
 /datum/reagent/space_cleaner/sterilizine/reaction_mob(mob/living/carbon/C, method=TOUCH, reac_volume)
 	if(method in list(TOUCH, VAPOR, PATCH))
-		for(var/s in C.surgeries)
-			var/datum/surgery/S = s
-			S.success_multiplier = max(0.2, S.success_multiplier)
-			// +20% success propability on each step, useful while operating in less-than-perfect conditions
-	..()
+		C.sterilize(20, 1 MINUTES * reac_volume/5)
+	return ..()
 
 /datum/reagent/space_cleaner/sterilizine/reaction_obj(obj/O, reac_volume)
 	if(istype(O, /obj/item/stack/medical/gauze))

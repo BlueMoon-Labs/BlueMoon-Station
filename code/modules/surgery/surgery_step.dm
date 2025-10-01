@@ -85,7 +85,8 @@
 			display_results(user, self_message = "<span class='warning'>You begin performing a surgery on yourself without any painkillers, you take your time due to the pain.</span>")
 			delay = delay * 15
 	if(do_after(user, delay, target = target))
-		var/prob_chance = 100
+		var/prob_chance = get_chance(target, user, surgery = surgery, silent = FALSE)
+		/*
 		if(implement_type)	//this means it isn't a require hand or any item step.
 			prob_chance = implements[implement_type]
 		prob_chance *= surgery.get_propability_multiplier()
@@ -104,6 +105,7 @@
 				prob_chance = 0
 			else
 				prob_chance = min(prob_chance, 20)
+		*/
 		if(prob_chance <= 0 && !try_to_fail)
 			to_chat(user, span_warning("Условия операции слишком ужасны, ничего не выйдет!"))
 		// BLUEMOON ADD END
@@ -215,13 +217,64 @@
 		return _max_chance_implements[type]
 
 	var/list/result = list()
-	var/maxval = -999
-	for(var/k in implements)
-		if(implements[k] > maxval)
-			maxval = implements[k]
-	for(var/k in implements)
-		if(implements[k] == maxval)
-			result += capitalize(ispath(k) ? initial(k:name) : k)
+	if(!accept_hand)
+		var/maxval = get_max_chance()
+		for(var/k in implements)
+			if(implements[k] == maxval)
+				result += capitalize(ispath(k) ? initial(k:name) : k)
+	else
+		result += "Hand"
 
 	_max_chance_implements[type] = result
 	return result
+
+/datum/surgery_step/proc/get_max_chance()
+	var/maxval = 0
+	if(!accept_hand)
+		for(var/k in implements)
+			if(implements[k] > maxval)
+				maxval = implements[k]
+	else
+		maxval = 100
+	return maxval
+
+/datum/surgery_step/proc/get_implement_type(obj/item/tool)
+	for(var/key in implements)
+		var/match = FALSE
+		if(ispath(key) && istype(tool, key))
+			match = TRUE
+		else if(tool.tool_behaviour == key)
+			match = TRUE
+		if(match)
+			return key
+
+/datum/surgery_step/proc/get_chance(mob/living/target, mob/living/user, obj/item/tool, datum/surgery/surgery, silent = TRUE)
+	var/prob_chance = get_max_chance()
+	if(tool) // if we want check chance for any item (like for operating computer)
+		var/tool_imlp_type = get_implement_type(tool)
+		if(tool_imlp_type && (tool_imlp_type in implements) && tool_imlp_type != /obj/item) // if the item is not suitable for the operation, then there will be a warning in try_op, and we will show the maximum value for implements
+			prob_chance = implements[tool_imlp_type]
+	else if(implement_type)	// this means it isn't a require hand or any item step.
+		prob_chance = implements[implement_type]
+	prob_chance *= surgery.get_propability_multiplier(silent)
+
+	// BLUEMOON ADD START - самооперирование - чертовски сложное дело
+	if(HAS_TRAIT(target, TRAIT_BLUEMOON_COMPLEX_MAINTENANCE)) // только роботехники, РД и борги могут ремонтировать таких роботов
+		if(HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
+			if(!HAS_TRAIT(user.mind, QUALIFIED_ROBOTIC_MAINTER) && !user.mind.antag_datums) // гост роли и обученный персонал могут оперировать таких синтов
+				if(!silent)
+					to_chat(user, span_warning("Этот протез выглядит слишком сложно... Здесь необходим специалист!"))
+				prob_chance = 0
+	if(target == user)
+		if(HAS_TRAIT(target, CAN_BE_OPERATED_WITHOUT_PAIN)) // Роботам и некоторым другим расам даётся проще. Они не чувствуют боли
+			if(!silent)
+				display_results(target, self_message = "<span class='notice'>Вы пытаетесь [HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM) ? "отремонтироваться" : "вылечитья"] самостоятельно. Это не так сложно, как было бы [HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM) ? "органикам" : "другим расам"], но неудобно.</span>")
+			prob_chance = min(prob_chance, 80)
+		else if(HAS_TRAIT(target, TRAIT_BLUEMOON_FEAR_OF_SURGEONS))
+			if(!silent)
+				to_chat(target, span_danger("Я НЕ СПРАВЛЮСЬ! Я НЕ СМОГУ! Я НЕ СПРАВЛЮСЬ!"))
+			prob_chance = 0
+		else
+			prob_chance = min(prob_chance, 20)
+
+	return prob_chance

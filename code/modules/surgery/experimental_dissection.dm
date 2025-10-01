@@ -28,7 +28,7 @@
 
 /datum/surgery_step/dissection
 	name = "Препарировать"
-	implements = list(/obj/item/scalpel/alien = 100, /obj/item/scalpel/advanced = 99, /obj/item/scalpel = 90, /obj/item/kitchen/knife = 45, /obj/item/shard = 25)// special tools not only cut down time but also improve probability, doesn't use TOOL_SCALPEL because different scalpels have different probs
+	implements = list(TOOL_SCALPEL = 100, /obj/item/kitchen/knife = 45, /obj/item/shard = 25)
 	time = 100
 	silicons_obey_prob = TRUE
 	repeatable = TRUE

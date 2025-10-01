@@ -9,6 +9,7 @@
 	attack_verb = list("gored", "squished", "slapped", "digested")
 	desc = "Onaka ga suite imasu."
 	var/disgust_metabolism = 1
+	var/operated = FALSE	//whether we can still have our damages fixed through surgery
 
 	healing_factor = STANDARD_ORGAN_HEALING
 	decay_factor = STANDARD_ORGAN_DECAY

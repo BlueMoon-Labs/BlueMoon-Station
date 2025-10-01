@@ -33,7 +33,7 @@
 	INVOKE_ASYNC(src, PROC_REF(try_heal), M, user)
 
 /obj/item/stack/medical/proc/try_heal(mob/living/M, mob/user, silent = FALSE)
-	if(!M.can_inject(user, TRUE))
+	if(!M.can_inject(user, TRUE) || INTERACTING_WITH(user, M))
 		return
 	if(M == user)
 		if(!silent)

@@ -501,6 +501,14 @@ GENETICS SCANNER
 						msg += "<span class='danger'> Вмешательство рекомендовано.</span>\n"
 					else
 						msg += "\n"
+	// Operations
+	if(M.sterilize_power)
+		msg += span_nicegreen("Ткани пациента продезинфицированы, что повышет шанс успеха операции на [M.sterilize_power] %. ") + span_info("Эффект продлиться еще [DisplayTimeText(M._sterilize_expire - world.time)]\n")
+
+	for(var/datum/surgery/procedure in M.surgeries)
+		var/datum/surgery_step/surgery_step = procedure.get_surgery_step()
+		msg += span_danger("Начата операция на [procedure.operated_bodypart?.ru_name_v], шанс на успех в текущих условиях: [clamp(surgery_step.get_chance(M, user, user.get_inactive_held_item(), procedure, TRUE),0,100)] %\n")
+
 	// Wounds
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M

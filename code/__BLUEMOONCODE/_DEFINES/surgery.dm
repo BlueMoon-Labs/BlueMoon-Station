@@ -11,10 +11,12 @@
 	/datum/surgery/advanced/toxichealing \
 	)
 
-// Все базовые операции
+// Все базовые операции с описанием (используется для показа описаний в мониторе операций)
 #define BASE_MED_SURGERY_OPERATIONS list( \
 	/datum/surgery/coronary_bypass, \
 	/datum/surgery/lobectomy, \
+	/datum/surgery/hepatectomy, \
+	/datum/surgery/gastrectomy, \
 	/datum/surgery/debride, \
 	/datum/surgery/cardioversion, \
 	/datum/surgery/eye_surgery, \
