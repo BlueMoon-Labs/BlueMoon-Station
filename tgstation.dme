@@ -4438,6 +4438,7 @@
 #include "modular_bluemoon\code\modules\clothing\under\jobs\civilian\civilian.dm"
 #include "modular_bluemoon\code\modules\clothing\underwear\boxers.dm"
 #include "modular_bluemoon\code\modules\clothing\underwear\shirts.dm"
+#include "modular_bluemoon\code\modules\clothing\underwear\adjustable_shirt.dm"
 #include "modular_bluemoon\code\modules\clothing\underwear\socks.dm"
 #include "modular_bluemoon\code\modules\clothing\underwear\tape_underwear.dm"
 #include "modular_bluemoon\code\modules\death_memory\death_memory.dm"
