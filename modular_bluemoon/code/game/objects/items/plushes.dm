@@ -621,20 +621,10 @@
 
 /obj/item/toy/plush/bm/catshark
 	name = "Catshark"
-	desc = "Плюшевая игрушка странной.. акулы? Кошки? Не разобрать, но от неё очень сильно тянет клубничными сырками. Кажется внутри есть механизм что приводит игрушку в движение."
+	desc = "Плюшевая игрушка странной.. акулы? Кошки? Не разобрать, но от неё очень сильно тянет клубничными сырками. Кажется внутри есть механизм что приводит игрушку в движение... и он заклинил."
 	icon_state = "catshark"
 	attack_verb = list("Rawr", "Meow", "Meowr")
 	squeak_override = list(
 		'modular_bluemoon/sound/plush/catshark1.ogg' = 1,
 		'modular_bluemoon/sound/plush/catshark2.ogg' = 1
 	)
-	var/enabled = TRUE
-
-/obj/item/toy/plush/bm/catshark/attack_self(mob/user)
-	enabled = !enabled
-	if (enabled)
-		icon_state = "catshark"
-	else
-		icon_state = "catshark-on"
-	to_chat(user, "<span class='notice'>You [enabled ? "disable" : "enable"] the plushie movement mechanism.</span>")
-	return
