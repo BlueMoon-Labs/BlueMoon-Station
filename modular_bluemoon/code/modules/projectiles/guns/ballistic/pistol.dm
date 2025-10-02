@@ -3,7 +3,7 @@
 	desc = "The mk59 version enforcer is equipped with a wire buttstock, which increases stabilization at the cost of weapon size."
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "mk59"
-	w_class = WEIGHT_CLASS_HUGE
+	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_LIGHT
 	spread = 1
 	mag_type = /obj/item/ammo_box/magazine/e45
@@ -28,7 +28,7 @@
 	desc = "The Mk60 version adds a pre-installed collimator sight to the Mk59 version, which helps with quick aiming, as well as an easier trigger mechanism."
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "mk60"
-	w_class = WEIGHT_CLASS_HUGE
+	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_LIGHT
 	spread = 0.25
 	fire_delay = 0
@@ -53,7 +53,7 @@
 	desc = "The MK62 version was designed for mecha pilots as a last-ditch weapon. Equipped with a fully automatic receiver, this bitch spits lead faster than the enemy can realize that it's already dead."
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "mk62"
-	w_class = WEIGHT_CLASS_HUGE
+	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
 	burst_shot_delay = 2
 	burst_size = 2
