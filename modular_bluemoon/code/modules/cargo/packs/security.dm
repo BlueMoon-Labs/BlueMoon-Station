@@ -61,6 +61,6 @@
 /datum/supply_pack/security/blueprints
 	name = "Advanced weapon blueprints"
 	desc = "Some fancy schematics for R&D minds, that will improve sec efficiency to shot each other."
-	cost = 10000
+	cost = 50000
 	contains = list(/obj/item/disk/weapon_blueprint)
-	crate_name = "Advanced weapon blueprints"
+	crate_name = "Advanced weapon blueprints crate"

@@ -19,7 +19,7 @@
 	start_empty = 1
 
 /obj/item/ammo_box/magazine/e45/e45_drum
-	name = "Drum Enforcer magazine"
+	name = "Drum Enforcer magazine (.45 Rubber)"
 	icon = 'modular_splurt/icons/obj/ammo.dmi'
 	icon_state = "enforcer-drum"
 	ammo_type = /obj/item/ammo_casing/c45

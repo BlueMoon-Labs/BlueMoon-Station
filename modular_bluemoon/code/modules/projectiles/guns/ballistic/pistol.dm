@@ -57,7 +57,7 @@
 	weapon_weight = WEAPON_HEAVY
 	burst_shot_delay = 2
 	burst_size = 2
-	fire_delay = 2
+	fire_delay = 2.5
 	mag_type = /obj/item/ammo_box/magazine/e45
 	can_flashlight = 0
 	can_suppress = TRUE
