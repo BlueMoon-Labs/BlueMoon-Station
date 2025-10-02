@@ -13,7 +13,8 @@
 	. = ..()
 	if(!.)
 		return .
-	if(!operated_bodypart?.embedded_objects.len)
+	var/obj/item/bodypart/BP = patient.get_bodypart(location)
+	if(!BP || !BP?.embedded_objects.len)
 		. = FALSE
 
 /datum/surgery_step/remove_object
