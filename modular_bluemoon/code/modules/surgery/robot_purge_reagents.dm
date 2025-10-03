@@ -74,7 +74,7 @@
 
 
 /datum/surgery_step/eject_reagents
-	name = "Открыть люк сброса реагентов (Мультитул)"
+	name = "Открыть люк сброса реагентов"
 	implements = list(TOOL_MULTITOOL = 95, TOOL_HEMOSTAT = 25, TOOL_CROWBAR = 25)
 	time = 40
 	preop_sound = 'sound/machines/doorclick.ogg'

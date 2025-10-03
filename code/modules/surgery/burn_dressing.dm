@@ -27,7 +27,7 @@
 
 ///// Debride
 /datum/surgery_step/debride
-	name = "Вырезать Заражённую Плоть"
+	name = "Удалить Заражённую Плоть"
 	implements = list(TOOL_SCALPEL = 100, TOOL_HEMOSTAT = 85, TOOL_SAW = 60, TOOL_WIRECUTTER = 40)
 	time = 30
 	repeatable = TRUE

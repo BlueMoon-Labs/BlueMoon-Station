@@ -14,7 +14,7 @@
 	icon_state = "stunbaton_active"
 
 /datum/surgery_step/splice_nerves
-	name = "splice nerves"
+	name = "Срастить нервы"
 	accept_hand = TRUE
 	time = 155
 

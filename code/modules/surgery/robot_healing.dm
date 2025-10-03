@@ -49,7 +49,7 @@
 				/datum/surgery_step/mechanic_close)
 
 /datum/surgery_step/robot_heal
-	name = "Отремонтировать (Сварочный Аппарат или Кабель)"
+	name = "Отремонтировать"
 	implements = list(TOOL_WELDER = 100, /obj/item/stack/cable_coil = 100)
 	repeatable = TRUE
 	time = 15
@@ -146,7 +146,7 @@
 /***************************STEPS***************************/
 
 /datum/surgery_step/robot_heal/basic
-	name = "repair damage"
+	name = "Починить повреждения"
 	brutehealing = 10
 	burnhealing = 10
 	missinghpbonus = 15

@@ -16,7 +16,7 @@
 /datum/surgery_step/embalming
 	name = "Бальмазировать Тело"
 	implements = list(TOOL_HEMOSTAT = 100, TOOL_SCREWDRIVER = 35)
-	chems_needed = list(/datum/reagent/drying_agent, /datum/reagent/space_cleaner/sterilizine)
+	chems_needed = list(/datum/reagent/space_cleaner/sterilizine, /datum/reagent/drying_agent)
 	require_all_chems = FALSE
 
 /datum/surgery_step/embalming/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)

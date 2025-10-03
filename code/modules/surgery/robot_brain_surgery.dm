@@ -16,7 +16,7 @@
 	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_STATIC
 
 /datum/surgery_step/fix_robot_brain
-	name = "Отремонтировать Пози-Мозг (Мультитул)"
+	name = "Отремонтировать Пози-Мозг"
 	implements = list(TOOL_MULTITOOL = 100, TOOL_HEMOSTAT = 35, TOOL_SCREWDRIVER = 15)
 	time = 120 //long and complicated
 

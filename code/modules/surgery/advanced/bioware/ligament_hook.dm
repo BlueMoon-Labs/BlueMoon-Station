@@ -14,7 +14,7 @@
 	icon_state = "surgery_arms"
 
 /datum/surgery_step/reshape_ligaments
-	name = "reshape ligaments"
+	name = "Изменить форму связок"
 	accept_hand = TRUE
 	time = 125
 

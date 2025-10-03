@@ -25,7 +25,7 @@
 
 
 /datum/surgery_step/extract_organ
-	name = "remove heart"
+	name = "Удалить сердце"
 	accept_hand = TRUE
 	time = 32
 	var/obj/item/organ/IC = null

@@ -48,7 +48,7 @@
 
 ///// Repair Hairline Fracture (Severe)
 /datum/surgery_step/repair_bone_hairline
-	name = "Восстановить Сломанную Кость (Костоправ/Костный Гель/Хирургическая Лента)"
+	name = "Восстановить Сломанную Кость"
 	implements = list(/obj/item/bonesetter = 100, /obj/item/stack/medical/bone_gel = 100, /obj/item/stack/sticky_tape/surgical = 100, /obj/item/stack/sticky_tape/super = 50, /obj/item/stack/sticky_tape = 30)
 	time = 40
 	stop_implements = TRUE
@@ -119,7 +119,7 @@
 
 ///// Repair Compound Fracture (Crticial)
 /datum/surgery_step/repair_bone_compound
-	name = "Восстановить Сломанную Кость (Костный Гель/Хирургическая Лента)"
+	name = "Восстановить Сломанную Кость"
 	implements = list(/obj/item/stack/medical/bone_gel = 100, /obj/item/stack/sticky_tape/surgical = 100, /obj/item/stack/sticky_tape/super = 50, /obj/item/stack/sticky_tape = 30)
 	time = 40
 	stop_implements = TRUE

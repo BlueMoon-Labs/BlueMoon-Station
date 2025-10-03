@@ -14,7 +14,7 @@
 	icon_state = "surgery_arms"
 
 /datum/surgery_step/reinforce_ligaments
-	name = "reinforce ligaments"
+	name = "Укрепить связки"
 	accept_hand = TRUE
 	time = 125
 

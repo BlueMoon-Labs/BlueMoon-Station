@@ -50,7 +50,7 @@
 
 //prepare electronics
 /datum/surgery_step/prepare_electronics
-	name = "Подготовить Электронику (Мультитул)"
+	name = "Подготовить Электронику"
 	implements = list(
 		TOOL_MULTITOOL = 100,
 		TOOL_HEMOSTAT = 10) // try to reboot internal controllers via short circuit with some conductor
@@ -105,7 +105,7 @@
 
 //open hatch
 /datum/surgery_step/open_hatch
-	name = "open the hatch (empty hand)"
+	name = "Открыть люк"
 	accept_hand = 1
 	time = 10
 	preop_sound = 'sound/items/ratchet.ogg'

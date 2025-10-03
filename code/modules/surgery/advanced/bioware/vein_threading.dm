@@ -14,7 +14,7 @@
 	icon_state = "panacea"
 
 /datum/surgery_step/thread_veins
-	name = "thread veins"
+	name = "Сделать сетку на венах"
 	accept_hand = TRUE
 	time = 125
 

@@ -13,7 +13,7 @@
 	icon_state = "demon_heart-on"
 
 /datum/surgery_step/muscled_veins
-	name = "shape vein muscles"
+	name = "Сформировать мышцы вокруг сосудов"
 	accept_hand = TRUE
 	time = 125
 

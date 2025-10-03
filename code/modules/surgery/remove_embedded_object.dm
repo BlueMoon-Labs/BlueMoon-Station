@@ -13,7 +13,7 @@
 	. = ..()
 	if(!.)
 		return .
-	var/obj/item/bodypart/BP = patient.get_bodypart(location)
+	var/obj/item/bodypart/BP = patient.get_bodypart(user.zone_selected)
 	if(!BP || !BP?.embedded_objects.len)
 		. = FALSE
 

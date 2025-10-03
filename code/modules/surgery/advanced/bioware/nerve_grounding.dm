@@ -14,7 +14,7 @@
 	icon_state = "yellow"
 
 /datum/surgery_step/ground_nerves
-	name = "ground nerves"
+	name = "Заземлить нервы"
 	accept_hand = TRUE
 	time = 155
 
