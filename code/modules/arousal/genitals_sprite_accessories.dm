@@ -14,8 +14,8 @@
  * If the sprite is like this: "penis_human_4_s_1_FRONT", the extra "_s" means it's used by the default skintones (the list of default skin tones that "Albino, Caucasian, etc.").
  * Those "_s" sprites use a more pink-ish tone instead of white, to match the different default skin tones automatically,
  * while the icon states without the "_s" are used by the custom skin tone.
- * In the future, it would be best to solve this, as it creates useless duplicated icon states, and therefore heavier file sizes. 
- * It would be best to just have 1 set of icon states that apply themselves normally to both custom skin tone users and match default skin tone users, 
+ * In the future, it would be best to solve this, as it creates useless duplicated icon states, and therefore heavier file sizes.
+ * It would be best to just have 1 set of icon states that apply themselves normally to both custom skin tone users and match default skin tone users,
  * effectively removing the need of using the extra "_s". - Goku
  */
 
@@ -30,7 +30,7 @@
 
 /datum/sprite_accessory/penis/teshari
 	icon_state = "taperedteshari"
-	name = "Teshari"
+	name = "Teshari(For Teshari Only)"
 	ru_name = "тешарьский"
 	icon = 'modular_splurt/icons/obj/genitals/teshari_penis.dmi'
 
@@ -64,6 +64,11 @@
 	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
 	taur_dimension_x = 64
 	ru_name = "утончённый к концу"
+
+	icon_state = "barbtapered"
+	name = "Tapered Barbed"
+	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
+	ru_name = "утончённый к концу и покрыт шипами"
 
 /datum/sprite_accessory/penis/tentacle
 	icon_state = "tentacle"
@@ -128,20 +133,17 @@
 	icon_state = "dentata"
 	name = "Dentata"
 
-/datum/sprite_accessory/vagina/hairy
+/datum/sprite_accessory/vagina/hairy //BlueMoon Edit
 	icon_state = "hairy"
 	name = "Hairy"
-	alt_aroused = FALSE
 
-/datum/sprite_accessory/vagina/spade
+/datum/sprite_accessory/vagina/spade //BlueMoon Edit
 	icon_state = "spade"
 	name = "Spade"
-	alt_aroused = FALSE
 
-/datum/sprite_accessory/vagina/furred
+/datum/sprite_accessory/vagina/furred //BlueMoon Edit
 	icon_state = "furred"
 	name = "Furred"
-	alt_aroused = FALSE
 
 /datum/sprite_accessory/vagina/gaping
 	icon_state = "gaping"
@@ -150,12 +152,35 @@
 /datum/sprite_accessory/vagina/cloaca
 	name = "cloaca"
 	icon_state = "cloaca"
+//BlueMoon Edit
+/datum/sprite_accessory/vagina/feline
+	icon_state = "furred"
+	name = "Feline"
 
-/datum/sprite_accessory/vagina/cloaca
-	name = "Cloaca"
-	icon = 'modular_sand/icons/obj/genitals/vagina_onmob.dmi'
-	icon_state = "cloaca"
+/datum/sprite_accessory/vagina/equine
+	icon_state = "gaping"
+	name = "Equine"
 
+/datum/sprite_accessory/vagina/cervine
+	icon_state = "gaping"
+	name = "Cervine"
+
+/datum/sprite_accessory/vagina/sergal
+	icon_state = "sergal"
+	name = "Sergal"
+
+/datum/sprite_accessory/vagina/hemi
+	icon_state = "human"
+	name = "Hemi"
+
+/datum/sprite_accessory/vagina/puffy
+	icon_state = "hairy"
+	name = "Puffy"
+
+/datum/sprite_accessory/vagina/teshari
+	name = "Cloaca (For Teshari Only)"
+	icon_state = "cloaca_teshari"
+//BlueMoon Edit End
 
 //BREASTS BE HERE
 /datum/sprite_accessory/breasts
