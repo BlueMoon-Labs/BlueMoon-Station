@@ -1495,12 +1495,16 @@
 	else
 		_sterilize_expire = world.time + time
 
+	var/const/max_time = 12 MINUTES
+
+	_sterilize_expire = min(_sterilize_expire, world.time + max_time)
+
 	// Recreating timer
 	if(_sterilize_timer_id)
 		deltimer(_sterilize_timer_id)
 		_sterilize_timer_id = null
 
-	var/remaining = min(_sterilize_expire - world.time, 12 MINUTES)
+	var/remaining = min(_sterilize_expire - world.time, max_time)
 	if(remaining <= 0)
 		desterilize()
 		return
