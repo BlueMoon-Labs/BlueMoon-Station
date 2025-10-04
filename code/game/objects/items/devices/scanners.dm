@@ -503,7 +503,7 @@ GENETICS SCANNER
 						msg += "\n"
 	// Operations
 	if(M.sterilize_power)
-		msg += span_nicegreen("Ткани пациента продезинфицированы, что повышет шанс успеха операции на [M.sterilize_power] %. ") + span_info("Эффект продлиться еще [DisplayTimeText(M._sterilize_expire - world.time)]\n")
+		msg += span_nicegreen("Ткани пациента продезинфицированы, что повышет шанс успеха операции на [M.sterilize_power] %. ") + span_info("Эффект продлится еще [DisplayTimeText(M._sterilize_expire - world.time)]\n")
 
 	for(var/datum/surgery/procedure in M.surgeries)
 		var/datum/surgery_step/surgery_step = procedure.get_surgery_step()
