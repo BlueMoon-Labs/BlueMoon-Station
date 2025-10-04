@@ -1482,6 +1482,8 @@
 		desterilize()
 		return
 
+	power = ceil(power)
+
 	// We dont want to prolong the effects by using a weak antiseptic
 	if(power < sterilize_power)
 		return
