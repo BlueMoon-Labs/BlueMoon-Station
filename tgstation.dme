@@ -4219,6 +4219,7 @@
 #include "modular_bluemoon\code\datums\dna.dm"
 #include "modular_bluemoon\code\datums\emotes.dm"
 #include "modular_bluemoon\code\datums\ert.dm"
+#include "modular_bluemoon\code\modules\integrated_electronics\integral_user.dm"
 #include "modular_bluemoon\code\datums\shuttles.dm"
 #include "modular_bluemoon\code\datums\world_topic.dm"
 #include "modular_bluemoon\code\datums\brain_damage\imaginary_friend.dm"
