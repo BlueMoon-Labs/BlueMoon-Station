@@ -105,7 +105,7 @@
 	desc = "A jolly dress, well suited to entertain your master, nuncle."
 	icon_state = "jester"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/rank/civilian/clown/sexy
 	name = "sexy-clown suit"
@@ -113,7 +113,7 @@
 	icon_state = "sexyclown"
 	item_state = "sexyclown"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/rank/civilian/clown/Initialize(mapload)
 	. = ..()
@@ -124,7 +124,7 @@
 	desc = "A jolly dress, well suited to entertain your master, nuncle."
 	icon_state = "harley_jester"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
+	mutantrace_variation = STYLE_DIGITIGRADE
 	unique_reskin = list(
 		"Basic" = list(
 			RESKIN_ICON_STATE = "harley_jester"

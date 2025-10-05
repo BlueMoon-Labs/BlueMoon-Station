@@ -34,11 +34,6 @@
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 	path = /obj/item/clothing/suit/suspenders/suspenders_white
 
-/datum/gear/suit/solfed_dress
-	name = "SolFed Dress"
-	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
-	path = /obj/item/clothing/suit/sol_dress
-
 /datum/gear/suit/nri_coat
 	name = "Russian Empire Coat"
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS

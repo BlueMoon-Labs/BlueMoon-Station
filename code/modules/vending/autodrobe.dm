@@ -164,7 +164,7 @@
 					/obj/item/clothing/suit/suspenders/suspenders_white = 4,
 					/obj/item/clothing/neck/tie/bandagewraps = 5,
 					/obj/item/clothing/mask/balaclava/breath/redscarf/greenscarf = 5,
-					/obj/item/clothing/suit/sol_dress = 4,
+					/obj/item/clothing/under/sol_dress = 4,
 					/obj/item/clothing/under/rank/security/officer/formal/sol/armorless = 4,
 					/obj/item/clothing/suit/armor/nri_coat/armorless = 2,
 					/obj/item/clothing/head/HoS/beret/sol/plain/armorless = 2,

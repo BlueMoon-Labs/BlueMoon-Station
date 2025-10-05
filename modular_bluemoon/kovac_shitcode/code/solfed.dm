@@ -38,18 +38,17 @@
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/mob_sol.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/kovac_shitcode/icons/solfed/mob_sol_digi.dmi'
 
-/// Suits
-
-/obj/item/clothing/suit/sol_dress
+/obj/item/clothing/under/sol_dress
 	name = "solfed dress"
 	desc = "A fancy dress."
 	icon_state = "solgov_dress"
 	item_state = "solgov_dress"
-	body_parts_covered = CHEST|GROIN|LEGS
-	flags_inv = HIDEJUMPSUIT
+	body_parts_covered = CHEST|GROIN
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/obj_sol.dmi'
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/mob_sol.dmi'
+
+/// Suits
 
 /obj/item/clothing/suit/armor/vest/warden/sol_robe
 	name = "solfed robe"
@@ -245,7 +244,7 @@
 /datum/outfit/sol_diplomacy/slut
 	name = "SolFed Secretary?"
 	uniform = /obj/item/clothing/under/rank/security/officer/formal/sol
-	suit = /obj/item/clothing/suit/sol_dress
+	suit = /obj/item/clothing/under/sol_dress
 
 /datum/outfit/sol_diplomacy/secret_service
 	name = "SolFed Secret Service"

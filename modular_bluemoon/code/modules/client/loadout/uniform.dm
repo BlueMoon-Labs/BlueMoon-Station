@@ -203,3 +203,8 @@
 	name = "Draculass coat"
 	path = /obj/item/clothing/under/costume/draculass
 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_DRESSES
+
+/datum/gear/uniform/solfed_dress
+	name = "SolFed Dress"
+	path = /obj/item/clothing/under/sol_dress
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_DRESSES

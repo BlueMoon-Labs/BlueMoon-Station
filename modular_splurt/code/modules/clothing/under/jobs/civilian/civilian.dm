@@ -34,3 +34,4 @@
 	icon_state = "galaxy_red"
 	item_state = "r_suit"
 	can_adjust = FALSE
+	mutantrace_variation = STYLE_DIGITIGRADE

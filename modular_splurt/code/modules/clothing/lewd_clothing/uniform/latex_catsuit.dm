@@ -9,6 +9,7 @@
 	lefthand_file = 'modular_splurt/icons/mob/inhands/lewd_items/lewd_inhand_left.dmi'
 	righthand_file = 'modular_splurt/icons/mob/inhands/lewd_items/lewd_inhand_right.dmi'
 	can_adjust = FALSE
+	flags_inv = HIDEJUMPSUIT|HIDETAUR
 	strip_delay = 80
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 	var/seamless = FALSE

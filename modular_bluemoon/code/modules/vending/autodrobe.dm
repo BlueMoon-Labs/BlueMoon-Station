@@ -199,7 +199,7 @@ GLOBAL_LIST_INIT(autodrobe_other_items, list(
 	/obj/item/clothing/shoes/jackboots/toeless = 3,
 	/obj/item/clothing/shoes/jackboots/tall = 3,
 	/obj/item/clothing/shoes/jackboots/tall_default = 1,
-	/obj/item/clothing/suit/sol_dress = 4,
+	/obj/item/clothing/under/sol_dress = 4,
 	/obj/item/clothing/under/rank/security/officer/formal/sol/armorless = 4,
 	/obj/item/clothing/suit/armor/nri_coat/armorless = 2,
 	/obj/item/clothing/head/HoS/beret/sol/plain/armorless = 2,
