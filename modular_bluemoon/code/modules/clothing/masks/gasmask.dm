@@ -66,6 +66,16 @@
 	icon_state = "frank"
 	item_state = "frank"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	unique_reskin = list(
+		"Snout" = list(
+			RESKIN_ICON_STATE = "frank_snout",
+			RESKIN_ITEM_STATE = "frank_snout"
+		),
+		"Basic" = list(
+			RESKIN_ICON_STATE = "frank",
+			RESKIN_ITEM_STATE = "frank"
+		),
+	)
 
 /obj/item/clothing/mask/gas/syndicate/legion_mask_julie
 	name = "Julie mask"
@@ -73,6 +83,16 @@
 	icon_state = "julie"
 	item_state = "julie"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	unique_reskin = list(
+		"Snout" = list(
+			RESKIN_ICON_STATE = "julie_snout",
+			RESKIN_ITEM_STATE = "julie_snout"
+		),
+		"Basic" = list(
+			RESKIN_ICON_STATE = "julie",
+			RESKIN_ITEM_STATE = "julie"
+		),
+	)
 
 /obj/item/clothing/mask/gas/syndicate/legion_mask_joey
 	name = "Joey mask"
@@ -80,6 +100,16 @@
 	icon_state = "joey"
 	item_state = "joey"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	unique_reskin = list(
+		"Snout" = list(
+			RESKIN_ICON_STATE = "joey_snout",
+			RESKIN_ITEM_STATE = "joey_snout"
+		),
+		"Basic" = list(
+			RESKIN_ICON_STATE = "joey",
+			RESKIN_ITEM_STATE = "joey"
+		),
+	)
 
 /obj/item/clothing/mask/gas/syndicate/legion_mask_susie
 	name = "Susie mask"
@@ -87,3 +117,13 @@
 	icon_state = "susie"
 	item_state = "susie"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	unique_reskin = list(
+		"Snout" = list(
+			RESKIN_ICON_STATE = "susie_snout",
+			RESKIN_ITEM_STATE = "susie_snout"
+		),
+		"Basic" = list(
+			RESKIN_ICON_STATE = "susie",
+			RESKIN_ITEM_STATE = "susie"
+		),
+	)

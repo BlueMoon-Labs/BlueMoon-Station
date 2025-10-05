@@ -1022,8 +1022,8 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/head/helmet/sec/ipai
 	ckeywhitelist = list("hateredsoul", "ggishka", "arion1234", "swgitty", "sw00ty", "kingdeaths", "sierraiv", "ordinarylife", "milidead")
-	restricted_desc = "Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
-	restricted_roles = list("Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
+	restricted_desc = "Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield, Ghostroles."
+	restricted_roles = list("Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield", "Ghostroles")
 
 /datum/gear/donator/bm/soviet_coat
     name = "Soviet coat"
@@ -1639,19 +1639,19 @@
 	path = /obj/item/clothing/mask/gas/syndicate/legion_mask_frank
 	ckeywhitelist = list("dimofon", "devildeadspace", "dimakr", "oroshimuraiori", "troubleneko17th", "dcp9371", "oni3288")
 
-/datum/gear/donator/bm/legion_mask
+/datum/gear/donator/bm/legion_mask_julie
 	name = "Julie mask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/legion_mask_julie
 	ckeywhitelist = list("dimofon", "devildeadspace", "dimakr", "oroshimuraiori", "troubleneko17th", "dcp9371", "oni3288")
 
-/datum/gear/donator/bm/legion_mask
+/datum/gear/donator/bm/legion_mask_joey
 	name = "Joey mask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/legion_mask_joey
 	ckeywhitelist = list("dimofon", "devildeadspace", "dimakr", "oroshimuraiori", "troubleneko17th", "dcp9371", "oni3288")
 
-/datum/gear/donator/bm/legion_mask
+/datum/gear/donator/bm/legion_mask_susie
 	name = "Susie mask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/legion_mask_susie

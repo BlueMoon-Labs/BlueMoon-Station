@@ -232,3 +232,4 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	clothing_flags = ALLOWINTERNALS
 	flags_inv = HIDEEARS|HIDEFACE
+	unique_reskin = null
