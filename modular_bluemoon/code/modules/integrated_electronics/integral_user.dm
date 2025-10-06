@@ -61,7 +61,8 @@
 	if(body_zone)
 		mob_for_using_items.zone_selected = body_zone
 	atom = get_pin_data_as_type(IC_INPUT, 1, /atom)
-	interacting(atom)
+	if(atom)
+		interacting(atom)
 	update_outputs()
 	activate_pin(2)
 
