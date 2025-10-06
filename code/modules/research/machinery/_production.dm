@@ -117,7 +117,7 @@
 		if(efficient_with(O.type))
 			O.set_custom_materials(matlist)
 			O.rnd_crafted(src)
-			playsound(src, 'sound/machines/prod_done.ogg', 50)
+	playsound(src, 'sound/machines/prod_done.ogg', 50)
 	SSblackbox.record_feedback("nested tally", "item_printed", amount, list("[type]", "[path]"))
 	investigate_log("[key_name(user)] built [amount] of [path] at [src]([type]).", INVESTIGATE_RESEARCH)
 
