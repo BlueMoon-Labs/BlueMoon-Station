@@ -15,6 +15,7 @@
 	var/organ_type = /obj/item/organ
 	var/processing = FALSE
 	var/surgery_time = 30 SECONDS
+	var/speed_up_percent = 0
 
 /obj/machinery/autodoc/Initialize(mapload)
 	. = ..()
@@ -29,15 +30,26 @@
 		stored_organ = null
 
 /obj/machinery/autodoc/RefreshParts()
-	var/max_time = AUTODOC_TIME_BASE
+	surgery_time = AUTODOC_TIME_BASE
+
+	var/parts_rating = 0
+	var/i = 0
 	for(var/obj/item/stock_parts/L in component_parts)
-		max_time -= (L.rating * 10)
-	surgery_time = max(max_time, 1 SECONDS)
+		parts_rating += L.rating
+		++i
+	// Average rating of all details 
+	var/rating = round_down(parts_rating / i)
+	var/const/speed_up_per_rating = 16.6 // T4 = 50% speed up
+	speed_up_percent = max(ceil((rating-1) * speed_up_per_rating),0)
+	surgery_time -= surgery_time*(speed_up_percent / 100)
+	surgery_time = max(round(surgery_time), 1 SECONDS)
 
 /obj/machinery/autodoc/examine(mob/user)
 	. = ..()
 	if(get_dist(src, user) <= 1 || isobserver(user))
 		. += span_notice("A small screen on \the [src] displays, \"Surgery time: [DisplayTimeText(surgery_time)]\"")
+		if(speed_up_percent)
+			. += span_notice("[src] is working at [span_nicegreen("[speed_up_percent]% faster")]")
 		if(processing)
 			. += span_notice("[src] is currently inserting [stored_organ] into [occupant].")
 		else if(stored_organ)

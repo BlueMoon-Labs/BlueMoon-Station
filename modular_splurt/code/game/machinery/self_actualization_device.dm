@@ -22,8 +22,8 @@
 	icon = 'modular_splurt/icons/obj/machinery/self_actualization_device.dmi'
 	icon_state = "sad_open"
 	circuit = /obj/item/circuitboard/machine/self_actualization_device
-	state_open = FALSE
-	density = TRUE
+	state_open = TRUE
+	density = FALSE
 	/// Is someone being processed inside of the machine?
 	var/processing = FALSE
 	/// How long does it take to break out of the machine?
@@ -42,9 +42,6 @@
 	)
 	allow_oversized_characters = TRUE
 
-/obj/machinery/self_actualization_device/update_appearance(updates)
-	. = ..()
-
 /obj/machinery/self_actualization_device/Initialize(mapload)
 	. = ..()
 	update_appearance()
@@ -61,7 +58,6 @@
 		return FALSE
 	to_chat(occupant, span_notice("You enter [src]."))
 	update_appearance()
-
 
 /obj/machinery/self_actualization_device/examine(mob/user)
 	. = ..()
