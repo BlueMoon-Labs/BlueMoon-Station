@@ -21,7 +21,7 @@
 	hand_bodyparts = null
 
 /mob/living/carbon/integral/put_in_hand(obj/item/I, hand_index, forced, ignore_anim)
-	return FALSE
+	return TRUE
 
 /mob/living/carbon/integral/has_hand_for_held_index()
 	return TRUE //В стандартной версии прока у родителя вызывает рантаймы
