@@ -215,23 +215,23 @@
 //Enforcer MK59-MK62 design//
 /////////////////////////////
 
-/datum/design/mk59
-	name = "Enfrocer MK59 upgrade kit"
-	desc = "A set of spare parts for upgrading the enforcer pistol to the MK59 version. Can be used only on empty gun"
-	id = "mk59"
-	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 5000, /datum/material/plastic = 1500)
-	build_path = /obj/item/weaponcrafting/gunkit/mk59
-	category = list("Weapons")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_BLUE
+// /datum/design/mk59
+//	name = "Enfrocer MK59 upgrade kit"
+//	desc = "A set of spare parts for upgrading the enforcer pistol to the MK59 version. Can be used only on empty gun"
+//	id = "mk59"
+//	build_type = PROTOLATHE
+//	materials = list(/datum/material/iron = 5000, /datum/material/plastic = 1500)
+//	build_path = /obj/item/weaponcrafting/gunkit/mk59
+//	category = list("Weapons")
+//	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+//	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/mk60
 	name = "Enfrocer MK60 upgrade kit"
-	desc = "A set of spare parts for upgrading the MK59 pistol to the MK60 version. Can be used only on empty gun"
+	desc = "A set of spare parts for upgrading the enforcer pistol to the MK60 version. Can be used only on empty gun"
 	id = "mk60"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 2500, /datum/material/uranium = 2500)
+	materials = list(/datum/material/iron = 7500, /datum/material/uranium = 2500, /datum/material/plastic = 1500)
 	build_path = /obj/item/weaponcrafting/gunkit/mk60
 	category = list("Weapons")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
@@ -247,3 +247,15 @@
 	category = list("Weapons")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_BLUE
+
+/datum/design/vector
+
+	name = "Vector SMG convetion kit"
+	desc = "A set of spare parts for upgrading the MK60 pistol to the Vector SMG. Can be used only on empty gun"
+	id = "vector"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 7500, /datum/material/silver = 3500, /datum/material/titanium = 2000 )
+	build_path = /obj/item/weaponcrafting/gunkit/vector
+	category = list("Weapons")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER

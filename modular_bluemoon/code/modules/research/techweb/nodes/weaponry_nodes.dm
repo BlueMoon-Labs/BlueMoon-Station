@@ -34,20 +34,20 @@
 //Enforcer MK59-MK62 design//
 /////////////////////////////
 
-/datum/techweb_node/mk59
-	id = "mk59"
-	display_name = "Enhanced stabilization tools."
-	description = "Comfort in a price of size."
-	design_ids = list("mk59")
-	prereq_ids = list("advanced_weaponry", "adv_weaponry")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+// /datum/techweb_node/mk59
+//	id = "mk59"
+//	display_name = "Enhanced stabilization tools."
+//	description = "Comfort in a price of size."
+//	design_ids = list("mk59")
+//	prereq_ids = list("advanced_weaponry", "adv_weaponry")
+//	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 
 /datum/techweb_node/mk60
 	id = "mk60"
 	display_name = "Advanced guidance systems."
 	description = "Replacing the bolt carrier with an improved one with a pre-installed collimator sight."
 	design_ids = list("mk60")
-	prereq_ids = list("mk59")
+	prereq_ids = list("advanced_weaponry", "adv_weaponry")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
 
 /datum/techweb_node/mk62
@@ -55,5 +55,13 @@
 	display_name = "Advanced gas extraction system."
 	description = "Replacing the receiver, which converts the enforcer from a pistol to a submachine gun."
 	design_ids = list("mk62")
+	prereq_ids = list("mk60")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
+
+/datum/techweb_node/vector
+	id = "vector"
+	display_name = "Advanced gas extraction system."
+	description = "A gift from Ligt Gear & Balistic Tech. Mostly - just whole new gun in a pack."
+	design_ids = list("vector")
 	prereq_ids = list("mk60")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)

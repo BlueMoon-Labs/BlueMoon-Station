@@ -18,14 +18,18 @@
 //Enforcer MK59-MK62 design//
 /////////////////////////////
 
-/obj/item/weaponcrafting/gunkit/mk59
-	name = "MK59 Enforcer gun conversion kit"
-	desc = "a set of spare parts for upgrading the enforcer pistol to the MK59 version. Can be used only on empty gun"
+// /obj/item/weaponcrafting/gunkit/mk59
+//	name = "MK59 Enforcer gun conversion kit"
+//	desc = "a set of spare parts for upgrading the enforcer pistol to the MK59 version. Can be used only on empty gun"
 
 /obj/item/weaponcrafting/gunkit/mk60
 	name = "MK60 Enforcer gun conversion kit"
-	desc = "a set of spare parts for upgrading the MK59 pistol to the MK60 version. Can be used only on empty gun"
+	desc = "A set of spare parts for upgrading the enforcer pistol to the MK60 version. Can be used only on empty gun"
 
 /obj/item/weaponcrafting/gunkit/mk62
 	name = "MK62 Enforcer gun conversion kit"
-	desc = "a set of spare parts for upgrading the MK60 pistol to the MK62 version. Can be used only on empty gun"
+	desc = "A set of spare parts for upgrading the MK60 pistol to the MK62 version. Can be used only on empty gun"
+
+/obj/item/weaponcrafting/gunkit/vector
+	name = "Vector SMG conversion kit"
+	desc = "A set of spare parts for upgrading the MK60 pistol to the Vector SMG. Can be used only on empty gun"
