@@ -47,16 +47,14 @@
 	update_outputs()
 	activate_pin(2)
 
-/obj/item/integrated_circuit/manipulation/interacter/proc/interacting(var/atom/object_to_use, var/obj/item/tool)
-	if(get_dist(src, object_to_use) <= 1 || src.assembly.loc == object_to_use.loc) //Если объект и деталька находятся на одном тайле, то расстояние до них расчитвается как INF и все ломается. Приходится ухищряться. //Так как мы уже проверили расстояние до tool, то стоит глянуть, есть ли в интегралке инструмент. Если да, то заменить и выкинуть на пол.
-		if(tool && tool != object_to_use)
-			if(tool.drop_location() == src.drop_location()) //если они фактически на одном тайле, но вложены во что-то или не вложены вовсе. Один фиг мы получим turf и сравним его. Если он один и тот же, то все окей.
-				tool.melee_attack_chain(mob_for_using_items, object_to_use, NONE)
-				return
-			else
-				object_to_use.attack_hand(mob_for_using_items)
-	else
-		playsound(src, 'sound/machines/buzz-sigh.ogg', 30, 1) //Явный намек на то, что то-то не так.
+/obj/item/integrated_circuit/manipulation/interacter/proc/interacting(atom/object_to_use, obj/item/tool)
+    if (get_dist(src, object_to_use) > 1 && src.assembly.loc != object_to_use.loc)
+        playsound(src, 'sound/machines/buzz-sigh.ogg', 30, 1)
+        return
+    if (tool && tool != object_to_use && tool.drop_location() == src.drop_location())
+        tool.melee_attack_chain(mob_for_using_items, object_to_use, NONE)
+    else
+        object_to_use.attack_hand(mob_for_using_items)
 
 /obj/item/integrated_circuit/manipulation/interacter/proc/update_outputs()
 	set_pin_data(IC_OUTPUT, 1, null)
