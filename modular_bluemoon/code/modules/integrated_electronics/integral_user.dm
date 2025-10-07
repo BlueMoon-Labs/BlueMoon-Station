@@ -14,14 +14,13 @@
 	action_flags = IC_ACTION_COMBAT
 	power_draw_per_use = 200
 	var/mob/living/carbon/integral/mob_for_using_items
-	var/obj/item/installed_item
 
 /mob/living/carbon/integral
 	name = "integrated robotic hand"
 	var/obj/item/integrated_circuit/manipulation/interacter/my_interacter
 
-/mob/living/carbon/integral/get_active_held_item()
-	return(my_interacter.installed_item)
+//mob/living/carbon/integral/get_active_held_item()
+//	return(my_interacter.installed_item)
 
 /mob/living/carbon/integral/has_hand_for_held_index()
 	return TRUE //В стандартной версии прока у родителя вызывает рантаймы
@@ -32,44 +31,28 @@
 	mob_for_using_items.status_flags ^= GODMODE
 	mob_for_using_items.my_interacter = src
 
-/obj/item/integrated_circuit/manipulation/interacter/attackby(var/obj/item/item, var/mob/user)
-	if(!installed_item)
-		item.forceMove(src)
-		installed_item = item
-		to_chat(user, "<span class='notice'>You slide \the [item] into the using mechanism.</span>")
-		playsound(src, 'sound/items/Crowbar.ogg', 50, 1)
-		push_data()
-	else
-		src.attack_self(user)
-		item.forceMove(src)
-		installed_item = item
-		playsound(src, 'sound/items/Crowbar.ogg', 50, 1)
-
 /obj/item/integrated_circuit/manipulation/interacter/do_work()
 	var/atom
 	var/intent = get_pin_data(IC_INPUT, 2)
 	var/body_zone = get_pin_data(IC_INPUT, 3)
 	var/obj/item/tool = get_pin_data_as_type(IC_INPUT, 4, /obj/item) //Получаем предмет из референса
 
-	if(installed_item && installed_item.loc != src)
-		installed_item = null
-
-	if(tool && tool != installed_item)
-		src.attackby(tool, mob_for_using_items)
 	if(intent)
 		mob_for_using_items.a_intent = intent //Интенты есть только у мобов. Я впинхул моба в переменную. Это позволяет использовать предметы и машинерию как игроку. Так же в будущем, возможно перенаправление окон UI
 	if(body_zone)
 		mob_for_using_items.zone_selected = body_zone
 	atom = get_pin_data_as_type(IC_INPUT, 1, /atom)
 	if(atom)
-		interacting(atom)
+		interacting(atom, tool)
 	update_outputs()
 	activate_pin(2)
 
-/obj/item/integrated_circuit/manipulation/interacter/proc/interacting(var/atom/object_to_use)
+/obj/item/integrated_circuit/manipulation/interacter/proc/interacting(var/atom/object_to_use, var/obj/item/tool)
 	if(get_dist(src, object_to_use) <= 1 || src.assembly.loc == object_to_use.loc) //Если объект и деталька находятся на одном тайле, то расстояние до них расчитвается как INF и все ломается. Приходится ухищряться. //Так как мы уже проверили расстояние до tool, то стоит глянуть, есть ли в интегралке инструмент. Если да, то заменить и выкинуть на пол.
-		if(installed_item && installed_item != object_to_use)
-			installed_item.melee_attack_chain(mob_for_using_items, object_to_use, NONE)
+		var/tempvar = locate(tool.type) in assembly
+		if(tool && tool != object_to_use)
+		if(tool.drop_location() == src.drop_location()) //если они фактически на одном тайле, но вложены во что-то или не вложены вовсе. Один фиг мы получим turf и сравним его. Если он один и тот же, то все окей.
+			tool.melee_attack_chain(mob_for_using_items, object_to_use, NONE)
 			return
 		else
 			object_to_use.attack_hand(mob_for_using_items)
@@ -84,9 +67,3 @@
 /obj/item/integrated_circuit/manipulation/interacter/attack_self(var/mob/user)
 	update_outputs()
 	push_data()
-	if(installed_item)
-		installed_item.forceMove(drop_location())
-		installed_item = null
-		to_chat(user, "<span class='notice'>You slide \the [installed_item] out of the using mechanism.</span>")
-		size = initial(size)
-		playsound(src, 'sound/items/Crowbar.ogg', 50, 1)
