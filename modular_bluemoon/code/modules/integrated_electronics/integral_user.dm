@@ -20,9 +20,8 @@
 	var/obj/item/integrated_circuit/manipulation/interacter/my_interacter
 	hand_bodyparts = null
 
-/mob/living/carbon/integral/update_icon(updates)
-	. = ..()
-	drop_all_held_items()
+/mob/living/carbon/integral/put_in_hand(obj/item/I, hand_index, forced, ignore_anim)
+	return FALSE
 
 /mob/living/carbon/integral/has_hand_for_held_index()
 	return TRUE //В стандартной версии прока у родителя вызывает рантаймы
