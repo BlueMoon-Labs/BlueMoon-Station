@@ -18,9 +18,11 @@
 /mob/living/carbon/integral
 	name = "integrated robotic hand"
 	var/obj/item/integrated_circuit/manipulation/interacter/my_interacter
+	hand_bodyparts = null
 
-//mob/living/carbon/integral/get_active_held_item()
-//	return(my_interacter.installed_item)
+/mob/living/carbon/integral/update_icon(updates)
+	. = ..()
+	drop_all_held_items()
 
 /mob/living/carbon/integral/has_hand_for_held_index()
 	return TRUE //В стандартной версии прока у родителя вызывает рантаймы
@@ -32,7 +34,6 @@
 	mob_for_using_items.my_interacter = src
 
 /obj/item/integrated_circuit/manipulation/interacter/do_work()
-	var/atom
 	var/intent = get_pin_data(IC_INPUT, 2)
 	var/body_zone = get_pin_data(IC_INPUT, 3)
 	var/obj/item/tool = get_pin_data_as_type(IC_INPUT, 4, /obj/item) //Получаем предмет из референса
@@ -41,14 +42,14 @@
 		mob_for_using_items.a_intent = intent //Интенты есть только у мобов. Я впинхул моба в переменную. Это позволяет использовать предметы и машинерию как игроку. Так же в будущем, возможно перенаправление окон UI
 	if(body_zone)
 		mob_for_using_items.zone_selected = body_zone
-	atom = get_pin_data_as_type(IC_INPUT, 1, /atom)
+	var/atom = get_pin_data_as_type(IC_INPUT, 1, /atom)
 	if(atom)
 		interacting(atom, tool)
 	update_outputs()
 	activate_pin(2)
 
 /obj/item/integrated_circuit/manipulation/interacter/proc/interacting(atom/object_to_use, obj/item/tool)
-    if (get_dist(src, object_to_use) > 1 && src.assembly.loc != object_to_use.loc)
+    if (get_dist(src, object_to_use) > 1 && src.assembly.loc == object_to_use.loc)
         playsound(src, 'sound/machines/buzz-sigh.ogg', 30, 1)
         return
     if (tool && tool != object_to_use && tool.drop_location() == src.drop_location())
