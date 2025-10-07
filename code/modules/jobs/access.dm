@@ -399,7 +399,7 @@
 		var/obj/item/card/id/card = GetID()
 		if (card.assignment == initial(card.assignment))
 			return "inteq"
-	if (istype(I, /obj/item/card/id/syndicate/advanced/ds)) // Карты DS гостроли
+	if (istype(I, /obj/item/card/id/syndicate/advanced/ds) || istype(I, /obj/item/card/id/syndicate/advanced/prisoner)) // Карты DS гостроли
 		var/obj/item/card/id/syndicate/advanced/ds/dscard = GetID()
 		return "[dscard.assignment]"
 	if (istype(I, /obj/item/card/id/away/hotel/splurt)) // Карты отельной гостроли

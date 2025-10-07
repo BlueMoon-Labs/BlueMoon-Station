@@ -1391,10 +1391,6 @@
 	mob_name = "a Waffle Co worker"
 	outfit = /datum/outfit/ds2/syndicate/service
 
-/obj/effect/mob_spawn/human/ds2/syndicate/miner
-	mob_name = "a Donk Co mining worker"
-	outfit = /datum/outfit/ds2/syndicate/miner
-
 /obj/effect/mob_spawn/human/ds2/syndicate/enginetech
 	mob_name = "a GEC ship engineer"
 	outfit = /datum/outfit/ds2/syndicate/enginetech
@@ -1420,7 +1416,10 @@
 	outfit = /datum/outfit/ds2/syndicate_command/corporateliaison
 
 /obj/effect/mob_spawn/human/ds2/syndicate_command/comms
-	mob_name = "Syndicate Comms Agent"
+	mob_name = "a Syndicate Comms Agent"
+	short_desc = "Вы Агент или Офицер Прослушки одной из ячеек Синдиката, работающий на Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием 'Благославлённый'. \
+	Помогите вашемукомандованию привести Объект к успеху, который планировался, либо умрите - стараясь."
+
 	outfit = /datum/outfit/ds2/syndicate_command/comms
 
 /obj/effect/mob_spawn/human/ds2/syndicate_command/admiral
@@ -1463,28 +1462,6 @@
 	id_trim = /datum/id_trim/syndicom/ds2
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/deathrattle/deepspacecrew)
 
-/datum/outfit/ds2/syndicate/miner
-	name = "DS-2 Mining Officer"
-	uniform = /obj/item/clothing/under/syndicate/overalls
-	belt = /obj/item/storage/bag/ore
-	back = /obj/item/storage/backpack/duffelbag/syndie
-	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
-		/obj/item/crowbar/red = 1,
-		/obj/item/kitchen/knife/combat/survival = 1,
-		/obj/item/t_scanner/adv_mining_scanner/lesser = 1,
-		/obj/item/gun/energy/kinetic_accelerator = 1,
-		)
-	l_pocket = /obj/item/card/mining_point_card
-	r_pocket = /obj/item/mining_voucher
-	head = /obj/item/clothing/head/soft/black
-	id = /obj/item/card/id/syndicate/advanced/ds/mining
-	id_trim = /datum/id_trim/syndicom/ds2/miner
-
-/obj/item/card/id/syndicate/advanced/ds/mining
-	assignment = "DS-2 Mining Officer"
-	icon_state = "id_dsblack"
-
 /datum/outfit/ds2/syndicate/service
 	name = "DS-2 General Staff"
 	uniform = /obj/item/clothing/under/syndicate
@@ -1493,9 +1470,6 @@
 	head = /obj/item/clothing/head/soft/mime
 	id = /obj/item/card/id/syndicate/advanced/ds/general
 	id_trim = /datum/id_trim/syndicom/ds2/syndicatestaff
-
-/obj/item/card/id/syndicate/advanced/ds/general
-	assignment = "DS-2 General Staff"
 
 /datum/outfit/ds2/syndicate/enginetech
 	name = "DS-2 Engine Technician"
@@ -1513,9 +1487,6 @@
 	id = /obj/item/card/id/syndicate/advanced/ds/enginetech
 	id_trim = /datum/id_trim/syndicom/ds2/enginetechnician
 
-/obj/item/card/id/syndicate/advanced/ds/enginetech
-	assignment = "DS-2 Engine Technician"
-
 /datum/outfit/ds2/syndicate/researcher
 	name = "DS-2 Researcher"
 	uniform = /obj/item/clothing/under/rank/rnd/scientist/utility/syndicate
@@ -1525,9 +1496,6 @@
 	back = /obj/item/storage/backpack/duffelbag/syndie
 	id = /obj/item/card/id/syndicate/advanced/ds/researcher
 	id_trim = /datum/id_trim/syndicom/ds2/researcher
-
-/obj/item/card/id/syndicate/advanced/ds/researcher
-	assignment = "DS-2 Researcher"
 
 /datum/outfit/ds2/syndicate/stationmed
 	name = "DS-2 Medical Officer"
@@ -1544,9 +1512,6 @@
 		/obj/item/storage/firstaid/tactical = 1,
 		)
 
-/obj/item/card/id/syndicate/advanced/ds/stationmed
-	assignment = "DS-2 Medical Officer"
-
 /datum/outfit/ds2/syndicate/brigoff
 	name = "DS-2 Brig Officer"
 	uniform = /obj/item/clothing/under/syndicate/combat
@@ -1558,13 +1523,8 @@
 	r_pocket = /obj/item/flashlight/seclite
 	mask = /obj/item/clothing/mask/gas/syndicate
 	ears = /obj/item/radio/headset/ds2
-	id = /obj/item/card/id/syndicate/advanced/ds/command/brigoff
+	id = /obj/item/card/id/syndicate/advanced/ds/black/brigoff
 	id_trim = /datum/id_trim/syndicom/ds2/brigofficer
-
-/obj/item/card/id/syndicate/advanced/ds/command/brigoff
-	assignment = "DS-2 Brig Officer"
-	icon_state = "id_dsblack"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate/post_equip(mob/living/carbon/human/syndicate)
 	syndicate.faction |= ROLE_SYNDICATE
@@ -1585,11 +1545,6 @@
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/deathrattle/deepspacecrew)
 	id_trim = /datum/id_trim/syndicom/ds2
 
-/obj/item/card/id/syndicate/advanced/ds/gold/command
-	assignment = "DS-2 Command Operative"
-	icon_state = "id_dsgold"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
-
 /datum/outfit/ds2/syndicate_command/masteratarms
 	name = "DS-2 Master At Arms"
 	uniform = /obj/item/clothing/under/syndicate/combat
@@ -1607,10 +1562,6 @@
 	id = /obj/item/card/id/syndicate/advanced/ds/gold/command/masteratarms
 	id_trim = /datum/id_trim/syndicom/ds2/masteratarms
 
-/obj/item/card/id/syndicate/advanced/ds/gold/command/masteratarms
-	assignment = "DS-2 Master At Arms"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
-
 /datum/outfit/ds2/syndicate_command/corporateliaison
 	name = "DS-2 Corporate Liasion"
 	uniform = /obj/item/clothing/under/syndicate/sniper
@@ -1619,10 +1570,6 @@
 	back = /obj/item/storage/backpack/duffelbag/syndie
 	id_trim = /datum/id_trim/syndicom/ds2/corporateliasion
 	id = /obj/item/card/id/syndicate/advanced/ds/gold/command/corporateliaison
-
-/obj/item/card/id/syndicate/advanced/ds/gold/command/corporateliaison
-	assignment = "DS-2 Corporate Liasion"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate_command/comms
 	name = "Space Syndicate Comms Agent"
@@ -1635,13 +1582,8 @@
 	l_pocket = /obj/item/melee/transforming/energy/sword/saber
 	r_pocket = /obj/item/gun/ballistic/automatic/pistol
 	implants = list(/obj/item/implant/weapons_auth)
-	id = /obj/item/card/id/syndicate/advanced/ds/comms
+	id = /obj/item/card/id/syndicate/advanced/ds/black/comms
 	id_trim = /datum/id_trim/syndicom/ds2/comms
-
-/obj/item/card/id/syndicate/advanced/ds/comms
-	assignment = "Space Syndicate Comms Agent"
-	icon_state = "card_black"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate_command/admiral
 	name = "DS-2 Admiral"
@@ -1653,10 +1595,6 @@
 	head = /obj/item/clothing/head/HoS/syndicate
 	id = /obj/item/card/id/syndicate/advanced/ds/gold/admiral
 	id_trim = /datum/id_trim/syndicom/ds2/stationadmiral
-
-/obj/item/card/id/syndicate/advanced/ds/gold/admiral
-	assignment = "DS-2 Admiral"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate_command/post_equip(mob/living/carbon/human/syndicate)
 	syndicate.faction |= ROLE_SYNDICATE
@@ -1733,7 +1671,7 @@
 	sechud_icon_state = SECHUD_DS2_ADMIRAL
 	access = list(ACCESS_SYNDICATE, ACCESS_ROBOTICS, ACCESS_SYNDICATE_LEADER)
 
-//Затычка до Id_Trim.
+// DS-2 карты
 
 /obj/item/card/id/syndicate/advanced/prisoner
 	name = "Prisoner ID"
@@ -1751,19 +1689,53 @@
 	assignment = "DS-2 Hostage"
 	access = list()
 
-/obj/item/card/id/syndicate/advanced/ds
+/obj/item/card/id/syndicate/advanced/ds // Стоковая карта
 	name = "'Blessed' ID Card"
 	icon_state = "id_ds"
+	assignment = "Syndicate"
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE)
 
-/obj/item/card/id/syndicate/advanced/ds/gold
+/obj/item/card/id/syndicate/advanced/ds/general
+	assignment = "DS-2 General Staff"
+
+/obj/item/card/id/syndicate/advanced/ds/enginetech
+	assignment = "DS-2 Engine Technician"
+
+/obj/item/card/id/syndicate/advanced/ds/researcher
+	assignment = "DS-2 Researcher"
+
+/obj/item/card/id/syndicate/advanced/ds/stationmed
+	assignment = "DS-2 Medical Officer"
+
+/obj/item/card/id/syndicate/advanced/ds/black // Чёрные карты для боевых офицерских ролей
+	name = "'Blessed' Black ID Card"
+	icon_state = "id_dsblack"
+	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
+
+/obj/item/card/id/syndicate/advanced/ds/black/brigoff
+	assignment = "DS-2 Brig Officer"
+
+/obj/item/card/id/syndicate/advanced/ds/black/comms
+	assignment = "DS-2 Comms Agent"
+
+/obj/item/card/id/syndicate/advanced/ds/gold // Золотые карты для командных ролей
 	name = "'Blessed' Gold ID Card"
 	icon_state = "id_dsgold"
+	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
+
+/obj/item/card/id/syndicate/advanced/ds/gold/admiral
+	assignment = "DS-2 Admiral"
+
+/obj/item/card/id/syndicate/advanced/ds/gold/command/corporateliaison
+	assignment = "DS-2 Corporate Liasion"
+
+/obj/item/card/id/syndicate/advanced/ds/gold/command/masteratarms
+	assignment = "DS-2 Master At Arms"
 
 // DS-1 карты
 /obj/item/card/id/syndicate/advanced/ds/lavaland
 	name = "'Dune' ID Card"
-	assignment = "DS-1 Agent"
+	assignment = "Syndicate"
 
 /obj/item/card/id/syndicate/advanced/ds/lavaland/researcher
 	assignment = "DS-1 Scientist"
@@ -1781,6 +1753,7 @@
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /obj/item/card/id/syndicate/advanced/ds/lavaland/mime
+	name = "'Dune' Mime ID Card"
 	icon_state = "id_dsmime"
 	assignment = "DS-1 Mime"
 

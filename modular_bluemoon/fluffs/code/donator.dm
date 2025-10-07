@@ -1632,3 +1632,9 @@
 	ckeywhitelist = list("domilion")
 	restricted_desc = "Security, Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
 	restricted_roles = list("Captain", "Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
+
+/datum/gear/donator/bm/mentalplushie
+	name = "Catshark Plushie"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/toy/plush/bm/catshark
+	ckeywhitelist = list("mentaleater")

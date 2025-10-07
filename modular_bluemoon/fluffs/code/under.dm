@@ -443,3 +443,4 @@
 	desc = " Long gothic dress decorated with lace patterns ."
 	icon_state = "kladmen_dress"
 	item_state = "kladmen_dress"
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'

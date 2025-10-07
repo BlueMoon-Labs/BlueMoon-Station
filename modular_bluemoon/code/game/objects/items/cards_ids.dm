@@ -1,6 +1,10 @@
 /obj/item/card/id/syndicate
 	var/uses = 10 // Даём гражданской Синди-Карте одно использование вместо десяти.
 
+/obj/item/card/id/syndicate/one_access_copy
+	name = "Civilian Syndicate Card"
+	uses = 1
+
 /obj/item/card/id/callsign
 	name = "сallsign id card"
 	desc = "A card used to provide ID and determine access across various facilities. This one belongs to NanoTrasen and has a small graved in label, marking it as \"Callsing Changing ID\"."
@@ -100,6 +104,8 @@
 			visible_message(span_warning("ID карта из лодаута не нашла цель для копирования доступа, сообщите разработчикам."))
 	. = ..()
 
+//////////////////////////////////////////////////////
+
 /obj/item/card/id/nri
 	name = "\improper NRI Military ID"
 	desc = "An Novaya Rossiyskya Imperia Spetsnaz ID card."
@@ -165,3 +171,21 @@
 	uses_overlays = FALSE
 	card_sticker = TRUE
 	special_assignment = "muck"
+
+/obj/item/card/id/blumenland_citizen
+	name = "Blumenland Citizen ID"
+	desc = "An ID made to recognize Blumenland Confederation habbitants and tourists."
+	icon_state = "blumland"
+	assignment = "Blumenland Citizen"
+	uses_overlays = FALSE
+	card_sticker = TRUE
+	special_assignment = "bmland"
+
+/obj/item/card/id/syndicate_citizen
+	name = "Syndicate Employee ID"
+	desc = "An ID made to recognize Triglav Syndicate off-duty agents and supportives."
+	icon_state = "card_black"
+	assignment = "Syndicate Employee"
+	uses_overlays = FALSE
+	card_sticker = TRUE
+	special_assignment = "syndicate"

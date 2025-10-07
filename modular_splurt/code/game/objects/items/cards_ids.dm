@@ -13,6 +13,7 @@
 	icon = 'modular_bluemoon/icons/obj/card.dmi' //BLUEMOON EDIT респрайт
 	icon_state = "vampire"
 	assignment = "Bloodsucker Fledgling"
+	special_assignment = "bloodsuckerfledgling" // BLUEMOON ADD
 	uses_overlays = FALSE
 	card_sticker = TRUE //BLUEMOON ADD
 

@@ -941,7 +941,7 @@ SUBSYSTEM_DEF(vote)
 	// var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) - last_dynamic_type
 
 	var/dynamic_type
-	if(get_total_player_count() >= 20)
+	if(get_total_player_count() >= 30)
 		if(total_chaos >= CONFIG_GET(number/chaos_for_a_hard_dynamic) && length(available_hard))
 			dynamic_type = pick(available_hard)
 		else

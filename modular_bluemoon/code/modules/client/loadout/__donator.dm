@@ -26,3 +26,11 @@
 	cost = 4
 	ckeywhitelist = list()
 	donator_group_id = DONATOR_GROUP_TIER_1
+
+/datum/gear/donator/syndicate_id_civilian
+	name = "Civilian Syndicate Card"
+	path = /obj/item/card/id/syndicate/one_access_copy
+	cost = 2
+	ckeywhitelist = list()
+	subcategory = LOADOUT_SUBCATEGORIES_DON02
+	donator_group_id = DONATOR_GROUP_TIER_2

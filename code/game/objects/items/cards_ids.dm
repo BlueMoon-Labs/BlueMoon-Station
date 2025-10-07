@@ -255,7 +255,6 @@
 			previous_icon_data[3] = assignment
 			icon = ID.icon
 			icon_state = ID.icon_state
-			assignment = ID.assignment
 			return
 		//BLUEMOON ADD END
 
