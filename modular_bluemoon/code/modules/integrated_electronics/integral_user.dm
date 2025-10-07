@@ -49,13 +49,12 @@
 
 /obj/item/integrated_circuit/manipulation/interacter/proc/interacting(var/atom/object_to_use, var/obj/item/tool)
 	if(get_dist(src, object_to_use) <= 1 || src.assembly.loc == object_to_use.loc) //Если объект и деталька находятся на одном тайле, то расстояние до них расчитвается как INF и все ломается. Приходится ухищряться. //Так как мы уже проверили расстояние до tool, то стоит глянуть, есть ли в интегралке инструмент. Если да, то заменить и выкинуть на пол.
-		var/tempvar = locate(tool.type) in assembly
 		if(tool && tool != object_to_use)
-		if(tool.drop_location() == src.drop_location()) //если они фактически на одном тайле, но вложены во что-то или не вложены вовсе. Один фиг мы получим turf и сравним его. Если он один и тот же, то все окей.
-			tool.melee_attack_chain(mob_for_using_items, object_to_use, NONE)
-			return
-		else
-			object_to_use.attack_hand(mob_for_using_items)
+			if(tool.drop_location() == src.drop_location()) //если они фактически на одном тайле, но вложены во что-то или не вложены вовсе. Один фиг мы получим turf и сравним его. Если он один и тот же, то все окей.
+				tool.melee_attack_chain(mob_for_using_items, object_to_use, NONE)
+				return
+			else
+				object_to_use.attack_hand(mob_for_using_items)
 	else
 		playsound(src, 'sound/machines/buzz-sigh.ogg', 30, 1) //Явный намек на то, что то-то не так.
 
