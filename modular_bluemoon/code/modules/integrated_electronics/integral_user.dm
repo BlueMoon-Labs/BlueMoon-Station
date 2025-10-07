@@ -26,6 +26,9 @@
 /mob/living/carbon/integral/has_hand_for_held_index()
 	return TRUE //В стандартной версии прока у родителя вызывает рантаймы
 
+/mob/living/carbon/integral/get_active_held_item()
+    return(my_interacter.get_pin_data_as_type(IC_INPUT, 4, /obj/item))
+
 /obj/item/integrated_circuit/manipulation/interacter/Initialize(mapload)
 	. = ..()
 	mob_for_using_items = new /mob/living/carbon/integral(src)
