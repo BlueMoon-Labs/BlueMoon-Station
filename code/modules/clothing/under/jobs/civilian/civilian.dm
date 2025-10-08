@@ -12,6 +12,7 @@
 	item_state = "purplebartender"
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/rank/civilian/bartender/skirt
 	name = "bartender's skirt"
