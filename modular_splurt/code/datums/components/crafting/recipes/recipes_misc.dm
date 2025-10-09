@@ -281,3 +281,16 @@
 	time = 30
 	subcategory = CAT_TOOL
 	category = CAT_MISCELLANEOUS
+
+/datum/crafting_recipe/forensic_card
+    name = "Fingerprint Card"
+    result = /obj/item/forensic_card
+    reqs = list(
+        /obj/item/paper = 1,
+    )
+    tools = list(
+        /obj/item/toner,
+    )
+    time = 20
+    subcategory = CAT_MISCELLANEOUS
+    category = CAT_MISCELLANEOUS

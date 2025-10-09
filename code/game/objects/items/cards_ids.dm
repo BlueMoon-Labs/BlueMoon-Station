@@ -1006,3 +1006,56 @@
 	icon_state = "deathsquad"
 	assignment = "Death Commando"
 	special_assignment = "deathcommando"
+
+/obj/item/forensic_card
+    name = "Fingerprint card"
+    desc = "Пустая карточка для снятия отпечатков пальцев."
+    icon = 'icons/obj/card.dmi'
+    icon_state = "fingerprint0"
+    w_class = WEIGHT_CLASS_TINY
+    var/has_print = FALSE
+    var/fingerprint_data = null
+
+/obj/item/forensic_card/attack(mob/living/carbon/human/target, mob/user)
+    if(has_print)
+        to_chat(user, "<span class='notice'>Эта карточка уже содержит отпечаток.</span>")
+        return
+
+    if(!ishuman(target))
+        to_chat(user, "<span class='warning'>Можно снять отпечатки только с человека.</span>")
+        return
+
+    var/mob/living/carbon/human/H = target
+
+    if(H.gloves)
+        to_chat(user, "<span class='warning'>У [H] надеты перчатки — отпечатков не видно.</span>")
+        return
+
+    to_chat(user, "<span class='notice'>Ты начинаешь аккуратно снимать отпечатки с [H]...</span>")
+    user.visible_message(
+        "<span class='info'>[user] прикладывает карточку к руке [H], пытаясь снять отпечатки.</span>",
+        "<span class='notice'>Ты осторожно прижимаешь карточку к пальцам [H].</span>"
+    )
+
+    // 5 секунд неподвижности для дела
+    if(!do_after(user, 5 SECONDS, target = H))
+        to_chat(user, "<span class='warning'>Ты прерываешь процесс, отпечаток не снят.</span>")
+        return
+
+    if(H.gloves) // повторная проверка если одели в момент перчатки.
+        to_chat(user, "<span class='warning'>Пока ты возился, [H] надел перчатки!</span>")
+        return
+
+    fingerprint_data = md5(H.dna.uni_identity)
+    has_print = TRUE
+    icon_state = "fingerprint1"
+
+    to_chat(user, "<span class='notice'>Ты успешно снял отпечатки пальцев с [H].</span>")
+    playsound(src, 'sound/items/taperecorder/taperecorder_print.ogg', 40, FALSE)
+
+/obj/item/forensic_card/examine(mob/user)
+    . = ..()
+    if(has_print)
+        . += "<span class='info'>На карточке виден отпечаток с кодом: [fingerprint_data]</span>"
+    else
+        . += "<span class='notice'>Карточка пуста. Используй её на человеке без перчаток, чтобы снять отпечатки.</span>"
