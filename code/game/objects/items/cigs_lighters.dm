@@ -839,6 +839,14 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	overlay_state = "contractorzippo"
 	item_state = "contractorzippo"
 
+//Bluemoon Edit
+/obj/item/lighter/plighter
+	name = "\improper Player's lighter"
+	desc = "A worn-out lighter with an unknown mechanism. A dent is visible on the back..."
+	icon_state = "lighter_overlay_zippo_player"
+	overlay_state = "playerzippo"
+	item_state = "playerzippo"
+
 ///////////
 //ROLLING//
 ///////////

@@ -1676,3 +1676,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/toy/plush/bm/catshark
 	ckeywhitelist = list("mentaleater")
+
+/datum/gear/donator/bm/player_zippo
+	name = "Player Zippo"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/lighter/plighter
+	ckeywhitelist = list("stasdvrz", "dimofon")
