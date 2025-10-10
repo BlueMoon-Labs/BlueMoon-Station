@@ -91,6 +91,7 @@
 	name = "luxurious Pen"
 	icon_state = "pen-fountain-ntr"
 	sharpness = SHARP_EDGED
+	resistance_flags = FIRE_PROOF
 
 /obj/item/pen/fourcolor/ntr/attack_self(mob/living/carbon/user)
 	switch(colour)
