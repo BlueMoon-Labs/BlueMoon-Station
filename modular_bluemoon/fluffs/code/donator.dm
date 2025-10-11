@@ -672,7 +672,7 @@
 	name = "Alta's dogtag"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/tie/dogtag
-	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos")
+	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228")
 
 /datum/gear/donator/bm/hateredsoul_dogtag
 	name = "Combat Dogtag"
@@ -1022,8 +1022,6 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/head/helmet/sec/ipai
 	ckeywhitelist = list("hateredsoul", "ggishka", "arion1234", "swgitty", "sw00ty", "kingdeaths", "sierraiv", "ordinarylife", "milidead")
-	restricted_desc = "Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield, Ghostroles."
-	restricted_roles = list("Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield", "Ghostroles")
 
 /datum/gear/donator/bm/soviet_coat
     name = "Soviet coat"
@@ -1676,3 +1674,27 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/toy/plush/bm/catshark
 	ckeywhitelist = list("mentaleater")
+
+/datum/gear/donator/bm/ranger_coat
+	name = "Ranger Coat"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/clothing/suit/donator/bm/ranger_coat
+	ckeywhitelist = list("dimofon", "devildeadspace")
+
+/datum/gear/donator/bm/ranger_helmet
+	name = "Ranger Helmet"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/clothing/head/ranger_helmet
+	ckeywhitelist = list("dimofon", "devildeadspace")
+
+/datum/gear/donator/bm/ranger_uniform
+	name = "Ranger Uniform"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/clothing/under/donator/bm/ranger_uniform
+	ckeywhitelist = list("dimofon", "devildeadspace")
+
+/datum/gear/donator/bm/ranger_gasmask
+	name = "Ranger Gasmask"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/clothing/mask/gas/syndicate/ranger_gasmask
+	ckeywhitelist = list("dimofon", "devildeadspace")

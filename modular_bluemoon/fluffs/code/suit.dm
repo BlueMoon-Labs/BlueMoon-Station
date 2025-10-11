@@ -440,3 +440,9 @@
 	body_parts_covered = HEAD
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 	rad_flags = RAD_NO_CONTAMINATE
+
+/obj/item/clothing/suit/donator/bm/ranger_coat
+    name = "Ranger Coat"
+    desc = "This military-grade armor is a modification of combat armor and was originally designed for special police units. The armor consists of a bulletproof vest, familiar from previous versions of the armor, with multi-layered composite armor plates that are designed to allow for freedom of movement. A special collar made of the same composite material covers the wearer's neck. On the collar of the armor that protects the neck, you can see a number that is the officer's personal identification number. "
+    icon_state = "ranger_coat"
+    item_state = "ranger_coat"

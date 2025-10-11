@@ -221,6 +221,17 @@
 
 /////////////////////////////////////////////////////
 
+/obj/item/clothing/head/ranger_helmet
+	name = "Ranger Helmet"
+	desc = "Protective equipment for special police personnel, designed to reduce damaging factors in combat and extreme conditions, it uses composite armor plate based on Kevlar and ceramic inserts resistant to shrapnel and small-caliber bullets. Lightweight, wearable and comfortable."
+	icon_state = "ranger_helmet"
+	item_state = "ranger_helmet"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/////////////////////////////////////////////////////
+
 /obj/item/clothing/head/helmet/sec/ipai
 	name = "I.P.A.I. helmet Dawn Dome"
 	desc = "Уникальная разработка ателье Чёрная Роза в области защиты и маскировки. Данный экземпляр, в виде шлема, является очевидным индивидуальным заказом, однако на шлеме отсутствуют какие-либо инициалы его владельца, только неизвестный штрихкод и логотип производителя, в виде всё той же чёрной розы. Шлем гермитичен, часть корпуса имеет возможность снятия для установки бронепластин, порт для подключения кислородного баллона, а также специально STEAL-s покрытие, которое припятствует считыванию данных о внешности и личности носителя. Во внутренней части имеется маленькая табличка со знаком предупреждения и надписью - ВНИМАНИЕ! В СЛУЧАЕ ВОЗНИКНОВЕНИЯ НЕОПРЕДЕЛЁННЫХ ЗВУКОВ ИЗ ДИНАМИКОВ ПЕРЕДАЧИ ЗВУКОВЫХ ДАННЫХ ВНЕШНЕЙ СРЕДЫ, НАПОМИНАЮЩИЕ ГОЛОСА ИЛИ КРИКИ - СЛЕДУЕТ НЕМЕДЛЕННО ПРЕКРАТИТЬ НОШЕНИЕ И ДОНЕСТИ ИНФОРМАЦИЮ ДО БЛИЖАЙШЕГО ОФИСА АТЕЛЬЕ ЧЁРНАЯ РОЗА"
@@ -228,6 +239,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "ipai"
 	item_state = "ipai"
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	clothing_flags = ALLOWINTERNALS
