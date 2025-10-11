@@ -20,7 +20,16 @@
 	var/obj/item/integrated_circuit/manipulation/interacter/my_interacter
 	hand_bodyparts = null
 
+/mob/living/carbon/integral/Initialize(mapload)
+	. = ..()
+	mind = new /datum/mind //заглушка чтобы не рантаймило
+
+/mob/living/carbon/integral/CheckActionCooldown(cooldown = 0.5, from_next_action = FALSE, ignore_mod = FALSE, ignore_next_action = FALSE, immediate = FALSE)
+	return TRUE //У нас уже есть кулдаун в виде кулдауна самого модуля. А вот родительская версия прока ломает взаимодействие со стенами(например, исползование сварки)
+
 /mob/living/carbon/integral/put_in_hand(obj/item/I, hand_index, forced, ignore_anim)
+	return TRUE
+/mob/living/carbon/integral/IsAdvancedToolUser()
 	return TRUE
 
 /mob/living/carbon/integral/has_hand_for_held_index()
@@ -51,11 +60,11 @@
 	activate_pin(2)
 
 /obj/item/integrated_circuit/manipulation/interacter/proc/interacting(atom/object_to_use, obj/item/tool)
-    if (get_dist(src, object_to_use) > 1 && src.assembly.loc == object_to_use.loc)
-        playsound(src, 'sound/machines/buzz-sigh.ogg', 30, 1)
-        return
+    if(get_dist(src, object_to_use) > 1)
+        if(src.assembly.loc != object_to_use.loc)
+            return
     if (tool && tool != object_to_use && tool.drop_location() == src.drop_location())
-        tool.melee_attack_chain(mob_for_using_items, object_to_use, NONE)
+        tool.melee_attack_chain(mob_for_using_items, object_to_use, "icon-x=7;icon-y=20;left=1;button=left;screen-loc=10:7,9:20")
     else
         object_to_use.attack_hand(mob_for_using_items)
 
