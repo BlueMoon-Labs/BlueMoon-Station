@@ -502,11 +502,11 @@
 	throw_icon.screen_loc = ui_drop_throw
 	hotkeybuttons += throw_icon
 
-	hunger = new /atom/movable/screen/hunger(null, src)
-	infodisplay += hunger
+	// hunger = new /atom/movable/screen/hunger(null, src)
+	// infodisplay += hunger
 
-	thirst = new /atom/movable/screen/thirst(null, src)
-	infodisplay += thirst
+	// thirst = new /atom/movable/screen/thirst(null, src)
+	// infodisplay += thirst
 
 	healths = new /atom/movable/screen/healths(null, src)
 	healths.icon = ui_style_modular(ui_style, "health")

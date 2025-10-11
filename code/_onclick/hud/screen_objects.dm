@@ -580,6 +580,13 @@
 	icon_state = "health0"
 	screen_loc = ui_health
 
+// BLUEMOON START ADD - Pe4henika / SCVMEN
+/atom/movable/screen/healths/Click()
+	if(!ishuman(usr))
+		return FALSE
+	var/mob/living/M = usr
+	M.human_status()
+
 /atom/movable/screen/healths/alien
 	icon = 'icons/mob/screen_alien.dmi'
 	screen_loc = ui_alien_health
@@ -646,21 +653,21 @@
 	screen_loc = ui_healthdoll
 	mouse_over_pointer = MOUSE_HAND_POINTER
 
-/atom/movable/screen/healthdoll/Click()
-	if (iscarbon(usr))
-		var/mob/living/carbon/C = usr
-		C.check_self_for_injuries()
+// /atom/movable/screen/healthdoll/Click()
+// 	if (iscarbon(usr))
+// 		var/mob/living/carbon/C = usr
+// 		C.check_self_for_injuries()
 
 /atom/movable/screen/healthdoll/living
 	icon_state = "fullhealth0"
 	screen_loc = ui_living_healthdoll
 	var/filtered = FALSE //so we don't repeatedly create the mask of the mob every update
 
-/atom/movable/screen/mood
-	name = "mood"
-	icon_state = "mood5"
-	screen_loc = ui_mood
-	mouse_over_pointer = MOUSE_HAND_POINTER
+// /atom/movable/screen/mood
+// 	name = "mood"
+// 	icon_state = "mood5"
+// 	screen_loc = ui_mood
+// 	mouse_over_pointer = MOUSE_HAND_POINTER
 
 /atom/movable/screen/mood/attack_tk()
 	return

@@ -548,330 +548,330 @@
 	gib()
 	return(gain)
 
-/mob/living/carbon/human/help_shake_act(mob/living/carbon/M)
-	if(!istype(M))
-		return
+// /mob/living/carbon/human/help_shake_act(mob/living/carbon/M)
+// 	if(!istype(M))
+// 		return
 
-	if(health >= 0)
-		if(src == M)
-			if(has_status_effect(STATUS_EFFECT_CHOKINGSTRAND))
-				to_chat(src, "<span class='notice'>You attempt to remove the durathread strand from around your neck.</span>")
-				if(do_after(src, 3.5 SECONDS, src))
-					to_chat(src, "<span class='notice'>You succesfuly remove the durathread strand.</span>")
-					remove_status_effect(STATUS_EFFECT_CHOKINGSTRAND)
-				return
-			var/to_send = "<div class='info'>"
-			visible_message("<span class='notice'>[src] осматривает себя.</span>","")
-			to_send += "<span class='notice'><center><b>Вы осматриваете себя</b></span></center><hr>"
+// 	if(health >= 0)
+// 		if(src == M)
+// 			if(has_status_effect(STATUS_EFFECT_CHOKINGSTRAND))
+// 				to_chat(src, "<span class='notice'>You attempt to remove the durathread strand from around your neck.</span>")
+// 				if(do_after(src, 3.5 SECONDS, src))
+// 					to_chat(src, "<span class='notice'>You succesfuly remove the durathread strand.</span>")
+// 					remove_status_effect(STATUS_EFFECT_CHOKINGSTRAND)
+// 				return
+// 			var/to_send = "<div class='info'>"
+// 			visible_message("<span class='notice'>[src] осматривает себя.</span>","")
+// 			to_send += "<span class='notice'><center><b>Вы осматриваете себя</b></span></center><hr>"
 
-			var/list/missing = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
-			for(var/X in bodyparts)
-				var/obj/item/bodypart/LB = X
-				missing -= LB.body_zone
-				if(LB.is_pseudopart) //don't show injury text for fake bodyparts; ie chainsaw arms or synthetic armblades
-					continue
-				var/limb_max_damage = LB.max_damage
-				var/status = ""
-				var/brutedamage = LB.brute_dam
-				var/burndamage = LB.burn_dam
-				if(hallucination)
-					if(prob(30))
-						brutedamage += rand(30,40)
-					if(prob(30))
-						burndamage += rand(30,40)
+// 			var/list/missing = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
+// 			for(var/X in bodyparts)
+// 				var/obj/item/bodypart/LB = X
+// 				missing -= LB.body_zone
+// 				if(LB.is_pseudopart) //don't show injury text for fake bodyparts; ie chainsaw arms or synthetic armblades
+// 					continue
+// 				var/limb_max_damage = LB.max_damage
+// 				var/status = ""
+// 				var/brutedamage = LB.brute_dam
+// 				var/burndamage = LB.burn_dam
+// 				if(hallucination)
+// 					if(prob(30))
+// 						brutedamage += rand(30,40)
+// 					if(prob(30))
+// 						burndamage += rand(30,40)
 
-				if(HAS_TRAIT(src, TRAIT_SELF_AWARE))
-					status = "[brutedamage] процентов увечий и [burndamage] процентов ожогов"
-					if(!brutedamage && !burndamage)
-						status = "не повреждена"
+// 				if(HAS_TRAIT(src, TRAIT_SELF_AWARE))
+// 					status = "[brutedamage] процентов увечий и [burndamage] процентов ожогов"
+// 					if(!brutedamage && !burndamage)
+// 						status = "не повреждена"
 
-				else
-					if(brutedamage > 0)
-						status = LB.light_brute_msg
-					if(brutedamage > (limb_max_damage*0.4))
-						status = LB.medium_brute_msg
-					if(brutedamage > (limb_max_damage*0.8))
-						status = LB.heavy_brute_msg
-					if(brutedamage > 0 && burndamage > 0)
-						status += " и "
+// 				else
+// 					if(brutedamage > 0)
+// 						status = LB.light_brute_msg
+// 					if(brutedamage > (limb_max_damage*0.4))
+// 						status = LB.medium_brute_msg
+// 					if(brutedamage > (limb_max_damage*0.8))
+// 						status = LB.heavy_brute_msg
+// 					if(brutedamage > 0 && burndamage > 0)
+// 						status += " и "
 
-					if(burndamage > (limb_max_damage*0.8))
-						status += LB.heavy_burn_msg
-					else if(burndamage > (limb_max_damage*0.2))
-						status += LB.medium_burn_msg
-					else if(burndamage > 0)
-						status += LB.light_burn_msg
+// 					if(burndamage > (limb_max_damage*0.8))
+// 						status += LB.heavy_burn_msg
+// 					else if(burndamage > (limb_max_damage*0.2))
+// 						status += LB.medium_burn_msg
+// 					else if(burndamage > 0)
+// 						status += LB.light_burn_msg
 
-					if(status == "")
-						status = "в норме"
-						if(LB.wounds)
-							status = "имеет увечье"
-				var/no_damage
-				if(status == "в норме" || status == "не повреждена")
-					no_damage = TRUE
-				to_send += "<span class='[no_damage ? "notice" : "warning"]'>Ваша [LB.ru_name] [status].</span>\n"
+// 					if(status == "")
+// 						status = "в норме"
+// 						if(LB.wounds)
+// 							status = "имеет увечье"
+// 				var/no_damage
+// 				if(status == "в норме" || status == "не повреждена")
+// 					no_damage = TRUE
+// 				to_send += "<span class='[no_damage ? "notice" : "warning"]'>Ваша [LB.ru_name] [status].</span>\n"
 
-				for(var/thing in LB.wounds)
-					var/datum/wound/W = thing
-					var/msg
-					switch(W.severity)
-						if(WOUND_SEVERITY_TRIVIAL)
-							msg = "<span class='danger'>Она страдает от [lowertext(W.ru_name_r)].</span>\n"
-						if(WOUND_SEVERITY_MODERATE)
-							msg = "<span class='warning'>Она страдает от [lowertext(W.ru_name_r)]!</span>\n"
-						if(WOUND_SEVERITY_SEVERE)
-							msg = "<span class='warning'><b>Она страдает от [lowertext(W.ru_name_r)]!</b></span>\n"
-						if(WOUND_SEVERITY_CRITICAL)
-							msg = "<span class='warning'><b>Она страдает от [lowertext(W.ru_name_r)]!!</b></span>\n"
-					to_send += "   [msg]"
+// 				for(var/thing in LB.wounds)
+// 					var/datum/wound/W = thing
+// 					var/msg
+// 					switch(W.severity)
+// 						if(WOUND_SEVERITY_TRIVIAL)
+// 							msg = "<span class='danger'>Она страдает от [lowertext(W.ru_name_r)].</span>\n"
+// 						if(WOUND_SEVERITY_MODERATE)
+// 							msg = "<span class='warning'>Она страдает от [lowertext(W.ru_name_r)]!</span>\n"
+// 						if(WOUND_SEVERITY_SEVERE)
+// 							msg = "<span class='warning'><b>Она страдает от [lowertext(W.ru_name_r)]!</b></span>\n"
+// 						if(WOUND_SEVERITY_CRITICAL)
+// 							msg = "<span class='warning'><b>Она страдает от [lowertext(W.ru_name_r)]!!</b></span>\n"
+// 					to_send += "   [msg]"
 
-				for(var/obj/item/I in LB.embedded_objects)
-					if(I.isEmbedHarmless())
-						to_send += "\n\t<a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] прорезался \a [I]!</a>"
-					else
-						to_send += "\n\t<a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
+// 				for(var/obj/item/I in LB.embedded_objects)
+// 					if(I.isEmbedHarmless())
+// 						to_send += "\n\t<a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] прорезался \a [I]!</a>"
+// 					else
+// 						to_send += "\n\t<a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
 
-			for(var/t in missing)
-				to_send += "<span class='boldannounce'>Ваша [ru_parse_zone(t)] отсутствует!</span>\n"
+// 			for(var/t in missing)
+// 				to_send += "<span class='boldannounce'>Ваша [ru_parse_zone(t)] отсутствует!</span>\n"
 
-			if(is_bleeding())
-				var/list/obj/item/bodypart/bleeding_limbs = list()
-				for(var/i in bodyparts)
-					var/obj/item/bodypart/BP = i
-					if(BP.get_bleed_rate())
-						bleeding_limbs += BP
+// 			if(is_bleeding())
+// 				var/list/obj/item/bodypart/bleeding_limbs = list()
+// 				for(var/i in bodyparts)
+// 					var/obj/item/bodypart/BP = i
+// 					if(BP.get_bleed_rate())
+// 						bleeding_limbs += BP
 
-				var/num_bleeds = LAZYLEN(bleeding_limbs)
-				var/bleed_text = "<span class='danger'>У вас кровотечение в"
-				switch(num_bleeds)
-					if(1 to 2)
-						bleed_text += " [bleeding_limbs[1].ru_name_v][num_bleeds == 2 ? " and [bleeding_limbs[2].ru_name_v]" : ""]"
-					if(3 to INFINITY)
-						for(var/i in 1 to (num_bleeds - 1))
-							var/obj/item/bodypart/BP = bleeding_limbs[i]
-							bleed_text += " [BP.ru_name_v],"
-						bleed_text += " и [bleeding_limbs[num_bleeds].ru_name_v]"
-				bleed_text += "!</span>"
-				to_send += "\n[bleed_text]\n"
-			if(getStaminaLoss())
-				if(getStaminaLoss() > 30)
-					to_send += "<span class='info'>Вы полностью измотаны.</span>\n"
-				else
-					to_send += "<span class='info'>Вы чувствуете усталость.</span>\n"
-			if(HAS_TRAIT(src, TRAIT_SELF_AWARE))
-				if(toxloss)
-					if(toxloss > 10)
-						to_send += "<span class='danger'>Вам нехорошо.</span>\n"
-					else if(toxloss > 20)
-						to_send += "<span class='danger'>Вам становится очень плохо.</span>\n"
-					else if(toxloss > 40)
-						to_send += "<span class='danger'>Вы ощущаете тошноту!</span>\n"
-				if(oxyloss)
-					if(oxyloss > 10)
-						to_send += "<span class='danger'>У вас кружится голова.</span>\n"
-					else if(oxyloss > 20)
-						to_send += "<span class='danger'>У вас темнеет в глазах.</span>\n"
-					else if(oxyloss > 30)
-						to_send += "<span class='danger'>Вы задыхаетесь!</span>\n"
+// 				var/num_bleeds = LAZYLEN(bleeding_limbs)
+// 				var/bleed_text = "<span class='danger'>У вас кровотечение в"
+// 				switch(num_bleeds)
+// 					if(1 to 2)
+// 						bleed_text += " [bleeding_limbs[1].ru_name_v][num_bleeds == 2 ? " and [bleeding_limbs[2].ru_name_v]" : ""]"
+// 					if(3 to INFINITY)
+// 						for(var/i in 1 to (num_bleeds - 1))
+// 							var/obj/item/bodypart/BP = bleeding_limbs[i]
+// 							bleed_text += " [BP.ru_name_v],"
+// 						bleed_text += " и [bleeding_limbs[num_bleeds].ru_name_v]"
+// 				bleed_text += "!</span>"
+// 				to_send += "\n[bleed_text]\n"
+// 			if(getStaminaLoss())
+// 				if(getStaminaLoss() > 30)
+// 					to_send += "<span class='info'>Вы полностью измотаны.</span>\n"
+// 				else
+// 					to_send += "<span class='info'>Вы чувствуете усталость.</span>\n"
+// 			if(HAS_TRAIT(src, TRAIT_SELF_AWARE))
+// 				if(toxloss)
+// 					if(toxloss > 10)
+// 						to_send += "<span class='danger'>Вам нехорошо.</span>\n"
+// 					else if(toxloss > 20)
+// 						to_send += "<span class='danger'>Вам становится очень плохо.</span>\n"
+// 					else if(toxloss > 40)
+// 						to_send += "<span class='danger'>Вы ощущаете тошноту!</span>\n"
+// 				if(oxyloss)
+// 					if(oxyloss > 10)
+// 						to_send += "<span class='danger'>У вас кружится голова.</span>\n"
+// 					else if(oxyloss > 20)
+// 						to_send += "<span class='danger'>У вас темнеет в глазах.</span>\n"
+// 					else if(oxyloss > 30)
+// 						to_send += "<span class='danger'>Вы задыхаетесь!</span>\n"
 
-			switch(nutrition)
-				if(NUTRITION_LEVEL_FULL to INFINITY)
-					to_send += "<span class='info'>Вы объелись!</span>\n"
-				if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
-					to_send += "<span class='info'>Вы сыты!</span>\n"
-				if(NUTRITION_LEVEL_FED to NUTRITION_LEVEL_WELL_FED)
-					to_send += "<span class='info'>Вы не голодны.</span>\n"
-				if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_FED)
-					to_send += "<span class='info'>Вам бы перекусить.</span>\n"
-				if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
-					to_send += "<span class='info'>У вас ощутимый голод.</span>\n"
-				if(0 to NUTRITION_LEVEL_STARVING)
-					to_send += "<span class='danger'>Вы голодаете!</span>\n"
+// 			switch(nutrition)
+// 				if(NUTRITION_LEVEL_FULL to INFINITY)
+// 					to_send += "<span class='info'>Вы объелись!</span>\n"
+// 				if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
+// 					to_send += "<span class='info'>Вы сыты!</span>\n"
+// 				if(NUTRITION_LEVEL_FED to NUTRITION_LEVEL_WELL_FED)
+// 					to_send += "<span class='info'>Вы не голодны.</span>\n"
+// 				if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_FED)
+// 					to_send += "<span class='info'>Вам бы перекусить.</span>\n"
+// 				if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
+// 					to_send += "<span class='info'>У вас ощутимый голод.</span>\n"
+// 				if(0 to NUTRITION_LEVEL_STARVING)
+// 					to_send += "<span class='danger'>Вы голодаете!</span>\n"
 
-			switch(thirst)
-				if(THIRST_LEVEL_FULL to INFINITY)
-					to_send += "<span class='info'>Вы переполнены водой!</span>\n"
-				if(THIRST_LEVEL_QUENCHED to THIRST_LEVEL_FULL)
-					to_send += "<span class='info'>Вы напились.</span>\n"
-				if(THIRST_LEVEL_BIT_THIRSTY to THIRST_LEVEL_QUENCHED)
-					to_send += "<span class='info'>Вы не испытываете жажду.</span>\n"
-				if(THIRST_LEVEL_THIRSTY to THIRST_LEVEL_BIT_THIRSTY)
-					to_send += "<span class='info'>Вам не помешало бы промочить горло.</span>\n"
-				if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
-					to_send += "<span class='danger'>Вы ощущаете жажду!</span>\n"
-				if(0 to THIRST_LEVEL_PARCHED)
-					to_send += "<span class='danger'>У вас обезвоживание!</span>\n"
+// 			switch(thirst)
+// 				if(THIRST_LEVEL_FULL to INFINITY)
+// 					to_send += "<span class='info'>Вы переполнены водой!</span>\n"
+// 				if(THIRST_LEVEL_QUENCHED to THIRST_LEVEL_FULL)
+// 					to_send += "<span class='info'>Вы напились.</span>\n"
+// 				if(THIRST_LEVEL_BIT_THIRSTY to THIRST_LEVEL_QUENCHED)
+// 					to_send += "<span class='info'>Вы не испытываете жажду.</span>\n"
+// 				if(THIRST_LEVEL_THIRSTY to THIRST_LEVEL_BIT_THIRSTY)
+// 					to_send += "<span class='info'>Вам не помешало бы промочить горло.</span>\n"
+// 				if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
+// 					to_send += "<span class='danger'>Вы ощущаете жажду!</span>\n"
+// 				if(0 to THIRST_LEVEL_PARCHED)
+// 					to_send += "<span class='danger'>У вас обезвоживание!</span>\n"
 
-			//TODO: Convert these messages into vague messages, thereby encouraging actual dignosis.
-			//Compiles then shows the list of damaged organs and broken organs
-			var/list/broken = list()
-			var/list/damaged = list()
-			var/broken_message
-			var/damaged_message
-			//var/broken_plural
-			//var/damaged_plural
-			//Sets organs into their proper list
-			for(var/O in internal_organs)
-				var/obj/item/organ/organ = O
-				if(organ.organ_flags & ORGAN_FAILING)
-					if(broken.len)
-						broken += ", "
-					broken += organ.ru_name
-				else if(organ.damage > organ.low_threshold)
-					if(damaged.len)
-						damaged += ", "
-					damaged += organ.ru_name
-			//Checks to enforce proper grammar, inserts words as necessary into the list
-			if(broken.len)
-				if(broken.len > 1)
-					broken.Insert(broken.len, "и ")
-					//broken_plural = TRUE
-				//else
-					//var/holder = broken[1]	//our one and only element
-					//if(holder[length(holder)] == "")
-						//broken_plural = TRUE
-				//Put the items in that list into a string of text
-				for(var/B in broken)
-					broken_message += B
-				to_send += "\n<span class='warning'> Ваша орган - [broken_message] - не функционирует!</span>"
-			if(damaged.len)
-				if(damaged.len > 1)
-					damaged.Insert(damaged.len, "и ")
-					//damaged_plural = TRUE
-				//else
-					//var/holder = damaged[1]
-					//if(holder[length(holder)] == "")
-						//damaged_plural = TRUE
-				for(var/D in damaged)
-					damaged_message += D
-				to_send += "\n<span class='info'>Ваш орган - [damaged_message] - повреждён.</span>"
+// 			//TODO: Convert these messages into vague messages, thereby encouraging actual dignosis.
+// 			//Compiles then shows the list of damaged organs and broken organs
+// 			var/list/broken = list()
+// 			var/list/damaged = list()
+// 			var/broken_message
+// 			var/damaged_message
+// 			//var/broken_plural
+// 			//var/damaged_plural
+// 			//Sets organs into their proper list
+// 			for(var/O in internal_organs)
+// 				var/obj/item/organ/organ = O
+// 				if(organ.organ_flags & ORGAN_FAILING)
+// 					if(broken.len)
+// 						broken += ", "
+// 					broken += organ.ru_name
+// 				else if(organ.damage > organ.low_threshold)
+// 					if(damaged.len)
+// 						damaged += ", "
+// 					damaged += organ.ru_name
+// 			//Checks to enforce proper grammar, inserts words as necessary into the list
+// 			if(broken.len)
+// 				if(broken.len > 1)
+// 					broken.Insert(broken.len, "и ")
+// 					//broken_plural = TRUE
+// 				//else
+// 					//var/holder = broken[1]	//our one and only element
+// 					//if(holder[length(holder)] == "")
+// 						//broken_plural = TRUE
+// 				//Put the items in that list into a string of text
+// 				for(var/B in broken)
+// 					broken_message += B
+// 				to_send += "\n<span class='warning'> Ваша орган - [broken_message] - не функционирует!</span>"
+// 			if(damaged.len)
+// 				if(damaged.len > 1)
+// 					damaged.Insert(damaged.len, "и ")
+// 					//damaged_plural = TRUE
+// 				//else
+// 					//var/holder = damaged[1]
+// 					//if(holder[length(holder)] == "")
+// 						//damaged_plural = TRUE
+// 				for(var/D in damaged)
+// 					damaged_message += D
+// 				to_send += "\n<span class='info'>Ваш орган - [damaged_message] - повреждён.</span>"
 
-			if(roundstart_quirks.len)
-				to_send += "\n<span class='notice'>У вас есть следующие особенности: [get_trait_string()].</span>"
-			//SPLURT edit
-			for(var/obj/item/organ/genital/G in internal_organs)
-				if(CHECK_BITFIELD(G.genital_flags, GENITAL_IMPOTENT))
-					if(istype(G, /obj/item/organ/genital/breasts))
-						to_send += "<span class='lewd'>\nYour [G.name] are frustratingly numb to any pleasurable sensations.</span>"
-					else
-						to_send += "<span class='lewd'>\nYour [G.name] is frustratingly numb to any pleasurable sensations.</span>"
-				if(CHECK_BITFIELD(G.genital_flags, GENITAL_EDGINGONLY))
-					to_send += "<span class='lewd'>\nYour [G.name] quivers with need, seemingly growing increasingly aroused without ever quite reaching climax.</span>"
-				if(CHECK_BITFIELD(G.genital_flags, GENITAL_DISAPPOINTING))
-					if(istype(G, /obj/item/organ/genital/breasts))
-						to_send += "<span class='lewd'>\nYour [G.name] dribbles a fine stream of slick milk as it throbs desperately for a satisfying, yet unlikely release.</span>"
-					else
-						to_send += "<span class='lewd'>\nYour [G.name] dribbles a fine stream of slick lubricant as it throbs desperately for a satisfying, yet unlikely release.</span>"
-				if(CHECK_BITFIELD(G.genital_flags, GENITAL_OVERSTIM))
-					to_send += "<span class='lewd'>\nYour [G.name] bristles with need, jolting you with pleasure at every slight touch.</span>"
-				if(CHECK_BITFIELD(G.genital_flags, GENITAL_HYPERSENS))
-					if(istype(G, /obj/item/organ/genital/breasts))
-						to_send += "<span class='lewd'>\nYour [G.name] are quivering with maddening lust. Even a strong draft or a shifting of your clothes is nearly enough to blank your mind of everything except the need for more.</span>"
-					to_send += "<span class='lewd'>\nYour [G.name] is quivering with maddening lust. Even a strong draft or a shifting of your clothes is nearly enough to blank your mind of everything except the need for more.</span>"
+// 			if(roundstart_quirks.len)
+// 				to_send += "\n<span class='notice'>У вас есть следующие особенности: [get_trait_string()].</span>"
+// 			//SPLURT edit
+// 			for(var/obj/item/organ/genital/G in internal_organs)
+// 				if(CHECK_BITFIELD(G.genital_flags, GENITAL_IMPOTENT))
+// 					if(istype(G, /obj/item/organ/genital/breasts))
+// 						to_send += "<span class='lewd'>\nYour [G.name] are frustratingly numb to any pleasurable sensations.</span>"
+// 					else
+// 						to_send += "<span class='lewd'>\nYour [G.name] is frustratingly numb to any pleasurable sensations.</span>"
+// 				if(CHECK_BITFIELD(G.genital_flags, GENITAL_EDGINGONLY))
+// 					to_send += "<span class='lewd'>\nYour [G.name] quivers with need, seemingly growing increasingly aroused without ever quite reaching climax.</span>"
+// 				if(CHECK_BITFIELD(G.genital_flags, GENITAL_DISAPPOINTING))
+// 					if(istype(G, /obj/item/organ/genital/breasts))
+// 						to_send += "<span class='lewd'>\nYour [G.name] dribbles a fine stream of slick milk as it throbs desperately for a satisfying, yet unlikely release.</span>"
+// 					else
+// 						to_send += "<span class='lewd'>\nYour [G.name] dribbles a fine stream of slick lubricant as it throbs desperately for a satisfying, yet unlikely release.</span>"
+// 				if(CHECK_BITFIELD(G.genital_flags, GENITAL_OVERSTIM))
+// 					to_send += "<span class='lewd'>\nYour [G.name] bristles with need, jolting you with pleasure at every slight touch.</span>"
+// 				if(CHECK_BITFIELD(G.genital_flags, GENITAL_HYPERSENS))
+// 					if(istype(G, /obj/item/organ/genital/breasts))
+// 						to_send += "<span class='lewd'>\nYour [G.name] are quivering with maddening lust. Even a strong draft or a shifting of your clothes is nearly enough to blank your mind of everything except the need for more.</span>"
+// 					to_send += "<span class='lewd'>\nYour [G.name] is quivering with maddening lust. Even a strong draft or a shifting of your clothes is nearly enough to blank your mind of everything except the need for more.</span>"
 
-			if(HAS_TRAIT(src, TRAIT_IMPOTENT_ANUS))
-				to_send += "<span class='lewd'>\nYour anus is frustratingly numb to any pleasurable sensations.</span>"
-			if(HAS_TRAIT(src, TRAIT_EDGINGONLY_ANUS))
-				to_send += "<span class='lewd'>\nYour anus winks with need, seemingly growing increasingly aroused without ever quite reaching climax.</span>"
-			if(HAS_TRAIT(src, TRAIT_DISAPPOINTING_ANUS))
-				to_send += "<span class='lewd'>\nYour anus winks, desperately asking for something to stuff it.</span>"
-			if(HAS_TRAIT(src, TRAIT_OVERSTIM_ANUS))
-				to_send += "<span class='lewd'>\nYour anus bristles with need, jolting you with pleasure at every slight touch.</span>"
-			if(HAS_TRAIT(src, TRAIT_HYPERSENS_ANUS))
-				to_send += "<span class='lewd'>\nYour anus is quivering with maddening lust. Even a strong draft or a shifting of your clothes is nearly enough to blank your mind of everything except the need for more.</span>"
-			//
-			to_chat(src, examine_block(to_send))
-		else
-			if(wear_suit)
-				wear_suit.add_fingerprint(M)
-			else if(w_uniform)
-				w_uniform.add_fingerprint(M)
+// 			if(HAS_TRAIT(src, TRAIT_IMPOTENT_ANUS))
+// 				to_send += "<span class='lewd'>\nYour anus is frustratingly numb to any pleasurable sensations.</span>"
+// 			if(HAS_TRAIT(src, TRAIT_EDGINGONLY_ANUS))
+// 				to_send += "<span class='lewd'>\nYour anus winks with need, seemingly growing increasingly aroused without ever quite reaching climax.</span>"
+// 			if(HAS_TRAIT(src, TRAIT_DISAPPOINTING_ANUS))
+// 				to_send += "<span class='lewd'>\nYour anus winks, desperately asking for something to stuff it.</span>"
+// 			if(HAS_TRAIT(src, TRAIT_OVERSTIM_ANUS))
+// 				to_send += "<span class='lewd'>\nYour anus bristles with need, jolting you with pleasure at every slight touch.</span>"
+// 			if(HAS_TRAIT(src, TRAIT_HYPERSENS_ANUS))
+// 				to_send += "<span class='lewd'>\nYour anus is quivering with maddening lust. Even a strong draft or a shifting of your clothes is nearly enough to blank your mind of everything except the need for more.</span>"
+// 			//
+// 			to_chat(src, examine_block(to_send))
+// 		else
+// 			if(wear_suit)
+// 				wear_suit.add_fingerprint(M)
+// 			else if(w_uniform)
+// 				w_uniform.add_fingerprint(M)
 
-			..()
+// 			..()
 
-/mob/living/carbon/human/check_self_for_injuries()
-	if(stat == DEAD || stat == UNCONSCIOUS)
-		return
+// /mob/living/carbon/human/check_self_for_injuries()
+// 	if(stat == DEAD || stat == UNCONSCIOUS)
+// 		return
 
-	visible_message("<span class='notice'>[src] осматривает себя.</span>", "")
-	var/output = "<span class='notice'>Вы осматриваете себя на предмет повреждений.</span><hr>"
+// 	visible_message("<span class='notice'>[src] осматривает себя.</span>", "")
+// 	var/output = "<span class='notice'>Вы осматриваете себя на предмет повреждений.</span><hr>"
 
-	var/list/missing = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
+// 	var/list/missing = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 
-	for(var/X in bodyparts)
-		var/obj/item/bodypart/LB = X
-		missing -= LB.body_zone
-		if(LB.is_pseudopart) //don't show injury text for fake bodyparts; ie chainsaw arms or synthetic armblades
-			continue
-		var/self_aware = FALSE
-		if(HAS_TRAIT(src, TRAIT_SELF_AWARE))
-			self_aware = TRUE
-		var/limb_max_damage = LB.max_damage
-		var/status = ""
-		var/brutedamage = LB.brute_dam
-		var/burndamage = LB.burn_dam
-		if(hallucination)
-			if(prob(30))
-				brutedamage += rand(30,40)
-			if(prob(30))
-				burndamage += rand(30,40)
+// 	for(var/X in bodyparts)
+// 		var/obj/item/bodypart/LB = X
+// 		missing -= LB.body_zone
+// 		if(LB.is_pseudopart) //don't show injury text for fake bodyparts; ie chainsaw arms or synthetic armblades
+// 			continue
+// 		var/self_aware = FALSE
+// 		if(HAS_TRAIT(src, TRAIT_SELF_AWARE))
+// 			self_aware = TRUE
+// 		var/limb_max_damage = LB.max_damage
+// 		var/status = ""
+// 		var/brutedamage = LB.brute_dam
+// 		var/burndamage = LB.burn_dam
+// 		if(hallucination)
+// 			if(prob(30))
+// 				brutedamage += rand(30,40)
+// 			if(prob(30))
+// 				burndamage += rand(30,40)
 
-		if(HAS_TRAIT(src, TRAIT_SELF_AWARE))
-			status = "[brutedamage] процентов увечий и [burndamage] процентов ожогов"
-			if(!brutedamage && !burndamage)
-				status = "не повреждена"
+// 		if(HAS_TRAIT(src, TRAIT_SELF_AWARE))
+// 			status = "[brutedamage] процентов увечий и [burndamage] процентов ожогов"
+// 			if(!brutedamage && !burndamage)
+// 				status = "не повреждена"
 
-		else
-			if(brutedamage > 0)
-				status = LB.light_brute_msg
-			if(brutedamage > (limb_max_damage*0.4))
-				status = LB.medium_brute_msg
-			if(brutedamage > (limb_max_damage*0.8))
-				status = LB.heavy_brute_msg
-			if(brutedamage > 0 && burndamage > 0)
-				status += " и "
+// 		else
+// 			if(brutedamage > 0)
+// 				status = LB.light_brute_msg
+// 			if(brutedamage > (limb_max_damage*0.4))
+// 				status = LB.medium_brute_msg
+// 			if(brutedamage > (limb_max_damage*0.8))
+// 				status = LB.heavy_brute_msg
+// 			if(brutedamage > 0 && burndamage > 0)
+// 				status += " и "
 
-			if(burndamage > (limb_max_damage*0.8))
-				status += LB.heavy_burn_msg
-			else if(burndamage > (limb_max_damage*0.2))
-				status += LB.medium_burn_msg
-			else if(burndamage > 0)
-				status += LB.light_burn_msg
+// 			if(burndamage > (limb_max_damage*0.8))
+// 				status += LB.heavy_burn_msg
+// 			else if(burndamage > (limb_max_damage*0.2))
+// 				status += LB.medium_burn_msg
+// 			else if(burndamage > 0)
+// 				status += LB.light_burn_msg
 
-			if(status == "")
-				status = "в норме"
-		var/no_damage
-		if(status == "в норме" || status == "не повреждена")
-			no_damage = TRUE
-		var/isdisabled = " "
-		if(LB.is_disabled())
-			isdisabled = " не функционирует "
-			if(no_damage)
-				isdisabled += " но в остальном "
-			else
-				isdisabled += " и "
-		output += "\n\t <span class='[no_damage ? "notice" : "warning"]'>Ваша [LB.ru_name][isdisabled][self_aware ? "  " : "  "][status].</span>"
+// 			if(status == "")
+// 				status = "в норме"
+// 		var/no_damage
+// 		if(status == "в норме" || status == "не повреждена")
+// 			no_damage = TRUE
+// 		var/isdisabled = " "
+// 		if(LB.is_disabled())
+// 			isdisabled = " не функционирует "
+// 			if(no_damage)
+// 				isdisabled += " но в остальном "
+// 			else
+// 				isdisabled += " и "
+// 		output += "\n\t <span class='[no_damage ? "notice" : "warning"]'>Ваша [LB.ru_name][isdisabled][self_aware ? "  " : "  "][status].</span>"
 
-		for(var/thing in LB.wounds)
-			var/datum/wound/W = thing
-			var/msg
-			switch(W.severity)
-				if(WOUND_SEVERITY_TRIVIAL)
-					msg = "\t <span class='danger'>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)].</span>"
-				if(WOUND_SEVERITY_MODERATE)
-					msg = "\t <span class='warning'>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)]!</span>"
-				if(WOUND_SEVERITY_SEVERE)
-					msg = "\t <span class='warning'><b>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)]!</b></span>"
-				if(WOUND_SEVERITY_CRITICAL)
-					msg = "\t <span class='warning'><b>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)]!!</b></span>"
-			output += "\n[msg]"
+// 		for(var/thing in LB.wounds)
+// 			var/datum/wound/W = thing
+// 			var/msg
+// 			switch(W.severity)
+// 				if(WOUND_SEVERITY_TRIVIAL)
+// 					msg = "\t <span class='danger'>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)].</span>"
+// 				if(WOUND_SEVERITY_MODERATE)
+// 					msg = "\t <span class='warning'>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)]!</span>"
+// 				if(WOUND_SEVERITY_SEVERE)
+// 					msg = "\t <span class='warning'><b>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)]!</b></span>"
+// 				if(WOUND_SEVERITY_CRITICAL)
+// 					msg = "\t <span class='warning'><b>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)]!!</b></span>"
+// 			output += "\n[msg]"
 
-		for(var/obj/item/I in LB.embedded_objects)
-			if(I.isEmbedHarmless())
-				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] прорезался \a [I]!</a>"
-			else
-				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
-	to_chat(src, examine_block(output))
+// 		for(var/obj/item/I in LB.embedded_objects)
+// 			if(I.isEmbedHarmless())
+// 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] прорезался \a [I]!</a>"
+// 			else
+// 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
+// 	to_chat(src, examine_block(output))
 
 /mob/living/carbon/human/damage_clothes(damage_amount, damage_type = BRUTE, damage_flag = 0, def_zone)
 	if(damage_type != BRUTE && damage_type != BURN)

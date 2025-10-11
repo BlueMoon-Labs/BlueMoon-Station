@@ -1,16 +1,16 @@
 #define ui_hunger_thirst "EAST-1:28,CENTER+1:24"
 
-/atom/movable/screen/hunger
-	name = "hunger"
-	icon = 'modular_sand/icons/hud/screen_gen.dmi'
-	icon_state = "nutrition0"
-	screen_loc = ui_hunger_thirst
+// /atom/movable/screen/hunger
+// 	name = "hunger"
+// 	icon = 'modular_sand/icons/hud/screen_gen.dmi'
+// 	icon_state = "nutrition0"
+// 	screen_loc = ui_hunger_thirst
 
-/atom/movable/screen/thirst
-	name = "thirst"
-	icon = 'modular_sand/icons/hud/screen_gen.dmi'
-	icon_state = "hydration0"
-	screen_loc = ui_hunger_thirst
+// /atom/movable/screen/thirst
+// 	name = "thirst"
+// 	icon = 'modular_sand/icons/hud/screen_gen.dmi'
+// 	icon_state = "hydration0"
+// 	screen_loc = ui_hunger_thirst
 
 /atom/movable/screen/healthdoll/Click(location, control, params)
 	if(hud?.mymob)
