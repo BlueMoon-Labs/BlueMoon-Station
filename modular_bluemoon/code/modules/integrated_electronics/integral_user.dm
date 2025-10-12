@@ -2,13 +2,13 @@
 	name = "Usage module"
 	desc = "A circuit capable of using objects."
 	icon_state = "grabber"
-	extended_desc = "На вход данной интегралки надо подавать референс объекта для взаимодействия на первый вход. Интент и части тела для взаимодействия указываются как help, harm, disarm, grab и chest, head, groin и т.д. соответственно. Если в интегралку не вставлен инструмент, то она взаимодействует с объектами как обычная пустая рука, иначе использует поданый на вход(или напрямую вставленный в интегралку) инструмент. Нет, вы не можете вставить инструмент внутрь интегралки и одновременно с этим подать на вход иной. Она не будет работать. МОЖНО ВСТАВИТЬ НЕ БОЛЕЕ ОДНОЙ ТАКОЙ ДЕТАЛИ В ОДНУ СХЕМУ."
+	extended_desc = "На вход данной интегралки надо подавать референс объекта для взаимодействия на первый вход. Интент и части тела для взаимодействия указываются как help, harm, disarm, grab и chest, head, groin и т.д. соответственно. Если в интегралку не вставлен инструмент, то она взаимодействует с объектами как обычная пустая рука, иначе использует поданый на вход инструмент. МОЖНО ВСТАВИТЬ НЕ БОЛЕЕ ОДНОЙ ТАКОЙ ДЕТАЛИ В ОДНУ СХЕМУ."
 	w_class = WEIGHT_CLASS_SMALL
 	size = 4
 	cooldown_per_use = 15
 	complexity = 20
 	inputs = list("target" = IC_PINTYPE_REF, "intent" = IC_PINTYPE_STRING, "body_zone" = IC_PINTYPE_STRING, "Tool" = IC_PINTYPE_REF)
-	outputs = list("used object(item, mob)" = IC_PINTYPE_REF, "last intent" = IC_PINTYPE_STRING)
+	outputs = list("last target" = IC_PINTYPE_REF, "used tool" = IC_PINTYPE_REF, "last intent" = IC_PINTYPE_STRING)
 	activators = list("pulse in" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_COMBAT
@@ -56,7 +56,7 @@
 	var/atom = get_pin_data_as_type(IC_INPUT, 1, /atom)
 	if(atom)
 		interacting(atom, tool)
-	update_outputs()
+	update_outputs(atom, tool)
 	activate_pin(2)
 
 /obj/item/integrated_circuit/manipulation/interacter/proc/interacting(atom/object_to_use, obj/item/tool)
@@ -68,9 +68,10 @@
     else
         object_to_use.attack_hand(mob_for_using_items)
 
-/obj/item/integrated_circuit/manipulation/interacter/proc/update_outputs()
-	set_pin_data(IC_OUTPUT, 1, null)
-	set_pin_data(IC_OUTPUT, 2, null)
+/obj/item/integrated_circuit/manipulation/interacter/proc/update_outputs(object_to_use, tool)
+	set_pin_data(IC_OUTPUT, 1, WEAKREF(object_to_use))
+	set_pin_data(IC_OUTPUT, 2, WEAKREF(item))
+	set_pin_data(IC_OUTPUT, 3, mob_for_using_items.a_intent)
 	push_data()
 
 /obj/item/integrated_circuit/manipulation/interacter/attack_self(var/mob/user)
