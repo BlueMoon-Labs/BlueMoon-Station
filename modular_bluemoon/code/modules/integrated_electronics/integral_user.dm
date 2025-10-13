@@ -70,7 +70,7 @@
 
 /obj/item/integrated_circuit/manipulation/interacter/proc/update_outputs(object_to_use, tool)
 	set_pin_data(IC_OUTPUT, 1, WEAKREF(object_to_use))
-	set_pin_data(IC_OUTPUT, 2, WEAKREF(item))
+	set_pin_data(IC_OUTPUT, 2, WEAKREF(tool))
 	set_pin_data(IC_OUTPUT, 3, mob_for_using_items.a_intent)
 	push_data()
 
