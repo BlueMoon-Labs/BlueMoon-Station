@@ -2,6 +2,8 @@
 ///  PHASE SHIFT  ///
 /////////////////////
 
+
+
 /obj/effect/temp_visual/shadekin
 	randomdir = FALSE
 	duration = 0.5 SECONDS
@@ -17,5 +19,14 @@
 	name = "Базовая способность шадекинов"
 	var/cost = 50
 	var/passive_cost = 0
+
+/datum/action/shadekin/proc/signal_shadekin_del(datum/source)
+	SIGNAL_HANDLER
+	if(!QDELETED(src))
+		qdel(src)
+	
+
+/datum/action/shadekin/proc/signal_shadekin_hide(datum/source)
+	SIGNAL_HANDLER
 
 /datum/action/shadekin/proc/use_dark_energy(amount)

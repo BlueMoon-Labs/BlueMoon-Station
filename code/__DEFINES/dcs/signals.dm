@@ -842,3 +842,7 @@
 #define COMSIG_KB_LIVING_JUMP "keybind_jump"
 #define COMSIG_TURF_JUMP_ENDED_HERE "turf_jump_ended_here"      //from datum/element/jump/end_jump(): (jumper)
 #define COMSIG_KB_ACTIVATED (1<<0)
+
+#define COMSIG_ADJUST_DARK_ENERGY "use_energy_shadekin"
+#define COMSIG_SHADEKIN_ACTION_DELETE "delete_shadekin_action"
+#define COMSIG_SHADEKIN_ACTION_HIDE "hide_shadekin_action"
