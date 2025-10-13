@@ -32,6 +32,7 @@
 		/obj/item/clothing/suit/armor/vest/blueshirt = 5,
 		/obj/item/armorkit/security = 5,
 		/obj/item/armorkit/security/helmet = 5,
+		/obj/item/storage/box/forensic_cards = 1,
 	)
 	contraband = list(
 		/obj/item/clothing/glasses/sunglasses = 2,

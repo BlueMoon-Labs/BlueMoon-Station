@@ -163,7 +163,7 @@
 /datum/bounty/item/assistant/ied
 	name = "IED"
 	description = "Nanotrasen's maximum security prison at CentCom is undergoing personnel training. Ship a handful of IEDs to serve as a training tools."
-	reward = 7000
+	reward = 5500
 	required_count = 3
 	wanted_types = list(/obj/item/grenade/iedcasing)
 
@@ -191,7 +191,7 @@
 	name = "Tool Belts" //Made it 5 so you can't just buy one set of toolbelts to finish the bounty.
 	description = "These things always seem to go missing. Ship us a few to help us restock."
 	reward = 5200
-	required_count = 5
+	required_count = 3
 	wanted_types = list(/obj/item/storage/belt/utility)
 
 /datum/bounty/item/assistant/gasmasks

@@ -32,6 +32,7 @@
 	minimal_access = list(ACCESS_SECURITY, ACCESS_BRIG, ACCESS_SEC_DOORS, ACCESS_COURT, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_WEAPONS, ACCESS_PEACEKEEPER) // See /datum/job/officer/get_access()
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_SEC
+	bounty_types = CIV_JOB_SEC
 
 	mind_traits = list(TRAIT_LAW_ENFORCEMENT_METABOLISM)
 

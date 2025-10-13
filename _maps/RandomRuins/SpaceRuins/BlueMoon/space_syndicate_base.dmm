@@ -2302,7 +2302,6 @@
 /obj/effect/turf_decal/trimline/purple/filled/corner{
 	dir = 4
 	},
-/obj/item/circuitboard/machine/circuit_imprinter,
 /obj/structure/frame/machine{
 	anchored = 1;
 	icon_state = "box_1";
@@ -2311,6 +2310,7 @@
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 8
 	},
+/obj/item/circuitboard/machine/circuit_imprinter/hacked,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
 "il" = (

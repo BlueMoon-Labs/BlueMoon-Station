@@ -159,8 +159,10 @@
 
 /obj/item/melee/sabre/directional_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return, override_direction)
 	if((attack_type & ATTACK_TYPE_PROJECTILE) && is_energy_reflectable_projectile(object))
-		block_return[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_RETURN_TO_SENDER
-		return BLOCK_SUCCESS | BLOCK_REDIRECTED | BLOCK_SHOULD_REDIRECT
+		var/reflect_chance = HAS_TRAIT(owner, TRAIT_FENCER) ? 60 : 20 // Определение шанса на рефлект.
+		if(prob(reflect_chance))
+			block_return[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_RETURN_TO_SENDER
+			return BLOCK_SUCCESS | BLOCK_REDIRECTED | BLOCK_SHOULD_REDIRECT
 	return ..()
 
 /obj/item/melee/sabre/on_active_parry(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, list/block_return, parry_efficiency, parry_time)
@@ -171,10 +173,12 @@
 
 /obj/item/melee/sabre/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	if(!is_energy_reflectable_projectile(object) && (attack_type & ATTACK_TYPE_PROJECTILE))
-		block_return[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_RETURN_TO_SENDER			//no you
-		owner.visible_message("<span class='danger'>Ranged attacks just make [owner] angrier!</span>")
-		playsound(src, pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, 1)
-		return BLOCK_SHOULD_REDIRECT | BLOCK_SUCCESS | BLOCK_REDIRECTED
+		var/reflect_chance = HAS_TRAIT(owner, TRAIT_FENCER) ? 60 : 20 // Определение шанса на рефлект.
+		if(prob(reflect_chance))
+			block_return[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_RETURN_TO_SENDER			//no you
+			owner.visible_message("<span class='danger'>[owner] redirected the sent projectile with his [src]!</span>")
+			playsound(src, pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, 1)
+			return BLOCK_SHOULD_REDIRECT | BLOCK_SUCCESS | BLOCK_REDIRECTED
 	return ..()
 
 /obj/item/melee/sabre/Initialize(mapload)

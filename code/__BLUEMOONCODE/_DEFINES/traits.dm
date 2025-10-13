@@ -39,6 +39,9 @@
 
 // Трейты для профессий
 #define QUALIFIED_ROBOTIC_MAINTER			"qualified_robotic_maintner"
+#define TRAIT_REAGENT_EXPERT				"reagent_expert"
+#define TRAIT_MECHA_EXPERT 					"mecha_expert"
+#define TRAIT_FENCER		 				"fencer"
 
 // Названия для мудов от квирков
 #define QMOOD_BONDAGE		"mood_bondage"

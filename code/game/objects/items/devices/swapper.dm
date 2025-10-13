@@ -13,6 +13,8 @@
 	var/cooldown = 300
 	var/next_use = 0
 	var/obj/item/swapper/linked_swapper
+
+	var/emped = 0
 	verb_say = "states" //BLUEMOON ADD
 
 /obj/item/swapper/Destroy()
@@ -30,12 +32,12 @@
 	if(istype(I, /obj/item/swapper))
 		var/obj/item/swapper/other_swapper = I
 		if(other_swapper.linked_swapper)
-			to_chat(user, span_warning("[other_swapper] is already linked. Break the current link to establish a new one."))
+			to_chat(user, span_warning("[other_swapper] уже квантово связан. Разорвите текущую связь, чтобы создать новую."))
 			return
 		if(linked_swapper)
-			to_chat(user, span_warning("[src] is already linked. Break the current link to establish a new one."))
+			to_chat(user, span_warning("[src] уже квантово связан. Разорвите текущую связь, чтобы создать новую."))
 			return
-		to_chat(user, span_notice("You establish a quantum link between the two devices."))
+		to_chat(user, span_notice("Вы установили квантовую связь между двумя устройствами."))
 		linked_swapper = other_swapper
 		other_swapper.linked_swapper = src
 		update_appearance()
@@ -44,29 +46,42 @@
 		return ..()
 
 /obj/item/swapper/attack_self(mob/living/user)
+	if(emped)
+		var/datum/effect_system/spark_spread/sparks = new /datum/effect_system/spark_spread
+		sparks.set_up(2, 0, get_turf(src))
+		sparks.start()
+		if(prob(10)) // Чтобы не спамили
+			do_teleport(user, get_turf(user), 3, channel = TELEPORT_CHANNEL_QUANTUM)
+			user.electrocute_act(5, src, flags = SHOCK_ILLUSION)
+			to_chat(user, span_warning("[src] начало искриться и ударило вас током, вырываясь из рук!"))
+			forceMove(drop_location())
+		to_chat(user, span_warning("[src] не работает должным образом."))
+		return
 	if(world.time < next_use)
-		to_chat(user, span_warning("[src] is still recharging."))
+		to_chat(user, span_warning("[src] все ещё перезаряжается."))
 		return
 	if(QDELETED(linked_swapper))
-		to_chat(user, span_warning("[src] is not linked with another swapper."))
+		to_chat(user, span_warning("[src] не связан с другим устройством."))
 		return
 	playsound(src, 'sound/weapons/flash.ogg', 25, TRUE)
-	to_chat(user, span_notice("You activate [src]."))
+	to_chat(user, span_notice("Вы активировали [src]."))
 	playsound(linked_swapper, 'sound/weapons/flash.ogg', 25, TRUE)
 	if(ismob(linked_swapper.loc))
 		var/mob/holder = linked_swapper.loc
-		to_chat(holder, span_notice("[linked_swapper] starts buzzing."))
+		to_chat(holder, span_notice("[linked_swapper] жужжит."))
 	next_use = world.time + cooldown //only the one used goes on cooldown
 	addtimer(CALLBACK(src, PROC_REF(swap), user), 25)
 
 /obj/item/swapper/examine(mob/user)
 	. = ..()
 	if(world.time < next_use)
-		. += span_warning("Time left to recharge: [DisplayTimeText(next_use - world.time)].")
+		. += span_warning("Время до перезарядки: [DisplayTimeText(next_use - world.time)].")
 	if(linked_swapper)
-		. += span_notice("<b>Linked.</b> Alt-Click to break the quantum link.")
+		. += span_notice("<b>Связано.</b> Alt-Click по устройству для разрыва текущей квантовой связи.")
 	else
-		. += span_notice("<b>Not Linked.</b> Use on another quantum spin inverter to establish a quantum link.")
+		. += span_notice("<b>Не связано.</b> Используйте на другом инвертере для установки квантвовой связи.")
+	if(emped)
+		. += span_red("<b>Выглядит странно.</b>")
 
 /obj/item/swapper/AltClick(mob/living/user)
 	if(!user.canUseTopic(src, BE_CLOSE, NO_DEXTERY,, FALSE, !iscyborg(user))) //someone mispelled dexterity
@@ -78,12 +93,30 @@
 		say("Разрыв квантовой связи невозможен. Одно из устройств перезаряжается.")
 		return
 	//BLUEMOON ADD END
-	to_chat(user, span_notice("You break the current quantum link."))
+	to_chat(user, span_notice("Вы разорвали квантовую связь."))
 	if(!QDELETED(linked_swapper))
 		linked_swapper.linked_swapper = null
 		linked_swapper.update_appearance()
 		linked_swapper = null
 	update_appearance()
+
+/obj/item/swapper/emp_act(severity)
+	. = ..()
+	if (!(. & EMP_PROTECT_SELF) && linked_swapper)
+		if(prob(90))
+			emped = clamp(emped + 1, 0, 1) // Значение никогда не будет выше 1, ниже 0
+			flick_overlay_view(image('modular_bluemoon/icons/obj/device.dmi', src, icon_state = "swapper_emped"), src, (2*severity))
+			spawn(2 * severity)
+				emped -= 1
+		else if(prob(15))
+			swap()
+			sleep(8)
+			swap()
+		else if(prob(10))
+			linked_swapper.linked_swapper = null
+			linked_swapper.update_appearance()
+			linked_swapper = null
+			emped = 0
 
 //Gets the topmost teleportable container
 /obj/item/swapper/proc/get_teleportable_container()
@@ -117,4 +150,4 @@
 		do_teleport(B, target_A, channel = TELEPORT_CHANNEL_QUANTUM)
 		if(ismob(B))
 			var/mob/M = B
-			to_chat(M, span_warning("[linked_swapper] activates, and you find yourself somewhere else."))
+			to_chat(M, span_warning("[linked_swapper] активируется и вы обнаруживаете себя в другом месте."))

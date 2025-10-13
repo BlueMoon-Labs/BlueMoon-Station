@@ -11237,7 +11237,7 @@
 /area/construction)
 "auJ" = (
 /obj/machinery/rnd/server,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/circuit/green/telecomms/mainframe,
 /area/science/server)
 "auK" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
@@ -11245,7 +11245,7 @@
 	name = "server vent";
 	pressure_checks = 0
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/circuit/green/telecomms/mainframe,
 /area/science/server)
 "auL" = (
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer/on,
@@ -12204,7 +12204,7 @@
 	external_pressure_bound = 120;
 	name = "server vent"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/circuit/green/telecomms/mainframe,
 /area/science/server)
 "aws" = (
 /obj/machinery/computer/rdservercontrol{

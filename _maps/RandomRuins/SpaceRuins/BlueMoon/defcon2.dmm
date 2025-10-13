@@ -6193,6 +6193,12 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
+"If" = (
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/circuitboard/machine/circuit_imprinter/hacked,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "Ig" = (
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 5
@@ -13340,7 +13346,7 @@ sq
 Km
 Gb
 Ur
-Dv
+If
 Dv
 Ur
 PR

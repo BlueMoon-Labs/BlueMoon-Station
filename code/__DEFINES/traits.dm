@@ -657,11 +657,6 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_KNOW_VIR_SURGERY_T1 "know_vir_surgery_t1"
 #define TRAIT_SKILLCHIP_ADAPTER "skillchip_adapter"
 
-//BLUEMOON ADD SKILLS START
-#define TRAIT_REAGENT_EXPERT "reagent_expert"
-#define TRAIT_MECHA_EXPERT "mecha_expert"
-//BLUEMOON ADD SKILLS END
-
 ///Movement type traits for movables. See elements/movetype_handler.dm
 #define TRAIT_MOVE_GROUND "move_ground"
 #define TRAIT_MOVE_FLYING "move_flying"

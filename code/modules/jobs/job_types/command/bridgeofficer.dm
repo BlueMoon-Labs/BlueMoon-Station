@@ -37,6 +37,8 @@
 						ACCESS_BRIDGE_OFFICER, ACCESS_MAILSORTING)
 	paycheck = PAYCHECK_COMMAND
 
+	mind_traits = list(TRAIT_FENCER) //BLUEMOON ADD use TRAIT system for jobs
+
 	paycheck = PAYCHECK_COMMAND
 	paycheck_department = ACCOUNT_SEC
 	alt_titles = list("NT Junior Manager", "Syndicate Junior Officer", "Command Secretary", "Command Officer", "Bridge Secretary", "Ensign", "Bridge Bitch", "Bridge Canine", "Captain Pet", "Command Pet", "Dick Attachment", "Pussy Attachment", "Bridge Advisor", "Bridge Intern", "Bridge Pet")

@@ -2,7 +2,6 @@
 	holder_type = /obj/machinery/vending
 	proper_name = "Vending Unit"
 	req_knowledge = JOB_SKILL_EXPERT
-	visibility_trait = TRAIT_KNOW_ENGI_WIRES // BLUEMOON ADD
 
 /datum/wires/vending/New(atom/holder)
 	wires = list(

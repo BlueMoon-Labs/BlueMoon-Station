@@ -1755,4 +1755,13 @@
 	new /obj/item/modkit/tonfa_kit(src)
 	new /obj/item/modkit/rs9(src)
 
+/obj/item/storage/box/forensic_cards
+	name = "fingerprint card box"
+	desc = "A box containing blank fingerprint cards for forensic use."
+	icon_state = "box"
+
+/obj/item/storage/box/forensic_cards/PopulateContents()
+	for(var/i in 1 to 7)
+		new /obj/item/forensic_card(src)
+
 //BLUEMOON ADD END

@@ -21537,6 +21537,7 @@
 /area/awaymission/complex/research)
 "sDC" = (
 /obj/structure/table,
+/obj/item/circuitboard/machine/circuit_imprinter/hacked,
 /turf/open/floor/plating,
 /area/awaymission/complex/outpost)
 "sDN" = (

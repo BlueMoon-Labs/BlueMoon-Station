@@ -553,6 +553,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	pixel_z = 0
 	animate(src, pixel_z = 2, time = 10, loop = -1, flags = ANIMATION_RELATIVE)
 	animate(pixel_z = -4, time = 10, loop = -1, flags = ANIMATION_RELATIVE)
+	reset_perspective() // Это чинит крепление камеры за телом при auto_observe фиче, если отлететь от цели на кнопки мувмента.
 
 /mob/dead/observer/verb/jumptomob() //Moves the ghost instead of just changing the ghosts's eye -Nodrak
 	set category = "Ghost"

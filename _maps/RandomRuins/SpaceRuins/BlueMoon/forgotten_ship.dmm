@@ -4843,6 +4843,12 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_rnd)
+"zC" = (
+/obj/machinery/photocopier,
+/turf/open/floor/plating{
+	icon_state = "platingdmg1"
+	},
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_bridge)
 "zE" = (
 /obj/effect/turf_decal/tile/brown/half,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
@@ -7858,10 +7864,10 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Qf" = (
-/obj/machinery/rnd/production/circuit_imprinter/department/science,
 /obj/item/toy/mecha/ares{
 	pixel_y = 5
 	},
+/obj/machinery/rnd/production/circuit_imprinter/hacked,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_rnd)
 "Ql" = (
@@ -13465,7 +13471,7 @@ gB
 DL
 iX
 yd
-DL
+zC
 gB
 gB
 gB

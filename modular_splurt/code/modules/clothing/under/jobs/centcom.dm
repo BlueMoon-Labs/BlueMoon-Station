@@ -54,30 +54,35 @@
 	desc = "A uniform made from cheap materials, manufactured to resemble what most CentCom officers wear, it has a quite obvious Donk Co. logo on the collar."
 	icon_state = "fakecent"
 	item_state = "fakecent"
+	can_adjust = FALSE
 
 /obj/item/clothing/under/rank/centcom/sweaterfem/replica
 	name = "CentCom turtleneck skirt replica"
 	desc = "A uniform made from cheap materials, manufactured to resemble what most CentCom officers wear, it has a quite obvious Donk Co. logo on the collar."
 	icon_state = "fakecent_skirt"
 	item_state = "fakecent_skirt"
+	can_adjust = FALSE
 
 /obj/item/clothing/under/rank/centcom/intern
 	name = "centcom intern jumpsuit"
 	desc = "A uniform worn by CentCom's interning employees, with a polo shirt for easy identification of their rank."
 	icon_state = "intern"
 	item_state = "intern"
+	can_adjust = FALSE
 
 /obj/item/clothing/under/rank/centcom/tactical
 	name = "tactical centcom uniform"
 	desc = "No technorussian."
 	icon_state = "military"
 	item_state = "military"
+	can_adjust = FALSE
 
 /obj/item/clothing/under/rank/centcom/tacticalengi
 	name = "tactical engie centcom uniform"
 	desc = "\"I solve practical problems.\""
 	icon_state = "military_eng"
 	item_state = "military_eng"
+	can_adjust = FALSE
 
 
 /*

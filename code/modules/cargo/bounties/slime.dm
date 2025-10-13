@@ -1,5 +1,6 @@
 /datum/bounty/item/slime
 	reward = 3000
+	required_count = 6
 
 /datum/bounty/item/slime/New()
 	..()

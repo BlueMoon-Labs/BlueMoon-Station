@@ -1698,3 +1698,10 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/mask/gas/syndicate/ranger_gasmask
 	ckeywhitelist = list("dimofon", "devildeadspace")
+
+/datum/gear/donator/bm/player_zippo
+	name = "Player Zippo"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/lighter/plighter
+	ckeywhitelist = list("stasdvrz", "dimofon")
+

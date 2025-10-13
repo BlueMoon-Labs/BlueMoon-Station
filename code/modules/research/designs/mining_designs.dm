@@ -82,6 +82,7 @@
 	category = list("Mining Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO
 
+/* BLUEMOON ADD перенесено в machine_vending.dm как ребалансировка
 /datum/design/jackhammer
 	name = "Sonic Jackhammer"
 	desc = "Essentially a handheld planet-cracker. Can drill through walls with ease as well."
@@ -91,6 +92,7 @@
 	build_path = /obj/item/pickaxe/drill/jackhammer
 	category = list("Mining Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO
+*/
 
 /datum/design/superresonator
 	name = "Upgraded Resonator"

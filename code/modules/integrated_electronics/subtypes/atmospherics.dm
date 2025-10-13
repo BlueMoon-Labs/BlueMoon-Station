@@ -623,7 +623,7 @@
 /obj/item/integrated_circuit/atmospherics/cooler/on_data_written()
 	temperature = max(243.15,min(293.15,get_pin_data(IC_INPUT, 1)))
 	if(get_pin_data(IC_INPUT, 2))
-		power_draw_idle = 30
+		power_draw_idle = 60
 	else
 		power_draw_idle = 0
 
@@ -653,7 +653,7 @@
 /obj/item/integrated_circuit/atmospherics/cooler/heater/on_data_written()
 	temperature = max(293.15,min(323.15,get_pin_data(IC_INPUT, 1)))
 	if(get_pin_data(IC_INPUT, 2))
-		power_draw_idle = 30
+		power_draw_idle = 60
 	else
 		power_draw_idle = 0
 

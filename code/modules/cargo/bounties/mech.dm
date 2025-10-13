@@ -43,3 +43,13 @@
 	name = "Phazon"
 	reward = 66600
 	wanted_types = list(/obj/vehicle/sealed/mecha/combat/phazon)
+
+/datum/bounty/item/mech/medigax // BLUEMOON ADD
+	name = "Medical Gygax"
+	reward = 34200
+	wanted_types = list(/obj/vehicle/sealed/mecha/medical/medigax)
+
+/datum/bounty/item/mech/savannah_ivanov // BLUEMOON ADD
+	name = "Savannah Ivanov"
+	reward = 57000
+	wanted_types = list(/obj/vehicle/sealed/mecha/combat/savannah_ivanov)

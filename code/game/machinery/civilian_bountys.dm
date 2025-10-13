@@ -119,8 +119,10 @@
 	if(!pot_acc.account_job)
 		to_chat(usr, "<span class='warning'>The console smartly rejects your ID card, as it lacks a job assignment!</span>")
 		return FALSE
-	var/list/datum/bounty/crumbs = list(random_bounty(pot_acc.account_job.bounty_types), // We want to offer 2 bounties from their appropriate job catagories
-										random_bounty(pot_acc.account_job.bounty_types), // and 1 guarenteed assistant bounty if the other 2 suck.
+	var/list/datum/bounty/crumbs = list(random_bounty(pot_acc.account_job.bounty_types), // We want to offer 2 (Три) bounties from their appropriate job catagories
+										random_bounty(pot_acc.account_job.bounty_types),
+										random_bounty(pot_acc.account_job.bounty_types),
+										random_bounty(CIV_JOB_BASIC), // and 1 (Два) guarenteed assistant bounty if the other 2 suck.
 										random_bounty(CIV_JOB_BASIC))
 	pot_acc.bounty_timer = world.time
 	pot_acc.bounties = crumbs
@@ -152,6 +154,7 @@
 	data["id_inserted"] = inserted_scan_id
 	if(inserted_scan_id && inserted_scan_id.registered_account)
 		if(inserted_scan_id.registered_account.civilian_bounty)
+			data["id_bounty_name"] = inserted_scan_id.registered_account.civilian_bounty.name
 			data["id_bounty_info"] = inserted_scan_id.registered_account.civilian_bounty.description
 			data["id_bounty_num"] = inserted_scan_id.registered_account.bounty_num()
 			data["id_bounty_value"] = (inserted_scan_id.registered_account.civilian_bounty.reward) * (CIV_BOUNTY_SPLIT/100)
@@ -159,10 +162,14 @@
 			data["picking"] = TRUE
 			data["id_bounty_names"] = list(inserted_scan_id.registered_account.bounties[1].name,
 											inserted_scan_id.registered_account.bounties[2].name,
-											inserted_scan_id.registered_account.bounties[3].name)
+											inserted_scan_id.registered_account.bounties[3].name,
+											inserted_scan_id.registered_account.bounties[4].name,
+											inserted_scan_id.registered_account.bounties[5].name)
 			data["id_bounty_values"] = list(inserted_scan_id.registered_account.bounties[1].reward * (CIV_BOUNTY_SPLIT/100),
 											inserted_scan_id.registered_account.bounties[2].reward * (CIV_BOUNTY_SPLIT/100),
-											inserted_scan_id.registered_account.bounties[3].reward * (CIV_BOUNTY_SPLIT/100))
+											inserted_scan_id.registered_account.bounties[3].reward * (CIV_BOUNTY_SPLIT/100),
+											inserted_scan_id.registered_account.bounties[4].reward * (CIV_BOUNTY_SPLIT/100),
+											inserted_scan_id.registered_account.bounties[5].reward * (CIV_BOUNTY_SPLIT/100))
 		else
 			data["picking"] = FALSE
 	return data

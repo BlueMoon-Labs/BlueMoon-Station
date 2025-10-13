@@ -103,7 +103,7 @@
 	ears = /obj/item/radio/headset/headset_cent/ntr
 	gloves = /obj/item/clothing/gloves/color/black
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	uniform = /obj/item/clothing/under/rank/civilian/lawyer/black/alt
+	uniform = /obj/item/clothing/under/rank/centcom/officer_alt
 	suit = /obj/item/clothing/suit/armor/ntr
 	head = /obj/item/clothing/head/beret/sec/ntr
 	shoes = /obj/item/clothing/shoes/laceup/ntr
@@ -115,7 +115,7 @@
 
 	chameleon_extras = /obj/item/stamp/law
 
-	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1)
+	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1, /obj/item/pen/fourcolor/ntr)
 
 	box = /obj/item/storage/box/survival/command
 
@@ -145,7 +145,7 @@
 	pda_slot = ITEM_SLOT_BELT
 	accessory = /obj/item/clothing/accessory/permit/special/representative
 
-	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1, /obj/item/syndicate_uplink=1, /obj/item/pen/fourcolor/ntr)
 
 /datum/outfit/job/ntr/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()

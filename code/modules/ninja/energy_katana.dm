@@ -144,11 +144,11 @@
 /obj/item/energy_naginata
 	name = "energy naginata"
 	desc = "A weapon resembling naginata infused with strong energy."
-	icon_state = "energy_naginata"
-	item_state = "energy_naginata1"
-	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
-	force = 40
+	icon_state = "energy_naginata0"
+	icon = 'modular_bluemoon/icons/obj/items_and_weapons.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/items/items_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/items/items_righthand.dmi'
+	force = 25
 	throwforce = 15
 	block_chance = 55
 	armour_penetration = 39
@@ -166,13 +166,14 @@
 	var/datum/effect_system/spark_spread/spark_system
 	var/datum/action/innate/dash/ninja/ronin/jaunt_ronin
 	var/dash_toggled = TRUE
+	var/wielded = FALSE // BLUEMOON ADD
 
 /obj/item/energy_naginata/check_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
-	block_return[BLOCK_RETURN_REFLECT_PROJECTILE_CHANCE] = 100
+	block_return[BLOCK_RETURN_REFLECT_PROJECTILE_CHANCE] = (wielded ? 100 : 25)
 	return ..()
 
 /obj/item/energy_naginata/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
-	if((is_energy_reflectable_projectile(object) ||  !is_energy_reflectable_projectile(object)) && (attack_type & ATTACK_TYPE_PROJECTILE) && prob(75))
+	if((is_energy_reflectable_projectile(object) ||  !is_energy_reflectable_projectile(object)) && (attack_type & ATTACK_TYPE_PROJECTILE) && prob(wielded? 75 : 25))
 		block_return[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_RETURN_TO_SENDER			//no you
 		owner.visible_message("<span class='danger'>Ranged attacks just make [owner] angrier!</span>")
 		playsound(src, pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, 1)
@@ -185,10 +186,28 @@
 	spark_system = new /datum/effect_system/spark_spread()
 	spark_system.set_up(5, 0, src)
 	spark_system.attach(src)
+	RegisterSignal(src, COMSIG_TWOHANDED_WIELD, PROC_REF(on_wield))
+	RegisterSignal(src, COMSIG_TWOHANDED_UNWIELD, PROC_REF(on_unwield))
 
-/obj/item/energy_naginata/attack_self(mob/user)
+/obj/item/energy_naginata/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded = 25, force_wielded = 40, icon_wielded = "energy_naginata1")
+
+/obj/item/energy_naginata/AltClick(mob/user)
+	. = ..()
 	dash_toggled = !dash_toggled
 	to_chat(user, "<span class='notice'>You [dash_toggled ? "enable" : "disable"] the dash function on [src].</span>")
+
+/obj/item/energy_naginata/proc/on_wield(datum/source, mob/user)
+	SIGNAL_HANDLER
+	wielded = TRUE
+
+/obj/item/energy_naginata/proc/on_unwield(datum/source, mob/user)
+	SIGNAL_HANDLER
+	wielded = FALSE
+
+/obj/item/energy_naginata/update_icon_state()
+	icon_state = "energy_naginata0"
 
 /obj/item/energy_naginata/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
@@ -270,6 +289,10 @@
 			H.apply_damage(rand(force/2, force), BRUTE, pick(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM))
 		else
 			user.adjustBruteLoss(rand(force/2,force))
+	if(!wielded)
+		force = rand(25, 40)
+	else
+		force = 40
 	..()
 
 /obj/item/energy_naginata/proc/explode()
@@ -293,4 +316,5 @@
 	phasein = /obj/effect/temp_visual/dir_setting/cult/phase
 	phaseout = /obj/effect/temp_visual/dir_setting/cult/phase/out
 
-
+/datum/action/innate/dash/ninja/ronin/Activate()
+	dashing_item.AltClick(owner) // Ронин переключает дэши на альтклик, т.к. нагината - двуручная

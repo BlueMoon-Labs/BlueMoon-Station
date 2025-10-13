@@ -7248,9 +7248,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Qf" = (
-/obj/machinery/rnd/production/circuit_imprinter/department/science{
-	req_one_access = null
-	},
+/obj/machinery/rnd/production/circuit_imprinter/hacked,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_rnd)
 "Ql" = (

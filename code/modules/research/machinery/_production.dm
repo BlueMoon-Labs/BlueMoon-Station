@@ -305,7 +305,16 @@
 			temp_material += " [all_materials[M] * coeff] [CallMaterialName(M)]"
 		c = min(c,t)
 
-	var/clearance = !(obj_flags & EMAGGED) && (offstation_security_levels || is_station_level(z))
+	var/on_station = is_station_level(z)
+	var/obj/machinery/rnd/production/protolathe/hacked_p
+	var/clearance = !(obj_flags & EMAGGED) && on_station
+	if(!on_station)
+		// Если продакшн машин вне станции, разрешаем только предметы без требований к коду
+		if(D.min_security_level <= SEC_LEVEL_GREEN || src.type == hacked_p)
+			clearance = TRUE
+		else
+			clearance = FALSE
+
 	var/sec_text = ""
 	if(clearance && (D.min_security_level > SEC_LEVEL_GREEN || D.max_security_level < SEC_LEVEL_DELTA))
 		sec_text = " (Allowed security levels: "
@@ -315,8 +324,7 @@
 				sec_text += ", "
 		sec_text += ")"
 
-	clearance = !clearance || ISINRANGE(GLOB.security_level, D.min_security_level, D.max_security_level)
-	if (c >= 1 && clearance)
+	if(c >= 1 && clearance && ISINRANGE(GLOB.security_level, D.min_security_level, D.max_security_level))
 		l += "<A href='?src=[REF(src)];build=[D.id];amount=1'>[D.name]</A>[RDSCREEN_NOBREAK]"
 		if(c >= 5)
 			l += "<A href='?src=[REF(src)];build=[D.id];amount=5'>x5</A>[RDSCREEN_NOBREAK]"

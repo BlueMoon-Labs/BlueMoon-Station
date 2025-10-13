@@ -67,13 +67,16 @@ export const CivCargoHoldTerminal = (props, context) => {
 
 const BountyTextBox = (props, context) => {
   const { data } = useBackend(context);
-  const { id_bounty_info, id_bounty_value, id_bounty_num } = data;
+  const { id_bounty_name, id_bounty_info, id_bounty_value, id_bounty_num } = data;
   const na_text = 'N/A, please add a new bounty.';
   return (
     <Section title="Bounty Info">
       <LabeledList>
+        <LabeledList.Item label="Name">
+          {id_bounty_info ? id_bounty_name : na_text}
+        </LabeledList.Item>
         <LabeledList.Item label="Description">
-          {id_bounty_info ? id_bounty_info : na_text}
+          {id_bounty_info ? id_bounty_info : 'N/A'}
         </LabeledList.Item>
         <LabeledList.Item label="Quantity">
           {id_bounty_info ? id_bounty_num : 'N/A'}
@@ -91,34 +94,28 @@ const BountyPickBox = (props, context) => {
   const { id_bounty_names, id_bounty_values } = data;
   return (
     <Section title="Please Select a Bounty:" textAlign="center">
-      <Flex width="100%" wrap>
-        <Flex.Item shrink={0} grow={0.5}>
-          <Button
-            fluid
-            color="green"
-            content={id_bounty_names[0]}
-            onClick={() => act('pick', { 'value': 1 })}>
-            <Box fontSize="14px">Payout: {id_bounty_values[0]} cr</Box>
-          </Button>
-        </Flex.Item>
-        <Flex.Item shrink={0} grow={0.5} px={1}>
-          <Button
-            fluid
-            color="green"
-            content={id_bounty_names[1]}
-            onClick={() => act('pick', { 'value': 2 })}>
-            <Box fontSize="14px">Payout: {id_bounty_values[1]} cr</Box>
-          </Button>
-        </Flex.Item>
-        <Flex.Item shrink={0} grow={0.5}>
-          <Button
-            fluid
-            color="green"
-            content={id_bounty_names[2]}
-            onClick={() => act('pick', { 'value': 3 })}>
-            <Box fontSize="14px">Payout: {id_bounty_values[2]} cr</Box>
-          </Button>
-        </Flex.Item>
+      <Flex width="100%" wrap justify="center">
+        {id_bounty_names.map((name, i) => (
+          <Flex.Item
+            key={i}
+            basis="30%"   // Три кнопки в ряд
+            grow={0}
+            shrink={0}
+            px={0.5}
+            mb={1}
+          >
+            <Button
+              fluid
+              color="green"
+              content={name}
+              onClick={() => act('pick', { value: i + 1 })}
+            >
+              <Box fontSize="14px">
+                Payout: {id_bounty_values[i]} cr
+              </Box>
+            </Button>
+          </Flex.Item>
+        ))}
       </Flex>
     </Section>
   );

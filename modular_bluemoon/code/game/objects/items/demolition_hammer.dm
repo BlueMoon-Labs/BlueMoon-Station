@@ -71,6 +71,16 @@
 	wielded = FALSE
 
 
+/obj/item/demolition_hammer/attack(mob/living/M, mob/living/user, attackchain_flags, damage_multiplier)
+	. = ..()
+	if(!wielded)
+		wound_bonus = 4
+		bare_wound_bonus = 6
+	else
+		wound_bonus = 8
+		bare_wound_bonus = 14
+
+
 // Sonic jackhammer dismantling feauture, reworked
 /turf/closed/wall/try_destroy(obj/item/I, mob/user, turf/T)
 	if(!istype(I, /obj/item/demolition_hammer))

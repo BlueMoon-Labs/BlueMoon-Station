@@ -21,7 +21,7 @@
 	display_name = "Advanced Mining Technology"
 	description = "Efficiency Level 127"	//dumb mc references
 	prereq_ids = list("basic_mining", "adv_engi", "adv_power", "adv_plasma")
-	design_ids = list("drill_diamond", "jackhammer", "hypermod", "plasmacutter_adv", "ore_silo", "plasteel_pick", "titanium_pick")
+	design_ids = list("drill_diamond", "hypermod", "plasmacutter_adv", "ore_silo", "plasteel_pick", "titanium_pick") // BLUEMOON убран айди jackhammer: перенесён в вендомат шахты.
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/janitor

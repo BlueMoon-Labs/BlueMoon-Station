@@ -1,9 +1,10 @@
 /obj/machinery/mineral/equipment_vendor/Initialize(mapload)
 	. = ..()
 	prize_list += list(
-			new /datum/data/mining_equipment("Precise Accelerator",			/obj/item/gun/energy/kinetic_accelerator/premiumka/precise,			10000),
-			new /datum/data/mining_equipment("Rapid Accelerator",			/obj/item/gun/energy/kinetic_accelerator/premiumka/rapid,			10000),
-			new /datum/data/mining_equipment("Heavy Accelerator",			/obj/item/gun/energy/kinetic_accelerator/premiumka/heavy,			10000),
-			new /datum/data/mining_equipment("Modular Accelerator",			/obj/item/gun/energy/kinetic_accelerator/premiumka/modular,			15000),
-			new /datum/data/mining_equipment("Build-your-own-KA kit",		/obj/item/gun/energy/kinetic_accelerator/premiumka/byoka,			30000),
+			new /datum/data/mining_equipment("Precise Accelerator",			/obj/item/gun/energy/kinetic_accelerator/premiumka/precise,			10000,	"Kinetic Accelerators"),
+			new /datum/data/mining_equipment("Rapid Accelerator",			/obj/item/gun/energy/kinetic_accelerator/premiumka/rapid,			10000,	"Kinetic Accelerators"),
+			new /datum/data/mining_equipment("Heavy Accelerator",			/obj/item/gun/energy/kinetic_accelerator/premiumka/heavy,			10000,	"Kinetic Accelerators"),
+			new /datum/data/mining_equipment("Modular Accelerator",			/obj/item/gun/energy/kinetic_accelerator/premiumka/modular,			15000,	"Kinetic Accelerators"),
+			new /datum/data/mining_equipment("Build-your-own-KA kit",		/obj/item/gun/energy/kinetic_accelerator/premiumka/byoka,			30000,	"Kinetic Accelerators"),
 			)
+	build_inventory() // Фикс нужен для корректного отображения иконок

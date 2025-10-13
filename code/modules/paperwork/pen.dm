@@ -86,6 +86,37 @@
 	to_chat(user, "<span class='notice'>\The [src] will now write in [colour].</span>")
 	desc = "It's a fancy four-color ink pen, set to [colour]."
 
+/obj/item/pen/fourcolor/ntr
+	desc = "A pen for real bureaucratic rats. It costs as much as an airplane wing and looks luxurious."
+	name = "luxurious Pen"
+	icon_state = "pen-fountain-ntr"
+	sharpness = SHARP_EDGED
+	resistance_flags = FIRE_PROOF
+
+/obj/item/pen/fourcolor/ntr/attack_self(mob/living/carbon/user)
+	switch(colour)
+		if("black")
+			colour = "red"
+			throw_speed++
+			icon_state = "pen-fountain-ntr_r"
+		if("red")
+			colour = "green"
+			throw_speed = initial(throw_speed)
+			icon_state = "pen-fountain-ntr_g"
+		if("green")
+			colour = "blue"
+			icon_state = "pen-fountain-ntr_b"
+		else
+			colour = "black"
+			icon_state = "pen-fountain-ntr"
+	to_chat(user, "<span class='notice'>\The [src] will now write in [colour].</span>")
+	desc = "A pen for real bureaucratic rats. It costs as much as an airplane wing and looks luxurious, set to [colour]."
+	embedding = list("embed_chance" = 75)
+
+/obj/item/pen/fourcolor/ntr/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/butchering, 200, 115) //the pen is mightier than the sword
+
 /obj/item/pen/fountain
 	name = "fountain pen"
 	desc = "It's a common fountain pen, with a faux wood body."
