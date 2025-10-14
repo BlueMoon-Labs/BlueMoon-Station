@@ -15,7 +15,7 @@
 
 	var/list/datum/action/shadekin/action_templates = list()
 
-	
+
 
 /datum/component/shadekin/Initialize(...)
 	if(!isshadekin(parent) || !ismob(parent))
@@ -34,8 +34,8 @@
 	return use_energy(amount)
 
 /datum/component/shadekin/proc/append_actions_from_templates(list/actions_path)
-	for(var/datum/action/shadekin/template in actions_paths)
+	for(var/datum/action/shadekin/template in action_templates)
 		template = new()
-		parent.gain()
-		
+		template.Grant(owner)
+
 
