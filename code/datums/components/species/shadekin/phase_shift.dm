@@ -15,18 +15,15 @@
 /obj/effect/temp_visual/shadekin/phase_out
 	icon_state = "tp_out"
 
-/datum/action/shadekin
-	name = "Базовая способность шадекинов"
-	var/cost = 50
-	var/passive_cost = 0
+/datum/action/shadekin/phase_shift
+	name = "Фазовый переход (100)"
+	desc = "Переход в темное пространство для перемещения"
+	cost = 100
 
-/datum/action/shadekin/proc/signal_shadekin_del(datum/source)
-	SIGNAL_HANDLER
-	if(!QDELETED(src))
-		qdel(src)
-	
+	var/in_phase = FALSE
 
-/datum/action/shadekin/proc/signal_shadekin_hide(datum/source)
-	SIGNAL_HANDLER
+/datum/action/shadekin/phase_shift/use()
 
-/datum/action/shadekin/proc/use_dark_energy(amount)
+/datum/action/shadekin/phase_shift/proc/phase_out()
+
+/datum/action/shadekin/phase_shift/proc/phase_in()
