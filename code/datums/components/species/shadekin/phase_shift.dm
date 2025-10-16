@@ -24,6 +24,9 @@
 
 /datum/action/shadekin/phase_shift/use()
 
-/datum/action/shadekin/phase_shift/proc/phase_out()
-
 /datum/action/shadekin/phase_shift/proc/phase_in()
+	ADD_TRAIT(owner, TRAIT_IN_PHASE_SHIFT)
+
+/datum/action/shadekin/phase_shift/proc/phase_out()
+	REMOVE_TRAIT(owner, TRAIT_IN_PHASE_SHIFT)
+
