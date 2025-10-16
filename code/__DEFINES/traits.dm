@@ -940,3 +940,7 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 
 /// A simple helper for checking traits in a mob's mind
 #define HAS_MIND_TRAIT(target, trait) (HAS_TRAIT(target, trait) || (target.mind ? HAS_TRAIT(target.mind, trait) : FALSE))
+
+//Maaaar traits
+#define TRAIT_IN_PHASE_SHIFT "in_phase_shift"
+#define TRAIT_DARK_ENERGY_BLOCKED "dark_energy_regen_blocked"
