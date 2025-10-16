@@ -457,6 +457,9 @@
 		),
 		"With butterfly" = list(
 			RESKIN_ICON_STATE = "long_fancy_kimono_B"
+		),
+		"No belt" = list(
+			RESKIN_ICON_STATE = "long_fancy_kimono_N"
 		)
 	)
 
