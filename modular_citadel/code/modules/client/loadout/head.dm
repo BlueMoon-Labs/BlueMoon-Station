@@ -222,3 +222,23 @@
 /datum/gear/head/
 	name = "Tactical Maid Headband"
 	path = /obj/item/clothing/head/maid/syndicate
+
+/datum/gear/head/geraniumcrown
+	name = "Geranium Crown"
+	path = /obj/item/clothing/head/geranium_crown
+
+/datum/gear/head/lilycrown
+	name = "Lily Crown"
+	path = /obj/item/clothing/head/lily_crown
+
+/datum/gear/head/poppycrown
+	name = "Poppy Crown"
+	path = /obj/item/clothing/head/poppy_crown
+
+/datum/gear/head/sunflowercrown
+	name = "Sunflower Crown"
+	path = /obj/item/clothing/head/sunflower_crown
+
+/datum/gear/head/flowercrown
+	name = "Flower Crown"
+	path = /obj/item/clothing/head/flower_crown
