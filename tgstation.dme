@@ -4671,6 +4671,7 @@
 #include "modular_bluemoon\fluffs\code\items.dm"
 #include "modular_bluemoon\fluffs\code\mask.dm"
 #include "modular_bluemoon\fluffs\code\melee.dm"
+#include "modular_bluemoon\fluffs\code\modsuit.dm"
 #include "modular_bluemoon\fluffs\code\neck.dm"
 #include "modular_bluemoon\fluffs\code\shoes.dm"
 #include "modular_bluemoon\fluffs\code\storage.dm"
