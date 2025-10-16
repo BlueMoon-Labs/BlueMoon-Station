@@ -36,6 +36,7 @@
 	RegisterSignal(owner, COMSIG_ADJUST_DARK_ENERGY, PROC_REF(signal_use_energy))
 	RegisterSignal(owner, COMSIG_LIVING_LIFE, PROC_REF(handle_life))
 	RegisterSignal(owner, COMSIG_MOB_ITEM_EQUIPPED, PROC_REF(equip_item_reaction))
+	RegisterSignal(owner, COMSIG_MOB_ITEM_DROPPED, PROC_REF(unequip_item_reaction))
 
 
 /datum/component/shadekin/UnregisterFromParent()
@@ -43,7 +44,8 @@
 		COMSIG_SHADEKIN_GEN_DARK_ENERGY,
 		COMSIG_ADJUST_DARK_ENERGY,
 		COMSIG_LIVING_LIFE,
-		COMSIG_MOB_ITEM_EQUIPPED
+		COMSIG_MOB_ITEM_EQUIPPED,
+		COMSIG_MOB_ITEM_DROPPED
 	))
 
 /datum/component/shadekin/proc/use_energy(amount)
@@ -97,16 +99,18 @@
 
 /datum/component/shadekin/proc/handle_life(...)
 	SIGNAL_HANDLER
+
+	if(QDELETED(parent))
+		return
+	if(owner.stat == DEAD)
+		return
+	if(HAS_TRAIT(owner, TRAIT_DARK_ENERGY_BLOCKED))
+		return
+
 	var/energy_to_add = 0
 	var/dark_level = check_is_dark()
 
-	if(HAS_TRAIT(owner, TRAIT_IN_PHASE_SHIFT) || HAS_TRAIT(owner, TRAIT_DARK_ENERGY_BLOCKED))
+	if(HAS_TRAIT(owner, TRAIT_IN_PHASE_SHIFT))
 		return
 
 	passive_dark_heal(dark_level)
-
-
-#define COMSIG_MOB_ITEM_EQUIPPED "mob_item_equipped"
-#define COMSIG_MOB_ITEM_DROPPING "mob_item_dropping"
-#define COMSIG_MOB_ITEM_DROPPED "mob_item_dropped"
-
