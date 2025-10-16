@@ -363,6 +363,11 @@
 	. = ..()
 	register_item_context()
 
+/obj/item/surgical_drapes/examine(mob/user)
+	. = ..()
+	if(user?.client?.prefs)
+		. += span_notice("Alt click to [user.client.prefs.surgical_disable_radial ? "enable" : "disable"] surgical radial menu.")
+
 /obj/item/surgical_drapes/add_item_context(obj/item/source, list/context, atom/target, mob/living/user)
 	. = ..()
 	if(iscarbon(target))
@@ -372,6 +377,18 @@
 /obj/item/surgical_drapes/attack(mob/living/M, mob/user)
 	if(!attempt_initiate_surgery(src, M, user))
 		..()
+
+/obj/item/surgical_drapes/AltClick(mob/user)
+	. = ..()
+	if(iscarbon(user))
+		var/mob/living/carbon/C = user
+		if(C.client?.prefs)
+			C.client.prefs.surgical_disable_radial = !C.client.prefs.surgical_disable_radial
+			if(C.client.prefs.surgical_disable_radial)
+				to_chat(C, "You will now use list menu.")
+			else
+				to_chat(C, "You will now use radial menu.")
+			return TRUE
 
 /obj/item/surgical_drapes/advanced
 	name = "smart surgical drapes"
