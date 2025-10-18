@@ -17,6 +17,7 @@
 	new /obj/item/mod/construction/armor/magnate(src)
 	new /obj/item/mod/module/holster(src)
 	new /obj/item/storage/garment_case/captain(src) //BLUEMOON add
+	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add
 
 /obj/structure/closet/secure_closet/hop
 	name = "\proper head of personnel's locker"
@@ -40,6 +41,7 @@
 	new /obj/item/circuitboard/machine/techfab/department/service(src)
 	new /obj/item/storage/photo_album/HoP(src)
 	new /obj/item/storage/garment_case/hop(src) // BLUEMOON add
+	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add
 
 /obj/structure/closet/secure_closet/hos
 	name = "\proper head of security's locker"
@@ -64,6 +66,7 @@
 	new /obj/item/mod/module/jetpack(src)
 	new /obj/item/mod/module/holster(src)
 	new /obj/item/storage/garment_case/hos(src) //Bluemoon add
+	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add
 
 /obj/structure/closet/secure_closet/warden
 	name = "\proper warden's locker"

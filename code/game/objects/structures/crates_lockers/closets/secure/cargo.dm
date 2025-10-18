@@ -15,3 +15,4 @@
 	new /obj/item/storage/photo_album/QM(src)
 	new /obj/item/circuitboard/machine/ore_silo(src)
 	new /obj/item/storage/garment_case/quartermaster(src) //BLUEMOON add
+	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add

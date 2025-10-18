@@ -22,3 +22,4 @@
 	new /obj/item/mod/construction/armor/research(src)
 	new /obj/item/storage/garment_case/RD(src)
 	new /obj/item/small_delivery/silo_multitool(src) //BLUEMOON ADD
+	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add
