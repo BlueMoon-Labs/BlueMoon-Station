@@ -236,7 +236,6 @@
 	new /obj/item/mod/construction/armor/safeguard(src)
 	new /obj/item/mod/module/jetpack(src)
 	new /obj/item/mod/module/holster(src)
-	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON ADD
 
 /obj/structure/closet/secure_closet/ntr
 	name = "representative's locker"
@@ -262,4 +261,3 @@
 	new /obj/item/storage/backpack/captain/ntr(src) //BLUEMOON add
 	new /obj/item/storage/backpack/satchel/cap/ntr(src) //BLUEMOON add
 	new /obj/item/storage/backpack/duffelbag/captain/ntr(src) //BLUEMOON add
-	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add

@@ -627,15 +627,3 @@
 		'modular_bluemoon/sound/plush/catshark1.ogg' = 1,
 		'modular_bluemoon/sound/plush/catshark2.ogg' = 1
 	)
-
-/obj/item/toy/plush/bm/fred
-	name = "Fred"
-	desc = "Это камень. Его зовут Фред."
-	icon_state = "fred"
-	attack_verb = list("Smash")
-
-/obj/item/toy/plush/bm/roxie
-	name = "Roxie"
-	desc = "Это камень. Ее зовут Рокси. Выглядит миленько с бантиком."
-	icon_state = "roxie"
-	attack_verb = list("Smash")
