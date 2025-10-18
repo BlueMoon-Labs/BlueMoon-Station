@@ -134,3 +134,4 @@
 	icon_state = "horror_mask"
 	item_state = "horror_mask"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	flags_inv = HIDEHAIR|HIDEFACIALHAIR
