@@ -28,7 +28,7 @@
 
 	var/list/action_templates = list()
 
-
+	var/datum/shadekin_eye_model/eye_type = /datum/shadekin_eye_model/blue
 
 /datum/component/shadekin/Initialize(...)
 	if(!isshadekin(parent) || !ishuman(parent))
@@ -91,6 +91,7 @@
 			eye_color = PURPLE_EYES
 		if(341 to 360)
 			eye_color = RED_EYES
+
 	return eye_color
 
 
