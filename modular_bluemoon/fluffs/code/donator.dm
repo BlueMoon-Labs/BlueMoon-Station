@@ -672,7 +672,7 @@
 	name = "Alta's dogtag"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/tie/dogtag
-	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228")
+	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228", "stasdvrz")
 
 /datum/gear/donator/bm/hateredsoul_dogtag
 	name = "Combat Dogtag"
@@ -1681,28 +1681,10 @@
 	path = /obj/item/toy/plush/bm/catshark
 	ckeywhitelist = list("mentaleater")
 
-/datum/gear/donator/bm/ranger_coat
+/datum/gear/donator/bm/fall_out_kit
 	name = "Ranger Coat"
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/clothing/suit/donator/bm/ranger_coat
-	ckeywhitelist = list("dimofon", "devildeadspace")
-
-/datum/gear/donator/bm/ranger_helmet
-	name = "Ranger Helmet"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/clothing/head/ranger_helmet
-	ckeywhitelist = list("dimofon", "devildeadspace")
-
-/datum/gear/donator/bm/ranger_uniform
-	name = "Ranger Uniform"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/clothing/under/donator/bm/ranger_uniform
-	ckeywhitelist = list("dimofon", "devildeadspace")
-
-/datum/gear/donator/bm/ranger_gasmask
-	name = "Ranger Gasmask"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/clothing/mask/gas/syndicate/ranger_gasmask
+	path = /obj/item/storage/box/fall_out_kit
 	ckeywhitelist = list("dimofon", "devildeadspace")
 
 /datum/gear/donator/bm/player_zippo
@@ -1711,3 +1693,8 @@
 	path = /obj/item/lighter/plighter
 	ckeywhitelist = list("stasdvrz", "dimofon")
 
+/datum/gear/donator/bm/horror_mask
+	name = "Horror_mask"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/clothing/mask/gas/syndicate/horror_mask
+	ckeywhitelist = list("dimakr")
