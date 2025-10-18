@@ -399,3 +399,15 @@
 	desc = "Banner of kingdom Norn"
 
 //////////////////////// БАНЕРЫ
+
+
+/obj/item/storage/box/fall_out_kit
+	name = "Ranger kit"
+	desc = "Military box that contains a full kit of Ranger uniform."
+	icon_state = "ammobox"
+
+/obj/item/storage/box/fall_out_kit/PopulateContents()
+	new /obj/item/clothing/suit/donator/bm/ranger_coat(src)
+	new /obj/item/clothing/head/ranger_helmet(src)
+	new /obj/item/clothing/under/donator/bm/ranger_uniform(src)
+	new /obj/item/clothing/mask/gas/syndicate/ranger_gasmask(src)

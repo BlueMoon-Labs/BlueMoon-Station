@@ -34,3 +34,12 @@
 	name = "Baguetteshoe"
 	icon_state = "baguetteshoe"
 	item_state = "baguetteshoe"
+
+/obj/item/clothing/shoes/jackboots/tall/soviet_jackboots
+	name = "Soviet Black Jackboots"
+	desc = "High-quality clothes made of a mixture of fleece and cotton. The logo in the form of an eagle and the caption of the Strategic Assault Tactical Team are visible on the tag. If you inhale the smell, you can smell the slices of a war crime."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes_digi.dmi'
+	icon_state = "sovietblackboots"
+	item_state = "jackboots"

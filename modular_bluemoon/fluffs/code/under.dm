@@ -456,3 +456,13 @@
 	icon_state = "ranger_uniform"
 	item_state = "ranger_uniform"
 	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/soviet_uniform
+	name = "Soviet Black Uniform"
+	desc = "The standard uniform of the Special Unit Rangers is designed for long-term and moderate wear, and the lightweight composite fabrics provide good mobility and lightness."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	icon_state = "sovietblack"
+	item_state = "syndicate-black"
+	can_adjust = FALSE

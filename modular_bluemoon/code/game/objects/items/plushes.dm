@@ -627,3 +627,10 @@
 		'modular_bluemoon/sound/plush/catshark1.ogg' = 1,
 		'modular_bluemoon/sound/plush/catshark2.ogg' = 1
 	)
+
+/obj/item/toy/plush/bm/chellicoll
+	name = "Sosona"
+	desc = "Акула с глупой мордой"
+	icon_state = "chellicoll"
+	attack_verb = list("Rawrs")
+	squeak_override = list('modular_bluemoon/sound/voice/rawr.ogg' = 1)
