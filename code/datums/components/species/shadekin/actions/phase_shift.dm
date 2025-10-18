@@ -1,7 +1,7 @@
 /////////////////////
 ///  PHASE SHIFT  ///
 /////////////////////
-
+#define TRAIT_IN_PHASE_SHIFT "in_phase_shift"
 
 
 /obj/effect/temp_visual/shadekin
@@ -25,8 +25,8 @@
 /datum/action/shadekin/phase_shift/use()
 
 /datum/action/shadekin/phase_shift/proc/phase_in()
-	ADD_TRAIT(owner, TRAIT_IN_PHASE_SHIFT)
+	ADD_TRAIT(owner, TRAIT_IN_PHASE_SHIFT, NONE)
 
 /datum/action/shadekin/phase_shift/proc/phase_out()
-	REMOVE_TRAIT(owner, TRAIT_IN_PHASE_SHIFT)
+	REMOVE_TRAIT(owner, TRAIT_IN_PHASE_SHIFT, NONE)
 

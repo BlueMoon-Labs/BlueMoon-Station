@@ -7,10 +7,14 @@
 
 #define DARK_ENERGY_BLOCK_SOURCE_SUIT "dark_stop_suit"
 
+#define NUTRITION_ENERGY_CONVERSION (0 << 1)
+
 /datum/component/shadekin
 
-	var/mob/owner
+	var/mob/living/carbon/human/owner
 	dupe_mode = COMPONENT_DUPE_UNIQUE
+
+	var/flags = NUTRITION_ENERGY_CONVERSION
 
 	var/dark_energy = 100
 	var/max_dark_energy = 100
@@ -27,7 +31,7 @@
 
 
 /datum/component/shadekin/Initialize(...)
-	if(!isshadekin(parent) || !ismob(parent))
+	if(!isshadekin(parent) || !ishuman(parent))
 		return COMPONENT_INCOMPATIBLE
 	owner = parent
 
@@ -47,6 +51,52 @@
 		COMSIG_MOB_ITEM_EQUIPPED,
 		COMSIG_MOB_ITEM_DROPPED
 	))
+
+/datum/component/shadekin/proc/set_shadekin_eyecolor()
+
+	var/mob/living/carbon/human/H = owner
+	var/eyecolor_rgb = BlendRGB(owner.left_eye_color, owner.right_eye_color, 0.5)
+
+	var/list/hsv_color = rgb2num(eyecolor_rgb, COLORSPACE_HSV)
+	var/eyecolor_hue = hsv_color[1]
+	var/eyecolor_sat = hsv_color[2]
+	var/eyecolor_val = hsv_color[3]
+
+	//First, clamp the saturation/value to prevent black/grey/white eyes
+	if(eyecolor_sat < 10)
+		eyecolor_sat = 10
+	if(eyecolor_val < 40)
+		eyecolor_val = 40
+
+	eyecolor_rgb = rgb(eyecolor_hue, eyecolor_sat, eyecolor_val, space=COLORSPACE_HSV)
+
+	owner.left_eye_color = eyecolor_rgb
+	owner.right_eye_color = eyecolor_rgb
+	owner.update_body()
+	
+	var/eye_color
+	//Now determine what color we fall into.
+	switch(eyecolor_hue)
+		if(0 to 20)
+			eye_color = RED_EYES
+		if(21 to 50)
+			eye_color = ORANGE_EYES
+		if(51 to 70)
+			eye_color = YELLOW_EYES
+		if(71 to 160)
+			eye_color = GREEN_EYES
+		if(161 to 260)
+			eye_color = BLUE_EYES
+		if(261 to 340)
+			eye_color = PURPLE_EYES
+		if(341 to 360)
+			eye_color = RED_EYES
+	return eye_color
+
+
+/datum/component/shadekin/proc/get_energy(datum/source)
+	SIGNAL_HANDLER
+	return dark_energy
 
 /datum/component/shadekin/proc/use_energy(amount)
 	var/temp = dark_energy - amount
@@ -85,12 +135,22 @@
 		return
 
 /datum/component/shadekin/proc/unequip_item_reaction(datum/source, obj/item/W, slot)
-	if((slot == ITEM_SLOT_SUITSTORE) && (HAS_TRAIT_FROM(owner, TRAIT_DARK_ENERGY_BLOCKED, DARK_ENERGY_BLOCK_SOURCE_SUIT)) && istype(W, /obj/item/clothing/suit))
-	  	REMOVE_TRAIT(owner, TRAIT_DARK_ENERGY_BLOCKED, DARK_ENERGY_BLOCK_SOURCE_SUIT)
+	if(((slot == ITEM_SLOT_SUITSTORE) && (HAS_TRAIT_FROM(owner, TRAIT_DARK_ENERGY_BLOCKED, DARK_ENERGY_BLOCK_SOURCE_SUIT))) && istype(W, /obj/item/clothing/suit))
+		REMOVE_TRAIT(owner, TRAIT_DARK_ENERGY_BLOCKED, DARK_ENERGY_BLOCK_SOURCE_SUIT)
 		return
 
-/datum/component/shadekin/proc/energy_gain()
+/datum/component/shadekin/proc/energy_gain(dark_level)
 
+/datum/component/shadekin/proc/nutriment_dark_gauns_modifer(energy_to_add)
+	if(!(flags & NUTRITION_ENERGY_CONVERSION))
+		return energy_to_add
+	if(shadekin_get_energy() == 100 && energy_to_add > 0)
+		owner.nutrition += energy_to_add * 5 * nutrition_conversion_scaling
+	else if(shadekin_get_energy() < 50 && owner.nutrition > 500)
+		owner.nutrition -= nutrition_conversion_scaling * 50
+		energy_to_add += nutrition_conversion_scaling
+	
+	return energy_to_add
 
 /datum/component/shadekin/proc/passive_dark_heal(dark_level)
 	owner.adjustFireLoss((-0.10)*dark_level)
@@ -110,7 +170,8 @@
 	var/energy_to_add = 0
 	var/dark_level = check_is_dark()
 
-	if(HAS_TRAIT(owner, TRAIT_IN_PHASE_SHIFT))
-		return
+	if(!HAS_TRAIT(owner, TRAIT_IN_PHASE_SHIFT))
+		energy_to_add = dark_level ? dark_gain_in_dark : dark_gain_in_light
+	energy_gain(dark_level)
 
 	passive_dark_heal(dark_level)
