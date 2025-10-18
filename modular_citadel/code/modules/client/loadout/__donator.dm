@@ -40,6 +40,14 @@
 	donator_group_id = DONATOR_GROUP_TIER_2
 	subcategory = LOADOUT_SUBCATEGORIES_DON02
 
+/datum/gear/donator/chameleon_kit
+	name = "Chameleon Box"
+	path = /obj/item/storage/box/syndie_kit/chameleon
+	cost = 8
+	ckeywhitelist = list()
+	donator_group_id = DONATOR_GROUP_TIER_2
+	subcategory = LOADOUT_SUBCATEGORIES_DON02
+
 /datum/gear/donator/cleanercloak
 	name = "Teshari Cleaner Cloak"
 	slot = ITEM_SLOT_NECK

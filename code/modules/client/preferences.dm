@@ -116,6 +116,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/blood_color = BLOOD_COLOR_UNIVERSAL
 
 	var/uses_glasses_colour = 0
+	var/surgical_disable_radial = FALSE 		// BLUEMOON ADD
 
 	//character preferences
 	var/real_name							//our character's name

@@ -20,6 +20,7 @@ GLOBAL_LIST_INIT(autodrobe_costumes_items, list(
 	/obj/item/clothing/suit/pirate = 1,
 	/obj/item/clothing/head/pirate = 1,
 	/obj/item/clothing/under/costume/soviet = 3,
+	/obj/item/clothing/head/ushanka/black = 3,
 	/obj/item/clothing/head/ushanka/soviet = 5,
 	/obj/item/clothing/head/ushanka = 5,
 	/obj/item/storage/backpack/henchmen = 5,

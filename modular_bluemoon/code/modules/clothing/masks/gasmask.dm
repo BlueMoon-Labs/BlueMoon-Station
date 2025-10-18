@@ -127,3 +127,10 @@
 			RESKIN_ITEM_STATE = "susie"
 		),
 	)
+
+/obj/item/clothing/mask/gas/syndicate/horror_mask
+	name = "Зловещая маска"
+	desc = "Серо-бледное лицо с потускневшими блондинистыми волосами. Чёрные прорези на месте глаз смотрят прямиком в душу."
+	icon_state = "horror_mask"
+	item_state = "horror_mask"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON

@@ -261,15 +261,6 @@
 	icon_state = "snagbackplate"
 	upgrade_to = list()
 
-//BLUEMOON ADD START - добовляю огоньки китцуне
-
-/datum/sprite_accessory/deco_wings/foxflames
-	name = "Kitsune flames"
-	icon_state = "foxflames"
-	upgrade_to = list()
-
-//BLUEMOON ADD END
-
 //moth wings
 
 /datum/sprite_accessory/deco_wings/atlas
