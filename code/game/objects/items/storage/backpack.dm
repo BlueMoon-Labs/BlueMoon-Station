@@ -143,6 +143,12 @@
 	resistance_flags = FIRE_PROOF
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 
+/obj/item/storage/backpack/captain/ntr
+	name = "NanoTrasen Representative backpack"
+	desc = "It's a special backpack made exclusively for Nanotrasen officers."
+	icon_state = "ntrpack"
+	item_state = "ntrpack"
+
 /obj/item/storage/backpack/industrial
 	name = "industrial backpack"
 	desc = "It's a tough backpack for the daily grind of station life."
@@ -291,6 +297,12 @@
 	resistance_flags = FIRE_PROOF
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 
+/obj/item/storage/backpack/satchel/cap/ntr  //BLUEMOON add
+	name = "NanoTrasen Representative's satchel"
+	desc = "An exclusive satchel for Nanotrasen officers."
+	icon_state = "satchel-ntr"
+	item_state = "satchel-ntr"
+
 /obj/item/storage/backpack/satchel/flat
 	name = "smuggler's satchel"
 	desc = "A very slim satchel that can easily fit into tight spaces."
@@ -399,6 +411,14 @@
 	desc = "A large duffel bag for holding extra captainly goods."
 	icon_state = "duffel-captain"
 	item_state = "duffel-captain"
+	resistance_flags = FIRE_PROOF //BLUEMOON add
+	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE //BLUEMOON add
+
+/obj/item/storage/backpack/duffelbag/captain/ntr //BLUEMOON add
+	name = "NanoTrasen Representative's duffel bag"
+	desc = "A large duffel bag for holding extra captainly goods."
+	icon_state = "duffel-ntr"
+	item_state = "duffel-ntr"
 
 /obj/item/storage/backpack/duffelbag/med
 	name = "medical duffel bag"
