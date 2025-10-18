@@ -346,3 +346,14 @@
 	w_class = WEIGHT_CLASS_BULKY
 	attack_verb = list("skubbed")
 
+/obj/item/choice_beacon/box/desk
+	name = "choice box office toys"
+	desc = "Contains desk toys, simple!"
+	var/static/list/toy_desk = list("Office toy" = /obj/item/toy/desk/officetoy,
+		"Dipping bird toy" = /obj/item/toy/desk/dippingbird,
+		"Newton's cradle" = /obj/item/toy/desk/newtoncradle,
+		"Fan" = /obj/item/toy/desk/fan
+	)
+
+/obj/item/choice_beacon/box/desk/generate_display_names()
+	return toy_desk
