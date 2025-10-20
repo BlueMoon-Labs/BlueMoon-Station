@@ -35,6 +35,8 @@
 		return COMPONENT_INCOMPATIBLE
 	owner = parent
 
+	eye_type = set_shadekin_eyecolor()
+
 /datum/component/shadekin/RegisterWithParent()
 	RegisterSignal(owner, COMSIG_SHADEKIN_GEN_DARK_ENERGY, PROC_REF(get_energy))
 	RegisterSignal(owner, COMSIG_ADJUST_DARK_ENERGY, PROC_REF(signal_use_energy))
@@ -73,26 +75,26 @@
 	owner.left_eye_color = eyecolor_rgb
 	owner.right_eye_color = eyecolor_rgb
 	owner.update_body()
-	
-	var/eye_color
+
+	var/datum/shadekin_eye_model/eye_type_color = /datum/shadekin_eye_model/blue
 	//Now determine what color we fall into.
 	switch(eyecolor_hue)
 		if(0 to 20)
-			eye_color = RED_EYES
+			eye_type_color = /datum/shadekin_eye_model/red
 		if(21 to 50)
-			eye_color = ORANGE_EYES
+			eye_type_color = /datum/shadekin_eye_model/orange
 		if(51 to 70)
-			eye_color = YELLOW_EYES
+			eye_type_color = /datum/shadekin_eye_model/yellow
 		if(71 to 160)
-			eye_color = GREEN_EYES
+			eye_type_color = /datum/shadekin_eye_model/green
 		if(161 to 260)
-			eye_color = BLUE_EYES
+			eye_type_color = /datum/shadekin_eye_model/blue
 		if(261 to 340)
-			eye_color = PURPLE_EYES
+			eye_type_color = /datum/shadekin_eye_model/purple
 		if(341 to 360)
-			eye_color = RED_EYES
+			eye_type_color = /datum/shadekin_eye_model/red
 
-	return eye_color
+	return eye_type_color
 
 
 /datum/component/shadekin/proc/get_energy(datum/source)
@@ -145,12 +147,12 @@
 /datum/component/shadekin/proc/nutriment_dark_gauns_modifer(energy_to_add)
 	if(!(flags & NUTRITION_ENERGY_CONVERSION))
 		return energy_to_add
-	if(shadekin_get_energy() == 100 && energy_to_add > 0)
-		owner.nutrition += energy_to_add * 5 * nutrition_conversion_scaling
-	else if(shadekin_get_energy() < 50 && owner.nutrition > 500)
-		owner.nutrition -= nutrition_conversion_scaling * 50
-		energy_to_add += nutrition_conversion_scaling
-	
+	if(dark_energy == 100 && energy_to_add > 0)
+		owner.nutrition += energy_to_add * 5 * eye_type::nutrition_conversion_scaling
+	else if(dark_energy < 50 && owner.nutrition > 500)
+		owner.nutrition -= eye_type::nutrition_conversion_scaling * 50
+		energy_to_add += eye_type::nutrition_conversion_scaling
+
 	return energy_to_add
 
 /datum/component/shadekin/proc/passive_dark_heal(dark_level)
@@ -172,7 +174,7 @@
 	var/dark_level = check_is_dark()
 
 	if(!HAS_TRAIT(owner, TRAIT_IN_PHASE_SHIFT))
-		energy_to_add = dark_level ? dark_gain_in_dark : dark_gain_in_light
+		energy_to_add = dark_level ? eye_type::gain_in_dark : eye_type::gain_in_light
 	energy_gain(dark_level)
 
 	passive_dark_heal(dark_level)
