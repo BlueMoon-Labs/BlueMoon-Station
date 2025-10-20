@@ -36,6 +36,7 @@
 	owner = parent
 
 	eye_type = set_shadekin_eyecolor()
+	append_actions_from_templates()
 
 /datum/component/shadekin/RegisterWithParent()
 	RegisterSignal(owner, COMSIG_SHADEKIN_GEN_DARK_ENERGY, PROC_REF(get_energy))
@@ -142,8 +143,6 @@
 		REMOVE_TRAIT(owner, TRAIT_DARK_ENERGY_BLOCKED, DARK_ENERGY_BLOCK_SOURCE_SUIT)
 		return
 
-/datum/component/shadekin/proc/energy_gain(dark_level)
-
 /datum/component/shadekin/proc/nutriment_dark_gauns_modifer(energy_to_add)
 	if(!(flags & NUTRITION_ENERGY_CONVERSION))
 		return energy_to_add
@@ -175,6 +174,10 @@
 
 	if(!HAS_TRAIT(owner, TRAIT_IN_PHASE_SHIFT))
 		energy_to_add = dark_level ? eye_type::gain_in_dark : eye_type::gain_in_light
-	energy_gain(dark_level)
 
 	passive_dark_heal(dark_level)
+
+	energy_to_add = nutriment_dark_gauns_modifer(energy_to_add)
+
+	use_energy(-1 * energy_to_add)
+

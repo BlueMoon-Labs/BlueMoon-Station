@@ -1,8 +1,6 @@
 /////////////////////
 ///  PHASE SHIFT  ///
 /////////////////////
-#define TRAIT_IN_PHASE_SHIFT "in_phase_shift"
-
 
 /obj/effect/temp_visual/shadekin
 	randomdir = FALSE

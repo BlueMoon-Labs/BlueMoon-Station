@@ -846,7 +846,9 @@
 //Maaaar signals
 // /datum/component/shadekin
 #define COMSIG_ADJUST_DARK_ENERGY "use_energy_shadekin"
-#define COMSIG_SHADEKIN_ACTION_DELETE "delete_shadekin_action"
-#define COMSIG_SHADEKIN_ACTION_HIDE "hide_shadekin_action"
 #define COMSIG_SHADEKIN_GEN_DARK_ENERGY "get_dark_energy"
 #define COMSIG_INFORM_NEW_ENERGY_LEVEL "update_dark_energy_level"
+
+///datum/action/shadekin
+#define COMSIG_SHADEKIN_ACTION_DELETE "delete_shadekin_action"
+#define COMSIG_SHADEKIN_ACTION_HIDE "hide_shadekin_action"
