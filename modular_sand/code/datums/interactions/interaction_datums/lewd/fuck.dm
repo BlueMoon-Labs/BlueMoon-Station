@@ -13,17 +13,19 @@
 
 /datum/interaction/lewd/fuck/display_interaction(mob/living/user, mob/living/partner)
 	var/message
+	//var/u_His = user.ru_ego()
 	//var/genital_name = user.get_penetrating_genital_name() - Стал не нужным.
-	//var/has_penis = user.has_penis()
+	//BLUEMOON ADD START
+	//var/has_penis = user.has_penis() - Стал не нужным.
 	var/has_balls = user.has_balls()
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
-
+//BLUEMOON ADD END
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = pick(
-			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc].",
+			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc].", //BLUEMOON EDIT ADD
 			"глубоко вводит свой [shape_desc] во влагалище <b>[partner]</b>.",
 			"с силой загоняет свой [shape_desc] в вагину <b>[partner]</b> и шлёпается своими [has_balls ? "яйцами" : "бедрами"].")
-	else
+	else //BLUEMOON EDIT END
 		message = "вводит свой [shape_desc] в лоно <b>[partner]</b>."
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
@@ -55,8 +57,8 @@
 	var/message
 	//var/u_His = user.ru_ego()
 	//var/t_His = partner.ru_ego()
-	//var/genital_name = user.get_penetrating_genital_name() - Стал не нужным.
 	//BLUEMOON ADD START
+	//var/genital_name = user.get_penetrating_genital_name() - Стал не нужным.
 	var/has_penis = user.has_penis()
 	var/has_balls = user.has_balls()
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
