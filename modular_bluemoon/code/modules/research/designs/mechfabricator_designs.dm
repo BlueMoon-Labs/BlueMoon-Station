@@ -19,7 +19,7 @@
 	category = list("Cyborg Upgrade Modules")
 
 /datum/design/borg_upgrade_syndircd
-	name = "Cyborg Upgrade (Advance RCD module)"
+	name = "Cyborg Upgrade (Advanced RCD module)"
 	id = "borg_upgrade_syndircd"
 	build_type = MECHFAB
 	build_path = /obj/item/borg/upgrade/rcdsyndi
