@@ -11,9 +11,10 @@
 
 /datum/interaction/lewd/handjob/display_interaction(mob/living/user, mob/living/partner)
 	var/message
-	var/genital_name = partner.get_penetrating_genital_name()
+	//var/genital_name = partner.get_penetrating_genital_name() - стал не нужен.
 
 	var/obj/item/reagent_containers/liquid_container
+	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
 
 	var/obj/item/cached_item = user.get_active_held_item()
 	if(istype(cached_item, /obj/item/reagent_containers))
@@ -28,13 +29,13 @@
 			"играется с членом <b>[partner]</b>",
 			"использует свои пальчики, вздрачивая пенис <b>[partner]</b>",
 			"вздрачивает член <b>[partner]</b>",
-			"стимулирует [genital_name] <b>[partner]</b>")]"
+			"стимулирует [shape_desc] <b>[partner]</b>")]"
 	else
 		message = "[pick("дрочит пенис <b>[partner]</b>",
 			"играется с членом <b>[partner]</b>",
 			"использует свои пальчики, вздрачивая пенис <b>[partner]</b>",
 			"вздрачивает член <b>[partner]</b>",
-			"стимулирует [genital_name] <b>[partner]</b>")]"
+			"стимулирует [shape_desc] <b>[partner]</b>")]"
 		partner.set_is_fucking(user, CUM_TARGET_HAND, partner.getorganslot(ORGAN_SLOT_PENIS))
 	if(liquid_container)
 		message += " над [liquid_container]"

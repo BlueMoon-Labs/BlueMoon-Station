@@ -22,11 +22,16 @@
 //BLUEMOON ADD END
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = pick(
-			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc].", //BLUEMOON EDIT ADD
+			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc].",
 			"глубоко вводит свой [shape_desc] во влагалище <b>[partner]</b>.",
-			"с силой загоняет свой [shape_desc] в вагину <b>[partner]</b> и шлёпается своими [has_balls ? "яйцами" : "бедрами"].")
-	else //BLUEMOON EDIT END
-		message = "вводит свой [shape_desc] в лоно <b>[partner]</b>."
+			"с силой загоняет свой [shape_desc] в вагину <b>[partner]</b> и шлёпается своими [has_balls ? "яйцами" : "бедрами"].",
+			"ритмично двигается, заставляя <b>[partner]</b> дрожать при каждом толчке.",
+			"жадно насаживает <b>[partner]</b> на свой [shape_desc], теряя самообладание.")
+	else
+		message = pick(
+			"медленно вводит свой [shape_desc] в лоно <b>[partner]</b>, наслаждаясь nёплотой.",
+			"плотно прижимается к <b>[partner]</b> и аккуратно погружает свой [shape_desc].",
+			"ловко находит нужный угол и начинает проникновение в киску <b>[partner]</b>.")
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick(
@@ -43,6 +48,23 @@
 	else
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
 
+	if(prob(5 + partner.get_lust()))
+		if(partner.a_intent == INTENT_HELP)
+			user.visible_message(
+				pick(span_lewd("<b>[partner]</b> дрожит от удовольствия."),
+					span_lewd("<b>[partner]</b> стонет, выгибаясь навстречу."),
+					span_lewd("<b>[partner]</b> слабо постанывает, чувствуя каждый толчок."),
+					span_lewd("<b>[partner]</b> прижимается к <b>[user]</b> всем телом, теряя дыхание.")))
+		else if(partner.a_intent == INTENT_DISARM)
+			user.visible_message(
+				pick(span_lewd("<b>[partner]</b> извивается в руках <b>[user]</b>, с трудом сдерживая стон."),
+					span_lewd("<b>[partner]</b> пытается вырваться, но лишь сильнее двигается навстречу."),
+					span_lewd("<b>[partner]</b> ерзает под <b>[user]</b>, не зная, хочет ли остановиться или продолжить.")))
+		else if(partner.a_intent == INTENT_HARM)
+			user.visible_message(
+				pick(span_lewd("<b>[partner]</b> резко отталкивает <b>[user]</b>, с гневом на лице."),
+					span_lewd("<b>[partner]</b> кусает <b>[user]</b> за плечо."),
+					span_lewd("<b>[partner]</b> злится, пытаясь прекратить происходящее.")))
 
 /datum/interaction/lewd/fuck/anal
 	description = "Член. Проникнуть в задницу."
@@ -85,6 +107,25 @@
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS) //SPLURT edit
+
+	if(prob(5 + partner.get_lust()))
+		if(partner.a_intent == INTENT_HELP)
+			user.visible_message(
+				pick(span_lewd("<b>[partner]</b> дрожит от удовольствия."),
+					span_lewd("<b>[partner]</b> стонет, выгибаясь навстречу."),
+					span_lewd("<b>[partner]</b> слабо постанывает, чувствуя каждый толчок."),
+					span_lewd("<b>[partner]</b> прижимается к <b>[user]</b> всем телом, теряя дыхание.")))
+		else if(partner.a_intent == INTENT_DISARM)
+			user.visible_message(
+				pick(span_lewd("<b>[partner]</b> извивается в руках <b>[user]</b>, с трудом сдерживая стон."),
+					span_lewd("<b>[partner]</b> пытается вырваться, но лишь сильнее двигается навстречу."),
+					span_lewd("<b>[partner]</b> ерзает под <b>[user]</b>, не зная, хочет ли остановиться или продолжить.")))
+		else if(partner.a_intent == INTENT_HARM)
+			user.visible_message(
+				pick(span_lewd("<b>[partner]</b> резко отталкивает <b>[user]</b>, с гневом на лице."),
+					span_lewd("<b>[partner]</b> кусает <b>[user]</b> за плечо."),
+					span_lewd("<b>[partner]</b> злится, пытаясь прекратить происходящее.")))
+
 	// BLUEMOON EDIT START
 	if(user.has_strapon())
 		var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
@@ -122,7 +163,6 @@
 	else
 		message = "игриво толкает <b>[partner]</b>, крепко хватается за грудь и сжимает ими свой [genital_name]."
 		user.set_is_fucking(partner, CUM_TARGET_BREASTS, user.getorganslot(ORGAN_SLOT_PENIS))
-
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
