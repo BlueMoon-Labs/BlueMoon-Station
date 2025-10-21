@@ -63,9 +63,9 @@
 		if(1)
 			size_name = "среднего"
 		if(2)
-			size_name = "большого"
-		if(3)
 			size_name = "сжимательного"
+		if(3)
+			size_name = "большого"
 		if(4)
 			size_name = "крупного"
 		if(5)

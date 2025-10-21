@@ -39,16 +39,48 @@
 //BLUEMOON ADD START
 /datum/interaction/headpat/post_interaction(mob/living/user, mob/living/target)
 	. = ..()
+
+	if(HAS_TRAIT(target, TRAIT_DISTANT))
+		to_chat(user, span_warning("[capitalize(target.name)] отстраняется от тебя, не желая таких прикосновений."))
+		to_chat(target, span_warning("Ты чувствуешь раздражение, когда [user] трогает тебя за голову."))
+
+		if(prob(20) && !HAS_TRAIT(target, TRAIT_PACIFISM) && !HAS_TRAIT(user, TRAIT_PACIFISM))
+			user.visible_message(
+				span_warning("<b>[target]</b> внезапно выкручивает руку <b>[user]</b>!"),
+				span_boldwarning("Ты чувствуешь, как <b>[target]</b> резко выкручивает тебе руку! Лучше не трогать его!"),
+				target_message = span_warning("Ты ловко выкручиваешь руку <b>[user]</b> за попытку прикоснуться к тебе.")
+			)
+			user.emote("realagony")
+			user.dropItemToGround(user.get_active_held_item())
+
+			var/hand = pick(BODY_ZONE_PRECISE_L_HAND, BODY_ZONE_PRECISE_R_HAND)
+			user.apply_damage(50, STAMINA, hand)
+			user.apply_damage(5, BRUTE, hand)
+			user.Knockdown(60) // STOP TOUCHING ME!
+
+		return
+
 	if(HAS_TRAIT(target, TRAIT_HEADPAT_SLUT))
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "lewd_headpat", /datum/mood_event/lewd_headpat)
 		target.handle_post_sex(5, null, target)
 	else
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "headpat", /datum/mood_event/headpat)
 
+
 /datum/interaction/headpat/display_interaction(mob/living/user, mob/living/target)
 	. = ..()
+
+	if(HAS_TRAIT(target, TRAIT_DISTANT))
+		user.visible_message(
+			span_warning("<b>[user]</b> тянется, чтобы погладить <b>[target]</b> по голове, но тот раздражённо отстраняется."),
+			span_warning("Ты пытаешься погладить <b>[target]</b> по голове, но он отстраняется и выглядит недовольным."),
+			target_message = span_warning("<b>[user]</b> тянется к твоей голове, но ты раздражённо отстраняешься.")
+		)
+		return
+
 	if(HAS_TRAIT(target, TRAIT_HEADPAT_SLUT))
 		new /obj/effect/temp_visual/heart(target.loc)
+
 //BLUEMOON ADD END
 
 /datum/interaction/fistbump

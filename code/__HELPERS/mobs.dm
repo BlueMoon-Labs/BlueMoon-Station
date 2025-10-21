@@ -611,3 +611,29 @@ GLOBAL_LIST_EMPTY(species_datums)
 	// BLUEMOON EDIT END
 	update_all_mob_security_hud()
 	return TRUE
+
+// ==============================
+// Описания каким органом ты трахаешь (BlueMoon Add)
+// ==============================
+
+/proc/get_penis_shape_desc(mob/living/carbon/human/H)
+	var/obj/item/organ/genital/penis/P = H?.getorganslot(ORGAN_SLOT_PENIS)
+	if(!P)
+		return "член"
+
+	var/lowershape = lowertext(P.shape)
+	switch(lowershape)
+		if("penis", "human") return "человеческий член"
+		if("knotted") return "узловатый член"
+		if("flared") return "конический член"
+		if("barbed, knotted") return "узловатый шипованный"
+		if("tapered") return "утончённый член"
+		if("tentacled") return "тентяклевидный член"
+		if("teshari") return "тешарьский член"
+		if("hemi") return "двойнымы членами"
+		if("knotted hemi") return "двойные узловатые члены"
+		if("barbed, knotted hemi") return "двойные с узлами колючие члены"
+		if("tapered barbed") return "утонченный шипованный член"
+		if("thick") return "обрезанный член"
+		else return "член необычной формы"
+

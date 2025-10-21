@@ -1,10 +1,10 @@
 /datum/status_effect/dripping_cum
 	id = "dripping_cum"
 	status_type = STATUS_EFFECT_MULTIPLE
-	// We only end when we run out!
 	duration = -1
 	tick_interval = 5 SECONDS
 	alert_type = /atom/movable/screen/alert/status_effect/dripping_cum
+
 	var/datum/reagents/contents
 	var/list/blood_DNA
 	var/cum_in_anus = 0
@@ -12,25 +12,51 @@
 	var/anus_can_leak
 	var/vagina_can_leak
 
+	var/total_injected_volume = 0
+
+
 /datum/status_effect/dripping_cum/on_creation(mob/living/carbon/human/new_owner, datum/reagents/add_or_merge, list/blood_DNA, obj/item/organ/genital/hole)
+	// если у владельца уже есть dripping_cum — просто обновляем существующий эффект
+	var/datum/status_effect/dripping_cum/existing = new_owner.has_status_effect(/datum/status_effect/dripping_cum)
+	if(existing && existing != src)
+		if(istype(hole, /obj/item/organ/genital/anus))
+			existing.cum_in_anus += add_or_merge.total_volume
+		if(istype(hole, /obj/item/organ/genital/vagina))
+			existing.cum_in_vagina += add_or_merge.total_volume
+		add_or_merge.trans_to(existing.contents, add_or_merge.total_volume)
+		if(blood_DNA)
+			LAZYINITLIST(existing.blood_DNA)
+			existing.blood_DNA |= blood_DNA
+		qdel(src)
+		return
+
 	. = ..()
 	if(QDELETED(src) || !.)
 		return
 	if(!istype(new_owner) || !(istype(add_or_merge) && add_or_merge.total_volume > 0))
 		qdel(src)
 		return
-	//BLUEMOON ADD START
-	if(new_owner.reagents.get_reagent(/datum/reagent/medicine/spermatex))
-		qdel(src)
-		return
-	//BLUEMOON ADD END
+
 	if(isnull(contents))
 		contents = new(300, NO_REACT)
+
 	if(istype(hole, /obj/item/organ/genital/anus))
 		cum_in_anus += add_or_merge.total_volume
 	if(istype(hole, /obj/item/organ/genital/vagina))
 		cum_in_vagina += add_or_merge.total_volume
+
 	add_or_merge.trans_to(contents, add_or_merge.total_volume)
+	if(blood_DNA)
+		LAZYINITLIST(src.blood_DNA)
+		src.blood_DNA |= blood_DNA
+
+	// --- Обычное создание при первом применении ---
+	add_or_merge.trans_to(contents, add_or_merge.total_volume)
+	if(istype(hole, /obj/item/organ/genital/anus))
+		cum_in_anus += add_or_merge.total_volume
+	if(istype(hole, /obj/item/organ/genital/vagina))
+		cum_in_vagina += add_or_merge.total_volume
+
 	if(blood_DNA)
 		LAZYINITLIST(src.blood_DNA)
 		src.blood_DNA |= blood_DNA
@@ -45,7 +71,7 @@
 		qdel(src)
 		return
 
-	if(!owner.alerts["dripping_cum"]) // only one alert is shared between all instances
+	if(!owner.alerts["dripping_cum"])
 		var/atom/movable/screen/alert/status_effect/A = owner.throw_alert(id, alert_type)
 		A.attached_effect = src
 		linked_alert = A
@@ -63,7 +89,6 @@
 			else if(cum_in_vagina > 0)
 				cum_in_vagina--
 
-			// ДОБАВЛЕНИЕ РЕАГЕНТА В ОБЪЕКТ //
 			S.reagents.add_reagent(/datum/reagent/consumable/semen, 10)
 			if(S.reagents.total_volume > 0)
 				S.reagents.trans_to(S.reagents, S.reagents.total_volume)
@@ -132,10 +157,15 @@
 	icon = 'modular_sand/icons/hud/screen_alert.dmi'
 	icon_state = "dripping_cum"
 
-/atom/movable/screen/alert/status_effect/dripping_cum/MouseEntered(location,control,params)
+/atom/movable/screen/alert/status_effect/dripping_cum/MouseEntered(location, control, params)
 	desc = initial(desc)
-	var/datum/status_effect/dripping_cum/dripping_cum = attached_effect
-	desc += "<br>You feel like there is about [dripping_cum.contents.total_volume] units inside you. Or even more..."
-	if(!dripping_cum.can_drip())
-		desc += "<br>For some reason such as your hole being covered, you are no longer dripping and this amount is not decreasing."
+	var/datum/status_effect/dripping_cum/DC = attached_effect
+	if(DC)
+		var/total_cum = DC.cum_in_anus + DC.cum_in_vagina
+		desc += "<br>You feel like there is about [round(total_cum, 0.1)] units inside you. Or even more..."
+		if(!DC.can_drip())
+			desc += "<br>It seems you're not dripping anymore — maybe you're covered up?"
+	else
+		desc += "<br>Something seems wrong... you feel empty."
 	..()
+

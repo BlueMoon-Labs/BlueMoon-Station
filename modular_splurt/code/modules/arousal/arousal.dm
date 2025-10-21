@@ -31,25 +31,39 @@
 //handles impregnation, also prefs
 /mob/living/proc/impregnate(mob/living/partner, obj/item/organ/W, baby_type = /mob/living/carbon/human)
 	var/obj/item/organ/container = W
-
 	if(!container)
 		container = getorganslot(ORGAN_SLOT_WOMB)
 	if(!container)
 		return
 
-	var/can_impregnate = 100
-	if(partner?.client?.prefs)
-		can_impregnate = partner.client.prefs.virility
-	var/can_get_pregnant = (client?.prefs?.fertility && !is_type_in_typecache(src.type, GLOB.pregnancy_blocked_mob_typecache))
-	if(!(can_impregnate && can_get_pregnant))
+	var/virility = partner?.client?.prefs?.virility || 0
+	var/fertility = client?.prefs?.fertility || 0
+	if(!fertility || is_type_in_typecache(src.type, GLOB.pregnancy_blocked_mob_typecache))
 		return
 
-	var/avg = (can_impregnate + client.prefs.fertility) / 2
+	// Базовый шанс Делаем в пользу женщин.. Почему ? Потому что девочки у нас вынашивают. и если у них фертильность 100 то пусть потом не удивляюьтся что залетели от парня.
+	var/chance = ((virility * 0.4) + (fertility * 0.6)) * (1 + (rand(-15, 15) / 100))
 
-	if(prob(avg))
-		var/obj/item/oviposition_egg/eggo = new()
-		eggo.forceMove(container)
-		eggo.AddComponent(/datum/component/pregnancy, src, partner, baby_type)
+	// Делаем квирк Эстральный цикл пизже
+	if(HAS_TRAIT(src, /datum/quirk/estrous_active))
+		var/bonus = 1.25 // базовый бонус = +25%
+		var/time_since_last_climax = max(world.time - last_climax, 0)
+
+		// Каждые 10 минут без разрядки дают +5% (до +50%)
+		var/time_bonus = clamp((time_since_last_climax / (10 MINUTES)) * 0.05, 0, 0.5)
+		chance *= (bonus + time_bonus)
+
+	chance = clamp(chance, 0, 100)
+
+	if(prob(chance))
+		var/num_eggs = rand(1, 3)
+		if(fertility > 80 && prob(30))
+			num_eggs += 1
+
+		for(var/i = 1, i <= num_eggs, i++)
+			var/obj/item/oviposition_egg/eggo = new()
+			eggo.forceMove(container)
+			eggo.AddComponent(/datum/component/pregnancy, src, partner, baby_type)
 
 /mob/living/carbon/human/do_climax(datum/reagents/R, atom/target, obj/item/organ/genital/sender, spill, cover = FALSE, obj/item/organ/genital/receiver, anonymous = FALSE)
 	if(!sender)

@@ -100,6 +100,8 @@
 			lowershape = "двойной узловатый"
 		if("barbed, knotted hemi")
 			lowershape = "двойной, узловатый и немного колючий"
+		if("tapered barbed")
+			lowershape = "утончённый к концу и покрыт шипами"
 		if("thick")
 			lowershape = "обрезанный"
 		else
