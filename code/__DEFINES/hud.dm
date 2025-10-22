@@ -221,6 +221,9 @@
 
 #define ui_wanted_lvl "NORTH,11"
 
+//Shadekin hud
+#define ui_shadekin_energy_level "EAST-1:28,CENTER-3:12"
+
 // Defines relating to action button positions
 
 /// Whatever the base action datum thinks is best

@@ -6,6 +6,8 @@
 
 	var/nutrition_conversion_scaling = 0.5
 
+	var/passive_heal_in_dark = 0.1
+
 /datum/shadekin_eye_model/red
 	gain_in_light = -0.5
 	gain_in_dark = 0.5

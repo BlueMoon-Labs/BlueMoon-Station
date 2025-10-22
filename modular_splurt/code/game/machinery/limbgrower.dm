@@ -10,6 +10,11 @@
 	limbs_id = SPECIES_SHADEKIN
 	icon_limbs = DEFAULT_BODYPART_ICON_ORGANIC
 
+/datum/species/mammal/shadekin/on_species_gain(mob/living/carbon/C, datum/species/old_species, pref_load)
+	. = ..()
+
+	C.AddComponent(/datum/component/shadekin)
+
 /datum/species/mammal/teshari
 	limbs_id = SPECIES_TESHARI
 	icon_limbs = 'modular_splurt/icons/mob/teshari.dmi'

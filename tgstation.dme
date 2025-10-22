@@ -782,6 +782,8 @@
 #include "code\datums\components\species\shadekin\shadekin_eyes_models.dm"
 #include "code\datums\components\species\shadekin\actions\shadekin_actions.dm"
 #include "code\datums\components\species\shadekin\actions\phase_shift.dm"
+#include "code\datums\components\species\shadekin\shadekin_huds\shadekin_energy_hud.dm"
+#include "code\datums\components\species\shadekin\shadekin_huds\shadekin_hud.dm"
 #include "code\datums\components\storage\storage.dm"
 #include "code\datums\components\storage\ui.dm"
 #include "code\datums\components\storage\concrete\_concrete.dm"

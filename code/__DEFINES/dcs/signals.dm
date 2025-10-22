@@ -844,11 +844,17 @@
 #define COMSIG_KB_ACTIVATED (1<<0)
 
 //Maaaar signals
-// /datum/component/shadekin
+///datum/component/shadekin
 #define COMSIG_ADJUST_DARK_ENERGY "use_energy_shadekin"
-#define COMSIG_SHADEKIN_GEN_DARK_ENERGY "get_dark_energy"
+#define COMSIG_SHADEKIN_GET_DARK_ENERGY "get_dark_energy"
+#define COMSIG_SHADEKIN_GET_MAX_ENERGY_LEVEL "get_max_dark_level"
 #define COMSIG_INFORM_NEW_ENERGY_LEVEL "update_dark_energy_level"
 
 ///datum/action/shadekin
 #define COMSIG_SHADEKIN_ACTION_DELETE "delete_shadekin_action"
 #define COMSIG_SHADEKIN_ACTION_HIDE "hide_shadekin_action"
+
+///atom/movable/screen/shadekin
+#define COMSIG_SHADEKIN_SCREENS_HIDE "hide_shadekin_screens"
+#define COMSIG_SHADEKIN_SCREENS_SHOW "show_shadekin_screens"
+#define COMSIG_SHADEKIN_ENERGY_LIGTH_LEVEL "dark_and_ligth_levels" // порядок аргументов (energy, ligth)

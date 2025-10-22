@@ -19,14 +19,10 @@
 	var/dark_energy = 100
 	var/max_dark_energy = 100
 
-	var/dark_gain_in_dark = 0.75
-	var/dark_gain_in_light = 0.25
-
 	var/passive_heal_in_dark = 0.1
 
-	var/nutrition_conversion_scaling = 0.5
-
 	var/list/action_templates = list()
+	var/list/hud_templates = list()
 
 	var/datum/shadekin_eye_model/eye_type = /datum/shadekin_eye_model/blue
 
@@ -37,18 +33,20 @@
 
 	eye_type = set_shadekin_eyecolor()
 	append_actions_from_templates()
+	append_screens_from_templates()
 
 /datum/component/shadekin/RegisterWithParent()
-	RegisterSignal(owner, COMSIG_SHADEKIN_GEN_DARK_ENERGY, PROC_REF(get_energy))
+	RegisterSignal(owner, COMSIG_SHADEKIN_GET_DARK_ENERGY, PROC_REF(get_energy))
+	RegisterSignal(owner, COMSIG_SHADEKIN_GET_MAX_ENERGY_LEVEL, PROC_REF(get_max_energy))
 	RegisterSignal(owner, COMSIG_ADJUST_DARK_ENERGY, PROC_REF(signal_use_energy))
 	RegisterSignal(owner, COMSIG_LIVING_LIFE, PROC_REF(handle_life))
 	RegisterSignal(owner, COMSIG_MOB_ITEM_EQUIPPED, PROC_REF(equip_item_reaction))
 	RegisterSignal(owner, COMSIG_MOB_ITEM_DROPPED, PROC_REF(unequip_item_reaction))
 
-
 /datum/component/shadekin/UnregisterFromParent()
 	UnregisterSignal(owner, list(
-		COMSIG_SHADEKIN_GEN_DARK_ENERGY,
+		COMSIG_SHADEKIN_GET_MAX_ENERGY_LEVEL,
+		COMSIG_SHADEKIN_GET_DARK_ENERGY,
 		COMSIG_ADJUST_DARK_ENERGY,
 		COMSIG_LIVING_LIFE,
 		COMSIG_MOB_ITEM_EQUIPPED,
@@ -57,7 +55,6 @@
 
 /datum/component/shadekin/proc/set_shadekin_eyecolor()
 
-	var/mob/living/carbon/human/H = owner
 	var/eyecolor_rgb = BlendRGB(owner.left_eye_color, owner.right_eye_color, 0.5)
 
 	var/list/hsv_color = rgb2num(eyecolor_rgb, COLORSPACE_HSV)
@@ -102,6 +99,10 @@
 	SIGNAL_HANDLER
 	return dark_energy
 
+/datum/component/shadekin/proc/get_max_energy(datum/source)
+	SIGNAL_HANDLER
+	return max_dark_energy
+
 /datum/component/shadekin/proc/use_energy(amount)
 	var/temp = dark_energy - amount
 	if(temp < 0)
@@ -114,10 +115,15 @@
 	SIGNAL_HANDLER
 	return use_energy(amount)
 
-/datum/component/shadekin/proc/append_actions_from_templates(list/actions_path)
+/datum/component/shadekin/proc/append_actions_from_templates()
 	for(var/template in action_templates)
 		var/datum/action/shadekin/temp = new template(owner)
 		temp.Grant(owner)
+
+/datum/component/shadekin/proc/append_screens_from_templates()
+	for(var/template in hud_templates)
+		var/atom/movable/screen/shadekin/shadekin_screen = new template()
+		shadekin_screen.set_owner(owner)
 
 /datum/component/shadekin/proc/check_is_dark()
 	var/turf/T = get_turf(owner)
@@ -155,9 +161,12 @@
 	return energy_to_add
 
 /datum/component/shadekin/proc/passive_dark_heal(dark_level)
-	owner.adjustFireLoss((-0.10)*dark_level)
-	owner.adjustBruteLoss((-0.10)*dark_level)
-	owner.adjustToxLoss((-0.10)*dark_level)
+	owner.adjustFireLoss((eye_type::passive_heal_in_dark * -1)*dark_level)
+	owner.adjustBruteLoss((eye_type::passive_heal_in_dark * -1)*dark_level)
+	owner.adjustToxLoss((eye_type::passive_heal_in_dark * -1)*dark_level)
+
+/datum/component/shadekin/proc/huds_ping(light_level)
+	SEND_SIGNAL(owner, COMSIG_SHADEKIN_ENERGY_LIGTH_LEVEL, dark_energy, light_level)
 
 /datum/component/shadekin/proc/handle_life(...)
 	SIGNAL_HANDLER
@@ -181,3 +190,4 @@
 
 	use_energy(-1 * energy_to_add)
 
+	huds_ping() //Увы?
