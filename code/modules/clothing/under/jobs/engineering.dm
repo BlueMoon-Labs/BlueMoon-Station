@@ -9,7 +9,7 @@
 
 /obj/item/clothing/under/rank/engineering/chief_engineer/skirt
 	name = "chief engineer's jumpskirt"
-	desc = "It's a  jumpskirt given to those engineers insane enough to achieve the rank of \"Chief Engineer\". It has minor radiation shielding."
+	desc = "It's a high-visibility jumpskirt given to those engineers insane enough to achieve the rank of \"Chief Engineer\". It has minor radiation shielding."
 	icon_state = "chiefengineer_skirt"
 	item_state = "gy_suit"
 	body_parts_covered = CHEST|GROIN|ARMS
