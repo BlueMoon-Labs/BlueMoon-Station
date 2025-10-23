@@ -172,9 +172,6 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		message = copytext_char(message, 2)
 	else if(message_mode || saymode)
 		message = copytext_char(message, 3)
-	message = trim_left(message)//Проводим ритуал изгнания пробелов
-	message = trim_left(message)
-	message = trim_left(message)
 	message = trim_left(message)
 	message = auto_capitalize(message)
 	if(copytext_char(message, 1, 2) == " ")
