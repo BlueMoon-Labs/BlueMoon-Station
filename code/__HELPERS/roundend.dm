@@ -403,6 +403,9 @@
 	else
 		parts += "[FOURSPACES]├ ID раунда: <b>(<i>недоступно</i>)</b>"
 	parts += "[FOURSPACES]└ Длительность смены: <b>[DisplayTimeText(world.time - SSticker.round_start_time)]</b>"
+	// --- BLUEMOON ADD: узлирования ---
+	if(GLOB.knottings)
+		parts += "[FOURSPACES] Узлирований за раунд: <b>[GLOB.knottings]</b>"
 
 	parts += "<hr><b><font color=\"#60b6ff\">ИНФОРМАЦИЯ О СТАНЦИИ //</font></b>"
 	parts += "[FOURSPACES]└ Состояние станции: <b>[mode.station_was_nuked ? span_redtext("уничтожена системой ядерного самоуничтожения")  : "[popcount["station_integrity"] == 100 ? span_greentext("нетронута")  : "[popcount["station_integrity"]]%"]"]</b>"

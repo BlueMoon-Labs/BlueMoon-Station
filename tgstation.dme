@@ -4378,6 +4378,8 @@
 #include "modular_bluemoon\code\modules\antagonists\qareen\qareen_abilities.dm"
 #include "modular_bluemoon\code\modules\apc_arcing\apc.dm"
 #include "modular_bluemoon\code\modules\arousal\arousal_robot.dm"
+#include "modular_bluemoon\code\modules\arousal\bm_knotting.dm"
+#include "modular_bluemoon\code\modules\arousal\bm_knotting_debug.dm"
 #include "modular_bluemoon\code\modules\arousal\toys\dildos.dm"
 #include "modular_bluemoon\code\modules\assembly\memorizer.dm"
 #include "modular_bluemoon\code\modules\asset_cache\assets\paper.dm"

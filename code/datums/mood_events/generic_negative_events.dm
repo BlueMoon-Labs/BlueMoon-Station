@@ -412,3 +412,9 @@
 	description = span_warning("Я что-то защемил!</span>\n")
 	mood_change = -12
 	timeout = 6 MINUTES
+
+//BM ADD
+/datum/mood_event/knotting_painful
+	description = span_danger("Боль пронзает тело — узел вырвался слишком резко!\n")
+	mood_change = -4
+	timeout = 5 MINUTES

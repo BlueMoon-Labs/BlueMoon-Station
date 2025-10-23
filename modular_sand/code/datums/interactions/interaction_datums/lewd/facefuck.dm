@@ -104,6 +104,7 @@
 				if("penis")
 					genital = partner.getorganslot(ORGAN_SLOT_PENIS)
 		user.set_is_fucking(partner, CUM_TARGET_MOUTH, genital)
+		try_apply_knot(user, partner, CUM_TARGET_MOUTH) // Проверка на узлирование.
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
 						'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
@@ -181,6 +182,7 @@
 		if(check)
 			genital = check
 		user.set_is_fucking(partner, CUM_TARGET_THROAT, genital)
+		try_apply_knot(user, partner, CUM_TARGET_THROAT) // Проверка на узлирование.
 
 	partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',

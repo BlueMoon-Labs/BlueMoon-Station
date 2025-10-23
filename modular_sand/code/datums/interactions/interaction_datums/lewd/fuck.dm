@@ -47,6 +47,7 @@
 		user_strapon.attached_dildo.target_reaction(partner, user, 0, CUM_TARGET_VAGINA, CUM_TARGET_PENIS, user.a_intent == INTENT_HARM)
 	else
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
+		try_apply_knot(user, partner, CUM_TARGET_VAGINA) // Проверка на узлирование.
 
 	if(prob(5 + partner.get_lust()))
 		if(partner.a_intent == INTENT_HELP)
@@ -107,6 +108,7 @@
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS) //SPLURT edit
+		try_apply_knot(user, partner, CUM_TARGET_ANUS) // Проверка на узлирование.
 
 	if(prob(5 + partner.get_lust()))
 		if(partner.a_intent == INTENT_HELP)
@@ -132,6 +134,7 @@
 		user_strapon.attached_dildo.target_reaction(partner, user, 0, CUM_TARGET_ANUS, null, user.a_intent == INTENT_HARM)
 	else
 		partner.handle_post_sex(NORMAL_LUST, null, user, "anus") //SPLURT edit
+		try_apply_knot(user, partner, CUM_TARGET_ANUS) // Проверка на узлирование.
 	// BLUEMOON EDIT END
 
 /datum/interaction/lewd/breastfuck

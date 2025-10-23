@@ -122,6 +122,7 @@
 				if("penis")
 					genital = partner.getorganslot(ORGAN_SLOT_PENIS)
 		partner.set_is_fucking(user, CUM_TARGET_MOUTH, genital)
+		try_apply_knot(partner, user, CUM_TARGET_MOUTH)
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bj1.ogg',
 									'modular_sand/sound/interactions/bj2.ogg',
