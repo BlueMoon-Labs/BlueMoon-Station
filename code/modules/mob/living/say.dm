@@ -591,3 +591,4 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		// End of Skyrat edits
 /mob/living/whisper(message, bubble_type, list/spans = list(), sanitize = TRUE, datum/language/language = null, ignore_spam = FALSE, forced = null)
 	say("#[message]", bubble_type, spans, sanitize, language, ignore_spam, forced)
+	
