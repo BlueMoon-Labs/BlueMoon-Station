@@ -4,27 +4,36 @@
 	icon_state = ""
 
 	var/mob/living/carbon/human/owner
+	var/client/client_link
 	var/is_active = TRUE
 	//var/datum/hud/our_hud
 
 /atom/movable/screen/shadekin/proc/death_with_parent(datum/source)
 	SIGNAL_HANDLER
-	source = null
 	owner = null
 
 	if(!QDELETED(src))
 		return
 	qdel(src)
-
+//Технически тут только одна ссылка, поэтому при убирании из screen будет мягкое удаление
 /atom/movable/screen/shadekin/Destroy()
+	if(client_link)
+		client_link.screen -= src
+		client_link = null
+
 	if(!owner)
 		return ..()
 	UnregisterSignal(owner, list(
 		COMSIG_PARENT_QDELETING,
 		COMSIG_SHADEKIN_SCREENS_SHOW,
-		COMSIG_SHADEKIN_SCREENS_HIDE
+		COMSIG_SHADEKIN_SCREENS_HIDE,
+		COMSIG_SHADEKIN_SCREEN_QDEL
 	))
 	DelUnregister()
+
+	owner = null
+	screen_loc = null
+
 	return ..()
 
 /atom/movable/screen/shadekin/proc/show_screen(datum/source)
@@ -43,14 +52,22 @@
 	is_active = FALSE
 	DelUnregister()
 
-/atom/movable/screen/shadekin/proc/set_owner(mob/living/carbon/human/new_owner)
+/atom/movable/screen/shadekin/proc/force_self_del(datum/source)
+	SIGNAL_HANDLER
+	if(!QDELETED(src))
+		return
+	qdel(src)
+
+/atom/movable/screen/shadekin/proc/set_owner(client/client_to_append, mob/living/carbon/human/new_owner)
 	owner = new_owner
-	if(!owner.client && !QDELETED(src))
+	if(!client_to_append && !QDELETED(src))
 		qdel(src)
-	owner.client.screen += src
+	client_to_append.screen += src
 	RegisterSignal(owner, COMSIG_PARENT_QDELETING, PROC_REF(death_with_parent))
 	RegisterSignal(owner, COMSIG_SHADEKIN_SCREENS_SHOW, PROC_REF(show_screen))
 	RegisterSignal(owner, COMSIG_SHADEKIN_SCREENS_HIDE, PROC_REF(hide_screen))
+	RegisterSignal(owner, COMSIG_SHADEKIN_SCREEN_QDEL, PROC_REF(force_self_del))
+	SetRegister()
 
 	on_gain()
 

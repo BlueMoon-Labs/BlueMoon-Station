@@ -22,18 +22,20 @@
 	var/passive_heal_in_dark = 0.1
 
 	var/list/action_templates = list()
-	var/list/hud_templates = list()
+	var/list/hud_templates = list(/atom/movable/screen/shadekin/dark_energy_level)
 
 	var/datum/shadekin_eye_model/eye_type = /datum/shadekin_eye_model/blue
 
 /datum/component/shadekin/Initialize(...)
-	if(!isshadekin(parent) || !ishuman(parent))
+	if(!isshadekin(parent) || !ishuman(parent) || isnull(parent))
 		return COMPONENT_INCOMPATIBLE
 	owner = parent
 
 	eye_type = set_shadekin_eyecolor()
 	append_actions_from_templates()
-	append_screens_from_templates()
+
+	if(owner?.client)
+		append_screens_from_templates(owner?.client)
 
 /datum/component/shadekin/RegisterWithParent()
 	RegisterSignal(owner, COMSIG_SHADEKIN_GET_DARK_ENERGY, PROC_REF(get_energy))
@@ -42,6 +44,7 @@
 	RegisterSignal(owner, COMSIG_LIVING_LIFE, PROC_REF(handle_life))
 	RegisterSignal(owner, COMSIG_MOB_ITEM_EQUIPPED, PROC_REF(equip_item_reaction))
 	RegisterSignal(owner, COMSIG_MOB_ITEM_DROPPED, PROC_REF(unequip_item_reaction))
+	RegisterSignal(owner, COMSIG_MOB_CLIENT_LOGIN, PROC_REF(rebuild_shadekin_screens))
 
 /datum/component/shadekin/UnregisterFromParent()
 	UnregisterSignal(owner, list(
@@ -50,8 +53,15 @@
 		COMSIG_ADJUST_DARK_ENERGY,
 		COMSIG_LIVING_LIFE,
 		COMSIG_MOB_ITEM_EQUIPPED,
-		COMSIG_MOB_ITEM_DROPPED
+		COMSIG_MOB_ITEM_DROPPED,
+		COMSIG_MOB_CLIENT_LOGIN
 	))
+
+//Хуйня конечно, но как говорится мы это хаваем
+/datum/component/shadekin/proc/rebuild_shadekin_screens(datum/source, client/hud_client)
+	SIGNAL_HANDLER
+	SEND_SIGNAL(owner, COMSIG_SHADEKIN_SCREEN_QDEL)
+	append_screens_from_templates(hud_client)
 
 /datum/component/shadekin/proc/set_shadekin_eyecolor()
 
@@ -105,7 +115,7 @@
 
 /datum/component/shadekin/proc/use_energy(amount)
 	var/temp = dark_energy - amount
-	if(temp < 0)
+	if(temp < 0 || temp > max_dark_energy)
 		return FALSE
 	dark_energy = temp
 	SEND_SIGNAL(owner, COMSIG_INFORM_NEW_ENERGY_LEVEL, dark_energy)
@@ -116,14 +126,20 @@
 	return use_energy(amount)
 
 /datum/component/shadekin/proc/append_actions_from_templates()
+	if(!owner)
+		return
+
 	for(var/template in action_templates)
 		var/datum/action/shadekin/temp = new template(owner)
 		temp.Grant(owner)
 
-/datum/component/shadekin/proc/append_screens_from_templates()
+/datum/component/shadekin/proc/append_screens_from_templates(client/client_to_append)
+	if(!owner)
+		return
+
 	for(var/template in hud_templates)
 		var/atom/movable/screen/shadekin/shadekin_screen = new template()
-		shadekin_screen.set_owner(owner)
+		shadekin_screen.set_owner(client_to_append, owner)
 
 /datum/component/shadekin/proc/check_is_dark()
 	var/turf/T = get_turf(owner)

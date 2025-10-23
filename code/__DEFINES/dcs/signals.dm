@@ -855,6 +855,7 @@
 #define COMSIG_SHADEKIN_ACTION_HIDE "hide_shadekin_action"
 
 ///atom/movable/screen/shadekin
+#define COMSIG_SHADEKIN_SCREEN_QDEL "qdel_screen_shadekin"
 #define COMSIG_SHADEKIN_SCREENS_HIDE "hide_shadekin_screens"
 #define COMSIG_SHADEKIN_SCREENS_SHOW "show_shadekin_screens"
 #define COMSIG_SHADEKIN_ENERGY_LIGTH_LEVEL "dark_and_ligth_levels" // порядок аргументов (energy, ligth)
