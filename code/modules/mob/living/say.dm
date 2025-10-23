@@ -69,6 +69,50 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	"щ" = RADIO_CHANNEL_AI_PRIVATE,
 	"ч" = MODE_VOCALCORDS
 ))
+/proc/auto_capitalize(text)
+	if(!text || text == "")
+		return text
+
+	text = trim_left(text)
+
+	var/result = ""
+	var/next_cap = TRUE
+	var/i = 1
+	var/len = length_char(text)
+
+	while(i <= len)
+		var/ch = copytext_char(text, i, i+1)
+
+		// Если ожидается заглавная и это буква — делаем кап
+		if(next_cap && lowertext(ch) != uppertext(ch))
+			result += uppertext(ch)
+			next_cap = FALSE
+		else
+			result += ch
+
+		// Если встретили конец предложения — включаем кап
+		if(ch == "." || ch == "!" || ch == "?")
+			next_cap = TRUE
+			// Если после .!? нет пробела — добавляем его
+			if(i < len)
+				var/nextch = copytext_char(text, i+1, i+2)
+				if(nextch != " " && nextch != "." && nextch != "!" && nextch != "?" && nextch != "\t" && nextch != "\n")
+					result += " "
+
+		// Если встретили кавычку — ожидаем заглавную после неё
+		if(ch == "\"" || ch == "«" || ch == "“")
+			next_cap = TRUE
+			// Убираем лишний пробел сразу после кавычки
+			if(i < len)
+				var/nextch2 = copytext_char(text, i+1, i+2)
+				if(nextch2 == " ")
+					i += 1 // просто пропускаем его
+
+		i += 1
+
+	return result
+
+
 
 /mob/living/proc/Ellipsis(original_msg, chance = 50, keep_words)
 	if(chance <= 0)
@@ -128,7 +172,13 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		message = copytext_char(message, 2)
 	else if(message_mode || saymode)
 		message = copytext_char(message, 3)
+	message = trim_left(message)//Проводим ритуал изгнания пробелов
 	message = trim_left(message)
+	message = trim_left(message)
+	message = trim_left(message)
+	message = auto_capitalize(message)
+	if(copytext_char(message, 1, 2) == " ")
+		message = copytext_char(message, 2)
 	if(!message)
 		return
 	if(message_mode == MODE_ADMIN)
