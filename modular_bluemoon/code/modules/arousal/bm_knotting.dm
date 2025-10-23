@@ -1,5 +1,5 @@
 // ============================================================
-// BlueMoon - Knotting core (standalone)
+// BlueMoon - Knotting core (standalone) //By Stasdvrz
 // ============================================================
 #include "bm_knotting_defines.dm"
 

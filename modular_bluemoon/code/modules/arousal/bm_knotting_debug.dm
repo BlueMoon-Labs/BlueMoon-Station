@@ -1,4 +1,4 @@
-/mob/verb/force_knot()
+/mob/verb/force_knot() //By Stasdvrz
 	set name = "Force Knot (Debug)"
 	set category = "Debug"
 

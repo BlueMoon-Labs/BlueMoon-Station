@@ -1,5 +1,5 @@
 // ============================================================
-// BlueMoon Knotting Defines
+// BlueMoon Knotting Defines //By Stasdvrz
 // ============================================================
 
 // --- Knotting state defines ---
