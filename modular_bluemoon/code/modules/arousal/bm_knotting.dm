@@ -136,8 +136,8 @@
 			pet.add_movespeed_modifier(/datum/movespeed_modifier/leash)
 
 		// Регистрация “натяжения” при движении
-		RegisterSignal(master, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move))
-		RegisterSignal(pet, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move))
+		RegisterSignal(master, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move), TRUE)
+		RegisterSignal(pet, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move), TRUE)
 
 
 	visible_message(list(user, partner),
@@ -270,6 +270,13 @@
 		if(partner.has_movespeed_modifier(/datum/movespeed_modifier/leash))
 			partner.remove_movespeed_modifier(/datum/movespeed_modifier/leash)
 
+		// 💨 Очистка сигналов движения
+		if(istype(user, /mob/living))
+			UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+		if(istype(partner, /mob/living))
+			UnregisterSignal(partner, COMSIG_MOVABLE_MOVED)
+
+
 // ============================================================
 // 🔁 Циклическая проверка дистанции (≤1 тайл) — безопасный цикл
 // ============================================================
@@ -353,6 +360,12 @@
 
 /obj/item/organ/genital/penis/proc/on_knot_move()
 	SIGNAL_HANDLER
+
+	if(QDELETED(src) || !knot_locked || QDELETED(knot_partner))
+		UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
+		if(istype(knot_partner, /mob/living))
+			UnregisterSignal(knot_partner, COMSIG_MOVABLE_MOVED)
+		return
 
 	var/mob/living/user = owner
 	if(!user || !knot_partner || !knot_locked)
