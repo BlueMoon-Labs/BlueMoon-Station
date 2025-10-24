@@ -126,6 +126,7 @@
 	. = ..()
 	if(pin)
 		pin = new pin(src)
+		pin.gun = src
 
 	if(gun_light)
 		alight = new(src)

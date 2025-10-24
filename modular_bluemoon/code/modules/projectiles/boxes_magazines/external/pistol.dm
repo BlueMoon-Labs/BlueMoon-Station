@@ -8,6 +8,7 @@
 	caliber = ".45"
 	desc = "An extended Mk. 58 magazine."
 	max_ammo = 12
+	w_class = WEIGHT_CLASS_SMALL
 
 /obj/item/ammo_box/magazine/e45/e45_extended/update_icon()
 	..()
@@ -26,6 +27,7 @@
 	caliber = ".45"
 	desc = "A drum Mk. 58 magazine, mostly known for it jams."
 	max_ammo = 28
+	w_class = WEIGHT_CLASS_NORMAL
 
 /obj/item/ammo_box/magazine/e45/e45_drum/update_icon()
 	..()

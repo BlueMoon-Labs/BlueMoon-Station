@@ -1,6 +1,6 @@
 //Contains: Engineering department jumpsuits
 /obj/item/clothing/under/rank/engineering/chief_engineer
-	desc = "It's a high visibility jumpsuit given to those engineers insane enough to achieve the rank of \"Chief Engineer\". It has minor radiation shielding."
+	desc = "It's a high-visibility jumpsuit given to those engineers insane enough to achieve the rank of \"Chief Engineer\". It has minor radiation shielding."
 	name = "chief engineer's jumpsuit"
 	icon_state = "chiefengineer"
 	item_state = "gy_suit"
@@ -9,7 +9,7 @@
 
 /obj/item/clothing/under/rank/engineering/chief_engineer/skirt
 	name = "chief engineer's jumpskirt"
-	desc = "It's a high visibility jumpskirt given to those engineers insane enough to achieve the rank of \"Chief Engineer\". It has minor radiation shielding."
+	desc = "It's a high-visibility jumpskirt given to those engineers insane enough to achieve the rank of \"Chief Engineer\". It has minor radiation shielding."
 	icon_state = "chiefengineer_skirt"
 	item_state = "gy_suit"
 	body_parts_covered = CHEST|GROIN|ARMS
@@ -36,7 +36,7 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/under/rank/engineering/engineer
-	desc = "It's an orange high visibility jumpsuit worn by engineers. It has minor radiation shielding."
+	desc = "It's an orange high-visibility jumpsuit worn by engineers. It has minor radiation shielding."
 	name = "engineer's jumpsuit"
 	icon_state = "engine"
 	item_state = "engi_suit"
@@ -66,7 +66,7 @@
 
 /obj/item/clothing/under/rank/engineering/engineer/hazard
 	name = "engineer's hazard jumpsuit"
-	desc = "A high visibility jumpsuit made from heat and radiation resistant materials."
+	desc = "A high-visibility jumpsuit made from heat and radiation resistant materials."
 	icon_state = "hazard_orange"
 	item_state = "engi_suit"
 	alt_covers_chest = TRUE
@@ -81,7 +81,7 @@
 
 /obj/item/clothing/under/rank/engineering/engineer/skirt
 	name = "engineer's jumpskirt"
-	desc = "It's an orange high visibility jumpskirt worn by engineers."
+	desc = "It's an orange high-visibility jumpskirt worn by engineers."
 	icon_state = "engine_skirt"
 	item_state = "engi_suit"
 	body_parts_covered = CHEST|GROIN|ARMS

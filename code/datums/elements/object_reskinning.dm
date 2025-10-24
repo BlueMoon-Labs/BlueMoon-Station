@@ -82,6 +82,11 @@
 	// Only once or always?
 	if(!to_reskin.always_reskinnable)
 		Detach(to_reskin)
+	// BLUEMOON ADD START
+	if(isitem(to_reskin))
+		var/obj/item/item_to_reskin = to_reskin
+		item_to_reskin.update_slot_icon()
+	// BLUEMOON ADD END
 	return TRUE
 
 /**

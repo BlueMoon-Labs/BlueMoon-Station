@@ -425,6 +425,7 @@
 	name = "eldritch whetstone"
 	desc = "A block, empowered by dark magic. Sharp weapons will be enhanced when used on the stone."
 	icon_state = "cult_sharpener"
+	icon = 'icons/obj/cult.dmi'
 	used = 0
 	increment = 5
 	max = 40
@@ -442,7 +443,7 @@
 	icon_state = "cult_armor"
 	item_state = "cult_armor"
 	w_class = WEIGHT_CLASS_BULKY
-	armor = list(MELEE = 50, BULLET = 40, LASER = 50, ENERGY = 60, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, MAGIC = 75)
+	armor = list(MELEE = 75, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, MAGIC = 75)
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
 	var/current_charges = 3
@@ -455,7 +456,7 @@
 	name = "\improper Nar'Sien Empowered Helmet"
 	desc = "A heavily-armored Empowered Helmet worn by warriors of the Nar'Sien cult. It can withstand hard vacuum."
 	icon_state = "cult_hoodalt"
-	armor = list(MELEE = 50, BULLET = 40, LASER = 50, ENERGY = 60, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, MAGIC = 75)
+	armor = list(MELEE = 75, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, MAGIC = 75)
 	body_parts_covered = HEAD
 	flash_protect = 1
 	flags_inv = HIDEHAIR|HIDEFACE|HIDEEARS
@@ -509,7 +510,7 @@
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	armor = list(MELEE = -50, BULLET = -50, LASER = -50,ENERGY = -50, BOMB = -50, BIO = -50, RAD = -50, FIRE = 0, ACID = 0)
-	slowdown = -1
+	slowdown = -0.5
 	hoodtype = /obj/item/clothing/head/hooded/berserkerhood
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC //bluemoon add
 

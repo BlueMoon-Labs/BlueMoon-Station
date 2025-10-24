@@ -84,8 +84,8 @@
 	item_state = "[suit_type]"
 	if(ishuman(loc))
 		var/mob/living/carbon/human/wearer = loc
-		if(wearer.wear_suit == src)
-			wearer.update_inv_wear_suit()
+		if(wearer.head == src)
+			wearer.update_inv_head()
 
 /obj/item/clothing/head/hooded/explorer/standard/improved/equipped(mob/living/carbon/human/user, slot)
 	..()

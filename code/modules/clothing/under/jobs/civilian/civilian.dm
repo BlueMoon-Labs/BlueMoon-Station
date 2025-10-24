@@ -72,6 +72,7 @@
 	item_state = "victorianreddress"
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/rank/civilian/victorianblackdress
 	name = "black victorian dress"
@@ -80,6 +81,7 @@
 	item_state = "victorianblackdress"
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/rank/civilian/dutch
 	name = "dutch suit"

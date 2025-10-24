@@ -377,11 +377,12 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 	item_state = "cent_headset_alt"
 	bowman = TRUE
 
-/obj/item/radio/headset/headset_cent/ntr
+/obj/item/radio/headset/headset_cent/ntr //BLUEMOON add
 	name = "\proper the NanoTrasen Representative headset"
 	desc = "The headset of the lead station's judge."
-	icon_state = "com_headset"
+	icon_state = "ntr_headset"
 	keyslot = new /obj/item/encryptionkey/headset_ntr
+	command = TRUE
 
 /obj/item/radio/headset/headset_cent/ntr/equipped(mob/user, slot)
 	..()
@@ -390,12 +391,13 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 	else
 		user.typing_indicator_state = /obj/effect/overlay/typing_indicator
 
-/obj/item/radio/headset/headset_cent/ntr/alt
+/obj/item/radio/headset/headset_cent/ntr/alt //BLUEMOON add
 	name = "\improper the NanoTrasen Representative bowman headset"
 	desc = "A headset especially for emergency response personnel. Protects ears from flashbangs."
-	icon_state = "cent_headset_alt"
-	item_state = "cent_headset_alt"
+	icon_state = "ntr_headset_alt"
+	item_state = "ntr_headset_alt"
 	bowman = TRUE
+	command = TRUE
 
 /obj/item/radio/headset/headset_cent/ntr/alt/equipped(mob/user, slot)
 	..()

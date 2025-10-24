@@ -327,6 +327,7 @@
 	desc = "A firing pin used by the austrailian defense force, retrofit to prevent weapon discharge on the station."
 	icon_state = "firing_pin_explorer"
 	fail_message = "<span class='warning'>CANNOT FIRE WHILE ON STATION, MATE!</span>"
+	pin_removeable = FALSE
 
 // This checks that the user isn't on the station Z-level.
 /obj/item/firing_pin/explorer/pin_auth(mob/living/user)
@@ -338,18 +339,17 @@
 
 /obj/item/firing_pin/alert_level
 	name = "alert level firing pin"
-	var/desired_minimium_alert = SEC_LEVEL_AMBER //For the purpose of the firing pin, we will consider violet, orange and amber as same level
+	var/desired_minimium_alert = SEC_LEVEL_AMBER
 	desc = "A small authentication device, to be inserted into a firearm receiver to allow operation. This one is configured to only fire on amber alert or higher."
-	fail_message = "<span class='warning'>incorrect alert level!</span>"
+	fail_message = "<span class='warning'>НЕКОРРЕКТНЫЙ УРОВЕНЬ ТРЕВОГИ!</span>"
 
 /obj/item/firing_pin/alert_level/pin_auth(mob/living/user)
+	if(gun.chambered?.harmful == FALSE)
+		return TRUE
 	return (isnum(GLOB.security_level) && GLOB.security_level >= desired_minimium_alert)
 
 /obj/item/firing_pin/alert_level/blue
 	name = "alert level firing pin"
 	desired_minimium_alert = SEC_LEVEL_BLUE
 	desc = "A small authentication device, to be inserted into a firearm receiver to allow operation. This one is configured to only fire on blue alert or higher."
-	fail_message = "<span class='warning'>incorrect alert level!</span>"
-
-/obj/item/firing_pin/alert_level/blue/pin_auth(mob/living/user)
-	return (isnum(GLOB.security_level) && GLOB.security_level >= desired_minimium_alert)
+	fail_message = "<span class='warning'>НЕКОРРЕКТНЫЙ УРОВЕНЬ ТРЕВОГИ!</span>"

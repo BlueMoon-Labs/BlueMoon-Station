@@ -1558,6 +1558,12 @@
 	slot = ITEM_SLOT_GLOVES
 	ckeywhitelist = list("nyaaaa")
 
+/datum/gear/donator/bm/long_fancy_kimono
+	name = "Long Fancy Kimono"
+	path = /obj/item/clothing/suit/donator/bm/long_fancy_kimono
+	slot = ITEM_SLOT_OCLOTHING
+	ckeywhitelist = list("nyaaaa")
+
 /datum/gear/donator/bm/toggles_poly_evening
 	name = "Polychromic evening gloves"
 	path = /obj/item/clothing/gloves/toggled/hug/poly_evening

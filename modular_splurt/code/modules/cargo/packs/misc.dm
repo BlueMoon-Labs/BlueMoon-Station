@@ -718,9 +718,3 @@
 			/obj/item/clothing/suit/hooded/teshari/standard/black_brown
 			)
 	cost = 40
-
-/datum/supply_pack/misc/sauna_oven
-	name = "Sauna Oven"
-	desc = "A humble sauna oven adorned with stones. Add some fuel, pour water, and relish the tranquil moment."
-	contains = list(/obj/structure/sauna_oven)
-	cost = 1000

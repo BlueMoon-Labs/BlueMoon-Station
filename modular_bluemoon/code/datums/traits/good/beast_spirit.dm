@@ -280,4 +280,6 @@
 	if(!CHECK_MOBILITY(HUMAN, MOBILITY_USE))
 		HUMAN.visible_message(span_warning("You cannot transform while restrained!"))
 		return
+
+	HUMAN.UseStaminaBuffer(50, TRUE)
 	return ..()

@@ -321,7 +321,7 @@
 
 /obj/structure/sign/mining/survival
 	name = "shelter sign"
-	desc = "A high visibility sign designating a safe shelter."
+	desc = "A high-visibility sign designating a safe shelter."
 	icon = 'icons/turf/walls/survival_pod_walls.dmi'
 	icon_state = "survival"
 

@@ -53,7 +53,7 @@
 /obj/item/pda/heads/ntr
 	name = "NanoTrasen Representative PDA"
 	default_cartridge = /obj/item/cartridge/hos
-	icon_state = "pda-security"
+	icon_state = "pda-ntr"
 
 /obj/item/clothing/suit/armor/ntr
 	name = "NanoTrasen Officer Coat"
@@ -109,9 +109,9 @@
 	shoes = /obj/item/clothing/shoes/laceup/ntr
 	r_pocket = /obj/item/clothing/accessory/lawyers_badge
 
-	backpack = /obj/item/storage/backpack/security
-	satchel = /obj/item/storage/backpack/satchel/sec
-	duffelbag = /obj/item/storage/backpack/duffelbag/sec
+	backpack = /obj/item/storage/backpack/captain/ntr //BLUEMOON add
+	satchel = /obj/item/storage/backpack/satchel/cap/ntr //BLUEMOON add
+	duffelbag = /obj/item/storage/backpack/duffelbag/captain/ntr //BLUEMOON add
 
 	chameleon_extras = /obj/item/stamp/law
 
@@ -132,7 +132,7 @@
 	ears = /obj/item/radio/headset/headset_cent/ntr
 	gloves = /obj/item/clothing/gloves/combat
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	uniform = /obj/item/clothing/under/rank/civilian/lawyer/black/alt
+	uniform = /obj/item/clothing/under/rank/centcom/officer_alt
 	suit = /obj/item/clothing/suit/armor/ntr
 	head = /obj/item/clothing/head/beret/sec/ntr
 	shoes = /obj/item/clothing/shoes/laceup/ntr

@@ -1725,3 +1725,80 @@
 	money+=cash_money
 	to_chat(user, "<span class='notice'>[src] quicky gobbles up [A], and the value goes up by [cash_money].</span>")
 	qdel(A)
+//BLUE MOON ADD
+/obj/item/toy/desk
+	name = "desk toy master"
+	desc = "A parent object for desk toys."
+	icon = 'icons/obj/toy.dmi'
+	layer = ABOVE_MOB_LAYER
+	var/on = FALSE
+	var/activation_sound = 'sound/effects/pop.ogg' // заменено на существующий звук
+
+/obj/item/toy/desk/update_icon_state()
+	icon_state = "[initial(icon_state)][on ? "-on" : ""]"
+
+/obj/item/toy/desk/attack_self(mob/user)
+	on = !on
+	if(activation_sound)
+		playsound(get_turf(src), activation_sound, 75, TRUE)
+	update_icon()
+	return TRUE
+
+/obj/item/toy/desk/proc/rotate(mob/user)
+	if(!user)
+		return
+	if(user.incapacitated() || HAS_TRAIT(user, TRAIT_HANDS_BLOCKED))
+		to_chat(user, span_warning("Сейчас ты не можешь этого сделать!"))
+		return
+	dir = turn(dir, 270)
+	to_chat(user, span_notice("Ты поворачиваешь [src.name]."))
+	return TRUE
+
+/obj/item/toy/desk/AltClick(mob/user)
+	rotate(user)
+	return TRUE
+
+
+/obj/item/toy/desk/officetoy
+	name = "office toy"
+	desc = "A generic microfusion powered office desk toy. Only generates magnetism and ennui."
+	icon_state = "desktoy"
+
+/obj/item/toy/desk/dippingbird
+	name = "dipping bird toy"
+	desc = "An ancient human bird idol, worshipped by clerks and desk jockeys."
+	icon_state = "dippybird"
+
+/obj/item/toy/desk/newtoncradle
+	name = "Newton's cradle"
+	desc = "An ancient 21st century desk toy demonstrating Sir Isaac Newton’s deadliness."
+	icon_state = "newtoncradle"
+	var/sound_playing = FALSE
+
+/obj/item/toy/desk/newtoncradle/attack_self(mob/user)
+	on = !on
+	update_icon()
+	if(on && !sound_playing)
+		sound_playing = TRUE
+		playsound(get_turf(src), 'sound/effects/pop.ogg', 50, TRUE)
+	else
+		sound_playing = FALSE
+	return TRUE
+
+
+/obj/item/toy/desk/fan
+	name = "office fan"
+	desc = "Your greatest fan."
+	icon_state = "fan"
+	var/sound_playing = FALSE
+
+/obj/item/toy/desk/fan/attack_self(mob/user)
+	on = !on
+	update_icon()
+	if(on && !sound_playing)
+		sound_playing = TRUE
+		playsound(get_turf(src), 'sound/effects/pop.ogg', 60, TRUE)
+	else
+		sound_playing = FALSE
+	return TRUE
+//BLUE MOON END

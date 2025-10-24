@@ -56,6 +56,7 @@
 		"Blue Shield" = list("icon_state" = "enforcer_blue"),
 		"Red Shield" = list("icon_state" = "enforcer_red")
 	)
+	pin = /obj/item/firing_pin/alert_level/blue
 
 /obj/item/gun/ballistic/automatic/pistol/enforcerred/update_icon_state() //BLUEMOOD EDIT: Визуально добавлены статусы оружия при наличии глушителя и расширенного магазина
 	if(current_skin)

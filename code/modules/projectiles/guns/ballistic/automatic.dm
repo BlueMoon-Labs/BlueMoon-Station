@@ -107,11 +107,12 @@
 	w_class = WEIGHT_CLASS_BULKY
 	burst_size = 2
 	burst_shot_delay = 1
-	fire_delay = 2.5 //BLUEMOON ADD Снижаем скорострельность втшки в автоматическом режиме (Новый ребеланс, смена 3 на 2.5)
+	fire_delay = 2.5
 	can_bayonet = TRUE
 	knife_x_offset = 25
 	knife_y_offset = 12
 	automatic_burst_overlay = FALSE
+	pin = /obj/item/firing_pin/alert_level
 
 /obj/item/gun/ballistic/automatic/wt550/afterattack()
 	. = ..()

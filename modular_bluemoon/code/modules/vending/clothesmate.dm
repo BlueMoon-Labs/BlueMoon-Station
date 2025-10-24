@@ -441,6 +441,25 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 				/obj/item/umbrella = 5,
 			),
 		),
+
+		list(
+			"name" = "Backpacks",
+			"icon" = "suitcase",
+			"products" = list(
+				/obj/item/storage/backpack = 3,
+				/obj/item/storage/backpack/satchel = 3,
+				/obj/item/storage/backpack/duffelbag = 3,
+				/obj/item/storage/backpack/pocketbook = 3,
+				/obj/item/storage/backpack/pocketbook/brown = 3,
+				/obj/item/storage/backpack/pocketbook/reddish = 3,
+				/obj/item/storage/backpack/satchel/leather = 3,
+				/obj/item/storage/backpack/santabag = 3,
+				/obj/item/storage/backpack/hipbag = 3,
+				/obj/item/storage/backpack/hipbag/tan = 3,
+				/obj/item/storage/backpack/hipbag/green = 3,
+				/obj/item/storage/backpack/guitarbag = 3,
+			),
+		),
 	)
 
 	contraband = list(

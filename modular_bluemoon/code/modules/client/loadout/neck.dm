@@ -28,12 +28,12 @@
 	name = "New Mecca Cape"
 	path = /obj/item/clothing/neck/cloak/chronos
 
-// /datum/gear/neck/poly_cape
-// 	name = "polychromic cape"
-// 	path = /obj/item/clothing/neck/cloak/poly_cape
-// 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
-// 	loadout_initial_colors = list("#0d8dc0", "#ffffff", "#ffe600")
-// 	item_icon_state = "poly_cape-1" // BLUEMOON EDIT - багованная иконка
+/datum/gear/neck/poly_cape
+	name = "polychromic cape"
+	path = /obj/item/clothing/neck/cloak/poly_cape
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_initial_colors = list("#0d8dc0", "#ffffff", "#ffe600")
+	item_icon_state = "poly_cape-1"
 
 /datum/gear/neck/windy_scarf
 	name = "A windy scarf"

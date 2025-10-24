@@ -441,6 +441,28 @@
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 	rad_flags = RAD_NO_CONTAMINATE
 
+/obj/item/clothing/suit/donator/bm/long_fancy_kimono
+	name = "Long Fancy Kimono"
+	desc = "A traditional piece of clothing from Japan. Special edition."
+	taur_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/suit_taur.dmi'
+	icon_state = "long_fancy_kimono"
+	item_state = "long_fancy_kimono"
+	body_parts_covered = CHEST|GROIN|ARMS
+	flags_inv = HIDEJUMPSUIT|HIDETAUR
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON|STYLE_PAW_TAURIC
+	always_reskinnable = TRUE
+	unique_reskin = list(
+		"Standard" = list(
+			RESKIN_ICON_STATE = "long_fancy_kimono"
+		),
+		"With butterfly" = list(
+			RESKIN_ICON_STATE = "long_fancy_kimono_B"
+		),
+		"No belt" = list(
+			RESKIN_ICON_STATE = "long_fancy_kimono_N"
+		)
+	)
+
 /obj/item/clothing/suit/donator/bm/ranger_coat
 	name = "Ranger Coat"
 	desc = "This military-grade armor is a modification of combat armor and was originally designed for special police units. The armor consists of a bulletproof vest, familiar from previous versions of the armor, with multi-layered composite armor plates that are designed to allow for freedom of movement. A special collar made of the same composite material covers the wearer's neck. On the collar of the armor that protects the neck, you can see a number that is the officer's personal identification number."

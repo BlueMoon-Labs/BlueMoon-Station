@@ -94,6 +94,7 @@
 	new /obj/item/mod/construction/armor/rescue(src)
 	new /obj/item/mod/module/health_analyzer(src)
 	new /obj/item/storage/garment_case/CMO(src) //BLUEMOON add
+	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add
 
 /obj/structure/closet/secure_closet/animal
 	name = "animal control"
