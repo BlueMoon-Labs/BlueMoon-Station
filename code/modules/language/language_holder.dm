@@ -354,7 +354,7 @@ GLOBAL_LIST_INIT(prototype_language_holders, init_language_holder_prototypes())
 	for(var/language in GLOB.all_languages)
 		if(language in blacklist)
 			continue
-		grant_language(language, UNDERSTOOD_LANGUAGE, LANGUAGE_SPECIES)
+		grant_language(language, UNDERSTOOD_LANGUAGE, LANGUAGE_ATOM)
 
 	return ..()
 
@@ -366,7 +366,7 @@ GLOBAL_LIST_INIT(prototype_language_holders, init_language_holder_prototypes())
 	for(var/language in GLOB.all_languages)
 		if(language in blacklist)
 			continue
-		grant_language(language, ALL, LANGUAGE_SPECIES)
+		grant_language(language, ALL, LANGUAGE_ATOM)
 
 	return ..()
 
