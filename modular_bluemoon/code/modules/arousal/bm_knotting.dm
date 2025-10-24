@@ -24,10 +24,17 @@
 /obj/item/organ/genital/penis/proc/update_knotting_from_shape()
 	var/datum/sprite_accessory/S = GLOB.cock_shapes_list[shape]
 	var/state = lowertext(S ? S.icon_state : "[shape]")
-	if(state == "knotted" || state == "barbknot")
-		knot_size = 1
-	else if(state == "hemiknot" || state == "barbedhemiknot")
+
+	// Taur shape check
+	var/tauric_shape = FALSE
+	var/datum/sprite_accessory/taur/T = GLOB.taur_list[src.owner?.dna.features["taur"]]
+	if(istype(T))
+		tauric_shape = T.taur_mode && S.accepted_taurs
+
+	if(tauric_shape || state == "hemiknot" || state == "barbedhemiknot")
 		knot_size = 2
+	else if(state == "knotted" || state == "barbknot")
+		knot_size = 1
 	else
 		knot_size = 0
 
@@ -516,6 +523,10 @@
 /proc/try_apply_knot(mob/living/user, mob/living/partner, target_zone)
 	// Проверка корректных типов
 	if(!ishuman(user) || !ishuman(partner))
+		return
+
+	// Проверка префов
+	if(!user?.client?.prefs.sexknotting || !partner?.client?.prefs.sexknotting)
 		return
 
 	var/static/list/valid_orifices = list(

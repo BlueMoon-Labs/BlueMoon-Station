@@ -5,6 +5,7 @@ type ContentPrefsInfo = {
   verb_consent: boolean,
   lewd_verb_sounds: boolean,
   arousable: boolean,
+  sexknotting: boolean,
   genital_examine: boolean,
   vore_examine: boolean,
   medihound_sleeper: boolean,
@@ -35,6 +36,7 @@ export const ContentPreferencesTab = (props, context) => {
     verb_consent,
     lewd_verb_sounds,
     arousable,
+    sexknotting,
     genital_examine,
     vore_examine,
     medihound_sleeper,
@@ -93,6 +95,18 @@ export const ContentPreferencesTab = (props, context) => {
           selected={arousable}
           onClick={() => act('pref', {
             pref: 'arousable',
+          })}
+        />
+      </Stack.Item>
+      <Stack.Item>
+        <Button
+          fluid
+          mb={-0.7}
+          content="Allow Knotting"
+          icon={sexknotting ? "toggle-on" : "toggle-off"}
+          selected={sexknotting}
+          onClick={() => act('pref', {
+            pref: 'sexknotting',
           })}
         />
       </Stack.Item>
