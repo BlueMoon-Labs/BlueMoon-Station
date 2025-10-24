@@ -227,7 +227,7 @@
 			span_warning("Ты резко выдёргиваешь узел из [partner]! Это больно обоим.")
 		)
 		to_chat(partner, span_userdanger("Ты чувствуешь резкую боль, когда узел [user] рвётся!"))
-		partner.emote("painmoan")
+		partner.emote("scream")
 
 		if(istype(partner, /mob/living))
 			partner.Stun(40)
@@ -291,24 +291,34 @@
 // 🚷 Автоматическая проверка дистанции
 // ============================================================
 
+/mob/living/var/tmp/in_knot_check = FALSE
+
 /mob/living/proc/check_knot_distance()
+	// ⚠️ Предотвращаем рекурсивные вызовы
+	if(in_knot_check)
+		return
+	in_knot_check = TRUE
+
 	var/obj/item/organ/genital/penis/P = getorganslot(ORGAN_SLOT_PENIS)
 	if(!P || !P.knot_locked || !P.knot_partner)
+		in_knot_check = FALSE
 		return
 
 	var/mob/living/partner = P.knot_partner
 	if(!istype(partner))
+		in_knot_check = FALSE
 		return
 
 	var/dist = get_dist(src, partner)
 	if(dist <= 1)
+		in_knot_check = FALSE
 		return
 
 	var/zone_text = "тела"
 	switch(P.knot_state)
 		if(CUM_TARGET_VAGINA) zone_text = "влагалища"
 		if(CUM_TARGET_ANUS) zone_text = "ануса"
-		if(CUM_TARGET_MOUTH) zone_text = "рта"
+		if(CUM_TARGET_MOUTH, CUM_TARGET_THROAT) zone_text = "рта"
 
 	to_chat(src, span_warning("❗ Узел болезненно натягивается в области [zone_text]!"))
 	to_chat(partner, span_danger("💢 Ты чувствуешь, как узел внутри твоего [zone_text] натягивается и причиняет боль!"))
@@ -319,6 +329,7 @@
 		span_notice("Ты ощущаешь сильное напряжение между ними...")
 	)
 
+	// 💥 80% шанс на силовой разрыв
 	if(prob(80))
 		var/zone = P.knot_state ? P.knot_state : CUM_TARGET_VAGINA
 		P.release_knot(src, partner, zone, TRUE)
@@ -326,6 +337,12 @@
 		to_chat(partner, span_userdanger("💥 Узел резко вырывается из твоего [zone_text]!"))
 	else
 		to_chat(src, span_warning("Ты чувствуешь, что узел вот-вот сорвётся..."))
+
+	// ✅ Двусторонняя проверка — вызываем у партнёра, если он не в процессе
+	if(!partner.in_knot_check && istype(partner, /mob/living))
+		partner.check_knot_distance()
+
+	in_knot_check = FALSE
 
 /obj/item/organ/genital/penis/proc/on_knot_move()
 	SIGNAL_HANDLER
@@ -445,7 +462,7 @@
 			to_chat(user, span_notice("Ты уже свободен."))
 	else
 		to_chat(user, span_danger("Ты не смог освободиться от узла!"))
-		if(prob(40)) user.emote("painmoan")
+		if(prob(40)) user.emote("scream")
 
 
 // ============================================================

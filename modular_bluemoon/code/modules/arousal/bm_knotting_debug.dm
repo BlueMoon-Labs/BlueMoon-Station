@@ -1,4 +1,4 @@
-/mob/verb/force_knot() //By Stasdvrz
+/mob/verb/force_knot() // By Stasdvrz
 	set name = "Force Knot (Debug)"
 	set category = "Debug"
 
@@ -7,22 +7,25 @@
 		return
 
 	var/mob/living/carbon/human/H = src
-	var/obj/item/organ/genital/penis/P = H.getorganslot(ORGAN_SLOT_PENIS)
+	if(!istype(H))
+		to_chat(src, span_warning("❌ Этот тест доступен только для людей."))
+		return
 
+	var/obj/item/organ/genital/penis/P = H.getorganslot(ORGAN_SLOT_PENIS)
 	var/list/modes = list()
 
 	if(P)
 		modes = list(
-			"Проверить состояние узла" = "state",
-			"Активировать узел (принудительно)" = "lock",
-			"Принудительный мягкий спад" = "release_soft",
-			"Принудительный силовой разрыв" = "release_force",
-			"Проверка дистанции" = "distance",
-			"Resist от себя" = "resist_self",
-			"Resist от партнёра" = "resist_partner",
-			"Симулировать движение (проверка натяжения)" = "simulate_move",
-			"Симулировать resist (нажатие вручную)" = "simulate_resist",
-			"Авто-resist через 5 секунд" = "auto_resist",
+			"📊 Проверить состояние узла" = "state",
+			"🔒 Активировать узел (принудительно)" = "lock",
+			"💧 Принудительный мягкий спад" = "release_soft",
+			"💥 Принудительный силовой разрыв" = "release_force",
+			"📡 Проверка дистанции" = "distance",
+			"🧩 Resist от себя" = "resist_self",
+			"🧩 Resist от партнёра" = "resist_partner",
+			"🚶 Симулировать движение" = "simulate_move",
+			"🧠 Симулировать resist (ручной)" = "simulate_resist",
+			"⏳ Авто-resist через 5 секунд" = "auto_resist",
 			"🧍 Проверить насаживание (женская сторона)" = "female_test"
 		)
 	else
@@ -40,11 +43,13 @@
 			to_chat(src, "- knot_locked: [P?.knot_locked]")
 			to_chat(src, "- knot_strength: [P?.knot_strength]")
 			to_chat(src, "- knot_until: [P?.knot_until ? "[P.knot_until - world.time] тиков" : "нет таймера"]")
-			to_chat(src, "- partner: [P?.knot_partner ? "[P.knot_partner]" : "нет партнёра"]")
+			to_chat(src, "- knot_partner: [P?.knot_partner ? "[P.knot_partner]" : "нет партнёра"]")
 			if(HAS_TRAIT(H, TRAIT_ESTROUS_ACTIVE))
 				to_chat(src, span_love("💗 Активен эстральный цикл"))
 			else
 				to_chat(src, span_notice("🧊 Эстральный цикл не активен"))
+			if(hascall(H, "get_lust") && hascall(H, "get_climax_threshold"))
+				to_chat(src, "- lust: [round((H.get_lust()/H.get_climax_threshold())*100,1)]%")
 			return
 
 		if("lock")
@@ -105,11 +110,10 @@
 				to_chat(src, span_notice("🧩 Resist попытка запущена от лица партнёра."))
 
 		if("simulate_move")
-			to_chat(src, span_notice("🚶 Тест: симуляция движения с активным узлом."))
+			to_chat(src, span_notice("🚶 Симулируем движение..."))
 			if(P.knot_locked && P.knot_partner)
-				var/dist = get_dist(src, P.knot_partner)
-				to_chat(src, span_notice("📏 Расстояние до партнёра: [dist] тайлов."))
-				call(src, "check_knot_distance")()
+				H.check_knot_distance()
+				to_chat(src, span_notice("📏 Проверка натяжения выполнена."))
 			else
 				to_chat(src, span_warning("❌ Узел не активен или нет партнёра."))
 
@@ -127,7 +131,6 @@
 			to_chat(src, span_notice("⏳ Resist через 5 секунд..."))
 			addtimer(CALLBACK(P, TYPE_PROC_REF(/obj/item/organ/genital/penis, start_resist_attempt), src), 5 SECONDS)
 
-		// 🧍 Новая ветка: тест женской стороны
 		if("female_test")
 			var/list/moblist = list()
 			for(var/mob/living/carbon/human/M in view(7, src))
@@ -152,5 +155,5 @@
 			var/zone = L[choice]
 
 			to_chat(src, span_notice("🔬 Тест: симуляция узлирования от женской стороны..."))
-			try_apply_knot(src, target, zone) // 👈 именно в таком порядке
+			try_apply_knot(src, target, zone)
 			to_chat(src, span_love("💞 Ты насаживаешься на [target]. Проверка узла выполнена."))
