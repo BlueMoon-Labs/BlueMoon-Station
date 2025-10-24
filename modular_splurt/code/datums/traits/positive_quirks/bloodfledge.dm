@@ -26,7 +26,7 @@
 		quirk_mob.skin_tone = "albino"
 
 	// Add quirk language
-	quirk_mob.grant_language(/datum/language/vampiric, TRUE, TRUE, LANGUAGE_BLOODSUCKER)
+	quirk_mob.grant_language(/datum/language/vampiric)
 
 	// Register examine text
 	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(quirk_examine_bloodfledge))
