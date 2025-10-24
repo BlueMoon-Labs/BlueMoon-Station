@@ -501,25 +501,29 @@
 	if(!ishuman(user) || !ishuman(partner))
 		return
 
+	var/static/list/valid_orifices = list(
+		CUM_TARGET_VAGINA,
+		CUM_TARGET_ANUS,
+		CUM_TARGET_MOUTH,
+		CUM_TARGET_THROAT
+	)
+
+	if(!(target_zone in valid_orifices))
+		return
+
 	var/mob/living/carbon/human/initiator = user
 	var/mob/living/carbon/human/receiver = partner
 	var/obj/item/organ/genital/penis/P = null
 
-	// Определяем, у кого член: у инициатора или у цели
-	var/obj/item/organ/genital/penis/user_penis = initiator.getorganslot(ORGAN_SLOT_PENIS)
-	var/obj/item/organ/genital/penis/partner_penis = receiver.getorganslot(ORGAN_SLOT_PENIS)
-
-	if(user_penis && !partner_penis)
-		P = user_penis
-	else if(partner_penis && !user_penis)
-		// Случай: инициатор (женщина) насаживается на партнёра (мужчину)
-		P = partner_penis
-		// Меняем роли — чтобы член считался активным источником узла
+	var/source = initiator.last_genital
+	if(istype(source, /obj/item/organ/genital/penis))
+		P = source
+	else if(istype(receiver.last_genital, /obj/item/organ/genital/penis))
+		P = receiver.last_genital
 		var/tmp = initiator
 		initiator = receiver
 		receiver = tmp
 	else
-		// Если у обоих или ни у кого нет члена — не узлируем
 		return
 
 	// Проверка на блокировку
