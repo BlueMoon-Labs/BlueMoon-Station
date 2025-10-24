@@ -474,6 +474,7 @@
 		.["verb_consent"] = 			!!CHECK_BITFIELD(prefs.toggles, VERB_CONSENT)
 		.["lewd_verb_sounds"] = 		!!CHECK_BITFIELD(prefs.toggles, LEWD_VERB_SOUNDS)
 		.["arousable"] = 				prefs.arousable
+		.["sexknotting"] = 				prefs.sexknotting // BLUEMONN ADD
 		.["genital_examine"] = 			!!CHECK_BITFIELD(prefs.cit_toggles, GENITAL_EXAMINE)
 		.["vore_examine"] = 			!!CHECK_BITFIELD(prefs.cit_toggles, VORE_EXAMINE)
 		.["medihound_sleeper"] =		!!CHECK_BITFIELD(prefs.cit_toggles, MEDIHOUND_SLEEPER)
@@ -707,6 +708,8 @@
 					TOGGLE_BITFIELD(prefs.toggles, LEWD_VERB_SOUNDS)
 				if("arousable")
 					prefs.arousable = !prefs.arousable
+				if("sexknotting")
+					prefs.sexknotting = !prefs.sexknotting
 				if("genital_examine")
 					TOGGLE_BITFIELD(prefs.cit_toggles, GENITAL_EXAMINE)
 				if("vore_examine")
