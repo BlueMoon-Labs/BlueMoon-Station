@@ -78,10 +78,10 @@
 	if(eyecolor_val < 40)
 		eyecolor_val = 40
 
-	eyecolor_rgb = rgb(eyecolor_hue, eyecolor_sat, eyecolor_val, space=COLORSPACE_HSV)
+	var/new_eyecolor_rgb = sanitize_hexcolor(rgb(eyecolor_hue, eyecolor_sat, eyecolor_val, space=COLORSPACE_HSV), 6)
 
-	owner.left_eye_color = eyecolor_rgb
-	owner.right_eye_color = eyecolor_rgb
+	owner.left_eye_color = new_eyecolor_rgb
+	owner.right_eye_color = new_eyecolor_rgb
 	owner.update_body()
 
 	var/datum/shadekin_eye_model/eye_type_color = /datum/shadekin_eye_model/blue
@@ -206,4 +206,4 @@
 
 	use_energy(-1 * energy_to_add)
 
-	huds_ping() //Увы?
+	huds_ping(dark_level) //Увы?
