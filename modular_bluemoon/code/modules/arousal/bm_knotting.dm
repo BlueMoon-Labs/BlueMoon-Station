@@ -170,7 +170,7 @@
 			HM.adjust_arousal(100, "knotting", aphro = TRUE)
 
 		var/climax_threshold = hascall(M, "get_climax_threshold") ? M.get_climax_threshold() : 100
-		if(M.lust / climax_threshold < 0.95)
+		if(M.lust / climax_threshold < 0.65)
 			M.add_lust(NORMAL_LUST)
 
 		REMOVE_TRAIT(M, TRAIT_NEVERBONER, "KNOT_AROUSAL")
