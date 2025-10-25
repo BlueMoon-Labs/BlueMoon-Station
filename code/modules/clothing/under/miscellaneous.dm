@@ -422,3 +422,10 @@
 	item_state = "blue_mech_suit"
 	can_adjust = FALSE
 
+/obj/item/clothing/under/raccveralls_alt
+	name = "Loose Overalls"
+	desc = "A not-so-tight, and definitely not form fitting pair of overalls."
+	icon_state = "raccveralls_alt"
+	item_state = "raccveralls_alt"
+	can_adjust = FALSE
+	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK

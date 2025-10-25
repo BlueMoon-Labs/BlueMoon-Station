@@ -3,6 +3,11 @@
 	description = "A simple tunic."
 	path = /obj/item/clothing/under/tunic
 
+/datum/gear/uniform/raccveralls_alt
+	name = "Loose Overalls"
+	description = "A not-so-tight, and definitely not form fitting pair of overalls."
+	path = /obj/item/clothing/under/raccveralls_alt
+
 /datum/gear/uniform/lumberjack
 	name = "Lumberjack Outfit"
 	description = "Makes you want to pull a genocide on trees."
