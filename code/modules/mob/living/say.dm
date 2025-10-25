@@ -90,14 +90,23 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		else
 			result += ch
 
-		// Если встретили конец предложения — включаем кап
-		if(ch == "." || ch == "!" || ch == "?")
-			next_cap = TRUE
-			// Если после .!? нет пробела — добавляем его
-			if(i < len)
-				var/nextch = copytext_char(text, i+1, i+2)
-				if(nextch != " " && nextch != "." && nextch != "!" && nextch != "?" && nextch != "\t" && nextch != "\n")
-					result += " "
+		// Проверяем на конец предложения, но игнорируем ...
+		if((ch == "." || ch == "!" || ch == "?"))
+			var/nextch = copytext_char(text, i+1, i+2)
+			var/nextnext = copytext_char(text, i+2, i+3)
+
+			// Если три точки подряд — не конец предложения
+			if(!(ch == "." && nextch == "." && nextnext == "."))
+				next_cap = TRUE
+
+				// Если после .!? нет пробела — добавляем
+				if(i < len)
+					if(nextch != " " && nextch != "." && nextch != "!" && nextch != "?" && nextch != "\t" && nextch != "\n")
+						result += " "
+
+		// Не включаем капитализацию после - или %
+		if(ch == "-" || ch == "%")
+			next_cap = FALSE
 
 		// Если встретили кавычку — ожидаем заглавную после неё
 		if(ch == "\"" || ch == "«" || ch == "“")
@@ -106,11 +115,12 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 			if(i < len)
 				var/nextch2 = copytext_char(text, i+1, i+2)
 				if(nextch2 == " ")
-					i += 1 // просто пропускаем его
+					i += 1 // пропускаем его
 
 		i += 1
 
 	return result
+
 
 
 
