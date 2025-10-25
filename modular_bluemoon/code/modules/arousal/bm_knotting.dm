@@ -227,12 +227,12 @@
 	for(var/mob/living/M in list(user, partner))
 		if(!M?.client?.prefs?.arousable)
 			continue
-		M.add_lust(rand(10, 20))
+		M.add_lust(rand(30, 40))
 		if(prob(8))
 			M.emote(pick("moan","pant","blush"))
 
 	// продолжаем, пока активен узел
-	addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), 10 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), 5 SECONDS)
 
 // ============================================================
 // 💥 Release: мягкий спад и силовой разрыв
