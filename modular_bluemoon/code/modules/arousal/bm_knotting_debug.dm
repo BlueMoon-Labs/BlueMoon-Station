@@ -1,10 +1,13 @@
-/mob/verb/force_knot() // By Stasdvrz
+/datum/admins/proc/force_knot() // By Stasdvrz
 	set name = "Force Knot (Debug)"
 	set category = "Debug"
 	set hidden = TRUE
 
 	if(!check_rights(R_ADMIN))
 		to_chat(src, span_warning("⚠ Только для админов."))
+		return
+
+	if(!check_rights(R_SPAWN))
 		return
 
 	var/mob/living/carbon/human/H = src
