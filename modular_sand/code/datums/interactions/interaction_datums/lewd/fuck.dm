@@ -29,7 +29,7 @@
 			"жадно насаживает <b>[partner]</b> на свой [shape_desc] член, теряя самообладание.")
 	else
 		message = pick(
-			"медленно вводит свой [shape_desc] член в лоно <b>[partner]</b>, наслаждаясь nёплотой.",
+			"медленно вводит свой [shape_desc] член в лоно <b>[partner]</b>, наслаждаясь тёплотой.",
 			"плотно прижимается к <b>[partner]</b> и аккуратно погружает свой [shape_desc] член.",
 			"ловко находит нужный угол и начинает проникновение в киску <b>[partner]</b>.")
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
