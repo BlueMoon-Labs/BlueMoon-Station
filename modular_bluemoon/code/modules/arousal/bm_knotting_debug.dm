@@ -1,6 +1,7 @@
 /mob/verb/force_knot() // By Stasdvrz
 	set name = "Force Knot (Debug)"
 	set category = "Debug"
+	set hidden = TRUE
 
 	if(!check_rights(R_ADMIN))
 		to_chat(src, span_warning("⚠ Только для админов."))
@@ -63,25 +64,50 @@
 			for(var/mob/living/carbon/human/M in view(7, src))
 				if(M != src)
 					moblist += M
-			if(!length(moblist))
-				to_chat(src, span_warning("❌ Рядом нет целей."))
-				return
 
-			var/mob/living/carbon/human/target = input(src, "Выбери цель для узла:", "Knot test") as null|anything in moblist
+			var/mob/living/carbon/human/target = null
+			var/fake_partner = FALSE
+
+			if(length(moblist))
+				target = input(src, "Выбери цель для узла:", "Knot test") as null|anything in moblist
+
 			if(!target)
-				return
+				to_chat(src, span_warning("⚙️ Цель не выбрана — создаётся тестовый партнёр для проверки сообщений."))
+				target = src
+				fake_partner = TRUE
 
 			P.knot_locked = TRUE
 			P.knot_partner = target
 			P.knot_state = zone
 			P.knot_until = world.time + 60 SECONDS
 
-			H.visible_message(
-				span_lewd("<b>[H]</b> застревает узлом в [choice] <b>[target]</b>!"),
-				span_notice("Твой узел набухает и фиксируется внутри [target].")
-			)
-			to_chat(src, span_love("✅ Узел искусственно активирован (цель: [target], зона: [choice]) на 60 секунд."))
+			// подключаем поводковую механику
+			var/mob/living/master = H
+			var/mob/living/pet = target
+			if(!pet.has_movespeed_modifier(/datum/movespeed_modifier/leash))
+				pet.add_movespeed_modifier(/datum/movespeed_modifier/leash)
 
+			// регистрация движения
+			P.RegisterSignal(master, COMSIG_MOVABLE_MOVED, TYPE_PROC_REF(/obj/item/organ/genital/penis, on_knot_move))
+			P.RegisterSignal(pet, COMSIG_MOVABLE_MOVED, TYPE_PROC_REF(/obj/item/organ/genital/penis, on_knot_move))
+
+
+			to_chat(src, span_love("✅ Узел искусственно активирован (цель: [target], зона: [choice]) на 60 секунд."))
+			to_chat(src, span_notice("📎 Поводок активирован — движение будет отслеживаться."))
+
+			// 💞 Принудительная симуляция возбуждения (для дебага)
+			if(istype(P, /obj/item/organ/genital/penis))
+				to_chat(src, span_love("<font color='#ff7ff5'><b>[DEBUG]</b> Запуск афродизиачного эффекта узла...</font>"))
+				P.knot_arousal_tick(H, target)
+
+			// 💬 Отладочная проверка видимости сообщений
+			if(fake_partner)
+				to_chat(src, span_love("<font color='#ff7ff5'><b>[DEBUG]</b> Симуляция: партнёрские сообщения будут отображаться здесь же.</font>"))
+				to_chat(src, span_lewd("<b>(Партнёр)</b> Ты ощущаешь, как узел блокирует выход и пульсирует внутри..."))
+			else
+				to_chat(target, span_love("<font color='#ff7ff5'><b>Узел блокирует выход — вы соединены с [src]!</b></font>"))
+
+			// планируем таймеры
 			addtimer(CALLBACK(P, TYPE_PROC_REF(/obj/item/organ/genital/penis, knot_distance_loop), H), 5 SECONDS)
 			addtimer(CALLBACK(P, TYPE_PROC_REF(/obj/item/organ/genital/penis, release_knot), H, target, zone, FALSE), 60 SECONDS)
 
@@ -155,5 +181,5 @@
 			var/zone = L[choice]
 
 			to_chat(src, span_notice("🔬 Тест: симуляция узлирования от женской стороны..."))
-			try_apply_knot(src, target, zone)
+			try_apply_knot(src, target, zone, TRUE)
 			to_chat(src, span_love("💞 Ты насаживаешься на [target]. Проверка узла выполнена."))

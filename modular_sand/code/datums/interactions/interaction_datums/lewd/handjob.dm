@@ -29,13 +29,13 @@
 			"играется с членом <b>[partner]</b>",
 			"использует свои пальчики, вздрачивая пенис <b>[partner]</b>",
 			"вздрачивает член <b>[partner]</b>",
-			"стимулирует [shape_desc] <b>[partner]</b>")]"
+			"стимулирует [shape_desc] член <b>[partner]</b>")]"
 	else
 		message = "[pick("дрочит пенис <b>[partner]</b>",
 			"играется с членом <b>[partner]</b>",
 			"использует свои пальчики, вздрачивая пенис <b>[partner]</b>",
 			"вздрачивает член <b>[partner]</b>",
-			"стимулирует [shape_desc] <b>[partner]</b>")]"
+			"стимулирует [shape_desc] член <b>[partner]</b>")]"
 		partner.set_is_fucking(user, CUM_TARGET_HAND, partner.getorganslot(ORGAN_SLOT_PENIS))
 	if(liquid_container)
 		message += " над [liquid_container]"

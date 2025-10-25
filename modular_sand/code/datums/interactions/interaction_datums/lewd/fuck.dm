@@ -22,15 +22,15 @@
 //BLUEMOON ADD END
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = pick(
-			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc].",
-			"глубоко вводит свой [shape_desc] во влагалище <b>[partner]</b>.",
-			"с силой загоняет свой [shape_desc] в вагину <b>[partner]</b> и шлёпается своими [has_balls ? "яйцами" : "бедрами"].",
+			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc] член.",
+			"глубоко вводит свой [shape_desc] член во влагалище <b>[partner]</b>.",
+			"с силой загоняет свой [shape_desc] член в вагину <b>[partner]</b> и шлёпается своими [has_balls ? "яйцами" : "бедрами"].",
 			"ритмично двигается, заставляя <b>[partner]</b> дрожать при каждом толчке.",
-			"жадно насаживает <b>[partner]</b> на свой [shape_desc], теряя самообладание.")
+			"жадно насаживает <b>[partner]</b> на свой [shape_desc] член, теряя самообладание.")
 	else
 		message = pick(
-			"медленно вводит свой [shape_desc] в лоно <b>[partner]</b>, наслаждаясь nёплотой.",
-			"плотно прижимается к <b>[partner]</b> и аккуратно погружает свой [shape_desc].",
+			"медленно вводит свой [shape_desc] член в лоно <b>[partner]</b>, наслаждаясь nёплотой.",
+			"плотно прижимается к <b>[partner]</b> и аккуратно погружает свой [shape_desc] член.",
 			"ловко находит нужный угол и начинает проникновение в киску <b>[partner]</b>.")
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
