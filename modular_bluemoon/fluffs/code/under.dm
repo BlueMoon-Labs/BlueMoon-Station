@@ -174,6 +174,12 @@
 	can_adjust = TRUE
 	fitted = FEMALE_UNIFORM_TOP
 
+/obj/item/clothing/under/donator/bm/braskirt
+	name = "Red bra and striped skirt"
+	desc = "Red side-slit skirt with stripes! Comes with a matching two-tone bra."
+	icon_state = "braskirt"
+	item_state = "braskirt"
+
 /obj/item/clothing/underwear/briefs/kladmen_panties
 	name = "Panties"
 	icon_state = "kladmen_panties"

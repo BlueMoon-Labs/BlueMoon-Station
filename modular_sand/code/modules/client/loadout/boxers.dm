@@ -62,6 +62,10 @@
 	name = "Slim Panties"
 	path = /obj/item/clothing/underwear/briefs/panties/slim
 
+/datum/gear/underwear/boxers/panties/lizared
+	name = "LIZARED Panties"
+	path = /obj/item/clothing/underwear/briefs/panties/lizared
+
 /datum/gear/underwear/boxers/panties/thin
 	name = "Thin Panties"
 	path = /obj/item/clothing/underwear/briefs/panties/thin

@@ -909,6 +909,12 @@
 	path = /obj/item/clothing/under/donator/bm/laskaskirt
 	ckeywhitelist = list("angrylaska")
 
+/datum/gear/donator/bm/braskirt
+	name = "Red bra and striped skirt"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/braskirt
+	ckeywhitelist = list("deltarayx")
+
 /datum/gear/donator/bm/mihana_mask
 	name = "Andromeda mask"
 	slot = ITEM_SLOT_BACKPACK
@@ -1481,6 +1487,12 @@
 	name = "Delivery Bag"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/backpack/satchel/dilivery_bag
+	ckeywhitelist = list("troubleneko17th", "dimofon", "hazzi", "cupteazee", "kolhozniik", "dimakr")
+
+/datum/gear/donator/bm/pawpack
+	name = "Paw Backpack"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/backpack/satchel/pawpack
 	ckeywhitelist = list("troubleneko17th", "dimofon", "hazzi", "cupteazee", "kolhozniik", "dimakr")
 
 /datum/gear/donator/bm/bishop_mitre

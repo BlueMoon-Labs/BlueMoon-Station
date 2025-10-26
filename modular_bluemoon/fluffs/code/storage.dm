@@ -125,6 +125,14 @@
 	icon_state = "dilivery_bag"
 	item_state = "dilivery_bag"
 
+/obj/item/storage/backpack/satchel/pawpack
+	name = "Paw Backpack"
+	desc = "A trendy looking backpack shaped like a paw."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/storage.dmi'
+	icon_state = "pawpack"
+	item_state = "pawpack"
+
 /obj/item/storage/backpack/satchel/rawk_sat
 	name = "Rawk Satchel"
 	desc = "Tactical military satchel for a special forces group."

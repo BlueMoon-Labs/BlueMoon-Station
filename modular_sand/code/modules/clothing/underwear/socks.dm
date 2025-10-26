@@ -256,3 +256,9 @@
 	desc = "A pair of stockings."
 	body_parts_covered = LEGS | FEET
 	icon_state = "stockings_latex"
+
+/obj/item/clothing/underwear/socks/thigh/leggings_stir
+	name = "Thigh-high Stirrups (Black)"
+	desc = "A pair of stockings."
+	body_parts_covered = LEGS | FEET
+	icon_state = "leggings-stir-black_bk"

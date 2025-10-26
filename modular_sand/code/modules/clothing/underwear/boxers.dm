@@ -94,6 +94,10 @@
 	name = "slim panties"
 	icon_state = "panties_slim"
 
+/obj/item/clothing/underwear/briefs/panties/lizared
+	name = "LIZARED panties"
+	icon_state = "panties_LIZARED"
+
 /obj/item/clothing/underwear/briefs/panties/striped
 	name = "striped panties"
 	icon_state = "panties_striped"

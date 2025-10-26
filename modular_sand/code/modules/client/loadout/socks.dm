@@ -203,3 +203,7 @@
 /datum/gear/socks/thigh/l_stockings
 	name = "A pair of latex stockings."
 	path = /obj/item/clothing/underwear/socks/thigh/l_stockings
+
+/datum/gear/socks/thigh/leggings_stir
+	name = "Thigh-high Stirrups (Black)"
+	path = /obj/item/clothing/underwear/socks/thigh/leggings_stir
