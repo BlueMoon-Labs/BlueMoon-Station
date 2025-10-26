@@ -27,15 +27,13 @@
 	var/datum/shadekin_eye_model/eye_type = /datum/shadekin_eye_model/blue
 
 /datum/component/shadekin/Initialize(...)
-	if(!isshadekin(parent) || !ishuman(parent) || isnull(parent))
+	to_chat(world, "[parent?.type]    [parent]")
+	if(!ishuman(parent) || isnull(parent))
 		return COMPONENT_INCOMPATIBLE
 	owner = parent
 
 	eye_type = set_shadekin_eyecolor()
 	append_actions_from_templates()
-
-	if(owner?.client)
-		append_screens_from_templates(owner?.client)
 
 /datum/component/shadekin/RegisterWithParent()
 	RegisterSignal(owner, COMSIG_SHADEKIN_GET_DARK_ENERGY, PROC_REF(get_energy))
@@ -125,7 +123,7 @@
 	return use_energy(amount)
 
 /datum/component/shadekin/proc/append_actions_from_templates()
-	if(!owner?.mind)
+	if(!owner)
 		return
 
 	SEND_SIGNAL(owner, COMSIG_SHADEKIN_ACTION_DELETE)

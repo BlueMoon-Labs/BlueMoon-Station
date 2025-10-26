@@ -46,7 +46,7 @@
 	return use()
 
 /datum/action/shadekin/proc/check_energy()
-	return cost >= dark_energy ? FALSE : TRUE
+	return cost <= dark_energy ? TRUE : FALSE
 //СВОя логика
 /datum/action/shadekin/proc/use()
 

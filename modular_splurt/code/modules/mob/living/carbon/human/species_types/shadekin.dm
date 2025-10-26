@@ -8,3 +8,5 @@
 	allowed_limb_ids = list("mammal","aquatic","avian")
 	override_bp_icon = DEFAULT_BODYPART_ICON_ORGANIC
 	eye_type = "shadekin"
+
+/datum/species/mammal/shadekin/species
