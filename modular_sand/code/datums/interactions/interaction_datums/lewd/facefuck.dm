@@ -252,7 +252,7 @@
 		user.visible_message(span_love("<b>[partner]</b> захлёбывается стонами, когда оба члена глубоко в её рту!"))
 
 /datum/interaction/lewd/knot_oral
-    description = "Член. Глубокий минет с высоким шансом узлирования."
+    description = "Член. Глубокий минет с узлом."
     required_from_user_exposed = INTERACTION_REQUIRE_PENIS
     required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
     write_log_user = "knot oral fucked"
