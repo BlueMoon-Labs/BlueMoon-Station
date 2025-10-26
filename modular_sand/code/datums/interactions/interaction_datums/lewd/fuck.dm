@@ -22,15 +22,15 @@
 //BLUEMOON ADD END
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = pick(
-			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc] член.",
-			"глубоко вводит свой [shape_desc] член во влагалище <b>[partner]</b>.",
-			"с силой загоняет свой [shape_desc] член в вагину <b>[partner]</b> и шлёпается своими [has_balls ? "яйцами" : "бедрами"].",
+			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc] .",
+			"глубоко вводит свой [shape_desc] во влагалище <b>[partner]</b>.",
+			"с силой загоняет свой [shape_desc] в вагину <b>[partner]</b> и шлёпается своими [has_balls ? "яйцами" : "бедрами"].",
 			"ритмично двигается, заставляя <b>[partner]</b> дрожать при каждом толчке.",
-			"жадно насаживает <b>[partner]</b> на свой [shape_desc] член, теряя самообладание.")
+			"жадно насаживает <b>[partner]</b> на свой [shape_desc], теряя самообладание.")
 	else
 		message = pick(
-			"медленно вводит свой [shape_desc] член в лоно <b>[partner]</b>, наслаждаясь тёплотой.",
-			"плотно прижимается к <b>[partner]</b> и аккуратно погружает свой [shape_desc] член.",
+			"медленно вводит свой [shape_desc] в лоно <b>[partner]</b>, наслаждаясь тёплотой.",
+			"плотно прижимается к <b>[partner]</b> и аккуратно погружает свой [shape_desc].",
 			"ловко находит нужный угол и начинает проникновение в киску <b>[partner]</b>.")
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
@@ -282,3 +282,242 @@
 		new /obj/effect/temp_visual/heart(user.loc)
 	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
 		new /obj/effect/temp_visual/heart(partner.loc)
+
+/datum/interaction/lewd/double_penetration
+	description = "Члены. Двойное проникновение"
+	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
+	required_from_target_exposed = INTERACTION_REQUIRE_VAGINA | INTERACTION_REQUIRE_ANUS
+	write_log_user = "double penetrated"
+	write_log_target = "was double penetrated by"
+	additional_details = list(INTERACTION_MAY_CAUSE_PREGNANCY)
+	interaction_sound = null
+
+/datum/interaction/lewd/double_penetration/display_interaction(mob/living/user, mob/living/partner)
+	var/message
+	var/shape_desc = get_penis_shape_desc(user)
+
+	// Проверяем, что у пользователя есть двойные члены
+	if(!findtext(shape_desc, "двойн"))
+		to_chat(user, span_warning("Для этого действия нужны двойные члены!"))
+		return
+
+	if(user.is_fucking(partner, CUM_TARGET_VAGINA) && user.is_fucking(partner, CUM_TARGET_ANUS))
+		message = pick(
+			"одновременно долбится в киску и задницу <b>[partner]</b>, двигаясь мощно и ритмично.",
+			"заполняет оба отверстия <b>[partner]</b> своими [shape_desc], доводя её до экстаза.",
+			"плотно насаживает <b>[partner]</b> сразу на два члена, лишая её дыхания от удовольствия.",
+			"ритмично двигается, заставляя <b>[partner]</b> дрожать при каждом двойном толчке.",
+			"жадно проникает в оба отверстия <b>[partner]</b>, чувствуя каждое сжатие.")
+	else
+		message = pick(
+			"аккуратно направляет оба своих [shape_desc] — один к вагине, другой к анусу <b>[partner]</b>.",
+			"плотно прижимается к <b>[partner]</b> и начинает двойное проникновение.",
+			"ловко совмещает движения, вводя оба члена одновременно в анус и киску <b>[partner]</b>.")
+		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
+		user.set_is_fucking(partner, CUM_TARGET_ANUS, user.getorganslot(ORGAN_SLOT_PENIS))
+
+	playlewdinteractionsound(get_turf(user), pick(
+		'modular_sand/sound/interactions/champ1.ogg',
+		'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+
+	user.visible_message(
+		span_lewd("<b>\The [user]</b> [message]"),
+		ignored_mobs = user.get_unconsenting()
+	)
+
+	// Эффекты возбуждения и оргазма
+	if(user.can_penetrating_genital_cum())
+		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS)
+		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS)
+
+	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
+	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, "anus")
+
+	try_apply_knot(user, partner, CUM_TARGET_VAGINA)
+	try_apply_knot(user, partner, CUM_TARGET_ANUS)
+
+	if(prob(25))
+		user.visible_message(span_love("<b>[partner]</b> выгибается от переполняющих ощущений, не выдерживая двойного проникновения!"))
+
+/datum/interaction/lewd/double_vaginal
+	description = "Члены. Двойное вагинальное проникновение"
+	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
+	required_from_target_exposed = INTERACTION_REQUIRE_VAGINA
+	write_log_user = "double vaginal fucked"
+	write_log_target = "was double vaginally fucked by"
+	additional_details = list(INTERACTION_MAY_CAUSE_PREGNANCY)
+	interaction_sound = null
+
+/datum/interaction/lewd/double_vaginal/display_interaction(mob/living/user, mob/living/partner)
+	var/message
+	var/shape_desc = get_penis_shape_desc(user)
+
+	if(!findtext(shape_desc, "двойн"))
+		to_chat(user, span_warning("Для этого действия нужны двойные члены!"))
+		return
+
+	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
+		message = pick(
+			"заполняет киску <b>[partner]</b> обоими [shape_desc], двигаясь в унисон.",
+			"жадно насаживает <b>[partner]</b> на два члена, растягивая её до предела.",
+			"ритмично долбит киску <b>[partner]</b>, заставляя тело дрожать от переполняющего жара.",
+			"заполняет влагалище <b>[partner]</b> каждым движением, не давая отдышаться.")
+	else
+		message = pick(
+			"направляет оба [shape_desc] ко входу во влагалище <b>[partner]</b> и начинает проникновение.",
+			"плотно прижимается к <b>[partner]</b> и медленно погружает оба члена внутрь.",
+			"ловко вводит оба члена в киску <b>[partner]</b>, чувствуя её сжатие.")
+		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
+
+	playlewdinteractionsound(get_turf(user), pick(
+		'modular_sand/sound/interactions/champ1.ogg',
+		'modular_sand/sound/interactions/champ2.ogg'), 70, 1, -1)
+
+	user.visible_message(
+		span_lewd("<b>\The [user]</b> [message]"),
+		ignored_mobs = user.get_unconsenting()
+	)
+
+	if(user.can_penetrating_genital_cum())
+		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS)
+	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
+
+	try_apply_knot(user, partner, CUM_TARGET_VAGINA)
+
+	if(prob(25))
+		user.visible_message(span_love("<b>[partner]</b> стонет, чувствуя, как оба члена растягивают её влагалище!"))
+
+/datum/interaction/lewd/double_anal
+	description = "Члены. Двойное анальное проникновение"
+	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
+	required_from_target_exposed = INTERACTION_REQUIRE_ANUS
+	write_log_user = "double anal fucked"
+	write_log_target = "was double anally fucked by"
+	interaction_sound = null
+
+/datum/interaction/lewd/double_anal/display_interaction(mob/living/user, mob/living/partner)
+	var/message
+	var/shape_desc = get_penis_shape_desc(user)
+
+	if(!findtext(shape_desc, "двойн"))
+		to_chat(user, span_warning("Для этого действия нужны двойные члены!"))
+		return
+
+	if(user.is_fucking(partner, CUM_TARGET_ANUS))
+		message = pick(
+			"грубо долбится в задницу <b>[partner]</b> обоими [shape_desc], не давая ей передохнуть.",
+			"заполняет анальное колечко <b>[partner]</b> двумя членами, двигаясь в унисон.",
+			"с силой насаживает <b>[partner]</b> на оба члена, заставляя зад активно трястись.",
+			"входит глубоко и одновременно двумя членами в задницу <b>[partner]</b>, теряя контроль.")
+	else
+		message = pick(
+			"аккуратно направляет оба [shape_desc] к анальному отверстию <b>[partner]</b>.",
+			"растягивает анус <b>[partner]</b> кончиками обоих членов и начинает медленно входить.",
+			"совмещает движения, проникая сразу двумя членами внутрь.")
+		user.set_is_fucking(partner, CUM_TARGET_ANUS, user.getorganslot(ORGAN_SLOT_PENIS))
+
+	playlewdinteractionsound(get_turf(user), pick(
+		'modular_sand/sound/interactions/bang1.ogg',
+		'modular_sand/sound/interactions/bang2.ogg'), 70, 1, -1)
+
+	user.visible_message(
+		span_lewd("<b>\The [user]</b> [message]"),
+		ignored_mobs = user.get_unconsenting()
+	)
+
+	if(user.can_penetrating_genital_cum())
+		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS)
+	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, "anus")
+
+	try_apply_knot(user, partner, CUM_TARGET_ANUS)
+
+	if(prob(25))
+		user.visible_message(span_love("<b>[partner]</b> вскрикивает, не выдерживая давления двух членов в заднице!"))
+
+/datum/interaction/lewd/knot_fuck
+    description = "Член. Проникнуть в Вагину с узлированием"
+    required_from_user_exposed = INTERACTION_REQUIRE_PENIS
+    required_from_target_exposed = INTERACTION_REQUIRE_VAGINA
+    write_log_user = "knot fucked"
+    write_log_target = "was knot fucked by"
+    interaction_sound = null
+    additional_details = list(INTERACTION_MAY_CAUSE_PREGNANCY)
+
+/datum/interaction/lewd/knot_fuck/display_interaction(mob/living/user, mob/living/partner)
+    var/message
+    var/shape_desc = get_penis_shape_desc(user)
+
+    if(!findtext(shape_desc, "узл"))
+        to_chat(user, span_warning("Твой член не имеет узла — узлирование невозможно!"))
+        return
+
+    if(user.is_fucking(partner, CUM_TARGET_VAGINA))
+        message = pick(
+            "ритмично долбится в киску <b>[partner]</b>, чувствуя, как узел начинает набухать.",
+            "жадно насаживает <b>[partner]</b> на [shape_desc], чувствуя плотное сцепление.",
+            "двигается мощно, заставляя узел застрять глубоко во влагалище <b>[partner]</b>.",
+            "с силой вдавливает узел внутрь, запирая <b>[partner]</b> на своём члене.")
+    else
+        message = pick(
+            "аккуратно вставляет свой [shape_desc] во влагалище <b>[partner]</b>.",
+            "медленно прижимается, продвигая узел глубже внутрь <b>[partner]</b>.",
+            "вводит [shape_desc], чувствуя, как узел плотно обхватывается мышцами <b>[partner]</b>.")
+        user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
+
+    playlewdinteractionsound(get_turf(user), pick(
+        'modular_sand/sound/interactions/champ1.ogg',
+        'modular_sand/sound/interactions/champ2.ogg'), 70, 1, -1)
+
+    user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+
+    if(user.can_penetrating_genital_cum())
+        user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS)
+        partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
+
+    //  ГАРАНТИРОВАННОЕ узлирование
+    if(prob(90))
+        try_apply_knot(user, partner, CUM_TARGET_VAGINA)
+
+/datum/interaction/lewd/knot_anal_fuck
+    description = "Член. Анальное проникновение с узлированием."
+    required_from_user_exposed = INTERACTION_REQUIRE_PENIS
+    required_from_target_exposed = INTERACTION_REQUIRE_ANUS
+    write_log_user = "knot anal fucked"
+    write_log_target = "was knot anal fucked by"
+    interaction_sound = null
+
+/datum/interaction/lewd/knot_anal_fuck/display_interaction(mob/living/user, mob/living/partner)
+    var/message
+    var/shape_desc = get_penis_shape_desc(user)
+
+    if(!findtext(shape_desc, "узл"))
+        to_chat(user, span_warning("Твой член не имеет узла — узлирование невозможно!"))
+        return
+
+    if(user.is_fucking(partner, CUM_TARGET_ANUS))
+        message = pick(
+            "двигается мощно, заполняя задницу <b>[partner]</b> своим [shape_desc].",
+            "глубоко вдавливает [shape_desc] в анус <b>[partner]</b>, чувствуя, как мышцы плотно сжимаются вокруг.",
+            "плотно насаживает <b>[partner]</b> на свой [shape_desc], не оставляя ей ни малейшего шанса вырваться.",
+            "вновь и вновь проникает в задницу <b>[partner]</b>, теряя контроль над движениями.")
+    else
+        message = pick(
+            "направляет свой [shape_desc] к заднице <b>[partner]</b> и медленно входит.",
+            "плотно прижимается и осторожно проникает в анус <b>[partner]</b>.",
+            "чувствует, как мышцы ануса <b>[partner]</b> обхватывают его [shape_desc].")
+        user.set_is_fucking(partner, CUM_TARGET_ANUS, user.getorganslot(ORGAN_SLOT_PENIS))
+
+    playlewdinteractionsound(get_turf(user), pick(
+        'modular_sand/sound/interactions/champ1.ogg',
+        'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+
+    user.visible_message(span_lewd("<b>\\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+
+    if(user.can_penetrating_genital_cum())
+        user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS)
+        partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, "anus")
+
+    //  Почти гарантированное узлирование, с учётом префов
+    if(prob(90))
+        try_apply_knot(user, partner, CUM_TARGET_ANUS)
+

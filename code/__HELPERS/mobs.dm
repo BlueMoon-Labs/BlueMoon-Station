@@ -626,7 +626,7 @@ GLOBAL_LIST_EMPTY(species_datums)
 		if("penis", "human") return "человеческий член"
 		if("knotted") return "узловатый член"
 		if("flared") return "конический член"
-		if("barbed, knotted") return "узловатый шипованный"
+		if("barbed, knotted") return "узловатый шипованный член"
 		if("tapered") return "утончённый член"
 		if("tentacled") return "тентяклевидный член"
 		if("teshari") return "тешарьский член"
@@ -635,5 +635,5 @@ GLOBAL_LIST_EMPTY(species_datums)
 		if("barbed, knotted hemi") return "двойные с узлами колючие члены"
 		if("tapered barbed") return "утонченный шипованный член"
 		if("thick") return "обрезанный член"
-		else return "член необычной формы"
+		else return "необычной формы член"
 

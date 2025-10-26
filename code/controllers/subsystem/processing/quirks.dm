@@ -150,3 +150,9 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 	*/
 
 	return cut
+
+/mob/proc/get_quirk(typepath)
+	for(var/datum/quirk/Q in SSquirks.quirk_objects)
+		if(Q.quirk_holder == src && istype(Q, typepath))
+			return Q
+	return null

@@ -35,7 +35,7 @@
 
 /datum/quirk/estrous_active
 	name = "Эстральный Цикл"
-	desc = "Ваш организм сгорает от желания совокупиться ради размножения. Удовлетворение вашей похоти сделает вас счастливей и ваша похоть кажется усилила шанс на оплодотворение, игнорирование этого желания может привести к тому что вы с каждыми условными 10 минут становитесь плодовитей на условные 5% (до 25% макс) пока вы не разрядитесь"
+	desc = "Ваш организм сгорает от желания совокупиться ради размножения. Удовлетворение вашей похоти сделает вас счастливей и ваша похоть кажется усилила шанс на оплодотворение, игнорирование этого желания может привести к тому что вы с каждыми условными 10 минут становитесь плодовитей на условные 5% (до 20% макс) пока вы не разрядитесь. Также увеличивает шансы чтобы заузлить партнера (Если есть член с узлом и у обоих префы Allow Knotting включен)"
 	value = 0
 	mob_trait = TRAIT_ESTROUS_ACTIVE
 	flavor_quirk = TRUE
@@ -65,6 +65,60 @@
 /datum/quirk/estrous_active/post_add()
 	// Update text used by message
 	update_heat_type()
+
+// === СИСТЕМА ОБНОВЛЕНИЯ ЭСТРАЛЬНОГО ЦИКЛА ===
+
+// Как часто обновлять (в проде 10 MINUTES, в тесте можно 1 MINUTES)
+#define ESTRUS_UPDATE_DELAY (10 MINUTES)
+
+/datum/quirk/estrous_active
+	var/current_stage = 0       // текущая стадия (0–5)
+	var/time_bonus = 0          // текущий бонус (0–0.15)
+	var/last_update = 0         // время последнего апдейта
+
+// Вызывается при добавлении трейта
+/datum/quirk/estrous_active/post_add()
+	update_heat_type()
+
+	if(isliving(quirk_holder))
+		var/mob/living/L = quirk_holder
+		if(!L.last_climax)
+			L.last_climax = world.time
+
+		START_PROCESSING(SSfastprocess, src) // запускаем автообновление
+
+// Останавливаем процесс при снятии трейта
+/datum/quirk/estrous_active/remove()
+	if(!QDELETED(quirk_holder))
+		STOP_PROCESSING(SSfastprocess, src)
+	UnregisterSignal(quirk_holder, list(COMSIG_MOB_ORGAN_ADD, COMSIG_MOB_ORGAN_REMOVE, COMSIG_PARENT_EXAMINE))
+
+// Основной цикл
+/datum/quirk/estrous_active/process()
+	if(QDELETED(quirk_holder))
+		STOP_PROCESSING(SSfastprocess, src)
+		return
+
+	if(!isliving(quirk_holder))
+		return
+
+	var/mob/living/L = quirk_holder
+	var/time_since_last_climax = max(world.time - L.last_climax, 0)
+
+	// Расчёт бонуса
+	var/new_stage = round(time_since_last_climax / (10 MINUTES))
+	var/new_bonus = clamp((time_since_last_climax / (10 MINUTES)) * 0.05, 0, 0.15)
+
+	if(new_stage > current_stage)
+		current_stage = new_stage
+		if(current_stage < 3)
+			to_chat(L, span_love("Воздержание для вас становится всё мучительней, гормоны бурлят в вас усиливая эффекты"))
+		else
+			to_chat(L, span_love("Ваши репродуктивные органы от воздержания просто горят, ваши шансы достигли максимума."))
+
+	if(new_bonus != time_bonus)
+		time_bonus = new_bonus
+
 
 /datum/quirk/estrous_active/proc/update_heat_type()
 	// Define temporary list of heat phrases

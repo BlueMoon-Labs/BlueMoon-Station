@@ -45,13 +45,25 @@
 	var/chance = min(virility * 0.8, fertility * 1.2) * (1 + (rand(-15, 15) / 100)) // Обновил формулу для большей точности
 
 	// Делаем квирк Эстральный цикл пизже
-	if(HAS_TRAIT(src, /datum/quirk/estrous_active))
-		var/bonus = 1.05 // базовый бонус = +5%
-		var/time_since_last_climax = max(world.time - last_climax, 0)
+	var/estrus_total_bonus = 0
 
-		// Каждые 10 минут без разрядки дают +5% (до +25%)
-		var/time_bonus = clamp((time_since_last_climax / (10 MINUTES)) * 0.05, 0, 0.25)
-		chance *= (bonus + time_bonus)
+	// Проверяем квирк у вынашивающего (src)
+	if(HAS_TRAIT(src, TRAIT_ESTROUS_ACTIVE))
+		var/datum/quirk/estrous_active/Q = src.get_quirk(/datum/quirk/estrous_active)
+		if(Q)
+			var/estrus_bonus = round((0.05 + Q.time_bonus) * 100)
+			estrus_total_bonus += estrus_bonus
+
+	// Проверяем квирк у партнёра (вносителя)
+	if(HAS_TRAIT(partner, TRAIT_ESTROUS_ACTIVE))
+		var/datum/quirk/estrous_active/Qp = partner.get_quirk(/datum/quirk/estrous_active)
+		if(Qp)
+			var/estrus_bonus_p = round((0.05 + Qp.time_bonus) * 100)
+			estrus_total_bonus += estrus_bonus_p
+
+	// Добавляем итоговый бонус
+	if(estrus_total_bonus)
+		chance += estrus_total_bonus
 
 	chance = clamp(chance, 0, 100)
 

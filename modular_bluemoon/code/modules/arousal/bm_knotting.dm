@@ -147,7 +147,7 @@
 	if(ishuman(partner))
 		SEND_SIGNAL(partner, COMSIG_ADD_MOOD_EVENT, "knotting_linked", /datum/mood_event/knotting_linked)
 
-	// 💞 Афродизиачный эффект при узлировании
+	// Афродизиачный эффект при узлировании
 	for(var/mob/living/M in list(user, partner))
 		if(!M?.client?.prefs?.arousable || (M.client?.prefs?.cit_toggles & NO_APHRO))
 			continue
@@ -235,7 +235,7 @@
 	addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), 5 SECONDS)
 
 // ============================================================
-// 💥 Release: мягкий спад и силовой разрыв
+//  Release: мягкий спад и силовой разрыв
 // ============================================================
 
 /obj/item/organ/genital/penis/proc/release_knot(mob/living/user, mob/living/partner, target_zone, forceful = FALSE)
@@ -259,7 +259,7 @@
 		if(CUM_TARGET_MOUTH, CUM_TARGET_THROAT) zone_text = "рта"
 
 	if(forceful)
-		// 💥 Силовой разрыв
+		//  Силовой разрыв
 		playsound(get_turf(Luser), 'sound/effects/snap01.ogg', 100, TRUE)
 		Luser.visible_message(
 			span_danger(" Узел [Luser] с силой вырывается из [zone_text] [Lpartner]!"),
@@ -273,7 +273,7 @@
 			if(prob(40))
 				to_chat(Lpartner, span_danger(" Узел вырвался слишком резко, оставив боль."))
 	else
-		// 💧 Мягкий спад
+		//  Мягкий спад
 		playsound(get_turf(Luser), 'sound/effects/snap01.ogg', 50, 1)
 		Luser.visible_message(
 			span_lewd(" Узел [Luser] постепенно спадает, освобождая [Lpartner] из [zone_text]."),
@@ -382,7 +382,7 @@
 		span_notice("Ты ощущаешь сильное напряжение между ними...")
 	)
 
-	// 💥 80% шанс на силовой разрыв
+	//  80% шанс на силовой разрыв
 	if(prob(80))
 		var/zone = P.knot_state ? P.knot_state : CUM_TARGET_VAGINA
 		P.release_knot(src, partner, zone, TRUE)
@@ -458,13 +458,13 @@
 		if(prob(70))
 			apply_tug_mob_to_mob(partner, user, 1)
 
-	// 💥 Если ушли дальше чем на 2 тайла — гарантированный разрыв
+	//  Если ушли дальше чем на 2 тайла — гарантированный разрыв
 	else if(dist > 2)
 		to_chat(user, span_danger(" Узел не выдерживает и рвётся!"))
 		to_chat(partner, span_userdanger(" Узел резко вырывается из тебя!"))
 		release_knot(user, partner, (knot_state ? knot_state : CUM_TARGET_VAGINA), TRUE)
 
-		// 💥 Боль и травма при разрыве
+		//  Боль и травма при разрыве
 		user.apply_damage(rand(15, 25), STAMINA)
 		user.apply_damage(rand(5, 10), BRUTE)
 		partner.apply_damage(rand(10, 20), STAMINA)
@@ -478,7 +478,7 @@
 			partner.emote("moan")
 
 // ============================================================
-// 🧩 Grab-style Resist (оба могут освободиться)
+//  Grab-style Resist (оба могут освободиться)
 // ============================================================
 
 /obj/item/organ/genital/penis/proc/start_resist_attempt(mob/living/user)
@@ -492,12 +492,12 @@
 		to_chat(user, span_warning("Цель отсутствует."))
 		return
 
-	// 🔒 антиспам: активный do_after?
+	//  антиспам: активный do_after?
 	if(DOING_INTERACTION_WITH_TARGET(user, owner) || DOING_INTERACTION_WITH_TARGET(user, knot_partner))
 		to_chat(user, span_warning("Ты уже пытаешься освободиться — не дёргайся!"))
 		return
 
-	// 🔒 антиспам: локальный кулдаун на нажатия (5 секунд)
+	//  антиспам: локальный кулдаун на нажатия (5 секунд)
 	if(world.time < user.knot_resist_cd_until)
 		to_chat(user, span_warning("Ты только что пытался освободиться — подожди немного..."))
 		return
@@ -550,7 +550,7 @@
 		if(prob(25)) pen_partner.emote(pick("moan","blush"))
 
 // ============================================================
-// 🧍 Верб: Resist Knot
+// Верб: Resist Knot
 // ============================================================
 
 /mob/living/carbon/human/verb/knot_resist()
@@ -589,7 +589,7 @@
 
 /* // Оставлю на потом (не работает блятьц)
 // ============================================================
-// 💞 Verb: Try Knot (ручное заузливание)
+// Verb: Try Knot (ручное заузливание)
 // ============================================================
 
 /mob/living/carbon/human/verb/knot_attempt()
@@ -639,7 +639,7 @@
 		to_chat(H, span_warning("Ты не смог завершить попытку заузливания."))
 */
 /mob/living/carbon/human/resist()
-	// 🧩 Узловая проверка перед стандартным Resist
+	//  Узловая проверка перед стандартным Resist
 	var/obj/item/organ/genital/penis/P = getorganslot(ORGAN_SLOT_PENIS)
 	if(P && P.knot_locked)
 		to_chat(src, span_love("Ты пытаешься освободиться от узла..."))
