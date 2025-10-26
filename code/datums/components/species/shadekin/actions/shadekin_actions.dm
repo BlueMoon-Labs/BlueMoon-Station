@@ -1,5 +1,9 @@
 /datum/action/shadekin
 	name = "Базовая способность шадекинов"
+	button_icon = 'icons/mob/actions/shadekin_abilities.dmi'
+	icon_icon = 'icons/mob/actions/shadekin_abilities.dmi'
+	background_icon_state = "grey_spell_ready"
+
 	var/cost = 50
 	var/passive_cost = 0
 
@@ -8,12 +12,13 @@
 	var/is_avalable = TRUE
 
 /datum/action/shadekin/Grant(mob/grant_to)
+	to_chat(world, "Вызов идет2")
 	. = ..()
 	if(!owner)
 		return
 
-	RegisterSignal(owner, COMSIG_INFORM_NEW_ENERGY_LEVEL, PROC_REF(handle_dark_energy_change))
-	RegisterSignal(owner, COMSIG_SHADEKIN_ACTION_DELETE, PROC_REF(signal_shadekin_del))
+	RegisterSignal(owner, COMSIG_INFORM_NEW_ENERGY_LEVEL, PROC_REF(handle_dark_energy_change), override = TRUE )
+	RegisterSignal(owner, COMSIG_SHADEKIN_ACTION_DELETE, PROC_REF(signal_shadekin_del), override = TRUE )
 
 /datum/action/shadekin/Remove(mob/remove_from)
 	if(!owner)
@@ -41,7 +46,7 @@
 	return use()
 
 /datum/action/shadekin/proc/check_energy()
-	return cost >= dark_energy ? TRUE : FALSE
+	return cost >= dark_energy ? FALSE : TRUE
 //СВОя логика
 /datum/action/shadekin/proc/use()
 

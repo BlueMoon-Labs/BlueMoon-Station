@@ -21,7 +21,7 @@
 
 	var/passive_heal_in_dark = 0.1
 
-	var/list/action_templates = list()
+	var/list/action_templates = list(/datum/action/shadekin/phase_shift)
 	var/list/hud_templates = list(/atom/movable/screen/shadekin/dark_energy_level)
 
 	var/datum/shadekin_eye_model/eye_type = /datum/shadekin_eye_model/blue
@@ -60,7 +60,6 @@
 //Хуйня конечно, но как говорится мы это хаваем
 /datum/component/shadekin/proc/rebuild_shadekin_screens(datum/source, client/hud_client)
 	SIGNAL_HANDLER
-	SEND_SIGNAL(owner, COMSIG_SHADEKIN_SCREEN_QDEL)
 	append_screens_from_templates(hud_client)
 
 /datum/component/shadekin/proc/set_shadekin_eyecolor()
@@ -126,17 +125,19 @@
 	return use_energy(amount)
 
 /datum/component/shadekin/proc/append_actions_from_templates()
-	if(!owner)
+	if(!owner?.mind)
 		return
 
+	SEND_SIGNAL(owner, COMSIG_SHADEKIN_ACTION_DELETE)
 	for(var/template in action_templates)
 		var/datum/action/shadekin/temp = new template(owner)
 		temp.Grant(owner)
 
 /datum/component/shadekin/proc/append_screens_from_templates(client/client_to_append)
-	if(!owner)
+	if(!owner?.mind)
 		return
 
+	SEND_SIGNAL(owner, COMSIG_SHADEKIN_SCREEN_QDEL)
 	for(var/template in hud_templates)
 		var/atom/movable/screen/shadekin/shadekin_screen = new template()
 		shadekin_screen.set_owner(client_to_append, owner)
