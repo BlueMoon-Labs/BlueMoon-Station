@@ -109,7 +109,7 @@
 	healing_factor = 3.5 * STANDARD_ORGAN_HEALING
 	decay_factor = 0.1 * STANDARD_ORGAN_DECAY
 
-/obj/item/organ/liver/tier3/antag/on_life()
+/obj/item/organ/liver/tier3/antag/on_life(seconds, times_fired)
 	. = ..()
 	if(!. || !owner)//can't process reagents with a failing liver
 		return
