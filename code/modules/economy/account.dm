@@ -23,6 +23,47 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	COOLDOWN_DECLARE(bounty_timer)
 	///List with a transaction history for NT pay app
 	var/list/transaction_history = list()
+	// Suspicion tracking (TGUI flag, optional timer)
+	var/suspicious_activity = FALSE
+	var/suspicion_reason = ""
+	var/suspicion_timer = 0
+
+/datum/bank_account/proc/schedule_suspicion_notice(var/datum/bank_account/from, var/amount)
+	// Не создаём второй раз, если уже помечен или есть активный таймер
+	if(suspicious_activity || suspicion_timer)
+		return
+
+	var/delay = 5 MINUTES
+	if(findtext(from?.account_holder, "Syndicate") || findtext(from?.account_holder, "Syndi"))
+		delay = 2 MINUTES
+
+	suspicion_reason = "Received funds from suspicious miner"
+	suspicious_activity = TRUE
+	suspicion_reason = "Unusual transfer detected: received [amount] credits from [from.account_holder]"
+
+	suspicion_timer = addtimer(CALLBACK(src, PROC_REF(trigger_suspicion_alert), from, amount), delay)
+
+/datum/bank_account/proc/trigger_suspicion_alert(var/datum/bank_account/from, var/amount)
+	// Очистим таймер чтобы можно было поставить новый позже
+	suspicion_timer = 0
+
+	// Убедимся, что флаг установлен (для совместимости)
+	suspicious_activity = TRUE
+	if(!suspicion_reason || suspicion_reason == "")
+		suspicion_reason = "Suspicious transaction detected"
+
+	// НЕ отправляем bank_card_talk владельцу — вместо этого логируем в экономику и оставляем флаг
+	log_econ("⚠ Suspicious transfer: [account_holder] received [amount] credits from [from.account_holder].")
+
+	// (Опционально) добавим запись в transaction_history с пометкой
+	var/datum/transaction/T = new()
+	T.target_name = from?.account_holder
+	T.purpose = "[suspicion_reason]"
+	T.amount = amount
+	T.source_terminal = "Automated detection"
+	T.date = GLOB.current_date_string
+	T.time = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
+	transaction_history += T
 
 /datum/bank_account/New(newname, job)
 	if(add_to_accounts)
@@ -101,11 +142,19 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	return account_balance >= amt
 
 /datum/bank_account/proc/transfer_money(datum/bank_account/from, amount)
-	if(!from.transferable || !from.has_money(amount))
-		return FALSE
-	adjust_money(amount)
-	from.adjust_money(-amount)
-	return TRUE
+    if(!from.transferable || !from.has_money(amount))
+        return FALSE
+
+    // Проверяем на подозрительные источники — если имя отправителя похоже на майнер/синдикат
+    if(from)
+        if(findtext(from.account_holder, "Illegal") || findtext(from.account_holder, "Miner") || findtext(from.account_holder, "Mining") || findtext(from.account_holder, "Syndicate") || findtext(from.account_holder, "Syndi"))
+            // Планируем показ уведомления с задержкой (schedule_suspicion_notice создаст флаг и запустит таймер)
+            schedule_suspicion_notice(from, amount)
+
+    // Перевод средств
+    adjust_money(amount)
+    from.adjust_money(-amount)
+    return TRUE
 
 /datum/bank_account/proc/payday(amount_of_paychecks, free = FALSE)
 	if(!account_job)
@@ -339,8 +388,6 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 
 	//add the account
 	M.transaction_history.Add(T)
-	GLOB.all_money_accounts.Add(M)
-
 	return M
 
 /proc/create_station_account()

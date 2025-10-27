@@ -510,7 +510,7 @@
 	name = "security laptop"
 	desc = "Nanotrasen Security laptop. Bringing modern compact computing to this century!"
 	icon_state = "laptop"
-	icon_keyboard = "seclaptop_key"
+	icon_keyboard = "laptop_key"
 	icon_screen = "seclaptop"
 	density = FALSE
 
