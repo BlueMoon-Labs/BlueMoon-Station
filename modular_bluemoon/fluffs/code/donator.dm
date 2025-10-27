@@ -1493,7 +1493,7 @@
 	name = "Paw Backpack"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/backpack/satchel/pawpack
-	ckeywhitelist = list("troubleneko17th", "dimofon", "hazzi", "cupteazee", "kolhozniik", "dimakr")
+	ckeywhitelist = list("deltarayx")
 
 /datum/gear/donator/bm/bishop_mitre
 	name = "Book of stealing"

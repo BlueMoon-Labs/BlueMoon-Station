@@ -179,6 +179,8 @@
 	desc = "Red side-slit skirt with stripes! Comes with a matching two-tone bra."
 	icon_state = "braskirt"
 	item_state = "braskirt"
+	can_adjust = TRUE
+	fitted = FEMALE_UNIFORM_TOP
 
 /obj/item/clothing/underwear/briefs/kladmen_panties
 	name = "Panties"
