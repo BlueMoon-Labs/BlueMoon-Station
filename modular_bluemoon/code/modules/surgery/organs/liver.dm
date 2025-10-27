@@ -110,9 +110,27 @@
 	decay_factor = 0.1 * STANDARD_ORGAN_DECAY
 
 /obj/item/organ/liver/tier3/antag/on_life()
+	. = ..()
+	if(!. || !owner)//can't process reagents with a failing liver
+		return
+
+	if(filterToxins && !HAS_TRAIT(owner, TRAIT_TOXINLOVER))
+		//handle liver toxin filtration
+		for(var/datum/reagent/toxin/T in owner.reagents.reagent_list)
+			var/thisamount = owner.reagents.get_reagent_amount(T.type)
+			if (thisamount && thisamount <= toxTolerance)
+				owner.reagents.remove_reagent(T.type, 1)
+			else
+				damage += (thisamount*toxLethality)
+
+	//metabolize reagents
 	owner.adjustToxLoss(-5, TRUE) //Heals like hell.
 	owner.adjustFireLoss(-2, FALSE)
 	owner.adjustStaminaLoss(-5, 0)
+	owner.reagents.metabolize(owner, seconds, times_fired, can_overdose=TRUE)
+
+	if(damage > 10 && prob(damage/3))//the higher the damage the higher the probability
+		to_chat(owner, "<span class='warning'>You feel a dull pain in your abdomen.</span>")
 
 /obj/item/autosurgeon/syndicate/inteq/biomorphedliver
 	uses = 1
