@@ -43,7 +43,7 @@
 /obj/item/organ/lungs/tier3
 	name = "exalted lungs"
 	icon_state = "exaltedlungs"
-	desc = "You will s e n s e the air - this version of liver is stronger, better, capable to filter and withstand more, even than cybernetic counterpart!"
+	desc = "You will s e n s e the air - this version of lungs is stronger, better, capable to filter and withstand even more than a cybernetic counterpart!"
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "exaltedlungs"
 	safe_breath_min = 3
