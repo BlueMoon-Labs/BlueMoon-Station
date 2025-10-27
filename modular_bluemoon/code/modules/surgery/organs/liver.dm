@@ -59,7 +59,7 @@
 	name = "exalted liver"
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "exaltedliver"
-	desc = "Something that an alcoholic of the future could use - this version of liver is stronger, better, capable to filter and withstand more, even than cybernetic counterpart!"
+	desc = "Something that an alcoholic of the future could use - this version of liver is stronger, better, capable to filter and withstand even more than a cybernetic counterpart!"
 	alcohol_tolerance = 0.0005 //At this point just drink everything.
 	maxHealth = 3.5 * STANDARD_ORGAN_THRESHOLD
 	toxTolerance = 7 * LIVER_DEFAULT_TOX_TOLERANCE
@@ -113,6 +113,10 @@
 	owner.adjustToxLoss(-5, TRUE) //Heals like hell.
 	owner.adjustFireLoss(-2, FALSE)
 	owner.adjustStaminaLoss(-5, 0)
+	owner.reagents.metabolize(owner, seconds, times_fired, can_overdose=TRUE)
+
+	if(damage > 10 && prob(damage/3))//the higher the damage the higher the probability
+		to_chat(owner, "<span class='warning'>You feel a dull pain in your abdomen.</span>")
 
 /obj/item/autosurgeon/syndicate/inteq/biomorphedliver
 	uses = 1
