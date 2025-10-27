@@ -235,14 +235,14 @@ GLOBAL_VAR(current_date_string)
 			set_temp("Pay level set to [choice] ([new_pay] credits).", "success", TRUE)
 
 		if("print_records")
-			world.log << "[src]: UI action 'print_records' triggered."
+			//world.log << "[src]: UI action 'print_records' triggered."
 			if(is_printing)
 				set_temp("Printer busy, please wait.", "warning", TRUE)
 				return
 			addtimer(CALLBACK(src, PROC_REF(print_records_finish), "list"), 5 SECONDS)
 
 		if("print_account_details")
-			world.log << "[src]: UI action 'print_account_details' triggered."
+			//world.log << "[src]: UI action 'print_account_details' triggered."
 			if(is_printing)
 				set_temp("Printer busy, please wait.", "warning", TRUE)
 				return
@@ -252,7 +252,7 @@ GLOBAL_VAR(current_date_string)
 
 /obj/machinery/computer/account_database/proc/print_records_finish(print_mode)
 	if(is_printing)
-		log_world("[src]: print_records_finish() called while already printing.")
+		//log_world("[src]: print_records_finish() called while already printing.")
 		return
 	is_printing = TRUE
 
@@ -260,13 +260,13 @@ GLOBAL_VAR(current_date_string)
 
 	var/turf/T = get_turf(src)
 	if(!T)
-		log_world("[src]: print_records_finish() failed — no turf found.")
+		//log_world("[src]: print_records_finish() failed — no turf found.")
 		is_printing = FALSE
 		return
 
 	var/obj/item/paper/P = new /obj/item/paper(T)
 	if(!P)
-		log_world("[src]: print_records_finish() failed to create paper.")
+		//log_world("[src]: print_records_finish() failed to create paper.")
 		is_printing = FALSE
 		return
 
@@ -319,7 +319,7 @@ GLOBAL_VAR(current_date_string)
 
 			var/list/all_accounts = GLOB.all_money_accounts
 
-			log_world("[src]: print_records_finish(list) — using GLOB.all_money_accounts ([length(all_accounts)] accounts total)")
+			//log_world("[src]: print_records_finish(list) — using GLOB.all_money_accounts ([length(all_accounts)] accounts total)")
 
 			if(!all_accounts || !length(all_accounts))
 				P.add_raw_text("<p><i>Не найдено активных счетов.</i></p>")
@@ -367,7 +367,7 @@ GLOBAL_VAR(current_date_string)
 
 	visible_message(span_notice("[src] prints out a financial report."))
 	is_printing = FALSE
-	log_world("[src]: print_records_finish('[print_mode]') completed successfully.")
+	//log_world("[src]: print_records_finish('[print_mode]') completed successfully.")
 
 // ───────────────────────────────
 //  Modal Input Support (SRD style)
