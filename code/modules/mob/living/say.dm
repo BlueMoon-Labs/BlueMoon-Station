@@ -75,6 +75,12 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	text = trim_left(text)
 
+	// если строка начинается с префикса языка (например ",r") — не трогаем его
+	if(copytext_char(text, 1, 1) == "," && length_char(text) >= 2)
+		var/prefix = copytext_char(text, 1, 2)
+		var/body = copytext_char(text, 3)
+		return prefix + auto_capitalize(body)
+
 	var/result = ""
 	var/next_cap = TRUE
 	var/i = 1
@@ -82,19 +88,26 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	while(i <= len)
 		var/ch = copytext_char(text, i, i+1)
+		var/nextch = (i < len) ? copytext_char(text, i+1, i+2) : ""
+		var/nextnext = (i+1 < len) ? copytext_char(text, i+2, i+3) : ""
+		var/prevch = (i > 1) ? copytext_char(text, i-1, i) : ""
 
 		// Если ожидается заглавная и это буква — делаем кап
 		if(next_cap && lowertext(ch) != uppertext(ch))
+			// проверяем контекст — не капаем, если предыдущий символ не разделитель
+			if(i > 1 && !(prevch == " " || prevch == "\t" || prevch == "\n" || prevch == "." || prevch == "!" || prevch == "?" || prevch == "\"" || prevch == "«" || prevch == "“" || prevch == "," || prevch == ";"))
+				result += ch
+				next_cap = FALSE
+				i += 1
+				continue
+
 			result += uppertext(ch)
 			next_cap = FALSE
 		else
 			result += ch
 
 		// Проверяем на конец предложения, но игнорируем ...
-		if((ch == "." || ch == "!" || ch == "?"))
-			var/nextch = copytext_char(text, i+1, i+2)
-			var/nextnext = copytext_char(text, i+2, i+3)
-
+		if(ch == "." || ch == "!" || ch == "?")
 			// Если три точки подряд — не конец предложения
 			if(!(ch == "." && nextch == "." && nextnext == "."))
 				next_cap = TRUE
@@ -102,10 +115,12 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 				// Если после .!? нет пробела — добавляем
 				if(i < len)
 					if(nextch != " " && nextch != "." && nextch != "!" && nextch != "?" && nextch != "\t" && nextch != "\n")
-						result += " "
+						// если после идёт цифра (3.14), то не вставляем пробел
+						if(!isnum(text2num(nextch)))
+							result += " "
 
-		// Не включаем капитализацию после - или %
-		if(ch == "-" || ch == "%")
+		// Не включаем капитализацию после - или % или других "связующих" знаков
+		if(ch == "-" || ch == "%" || ch == "*" || ch == ":" || ch == ";" || ch == "'" || ch == ")" || ch == "]" || ch == "°")
 			next_cap = FALSE
 
 		// Если встретили кавычку — ожидаем заглавную после неё
@@ -120,6 +135,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		i += 1
 
 	return result
+
 
 
 
@@ -183,7 +199,6 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	else if(message_mode || saymode)
 		message = copytext_char(message, 3)
 	message = trim_left(message)
-	message = auto_capitalize(message)
 	if(copytext_char(message, 1, 2) == " ")
 		message = copytext_char(message, 2)
 	if(!message)
@@ -306,7 +321,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	if(pressure < ONE_ATMOSPHERE*0.4) //Thin air, let's italicise the message
 		spans |= SPAN_ITALICS
-
+	message = auto_capitalize(message)
 	send_speech(message, message_range, src, bubble_type, spans, language, message_mode)
 
 	if(succumbed)
