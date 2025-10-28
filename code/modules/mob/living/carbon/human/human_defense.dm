@@ -54,6 +54,9 @@
 
 
 /mob/living/carbon/human/bullet_act(obj/item/projectile/P, def_zone, piercing_hit = FALSE)
+	if(HAS_TRAIT(src, TRAIT_IN_PHASE_SHIFT))
+		//to_chat(src, span_info("[P.name] пролетает сквозь вас"))
+		return BULLET_ACT_FORCE_PIERCE
 	if(dna && dna.species)
 		var/spec_return = dna.species.bullet_act(P, src)
 		if(spec_return)

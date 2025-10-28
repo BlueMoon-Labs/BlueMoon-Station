@@ -120,6 +120,8 @@
 	. = ..()
 	if(!.)
 		return
+	if(SEND_SIGNAL(src, COMSIG_GUN_EXTERNAL_GUN_CHECK))
+		return FALSE
 	if(G.trigger_guard == TRIGGER_GUARD_NORMAL)
 		if(HAS_TRAIT(src, TRAIT_CHUNKYFINGERS))
 			balloon_alert(src, "fingers are too big!")

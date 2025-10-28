@@ -7,7 +7,7 @@
 
 	//От неакттуальности данных на один тик, еще никто не умирал
 	var/cashed_max_energy = 100
-	var/last_energy_level = 100 
+	var/last_energy_level = 100
 	var/last_ligth_level = 1
 
 /atom/movable/screen/shadekin/dark_energy_level/SetRegister()
@@ -37,7 +37,7 @@
 			l_icon = 4
 
 	switch((dark_energy / cashed_max_energy) * 100)
-		if(0 to 24)  
+		if(0 to 24)
 			e_icon = 0
 		if(25 to 49)
 			e_icon = 1
@@ -59,6 +59,5 @@
 
 /atom/movable/screen/shadekin/dark_energy_level/Click(location,control,params)
 	to_chat(usr, examine_block(span_notice("Уровень освещенности: <b>[round(last_ligth_level, 0.1)]</b>.<br>\
-		<br>Уровень темной энергии: <b>[round((last_energy_level / cashed_max_energy) * 100, 0.1)]%</b>.")))
+		<br>Уровень темной энергии: <b>[last_energy_level]/[cashed_max_energy]</b>.")))
 
-	

@@ -96,10 +96,12 @@
 	var/obj/item/W = get_active_held_item()
 
 	if(W == A)
-		W.attack_self(src)
+		W.attack_self(s	rc)
 		update_inv_hands()
 		return
-
+	if(HAS_TRAIT(src, TRAIT_IN_PHASE_SHIFT))
+		to_chat(src, span_warning("Вы не можете никак повлиять на реальный мир!!"))
+		return
 	//These are always reachable.
 	//User itself, current loc, and user inventory
 	if(A in DirectAccess())
@@ -156,7 +158,7 @@
 
 	var/list/closed = list()
 	var/list/checking = list(ultimate_target)
-	
+
 	while(checking.len && depth)
 		var/list/next = list()
 		--depth

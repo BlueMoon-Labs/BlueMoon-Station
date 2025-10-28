@@ -1,6 +1,8 @@
 //Таков путь
 
 /datum/shadekin_eye_model
+	var/desc = "У данного типа глаз нет описания."
+
 	var/gain_in_light = 0.25
 	var/gain_in_dark = 0.75
 
