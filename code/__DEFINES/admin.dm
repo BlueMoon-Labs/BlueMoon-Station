@@ -41,6 +41,7 @@
 #define R_DEFAULT R_AUTOLOGIN | R_SENSITIVE
 
 #define R_EVERYTHING ALL //the sum of all other rank permissions, used for +EVERYTHING
+#define R_HOLDER ((R_EVERYTHING) & (~(R_STEALTH))) //Подлежит обсуждению
 
 #define ADMIN_QUE(user) "(<a href='?_src_=holder;[HrefToken(TRUE)];adminmoreinfo=[REF(user)]'>?</a>)"
 #define ADMIN_FLW(user) "(<a href='?_src_=holder;[HrefToken(TRUE)];adminplayerobservefollow=[REF(user)]'>FLW</a>)"

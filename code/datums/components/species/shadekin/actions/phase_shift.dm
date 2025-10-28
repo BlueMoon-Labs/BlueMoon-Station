@@ -65,25 +65,62 @@
 
 	return ability_cost
 
+/datum/action/shadekin/phase_shift/not_enough_energy_handler()
+	owner.balloon_alert(owner, "недостаточно энергии!")
+
 /datum/action/shadekin/phase_shift/use()
-	if(HAS_TRAIT(owner, TRAIT_IN_PHASE_SHIFT))
+
+
+	if(!get_turf(owner))
+		to_chat(owner, span_alertwarning("Вы не можете тут это сделать!"))
+		return FALSE
+
+	var/area/temp_area = get_area(owner)
+	if(!check_rights_for(owner?.client, R_HOLDER) && temp_area.area_flags & BLOCK_PHASE_SHIFT)
+		to_chat(owner, span_alertwarning("Что-то вам мешает преодолеть границу реальности!"))
+		return FALSE
+
+	if(HAS_TRAIT(owner, TRAIT_IN_PHASE_SHIFT)) //БЕСПЛАТНО!?!?!??!
 		return phase_in()
+	
+	var/fucking_cost = get_cost()
+
+	if(dark_energy < fucking_cost)
+		not_enough_energy_handler()
+		to_chat(owner, span_warning("Кажется вам что-то мешает совершить фазовый переход!"))
+		return FALSE
+
 	return phase_out()
 
+/datum/action/shadekin/phase_shift/proc/spawn_phase_effect(phase_effect_type)
+	var/obj/effect/temp_visual/shadekin/phase_in/temp = new phase_effect_type(owner.loc)
+	var/mob/living/temp_owner = owner
+	var/matrix/M = matrix()
+	
+	M.Scale(temp_owner.size_multiplier, temp_owner.size_multiplier)
+
+	temp.pixel_y = (temp_owner.size_multiplier - 1) * 16 // Pixel shift for the animation placement
+	temp.dir = temp_owner.dir
+	temp.transform = M
+
 /datum/action/shadekin/phase_shift/proc/phase_in()
-	ADD_TRAIT(owner, TRAIT_IN_PHASE_SHIFT, NONE)
+	owner.emote("phases in!")
+
+	REMOVE_TRAIT(owner, TRAIT_IN_PHASE_SHIFT, NONE)
 	owner.movement_type &= ~PHASING
 	owner.invisibility = initial(owner.invisibility)
 	owner.see_invisible = initial(owner.see_invisible)
 	owner.alpha = initial(owner.alpha)
 
-	var/obj/effect/temp_visual/shadekin/phase_in/temp = new(owner.loc)
+	spawn_phase_effect(/obj/effect/temp_visual/shadekin/phase_in)
 
 /datum/action/shadekin/phase_shift/proc/phase_out()
-	REMOVE_TRAIT(owner, TRAIT_IN_PHASE_SHIFT, NONE)
+	owner.emote("phases out!")
+
+	ADD_TRAIT(owner, TRAIT_IN_PHASE_SHIFT, NONE)
 	owner.movement_type |= PHASING
 	owner.invisibility = INVISIBILITY_SHADEKIN
 	owner.see_invisible = SEE_INVISIBILITY_SHADEKIN
 	owner.alpha = 127
 
-	var/obj/effect/temp_visual/shadekin/phase_out/temp = new(owner.loc)
+	spawn_phase_effect(/obj/effect/temp_visual/shadekin/phase_out)

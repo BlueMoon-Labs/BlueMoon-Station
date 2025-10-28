@@ -185,6 +185,8 @@ you will have to do something like if(client.rights & R_ADMIN) yourself.
 
 //This proc checks whether subject has at least ONE of the rights specified in rights_required.
 /proc/check_rights_for(client/subject, rights_required)
+	if(!subject)
+		return FALSE
 	if(subject && subject.holder)
 		return subject.holder.check_for_rights(rights_required)
 	return FALSE

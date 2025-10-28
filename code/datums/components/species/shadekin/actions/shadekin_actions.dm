@@ -9,7 +9,7 @@
 
 	//Уровень энергии, отправляет сигналом
 	var/dark_energy = 0
-	var/is_avalable = TRUE
+	var/is_avalable = FALSE
 
 /datum/action/shadekin/Grant(mob/grant_to)
 	to_chat(world, "Вызов идет2")
@@ -36,17 +36,25 @@
 
 	if(enough_energy && ..())
 		is_avalable = TRUE
-		UpdateButtons()
+		//UpdateButtons() рекурсия ))0))))
 	return is_avalable
 
 /datum/action/shadekin/Trigger()
+	if(owner?.GetComponent(/datum/component/virtual_reality))
+		to_chat(owner, span_danger("Системы виртуальной реальности не могут постичь эту силу! Для вас это бесполезно!"))
+		return FALSE
+
 	. = ..()
 	if(!.)
+		not_enough_energy_handler()
 		return
 	return use()
 
 /datum/action/shadekin/proc/check_energy()
-	return cost <= dark_energy ? TRUE : FALSE
+	return cost > dark_energy ? FALSE : TRUE
+
+/datum/action/shadekin/proc/not_enough_energy_handler()
+
 //СВОя логика
 /datum/action/shadekin/proc/use()
 

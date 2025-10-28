@@ -35,6 +35,9 @@
 	eye_type = set_shadekin_eyecolor()
 	append_actions_from_templates()
 
+	use_energy(0) //Пинаем по яицами все action
+	huds_ping(0)
+
 /datum/component/shadekin/RegisterWithParent()
 	RegisterSignal(owner, COMSIG_SHADEKIN_GET_DARK_ENERGY, PROC_REF(get_energy))
 	RegisterSignal(owner, COMSIG_SHADEKIN_GET_MAX_ENERGY_LEVEL, PROC_REF(get_max_energy))
@@ -111,7 +114,7 @@
 	return max_dark_energy
 
 /datum/component/shadekin/proc/use_energy(amount)
-	var/temp = dark_energy - amount
+	var/temp = min(dark_energy - amount, max_dark_energy)
 	if(temp < 0 || temp > max_dark_energy)
 		return FALSE
 	dark_energy = temp
