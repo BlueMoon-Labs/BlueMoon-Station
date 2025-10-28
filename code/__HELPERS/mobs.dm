@@ -619,11 +619,14 @@ GLOBAL_LIST_EMPTY(species_datums)
 /proc/get_penis_shape_desc(mob/living/carbon/human/H)
 	var/obj/item/organ/genital/penis/P = H?.getorganslot(ORGAN_SLOT_PENIS)
 	if(!P)
-		return "член"
+		if(H.has_strapon())
+			return "дилдо"
+		else
+			return "член"
 
 	var/lowershape = lowertext(P.shape)
 	switch(lowershape)
-		if("penis", "human") return "человеческий член"
+		if("penis", "human") return "член"
 		if("knotted") return "узловатый член"
 		if("flared") return "конический член"
 		if("barbed, knotted") return "узловатый шипованный член"

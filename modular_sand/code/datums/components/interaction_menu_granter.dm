@@ -129,6 +129,7 @@
 	.["max_distance"] = 0
 	.["user_is_blacklisted"] = SSinteractions.is_blacklisted(self)
 	var/required_from_user = NONE
+	var/user_has_penis = self.has_penis()
 	if(self.has_mouth())
 		required_from_user |= INTERACTION_REQUIRE_MOUTH
 	if(self.has_hands())
@@ -140,13 +141,19 @@
 	// BLUEMOON ADD
 	if(self.has_tail())
 		required_from_user |= INTERACTION_REQUIRE_TAIL
+	if(user_has_penis)
+		var/shape_desc = get_penis_shape_desc(self)
+		if(self?.client?.prefs.sexknotting && target?.client?.prefs.sexknotting && findtext(shape_desc, "узл"))
+			required_from_user |= INTERACTION_REQUIRE_KNOT
+		if(findtext(shape_desc, "двойн"))
+			required_from_user |= INTERACTION_REQUIRE_DOUBLE_PENIS
 	// BLUEMOON ADD
 	.["required_from_user"] = required_from_user
 
 	var/required_from_user_exposed = NONE
 	var/required_from_user_unexposed = NONE
 
-	var/user_has_penis = self.has_penis() || self.has_strapon()
+	user_has_penis = user_has_penis || self.has_strapon()
 	switch(user_has_penis)
 		if(HAS_EXPOSED_GENITAL)
 			required_from_user_exposed |= INTERACTION_REQUIRE_PENIS
@@ -275,6 +282,7 @@
 		.["max_distance"] = get_dist(self, target)
 		.["target_is_blacklisted"] = SSinteractions.is_blacklisted(target)
 		var/required_from_target = NONE
+		var/target_has_penis = target.has_penis()
 		if(target.has_mouth())
 			required_from_target |= INTERACTION_REQUIRE_MOUTH
 		if(target.has_hands())
@@ -286,13 +294,19 @@
 		// BLUEMOON ADD
 		if(target.has_tail())
 			required_from_target |= INTERACTION_REQUIRE_TAIL
+		if(target_has_penis)
+			var/shape_desc = get_penis_shape_desc(target)
+			if(self?.client?.prefs.sexknotting && target?.client?.prefs.sexknotting && findtext(shape_desc, "узл"))
+				required_from_target |= INTERACTION_REQUIRE_KNOT
+			if(findtext(shape_desc, "двойн"))
+				required_from_target |= INTERACTION_REQUIRE_DOUBLE_PENIS
 		// BLUEMOON ADD
 		.["required_from_target"] = required_from_target
 
 		var/required_from_target_exposed = NONE
 		var/required_from_target_unexposed = NONE
 
-		var/target_has_penis = target.has_penis() || target.has_strapon()
+		target_has_penis = target_has_penis || target.has_strapon()
 		switch(target_has_penis)
 			if(HAS_EXPOSED_GENITAL)
 				required_from_target_exposed |= INTERACTION_REQUIRE_PENIS

@@ -285,6 +285,7 @@
 
 /datum/interaction/lewd/double_penetration
 	description = "Члены. Двойное проникновение"
+	required_from_user = INTERACTION_REQUIRE_DOUBLE_PENIS
 	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_exposed = INTERACTION_REQUIRE_VAGINA | INTERACTION_REQUIRE_ANUS
 	write_log_user = "double penetrated"
@@ -295,11 +296,6 @@
 /datum/interaction/lewd/double_penetration/display_interaction(mob/living/user, mob/living/partner)
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
-
-	// Проверяем, что у пользователя есть двойные члены
-	if(!findtext(shape_desc, "двойн"))
-		to_chat(user, span_warning("Для этого действия нужны двойные члены!"))
-		return
 
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA) && user.is_fucking(partner, CUM_TARGET_ANUS))
 		message = pick(
@@ -341,6 +337,7 @@
 
 /datum/interaction/lewd/double_vaginal
 	description = "Члены. Двойное вагинальное проникновение"
+	required_from_user = INTERACTION_REQUIRE_DOUBLE_PENIS
 	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_exposed = INTERACTION_REQUIRE_VAGINA
 	write_log_user = "double vaginal fucked"
@@ -351,10 +348,6 @@
 /datum/interaction/lewd/double_vaginal/display_interaction(mob/living/user, mob/living/partner)
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
-
-	if(!findtext(shape_desc, "двойн"))
-		to_chat(user, span_warning("Для этого действия нужны двойные члены!"))
-		return
 
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = pick(
@@ -389,6 +382,7 @@
 
 /datum/interaction/lewd/double_anal
 	description = "Члены. Двойное анальное проникновение"
+	required_from_user = INTERACTION_REQUIRE_DOUBLE_PENIS
 	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_exposed = INTERACTION_REQUIRE_ANUS
 	write_log_user = "double anal fucked"
@@ -398,10 +392,6 @@
 /datum/interaction/lewd/double_anal/display_interaction(mob/living/user, mob/living/partner)
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
-
-	if(!findtext(shape_desc, "двойн"))
-		to_chat(user, span_warning("Для этого действия нужны двойные члены!"))
-		return
 
 	if(user.is_fucking(partner, CUM_TARGET_ANUS))
 		message = pick(
@@ -435,89 +425,83 @@
 		user.visible_message(span_love("<b>[partner]</b> вскрикивает, не выдерживая давления двух членов в заднице!"))
 
 /datum/interaction/lewd/knot_fuck
-    description = "Член. Проникнуть в Вагину с узлированием"
-    required_from_user_exposed = INTERACTION_REQUIRE_PENIS
-    required_from_target_exposed = INTERACTION_REQUIRE_VAGINA
-    write_log_user = "knot fucked"
-    write_log_target = "was knot fucked by"
-    interaction_sound = null
-    additional_details = list(INTERACTION_MAY_CAUSE_PREGNANCY)
+	description = "Член. Проникнуть в Вагину с узлированием"
+	required_from_user = INTERACTION_REQUIRE_KNOT
+	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
+	required_from_target_exposed = INTERACTION_REQUIRE_VAGINA
+	write_log_user = "knot fucked"
+	write_log_target = "was knot fucked by"
+	interaction_sound = null
+	additional_details = list(INTERACTION_MAY_CAUSE_PREGNANCY)
 
 /datum/interaction/lewd/knot_fuck/display_interaction(mob/living/user, mob/living/partner)
-    var/message
-    var/shape_desc = get_penis_shape_desc(user)
+	var/message
+	var/shape_desc = get_penis_shape_desc(user)
 
-    if(!findtext(shape_desc, "узл"))
-        to_chat(user, span_warning("Твой член не имеет узла — узлирование невозможно!"))
-        return
+	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
+		message = pick(
+			"ритмично долбится в киску <b>[partner]</b>, чувствуя, как узел начинает набухать.",
+			"жадно насаживает <b>[partner]</b> на [shape_desc], чувствуя плотное сцепление.",
+			"двигается мощно, заставляя узел застрять глубоко во влагалище <b>[partner]</b>.",
+			"с силой вдавливает узел внутрь, запирая <b>[partner]</b> на своём члене.")
+	else
+		message = pick(
+			"аккуратно вставляет свой [shape_desc] во влагалище <b>[partner]</b>.",
+			"медленно прижимается, продвигая узел глубже внутрь <b>[partner]</b>.",
+			"вводит [shape_desc], чувствуя, как узел плотно обхватывается мышцами <b>[partner]</b>.")
+		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
-    if(user.is_fucking(partner, CUM_TARGET_VAGINA))
-        message = pick(
-            "ритмично долбится в киску <b>[partner]</b>, чувствуя, как узел начинает набухать.",
-            "жадно насаживает <b>[partner]</b> на [shape_desc], чувствуя плотное сцепление.",
-            "двигается мощно, заставляя узел застрять глубоко во влагалище <b>[partner]</b>.",
-            "с силой вдавливает узел внутрь, запирая <b>[partner]</b> на своём члене.")
-    else
-        message = pick(
-            "аккуратно вставляет свой [shape_desc] во влагалище <b>[partner]</b>.",
-            "медленно прижимается, продвигая узел глубже внутрь <b>[partner]</b>.",
-            "вводит [shape_desc], чувствуя, как узел плотно обхватывается мышцами <b>[partner]</b>.")
-        user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
+	playlewdinteractionsound(get_turf(user), pick(
+		'modular_sand/sound/interactions/champ1.ogg',
+		'modular_sand/sound/interactions/champ2.ogg'), 70, 1, -1)
 
-    playlewdinteractionsound(get_turf(user), pick(
-        'modular_sand/sound/interactions/champ1.ogg',
-        'modular_sand/sound/interactions/champ2.ogg'), 70, 1, -1)
+	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 
-    user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+	if(user.can_penetrating_genital_cum())
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS)
+		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
 
-    if(user.can_penetrating_genital_cum())
-        user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_PENIS)
-        partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
-
-    //  ГАРАНТИРОВАННОЕ узлирование
-    if(prob(90))
-        try_apply_knot(user, partner, CUM_TARGET_VAGINA)
+	//  ГАРАНТИРОВАННОЕ узлирование
+	if(prob(90))
+		try_apply_knot(user, partner, CUM_TARGET_VAGINA)
 
 /datum/interaction/lewd/knot_anal_fuck
-    description = "Член. Анальное проникновение с узлированием."
-    required_from_user_exposed = INTERACTION_REQUIRE_PENIS
-    required_from_target_exposed = INTERACTION_REQUIRE_ANUS
-    write_log_user = "knot anal fucked"
-    write_log_target = "was knot anal fucked by"
-    interaction_sound = null
+	description = "Член. Анальное проникновение с узлированием."
+	required_from_user = INTERACTION_REQUIRE_KNOT
+	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
+	required_from_target_exposed = INTERACTION_REQUIRE_ANUS
+	write_log_user = "knot anal fucked"
+	write_log_target = "was knot anal fucked by"
+	interaction_sound = null
 
 /datum/interaction/lewd/knot_anal_fuck/display_interaction(mob/living/user, mob/living/partner)
-    var/message
-    var/shape_desc = get_penis_shape_desc(user)
+	var/message
+	var/shape_desc = get_penis_shape_desc(user)
 
-    if(!findtext(shape_desc, "узл"))
-        to_chat(user, span_warning("Твой член не имеет узла — узлирование невозможно!"))
-        return
+	if(user.is_fucking(partner, CUM_TARGET_ANUS))
+		message = pick(
+			"двигается мощно, заполняя задницу <b>[partner]</b> своим [shape_desc].",
+			"глубоко вдавливает [shape_desc] в анус <b>[partner]</b>, чувствуя, как мышцы плотно сжимаются вокруг.",
+			"плотно насаживает <b>[partner]</b> на свой [shape_desc], не оставляя ей ни малейшего шанса вырваться.",
+			"вновь и вновь проникает в задницу <b>[partner]</b>, теряя контроль над движениями.")
+	else
+		message = pick(
+			"направляет свой [shape_desc] к заднице <b>[partner]</b> и медленно входит.",
+			"плотно прижимается и осторожно проникает в анус <b>[partner]</b>.",
+			"чувствует, как мышцы ануса <b>[partner]</b> обхватывают его [shape_desc].")
+		user.set_is_fucking(partner, CUM_TARGET_ANUS, user.getorganslot(ORGAN_SLOT_PENIS))
 
-    if(user.is_fucking(partner, CUM_TARGET_ANUS))
-        message = pick(
-            "двигается мощно, заполняя задницу <b>[partner]</b> своим [shape_desc].",
-            "глубоко вдавливает [shape_desc] в анус <b>[partner]</b>, чувствуя, как мышцы плотно сжимаются вокруг.",
-            "плотно насаживает <b>[partner]</b> на свой [shape_desc], не оставляя ей ни малейшего шанса вырваться.",
-            "вновь и вновь проникает в задницу <b>[partner]</b>, теряя контроль над движениями.")
-    else
-        message = pick(
-            "направляет свой [shape_desc] к заднице <b>[partner]</b> и медленно входит.",
-            "плотно прижимается и осторожно проникает в анус <b>[partner]</b>.",
-            "чувствует, как мышцы ануса <b>[partner]</b> обхватывают его [shape_desc].")
-        user.set_is_fucking(partner, CUM_TARGET_ANUS, user.getorganslot(ORGAN_SLOT_PENIS))
+	playlewdinteractionsound(get_turf(user), pick(
+		'modular_sand/sound/interactions/champ1.ogg',
+		'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
 
-    playlewdinteractionsound(get_turf(user), pick(
-        'modular_sand/sound/interactions/champ1.ogg',
-        'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	user.visible_message(span_lewd("<b>\\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 
-    user.visible_message(span_lewd("<b>\\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+	if(user.can_penetrating_genital_cum())
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS)
+		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, "anus")
 
-    if(user.can_penetrating_genital_cum())
-        user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS)
-        partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, "anus")
-
-    //  Почти гарантированное узлирование, с учётом префов
-    if(prob(90))
-        try_apply_knot(user, partner, CUM_TARGET_ANUS)
+	//  Почти гарантированное узлирование, с учётом префов
+	if(prob(90))
+		try_apply_knot(user, partner, CUM_TARGET_ANUS)
 

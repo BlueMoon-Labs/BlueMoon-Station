@@ -107,6 +107,8 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define INTERACTION_REQUIRE_VAGINA (1<<9)
 // BLUEMOON ADD хвостики!
 #define INTERACTION_REQUIRE_TAIL (1<<9)
+#define INTERACTION_REQUIRE_KNOT (1<<10) // not replace INTERACTION_REQUIRE_PENIS, use both
+#define INTERACTION_REQUIRE_DOUBLE_PENIS (1<<11) // not replace INTERACTION_REQUIRE_PENIS, use both
 // BLUEMOON ADD END
 
 /// Interaction flags
