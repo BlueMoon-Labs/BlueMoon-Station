@@ -117,6 +117,7 @@
 			to_chat(source, self_message)
 		if(playsound)
 			source.playsound_local(source, 'sound/misc/ui_toggleoff.ogg', 50, FALSE, pressure_affected = FALSE) //Slightly modified version of the toggleon sound!
+	log_combat(source, source, "выключает Комбат Индикатор")
 	UnregisterSignal(source, list(COMSIG_MOB_CLIENT_MOUSEMOVE, COMSIG_MOVABLE_MOVED))
 	if(hud_icon)
 		hud_icon.combat_on = FALSE

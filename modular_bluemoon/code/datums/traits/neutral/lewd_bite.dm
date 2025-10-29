@@ -8,6 +8,7 @@
 //	mob_trait = TRAIT_POISONOUS_FANGS
 	gain_text = span_notice("Вы ощущаете желание кого-то укусить")
 	lose_text = span_notice("Ваши клыки больше не такие опасные")
+	var/datum/action/cooldown/bite/my_action
 	var/list/my_reagents = list(
 		/datum/reagent/toxin = "Toxin",
 		/datum/reagent/toxin/acid = "Sulphuric acid",
@@ -16,12 +17,18 @@
 
 /datum/quirk/bite/add()
 	var/datum/action/cooldown/bite/act_bite = new
+	my_action = act_bite
 	act_bite.Grant(quirk_holder, src.type)
+
+/datum/quirk/bite/remove()
+	. = ..()
+	my_action.Remove()
 
 /datum/quirk/bite_lewd
 	name = "Клыки суккуба"
 	desc = "Укус ваших зубов имеет особый эффект, который может как возбуждать жертву, так и усмирить. Выбор реагента дается при первой активации"
 	value = 0
+	var/datum/action/cooldown/bite/lewd/my_action
 	var/list/my_reagents = list(
 		/datum/reagent/drug/aphrodisiac = "Crocin",
 		/datum/reagent/drug/aphrodisiacplus = "Hexacrocin",
@@ -33,10 +40,15 @@
 
 /datum/quirk/bite_lewd/add()
 	var/datum/action/cooldown/bite/lewd/act_bite = new
+	my_action = act_bite
 	if(GLOB.round_type != ROUNDTYPE_EXTENDED)
 		to_chat(quirk_holder, "В режим отличный от Extended из списка реагентов квирка Клыки суккуба были убраны опасные реагенты.")
 		my_reagents -= /datum/reagent/toxin/chloralhydrate
 	act_bite.Grant(quirk_holder, src.type)
+
+/datum/quirk/bite_lewd/remove()
+	. = ..()
+	my_action.Remove()
 
 /datum/action/cooldown/bite
 	name = "Ядовитый укус"
