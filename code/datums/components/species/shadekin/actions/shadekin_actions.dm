@@ -12,7 +12,6 @@
 	var/is_avalable = FALSE
 
 /datum/action/shadekin/Grant(mob/grant_to)
-	to_chat(world, "Вызов идет2")
 	. = ..()
 	if(!owner)
 		return

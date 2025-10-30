@@ -96,15 +96,16 @@
 	var/obj/item/W = get_active_held_item()
 
 	if(W == A)
-		W.attack_self(s	rc)
+		W.attack_self(src)
 		update_inv_hands()
 		return
-	if(HAS_TRAIT(src, TRAIT_IN_PHASE_SHIFT))
-		to_chat(src, span_warning("Вы не можете никак повлиять на реальный мир!!"))
-		return
+
 	//These are always reachable.
 	//User itself, current loc, and user inventory
 	if(A in DirectAccess())
+		if(HAS_TRAIT(src, TRAIT_IN_PHASE_SHIFT))
+			to_chat(src, span_warning("Вы не можете никак повлиять на реальный мир!!"))
+			return
 		if(W)
 			return W.melee_attack_chain(src, A, params)
 		else
@@ -119,6 +120,9 @@
 
 	//Standard reach turf to turf or reaching inside storage
 	if(CanReach(A,W))
+		if(HAS_TRAIT(src, TRAIT_IN_PHASE_SHIFT))
+			to_chat(src, span_warning("Вы не можете никак повлиять на реальный мир!!"))
+			return
 		if(W)
 			return W.melee_attack_chain(src, A, params)
 		else
@@ -127,6 +131,9 @@
 				DelayNextAction(CLICK_CD_MELEE)
 			return
 	else
+		if(HAS_TRAIT(src, TRAIT_IN_PHASE_SHIFT))
+			to_chat(src, span_warning("Вы не способны использывать оружие"))
+			return
 		if(W)
 			return W.ranged_attack_chain(src, A, params)
 		else

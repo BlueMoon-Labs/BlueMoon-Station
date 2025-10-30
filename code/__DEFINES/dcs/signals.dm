@@ -861,3 +861,6 @@
 #define COMSIG_SHADEKIN_SCREENS_HIDE "hide_shadekin_screens"
 #define COMSIG_SHADEKIN_SCREENS_SHOW "show_shadekin_screens"
 #define COMSIG_SHADEKIN_ENERGY_LIGTH_LEVEL "dark_and_ligth_levels" // порядок аргументов (energy, ligth)
+
+//Сигнал проверки может ли находится предмет во фремя фазового перехода.
+#define COMSIG_CHECK_CAN_EXIST_IN_PHASE_SHIFT "exist_in_phase_shift"

@@ -106,13 +106,18 @@
 	//owner.emote("phases in!")
 	var/dchatmsg = "<span class='emote'><b>[owner]</b> phases in!</span>"
 	owner.visible_message(dchatmsg, runechat_popup = TRUE, rune_msg = "phases in!")
+
+	owner.clear_fullscreen("phase_shift")
+	owner.layer = initial(owner.layer)
+
 	UnregisterSignal(owner, COMSIG_GUN_EXTERNAL_GUN_CHECK)
 
 	REMOVE_TRAIT(owner, TRAIT_IN_PHASE_SHIFT, NONE)
 	owner.movement_type &= ~PHASING
 	owner.invisibility = initial(owner.invisibility)
 	owner.see_invisible = initial(owner.see_invisible)
-	owner.alpha = initial(owner.alpha)
+	//owner.vision_flags
+	//owner.alpha = initial(owner.alpha)
 
 	spawn_phase_effect(/obj/effect/temp_visual/shadekin/phase_in)
 
@@ -121,13 +126,16 @@
 	var/dchatmsg = "<span class='emote'><b>[owner]</b> phases out!</span>"
 	owner.visible_message(dchatmsg, runechat_popup = TRUE, rune_msg = "phases out!")
 
+	owner.overlay_fullscreen("phase_shift", /atom/movable/screen/fullscreen/scaled/phase_shift)
+	owner.layer = PHASE_SHIFT_FILTER_LAYER - 0.2
+
 	RegisterSignal(owner, COMSIG_GUN_EXTERNAL_GUN_CHECK, PROC_REF(no_gun_allowed))
 
 	ADD_TRAIT(owner, TRAIT_IN_PHASE_SHIFT, NONE)
 	owner.movement_type |= PHASING
 	owner.invisibility = INVISIBILITY_SHADEKIN
 	owner.see_invisible = SEE_INVISIBILITY_SHADEKIN
-	owner.alpha = 127
+	//owner.alpha = 2
 
 	spawn_phase_effect(/obj/effect/temp_visual/shadekin/phase_out)
 
