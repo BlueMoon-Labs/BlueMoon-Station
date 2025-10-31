@@ -75,7 +75,7 @@
 	alt_titles = list("Prison Chief", "Armory Manager", "Prison Administrator", "Brig Superintendent")
 
 /datum/job/officer
-	alt_titles = list("Security Agent", "Security Technician", "Riot Control Officer","Explosives Specialist", "Probation Officer", "Security Peacekeeper", "Security Guard", "Guardsman", "Security Cadet")
+	alt_titles = list("Security Agent", "Security Technician", "Riot Control Officer", "Explosives Specialist", "Probation Officer", "Security Peacekeeper", "Security Guard", "Guardsman", "Security Cadet")
 
 /datum/job/detective
 	alt_titles = list("Forensics Technician", "Private Investigator", "Gumshoe")
