@@ -47,13 +47,6 @@
 	// Делаем квирк Эстральный цикл пизже
 	var/estrus_total_bonus = 0
 
-	// Проверяем квирк у вынашивающего (src)
-	if(HAS_TRAIT(src, TRAIT_ESTROUS_ACTIVE))
-		var/datum/quirk/estrous_active/Q = src.get_quirk(/datum/quirk/estrous_active)
-		if(Q)
-			var/estrus_bonus = round((0.05 + Q.time_bonus) * 100)
-			estrus_total_bonus += estrus_bonus
-
 	// Проверяем квирк у партнёра (вносителя)
 	if(HAS_TRAIT(partner, TRAIT_ESTROUS_ACTIVE))
 		var/datum/quirk/estrous_active/Qp = partner.get_quirk(/datum/quirk/estrous_active)
