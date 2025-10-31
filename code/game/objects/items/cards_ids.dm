@@ -286,6 +286,15 @@
 		to_chat(user, "<span class='notice'>You stuff [I] into [src]. It disappears in a small puff of bluespace smoke, adding [cash_money] credits to the linked account.</span>")
 	else
 		to_chat(user, "<span class='notice'>You insert [I] into [src], adding [cash_money] credits to the linked account.</span>")
+	// после успешного зачисления:
+	if(registered_account)
+		registered_account.makeTransactionLog(
+			cash_money,
+			"Deposit via [I.name]",
+			"[src.name]",
+			user ? user.real_name : "Unknown depositor",
+			FALSE
+		)
 
 	to_chat(user, "<span class='notice'>The linked account now reports a balance of [registered_account.account_balance] cr.</span>")
 	qdel(I)
@@ -305,6 +314,14 @@
 		CHECK_TICK
 
 	registered_account.adjust_money(total)
+	if(registered_account && total > 0)
+		registered_account.makeTransactionLog(
+			total,
+			"Deposit via money bag",
+			"[src.name]",
+			user ? user.real_name : "Unknown depositor",
+			FALSE
+		)
 
 	QDEL_LIST(money)
 

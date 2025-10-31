@@ -61,7 +61,7 @@ GLOBAL_VAR(current_date_string)
 		ui = new(user, src, "AccountsUplinkTerminal", name)
 		ui.open()
 	else
-		ui.set_autoupdate(FALSE)
+		ui.set_autoupdate(TRUE) // раз в ~2 сек
 
 /proc/safe_text(value, default = "Unknown")
 	if(isnull(value))
@@ -216,37 +216,62 @@ GLOBAL_VAR(current_date_string)
 
 		if("change_pay_level")
 			if(!detailed_account_view) return
+
+			// 1) Выбор грейда
 			var/list/pay_levels = list(
-				"Assistant 25 " = PAYCHECK_ASSISTANT,
-				"Minimal 75 " = PAYCHECK_MINIMAL,
-				"Normal 125 " = PAYCHECK_EASY,
-				"Normal+ 175 " = PAYCHECK_MEDIUM,
-				"High 200" = PAYCHECK_HARD,
-				"Command 250 " = PAYCHECK_COMMAND
+				"Assistant 25" = PAYCHECK_ASSISTANT,
+				"Minimal 75"   = PAYCHECK_MINIMAL,
+				"Normal 125"   = PAYCHECK_EASY,
+				"Normal+ 175"  = PAYCHECK_MEDIUM,
+				"High 200"     = PAYCHECK_HARD,
+				"Command 250"  = PAYCHECK_COMMAND
 			)
 			var/choice = tgui_input_list(usr, "Select new pay grade", "Pay Adjustment", pay_levels)
 			if(!choice) return
 			var/new_pay = pay_levels[choice]
+
+			// 2) Выбор отдела (откуда платим)
+			var/list/dep_choices = list(
+				"[ACCOUNT_CIV_NAME]" = ACCOUNT_CIV,
+				"[ACCOUNT_ENG_NAME]" = ACCOUNT_ENG,
+				"[ACCOUNT_SCI_NAME]" = ACCOUNT_SCI,
+				"[ACCOUNT_MED_NAME]" = ACCOUNT_MED,
+				"[ACCOUNT_SRV_NAME]" = ACCOUNT_SRV,
+				"[ACCOUNT_CAR_NAME]" = ACCOUNT_CAR,
+				"[ACCOUNT_SEC_NAME]" = ACCOUNT_SEC
+			)
+			var/dep_choice = tgui_input_list(usr, "Choose budget (department)", "Pay Budget", dep_choices)
+			if(!dep_choice) return
+			var/new_dep = dep_choices[dep_choice]
+
+			// 3) Применяем к аккаунту
 			var/datum/bank_account/A = detailed_account_view
 			if(!A.account_job)
 				A.account_job = new()
 			A.account_job.paycheck = new_pay
-			to_chat(usr, span_notice("Set [A.account_holder]'s paycheck to [new_pay] credits ([choice])."))
-			set_temp("Pay level set to [choice] ([new_pay] credits).", "success", TRUE)
+			A.account_job.paycheck_department = new_dep
+
+			// 4) Сообщения и всплывашка
+			to_chat(usr, span_notice("Set [A.account_holder]'s paycheck to [new_pay] credits ([choice]) and budget to [dep_choice]."))
+			set_temp("Pay updated: [choice] ([new_pay]) • Budget: [dep_choice].", "success", TRUE)
+
+			// (опционально) Лог в историю для наглядности
+			A.makeTransactionLog(0, "Pay profile updated: [choice], budget: [dep_choice]", "[src.name]", "[dep_choice]", FALSE)
+
 
 		if("print_records")
 			//world.log << "[src]: UI action 'print_records' triggered."
 			if(is_printing)
 				set_temp("Printer busy, please wait.", "warning", TRUE)
 				return
-			addtimer(CALLBACK(src, PROC_REF(print_records_finish), "list"), 5 SECONDS)
+			addtimer(CALLBACK(src, PROC_REF(print_records_finish), "list"), 2 SECONDS)
 
 		if("print_account_details")
 			//world.log << "[src]: UI action 'print_account_details' triggered."
 			if(is_printing)
 				set_temp("Printer busy, please wait.", "warning", TRUE)
 				return
-			addtimer(CALLBACK(src, PROC_REF(print_records_finish), "details"), 5 SECONDS)
+			addtimer(CALLBACK(src, PROC_REF(print_records_finish), "details"), 2 SECONDS)
 
 	add_fingerprint(usr)
 
@@ -305,6 +330,10 @@ GLOBAL_VAR(current_date_string)
 
 				P.add_raw_text("<font color=\"grey\"><div align=\"justify\">Данный отчёт составлен автоматически системой Nanotrasen Financial Uplink.")
 				P.add_raw_text("Считается действительным только при наличии печати станции.</div></font>")
+				var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/simple/paper)
+				P.add_stamp(sheet.icon_class_name("stamp-machine"), 400, 300, 1, "stamp-machine")
+				P.add_raw_text("<div align='center'><i>This document has been automatically stamped by the Accounts Database system.</i></div>")
+				P.update_icon()
 
 		// вот здесь закончился блок DETAILS, теперь начинается LIST 👇
 		if("list")
@@ -347,18 +376,15 @@ GLOBAL_VAR(current_date_string)
 
 					P.add_raw_text("</table><br>\n")
 
-
-			P.add_raw_text("<hr />")
-			P.add_raw_text("<p><strong><div align=\"center\">Печати</strong></div></p>")
-			P.add_raw_text("<p><strong>Место для печатей:</strong></p>")
-			P.add_raw_text("<hr />")
+				var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/simple/paper)
+				P.add_stamp(sheet.icon_class_name("stamp-machine"), 400, 600, 1, "stamp-machine")
+				P.add_raw_text("<div align='center'><i>This document has been automatically stamped by the Accounts Database system.</i></div>")
+				P.update_icon()
 
 			P.add_raw_text("<font color=\"grey\"><div align=\"justify\">Данный отчёт составлен автоматически системой Nanotrasen Financial Uplink. ")
-			P.add_raw_text("Считается действительным только при наличии подписи ответственного лица и печати станции.</div></font>")
 
 		else
 			P.add_raw_text("<b>Unknown print mode:</b> [print_mode]<br>")
-
 
 	// ============================
 

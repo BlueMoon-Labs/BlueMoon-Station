@@ -65,6 +65,20 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	T.time = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
 	transaction_history += T
 
+/datum/bank_account/proc/add_transaction(purpose, amount, target_name = "System", source_terminal = "ID Card")
+	if(!transaction_history)
+		transaction_history = list()
+
+	var/datum/transaction/T = new
+	T.date = time2text(world.timeofday, "DD-MM-YYYY")
+	T.time = time2text(world.timeofday, "hh:mm:ss")
+	T.target_name = target_name
+	T.purpose = purpose
+	T.amount = amount
+	T.source_terminal = source_terminal
+
+	transaction_history += T
+
 /datum/bank_account/New(newname, job)
 	if(add_to_accounts)
 		if(!SSeconomy)
@@ -142,19 +156,35 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	return account_balance >= amt
 
 /datum/bank_account/proc/transfer_money(datum/bank_account/from, amount)
-    if(!from.transferable || !from.has_money(amount))
-        return FALSE
+	if(!from.transferable || !from.has_money(amount))
+		return FALSE
 
-    // Проверяем на подозрительные источники — если имя отправителя похоже на майнер/синдикат
-    if(from)
-        if(findtext(from.account_holder, "Illegal") || findtext(from.account_holder, "Miner") || findtext(from.account_holder, "Mining") || findtext(from.account_holder, "Syndicate") || findtext(from.account_holder, "Syndi"))
-            // Планируем показ уведомления с задержкой (schedule_suspicion_notice создаст флаг и запустит таймер)
-            schedule_suspicion_notice(from, amount)
+	if(from)
+		if(findtext(from.account_holder, "Illegal") || findtext(from.account_holder, "Miner") || findtext(from.account_holder, "Syndicate") || findtext(from.account_holder, "Syndi"))
+			schedule_suspicion_notice(from, amount)
 
-    // Перевод средств
-    adjust_money(amount)
-    from.adjust_money(-amount)
-    return TRUE
+	// Перевод средств
+	adjust_money(amount)
+	from.adjust_money(-amount)
+
+	// 🧾 Запись в историю для получателя
+	makeTransactionLog(
+		amount,
+		"Incoming transfer from [from.account_holder]",
+		"Inter-Account Transfer",
+		from.account_holder,
+		FALSE
+	)
+	// 🧾 Запись для отправителя
+	from.makeTransactionLog(
+		-amount,
+		"Transfer to [account_holder]",
+		"Inter-Account Transfer",
+		account_holder,
+		FALSE
+	)
+
+	return TRUE
 
 /datum/bank_account/proc/payday(amount_of_paychecks, free = FALSE)
 	if(!account_job)
@@ -167,18 +197,33 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 		SSblackbox.record_feedback("amount", "free_income", money_to_transfer)
 		SSeconomy.station_target += money_to_transfer
 		log_econ("[money_to_transfer] кредит[get_num_string(money_to_transfer)] выдано на аккаунт [src.account_holder] из дохода.")
+
+		// 🧾 Добавляем запись в историю
+		makeTransactionLog(
+			money_to_transfer,
+			"Salary Payment (Free Income)",
+			"Payroll System",
+			"Nanotrasen",
+			FALSE
+		)
 		return TRUE
 	else
 		var/datum/bank_account/department_account = SSeconomy.get_dep_account(account_job.paycheck_department)
 		if(department_account)
 			if(!transfer_money(department_account, money_to_transfer))
-				bank_card_talk("ERROR: Зарплата отменена. Недостаточно средстве на счету отдела.")
+				bank_card_talk("ERROR: Зарплата отменена. Недостаточно средств на счету отдела.")
 				return FALSE
 			else
 				bank_card_talk("Зарплата выдана, текущий баланс: [account_balance] кр.")
+				// 🧾 Добавляем запись в историю
+				makeTransactionLog(
+					money_to_transfer,
+					"Salary Payment",
+					"Payroll System",
+					"[department_account.account_holder]",
+					FALSE
+				)
 				return TRUE
-	bank_card_talk("ERROR: Зарплата не выдана. Невозможно связаться с аккаунтом отдела.")
-	return FALSE
 
 /datum/bank_account/proc/bank_card_talk(message, force)
 	if(!message || !bank_cards.len)
@@ -331,23 +376,22 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 //STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)("hh:mm:ss")
 
 /proc/create_account(var/new_account_holder = "Default user", var/starting_funds = 0, var/obj/machinery/computer/account_database/source_db)
-
-	//create a new account
+	// Создание нового аккаунта
 	var/datum/bank_account/M = new()
 	M.account_holder = new_account_holder
 	M.account_balance = starting_funds
 
-	//create an entry in the account transaction log for when it was created
+	// Лог первой транзакции (создание)
 	var/datum/transaction/T = new()
 	T.target_name = new_account_holder
 	T.purpose = "Account creation"
 	T.amount = starting_funds
+
 	if(!source_db)
-		//set a random date, time and location some time over the past few decades
-		T.date = "[num2text(rand(1,31))] [pick(GLOB.month_names)], [rand(GLOB.year_integer - 20,GLOB.year_integer - 1)]"
+		// Старый автономный режим
+		T.date = "[num2text(rand(1,31))] [pick(GLOB.month_names)], [rand(GLOB.year_integer - 20, GLOB.year_integer - 1)]"
 		T.time = "[rand(0,23)]:[rand(0,59)]:[rand(0,59)]"
 		T.source_terminal = "NTGalaxyNet Terminal #[rand(111,1111)]"
-
 		M.account_id = rand(111111, 999999)
 	else
 		T.date = GLOB.current_date_string
@@ -355,20 +399,24 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 		T.source_terminal = source_db.machine_id
 
 		M.account_id = GLOB.next_account_number
-		GLOB.next_account_number += rand(1,25)
+		GLOB.next_account_number += rand(1, 25)
 
-		//create a sealed package containing the account details
+		// 📦 создаём посылку с документами
 		var/obj/item/small_delivery/P = new /obj/item/small_delivery(source_db.loc)
 
 		var/obj/item/paper/R = new /obj/item/paper(P)
-		playsound(source_db.loc, 'sound/goonstation/machines/printer_thermal.ogg', 50, 1)
-		P.contents = R
+		playsound(source_db.loc, 'sound/goonstation/machines/printer_thermal.ogg', 50, TRUE)
 		R.name = "Account information: [M.account_holder]"
 
 		var/overseer = "Unknown"
 		var/datum/ui_login/L = source_db.ui_login_get()
 		if(L.id)
-			overseer = L.id.registered_name
+			var/obj/item/card/id/ID = L.id
+			if(ID.registered_name && ID.assignment)
+				overseer = "[ID.registered_name], [ID.assignment]"
+			else if(ID.registered_name)
+				overseer = ID.registered_name
+
 		R.default_raw_text = {"<b>Account details (confidential)</b><br><hr><br>
 			<i>Account holder:</i> [M.account_holder]<br>
 			<i>Account number:</i> [M.account_id]<br>
@@ -377,16 +425,31 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 			<i>Creation terminal ID:</i> [source_db.machine_id]<br>
 			<i>Authorised NT officer overseeing creation:</i> [overseer]<br>"}
 
-		//stamp the paper
-		var/image/stampoverlay = image('icons/obj/bureaucracy.dmi')
-		stampoverlay.icon_state = "paper_stamp-cent"
-		if(!R.stamp_cache)
-			R.stamp_cache = new
-		R.stamp_cache += /obj/item/stamp
-		R.overlays += stampoverlay
-		R.stamp_cache += "<HR><i>This paper has been stamped by the Accounts Database.</i>"
+		R.add_raw_text(R.default_raw_text)
+		R.update_icon()
+		P.update_icon()
 
-	//add the account
+		// 🕹️ Автоматическая печать станции — визуальный PNG-штамп
+		if(!R.stamp_cache)
+			R.stamp_cache = list()
+		R.stamp_cache += /obj/item/stamp/machine
+
+		// добавляем графическое изображение штампа из ассета
+		var/stamp_html = icon2html('icons/stamp_icons/legit/large_stamp-machine.png', "paper")
+
+		R.add_raw_text("<hr>")
+		R.add_raw_text("<div align='center'>[stamp_html]</div>")
+
+		// 📜 Добавляем визуальный PNG-штамп Nanotrasen
+		var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/simple/paper)
+		R.add_stamp(sheet.icon_class_name("stamp-machine"), 400, 50, 1, "stamp-machine")
+
+		// подпись под штампом
+		R.add_raw_text("<div align='center'><i>This document has been automatically stamped by the Accounts Database system.</i></div>")
+		R.update_icon()
+		P.update_icon()
+
+	// Добавляем аккаунт в систему
 	M.transaction_history.Add(T)
 	return M
 
