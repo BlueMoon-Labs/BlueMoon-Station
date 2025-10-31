@@ -92,7 +92,6 @@
 	attack_verb = list("stabbed", "slashed", "cut")
 	tool_behaviour = TOOL_KNIFE
 	sharpness = SHARP_EDGED
-	item_flags = ITEM_FLAG_SHARP
 
 /obj/item/armyknife/blade/attack_self(mob/user)
 	playsound(get_turf(user), 'sound/weapons/batonextend.ogg', 50, 1)
