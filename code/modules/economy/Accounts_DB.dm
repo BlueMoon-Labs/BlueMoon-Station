@@ -25,6 +25,7 @@ GLOBAL_VAR(current_date_string)
 	var/current_page = AUT_ACCLST
 	var/is_printing = FALSE
 	var/temp_notice
+	var/last_dep_click_count = 0
 
 /obj/machinery/computer/account_database/New()
 	if(!GLOB.station_account)
@@ -61,7 +62,11 @@ GLOBAL_VAR(current_date_string)
 		ui = new(user, src, "AccountsUplinkTerminal", name)
 		ui.open()
 	else
-		ui.set_autoupdate(TRUE) // раз в ~2 сек
+		// 🔧 Чтобы не было двойных вызовов ui_act при детальном просмотре
+		if(current_page == AUT_ACCLST)
+			ui.set_autoupdate(TRUE) // обновляем только список
+		else
+			ui.set_autoupdate(FALSE) // подробная страница — статична
 
 /proc/safe_text(value, default = "Unknown")
 	if(isnull(value))
@@ -86,22 +91,44 @@ GLOBAL_VAR(current_date_string)
 
 	switch(current_page)
 		if(AUT_ACCLST)
-			var/list/accounts = list()
-			for(var/datum/bank_account/B in GLOB.all_money_accounts)
-				if(!istype(B, /datum/bank_account))
-					continue
-				accounts += list(list(
-					"id" = GLOB.all_money_accounts.Find(B),
-					"account_number" = "[B.account_id]",
-					"owner_name" = "[B.account_holder]",
-					"suspended" = (B.transferable ? "Active" : "Suspended"),
-					"balance" = "[B.account_balance]",
-					"account_index" = GLOB.all_money_accounts.Find(B)
+			var/list/dep_accounts = list()
+			var/list/player_accounts = list()
+
+			// 🏛️ Сначала — департаменты
+			var/i = 1
+			for (var/datum/bank_account/department/D in SSeconomy.generated_accounts)
+				dep_accounts += list(list(
+					"id" = "dep_[i]",
+					"dep_index" = i,
+					"dep_id" = "[D.department_id]",
+					"account_number" = "##",
+					"owner_name" = "[D.account_holder] (Department)",
+					"target_name" = "[D.account_holder]",
+					"suspended" = (D.transferable ? "Active" : "Suspended"),
+					"balance" = "[D.account_balance]",
+					"account_index" = -1
 				))
-			data["accounts"] = accounts
+				i++
+
+			// 👤 Потом — обычные счета
+			for (var/datum/bank_account/B in GLOB.all_money_accounts)
+				if (!istype(B, /datum/bank_account/department))
+					player_accounts += list(list(
+						"id" = GLOB.all_money_accounts.Find(B),
+						"account_number" = "[B.account_id]",
+						"owner_name" = "[B.account_holder]",
+						"suspended" = (B.transferable ? "Active" : "Suspended"),
+						"balance" = "[B.account_balance]",
+						"account_index" = GLOB.all_money_accounts.Find(B)
+					))
+
+			// 📋 Объединяем: департаменты сверху, игроки снизу
+			data["accounts"] = dep_accounts + player_accounts
+
 
 		if(AUT_ACCINF)
 			var/datum/bank_account/A = detailed_account_view
+			data["is_department"] = istype(A, /datum/bank_account/department)
 			if(!A)
 				return data
 
@@ -117,12 +144,14 @@ GLOBAL_VAR(current_date_string)
 			// 📜 История транзакций
 			var/list/txs = list()
 			for(var/datum/transaction/T in A.transaction_history)
+				var/amt_text = isnum(T.amount) ? "[T.amount]" : "[T.amount]"
+				// Нормализуем вид: -1250 / 1250 (знак оставляем как есть)
 				txs += list(list(
 					"date" = safe_text(T.date, "N/A"),
 					"time" = safe_text(T.time, "--:--:--"),
 					"target_name" = safe_text(T.target_name, "Unknown"),
 					"purpose" = safe_text(T.purpose, "Unknown"),
-					"amount" = "[safe_text(T.amount, "0")]",
+					"amount" = amt_text,
 					"source_terminal" = safe_text(T.source_terminal, "Unknown")
 				))
 			data["transactions"] = txs
@@ -151,16 +180,62 @@ GLOBAL_VAR(current_date_string)
 /obj/machinery/computer/account_database/ui_act(action, list/params)
 	if(..()) return
 	. = TRUE
+	world.log << "[src]: ui_act('[action]') called with params=[json_encode(params)]"
+	to_chat(world, span_notice("[src]: ui_act('[action]') called with params=[json_encode(params)]"))
 	if(ui_login_act(action, params)) return
 	if(ui_act_modal(action, params)) return
 	if(!ui_login_get().logged_in) return
+	// Если выбран департаментский счёт — запретить любые операции
+	if (detailed_account_view && istype(detailed_account_view, /datum/bank_account/department))
+		switch(action)
+			if("toggle_suspension", "finalise_transfer", "change_pay_level", "create_new_account")
+				set_temp("Department accounts are read-only.", "warning", TRUE)
+				return
 
 	switch(action)
 		if("view_account_detail")
 			var/index = text2num(params["index"])
+
+			if (index == -1)
+
+				var/dep_i = text2num(params["dep_index"])
+				if (dep_i)
+					var/i = 1
+					for (var/datum/bank_account/department/D in SSeconomy.generated_accounts)
+						if (i == dep_i)
+							detailed_account_view = D
+							current_page = AUT_ACCINF
+							return
+						i++
+
+				var/dep_id = params["dep_id"]
+				if (istext(dep_id) && length(dep_id))
+					for (var/datum/bank_account/department/D in SSeconomy.generated_accounts)
+						if ("[D.department_id]" == "[dep_id]")
+							detailed_account_view = D
+							current_page = AUT_ACCINF
+							return
+
+				var/target_name = params["target_name"]
+				if (istext(target_name) && length(target_name))
+					var/clean_target = lowertext(trim(replacetext(target_name, " (Department)", "")))
+					for (var/datum/bank_account/department/D in SSeconomy.generated_accounts)
+						var/clean_holder = lowertext(trim(D.account_holder))
+						if (clean_holder == clean_target)
+							detailed_account_view = D
+							current_page = AUT_ACCINF
+							return
+
+				set_temp("Department account not found for the clicked row.", "danger", TRUE)
+				return
+
 			if(index && index > 0 && index <= length(GLOB.all_money_accounts))
 				detailed_account_view = GLOB.all_money_accounts[index]
 				current_page = AUT_ACCINF
+				to_chat(world, span_notice("[src]: Opened regular account [detailed_account_view.account_holder]"))
+				return
+
+			set_temp("Account not found.", "danger", TRUE)
 
 		if("back")
 			detailed_account_view = null
@@ -219,12 +294,12 @@ GLOBAL_VAR(current_date_string)
 
 			// 1) Выбор грейда
 			var/list/pay_levels = list(
-				"Assistant 25" = PAYCHECK_ASSISTANT,
-				"Minimal 75"   = PAYCHECK_MINIMAL,
-				"Normal 125"   = PAYCHECK_EASY,
-				"Normal+ 175"  = PAYCHECK_MEDIUM,
-				"High 200"     = PAYCHECK_HARD,
-				"Command 250"  = PAYCHECK_COMMAND
+				"Assistant" = PAYCHECK_ASSISTANT,
+				"Minimal"   = PAYCHECK_MINIMAL,
+				"Normal"   = PAYCHECK_EASY,
+				"Normal+"  = PAYCHECK_MEDIUM,
+				"High"     = PAYCHECK_HARD,
+				"Command"  = PAYCHECK_COMMAND
 			)
 			var/choice = tgui_input_list(usr, "Select new pay grade", "Pay Adjustment", pay_levels)
 			if(!choice) return
@@ -283,13 +358,13 @@ GLOBAL_VAR(current_date_string)
 
 	playsound(get_turf(src), 'sound/goonstation/machines/printer_thermal.ogg', 50, TRUE)
 
-	var/turf/T = get_turf(src)
-	if(!T)
+	var/turf/TT = get_turf(src)
+	if(!TT)
 		//log_world("[src]: print_records_finish() failed — no turf found.")
 		is_printing = FALSE
 		return
 
-	var/obj/item/paper/P = new /obj/item/paper(T)
+	var/obj/item/paper/P = new /obj/item/paper(TT)
 	if(!P)
 		//log_world("[src]: print_records_finish() failed to create paper.")
 		is_printing = FALSE
@@ -297,7 +372,7 @@ GLOBAL_VAR(current_date_string)
 
 	P.name = "Account Report"
 // ============================
-// 🧾 МОД РЕЖИМОВ ПЕЧАТИ
+// МОД РЕЖИМОВ ПЕЧАТИ
 // ============================
 
 	switch(print_mode)
@@ -308,7 +383,8 @@ GLOBAL_VAR(current_date_string)
 			else
 				P.name = "Финансовый отчёт Nanotrasen"
 
-				P.add_raw_text("<h1><div align=\"center\">ФИНАНСОВЫЙ ОТЧЁТ О СЧЁТЕ</div></h1>")
+				// Заголовок
+				P.add_raw_text("<h1><div align='center'>ФИНАНСОВЫЙ ОТЧЁТ О СЧЁТЕ</div></h1>")
 				P.add_raw_text("<hr />")
 				P.add_raw_text("<p><strong>Владелец счёта:</strong> [A.account_holder]</p>")
 				P.add_raw_text("<p><strong>Номер счёта:</strong> #[A.account_id]</p>")
@@ -316,30 +392,76 @@ GLOBAL_VAR(current_date_string)
 				P.add_raw_text("<p><strong>Статус счёта:</strong> [(A.transferable ? "Активен" : "Заморожен")]</p>")
 
 				if(A.suspicious_activity)
-					P.add_raw_text("<p><font color=\"red\"><strong>⚠ Подозрительная активность:</strong> [A.suspicion_reason]</font></p>")
+					P.add_raw_text("<p><font color='red'><strong>⚠ Подозрительная активность:</strong> [A.suspicion_reason]</font></p>")
 
 				P.add_raw_text("<hr />")
 				P.add_raw_text("<p><strong>Дата формирования отчёта:</strong> [GLOB.current_date_string]</p>")
 				P.add_raw_text("<p><strong>Источник:</strong> [src.name]</p>")
-				P.add_raw_text("<p><strong>Авторизация терминала:</strong> [usr ? usr.real_name : "N/A"]</p>")
+				var/author_name = usr ? usr.real_name : "N/A"
+				P.add_raw_text("<p><strong>Авторизация терминала:</strong> [author_name]</p>")
 				P.add_raw_text("<hr />")
 
-				P.add_raw_text("<p><strong><div align=\"center\">Печати</strong></div></p>")
+				// ────────────────────────────────
+				// ПЕЧАТИ
+				// ────────────────────────────────
+				P.add_raw_text("<p><div align='center'><strong>Печати</strong></div></p>")
 				P.add_raw_text("<p><strong>Место для печатей:</strong></p>")
 				P.add_raw_text("<hr />")
 
-				P.add_raw_text("<font color=\"grey\"><div align=\"justify\">Данный отчёт составлен автоматически системой Nanotrasen Financial Uplink.")
-				P.add_raw_text("Считается действительным только при наличии печати станции.</div></font>")
+				P.add_raw_text("<font color='grey'><div align='justify'>Данный отчёт составлен автоматически системой Nanotrasen Financial Uplink. Считается действительным только при наличии печати станции.</div></font>")
+
 				var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/simple/paper)
-				P.add_stamp(sheet.icon_class_name("stamp-machine"), 400, 300, 1, "stamp-machine")
+				P.add_stamp(sheet.icon_class_name("stamp-machine"), 350, 250, 1, "stamp-machine")
+
 				P.add_raw_text("<div align='center'><i>This document has been automatically stamped by the Accounts Database system.</i></div>")
 				P.update_icon()
 
-		// вот здесь закончился блок DETAILS, теперь начинается LIST 👇
+				// ────────────────────────────────
+				// ИСТОРИЯ ТРАНЗАКЦИЙ
+				// ────────────────────────────────
+				P.add_raw_text("<p><div align='center'><strong>История транзакций</strong></div></p>")
+				P.add_raw_text("<table border='0' width='100%' style='border-collapse: collapse; line-height: 1.4;'>")
+
+				// Заголовки таблицы — теперь отделены
+				P.add_raw_text("<thead>")
+				P.add_raw_text("<tr style='font-weight:bold; border-bottom:2px solid #000;'>")
+				P.add_raw_text("<td width='5%'>№</td>")
+				P.add_raw_text("<td width='15%'>Дата</td>")
+				P.add_raw_text("<td width='10%'>Время</td>")
+				P.add_raw_text("<td width='25%'>Цель</td>")
+				P.add_raw_text("<td width='25%'>Описание</td>")
+				P.add_raw_text("<td width='10%' align='right'>Сумма</td>")
+				P.add_raw_text("<td width='10%'>Терминал</td>")
+				P.add_raw_text("</tr>")
+				P.add_raw_text("</thead>")
+
+				P.add_raw_text("<tbody>")
+				P.add_raw_text("<tr><td colspan='7'><br></td></tr>") // отступ между заголовком и первой строкой
+
+				if(!A.transaction_history || !length(A.transaction_history))
+					P.add_raw_text("<tr><td colspan='7' align='center'><i>Нет зарегистрированных транзакций.</i></td></tr>")
+				else
+					var/i = 1
+					for(var/datum/transaction/TX in A.transaction_history)
+						P.add_raw_text("<tr style='border-top:1px solid #ccc;'>")
+						P.add_raw_text("<td align='center'><b>[i].</b></td>")
+						P.add_raw_text("<td>[TX.date]</td>")
+						P.add_raw_text("<td>[TX.time]</td>")
+						P.add_raw_text("<td>[TX.target_name]</td>")
+						P.add_raw_text("<td>[TX.purpose]</td>")
+						P.add_raw_text("<td align='right'>[TX.amount]</td>")
+						P.add_raw_text("<td>[TX.source_terminal]</td>")
+						P.add_raw_text("</tr>")
+						P.add_raw_text("<tr><td colspan='7'><br></td></tr>") // разделитель строк
+						i++
+
+				P.add_raw_text("</tbody></table><hr />")
+
+// вот здесь закончился блок DETAILS, теперь начинается LIST
 		if("list")
 			P.name = "Сводный финансовый отчёт"
 
-			P.add_raw_text("<h1><div align=\"center\">СВОДНЫЙ ФИНАНСОВЫЙ ОТЧЁТ</div></h1>")
+			P.add_raw_text("<h1><div align='center'>СВОДНЫЙ ФИНАНСОВЫЙ ОТЧЁТ</div></h1>")
 			P.add_raw_text("<hr />")
 			P.add_raw_text("<p><strong>Описание:</strong> Автоматически сгенерированный отчёт о состоянии всех активных и замороженных счетов станции Nanotrasen.</p>")
 			P.add_raw_text("<p><strong>Источник данных:</strong> Финансовый терминал станции #[GLOB.num_financial_terminals]</p>")
@@ -348,40 +470,49 @@ GLOBAL_VAR(current_date_string)
 
 			var/list/all_accounts = GLOB.all_money_accounts
 
-			//log_world("[src]: print_records_finish(list) — using GLOB.all_money_accounts ([length(all_accounts)] accounts total)")
-
 			if(!all_accounts || !length(all_accounts))
 				P.add_raw_text("<p><i>Не найдено активных счетов.</i></p>")
 			else
 				P.add_raw_text("<p><strong>Список счетов:</strong></p>")
-				P.add_raw_text("<table border='1' width='100%' style='border-collapse: collapse; border: 1px solid #555;'>\n")
-				P.add_raw_text("<tr style='background-color:#e6e6e6;'>\n")
-				P.add_raw_text("<th width='5%'>№</th>\n")
-				P.add_raw_text("<th width='35%'>Владелец</th>\n")
-				P.add_raw_text("<th width='20%'>ID</th>\n")
-				P.add_raw_text("<th width='20%'>Баланс</th>\n")
-				P.add_raw_text("<th width='20%'>Статус</th>\n")
-				P.add_raw_text("</tr>\n")
+				P.add_raw_text("<table border='0' width='100%' style='border-collapse: collapse; line-height: 1.5;'>")
+
+				// 🔹 Заголовки таблицы — отдельно и с нижней границей
+				P.add_raw_text("<thead>")
+				P.add_raw_text("<tr style='font-weight:bold; border-bottom:2px solid #000;'>")
+				P.add_raw_text("<td width='5%'>№</td>")
+				P.add_raw_text("<td width='35%'>Владелец</td>")
+				P.add_raw_text("<td width='20%'>Номер счёта</td>")
+				P.add_raw_text("<td width='20%' align='right'>Баланс</td>")
+				P.add_raw_text("<td width='20%' align='center'>Статус</td>")
+				P.add_raw_text("</tr>")
+				P.add_raw_text("</thead>")
+
+				// Добавляем визуальный отступ между шапкой и первой записью
+				P.add_raw_text("<tbody>")
+				P.add_raw_text("<tr><td colspan='5'><br></td></tr>")
 
 				var/i = 1
-				for (var/datum/bank_account/ACC in all_accounts)
-					P.add_raw_text("<tr>\n")
-					P.add_raw_text("<td align='center'>[i]</td>\n")
-					P.add_raw_text("<td>[ACC.account_holder]</td>\n")
-					P.add_raw_text("<td align='center'>#[ACC.account_id]</td>\n")
-					P.add_raw_text("<td align='right'>[ACC.account_balance]</td>\n")
-					P.add_raw_text("<td align='center'>[(ACC.transferable ? "Активен" : "Заморожен")]</td>\n")
-					P.add_raw_text("</tr>\n")
+				for(var/datum/bank_account/ACC in all_accounts)
+					P.add_raw_text("<tr style='border-top:1px solid #ccc;'>")
+					P.add_raw_text("<td align='center'><b>[i].</b></td>")
+					P.add_raw_text("<td>[ACC.account_holder]</td>")
+					P.add_raw_text("<td>#[ACC.account_id]</td>")
+					P.add_raw_text("<td align='right'>[ACC.account_balance]</td>")
+					P.add_raw_text("<td align='center'>[(ACC.transferable ? "Активен" : "Заморожен")]</td>")
+					P.add_raw_text("</tr>")
+					P.add_raw_text("<tr><td colspan='5'><br></td></tr>")
 					i++
 
-					P.add_raw_text("</table><br>\n")
+				P.add_raw_text("</tbody></table><hr />")
 
+				// Автоматическая печать
 				var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/simple/paper)
 				P.add_stamp(sheet.icon_class_name("stamp-machine"), 400, 600, 1, "stamp-machine")
 				P.add_raw_text("<div align='center'><i>This document has been automatically stamped by the Accounts Database system.</i></div>")
 				P.update_icon()
 
-			P.add_raw_text("<font color=\"grey\"><div align=\"justify\">Данный отчёт составлен автоматически системой Nanotrasen Financial Uplink. ")
+			// Сноска
+			P.add_raw_text("<font color='grey'><div align='justify'>Данный отчёт составлен автоматически системой Nanotrasen Financial Uplink. Считается действительным только при наличии печати станции.</div></font>")
 
 		else
 			P.add_raw_text("<b>Unknown print mode:</b> [print_mode]<br>")

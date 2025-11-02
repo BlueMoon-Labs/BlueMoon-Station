@@ -167,22 +167,9 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	adjust_money(amount)
 	from.adjust_money(-amount)
 
-	// 🧾 Запись в историю для получателя
-	makeTransactionLog(
-		amount,
-		"Incoming transfer from [from.account_holder]",
-		"Inter-Account Transfer",
-		from.account_holder,
-		FALSE
-	)
-	// 🧾 Запись для отправителя
-	from.makeTransactionLog(
-		-amount,
-		"Transfer to [account_holder]",
-		"Inter-Account Transfer",
-		account_holder,
-		FALSE
-	)
+	// 🧾 Явно пишем расход/приход со знаком
+	makeTransactionLog(amount, "Incoming transfer from [from.account_holder]", "Inter-Account Transfer", from.account_holder, FALSE)
+	from.makeTransactionLog(-amount, "Transfer to [account_holder]", "Inter-Account Transfer", account_holder, FALSE)
 
 	return TRUE
 
@@ -333,44 +320,53 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 		"reason" = reason,
 	))
 
-
+	// чтобы оно отображалось в UI и на распечатке.
+	var/datum/transaction/T = new()
+	T.date = GLOB.current_date_string
+	T.time = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
+	T.target_name = "System"
+	T.purpose = reason
+	T.amount = adjusted_money          // уже со знаком
+	T.source_terminal = "Account System"
+	transaction_history += T
 
  // Charge is for transferring money from an account to another. The destination account can possibly not exist (Magical money sink)
+// Charge is for transferring money from an account to another...
 /datum/bank_account/proc/charge(transaction_amount = 0, datum/bank_account/dest, transaction_purpose, terminal_name = "", dest_name = "UNKNOWN", dest_purpose, dest_target_name)
-	if(transferable)
+	if(!transferable)
 		to_chat(usr, "<span class='warning'>Unable to access source account: account not transferable.</span>")
 		return FALSE
 
 	if(transaction_amount <= account_balance)
-		//transfer the money
+		// Списание со счёта-источника
 		account_balance -= transaction_amount
-		makeTransactionLog(transaction_amount, transaction_purpose, terminal_name, dest_name)
+		makeTransactionLog(-transaction_amount, transaction_purpose, terminal_name, dest_name)
+
+		// Пополнение счёта-получателя, если он есть
 		if(dest)
 			dest.account_balance += transaction_amount
 			dest.makeTransactionLog(transaction_amount,
-			dest_purpose ? dest_purpose : transaction_purpose, terminal_name, dest_target_name ? dest_target_name : dest_name, FALSE)
+				dest_purpose ? dest_purpose : transaction_purpose,
+				terminal_name,
+				dest_target_name ? dest_target_name : dest_name,
+				FALSE)
+
 		return TRUE
 	else
 		to_chat(usr, "<span class='warning'>Insufficient funds in account.</span>")
 		return FALSE
+
 
 // Seperated from charge so they can reuse the code and also because there's many instances where a log will be made without actually making a transaction
 /datum/bank_account/proc/makeTransactionLog(transaction_amount = 0, transaction_purpose, terminal_name = "", dest_name = "UNKNOWN", charging = TRUE, date = GLOB.current_date_string, time = "")
 	var/datum/transaction/T = new()
 	T.target_name = dest_name
 	T.purpose = transaction_purpose
-	if(!charging || transaction_amount == 0)
-		T.amount = "[transaction_amount]"
-	else
-		T.amount = "([transaction_amount])"
-
+	T.amount = transaction_amount
 	T.source_terminal = terminal_name
 	T.date = date
-	if(time == "")
-		T.time = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
-	else
-		T.time = time
-	transaction_history.Add(T)
+	T.time = (time == "") ? STATION_TIME_TIMESTAMP("hh:mm:ss", world.time) : time
+	transaction_history += T
 
 //the current ingame time (hh:mm:ss) can be obtained by calling:
 //STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)("hh:mm:ss")

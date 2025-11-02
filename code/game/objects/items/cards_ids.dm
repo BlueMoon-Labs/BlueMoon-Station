@@ -429,6 +429,15 @@
 		var/obj/item/holochip/holochip = new (user.drop_location(), amount_to_remove)
 		user.put_in_hands(holochip)
 		to_chat(user, "<span class='notice'>You withdraw [amount_to_remove] credits into a holochip.</span>")
+
+		// 🧾 Добавляем запись о снятии в историю транзакций
+		registered_account.makeTransactionLog(
+			-amount_to_remove,
+			"Withdrawal via ID Card",
+			"[src.name]",
+			user ? user.real_name : "Unknown user",
+			FALSE
+		)
 		return
 	registered_account.bank_card_talk("<span class='warning'>ERROR: The linked account has no sufficient credits to perform that withdrawal.</span>", TRUE)
 

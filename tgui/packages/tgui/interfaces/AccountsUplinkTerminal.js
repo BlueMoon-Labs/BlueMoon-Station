@@ -109,11 +109,20 @@ const AccountsRecordList = (_props, context) => {
             {sorted.map((account, idx) => (
               <Table.Row
                 key={account.id ?? idx}
-                onClick={() =>
-                  act('view_account_detail', {
-                    index: account.account_index,
-                  })
-                }
+                onClick={() => {
+                  if (account.account_index === -1) {
+                    act('view_account_detail', {
+                      index: -1,
+                      dep_index: account.dep_index,   // ✅ добавили
+                      dep_id: account.dep_id,         // ✅ добавили
+                      // target_name: account.target_name, // можно, но уже не обязательно
+                    });
+                  } else {
+                    act('view_account_detail', {
+                      index: account.account_index,
+                    });
+                  }
+                }}
               >
                 <Table.Cell>
                   <Icon name="user" /> {safe(account.owner_name, 'Unknown')}
@@ -196,7 +205,7 @@ const DetailedAccountInfo = (_props, context) => {
   } = data;
 
   const transactions = Array.isArray(data.transactions) ? data.transactions : [];
-
+  const isDepartment = !!data.is_department;
   return (
     <Fragment>
       <Section
@@ -226,21 +235,25 @@ const DetailedAccountInfo = (_props, context) => {
           </LabeledList.Item>
           <LabeledList.Item label="Account Balance">
             {money}
+            {!isDepartment && (
             <Button
               ml={1}
               icon="dollar-sign"
               content="Change Pay Level"
               onClick={() => act('change_pay_level')}
             />
+          )}
           </LabeledList.Item>
           <LabeledList.Item label="Account Status" color={suspended ? 'red' : 'green'}>
             {suspended ? 'Suspended' : 'Active'}
+            {!isDepartment && (
             <Button
               ml={1}
               content={suspended ? 'Unsuspend' : 'Suspend'}
               icon={suspended ? 'unlock' : 'lock'}
               onClick={() => act('toggle_suspension')}
             />
+            )}
           </LabeledList.Item>
         </LabeledList>
 
