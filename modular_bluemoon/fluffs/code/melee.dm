@@ -25,6 +25,16 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
+	unique_reskin = list(
+		"Black" = list(
+			RESKIN_ICON_STATE = "kukri",
+			RESKIN_ITEM_STATE = "kukri"
+		),
+		"White" = list(
+			RESKIN_ICON_STATE = "kukri_w",
+			RESKIN_ITEM_STATE = "kukri_w"
+		)
+	)
 
 //////////////////////////////////////////////////
 

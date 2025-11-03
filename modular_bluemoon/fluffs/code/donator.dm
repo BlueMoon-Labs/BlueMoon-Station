@@ -672,7 +672,7 @@
 	name = "Alta's dogtag"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/tie/dogtag
-	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228", "stasdvrz")
+	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228", "stasdvrz", "shizalrp", "tblkba")
 
 /datum/gear/donator/bm/hateredsoul_dogtag
 	name = "Combat Dogtag"
@@ -1501,6 +1501,12 @@
 	path = /obj/item/storage/backpack/satchel/pawpack
 	ckeywhitelist = list("deltarayx")
 
+/datum/gear/donator/bm/coffin
+	name = "Black Rose atelier worker coffin"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/backpack/coffin
+	ckeywhitelist = list("hateredsoul")
+
 /datum/gear/donator/bm/bishop_mitre
 	name = "Book of stealing"
 	slot = ITEM_SLOT_BACKPACK
@@ -1747,3 +1753,38 @@
 	path = /obj/item/clothing/shoes/jackboots/tall/soviet_jackboots
 	ckeywhitelist = list("naivo")
 
+/datum/gear/donator/bm/mu88
+	name = "M.U. 88 New hope coat"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/armor/vest/bluesheid/mu88
+	ckeywhitelist = list("milidead", "hateredsoul")
+	restricted_desc = "Brig Physician, Blueshield."
+	restricted_roles = list("Brig Physician, Blueshield.")
+
+/datum/gear/donator/bm/mu88_swimsuit
+	name = "M.U. 88 New hope swimcoat"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/rank/brigdoc/mu88_swimsuit
+	ckeywhitelist = list("milidead", "hateredsoul")
+	restricted_desc = "Brig Physician, Blueshield."
+	restricted_roles = list("Brig Physician, Blueshield.")
+
+/datum/gear/donator/bm/mu88_boots
+	name = "M.U. 88 New hope boots"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/shoes/jackboots/tall/mu88_boots
+	ckeywhitelist = list("milidead", "hateredsoul")
+
+/datum/gear/donator/bm/mu88_horns
+	name = "M.U. 88 New hope horns"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/head/helmet/sec/blueshield/mu88_horns
+	ckeywhitelist = list("milidead", "hateredsoul")
+	restricted_desc = "Brig Physician, Blueshield."
+	restricted_roles = list("Brig Physician, Blueshield.")
+
+/datum/gear/donator/bm/mu88_tie
+	name = "M.U. 88 New hope tie"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/neck/tie/mu88_tie
+	ckeywhitelist = list("milidead", "hateredsoul")

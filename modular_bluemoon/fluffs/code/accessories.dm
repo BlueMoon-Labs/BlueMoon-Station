@@ -321,6 +321,16 @@
 
 ////////////////////////
 
+/obj/item/clothing/neck/tie/mu88_tie
+	name = "M.U. 88 New hope tie"
+	desc = "Кол, представляющий собой белый воротник и светло-зелёного оттенка галстук, носящие за собой смысл лишь декорации, хоть и выполнены из износостойкой ткани, для работ в области повышенной опасности. Во внутренней части галстука имеется логотип в виде чёрной розы, а также надпись - Black Rose atelier."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+	icon_state = "mu88_tie"
+	item_state = "mu88_tie"
+
+////////////////////////
+
 /obj/item/clothing/neck/tie/hahun_cape
 	name = "Praxil Mk.6"
 	desc = "A cape that awarded to trusted agents of Syndicate, pleasant to the touch and look very stylish, doesn't even restrict movement"

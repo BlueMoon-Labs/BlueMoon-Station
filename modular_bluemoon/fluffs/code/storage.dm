@@ -142,3 +142,31 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_righthand.dmi'
 	icon_state = "rawk_sat"
 	item_state = "rawk_sat"
+
+/obj/item/storage/backpack/coffin
+	name = "Black Rose atelier worker coffin"
+	desc = "Шестигранный чёрный гроб, форма, размер отличаются от серийных образцов похожих предметов для захоронения. Непонятно кто и зачем это придумал, однако гроб имеет функционал обычной сумки для ношения на спине, что почёркивает плотный, чёрный ремень. На изголовье имеется крупный логотип изготовителя в виде розы, хоть и без названия. К сожалению, в гроб поместить человека или иное подобное существо можно лишь по частям, ведь внутренняя часть гроба обладает большим количеством карманов и иными подобными отсеками для хранения предметов, а в центральной части имеются углубления для  хранения оружия и прочих подобных предметов."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/storage.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_righthand.dmi'
+	icon_state = "coffin_b"
+	item_state = "coffin_b"
+	unique_reskin = list(
+		"Black" = list(
+			RESKIN_ICON_STATE = "coffin_b",
+			RESKIN_ITEM_STATE = "coffin_b"
+		),
+		"Black different" = list(
+			RESKIN_ICON_STATE = "coffin_b2",
+			RESKIN_ITEM_STATE = "coffin_b2"
+		),
+		"White" = list(
+			RESKIN_ICON_STATE = "coffin_w",
+			RESKIN_ITEM_STATE = "coffin_w"
+		),
+		"White different" = list(
+			RESKIN_ICON_STATE = "coffin_w2",
+			RESKIN_ITEM_STATE = "coffin_w2"
+		),
+	)

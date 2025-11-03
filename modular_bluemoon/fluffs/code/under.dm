@@ -474,3 +474,15 @@
 	icon_state = "sovietblack"
 	item_state = "syndicate-black"
 	can_adjust = FALSE
+
+/obj/item/clothing/under/rank/brigdoc/mu88_swimsuit
+	name = "M.U. 88 New hope swimcoat"
+	desc = "Лёгкое и незамысловатое одеяние, похожее на женский купальник белого цвета, имеющее подобие корсета из двух чёрных ремешков у пояса. Сделано из гибрида синтетических волокон, делая носку приятной, а сам элемент одежды - прочным и износостойким. На внутренней части имеется небольшой логотип производителя в виде чёрной розы, а рядом надпись - Black Rose atelier."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	icon_state = "mu88_swimsuit"
+	item_state = "mu88_swimsuit"
+	can_adjust = FALSE

@@ -38,8 +38,14 @@
 /obj/item/clothing/shoes/jackboots/tall/soviet_jackboots
 	name = "Soviet Black Jackboots"
 	desc = "High-quality clothes made of a mixture of fleece and cotton. The logo in the form of an eagle and the caption of the Strategic Assault Tactical Team are visible on the tag. If you inhale the smell, you can smell the slices of a war crime."
+
+/obj/item/clothing/shoes/jackboots/tall/mu88_boots
+	name = "M.U. 88 New hope boots"
+	desc = "Ботфорты, практически доходящие до бёдер своего носителя. Основной материал или сплав, из которых выполнен данных элемент одежды определить сложно, хоть и по прочности и класса брони напоминает соединение кевлара, лёгкого металла и карбона. Каркас подвижный, не стесняет движения своего носителя, самая подвижная часть расположена в месте колена. Не требует внешней зарядки, несмотря на установленную механическую часть. В незаметной части сапога имеется небольшой логотип в виде чёрной розы, а рядом надпись - Black Rose atelier."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes_digi.dmi'
-	icon_state = "sovietblackboots"
-	item_state = "jackboots"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	icon_state = "mu88_boots"
+	item_state = "mu88_boots"
