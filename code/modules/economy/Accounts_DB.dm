@@ -180,8 +180,6 @@ GLOBAL_VAR(current_date_string)
 /obj/machinery/computer/account_database/ui_act(action, list/params)
 	if(..()) return
 	. = TRUE
-	world.log << "[src]: ui_act('[action]') called with params=[json_encode(params)]"
-	to_chat(world, span_notice("[src]: ui_act('[action]') called with params=[json_encode(params)]"))
 	if(ui_login_act(action, params)) return
 	if(ui_act_modal(action, params)) return
 	if(!ui_login_get().logged_in) return
@@ -232,7 +230,6 @@ GLOBAL_VAR(current_date_string)
 			if(index && index > 0 && index <= length(GLOB.all_money_accounts))
 				detailed_account_view = GLOB.all_money_accounts[index]
 				current_page = AUT_ACCINF
-				to_chat(world, span_notice("[src]: Opened regular account [detailed_account_view.account_holder]"))
 				return
 
 			set_temp("Account not found.", "danger", TRUE)
