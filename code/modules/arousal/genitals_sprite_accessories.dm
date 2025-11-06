@@ -65,6 +65,7 @@
 	taur_dimension_x = 64
 	ru_name = "утончённый к концу"
 
+/datum/sprite_accessory/penis/taperedbarbed
 	icon_state = "barbtapered"
 	name = "Tapered Barbed"
 	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
