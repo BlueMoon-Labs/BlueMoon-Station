@@ -87,6 +87,16 @@
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
+/datum/design/sl357dumdum
+	name = "revolver speedloader (.357 DumDum)"
+	desc = "A revolver speedloader. Rip and tar the naked flash."
+	id = "sl357dumdum"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 30000, /datum/material/glass = 5000)
+	build_path = /obj/item/ammo_box/a357/dumdum
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+
 /datum/design/m10apbox
 	name = "ammo box (10mm Armour Piercing)"
 	desc = "A box of ammo containing 20 rounds designed to penetrate armor, at the cost of raw damage."
