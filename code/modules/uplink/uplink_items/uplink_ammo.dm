@@ -145,7 +145,7 @@
 	item = /obj/item/ammo_box/a357/ap
 
 /datum/uplink_item/ammo/revolver/dumdum
-	name = ".357 Armor Piercing Speed Loader"
+	name = ".357 DumDum Speed Loader"
 	desc = "A speed loader that contains seven additional .357 DumDum Magnum rounds; usable with the Syndicate revolver. \
 			Rip and tear the flash."
 	item = /obj/item/ammo_box/a357/dumdum
