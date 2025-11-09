@@ -9,3 +9,4 @@
 	ammo_type = /obj/item/ammo_casing/g45l
 	caliber = list(".45l")
 	max_ammo = 6
+	multiload = 0 // заряжание через камору

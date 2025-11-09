@@ -22,13 +22,22 @@
 	..()
 	chamber_round(1)
 
-/obj/item/gun/ballistic/revolver/attackby(obj/item/A, mob/user, params)
+/obj/item/gun/ballistic/revolver/attackby(obj/item/A, mob/user, params) //есть задел для наличия и спилоадеров и коробок с патронами.
 	. = ..()
 	if(.)
 		return
-	// if(!magazine.speedloader)
-	// 	return to_chat(user, span_userdanger("Вам не получается зарядить револьвер при помощи [magazine]!"))
-	var/num_loaded = magazine.attackby(A, user, params, 1)
+	var/num_loaded = 0
+	if(istype(A, /obj/item/ammo_box)) //проверка что контейнер с боеприпасами и приведение к типу
+		var/obj/item/ammo_box/AM = A
+		if(!AM.speedloader) // Не спидлоадер
+			if(!istype(magazine, /obj/item/ammo_box/magazine/internal/cylinder)) // ВДРУГ используется не цилиндр, двустволку заряжать патронами
+				return to_chat(user, span_userdanger("У вас не получается зарядить револьвер при помощи [A]!"))
+			var/obj/item/ammo_box/magazine/internal/cylinder/C = magazine
+			num_loaded = C.ammo_box_reload(AM, user, params, 1)
+		else // Заряжание спидлоадером и патроном
+			num_loaded = magazine.attackby(A, user, params, 1) // У магазина есть параметр multiload, если false, то будет заряжать по одному.(иммитация каморы.)
+	else
+		num_loaded = magazine.attackby(A, user, params, 1) // Да, я не смог победить весвление чтоб объеденить с else выше.
 	if(num_loaded)
 		to_chat(user, "<span class='notice'>You load [num_loaded] shell\s into \the [src].</span>")
 		playsound(user, 'sound/weapons/bulletinsert.ogg', 60, 1)
