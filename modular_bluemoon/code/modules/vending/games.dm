@@ -28,6 +28,7 @@
 				/obj/item/canvas/twentyfour_twentyfour = 5,
 				/obj/item/canvas/twentythreeXnineteen = 5,
 				/obj/item/canvas/twentythreeXtwentythree = 5,
+				/obj/item/canvas/ultra_big = 5,
 				/obj/item/wallframe/painting = 5,
 			),
 		),

@@ -223,6 +223,16 @@
 	framed_offset_x = 5
 	framed_offset_y = 6
 
+/obj/item/canvas/ultra_big
+	name = "B-B-Big Canvas"
+	icon_state = "32x32"
+	width = 31
+	height = 31
+	pixel_x = 1
+	pixel_y = 1
+	framed_offset_x = 1
+	framed_offset_y = 1
+
 /obj/item/canvas/twentyfour_twentyfour
 	name = "ai universal standard canvas"
 	desc = "Besides being very large, the AI can accept these as a display from their internal database after you've hung it up."
