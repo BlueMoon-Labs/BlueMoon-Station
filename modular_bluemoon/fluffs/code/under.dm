@@ -503,3 +503,21 @@
 	can_adjust = FALSE
 
 ///////////////////////////////////////////////
+
+/obj/item/clothing/under/donator/bm/cesar_tunic
+
+	name = "Fancy tunic"
+	desc = "A comfortable tunic made of expensive fabrics and decorated with gold threads."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "cesar_tunic"
+	item_state = "cesar_tunic"
+	can_adjust = FALSE
+	unique_reskin = list(
+		"Standart" = list("icon_state" = "cesar_tunic"),
+		"half" = list("icon_state" = "cesar_tunic_alt")
+	)

@@ -1807,6 +1807,18 @@
 	path = /obj/item/clothing/neck/tie/mu88_tie
 	ckeywhitelist = list("milidead", "hateredsoul")
 
+/datum/gear/donator/bm/cesar_tunic
+	name = "Fancy tunic"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/cesar_tunic
+	ckeywhitelist = list("nopeingeneer")
+
+/datum/gear/donator/bm/cesar_crown
+	name = "Golden laurel wreath"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/laurel_crown
+	ckeywhitelist = list("nopeingeneer")
+
 ///////////////////////////////////////////////
 
 /datum/gear/donator/bm/dm_pzuniform
