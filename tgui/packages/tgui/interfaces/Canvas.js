@@ -90,8 +90,8 @@ export const Canvas = (props, context) => {
   const [width, height] = getImageSize(data.grid);
   return (
     <Window
-      width={Math.min(700, width * dotsize + 72)}
-      height={Math.min(700, height * dotsize + 72)}>
+      width={Math.min(816, width * dotsize + 72)}
+      height={Math.min(816, height * dotsize + 72)}>
       <Window.Content>
         <Box textAlign="center">
           <PaintCanvas
