@@ -209,14 +209,14 @@ export const Jukebox = (props, context) => {
                           <Button
                             icon="up-long"
                             color="green"
-                            tooltip="Вверх в избраном"
+                            tooltip="Вверх в избранном"
                             onClick={() => act('move_favorite', { track, up: true })}
                           />
 
                           <Button
                             icon="down-long"
                             color="green"
-                            tooltip="Вниз в избраном"
+                            tooltip="Вниз в избранном"
                             onClick={() => act('move_favorite', { track, up: false })}
                           />
                         </>
