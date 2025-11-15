@@ -67,8 +67,8 @@
 	if(used)
 		user.visible_message("<span class = 'notice'>[user] reinforces [C] with [src].</span>", \
 		"<span class = 'notice'>You reinforce [C] with [src], making it as protective as a helmet.</span>")
-		C.name = "quiet [C.name]"
-		C.upgrade_prefix = "quiet"
+		C.name = "rogue [C.name]"
+		C.upgrade_prefix = "rogue"
 		qdel(src)
 		return
 	else
