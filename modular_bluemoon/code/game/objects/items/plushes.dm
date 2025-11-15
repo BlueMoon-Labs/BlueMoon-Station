@@ -646,3 +646,23 @@
 	desc = "Это камень. Ее зовут Рокси. Выглядит миленько с бантиком."
 	icon_state = "roxie"
 	attack_verb = list("Smash")
+
+/obj/item/toy/plush/bm/Sheya
+	name = "Vampire"
+	desc = "Вампирша, одетая в готическую одежду"
+	icon_state = "sheya"
+	attack_verb = list("bit")
+
+/obj/item/toy/plush/bm/Sheya/slime
+	name = "Sheya"
+	desc = "Слайм, выглядящая как лиса, представляющая что она тигр."
+	icon_state = "sheya_slime"
+	attack_verb = list("squish", "glorp", "blorp")
+	squeak_override = list('modular_bluemoon/sound/voice/fleshy_squish.ogg' = 1)
+
+/obj/item/toy/plush/bm/Sheya/melting
+	name = "Melting love"
+	desc = "Слайм с сердцем на груди и на голове, вместо ног у неё лужа слизи."
+	icon_state = "sheya_melting"
+	attack_verb = list("squish", "glorp", "blorp")
+	squeak_override = list('modular_bluemoon/sound/voice/fleshy_squish.ogg' = 1)

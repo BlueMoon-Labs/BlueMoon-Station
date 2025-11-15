@@ -1592,7 +1592,7 @@
 	name = "Cybersun Cloak"
 	path = /obj/item/clothing/neck/cloak/cybersun/civil
 	slot = ITEM_SLOT_NECK
-	ckeywhitelist = list("herobrine998", "nyaaaa")
+	ckeywhitelist = list("herobrine998", "nyaaaa", "sheya")
 
 /datum/gear/donator/bm/toggles_combat_maid_civil
 	name = "Combat Maid Sleeves"
@@ -1818,6 +1818,24 @@
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/laurel_crown
 	ckeywhitelist = list("nopeingeneer")
+
+/datum/gear/donator/bm/sheya_plush
+	name = "Vampire plushie"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/toy/plush/bm/Sheya
+	ckeywhitelist = list("sheya")
+
+/datum/gear/donator/bm/sheya_plush_slime
+	name = "Sheya plushie"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/toy/plush/bm/Sheya/slime
+	ckeywhitelist = list("sheya")
+
+/datum/gear/donator/bm/sheya_plush_melting
+	name = "Melting love plushie"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/toy/plush/bm/Sheya/melting
+	ckeywhitelist = list("sheya")
 
 ///////////////////////////////////////////////
 
