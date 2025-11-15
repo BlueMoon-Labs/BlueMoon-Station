@@ -812,6 +812,8 @@
 		/obj/item/clothing/head/soft/sec/syndicate = 3,
 		/obj/item/clothing/head/beret/sec/syndicate = 3,
 		/obj/item/clothing/neck/cloak/syndiecap = 1,
+		/obj/item/armorkit/syndicate = 5,
+		/obj/item/armorkit/helmet/syndicate = 5,
 	)
 	contraband = list(
 		/obj/item/kitchen/knife/combat = 4,
