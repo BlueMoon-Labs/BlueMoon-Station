@@ -164,6 +164,11 @@ i'd be right happy to */
 		return
 
 	switch(action)
+		// BLUEMOON ADD START
+		if("toggleLock")
+			if(allowed(usr))
+				locked = !locked
+		// BLUEMOON ADD END
 		if("LZCargo")
 			usingBeacon = FALSE
 			if (beacon)

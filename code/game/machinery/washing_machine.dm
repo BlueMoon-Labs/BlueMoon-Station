@@ -183,11 +183,11 @@ GLOBAL_LIST_INIT(dye_registry, list(
 		return TRUE
 	if(!state_open)
 		open_machine()
-	else
+	else if(user.canUseTopic(src, BE_CLOSE))
 		state_open = FALSE //close the door
 		can_buckle = FALSE
 		update_icon()
-	return TRUE
+		return TRUE
 
 /obj/machinery/washing_machine/process()
 	if (!busy)
@@ -421,7 +421,7 @@ GLOBAL_LIST_INIT(dye_registry, list(
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HELP, "Открутить")
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Разобрать")
 		return .
-	
+
 	var/message = ""
 	if(user.get_active_held_item())
 		message = "Положить"

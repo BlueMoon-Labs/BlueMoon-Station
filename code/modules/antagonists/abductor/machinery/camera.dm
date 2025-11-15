@@ -24,19 +24,19 @@
 
 /obj/machinery/computer/camera_advanced/abductor/Initialize(mapload)
 	. = ..()
-	
+
 	if(tele_in_action)
-		actions += new tele_in_action(src)
+		actions += new tele_in_action(console.pad)
 	if(tele_out_action)
-		actions += new tele_out_action(src)
+		actions += new tele_out_action(console)
 	if(tele_self_action)
-		actions += new tele_self_action(src)
+		actions += new tele_self_action(console.pad)
 	if(vest_mode_action)
-		actions += new vest_mode_action(src)
+		actions += new vest_mode_action(console)
 	if(vest_disguise_action)
-		actions += new vest_disguise_action(src)
+		actions += new vest_disguise_action(console)
 	if(set_droppoint_action)
-		actions += new set_droppoint_action(src)
+		actions += new set_droppoint_action(console)
 
 /obj/machinery/computer/camera_advanced/abductor/proc/IsScientist(mob/living/carbon/human/H)
 	return HAS_TRAIT(H, TRAIT_ABDUCTOR_SCIENTIST_TRAINING)

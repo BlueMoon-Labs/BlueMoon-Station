@@ -333,6 +333,8 @@
 				return FALSE
 			var/obj/structure/frame/computer/C = new(src)
 			C.anchored = TRUE
+			C.state = 1
+			C.icon_state = "0"
 			C.setDir(the_rcd.computer_dir)
 			return TRUE
 

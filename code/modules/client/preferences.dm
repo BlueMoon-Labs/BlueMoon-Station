@@ -1009,7 +1009,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "ERP : <a href='?_src_=prefs;preference=erp_pref'>[erppref]</a><br>"
 					dat += "Non-Con : <a href='?_src_=prefs;preference=noncon_pref'>[nonconpref]</a><br>"
 					dat += "Vore : <a href='?_src_=prefs;preference=vore_pref'>[vorepref]</a><br>"
-					dat += "Mob-Sex : <a href='?_src_=prefs;preference=mobsex_pref'>[mobsexpref]</a><br>"
+					dat += "Mob Non-Con Sex : <a href='?_src_=prefs;preference=mobsex_pref'>[mobsexpref]</a><br>"
 					dat += "Horny Antags : <a href='?_src_=prefs;preference=hornyantags_pref'>[hornyantagspref]</a><br>"
 
 					dat += "<h2>Lewd preferences</h2>"

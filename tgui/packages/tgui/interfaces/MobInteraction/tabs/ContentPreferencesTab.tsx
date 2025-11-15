@@ -28,6 +28,7 @@ type ContentPrefsInfo = {
   stimulation_pref: boolean,
   edging_pref: boolean,
   cum_onto_pref: boolean,
+  sex_jitter: boolean,
 }
 
 export const ContentPreferencesTab = (props, context) => {
@@ -59,6 +60,7 @@ export const ContentPreferencesTab = (props, context) => {
     stimulation_pref,
     edging_pref,
     cum_onto_pref,
+    sex_jitter,
   } = data;
   return (
     <Stack vertical fill>
@@ -371,6 +373,18 @@ export const ContentPreferencesTab = (props, context) => {
           selected={cum_onto_pref}
           onClick={() => act('pref', {
             pref: 'cum_onto_pref',
+          })}
+        />
+      </Stack.Item>
+      <Stack.Item>
+        <Button
+          fluid
+          mb={-0.7}
+          content="Jitter in sex"
+          icon={sex_jitter ? "toggle-on" : "toggle-off"}
+          selected={sex_jitter}
+          onClick={() => act('pref', {
+            pref: 'sex_jitter',
           })}
         />
       </Stack.Item>

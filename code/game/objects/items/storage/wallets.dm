@@ -70,6 +70,16 @@
 			front_id = I
 		LAZYINITLIST(combined_access)
 		combined_access |= I.access
+	// BLUEMOON ADD START
+	for(var/obj/item/pda/PDA in contents)
+		var/obj/item/card/id/I = PDA.GetID()
+		if(!istype(I))
+			continue
+		if(!front_id)
+			front_id = I
+		LAZYINITLIST(combined_access)
+		combined_access |= I.access
+	// BLUEMOON ADD END
 	if(ishuman(loc))
 		var/mob/living/carbon/human/H = loc
 		if(H.wear_id == src)

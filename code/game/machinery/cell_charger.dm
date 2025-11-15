@@ -13,6 +13,31 @@
 	var/charge_rate = 250
 	var/recharge_coeff = 1
 
+/obj/machinery/cell_charger/Initialize(mapload)
+	. = ..()
+	register_context()
+
+/obj/machinery/cell_charger/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	. = CONTEXTUAL_SCREENTIP_SET
+
+	if(held_item?.tool_behaviour == TOOL_SCREWDRIVER)
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, panel_open ? "Закрутить панель" : "Открутить панель")
+		return .
+	if(held_item?.tool_behaviour == TOOL_WRENCH)
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, anchored ? "Открутить" : "Прикрутить")
+		return .
+
+	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Вставить батарею")
+
+/obj/machinery/cell_charger/examine(mob/user)
+	. = ..()
+	. += "There's [charging ? "\a [charging]" : "no cell"] in the charger."
+	if(charging)
+		. += "Current charge: [round(charging.percent(), 1)]%."
+	if(in_range(user, src) || isobserver(user))
+		. += span_notice("The status display reads: Charging speed: <b>[recharge_coeff*100]%</b>.")
+
 /obj/machinery/cell_charger/update_overlays()
 	. = ..()
 
@@ -26,14 +51,6 @@
 		. += image(charging.icon, charging.icon_state)
 	else
 		.+= image('icons/obj/power.dmi', charging.charging_icon)
-
-/obj/machinery/cell_charger/examine(mob/user)
-	. = ..()
-	. += "There's [charging ? "\a [charging]" : "no cell"] in the charger."
-	if(charging)
-		. += "Current charge: [round(charging.percent(), 1)]%."
-	if(in_range(user, src) || isobserver(user))
-		. += span_notice("The status display reads: Charging speed: <b>[recharge_coeff*100]%</b>.")
 
 /obj/machinery/cell_charger/wrench_act(mob/living/user, obj/item/tool)
 	. = ..()

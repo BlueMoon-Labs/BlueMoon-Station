@@ -1023,7 +1023,7 @@ GLOBAL_LIST_EMPTY(PDAs)
 				playsound(src, 'sound/machines/terminal_success.ogg', 15, 1)
 		else
 			//Basic safety check. If either both objects are held by user or PDA is on ground and card is in hand.
-			if(((src in user.contents) || (isturf(loc) && in_range(src, user))) && (C in user.contents))
+			if(user.canUseTopic(src, BE_CLOSE)) //if(((src in user.contents) || (isturf(loc) && in_range(src, user))) && (C in user.contents)) // BLUEMOON EDIT
 				if(!id_check(user, idcard))
 					return
 				to_chat(user, "<span class='notice'>You put the ID into \the [src]'s slot.</span>")
