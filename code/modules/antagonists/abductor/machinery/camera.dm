@@ -26,17 +26,17 @@
 	. = ..()
 
 	if(tele_in_action)
-		actions += new tele_in_action(console.pad)
+		actions += new tele_in_action(src)
 	if(tele_out_action)
-		actions += new tele_out_action(console)
+		actions += new tele_out_action(src)
 	if(tele_self_action)
-		actions += new tele_self_action(console.pad)
+		actions += new tele_self_action(src)
 	if(vest_mode_action)
-		actions += new vest_mode_action(console)
+		actions += new vest_mode_action(src)
 	if(vest_disguise_action)
-		actions += new vest_disguise_action(console)
+		actions += new vest_disguise_action(src)
 	if(set_droppoint_action)
-		actions += new set_droppoint_action(console)
+		actions += new set_droppoint_action(src)
 
 /obj/machinery/computer/camera_advanced/abductor/proc/IsScientist(mob/living/carbon/human/H)
 	return HAS_TRAIT(H, TRAIT_ABDUCTOR_SCIENTIST_TRAINING)
@@ -49,8 +49,9 @@
 /datum/action/innate/teleport_in/Activate()
 	if(QDELETED(owner) || !iscarbon(owner))
 		return
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
 	var/mob/camera/aiEye/remote/remote_eye = owner.remote_control
-	var/obj/machinery/abductor/pad/P = target
+	var/obj/machinery/abductor/pad/P = obs_console.console.pad
 
 	if(GLOB.cameranet.checkTurfVis(remote_eye.loc))
 		P.PadToLoc(remote_eye.loc)
@@ -63,7 +64,8 @@
 /datum/action/innate/teleport_out/Activate()
 	if(QDELETED(owner) || !iscarbon(owner))
 		return
-	var/obj/machinery/abductor/console/console = target
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
+	var/obj/machinery/abductor/console/console = obs_console.console
 
 	console.TeleporterRetrieve()
 
@@ -75,8 +77,9 @@
 /datum/action/innate/teleport_self/Activate()
 	if(QDELETED(owner) || !iscarbon(owner))
 		return
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
 	var/mob/camera/aiEye/remote/remote_eye = owner.remote_control
-	var/obj/machinery/abductor/pad/P = target
+	var/obj/machinery/abductor/pad/P = obs_console.console.pad
 
 	if(GLOB.cameranet.checkTurfVis(remote_eye.loc))
 		P.MobToLoc(remote_eye.loc, owner)
@@ -89,7 +92,8 @@
 /datum/action/innate/vest_mode_swap/Activate()
 	if(QDELETED(owner) || !iscarbon(owner))
 		return
-	var/obj/machinery/abductor/console/console = target
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
+	var/obj/machinery/abductor/console/console = obs_console.console
 	console.FlipVest()
 
 
@@ -101,7 +105,8 @@
 /datum/action/innate/vest_disguise_swap/Activate()
 	if(QDELETED(owner) || !iscarbon(owner))
 		return
-	var/obj/machinery/abductor/console/console = target
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
+	var/obj/machinery/abductor/console/console = obs_console.console
 	console.SelectDisguise(remote=1)
 
 /datum/action/innate/set_droppoint
@@ -114,6 +119,6 @@
 		return
 
 	var/mob/camera/aiEye/remote/remote_eye = owner.remote_control
-
-	var/obj/machinery/abductor/console/console = target
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
+	var/obj/machinery/abductor/console/console = obs_console.console
 	console.SetDroppoint(remote_eye.loc,owner)
