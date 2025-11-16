@@ -653,6 +653,7 @@
 	icon_state = "sheya"
 	icon = 'modular_bluemoon/icons/obj/toys/plushies 32x48.dmi'
 	attack_verb = list("bit")
+	can_you_fuck_plush = FALSE
 
 /obj/item/toy/plush/bm/Sheya/slime
 	name = "Sheya"
@@ -661,6 +662,7 @@
 	icon = 'modular_bluemoon/icons/obj/toys/plushies 32x48.dmi'
 	attack_verb = list("squish", "glorp", "blorp")
 	squeak_override = list('modular_bluemoon/sound/voice/fleshy_squish.ogg' = 1)
+	can_you_fuck_plush = FALSE
 
 /obj/item/toy/plush/bm/Sheya/melting
 	name = "Melting love"
@@ -669,3 +671,4 @@
 	icon = 'modular_bluemoon/icons/obj/toys/plushes.dmi'
 	attack_verb = list("squish", "glorp", "blorp")
 	squeak_override = list('modular_bluemoon/sound/voice/fleshy_squish.ogg' = 1)
+	can_you_fuck_plush = FALSE
