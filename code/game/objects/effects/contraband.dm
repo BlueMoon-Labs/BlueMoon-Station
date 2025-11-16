@@ -783,6 +783,7 @@
 	name = "No ERP"
 	desc = "This poster reminds the crew that Eroticism, Rape and Pornography are banned on Nanotrasen stations."
 	icon_state = "poster_noerp"
+	never_random = TRUE // BLUEMOON ADD
 
 /obj/structure/sign/poster/official/wtf_is_co2
 	name = "Carbon Dioxide"

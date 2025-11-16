@@ -1030,6 +1030,10 @@ GLOBAL_LIST_EMPTY(PDAs)
 				updateSelfDialog()//Update self dialog on success.
 			return	//Return in case of failed check or when successful.
 		updateSelfDialog()//For the non-input related code.
+	// BLUEMOON ADD START
+	else if(id && (istype(C, /obj/item/holochip) || istype(C, /obj/item/stack/spacecash) || istype(C, /obj/item/coin)))
+		id.insert_money(C, user)
+	// BLUEMOON ADD END
 	else if(istype(C, /obj/item/paicard) && !pai)
 		if(!user.transferItemToLoc(C, src))
 			return
