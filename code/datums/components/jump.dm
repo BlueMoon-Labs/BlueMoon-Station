@@ -58,7 +58,7 @@
 
 	var/adjusted_stamina_cost = stamina_cost
 	if(!jumper.has_gravity())
-		adjusted_stamina_cost *= 0.4
+		adjusted_stamina_cost = round(adjusted_stamina_cost*0.4)
 
 	if(adjusted_stamina_cost && (jumper.getStaminaLoss() < -adjusted_stamina_cost))
 		to_chat(jumper, span_warning("Catch your breath!"))
