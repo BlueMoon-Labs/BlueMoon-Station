@@ -31,6 +31,7 @@
 	usesound = 'sound/weapons/empty.ogg'
 	drop_sound = 'sound/items/handling/multitool_drop.ogg'
 	pickup_sound = 'sound/items/handling/multitool_pickup.ogg'
+	used_skills = list(/datum/skill/level/job/wiring) //BLUEMOON ADD
 	var/mode = 0
 
 /obj/item/multitool/chaplain

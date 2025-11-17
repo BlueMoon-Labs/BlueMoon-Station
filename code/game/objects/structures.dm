@@ -75,25 +75,29 @@
 	user.visible_message("<span class='warning'>[user] starts climbing onto [src].</span>", \
 								"<span class='notice'>You start climbing onto [src]...</span>")
 	var/adjusted_climb_time = climb_time
-	if(user.restrained()) //climbing takes twice as long when restrained.
-		adjusted_climb_time *= 2
-	if(isalien(user))
-		adjusted_climb_time *= 0.25 //aliens are terrifyingly fast
-	if(HAS_TRAIT(user, TRAIT_FREERUNNING)) //do you have any idea how fast I am???
-		adjusted_climb_time *= 0.8
-	// BLUEMOON ADDITION взаимодействия квирков и размеров на скорость залезания на стол
-	if(get_size(user) < 0.8) //BLUEMOON ADD персонажи меньше 0.8 дольше забираются на столы
-		adjusted_climb_time *= 2 - get_size(user) //x1.75 при размере 25%; x1.2 при размере 80%
-	// тяжёлые (но не очень тяжёлые) персонажи медленее забираются на преграды
-	if(user.mob_weight == MOB_WEIGHT_HEAVY)
-		adjusted_climb_time *= 2
+	var/user_has_gravity = user.has_gravity() // BLUEMOON ADD
+	if(user_has_gravity)
+		if(user.restrained()) //climbing takes twice as long when restrained.
+			adjusted_climb_time *= 2
+		if(isalien(user))
+			adjusted_climb_time *= 0.25 //aliens are terrifyingly fast
+		if(HAS_TRAIT(user, TRAIT_FREERUNNING)) //do you have any idea how fast I am???
+			adjusted_climb_time *= 0.8
+		// BLUEMOON ADDITION взаимодействия квирков и размеров на скорость залезания на стол
+		if(get_size(user) < 0.8) //BLUEMOON ADD персонажи меньше 0.8 дольше забираются на столы
+			adjusted_climb_time *= 2 - get_size(user) //x1.75 при размере 25%; x1.2 при размере 80%
+		// тяжёлые (но не очень тяжёлые) персонажи медленее забираются на преграды
+		if(user.mob_weight == MOB_WEIGHT_HEAVY)
+			adjusted_climb_time *= 2
+	else
+		adjusted_climb_time *= 0.2
 	// BLUEMOON ADDITION END
 	structureclimber = user
 	if(do_mob(user, user, adjusted_climb_time))
 		if(src.loc) //Checking if structure has been destroyed
 			if(do_climb(user))
 				// BLUEMOON ADDITION AHEAD - сверхтяжёлые персонажи пересекают преграды быстро, но в процессе ломают их
-				if(user.mob_weight > MOB_WEIGHT_HEAVY && !istype(src, /obj/structure/closet/crate))
+				if(user_has_gravity && user.mob_weight > MOB_WEIGHT_HEAVY && !istype(src, /obj/structure/closet/crate))
 					visible_message(span_warning("[src] breaks in half under the weight of [user]!"))
 					playsound(src, 'modular_bluemoon/sound/effects/chair_break.ogg', 70, TRUE)
 					deconstruct(FALSE)
@@ -102,7 +106,7 @@
 				user.visible_message("<span class='warning'>[user] climbs onto [src].</span>", \
 									"<span class='notice'>You climb onto [src].</span>")
 				log_combat(user, src, "climbed onto")
-				if(climb_stun)
+				if(climb_stun && user_has_gravity)
 					user.Stun(climb_stun)
 				. = 1
 			else

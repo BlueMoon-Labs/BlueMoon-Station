@@ -376,7 +376,7 @@
 	if(src.contents)
 		for(var/obj/item/card/id/ID in contents)
 			if(ID.card_sticker)
-				var/response = alert(user, "What you want to do?","[src.name]", "remove sticker", "[prob(1)? "do some tax evasion" : "withdraw money"]")
+				var/response = alert(user, "What you want to do?","[src.name]", "[prob(1)? "do some tax evasion" : "withdraw money"]", "remove sticker")
 				if(response == "remove sticker")
 					to_chat(user, "<span class='notice'>You start to unwrap the card...</span>")
 					if(!do_after(user, 15, target = user))

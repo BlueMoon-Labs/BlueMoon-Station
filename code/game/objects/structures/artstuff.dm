@@ -331,15 +331,11 @@
 	name = "large painting frame"
 	desc = "The perfect showcase for your favorite deathtrap memories. Make sure you have enough space to mount this one to the wall."
 	custom_materials = list(/datum/material/wood = 2000*2)
-	icon = 'icons/obj/decals.dmi'
+	icon = 'icons/obj/art/artstuff_64x64.dmi'
 	icon_state = "frame-empty"
 	result_path = /obj/structure/sign/painting/large
 	pixel_shift = 0
 	custom_price = PRICE_NORMAL * 1.25
-
-/obj/item/wallframe/painting/large/Initialize(mapload)
-	. = ..()
-	icon = 'icons/obj/art/artstuff_64x64.dmi'
 
 /obj/item/wallframe/painting/large/try_build(turf/on_wall, mob/user)
 	. = ..()
@@ -462,6 +458,20 @@
 		frame_canvas(user,I)
 	else if(current_canvas && current_canvas.painting_name == initial(current_canvas.painting_name) && istype(I,/obj/item/pen))
 		try_rename(user)
+	/*
+	else if(I.tool_behaviour == TOOL_SCREWDRIVER)
+		user.visible_message("<span class='notice'>[user] starts removing [src]...</span>", \
+							"<span class='notice'>You start unscrewing [src].</span>")
+		I.play_tool_sound(src)
+		if(I.use_tool(src, user, 40))
+			playsound(src, 'sound/items/deconstruct.ogg', 50, 1)
+			user.visible_message("<span class='notice'>[user] unscrews [src].</span>", \
+								"<span class='notice'>You unscrew [src].</span>")
+			var/obj/item/wallframe/painting/frame = new wallframe_type(get_turf(user))
+			remove_canvas()
+			qdel(src)
+		return
+	*/
 	else
 		return ..()
 
@@ -469,21 +479,46 @@
 	. = ..()
 	if(persistence_id)
 		. += "<span class='notice'>Any painting placed here will be archived at the end of the shift.</span>"
+	else
+		. += span_notice("Use screwdriver to remove frame from the wall.")
 	if(current_canvas)
 		current_canvas.ui_interact(user)
 		. += "<span class='notice'>Use wirecutters to remove the painting.</span>"
 
+/obj/structure/sign/painting/screwdriver_act(mob/living/user, obj/item/I)
+	. = ..()
+	if(persistence_id)
+		return
+	user.visible_message("<span class='notice'>[user] starts removing [src]...</span>", \
+							"<span class='notice'>You start unscrewing [src].</span>")
+	I.play_tool_sound(src)
+	if(I.use_tool(src, user, 3 SECONDS))
+		playsound(src, 'sound/items/deconstruct.ogg', 50, 1)
+		user.visible_message("<span class='notice'>[user] unscrews [src].</span>", \
+							"<span class='notice'>You unscrew [src].</span>")
+		new wallframe_type(get_turf(user))
+		remove_canvas()
+		qdel(src)
+		return TRUE
+
 /obj/structure/sign/painting/wirecutter_act(mob/living/user, obj/item/I)
 	. = ..()
-	if(current_canvas)
-		if(istype(src, /obj/structure/sign/painting/large))
-			var /obj/structure/sign/painting/large/P = src
-			P.deoffset_painting()
-		current_canvas.forceMove(drop_location())
-		current_canvas = null
+	if(remove_canvas())
+		I.play_tool_sound(src)
 		to_chat(user, "<span class='notice'>You remove the painting from the frame.</span>")
-		update_icon()
 		return TRUE
+
+/obj/structure/sign/painting/proc/remove_canvas()
+	if(!current_canvas)
+		return
+
+	if(istype(src, /obj/structure/sign/painting/large))
+		var /obj/structure/sign/painting/large/P = src
+		P.deoffset_painting()
+	current_canvas.forceMove(drop_location())
+	current_canvas = null
+	update_icon()
+	return TRUE
 
 /obj/structure/sign/painting/proc/frame_canvas(mob/user,obj/item/canvas/new_canvas)
 	if(!(new_canvas.type in accepted_canvas_types))

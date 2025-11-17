@@ -80,10 +80,10 @@
 		return
 	fancy_open = !fancy_open
 	if(!fancy_open)
-		var/obj/item/stack/sheet/cardboard/cardboard = new /obj/item/stack/sheet/cardboard(user.drop_location())
 		to_chat(user, span_notice("Складываю коробку из-под пончиков в картон."))
-		user.put_in_active_hand(cardboard)
+		var/obj/item/stack/sheet/cardboard/cardboard = new /obj/item/stack/sheet/cardboard()
 		qdel(src)
+		user.put_in_hands(cardboard)
 		return
 	update_icon()
 
@@ -149,10 +149,10 @@
 		return
 	fancy_open = !fancy_open
 	if(!fancy_open)
-		var/obj/item/stack/sheet/cardboard/cardboard = new /obj/item/stack/sheet/cardboard(user.drop_location())
 		to_chat(user, span_notice("Складываю коробку из-под куринных яиц в картон."))
-		user.put_in_active_hand(cardboard)
+		var/obj/item/stack/sheet/cardboard/cardboard = new /obj/item/stack/sheet/cardboard()
 		qdel(src)
+		user.put_in_hands(cardboard)
 		return
 	update_icon()
 

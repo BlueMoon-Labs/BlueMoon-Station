@@ -465,7 +465,7 @@
 	message = "разминает суставы."
 	message_mime = "делает вид, что разминает суставы."
 	sound = 'modular_bluemoon/sound/emotes/bonecrack.ogg'
-	emote_cooldown = 11.6 SECONDS
+	emote_cooldown = 3 SECONDS
 
 /datum/emote/sound/human/ohyes
 	key = "ohyes"
