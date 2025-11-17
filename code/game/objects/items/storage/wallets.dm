@@ -61,6 +61,20 @@
 	. = ..()
 	refreshID()
 
+// BLUEMOON ADD START
+/obj/item/storage/wallet/examine(mob/user)
+	. = ..()
+	. += span_notice("Ctrl-click to fast take ID.")
+
+/obj/item/storage/wallet/CtrlClick(mob/user)
+	. = ..()
+	for(var/obj/item/I in contents)
+		if(I.GetID())
+			user.put_in_hands(I)
+			refreshID()
+			return TRUE
+// BLUEMOON ADD END
+
 /obj/item/storage/wallet/proc/refreshID()
 	LAZYCLEARLIST(combined_access)
 	if(!(front_id in src))

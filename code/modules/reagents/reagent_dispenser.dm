@@ -28,6 +28,21 @@
 		reagents.add_reagent(reagent_id, tank_volume)
 	. = ..()
 
+// BLUEMOON ADD START
+/obj/structure/reagent_dispensers/examine(mob/user)
+	. = ..()
+	if(anchored)
+		. += span_notice("It is <b>bolted</b> to the floor.")
+
+/obj/structure/reagent_dispensers/wrench_act(mob/living/user, obj/item/I)
+	. = ..()
+	to_chat(user, "<span class='notice'>You start [anchored ? "un" : ""]securing [src]...</span>")
+	if(I.use_tool(src, user, 40, volume=75))
+		to_chat(user, "<span class='notice'>You [anchored ? "un" : ""]secure [src].</span>")
+		set_anchored(!anchored)
+		return TRUE
+// BLUEMOON ADD END
+
 //BLUEMOON CHANGE - FUELTANK
 /obj/structure/reagent_dispensers/proc/boom()
 	var/datum/reagent/fuel/volatiles = reagents.has_reagent(/datum/reagent/fuel)
