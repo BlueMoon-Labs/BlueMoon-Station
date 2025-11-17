@@ -4784,6 +4784,7 @@
 #include "modular_bluemoon\Ren\Code\staff\bundles_and_outfits.dm"
 #include "modular_bluemoon\Ren\Code\staff\plasma_weapon.dm"
 #include "modular_bluemoon\Ren\Code\staff\uplink.dm"
+#include "modular_bluemoon\Sheya\code\cloth.dm"
 #include "modular_bluemoon\SmiLeY\aesthetics\airlock\code\airlock.dm"
 #include "modular_bluemoon\SmiLeY\aesthetics\connecting_computer\code\_computer.dm"
 #include "modular_bluemoon\SmiLeY\aesthetics\connecting_computer\code\connectable_component.dm"
