@@ -59,6 +59,17 @@
 /obj/machinery/computer/communications/syndicate/emag_act(mob/user, obj/item/card/emag/emag_card)
 	return
 
+/obj/machinery/computer/communications/inteq
+	name = "InteQ Communications Console"
+	icon_screen = "comminteq"
+	icon_keyboard = "inteq_key"
+	req_access = list(ACCESS_INTEQ_LEADER)
+	light_color = LIGHT_COLOR_YELLOW
+	obj_flags = EMAGGED
+
+/obj/machinery/computer/communications/inteq/emag_act(mob/user, obj/item/card/emag/emag_card)
+	return
+
 /obj/machinery/computer/communications/syndicate/authenticated_as_silicon_or_captain(mob/user)
 	return FALSE
 	/// Cooldown between printing announcement papers

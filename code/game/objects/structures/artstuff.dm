@@ -687,6 +687,7 @@
 	new_canvas.author_ckey = author
 	new_canvas.name = "painting - [title]"
 	current_canvas = new_canvas
+	current_canvas.update_icon()
 	update_icon()
 	return TRUE
 

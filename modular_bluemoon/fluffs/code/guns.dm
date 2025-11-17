@@ -823,6 +823,25 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+/obj/item/modkit/p320_kit
+	name = "Magnetic Pistol p320 Kit"
+	desc = "A modkit for making an Enforcer into a Magnetic Pistol p320."
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/p320
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/p320
+	name = "\improper P320"
+	desc = "P320 — модульный полуавтоматический пистолет. Данная версия пистолета была собрана под .45 калибр."
+	icon = 'modular_bluemoon/fluffs/icons/obj/P320.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	icon_state = "p320"
+	item_state = "p320"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/archivo.ogg'
+	unique_reskin = null
+
+////////////////////////////////////////////////////////////////////////////////////////
+
 /obj/item/modkit/dedication_kit
 	name = "Magnetic Pistol Dedication Kit"
 	desc = "A modkit for making an Enforcer into a Magnetic Pistol Dedication."

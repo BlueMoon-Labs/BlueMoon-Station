@@ -31,8 +31,8 @@ export const Jukebox = (props, context) => {
 
   // Получаем тему из конфигурации. Для будущих изменений, если найдется тот кто сделает нормальную ретротему для обычного джукбокса.
   const theme = config?.title?.toLowerCase() === 'jukebox' ? 'main' :
-                config?.title?.toLowerCase() === 'handled jukebox' ? 'main' :
-                'main';
+    config?.title?.toLowerCase() === 'handled jukebox' ? 'main' :
+      'main';
 
   const [query, setQuery] = useSharedState(context, 'query', '');
   const [page, setPage] = useSharedState(context, 'page', 1);
@@ -171,7 +171,7 @@ export const Jukebox = (props, context) => {
             onClick={() => {
               if (songs.length === 0) return;
               const randomSongName = songs[Math.floor(Math.random() * songs.length)];
-              act('add_to_queue', { track: randomSongName });
+              act('add_to_queue', { track: randomSongName, up: false });
             }}
           />
         </Tabs>
@@ -204,12 +204,36 @@ export const Jukebox = (props, context) => {
                       </Box>
                     </Stack.Item>
                     <Stack.Item>
+                      {inFavorites && (
+                        <>
+                          <Button
+                            icon="up-long"
+                            color="green"
+                            tooltip="Вверх в избранном"
+                            onClick={() => act('move_favorite', { track, up: true })}
+                          />
+
+                          <Button
+                            icon="down-long"
+                            color="green"
+                            tooltip="Вниз в избранном"
+                            onClick={() => act('move_favorite', { track, up: false })}
+                          />
+                        </>
+                      )}
                       {isAvailable && (
-                        <Button
-                          icon="plus"
-                          content="В очередь"
-                          onClick={() => act('add_to_queue', { track })}
-                        />
+                        <>
+                          <Button
+                            icon="up-long"
+                            tooltip="В начало очереди"
+                            onClick={() => act('add_to_queue', { track, up: true })}
+                          />
+                          <Button
+                            icon="down-long"
+                            tooltip="В конец очереди"
+                            onClick={() => act('add_to_queue', { track, up: false })}
+                          />
+                        </>
                       )}
                       <Button
                         icon="star"
@@ -268,9 +292,22 @@ export const Jukebox = (props, context) => {
                   </Stack.Item>
                   <Stack.Item>
                     <Button
+                      icon="up-long"
+                      tooltip="Переместить выше"
+                      onClick={() => act('move_queue', { index: track.index, up: true })}
+                      disabled={!has_access}
+                    />
+                    <Button
+                      icon="down-long"
+                      tooltip="Переместить ниже"
+                      onClick={() => act('move_queue', { index: track.index, up: false })}
+                      disabled={!has_access}
+                    />
+                    <Button
                       icon="trash"
                       tooltip="Удалить из очереди"
                       onClick={() => act('remove_from_queue', { index: track.index })}
+                      disabled={!has_access}
                     />
                   </Stack.Item>
                 </Stack>

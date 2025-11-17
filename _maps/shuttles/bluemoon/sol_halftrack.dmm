@@ -33,7 +33,7 @@
 	id = "traumawindows";
 	name = "Window Blast Door"
 	},
-/obj/effect/spawner/structure/window/reinforced,
+/obj/effect/spawner/structure/window/shuttle,
 /turf/open/floor/plating,
 /area/shuttle/solfed/corvette)
 "dI" = (
@@ -301,7 +301,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "mP" = (
-/obj/effect/spawner/structure/window/reinforced,
+/obj/effect/spawner/structure/window/shuttle,
 /obj/machinery/door/poddoor/preopen{
 	id = "traumawindows";
 	name = "Window Blast Door";
@@ -335,7 +335,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "nu" = (
-/turf/closed/wall/r_wall,
+/turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/solfed/corvette)
 "oH" = (
 /obj/structure/cable{
@@ -667,7 +667,7 @@
 /area/shuttle/solfed/corvette)
 "Fx" = (
 /obj/structure/sign/poster/contraband/c20r,
-/turf/closed/wall/r_wall,
+/turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/solfed/corvette)
 "FA" = (
 /obj/machinery/firealarm/directional/east,
@@ -855,6 +855,12 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
+"LW" = (
+/obj/machinery/porta_turret/syndicate/shuttle{
+	faction = list("InteQ")
+	},
+/turf/closed/wall/mineral/titanium/interior,
+/area/shuttle/solfed/corvette)
 "MN" = (
 /obj/machinery/power/port_gen/pacman,
 /obj/structure/cable/yellow{
@@ -942,7 +948,7 @@
 	name = "Window Blast Door";
 	dir = 4
 	},
-/obj/effect/spawner/structure/window/reinforced,
+/obj/effect/spawner/structure/window/shuttle,
 /turf/open/floor/plating,
 /area/shuttle/solfed/corvette)
 "Pr" = (
@@ -1109,7 +1115,7 @@
 	id = "traumawindows";
 	name = "Window Blast Door"
 	},
-/obj/effect/spawner/structure/window/reinforced,
+/obj/effect/spawner/structure/window/shuttle,
 /turf/open/floor/plating,
 /area/shuttle/solfed/corvette)
 "Vq" = (
@@ -1208,7 +1214,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Yn" = (
-/obj/effect/spawner/structure/window/reinforced,
+/obj/effect/spawner/structure/window/shuttle,
 /obj/machinery/door/poddoor/preopen{
 	id = "traumawindows";
 	name = "Window Blast Door"
@@ -1271,13 +1277,13 @@ UG
 UG
 UG
 UG
+LW
 nu
 nu
 nu
 nu
 nu
-nu
-nu
+LW
 UG
 UG
 UG
@@ -1289,11 +1295,11 @@ UG
 UG
 UG
 UG
+LW
 nu
 nu
 nu
-nu
-nu
+LW
 UG
 UG
 UG
@@ -1360,7 +1366,7 @@ UG
 UG
 UG
 UG
-nu
+LW
 nu
 nu
 nu
@@ -1433,7 +1439,7 @@ UG
 UG
 "}
 (7,1,1) = {"
-nu
+LW
 nu
 uk
 UJ
@@ -1459,7 +1465,7 @@ Rh
 Fx
 nu
 nu
-nu
+LW
 UG
 "}
 (8,1,1) = {"
@@ -1613,7 +1619,7 @@ nu
 UG
 "}
 (13,1,1) = {"
-nu
+LW
 nu
 YI
 Nq
@@ -1639,7 +1645,7 @@ Xj
 nu
 nu
 nu
-nu
+LW
 UG
 "}
 (14,1,1) = {"
@@ -1720,7 +1726,7 @@ UG
 UG
 UG
 UG
-nu
+LW
 nu
 nu
 nu
@@ -1769,11 +1775,11 @@ UG
 UG
 UG
 UG
-nu
+LW
 nu
 Po
 nu
-nu
+LW
 UG
 UG
 UG
@@ -1811,13 +1817,13 @@ UG
 UG
 UG
 UG
+LW
 nu
 nu
 nu
 nu
 nu
-nu
-nu
+LW
 UG
 UG
 UG

@@ -1,0 +1,6885 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ae" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/obj/structure/sign/poster/contraband/pwr_game{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ag" = (
+/obj/structure/window/reinforced/survival_pod{
+	dir = 4
+	},
+/obj/structure/window/reinforced/survival_pod{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ak" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"an" = (
+/obj/machinery/telecomms/processor/preset_four{
+	autolinkers = list("processor4","bus");
+	network = "irmg_commnet"
+	},
+/turf/open/floor/circuit/telecomms/mainframe,
+/area/shuttle/solfed/destroyer)
+"ao" = (
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"as" = (
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
+/obj/machinery/status_display/shuttle{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"au" = (
+/obj/machinery/light/directional/east,
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"aH" = (
+/obj/machinery/button/door{
+	dir = 4;
+	id = "talos_thrusters_starboard";
+	name = "Blast Door Control";
+	pixel_x = -21;
+	pixel_y = -6
+	},
+/obj/machinery/atmospherics/pipe/simple/general/visible,
+/obj/machinery/light_switch{
+	dir = 4;
+	pixel_x = -20;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"aI" = (
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/door/window/eastright{
+	name = "Engine Access"
+	},
+/obj/machinery/door/poddoor{
+	dir = 4;
+	id = "talos_thrusters_port"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"aM" = (
+/obj/machinery/door/airlock/public/glass{
+	dir = 4;
+	name = "Crew Quarters"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"aT" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/obj/structure/closet/emcloset/wall{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"bb" = (
+/obj/machinery/door/airlock/grunge{
+	dir = 4;
+	name = "Cargo Bay"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"bx" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"bA" = (
+/obj/machinery/atmospherics/pipe/layer_manifold{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/door/poddoor{
+	dir = 4;
+	id = "talos_tank_fuel"
+	},
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"bF" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/telecomms/server/presets/common{
+	autolinkers = list("common","hub");
+	freq_listening = list(1459);
+	network = "irmg_commnet"
+	},
+/turf/open/floor/circuit/telecomms/mainframe,
+/area/shuttle/solfed/destroyer)
+"bI" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating/dark,
+/obj/machinery/light/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"bK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/mopbucket,
+/obj/item/reagent_containers/glass/bucket,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"bM" = (
+/obj/machinery/door/poddoor{
+	id = "talos_thrusters_port"
+	},
+/obj/machinery/atmospherics/pipe/layer_manifold,
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"bN" = (
+/obj/structure/grille,
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"bU" = (
+/obj/machinery/light/directional/south,
+/obj/effect/turf_decal/siding/thinplating,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"bX" = (
+/obj/structure/rack,
+/obj/machinery/light/directional/south,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/item/pickaxe/mini,
+/obj/item/pickaxe/mini,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ce" = (
+/obj/structure/sign/warning/vacuum/external,
+/turf/closed/wall/mineral/titanium/interior,
+/area/shuttle/solfed/destroyer)
+"cf" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/item/storage/lockbox/medal/sec{
+	pixel_y = 5
+	},
+/obj/structure/table/reinforced,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/big_sign/solgov/bb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"ck" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"cn" = (
+/obj/machinery/light/directional/south,
+/obj/structure/railing{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_x = -32
+	},
+/obj/machinery/space_heater,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"cz" = (
+/obj/structure/cable{
+	icon_state = "5-10"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+	dir = 4
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"cA" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/airlock/engineering{
+	name = "Engine Room";
+	req_access_txt = "10"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"cC" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light_switch{
+	dir = 1;
+	pixel_y = -19
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"cD" = (
+/obj/structure/sink{
+	dir = 1;
+	pixel_y = -12
+	},
+/obj/structure/mirror{
+	pixel_y = -32
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light_switch{
+	dir = 8;
+	pixel_x = 20
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/shuttle/solfed/destroyer)
+"cF" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/manifold/purple/visible{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"cR" = (
+/obj/machinery/light/directional/west,
+/obj/item/cigbutt,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"cT" = (
+/obj/machinery/door/window/northleft{
+	req_access_txt = "61"
+	},
+/obj/machinery/door/window/southright{
+	req_access_txt = "61"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"dh" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"di" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/door/airlock/engineering{
+	dir = 4;
+	name = "Engineering";
+	normalspeed = 0;
+	req_access_txt = "10"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"dk" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "21"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"dl" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"dw" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/machinery/power/smes/magical,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"dD" = (
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"dE" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4;
+	name = "Helm"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"dZ" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"ek" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/railing,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"em" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"eu" = (
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"ey" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/machinery/recharger,
+/obj/item/screwdriver,
+/obj/structure/table/reinforced,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"eC" = (
+/obj/structure/table,
+/obj/item/mecha_parts/mecha_equipment/rcd,
+/obj/machinery/cell_charger,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"eK" = (
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"eN" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"eO" = (
+/obj/machinery/door/airlock{
+	dir = 4;
+	name = "Restroom"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"eT" = (
+/obj/machinery/light/small/directional/north,
+/obj/machinery/airalarm/directional/west,
+/obj/structure/closet/firecloset/full{
+	anchored = 1;
+	can_be_unanchored = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"eW" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/shuttle/solfed/destroyer)
+"fg" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"fj" = (
+/obj/structure/artilleryplaceholder/decorative{
+	icon_state = "31"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"fo" = (
+/obj/machinery/rnd/production/protolathe/department/engineering,
+/obj/machinery/camera/autoname{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"fr" = (
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"ft" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/structure/fireaxecabinet{
+	dir = 1;
+	pixel_y = -32
+	},
+/obj/item/paper/fluff{
+	info = "Artificer team: The AAC is finicky and has a habit of malfunctioning over time. If this happens, remember how to reset it. Swipe your ID card on the control unit and make sure all settings are correct. One airlock should be set to internal, one to external. Once this is done, cycle the airlock to re-enable automatic mode and lift any stuck bolts. If you aren't an artificer, don't mess with it. You shouldn't have access anyway."
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"fC" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/camera/autoname{
+	dir = 5
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"fE" = (
+/obj/machinery/light/small/directional/north,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/shuttle/solfed/destroyer)
+"fF" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/effect/turf_decal/big_sign/solgov/ab,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"fK" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "20"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"fN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/maintenance,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"fU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/maintenance,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"fX" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 10;
+	layer = 2.030
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"fY" = (
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"ge" = (
+/obj/machinery/door/poddoor/shutters{
+	id = "talos_engine_shutter"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"gf" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"gk" = (
+/obj/item/storage/backpack/industrial,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/gloves/color/yellow,
+/obj/item/clothing/head/soft/inteq,
+/obj/item/clothing/head/hardhat,
+/obj/item/clothing/shoes/combat,
+/obj/item/storage/belt/utility/full,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/item/clothing/glasses/meson,
+/obj/structure/closet/secure_closet{
+	anchored = 1;
+	icon_state = "eng_secure";
+	name = "artificer's locker";
+	req_access_txt = "11";
+	req_one_access = null
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"gm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/maintenance,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"go" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "10"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"gp" = (
+/obj/effect/turf_decal/siding/thinplating,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"gr" = (
+/obj/machinery/light/directional/east,
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"gG" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"gN" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/airlock/grunge{
+	dir = 4;
+	name = "Cargo Bay"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"gP" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"gT" = (
+/obj/structure/railing,
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"gV" = (
+/obj/machinery/computer/apc_control{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"gY" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/light/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/kirbyplants/random,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"gZ" = (
+/obj/structure/closet/crate{
+	name = "sandbags crate"
+	},
+/obj/item/storage/box/emptysandbags{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/storage/box/emptysandbags,
+/obj/item/storage/box/emptysandbags{
+	pixel_x = 5;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"hc" = (
+/obj/structure/closet/crate/bin,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt,
+/obj/item/cigbutt,
+/obj/item/trash/raisins,
+/obj/item/trash/can,
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"hg" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/item/kirbyplants/random,
+/obj/structure/sign/poster/contraband/have_a_puff{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"hl" = (
+/obj/machinery/atmospherics/pipe/simple{
+	dir = 8
+	},
+/obj/machinery/air_sensor/atmos/mix_tank,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"hw" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"hz" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood,
+/obj/item/reagent_containers/food/drinks/bottle/cognac{
+	pixel_x = 7;
+	pixel_y = 14
+	},
+/obj/item/storage/fancy/cigarettes/cigars/havana,
+/obj/item/lighter{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"hG" = (
+/obj/structure/railing{
+	dir = 6;
+	layer = 4.1
+	},
+/obj/structure{
+	desc = "A huge bundle of double insulated cabling which seems to run up into the ceiling.";
+	icon = 'icons/obj/power.dmi';
+	icon_state = "cablerelay-on";
+	name = "Multi-deck power adapter";
+	pixel_x = -10
+	},
+/obj/structure{
+	desc = "An adapter which allows pipes to connect to other pipenets on different decks.";
+	icon = 'icons/obj/atmos.dmi';
+	icon_state = "multiz_pipe";
+	name = "multi deck pipe adapter"
+	},
+/turf/open/floor/plasteel/elevatorshaft,
+/area/shuttle/solfed/destroyer)
+"hM" = (
+/obj/effect/decal/cleanable/oil/streak,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"hO" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/obj/structure/railing,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"hQ" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/box/drinkingglasses{
+	pixel_x = -8;
+	pixel_y = 5
+	},
+/obj/machinery/light_switch{
+	dir = 1;
+	pixel_y = -19
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"ia" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on,
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"ik" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/item/cigbutt,
+/obj/effect/spawner/lootdrop/maintenance,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"iu" = (
+/obj/machinery/door/airlock/hatch{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"iy" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/landmark/observer_start,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"iA" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/machinery/atmospherics/components/trinary/mixer/airmix{
+	dir = 4;
+	layer = 2.46
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"iE" = (
+/obj/item/storage/backpack/industrial,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/gloves/color/yellow,
+/obj/item/clothing/head/soft/inteq,
+/obj/item/clothing/head/hardhat,
+/obj/item/clothing/shoes/combat,
+/obj/structure/railing,
+/obj/item/storage/belt/utility/full,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/item/clothing/glasses/meson,
+/obj/structure/closet/secure_closet{
+	anchored = 1;
+	icon_state = "eng_secure";
+	name = "artificer's locker";
+	req_access_txt = "11";
+	req_one_access = null
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"iM" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/machinery/door/window/eastleft{
+	name = "Engine Access"
+	},
+/obj/machinery/door/poddoor{
+	dir = 4;
+	id = "talos_thrusters_port"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"iN" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"iO" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "12"
+	},
+/obj/machinery/light/floor,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"iW" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"iZ" = (
+/obj/effect/turf_decal/siding/thinplating/corner,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"jc" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/big_sign/solgov/cb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"jd" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"jf" = (
+/obj/machinery/light/directional/north,
+/obj/structure/closet/secure_closet/engineering_welding{
+	req_access = null;
+	req_access_txt = "11";
+	req_one_access = null
+	},
+/obj/effect/turf_decal/siding/thinplating/dark,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"jt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/door/airlock/maintenance_hatch{
+	dir = 4
+	},
+/obj/effect/mapping_helpers/airlock/abandoned,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"jw" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/effect/turf_decal/big_sign/solgov/ca,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"jH" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/airlock/highsecurity{
+	name = "Communications";
+	req_access_txt = "61"
+	},
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"jJ" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"jP" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"jS" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"jT" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/simple/purple/visible{
+	dir = 6
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"jU" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"jW" = (
+/obj/machinery/light/directional/east,
+/obj/machinery/computer/telecomms/server{
+	dir = 1;
+	network = "irmg_commnet"
+	},
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"jX" = (
+/obj/structure/sign/warning/securearea,
+/turf/closed/wall/mineral/titanium/interior,
+/area/shuttle/solfed/destroyer)
+"jY" = (
+/obj/item/storage/backpack/industrial,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/gloves/color/yellow,
+/obj/item/clothing/head/soft/inteq,
+/obj/item/clothing/head/hardhat,
+/obj/item/clothing/shoes/combat,
+/obj/structure/closet/secure_closet{
+	anchored = 1;
+	icon_state = "eng_secure";
+	name = "artificer's locker";
+	req_access_txt = "11";
+	req_one_access = null
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/light/directional/north,
+/obj/item/storage/belt/utility/full,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/item/clothing/glasses/meson,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"jZ" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/door/airlock/engineering{
+	dir = 4;
+	name = "Engineering";
+	normalspeed = 0;
+	req_access_txt = "10"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"kh" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "35"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"ks" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "8"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"kJ" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"kM" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/chair/comfy/black,
+/obj/machinery/light_switch{
+	pixel_y = 22
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"kU" = (
+/obj/machinery/door/poddoor{
+	id = "talos_tank_burn"
+	},
+/obj/effect/decal/cleanable/oil/slippery,
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"kW" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/stairs{
+	dir = 8
+	},
+/area/shuttle/solfed/destroyer)
+"lq" = (
+/obj/machinery/atmospherics/pipe/layer_manifold{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/door/poddoor{
+	dir = 4;
+	id = "talos_tank_air"
+	},
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"ls" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/circuit/telecomms/mainframe,
+/area/shuttle/solfed/destroyer)
+"lt" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"lA" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/general/hidden/layer1{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"lB" = (
+/obj/structure/closet/crate/medical,
+/obj/item/storage/backpack/satchel/med,
+/obj/item/clothing/shoes/combat,
+/obj/item/clothing/glasses/hud/health,
+/obj/structure/railing,
+/obj/item/storage/box/bodybags,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"lF" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light/directional/north,
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"lI" = (
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"lM" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"lO" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"lQ" = (
+/obj/machinery/light/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/camera_advanced/shuttle_docker/solfed/destroyer,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"lS" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"mi" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 6
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ml" = (
+/obj/item/clothing/glasses/hud/security/sunglasses/inteq,
+/obj/item/clothing/gloves/tackler/combat/insulated,
+/obj/item/clothing/shoes/combat,
+/obj/item/storage/belt/military/assault,
+/obj/structure/closet/secure_closet{
+	anchored = 1;
+	can_be_unanchored = 1;
+	icon_state = "warden";
+	name = "master at arms' locker";
+	req_access_txt = "3"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/clothing/head/warden/drill{
+	desc = "A special armored campaign hat with the IRMG insignia emblazoned on it. Uses reinforced fabric to offer sufficient protection.";
+	name = "master at arms' campaign hat"
+	},
+/obj/item/megaphone/sec,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ms" = (
+/obj/machinery/light/directional/west,
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/power/smes/magical,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"mw" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/airlock/command{
+	name = "Bridge";
+	req_one_access = list(19,3)
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"mz" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"mC" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"mI" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "5"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"mL" = (
+/obj/item/clothing/shoes/combat,
+/obj/item/clothing/shoes/combat,
+/obj/item/clothing/shoes/combat,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/structure/closet{
+	icon_door = "orange";
+	name = "inteq wardrobe"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"mU" = (
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/door/poddoor{
+	id = "talos_windows";
+	name = "Window Shield"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"mV" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/light/directional/west,
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ne" = (
+/turf/open/floor/plasteel/showroomfloor,
+/area/shuttle/solfed/destroyer)
+"nh" = (
+/obj/structure/bed/roller,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"nl" = (
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"no" = (
+/obj/structure/bed,
+/obj/item/bedsheet/hos{
+	name = "vanguard's bedsheet"
+	},
+/obj/structure/sign/poster/official/bless_this_spess{
+	pixel_y = 32
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"nz" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/effect/turf_decal/siding/thinplating/corner,
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"nD" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"nF" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "3"
+	},
+/obj/machinery/light/floor,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"nH" = (
+/obj/machinery/door/airlock/maintenance_hatch,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/mapping_helpers/airlock/abandoned,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"nJ" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 4
+	},
+/obj/machinery/camera/autoname{
+	dir = 8
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"nS" = (
+/obj/machinery/vending/coffee,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"nT" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/machinery/nuclearbomb/beer{
+	desc = "An evidently-decommissioned nuclear warhead. It has traces of blood-red paint on it, but a much-newer graffiti of the IRMG Shield logo has been painted on top. A drink tap has been drilled directly into the metal.";
+	name = "comemmorative nuclear fission explosive"
+	},
+/obj/machinery/light/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"nY" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"nZ" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"oi" = (
+/obj/machinery/camera/autoname,
+/obj/machinery/status_display/shuttle{
+	pixel_y = 32
+	},
+/obj/structure/table,
+/obj/item/storage/firstaid/tactical,
+/obj/item/storage/firstaid/tactical,
+/obj/item/storage/firstaid/tactical,
+/obj/item/storage/firstaid/tactical,
+/obj/item/storage/firstaid/tactical,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"om" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark/corner,
+/obj/effect/turf_decal/siding/thinplating/dark/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"on" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/chair/sofa/left,
+/obj/machinery/camera/autoname,
+/obj/machinery/status_display/shuttle{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"oo" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating/dark,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/peppertank{
+	pixel_y = -28
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"os" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/modular_computer/console/preset/command{
+	dir = 1
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"ot" = (
+/obj/structure/rack,
+/obj/item/pickaxe/mini,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/layer_manifold{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ow" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"oD" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/item/trash/popcorn,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"oG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/closet/cardboard,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"oS" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"oT" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/machinery/light_switch{
+	pixel_y = 22
+	},
+/obj/effect/turf_decal/big_sign/solgov/aa,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"oU" = (
+/obj/machinery/atmospherics/pipe/simple{
+	dir = 8
+	},
+/turf/open/floor/engine/air,
+/area/shuttle/solfed/destroyer)
+"oV" = (
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"oW" = (
+/obj/machinery/light/directional/east,
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"oY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"pb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"pf" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/firealarm/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/cargo/express{
+	dir = 4
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"pk" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"pm" = (
+/obj/machinery/atmospherics/pipe/simple/purple/visible{
+	dir = 5
+	},
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"pq" = (
+/obj/structure/artilleryplaceholder/decorative{
+	icon_state = "33"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"pu" = (
+/obj/structure/closet/secure_closet/freezer{
+	anchored = 1;
+	locked = 0;
+	name = "fridge"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"pD" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"pG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"pL" = (
+/obj/structure/table/reinforced,
+/obj/item/paper_bin,
+/obj/item/folder/syndicate{
+	desc = "A slick black folder stamped 'Property of Inteq Risk Management Group.'";
+	name = "folder"
+	},
+/obj/item/pen/fountain,
+/obj/item/gps{
+	pixel_x = 12
+	},
+/obj/item/stamp/hos{
+	name = "vanguard's rubber stamp"
+	},
+/obj/machinery/airalarm/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"pX" = (
+/obj/machinery/atmospherics/pipe/simple{
+	dir = 8
+	},
+/obj/machinery/air_sensor/atmos/air_tank,
+/turf/open/floor/engine/air,
+/area/shuttle/solfed/destroyer)
+"pZ" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"qh" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"qm" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"qo" = (
+/obj/machinery/shower{
+	dir = 1
+	},
+/obj/structure/curtain,
+/obj/effect/decal/cleanable/vomit/old,
+/turf/open/floor/plasteel/showroomfloor,
+/area/shuttle/solfed/destroyer)
+"qp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/spawner/lootdrop/grille_or_trash,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"qr" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/computer/atmos_control/tank/air_tank{
+	dir = 8
+	},
+/obj/machinery/button/door{
+	dir = 8;
+	id = "talos_tank_air";
+	name = "Access Door Control";
+	pixel_x = 21;
+	pixel_y = -6;
+	req_access_txt = "24"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"qs" = (
+/obj/structure/railing,
+/obj/machinery/airalarm/directional/north,
+/obj/structure/closet/wall{
+	dir = 4;
+	icon_door = "grey_wall";
+	pixel_x = -32
+	},
+/obj/item/radio/headset,
+/obj/item/radio/headset,
+/obj/item/radio/headset,
+/obj/item/radio/headset,
+/obj/item/radio/headset,
+/obj/item/radio/headset,
+/obj/item/radio/headset,
+/obj/item/radio/headset,
+/obj/item/radio/headset,
+/obj/item/radio/headset,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"qM" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"qP" = (
+/obj/structure/closet/crate{
+	name = "target crate"
+	},
+/obj/item/target/syndicate{
+	pixel_x = -5;
+	pixel_y = 10
+	},
+/obj/item/target/syndicate{
+	pixel_y = 5
+	},
+/obj/item/target/alien{
+	pixel_x = 5
+	},
+/obj/item/target/clown{
+	pixel_x = -5;
+	pixel_y = 10
+	},
+/obj/item/target{
+	pixel_y = 5
+	},
+/obj/item/target{
+	pixel_x = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"qT" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"qW" = (
+/obj/effect/turf_decal/siding/thinplating,
+/obj/structure/noticeboard/captain{
+	desc = "Important notices from the Vanguard.";
+	dir = 1;
+	name = "Vanguard's Notice Board";
+	pixel_y = -25
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"rc" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/plasteel/showroomfloor,
+/area/shuttle/solfed/destroyer)
+"rj" = (
+/obj/structure/closet/crate/bin,
+/obj/item/trash/candy,
+/obj/item/trash/can,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"rv" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"rw" = (
+/obj/structure/chair/comfy/black{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"rV" = (
+/obj/machinery/button/door{
+	dir = 4;
+	id = "talos_engine_shutter";
+	name = "Shutter Control";
+	pixel_x = -21;
+	pixel_y = -2
+	},
+/obj/machinery/button/door{
+	dir = 4;
+	id = "talos_engine_vent";
+	name = "External Vent Control";
+	pixel_x = -21;
+	pixel_y = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/obj/machinery/computer/atmos_control/incinerator{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"sc" = (
+/obj/structure/table,
+/obj/item/paper_bin,
+/obj/item/folder/syndicate{
+	desc = "A slick black folder stamped 'Property of Inteq Risk Management Group.'";
+	name = "folder"
+	},
+/obj/item/pen,
+/obj/item/multitool{
+	pixel_x = 12;
+	pixel_y = 8
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"si" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/mineral/titanium/interior,
+/area/shuttle/solfed/destroyer)
+"sl" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"sn" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"sq" = (
+/obj/machinery/light/directional/north,
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"su" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"sw" = (
+/turf/template_noop,
+/area/template_noop)
+"sA" = (
+/obj/structure/table,
+/obj/item/folder/yellow,
+/obj/item/pen,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"sC" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "11"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"sD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/grille_or_trash,
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"sF" = (
+/obj/machinery/vending/snack/random,
+/obj/machinery/camera/autoname,
+/obj/machinery/status_display/shuttle{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"sJ" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/chair{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/cohiba_robusto_ad{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"sM" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"sQ" = (
+/obj/machinery/door/poddoor{
+	dir = 4;
+	id = "talos_cargo"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"sT" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"sY" = (
+/obj/machinery/door/airlock/public/glass{
+	dir = 4;
+	name = "Canteen"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ta" = (
+/obj/machinery/light/directional/east,
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 6
+	},
+/obj/structure/closet/crate/bin,
+/obj/item/cigbutt,
+/obj/item/trash/popcorn,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"tb" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/structure/railing/corner,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"te" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/high_volume/siphon/atmos/air_output{
+	dir = 8
+	},
+/turf/open/floor/engine/air,
+/area/shuttle/solfed/destroyer)
+"tf" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "2"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"ti" = (
+/obj/structure/artilleryplaceholder/decorative{
+	icon_state = "29"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"tp" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"tq" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/table,
+/obj/item/instrument/harmonica,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"tr" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"tu" = (
+/obj/machinery/camera/autoname{
+	dir = 6
+	},
+/obj/structure/extinguisher_cabinet/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"tF" = (
+/obj/structure/table,
+/obj/item/storage/fancy/donut_box,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"tK" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "17"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"tO" = (
+/obj/machinery/computer/telecomms/monitor{
+	dir = 1;
+	network = "irmg_commnet"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"tT" = (
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"ub" = (
+/obj/effect/spawner/lootdrop/maintenance,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"uc" = (
+/turf/open/floor/carpet,
+/area/shuttle/solfed/destroyer)
+"ud" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ue" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"ug" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/siding/thinplating/dark,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ul" = (
+/obj/machinery/camera/autoname{
+	dir = 10
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"uo" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"up" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ur" = (
+/obj/structure/table,
+/obj/item/toy/cards/deck/syndicate{
+	pixel_x = 12;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"uv" = (
+/obj/structure/closet/crate/freezer/blood,
+/obj/machinery/light/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"uI" = (
+/turf/closed/wall/mineral/titanium/interior,
+/area/shuttle/solfed/destroyer)
+"uO" = (
+/obj/machinery/iv_drip,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"vn" = (
+/obj/structure/noticeboard{
+	dir = 8;
+	pixel_x = 25
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"vo" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"vv" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"vF" = (
+/obj/item/toy/plush/slimeplushie,
+/obj/machinery/atmospherics/components/unary/outlet_injector/atmos/mix_input{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"vJ" = (
+/obj/structure/toilet{
+	dir = 4
+	},
+/obj/structure/window/reinforced/tinted/frosted,
+/obj/structure/curtain,
+/turf/open/floor/plasteel/showroomfloor,
+/area/shuttle/solfed/destroyer)
+"vM" = (
+/obj/structure/closet/secure_closet{
+	anchored = 1;
+	icon_state = "ce";
+	name = "artificer class II's locker";
+	req_access = null;
+	req_access_txt = "56"
+	},
+/obj/item/storage/backpack/industrial,
+/obj/item/clothing/head/hardhat/white,
+/obj/item/clothing/shoes/combat,
+/obj/item/clothing/gloves/combat,
+/obj/item/megaphone/cargo{
+	name = "engineering megaphone"
+	},
+/obj/item/stamp/ce{
+	name = "artificer class II's rubber stamp"
+	},
+/obj/item/clothing/glasses/meson/engine,
+/obj/item/clothing/glasses/welding,
+/obj/item/pipe_dispenser,
+/obj/item/storage/belt/utility/chief{
+	name = "\improper Artificer Class II's toolbelt"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"vP" = (
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"vQ" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"vT" = (
+/obj/item/kirbyplants/random,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"vX" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"wb" = (
+/obj/structure/window/reinforced/survival_pod{
+	dir = 8
+	},
+/obj/structure/window/reinforced/survival_pod{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"wc" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"wp" = (
+/obj/structure/weightmachine/stacklifter,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"wu" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/machinery/autolathe,
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"wy" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"wB" = (
+/obj/structure/chair/stool/bar{
+	dir = 8
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"wD" = (
+/obj/item/tank/internals/plasmaman/full,
+/obj/item/tank/internals/plasmaman/full,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/safety_internals{
+	pixel_x = -32
+	},
+/obj/machinery/atmospherics/pipe/layer_manifold{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"wE" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/obj/structure/closet/emcloset/wall{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"wY" = (
+/obj/machinery/light/directional/east,
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/emcloset/wall{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"xb" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/door/airlock/security{
+	dir = 4;
+	id_tag = "talos_armory";
+	name = "Armory";
+	req_access_txt = "1"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"xc" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"xl" = (
+/obj/machinery/telecomms/bus/preset_four{
+	autolinkers = list("hub","processor4","bus");
+	network = "irmg_commnet"
+	},
+/turf/open/floor/circuit/telecomms/mainframe,
+/area/shuttle/solfed/destroyer)
+"xn" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light_switch{
+	dir = 1;
+	pixel_y = -19
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"xo" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/structure/tank_dispenser,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"xz" = (
+/obj/machinery/telecomms/broadcaster/preset_right{
+	autolinkers = list("broadcasterB","hub");
+	network = "irmg_commnet"
+	},
+/obj/structure/window/reinforced/survival_pod{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/circuit/telecomms/mainframe,
+/area/shuttle/solfed/destroyer)
+"xB" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/showroomfloor,
+/area/shuttle/solfed/destroyer)
+"xD" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating/corner,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"xG" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"xK" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"xT" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/filingcabinet/chestdrawer,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"yb" = (
+/obj/structure/bed,
+/obj/item/bedsheet/brown,
+/obj/structure/sign/poster/contraband/masked_men{
+	pixel_y = -32
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"yc" = (
+/obj/machinery/light_switch{
+	dir = 4;
+	pixel_x = -19
+	},
+/obj/structure/cable/yellow,
+/obj/machinery/power/terminal,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"yj" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"yl" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"yn" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"yo" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"yp" = (
+/obj/structure/artilleryplaceholder/decorative{
+	icon_state = "25"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"yr" = (
+/obj/structure/chair/office,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"yx" = (
+/obj/structure/table/reinforced,
+/obj/machinery/computer/secure_data/laptop,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"yz" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"yL" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/obj/structure/railing,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"yP" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "7"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"yS" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"yU" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "9"
+	},
+/obj/machinery/light/floor,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"zf" = (
+/obj/item/clothing/head/soft/inteq,
+/obj/item/clothing/head/soft/inteq,
+/obj/item/clothing/head/soft/inteq,
+/obj/structure/closet{
+	icon_door = "orange";
+	name = "inteq wardrobe"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"zh" = (
+/obj/effect/turf_decal/big_sign/solgov/bb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"zo" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"zu" = (
+/obj/machinery/button/door{
+	dir = 8;
+	id = "talos_cargo";
+	name = "Cargo Door Control";
+	pixel_x = 21;
+	pixel_y = 8
+	},
+/obj/structure/weightmachine/weightlifter,
+/obj/machinery/light/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"zw" = (
+/obj/machinery/door/airlock/external,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"zz" = (
+/obj/machinery/light_switch{
+	dir = 1;
+	pixel_y = -19
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"zB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/trashcart,
+/obj/effect/spawner/lootdrop/maintenance,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"zG" = (
+/obj/item/bedsheet/brown,
+/obj/structure/bed,
+/obj/structure/sign/poster/contraband/lusty_xenomorph{
+	pixel_x = -32
+	},
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"zK" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/machinery/portable_atmospherics/scrubber,
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"zL" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"zR" = (
+/obj/machinery/firealarm/directional/south,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 6
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"zT" = (
+/obj/structure/chair/stool/bar{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"zV" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Aa" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/grille_or_trash,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"Ag" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Ah" = (
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Ai" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+	dir = 6
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"An" = (
+/obj/machinery/shower{
+	dir = 1
+	},
+/obj/structure/window/reinforced/tinted/frosted{
+	dir = 4
+	},
+/obj/structure/curtain,
+/obj/item/soap,
+/turf/open/floor/plasteel/showroomfloor,
+/area/shuttle/solfed/destroyer)
+"Ar" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 4;
+	filter_types = list("o2")
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"Ax" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/table/reinforced,
+/obj/item/lighter{
+	pixel_y = 5
+	},
+/obj/item/storage/fancy/cigarettes/cigars,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"AB" = (
+/obj/docking_port/stationary{
+	dir = 4;
+	dwidth = 4;
+	height = 15;
+	width = 6
+	},
+/turf/template_noop,
+/area/template_noop)
+"AC" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"AK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/oil/slippery,
+/obj/machinery/door/poddoor{
+	dir = 4;
+	id = "talos_cargo"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"AL" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/closet/crate/large,
+/obj/item/mop,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"AZ" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Bb" = (
+/obj/machinery/atmospherics/components/binary/circulator{
+	piping_layer = 1
+	},
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"Bh" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/table,
+/obj/item/instrument/guitar,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Bm" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/smes/magical,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"Bv" = (
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"Bz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/safety_internals{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"BN" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/grille_or_trash,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"BS" = (
+/obj/machinery/mineral/ore_redemption{
+	dir = 4;
+	input_dir = 4;
+	output_dir = 0
+	},
+/obj/machinery/light_switch{
+	dir = 4;
+	pixel_x = -19
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"BY" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/light/directional/west,
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Cp" = (
+/obj/machinery/vending/cola/random,
+/obj/machinery/light/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Cu" = (
+/obj/structure/railing,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"Cy" = (
+/obj/machinery/cryopod{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"CJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/book/manual/wiki/detective,
+/obj/item/book/manual/wiki/security_space_law,
+/obj/structure/bookcase,
+/obj/item/book/random,
+/obj/item/book/random,
+/obj/item/book/random,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"CN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/portable_atmospherics/canister/toxins,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"CP" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Storage Bay";
+	req_access_txt = "10"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"CS" = (
+/obj/structure/bed/roller,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"CX" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Dd" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/table/reinforced,
+/obj/item/paper_bin{
+	pixel_y = 4
+	},
+/obj/item/pen/fourcolor,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Dg" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Dq" = (
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/obj/machinery/light/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"Dr" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Ds" = (
+/obj/machinery/vending/cigarette,
+/obj/machinery/light/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"DC" = (
+/obj/structure/closet/crate{
+	name = "training equipment crate"
+	},
+/obj/item/gun/energy/laser/practice{
+	pixel_x = -5;
+	pixel_y = 10
+	},
+/obj/item/gun/energy/laser/practice{
+	pixel_y = 5
+	},
+/obj/item/gun/energy/laser/practice{
+	pixel_x = 5
+	},
+/obj/item/clothing/ears/earmuffs,
+/obj/item/clothing/ears/earmuffs,
+/obj/item/clothing/ears/earmuffs,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"DQ" = (
+/obj/machinery/door/airlock/security/glass{
+	name = "Office"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"DY" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/obj/structure/sign/poster/contraband/missing_gloves{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Eg" = (
+/obj/machinery/mech_bay_recharge_port,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Ep" = (
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Fi" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/marker_beacon{
+	picked_color = "Lime"
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"Fk" = (
+/obj/structure/marker_beacon{
+	picked_color = "Burgundy"
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"Fl" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Fm" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Fo" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-10"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Fp" = (
+/obj/effect/turf_decal/siding/thinplating/corner,
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Fu" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/item/analyzer{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"FK" = (
+/obj/machinery/light/directional/south,
+/obj/item/analyzer,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"FL" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"FO" = (
+/obj/item/tank/internals/plasmaman/full,
+/obj/item/tank/internals/plasmaman/full,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/machinery/light/small/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"FV" = (
+/obj/structure/railing,
+/obj/structure/noticeboard{
+	pixel_y = 25
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"Ga" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating/corner,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Gq" = (
+/obj/machinery/light/small/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Gr" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/atmos/incinerator_input{
+	dir = 8
+	},
+/turf/open/floor/engine/vacuum,
+/area/shuttle/solfed/destroyer)
+"Gt" = (
+/obj/effect/turf_decal/siding/thinplating/dark,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/airalarm/directional/south,
+/obj/structure/closet/secure_closet{
+	anchored = 1;
+	can_be_unanchored = 1;
+	icon_state = "armory";
+	name = "armor locker";
+	req_access_txt = "1"
+	},
+/obj/item/clothing/suit/armor/vest/alt,
+/obj/item/clothing/head/helmet/inteq,
+/obj/item/clothing/gloves/combat,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Gx" = (
+/obj/machinery/light_switch{
+	dir = 8;
+	pixel_x = 20
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Gz" = (
+/obj/machinery/light/directional/south,
+/obj/machinery/telecomms/hub{
+	autolinkers = list("hub","bus","relay","messaging","inteq","common","broadcasterB","receiverB");
+	id = "IRMG Communications Hub";
+	network = "irmg_commnet"
+	},
+/turf/open/floor/circuit/telecomms/mainframe,
+/area/shuttle/solfed/destroyer)
+"GG" = (
+/obj/machinery/light/small/directional/west,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"GL" = (
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"GN" = (
+/obj/effect/turf_decal/siding/thinplating,
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"GQ" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/spawner/lootdrop/grille_or_trash,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"GR" = (
+/obj/structure/bed,
+/obj/item/bedsheet/brown,
+/obj/structure/sign/poster/contraband/d_day_promo{
+	pixel_x = 32
+	},
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"GY" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-6"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"Hc" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "18"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Hj" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Hl" = (
+/obj/machinery/airalarm/directional/east,
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/weldingtool/largetank,
+/obj/item/clothing/glasses/welding,
+/obj/item/multitool,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Ho" = (
+/obj/structure/artilleryplaceholder/decorative{
+	icon_state = "27"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Hp" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/big_sign/solgov/ba,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"HB" = (
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"HD" = (
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"HN" = (
+/obj/structure/sink{
+	dir = 1;
+	pixel_y = -12
+	},
+/obj/structure/mirror{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/shuttle/solfed/destroyer)
+"If" = (
+/obj/structure/artilleryplaceholder/decorative{
+	icon_state = "30"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Io" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"Ir" = (
+/obj/machinery/computer/security{
+	dir = 4
+	},
+/obj/machinery/button/door{
+	dir = 4;
+	id = "talos_armory";
+	name = "Door Control";
+	normaldoorcontrol = 1;
+	pixel_x = -21;
+	pixel_y = -6;
+	req_access_txt = "3"
+	},
+/obj/machinery/button/door{
+	dir = 4;
+	id = "talos_armory";
+	name = "Door Bolt Control";
+	normaldoorcontrol = 1;
+	pixel_x = -21;
+	pixel_y = 6;
+	req_access_txt = "3";
+	specialfunctions = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Iv" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating/dark/corner{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ID" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Cryogenic Storage"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"IF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/firecloset,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"IJ" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/box/cups{
+	pixel_y = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"IR" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/door/poddoor{
+	dir = 4;
+	id = "talos_cargo"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"IT" = (
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/siding/thinplating,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Je" = (
+/obj/machinery/atmospherics/pipe/simple/purple/hidden{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+	dir = 10
+	},
+/turf/open/floor/engine/vacuum,
+/area/shuttle/solfed/destroyer)
+"Jk" = (
+/obj/effect/spawner/lootdrop/maintenance,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"Jo" = (
+/obj/structure/cable{
+	icon_state = "2-5"
+	},
+/obj/structure/cable{
+	icon_state = "5-8"
+	},
+/obj/machinery/camera/autoname{
+	dir = 8
+	},
+/obj/machinery/computer/atmos_control/tank/mix_tank{
+	dir = 8
+	},
+/obj/machinery/button/door{
+	color = "red";
+	dir = 8;
+	id = "talos_tank_fuel";
+	name = "Access Door Control (DANGER) (EXTREMELY DANGEROUS) (DO NOT PRESS)";
+	pixel_x = 21;
+	pixel_y = -6;
+	req_access_txt = "24"
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Jz" = (
+/obj/effect/turf_decal/siding/thinplating,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"JC" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/thinplating/corner,
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"JI" = (
+/obj/structure/artilleryplaceholder/decorative{
+	icon_state = "28"
+	},
+/obj/machinery/artillerycontrol,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"JP" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/north,
+/obj/structure/rack,
+/obj/item/melee/baton{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/spray/pepper{
+	pixel_x = 10;
+	pixel_y = 7
+	},
+/obj/item/reagent_containers/spray/pepper{
+	pixel_x = -1;
+	pixel_y = 3
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"JT" = (
+/obj/machinery/porta_turret/syndicate/shuttle{
+	faction = list("InteQ")
+	},
+/turf/closed/wall/mineral/titanium/interior,
+/area/shuttle/solfed/destroyer)
+"JZ" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Kd" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating/dark,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Ke" = (
+/obj/structure/table,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Ks" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Kz" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating,
+/obj/machinery/camera/autoname{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"KB" = (
+/obj/machinery/light/small/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"KF" = (
+/obj/structure/railing,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"KI" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"KQ" = (
+/obj/machinery/door/airlock/hatch{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/layer_manifold{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"KR" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"KT" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "14"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"KY" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Crew Quarters"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"Lc" = (
+/obj/structure/cable,
+/obj/machinery/door/poddoor/shutters{
+	id = "talos_bridge"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"Lm" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/table/reinforced,
+/obj/item/folder/syndicate{
+	desc = "A slick black folder stamped 'Property of Inteq Risk Management Group.'";
+	name = "folder"
+	},
+/obj/item/stamp/law{
+	name = "master at arms' rubber stamp"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Lo" = (
+/obj/machinery/power/terminal,
+/obj/structure/table,
+/obj/item/assembly/timer{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/item/screwdriver{
+	pixel_x = -2;
+	pixel_y = 1
+	},
+/obj/item/assembly/igniter{
+	pixel_y = 6
+	},
+/obj/structure/cable/yellow,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Lu" = (
+/obj/machinery/atmospherics/components/binary/circulator/cold{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"LF" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "24"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"LJ" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"LM" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"LS" = (
+/obj/machinery/door/poddoor{
+	dir = 4;
+	id = "talos_engine_vent";
+	name = "Combustion Chamber Vent"
+	},
+/obj/machinery/atmospherics/pipe/layer_manifold{
+	dir = 4
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"LT" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"LU" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"LV" = (
+/obj/machinery/telecomms/receiver/preset_right{
+	autolinkers = list("receiverB","hub");
+	freq_listening = list(1347,1359);
+	network = "irmg_commnet"
+	},
+/obj/structure/window/reinforced/survival_pod{
+	dir = 1
+	},
+/turf/open/floor/circuit/telecomms/mainframe,
+/area/shuttle/solfed/destroyer)
+"Ma" = (
+/obj/machinery/door/poddoor/shutters{
+	id = "talos_engine_shutter"
+	},
+/obj/machinery/door/poddoor/shutters{
+	id = "talos_engine_shutter"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"Mf" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/contraband/donut_corp{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Ml" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/chair/sofa/right,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Mx" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"My" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"MR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/secure/loot,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"MW" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/ore_box,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"MX" = (
+/obj/machinery/light/directional/east,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Nd" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Nf" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Ng" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"Ni" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/portable_atmospherics/canister/toxins,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"Nj" = (
+/obj/machinery/button/door{
+	dir = 8;
+	id = "talos_cargo";
+	name = "Cargo Door Control";
+	pixel_x = 21;
+	pixel_y = -2
+	},
+/obj/machinery/light/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"NC" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"NF" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "15"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"NK" = (
+/turf/open/floor/engine/air,
+/area/shuttle/solfed/destroyer)
+"NN" = (
+/obj/item/kirbyplants/random,
+/obj/structure/cable,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"NW" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/poddoor{
+	dir = 4;
+	id = "talos_cargo"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"Oc" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Ok" = (
+/obj/machinery/mech_bay_recharge_port{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Oq" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"OD" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"OK" = (
+/obj/machinery/cryopod{
+	dir = 8
+	},
+/obj/machinery/light/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/destroyer)
+"OM" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ON" = (
+/obj/structure/table/reinforced,
+/obj/machinery/button/door{
+	id = "talos_bridge";
+	name = "Bridge Shutters";
+	pixel_x = 6;
+	pixel_y = 23
+	},
+/obj/machinery/button/door{
+	id = "talos_windows";
+	name = "Window Lockdown";
+	pixel_x = -6;
+	pixel_y = 23
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"OP" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/grille_or_trash,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Pf" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"Pk" = (
+/obj/machinery/door/poddoor/shutters{
+	dir = 4;
+	id = "talos_engine_shutter"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"Pm" = (
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
+	dir = 9
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"Pp" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "23"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Pr" = (
+/obj/machinery/air_sensor/atmos/incinerator_tank,
+/obj/machinery/atmospherics/pipe/simple/purple/hidden{
+	dir = 4
+	},
+/turf/open/floor/engine/vacuum,
+/area/shuttle/solfed/destroyer)
+"Ps" = (
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"Pt" = (
+/obj/machinery/light/small/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/structure/closet/crate,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Py" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/walk{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"PJ" = (
+/obj/machinery/shower{
+	dir = 8
+	},
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"PL" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"PN" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating,
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"PX" = (
+/obj/structure/marker_beacon{
+	picked_color = "Yellow"
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"PY" = (
+/obj/structure/table/reinforced,
+/obj/item/flashlight/lamp,
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Qa" = (
+/obj/machinery/door/window/northleft{
+	dir = 4;
+	req_access_txt = "3"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating/dark,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Qg" = (
+/obj/machinery/atmospherics/pipe/simple{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Qt" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 1;
+	name = "burn chamber input pump"
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Qu" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 8;
+	name = "fuel tank output pump"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Qx" = (
+/obj/structure/marker_beacon{
+	picked_color = "Lime"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"Qy" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "1"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"QC" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating/dark,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"QD" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/atmos/air_input{
+	dir = 8
+	},
+/turf/open/floor/engine/air,
+/area/shuttle/solfed/destroyer)
+"QU" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/machinery/airalarm/directional/south,
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer{
+	dir = 1;
+	heat_capacity = 500;
+	name = "thermo-electric cooler"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"QV" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "4"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"QW" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"QZ" = (
+/obj/machinery/door/poddoor{
+	id = "talos_tank_burn"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"Rc" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Rg" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Rp" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Ry" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/shuttle/engine/propulsion{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"RC" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"RF" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"RL" = (
+/obj/machinery/light_switch{
+	dir = 8;
+	pixel_x = 20
+	},
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"RT" = (
+/obj/structure/artilleryplaceholder/decorative{
+	icon_state = "26"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"RV" = (
+/obj/structure/artilleryplaceholder/decorative{
+	icon_state = "34"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"RW" = (
+/obj/effect/turf_decal/big_sign/solgov/ac,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"RY" = (
+/obj/machinery/door/airlock/hatch{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/layer_manifold{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Si" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Sj" = (
+/obj/machinery/camera/autoname{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"So" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/door/window/eastleft{
+	name = "Engine Access"
+	},
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/machinery/door/poddoor{
+	dir = 4;
+	id = "talos_thrusters_port"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"Su" = (
+/obj/machinery/computer/mech_bay_power_console,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"SB" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"SD" = (
+/obj/structure/cable{
+	icon_state = "5-10"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"SI" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"SK" = (
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/electrical,
+/obj/machinery/light/directional/west,
+/obj/vehicle/sealed/mecha/combat/durand/zeus,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"SS" = (
+/obj/machinery/vending/cola/random,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"SZ" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/purple/visible{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Tg" = (
+/obj/structure/cable,
+/obj/machinery/door/poddoor{
+	id = "talos_windows";
+	name = "Window Shield"
+	},
+/turf/closed/wall/mineral/titanium/interior,
+/area/shuttle/solfed/destroyer)
+"Tj" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/chair/comfy/black{
+	dir = 1
+	},
+/obj/effect/turf_decal/big_sign/solgov/cc,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"TC" = (
+/obj/machinery/power/terminal,
+/obj/structure/cable/yellow,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"TD" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"TE" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "16"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"TH" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "19"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"TK" = (
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/camera/autoname,
+/obj/item/storage/box/flashbangs{
+	pixel_x = 2;
+	pixel_y = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"TN" = (
+/obj/structure/falsewall/plastitanium,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"TO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/vomit/old,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"TS" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light/directional/south,
+/obj/effect/turf_decal/siding/thinplating,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"TV" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Ub" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/secure/loot,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Uc" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Ug" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sink/kitchen{
+	dir = 4;
+	pixel_x = -12
+	},
+/obj/machinery/computer/security/telescreen/entertainment{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Ui" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Ul" = (
+/obj/structure/closet/crate{
+	name = "food crate"
+	},
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/storage/firstaid/tactical,
+/obj/item/storage/firstaid/tactical,
+/obj/item/storage/firstaid/tactical,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Um" = (
+/obj/structure/chair/stool{
+	dir = 4
+	},
+/obj/machinery/computer/security/telescreen/entertainment{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Uq" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Uy" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/grille_or_trash,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"UG" = (
+/obj/machinery/button/door{
+	dir = 4;
+	id = "talos_thrusters_port";
+	name = "Blast Door Control";
+	pixel_x = -21;
+	pixel_y = 3
+	},
+/obj/structure/closet/secure_closet/engineering_electrical{
+	req_access = null;
+	req_access_txt = "11";
+	req_one_access = null
+	},
+/obj/effect/turf_decal/siding/thinplating/dark,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"UM" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"UP" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"UQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Ve" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/machinery/light/directional/north,
+/obj/machinery/light_switch{
+	dir = 8;
+	pixel_x = 20
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Vg" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/oil/streak,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Vj" = (
+/obj/structure/table/reinforced,
+/obj/structure/sign/poster/contraband/red_rum{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Vk" = (
+/obj/machinery/light/directional/west,
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/machinery/atmospherics/pipe/simple/purple/visible{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1{
+	dir = 6
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Vp" = (
+/obj/machinery/light/small/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/shuttle/solfed/destroyer)
+"Vr" = (
+/obj/item/trash/boritos,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Vs" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "6"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Vz" = (
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"VG" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/thinplating,
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"VL" = (
+/obj/machinery/button/door{
+	id = "talos_tank_burn";
+	name = "Access Door Control";
+	pixel_x = 4;
+	pixel_y = 21;
+	req_access = null;
+	req_access_txt = "56"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"VO" = (
+/obj/machinery/light/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"VS" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"VX" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/marker_beacon{
+	picked_color = "Yellow"
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"Wb" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/machinery/photocopier,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Wd" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Wf" = (
+/obj/structure/cable,
+/obj/machinery/door/poddoor{
+	id = "talos_windows";
+	name = "Window Shield"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"Wg" = (
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Wp" = (
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/effect/turf_decal/siding/thinplating/dark,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Wr" = (
+/obj/machinery/light/small/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet,
+/area/shuttle/solfed/destroyer)
+"Wz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/shuttle/solfed/destroyer{
+	dir = 8
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"WC" = (
+/obj/structure/dresser,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"WG" = (
+/obj/machinery/light/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/bin,
+/obj/item/trash/can,
+/obj/item/cigbutt,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"WH" = (
+/obj/machinery/atmospherics/pipe/simple/general/visible{
+	dir = 1
+	},
+/obj/machinery/door/poddoor{
+	id = "talos_thrusters_starboard"
+	},
+/obj/structure/grille,
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"WL" = (
+/obj/machinery/power/generator{
+	dir = 8
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"WR" = (
+/obj/effect/turf_decal/big_sign/solgov/bc,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"Xg" = (
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"Xn" = (
+/obj/structure/cable{
+	icon_state = "2-9"
+	},
+/obj/structure/cable{
+	icon_state = "8-9"
+	},
+/obj/machinery/portable_atmospherics/pump,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"XA" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/siphon/atmos/mix_output{
+	dir = 8
+	},
+/obj/structure/sign/warning/nosmoking/circle{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"XJ" = (
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/destroyer)
+"XV" = (
+/obj/effect/turf_decal/siding/thinplating/dark,
+/obj/machinery/light/directional/south,
+/obj/structure/closet/secure_closet{
+	anchored = 1;
+	can_be_unanchored = 1;
+	icon_state = "sec";
+	name = "equipment locker";
+	req_access_txt = "1"
+	},
+/obj/item/clothing/glasses/hud/security/sunglasses/inteq,
+/obj/item/storage/box/handcuffs,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Yp" = (
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/purple/hidden,
+/obj/machinery/door/poddoor{
+	id = "talos_tank_burn"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/space/basic,
+/area/shuttle/solfed/destroyer)
+"Yt" = (
+/obj/structure/table/reinforced,
+/obj/machinery/microwave,
+/obj/structure/sign/poster/contraband/eat{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Yz" = (
+/obj/item/clothing/glasses/hud/security/sunglasses/inteq,
+/obj/item/clothing/gloves/tackler/combat/insulated,
+/obj/item/clothing/shoes/combat,
+/obj/item/storage/belt/military/assault,
+/obj/item/megaphone/command,
+/obj/item/shield/riot/tele,
+/obj/structure/closet/secure_closet{
+	anchored = 1;
+	can_be_unanchored = 1;
+	icon_state = "cap";
+	name = "vanguard's locker";
+	req_access_txt = "20"
+	},
+/obj/machinery/light/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/tank/jetpack/oxygen,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/destroyer)
+"YC" = (
+/obj/structure/table,
+/obj/item/flashlight/lamp/green,
+/turf/open/floor/carpet/black,
+/area/shuttle/solfed/destroyer)
+"YI" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"YU" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "13"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"YX" = (
+/obj/structure/artilleryplaceholder{
+	icon_state = "22"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"YZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/grille_or_trash,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Zb" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"Zc" = (
+/obj/machinery/status_display/shuttle{
+	pixel_y = 32
+	},
+/obj/vehicle/sealed/mecha/combat/durand/zeus,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Zd" = (
+/obj/machinery/door/airlock{
+	dir = 4;
+	name = "Dormitory"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/destroyer)
+"Zj" = (
+/obj/effect/turf_decal/siding/thinplating,
+/obj/machinery/camera/autoname{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Zk" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet/hos{
+	name = "vanguard's spare bedsheet"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"Zn" = (
+/obj/item/tank/internals/plasmaman/full,
+/obj/item/tank/internals/plasmaman/full,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/machinery/light/small/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Zo" = (
+/obj/machinery/light/small/directional/north,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Zq" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"Zu" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/machinery/autolathe,
+/obj/item/stack/sheet/metal/five,
+/obj/item/stack/sheet/glass/five,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ZB" = (
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel/showroomfloor,
+/area/shuttle/solfed/destroyer)
+"ZE" = (
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/sign/warning{
+	pixel_x = -25;
+	pixel_y = 9
+	},
+/obj/structure/sign/warning/fire{
+	pixel_x = -22;
+	pixel_y = -4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ZJ" = (
+/obj/structure/shuttle/engine/propulsion{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/destroyer)
+"ZU" = (
+/obj/machinery/light/directional/west,
+/obj/machinery/computer/rdconsole/core{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/destroyer)
+"ZV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/cardboard,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+"ZY" = (
+/obj/structure/artilleryplaceholder/decorative{
+	icon_state = "32"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/shuttle/solfed/destroyer)
+
+(1,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+Fk
+sw
+sw
+sw
+sw
+JT
+uI
+Ry
+Ry
+Ry
+ZJ
+uI
+JT
+sw
+sw
+sw
+sw
+JT
+uI
+Ry
+Ry
+Ry
+ZJ
+uI
+JT
+sw
+sw
+sw
+Fk
+sw
+sw
+"}
+(2,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+tT
+sw
+sw
+sw
+XJ
+uI
+uI
+So
+aI
+iM
+iM
+uI
+uI
+sw
+sw
+sw
+sw
+uI
+uI
+So
+aI
+iM
+iM
+uI
+uI
+Ar
+sw
+sw
+tT
+sw
+sw
+"}
+(3,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+tT
+sw
+sw
+sw
+ia
+bM
+UG
+UM
+lO
+tb
+KI
+cn
+uI
+JT
+LS
+uI
+JT
+uI
+Vk
+Qt
+dl
+pm
+iA
+aH
+WH
+Pm
+sw
+sw
+tT
+sw
+sw
+"}
+(4,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+tT
+sw
+sw
+sw
+uI
+uI
+jf
+ak
+Uc
+hO
+Fu
+Lo
+dw
+ge
+Je
+Yp
+ZE
+rV
+SZ
+Bb
+WL
+Lu
+wy
+FK
+uI
+uI
+sw
+sw
+tT
+sw
+sw
+"}
+(5,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+uI
+uI
+uI
+uI
+uI
+LT
+lM
+ek
+jS
+AZ
+gV
+ge
+Pr
+kU
+wy
+Ai
+Io
+jT
+lA
+cF
+xK
+QU
+uI
+uI
+uI
+uI
+uI
+uI
+sw
+"}
+(6,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+JT
+uI
+uI
+ZU
+eC
+Zu
+SK
+Ok
+uI
+HB
+lM
+yL
+RF
+TC
+Bm
+Ma
+Gr
+QZ
+lS
+RC
+Jo
+Qu
+su
+qr
+vX
+em
+jH
+yc
+ms
+xz
+ls
+uI
+JT
+"}
+(7,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+Eg
+mz
+LT
+My
+LT
+zz
+uI
+Sj
+lM
+ek
+ud
+xo
+uI
+uI
+Pk
+uI
+VL
+cz
+uI
+bA
+bA
+uI
+lq
+lq
+ao
+tu
+Ah
+ag
+wy
+xl
+uI
+"}
+(8,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+Zc
+Vg
+Ah
+ak
+iW
+om
+CP
+dh
+KR
+GY
+vv
+TD
+cA
+PL
+TD
+vv
+SD
+LJ
+bN
+hl
+Qg
+bN
+oU
+pX
+bN
+Ah
+Ah
+cT
+wy
+Gz
+uI
+"}
+(9,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+Su
+Rc
+zo
+zo
+zo
+zR
+uI
+jY
+gk
+iE
+Xn
+gP
+qh
+MX
+gG
+Fo
+Dg
+qT
+bN
+XA
+vF
+bN
+te
+QD
+bN
+Ah
+vM
+wb
+wy
+an
+uI
+"}
+(10,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+JT
+uI
+uI
+au
+fo
+Hl
+jJ
+uI
+uI
+uI
+uI
+uI
+zK
+xn
+uI
+uI
+uI
+uI
+uI
+uI
+uI
+uI
+uI
+uI
+NK
+NK
+uI
+yr
+tO
+LV
+bF
+uI
+JT
+"}
+(11,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+tT
+sw
+uI
+uI
+uI
+uI
+uI
+uI
+zG
+YC
+yb
+uI
+uI
+jZ
+uI
+Yt
+IJ
+Ug
+pD
+sT
+Mf
+NN
+uI
+uI
+NK
+NK
+uI
+sc
+jW
+uI
+uI
+uI
+tT
+"}
+(12,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+tT
+sw
+tT
+sw
+uI
+uI
+zf
+GG
+tr
+Xg
+Ps
+uI
+eT
+ft
+uI
+Oq
+Ah
+Ah
+wy
+Ke
+sA
+VO
+uI
+uI
+uI
+uI
+uI
+uI
+uI
+uI
+tT
+sw
+tT
+"}
+(13,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+tT
+sw
+tT
+sw
+sw
+uI
+mL
+RL
+ow
+WC
+GR
+uI
+PJ
+AC
+uI
+pu
+Ah
+tF
+wy
+yz
+yz
+Zq
+uI
+vJ
+vJ
+ZB
+An
+uI
+sw
+sw
+tT
+sw
+tT
+"}
+(14,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+tT
+uI
+tT
+sw
+JT
+uI
+uI
+uI
+Zd
+uI
+uI
+uI
+jX
+di
+uI
+sF
+Ah
+Ke
+wy
+nZ
+nZ
+Ah
+uI
+eW
+ne
+xB
+qo
+uI
+sw
+sw
+tT
+uI
+tT
+"}
+(15,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+tT
+sw
+tT
+sw
+mU
+hg
+Um
+Nd
+dZ
+Vj
+hQ
+uI
+hG
+kW
+uI
+nS
+Ep
+Ah
+wy
+Ke
+Ke
+VO
+uI
+fE
+HN
+uI
+uI
+uI
+JT
+sw
+tT
+sw
+tT
+"}
+(16,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+tT
+sw
+tT
+sw
+mU
+Ml
+ur
+Ag
+dZ
+wB
+zT
+Vz
+iN
+yo
+uI
+hc
+vn
+Gx
+wy
+yz
+yz
+vT
+uI
+rc
+cD
+uI
+wD
+ot
+uI
+sw
+tT
+sw
+tT
+"}
+(17,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+Fk
+sw
+tT
+sw
+Bv
+on
+Bh
+sn
+gf
+GL
+nl
+Vz
+iN
+jU
+uI
+uI
+uI
+uI
+sY
+bN
+bN
+uI
+uI
+eO
+uI
+uI
+Zo
+LT
+zw
+sw
+tT
+sw
+Fk
+"}
+(18,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+Fk
+sw
+mU
+CX
+nl
+TV
+vo
+ue
+ue
+KY
+rv
+bx
+LU
+BY
+vQ
+LU
+pZ
+LU
+Fm
+Py
+mV
+Ui
+Fp
+zw
+zo
+NC
+uI
+sw
+Fk
+sw
+sw
+"}
+(19,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+mU
+nT
+nl
+dZ
+Vr
+Cp
+SS
+uI
+wY
+nJ
+xc
+xc
+mC
+iZ
+xc
+gr
+qm
+eK
+xD
+xc
+mi
+ce
+lt
+lt
+uI
+sw
+sw
+sw
+sw
+"}
+(20,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+JT
+uI
+fY
+zV
+rj
+uI
+uI
+uI
+uI
+uI
+uI
+uI
+bb
+gN
+uI
+uI
+uI
+Si
+PN
+uI
+uI
+uI
+uI
+uI
+JT
+sw
+sw
+sw
+sw
+"}
+(21,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+aM
+uI
+uI
+no
+Yz
+pf
+uI
+uv
+lB
+wy
+KF
+BS
+bX
+uI
+sq
+Rg
+uI
+sM
+bI
+ug
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(22,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+Ks
+IT
+uI
+oT
+Hp
+jw
+Lc
+CS
+Ah
+wy
+Ah
+Ah
+JZ
+bN
+iN
+Rg
+uI
+TK
+Qa
+Wp
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(23,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+SI
+JC
+mw
+fF
+zh
+jc
+Lc
+uO
+Ah
+nY
+iW
+MW
+Dr
+bN
+iN
+VG
+uI
+JP
+Kd
+Gt
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(24,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+ae
+bU
+uI
+RW
+WR
+Tj
+uI
+oi
+nh
+iy
+lt
+Oc
+HD
+uI
+VS
+Kz
+uI
+ey
+Kd
+XV
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(25,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+wE
+qW
+uI
+ON
+qM
+cf
+Lc
+wp
+lt
+wy
+hM
+gZ
+DC
+bN
+iN
+TS
+uI
+wu
+Iv
+fX
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(26,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+Ks
+Zj
+uI
+pL
+dE
+Ax
+Lc
+Ul
+Ah
+wy
+Ah
+Ah
+qP
+bN
+LM
+Rg
+uI
+Mx
+tp
+QC
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(27,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+UP
+gp
+uI
+lQ
+Wz
+os
+uI
+zu
+pD
+up
+iW
+OD
+Nj
+uI
+iN
+Rg
+uI
+Ve
+AC
+oo
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(28,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+JT
+uI
+uI
+lF
+GN
+uI
+uI
+uI
+uI
+uI
+uI
+IR
+AK
+sQ
+NW
+uI
+uI
+sq
+yo
+uI
+uI
+xb
+uI
+uI
+uI
+JT
+sw
+sw
+sw
+"}
+(29,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+mU
+sJ
+yn
+Ks
+Jz
+uI
+qs
+Dq
+eu
+uI
+fC
+XJ
+yl
+yl
+XJ
+yl
+uI
+DY
+Rg
+uI
+cR
+wy
+PY
+Ir
+xT
+Wf
+sw
+sw
+sw
+"}
+(30,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+tq
+iW
+wc
+Jz
+uI
+FV
+jP
+cC
+uI
+yl
+XJ
+XJ
+XJ
+XJ
+XJ
+uI
+aT
+Rg
+oV
+Ah
+pk
+Lm
+eN
+Dd
+uI
+sw
+sw
+sw
+"}
+(31,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+mU
+SB
+Ah
+SI
+JC
+ID
+FL
+jP
+ul
+uI
+XJ
+yl
+XJ
+XJ
+yl
+XJ
+uI
+iN
+nz
+DQ
+yS
+OM
+yx
+Ah
+Wb
+Tg
+sw
+sw
+sw
+"}
+(32,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+Ds
+lt
+Ga
+ta
+uI
+Cu
+jP
+yj
+uI
+sw
+PX
+XJ
+XJ
+VX
+sw
+uI
+oW
+fg
+uI
+kM
+Ah
+Ah
+vP
+ml
+uI
+sw
+sw
+sw
+"}
+(33,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+JT
+uI
+si
+iu
+uI
+uI
+gT
+OK
+Cy
+uI
+sw
+sw
+sw
+AB
+sw
+sw
+uI
+si
+iu
+uI
+gY
+as
+Ah
+WG
+uI
+JT
+sw
+sw
+sw
+"}
+(34,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+Bz
+lM
+uI
+uI
+uI
+uI
+uI
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+Bz
+Uq
+uI
+uI
+uI
+TN
+uI
+uI
+sw
+sw
+sw
+sw
+"}
+(35,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+Zn
+Uq
+uI
+AL
+Aa
+oY
+zB
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+FO
+lM
+uI
+Pt
+lI
+Ng
+CJ
+uI
+sw
+sw
+sw
+sw
+"}
+(36,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+RY
+uI
+uI
+uI
+jt
+uI
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+KQ
+uI
+TO
+lI
+uc
+rw
+uI
+sw
+sw
+sw
+sw
+"}
+(37,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+fU
+nD
+nH
+oS
+lI
+fr
+Vp
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+Zb
+Nf
+oD
+oS
+lI
+Wr
+pb
+uI
+sw
+sw
+sw
+sw
+"}
+(38,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+Pf
+uI
+jd
+Uy
+uI
+kJ
+lI
+YZ
+ZV
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+ik
+Wd
+YI
+Rp
+lI
+Zk
+hz
+uI
+Pf
+sw
+sw
+sw
+"}
+(39,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+Pf
+JT
+uI
+uI
+uI
+Qy
+YU
+yp
+lI
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+lI
+Qy
+YU
+yp
+lI
+uI
+JT
+Pf
+sw
+sw
+sw
+"}
+(40,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+Qx
+sw
+uI
+MR
+lI
+tf
+KT
+lI
+bK
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+Ub
+lI
+tf
+KT
+lI
+gm
+uI
+sw
+Qx
+sw
+sw
+sw
+"}
+(41,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+YZ
+lI
+nF
+NF
+RT
+Hj
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+lI
+nF
+NF
+RT
+lI
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(42,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uo
+Wd
+QV
+TE
+Ho
+UQ
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+pG
+BN
+QV
+TE
+Ho
+Wd
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(43,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+uI
+mI
+tK
+JI
+lI
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+lI
+mI
+tK
+JI
+lI
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(44,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+BN
+zL
+Vs
+Hc
+ti
+IF
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+YZ
+hw
+Vs
+Hc
+ti
+Ni
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(45,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+sl
+yP
+TH
+If
+lI
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+Wd
+ub
+yP
+TH
+If
+Jk
+uI
+sw
+sw
+sw
+sw
+sw
+"}
+(46,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+Pf
+uI
+qp
+xG
+ks
+fK
+fj
+Zb
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+oG
+Wd
+ks
+fK
+fj
+Uy
+uI
+Pf
+sw
+sw
+sw
+sw
+"}
+(47,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+Pf
+JT
+uI
+uI
+yU
+dk
+ZY
+lI
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+lI
+yU
+dk
+ZY
+uI
+JT
+Pf
+sw
+sw
+sw
+sw
+"}
+(48,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+Pf
+sw
+uI
+YZ
+go
+YX
+pq
+YZ
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+BN
+QW
+go
+YX
+pq
+uI
+sw
+Pf
+sw
+sw
+sw
+sw
+"}
+(49,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+Pf
+sw
+uI
+Wd
+sC
+Pp
+RV
+CN
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+Rp
+sC
+Pp
+RV
+uI
+sw
+Pf
+sw
+sw
+sw
+sw
+"}
+(50,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+Fi
+sw
+uI
+KB
+iO
+LF
+kh
+OP
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+dD
+GQ
+iO
+LF
+kh
+uI
+sw
+Fi
+sw
+sw
+sw
+sw
+"}
+(51,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+JT
+uI
+fN
+lI
+uI
+uI
+JT
+sw
+sw
+sw
+sw
+sw
+sw
+JT
+uI
+Gq
+Wd
+YZ
+uI
+JT
+sw
+sw
+sw
+sw
+sw
+sw
+"}
+(52,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+Fl
+sD
+uI
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+uI
+uI
+Fl
+Fl
+uI
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+"}
+(53,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+JT
+Wg
+ck
+JT
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+JT
+Fl
+Wg
+JT
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+"}
+(54,1,1) = {"
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+"}

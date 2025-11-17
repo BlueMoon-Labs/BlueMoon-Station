@@ -8,6 +8,8 @@
 #define TAB_LIBRARY 1
 #define TAB_SECURE 2
 #define TAB_PRIVATE 3
+#define TAB_LARGE 4
+#define TAB_LARGE_PRIVATE 5
 
 /datum/portrait_picker
 	var/client/holder //client of whoever is using this datum

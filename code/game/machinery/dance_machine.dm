@@ -151,6 +151,47 @@
 			repeat = !repeat
 			return
 		//BLUEMOON ADD END
+		//BLUEMOON ADD START Возможность двигать треки в избранном и двигать в очереди
+		if("move_favorite")
+			var/mob/living/L = usr
+			if(!L?.client?.prefs)
+				return
+			var/track = params["track"]
+			if(!track)
+				return
+			var/list/track_list = L.client.prefs.favorite_tracks
+
+			var/to_index = params["up"] ? track_list.Find(next_list_item(track, track_list)) : track_list.Find(previous_list_item(track, track_list))
+			var/track_index = track_list.Find(track)
+
+			if(to_index == track_list.len)
+				track_list -= track
+				track_list += track
+			else if(to_index == 1)
+				track_list -= track
+				track_list.Insert(to_index, track)
+			else
+				track_list.Swap(track_index, to_index)
+
+			L.client.prefs.save_preferences()
+			return TRUE
+
+		if("move_queue")
+			var/track_index = params["index"]
+			if (!track_index || !queuedplaylist.len || track_index < 1 || track_index > queuedplaylist.len)
+				return
+			var/datum/track/track = queuedplaylist[track_index]
+			var/to_index = params["up"] ? queuedplaylist.Find(previous_list_item(track, queuedplaylist)) : queuedplaylist.Find(next_list_item(track, queuedplaylist))
+			if(to_index == queuedplaylist.len)
+				queuedplaylist.Cut(track_index, track_index+1)
+				queuedplaylist += track
+			else if(to_index == 1)
+				queuedplaylist.Cut(track_index, track_index+1)
+				queuedplaylist.Insert(to_index, track)
+			else
+				queuedplaylist.Swap(track_index, to_index)
+			return TRUE
+		//BLUEMOON ADD END
 		if("add_to_queue")
 			var/list/available = list()
 			for(var/datum/track/S in SSjukeboxes.songs)
@@ -179,13 +220,18 @@
 					return
 				to_chat(usr, "<span class='notice'>You spend [queuecost] credits to queue [selectedtrack.song_name].</span>")
 				log_econ("[queuecost] credits were inserted into [src] by [key_name(usr)] (ID: [C.registered_name]) to queue [selectedtrack.song_name].")
-			queuedplaylist += selectedtrack
+			// BLUEMOON ADD START Возможность поставить трек в начало
+			if(params["up"])
+				queuedplaylist.Insert(1, selectedtrack)
+			else
+			// BLUEMOON END START
+				queuedplaylist += selectedtrack
 			if(active)
 				say("[selectedtrack.song_name] has been added to the queue.")
 			else if(!playing)
 				activate_music()
 			playsound(src, 'sound/machines/ping.ogg', 50, TRUE)
-			queuecooldown = world.time + (3 SECONDS)
+			queuecooldown = world.time + (1 SECONDS)
 			return TRUE
 		if("select_track")
 			var/list/available = list()
