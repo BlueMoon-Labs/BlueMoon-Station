@@ -306,7 +306,7 @@
 	icon_state = "syn_armor_kit"
 	w_class = WEIGHT_CLASS_SMALL
 
-/obj/item/armorkit/inteq/afterattack(obj/item/target, mob/user, proximity_flag, click_parameters)
+/obj/item/armorkit/syndicate/afterattack(obj/item/target, mob/user, proximity_flag, click_parameters)
 	var/used = FALSE
 	if(!isclothing(target))
 		return
@@ -344,7 +344,7 @@
 	icon_state = "syn_helmet_kit"
 	w_class = WEIGHT_CLASS_SMALL
 
-/obj/item/armorkit/helmet/afterattack(obj/item/target, mob/user, proximity_flag, click_parameters)
+/obj/item/armorkit/helmet/syndicate/afterattack(obj/item/target, mob/user, proximity_flag, click_parameters)
 	var/used = FALSE
 	if(!isclothing(target))
 		return
