@@ -57,7 +57,7 @@
 
 /datum/surgery_step/heal/initiate(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery, try_to_fail = FALSE)
 	if(..())
-		while((brutehealing && target.getBruteLoss()) || (burnhealing && target.getFireLoss()))
+		while((brutehealing && target.getBruteLoss_nonProsthetic()) || (burnhealing && target.getFireLoss_nonProsthetic()))
 			if(!..())
 				break
 

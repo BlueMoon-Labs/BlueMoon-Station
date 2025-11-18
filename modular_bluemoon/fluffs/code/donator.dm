@@ -534,7 +534,7 @@
 	name = "Old Power Armor Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/t51armor_kit
-	ckeywhitelist = list("stasdvrz", "Pingvas", "vovakr")
+	ckeywhitelist = list("stasdvrz", "pingvas", "vovakr")
 
 /datum/gear/donator/bm/old_world_kit
 	name = "Old Wolrd Blues Kit"
@@ -957,7 +957,7 @@
 	path = /obj/item/modkit/institute_kit
 	ckeywhitelist = list("stasdvrz", "vlonger", "vidl")
 
-/datum/gear/donator/bm/dedication_kit
+/datum/gear/donator/bm/p320_kit
 	name = "P320 kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/p320_kit

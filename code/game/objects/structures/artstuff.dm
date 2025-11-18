@@ -107,11 +107,13 @@
 
 /obj/item/canvas/ui_act(action, params)
 	. = ..()
-	if(. || finalized)
+	if(.)
 		return
 	var/mob/user = usr
 	switch(action)
 		if("paint")
+			if(finalized)
+				return
 			var/obj/item/I = user.get_active_held_item()
 			var/color = get_paint_tool_color(I)
 			if(!color)
@@ -123,9 +125,23 @@
 			update_icon()
 			. = TRUE
 		if("finalize")
+			if(finalized)
+				return
+			finalize(user)
 			. = TRUE
-			if(!finalized)
-				finalize(user)
+		if("export")
+			var/datum/browser/popup = new(user, "canvas_export", "", 600, 900)
+			popup.set_content(get_data_string(TRUE))
+			popup.open()
+		if("import")
+			if(finalized)
+				return
+			// Кол-во символов по размеру картины + 10% на всякий мусор, вроде пробелов или переносов строк
+			var/string = tgui_input_text(user, "Вставьте экспортированную картину", "Import", max_length = round(width * height * 7 * 1.1), multiline = TRUE)
+			if(!string)
+				return
+			. = load_data_string(string, user)
+
 
 /obj/item/canvas/proc/finalize(mob/user)
 	finalized = TRUE
@@ -160,12 +176,97 @@
 	icon_generated = TRUE
 	update_icon()
 
-/obj/item/canvas/proc/get_data_string()
+/obj/item/canvas/proc/get_data_string(to_export = FALSE)
 	var/list/data = list()
+	if(to_export)
+		var/list/rows = list()
+		for (var/y in 1 to height)
+			var/list/row = list()
+			for (var/x in 1 to width)
+				row += grid[x][y]
+			rows += row.Join("")
+		return rows.Join("\n")
+	else
+		for(var/y in 1 to height)
+			for(var/x in 1 to width)
+				data += grid[x][y]
+		return data.Join("")
+
+// BLUEMOON ADD START
+// user is optional
+/obj/item/canvas/proc/load_data_string(string, mob/user)
+	if(!istext(string))
+		return
+
+	var/list/colors_list = parse_color_sequence(string) // vailid sting check
+	if(!colors_list)
+		to_chat(user, span_boldwarning("Некорректная строка!"))
+		return
+	var/expected = width * height
+	if(colors_list.len < expected)
+		to_chat(user, span_boldwarning("Картина не подходит по формату! Ожидаемый размер: [expected], полученный размер: [colors_list.len]"))
+		return
+
+	var/i = 1
 	for(var/y in 1 to height)
 		for(var/x in 1 to width)
-			data += grid[x][y]
-	return data.Join("")
+			grid[x][y] = colors_list[i]
+			i++
+
+	return TRUE
+
+#define IS_HEX_DIGIT(ch) \
+	(((ch) >= "0" && (ch) <= "9") || \
+	((ch) >= "A" && (ch) <= "F") || \
+	((ch) >= "a" && (ch) <= "f"))
+
+/obj/item/canvas/proc/parse_color_sequence(string)
+	if (!string || !istext(string))
+		return
+
+	var/str = ""
+	var/L = length(string)
+
+	// Удаляем пробелы, переносы строк и т.д.
+	for(var/i = 1, i <= L, i++)
+		var/code = text2ascii(string, i)
+
+		// 9  = TAB
+		// 10 = LF (\n)
+		// 13 = CR (\r)
+		// 32 = SPACE
+		if(code == 9 || code == 10 || code == 13 || code == 32)
+			continue
+
+		str += ascii2text(code)
+
+	L = length(str)
+
+	if (!L || (L % 7))
+		// длина не совпадает с форматом #RRGGBB
+		return
+
+	var/list/colors_list = list()
+
+	// проверяем каждый блок "#RRGGBB"
+	for (var/i = 1; i <= L; i += 7)
+		// символ '#' на первом месте блока
+		if (copytext(str, i, i + 1) != "#")
+			return
+
+		// 6 hex-символов
+		for (var/j = i + 1; j <= i + 6; j++)
+			var/ch = copytext(str, j, j + 1)
+			if (!IS_HEX_DIGIT(ch))
+				return
+
+		colors_list += copytext(str, i, i + 7)
+
+	// валидная строка, возвращаем кол-во цветов
+	return colors_list
+
+#undef IS_HEX_DIGIT
+// BLUEMOON ADD END
 
 //Todo make this element ?
 /obj/item/canvas/proc/get_paint_tool_color(obj/item/I)
@@ -331,15 +432,11 @@
 	name = "large painting frame"
 	desc = "The perfect showcase for your favorite deathtrap memories. Make sure you have enough space to mount this one to the wall."
 	custom_materials = list(/datum/material/wood = 2000*2)
-	icon = 'icons/obj/decals.dmi'
+	icon = 'icons/obj/art/artstuff_64x64.dmi'
 	icon_state = "frame-empty"
 	result_path = /obj/structure/sign/painting/large
 	pixel_shift = 0
 	custom_price = PRICE_NORMAL * 1.25
-
-/obj/item/wallframe/painting/large/Initialize(mapload)
-	. = ..()
-	icon = 'icons/obj/art/artstuff_64x64.dmi'
 
 /obj/item/wallframe/painting/large/try_build(turf/on_wall, mob/user)
 	. = ..()
@@ -469,21 +566,46 @@
 	. = ..()
 	if(persistence_id)
 		. += "<span class='notice'>Any painting placed here will be archived at the end of the shift.</span>"
+	else
+		. += span_notice("Use screwdriver to remove frame from the wall.")
 	if(current_canvas)
 		current_canvas.ui_interact(user)
 		. += "<span class='notice'>Use wirecutters to remove the painting.</span>"
 
+/obj/structure/sign/painting/screwdriver_act(mob/living/user, obj/item/I)
+	. = ..()
+	if(persistence_id)
+		return
+	user.visible_message("<span class='notice'>[user] starts removing [src]...</span>", \
+							"<span class='notice'>You start unscrewing [src].</span>")
+	I.play_tool_sound(src)
+	if(I.use_tool(src, user, 3 SECONDS))
+		playsound(src, 'sound/items/deconstruct.ogg', 50, 1)
+		user.visible_message("<span class='notice'>[user] unscrews [src].</span>", \
+							"<span class='notice'>You unscrew [src].</span>")
+		new wallframe_type(get_turf(user))
+		remove_canvas()
+		qdel(src)
+		return TRUE
+
 /obj/structure/sign/painting/wirecutter_act(mob/living/user, obj/item/I)
 	. = ..()
-	if(current_canvas)
-		if(istype(src, /obj/structure/sign/painting/large))
-			var /obj/structure/sign/painting/large/P = src
-			P.deoffset_painting()
-		current_canvas.forceMove(drop_location())
-		current_canvas = null
+	if(remove_canvas())
+		I.play_tool_sound(src)
 		to_chat(user, "<span class='notice'>You remove the painting from the frame.</span>")
-		update_icon()
 		return TRUE
+
+/obj/structure/sign/painting/proc/remove_canvas()
+	if(!current_canvas)
+		return
+
+	if(istype(src, /obj/structure/sign/painting/large))
+		var /obj/structure/sign/painting/large/P = src
+		P.deoffset_painting()
+	current_canvas.forceMove(drop_location())
+	current_canvas = null
+	update_icon()
+	return TRUE
 
 /obj/structure/sign/painting/proc/frame_canvas(mob/user,obj/item/canvas/new_canvas)
 	if(!(new_canvas.type in accepted_canvas_types))

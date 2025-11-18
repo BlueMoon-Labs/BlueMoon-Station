@@ -52,8 +52,8 @@ class PaintCanvas extends Component {
     const y_size = this.props.value[0].length;
     const x_scale = this.canvasRef.current.width / x_size;
     const y_scale = this.canvasRef.current.height / y_size;
-    const x = Math.floor(event.offsetX / x_scale)+1;
-    const y = Math.floor(event.offsetY / y_scale)+1;
+    const x = Math.floor(event.offsetX / x_scale) + 1;
+    const y = Math.floor(event.offsetY / y_scale) + 1;
     this.onCVClick(x, y);
   }
 
@@ -99,12 +99,27 @@ export const Canvas = (props, context) => {
             dotsize={dotsize}
             onCanvasClick={(x, y) => act("paint", { x, y })} />
           <Box>
+            {data.finalized
+              ? <Box inline mr={1}>{data.name}</Box>
+              : null
+            }
             {!data.finalized && (
-              <Button.Confirm
-                onClick={() => act("finalize")}
-                content="Finalize" />
+              <>
+                <Button.Confirm
+                  onClick={() => act("finalize")}
+                  icon="paintbrush"
+                  color="green"
+                  content="Finalize" />
+                <Button
+                  onClick={() => act("import")}
+                  icon="file-import"
+                  content="Import" />
+              </>
             )}
-            {data.name}
+            <Button
+              onClick={() => act("export")}
+              icon="file-arrow-up"
+              content="Export" />
           </Box>
         </Box>
       </Window.Content>

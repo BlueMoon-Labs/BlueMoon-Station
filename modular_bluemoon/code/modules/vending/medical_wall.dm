@@ -11,6 +11,7 @@
 		/obj/item/reagent_containers/pill/patch/silver_sulf = 5,
 		/obj/item/reagent_containers/medspray/styptic = 2,
 		/obj/item/reagent_containers/medspray/silver_sulf = 2,
+		/obj/item/reagent_containers/hypospray/medipen = 3,
 		/obj/item/reagent_containers/pill/charcoal = 2,
 		/obj/item/reagent_containers/medspray/sterilizine = 1,
 		/obj/item/healthanalyzer/wound = 2,

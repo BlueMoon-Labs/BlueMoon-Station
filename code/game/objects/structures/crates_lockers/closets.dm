@@ -468,18 +468,20 @@
 		span_warning("You [actuallyismob ? "try to ":""]stuff [O] into [src]."), \
 		span_hear("You hear clanging."))
 	if(actuallyismob)
-		if(do_after(user, 3 SECONDS, O)) // BLUEMOON EDIT - CLOSET DROP RUNTIME FIX - WAS if(!do_after(user, 3 SECONDS, target = targets, timed_action_flags = (IGNORE_HELD_ITEM | IGNORE_INCAPACITATED), extra_checks = CALLBACK(user, TYPE_PROC_REF(/mob/living/carbon, cuff_resist_check))))
+		var/is_bodybag = istype(src, /obj/structure/closet/body_bag) // BLUEMOON ADD
+		if(is_bodybag || do_after(user, 3 SECONDS, O)) // BLUEMOON EDIT - CLOSET DROP RUNTIME FIX - WAS if(!do_after(user, 3 SECONDS, target = targets, timed_action_flags = (IGNORE_HELD_ITEM | IGNORE_INCAPACITATED), extra_checks = CALLBACK(user, TYPE_PROC_REF(/mob/living/carbon, cuff_resist_check))))
 			user.visible_message(span_notice("[user] stuffs [O] into [src]."), \
 				span_notice("You stuff [O] into [src]."), \
-				span_hear("You hear a loud metal bang."))
+				is_bodybag ? span_hear("You hear a loud metal bang.") : null)
 			var/mob/living/L = O
-			if(!issilicon(L))
+			if(!is_bodybag && !issilicon(L))
 				L.DefaultCombatKnockdown(40)
 			if(istype(src, /obj/structure/closet/supplypod/extractionpod))
 				O.forceMove(src)
 			else
 				O.forceMove(T)
-				close()
+				if(!is_bodybag)
+					close()
 			log_combat(user, O, "stuffed", addition = "inside of [src]") // BLUEMOON ADD - CLOSET DROP RUNTIME FIX
 	else
 		O.forceMove(T)

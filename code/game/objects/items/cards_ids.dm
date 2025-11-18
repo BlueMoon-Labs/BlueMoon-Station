@@ -260,10 +260,8 @@
 
 	if(!bank_support)
 		return ..()
-	if(istype(W, /obj/item/holochip))
+	if((istype(W, /obj/item/holochip) || istype(W, /obj/item/stack/spacecash) || istype(W, /obj/item/coin)))
 		insert_money(W, user)
-	else if(istype(W, /obj/item/stack/spacecash) || istype(W, /obj/item/coin))
-		insert_money(W, user, TRUE)
 	else if(istype(W, /obj/item/storage/bag/money))
 		var/obj/item/storage/bag/money/money_bag = W
 		var/list/money_contained = money_bag.contents
@@ -273,8 +271,8 @@
 	else
 		return ..()
 
-/obj/item/card/id/proc/insert_money(obj/item/I, mob/user, physical_currency)
-	if(!registered_account)
+/obj/item/card/id/proc/insert_money(obj/item/I, mob/user)
+	if(!bank_support || !registered_account) // BLUEMOON EDIT
 		to_chat(user, "<span class='warning'>[src] doesn't have a linked account to deposit [I] into!</span>")
 		return
 	var/cash_money = I.get_item_credit_value()
@@ -282,7 +280,7 @@
 		to_chat(user, "<span class='warning'>[I] doesn't seem to be worth anything!</span>")
 		return
 	registered_account.adjust_money(cash_money)
-	if(physical_currency)
+	if(istype(I, /obj/item/stack/spacecash) || istype(I, /obj/item/coin))
 		to_chat(user, "<span class='notice'>You stuff [I] into [src]. It disappears in a small puff of bluespace smoke, adding [cash_money] credits to the linked account.</span>")
 	else
 		to_chat(user, "<span class='notice'>You insert [I] into [src], adding [cash_money] credits to the linked account.</span>")
@@ -300,7 +298,7 @@
 	qdel(I)
 
 /obj/item/card/id/proc/mass_insert_money(list/money, mob/user)
-	if(!registered_account)
+	if(!bank_support || !registered_account)
 		to_chat(user, "<span class='warning'>[src] doesn't have a linked account to deposit into!</span>")
 		return FALSE
 
@@ -378,7 +376,7 @@
 	if(src.contents)
 		for(var/obj/item/card/id/ID in contents)
 			if(ID.card_sticker)
-				var/response = alert(user, "What you want to do?","[src.name]", "remove sticker", "[prob(1)? "do some tax evasion" : "withdraw money"]")
+				var/response = alert(user, "What you want to do?","[src.name]", "[prob(1)? "do some tax evasion" : "withdraw money"]", "remove sticker")
 				if(response == "remove sticker")
 					to_chat(user, "<span class='notice'>You start to unwrap the card...</span>")
 					if(!do_after(user, 15, target = user))

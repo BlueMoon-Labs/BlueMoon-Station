@@ -232,6 +232,13 @@
 				return TRUE
 	return FALSE
 
+// BLUEMOON ADD START Не открыть список рецептов, если он пуст
+/obj/item/stack/attack_self(mob/user)
+	var/list/L = recursively_build_recipes(recipes)
+	if(L.len)
+		return ..()
+// BLUEMOON ADD END
+
 /obj/item/stack/ui_state(mob/user)
 	return GLOB.hands_state
 
