@@ -764,6 +764,11 @@ GLOBAL_LIST_EMPTY(PDAs)
 		var/mob/living/carbon/human/H = loc
 		if(H.wear_id == src)
 			H.sec_hud_set_ID()
+	//BLUEMOON ADD START
+	else if(istype(loc, /obj/item/storage/wallet))
+		var/obj/item/storage/wallet/W = loc
+		W.refreshID()
+	//BLUEMOON ADD END
 
 /obj/item/pda/proc/msg_input(mob/living/U = usr)
 	var/t = stripped_input(U, "Please enter message", name)
@@ -989,6 +994,11 @@ GLOBAL_LIST_EMPTY(PDAs)
 		var/mob/living/carbon/human/human_wearer = loc
 		if(human_wearer.wear_id == src)
 			human_wearer.sec_hud_set_ID()
+	//BLUEMOON ADD START
+	else if(istype(loc, /obj/item/storage/wallet))
+		var/obj/item/storage/wallet/W = loc
+		W.refreshID()
+	//BLUEMOON ADD END
 	if(old_id)
 		if(user)
 			user.put_in_hands(old_id)
