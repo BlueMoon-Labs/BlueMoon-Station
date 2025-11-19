@@ -99,6 +99,22 @@
 	icon_state = "water_high" //I was gonna clean my room...
 	tank_volume = 100000
 
+/obj/structure/reagent_dispensers/holy_watertank
+	name = "BIG HOLY FLASK"
+	desc = "A VERY large and VERY holy flask, pure holy waterness!"
+	icon_state = "holyflask"
+	reagent_id = /datum/reagent/water/holywater
+
+/obj/structure/reagent_dispensers/holy_watertank/Initialize(mapload)
+	. = ..()
+	var/const/scale = 2
+	var/matrix/m = matrix()
+	m.Scale(scale)
+	// смещаем спрайт вверх
+	var/shift = (scale - 1) * 16
+	m.Translate(0, shift)
+	transform = m
+
 /obj/structure/reagent_dispensers/foamtank
 	name = "firefighting foam tank"
 	desc = "A tank full of firefighting foam."

@@ -347,7 +347,7 @@
 	crate_name = "potted plants crate"
 	crate_type = /obj/structure/closet/crate/hydroponics
 
-/datum/supply_pack/misc/religious_supplies
+/datum/supply_pack/service/religious_supplies
 	name = "Religious Supplies Crate"
 	desc = "Следите за тем, чтобы ваш местный капеллан был доволен и хорошо снабжался, чтобы они не навлекли осуждение на ваш грузовой отсек. Содержит две бутылки со святой водой, библии, одеяния капеллана и погребальную одежду."
 	cost = 4000	// it costs so much because the Space Church needs funding to build a cathedral
@@ -358,6 +358,26 @@
 					/obj/item/clothing/suit/hooded/chaplain_hoodie,
 					/obj/item/clothing/suit/hooded/chaplain_hoodie)
 	crate_name = "religious supplies crate"
+
+/datum/supply_pack/misc/holy_knight
+	name = "Knights of the Round Table Crate"
+	desc = "Содержит один священный клеймор для особо убеждённых паладинов, три обычных меча для статистов, четыре комплекта рыцарских доспехов для тех, кто хочет тяжело топать по коридорам, и бочку святой воды на случай, если кто-то снова решил дружить с демонами."
+	cost = 24999
+	contains = list(/obj/item/nullrod/claymore,
+					/obj/item/claymore,
+					/obj/item/claymore,
+					/obj/item/claymore,
+					/obj/item/clothing/suit/armor/riot/knight,
+					/obj/item/clothing/suit/armor/riot/knight/blue,
+					/obj/item/clothing/suit/armor/riot/knight/red,
+					/obj/item/clothing/suit/armor/riot/knight/yellow,
+					/obj/item/clothing/head/helmet/knight,
+					/obj/item/clothing/head/helmet/knight/blue,
+					/obj/item/clothing/head/helmet/knight/red,
+					/obj/item/clothing/head/helmet/knight/yellow,
+					/obj/structure/reagent_dispensers/holy_watertank)
+	crate_name = "holy knight crate"
+	crate_type = /obj/structure/closet/crate/wooden
 
 /datum/supply_pack/misc/shower
 	name = "Shower Supplies"
