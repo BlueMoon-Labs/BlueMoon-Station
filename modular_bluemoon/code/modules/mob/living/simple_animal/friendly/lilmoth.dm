@@ -19,13 +19,8 @@
 	gold_core_spawnable = null
 	loot = list(/obj/effect/gibspawner/generic/animal/lilmoth)
 
-
 /obj/effect/gibspawner/generic/animal/lilmoth
 	gibtypes = list(/obj/effect/decal/cleanable/blood/gibs/lilmoth)
-
-
-
-
 
 /obj/effect/decal/cleanable/blood/gibs/lilmoth
 	icon = 'modular_bluemoon/icons/mob/caimon.dmi'
