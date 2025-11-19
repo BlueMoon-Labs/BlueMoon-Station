@@ -636,15 +636,14 @@
 	loot = list(/obj/item/clothing/head/hardhat = 1)
 
 /mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth/death(gibbed)
-	if(istype(src, /mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth))
 		explosion(src.loc, -1, -1, 2, 3)
 		..()
-typesof
+
 /mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth/ComponentInitialize()
 	. = ..()
 	RemoveElement(/datum/element/wuv, "yaps happily!", EMOTE_AUDIBLE, /datum/mood_event/pet_animal, "growls!", EMOTE_AUDIBLE)
 	RemoveElement(/datum/element/strippable, GLOB.strippable_corgi_items)
-
+	RemoveElement(/datum/element/mob_holder, held_icon)
 	AddElement(/datum/element/wuv, "mothin'!", EMOTE_AUDIBLE, /datum/mood_event/pet_animal, "buzzes!", EMOTE_AUDIBLE)
 	AddElement(/datum/element/mob_holder, held_icon, inv_slots = ITEM_SLOT_HEAD)
 
