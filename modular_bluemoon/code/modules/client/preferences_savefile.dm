@@ -58,12 +58,14 @@
 
 /datum/preferences
 	var/list/favorite_tracks = list()
+	var/list/favorite_paintings_md5 = list()
 
 /datum/preferences/save_preferences()
 	. = ..()
 	if(!istype(., /savefile))
 		return FALSE
 	WRITE_FILE(.["favorite_tracks"], favorite_tracks)
+	WRITE_FILE(.["favorite_paintings_md5"], favorite_paintings_md5)
 
 /datum/preferences/load_preferences()
 	. = ..()
@@ -71,3 +73,6 @@
 		return FALSE
 	.["favorite_tracks"] >> favorite_tracks
 	favorite_tracks = SANITIZE_LIST(favorite_tracks)
+
+	.["favorite_paintings_md5"] >> favorite_paintings_md5
+	favorite_paintings_md5 = SANITIZE_LIST(favorite_paintings_md5)
