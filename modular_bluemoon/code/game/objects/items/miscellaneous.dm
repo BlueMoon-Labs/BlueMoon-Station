@@ -94,3 +94,8 @@
 
 /obj/item/choice_beacon/pet/wertyanmoth
 	pets = list("Wertyan" = /mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth)
+
+/obj/item/choice_beacon/pet/lilmoth
+	pets = list("Little moth" = /mob/living/simple_animal/pet/dog/corgi/mothroach/lilmoth,
+				"Little moth with funny hat"  = /mob/living/simple_animal/pet/dog/corgi/mothroach/lilmoth/dressed,
+				)
