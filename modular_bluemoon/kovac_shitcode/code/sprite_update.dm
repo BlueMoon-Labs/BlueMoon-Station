@@ -636,8 +636,8 @@
 	loot = list(/obj/item/clothing/head/hardhat = 1)
 
 /mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth/death(gibbed)
-		explosion(src.loc, -1, -1, 2, 3)
-		..()
+	explosion(src.loc, -1, -1, 2, 3)
+	..()
 
 /mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth/ComponentInitialize()
 	. = ..()
