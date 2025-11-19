@@ -303,6 +303,7 @@
 /obj/item/armorkit/syndicate
 	name = "SynTech armor kit"
 	desc = "Набор гибких армированных пластин которые будут совершенно незаметно сидеть под твоей толстовкой, с которой ты так не захотел расставаться, хиккан."
+	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
 	icon_state = "syn_armor_kit"
 	w_class = WEIGHT_CLASS_SMALL
 
@@ -341,6 +342,7 @@
 /obj/item/armorkit/helmet/syndicate
 	name = "SynTech helmet kit"
 	desc = "Набор гибких армированных пластин которые будут совершенно незаметно сидеть под твоей кепкой, с которой ты так не захотел расставаться, хиккан."
+	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
 	icon_state = "syn_helmet_kit"
 	w_class = WEIGHT_CLASS_SMALL
 
