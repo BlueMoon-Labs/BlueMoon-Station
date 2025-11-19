@@ -1,6 +1,6 @@
 
 ///how much paper it takes from the printer to create a canvas.
-#define CANVAS_PAPER_COST 10
+#define CANVAS_PAPER_COST 5
 
 /**
  * ## portrait printer!

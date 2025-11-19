@@ -103,6 +103,7 @@
 
 /obj/item/canvas/examine(mob/user)
 	. = ..()
+	. += span_notice("It looks like the canvas has a size [width] x [height].")
 	ui_interact(user)
 
 /obj/item/canvas/ui_act(action, params)
@@ -213,6 +214,8 @@
 			grid[x][y] = colors_list[i]
 			i++
 
+	used = TRUE
+	update_icon()
 	return TRUE
 
 #define IS_HEX_DIGIT(ch) \
@@ -335,7 +338,7 @@
 	framed_offset_y = 1
 
 /obj/item/canvas/twentyfour_twentyfour
-	name = "ai universal standard canvas"
+	name = "Ai Universal Standard Canvas"
 	desc = "Besides being very large, the AI can accept these as a display from their internal database after you've hung it up."
 	icon_state = "24x24"
 	width = 24
@@ -346,9 +349,9 @@
 	framed_offset_y = 5
 
 /obj/item/canvas/thirtysix_twentyfour
-	name = "canvas (36x24)"
+	name = "Large Canvas"
 	desc = "A very large canvas to draw out your soul on. You'll need a larger frame to put it on a wall."
-	icon_state = "24x24" //The vending spritesheet needs the icons to be 32x32. We'll set the actual icon on Initialize.
+	icon_state = "32x32" //The vending spritesheet needs the icons to be 32x32. We'll set the actual icon on Initialize.
 	width = 36
 	height = 24
 	pixel_x = -4
@@ -369,9 +372,9 @@
 	icon_state = "36x24"
 
 /obj/item/canvas/fortyfive_twentyseven
-	name = "canvas (45x27)"
+	name = "Ultra-Large Canvas"
 	desc = "The largest canvas available on the space market. You'll need a larger frame to put it on a wall."
-	icon_state = "24x24" //Ditto
+	icon_state = "32x32" //The vending spritesheet needs the icons to be 32x32. We'll set the actual icon on Initialize.
 	width = 45
 	height = 27
 	pixel_x = -8
@@ -432,11 +435,13 @@
 	name = "large painting frame"
 	desc = "The perfect showcase for your favorite deathtrap memories. Make sure you have enough space to mount this one to the wall."
 	custom_materials = list(/datum/material/wood = 2000*2)
-	icon = 'icons/obj/art/artstuff_64x64.dmi'
-	icon_state = "frame-empty"
 	result_path = /obj/structure/sign/painting/large
 	pixel_shift = 0
 	custom_price = PRICE_NORMAL * 1.25
+
+/obj/item/wallframe/painting/large/Initialize(mapload)
+	. = ..()
+	icon = 'icons/obj/art/artstuff_64x64.dmi' //The vending spritesheet needs the icons to be 32x32. We'll set the actual icon on Initialize.
 
 /obj/item/wallframe/painting/large/try_build(turf/on_wall, mob/user)
 	. = ..()
