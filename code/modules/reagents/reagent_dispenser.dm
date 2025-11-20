@@ -36,11 +36,8 @@
 
 /obj/structure/reagent_dispensers/wrench_act(mob/living/user, obj/item/I)
 	. = ..()
-	to_chat(user, "<span class='notice'>You start [anchored ? "un" : ""]securing [src]...</span>")
-	if(I.use_tool(src, user, 40, volume=75))
-		to_chat(user, "<span class='notice'>You [anchored ? "un" : ""]secure [src].</span>")
-		set_anchored(!anchored)
-		return TRUE
+	if(plane != ABOVE_WALL_PLANE)
+		return default_unfasten_wrench(user, I, 4 SECONDS)
 // BLUEMOON ADD END
 
 //BLUEMOON CHANGE - FUELTANK
