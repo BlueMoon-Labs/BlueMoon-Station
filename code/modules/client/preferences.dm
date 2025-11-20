@@ -428,6 +428,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/silicon_lawset
 
 	var/preferred_chaos_level = 2
+	var/auto_capitalize_enabled = FALSE
 
 /datum/preferences/New(client/C)
 	parent = C
@@ -1549,6 +1550,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>Ghost PDA:</b> <a href='?_src_=prefs;preference=ghost_pda'>[(chat_toggles & CHAT_GHOSTPDA) ? "All Messages" : "Nearest Creatures"]</a><br>"
 					dat += "<br>"
 					dat += "<b>Preferred Chaos Level:</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=preferred_chaos_level;task=input'>[preferred_chaos_level]</a><br>"
+					dat += "<b>Auto-Capitalize Speech:</b> <a href='?_src_=prefs;preference=auto_capitalize_enabled'>[(auto_capitalize_enabled ? "Enabled" : "Disabled")]</a><br>"
 
 					dat += "</td>"
 
@@ -3708,7 +3710,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										3. - СЛАВА ХАОСУ НЕДЕЛИМОМУ. Готов к любым безумствам и опасностям.", "Предпочитаемый Уровень Хаоса", 2, 3, 0)
 					if(preferred_chaos_level)
 						preferred_chaos_level = chaos_level
-
+				if("auto_capitalize_enabled")
+					auto_capitalize_enabled = !auto_capitalize_enabled
 				//Sandstorm changes begin
 				if("personal_chat_color")
 					var/new_chat_color = input(user, "Choose your character's runechat color:", "Character Preference",personal_chat_color) as color|null
