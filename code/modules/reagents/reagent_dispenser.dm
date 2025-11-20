@@ -477,7 +477,8 @@
 	name = "Space Cleaner Refiller"
 	desc = "Refills space cleaner bottles."
 	icon_state = "cleaner"
-	anchored = 1
-	density = 0
+	anchored = TRUE
+	density = FALSE
+	plane = ABOVE_WALL_PLANE
 	tank_volume = 5000
 	reagent_id = /datum/reagent/space_cleaner
