@@ -1549,8 +1549,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>Ghost Whispers:</b> <a href='?_src_=prefs;preference=ghost_whispers'>[(chat_toggles & CHAT_GHOSTWHISPER) ? "All Speech" : "Nearest Creatures"]</a><br>"
 					dat += "<b>Ghost PDA:</b> <a href='?_src_=prefs;preference=ghost_pda'>[(chat_toggles & CHAT_GHOSTPDA) ? "All Messages" : "Nearest Creatures"]</a><br>"
 					dat += "<br>"
-					dat += "<b>Preferred Chaos Level:</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=preferred_chaos_level;task=input'>[preferred_chaos_level]</a><br>"
 					dat += "<b>Auto-Capitalize Speech:</b> <a href='?_src_=prefs;preference=auto_capitalize_enabled'>[(auto_capitalize_enabled ? "Enabled" : "Disabled")]</a><br>"
+					dat += "<b>Preferred Chaos Level:</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=preferred_chaos_level'>[preferred_chaos_level]</a><br>"
 
 					dat += "</td>"
 
@@ -3700,18 +3700,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/desiredlength = input(user, "Choose the max character length of shown Runechat messages. Valid range is 1 to [CHAT_MESSAGE_MAX_LENGTH] (default: [initial(max_chat_length)]))", "Character Preference", max_chat_length)  as null|num
 					if (!isnull(desiredlength))
 						max_chat_length = clamp(desiredlength, 1, CHAT_MESSAGE_MAX_LENGTH)
-				if ("preferred_chaos_level")
-					var/chaos_level = tgui_input_number(user, "Выбирайте число в зависимости от своих предпочтений \
-										к стилю игры. От предпочтений к Хаосу зависит режим Динамика, \
-										который будет выбран. \
-										0. - ничего не ожидайте от меня. Я убегу при первой же возможности. \
-										1. - предпочитаю спокойную игру, но могу ввязаться в неприятности, если потребуется. \
-										2. - не против Хаоса и неожиданных ситуаций, готов рисковать ради интереса. \
-										3. - СЛАВА ХАОСУ НЕДЕЛИМОМУ. Готов к любым безумствам и опасностям.", "Предпочитаемый Уровень Хаоса", 2, 3, 0)
-					if(preferred_chaos_level)
-						preferred_chaos_level = chaos_level
-				if("auto_capitalize_enabled")
-					auto_capitalize_enabled = !auto_capitalize_enabled
 				//Sandstorm changes begin
 				if("personal_chat_color")
 					var/new_chat_color = input(user, "Choose your character's runechat color:", "Character Preference",personal_chat_color) as color|null
@@ -4481,6 +4469,23 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("hud_toggle_flash")
 					hud_toggle_flash = !hud_toggle_flash
+
+				if ("preferred_chaos_level")
+					var/chaos_level = tgui_input_number(user, \
+										"Выбирайте число в зависимости от своих предпочтений \
+										к стилю игры.\n От предпочтений к Хаосу зависит режим Динамика, \
+										который будет выбран. \n\
+										0. - ничего не ожидайте от меня. Я убегу при первой же возможности. \n\
+										1. - предпочитаю спокойную игру, но могу ввязаться в неприятности, если потребуется. \n\
+										2. - не против Хаоса и неожиданных ситуаций, готов рисковать ради интереса. \n\
+										3. - СЛАВА ХАОСУ НЕДЕЛИМОМУ. Готов к любым безумствам и опасностям.",\
+										"Предпочитаемый Уровень Хаоса", 2, 3, 0, round_value = TRUE)
+					
+					if(isnum(chaos_level))		
+						preferred_chaos_level = chaos_level
+
+				if("auto_capitalize_enabled")
+					auto_capitalize_enabled = !auto_capitalize_enabled
 
 				if("barkpreview")
 					if(SSticker.current_state == GAME_STATE_STARTUP) //Timers don't tick at all during game startup, so let's just give an error message
