@@ -1,13 +1,13 @@
 import { resolveAsset } from '../assets';
-import { useBackend, useLocalState } from '../backend';
+import { useBackend, useSharedState } from '../backend';
 import { Button, NoticeBox, Section, Stack, Tabs, Input } from '../components';
 import { NtosWindow } from '../layouts';
 
 export const NtosPortraitPrinter = (props, context) => {
   const { act, data } = useBackend(context);
-  const [tabIndex, setTabIndex] = useLocalState(context, 'tabIndex', 0);
-  const [listIndex, setListIndex] = useLocalState(context, 'listIndex', 0);
-  const [query, setQuery] = useLocalState(context, 'query', '');
+  const [tabIndex, setTabIndex] = useSharedState(context, 'tabIndex', 0);
+  const [listIndex, setListIndex] = useSharedState(context, 'listIndex', 0);
+  const [query, setQuery] = useSharedState(context, 'query', '');
   const {
     library,
     library_secure,
