@@ -29,27 +29,27 @@ export const NtosPortraitPrinter = (props, context) => {
 
   const TABS = [
     {
-      name: 'Common Portraits',
+      name: 'Common',
       asset_prefix: "library",
       list: library,
     },
     {
-      name: 'Secure Portraits',
+      name: 'Secure',
       asset_prefix: "library_secure",
       list: library_secure,
     },
     {
-      name: 'Private Portraits',
+      name: 'Private',
       asset_prefix: "library_private",
       list: library_private,
     },
     {
-      name: 'Large Portraits',
+      name: 'Large',
       asset_prefix: "library_large",
       list: library_large,
     },
     {
-      name: 'Large Private Portraits',
+      name: 'Large Private',
       asset_prefix: "library_large_private",
       list: library_large_private,
     },
@@ -124,7 +124,7 @@ export const NtosPortraitPrinter = (props, context) => {
                 <Stack.Item grow>
                   <Input
                     fluid
-                    placeholder="Search portraits..."
+                    placeholder="Search paintings..."
                     value={query}
                     onInput={(_e, value) => {
                       if (query === "" && value !== "") {
