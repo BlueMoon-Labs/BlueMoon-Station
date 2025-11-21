@@ -192,7 +192,7 @@
 	flashlight_power = 0.5
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_EARS
 	var/holo_cooldown = 0
-	flags_1 = NULL // BLUEMOON ADD
+	flags_1 = NONE // BLUEMOON ADD
 
 /obj/item/flashlight/pen/afterattack(atom/target, mob/user, proximity_flag)
 	. = ..()
@@ -301,7 +301,7 @@
 	light_color = LIGHT_COLOR_FLARE
 	grind_results = list(/datum/reagent/sulfur = 15)
 	electronic = FALSE // BLUEMOON ADD
-	flags_1 = NULL
+	flags_1 = NONE
 
 /obj/item/flashlight/flare/New()
 	fuel = rand(800, 1000) // Sorry for changing this so much but I keep under-estimating how long X number of ticks last in seconds.
@@ -414,7 +414,7 @@
 	light_color = "#FFEEAA"
 	flashlight_power = 0.6
 	electronic = FALSE // BLUEMOON ADD
-	flags_1 = NULL // BLUEMOON ADD
+	flags_1 = NONE // BLUEMOON ADD
 
 /obj/item/flashlight/emp
 	var/emp_max_charges = 4
@@ -482,7 +482,7 @@
 	grind_results = list(/datum/reagent/phenol = 15, /datum/reagent/hydrogen = 10, /datum/reagent/oxygen = 5) //Meth-in-a-stick
 	rad_flags = RAD_NO_CONTAMINATE
 	electronic = FALSE // BLUEMOON ADD
-	flags_1 = NULL // BLUEMOON ADD
+	flags_1 = NONE // BLUEMOON ADD
 	var/fuel = 0
 
 /obj/item/flashlight/glowstick/Initialize(mapload)
@@ -579,7 +579,7 @@
 	anchored = TRUE
 	var/range = null
 	electronic = FALSE // BLUEMOON ADD
-	flags_1 = NULL // BLUEMOON ADD
+	flags_1 = NONE // BLUEMOON ADD
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 
 /obj/item/flashlight/flashdark
