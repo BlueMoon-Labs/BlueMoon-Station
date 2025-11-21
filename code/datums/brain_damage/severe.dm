@@ -319,9 +319,9 @@
 	if(owner == hearing_args[HEARING_SPEAKER])
 		return
 
-	var/regex/reg = new("(\\b[REGEX_QUOTE(trigger_phrase)]\\b)","ig")
+	var/regex/reg = new("[REGEX_QUOTE(trigger_phrase)]","ig")
 
-	if(findtext(hearing_args[HEARING_RAW_MESSAGE], reg))
+	if(findtext(hearing_args[HEARING_RAW_MESSAGE], lowertext(reg.name)))
 		addtimer(CALLBACK(src, PROC_REF(hypnotrigger)), 10) //to react AFTER the chat message
 		hearing_args[HEARING_RAW_MESSAGE] = reg.Replace(hearing_args[HEARING_RAW_MESSAGE], "<span class='hypnophrase'>*********</span>")
 
