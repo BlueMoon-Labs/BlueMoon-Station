@@ -1189,6 +1189,8 @@
 	. = ..()
 	var/mob/living/carbon/human/C = owner
 	C.AddElement(/datum/element/photosynthesis, 1, 1, 0, 0, 0, 0, SHADOW_SPECIES_LIGHT_THRESHOLD, SHADOW_SPECIES_LIGHT_THRESHOLD)
+	give_item(/obj/item/flashlight/flashdark, quirk_holder)
+	give_item(/obj/item/clothing/accessory/permit/special/lessnightmareish, quirk_holder)
 
 /datum/mutation/human/bm/less_nightmare/on_losing(mob/living/carbon/human/owner)
 	. = ..()
