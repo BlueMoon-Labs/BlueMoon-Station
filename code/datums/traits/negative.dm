@@ -536,6 +536,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 /datum/quirk/less_nightmare/add()
 	var/mob/living/carbon/human/C = quirk_holder
 	C.AddElement(/datum/element/photosynthesis, 1, 1, 0, 0, 0, 0, SHADOW_SPECIES_LIGHT_THRESHOLD, SHADOW_SPECIES_LIGHT_THRESHOLD)
+	give_item(/obj/item/flashlight/flashdark, quirk_holder)
+	give_item(/obj/item/clothing/accessory/permit/special/lessnightmareish, quirk_holder)
 
 /datum/quirk/less_nightmare/remove()
 	var/mob/living/carbon/human/C = quirk_holder
