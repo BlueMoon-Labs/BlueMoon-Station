@@ -672,3 +672,10 @@
 	attack_verb = list("squish", "glorp", "blorp")
 	squeak_override = list('modular_bluemoon/sound/voice/fleshy_squish.ogg' = 1)
 	can_you_fuck_plush = FALSE
+
+/obj/item/toy/plush/bm/vella
+	name = "Vella plushie"
+	desc = "Почти плюшевая игрушка, наполнение которой по каким-то неведомым законам физики стало прозрачным. На ощупь очень сильно напоминает слизьку, а запах выдаёт гамму разнообразных ягодных ноток."
+	icon_state = "vella"
+	icon = 'modular_bluemoon/icons/obj/toys/plushes.dmi'
+	squeak_override = list('modular_splurt/sound/voice/catpeople/cat_mrrp1.ogg' = 1)

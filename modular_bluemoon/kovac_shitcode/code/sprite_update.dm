@@ -546,6 +546,18 @@
 		icon_dead = "spacealta_dead_santa"
 		held_icon = "spacealta_santa"
 
+/mob/living/simple_animal/pet/cat/alta/dar
+	name = "Dar Jr"
+	desc = "A little kitten with a cool little bag and a cap! He is trying really hard to bring you your order and happiness!"
+	icon_state = "dar"
+	icon_living = "dar"
+	icon_dead = "dar_dead"
+	held_icon = "alta" //inhand нет, так что пока ну пусть будет алта хз
+	unique_pet = TRUE
+	gender = MALE
+	speak = list("*meow", "*meow2", "*meow3", "*meow4", "*meow5", "*meow6", "*mrrp", "*mrrp3", "*purr")
+	icon = 'modular_bluemoon/kovac_shitcode/icons/animals.dmi'
+
 /mob/living/simple_animal/pet/dog/corgi/Lisa/ada
 	name = "Ada"
 	real_name = "Ada"
