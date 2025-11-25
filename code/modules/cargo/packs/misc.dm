@@ -375,7 +375,7 @@
 					/obj/item/clothing/head/helmet/knight/blue,
 					/obj/item/clothing/head/helmet/knight/red,
 					/obj/item/clothing/head/helmet/knight/yellow,
-					/obj/structure/reagent_dispensers/holy_watertank)
+					/obj/structure/reagent_dispensers/watertank/holy)
 	crate_name = "holy knight crate"
 	crate_type = /obj/structure/closet/crate/wooden
 

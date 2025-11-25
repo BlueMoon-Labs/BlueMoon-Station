@@ -72,6 +72,6 @@
 	return TRUE
 
 /datum/surgery_step/graft_synthtissue/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	user.visible_message("<span class='warning'>[user] accidentally damages part of [chosen_organ]!</span>", "<span class='warning'>You damage [chosen_organ]! Apply more synthtissue if it's run out.</span>")
 	chosen_organ.applyOrganDamage(10)
-	return FALSE

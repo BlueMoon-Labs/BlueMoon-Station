@@ -36,8 +36,9 @@
 
 /obj/structure/reagent_dispensers/wrench_act(mob/living/user, obj/item/I)
 	. = ..()
-	if(plane != ABOVE_WALL_PLANE)
-		return default_unfasten_wrench(user, I, 4 SECONDS)
+	if(density)
+		default_unfasten_wrench(user, I)
+		return TRUE
 // BLUEMOON ADD END
 
 //BLUEMOON CHANGE - FUELTANK
@@ -96,13 +97,14 @@
 	icon_state = "water_high" //I was gonna clean my room...
 	tank_volume = 100000
 
-/obj/structure/reagent_dispensers/holy_watertank
+/obj/structure/reagent_dispensers/watertank/holy
 	name = "BIG HOLY FLASK"
 	desc = "A VERY large and VERY holy flask, pure holy waterness!"
 	icon_state = "holyflask"
 	reagent_id = /datum/reagent/water/holywater
+	layer = ABOVE_ALL_MOB_LAYER // Big sprite
 
-/obj/structure/reagent_dispensers/holy_watertank/Initialize(mapload)
+/obj/structure/reagent_dispensers/watertank/holy/Initialize(mapload)
 	. = ..()
 	var/const/scale = 2
 	var/matrix/m = matrix()

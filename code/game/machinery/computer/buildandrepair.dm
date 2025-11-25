@@ -8,6 +8,11 @@
 	var/built_icon_state = "computer"
 	var/deconpath = /obj/structure/frame/computer
 
+/obj/structure/frame/computer/examine(user)
+	. = ..()
+	if(anchored)
+		. += span_notice("It's bolted to the floor.")
+
 /obj/structure/frame/computer/attackby(obj/item/P, mob/user, params)
 	add_fingerprint(user)
 	switch(state)

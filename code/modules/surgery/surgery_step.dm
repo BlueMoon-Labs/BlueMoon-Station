@@ -165,9 +165,8 @@
 	playsound(get_turf(target), success_sound, 75, TRUE, falloff_exponent = 12, falloff_distance = 1)
 
 /datum/surgery_step/proc/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	display_results(user, target, "<span class='warning'>You screw up! Repeat the step!</span>", // BLUEMOON EDIT - добавлено про повтор
-		"<span class='warning'>[user] screws up!</span>",
-		"[user] finishes.", TRUE) //By default the patient will notice if the wrong thing has been cut
+	// CSS .warning{color:#c51e1e;font-style:italic}
+	target.balloon_alert(user, "<span style='color:#c51e1e'>[pick("Ошибка!", "Провал!", "Неудача!")]</span>")
 	return FALSE
 
 /datum/surgery_step/proc/play_failure_sound(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)

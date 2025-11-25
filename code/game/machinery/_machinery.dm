@@ -589,7 +589,8 @@ Class Procs:
 
 /obj/proc/can_be_unfasten_wrench(mob/user, silent) //if we can unwrench this object; returns SUCCESSFUL_UNFASTEN and FAILED_UNFASTEN, which are both TRUE, or CANT_UNFASTEN, which isn't.
 	if(!(isfloorturf(loc) || istype(loc, /turf/open/indestructible)) && !anchored)
-		to_chat(user, "<span class='warning'>[src] должен находится на полу, чтобы закрутить!</span>")
+		if(!silent)
+			to_chat(user, "<span class='warning'>[src] должен находится на полу, чтобы закрутить!</span>")
 		return FAILED_UNFASTEN
 	return SUCCESSFUL_UNFASTEN
 

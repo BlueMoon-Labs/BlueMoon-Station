@@ -28,6 +28,6 @@
 	return TRUE
 
 /datum/surgery_step/embalming/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	user.visible_message("[user] screws up!", "<span class='warning'>You screwed up!</span>")
 	ADD_TRAIT(target, TRAIT_NOCLONE, MAGIC_TRAIT) //That body is ruined, but still gives miasma
-	return FALSE

@@ -52,6 +52,8 @@
 			. +=  "[requires]."
 		else
 			. += "It does not require any more components."
+	if(anchored)
+		. += span_notice("It's bolted to the floor.")
 
 /obj/structure/frame/machine/proc/update_namelist()
 	if(!req_components)

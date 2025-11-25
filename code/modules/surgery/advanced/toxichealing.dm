@@ -40,6 +40,5 @@
 	return TRUE
 
 /datum/surgery_step/toxichealing/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	user.visible_message("[user] screws up!", "<span class='warning'>You screwed up!</span>")
+	. = ..()
 	target.take_bodypart_damage(25,0)
-	return FALSE
