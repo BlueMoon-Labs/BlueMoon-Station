@@ -107,18 +107,6 @@
 	if(processing)
 		to_chat(user, "<span class='warning'>The biogenerator is currently processing.</span>")
 		return
-	/*
-	if(default_deconstruction_screwdriver(user, "biogen-empty-o", "biogen-empty", O))
-		if(beaker)
-			var/obj/item/reagent_containers/glass/B = beaker
-			B.forceMove(drop_location())
-			beaker = null
-		update_icon()
-		return
-
-	if(default_deconstruction_crowbar(O))
-		return
-	*/
 
 	if(istype(O, /obj/item/reagent_containers/glass))
 		. = 1 //no afterattack
