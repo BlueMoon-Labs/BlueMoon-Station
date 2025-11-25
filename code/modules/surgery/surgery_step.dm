@@ -42,7 +42,7 @@
 			if(get_location_accessible(target, target_zone) || surgery.ignore_clothes)
 				return initiate(user, target, target_zone, tool, surgery, try_to_fail)
 			else
-				to_chat(user, "<span class='warning'>You need to expose [target]'s [parse_zone(target_zone)] to perform surgery on it!</span>")
+				target.balloon_alert(user, "Одежда мешает!")
 				return TRUE	//returns TRUE so we don't stab the guy in the dick or wherever.
 	if(repeatable)
 		var/datum/surgery_step/next_step = surgery.get_surgery_next_step()

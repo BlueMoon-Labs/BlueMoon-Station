@@ -15,6 +15,7 @@
 
 /obj/structure/frame/computer/attackby(obj/item/P, mob/user, params)
 	add_fingerprint(user)
+	var/obj/item/storage/part_replacer/replacer = istype(P, /obj/item/storage/part_replacer) && P
 	switch(state)
 		if(0)
 			if(P.tool_behaviour == TOOL_WRENCH)
@@ -67,7 +68,6 @@
 			else
 				// installing circuitboard
 				var/obj/item/circuitboard/computer/B = P
-				var/obj/item/storage/part_replacer/replacer = istype(P, /obj/item/storage/part_replacer) && P
 
 				if(replacer && replacer.contents.len)
 					var/list/board_list = list()
@@ -79,14 +79,14 @@
 							continue
 						board_list += co
 						board_type_list += co.type
-					
+
 					reverseList(board_list)
 
 					if(board_list.len)
 						var/const/max_radial_len = 8
 						if(board_list.len == 1)
-							B = board_list[1]		
-						// Radial menu	
+							B = board_list[1]
+						// Radial menu
 						else if(board_list.len <= max_radial_len)
 							var/list/choices = list()
 							for(var/obj/item/circuitboard/computer/co in board_list)
@@ -121,7 +121,7 @@
 
 						if(QDELETED(src) || QDELETED(replacer) || (B && QDELETED(B)) || state != 1 || !Adjacent(user))
 							return
-							
+
 				if(istype(B))
 					if(!user.transferItemToLoc(B, src))
 						return
@@ -130,6 +130,19 @@
 					circuit = B
 					circuit.add_fingerprint(user)
 					icon_state = "1"
+					if(!replacer)
+						update_icon()
+						return
+					state = 2
+					icon_state = "2"
+					var/obj/item/stack/cable_coil/c = locate(/obj/item/stack/cable_coil) in replacer.contents
+					if(c && c.use_tool(src, user, 0, 5, 0))
+						state = 3
+						icon_state = "3"
+						var/obj/item/stack/sheet/glass/g = locate(/obj/item/stack/sheet/glass) in replacer.contents
+						if(g && g.use_tool(src, user, 0, 2, 0))
+							state = 4
+							icon_state = "4"
 					update_icon()
 					return
 				else if(istype(P, /obj/item/circuitboard))
@@ -143,7 +156,19 @@
 				icon_state = "1"
 				update_icon()
 				return
-			if(istype(P, /obj/item/stack/cable_coil))
+
+			if(replacer)
+				var/obj/item/stack/cable_coil/c = locate(/obj/item/stack/cable_coil) in replacer.contents
+				if(c && c.use_tool(src, user, 0, 5, 50))
+					state = 3
+					icon_state = "3"
+					var/obj/item/stack/sheet/glass/g = locate(/obj/item/stack/sheet/glass) in replacer.contents
+					if(g && g.use_tool(src, user, 0, 2, 0))
+						state = 4
+						icon_state = "4"
+				update_icon()
+				return
+			else if(istype(P, /obj/item/stack/cable_coil))
 				if(!P.tool_start_check(user, amount=5))
 					return
 				to_chat(user, "<span class='notice'>You start adding cables to the frame...</span>")
@@ -166,7 +191,15 @@
 				A.add_fingerprint(user)
 				return
 
-			if(istype(P, /obj/item/stack/sheet/glass))
+			if(replacer)
+				var/obj/item/stack/sheet/glass/g = locate(/obj/item/stack/sheet/glass) in replacer.contents
+				if(g && g.use_tool(src, user, 0, 2))
+					playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
+					state = 4
+					icon_state = "4"
+					update_icon()
+				return
+			else if(istype(P, /obj/item/stack/sheet/glass))
 				if(!P.tool_start_check(user, amount=2))
 					return
 				playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
