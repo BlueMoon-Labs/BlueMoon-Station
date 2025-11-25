@@ -563,6 +563,15 @@
 	sound = 'modular_bluemoon/sound/emotes/felinid_hiss.ogg'
 	emote_cooldown = 1 SECONDS
 
+/datum/emote/sound/human/dexter
+	key = "dexter"
+	key_third_person = "dextered"
+	message = "неистово подозревает в чем-то"
+	message_mime = "пронзает взглядом, неистово подозревая в чем-то"
+	emote_type = EMOTE_AUDIBLE
+	sound = 'modular_bluemoon/sound/emotes/dexter-song.ogg'
+	emote_cooldown = 5 SECONDS
+
 /*
  * XENO EMOTES START
  */
