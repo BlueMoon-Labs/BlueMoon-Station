@@ -638,6 +638,7 @@ Class Procs:
 	var/P
 	if(W.works_from_distance)
 		to_chat(user, display_parts(user))
+	var/list/message_list = list()
 	for(var/obj/item/A in component_parts)
 		for(var/D in machine_board.req_components)
 			if(istype(A, D))
@@ -660,9 +661,12 @@ Class Procs:
 							B.moveToNullspace()
 					SEND_SIGNAL(W, COMSIG_TRY_STORAGE_INSERT, A, null, null, TRUE)
 					component_parts -= A
-					to_chat(user, "<span class='notice'>[capitalize(A.name)] replaced with [B.name].</span>")
+					message_list += span_notice("[icon2html(A, user)] [capitalize(A.name)] replaced with [icon2html(B, user)] [B.name].")
 					shouldplaysound = 1 //Only play the sound when parts are actually replaced!
 					break
+	if(message_list.len)
+		var/message = jointext(message_list, "\n")
+		to_chat(user,message)
 	RefreshParts()
 	if(shouldplaysound)
 		W.play_rped_sound()
