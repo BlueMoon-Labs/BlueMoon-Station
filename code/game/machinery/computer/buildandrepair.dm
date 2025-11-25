@@ -136,11 +136,11 @@
 					state = 2
 					icon_state = "2"
 					var/obj/item/stack/cable_coil/c = locate(/obj/item/stack/cable_coil) in replacer.contents
-					if(c && c.use_tool(src, user, 0, 5, 0))
+					if(c && c.use_tool(src, user, 0, 5, 0, skill_gain_mult = 0.05))
 						state = 3
 						icon_state = "3"
 						var/obj/item/stack/sheet/glass/g = locate(/obj/item/stack/sheet/glass) in replacer.contents
-						if(g && g.use_tool(src, user, 0, 2, 0))
+						if(g && g.use_tool(src, user, 0, 2, 0, skill_gain_mult = 0.05))
 							state = 4
 							icon_state = "4"
 					update_icon()
@@ -159,11 +159,11 @@
 
 			if(replacer)
 				var/obj/item/stack/cable_coil/c = locate(/obj/item/stack/cable_coil) in replacer.contents
-				if(c && c.use_tool(src, user, 0, 5, 50))
+				if(c && c.use_tool(src, user, 0, 5, 50, skill_gain_mult = 0.05))
 					state = 3
 					icon_state = "3"
 					var/obj/item/stack/sheet/glass/g = locate(/obj/item/stack/sheet/glass) in replacer.contents
-					if(g && g.use_tool(src, user, 0, 2, 0))
+					if(g && g.use_tool(src, user, 0, 2, 0, skill_gain_mult = 0.05))
 						state = 4
 						icon_state = "4"
 				update_icon()
@@ -193,7 +193,7 @@
 
 			if(replacer)
 				var/obj/item/stack/sheet/glass/g = locate(/obj/item/stack/sheet/glass) in replacer.contents
-				if(g && g.use_tool(src, user, 0, 2))
+				if(g && g.use_tool(src, user, 0, 2, skill_gain_mult = 0.05))
 					playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
 					state = 4
 					icon_state = "4"
