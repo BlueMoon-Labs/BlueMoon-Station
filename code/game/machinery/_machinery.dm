@@ -636,8 +636,6 @@ Class Procs:
 	if(!machine_board)
 		return FALSE
 	var/P
-	if(W.works_from_distance)
-		to_chat(user, display_parts(user))
 	var/list/message_list = list()
 	for(var/obj/item/A in component_parts)
 		for(var/D in machine_board.req_components)
@@ -667,6 +665,8 @@ Class Procs:
 	if(message_list.len)
 		var/message = jointext(message_list, "\n")
 		to_chat(user,message)
+	if(W.works_from_distance)
+		to_chat(user, display_parts(user))
 	RefreshParts()
 	if(shouldplaysound)
 		W.play_rped_sound()
