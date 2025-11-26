@@ -41,6 +41,13 @@ If you create T5+ please take a pass at gene_modder.dm [L40]. Max_values MUST fi
 	else
 		playsound(src, pshoom_or_beepboopblorpzingshadashwoosh, 40, 1)
 
+/obj/item/storage/part_replacer/mini
+	name = "mini rapid part exchange device"
+	desc = "Civil version of mechanical module made to store, sort, and apply standard machine parts."
+	icon_state = "mini_RPED"
+	w_class = WEIGHT_CLASS_NORMAL
+	component_type = /datum/component/storage/concrete/rped/mini
+
 /obj/item/storage/part_replacer/bluespace
 	name = "bluespace rapid part exchange device"
 	desc = "A version of the RPED that allows for replacement of parts and scanning from a distance, along with higher capacity for parts."

@@ -66,6 +66,14 @@
 	build_path = /obj/item/pipe_dispenser
 	category = list("hacked", "Construction")
 
+/datum/design/mini_RPED
+	name = "Mini Rapid Part Exchange Device (RPED)"
+	id = "mini_rped"
+	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	materials = list(/datum/material/iron = 5000, /datum/material/glass = 5000)
+	build_path = /obj/item/storage/part_replacer/mini
+	category = list("hacked", "Machinery")
+
 /datum/design/handcuffs
 	name = "Handcuffs"
 	id = "handcuffs"
