@@ -110,10 +110,10 @@
 	fitted = FEMALE_UNIFORM_TOP
 
 /obj/item/clothing/under/donator/bm/Prosecutor_suit
-    name = "Prosecutor_suit"
-    desc = "Невероятный фиолетовый костюм, что бросается в ваши глаза выглядит довольно качественным, на него явно было потрачено не одна сотня тысяч кредитов, присмотревшись вы видите на кайме пиджака аккуратно пришита именная бирка 'Berly Blight'."
-    icon_state = "Prosecutor_suit"
-    item_state = "Prosecutor_suit"
+	name = "Prosecutor_suit"
+	desc = "Невероятный фиолетовый костюм, что бросается в ваши глаза выглядит довольно качественным, на него явно было потрачено не одна сотня тысяч кредитов, присмотревшись вы видите на кайме пиджака аккуратно пришита именная бирка 'Berly Blight'."
+	icon_state = "Prosecutor_suit"
+	item_state = "Prosecutor_suit"
 
 /obj/item/clothing/under/donator/bm/monolith_uniform
 	name = "Granite M1 ''Monolith'' uniform"
@@ -215,11 +215,11 @@
 	can_adjust = FALSE
 
 /obj/item/clothing/under/donator/bm/archangel_turtleneck
-    name = "Archangel Group turtleneck"
-    desc = "Archangel group turtleneck for special missions. Black and Stylish."
-    mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-    icon_state = "arch_group_turtleneck"
-    item_state = "arch_group_turtleneck"
+	name = "Archangel Group turtleneck"
+	desc = "Archangel group turtleneck for special missions. Black and Stylish."
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "arch_group_turtleneck"
+	item_state = "arch_group_turtleneck"
 
 /obj/item/clothing/under/donator/bm/tavern_skirt
 	name = "Tavern skirt"
@@ -520,4 +520,16 @@
 	unique_reskin = list(
 		"Standart" = list("icon_state" = "cesar_tunic"),
 		"half" = list("icon_state" = "cesar_tunic_alt")
+	)
+
+/obj/item/clothing/under/donator/bm/mk6_suit
+	name = "MK-VII Tactical suit"
+	desc = "Многофункциональный рабочий комплект, созданный для длительных миссий и путешествий. Он удобен, не стесняет движений и поддерживает стабильный комфорт в разных условиях."
+	icon_state = "mk6_green"
+	item_state = "mk6_green"
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
+	unique_reskin = list(
+		"Red" = list("icon_state" = "mk6_red"),
+		"Gray" = list("icon_state" = "mk6_gray")
 	)
