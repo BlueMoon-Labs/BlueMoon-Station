@@ -572,6 +572,7 @@
 	sound = 'modular_bluemoon/sound/emotes/dexter-song.ogg'
 	emote_cooldown = 5 SECONDS
 
+
 /*
  * XENO EMOTES START
  */
