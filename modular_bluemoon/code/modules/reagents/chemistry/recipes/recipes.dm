@@ -61,5 +61,5 @@
 	id = "advbionanites"
 	results = list(/datum/reagent/consumable/organicprecursor/advbionanites = 25) //You can potentially print them nonstop, so there is a stagger.
 	required_reagents = list(/datum/reagent/blackpowder = 50, /datum/reagent/teslium = 50, /datum/reagent/consumable/organicprecursor/bionanites = 50)
-	required_temp = 475 //И опять же, чё то было на пендоском. Автор хотел сделать ловушку на cпидранеров, сделал выстрел себе в ногу.
+	required_temp = 475 
 	mob_react = FALSE
