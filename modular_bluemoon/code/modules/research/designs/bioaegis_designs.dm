@@ -267,3 +267,14 @@
 	category = list("Dangerous Designs")
 	min_security_level = SEC_LEVEL_RED
 	materials = list (/datum/material/plasma = 15000)
+
+/datum/design/vocalbabylon
+	name = "Babylon's Vocal Cords"
+	id = "babyloncords"
+	desc = "A design for biological organ."
+	build_type = BIOAEGIS
+	construction_time = 150
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/advbionanites = 50)
+	build_path = /obj/item/organ/vocal_cords/babyloncords
+	category = list("Species-specific Designs")
+	materials = list (/datum/material/plasma = 15000)
