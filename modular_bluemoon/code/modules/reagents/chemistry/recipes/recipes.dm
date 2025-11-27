@@ -61,5 +61,5 @@
 	id = "advbionanites"
 	results = list(/datum/reagent/consumable/organicprecursor/advbionanites = 25) //You can potentially print them nonstop, so there is a stagger.
 	required_reagents = list(/datum/reagent/blackpowder = 50, /datum/reagent/teslium = 50, /datum/reagent/consumable/organicprecursor/bionanites = 50)
-	required_temp = 475 
+	required_temp = 470 //Tricky, be mindful about temp. 474 *is the detonation* for both blackpowder and teslium.
 	mob_react = FALSE
