@@ -20,7 +20,8 @@
 
 /obj/machinery/defibrillator_mount/Destroy()
 	if(defib)
-		QDEL_NULL(defib)
+		defib.forceMove(drop_location())
+		defib = null
 	. = ..()
 
 /obj/machinery/defibrillator_mount/examine(mob/user)
@@ -119,6 +120,13 @@
 	clamps_locked = FALSE
 	update_icon()
 	return TRUE
+
+/obj/machinery/defibrillator_mount/wrench_act(mob/living/user, obj/item/I)
+	if(defib)
+		balloon_alert("Нужно вынуть дефибриллятор!")
+		return TRUE
+	new /obj/item/wallframe/defib_mount(drop_location())
+	qdel(src)
 
 /obj/machinery/defibrillator_mount/AltClick(mob/living/carbon/user)
 	. = ..()

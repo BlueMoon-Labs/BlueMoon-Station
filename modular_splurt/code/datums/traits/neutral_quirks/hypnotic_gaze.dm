@@ -29,8 +29,9 @@
 		return
 	// BLUEMOON EDIT END
 	// Remove quirk ability action datum
-	var/datum/action/cooldown/hypnotize/act_hypno = locate() in quirk_mob.actions
-	act_hypno.Remove(quirk_mob)
+	var/datum/action/cooldown/hypnotize/act_hypno = locate(/datum/action/cooldown/hypnotize) in quirk_mob.actions
+	if(act_hypno)
+		act_hypno.Remove(quirk_mob)
 
 	// Remove examine text
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)

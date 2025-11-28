@@ -438,7 +438,10 @@ GENETICS SCANNER
 
 
 		if(M.radiation)
-			msg += "<span class='alert'>Субъект заражен радиацией.</span>\n"
+			if(M.radiation > RAD_MOB_SAFE)
+				msg += "<span class='alert'>Субъект заражен опасной дозой радиацией!</span>\n"
+			else
+				msg += "<span class='red'>Субъект подвергся безопасному уровню радиационного воздействия.</span>\n"
 			msg += "<span class='info'>Показатели радиационного заражения: [M.radiation] rad</span>\n"
 
 
