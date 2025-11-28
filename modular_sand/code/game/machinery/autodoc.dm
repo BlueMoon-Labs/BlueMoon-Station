@@ -210,7 +210,7 @@
 
 /obj/machinery/autodoc/AltClick(mob/user)
 	. = ..()
-	if(stored_organ)
+	if(stored_organ && !processing && occupant != user)
 		user.put_in_hands(stored_organ)
 		to_chat(user, span_notice("Вы извлекли [icon2html(stored_organ, user)] [stored_organ.name] из [src]."))
 		stored_organ = null
