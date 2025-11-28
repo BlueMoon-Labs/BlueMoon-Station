@@ -24,6 +24,12 @@
 	circuit = /obj/item/circuitboard/machine/self_actualization_device
 	state_open = TRUE
 	density = FALSE
+	use_power = IDLE_POWER_USE
+	active_power_usage = 500
+	idle_power_usage = 10
+	vocal_speed = 5
+	vocal_pitch = 0.6
+	vocal_pitch_range = 0.3
 	/// Is someone being processed inside of the machine?
 	var/processing = FALSE
 	/// How long does it take to break out of the machine?
@@ -31,17 +37,17 @@
 	/// How long does the machine take to work?
 	var/processing_time = 1 MINUTES
 	/// The interval that advertisements are said by the machine's speaker.
-	var/next_fact = 10
+	var/next_fact = 20 SECONDS
 	/// A list containing advertisements that the machine says while working.
 	var/static/list/advertisements = list(\
 	"Спасибо, что воспользовались Устройством Самоактуализации от компании Veymed — вы всегда этого хотели.", \
 	"Устройство Самоактуализации не должно использоваться пожилыми людьми без непосредственного присмотра взрослых. Компания Cinco не несет ответственности за любые травмы, полученные при использовании устройства самоактуализации без присмотра.", \
 	"Пожалуйста, очищайте Устройство Самоактуализации каждые пятнадцать минут! Запрещено использовать неочищенным, в противном случае, компания не несет ответственности, за побочные эффекты, например беременность.", \
 	"Перед использованием Устройства Самоактуализации снимите все металлические предметы, иначе выражение «железный человек» станет слишком буквальным!" , \
-	"Устройство Самоактуализации не предназначено для «романтического» использования вдвоём. Даже если очень хочется.", \
-	"Перед началом сеанса убедитесь, что у вас нет «запасных» органов. Устройство Самоактуализации может решить, что они лишние.", \
+	"Устройство Самоактуализации не предназначено для романтического использования вдвоём. Даже если очень хочется.", \
+	"Перед началом сеанса убедитесь, что у вас нет «дополнительных» органов. Устройство Самоактуализации может решить, что они лишние.", \
 	"Компания Veymed напоминает: любые новые органы, выросшие после пятого сеанса, считаются исключительно вашим личным достижением.", \
-	"Не вставляйте в Устройство Самоактуализации ничего, что компания не поставляла официально. Особенно если это «вибрирует».", \
+	"Не вставляйте в Устройство Самоактуализации ничего, что компания не поставляла официально. Особенно если это вибрирует.", \
 	"Пользователям, склонным к чрезмерному энтузиазму, следует удерживаться от попыток «достичь взаимности» с устройством. Оно вас не оценит.", \
 	"Устройство Самоактуализации не предназначено для личных экспериментов анатомического или интимного характера. Даже если выглядит, будто справится." \
 	)
@@ -66,12 +72,18 @@
 
 /obj/machinery/self_actualization_device/examine(mob/user)
 	. = ..()
-	. += span_notice("Процедура займет: [DisplayTimeText(processing_time)]")
+	. += span_notice("Время процедуры: [DisplayTimeText(processing_time)]")
+	var/static/init_processing_time
+	if(isnull(init_processing_time))
+		init_processing_time = initial(processing_time)
+	if(init_processing_time > processing_time)
+		. += span_notice("Машина работает на [span_nicegreen("[100-(processing_time/init_processing_time*100)]% быстрее.")]")
 	. += span_notice("ALT-Click для <b>включения</b> машины, когда пациент внутри.")
 
 /obj/machinery/self_actualization_device/open_machine(mob/user)
 	playsound(src, 'sound/machines/click.ogg', 50)
 	icon_state = "sad_open"
+	use_power = IDLE_POWER_USE
 	..()
 
 /obj/machinery/self_actualization_device/RefreshParts()
@@ -82,7 +94,7 @@
 	for(var/obj/item/stock_parts/L in component_parts)
 		parts_rating += L.rating
 		++i
-	// Average rating of all details 
+	// Average rating of all details
 	var/rating = round_down(parts_rating / i)
 	var/const/speed_up_per_rating = 20 // T4 = 60% speed up
 	var/speed_up_ratio = max(ceil((rating-1) * speed_up_per_rating),0)/100
@@ -101,6 +113,8 @@
 		else
 			icon_state = "sad_off"
 	processing = TRUE
+	use_power = ACTIVE_POWER_USE
+	next_fact = 0 // Больше рекламы
 	update_appearance()
 
 /obj/machinery/self_actualization_device/interact(mob/user)
@@ -128,19 +142,18 @@
 		open_machine()
 		return
 
-	next_fact--
+	next_fact -= delta_time SECONDS
 	if(next_fact <= 0)
-		next_fact = rand(initial(next_fact), 2 * initial(next_fact))
+		next_fact = initial(next_fact)
 		say(pick(advertisements))
 		playsound(loc, 'sound/machines/chime.ogg', 30, FALSE)
-
-	use_power(500)
 
 /// Ejects the occupant as either their preference character, or as a monke based on emag status.
 /obj/machinery/self_actualization_device/proc/eject_new_you()
 	if(state_open || !occupant || !powered())
 		return
 	processing = FALSE
+	use_power = IDLE_POWER_USE
 
 	if(!ishuman(occupant) || !check_for_normalizer(occupant)) // BLUEMOON EDIT - added || !check_for_normalizer(occupant)
 		return FALSE

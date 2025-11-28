@@ -38,7 +38,7 @@
 	for(var/obj/item/stock_parts/L in component_parts)
 		parts_rating += L.rating
 		++i
-	// Average rating of all details 
+	// Average rating of all details
 	var/rating = round_down(parts_rating / i)
 	var/const/speed_up_per_rating = 16.6 // T4 = 50% speed up
 	speed_up_percent = max(ceil((rating-1) * speed_up_per_rating),0)
@@ -50,14 +50,14 @@
 	if(get_dist(src, user) <= 1 || isobserver(user))
 		. += span_notice("Небольшой дисплей показывает: \"Время операции: [DisplayTimeText(surgery_time)]\"")
 		if(speed_up_percent)
-			. += span_notice("[src] работает на [span_nicegreen("[speed_up_percent]% быстрее.")]")
+			. += span_notice("Машина работает на [span_nicegreen("[speed_up_percent]% быстрее.")]")
 		if(processing)
-			. += span_notice("В процессе имплантации [icon2html(stored_organ, user)] [stored_organ] в [occupant].")
+			. += span_notice("В процессе имплантации [icon2html(stored_organ, user)] [stored_organ.name] в [occupant].")
 		else if(stored_organ)
-			. += span_notice("Внутрь загружен и подготовлен к установке [icon2html(stored_organ, user)] [stored_organ].")
+			. += span_notice("Внутрь загружен и подготовлен к установке [icon2html(stored_organ, user)] [stored_organ.name].")
 			. += span_notice("Alt-click для извлечения органа.")
 		if((obj_flags & EMAGGED) && panel_open)
-			. += span_boldwarning("Протоколы работы повреждены, обратитесь к специалисту!")
+			. += span_boldwarning("Протоколы работы повреждены, выставлен режим РАСЧЛЕНЕНИЕ!")
 	else
 		. += span_warning("Нужно подойти ближе, чтобы получить больше информации.")
 
@@ -96,7 +96,7 @@
 				C.say(pick("AAA!!", "АААХ!!", "ААГХ!!"), forced = "autodoc")
 				C.Stun(20)
 				C.Jitter(50)
-				C.blind_eyes(20)
+				C.blur_eyes(15)
 				C.dizziness += 50
 				C.confused += 30
 				C.stuttering += 30
@@ -106,7 +106,7 @@
 			else
 				C.apply_damage(round(40 * speed_up_percent/100), BRUTE, BP) // Больнее бъет при улучшении
 			playsound(src, 'sound/weapons/chainsawhit.ogg', 100)
-			
+
 			//40 seconds to get help before dying
 			if(!do_after(occupant, 10 SECONDS, src, IGNORE_HELD_ITEM|IGNORE_INCAPACITATED|IGNORE_TARGET_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(check_surgery))))
 				open_machine()
@@ -116,7 +116,7 @@
 
 	else
 		occupant.visible_message(span_notice("[occupant] нажимает на кнопку [src], и вы слышите работу механизов."), \
-							span_notice("Вы чувствуете укол и онемение, после чего [src] начинает имплантировать [icon2html(stored_organ, occupant)] [stored_organ] в ваше тело."))
+							span_notice("Вы чувствуете укол и онемение, после чего [src] начинает имплантировать [icon2html(stored_organ, occupant)] [stored_organ.name] в ваше тело."))
 		ADD_TRAIT(C, TRAIT_PAINKILLER, PAINKILLER_AUTODOC)
 		C.throw_alert("painkiller", /atom/movable/screen/alert/painkiller)
 		if(HAS_TRAIT(occupant, TRAIT_BLUEMOON_FEAR_OF_SURGEONS))
@@ -129,22 +129,23 @@
 			currentorgan.Remove(C)
 			currentorgan.forceMove(get_turf(src))
 		stored_organ.Insert(occupant)//insert stored organ into the user
-		occupant.visible_message(span_notice("[src] заканчивает хирургическую операцию."), span_notice("[src] имплантирует [icon2html(stored_organ, occupant)] [stored_organ] в ваше тело."))
+		occupant.visible_message(span_notice("[src] заканчивает хирургическую операцию."), span_notice("[src] имплантирует [icon2html(stored_organ, occupant)] [stored_organ.name] в ваше тело."))
 		stored_organ = null
+		REMOVE_TRAIT(C, TRAIT_PAINKILLER, PAINKILLER_AUTODOC)
+		C.clear_alert("painkiller", /atom/movable/screen/alert/painkiller)
 	playsound(src, 'sound/machines/microwave/microwave-end.ogg', 100, 0)
 	processing = FALSE
 	open_machine()
 
-/obj/machinery/autodoc/open_machine(mob/user)
+/obj/machinery/autodoc/open_machine(drop)
 	if(processing)
-		if(user)
-			occupant.visible_message(span_notice("[user] отменяет процедуру."), span_notice("[src] прекращает операцию над твоим телом."))
+		to_chat(occupant, span_warning("[src] прекращает операцию над твоим телом."))
 		if(iscarbon(occupant))
 			var/mob/living/carbon/C = occupant
 			REMOVE_TRAIT(C, TRAIT_PAINKILLER, PAINKILLER_AUTODOC)
 			C.clear_alert("painkiller", /atom/movable/screen/alert/painkiller)
 		processing = FALSE
-	..()
+	. = ..()
 
 /obj/machinery/autodoc/interact(mob/user)
 	if(panel_open)
@@ -156,9 +157,9 @@
 		return
 
 	if(processing)
-		balloon_alert(user, span_balloon_warning(user == occupant ? "Заперто" : "Не могу открыть руками!"))
+		balloon_alert(user, span_balloon_warning("[user == occupant ? "Заперто" : "Не могу открыть руками!"]"))
 		return
-	open_machine(user)
+	open_machine()
 
 /obj/machinery/autodoc/attackby(obj/item/I, mob/user, params)
 	if(istype(I, organ_type))
@@ -166,21 +167,20 @@
 			return
 		if(stored_organ)
 			user.put_in_hands(stored_organ)
-			to_chat(user, span_notice("Вы извлекли [icon2html(stored_organ, user)] [stored_organ] из [src]."))
+			to_chat(user, span_notice("Вы извлекли [icon2html(stored_organ, user)] [stored_organ.name] из [src]."))
 			stored_organ = null
 		stored_organ = I
-		I.forceMove(src)
-		to_chat(user, span_notice("Вы загрузили [icon2html(stored_organ, user)] [stored_organ] внутрь [src]."))
+		stored_organ.moveToNullspace()
+		to_chat(user, span_notice("Вы загрузили [icon2html(stored_organ, user)] [stored_organ.name] внутрь [src]."))
 	else
 		return ..()
 
 /obj/machinery/autodoc/tool_act(mob/living/user, obj/item/I, tool_type)
 	if(user == occupant)
-		to_chat(user, span_warning("Не могу, пока я внутри!"))
 		return FALSE
-	else 
+	else
 		return ..()
-	
+
 /obj/machinery/autodoc/screwdriver_act(mob/living/user, obj/item/I)
 	. = TRUE
 	if(..())
@@ -203,7 +203,8 @@
 	if(default_deconstruction_crowbar(I))
 		return TRUE
 	else if(!state_open && processing)
-		if(I.use_tool(src, user, 0.5 SECONDS, skill_gain_mult = 0))
+		playsound(src, 'sound/machines/airlock_alien_prying.ogg',50,1)
+		if(I.use_tool(src, user, 2 SECONDS, skill_gain_mult = 0))
 			open_machine(user)
 		return TRUE
 
@@ -211,7 +212,7 @@
 	. = ..()
 	if(stored_organ)
 		user.put_in_hands(stored_organ)
-		to_chat(user, span_notice("Вы извлекли [icon2html(stored_organ, user)] [stored_organ] из [src]."))
+		to_chat(user, span_notice("Вы извлекли [icon2html(stored_organ, user)] [stored_organ.name] из [src]."))
 		stored_organ = null
 
 /obj/machinery/autodoc/update_icon()
@@ -246,7 +247,7 @@
 
 /obj/machinery/autodoc/container_resist(mob/living/user)
 	. = ..()
-	if(user.stat)
+	if(user.stat || processing)
 		return
 	open_machine(user)
 
