@@ -145,7 +145,7 @@
 		playsound(src, 'sound/magic/demon_consume.ogg', 50, 1)
 		M.emote("realagony")
 		M.say(pick("AAA!!", "АААХ!!", "ААГХ!!"), forced = "nether")
-		M.Stun(20)
+		M.Stun(100)
 		M.Jitter(50)
 		M.blur_eyes(15)
 		M.dizziness += 50
