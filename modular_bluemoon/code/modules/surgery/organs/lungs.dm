@@ -32,8 +32,8 @@
 	)
 
 /obj/item/organ/lungs/tier2/on_life()
-	owner.adjustToxLoss(-0.4, TRUE) //Doesn't kill slimes. Yes.
-	owner.adjustFireLoss(-0.4, FALSE)
+	owner.adjustToxLoss(-0.25, TRUE) //Doesn't kill slimes. Yes.
+	owner.adjustFireLoss(-0.25, FALSE)
 
 /obj/item/organ/lungs/tier2/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
 	. = ..()
@@ -77,9 +77,9 @@
 	mood_change = 1 //Less, but persistent mood buff. Hey, handsome, you deserve it.
 
 /obj/item/organ/lungs/tier3/on_life()
-	owner.adjustOxyLoss(-3, FALSE)
-	owner.adjustFireLoss(-1.5, FALSE)
-	owner.adjustStaminaLoss(-5, 0)
+	owner.adjustOxyLoss(-1.5, FALSE)
+	owner.adjustFireLoss(-0,8, FALSE)
+	owner.adjustStaminaLoss(-2.5, 0)
 
 //ANTAG LUNGS//
 /obj/item/organ/lungs/tier3/antag //antag organ that can be found in some shitty places or in antag uplink since why not?

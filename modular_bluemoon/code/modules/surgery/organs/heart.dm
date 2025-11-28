@@ -24,8 +24,8 @@
 	decay_factor = 0.8 * STANDARD_ORGAN_DECAY //Decays a bit longer
 
 /obj/item/organ/heart/tier2/on_life()
-	owner.adjustOxyLoss(-0.4, FALSE) //Only two healing factors, but heals really, really good. An exchange for being way too problematic to create.
-	owner.adjustBruteLoss(-0.4, FALSE)
+	owner.adjustOxyLoss(-0.25, FALSE) //Only two healing factors, but heals really, really good. An exchange for being way too problematic to create.
+	owner.adjustBruteLoss(-0.25, FALSE)
 
 /obj/item/organ/heart/tier2/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
 	. = ..()
@@ -59,9 +59,9 @@
 		to_chat(H, "<span class='notice'>Вы ощущаете как словно ваши собственные вены начали биться в знакомый ритм!</span>\n")
 
 /obj/item/organ/heart/tier3/on_life()
-	owner.adjustOxyLoss(-0.5, FALSE) //It can pump blood rather well, so it can delay oxy damage to some degree.
-	owner.adjustBruteLoss(-1.5, FALSE)
-	owner.adjustStaminaLoss(-2.5, 0)
+	owner.adjustOxyLoss(-0.25, FALSE) //It can pump blood rather well, so it can delay oxy damage to some degree.
+	owner.adjustBruteLoss(-0.8, FALSE)
+	owner.adjustStaminaLoss(-1.5, 0)
 
 //ANTAG HEART//
 /obj/item/organ/heart/tier3/antag //antag organ that can be found in some shitty places or in antag uplink since why not?
