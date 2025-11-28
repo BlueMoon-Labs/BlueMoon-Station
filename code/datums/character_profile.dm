@@ -30,6 +30,15 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	. = ..()
 	host = null
 
+/datum/description_profile/ui_status(mob/user, datum/ui_state/state)
+	. = ..()
+	if(. <= UI_DISABLED)
+		return .
+	if(host.resolve() in view(10, user))
+		return .
+	else
+		return UI_DISABLED
+
 /datum/description_profile/ui_state()
 	return GLOB.always_state
 

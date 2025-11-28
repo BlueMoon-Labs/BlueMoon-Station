@@ -118,3 +118,6 @@
 #define span_yellowteamradio(str) ("<span class='yellowteamradio'>" + str + "</span>")
 #define span_marooned(str) ("<span class='marooned'>" + str + "</span>")
 #define span_header(str) ("<span class='header'>" + str + "</span>")
+
+//For balloons (they dont use CSS)
+#define span_balloon_warning(str) ("<span style='color:#c51e1e'>" + str + "</span>")

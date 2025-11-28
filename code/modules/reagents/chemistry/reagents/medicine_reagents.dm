@@ -544,10 +544,15 @@
 				to_chat(M, "<span class='danger'>You feel your burns and bruises healing! It stings like hell!</span>")
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "painful_medicine", /datum/mood_event/painful_medicine)
 			var/vol = reac_volume + M.reagents.get_reagent_amount(/datum/reagent/medicine/synthflesh)
-			//Has to be at less than THRESHOLD_UNHUSK burn damage and have 100 synthflesh before unhusking. Corpses dont metabolize.
-			if(HAS_TRAIT_FROM(M, TRAIT_HUSK, "burn") && M.getFireLoss() < THRESHOLD_UNHUSK && (vol >= 100))
-				M.cure_husk("burn")
-				M.visible_message("<span class='nicegreen'>Most of [M]'s burnt off or charred flesh has been restored.")
+			// 100 synthflesh at least. Corpses dont metabolize.
+			if(vol >= 100)
+				for(var/i in C.all_scars)
+					qdel(i)
+				
+				//Has to be at less than THRESHOLD_UNHUSK burn damage before unhusking.
+				if(HAS_TRAIT_FROM(M, TRAIT_HUSK, "burn") && M.getFireLoss() < THRESHOLD_UNHUSK)
+					M.cure_husk("burn")
+					M.visible_message("<span class='nicegreen'>Most of [M]'s burnt off or charred flesh has been restored.")
 	..()
 
 /datum/reagent/medicine/synthflesh/overdose_start(mob/living/M)

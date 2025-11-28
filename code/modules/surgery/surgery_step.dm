@@ -165,8 +165,7 @@
 	playsound(get_turf(target), success_sound, 75, TRUE, falloff_exponent = 12, falloff_distance = 1)
 
 /datum/surgery_step/proc/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	// CSS .warning{color:#c51e1e;font-style:italic}
-	target.balloon_alert(user, "<span style='color:#c51e1e'>[pick("Ошибка!", "Провал!", "Неудача!")]</span>")
+	target.balloon_alert(user, span_balloon_warning("[pick("Ошибка!", "Провал!", "Неудача!")]"))
 	return FALSE
 
 /datum/surgery_step/proc/play_failure_sound(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)

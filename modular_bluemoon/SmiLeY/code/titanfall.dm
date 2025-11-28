@@ -13,6 +13,11 @@
 			pact_mecha_list[initial(A.name)] = A
 	return pact_mecha_list
 
+/obj/item/choice_beacon/pact_mecha/spawn_option(atom/choice, mob/living/M)
+	. = ..()
+	var/obj/effect/pod_landingzone/effect = .
+	effect.say("Stand by for TitanFall!")
+
 /obj/item/choice_beacon/pact_mecha/medical
 	name = "Medical Pact Mech Beacon"
 	pact_mecha_list = list("Vey-Med Odysseus" = /obj/vehicle/sealed/mecha/medical/odysseus/loaded,

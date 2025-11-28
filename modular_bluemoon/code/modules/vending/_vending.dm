@@ -684,6 +684,8 @@ GLOBAL_LIST_EMPTY(vending_products)
 		return
 	visible_message(span_danger("[src] tips over!"))
 	tilted = TRUE
+	panel_open = TRUE
+	set_anchored(FALSE)
 	layer = ABOVE_MOB_LAYER
 
 	var/crit_case
@@ -800,6 +802,8 @@ GLOBAL_LIST_EMPTY(vending_products)
 	unbuckle_all_mobs(TRUE)
 
 	tilted = FALSE
+	panel_open = FALSE
+	set_anchored(TRUE)
 	layer = initial(layer)
 
 	var/matrix/M = matrix()

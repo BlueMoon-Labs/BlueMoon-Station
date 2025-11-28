@@ -423,6 +423,8 @@ GENETICS SCANNER
 			msg += "<span class='alert'><b>У субъекта отсутствуют глаза.</b></span>\n"
 		if(!M.getorganslot(ORGAN_SLOT_EARS))
 			msg += "<span class='alert'><b>У субъекта отсутсвуют уши.</b></span>\n"
+		if(!M.getorganslot(ORGAN_SLOT_TONGUE))
+			msg += "<span class='alert'><b>У субъекта отсутсвует язык.</b></span>\n"
 		if(!M.getorganslot(ORGAN_SLOT_BRAIN))
 			msg += "<span class='alert'><b>У субъекта отсутствуют функции мозга!</b></span>\n"
 		if(has_liver && !M.getorganslot(ORGAN_SLOT_LIVER))
