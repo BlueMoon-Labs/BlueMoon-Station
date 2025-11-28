@@ -5,7 +5,7 @@
 	id = "bioaegisboard"
 	build_path = /obj/item/circuitboard/machine/protolathe/bioaegis
 	category = list("Research Machinery")
-	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
 
 //Xenomorphic organs in bio-organic printer. Cheaper since this machine is *designed* to work with flesh specifically.
 /datum/design/plasmavessel_alt
