@@ -94,12 +94,12 @@
 			if(has_pain)
 				C.emote("realagony")
 				C.say(pick("AAA!!", "АААХ!!", "ААГХ!!"), forced = "autodoc")
-				target.Stun(20)
-				target.Jitter(50)
-				target.blind_eyes(20)
-				target.dizziness += 50
-				target.confused += 30
-				target.stuttering += 30
+				C.Stun(20)
+				C.Jitter(50)
+				C.blind_eyes(20)
+				C.dizziness += 50
+				C.confused += 30
+				C.stuttering += 30
 			if(!HAS_TRAIT(C, TRAIT_NODISMEMBER))
 				BP.dismember()
 				C.apply_damage(round(10 * speed_up_percent/100), BRUTE, BP) // Больнее бъет при улучшении
