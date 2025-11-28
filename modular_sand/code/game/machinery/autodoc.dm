@@ -109,8 +109,6 @@
 			
 			//40 seconds to get help before dying
 			if(!do_after(occupant, 10 SECONDS, src, IGNORE_HELD_ITEM|IGNORE_INCAPACITATED|IGNORE_TARGET_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(check_surgery))))
-				processing = FALSE
-				update_icon()
 				open_machine()
 				return
 
@@ -124,8 +122,6 @@
 		if(HAS_TRAIT(occupant, TRAIT_BLUEMOON_FEAR_OF_SURGEONS))
 			SEND_SIGNAL(occupant, COMSIG_ADD_MOOD_EVENT, "autodoc", /datum/mood_event/surgery_pain/painkiller)
 		if(!do_after(occupant, surgery_time, src, IGNORE_HELD_ITEM|IGNORE_INCAPACITATED|IGNORE_TARGET_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(check_surgery))))
-			processing = FALSE
-			update_icon()
 			open_machine()
 			return
 		var/obj/item/organ/currentorgan = C.getorganslot(stored_organ.slot)
