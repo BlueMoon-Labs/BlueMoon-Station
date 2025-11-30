@@ -19502,7 +19502,7 @@
 /turf/open/floor/plasteel/freezer,
 /area/ruin/lavaland/powered)
 "hbi" = (
-/obj/structure/sign/poster/official/no_erp,
+/obj/structure/sign/poster/contraband/yes_erp,
 /turf/closed/wall/r_wall,
 /area/maintenance/aft)
 "hbA" = (
@@ -23185,7 +23185,7 @@
 /turf/open/floor/circuit/telecomms/mainframe,
 /area/tcommsat/server)
 "imH" = (
-/obj/structure/sign/poster/official/no_erp,
+/obj/structure/sign/poster/contraband/yes_erp,
 /turf/closed/wall/r_wall,
 /area/security/execution/transfer)
 "imJ" = (
@@ -36779,7 +36779,7 @@
 /turf/open/floor/plating/rust,
 /area/awaymission)
 "nfZ" = (
-/obj/structure/sign/poster/official/no_erp,
+/obj/structure/sign/poster/contraband/yes_erp,
 /turf/closed/wall/r_wall,
 /area/security/prison/shower)
 "nge" = (
@@ -51260,7 +51260,7 @@
 /turf/open/floor/plating/rust,
 /area/awaymission)
 "soM" = (
-/obj/structure/sign/poster/official/no_erp,
+/obj/structure/sign/poster/contraband/yes_erp,
 /obj/structure/falsewall/reinforced,
 /turf/closed/wall/r_wall,
 /area/maintenance/starboard/aft)
@@ -55502,7 +55502,7 @@
 /turf/open/misc/grass,
 /area/security/prison/workout)
 "tKO" = (
-/obj/structure/sign/poster/official/no_erp,
+/obj/structure/sign/poster/contraband/yes_erp,
 /turf/closed/wall/r_wall,
 /area/service/library)
 "tKU" = (
@@ -62182,7 +62182,7 @@
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "wrH" = (
-/obj/structure/sign/poster/official/no_erp,
+/obj/structure/sign/poster/contraband/yes_erp,
 /turf/closed/wall,
 /area/maintenance/aft)
 "wrW" = (

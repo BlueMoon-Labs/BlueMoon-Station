@@ -27094,7 +27094,7 @@
 /turf/open/floor/plasteel/dark,
 /area/centcom/evac)
 "sZJ" = (
-/obj/structure/sign/poster/official/no_erp{
+/obj/structure/sign/poster/contraband/yes_erp{
 	pixel_x = 32
 	},
 /turf/open/floor/plasteel/dark,

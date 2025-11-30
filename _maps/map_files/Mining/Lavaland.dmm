@@ -506,7 +506,7 @@
 /turf/open/floor/noslip,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "awa" = (
-/obj/structure/sign/poster/official/no_erp{
+/obj/structure/sign/poster/contraband/yes_erp{
 	pixel_x = 32
 	},
 /turf/open/floor/wood,

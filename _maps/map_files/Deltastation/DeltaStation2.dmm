@@ -66256,7 +66256,7 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/port)
 "fzp" = (
-/obj/structure/sign/poster/official/no_erp{
+/obj/structure/sign/poster/contraband/yes_erp{
 	pixel_y = -1
 	},
 /obj/structure/cable/white{
