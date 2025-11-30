@@ -49,7 +49,6 @@
 		H.equipOutfit(nukeop_outfit)
 
 	if(name == "Lone Operative")
-		//var/load_character = alert(H.client, "Желаете загрузить текущего своего выбранного персонажа?", "Играть своим персонажем!", "Да", "Нет")
 		var/load_character = tgui_alert(H.client, "Желаете загрузить текущего своего выбранного персонажа?", "Играть своим персонажем!", list("Да", "Нет"), 10 SECONDS, TRUE)
 		if(load_character == "Да")
 			H.load_client_appearance(H.client)
