@@ -473,7 +473,7 @@
 /datum/outfit/syndicate/lone/post_equip(mob/living/carbon/human/H, visualsOnly, client/preference_source)
 	. = ..()
 	var/obj/item/card/id/syndicate/W = H.wear_id
-	W.assignment = "Syndicate Nuclear Disk Protection Specialist"
+	W.assignment = "Syndicate Nuclear Disk Protector"
 	W.update_label(newjob = W.assignment)
 
 /datum/outfit/syndicate/syndiesquad
