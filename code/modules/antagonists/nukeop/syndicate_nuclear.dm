@@ -461,14 +461,20 @@
 	r_pocket = /obj/item/tank/internals/emergency_oxygen/engi/syndi
 	internals_slot = ITEM_SLOT_RPOCKET
 	belt = /obj/item/storage/belt/military
-	backpack_contents = list(/obj/item/storage/box/survival/syndie=1,\
-	/obj/item/clothing/accessory/permit=1,\
-	/obj/item/tank/jetpack/oxygen/harness=1,\
-	/obj/item/gun/ballistic/automatic/pistol=1,\
+	accessory = /obj/item/clothing/accessory/permit/special/disk_keeper
+	backpack_contents = list(/obj/item/storage/box/survival/syndie=1,
+	/obj/item/tank/jetpack/oxygen/harness=1,
+	/obj/item/gun/ballistic/automatic/pistol=1,
 	/obj/item/kitchen/knife/combat/survival)
 
 	uplink_type = /obj/item/syndicate_uplink
 	tc = 120
+
+/datum/outfit/syndicate/lone/post_equip(mob/living/carbon/human/H, visualsOnly, client/preference_source)
+	. = ..()
+	var/obj/item/card/id/syndicate/W = H.wear_id
+	W.assignment = "Syndicate Nuclear Disk Protection Specialist"
+	W.update_label(newjob = W.assignment)
 
 /datum/outfit/syndicate/syndiesquad
 	name = "Syndicate Special Forces"
