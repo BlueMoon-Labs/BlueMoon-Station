@@ -552,7 +552,7 @@
 	icon_state = "dar"
 	icon_living = "dar"
 	icon_dead = "dar_dead"
-	held_icon = "alta" //inhand нет, так что пока ну пусть будет алта хз
+	held_icon = "dar"
 	unique_pet = TRUE
 	gender = MALE
 	speak = list("*meow", "*meow2", "*meow3", "*meow4", "*meow5", "*meow6", "*mrrp", "*mrrp3", "*purr")
