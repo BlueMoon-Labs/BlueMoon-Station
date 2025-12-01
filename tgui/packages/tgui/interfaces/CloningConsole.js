@@ -115,67 +115,68 @@ export const CloningConsole = (props, context) => {
                 <Collapsible disabled={!records.length} title={`View Records (${records.length})`}>
                   <Box color="blue"><h3>Current Records:</h3></Box>
                   {records.map(record => (
-                      <Collapsible
-                        title={record["name"]}
-                        buttons={
-                          <Button
-                            content="Clone"
-                            icon="power-off"
-                            color="good"
-                            onClick={() => act('clone', {
-                              target: record["id"],
-                            })}
-                          />
-                        }>
-                        <div key={record["name"]} style={{
-                          'word-break': 'break-all',
-                        }}>
-                          Scan ID {record["id"]}<br />
-                          <Button
-                            content="Clone"
-                            icon="power-off"
-                            color="good"
-                            onClick={() => act('clone', {
-                              target: record["id"],
-                            })}
-                          />
-                          <Button
-                            content="Delete Record"
-                            icon="user-slash"
-                            color="bad"
-                            onClick={() => act('delrecord', {
-                              target: record["id"],
-                            })}
-                          />
-                          <Button
-                            content="Save to Disk"
-                            icon="upload"
-                            color="orange"
-                            disabled={diskData.length === 0}
-                            onClick={() => act('save', {
-                              target: record["id"],
-                            })}
-                          />
-                          <br />
-                          Health Implant Data<br />
+                    <Collapsible
+                      key={record["id"] || record["name"]}
+                      title={record["name"]}
+                      buttons={
+                        <Button
+                          content="Clone"
+                          icon="power-off"
+                          color="good"
+                          onClick={() => act('clone', {
+                            target: record["id"],
+                          })}
+                        />
+                      }>
+                      <div style={{
+                        'word-break': 'break-all',
+                      }}>
+                        Scan ID {record["id"]}<br />
+                        <Button
+                          content="Clone"
+                          icon="power-off"
+                          color="good"
+                          onClick={() => act('clone', {
+                            target: record["id"],
+                          })}
+                        />
+                        <Button
+                          content="Delete Record"
+                          icon="user-slash"
+                          color="bad"
+                          onClick={() => act('delrecord', {
+                            target: record["id"],
+                          })}
+                        />
+                        <Button
+                          content="Save to Disk"
+                          icon="upload"
+                          color="orange"
+                          disabled={diskData.length === 0}
+                          onClick={() => act('save', {
+                            target: record["id"],
+                          })}
+                        />
+                        <br />
+                        Health Implant Data<br />
 
-                          <small>
-                            Oxygen Deprivation Damage:<br />
-                            <ProgressBar color="blue" value={record["damages"]["oxy"] / 100} />
-                            Fire Damage:<br />
-                            <ProgressBar color="orange" value={record["damages"]["burn"] / 100} />
-                            Toxin Damage:<br />
-                            <ProgressBar color="green" value={record["damages"]["tox"] / 100} />
-                            Brute Damage:<br />
-                            <ProgressBar color="red" value={record["damages"]["brute"] / 100} />
-                          </small><br />
-                          Unique Identifier:<br />
-                          {record["UI"]}<br />
-                          Unique Enzymes:<br />
-                          {record["UE"]}<br />
-                          Blood Type: {record["blood_type"]}
-                        </div>
-                      </Collapsible>
+                        <small>
+                          Oxygen Deprivation Damage:<br />
+                          <ProgressBar color="blue" value={record["damages"]["oxy"] / 100} />
+                          Fire Damage:<br />
+                          <ProgressBar color="orange" value={record["damages"]["burn"] / 100} />
+                          Toxin Damage:<br />
+                          <ProgressBar color="green" value={record["damages"]["tox"] / 100} />
+                          Brute Damage:<br />
+                          <ProgressBar color="red" value={record["damages"]["brute"] / 100} />
+                        </small><br />
+                        Unique Identifier:<br />
+                        {record["UI"]}<br />
+                        Unique Enzymes:<br />
+                        {record["UE"]}<br />
+                        Blood Type: {record["blood_type"]}
+                      </div>
+                    </Collapsible>
                   ))}
                 </Collapsible>
               </Section>
