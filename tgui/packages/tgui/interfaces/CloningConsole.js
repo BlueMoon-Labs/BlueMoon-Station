@@ -105,9 +105,14 @@ export const CloningConsole = (props, context) => {
               />
             </Section>
           ) : (
-            <NoticeBox danger>
-              ERROR: No Scanner Detected!
-            </NoticeBox>
+            <>
+              <NoticeBox danger>
+                ERROR: No Scanner Detected!
+              </NoticeBox>
+              {cloning_result.message && (
+                <NoticeBox {...makeNoticeFlags(cloning_result.flag)}>{cloning_result.message}</NoticeBox>
+              )}
+            </>
           )}
           {useRecords && (
             <Section>
