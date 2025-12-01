@@ -10,14 +10,17 @@
 	var/obj/machinery/dna_scannernew/scanner = null //Linked scanner. For scanning.
 	var/clonepod_type = /obj/machinery/clonepod
 	var/list/pods //Linked cloning pods
-	var/temp = "Inactive"
-	var/scantemp_ckey
-	var/scantemp_name
-	var/scantemp = "Inactive"
+	var/cloning_message = ""
+	var/cloning_flag = "info" // TGUI
+	var/message_clear_timer
+	var/scanned_ckey
+	var/scanned_name
+	var/scan_message = ""
+	var/scan_flag = "info" // TGUI
 	var/menu = 1 //Which menu screen to display
 	var/datum/data/record/active_record = null
 	var/obj/item/disk/data/diskette = null //Mostly so the geneticist can steal everything.
-	var/loading = 0 // Nice loading text
+	var/loading = 0 // Nice loading texft
 	var/autoprocess = 0
 	var/use_records = TRUE // Old experimental cloner.
 	var/list/records = list()
@@ -30,7 +33,6 @@
 	var/obj/item/circuitboard/computer/cloning/board = circuit
 	records = board.records
 
-
 /obj/machinery/computer/cloning/Destroy()
 	if(pods)
 		for(var/P in pods)
@@ -38,15 +40,43 @@
 		pods = null
 	return ..()
 
-/obj/machinery/computer/cloning/proc/GetAvailablePod(mind = null)
+/obj/machinery/computer/cloning/proc/SetScanMessage(message = "", flag = "info")
+	scan_message = message
+	scan_flag = flag
+
+/obj/machinery/computer/cloning/proc/SetCloningMessage(message = "", flag = "info")
+	cloning_message = message
+	cloning_flag = flag
+
+/obj/machinery/computer/cloning/proc/GetAvailablePod()
 	if(!pods)
 		return
 	for(var/P in pods)
 		var/obj/machinery/clonepod/pod = P
-		if(pod.occupant && pod.get_clone_mind == CLONEPOD_GET_MIND && pod.clonemind == mind)
+		if(pod.occupant && pod.get_clone_mind == CLONEPOD_GET_MIND && pod.clonemind == null)
 			return null
 		if(pod.is_operational() && !(pod.occupant || pod.mess))
 			return pod
+
+/obj/machinery/computer/cloning/proc/get_pods_status()
+	var/list/result = list()
+
+	for(var/obj/machinery/clonepod/pod in pods)
+		var/list/L
+
+		if(!pod.is_operational())
+			L = list("status"="Offline", "color"="bad")
+		else if(pod.mess)
+			L = list("status"="Messy", "color"="bad")
+		else if(pod.occupant && pod.occupant.loc == pod)
+			var/mob/living/O = pod.occupant
+			L = list("status"="Cloning [O.real_name] [round(pod.get_completion())]%", "color"="orange")
+		else
+			L = list("status"="Online", "color"="good")
+
+		result += list(L)
+
+	return result
 
 /obj/machinery/computer/cloning/proc/HasEfficientPod()
 	if(!pods)
@@ -80,7 +110,7 @@
 			continue	//how though?
 
 		if(pod.growclone(R.fields["ckey"], R.fields["name"], R.fields["UI"], R.fields["SE"], R.fields["mind"], R.fields["blood_type"], R.fields["mrace"], R.fields["features"], R.fields["factions"], R.fields["quirks"], R.fields["bank_account"], R.fields["traumas"]))
-			temp = "[R.fields["name"]] => Cloning cycle in progress..."
+			SetCloningMessage("[R.fields["name"]] => Cloning cycle in progress...", "warning")
 			records -= R
 
 /obj/machinery/computer/cloning/proc/updatemodules(findfirstcloner)
@@ -156,7 +186,7 @@
 
 /obj/machinery/computer/cloning/proc/EjectDisk(mob/user)
 	if(diskette)
-		scantemp = "Disk Ejected"
+		SetScanMessage("Disk Ejected", "success")
 		diskette.forceMove(drop_location())
 		usr.put_in_active_hand(diskette)
 		diskette = null
@@ -172,15 +202,15 @@
 			continue
 	if(!GRAB || !GRAB.fields)
 		playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
-		scantemp = "Failed saving to disk: Data Corruption"
+		SetScanMessage("Failed saving to disk: Data Corruption","danger")
 		return FALSE
 	if(!diskette || diskette.read_only)
-		scantemp = !diskette ? "Failed saving to disk: No disk." : "Failed saving to disk: Disk refuses override attempt."
+		SetScanMessage(!diskette ? "Failed saving to disk: No disk." : "Failed saving to disk: Disk refuses override attempt.","danger")
 		playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
 		return
 	diskette.fields = GRAB.fields.Copy()
 	diskette.name = "data disk - '[src.diskette.fields["name"]]'"
-	scantemp = "Saved to disk successfully."
+	SetScanMessage("Saved to disk successfully.","success")
 	playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, 0)
 
 /obj/machinery/computer/cloning/proc/DeleteRecord(mob/user, target)
@@ -193,34 +223,34 @@
 			continue
 	if(!GRAB)
 		playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
-		scantemp = "Cannot delete: Data Corrupted."
+		SetScanMessage("Cannot delete: Data Corrupted.","danger")
 		return FALSE
 	var/obj/item/card/id/C = usr.get_idcard(hand_first = TRUE)
 	if(istype(C) || istype(C, /obj/item/pda) || istype(C, /obj/item/modular_computer/tablet))
 		if(check_access(C))
-			scantemp = "[GRAB.fields["name"]] => Record deleted."
+			SetScanMessage("[GRAB.fields["name"]] => Record deleted.","warning")
 			records.Remove(GRAB)
 			playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, 0)
 			var/obj/item/circuitboard/computer/cloning/board = circuit
 			board.records = records
 			return TRUE
-	scantemp = "Cannot delete: Access Denied."
+	SetScanMessage("Cannot delete: Access Denied.","danger")
 	playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
 
 /obj/machinery/computer/cloning/proc/Load(mob/user)
 	if(!diskette || !istype(diskette.fields) || !diskette.fields["name"] || !diskette.fields)
-		scantemp = "Failed loading: Load error."
+		SetScanMessage("Failed loading: Load error.","danger")
 		playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
 		return
 	for(var/datum/data/record/R in records)
 		if(R.fields["key"] == diskette.fields["key"])
-			scantemp = "Failed loading: Data already exists!"
+			SetScanMessage("Failed loading: Data already exists!","danger")
 			return FALSE
 	var/datum/data/record/R = new(src)
 	for(var/key in diskette.fields)
 		R.fields[key] = diskette.fields[key]
 	records += R
-	scantemp = "Loaded into internal storage successfully."
+	SetScanMessage("Loaded into internal storage successfully.","success")
 	var/obj/item/circuitboard/computer/cloning/board = circuit
 	board.records = records
 	playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, 0)
@@ -228,33 +258,31 @@
 /obj/machinery/computer/cloning/proc/Clone(mob/user, target)
 	var/datum/data/record/C = find_record("id", target, records)
 	//Look for that player! They better be dead!
+	var/sound = 'sound/machines/terminal_prompt_deny.ogg'
 	if(C)
 		var/obj/machinery/clonepod/pod = GetAvailablePod()
 		//Can't clone without someone to clone.  Or a pod.  Or if the pod is busy. Or full of gibs.
 		if(!LAZYLEN(pods))
-			temp = "Error: No Clonepods detected."
-			playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
+			SetCloningMessage("Error: No Clonepods detected.","danger")
 		else if(!pod)
-			temp = "Error: No Clonepods available."
-			playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
+			SetCloningMessage("Error: No Clonepods available.","danger")
 		else if(!CONFIG_GET(flag/revival_cloning))
-			temp = "Error: Unable to initiate cloning cycle."
-			playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
+			SetCloningMessage("Error: Unable to initiate cloning cycle.","danger")
 		else if(pod.occupant)
-			temp = "Warning: Cloning cycle already in progress."
-			playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
+			SetCloningMessage("Warning: Cloning cycle already in progress.","info")
 		else if(pod.growclone(C.fields["ckey"], C.fields["name"], C.fields["UI"], C.fields["SE"], C.fields["mind"], C.fields["blood_type"], C.fields["mrace"], C.fields["features"], C.fields["factions"], C.fields["quirks"], C.fields["bank_account"], C.fields["traumas"]))
-			temp = "Notice: [C.fields["name"]] => Cloning cycle in progress..."
-			playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, 0)
+			SetCloningMessage("[C.fields["name"]] => Cloning cycle has begun...","success")
+			sound = 'sound/machines/terminal_prompt_confirm.ogg'
 			records.Remove(C)
 		else
-			temp = "Error: [C.fields["name"]] => Initialisation failure."
-			playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
-
+			SetCloningMessage("Error: [C.fields["name"]] => Initialisation failure.","danger")
 	else
-		temp = "Failed to clone: Data corrupted."
-		playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
+		SetCloningMessage("Failed to clone: Data corrupted.","danger")
+
+	playsound(src, sound, 50, 0)
 	. = TRUE
+	// Clear cloning_message
+	addtimer(CALLBACK(src,PROC_REF(SetCloningMessage)), 15 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 
 /obj/machinery/computer/cloning/proc/Toggle_lock(mob/user)
 	if(!scanner.is_operational())
@@ -268,7 +296,7 @@
 /obj/machinery/computer/cloning/proc/Scan(mob/user)
 	if(!scanner.is_operational() || !scanner.occupant)
 		return
-	scantemp = "[scantemp_name] => Scanning..."
+	SetScanMessage("[scanned_name] => Scanning...","warning")
 	loading = TRUE
 	playsound(src, 'sound/machines/terminal_prompt.ogg', 50, 0)
 	say("Initiating scan...")
@@ -324,27 +352,22 @@
 	else
 		data["hasAutoprocess"] = FALSE
 	data["autoprocess"] = autoprocess
-	var/list/lack_machine = list()
-	if(isnull(src.scanner))
-		lack_machine += "ERROR: No Scanner Detected!"
-	if(!LAZYLEN(pods))
-		lack_machine += "ERROR: No Pod Detected!"
-	data["lacksMachine"] = lack_machine
-	data["temp"] = temp
-	var/build_temp = null
+	data["pods"] = get_pods_status()
+	data["hasScanner"] = !isnull(src.scanner)
+	var/build_temp = use_records ? "Ready to Scan" : "Ready to Clone"
 	var/mob/living/scanner_occupant = get_mob_or_brainmob(scanner?.occupant)
-	if(scanner_occupant?.ckey != scantemp_ckey || scanner_occupant?.name != scantemp_name)
+	if(!scan_message || scanner_occupant?.ckey != scanned_ckey || scanner_occupant?.name != scanned_name)
 		if(use_records)
-			build_temp = "Ready to Scan"
-			scantemp_ckey = scanner_occupant?.ckey
-			scantemp_name = scanner_occupant?.name
+			scanned_ckey = scanner_occupant?.ckey
+			scanned_name = scanner_occupant?.name
+		if(scanner_occupant)
+			SetScanMessage("[scanner_occupant] => [build_temp]","info")
 		else
-			build_temp = "Ready to Clone"
-		scantemp = "[scanner_occupant] => [build_temp]"
-	data["scanTemp"] = scantemp
+			SetScanMessage(build_temp+"...","info")
+	data["scan_result"] = list("message" = scan_message, "flag" = scan_flag)
+	data["cloning_result"] = list("message" = cloning_message, "flag" = cloning_flag)
 	data["scannerLocked"] = scanner?.locked
 	data["hasOccupant"] = scanner?.occupant
-	data["recordsLength"] = "View Records ([length(records)])"
 
 	return data
 
@@ -461,7 +484,7 @@
 	src.records += R
 	var/obj/item/circuitboard/computer/cloning/board = circuit
 	board.records = records
-	scantemp = "Subject successfully scanned."
+	SetScanMessage("Subject successfully scanned.","success")
 	playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, 0)
 
 //Used by the experimental cloning computer.
@@ -488,52 +511,49 @@
 	var/obj/machinery/clonepod/pod = GetAvailablePod()
 	//Can't clone without someone to clone.  Or a pod.  Or if the pod is busy. Or full of gibs.
 	if(!LAZYLEN(pods))
-		temp = "No Clonepods detected."
+		SetCloningMessage("No Clonepods detected.","danger")
 		playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
 	else if(!pod)
-		temp = "No Clonepods available."
+		SetCloningMessage("No Clonepods available.","danger")
 		playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
 	else if(pod.occupant)
-		temp = "Cloning cycle already in progress."
+		SetCloningMessage("Cloning cycle already in progress.","info")
 		playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
 	else
 		pod.growclone(null, mob_occupant.real_name, dna.uni_identity, dna.mutation_index, null, dna.blood_type, clone_species, dna.features, mob_occupant.faction)
-		temp = "[mob_occupant.real_name] => Cloning data sent to pod."
+		SetCloningMessage("[mob_occupant.real_name] => Cloning data sent to pod.","success")
 		playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, 0)
 
 /obj/machinery/computer/cloning/proc/can_scan(datum/dna/dna, mob/living/mob_occupant, experimental = FALSE, datum/bank_account/account)
+	var/error_message = ""
+	var/error_sound = 'sound/machines/terminal_prompt_deny.ogg'
 	if(!istype(dna))
-		scantemp = "Unable to locate valid genetic data."
-		playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
-		return
+		error_message = "Unable to locate valid genetic data."
+	// Check for DNC Order quirk
+	else if(HAS_TRAIT(mob_occupant, TRAIT_DNC_ORDER))
+		error_message = "Subject has an active DNC order on file. Further operations terminated."
 	// BLUEMOON ADD START - нельзя сканировать синтетиков
-	if(HAS_TRAIT(mob_occupant, TRAIT_ROBOTIC_ORGANISM))
-		scantemp = "ERROR. Insert a living occupant."
-		playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
-		return
+	else if(HAS_TRAIT(mob_occupant, TRAIT_ROBOTIC_ORGANISM))
+		error_message = "ERROR. Insert a living occupant."
 	// BLUEMOON ADD END
-	if(!experimental)
+	else if((HAS_TRAIT(mob_occupant, TRAIT_NOCLONE)) && (src.scanner.scan_level < 2))
+		error_message = "Subject no longer contains the fundamental materials required to create a living clone."
+		error_sound = 'sound/machines/terminal_alert.ogg'
+	else if(!experimental)
 		if(mob_occupant.suiciding || mob_occupant.hellbound)
-			scantemp = "Subject's brain is not responding to scanning stimuli."
-			playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
-			return
-	if((HAS_TRAIT(mob_occupant, TRAIT_NOCLONE)) && (src.scanner.scan_level < 2))
-		scantemp = "Subject no longer contains the fundamental materials required to create a living clone."
-		playsound(src, 'sound/machines/terminal_alert.ogg', 50, 0)
-		return
-	if (!experimental)
-		if(!mob_occupant.ckey || !mob_occupant.client)
-			scantemp = "Mental interface failure."
-			playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
-			return
-		if (find_record("ckey", mob_occupant.ckey, records))
-			scantemp = "Subject already in database."
-			playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
-			return
-		if(SSeconomy.full_ancap && !account)
-			scantemp = "Subject is either missing an ID card with a bank account on it, or does not have an account to begin with. Please ensure the ID card is on the body before attempting to scan."
-			playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, 0)
-			return
+			error_message = "Subject's brain is not responding to scanning stimuli."
+		else if(!mob_occupant.ckey || !mob_occupant.client)
+			error_message = "Mental interface failure."
+		else if (find_record("ckey", mob_occupant.ckey, records))
+			error_message = "Subject already in database."
+		else if(SSeconomy.full_ancap && !account)
+			error_message = "Subject is either missing an ID card with a bank account on it, or does not have an account to begin with. Please ensure the ID card is on the body before attempting to scan."
+
+	if(error_message)
+		SetScanMessage(error_message,"danger")
+		playsound(src, error_sound, 50, 0)
+		return FALSE
+
 	return TRUE
 
 //Prototype cloning console, much more rudimental and lacks modern functions such as saving records, autocloning, or safety checks.
@@ -545,3 +565,5 @@
 	circuit = /obj/item/circuitboard/computer/cloning/prototype
 	clonepod_type = /obj/machinery/clonepod/experimental
 	use_records = FALSE	//Wait, so you tell me it lacks records but you never set it as false?
+
+#undef AUTOCLONING_MINIMAL_LEVEL

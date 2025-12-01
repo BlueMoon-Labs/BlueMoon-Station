@@ -350,7 +350,7 @@
 	if (!message)
 		return FALSE
 
-	connected.temp = message
+	connected.cloning_message = message
 	connected.updateUsrDialog()
 	return TRUE
 
