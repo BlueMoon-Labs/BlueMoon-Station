@@ -20,12 +20,18 @@
 	var/obj/item/integrated_circuit/manipulation/interacter/my_interacter
 	hand_bodyparts = null
 
+/mob/living/carbon/integral/breathe()
+	return
+
+/mob/living/carbon/integral/update_body_parts()
+	return
+
 /mob/living/carbon/integral/Initialize(mapload)
 	. = ..()
-	mind = new /datum/mind //заглушка чтобы не рантаймило
+	mind = new /datum/mind
 
 /mob/living/carbon/integral/CheckActionCooldown(cooldown = 0.5, from_next_action = FALSE, ignore_mod = FALSE, ignore_next_action = FALSE, immediate = FALSE)
-	return TRUE //У нас уже есть кулдаун в виде кулдауна самого модуля. А вот родительская версия прока ломает взаимодействие со стенами(например, исползование сварки)
+	return TRUE //У нас уже есть кулдаун в виде кулдауна самого модуля. А вот родительская версия прока ломает взаимодействие со стенами(например, использование сварки)
 
 /mob/living/carbon/integral/put_in_hand(obj/item/I, hand_index, forced, ignore_anim)
 	return TRUE
