@@ -12,7 +12,6 @@
 	var/list/pods //Linked cloning pods
 	var/cloning_message = ""
 	var/cloning_flag = "info" // TGUI
-	var/message_clear_timer
 	var/scanned_ckey
 	var/scanned_name
 	var/scan_message = ""
