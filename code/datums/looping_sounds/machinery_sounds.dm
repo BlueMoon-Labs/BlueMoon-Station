@@ -124,3 +124,15 @@
 	mid_length = 16
 	mid_sounds = list('sound/effects/rbmk/reactor_hum.ogg' = 10)
 	volume = 10
+
+/datum/looping_sound/bloodbankgen
+	mid_sounds = list('sound/machines/computer/computer_mid1.ogg'=1)
+	mid_length = 16
+	end_sound = 'sound/machines/computer/computer_end.ogg'
+	volume = 50
+	end_volume = 100
+	falloff_distance = 0
+	falloff_exponent = 4 // quiet
+	extra_range = -13 // 3 tiles around
+	vary = TRUE
+
