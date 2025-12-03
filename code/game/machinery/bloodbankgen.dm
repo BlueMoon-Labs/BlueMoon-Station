@@ -18,7 +18,7 @@
 	var/maxbloodstored = 500 // Max uints of blood bank
 	var/transfer_amount = 20 // Draining && Filling amount
 	var/efficiency = 1
-	var/datum/looping_sound/bloodbankgen/soundloop // Working soung
+	var/datum/looping_sound/bloodbankgen/soundloop // Working sound
 
 /obj/machinery/bloodbankgen/Initialize(mapload)
 	. = ..()
