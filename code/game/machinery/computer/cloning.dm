@@ -16,10 +16,7 @@
 	var/scanned_name
 	var/scan_message = ""
 	var/scan_flag = "info" // TGUI
-	var/menu = 1 //Which menu screen to display
-	var/datum/data/record/active_record = null
 	var/obj/item/disk/data/diskette = null //Mostly so the geneticist can steal everything.
-	var/loading = 0 // Nice loading texft
 	var/autoprocess = 0
 	var/use_records = TRUE // Old experimental cloner.
 	var/list/records = list()
@@ -296,7 +293,6 @@
 	if(!scanner.is_operational() || !scanner.occupant)
 		return
 	SetScanMessage("[scanned_name] => Scanning...","warning")
-	loading = TRUE
 	playsound(src, 'sound/machines/terminal_prompt.ogg', 50, 0)
 	say("Initiating scan...")
 	var/prev_locked = scanner.locked
@@ -410,7 +406,6 @@
 	else
 		clone_occupant(L)
 
-	loading = FALSE
 	scanner.locked = prev_locked
 	playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, 0)
 
