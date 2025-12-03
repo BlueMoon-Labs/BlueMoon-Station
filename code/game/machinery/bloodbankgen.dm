@@ -18,7 +18,7 @@
 	var/maxbloodstored = 500 // Max uints of blood bank
 	var/transfer_amount = 20 // Draining && Filling amount
 	var/efficiency = 1
-	var/datum/looping_sound/bloodbankgen/soundloop // Workong soung
+	var/datum/looping_sound/bloodbankgen/soundloop // Working soung
 
 /obj/machinery/bloodbankgen/Initialize(mapload)
 	. = ..()
@@ -125,23 +125,24 @@
 				ToggleDrain(silent = TRUE)
 				playsound(src, 'sound/machines/triple_beep.ogg', 50, 1)
 				return
-
-			var/blood_amount = 0
+			bag.reagents.get_reagent_amount()
+			var/datum/reagent/blood/selected_blood
 			for(var/datum/reagent/blood/B in bag.reagents.reagent_list)
 				if(islist(B.data) && B.data["blood_type"] == "SY")
 					continue
-				blood_amount = B.volume
+				selected_blood = B
 				break
-			var/amount = min(blood_amount, min(transfer_amount, reagents.maximum_volume - reagents.total_volume))
-			if(!amount)
+			var/amount = 0
+			if(selected_blood)
+				amount = round(min(selected_blood.volume, min(transfer_amount, reagents.maximum_volume - reagents.total_volume)))
+			if(!selected_blood || !amount)
 				ToggleDrain(silent = TRUE)
 				playsound(src, 'sound/machines/triple_beep.ogg', 50, 1)
 				return
 
 			var/bonus = round((amount/transfer_amount)*(TRANSFER_BONUS_EFFICIENCY*efficiency))
 			reagents.add_reagent(/datum/reagent/blood/synthetics, amount + bonus)
-			bag.reagents.remove_reagent(/datum/reagent/blood, amount)
-			update_icon()
+			bag.reagents.remove_reagent(selected_blood.type, amount)
 		if(filling)
 			if(!reagents.total_volume || !outbag || outbag.reagents.total_volume >= outbag.reagents.maximum_volume)
 				ToggleFilling(silent = TRUE)
@@ -150,7 +151,7 @@
 			//monitor the output bag's  reagents storage.
 			var/amount = min(transfer_amount, outbag.reagents.maximum_volume - outbag.reagents.total_volume)
 			reagents.trans_to(outbag, amount)
-			update_icon()
+		update_icon()
 	else
 		use_power = IDLE_POWER_USE
 		soundloop.stop()
@@ -188,7 +189,7 @@
 
 	return result != CANT_UNFASTEN
 
-/obj/machinery/bloodbankgen/can_be_unfasten_wrench(mob/user, silent)
+/obj/machinery/bloodbankgen/can_be_unfasten_wrench(mob/user, silent = FALSE)
 	. = ..()
 	if(. == FAILED_UNFASTEN)
 		return .
@@ -214,9 +215,7 @@
 		else if(!bag || !outbag)
 			var/datum/reagent/blood/B = O.reagents.get_master_reagent()
 			var/is_syntblood = istype(B) && islist(B.data) && B.data["blood_type"] == "SY"
-			if(is_syntblood)
-				attach_bag(O, user, is_input = FALSE)
-			else if(O.reagents.reagent_list.len == 0)
+			if(is_syntblood || O.reagents.reagent_list.len == 0)
 				attach_bag(O, user, is_input = FALSE)
 			else // Blood I guess
 				attach_bag(O, user, is_input = TRUE)
