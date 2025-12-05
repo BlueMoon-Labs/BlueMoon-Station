@@ -32,6 +32,7 @@
 			. += "<span class='notice'>Due to a security situation, its locking clamps can be toggled by swiping any ID.</span>"
 		else
 			. += "<span class='notice'>Its locking clamps can be [clamps_locked ? "dis" : ""]engaged by swiping an ID with access.</span>"
+	. += span_notice("Looks like it's can be <b>unbolted</b>.")
 
 /obj/machinery/defibrillator_mount/process()
 	if(defib && defib.cell && defib.cell.charge < defib.cell.maxcharge && is_operational())
@@ -132,9 +133,10 @@
 /obj/machinery/defibrillator_mount/wrench_act(mob/living/user, obj/item/I)
 	if(defib)
 		balloon_alert("Нужно вынуть дефибриллятор!")
-		return TRUE
-	new /obj/item/wallframe/defib_mount(drop_location())
-	qdel(src)
+	else if(I.use_tool(src, user, 1.5 SECONDS))
+		new /obj/item/wallframe/defib_mount(drop_location())
+		qdel(src)
+	return TRUE
 
 /obj/machinery/defibrillator_mount/AltClick(mob/living/carbon/user)
 	. = ..()
