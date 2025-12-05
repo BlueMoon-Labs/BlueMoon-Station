@@ -204,7 +204,7 @@
 
 			var/has_wound = FALSE
 			for(var/datum/wound/wound in C.all_wounds)
-				if(wound.wound_type != WOUND_BURN || !wound?.limb?.is_organic_limb())
+				if(wound.wound_type != WOUND_BURN || !wound?.limb?.is_organic_limb(FALSE))
 					continue
 				has_wound = TRUE
 				break

@@ -82,15 +82,16 @@
 	if(prob(severity * 2))
 		victim.take_bodypart_damage(rand(2, severity * 2), stamina=rand(2, severity * 2.5), wound_bonus=CANT_WOUND)
 		if(prob(33))
-			var/has_pain = victim.has_pain(limb)
-			if(limb.is_robotic_limb(FALSE))
+			if(limb.is_robotic_limb())
 				to_chat(victim, span_danger("Ваша гидравлика продолжает восстанавливаться, в процессе надрывая обшивку рядом!"))
-			else if(!has_pain)
-				to_chat(victim, span_big_warning("Вы ощущаете как двигаются ваши кости в теле, восстанавливаясь!"))
-			else if(has_pain <= PAIN_LOW)
-				to_chat(victim, span_big_warning("Вы ощущаете боль в теле, пока ваши кости восстанавливаются!"))
 			else
-				to_chat(victim, span_danger("Вы ощущаете острую боль в теле, пока ваши кости восстанавливаются!"))
+				var/has_pain = victim.has_pain(limb)
+				if(!has_pain)
+					to_chat(victim, span_big_warning("Вы ощущаете как двигаются ваши кости в теле, восстанавливаясь!"))
+				else if(has_pain <= PAIN_LOW)
+					to_chat(victim, span_big_warning("Вы ощущаете боль в теле, пока ваши кости восстанавливаются!"))
+				else
+					to_chat(victim, span_danger("Вы ощущаете острую боль в теле, пока ваши кости восстанавливаются!"))
 
 	if(regen_points_current > regen_points_needed)
 		if(!victim || !limb)
@@ -108,16 +109,18 @@
 	if(prob((severity - 1) * 15))
 		// And you have a 70% or 50% chance to actually land the blow, respectively
 		if(prob(70 - 20 * (severity - 1)))
-			var/has_pain = victim.has_pain(limb)
-			if(limb.is_robotic_limb(FALSE))
+
+			if(limb.is_robotic_limb())
 				to_chat(victim, span_userdanger("Гидравлика в вашей [limb.ru_name_v] смещается, пока вы бьете [target], повреждаясь!"))
-			else if(has_pain <= PAIN_LOW)
-				to_chat(victim, span_userdanger("Кости в вашей [limb.ru_name_v] двигаются, пока вы бьете [target]!"))
 			else
-				to_chat(victim, span_userdanger("Перелом в вашей [limb.ru_name_v] отзывается болью, пока вы бьете [target]!"))
+				var/has_pain = victim.has_pain(limb)
+				if(has_pain <= PAIN_LOW)
+					to_chat(victim, span_userdanger("Кости в вашей [limb.ru_name_v] двигаются, пока вы бьете [target]!"))
+				else
+					to_chat(victim, span_userdanger("Перелом в вашей [limb.ru_name_v] отзывается болью, пока вы бьете [target]!"))
 			limb.receive_damage(brute=rand(1,5))
 		else
-			var/robo_limb = limb.is_robotic_limb(FALSE)
+			var/robo_limb = limb.is_robotic_limb()
 			var/has_pain = victim.has_pain(limb)
 			victim.visible_message(
 				span_danger("[victim] слабо бьет [target] [victim.ru_ego()] [robo_limb ? "поврежденной" : "сломанной"] конечностью - [limb.ru_name][has_pain ? ", изнывая от боли" : ""]!"), \
@@ -146,7 +149,7 @@
 				victim.bleed(blood_bled, TRUE)
 			if(7 to 13)
 				// BLUEMOON ADD START - кастомное описание для роботов
-				if(limb.is_robotic_limb(FALSE))
+				if(limb.is_robotic_limb())
 					// TO DO
 				else
 				// BLUEMOON ADD END
@@ -154,7 +157,7 @@
 				victim.bleed(blood_bled, TRUE)
 			if(14 to 19)
 				// BLUEMOON ADD START - кастомное описание для роботов
-				if(limb.is_robotic_limb(FALSE))
+				if(limb.is_robotic_limb())
 					// TO DO
 				else
 				// BLUEMOON ADD END
@@ -167,7 +170,7 @@
 				victim.bleed(blood_bled)
 			if(20 to INFINITY)
 				// BLUEMOON ADD START - кастомное описание для роботов
-				if(limb.is_robotic_limb(FALSE))
+				if(limb.is_robotic_limb())
 					// TO DO
 				else
 				// BLUEMOON ADD END
@@ -256,7 +259,7 @@
 	scar_keyword = "bluntmoderate"
 
 /datum/wound/blunt/moderate/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
-	if(istype(L) && L.is_robotic_limb(FALSE))
+	if(istype(L) && L.is_robotic_limb())
 		ru_name = "Повреждение крепления"
 		ru_name_r = "повреждения крепления"
 		desc = "Крепление конечности некорректно повернуто. Это сказывается на моторике."
@@ -268,7 +271,7 @@
 
 /datum/wound/blunt/moderate/crush()
 	if(prob(33))
-		if(limb.is_robotic_limb(FALSE))
+		if(limb.is_robotic_limb())
 			victim.visible_message(span_danger("Сдвинутое крепление [limb.ru_name] [victim] возвращается на место!"), span_userdanger("Ваше сдвинутое крепление у [limb.ru_name] возвращается на место! Система в норме."))
 		else
 			victim.visible_message(span_danger("Вывихнутая [limb.ru_name] [victim] возвращается на место!"), span_userdanger("Ваша вывихнутая [limb.ru_name] возвращается на место! Ау!"))
@@ -323,7 +326,7 @@
 		limb.receive_damage(brute = 10, stamina=stamina_damage, wound_bonus = CANT_WOUND)
 		// рекурсивно повторяем
 		return handle_joint(user, user.a_intent != INTENT_HELP)
-	
+
 	// Успех
 	user.visible_message(message, self_message, ignored_mobs = victim)
 	to_chat(victim,victim_message)
@@ -331,7 +334,7 @@
 	limb.receive_damage(brute = success_brute, stamina = stamina_damage, wound_bonus = success_wound_bonus)
 	if(!harmfull)
 		qdel(src)
-	
+
 	return TRUE
 
 /datum/wound/blunt/moderate/treat(obj/item/I, mob/user)
@@ -387,7 +390,7 @@
 	wound_flags = (BONE_WOUND | ACCEPTS_GAUZE | MANGLES_BONE)
 
 /datum/wound/blunt/severe/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
-	if(istype(L) && L.is_robotic_limb(FALSE))
+	if(istype(L) && L.is_robotic_limb())
 		ru_name = "Повреждение гидравлики"
 		ru_name_r = "Повреждения гидравлики"
 		desc = "Гидравлика сильно повреждена и треснула. Серьёзно ухудшает моторику."
@@ -396,9 +399,9 @@
 		occur_text = "трешит с неприятным звуком"
 		wound_flags = (BONE_WOUND | MANGLES_BONE)
 		treatable_by = list(/obj/item/stack/medical/nanogel)
-	
+
 	return ..()
-	
+
 /datum/wound/blunt/critical
 	name = "Compound Fracture"
 	ru_name = "Открытый перелом"
@@ -424,7 +427,7 @@
 	wound_flags = (BONE_WOUND | ACCEPTS_GAUZE | MANGLES_BONE)
 
 /datum/wound/blunt/critical/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
-	if(istype(L) && L.is_robotic_limb(FALSE))
+	if(istype(L) && L.is_robotic_limb())
 		ru_name = "Разрыв гидравлики"
 		ru_name_r = "разрыва гидравлики"
 		desc = "Гидравлика переломалась и практически не функционирует."
@@ -433,16 +436,16 @@
 		occur_text = "надламывается, из-за чего гидравлика выходят наружу"
 		wound_flags = (BONE_WOUND | MANGLES_BONE)
 		treatable_by = list(/obj/item/stack/medical/nanogel)
-	
+
 	return ..()
 
 // doesn't make much sense for "a" bone to stick out of your head
 /datum/wound/blunt/critical/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
 	if(istype(L) && L.body_zone == BODY_ZONE_HEAD && severity == WOUND_SEVERITY_CRITICAL)
-		occur_text = L.is_robotic_limb(FALSE) \
+		occur_text = L.is_robotic_limb() \
 			? "раскалывается, обнажая сквозь поврежденную обшивку и провода, различные платы" \
 			: "раскалывается, обнажая сквозь пелену крови и плоти, потрескавшийся череп"
-		examine_desc = L.is_robotic_limb(FALSE) \
+		examine_desc = L.is_robotic_limb() \
 			? "имеет раскол, из которого торчат куски проводов" \
 			: "имеет выемку, из которой торчат куски черепа"
 	. = ..()
@@ -488,25 +491,25 @@
 		to_chat(victim, span_userdanger("[user] наносит [I] на вашу на конечность - [limb.ru_name]. Вы чувствуете, как ваши кости [has_pain ? "болезнено " : ""]хрустят, срастаясь и перестриваясь."))
 	else
 		var/painkiller_bonus = 0
-		
+
 		if(has_pain <= PAIN_LOW)
 			painkiller_bonus += 25
 		else if(has_pain <= PAIN_MEDIUM)
 			painkiller_bonus += 15
-	
+
 		if(has_pain && prob(25 + (20 * severity - 2) - painkiller_bonus)) // 15%/35% chance to fail self-applying with severe and critical wounds, modded by painkillers
 			victim.visible_message(span_danger("[victim] проваливается с нанесением [I] на [victim.ru_ego()] конечность - [limb.ru_name]!"), span_notice("Вы дергаетесь от боли, не в силах нанести [I] на вашу конечность [limb.ru_name]!"))
 			victim.Stun(0.5 SECONDS)
 			victim.Jitter(10)
 			limb.receive_damage(stamina=15)
 			return
-		
+
 	var/stamina_damage = 60
 	if(!has_pain)
 		stamina_damage = 0
 	else if(has_pain <= PAIN_LOW)
 		stamina_damage = 30
-	
+
 	limb.receive_damage(30, stamina=stamina_damage, wound_bonus=CANT_WOUND)
 	if(!gelled)
 		gelled = TRUE
