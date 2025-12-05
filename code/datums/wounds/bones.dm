@@ -298,6 +298,31 @@
 	if(!do_after(user, time, target=victim, extra_checks = CALLBACK(src, PROC_REF(still_exists))))
 		return FALSE
 
+	var/has_pain = victim.has_pain(limb)
+	var/stamina_damage = (has_pain > PAIN_LOW) ? 30 : 0
+	var/glass_bones = HAS_TRAIT(victim, TRAIT_GLASS_BONES)
+
+	if(glass_bones || !prob(65))
+		// Провал
+		user.visible_message(
+			span_danger("[user] болезненно выкручивает вывих на [limb.ru_name_v] персонажа [victim]."),
+			span_danger("Вы болезненно выкручиваете вывих на [limb.ru_name_v] персонажа [victim]!"),
+			ignored_mobs = victim,
+		)
+		to_chat(victim,
+			span_userdanger("[user] [has_pain ? "болезненно " : ""]выкручивает вывих на вашей [limb.ru_name_v]!"),
+		)
+
+		if(glass_bones)
+			//var/datum/wound/blunt/bone_crack = (harmfull ? /datum/wound/blunt/severe : /datum/wound/blunt/critical)
+			replace_wound(harmfull ? /datum/wound/blunt/severe : /datum/wound/blunt/critical)
+			return FALSE
+
+		limb.receive_damage(brute = 10, stamina=stamina_damage, wound_bonus = (harmfull ? 10 : CANT_WOUND))
+		// рекурсивно повторяем
+		return handle_joint(user, user.a_intent != INTENT_HELP)
+
+	// Успех
 	var/message = harmfull \
 		? span_danger("[user] с резким хрустом вправляет вывих на [limb.ru_name_v] персонажа [victim]!") \
 		: span_danger("[user] вправляет вывих на [limb.ru_name_v] персонажа [victim]!")
@@ -309,25 +334,7 @@
 		: span_userdanger("[user] вправляет вашу вывих на [limb.ru_name_v] - на место!")
 	var/success_brute = harmfull ? 25 : 20
 	var/success_wound_bonus = harmfull ? 30 : CANT_WOUND
-	var/has_pain = victim.has_pain(limb)
-	var/stamina_damage = (has_pain > PAIN_LOW) ? 30 : 0
 
-	if(!prob(65))
-		// Провал
-		user.visible_message(
-			span_danger("[user] болезненно выкручивает вывих на [limb.ru_name_v] персонажа [victim]."),
-			span_danger("Вы болезненно выкручиваете вывих на [limb.ru_name_v] персонажа [victim]!"),
-			ignored_mobs = victim,
-		)
-		to_chat(victim,
-			span_userdanger("[user] [has_pain ? "болезненно " : ""]выкручивает вывих на вашей [limb.ru_name_v]!"),
-		)
-
-		limb.receive_damage(brute = 10, stamina=stamina_damage, wound_bonus = CANT_WOUND)
-		// рекурсивно повторяем
-		return handle_joint(user, user.a_intent != INTENT_HELP)
-
-	// Успех
 	user.visible_message(message, self_message, ignored_mobs = victim)
 	to_chat(victim,victim_message)
 	victim.pain_emote(has_pain)
@@ -388,6 +395,7 @@
 	trauma_cycle_cooldown = 1.5 MINUTES
 	internal_bleeding_chance = 40
 	wound_flags = (BONE_WOUND | ACCEPTS_GAUZE | MANGLES_BONE)
+	pain_realagony = TRUE
 
 /datum/wound/blunt/severe/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
 	if(istype(L) && L.is_robotic_limb())
@@ -425,6 +433,7 @@
 	trauma_cycle_cooldown = 2.5 MINUTES
 	internal_bleeding_chance = 60
 	wound_flags = (BONE_WOUND | ACCEPTS_GAUZE | MANGLES_BONE)
+	pain_realagony = TRUE
 
 /datum/wound/blunt/critical/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
 	if(istype(L) && L.is_robotic_limb())
@@ -442,10 +451,11 @@
 // doesn't make much sense for "a" bone to stick out of your head
 /datum/wound/blunt/critical/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
 	if(istype(L) && L.body_zone == BODY_ZONE_HEAD && severity == WOUND_SEVERITY_CRITICAL)
-		occur_text = L.is_robotic_limb() \
+		var/robo_limb = L.is_robotic_limb()
+		occur_text = robo_limb \
 			? "раскалывается, обнажая сквозь поврежденную обшивку и провода, различные платы" \
 			: "раскалывается, обнажая сквозь пелену крови и плоти, потрескавшийся череп"
-		examine_desc = L.is_robotic_limb() \
+		examine_desc = robo_limb \
 			? "имеет раскол, из которого торчат куски проводов" \
 			: "имеет выемку, из которой торчат куски черепа"
 	. = ..()

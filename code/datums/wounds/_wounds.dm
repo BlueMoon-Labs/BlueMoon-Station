@@ -90,6 +90,9 @@
 	/// What flags apply to this wound
 	var/wound_flags = (FLESH_WOUND | BONE_WOUND | ACCEPTS_GAUZE)
 
+	/// Affects the emotion of pain
+	var/pain_realagony = FALSE
+
 	var/ru_name = ""
 	var/ru_name_r = ""
 
@@ -144,7 +147,7 @@
 	if(status_effect_type)
 		victim.apply_status_effect(status_effect_type, src)
 	SEND_SIGNAL(victim, COMSIG_CARBON_GAIN_WOUND, src, limb)
-	victim.pain_emote(limb = limb)
+	victim.pain_emote(limb = limb, realagony = pain_realagony)
 	if(!victim.alerts["wound"]) // only one alert is shared between all of the wounds
 		victim.throw_alert("wound", /atom/movable/screen/alert/status_effect/wound)
 
