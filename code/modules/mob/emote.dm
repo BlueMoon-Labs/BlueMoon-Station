@@ -23,6 +23,8 @@
 /// * `message_override` - if set to some string, will replace the emote message with the provided string. If `message` is used,
 /// this string can contain `%t`, which will be replaced with `message`.
 /mob/proc/emote(act, m_type = null, message = null, intentional = FALSE, message_override = null)
+	if(!act)
+		return
 	act = lowertext(act)
 	var/param = message
 	var/custom_param = findchar(act, " ")

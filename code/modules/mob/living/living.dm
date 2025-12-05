@@ -1125,15 +1125,18 @@
 /mob/living/proc/harvest(mob/living/user) //used for extra objects etc. in butchering
 	return
 
-/mob/living/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE)
+/mob/living/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE, silent = FALSE)
 	if(incapacitated())
-		to_chat(src, "<span class='warning'>Вы не можете этого сделать в нынешнем состоянии!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>Вы не можете этого сделать в нынешнем состоянии!</span>")
 		return FALSE
 	if(be_close && !in_range(M, src))
-		to_chat(src, "<span class='warning'>Вы слишком далеко!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>Вы слишком далеко!</span>")
 		return FALSE
 	if(!no_dextery)
-		to_chat(src, "<span class='warning'>У тебя не хватит ловкости, чтобы сделать это!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>У тебя не хватит ловкости, чтобы сделать это!</span>")
 		return FALSE
 	return TRUE
 
@@ -1521,3 +1524,49 @@
 	sterilize_power = 0
 	_sterilize_expire = 0
 	_sterilize_timer_id = null
+
+/**
+ * Универсальный прок для проверки наличия боли
+ * limb - Если боль нужно посчиать от отдельной конечности (Протезы не болят)
+ */
+/mob/proc/has_pain(obj/item/bodypart/limb)
+	return PAIN_NO
+
+/mob/living/has_pain(obj/item/bodypart/limb)
+	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM) || HAS_TRAIT(src, TRAIT_PAINKILLER))
+		return PAIN_NO
+	else if(HAS_TRAIT(src, TRAIT_BLUEMOON_HIGH_PAIN_THRESHOLD))
+		return PAIN_LOW
+	else if(reagents?.has_reagent(/datum/reagent/determination))
+		return PAIN_MEDIUM
+
+	return PAIN_FULL
+
+/**
+ * Прок для выбора эмоции боли
+ * realagony - TRUE повышает "максимальную эмоцию" боли до realagony
+ */
+/mob/proc/get_pain_emote(pain_level, realagony = FALSE)
+	if(!pain_level)
+		return ""
+	switch(pain_level)
+		if(PAIN_FULL)
+			return realagony ? "realagony" : pick("scream","pain")
+		if(PAIN_MEDIUM) // Позже заменить на шипит от боли, кривится от боли
+			return realagony ? "realagony" : pick("scream","pain")
+		if(PAIN_LOW)
+			return realagony ? pick("scream","pain") : "twitch"
+		else
+			return pick("scream","pain")
+
+/**
+ * Прок запускает эмоцию боли
+ * pain_level - Уровень боли полученный из has_pain()
+ * limb - Если не задан pain_level и боль нужно посчитать от отдельной конечности (Протезы не болят)
+ * realagony - TRUE повышает "максимальную эмоцию" боли до realagony
+ */
+/mob/proc/pain_emote(pain_level = null, obj/item/bodypart/limb, realagony = FALSE)
+	if(isnull(pain_level))
+		pain_level = has_pain(limb)
+
+	return emote(get_pain_emote(pain_level, realagony))

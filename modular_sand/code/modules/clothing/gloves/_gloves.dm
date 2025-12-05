@@ -23,7 +23,7 @@
 
 /obj/item/clothing/gloves/AltClick(mob/user)
 	. = ..()
-	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 	if(length(attached_accessories))
 		remove_accessory(user)

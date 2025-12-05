@@ -390,7 +390,7 @@
 
 /obj/item/clothing/under/AltClick(mob/user)
 	. = ..()
-	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 	if(length(attached_accessories)) //SKYRAT EDIT
 		remove_accessory(user)
@@ -439,7 +439,7 @@
 	if (!(item_flags & IN_INVENTORY))
 		return
 
-	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 
 	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Set to highest sensor")

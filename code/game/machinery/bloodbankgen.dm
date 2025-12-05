@@ -289,6 +289,8 @@
 
 /obj/machinery/bloodbankgen/AltClick(mob/user)
 	. = ..()
+	if(!user.canUseTopic(src, BE_CLOSE, no_tk = TRUE, silent = TRUE))
+		return
 	if(outbag)
 		detach_bag(user, FALSE)
 	else if(bag)

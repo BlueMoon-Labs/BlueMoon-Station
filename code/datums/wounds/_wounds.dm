@@ -144,8 +144,7 @@
 	if(status_effect_type)
 		victim.apply_status_effect(status_effect_type, src)
 	SEND_SIGNAL(victim, COMSIG_CARBON_GAIN_WOUND, src, limb)
-	if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от получения ран
-		victim.emote("scream")
+	victim.pain_emote(limb = limb)
 	if(!victim.alerts["wound"]) // only one alert is shared between all of the wounds
 		victim.throw_alert("wound", /atom/movable/screen/alert/status_effect/wound)
 
@@ -276,7 +275,7 @@
 /datum/wound/proc/check_grab_treatments(obj/item/I, mob/user)
 	return FALSE
 
-/// Like try_treating() but for unhanded interactions from humans, used by joint dislocations for manual bodypart chiropractice for example.
+/// Like try_treating() but for unhanded interactions from humans, used by joint dislocations for manual bodypart handle_joint for example.
 /datum/wound/proc/try_handling(mob/living/carbon/human/user)
 	return FALSE
 
