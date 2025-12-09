@@ -103,7 +103,7 @@
 
 /obj/machinery/self_actualization_device/AltClick(mob/user)
 	. = ..()
-	if(!powered() || !occupant || state_open)
+	if(!powered() || !occupant || state_open || processing)
 		return FALSE
 	to_chat(user, "Вы запускаете процедуру Актуализации.")
 	addtimer(CALLBACK(src, PROC_REF(eject_new_you)), processing_time, TIMER_OVERRIDE|TIMER_UNIQUE)
