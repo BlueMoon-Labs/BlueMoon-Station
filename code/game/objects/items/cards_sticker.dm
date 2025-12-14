@@ -143,7 +143,7 @@
 	name = "Occult sticker"
 	desc = "Sticker for research related to occult activities whose nature of phenomena is poorly supported by scientific evidence."
 	icon_state = "occult_id"
-	prefix = "Herecit"
+	prefix = "Heretic"
 	special_assignment = "heresy"
 	permit = /obj/item/clothing/accessory/permit/special/deviant/heresey
 
