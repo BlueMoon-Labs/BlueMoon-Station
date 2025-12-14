@@ -216,14 +216,12 @@
 		for(var/accessory_type in accessory)
 			var/obj/item/clothing/accessory/A = new accessory_type(H)
 			if(!istype(A)) // why??
-				H.equip_in_one_of_slots(A, list("backpack" = ITEM_SLOT_BACKPACK), critical = TRUE)
+				H.equip_to_slot_or_del(A, ITEM_SLOT_BACKPACK, TRUE)
 				continue
 
 			var/obj/item/clothing/wear = H.get_item_by_slot(A.accessory_slot)
 			if(!(wear && wear.attach_accessory(A, H)))
-				H.equip_in_one_of_slots(A, list("backpack" = ITEM_SLOT_BACKPACK), critical = TRUE)
-			//else
-				//WARNING("Unable to equip accessory [accessory] in outfit [name]. No uniform present!")
+				H.equip_to_slot_or_del(A, ITEM_SLOT_BACKPACK, TRUE)
 
 	if(l_hand)
 		H.put_in_l_hand(new l_hand(H))
