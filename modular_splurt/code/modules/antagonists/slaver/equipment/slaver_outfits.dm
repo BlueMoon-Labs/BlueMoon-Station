@@ -35,6 +35,13 @@
 // BLUEMOON ADD END
 
 /datum/outfit/slaver/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	. = ..()
+
+	var/obj/item/card/id/W = H.wear_id
+	W.registered_name = H.real_name
+	W.assignment = name
+	W.update_label()
+
 	H.faction |= ROLE_SLAVER
 	H.update_icons()
 	var/obj/item/radio/R = H.ears
