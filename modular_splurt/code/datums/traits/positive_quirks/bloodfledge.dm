@@ -149,41 +149,7 @@
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 
 /datum/quirk/bloodfledge/on_spawn()
-	// Define quirk mob
-	var/mob/living/carbon/human/quirk_mob = quirk_holder
-
-	// Create vampire ID card
-	var/obj/item/card/id/vampire/id_vampire = new /obj/item/card/id/vampire(get_turf(quirk_holder))
-
-	// Update card information
-	id_vampire.registered_name = quirk_mob.real_name
-	id_vampire.update_label(addtext(id_vampire.registered_name, "'s Bloodfledge"))
-
-	// Determine banking ID information
-	for(var/bank_account in SSeconomy.bank_accounts)
-		// Define current iteration's account
-		var/datum/bank_account/account = bank_account
-
-		// Check for match
-		if(account.account_id == quirk_mob.account_id)
-			// Add to cards list
-			account.bank_cards += src
-
-			// Assign account
-			id_vampire.registered_account = account
-
-			// Stop searching
-			break
-
-	// Try to add ID to backpack
-	var/id_in_bag = quirk_mob.equip_to_slot_if_possible(id_vampire, ITEM_SLOT_BACKPACK) || FALSE
-
-	// Text for where the item was sent
-	var/id_location = (id_in_bag ? "in your backpack" : "at your feet" )
-
-	// Alert user in chat
-	// This should not post_add, because the ID is added by on_spawn
-	to_chat(quirk_holder, span_boldnotice("There is a bloodfledge's ID card [id_location], linked to your station account. It functions as a spare ID, but lacks job access."))
+	give_item(/obj/item/card_sticker/vampire/loadout, quirk_holder)
 
 /datum/quirk/bloodfledge/proc/quirk_examine_bloodfledge(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
 	SIGNAL_HANDLER

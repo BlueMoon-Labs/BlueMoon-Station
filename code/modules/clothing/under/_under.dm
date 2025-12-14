@@ -165,7 +165,7 @@
 	..()
 
 
-/obj/item/clothing/under/proc/attach_accessory(obj/item/I, mob/user, notifyAttach = 1)
+/obj/item/clothing/under/attach_accessory(obj/item/I, mob/user, notifyAttach = TRUE)
 	. = FALSE
 	if(istype(I, /obj/item/clothing/accessory) && !istype(I, /obj/item/clothing/accessory/ring))
 		var/obj/item/clothing/accessory/A = I

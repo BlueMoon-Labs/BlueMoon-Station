@@ -79,7 +79,7 @@ export const AccessList = (props, context) => {
         </Fragment>
       )}>
       <Flex>
-        <Flex.Item>
+        <Flex.Item mr={2}>
           <Tabs vertical>
             {accesses.map(access => {
               const entries = access.accesses || [];

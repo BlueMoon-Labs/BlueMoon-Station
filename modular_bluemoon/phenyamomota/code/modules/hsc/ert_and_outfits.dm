@@ -139,7 +139,7 @@
 	var/obj/item/card/id/W = H.wear_id
 	if(W)
 		W.registered_name = H.real_name
-		W.update_label(W.registered_name, W.assignment)
+		W.update_label()
 
 /obj/item/card/id/hsc
 	name = "\improper HSC ID"

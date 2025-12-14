@@ -132,10 +132,15 @@
 			manifest_inject(N.new_character, N.client, N.client.prefs)
 		CHECK_TICK
 
-/datum/datacore/proc/manifest_modify(name, assignment)
+/datum/datacore/proc/manifest_modify(name, assignment, real_rank)
+	if(!name || !assignment && !real_rank)
+		return
 	var/datum/data/record/foundrecord = find_record("name", name, GLOB.data_core.general)
 	if(foundrecord)
-		foundrecord.fields["rank"] = assignment
+		if(assignment)
+			foundrecord.fields["rank"] = assignment
+		if(real_rank)
+			foundrecord.fields["real_rank"] = real_rank
 
 /datum/datacore/proc/get_manifest()
 	var/list/manifest_out = list()
@@ -153,7 +158,7 @@
 	for(var/datum/data/record/t in GLOB.data_core.general)
 		var/name = t.fields["name"]
 		var/rank = t.fields["rank"]
-		var/department_check = GetJobName(t.fields["rank"])
+		var/department_check = GetJobName(t.fields["real_rank"])
 		var/has_department = FALSE
 		for(var/department in departments)
 			var/list/jobs = departments[department]
@@ -212,7 +217,7 @@
 	for(var/datum/data/record/t in GLOB.data_core.general)
 		var/name = t.fields["name"]
 		var/rank = t.fields["rank"]
-		var/department_check = GetJobName(t.fields["rank"])
+		var/department_check = GetJobName(t.fields["real_rank"])
 		var/department = 0
 		if(department_check in GLOB.command_positions)
 			heads[name] = rank
@@ -306,14 +311,26 @@
 	var/static/list/show_directions = list(SOUTH, WEST)
 	if(H.mind && (H.mind.assigned_role != H.mind.special_role)  && (H.mind.assigned_role != "Stowaway"))
 		var/assignment
+		var/real_rank
 		if(H.mind.assigned_role)
-			assignment = H.mind.assigned_role
+			real_rank = H.mind.assigned_role
 		else if(H.job)
-			assignment = H.job
+			real_rank = H.job
 		else
-			assignment = "Unassigned"
-		if(C && C.prefs && C.prefs.alt_titles_preferences[assignment])
-			assignment = C.prefs.alt_titles_preferences[assignment]
+			real_rank = "Unassigned"
+
+		// Берем название роли из карточки, с учетом наклеек и альт. названия
+		if(H.wear_id)
+			var/obj/item/card/id/id_card = H.wear_id.GetID()
+			if(istype(id_card))
+				assignment = id_card.get_assignment_name()
+		if(!assignment)
+			// Если не удалось, пробуем получить из префов
+			if(C && C.prefs && C.prefs.alt_titles_preferences[assignment])
+				assignment = C.prefs.alt_titles_preferences[assignment]
+			// Иначе берем стандартное название
+			else
+				assignment = real_rank
 
 		var/static/record_id_num = 1001
 		var/id = num2hex(record_id_num++,6)
@@ -337,7 +354,7 @@
 		G.fields["id"]			= id
 		G.fields["name"]		= H.real_name
 		G.fields["rank"]		= assignment
-		G.fields["real_rank"]	= GetJobName(assignment)
+		G.fields["real_rank"]	= GetJobName(real_rank)
 		G.fields["age"]			= H.age
 		G.fields["species"]		= H.dna.species.name
 		G.fields["fingerprint"]	= md5(H.dna.uni_identity)
@@ -393,7 +410,7 @@
 		L.fields["id"]			= md5("[H.real_name][H.mind.assigned_role]")	//surely this should just be id, like the others?
 		L.fields["name"]		= H.real_name
 		L.fields["rank"] 		= assignment
-		L.fields["real_rank"]	= GetJobName(assignment)
+		L.fields["real_rank"]	= GetJobName(real_rank)
 		L.fields["age"]			= H.age
 		if(H.gender == MALE)
 			G.fields["gender"]  = "Male"

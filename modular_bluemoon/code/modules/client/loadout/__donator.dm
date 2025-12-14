@@ -22,7 +22,7 @@
 
 /datum/gear/donator/syndicate_id_civilian
 	name = "Civilian Syndicate Card"
-	path = /obj/item/card/id/syndicate/one_access_copy
+	path = /obj/item/card/id/syndicate/one_access_copy/loadout
 	cost = 2
 	ckeywhitelist = list()
 	subcategory = LOADOUT_SUBCATEGORIES_DON02

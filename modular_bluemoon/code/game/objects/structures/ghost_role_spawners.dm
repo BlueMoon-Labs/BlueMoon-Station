@@ -147,7 +147,7 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	l_pocket = /obj/item/extinguisher/mini
 	r_pocket = /obj/item/tank/internals/emergency_oxygen/double
 
-	accessory = /obj/item/clothing/accessory/permit/special/deviant/lust/changeling
+	accessory = list(/obj/item/clothing/accessory/permit/special/deviant/lust/changeling)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
@@ -268,14 +268,14 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 /datum/outfit/slaver/extended
 	name = "Actor Slaver"
 	glasses = /obj/item/clothing/glasses/hud/slaver/upgraded
-	accessory = /obj/item/clothing/accessory/permit/special/deviant/lust/slavers
+	accessory = list(/obj/item/clothing/accessory/permit/special/deviant/lust/slavers)
 	backpack_contents = list(/obj/item/storage/box/survival,\
 							/obj/item/kitchen/knife/combat/survival)
 
 /datum/outfit/slaver/leader/extended
 	name = "Actor Slaver Leader"
 	glasses = /obj/item/clothing/glasses/hud/slaver/upgraded
-	accessory = /obj/item/clothing/accessory/permit/special/deviant/lust/slavers
+	accessory = list(/obj/item/clothing/accessory/permit/special/deviant/lust/slavers)
 	backpack_contents = list(/obj/item/storage/box/survival,\
 							/obj/item/kitchen/knife/combat/survival)
 

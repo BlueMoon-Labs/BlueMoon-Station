@@ -142,8 +142,7 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	suit = /obj/item/clothing/suit/armor/vest/alt
 	shoes = /obj/item/clothing/shoes/jackboots/sec
 	l_pocket = /obj/item/storage/bag/security
-	r_pocket = /obj/item/clothing/accessory/badge
-	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit, /obj/item/clothing/accessory/permit/special/security = 1)
+	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit)
 
 	backpack = /obj/item/storage/backpack/security
 	satchel = /obj/item/storage/backpack/satchel/sec
@@ -151,6 +150,7 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	box = /obj/item/storage/box/survival/security
 
 	implants = list(/obj/item/implant/mindshield)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/badge)
 
 	chameleon_extras = list(/obj/item/gun/energy/disabler, /obj/item/clothing/glasses/hud/security/sunglasses, /obj/item/clothing/head/helmet)
 
@@ -168,12 +168,13 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	l_pocket = /obj/item/restraints/handcuffs
 	r_pocket = /obj/item/assembly/flash/handheld
-	backpack_contents = list(/obj/item/storage/ifak, /obj/item/syndicate_uplink_high=1, /obj/item/clothing/accessory/permit/special/security = 1)
+	backpack_contents = list(/obj/item/storage/ifak, /obj/item/syndicate_uplink_high=1)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
+	accessory = list(/obj/item/clothing/accessory/permit/special/security)
 	pda_slot = ITEM_SLOT_BELT
 
 /obj/item/radio/headset/headset_sec/alt/department/Initialize(mapload)

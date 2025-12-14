@@ -417,7 +417,7 @@
 		/obj/item/clothing/head/press_helmet = 1,
 	)
 	premium = list(
-		/obj/item/card/id/heresy = 5,
+		/obj/item/card_sticker/heresy = 5,
 	)
 	refill_canister = /obj/item/vending_refill/wardrobe/curator_wardrobe
 	payment_department = ACCOUNT_SRV
@@ -483,7 +483,7 @@
 		/obj/item/clothing/gloves/color/white = 3,
 	)
 	contraband = list(
-		/obj/item/card/id/muck = 2,
+		/obj/item/card_sticker/muck = 2,
 	)
 	refill_canister = /obj/item/vending_refill/wardrobe/chef_wardrobe
 	payment_department = ACCOUNT_SRV
@@ -611,7 +611,7 @@
 		/obj/item/sign/flag/ravenheart = 3, // Bluemoon edition - Флаг Воронье Сердце,
 		/obj/item/sign/flag/ravenheart/alt = 3, // Bluemoon edition - Флаг-баннер Воронье Сердце,
 		/obj/item/storage/box/raven_box/posters = 3, // Bluemoon edition - Постеры,
-		/obj/item/card/id/agony = 5,
+		/obj/item/card_sticker/agony = 5,
 		/obj/item/choice_beacon/box/creepy_statue_kit = 6,
 		/obj/item/choice_beacon/box/creepy_statue_kit/big = 1,
 	)
@@ -929,7 +929,7 @@
 		/obj/item/clothing/head/maid/syndicate/civil = 5,
 		/obj/item/clothing/head/helmet/swat/ds/civil = 5,
 		/obj/item/clothing/head/hats/warden/syndicate/civil = 5,
-		/obj/item/card/id/syndicate_citizen = 5
+		/obj/item/card_sticker/syndicate = 5
 	)
 	refill_canister = /obj/item/vending_refill/wardrobe/syndie_wardrobe/civil
 	light_color = COLOR_MOSTLY_PURE_RED

@@ -245,7 +245,7 @@
 /datum/job/proc/radio_help_message(mob/M)
 	to_chat(M, "<b>Prefix your message with :h to speak on your department's radio. To see other prefixes, look closely at your headset.</b>")
 
-// BLUEMOON ADD 
+// BLUEMOON ADD
 /datum/job/proc/jobname_to_ru(mob/M, jobname)
 	var/static/list/joblist = list()
 // BLUEMOON ADD END
@@ -326,9 +326,8 @@
 		C.registered_name = H.real_name
 		C.assignment = J.title
 		if(preference_source && preference_source.prefs && preference_source.prefs.alt_titles_preferences[J.title])
-			C.update_label(C.registered_name, preference_source.prefs.alt_titles_preferences[J.title])
-		else
-			C.update_label()
+			C.custom_job = preference_source.prefs.alt_titles_preferences[J.title]
+		C.update_label()
 
 		if(J.title != "Stowaway") //SPLURT EDIT
 			for(var/A in SSeconomy.bank_accounts)
