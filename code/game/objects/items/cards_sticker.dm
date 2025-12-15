@@ -221,7 +221,7 @@
 	desc = "An sticker made to recognize Solar Federation habbitants and tourists."
 	icon = 'icons/obj/card.dmi'
 	icon_state = "sol"
-	prefix = "Sol"
+	prefix = "SolFed"
 	special_assignment = "sol"
 
 /obj/item/card_sticker/sol/loadout
