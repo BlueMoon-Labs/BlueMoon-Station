@@ -102,8 +102,8 @@
 
 	if(prefix)
 		card.prefix = prefix
-	if(special_assignment)
-		card.special_assignment = special_assignment
+	//if(special_assignment)
+		//card.special_assignment = special_assignment
 	card.icon = icon
 	card.icon_state = icon_state
 
