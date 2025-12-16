@@ -1,5 +1,3 @@
-#define WRAP_DELAY 1.3 SECONDS
-
 #define DATA_ICON "icon"
 #define DATA_ICON_STATE "icon_state"
 #define DATA_PREFIX "prefix"
@@ -10,14 +8,18 @@
 	desc = "Расширение, устанавливаемое поверх стандартной ID-карты. \
 	Перехватывает и подменяет отображаемые данные: визуальный стиль карты, цветовую схему и название должности.\n\
 	Не влияет на реальные уровни доступа и системы аутентификации, изменяя исключительно представление информации для интерфейсов и внешнего осмотра."
-	icon = 'modular_bluemoon/icons/obj/card.dmi'
+	icon = 'icons/obj/card.dmi'
 	icon_state = "occult_id"
 	w_class = WEIGHT_CLASS_TINY
+	var/const/wrap_delay = 1.3 SECONDS // time to wrap sticker on card
 	var/special_assignment = "syndicate" // id card HUD icon
 	var/prefix = "Test" // prefix for card assigment
 	var/auto_equip = FALSE // for loadout
-	var/obj/item/clothing/accessory/permit/special/permit = null // only for auto_equip
+	var/permit = null // only for auto_equip
 	var/permit_only_extended = FALSE
+	// Список слов, при наличиии которых в профессии, префикс отображен не будет
+	// Проверка на сам префикс будет, даже если список пустой, что бы избежать «Syndicate Syndicate Admiral»
+	var/list/prefix_not_allowed_with = list()
 	// list of changed vars on ID card
 	var/list/previous_icon_data = list(
 		DATA_ICON = "",
@@ -31,12 +33,6 @@
 	. += span_notice("Расширение, устанавливаемое поверх стандартной ID-карты. \
 	Перехватывает и подменяет отображаемые данные: визуальный стиль карты, цветовую схему и название должности.\n\
 	Не влияет на реальные уровни доступа и системы аутентификации, изменяя исключительно представление информации для интерфейсов и внешнего осмотра.")
-
-/obj/item/card_sticker/forceMove(atom/destination)
-	. = ..()
-
-/obj/item/card_sticker/equipped(mob/user, slot, initial)
-	. = ..()
 
 // При выдаче через лодаут карта помещается в рюкзак и применяется на основную карту
 /obj/item/card_sticker/on_enter_storage(datum/component/storage/concrete/S)
@@ -90,7 +86,7 @@
 		return
 	if(!silent)
 		balloon_alert(user, "Присоединяю...")
-	if(!force && !do_after(user, WRAP_DELAY, card))
+	if(!force && !do_after(user, wrap_delay, card))
 		return
 
 	if(!forceMove(card))
@@ -107,7 +103,6 @@
 	card.icon = icon
 	card.icon_state = icon_state
 
-	card.update_appearance()
 	card.update_label()
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
@@ -116,16 +111,18 @@
 	return TRUE
 
 /obj/item/card_sticker/proc/unwrap(obj/item/card/id/card, mob/user, silent = FALSE, force = FALSE)
-	. = TRUE
+	. = FALSE
 	if(card.sticker != src || (user && INTERACTING_WITH(user, card)))
 		return
 	if(!silent)
 		balloon_alert(user, "Снимаю...")
-	if(!force && !do_after(user, WRAP_DELAY, card))
+	if(!force && !do_after(user, wrap_delay, card))
 		return
 
 	if(user && !user.put_in_hands(src))
 		return
+	else if(!user)
+		moveToNullspace()
 
 	card.sticker = null
 
@@ -133,11 +130,12 @@
 		card.vars[var_name] = previous_icon_data[var_name]
 		previous_icon_data[var_name] = ""
 
-	card.update_appearance()
 	card.update_label()
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		H.sec_hud_set_ID()
+
+	return TRUE
 
 /obj/item/card_sticker/heresy
 	name = "Occult sticker"
@@ -156,6 +154,7 @@
 	icon_state = "lust_id"
 	prefix = "Sex Worker"
 	special_assignment = "lust"
+	prefix_not_allowed_with = list("Sex")
 	permit = /obj/item/clothing/accessory/permit/special/deviant/lust
 
 /obj/item/card_sticker/lust/loadout
@@ -187,7 +186,7 @@
 /obj/item/card_sticker/vampire
 	name = "Bloodfledge sticker"
 	desc = "An sticker made to easily recognize bloodsucker fledglings without requiring medical scans."
-	icon_state = "vampire"
+	icon_state = "vampire2"
 	prefix = "Bloodsucker"
 	special_assignment = "bloodsuckerfledgling"
 
@@ -197,7 +196,6 @@
 /obj/item/card_sticker/blumenland
 	name = "Blumenland Citizen sticker"
 	desc = "An sticker made to recognize Blumenland Confederation habbitants and tourists."
-	icon = 'icons/obj/card.dmi'
 	icon_state = "blumland"
 	prefix = "Blumenland"
 	special_assignment = "bmland"
@@ -208,10 +206,10 @@
 /obj/item/card_sticker/syndicate
 	name = "Syndicate Employee sticker"
 	desc = "An sticker made to recognize Triglav Syndicate agents and supportives."
-	icon = 'icons/obj/card.dmi'
 	icon_state = "card_black"
 	prefix = "Syndicate"
 	special_assignment = "syndicate"
+	prefix_not_allowed_with = list("Syndi", "NT", "Nanotrasen")
 
 /obj/item/card_sticker/syndicate/loadout
 	auto_equip = TRUE
@@ -219,10 +217,10 @@
 /obj/item/card_sticker/sol
 	name = "SolFed Citizen sticker"
 	desc = "An sticker made to recognize Solar Federation habbitants and tourists."
-	icon = 'icons/obj/card.dmi'
 	icon_state = "sol"
 	prefix = "SolFed"
 	special_assignment = "sol"
+	prefix_not_allowed_with = list("Sol", "Solar Federation")
 
 /obj/item/card_sticker/sol/loadout
 	auto_equip = TRUE
@@ -230,10 +228,10 @@
 /obj/item/card_sticker/nri
 	name = "NRI Citizen sticker"
 	desc = "An sticker made to recognize Novaya Rossiyskya Imperia habbitants and tourists."
-	icon = 'icons/obj/card.dmi'
 	icon_state = "nri"
 	prefix = "NRI"
 	special_assignment = "nri"
+	prefix_not_allowed_with = list("New Russian Empire")
 
 /obj/item/card_sticker/nri/loadout
 	auto_equip = TRUE
@@ -242,5 +240,3 @@
 #undef DATA_ICON_STATE
 #undef DATA_PREFIX
 #undef DATA_S_ASSIGNMENT
-
-#undef WRAP_DELAY

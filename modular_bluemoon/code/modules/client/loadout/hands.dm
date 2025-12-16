@@ -2,22 +2,16 @@
 	name = "Sex Worker kit"
 	path = /obj/item/card_sticker/lust/loadout
 	slot = ITEM_SLOT_BACKPACK
-	item_icon = 'modular_bluemoon/icons/obj/card.dmi'
-	item_icon_state = "lust_id"
 
 /datum/gear/hands/heresy_kit
 	name = "Occult kit"
 	path = /obj/item/card_sticker/heresy/loadout
 	slot = ITEM_SLOT_BACKPACK
-	item_icon = 'modular_bluemoon/icons/obj/card.dmi'
-	item_icon_state = "occult_id"
 
 /datum/gear/hands/agony_kit
 	name = "Ravenheart Resident kit"
 	path = /obj/item/card_sticker/agony/loadout
 	slot = ITEM_SLOT_BACKPACK
-	item_icon = 'modular_bluemoon/icons/obj/card.dmi'
-	item_icon_state = "agony_id"
 
 /datum/gear/hands/sol_citizen
 	name = "Solar Federation Citizen sticker"

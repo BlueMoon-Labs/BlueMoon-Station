@@ -503,12 +503,24 @@
 /obj/item/card/id/proc/get_assignment_name(newjob)
 	. = ""
 	var/effective_job = newjob || custom_job || assignment
-	if(effective_job)
-		. = effective_job
-		if(prefix)
-			var/regex/R = regex("(^|\[^A-Za-zА-Яа-я0-9_\])[prefix](\[^A-Za-zА-Яа-я0-9_\]|$)", "i")
-			if(!R.Find(effective_job))
-				. = "[prefix] [effective_job]"
+	if(!effective_job)
+		return
+
+	. = effective_job
+
+	if(!sticker)
+		return
+
+	// Ищем префикс и запрещенные слова в работе
+	if(sticker.prefix)
+		var/list/temp = sticker.prefix_not_allowed_with.Copy()
+		temp |= sticker.prefix
+		for(var/forbidden in temp)
+			var/regex/R = regex("(^|\[^A-Za-zА-Яа-я0-9\])[forbidden](\[^A-Za-zА-Яа-я0-9\]|$)", "i")
+			if(R.Find(effective_job))
+				return // есть совпадение — возвращаем без префикса
+
+	. = "[sticker.prefix] [effective_job]"
 
 /obj/item/card/id/proc/update_manifest()
 	GLOB.data_core.manifest_modify(registered_name, get_assignment_name(), assignment)
