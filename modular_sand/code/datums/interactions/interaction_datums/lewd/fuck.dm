@@ -22,7 +22,7 @@
 //BLUEMOON ADD END
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = pick(
-			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc] .",
+			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc].",
 			"глубоко вводит свой [shape_desc] во влагалище <b>[partner]</b>.",
 			"с силой загоняет свой [shape_desc] в вагину <b>[partner]</b> и шлёпается своими [has_balls ? "яйцами" : "бедрами"].",
 			"ритмично двигается, заставляя <b>[partner]</b> дрожать при каждом толчке.",
