@@ -911,7 +911,6 @@ GLOBAL_LIST_EMPTY(PDAs)
 		playsound(src, 'sound/machines/terminal_eject_disc.ogg', 50, 1)
 	else
 		remove_pen(user)
-		playsound(src, 'sound/machines/button4.ogg', 50, 1)
 	return TRUE
 
 /obj/item/pda/CtrlClick(mob/user)
@@ -966,6 +965,7 @@ GLOBAL_LIST_EMPTY(PDAs)
 		usr.put_in_hands(inserted_item)
 		to_chat(usr, "<span class='notice'>Вы извлекли [inserted_item] из [src].</span>")
 		inserted_item = null
+		playsound(src, 'sound/machines/button4.ogg', 50, 1)
 		update_icon()
 	else
 		to_chat(usr, "<span class='warning'>Этот PDA не имеет в себе ручки!</span>")

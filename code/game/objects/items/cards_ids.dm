@@ -206,7 +206,6 @@
 	var/uses_overlays = TRUE
 	var/icon/cached_flat_icon
 	var/obj/item/card_sticker/sticker //BLUEMOON ADD Стикеры на карточку
-	var/prefix = "" // //BLUEMOON ADD Приписка к должности карты
 	var/special_assignment = null // BLUEMOOD ADD для особых карт и их HUD, техническое
 
 /obj/item/card/id/Initialize(mapload)
@@ -237,7 +236,7 @@
 	. = ..()
 	if(.)
 		switch(var_name)
-			if(NAMEOF(src, assignment),NAMEOF(src, registered_name),NAMEOF(src, prefix),NAMEOF(src, custom_job)) //,NAMEOF(src, registered_age))
+			if(NAMEOF(src, assignment),NAMEOF(src, registered_name),NAMEOF(src, sticker),NAMEOF(src, custom_job)) //,NAMEOF(src, registered_age))
 				update_label()
 
 /obj/item/card/id/attack_self(mob/user)

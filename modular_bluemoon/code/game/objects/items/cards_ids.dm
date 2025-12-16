@@ -52,18 +52,16 @@
 				card_sticker.unwrap(id_card, my_owner, silent = TRUE, force = TRUE)
 
 			assignment = id_card.assignment
-			prefix = id_card.prefix
 			custom_job = id_card.custom_job
-
-			if(card_sticker)
-				card_sticker.wrap(src, my_owner, silent = TRUE, force = TRUE)
 
 			access |= id_card.access
 			registered_account = id_card.registered_account
 			registered_name = id_card.registered_name
 			name = id_card.name
 
-			update_icon()
+			if(card_sticker)
+				card_sticker.wrap(src, my_owner, silent = TRUE, force = TRUE)
+
 			update_label()
 
 			qdel(id_card)

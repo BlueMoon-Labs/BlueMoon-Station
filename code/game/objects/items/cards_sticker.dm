@@ -1,6 +1,5 @@
 #define DATA_ICON "icon"
 #define DATA_ICON_STATE "icon_state"
-#define DATA_PREFIX "prefix"
 #define DATA_S_ASSIGNMENT "special_assignment"
 
 /obj/item/card_sticker
@@ -24,7 +23,6 @@
 	var/list/previous_icon_data = list(
 		DATA_ICON = "",
 		DATA_ICON_STATE = "",
-		DATA_PREFIX = "",
 		DATA_S_ASSIGNMENT = "",
 	)
 
@@ -96,8 +94,6 @@
 	for(var/var_name in previous_icon_data)
 		previous_icon_data[var_name] = card.vars[var_name]
 
-	if(prefix)
-		card.prefix = prefix
 	//if(special_assignment)
 		//card.special_assignment = special_assignment
 	card.icon = icon
@@ -238,5 +234,4 @@
 
 #undef DATA_ICON
 #undef DATA_ICON_STATE
-#undef DATA_PREFIX
 #undef DATA_S_ASSIGNMENT
