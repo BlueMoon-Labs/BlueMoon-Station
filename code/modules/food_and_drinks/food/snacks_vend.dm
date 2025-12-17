@@ -20,7 +20,7 @@
 	icon_state = "sosjerky"
 	desc = "Вяленая говядина из лучших космокоров."
 	trash = /obj/item/trash/sosjerky
-	list_reagents = list(/datum/reagent/consumable/nutriment = 1, /datum/reagent/consumable/sugar = 3, /datum/reagent/consumable/sodiumchloride = 2)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 4, /datum/reagent/consumable/sugar = 3, /datum/reagent/consumable/sodiumchloride = 2)
 	junkiness = 25
 	filling_color = "#8B0000"
 	tastes = list("dried meat" = 1)
@@ -29,7 +29,7 @@
 /obj/item/reagent_containers/food/snacks/sosjerky/healthy
 	name = "homemade beef jerky"
 	desc = "Домашняя вяленая говядина из лучших космокоров."
-	list_reagents = list(/datum/reagent/consumable/nutriment = 3, /datum/reagent/consumable/nutriment/vitamin = 1)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 5, /datum/reagent/consumable/nutriment/vitamin = 1)
 	junkiness = 0
 
 /obj/item/reagent_containers/food/snacks/chips
@@ -39,7 +39,7 @@
 	icon_state = "chips"
 	trash = /obj/item/trash/chips
 	bitesize = 1
-	list_reagents = list(/datum/reagent/consumable/nutriment = 1, /datum/reagent/consumable/sugar = 3, /datum/reagent/consumable/sodiumchloride = 1)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 3, /datum/reagent/consumable/sugar = 3, /datum/reagent/consumable/sodiumchloride = 1)
 	junkiness = 20
 	filling_color = "#FFD700"
 	tastes = list("salt" = 1, "crisps" = 1)
@@ -51,7 +51,7 @@
 	icon_state = "4no_raisins"
 	desc = "Лучший изюм во вселенной. Только непонятно, почему."
 	trash = /obj/item/trash/raisins
-	list_reagents = list(/datum/reagent/consumable/nutriment = 2, /datum/reagent/consumable/sugar = 4)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 4, /datum/reagent/consumable/sugar = 4)
 	junkiness = 25
 	filling_color = "#8B0000"
 	tastes = list("dried raisins" = 1)
@@ -60,7 +60,7 @@
 /obj/item/reagent_containers/food/snacks/no_raisin/healthy
 	name = "homemade raisins"
 	desc = "Домашний изюм, лучший из всех."
-	list_reagents = list(/datum/reagent/consumable/nutriment = 3, /datum/reagent/consumable/nutriment/vitamin = 2)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 5, /datum/reagent/consumable/nutriment/vitamin = 2)
 	junkiness = 0
 	foodtype = FRUIT
 
@@ -68,7 +68,7 @@
 	name = "space twinkie"
 	icon_state = "space_twinkie"
 	desc = "Гарантированно пролежит свежим дольше, чем вы проживёте."
-	list_reagents = list(/datum/reagent/consumable/sugar = 4)
+	list_reagents = list(/datum/reagent/consumable/sugar = 6)
 	junkiness = 25
 	filling_color = "#FFD700"
 	foodtype = JUNKFOOD | GRAIN | SUGAR
@@ -80,7 +80,7 @@
 	desc = "Сырная закуска на один укус, от которой ваш рот будет отхонкан."
 	icon_state = "cheesie_honkers"
 	trash = /obj/item/trash/cheesie
-	list_reagents = list(/datum/reagent/consumable/nutriment = 1, /datum/reagent/consumable/sugar = 3)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 3, /datum/reagent/consumable/sugar = 3)
 	junkiness = 25
 	filling_color = "#FFD700"
 	tastes = list("cheese" = 5, "crisps" = 2)
@@ -92,7 +92,7 @@
 	icon_state = "syndi_cakes"
 	desc = "Сверхвлажные кексики для перекуса. На вкус так же великолепны, как испепеление ядерным зарядом."
 	trash = /obj/item/trash/syndi_cakes
-	list_reagents = list(/datum/reagent/consumable/nutriment = 4, /datum/reagent/consumable/doctor_delight = 5)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 5, /datum/reagent/consumable/doctor_delight = 5)
 	filling_color = "#F5F5DC"
 	tastes = list("sweetness" = 3, "cake" = 1)
 	foodtype = GRAIN | FRUIT | VEGETABLES | ANTITOXIC
@@ -103,7 +103,7 @@
 	icon_state = "energybar"
 	desc = "Энергобатончик с высоким зарядом, скорее всего, не-этериалам лучше не пробовать."
 	trash = /obj/item/trash/energybar
-	list_reagents = list(/datum/reagent/consumable/nutriment = 3, /datum/reagent/consumable/liquidelectricity = 3)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 5, /datum/reagent/consumable/liquidelectricity = 3)
 	filling_color = "#97ee63"
 	tastes = list("pure electricity" = 3, "fitness" = 2)
 	foodtype = TOXIC

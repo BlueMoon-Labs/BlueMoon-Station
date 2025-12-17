@@ -63,14 +63,14 @@
 	icon_state = "data_2"
 
 /obj/item/card/data/disk
-	desc = "A plastic magstripe card for simple and speedy data storage and transfer. This one inexplicibly looks like a floppy disk."
+	desc = "Пластиковая карта с магнитной полосой для простой и скоростной передачи-записи данных. Этот выглядит ну прямо как дискета."
 	icon_state = "data_3"
 
 /*
  * ID CARDS
  */
 /obj/item/card/emag
-	desc = "It's a card with a magnetic strip attached to some circuitry."
+	desc = "Это карта с какими-то магнитными полосами на её схемах."
 	name = "cryptographic sequencer"
 	icon_state = "emag"
 	item_state = "card-id"
@@ -82,7 +82,7 @@
 
 /obj/item/card/emag/bluespace
 	name = "bluespace cryptographic sequencer"
-	desc = "It's a blue card with a magnetic strip attached to some circuitry. It appears to have some sort of transmitter attached to it."
+	desc = "Это синяя карта с какими-то магнитными полосами на её схемах... На ней видно некий передатчик."
 	icon_state = "emag_bs"
 	prox_check = FALSE
 
@@ -97,7 +97,7 @@
 	if(istype(A, /obj/item/storage) && !(istype(A, /obj/item/storage/lockbox) || istype(A, /obj/item/storage/pod)))
 		return
 	if(!uses)
-		user.visible_message("<span class='warning'>[src] emits a weak spark. It's burnt out!</span>")
+		user.visible_message("<span class='warning'>[src] вспыхивает с небольшой искрой. Карта сожжена!</span>")
 		playsound(src, 'sound/effects/light_flicker.ogg', 100, 1)
 		return
 	else if(uses <= 3)
@@ -106,30 +106,30 @@
 		return
 	uses = max(uses - 1, 0)
 	if(!uses)
-		user.visible_message("<span class='warning'>[src] fizzles and sparks. It seems like it's out of charges.</span>")
+		user.visible_message("<span class='warning'>[src] шипит и искрится. Похоже, зарядов не осталось.</span>")
 		playsound(src, 'sound/effects/light_flicker.ogg', 100, 1)
 
 /obj/item/card/emag/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>It has <b>[uses ? uses : "no"]</b> charges left.</span>"
+	. += "<span class='notice'>Зарядов осталось: <b>[uses ? uses : "0"]</b>.</span>"
 
 /obj/item/card/id/examine_more(mob/user)
-	var/list/msg = list("<span class='notice'><i>You examine [src] closer, and note the following...</i></span>")
+	var/list/msg = list("<span class='notice'><i>Вы осмотрели [src] поближе и заметили следующее...</i></span>")
 
 	if(mining_points)
-		msg += "There's [mining_points] mining equipment redemption point\s loaded onto this card."
+		msg += "У карты в наличии [mining_points] ед. очков шахтёрского оборудования."
 	if(registered_account)
-		msg += "The account linked to the ID belongs to '[registered_account.account_holder]' and reports a balance of [registered_account.account_balance] cr."
+		msg += "К ID-карте приписан аккаунт, записанный на имя'[registered_account.account_holder]', с балансом в [registered_account.account_balance] кр."
 		if(registered_account.account_job)
 			var/datum/bank_account/D = SSeconomy.get_dep_account(registered_account.account_job.paycheck_department)
 			if(D)
-				msg += "The [D.account_holder] reports a balance of [D.account_balance] cr."
-		msg += "<span class='info'>Alt-Click the ID to pull money from the linked account in the form of holochips.</span>"
-		msg += "<span class='info'>You can insert credits into the linked account by pressing holochips, cash, or coins against the ID.</span>"
+				msg += "[D.account_holder] сообщает о балансе в [D.account_balance] кр."
+		msg += "<span class='info'>Alt-Click по ID, чтобы достать деньги из аккаунта в форме голочипов.</span>"
+		msg += "<span class='info'>Вы может добавить кредиты на аккаунт, прижимая голочипы, наличные или монеты к ID.</span>"
 		if(registered_account.account_holder == user.real_name)
-			msg += "<span class='boldnotice'>If you lose this ID card, you can reclaim your account by Alt-Clicking a blank ID card while holding it and entering your account ID number.</span>"
+			msg += "<span class='boldnotice'>Если вы потеряете эту ID-карту, вы можете переподключить свой аккаунт путём Alt-Click по пустой карте, держа её и введя свой ID-номер.</span>"
 	else
-		msg += "<span class='info'>There is no registered account linked to this card. Alt-Click to add one.</span>"
+		msg += "<span class='info'>У данной карты нет зарегистрированного акканта. Alt-Click, чтобы добавить.</span>"
 
 	return msg
 
@@ -138,11 +138,11 @@
 		var/obj/item/emagrecharge/ER = W
 		if(ER.uses)
 			uses += ER.uses
-			to_chat(user, "<span class='notice'>You have added [ER.uses] charges to [src]. It now has [uses] charges.</span>")
+			to_chat(user, "<span class='notice'>Вы добавили [ER.uses] ед. зарядов к [src]. Теперь осталось [uses] использований.</span>")
 			playsound(src, "sparks", 100, 1)
 			ER.uses = 0
 		else
-			to_chat(user, "<span class='warning'>[ER] has no charges left.</span>")
+			to_chat(user, "<span class='warning'>У [ER] не осталось зарядов.</span>")
 		return
 	. = ..()
 
@@ -151,7 +151,7 @@
 
 /obj/item/emagrecharge
 	name = "electromagnet charging device"
-	desc = "A small cell with two prongs lazily jabbed into it. It looks like it's made for charging the small batteries found in electromagnetic devices, sadly this can't be recharged like a normal cell."
+	desc = "Небольшой аккумулятор двумя лениво воткнутыми штырями. Похоже, она нужна для заряжения небольших батарей в электромагнитных устройствах и, к несчастью, без возможности нормальной зарядки."
 	icon = 'icons/obj/module.dmi'
 	icon_state = "cell_mini"
 	item_flags = NOBLUDGEON
@@ -160,17 +160,22 @@
 /obj/item/emagrecharge/examine(mob/user)
 	. = ..()
 	if(uses)
-		. += "<span class='notice'>It can add up to [uses] charges to compatible devices</span>"
+		. += "<span class='notice'>Вы можете добавить до [uses] ед. зарядов к подходящим устройствам.</span>"
 	else
-		. += "<span class='warning'>It has a small, red, blinking light coming from inside of it. It's spent.</span>"
+		. += "<span class='warning'>Видна маленький, красный, мигающий свет изнутри. Израсходовано.</span>"
 
 /obj/item/card/emagfake
-	desc = "It's a card with a magnetic strip attached to some circuitry. Closer inspection shows that this card is a poorly made replica, with a \"DonkCo\" logo stamped on the back."
+	desc = "Это карта с какими-то магнитными полосами на её схемах."
 	name = "cryptographic sequencer"
 	icon_state = "emag"
 	item_state = "card-id"
 	lefthand_file = 'icons/mob/inhands/equipment/idcards_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/idcards_righthand.dmi'
+
+/obj/item/card/emagfake/examine(mob/user)
+	. = ..()
+	if(in_range(user, src) || isobserver(user))
+		. += "Вблизи видно, что эта карта - просто дешёвая имитация с лого \"DonkCo\" сзади."
 
 /obj/item/card/emagfake/afterattack()
 	. = ..()
@@ -178,7 +183,7 @@
 
 /obj/item/card/id
 	name = "Identification Card"
-	desc = "A card used to provide ID and determine access across the station."
+	desc = "ID-карта для идентификации и определения доступов по стации."
 	icon_state = "id"
 	item_state = "card-id"
 	lefthand_file = 'icons/mob/inhands/equipment/idcards_lefthand.dmi'
@@ -237,8 +242,8 @@
 
 /obj/item/card/id/attack_self(mob/user)
 	if(Adjacent(user))
-		user.visible_message("<span class='notice'>[user] shows you: [icon2html(src, viewers(user))] [src.name].</span>", \
-					"<span class='notice'>You show \the [src.name].</span>")
+		user.visible_message("<span class='notice'>[user] показывает вам: [icon2html(src, viewers(user))] [src.name].</span>", \
+					"<span class='notice'>Вы показали \the [src.name].</span>")
 		add_fingerprint(user)
 
 /obj/item/card/id/attackby(obj/item/W, mob/user, params)
@@ -246,7 +251,7 @@
 	if(istype(W, /obj/item/card/id) && !src.card_sticker && !contents.len)
 		var/obj/item/card/id/ID = W
 		if(ID.card_sticker)
-			to_chat(user, "<span class='notice'>You start to wrap the card...</span>")
+			to_chat(user, "<span class='notice'>Вы стали оборачивать карту...</span>")
 			if(!do_after(user, 15, target = user))
 				return
 			ID.forceMove(src)

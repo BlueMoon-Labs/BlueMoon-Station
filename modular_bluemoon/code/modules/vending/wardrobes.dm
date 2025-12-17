@@ -139,7 +139,7 @@
 
 /obj/machinery/vending/wardrobe/medi_wardrobe
 	name = "\improper MediDrobe"
-	desc = "A vending machine rumoured to be capable of dispensing clothing for medical personnel."
+	desc = "Вендомат, по слухам, способный выдавать одежду медперсоналу."
 	icon_state = "medidrobe"
 	product_slogans = "Сделайте пятна крови модными!!!"
 	vend_reply = "Спасибо за использование MediDrobe!"
@@ -634,7 +634,7 @@
 
 /obj/machinery/vending/wardrobe/chem_wardrobe
 	name = "ChemDrobe"
-	desc = "A vending machine for dispensing chemistry related clothing."
+	desc = "Вендор для выдачи одежды, связанной с химической дисциплиной."
 	icon_state = "chemdrobe"
 	product_slogans = "Наша одежда на 0,5% более устойчива к воздействию кислот! Приобретайте прямо сейчас!"
 	vend_reply = "TСпасибо за использование ChemDrobe!"
@@ -658,7 +658,7 @@
 
 /obj/machinery/vending/wardrobe/gene_wardrobe
 	name = "GeneDrobe"
-	desc = "A machine for dispensing clothing related to genetics."
+	desc = "Вендор для выдачи одежды, связанной с генетической дисциплиной."
 	icon_state = "genedrobe"
 	product_slogans = "Идеально подходит для безумного ученого!"
 	vend_reply = "Спасибо за использование GeneDrobe!"
@@ -679,7 +679,7 @@
 
 /obj/machinery/vending/wardrobe/viro_wardrobe
 	name = "ViroDrobe"
-	desc = "An unsterilized machine for dispending virology related clothing."
+	desc = "Нестерелизрованная машина для выдачи вирусологической одежды."
 	icon_state = "virodrobe"
 	product_slogans = " Вирусы донимают вас? Тогда перейдите на стерильную одежду уже сегодня!"
 	vend_reply = "Спасибо за использование ViroDrobe"

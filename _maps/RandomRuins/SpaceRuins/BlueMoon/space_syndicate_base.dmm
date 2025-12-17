@@ -5549,6 +5549,12 @@
 	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/medbay)
+"vk" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/marker_beacon/burgundy,
+/obj/structure/shield,
+/turf/template_noop,
+/area/template_noop)
 "vl" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge/vault)
@@ -7190,6 +7196,10 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering)
+"Co" = (
+/obj/structure/shield,
+/turf/template_noop,
+/area/template_noop)
 "Cp" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
@@ -13486,7 +13496,62 @@
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security/prison)
 
 (1,1,1) = {"
-wg
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+"}
+(2,1,1) = {"
+Co
 wg
 wg
 wg
@@ -13538,10 +13603,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(2,1,1) = {"
-wg
+(3,1,1) = {"
+Co
 wg
 wg
 wg
@@ -13593,10 +13658,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(3,1,1) = {"
-wg
+(4,1,1) = {"
+Co
 wg
 wg
 wg
@@ -13648,10 +13713,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(4,1,1) = {"
-wg
+(5,1,1) = {"
+Co
 EJ
 kx
 WA
@@ -13703,10 +13768,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(5,1,1) = {"
-wg
+(6,1,1) = {"
+Co
 wg
 wg
 wg
@@ -13758,10 +13823,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(6,1,1) = {"
-wg
+(7,1,1) = {"
+Co
 wg
 wg
 xr
@@ -13813,10 +13878,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(7,1,1) = {"
-wg
+(8,1,1) = {"
+Co
 wg
 xr
 NB
@@ -13868,10 +13933,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(8,1,1) = {"
-wg
+(9,1,1) = {"
+Co
 wg
 dT
 qh
@@ -13923,10 +13988,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(9,1,1) = {"
-wg
+(10,1,1) = {"
+Co
 wg
 cI
 qh
@@ -13978,10 +14043,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(10,1,1) = {"
-wg
+(11,1,1) = {"
+Co
 Nc
 zI
 qh
@@ -14033,10 +14098,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(11,1,1) = {"
-wg
+(12,1,1) = {"
+Co
 IC
 Oi
 qh
@@ -14088,10 +14153,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(12,1,1) = {"
-wg
+(13,1,1) = {"
+Co
 Nc
 zI
 qh
@@ -14143,10 +14208,10 @@ NB
 vS
 kx
 EJ
-wg
+Co
 "}
-(13,1,1) = {"
-wg
+(14,1,1) = {"
+Co
 IC
 Oi
 qh
@@ -14198,10 +14263,10 @@ uq
 wg
 wg
 wg
-wg
+Co
 "}
-(14,1,1) = {"
-wg
+(15,1,1) = {"
+Co
 mf
 NB
 NB
@@ -14253,10 +14318,10 @@ Yb
 wg
 wg
 wg
-wg
+Co
 "}
-(15,1,1) = {"
-wg
+(16,1,1) = {"
+Co
 Nc
 zI
 qh
@@ -14308,10 +14373,10 @@ Oi
 GK
 wg
 wg
-wg
+Co
 "}
-(16,1,1) = {"
-wg
+(17,1,1) = {"
+Co
 IC
 Oi
 qh
@@ -14363,10 +14428,10 @@ Oi
 Yb
 wg
 wg
-wg
+Co
 "}
-(17,1,1) = {"
-wg
+(18,1,1) = {"
+Co
 wg
 qz
 qh
@@ -14418,10 +14483,10 @@ Oi
 ZY
 wg
 wg
-wg
+Co
 "}
-(18,1,1) = {"
-wg
+(19,1,1) = {"
+Co
 mf
 NB
 NB
@@ -14473,10 +14538,10 @@ GK
 wg
 wg
 wg
-wg
+Co
 "}
-(19,1,1) = {"
-wg
+(20,1,1) = {"
+Co
 wg
 wg
 xr
@@ -14528,10 +14593,10 @@ Yb
 wg
 wg
 wg
-wg
+Co
 "}
-(20,1,1) = {"
-wg
+(21,1,1) = {"
+Co
 wg
 wg
 wg
@@ -14583,10 +14648,10 @@ ZY
 wg
 wg
 wg
-wg
+Co
 "}
-(21,1,1) = {"
-wg
+(22,1,1) = {"
+Co
 wg
 wg
 wg
@@ -14638,10 +14703,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(22,1,1) = {"
-wg
+(23,1,1) = {"
+Co
 wg
 wg
 wg
@@ -14693,10 +14758,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(23,1,1) = {"
-wg
+(24,1,1) = {"
+Co
 wg
 wg
 wg
@@ -14748,10 +14813,10 @@ vS
 kx
 EJ
 wg
-wg
+Co
 "}
-(24,1,1) = {"
-wg
+(25,1,1) = {"
+Co
 wg
 wg
 wg
@@ -14803,10 +14868,10 @@ kx
 wg
 wg
 wg
-wg
+Co
 "}
-(25,1,1) = {"
-wg
+(26,1,1) = {"
+Co
 wg
 wg
 wg
@@ -14858,10 +14923,10 @@ kx
 wg
 wg
 wg
-wg
+Co
 "}
-(26,1,1) = {"
-wg
+(27,1,1) = {"
+Co
 wg
 wg
 wg
@@ -14913,10 +14978,10 @@ Uv
 wg
 wg
 wg
-wg
+Co
 "}
-(27,1,1) = {"
-wg
+(28,1,1) = {"
+Co
 wg
 wg
 wg
@@ -14968,10 +15033,10 @@ vS
 kx
 EJ
 wg
-wg
+Co
 "}
-(28,1,1) = {"
-wg
+(29,1,1) = {"
+Co
 wg
 wg
 wg
@@ -15023,10 +15088,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(29,1,1) = {"
-wg
+(30,1,1) = {"
+Co
 wg
 wg
 wg
@@ -15078,10 +15143,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(30,1,1) = {"
-wg
+(31,1,1) = {"
+Co
 wg
 wg
 wg
@@ -15133,10 +15198,10 @@ GK
 wg
 wg
 wg
-wg
+Co
 "}
-(31,1,1) = {"
-wg
+(32,1,1) = {"
+Co
 wg
 wg
 xr
@@ -15188,10 +15253,10 @@ Yb
 wg
 wg
 wg
-wg
+Co
 "}
-(32,1,1) = {"
-wg
+(33,1,1) = {"
+Co
 mf
 NB
 NB
@@ -15243,10 +15308,10 @@ ZY
 wg
 wg
 wg
-wg
+Co
 "}
-(33,1,1) = {"
-wg
+(34,1,1) = {"
+Co
 wg
 dT
 qh
@@ -15298,10 +15363,10 @@ Oi
 GK
 wg
 wg
-wg
+Co
 "}
-(34,1,1) = {"
-wg
+(35,1,1) = {"
+Co
 IC
 zI
 qh
@@ -15353,10 +15418,10 @@ Oi
 Yb
 wg
 wg
-wg
+Co
 "}
-(35,1,1) = {"
-wg
+(36,1,1) = {"
+Co
 Nc
 Oi
 qh
@@ -15408,10 +15473,10 @@ Oi
 ZY
 wg
 wg
-wg
+Co
 "}
-(36,1,1) = {"
-wg
+(37,1,1) = {"
+Co
 mf
 NB
 NB
@@ -15463,10 +15528,10 @@ VP
 wg
 wg
 wg
-wg
+Co
 "}
-(37,1,1) = {"
-wg
+(38,1,1) = {"
+Co
 Nc
 zI
 qh
@@ -15518,10 +15583,10 @@ ZY
 wg
 wg
 wg
-wg
+Co
 "}
-(38,1,1) = {"
-wg
+(39,1,1) = {"
+Co
 IC
 Oi
 qh
@@ -15573,10 +15638,10 @@ NB
 vS
 kx
 EJ
-wg
+Co
 "}
-(39,1,1) = {"
-wg
+(40,1,1) = {"
+Co
 Nc
 zI
 qh
@@ -15628,10 +15693,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(40,1,1) = {"
-wg
+(41,1,1) = {"
+Co
 IC
 Oi
 qh
@@ -15683,10 +15748,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(41,1,1) = {"
-wg
+(42,1,1) = {"
+Co
 wg
 dT
 qh
@@ -15738,10 +15803,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(42,1,1) = {"
-wg
+(43,1,1) = {"
+Co
 wg
 cI
 qh
@@ -15793,10 +15858,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(43,1,1) = {"
-wg
+(44,1,1) = {"
+Co
 wg
 xr
 NB
@@ -15848,10 +15913,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(44,1,1) = {"
-wg
+(45,1,1) = {"
+Co
 wg
 wg
 xr
@@ -15903,10 +15968,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(45,1,1) = {"
-wg
+(46,1,1) = {"
+Co
 wg
 wg
 wg
@@ -15958,10 +16023,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(46,1,1) = {"
-wg
+(47,1,1) = {"
+Co
 EJ
 kx
 Mt
@@ -16013,10 +16078,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(47,1,1) = {"
-wg
+(48,1,1) = {"
+Co
 wg
 wg
 wg
@@ -16068,10 +16133,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(48,1,1) = {"
-wg
+(49,1,1) = {"
+Co
 wg
 wg
 wg
@@ -16123,10 +16188,10 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
-(49,1,1) = {"
-wg
+(50,1,1) = {"
+Co
 wg
 wg
 wg
@@ -16178,64 +16243,10 @@ wg
 wg
 wg
 wg
-wg
-"}
-(50,1,1) = {"
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-kx
-wg
-kx
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-kx
-wg
-kx
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
+Co
 "}
 (51,1,1) = {"
+Co
 wg
 wg
 wg
@@ -16262,8 +16273,7 @@ wg
 wg
 wg
 wg
-wg
-EJ
+kx
 wg
 kx
 wg
@@ -16275,7 +16285,7 @@ wg
 wg
 kx
 wg
-EJ
+kx
 wg
 wg
 wg
@@ -16288,60 +16298,60 @@ wg
 wg
 wg
 wg
-wg
+Co
 "}
 (52,1,1) = {"
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-EJ
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-EJ
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
-wg
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+vk
+Co
+vk
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+vk
+Co
+vk
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
+Co
 "}

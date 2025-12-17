@@ -119,7 +119,7 @@
 		if(!traits_dat)
 			return
 		else
-			foundrecord.fields["notes"] += "\n traits information as of shift start: [traits_dat]"
+			foundrecord.fields["notes"] += "\n информация о чертах на начало смены: [traits_dat]"
 // BLUEMOON ADD END
 
 /datum/datacore/proc/manifest()

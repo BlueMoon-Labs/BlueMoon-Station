@@ -122,6 +122,14 @@
 	build_path = /obj/item/ammo_casing/shotgun/incendiary
 	category = list("hacked", "Security")
 
+/datum/design/extended_emergency
+	name = "Extended emergency oxygen tank"
+	id = "extendedemergency"
+	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	materials = list(/datum/material/iron = 1500, /datum/material/titanium = 500)
+	build_path = /obj/item/tank/internals/emergency_oxygen/engi/empty
+	category = list("hacked", "Misc")
+
 /////////////////
 //   Bullets   //
 /////////////////

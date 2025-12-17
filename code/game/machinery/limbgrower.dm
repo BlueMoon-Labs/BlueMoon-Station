@@ -124,17 +124,17 @@
 
 /obj/machinery/limbgrower/attackby(obj/item/user_item, mob/living/user, params)
 	if (busy)
-		to_chat(user, "<span class=\"alert\">\The [src] is busy. Please wait for completion of previous operation.</span>")
+		to_chat(user, "<span class=\"alert\">\The [src] в работе. Пожалуйста, дождитесь завершения предыдущей операции.</span>")
 		return
 	if(ispath(user_item.type, /obj/item/reagent_containers/blood) && user.a_intent != INTENT_HARM)
 		var/obj/item/reagent_containers/blood/B = user_item
 		if(!B.reagents.get_reagents())
-			to_chat(user, "<span class=\"alert\">You can't fill [src] with an empty [B.name]!</span>")
+			to_chat(user, "<span class=\"alert\">Вы не можете заправить [src] пустым [B.name]!</span>")
 			return
 		if(reagents.total_volume == reagents.maximum_volume)
-			to_chat(user, "<span class=\"alert\">\The [src] can't hold more blood!</span>")
+			to_chat(user, "<span class=\"alert\">\The [src] не может произвести больше крови!</span>")
 			return
-		user.visible_message("<span class='notice'>[user] drains the [user_item] into [src] using the blood bag port on [src].</span>",
+		user.visible_message("<span class='notice'>[user] сливает [user_item] внутрь [src] при помощи слота для пакетов крови.</span>",
 			"You drain the [user_item] into [src] using the blood bag port.")
 		B.reagents.trans_to(src, B.amount_per_transfer_from_this)
 		return
@@ -151,12 +151,12 @@
 
 	if(istype(user_item, /obj/item/disk))
 		if(dna_disk)
-			to_chat(user, "<span class='warning'>\The [src] already has a dna disk, take it out first!</span>")
+			to_chat(user, "<span class='warning'>\The [src] уже имеет ДНК-диск, для начала извлеките его!</span>")
 			return
 		else
 			user_item.forceMove(src)
 			dna_disk = user_item
-			to_chat(user, "<span class='notice'>You insert \the [user_item] into \the [src].</span>")
+			to_chat(user, "<span class='notice'>Вы вставили \the [user_item] внутрь \the [src].</span>")
 			playsound(src, 'sound/machines/terminal_insert_disc.ogg', 50, 0)
 			return
 
@@ -174,7 +174,7 @@
 		return
 
 	if (busy)
-		to_chat(usr, "<span class='danger'>\The [src] is busy. Please wait for completion of previous operation.</span>")
+		to_chat(usr, "<span class='danger'>\The [src] в работе. Пожалуйста, дождитесь завершения предыдущей операции.</span>")
 		return
 
 	switch(action)
@@ -199,7 +199,7 @@
 			for(var/reagent_id in consumed_reagents_list)
 				consumed_reagents_list[reagent_id] *= production_coefficient
 				if(!reagents.has_reagent(reagent_id, consumed_reagents_list[reagent_id]))
-					audible_message("<span class='warning'>\The [src] buzzes and states \"INSUFFICENT REAGENTS\"</span>")
+					audible_message("<span class='warning'>\The [src] гудит и объявляет: \"НЕДОСТАТОЧНО РЕАГЕНТОВ\"</span>")
 					playsound(src, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
 					return
 
@@ -257,7 +257,7 @@
 /obj/machinery/limbgrower/proc/reagent_sanity_check(reagent_id, amount)
 	if(reagents.has_reagent(reagent_id, amount))
 		return TRUE
-	audible_message("<span class='warning'>\The [src] buzzes, with a screen showing: INSUFFICENT REAGENTS</span>")
+	audible_message("<span class='warning'>\The [src] гудит, на экране видна надпись: \"НЕДОСТАТОЧНО РЕАГЕНТОВ\"<</span>")
 	playsound(src, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
 	return FALSE
 
@@ -281,7 +281,7 @@
 	limb.update_limb(TRUE)
 	limb.update_icon_dropped()
 	limb.name = "\improper synthetic [lowertext(selected.name)] [limb.name]"
-	limb.desc = "A synthetic [selected_category] limb that will morph on its first use in surgery. This one is for the [parse_zone(limb.body_zone)]."
+	limb.desc = "Синтетическая [selected_category] конечность, которая трансформируется в момент имплантации при операции. Она нужна для [parse_zone(limb.body_zone)]."
 	limb.forcereplace = TRUE
 	for(var/obj/item/bodypart/BP in limb)
 		BP.base_bp_icon = selected.icon_limbs || DEFAULT_BODYPART_ICON_ORGANIC
@@ -291,7 +291,7 @@
 		BP.update_limb(TRUE)
 		BP.update_icon_dropped()
 		BP.name = "\improper synthetic [lowertext(selected.name)] [limb.name]"
-		BP.desc = "A synthetic [selected_category] limb that will morph on its first use in surgery. This one is for the [parse_zone(limb.body_zone)]."
+		BP.desc = "Синтетическая [selected_category] конечность, которая трансформируется в момент имплантации при операции. Она нужна для [parse_zone(limb.body_zone)]."
 
 /*
  * Builds genitals, modifies to be the same
@@ -356,7 +356,7 @@
 	// Create a mob with a chest, but nothing else
 	if(!ispath(built_typepath, /mob/living/carbon/human/chestonly))
 		playsound(src, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
-		visible_message(src, "Buzzes, an error screen appearing on its display.")
+		visible_message(src, "Гудит, ошибка выскакивает на дисплее.")
 		return FALSE
 	// Fields is from cloning, a much fuller scan, genetic_makeup_buffer is less so
 	var/dna_genetics = dna_disk?.genetic_makeup_buffer
@@ -414,11 +414,13 @@
 /obj/machinery/limbgrower/examine(mob/user)
 	. = ..()
 	if(!panel_open)
-		. += "<span class='notice'>It looks like as if the panel were open you could rotate it with a <b>wrench</b>.</span>"
+		. += "<span class='notice'>При открытой панели техобслуживания, машину можно было бы повернуть <b>гаечным ключом</b>.</span>"
 	else
-		. += "<span class='notice'>The panel is open.</span>"
+		. += "<span class='notice'>Панель техобслуживания открыта.</span>"
 	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Storing up to <b>[reagents.maximum_volume]u</b> of reagents.<br>Reagent consumption rate at <b>[production_coefficient * 100]%</b>.</span>"
+		. += "<span class='notice'>Статус-дисплей сообщает: \n\
+		- Хранится до <b>[reagents.maximum_volume]u</b> реагентов.\n\
+		- Затраты реагентов: <b>[production_coefficient * 100]%</b>.</span>"
 
 /*
  * Checks our reagent list to see if a design can be built.
@@ -442,7 +444,7 @@
 		var/datum/design/found_design = SSresearch.techweb_design_by_id(design_id)
 		if((found_design.build_type & LIMBGROWER) && ("emagged" in found_design.category))
 			stored_research.add_design(found_design)
-	to_chat(user, "<span class='warning'>A warning flashes onto the screen, stating that safety overrides have been deactivated!</span>")
+	to_chat(user, "<span class='warning'>Предупреждение мачит на экране, заявляя что протоколы безопасности были отключены!</span>")
 	obj_flags |= EMAGGED
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	update_static_data(user)
@@ -454,16 +456,16 @@
 /obj/machinery/limbgrower/proc/eject_disk(mob/user)
 	if(istype(user) && user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 		if(busy)
-			to_chat(user, "<span class=\"alert\">\The [src] is busy. Please wait for completion of previous operation.</span>")
+			to_chat(user, "<span class=\"alert\">\The [src] в работе. Пожалуйста, дождитесь завершения предыдущей операции.</span>")
 		else
 			if(dna_disk)
 				dna_disk.forceMove(src.loc)
 				user.put_in_active_hand(dna_disk)
-				to_chat(user, "<span class='notice'>You remove \the [dna_disk] from \the [src].</span>")
+				to_chat(user, "<span class='notice'>Вы извлекли \the [dna_disk] из \the [src].</span>")
 				playsound(src, 'sound/machines/terminal_insert_disc.ogg', 50, 0)
 				dna_disk = null
 			else
-				to_chat(user, "<span class='warning'>\The [src] has doesn't have a disk on it!")
+				to_chat(user, "<span class='warning'>\The [src] не имеет диска внутри себя!")
 
 //Defines some vars that makes limbs appears, TO-DO: define every single species.
 

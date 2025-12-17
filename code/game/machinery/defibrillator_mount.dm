@@ -14,7 +14,12 @@
 	var/obj/item/defibrillator/defib //this mount's defibrillator
 	var/clamps_locked = FALSE //if true, and a defib is loaded, it can't be removed without unlocking the clamps
 
-/obj/machinery/defibrillator_mount/loaded/Initialize(mapload) //loaded subtype for mapping use
+/obj/machinery/defibrillator_mount/Initialize(mapload, ndir)
+	. = ..()
+	if(ndir)
+		setDir(ndir)
+
+/obj/machinery/defibrillator_mount/loaded/Initialize(mapload, ndir) //loaded subtype for mapping use
 	. = ..()
 	defib = new/obj/item/defibrillator/loaded(src)
 
@@ -39,14 +44,19 @@
 		use_power(200)
 		defib.cell.give(180) //90% efficiency, slightly better than the cell charger's 87.5%
 		update_icon()
-	var/turf/open/floor/F = get_turf(src)
-	if(istype(F, /turf/open/floor))
-		visible_message(span_warning("Дефибрилляторная стойка упала без стабильной опоры!"))
-		new /obj/item/wallframe/defib_mount(drop_location())
-		if(defib)
-			defib.drop_location()
-		qdel(src)
-		return
+	var/turf/T = get_turf(src)
+	var/turf/parentwall = get_step(T, REVERSE_DIR(src.dir))
+	if(!istype(parentwall, /turf/closed))
+		fall_down()
+
+/obj/machinery/defibrillator_mount/proc/fall_down()
+	if(defib)
+		defib.forceMove(drop_location())
+		defib = null
+	visible_message(span_warning("Дефибрилляторная стойка упала без стабильной опоры!"))
+	new /obj/item/wallframe/defib_mount(drop_location())
+	qdel(src)
+	return
 
 /obj/machinery/defibrillator_mount/update_overlays()
 	. = ..()
@@ -162,9 +172,9 @@
 //wallframe, for attaching the mounts easily
 /obj/item/wallframe/defib_mount
 	name = "unhooked defibrillator mount"
-	desc = "A frame for a defibrillator mount. It can't be removed once it's placed."
+	desc = "A frame for a defibrillator mount. It can be removed with wrench once it's placed."
 	icon = 'icons/obj/machines/defib_mount.dmi'
-	icon_state = "defibrillator_mount"
+	icon_state = "defibrillator_mount_item"
 	custom_materials = list(/datum/material/iron = 300, /datum/material/glass = 100)
 	w_class = WEIGHT_CLASS_BULKY
 	result_path = /obj/machinery/defibrillator_mount

@@ -101,7 +101,9 @@
 	. = ..()
 	var/datum/component/remote_materials/materials = GetComponent(/datum/component/remote_materials)
 	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Storing up to <b>[materials.local_size]</b> material units locally.<br>Material usage cost at <b>[print_cost_coeff*100]%</b>.</span>"
+		. += "<span class='notice'>Статус-дисплей сообщает: \n\
+		- Хранится до <b>[materials.local_size]</b> m/u локально.\n\
+		- Затраты материалов: <b>[print_cost_coeff*100]%</b>.</span>"
 
 //we eject the materials upon deconstruction.
 /obj/machinery/rnd/production/on_deconstruction()
@@ -228,14 +230,14 @@
 /obj/machinery/rnd/production/proc/ui_header()
 	var/list/l = list()
 	l += "<div class='statusDisplay'><b>[host_research.organization] [department_tag] Department Lathe</b>"
-	l += "Security protocols: [(obj_flags & EMAGGED)? "<font color='red'>Disabled</font>" : "<font color='green'>Enabled</font>"]"
+	l += "Протоколы безопасности: [(obj_flags & EMAGGED)? "<font color='red'>отключены</font>" : "<font color='green'>включены</font>"]"
 	if (materials.mat_container)
-		l += "<A href='?src=[REF(src)];switch_screen=[RESEARCH_FABRICATOR_SCREEN_MATERIALS]'><B>Material Amount:</B> [materials.format_amount()]</A>"
+		l += "<A href='?src=[REF(src)];switch_screen=[RESEARCH_FABRICATOR_SCREEN_MATERIALS]'><B>Кол-во материалов:</B> [materials.format_amount()]</A>"
 	else
 		l += "<font color='red'>No material storage connected, please contact the quartermaster.</font>"
-	l += "<A href='?src=[REF(src)];switch_screen=[RESEARCH_FABRICATOR_SCREEN_CHEMICALS]'><B>Chemical volume:</B> [reagents.total_volume] / [reagents.maximum_volume]</A>"
-	l += "<a href='?src=[REF(src)];sync_research=1'>Synchronize Research</a>"
-	l += "<a href='?src=[REF(src)];switch_screen=[RESEARCH_FABRICATOR_SCREEN_MAIN]'>Main Screen</a></div>[RDSCREEN_NOBREAK]"
+	l += "<A href='?src=[REF(src)];switch_screen=[RESEARCH_FABRICATOR_SCREEN_CHEMICALS]'><B>Объём химикатов:</B> [reagents.total_volume] / [reagents.maximum_volume]</A>"
+	l += "<a href='?src=[REF(src)];sync_research=1'>Синхронизация исследований</a>"
+	l += "<a href='?src=[REF(src)];switch_screen=[RESEARCH_FABRICATOR_SCREEN_MAIN]'>Главное меню</a></div>[RDSCREEN_NOBREAK]"
 	return l
 
 /obj/machinery/rnd/production/proc/ui_screen_materials()
@@ -243,12 +245,12 @@
 		screen = RESEARCH_FABRICATOR_SCREEN_MAIN
 		return ui_screen_main()
 	var/list/l = list()
-	l += "<div class='statusDisplay'><h3>Material Storage:</h3>"
+	l += "<div class='statusDisplay'><h3>Хранилище материалов:</h3>"
 	for(var/mat_id in materials.mat_container.materials)
 		var/datum/material/M = mat_id
 		var/amount = materials.mat_container.materials[mat_id]
 		var/ref = REF(M)
-		l += "* [amount] of [M.name]: "
+		l += "* [amount] см³ [material_to_ru_genitive(M.name)]: "
 		if(amount >= MINERAL_MATERIAL_AMOUNT) l += "<A href='?src=[REF(src)];ejectsheet=[ref];eject_amt=1'>1x</A> [RDSCREEN_NOBREAK]"
 		if(amount >= MINERAL_MATERIAL_AMOUNT*5) l += "<A href='?src=[REF(src)];ejectsheet=[ref];eject_amt=5'>5x</A> [RDSCREEN_NOBREAK]"
 		if(amount >= MINERAL_MATERIAL_AMOUNT*10) l += "<A href='?src=[REF(src)];ejectsheet=[ref];eject_amt=10'>10x</A> [RDSCREEN_NOBREAK]"
@@ -261,8 +263,8 @@
 
 /obj/machinery/rnd/production/proc/ui_screen_chemicals()
 	var/list/l = list()
-	l += "<div class='statusDisplay'><A href='?src=[REF(src)];disposeall=1'>Disposal All Chemicals in Storage</A>"
-	l += "<h3>Chemical Storage:</h3>"
+	l += "<div class='statusDisplay'><A href='?src=[REF(src)];disposeall=1'>Утилизировать все химикаты хранилища</A>"
+	l += "<h3>Хранилище химикатов:</h3>"
 	for(var/datum/reagent/R in reagents.reagent_list)
 		l += "[R.name]: [R.volume]"
 		l += "<A href='?src=[REF(src)];dispose=[R.type]'>Purge</A>"
@@ -272,12 +274,12 @@
 /obj/machinery/rnd/production/proc/ui_screen_search()
 	var/list/l = list()
 	var/coeff = print_cost_coeff
-	l += "<h2>Search Results:</h2>"
+	l += "<h2>Результаты поиска:</h2>"
 	l += "<form name='search' action='?src=[REF(src)]'>\
 	<input type='hidden' name='src' value='[REF(src)]'>\
 	<input type='hidden' name='search' value='to_search'>\
 	<input type='text' name='to_search'>\
-	<input type='submit' value='Search'>\
+	<input type='submit' value='Поиск'>\
 	</form><HR>"
 	for(var/datum/design/D in matching_designs)
 		l += design_menu_entry(D, coeff)
@@ -300,9 +302,9 @@
 		t = check_mat(D, M)
 		temp_material += " | "
 		if (t < 1)
-			temp_material += "<span class='bad'>[all_materials[M] * coeff] [CallMaterialName(M)]</span>"
+			temp_material += "<span class='bad'>[all_materials[M] * coeff] [CallMaterialName_RuGenitive(M)]</span>"
 		else
-			temp_material += " [all_materials[M] * coeff] [CallMaterialName(M)]"
+			temp_material += " [all_materials[M] * coeff] [CallMaterialName_RuGenitive(M)]"
 		c = min(c,t)
 
 	var/on_station = is_station_level(z)
@@ -317,7 +319,7 @@
 
 	var/sec_text = ""
 	if(clearance && (D.min_security_level > SEC_LEVEL_GREEN || D.max_security_level < SEC_LEVEL_DELTA))
-		sec_text = " (Allowed security levels: "
+		sec_text = " (При уровнях тревоги: "
 		for(var/n in D.min_security_level to D.max_security_level)
 			sec_text += NUM2SECLEVEL(n)
 			if(n + 1 <= D.max_security_level)
@@ -356,7 +358,7 @@
 		screen = RESEARCH_FABRICATOR_SCREEN_SEARCH
 	if(ls["sync_research"])
 		update_research()
-		say("Synchronizing research with host technology database.")
+		say("Синхронизация исследований с базой данных научно-исследовательского отдела.")
 	if(ls["category"])
 		selected_category = ls["category"]
 	if(ls["dispose"])  //Causes the protolathe to dispose of a single reagent (all of it)
@@ -371,10 +373,10 @@
 /obj/machinery/rnd/production/proc/eject_sheets(eject_sheet, eject_amt)
 	var/datum/component/material_container/mat_container = materials.mat_container
 	if (!mat_container)
-		say("No access to material storage, please contact the quartermaster.")
+		say("Нет доступа к хранилищу материалов, пожалуйста, свяжитесь с завхозом.")
 		return FALSE
 	if (materials.on_hold())
-		say("Mineral access is on hold, please contact the quartermaster.")
+		say("Доступ к материалам приостановлен, ожалуйста, свяжитесь с завхозом.")
 		return FALSE
 	var/count = mat_container.retrieve_sheets(text2num(eject_amt), eject_sheet, drop_location())
 	var/list/matlist = list()
@@ -389,7 +391,7 @@
 	<input type='hidden' name='search' value='to_search'>\
 	<input type='hidden' name='type' value='proto'>\
 	<input type='text' name='to_search'>\
-	<input type='submit' value='Search'>\
+	<input type='submit' value='Поиск'>\
 	</form><HR>"
 
 	l += list_categories(categories, RESEARCH_FABRICATOR_SCREEN_CATEGORYVIEW)
@@ -400,7 +402,7 @@
 	if(!selected_category)
 		return ui_screen_main()
 	var/list/l = list()
-	l += "<div class='statusDisplay'><h3>Browsing [selected_category]:</h3>"
+	l += "<div class='statusDisplay'><h3>Категория: [selected_category]</h3>"
 	var/coeff = print_cost_coeff
 	for(var/v in stored_research.researched_designs)
 		var/datum/design/D = SSresearch.techweb_design_by_id(v)

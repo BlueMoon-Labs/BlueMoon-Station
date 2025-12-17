@@ -299,23 +299,23 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /obj/item/examine(mob/user) //This might be spammy. Remove?
 	. = ..()
 
-	. += "[gender == PLURAL ? "They are" : "It is"] a [weightclass2text(w_class)] item."
+	. += "[gender == PLURAL ? "Это вещи" : "Это предмет"] [weight_class_to_text(w_class)] размера."
 
 	if(resistance_flags & INDESTRUCTIBLE)
-		. += "[src] seems extremely robust! It'll probably withstand anything that could happen to it!"
+		. += "[gender == PLURAL ? "Оно" : "Этот предмет"] выглядит особенно прочным! Скорее всего, выдержит что угодно!"
 	else
 		if(resistance_flags & LAVA_PROOF)
-			. += "[src] is made of an extremely heat-resistant material, it'd probably be able to withstand lava!"
+			. += "[gender == PLURAL ? "Эти вещи содержат" : "Этот предмет содержит"] особо огнеупорный материал и, скорее всего, пережив[gender == PLURAL ? "ут" : "ёт"] лаву!"
 		if(resistance_flags & (ACID_PROOF | UNACIDABLE))
-			. += "[src] looks pretty robust! It'd probably be able to withstand acid!"
+			. += "[gender == PLURAL ? "Эти вещи выглядят устойчивыми" : "Этот предмет выглядит устойчивым"] к кислоте."
 		if(resistance_flags & FREEZE_PROOF)
-			. += "[src] is made of cold-resistant materials."
+			. += "[gender == PLURAL ? "Эти вещи выглядят устойчивыми" : "Этот предмет выглядит устойчивым"] к холоду."
 		if(resistance_flags & FIRE_PROOF)
-			. += "[src] is made of fire-retardant materials."
+			. += "[gender == PLURAL ? "Эти вещи выглядят устойчивыми" : "Этот предмет выглядит устойчивым"] к огню."
 
 	if(item_flags & (ITEM_CAN_BLOCK | ITEM_CAN_PARRY))
 		var/datum/block_parry_data/data = return_block_parry_datum(block_parry_data)
-		. += "[src] has the capacity to be used to block and/or parry. <a href='?src=[REF(data)];name=[strip_html(name)];block=[item_flags & ITEM_CAN_BLOCK];parry=[item_flags & ITEM_CAN_PARRY];render=1'>\[Show Stats\]</a>"
+		. += "[src] имеет потеницал к блокированию и/или паррированию. <a href='?src=[REF(data)];name=[strip_html(name)];block=[item_flags & ITEM_CAN_BLOCK];parry=[item_flags & ITEM_CAN_PARRY];render=1'>\[Show Stats\]</a>"
 
 	// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
 	if(item_flags & FAMILY_HEIRLOOM)
@@ -328,7 +328,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 					if(src == heirloom_quirk.heirloom)
 						my_heirloom = TRUE // МОЯ ПРЕЛЕСТЬ!
 		if(my_heirloom)
-			. += "<span class='boldnotice'>[src] - это моя реликвия! Нужно её беречь!</span>"
+			. += "<span class='boldnotice'>[src] - моя реликвия! Нужно её беречь!</span>"
 		else
 			. += "<span class='notice'>[src] выглядит очень ухоженно. Видимо, этот предмет кому-то ценен...</span>"
 	// BLUEMOON ADD END
@@ -338,7 +338,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 	// Research prospects, including boostable nodes and point values.
 	// Deliver to a console to know whether the boosts have already been used.
-	var/list/research_msg = list("<font color='purple'>Research prospects:</font> ")
+	var/list/research_msg = list("<font color='purple'>Перспективы исследований:</font> ")
 	var/sep = ""
 	var/list/boostable_nodes = techweb_item_boost_check(src)
 	if (boostable_nodes)
@@ -355,18 +355,18 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		research_msg += techweb_point_display_generic(points)
 
 	if (!sep) // nothing was shown
-		research_msg += "None"
+		research_msg += "отсутствуют"
 
 	// Extractable materials. Only shows the names, not the amounts.
-	research_msg += ".<br><font color='purple'>Extractable materials:</font> "
+	research_msg += ".<br><font color='purple'>Материалы для разбора:</font> "
 	if (length(custom_materials))
 		sep = ""
 		for(var/mat in custom_materials)
 			research_msg += sep
-			research_msg += CallMaterialName(mat)
+			research_msg += CallMaterialName_RuNominative(mat)
 			sep = ", "
 	else
-		research_msg += "None"
+		research_msg += "отсутствуют"
 	research_msg += "."
 	. += research_msg.Join()
 
@@ -388,7 +388,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		return
 	if(loc == user && current_equipped_slot && current_equipped_slot != ITEM_SLOT_HANDS)
 		if(current_equipped_slot in user.check_obscured_slots())
-			to_chat(user, "<span class='warning'>You are unable to unequip that while wearing other garments over it!</span>")
+			to_chat(user, "<span class='warning'>Вы не можете снять вещь, пока носите что-то поверх неё!</span>")
 			return FALSE
 
 	. = TRUE
@@ -420,7 +420,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	var/grav = user.has_gravity()
 	if(grav > STANDARD_GRAVITY)
 		var/grav_power = min(3,grav - STANDARD_GRAVITY)
-		to_chat(user,"<span class='notice'>You start picking up [src]...</span>")
+		to_chat(user,"<span class='notice'>Вы начали поднимать [src]...</span>")
 		if(!do_mob(user,src,30*grav_power))
 			return
 
@@ -453,7 +453,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		return
 	if(loc == user && current_equipped_slot && current_equipped_slot != ITEM_SLOT_HANDS)
 		if(current_equipped_slot in user.check_obscured_slots())
-			to_chat(user, "<span class='warning'>You are unable to unequip that while wearing other garments over it!</span>")
+			to_chat(user, "<span class='warning'>Вы не можете снять вещь, пока носите что-то поверх неё!</span>")
 			return FALSE
 
 

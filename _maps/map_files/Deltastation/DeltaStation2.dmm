@@ -60378,21 +60378,6 @@
 	desc = "A high-visibility lifejacket complete with whistle and slot for oxygen tanks.";
 	name = "emergency lifejacket"
 	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
 /obj/item/clothing/mask/breath{
 	pixel_x = -3;
 	pixel_y = -3
@@ -60444,6 +60429,11 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
 /turf/open/floor/plasteel/dark,
 /area/maintenance/port/aft)
 "edh" = (
@@ -60491,21 +60481,6 @@
 	desc = "A high-visibility lifejacket complete with whistle and slot for oxygen tanks.";
 	name = "emergency lifejacket"
 	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
 /obj/item/clothing/mask/breath{
 	pixel_x = -3;
 	pixel_y = -3
@@ -60547,6 +60522,11 @@
 	pixel_y = 9
 	},
 /obj/structure/closet/crate/internals,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
 "edl" = (
@@ -74024,21 +74004,6 @@
 	desc = "A high-visibility lifejacket complete with whistle and slot for oxygen tanks.";
 	name = "emergency lifejacket"
 	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
 /obj/item/clothing/mask/breath{
 	pixel_x = -3;
 	pixel_y = -3
@@ -74084,6 +74049,11 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
 /turf/open/floor/plasteel,
 /area/commons/storage/primary)
 "hIq" = (
@@ -78359,21 +78329,6 @@
 	desc = "A high-visibility lifejacket complete with whistle and slot for oxygen tanks.";
 	name = "emergency lifejacket"
 	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
 /obj/item/clothing/mask/breath{
 	pixel_x = -3;
 	pixel_y = -3
@@ -78416,6 +78371,11 @@
 	},
 /obj/structure/closet/crate/internals,
 /obj/effect/turf_decal/bot/yellow,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "iOd" = (
@@ -129006,21 +128966,6 @@
 	desc = "A high-visibility lifejacket complete with whistle and slot for oxygen tanks.";
 	name = "emergency lifejacket"
 	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
 /obj/item/clothing/mask/breath{
 	pixel_x = -3;
 	pixel_y = -3
@@ -129063,6 +129008,11 @@
 	},
 /obj/structure/closet/crate/internals,
 /obj/effect/turf_decal/bot/yellow,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "xip" = (

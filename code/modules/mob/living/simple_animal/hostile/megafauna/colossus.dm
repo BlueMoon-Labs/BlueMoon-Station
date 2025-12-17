@@ -676,7 +676,7 @@ GLOBAL_VAR(blackbox_smartfridge)
 	activation_sound = 'sound/magic/timeparadox2.ogg'
 	var/static/list/banned_items_typecache = typecacheof(list(/obj/item/storage, /obj/item/implant, /obj/item/implanter, \
 	/obj/item/disk/nuclear, /obj/item/projectile, /obj/item/spellbook, /obj/item/inteq, /obj/item/syndicate_uplink, /obj/item/syndicate_uplink_high, \
-	/obj/item/dice/d20/fate, /obj/item/wisp_lantern))
+	/obj/item/dice/d20/fate, /obj/item/wisp_lantern, /obj/item/card/mining_point_card))
 
 /obj/machinery/anomalous_crystal/refresher/ActivationReaction(mob/user, method)
 	if(..())

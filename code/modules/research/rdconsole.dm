@@ -49,6 +49,24 @@ Nothing else in the console has ID requirements.
 		return reagent.name
 	return ID
 
+/proc/CallMaterialName_RuNominative(ID)
+	if (istype(ID, /datum/material))
+		var/datum/material/material = ID
+		return material_to_ru_nominative(material.name)
+	else if(GLOB.chemical_reagents_list[ID])
+		var/datum/reagent/reagent = GLOB.chemical_reagents_list[ID]
+		return reagent.name
+	return ID
+
+/proc/CallMaterialName_RuGenitive(ID)
+	if (istype(ID, /datum/material))
+		var/datum/material/material = ID
+		return material_to_ru_genitive(material.name)
+	else if(GLOB.chemical_reagents_list[ID])
+		var/datum/reagent/reagent = GLOB.chemical_reagents_list[ID]
+		return reagent.name
+	return ID
+
 /obj/machinery/computer/rdconsole/production
 	circuit = /obj/item/circuitboard/computer/rdconsole/production
 	research_control = FALSE

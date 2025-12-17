@@ -30,10 +30,10 @@ export const CloningConsole = (props, context) => {
       <Window.Content overflow="auto">
         <Section>
           <Section
-            title="Cloning Pods Status"
+            title="Статус капсул"
             buttons={useRecords &&
               <Button
-                content="Autoclone"
+                content="Автоклонирование"
                 color={autoprocess ? "green" : "default"}
                 icon={autoprocess ? "toggle-on" : "toggle-off"}
                 disabled={!hasAutoprocess}
@@ -65,7 +65,7 @@ export const CloningConsole = (props, context) => {
 
             {/* >5 подов: всё то же, но внутри Collapsible */}
             {pods.length > 5 && (
-              <Collapsible title={`Cloning pods (${pods.length})`} open={pods.length <= 7}>
+              <Collapsible title={`Капсулы клонирования (${pods.length})`} open={pods.length <= 7}>
                 {pods.map((pod, i) => (
                   <Stack key={i}>
                     <Stack.Item>
@@ -84,20 +84,20 @@ export const CloningConsole = (props, context) => {
             )}
           </Section>
           {hasScanner ? (
-            <Section title="Scanner Functions">
+            <Section title="Функции сканера">
               <NoticeBox {...makeNoticeFlags(scan_result.flag)}>{scan_result.message}</NoticeBox>
               {cloning_result.message && (
                 <NoticeBox {...makeNoticeFlags(cloning_result.flag)}>{cloning_result.message}</NoticeBox>
               )}
               <br />
               <Button
-                content={useRecords ? "Start Scan" : "Clone"}
+                content={useRecords ? "Сканировать" : "Клонировать"}
                 icon={useRecords ? "search" : "power-off"}
                 disabled={!hasOccupant}
                 onClick={() => act('scan')}
               />
               <Button
-                content={scannerLocked ? "Unlock Scanner" : "Lock Scanner"}
+                content={scannerLocked ? "Разблокировать сканер" : "Заблокировать сканер"}
                 icon={scannerLocked ? "lock" : "lock-open"}
                 color={scannerLocked ? "bad" : "good"}
                 disabled={!hasOccupant && !scannerLocked}
@@ -107,7 +107,7 @@ export const CloningConsole = (props, context) => {
           ) : (
             <>
               <NoticeBox danger>
-                ERROR: No Scanner Detected!
+                ОШИБКА: сканера не обнаружено!
               </NoticeBox>
               {cloning_result.message && (
                 <NoticeBox {...makeNoticeFlags(cloning_result.flag)}>{cloning_result.message}</NoticeBox>
@@ -116,16 +116,16 @@ export const CloningConsole = (props, context) => {
           )}
           {useRecords && (
             <Section>
-              <Section title="Database Functions">
-                <Collapsible disabled={!records.length} title={`View Records (${records.length})`}>
+              <Section title="Файлы записей">
+                <Collapsible disabled={!records.length} title={`Просмотр записей (${records.length})`}>
                   <Box color="blue"><h3>Current Records:</h3></Box>
                   {records.map(record => (
                     <Collapsible
                       key={record["id"] || record["name"]}
-                      title={record["name"]}
+                      title={record["имя"]}
                       buttons={
                         <Button
-                          content="Clone"
+                          content="Клонировать"
                           icon="power-off"
                           color="good"
                           onClick={() => act('clone', {
@@ -138,7 +138,7 @@ export const CloningConsole = (props, context) => {
                       }}>
                         Scan ID {record["id"]}<br />
                         <Button
-                          content="Clone"
+                          content="Клонировать"
                           icon="power-off"
                           color="good"
                           onClick={() => act('clone', {
@@ -146,7 +146,7 @@ export const CloningConsole = (props, context) => {
                           })}
                         />
                         <Button
-                          content="Delete Record"
+                          content="Удалить запись"
                           icon="user-slash"
                           color="bad"
                           onClick={() => act('delrecord', {
@@ -154,7 +154,7 @@ export const CloningConsole = (props, context) => {
                           })}
                         />
                         <Button
-                          content="Save to Disk"
+                          content="Сохранить на диск"
                           icon="upload"
                           color="orange"
                           disabled={diskData.length === 0}
@@ -186,17 +186,17 @@ export const CloningConsole = (props, context) => {
                 </Collapsible>
               </Section>
               <Section
-                title="Disk"
+                title="Диск"
                 buttons={
                   <Box>
                     <Button
-                      content="Load"
+                      content="Загрузить"
                       icon="download"
                       disabled={!diskData["name"]}
                       onClick={() => act('load')}
                     />
                     <Button
-                      content="Eject Disk"
+                      content="Извлечь"
                       icon="eject"
                       disabled={diskData.length === 0}
                       onClick={() => act('eject')}
@@ -205,7 +205,7 @@ export const CloningConsole = (props, context) => {
                 }
               >
                 {diskData.length !== 0 ? (
-                  <Collapsible title={diskData["name"] ? diskData["name"] : "Empty Disk"}>
+                  <Collapsible title={diskData["name"] ? diskData["name"] : "Пустой диск"}>
                     {diskData["id"] ? (
                       <Box style={{
                         'word-break': 'break-all',
@@ -215,9 +215,9 @@ export const CloningConsole = (props, context) => {
                         UE: {diskData["UE"]}<br />
                         Blood Type: {diskData["blood_type"]}<br />
                       </Box>
-                    ) : ("No Data")}
+                    ) : ("Запись отсутствует")}
                   </Collapsible>
-                ) : ("No Disk")}
+                ) : ("Отсутствует")}
               </Section>
             </Section>
           )}

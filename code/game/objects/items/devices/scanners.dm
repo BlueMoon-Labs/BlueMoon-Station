@@ -78,7 +78,7 @@ GENETICS SCANNER
 	item_state = "healthanalyzer"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
-	desc = "A hand-held body scanner able to distinguish vital signs of the subject."
+	desc = "Ручной сканер тела с функцией анализа показателей здоровья пациента."
 	flags_1 = CONDUCT_1
 	item_flags = NOBLUDGEON
 	slot_flags = ITEM_SLOT_BELT
@@ -746,7 +746,7 @@ GENETICS SCANNER
 	woundscan(user, patient, src)
 
 /obj/item/analyzer
-	desc = "A hand-held environmental scanner which reports current gas levels. Alt-Click to use the built in barometer function."
+	desc = "Ручной анализатор среды, докладывающий о состоянии газов вокруг себя."
 	name = "analyzer"
 	icon = 'icons/obj/device.dmi'
 	icon_state = "analyzer"
@@ -769,10 +769,10 @@ GENETICS SCANNER
 
 /obj/item/analyzer/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Alt-click [src] to activate the barometer function.</span>"
+	. += "<span class='notice'>Alt-click для активации функций барометра.</span>"
 
 /obj/item/analyzer/suicide_act(mob/living/carbon/user)
-	user.visible_message("<span class='suicide'>[user] begins to analyze себя with [src]! The display shows that [user.ru_who()] dead!</span>")
+	user.visible_message("<span class='suicide'>[user] начинает анализировать себя с помощью [src]! Экран показывает, что [user.ru_who()] мертв[user.ru_a()]!</span>")
 	return BRUTELOSS
 
 /obj/item/analyzer/attack_self(mob/user)
@@ -836,7 +836,7 @@ GENETICS SCANNER
 /obj/item/analyzer/proc/ping()
 	if(isliving(loc))
 		var/mob/living/L = loc
-		to_chat(L, "<span class='notice'>[src]'s barometer function is ready!</span>")
+		to_chat(L, "<span class='notice'>Функция барометра [src] готова!</span>")
 	playsound(src, 'sound/machines/click.ogg', 100)
 	cooldown = FALSE
 
@@ -859,8 +859,8 @@ GENETICS SCANNER
 	var/icon = target
 	var/render_list = list()
 	if(!silent && isliving(user))
-		user.visible_message("<span class='notice'>[user] uses the analyzer on [icon2html(icon, viewers(user))] [target].</span>", "<span class='notice'>You use the analyzer on [icon2html(icon, user)] [target].</span>")
-	render_list += "<span class='boldnotice'>Results of analysis of [icon2html(icon, user)] [target].</span>"
+		user.visible_message("<span class='notice'>[user] использует анализатор на [icon2html(icon, viewers(user))] [target].</span>", "<span class='notice'>Вы используете анализатор на [icon2html(icon, user)] [target].</span>")
+	render_list += "<span class='boldnotice'>Результаты анализа [icon2html(icon, user)] [target].</span>"
 
 	var/list/airs = islist(mixture) ? mixture : list(mixture)
 	for(var/g in airs)
@@ -876,10 +876,10 @@ GENETICS SCANNER
 
 		if(total_moles > 0)
 			//WS Start -- Atmos Analyzer Reformat (Issue #419)
-			render_list += "<span class='notice'>Moles: [round(total_moles, 0.01)] mol</span>\
-							\n<span class='notice'>Volume: [volume] L</span>\
-							\n<span class='notice'>Pressure: [round(pressure,0.01)] kPa</span>\
-							\n<span class='notice'>Temperature: [round(temperature - T0C,0.01)] &deg;C ([round(temperature, 0.01)] K)</span>"
+			render_list += "<span class='notice'>Молей: [round(total_moles, 0.01)] mol</span>\
+							\n<span class='notice'>Объём: [volume] L</span>\
+							\n<span class='notice'>Давление: [round(pressure,0.01)] кПа</span>\
+							\n<span class='notice'>Температура: [round(temperature - T0C,0.01)] &deg;C ([round(temperature, 0.01)] K)</span>"
 			//WS End
 
 			for(var/id in air_contents.get_gases())
@@ -890,8 +890,8 @@ GENETICS SCANNER
 			render_list += airs.len > 1 ? "<span class='notice'>This node is empty!</span>" : "<span class='notice'>[target] is empty!</span>"
 
 		if(cached_scan_results && cached_scan_results["fusion"]) //notify the user if a fusion reaction was detected
-			render_list += "<span class='boldnotice'>Large amounts of free neutrons detected in the air indicate that a fusion reaction took place.</span>\
-						\n<span class='notice'>Instability of the last fusion reaction: [round(cached_scan_results["fusion"], 0.01)].</span>"
+			render_list += "<span class='boldnotice'>Большое количество свободных нейтронов зафиксировано в воздухе, свидетельствуя, что реакция синтеза была поблизости.</span>\
+						\n<span class='notice'>Нестабильность недавней реакции синтеза: [round(cached_scan_results["fusion"], 0.01)].</span>"
 
 	// we let the join apply newlines so we do need handholding
 	to_chat(user, examine_block(jointext(render_list, "\n")), type = MESSAGE_TYPE_INFO)
@@ -905,11 +905,11 @@ GENETICS SCANNER
 	var/total_moles = environment.total_moles()
 	var/cached_scan_results = environment.analyzer_results
 
-	var/results = "<span class='info'><B>Results:</B></span>"
+	var/results = "<span class='info'><B>Результаты:</B></span>"
 	if(abs(pressure - ONE_ATMOSPHERE) < 10)
-		results += "\n<span class='info'>Pressure: [round(pressure, 0.01)] kPa</span>"
+		results += "\n<span class='info'>Давление: [round(pressure, 0.01)] кПа</span>"
 	else
-		results += "\n<span class='alert'>Pressure: [round(pressure, 0.01)] kPa</span>"
+		results += "\n<span class='alert'>Давление: [round(pressure, 0.01)] кПа</span>"
 	if(total_moles)
 
 		var/o2_concentration = environment.get_moles(GAS_O2)/total_moles

@@ -70,7 +70,7 @@
 
 /mob/living/simple_animal/bot/floorbot/examine(mob/user)
 	. = ..()
-	// Если планируются ещё улучшения (> 2), рекомендация использовать прок jointext_ru_comma_plus_and() или написать отдельную строчку улучшения
+	// Если планируются ещё улучшения (> 2), рекомендация использовать прок english_list() или написать отдельную строчку улучшения
 	if(toolbox_upg && toolbox_upg.len)
 		var/installed_toolboxes = jointext(toolbox_upg, " и ")
 		. += span_info("Бот оболочен [installed_toolboxes].")

@@ -19,7 +19,7 @@
 
 /obj/item/cartridge
 	name = "generic cartridge"
-	desc = "A data cartridge for portable microcomputers."
+	desc = "Картридж с данными для портативных микрокомпьютеров."
 	icon = 'icons/obj/pda.dmi'
 	icon_state = "cart"
 	item_state = "electronic"
@@ -101,14 +101,14 @@
 
 /obj/item/cartridge/janitor
 	name = "\improper CustodiPRO cartridge"
-	desc = "The ultimate in clean-room design."
+	desc = "Ультимативен в решениях очисток помещений."
 	icon_state = "cart-j"
 	access = CART_JANITOR | CART_DRONEPHONE | CART_MANIFEST
 	bot_access_flags = CLEAN_BOT
 
 /obj/item/cartridge/lawyer
 	name = "\improper S.P.A.M. cartridge"
-	desc = "Introducing the Station Public Announcement Messenger cartridge, featuring the unique ability to broadcast-mark messages, designed for lawyers across Nanotrasen to advertise their useful and important services."
+	desc = "Представляем вам картридж программы Station Public Announcement Messenger, с уникальной функцией вещания сообщениями, спроектировано для агентов внутренних дел Nanotrasen для рекламы их нужных и важных услуг."
 	icon_state = "cart-law"
 	access = CART_SECURITY | CART_MANIFEST
 	spam_enabled = 1
@@ -120,7 +120,7 @@
 
 /obj/item/cartridge/roboticist
 	name = "\improper B.O.O.P. Remote Control cartridge"
-	desc = "Packed with heavy duty triple-bot interlink!"
+	desc = "Снабжен тяжеловесным интерлинком связи с ботами и дронами!"
 	icon_state = "cart-robo"
 	bot_access_flags = FLOOR_BOT | CLEAN_BOT | MED_BOT | FIRE_BOT | SEC_BOT | MULE_BOT
 	access = CART_DRONEPHONE | CART_MANIFEST
@@ -128,11 +128,11 @@
 /obj/item/cartridge/signal
 	name = "generic signaler cartridge"
 	icon_state = "cart-sig"
-	desc = "A data cartridge with an integrated radio signaler module."
+	desc = "Дата-картридж со встроенным радиосигналером."
 
 /obj/item/cartridge/signal/toxins
 	name = "\improper Signal Ace 2 cartridge"
-	desc = "Complete with integrated radio signaler!"
+	desc = "Полноценен со встроенным радиосигналером!"
 	icon_state = "cart-tox"
 	access = CART_REAGENT_SCANNER | CART_ATMOS | CART_MANIFEST
 
@@ -144,7 +144,7 @@
 
 /obj/item/cartridge/quartermaster
 	name = "space parts & space vendors cartridge"
-	desc = "Perfect for the Quartermaster on the go!"
+	desc = "Идеален для квартирмейстера тут и там!"
 	icon_state = "cart-q"
 	access = CART_QUARTERMASTER | CART_MANIFEST
 	bot_access_flags = MULE_BOT
@@ -191,7 +191,7 @@
 
 /obj/item/cartridge/captain
 	name = "\improper Value-PAK cartridge"
-	desc = "Now with 350% more value!" //Give the Captain...EVERYTHING! (Except Mime, Clown, and Syndie)
+	desc = "Теперь полезнее на 350%!" //Give the Captain...EVERYTHING! (Except Mime, Clown, and Syndie)
 	icon_state = "cart-c"
 	access = ~(CART_CLOWN | CART_MIME | CART_REMOTE_DOOR)
 	bot_access_flags = SEC_BOT | MULE_BOT | FLOOR_BOT | CLEAN_BOT | MED_BOT | FIRE_BOT
@@ -199,13 +199,13 @@
 
 /obj/item/cartridge/bartender
 	name = "\improper B.O.O.Z.E cartridge"
-	desc = "Now with 12% alcohol!"
+	desc = "Теперь с 12%-м содержанием спирта!"
 	icon_state = "cart-bar"
 	access = CART_BARTENDER | CART_MANIFEST
 
 /obj/item/cartridge/chaplain
 	name = "holy cartridge"
-	desc = "Amen!"
+	desc = "Аминь!"
 	icon_state = "cart-q"
 	access = CART_MANIFEST
 
@@ -235,38 +235,38 @@
 		return
 	switch(host_pda.mode)
 		if(40) //signaller
-			menu = "<h4>[PDAIMG(signaler)] Remote Signaling System</h4>"
+			menu = "<h4>[PDAIMG(signaler)] Радиосигналлер</h4>"
 
 			menu += {"
-<a href='byond://?src=[REF(src)];choice=Send Signal'>Send Signal</A><BR>
-Frequency:
+<a href='byond://?src=[REF(src)];choice=Send Signal'>Отправить сигнал</A><BR>
+Частота:
 <a href='byond://?src=[REF(src)];choice=Signal Frequency;sfreq=-10'>-</a>
 <a href='byond://?src=[REF(src)];choice=Signal Frequency;sfreq=-2'>-</a>
 [format_frequency(radio.frequency)]
 <a href='byond://?src=[REF(src)];choice=Signal Frequency;sfreq=2'>+</a>
 <a href='byond://?src=[REF(src)];choice=Signal Frequency;sfreq=10'>+</a><br>
 <br>
-Code:
+Код:
 <a href='byond://?src=[REF(src)];choice=Signal Code;scode=-5'>-</a>
 <a href='byond://?src=[REF(src)];choice=Signal Code;scode=-1'>-</a>
 [radio.code]
 <a href='byond://?src=[REF(src)];choice=Signal Code;scode=1'>+</a>
 <a href='byond://?src=[REF(src)];choice=Signal Code;scode=5'>+</a><br>"}
 		if (42) //status displays
-			menu = "<h4>[PDAIMG(status)] Station Status Display Interlink</h4>"
+			menu = "<h4>[PDAIMG(status)] Интерлинк: статус-дисплеи</h4>"
 
-			menu += "\[ <A HREF='?src=[REF(src)];choice=Status;statdisp=blank'>Clear</A> \]<BR>"
-			menu += "\[ <A HREF='?src=[REF(src)];choice=Status;statdisp=shuttle'>Shuttle ETA</A> \]<BR>"
-			menu += "\[ <A HREF='?src=[REF(src)];choice=Status;statdisp=message'>Message</A> \]"
-			menu += "<ul><li> Line 1: <A HREF='?src=[REF(src)];choice=Status;statdisp=setmsg1'>[ message1 ? message1 : "(none)"]</A>"
-			menu += "<li> Line 2: <A HREF='?src=[REF(src)];choice=Status;statdisp=setmsg2'>[ message2 ? message2 : "(none)"]</A></ul><br>"
-			menu += "\[ Alert: <A HREF='?src=[REF(src)];choice=Status;statdisp=alert;alert=default'>None</A> |"
-			menu += " <A HREF='?src=[REF(src)];choice=Status;statdisp=alert;alert=redalert'>Red Alert</A> |"
-			menu += " <A HREF='?src=[REF(src)];choice=Status;statdisp=alert;alert=lockdown'>Lockdown</A> |"
-			menu += " <A HREF='?src=[REF(src)];choice=Status;statdisp=alert;alert=biohazard'>Biohazard</A> \]<BR>"
+			menu += "\[ <A HREF='?src=[REF(src)];choice=Status;statdisp=blank'>Очистить</A> \]<BR>"
+			menu += "\[ <A HREF='?src=[REF(src)];choice=Status;statdisp=shuttle'>Время прибытия шаттла</A> \]<BR>"
+			menu += "\[ <A HREF='?src=[REF(src)];choice=Status;statdisp=message'>Выставить сообщение:</A> \]"
+			menu += "<ul><li> Строка 1: <A HREF='?src=[REF(src)];choice=Status;statdisp=setmsg1'>[ message1 ? message1 : "(отсут.)"]</A>"
+			menu += "<li> Строка 2: <A HREF='?src=[REF(src)];choice=Status;statdisp=setmsg2'>[ message2 ? message2 : "(отсут.)"]</A></ul><br>"
+			menu += "\[ Угроза: <A HREF='?src=[REF(src)];choice=Status;statdisp=alert;alert=default'>Отсутствует</A> |"
+			menu += " <A HREF='?src=[REF(src)];choice=Status;statdisp=alert;alert=redalert'>Красный Код</A> |"
+			menu += " <A HREF='?src=[REF(src)];choice=Status;statdisp=alert;alert=lockdown'>Изоляция</A> |"
+			menu += " <A HREF='?src=[REF(src)];choice=Status;statdisp=alert;alert=biohazard'>Биоугроза</A> \]<BR>"
 
 		if (43)
-			menu = "<h4>[PDAIMG(power)] Power Monitors - Please select one</h4><BR>"
+			menu = "<h4>[PDAIMG(power)] Консоли Питания - выберите одну</h4><BR>"
 			powmonitor = null
 			powermonitors = list()
 			var/powercount = 0
@@ -286,7 +286,7 @@ Code:
 
 
 			if(!powercount)
-				menu += "<span class='danger'>No connection<BR></span>"
+				menu += "<span class='danger'>Не подключючено<BR></span>"
 			else
 
 				menu += "<FONT SIZE=-1>"
@@ -298,9 +298,9 @@ Code:
 				menu += "</FONT>"
 
 		if (433)
-			menu = "<h4>[PDAIMG(power)] Power Monitor </h4><BR>"
+			menu = "<h4>[PDAIMG(power)] Консоль питания </h4><BR>"
 			if(!powmonitor || !powmonitor.get_powernet())
-				menu += "<span class='danger'>No connection<BR></span>"
+				menu += "<span class='danger'>Не подключено<BR></span>"
 			else
 				var/list/L = list()
 				var/datum/powernet/connected_powernet = powmonitor.get_powernet()
@@ -309,12 +309,12 @@ Code:
 						var/obj/machinery/power/apc/A = term.master
 						L += A
 
-				menu += "<PRE>Location: [get_area_name(powmonitor, TRUE)]<BR>Total power: [DisplayPower(connected_powernet.viewavail)]<BR>Total load:  [DisplayPower(connected_powernet.viewload)]<BR>"
+				menu += "<PRE>Локация: [get_area_name(powmonitor, TRUE)]<BR>Всего энергии: [DisplayPower(connected_powernet.viewavail)]<BR>Потребление:  [DisplayPower(connected_powernet.viewload)]<BR>"
 
 				menu += "<FONT SIZE=-1>"
 
 				if(L.len > 0)
-					menu += "Area                           Eqp./Lgt./Env.  Load   Cell<HR>"
+					menu += "Зона                           Eqp./Lgt./Env.  Потр.   Заряд<HR>"
 
 					var/list/S = list(" Off","AOff","  On", " AOn")
 					var/list/chg = list("N","C","F")
@@ -331,83 +331,83 @@ Code:
 				menu += "</FONT></PRE>"
 
 		if (44) //medical records //This thing only displays a single screen so it's hard to really get the sub-menu stuff working.
-			menu = "<h4>[PDAIMG(medical)] Medical Record List</h4>"
+			menu = "<h4>[PDAIMG(medical)] Список Мед. Записей</h4>"
 			if(GLOB.data_core.general)
 				for(var/datum/data/record/R in sortRecord(GLOB.data_core.general))
 					menu += "<a href='byond://?src=[REF(src)];choice=Medical Records;target=[R.fields["id"]]'>[R.fields["id"]]: [R.fields["name"]]<br>"
 			menu += "<br>"
 		if(441)
-			menu = "<h4>[PDAIMG(medical)] Medical Record</h4>"
+			menu = "<h4>[PDAIMG(medical)] Мед Записи</h4>"
 
 			if(active1 in GLOB.data_core.general)
-				menu += "Name: [active1.fields["name"]] ID: [active1.fields["id"]]<br>"
-				menu += "Sex: [active1.fields["gender"]]<br>"
-				menu += "Age: [active1.fields["age"]]<br>"
-				menu += "Rank: [active1.fields["rank"]]<br>"
-				menu += "Fingerprint: [active1.fields["fingerprint"]]<br>"
-				menu += "Physical Status: [active1.fields["p_stat"]]<br>"
-				menu += "Mental Status: [active1.fields["m_stat"]]<br>"
+				menu += "Имя: [active1.fields["name"]] ID: [active1.fields["id"]]<br>"
+				menu += "Пол: [active1.fields["gender"]]<br>"
+				menu += "Возраст: [active1.fields["age"]]<br>"
+				menu += "Должность: [active1.fields["rank"]]<br>"
+				menu += "Отпечатки: [active1.fields["fingerprint"]]<br>"
+				menu += "Физ. Статус: [active1.fields["p_stat"]]<br>"
+				menu += "Мент. Статус: [active1.fields["m_stat"]]<br>"
 			else
-				menu += "<b>Record Lost!</b><br>"
+				menu += "<b>Записи утеряны!</b><br>"
 
 			menu += "<br>"
 
 			menu += "<h4>[PDAIMG(medical)] Medical Data</h4>"
 			if(active2 in GLOB.data_core.medical)
-				menu += "Blood Type: [active2.fields["blood_type"]]<br><br>"
+				menu += "Группа крови: [active2.fields["blood_type"]]<br><br>"
 
-				menu += "Minor Disabilities: [active2.fields["mi_dis"]]<br>"
-				menu += "Details: [active2.fields["mi_dis_d"]]<br><br>"
+				menu += "Малая инвалидность: [active2.fields["mi_dis"]]<br>"
+				menu += "Детали: [active2.fields["mi_dis_d"]]<br><br>"
 
-				menu += "Major Disabilities: [active2.fields["ma_dis"]]<br>"
-				menu += "Details: [active2.fields["ma_dis_d"]]<br><br>"
+				menu += "Серьёзная инвалидность: [active2.fields["ma_dis"]]<br>"
+				menu += "Детали: [active2.fields["ma_dis_d"]]<br><br>"
 
-				menu += "Allergies: [active2.fields["alg"]]<br>"
-				menu += "Details: [active2.fields["alg_d"]]<br><br>"
+				menu += "Аллергии: [active2.fields["alg"]]<br>"
+				menu += "Детали: [active2.fields["alg_d"]]<br><br>"
 
-				menu += "Current Diseases: [active2.fields["cdi"]]<br>"
-				menu += "Details: [active2.fields["cdi_d"]]<br><br>"
+				menu += "Текущие болезни: [active2.fields["cdi"]]<br>"
+				menu += "Детали: [active2.fields["cdi_d"]]<br><br>"
 
-				menu += "Important Notes: [active2.fields["notes"]]<br>"
+				menu += "Важные заметки: [active2.fields["notes"]]<br>"
 			else
-				menu += "<b>Record Lost!</b><br>"
+				menu += "<b>Записи утеряны!</b><br>"
 
 			menu += "<br>"
 		if (45) //security records
-			menu = "<h4>[PDAIMG(cuffs)] Security Record List</h4>"
+			menu = "<h4>[PDAIMG(cuffs)] База Данных СБ</h4>"
 			if(GLOB.data_core.general)
 				for (var/datum/data/record/R in sortRecord(GLOB.data_core.general))
 					menu += "<a href='byond://?src=[REF(src)];choice=Security Records;target=[R.fields["id"]]'>[R.fields["id"]]: [R.fields["name"]]<br>"
 
 			menu += "<br>"
 		if(451)
-			menu = "<h4>[PDAIMG(cuffs)] Security Record</h4>"
+			menu = "<h4>[PDAIMG(cuffs)] База Данных</h4>"
 
 			if(active1 in GLOB.data_core.general)
-				menu += "Name: [active1.fields["name"]] ID: [active1.fields["id"]]<br>"
-				menu += "Sex: [active1.fields["gender"]]<br>"
-				menu += "Age: [active1.fields["age"]]<br>"
-				menu += "Rank: [active1.fields["rank"]]<br>"
-				menu += "Fingerprint: [active1.fields["fingerprint"]]<br>"
-				menu += "Physical Status: [active1.fields["p_stat"]]<br>"
-				menu += "Mental Status: [active1.fields["m_stat"]]<br>"
+				menu += "Имя: [active1.fields["name"]] ID: [active1.fields["id"]]<br>"
+				menu += "Пол: [active1.fields["gender"]]<br>"
+				menu += "Возраст: [active1.fields["age"]]<br>"
+				menu += "Должность: [active1.fields["rank"]]<br>"
+				menu += "Отпечатки: [active1.fields["fingerprint"]]<br>"
+				menu += "Физ. Статус: [active1.fields["p_stat"]]<br>"
+				menu += "Мед. Статус: [active1.fields["m_stat"]]<br>"
 			else
-				menu += "<b>Record Lost!</b><br>"
+				menu += "<b>Записи утеряны!</b><br>"
 
 			menu += "<br>"
 
-			menu += "<h4>[PDAIMG(cuffs)] Security Data</h4>"
+			menu += "<h4>[PDAIMG(cuffs)] Данные Безопасности</h4>"
 			if(active3 in GLOB.data_core.security)
-				menu += "Criminal Status: [active3.fields["criminal"]]<br>"
+				menu += "Криминальный Статус: [active3.fields["criminal"]]<br>"
 
-				menu += text("<BR>\nMinor Crimes:")
+				menu += text("<BR>\nМалые нарушения:")
 
 				menu +={"<table style="text-align:center;" border="1" cellspacing="0" width="100%">
 <tr>
-<th>Crime</th>
-<th>Details</th>
-<th>Author</th>
-<th>Time Added</th>
+<th>Нарушение</th>
+<th>Детали</th>
+<th>Автор</th>
+<th>Время</th>
 </tr>"}
 				for(var/datum/data/crime/c in active3.fields["mi_crim"])
 					menu += "<tr><td>[c.crimeName]</td>"
@@ -417,14 +417,14 @@ Code:
 					menu += "</tr>"
 				menu += "</table>"
 
-				menu += text("<BR>\nMajor Crimes:")
+				menu += text("<BR>\nКрупные нарушения:")
 
 				menu +={"<table style="text-align:center;" border="1" cellspacing="0" width="100%">
 <tr>
-<th>Crime</th>
-<th>Details</th>
-<th>Author</th>
-<th>Time Added</th>
+<th>Нарушение</th>
+<th>Детали</th>
+<th>Автор</th>
+<th>Время</th>
 </tr>"}
 				for(var/datum/data/crime/c in active3.fields["ma_crim"])
 					menu += "<tr><td>[c.crimeName]</td>"
@@ -434,60 +434,59 @@ Code:
 					menu += "</tr>"
 				menu += "</table>"
 
-				menu += "<BR>\nImportant Notes:<br>"
+				menu += "<BR>\nВажные заметки:<br>"
 				menu += "[active3.fields["notes"]]"
 			else
-				menu += "<b>Record Lost!</b><br>"
+				menu += "<b>Данные утеряны!</b><br>"
 
 			menu += "<br>"
 
 		if (47) //quartermaster order records
-			menu = "<h4>[PDAIMG(crate)] Supply Record Interlink</h4>"
+			menu = "<h4>[PDAIMG(crate)] Ссылка архива поставок</h4>"
 
-			menu += "<BR><B>Supply shuttle</B><BR>"
-			menu += "Location: "
+			menu += "<BR><B>Шаттл снабжения</B><BR>"
+			menu += "Локация: "
 			switch(SSshuttle.supply.mode)
 				if(SHUTTLE_CALL)
-					menu += "Moving to "
+					menu += "Отправка: "
 					if(!is_station_level(SSshuttle.supply.z))
-						menu += "station"
+						menu += "к станции"
 					else
-						menu += "CentCom"
+						menu += "ЦК"
 					menu += " ([SSshuttle.supply.timeLeft(600)] Mins)"
 				else
-					menu += "At "
 					if(!is_station_level(SSshuttle.supply.z))
-						menu += "CentCom"
+						menu += "ЦК"
 					else
-						menu += "station"
-			menu += "<BR>Current approved orders: <BR><ol>"
+						menu += "на станции"
+			menu += "<BR>Одобренные заказы: <BR><ol>"
 			for(var/S in SSshuttle.shoppinglist)
 				var/datum/supply_order/SO = S
-				menu += "<li>#[SO.id] - [SO.pack.name] approved by [SO.orderer] [SO.reason ? "([SO.reason])":""]</li>"
+				menu += "<li>#[SO.id] - [SO.pack.name], одобривший: [SO.orderer] [SO.reason ? "([SO.reason])":""]</li>"
 			menu += "</ol>"
 
-			menu += "Current requests: <BR><ol>"
+			menu += "Текущие заказы: <BR><ol>"
 			for(var/S in SSshuttle.requestlist)
 				var/datum/supply_order/SO = S
-				menu += "<li>#[SO.id] - [SO.pack.name] requested by [SO.orderer]</li>"
-			menu += "</ol><font size=\"-3\">Upgrade NOW to Space Parts & Space Vendors PLUS for full remote order control and inventory management."
+				menu += "<li>#[SO.id] - [SO.pack.name], запрошено: [SO.orderer]</li>"
+			menu += "</ol><font size=\"-3\">Улучшитетсь СЕЙЧАС до Space Parts & Space Vendors PLUS для полного удалённого доступа и контролем над инвентарём."
 
 		if (48) // quartermaster ore logs
-			menu = list("<h4>[PDAIMG(crate)] Ore Silo Logs</h4>")
+			menu = list("<h4>[PDAIMG(crate)] Записи Сило</h4>")
 			if (GLOB.ore_silo_default)
 				var/list/logs = GLOB.silo_access_logs[REF(GLOB.ore_silo_default)]
 				var/len = LAZYLEN(logs)
 				var/i = 0
 				for(var/M in logs)
 					if (++i > 30)
-						menu += "(... older logs not shown ...)"
+						menu += "(... старые записи не отображены ...)"
 						break
 					var/datum/ore_silo_log/entry = M
 					menu += "[len - i]. [entry.formatted]<br><br>"
 				if(i == 0)
-					menu += "Nothing!"
+					menu += "Отсутствуют!"
 			else
-				menu += "<b>No ore silo detected!</b>"
+				menu += "<b>Сило не обнаружено!</b>"
 			menu = jointext(menu, "")
 
 		if (49) //janitorial locator
@@ -495,9 +494,9 @@ Code:
 
 			var/turf/cl = get_turf(src)
 			if (cl)
-				menu += "Current Orbital Location: <b>\[[cl.x],[cl.y]\]</b>"
+				menu += "Текущее орбитальное положение: <b>\[[cl.x],[cl.y]\]</b>"
 
-				menu += "<h4>Located Mops:</h4>"
+				menu += "<h4>Обнаруженные швабры:</h4>"
 
 				var/ldat
 				for (var/obj/item/mop/M in world)
@@ -510,7 +509,7 @@ Code:
 						ldat += "Mop - <b>\[[ml.x],[ml.y] ([uppertext(dir2text(direction))])\]</b> - [M.reagents.total_volume ? "Wet" : "Dry"]<br>"
 
 				if (!ldat)
-					menu += "None"
+					menu += "Отсутствует"
 				else
 					menu += "[ldat]"
 
@@ -527,11 +526,11 @@ Code:
 						ldat += "Ride - <b>\[[ml.x],[ml.y] ([uppertext(dir2text(direction))])\]</b><br>"
 
 				if (!ldat)
-					menu += "None"
+					menu += "Отсутствуют"
 				else
 					menu += "[ldat]"
 
-				menu += "<h4>Located Janitorial Cart:</h4>"
+				menu += "<h4>Уборочные Тележки:</h4>"
 
 				ldat = null
 				for (var/obj/structure/janitorialcart/B in world)
@@ -544,11 +543,11 @@ Code:
 						ldat += "Cart - <b>\[[bl.x],[bl.y] ([uppertext(dir2text(direction))])\]</b> - Water level: [B.reagents.total_volume]/100<br>"
 
 				if (!ldat)
-					menu += "None"
+					menu += "Отсутствуют"
 				else
 					menu += "[ldat]"
 
-				menu += "<h4>Located Cleanbots:</h4>"
+				menu += "<h4>Обнаруженные Клинботы:</h4>"
 
 				ldat = null
 				for (var/mob/living/simple_animal/bot/cleanbot/B in GLOB.alive_mob_list)
@@ -561,16 +560,16 @@ Code:
 						ldat += "Cleanbot - <b>\[[bl.x],[bl.y] ([uppertext(dir2text(direction))])\]</b> - [B.on ? "Online" : "Offline"]<br>"
 
 				if (!ldat)
-					menu += "None"
+					menu += "Отсутствуют"
 				else
 					menu += "[ldat]"
 
 			else
-				menu += "ERROR: Unable to determine current location."
-			menu += "<br><br><A href='byond://?src=[REF(src)];choice=49'>Refresh GPS Locator</a>"
+				menu += "ОШИБКА: невозможно определить текущую локацию."
+			menu += "<br><br><A href='byond://?src=[REF(src)];choice=49'>Обновить GPS-локатор</a>"
 
 		if (54) // Beepsky, Medibot, Floorbot, and Cleanbot access
-			menu = "<h4>[PDAIMG(medbot)] Bots Interlink</h4>"
+			menu = "<h4>[PDAIMG(medbot)] Интерлинк: боты</h4>"
 			bot_control()
 		if (55) // Emoji Guidebook for mimes
 			menu = "<h4>[PDAIMG(emoji)] Emoji Guidebook</h4>"
@@ -585,11 +584,11 @@ Code:
 				collate += "</table><br>"
 				emoji_table = collate.Join()
 
-			menu += "<br> To use an emoji in a pda message, refer to the guide and add \":\" around the emoji. Your PDA supports the following emoji:<br>"
+			menu += "<br> Бля использования эмодзи через pda, ссылайтесь на руководство и добавляйте \":\" вокруг эмодзи. Ваш PDA поддерживает следующие эмодзи:<br>"
 			menu += emoji_table
 
 		if (99) //Newscaster message permission error
-			menu = "<h5> ERROR : NOT AUTHORIZED [host_pda.id ? "" : "- ID SLOT EMPTY"] </h5>"
+			menu = "<h5> ОШИБКА : НЕ АВТОРИЗОВАНО [host_pda.id ? "" : "- СЛОТ ID ПУСТ"] </h5>"
 
 	return menu
 
@@ -643,10 +642,10 @@ Code:
 				if("alert")
 					post_status("alert", href_list["alert"])
 				if("setmsg1")
-					message1 = reject_bad_text(input("Line 1", "Enter Message Text", message1) as text|null, 40)
+					message1 = reject_bad_text(input("Строка 1", "Введите текст сообщения", message1) as text|null, 40)
 					updateSelfDialog()
 				if("setmsg2")
-					message2 = reject_bad_text(input("Line 2", "Enter Message Text", message2) as text|null, 40)
+					message2 = reject_bad_text(input("Строка 2", "Введите текст сообщения", message2) as text|null, 40)
 					updateSelfDialog()
 				else
 					post_status(href_list["statdisp"])
@@ -706,10 +705,10 @@ Code:
 	var/mob/living/simple_animal/bot/Bot
 
 	if(active_bot)
-		menu += "<B>[active_bot]</B><BR> Status: (<A href='byond://?src=[REF(src)];op=control;bot=[REF(active_bot)]'>[PDAIMG(refresh)]<i>refresh</i></A>)<BR>"
-		menu += "Model: [active_bot.model]<BR>"
-		menu += "Location: [get_area(active_bot)]<BR>"
-		menu += "Mode: [active_bot.get_mode()]"
+		menu += "<B>[active_bot]</B><BR> Статус: (<A href='byond://?src=[REF(src)];op=control;bot=[REF(active_bot)]'>[PDAIMG(refresh)]<i>refresh</i></A>)<BR>"
+		menu += "Модель: [active_bot.model]<BR>"
+		menu += "Локация: [get_area(active_bot)]<BR>"
+		menu += "Режим: [active_bot.get_mode()]"
 		if(active_bot.allow_pai)
 			menu += "<BR>pAI: "
 			if(active_bot.paicard && active_bot.paicard.pai)
@@ -717,34 +716,34 @@ Code:
 				if(active_bot.bot_core.allowed(usr))
 					menu += " (<A href='byond://?src=[REF(src)];op=ejectpai'><i>eject</i></A>)"
 			else
-				menu += "<i>none</i>"
+				menu += "<i>отсутствует</i>"
 
 		//MULEs!
 		if(active_bot.bot_type == MULE_BOT)
 			var/mob/living/simple_animal/bot/mulebot/MULE = active_bot
 			var/atom/Load = MULE.load
-			menu += "<BR>Current Load: [ !Load ? "<i>none</i>" : "[Load.name] (<A href='byond://?src=[REF(src)];mule=unload'><i>unload</i></A>)" ]<BR>"
-			menu += "Destination: [MULE.destination ? MULE.destination : "<i>None</i>"] (<A href='byond://?src=[REF(src)];mule=destination'><i>set</i></A>)<BR>"
-			menu += "Set ID: [MULE.suffix] <A href='byond://?src=[REF(src)];mule=setid'><i> Modify</i></A><BR>"
-			menu += "Power: [MULE.cell ? MULE.cell.percent() : 0]%<BR>"
-			menu += "Home: [!MULE.home_destination ? "<i>none</i>" : MULE.home_destination ]<BR>"
-			menu += "Delivery Reporting: <A href='byond://?src=[REF(src)];mule=report'>[MULE.report_delivery ? "(<B>On</B>)": "(<B>Off</B>)"]</A><BR>"
-			menu += "Auto Return Home: <A href='byond://?src=[REF(src)];mule=autoret'>[MULE.auto_return ? "(<B>On</B>)": "(<B>Off</B>)"]</A><BR>"
-			menu += "Auto Pickup Crate: <A href='byond://?src=[REF(src)];mule=autopick'>[MULE.auto_pickup ? "(<B>On</B>)": "(<B>Off</B>)"]</A><BR><BR>" //Hue.
+			menu += "<BR>Текущий груз: [ !Load ? "<i>отсутствует</i>" : "[Load.name] (<A href='byond://?src=[REF(src)];mule=unload'><i>разгрузить</i></A>)" ]<BR>"
+			menu += "Адрес: [MULE.destination ? MULE.destination : "<i>отсутствует</i>"] (<A href='byond://?src=[REF(src)];mule=destination'><i>задать</i></A>)<BR>"
+			menu += "Задать ID: [MULE.suffix] <A href='byond://?src=[REF(src)];mule=setid'><i> Изменить</i></A><BR>"
+			menu += "Заряд: [MULE.cell ? MULE.cell.percent() : 0]%<BR>"
+			menu += "Домашняя локация: [!MULE.home_destination ? "<i>отсутствует</i>" : MULE.home_destination ]<BR>"
+			menu += "Отчёт доставки: <A href='byond://?src=[REF(src)];mule=report'>[MULE.report_delivery ? "(<B>On</B>)": "(<B>Off</B>)"]</A><BR>"
+			menu += "Автовозврат домой: <A href='byond://?src=[REF(src)];mule=autoret'>[MULE.auto_return ? "(<B>On</B>)": "(<B>Off</B>)"]</A><BR>"
+			menu += "Автоподбор ящиков: <A href='byond://?src=[REF(src)];mule=autopick'>[MULE.auto_pickup ? "(<B>On</B>)": "(<B>Off</B>)"]</A><BR><BR>" //Hue.
 
-			menu += "\[<A href='byond://?src=[REF(src)];mule=stop'>Stop</A>\] "
-			menu += "\[<A href='byond://?src=[REF(src)];mule=go'>Proceed</A>\] "
-			menu += "\[<A href='byond://?src=[REF(src)];mule=home'>Return Home</A>\]<BR>"
+			menu += "\[<A href='byond://?src=[REF(src)];mule=stop'>Остановить</A>\] "
+			menu += "\[<A href='byond://?src=[REF(src)];mule=go'>Продолжить</A>\] "
+			menu += "\[<A href='byond://?src=[REF(src)];mule=home'>Вернуть Домой</A>\]<BR>"
 
 		else
-			menu += "<BR>\[<A href='byond://?src=[REF(src)];op=patroloff'>Stop Patrol</A>\] "	//patrolon
-			menu += "\[<A href='byond://?src=[REF(src)];op=patrolon'>Start Patrol</A>\] "	//patroloff
-			menu += "\[<A href='byond://?src=[REF(src)];op=summon'>Summon Bot</A>\]<BR>"		//summon
-			menu += "Keep an ID inserted to upload access codes upon summoning."
+			menu += "<BR>\[<A href='byond://?src=[REF(src)];op=patroloff'>Остановить патруль</A>\] "	//patrolon
+			menu += "\[<A href='byond://?src=[REF(src)];op=patrolon'>Начать патруль</A>\] "	//patroloff
+			menu += "\[<A href='byond://?src=[REF(src)];op=summon'>Призвать бота</A>\]<BR>"		//summon
+			menu += "Держу ID-карту внутри для загрузки кодов доступов в момент призыва."
 
-		menu += "<HR><A href='byond://?src=[REF(src)];op=botlist'>[PDAIMG(back)]Return to bot list</A>"
+		menu += "<HR><A href='byond://?src=[REF(src)];op=botlist'>[PDAIMG(back)]Вернуться к списку ботов</A>"
 	else
-		menu += "<BR><A href='byond://?src=[REF(src)];op=botlist'>[PDAIMG(refresh)]Scan for active bots</A><BR><BR>"
+		menu += "<BR><A href='byond://?src=[REF(src)];op=botlist'>[PDAIMG(refresh)]Сканировать активных ботов</A><BR><BR>"
 		var/turf/current_turf = get_turf(src)
 		var/zlevel = current_turf.z
 		var/botcount = 0
@@ -754,7 +753,7 @@ Code:
 			menu += "<A href='byond://?src=[REF(src)];op=control;bot=[REF(Bot)]'><b>[Bot.name]</b> ([Bot.get_mode()])<BR>"
 			botcount++
 		if(!botcount) //No bots at all? Lame.
-			menu += "No bots found.<BR>"
+			menu += "Боты не найдены.<BR>"
 			return
 
 	return menu

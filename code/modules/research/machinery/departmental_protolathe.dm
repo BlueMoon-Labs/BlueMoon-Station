@@ -1,6 +1,7 @@
 /obj/machinery/rnd/production/protolathe/department
 	name = "Department Protolathe"
-	desc = "A special protolathe with a built in interface meant for departmental usage, with built in ExoSync receivers allowing it to print designs researched that match its ROM-encoded department type."
+	desc = "Специальный протолат со встроенным интерфейсом для использования конкретным отделом, \
+	и встроеннымыми приёмниками ExoSync для распечатки исследованных проектов, совместимых с ROM-закодированным типом отделения."
 	icon_state = "protolathe"
 	circuit = /obj/item/circuitboard/machine/protolathe/department
 	requires_console = FALSE

@@ -362,8 +362,8 @@
 		log_combat(src, M, "grabbed", addition="passive grab")
 		if(!supress_message && !(iscarbon(AM) && HAS_TRAIT(src, TRAIT_STRONG_GRABBER)))
 			if((zone_selected == BODY_ZONE_PRECISE_GROIN) && has_tail() && M.has_tail())
-				visible_message("<span class='warning'>[src] coils [ru_ego()] tail with [M]'s, pulling [M.ru_na()] along!</span>", "You entwine tails with [M], pulling [M.ru_na()] along!", ignored_mobs = M)
-				M.show_message("<span class='warning'>[src] has entwined [ru_ego()] tail with yours, pulling you along!</span>", MSG_VISUAL, "<span class='warning'>You feel <b>something</b> coiling around your tail, pulling you along!</span>")
+				visible_message("<span class='warning'>[src] оборачивает свой хвост с хвостом [M], утягивая [M.ru_ego()] за собой!</span>", "Вы обернулись хвостиками с [M], утягивая [M.ru_ego()] за собой!", ignored_mobs = M)
+				M.show_message("<span class='warning'>[src] обернул[ru_a()] [ru_ego()] хвост с вашим, утягивая за собой!</span>", MSG_VISUAL, "<span class='warning'>Вы чувствуете как <b>что-то</b> окольцовывается вокруг вашего хвоста, утягивая за собой!</span>")
 
 			else // BLUEMOON CHANGES
 				visible_message("<span class='warning'>[src] has grabbed [M][(zone_selected == "l_arm" || zone_selected == "r_arm")? " by [M.ru_ego()] hands":" passively"]! [M.mob_weight > MOB_WEIGHT_NORMAL ? "Looks heavy." : ""]</span>",

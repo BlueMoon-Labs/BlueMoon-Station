@@ -21,7 +21,7 @@
 
 /obj/item/storage/firstaid/regular
 	icon_state = "firstaid"
-	desc = "A first aid kit with the ability to heal common types of injuries."
+	desc = "Аптечка первой помощи со снаряжением для борьбы с распространнёными видами ранений."
 
 /obj/item/storage/firstaid/regular/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] begins giving себя aids with \the [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")
@@ -41,7 +41,7 @@
 /obj/item/storage/firstaid/emergency
 	icon_state = "firstaid-briefcase"
 	name = "emergency first-aid kit"
-	desc = "A very simple first aid kit meant to secure and stabilize serious wounds for later treatment."
+	desc = "Очень простая аптечка для стабилизации серьёзных ран перед полноценным лечением."
 
 /obj/item/storage/firstaid/emergency/PopulateContents()
 	if(empty)
@@ -57,7 +57,7 @@
 /obj/item/storage/firstaid/ancient
 	name = "ancient first-aid kit"
 	icon_state = "oldfirstaid"
-	desc = "A first aid kit with the ability to heal common types of injuries. You start thinking of the good old days just by looking at it."
+	desc = "Аптечка первой помощи со снаряжением для борьбы с распространнёными видами ранений. Один взгляд на неё навеивает мысли о старых добрых деньках."
 
 /obj/item/storage/firstaid/ancient/PopulateContents()
 	if(empty)
@@ -76,7 +76,7 @@
 
 /obj/item/storage/firstaid/brute
 	name = "trauma treatment kit"
-	desc = "A first aid kit for when you get toolboxed."
+	desc = "Аптечка первой помощи, нужная после знакомства с ящиком с инструментами."
 	icon_state = "firstaid-brute"
 	item_state = "firstaid-brute"
 
@@ -95,7 +95,7 @@
 
 /obj/item/storage/firstaid/fire
 	name = "burn treatment kit"
-	desc = "A specialized medical kit for when the toxins lab <i>-spontaneously-</i> burns down."
+	desc = "Специализированная аптечка, нужная после <i>-случайных-</i> пожаров лабораторий токсинологии."
 	icon_state = "firstaid-burn"
 	item_state = "firstaid-burn"
 
@@ -115,7 +115,7 @@
 
 /obj/item/storage/firstaid/toxin
 	name = "toxin treatment kit"
-	desc = "Used to treat toxic blood content and radiation poisoning."
+	desc = "Нужна для вывеения токсинов из крови и третирования радиационного отравления."
 	icon_state = "firstaid-toxin"
 	item_state = "firstaid-toxin"
 
@@ -136,7 +136,7 @@
 
 /obj/item/storage/firstaid/o2
 	name = "oxygen deprivation treatment kit"
-	desc = "A box full of oxygen goodies."
+	desc = "Коробка, полная антигипоксичных вещиц."
 	icon_state = "firstaid-o2"
 	item_state = "firstaid-o2"
 
@@ -155,7 +155,7 @@
 
 /obj/item/storage/firstaid/tactical
 	name = "tactical first-aid kit"
-	desc = "I hope you've got insurance."
+	desc = "Надеемся, у вас есть страховка."
 	icon_state = "firstaid-tactical"
 	item_state = "firstaid-tactical"
 
@@ -226,7 +226,7 @@
 
 /obj/item/storage/firstaid/radbgone
 	name = "radiation treatment kit"
-	desc = "Used to treat minor toxic blood content and major radiation poisoning."
+	desc = "Нужна для выведения из крови малых доз токсинов и серьёзного радиационного отравления."
 	icon_state = "firstaid-rad"
 	item_state = "firstaid-rad"
 
@@ -254,7 +254,7 @@
 
 /obj/item/storage/pill_bottle
 	name = "pill bottle"
-	desc = "It's an airtight container for storing medication."
+	desc = "Воздухонепроницаемый контейнер для хранения медикаментов."
 	icon_state = "pill_canister"
 	icon = 'icons/obj/chemical.dmi'
 	item_state = "contsolid"
@@ -275,18 +275,18 @@
 	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
 		return
 	if(!length(user.get_empty_held_indexes()))
-		to_chat(user, "<span class='warning'>Your hands are full!</span>")
+		to_chat(user, "<span class='warning'>Ваши руки заняты</span>")
 		return
 	var/obj/item/reagent_containers/pill/P = locate() in contents
 	if(P)
 		SEND_SIGNAL(src, COMSIG_TRY_STORAGE_TAKE, P, user)
 		if(!user.put_in_hands(P))
 			P.forceMove(user.drop_location())	// make sure it's not stuck in the user if the put in hands somehow fails
-			to_chat(user, "<span class='warning'>[P] drops to the floor!</span>")
+			to_chat(user, "<span class='warning'>[P] выпадает на пол!</span>")
 		else
-			to_chat(user, "<span class='notice'>You take \a [P] out of [src].</span>")
+			to_chat(user, "<span class='notice'>Вы взяли \a [P] из [src].</span>")
 	else
-		to_chat(user, "<span class='notice'>There are no pills left in the bottle.</span>")
+		to_chat(user, "<span class='notice'>В бутылочке не осталось пилюль.</span>")
 	return TRUE
 
 
@@ -296,15 +296,15 @@
 
 /obj/item/storage/pill_bottle/charcoal
 	name = "bottle of charcoal pills"
-	desc = "Contains pills used to counter toxins."
+	desc = "Содержит пилюли для борьбы с токсинами."
 
 /obj/item/storage/pill_bottle/charcoal/PopulateContents()
 	for(var/i in 1 to 7)
 		new /obj/item/reagent_containers/pill/charcoal(src)
 
 /obj/item/storage/pill_bottle/antirad
-	name = "bottle of charcoal pills"
-	desc = "Contains pills used to counter radiation poisoning."
+	name = "bottle of potassium iodide pills"
+	desc = "Содержит пилюли для борьбы с радиационным отравлением."
 
 /obj/item/storage/pill_bottle/anitrad/PopulateContents()
 	for(var/i in 1 to 4)
@@ -312,7 +312,7 @@
 
 /obj/item/storage/pill_bottle/epinephrine
 	name = "bottle of epinephrine pills"
-	desc = "Contains pills used to stabilize patients."
+	desc = "Содержит пилюли для стабилизации пациентов."
 
 /obj/item/storage/pill_bottle/epinephrine/PopulateContents()
 	for(var/i in 1 to 7)
@@ -320,7 +320,7 @@
 
 /obj/item/storage/pill_bottle/mutadone
 	name = "bottle of mutadone pills"
-	desc = "Contains pills used to treat genetic abnormalities."
+	desc = "Содержит пилюли для ухода генетических отклонений."
 
 /obj/item/storage/pill_bottle/mutadone/PopulateContents()
 	for(var/i in 1 to 7)
@@ -328,7 +328,7 @@
 
 /obj/item/storage/pill_bottle/mannitol
 	name = "bottle of mannitol pills"
-	desc = "Contains pills used to treat brain damage."
+	desc = "Содержит пилюли для ухода повреждений мозга."
 
 /obj/item/storage/pill_bottle/mannitol/PopulateContents()
 	for(var/i in 1 to 7)
@@ -336,7 +336,7 @@
 
 /obj/item/storage/pill_bottle/stimulant
 	name = "bottle of stimulant pills"
-	desc = "Guaranteed to give you that extra burst of energy during a long shift!"
+	desc = "Гарантированно придаст вам приток сил и энергии для долгой смены!"
 
 /obj/item/storage/pill_bottle/stimulant/PopulateContents()
 	for(var/i in 1 to 4)
@@ -344,7 +344,7 @@
 
 /obj/item/storage/pill_bottle/mining
 	name = "bottle of patches"
-	desc = "Contains patches used to treat brute and burn damage."
+	desc = "Содержит пластыри для травм и ожогов."
 
 /obj/item/storage/pill_bottle/mining/PopulateContents()
 	new /obj/item/reagent_containers/pill/patch/silver_sulf(src)
@@ -353,7 +353,7 @@
 
 /obj/item/storage/pill_bottle/zoom
 	name = "suspicious pill bottle"
-	desc = "The label is pretty old and almost unreadable, you recognize some chemical compounds."
+	desc = "Этикетка очень стара и почти нечитаема, вы распознаете парочку химических соединений."
 
 /obj/item/storage/pill_bottle/zoom/PopulateContents()
 	for(var/i in 1 to 5)
@@ -361,7 +361,7 @@
 
 /obj/item/storage/pill_bottle/happy
 	name = "suspicious pill bottle"
-	desc = "There is a smiley on the top."
+	desc = "Сверху виден смайлик."
 
 /obj/item/storage/pill_bottle/happy/PopulateContents()
 	for(var/i in 1 to 5)
@@ -369,7 +369,7 @@
 
 /obj/item/storage/pill_bottle/lsd
 	name = "suspicious pill bottle"
-	desc = "There is a badly drawn thing with the shape of a mushroom."
+	desc = "Видна плохо нарисованная каракуля формы гриба."
 
 /obj/item/storage/pill_bottle/lsd/PopulateContents()
 	for(var/i in 1 to 5)
@@ -377,7 +377,7 @@
 
 /obj/item/storage/pill_bottle/aranesp
 	name = "suspicious pill bottle"
-	desc = "The label says 'gotta go fast'."
+	desc = "Этикетка пишет: \"gotta go fast\"."
 
 /obj/item/storage/pill_bottle/aranesp/PopulateContents()
 	for(var/i in 1 to 5)
@@ -385,7 +385,7 @@
 
 /obj/item/storage/pill_bottle/psicodine
 	name = "bottle of psicodine pills"
-	desc = "Contains pills used to treat mental distress and traumas."
+	desc = "Содержит пилюли для ухода ментальных расстройств и травм."
 
 /obj/item/storage/pill_bottle/psicodine/PopulateContents()
 	for(var/i in 1 to 7)
@@ -393,7 +393,7 @@
 
 /obj/item/storage/pill_bottle/happiness
 	name = "happiness pill bottle"
-	desc = "The label is long gone, in its place an 'H' written with a marker."
+	desc = "Этикетки давно нет, на её месте написана буква 'С' маркером."
 
 /obj/item/storage/pill_bottle/happiness/PopulateContents()
 	for(var/i in 1 to 5)
@@ -401,7 +401,7 @@
 
 /obj/item/storage/pill_bottle/antirad_plus
 	name = "anti radiation deluxe pill bottle"
-	desc = "The label says 'Med-Co branded pills'."
+	desc = "Этикетка пишет: \"Пилюли бренда Med-Co\"."
 
 /obj/item/storage/pill_bottle/antirad_plus/PopulateContents()
 	for(var/i in 1 to 7)
@@ -409,7 +409,7 @@
 
 /obj/item/storage/pill_bottle/mutarad
 	name = "radiation treatment deluxe pill bottle"
-	desc = "The label says 'Med-Co branded pills' and below that 'Contains Mutadone in each pill!`."
+	desc = "Этиктека пишет: \"Пилюли бренда Med-Co\", а под ним: \"Содержит мутадон в каждой пилюле!\"."
 
 /obj/item/storage/pill_bottle/mutarad/PopulateContents()
 	for(var/i in 1 to 7)
@@ -417,7 +417,7 @@
 
 /obj/item/storage/pill_bottle/penis_enlargement
 	name = "penis enlargement pills"
-	desc = "You want penis enlargement pills?"
+	desc = "Хотите таблетки для увеличения члена?"
 
 /obj/item/storage/pill_bottle/penis_enlargement/PopulateContents()
 	for(var/i in 1 to 10)
@@ -425,7 +425,7 @@
 
 /obj/item/storage/pill_bottle/breast_enlargement
 	name = "breast enlargement pills"
-	desc = "Made by Fermichem - The bottle shows a woman with breasts larger than she is on them. The warning states to not take more than 10 units at a time."
+	desc = "Сделано компанией Fermichem - таблетница показывает женщину с грудями больше её самой. Предупреждение предостерегает не применять больше 10 u за раз."
 
 /obj/item/storage/pill_bottle/breast_enlargement/PopulateContents()
 	for(var/i in 1 to 10)
@@ -433,7 +433,7 @@
 
 /obj/item/storage/pill_bottle/butt_enlargement
 	name = "butt enlargement pills"
-	desc = "May alert security when sneaking around if enough pills are consumed due to assclapping. Be dummy thick responsibly."
+	desc = "Хлопанье ягодиц может тревожить офицеров при попытках красться, если достаточно таблеток было выпито. Будьте толстозадыми ответственно."
 
 /obj/item/storage/pill_bottle/butt_enlargement/PopulateContents()
 	for(var/i in 1 to 10)
@@ -441,7 +441,7 @@
 
 /obj/item/storage/pill_bottle/neurine
 	name = "bottle of neurine pills"
-	desc = "Contains pills to treat non-severe mental traumas."
+	desc = "Содержит пилюли для лечения несерьёзных ментальных травм."
 
 /obj/item/storage/pill_bottle/neurine/PopulateContents()
 	for(var/i in 1 to 5)
@@ -449,7 +449,7 @@
 
 /obj/item/storage/pill_bottle/floorpill
 	name = "bottle of floorpills"
-	desc = "An old pill bottle. It smells musty."
+	desc = "Старая таблетница. Пахнет затхлостью."
 
 /obj/item/storage/pill_bottle/floorpill/Initialize(mapload)
 	. = ..()
@@ -470,7 +470,7 @@
 
 /obj/item/storage/belt/organbox
 	name = "Organ Storage"
-	desc = "A compact box that helps hold massive amounts of implants, organs, and some tools. Has a belt clip for easy carrying"
+	desc = "Компактный контейнер для переноски огромного количества имплантатов, органов и некоторых инструментов. С поясным карабином для упрощённой переноски."
 	w_class = WEIGHT_CLASS_BULKY
 	icon = 'icons/obj/mysterybox.dmi'
 	icon_state = "organbox_open"
@@ -521,7 +521,7 @@
 //hijacking the minature first aids for hypospray boxes. <3
 /obj/item/storage/hypospraykit
 	name = "hypospray kit"
-	desc = "It's a kit designed for containing a hypospray and specific treatment chemical-filled vials."
+	desc = "Набор для хранения гипоспрея и специализированных флаконов-ампул с препаратами."
 	icon_state = "firstaid-mini"
 	item_state = "firstaid"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
@@ -542,7 +542,7 @@
 
 /obj/item/storage/hypospraykit/regular
 	name = "first-aid hypospray kit"
-	desc = "A hypospray kit with general use vials."
+	desc = "Набор с гипоспреем и ампулами общего назначения."
 
 /obj/item/storage/hypospraykit/regular/PopulateContents()
 	if(empty)
@@ -566,7 +566,7 @@
 
 /obj/item/storage/hypospraykit/fire
 	name = "burn treatment hypospray kit"
-	desc = "A specialized hypospray kit for burn treatments. Apply with sass."
+	desc = "Спецаилизированный набор с гипоспреем и ожоговыми препаратами. \"Apply with sass\"."
 	icon_state = "firstaid-burn-mini"
 	item_state = "firstaid-burn"
 
@@ -608,7 +608,7 @@
 
 /obj/item/storage/hypospraykit/tactical
 	name = "tactical first-aid hypospray kit"
-	desc = "A hypospray kit best suited for combat situations."
+	desc = "Набор с гипоспреем и химией для боевой обстановки."
 	icon_state = "firstaid-tactical-mini"
 	item_state = "firstaid-tactical-mini"
 
@@ -622,7 +622,7 @@
 
 /obj/item/storage/hypospraykit/cmo
 	name = "deluxe hypospray kit"
-	desc = "A kit containing a Deluxe hypospray and Vials."
+	desc = "Набор, содержащий делюкс-гипоспрей и ампулы для него."
 	icon_state = "firstaid-rad-mini"
 	item_state = "firstaid-rad"
 

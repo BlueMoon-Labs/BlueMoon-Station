@@ -103,8 +103,8 @@
 	var/salute_delay = 60 SECONDS
 
 	//emotes/speech stuff
-	var/patrol_emote = "Engaging patrol mode."
-	var/patrol_fail_emote = "Unable to start patrol."
+	var/patrol_emote = "Включение режима патруля."
+	var/patrol_fail_emote = "Невозможно начать патруль."
 
 /mob/living/simple_animal/bot/proc/get_mode()
 	if(client) //Player bots do not have modes, thus the override. Also an easy way for PDA users/AI to know when a bot is a player.

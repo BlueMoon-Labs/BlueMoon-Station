@@ -86,7 +86,7 @@ Class Procs:
 /obj/machinery
 	name = "machinery"
 	icon = 'icons/obj/stationobjs.dmi'
-	desc = "Some kind of machine."
+	desc = "Какого-то рода машинерия."
 	verb_say = "beeps"
 	verb_yell = "blares"
 	pressure_resistance = 15
@@ -571,7 +571,7 @@ Class Procs:
 		if(!panel_open)
 			panel_open = TRUE
 			icon_state = icon_state_open
-			to_chat(user, "<span class='notice'>Вы скручиваете панель обслуживания [src] с винтов.</span>")
+			to_chat(user, "<span class='notice'>Вы скручиваете винты панели обслуживания [src].</span>")
 		else
 			panel_open = FALSE
 			icon_state = icon_state_closed

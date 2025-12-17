@@ -311,19 +311,21 @@
 			if (worn_suit.clothing_flags & worn_helmet.clothing_flags & THICKMATERIAL)
 				protected = TRUE
 		if(method == TOUCH && protected)
-			M.visible_message("<span class='danger'>[M] был[M.ru_a()] облит [src]!</span>", \
-						"<span class='userdanger'>Меня облили [src]!</span>")
+			var/obj/item/clothing/worn_suit = H.wear_suit
+			M.visible_message("<span class='danger'>[H] был[H.ru_a()] чем-то облит[H.ru_a()], но оно стекло вниз по [worn_suit.name]!</span>", \
+						"<span class='userdanger'>Меня чем-то облили, но оно стекло вниз по [worn_suit.name]!</span>")
 			playsound(src.loc, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
 			return
 		else if(method in list(INGEST, VAPOR, INJECT))
 			M.adjustToxLoss(0.5*reac_volume)
 			if(show_message)
-				to_chat(M, "<span class='warning'>You don't feel so good...</span>")
+				to_chat(M, "<span class='warning'>Вы ощущаете себя не очень хорошо...</span>")
 		else if(M.getFireLoss())
 			M.adjustFireLoss(-reac_volume)
 			if(show_message)
-				to_chat(M, "<span class='danger'>You feel your burns healing! It stings like hell!</span>")
+				to_chat(M, "<span class='danger'>Вы ощущаете, как ваши ожоги затягиваются! Жжётся адски!!</span>")
 			//M.emote("scream")
+			shake_camera(M, 5, 2)
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "painful_medicine", /datum/mood_event/painful_medicine)
 	..()
 
@@ -388,19 +390,21 @@
 			if (worn_suit.clothing_flags & worn_helmet.clothing_flags & THICKMATERIAL)
 				protected = TRUE
 		if(method == TOUCH && protected)
-			M.visible_message("<span class='danger'>[M] был[M.ru_a()] облит [src]!</span>", \
-						"<span class='userdanger'>Меня облили [src]!</span>")
+			var/obj/item/clothing/worn_suit = H.wear_suit
+			M.visible_message("<span class='danger'>[H] был[H.ru_a()] чем-то облит[H.ru_a()], но оно стекло вниз по [worn_suit.name]!</span>", \
+						"<span class='userdanger'>Меня чем-то облили, но оно стекло вниз по [worn_suit.name]!</span>")
 			playsound(src.loc, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
 			return
 		else if(method in list(INGEST, VAPOR, INJECT))
 			M.adjustToxLoss(0.5*reac_volume)
 			if(show_message)
-				to_chat(M, "<span class='warning'>You don't feel so good...</span>")
+				to_chat(M, "<span class='warning'>Вы ощущаете себя не очень хорошо...</span>")
 		else if(M.getBruteLoss())
 			M.adjustBruteLoss(-reac_volume)
 			if(show_message)
-				to_chat(M, "<span class='danger'>You feel your bruises healing! It stings like hell!</span>")
+				to_chat(M, "<span class='danger'>Вы ощущаете, как ваши ушибы затягиваются! Жжётся адски!</span>")
 			//M.emote("scream")
+			shake_camera(M, 5, 2)
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "painful_medicine", /datum/mood_event/painful_medicine)
 	..()
 
@@ -802,11 +806,16 @@
 	..()
 
 /datum/reagent/medicine/ephedrine/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
-	// if(DT_PROB(10 * (1-creation_purity), delta_time) && iscarbon(M))
-	// 	var/obj/item/I = M.get_active_held_item()
-	// 	if(I && M.dropItemToGround(I))
-	// 		to_chat(M, span_notice("Your hands spaz out and you drop what you were holding!"))
-	// 		M.Jitter(10)
+	if(DT_PROB(7.5, delta_time) && iscarbon(M))
+		var/obj/item/Iactive = M.get_active_held_item()
+		if(Iactive && M.dropItemToGround(Iactive))
+			to_chat(M, span_notice("Your hands spaz out and you drop what you were holding!"))
+			M.Jitter(10)
+	if(DT_PROB(5, delta_time) && iscarbon(M))
+		var/obj/item/Isecond = M.get_inactive_held_item()
+		if(Isecond && M.dropItemToGround(Isecond))
+			to_chat(M, span_notice("Your hands spaz out and you drop what you were holding!"))
+			M.Jitter(10)
 
 	M.AdjustAllImmobility(-20 * REM * delta_time)
 	M.adjustStaminaLoss(-1 * REM * delta_time, FALSE)

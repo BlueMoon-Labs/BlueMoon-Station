@@ -7,13 +7,13 @@
 	if(!.)
 		return
 	if(!ishuman(user)) // /datum/component/riding/human разработан для хуманов, поэтому не буду проверять растяжимость хрупко работающих механик
-		to_chat(user, span_warning("Тебе не получиться поднять это существо таким способом.")) // "я ограничен технологиями своего времени."
+		to_chat(user, span_warning("Тебе не получится поднять это существо таким способом.")) // "я ограничен технологиями своего времени."
 		return FALSE
 	if(user.incapacitated())
 		to_chat(user, span_warning("Ты сейчас не можешь это сделать."))
 		return FALSE
 	if(user.get_active_held_item())
-		to_chat(user, span_warning("Нужна свобдная рука."))
+		to_chat(user, span_warning("Нужна свободная рука."))
 		return FALSE
 
 /datum/interaction/carry/evaluate_target(mob/living/user, mob/living/target, silent)
@@ -23,7 +23,7 @@
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		if(!is_type_in_typecache(target, H.can_ride_typecache))
-			to_chat(H, span_warning("Тебе не получиться поднять это существо таким способом."))
+			to_chat(H, span_warning("Тебе не получится поднять это существо таким способом."))
 			return FALSE
 	if((target.mob_weight > MOB_WEIGHT_NORMAL) && !(user.mob_weight > MOB_WEIGHT_NORMAL))
 		to_chat(user, span_warning("[target] слишком много весит."))

@@ -1,7 +1,7 @@
 //ported from TG, credit to XDTM
 /obj/item/swapper
 	name = "quantum spin inverter"
-	desc = "An experimental device that is able to swap the locations of two entities by switching their particles' spin values. Must be linked to another device to function."
+	desc = "Экспериментальное устройство для смены локации двух сущностей путём подмены значения спина их частиц. Должно быть соединено с другим таким же устройством."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "swapper"
 	item_state = "electronic"

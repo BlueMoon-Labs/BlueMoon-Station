@@ -7493,6 +7493,10 @@
 /obj/item/flashlight,
 /obj/item/flashlight,
 /obj/item/flashlight,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "auh" = (

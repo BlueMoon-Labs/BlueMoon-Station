@@ -42,29 +42,29 @@ const ChemMasterContent = (props, context) => {
   return (
     <Fragment>
       <Section
-        title="Beaker"
+        title="Ёмкость"
         buttons={!!data.isBeakerLoaded && (
           <Fragment>
             <Box inline color="label" mr={2}>
               <AnimatedNumber
                 value={beakerCurrentVolume}
                 initial={0} />
-              {` / ${beakerMaxVolume} units`}
+              {` / ${beakerMaxVolume} u`}
             </Box>
             <Button
               icon="eject"
-              content="Eject"
+              content="Извлечь"
               onClick={() => act('eject')} />
           </Fragment>
         )}>
         {!isBeakerLoaded && (
           <Box color="label" mt="3px" mb="5px">
-            No beaker loaded.
+            Ёмкость отсутствует.
           </Box>
         )}
         {!!isBeakerLoaded && beakerContents.length === 0 && (
           <Box color="label" mt="3px" mb="5px">
-            Beaker is empty.
+            Ёмкость пуста.
           </Box>
         )}
         <ChemicalBuffer>
@@ -77,22 +77,22 @@ const ChemMasterContent = (props, context) => {
         </ChemicalBuffer>
       </Section>
       <Section
-        title="Buffer"
+        title="Буфер"
         buttons={(
           <Fragment>
             <Box inline color="label" mr={1}>
-              Mode:
+              Режим:
             </Box>
             <Button
               color={data.mode ? 'good' : 'bad'}
               icon={data.mode ? 'exchange-alt' : 'times'}
-              content={data.mode ? 'Transfer' : 'Destroy'}
+              content={data.mode ? 'Переместить' : 'Утилизировать'}
               onClick={() => act('toggleMode')} />
           </Fragment>
         )}>
         {bufferContents.length === 0 && (
           <Box color="label" mt="3px" mb="5px">
-            Buffer is empty.
+            Буфер пуст.
           </Box>
         )}
         <ChemicalBuffer>
@@ -105,12 +105,12 @@ const ChemMasterContent = (props, context) => {
         </ChemicalBuffer>
       </Section>
       <Section
-        title="Packaging">
+        title="Упаковка">
         <PackagingControls />
       </Section>
       {!!isPillBottleLoaded && (
         <Section
-          title="Pill Bottle"
+          title="Таблетница"
           buttons={(
             <Fragment>
               <Box inline color="label" mr={2}>
@@ -118,7 +118,7 @@ const ChemMasterContent = (props, context) => {
               </Box>
               <Button
                 icon="eject"
-                content="Eject"
+                content="Извлечь"
                 onClick={() => act('ejectPillBottle')} />
             </Fragment>
           )} />
@@ -138,7 +138,7 @@ const ChemicalBufferEntry = (props, context) => {
         <AnimatedNumber
           value={chemical.volume}
           initial={0} />
-        {` units of ${chemical.name}`}
+        {`u ${chemical.name}`}
       </Table.Cell>
       <Table.Cell collapsing>
         <Button
@@ -171,7 +171,7 @@ const ChemicalBufferEntry = (props, context) => {
           })} />
         <Button
           icon="ellipsis-h"
-          title="Custom amount"
+          title="Произвольное кол-во"
           onClick={() => act('transfer', {
             id: chemical.id,
             amount: -1,
@@ -179,7 +179,7 @@ const ChemicalBufferEntry = (props, context) => {
           })} />
         <Button
           icon="question"
-          title="Analyze"
+          title="Анализ"
           onClick={() => act('analyze', {
             id: chemical.id,
           })} />
@@ -211,7 +211,7 @@ const PackagingControlsItem = (props, context) => {
         onChange={onChangeAmount} />
       <Button
         ml={1}
-        content="Create"
+        content="Создать"
         onClick={onCreate} />
       <Box inline ml={1} color="label">
         {sideNote}
@@ -255,7 +255,7 @@ const PackagingControls = (props, context) => {
   } = data;
   return (
     <LabeledList>
-      {!condi && (<LabeledList.Item label="Pill type">
+      {!condi && (<LabeledList.Item label="Тип таблетки">
         {pillStyles.map(pill => (
           <Button
             key={pill.id}
@@ -269,7 +269,7 @@ const PackagingControls = (props, context) => {
         ))}
         </LabeledList.Item>
       )}
-      {!condi && (<LabeledList.Item label="Patch type">
+      {!condi && (<LabeledList.Item label="Тип пластыря">
         {patchStyles.map(patch => (
           <Button
             key={patch.id}
@@ -285,7 +285,7 @@ const PackagingControls = (props, context) => {
       )}
       {!condi && (
         <PackagingControlsItem
-          label="Pills"
+          label="Таблетки"
           amount={pillAmount}
           amountUnit="pills"
           sideNote="max 50u"
@@ -298,7 +298,7 @@ const PackagingControls = (props, context) => {
       )}
       {!condi && (
         <PackagingControlsItem
-          label="Patches"
+          label="Пластыри"
           amount={patchAmount}
           amountUnit="patches"
           sideNote="max 40u"
@@ -311,7 +311,7 @@ const PackagingControls = (props, context) => {
       )}
       {!condi && (
         <PackagingControlsItem
-          label="Bottles"
+          label="Бутылочки"
           amount={bottleAmount}
           amountUnit="bottles"
           sideNote="max 30u"
@@ -324,7 +324,7 @@ const PackagingControls = (props, context) => {
       )}
       {!condi && (
         <PackagingControlsItem
-          label="Hypovials"
+          label="Гипоампулы"
           amount={vialAmount}
           amountUnit="vials"
           sideNote="max 60u"
@@ -337,7 +337,7 @@ const PackagingControls = (props, context) => {
       )}
       {!condi && (
         <PackagingControlsItem
-          label="Smartdarts"
+          label="Смартдарты"
           amount={dartAmount}
           amountUnit="darts"
           sideNote="max 20u"
@@ -350,7 +350,7 @@ const PackagingControls = (props, context) => {
       )}
       {!!condi && (
         <PackagingControlsItem
-          label="Packs"
+          label="Пакетики"
           amount={packAmount}
           amountUnit="packs"
           sideNote="max 10u"
@@ -363,7 +363,7 @@ const PackagingControls = (props, context) => {
       )}
       {!!condi && (
         <PackagingControlsItem
-          label="Bottles"
+          label="Бутылки"
           amount={bottleAmount}
           amountUnit="bottles"
           sideNote="max 50u"
@@ -384,43 +384,43 @@ const AnalysisResults = (props, context) => {
   const { analyzeVars } = data;
   return (
     <Section
-      title="Analysis Results"
+      title="Результаты анализа"
       buttons={(
         <Button
           icon="arrow-left"
-          content="Back"
+          content="Назад"
           onClick={() => act('goScreen', {
             screen: 'home',
           })} />
       )}>
 
       <LabeledList>
-        <LabeledList.Item label="Name">
+        <LabeledList.Item label="Название">
           {analyzeVars.name}
         </LabeledList.Item>
-        <LabeledList.Item label="State">
+        <LabeledList.Item label="Агрегатное сост.">
           {analyzeVars.state}
         </LabeledList.Item>
-        <LabeledList.Item label="Color">
+        <LabeledList.Item label="Цвет">
           <ColorBox color={analyzeVars.color} mr={1} />
           {analyzeVars.color}
         </LabeledList.Item>
-        <LabeledList.Item label="Description">
+        <LabeledList.Item label="Описание">
           {analyzeVars.description}
         </LabeledList.Item>
-        <LabeledList.Item label="Metabolization Rate">
+        <LabeledList.Item label="Метабол. усваиваем.">
           {analyzeVars.metaRate} u/minute
         </LabeledList.Item>
-        <LabeledList.Item label="Overdose Threshold">
+        <LabeledList.Item label="Порог дозировки">
           {analyzeVars.overD}
         </LabeledList.Item>
-        <LabeledList.Item label="Addiction Threshold">
+        <LabeledList.Item label="Порог зависимости">
           {analyzeVars.addicD}
         </LabeledList.Item>
-        <LabeledList.Item label="Metabolized by">
+        <LabeledList.Item label="Метаболизируется">
           {analyzeVars.processType}
         </LabeledList.Item>
-        <LabeledList.Item label="Purity">
+        <LabeledList.Item label="Чистота">
           {analyzeVars.purityF}
         </LabeledList.Item>
         {!! data.fermianalyze && ( // why did you do that before? it's bad.
@@ -431,16 +431,16 @@ const AnalysisResults = (props, context) => {
             <LabeledList.Item label="Purity E">
               {analyzeVars.purityE}
             </LabeledList.Item>
-            <LabeledList.Item label="Lower Optimal Temperature">
+            <LabeledList.Item label="Нижний оптимум температуры">
               {analyzeVars.minTemp}
             </LabeledList.Item>
-            <LabeledList.Item label="Upper Optimal Temperature">
+            <LabeledList.Item label="Высший оптимум температуры">
               {analyzeVars.maxTemp}
             </LabeledList.Item>
-            <LabeledList.Item label="Explosive Temperature">
+            <LabeledList.Item label="Температура детонации">
               {analyzeVars.eTemp}
             </LabeledList.Item>
-            <LabeledList.Item label="pH Peak">
+            <LabeledList.Item label="Края значений pH">
               {analyzeVars.pHpeak}
             </LabeledList.Item>
           </Fragment>

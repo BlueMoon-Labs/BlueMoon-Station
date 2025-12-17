@@ -440,9 +440,9 @@
 
 	if(upgr_reag_colour && upgr_reag_colour.len)
 		if(upgr_reag_colour.len == 1)
-			. += span_info("В корпусе видна [jointext_ru_comma_plus_and(upgr_reag_colour)] гипоампула.")
+			. += span_info("В корпусе видна [english_list(upgr_reag_colour)] гипоампула.")
 		else
-			. += span_info("В корпусе есть [jointext_ru_comma_plus_and(upgr_reag_colour)] гипоампулы.")
+			. += span_info("В корпусе есть [english_list(upgr_reag_colour)] гипоампулы.")
 
 	if(tipped_status != MEDBOT_PANIC_NONE)
 		switch(tipped_status)

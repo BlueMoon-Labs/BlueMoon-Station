@@ -33,9 +33,9 @@
 /obj/item/reagent_containers/examine(mob/user)
 	. = ..()
 	if(length(possible_transfer_amounts) > 1)
-		. += "Currently transferring [amount_per_transfer_from_this] units per use."
+		. += "В данный момент используется [amount_per_transfer_from_this] u за раз."
 		if(container_flags & APTFT_ALTCLICK && user.Adjacent(src))
-			. += "<span class='notice'>Alt-click it to set its transfer amount.</span>"
+			. += "<span class='notice'>Alt-click для настройки объёмов использования.</span>"
 
 /obj/item/reagent_containers/AltClick(mob/user)
 	. = ..()
@@ -47,10 +47,10 @@
 	set name = "Set Transfer Amount"
 	set category = "Object"
 	set waitfor = FALSE
-	var/N = input("Amount per transfer from this:","[src]") as null|anything in possible_transfer_amounts
+	var/N = input("Объём переливания:","[src]") as null|anything in possible_transfer_amounts
 	if(N)
 		amount_per_transfer_from_this = N
-		to_chat(usr, "<span class='notice'>[src]'s transfer amount is now [amount_per_transfer_from_this] units.</span>")
+		to_chat(usr, "<span class='notice'>[src] теперь переливает [amount_per_transfer_from_this]u за раз.</span>")
 
 /obj/item/reagent_containers/proc/add_initial_reagents()
 	if(list_reagents)

@@ -66,7 +66,8 @@
 /obj/machinery/atmospherics/components/unary/cryo_cell/examine(mob/user) //this is leaving out everything but efficiency since they follow the same idea of "better matter bin, better results"
 	. = ..()
 	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Efficiency at <b>[efficiency*100]%</b>.</span>"
+		. += "<span class='notice'>Статус-дисплей сообщает: \n\
+		- Эффективность машины: <b>[efficiency*100]%</b>.</span>"
 
 /obj/machinery/atmospherics/components/unary/cryo_cell/Destroy()
 	QDEL_NULL(radio)
@@ -289,7 +290,7 @@
 /obj/machinery/atmospherics/components/unary/cryo_cell/relaymove(mob/user)
 	if(message_cooldown <= world.time)
 		message_cooldown = world.time + 50
-		to_chat(user, "<span class='warning'>[src]'s door won't budge!</span>")
+		to_chat(user, "<span class='warning'>Створки [src] не поддаются!</span>")
 
 /obj/machinery/atmospherics/components/unary/cryo_cell/open_machine(drop = FALSE)
 	if(!state_open && !panel_open)
@@ -313,7 +314,7 @@
 	if(INTERACTING_WITH(user, src))
 		return
 	if(user.stat != CONSCIOUS)
-		to_chat(user, "Ты активируешь программу экстренного высвобождения из [src]... (это займет примерно [DisplayTimeText(breakout_time_unconscious)].)")
+		to_chat(user, "Вы активируете программу экстренного высвобождения из [src]... (это займет примерно [DisplayTimeText(breakout_time_unconscious)].)")
 		user.visible_message(\
 			span_notice("Вы видите, как [user] активирует программу высвобождения из [src]!"), \
 			blind_message = "<span class='italics'>Вы слышите как [src] начинает сливать жидкость.</span>")
@@ -321,7 +322,7 @@
 	else
 		user.visible_message(\
 			span_notice("Вы видите, как [user] пытается раздвинуть створки [src]!"), \
-			span_notice("Ты пытаешься выбраться из [src], раздвигая створки... (это займет примерно [DisplayTimeText(breakout_time)].)"), \
+			span_notice("Вы пытаетесь выбраться из [src], раздвигая створки... (это займет примерно [DisplayTimeText(breakout_time)].)"), \
 			"<span class='italics'>Вы слышите гул сервоприводов от [src].</span>")
 		playsound(src, 'sound/machines/airlock_alien_prying.ogg',60,TRUE)
 
@@ -335,11 +336,11 @@
 	. = ..()
 	if(occupant)
 		if(on)
-			. += "Someone's inside [src]!"
+			. += "Кто-то есть внутри [src]!"
 		else
-			. += "You can barely make out a form floating in [src]."
+			. += "Вы едва можете разглядеть силуэт, плавающий в [src]."
 	else
-		. += "[src] seems empty."
+		. += "[src] выглядит пустой."
 
 /obj/machinery/atmospherics/components/unary/cryo_cell/MouseDrop_T(mob/living/carbon/target, mob/user)
 	if(user.stat || user.lying || !Adjacent(user) || !user.Adjacent(target) || !istype(target) || !user.IsAdvancedToolUser())
@@ -347,7 +348,7 @@
 	if(!CHECK_MOBILITY(target, MOBILITY_MOVE))
 		close_machine(target)
 	else
-		user.visible_message("<b>[user]</b> starts shoving [target] inside [src].", "<span class='notice'>You start shoving [target] inside [src].</span>")
+		user.visible_message("<b>[user]</b> начинает запихивать [target] внутрь [src].", "<span class='notice'>Вы стали запихивать [target] внутрь [src].</span>")
 		if (do_after(user, 1.5 SECONDS, target))
 			close_machine(target)
 
@@ -355,13 +356,13 @@
 	if(istype(I, /obj/item/reagent_containers/glass))
 		. = 1 //no afterattack
 		if(beaker)
-			to_chat(user, "<span class='warning'>A beaker is already loaded into [src]!</span>")
+			to_chat(user, "<span class='warning'>Ёмкость уже загружена в [src]!</span>")
 			return
 		if(!user.transferItemToLoc(I, src))
 			return
 		beaker = I
 		user.visible_message("[user] places [I] in [src].", \
-							"<span class='notice'>You place [I] in [src].</span>")
+							"<span class='notice'>Вы поместили [I] внутрь [src].</span>")
 		var/reagentlist = pretty_string_from_reagent_list(I.reagents.reagent_list)
 		log_game("[key_name(user)] added an [I] to cryo containing [reagentlist]")
 		return
@@ -372,8 +373,8 @@
 		update_icon()
 		return
 	else if(I.tool_behaviour == TOOL_SCREWDRIVER)
-		to_chat(user, "<span class='notice'>You can't access the maintenance panel while the pod is " \
-		+ (on ? "active" : (occupant ? "full" : "open")) + ".</span>")
+		to_chat(user, "<span class='notice'>Вы не можете открутить панель обслуживания, пока капсула " \
+		+ (on ? "работает" : (occupant ? "не пуста" : "открыта")) + ".</span>")
 		return
 	return ..()
 
@@ -399,16 +400,16 @@
 		data["occupant"]["name"] = mob_occupant.name
 		switch(mob_occupant.stat)
 			if(CONSCIOUS)
-				data["occupant"]["stat"] = "Conscious"
+				data["occupant"]["stat"] = "В сознании"
 				data["occupant"]["statstate"] = "good"
 			if(SOFT_CRIT)
-				data["occupant"]["stat"] = "Conscious"
+				data["occupant"]["stat"] = "В сознании"
 				data["occupant"]["statstate"] = "average"
 			if(UNCONSCIOUS)
-				data["occupant"]["stat"] = "Unconscious"
+				data["occupant"]["stat"] = "Без сознания"
 				data["occupant"]["statstate"] = "average"
 			if(DEAD)
-				data["occupant"]["stat"] = "Dead"
+				data["occupant"]["stat"] = "М[mob_occupant.gender == FEMALE ? "ертва" : "ёртв"]"
 				data["occupant"]["statstate"] = "bad"
 		data["occupant"]["health"] = round(mob_occupant.health, 1)
 		data["occupant"]["maxHealth"] = mob_occupant.maxHealth

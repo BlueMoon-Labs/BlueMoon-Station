@@ -3,9 +3,8 @@
 /obj/structure/window/reinforced/tinted{
 	dir = 4
 	},
-/obj/structure/sink/kitchen{
-	dir = 8;
-	pixel_x = 5
+/obj/structure/closet/secure_closet/freezer/kitchen{
+	req_access = null
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
@@ -166,11 +165,13 @@
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "bd" = (
 /obj/structure/table/wood,
-/mob/living/simple_animal/pet/cat,
-/obj/item/clothing/neck/petcollar,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 8
 	},
+/obj/item/clipboard{
+	pixel_y = 3
+	},
+/obj/item/pen,
 /turf/open/floor/carpet/blackred,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "bj" = (
@@ -466,7 +467,8 @@
 /obj/machinery/power/apc/away{
 	dir = 8;
 	name = "Reception APC";
-	pixel_x = -25
+	pixel_x = -25;
+	req_access = null
 	},
 /obj/structure/cable{
 	icon_state = "0-4"
@@ -930,6 +932,11 @@
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "eM" = (
 /obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "spacehotelwindow";
+	name = "Space Protection Shutters";
+	desc = "ask a manager to close this, if need."
+	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel/dock)
 "eP" = (
@@ -1463,7 +1470,8 @@
 /obj/machinery/power/apc/away{
 	dir = 1;
 	name = "Hotel Security APC";
-	pixel_y = 23
+	pixel_y = 23;
+	req_access = null
 	},
 /obj/structure/cable{
 	icon_state = "0-2"
@@ -1559,7 +1567,9 @@
 /obj/machinery/power/apc/away{
 	dir = 8;
 	name = "Hotel Corridors APC";
-	pixel_x = -25
+	pixel_x = -25;
+	req_access = null;
+	req_access_txt = "200"
 	},
 /obj/structure/cable{
 	icon_state = "0-2"
@@ -1626,8 +1636,7 @@
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "jm" = (
 /obj/machinery/airalarm/directional/north{
-	req_access = null;
-	req_access_txt = "204"
+	req_access = null
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
@@ -1730,7 +1739,9 @@
 /turf/open/floor/engine/air,
 /area/ruin/space/has_grav/bluemoon/hotel/power)
 "jR" = (
-/obj/machinery/airalarm/directional/east,
+/obj/machinery/airalarm/directional/east{
+	req_access = null
+	},
 /obj/structure/bed/double,
 /turf/open/floor/plasteel/white,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
@@ -1864,13 +1875,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/wood/wood_tiled,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
-"kR" = (
-/obj/structure/chair/sofa/corp/left{
-	dir = 1
-	},
-/obj/structure/closet/secure_closet/freezer/kitchen,
-/turf/open/floor/carpet/royalblack,
-/area/ruin/space/has_grav/bluemoon/hotel/bar)
 "kV" = (
 /obj/machinery/vending/autodrobe/all_access,
 /obj/machinery/light,
@@ -1976,9 +1980,9 @@
 	pixel_y = 8
 	},
 /obj/item/reagent_containers/food/drinks/bottle/whiskey{
-	pixel_x = 3
+	pixel_x = 9;
+	pixel_y = 7
 	},
-/obj/item/reagent_containers/food/drinks/drinkingglass,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 8
@@ -1986,6 +1990,7 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
+/obj/item/reagent_containers/food/drinks/drinkingglass,
 /turf/open/floor/carpet/blackred,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "lE" = (
@@ -2517,6 +2522,15 @@
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
+"oC" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "spacehotelwindow";
+	name = "Space Protection Shutters";
+	desc = "ask a manager to close this, if need."
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "oG" = (
 /obj/structure/sign/departments/custodian,
 /turf/closed/wall,
@@ -2714,8 +2728,7 @@
 /obj/item/storage/box/lights/mixed,
 /obj/item/lightreplacer,
 /obj/machinery/airalarm/directional/west{
-	req_access = null;
-	req_access_txt = "204"
+	req_access = null
 	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/hotel/custodial)
@@ -3081,9 +3094,6 @@
 /area/ruin/space/has_grav/bluemoon/hotel/security)
 "rX" = (
 /obj/structure/table/wood,
-/obj/item/clipboard{
-	pixel_y = 3
-	},
 /obj/item/hand_labeler,
 /obj/item/stack/packageWrap,
 /obj/item/stamp{
@@ -3562,7 +3572,9 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "uD" = (
-/obj/machinery/airalarm/directional/east,
+/obj/machinery/airalarm/directional/east{
+	req_access = null
+	},
 /turf/open/floor/carpet/black,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "uE" = (
@@ -3655,8 +3667,7 @@
 /area/ruin/space/has_grav/bluemoon/hotel)
 "va" = (
 /obj/machinery/airalarm/directional/east{
-	req_access = null;
-	req_access_txt = "204"
+	req_access = null
 	},
 /obj/machinery/light{
 	dir = 4
@@ -3720,7 +3731,8 @@
 /obj/machinery/power/apc/away{
 	dir = 1;
 	name = "Guest Rooms APC";
-	pixel_y = 23
+	pixel_y = 23;
+	req_access = null
 	},
 /obj/structure/cable{
 	icon_state = "0-2"
@@ -3774,7 +3786,9 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "vO" = (
-/obj/machinery/airalarm/directional/south,
+/obj/machinery/airalarm/directional/south{
+	req_access = null
+	},
 /obj/structure/chair/sofa/corp/left{
 	dir = 1
 	},
@@ -4481,6 +4495,15 @@
 /obj/machinery/atmospherics/pipe/simple/supply/visible,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/hotel/power)
+"zW" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "spacehotelwindow";
+	name = "Space Protection Shutters";
+	desc = "ask a manager to close this, if need."
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/bluemoon/hotel/bar)
 "zX" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -5006,7 +5029,8 @@
 	dir = 1;
 	name = "Bar and Club APC";
 	pixel_y = 0;
-	pixel_x = -26
+	pixel_x = -26;
+	req_access = null
 	},
 /obj/structure/cable{
 	icon_state = "0-2"
@@ -5489,7 +5513,9 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
-/obj/machinery/airalarm/directional/north,
+/obj/machinery/airalarm/directional/north{
+	req_access = null
+	},
 /obj/machinery/hydroponics/constructable,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
@@ -5497,7 +5523,9 @@
 /obj/structure/cable{
 	icon_state = "0-4"
 	},
-/obj/machinery/power/apc/auto_name/north,
+/obj/machinery/power/apc/auto_name/north{
+	req_access = null
+	},
 /turf/open/floor/plasteel/white,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "GD" = (
@@ -5905,6 +5933,8 @@
 	desc = "A comfy-looking pet bed. You can even strap your pet in, in case the gravity turns off.";
 	name = "pet bed"
 	},
+/mob/living/simple_animal/pet/cat,
+/obj/item/clothing/neck/petcollar,
 /turf/open/floor/wood/wood_tiled,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "Ji" = (
@@ -6058,7 +6088,8 @@
 /obj/machinery/power/apc/away{
 	dir = 1;
 	name = "Hotel Custodial APC";
-	pixel_y = 23
+	pixel_y = 23;
+	req_access = null
 	},
 /obj/structure/closet/crate/trashcart,
 /obj/item/storage/bag/trash,
@@ -6112,6 +6143,15 @@
 /obj/item/stack/tile/carpet/black/fifty,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
+"KJ" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "spacehotelwindow";
+	name = "Space Protection Shutters";
+	desc = "ask a manager to close this, if need."
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/bluemoon/hotel)
 "KK" = (
 /obj/effect/decal/cleanable/generic,
 /obj/structure/disposalpipe/segment{
@@ -6128,6 +6168,11 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/carpet/black,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
+"KU" = (
+/obj/effect/turf_decal/tile/yellow/half,
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/bluemoon/hotel/power)
 "KV" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -6483,7 +6528,9 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "MS" = (
-/obj/machinery/airalarm/directional/west,
+/obj/machinery/airalarm/directional/west{
+	req_access = null
+	},
 /turf/open/floor/carpet/black,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
 "MZ" = (
@@ -6503,8 +6550,7 @@
 	dir = 1
 	},
 /obj/machinery/airalarm/directional/north{
-	req_access = null;
-	req_access_txt = "204"
+	req_access = null
 	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/hotel/power)
@@ -6904,7 +6950,9 @@
 /turf/open/floor/plasteel/vaporwave,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
 "Pj" = (
-/obj/machinery/airalarm/directional/west,
+/obj/machinery/airalarm/directional/west{
+	req_access = null
+	},
 /turf/open/floor/plasteel/white,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "Pm" = (
@@ -7109,7 +7157,8 @@
 /obj/machinery/power/apc/away{
 	dir = 1;
 	name = "Hotel Engineering APC";
-	pixel_y = 23
+	pixel_y = 23;
+	req_access = null
 	},
 /obj/structure/cable{
 	icon_state = "0-2"
@@ -7363,6 +7412,11 @@
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
 "Rn" = (
 /obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "spacehotelwindow";
+	name = "Space Protection Shutters";
+	desc = "ask a manager to close this, if need."
+	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "Rp" = (
@@ -7711,8 +7765,7 @@
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "ST" = (
 /obj/machinery/airalarm/directional/north{
-	req_access = null;
-	req_access_txt = "204"
+	req_access = null
 	},
 /obj/machinery/vending/clothing{
 	onstation = 0
@@ -7834,7 +7887,9 @@
 	icon_state = "shower"
 	})
 "TD" = (
-/obj/machinery/airalarm/directional/south,
+/obj/machinery/airalarm/directional/south{
+	req_access = null
+	},
 /obj/structure/chair/sofa/corp/right{
 	dir = 1
 	},
@@ -7898,6 +7953,13 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
+"Uh" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/paper_bin,
+/obj/item/pen,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "Ui" = (
 /obj/machinery/light{
 	dir = 8
@@ -8070,7 +8132,9 @@
 	pixel_x = 24;
 	req_access_txt = null
 	},
-/obj/machinery/airalarm/directional/south,
+/obj/machinery/airalarm/directional/south{
+	req_access = null
+	},
 /turf/open/floor/plasteel/vaporwave,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
 "Vk" = (
@@ -8277,7 +8341,9 @@
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
 "Wz" = (
 /obj/effect/turf_decal/tile/red/half,
-/obj/machinery/airalarm/directional/south,
+/obj/machinery/airalarm/directional/south{
+	req_access = null
+	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/hotel/security)
 "WA" = (
@@ -8314,8 +8380,7 @@
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "WH" = (
 /obj/machinery/airalarm/directional/north{
-	req_access = null;
-	req_access_txt = "204"
+	req_access = null
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
@@ -8365,6 +8430,7 @@
 	dir = 6
 	},
 /obj/machinery/light/floor,
+/obj/structure/chair,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "Xa" = (
@@ -8627,10 +8693,18 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
-/obj/item/stack/sheet/mineral/silver{
-	amount = 10
+/obj/machinery/button/door{
+	id = "spacehotelwindow";
+	name = "Space Window Shutters";
+	pixel_y = -11;
+	pixel_x = 6;
+	desc = "In case of a window breach, press this."
 	},
 /obj/item/stack/spacecash/c1000,
+/obj/item/stack/sheet/mineral/silver{
+	amount = 10;
+	pixel_y = 5
+	},
 /turf/open/floor/carpet/blackred,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "Zb" = (
@@ -8706,8 +8780,7 @@
 /obj/item/reagent_containers/food/snacks/meat/slab/human/mutant/plant,
 /obj/item/reagent_containers/food/snacks/meat/slab/human/mutant/plant,
 /obj/machinery/airalarm/directional/south{
-	req_access = null;
-	req_access_txt = "204"
+	req_access = null
 	},
 /turf/open/floor/plasteel/freezer,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
@@ -8734,6 +8807,11 @@
 "ZF" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/firedoor,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "spacehotelwindow";
+	name = "Space Protection Shutters";
+	desc = "ask a manager to close this, if need."
+	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "ZH" = (
@@ -9478,7 +9556,7 @@ zr
 VT
 Uw
 Rb
-ZP
+Uh
 ww
 or
 qN
@@ -9590,9 +9668,9 @@ Dl
 Dl
 Dl
 vh
-hS
-hS
-hS
+oC
+oC
+oC
 vh
 Bo
 Bo
@@ -9659,7 +9737,7 @@ Dl
 Dl
 Dl
 Dl
-hS
+oC
 Jv
 CT
 sK
@@ -9729,7 +9807,7 @@ Dl
 Dl
 Dl
 Dl
-hS
+oC
 Jv
 PI
 Zs
@@ -9799,7 +9877,7 @@ Dl
 Dl
 Dl
 Dl
-hS
+oC
 Jv
 OU
 xG
@@ -9837,7 +9915,7 @@ Qc
 ej
 zP
 CD
-el
+KU
 Ux
 Ux
 Ux
@@ -10362,12 +10440,12 @@ vh
 vh
 vh
 vh
-hS
-hS
-hS
-hS
+oC
+oC
+oC
+oC
 vh
-hS
+oC
 vh
 BP
 De
@@ -10438,7 +10516,7 @@ NL
 NL
 NL
 NL
-hF
+zW
 ao
 ao
 iB
@@ -10508,7 +10586,7 @@ NL
 NL
 NL
 NL
-hF
+zW
 ao
 ao
 gX
@@ -10578,7 +10656,7 @@ NL
 NL
 NL
 NL
-hF
+zW
 ao
 ao
 iB
@@ -11367,7 +11445,7 @@ FV
 ao
 nr
 pV
-kR
+Wr
 ao
 mY
 ao
@@ -11838,7 +11916,7 @@ NL
 NL
 NL
 NL
-hF
+zW
 ao
 ao
 Rw
@@ -11908,7 +11986,7 @@ NL
 NL
 NL
 NL
-hF
+zW
 ao
 ao
 Ao
@@ -11978,7 +12056,7 @@ NL
 NL
 NL
 NL
-hF
+zW
 ao
 ao
 Rw
@@ -12042,12 +12120,12 @@ vh
 vh
 vh
 vh
-hS
-hS
-hS
-hS
+oC
+oC
+oC
+oC
 vh
-hS
+oC
 De
 BP
 De
@@ -12912,12 +12990,12 @@ vh
 gO
 yW
 Ji
-zv
-zv
+KJ
+KJ
 Ji
 Ji
-zv
-zv
+KJ
+KJ
 Ji
 zv
 gy

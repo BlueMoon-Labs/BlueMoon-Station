@@ -1,5 +1,6 @@
 /obj/machinery/chem_heater
 	name = "chemical heater"
+	desc = "Машина для контролируемых и постепенных термических реакций."
 	density = TRUE
 	icon = 'icons/obj/chemical.dmi'
 	icon_state = "mixer0b"
@@ -54,7 +55,8 @@
 /obj/machinery/chem_heater/examine(mob/user)
 	. = ..()
 	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Heating reagents at <b>[heater_coefficient*1000]%</b> speed.</span>"
+		. += "<span class='notice'>Статус-дисплей сообщает: \n\
+		- Вещества нагреваются со скоростью в <b>[heater_coefficient*1000]%</b>.</span>"
 
 /obj/machinery/chem_heater/process()
 	..()
@@ -79,7 +81,7 @@
 		if(!user.transferItemToLoc(B, src))
 			return
 		replace_beaker(user, B)
-		to_chat(user, "<span class='notice'>You add [B] to [src].</span>")
+		to_chat(user, "<span class='notice'>Вы вставили [B] в [src].</span>")
 		updateUsrDialog()
 		update_icon()
 		return
