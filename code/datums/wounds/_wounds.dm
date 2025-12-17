@@ -113,11 +113,6 @@
   * * smited- If this is a smite, we don't care about this wound for stat tracking purposes (not yet implemented)
   */
 
-// BLUEMOON ADD START - модификатор текста, чтобы у синтетиков не "ломались кости", а были "повреждены приводы", оставляя суть травмы без изменений.
-/datum/wound/proc/apply_typo_modification()
-	return
-// BLUEMOON ADD END
-
 /datum/wound/proc/apply_wound(obj/item/bodypart/L, silent = FALSE, datum/wound/old_wound = null, smited = FALSE)
 	if(!istype(L) || !L.owner || !(L.body_zone in viable_zones) || isalien(L.owner) || !L.is_organic_limb())
 		qdel(src)
@@ -138,7 +133,6 @@
 			return
 
 	victim = L.owner
-	apply_typo_modification()
 	RegisterSignal(victim, COMSIG_PARENT_QDELETING, PROC_REF(null_victim))
 	limb = L
 	LAZYADD(victim.all_wounds, src)

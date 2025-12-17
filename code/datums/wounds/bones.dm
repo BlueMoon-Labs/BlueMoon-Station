@@ -258,6 +258,7 @@
 	status_effect_type = /datum/status_effect/wound/blunt/moderate
 	scar_keyword = "bluntmoderate"
 
+// BLUEMOON ADD START
 /datum/wound/blunt/moderate/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
 	if(istype(L) && L.is_robotic_limb())
 		ru_name = "Повреждение крепления"
@@ -268,6 +269,7 @@
 		treatable_tool = TOOL_WRENCH
 
 	return ..()
+// BLUEMOON ADD END
 
 /datum/wound/blunt/moderate/crush()
 	if(prob(33))
@@ -314,7 +316,6 @@
 		)
 
 		if(glass_bones)
-			//var/datum/wound/blunt/bone_crack = (harmfull ? /datum/wound/blunt/severe : /datum/wound/blunt/critical)
 			replace_wound(harmfull ? /datum/wound/blunt/severe : /datum/wound/blunt/critical)
 			return FALSE
 
@@ -397,6 +398,7 @@
 	wound_flags = (BONE_WOUND | ACCEPTS_GAUZE | MANGLES_BONE)
 	pain_realagony = TRUE
 
+// BLUEMOON ADD START
 /datum/wound/blunt/severe/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
 	if(istype(L) && L.is_robotic_limb())
 		ru_name = "Повреждение гидравлики"
@@ -409,6 +411,7 @@
 		treatable_by = list(/obj/item/stack/medical/nanogel)
 
 	return ..()
+// BLUEMOON ADD END
 
 /datum/wound/blunt/critical
 	name = "Compound Fracture"
@@ -435,30 +438,31 @@
 	wound_flags = (BONE_WOUND | ACCEPTS_GAUZE | MANGLES_BONE)
 	pain_realagony = TRUE
 
+// BLUEMOON ADD START
 /datum/wound/blunt/critical/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
-	if(istype(L) && L.is_robotic_limb())
-		ru_name = "Разрыв гидравлики"
-		ru_name_r = "разрыва гидравлики"
-		desc = "Гидравлика переломалась и практически не функционирует."
-		treat_text = "Глубокий ремонт (или нанесение наногеля на поврежденный привод)."
-		examine_desc = "раздроблена и не работает, держась на обшивке и проводах вокруг разорванной гидравлики"
-		occur_text = "надламывается, из-за чего гидравлика выходят наружу"
-		wound_flags = (BONE_WOUND | MANGLES_BONE)
-		treatable_by = list(/obj/item/stack/medical/nanogel)
+	if(istype(L))
+		var/robo_limb = L.is_robotic_limb()
+		if(robo_limb)
+			ru_name = "Разрыв гидравлики"
+			ru_name_r = "разрыва гидравлики"
+			desc = "Гидравлика переломалась и практически не функционирует."
+			treat_text = "Глубокий ремонт (или нанесение наногеля на поврежденный привод)."
+			examine_desc = "раздроблена и не работает, держась на обшивке и проводах вокруг разорванной гидравлики"
+			occur_text = "надламывается, из-за чего гидравлика выходят наружу"
+			wound_flags = (BONE_WOUND | MANGLES_BONE)
+			treatable_by = list(/obj/item/stack/medical/nanogel)
+
+		if(L.body_zone == BODY_ZONE_HEAD && severity == WOUND_SEVERITY_CRITICAL)
+			occur_text = robo_limb \
+				? "раскалывается, обнажая сквозь поврежденную обшивку и провода, различные платы" \
+				: "раскалывается, обнажая сквозь пелену крови и плоти, потрескавшийся череп"
+			examine_desc = robo_limb \
+				? "имеет раскол, из которого торчат куски проводов" \
+				: "имеет выемку, из которой торчат куски черепа"
+
 
 	return ..()
-
-// doesn't make much sense for "a" bone to stick out of your head
-/datum/wound/blunt/critical/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
-	if(istype(L) && L.body_zone == BODY_ZONE_HEAD && severity == WOUND_SEVERITY_CRITICAL)
-		var/robo_limb = L.is_robotic_limb()
-		occur_text = robo_limb \
-			? "раскалывается, обнажая сквозь поврежденную обшивку и провода, различные платы" \
-			: "раскалывается, обнажая сквозь пелену крови и плоти, потрескавшийся череп"
-		examine_desc = robo_limb \
-			? "имеет раскол, из которого торчат куски проводов" \
-			: "имеет выемку, из которой торчат куски черепа"
-	. = ..()
+// BLUEMOON ADD END
 
 // BLUEMOON ADD START - нанесение наногеля на рану (только для синтетиков)
 /datum/wound/blunt/proc/nanogel(obj/item/stack/medical/nanogel/I, mob/user)
