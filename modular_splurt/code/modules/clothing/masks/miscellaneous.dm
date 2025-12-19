@@ -32,14 +32,17 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/mask_muzzle.dmi'
 	gas_transfer_coefficient = 0.5
 	permeability_coefficient = 0.5
+	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	flags_cover = MASKCOVERSEYES | MASKCOVERSMOUTH
-	resistance_flags = ACID_PROOF
+	resistance_flags = ACID_PROOF | FIRE_PROOF
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 	mutantrace_variation = STYLE_MUZZLE
 	visor_flags_inv = 0
 	flavor_adjust = FALSE
-	armor = list("melee" = 5, "bullet" = 0, "laser" = 5,"energy" = 5, "bomb" = 0, "bio" = 100, "rad" = 100, "fire" = 40, "acid" = 100)
+	armor = list("melee" = 5, "bullet" = 0, "laser" = 5,"energy" = 5, "bomb" = 0, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	is_edible = 0
+	equip_delay_self = 30
+	unequip_delay_self = 15
 
 /obj/item/clothing/mask/gas/sechailer/mopp
 	name = "MOPP gas mask"
@@ -51,7 +54,7 @@
 //	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/mask_muzzle.dmi' // BLUEMOON COMMENTING OUT using own states modular_bluemoon\icons\mob\clothing\mask_muzzled.dmi
 	gas_transfer_coefficient = 0.01
 	permeability_coefficient = 0.01
-	armor = list("melee" = 10, "bullet" = 5, "laser" = 10,"energy" = 10, "bomb" = 10, "bio" = 100, "rad" = 100, "fire" = 40, "acid" = 100)
+	armor = list("melee" = 10, "bullet" = 5, "laser" = 10,"energy" = 10, "bomb" = 10, "bio" = 100, "rad" = 75, "fire" = 40, "acid" = 100)
 	aggressiveness = 1
 	clothing_flags = BLOCK_GAS_SMOKE_EFFECT | ALLOWINTERNALS | STOPSPRESSUREDAMAGE | THICKMATERIAL
 	flags_cover = MASKCOVERSMOUTH | MASKCOVERSEYES

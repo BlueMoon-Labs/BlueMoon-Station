@@ -200,14 +200,6 @@ GLOBAL_VAR_INIT(weapon_permits_issued, 0)
 	special = TRUE
 	var/first_inited = FALSE // Карточку нужно использовать в руке, чтобы она записалась. Как со старыми пермитами
 
-
-/obj/item/clothing/accessory/permit/special/Initialize(mapload)
-	. = ..()
-	if(ishuman(loc))
-		// Пермит инициализируется перед картой, нужно её подождать. Костыли люблю пиздец.
-		addtimer(CALLBACK(src, PROC_REF(bind_to_user), loc, TRUE), 5 SECONDS)
-
-
 /obj/item/clothing/accessory/permit/special/examine(mob/user)
 	. = ..()
 	if(!first_inited)

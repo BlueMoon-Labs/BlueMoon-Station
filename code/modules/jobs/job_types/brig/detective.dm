@@ -65,8 +65,9 @@
 	mask = /obj/item/clothing/mask/cigarette
 
 	implants = list(/obj/item/implant/mindshield)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security)
 
-	chameleon_extras = list(/obj/item/gun/ballistic/revolver/detective, /obj/item/clothing/glasses/sunglasses, /obj/item/clothing/accessory/permit/special/security = 1)
+	chameleon_extras = list(/obj/item/gun/ballistic/revolver/detective, /obj/item/clothing/glasses/sunglasses)
 
 /datum/outfit/job/detective/syndicate
 	name = "Syndicate Detective"
@@ -86,14 +87,14 @@
 	backpack_contents = list(/obj/item/storage/box/evidence=1,\
 		/obj/item/detective_scanner=1,\
 		/obj/item/syndicate_uplink_high=1,\
-		/obj/item/melee/classic_baton=1,\
-		/obj/item/clothing/accessory/permit/special/security = 1)
+		/obj/item/melee/classic_baton=1)
 	mask = /obj/item/clothing/mask/cigarette/cigar/havana
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
+	accessory = list(/obj/item/clothing/accessory/permit/special/security)
 	pda_slot = ITEM_SLOT_BELT
 
 /datum/outfit/job/detective/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)

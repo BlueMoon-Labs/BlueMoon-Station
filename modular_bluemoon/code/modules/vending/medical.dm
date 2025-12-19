@@ -1,6 +1,6 @@
 /obj/machinery/vending/medical
 	name = "\improper NanoMed Plus"
-	desc = "Раздатчик медпрепаратов и медснаряжения."
+	desc = "Раздатчик медпрепаратов и снаряжения."
 	icon_state = "med"
 	icon_deny = "med-deny"
 	//panel_type = "panel11"
@@ -136,7 +136,7 @@
 //Created out of a necessity to get these dumb chems out of the medical tools vendor.
 /obj/machinery/vending/drugs
 	name = "\improper NanoDrug Plus"
-	desc = "Раздатчик медпрепаратов и медснаряжения."
+	desc = "Раздатчик медпрепаратов и снаряжения."
 	icon_state = "drug"
 	icon_deny = "drug-deny"
 	//panel_type = "panel11"

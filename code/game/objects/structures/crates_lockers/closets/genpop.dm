@@ -54,7 +54,7 @@
 	var/filteredsentlength = text2num(sentence_length)
 	registered_id.sentence = filteredsentlength ? (filteredsentlength MINUTES) + world.time : 0
 	registered_id.crime = crimes
-	registered_id.update_label(prisoner_name, registered_id.assignment)
+	registered_id.update_label()
 	if(registered_id.sentence)
 		START_PROCESSING(SSobj, registered_id)
 	else

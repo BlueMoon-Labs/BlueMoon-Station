@@ -634,7 +634,7 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 	var/obj/item/card/id/id_card = get_idcard() //Time to change their ID card as well if they have one.
 	if(id_card)
 		id_card.registered_name = real_name
-		id_card.update_label(real_name, id_card.assignment)
+		id_card.update_label()
 	fully_replace_character_name(old_name, real_name)
 	ADD_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT) //Makes sure they are exempt from health events.
 	ADD_TRAIT(src, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)

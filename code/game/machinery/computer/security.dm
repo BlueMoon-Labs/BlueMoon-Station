@@ -358,7 +358,7 @@ What a mess.*/
 				active1 = null
 				active2 = null
 				authenticated = I.registered_name
-				rank = I.assignment
+				rank = I.get_assignment_name()
 				screen = 1
 
 				logged_access = I.access

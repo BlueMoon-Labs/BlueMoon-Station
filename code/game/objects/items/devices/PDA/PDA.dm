@@ -295,8 +295,9 @@ GLOBAL_LIST_EMPTY(PDAs)
 			if (0)
 				dat += "<h2>PERSONAL DATA ASSISTANT v.1.2</h2>"
 				dat += "Владелец: [owner], [ownjob]<br>"
-				dat += text("ID: <a href='?src=[REF(src)];choice=Authenticate'>[id ? "[id.registered_name], [id.assignment]" : "----------"]")
+				dat += text("ID: <a href='?src=[REF(src)];choice=Authenticate'>[id ? "[id.registered_name], [id.get_assignment_name()]" : "----------"]")
 				dat += text("<br><a href='?src=[REF(src)];choice=UpdateInfo'>[id ? "Обновить данные PDA" : ""]</A><br><br>")
+
 
 				dat += "[STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)]<br>" //:[world.time / 100 % 6][world.time / 100 % 10]"
 				dat += "[time2text(world.realtime, "MMM DD")] [GLOB.year_integer]"
@@ -523,10 +524,11 @@ GLOBAL_LIST_EMPTY(PDAs)
 				id_check(U)
 
 			if("UpdateInfo")
-				ownjob = id.assignment
+				ownjob = id.get_assignment_name()
 				if(istype(id, /obj/item/card/id/syndicate))
 					owner = id.registered_name
 				update_label()
+				id.update_manifest() // botkeeper has this, why PDA not?
 				if (!silent)
 					playsound(src, 'sound/machines/terminal_processing.ogg', 15, 1)
 				addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'sound/machines/terminal_success.ogg', 15, 1), 13)
@@ -909,7 +911,6 @@ GLOBAL_LIST_EMPTY(PDAs)
 		playsound(src, 'sound/machines/terminal_eject_disc.ogg', 50, 1)
 	else
 		remove_pen(user)
-		playsound(src, 'sound/machines/button4.ogg', 50, 1)
 	return TRUE
 
 /obj/item/pda/CtrlClick(mob/user)
@@ -964,6 +965,7 @@ GLOBAL_LIST_EMPTY(PDAs)
 		usr.put_in_hands(inserted_item)
 		to_chat(usr, "<span class='notice'>Вы извлекли [inserted_item] из [src].</span>")
 		inserted_item = null
+		playsound(src, 'sound/machines/button4.ogg', 50, 1)
 		update_icon()
 	else
 		to_chat(usr, "<span class='warning'>Этот PDA не имеет в себе ручки!</span>")
@@ -1026,7 +1028,7 @@ GLOBAL_LIST_EMPTY(PDAs)
 
 		if(!owner)
 			owner = idcard.registered_name
-			ownjob = idcard.assignment
+			ownjob = idcard.get_assignment_name()
 			update_label()
 			to_chat(user, "<span class='notice'>Card scanned.</span>")
 			if (!silent)

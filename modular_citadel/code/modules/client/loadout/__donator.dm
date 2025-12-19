@@ -164,9 +164,9 @@
 	donator_group_id = DONATOR_GROUP_TIER_1
 
 /datum/gear/donator/agent_card
-	name = "Syndicate Employee ID Card" //BLUEMOON CHANGES
+	name = "Syndicate Employee Card sticker" //BLUEMOON CHANGES
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/card/id/syndicate_citizen  //BLUEMOON CHANGES
+	path = /obj/item/card_sticker/syndicate/loadout //BLUEMOON CHANGES
 	ckeywhitelist = list()
 	donator_group_id = DONATOR_GROUP_TIER_1
 

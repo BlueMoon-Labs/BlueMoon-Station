@@ -62,7 +62,7 @@
 
 	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/stamp/command=1, /obj/item/gun/energy/civilian=1)
 	box = /obj/item/storage/box/survival/command
-	accessory = /obj/item/clothing/accessory/permit/special/bridge_officer
+	accessory = list(/obj/item/clothing/accessory/permit/special/bridge_officer)
 
 /datum/outfit/job/bridgeofficer/syndicate
 	name = "Syndicate Bridge Officer"
@@ -82,7 +82,7 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = /obj/item/clothing/accessory/permit/special/bridge_officer
+	accessory = list(/obj/item/clothing/accessory/permit/special/bridge_officer)
 	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/gun/energy/e_gun=1, /obj/item/stamp/command=1, /obj/item/syndicate_uplink=1)
 
 /datum/outfit/plasmaman/bridgeofficer

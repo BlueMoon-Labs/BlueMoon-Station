@@ -128,7 +128,7 @@
 				/obj/item/clothing/neck/stole = 2,
 				/obj/item/clothing/neck/stole/black = 2,
 				/obj/item/clothing/mask/gas/sechailer/slut = 4,
-				/obj/item/card/id/lust = 5,
+				/obj/item/card_sticker/lust = 5,
 				/obj/item/clothing/glasses/hud/slaver = 8,
 				/obj/item/clothing/wrists/helper_bracelet = 10,
 				/obj/item/clothing/wrists/helper_bracelet/love_need_bracelet = 10,

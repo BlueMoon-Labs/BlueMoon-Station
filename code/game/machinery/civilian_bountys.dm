@@ -307,7 +307,7 @@
 	bounty_value = my_bounty.reward
 	bounty_name = my_bounty.name
 	bounty_holder = holder_id.registered_name
-	bounty_holder_job = holder_id.assignment
+	bounty_holder_job = holder_id.get_assignment_name()
 	bounty_holder_account = holder_id.registered_account
 	name = "\improper [bounty_value] cr [name]"
 	desc += " The sales tag indicates it was <i>[bounty_holder] ([bounty_holder_job])</i>'s reward for completing the <i>[bounty_name]</i> bounty."

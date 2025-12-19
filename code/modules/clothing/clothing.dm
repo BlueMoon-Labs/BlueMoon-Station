@@ -510,3 +510,6 @@ BLIND     // can't see anything
 // BlueMoon 19.08.2023 added
 /obj/item/clothing/proc/attack_reaction(mob/living/L, reaction_type, mob/living/carbon/human/T = null)
 	return
+
+/obj/item/clothing/proc/attach_accessory(obj/item/I, mob/user, notifyAttach = TRUE)
+	return

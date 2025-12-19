@@ -165,18 +165,18 @@
 /obj/structure/closet/examine(mob/user)
 	. = ..()
 	if(welded)
-		. += "<span class='notice'>It's welded shut.</span>"
+		. += "<span class='notice'>Шкафчик заварен.</span>"
 	if(anchored)
-		. += "<span class='notice'>It is <b>bolted</b> to the ground.</span>"
+		. += "<span class='notice'>Шкафчик <b>прикручен</b> к полу.</span>"
 	if(opened)
-		. += "<span class='notice'>The parts are <b>welded</b> together.</span>"
+		. += "<span class='notice'>Части шкафчика <b>сварены</b> инструментом.</span>"
 	else if(secure && !opened)
-		. += "<span class='notice'>Alt-click to [locked ? "unlock" : "lock"].</span>"
+		. += "<span class='notice'>Alt-click, чтобы [locked ? "открыть" : "закрыть"].</span>"
 	else if(broken)
-		. += "<span class='notice'>The lock is <b>screwed</b> in.</span>"
+		. += "<span class='notice'>Замок <b>вкручен</b> внутрь.</span>"
 
 	if(isobserver(user))
-		. += "<span class='info'>It contains: [english_list(contents)].</span>"
+		. += "<span class='info'>Внутри находится: [english_list(contents)].</span>"
 		investigate_log("had its contents examined by [user] as a ghost.", INVESTIGATE_GHOST)
 
 	if(HAS_TRAIT(user, TRAIT_SKITTISH))
@@ -196,7 +196,7 @@
 	for(var/mob/living/L in T)
 		if(L.anchored || L.move_resist >= MOVE_FORCE_VERY_STRONG || (horizontal && L.mob_size > MOB_SIZE_TINY && L.density))
 			if(user)
-				to_chat(user, "<span class='danger'>There's something large on top of [src], preventing it from opening.</span>" )
+				to_chat(user, "<span class='danger'>Что-то большое поверх [src] мешает открыть шкафчик.</span>" )
 			return FALSE
 	return TRUE
 
@@ -208,7 +208,7 @@
 	for(var/mob/living/L in T)
 		if(L.anchored || L.move_resist >= MOVE_FORCE_VERY_STRONG || (horizontal && L.mob_size > MOB_SIZE_TINY && L.density))
 			if(user)
-				to_chat(user, "<span class='danger'>There's something too large in [src], preventing it from closing.</span>")
+				to_chat(user, "<span class='danger'>Что-то слишком большое внутри [src] мешает закрыть шкафчик.</span>")
 			return FALSE
 	// BLUEMOON ADD START - крутое ЕРТ кропило против сатанистов
 	for(var/obj/item/aspergillum/ert/holy_thing)

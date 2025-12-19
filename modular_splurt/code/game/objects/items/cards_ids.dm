@@ -7,16 +7,6 @@
 	name = "\improper Slaver Master ID"
 	desc = "A cheap ID used by slave traders. This guy seems to run the show."
 
-/obj/item/card/id/vampire
-	name = "Bloodfledge ID"
-	desc = "An ID made to easily recognize bloodsucker fledglings without requiring medical scans."
-	icon = 'modular_bluemoon/icons/obj/card.dmi' //BLUEMOON EDIT респрайт
-	icon_state = "vampire"
-	assignment = "Bloodsucker Fledgling"
-	special_assignment = "bloodsuckerfledgling" // BLUEMOON ADD
-	uses_overlays = FALSE
-	card_sticker = TRUE //BLUEMOON ADD
-
 /obj/item/card/id/away/hotel/splurt
 	name = "Staff ID"
 	assignment = "Hotel Staff"

@@ -146,4 +146,4 @@
 	W.access += get_centcom_access("TED Agent")//Let's add their alloted CentCom access.
 	W.assignment = "Timeline Eradication Agent"
 	W.registered_name = H.real_name
-	W.update_label(W.registered_name, W.assignment)
+	W.update_label()

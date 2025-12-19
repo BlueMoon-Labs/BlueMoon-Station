@@ -64,6 +64,7 @@
 		usr.put_in_hands(inserted_item)
 		to_chat(usr, "<span class='notice'>You remove [inserted_item] from \the [src]'s pen slot.</span>")
 		inserted_item = null
+		playsound(src, 'sound/machines/button4.ogg', 50, 1)
 		SStgui.update_uis(src)
 	else
 		to_chat(usr, "<span class='warning'>\The [src] does not have a pen in it!</span>")

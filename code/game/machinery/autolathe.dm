@@ -1,6 +1,6 @@
 /obj/machinery/autolathe
 	name = "autolathe"
-	desc = "Производит вещи, обычно используя запасы железа и стекла."
+	desc = "Производит вещи, используя запасы железа, стекла и других материалов."
 	icon_state = "autolathe"
 	density = TRUE
 	use_power = IDLE_POWER_USE
@@ -445,7 +445,7 @@
 
 /obj/machinery/autolathe/secure
 	name = "secured autolathe"
-	desc = "Производит вещи, обычно используя запасы железа и стекла. Этот образец перепрограммирован без чертежей более \"опасных \" вещей."
+	desc = "Производит вещи, используя запасы железа, стекла и других материалов. Этот образец перепрограммирован без чертежей более \"опасных \" вещей."
 	circuit = /obj/item/circuitboard/machine/autolathe/secure
 
 /obj/machinery/autolathe/secure/Initialize(mapload)

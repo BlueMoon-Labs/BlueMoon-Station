@@ -77,11 +77,16 @@
 	SIGNAL_HANDLER
 
 	if(show_on_examine)
+		var/list/entries = list()
+
 		for(var/I in materials)
 			var/datum/material/M = I
 			var/amt = materials[I]
 			if(amt)
-				examine_list += "<span class='notice'>Внутри хранится [amt] см³ [lowertext(material_to_ru_genitive(M.name))].</span>"
+				entries += "[amt] см³ [lowertext(material_to_ru_genitive(M.name))]"
+
+		if(length(entries))
+			examine_list += "<span class='notice'>Внутри хранится [english_list(entries)].</span>"
 
 /// Proc that allows players to fill the parent with mats
 /datum/component/material_container/proc/on_attackby(datum/source, obj/item/I, mob/living/user)

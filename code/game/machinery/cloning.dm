@@ -80,7 +80,7 @@
 /obj/machinery/clonepod/examine(mob/user)
 	. = ..()
 	var/mob/living/mob_occupant = occupant
-	. += span_notice("<i>Связующее</i> устройство может быть <i>отсканировано<i> мультитулом.</span>")
+	. += span_notice("<i>Связующее</i> устройство может быть <i>отсканировано</i> мультитулом.</span>")
 	if(mess)
 		. += "Наполнено кровю и потрохами. Вы покляться можете, что оно двинулось..."
 	if(in_range(user, src) || isobserver(user))

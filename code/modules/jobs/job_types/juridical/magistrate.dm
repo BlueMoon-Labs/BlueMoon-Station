@@ -107,7 +107,7 @@
 	suit = /obj/item/clothing/suit/armor/ntr
 	head = /obj/item/clothing/head/beret/sec/ntr
 	shoes = /obj/item/clothing/shoes/laceup/ntr
-	r_pocket = /obj/item/clothing/accessory/lawyers_badge
+	r_pocket = /obj/item/pen/fourcolor/ntr
 
 	backpack = /obj/item/storage/backpack/captain/ntr //BLUEMOON add
 	satchel = /obj/item/storage/backpack/satchel/cap/ntr //BLUEMOON add
@@ -115,13 +115,13 @@
 
 	chameleon_extras = /obj/item/stamp/law
 
-	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1, /obj/item/pen/fourcolor/ntr)
+	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1)
 
 	box = /obj/item/storage/box/survival/command
 
 	implants = list(/obj/item/implant/mindshield)
 
-	accessory = /obj/item/clothing/accessory/permit/special/representative
+	accessory = list(/obj/item/clothing/accessory/permit/special/representative, /obj/item/clothing/accessory/lawyers_badge)
 
 /datum/outfit/job/ntr/syndicate
 	name = "Syndicate Representative"
@@ -143,7 +143,7 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = /obj/item/clothing/accessory/permit/special/representative
+	accessory = list(/obj/item/clothing/accessory/permit/special/representative)
 
 	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1, /obj/item/syndicate_uplink=1, /obj/item/pen/fourcolor/ntr)
 

@@ -751,7 +751,7 @@
 
 /obj/structure/table/optable
 	name = "operating table"
-	desc = "Для продвинутых хирургических операций."
+	desc = "Кушетка для продвинутых хирургических операций."
 	icon = 'icons/obj/surgery.dmi'
 	icon_state = "optable"
 	buildstack = /obj/item/stack/sheet/mineral/silver
@@ -796,10 +796,10 @@
 		. += span_info("Операционный стол подключен к компьютеру рядом через кабель на полу.")
 
 	if(tank && mask)
-		. += span_notice("Alt-Click: Можно попробовать включить оборудование для анестезии, если положить кого-то на стол.")
+		. += span_notice("Alt-Click для подачи анестетика пациенту на столе.")
 
 	if(tank || mask)
-		. += span_notice("Ctrl-Click: Отсоединить от стола баллон и маску.")
+		. += span_notice("Ctrl-Click: отсоединить от стола баллон и маску.")
 
 /obj/structure/table/optable/AltClick(mob/living/user)
 	. = ..()
@@ -949,7 +949,7 @@
  */
 /obj/structure/rack
 	name = "rack"
-	desc = "Иначе, чем во времена Средневековья..."
+	desc = "Совсем не как во времена Средневековья..."
 	icon = 'icons/obj/objects.dmi'
 	icon_state = "rack"
 	layer = TABLE_LAYER

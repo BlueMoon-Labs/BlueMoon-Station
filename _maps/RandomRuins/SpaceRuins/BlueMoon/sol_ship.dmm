@@ -4606,19 +4606,19 @@
 /obj/machinery/airalarm/inteq{
 	pixel_y = 24
 	},
-/obj/item/card/id/sol_citizen{
+/obj/item/card/id/sol{
 	access = list(152, 153)
 	},
-/obj/item/card/id/sol_citizen{
+/obj/item/card/id/sol{
 	access = list(152, 153)
 	},
-/obj/item/card/id/sol_citizen{
+/obj/item/card/id/sol{
 	access = list(152, 153)
 	},
-/obj/item/card/id/sol_citizen{
+/obj/item/card/id/sol{
 	access = list(152, 153)
 	},
-/obj/item/card/id/sol_citizen{
+/obj/item/card/id/sol{
 	access = list(152, 153)
 	},
 /turf/open/floor/mineral/plastitanium,
