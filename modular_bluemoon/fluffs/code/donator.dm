@@ -1941,3 +1941,10 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/dress/skirt/lskirt
 	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/invis_belt_kit
+	name = "Invisible Belt Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/invis_belt
+	ckeywhitelist = list("herobrine998", "nyaaaa")
+	cost = 0
