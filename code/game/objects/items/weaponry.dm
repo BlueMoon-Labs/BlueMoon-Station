@@ -736,6 +736,20 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	custom_materials = list(/datum/material/iron=50)
 	attack_verb = list("bludgeoned", "whacked", "disciplined", "thrashed")
 
+/obj/item/tactilecane
+	name = "tactilecane"
+	desc = "Обычная трость для незрячих, ах если бы на станции были бы всем небыло бы всё равно на этих бедолаг"
+	icon = 'icons/obj/items_and_weapons.dmi'
+	icon_state = "tactilecane"
+	item_state = "tactilecane"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
+	force = 5
+	throwforce = 5
+	w_class = WEIGHT_CLASS_SMALL
+	custom_materials = list(/datum/material/iron=50)
+	attack_verb = list("bludgeoned", "whacked", "disciplined", "thrashed")
+
 /obj/item/staff
 	name = "wizard staff"
 	desc = "Apparently a staff used by the wizard."

@@ -6,6 +6,10 @@
 	name = "Cane"
 	path = /obj/item/cane
 
+/datum/gear/hands/tactilecane
+	name = "tactilecane"
+	path = /obj/item/tactilecane
+
 /datum/gear/hands/cigarettes
 	name = "Cigarette pack"
 	path = /obj/item/storage/fancy/cigarettes
