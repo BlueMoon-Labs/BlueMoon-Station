@@ -169,10 +169,10 @@
 		if(ishuman(M) && load_character)
 			var/mob/living/carbon/human/H = M
 			if (H.client)
+				H.load_client_appearance(H.client)
 				if (loadout_enabled == TRUE)
 					SSjob.equip_loadout(null, H)
 					SSjob.post_equip_loadout(null, H)
-				H.load_client_appearance(H.client)
 		MM.name = M.real_name
 		if(make_bank_account)
 			handlebank(M, starting_money)

@@ -215,9 +215,16 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 
 /obj/effect/mob_spawn/human/slavers/attack_ghost(mob/user, latejoinercalling)
 	if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
-		return . = ..()
+		if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
+			if(isLeader)
+				outfit = /datum/outfit/slaver/leader/extended
+			else
+				outfit = /datum/outfit/slaver/extended
+
+		return ..()
 	else
-		return to_chat(user, "<span class='warning'>Игра за слейверов допускается лишь в режим Extended или Dynamic Light!</span>")
+		to_chat(user, span_warning("Игра за слейверов допускается лишь в режим Extended или Dynamic Light!"))
+		return
 
 /obj/effect/mob_spawn/human/slavers/Initialize(mapload)
 	. = ..()
@@ -227,10 +234,7 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	var/obj/effect/mob_spawn/human/slavers/all_avaible_spawnpods = list(locate(/obj/effect/mob_spawn/human/slavers))
 	var/obj/effect/mob_spawn/human/slavers/one_is_spawnpods = pick(all_avaible_spawnpods)
 	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
-		if(isLeader)
-			slaver.slaver_outfit = /datum/outfit/slaver/leader/extended
-		else
-			slaver.slaver_outfit = /datum/outfit/slaver/extended
+		slaver.slaver_outfit = outfit
 		slaver.send_to_spawnpoint = FALSE
 		if(one_is_spawnpods.first_time)
 			print_command_report(src.announce_text, "Central Command")

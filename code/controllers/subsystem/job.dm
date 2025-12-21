@@ -934,6 +934,14 @@ SUBSYSTEM_DEF(job)
 
 		M.update_inv_wear_id() // Фикс не отображения стикеров и карточек из лодаута
 
+		// Переоформление пермитов, если у нас была загрузка из префов
+		var/obj/item/clothing/under/U = M.get_item_by_slot(ITEM_SLOT_ICLOTHING)
+		if(istype(U))
+			for(var/obj/item/clothing/accessory/permit/special/permit in U.attached_accessories)
+				if(permit.first_inited && permit.owner_name == M.real_name)
+					continue
+				permit.bind_to_user(M, TRUE)
+
 /datum/controller/subsystem/job/proc/FreeRole(rank)
 	if(!rank)
 		return
