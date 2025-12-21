@@ -534,13 +534,13 @@
 	name = "Old Power Armor Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/t51armor_kit
-	ckeywhitelist = list("stasdvrz", "pingvas", "vovakr")
+	ckeywhitelist = list("stasdvrz", "pingvas", "vovakr", "roninqwerty")
 
 /datum/gear/donator/bm/old_world_kit
 	name = "Old Wolrd Blues Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/old_world_kit
-	ckeywhitelist = list("stasdvrz", "vlonger")
+	ckeywhitelist = list("stasdvrz", "vlonger", "roninqwerty")
 
 /datum/gear/donator/bm/money_100k
 	name = "Extra Money"
@@ -949,7 +949,7 @@
 	name = "Dread Kit"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/modkit/dreadmk3_kit
-	ckeywhitelist = list("stasdvrz", "mrsko", "akinight", "vovakr")
+	ckeywhitelist = list("stasdvrz", "mrsko", "akinight", "vovakr", "roninqwerty")
 
 /datum/gear/donator/bm/old_laser_kit
 	name = "AER9 Kit"
@@ -1941,3 +1941,10 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/dress/skirt/lskirt
 	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/invis_belt_kit
+	name = "Invisible Belt Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/invis_belt
+	ckeywhitelist = list("herobrine998", "nyaaaa")
+	cost = 0

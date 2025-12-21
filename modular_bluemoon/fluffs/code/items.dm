@@ -54,3 +54,24 @@
 		cut_overlay(enabled)
 
 ////////////////////////
+
+/obj/item/modkit/invis_belt
+	name = "\improper Invisible Belt Kit"
+	desc = "Экспериментальный комплект полихромных нанитов, предназначенных для временной модификации внешних свойств одежды. \
+	После активации наниты закрепляются в структуре ткани, выстраивая адаптивную решётку, изменяющую показатели светопропускания и преломления. \n\
+	В активном режиме одежда становится визуально прозрачной для наблюдателя, при этом сохраняя физическую целостность, теплоизоляцию и защитные свойства. \
+	Эффект не постоянный, наниты со временем деактивируются и разрушаются."
+	icon_state = "blueshield_helmet_kit"
+	product = null
+	fromitem = list(/obj/item/storage/belt)
+
+/obj/item/modkit/invis_belt/afterattack(obj/item/O, mob/user)
+	if(!istype(O))
+		return
+	for(var/path in fromitem)
+		if(istype(O, path))
+			O.item_state = null
+			O.update_slot_icon()
+			user.visible_message(span_warning("[user] modifies [O]!"),span_warning("You modify the [O]!"))
+			qdel(src)
+			return
