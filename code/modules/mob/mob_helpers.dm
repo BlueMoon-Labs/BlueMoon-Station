@@ -635,6 +635,15 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 	if(id_card)
 		id_card.registered_name = real_name
 		id_card.update_label()
+
+	// Переоформление пермитов, если у нас была загрузка из префов
+	if(istype(w_uniform, /obj/item/clothing/under))
+		var/obj/item/clothing/under/U = w_uniform
+		for(var/obj/item/clothing/accessory/permit/special/permit in U.attached_accessories)
+			if(permit.first_inited && permit.owner_name == real_name)
+				continue
+			permit.bind_to_user(src, TRUE)
+
 	fully_replace_character_name(old_name, real_name)
 	ADD_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT) //Makes sure they are exempt from health events.
 	ADD_TRAIT(src, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)
