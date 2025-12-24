@@ -22,7 +22,7 @@
 	. = ..()
 	GLOB.tracked_slave_consoles += src
 	possible_gear = get_slaver_gear()
-	radio = new /obj/item/radio/headset/syndicate(src)
+	radio = new /obj/item/radio/headset/pirate(src)
 
 /obj/machinery/computer/slavery/Destroy()
 	GLOB.tracked_slave_consoles -= src
