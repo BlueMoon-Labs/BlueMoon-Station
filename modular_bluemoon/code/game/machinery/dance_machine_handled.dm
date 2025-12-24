@@ -11,8 +11,7 @@
 	unique_reskin = list(
 		"Black" = list(
 			"icon_state" = "raiqbawks_black",
-			"item_state" = "raiqbawks_black",
-			"name" = "Black Handled Jukebox"
+			"item_state" = "raiqbawks_black"
 		)
 	)
 	var/active = FALSE
