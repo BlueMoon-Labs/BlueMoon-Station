@@ -131,6 +131,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/vorepref = "Ask"
 	var/mobsexpref = "No" 					//Added by Gardelin0 - Sex(mostly non-con) with hostile mobs(tentacles)
 	var/hornyantagspref = "No" 				//Added by Gardelin0 - Interactions(mostly non-con) with horny antags(Qareen)
+	var/tattoopref = "Ask"					//BLUEMOON ADD - Tattoo consent preference
 	var/extremepref = "No" 					//This is for extreme shit, maybe even literal shit, better to keep it on no by default
 	var/extremeharm = "No" 					//If "extreme content" is enabled, this option serves as a toggle for the related interactions to cause damage or not
 	var/see_chat_emotes = TRUE
@@ -1787,6 +1788,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					//END OF SANDSTORM EDIT
 					dat += "<b>Automatic Wagging:</b> <a href='?_src_=prefs;preference=auto_wag'>[(cit_toggles & NO_AUTO_WAG) ? "Disabled" : "Enabled"]</a><br>"
 					dat += "<b>Dance Near Disco Ball:</b> <a href='?_src_=prefs;preference=disco_dance'>[(cit_toggles & NO_DISCO_DANCE) ? "Disabled" : "Enabled"]</a><br>"
+					dat += "<b>Tattoos from others:</b> <a href='?_src_=prefs;preference=tattoo_pref'>[tattoopref]</a><br>" // BLUEMOON ADD - tattoo consent
 					dat += "<span style='border-radius: 2px;border:1px dotted white;cursor:help;' title='If anyone cums a blacklisted fluid into you, it uses the default fluid for that genital.'>?</span> "
 					dat += "<b><a href='?_src_=prefs;preference=gfluid_black;task=input'>Genital Fluid Blacklist</a></b><br>"
 					if(gfluid_blacklist?.len)
@@ -4097,6 +4099,16 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							erppref = "No"
 						if("No")
 							erppref = "Yes"
+				// BLUEMOON EDIT - tattoo consent
+				if("tattoo_pref")
+					switch(tattoopref)
+						if("Yes")
+							tattoopref = "Ask"
+						if("Ask")
+							tattoopref = "No"
+						if("No")
+							tattoopref = "Yes"
+				// BLUEMOON EDIT END
 				if("noncon_pref")
 					var/nonconpref_old = nonconpref
 					switch(nonconpref)
@@ -4484,8 +4496,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										2. - не против Хаоса и неожиданных ситуаций, готов рисковать ради интереса. \n\
 										3. - СЛАВА ХАОСУ НЕДЕЛИМОМУ. Готов к любым безумствам и опасностям.",\
 										"Предпочитаемый Уровень Хаоса", 2, 3, 0, round_value = TRUE)
-					
-					if(isnum(chaos_level))		
+
+					if(isnum(chaos_level))
 						preferred_chaos_level = chaos_level
 
 				if("auto_capitalize_enabled")

@@ -1464,6 +1464,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	bluemoon_character_pref_load(S)
 
+	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
+
 	return S
 
 /datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
@@ -1749,6 +1751,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	splurt_character_pref_save(S)
 
 	bluemoon_character_pref_save(S)
+
+	save_tattoo_prefs(S) // BLUEMOON ADD - сохранение татуировок
 
 	if(parent)
 		if(ishuman(parent?.mob))

@@ -488,6 +488,10 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		// BLUEMOON ADD START - отображение надписей на теле, если они видимы и есть
 		if(show_written_on_bodypart_text != "")
 			msg += show_written_on_bodypart_text
+		// BLUEMOON ADD - отображение татуировок
+		var/tattoo_examine_text = get_tattoo_examine_text()
+		if(tattoo_examine_text)
+			msg += tattoo_examine_text
 		if(user.client?.prefs.cit_toggles & GENITAL_EXAMINE)
 		// BLUEMOON ADD END
 			for(var/obj/item/organ/genital/G in internal_organs)
