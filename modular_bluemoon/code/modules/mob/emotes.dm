@@ -714,3 +714,49 @@
 /*
  * XENO EMOTES END
  */
+
+
+/datum/emote/sound/human/fox_bark_1
+	key = "foxbark1"
+	key_third_person = "foxbark1"
+	message = "тяфкает"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_bark_1.ogg'
+	emote_cooldown = 0.75 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_scream
+	key = "foxscream"
+	key_third_person = "foxscream"
+	message = "издает лисий вопль"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_scream.ogg'
+	emote_cooldown = 2 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_trill
+	key = "foxtrill"
+	key_third_person = "foxtrill"
+	message = "издает довольную лисью трель"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_trill.ogg'
+	emote_cooldown = 3 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_aaugh
+	key = "foxaaugh"
+	key_third_person = "foxaaugh"
+	message = "издаёт лисьи звуки!"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_aaugh.ogg'
+	emote_cooldown = 1 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/memee
+	key = "memee"
+	key_third_person = "memee"
+	message = "издаёт жалостливые звуки"
+	message_mime = null
+	sound = 'sound/fox/Voice/memee.ogg'
+	emote_cooldown = 1 SECONDS
+	emote_type = EMOTE_AUDIBLE
