@@ -99,6 +99,8 @@
 		slave["price"] = C.price
 		slave["price_change_cooldown"] = round((C.nextPriceChange - world.time) / 10)
 		slave["bought"] = C.bought
+		slave["can_bought"] = C.nextboughtChance <= world.time
+		slave["bought_timer"] = seconds_to_clock(max(0, round(C.nextboughtChance - world.time) / 10))
 
 		var/turf/curr = get_turf(src)
 		if(pos.z == curr.z) //Distance/Direction calculations for same z-level only
@@ -173,8 +175,8 @@
 			last_announcement = world.time
 
 		if("setPrice")
-			var/newPrice = input(usr, "The station will need to pay this to get the slave back.", "Set slave price", collar.price) as num
-			if(!newPrice) // Blank input
+			var/newPrice = tgui_input_number(usr, "The station will need to pay this to get the slave back.", "Set slave price", collar.price, SLAVER_STANDARD_RANSOM*2, 1, round_value = TRUE)
+			if(!newPrice)
 				return
 
 			if (collar.bought) // The slave has already been pair for as we try to change the price
@@ -184,8 +186,6 @@
 			if (collar.nextPriceChange - world.time > 0) // Another user changed it already just now
 				say("The price has already changed recently. Please wait [round((collar.nextPriceChange - world.time) / 10)] seconds.")
 				return
-
-			newPrice = clamp(round(newPrice), 1, 1000000)
 
 			if (newPrice == collar.price) // New price is same as the old price
 				return
@@ -238,7 +238,8 @@
 			var/area/pod_storage_area = locate(/area/centcom/supplypod/podStorage) in GLOB.sortedAreas
 			var/mob/living/M = collar.loc
 
-			priority_announce("Работорговцы вернули [M.real_name] на Космическую Станцию за [collar.price] кредитов. Отлично!", sender_override = GLOB.slavers_team_name)
+			priority_announce("Возвращают [M.real_name] на Космическую Станцию[GLOB.master_mode == ROUNDTYPE_EXTENDED ? "" : " за [collar.price] кредитов"].", sender_override = GLOB.slavers_team_name)
+			radioAnnounce("За возврат [M.real_name] на счет поступило [collar.price] кредитов.")
 			var/obj/structure/closet/supplypod/centcompod/exportPod = new(pick(get_area_turfs(pod_storage_area)))
 			var/obj/effect/landmark/observer_start/dropzone = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
 			M.forceMove(exportPod)
@@ -287,7 +288,7 @@
 
 
 /obj/machinery/computer/slavery/proc/radioAnnounce(message)
-	radio.talk_into(src, message, RADIO_CHANNEL_SYNDICATE)
+	radio.talk_into(src, message, RADIO_CHANNEL_PIRATE)
 
 /obj/machinery/computer/slavery/proc/dropSupplies(item)
 

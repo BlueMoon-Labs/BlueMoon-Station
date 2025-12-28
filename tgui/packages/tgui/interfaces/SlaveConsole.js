@@ -221,7 +221,7 @@ const SlavePanel = (props, context) => {
             {!slave.price
               ? "Set the price"
               : !slave.bought
-                ? 'Awaiting payment from station'
+                ? `Awaiting payment from station${!slave.can_bought ? ' (suspended: ' + slave.bought_timer + ')' : ''}`
                 : 'Paid; Ready for export'}
           </LabeledList.Item>
         </LabeledList>

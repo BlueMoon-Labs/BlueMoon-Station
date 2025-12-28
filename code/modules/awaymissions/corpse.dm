@@ -145,7 +145,8 @@
 				output_message += "<p>[flavour_text]</p>"
 			if(important_info != "")
 				output_message += "<span class='warning'>[important_info]</span>"
-			output_message += "\n<span class='boldwarning'>В режим игры Extended станцию посещать допустимо, в Dynamic — запрещено!</span>"
+			if(addition_warning)
+				output_message += "\n\n[addition_warning]"
 			to_chat(M, examine_block(output_message))
 		// BLUEMOON EDIT END
 		var/datum/mind/MM = M.mind

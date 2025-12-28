@@ -4,8 +4,6 @@ GLOBAL_VAR_INIT(slavers_credits_balance, 5000)
 GLOBAL_VAR_INIT(slavers_credits_total, 0)
 GLOBAL_VAR_INIT(slavers_slaves_sold, 0)
 
-#define SLAVER_STANDARD_RANSOM 20000
-
 /// Price table for when trying to set slave prices automatically
 GLOBAL_LIST_INIT(slavers_ransom_values, list(
 	"Captain" 					= 250000,
@@ -50,8 +48,6 @@ GLOBAL_LIST_INIT(slavers_ransom_values, list(
 	"Bouncer"					= SLAVER_STANDARD_RANSOM,
 ))
 
-#undef SLAVER_STANDARD_RANSOM
-
 /datum/antagonist/slaver
 	name = "Slave Trader"
 	roundend_category = "slaver"
@@ -95,7 +91,6 @@ GLOBAL_LIST_INIT(slavers_ransom_values, list(
 	owner.assigned_role = ROLE_SLAVER
 	owner.current.playsound_local(get_turf(owner.current), 'modular_splurt/sound/ambience/antag/slavers.ogg',100,0)
 	to_chat(owner, "<B>You are a Slave Trader!</B>")
-	spawnText()
 
 	var/mob/living/carbon/human/H = owner.current
 	if(istype(H))
@@ -159,20 +154,12 @@ GLOBAL_LIST_INIT(slavers_ransom_values, list(
 /datum/antagonist/slaver/leader/greet()
 	owner.assigned_role = ROLE_SLAVER_LEADER
 	owner.current.playsound_local(get_turf(owner.current), 'modular_splurt/sound/ambience/antag/slavers.ogg',100,0)
-	to_chat(owner, "<B>You are the Slave Master!</B>")
-	spawnText()
 
 	var/mob/living/carbon/human/H = owner.current
 	if(istype(H))
 		H.set_antag_target_indicator() // Hide consent of this player, they are an antag and can't be a target
 
 	addtimer(CALLBACK(src, PROC_REF(slavers_name_assign)), 1)
-
-/datum/antagonist/slaver/proc/spawnText()
-	to_chat(owner, "<br><B>You are tasked with infiltrating the station and kidnapping members of the crew. Once brought back to the hideout, they can be collared and priced using the console.</B>")
-	to_chat(owner, "<B>The station can choose whether to pay the ransom, and if they do, you can take the slave to the green floor and use the console to 'export' them back, where the ransom will then be paid to your crew to buy new gear. Make sure you give all of the slave's items back before exporting them.</B>")
-	to_chat(owner, "<br><B><span class='adminhelp'>Important:</span> This role does NOT mean you can break server rules. Additionally to avoid round removing people, you can <span class='adminnotice'>only kidnap crew who consent OOC</span> or attack you.</B>")
-	to_chat(owner, "<B>You have a special HUD that shows consent for each player at the bottom right of their sprite. A tick means you can kidnap them. A cross means do not. A question mark means ask first.</B>")
 
 /datum/antagonist/slaver/leader/proc/slavers_name_assign()
 	GLOB.slavers_team_name = ask_name()

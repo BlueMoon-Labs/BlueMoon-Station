@@ -66,7 +66,7 @@
 						PDA.ownjob = id_card.get_assignment_name()
 						PDA.update_label()
 
-			if(permit && (!permit_only_extended || GLOB.round_type == ROUNDTYPE_EXTENDED))
+			if(permit && (!permit_only_extended || GLOB.master_mode == ROUNDTYPE_EXTENDED))
 				var/obj/item/clothing/accessory/permit/special/prmt = new permit(my_owner)
 				//Привязываем пермит
 				prmt.bind_to_user(my_owner, TRUE)
