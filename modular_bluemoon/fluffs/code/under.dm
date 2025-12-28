@@ -548,3 +548,15 @@
 	fitted = NO_FEMALE_UNIFORM
 	can_adjust = FALSE
 	alternate_worn_layer = BELT_LAYER
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/under/donator/bm/verdant
+	name = "Verdant Tactical Suit"
+	desc = "Комплект одежды в спокойной зелёной палитре с аккуратными усиленными элементами. \
+	Сочетает плотные и мягкие материалы, создавая сбалансированный образ между защитой и комфортом. \
+	Подходит для повседневного ношения в суровых условиях."
+	icon_state = "verdant"
+	item_state = "verdant"
+	body_parts_covered = CHEST|ARMS|GROIN
+	mutantrace_variation = STYLE_DIGITIGRADE

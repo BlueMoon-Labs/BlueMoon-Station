@@ -1954,3 +1954,9 @@
 	path = /obj/item/modkit/invis_belt
 	ckeywhitelist = list("herobrine998", "nyaaaa")
 	cost = 0
+
+/datum/gear/donator/bm/verdant_suit
+	name = "Verdant Tactical Suit"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/verdant
+	ckeywhitelist = list("dragon9090")
