@@ -88,5 +88,7 @@
 					tattoo_text_output = append_tattoo_lines(tattoo_text_output, BP.pussy_tattoo_text, "На [ru_ego()] лобке набита татуировка: ")
 				if(BP.testicles_tattoo_text && BP.testicles_tattoo_text != "")
 					tattoo_text_output = append_tattoo_lines(tattoo_text_output, BP.testicles_tattoo_text, "На [ru_ego()] яичках набита татуировка: ")
+				if(BP.penis_tattoo_text && BP.penis_tattoo_text != "")
+					tattoo_text_output = append_tattoo_lines(tattoo_text_output, BP.penis_tattoo_text, "На [ru_ego()] члене набита татуировка: ")
 
 	return tattoo_text_output

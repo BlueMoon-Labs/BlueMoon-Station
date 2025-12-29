@@ -59,7 +59,8 @@
 		TATTOO_ZONE_BUTT = "butt_tattoo_text",
 		TATTOO_ZONE_PUSSY = "pussy_tattoo_text",
 		TATTOO_ZONE_TESTICLES = "testicles_tattoo_text",
-		TATTOO_ZONE_BREASTS = "breasts_tattoo_text"
+		TATTOO_ZONE_BREASTS = "breasts_tattoo_text",
+		TATTOO_ZONE_PENIS = "penis_tattoo_text"
 	)
 
 	var/tattoos = ""
@@ -85,6 +86,7 @@
 		TATTOO_ZONE_PUSSY = TATTOO_ZONE_PUSSY,
 		TATTOO_ZONE_TESTICLES = TATTOO_ZONE_TESTICLES,
 		TATTOO_ZONE_BREASTS = TATTOO_ZONE_BREASTS,
+		TATTOO_ZONE_PENIS = TATTOO_ZONE_PENIS,
 		BODY_ZONE_PRECISE_GROIN = TATTOO_ZONE_GROIN  // обратная совместимость
 	)
 

@@ -16,3 +16,5 @@
 	var/testicles_tattoo_text = ""
 	/// Текст татуировок на груди (женской)
 	var/breasts_tattoo_text = ""
+	/// Текст татуировок на половом члене
+	var/penis_tattoo_text = ""

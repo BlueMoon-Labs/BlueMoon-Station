@@ -6,3 +6,4 @@
 #define TATTOO_ZONE_PUSSY "pussy"
 #define TATTOO_ZONE_TESTICLES "testicles"
 #define TATTOO_ZONE_BREASTS "breasts"
+#define TATTOO_ZONE_PENIS "penis"

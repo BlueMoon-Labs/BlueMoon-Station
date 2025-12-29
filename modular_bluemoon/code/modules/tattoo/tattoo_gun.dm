@@ -137,6 +137,9 @@
 		if(TATTOO_ZONE_BREASTS)
 			actual_zone = BODY_ZONE_CHEST
 			intimate_zone = TATTOO_ZONE_BREASTS
+		if(TATTOO_ZONE_PENIS)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_PENIS
 
 	var/obj/item/bodypart/BP = target.get_bodypart(actual_zone)
 	if(!BP)
@@ -199,51 +202,97 @@
 	// Немедленное сохранение татуировки (защита от краша сервера)
 	target.save_tattoos_now()
 
+/// Генерирует динамическую иконку для органа персонажа
+/proc/generate_genital_radial_icon(mob/living/carbon/human/target, organ_slot)
+	var/obj/item/organ/genital/G = target.getorganslot(organ_slot)
+	if(!G)
+		return null
+
+	var/datum/sprite_accessory/S
+	var/size = G.size_to_state()
+
+	switch(G.type)
+		if(/obj/item/organ/genital/penis)
+			S = GLOB.cock_shapes_list[G.shape]
+		if(/obj/item/organ/genital/testicles)
+			S = GLOB.balls_shapes_list[G.shape]
+		if(/obj/item/organ/genital/vagina)
+			S = GLOB.vagina_shapes_list[G.shape]
+		if(/obj/item/organ/genital/breasts)
+			S = GLOB.breasts_shapes_list[G.shape]
+		if(/obj/item/organ/genital/butt)
+			S = GLOB.butt_shapes_list[G.shape]
+
+	if(!S || S.icon_state == "none")
+		return null
+
+	var/icon_state_str = "[G.slot]_[S.icon_state]_[size]_0_FRONT"
+	var/image/I = image(icon = S.icon, icon_state = icon_state_str)
+
+	// Применяем цвет органа
+	if(target.dna?.species?.use_skintones && target.dna.features["genitals_use_skintone"])
+		I.color = SKINTONE2HEX(target.skin_tone)
+	else if(S.color_src && target.dna)
+		switch(S.color_src)
+			if("cock_color")
+				I.color = "#[target.dna.features["cock_color"]]"
+			if("balls_color")
+				I.color = "#[target.dna.features["balls_color"]]"
+			if("breasts_color")
+				I.color = "#[target.dna.features["breasts_color"]]"
+			if("vag_color")
+				I.color = "#[target.dna.features["vag_color"]]"
+			if("butt_color")
+				I.color = "#[target.dna.features["butt_color"]]"
+
+	return I
+
 /// Выбор части тела через радиальное меню
 /obj/item/tattoo_gun/proc/select_body_zone_radial(mob/user, mob/living/carbon/human/target)
 	var/list/body_zones = list()
 
-	// Создаём список частей тела с иконками
-	var/static/list/zone_icons
-	if(!zone_icons)
-		zone_icons = list()
-		// Основные части тела из screen_gen.dmi
-		zone_icons[BODY_ZONE_HEAD] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "head")
-		zone_icons[BODY_ZONE_CHEST] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "chest")
-		zone_icons[BODY_ZONE_PRECISE_GROIN] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "crotch")
-		zone_icons[BODY_ZONE_L_ARM] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "l_arm")
-		zone_icons[BODY_ZONE_R_ARM] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "r_arm")
-		zone_icons[BODY_ZONE_L_LEG] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "l_leg")
-		zone_icons[BODY_ZONE_R_LEG] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "r_leg")
-		// Интимные зоны - используем иконки органов (состояния как в limbgrower для различимости)
-		zone_icons[TATTOO_ZONE_BREASTS] = image(icon = 'icons/obj/genitals/breasts.dmi', icon_state = "breasts_pair_e_s")
-		zone_icons[TATTOO_ZONE_BUTT] = image(icon = 'icons/obj/genitals/butt.dmi', icon_state = "butt_pair_5_s")
-		zone_icons[TATTOO_ZONE_PUSSY] = image(icon = 'icons/obj/genitals/vagina.dmi', icon_state = "vagina")
-		zone_icons[TATTOO_ZONE_TESTICLES] = image(icon = 'icons/obj/genitals/testicles.dmi', icon_state = "testicles")
+	// Статические иконки для основных частей тела
+	var/static/list/base_zone_icons
+	if(!base_zone_icons)
+		base_zone_icons = list()
+		base_zone_icons[BODY_ZONE_HEAD] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "head")
+		base_zone_icons[BODY_ZONE_CHEST] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "chest")
+		base_zone_icons[BODY_ZONE_PRECISE_GROIN] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "crotch")
+		base_zone_icons[BODY_ZONE_L_ARM] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "l_arm")
+		base_zone_icons[BODY_ZONE_R_ARM] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "r_arm")
+		base_zone_icons[BODY_ZONE_L_LEG] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "l_leg")
+		base_zone_icons[BODY_ZONE_R_LEG] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "r_leg")
 
 	// Добавляем только те части тела, которые есть у цели
 	if(target.get_bodypart(BODY_ZONE_HEAD))
-		body_zones["Голова"] = zone_icons[BODY_ZONE_HEAD]
+		body_zones["Голова"] = base_zone_icons[BODY_ZONE_HEAD]
 	if(target.get_bodypart(BODY_ZONE_CHEST))
-		body_zones["Туловище"] = zone_icons[BODY_ZONE_CHEST]
-		body_zones["Пах"] = zone_icons[BODY_ZONE_PRECISE_GROIN]
-		// Интимные зоны - показываем только если есть соответствующие органы
-		if(target.getorganslot(ORGAN_SLOT_BREASTS))
-			body_zones["Грудь"] = zone_icons[TATTOO_ZONE_BREASTS]
-		if(target.getorganslot(ORGAN_SLOT_BUTT))
-			body_zones["Ягодицы"] = zone_icons[TATTOO_ZONE_BUTT]
-		if(target.getorganslot(ORGAN_SLOT_VAGINA))
-			body_zones["Лобок"] = zone_icons[TATTOO_ZONE_PUSSY]
-		if(target.getorganslot(ORGAN_SLOT_TESTICLES))
-			body_zones["Яички"] = zone_icons[TATTOO_ZONE_TESTICLES]
+		body_zones["Туловище"] = base_zone_icons[BODY_ZONE_CHEST]
+		body_zones["Пах"] = base_zone_icons[BODY_ZONE_PRECISE_GROIN]
+		// Интимные зоны - генерируем динамические иконки на основе органов персонажа
+		var/image/breasts_icon = generate_genital_radial_icon(target, ORGAN_SLOT_BREASTS)
+		if(breasts_icon)
+			body_zones["Грудь"] = breasts_icon
+		var/image/butt_icon = generate_genital_radial_icon(target, ORGAN_SLOT_BUTT)
+		if(butt_icon)
+			body_zones["Ягодицы"] = butt_icon
+		var/image/vagina_icon = generate_genital_radial_icon(target, ORGAN_SLOT_VAGINA)
+		if(vagina_icon)
+			body_zones["Лобок"] = vagina_icon
+		var/image/testicles_icon = generate_genital_radial_icon(target, ORGAN_SLOT_TESTICLES)
+		if(testicles_icon)
+			body_zones["Яички"] = testicles_icon
+		var/image/penis_icon = generate_genital_radial_icon(target, ORGAN_SLOT_PENIS)
+		if(penis_icon)
+			body_zones["Член"] = penis_icon
 	if(target.get_bodypart(BODY_ZONE_L_ARM))
-		body_zones["Левая рука"] = zone_icons[BODY_ZONE_L_ARM]
+		body_zones["Левая рука"] = base_zone_icons[BODY_ZONE_L_ARM]
 	if(target.get_bodypart(BODY_ZONE_R_ARM))
-		body_zones["Правая рука"] = zone_icons[BODY_ZONE_R_ARM]
+		body_zones["Правая рука"] = base_zone_icons[BODY_ZONE_R_ARM]
 	if(target.get_bodypart(BODY_ZONE_L_LEG))
-		body_zones["Левая нога"] = zone_icons[BODY_ZONE_L_LEG]
+		body_zones["Левая нога"] = base_zone_icons[BODY_ZONE_L_LEG]
 	if(target.get_bodypart(BODY_ZONE_R_LEG))
-		body_zones["Правая нога"] = zone_icons[BODY_ZONE_R_LEG]
+		body_zones["Правая нога"] = base_zone_icons[BODY_ZONE_R_LEG]
 
 	if(!length(body_zones))
 		to_chat(user, span_warning("У [target] нет доступных частей тела для татуировки!"))
@@ -268,6 +317,8 @@
 			return TATTOO_ZONE_PUSSY
 		if("Яички")
 			return TATTOO_ZONE_TESTICLES
+		if("Член")
+			return TATTOO_ZONE_PENIS
 		if("Левая рука")
 			return BODY_ZONE_L_ARM
 		if("Правая рука")
@@ -292,6 +343,8 @@
 			return "яичках"
 		if(TATTOO_ZONE_BREASTS)
 			return "груди"
+		if(TATTOO_ZONE_PENIS)
+			return "члене"
 	return BP?.ru_name_v
 
 /// Получает текст татуировки для указанной зоны
@@ -309,6 +362,8 @@
 			return BP.testicles_tattoo_text
 		if(TATTOO_ZONE_BREASTS)
 			return BP.breasts_tattoo_text
+		if(TATTOO_ZONE_PENIS)
+			return BP.penis_tattoo_text
 	return BP.tattoo_text
 
 /// Устанавливает текст татуировки для указанной зоны
@@ -326,19 +381,21 @@
 			BP.testicles_tattoo_text = text
 		if(TATTOO_ZONE_BREASTS)
 			BP.breasts_tattoo_text = text
+		if(TATTOO_ZONE_PENIS)
+			BP.penis_tattoo_text = text
 		else
 			BP.tattoo_text = text
 
 /// Проверяет, является ли зона интимной
 /proc/is_intimate_tattoo_zone(zone)
-	return zone in list(BODY_ZONE_PRECISE_GROIN, TATTOO_ZONE_BUTT, TATTOO_ZONE_PUSSY, TATTOO_ZONE_TESTICLES, TATTOO_ZONE_BREASTS)
+	return zone in list(BODY_ZONE_PRECISE_GROIN, TATTOO_ZONE_BUTT, TATTOO_ZONE_PUSSY, TATTOO_ZONE_TESTICLES, TATTOO_ZONE_BREASTS, TATTOO_ZONE_PENIS)
 
 /// Преобразует зону татуировки в интимную зону (для persistence)
 /proc/zone_to_intimate_zone(zone)
 	switch(zone)
 		if(BODY_ZONE_PRECISE_GROIN)
 			return TATTOO_ZONE_GROIN
-		if(TATTOO_ZONE_BUTT, TATTOO_ZONE_PUSSY, TATTOO_ZONE_TESTICLES, TATTOO_ZONE_BREASTS)
+		if(TATTOO_ZONE_BUTT, TATTOO_ZONE_PUSSY, TATTOO_ZONE_TESTICLES, TATTOO_ZONE_BREASTS, TATTOO_ZONE_PENIS)
 			return zone
 	return null
 
@@ -351,7 +408,7 @@
 			return CHEST
 		if(TATTOO_ZONE_BREASTS)
 			return CHEST
-		if(BODY_ZONE_PRECISE_GROIN, TATTOO_ZONE_GROIN, TATTOO_ZONE_BUTT, TATTOO_ZONE_PUSSY, TATTOO_ZONE_TESTICLES)
+		if(BODY_ZONE_PRECISE_GROIN, TATTOO_ZONE_GROIN, TATTOO_ZONE_BUTT, TATTOO_ZONE_PUSSY, TATTOO_ZONE_TESTICLES, TATTOO_ZONE_PENIS)
 			return GROIN
 		if(BODY_ZONE_L_ARM)
 			return ARM_LEFT
