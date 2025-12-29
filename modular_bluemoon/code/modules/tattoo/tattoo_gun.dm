@@ -15,9 +15,9 @@
 	item_flags = NOBLUDGEON
 
 	/// Цвет чернил для татуировки
-	var/ink_color = "#00FF00"
+	var/ink_color = "#4A4A4A"
 	/// Название стиля чернил
-	var/ink_style = "кислотно-зелёные"
+	var/ink_style = "тёмно-серые"
 
 /obj/item/tattoo_gun/Initialize(mapload)
 	. = ..()
@@ -35,14 +35,30 @@
 		return
 
 	var/list/ink_choices = list(
-		"Кислотно-зелёные" = "#00FF00",
-		"Неоново-розовые" = "#FF00FF",
-		"Электро-голубые" = "#00FFFF",
+		"Тёмно-серые" = "#4A4A4A",
+		"Белые" = "#FFFFFF",
+		"Огненно-красные" = "#FF3232",
+		"Алые" = "#DC143C",
+		"Бордовые" = "#8B0000",
+		"Розовые" = "#FF69B4",
+		"Коралловые" = "#FF7F50",
+		"Оранжевые" = "#FF8C00",
 		"Ярко-жёлтые" = "#FFFF00",
+		"Золотые" = "#FFD700",
+		"Кислотно-зелёные" = "#00FF00",
+		"Изумрудные" = "#50C878",
+		"Тёмно-зелёные" = "#228B22",
+		"Бирюзовые" = "#40E0D0",
+		"Электро-голубые" = "#00FFFF",
+		"Небесно-голубые" = "#87CEEB",
+		"Синие" = "#4169E1",
+		"Тёмно-синие" = "#00008B",
 		"Фиолетовые" = "#B900F7",
 		"Лавандовые" = "#9B51FF",
-		"Огненно-красные" = "#FF3232",
-		"Белые" = "#FFFFFF"
+		"Пурпурные" = "#800080",
+		"Неоново-розовые" = "#FF00FF",
+		"Серебряные" = "#C0C0C0",
+		"Бронзовые" = "#CD7F32"
 	)
 
 	var/choice = input(user, "Выберите цвет чернил для татуировки:", "Цвет чернил") as null|anything in ink_choices
@@ -135,6 +151,20 @@
 	if(!user.canUseTopic(src, BE_CLOSE))
 		return
 
+	// Выбор стиля татуировки: надпись (в кавычках) или описание (без кавычек)
+	var/list/style_choices = list(
+		"Надпись" = "T",
+		"Описание" = "D"
+	)
+	var/style_choice = tgui_alert(user, "Выберите стиль отображения татуировки:\n\n\"Надпись\" - текст в кавычках (например: \"ACAB\")\n\"Описание\" - описание узора (например: кельтский узор)", "Стиль татуировки", list("Надпись", "Описание"))
+	if(!style_choice)
+		return
+
+	if(!user.canUseTopic(src, BE_CLOSE))
+		return
+
+	var/style_prefix = "\[[style_choices[style_choice]]\]"
+
 	if(user != target)
 		user.visible_message(span_notice("[user] начинает набивать татуировку на [zone_name] [target]."), \
 			span_notice("Вы начинаете набивать татуировку на [zone_name] [target]."))
@@ -147,7 +177,7 @@
 		return
 
 	// Проверяем лимит символов на части тела
-	var/new_tattoo = "<span style='color:[ink_color]'>[html_encode(tattoo_text)]</span>"
+	var/new_tattoo = "<span style='color:[ink_color]'>[style_prefix][html_encode(tattoo_text)]</span>"
 	var/current_tattoo = get_tattoo_text_for_zone(BP, intimate_zone)
 	if((length(current_tattoo) + length(new_tattoo)) > 500)
 		to_chat(user, span_warning("На [zone_name] [target] недостаточно места для ещё одной татуировки!"))
