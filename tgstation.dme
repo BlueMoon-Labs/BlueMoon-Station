@@ -4631,6 +4631,7 @@
 #include "modular_bluemoon\code\modules\surgery\organs\heart.dm"
 #include "modular_bluemoon\code\modules\surgery\organs\liver.dm"
 #include "modular_bluemoon\code\modules\surgery\organs\lungs.dm"
+#include "modular_bluemoon\code\modules\tattoo\tattoo_zones.dm"
 #include "modular_bluemoon\code\modules\tattoo\tattoo_bodypart.dm"
 #include "modular_bluemoon\code\modules\tattoo\tattoo_crafting.dm"
 #include "modular_bluemoon\code\modules\tattoo\tattoo_examine.dm"

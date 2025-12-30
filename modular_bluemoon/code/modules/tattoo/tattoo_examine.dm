@@ -1,44 +1,28 @@
 // Отображение татуировок при осмотре персонажа
 // Татуировки видны только на открытых частях тела (не закрытых одеждой)
 
-// Хук для отображения татуировок - вызывается в examine.dm
-// + Добавляем сигнал для модульного расширения examine
-
 /// Парсит текст татуировок и возвращает список отформатированных строк
 /// Каждая татуировка форматируется по стилю: [T] = надпись (в кавычках), [D] = описание (без кавычек)
 /proc/parse_tattoos_for_display(raw_text)
 	. = list()
-	if(!raw_text || raw_text == "")
+	if(!length(raw_text))
 		return
 
-	// Татуировки разделены через "; "
-	var/list/tattoos = splittext(raw_text, "; ")
-
-	for(var/tattoo in tattoos)
+	for(var/tattoo in splittext(raw_text, "; "))
 		if(!length(tattoo))
 			continue
 
-		// Проверяем стиль: [T] = текст (кавычки), [D] = описание (без кавычек)
-		// Формат: <span style='color:#COLOR'>[T]текст</span> или <span style='color:#COLOR'>[D]описание</span>
 		var/is_description = findtext(tattoo, "\[D\]")
+		var/display_text = replacetext(replacetext(tattoo, "\[T\]", ""), "\[D\]", "")
 
-		// Удаляем маркеры стиля из текста для отображения
-		var/display_text = replacetext(tattoo, "\[T\]", "")
-		display_text = replacetext(display_text, "\[D\]", "")
+		. += is_description ? display_text : "\"[display_text]\""
 
-		if(is_description)
-			// Описание - без кавычек
-			. += display_text
-		else
-			// Надпись - в кавычках
-			. += "\"[display_text]\""
-
-/// Добавляет строки татуировок для указанной зоны в выходной текст
-/proc/append_tattoo_lines(output, raw_text, zone_prefix)
-	var/list/tattoos = parse_tattoos_for_display(raw_text)
-	for(var/tattoo in tattoos)
-		output += span_notice("[zone_prefix][tattoo].\n")
-	return output
+/// Проверяет, закрыта ли зона одеждой
+/proc/is_zone_covered(list/items, body_covered_flag)
+	for(var/obj/item/worn in items)
+		if(worn.body_parts_covered & body_covered_flag)
+			return TRUE
+	return FALSE
 
 /mob/living/carbon/human/proc/get_tattoo_examine_text()
 	var/tattoo_text_output = ""
@@ -46,49 +30,33 @@
 
 	for(var/obj/item/bodypart/BP as anything in bodyparts)
 		// Обычные татуировки на части тела
-		if(BP.tattoo_text && BP.tattoo_text != "")
-			var/covered_area = tattoo_zone_to_body_covered(BP.body_zone)
-			if(!covered_area)
-				covered_area = CHEST
-
-			var/show_tattoo = TRUE
-			for(var/obj/item/worn_clothes in items_on_self)
-				if(worn_clothes.body_parts_covered & covered_area)
-					show_tattoo = FALSE
-					break
-
-			if(show_tattoo)
-				tattoo_text_output = append_tattoo_lines(tattoo_text_output, BP.tattoo_text, "На [ru_ego()] [BP.ru_name_v] набита татуировка: ")
+		if(length(BP.tattoo_text))
+			var/covered_area = tattoo_zone_to_body_covered(BP.body_zone) || CHEST
+			if(!is_zone_covered(items_on_self, covered_area))
+				for(var/tattoo in parse_tattoos_for_display(BP.tattoo_text))
+					tattoo_text_output += span_notice("На [ru_ego()] [BP.ru_name_v] набита татуировка: [tattoo].\n")
 
 		// Интимные татуировки (хранятся на груди)
-		if(BP.body_zone == BODY_ZONE_CHEST)
-			// Татуировки на груди (проверяем CHEST покрытие)
-			var/chest_covered = FALSE
-			for(var/obj/item/worn_clothes in items_on_self)
-				if(worn_clothes.body_parts_covered & CHEST)
-					chest_covered = TRUE
-					break
+		if(BP.body_zone != BODY_ZONE_CHEST)
+			continue
 
-			if(!chest_covered && BP.breasts_tattoo_text && BP.breasts_tattoo_text != "")
-				tattoo_text_output = append_tattoo_lines(tattoo_text_output, BP.breasts_tattoo_text, "На [ru_ego()] груди набита татуировка: ")
+		// Проверяем покрытие один раз для каждой области
+		var/chest_covered = is_zone_covered(items_on_self, CHEST)
+		var/groin_covered = is_zone_covered(items_on_self, GROIN)
 
-			// Татуировки в паховой области (проверяем GROIN покрытие)
-			var/groin_covered = FALSE
-			for(var/obj/item/worn_clothes in items_on_self)
-				if(worn_clothes.body_parts_covered & GROIN)
-					groin_covered = TRUE
-					break
+		// Итерируем через все интимные зоны используя centralized data
+		for(var/zone in GLOB.tattoo_zone_data)
+			var/list/data = GLOB.tattoo_zone_data[zone]
+			var/text = BP.vars[data[TATTOO_DATA_VAR]]
+			if(!length(text))
+				continue
 
-			if(!groin_covered)
-				if(BP.groin_tattoo_text && BP.groin_tattoo_text != "")
-					tattoo_text_output = append_tattoo_lines(tattoo_text_output, BP.groin_tattoo_text, "На [ru_ego()] паху набита татуировка: ")
-				if(BP.butt_tattoo_text && BP.butt_tattoo_text != "")
-					tattoo_text_output = append_tattoo_lines(tattoo_text_output, BP.butt_tattoo_text, "На [ru_ego()] ягодицах набита татуировка: ")
-				if(BP.pussy_tattoo_text && BP.pussy_tattoo_text != "")
-					tattoo_text_output = append_tattoo_lines(tattoo_text_output, BP.pussy_tattoo_text, "На [ru_ego()] лобке набита татуировка: ")
-				if(BP.testicles_tattoo_text && BP.testicles_tattoo_text != "")
-					tattoo_text_output = append_tattoo_lines(tattoo_text_output, BP.testicles_tattoo_text, "На [ru_ego()] яичках набита татуировка: ")
-				if(BP.penis_tattoo_text && BP.penis_tattoo_text != "")
-					tattoo_text_output = append_tattoo_lines(tattoo_text_output, BP.penis_tattoo_text, "На [ru_ego()] члене набита татуировка: ")
+			// Проверяем покрытие
+			var/body_covered = data[TATTOO_DATA_COVERED]
+			if((body_covered == CHEST && chest_covered) || (body_covered == GROIN && groin_covered))
+				continue
+
+			for(var/tattoo in parse_tattoos_for_display(text))
+				tattoo_text_output += span_notice("На [ru_ego()] [data[TATTOO_DATA_NAME_GEN]] набита татуировка: [tattoo].\n")
 
 	return tattoo_text_output

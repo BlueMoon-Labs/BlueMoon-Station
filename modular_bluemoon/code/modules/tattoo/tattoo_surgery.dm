@@ -206,32 +206,33 @@
 	if(!BP)
 		return FALSE
 
-	// Для торса проверяем грудные татуировки
+	// Для торса проверяем основную + грудь
 	if(target_zone == BODY_ZONE_CHEST)
-		if(BP.tattoo_text && BP.tattoo_text != "")
+		if(length(BP.tattoo_text))
 			return TRUE
-		if(target.getorganslot(ORGAN_SLOT_BREASTS) && BP.breasts_tattoo_text && BP.breasts_tattoo_text != "")
+		var/list/breast_data = GLOB.tattoo_zone_data[TATTOO_ZONE_BREASTS]
+		if(target.getorganslot(breast_data[TATTOO_DATA_ORGAN]) && length(BP.vars[breast_data[TATTOO_DATA_VAR]]))
 			return TRUE
 		return FALSE
 
 	// Для паха проверяем все интимные подзоны (кроме груди)
 	if(target_zone == BODY_ZONE_PRECISE_GROIN)
-		if(BP.groin_tattoo_text && BP.groin_tattoo_text != "")
+		if(length(BP.groin_tattoo_text))
 			return TRUE
-		if(BP.butt_tattoo_text && BP.butt_tattoo_text != "")
-			return TRUE
-		if(target.getorganslot(ORGAN_SLOT_VAGINA) && BP.pussy_tattoo_text && BP.pussy_tattoo_text != "")
-			return TRUE
-		if(target.getorganslot(ORGAN_SLOT_TESTICLES) && BP.testicles_tattoo_text && BP.testicles_tattoo_text != "")
-			return TRUE
-		if(target.getorganslot(ORGAN_SLOT_PENIS) && BP.penis_tattoo_text && BP.penis_tattoo_text != "")
-			return TRUE
+		for(var/zone in GLOB.tattoo_zone_data)
+			if(zone == TATTOO_ZONE_BREASTS || zone == TATTOO_ZONE_GROIN)
+				continue
+			var/list/data = GLOB.tattoo_zone_data[zone]
+			var/organ_slot = data[TATTOO_DATA_ORGAN]
+			if(organ_slot && !target.getorganslot(organ_slot))
+				continue
+			if(length(BP.vars[data[TATTOO_DATA_VAR]]))
+				return TRUE
 		return FALSE
 
 	// Для остальных зон - просто проверяем основную татуировку
 	var/intimate_zone = zone_to_intimate_zone(target_zone)
-	var/tattoo_text = get_tattoo_text_for_zone(BP, intimate_zone)
-	return tattoo_text && tattoo_text != ""
+	return length(get_tattoo_text_for_zone(BP, intimate_zone))
 
 /// Выбор конкретной зоны татуировки для хирургии через радиальное меню
 /proc/select_tattoo_zone_for_surgery(mob/user, mob/living/carbon/human/target, target_zone, obj/item/bodypart/BP)
@@ -241,67 +242,42 @@
 
 	var/list/available_zones = list()
 
-	// Статические иконки для основных зон
-	var/static/list/base_zone_icons
-	if(!base_zone_icons)
-		base_zone_icons = list()
-		base_zone_icons["Туловище"] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "chest")
-		base_zone_icons["Пах"] = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "crotch")
-
 	// Для торса показываем только грудные зоны
 	if(target_zone == BODY_ZONE_CHEST)
-		if(BP.tattoo_text && BP.tattoo_text != "")
-			available_zones["Туловище"] = base_zone_icons["Туловище"]
-		if(target.getorganslot(ORGAN_SLOT_BREASTS) && BP.breasts_tattoo_text && BP.breasts_tattoo_text != "")
-			var/image/breasts_icon = generate_genital_radial_icon(target, ORGAN_SLOT_BREASTS)
-			available_zones["Грудь"] = breasts_icon ? breasts_icon : base_zone_icons["Туловище"]
+		if(length(BP.tattoo_text))
+			available_zones["Туловище"] = GLOB.tattoo_radial_icons[BODY_ZONE_CHEST]
+		// Проверяем грудь через GLOB.tattoo_zone_data
+		var/list/breast_data = GLOB.tattoo_zone_data[TATTOO_ZONE_BREASTS]
+		if(target.getorganslot(breast_data[TATTOO_DATA_ORGAN]) && length(BP.vars[breast_data[TATTOO_DATA_VAR]]))
+			var/image/icon = generate_genital_radial_icon(target, breast_data[TATTOO_DATA_ORGAN])
+			available_zones[breast_data[TATTOO_DATA_NAME_NOM]] = icon ? icon : GLOB.tattoo_radial_icons[BODY_ZONE_CHEST]
 
 	// Для паха показываем интимные зоны
 	if(target_zone == BODY_ZONE_PRECISE_GROIN)
-		if(BP.groin_tattoo_text && BP.groin_tattoo_text != "")
-			available_zones["Пах"] = base_zone_icons["Пах"]
-		if(BP.butt_tattoo_text && BP.butt_tattoo_text != "")
-			var/image/butt_icon = generate_genital_radial_icon(target, ORGAN_SLOT_BUTT)
-			available_zones["Ягодицы"] = butt_icon ? butt_icon : base_zone_icons["Пах"]
-		if(target.getorganslot(ORGAN_SLOT_VAGINA) && BP.pussy_tattoo_text && BP.pussy_tattoo_text != "")
-			var/image/vagina_icon = generate_genital_radial_icon(target, ORGAN_SLOT_VAGINA)
-			available_zones["Лобок"] = vagina_icon ? vagina_icon : base_zone_icons["Пах"]
-		if(target.getorganslot(ORGAN_SLOT_TESTICLES) && BP.testicles_tattoo_text && BP.testicles_tattoo_text != "")
-			var/image/testicles_icon = generate_genital_radial_icon(target, ORGAN_SLOT_TESTICLES)
-			available_zones["Яички"] = testicles_icon ? testicles_icon : base_zone_icons["Пах"]
-		if(target.getorganslot(ORGAN_SLOT_PENIS) && BP.penis_tattoo_text && BP.penis_tattoo_text != "")
-			var/image/penis_icon = generate_genital_radial_icon(target, ORGAN_SLOT_PENIS)
-			available_zones["Член"] = penis_icon ? penis_icon : base_zone_icons["Пах"]
+		if(length(BP.groin_tattoo_text))
+			available_zones["Пах"] = GLOB.tattoo_radial_icons[BODY_ZONE_PRECISE_GROIN]
+		// Итерируем через все интимные зоны кроме груди
+		for(var/zone in GLOB.tattoo_zone_data)
+			if(zone == TATTOO_ZONE_BREASTS || zone == TATTOO_ZONE_GROIN)
+				continue
+			var/list/data = GLOB.tattoo_zone_data[zone]
+			var/text = BP.vars[data[TATTOO_DATA_VAR]]
+			if(!length(text))
+				continue
+			var/organ_slot = data[TATTOO_DATA_ORGAN]
+			if(organ_slot && !target.getorganslot(organ_slot))
+				continue
+			var/image/icon = organ_slot ? generate_genital_radial_icon(target, organ_slot) : null
+			available_zones[data[TATTOO_DATA_NAME_NOM]] = icon ? icon : GLOB.tattoo_radial_icons[BODY_ZONE_PRECISE_GROIN]
 
 	if(!length(available_zones))
 		to_chat(user, span_warning("На этой части тела нет татуировок!"))
 		return null
 
 	if(length(available_zones) == 1)
-		var/only_zone = available_zones[1]
-		return zone_name_to_zone(only_zone)
+		return zone_name_to_zone(available_zones[1])
 
 	var/choice = show_radial_menu(user, target, available_zones, require_near = TRUE, tooltips = TRUE)
-	if(!choice)
-		return null
+	return choice ? zone_name_to_zone(choice) : null
 
-	return zone_name_to_zone(choice)
-
-/// Конвертирует название зоны обратно в константу
-/proc/zone_name_to_zone(zone_name)
-	switch(zone_name)
-		if("Туловище")
-			return BODY_ZONE_CHEST
-		if("Пах")
-			return BODY_ZONE_PRECISE_GROIN
-		if("Грудь")
-			return TATTOO_ZONE_BREASTS
-		if("Ягодицы")
-			return TATTOO_ZONE_BUTT
-		if("Лобок")
-			return TATTOO_ZONE_PUSSY
-		if("Яички")
-			return TATTOO_ZONE_TESTICLES
-		if("Член")
-			return TATTOO_ZONE_PENIS
-	return null
+// zone_name_to_zone перенесён в tattoo_zones.dm

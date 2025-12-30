@@ -54,15 +54,6 @@
 
 // Форматирование татуировок для сохранения
 /mob/living/carbon/human/proc/format_tattoos()
-	var/static/list/intimate_zones = list(
-		TATTOO_ZONE_GROIN = "groin_tattoo_text",
-		TATTOO_ZONE_BUTT = "butt_tattoo_text",
-		TATTOO_ZONE_PUSSY = "pussy_tattoo_text",
-		TATTOO_ZONE_TESTICLES = "testicles_tattoo_text",
-		TATTOO_ZONE_BREASTS = "breasts_tattoo_text",
-		TATTOO_ZONE_PENIS = "penis_tattoo_text"
-	)
-
 	var/tattoos = ""
 	for(var/obj/item/bodypart/BP as anything in bodyparts)
 		// Обычные татуировки
@@ -71,62 +62,53 @@
 			tattoos += "[TATTOO_CURRENT_VERSION][TATTOO_FIELD_SEPARATOR][BP.body_zone][TATTOO_FIELD_SEPARATOR][escaped_text][TATTOO_RECORD_SEPARATOR]"
 		// Интимные татуировки (хранятся на груди)
 		if(BP.body_zone == BODY_ZONE_CHEST)
-			for(var/zone in intimate_zones)
-				var/var_name = intimate_zones[zone]
-				var/text = BP.vars[var_name]
+			for(var/zone in GLOB.tattoo_zone_data)
+				var/list/data = GLOB.tattoo_zone_data[zone]
+				var/text = BP.vars[data[TATTOO_DATA_VAR]]
 				if(length(text))
 					tattoos += "[TATTOO_CURRENT_VERSION][TATTOO_FIELD_SEPARATOR][zone][TATTOO_FIELD_SEPARATOR][escape_tattoo_text(text)][TATTOO_RECORD_SEPARATOR]"
 	return tattoos
 
 // Загрузка одной татуировки из сохранённых данных
 /mob/living/carbon/human/proc/load_tattoo(tattoo_line)
-	var/static/list/zone_mapping = list(
-		TATTOO_ZONE_GROIN = TATTOO_ZONE_GROIN,
-		TATTOO_ZONE_BUTT = TATTOO_ZONE_BUTT,
-		TATTOO_ZONE_PUSSY = TATTOO_ZONE_PUSSY,
-		TATTOO_ZONE_TESTICLES = TATTOO_ZONE_TESTICLES,
-		TATTOO_ZONE_BREASTS = TATTOO_ZONE_BREASTS,
-		TATTOO_ZONE_PENIS = TATTOO_ZONE_PENIS,
-		BODY_ZONE_PRECISE_GROIN = TATTOO_ZONE_GROIN  // обратная совместимость
-	)
-
 	var/list/tattoo_data = splittext(tattoo_line, TATTOO_FIELD_SEPARATOR)
 	if(length(tattoo_data) != TATTOO_SAVE_LENGTH)
-		return FALSE // невалидные данные
+		return FALSE
 
 	var/version = text2num(tattoo_data[TATTOO_SAVE_VERS])
 	if(!version || version < TATTOO_CURRENT_VERSION)
-		return FALSE // устаревший формат
+		return FALSE
 
 	var/zone = tattoo_data[TATTOO_SAVE_ZONE]
 	var/text = unescape_tattoo_text(tattoo_data[TATTOO_SAVE_TEXT])
 
-	var/intimate_zone = zone_mapping[zone]
+	// Определяем интимную зону через centralized data
+	var/intimate_zone = zone_to_intimate_zone(zone)
+	if(!intimate_zone && (zone in GLOB.tattoo_zone_data))
+		intimate_zone = zone
 	var/actual_zone = intimate_zone ? BODY_ZONE_CHEST : zone
 
 	var/obj/item/bodypart/the_part = get_bodypart(actual_zone)
 	if(!the_part)
-		return FALSE // нет такой части тела
+		return FALSE
 
-	// Устанавливаем татуировку в соответствующую переменную
 	set_tattoo_text_for_zone(the_part, intimate_zone, text)
-
 	return TRUE
 
 // Хук для загрузки татуировок при создании персонажа
 /datum/preferences/proc/apply_tattoos_to_human(mob/living/carbon/human/H)
-	if(!persistent_tattoos || !tattoos_string)
+	if(!persistent_tattoos)
 		return
 
-	var/valid_tattoos = ""
-	for(var/tattoo_line in splittext(tattoos_string, TATTOO_RECORD_SEPARATOR))
-		if(!length(tattoo_line))
-			continue
-		if(H.load_tattoo(tattoo_line))
-			valid_tattoos += "[tattoo_line][TATTOO_RECORD_SEPARATOR]"
-
-	// Обновляем сохранённые данные (удаляем невалидные)
-	tattoos_string = valid_tattoos
+	// Загружаем текстовые татуировки
+	if(tattoos_string)
+		var/valid_tattoos = ""
+		for(var/tattoo_line in splittext(tattoos_string, TATTOO_RECORD_SEPARATOR))
+			if(!length(tattoo_line))
+				continue
+			if(H.load_tattoo(tattoo_line))
+				valid_tattoos += "[tattoo_line][TATTOO_RECORD_SEPARATOR]"
+		tattoos_string = valid_tattoos
 
 // Сохранение татуировок (вызывается при нанесении/удалении татуировки)
 /mob/living/carbon/human/proc/save_tattoos_now()
