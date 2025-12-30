@@ -94,7 +94,7 @@
 		slave["id"] = REF(C)
 		slave["name"] = L.real_name
 		slave["station_rank"] = C.station_rank
-		slave["price"] = C.price
+		slave["price"] = C.price * SLAVER_RANSOM_MULTIPLIER
 		slave["price_change_cooldown"] = round((C.nextPriceChange - world.time) / 10)
 		slave["bought"] = C.bought
 		slave["can_bought"] = C.nextboughtChance <= world.time
@@ -223,7 +223,7 @@
 
 		if("export")
 			editBalance(collar.price)
-			GLOB.slavers_credits_total += collar.price
+			GLOB.slavers_credits_total += collar.price * SLAVER_RANSOM_MULTIPLIER
 			GLOB.slavers_slaves_sold++
 
 
@@ -237,7 +237,7 @@
 			var/mob/living/M = collar.loc
 
 			priority_announce("Возвращают [M.real_name] на Космическую Станцию[GLOB.master_mode == ROUNDTYPE_EXTENDED ? "" : " за [collar.price] кредитов"].", sender_override = GLOB.slavers_team_name)
-			radioAnnounce("За возврат [M.real_name] на счет поступило [collar.price] кредитов.")
+			radioAnnounce("За возврат [M.real_name] на счет поступило [collar.price * SLAVER_RANSOM_MULTIPLIER] кредитов.")
 			var/obj/structure/closet/supplypod/centcompod/exportPod = new(pick(get_area_turfs(pod_storage_area)))
 			var/obj/effect/landmark/observer_start/dropzone = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
 			M.forceMove(exportPod)
