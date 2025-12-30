@@ -9,10 +9,12 @@
 	possible_destinations = "slaver_away;slaver_custom"
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 
+/*
 /obj/machinery/computer/shuttle/slaver/recall
 	name = "slaver shuttle recall terminal"
 	desc = "Use this if your friends left you behind."
 	possible_destinations = "slaver_away"
+*/
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/slaver
 	name = "Slaver Shuttle Navigation Computer"

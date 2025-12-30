@@ -9515,7 +9515,7 @@
 /turf/open/floor/plating,
 /area/syndicate_mothership/control)
 "aZI" = (
-/obj/machinery/computer/shuttle/slaver/recall,
+/obj/machinery/computer/shuttle/slaver,
 /obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
