@@ -18,3 +18,5 @@
 	var/breasts_tattoo_text = ""
 	/// Текст татуировок на половом члене
 	var/penis_tattoo_text = ""
+	/// Текст татуировок на губах
+	var/lips_tattoo_text = ""

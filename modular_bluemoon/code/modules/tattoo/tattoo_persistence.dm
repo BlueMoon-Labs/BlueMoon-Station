@@ -21,23 +21,26 @@
 	var/persistent_tattoos = TRUE
 	/// Сохранённые татуировки персонажа (формат: "VERSION|ZONE|TEXT;VERSION|ZONE|TEXT;...")
 	var/tattoos_string = ""
-	// Примечание: tattoopref определён в code/modules/client/preferences.dm
 
 // Загрузка настроек татуировок
-// Примечание: tattoopref загружается/сохраняется в modular_citadel/code/modules/client/preferences_savefile.dm
+// tattoopref загружается/сохраняется в modular_citadel/code/modules/client/preferences_savefile.dm
 /datum/preferences/proc/load_tattoo_prefs(savefile/S)
 	var/temp_persistent
 	var/temp_tattoos
+	var/list/temp_pending_removals
 	S["persistent_tattoos"] >> temp_persistent
 	S["tattoos_string"] >> temp_tattoos
+	S["pending_tattoo_removals"] >> temp_pending_removals
 
 	persistent_tattoos = sanitize_integer(temp_persistent, 0, 1, TRUE)
 	tattoos_string = sanitize_text(temp_tattoos)
+	pending_tattoo_removals = islist(temp_pending_removals) ? temp_pending_removals : list()
 
 // Сохранение настроек татуировок
 /datum/preferences/proc/save_tattoo_prefs(savefile/S)
 	WRITE_FILE(S["persistent_tattoos"], persistent_tattoos)
 	WRITE_FILE(S["tattoos_string"], tattoos_string)
+	WRITE_FILE(S["pending_tattoo_removals"], pending_tattoo_removals)
 
 // Экранирование разделителей в тексте татуировки для безопасного сохранения
 /proc/escape_tattoo_text(text)
@@ -99,6 +102,12 @@
 /datum/preferences/proc/apply_tattoos_to_human(mob/living/carbon/human/H)
 	if(!persistent_tattoos)
 		return
+
+	// Сначала применяем помеченные для удаления татуировки
+	if(length(pending_tattoo_removals))
+		apply_pending_tattoo_removals()
+		// Сохраняем изменения
+		save_character()
 
 	// Загружаем текстовые татуировки
 	if(tattoos_string)

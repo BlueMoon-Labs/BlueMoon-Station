@@ -1206,6 +1206,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "</tr></table>"
 				//Markings
 				if(MARKINGS_CHAR_TAB)
+					// BLUEMOON ADD - Tattoo Manager Button
+					dat += "<center>"
+					dat += "<h3>Татуировки персонажа</h3>"
+					dat += "<a href='?_src_=prefs;preference=open_tattoo_manager'>Просмотр и удаление татуировок</a>"
+					dat += "</center>"
+					dat += "<hr>"
+					// BLUEMOON ADD END
 					var/iterated_markings = 0
 					var/total_pages = 0
 					// rp marking selection

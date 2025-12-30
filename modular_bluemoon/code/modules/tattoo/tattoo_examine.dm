@@ -24,6 +24,16 @@
 			return TRUE
 	return FALSE
 
+/// Проверяет, закрыт ли рот маской или шлемом (flags_cover)
+/proc/is_mouth_covered(mob/living/carbon/human/H)
+	// Проверяем маску
+	if(H.wear_mask?.flags_cover & MASKCOVERSMOUTH)
+		return TRUE
+	// Проверяем шлем/головной убор
+	if(H.head?.flags_cover & HEADCOVERSMOUTH)
+		return TRUE
+	return FALSE
+
 /mob/living/carbon/human/proc/get_tattoo_examine_text()
 	var/tattoo_text_output = ""
 	var/list/items_on_self = get_equipped_items()
@@ -43,6 +53,7 @@
 		// Проверяем покрытие один раз для каждой области
 		var/chest_covered = is_zone_covered(items_on_self, CHEST)
 		var/groin_covered = is_zone_covered(items_on_self, GROIN)
+		var/mouth_covered = is_mouth_covered(src)
 
 		// Итерируем через все интимные зоны используя centralized data
 		for(var/zone in GLOB.tattoo_zone_data)
@@ -51,12 +62,17 @@
 			if(!length(text))
 				continue
 
+			// Проверяем наличие органа если требуется (татуировка на органе не видна без органа)
+			var/organ_slot = data[TATTOO_DATA_ORGAN]
+			if(organ_slot && !getorganslot(organ_slot))
+				continue
+
 			// Проверяем покрытие
 			var/body_covered = data[TATTOO_DATA_COVERED]
-			if((body_covered == CHEST && chest_covered) || (body_covered == GROIN && groin_covered))
+			if((body_covered == CHEST && chest_covered) || (body_covered == GROIN && groin_covered) || (body_covered == TATTOO_COVERED_MOUTH && mouth_covered))
 				continue
 
 			for(var/tattoo in parse_tattoos_for_display(text))
-				tattoo_text_output += span_notice("На [ru_ego()] [data[TATTOO_DATA_NAME_GEN]] набита татуировка: [tattoo].\n")
+				tattoo_text_output += span_notice("На [ru_ego()] [data[TATTOO_DATA_NAME_PREP]] набита татуировка: [tattoo].\n")
 
 	return tattoo_text_output

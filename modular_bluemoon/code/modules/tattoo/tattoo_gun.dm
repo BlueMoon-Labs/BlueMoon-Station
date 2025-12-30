@@ -115,11 +115,17 @@
 		to_chat(user, span_warning("Вы должны выбрать часть тела!"))
 		return
 
-	var/list/items_on_target = target.get_equipped_items()
-	for(var/obj/item/worn_clothes in items_on_target)
-		if(worn_clothes.body_parts_covered & target_body_part)
-			to_chat(user, span_warning("Вам мешает одежда [target]!"))
+	// Специальная проверка для губ - маска закрывает рот
+	if(target_body_part == TATTOO_COVERED_MOUTH)
+		if(is_mouth_covered(target))
+			to_chat(user, span_warning("Вам мешает маска [target]!"))
 			return
+	else
+		var/list/items_on_target = target.get_equipped_items()
+		for(var/obj/item/worn_clothes in items_on_target)
+			if(worn_clothes.body_parts_covered & target_body_part)
+				to_chat(user, span_warning("Вам мешает одежда [target]!"))
+				return
 
 	// Определяем тип зоны и реальную часть тела
 	var/actual_zone = selected_zone
@@ -144,6 +150,9 @@
 		if(TATTOO_ZONE_PENIS)
 			actual_zone = BODY_ZONE_CHEST
 			intimate_zone = TATTOO_ZONE_PENIS
+		if(TATTOO_ZONE_LIPS)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_LIPS
 
 	var/obj/item/bodypart/BP = target.get_bodypart(actual_zone)
 	if(!BP)
@@ -222,6 +231,7 @@
 	// Добавляем только те части тела, которые есть у цели
 	if(target.get_bodypart(BODY_ZONE_HEAD))
 		body_zones["Голова"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
+		body_zones["Губы"] = GLOB.tattoo_radial_icons[BODY_ZONE_PRECISE_MOUTH]
 	if(target.get_bodypart(BODY_ZONE_CHEST))
 		body_zones["Туловище"] = GLOB.tattoo_radial_icons[BODY_ZONE_CHEST]
 		body_zones["Пах"] = GLOB.tattoo_radial_icons[BODY_ZONE_PRECISE_GROIN]

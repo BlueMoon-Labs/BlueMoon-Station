@@ -12,6 +12,7 @@
 	)
 	possible_locs = list(
 		BODY_ZONE_HEAD,
+		BODY_ZONE_PRECISE_MOUTH,
 		BODY_ZONE_CHEST,
 		BODY_ZONE_PRECISE_GROIN,
 		BODY_ZONE_L_ARM,
@@ -30,11 +31,20 @@
 		return FALSE
 
 	// Проверка на кататоника (SSD/отключённого игрока)
+	// Нельзя удалять татуировки у отключённых игроков, т.к. сохранение всё равно не сработает
 	if(!target.client && user != target)
 		return FALSE
 
 	var/target_zone = user.zone_selected
-	var/obj/item/bodypart/BP = target.get_bodypart(target_zone == BODY_ZONE_PRECISE_GROIN ? BODY_ZONE_CHEST : target_zone)
+	// Для паха и рта используем соответствующие части тела
+	var/actual_bodypart_zone = target_zone
+	switch(target_zone)
+		if(BODY_ZONE_PRECISE_GROIN)
+			actual_bodypart_zone = BODY_ZONE_CHEST
+		if(BODY_ZONE_PRECISE_MOUTH)
+			actual_bodypart_zone = BODY_ZONE_HEAD
+
+	var/obj/item/bodypart/BP = target.get_bodypart(actual_bodypart_zone)
 	if(!BP)
 		return FALSE
 
@@ -56,7 +66,15 @@
 	repeatable = TRUE
 
 /datum/surgery_step/remove_tattoo/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	var/obj/item/bodypart/BP = target.get_bodypart(target_zone == BODY_ZONE_PRECISE_GROIN ? BODY_ZONE_CHEST : target_zone)
+	// Для паха и рта используем соответствующие части тела
+	var/actual_bodypart_zone = target_zone
+	switch(target_zone)
+		if(BODY_ZONE_PRECISE_GROIN)
+			actual_bodypart_zone = BODY_ZONE_CHEST
+		if(BODY_ZONE_PRECISE_MOUTH)
+			actual_bodypart_zone = BODY_ZONE_HEAD
+
+	var/obj/item/bodypart/BP = target.get_bodypart(actual_bodypart_zone)
 	if(!BP)
 		to_chat(user, span_warning("На этой части тела нет татуировок!"))
 		return -1
@@ -67,6 +85,13 @@
 
 	surgery.selected_tattoo_zone = selected_zone
 	var/intimate_zone = zone_to_intimate_zone(selected_zone)
+
+	// Для интимных зон (включая губы) татуировки хранятся на груди
+	if(intimate_zone)
+		BP = target.get_bodypart(BODY_ZONE_CHEST)
+		if(!BP)
+			to_chat(user, span_warning("На этой части тела нет татуировок!"))
+			return -1
 
 	var/tattoo_text_raw = get_tattoo_text_for_zone(BP, intimate_zone)
 	if(!tattoo_text_raw)
@@ -89,7 +114,7 @@
 		to_chat(user, span_warning("На этой части тела нет татуировок!"))
 		return -1
 
-	var/zone_name = get_tattoo_zone_name(selected_zone, BP)
+	var/zone_name = get_tattoo_zone_name_genitive(selected_zone, BP)
 	var/choice = tgui_input_list(user, "Выберите татуировку для удаления с [zone_name]:", "Удаление татуировки", display_choices)
 
 	if(!choice)
@@ -97,12 +122,13 @@
 
 	surgery.tattoo_to_remove = raw_to_display[choice]
 
+	var/zone_name_prep = get_tattoo_zone_name(selected_zone, BP)
 	display_results(
 		user,
 		target,
 		span_notice("Вы начинаете аккуратно срезать татуировку \"[choice]\" с [zone_name] [target]..."),
-		span_notice("[user] начинает аккуратно срезать кожу на [zone_name] [target]."),
-		span_notice("[user] делает надрезы на [zone_name] [target].")
+		span_notice("[user] начинает аккуратно срезать кожу на [zone_name_prep] [target]."),
+		span_notice("[user] делает надрезы на [zone_name_prep] [target].")
 	)
 
 /datum/surgery_step/remove_tattoo/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
@@ -119,14 +145,15 @@
 	tattoos -= surgery.tattoo_to_remove
 	set_tattoo_text_for_zone(BP, intimate_zone, jointext(tattoos, "; "))
 
-	var/zone_name = get_tattoo_zone_name(selected_zone, BP)
+	var/zone_name_gen = get_tattoo_zone_name_genitive(selected_zone, BP)
+	var/zone_name_prep = get_tattoo_zone_name(selected_zone, BP)
 	var/removed_display = parse_tattoo_for_selection(surgery.tattoo_to_remove)
 	display_results(
 		user,
 		target,
-		span_notice("Вы успешно удалили татуировку \"[removed_display]\" с [zone_name] [target]."),
-		span_notice("[user] успешно удаляет татуировку с [zone_name] [target]."),
-		span_notice("[user] заканчивает работу на [zone_name] [target].")
+		span_notice("Вы успешно удалили татуировку \"[removed_display]\" с [zone_name_gen] [target]."),
+		span_notice("[user] успешно удаляет татуировку с [zone_name_gen] [target]."),
+		span_notice("[user] заканчивает работу на [zone_name_prep] [target].")
 	)
 
 	target.apply_damage(3, BRUTE, BP)
@@ -206,7 +233,17 @@
 	if(!BP)
 		return FALSE
 
-	// Для торса проверяем основную + грудь
+	var/obj/item/bodypart/chest = target.get_bodypart(BODY_ZONE_CHEST)
+
+	// Для головы - только обычная татуировка на голове
+	if(target_zone == BODY_ZONE_HEAD)
+		return length(BP.tattoo_text)
+
+	// Для рта - губы (хранятся на груди)
+	if(target_zone == BODY_ZONE_PRECISE_MOUTH)
+		return chest && length(chest.lips_tattoo_text)
+
+	// Для торса - туловище + груди (breasts)
 	if(target_zone == BODY_ZONE_CHEST)
 		if(length(BP.tattoo_text))
 			return TRUE
@@ -215,54 +252,58 @@
 			return TRUE
 		return FALSE
 
-	// Для паха проверяем все интимные подзоны (кроме груди)
+	// Для паха - пах + ягодицы + член + яички + лобок (всё кроме груди и губ)
 	if(target_zone == BODY_ZONE_PRECISE_GROIN)
-		if(length(BP.groin_tattoo_text))
+		if(chest && length(chest.groin_tattoo_text))
 			return TRUE
 		for(var/zone in GLOB.tattoo_zone_data)
-			if(zone == TATTOO_ZONE_BREASTS || zone == TATTOO_ZONE_GROIN)
+			if(zone == TATTOO_ZONE_BREASTS || zone == TATTOO_ZONE_GROIN || zone == TATTOO_ZONE_LIPS)
 				continue
 			var/list/data = GLOB.tattoo_zone_data[zone]
 			var/organ_slot = data[TATTOO_DATA_ORGAN]
 			if(organ_slot && !target.getorganslot(organ_slot))
 				continue
-			if(length(BP.vars[data[TATTOO_DATA_VAR]]))
+			if(chest && length(chest.vars[data[TATTOO_DATA_VAR]]))
 				return TRUE
 		return FALSE
 
-	// Для остальных зон - просто проверяем основную татуировку
-	var/intimate_zone = zone_to_intimate_zone(target_zone)
-	return length(get_tattoo_text_for_zone(BP, intimate_zone))
+	// Для остальных зон (руки, ноги) - просто проверяем основную татуировку
+	return length(BP.tattoo_text)
 
 /// Выбор конкретной зоны татуировки для хирургии через радиальное меню
 /proc/select_tattoo_zone_for_surgery(mob/user, mob/living/carbon/human/target, target_zone, obj/item/bodypart/BP)
-	// Для не-торсовых и не-паховых зон сразу возвращаем выбранную зону
+	// Для простых зон без подзон - сразу возвращаем
+	// Голова, рот, руки, ноги - не имеют подзон для выбора
+	if(target_zone == BODY_ZONE_HEAD)
+		return target_zone
+	if(target_zone == BODY_ZONE_PRECISE_MOUTH)
+		return TATTOO_ZONE_LIPS
 	if(target_zone != BODY_ZONE_CHEST && target_zone != BODY_ZONE_PRECISE_GROIN)
 		return target_zone
 
 	var/list/available_zones = list()
+	var/obj/item/bodypart/chest = target.get_bodypart(BODY_ZONE_CHEST)
 
-	// Для торса показываем только грудные зоны
+	// Для торса показываем туловище + груди (breasts)
 	if(target_zone == BODY_ZONE_CHEST)
 		if(length(BP.tattoo_text))
 			available_zones["Туловище"] = GLOB.tattoo_radial_icons[BODY_ZONE_CHEST]
 		// Проверяем грудь через GLOB.tattoo_zone_data
 		var/list/breast_data = GLOB.tattoo_zone_data[TATTOO_ZONE_BREASTS]
-		if(target.getorganslot(breast_data[TATTOO_DATA_ORGAN]) && length(BP.vars[breast_data[TATTOO_DATA_VAR]]))
+		if(target.getorganslot(breast_data[TATTOO_DATA_ORGAN]) && chest && length(chest.vars[breast_data[TATTOO_DATA_VAR]]))
 			var/image/icon = generate_genital_radial_icon(target, breast_data[TATTOO_DATA_ORGAN])
 			available_zones[breast_data[TATTOO_DATA_NAME_NOM]] = icon ? icon : GLOB.tattoo_radial_icons[BODY_ZONE_CHEST]
 
-	// Для паха показываем интимные зоны
+	// Для паха показываем пах + ягодицы + член + яички + лобок (всё кроме груди и губ)
 	if(target_zone == BODY_ZONE_PRECISE_GROIN)
-		if(length(BP.groin_tattoo_text))
+		if(chest && length(chest.groin_tattoo_text))
 			available_zones["Пах"] = GLOB.tattoo_radial_icons[BODY_ZONE_PRECISE_GROIN]
-		// Итерируем через все интимные зоны кроме груди
+		// Итерируем через интимные зоны паха
 		for(var/zone in GLOB.tattoo_zone_data)
-			if(zone == TATTOO_ZONE_BREASTS || zone == TATTOO_ZONE_GROIN)
+			if(zone == TATTOO_ZONE_BREASTS || zone == TATTOO_ZONE_GROIN || zone == TATTOO_ZONE_LIPS)
 				continue
 			var/list/data = GLOB.tattoo_zone_data[zone]
-			var/text = BP.vars[data[TATTOO_DATA_VAR]]
-			if(!length(text))
+			if(!chest || !length(chest.vars[data[TATTOO_DATA_VAR]]))
 				continue
 			var/organ_slot = data[TATTOO_DATA_ORGAN]
 			if(organ_slot && !target.getorganslot(organ_slot))

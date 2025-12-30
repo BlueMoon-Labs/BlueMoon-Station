@@ -9,18 +9,21 @@ GLOBAL_LIST_INIT(tattoo_radial_icons, init_tattoo_radial_icons())
 
 /proc/init_tattoo_zone_data()
 	return list(
-		// zone_id = list(var_name, display_name_genetive, display_name_nominative, organ_slot, body_covered)
-		TATTOO_ZONE_GROIN = list("groin_tattoo_text", "паху", "Пах", null, GROIN),
-		TATTOO_ZONE_BUTT = list("butt_tattoo_text", "ягодицах", "Ягодицы", ORGAN_SLOT_BUTT, GROIN),
-		TATTOO_ZONE_PUSSY = list("pussy_tattoo_text", "лобке", "Лобок", ORGAN_SLOT_VAGINA, GROIN),
-		TATTOO_ZONE_TESTICLES = list("testicles_tattoo_text", "яичках", "Яички", ORGAN_SLOT_TESTICLES, GROIN),
-		TATTOO_ZONE_BREASTS = list("breasts_tattoo_text", "груди", "Грудь", ORGAN_SLOT_BREASTS, CHEST),
-		TATTOO_ZONE_PENIS = list("penis_tattoo_text", "члене", "Член", ORGAN_SLOT_PENIS, GROIN)
+		// zone_id = list(var_name, display_name_prepositional, display_name_nominative, organ_slot, body_covered, display_name_genitive)
+		// prepositional - предложный падеж ("на паху"), genitive - родительный падеж ("с паха")
+		TATTOO_ZONE_GROIN = list("groin_tattoo_text", "паху", "Пах", null, GROIN, "паха"),
+		TATTOO_ZONE_BUTT = list("butt_tattoo_text", "ягодицах", "Ягодицы", ORGAN_SLOT_BUTT, GROIN, "ягодиц"),
+		TATTOO_ZONE_PUSSY = list("pussy_tattoo_text", "лобке", "Лобок", ORGAN_SLOT_VAGINA, GROIN, "лобка"),
+		TATTOO_ZONE_TESTICLES = list("testicles_tattoo_text", "яичках", "Яички", ORGAN_SLOT_TESTICLES, GROIN, "яичек"),
+		TATTOO_ZONE_BREASTS = list("breasts_tattoo_text", "груди", "Грудь", ORGAN_SLOT_BREASTS, CHEST, "груди"),
+		TATTOO_ZONE_PENIS = list("penis_tattoo_text", "члене", "Член", ORGAN_SLOT_PENIS, GROIN, "члена"),
+		TATTOO_ZONE_LIPS = list("lips_tattoo_text", "губах", "Губы", null, TATTOO_COVERED_MOUTH, "губ")
 	)
 
 /proc/init_tattoo_radial_icons()
 	return list(
 		BODY_ZONE_HEAD = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "head"),
+		BODY_ZONE_PRECISE_MOUTH = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "head"),
 		BODY_ZONE_CHEST = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "chest"),
 		BODY_ZONE_PRECISE_GROIN = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "groin"),
 		BODY_ZONE_L_ARM = image(icon = 'icons/mob/screen_gen.dmi', icon_state = "l_arm"),
@@ -30,10 +33,11 @@ GLOBAL_LIST_INIT(tattoo_radial_icons, init_tattoo_radial_icons())
 	)
 
 #define TATTOO_DATA_VAR 1
-#define TATTOO_DATA_NAME_GEN 2
-#define TATTOO_DATA_NAME_NOM 3
+#define TATTOO_DATA_NAME_PREP 2      // предложный падеж ("на губах")
+#define TATTOO_DATA_NAME_NOM 3       // именительный падеж ("Губы")
 #define TATTOO_DATA_ORGAN 4
 #define TATTOO_DATA_COVERED 5
+#define TATTOO_DATA_NAME_GEN 6       // родительный падеж ("с губ")
 
 /// Получает текст татуировки для любой зоны (обычной или интимной)
 /proc/get_tattoo_text_for_zone(obj/item/bodypart/BP, intimate_zone)
@@ -64,13 +68,36 @@ GLOBAL_LIST_INIT(tattoo_radial_icons, init_tattoo_radial_icons())
 
 	BP.vars[zone_data[TATTOO_DATA_VAR]] = text
 
-/// Получает название зоны в родительном падеже (для "на ...")
+/// Получает название зоны в предложном падеже (для "на ...")
 /proc/get_tattoo_zone_name(zone, obj/item/bodypart/BP)
+	var/list/zone_data = GLOB.tattoo_zone_data[zone]
+	if(zone_data)
+		return zone_data[TATTOO_DATA_NAME_PREP]
+	if(zone == BODY_ZONE_PRECISE_GROIN)
+		return "паху"
+	return BP?.ru_name_v
+
+/// Получает название зоны в родительном падеже (для "с ...")
+/proc/get_tattoo_zone_name_genitive(zone, obj/item/bodypart/BP)
 	var/list/zone_data = GLOB.tattoo_zone_data[zone]
 	if(zone_data)
 		return zone_data[TATTOO_DATA_NAME_GEN]
 	if(zone == BODY_ZONE_PRECISE_GROIN)
-		return "паху"
+		return "паха"
+	// Маппинг для обычных зон тела
+	switch(zone)
+		if(BODY_ZONE_HEAD)
+			return "головы"
+		if(BODY_ZONE_CHEST)
+			return "туловища"
+		if(BODY_ZONE_L_ARM)
+			return "левой руки"
+		if(BODY_ZONE_R_ARM)
+			return "правой руки"
+		if(BODY_ZONE_L_LEG)
+			return "левой ноги"
+		if(BODY_ZONE_R_LEG)
+			return "правой ноги"
 	return BP?.ru_name_v
 
 /// Получает название зоны в именительном падеже
@@ -101,6 +128,8 @@ GLOBAL_LIST_INIT(tattoo_radial_icons, init_tattoo_radial_icons())
 	switch(zone)
 		if(BODY_ZONE_HEAD)
 			return HEAD
+		if(BODY_ZONE_PRECISE_MOUTH)
+			return TATTOO_COVERED_MOUTH
 		if(BODY_ZONE_CHEST)
 			return CHEST
 		if(BODY_ZONE_PRECISE_GROIN)
@@ -211,4 +240,4 @@ GLOBAL_LIST_INIT(tattoo_radial_icons, init_tattoo_radial_icons())
 		if(organ_slot && H && !H.getorganslot(organ_slot))
 			continue
 
-		CB.Invoke(zone, text, data[TATTOO_DATA_NAME_GEN])
+		CB.Invoke(zone, text, data[TATTOO_DATA_NAME_PREP])
