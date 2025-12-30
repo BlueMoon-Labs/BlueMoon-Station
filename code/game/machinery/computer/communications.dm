@@ -583,7 +583,7 @@
 					var/ransomChangeCooldown = C.nextRansomChange - world.time
 
 					if(ransomChangeCooldown > 0) // On cooldown.
-						ransomFeedback += " (can undo in [round(ransomChangeCooldown / 10)])"
+						ransomFeedback = "Can undo in [seconds_to_clock(max(0, round(ransomChangeCooldown / 10)))]"
 					else if (C.bought || (bank && bank.account_balance >= C.price)) // Slave already bought
 						canToggleRansom = TRUE
 

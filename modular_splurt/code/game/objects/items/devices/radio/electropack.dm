@@ -142,8 +142,8 @@
 	if(price) // If price has already been set once, we are just changing it
 		announceMessage = "Сумма выкупа за [M.real_name] [newPrice > price ? "увеличилась" : "уменьшилась"] до [newPrice] кредитов."
 	else
-		nextRecruitChance = world.time + 15 MINUTES // Our first time setting the price, now we begin the countdown for when this slave can be recruited
 		nextboughtChance = is_extended ? world.time + (rand(MIN_BOUGHT_TIME, MAX_BOUGHT_TIME) MINUTES) : 0 // В эксту во избежание моментальных выкупов, ставим задержку
+		nextRecruitChance = (nextboughtChance ? nextboughtChance : world.time) + 5 MINUTES // Our first time setting the price, now we begin the countdown for when this slave can be recruited
 
 	price = round(newPrice)
 	nextPriceChange = world.time + 5 MINUTES // Cannot be changed again for 5 minutes

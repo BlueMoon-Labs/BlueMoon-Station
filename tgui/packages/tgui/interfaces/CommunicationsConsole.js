@@ -593,8 +593,10 @@ const PageMain = (props, context) => {
                   {slave.name}
                 </Flex.Item>
 
-                <Flex.Item>
-                  {slave.toggleransomfeedback}
+                <Flex.Item color = "average">
+                  {!slave.can_bought && !slave.bought
+                    ? `${'Suspended: ' + slave.bought_timer}`
+                    : slave.toggleransomfeedback}
                 </Flex.Item>
 
                 <Flex.Item
@@ -605,12 +607,9 @@ const PageMain = (props, context) => {
                   <Button
                     icon={slave.bought ? "times" : ""}
                     disabled={!slave.cantoggleransom || !slave.can_bought}
-                    content={
-                      slave.cantoggleransom && !slave.can_bought
-                        ? slave.bought_timer
-                        : (slave.bought
-                          ? "Cancel"
-                          : formatMoney(slave.price, null, true) + "cr")}
+                    content={slave.bought
+                      ? "Cancel"
+                      : formatMoney(slave.price, null, true) + "cr"}
                     color={slave.bought ? "bad" : "default"}
                     onClick={() => act('toggleBought', {
                       id: slave.id,
