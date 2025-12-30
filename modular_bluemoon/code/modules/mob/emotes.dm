@@ -391,6 +391,23 @@
 	sound = 'modular_bluemoon/sound/emotes/meow6.ogg'
 	emote_cooldown = 0.5 SECONDS
 
+/datum/emote/sound/human/meow7
+	key = "meow7"
+	key_third_person = "meow7"
+	message = "мяукает как сервал."
+	message_mime = "безмолвно мяукает."
+	sound = 'modular_bluemoon/sound/emotes/meow7_1.ogg'
+	emote_cooldown = 0.75 SECONDS
+
+/datum/emote/sound/human/meow7/run_emote(mob/user, params)
+	sound = pick(
+	'modular_bluemoon/sound/emotes/meow7_1.ogg',
+	'modular_bluemoon/sound/emotes/meow7_2.ogg',
+	'modular_bluemoon/sound/emotes/meow7_3.ogg',
+	'modular_bluemoon/sound/emotes/meow7_4.ogg',
+	'modular_bluemoon/sound/emotes/meow7_5.ogg')
+	. = ..()
+
 /datum/emote/sound/human/catscream1
 	key = "catscream1"
 	key_third_person = "catscreams1"
