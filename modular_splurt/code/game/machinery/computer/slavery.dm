@@ -1,5 +1,4 @@
 #define ANNOUNCEMENT_COOLDOWN 6 MINUTES
-#define SLAVER_RANSOM_SCALE_VALUE 1000000
 
 /obj/machinery/computer/slavery
 	name = "\improper slave management console"
@@ -50,7 +49,6 @@
 	var/turf/curr = get_turf(src)
 	data["currentCoords"] = "[curr.x], [curr.y], [curr.z]"
 	data["value_table"] = GLOB.slavers_ransom_values
-	data["ransom_scale_value"] = SLAVER_RANSOM_SCALE_VALUE
 	data["categories"] = list()
 	for(var/category in possible_gear)
 		var/list/cat = list(
