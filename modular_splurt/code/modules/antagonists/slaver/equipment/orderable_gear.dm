@@ -33,13 +33,6 @@ GLOBAL_LIST_INIT(slaver_gear, subtypesof(/datum/slaver_gear))
 	category = "Slaving"
 	cost = 1750
 
-/datum/slaver_gear/pens
-	name = "Sleepy Pens"
-	description = "Pen that injects sleep-inducing chemicals x 7."
-	build_path = /obj/item/storage/box/pens
-	category = "Slaving"
-	cost = 1500
-
 /datum/slaver_gear/codespeak
 	name = "Codespeak Manual"
 	description = "A handy book that teaches the user how to speak in code. Useful to stop eavesdropping! This one has unlimited uses."

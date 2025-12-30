@@ -368,7 +368,6 @@ const PageMain = (props, context) => {
     emagged,
     emergencyAccess,
     importantActionReady,
-    is_extended,
     sectors,
     shuttleCalled,
     shuttleCalledPreviously,
@@ -611,9 +610,7 @@ const PageMain = (props, context) => {
                         ? slave.bought_timer
                         : (slave.bought
                           ? "Cancel"
-                          : is_extended
-                            ? "Free"
-                            : formatMoney(slave.price, null, true) + "cr")}
+                          : formatMoney(slave.price, null, true) + "cr")}
                     color={slave.bought ? "bad" : "default"}
                     onClick={() => act('toggleBought', {
                       id: slave.id,

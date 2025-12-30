@@ -234,7 +234,7 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	Поэтому вы должны демонстрировать свою с ними, якобы, настоящую, но на самом деле фиктивную, фальшивую борьбу. \
 	Как только Работорговцы начнут проявлять активность, максимум ваших возможностей - поставить Синий Код и просить сотрудников остерегаться незнакомцев. \
 	Допустимо применять КЗ в отношении актеров, но с оглядкой на полученный им разрешающий документ (пермит).\n\
-	Центральное командование вычтет расходы на оснащение наших партнёров, после окончания смены, пока можете не беспокоиться. "
+	Вам были высланы кредиты для оплаты, которую нужно будет производить как минимум после двадцати минут заключения сотрудников на их аванпосту."
 
 /obj/effect/mob_spawn/human/slavers/attack_ghost(mob/user, latejoinercalling)
 	if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
@@ -258,8 +258,8 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		slaver.send_to_spawnpoint = FALSE
 		if(one_is_spawnpods.first_time)
 			print_command_report(src.announce_text, "Central Command")
-			//var/datum/bank_account/cargo_bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
-			//cargo_bank.adjust_money(50000)
+			var/datum/bank_account/cargo_bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
+			cargo_bank.adjust_money(50000)
 			for(var/obj/effect/mob_spawn/human/slavers/S in all_avaible_spawnpods)
 				S.first_time = FALSE
 	slaver.equip_outfit = FALSE

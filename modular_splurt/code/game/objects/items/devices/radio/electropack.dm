@@ -1,5 +1,5 @@
-#define MIN_BOUGHT_TIME 5 // минуты
-#define MAX_BOUGHT_TIME 12 // минуты
+#define MIN_BOUGHT_TIME 20 // минуты
+#define MAX_BOUGHT_TIME 20 // минуты
 
 /obj/item/electropack/shockcollar/security
 	name = "security shock collar"
@@ -114,20 +114,19 @@
 			playsound(get_turf(M), 'sound/machines/triple_beep.ogg', 50, 1)
 			ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
 
-			var/automatic_ransom_value = GLOB.slavers_ransom_values[M.job]
-			var/is_extended = GLOB.master_mode == ROUNDTYPE_EXTENDED
-			if(is_extended && !automatic_ransom_value)
-				automatic_ransom_value = rand(SLAVER_STANDARD_RANSOM*0.9, SLAVER_STANDARD_RANSOM)
-			if (automatic_ransom_value)
-				station_rank = M.job
+			var/max_ransom = SLAVER_RANSOM_STANDARD
+			var/max_ransom_percent = SLAVER_RANSOM_STANDARD_PERCENT
+			var/automatic_ransom = GLOB.slavers_ransom_values[M.job]
+			if(automatic_ransom)
+				max_ransom = automatic_ransom["maxPrice"]
+				max_ransom_percent = automatic_ransom["percent"]
 
-				if(is_extended)
-					automatic_ransom_value *= rand(80, 200)/100
-				else
-					var/datum/bank_account/bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
-					automatic_ransom_value += automatic_ransom_value * (bank.account_balance / SLAVER_RANSOM_SCALE_VALUE) // Slave price scales with station credit balance (+100% per 1,000,000 credits in the cargo budget)
+			station_rank = M.job
 
-				setPrice(automatic_ransom_value)
+			var/datum/bank_account/bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
+			if(!bank)
+				setPrice(max_ransom)
+			setPrice(max(1, min(max_ransom, bank.account_balance*max_ransom_percent)))
 
 /obj/item/electropack/shockcollar/slave/proc/setPrice(newPrice)
 	var/mob/living/M = loc
@@ -137,11 +136,8 @@
 		slaveJobText = " ([station_rank])"
 
 	var/is_extended = GLOB.master_mode == ROUNDTYPE_EXTENDED
-	var/announceMessage = "Мы позаимствовали у вас [M.real_name][slaveJobText] на добровольно-принудительный отпуск."
-	if(is_extended)
-		announceMessage = announceMessage + " Можете получить [M.ru_ego()] обратно, после... Небольшого отдыха."
-	else
-		announceMessage = announceMessage + " Отправьте нам [newPrice] и мы обязательно вернём вашего сотрудника! Вам же... нужны рабочие?"
+	var/announceMessage = "Мы позаимствовали у вас [M.real_name][slaveJobText] на добровольно-принудительный отпуск. \
+	Отправьте нам [newPrice] кредитов и мы вернём вашего сотрудника в течении пятнадцати минут! Вам же... нужны работники?"
 
 	if(price) // If price has already been set once, we are just changing it
 		announceMessage = "Сумма выкупа за [M.real_name] [newPrice > price ? "увеличилась" : "уменьшилась"] до [newPrice] кредитов."

@@ -472,7 +472,6 @@
 
 		if("toggleBought")
 			var/boughtID = params["id"]
-			var/is_extended = GLOB.master_mode == ROUNDTYPE_EXTENDED
 			for(var/tracked_slave in GLOB.tracked_slaves)
 				var/obj/item/electropack/shockcollar/slave/C = tracked_slave
 				var/mob/living/M = C.loc
@@ -481,21 +480,20 @@
 					var/datum/bank_account/bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
 					if(bank)
 						if(C.bought)
-							var/announce_message = is_extended ? "Станция отказалась возвращать [M.real_name] от [GLOB.slavers_team_name]." : "Станция отменяет плату [GLOB.slavers_team_name] в [C.price] кредитов за [M.real_name]."
-							var/slaver_message = is_extended ? "Станция отказалась возвращать [M.real_name] от [GLOB.slavers_team_name]." : "Станция отказалась платить [GLOB.slavers_team_name] за [C.loc.name]."
-							if(!is_extended)
-								bank.adjust_money(C.price)
+							var/announce_message = "Станция отменяет плату [GLOB.slavers_team_name] в [C.price] кредитов за [M.real_name]."
+							var/slaver_message = "Станция отказалась платить [GLOB.slavers_team_name] за [C.loc.name]."
+							bank.adjust_money(C.price)
 							C.setBought(FALSE)
+							C.nextboughtChance = world.time + 5 MINUTES
 
 							for(var/obj/machinery/computer/slavery/tracked_slave_console in GLOB.tracked_slave_consoles)
 								priority_announce(announce_message, sender_override = GLOB.station_name)
 								tracked_slave_console.radioAnnounce(slaver_message)
 
 						else
-							var/announce_message = is_extended ? "Станция запросила возврат [M.real_name] у [GLOB.slavers_team_name]." : "Станция оплачивает возвращение [M.real_name] у [GLOB.slavers_team_name] за [C.price] кредитов."
-							var/slaver_message = is_extended ? "Станция запросила возврат [M.real_name] у [GLOB.slavers_team_name]." : "Станция заплатила выкуп [GLOB.slavers_team_name] за [C.loc.name]."
-							if(!is_extended)
-								bank.adjust_money(-C.price)
+							var/announce_message = "Станция оплачивает возвращение [M.real_name] у [GLOB.slavers_team_name] за [C.price] кредитов."
+							var/slaver_message = "Станция заплатила выкуп [GLOB.slavers_team_name] за [C.loc.name]."
+							bank.adjust_money(-C.price)
 							C.setBought(TRUE)
 
 							for(var/obj/machinery/computer/slavery/tracked_slave_console in GLOB.tracked_slave_consoles)
@@ -561,7 +559,6 @@
 				data["slaves"] = list()
 				var/datum/bank_account/bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
 				data["cargocredits"] = bank.account_balance
-				var/is_extended = GLOB.master_mode == ROUNDTYPE_EXTENDED
 
 				for(var/tracked_slave in GLOB.tracked_slaves)
 					var/obj/item/electropack/shockcollar/slave/C = tracked_slave
@@ -587,7 +584,7 @@
 
 					if(ransomChangeCooldown > 0) // On cooldown.
 						ransomFeedback += " (can undo in [round(ransomChangeCooldown / 10)])"
-					else if (C.bought || is_extended || (bank && bank.account_balance >= C.price)) // Slave already bought
+					else if (C.bought || (bank && bank.account_balance >= C.price)) // Slave already bought
 						canToggleRansom = TRUE
 
 					slave["cantoggleransom"] = canToggleRansom
@@ -708,7 +705,6 @@
 		"callShuttleReasonMinLength" = CALL_SHUTTLE_REASON_LENGTH,
 		"maxStatusLineLength" = MAX_STATUS_LINE_LENGTH,
 		"maxMessageLength" = MAX_MESSAGE_LEN,
-		"is_extended" = GLOB.master_mode == ROUNDTYPE_EXTENDED, // for slavers
 	)
 
 /// Returns whether or not the communications console can communicate with the station

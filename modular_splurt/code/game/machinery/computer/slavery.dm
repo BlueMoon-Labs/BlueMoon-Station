@@ -175,7 +175,7 @@
 			last_announcement = world.time
 
 		if("setPrice")
-			var/newPrice = tgui_input_number(usr, "The station will need to pay this to get the slave back.", "Set slave price", collar.price, SLAVER_STANDARD_RANSOM*2, 1, round_value = TRUE)
+			var/newPrice = tgui_input_number(usr, "The station will need to pay this to get the slave back.", "Set slave price", collar.price, SLAVER_RANSOM_STANDARD*2, 1, round_value = TRUE)
 			if(!newPrice)
 				return
 
