@@ -2,6 +2,7 @@
 	name = "\improper Slaver Trader ID"
 	desc = "A cheap ID used by slave traders."
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_EXTERNAL_AIRLOCKS, ACCESS_SLAVER)
+	anyone = TRUE
 
 /obj/item/card/id/syndicate/slaver/leader
 	name = "\improper Slaver Master ID"
