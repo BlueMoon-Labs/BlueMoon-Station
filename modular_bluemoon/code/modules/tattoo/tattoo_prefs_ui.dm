@@ -53,6 +53,12 @@
 	var/has_tattoos = FALSE
 	var/pending_count = 0
 
+	// Доступные цвета чернил
+	.["ink_colors"] = get_ink_colors_list()
+
+	// Доступные зоны для татуировок
+	.["available_zones"] = get_available_zones_list()
+
 	if(!owner_client?.prefs?.tattoos_string)
 		.["tattoo_zones"] = tattoo_zones
 		.["has_tattoos"] = FALSE
@@ -151,6 +157,27 @@
 		if("clear_pending")
 			pending_removals = list()
 			save_pending_removals()
+			return TRUE
+
+		if("add_tattoo")
+			var/zone = params["zone"]
+			var/text = params["text"]
+			var/color = params["color"]
+			var/style = params["style"]
+			if(!zone || !text || !color || !style)
+				return FALSE
+			add_tattoo(zone, text, color, style)
+			return TRUE
+
+		if("edit_tattoo")
+			var/zone = params["zone"]
+			var/index = params["index"]
+			var/new_text = params["text"]
+			var/new_color = params["color"]
+			var/new_style = params["style"]
+			if(!zone || !index || !new_text || !new_color || !new_style)
+				return FALSE
+			edit_tattoo(zone, index, new_text, new_color, new_style)
 			return TRUE
 
 /// Получает отображаемое имя зоны на русском
@@ -262,3 +289,193 @@ GLOBAL_LIST_EMPTY(tattoo_managers)
 	var/datum/tattoo_manager/manager = new(src)
 	GLOB.tattoo_managers[ckey] = manager
 	manager.ui_interact(mob)
+
+/// Возвращает список доступных цветов чернил для TGUI
+/proc/get_ink_colors_list()
+	return list(
+		// Чёрные и серые
+		list("name" = "Угольно-чёрные", "color" = "#1A1A1A"),
+		list("name" = "Тёмно-серые", "color" = "#4A4A4A"),
+		list("name" = "Графитовые", "color" = "#696969"),
+		list("name" = "Пепельные", "color" = "#A0A0A0"),
+		list("name" = "Серебряные", "color" = "#C0C0C0"),
+		list("name" = "Белые", "color" = "#FFFFFF"),
+		// Красные
+		list("name" = "Кровавые", "color" = "#8A0303"),
+		list("name" = "Бордовые", "color" = "#8B0000"),
+		list("name" = "Алые", "color" = "#DC143C"),
+		list("name" = "Огненно-красные", "color" = "#FF3232"),
+		list("name" = "Рубиновые", "color" = "#E0115F"),
+		// Розовые
+		list("name" = "Малиновые", "color" = "#C71585"),
+		list("name" = "Розовые", "color" = "#FF69B4"),
+		list("name" = "Нежно-розовые", "color" = "#FFB6C1"),
+		list("name" = "Неоново-розовые", "color" = "#FF00FF"),
+		list("name" = "Фуксия", "color" = "#FF1493"),
+		// Оранжевые
+		list("name" = "Коралловые", "color" = "#FF7F50"),
+		list("name" = "Оранжевые", "color" = "#FF8C00"),
+		list("name" = "Мандариновые", "color" = "#FF6347"),
+		list("name" = "Янтарные", "color" = "#FFBF00"),
+		// Жёлтые
+		list("name" = "Лимонные", "color" = "#FFF44F"),
+		list("name" = "Ярко-жёлтые", "color" = "#FFFF00"),
+		list("name" = "Золотые", "color" = "#FFD700"),
+		list("name" = "Медовые", "color" = "#EB9605"),
+		list("name" = "Бронзовые", "color" = "#CD7F32"),
+		// Зелёные
+		list("name" = "Оливковые", "color" = "#808000"),
+		list("name" = "Тёмно-зелёные", "color" = "#228B22"),
+		list("name" = "Изумрудные", "color" = "#50C878"),
+		list("name" = "Травяные", "color" = "#7CFC00"),
+		list("name" = "Кислотно-зелёные", "color" = "#00FF00"),
+		list("name" = "Мятные", "color" = "#98FB98"),
+		// Голубые и бирюзовые
+		list("name" = "Бирюзовые", "color" = "#40E0D0"),
+		list("name" = "Аквамариновые", "color" = "#7FFFD4"),
+		list("name" = "Электро-голубые", "color" = "#00FFFF"),
+		list("name" = "Небесно-голубые", "color" = "#87CEEB"),
+		list("name" = "Ледяные", "color" = "#B0E0E6"),
+		// Синие
+		list("name" = "Синие", "color" = "#4169E1"),
+		list("name" = "Сапфировые", "color" = "#0F52BA"),
+		list("name" = "Тёмно-синие", "color" = "#00008B"),
+		list("name" = "Индиго", "color" = "#4B0082"),
+		list("name" = "Полуночные", "color" = "#191970"),
+		// Фиолетовые
+		list("name" = "Лавандовые", "color" = "#9B51FF"),
+		list("name" = "Фиолетовые", "color" = "#B900F7"),
+		list("name" = "Пурпурные", "color" = "#800080"),
+		list("name" = "Аметистовые", "color" = "#9966CC"),
+		list("name" = "Сливовые", "color" = "#8E4585"),
+		// Коричневые
+		list("name" = "Шоколадные", "color" = "#7B3F00"),
+		list("name" = "Каштановые", "color" = "#954535"),
+		list("name" = "Кофейные", "color" = "#6F4E37"),
+		list("name" = "Песочные", "color" = "#C2B280")
+	)
+
+/// Возвращает список доступных зон для TGUI
+/proc/get_available_zones_list()
+	var/list/zones = list()
+	// Стандартные зоны тела
+	zones += list(list("id" = BODY_ZONE_HEAD, "name" = "Голова"))
+	zones += list(list("id" = TATTOO_ZONE_LIPS, "name" = "Губы"))
+	zones += list(list("id" = TATTOO_ZONE_HORNS, "name" = "Рога"))
+	zones += list(list("id" = BODY_ZONE_CHEST, "name" = "Туловище"))
+	zones += list(list("id" = TATTOO_ZONE_BREASTS, "name" = "Грудь"))
+	zones += list(list("id" = BODY_ZONE_PRECISE_GROIN, "name" = "Пах"))
+	zones += list(list("id" = TATTOO_ZONE_BUTT, "name" = "Ягодицы"))
+	zones += list(list("id" = TATTOO_ZONE_PUSSY, "name" = "Лобок"))
+	zones += list(list("id" = TATTOO_ZONE_TESTICLES, "name" = "Яички"))
+	zones += list(list("id" = TATTOO_ZONE_PENIS, "name" = "Член"))
+	zones += list(list("id" = BODY_ZONE_L_ARM, "name" = "Левая рука"))
+	zones += list(list("id" = BODY_ZONE_R_ARM, "name" = "Правая рука"))
+	zones += list(list("id" = BODY_ZONE_L_LEG, "name" = "Левая нога"))
+	zones += list(list("id" = BODY_ZONE_R_LEG, "name" = "Правая нога"))
+	zones += list(list("id" = TATTOO_ZONE_LEFT_THIGH, "name" = "Левое бедро"))
+	zones += list(list("id" = TATTOO_ZONE_RIGHT_THIGH, "name" = "Правое бедро"))
+	zones += list(list("id" = TATTOO_ZONE_TAIL, "name" = "Хвост"))
+	zones += list(list("id" = TATTOO_ZONE_EARS, "name" = "Уши"))
+	zones += list(list("id" = TATTOO_ZONE_WINGS, "name" = "Крылья"))
+	zones += list(list("id" = TATTOO_ZONE_BELLY, "name" = "Живот"))
+	return zones
+
+/// Добавляет новую татуировку в настройки персонажа
+/datum/tattoo_manager/proc/add_tattoo(zone, text, color, style)
+	if(!owner_client?.prefs)
+		return FALSE
+
+	// Формируем татуировку
+	var/style_prefix = style == "text" ? "\[T\]" : "\[D\]"
+	var/formatted_tattoo = "<span style='color:[color]'>[style_prefix][html_encode(text)]</span>"
+
+	// Ищем существующую зону в tattoos_string
+	var/list/all_tattoos = list()
+	var/zone_found = FALSE
+
+	if(length(owner_client.prefs.tattoos_string))
+		for(var/tattoo_line in splittext(owner_client.prefs.tattoos_string, TATTOO_RECORD_SEPARATOR))
+			if(!length(tattoo_line))
+				continue
+
+			var/list/tattoo_data = splittext(tattoo_line, TATTOO_FIELD_SEPARATOR)
+			if(length(tattoo_data) != TATTOO_SAVE_LENGTH)
+				continue
+
+			var/existing_zone = tattoo_data[TATTOO_SAVE_ZONE]
+			var/existing_text = unescape_tattoo_text(tattoo_data[TATTOO_SAVE_TEXT])
+
+			if(existing_zone == zone)
+				// Добавляем к существующей зоне
+				existing_text = existing_text + "; " + formatted_tattoo
+				all_tattoos += "[TATTOO_CURRENT_VERSION][TATTOO_FIELD_SEPARATOR][zone][TATTOO_FIELD_SEPARATOR][escape_tattoo_text(existing_text)]"
+				zone_found = TRUE
+			else
+				all_tattoos += tattoo_line
+
+	// Если зона не найдена - создаём новую запись
+	if(!zone_found)
+		all_tattoos += "[TATTOO_CURRENT_VERSION][TATTOO_FIELD_SEPARATOR][zone][TATTOO_FIELD_SEPARATOR][escape_tattoo_text(formatted_tattoo)]"
+
+	owner_client.prefs.tattoos_string = length(all_tattoos) ? jointext(all_tattoos, TATTOO_RECORD_SEPARATOR) + TATTOO_RECORD_SEPARATOR : ""
+	owner_client.prefs.save_character()
+	return TRUE
+
+/// Редактирует существующую татуировку
+/datum/tattoo_manager/proc/edit_tattoo(zone, index, new_text, new_color, new_style)
+	if(!owner_client?.prefs?.tattoos_string)
+		return FALSE
+
+	// Парсим индекс (формат: "tattoo_index_sub_index")
+	var/list/index_parts = splittext(index, "_")
+	if(length(index_parts) < 2)
+		return FALSE
+
+	var/target_tattoo_index = text2num(index_parts[1])
+	var/target_sub_index = text2num(index_parts[2])
+
+	// Формируем новую татуировку
+	var/style_prefix = new_style == "text" ? "\[T\]" : "\[D\]"
+	var/formatted_tattoo = "<span style='color:[new_color]'>[style_prefix][html_encode(new_text)]</span>"
+
+	var/list/all_tattoos = list()
+	var/tattoo_index = 0
+
+	for(var/tattoo_line in splittext(owner_client.prefs.tattoos_string, TATTOO_RECORD_SEPARATOR))
+		if(!length(tattoo_line))
+			continue
+
+		var/list/tattoo_data = splittext(tattoo_line, TATTOO_FIELD_SEPARATOR)
+		if(length(tattoo_data) != TATTOO_SAVE_LENGTH)
+			tattoo_index++
+			continue
+
+		var/existing_zone = tattoo_data[TATTOO_SAVE_ZONE]
+		var/raw_text = unescape_tattoo_text(tattoo_data[TATTOO_SAVE_TEXT])
+
+		if(existing_zone == zone && tattoo_index == target_tattoo_index)
+			// Нашли нужную зону, теперь редактируем sub_index
+			var/list/tattoos_on_zone = splittext(raw_text, "; ")
+			var/list/new_tattoos_on_zone = list()
+			var/sub_index = 0
+
+			for(var/single_tattoo in tattoos_on_zone)
+				if(!length(single_tattoo))
+					continue
+				if(sub_index == target_sub_index)
+					new_tattoos_on_zone += formatted_tattoo
+				else
+					new_tattoos_on_zone += single_tattoo
+				sub_index++
+
+			var/new_zone_text = jointext(new_tattoos_on_zone, "; ")
+			all_tattoos += "[TATTOO_CURRENT_VERSION][TATTOO_FIELD_SEPARATOR][zone][TATTOO_FIELD_SEPARATOR][escape_tattoo_text(new_zone_text)]"
+		else
+			all_tattoos += tattoo_line
+
+		tattoo_index++
+
+	owner_client.prefs.tattoos_string = length(all_tattoos) ? jointext(all_tattoos, TATTOO_RECORD_SEPARATOR) + TATTOO_RECORD_SEPARATOR : ""
+	owner_client.prefs.save_character()
+	return TRUE

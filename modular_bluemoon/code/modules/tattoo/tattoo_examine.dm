@@ -53,6 +53,9 @@
 		// Проверяем покрытие один раз для каждой области
 		var/chest_covered = is_zone_covered(items_on_self, CHEST)
 		var/groin_covered = is_zone_covered(items_on_self, GROIN)
+		var/head_covered = is_zone_covered(items_on_self, HEAD)
+		var/left_leg_covered = is_zone_covered(items_on_self, LEG_LEFT)
+		var/right_leg_covered = is_zone_covered(items_on_self, LEG_RIGHT)
 		var/mouth_covered = is_mouth_covered(src)
 
 		// Итерируем через все интимные зоны используя centralized data
@@ -67,9 +70,53 @@
 			if(organ_slot && !getorganslot(organ_slot))
 				continue
 
+			// Для рогов проверяем наличие мутантной части вида
+			if(zone == TATTOO_ZONE_HORNS)
+				if(!dna?.species?.mutant_bodyparts["horns"] || !dna.features["horns"] || dna.features["horns"] == "None")
+					continue
+
+			// Для ушей проверяем наличие мутантной части вида
+			if(zone == TATTOO_ZONE_EARS)
+				var/has_ears = FALSE
+				if(dna?.species?.mutant_bodyparts["ears"] && dna.features["ears"] && dna.features["ears"] != "None")
+					has_ears = TRUE
+				else if(dna?.species?.mutant_bodyparts["mam_ears"] && dna.features["mam_ears"] && dna.features["mam_ears"] != "None")
+					has_ears = TRUE
+				if(!has_ears)
+					continue
+
+			// Для крыльев проверяем наличие мутантной части вида
+			if(zone == TATTOO_ZONE_WINGS)
+				var/has_wings = FALSE
+				if(dna?.species?.mutant_bodyparts["wings"] && dna.features["wings"] && dna.features["wings"] != "None")
+					has_wings = TRUE
+				else if(dna?.species?.mutant_bodyparts["deco_wings"] && dna.features["deco_wings"] && dna.features["deco_wings"] != "None")
+					has_wings = TRUE
+				else if(dna?.species?.mutant_bodyparts["insect_wings"] && dna.features["insect_wings"] && dna.features["insect_wings"] != "None")
+					has_wings = TRUE
+				if(!has_wings)
+					continue
+
 			// Проверяем покрытие
 			var/body_covered = data[TATTOO_DATA_COVERED]
-			if((body_covered == CHEST && chest_covered) || (body_covered == GROIN && groin_covered) || (body_covered == TATTOO_COVERED_MOUTH && mouth_covered))
+			var/is_covered = FALSE
+			switch(body_covered)
+				if(CHEST)
+					is_covered = chest_covered
+				if(GROIN)
+					is_covered = groin_covered
+				if(HEAD)
+					is_covered = head_covered
+				if(LEG_LEFT)
+					is_covered = left_leg_covered
+				if(LEG_RIGHT)
+					is_covered = right_leg_covered
+				if(TATTOO_COVERED_MOUTH)
+					is_covered = mouth_covered
+				if(null)
+					is_covered = FALSE // Хвост и прочее без покрытия всегда видны
+
+			if(is_covered)
 				continue
 
 			for(var/tattoo in parse_tattoos_for_display(text))

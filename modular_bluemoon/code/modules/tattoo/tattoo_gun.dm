@@ -39,30 +39,66 @@
 		return
 
 	var/list/ink_choices = list(
+		// Чёрные и серые
+		"Угольно-чёрные" = "#1A1A1A",
 		"Тёмно-серые" = "#4A4A4A",
+		"Графитовые" = "#696969",
+		"Пепельные" = "#A0A0A0",
+		"Серебряные" = "#C0C0C0",
 		"Белые" = "#FFFFFF",
-		"Огненно-красные" = "#FF3232",
-		"Алые" = "#DC143C",
+		// Красные
+		"Кровавые" = "#8A0303",
 		"Бордовые" = "#8B0000",
+		"Алые" = "#DC143C",
+		"Огненно-красные" = "#FF3232",
+		"Рубиновые" = "#E0115F",
+		// Розовые
+		"Малиновые" = "#C71585",
 		"Розовые" = "#FF69B4",
+		"Нежно-розовые" = "#FFB6C1",
+		"Неоново-розовые" = "#FF00FF",
+		"Фуксия" = "#FF1493",
+		// Оранжевые
 		"Коралловые" = "#FF7F50",
 		"Оранжевые" = "#FF8C00",
+		"Мандариновые" = "#FF6347",
+		"Янтарные" = "#FFBF00",
+		// Жёлтые
+		"Лимонные" = "#FFF44F",
 		"Ярко-жёлтые" = "#FFFF00",
 		"Золотые" = "#FFD700",
-		"Кислотно-зелёные" = "#00FF00",
-		"Изумрудные" = "#50C878",
+		"Медовые" = "#EB9605",
+		"Бронзовые" = "#CD7F32",
+		// Зелёные
+		"Оливковые" = "#808000",
 		"Тёмно-зелёные" = "#228B22",
+		"Изумрудные" = "#50C878",
+		"Травяные" = "#7CFC00",
+		"Кислотно-зелёные" = "#00FF00",
+		"Мятные" = "#98FB98",
+		// Голубые и бирюзовые
 		"Бирюзовые" = "#40E0D0",
+		"Аквамариновые" = "#7FFFD4",
 		"Электро-голубые" = "#00FFFF",
 		"Небесно-голубые" = "#87CEEB",
+		"Ледяные" = "#B0E0E6",
+		// Синие
 		"Синие" = "#4169E1",
+		"Сапфировые" = "#0F52BA",
 		"Тёмно-синие" = "#00008B",
-		"Фиолетовые" = "#B900F7",
+		"Индиго" = "#4B0082",
+		"Полуночные" = "#191970",
+		// Фиолетовые
 		"Лавандовые" = "#9B51FF",
+		"Фиолетовые" = "#B900F7",
 		"Пурпурные" = "#800080",
-		"Неоново-розовые" = "#FF00FF",
-		"Серебряные" = "#C0C0C0",
-		"Бронзовые" = "#CD7F32"
+		"Аметистовые" = "#9966CC",
+		"Сливовые" = "#8E4585",
+		// Коричневые
+		"Шоколадные" = "#7B3F00",
+		"Каштановые" = "#954535",
+		"Кофейные" = "#6F4E37",
+		"Песочные" = "#C2B280"
 	)
 
 	var/choice = input(user, "Выберите цвет чернил для татуировки:", "Цвет чернил") as null|anything in ink_choices
@@ -111,7 +147,8 @@
 
 	// Проверка на одежду
 	var/target_body_part = tattoo_zone_to_body_covered(selected_zone)
-	if(!target_body_part)
+	// null допустим для зон без покрытия одеждой (хвост)
+	if(target_body_part == 0)
 		to_chat(user, span_warning("Вы должны выбрать часть тела!"))
 		return
 
@@ -120,7 +157,7 @@
 		if(is_mouth_covered(target))
 			to_chat(user, span_warning("Вам мешает маска [target]!"))
 			return
-	else
+	else if(target_body_part) // Проверяем одежду только если есть покрытие (хвост не проверяем)
 		var/list/items_on_target = target.get_equipped_items()
 		for(var/obj/item/worn_clothes in items_on_target)
 			if(worn_clothes.body_parts_covered & target_body_part)
@@ -153,6 +190,27 @@
 		if(TATTOO_ZONE_LIPS)
 			actual_zone = BODY_ZONE_CHEST
 			intimate_zone = TATTOO_ZONE_LIPS
+		if(TATTOO_ZONE_HORNS)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_HORNS
+		if(TATTOO_ZONE_TAIL)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_TAIL
+		if(TATTOO_ZONE_LEFT_THIGH)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_LEFT_THIGH
+		if(TATTOO_ZONE_RIGHT_THIGH)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_RIGHT_THIGH
+		if(TATTOO_ZONE_EARS)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_EARS
+		if(TATTOO_ZONE_WINGS)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_WINGS
+		if(TATTOO_ZONE_BELLY)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_BELLY
 
 	var/obj/item/bodypart/BP = target.get_bodypart(actual_zone)
 	if(!BP)
@@ -232,14 +290,41 @@
 	if(target.get_bodypart(BODY_ZONE_HEAD))
 		body_zones["Голова"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
 		body_zones["Губы"] = GLOB.tattoo_radial_icons[BODY_ZONE_PRECISE_MOUTH]
+		// Рога - проверяем через мутантные части вида
+		if(target.dna?.species?.mutant_bodyparts["horns"] && target.dna.features["horns"] && target.dna.features["horns"] != "None")
+			body_zones["Рога"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
+		// Уши - проверяем через мутантные части вида
+		var/has_ears = FALSE
+		if(target.dna?.species?.mutant_bodyparts["ears"] && target.dna.features["ears"] && target.dna.features["ears"] != "None")
+			has_ears = TRUE
+		else if(target.dna?.species?.mutant_bodyparts["mam_ears"] && target.dna.features["mam_ears"] && target.dna.features["mam_ears"] != "None")
+			has_ears = TRUE
+		if(has_ears)
+			body_zones["Уши"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
 	if(target.get_bodypart(BODY_ZONE_CHEST))
 		body_zones["Туловище"] = GLOB.tattoo_radial_icons[BODY_ZONE_CHEST]
 		body_zones["Пах"] = GLOB.tattoo_radial_icons[BODY_ZONE_PRECISE_GROIN]
+		// Хвост - проверяем через орган
+		if(target.getorganslot(ORGAN_SLOT_TAIL))
+			body_zones["Хвост"] = GLOB.tattoo_radial_icons[BODY_ZONE_PRECISE_GROIN]
+		// Крылья - проверяем через мутантные части вида
+		var/has_wings = FALSE
+		if(target.dna?.species?.mutant_bodyparts["wings"] && target.dna.features["wings"] && target.dna.features["wings"] != "None")
+			has_wings = TRUE
+		else if(target.dna?.species?.mutant_bodyparts["deco_wings"] && target.dna.features["deco_wings"] && target.dna.features["deco_wings"] != "None")
+			has_wings = TRUE
+		else if(target.dna?.species?.mutant_bodyparts["insect_wings"] && target.dna.features["insect_wings"] && target.dna.features["insect_wings"] != "None")
+			has_wings = TRUE
+		if(has_wings)
+			body_zones["Крылья"] = GLOB.tattoo_radial_icons[BODY_ZONE_CHEST]
+		// Живот - проверяем через орган
+		if(target.getorganslot(ORGAN_SLOT_BELLY))
+			body_zones["Живот"] = GLOB.tattoo_radial_icons[BODY_ZONE_CHEST]
 		// Интимные зоны - генерируем динамические иконки на основе органов персонажа
 		for(var/zone in GLOB.tattoo_zone_data)
 			var/list/data = GLOB.tattoo_zone_data[zone]
 			var/organ_slot = data[TATTOO_DATA_ORGAN]
-			if(!organ_slot)
+			if(!organ_slot || organ_slot == ORGAN_SLOT_TAIL || organ_slot == ORGAN_SLOT_BELLY)
 				continue
 			var/image/organ_icon = generate_genital_radial_icon(target, organ_slot)
 			if(organ_icon)
@@ -250,8 +335,10 @@
 		body_zones["Правая рука"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_ARM]
 	if(target.get_bodypart(BODY_ZONE_L_LEG))
 		body_zones["Левая нога"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_LEG]
+		body_zones["Левое бедро"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_LEG]
 	if(target.get_bodypart(BODY_ZONE_R_LEG))
 		body_zones["Правая нога"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_LEG]
+		body_zones["Правое бедро"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_LEG]
 
 	if(!length(body_zones))
 		to_chat(user, span_warning("У [target] нет доступных частей тела для татуировки!"))

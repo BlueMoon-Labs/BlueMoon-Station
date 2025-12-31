@@ -20,3 +20,17 @@
 	var/penis_tattoo_text = ""
 	/// Текст татуировок на губах
 	var/lips_tattoo_text = ""
+	/// Текст татуировок на рогах
+	var/horns_tattoo_text = ""
+	/// Текст татуировок на хвосте
+	var/tail_tattoo_text = ""
+	/// Текст татуировок на левом бедре
+	var/left_thigh_tattoo_text = ""
+	/// Текст татуировок на правом бедре
+	var/right_thigh_tattoo_text = ""
+	/// Текст татуировок на ушах
+	var/ears_tattoo_text = ""
+	/// Текст татуировок на крыльях
+	var/wings_tattoo_text = ""
+	/// Текст татуировок на животе
+	var/belly_tattoo_text = ""

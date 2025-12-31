@@ -17,7 +17,14 @@ GLOBAL_LIST_INIT(tattoo_radial_icons, init_tattoo_radial_icons())
 		TATTOO_ZONE_TESTICLES = list("testicles_tattoo_text", "яичках", "Яички", ORGAN_SLOT_TESTICLES, GROIN, "яичек"),
 		TATTOO_ZONE_BREASTS = list("breasts_tattoo_text", "груди", "Грудь", ORGAN_SLOT_BREASTS, CHEST, "груди"),
 		TATTOO_ZONE_PENIS = list("penis_tattoo_text", "члене", "Член", ORGAN_SLOT_PENIS, GROIN, "члена"),
-		TATTOO_ZONE_LIPS = list("lips_tattoo_text", "губах", "Губы", null, TATTOO_COVERED_MOUTH, "губ")
+		TATTOO_ZONE_LIPS = list("lips_tattoo_text", "губах", "Губы", null, TATTOO_COVERED_MOUTH, "губ"),
+		TATTOO_ZONE_HORNS = list("horns_tattoo_text", "рогах", "Рога", null, HEAD, "рогов"),
+		TATTOO_ZONE_TAIL = list("tail_tattoo_text", "хвосте", "Хвост", ORGAN_SLOT_TAIL, null, "хвоста"),
+		TATTOO_ZONE_LEFT_THIGH = list("left_thigh_tattoo_text", "левом бедре", "Левое бедро", null, LEG_LEFT, "левого бедра"),
+		TATTOO_ZONE_RIGHT_THIGH = list("right_thigh_tattoo_text", "правом бедре", "Правое бедро", null, LEG_RIGHT, "правого бедра"),
+		TATTOO_ZONE_EARS = list("ears_tattoo_text", "ушах", "Уши", null, HEAD, "ушей"),
+		TATTOO_ZONE_WINGS = list("wings_tattoo_text", "крыльях", "Крылья", null, CHEST, "крыльев"),
+		TATTOO_ZONE_BELLY = list("belly_tattoo_text", "животе", "Живот", ORGAN_SLOT_BELLY, CHEST, "живота")
 	)
 
 /proc/init_tattoo_radial_icons()
