@@ -422,6 +422,9 @@
 		qdel(src)
 		P.clashing = FALSE
 
+///////////////////////////////////////////////
+#define LOVE_INTERACTION_COOLDOWN 10 SECONDS
+
 /obj/item/toy/plush/bm/lissara
 	name = "Lissara plush"
 	desc = "Очаровательная мягкая игрушка в форме миниатюрной ламии. Её гладкое тело приятно тянется под пальцами, а хвост — гибкий, словно зовёт обвиться вокруг запястья. При лёгком нажатии на животик игрушка тихо шипит, а её тонкий язычок чуть высовывается наружу."
@@ -437,9 +440,9 @@
 	. = ..()
 
 	// Ограничение по процессу и времени на срабатывания
-	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= 100)
+	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 		var/obj/item/toy/plush/bm/araminta/P = locate() in range(1, src)
-		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= 100)
+		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 			spawn(1) // Что-то меняет пиксельную позицую после и так решаем приколы с бросками
 				if(istype(src.loc, /turf/open) && istype(P.loc, /turf/open)) // Изъятие из контейнера изначально считается как на открытом турфе, поэтому перепроверяем еще раз
 					loving_interaction(P)
@@ -549,26 +552,25 @@
 			src.say(pick(heart_broken_say))
 			partner.say(pick(heart_broken_say))
 			heart_broken = TRUE
-			goto cleanup
+			break
 		new /obj/effect/temp_visual/heart(get_turf(src))
 		new /obj/effect/temp_visual/heart(get_turf(partner))
 		if(i % 2 == 0)
-			playlewdinteractionsound(partner.loc, pick(GLOB.lewd_kiss_sounds), 90, 1, -1)
+			playsound(partner.loc, pick(GLOB.lewd_kiss_sounds), 90, TRUE, -1)
 		else
-			playlewdinteractionsound(src.loc, pick(GLOB.lewd_kiss_sounds), 90, 1, -1)
+			playsound(src.loc, pick(GLOB.lewd_kiss_sounds), 90, TRUE, -1)
 		sleep(8)
 
-	cleanup:
-		if(need_animate)
-			for(var/obj/item/toy/plush/plushe in list(src, partner))
-				var/list/offsets = original_pixel_offsets[plushe]
-				if(heart_broken)
-					plushe.pixel_x = offsets["pixel_x"]
-					plushe.pixel_y = offsets["pixel_y"]
-				else
-					animate(plushe, pixel_x = offsets["pixel_x"], pixel_y = offsets["pixel_y"], time = 6)
-		love_target = null
-		partner.love_target = null
+	if(need_animate)
+		for(var/obj/item/toy/plush/plushe in list(src, partner))
+			var/list/offsets = original_pixel_offsets[plushe]
+			if(heart_broken)
+				plushe.pixel_x = offsets["pixel_x"]
+				plushe.pixel_y = offsets["pixel_y"]
+			else
+				animate(plushe, pixel_x = offsets["pixel_x"], pixel_y = offsets["pixel_y"], time = 6)
+	love_target = null
+	partner.love_target = null
 
 
 /obj/item/toy/plush/bm/araminta
@@ -586,12 +588,15 @@
 	. = ..()
 
 	// Ограничение по процессу и времени на срабатывания
-	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= 100)
+	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 		var/obj/item/toy/plush/bm/lissara/P = locate() in range(1, src)
-		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= 100)
+		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 			spawn(1) // Что-то меняет пиксельную позицую после и так решаем приколы с бросками
 				if(istype(src.loc, /turf/open) && istype(P.loc, /turf/open)) // Изъятие из контейнера изначально считается как на открытом турфе, поэтому перепроверяем еще раз
 					P.loving_interaction(src)
+
+#undef LOVE_INTERACTION_COOLDOWN
+///////////////////////////////////////////////
 
 /obj/item/toy/plush/bm/stasik/artemq
 	name = "Artems toy plush"
