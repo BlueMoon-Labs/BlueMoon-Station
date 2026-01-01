@@ -1005,6 +1005,8 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 /mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, fireman = FALSE, carry_type = null)
 	if(!force)//humans are only meant to be ridden through piggybacking and special cases
 		return
+	if(!istype(target))
+		return FALSE
 	if(!is_type_in_typecache(target, can_ride_typecache))
 		target.visible_message("<span class='warning'>[target] действительно не может забраться на [src]...</span>")
 		return
