@@ -2,6 +2,7 @@
 	name = "Slave Trader"
 
 	uniform = /obj/item/clothing/under/syndicate
+	glasses = /obj/item/clothing/glasses/sunglasses
 	shoes = /obj/item/clothing/shoes/workboots
 	gloves = /obj/item/clothing/gloves/color/black
 	back = /obj/item/storage/backpack
