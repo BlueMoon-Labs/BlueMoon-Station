@@ -118,6 +118,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/uses_glasses_colour = 0
 	var/surgical_disable_radial = FALSE 		// BLUEMOON ADD
 
+	// BLUEMOON ADD START || Colormate presets
+	// Листы состоят из ключа, типа предмета и листа с именами престов и настройками цвета
+	var/list/color_presets_tint = list() // Пример: list(/obj/item/clothing = list("Стандарт" = "#ffffff"))
+	var/list/color_presets_hsv = list() // Пример: list(/obj/item/clothing = list("Стандарт" = list("hue" = 0, "sat" = 1, "val" = 1)))
+	var/list/color_presets_matrix = list() // Пример: list(/obj/item/clothing = list("Стандарт" = list(1,0,0,0,1,0,0,0,1,0,0,0)))
+	// BLUEMOON ADD END
+
 	//character preferences
 	var/real_name							//our character's name
 	var/nameless = FALSE					//whether or not our character is nameless
@@ -4484,8 +4491,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										2. - не против Хаоса и неожиданных ситуаций, готов рисковать ради интереса. \n\
 										3. - СЛАВА ХАОСУ НЕДЕЛИМОМУ. Готов к любым безумствам и опасностям.",\
 										"Предпочитаемый Уровень Хаоса", 2, 3, 0, round_value = TRUE)
-					
-					if(isnum(chaos_level))		
+
+					if(isnum(chaos_level))
 						preferred_chaos_level = chaos_level
 
 				if("auto_capitalize_enabled")

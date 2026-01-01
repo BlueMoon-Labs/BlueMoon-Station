@@ -166,49 +166,134 @@
 		.["item"]["name"] = inserted.name
 		.["item"]["sprite"] = icon2base64(getFlatIcon(inserted,defdir=SOUTH,no_anim=TRUE))
 		.["item"]["preview"] = icon2base64(build_preview())
+		if(user?.client?.prefs)
+			var/datum/preferences/prefs = user.client.prefs
+			var/t = inserted.type
+
+			.["presets_tint"]   = assoc_to_keys(prefs.color_presets_tint[t]		|| null)
+			.["presets_hsv"]    = assoc_to_keys(prefs.color_presets_hsv[t]		|| null)
+			.["presets_matrix"] = assoc_to_keys(prefs.color_presets_matrix[t]	|| null)
 	else
 		.["item"] = null
+		.["presets_tint"] = null
+		.["presets_hsv"] = null
+		.["presets_matrix"] = null
 
 /obj/machinery/gear_painter/ui_act(action, params)
 	. = ..()
 	if(.)
 		return
-	if(inserted)
-		switch(action)
-			if("switch_modes")
-				active_mode = text2num(params["mode"])
-				return TRUE
-			if("choose_color")
-				var/chosen_color = input(usr, "Choose a color: ", "Colormate color picking", activecolor) as color|null
-				if(chosen_color)
-					activecolor = chosen_color
-				return TRUE
-			if("paint")
-				do_paint(usr)
-				temp = "Painted Successfully!"
-				return TRUE
-			if("drop")
-				temp = ""
-				drop_item()
-				return TRUE
-			if("clear")
-				inserted.remove_atom_colour(FIXED_COLOUR_PRIORITY)
-				playsound(src, 'sound/effects/spray3.ogg', 50, 1)
-				temp = "Cleared Successfully!"
-				return TRUE
-			if("set_matrix_color")
-				color_matrix_last[params["color"]] = params["value"]
-				return TRUE
-			if("set_hue")
-				build_hue = clamp(text2num(params["buildhue"]), 0, 360)
-				return TRUE
-			if("set_sat")
-				build_sat = clamp(text2num(params["buildsat"]), -10, 10)
-				return TRUE
-			if("set_val")
-				build_val = clamp(text2num(params["buildval"]), -10, 10)
-				return TRUE
+	var/mob/user = usr
+	if(action == "insert")
+		user.ClickOn(src) // Чутка лениво, но... Кто хочет, может прописать отдельный прок
+		return TRUE
+	if(!inserted)
+		return
+	switch(action)
+		if("switch_modes")
+			active_mode = text2num(params["mode"])
+			return TRUE
+		if("choose_color")
+			var/chosen_color = input(usr, "Choose a color: ", "Colormate color picking", activecolor) as color|null
+			if(chosen_color)
+				activecolor = chosen_color
+			return TRUE
+		if("paint")
+			do_paint(usr)
+			temp = "Painted Successfully!"
+			return TRUE
+		if("drop")
+			temp = ""
+			drop_item()
+			return TRUE
+		if("clear")
+			inserted.remove_atom_colour(FIXED_COLOUR_PRIORITY)
+			playsound(src, 'sound/effects/spray3.ogg', 50, 1)
+			temp = "Cleared Successfully!"
+			return TRUE
+		if("set_matrix_color")
+			color_matrix_last[params["color"]] = params["value"]
+			return TRUE
+		if("set_hue")
+			build_hue = clamp(text2num(params["buildhue"]), 0, 360)
+			return TRUE
+		if("set_sat")
+			build_sat = clamp(text2num(params["buildsat"]), -10, 10)
+			return TRUE
+		if("set_val")
+			build_val = clamp(text2num(params["buildval"]), -10, 10)
+			return TRUE
+		if("preset_select", "preset_save", "preset_delete")
+			if(!inserted || !user?.client?.prefs)
+				return
 
+			var/datum/preferences/prefs = user.client.prefs
+			var/preset_name = params["name"]
+
+			// Сопоставляем режим (имя поля в prefs, лист пресетов для inserted.type)
+			var/presets_field
+			var/list/presets
+
+			switch(active_mode)
+				if(COLORMATE_TINT)
+					presets_field = "color_presets_tint"
+					presets = prefs.color_presets_tint[inserted.type]
+				if(COLORMATE_HSV)
+					presets_field = "color_presets_hsv"
+					presets = prefs.color_presets_hsv[inserted.type]
+				if(COLORMATE_MATRIX)
+					presets_field = "color_presets_matrix"
+					presets = prefs.color_presets_matrix[inserted.type]
+				else
+					return
+
+			switch(action)
+				if("preset_select")
+					if(!presets || !preset_name)
+						return
+
+					var/list/value = presets[preset_name]
+					switch(active_mode)
+						if(COLORMATE_TINT)
+							if(!istext(value)) // тут value не лист
+								return
+							activecolor = value
+						if(COLORMATE_HSV)
+							build_hue = value["hue"]
+							build_sat = value["sat"]
+							build_val = value["val"]
+						if(COLORMATE_MATRIX)
+							color_matrix_last = value.Copy()
+
+				if("preset_save")
+					// гарантируем существование контейнера пресетов
+					if(!presets)
+						prefs.vars[presets_field][inserted.type] = list()
+						presets = prefs.vars[presets_field][inserted.type]
+
+					// если имя пустое ИЛИ имя занято и выбрал "создать новый" — спрашиваем новое
+					if(!preset_name || (presets[preset_name] && tgui_alert(user, "Пресет уже существует, желаете изменить?", "Сохранение пресета", list("Создать новый", "Изменить")) == "Создать новый"))
+						var/const/max_length_name = 40
+						preset_name = tgui_input_text(user, "Впишите название ([max_length_name] символов)", "Сохранение пресета", max_length = max_length_name, multiline = FALSE, encode = TRUE)
+					if(!preset_name)
+						return
+
+					switch(active_mode)
+						if(COLORMATE_TINT)
+							presets[preset_name] = activecolor
+						if(COLORMATE_HSV)
+							presets[preset_name] = list("hue" = build_hue, "sat" = build_sat, "val" = build_val)
+						if(COLORMATE_MATRIX)
+							presets[preset_name] = color_matrix_last.Copy()
+
+					prefs.save_preferences()
+				if("preset_delete")
+					if(!presets || !preset_name)
+						return
+					presets -= preset_name
+					prefs.save_preferences()
+
+			return TRUE
 
 /obj/machinery/gear_painter/proc/do_paint(mob/user)
 	var/color_to_use
