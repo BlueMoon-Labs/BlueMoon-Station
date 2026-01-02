@@ -270,7 +270,7 @@
 						prefs.vars[presets_field][inserted.type] = list()
 						presets = prefs.vars[presets_field][inserted.type]
 
-					// если имя пустое ИЛИ имя занято и выбрал "создать новый" — спрашиваем новое
+					// если имя пустое ИЛИ имя занято и выбрал "создать новый" = спрашиваем новое
 					if(!preset_name || (presets[preset_name] && tgui_alert(user, "Пресет уже существует, желаете изменить?", "Сохранение пресета", list("Создать новый", "Изменить")) == "Создать новый"))
 						var/const/max_length_name = 40
 						preset_name = tgui_input_text(user, "Впишите название ([max_length_name] символов)", "Сохранение пресета", max_length = max_length_name, multiline = FALSE, encode = TRUE)
