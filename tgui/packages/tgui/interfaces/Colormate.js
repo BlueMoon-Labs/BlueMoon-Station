@@ -1,10 +1,10 @@
 import { useBackend, useLocalState } from '../backend';
-import { Button, Icon, NoticeBox, NumberInput, Section, Slider, Table, Tabs, Dropdown, Flex, Box, Stack, Modal } from '../components';
+import { Button, Icon, NoticeBox, NumberInput, Section, Slider, Table, Tabs, Dropdown, Flex, Stack } from '../components';
 import { Window } from '../layouts';
 
 export const Colormate = (props, context) => {
   const { act, data } = useBackend(context);
-  const { activemode, temp } = data;
+  const { activemode, temp_message } = data;
   const item = data.item || [];
 
   // Пресеты покрасок (только для текущего вставленного предмета)
@@ -50,12 +50,12 @@ export const Colormate = (props, context) => {
   };
 
   return (
-    <Window width="980" height="735" resizable>
-      <Window.Content>
+    <Window width="980" height="745" resizable>
+      <Window.Content overflow="auto">
 
         {Object.keys(item).length ? (
           <Section>
-            {temp ? <NoticeBox>{temp}</NoticeBox> : null}
+            {temp_message ? <NoticeBox>{temp_message}</NoticeBox> : null}
             <>
               <Table>
                 <Table.Cell width="50%">
