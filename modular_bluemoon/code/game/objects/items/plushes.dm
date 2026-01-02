@@ -486,8 +486,8 @@
 	var/distance = sqrt(dx * dx + dy * dy)
 
 	// Целевое расстояние между игрушками
-	var/target_distance = 16
-	var/tolerance = 5
+	var/const/target_distance = 16
+	var/const/tolerance = 5
 
 	// Нужно ли анимировать
 	var/need_animate = abs(distance - target_distance) > tolerance
