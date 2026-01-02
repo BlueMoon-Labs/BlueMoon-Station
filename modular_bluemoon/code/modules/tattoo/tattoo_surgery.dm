@@ -235,7 +235,7 @@
 
 	var/obj/item/bodypart/chest = target.get_bodypart(BODY_ZONE_CHEST)
 
-	// Для головы - обычная татуировка на голове + рога + уши
+	// Для головы - обычная татуировка на голове + рога + уши + щёки + лоб + подбородок
 	if(target_zone == BODY_ZONE_HEAD)
 		if(length(BP.tattoo_text))
 			return TRUE
@@ -250,6 +250,13 @@
 		else if(target.dna?.species?.mutant_bodyparts["mam_ears"] && target.dna.features["mam_ears"] && target.dna.features["mam_ears"] != "None")
 			has_ears = TRUE
 		if(has_ears && chest && length(chest.ears_tattoo_text))
+			return TRUE
+		// Проверяем щёки, лоб, подбородок
+		if(chest && length(chest.cheeks_tattoo_text))
+			return TRUE
+		if(chest && length(chest.forehead_tattoo_text))
+			return TRUE
+		if(chest && length(chest.chin_tattoo_text))
 			return TRUE
 		return FALSE
 
@@ -279,12 +286,12 @@
 			return TRUE
 		return FALSE
 
-	// Для паха - пах + ягодицы + член + яички + лобок + хвост (всё кроме груди, губ, рогов, бёдер, ушей, крыльев, живота)
+	// Для паха - пах + ягодицы + член + яички + лобок + хвост (всё кроме груди, губ, рогов, бёдер, ушей, крыльев, живота, лица, рук, ног)
 	if(target_zone == BODY_ZONE_PRECISE_GROIN)
 		if(chest && length(chest.groin_tattoo_text))
 			return TRUE
 		for(var/zone in GLOB.tattoo_zone_data)
-			if(zone == TATTOO_ZONE_BREASTS || zone == TATTOO_ZONE_GROIN || zone == TATTOO_ZONE_LIPS || zone == TATTOO_ZONE_HORNS || zone == TATTOO_ZONE_LEFT_THIGH || zone == TATTOO_ZONE_RIGHT_THIGH || zone == TATTOO_ZONE_EARS || zone == TATTOO_ZONE_WINGS || zone == TATTOO_ZONE_BELLY)
+			if(zone == TATTOO_ZONE_BREASTS || zone == TATTOO_ZONE_GROIN || zone == TATTOO_ZONE_LIPS || zone == TATTOO_ZONE_HORNS || zone == TATTOO_ZONE_LEFT_THIGH || zone == TATTOO_ZONE_RIGHT_THIGH || zone == TATTOO_ZONE_EARS || zone == TATTOO_ZONE_WINGS || zone == TATTOO_ZONE_BELLY || zone == TATTOO_ZONE_CHEEKS || zone == TATTOO_ZONE_FOREHEAD || zone == TATTOO_ZONE_CHIN || zone == TATTOO_ZONE_LEFT_HAND || zone == TATTOO_ZONE_RIGHT_HAND || zone == TATTOO_ZONE_LEFT_FOOT || zone == TATTOO_ZONE_RIGHT_FOOT)
 				continue
 			var/list/data = GLOB.tattoo_zone_data[zone]
 			var/organ_slot = data[TATTOO_DATA_ORGAN]
@@ -294,23 +301,43 @@
 				return TRUE
 		return FALSE
 
-	// Для левой ноги - нога + левое бедро
+	// Для левой ноги - нога + левое бедро + левая ступня
 	if(target_zone == BODY_ZONE_L_LEG)
 		if(length(BP.tattoo_text))
 			return TRUE
 		if(chest && length(chest.left_thigh_tattoo_text))
 			return TRUE
+		if(chest && length(chest.left_foot_tattoo_text))
+			return TRUE
 		return FALSE
 
-	// Для правой ноги - нога + правое бедро
+	// Для правой ноги - нога + правое бедро + правая ступня
 	if(target_zone == BODY_ZONE_R_LEG)
 		if(length(BP.tattoo_text))
 			return TRUE
 		if(chest && length(chest.right_thigh_tattoo_text))
 			return TRUE
+		if(chest && length(chest.right_foot_tattoo_text))
+			return TRUE
 		return FALSE
 
-	// Для остальных зон (руки) - просто проверяем основную татуировку
+	// Для левой руки - рука + левая кисть
+	if(target_zone == BODY_ZONE_L_ARM)
+		if(length(BP.tattoo_text))
+			return TRUE
+		if(chest && length(chest.left_hand_tattoo_text))
+			return TRUE
+		return FALSE
+
+	// Для правой руки - рука + правая кисть
+	if(target_zone == BODY_ZONE_R_ARM)
+		if(length(BP.tattoo_text))
+			return TRUE
+		if(chest && length(chest.right_hand_tattoo_text))
+			return TRUE
+		return FALSE
+
+	// Для остальных зон - просто проверяем основную татуировку
 	return length(BP.tattoo_text)
 
 /// Выбор конкретной зоны татуировки для хирургии через радиальное меню
@@ -319,14 +346,10 @@
 	if(target_zone == BODY_ZONE_PRECISE_MOUTH)
 		return TATTOO_ZONE_LIPS
 
-	// Для рук - сразу возвращаем
-	if(target_zone == BODY_ZONE_L_ARM || target_zone == BODY_ZONE_R_ARM)
-		return target_zone
-
 	var/list/available_zones = list()
 	var/obj/item/bodypart/chest = target.get_bodypart(BODY_ZONE_CHEST)
 
-	// Для головы - голова + рога + уши
+	// Для головы - голова + рога + уши + щёки + лоб + подбородок
 	if(target_zone == BODY_ZONE_HEAD)
 		if(length(BP.tattoo_text))
 			available_zones["Голова"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
@@ -342,6 +365,13 @@
 			has_ears = TRUE
 		if(has_ears && chest && length(chest.ears_tattoo_text))
 			available_zones["Уши"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
+		// Проверяем щёки, лоб, подбородок
+		if(chest && length(chest.cheeks_tattoo_text))
+			available_zones["Щёки"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
+		if(chest && length(chest.forehead_tattoo_text))
+			available_zones["Лоб"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
+		if(chest && length(chest.chin_tattoo_text))
+			available_zones["Подбородок"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
 		// Если только одна зона или нет зон
 		if(!length(available_zones))
 			return target_zone
@@ -371,13 +401,13 @@
 		if(target.getorganslot(ORGAN_SLOT_BELLY) && chest && length(chest.belly_tattoo_text))
 			available_zones["Живот"] = GLOB.tattoo_radial_icons[BODY_ZONE_CHEST]
 
-	// Для паха показываем пах + ягодицы + член + яички + лобок + хвост (всё кроме груди, губ, рогов, бёдер, ушей, крыльев, живота)
+	// Для паха показываем пах + ягодицы + член + яички + лобок + хвост (всё кроме груди, губ, рогов, бёдер, ушей, крыльев, живота, лица, рук, ног)
 	if(target_zone == BODY_ZONE_PRECISE_GROIN)
 		if(chest && length(chest.groin_tattoo_text))
 			available_zones["Пах"] = GLOB.tattoo_radial_icons[BODY_ZONE_PRECISE_GROIN]
 		// Итерируем через интимные зоны паха
 		for(var/zone in GLOB.tattoo_zone_data)
-			if(zone == TATTOO_ZONE_BREASTS || zone == TATTOO_ZONE_GROIN || zone == TATTOO_ZONE_LIPS || zone == TATTOO_ZONE_HORNS || zone == TATTOO_ZONE_LEFT_THIGH || zone == TATTOO_ZONE_RIGHT_THIGH || zone == TATTOO_ZONE_EARS || zone == TATTOO_ZONE_WINGS || zone == TATTOO_ZONE_BELLY)
+			if(zone == TATTOO_ZONE_BREASTS || zone == TATTOO_ZONE_GROIN || zone == TATTOO_ZONE_LIPS || zone == TATTOO_ZONE_HORNS || zone == TATTOO_ZONE_LEFT_THIGH || zone == TATTOO_ZONE_RIGHT_THIGH || zone == TATTOO_ZONE_EARS || zone == TATTOO_ZONE_WINGS || zone == TATTOO_ZONE_BELLY || zone == TATTOO_ZONE_CHEEKS || zone == TATTOO_ZONE_FOREHEAD || zone == TATTOO_ZONE_CHIN || zone == TATTOO_ZONE_LEFT_HAND || zone == TATTOO_ZONE_RIGHT_HAND || zone == TATTOO_ZONE_LEFT_FOOT || zone == TATTOO_ZONE_RIGHT_FOOT)
 				continue
 			var/list/data = GLOB.tattoo_zone_data[zone]
 			if(!chest || !length(chest.vars[data[TATTOO_DATA_VAR]]))
@@ -388,24 +418,52 @@
 			var/image/icon = organ_slot ? generate_genital_radial_icon(target, organ_slot) : null
 			available_zones[data[TATTOO_DATA_NAME_NOM]] = icon ? icon : GLOB.tattoo_radial_icons[BODY_ZONE_PRECISE_GROIN]
 
-	// Для левой ноги - нога + левое бедро
+	// Для левой ноги - нога + левое бедро + левая ступня
 	if(target_zone == BODY_ZONE_L_LEG)
 		if(length(BP.tattoo_text))
 			available_zones["Левая нога"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_LEG]
 		if(chest && length(chest.left_thigh_tattoo_text))
 			available_zones["Левое бедро"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_LEG]
+		if(chest && length(chest.left_foot_tattoo_text))
+			available_zones["Левая ступня"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_LEG]
 		// Если только одна зона или нет зон
 		if(!length(available_zones))
 			return target_zone
 		if(length(available_zones) == 1)
 			return zone_name_to_zone(available_zones[1])
 
-	// Для правой ноги - нога + правое бедро
+	// Для правой ноги - нога + правое бедро + правая ступня
 	if(target_zone == BODY_ZONE_R_LEG)
 		if(length(BP.tattoo_text))
 			available_zones["Правая нога"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_LEG]
 		if(chest && length(chest.right_thigh_tattoo_text))
 			available_zones["Правое бедро"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_LEG]
+		if(chest && length(chest.right_foot_tattoo_text))
+			available_zones["Правая ступня"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_LEG]
+		// Если только одна зона или нет зон
+		if(!length(available_zones))
+			return target_zone
+		if(length(available_zones) == 1)
+			return zone_name_to_zone(available_zones[1])
+
+	// Для левой руки - рука + левая кисть
+	if(target_zone == BODY_ZONE_L_ARM)
+		if(length(BP.tattoo_text))
+			available_zones["Левая рука"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_ARM]
+		if(chest && length(chest.left_hand_tattoo_text))
+			available_zones["Левая кисть"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_ARM]
+		// Если только одна зона или нет зон
+		if(!length(available_zones))
+			return target_zone
+		if(length(available_zones) == 1)
+			return zone_name_to_zone(available_zones[1])
+
+	// Для правой руки - рука + правая кисть
+	if(target_zone == BODY_ZONE_R_ARM)
+		if(length(BP.tattoo_text))
+			available_zones["Правая рука"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_ARM]
+		if(chest && length(chest.right_hand_tattoo_text))
+			available_zones["Правая кисть"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_ARM]
 		// Если только одна зона или нет зон
 		if(!length(available_zones))
 			return target_zone

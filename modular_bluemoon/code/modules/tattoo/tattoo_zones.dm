@@ -7,6 +7,70 @@ GLOBAL_LIST_INIT(tattoo_zone_data, init_tattoo_zone_data())
 /// Кэш иконок для радиального меню
 GLOBAL_LIST_INIT(tattoo_radial_icons, init_tattoo_radial_icons())
 
+/// Глобальный список цветов чернил для татуировок (название = hex-код)
+GLOBAL_LIST_INIT(tattoo_ink_colors, list(
+	// Чёрные и серые
+	"Угольно-чёрные" = "#1A1A1A",
+	"Тёмно-серые" = "#4A4A4A",
+	"Графитовые" = "#696969",
+	"Пепельные" = "#A0A0A0",
+	"Серебряные" = "#C0C0C0",
+	"Белые" = "#FFFFFF",
+	// Красные
+	"Кровавые" = "#8A0303",
+	"Бордовые" = "#8B0000",
+	"Алые" = "#DC143C",
+	"Огненно-красные" = "#FF3232",
+	"Рубиновые" = "#E0115F",
+	// Розовые
+	"Малиновые" = "#C71585",
+	"Розовые" = "#FF69B4",
+	"Нежно-розовые" = "#FFB6C1",
+	"Неоново-розовые" = "#FF00FF",
+	"Фуксия" = "#FF1493",
+	// Оранжевые
+	"Коралловые" = "#FF7F50",
+	"Оранжевые" = "#FF8C00",
+	"Мандариновые" = "#FF6347",
+	"Янтарные" = "#FFBF00",
+	// Жёлтые
+	"Лимонные" = "#FFF44F",
+	"Ярко-жёлтые" = "#FFFF00",
+	"Золотые" = "#FFD700",
+	"Медовые" = "#EB9605",
+	"Бронзовые" = "#CD7F32",
+	// Зелёные
+	"Оливковые" = "#808000",
+	"Тёмно-зелёные" = "#228B22",
+	"Изумрудные" = "#50C878",
+	"Травяные" = "#7CFC00",
+	"Кислотно-зелёные" = "#00FF00",
+	"Мятные" = "#98FB98",
+	// Голубые и бирюзовые
+	"Бирюзовые" = "#40E0D0",
+	"Аквамариновые" = "#7FFFD4",
+	"Электро-голубые" = "#00FFFF",
+	"Небесно-голубые" = "#87CEEB",
+	"Ледяные" = "#B0E0E6",
+	// Синие
+	"Синие" = "#4169E1",
+	"Сапфировые" = "#0F52BA",
+	"Тёмно-синие" = "#00008B",
+	"Индиго" = "#4B0082",
+	"Полуночные" = "#191970",
+	// Фиолетовые
+	"Лавандовые" = "#9B51FF",
+	"Фиолетовые" = "#B900F7",
+	"Пурпурные" = "#800080",
+	"Аметистовые" = "#9966CC",
+	"Сливовые" = "#8E4585",
+	// Коричневые
+	"Шоколадные" = "#7B3F00",
+	"Каштановые" = "#954535",
+	"Кофейные" = "#6F4E37",
+	"Песочные" = "#C2B280"
+))
+
 /proc/init_tattoo_zone_data()
 	return list(
 		// zone_id = list(var_name, display_name_prepositional, display_name_nominative, organ_slot, body_covered, display_name_genitive)
@@ -19,12 +83,19 @@ GLOBAL_LIST_INIT(tattoo_radial_icons, init_tattoo_radial_icons())
 		TATTOO_ZONE_PENIS = list("penis_tattoo_text", "члене", "Член", ORGAN_SLOT_PENIS, GROIN, "члена"),
 		TATTOO_ZONE_LIPS = list("lips_tattoo_text", "губах", "Губы", null, TATTOO_COVERED_MOUTH, "губ"),
 		TATTOO_ZONE_HORNS = list("horns_tattoo_text", "рогах", "Рога", null, HEAD, "рогов"),
-		TATTOO_ZONE_TAIL = list("tail_tattoo_text", "хвосте", "Хвост", ORGAN_SLOT_TAIL, null, "хвоста"),
+		TATTOO_ZONE_TAIL = list("tail_tattoo_text", "хвосте", "Хвост", ORGAN_SLOT_TAIL, TATTOO_COVERED_TAIL, "хвоста"),
 		TATTOO_ZONE_LEFT_THIGH = list("left_thigh_tattoo_text", "левом бедре", "Левое бедро", null, LEG_LEFT, "левого бедра"),
 		TATTOO_ZONE_RIGHT_THIGH = list("right_thigh_tattoo_text", "правом бедре", "Правое бедро", null, LEG_RIGHT, "правого бедра"),
 		TATTOO_ZONE_EARS = list("ears_tattoo_text", "ушах", "Уши", null, HEAD, "ушей"),
 		TATTOO_ZONE_WINGS = list("wings_tattoo_text", "крыльях", "Крылья", null, CHEST, "крыльев"),
-		TATTOO_ZONE_BELLY = list("belly_tattoo_text", "животе", "Живот", ORGAN_SLOT_BELLY, CHEST, "живота")
+		TATTOO_ZONE_BELLY = list("belly_tattoo_text", "животе", "Живот", ORGAN_SLOT_BELLY, CHEST, "живота"),
+		TATTOO_ZONE_CHEEKS = list("cheeks_tattoo_text", "щеках", "Щёки", null, TATTOO_COVERED_FACE, "щёк"),
+		TATTOO_ZONE_FOREHEAD = list("forehead_tattoo_text", "лбу", "Лоб", null, HEAD, "лба"),
+		TATTOO_ZONE_CHIN = list("chin_tattoo_text", "подбородке", "Подбородок", null, TATTOO_COVERED_MOUTH, "подбородка"),
+		TATTOO_ZONE_LEFT_HAND = list("left_hand_tattoo_text", "левой кисти", "Левая кисть", null, HAND_LEFT, "левой кисти"),
+		TATTOO_ZONE_RIGHT_HAND = list("right_hand_tattoo_text", "правой кисти", "Правая кисть", null, HAND_RIGHT, "правой кисти"),
+		TATTOO_ZONE_LEFT_FOOT = list("left_foot_tattoo_text", "левой ступне", "Левая ступня", null, FOOT_LEFT, "левой ступни"),
+		TATTOO_ZONE_RIGHT_FOOT = list("right_foot_tattoo_text", "правой ступне", "Правая ступня", null, FOOT_RIGHT, "правой ступни")
 	)
 
 /proc/init_tattoo_radial_icons()
@@ -248,3 +319,77 @@ GLOBAL_LIST_INIT(tattoo_radial_icons, init_tattoo_radial_icons())
 			continue
 
 		CB.Invoke(zone, text, data[TATTOO_DATA_NAME_PREP])
+
+/// Проверяет, закрыта ли зона одеждой (простая проверка)
+/proc/is_zone_covered(list/items, body_covered_flag)
+	for(var/obj/item/worn in items)
+		if(worn.body_parts_covered & body_covered_flag)
+			return TRUE
+	return FALSE
+
+/// Проверяет, закрыта ли грудь "существенной" одеждой (не нижним бельём)
+/// Существенная одежда - это та, что покрывает грудь И хотя бы руки или пах (рубашка, комбинезон)
+/// Нижнее бельё (бра, топ) покрывает только грудь без дополнительных зон
+/proc/is_chest_substantially_covered(list/items)
+	for(var/obj/item/worn in items)
+		if(!(worn.body_parts_covered & CHEST))
+			continue
+		// Если одежда покрывает грудь + руки или грудь + пах - это существенное покрытие
+		if(worn.body_parts_covered & (ARM_LEFT|ARM_RIGHT|GROIN))
+			return TRUE
+	return FALSE
+
+/// Проверяет, закрыт ли рот маской или шлемом (flags_cover)
+/proc/is_mouth_covered(mob/living/carbon/human/H)
+	if(H.wear_mask?.flags_cover & MASKCOVERSMOUTH)
+		return TRUE
+	if(H.head?.flags_cover & HEADCOVERSMOUTH)
+		return TRUE
+	return FALSE
+
+/// Проверяет, закрыто ли лицо маской или шлемом (HIDEFACE через flags_inv)
+/// Используется для татуировок на щеках
+/proc/is_face_covered(mob/living/carbon/human/H)
+	if(H.wear_mask?.flags_inv & HIDEFACE)
+		return TRUE
+	if(H.head?.flags_inv & HIDEFACE)
+		return TRUE
+	return FALSE
+
+/// Проверяет, закрыт ли хвост костюмом (HIDETAUR через flags_inv)
+/// Используется для татуировок на хвосте
+/proc/is_tail_covered(mob/living/carbon/human/H)
+	if(H.wear_suit?.flags_inv & HIDETAUR)
+		return TRUE
+	return FALSE
+
+/// Проверяет, закрыта ли конкретная зона татуировки одеждой
+/proc/is_tattoo_zone_covered(zone, list/items, mob/living/carbon/human/H)
+	var/body_covered = tattoo_zone_to_body_covered(zone)
+
+	// Специальная проверка для губ/подбородка - маска закрывает рот
+	if(body_covered == TATTOO_COVERED_MOUTH)
+		return is_mouth_covered(H)
+
+	// Специальная проверка для щёк - полнолицевая маска или шлем
+	if(body_covered == TATTOO_COVERED_FACE)
+		return is_face_covered(H)
+
+	// Специальная проверка для хвоста - скафандр и подобная одежда
+	if(body_covered == TATTOO_COVERED_TAIL)
+		return is_tail_covered(H)
+
+	// Нет покрытия - всегда видны
+	if(!body_covered)
+		return FALSE
+
+	// Для CHEST используем разную логику в зависимости от зоны
+	if(body_covered == CHEST)
+		// Груди покрываются бра, остальное (живот, крылья, туловище) - только существенной одеждой
+		if(zone == TATTOO_ZONE_BREASTS)
+			return is_zone_covered(items, CHEST)
+		else
+			return is_chest_substantially_covered(items)
+
+	// Для остальных зон - простая проверка
+	return is_zone_covered(items, body_covered)

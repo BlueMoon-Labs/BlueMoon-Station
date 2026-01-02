@@ -38,74 +38,11 @@
 	if(!user.canUseTopic(src, BE_CLOSE))
 		return
 
-	var/list/ink_choices = list(
-		// Чёрные и серые
-		"Угольно-чёрные" = "#1A1A1A",
-		"Тёмно-серые" = "#4A4A4A",
-		"Графитовые" = "#696969",
-		"Пепельные" = "#A0A0A0",
-		"Серебряные" = "#C0C0C0",
-		"Белые" = "#FFFFFF",
-		// Красные
-		"Кровавые" = "#8A0303",
-		"Бордовые" = "#8B0000",
-		"Алые" = "#DC143C",
-		"Огненно-красные" = "#FF3232",
-		"Рубиновые" = "#E0115F",
-		// Розовые
-		"Малиновые" = "#C71585",
-		"Розовые" = "#FF69B4",
-		"Нежно-розовые" = "#FFB6C1",
-		"Неоново-розовые" = "#FF00FF",
-		"Фуксия" = "#FF1493",
-		// Оранжевые
-		"Коралловые" = "#FF7F50",
-		"Оранжевые" = "#FF8C00",
-		"Мандариновые" = "#FF6347",
-		"Янтарные" = "#FFBF00",
-		// Жёлтые
-		"Лимонные" = "#FFF44F",
-		"Ярко-жёлтые" = "#FFFF00",
-		"Золотые" = "#FFD700",
-		"Медовые" = "#EB9605",
-		"Бронзовые" = "#CD7F32",
-		// Зелёные
-		"Оливковые" = "#808000",
-		"Тёмно-зелёные" = "#228B22",
-		"Изумрудные" = "#50C878",
-		"Травяные" = "#7CFC00",
-		"Кислотно-зелёные" = "#00FF00",
-		"Мятные" = "#98FB98",
-		// Голубые и бирюзовые
-		"Бирюзовые" = "#40E0D0",
-		"Аквамариновые" = "#7FFFD4",
-		"Электро-голубые" = "#00FFFF",
-		"Небесно-голубые" = "#87CEEB",
-		"Ледяные" = "#B0E0E6",
-		// Синие
-		"Синие" = "#4169E1",
-		"Сапфировые" = "#0F52BA",
-		"Тёмно-синие" = "#00008B",
-		"Индиго" = "#4B0082",
-		"Полуночные" = "#191970",
-		// Фиолетовые
-		"Лавандовые" = "#9B51FF",
-		"Фиолетовые" = "#B900F7",
-		"Пурпурные" = "#800080",
-		"Аметистовые" = "#9966CC",
-		"Сливовые" = "#8E4585",
-		// Коричневые
-		"Шоколадные" = "#7B3F00",
-		"Каштановые" = "#954535",
-		"Кофейные" = "#6F4E37",
-		"Песочные" = "#C2B280"
-	)
-
-	var/choice = input(user, "Выберите цвет чернил для татуировки:", "Цвет чернил") as null|anything in ink_choices
+	var/choice = input(user, "Выберите цвет чернил для татуировки:", "Цвет чернил") as null|anything in GLOB.tattoo_ink_colors
 	if(!choice || !user.canUseTopic(src, BE_CLOSE))
 		return
 
-	ink_color = ink_choices[choice]
+	ink_color = GLOB.tattoo_ink_colors[choice]
 	ink_style = lowertext(choice)
 	to_chat(user, span_notice("Вы заправили [src] [ink_style] чернилами."))
 
@@ -145,24 +82,15 @@
 	if(!selected_zone)
 		return
 
-	// Проверка на одежду
-	var/target_body_part = tattoo_zone_to_body_covered(selected_zone)
-	// null допустим для зон без покрытия одеждой (хвост)
-	if(target_body_part == 0)
-		to_chat(user, span_warning("Вы должны выбрать часть тела!"))
-		return
-
-	// Специальная проверка для губ - маска закрывает рот
-	if(target_body_part == TATTOO_COVERED_MOUTH)
-		if(is_mouth_covered(target))
+	// Проверка на одежду (используем централизованную функцию)
+	var/list/items_on_target = target.get_equipped_items()
+	if(is_tattoo_zone_covered(selected_zone, items_on_target, target))
+		var/body_covered = tattoo_zone_to_body_covered(selected_zone)
+		if(body_covered == TATTOO_COVERED_MOUTH)
 			to_chat(user, span_warning("Вам мешает маска [target]!"))
-			return
-	else if(target_body_part) // Проверяем одежду только если есть покрытие (хвост не проверяем)
-		var/list/items_on_target = target.get_equipped_items()
-		for(var/obj/item/worn_clothes in items_on_target)
-			if(worn_clothes.body_parts_covered & target_body_part)
-				to_chat(user, span_warning("Вам мешает одежда [target]!"))
-				return
+		else
+			to_chat(user, span_warning("Вам мешает одежда [target]!"))
+		return
 
 	// Определяем тип зоны и реальную часть тела
 	var/actual_zone = selected_zone
@@ -211,6 +139,27 @@
 		if(TATTOO_ZONE_BELLY)
 			actual_zone = BODY_ZONE_CHEST
 			intimate_zone = TATTOO_ZONE_BELLY
+		if(TATTOO_ZONE_CHEEKS)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_CHEEKS
+		if(TATTOO_ZONE_FOREHEAD)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_FOREHEAD
+		if(TATTOO_ZONE_CHIN)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_CHIN
+		if(TATTOO_ZONE_LEFT_HAND)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_LEFT_HAND
+		if(TATTOO_ZONE_RIGHT_HAND)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_RIGHT_HAND
+		if(TATTOO_ZONE_LEFT_FOOT)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_LEFT_FOOT
+		if(TATTOO_ZONE_RIGHT_FOOT)
+			actual_zone = BODY_ZONE_CHEST
+			intimate_zone = TATTOO_ZONE_RIGHT_FOOT
 
 	var/obj/item/bodypart/BP = target.get_bodypart(actual_zone)
 	if(!BP)
@@ -290,6 +239,9 @@
 	if(target.get_bodypart(BODY_ZONE_HEAD))
 		body_zones["Голова"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
 		body_zones["Губы"] = GLOB.tattoo_radial_icons[BODY_ZONE_PRECISE_MOUTH]
+		body_zones["Щёки"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
+		body_zones["Лоб"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
+		body_zones["Подбородок"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
 		// Рога - проверяем через мутантные части вида
 		if(target.dna?.species?.mutant_bodyparts["horns"] && target.dna.features["horns"] && target.dna.features["horns"] != "None")
 			body_zones["Рога"] = GLOB.tattoo_radial_icons[BODY_ZONE_HEAD]
@@ -331,14 +283,18 @@
 				body_zones[data[TATTOO_DATA_NAME_NOM]] = organ_icon
 	if(target.get_bodypart(BODY_ZONE_L_ARM))
 		body_zones["Левая рука"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_ARM]
+		body_zones["Левая кисть"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_ARM]
 	if(target.get_bodypart(BODY_ZONE_R_ARM))
 		body_zones["Правая рука"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_ARM]
+		body_zones["Правая кисть"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_ARM]
 	if(target.get_bodypart(BODY_ZONE_L_LEG))
 		body_zones["Левая нога"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_LEG]
 		body_zones["Левое бедро"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_LEG]
+		body_zones["Левая ступня"] = GLOB.tattoo_radial_icons[BODY_ZONE_L_LEG]
 	if(target.get_bodypart(BODY_ZONE_R_LEG))
 		body_zones["Правая нога"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_LEG]
 		body_zones["Правое бедро"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_LEG]
+		body_zones["Правая ступня"] = GLOB.tattoo_radial_icons[BODY_ZONE_R_LEG]
 
 	if(!length(body_zones))
 		to_chat(user, span_warning("У [target] нет доступных частей тела для татуировки!"))

@@ -290,70 +290,12 @@ GLOBAL_LIST_EMPTY(tattoo_managers)
 	GLOB.tattoo_managers[ckey] = manager
 	manager.ui_interact(mob)
 
-/// Возвращает список доступных цветов чернил для TGUI
+/// Возвращает список доступных цветов чернил для TGUI (формат list(list("name", "color"), ...))
 /proc/get_ink_colors_list()
-	return list(
-		// Чёрные и серые
-		list("name" = "Угольно-чёрные", "color" = "#1A1A1A"),
-		list("name" = "Тёмно-серые", "color" = "#4A4A4A"),
-		list("name" = "Графитовые", "color" = "#696969"),
-		list("name" = "Пепельные", "color" = "#A0A0A0"),
-		list("name" = "Серебряные", "color" = "#C0C0C0"),
-		list("name" = "Белые", "color" = "#FFFFFF"),
-		// Красные
-		list("name" = "Кровавые", "color" = "#8A0303"),
-		list("name" = "Бордовые", "color" = "#8B0000"),
-		list("name" = "Алые", "color" = "#DC143C"),
-		list("name" = "Огненно-красные", "color" = "#FF3232"),
-		list("name" = "Рубиновые", "color" = "#E0115F"),
-		// Розовые
-		list("name" = "Малиновые", "color" = "#C71585"),
-		list("name" = "Розовые", "color" = "#FF69B4"),
-		list("name" = "Нежно-розовые", "color" = "#FFB6C1"),
-		list("name" = "Неоново-розовые", "color" = "#FF00FF"),
-		list("name" = "Фуксия", "color" = "#FF1493"),
-		// Оранжевые
-		list("name" = "Коралловые", "color" = "#FF7F50"),
-		list("name" = "Оранжевые", "color" = "#FF8C00"),
-		list("name" = "Мандариновые", "color" = "#FF6347"),
-		list("name" = "Янтарные", "color" = "#FFBF00"),
-		// Жёлтые
-		list("name" = "Лимонные", "color" = "#FFF44F"),
-		list("name" = "Ярко-жёлтые", "color" = "#FFFF00"),
-		list("name" = "Золотые", "color" = "#FFD700"),
-		list("name" = "Медовые", "color" = "#EB9605"),
-		list("name" = "Бронзовые", "color" = "#CD7F32"),
-		// Зелёные
-		list("name" = "Оливковые", "color" = "#808000"),
-		list("name" = "Тёмно-зелёные", "color" = "#228B22"),
-		list("name" = "Изумрудные", "color" = "#50C878"),
-		list("name" = "Травяные", "color" = "#7CFC00"),
-		list("name" = "Кислотно-зелёные", "color" = "#00FF00"),
-		list("name" = "Мятные", "color" = "#98FB98"),
-		// Голубые и бирюзовые
-		list("name" = "Бирюзовые", "color" = "#40E0D0"),
-		list("name" = "Аквамариновые", "color" = "#7FFFD4"),
-		list("name" = "Электро-голубые", "color" = "#00FFFF"),
-		list("name" = "Небесно-голубые", "color" = "#87CEEB"),
-		list("name" = "Ледяные", "color" = "#B0E0E6"),
-		// Синие
-		list("name" = "Синие", "color" = "#4169E1"),
-		list("name" = "Сапфировые", "color" = "#0F52BA"),
-		list("name" = "Тёмно-синие", "color" = "#00008B"),
-		list("name" = "Индиго", "color" = "#4B0082"),
-		list("name" = "Полуночные", "color" = "#191970"),
-		// Фиолетовые
-		list("name" = "Лавандовые", "color" = "#9B51FF"),
-		list("name" = "Фиолетовые", "color" = "#B900F7"),
-		list("name" = "Пурпурные", "color" = "#800080"),
-		list("name" = "Аметистовые", "color" = "#9966CC"),
-		list("name" = "Сливовые", "color" = "#8E4585"),
-		// Коричневые
-		list("name" = "Шоколадные", "color" = "#7B3F00"),
-		list("name" = "Каштановые", "color" = "#954535"),
-		list("name" = "Кофейные", "color" = "#6F4E37"),
-		list("name" = "Песочные", "color" = "#C2B280")
-	)
+	var/list/result = list()
+	for(var/name in GLOB.tattoo_ink_colors)
+		result += list(list("name" = name, "color" = GLOB.tattoo_ink_colors[name]))
+	return result
 
 /// Возвращает список доступных зон для TGUI
 /proc/get_available_zones_list()
@@ -361,6 +303,9 @@ GLOBAL_LIST_EMPTY(tattoo_managers)
 	// Стандартные зоны тела
 	zones += list(list("id" = BODY_ZONE_HEAD, "name" = "Голова"))
 	zones += list(list("id" = TATTOO_ZONE_LIPS, "name" = "Губы"))
+	zones += list(list("id" = TATTOO_ZONE_CHEEKS, "name" = "Щёки"))
+	zones += list(list("id" = TATTOO_ZONE_FOREHEAD, "name" = "Лоб"))
+	zones += list(list("id" = TATTOO_ZONE_CHIN, "name" = "Подбородок"))
 	zones += list(list("id" = TATTOO_ZONE_HORNS, "name" = "Рога"))
 	zones += list(list("id" = BODY_ZONE_CHEST, "name" = "Туловище"))
 	zones += list(list("id" = TATTOO_ZONE_BREASTS, "name" = "Грудь"))
@@ -370,11 +315,15 @@ GLOBAL_LIST_EMPTY(tattoo_managers)
 	zones += list(list("id" = TATTOO_ZONE_TESTICLES, "name" = "Яички"))
 	zones += list(list("id" = TATTOO_ZONE_PENIS, "name" = "Член"))
 	zones += list(list("id" = BODY_ZONE_L_ARM, "name" = "Левая рука"))
+	zones += list(list("id" = TATTOO_ZONE_LEFT_HAND, "name" = "Левая кисть"))
 	zones += list(list("id" = BODY_ZONE_R_ARM, "name" = "Правая рука"))
+	zones += list(list("id" = TATTOO_ZONE_RIGHT_HAND, "name" = "Правая кисть"))
 	zones += list(list("id" = BODY_ZONE_L_LEG, "name" = "Левая нога"))
-	zones += list(list("id" = BODY_ZONE_R_LEG, "name" = "Правая нога"))
 	zones += list(list("id" = TATTOO_ZONE_LEFT_THIGH, "name" = "Левое бедро"))
+	zones += list(list("id" = TATTOO_ZONE_LEFT_FOOT, "name" = "Левая ступня"))
+	zones += list(list("id" = BODY_ZONE_R_LEG, "name" = "Правая нога"))
 	zones += list(list("id" = TATTOO_ZONE_RIGHT_THIGH, "name" = "Правое бедро"))
+	zones += list(list("id" = TATTOO_ZONE_RIGHT_FOOT, "name" = "Правая ступня"))
 	zones += list(list("id" = TATTOO_ZONE_TAIL, "name" = "Хвост"))
 	zones += list(list("id" = TATTOO_ZONE_EARS, "name" = "Уши"))
 	zones += list(list("id" = TATTOO_ZONE_WINGS, "name" = "Крылья"))

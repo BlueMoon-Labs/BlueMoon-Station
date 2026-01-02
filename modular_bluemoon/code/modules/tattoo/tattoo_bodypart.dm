@@ -34,3 +34,17 @@
 	var/wings_tattoo_text = ""
 	/// Текст татуировок на животе
 	var/belly_tattoo_text = ""
+	/// Текст татуировок на щеках
+	var/cheeks_tattoo_text = ""
+	/// Текст татуировок на лбу
+	var/forehead_tattoo_text = ""
+	/// Текст татуировок на подбородке
+	var/chin_tattoo_text = ""
+	/// Текст татуировок на левой кисти
+	var/left_hand_tattoo_text = ""
+	/// Текст татуировок на правой кисти
+	var/right_hand_tattoo_text = ""
+	/// Текст татуировок на левой ступне
+	var/left_foot_tattoo_text = ""
+	/// Текст татуировок на правой ступне
+	var/right_foot_tattoo_text = ""

@@ -93,6 +93,18 @@ const getZoneIcon = (zone: string): string => {
       return 'dove';
     case 'belly':
       return 'circle';
+    case 'cheeks':
+      return 'smile';
+    case 'forehead':
+      return 'brain';
+    case 'chin':
+      return 'user';
+    case 'left_hand':
+    case 'right_hand':
+      return 'hand-paper';
+    case 'left_foot':
+    case 'right_foot':
+      return 'shoe-prints';
     default:
       return 'palette';
   }

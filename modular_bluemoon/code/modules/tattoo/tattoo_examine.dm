@@ -17,23 +17,6 @@
 
 		. += is_description ? display_text : "\"[display_text]\""
 
-/// Проверяет, закрыта ли зона одеждой
-/proc/is_zone_covered(list/items, body_covered_flag)
-	for(var/obj/item/worn in items)
-		if(worn.body_parts_covered & body_covered_flag)
-			return TRUE
-	return FALSE
-
-/// Проверяет, закрыт ли рот маской или шлемом (flags_cover)
-/proc/is_mouth_covered(mob/living/carbon/human/H)
-	// Проверяем маску
-	if(H.wear_mask?.flags_cover & MASKCOVERSMOUTH)
-		return TRUE
-	// Проверяем шлем/головной убор
-	if(H.head?.flags_cover & HEADCOVERSMOUTH)
-		return TRUE
-	return FALSE
-
 /mob/living/carbon/human/proc/get_tattoo_examine_text()
 	var/tattoo_text_output = ""
 	var/list/items_on_self = get_equipped_items()
@@ -41,22 +24,14 @@
 	for(var/obj/item/bodypart/BP as anything in bodyparts)
 		// Обычные татуировки на части тела
 		if(length(BP.tattoo_text))
-			var/covered_area = tattoo_zone_to_body_covered(BP.body_zone) || CHEST
-			if(!is_zone_covered(items_on_self, covered_area))
+			// Для обычных частей тела используем BODY_ZONE как зону
+			if(!is_tattoo_zone_covered(BP.body_zone, items_on_self, src))
 				for(var/tattoo in parse_tattoos_for_display(BP.tattoo_text))
 					tattoo_text_output += span_notice("На [ru_ego()] [BP.ru_name_v] набита татуировка: [tattoo].\n")
 
 		// Интимные татуировки (хранятся на груди)
 		if(BP.body_zone != BODY_ZONE_CHEST)
 			continue
-
-		// Проверяем покрытие один раз для каждой области
-		var/chest_covered = is_zone_covered(items_on_self, CHEST)
-		var/groin_covered = is_zone_covered(items_on_self, GROIN)
-		var/head_covered = is_zone_covered(items_on_self, HEAD)
-		var/left_leg_covered = is_zone_covered(items_on_self, LEG_LEFT)
-		var/right_leg_covered = is_zone_covered(items_on_self, LEG_RIGHT)
-		var/mouth_covered = is_mouth_covered(src)
 
 		// Итерируем через все интимные зоны используя centralized data
 		for(var/zone in GLOB.tattoo_zone_data)
@@ -97,26 +72,8 @@
 				if(!has_wings)
 					continue
 
-			// Проверяем покрытие
-			var/body_covered = data[TATTOO_DATA_COVERED]
-			var/is_covered = FALSE
-			switch(body_covered)
-				if(CHEST)
-					is_covered = chest_covered
-				if(GROIN)
-					is_covered = groin_covered
-				if(HEAD)
-					is_covered = head_covered
-				if(LEG_LEFT)
-					is_covered = left_leg_covered
-				if(LEG_RIGHT)
-					is_covered = right_leg_covered
-				if(TATTOO_COVERED_MOUTH)
-					is_covered = mouth_covered
-				if(null)
-					is_covered = FALSE // Хвост и прочее без покрытия всегда видны
-
-			if(is_covered)
+			// Проверяем покрытие одеждой
+			if(is_tattoo_zone_covered(zone, items_on_self, src))
 				continue
 
 			for(var/tattoo in parse_tattoos_for_display(text))
