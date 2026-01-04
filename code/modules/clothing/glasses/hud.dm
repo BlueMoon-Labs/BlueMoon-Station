@@ -185,6 +185,62 @@
 	tint = 1
 	glass_colour_type = /datum/client_colour/glass_colour/darkred
 
+/obj/item/clothing/glasses/hud/securitygoggles
+	name = "security HUD Goggles"
+	desc = "Be on style! Who needs sunglasses when you have this!?"
+	icon_state = "secgoggles-g"
+	item_state = "secgoggles-g"
+
+	can_toggle = TRUE
+	actions_types = list(/datum/action/item_action/toggle)
+
+	flash_protect = 1
+	tint = 1
+
+	flags_cover = GLASSESCOVERSEYES
+	visor_flags_inv = HIDEEYES
+
+	hud_type = DATA_HUD_SECURITY_ADVANCED
+
+/obj/item/clothing/glasses/hud/securitygoggles/proc/update_visuals(mob/user)
+	if(!ishuman(user))
+		return
+
+	var/mob/living/carbon/human/H = user
+	if(H.glasses != src)
+		return
+
+	// Визор поднят → очки поверх шлема
+	if(!(src.flags_cover & GLASSESCOVERSEYES))
+		src.alternate_worn_layer = ABOVE_HEAD_LAYER
+	else
+		src.alternate_worn_layer = null
+
+	H.update_inv_glasses()
+
+
+
+/obj/item/clothing/glasses/hud/securitygoggles/proc/update_hud(mob/user)
+	if(!ishuman(user))
+		return
+
+	var/mob/living/carbon/human/H = user
+	if(H.glasses != src)
+		return
+
+	var/datum/atom_hud/HUD = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
+
+	// Визор ОПУЩЕН → очки закрывают глаза
+	if(src.flags_cover & GLASSESCOVERSEYES)
+		HUD.add_hud_to(H)
+	else
+		HUD.remove_hud_from(H)
+
+/obj/item/clothing/glasses/hud/securitygoggles/attack_self(mob/user)
+	weldingvisortoggle(user)
+	update_hud(user)
+	update_visuals(user)
+
 /obj/item/clothing/glasses/hud/security/sunglasses/eyepatch // why was this defined *before* the sunglasses it is a subtype of.
 	name = "eyepatch HUD"
 	desc = "A heads-up display that connects directly to the optical nerve of the user, replacing the need for that useless eyeball."

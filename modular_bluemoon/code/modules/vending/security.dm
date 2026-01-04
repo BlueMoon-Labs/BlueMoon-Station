@@ -61,6 +61,7 @@
 		/obj/item/storage/backpack/hipbag/green = 1,
 		/obj/item/storage/bag/ammo = 3,
 		/obj/item/stamp/security = 3,
+		/obj/item/storage/belt/security/webbing/ds = 6,
 	)
 	refill_canister = /obj/item/vending_refill/security
 	default_price = PRICE_ALMOST_EXPENSIVE
