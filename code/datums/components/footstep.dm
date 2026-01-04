@@ -67,7 +67,10 @@
 	if(steps >= 6)
 		steps = 0
 
-	if(steps && !LM.has_gravity(T))
+	if(steps % 2)
+		return
+
+	if(steps != 0 && !LM.has_gravity(T)) // don't need to step as often when you hop around
 		return
 	return T
 
