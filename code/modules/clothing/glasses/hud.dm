@@ -244,8 +244,8 @@
 
 /obj/item/clothing/glasses/hud/securitygoggles/dropped(mob/living/carbon/human/user)
 	. = ..()
-	GLOB.huds[DATA_HUD_SECURITY_ADVANCED].remove_hud_from(user)
-
+	var/datum/atom_hud/HUD = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
+	HUD.remove_hud_from(user)
 
 /obj/item/clothing/glasses/hud/security/sunglasses/eyepatch // why was this defined *before* the sunglasses it is a subtype of.
 	name = "eyepatch HUD"
