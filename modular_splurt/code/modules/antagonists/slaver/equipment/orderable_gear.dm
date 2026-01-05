@@ -62,6 +62,13 @@ GLOBAL_LIST_INIT(slaver_gear, subtypesof(/datum/slaver_gear))
 	category = "Slaving"
 	cost = 1000
 
+/datum/slaver_gear/kinkmate
+	name = "Kinkmate Supply"
+	description = "A fun way to spend a shift. Contains 2 packages of unspeakable desires."
+	build_path = /obj/structure/closet/crate/slave_kink
+	category = "Slaving"
+	cost = 5000
+
 /datum/slaver_gear/emag
 	name = "Cryptographic Sequencer"
 	description = "A card capable of instantly hacking open most doors."

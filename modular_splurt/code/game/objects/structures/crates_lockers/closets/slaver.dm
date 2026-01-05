@@ -40,3 +40,12 @@
 	new /obj/item/reagent_containers/hypospray/medipen/survival(src)
 	new /obj/item/reagent_containers/hypospray/medipen/lewdsleepy(src)
 	new /obj/item/slaver/gizmo(src)
+
+/obj/structure/closet/crate/slave_kink
+	name = "Kinkmate Supply"
+
+/obj/structure/closet/crate/slave_kink/PopulateContents()
+	. = ..()
+
+	new /obj/item/vending_refill/kink(src)
+	new /obj/item/vending_refill/kink(src)
