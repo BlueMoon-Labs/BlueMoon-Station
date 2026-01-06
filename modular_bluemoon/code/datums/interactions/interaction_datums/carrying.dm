@@ -50,7 +50,7 @@
 	. = ..()
 	if(!.)
 		return
-	user.buckle_mob(target, TRUE, TRUE, 0, 1, 0, FALSE, "face_to_face")
+	user.buckle_mob(target, TRUE, TRUE, 0, 1, 0, RIDING_FACE_TO_FACE)
 
 /datum/interaction/carry/princess
 	description = "Нести на руках как принцессу."
@@ -68,4 +68,4 @@
 	. = ..()
 	if(!.)
 		return
-	user.buckle_mob(target, TRUE, TRUE, 90, 2, 0, FALSE, "princess")
+	user.buckle_mob(target, TRUE, TRUE, 90, 2, 0, RIDING_PRINCESS)

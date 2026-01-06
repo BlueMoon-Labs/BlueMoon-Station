@@ -206,9 +206,7 @@
 ///////Yes, I said humans. No, this won't end well...//////////
 /datum/component/riding/human
 	del_on_unbuckle_all = TRUE
-	var/fireman_carrying = FALSE
-	var/face_to_face_carrying = FALSE
-	var/princess_carrying = FALSE
+	var/buckle_type = RIDING_PIGGYBACK
 
 /datum/component/riding/human/Initialize()
 	. = ..()
@@ -219,9 +217,9 @@
 	var/mob/living/carbon/human/H = parent
 	if(!length(H.buckled_mobs))
 		H.remove_movespeed_modifier(/datum/movespeed_modifier/human_carry)
-	if(!fireman_carrying)
+	if(!buckle_type == RIDING_FIREMAN)
 		M.Daze(25)
-	if(princess_carrying)
+	if(buckle_type == RIDING_PRINCESS)
 		M.update_pixel_shifting(TRUE)
 	REMOVE_TRAIT(M, TRAIT_MOBILITY_NOUSE, src)
 	REMOVE_TRAIT(M, TRAIT_BEING_CARRIED, src)
@@ -231,9 +229,9 @@
 	. = ..()
 	var/mob/living/carbon/human/H = parent
 	if(length(H.buckled_mobs))
-		H.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/human_carry, TRUE, fireman_carrying? FIREMAN_CARRY_SLOWDOWN : PIGGYBACK_CARRY_SLOWDOWN)
+		H.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/human_carry, TRUE, buckle_type == RIDING_FIREMAN? FIREMAN_CARRY_SLOWDOWN : PIGGYBACK_CARRY_SLOWDOWN)
 		RegisterSignal(H.buckled_mobs[1], COMSIG_MOVABLE_MOVED, PROC_REF(set_rider_dir)) // works fine while all humans has max_buckled_mobs = 1
-	if(fireman_carrying)
+	if(buckle_type == RIDING_FIREMAN)
 		ADD_TRAIT(M, TRAIT_MOBILITY_NOUSE, src)
 	ADD_TRAIT(M, TRAIT_BEING_CARRIED, src)
 
@@ -246,9 +244,9 @@
 	var/mob/living/carbon/human/H = parent
 	if(H.has_buckled_mobs())
 		for(var/mob/living/L in H.buckled_mobs)
-			if(face_to_face_carrying)
+			if(buckle_type == RIDING_FACE_TO_FACE)
 				L.setDir(turn(L.dir, 180))
-			else if(princess_carrying)
+			else if(buckle_type == RIDING_PRINCESS)
 				switch(H.dir)
 					if(EAST, NORTH)
 						H.buckle_lying = 90
@@ -286,12 +284,12 @@
 			M.layer = MOB_LAYER
 		// NORTH | SOUTH | EAST | WEST
 		// ABOVE_MOB_LAYER = A, OBJ_LAYER = O
-		if(face_to_face_carrying || princess_carrying) // A|O|O|O
+		if(buckle_type == RIDING_FACE_TO_FACE || buckle_type == RIDING_PRINCESS) // A|O|O|O
 			if(AM.dir == NORTH)
 				AM.layer = ABOVE_MOB_LAYER
 			else
 				AM.layer = OBJ_LAYER
-		// else if(princess_carrying) // A|O|A|A
+		// else if(buckle_type == RIDING_PRINCESS) // A|O|A|A
 		// 	if(AM.dir == SOUTH)
 		// 		AM.layer = OBJ_LAYER
 		// 	else
@@ -301,7 +299,7 @@
 				AM.layer = ABOVE_MOB_LAYER
 			else
 				AM.layer = OBJ_LAYER
-		else // O|A|A|A - fireman_carrying
+		else // O|A|A|A - RIDING_FIREMAN
 			if(AM.dir == NORTH)
 				AM.layer = OBJ_LAYER
 			else
@@ -312,9 +310,9 @@
 /datum/component/riding/human/get_offsets(pass_index)
 	var/mob/living/carbon/human/H = parent
 	var/size_modifier = get_size(H)
-	if(face_to_face_carrying)
+	if(buckle_type == RIDING_FACE_TO_FACE)
 		. = list(TEXT_NORTH = list(0, 4), TEXT_SOUTH = list(0, 4), TEXT_EAST = list(8, 4), TEXT_WEST = list(-8, 4))
-	else if(princess_carrying)
+	else if(buckle_type == RIDING_PRINCESS)
 		. = list(TEXT_NORTH = list(0, 0), TEXT_SOUTH = list(0, 0), TEXT_EAST = list(0, 0), TEXT_WEST = list(0, 0))
 	else if(H.buckle_lying)
 		. = list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(0, 6), TEXT_WEST = list(0, 6))

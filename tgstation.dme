@@ -201,6 +201,7 @@
 #include "code\__DEFINES\combat\block.dm"
 #include "code\__DEFINES\combat\block_parry.dm"
 #include "code\__DEFINES\combat\stamina_combat.dm"
+#include "code\__DEFINES\components\riding.dm"
 #include "code\__DEFINES\dcs\flags.dm"
 #include "code\__DEFINES\dcs\helpers.dm"
 #include "code\__DEFINES\dcs\signals.dm"

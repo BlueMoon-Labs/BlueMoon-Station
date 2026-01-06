@@ -1040,3 +1040,13 @@
 		/obj/item/shovel/spade,
 		/obj/item/gun/energy/floragun
 	))
+
+/obj/item/storage/belt/belly_riding
+	name = "belly riding harness"
+	desc = "Комплект прочных ремней и талей, предназначенных для фиксации существ на животе."
+	icon = 'icons/obj/clothing/uniforms.dmi'
+	icon_state = "gear_harness"
+	item_state = null
+	w_class = WEIGHT_CLASS_SMALL
+	component_type = null
+

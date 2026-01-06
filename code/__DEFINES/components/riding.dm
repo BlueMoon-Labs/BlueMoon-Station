@@ -1,0 +1,5 @@
+#define RIDING_FIREMAN "fireman"
+#define RIDING_PIGGYBACK "piggyback"
+#define RIDING_PRINCESS "princess"
+#define RIDING_BELLY "belly_riding"
+#define RIDING_FACE_TO_FACE "face_to_face"
