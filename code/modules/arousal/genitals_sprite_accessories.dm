@@ -142,7 +142,7 @@
 	ru_name = "двойной узловатый"
 
 /datum/sprite_accessory/penis/barbedhemiknot
-	icon_state = "hemiknot"
+	icon_state = "bhemiknot"
 	name = "Barbed, Knotted Hemi"
 	ru_name = "двойной, узловатый и немного колючий"
 
