@@ -267,8 +267,7 @@ GLOBAL_VAR_INIT(hhmysteryRoomNumber, 1337)
 			user.forceMove(T)
 			seating.buckle_mob(user, TRUE, TRUE)
 	else if(user.buckled_mobs)
-		var/datum/component/riding/riding_datum = user.GetComponent(/datum/component/riding)
-		var/datum/component/riding/human/riding_datum_human = istype(riding_datum, /datum/component/riding/human) && riding_datum
+		var/datum/component/riding/human/riding_datum_human = user.GetComponent(/datum/component/riding/human)
 		var/mob/living/buckled_mob
 		for(var/mob/living/I in user.buckled_mobs)
 			buckled_mob = I

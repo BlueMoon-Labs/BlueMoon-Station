@@ -4997,7 +4997,6 @@
 #include "modular_sand\code\datums\components\glory_kill.dm"
 #include "modular_sand\code\datums\components\interaction_menu_granter.dm"
 #include "modular_sand\code\datums\components\mood.dm"
-#include "modular_sand\code\datums\components\riding.dm"
 #include "modular_sand\code\datums\components\container_item\container_item.dm"
 #include "modular_sand\code\datums\components\container_item\tank_holder.dm"
 #include "modular_sand\code\datums\components\crafting\recipes\recipes_misc.dm"

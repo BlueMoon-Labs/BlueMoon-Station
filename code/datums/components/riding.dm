@@ -28,8 +28,11 @@
 	RegisterSignal(parent, COMSIG_MOVABLE_BUCKLE, PROC_REF(vehicle_mob_buckle))
 	RegisterSignal(parent, COMSIG_MOVABLE_UNBUCKLE, PROC_REF(vehicle_mob_unbuckle))
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(vehicle_moved))
+	RegisterSignal(parent, COMSIG_ATOM_DIR_AFTER_CHANGE, PROC_REF(update_dir))
 
 /datum/component/riding/proc/vehicle_mob_unbuckle(datum/source, mob/living/M, force = FALSE)
+	SIGNAL_HANDLER
+
 	var/atom/movable/AM = parent
 	restore_position(M)
 	unequip_buckle_inhands(M)
@@ -37,8 +40,16 @@
 		qdel(src)
 
 /datum/component/riding/proc/vehicle_mob_buckle(datum/source, mob/living/M, force)
+	SIGNAL_HANDLER
+
 	handle_vehicle_offsets(M.buckled?.dir)
 	handle_vehicle_layer(M.buckled?.dir)
+
+/datum/component/riding/proc/update_dir(mob/source, dir, newdir)
+	SIGNAL_HANDLER
+
+	handle_vehicle_offsets(newdir)
+	handle_vehicle_layer(newdir)
 
 /datum/component/riding/proc/handle_vehicle_layer(dir)
 	var/atom/movable/AM = parent
@@ -57,7 +68,7 @@
 	SIGNAL_HANDLER
 
 	var/atom/movable/AM = parent
-	if (isnull(dir))
+	if(isnull(dir))
 		dir = AM.dir
 	AM.set_glide_size(DELAY_TO_GLIDE_SIZE(vehicle_move_delay), FALSE)
 	for(var/i in AM.buckled_mobs)
@@ -88,9 +99,9 @@
 		for(var/m in AM.buckled_mobs)
 			passindex++
 			var/mob/living/buckled_mob = m
-			var/list/offsets = get_offsets(passindex)
 			var/rider_dir = get_rider_dir(passindex)
 			buckled_mob.setDir(rider_dir)
+			var/list/offsets = get_offsets(passindex)
 			for(var/offsetdir in offsets)
 				if(offsetdir == AM_dir)
 					var/list/diroffsets = offsets[offsetdir]
@@ -143,9 +154,22 @@
 
 //BUCKLE HOOKS
 /datum/component/riding/proc/restore_position(mob/living/buckled_mob)
+	if(isliving(parent))
+		var/mob/living/M = parent
+		if(M.lying)
+			M.layer = LYING_MOB_LAYER
+		else
+			M.layer = initial(M.layer)
+
 	if(buckled_mob)
 		buckled_mob.pixel_x = 0
 		buckled_mob.pixel_y = 0
+
+		if(buckled_mob.lying)
+			buckled_mob.layer = LYING_MOB_LAYER
+		else
+			buckled_mob.layer = initial(buckled_mob.layer)
+
 		if(buckled_mob.client)
 			buckled_mob.client.view_size.resetToDefault()
 
@@ -207,6 +231,10 @@
 /datum/component/riding/human
 	del_on_unbuckle_all = TRUE
 	var/buckle_type = RIDING_PIGGYBACK
+	var/belly_taur = FALSE
+	var/rider_dir = 0
+	var/test_degree1 = 20
+	var/test_degree2 = 340
 
 /datum/component/riding/human/Initialize()
 	. = ..()
@@ -219,7 +247,7 @@
 		H.remove_movespeed_modifier(/datum/movespeed_modifier/human_carry)
 	if(!buckle_type == RIDING_FIREMAN)
 		M.Daze(25)
-	if(buckle_type == RIDING_PRINCESS)
+	if(buckle_type == RIDING_PRINCESS || buckle_type == RIDING_BELLY)
 		M.update_pixel_shifting(TRUE)
 	REMOVE_TRAIT(M, TRAIT_MOBILITY_NOUSE, src)
 	REMOVE_TRAIT(M, TRAIT_BEING_CARRIED, src)
@@ -230,17 +258,24 @@
 	var/mob/living/carbon/human/H = parent
 	if(length(H.buckled_mobs))
 		H.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/human_carry, TRUE, buckle_type == RIDING_FIREMAN? FIREMAN_CARRY_SLOWDOWN : PIGGYBACK_CARRY_SLOWDOWN)
-		RegisterSignal(H.buckled_mobs[1], COMSIG_MOVABLE_MOVED, PROC_REF(set_rider_dir)) // works fine while all humans has max_buckled_mobs = 1
+		RegisterSignal(H.buckled_mobs[1], COMSIG_MOVABLE_MOVED, PROC_REF(rider_moved)) // works fine while all humans has max_buckled_mobs = 1
 	if(buckle_type == RIDING_FIREMAN)
 		ADD_TRAIT(M, TRAIT_MOBILITY_NOUSE, src)
 	ADD_TRAIT(M, TRAIT_BEING_CARRIED, src)
 
 /datum/component/riding/human/handle_vehicle_offsets(dir)
+	set_rider_dir() // первым, т.к. update_transform сбрасывает позицию x, y
 	. = ..()
-	set_rider_dir()
+
+/datum/component/riding/human/get_rider_dir(pass_index)
+	return rider_dir
+
+/datum/component/riding/human/proc/rider_moved(datum/source, oldLoc, dir)
+	SIGNAL_HANDLER
+
+	vehicle_moved()
 
 /datum/component/riding/human/proc/set_rider_dir()
-	SIGNAL_HANDLER
 	var/mob/living/carbon/human/H = parent
 	if(H.has_buckled_mobs())
 		for(var/mob/living/L in H.buckled_mobs)
@@ -253,7 +288,7 @@
 						L.lying = 90
 						L.update_transform(FALSE)
 						L.lying_prev = L.lying
-						L.setDir(WEST)
+						rider_dir = WEST
 						L.update_pixel_shifting(TRUE)
 						while(L.is_tilted > -20)
 							if(L.tilt_left() == FALSE)
@@ -264,12 +299,19 @@
 						L.lying = 270
 						L.update_transform(FALSE)
 						L.lying_prev = L.lying
-						L.setDir(EAST)
+						rider_dir = EAST
 						L.update_pixel_shifting(TRUE)
 						while(L.is_tilted < 20)
 							if(L.tilt_right() == FALSE)
 								break
 						L.pixel_x -= 4
+			else if(buckle_type == RIDING_BELLY)
+				rider_dir = turn(H.dir, 180)
+				var/degree = (H.dir in list(NORTH, SOUTH)) ? 0 : (H.dir == EAST) ? test_degree1 : test_degree2
+				H.buckle_lying = degree
+				L.lying = degree
+				L.update_transform(FALSE)
+				L.lying_prev = L.lying
 
 /datum/component/riding/human/proc/on_host_unarmed_melee(atom/target)
 	var/mob/living/carbon/human/H = parent
@@ -282,48 +324,81 @@
 	if(AM.buckled_mobs && AM.buckled_mobs.len)
 		for(var/mob/M in AM.buckled_mobs) //ensure proper layering of piggyback and carry, sometimes weird offsets get applied
 			M.layer = MOB_LAYER
+
 		// NORTH | SOUTH | EAST | WEST
-		// ABOVE_MOB_LAYER = A, OBJ_LAYER = O
-		if(buckle_type == RIDING_FACE_TO_FACE || buckle_type == RIDING_PRINCESS) // A|O|O|O
+		// ABOVE_MOB_LAYER = A, BELOW_MOB_LAYER = B
+
+		// A|B|B|B
+		if(buckle_type == RIDING_FACE_TO_FACE || buckle_type == RIDING_PRINCESS || buckle_type == RIDING_BELLY)
 			if(AM.dir == NORTH)
 				AM.layer = ABOVE_MOB_LAYER
 			else
-				AM.layer = OBJ_LAYER
-		// else if(buckle_type == RIDING_PRINCESS) // A|O|A|A
-		// 	if(AM.dir == SOUTH)
-		// 		AM.layer = OBJ_LAYER
-		// 	else
-		// 		AM.layer = ABOVE_MOB_LAYER
-		else if(!AM.buckle_lying) // O|A|O|O - piggyback_carrying
+				AM.layer = BELOW_MOB_LAYER
+
+		// B|A|B|B - piggyback_carrying
+		else if(!AM.buckle_lying)
 			if(AM.dir == SOUTH)
 				AM.layer = ABOVE_MOB_LAYER
 			else
-				AM.layer = OBJ_LAYER
-		else // O|A|A|A - RIDING_FIREMAN
+				AM.layer = BELOW_MOB_LAYER
+
+		// B|A|A|A - RIDING_FIREMAN
+		else
 			if(AM.dir == NORTH)
-				AM.layer = OBJ_LAYER
-			else
 				AM.layer = ABOVE_MOB_LAYER
+			else
+				AM.layer = BELOW_MOB_LAYER
 	else
-		AM.layer = MOB_LAYER
+		AM.layer = initial(AM.layer)
 
 /datum/component/riding/human/get_offsets(pass_index)
+	var/static/list/offsets_by_type = list(
+		RIDING_FACE_TO_FACE	= list(TEXT_NORTH = list(0, 4), TEXT_SOUTH = list(0, 4), TEXT_EAST = list(8, 4), TEXT_WEST = list(-8, 4)),
+		RIDING_PRINCESS		= list(TEXT_NORTH = list(0, 0), TEXT_SOUTH = list(0, 0), TEXT_EAST = list(0, 0), TEXT_WEST = list(0, 0)),
+		RIDING_BELLY 		= list(TEXT_NORTH = list(0, 2), TEXT_SOUTH = list(0, 2), TEXT_EAST = list(9, 2), TEXT_WEST = list(-9, 2)),
+		"lying" 			= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(0, 6), TEXT_WEST = list(0, 6)),
+		"else" 				= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(-6, 6), TEXT_WEST = list(6, 6)),
+	)
+	var/key_name = buckle_type
+	var/list/result = offsets_by_type[key_name]
 	var/mob/living/carbon/human/H = parent
-	var/size_modifier = get_size(H)
-	if(buckle_type == RIDING_FACE_TO_FACE)
-		. = list(TEXT_NORTH = list(0, 4), TEXT_SOUTH = list(0, 4), TEXT_EAST = list(8, 4), TEXT_WEST = list(-8, 4))
-	else if(buckle_type == RIDING_PRINCESS)
-		. = list(TEXT_NORTH = list(0, 0), TEXT_SOUTH = list(0, 0), TEXT_EAST = list(0, 0), TEXT_WEST = list(0, 0))
-	else if(H.buckle_lying)
-		. = list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(0, 6), TEXT_WEST = list(0, 6))
-	else
-		. = list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(-6, 6), TEXT_WEST = list( 6, 6))
-	for(var/d in .)
-		if(.[d][1] > 0)
-			.[d][1] += (size_modifier-1)*2
-		else if(.[d][1] < 0)
-			.[d][1] -= (size_modifier-1)*2
-		.[d][2] += (size_modifier-1)*16
+	if(!result)
+		key_name = H.buckle_lying ? "lying" : "else"
+		result = offsets_by_type[key_name]
+
+	. = deepCopyList(result)
+
+	var/x_change = 2
+	var/y_change = 16
+	if(key_name == RIDING_BELLY)
+		y_change = 8
+
+	var/vehicle_size = get_size(H) || 1
+	if(vehicle_size != 1 && (x_change || y_change))
+		vehicle_size -= 1
+		for(var/d in .)
+			if(.[d][1] > 0)
+				.[d][1] += vehicle_size * x_change
+			else if(.[d][1] < 0)
+				.[d][1] -= vehicle_size * x_change
+			.[d][2] += vehicle_size * y_change
+
+
+	var/rider_size = get_size(H.buckled_mobs[pass_index]) || 1
+	x_change = 0
+	y_change = 0
+
+	if(key_name == RIDING_BELLY)
+		y_change = -12
+
+	if(rider_size != 1 && (x_change || y_change))
+		rider_size -= 1
+		for(var/d in .)
+			if(.[d][1] > 0)
+				.[d][1] += rider_size * x_change
+			else if(.[d][1] < 0)
+				.[d][1] -= rider_size * x_change
+			.[d][2] += rider_size * y_change
 
 /datum/component/riding/human/additional_offset_checks()
 	var/mob/living/carbon/human/H = parent

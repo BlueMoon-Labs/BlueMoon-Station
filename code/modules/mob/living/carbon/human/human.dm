@@ -931,7 +931,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		span_notice("Вы закрепяете [target] в ремни на своем животе."))
 		if(do_after(src, carrydelay, target, extra_checks = CALLBACK(src, PROC_REF(can_belly_ride), target)))
 			if(can_belly_ride(target))
-				buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_FACE_TO_FACE, auto_by_type = TRUE)
+				buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_BELLY, auto_by_type = TRUE)
 				return
 		visible_message(span_warning("[src] не закрепил [target] на своем животе!"))
 	else

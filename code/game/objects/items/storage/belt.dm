@@ -1049,4 +1049,5 @@
 	item_state = null
 	w_class = WEIGHT_CLASS_SMALL
 	component_type = null
+	item_flags = NO_UNIFORM_REQUIRED
 
