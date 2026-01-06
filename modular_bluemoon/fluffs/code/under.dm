@@ -198,6 +198,30 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
 
+/obj/item/clothing/underwear/shirt/bra/troubleneko_bra
+	name = "Laced lingerie bra"
+	icon_state = "troubleneko_bra"
+	item_state = "troubleneko_bra"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
+
+/obj/item/clothing/underwear/briefs/troubleneko_panties
+	name = "Panties"
+	icon_state = "troubleneko_panties"
+	item_state = "troubleneko_panties"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
+
+/obj/item/clothing/underwear/socks/thigh/troubleneko_socks
+	name = "Socks"
+	icon_state = "troubleneko_socks"
+	item_state = "troubleneko_socks"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
+
 /obj/item/clothing/underwear/shirt/toggle/savannah_sleepwear
 	name = "sleepwear"
 	desc = "A sleepshirt. Fancy?"

@@ -1119,6 +1119,27 @@
 	ckeywhitelist = list("kladmenuwu", "scramblescream")
 	subcategory = LOADOUT_SUBCATEGORIES_DON03
 
+/datum/gear/donator/bm/troubleneko_bra
+	name = "Laced lingerie bra"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/underwear/shirt/bra/troubleneko_bra
+	ckeywhitelist = list("troubleneko17th")
+	subcategory = LOADOUT_SUBCATEGORIES_DON03
+
+/datum/gear/donator/bm/troubleneko_panties
+	name = "Panties"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/underwear/briefs/troubleneko_panties
+	ckeywhitelist = list("troubleneko17th")
+	subcategory = LOADOUT_SUBCATEGORIES_DON03
+
+/datum/gear/donator/bm/troubleneko_socks
+	name = "Socks"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/underwear/socks/thigh/troubleneko_socks
+	ckeywhitelist = list("troubleneko17th")
+	subcategory = LOADOUT_SUBCATEGORIES_DON03
+
 /datum/gear/donator/bm/f_haori
 	name = "Flaming Haori"
 	slot = ITEM_SLOT_NECK
