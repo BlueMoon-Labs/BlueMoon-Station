@@ -931,7 +931,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		span_notice("Вы закрепяете [target] в ремни на своем животе."))
 		if(do_after(src, carrydelay, target, extra_checks = CALLBACK(src, PROC_REF(can_belly_ride), target)))
 			if(can_belly_ride(target))
-				buckle_mob(target, TRUE, TRUE, 90, 1, 0, RIDING_FIREMAN)
+				buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_FACE_TO_FACE, auto_by_type = TRUE)
 				return
 		visible_message(span_warning("[src] не закрепил [target] на своем животе!"))
 	else
@@ -968,7 +968,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		if(do_after(src, carrydelay, target, extra_checks = CALLBACK(src, PROC_REF(can_be_firemanned), target)))
 			//Second check to make sure they're still valid to be carried
 			if(can_be_firemanned(target) && !incapacitated(FALSE, TRUE))
-				buckle_mob(target, TRUE, TRUE, 90, 1, 0, RIDING_FIREMAN)
+				buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_FIREMAN, auto_by_type = TRUE)
 				return
 		visible_message(span_warning("[src] не поднимает [target] за свои плечи!"))
 	else
@@ -1019,13 +1019,13 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 					if(get_turf(target) != get_turf(src))
 						target.throw_at(get_turf(src), 1, 1, FALSE, FALSE)
 					// BLUEMOON ADDITION END
-				buckle_mob(target, TRUE, TRUE, 0, 1, 2, RIDING_PIGGYBACK)
+				buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_PIGGYBACK, auto_by_type = TRUE)
 		else
 			visible_message(span_warning("[target] не удаётся забраться на [src]!"))
 	else
 		to_chat(target, span_warning("Ты не можешь прокатиться на спине [src] прямо сейчас!"))
 
-/mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, buckle_type = RIDING_PIGGYBACK)
+/mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, buckle_type = RIDING_PIGGYBACK, auto_by_type = FALSE)
 	if(!force)//humans are only meant to be ridden through piggybacking and special cases
 		return
 	if(!istype(target))
@@ -1035,6 +1035,30 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		return
 	if(target.has_buckled_mobs())
 		return FALSE
+
+	if(auto_by_type)
+		switch(buckle_type)
+			if(RIDING_PIGGYBACK)
+				lying_buckle = 0
+				hands_needed = 1
+				target_hands_needed = 2
+			if(RIDING_FIREMAN)
+				lying_buckle = 90
+				hands_needed = 1
+				target_hands_needed = 0
+			if(RIDING_PRINCESS)
+				lying_buckle = 90
+				hands_needed = 2
+				target_hands_needed = 0
+			if(RIDING_FACE_TO_FACE)
+				lying_buckle = 0
+				hands_needed = 1
+				target_hands_needed = 0
+			if(RIDING_BELLY)
+				lying_buckle = 0
+				hands_needed = 1
+				target_hands_needed = 0
+
 	buckle_lying = lying_buckle
 	var/datum/component/riding/human/riding_datum = LoadComponent(/datum/component/riding/human)
 	if(target_hands_needed)

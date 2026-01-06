@@ -275,14 +275,9 @@ GLOBAL_VAR_INIT(hhmysteryRoomNumber, 1337)
 			I.forceMove(T)
 		user.unbuckle_all_mobs(TRUE)
 		user.forceMove(T)
-		if(riding_datum_human)
-			switch(riding_datum_human.buckle_type)
-				if(RIDING_FACE_TO_FACE)
-					user.buckle_mob(buckled_mob, TRUE, TRUE, 0, 1, 0, riding_datum_human.buckle_type)
-				if(RIDING_PRINCESS)
-					user.buckle_mob(buckled_mob, TRUE, TRUE, 90, 2, 0, riding_datum_human.buckle_type)
-				if(RIDING_FIREMAN)
-					user.buckle_mob(buckled_mob, TRUE, TRUE, 90, 1, 0, riding_datum_human.buckle_type)
+		if(riding_datum_human && ishuman(user))
+			var/mob/living/carbon/human/H = user
+			H.buckle_mob(buckled_mob, TRUE, TRUE, buckle_type = riding_datum_human.buckle_type, auto_by_type = TRUE)
 		else
 			user.buckle_mob(buckled_mob, TRUE, TRUE)
 	else
