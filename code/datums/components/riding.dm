@@ -250,6 +250,7 @@
 	var/mob/living/carbon/human/H = parent
 	if(!length(H.buckled_mobs))
 		H.remove_movespeed_modifier(/datum/movespeed_modifier/human_carry)
+		H.clear_alert(RIDING_ALERT_CATEGORY)
 		if(belly_harness)
 			REMOVE_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
 	if(!buckle_type == RIDING_FIREMAN)
@@ -258,7 +259,6 @@
 		M.update_pixel_shifting(TRUE)
 	REMOVE_TRAIT(M, TRAIT_MOBILITY_NOUSE, src)
 	REMOVE_TRAIT(M, TRAIT_BEING_CARRIED, src)
-	H.clear_alert(RIDING_ALERT_CATEGORY)
 	return ..()
 
 /datum/component/riding/human/vehicle_mob_buckle(datum/source, mob/living/M, force = FALSE)
@@ -450,11 +450,10 @@
 	return !H.buckled
 
 /datum/component/riding/human/force_dismount(mob/living/M, from_mob = FALSE)
-	var/atom/movable/AM = parent
-	if(RIDING_IS_BELLY(buckle_type) && (belly_harness && !QDELETED(belly_harness)))
-		var/sender = from_mob ? M : AM
-		var/target = from_mob ? AM : M
-		if(!do_after(sender, RIDING_CARRYDELAY_BELLY, target))
+	if(isliving(parent) && RIDING_IS_BELLY(buckle_type) && (belly_harness && !QDELETED(belly_harness)))
+		var/mob/living/sender = from_mob ? M : parent
+		var/mob/living/target = from_mob ? parent : M
+		if(INTERACTING_WITH(sender, target) || !do_after(sender, RIDING_CARRYDELAY_BELLY, target))
 			return
 	return ..()
 
