@@ -919,17 +919,19 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 	return (ishuman(target) && (!CHECK_MOBILITY(target, MOBILITY_STAND) || target.mob_weight < MOB_WEIGHT_NORMAL)) || ispAI(target)
 
 /mob/living/carbon/human/proc/can_belly_ride(mob/living/carbon/target)
-	return (ishuman(target) && target.mob_weight <= max(mob_weight, MOB_WEIGHT_NORMAL)) && !incapacitated(ignore_restraints = TRUE) && istype(belt, /obj/item/storage/belt/belly_riding)
+	return (ishuman(target) && target.mob_weight <= max(mob_weight, MOB_WEIGHT_NORMAL)) && !incapacitated(ignore_restraints = TRUE) && istype(belt, /obj/item/storage/belt/belly_riding) && target.stat != DEAD
 
 /mob/living/carbon/human/proc/belly_ride(mob/living/carbon/target)
-	var/const/carrydelay = 3 SECONDS
 	if(target.mob_weight > max(mob_weight, MOB_WEIGHT_NORMAL))
 		to_chat(src, span_warning("Вы пытаетесь поднять [target], но [target.ru_who()] слишком тяжелая!"))
 		return
+	if(target.stat == DEAD)
+		to_chat(src, span_warning("Я не буду переносить труп на животе!"))
+		return
 	if(can_belly_ride(target))
-		visible_message(span_notice("[src] начинает закреплять [target] в ремни на своем животе."),
+		visible_message(span_warning("[src] начинает закреплять [target] в ремни на своем животе."),
 		span_notice("Вы закрепяете [target] в ремни на своем животе."))
-		if(do_after(src, carrydelay, target, extra_checks = CALLBACK(src, PROC_REF(can_belly_ride), target)))
+		if(do_after(src, RIDING_CARRYDELAY_BELLY, target, extra_checks = CALLBACK(src, PROC_REF(can_belly_ride), target)))
 			if(can_belly_ride(target))
 				buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_BELLY, auto_by_type = TRUE)
 				return
@@ -1036,6 +1038,26 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 	if(target.has_buckled_mobs())
 		return FALSE
 
+	// Автосмена типа перевозки для тавров, если это RIDING_BELLY
+	if(RIDING_IS_BELLY(buckle_type))
+		buckle_type = RIDING_BELLY
+
+		// Переносимый, проверка на то, что тавры могут быть только переносчиками, но не носимыми
+		if(ishuman(target))
+			var/mob/living/carbon/human/H = target
+			if(!(H.dna?.features["taur"] in list(null, "None")))
+				var/datum/sprite_accessory/taur/T = GLOB.taur_list[H.dna.features["taur"]]
+				if(T && T.taur_mode != STYLE_SNEK_TAURIC)
+					target.visible_message(span_warning("[target] не может уместиться в ремни [src]..."))
+					return
+
+		// Переносчик, проверка, что он 4х лапый, а не змея
+		if(!(dna?.features["taur"] in list(null, "None")))
+			var/datum/sprite_accessory/taur/T = GLOB.taur_list[dna.features["taur"]]
+			if(T?.taur_mode in list(STYLE_PAW_TAURIC, STYLE_HOOF_TAURIC))
+				buckle_type = RIDING_BELLY_TAUR
+
+	// Пресеты настроек по типу переноски
 	if(auto_by_type)
 		switch(buckle_type)
 			if(RIDING_PIGGYBACK)
@@ -1054,9 +1076,9 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 				lying_buckle = 0
 				hands_needed = 1
 				target_hands_needed = 0
-			if(RIDING_BELLY)
+			if(RIDING_BELLY, RIDING_BELLY_TAUR)
 				lying_buckle = 0
-				hands_needed = 1
+				hands_needed = 0
 				target_hands_needed = 0
 
 	buckle_lying = lying_buckle
@@ -1077,17 +1099,19 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 
 	if(hands_needed || target_hands_needed)
 		if(hands_needed && !equipped_hands_self)
-			src.visible_message("<span class='warning'>[src] can't get a grip on [target] because their hands are full!</span>",
-				"<span class='warning'>You can't get a grip on [target] because your hands are full!</span>")
+			src.visible_message(span_warning("[src] can't get a grip on [target] because their hands are full!"),
+				span_warning("You can't get a grip on [target] because your hands are full!"))
 			return
 		else if(target_hands_needed && !equipped_hands_target)
-			target.visible_message("<span class='warning'>[target] can't get a grip on [src] because their hands are full!</span>",
-				"<span class='warning'>You can't get a grip on [src] because your hands are full!</span>")
+			target.visible_message(span_warning("[target] can't get a grip on [src] because their hands are full!"),
+				span_warning("You can't get a grip on [src] because your hands are full!"))
 			return
 
 	stop_pulling()
 	riding_datum.buckle_type = buckle_type
 	riding_datum.handle_vehicle_layer(dir)
+	if(RIDING_IS_BELLY(buckle_type))
+		riding_datum.belly_harness = belt
 	. = ..(target, force, check_loc)
 	if(!.)
 		visible_message(span_warning("[src] не смог(ла) поднять [target]."))

@@ -84,7 +84,12 @@
 		AM.unbuckle_mob(M)
 	return TRUE
 
-/datum/component/riding/proc/force_dismount(mob/living/M)
+/datum/component/riding/proc/force_dismount_all()
+	var/atom/movable/AM = parent
+	for(var/i in AM.buckled_mobs)
+		force_dismount(i)
+
+/datum/component/riding/proc/force_dismount(mob/living/M, from_mob = FALSE)
 	var/atom/movable/AM = parent
 	AM.unbuckle_mob(M)
 
@@ -167,6 +172,9 @@
 
 		if(buckled_mob.lying)
 			buckled_mob.layer = LYING_MOB_LAYER
+			buckled_mob.lying = buckled_mob.lying >= 180 ? 270 : 90
+			buckled_mob.update_transform(FALSE)
+			buckled_mob.lying_prev = buckled_mob.lying
 		else
 			buckled_mob.layer = initial(buckled_mob.layer)
 
@@ -231,26 +239,26 @@
 /datum/component/riding/human
 	del_on_unbuckle_all = TRUE
 	var/buckle_type = RIDING_PIGGYBACK
-	var/belly_taur = FALSE
 	var/rider_dir = 0
-	var/test_degree1 = 20
-	var/test_degree2 = 340
+	var/obj/item/storage/belt/belly_riding/belly_harness
 
 /datum/component/riding/human/Initialize()
 	. = ..()
 	directional_vehicle_layers = list(TEXT_NORTH = MOB_LOWER_LAYER, TEXT_SOUTH = MOB_UPPER_LAYER, TEXT_EAST = MOB_UPPER_LAYER, TEXT_WEST = MOB_UPPER_LAYER)
-	RegisterSignal(parent, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, PROC_REF(on_host_unarmed_melee))
 
 /datum/component/riding/human/vehicle_mob_unbuckle(datum/source, mob/living/M, force = FALSE)
 	var/mob/living/carbon/human/H = parent
 	if(!length(H.buckled_mobs))
 		H.remove_movespeed_modifier(/datum/movespeed_modifier/human_carry)
+		if(belly_harness)
+			REMOVE_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
 	if(!buckle_type == RIDING_FIREMAN)
 		M.Daze(25)
 	if(buckle_type == RIDING_PRINCESS || buckle_type == RIDING_BELLY)
 		M.update_pixel_shifting(TRUE)
 	REMOVE_TRAIT(M, TRAIT_MOBILITY_NOUSE, src)
 	REMOVE_TRAIT(M, TRAIT_BEING_CARRIED, src)
+	H.clear_alert(RIDING_ALERT_CATEGORY)
 	return ..()
 
 /datum/component/riding/human/vehicle_mob_buckle(datum/source, mob/living/M, force = FALSE)
@@ -263,12 +271,28 @@
 		ADD_TRAIT(M, TRAIT_MOBILITY_NOUSE, src)
 	ADD_TRAIT(M, TRAIT_BEING_CARRIED, src)
 
+	if(istype(belly_harness) && RIDING_IS_BELLY(buckle_type))
+		RegisterSignal(parent, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(belly_harness_unequipped))
+		ADD_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
+		H.throw_alert(RIDING_ALERT_CATEGORY, /atom/movable/screen/alert/belly_riding)
+
 /datum/component/riding/human/handle_vehicle_offsets(dir)
 	set_rider_dir() // первым, т.к. update_transform сбрасывает позицию x, y
 	. = ..()
 
 /datum/component/riding/human/get_rider_dir(pass_index)
-	return rider_dir
+	return rider_dir || ..()
+
+/datum/component/riding/human/proc/belly_harness_unequipped(mob/source, obj/item)
+	SIGNAL_HANDLER
+
+	if(item != belly_harness || !RIDING_IS_BELLY(buckle_type))
+		return
+	if(!QDELETED(belly_harness))
+		REMOVE_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
+	belly_harness = null
+
+	force_dismount_all()
 
 /datum/component/riding/human/proc/rider_moved(datum/source, oldLoc, dir)
 	SIGNAL_HANDLER
@@ -280,7 +304,7 @@
 	if(H.has_buckled_mobs())
 		for(var/mob/living/L in H.buckled_mobs)
 			if(buckle_type == RIDING_FACE_TO_FACE)
-				L.setDir(turn(L.dir, 180))
+				rider_dir = turn(H.dir, 180)
 			else if(buckle_type == RIDING_PRINCESS)
 				switch(H.dir)
 					if(EAST, NORTH)
@@ -307,16 +331,18 @@
 						L.pixel_x -= 4
 			else if(buckle_type == RIDING_BELLY)
 				rider_dir = turn(H.dir, 180)
-				var/degree = (H.dir in list(NORTH, SOUTH)) ? 0 : (H.dir == EAST) ? test_degree1 : test_degree2
+				var/degree = (H.dir in list(NORTH, SOUTH)) ? 0 : (H.dir == EAST) ? 20 : 340
 				H.buckle_lying = degree
 				L.lying = degree
 				L.update_transform(FALSE)
 				L.lying_prev = L.lying
-
-/datum/component/riding/human/proc/on_host_unarmed_melee(atom/target)
-	var/mob/living/carbon/human/H = parent
-	if(H.a_intent == INTENT_DISARM && (target in H.buckled_mobs))
-		force_dismount(target)
+			else if(buckle_type == RIDING_BELLY_TAUR)
+				var/degree = (H.dir in list(NORTH, SOUTH)) ? 360 : (H.dir == EAST) ? 70 : 290
+				rider_dir = turn(H.dir, 180)
+				H.buckle_lying = degree
+				L.lying = degree
+				L.update_transform(FALSE)
+				L.lying_prev = L.lying
 
 /datum/component/riding/human/handle_vehicle_layer()
 	. = ..()
@@ -329,12 +355,23 @@
 		// ABOVE_MOB_LAYER = A, BELOW_MOB_LAYER = B
 
 		// A|B|B|B
-		if(buckle_type == RIDING_FACE_TO_FACE || buckle_type == RIDING_PRINCESS || buckle_type == RIDING_BELLY)
+		if(buckle_type == RIDING_PRINCESS || buckle_type == RIDING_BELLY)
 			if(AM.dir == NORTH)
 				AM.layer = ABOVE_MOB_LAYER
 			else
 				AM.layer = BELOW_MOB_LAYER
-
+		// A|B|A|A
+		else if(buckle_type == RIDING_FACE_TO_FACE)
+			if(AM.dir == SOUTH)
+				AM.layer = BELOW_MOB_LAYER
+			else
+				AM.layer = ABOVE_MOB_LAYER
+		// A|A|B|B
+		else if(buckle_type == RIDING_BELLY_TAUR)
+			if(AM.dir == NORTH)
+				AM.layer = ABOVE_MOB_LAYER
+			else
+				AM.layer = BELOW_MOB_LAYER
 		// B|A|B|B - piggyback_carrying
 		else if(!AM.buckle_lying)
 			if(AM.dir == SOUTH)
@@ -342,36 +379,41 @@
 			else
 				AM.layer = BELOW_MOB_LAYER
 
-		// B|A|A|A - RIDING_FIREMAN
+		// A|B|B|B - RIDING_FIREMAN
 		else
 			if(AM.dir == NORTH)
-				AM.layer = ABOVE_MOB_LAYER
-			else
 				AM.layer = BELOW_MOB_LAYER
+			else
+				AM.layer = ABOVE_MOB_LAYER
 	else
 		AM.layer = initial(AM.layer)
 
 /datum/component/riding/human/get_offsets(pass_index)
 	var/static/list/offsets_by_type = list(
 		RIDING_FACE_TO_FACE	= list(TEXT_NORTH = list(0, 4), TEXT_SOUTH = list(0, 4), TEXT_EAST = list(8, 4), TEXT_WEST = list(-8, 4)),
-		RIDING_PRINCESS		= list(TEXT_NORTH = list(0, 0), TEXT_SOUTH = list(0, 0), TEXT_EAST = list(0, 0), TEXT_WEST = list(0, 0)),
-		RIDING_BELLY 		= list(TEXT_NORTH = list(0, 2), TEXT_SOUTH = list(0, 2), TEXT_EAST = list(9, 2), TEXT_WEST = list(-9, 2)),
+		RIDING_PRINCESS		= list(TEXT_NORTH = list(6, 0), TEXT_SOUTH = list(-6, 0), TEXT_EAST = list(6, 0), TEXT_WEST = list(-6, 0)),
+		RIDING_BELLY 		= list(TEXT_NORTH = list(0, 2), TEXT_SOUTH = list(0, 2), TEXT_EAST = list(10, 0), TEXT_WEST = list(-10, 0)),
+		RIDING_BELLY_TAUR 	= list(TEXT_NORTH = list(0, -7), TEXT_SOUTH = list(0, -7), TEXT_EAST = list(-3, -12), TEXT_WEST = list(3, -12)),
 		"lying" 			= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(0, 6), TEXT_WEST = list(0, 6)),
 		"else" 				= list(TEXT_NORTH = list(0, 6), TEXT_SOUTH = list(0, 6), TEXT_EAST = list(-6, 6), TEXT_WEST = list(6, 6)),
 	)
 	var/key_name = buckle_type
 	var/list/result = offsets_by_type[key_name]
+
 	var/mob/living/carbon/human/H = parent
 	if(!result)
 		key_name = H.buckle_lying ? "lying" : "else"
 		result = offsets_by_type[key_name]
-
 	. = deepCopyList(result)
 
 	var/x_change = 2
 	var/y_change = 16
-	if(key_name == RIDING_BELLY)
-		y_change = 8
+	switch(key_name)
+		if(RIDING_BELLY)
+			y_change = 8
+		if(RIDING_BELLY_TAUR)
+			x_change = 7
+			y_change = 2
 
 	var/vehicle_size = get_size(H) || 1
 	if(vehicle_size != 1 && (x_change || y_change))
@@ -387,9 +429,12 @@
 	var/rider_size = get_size(H.buckled_mobs[pass_index]) || 1
 	x_change = 0
 	y_change = 0
-
-	if(key_name == RIDING_BELLY)
-		y_change = -12
+	switch(key_name)
+		if(RIDING_BELLY)
+			y_change = -8
+		if(RIDING_BELLY_TAUR)
+			x_change = 7
+			y_change = -2
 
 	if(rider_size != 1 && (x_change || y_change))
 		rider_size -= 1
@@ -404,12 +449,14 @@
 	var/mob/living/carbon/human/H = parent
 	return !H.buckled
 
-/datum/component/riding/human/force_dismount(mob/living/user)
+/datum/component/riding/human/force_dismount(mob/living/M, from_mob = FALSE)
 	var/atom/movable/AM = parent
-	AM.unbuckle_mob(user)
-	user.DefaultCombatKnockdown(60)
-	user.Daze(50)
-	user.visible_message("<span class='warning'>[AM] pushes [user] off of [AM.ru_na()]!</span>")
+	if(RIDING_IS_BELLY(buckle_type) && (belly_harness && !QDELETED(belly_harness)))
+		var/sender = from_mob ? M : AM
+		var/target = from_mob ? AM : M
+		if(!do_after(sender, RIDING_CARRYDELAY_BELLY, target))
+			return
+	return ..()
 
 /datum/component/riding/cyborg
 	del_on_unbuckle_all = TRUE
@@ -463,9 +510,9 @@
 			else
 				..()
 
-/datum/component/riding/cyborg/force_dismount(mob/living/M)
+/datum/component/riding/cyborg/force_dismount(mob/living/M, from_mob = FALSE)
+	. = ..()
 	var/atom/movable/AM = parent
-	AM.unbuckle_mob(M)
 	var/turf/target = get_edge_target_turf(AM, AM.dir)
 	var/turf/targetm = get_step(get_turf(AM), AM.dir)
 	M.Move(targetm)

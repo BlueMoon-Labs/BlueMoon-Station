@@ -1051,3 +1051,9 @@
 	component_type = null
 	item_flags = NO_UNIFORM_REQUIRED
 
+/obj/item/storage/belt/belly_riding/examine(mob/user)
+	. = ..()
+	. += span_notice("Закрепив ремни на поясе, вы сможете усадить в них другого персонажа, \
+					взяв его в агрессивных захват и перетащив на себя.")
+	if(HAS_TRAIT_FROM(src, TRAIT_NODROP, RIDING_TRAIT))
+		. += span_warning("Вы на сможете снять ремни, пока кого-то переносите!")
