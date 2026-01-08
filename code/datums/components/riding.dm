@@ -288,7 +288,7 @@
 		RegisterSignal(parent, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(belly_harness_unequipped))
 		ADD_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
 		H.throw_alert(RIDING_ALERT_CATEGORY, /atom/movable/screen/alert/belly_riding)
-		if(H?.client?.prefs.erppref == "Yes" || H.has_penis() || H.has_strapon())
+		if((H?.client?.prefs.toggles & VERB_CONSENT) && H?.client?.prefs.erppref == "Yes" || H.has_penis() || H.has_strapon())
 			var/datum/action/cooldown/true_belly_riding/belly_riding_action = new
 			belly_riding_action.Grant(H)
 
