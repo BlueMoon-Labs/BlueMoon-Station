@@ -241,6 +241,9 @@
 	var/buckle_type = RIDING_PIGGYBACK
 	var/rider_dir = 0
 	var/obj/item/storage/belt/belly_riding/belly_harness
+	var/true_belly_riding = FALSE
+	var/datum/interaction/true_belly_riding_interaction
+	var/true_belly_riding_cooldown = 0
 
 /datum/component/riding/human/Initialize()
 	. = ..()
@@ -248,11 +251,21 @@
 
 /datum/component/riding/human/vehicle_mob_unbuckle(datum/source, mob/living/M, force = FALSE)
 	var/mob/living/carbon/human/H = parent
+
+	// belly riding
+	off_true_belly_riding()
+
 	if(!length(H.buckled_mobs))
 		H.remove_movespeed_modifier(/datum/movespeed_modifier/human_carry)
+
+		// belly riding
 		H.clear_alert(RIDING_ALERT_CATEGORY)
 		if(belly_harness)
 			REMOVE_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
+		var/datum/action/cooldown/true_belly_riding/belly_riding_action = locate() in H.actions
+		if(belly_riding_action)
+			belly_riding_action.Remove(H)
+
 	if(!buckle_type == RIDING_FIREMAN)
 		M.Daze(25)
 	if(buckle_type == RIDING_PRINCESS || buckle_type == RIDING_BELLY)
@@ -275,6 +288,9 @@
 		RegisterSignal(parent, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(belly_harness_unequipped))
 		ADD_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
 		H.throw_alert(RIDING_ALERT_CATEGORY, /atom/movable/screen/alert/belly_riding)
+		if(H?.client?.prefs.erppref == "Yes" || H.has_penis() || H.has_strapon())
+			var/datum/action/cooldown/true_belly_riding/belly_riding_action = new
+			belly_riding_action.Grant(H)
 
 /datum/component/riding/human/handle_vehicle_offsets(dir)
 	set_rider_dir() // первым, т.к. update_transform сбрасывает позицию x, y
@@ -282,6 +298,37 @@
 
 /datum/component/riding/human/get_rider_dir(pass_index)
 	return rider_dir || ..()
+
+/datum/component/riding/human/vehicle_moved(datum/source, oldLoc, dir)
+	. = ..()
+	spawn()
+		if(!src || QDELETED(src))
+			return
+		do_true_belly_riding()
+
+/datum/component/riding/human/proc/do_true_belly_riding()
+	var/mob/living/carbon/human/H = parent
+	// true belly riding
+	if(!true_belly_riding || !true_belly_riding_interaction || !length(H.buckled_mobs))
+		off_true_belly_riding()
+		return
+
+	if(true_belly_riding_cooldown > world.time)
+		return
+
+	true_belly_riding_cooldown = world.time + 0.5 SECONDS
+	if(!true_belly_riding_interaction.do_action(H, H.buckled_mobs[1], FALSE))
+		off_true_belly_riding()
+		return
+
+/datum/component/riding/human/proc/off_true_belly_riding()
+	true_belly_riding = FALSE
+	true_belly_riding_interaction = null
+	true_belly_riding_cooldown = 0
+	var/mob/living/carbon/human/H = parent
+	var/datum/action/cooldown/true_belly_riding/belly_riding_action = locate() in H.actions
+	if(belly_riding_action)
+		belly_riding_action.UpdateButtons()
 
 /datum/component/riding/human/proc/belly_harness_unequipped(mob/source, obj/item)
 	SIGNAL_HANDLER
@@ -297,7 +344,7 @@
 /datum/component/riding/human/proc/rider_moved(datum/source, oldLoc, dir)
 	SIGNAL_HANDLER
 
-	vehicle_moved()
+	vehicle_moved() // Да, сюда НЕ нужно передавать параметры
 
 /datum/component/riding/human/proc/set_rider_dir()
 	var/mob/living/carbon/human/H = parent
@@ -585,3 +632,76 @@
 		to_chat(user, span_notice("Вы аккуратно отпускаете [rider]."))
 		return
 	return rider
+
+/datum/action/cooldown/true_belly_riding
+	name = "True Belly Riding"
+	desc = "Позвозяет насадить переносимого на свой член или дилдо."
+	icon_icon = 'modular_splurt/icons/mob/actions/lewd_actions/lewd_icons.dmi'
+	button_icon_state = "arousal_small"
+
+/datum/action/cooldown/true_belly_riding/Activate()
+	if(!ishuman(owner))
+		Remove(owner)
+		return
+
+	var/mob/living/carbon/human/action_owner = owner
+	var/datum/component/riding/human/riding_comp = action_owner.GetComponent(/datum/component/riding/human)
+	if(!RIDING_IS_BELLY(riding_comp?.buckle_type))
+		Remove(action_owner)
+		return
+	if(!length(action_owner.buckled_mobs) || (!action_owner.has_penis() && !action_owner.has_strapon()))
+		riding_comp.off_true_belly_riding()
+		Remove(action_owner)
+		return
+	var/mob/living/target = action_owner.buckled_mobs[1]
+	var/t_has_vagina = target.has_vagina()
+	var/t_has_anus = target.has_anus()
+	if(!t_has_anus && !t_has_vagina)
+		riding_comp.off_true_belly_riding()
+		Remove(action_owner)
+		return
+	// Если выключено, даем выбор интеракции
+	if(!riding_comp.true_belly_riding)
+		if(!(target?.client?.prefs.toggles & VERB_CONSENT) || !target?.client?.prefs.erppref)
+			to_chat(src, span_warning("[target] не желает такой поездки."))
+			return
+		var/list/interactions_list = list()
+		if(t_has_vagina)
+			interactions_list[CUM_TARGET_VAGINA] = "/datum/interaction/lewd/fuck"
+		if(t_has_anus)
+			interactions_list[CUM_TARGET_ANUS] = "/datum/interaction/lewd/fuck/anal"
+		if(!interactions_list.len)
+			to_chat(action_owner, span_warning("К сожалению, у [target] отсутствуют подходящие места."))
+			return
+		var/choise = interactions_list.len == 1 ? interactions_list[1] : tgui_input_list(action_owner, "Чем вы хотите насадить переносимого?", name, interactions_list)
+		if(!choise)
+			return
+		riding_comp.true_belly_riding_interaction = SSinteractions.interactions[interactions_list[choise]]
+		if(!riding_comp.true_belly_riding_interaction)
+			return
+		else
+			var/penis_desc = action_owner.has_strapon() ? "Дилдо" : "Член"
+			to_chat(action_owner, span_userlove("Вы насаживаете [target] на свой [penis_desc]!"))
+			to_chat(target, span_userlove("[action_owner] насаживает вас на свой [penis_desc]!"))
+
+	riding_comp.true_belly_riding = !riding_comp.true_belly_riding
+	if(!riding_comp.true_belly_riding)
+		riding_comp.off_true_belly_riding()
+	else
+		riding_comp.do_true_belly_riding()
+
+	UpdateButtons()
+
+/datum/action/cooldown/true_belly_riding/UpdateButton(atom/movable/screen/movable/action_button/button, status_only, force)
+	if(!button)
+		return
+	if(!ishuman(owner))
+		Remove(owner)
+		return
+	var/mob/living/carbon/human/action_owner = owner
+	var/datum/component/riding/human/riding_comp = action_owner.GetComponent(/datum/component/riding/human)
+	if(!RIDING_IS_BELLY(riding_comp?.buckle_type))
+		Remove(action_owner)
+		return
+	button_icon_state = riding_comp.true_belly_riding ? "arousal_max" : "arousal_small"
+	return ..()
