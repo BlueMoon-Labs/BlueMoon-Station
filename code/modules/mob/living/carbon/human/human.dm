@@ -922,11 +922,11 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 	return (ishuman(target) && target.mob_weight <= max(mob_weight, MOB_WEIGHT_NORMAL)) && !incapacitated(ignore_restraints = TRUE) && istype(belt, /obj/item/storage/belt/belly_riding) && target.stat != DEAD
 
 /mob/living/carbon/human/proc/belly_ride(mob/living/carbon/target)
-	if(target.mob_weight > max(mob_weight, MOB_WEIGHT_NORMAL))
-		to_chat(src, span_warning("Вы пытаетесь поднять [target], но [target.ru_who()] слишком тяжелая!"))
-		return
 	if(target.stat == DEAD)
 		to_chat(src, span_warning("Я не буду переносить труп на животе!"))
+		return
+	if(target.mob_weight > max(mob_weight, MOB_WEIGHT_NORMAL))
+		to_chat(src, span_warning("Вы пытаетесь поднять [target], но [target.ru_who()] слишком тяжелая!"))
 		return
 	if(can_belly_ride(target))
 		visible_message(span_warning("[src] начинает закреплять [target] в ремни на своем животе."),

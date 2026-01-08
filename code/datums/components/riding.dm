@@ -649,16 +649,19 @@
 	if(!RIDING_IS_BELLY(riding_comp?.buckle_type))
 		Remove(action_owner)
 		return
-	if(!length(action_owner.buckled_mobs) || (!action_owner.has_penis() && !action_owner.has_strapon()))
+	if(!length(action_owner.buckled_mobs))
 		riding_comp.off_true_belly_riding()
 		Remove(action_owner)
+		return
+	if(!action_owner.has_penis() && !action_owner.has_strapon())
+		riding_comp.off_true_belly_riding()
 		return
 	var/mob/living/target = action_owner.buckled_mobs[1]
 	var/t_has_vagina = target.has_vagina()
 	var/t_has_anus = target.has_anus()
 	if(!t_has_anus && !t_has_vagina)
 		riding_comp.off_true_belly_riding()
-		Remove(action_owner)
+		to_chat(action_owner, span_warning("К сожалению, у [target] отсутствуют подходящие места."))
 		return
 	// Если выключено, даем выбор интеракции
 	if(!riding_comp.true_belly_riding)
@@ -680,7 +683,7 @@
 		if(!riding_comp.true_belly_riding_interaction)
 			return
 		else
-			var/penis_desc = action_owner.has_strapon() ? "Дилдо" : "Член"
+			var/penis_desc = action_owner.has_strapon() ? "дилдо" : "член"
 			to_chat(action_owner, span_userlove("Вы насаживаете [target] на свой [penis_desc]!"))
 			to_chat(target, span_userlove("[action_owner] насаживает вас на свой [penis_desc]!"))
 
@@ -693,8 +696,6 @@
 	UpdateButtons()
 
 /datum/action/cooldown/true_belly_riding/UpdateButton(atom/movable/screen/movable/action_button/button, status_only, force)
-	if(!button)
-		return
 	if(!ishuman(owner))
 		Remove(owner)
 		return
