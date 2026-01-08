@@ -49,7 +49,7 @@
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
 		try_apply_knot(user, partner, CUM_TARGET_VAGINA) // Проверка на узлирование.
 
-	if(prob(5 + partner.get_lust()))
+	if(prob(partner.get_lust() / partner.get_climax_threshold() * 100))
 		if(partner.a_intent == INTENT_HELP)
 			user.visible_message(
 				pick(span_lewd("<b>[partner]</b> дрожит от удовольствия."),
@@ -110,7 +110,7 @@
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS) //SPLURT edit
 		try_apply_knot(user, partner, CUM_TARGET_ANUS) // Проверка на узлирование.
 
-	if(prob(5 + partner.get_lust()))
+	if(prob(partner.get_lust() / partner.get_climax_threshold() * 100))
 		if(partner.a_intent == INTENT_HELP)
 			user.visible_message(
 				pick(span_lewd("<b>[partner]</b> дрожит от удовольствия."),
