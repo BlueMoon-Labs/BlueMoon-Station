@@ -1045,8 +1045,10 @@
 	name = "belly riding harness"
 	desc = "Комплект прочных ремней и талей, предназначенных для фиксации существ на животе."
 	icon = 'icons/obj/clothing/uniforms.dmi'
+	taur_mob_worn_overlay = 'icons/mob/clothing/belt_taur.dmi'
 	icon_state = "gear_harness"
-	item_state = null
+	item_state = "bellyriding_harness"
+	mutantrace_variation = STYLE_PAW_TAURIC|STYLE_HOOF_TAURIC
 	w_class = WEIGHT_CLASS_SMALL
 	component_type = null
 	item_flags = NO_UNIFORM_REQUIRED
@@ -1055,5 +1057,12 @@
 	. = ..()
 	. += span_notice("Закрепив ремни на поясе, вы сможете усадить в них другого персонажа, \
 					взяв его в агрессивный захват и перетащив на себя.")
+	. += span_notice("Нажмите ALT, чтобы сделать ремни невидимыми.")
 	if(HAS_TRAIT_FROM(src, TRAIT_NODROP, RIDING_TRAIT))
 		. += span_warning("Вы не сможете снять ремни, пока кого-то переносите!")
+
+/obj/item/storage/belt/belly_riding/AltClick(mob/user)
+	. = ..()
+	item_state = item_state ? null : initial(item_state)
+	balloon_alert(user, item_state ? "Видимые" : "Невидимые")
+	update_slot_icon()
