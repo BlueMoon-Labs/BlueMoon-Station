@@ -54,75 +54,16 @@
 	write_log_user = "tail-ass-slapped"
 	write_log_target = "was tail-ass-slapped by"
 
-////////////////////////////////
-// база для эмоутов с хвостами//
-////////////////////////////////
+///////////////////////////
+// lewd эмоуты с хвостами//
+///////////////////////////
 
-/datum/interaction/lewd/tail
-	simple_style = "lewd"
-	big_user_target_text = TRUE
-	var/target_organ		// орган для взаимодействия
-	var/try_milking = FALSE // пытаемся-ли выдоить что-то в контейнер
-	// для фраз стоит находить формулировки в которых можно будет использовать USER и TARGET
-	var/start_text
-	var/help_text
-	var/grab_text
-	var/harm_text
-	var/list/lewd_sounds
-	var/p13target_strength_base_point = PLUG13_STRENGTH_NORMAL // точка к которой прибавляет +1 уровень при граб, дизарм и +2 уровня при харме
-
-/datum/interaction/lewd/tail/proc/text_picker(mob/living/user, mob/living/partner) // особая проверка для замены текста в n ситуации
-	return
-
-/datum/interaction/lewd/tail/proc/lust_granted(mob/living/partner) // разрешение на получение удовольствия
-	return TRUE
-
-/datum/interaction/lewd/tail/display_interaction(mob/living/user, mob/living/partner)
-
-	var/obj/item/reagent_containers/liquid_container
-	if(try_milking)
-		var/obj/item/cached_item = user.get_active_held_item()
-		if(istype(cached_item, /obj/item/reagent_containers))
-			liquid_container = cached_item
-		else
-			cached_item = user.pulling
-			if(istype(cached_item, /obj/item/reagent_containers))
-				liquid_container = cached_item
-
-	p13target_strength = p13target_strength_base_point
-	simple_message = null	// используем для сообщения базовую переменную
-	var/lust_amount = NORMAL_LUST
-	var/obj/item/organ/genital/partner_organ = partner.getorganslot(target_organ)
-	text_picker(user, partner)	// для особых случаев
-	if(partner.is_fucking(user, CUM_TARGET_TAIL, partner_organ))
-		switch(user.a_intent)
-			if(INTENT_HELP)
-				simple_message = islist(help_text) ? pick(help_text) : help_text
-			if(INTENT_GRAB, INTENT_DISARM)
-				p13target_strength = min(p13target_strength + 20, 100)
-				simple_message = islist(grab_text) ? pick(grab_text) : grab_text
-				lust_amount += 4 // чуть лучше, но не прям на HIGH_LUST
-			if(INTENT_HARM)
-				p13target_strength = min(p13target_strength + 40, 100)
-				simple_message = islist(harm_text) ? pick(harm_text) : harm_text
-				if(HAS_TRAIT(partner, TRAIT_MASO))
-					lust_amount = HIGH_LUST
-				else
-					lust_amount = LOW_LUST
-	else	// начинаем как на help независимо от интента
-		simple_message = islist(start_text) ? pick(start_text) : start_text
-		partner.set_is_fucking(user, CUM_TARGET_TAIL, partner_organ)
-
-	if(liquid_container)
-		simple_message += " Стараясь ловить исходящие жидкости в [liquid_container]"
-	if(lust_granted(partner))
-		partner.handle_post_sex(lust_amount, CUM_TARGET_TAIL, liquid_container ? liquid_container : user,  partner_organ)
-	playlewdinteractionsound(get_turf(user), pick(lewd_sounds), 70, 1, -1)
-	..() // отправка сообщения в родительском проке
-
-/datum/interaction/lewd/tail/dick
-	description = "Хвост. Подрочить член."
+/datum/interaction/lewd/simplified_interaction/tail
 	required_from_user = INTERACTION_REQUIRE_TAIL
+	cum_target = CUM_TARGET_TAIL
+
+/datum/interaction/lewd/simplified_interaction/tail/dick
+	description = "Хвост. Подрочить член."
 	required_from_target_exposed = INTERACTION_REQUIRE_PENIS
 	p13target_emote = PLUG13_EMOTE_PENIS
 	additional_details = list(INTERACTION_FILLS_CONTAINERS)
@@ -134,10 +75,10 @@
 						'modular_sand/sound/interactions/bang2.ogg',
 						'modular_sand/sound/interactions/bang3.ogg')
 
-/datum/interaction/lewd/tail/dick/lust_granted(mob/living/partner)
+/datum/interaction/lewd/simplified_interaction/tail/dick/lust_granted(mob/living/partner)
 	return partner.has_penis()
 
-/datum/interaction/lewd/tail/dick/text_picker(mob/living/user, mob/living/partner) // особая проверка для замены текста в n ситуации
+/datum/interaction/lewd/simplified_interaction/tail/dick/text_picker(mob/living/user, mob/living/partner)
 	var/has_penis = partner.has_penis()
 	start_text = list(
 		"USER обхватывает своим хвостом [has_penis ? "член" : "дилдо"] TARGET.",
@@ -163,7 +104,7 @@
 		"USER резко сжимает и выкручивает [has_penis ? "член" : "дилдо"] TARGET, действуя без жалости и удерживая с силой."
 	)
 
-/datum/interaction/lewd/tail/vagina
+/datum/interaction/lewd/simplified_interaction/tail/vagina
 	description = "Хвост. Проникнуть в вагину."
 	required_from_target_exposed = INTERACTION_REQUIRE_VAGINA
 	p13target_emote = PLUG13_EMOTE_VAGINA
@@ -195,7 +136,7 @@
 	lewd_sounds = list('modular_sand/sound/interactions/champ1.ogg',
 						'modular_sand/sound/interactions/champ2.ogg')
 
-/datum/interaction/lewd/tail/ass
+/datum/interaction/lewd/simplified_interaction/tail/ass
 	description = "Хвост. Проникнуть в задницу."
 	required_from_target_exposed = INTERACTION_REQUIRE_ANUS
 	p13target_emote = PLUG13_EMOTE_ANUS
@@ -226,7 +167,7 @@
 						'modular_sand/sound/interactions/bang2.ogg',
 						'modular_sand/sound/interactions/bang3.ogg')
 
-/datum/interaction/lewd/tail/urethra
+/datum/interaction/lewd/simplified_interaction/tail/urethra
 	description = "Хвост. Проникнуть в уретру."
 	required_from_target_exposed = INTERACTION_REQUIRE_PENIS
 	p13target_emote = PLUG13_EMOTE_PENIS
@@ -241,10 +182,10 @@
 						'modular_sand/sound/interactions/bang6.ogg',)
 	p13target_strength_base_point = PLUG13_STRENGTH_MEDIUM
 
-/datum/interaction/lewd/tail/urethra/lust_granted(mob/living/partner)
+/datum/interaction/lewd/simplified_interaction/tail/urethra/lust_granted(mob/living/partner)
 	return partner.has_penis()
 
-/datum/interaction/lewd/tail/urethra/text_picker(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/simplified_interaction/tail/urethra/text_picker(mob/living/user, mob/living/partner)
 	var/has_penis = partner.has_penis()
 	start_text = list(
 		"USER утыкает хвостик в [has_penis ? "уретру" : "отверстие дилдо"] TARGET, медленно входя.",
@@ -271,7 +212,7 @@
 //Итеракции с самим собой///
 ////////////////////////////
 
-/datum/interaction/lewd/tail/dick/self
+/datum/interaction/lewd/simplified_interaction/tail/dick/self
 	description = "Хвост. Подрочить свой член."
 	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_exposed = null
@@ -282,7 +223,7 @@
 						'modular_sand/sound/interactions/bang2.ogg',
 						'modular_sand/sound/interactions/bang3.ogg')
 
-/datum/interaction/lewd/tail/dick/self/text_picker(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/simplified_interaction/tail/dick/self/text_picker(mob/living/user, mob/living/partner)
 	var/has_penis = user.has_penis()
 	start_text = list(
 		"USER обхватывает хвостом собственный [has_penis ? "член" : "дилдо"].",
@@ -305,7 +246,7 @@
 		"USER грубо работает хвостом по своему [has_penis ? "члену" : "дилдо"], [has_penis ? "будто" : "безуспешно"] стремясь испытать боль и наслаждение одновременно."
 	)
 
-/datum/interaction/lewd/tail/vagina/self
+/datum/interaction/lewd/simplified_interaction/tail/vagina/self
 	description = "Хвост. Проникнуть в свою вагину."
 	required_from_user_exposed = INTERACTION_REQUIRE_VAGINA
 	required_from_target_exposed = null
@@ -338,7 +279,7 @@
 	lewd_sounds = list('modular_sand/sound/interactions/champ1.ogg',
 						'modular_sand/sound/interactions/champ2.ogg')
 
-/datum/interaction/lewd/tail/ass/self
+/datum/interaction/lewd/simplified_interaction/tail/ass/self
 	description = "Хвост. Проникнуть в свою задницу."
 	required_from_user_exposed = INTERACTION_REQUIRE_ANUS
 	required_from_target_exposed = null
@@ -369,7 +310,7 @@
 						'modular_sand/sound/interactions/bang2.ogg',
 						'modular_sand/sound/interactions/bang3.ogg')
 
-/datum/interaction/lewd/tail/urethra/self
+/datum/interaction/lewd/simplified_interaction/tail/urethra/self
 	description = "Хвост. Проникнуть в свою уретру."
 	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_exposed = null
@@ -383,7 +324,7 @@
 						'modular_sand/sound/interactions/bang5.ogg',
 						'modular_sand/sound/interactions/bang6.ogg',)
 
-/datum/interaction/lewd/tail/urethra/self/text_picker(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/simplified_interaction/tail/urethra/self/text_picker(mob/living/user, mob/living/partner)
 	var/has_penis = user.has_penis()
 	start_text = list(
 		"USER утыкает хвостик в [has_penis ? "свою уретру" : "отверстие свего дилдо"], медленно входя.",

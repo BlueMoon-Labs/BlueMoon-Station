@@ -480,4 +480,4 @@
 	var/choice = show_radial_menu(user, target, available_zones, require_near = TRUE, tooltips = TRUE)
 	return choice ? zone_name_to_zone(choice) : null
 
-// zone_name_to_zone перенесён в tattoo_zones.dm
+// zone_name_to_zone перенесён в _tattoo_zones.dm

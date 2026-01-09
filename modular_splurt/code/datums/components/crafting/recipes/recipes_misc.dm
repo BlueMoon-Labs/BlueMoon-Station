@@ -95,6 +95,18 @@
 	category = CAT_WEAPONRY
 	subcategory = CAT_AMMO
 
+/datum/crafting_recipe/securitygoggles
+	name = "Security HUD Goggles"
+	result = /obj/item/clothing/glasses/hud/securitygoggles
+	time = 20
+	tools = list(TOOL_SCREWDRIVER, TOOL_WIRECUTTER)
+	parts = list(/obj/item/clothing/glasses/hud/security/sunglasses = 1,
+					/obj/item/stack/sheet/metal = 5)
+	reqs = list(/obj/item/clothing/glasses/hud/security/sunglasses = 1,
+				/obj/item/stack/sheet/metal = 5,
+				/obj/item/stack/cable_coil = 5)
+	category = CAT_CLOTHING
+
 /datum/crafting_recipe/hudsunsecaviators
 	name = "Security HUD Aviators"
 	result = /obj/item/clothing/glasses/hud/security/sunglasses/aviators
@@ -269,6 +281,14 @@
 	subcategory = CAT_MISCELLANEOUS
 	category = CAT_MISCELLANEOUS
 	result = /obj/item/cushion/silk
+
+/datum/crafting_recipe/syrgery_bag
+	name = "Surgery Bag"
+	reqs = list(/obj/item/stack/sheet/leather = 30, /obj/item/stack/sheet/cloth = 20)
+	tools = list(TOOL_WIRECUTTER)
+	subcategory = CAT_MISCELLANEOUS
+	category = CAT_MISCELLANEOUS
+	result = /obj/item/storage/backpack/duffelbag/med/leather
 
 // TOOLS
 /datum/crafting_recipe/igniter

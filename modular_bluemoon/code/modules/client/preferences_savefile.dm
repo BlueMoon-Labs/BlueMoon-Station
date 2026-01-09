@@ -76,3 +76,10 @@
 
 	.["favorite_paintings_md5"] >> favorite_paintings_md5
 	favorite_paintings_md5 = SANITIZE_LIST(favorite_paintings_md5)
+
+/datum/preferences/update_preferences(current_version, savefile/S)
+	// Citadel added a new bitfield to toggles, we need to push our prefs forward starting from the last bit
+	if(current_version < 61)
+		if(CHECK_BITFIELD(toggles, VERB_CONSENT))
+			ENABLE_BITFIELD(toggles, RANGED_VERBS_CONSENT)
+	. = ..()

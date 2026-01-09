@@ -534,8 +534,9 @@ PAI_CUSTOM_HOLOFORMS
 ## Do station renames from the station charter require admin approval to pass, as opposed to autoapproving if not denied.
 STATION_NAME_NEEDS_APPROVAL
 
-INITIAL_GEAR_POINTS 16
-SPONSOR_EXTRA_GEAR_POINTS 4
+INITIAL_GEAR_POINTS 12
+SUBSCRIBER_EXTRA_GEAR_POINTS 4
+SPONSOR_EXTRA_GEAR_POINTS 8
 
 ## Strings for the station trait "Randomizing station name"
 RANDOMIZING_STATION_NAME_MESSAGE Due to internal affairs, the station is now named %NEW_STATION_NAME%.

@@ -959,7 +959,7 @@
 
 		if(LOADOUT_TAB)
 			//calculate your gear points from the chosen item
-			gear_points = CONFIG_GET(number/initial_gear_points) + (IS_CKEY_DONATOR_GROUP(user.ckey, DONATOR_GROUP_TIER_3) ? CONFIG_GET(number/sponsor_extra_gear_points) : 0)
+			gear_points = CONFIG_GET(number/initial_gear_points) + (IS_CKEY_DONATOR_GROUP(user.ckey, DONATOR_GROUP_TIER_1) ? CONFIG_GET(number/subscriber_extra_gear_points) : 0) + (IS_CKEY_DONATOR_GROUP(user.ckey, DONATOR_GROUP_TIER_2) ? CONFIG_GET(number/sponsor_extra_gear_points) : 0)
 			var/list/chosen_gear = loadout_data["SAVE_[loadout_slot]"]
 			if(chosen_gear)
 				for(var/loadout_item in chosen_gear)

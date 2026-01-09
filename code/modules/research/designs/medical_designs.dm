@@ -213,6 +213,16 @@
 	category = list("Medical Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
+/datum/design/syrgerytools
+	name = "Surgical tools case"
+	desc = "A large plastic case for holding surgical tools or most other medical supplies you could imagine."
+	id = "surgicalcase"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/plastic = 15000)
+	build_path = /obj/item/storage/backpack/duffelbag/med/surgery_empty //So we dont spawn medical items in it
+	category = list("Medical Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
 /datum/design/hypospraykit
 	name = "Empty Hypospray Kit"
 	desc = "A plastic medical kit for storing hyposprays and hypospray accessories."

@@ -47,6 +47,7 @@
 	var/required_from_target_unexposed = NONE
 
 	var/big_user_target_text = FALSE // BLUEMOON ADD большой текстик для TARGET И USER если TRUE
+	var/massage_by_user = TRUE /// BLUEMOON ADD Сообщение и звук происходит от user-а? Если нет, то от цели
 	/// Additional details to be shown in the interaction menu, accepts more than one entry
 	var/list/additional_details
 
@@ -146,7 +147,10 @@
 	if(simple_message)
 		var/use_message = replacetext(simple_message, "USER", big_user_target_text ? "<b>\the [user]</b>" : "\the [user]") // BLUEMOON ADD большой текст
 		use_message = replacetext(use_message, "TARGET", big_user_target_text ? "<b>\the [target]</b>" : "\the [target]") // BLUEMOON ADD большой текст
-		user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
+		if(massage_by_user)
+			user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
+		else
+			target.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
 
 /// After the interaction, the base only plays the sound and only if it has one
 /datum/interaction/proc/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
@@ -163,7 +167,7 @@
 			soundfile_to_play = pickweight(interaction_sound)
 		else
 			soundfile_to_play = interaction_sound
-		playsound(get_turf(user), soundfile_to_play, 50, 1, -1)
+		playsound(get_turf(massage_by_user ? user : target), soundfile_to_play, 50, 1, -1)
 	return
 
 /datum/interaction/cheer/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
@@ -175,9 +179,19 @@
     . = ..()
 
 /datum/interaction/lewd/titgrope_self/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
-    if(user.ckey == "dimakr")
+    if(user.ckey == "dimakr" || user.ckey == "pingvas")
         if(apply_cooldown)
             COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
         playsound(get_turf(user), 'modular_bluemoon/sound/plush/milp6.ogg', 50, FALSE, -1)
         return
     . = ..()
+
+/datum/interaction/handwave/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+	var/obj/item/clothing/mask/screammask/mask = locate() in user.get_equipped_items()
+	if(mask)
+		if(apply_cooldown)
+			COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
+		var/soundfile_to_play = pick('modular_bluemoon/sound/interactions/chuv2.ogg', 'modular_bluemoon/sound/interactions/chuv3.ogg')
+		playsound(get_turf(user), soundfile_to_play, 80, FALSE, -1)
+		return
+	. = ..()
