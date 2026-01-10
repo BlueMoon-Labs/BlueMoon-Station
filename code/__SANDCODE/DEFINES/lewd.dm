@@ -122,6 +122,7 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define INTERACTION_FLAG_UNHOLY_CONTENT (1<<6)
 #define INTERACTION_FLAG_REQUIRE_BONDAGE (1<<7) //TODO: move the bondage interactions out of the interaction menu
 #define INTERACTION_FLAG_RANGED_CONSENT (1<<8)
+#define INTERACTION_FLAG_HIDE_IN_PANEL (1<<9) // not show for users
 
 /// Copy-paste prevention for additional details
 /// Fills containers

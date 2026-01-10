@@ -33,6 +33,7 @@
 	var/write_log_target
 
 	var/interaction_sound
+	var/interaction_sound_volume = 50
 
 	var/max_distance = 1
 
@@ -167,7 +168,10 @@
 			soundfile_to_play = pickweight(interaction_sound)
 		else
 			soundfile_to_play = interaction_sound
-		playsound(get_turf(massage_by_user ? user : target), soundfile_to_play, 50, 1, -1)
+		if(interaction_flags & INTERACTION_FLAG_OOC_CONSENT)
+			playlewdinteractionsound(get_turf(massage_by_user ? user : target), soundfile_to_play, interaction_sound_volume, 1, -1)
+		else
+			playsound(get_turf(massage_by_user ? user : target), soundfile_to_play, interaction_sound_volume, 1, -1)
 	return
 
 /datum/interaction/cheer/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)

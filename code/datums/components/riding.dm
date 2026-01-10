@@ -670,9 +670,9 @@
 			return
 		var/list/interactions_list = list()
 		if(t_has_vagina)
-			interactions_list[CUM_TARGET_VAGINA] = "/datum/interaction/lewd/fuck"
+			interactions_list[CUM_TARGET_VAGINA] = "/datum/interaction/lewd/belly_riding/vagina"
 		if(t_has_anus)
-			interactions_list[CUM_TARGET_ANUS] = "/datum/interaction/lewd/fuck/anal"
+			interactions_list[CUM_TARGET_ANUS] = "/datum/interaction/lewd/belly_riding/anal"
 		if(!interactions_list.len)
 			to_chat(action_owner, span_warning("К сожалению, у [target] отсутствуют подходящие места."))
 			return

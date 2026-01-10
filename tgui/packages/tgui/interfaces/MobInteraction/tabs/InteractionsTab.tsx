@@ -44,6 +44,7 @@ const INTERACTION_FLAG_USER_NOT_TIRED = (1<<5);
 const INTERACTION_FLAG_UNHOLY_CONTENT = (1<<6);
 const INTERACTION_FLAG_REQUIRE_BONDAGE = (1<<7);
 const INTERACTION_FLAG_RANGED_CONSENT = (1<<8);
+const INTERACTION_FLAG_HIDE_IN_PANEL = (1<<9);
 
 export const InteractionsTab = (props, context) => {
   const { act, data } = useBackend<ContentInfo>(context);

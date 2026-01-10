@@ -525,8 +525,8 @@
 	var/list/sent_interactions = list()
 	for(var/interaction_key in SSinteractions.interactions)
 		var/datum/interaction/I = SSinteractions.interactions[interaction_key]
-		// THIS IS A BASETYPE, DO NOT SEND
-		if(!I.description)
+		// THIS IS A BASETYPE, DO NOT SEND || we hide it from users
+		if(!I.description || (I.interaction_flags & INTERACTION_FLAG_HIDE_IN_PANEL))
 			continue
 		var/list/interaction = list()
 		interaction["key"] = I.type
