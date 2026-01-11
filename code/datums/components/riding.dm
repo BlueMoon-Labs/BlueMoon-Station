@@ -301,10 +301,7 @@
 
 /datum/component/riding/human/vehicle_moved(datum/source, oldLoc, dir)
 	. = ..()
-	spawn()
-		if(!src || QDELETED(src))
-			return
-		do_true_belly_riding()
+	INVOKE_ASYNC(src, PROC_REF(do_true_belly_riding))
 
 /datum/component/riding/human/proc/do_true_belly_riding()
 	var/mob/living/carbon/human/H = parent
