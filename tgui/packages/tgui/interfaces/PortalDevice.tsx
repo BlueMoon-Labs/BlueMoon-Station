@@ -123,8 +123,6 @@ type ActiveVibration = {
 type TabProps = {
   data: PortalDeviceData;
   act: (action: string, params?: object) => void;
-  isPanties?: boolean;
-  isConnected?: boolean;
 };
 
 // Control mode labels
@@ -260,8 +258,9 @@ const QuickMessagesSection = (props: {
 
 // Status Tab Content (Passive Mode for Panties)
 const StatusTabContent = (props: TabProps) => {
-  const { data, act, isConnected } = props;
-  const { connected_devices, vibration_enabled, vibration_intensity, vibration_pattern, available_patterns, quick_messages, telecomms_available, active_vibrations, has_remote_vibration, effective_intensity, effective_pattern } = data;
+  const { data, act } = props;
+  const { connected_devices, vibration_enabled, vibration_intensity, vibration_pattern, available_patterns, quick_messages, telecomms_available, active_vibrations, has_remote_vibration, effective_intensity, effective_pattern, connected_count } = data;
+  const isConnected = (connected_count || 0) > 0;
 
   // Use effective intensity from remote sources if available, otherwise local
   const displayIntensity = has_remote_vibration && effective_intensity ? effective_intensity : vibration_intensity;
@@ -377,13 +376,15 @@ const StatusTabContent = (props: TabProps) => {
 
 // Control Tab Content
 const ControlTabContent = (props: TabProps) => {
-  const { data, act, isPanties, isConnected } = props;
+  const { data, act } = props;
   const {
+    device_type,
     connection_mode,
     in_network,
     connected_devices,
     connected,
     connected_name,
+    connected_count,
     partner_mood_color,
     partner_mood_text,
     available_panties,
@@ -393,6 +394,8 @@ const ControlTabContent = (props: TabProps) => {
     connection_history,
     telecomms_available,
   } = data;
+  const isPanties = device_type === 'panties';
+  const isConnected = isPanties ? (connected_count || 0) > 0 : !!connected;
 
   return (
     <Stack vertical fill>
@@ -615,8 +618,9 @@ const ControlTabContent = (props: TabProps) => {
 
 // Remote Control Tab (Fleshlight only)
 const RemoteTabContent = (props: TabProps) => {
-  const { data, act, isConnected } = props;
+  const { data, act } = props;
   const {
+    connected,
     connected_name,
     partner_mood_color,
     partner_mood_text,
@@ -631,6 +635,7 @@ const RemoteTabContent = (props: TabProps) => {
     vibration_intensity,
     vibration_pattern,
   } = data;
+  const isConnected = !!connected;
 
   if (!isConnected) {
     return (
@@ -1218,7 +1223,7 @@ export const PortalDevice = (_, context) => {
   const defaultTab = isPassiveMode ? 'status' : !isPanties && isConnected ? 'remote' : 'control';
   const [activeTab, setActiveTab] = useLocalState(context, 'activeTab', defaultTab);
 
-  const tabProps: TabProps = { data, act, isPanties, isConnected };
+  const tabProps: TabProps = { data, act };
 
   return (
     <Window width={420} height={560} title={device_name}>
