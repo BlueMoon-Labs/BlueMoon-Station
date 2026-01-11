@@ -123,8 +123,8 @@ type ActiveVibration = {
 type TabProps = {
   data: PortalDeviceData;
   act: (action: string, params?: object) => void;
-  isPanties: boolean;
-  isConnected: boolean;
+  isPanties?: boolean;
+  isConnected?: boolean;
 };
 
 // Control mode labels
