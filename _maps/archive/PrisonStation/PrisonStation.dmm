@@ -50737,9 +50737,7 @@
 	dir = 1;
 	light_color = "#d1dfff"
 	},
-/obj/machinery/jukebox{
-	volume = 140
-	},
+/obj/machinery/jukebox,
 /turf/open/floor/plasteel/dark/side{
 	dir = 10
 	},

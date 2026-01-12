@@ -1765,7 +1765,7 @@
 "jX" = (
 /obj/machinery/light/floor,
 /obj/machinery/jukebox{
-	queuecost = 0
+	req_one_access = null
 	},
 /turf/open/floor/carpet/royalblack,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
