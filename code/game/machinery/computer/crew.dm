@@ -12,20 +12,6 @@
 
 	light_color = LIGHT_COLOR_BLUE
 
-	var/internal_radio = TRUE
-	var/obj/item/radio/radio
-	var/radio_key = /obj/item/encryptionkey/headset_med
-	var/radio_channel = RADIO_CHANNEL_MEDICAL
-
-/obj/machinery/computer/crew/Initialize(mapload)
-	. = ..()
-
-	radio = new(src)
-	radio.keyslot = new radio_key
-	radio.subspace_transmission = TRUE
-	radio.canhear_range = 0
-	radio.recalculateChannels()
-
 /obj/machinery/computer/crew/syndie
 	icon_keyboard = "syndie_key"
 
@@ -108,10 +94,6 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 	jobs["Assistant"] = 999 //Unknowns/custom jobs should appear after civilians, and before assistants
 
 	src.jobs = jobs
-
-/obj/machinery/computer/crew/Destroy()
-	QDEL_NULL(radio)
-	return ..()
 
 /datum/crewmonitor/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
