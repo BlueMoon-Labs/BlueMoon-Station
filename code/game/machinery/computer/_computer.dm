@@ -20,6 +20,87 @@
 	var/unique_icon = FALSE
 	var/authenticated = FALSE
 
+
+/obj/machinery/computer/var/typing = FALSE
+/obj/machinery/computer/var/list/typing_users = null
+
+/obj/machinery/computer/attack_hand(mob/user)
+	. = ..()
+	if(.)
+		return
+
+	start_typing(user)
+
+/obj/machinery/computer/proc/start_typing(mob/user)
+	if(machine_stat & (NOPOWER|BROKEN))
+		return
+
+	if(!typing_users)
+		typing_users = list()
+
+	if(!(user in typing_users))
+		typing_users += user
+
+	if(!typing)
+		typing = TRUE
+		spawn_typing_loop()
+
+/obj/machinery/computer/ui_interact(mob/user, datum/tgui/ui)
+	. = ..()
+	if(!typing)
+		start_typing(user)
+
+/obj/machinery/computer/ui_close(mob/user)
+	. = ..()
+	stop_typing(user)
+
+/obj/machinery/computer/proc/spawn_typing_loop()
+	spawn()
+		while(typing)
+			if(!typing_users || !typing_users.len)
+				typing = FALSE
+				return
+
+			var/volume = min(30 + (typing_users.len * 5), 60)
+			playsound(src, pick(keyboard_sounds), volume, FALSE)
+
+			sleep(rand(3,6))
+
+
+/obj/machinery/computer/proc/stop_typing(mob/user)
+	if(!typing_users)
+		return
+
+	typing_users -= user
+
+	if(!typing_users.len)
+		typing = FALSE
+
+
+/obj/machinery/computer/var/static/list/keyboard_sounds = list(
+	'sound/machines/computer/keyboard_clicks_1.ogg',
+	'sound/machines/computer/keyboard_clicks_2.ogg',
+	'sound/machines/computer/keyboard_clicks_3.ogg',
+	'sound/machines/computer/keyboard_clicks_4.ogg',
+	'sound/machines/computer/keyboard_clicks_5.ogg',
+	'sound/machines/computer/keyboard_clicks_6.ogg',
+	'sound/machines/computer/keyboard_clicks_7.ogg'
+)
+
+/obj/machinery/computer/process()
+	. = ..()
+
+	if(!typing || !typing_users)
+		return
+
+	for(var/mob/M in typing_users.Copy())
+		if(!M || !M.client || get_dist(src, M) > 1)
+			typing_users -= M
+
+	if(!typing_users.len)
+		typing = FALSE
+
+
 /obj/machinery/computer/Initialize(mapload, obj/item/circuitboard/C)
 	. = ..()
 	power_change()
