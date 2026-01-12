@@ -38,21 +38,6 @@
 	icon_state = "hahun_jukebox"
 	item_state = "hahun_jukebox"
 
-/obj/item/jukebox/hahun/ComponentInitialize()
-	. = ..()
-	AddElement(/datum/element/update_icon_updates_onmob)
-
-/obj/item/jukebox/hahun/update_icon_state()
-	var/mutable_appearance/enabled = mutable_appearance('modular_citadel/icons/obj/boombox_righthand.dmi', "headphones_on")
-	if(active)
-		. += mutable_appearance('modular_citadel/icons/obj/boombox_righthand.dmi', "headphones_on")
-		item_state = "[initial(icon_state)]-active"
-		add_overlay(enabled)
-	else
-		icon_state = "[initial(icon_state)]"
-		item_state = "[initial(item_state)]"
-		cut_overlay(enabled)
-
 ////////////////////////
 
 /obj/item/modkit/invis_belt

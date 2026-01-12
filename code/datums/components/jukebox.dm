@@ -28,6 +28,9 @@
 		queuecost = _queuecost
 	if(isnum(_volume) && _volume >= 0)
 		volume = _volume
+	var/obj/box = parent
+	if(box.obj_flags & EMAGGED)
+		emag_act(silent = TRUE)
 	RegisterSignal(parent, COMSIG_MOUSEDROP_ONTO, PROC_REF(on_mouse_dropped))
 	RegisterSignal(parent, COMSIG_ITEM_ATTACK_SELF, PROC_REF(interact)) // Для предметов
 	RegisterSignal(parent, COMSIG_ATOM_ATTACK_HAND, PROC_REF(on_attack_hand)) // Для машинерии
@@ -42,6 +45,22 @@
 	if(active)
 		box.icon_state += "-active"
 
+	if(!isitem(box))
+		return
+	var/obj/item/ibox = box
+	if(ibox.item_state)
+		ibox.item_state = ibox.current_skin ? ibox.unique_reskin[ibox.current_skin]["item_state"] : initial(ibox.item_state)
+		if(active)
+			ibox.item_state += "-active"
+		// Обновляем иконку в руке || прямо как в update_icon_updates_onmob
+		if(!ismob(ibox.loc))
+			return
+		var/mob/M = ibox.loc
+		if(M.is_holding(ibox))
+			M.update_inv_hands()
+		else
+			M.regenerate_icons()
+
 /datum/component/jukebox/proc/on_emag_act(atom/source)
 	SIGNAL_HANDLER
 
@@ -50,11 +69,15 @@
 	if(!need_anchored || box.obj_flags & EMAGGED)
 		return
 
+	emag_act(usr)
+
+/datum/component/jukebox/proc/emag_act(mob/user, silent = FALSE)
+
+	var/obj/box = parent
 	queuecost = PRICE_FREE
 	box.obj_flags |= EMAGGED
 	box.req_one_access = null
 
-	var/mob/living/user = usr
 	if(user)
 		log_admin("[key_name(user)] emagged [box] at [AREACOORD(box)]")
 		to_chat(user, "<span class='notice'>You've bypassed [box]'s audio volume limiter, and enabled free play.</span>")
@@ -365,7 +388,7 @@
 		if("clear_queue")
 			if(!LAZYLEN(queuedplaylist))
 				return
-			box.say("Очередь очищена, удалено [queuedplaylist.len] треков.")
+			box.say("Очередь очищена, удалено треков: [queuedplaylist.len]")
 			LAZYCLEARLIST(queuedplaylist)
 		if("remove_from_queue")
 			var/index = params["index"]
