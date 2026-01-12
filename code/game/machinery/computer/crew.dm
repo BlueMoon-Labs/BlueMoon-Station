@@ -12,6 +12,20 @@
 
 	light_color = LIGHT_COLOR_BLUE
 
+	var/internal_radio = TRUE
+	var/obj/item/radio/radio
+	var/radio_key = /obj/item/encryptionkey/headset_med
+	var/radio_channel = RADIO_CHANNEL_MEDICAL
+
+/obj/machinery/computer/crew/Initialize(mapload)
+	. = ..()
+
+	radio = new(src)
+	radio.keyslot = new radio_key
+	radio.subspace_transmission = TRUE
+	radio.canhear_range = 0
+	radio.recalculateChannels()
+
 /obj/machinery/computer/crew/syndie
 	icon_keyboard = "syndie_key"
 
@@ -28,6 +42,7 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 	var/list/data_by_z = list()
 	var/list/last_update = list()
 	var/selected_jobs = -1
+	var/list/last_crit_alert = list()
 
 /datum/crewmonitor/New()
 	. = ..()
@@ -94,7 +109,8 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 
 	src.jobs = jobs
 
-/datum/crewmonitor/Destroy()
+/obj/machinery/computer/crew/Destroy()
+	QDEL_NULL(radio)
 	return ..()
 
 /datum/crewmonitor/ui_interact(mob/user, datum/tgui/ui)
@@ -211,6 +227,30 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 					results_damaged[++results_damaged.len] = total_list
 				else
 					results_undamaged[++results_undamaged.len] = total_list
+
+// --- CRITICAL ALERT ---
+				if((nanite_sensors || U.sensor_mode >= SENSOR_VITALS) && (H.stat == SOFT_CRIT || H.stat == DEAD || H.health <= -20))
+					var/ck = H.ckey
+					if(!last_crit_alert[ck] || world.time > last_crit_alert[ck] + 1200)
+						last_crit_alert[ck] = world.time
+
+						var/area_name = get_area_name(H, TRUE)
+						var/realname = I ? I.registered_name : H.real_name
+						var/job = I ? I.get_assignment_name() : "Unknown"
+
+						var/obj/machinery/announcement_system/AAS = null
+						for(var/obj/machinery/announcement_system/S in GLOB.announcement_systems)
+							if(S.z == z && S.is_operational())
+								AAS = S
+								break
+
+						// Найдём все crew мониторы на этом Z и заставим их пикнуть
+						for(var/obj/machinery/computer/crew/C in world)
+							if(C.z == z && C.is_operational())
+								playsound(C, 'sound/machines/beep.ogg', 50, FALSE)
+
+						if(AAS)
+							AAS.announce_critical(realname, job, area_name)
 
 	var/list/returning = sortTim(results_damaged,GLOBAL_PROC_REF(damage_compare)) + sortTim(results_undamaged,GLOBAL_PROC_REF(ijob_compare))
 
