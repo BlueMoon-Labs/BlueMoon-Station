@@ -8,6 +8,7 @@ import {
   Section,
   Stack,
   Tabs,
+  NumberInput,
 } from '../components';
 import { Window } from '../layouts';
 
@@ -37,13 +38,13 @@ export const Jukebox = (props, context) => {
   const [query, setQuery] = useSharedState(context, 'query', '');
   const [page, setPage] = useSharedState(context, 'page', 1);
   const [tab, setTab] = useSharedState(context, 'tab', 1);
-  const [inFavorites, setInFavorites] = useSharedState(context, 'inFavorites', false);
+  const [inFavoritesMode, setinFavoritesMode] = useSharedState(context, 'inFavoritesMode', false);
   const [inputPage, setInputPage] = useSharedState(context, 'inputPage', page);
 
   const songsPerPage = 25;
   const filteredSongs = !query
-    ? (inFavorites ? [...favorite_tracks].reverse() : songs)
-    : (inFavorites ? [...favorite_tracks].reverse() : songs)
+    ? (inFavoritesMode ? [...favorite_tracks].reverse() : songs)
+    : (inFavoritesMode ? [...favorite_tracks].reverse() : songs)
       .filter(name => name.toLowerCase().includes(query.toLowerCase()));
 
   const totalPages = Math.max(1, Math.ceil(filteredSongs.length / songsPerPage));
@@ -67,7 +68,7 @@ export const Jukebox = (props, context) => {
   };
 
   return (
-    <Window width={520} height={680} theme={theme}>
+    <Window width={560} height={680} theme={theme}>
       <Window.Content scrollable>
         <Section title="Настройки" buttons={
           <Box>
@@ -151,11 +152,11 @@ export const Jukebox = (props, context) => {
           <Tabs.Tab selected={tab === 1} onClick={() => setTab(1)}
             rightSlot={
               <Button
-                icon={"star" + (inFavorites ? "" : "-o")}
+                icon={"star" + (inFavoritesMode ? "" : "-o")}
                 color="transparent"
-                selected={inFavorites}
-                onClick={() => setInFavorites(!inFavorites)}
-                tooltip={`${inFavorites ? "Показать все" : "Показать избранное"}`}
+                selected={inFavoritesMode}
+                onClick={() => setinFavoritesMode(!inFavoritesMode)}
+                tooltip={`${inFavoritesMode ? "Показать все" : "Показать избранное"}`}
               />
             }>
             Треки
@@ -197,12 +198,25 @@ export const Jukebox = (props, context) => {
                 Нет треков
               </Box>
             ) : (
-              currentSongs.map(track => {
+              currentSongs.map((track, i) => {
                 const isAvailable = songs.includes(track);
                 const isFavorite = favorite_tracks.includes(track);
 
                 return (
                   <Stack key={track} mb={1} align="center">
+                    {inFavoritesMode && (
+                      <Stack.Item mr={1}>
+                        <NumberInput
+                          width="40px"
+                          textAlign="center"
+                          value={i + 1}
+                          showBar={false}
+                          minValue={1}
+                          maxValue={currentSongs.length + 1}
+                          onChange={(e, value) => act('set_favorite_index', { track, index: value })}
+                        />
+                      </Stack.Item>
+                    )}
                     <Stack.Item grow>
                       <Box
                         color={isAvailable ? "gray" : "red"}
@@ -211,7 +225,7 @@ export const Jukebox = (props, context) => {
                       </Box>
                     </Stack.Item>
                     <Stack.Item>
-                      {inFavorites && (
+                      {inFavoritesMode && (
                         <>
                           <Button
                             icon="up-long"

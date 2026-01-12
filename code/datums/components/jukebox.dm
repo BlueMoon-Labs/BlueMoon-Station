@@ -225,30 +225,57 @@
 			return
 		//BLUEMOON ADD END
 		//BLUEMOON ADD START Возможность двигать треки в избранном и двигать в очереди
-		if("move_favorite")
+		if("toggle_favorite", "move_favorite", "set_favorite_index")
 			var/mob/living/L = usr
 			if(!L?.client?.prefs)
 				return
+			var/datum/preferences/prefs = L.client.prefs
 			var/track = params["track"]
 			if(!track)
 				return
-			var/list/track_list = L.client.prefs.favorite_tracks
+			var/list/track_list = prefs.favorite_tracks
 
-			var/to_index = params["up"] ? track_list.Find(next_list_item(track, track_list)) : track_list.Find(previous_list_item(track, track_list))
-			var/track_index = track_list.Find(track)
+			switch(action)
+				if("toggle_favorite")
+					if(track in track_list)
+						track_list -= track
+					else
+						track_list += track
+				if("move_favorite")
+					var/to_index = params["up"] ? track_list.Find(next_list_item(track, track_list)) : track_list.Find(previous_list_item(track, track_list))
+					var/track_index = track_list.Find(track)
+					if(!to_index || !track_index)
+						return
 
-			if(to_index == track_list.len)
-				track_list -= track
-				track_list += track
-			else if(to_index == 1)
-				track_list -= track
-				track_list.Insert(to_index, track)
-			else
-				track_list.Swap(track_index, to_index)
+					if(to_index == track_list.len)
+						track_list -= track
+						track_list += track
+					else if(to_index == 1)
+						track_list -= track
+						track_list.Insert(to_index, track)
+					else
+						track_list.Swap(track_index, to_index)
+				if("set_favorite_index")
+					var/ui_index = params["index"]
+					if(!ui_index)
+						return
 
-			L.client.prefs.save_preferences()
+					var/from = track_list.Find(track)
+					if(!from)
+						return
+
+					if(ui_index < 0)
+						ui_index = track_list.len
+					else
+						ui_index = clamp(ui_index, 1, track_list.len)
+
+					var/to_index = track_list.len - ui_index + 1 // Индексы в UI в обратном порядке идут
+
+					moveElementToPos(track_list, from, to_index)
+
+			prefs.save_preferences()
 			return TRUE
-
+		//BLUEMOON ADD END
 		if("move_queue")
 			var/track_index = params["index"]
 			if (!track_index || !queuedplaylist.len || track_index < 1 || track_index > queuedplaylist.len)
@@ -264,7 +291,6 @@
 			else
 				queuedplaylist.Swap(track_index, to_index)
 			return TRUE
-		//BLUEMOON ADD END
 		if("add_to_queue")
 			var/list/available = list()
 			for(var/datum/track/S in SSjukeboxes.songs)
@@ -347,19 +373,6 @@
 			var/datum/track/song_to_remove = queuedplaylist[index]
 			queuedplaylist.Cut(index, index + 1)
 			box.say("[song_to_remove.song_name] была удалена из очереди.")
-			return TRUE
-		if("toggle_favorite")
-			var/mob/living/L = usr
-			if(!L?.client?.prefs)
-				return
-			var/track = params["track"]
-			if(!track)
-				return
-			if(track in L.client.prefs.favorite_tracks)
-				L.client.prefs.favorite_tracks -= track
-			else
-				L.client.prefs.favorite_tracks += track
-			L.client.prefs.save_preferences()
 			return TRUE
 
 /datum/component/jukebox/proc/activate_music()

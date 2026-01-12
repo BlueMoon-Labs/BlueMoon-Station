@@ -590,6 +590,18 @@
 	L.Swap(fromIndex, toIndex)
 	L.Cut(fromIndex, fromIndex+1)
 
+// Like moveElement but direct to position
+/proc/moveElementToPos(list/L, fromIndex, newPos)
+	if(!L || fromIndex < 1 || fromIndex > L.len)
+		return
+	newPos = clamp(newPos, 1, L.len)
+
+	// convert "new position" -> "insertion index"
+	var/toIndex = newPos
+	if(newPos > fromIndex)
+		toIndex = newPos + 1
+
+	moveElement(L, fromIndex, toIndex)
 
 //Move elements [fromIndex,fromIndex+len) to [toIndex-len, toIndex)
 //Same as moveElement but for ranges of elements
