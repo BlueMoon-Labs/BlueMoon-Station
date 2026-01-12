@@ -235,12 +235,15 @@ export class NumberInput extends Component {
               editing: false,
               value,
             });
-            this.suppressFlicker();
-            if (onChange) {
-              onChange(e, value);
-            }
-            if (onDrag) {
-              onDrag(e, value);
+
+            if (value !== this.props.value) {
+              this.suppressFlicker();
+              if (onChange) {
+                onChange(e, value);
+              }
+              if (onDrag) {
+                onDrag(e, value);
+              }
             }
           }}
           onKeyDown={e => {
@@ -249,22 +252,20 @@ export class NumberInput extends Component {
                 parseFloat(e.target.value),
                 minValue,
                 maxValue);
-              if (Number.isNaN(value)) {
-                this.setState({
-                  editing: false,
-                });
-                return;
-              }
+
               this.setState({
                 editing: false,
                 value,
               });
-              this.suppressFlicker();
-              if (onChange) {
-                onChange(e, value);
-              }
-              if (onDrag) {
-                onDrag(e, value);
+
+              if (value !== this.props.value) {
+                this.suppressFlicker();
+                if (onChange) {
+                  onChange(e, value);
+                }
+                if (onDrag) {
+                  onDrag(e, value);
+                }
               }
               return;
             }
