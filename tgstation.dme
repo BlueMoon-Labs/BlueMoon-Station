@@ -710,6 +710,7 @@
 #include "code\datums\components\igniter.dm"
 #include "code\datums\components\infective.dm"
 #include "code\datums\components\jousting.dm"
+#include "code\datums\components\jukebox.dm"
 #include "code\datums\components\jump.dm"
 #include "code\datums\components\killerqueen.dm"
 #include "code\datums\components\knockback.dm"

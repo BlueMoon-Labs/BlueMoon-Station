@@ -174,6 +174,13 @@ export const Jukebox = (props, context) => {
               act('add_to_queue', { track: randomSongName, up: false });
             }}
           />
+          <Button
+            color="transparent"
+            icon="trash"
+            tooltip="Очистить очередь"
+            disabled={!has_access}
+            onClick={() => act('clear_queue')}
+          />
         </Tabs>
 
         {tab === 1 && (
