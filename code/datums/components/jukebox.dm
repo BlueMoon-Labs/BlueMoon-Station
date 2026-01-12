@@ -1,4 +1,6 @@
 /datum/component/jukebox
+	dupe_mode = COMPONENT_DUPE_UNIQUE
+	dupe_type = /datum/component/jukebox
 	var/active = FALSE
 	var/list/rangers = list()
 	var/stop = 0
@@ -8,7 +10,6 @@
 	var/datum/track/selectedtrack = null
 	var/list/queuedplaylist = list()
 	var/repeat = FALSE // BLUEMOON ADD зацикливание плейлистов
-	var/area_priority = TRUE // BLUEMOON ADD стационарные джукбоксы имеют приоритет игры внутри своей зоны
 	var/area/privatized_area = null // BLUEMOON ADD зона которая будет забрана для конкретного джукбокса
 	var/list/emagged_ckey_allowed = list("smileycom") // BLUEMOON ADD Список сикеев, которым разерешено пользоваться взломанной, ручной колонкой
 	var/need_anchored = FALSE // Обзательно ли прикручивать для работы
@@ -397,13 +398,12 @@
 		if(repeat)
 			queuedplaylist += queuedplaylist[1]
 		// BLUEMOON ADD стационарные джукбоксы забирают приоритет зоны себе и если сидеть в этой зоне играет только их музыка
-		if(area_priority)
-			if(need_anchored && privatized_area)
+		if(need_anchored)
+			if(privatized_area)
 				privatized_area.jukebox_privatized_by = null
 			var/area/juke_area = get_area(parent)
 			juke_area.jukebox_privatized_by = box
-			if(need_anchored)
-				privatized_area = juke_area
+			privatized_area = juke_area
 
 		//BLUEMOON ADD END
 		queuedplaylist.Cut(1, 2)
@@ -435,8 +435,11 @@
 	rangers = list()
 
 /datum/component/jukebox/process(delta_time)
-	if((!active || world.time < stop) && check_area())
-		return
+	if((!active || world.time < stop))
+		if(!check_area())
+			stop = 0
+		else
+			return
 
 	var/obj/box = parent
 	active = FALSE
@@ -452,3 +455,302 @@
 /datum/component/jukebox/Destroy()
 	dance_over()
 	. = ..()
+
+
+
+//////////////////// DISCO ////////////////////
+/datum/component/jukebox/disco
+	var/list/spotlights = list()
+	var/list/sparkles = list()
+
+/datum/component/jukebox/disco/activate_music()
+	. = ..()
+	if(!.)
+		return
+	dance_setup()
+	lights_spin()
+
+/datum/component/jukebox/disco/proc/dance_setup()
+	var/turf/cen = get_turf(parent)
+	FOR_DVIEW(var/turf/t, 3, cen, INVISIBILITY_LIGHTING)
+		if(t.x == cen.x && t.y > cen.y)
+			var/obj/item/flashlight/spotlight/L = new /obj/item/flashlight/spotlight(t)
+			L.light_color = LIGHT_COLOR_RED
+			L.light_power = 30-(get_dist(parent,L)*8)
+			L.range = 1+get_dist(parent, L)
+			spotlights+=L
+			continue
+		if(t.x == cen.x && t.y < cen.y)
+			var/obj/item/flashlight/spotlight/L = new /obj/item/flashlight/spotlight(t)
+			L.light_color = LIGHT_COLOR_PURPLE
+			L.light_power = 30-(get_dist(parent,L)*8)
+			L.range = 1+get_dist(parent, L)
+			spotlights+=L
+			continue
+		if(t.x > cen.x && t.y == cen.y)
+			var/obj/item/flashlight/spotlight/L = new /obj/item/flashlight/spotlight(t)
+			L.light_color = LIGHT_COLOR_YELLOW
+			L.light_power = 30-(get_dist(parent,L)*8)
+			L.range = 1+get_dist(parent, L)
+			spotlights+=L
+			continue
+		if(t.x < cen.x && t.y == cen.y)
+			var/obj/item/flashlight/spotlight/L = new /obj/item/flashlight/spotlight(t)
+			L.light_color = LIGHT_COLOR_GREEN
+			L.light_power = 30-(get_dist(parent,L)*8)
+			L.range = 1+get_dist(parent, L)
+			spotlights+=L
+			continue
+		if((t.x+1 == cen.x && t.y+1 == cen.y) || (t.x+2==cen.x && t.y+2 == cen.y))
+			var/obj/item/flashlight/spotlight/L = new /obj/item/flashlight/spotlight(t)
+			L.light_color = LIGHT_COLOR_ORANGE
+			L.light_power = 30-(get_dist(parent,L)*8)
+			L.range = 1.4+get_dist(parent, L)
+			spotlights+=L
+			continue
+		if((t.x-1 == cen.x && t.y-1 == cen.y) || (t.x-2==cen.x && t.y-2 == cen.y))
+			var/obj/item/flashlight/spotlight/L = new /obj/item/flashlight/spotlight(t)
+			L.light_color = LIGHT_COLOR_CYAN
+			L.light_power = 30-(get_dist(parent,L)*8)
+			L.range = 1.4+get_dist(parent, L)
+			spotlights+=L
+			continue
+		if((t.x-1 == cen.x && t.y+1 == cen.y) || (t.x-2==cen.x && t.y+2 == cen.y))
+			var/obj/item/flashlight/spotlight/L = new /obj/item/flashlight/spotlight(t)
+			L.light_color = LIGHT_COLOR_BLUEGREEN
+			L.light_power = 30-(get_dist(parent,L)*8)
+			L.range = 1.4+get_dist(parent, L)
+			spotlights+=L
+			continue
+		if((t.x+1 == cen.x && t.y-1 == cen.y) || (t.x+2==cen.x && t.y-2 == cen.y))
+			var/obj/item/flashlight/spotlight/L = new /obj/item/flashlight/spotlight(t)
+			L.light_color = LIGHT_COLOR_BLUE
+			L.light_power = 30-(get_dist(parent,L)*8)
+			L.range = 1.4+get_dist(parent, L)
+			spotlights+=L
+			continue
+		continue
+	FOR_DVIEW_END
+
+#define DISCO_INFENO_RANGE (rand(85, 115)*0.01)
+
+/datum/component/jukebox/disco/proc/lights_spin()
+	for(var/i in 1 to 25)
+		if(QDELETED(src) || QDELETED(parent) || !active)
+			return
+		var/obj/effect/overlay/sparkles/S = new /obj/effect/overlay/sparkles(parent)
+		S.alpha = 0
+		sparkles += S
+		switch(i)
+			if(1 to 8)
+				S.orbit(parent, 30, TRUE, 60, 36, TRUE)
+			if(9 to 16)
+				S.orbit(parent, 62, TRUE, 60, 36, TRUE)
+			if(17 to 24)
+				S.orbit(parent, 95, TRUE, 60, 36, TRUE)
+			if(25)
+				S.pixel_y = 7
+				S.forceMove(get_turf(parent))
+		sleep(7)
+	if(playing.song_name == "Engineering's Ultimate High-Energy Hustle")
+		sleep(280)
+	for(var/obj/reveal in sparkles)
+		reveal.alpha = 255
+	while(active)
+		for(var/obj/item/flashlight/spotlight/glow in spotlights) // The multiples reflects custom adjustments to each colors after dozens of tests
+			if(QDELETED(src) || QDELETED(parent) || !active || QDELETED(glow))
+				return
+			if(glow.light_color == LIGHT_COLOR_RED)
+				glow.light_color = LIGHT_COLOR_BLUE
+				glow.light_power = glow.light_power * 1.48
+				glow.light_range = 0
+				glow.update_light()
+				continue
+			if(glow.light_color == LIGHT_COLOR_BLUE)
+				glow.light_color = LIGHT_COLOR_GREEN
+				glow.light_range = glow.range * DISCO_INFENO_RANGE
+				glow.light_power = glow.light_power * 2 // Any changes to power must come in pairs to neutralize it for other colors
+				glow.update_light()
+				continue
+			if(glow.light_color == LIGHT_COLOR_GREEN)
+				glow.light_color = LIGHT_COLOR_ORANGE
+				glow.light_power = glow.light_power * 0.5
+				glow.light_range = 0
+				glow.update_light()
+				continue
+			if(glow.light_color == LIGHT_COLOR_ORANGE)
+				glow.light_color = LIGHT_COLOR_PURPLE
+				glow.light_power = glow.light_power * 2.27
+				glow.light_range = glow.range * DISCO_INFENO_RANGE
+				glow.update_light()
+				continue
+			if(glow.light_color == LIGHT_COLOR_PURPLE)
+				glow.light_color = LIGHT_COLOR_BLUEGREEN
+				glow.light_power = glow.light_power * 0.44
+				glow.light_range = 0
+				glow.update_light()
+				continue
+			if(glow.light_color == LIGHT_COLOR_BLUEGREEN)
+				glow.light_color = LIGHT_COLOR_YELLOW
+				glow.light_range = glow.range * DISCO_INFENO_RANGE
+				glow.update_light()
+				continue
+			if(glow.light_color == LIGHT_COLOR_YELLOW)
+				glow.light_color = LIGHT_COLOR_CYAN
+				glow.light_range = 0
+				glow.update_light()
+				continue
+			if(glow.light_color == LIGHT_COLOR_CYAN)
+				glow.light_color = LIGHT_COLOR_RED
+				glow.light_power = glow.light_power * 0.68
+				glow.light_range = glow.range * DISCO_INFENO_RANGE
+				glow.update_light()
+				continue
+		if(prob(2))  // Unique effects for the dance floor that show up randomly to mix things up
+			INVOKE_ASYNC(src, PROC_REF(hierofunk))
+		sleep(playing.song_beat)
+
+#undef DISCO_INFENO_RANGE
+
+/datum/component/jukebox/disco/proc/hierofunk()
+	for(var/i in 1 to 10)
+		spawn_atom_to_turf(/obj/effect/temp_visual/hierophant/telegraph/edge, parent, 1, FALSE)
+		sleep(5)
+		if(QDELETED(src) || QDELETED(parent))
+			return
+
+/datum/component/jukebox/disco/proc/dance(var/mob/living/M) //Show your moves
+	set waitfor = FALSE
+	// switch(rand(0,9))
+	// 	if(0 to 1)
+	dance2(M) // остался только эмоут, не ломающий спрайты
+		// if(2 to 3)
+		// 	dance3(M)
+		// if(4 to 6)
+		// 	dance4(M)
+		// if(7 to 9)
+		// 	dance5(M)
+
+/datum/component/jukebox/disco/proc/dance2(var/mob/living/M)
+	for(var/i = 1, i < 10, i++)
+		for(var/d in list(NORTH,SOUTH,EAST,WEST,EAST,SOUTH,NORTH,SOUTH,EAST,WEST,EAST,SOUTH))
+			M.setDir(d)
+			if(i == WEST)
+				M.emote("flip")
+			sleep(1)
+		sleep(20)
+
+/*
+/datum/component/jukebox/disco/proc/dance3(var/mob/living/M)
+	var/matrix/initial_matrix = matrix(M.transform)
+	for (var/i in 1 to 75)
+		if (!M)
+			return
+		switch(i)
+			if (1 to 15)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(0,1)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+			if (16 to 30)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(1,-1)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+			if (31 to 45)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(-1,-1)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+			if (46 to 60)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(-1,1)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+			if (61 to 75)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(1,0)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+		M.setDir(turn(M.dir, 90))
+		switch (M.dir)
+			if (NORTH)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(0,3)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+			if (SOUTH)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(0,-3)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+			if (EAST)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(3,0)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+			if (WEST)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(-3,0)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+		sleep(1)
+	M.lying_fix()
+
+/datum/component/jukebox/disco/proc/dance4(var/mob/living/M)
+	var/speed = rand(1,3)
+	set waitfor = 0
+	var/time = 30
+	while(time)
+		sleep(speed)
+		for(var/i in 1 to speed)
+			M.setDir(pick(GLOB.cardinals))
+			// update resting manually to avoid chat spam CITADEL EDIT - NO MORE RESTSPAM
+			//for(var/mob/living/carbon/NS in rangers)
+			//	NS.resting = !NS.resting
+			//	NS.update_canmove()
+		time--
+
+/datum/component/jukebox/disco/proc/dance5(var/mob/living/M)
+	animate(M, transform = matrix(180, MATRIX_ROTATE), time = 1, loop = 0)
+	var/matrix/initial_matrix = matrix(M.transform)
+	for (var/i in 1 to 60)
+		if (!M)
+			return
+		if (i<31)
+			initial_matrix = matrix(M.transform)
+			initial_matrix.Translate(0,1)
+			animate(M, transform = initial_matrix, time = 1, loop = 0)
+		if (i>30)
+			initial_matrix = matrix(M.transform)
+			initial_matrix.Translate(0,-1)
+			animate(M, transform = initial_matrix, time = 1, loop = 0)
+		M.setDir(turn(M.dir, 90))
+		switch (M.dir)
+			if (NORTH)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(0,3)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+			if (SOUTH)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(0,-3)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+			if (EAST)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(3,0)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+			if (WEST)
+				initial_matrix = matrix(M.transform)
+				initial_matrix.Translate(-3,0)
+				animate(M, transform = initial_matrix, time = 1, loop = 0)
+		sleep(1)
+	M.lying_fix()
+
+/mob/living/proc/lying_fix()
+	animate(src, transform = null, time = 1, loop = 0)
+	lying_prev = 0
+*/
+
+/datum/component/jukebox/disco/dance_over()
+	. = ..()
+	QDEL_LIST(spotlights)
+	QDEL_LIST(sparkles)
+
+/datum/component/jukebox/disco/process()
+	. = ..()
+	if(active)
+		for(var/mob/living/M in hearers(2, parent))
+			var/obj/box = parent
+			if(prob(5+(box.allowed(M)*4)) && CHECK_MOBILITY(M, MOBILITY_MOVE) && (!M.client || !(M.client.prefs.cit_toggles & NO_DISCO_DANCE)))
+				dance(M)
