@@ -59,6 +59,29 @@
 		using_power = FALSE
 		update_appearance()
 
+	// Notify old gun it's being removed
+	if(charging && istype(charging, /obj/item/gun/energy/e_gun/hos/dreadmk3/talking))
+		var/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/old_gun = charging
+		old_gun.exit_recharger()
+
+	charging = new_charging
+
+	// Notify new gun it's being inserted
+	if(new_charging)
+		if(istype(new_charging, /obj/item/gun/energy/e_gun/hos/dreadmk3/talking))
+			var/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/new_gun = new_charging
+			new_gun.enter_recharger()
+
+		START_PROCESSING(SSmachines, src)
+		finished_recharging = FALSE
+		use_power = ACTIVE_POWER_USE
+		using_power = TRUE
+		update_appearance()
+	else
+		use_power = IDLE_POWER_USE
+		using_power = FALSE
+		update_appearance()
+
 /obj/machinery/recharger/Exited(atom/movable/M, atom/newloc)
 	. = ..()
 	if(charging == M)
