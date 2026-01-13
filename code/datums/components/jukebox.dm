@@ -261,16 +261,17 @@
 				var/list/new_track_list = safe_json_decode(tgui_input_text(L, "Вставьте экспортированный список", "Import", multiline = TRUE))
 				if(!LAZYLEN(new_track_list))
 					return
-				var/mode = tgui_alert(L, "Желаете заменить список или добавить треки в конец,", "Режим добавления", list("Добавить", "Заменить"))
-				if(!mode)
-					return
-
-				if(mode == "Заменить")
-					var/confirm = tgui_alert(L, "Вы уверены, что хотите полностью очистить избранное перед импортом?\nТреков в избранном: [track_list.len], треков в новом избранном: [new_track_list.len] (без учета дубликатов)", "Очистка избранного", list("Нет", "Да"))
-					if(!confirm || confirm == "Нет")
+				if(track_list.len)
+					var/mode = tgui_alert(L, "Желаете заменить список или добавить треки в конец,", "Режим добавления", list("Добавить", "Заменить"))
+					if(!mode)
 						return
 
-					track_list.Cut()
+					if(mode == "Заменить")
+						var/confirm = tgui_alert(L, "Вы уверены, что хотите полностью очистить избранное перед импортом?\nТреков в избранном: [track_list.len], треков в новом избранном: [new_track_list.len] (без учета дубликатов)", "Очистка избранного", list("Нет", "Да"))
+						if(!confirm || confirm == "Нет")
+							return
+
+						track_list.Cut()
 				track_list |= new_track_list
 				prefs.save_preferences()
 			else
