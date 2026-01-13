@@ -949,7 +949,7 @@
 	name = "Dread Kit"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/modkit/dreadmk3_kit
-	ckeywhitelist = list("stasdvrz", "mrsko", "akinight", "vovakr", "roninqwerty")
+	ckeywhitelist = list("stasdvrz", "mrsko", "akinight", "vovakr", "roninqwerty","pingvas")
 
 /datum/gear/donator/bm/old_laser_kit
 	name = "AER9 Kit"

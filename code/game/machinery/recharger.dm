@@ -47,34 +47,13 @@
 			. += "<span class='notice'>- \The [charging]'s cell is at <b>[C.percent()]%</b>.</span>"
 
 /obj/machinery/recharger/proc/setCharging(new_charging)
+	if(charging && istype(charging, /obj/item/gun/energy/e_gun/hos/dreadmk3/talking))
+		var/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/old_gun = charging
+		old_gun.exit_recharger()
+
 	charging = new_charging
 	if (new_charging)
-		START_PROCESSING(SSmachines, src)
-		finished_recharging = FALSE
-		use_power = ACTIVE_POWER_USE
-		using_power = TRUE
-		update_appearance()
-	else
-		use_power = IDLE_POWER_USE
-		using_power = FALSE
-		update_appearance()
-
-	// Notify old gun it's being removed
-	if(charging && istype(charging, /obj/item/gun/energy/e_gun/hos/dreadmk3/talking))
-		var/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/old_gun = charging
-		old_gun.exit_recharger()
-
-	charging = new_charging
-
-	// Notify old gun it's being removed
-	if(charging && istype(charging, /obj/item/gun/energy/e_gun/hos/dreadmk3/talking))
-		var/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/old_gun = charging
-		old_gun.exit_recharger()
-
-	charging = new_charging
-
-	// Notify new gun it's being inserted
-	if(new_charging)
+		// Notify new gun it's being inserted
 		if(istype(new_charging, /obj/item/gun/energy/e_gun/hos/dreadmk3/talking))
 			var/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/new_gun = new_charging
 			new_gun.enter_recharger()
