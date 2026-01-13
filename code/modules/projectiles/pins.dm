@@ -58,6 +58,11 @@
 	gun = G
 	forceMove(gun)
 	gun.pin = src
+	// Уведомляем говорящее оружие
+	if(istype(gun, /obj/item/gun/energy/e_gun/hos/dreadmk3/talking))
+		var/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/talking_gun = gun
+		talking_gun.on_pin_inserted()
+
 	return
 
 /obj/item/firing_pin/proc/gun_remove(mob/living/user, obj/item/gun/G)

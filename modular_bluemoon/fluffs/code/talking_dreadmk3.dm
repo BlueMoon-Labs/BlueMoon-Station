@@ -33,11 +33,17 @@
 	/// Quiet mode - whisper instead of speaking
 	var/quiet_mode = FALSE
 	/// Last time we checked ID
-	var/last_id_check = 0
+	COOLDOWN_DECLARE(id_check_cooldown)
 	/// Last time gun made an idle comment
-	var/last_idle_comment = 0
-	/// How often to make idle comments (in deciseconds)
-	var/idle_comment_cooldown = 1200 // 2 minutes
+	COOLDOWN_DECLARE(idle_comment_cooldown)
+	/// List of allowed firing pins with their voice lines
+	var/static/list/allowed_pins = list(
+		/obj/item/firing_pin = "pin_standard",
+		/obj/item/firing_pin/test_range = "pin_test",
+		/obj/item/firing_pin/implant/mindshield = "pin_mindshield",
+		/obj/item/firing_pin/explorer = "pin_explorer",
+		/obj/item/firing_pin/alert_level/blue = "pin_alert"
+	)
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/Initialize()
 	. = ..()
@@ -59,7 +65,7 @@
 	else
 		. += "<span class='warning'>AI Core: <b>Offline</b></span>"
 
-/// Makes the gun speak with sound effect - now uses say() to speak like a character
+/// Makes the gun speak
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/speak_up(json_string, ignores_cooldown = FALSE, ignores_personality_toggle = FALSE)
 	if(!personality_mode && !ignores_personality_toggle)
 		return
@@ -125,22 +131,30 @@
 	if(interaction_locked)
 		return
 
-	in_recharger = FALSE // Больше не в зарядке
+	in_recharger = FALSE
 
 	if(slot == ITEM_SLOT_BELT || slot == ITEM_SLOT_BACK || slot == ITEM_SLOT_SUITSTORE)
 		currently_held = FALSE
 		if(world.time >= last_speech + DREADMK3_SPEECH_COOLDOWN)
 			interaction_locked = TRUE
 			speak_up("worn")
-			addtimer(CALLBACK(src, PROC_REF(unlock_interaction)), 10) // 1 second lock
+			addtimer(CALLBACK(src, PROC_REF(unlock_interaction)), 10)
 	else if(slot == ITEM_SLOT_HANDS)
 		currently_held = TRUE
-		// Проверяем ID при взятии в руки
-		check_user_id(user)
+		// Один таймер для всех проверок
+		var/phrase_to_say = null
+
+		// Проверяем ID (раз в минуту)
+		if(COOLDOWN_FINISHED(src, id_check_cooldown))
+			phrase_to_say = check_user_id_silent(user)
+			COOLDOWN_START(src, id_check_cooldown, 1 MINUTES)
+
 		if(world.time >= last_speech + DREADMK3_SPEECH_COOLDOWN)
 			interaction_locked = TRUE
+			if(phrase_to_say)
+				addtimer(CALLBACK(src, PROC_REF(speak_up), phrase_to_say, TRUE), 15)
 			speak_up("pickup")
-			addtimer(CALLBACK(src, PROC_REF(unlock_interaction)), 10) // 1 second lock
+			addtimer(CALLBACK(src, PROC_REF(unlock_interaction)), 10)
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/dropped(mob/user)
 	. = ..()
@@ -153,7 +167,7 @@
 	if(world.time >= last_speech + DREADMK3_SPEECH_COOLDOWN)
 		interaction_locked = TRUE
 		speak_up("putdown")
-		addtimer(CALLBACK(src, PROC_REF(unlock_interaction)), 10) // 1 second lock
+		addtimer(CALLBACK(src, PROC_REF(unlock_interaction)), 10)
 
 /// Unlocks interaction after pickup/drop
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/unlock_interaction()
@@ -172,100 +186,32 @@
 	if(personality_mode && world.time >= last_speech + DREADMK3_SPEECH_COOLDOWN)
 		speak_up("recharger_out")
 
-/// Checks user's ID card and greets based on rank
-/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/check_user_id(mob/living/carbon/human/user)
-	if(!personality_mode)
-		return
-	if(!ishuman(user))
-		return
-	// Проверяем не чаще чем раз в 30 секунд
-	if(world.time < last_id_check + 300)
-		return
-
-	last_id_check = world.time
-
-	var/obj/item/card/id/id_card = user.get_idcard(TRUE)
-	if(!id_card)
-		// Нет ID карты
-		addtimer(CALLBACK(src, PROC_REF(speak_up), "no_id", TRUE), 15)
-		return
-
-	var/job = id_card.assignment
-	if(!job)
-		addtimer(CALLBACK(src, PROC_REF(speak_up), "no_id", TRUE), 15)
-		return
-
-	// Проверяем ранг
-	switch(job)
-		// Command
-		if("Captain")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_captain", TRUE), 15)
-		if("Blueshield")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_blueshield", TRUE), 15)
-		if("Bridge Officer")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_command", TRUE), 15)
-		// Security
-		if("Head of Security")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_hos", TRUE), 15)
-		if("Warden")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_warden", TRUE), 15)
-		if("Security Officer")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_security", TRUE), 15)
-		if("Detective")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_detective", TRUE), 15)
-		if("Brig Physician")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_security", TRUE), 15)
-		if("Peacekeeper")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_security", TRUE), 15)
-		if("Internal Affairs Agent")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_command", TRUE), 15)
-		if("NanoTrasen Representative")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_command", TRUE), 15)
-		// Heads
-		if("Chief Medical Officer")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_head", TRUE), 15)
-		if("Research Director")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_head", TRUE), 15)
-		if("Chief Engineer")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_head", TRUE), 15)
-		if("Quartermaster")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_head", TRUE), 15)
-		if("Head of Personnel")
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_hop", TRUE), 15)
-		else
-			// Civilian
-			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_civilian", TRUE), 15)
-
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/process()
 	// Проверка заряда
 	var/cell_charge_quarter = cell.maxcharge / 4
 
-	// Предупреждение о низком заряде - срабатывает когда заряд ВПЕРВЫЕ падает ниже 25%
 	if(cell.charge <= cell_charge_quarter && !low_charge_warned)
-		speak_up("lowcharge", TRUE) // Игнорируем кулдаун для важных сообщений
+		speak_up("lowcharge", TRUE)
 		low_charge_warned = TRUE
 
-	// Сбрасываем флаг если заряд восстановился выше 30%
 	if(cell.charge > (cell.maxcharge * 0.3) && low_charge_warned)
 		low_charge_warned = FALSE
 
-	// Сообщение о полном заряде - срабатывает когда заряд достигает 100%
 	if(cell.charge >= cell.maxcharge && last_charge < cell.maxcharge)
 		speak_up("fullcharge")
 
 	last_charge = cell.charge
 
-	// Рандомные idle фразы если оружие в руках или в кобуре
+	// Рандомные idle фразы
 	if(personality_mode && (currently_held || (loc && ishuman(loc))))
-		if(world.time >= last_idle_comment + idle_comment_cooldown)
-			if(prob(15)) // 15% шанс каждые 2 минуты
+		if(COOLDOWN_FINISHED(src, idle_comment_cooldown))
+			if(prob(15))
 				speak_up("idle")
-				last_idle_comment = world.time
+				COOLDOWN_START(src, idle_comment_cooldown, 2 MINUTES)
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/attack_self(mob/living/user)
 	. = ..()
 	if(personality_mode)
-		// Голосовая команда + ответ оружия
 		voice_command_mode_switch(user)
 
 /// Gets the announcement for current fire mode
@@ -284,9 +230,9 @@
 	return null
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/afterattack(atom/target, mob/living/user, flag, params)
-	// Проверка на пустой выстрел ДО вызова родительского метода
+	// Проверка на пустой выстрел
 	if(!can_shoot() && user && personality_mode)
-		speak_up("empty", TRUE) // Игнорируем кулдаун для важного сообщения
+		speak_up("empty", TRUE)
 
 	. = ..()
 	if(.)
@@ -296,14 +242,14 @@
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/emp_act(severity)
 	. = ..()
-	speak_up("emp", TRUE) // Игнорируем кулдаун для критических сообщений
+	speak_up("emp", TRUE)
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/CtrlClick(mob/user)
 	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 		return
 	personality_mode = !personality_mode
 	playsound(src, 'sound/machines/terminal_button08.ogg', 30, TRUE)
-	speak_up("[personality_mode ? "online" : "offline"]", TRUE, TRUE) // Игнорируем всё для этого сообщения
+	speak_up("[personality_mode ? "online" : "offline"]", TRUE, TRUE)
 	to_chat(user, "<span class='notice'>[src]'s AI core is now [personality_mode ? "online" : "offline"].</span>")
 	return TRUE
 
@@ -321,6 +267,49 @@
 	else
 		say("Голосовой режим восстановлен.")
 	return TRUE
+
+/// Checks user's ID card silently and returns phrase key
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/check_user_id_silent(mob/living/carbon/human/user)
+	if(!ishuman(user))
+		return null
+
+	var/obj/item/card/id/id_card = user.get_idcard(TRUE)
+	if(!id_card || !id_card.assignment)
+		return "no_id"
+
+	var/job = id_card.assignment
+
+	// Security jobs
+	if(job in list("Head of Security", "Warden", "Security Officer", "Detective", "Brig Physician", "Peacekeeper"))
+		return "id_[lowertext(replacetext(job, " ", "_"))]"
+
+	// Command jobs
+	if(job in list("Captain", "Blueshield", "Bridge Officer", "Internal Affairs Agent", "NanoTrasen Representative"))
+		return "id_[lowertext(replacetext(job, " ", "_"))]"
+
+	// Department heads
+	if(job in list("Chief Medical Officer", "Research Director", "Chief Engineer", "Quartermaster", "Head of Personnel"))
+		return "id_[lowertext(replacetext(job, " ", "_"))]"
+
+	// Everyone else is civilian
+	return "id_civilian"
+
+/// Called when firing pin is inserted - checks and announces
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/on_pin_inserted()
+	if(!personality_mode || !pin)
+		return
+
+	// Проверяем тип бойка
+	var/phrase_key = null
+	for(var/pin_type in allowed_pins)
+		if(istype(pin, pin_type))
+			phrase_key = allowed_pins[pin_type]
+			break
+
+	if(!phrase_key)
+		phrase_key = "pin_unauthorized"
+
+	addtimer(CALLBACK(src, PROC_REF(speak_up), phrase_key, TRUE), 5)
 
 #undef DREADMK3_SPEECH
 #undef DREADMK3_SPEECH_COOLDOWN
