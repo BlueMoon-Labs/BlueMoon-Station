@@ -52,7 +52,7 @@
 /obj/item/bodypart/head/dismember(dam_type = BRUTE, silent=TRUE, harmless=FALSE)
 	if(HAS_TRAIT(owner, TRAIT_NODECAP))
 		return FALSE
-	..()
+	. = ..()
 
 /obj/item/bodypart/chest/dismember(dam_type = BRUTE, silent=TRUE, harmless=FALSE)
 	if(!owner)

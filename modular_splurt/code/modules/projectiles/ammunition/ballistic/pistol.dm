@@ -17,7 +17,7 @@
 
 /obj/item/ammo_casing/c22lr/rubber
 	name = ".22 Long rifle bullet casing (rubber)"
-	projectile_type = /obj/item/projectile/bullet/c22lr
+	projectile_type = /obj/item/projectile/bullet/c22lr/rubber
 
 /obj/item/ammo_casing/a357/rubber
 	name = ".357 Rubber bullet casing"

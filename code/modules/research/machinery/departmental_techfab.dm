@@ -1,6 +1,7 @@
 /obj/machinery/rnd/production/techfab/department
 	name = "department techfab"
-	desc = "An advanced fabricator designed to print out the latest prototypes and circuits researched from Science. Contains hardware to sync to research networks. This one is department-locked and only possesses a limited set of decryption keys."
+	desc = "Продвинутый фабрикатор для распечатки новейших прототипов и схем, исследованных в НИО. \
+	Оборудован комплектующими для синхронизации с научной сетью. Этот фабрикатор принадлежит конкретному отделу и имеет ограниченный набор расшифровочных ключей."
 	icon_state = "protolathe"
 	circuit = /obj/item/circuitboard/machine/techfab/department
 

@@ -22,7 +22,7 @@
 	speak_emote = list("squeaks")
 	var/datum/mind/origin
 	var/egg_lain = 0
-	gold_core_spawnable = HOSTILE_SPAWN //NO, It's powergame time! :wooo:
+	gold_core_spawnable = NO_SPAWN //are you sure about this?? // CITADEL CHANGE, Yes.
 
 /mob/living/simple_animal/hostile/headslug/Initialize(mapload)
 	. = ..()

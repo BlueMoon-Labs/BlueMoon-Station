@@ -8,6 +8,12 @@
 	icon_state = "raiqbawks"
 	verb_say = "states"
 	density = FALSE
+	unique_reskin = list(
+		"Black" = list(
+			"icon_state" = "raiqbawks_black",
+			"item_state" = "raiqbawks_black"
+		)
+	)
 	var/active = FALSE
 	var/list/rangers = list()
 	var/stop = 0
@@ -107,10 +113,9 @@
 //	return TRUE
 
 /obj/item/jukebox/update_icon_state()
+	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
 	if(active)
-		icon_state = "[initial(icon_state)]-active"
-	else
-		icon_state = "[initial(icon_state)]"
+		icon_state = icon_state + "-active"
 
 /obj/item/jukebox/ui_status(mob/user)
 	if((queuecost < 0 && !allowed(user)) && !isobserver(user))

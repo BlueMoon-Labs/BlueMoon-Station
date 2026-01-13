@@ -299,7 +299,15 @@
 
 ///Initial loadout points
 /datum/config_entry/number/initial_gear_points
-	default = 16
+	default = 12
+
+///Subscriber extra loadout points
+/datum/config_entry/number/subscriber_extra_gear_points
+	default = 4
+
+///Sponsor extra loadout points
+/datum/config_entry/number/sponsor_extra_gear_points
+	default = 8
 
 /**
   * Enables the FoV component, which hides objects and mobs behind the parent from their sight, unless they turn around, duh.

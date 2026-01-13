@@ -43,8 +43,8 @@
 				damage += (thisamount*toxLethality)
 
 	//metabolize reagents
-	owner.adjustToxLoss(-0.4, TRUE) //Doesn't kill slimes. Yes.
-	owner.adjustFireLoss(-0.4, FALSE)
+	owner.adjustToxLoss(-0.25, TRUE) //Doesn't kill slimes. Yes.
+	owner.adjustFireLoss(-0.25, FALSE)
 	owner.reagents.metabolize(owner, seconds, times_fired, can_overdose=TRUE)
 
 	if(damage > 10 && prob(damage/3))//the higher the damage the higher the probability
@@ -91,8 +91,8 @@
 				damage += (thisamount*toxLethality)
 
 	//metabolize reagents
-	owner.adjustToxLoss(-3, TRUE)
-	owner.adjustFireLoss(-0.5, FALSE)
+	owner.adjustToxLoss(-1.5, TRUE)
+	owner.adjustFireLoss(-0.35, FALSE)
 	owner.reagents.metabolize(owner, seconds, times_fired, can_overdose=TRUE)
 
 	if(damage > 10 && prob(damage/3))//the higher the damage the higher the probability

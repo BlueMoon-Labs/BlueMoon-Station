@@ -55,7 +55,7 @@
 		new /obj/item/organ/body_egg/terror_eggs(L)
 		visible_message("<span class='danger'>[src] buries its long fangs deep into the [inject_target] of [target]!</span>")
 	else
-		if(prob(15))
+		if(prob(1))
 			new /obj/item/organ/body_egg/terror_eggs(L)
 			visible_message("<span class='danger'>[src] pierces armour and buries its long fangs deep into the [inject_target] of [target]!</span>")
 	if(!ckey && !IsTSInfected(L))

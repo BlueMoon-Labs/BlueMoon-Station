@@ -45,6 +45,12 @@
 	mob_overlay_icon = 'modular_bluemoon/Gardelin0/icons/clothing/worn/underwear.dmi'
 	icon_state = "poly_shirt"
 	body_parts_covered = CHEST | ARMS
+	var/polychromic = TRUE
+
+/obj/item/clothing/underwear/shirt/poly_shirt/ComponentInitialize()
+	. = ..()
+	if(polychromic)
+		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
 
 /obj/item/clothing/underwear/shirt/poly_lightshirt
 	name = "polychromic light shirt"
@@ -53,6 +59,12 @@
 	mob_overlay_icon = 'modular_bluemoon/Gardelin0/icons/clothing/worn/underwear.dmi'
 	icon_state = "poly_lightshirt"
 	body_parts_covered = CHEST | ARMS
+	var/polychromic = TRUE
+
+/obj/item/clothing/underwear/shirt/poly_lightshirt/ComponentInitialize()
+	. = ..()
+	if(polychromic)
+		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
 
 /obj/item/clothing/underwear/shirt/formalshirt_light
 	name = "light formal shirt"
@@ -77,6 +89,12 @@
 	mob_overlay_icon = 'modular_bluemoon/Gardelin0/icons/clothing/worn/underwear.dmi'
 	icon_state = "poly_corset"
 	body_parts_covered = CHEST
+	var/polychromic = TRUE
+
+/obj/item/clothing/underwear/shirt/poly_corset/ComponentInitialize()
+	. = ..()
+	if(polychromic)
+		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
 
 /obj/item/clothing/underwear/shirt/revealing_shirt
 	name = "revealing shirt"
@@ -94,6 +112,12 @@
 	mob_overlay_icon = 'modular_bluemoon/Gardelin0/icons/clothing/worn/underwear.dmi'
 	icon_state = "poly_shortertop"
 	body_parts_covered = CHEST
+	var/polychromic = TRUE
+
+/obj/item/clothing/underwear/shirt/poly_shortertop/ComponentInitialize()
+	. = ..()
+	if(polychromic)
+		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
 
 /obj/item/clothing/underwear/shirt/formalshirt_thin
 	name = "thin formal shirt"
@@ -110,6 +134,12 @@
 	mob_overlay_icon = 'modular_bluemoon/Gardelin0/icons/clothing/worn/underwear.dmi'
 	icon_state = "poly_mesh"
 	body_parts_covered = CHEST
+	var/polychromic = TRUE
+
+/obj/item/clothing/underwear/shirt/poly_mesh/ComponentInitialize()
+	. = ..()
+	if(polychromic)
+		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
 
 /obj/item/clothing/underwear/shirt/poly_sweater
 	name = "polychromic sweater"
@@ -118,6 +148,12 @@
 	mob_overlay_icon = 'modular_bluemoon/Gardelin0/icons/clothing/worn/underwear.dmi'
 	icon_state = "poly_sweater"
 	body_parts_covered = CHEST | ARMS
+	var/polychromic = TRUE
+
+/obj/item/clothing/underwear/shirt/poly_sweater/ComponentInitialize()
+	. = ..()
+	if(polychromic)
+		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
 
 /obj/item/clothing/underwear/shirt/poly_sweater/verb/worn_layer()
 	set name = "Change worn layer"
@@ -161,6 +197,12 @@
 	mob_overlay_icon = 'modular_bluemoon/Gardelin0/icons/clothing/worn/underwear.dmi'
 	icon_state = "poly_sweater_shoulderless"
 	body_parts_covered = CHEST | ARMS
+	var/polychromic = TRUE
+
+/obj/item/clothing/underwear/shirt/poly_sweater_shoulderless/ComponentInitialize()
+	. = ..()
+	if(polychromic)
+		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
 
 /obj/item/clothing/underwear/shirt/poly_sweater_shoulderless/verb/worn_layer()
 	set name = "Change worn layer"
@@ -204,6 +246,12 @@
 	mob_overlay_icon = 'modular_bluemoon/Gardelin0/icons/clothing/worn/underwear.dmi'
 	icon_state = "poly_sweater_shoulderlessalt"
 	body_parts_covered = CHEST | ARMS
+	var/polychromic = TRUE
+
+/obj/item/clothing/underwear/shirt/poly_sweater_shoulderlessalt/ComponentInitialize()
+	. = ..()
+	if(polychromic)
+		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
 
 /obj/item/clothing/underwear/shirt/poly_sweater_shoulderlessalt/verb/worn_layer()
 	set name = "Change worn layer"
@@ -247,6 +295,12 @@
 	mob_overlay_icon = 'modular_bluemoon/Gardelin0/icons/clothing/worn/underwear.dmi'
 	icon_state = "poly_keyholesweater"
 	body_parts_covered = CHEST | ARMS
+	var/polychromic = TRUE
+
+/obj/item/clothing/underwear/shirt/poly_keyholesweater/ComponentInitialize()
+	. = ..()
+	if(polychromic)
+		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
 
 /obj/item/clothing/underwear/shirt/poly_keyholesweater/verb/worn_layer()
 	set name = "Change worn layer"

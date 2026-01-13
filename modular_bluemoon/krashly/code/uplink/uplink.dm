@@ -22,6 +22,7 @@
 	var/pred = alert("Сжечь Аплинк?","Аплинк", "Да", "Нет")
 	if(pred == "Да")
 		to_chat(user, span_warning("Аплинк превращается в пепел на ваших глазах."))
+		new /obj/effect/decal/cleanable/ash(get_turf(user))
 		qdel(src)
 	else
 		return

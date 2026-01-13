@@ -94,9 +94,6 @@
 		/obj/item/mod/module/holster,
 	)
 
-/obj/item/mod/control/pre_equipped/security/syndicate
-	theme = /datum/mod_theme/security/syndicate
-
 /obj/item/mod/control/pre_equipped/safeguard
 	theme = /datum/mod_theme/safeguard
 	cell = /obj/item/stock_parts/cell/super

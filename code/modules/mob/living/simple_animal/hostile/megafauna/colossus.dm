@@ -54,6 +54,7 @@ Difficulty: Very Hard
 	butcher_results = list(/obj/item/stack/ore/diamond = 5, /obj/item/stack/sheet/sinew = 5, /obj/item/stack/sheet/animalhide/ashdrake = 10, /obj/item/stack/sheet/bone = 30)
 	deathmessage = "disintegrates, leaving a glowing core in its wake."
 	death_sound = 'sound/magic/demon_dies.ogg'
+	sharpness = SHARP_POINTY
 
 /mob/living/simple_animal/hostile/megafauna/colossus/devour(mob/living/L)
 	visible_message("<span class='colossus'>[src] disintegrates [L]!</span>")
@@ -676,7 +677,7 @@ GLOBAL_VAR(blackbox_smartfridge)
 	activation_sound = 'sound/magic/timeparadox2.ogg'
 	var/static/list/banned_items_typecache = typecacheof(list(/obj/item/storage, /obj/item/implant, /obj/item/implanter, \
 	/obj/item/disk/nuclear, /obj/item/projectile, /obj/item/spellbook, /obj/item/inteq, /obj/item/syndicate_uplink, /obj/item/syndicate_uplink_high, \
-	/obj/item/dice/d20/fate, /obj/item/wisp_lantern))
+	/obj/item/dice/d20/fate, /obj/item/wisp_lantern, /obj/item/card/mining_point_card))
 
 /obj/machinery/anomalous_crystal/refresher/ActivationReaction(mob/user, method)
 	if(..())

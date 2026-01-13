@@ -24,7 +24,7 @@
 	harm_intent_damage = 8
 	obj_damage = 50
 	melee_damage_lower = 15
-	melee_damage_upper = 15
+	melee_damage_upper = 25
 	attack_verb_continuous = "bites"
 	attack_verb_simple = "bite"
 	attack_sound = 'sound/weapons/bite.ogg'
@@ -38,6 +38,7 @@
 	pass_flags = PASSTABLE
 	pressure_resistance = 200
 	gold_core_spawnable = HOSTILE_SPAWN
+	sharpness = SHARP_POINTY
 	//some carps heal over time
 	var/regen_cooldown = 0 //Used for how long it takes before a healing will take place default in 60 seconds
 	var/regen_amount = 0 //How much is healed pre regen cooldown

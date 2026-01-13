@@ -138,3 +138,13 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define REQUEST_LOSE_OBJECTIVE "lose_objective"
 
 #define ANTAG_GROUP_ABOMINATIONS "Extradimensional Abominations"
+
+// Slavers
+#define SLAVER_RANSOM_STANDARD 5000 // credits
+#define SLAVER_RANSOM_VALUABLE SLAVER_RANSOM_STANDARD*4
+#define SLAVER_RANSOM_HEAD SLAVER_RANSOM_STANDARD*5
+#define SLAVER_RANSOM_HEAD_VALUABLE SLAVER_RANSOM_STANDARD*20
+
+#define SLAVER_RANSOM_STANDARD_PERCENT 0.05 // 5%
+
+#define SLAVER_RANSOM_MULTIPLIER 2

@@ -1,6 +1,6 @@
 /obj/machinery/rnd/production/protolathe
 	name = "Hacked Protolathe"
-	desc = "Принтер с абсолютным доступом к большинству технологий. Запрещён к использованию в многих Корпорациях с делением власти меж множеством Отделов."
+	desc = "Принтер с абсолютным доступом к большинству технологий. Запрещён к использованию во многих корпорациях с делением власти между множеством отделов."
 	icon_state = "protolathe"
 	circuit = /obj/item/circuitboard/machine/protolathe
 	categories = list(
@@ -42,15 +42,15 @@
 		t = check_mat(D, M)
 		temp_material += " | "
 		if (t < 1)
-			temp_material += "<span class='bad'>[all_materials[M] * coeff] [CallMaterialName(M)]</span>"
+			temp_material += "<span class='bad'>[all_materials[M] * coeff] [CallMaterialName_RuGenitive(M)]</span>"
 		else
-			temp_material += " [all_materials[M] * coeff] [CallMaterialName(M)]"
+			temp_material += " [all_materials[M] * coeff] [CallMaterialName_RuGenitive(M)]"
 		c = min(c,t)
 
 	var/clearance = !(obj_flags & EMAGGED) && (offstation_security_levels || is_station_level(z))
 	var/sec_text = ""
 	if(clearance && (D.min_security_level > SEC_LEVEL_GREEN || D.max_security_level < SEC_LEVEL_DELTA))
-		sec_text = " (Allowed security levels: "
+		sec_text = " (При уровнях тревоги: "
 		for(var/n in D.min_security_level to D.max_security_level)
 			sec_text += NUM2SECLEVEL(n)
 			if(n + 1 <= D.max_security_level)

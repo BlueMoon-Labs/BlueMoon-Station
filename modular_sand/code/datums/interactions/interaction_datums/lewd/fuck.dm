@@ -22,7 +22,7 @@
 //BLUEMOON ADD END
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = pick(
-			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc] .",
+			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc].",
 			"глубоко вводит свой [shape_desc] во влагалище <b>[partner]</b>.",
 			"с силой загоняет свой [shape_desc] в вагину <b>[partner]</b> и шлёпается своими [has_balls ? "яйцами" : "бедрами"].",
 			"ритмично двигается, заставляя <b>[partner]</b> дрожать при каждом толчке.",
@@ -462,8 +462,7 @@
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
 
 	//  ГАРАНТИРОВАННОЕ узлирование
-	if(prob(90))
-		try_apply_knot(user, partner, CUM_TARGET_VAGINA)
+		try_apply_knot(user, partner, CUM_TARGET_VAGINA, FALSE, TRUE)
 
 /datum/interaction/lewd/knot_anal_fuck
 	description = "Член. Анальное проникновение с узлированием."
@@ -501,7 +500,5 @@
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS)
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, "anus")
 
-	//  Почти гарантированное узлирование, с учётом префов
-	if(prob(90))
-		try_apply_knot(user, partner, CUM_TARGET_ANUS)
+		try_apply_knot(user, partner, CUM_TARGET_ANUS, FALSE, TRUE)
 

@@ -118,6 +118,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/uses_glasses_colour = 0
 	var/surgical_disable_radial = FALSE 		// BLUEMOON ADD
 
+	// BLUEMOON ADD START || Colormate presets
+	// Листы состоят из ключа, типа предмета и листа с именами престов и настройками цвета
+	var/list/color_presets_tint = list() // Пример: list(/obj/item/clothing = list("Стандарт" = "#ffffff"))
+	var/list/color_presets_hsv = list() // Пример: list(/obj/item/clothing = list("Стандарт" = list("hue" = 0, "sat" = 1, "val" = 1)))
+	var/list/color_presets_matrix = list() // Пример: list(/obj/item/clothing = list("Стандарт" = list(1,0,0,0,1,0,0,0,1,0,0,0)))
+	// BLUEMOON ADD END
+
 	//character preferences
 	var/real_name							//our character's name
 	var/nameless = FALSE					//whether or not our character is nameless
@@ -131,6 +138,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/vorepref = "Ask"
 	var/mobsexpref = "No" 					//Added by Gardelin0 - Sex(mostly non-con) with hostile mobs(tentacles)
 	var/hornyantagspref = "No" 				//Added by Gardelin0 - Interactions(mostly non-con) with horny antags(Qareen)
+	var/tattoopref = "Ask"					//BLUEMOON ADD - Tattoo consent preference
 	var/extremepref = "No" 					//This is for extreme shit, maybe even literal shit, better to keep it on no by default
 	var/extremeharm = "No" 					//If "extreme content" is enabled, this option serves as a toggle for the related interactions to cause damage or not
 	var/see_chat_emotes = TRUE
@@ -429,6 +437,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/silicon_lawset
 
 	var/preferred_chaos_level = 2
+	var/auto_capitalize_enabled = FALSE
 
 /datum/preferences/New(client/C)
 	parent = C
@@ -567,7 +576,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			dat += "</td>"
 			if(character_settings_tab == LOADOUT_CHAR_TAB) //if loadout
 				//calculate your gear points from the chosen item
-				gear_points = CONFIG_GET(number/initial_gear_points)
+				gear_points = CONFIG_GET(number/initial_gear_points) + (IS_CKEY_DONATOR_GROUP(user.ckey, DONATOR_GROUP_TIER_1) ? CONFIG_GET(number/subscriber_extra_gear_points) : 0) + (IS_CKEY_DONATOR_GROUP(user.ckey, DONATOR_GROUP_TIER_2) ? CONFIG_GET(number/sponsor_extra_gear_points) : 0)
 				var/list/chosen_gear = loadout_data["SAVE_[loadout_slot]"]
 				if(islist(chosen_gear))
 					loadout_errors = 0
@@ -1204,6 +1213,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "</tr></table>"
 				//Markings
 				if(MARKINGS_CHAR_TAB)
+					// BLUEMOON ADD - Tattoo Manager Button
+					dat += "<center>"
+					dat += "<h3>Татуировки персонажа</h3>"
+					dat += "<a href='?_src_=prefs;preference=open_tattoo_manager'>Просмотр и удаление татуировок</a>"
+					dat += "</center>"
+					dat += "<hr>"
+					// BLUEMOON ADD END
 					var/iterated_markings = 0
 					var/total_pages = 0
 					// rp marking selection
@@ -1549,7 +1565,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>Ghost Whispers:</b> <a href='?_src_=prefs;preference=ghost_whispers'>[(chat_toggles & CHAT_GHOSTWHISPER) ? "All Speech" : "Nearest Creatures"]</a><br>"
 					dat += "<b>Ghost PDA:</b> <a href='?_src_=prefs;preference=ghost_pda'>[(chat_toggles & CHAT_GHOSTPDA) ? "All Messages" : "Nearest Creatures"]</a><br>"
 					dat += "<br>"
-					dat += "<b>Preferred Chaos Level:</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=preferred_chaos_level;task=input'>[preferred_chaos_level]</a><br>"
+					dat += "<b>Auto-Capitalize Speech:</b> <a href='?_src_=prefs;preference=auto_capitalize_enabled'>[(auto_capitalize_enabled ? "Enabled" : "Disabled")]</a><br>"
+					dat += "<b>Preferred Chaos Level:</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=preferred_chaos_level'>[preferred_chaos_level]</a><br>"
 
 					dat += "</td>"
 
@@ -1741,6 +1758,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<table><tr><td width='340px' height='300px' valign='top'>"
 					dat += "<h2>Fetish content prefs</h2>"
 					dat += "<b>Allow Lewd Verbs:</b> <a href='?_src_=prefs;preference=verb_consent'>[(toggles & VERB_CONSENT) ? "Yes":"No"]</a><br>" // Skyrat - ERP Mechanic Addition
+					dat += "<b>Allow Lewd Ranged Verbs:</b> <a href='?_src_=prefs;preference=ranged_verb_consent'>[(toggles & RANGED_VERBS_CONSENT) ? "Yes":"No"]</a><br>" // BLUEMOON ADD интеракты с расстояния
 					dat += "<b>Lewd Verb Sounds:</b> <a href='?_src_=prefs;preference=lewd_verb_sounds'>[(toggles & LEWD_VERB_SOUNDS) ? "Yes":"No"]</a><br>" // Sandstorm - ERP Mechanic Addition
 					dat += "<b>Arousal:</b><a href='?_src_=prefs;preference=arousable'>[arousable == TRUE ? "Enabled" : "Disabled"]</a><BR>"
 					dat += "<b>Allow Knotting:</b><a href='?_src_=prefs;preference=sexknotting'>[sexknotting == TRUE ? "Enabled" : "Disabled"]</a><BR>"
@@ -1785,6 +1803,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					//END OF SANDSTORM EDIT
 					dat += "<b>Automatic Wagging:</b> <a href='?_src_=prefs;preference=auto_wag'>[(cit_toggles & NO_AUTO_WAG) ? "Disabled" : "Enabled"]</a><br>"
 					dat += "<b>Dance Near Disco Ball:</b> <a href='?_src_=prefs;preference=disco_dance'>[(cit_toggles & NO_DISCO_DANCE) ? "Disabled" : "Enabled"]</a><br>"
+					dat += "<b>Tattoos from others:</b> <a href='?_src_=prefs;preference=tattoo_pref'>[tattoopref]</a><br>" // BLUEMOON ADD - tattoo consent
 					dat += "<span style='border-radius: 2px;border:1px dotted white;cursor:help;' title='If anyone cums a blacklisted fluid into you, it uses the default fluid for that genital.'>?</span> "
 					dat += "<b><a href='?_src_=prefs;preference=gfluid_black;task=input'>Genital Fluid Blacklist</a></b><br>"
 					if(gfluid_blacklist?.len)
@@ -3700,17 +3719,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/desiredlength = input(user, "Choose the max character length of shown Runechat messages. Valid range is 1 to [CHAT_MESSAGE_MAX_LENGTH] (default: [initial(max_chat_length)]))", "Character Preference", max_chat_length)  as null|num
 					if (!isnull(desiredlength))
 						max_chat_length = clamp(desiredlength, 1, CHAT_MESSAGE_MAX_LENGTH)
-				if ("preferred_chaos_level")
-					var/chaos_level = tgui_input_number(user, "Выбирайте число в зависимости от своих предпочтений \
-										к стилю игры. От предпочтений к Хаосу зависит режим Динамика, \
-										который будет выбран. \
-										0. - ничего не ожидайте от меня. Я убегу при первой же возможности. \
-										1. - предпочитаю спокойную игру, но могу ввязаться в неприятности, если потребуется. \
-										2. - не против Хаоса и неожиданных ситуаций, готов рисковать ради интереса. \
-										3. - СЛАВА ХАОСУ НЕДЕЛИМОМУ. Готов к любым безумствам и опасностям.", "Предпочитаемый Уровень Хаоса", 2, 3, 0)
-					if(preferred_chaos_level)
-						preferred_chaos_level = chaos_level
-
 				//Sandstorm changes begin
 				if("personal_chat_color")
 					var/new_chat_color = input(user, "Choose your character's runechat color:", "Character Preference",personal_chat_color) as color|null
@@ -4106,6 +4114,16 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							erppref = "No"
 						if("No")
 							erppref = "Yes"
+				// BLUEMOON EDIT - tattoo consent
+				if("tattoo_pref")
+					switch(tattoopref)
+						if("Yes")
+							tattoopref = "Ask"
+						if("Ask")
+							tattoopref = "No"
+						if("No")
+							tattoopref = "Yes"
+				// BLUEMOON EDIT END
 				if("noncon_pref")
 					var/nonconpref_old = nonconpref
 					switch(nonconpref)
@@ -4348,6 +4366,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("verb_consent") // Skyrat - ERP Mechanic Addition
 					toggles ^= VERB_CONSENT // Skyrat - ERP Mechanic Addition
 
+				if("ranged_verb_consent") // BLUEMOON ADD интеракты с расстояния
+					toggles ^= RANGED_VERBS_CONSENT // BLUEMOON ADD END
+
 				if("lewd_verb_sounds") // Skyrat - ERP Mechanic Addition
 					toggles ^= LEWD_VERB_SOUNDS // Skyrat - ERP Mechanic Addition
 
@@ -4482,6 +4503,23 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("hud_toggle_flash")
 					hud_toggle_flash = !hud_toggle_flash
+
+				if ("preferred_chaos_level")
+					var/chaos_level = tgui_input_number(user, \
+										"Выбирайте число в зависимости от своих предпочтений \
+										к стилю игры.\n От предпочтений к Хаосу зависит режим Динамика, \
+										который будет выбран. \n\
+										0. - ничего не ожидайте от меня. Я убегу при первой же возможности. \n\
+										1. - предпочитаю спокойную игру, но могу ввязаться в неприятности, если потребуется. \n\
+										2. - не против Хаоса и неожиданных ситуаций, готов рисковать ради интереса. \n\
+										3. - СЛАВА ХАОСУ НЕДЕЛИМОМУ. Готов к любым безумствам и опасностям.",\
+										"Предпочитаемый Уровень Хаоса", 2, 3, 0, round_value = TRUE)
+
+					if(isnum(chaos_level))
+						preferred_chaos_level = chaos_level
+
+				if("auto_capitalize_enabled")
+					auto_capitalize_enabled = !auto_capitalize_enabled
 
 				if("barkpreview")
 					if(SSticker.current_state == GAME_STATE_STARTUP) //Timers don't tick at all during game startup, so let's just give an error message

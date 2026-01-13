@@ -10,7 +10,7 @@
 
 /obj/structure/barricade
 	name = "chest high wall"
-	desc = "Looks like this would make good cover."
+	desc = "Похоже, из этого выйдет отличное укрытие"
 	anchored = TRUE
 	density = TRUE
 	max_integrity = 100
@@ -23,6 +23,9 @@
 	qdel(src)
 
 /obj/structure/barricade/proc/make_debris()
+	return
+
+/obj/structure/barricade/proc/disassemble()
 	return
 
 /obj/structure/barricade/attackby(obj/item/I, mob/user, params)
@@ -55,7 +58,7 @@
 
 /obj/structure/barricade/wooden
 	name = "wooden barricade"
-	desc = "This space is blocked off by a wooden barricade."
+	desc = "Это пространство занято какой-то деревянной баррикадой."
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "woodenbarricade"
 	bar_material = WOOD
@@ -68,36 +71,45 @@
 	if(istype(I, plank_type))
 		var/obj/item/stack/sheet/W = I
 		if(W.amount < 5)
-			to_chat(user, "<span class='warning'>You need at least five planks to make a wall!</span>")
+			to_chat(user, "<span class='warning'>Вам нужно как минимум пять досок, чтобы сделать стену!</span>")
 			return
-		to_chat(user, "<span class='notice'>You start adding [I] to [src]...</span>")
+		to_chat(user, "<span class='notice'>Вы начали добавлять [I] к [src]...</span>")
 		if(do_after(user, 50, target=src))
 			W.use(5)
 			var/turf/T = get_turf(src)
 			T.PlaceOnTop(wall_type)
 			qdel(src)
 		return
+	if(I.tool_behaviour == TOOL_CROWBAR && user.a_intent != INTENT_HARM)
+		to_chat(user, "<span class='warning'>Вы начали разбирать баррикаду монтировкой!</span>")
+		if(I.use_tool(src, user, max_integrity / 1.6, volume = 50)) // Можно прописать отдельную переменную для скорости разбора каждой отдельной баррикады, но зачем утяжелять лишним var/?
+			I.play_tool_sound(src, 50)
+			disassemble()
 	return ..()
 
 /obj/structure/barricade/wooden/crude
 	name = "crude plank barricade"
-	desc = "This space is blocked off by a crude assortment of planks."
+	desc = "Это пространство занято какими-то криво налепленными досками."
 	icon_state = "woodenbarricade-old"
 	drop_amount = 1
 	max_integrity = 50
 	proj_pass_rate = 65
 
 /obj/structure/barricade/wooden/crude/snow
-	desc = "This space is blocked off by a crude assortment of planks. It seems to be covered in a layer of snow."
+	desc = "Это пространство занято какими-то криво налепленными, припорошенными снегом досками."
 	icon_state = "woodenbarricade-snow-old"
 	max_integrity = 75
 
 /obj/structure/barricade/wooden/make_debris()
 	new plank_type(get_turf(src), drop_amount)
 
+/obj/structure/barricade/wooden/disassemble()
+	new plank_type(get_turf(src), drop_amount + 2)
+	qdel(src)
+
 /obj/structure/barricade/sandbags
 	name = "sandbags"
-	desc = "Bags of sand. Self explanatory."
+	desc = "Мешки, полные песка. Что очевидно."
 	icon = 'icons/obj/smooth_structures/sandbags.dmi'
 	icon_state = "sandbags"
 	max_integrity = 280
@@ -110,7 +122,7 @@
 
 /obj/structure/barricade/security
 	name = "security barrier"
-	desc = "A deployable barrier. Provides good cover in fire fights."
+	desc = "Разворачиваемый барьер. Даёт неплохое укрытие в перестрелках."
 	icon = 'icons/obj/objects.dmi'
 	icon_state = "barrier0"
 	density = FALSE
@@ -131,11 +143,11 @@
 	density = TRUE
 	anchored = TRUE
 	if(deploy_message)
-		visible_message("<span class='warning'>[src] deploys!</span>")
+		visible_message("<span class='warning'>[src] разворачивается!</span>")
 
 /obj/item/grenade/barrier
 	name = "barrier grenade"
-	desc = "Instant cover."
+	desc = "Мгновенное укрытие."
 	icon = 'icons/obj/grenade.dmi'
 	icon_state = "barrier"
 	item_state = "flashbang"
@@ -144,7 +156,7 @@
 
 /obj/item/grenade/barrier/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Alt-click to toggle modes.</span>"
+	. += "<span class='notice'>Alt-click для переключения режимов.</span>"
 
 /obj/item/grenade/barrier/AltClick(mob/living/carbon/user)
 	. = ..()
@@ -162,7 +174,7 @@
 		if(HORIZONTAL)
 			mode = SINGLE
 
-	to_chat(user, "[src] is now in [mode] mode.")
+	to_chat(user, "[src] сейчас в режиме [mode].")
 
 /obj/item/grenade/barrier/prime(mob/living/lanced_by)
 	. = ..()

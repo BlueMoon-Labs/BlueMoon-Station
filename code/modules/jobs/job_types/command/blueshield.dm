@@ -46,10 +46,9 @@
 	suit = /obj/item/clothing/suit/armor/vest/bluesheid
 	shoes = /obj/item/clothing/shoes/jackboots
 	suit_store = /obj/item/kitchen/knife/combat
-	l_pocket = /obj/item/clothing/accessory/badge/holo
 	r_pocket = /obj/item/sensor_device_command
 	backpack_contents = list(/obj/item/storage/firstaid/regular, /obj/item/storage/box/death_alert, /obj/item/storage/box/blue_shield_hs, /obj/item/storage/box/sec_kit,  /obj/item/choice_beacon/hosgun, /obj/item/choice_beacon/bsbaton)
-	accessory = /obj/item/clothing/accessory/permit/special/blueshield
+	accessory = list(/obj/item/clothing/accessory/permit/special/blueshield, /obj/item/clothing/accessory/badge/holo)
 
 	backpack = /obj/item/storage/backpack/blueshield
 	satchel = /obj/item/storage/backpack/satchel/blueshield
@@ -74,13 +73,12 @@
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	suit_store = /obj/item/kitchen/knife/combat
 	l_pocket = /obj/item/sensor_device_command
-	r_pocket = /obj/item/clothing/accessory/badge/holo
 	backpack_contents = list(/obj/item/storage/firstaid/regular, /obj/item/storage/box/death_alert, /obj/item/storage/box/blue_shield_hs, /obj/item/storage/box/sec_kit,  /obj/item/choice_beacon/hosgun, /obj/item/choice_beacon/bsbaton, /obj/item/syndicate_uplink_high)
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
-	accessory = /obj/item/clothing/accessory/permit/special/blueshield
+	accessory = list(/obj/item/clothing/accessory/permit/special/blueshield, /obj/item/clothing/accessory/badge/holo)
 	pda_slot = ITEM_SLOT_BELT
 
 /datum/outfit/plasmaman/blueshield
@@ -89,7 +87,7 @@
 	head = /obj/item/clothing/head/helmet/space/plasmaman/security/blueshield //Ported the ones from fucking Skyrat
 	uniform = /obj/item/clothing/under/plasmaman/security/blueshield
 	ears = /obj/item/radio/headset/headset_blueshield
-	accessory = /obj/item/clothing/accessory/permit/special/blueshield
+	accessory = list(/obj/item/clothing/accessory/permit/special/blueshield, /obj/item/clothing/accessory/badge/holo)
 
 /obj/item/radio/headset/headset_blueshield
 	name = "blueshield bowman headset"

@@ -1,6 +1,6 @@
 /obj/item/reagent_containers/syringe
 	name = "syringe"
-	desc = "A syringe that can hold up to 15 units."
+	desc = "Шприц. Может вмещать в себе до 15 u."
 	icon = 'icons/obj/syringe.dmi'
 	item_state = "syringe_0"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
@@ -84,14 +84,14 @@
 		if(SYRINGE_DRAW)
 
 			if(reagents.total_volume >= reagents.maximum_volume)
-				to_chat(user, "<span class='notice'>The syringe is full.</span>")
+				to_chat(user, "<span class='notice'>Шприц полон.</span>")
 				return
 
 			if(L) //living mob
 				var/drawn_amount = reagents.maximum_volume - reagents.total_volume
 				if(target != user)
-					target.visible_message("<span class='danger'>[user] is trying to take a blood sample from [target]!</span>", \
-									"<span class='userdanger'>[user] is trying to take a blood sample from [target]!</span>")
+					target.visible_message("<span class='danger'>[user] пытается взять образец крови у [target]!</span>", \
+									"<span class='userdanger'>[user] пытается взять образец крови у [target]!</span>")
 					busy = TRUE
 					if(!do_mob(user, target, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject),user,1)))
 						busy = FALSE
@@ -100,22 +100,22 @@
 						return
 				busy = FALSE
 				if(L.transfer_blood_to(src, drawn_amount))
-					user.visible_message("[user] takes a blood sample from [L].")
+					user.visible_message("[user] берёт образец крови у [L].")
 				else
-					to_chat(user, "<span class='warning'>You are unable to draw any blood from [L]!</span>")
+					to_chat(user, "<span class='warning'>Вы вообще не можете взять нисколько крови у [L]!</span>")
 
 			else //if not mob
 				if(!target.reagents.total_volume)
-					to_chat(user, "<span class='warning'>[target] is empty!</span>")
+					to_chat(user, "<span class='warning'>Внутри [target] пусто!</span>")
 					return
 
 				if(!target.is_drawable())
-					to_chat(user, "<span class='warning'>You cannot directly remove reagents from [target]!</span>")
+					to_chat(user, "<span class='warning'>Вы не можете взять что-либо напрямую из [target]!</span>")
 					return
 
 				var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, log = TRUE) // transfer from, transfer to - who cares?
 
-				to_chat(user, "<span class='notice'>You fill [src] with [trans] units of the solution. It now contains [reagents.total_volume] units.</span>")
+				to_chat(user, "<span class='notice'>Вы наполнили [src] на [trans] u раствора. Теперь внутри [reagents.total_volume] u.</span>")
 			if (round(reagents.total_volume, 0.1) >= reagents.maximum_volume)
 				mode=!mode
 				update_icon()
@@ -126,11 +126,11 @@
 			log_combat(user, target, "attempted to inject", src, addition="which had [contained]")
 
 			if(!reagents.total_volume)
-				to_chat(user, "<span class='notice'>[src] is empty.</span>")
+				to_chat(user, "<span class='notice'>Внутри [src] пусто.</span>")
 				return
 
 			if(!L && !target.is_injectable()) //only checks on non-living mobs, due to how can_inject() handles
-				to_chat(user, "<span class='warning'>You cannot directly fill [target]!</span>")
+				to_chat(user, "<span class='warning'>Вы не можете влить что-либо напрямую в [target]!</span>")
 				return
 
 			if(target.reagents.total_volume >= target.reagents.maximum_volume)
@@ -141,16 +141,16 @@
 				if(!L.can_inject(user, TRUE))
 					return
 				if(L != user)
-					L.visible_message("<span class='danger'>[user] is trying to inject [L]!</span>", \
-											"<span class='userdanger'>[user] is trying to inject [L]!</span>")
+					L.visible_message("<span class='danger'>[user] пытается сделать инъекцию [L]!</span>", \
+											"<span class='userdanger'>[user] пытается сделать инъекцию [L]!</span>")
 					if(!do_mob(user, L, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject),user,1)))
 						return
 					if(!reagents.total_volume)
 						return
 					if(L.reagents.total_volume >= L.reagents.maximum_volume)
 						return
-					L.visible_message("<span class='danger'>[user] injects [L] with the syringe!", \
-									"<span class='userdanger'>[user] injects [L] with the syringe!</span>")
+					L.visible_message("<span class='danger'>[user] сделал[user.ru_a()] инъекцию [L] шприцом!", \
+									"<span class='userdanger'>[user] сделал[user.ru_a()] инъекцию [L] шприцо!</span>")
 
 				if(L != user)
 					log_combat(user, L, "injected", src, addition="which had [contained]")
@@ -159,7 +159,7 @@
 			var/fraction = min(amount_per_transfer_from_this/reagents.total_volume, 1)
 			reagents.reaction(L, INJECT, fraction)
 			reagents.trans_to(target, amount_per_transfer_from_this, log = TRUE)
-			to_chat(user, "<span class='notice'>You inject [amount_per_transfer_from_this] units of the solution. The syringe now contains [reagents.total_volume] units.</span>")
+			to_chat(user, "<span class='notice'>Вы вкололи [amount_per_transfer_from_this] u раствора. В шприце осталось [reagents.total_volume] u.</span>")
 			if (reagents.total_volume <= 0 && mode==SYRINGE_INJECT)
 				mode = SYRINGE_DRAW
 				update_icon()
@@ -193,34 +193,34 @@
 
 /obj/item/reagent_containers/syringe/epinephrine
 	name = "syringe (epinephrine)"
-	desc = "Contains epinephrine - used to stabilize patients."
+	desc = "Содержит эпинефрин - для стабилизации пациентов."
 	list_reagents = list(/datum/reagent/medicine/epinephrine = 15)
 
 /obj/item/reagent_containers/syringe/charcoal
 	name = "syringe (charcoal)"
-	desc = "Contains charcoal."
+	desc = "Содержит активированный уголь."
 	list_reagents = list(/datum/reagent/medicine/charcoal = 15)
 
 /obj/item/reagent_containers/syringe/antiviral
 	name = "syringe (spaceacillin)"
-	desc = "Contains antiviral agents."
+	desc = "Содержит антипатогенные агенты."
 	list_reagents = list(/datum/reagent/medicine/spaceacillin = 15)
 
 /obj/item/reagent_containers/syringe/bioterror
 	name = "bioterror syringe"
-	desc = "Contains several paralyzing reagents."
+	desc = "Содержит смесь препаратов-паралитиков."
 	list_reagents = list(/datum/reagent/consumable/ethanol/neurotoxin = 5, /datum/reagent/toxin/mutetoxin = 5, /datum/reagent/toxin/sodium_thiopental = 5)
 
 /obj/item/reagent_containers/syringe/stimulants
 	name = "Stimpack"
-	desc = "Contains stimulants."
+	desc = "Содержит стимулянты."
 	amount_per_transfer_from_this = 50
 	volume = 50
 	list_reagents = list(/datum/reagent/medicine/stimulants = 50)
 
 /obj/item/reagent_containers/syringe/contraband
 	name = "unlabeled syringe"
-	desc = "A syringe containing some sort of unknown chemical cocktail."
+	desc = "Шприц с какой-то неизвестным коктейлем препаратов."
 
 /obj/item/reagent_containers/syringe/contraband/space_drugs
 	list_reagents = list(/datum/reagent/drug/space_drugs = 15)
@@ -245,17 +245,17 @@
 
 /obj/item/reagent_containers/syringe/calomel
 	name = "syringe (calomel)"
-	desc = "Contains calomel."
+	desc = "Содержит каломель."
 	list_reagents = list(/datum/reagent/medicine/calomel = 15)
 
 /obj/item/reagent_containers/syringe/plasma
 	name = "syringe (plasma)"
-	desc = "Contains plasma."
+	desc = "Содержит жидкую плазму."
 	list_reagents = list(/datum/reagent/toxin/plasma = 15)
 
 /obj/item/reagent_containers/syringe/lethal
 	name = "lethal injection syringe"
-	desc = "A syringe used for lethal injections. It can hold up to 50 units."
+	desc = "Шприц для смертельных инъекций. Может вмещать до 50 u."
 	amount_per_transfer_from_this = 50
 	volume = 50
 
@@ -267,33 +267,33 @@
 
 /obj/item/reagent_containers/syringe/mulligan
 	name = "Mulligan"
-	desc = "A syringe used to completely change the users identity."
+	desc = "Шприц дл полной смены личности пользователя."
 	amount_per_transfer_from_this = 1
 	volume = 1
 	list_reagents = list(/datum/reagent/mulligan = 1)
 
 /obj/item/reagent_containers/syringe/gluttony
 	name = "Gluttony's Blessing"
-	desc = "A syringe recovered from a dread place. It probably isn't wise to use."
+	desc = "Шприц из каких-то лихих мест. Возможно, будет мудрым отложить его в сторону."
 	amount_per_transfer_from_this = 1
 	volume = 1
 	list_reagents = list(/datum/reagent/gluttonytoxin = 1)
 
 /obj/item/reagent_containers/syringe/bluespace
 	name = "bluespace syringe"
-	desc = "An advanced syringe that can hold 60 units of chemicals."
+	desc = "Продвинутый шприц, способный вмещать до 60 u веществ."
 	amount_per_transfer_from_this = 20
 	volume = 60
 
 /obj/item/reagent_containers/syringe/noreact
 	name = "cryo syringe"
-	desc = "An advanced syringe that stops reagents inside from reacting. It can hold up to 20 units."
+	desc = "Прдвинутый шпирц, останавливающий реакции препаратов внутри. Может вмещать до 20 u."
 	volume = 20
 	reagent_flags = TRANSPARENT | NO_REACT
 
 /obj/item/reagent_containers/syringe/piercing
 	name = "piercing syringe"
-	desc = "A diamond-tipped syringe that pierces armor when launched at high velocity. It can hold up to 10 units."
+	desc = "Шприц с алмазным накончеником, способный пробить слои брони, если летит на высокой скорости. Может вмещать до 10 u."
 	volume = 10
 	proj_piercing = 1
 
@@ -302,7 +302,7 @@
 
 /obj/item/reagent_containers/syringe/dart
 	name = "medicinal smartdart"
-	desc = "A non-harmful dart that can administer medication from a range. Once it hits a patient using it's smart nanofilter technology only medicines contained within the dart are administered to the patient. Additonally, due to capillary action, injection of chemicals past the overdose limit is prevented."
+	desc = "Безвредный дротик для введения медикаментов на расстоянии. Уколов пациента, смарт-нанофильтер введёт только лекарства внутри дротика. Вдобавок к этому, из-за капиллярного эффекта, инъекции не превысят пациенту порог дозировки препарата."
 	volume = 20
 	amount_per_transfer_from_this = 20
 	icon_state = "empty"
@@ -329,31 +329,31 @@
 		if(SYRINGE_DRAW)
 
 			if(reagents.total_volume >= reagents.maximum_volume)
-				to_chat(user, "<span class='notice'>The dart is full!</span>")
+				to_chat(user, "<span class='notice'>Дротик наполнен!</span>")
 				return
 
 			if(L) //living mob
-				to_chat(user, "<span class='warning'>You can't draw blood using a dart!</span>")
+				to_chat(user, "<span class='warning'>Вы не можете брать кровь дротиком!</span>")
 				return
 
 			else //if not mob
 				if(!target.reagents.total_volume)
-					to_chat(user, "<span class='warning'>[target] is empty!</span>")
+					to_chat(user, "<span class='warning'>Внутри [target] пусто!</span>")
 					return
 
 				if(!target.is_drawable())
-					to_chat(user, "<span class='warning'>You cannot directly remove reagents from [target]!</span>")
+					to_chat(user, "<span class='warning'>Вы не можете взять что-либо напрямую из [target]!</span>")
 					return
 
 				var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this)
 
-				to_chat(user, "<span class='notice'>You soak the [src] with [trans] units of the solution. It now contains [reagents.total_volume] units.</span>")
+				to_chat(user, "<span class='notice'>Вы обмакнули [src] в [trans] u раствора. Теперь внутри содержится [reagents.total_volume] u.</span>")
 			if (round(reagents.total_volume,1) >= reagents.maximum_volume)
 				mode=!mode
 				update_icon()
 
 		if(SYRINGE_INJECT)
-			src.visible_message("<span class='danger'>The smartdart gives a frustrated boop! It's fully saturated; You need to shoot someone with it!</span>")
+			src.visible_message("<span class='danger'>Смартдарт даёт разражённый \"буп\"! Он полностью наполнен; подстрелите им кого-нибудь!</span>")
 
 /obj/item/reagent_containers/syringe/dart/attack_self(mob/user)
 	return
@@ -372,6 +372,6 @@
 
 /obj/item/reagent_containers/syringe/dart/bluespace
 	name = "bluespace smartdart"
-	desc = "A non-harmful dart that can administer medication from a range. Once it hits a patient using it's smart nanofilter technology only medicines contained within the dart are administered to the patient. Additonally, due to capillary action, injection of chemicals past the overdose limit is prevented. Has an extended volume capacity thanks to bluespace foam."
+	desc = "Безвредный дротик для введения медикаментов на расстоянии. Уколов пациента, смарт-нанофильтер введёт только лекарства внутри дротика. Вдобавок к этому, из-за капиллярного эффекта, инъекции не превысят пациенту порог дозировки препарата. Вмещает большие объёмы благодаря блюспейс-пене."
 	amount_per_transfer_from_this = 50
 	volume = 50

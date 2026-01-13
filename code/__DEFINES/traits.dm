@@ -292,6 +292,8 @@
 
 #define TRAIT_AKIMBO	"akimbo"
 
+#define TRAIT_COMPATIBLE_WITH_NANOMACHINES "compatible_with_nanomachines"
+
 
 // mobility flag traits
 // IN THE FUTURE, IT WOULD BE NICE TO DO SOMETHING SIMILAR TO https://github.com/tgstation/tgstation/pull/48923/files (ofcourse not nearly the same because I have my.. thoughts on it)

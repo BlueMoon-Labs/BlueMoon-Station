@@ -83,6 +83,7 @@
 	return ..()
 
 /datum/surgery_step/filter_blood/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(
 		user,
 		target,

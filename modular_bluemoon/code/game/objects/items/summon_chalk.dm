@@ -77,7 +77,13 @@
 
 	var/massage_time = world.time + 1 SECONDS //Поглощаем энтропию и теорио вероятности тыкнуть энтер в момент появления
 	var/summoned_approve = TRUE
-	if(tgui_alert(target, "You have been summoned! Do you want to answer?", "Do you want to answer?", list("Yes", "No")) != "Yes")
+	var/summoner_info = "[M.gender]"
+	if(M.dna)
+		var/summoner_species = "[M.dna.species]"
+		if(M.dna.custom_species)
+			summoner_species = "[M.dna.custom_species]"
+		summoner_info += " [summoner_species]"
+	if(tgui_alert(target, "You have been summoned by [summoner_info]! Do you want to answer?", "Do you want to answer?", list("Yes", "No")) != "Yes")
 		summoned_approve = FALSE
 	else if(massage_time > world.time)
 		if(tgui_alert(target, "Too quick! You are really want to answer?", "Do you really want to answer the summon?", list("Yes", "No")) != "Yes")
@@ -116,7 +122,7 @@
 	if(!target || !pos_to_teleport)
 		return FALSE
 	if(switch_summoned)
-		if(HAS_TRAIT(target, TRAIT_LEWD_SUMMONED))
+		if(HAS_TRAIT_FROM(target, TRAIT_LEWD_SUMMONED, TRAIT_LEWD_SUMMONED))
 			REMOVE_TRAIT(target, TRAIT_LEWD_SUMMONED, TRAIT_LEWD_SUMMONED)
 		else
 			ADD_TRAIT(target, TRAIT_LEWD_SUMMONED, TRAIT_LEWD_SUMMONED)

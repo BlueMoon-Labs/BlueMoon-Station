@@ -103,8 +103,8 @@
 	spreadFire(AM)
 
 /mob/living/carbon/human/Topic(href, href_list)
-	if(usr.canUseTopic(src, BE_CLOSE, NO_DEXTERY, check_resting = FALSE))
-		if(href_list["embedded_object"])
+	if(href_list["embedded_object"])
+		if(usr.canUseTopic(src, BE_CLOSE, NO_DEXTERY, check_resting = FALSE))
 			var/obj/item/bodypart/L = locate(href_list["embedded_limb"]) in bodyparts
 			if(!L)
 				return
@@ -114,7 +114,7 @@
 			SEND_SIGNAL(src, COMSIG_CARBON_EMBED_RIP, I, L)
 			return
 
-	if(href_list["character_profile"])
+	else if(href_list["character_profile"])
 		if(!profile)
 			profile = new(src)
 		profile.ui_interact(usr)
@@ -646,14 +646,16 @@
 	remove_atom_colour(TEMPORARY_COLOUR_PRIORITY, "#000000")
 	cut_overlay(MA)
 
-/mob/living/carbon/human/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting = TRUE)
+/mob/living/carbon/human/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting = TRUE, silent = FALSE)
 	if(incapacitated() || (check_resting && !CHECK_MOBILITY(src, MOBILITY_STAND)))
-		to_chat(src, "<span class='warning'>You can't do that right now!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
 		return FALSE
 	if(!Adjacent(M) && (M.loc != src))
 		if((be_close == 0) || (!no_tk && (dna.check_mutation(TK) && tkMaxRangeCheck(src, M))))
 			return TRUE
-		to_chat(src, "<span class='warning'>You are too far away!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>You are too far away!</span>")
 		return FALSE
 	return TRUE
 
@@ -1003,6 +1005,8 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 /mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, fireman = FALSE, carry_type = null)
 	if(!force)//humans are only meant to be ridden through piggybacking and special cases
 		return
+	if(!istype(target))
+		return FALSE
 	if(!is_type_in_typecache(target, can_ride_typecache))
 		target.visible_message("<span class='warning'>[target] действительно не может забраться на [src]...</span>")
 		return

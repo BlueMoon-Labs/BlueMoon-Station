@@ -1,6 +1,6 @@
 /obj/item/mod/construction
 	desc = "A part used in MOD construction."
-	icon = 'icons/obj/clothing/modsuit/mod_construction.dmi'
+	icon = 'modular_bluemoon/icons/obj/clothing/modsuit/mod_construction.dmi' // Чтобы не срать в мейн, будет заменено на файл нашего модуля
 	item_state = "rack_parts"
 	mod_flags = MOD_CONSTRUCTION // BLUEMOON ADD
 

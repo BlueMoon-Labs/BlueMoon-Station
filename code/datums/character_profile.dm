@@ -1,5 +1,8 @@
-/mob/living
+/mob/living/carbon/human
 	var/datum/description_profile/profile
+
+/mob/living/silicon/robot
+	var/datum/description_profile/robot/profile
 
 /client/verb/regenerate_cached_character_appearance()
 	set name = "Regenerate Cached Profile Appearance"
@@ -29,6 +32,18 @@ GLOBAL_LIST_EMPTY(cached_previews)
 /datum/description_profile/Destroy(force, ...)
 	. = ..()
 	host = null
+
+/datum/description_profile/ui_status(mob/user, datum/ui_state/state)
+	. = ..()
+	if(. <= UI_DISABLED)
+		return .
+	var/mob/M = host.resolve()
+	if(M in view(10, user))
+		return .
+	else if(get_turf(M) == get_turf(user))
+		return .
+	else
+		return UI_UPDATE
 
 /datum/description_profile/ui_state()
 	return GLOB.always_state
@@ -167,3 +182,31 @@ GLOBAL_LIST_EMPTY(cached_previews)
 			current_background.icon_state = next_list_item(current_background.icon_state, preview_backgrounds)
 			return TRUE
 
+
+/datum/description_profile/robot/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "CyborgProfile", "Профиль юнита [src]")
+		ui.open()
+
+/datum/description_profile/robot/ui_static_data(mob/user, datum/tgui/ui, datum/ui_state/state)
+	var/data[0]
+	var/mob/living/M = host.resolve()
+	if(!M || !istype(M))
+		return
+	if(M.mind)
+		data["silicon_flavor_text"] = M.mind.silicon_flavor_text || ""
+		data["oocnotes"] = M.mind.ooc_notes || ""
+	if(M.client?.prefs)
+		var/datum/preferences/prefs = M.client.prefs
+		data["vore_tag"] = prefs.vorepref
+		data["erp_tag"] = prefs.erppref
+		data["mob_tag"] = prefs.mobsexpref
+		data["nc_tag"] = prefs.nonconpref
+		data["unholy_tag"] = prefs.unholypref
+		data["extreme_tag"] = prefs.extremepref
+		data["very_extreme_tag"] = prefs.extremeharm
+	else for(var/i in list("vore_tag", "erp_tag", "mob_tag", "nc_tag", "unholy_tag", "extreme_tag", "very_extreme_tag"))
+		data[i] = "No"
+
+	return data

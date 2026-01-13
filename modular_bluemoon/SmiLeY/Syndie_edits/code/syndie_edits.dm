@@ -90,7 +90,7 @@
 	icon = 'icons/obj/clothing/belts.dmi'
 	mob_overlay_icon = 'icons/mob/clothing/belt.dmi'
 	icon_state = "webbingds"
-	mob_overlay_icon = "webbingds"
+	item_state = "webbingds"
 
 /obj/item/clothing/suit/armor/bulletproof/old
 	icon = 'icons/obj/clothing/suits.dmi'

@@ -121,7 +121,7 @@
 
 /obj/item/clothing/glasses/science
 	name = "science goggles"
-	desc = "A pair of snazzy goggles used to protect against chemical spills. Fitted with an analyzer for scanning items and reagents."
+	desc = "Пара стильных очков для защиты от брызг химикатов. Со встроенным анализатором вещей и жидкостей."
 	icon_state = "purple"
 	item_state = "glasses"
 	clothing_flags = SCAN_REAGENTS //You can see reagents while wearing science goggles

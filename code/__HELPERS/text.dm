@@ -34,6 +34,21 @@
 			index = findtext(t, char)
 	return t
 
+/// Удаляет HTML-теги целиком, оставляя только текст между ними.
+/proc/strip_html_tags(t, trim_tab = FALSE, limit = 0)
+	if(!t)
+		return ""
+	if(limit > 0)
+		t = copytext(t, 1, limit)
+
+	// Удаляем теги вида <...>
+	t = replacetext(t, regex("<\[^>\]*>", "g"), "")
+
+	if(trim_tab)
+		t = sanitize_simple(t, list("\n"=" ", "\t"=" "))
+
+	return t
+
 //Removes a few problematic characters
 /proc/sanitize_simple(t,list/repl_chars = list("\n"="#","\t"="#"))
 	for(var/char in repl_chars)
@@ -925,57 +940,57 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 		return zone
 
 /proc/ru_kogo_zone(zone)	// Винительный
-	if(zone == "правая кисть")
+	if(zone == BODY_ZONE_PRECISE_R_HAND)
 		return "правую кисть"
-	else if (zone == "левая кисть")
+	else if (zone == BODY_ZONE_PRECISE_L_HAND)
 		return "левую кисть"
-	else if (zone == "левая рука")
+	else if (zone == BODY_ZONE_L_ARM)
 		return "левую руку"
-	else if (zone == "правая рука")
+	else if (zone == BODY_ZONE_R_ARM)
 		return "правую руку"
-	else if (zone == "левая нога")
+	else if (zone == BODY_ZONE_L_LEG)
 		return "левую ногу"
-	else if (zone == "правая нога")
+	else if (zone == BODY_ZONE_R_LEG)
 		return "правую ногу"
-	else if (zone == "левая ступня")
+	else if (zone == BODY_ZONE_PRECISE_L_FOOT)
 		return "левую ступню"
-	else if (zone == "правая ступня")
+	else if (zone == BODY_ZONE_PRECISE_R_FOOT)
 		return "правую ступню"
-	else if (zone == "грудь")
+	else if (zone == "chest")
 		return "грудь"
-	else if (zone == "рот")
+	else if (zone == "mouth")
 		return "рот"
-	else if (zone == "пах")
+	else if (zone == "groin")
 		return "пах"
-	else if (zone == "голова")
+	else if (zone == "head")
 		return "голову"
 	else
 		return zone
 
-/proc/ru_gde_zone(zone)	// Дательный
-	if(zone == "правая кисть")
+/proc/ru_gde_zone(zone)	// Дательный // Я поменял значения как у ru_parse_zone(), чтобы можно было использовать в коде.
+	if(zone == BODY_ZONE_PRECISE_R_HAND)
 		return "правой кисти"
-	else if (zone == "левая кисть")
+	else if  (zone == BODY_ZONE_PRECISE_L_HAND)
 		return "левой кисти"
-	else if (zone == "левая рука")
+	else if (zone == BODY_ZONE_L_ARM)
 		return "левой руке"
-	else if (zone == "правая рука")
+	else if (zone == BODY_ZONE_R_ARM)
 		return "правой руке"
-	else if (zone == "левая нога")
+	else if (zone == BODY_ZONE_L_LEG)
 		return "левой ноге"
-	else if (zone == "правая нога")
+	else if (zone == BODY_ZONE_R_LEG)
 		return "правой ноге"
-	else if (zone == "левая ступня")
+	else if (zone == BODY_ZONE_PRECISE_L_FOOT)
 		return "левой ступне"
-	else if (zone == "правая ступня")
+	else if (zone == BODY_ZONE_PRECISE_R_FOOT)
 		return "правой ступне"
-	else if (zone == "грудь")
+	else if (zone == "chest")
 		return "груди"
-	else if (zone == "рот")
+	else if (zone == "mouth")
 		return "ротовой полости"
-	else if (zone == "пах")
+	else if (zone == "groin")
 		return "паховой области"
-	else if (zone == "голова")
+	else if (zone == "head")
 		return "голове"
 	else
 		return zone
@@ -1097,11 +1112,11 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 /proc/weight_class_to_text(w_class)
 	switch(w_class)
 		if(WEIGHT_CLASS_TINY)
-			. = "маленького"
+			. = "крохотного"
 		if(WEIGHT_CLASS_SMALL)
-			. = "небольшого"
+			. = "маленького"
 		if(WEIGHT_CLASS_NORMAL)
-			. = "среднего"
+			. = "нормального"
 		if(WEIGHT_CLASS_BULKY)
 			. = "большого"
 		if(WEIGHT_CLASS_HUGE)

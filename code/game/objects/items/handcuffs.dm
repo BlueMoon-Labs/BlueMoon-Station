@@ -25,7 +25,7 @@
 
 /obj/item/restraints/handcuffs
 	name = "handcuffs"
-	desc = "Используйте это, чтобы держать заключенных в узде."
+	desc = "Используйте их, чтобы держать заключенных в узде."
 	gender = PLURAL
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "handcuff"
@@ -55,7 +55,7 @@
 		return
 
 	if(iscarbon(user) && (HAS_TRAIT(user, TRAIT_CLUMSY) && prob(50)))
-		to_chat(user, "<span class='warning'>Uh... how do those things work?!</span>")
+		to_chat(user, "<span class='warning'>М-м-м... А как оно вообще работает?!</span>")
 		apply_cuffs(user,user)
 		return
 
@@ -67,8 +67,8 @@
 
 	if(!C.handcuffed)
 		if(C.get_num_arms(FALSE) >= 2 || C.get_arm_ignore())
-			C.visible_message("<span class='danger'>[user] is trying to put [src.name] on [C]!</span>", \
-								"<span class='userdanger'>[user] is trying to put [src.name] on [C]!</span>")
+			C.visible_message("<span class='danger'>[user] пытается надеть [src.name] на [C]!</span>", \
+								"<span class='userdanger'>[user] пытается надеть [src.name] на [C]!</span>")
 
 			playsound(loc, cuffsound, 30, 1, -2)
 			if(do_mob(user, C, 30) && (C.get_num_arms(FALSE) >= 2 || C.get_arm_ignore()))
@@ -76,14 +76,14 @@
 					apply_cuffs(C, user, TRUE)
 				else
 					apply_cuffs(C, user)
-				to_chat(user, "<span class='notice'>You handcuff [C].</span>")
+				to_chat(user, "<span class='notice'>Вы стянули руки [C] наручниками.</span>")
 				SSblackbox.record_feedback("tally", "handcuffs", 1, type)
 
 				log_combat(user, C, "handcuffed")
 			else
-				to_chat(user, "<span class='warning'>You fail to handcuff [C]!</span>")
+				to_chat(user, "<span class='warning'>Вы не смогли надеть наручники на [C]!</span>")
 		else
-			to_chat(user, "<span class='warning'>[C] doesn't have two hands...</span>")
+			to_chat(user, "<span class='warning'>[C] не имеет руки...</span>")
 
 /obj/item/restraints/handcuffs/proc/apply_cuffs(mob/living/carbon/target, mob/user, var/dispense = 0)
 	if(target.handcuffed)
@@ -144,7 +144,7 @@
 	AddElement(/datum/element/contextual_screentip_item_typechecks, hovering_item_typechecks)
 
 /obj/item/restraints/handcuffs/cable/attack_self(mob/user)
-	to_chat(user, "<span class='notice'>You start unwinding the cable restraints back into coil</span>")
+	to_chat(user, "<span class='notice'>Вы начинаете разматывать стяжки в форму кабеля.</span>")
 	if(!do_after(user, 25, user))
 		return
 	qdel(src)
@@ -152,7 +152,7 @@
 	coil.amount = 15
 	user.put_in_hands(coil)
 	coil.color = color
-	to_chat(user, "<span class='notice'>You unwind the cable restraints back into coil</span>")
+	to_chat(user, "<span class='notice'>Вы размотали стяжки обратно в форму кабеля.</span>")
 
 /obj/item/restraints/handcuffs/cable/red
 	color = "#ff0000"
@@ -192,24 +192,24 @@
 			var/obj/item/wirerod/W = new /obj/item/wirerod
 			remove_item_from_storage(user)
 			user.put_in_hands(W)
-			to_chat(user, "<span class='notice'>You wrap the cable restraint around the top of the rod.</span>")
+			to_chat(user, "<span class='notice'>Вы обернули стяжки вокруг верхушки прута.</span>")
 			qdel(src)
 		else
-			to_chat(user, "<span class='warning'>You need one rod to make a wired rod!</span>")
+			to_chat(user, "<span class='warning'>Вам нужна один прут, чтобы обернуть вокруг него кабель!</span>")
 			return
 	else if(istype(I, /obj/item/stack/sheet/metal))
 		var/obj/item/stack/sheet/metal/M = I
 		if(M.get_amount() < 6)
-			to_chat(user, "<span class='warning'>You need at least six metal sheets to make good enough weights!</span>")
+			to_chat(user, "<span class='warning'>Вам нужно как минимум шесть листов железа для придания нужной массы!</span>")
 			return
-		to_chat(user, "<span class='notice'>You begin to apply [I] to [src]...</span>")
+		to_chat(user, "<span class='notice'>Вы начинаете применять [I] к [src]...</span>")
 		if(do_after(user, 35, target = src))
 			if(M.get_amount() < 6 || !M)
 				return
 			var/obj/item/restraints/legcuffs/bola/S = new /obj/item/restraints/legcuffs/bola
 			M.use(6)
 			user.put_in_hands(S)
-			to_chat(user, "<span class='notice'>You make some weights out of [I] and tie them to [src].</span>")
+			to_chat(user, "<span class='notice'>Вы сделали несколько грузиков из [I] и привязали их к [src].</span>")
 			remove_item_from_storage(user)
 			qdel(src)
 	else
@@ -255,7 +255,7 @@
 
 /obj/item/restraints/legcuffs
 	name = "leg cuffs"
-	desc = "Use this to keep prisoners in line."
+	desc = "Используйте это, чтобы держать заключённых в узде."
 	gender = PLURAL
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "handcuff"
@@ -264,6 +264,7 @@
 	righthand_file = 'icons/mob/inhands/equipment/security_righthand.dmi'
 	flags_1 = CONDUCT_1
 	throwforce = 0
+	obj_flags = IMMUTABLE_SLOW
 	w_class = WEIGHT_CLASS_NORMAL
 	slowdown = 7
 	allow_breakout_movement = TRUE
@@ -277,7 +278,7 @@
 	throw_speed = 1
 	throw_range = 1
 	icon_state = "beartrap"
-	desc = "A trap used to catch bears and other legged creatures."
+	desc = "Ловушка для поимки медведей и других существ с ногами."
 	var/armed = FALSE
 	var/trap_damage = 20
 	var/ignore_weight = FALSE //BLUEMOON ADD капканы реагируют на вес карбонов
@@ -290,7 +291,7 @@
 	icon_state = "[initial(icon_state)][armed]"
 
 /obj/item/restraints/legcuffs/beartrap/suicide_act(mob/user)
-	user.visible_message("<span class='suicide'>[user] is sticking [user.ru_ego()] head in the [src.name]! It looks like [user.p_theyre()] trying to commit suicide!</span>")
+	user.visible_message("<span class='suicide'>[user] засовывает свою голову в [src.name]! Похоже что [user.ru_who()] пытается покончить с собой!</span>")
 	playsound(loc, 'sound/weapons/bladeslice.ogg', 75, 1, -1)
 	return (BRUTELOSS)
 
@@ -299,7 +300,7 @@
 	if(ishuman(user) && !user.stat && !user.restrained())
 		armed = !armed
 		icon_state = "[initial(icon_state)][armed]"
-		to_chat(user, "<span class='notice'>[src] is now [armed ? "armed" : "disarmed"]</span>")
+		to_chat(user, "<span class='notice'>[src] теперь [armed ? "взведён" : "спущен"]</span>")
 
 /obj/item/restraints/legcuffs/beartrap/Crossed(AM as mob|obj)
 	if(armed && isturf(src.loc))
@@ -328,8 +329,8 @@
 				armed = FALSE
 				icon_state = "[initial(icon_state)][armed]"
 				playsound(src.loc, 'sound/effects/snap.ogg', 50, 1)
-				L.visible_message("<span class='danger'>[L] triggers \the [src].</span>", \
-						"<span class='userdanger'>You trigger \the [src]!</span>")
+				L.visible_message("<span class='danger'>[L] активирует \the [src].</span>", \
+						"<span class='userdanger'>Вы активируете \the [src]!</span>")
 				L.apply_damage(trap_damage, BRUTE, def_zone)
 	..()
 
@@ -362,7 +363,7 @@
 
 /obj/item/restraints/legcuffs/bola
 	name = "bola"
-	desc = "A restraining device designed to be thrown at the target. Upon connecting with said target, it will wrap around their legs, making it difficult for them to move quickly."
+	desc = "Сдерживающий метательный инструмент. По достижению цели, оборачивает ноги, мешая балансу движений, вплоть до падений."
 	icon_state = "bola"
 	breakouttime = 35//easy to apply, easy to break out of
 	gender = NEUTER
@@ -386,26 +387,27 @@
   */
 /obj/item/restraints/legcuffs/bola/proc/ensnare(mob/living/carbon/C)
 	if(!C.legcuffed && C.get_num_legs(FALSE) >= 2)
-		visible_message("<span class='danger'>\The [src] ensnares [C]!</span>")
+		visible_message("<span class='danger'>\The [src] опутывает [C]!</span>")
 		C.legcuffed = src
 		forceMove(C)
 		C.update_equipment_speed_mods()
 		C.update_inv_legcuffed()
 		SSblackbox.record_feedback("tally", "handcuffs", 1, type)
-		to_chat(C, "<span class='userdanger'>\The [src] ensnares you!</span>")
+		to_chat(C, "<span class='userdanger'>\The [src] опутывает вас!</span>")
 		C.Knockdown(knockdown)
 		playsound(src, 'sound/effects/snap.ogg', 50, TRUE)
+		C.apply_status_effect(/datum/status_effect/bola_snared)
 
 /obj/item/restraints/legcuffs/bola/tactical//traitor variant
 	name = "reinforced bola"
-	desc = "A strong bola, made with a long steel chain. It looks heavy, enough so that it could trip somebody."
+	desc = "Крепкая бола со стальной цепью. Выглядит тяжёлой, достаточно, чтобы опрокинуть кого-то при попадании."
 	icon_state = "bola_r"
 	breakouttime = 70
 	knockdown = 20
 
 /obj/item/restraints/legcuffs/bola/energy //For Security
 	name = "energy bola"
-	desc = "A specialized hard-light bola designed to ensnare fleeing criminals and aid in arrests."
+	desc = "Специализированая бола из твёрдого света для опутывания ног убегающих преступников и помощи в арестах."
 	icon_state = "ebola"
 	hitsound = 'sound/weapons/taserhit.ogg'
 	w_class = WEIGHT_CLASS_SMALL

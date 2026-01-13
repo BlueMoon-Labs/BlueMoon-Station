@@ -72,7 +72,7 @@
 	head = /obj/item/clothing/head/hardhat/white
 	gloves = /obj/item/clothing/gloves/color/black
 	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1)
-	accessory = /obj/item/clothing/accessory/permit/special/chief_engineer
+	accessory = list(/obj/item/clothing/accessory/permit/special/chief_engineer)
 
 	backpack = /obj/item/storage/backpack/industrial
 	satchel = /obj/item/storage/backpack/satchel/eng
@@ -95,7 +95,7 @@
 	gloves = /obj/item/clothing/gloves/combat
 	neck = /obj/item/clothing/neck/cloak/syndiecap
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/syndicate_uplink_high=1)
-	accessory = /obj/item/clothing/accessory/permit/special/chief_engineer
+	accessory = list(/obj/item/clothing/accessory/permit/special/chief_engineer)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo

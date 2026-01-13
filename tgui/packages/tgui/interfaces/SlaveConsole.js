@@ -221,7 +221,7 @@ const SlavePanel = (props, context) => {
             {!slave.price
               ? "Set the price"
               : !slave.bought
-                ? 'Awaiting payment from station'
+                ? `Awaiting payment from station${!slave.can_bought ? ' (suspended: ' + slave.bought_timer + ')' : ''}`
                 : 'Paid; Ready for export'}
           </LabeledList.Item>
         </LabeledList>
@@ -241,43 +241,41 @@ const SupplyPanel = (props, context) => {
 
 const RansomPanel = (props, context) => {
   const { data } = useBackend(context);
-  const value_table = props.value_table;
-  const { cargo_credits, ransom_scale_value } = data;
+  const value_table = props.value_table || {};
 
-  let value_table_converted = [];
-
-  for (const property in value_table) {
-    value_table_converted.push({
-      rank: `${property}`,
-      value: value_table[property],
-    });
-  }
+  const value_table_converted = Object.entries(value_table).map(
+    ([rank, cfg]) => ({
+      rank,
+      maxPrice: cfg.maxPrice,
+      percent: cfg.percent,
+    })
+  );
 
   return (
     <Fragment>
       <NoticeBox danger>
-        Prices are set automatically for the following ranks:
+        Цены устанавливаются автоматически по прайс-листу
       </NoticeBox>
-      <Flex
-        direction="column">
-        {value_table_converted.map(rank_value => {
+      <NoticeBox info>
+        Должность: Процент от счета карго; Максимальная сумма выкупа
+      </NoticeBox>
+
+      <Flex direction="column">
+        {value_table_converted.map(({ rank, maxPrice, percent }) => {
+
           return (
             <Flex
-              key={0}
+              key={rank}
               className="candystripe"
               justify="space-between"
               px="1rem"
               py=".5rem"
             >
-              <Flex.Item
-                bold>
-                {rank_value.rank}
+              <Flex.Item bold>
+                {rank}
               </Flex.Item>
               <Flex.Item>
-                {formatMoney(
-                  rank_value.value + (rank_value.value
-                    * (cargo_credits / ransom_scale_value))
-                  , null, true)}cr
+                {Math.round(percent * 100)}%; Максимум: {formatMoney(maxPrice, null, true)}cr
               </Flex.Item>
             </Flex>
           );

@@ -110,10 +110,10 @@
 	fitted = FEMALE_UNIFORM_TOP
 
 /obj/item/clothing/under/donator/bm/Prosecutor_suit
-    name = "Prosecutor_suit"
-    desc = "Невероятный фиолетовый костюм, что бросается в ваши глаза выглядит довольно качественным, на него явно было потрачено не одна сотня тысяч кредитов, присмотревшись вы видите на кайме пиджака аккуратно пришита именная бирка 'Berly Blight'."
-    icon_state = "Prosecutor_suit"
-    item_state = "Prosecutor_suit"
+	name = "Prosecutor_suit"
+	desc = "Невероятный фиолетовый костюм, что бросается в ваши глаза выглядит довольно качественным, на него явно было потрачено не одна сотня тысяч кредитов, присмотревшись вы видите на кайме пиджака аккуратно пришита именная бирка 'Berly Blight'."
+	icon_state = "Prosecutor_suit"
+	item_state = "Prosecutor_suit"
 
 /obj/item/clothing/under/donator/bm/monolith_uniform
 	name = "Granite M1 ''Monolith'' uniform"
@@ -198,6 +198,30 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
 
+/obj/item/clothing/underwear/shirt/bra/troubleneko_bra
+	name = "Laced lingerie bra"
+	icon_state = "troubleneko_bra"
+	item_state = "troubleneko_bra"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
+
+/obj/item/clothing/underwear/briefs/troubleneko_panties
+	name = "Panties"
+	icon_state = "troubleneko_panties"
+	item_state = "troubleneko_panties"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
+
+/obj/item/clothing/underwear/socks/thigh/troubleneko_socks
+	name = "Socks"
+	icon_state = "troubleneko_socks"
+	item_state = "troubleneko_socks"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
+
 /obj/item/clothing/underwear/shirt/toggle/savannah_sleepwear
 	name = "sleepwear"
 	desc = "A sleepshirt. Fancy?"
@@ -215,11 +239,11 @@
 	can_adjust = FALSE
 
 /obj/item/clothing/under/donator/bm/archangel_turtleneck
-    name = "Archangel Group turtleneck"
-    desc = "Archangel group turtleneck for special missions. Black and Stylish."
-    mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-    icon_state = "arch_group_turtleneck"
-    item_state = "arch_group_turtleneck"
+	name = "Archangel Group turtleneck"
+	desc = "Archangel group turtleneck for special missions. Black and Stylish."
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "arch_group_turtleneck"
+	item_state = "arch_group_turtleneck"
 
 /obj/item/clothing/under/donator/bm/tavern_skirt
 	name = "Tavern skirt"
@@ -521,3 +545,42 @@
 		"Standart" = list("icon_state" = "cesar_tunic"),
 		"half" = list("icon_state" = "cesar_tunic_alt")
 	)
+
+/obj/item/clothing/under/donator/bm/mk6_suit
+	name = "MK-VII Tactical suit"
+	desc = "Многофункциональный рабочий комплект, созданный для длительных миссий и путешествий. Он удобен, не стесняет движений и поддерживает стабильный комфорт в разных условиях."
+	icon_state = "mk6_green"
+	item_state = "mk6_green"
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
+	unique_reskin = list(
+		"Red" = list("icon_state" = "mk6_red"),
+		"Gray" = list("icon_state" = "mk6_gray")
+	)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/under/dress/skirt/lskirt
+	name = "Short skirt"
+	desc = "A short pleated skirt."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "lskirt"
+	item_state = "lskirt"
+	body_parts_covered = GROIN
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	fitted = NO_FEMALE_UNIFORM
+	can_adjust = FALSE
+	alternate_worn_layer = BELT_LAYER
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/under/donator/bm/verdant
+	name = "Verdant Tactical Suit"
+	desc = "Комплект одежды в спокойной зелёной палитре с аккуратными усиленными элементами. \
+	Сочетает плотные и мягкие материалы, создавая сбалансированный образ между защитой и комфортом. \
+	Подходит для повседневного ношения в суровых условиях."
+	icon_state = "verdant"
+	item_state = "verdant"
+	body_parts_covered = CHEST|ARMS|GROIN
+	mutantrace_variation = STYLE_DIGITIGRADE

@@ -76,7 +76,7 @@ export const GulagTeleporterConsole = (props, context) => {
                 value={goal}
                 width="48px"
                 minValue={1}
-                maxValue={1000}
+                maxValue={1000000}
                 onChange={(e, value) => act('set_goal', { value })} />
             </LabeledList.Item>
             <LabeledList.Item label="Occupant">

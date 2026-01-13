@@ -71,8 +71,8 @@
 /obj/item/clothing/suit/wizrobe
 	name = "wizard robe"
 	desc = "A magnificent, gem-lined robe that seems to radiate power."
-	icon_state = "wizard"
-	item_state = "wizrobe"
+	icon_state = "bluewizard"
+	item_state = "bluewizrobe"
 	gas_transfer_coefficient = 0.01
 	permeability_coefficient = 0.01
 	body_parts_covered = CHEST|ARMS|LEGS

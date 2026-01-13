@@ -1231,3 +1231,12 @@
 
 /mob/living/carbon/proc/functional_blood()
 	return blood_volume + integrating_blood
+
+/mob/living/carbon/has_pain(obj/item/bodypart/limb)
+	. = ..()
+	if(. == PAIN_NO)
+		return .
+	if(limb && limb.is_robotic_limb())
+		return PAIN_NO
+	if(. > PAIN_MEDIUM && drunkenness > 20)
+		return PAIN_MEDIUM

@@ -210,13 +210,16 @@
 					var/mob/living/L = usr
 					C = L.get_idcard(TRUE)
 				if(!can_transact(C))
+					if(COOLDOWN_FINISHED(src, error_message_cooldown))
+						playsound(src, 'sound/misc/compiler-failure.ogg', 25, TRUE)
 					queuecooldown = world.time + (1 SECONDS)
-					playsound(src, 'sound/misc/compiler-failure.ogg', 25, TRUE)
 					return
 				if(!attempt_transact(C, queuecost))
-					say("Insufficient funds.")
+					if(COOLDOWN_FINISHED(src, error_message_cooldown))
+						say("Insufficient funds.")
+						playsound(src, 'sound/misc/compiler-failure.ogg', 25, TRUE)
+						COOLDOWN_START(src, error_message_cooldown, 6 SECONDS)
 					queuecooldown = world.time + (1 SECONDS)
-					playsound(src, 'sound/misc/compiler-failure.ogg', 25, TRUE)
 					return
 				to_chat(usr, "<span class='notice'>You spend [queuecost] credits to queue [selectedtrack.song_name].</span>")
 				log_econ("[queuecost] credits were inserted into [src] by [key_name(usr)] (ID: [C.registered_name]) to queue [selectedtrack.song_name].")

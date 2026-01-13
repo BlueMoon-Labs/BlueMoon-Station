@@ -312,8 +312,8 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 			G.on_report()
 			. += G.get_report()
 
-	print_command_report(., "Отдел ССО Пакта Синих Лун", announce=FALSE)
-	priority_announce("Благодаря неустанным усилиям наших специальных оперативных подразделений мы обнаружили несколько возможных угроз для [station_name()]. Будьте осторожней!", "Отдел ССО Пакта Синих Лун", "intercept")
+	print_command_report(., "Отдел ССО ПАКТа Синих Лун", announce=FALSE)
+	priority_announce("Благодаря неустанным усилиям наших специальных оперативных подразделений мы обнаружили несколько возможных угроз для [station_name()]. Будьте осторожней!", "Отдел ССО ПАКТа Синих Лун", "intercept")
 
 /datum/game_mode/dynamic/proc/show_threatlog(mob/admin)
 	if(!SSticker.HasRoundStarted())

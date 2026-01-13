@@ -90,6 +90,9 @@
 	/// What flags apply to this wound
 	var/wound_flags = (FLESH_WOUND | BONE_WOUND | ACCEPTS_GAUZE)
 
+	/// Affects the emotion of pain
+	var/pain_realagony = FALSE
+
 	var/ru_name = ""
 	var/ru_name_r = ""
 
@@ -109,11 +112,6 @@
   * * old_wound: If our new wound is a replacement for one of the same time (promotion or demotion), we can reference the old one just before it's removed to copy over necessary vars
   * * smited- If this is a smite, we don't care about this wound for stat tracking purposes (not yet implemented)
   */
-
-// BLUEMOON ADD START - модификатор текста, чтобы у синтетиков не "ломались кости", а были "повреждены приводы", оставляя суть травмы без изменений.
-/datum/wound/proc/apply_typo_modification()
-	return
-// BLUEMOON ADD END
 
 /datum/wound/proc/apply_wound(obj/item/bodypart/L, silent = FALSE, datum/wound/old_wound = null, smited = FALSE)
 	if(!istype(L) || !L.owner || !(L.body_zone in viable_zones) || isalien(L.owner) || !L.is_organic_limb())
@@ -135,7 +133,6 @@
 			return
 
 	victim = L.owner
-	apply_typo_modification()
 	RegisterSignal(victim, COMSIG_PARENT_QDELETING, PROC_REF(null_victim))
 	limb = L
 	LAZYADD(victim.all_wounds, src)
@@ -144,8 +141,7 @@
 	if(status_effect_type)
 		victim.apply_status_effect(status_effect_type, src)
 	SEND_SIGNAL(victim, COMSIG_CARBON_GAIN_WOUND, src, limb)
-	if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от получения ран
-		victim.emote("scream")
+	victim.pain_emote(limb = limb, realagony = pain_realagony)
 	if(!victim.alerts["wound"]) // only one alert is shared between all of the wounds
 		victim.throw_alert("wound", /atom/movable/screen/alert/status_effect/wound)
 
@@ -276,7 +272,7 @@
 /datum/wound/proc/check_grab_treatments(obj/item/I, mob/user)
 	return FALSE
 
-/// Like try_treating() but for unhanded interactions from humans, used by joint dislocations for manual bodypart chiropractice for example.
+/// Like try_treating() but for unhanded interactions from humans, used by joint dislocations for manual bodypart handle_joint for example.
 /datum/wound/proc/try_handling(mob/living/carbon/human/user)
 	return FALSE
 

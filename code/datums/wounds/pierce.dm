@@ -182,8 +182,8 @@
 	scar_keyword = "piercemoderate"
 
 // BLUEMOON ADD START
-/datum/wound/pierce/moderate/apply_typo_modification()
-	if(HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM))
+/datum/wound/pierce/moderate/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
+	if(istype(L) && L.is_robotic_limb())
 		ru_name = "Малая Пробоина Обшивки"
 		ru_name_r = "малой пробоины обшивки"
 		desc = "Обшивка повреждена, что приводит к малой потери жидкостей"
@@ -191,7 +191,9 @@
 		examine_desc = "покрыто маленькими отверстиями, из которых течёт чёрная жижа"
 		occur_text = "начинает истекать чёрной жижей"
 		treatable_tool = TOOL_WELDER
-	return
+
+	return ..()
+// BLUEMOON ADD END
 
 /datum/wound/pierce/severe
 	name = "Open Puncture"
@@ -212,8 +214,9 @@
 	status_effect_type = /datum/status_effect/wound/pierce/severe
 	scar_keyword = "piercesevere"
 
-/datum/wound/pierce/severe/apply_typo_modification()
-	if(HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM))
+// BLUEMOON ADD START
+/datum/wound/pierce/severe/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
+	if(istype(L) && L.is_robotic_limb())
 		name = "Open Puncture"
 		ru_name = "Пробоина Обшивки"
 		ru_name_r = "пробоины обшивки"
@@ -222,7 +225,9 @@
 		examine_desc = "пробита насквозь, чёрная жидкость вытекает."
 		occur_text = "выплескивает струю чёрной жижи, обнажая сквозную пробоину"
 		treatable_tool = TOOL_WELDER
-	return
+
+	return ..()
+// BLUEMOON ADD END
 
 /datum/wound/pierce/critical
 	name = "Ruptured Cavity"
@@ -244,8 +249,9 @@
 	scar_keyword = "piercecritical"
 	wound_flags = (FLESH_WOUND | ACCEPTS_GAUZE | MANGLES_FLESH)
 
-/datum/wound/pierce/critical/apply_typo_modification()
-	if(HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM))
+// BLUEMOON ADD START
+/datum/wound/pierce/critical/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)
+	if(istype(L) && L.is_robotic_limb())
 		ru_name = "Прорванная Обшивка"
 		ru_name_r = "прорванная обшивка"
 		desc = "обшивка и трубы гидравлической жидкости пробиты, это приводит к обильной потери жидкостей."
@@ -254,4 +260,6 @@
 		occur_text = "разрывается со всплеском чёрной жижи, разбрасывая вокруг обломки обшивки и приводов"
 		wound_flags = (FLESH_WOUND | MANGLES_FLESH)
 		treatable_tool = TOOL_WELDER
-	return
+
+	return ..()
+// BLUEMOON ADD END

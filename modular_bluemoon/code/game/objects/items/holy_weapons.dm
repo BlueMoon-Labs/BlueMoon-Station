@@ -127,7 +127,7 @@
 
 /obj/item/aspergillum/ert
 	name = "Inquisitor's Aspergillum"
-	desc = "Древний инструмент для окропления святой водой, улучшенный для лучших инквизиторов Пакта, мокрый не столько от святой воды, сколько от крови еретиков. Бегите, грешники!"
+	desc = "Древний инструмент для окропления святой водой, улучшенный для лучших инквизиторов ПАКТа, мокрый не столько от святой воды, сколько от крови еретиков. Бегите, грешники!"
 	icon_state = "aspergillum_ert"
 	attack_verb = list("exorcised", "sprinkled with holy water... violently", "purged of heresy")
 	resistance_flags = INDESTRUCTIBLE

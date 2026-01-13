@@ -74,13 +74,14 @@
 
 ///setter used to set our new hud
 /atom/movable/screen/proc/set_new_hud(datum/hud/hud_owner)
-	if(hud)
+	if(istype(hud, /datum))
 		UnregisterSignal(hud, COMSIG_PARENT_QDELETING)
 	if(isnull(hud_owner))
 		hud = null
 		return
 	hud = hud_owner
-	RegisterSignal(hud, COMSIG_PARENT_QDELETING, PROC_REF(on_hud_delete))
+	if(istype(hud, /datum))
+		RegisterSignal(hud, COMSIG_PARENT_QDELETING, PROC_REF(on_hud_delete))
 
 /// Returns the mob this is being displayed to, if any
 /atom/movable/screen/proc/get_mob()

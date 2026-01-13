@@ -59,10 +59,10 @@
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
 	//suit_store = /obj/item/gun/energy/e_gun
 	l_pocket = /obj/item/storage/bag/security
-	r_pocket = /obj/item/clothing/accessory/badge
-	backpack_contents = list(/obj/item/storage/box/sec_kit, /obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/choice_beacon/hos_new_weapon = 1)
+	r_pocket = /obj/item/modular_computer/tablet/preset/advanced
+	backpack_contents = list(/obj/item/storage/box/sec_kit, /obj/item/choice_beacon/hos_new_weapon = 1)
 	box = /obj/item/storage/box/survival/command
-	accessory = /obj/item/clothing/accessory/permit/special/head_of_sec
+	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_sec, /obj/item/clothing/accessory/badge)
 
 	satchel = /obj/item/storage/backpack/satchel/sec
 	duffelbag = /obj/item/storage/backpack/duffelbag/sec
@@ -93,7 +93,7 @@
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
-	accessory = /obj/item/clothing/accessory/permit/special/head_of_sec
+	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_sec)
 	pda_slot = ITEM_SLOT_BELT
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/syndicate_uplink_high=1)
 

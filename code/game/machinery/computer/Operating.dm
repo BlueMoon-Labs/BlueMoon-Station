@@ -3,7 +3,7 @@
 
 /obj/machinery/computer/operating
 	name = "operating computer"
-	desc = "Monitors patient vitals and displays surgery steps. Can be loaded with surgery disks to perform experimental procedures."
+	desc = "Отслеживает состояние пациента и отображает прогресс операции пошагово. Имеет слот для дискет с операциями, для проведения экспериментальных процедур."
 	icon_screen = "crew"
 	icon_keyboard = "med_key"
 	circuit = /obj/item/circuitboard/computer/operating

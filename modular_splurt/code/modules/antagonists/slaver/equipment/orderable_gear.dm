@@ -33,13 +33,6 @@ GLOBAL_LIST_INIT(slaver_gear, subtypesof(/datum/slaver_gear))
 	category = "Slaving"
 	cost = 1750
 
-/datum/slaver_gear/pens
-	name = "Sleepy Pens"
-	description = "Pen that injects sleep-inducing chemicals x 7."
-	build_path = /obj/item/storage/box/pens
-	category = "Slaving"
-	cost = 1500
-
 /datum/slaver_gear/codespeak
 	name = "Codespeak Manual"
 	description = "A handy book that teaches the user how to speak in code. Useful to stop eavesdropping! This one has unlimited uses."
@@ -68,6 +61,13 @@ GLOBAL_LIST_INIT(slaver_gear, subtypesof(/datum/slaver_gear))
 	build_path = /obj/structure/closet/crate/slaver_loadout
 	category = "Slaving"
 	cost = 1000
+
+/datum/slaver_gear/kinkmate
+	name = "Kinkmate Supply"
+	description = "A fun way to spend a shift. Contains 2 packages of unspeakable desires."
+	build_path = /obj/structure/closet/crate/slave_kink
+	category = "Slaving"
+	cost = 5000
 
 /datum/slaver_gear/emag
 	name = "Cryptographic Sequencer"
@@ -147,6 +147,13 @@ GLOBAL_LIST_INIT(slaver_gear, subtypesof(/datum/slaver_gear))
 	build_path = /obj/item/storage/backpack/duffelbag/syndie/slaver_marksman
 	category = "Firearms"
 	cost = 50000
+
+/datum/slaver_gear/p50crocineammo
+	name = "Ammo (.50 Crocine)"
+	description = "Lewd ammo filled with aphrodisiac and capabable of knocking targets down. 12 rounds total. Compatible with .50 cal slaver sniper rifle."
+	build_path = /obj/item/storage/belt/cummerbund/slaver
+	category = "Firearms"
+	cost = 15000
 
 /datum/slaver_gear/freedom
 	name = "Freedom Implant"

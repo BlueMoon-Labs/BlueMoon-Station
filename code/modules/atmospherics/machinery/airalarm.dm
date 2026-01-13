@@ -40,7 +40,7 @@
 
 /obj/item/wallframe/airalarm
 	name = "air alarm frame"
-	desc = "Used for building Air Alarms."
+	desc = "Рабочая начинка воздушной сигнализации."
 	icon = 'icons/obj/monitors.dmi'
 	icon_state = "alarm_bitem"
 	result_path = /obj/machinery/airalarm
@@ -64,7 +64,7 @@
 
 /obj/machinery/airalarm
 	name = "air alarm"
-	desc = "A machine that monitors atmosphere levels. Goes off if the area is dangerous."
+	desc = "Машина для отслеживания атмосферных показателей. Сигнализирует при опасности окружающей среды."
 	icon = 'icons/obj/monitors.dmi'
 	icon_state = "alarm0"
 	plane = ABOVE_WALL_PLANE
@@ -259,17 +259,17 @@
 	. = ..()
 	switch(buildstage)
 		if(0)
-			. += "<span class='notice'>It is missing air alarm electronics.</span>"
+			. += "<span class='notice'>Отсутствует электроника.</span>"
 		if(1)
-			. += "<span class='notice'>It is missing wiring.</span>"
+			. += "<span class='notice'>Отсутствует проводка.</span>"
 		if(2)
-			. += "<span class='notice'>Alt-click to [locked ? "unlock" : "lock"] the interface.</span>"
+			. += "<span class='notice'>Alt-click, чтобы [locked ? "заблокировать" : "заблокировать"] интерфейс.</span>"
 	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[capitalize(get_security_level())]</u></b>.</span>"
 
 /obj/machinery/airalarm/ui_status(mob/user)
 	if(hasSiliconAccessInArea(user))
 		if(aidisabled)
-			to_chat(user, "AI control has been disabled")
+			to_chat(user, "ИИ-управление отключено")
 			return UI_CLOSE
 		else if(!issilicon(user)) //True sillycones use ..()
 			return UI_INTERACTIVE

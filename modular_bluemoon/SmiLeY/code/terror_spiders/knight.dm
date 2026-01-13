@@ -18,7 +18,7 @@
 	icon_dead = "terror_red_dead"
 	maxHealth = 200
 	health = 200
-	damage_coeff = list(BRUTE = 0.7, BURN = 1.1, TOX = 1, CLONE = 0, STAMINA = 0, OXY = 1)
+	damage_coeff = list(BRUTE = 0.7, BURN = 1.15, TOX = 1, CLONE = 0, STAMINA = 0, OXY = 1)
 	melee_damage_lower = 15
 	melee_damage_upper = 15
 	obj_damage = 30

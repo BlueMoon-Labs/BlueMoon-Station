@@ -322,6 +322,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 				if(I.fingerprintslast == quirk_holder.ckey)
 					quirk_holder.put_in_hands(I)
 
+/* Квирк нефунцкиональный и не задействован в механе
 /datum/quirk/poor_aim
 	name = "Ужасный стрелок"
 	desc = "Ваши навыки обращения с оружием не позволяют точно прицелиться даже для того, чтобы спасти свою жизнь. Стрельба с двух рук даже не обсуждается."
@@ -329,6 +330,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	mob_trait = TRAIT_POOR_AIM
 	flavor_quirk = TRUE
 	medical_record_text = "Обе руки пациента подвержены тремору."
+*/
 
 /datum/quirk/prosopagnosia
 	name = "Прозопагнозия"
@@ -536,6 +538,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 /datum/quirk/less_nightmare/add()
 	var/mob/living/carbon/human/C = quirk_holder
 	C.AddElement(/datum/element/photosynthesis, 1, 1, 0, 0, 0, 0, SHADOW_SPECIES_LIGHT_THRESHOLD, SHADOW_SPECIES_LIGHT_THRESHOLD)
+	give_item(/obj/item/flashlight/flashdark, quirk_holder)
+	give_item(/obj/item/clothing/accessory/permit/special/lessnightmareish, quirk_holder)
 
 /datum/quirk/less_nightmare/remove()
 	var/mob/living/carbon/human/C = quirk_holder

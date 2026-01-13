@@ -76,7 +76,6 @@ Unused icons for new areas are "awaycontent1" ~ "awaycontent30"
 	sound_environment = SOUND_ENVIRONMENT_ROOM
 
 /area/awaymission/InteQ/lvl3
-
 	name = "InteQGate"
 	icon_state = "away"
 	has_gravity = STANDARD_GRAVITY

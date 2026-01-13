@@ -142,6 +142,12 @@
 	can_adjust = FALSE
 	flags_inv = HIDESHOES //You can't see shoes under the gown
 	alternate_worn_layer = ABOVE_SHOES_LAYER
+	unique_reskin = list(
+		"Glove" = list(
+			"icon_state" = "red_evening_gown_glove",
+			"name" = "red evening gown"
+		)
+	)
 
 /obj/item/clothing/under/dress/skirt/plaid
 	name = "red plaid skirt"

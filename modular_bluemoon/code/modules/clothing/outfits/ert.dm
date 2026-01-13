@@ -43,7 +43,7 @@
 	W.access += get_centcom_access("Death Commando")//Let's add their alloted CentCom access.
 	W.registered_name = H.real_name
 	W.assignment = "Tribunal Ordinator"
-	W.update_label(W.registered_name)
+	W.update_label()
 
 /datum/outfit/lfwb_ordinator/officer
 	name = "Офицер-ординатор трибунала"
@@ -613,10 +613,10 @@
 	glasses = /obj/item/clothing/glasses/hud/health/night/syndicate
 	back = /obj/item/storage/backpack/ert_commander/ert_security
 	belt = /obj/item/storage/belt/military/ert_min
-	l_pocket = /obj/item/clothing/accessory/lawyers_badge
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/box/ert_commander=1,
 		/obj/item/storage/firstaid/regular=1,)
+	accessory = list(/obj/item/clothing/accessory/lawyers_badge)
 
 // BLUEMOON ADD START - командная коробочка для командира
 /datum/outfit/ert/ntr_ert_leader/pre_equip(mob/living/carbon/human/H, visualsOnly, client/preference_source)
@@ -646,11 +646,11 @@
 	glasses = /obj/item/clothing/glasses/hud/health/night/syndicate
 	back = /obj/item/storage/backpack/ert_commander/ert_security
 	belt = /obj/item/storage/belt/military/ert_min
-	l_pocket = /obj/item/clothing/accessory/lawyers_badge
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/pda/heads=1,
 		/obj/item/stamp/law=1,
 		/obj/item/storage/firstaid/regular=1,)
+	accessory = list(/obj/item/clothing/accessory/lawyers_badge)
 
 /datum/outfit/ert/ntr_ert_agent/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()
@@ -678,7 +678,6 @@
 	belt = /obj/item/storage/belt/janitor/ert_maid
 	mask = /obj/item/clothing/mask/gas/sechailer/syndicate
 	r_hand = /obj/item/mop/advanced
-	//l_pocket = /obj/item/clothing/accessory/lawyers_badge
 	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
 		/obj/item/storage/ifak=1)
 	l_pocket = /obj/item/dualsaber
@@ -717,7 +716,6 @@
 	belt = /obj/item/storage/belt/janitor/ert_maid
 	r_hand = /obj/item/mop/advanced
 	mask = /obj/item/clothing/mask/gas/sechailer/syndicate
-	//l_pocket = /obj/item/clothing/accessory/lawyers_badge
 	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
 		/obj/item/storage/ifak=1)
 

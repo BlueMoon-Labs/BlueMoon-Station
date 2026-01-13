@@ -64,7 +64,7 @@
 	l_hand = /obj/item/clipboard
 	l_pocket = /obj/item/laser_pointer
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced=1)
-	accessory = /obj/item/clothing/accessory/permit/special/research_director
+	accessory = list(/obj/item/clothing/accessory/permit/special/research_director)
 
 	backpack = /obj/item/storage/backpack/science
 	box = /obj/item/storage/box/survival/command
@@ -92,7 +92,7 @@
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/syndicate_uplink_high=1)
-	accessory = /obj/item/clothing/accessory/permit/special/research_director
+	accessory = list(/obj/item/clothing/accessory/permit/special/research_director)
 
 	neck = /obj/item/clothing/neck/cloak/syndiecap
 

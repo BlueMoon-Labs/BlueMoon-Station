@@ -495,3 +495,43 @@
 	item_state = "pz_grenadierjacket"
 
 ///////////////////////////////////////////////
+
+/obj/item/clothing/suit/donator/bm/apronchef_red
+	name = "Gubby Family Apron"
+	desc = "Ярко красный фартук с чёрно белыми узорами, немного потрёпан временем"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST|GROIN
+	icon_state = "apronchef_red"
+	item_state = "apronchef_red"
+	allowed = list(/obj/item/kitchen)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/toggle/shark
+	name = "Shark Pajamas"
+	desc = "Soft shark-shaped pajamas, isn't it cute?"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+	flags_inv = HIDEJUMPSUIT
+	icon_state = "shark"
+	item_state = "bluewizrobe"
+	togglename = "buttons"
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/toggle/lsweater
+	name = "Sweater"
+	desc = "A sweater belonging to some fox"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	body_parts_covered = GROIN|ARMS
+	icon_state = "lsweater"
+	item_state = "lsweater"
+	togglename = "buttons"
+	alternate_worn_layer = SUIT_STORE_LAYER

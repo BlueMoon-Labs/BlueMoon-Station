@@ -3,7 +3,7 @@
 	icon_state = "freezer"
 
 	name = "thermomachine"
-	desc = "Heats or cools gas in connected pipes."
+	desc = "Нагревает или охлаждает газ в подсоединённой системе труб."
 
 	density = TRUE
 	max_integrity = 300
@@ -59,10 +59,11 @@
 
 /obj/machinery/atmospherics/components/unary/thermomachine/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>The thermostat is set to [target_temperature]K ([target_temperature-T0C]C).</span>"
+	. += "<span class='notice'>Термостат настроен на [target_temperature]K ([target_temperature-T0C]C).</span>"
 	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Effective heat capacity <b>[heat_capacity] J/K</b>.</span>"
-		. += "<span class='notice'>Temperature range <b>[min_temperature]K - [max_temperature]K ([min_temperature-T0C]C - [max_temperature-T0C]C)</b>.</span>"
+		. += "<span class='notice'>Статус-дисплей сообщает: \n\
+		- Теплоёмкость работы с газами: <b>[heat_capacity] J/K</b>. \n\
+		- Диапазон T: <b>[min_temperature]K - [max_temperature]K ([min_temperature-T0C]C - [max_temperature-T0C]C)</b>.</span>"
 
 /obj/machinery/atmospherics/components/unary/thermomachine/process_atmos()
 	..()
@@ -158,7 +159,7 @@
 			var/target = params["target"]
 			var/adjust = text2num(params["adjust"])
 			if(target == "input")
-				target = input("Set new target ([min_temperature]-[max_temperature] K):", name, target_temperature) as num|null
+				target = input("Задайте новое значение ([min_temperature]-[max_temperature] K):", name, target_temperature) as num|null
 				if(!isnull(target))
 					. = TRUE
 			else if(adjust)
@@ -221,7 +222,7 @@
 		return
 	target_temperature = min_temperature
 	investigate_log("was set to [target_temperature] K by [key_name(user)]", INVESTIGATE_ATMOS)
-	balloon_alert(user, "temperature reset to [target_temperature] K")
+	balloon_alert(user, "температура сброшена до [target_temperature] K")
 
 /obj/machinery/atmospherics/components/unary/thermomachine/heater
 	name = "heater"
@@ -249,4 +250,4 @@
 		return
 	target_temperature = max_temperature
 	investigate_log("was set to [target_temperature] K by [key_name(user)]", INVESTIGATE_ATMOS)
-	balloon_alert(user, "temperature reset to [target_temperature] K")
+	balloon_alert(user, "температура сброшена до [target_temperature] K")

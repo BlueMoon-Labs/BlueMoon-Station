@@ -2,7 +2,7 @@
 
 /obj/item/reagent_containers/glass/bottle/vial // these have literally no fucking right to just be better beakers that you can shit out of a chemmaster
 	name = "broken hypovial"
-	desc = "A hypovial compatible with most hyposprays."
+	desc = "Гипоампула, совместимая с большинствами гипоспреев."
 	icon_state = "hypovial"
 	spillable = FALSE
 	volume = 10
@@ -47,7 +47,7 @@
 
 /obj/item/reagent_containers/glass/bottle/vial/large
 	name = "large hypovial"
-	desc = "A large hypovial, for deluxe hypospray models."
+	desc = "Большая гипоампула, для моделей гипоспреев \"Делюкс\"."
 	icon_state = "hypoviallarge"
 	volume = 120
 	possible_transfer_amounts = list(1,2,5,10,20)

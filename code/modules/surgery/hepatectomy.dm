@@ -42,6 +42,7 @@
 
 /datum/surgery_step/hepatectomy/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	if(ishuman(target))
+		..()
 		var/mob/living/carbon/human/H = target
 		display_results(user, target, span_warning("Вы облажались, не сумев удалить поврежденную долю печени [H]!"),
 			span_warning("[user] допускает ошибку при операции!"),

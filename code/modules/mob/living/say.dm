@@ -69,6 +69,82 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	"щ" = RADIO_CHANNEL_AI_PRIVATE,
 	"ч" = MODE_VOCALCORDS
 ))
+/proc/auto_capitalize(text)
+	if(!text || text == "")
+		return text
+
+	text = trim_left(text)
+
+	// если строка начинается с префикса языка (например ",r") — не трогаем его
+	if(copytext_char(text, 1, 1) == "," && length_char(text) >= 2)
+		var/prefix = copytext_char(text, 1, 2)
+		var/body = copytext_char(text, 3)
+		return prefix + auto_capitalize(body)
+
+	var/result = ""
+	var/next_cap = TRUE
+	var/i = 1
+	var/len = length_char(text)
+
+	while(i <= len)
+		var/ch = copytext_char(text, i, i+1)
+		var/nextch = (i < len) ? copytext_char(text, i+1, i+2) : ""
+		var/nextnext = (i+1 < len) ? copytext_char(text, i+2, i+3) : ""
+		var/prevch = (i > 1) ? copytext_char(text, i-1, i) : ""
+
+		// Если ожидается заглавная и это буква — делаем кап
+		if(next_cap && lowertext(ch) != uppertext(ch))
+			// проверяем контекст — не капаем, если предыдущий символ не разделитель
+			if(i > 1 && !(prevch == " " || prevch == "\t" || prevch == "\n" || prevch == "." || prevch == "!" || prevch == "?" || prevch == "\"" || prevch == "«" || prevch == "“" || prevch == "," || prevch == ";"))
+				result += ch
+				next_cap = FALSE
+				i += 1
+				continue
+
+			result += uppertext(ch)
+			next_cap = FALSE
+		else
+			result += ch
+
+		// Проверяем на конец предложения, но игнорируем ...
+		if(ch == "." || ch == "!" || ch == "?")
+			// Если три точки подряд — не конец предложения
+			if(!(ch == "." && nextch == "." && nextnext == "."))
+				next_cap = TRUE
+
+				// Если после .!? нет пробела — добавляем
+				if(i < len)
+					if(nextch != " " && nextch != "." && nextch != "!" && nextch != "?" && nextch != "\t" && nextch != "\n")
+						// если после идёт цифра (3.14), то не вставляем пробел
+						if(!isnum(text2num(nextch)))
+							result += " "
+
+		// Не включаем капитализацию после - или % или других "связующих" знаков
+		if(ch == "-" || ch == "%" || ch == "*" || ch == ":" || ch == ";" || ch == "'" || ch == ")" || ch == "]" || ch == "°")
+			next_cap = FALSE
+
+		// Если встретили кавычку — ожидаем заглавную после неё
+		if(ch == "\"" || ch == "«" || ch == "“")
+			next_cap = TRUE
+			// Убираем лишний пробел сразу после кавычки
+			if(i < len)
+				var/nextch2 = copytext_char(text, i+1, i+2)
+				if(nextch2 == " ")
+					i += 1 // пропускаем его
+
+		// Теперь сбрасываем next_cap ТОЛЬКО если текущий символ не является
+		// разделителем/пунктуацией/кавычкой/пробелом — тогда следующая буква не должна капитализироваться.
+		if(ch != " " && ch != "\t" && ch != "\n" && ch != "." && ch != "!" && ch != "?" && ch != "\"" && ch != "«" && ch != "“")
+			next_cap = FALSE
+
+		i += 1
+
+	return result
+
+
+
+
+
 
 /mob/living/proc/Ellipsis(original_msg, chance = 50, keep_words)
 	if(chance <= 0)
@@ -133,6 +209,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	else if(message_mode || saymode)
 		message = copytext_char(message, 3)
 	message = trim_left(message)
+	if(copytext_char(message, 1, 2) == " ")
+		message = copytext_char(message, 2)
 	if(!message)
 		return
 	if(message_mode == MODE_ADMIN)
@@ -253,7 +331,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	if(pressure < ONE_ATMOSPHERE*0.4) //Thin air, let's italicise the message
 		spans |= SPAN_ITALICS
-
+	if(src?.client?.prefs.auto_capitalize_enabled)
+		message=auto_capitalize(message)
 	send_speech(message, message_range, src, bubble_type, spans, language, message_mode)
 
 	if(succumbed)

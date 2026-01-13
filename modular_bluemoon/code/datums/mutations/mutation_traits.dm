@@ -414,7 +414,7 @@
 
 	owner.gain_trauma(T, TRAUMA_RESILIENCE_ABSOLUTE)
 
-
+/*
 /datum/mutation/human/bm/poor_aim
 	name = "Ужасный стрелок"
 	desc = "Ваши навыки обращения с оружием не позволяют точно прицелиться даже для того, чтобы спасти свою жизнь. Стрельба с двух рук даже не обсуждается."
@@ -422,6 +422,7 @@
 	difficulty = 8
 	instability = -10
 	mob_trait = TRAIT_POOR_AIM
+*/
 
 /datum/mutation/human/bm/prosopagnosia
 	name = "Прозопагнозия"

@@ -13,12 +13,12 @@
 
 /obj/machinery/power/apc/examine()
 	. = ..()
-	. += "It [arc_shielded ? "has" : "does not have"] arc shielding installed."
+	. += "Дуговое экранирование [arc_shielded ? "" : "не"] установлено."
 	if(panel_open)
 		if(arc_shielded)
-			. += "The arc shielding could be removed with a <b>wrench</b>."
+			. += "Дуговое экранирование можно снять <b>гаечным ключом</b>."
 		else
-			. += "It could be arc shielded with a <b>sheet of bronze</b>."
+			. += "Можно экранировать <b>листом бронзы</b>."
 
 /obj/machinery/power/apc/process(seconds_per_tick)
 	. = ..()
@@ -78,10 +78,10 @@
 /// Handles interaction of adding arc shielding to apc with bronze
 /obj/machinery/power/apc/proc/bronze_act(mob/living/user, obj/item/stack/sheet/bronze/bronze)
 	if(arc_shielded)
-		balloon_alert(user, "already arc shielded!")
+		balloon_alert(user, "уже экранировано!")
 		return FALSE
 	bronze.use(1)
-	balloon_alert(user, "installed arc shielding")
+	balloon_alert(user, "установлено дуговое экранирование.")
 	arc_shielded = TRUE
 	playsound(src, 'sound/items/rped.ogg', 20)
 	return TRUE
@@ -89,7 +89,7 @@
 /obj/machinery/power/apc/wrench_act(mob/living/user, obj/item/tool)
 	. = ..()
 	if(panel_open && arc_shielded)
-		balloon_alert(user, "arc shielding removed")
+		balloon_alert(user, "дуговое экранирование снято.")
 		arc_shielded = FALSE
 		tool.play_tool_sound(src, 50)
 

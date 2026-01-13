@@ -303,15 +303,29 @@
 
 /datum/reagent/medicine/silver_sulfadiazine/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1)
 	if(iscarbon(M) && M.stat != DEAD)
-		if(method in list(INGEST, VAPOR, INJECT))
+		var/mob/living/carbon/human/H = M
+		var/protected = FALSE
+		if (H.wear_suit && H.head && istype(H.wear_suit, /obj/item/clothing) && istype(H.head, /obj/item/clothing))
+			var/obj/item/clothing/worn_suit = H.wear_suit
+			var/obj/item/clothing/worn_helmet = H.head
+			if (worn_suit.clothing_flags & worn_helmet.clothing_flags & THICKMATERIAL)
+				protected = TRUE
+		if(method == TOUCH && protected)
+			var/obj/item/clothing/worn_suit = H.wear_suit
+			M.visible_message("<span class='danger'>[H] был[H.ru_a()] чем-то облит[H.ru_a()], но оно стекло вниз по [worn_suit.name]!</span>", \
+						"<span class='userdanger'>Меня чем-то облили, но оно стекло вниз по [worn_suit.name]!</span>")
+			playsound(src.loc, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
+			return
+		else if(method in list(INGEST, VAPOR, INJECT))
 			M.adjustToxLoss(0.5*reac_volume)
 			if(show_message)
-				to_chat(M, "<span class='warning'>You don't feel so good...</span>")
+				to_chat(M, "<span class='warning'>Вы ощущаете себя не очень хорошо...</span>")
 		else if(M.getFireLoss())
 			M.adjustFireLoss(-reac_volume)
 			if(show_message)
-				to_chat(M, "<span class='danger'>You feel your burns healing! It stings like hell!</span>")
+				to_chat(M, "<span class='danger'>Вы ощущаете, как ваши ожоги затягиваются! Жжётся адски!!</span>")
 			//M.emote("scream")
+			shake_camera(M, 5, 2)
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "painful_medicine", /datum/mood_event/painful_medicine)
 	..()
 
@@ -368,15 +382,29 @@
 
 /datum/reagent/medicine/styptic_powder/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1)
 	if(iscarbon(M) && M.stat != DEAD)
-		if(method in list(INGEST, VAPOR, INJECT))
+		var/mob/living/carbon/human/H = M
+		var/protected = FALSE
+		if (H.wear_suit && H.head && istype(H.wear_suit, /obj/item/clothing) && istype(H.head, /obj/item/clothing))
+			var/obj/item/clothing/worn_suit = H.wear_suit
+			var/obj/item/clothing/worn_helmet = H.head
+			if (worn_suit.clothing_flags & worn_helmet.clothing_flags & THICKMATERIAL)
+				protected = TRUE
+		if(method == TOUCH && protected)
+			var/obj/item/clothing/worn_suit = H.wear_suit
+			M.visible_message("<span class='danger'>[H] был[H.ru_a()] чем-то облит[H.ru_a()], но оно стекло вниз по [worn_suit.name]!</span>", \
+						"<span class='userdanger'>Меня чем-то облили, но оно стекло вниз по [worn_suit.name]!</span>")
+			playsound(src.loc, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
+			return
+		else if(method in list(INGEST, VAPOR, INJECT))
 			M.adjustToxLoss(0.5*reac_volume)
 			if(show_message)
-				to_chat(M, "<span class='warning'>You don't feel so good...</span>")
+				to_chat(M, "<span class='warning'>Вы ощущаете себя не очень хорошо...</span>")
 		else if(M.getBruteLoss())
 			M.adjustBruteLoss(-reac_volume)
 			if(show_message)
-				to_chat(M, "<span class='danger'>You feel your bruises healing! It stings like hell!</span>")
+				to_chat(M, "<span class='danger'>Вы ощущаете, как ваши ушибы затягиваются! Жжётся адски!</span>")
 			//M.emote("scream")
+			shake_camera(M, 5, 2)
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "painful_medicine", /datum/mood_event/painful_medicine)
 	..()
 
@@ -544,10 +572,15 @@
 				to_chat(M, "<span class='danger'>You feel your burns and bruises healing! It stings like hell!</span>")
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "painful_medicine", /datum/mood_event/painful_medicine)
 			var/vol = reac_volume + M.reagents.get_reagent_amount(/datum/reagent/medicine/synthflesh)
-			//Has to be at less than THRESHOLD_UNHUSK burn damage and have 100 synthflesh before unhusking. Corpses dont metabolize.
-			if(HAS_TRAIT_FROM(M, TRAIT_HUSK, "burn") && M.getFireLoss() < THRESHOLD_UNHUSK && (vol >= 100))
-				M.cure_husk("burn")
-				M.visible_message("<span class='nicegreen'>Most of [M]'s burnt off or charred flesh has been restored.")
+			// 100 synthflesh at least. Corpses dont metabolize.
+			if(vol >= 100)
+				for(var/i in C.all_scars)
+					qdel(i)
+
+				//Has to be at less than THRESHOLD_UNHUSK burn damage before unhusking.
+				if(HAS_TRAIT_FROM(M, TRAIT_HUSK, "burn") && M.getFireLoss() < THRESHOLD_UNHUSK)
+					M.cure_husk("burn")
+					M.visible_message("<span class='nicegreen'>Most of [M]'s burnt off or charred flesh has been restored.")
 	..()
 
 /datum/reagent/medicine/synthflesh/overdose_start(mob/living/M)
@@ -773,11 +806,16 @@
 	..()
 
 /datum/reagent/medicine/ephedrine/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
-	// if(DT_PROB(10 * (1-creation_purity), delta_time) && iscarbon(M))
-	// 	var/obj/item/I = M.get_active_held_item()
-	// 	if(I && M.dropItemToGround(I))
-	// 		to_chat(M, span_notice("Your hands spaz out and you drop what you were holding!"))
-	// 		M.Jitter(10)
+	if(DT_PROB(7.5, delta_time) && iscarbon(M))
+		var/obj/item/Iactive = M.get_active_held_item()
+		if(Iactive && M.dropItemToGround(Iactive))
+			to_chat(M, span_notice("Your hands spaz out and you drop what you were holding!"))
+			M.Jitter(10)
+	if(DT_PROB(5, delta_time) && iscarbon(M))
+		var/obj/item/Isecond = M.get_inactive_held_item()
+		if(Isecond && M.dropItemToGround(Isecond))
+			to_chat(M, span_notice("Your hands spaz out and you drop what you were holding!"))
+			M.Jitter(10)
 
 	M.AdjustAllImmobility(-20 * REM * delta_time)
 	M.adjustStaminaLoss(-1 * REM * delta_time, FALSE)

@@ -10,6 +10,7 @@
 	block_parry_data = /datum/block_parry_data/sleeping_carp
 	pugilist = TRUE
 	display_combos = TRUE
+	resist_grab_chance = 70
 
 /datum/martial_art/the_sleeping_carp/proc/check_streak(mob/living/carbon/human/A, mob/living/carbon/human/D)
 	if(findtext(streak,STRONG_PUNCH_COMBO))

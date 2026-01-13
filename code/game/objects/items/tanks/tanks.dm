@@ -123,7 +123,7 @@
 	else
 		descriptive = "обжигающе горячей"
 
-	. += "<span class='notice'>Поверхность ощущается [descriptive] внешне.</span>"
+	. += "<span class='notice'>Поверхность ощущается [descriptive].</span>"
 
 /obj/item/tank/blob_act(obj/structure/blob/B)
 	if(B && B.loc == loc)

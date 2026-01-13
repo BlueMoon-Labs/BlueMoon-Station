@@ -358,3 +358,7 @@
 	name = "polychromic keyhole sweater"
 	path = /obj/item/clothing/accessory/poly_keyholesweater
 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+
+/datum/gear/accessory/uglyxmas
+	name = "Ugly Xmas Sweater"
+	path = /obj/item/clothing/accessory/sweater/uglyxmas

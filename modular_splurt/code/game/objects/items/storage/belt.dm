@@ -38,3 +38,8 @@ obj/item/storage/belt/slut/ComponentInitialize()
 	icon_state = "cummerbund"
 	item_state = "cummerbund"
 
+/obj/item/storage/belt/cummerbund/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 4
+	STR.max_w_class = WEIGHT_CLASS_SMALL

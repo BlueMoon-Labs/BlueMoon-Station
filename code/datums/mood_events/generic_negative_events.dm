@@ -367,6 +367,11 @@
 	mood_change = -6
 	timeout = 2 MINUTES
 
+/datum/mood_event/tripped/bola
+	description = span_boldwarning("Чёртова бола!</span>\n")
+	mood_change = -6
+	timeout = 1 MINUTES
+
 /datum/mood_event/untied
 	description = span_boldwarning("Ненавижу, когда моя обувь развязана!</span>\n")
 	mood_change = -3

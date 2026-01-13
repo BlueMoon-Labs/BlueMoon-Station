@@ -1,6 +1,6 @@
 /obj/machinery/rnd/production/circuit_imprinter
 	name = "circuit imprinter"
-	desc = "Manufactures circuit boards for the construction of machines."
+	desc = "Производит электронные платы для сбора машинерии."
 	icon_state = "circuit_imprinter"
 	circuit = /obj/item/circuitboard/machine/circuit_imprinter
 	categories = list(
@@ -29,7 +29,7 @@
 /////// BLUEMOON ADD хакнутый принтер для печатки вещей, требующих код, в любом месте.
 /obj/machinery/rnd/production/circuit_imprinter/hacked
 	name = "hacked imprinter"
-	desc = "Manufactures circuit boards for the construction of machines. This type of imprinters are prohibited in the most of the space due to its unrestricted ability for printing combat circuits."
+	desc = "Производит электронные платы для сбора машинерии. Конкретно этот тип принтеров запрещён к использованию во многих корпорациях с делением власти между множеством отделов.."
 	circuit = /obj/item/circuitboard/machine/circuit_imprinter/hacked
 	requires_console = 0
 
@@ -49,15 +49,15 @@
 		t = check_mat(D, M)
 		temp_material += " | "
 		if (t < 1)
-			temp_material += "<span class='bad'>[all_materials[M] * coeff] [CallMaterialName(M)]</span>"
+			temp_material += "<span class='bad'>[all_materials[M] * coeff] [CallMaterialName_RuGenitive(M)]</span>"
 		else
-			temp_material += " [all_materials[M] * coeff] [CallMaterialName(M)]"
+			temp_material += " [all_materials[M] * coeff] [CallMaterialName_RuGenitive(M)]"
 		c = min(c,t)
 
 	var/clearance = !(obj_flags & EMAGGED) && (offstation_security_levels || is_station_level(z))
 	var/sec_text = ""
 	if(clearance && (D.min_security_level > SEC_LEVEL_GREEN || D.max_security_level < SEC_LEVEL_DELTA))
-		sec_text = " (Allowed security levels: "
+		sec_text = " (При уровнях тревоги: "
 		for(var/n in D.min_security_level to D.max_security_level)
 			sec_text += NUM2SECLEVEL(n)
 			if(n + 1 <= D.max_security_level)

@@ -160,3 +160,33 @@
 		winners += haystack[i]
 
 	return winners
+
+// Прок-хелпер для examine-string'а материалов. Нужен по большей части для бэкапа неучтённых словарём материалов, а также если будут новые материалы.
+/proc/material_to_ru_nominative(mat_name)
+	var/ru_mat_name = GLOB.mat_ru_nominative[lowertext(mat_name)]
+	if(ru_mat_name)
+		return ru_mat_name
+
+	return mat_name
+
+/proc/material_to_ru_genitive(mat_name)
+	var/ru_mat_name = GLOB.mat_ru_genitive[lowertext(mat_name)]
+	if(ru_mat_name)
+		return ru_mat_name
+
+	return mat_name
+
+// падежи для бюджетов
+/proc/budget_to_ru_nominative(budget_name)
+	var/ru_budget_name = GLOB.budget_ru_nominative[lowertext(budget_name)]
+	if(ru_budget_name)
+		return ru_budget_name
+
+	return budget_name
+
+/proc/budget_to_ru_genitive(budget_name)
+	var/ru_budget_name = GLOB.budget_ru_genitive[lowertext(budget_name)]
+	if(ru_budget_name)
+		return ru_budget_name
+
+	return budget_name

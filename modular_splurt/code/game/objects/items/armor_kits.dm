@@ -303,10 +303,11 @@
 /obj/item/armorkit/syndicate
 	name = "SynTech armor kit"
 	desc = "Набор гибких армированных пластин которые будут совершенно незаметно сидеть под твоей толстовкой, с которой ты так не захотел расставаться, хиккан."
+	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
 	icon_state = "syn_armor_kit"
 	w_class = WEIGHT_CLASS_SMALL
 
-/obj/item/armorkit/inteq/afterattack(obj/item/target, mob/user, proximity_flag, click_parameters)
+/obj/item/armorkit/syndicate/afterattack(obj/item/target, mob/user, proximity_flag, click_parameters)
 	var/used = FALSE
 	if(!isclothing(target))
 		return
@@ -341,10 +342,11 @@
 /obj/item/armorkit/helmet/syndicate
 	name = "SynTech helmet kit"
 	desc = "Набор гибких армированных пластин которые будут совершенно незаметно сидеть под твоей кепкой, с которой ты так не захотел расставаться, хиккан."
+	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
 	icon_state = "syn_helmet_kit"
 	w_class = WEIGHT_CLASS_SMALL
 
-/obj/item/armorkit/helmet/afterattack(obj/item/target, mob/user, proximity_flag, click_parameters)
+/obj/item/armorkit/helmet/syndicate/afterattack(obj/item/target, mob/user, proximity_flag, click_parameters)
 	var/used = FALSE
 	if(!isclothing(target))
 		return

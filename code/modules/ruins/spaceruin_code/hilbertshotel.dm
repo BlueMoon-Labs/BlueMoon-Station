@@ -121,7 +121,7 @@ GLOBAL_VAR_INIT(hhmysteryRoomNumber, 1337)
 	var/chosen_room = "Nothing"
 	if(!activeRooms["[chosenRoomNumber]"] && !storedRooms["[chosenRoomNumber]"] && chosenRoomNumber != GLOB.hhmysteryRoomNumber)
 		chosen_room = tgui_input_list(user, "Choose your desired room:", "∼♦️ Time to choose a room ♦️∼!", hotel_maps)
-		if(!chosen_room)
+		if(!chosen_room || !user.CanReach(src))
 			return FALSE
 	//SPLURT EDIT END
 
@@ -182,7 +182,7 @@ GLOBAL_VAR_INIT(hhmysteryRoomNumber, 1337)
 		var/datum/map_template/hilbertshotel/mapTemplate = getMapTemplate(currentArea.roomType)
 
 		do_sparks(3, FALSE, get_turf(user))
-		user.forceMove(locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
+		MobTransfer(user, locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
 		return TRUE
 	else
 		return FALSE
@@ -240,10 +240,59 @@ GLOBAL_VAR_INIT(hhmysteryRoomNumber, 1337)
 		// SPLURT EDIT END
 		linkTurfs(roomReservation, roomNumber)
 		do_sparks(3, FALSE, get_turf(user))
-		user.forceMove(locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
+		MobTransfer(user, locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
 		return TRUE
 	else
 		return FALSE
+
+/obj/item/hilbertshotel/proc/MobTransfer(mob/living/user, turf/T, depth = 0)
+	depth++
+	if(depth > 4)
+		return
+	if(!istype(T))
+		return
+	var/atom/movable/AM
+	if(user.pulling)
+		AM = user.pulling
+		if(istype(AM, /mob/living))
+			MobTransfer(AM, T, depth)
+		else
+			AM.forceMove(T)
+	if(user.buckled && !user.buckled.anchored)
+		var/atom/movable/seating = user.buckled
+		if(istype(seating, /mob/living))
+			MobTransfer(seating, T, depth)
+		else
+			seating.forceMove(T)
+			user.forceMove(T)
+			seating.buckle_mob(user, TRUE, TRUE)
+	else if(user.buckled_mobs)
+		var/datum/component/riding/riding_datum = user.GetComponent(/datum/component/riding)
+		var/datum/component/riding/human/riding_datum_human
+		var/mob/living/buckled_mob
+		var/buckle_type
+		if(istype(riding_datum, /datum/component/riding/human))
+			riding_datum_human = riding_datum
+			buckle_type = riding_datum_human.face_to_face_carrying ? "face_to_face" : riding_datum_human.princess_carrying ? "princess" : "firefiremanned"
+		for(var/mob/living/I in user.buckled_mobs)
+			buckled_mob = I
+			I.forceMove(T)
+		user.unbuckle_all_mobs(TRUE)
+		user.forceMove(T)
+		if(riding_datum_human)
+			switch(buckle_type)
+				if("face_to_face")
+					user.buckle_mob(buckled_mob, TRUE, TRUE, 0, 1, 0, FALSE, "face_to_face")
+				if("princess")
+					user.buckle_mob(buckled_mob, TRUE, TRUE, 90, 2, 0, FALSE, "princess")
+				if("firefiremanned")
+					user.buckle_mob(buckled_mob, TRUE, TRUE, 90, 1, 0, TRUE)
+		else
+			user.buckle_mob(buckled_mob, TRUE, TRUE)
+	else
+		user.forceMove(T)
+	if(AM)
+		user.start_pulling(AM)
 
 /obj/item/hilbertshotel/proc/getMapTemplate(roomType) // To load a map and remove it's atoms
 	switch(roomType)
@@ -308,7 +357,7 @@ GLOBAL_VAR_INIT(hhmysteryRoomNumber, 1337)
 
 	linkTurfs(roomReservation, roomNumber)
 	do_sparks(3, FALSE, get_turf(user))
-	user.forceMove(locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
+	MobTransfer(user, locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
 //SPLURT EDIT END
 
 /obj/item/hilbertshotel/proc/linkTurfs(var/datum/turf_reservation/currentReservation, var/currentRoomnumber, var/chosen_room)
@@ -449,7 +498,7 @@ GLOBAL_VAR_INIT(hhmysteryRoomNumber, 1337)
 	if(alert(user, "Hilbert's Hotel would like to remind you that while we will do everything we can to protect the belongings you leave behind, we make no guarantees of their safety while you're gone, especially that of the health of any living creatures. With that in mind, are you ready to leave?", "Exit", "Leave", "Stay") == "Leave")
 		if(!CHECK_MOBILITY(user, MOBILITY_MOVE) || (get_dist(get_turf(src), get_turf(user)) > 1)) //no teleporting around if they're dead or moved away during the prompt.
 			return
-		user.forceMove(get_turf(parentSphere))
+		parentSphere.MobTransfer(user, get_turf(parentSphere))
 		do_sparks(3, FALSE, get_turf(user))
 
 /turf/closed/indestructible/hoteldoor/attack_ghost(mob/dead/observer/user)

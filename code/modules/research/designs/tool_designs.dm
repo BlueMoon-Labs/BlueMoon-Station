@@ -317,3 +317,24 @@
 	materials = list(/datum/material/iron = 4500, /datum/material/glass = 4500, /datum/material/silver = 4500, /datum/material/gold = 2500, /datum/material/diamond = 1500)
 	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+// BLUEMOON Перенёс РПЕДы из parts в tools.
+/datum/design/RPED
+	name = "Rapid Part Exchange Device"
+	desc = "\"Модуль механический специальный\" для хранения, сортировки и применения стандартизированных деталей."
+	id = "rped"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 10000, /datum/material/glass = 5000) //hardcore
+	build_path = /obj/item/storage/part_replacer
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/BS_RPED
+	name = "Bluespace RPED"
+	desc = "Усиленный блюспейс-технологиями, этот RPED может улучшать машинерию дистанционно, без необходимости отвинчивать её панель."
+	id = "bs_rped"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 15000, /datum/material/glass = 5000, /datum/material/silver = 2500) //hardcore
+	build_path = /obj/item/storage/part_replacer/bluespace
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE

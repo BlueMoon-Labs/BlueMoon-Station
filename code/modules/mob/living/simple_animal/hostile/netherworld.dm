@@ -1,6 +1,6 @@
 /mob/living/simple_animal/hostile/netherworld
 	name = "creature"
-	desc = "A sanity-destroying otherthing from the netherworld."
+	desc = "Существо из потустороннего мира, разрушающее рассудок. Хотя кто-то найдет его милым..."
 	icon_state = "otherthing"
 	icon_living = "otherthing"
 	icon_dead = "otherthing-dead"
@@ -22,7 +22,7 @@
 
 /mob/living/simple_animal/hostile/netherworld/migo
 	name = "mi-go"
-	desc = "A pinkish, fungoid crustacean-like creature with numerous pairs of clawed appendages and a head covered with waving antennae."
+	desc = "Розоватое, грибоподобное существо, напоминающее ракообразное, с множеством пар клешнеобразных конечностей и головой, покрытой извивающимися антеннами."
 	speak_emote = list("screams", "clicks", "chitters", "barks", "moans", "growls", "meows", "reverberates", "roars", "squeaks", "rattles", "exclaims", "yells", "remarks", "mumbles", "jabbers", "stutters", "seethes")
 	icon_state = "mi-go"
 	icon_living = "mi-go"
@@ -31,7 +31,7 @@
 	attack_verb_simple = "lacerate"
 	speed = -0.5
 	var/static/list/migo_sounds
-	deathmessage = "wails as its form turns into a pulpy mush."
+	deathmessage = "издает завывания, пока его тело превращается в кашеобразную массу."
 	death_sound = 'sound/voice/hiss6.ogg'
 
 /mob/living/simple_animal/hostile/netherworld/migo/Initialize(mapload)
@@ -56,7 +56,7 @@
 
 /mob/living/simple_animal/hostile/netherworld/blankbody
 	name = "blank body"
-	desc = "This looks human enough, but its flesh has an ashy texture, and it's face is featureless save an eerie smile."
+	desc = "Выглядит достаточно по-человечески, но его плоть выглядит вывернутой наизнанку, а лицо лишено всего, за исключением зловещей улыбки."
 	icon_state = "blank-body"
 	icon_living = "blank-body"
 	icon_dead = "blank-dead"
@@ -67,40 +67,98 @@
 	melee_damage_upper = 10
 	attack_verb_continuous = "punches"
 	attack_verb_simple = "punch"
-	deathmessage = "falls apart into a fine dust."
+	deathmessage = "рассыпается в мелкую пыль."
+
+/mob/living/simple_animal/hostile/netherworld/blankbody/examine(mob/user)
+	. = ..()
+	var/obj/item/organ/brain/brain = locate(/obj/item/organ/brain) in contents
+	if(brain)
+		. += span_boldwarning("\nВнутри кровоточащей плоти, ты замечаешь [icon2html(brain, user)] [brain.name]!")
+
+/mob/living/simple_animal/hostile/netherworld/blankbody/death(gibbed)
+	var/turf/T = get_turf(src)
+	for(var/atom/movable/A in contents)
+		A.forceMove(T)
+		if(isliving(A))
+			var/mob/living/L = A
+			L.update_mobility()
+	. = ..()
 
 /obj/structure/spawner/nether
 	name = "netherworld link"
-	desc = "A direct link to another dimension full of creatures not very happy to see you. <span class='warning'>Entering the link would be a very bad idea.</span>"
+	desc = "Прямая связь с другим измерением, полным существ, которые явно не рады тебе. \
+	<span class='boldwarning'>Входить туда - очень плохая идея.</span>\
+	\n<span class='nicegreen'>Но может быть там есть что-то ценное...</span>"
 	icon_state = "nether"
 	max_integrity = 50
-	spawn_time = 600 //1 minute
+	spawn_time = 1 MINUTES //1 minute
 	max_mobs = 15
 	icon = 'icons/mob/nest.dmi'
 	spawn_text = "crawls through"
 	mob_types = list(/mob/living/simple_animal/hostile/netherworld/migo, /mob/living/simple_animal/hostile/netherworld, /mob/living/simple_animal/hostile/netherworld/blankbody)
 	faction = list("nether")
-
-/obj/structure/spawner/nether/Initialize(mapload)
-	.=..()
-	START_PROCESSING(SSprocessing, src)
+	var/processing_time = 15 SECONDS
 
 /obj/structure/spawner/nether/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
-		user.visible_message("<span class='warning'>[user] is violently pulled into the link!</span>", \
-						  "<span class='userdanger'>Touching the portal, you are quickly pulled through into a world of unimaginable horror!</span>")
-		contents.Add(user)
+	if(user.loc == src)
+		return
+	user.visible_message(span_warning("[user] с силой затягивает в портал!"), \
+						span_userdanger("Когда ты прикасаешься к порталу, он стремительно затягивает тебя в мир невообразимого ужаса!"))
+	if(!do_after(user, 2 SECONDS, src))
+		return
+	contents.Add(user)
+	processing_time = 0
+	START_PROCESSING(SSobj, src)
 
+/obj/structure/spawner/nether/process(delta_time)
+	if(!locate(/mob/living) in contents)
+		return PROCESS_KILL
 
-/obj/structure/spawner/nether/process()
 	for(var/mob/living/M in contents)
-		if(M)
-			playsound(src, 'sound/magic/demon_consume.ogg', 50, 1)
-			M.adjustBruteLoss(60)
-			M.spawn_gibs()
-			if(M.stat == DEAD)
-				var/mob/living/simple_animal/hostile/netherworld/blankbody/blank
-				blank = new(loc)
-				blank.name = "[M]"
-				blank.desc = "It's [M], but [M.ru_ego()] flesh has an ashy texture, and [M.ru_ego()] face is featureless save an eerie smile."
-				src.visible_message("<span class='warning'>[M] reemerges from the link!</span>")
-				qdel(M)
+		if(M.stat == DEAD)
+			var/mob/living/simple_animal/hostile/netherworld/blankbody/blank
+			blank = new(loc)
+			blank.name = "[M]"
+			blank.desc = "Это [M], но [M.ru_ego()] его плоть выглядит вывернутой наизнанку, а [M.ru_ego()] лицо лишено всего, за исключением зловещей улыбки."
+			balloon_alert_to_viewers(span_balloon_warning("[M] выходит!"))
+			if(iscarbon(M))
+				var/mob/living/carbon/C = M
+				for(var/obj/item/organ/organ in C.internal_organs)
+					if(istype(organ, /obj/item/organ/genital))
+						continue
+					organ.Remove()
+					organ.forceMove(blank)
+			qdel(M)
+
+	if(processing_time > 0)
+		processing_time -= delta_time SECONDS
+		return
+	processing_time = initial(processing_time)
+
+	for(var/mob/living/M in contents)
+		if(prob(10))
+			playsound(get_turf(src), 'sound/effects/pray.ogg', 50)
+			to_chat(M, span_nicegreen("Вы не знаете боги ли спасли вас или демоны, но вам чудом удается выбраться из проклятого мира и закрыть портал!"))
+			new /obj/structure/closet/crate/necropolis/tendril/random(drop_location())
+			qdel(src)
+			return
+		playsound(src, 'sound/magic/demon_consume.ogg', 50, 1)
+		M.emote("realagony")
+		M.say(pick("AAA!!", "АААХ!!", "ААГХ!!"), forced = "nether")
+		M.Stun(100)
+		M.Jitter(50)
+		M.blur_eyes(15)
+		M.dizziness += 50
+		M.confused += 30
+		M.stuttering += 30
+		M.adjustBruteLoss(60)
+		M.spawn_gibs()
+
+/obj/structure/spawner/nether/Destroy()
+	var/turf/T = get_turf(src)
+	for(var/atom/movable/A in contents)
+		A.forceMove(T)
+		if(isliving(A))
+			var/mob/living/L = A
+			L.update_mobility()
+	. = ..()

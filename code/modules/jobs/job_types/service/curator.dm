@@ -37,7 +37,7 @@
 	l_hand = /obj/item/storage/bag/books
 	r_pocket = /obj/item/key/displaycase
 	l_pocket = /obj/item/laser_pointer
-	accessory = /obj/item/clothing/accessory/pocketprotector/full
+	accessory = list(/obj/item/clothing/accessory/pocketprotector/full)
 	backpack_contents = list(
 		/obj/item/choice_beacon/hero = 1,
 		/obj/item/soapstone = 1,
@@ -56,7 +56,7 @@
 	l_hand = /obj/item/storage/bag/books
 	r_pocket = /obj/item/key/displaycase
 	l_pocket = /obj/item/laser_pointer
-	accessory = /obj/item/clothing/accessory/pocketprotector/full
+	accessory = list(/obj/item/clothing/accessory/pocketprotector/full)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie

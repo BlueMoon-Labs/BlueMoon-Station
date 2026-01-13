@@ -258,7 +258,7 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 		var/scan_name = inserted_scan_id ? html_encode(inserted_scan_id.name) : "--------"
 		var/target_name = inserted_modify_id ? html_encode(inserted_modify_id.name) : "--------"
 		var/target_owner = (inserted_modify_id && inserted_modify_id.registered_name) ? html_encode(inserted_modify_id.registered_name) : "--------"
-		var/target_rank = (inserted_modify_id && inserted_modify_id.assignment) ? html_encode(inserted_modify_id.assignment) : "Unassigned"
+		var/target_rank = (inserted_modify_id && inserted_modify_id.get_assignment_name()) ? html_encode(inserted_modify_id.get_assignment_name()) : "Unassigned"
 
 		if(!authenticated)
 			header += {"<br><i>Please insert the cards into the slots</i><br>
@@ -473,10 +473,12 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 					inserted_modify_id.access = ( istype(src, /obj/machinery/computer/card/centcom) ? get_centcom_access(t1) : jobdatum.get_access() )
 				if (inserted_modify_id)
 					inserted_modify_id.assignment = t1
+					inserted_modify_id.custom_job = ""
 					playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 		if ("demote")
 			if(inserted_modify_id.assignment in head_subordinates || inserted_modify_id.assignment == "Assistant")
 				inserted_modify_id.assignment = "Unassigned"
+				inserted_modify_id.custom_job = ""
 				playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			else
 				to_chat(usr, "<span class='alert'>You are not authorized to demote this position.</span>")

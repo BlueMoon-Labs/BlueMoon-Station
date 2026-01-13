@@ -33,7 +33,7 @@
 	// Taur shape check
 	var/tauric_shape = FALSE
 	var/datum/sprite_accessory/taur/T = GLOB.taur_list[src.owner?.dna.features["taur"]]
-	if(istype(T))
+	if(istype(T) && S)
 		tauric_shape = T.taur_mode && S.accepted_taurs
 
 	if(tauric_shape || state == "hemiknot" || state == "barbedhemiknot")
@@ -51,7 +51,7 @@
 // 🔗 Основная механика узла
 // ============================================================
 
-/obj/item/organ/genital/penis/proc/do_knotting(mob/living/user, mob/living/partner, target_zone)
+/obj/item/organ/genital/penis/proc/do_knotting(mob/living/user, mob/living/partner, target_zone, force_success = FALSE)
 	if(!knot_size || knot_locked || !user || !partner)
 		return FALSE
 
@@ -116,7 +116,7 @@
 				knot_chance = 0
 				break
 
-	if(!prob(knot_chance))
+	if(!force_success && !prob(knot_chance))
 		return FALSE
 
 	// === активация узла ===
@@ -161,20 +161,41 @@
 
 		// чувственные тексты
 		if(prob(15))
-			var/msg = pick("Ты чувствуешь, как всё внутри горит от удовольствия...", "Каждое движение узла усиливает твоё желание...", "Твоё тело отзывается на каждую пульсацию...")
+			var/msg = pick(
+				"Ты чувствуешь, как всё внутри горит от удовольствия...",
+				"Каждое движение узла усиливает твоё желание...",
+				"Твоё тело отзывается на каждую пульсацию...")
 			to_chat(M, span_love(msg))
 
-		// усиление возбуждения
+		// усиление возбуждения + ограничение роста lust
 		if(ishuman(M))
 			var/mob/living/carbon/human/HM = M
 			HM.adjust_arousal(100, "knotting", aphro = TRUE)
 
+			if(hascall(HM, "get_lust") && hascall(HM, "get_climax_threshold"))
+				var/max_lust = HM.get_climax_threshold()
+				if(max_lust <= 0)
+					max_lust = 100
+
+				var/current_lust = HM.get_lust()
+				if(current_lust < max_lust)
+					var/to_add = NORMAL_LUST
+					if(current_lust + to_add > max_lust)
+						to_add = max_lust - current_lust
+					if(to_add > 0)
+						HM.add_lust(to_add)
+			else
+				HM.add_lust(NORMAL_LUST)
+		else
+			M.add_lust(NORMAL_LUST)
+
 		var/climax_threshold = hascall(M, "get_climax_threshold") ? M.get_climax_threshold() : 100
+		if(climax_threshold <= 0)
+			climax_threshold = 100
 		if(M.lust / climax_threshold < 0.65)
 			M.add_lust(NORMAL_LUST)
 
 		REMOVE_TRAIT(M, TRAIT_NEVERBONER, "KNOT_AROUSAL")
-
 
 	// ⚡ Периодическое усиление возбуждения (авто-стимуляция узла)
 	addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), 4 SECONDS)
@@ -227,7 +248,27 @@
 	for(var/mob/living/M in list(user, partner))
 		if(!M?.client?.prefs?.arousable)
 			continue
-		M.add_lust(rand(30, 40))
+
+		var/add_amount = rand(10, 20)
+
+		if(ishuman(M) && hascall(M, "get_lust") && hascall(M, "get_climax_threshold"))
+			var/max_lust = M.get_climax_threshold()
+			if(max_lust <= 0)
+				max_lust = 100
+
+			var/current_lust = M.get_lust()
+			if(current_lust >= max_lust)
+				continue
+
+			if(current_lust + add_amount > max_lust)
+				add_amount = max_lust - current_lust
+			if(add_amount <= 0)
+				continue
+
+			M.add_lust(add_amount)
+		else
+			M.add_lust(add_amount)
+
 		if(prob(8))
 			M.emote(pick("moan","pant","blush"))
 
@@ -298,7 +339,6 @@
 		if(ishuman(Lpartner))
 			SEND_SIGNAL(Lpartner, COMSIG_ADD_MOOD_EVENT, "knotting_painful", /datum/mood_event/knotting_painful)
 	else
-
 		if(ishuman(Luser))
 			SEND_SIGNAL(Luser, COMSIG_ADD_MOOD_EVENT, "knotting_satisfied", /datum/mood_event/knotting_satisfied)
 		if(ishuman(Lpartner))
@@ -330,7 +370,7 @@
 		who = owner
 
 	// страхуемся от некорректного типа
-	if(istype(who))
+	if(istype(who, /mob/living))
 		// эта проверка на /mob/living — там уже защита по состоянию узла
 		who.check_knot_distance()
 
@@ -550,7 +590,7 @@
 		if(prob(25)) pen_partner.emote(pick("moan","blush"))
 
 // ============================================================
-// Верб: Resist Knot
+// Верб: Resist Knot (обёртка над обычным Resist)
 // ============================================================
 
 /mob/living/carbon/human/verb/knot_resist()
@@ -558,34 +598,9 @@
 	set category = "IC"
 	set desc = "Попытаться освободиться от узла (если застрял)."
 
-	var/mob/living/carbon/human/H = src
-	var/obj/item/organ/genital/penis/P = H.getorganslot(ORGAN_SLOT_PENIS)
-
-	// общий кулдаун верба
-	if(world.time < H.knot_resist_cd_until)
-		to_chat(H, span_warning("Ты только что пытался освободиться — подожди немного..."))
-		return
-	H.knot_resist_cd_until = world.time + 50  // 5 SECONDS
-
-	if(P && P.knot_locked)
-		// антиспам по активному do_after
-		if(DOING_INTERACTION_WITH_TARGET(H, P.owner) || DOING_INTERACTION_WITH_TARGET(H, P.knot_partner))
-			to_chat(H, span_warning("Ты уже пытаешься освободиться — не дёргайся!"))
-			return
-		P.start_resist_attempt(H)
-		return
-
-	for(var/mob/living/carbon/human/other in view(1, H))
-		if(other == H) continue
-		var/obj/item/organ/genital/penis/P2 = other.getorganslot(ORGAN_SLOT_PENIS)
-		if(P2 && P2.knot_locked && P2.knot_partner == H)
-			if(DOING_INTERACTION_WITH_TARGET(H, other) || DOING_INTERACTION_WITH_TARGET(H, P2.owner))
-				to_chat(H, span_warning("Ты уже пытаешься освободиться — не дёргайся!"))
-				return
-			P2.start_resist_attempt(H)
-			return
-
-	to_chat(H, span_notice("Нет активного узла поблизости."))
+	// Просто вызываем стандартный Resist, который уже умеет
+	// проверять узел и запускать start_resist_attempt().
+	resist()
 
 /* // Оставлю на потом (не работает блятьц)
 // ============================================================
@@ -661,7 +676,9 @@
 // 🌐 Универсальный прок: попытка активировать узел при сексе
 // ============================================================
 
-/proc/try_apply_knot(mob/living/user, mob/living/partner, target_zone, force_override = FALSE)
+// force_override — игнорировать префы
+// force_knot     — гарантировать срабатывание узла (если технически возможно)
+/proc/try_apply_knot(mob/living/user, mob/living/partner, target_zone, force_override = FALSE, force_knot = FALSE)
 	// Проверка корректных типов
 	if(!ishuman(user) || !ishuman(partner))
 		return
@@ -709,7 +726,7 @@
 			if(max_lust > 0)
 				effective_lust = (C.get_lust() / max_lust) * 100
 
-	if(effective_lust < 65)
+	if(effective_lust < 65 && !force_knot)
 		return
 
 	// 🎲 Шанс узла
@@ -721,8 +738,12 @@
 
 	chance = clamp(chance, 5, 60)
 
-	if(prob(chance))
-		if(P.do_knotting(initiator, receiver, target_zone))
+	// Если явно попросили — делаем 100% шанс
+	if(force_knot)
+		chance = 100
+
+	if(force_knot || prob(chance))
+		if(P.do_knotting(initiator, receiver, target_zone, force_knot))
 			to_chat(initiator, span_love(" Ты чувствуешь, как узел набухает внутри [receiver]!"))
 			to_chat(receiver, span_love(" Ты ощущаешь, как узел [initiator] застревает внутри!"))
 			GLOB.knottings++

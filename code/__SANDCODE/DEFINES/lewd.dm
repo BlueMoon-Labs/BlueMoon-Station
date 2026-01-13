@@ -109,6 +109,7 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define INTERACTION_REQUIRE_TAIL (1<<9)
 #define INTERACTION_REQUIRE_KNOT (1<<10) // not replace INTERACTION_REQUIRE_PENIS, use both
 #define INTERACTION_REQUIRE_DOUBLE_PENIS (1<<11) // not replace INTERACTION_REQUIRE_PENIS, use both
+#define INTERACTION_REQUIRE_TK (1<<12)
 // BLUEMOON ADD END
 
 /// Interaction flags
@@ -118,6 +119,9 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define INTERACTION_FLAG_TARGET_NOT_TIRED (1<<3)
 #define INTERACTION_FLAG_USER_IS_TARGET (1<<4)
 #define INTERACTION_FLAG_USER_NOT_TIRED (1<<5)
+#define INTERACTION_FLAG_UNHOLY_CONTENT (1<<6)
+#define INTERACTION_FLAG_REQUIRE_BONDAGE (1<<7) //TODO: move the bondage interactions out of the interaction menu
+#define INTERACTION_FLAG_RANGED_CONSENT (1<<8)
 
 /// Copy-paste prevention for additional details
 /// Fills containers

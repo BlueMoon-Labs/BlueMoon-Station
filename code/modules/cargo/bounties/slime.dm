@@ -5,7 +5,7 @@
 /datum/bounty/item/slime/New()
 	..()
 	description = "Nanotrasen's science lead is hunting for generic [name]. A bounty has been offered for finding it."
-	reward += rand(1, 4) * 450
+	reward += rand(2, 5) * 450
 
 /datum/bounty/item/slime/green
 	name = "Green Slime Extracts"
@@ -44,15 +44,20 @@ GLOBAL_LIST_INIT(valid_slimecross, get_existing_slimecross_types())
 
 /datum/bounty/item/slime/crossbreeded
 	required_count = 1
+	var/target_colour
+	var/target_effect
 
 /datum/bounty/item/slime/crossbreeded/New()
 	..()
+	// Проверям экстракты на его свойства вместо типа как айтема
 	var/slimetype = pick(GLOB.valid_slimecross)
 	var/slimedata = GLOB.valid_slimecross[slimetype]
-	var/colour = capitalize(slimedata["colour"])
-	var/effect = capitalize(slimedata["effect"])
-	name = "[colour] [effect] Slime Extr."
-	wanted_types = list(slimetype)
+	target_colour = slimedata["colour"]
+	target_effect = slimedata["effect"]
+
+	var/colour_name = capitalize(target_colour)
+	var/effect_name = capitalize(target_effect)
+	name = "[colour_name] [effect_name] Slime Extr."
 	description = "Nanotrasen's science lead is hunting for the rare and exotic [name]. A bounty has been offered for finding it."
 
 	var/color_rarity = get_slimecross_rarity(slimetype)
@@ -64,9 +69,21 @@ GLOBAL_LIST_INIT(valid_slimecross, get_existing_slimecross_types())
 		if ("highest")
 			reward = 13000 + round(rand(0, 2000), 100)
 		else
-			reward = 5000 // Если ВДРУГ будут какие-то новые цвета вне списка - это заглушка
+			reward = 5000
 
-////////////
+/datum/bounty/item/slime/crossbreeded/applies_to(obj/O)
+	if(!istype(O, /obj/item/slimecross))
+		return FALSE
+	var/obj/item/slimecross/S = O
+	if(!S.colour || !S.effect)
+		return FALSE
+	if(S.colour != target_colour)
+		return FALSE
+	if(S.effect != target_effect)
+		return FALSE
+
+	return TRUE
+////////////////////////////////////////////////////////////
 
 /// Прок для расчёта выше комбинаций экстрактов по цвету и виду.
 /// 22*11 = 242, но у нас нет 242 видов скрещённых экстрактов. Прок будет это фильтровать.

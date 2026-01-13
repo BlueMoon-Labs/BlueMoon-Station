@@ -1117,7 +1117,7 @@
 	desc = "Despite their age, they seem clean and capable of providing hot water just as well as their modern counterparts. Hopefully Nanotrasen cleaned the water pipes this well...";
 	dir = 4
 	},
-/obj/item/soap/syndie,
+/obj/item/soap,
 /turf/open/floor/plasteel/freezer,
 /area/hilbertshotel)
 "Lg" = (

@@ -803,7 +803,14 @@ SUBSYSTEM_DEF(job)
 					var/obj/item/clothing/neck/petcollar/collar = I
 					collar.tagname = custom_tagname
 					collar.name = "[initial(collar.name)] - [collar.tagname]"
-			if(!M.equip_to_slot_if_possible(I, G.slot, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // If the job's dresscode compliant, try to put it in its slot, first
+
+			var/already_equiped = FALSE
+			if(G.slot == ITEM_SLOT_ACCESSORY && istype(I, /obj/item/clothing/accessory))
+				var/obj/item/clothing/accessory/A = I
+				var/obj/item/clothing/wear = M.get_item_by_slot(A.accessory_slot)
+				if(istype(wear))
+					already_equiped = wear.attach_accessory(A, M, FALSE)
+			if(!already_equiped && !M.equip_to_slot_if_possible(I, G.slot, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // If the job's dresscode compliant, try to put it in its slot, first
 				if(iscarbon(M))
 					var/mob/living/carbon/C = M
 					var/obj/item/storage/backpack/B = C.back
@@ -893,7 +900,14 @@ SUBSYSTEM_DEF(job)
 					var/obj/item/clothing/neck/petcollar/collar = I
 					collar.tagname = custom_tagname
 					collar.name = "[initial(collar.name)] - [collar.tagname]"
-			if(!M.equip_to_slot_if_possible(I, G.slot, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // If the job's dresscode compliant, try to put it in its slot, first
+
+			var/already_equiped = FALSE
+			if(G.slot == ITEM_SLOT_ACCESSORY && istype(I, /obj/item/clothing/accessory))
+				var/obj/item/clothing/accessory/A = I
+				var/obj/item/clothing/wear = M.get_item_by_slot(A.accessory_slot)
+				if(istype(wear))
+					already_equiped = wear.attach_accessory(A, M, FALSE)
+			if(!already_equiped && !M.equip_to_slot_if_possible(I, G.slot, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // If the job's dresscode compliant, try to put it in its slot, first
 				if(iscarbon(M))
 					var/mob/living/carbon/C = M
 					var/obj/item/storage/backpack/B = C.back
@@ -917,6 +931,16 @@ SUBSYSTEM_DEF(job)
 			// Эффект при спавне
 			G.on_spawn(M, I)
 			// BLUEMOON ADD END
+
+		M.update_inv_wear_id() // Фикс не отображения стикеров и карточек из лодаута
+
+		// Переоформление пермитов, если у нас была загрузка из префов
+		var/obj/item/clothing/under/U = M.get_item_by_slot(ITEM_SLOT_ICLOTHING)
+		if(istype(U))
+			for(var/obj/item/clothing/accessory/permit/special/permit in U.attached_accessories)
+				if(permit.first_inited && permit.owner_name == M.real_name)
+					continue
+				permit.bind_to_user(M, TRUE)
 
 /datum/controller/subsystem/job/proc/FreeRole(rank)
 	if(!rank)
