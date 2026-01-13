@@ -248,6 +248,40 @@
 			repeat = !repeat
 			return
 		//BLUEMOON ADD END
+		if("json")
+			var/mob/living/L = usr
+			if(!L?.client?.prefs)
+				return
+			var/datum/preferences/prefs = L.client.prefs
+			var/list/track_list = prefs.favorite_tracks
+			var/manage_mode = tgui_alert(L, "Что требуется сделать с избранным?", "Менеджемент избранного", list("Экспорт", "Импорт"))
+			if(!manage_mode)
+				return
+			if(manage_mode == "Импорт")
+				var/list/new_track_list = safe_json_decode(tgui_input_text(L, "Вставьте экспортированный список", "Import", multiline = TRUE))
+				if(!LAZYLEN(new_track_list))
+					return
+				var/mode = tgui_alert(L, "Желаете заменить список или добавить треки в конец,", "Режим добавления", list("Добавить", "Заменить"))
+				if(!mode)
+					return
+
+				if(mode == "Заменить")
+					var/confirm = tgui_alert(L, "Вы уверены, что хотите полностью очистить избранное перед импортом?\nТреков в избранном: [track_list.len], треков в новом избранном: [new_track_list.len] (без учета дубликатов)", "Очистка избранного", list("Нет", "Да"))
+					if(!confirm || confirm == "Нет")
+						return
+
+					track_list.Cut()
+				track_list |= new_track_list
+				prefs.save_preferences()
+			else
+				if(!track_list.len)
+					to_chat(L, span_warning("У вас нет треков в избранном"))
+					return
+				var/datum/browser/popup = new(L, "favorite_tracks_export", "", 600, 600)
+				popup.set_content(safe_json_encode(track_list))
+				popup.open()
+
+			return TRUE
 		//BLUEMOON ADD START Возможность двигать треки в избранном и двигать в очереди
 		if("toggle_favorite", "move_favorite", "set_favorite_index")
 			var/mob/living/L = usr
@@ -296,6 +330,7 @@
 					var/to_index = track_list.len - ui_index + 1 // Индексы в UI в обратном порядке идут
 
 					moveElementToPos(track_list, from, to_index)
+
 
 			prefs.save_preferences()
 			return TRUE

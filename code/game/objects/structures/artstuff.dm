@@ -134,6 +134,7 @@
 			var/datum/browser/popup = new(user, "canvas_export", "", 600, 900)
 			popup.set_content(get_data_string(TRUE))
 			popup.open()
+			. = TRUE
 		if("import")
 			if(finalized)
 				return

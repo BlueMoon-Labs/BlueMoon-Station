@@ -167,6 +167,12 @@ export const Jukebox = (props, context) => {
           <Stack.Item grow />
           <Button
             color="transparent"
+            icon="upload"
+            tooltip="Менеджмент избранного"
+            onClick={() => act('json')}
+          />
+          <Button
+            color="transparent"
             icon="shuffle"
             tooltip="Добавить случайную песню в очередь"
             onClick={() => {
