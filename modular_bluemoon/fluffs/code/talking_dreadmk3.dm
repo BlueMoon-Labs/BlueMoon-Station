@@ -30,6 +30,14 @@
 	var/interaction_locked = FALSE
 	/// Is the gun currently in a recharger?
 	var/in_recharger = FALSE
+	/// Quiet mode - whisper instead of speaking
+	var/quiet_mode = FALSE
+	/// Last time we checked ID
+	var/last_id_check = 0
+	/// Last time gun made an idle comment
+	var/last_idle_comment = 0
+	/// How often to make idle comments (in deciseconds)
+	var/idle_comment_cooldown = 1200 // 2 minutes
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/Initialize()
 	. = ..()
@@ -45,7 +53,9 @@
 	. += "<span class='notice'>The AI display shows: [shots_fired] rounds discharged.</span>"
 	if(personality_mode)
 		. += "<span class='notice'>AI Core: <b>Online</b></span>"
+		. += "<span class='notice'>Voice Mode: <b>[quiet_mode ? "Quiet" : "Normal"]</b></span>"
 		. += "<span class='notice'>Use <b>Ctrl+Click</b> to toggle AI core.</span>"
+		. += "<span class='notice'>Use <b>Alt+Click</b> to toggle voice mode.</span>"
 	else
 		. += "<span class='warning'>AI Core: <b>Offline</b></span>"
 
@@ -62,9 +72,13 @@
 	if(!message)
 		return
 
-	// Используем say() чтобы говорить как персонаж, а не в чат внизу
-	say(message)
-	playsound(src, 'sound/machines/synth_yes.ogg', 1, FALSE)
+	// Тихий режим - whisper (текст над головой курсивом)
+	// Обычный режим - say (текст над головой обычный)
+	if(quiet_mode)
+		visible_message("<span class='notice'><i>[message]</i></span>", blind_message = message)
+	else
+		say(message)
+
 	last_speech = world.time
 
 /// User says/whispers the mode name, gun confirms it
@@ -76,16 +90,18 @@
 	if(!mode_name)
 		return
 
-	// Пользователь шепчет название режима
-	user.whisper(mode_name)
+	// Проверяем комбат мод через компонент
+	var/in_combat = FALSE
+	var/datum/component/combat_mode/combat = user.GetComponent(/datum/component/combat_mode)
+	if(combat)
+		in_combat = combat.check_flags(user, COMBAT_MODE_ACTIVE)
 
-/* Пока что не работает изза if(user.combat_indicator) потом допилю.
-	// В комбат-моде говорим громко, иначе шёпотом
-	if(user.combat_indicator)
+	// В комбат-моде говорим громко, иначе шёпотом (если не включен quiet_mode)
+	if(in_combat || !quiet_mode)
 		user.say(mode_name)
 	else
 		user.whisper(mode_name)
-*/
+
 	// Оружие отвечает с небольшой задержкой
 	addtimer(CALLBACK(src, PROC_REF(speak_up), get_current_mode_announce(), TRUE), 3)
 
@@ -119,6 +135,8 @@
 			addtimer(CALLBACK(src, PROC_REF(unlock_interaction)), 10) // 1 second lock
 	else if(slot == ITEM_SLOT_HANDS)
 		currently_held = TRUE
+		// Проверяем ID при взятии в руки
+		check_user_id(user)
 		if(world.time >= last_speech + DREADMK3_SPEECH_COOLDOWN)
 			interaction_locked = TRUE
 			speak_up("pickup")
@@ -154,6 +172,70 @@
 	if(personality_mode && world.time >= last_speech + DREADMK3_SPEECH_COOLDOWN)
 		speak_up("recharger_out")
 
+/// Checks user's ID card and greets based on rank
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/check_user_id(mob/living/carbon/human/user)
+	if(!personality_mode)
+		return
+	if(!ishuman(user))
+		return
+	// Проверяем не чаще чем раз в 30 секунд
+	if(world.time < last_id_check + 300)
+		return
+
+	last_id_check = world.time
+
+	var/obj/item/card/id/id_card = user.get_idcard(TRUE)
+	if(!id_card)
+		// Нет ID карты
+		addtimer(CALLBACK(src, PROC_REF(speak_up), "no_id", TRUE), 15)
+		return
+
+	var/job = id_card.assignment
+	if(!job)
+		addtimer(CALLBACK(src, PROC_REF(speak_up), "no_id", TRUE), 15)
+		return
+
+	// Проверяем ранг
+	switch(job)
+		// Command
+		if("Captain")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_captain", TRUE), 15)
+		if("Blueshield")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_blueshield", TRUE), 15)
+		if("Bridge Officer")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_command", TRUE), 15)
+		// Security
+		if("Head of Security")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_hos", TRUE), 15)
+		if("Warden")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_warden", TRUE), 15)
+		if("Security Officer")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_security", TRUE), 15)
+		if("Detective")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_detective", TRUE), 15)
+		if("Brig Physician")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_security", TRUE), 15)
+		if("Peacekeeper")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_security", TRUE), 15)
+		if("Internal Affairs Agent")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_command", TRUE), 15)
+		if("NanoTrasen Representative")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_command", TRUE), 15)
+		// Heads
+		if("Chief Medical Officer")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_head", TRUE), 15)
+		if("Research Director")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_head", TRUE), 15)
+		if("Chief Engineer")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_head", TRUE), 15)
+		if("Quartermaster")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_head", TRUE), 15)
+		if("Head of Personnel")
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_hop", TRUE), 15)
+		else
+			// Civilian
+			addtimer(CALLBACK(src, PROC_REF(speak_up), "id_civilian", TRUE), 15)
+
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/process()
 	// Проверка заряда
 	var/cell_charge_quarter = cell.maxcharge / 4
@@ -172,6 +254,13 @@
 		speak_up("fullcharge")
 
 	last_charge = cell.charge
+
+	// Рандомные idle фразы если оружие в руках или в кобуре
+	if(personality_mode && (currently_held || (loc && ishuman(loc))))
+		if(world.time >= last_idle_comment + idle_comment_cooldown)
+			if(prob(15)) // 15% шанс каждые 2 минуты
+				speak_up("idle")
+				last_idle_comment = world.time
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/attack_self(mob/living/user)
 	. = ..()
@@ -216,6 +305,21 @@
 	playsound(src, 'sound/machines/terminal_button08.ogg', 30, TRUE)
 	speak_up("[personality_mode ? "online" : "offline"]", TRUE, TRUE) // Игнорируем всё для этого сообщения
 	to_chat(user, "<span class='notice'>[src]'s AI core is now [personality_mode ? "online" : "offline"].</span>")
+	return TRUE
+
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/AltClick(mob/user)
+	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
+		return
+	if(!personality_mode)
+		to_chat(user, "<span class='warning'>AI core is offline.</span>")
+		return TRUE
+	quiet_mode = !quiet_mode
+	playsound(src, 'sound/machines/terminal_button08.ogg', 30, TRUE)
+	to_chat(user, "<span class='notice'>[src]'s voice mode is now [quiet_mode ? "quiet" : "normal"].</span>")
+	if(quiet_mode)
+		visible_message("<span class='notice'><i>Тихий режим активирован.</i></span>")
+	else
+		say("Голосовой режим восстановлен.")
 	return TRUE
 
 #undef DREADMK3_SPEECH

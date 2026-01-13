@@ -66,6 +66,13 @@
 
 	charging = new_charging
 
+	// Notify old gun it's being removed
+	if(charging && istype(charging, /obj/item/gun/energy/e_gun/hos/dreadmk3/talking))
+		var/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/old_gun = charging
+		old_gun.exit_recharger()
+
+	charging = new_charging
+
 	// Notify new gun it's being inserted
 	if(new_charging)
 		if(istype(new_charging, /obj/item/gun/energy/e_gun/hos/dreadmk3/talking))

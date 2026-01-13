@@ -752,7 +752,7 @@
 /obj/item/modkit/dreadmk3_kit
 	name = "Законодатель MK3 Kit"
 	desc = "A modkit for making a MultiPhase Energy Gun into Законодатель MK3."
-	product = /obj/item/gun/energy/e_gun/hos/dreadmk3
+	product = /obj/item/gun/energy/e_gun/hos/dreadmk3/talking
 	fromitem = list(/obj/item/gun/energy/e_gun/hos)
 
 ////////////////////////////////////////////////////////////////////////////////////////
