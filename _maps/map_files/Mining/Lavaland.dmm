@@ -1184,6 +1184,12 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/mine/storage)
+"aXC" = (
+/obj/structure/flora/grass/jungle,
+/obj/structure/flora/ausbushes/lavendergrass,
+/obj/structure/flora/tree/pinetree,
+/turf/open/floor/grass/grass0,
+/area/mine/xenoarch_area_b)
 "aYj" = (
 /obj/machinery/light{
 	dir = 4;
@@ -6696,8 +6702,7 @@
 /turf/open/floor/wood,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "fqc" = (
-/obj/structure/flora/tree/jungle/small,
-/obj/structure/flora/grass/jungle/b,
+/obj/structure/flora/tree/pinetree,
 /turf/open/floor/grass/grass0,
 /area/mine/xenoarch_area_b)
 "fqp" = (
@@ -14229,6 +14234,11 @@
 /obj/structure/grille,
 /turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/biolab)
+"lmp" = (
+/obj/structure/flora/ausbushes/lavendergrass,
+/obj/structure/flora/tree/pinetree,
+/turf/open/floor/grass/grass0,
+/area/mine/xenoarch_area_b)
 "lnk" = (
 /obj/structure/flora/tree/jungle/small,
 /turf/open/floor/grass/grass0,
@@ -20421,6 +20431,10 @@
 /obj/structure/chair/brass,
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
+"pWG" = (
+/obj/structure/flora/tree/pinetree,
+/turf/open/floor/grass/grass0,
+/area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "pWH" = (
 /obj/machinery/light,
 /obj/structure/sign/flag/syndicate{
@@ -23442,6 +23456,10 @@
 /obj/effect/clockwork/overlay/floor,
 /turf/open/floor/clockwork/reebe,
 /area/lavaland/necropolis)
+"slB" = (
+/obj/structure/flora/tree/pinetree,
+/turf/open/floor/grass/grass0,
+/area/mine/xenoarch_area_c)
 "sml" = (
 /obj/effect/turf_decal/tile/green{
 	dir = 1
@@ -26870,6 +26888,11 @@
 /obj/effect/clockwork/overlay/floor,
 /turf/open/floor/clockwork/reebe,
 /area/lavaland/necropolis)
+"uYu" = (
+/obj/structure/flora/ausbushes/grassybush,
+/obj/structure/flora/tree/pinetree,
+/turf/open/floor/grass/grass0,
+/area/mine/xenoarch_area_c)
 "uYx" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 5
@@ -54101,7 +54124,7 @@ hDg
 hqj
 tcS
 tcS
-tcS
+pWG
 tcS
 wCc
 tfw
@@ -55386,7 +55409,7 @@ rhC
 hqj
 tcS
 tcS
-tcS
+pWG
 wCc
 wCc
 tfw
@@ -57439,7 +57462,7 @@ fES
 tcS
 tcS
 tcS
-tcS
+pWG
 tcS
 tcS
 wCc
@@ -68893,7 +68916,7 @@ oeS
 moF
 ciU
 ktg
-prE
+uYu
 ktg
 eHd
 eHd
@@ -71463,7 +71486,7 @@ oeS
 moF
 ciU
 sfh
-ktg
+slB
 bGB
 sfh
 ktg
@@ -73484,8 +73507,8 @@ llq
 wDU
 gPT
 gPT
-qUJ
-dhU
+gPT
+fqc
 kQI
 kQI
 gPT
@@ -74511,7 +74534,7 @@ llq
 wDU
 hHz
 gPT
-qUJ
+fqc
 bDp
 kQI
 kQI
@@ -75281,7 +75304,7 @@ llq
 llq
 wDU
 gPT
-qUJ
+gPT
 gPT
 bDp
 kQI
@@ -76568,7 +76591,7 @@ llq
 wDU
 bDp
 hHz
-bBO
+lmp
 gPT
 kQI
 kQI
@@ -77093,9 +77116,9 @@ kQI
 kQI
 kQI
 kQI
-fqc
+rdr
 bDp
-wMo
+aXC
 hHz
 bBO
 wDU
@@ -77599,7 +77622,7 @@ eQh
 cKl
 gPT
 gPT
-qUJ
+gPT
 gPT
 eQh
 bDp

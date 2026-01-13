@@ -26,6 +26,11 @@
 				for(var/i=1 to log_amount)
 					new spawned_wood(get_turf(src))
 
+				if(istype(src,/obj/structure/flora/tree/pinetree)) // Bluemoon ADD
+					var/cone_amount=rand(1,3)
+					for (var/i =1 to cone_amount)
+						new /obj/item/pinecone(get_turf(src))
+
 				var/obj/structure/flora/stump/S = new spawned_stump(loc)
 				S.name = "[name] stump"
 
@@ -46,6 +51,8 @@
 /obj/structure/flora/stump/attackby(obj/item/W, mob/user, params)
 	if((W.tool_behaviour == TOOL_SHOVEL) && params)
 		playsound(src, 'sound/effects/shovel_dig.ogg', 50, 1)
+
+		user.visible_message("<span class='notice'>[user] begins to dig out [src] with [W].</span>") // BLuemoon ADD
 		if(do_after(user, 20))
 			new wood_type(get_turf(src))
 			user.visible_message("[user] digs up [src].", "<span class='notice'>You dig up [src].</span>")
