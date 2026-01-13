@@ -144,10 +144,10 @@
 		// Один таймер для всех проверок
 		var/phrase_to_say = null
 
-		// Проверяем ID (раз в минуту)
+		// Проверяем ID (раз в 5 минут)
 		if(COOLDOWN_FINISHED(src, id_check_cooldown))
 			phrase_to_say = check_user_id_silent(user)
-			COOLDOWN_START(src, id_check_cooldown, 1 MINUTES)
+			COOLDOWN_START(src, id_check_cooldown, 5 MINUTES)
 
 		if(world.time >= last_speech + DREADMK3_SPEECH_COOLDOWN)
 			interaction_locked = TRUE
