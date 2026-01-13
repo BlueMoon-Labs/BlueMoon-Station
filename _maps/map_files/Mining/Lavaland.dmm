@@ -6357,8 +6357,8 @@
 /turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "fqc" = (
-/obj/structure/flora/tree/jungle/small,
-/obj/structure/flora/grass/jungle/b,
+/obj/structure/flora/ausbushes/grassybush,
+/obj/structure/flora/tree/pinetree,
 /turf/open/floor/grass/grass0,
 /area/mine/xenoarch_area_b)
 "fqp" = (
@@ -15915,10 +15915,9 @@
 /turf/open/floor/plasteel,
 /area/mine/xenoarch)
 "nam" = (
-/obj/structure/flora/tree/jungle/small,
-/obj/structure/flora/grass/jungle,
+/obj/structure/flora/tree/pinetree,
 /turf/open/floor/grass/grass0,
-/area/mine/xenoarch_area_b)
+/area/mine/xenoarch_area_c)
 "naH" = (
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 1
@@ -20779,7 +20778,7 @@
 /turf/open/floor/grass/grass0,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "qUJ" = (
-/obj/structure/flora/tree/jungle/small,
+/obj/structure/flora/tree/pinetree,
 /turf/open/floor/grass/grass0,
 /area/mine/xenoarch_area_b)
 "qVW" = (
@@ -67341,7 +67340,7 @@ moF
 ciU
 ktg
 prE
-ktg
+nam
 eHd
 eHd
 eHd
@@ -69910,7 +69909,7 @@ oeS
 moF
 ciU
 sfh
-ktg
+nam
 bGB
 sfh
 ktg
@@ -71938,7 +71937,7 @@ kQI
 gPT
 gPT
 gPT
-qUJ
+gPT
 gPT
 dhU
 gPT
@@ -72196,7 +72195,7 @@ gPT
 gPT
 gPT
 bBO
-gPT
+qUJ
 dhU
 gPT
 wDU
@@ -72455,7 +72454,7 @@ hHz
 gPT
 gPT
 gPT
-qUJ
+gPT
 wDU
 eQh
 rYR
@@ -73728,7 +73727,7 @@ gdj
 gdj
 fxY
 gPT
-qUJ
+gPT
 gPT
 bDp
 kQI
@@ -73985,7 +73984,7 @@ gdj
 gdj
 fxY
 dhU
-gPT
+qUJ
 dhU
 hHz
 kQI
@@ -74770,7 +74769,7 @@ hrM
 qHs
 rdr
 gPT
-nam
+hHz
 vAt
 bBO
 fxY
@@ -75284,7 +75283,7 @@ kQI
 kQI
 kQI
 bBO
-dhU
+fqc
 bBO
 bDp
 bDp
@@ -75540,7 +75539,7 @@ kQI
 kQI
 kQI
 kQI
-fqc
+rdr
 bDp
 wMo
 hHz
@@ -75787,7 +75786,7 @@ gdj
 fxY
 iJm
 gPT
-gPT
+qUJ
 bBO
 bDp
 bBO
@@ -76046,7 +76045,7 @@ eQh
 cKl
 gPT
 gPT
-qUJ
+gPT
 gPT
 eQh
 bDp
