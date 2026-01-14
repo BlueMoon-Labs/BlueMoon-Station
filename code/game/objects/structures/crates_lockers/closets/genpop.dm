@@ -69,7 +69,7 @@
 	name = "[default_name] ([prisoner_name])"
 	desc = "[default_desc] It contains the personal effects of [prisoner_name]."
 	desc += "<br>[registered_id.sentence ? "Imprisoned until: [STATION_TIME_TIMESTAMP("hh:mm:ss", registered_id.sentence)]." : "Imprisoned permanently."]"
-	desc += "<br>Imprisoned under the following crimes: [crimes]"
+	desc += "<br>Imprisoned under the following crimes: [crimes]."
 	return TRUE
 
 /obj/structure/closet/secure_closet/genpop/togglelock(mob/living/user)
@@ -82,6 +82,7 @@
 		if(!user.Adjacent(src))
 			return
 		if(result == "Reset")
+			generate_log_reset()
 			reset()
 		if(result == "Open" | result == "Reset")
 			locked = FALSE
@@ -159,7 +160,12 @@
 
 /obj/structure/closet/secure_closet/genpop/proc/generate_log_release()
 	if(target_record)
-		target_record.fields["actions_logs"] +=	"<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] Released from Permabrig;</u>"
+		target_record.fields["actions_logs"] +=	"<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] Released from PermaBrig;</u>"
+	return
+
+/obj/structure/closet/secure_closet/genpop/proc/generate_log_reset()
+	if(target_record)
+		target_record.fields["actions_logs"] +=	"<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] PermaBrig Locker resetted;</u>"
 	return
 
 /obj/structure/closet/secure_closet/genpop/proc/select_rank_do_stuff(mob/living/carbon/human/M)
