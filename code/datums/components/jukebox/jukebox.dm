@@ -367,16 +367,18 @@
 	var/count_added = 0
 	var/spend = 0
 	var/datum/track/last_selectedtrack
+	var/obj/item/card/id/id_card
 	for(var/datum/track/selectedtrack in tracks_to_queue)
 		if(need_pay)
 			var/obj/machinery/box_machine = box
 			var/mob/living/L = user
-			var/obj/item/card/id/C = L.get_idcard(TRUE)
-			if(!box_machine.can_transact(C))
+			if(!id_card)
+				id_card = L.get_idcard(TRUE)
+			if(!box_machine.can_transact(id_card))
 				if(COOLDOWN_FINISHED(src, error_message_cooldown))
 					playsound(box, 'sound/misc/compiler-failure.ogg', 25, TRUE)
 				break
-			if(!box_machine.attempt_transact(C, queuecost))
+			if(!box_machine.attempt_transact(id_card, queuecost))
 				if(COOLDOWN_FINISHED(src, error_message_cooldown))
 					box.say("Недостаточно средств для оплаты[tracks_to_queue.len > 1 ? " всех треков" : ""].")
 					playsound(box, 'sound/misc/compiler-failure.ogg', 25, TRUE)
@@ -384,7 +386,6 @@
 					sleep(0.3 SECONDS)
 				break
 			spend += queuecost
-			log_econ("[queuecost] credits were inserted into [box] by [key_name(usr)] (ID: [C.registered_name]) to queue [selectedtrack.song_name].")
 
 		if(to_top)
 			queuedplaylist.Insert(1, selectedtrack)
@@ -398,6 +399,7 @@
 		return
 	if(spend)
 		to_chat(user, span_notice("Вы потратили [spend]cr поставив в очередь [count_added > 1? "[count_added] треков" : last_selectedtrack.song_name]."))
+		log_econ("[spend] credits were inserted into [box] by [key_name(user)] (ID: [id_card?.registered_account?.account_holder]) to queue [count_added > 1 ? "[count_added] tracks" : last_selectedtrack.song_name].")
 
 	if(count_added > 1)
 		box.say("[count_added] треков добавлено в очередь.")
