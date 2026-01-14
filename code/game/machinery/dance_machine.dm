@@ -5,7 +5,7 @@
 	icon_state = "jukebox"
 	verb_say = "states"
 	density = TRUE
-	req_one_access = list(ACCESS_BAR)
+	req_one_access = list(ACCESS_BAR, ACCESS_HOP, ACCESS_CAPTAIN)
 	payment_department = ACCOUNT_SRV
 	var/jukebox_type = /datum/component/jukebox
 
