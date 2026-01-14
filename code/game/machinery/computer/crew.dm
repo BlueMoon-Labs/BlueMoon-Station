@@ -227,7 +227,7 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 								break
 
 						// Найдём все crew мониторы на этом Z и заставим их пикнуть
-						for(var/obj/machinery/computer/crew/C in world)
+						for(var/obj/machinery/computer/crew/C in GLOB.crew_sensor_monitors)
 							if(C.z == z && C.is_operational())
 								playsound(C, 'sound/machines/beep.ogg', 50, FALSE)
 
@@ -282,5 +282,14 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 
 	src.jobs = jobs
 
+GLOBAL_LIST_EMPTY(crew_sensor_monitors)
+
+/obj/machinery/computer/crew/Initialize()
+	. = ..()
+	GLOB.crew_sensor_monitors += src
+
+/obj/machinery/computer/crew/Destroy()
+	GLOB.crew_sensor_monitors -= src
+	. = ..()
 
 #undef SENSORS_UPDATE_PERIOD
