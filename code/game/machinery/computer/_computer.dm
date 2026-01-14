@@ -136,7 +136,7 @@
 		update_icon()
 
 /obj/machinery/computer/narsie_act()
-	if(clockwork && clockwork != initial(clockwork))
+	if(clockwork && clockwork != initial(clockwork)) //if it's clockwork but isn't normally clockwork
 		clockwork = FALSE
 		icon_screen = initial(icon_screen)
 		icon_keyboard = initial(icon_keyboard)
@@ -154,9 +154,9 @@
 
 	if(machine_stat & BROKEN)
 		. += mutable_appearance(icon, "[icon_state]_broken")
-		return
+		return // If we don't do this broken computers glow in the dark.
 
-	if(machine_stat & NOPOWER)
+	if(machine_stat & NOPOWER)  // Your screen can't be on if you've got no damn charge
 		return
 
 	if(icon_screen)
@@ -217,11 +217,13 @@
 /obj/machinery/computer/deconstruct(disassembled = TRUE, mob/user)
 	on_deconstruction()
 	if(!(flags_1 & NODECONSTRUCT_1))
-		if(circuit)
+		if(circuit) //no circuit, no computer frame
 			var/obj/structure/frame/computer/A = new deconpath (src.loc)
 			A.setDir(dir)
 			A.circuit = circuit
+			// Circuit removal code is handled in /obj/machinery/Exited()
 			circuit.forceMove(A)
+			// no it's not 4head the circuit's in nullspace which means this won't be called!!
 			circuit = null
 			component_parts -= circuit
 			A.set_anchored(TRUE)
