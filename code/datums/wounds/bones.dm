@@ -347,20 +347,20 @@
 
 /datum/wound/blunt/moderate/treat(obj/item/I, mob/user)
 	if(victim == user)
-		victim.visible_message(span_danger("[user] пытается восстановить [victim.ru_ego()] конечность - [limb.ru_name], используя [I]."), span_warning("Вы пытаетесь восстановить свою конечность - [limb.ru_name], используя [I]..."))
+		victim.visible_message(span_danger("[user] пытается вправить свою [ru_kogo_zone(limb)], используя [I]."), span_warning("Вы пытаетесь восстановить свою [ru_kogo_zone(limb)], используя [I]..."))
 	else
-		user.visible_message(span_danger("[user] пытается восстановить конечность - [limb.ru_name] - персонажа [victim], используя [I]."), span_notice("Вы пытаетесь восстановить конечность - [limb.ru_name] - персонажа [victim], используя [I]..."))
+		user.visible_message(span_danger("[user] пытается вправить [ru_kogo_zone(limb)] [victim], используя [I]."), span_notice("Вы пытаетесь восстановить [ru_kogo_zone(limb)] [victim], используя [I]..."))
 
 	if(!do_after(user, base_treat_time * (user == victim ? 1.5 : 1), target = victim, extra_checks=CALLBACK(src, PROC_REF(still_exists))))
 		return
 
 	if(victim == user)
 		limb.receive_damage(brute=15, wound_bonus=CANT_WOUND)
-		victim.visible_message(span_danger("[user] восстанавливает [victim.ru_ego()] конечность - [limb.ru_name]!"), span_userdanger("Вы восстанавливаете вашу конечность - [limb.ru_name]!"))
+		victim.visible_message(span_danger("[user] вправляет [victim.ru_ego()] конечность - [limb.ru_name]!"), span_userdanger("Вы вправляете свою [ru_kogo_zone(limb)]!"))
 	else
 		limb.receive_damage(brute=10, wound_bonus=CANT_WOUND)
-		user.visible_message(span_danger("[user] восстанавливает конечность - [limb.ru_name] - персонажа [victim]!"), span_nicegreen("Вы завершаете восстановление конечности - [limb.ru_name] - персонажа [victim]!"), victim)
-		to_chat(victim, span_userdanger("[user] восстанавливает вашу конечность - [limb.ru_name]!"))
+		user.visible_message(span_danger("[user] вправляет [ru_kogo_zone(limb)] [victim]!"), span_nicegreen("Вы успешно вправляете [ru_kogo_zone(limb)] [victim]!"), victim)
+		to_chat(victim, span_userdanger("[user] вправляет вашу [ru_kogo_zone(limb)]!"))
 
 	var/has_pain = victim.has_pain()
 	var/stamina_damage = min(10 * has_pain, 50)

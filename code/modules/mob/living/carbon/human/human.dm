@@ -361,13 +361,13 @@
 				if (CH.clothing_flags & THICKMATERIAL)
 					. = 0
 		else
-			if(wear_suit && istype(wear_suit, /obj/item/clothing))
-				var/obj/item/clothing/CS = wear_suit
-				if (CS.clothing_flags & THICKMATERIAL)
-					. = 0
+			var/obj/item/bodypart/BP = get_bodypart(target_zone)
+			var/obj/item/clothing/CS = get_bodypart_protecting_clothing_by_coverage(src, BP)
+			if(CS && (CS.clothing_flags & THICKMATERIAL))
+				. = 0
 	if(!. && error_msg && user)
 		// Might need re-wording.
-		to_chat(user, "<span class='alert'>There is no exposed flesh or thin material [above_neck(target_zone) ? "on [ru_ego()] head" : "on [ru_ego()] body"].</span>")
+		to_chat(user, "<span class='alert'>Участок тела на [above_neck(target_zone) ? "вашей голове" : "вашем теле"] скрыт или на нём слишком толстый слой одежды!</span>")
 
 /mob/living/carbon/human/check_obscured_slots()
 	. = ..()
@@ -904,7 +904,10 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		//If you dragged them to you and you're aggressively grabbing try to fireman carry them
 		else if(user == src)
 			if(user.a_intent == INTENT_GRAB)
-				fireman_carry(target)
+				if(istype(belt, /obj/item/storage/belt/belly_riding))
+					belly_ride(target)
+				else
+					fireman_carry(target)
 				return
 	. = ..()
 
@@ -914,6 +917,28 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 
 /mob/living/carbon/human/proc/can_be_firemanned(mob/living/carbon/target)
 	return (ishuman(target) && (!CHECK_MOBILITY(target, MOBILITY_STAND) || target.mob_weight < MOB_WEIGHT_NORMAL)) || ispAI(target)
+
+/mob/living/carbon/human/proc/can_belly_ride(mob/living/carbon/target)
+	return (ishuman(target) && target.mob_weight <= max(mob_weight, MOB_WEIGHT_NORMAL)) && !incapacitated(ignore_restraints = TRUE) && istype(belt, /obj/item/storage/belt/belly_riding) && target.stat != DEAD
+
+/mob/living/carbon/human/proc/belly_ride(mob/living/carbon/target)
+	if(target.stat == DEAD)
+		to_chat(src, span_warning("Я не буду переносить труп на животе!"))
+		return
+	if(target.mob_weight > max(mob_weight, MOB_WEIGHT_NORMAL))
+		to_chat(src, span_warning("Вы пытаетесь поднять [target], но [target.ru_who()] слишком тяжелая!"))
+		return
+	if(can_belly_ride(target))
+		visible_message(span_warning("[src] начинает закреплять [target] в ремни на своем животе."),
+		span_notice("Вы закрепяете [target] в ремни на своем животе."))
+		if(do_after(src, RIDING_CARRYDELAY_BELLY, target, extra_checks = CALLBACK(src, PROC_REF(can_belly_ride), target)))
+			if(can_belly_ride(target))
+				buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_BELLY, auto_by_type = TRUE)
+				return
+		visible_message(span_warning("[src] не закрепил [target] на своем животе!"))
+	else
+		if(ishuman(target))
+			to_chat(src, span_notice("Вы не смогли закрепить [target] в ремни на своем животе!"))
 
 /mob/living/carbon/human/proc/fireman_carry(mob/living/carbon/target)
 	var/carrydelay = 40 //if you have latex you are faster at grabbing
@@ -934,29 +959,29 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		skills_space = "быстро "
 	// BLUEMOON ADDITION AHEAD - тяжёлых и сверхтяжёлых персонажей нельзя нести на плече
 	if(target.mob_weight > MOB_WEIGHT_NORMAL)
-		to_chat(src, span_warning("You tried to lift [target], but they are too heavy!"))
+		to_chat(src, span_warning("Вы пытаетесь поднять [target], но [target.ru_who()] слишком тяжелая!"))
 		return
 	// BLUEMOON ADDITION END
 	if(can_be_firemanned(target) && !incapacitated(FALSE, TRUE))
-		visible_message("<span class='notice'>[src] [skills_space]поднимает [target] на свои плечи.</span>",
+		visible_message(span_notice("[src] [skills_space]поднимает [target] на свои плечи."),
 		//Joe Medic starts quickly/expertly lifting Grey Tider onto their back..
-		"<span class='notice'>[gloves_used ? "Используя перчатки с наночипами, вы" : "Вы"] [skills_space]поднимаете [target] на свои плечи.</span>")
+		span_notice("[gloves_used ? "Используя перчатки с наночипами, вы" : "Вы"] [skills_space]поднимаете [target] на свои плечи."))
 		//(Using your gloves' nanochips, you/You) ( /quickly/expertly) start to lift Grey Tider onto your back(, while assisted by the nanochips in your gloves../...)
 		if(do_after(src, carrydelay, target, extra_checks = CALLBACK(src, PROC_REF(can_be_firemanned), target)))
 			//Second check to make sure they're still valid to be carried
 			if(can_be_firemanned(target) && !incapacitated(FALSE, TRUE))
-				buckle_mob(target, TRUE, TRUE, 90, 1, 0, TRUE)
+				buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_FIREMAN, auto_by_type = TRUE)
 				return
-		visible_message("<span class='warning'>[src] не поднимает [target] за свои плечи!")
+		visible_message(span_warning("[src] не поднимает [target] за свои плечи!"))
 	else
 		if (ishuman(target))
-			to_chat(src, "<span class='notice'>Вы не можете поднять [target] на свои плечи, ибо [target] стоит!</span>")
+			to_chat(src, span_notice("Вы не можете поднять [target] на свои плечи, ибо [target] стоит!"))
 		else
-			to_chat(src, "<span class='notice'>Вам не удалось поднять [src].</span>")
+			to_chat(src, span_notice("Вам не удалось поднять [src]."))
 
 /mob/living/carbon/human/proc/piggyback(mob/living/carbon/target)
 	if(can_piggyback(target))
-		visible_message("<span class='notice'>[target] начинает забираться на [src]...</span>")
+		visible_message(span_notice("[target] начинает забираться на [src]..."))
 
 		// BLUEMOON ADDITION START - тяжёлые персонажи дольше забираются на спину
 		var/climb_on_time = 1.5 SECONDS
@@ -970,7 +995,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		if(do_after(target, climb_on_time, src, IGNORE_INCAPACITATED, extra_checks = CALLBACK(src, PROC_REF(can_piggyback), target)))
 			if(can_piggyback(target))
 				if(target.incapacitated(FALSE, TRUE) || incapacitated(FALSE, TRUE))
-					target.visible_message("<span class='warning'>[target] can't hang onto [src]!</span>")
+					target.visible_message(span_warning("[target] не может уцепиться за [src]!"))
 					return
 				// BLUEMOON ADDITION START
 				if(target.mob_weight > MOB_WEIGHT_NORMAL)
@@ -996,22 +1021,66 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 					if(get_turf(target) != get_turf(src))
 						target.throw_at(get_turf(src), 1, 1, FALSE, FALSE)
 					// BLUEMOON ADDITION END
-				buckle_mob(target, TRUE, TRUE, 0, 1, 2, FALSE)
+				buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_PIGGYBACK, auto_by_type = TRUE)
 		else
-			visible_message("<span class='warning'>[target] не удаётся забраться на [src]!</span>")
+			visible_message(span_warning("[target] не удаётся забраться на [src]!"))
 	else
-		to_chat(target, "<span class='warning'>Ты не можешь прокатиться на спине [src] прямо сейчас!</span>")
+		to_chat(target, span_warning("Ты не можешь прокатиться на спине [src] прямо сейчас!"))
 
-/mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, fireman = FALSE, carry_type = null)
+/mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, buckle_type = RIDING_PIGGYBACK, auto_by_type = FALSE)
 	if(!force)//humans are only meant to be ridden through piggybacking and special cases
 		return
 	if(!istype(target))
 		return FALSE
 	if(!is_type_in_typecache(target, can_ride_typecache))
-		target.visible_message("<span class='warning'>[target] действительно не может забраться на [src]...</span>")
+		target.visible_message(span_warning("[target] действительно не может забраться на [src]..."))
 		return
 	if(target.has_buckled_mobs())
 		return FALSE
+
+	// Автосмена типа перевозки для тавров, если это RIDING_BELLY
+	if(RIDING_IS_BELLY(buckle_type))
+		buckle_type = RIDING_BELLY
+
+		// Переносимый, проверка на то, что тавры могут быть только переносчиками, но не носимыми
+		if(ishuman(target))
+			var/mob/living/carbon/human/H = target
+			if(!(H.dna?.features["taur"] in list(null, "None")))
+				var/datum/sprite_accessory/taur/T = GLOB.taur_list[H.dna.features["taur"]]
+				if(T && T.taur_mode != STYLE_SNEK_TAURIC)
+					target.visible_message(span_warning("[target] не может уместиться в ремни [src]..."))
+					return
+
+		// Переносчик, проверка, что он 4х лапый, а не змея
+		if(!(dna?.features["taur"] in list(null, "None")))
+			var/datum/sprite_accessory/taur/T = GLOB.taur_list[dna.features["taur"]]
+			if(T?.taur_mode in list(STYLE_PAW_TAURIC, STYLE_HOOF_TAURIC))
+				buckle_type = RIDING_BELLY_TAUR
+
+	// Пресеты настроек по типу переноски
+	if(auto_by_type)
+		switch(buckle_type)
+			if(RIDING_PIGGYBACK)
+				lying_buckle = 0
+				hands_needed = 1
+				target_hands_needed = 2
+			if(RIDING_FIREMAN)
+				lying_buckle = 90
+				hands_needed = 1
+				target_hands_needed = 0
+			if(RIDING_PRINCESS)
+				lying_buckle = 90
+				hands_needed = 2
+				target_hands_needed = 0
+			if(RIDING_FACE_TO_FACE)
+				lying_buckle = 0
+				hands_needed = 1
+				target_hands_needed = 0
+			if(RIDING_BELLY, RIDING_BELLY_TAUR)
+				lying_buckle = 0
+				hands_needed = 0
+				target_hands_needed = 0
+
 	buckle_lying = lying_buckle
 	var/datum/component/riding/human/riding_datum = LoadComponent(/datum/component/riding/human)
 	if(target_hands_needed)
@@ -1030,22 +1099,19 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 
 	if(hands_needed || target_hands_needed)
 		if(hands_needed && !equipped_hands_self)
-			src.visible_message("<span class='warning'>[src] can't get a grip on [target] because their hands are full!</span>",
-				"<span class='warning'>You can't get a grip on [target] because your hands are full!</span>")
+			src.visible_message(span_warning("[src] can't get a grip on [target] because their hands are full!"),
+				span_warning("You can't get a grip on [target] because your hands are full!"))
 			return
 		else if(target_hands_needed && !equipped_hands_target)
-			target.visible_message("<span class='warning'>[target] can't get a grip on [src] because their hands are full!</span>",
-				"<span class='warning'>You can't get a grip on [src] because your hands are full!</span>")
+			target.visible_message(span_warning("[target] can't get a grip on [src] because their hands are full!"),
+				span_warning("You can't get a grip on [src] because your hands are full!"))
 			return
 
 	stop_pulling()
-	switch(carry_type)
-		if("face_to_face")
-			riding_datum.face_to_face_carrying = TRUE
-		if("princess")
-			riding_datum.princess_carrying = TRUE
+	riding_datum.buckle_type = buckle_type
 	riding_datum.handle_vehicle_layer(dir)
-	riding_datum.fireman_carrying = fireman
+	if(RIDING_IS_BELLY(buckle_type))
+		riding_datum.belly_harness = belt
 	. = ..(target, force, check_loc)
 	if(!.)
 		visible_message(span_warning("[src] не смог(ла) поднять [target]."))

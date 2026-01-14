@@ -422,6 +422,15 @@
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_w_class = WEIGHT_CLASS_SMALL
 
+/obj/item/storage/belt/military/green
+	name = "military belt"
+	desc = "A tactical belt with a woodland pattern, designed for infantry operations in dense vegetation."
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/belt.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/belt_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/belt_righthand.dmi'
+	icon_state = "militarybelt"
+	item_state = "militarybelt"
+
 /obj/item/storage/belt/military/snack
 	name = "tactical snack rig"
 
@@ -1040,3 +1049,29 @@
 		/obj/item/shovel/spade,
 		/obj/item/gun/energy/floragun
 	))
+
+/obj/item/storage/belt/belly_riding
+	name = "belly riding harness"
+	desc = "Комплект прочных ремней и талей, предназначенных для фиксации существ на животе."
+	icon = 'icons/obj/clothing/uniforms.dmi'
+	taur_mob_worn_overlay = 'icons/mob/clothing/belt_taur.dmi'
+	icon_state = "gear_harness"
+	item_state = "bellyriding_harness"
+	mutantrace_variation = STYLE_PAW_TAURIC|STYLE_HOOF_TAURIC
+	w_class = WEIGHT_CLASS_SMALL
+	component_type = null
+	item_flags = NO_UNIFORM_REQUIRED
+
+/obj/item/storage/belt/belly_riding/examine(mob/user)
+	. = ..()
+	. += span_notice("Закрепив ремни на поясе, вы сможете усадить в них другого персонажа, \
+					взяв его в агрессивный захват и перетащив на себя.")
+	. += span_notice("Нажмите ALT, чтобы сделать ремни невидимыми.")
+	if(HAS_TRAIT_FROM(src, TRAIT_NODROP, RIDING_TRAIT))
+		. += span_warning("Вы не сможете снять ремни, пока кого-то переносите!")
+
+/obj/item/storage/belt/belly_riding/AltClick(mob/user)
+	. = ..()
+	item_state = item_state ? null : initial(item_state)
+	balloon_alert(user, item_state ? "Видимые" : "Невидимые")
+	update_slot_icon()

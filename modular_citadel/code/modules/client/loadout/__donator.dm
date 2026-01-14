@@ -8,6 +8,13 @@
 	subcategory = LOADOUT_SUBCATEGORIES_DON01
 	donator_group_id = DONATOR_GROUP_TIER_1
 
+/datum/gear/donator/maskscream
+	name = "Mask Scream"
+	slot = ITEM_SLOT_MASK
+	path = /obj/item/clothing/mask/screammask
+	donator_group_id = DONATOR_GROUP_TIER_2
+	subcategory = LOADOUT_SUBCATEGORIES_DON02
+
 /datum/gear/donator/deskbox
 	name = "Desk Box"
 	slot = ITEM_SLOT_BACKPACK

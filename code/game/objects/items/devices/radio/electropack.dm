@@ -191,7 +191,7 @@
 				H.adjust_arousal(40, "masochism", maso = TRUE)
 				H.handle_post_sex(HIGH_LUST, null, null) // Big cooldown = high_lust
 				if(prob(30))
-					H.emote(pick("moan", "shiver", "blush"))
+					H.emote(pick("moan", "shiver", "blushh"))
 			else
 				if(prob(30))
 					H.emote(pick("groan", "shiver", "twitch_s"))

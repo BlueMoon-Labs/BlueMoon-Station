@@ -38,21 +38,6 @@
 	icon_state = "hahun_jukebox"
 	item_state = "hahun_jukebox"
 
-/obj/item/jukebox/hahun/ComponentInitialize()
-	. = ..()
-	AddElement(/datum/element/update_icon_updates_onmob)
-
-/obj/item/jukebox/hahun/update_icon_state()
-	var/mutable_appearance/enabled = mutable_appearance('modular_citadel/icons/obj/boombox_righthand.dmi', "headphones_on")
-	if(active)
-		. += mutable_appearance('modular_citadel/icons/obj/boombox_righthand.dmi', "headphones_on")
-		item_state = "[initial(icon_state)]-active"
-		add_overlay(enabled)
-	else
-		icon_state = "[initial(icon_state)]"
-		item_state = "[initial(item_state)]"
-		cut_overlay(enabled)
-
 ////////////////////////
 
 /obj/item/modkit/invis_belt
@@ -75,3 +60,40 @@
 			user.visible_message(span_warning("[user] modifies [O]!"),span_warning("You modify the [O]!"))
 			qdel(src)
 			return
+
+////////////////////////
+
+/obj/item/sign/flag/imperium
+	name = "flag of Imperium"
+	desc = "Флаг далекой, колоссальной, жестокой и забюрократизированной империи."
+	icon = 'modular_bluemoon/fluffs/icons/obj/flags.dmi'
+	icon_state = "folded_imperium_red"
+	can_lock_coffin = TRUE
+	sign_path = /obj/structure/sign/flag/imperium
+
+/obj/structure/sign/flag/imperium
+	name = "flag of Imperium"
+	desc = "Флаг далекой, колоссальной, жестокой и забюрократизированной империи."
+	icon = 'modular_bluemoon/fluffs/icons/obj/flags.dmi'
+	icon_state = "flag_imperium_red"
+	item_flag = /obj/item/sign/flag/imperium
+
+/obj/item/sign/flag/imperium/gray
+	icon_state = "folded_imperium_gray"
+	sign_path = /obj/structure/sign/flag/imperium/gray
+
+/obj/structure/sign/flag/imperium/gray
+	icon_state = "flag_imperium_gray"
+	item_flag = /obj/item/sign/flag/imperium/gray
+
+
+/obj/item/storage/box/imperium_flags
+	name = "Imperium flag kit"
+	desc = "Коробка с набором флагов одной далекой империи."
+	icon_state = "secbox_xl"
+
+/obj/item/storage/box/imperium_flags/PopulateContents()
+	// По 2x3 флага в коробке
+	for(var/path in list(/obj/item/sign/flag/imperium, /obj/item/sign/flag/imperium/gray))
+		for(var/i = 1 to 3)
+			new path(src)

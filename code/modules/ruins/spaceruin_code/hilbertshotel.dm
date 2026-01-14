@@ -267,26 +267,16 @@ GLOBAL_VAR_INIT(hhmysteryRoomNumber, 1337)
 			user.forceMove(T)
 			seating.buckle_mob(user, TRUE, TRUE)
 	else if(user.buckled_mobs)
-		var/datum/component/riding/riding_datum = user.GetComponent(/datum/component/riding)
-		var/datum/component/riding/human/riding_datum_human
+		var/datum/component/riding/human/riding_datum_human = user.GetComponent(/datum/component/riding/human)
 		var/mob/living/buckled_mob
-		var/buckle_type
-		if(istype(riding_datum, /datum/component/riding/human))
-			riding_datum_human = riding_datum
-			buckle_type = riding_datum_human.face_to_face_carrying ? "face_to_face" : riding_datum_human.princess_carrying ? "princess" : "firefiremanned"
 		for(var/mob/living/I in user.buckled_mobs)
 			buckled_mob = I
 			I.forceMove(T)
 		user.unbuckle_all_mobs(TRUE)
 		user.forceMove(T)
-		if(riding_datum_human)
-			switch(buckle_type)
-				if("face_to_face")
-					user.buckle_mob(buckled_mob, TRUE, TRUE, 0, 1, 0, FALSE, "face_to_face")
-				if("princess")
-					user.buckle_mob(buckled_mob, TRUE, TRUE, 90, 2, 0, FALSE, "princess")
-				if("firefiremanned")
-					user.buckle_mob(buckled_mob, TRUE, TRUE, 90, 1, 0, TRUE)
+		if(riding_datum_human && ishuman(user))
+			var/mob/living/carbon/human/H = user
+			H.buckle_mob(buckled_mob, TRUE, TRUE, buckle_type = riding_datum_human.buckle_type, auto_by_type = TRUE)
 		else
 			user.buckle_mob(buckled_mob, TRUE, TRUE)
 	else

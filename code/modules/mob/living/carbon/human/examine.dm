@@ -197,6 +197,18 @@
 			. += "<span class='warning'>[t_on] нервно дёргается.</span>\n"
 		if(100 to 200)
 			. += "<span class='warning'>[t_on] дрожит.</span>\n"
+
+	//belly riding
+	if(ishuman(buckled))
+		var/mob/living/carbon/human/H = buckled
+		var/datum/component/riding/human/riding_comp = H.GetComponent(/datum/component/riding/human)
+		if(RIDING_IS_BELLY(riding_comp?.buckle_type))
+			. += span_lewd("[t_on] удерживается ремнями, на животе [H].")
+
+	var/datum/component/riding/human/riding_comp = GetComponent(/datum/component/riding/human)
+	if(RIDING_IS_BELLY(riding_comp?.buckle_type) && has_buckled_mobs())
+		. += span_lewd("На [t_ego] животе, ремнями удерживаeтся [english_list(buckled_mobs)].")
+
 	var/appears_dead = FALSE
 	var/just_sleeping = FALSE
 	if(stat == DEAD || (HAS_TRAIT(src, TRAIT_FAKEDEATH)))

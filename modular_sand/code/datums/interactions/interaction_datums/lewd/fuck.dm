@@ -49,30 +49,27 @@
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, ORGAN_SLOT_VAGINA)
 		try_apply_knot(user, partner, CUM_TARGET_VAGINA) // Проверка на узлирование.
 
-	if(prob(5 + partner.get_lust()))
-		if(partner.a_intent == INTENT_HELP)
-			user.visible_message(
-				pick(span_lewd("<b>[partner]</b> дрожит от удовольствия."),
-					span_lewd("<b>[partner]</b> стонет, выгибаясь навстречу."),
-					span_lewd("<b>[partner]</b> слабо постанывает, чувствуя каждый толчок."),
-					span_lewd("<b>[partner]</b> прижимается к <b>[user]</b> всем телом, теряя дыхание.")))
-		else if(partner.a_intent == INTENT_DISARM)
-			user.visible_message(
-				pick(span_lewd("<b>[partner]</b> извивается в руках <b>[user]</b>, с трудом сдерживая стон."),
-					span_lewd("<b>[partner]</b> пытается вырваться, но лишь сильнее двигается навстречу."),
-					span_lewd("<b>[partner]</b> ерзает под <b>[user]</b>, не зная, хочет ли остановиться или продолжить.")))
-		else if(partner.a_intent == INTENT_HARM)
-			user.visible_message(
-				pick(span_lewd("<b>[partner]</b> резко отталкивает <b>[user]</b>, с гневом на лице."),
-					span_lewd("<b>[partner]</b> кусает <b>[user]</b> за плечо."),
-					span_lewd("<b>[partner]</b> злится, пытаясь прекратить происходящее.")))
+	if(prob(partner.get_lust() / partner.get_climax_threshold() * 50)) // 50%
+		switch(partner.a_intent)
+			if(INTENT_HELP)
+				user.visible_message(
+					pick(span_lewd("<b>[partner]</b> подрагивает от удовольствия."),
+						span_lewd("<b>[partner]</b> стонет, выгибаясь навстречу."),
+						span_lewd("<b>[partner]</b> слабо постанывает, чувствуя каждый толчок.")))
+			if(INTENT_HARM)
+				user.visible_message(
+					pick(span_lewd("<b>[partner]</b> резко пихает <b>[user]</b>, с гневом на лице."),
+						span_lewd("<b>[partner]</b> кусает <b>[user]</b> за плечо."),
+						span_lewd("<b>[partner]</b> злится, пытаясь прекратить происходящее.")))
+			else
+				user.visible_message(
+					pick(span_lewd("<b>[partner]</b> извивается в руках <b>[user]</b>, с трудом сдерживая стон."),
+						span_lewd("<b>[partner]</b> ерзает под <b>[user]</b>, не сдерживая себя.")))
 
 /datum/interaction/lewd/fuck/anal
 	description = "Член. Проникнуть в задницу."
 	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_exposed = INTERACTION_REQUIRE_ANUS
-	p13user_emote = "front"
-	p13target_emote = "back"
 	p13target_emote = PLUG13_EMOTE_ANUS
 	additional_details = null // no pregnancy
 
@@ -110,30 +107,29 @@
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS) //SPLURT edit
 		try_apply_knot(user, partner, CUM_TARGET_ANUS) // Проверка на узлирование.
 
-	if(prob(5 + partner.get_lust()))
-		if(partner.a_intent == INTENT_HELP)
-			user.visible_message(
-				pick(span_lewd("<b>[partner]</b> дрожит от удовольствия."),
-					span_lewd("<b>[partner]</b> стонет, выгибаясь навстречу."),
-					span_lewd("<b>[partner]</b> слабо постанывает, чувствуя каждый толчок."),
-					span_lewd("<b>[partner]</b> прижимается к <b>[user]</b> всем телом, теряя дыхание.")))
-		else if(partner.a_intent == INTENT_DISARM)
-			user.visible_message(
-				pick(span_lewd("<b>[partner]</b> извивается в руках <b>[user]</b>, с трудом сдерживая стон."),
-					span_lewd("<b>[partner]</b> пытается вырваться, но лишь сильнее двигается навстречу."),
-					span_lewd("<b>[partner]</b> ерзает под <b>[user]</b>, не зная, хочет ли остановиться или продолжить.")))
-		else if(partner.a_intent == INTENT_HARM)
-			user.visible_message(
-				pick(span_lewd("<b>[partner]</b> резко отталкивает <b>[user]</b>, с гневом на лице."),
-					span_lewd("<b>[partner]</b> кусает <b>[user]</b> за плечо."),
-					span_lewd("<b>[partner]</b> злится, пытаясь прекратить происходящее.")))
+	if(prob(partner.get_lust() / partner.get_climax_threshold() * 50)) // 50%
+		switch(partner.a_intent)
+			if(INTENT_HELP)
+				user.visible_message(
+					pick(span_lewd("<b>[partner]</b> подрагивает от удовольствия."),
+						span_lewd("<b>[partner]</b> стонет, выгибаясь навстречу."),
+						span_lewd("<b>[partner]</b> слабо постанывает, чувствуя каждый толчок.")))
+			if(INTENT_HARM)
+				user.visible_message(
+					pick(span_lewd("<b>[partner]</b> резко пихает <b>[user]</b>, с гневом на лице."),
+						span_lewd("<b>[partner]</b> кусает <b>[user]</b> за плечо."),
+						span_lewd("<b>[partner]</b> злится, пытаясь прекратить происходящее.")))
+			else
+				user.visible_message(
+					pick(span_lewd("<b>[partner]</b> извивается в руках <b>[user]</b>, с трудом сдерживая стон."),
+						span_lewd("<b>[partner]</b> ерзает под <b>[user]</b>, не сдерживая себя.")))
 
 	// BLUEMOON EDIT START
 	if(user.has_strapon())
 		var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
 		user_strapon.attached_dildo.target_reaction(partner, user, 0, CUM_TARGET_ANUS, null, user.a_intent == INTENT_HARM)
 	else
-		partner.handle_post_sex(NORMAL_LUST, null, user, "anus") //SPLURT edit
+		partner.handle_post_sex(NORMAL_LUST, null, user, CUM_TARGET_ANUS) //SPLURT edit
 		try_apply_knot(user, partner, CUM_TARGET_ANUS) // Проверка на узлирование.
 	// BLUEMOON EDIT END
 

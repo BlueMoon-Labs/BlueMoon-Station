@@ -33,6 +33,8 @@
 	/// Max volume we can hold. Applies to [STORAGE_LIMIT_VOLUME]. Auto scaled on New() if unset.
 	var/max_volume
 
+	var/allow_other_storages = TRUE					// whether this storage can hold other storage items.
+
 	var/emp_shielded = FALSE
 
 	var/silent = FALSE								//whether this makes a message when things are put in.
@@ -506,21 +508,21 @@
 	if(!length(can_hold_extra) || !is_type_in_typecache(I, can_hold_extra))
 		if(length(can_hold) && !is_type_in_typecache(I, can_hold))
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[host] cannot hold [I]!</span>")
+				to_chat(M, span_warning("[host] не может уместить [I]!"))
 			return FALSE
 		if(is_type_in_typecache(I, cant_hold)) //Check for specific items which this container can't hold.
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[host] cannot hold [I]!</span>")
+				to_chat(M, span_warning("[host] не может уместить [I]!</span>"))
 			return FALSE
 		if(storage_flags & STORAGE_LIMIT_MAX_W_CLASS && I.w_class > max_w_class)
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[I] is too long for [host]!</span>")
+				to_chat(M, span_warning("[I] не вмещается по длине в [host]!"))
 			return FALSE
 		// STORAGE LIMITS
 	if(storage_flags & STORAGE_LIMIT_MAX_ITEMS)
 		if(real_location.contents.len >= max_items)
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[host] has too many things in it, make some space!</span>")
+				to_chat(M, span_warning("Внутри [host] слишком много вещей, освободите место!"))
 			return FALSE //Storage item is full
 	if(storage_flags & STORAGE_LIMIT_COMBINED_W_CLASS)
 		var/sum_w_class = I.w_class
@@ -528,7 +530,7 @@
 			sum_w_class += _I.w_class //Adds up the combined w_classes which will be in the storage item if the item is added to it.
 		if(sum_w_class > max_combined_w_class)
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[I] won't fit in [host], make some space!</span>")
+				to_chat(M, span_warning("[I] не поместится в [host], освободите место!"))
 			return FALSE
 	if(storage_flags & STORAGE_LIMIT_VOLUME)
 		var/sum_volume = I.get_w_volume()
@@ -536,18 +538,22 @@
 			sum_volume += _I.get_w_volume()
 		if(sum_volume > get_max_volume())
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[I] is too spacious to fit in [host], make some space!</span>")
+				to_chat(M, span_warning("[I] слишком объемный для [host], освободите место!"))
 			return FALSE
 	/////////////////
 	if(isitem(host))
 		var/obj/item/IP = host
 		var/datum/component/storage/STR_I = I.GetComponent(/datum/component/storage)
+		if(STR_I && !allow_other_storages)
+			if(!stop_messages)
+				to_chat(M, span_warning("[host] не может уместить в себя ёмкости вроде [I]!"))
+				return FALSE
 		if((I.w_class >= IP.w_class) && STR_I && !allow_big_nesting)
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[IP] cannot hold [I] as it's a storage item of the same size!</span>")
+				to_chat(M, span_warning("[IP] не может уместить [I], так как это ёмкость того же размера!"))
 			return FALSE //To prevent the stacking of same sized storage items.
 	if(HAS_TRAIT(I, TRAIT_NODROP)) //SHOULD be handled in unEquip, but better safe than sorry.
-		to_chat(M, "<span class='warning'>\the [I] is stuck to your hand, you can't put it in \the [host]!</span>")
+		to_chat(M, span_warning("[I] прилипло к вашей руке, не выйдет положить в [host]!"))
 		return FALSE
 	var/datum/component/storage/concrete/master = master()
 	if(!istype(master))

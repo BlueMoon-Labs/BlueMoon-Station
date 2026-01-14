@@ -245,7 +245,7 @@ IMPORTANT FACTORS TO CONSIDER WHILE BALANCING
 		if (M.nutrition < 1500)
 			M.adjust_nutrition(500)
 
-/datum/reagent/fermi/SDGF/reaction_mob(mob/living/carbon/human/M, method=TOUCH, reac_volume)
+/datum/reagent/fermi/SDGF/reaction_mob(mob/living/carbon/human/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(volume<5)
 		M.visible_message("<span class='warning'>The growth factor froths upon [M]'s body, failing to do anything of note.</span>")
 		return

@@ -3,7 +3,7 @@
 //Not being adjacent will cause the paddles to snap back
 /obj/machinery/defibrillator_mount
 	name = "defibrillator mount"
-	desc = "Стойка для дефибриллятора. Может удерживать их и заряжать внутреннюю батарею. Вы можете взять электроды дефибриллятора, при его наличии."
+	desc = "Стойка с креплениями. На неё можно повесить дефибриллятор для зарядки его внутренней батареи и удобного доступа к его электродам."
 	icon = 'icons/obj/machines/defib_mount.dmi'
 	icon_state = "defibrillator_mount"
 	density = FALSE
@@ -37,7 +37,7 @@
 			. += "<span class='notice'>Из-за кода тревоги, фиксирующие зажимы могут быть переключены ID-картой.</span>"
 		else
 			. += "<span class='notice'>Фиксирующие зажимы могут быть [clamps_locked ? "раз" : "за"]блокированы ID-картой с доступами.</span>"
-  . += span_notice("Выглядит <b>откручиваемым</b>.")
+	. += span_notice("Держится на нескольких <b>болтах</b>.")
 
 /obj/machinery/defibrillator_mount/process()
 	if(defib && defib.cell && defib.cell.charge < defib.cell.maxcharge && is_operational())

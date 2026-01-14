@@ -101,6 +101,40 @@
 	flags_cover = HEADCOVERSEYES
 	flags_inv = HIDEHAIR|HIDEEARS|HIDESNOUT
 	mutantrace_variation = STYLE_MUZZLE
+	actions_types = list(/datum/action/item_action/dread_lawgiver)
+
+	/// Cooldown between voice lines
+	var/voice_cooldown = 0
+	/// Cooldown duration (3 seconds)
+	var/voice_cooldown_duration = 30
+
+/obj/item/clothing/head/HoS/dread_helmet/ui_action_click(mob/user, action)
+	if(istype(action, /datum/action/item_action/dread_lawgiver))
+		announce_law(user)
+	else
+		return ..()
+
+/obj/item/clothing/head/HoS/dread_helmet/proc/announce_law(mob/living/user)
+	if(!isliving(user))
+		return
+
+	// Проверка кулдауна
+	if(world.time < voice_cooldown)
+		to_chat(user, "<span class='warning'>Системы голосового модуля перезаряжаются...</span>")
+		return
+
+	// Объявляем ЗАКОН
+	user.audible_message("<font color='red' size='4'><b>Я. ЕСТЬ. ЗАКОН!</b></font>")
+	playsound(src.loc, 'sound/voice/complionator/dredd.ogg', 100, FALSE, 4)
+
+	voice_cooldown = world.time + voice_cooldown_duration
+
+// Action button для шлема
+/datum/action/item_action/dread_lawgiver
+	name = "I AM THE LAW!"
+	desc = "Объявить что вы - ЗАКОН."
+	button_icon_state = "sechailer"
+	background_icon_state = "bg_default"
 
 /obj/item/clothing/head/donator/bm/royal_hunters
 	name = "Royal hunters hat"

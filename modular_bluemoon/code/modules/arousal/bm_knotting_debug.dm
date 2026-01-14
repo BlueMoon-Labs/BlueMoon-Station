@@ -53,7 +53,7 @@
 			else
 				to_chat(src, span_notice("🧊 Эстральный цикл не активен"))
 			if(hascall(H, "get_lust") && hascall(H, "get_climax_threshold"))
-				to_chat(src, "- lust: [round((H.get_lust()/H.get_climax_threshold())*100,1)]%")
+				to_chat(src, "- lust: [round((H.get_lust() / H.get_climax_threshold())*100,1)]%")
 			return
 
 		if("lock")

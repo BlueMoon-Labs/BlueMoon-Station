@@ -30,6 +30,6 @@
 	name = "Shifting Fragments"
 	color = "#C8963C"
 
-/datum/reagent/blob/shifting_fragments/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message, touch_protection, mob/camera/blob/O)
+/datum/reagent/blob/shifting_fragments/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message, touch_protection, mob/camera/blob/O, affected_bodypart)
 	reac_volume = ..()
 	M.apply_damage(0.7*reac_volume, BRUTE, wound_bonus=5)

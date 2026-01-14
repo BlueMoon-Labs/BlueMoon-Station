@@ -207,6 +207,19 @@
 		return TRUE
 	return FALSE
 
+/// Is there at least one associative key in the list (i.e. not a numeric index)
+/// Hybrid lists will also return TRUE.
+/proc/is_assoc_list(list/L)
+	if(!LAZYLEN(L))
+		return FALSE
+
+	for(var/i = 1 to L.len)
+		var/k = L[i]
+		if(!isnull(L[k]))
+			return TRUE
+
+	return FALSE
+
 //Checks for specific types in a listc
 /proc/is_type_in_list(atom/A, list/L)
 	if(!LAZYLEN(L) || !A)
@@ -589,7 +602,20 @@
 	L.Insert(toIndex, null)
 	L.Swap(fromIndex, toIndex)
 	L.Cut(fromIndex, fromIndex+1)
+	return TRUE
 
+// Like moveElement but direct to position
+/proc/moveElementToPos(list/L, fromIndex, newPos)
+	if(!L || fromIndex < 1 || fromIndex > L.len)
+		return
+	newPos = clamp(newPos, 1, L.len)
+
+	// convert "new position" -> "insertion index"
+	var/toIndex = newPos
+	if(newPos > fromIndex)
+		toIndex = newPos + 1
+
+	return moveElement(L, fromIndex, toIndex)
 
 //Move elements [fromIndex,fromIndex+len) to [toIndex-len, toIndex)
 //Same as moveElement but for ranges of elements
@@ -613,6 +639,23 @@
 			L.Insert(toIndex, null)
 			L.Swap(fromIndex, toIndex)
 			L.Cut(fromIndex, fromIndex+1)
+
+// changes the key in the list, keeping the index of the element
+/proc/change_assoc_key_preserve_index(list/L, new_key, old_key)
+	if(!(old_key in L))
+		return FALSE
+
+	var/index = L.Find(old_key)
+	if(!index)
+		return FALSE
+
+	var/value = L[old_key]
+
+	L -= old_key
+	L.Insert(index, new_key)
+	L[new_key] = value
+
+	return TRUE
 
 //Move elements from [fromIndex, fromIndex+len) to [toIndex, toIndex+len)
 //Move any elements being overwritten by the move to the now-empty elements, preserving order
@@ -872,16 +915,25 @@
 			continue
 		. += checked_atom.contents
 
-/// Ищет объект и его дочерние объекты среди указанного листа.
-/proc/is_typeof_list(typepath, list/type_list)
-	if (!ispath(typepath))
-		if (istext(typepath)) // Для работы с датумами прок учитывает то, что у нас выводится при return (Например, текстово - путь предмета /datum/gear)
-			typepath = text2path(typepath)
-		else
-			return FALSE
-	for (var/T in type_list)
-		if (ispath(typepath, T))
+/** Прок ищет объект и его дочерние объекты среди указанного листа.
+ * typepath – аргумент атома, обычно записывается как [x.path]
+ * list/type_list – указанный глобально или локально лист, по которому будет произведён поиск
+ */
+/proc/ispath_in_list(atom/thing, list/type_list)
+	if(!islist(type_list))
+		return FALSE
+
+	var/typepath
+	if(ispath(thing))
+		typepath = thing
+	else if(isdatum(thing))
+		typepath = thing.type
+	else
+		return FALSE
+	for(var/T in type_list)
+		if(ispath(T) && ispath(typepath, T))
 			return TRUE
+
 	return FALSE
 
 /// Returns whether a numerical index is within a given list's bounds. Faster than isnull(LAZYACCESS(L, I)).

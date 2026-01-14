@@ -39,7 +39,7 @@
 	/// Assoc list "[bitflag]" = list(typepaths)
 	var/list/autogrant_actions_controller = list()
 	/// Assoc list mob = list(type = action datum assigned to mob)
-	var/list/mob/occupant_actions = list()
+	var/list/list/datum/action/occupant_actions = list()
 	/// This vehicle will follow us when we move (like atrailer duh)
 	var/obj/vehicle/trailer
 	/// Do we have a special mouse

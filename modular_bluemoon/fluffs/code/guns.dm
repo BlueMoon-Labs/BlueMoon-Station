@@ -752,7 +752,9 @@
 /obj/item/modkit/dreadmk3_kit
 	name = "Законодатель MK3 Kit"
 	desc = "A modkit for making a MultiPhase Energy Gun into Законодатель MK3."
-	product = /obj/item/gun/energy/e_gun/hos/dreadmk3
+	icon = 'icons/obj/device.dmi'
+	icon_state = "modkit"
+	product = /obj/item/gun/energy/e_gun/hos/dreadmk3/talking
 	fromitem = list(/obj/item/gun/energy/e_gun/hos)
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -773,6 +775,8 @@
 /obj/item/modkit/institute_kit
 	name = "Карабин Института Kit"
 	desc = "A modkit for making a Energy Gun into Карабин Института."
+	icon = 'icons/obj/device.dmi'
+	icon_state = "modkit"
 	product = /obj/item/gun/energy/e_gun/institute
 	fromitem = list(/obj/item/gun/energy/e_gun)
 
@@ -791,6 +795,8 @@
 /obj/item/modkit/old_laser_kit
 	name = "Лазер AER9 Kit"
 	desc = "A modkit for making a laser carbine into Лазер AER9."
+	icon = 'icons/obj/device.dmi'
+	icon_state = "modkit"
 	product = /obj/item/gun/energy/laser/carbine/old
 	fromitem = list(/obj/item/gun/energy/laser/carbine/nopin, /obj/item/gun/energy/laser/carbine)
 ////////////////////////////////////////////////////////////////////////////////////////

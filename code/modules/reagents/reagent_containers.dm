@@ -135,7 +135,12 @@
 			var/turf/AT = get_turf(thrown_by)
 			throwerstring = " THROWN BY [key_name(thrown_by)] at [AT] (AREACOORD(AT)]"
 		log_reagent("SPLASH: [src] mob SplashReagents() onto [key_name(target)] at [TT] ([AREACOORD(TT)])[throwerstring] - [R]")
-		reagents.reaction(target, TOUCH)
+		if(ishuman(target))
+			var/mob/living/carbon/human/H = target
+			var/obj/item/bodypart/affecting = H.get_bodypart(check_zone(thrown_by.zone_selected))
+			reagents.reaction(M, TOUCH, affected_bodypart = affecting)
+		else
+			reagents.reaction(M, TOUCH)
 		reagents.clear_reagents()
 		playsound(src.loc, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
 

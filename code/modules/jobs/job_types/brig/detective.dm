@@ -64,6 +64,10 @@
 		/obj/item/stamp/security = 1)
 	mask = /obj/item/clothing/mask/cigarette
 
+	backpack = /obj/item/storage/backpack/detective //BLUEMOON add
+	satchel = /obj/item/storage/backpack/satchel/detective //BLUEMOON add
+	duffelbag = /obj/item/storage/backpack/duffelbag/detective //BLUEMOON add
+
 	implants = list(/obj/item/implant/mindshield)
 	accessory = list(/obj/item/clothing/accessory/permit/special/security)
 

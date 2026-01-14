@@ -19,6 +19,85 @@
 	///Does this computer have a unique icon_state? Prevents the changing of icons from alternative computer construction
 	var/unique_icon = FALSE
 	var/authenticated = FALSE
+	var/list/typing_users = null
+	var/typing = FALSE
+	var/static/list/keyboard_sounds = list(
+	'sound/machines/computer/keyboard_clicks_1.ogg',
+	'sound/machines/computer/keyboard_clicks_2.ogg',
+	'sound/machines/computer/keyboard_clicks_3.ogg',
+	'sound/machines/computer/keyboard_clicks_4.ogg',
+	'sound/machines/computer/keyboard_clicks_5.ogg',
+	'sound/machines/computer/keyboard_clicks_6.ogg',
+	'sound/machines/computer/keyboard_clicks_7.ogg'
+)
+
+/obj/machinery/computer/attack_hand(mob/user)
+	. = ..()
+	if(.)
+		return
+
+	start_typing(user)
+
+/obj/machinery/computer/proc/start_typing(mob/user)
+	if(machine_stat & (NOPOWER|BROKEN))
+		return
+
+	if(!typing_users)
+		typing_users = list()
+
+	if(!(user in typing_users))
+		typing_users += user
+
+	if(!typing)
+		typing = TRUE
+		spawn_typing_loop()
+
+/obj/machinery/computer/ui_interact(mob/user, datum/tgui/ui)
+	. = ..()
+	if(!typing)
+		start_typing(user)
+
+/obj/machinery/computer/ui_close(mob/user)
+	. = ..()
+	stop_typing(user)
+
+/obj/machinery/computer/proc/spawn_typing_loop()
+	spawn()
+		while(typing)
+			if(!typing_users || !typing_users.len)
+				typing = FALSE
+				return
+
+			var/volume = min(30 + (typing_users.len * 5), 60)
+			playsound(src, pick(keyboard_sounds), volume, FALSE)
+
+			sleep(rand(3,6))
+
+
+/obj/machinery/computer/proc/stop_typing(mob/user)
+	if(!typing_users)
+		return
+
+	typing_users -= user
+
+	if(!typing_users.len)
+		typing = FALSE
+
+/obj/machinery/computer/process()
+    . = ..()
+
+    if(!typing)
+        return
+
+    // Если никто реально не смотрит окно — выключаем
+    if(!has_active_viewers())
+        typing = FALSE
+
+/obj/machinery/computer/proc/has_active_viewers()
+    for(var/mob/M in viewers(src))
+        if(M.client && get_dist(src, M) <= 1)
+            return TRUE
+    return FALSE
 
 /obj/machinery/computer/Initialize(mapload, obj/item/circuitboard/C)
 	. = ..()

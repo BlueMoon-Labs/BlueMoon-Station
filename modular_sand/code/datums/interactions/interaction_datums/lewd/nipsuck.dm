@@ -50,7 +50,7 @@
 			user.reagents.add_reagent(B.fluid_id, rand(1,amount_high * modifier) * user.get_fluid_mod(B))
 			user_message += ", вытягивая <b>'[lowertext(milktext)]'</b>."
 
-	if(prob(5 + target.get_lust()))
+	if(prob(target.get_lust() / target.get_climax_threshold() * 50)) // 50%
 		switch(target.a_intent)
 			if(INTENT_HELP)
 				if(!target.has_breasts())

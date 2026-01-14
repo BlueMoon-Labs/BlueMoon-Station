@@ -141,6 +141,8 @@
 	// BLUEMOON ADD
 	if(self.has_tail())
 		required_from_user |= INTERACTION_REQUIRE_TAIL
+	if(self.check_mutation(TK) || HAS_TRAIT(self, TRAIT_TK_POTENTIAL))
+		required_from_user |= INTERACTION_REQUIRE_TK
 	if(user_has_penis)
 		var/shape_desc = get_penis_shape_desc(self)
 		if(self?.client?.prefs.sexknotting && target?.client?.prefs.sexknotting && findtext(shape_desc, "узл"))
@@ -269,6 +271,7 @@
 	.["theirPrefs"] = null
 	.["theirLust"] = null
 	.["theyAllowLewd"] = null
+	.["theyAllowRanged"] = null
 	.["theyAllowExtreme"] = null
 	//SPLURT EDIT
 	.["theyAllowUnholy"] = null
@@ -401,6 +404,7 @@
 			.["theyAllowLewd"] = !!(target.client.prefs.toggles & VERB_CONSENT)
 			.["theyAllowExtreme"] = !!pref_to_num(target.client.prefs.extremepref)
 			.["theyAllowUnholy"] = !!pref_to_num(target.client.prefs.unholypref) //SPLURT EDIT
+			.["theyAllowRanged"] = !!(target.client.prefs.toggles & RANGED_VERBS_CONSENT)
 		if(HAS_TRAIT(user, TRAIT_ESTROUS_DETECT))
 			.["theirLust"] = target.get_lust()
 			.["theirMaxLust"] = target.get_climax_threshold() // BLUEMOON EDIT
@@ -486,6 +490,7 @@
 
 	//Getting preferences
 		.["verb_consent"] = 			!!CHECK_BITFIELD(prefs.toggles, VERB_CONSENT)
+		.["ranged_verb_pref"] = 		!!CHECK_BITFIELD(prefs.toggles, RANGED_VERBS_CONSENT)
 		.["lewd_verb_sounds"] = 		!!CHECK_BITFIELD(prefs.toggles, LEWD_VERB_SOUNDS)
 		.["arousable"] = 				prefs.arousable
 		.["sexknotting"] = 				prefs.sexknotting // BLUEMONN ADD
@@ -520,8 +525,8 @@
 	var/list/sent_interactions = list()
 	for(var/interaction_key in SSinteractions.interactions)
 		var/datum/interaction/I = SSinteractions.interactions[interaction_key]
-		// THIS IS A BASETYPE, DO NOT SEND
-		if(!I.description)
+		// THIS IS A BASETYPE, DO NOT SEND || we hide it from users
+		if(!I.description || (I.interaction_flags & INTERACTION_FLAG_HIDE_IN_PANEL))
 			continue
 		var/list/interaction = list()
 		interaction["key"] = I.type
@@ -718,6 +723,8 @@
 
 				if("verb_consent")
 					TOGGLE_BITFIELD(prefs.toggles, VERB_CONSENT)
+				if("ranged_verb_pref")
+					TOGGLE_BITFIELD(prefs.toggles, RANGED_VERBS_CONSENT)
 				if("lewd_verb_sounds")
 					TOGGLE_BITFIELD(prefs.toggles, LEWD_VERB_SOUNDS)
 				if("arousable")

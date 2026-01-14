@@ -3,6 +3,7 @@
 	description = null
 	simple_style = "lewd"
 	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT
+	interaction_sound_volume = 70
 
 	/// Use the number of required feet.
 	var/require_user_num_feet
@@ -241,9 +242,13 @@
 				return FALSE
 
 	if(interaction_flags & INTERACTION_FLAG_OOC_CONSENT)
-		if((!user.ckey) || (user.client && user.client.prefs.toggles & VERB_CONSENT))
-			return TRUE
-	return FALSE
+		if((user.ckey) && (user.client && !(user.client.prefs.toggles & VERB_CONSENT)))
+			return FALSE
+
+	if(interaction_flags & INTERACTION_FLAG_RANGED_CONSENT)
+		if((user.ckey) && (user.client && !(user.client.prefs.toggles & RANGED_VERBS_CONSENT)))
+			return FALSE
+	return TRUE
 
 /datum/interaction/lewd/evaluate_target(mob/living/user, mob/living/target, silent = TRUE)
 	. = ..()

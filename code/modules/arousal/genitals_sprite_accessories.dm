@@ -39,9 +39,23 @@
 	name = "Human"
 	ru_name = "человеческий"
 
+/datum/sprite_accessory/penis/human_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "human"
+	name = "Human (New Tg)"
+	ru_name = "человеческий"
+
 /datum/sprite_accessory/penis/knotted
 	icon_state = "knotted"
 	name = "Knotted"
+	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
+	taur_dimension_x = 64
+	ru_name = "узловатый"
+
+/datum/sprite_accessory/penis/knotted_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "knotted"
+	name = "Knotted (New Tg)"
 	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
 	taur_dimension_x = 64
 	ru_name = "узловатый"
@@ -53,14 +67,37 @@
 	taur_dimension_x = 64
 	ru_name = "конический"
 
+/datum/sprite_accessory/penis/flared_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "flared"
+	name = "Flared (New Tg)"
+	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
+	taur_dimension_x = 64
+	ru_name = "конический"
+
 /datum/sprite_accessory/penis/barbknot
+
 	icon_state = "barbknot"
 	name = "Barbed, Knotted"
+	ru_name = "узловатый и немного колючий"
+
+/datum/sprite_accessory/penis/barbknot_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "barbknot"
+	name = "Barbed, Knotted (New Tg)"
 	ru_name = "узловатый и немного колючий"
 
 /datum/sprite_accessory/penis/tapered
 	icon_state = "tapered"
 	name = "Tapered"
+	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
+	taur_dimension_x = 64
+	ru_name = "утончённый к концу"
+
+/datum/sprite_accessory/penis/tapered_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "tapered"
+	name = "Tapered (New Tg)"
 	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
 	taur_dimension_x = 64
 	ru_name = "утончённый к концу"
@@ -76,9 +113,21 @@
 	name = "Tentacled"
 	ru_name = "тентяклевидный"
 
+/datum/sprite_accessory/penis/tentacle_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "tentacle"
+	name = "Tentacled (New Tg)"
+	ru_name = "тентяклевидный"
+
 /datum/sprite_accessory/penis/hemi
 	icon_state = "hemi"
 	name = "Hemi"
+	ru_name = "двойной"
+
+/datum/sprite_accessory/penis/hemi_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "hemi"
+	name = "Hemi (New Tg)"
 	ru_name = "двойной"
 
 /datum/sprite_accessory/penis/hemiknot
@@ -86,14 +135,26 @@
 	name = "Knotted Hemi"
 	ru_name = "двойной узловатый"
 
-/datum/sprite_accessory/penis/barbedhemiknot
+/datum/sprite_accessory/penis/hemiknot_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
 	icon_state = "hemiknot"
+	name = "Knotted Hemi (New Tg)"
+	ru_name = "двойной узловатый"
+
+/datum/sprite_accessory/penis/barbedhemiknot
+	icon_state = "bhemiknot"
 	name = "Barbed, Knotted Hemi"
 	ru_name = "двойной, узловатый и немного колючий"
 
 /datum/sprite_accessory/penis/thick
 	icon_state = "thick"
 	name = "Thick"
+	ru_name = "обрезанный"
+
+/datum/sprite_accessory/penis/nondescript
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "nondescript"
+	name = "Thick (New Tg)"
 	ru_name = "обрезанный"
 
 //Testicles
@@ -107,6 +168,11 @@
 	icon_state = "single"
 	name = "Single" //Single as "single pair", for clarity.
 
+/datum/sprite_accessory/testicles/single_new
+	icon = 'modular_bluemoon/icons/obj/genitals/testicles_onmob.dmi'
+	icon_state = "single"
+	name = "Single (New Tg)"
+
 /datum/sprite_accessory/testicles/hidden
 	icon_state = "hidden"
 	name = "Hidden" //not sure why these were missing, but I'm pretty certain people might want these.
@@ -114,6 +180,11 @@
 /datum/sprite_accessory/testicles/sheath
 	icon_state = "sheath"
 	name = "Sheath"
+
+/datum/sprite_accessory/testicles/sheath_new
+	icon = 'modular_bluemoon/icons/obj/genitals/testicles_onmob.dmi'
+	icon_state = "sheath"
+	name = "Sheath (New Tg)"
 
 //Vaginas
 /datum/sprite_accessory/vagina

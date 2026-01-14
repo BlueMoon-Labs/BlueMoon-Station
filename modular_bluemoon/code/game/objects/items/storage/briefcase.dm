@@ -3,7 +3,7 @@
 	icon_state = "gbriefcase"
 	lefthand_file = 'icons/mob/inhands/equipment/briefcase_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/briefcase_righthand.dmi'
-	desc = "An old briefcase with a golden trim. It's clear they don't make them as good as they used to. Comes with an added belt clip!"
+	desc = "Старый кейс с золотой внутренней отделкой. Сегодня их не делают настолько же качественными. В комплекте с поясным карабином!"
 	slot_flags = ITEM_SLOT_BELT
 
 /obj/item/storage/briefcase/lawyer/family/loadout/ComponentInitialize()
@@ -11,6 +11,7 @@
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_w_class = WEIGHT_CLASS_NORMAL
 	STR.max_combined_w_class = 14
+	STR.allow_other_storages = FALSE
 
 /obj/item/storage/briefcase/lawyer/family/loadout/PopulateContents()
 	new /obj/item/pen/fountain(src)

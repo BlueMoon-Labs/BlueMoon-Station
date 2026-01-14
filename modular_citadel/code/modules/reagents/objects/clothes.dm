@@ -52,7 +52,7 @@
 	var/mob/living/simple_animal/hostile/mimic/M = loc
 	M.say(pick("Whooee! Time for a hootenanny!", "Rough 'em up boys!", "Yeehaw! Freedom at last!", "Y'all about to get a good old fashioned spanking!"))
 
-/obj/item/clothing/head/hattip/proc/handle_speech(datum/source, mob/speech_args)
+/obj/item/clothing/head/hattip/proc/handle_speech(datum/source, list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
 	var/mob/living/carbon/C = get_wearer()//user
 	var/obj/item/organ/tongue/T = C.getorganslot(ORGAN_SLOT_TONGUE)

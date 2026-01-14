@@ -75,6 +75,7 @@
 				/obj/item/clothing/gloves/latexsleeves = 3,
 				/obj/item/bdsm_whip = 3,
 				/obj/item/bdsm_whip/ridingcrop = 3,
+				/obj/item/storage/belt/belly_riding = 10,
 			),
 		),
 

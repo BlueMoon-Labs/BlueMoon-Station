@@ -210,7 +210,7 @@
 		.manifest tr.alt td {[monochrome?"border-top-width: 2px":"background-color: #DEF"]}
 	</style></head>
 	<table class="manifest" width='350px'>
-	<tr class='head'><th>Name</th><th>Rank</th></tr>
+	<tr class='head'><th>Имя</th><th>Должность</th></tr>
 	"}
 	var/even = 0
 	// sort mobs
@@ -391,7 +391,12 @@
 		var/datum/data/record/S = new()
 		S.fields["id"]			= id
 		S.fields["name"]		= H.real_name
-		S.fields["criminal"]	= SEC_RECORD_STATUS_NONE
+		// BLUEMOON CHANGE START - Установление статуса заключенного
+		if(real_rank == "Prisoner")
+			S.fields["criminal"]	= SEC_RECORD_STATUS_INCARCERATED
+		else
+			S.fields["criminal"]	= SEC_RECORD_STATUS_NONE
+		// BLUEMOON CHANGE END
 		S.fields["mi_crim"]		= list()
 		S.fields["mi_crim_d"]	= list()
 		S.fields["ma_crim"]		= list()
@@ -404,6 +409,10 @@
 		// BLUEMOON ADD END
 		LAZYINITLIST(S.fields["comments"])
 		security += S
+		// BLUEMOON ADD START - Установление статуса заключенного
+		if(real_rank == "Prisoner")
+			H.sec_hud_set_security_status()
+		// BLUEMOON ADD END
 
 		//Locked Record
 		var/datum/data/record/L = new()

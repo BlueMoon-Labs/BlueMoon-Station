@@ -10,6 +10,14 @@
 	if(. && isrobotic(user))
 		do_fake_sparks(5,FALSE,user)
 
+/datum/emote/sound/human/blushh
+	name = "Краснеть"
+	key = "blushh"
+	key_third_person = "blushes"
+	message = "краснеет."
+	sound = 'sound/voice/blush.ogg'
+	stat_allowed = SOFT_CRIT // BLUEMOON EDIT - некоторые эмоуты можно использовать в софткрите
+
 /datum/emote/sound/human/bow
 	name = "Поклониться"
 	key = "bow"

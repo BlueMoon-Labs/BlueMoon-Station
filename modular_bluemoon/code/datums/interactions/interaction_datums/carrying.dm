@@ -46,11 +46,11 @@
 	description = "Нести на руках лицом к лицу."
 	simple_message = "USER поднимает TARGET к себе на руки."
 
-/datum/interaction/carry/face_to_face/do_action(mob/living/user, mob/living/target, apply_cooldown)
+/datum/interaction/carry/face_to_face/do_action(mob/living/carbon/human/user, mob/living/target, apply_cooldown)
 	. = ..()
-	if(!.)
+	if(!. || !istype(user))
 		return
-	user.buckle_mob(target, TRUE, TRUE, 0, 1, 0, FALSE, "face_to_face")
+	user.buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_FACE_TO_FACE, auto_by_type = TRUE)
 
 /datum/interaction/carry/princess
 	description = "Нести на руках как принцессу."
@@ -64,8 +64,8 @@
 		to_chat(user, span_warning("Одной свободной руки недостаточно для такого действия."))
 		return FALSE
 
-/datum/interaction/carry/princess/do_action(mob/living/user, mob/living/target, apply_cooldown)
+/datum/interaction/carry/princess/do_action(mob/living/carbon/human/user, mob/living/target, apply_cooldown)
 	. = ..()
-	if(!.)
+	if(!. || !istype(user))
 		return
-	user.buckle_mob(target, TRUE, TRUE, 90, 2, 0, FALSE, "princess")
+	user.buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_PRINCESS, auto_by_type = TRUE)

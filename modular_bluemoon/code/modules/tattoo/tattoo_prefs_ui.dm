@@ -1,24 +1,6 @@
 // TGUI интерфейс для просмотра и удаления татуировок в настройках персонажа
 // Удаление татуировок применяется только при следующем респауне
 
-/// Удаляет HTML теги из текста
-/proc/strip_html_tags(text)
-	if(!text)
-		return ""
-	// Удаляем теги последовательно, чтобы не ломать UTF-8
-	var/result = text
-	var/safety = 100 // защита от бесконечного цикла
-	while(safety > 0)
-		var/tag_start = findtext(result, "<")
-		if(!tag_start)
-			break
-		var/tag_end = findtext(result, ">", tag_start)
-		if(!tag_end)
-			break
-		result = copytext(result, 1, tag_start) + copytext(result, tag_end + 1)
-		safety--
-	return result
-
 /// Датум для управления татуировками через настройки персонажа
 /datum/tattoo_manager
 	/// Клиент владельца

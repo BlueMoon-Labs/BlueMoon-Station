@@ -123,7 +123,7 @@
 	if(default_unfasten_wrench(user, I))
 		return
 
-	if(istype(I, /obj/item/reagent_containers) && !(I.item_flags & ABSTRACT) && I.is_open_container())
+	if(istype(I, /obj/item/reagent_containers) && !(I.item_flags & ABSTRACT) && I.is_open_container() || is_type_in_list(I, CLOSED_CONTAINERS_OPERABLE))
 		. = TRUE // no afterattack
 		if(panel_open)
 			to_chat(user, "<span class='warning'>Вы не можете работать с [src.name], пока открыт люк техобслуживания!</span>")
@@ -146,6 +146,7 @@
 		to_chat(user, "<span class='notice'>Вы вставили [I] в слот раздатчика.</span>")
 		updateUsrDialog()
 	else
+		to_chat(user, "<span class='warning'>Вы не можете вставить [I] в [src]!</span>")
 		return ..()
 
 /obj/machinery/chem_master/AltClick(mob/living/user)

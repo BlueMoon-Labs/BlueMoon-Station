@@ -730,7 +730,10 @@
 		/obj/item/clothing/gloves/color/black = 2,
 		/obj/item/clothing/gloves/color/latex = 2,
 		/obj/item/reagent_containers/food/drinks/flask/det = 2,
-		/obj/item/storage/fancy/cigarettes = 5
+		/obj/item/storage/fancy/cigarettes = 5,
+		/obj/item/storage/backpack/detective = 2,
+		/obj/item/storage/backpack/satchel/detective = 2,
+		/obj/item/storage/backpack/duffelbag/detective = 2
 	)
 	premium = list(
 		/obj/item/clothing/head/flatcap = 1,

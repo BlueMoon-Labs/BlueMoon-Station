@@ -186,7 +186,7 @@
 	description = span_warning("Меня только что вырвало на себя. Мерзость.</span>\n")
 
 /datum/mood_event/painful_medicine
-	description = span_warning("Лекарства делают свои дело, но боль ещё не успела затихнуть.\n")
+	description = span_warning("Лекарства делают своё дело, но боль ещё не успела затихнуть.\n")
 	mood_change = -5
 	timeout = 1 MINUTES
 

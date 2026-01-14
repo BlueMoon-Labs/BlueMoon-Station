@@ -22,7 +22,7 @@
 			return
 
 		if(!target.is_injectable())
-			to_chat(user, "<span class='warning'>Вы не может напрямую наполнить [target]!</span>")
+			to_chat(user, "<span class='warning'>Вы не можете напрямую наполнить [target]!</span>")
 			return
 
 		var/trans = 0

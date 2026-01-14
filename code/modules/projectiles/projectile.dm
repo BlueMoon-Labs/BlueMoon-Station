@@ -742,6 +742,7 @@
 		pixel_increment_amount = SSprojectiles.global_pixel_increment_amount
 	trajectory = new(starting.x, starting.y, starting.z, pixel_x, pixel_y, Angle, pixel_increment_amount)
 	fired = TRUE
+	play_fov_effect(starting, 6, "gunfire", angle = Angle - 180)
 	if(hitscan)
 		INVOKE_ASYNC(src, PROC_REF(process_hitscan))
 		return

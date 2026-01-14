@@ -1,6 +1,6 @@
 /obj/structure/closet/secure_closet
 	name = "secure locker"
-	desc = "Шкаф-хранилище с ID-карточным замком."
+	desc = "Шкаф-хранилище с ID замком."
 	locked = TRUE
 	icon_state = "secure"
 	max_integrity = 250

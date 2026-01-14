@@ -931,6 +931,13 @@
 	required_reagents = list(/datum/reagent/medicine/ephedrine = 1, /datum/reagent/consumable/ethanol/pina_colada = 1)
 	mix_message = "<span class='warning'>You can hear synthwave in the distance as you can feel your blood boiling with rage.</span>"
 
+/datum/chemical_reaction/millie_kiss
+	name = "Millie Kiss"
+	id = /datum/reagent/consumable/ethanol/millie_kiss
+	results = list(/datum/reagent/consumable/ethanol/millie_kiss = 2)
+	required_reagents = list(/datum/reagent/consumable/ethanol/irishcoffee = 1,  /datum/reagent/consumable/milkshake_strawberry = 1)
+	mix_message = "The drink bubbles, forming pink hearts on the surface."
+
 /datum/chemical_reaction/mauna_loa
 	name = "Mauna Loa"
 	id = /datum/reagent/consumable/ethanol/mauna_loa
