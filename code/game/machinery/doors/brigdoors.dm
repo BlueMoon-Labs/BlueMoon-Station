@@ -46,12 +46,12 @@
 	var/radio_channel = RADIO_CHANNEL_SECURITY //Security channel
 
 /obj/machinery/door_timer/New()
- 	GLOB.celltimers_list += src
- 	return ..()
+	GLOB.celltimers_list += src
+	return ..()
 
 /obj/machinery/door_timer/Destroy()
- 	GLOB.celltimers_list -= src
- 	return ..()
+	GLOB.celltimers_list -= src
+	return ..()
 
 /obj/machinery/door_timer/proc/print_report()
 	if(criminal == CELL_NONE || crimes == CELL_NONE)
@@ -74,6 +74,8 @@
 						<small>This log file was generated automatically upon activation of a cell timer.</small>"}
 
 		P.add_raw_text(report_text)
+		var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/simple/paper)
+		P.add_stamp(sheet.icon_class_name("stamp-machine"), 400, 50, 1, "stamp-machine")
 		P.update_appearance()
 
 		playsound(C.loc, "sound/goonstation/machines/printer_dotmatrix.ogg", 50, 1)

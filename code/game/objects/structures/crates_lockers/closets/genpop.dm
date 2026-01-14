@@ -130,6 +130,7 @@
 		P.name = "PermaBrig log - [prisoner_name] [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)]"
 		generate_report()
 		P.add_raw_text(report_text)
+		var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/simple/paper)
 		P.add_stamp(sheet.icon_class_name("stamp-machine"), 400, 50, 1, "stamp-machine")
 		P.update_appearance()
 
