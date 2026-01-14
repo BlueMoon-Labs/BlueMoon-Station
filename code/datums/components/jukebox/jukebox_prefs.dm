@@ -2,6 +2,7 @@
 #define SAVE_TIMER addtimer(CALLBACK(src, PROC_REF(save_preferences)), 4 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE)
 #define POPUP_ID "tracks_export"
 #define PLAYLIST_MAX_NAME_LEN 35
+#define PLAYLIST_MAX_COUNT 40
 
 ////////////////////	ОБЩИЕ 	////////////////////
 /datum/preferences/proc/tracks_move(list/track_list, track, up = TRUE)
@@ -111,6 +112,9 @@
 		return
 	if(new_playlist_name in playlists)
 		tgui_alert_async(parent, "Такой плейлист уже существует!")
+		return
+	if(playlists >= PLAYLIST_MAX_COUNT)
+		tgui_alert_async(parent, "Уже достигнут максимум в [PLAYLIST_MAX_COUNT] плейлистов!")
 		return
 	playlists[new_playlist_name] = list()
 
@@ -249,3 +253,4 @@
 #undef SAVE_TIMER
 #undef POPUP_ID
 #undef PLAYLIST_MAX_NAME_LEN
+#undef PLAYLIST_MAX_COUNT
