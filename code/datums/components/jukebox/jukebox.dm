@@ -17,6 +17,7 @@
 	var/const/error_message_cooldown_time = 5 SECONDS
 	COOLDOWN_DECLARE(queuecooldown) // This exists solely to prevent accidental repeats of John Mulaney's 'What's New Pussycat?' incident. Intentional, however......
 	var/const/queuecooldown_time = 1 SECONDS
+	var/const/queuecooldown_time_max = 12 SECONDS
 
 /datum/component/jukebox/Initialize(_need_anchored, _queuecost, _volume)
 	. = ..()
@@ -224,6 +225,7 @@
 		all_song_names += T.song_name
 	data["songs"] = all_song_names
 	data["favorite_tracks"] = user?.client?.prefs?.favorite_tracks
+	data["playlists"] = user?.client?.prefs?.playlists
 
 	return data
 
@@ -243,99 +245,9 @@
 			else
 				stop = 0
 			return TRUE
-		//BLUEMOON ADD зацикливание плейлистов
 		if("repeat")
 			repeat = !repeat
-			return
-		//BLUEMOON ADD END
-		if("json")
-			var/mob/living/L = usr
-			if(!L?.client?.prefs)
-				return
-			var/datum/preferences/prefs = L.client.prefs
-			var/list/track_list = prefs.favorite_tracks
-			var/manage_mode = tgui_alert(L, "Что требуется сделать с избранным?", "Менеджемент избранного", list("Экспорт", "Импорт"))
-			if(!manage_mode)
-				return
-			if(manage_mode == "Импорт")
-				var/list/new_track_list = safe_json_decode(tgui_input_text(L, "Вставьте экспортированный список", "Import", multiline = TRUE))
-				if(!LAZYLEN(new_track_list))
-					return
-				if(track_list.len)
-					var/mode = tgui_alert(L, "Желаете заменить список или добавить треки в конец,", "Режим добавления", list("Добавить", "Заменить"))
-					if(!mode)
-						return
-
-					if(mode == "Заменить")
-						var/confirm = tgui_alert(L, "Вы уверены, что хотите полностью очистить избранное перед импортом?\nТреков в избранном: [track_list.len], треков в новом избранном: [new_track_list.len] (без учета дубликатов)", "Очистка избранного", list("Нет", "Да"))
-						if(!confirm || confirm == "Нет")
-							return
-
-						track_list.Cut()
-				track_list |= new_track_list
-				prefs.save_preferences()
-			else
-				if(!track_list.len)
-					to_chat(L, span_warning("У вас нет треков в избранном"))
-					return
-				var/datum/browser/popup = new(L, "favorite_tracks_export", "", 600, 600)
-				popup.set_content(safe_json_encode(track_list))
-				popup.open()
-
 			return TRUE
-		//BLUEMOON ADD START Возможность двигать треки в избранном и двигать в очереди
-		if("toggle_favorite", "move_favorite", "set_favorite_index")
-			var/mob/living/L = usr
-			if(!L?.client?.prefs)
-				return
-			var/datum/preferences/prefs = L.client.prefs
-			var/track = params["track"]
-			if(!track)
-				return
-			var/list/track_list = prefs.favorite_tracks
-
-			switch(action)
-				if("toggle_favorite")
-					if(track in track_list)
-						track_list -= track
-					else
-						track_list += track
-				if("move_favorite")
-					var/to_index = params["up"] ? track_list.Find(next_list_item(track, track_list)) : track_list.Find(previous_list_item(track, track_list))
-					var/track_index = track_list.Find(track)
-					if(!to_index || !track_index)
-						return
-
-					if(to_index == track_list.len)
-						track_list -= track
-						track_list += track
-					else if(to_index == 1)
-						track_list -= track
-						track_list.Insert(to_index, track)
-					else
-						track_list.Swap(track_index, to_index)
-				if("set_favorite_index")
-					var/ui_index = params["index"]
-					if(!ui_index)
-						return
-
-					var/from = track_list.Find(track)
-					if(!from)
-						return
-
-					if(ui_index < 0)
-						ui_index = track_list.len
-					else
-						ui_index = clamp(ui_index, 1, track_list.len)
-
-					var/to_index = track_list.len - ui_index + 1 // Индексы в UI в обратном порядке идут
-
-					moveElementToPos(track_list, from, to_index)
-
-
-			prefs.save_preferences()
-			return TRUE
-		//BLUEMOON ADD END
 		if("move_queue")
 			var/track_index = params["index"]
 			if (!track_index || !queuedplaylist.len || track_index < 1 || track_index > queuedplaylist.len)
@@ -352,50 +264,7 @@
 				queuedplaylist.Swap(track_index, to_index)
 			return TRUE
 		if("add_to_queue")
-			var/list/available = list()
-			for(var/datum/track/S in SSjukeboxes.songs)
-				available[S.song_name] = S
-			var/selected = params["track"]
-			if(QDELETED(src) || QDELETED(box) || !selected || !istype(available[selected], /datum/track))
-				return
-			selectedtrack = available[selected]
-			if(!COOLDOWN_FINISHED(src, queuecooldown))
-				return
-			if(!istype(selectedtrack, /datum/track))
-				return
-			if(!box.allowed(usr) && queuecost && ismachinery(box))
-				var/obj/machinery/box_machine = box
-				var/obj/item/card/id/C
-				if(isliving(usr))
-					var/mob/living/L = usr
-					C = L.get_idcard(TRUE)
-				if(!box_machine.can_transact(C))
-					if(COOLDOWN_FINISHED(src, error_message_cooldown))
-						playsound(box, 'sound/misc/compiler-failure.ogg', 25, TRUE)
-					COOLDOWN_START(src, queuecooldown, queuecooldown_time)
-					return
-				if(!box_machine.attempt_transact(C, queuecost))
-					if(COOLDOWN_FINISHED(src, error_message_cooldown))
-						box.say("Insufficient funds.")
-						playsound(box, 'sound/misc/compiler-failure.ogg', 25, TRUE)
-						COOLDOWN_START(src, error_message_cooldown, error_message_cooldown_time)
-					COOLDOWN_START(src, queuecooldown, queuecooldown_time)
-					return
-				to_chat(usr, "<span class='notice'>You spend [queuecost] credits to queue [selectedtrack.song_name].</span>")
-				log_econ("[queuecost] credits were inserted into [box] by [key_name(usr)] (ID: [C.registered_name]) to queue [selectedtrack.song_name].")
-			// BLUEMOON ADD START Возможность поставить трек в начало
-			if(params["up"])
-				queuedplaylist.Insert(1, selectedtrack)
-			else
-			// BLUEMOON END START
-				queuedplaylist += selectedtrack
-			if(active)
-				box.say("[selectedtrack.song_name] has been added to the queue.")
-			else if(!playing)
-				activate_music()
-			playsound(box, 'sound/machines/ping.ogg', 50, TRUE)
-			COOLDOWN_START(src, queuecooldown, queuecooldown_time)
-			return TRUE
+			return add_to_queue(params["track"], usr, params["up"])
 		if("select_track")
 			var/list/available = list()
 			for(var/datum/track/S in SSjukeboxes.songs)
@@ -426,6 +295,7 @@
 				return
 			box.say("Очередь очищена, удалено треков: [queuedplaylist.len]")
 			LAZYCLEARLIST(queuedplaylist)
+			return TRUE
 		if("remove_from_queue")
 			var/index = params["index"]
 			if(!index || !queuedplaylist.len || index < 1 || index > queuedplaylist.len)
@@ -434,6 +304,111 @@
 			queuedplaylist.Cut(index, index + 1)
 			box.say("[song_to_remove.song_name] была удалена из очереди.")
 			return TRUE
+		if("new_playlist", "change_playlist", "to_playlist", "move_playlist", "set_playlist_index", "playlist_to_queue", "json", "toggle_favorite", "move_favorite", "set_favorite_index")
+			var/mob/living/L = usr
+			var/datum/preferences/prefs = L?.client?.prefs
+			if(!prefs)
+				return
+			var/current_playlist_name = params["playlist"]
+			var/track = params["track"]
+			switch(action)
+				if("new_playlist")
+					return prefs.playlists_new()
+				if("change_playlist")
+					return prefs.playlists_change(current_playlist_name, params["delete"])
+				if("to_playlist")
+					return prefs.playlist_track_change(track, current_playlist_name, params["remove"])
+				if("move_playlist")
+					return prefs.playlist_tack_move(track, current_playlist_name, params["up"])
+				if("set_playlist_index")
+					return prefs.playlist_track_set_index(params["index"], track, current_playlist_name)
+				if("json")
+					return params["playlist_mode"] ? prefs.playlists_json() : prefs.favorite_tracks_json()
+				if("playlist_to_queue")
+					if(!(current_playlist_name in prefs.playlists))
+						return
+					var/list/current_playlist = prefs.playlists[current_playlist_name]
+					if(!LAZYLEN(current_playlist))
+						return
+					return add_to_queue(current_playlist, usr, FALSE)
+				if("toggle_favorite")
+					return prefs.favorite_tracks_toggle(track)
+				if("move_favorite")
+					return prefs.favorite_tracks_move(track, params["up"])
+				if("set_favorite_index")
+					return prefs.favorite_track_set_index(params["index"], track)
+
+/datum/component/jukebox/proc/add_to_queue(list/tracks, mob/user, to_top = FALSE)
+	var/obj/box = parent
+	if(QDELETED(src) || QDELETED(box) || !tracks || !COOLDOWN_FINISHED(src, queuecooldown))
+		return
+
+	var/list/available = list()
+	for(var/datum/track/S in SSjukeboxes.songs)
+		available[S.song_name] = S
+	if(!islist(tracks))
+		tracks = list(tracks)
+
+	var/list/tracks_to_queue = list()
+	for(var/selected in tracks)
+		var/datum/track/selectedtrack = available[selected]
+		if(!istype(selectedtrack))
+			continue
+		tracks_to_queue += selectedtrack
+	if(!tracks_to_queue.len)
+		return
+
+	var/need_pay = isliving(user) && !box.allowed(user) && queuecost && ismachinery(box)
+	if(need_pay && tracks_to_queue.len > 1)
+		var/confirm = tgui_alert(user, "Общая сумма за добавление в очередь составит: [tracks_to_queue.len * queuecost]cr. Продолжить?", "Предупреждение об оплате", list("Да","Нет"))
+		if(confirm != "Да")
+			return
+
+	var/count_added = 0
+	var/spend = 0
+	var/datum/track/last_selectedtrack
+	for(var/datum/track/selectedtrack in tracks_to_queue)
+		if(need_pay)
+			var/obj/machinery/box_machine = box
+			var/mob/living/L = user
+			var/obj/item/card/id/C = L.get_idcard(TRUE)
+			if(!box_machine.can_transact(C))
+				if(COOLDOWN_FINISHED(src, error_message_cooldown))
+					playsound(box, 'sound/misc/compiler-failure.ogg', 25, TRUE)
+				break
+			if(!box_machine.attempt_transact(C, queuecost))
+				if(COOLDOWN_FINISHED(src, error_message_cooldown))
+					box.say("Недостаточно средств для оплаты[tracks_to_queue.len > 1 ? " всех треков" : ""].")
+					playsound(box, 'sound/misc/compiler-failure.ogg', 25, TRUE)
+					COOLDOWN_START(src, error_message_cooldown, error_message_cooldown_time)
+					sleep(0.3 SECONDS)
+				break
+			spend += queuecost
+			log_econ("[queuecost] credits were inserted into [box] by [key_name(usr)] (ID: [C.registered_name]) to queue [selectedtrack.song_name].")
+
+		if(to_top)
+			queuedplaylist.Insert(1, selectedtrack)
+		else
+			queuedplaylist += selectedtrack
+		last_selectedtrack = selectedtrack
+		++count_added
+		. = TRUE
+
+	if(!.)
+		return
+	if(spend)
+		to_chat(user, span_notice("Вы потратили [spend]cr поставив в очередь [count_added > 1? "[count_added] треков" : last_selectedtrack.song_name]."))
+
+	if(count_added > 1)
+		box.say("[count_added] треков добавлено в очередь.")
+	else if(active)
+		box.say("[last_selectedtrack.song_name] добавлена в очередь.")
+
+	if(!playing)
+		activate_music()
+	playsound(box, 'sound/machines/ping.ogg', 50, TRUE)
+	COOLDOWN_START(src, queuecooldown, clamp(queuecooldown_time*count_added, 0, queuecooldown_time_max))
+	return TRUE
 
 /datum/component/jukebox/proc/activate_music()
 	var/obj/box = parent
@@ -441,7 +416,7 @@
 		return FALSE
 	// BLUEMOON ADD - Making sure not to play track if all jukebox channels are busy. That shouldn't happen.
 	if(!SSjukeboxes.freejukeboxchannels.len)
-		box.say("Cannot play song: limit of currently playing tracks has been exceeded.")
+		box.say("Не удается воспроизвести песню: превышен лимит воспроизводимых в данный момент треков.")
 		return FALSE
 	if(!check_area())
 		return FALSE
@@ -478,7 +453,7 @@
 	var/area/juke_area = get_area(box)
 	if(juke_area.jukebox_privatized_by && juke_area.jukebox_privatized_by != box)
 		if(!silent)
-			box.say("Vibration sensor error. A reduction in the number of jukeboxes in the area is required.")
+			box.say("Ошибка датчика вибрации. Необходимо сократить количество музыкальных автоматов в этом районе.")
 		return FALSE
 
 /datum/component/jukebox/proc/dance_over()
