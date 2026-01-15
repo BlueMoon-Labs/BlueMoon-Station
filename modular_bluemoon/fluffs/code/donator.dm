@@ -1983,7 +1983,7 @@
 	ckeywhitelist = list("dragon9090")
 
 /datum/gear/donator/bm/imperium_flags
-	name = "Invisible Belt Kit"
+	name = "Imperium flag kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/imperium_flags
 	ckeywhitelist = list("domilion")
