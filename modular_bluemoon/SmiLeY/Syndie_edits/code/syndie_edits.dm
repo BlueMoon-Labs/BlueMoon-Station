@@ -91,8 +91,11 @@
 	mob_overlay_icon = 'icons/mob/clothing/belt.dmi'
 	icon_state = "webbingds"
 	item_state = "webbingds"
-	STR.max_items = 7
 	custom_premium_price = 450 // потому что это улучшенная версия пояса которая вмещает всё что нужно
+
+/obj/item/storage/belt/security/webbing/ds/ComponentInitialize()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 7
 
 /obj/item/clothing/suit/armor/bulletproof/old
 	icon = 'icons/obj/clothing/suits.dmi'
