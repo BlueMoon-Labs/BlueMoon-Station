@@ -378,6 +378,7 @@
 			if(!box_machine.can_transact(id_card))
 				if(COOLDOWN_FINISHED(src, error_message_cooldown))
 					playsound(box, 'sound/misc/compiler-failure.ogg', 25, TRUE)
+					COOLDOWN_START(src, error_message_cooldown, error_message_cooldown_time)
 				break
 			if(!box_machine.attempt_transact(id_card, queuecost))
 				if(COOLDOWN_FINISHED(src, error_message_cooldown))
@@ -419,8 +420,9 @@
 		return FALSE
 	// BLUEMOON ADD - Making sure not to play track if all jukebox channels are busy. That shouldn't happen.
 	if(!SSjukeboxes.freejukeboxchannels.len)
-		box.say("Не удается воспроизвести песню: превышен лимит воспроизводимых в данный момент треков.")
-		COOLDOWN_START(src, error_message_cooldown, error_message_cooldown_time)
+		if(COOLDOWN_FINISHED(src, error_message_cooldown))
+			box.say("Не удается воспроизвести песню: превышен лимит воспроизводимых в данный момент треков.")
+			COOLDOWN_START(src, error_message_cooldown, error_message_cooldown_time)
 		return FALSE
 	if(!check_area())
 		return FALSE
