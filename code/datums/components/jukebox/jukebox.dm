@@ -32,8 +32,9 @@
 	var/obj/box = parent
 	if(box.obj_flags & EMAGGED)
 		emag_act(silent = TRUE)
-	RegisterSignal(parent, COMSIG_MOUSEDROP_ONTO, PROC_REF(on_mouse_dropped))
+	RegisterSignal(parent, COMSIG_MOUSEDROP_ONTO, PROC_REF(on_mouse_dropped)) // Для удобства
 	RegisterSignal(parent, COMSIG_ITEM_ATTACK_SELF, PROC_REF(interact)) // Для предметов
+	RegisterSignal(parent, COMSIG_ATOM_ATTACK_GHOST, PROC_REF(interact)) // Для гостов
 	RegisterSignal(parent, COMSIG_ATOM_ATTACK_HAND, PROC_REF(on_attack_hand)) // Для машинерии
 	RegisterSignal(parent, COMSIG_ATOM_UPDATE_ICON_STATE, PROC_REF(on_update_icon_state))
 	RegisterSignal(parent, COMSIG_ATOM_EMAG_ACT, PROC_REF(on_emag_act))
