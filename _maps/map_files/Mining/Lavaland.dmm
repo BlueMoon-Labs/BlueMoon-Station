@@ -7914,10 +7914,6 @@
 /obj/item/pen/fountain/captain,
 /turf/open/floor/carpet/royalblack,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
-"gpF" = (
-/obj/effect/ash_rune,
-/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
-/area/ruin/lavaland/unpowered/ash_walkers)
 "gpS" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
@@ -100814,7 +100810,7 @@ nBA
 nBA
 nBA
 nBA
-gpF
+nBA
 nBA
 nBA
 nBA
@@ -157329,7 +157325,7 @@ lzC
 lzC
 nBA
 nBA
-gpF
+nBA
 nBA
 nBA
 vAU
