@@ -209,17 +209,19 @@
 			save_preferences()
 			return TRUE
 
-		var/choise = tgui_alert(parent, "Создать новый плейлист или хотите добавить треки в существующий?", "Импорт плейлистов", list("Новый", "Существующий"))
-		if(!choise)
-			return
 		var/current_playlist_name
 		var/list/track_list
-		if(choise == "Существующий")
-			current_playlist_name = tgui_input_list(parent, "В какой плейлист добавить треки?", "Плейлисты", playlists)
-			if(!(current_playlist_name in playlists))
+		var/choise
+		if(playlists.len)
+			choise = tgui_alert(parent, "Создать новый плейлист или хотите добавить треки в существующий?", "Импорт плейлистов", list("Новый", "Существующий"))
+			if(!choise)
 				return
-			track_list = playlists[current_playlist_name]
-		else if(choise == "Новый")
+			if(choise == "Существующий")
+				current_playlist_name = tgui_input_list(parent, "В какой плейлист добавить треки?", "Плейлисты", playlists)
+				if(!(current_playlist_name in playlists))
+					return
+				track_list = playlists[current_playlist_name]
+		if(!playlists.len || choise == "Новый")
 			current_playlist_name = playlists_new()
 			if(!current_playlist_name)
 				return
