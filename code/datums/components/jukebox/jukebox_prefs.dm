@@ -113,7 +113,7 @@
 	if(new_playlist_name in playlists)
 		tgui_alert_async(parent, "Такой плейлист уже существует!")
 		return
-	if(playlists >= PLAYLIST_MAX_COUNT)
+	if(playlists.len >= PLAYLIST_MAX_COUNT)
 		tgui_alert_async(parent, "Уже достигнут максимум в [PLAYLIST_MAX_COUNT] плейлистов!")
 		return
 	playlists[new_playlist_name] = list()
