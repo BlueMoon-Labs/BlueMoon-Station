@@ -118,3 +118,20 @@
 		visible_message(span_danger("One of the eggs swells to an unnatural size and tumbles free. It's ready to hatch!"))
 		meat_counter -= ASH_WALKER_SPAWN_THRESHOLD
 		// ashies.eggs_created++
+
+/obj/structure/lavaland/ash_walker/attackby(obj/item/attacking_item, mob/living/user, params)
+	if(!istype(attacking_item, /obj/item/organ/regenerative_core/legion))
+		return ..()
+
+	if(!user.mind.has_antag_datum(/datum/antagonist/ashwalker))
+		balloon_alert(user, "must be an ashwalker!")
+		return
+
+	var/obj/item/organ/regenerative_core/legion/regen_core = attacking_item
+
+	if(!regen_core.preserved())
+		balloon_alert(user, "organ decayed!")
+		return
+	playsound(src, 'sound/magic/Demon_consume.ogg', 50, TRUE)
+	balloon_alert_to_viewers("[src] revitalizes [regen_core]!")
+	return

@@ -18,13 +18,21 @@
 
 /datum/component/ash_age
 	/// the amount of minutes after each upgrade
-	var/stage_time = 20 MINUTES
+	var/stage_time = 1 MINUTES //для проверки, не забыть поменять
 	/// the current stage of the ash
 	var/current_stage = 0
 	/// the time when upgraded/attached
 	var/evo_time = 0
 	/// the human target the element is attached to
 	var/mob/living/carbon/human/human_target
+	COOLDOWN_DECLARE(ash_regen)
+
+/datum/component/ash_age/process()
+	var/bruteheal = human_target.getBruteLoss()
+	var/burnheal = human_target.getFireLoss()
+	if(burnheal+bruteheal>0 && human_target.health >= human_target.crit_threshold)
+		human_target.heal_overall_damage(1, 1)
+	COOLDOWN_START(src, ash_regen, 10 SECONDS)
 
 /datum/component/ash_age/Initialize()
 	if(!ishuman(parent))
@@ -37,22 +45,6 @@
 	RegisterSignal(human_target, COMSIG_RUNE_EVOLUTION, PROC_REF(check_evolution))
 	RegisterSignal(human_target, COMSIG_ATOM_EXAMINE, PROC_REF(on_examine))
 
-/*/obj/item/ash_blood
-	name = "bottle of tendril blood"
-	desc = "Говорят, если выпить это, можно стать монстром охраняющим Некрополис."
-	icon = 'icons/obj/wizard.dmi'
-	icon_state = "vial"
-
-/obj/item/ash_blood/attack_self(mob/living/carbon/human/user)
-	if(!istype(user))
-		return
-	to_chat(user, "<span class='danger'>Power courses through you! You can now shift your form at will.</span>")
-	if(user.mind)
-		var/obj/effect/proc_holder/spell/targeted/shapeshift/dragon/D = new
-		user.mind.AddSpell(D)
-	playsound(user.loc,'sound/items/drink.ogg', rand(10,50), 1)
-	qdel(src)  Попытка сделать ненужный костыль
-*/
 /datum/component/ash_age/proc/check_evolution(mob/living/carbon/human/user)
 	SIGNAL_HANDLER
 	// if the world time hasn't yet passed the time required for evolution
@@ -67,13 +59,7 @@
 	switch(current_stage)
 		if(1)
 			to_chat(human_target, "<span class='notice'>Ты чувствуешь, как твои раны затягиваются</span>")
-			spawn()
-			while(src)
-				var/bruteheal = human_target.getBruteLoss()
-				var/burnheal = human_target.getFireLoss()
-				if(burnheal+bruteheal>0 && human_target.health >= human_target.crit_threshold)
-					human_target.heal_overall_damage(5, 5)
-				sleep(10 SECONDS)
+			START_PROCESSING(SSprocessing, src)
 		if(2)
 			to_chat(human_target, "<span class='notice'>Вы чувствуете себя более крепким.</span>")
 			species_target.brutemod *= 0.9
