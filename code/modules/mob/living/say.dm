@@ -379,8 +379,18 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	if(eavesdropping_modes[message_mode])
 		eavesdrop_range = EAVESDROP_EXTRA_RANGE
 	var/list/listening = get_hearers_in_view(message_range+eavesdrop_range, source)
-	var/list/the_dead = list()
 
+	// ТЕШАРИ - улучшенный слух (слышат шёпот на +2 клетки дальше)
+	if(eavesdropping_modes[message_mode])
+		for(var/mob/living/carbon/human/H in range(message_range + eavesdrop_range + 2, source))
+			if(H in listening)
+				continue
+			if(!H.client)
+				continue
+			if(H.dna?.species?.id == SPECIES_TESHARI)
+				listening += H
+
+	var/list/the_dead = list()
 	for(var/_M in GLOB.player_list)
 		var/mob/M = _M
 		if(M.stat != DEAD) //not dead, not important
