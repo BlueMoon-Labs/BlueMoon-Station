@@ -53,6 +53,8 @@
 	data["allowedBuildTypes"] = allowed_buildtypes
 
 	// All designs
+	var/icon_path = null
+	var/icon_state = null
 	var/list/designs_data = list()
 	for(var/design_id in stored_research.researched_designs)
 		var/datum/design/D = SSresearch.techweb_design_by_id(design_id)
@@ -63,17 +65,24 @@
 		if(!(isnull(allowed_department_flags) || (D.departmental_flags & allowed_department_flags)))
 			continue
 
+		if (D.build_path)
+			var/obj/O = D.build_path
+			icon_path = initial(O.icon)
+			icon_state = initial(O.icon_state)
+
 		var/list/design_data = list(
 			"id" = D.id,
 			"name" = D.name,
-			"desc" = D.desc,
+			"desc" = (D.desc && D.desc != "Desc") ? D.desc : null,
 			"categories" = D.category,
 			"buildPath" = "[D.build_path]",
 			"constructionTime" = D.construction_time,
 			"latheTimeFactor" = D.lathe_time_factor,
 			"minSecurityLevel" = D.min_security_level,
 			"maxSecurityLevel" = D.max_security_level,
-			"departmentalFlags" = D.departmental_flags
+			"departmentalFlags" = D.departmental_flags,
+			"icon" = icon_path ? "[icon_path]" : null,
+			"iconState" = icon_state
 		)
 
 		// Materials
@@ -92,7 +101,8 @@
 		var/list/reagents_list = list()
 		for(var/reagent in D.reagents_list)
 			reagents_list += list(list(
-				"name" = "[reagent]",
+				"type" = "[reagent]",
+				"name" = initial(reagent:name),
 				"amount" = D.reagents_list[reagent] * coeff
 			))
 		design_data["reagents"] = reagents_list
@@ -126,11 +136,22 @@
 		for(var/mat_id in materials.mat_container.materials)
 			var/datum/material/M = mat_id
 			var/amount = materials.mat_container.materials[mat_id]
+
+			var/icon_path = null
+			var/icon_state = null
+
+			if (M.sheet_type)
+				var/obj/item/stack/sheet/S = M.sheet_type
+				icon_path = initial(S.icon)
+				icon_state = initial(S.icon_state)
+
 			materials_data += list(list(
 				"name" = M.name,
 				"amount" = amount,
 				"ref" = REF(M),
-				"sheets" = round(amount / MINERAL_MATERIAL_AMOUNT)
+				"sheets" = round(amount / MINERAL_MATERIAL_AMOUNT),
+				"icon" = icon_path ? "[icon_path]" : null,
+				"iconState" = icon_state
 			))
 	else
 		data["materialsConnected"] = FALSE

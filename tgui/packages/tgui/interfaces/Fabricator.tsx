@@ -18,7 +18,7 @@ import {
 type Design = {
   id: string;
   name: string;
-  desc: string;
+  desc: string | null;
   categories: string[];
   buildPath: string;
   constructionTime: number;
@@ -27,7 +27,10 @@ type Design = {
   maxSecurityLevel: number;
   materials: Material[];
   reagents: Reagent[];
+  icon?: string;
+  iconState?: string;
 };
+
 
 type Category = {
   name: string;
@@ -43,6 +46,7 @@ type Material = {
 type Reagent = {
   name: string;
   amount: number;
+  type: string;
 };
 
 type StoredMaterial = {
@@ -87,6 +91,30 @@ type FabricatorData = {
   securityLevel: number;
   securityLevelName: string;
   isStation: boolean;
+};
+
+const SECURITY_LEVEL_NAMES: Record<number, string> = {
+  1: 'Green',
+  2: 'Blue',
+  3: 'Orange',
+  4: 'Violet',
+  5: 'Amber',
+  6: 'Red',
+  7: 'Lambda',
+  8: 'Gamma',
+  9: 'Epsilon',
+  10: 'Delta',
+};
+
+const formatSecurityRange = (min: number, max: number) => {
+  const minName = SECURITY_LEVEL_NAMES[min] || min;
+  const maxName = SECURITY_LEVEL_NAMES[max] || max;
+
+  if (min === max) {
+    return minName;
+  }
+
+  return `${minName}–${maxName}`;
 };
 
 export const Fabricator = (props, context) => {
@@ -143,7 +171,7 @@ export const Fabricator = (props, context) => {
 
     // Check reagents
     for (const reagent of design.reagents) {
-      const stored = data.reagents.find((r) => r.name === reagent.name);
+      const stored = data.reagents.find((r) => r.type === reagent.type);
       if (!stored || stored.volume < reagent.amount) {
         return false;
       }
@@ -521,7 +549,11 @@ const DesignCard = (props) => {
       {/* Security warning */}
       {hasSecurityIssue && (
         <Box mt={1} color="average">
-          <Icon name="exclamation-triangle" /> Security level required
+          <Icon name="exclamation-triangle" />
+          Security level required: {formatSecurityRange(
+            design.minSecurityLevel,
+            design.maxSecurityLevel
+          )}
         </Box>
       )}
     </Section>
