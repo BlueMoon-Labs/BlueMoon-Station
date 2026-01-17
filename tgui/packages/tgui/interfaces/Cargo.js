@@ -155,9 +155,9 @@ export const CargoCatalog = (props, context) => {
   return (
     <Section
       title="Catalog"
-      buttons={!express && (
+      buttons={(
         <Fragment>
-          <CargoCartButtons />
+          {!express && <CargoCartButtons />}
           <Input
             placeholder="Search..."
             value={searchText}

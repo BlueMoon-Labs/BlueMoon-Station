@@ -129,6 +129,7 @@ i'd be right happy to */
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	if(D)
 		data["points"] = D.account_balance
+	data["self_paid"] = self_paid
 	data["locked"] = locked//swipe an ID to unlock
 	data["siliconUser"] = hasSiliconAccessInArea(user)
 	data["beaconzone"] = beacon ? get_area(beacon) : ""//where is the beacon located? outputs in the tgui
@@ -168,6 +169,9 @@ i'd be right happy to */
 		if("toggleLock")
 			if(allowed(usr))
 				locked = !locked
+		if("toggleprivate")
+			self_paid = !self_paid
+			. = TRUE
 		// BLUEMOON ADD END
 		if("LZCargo")
 			usingBeacon = FALSE
@@ -199,6 +203,33 @@ i'd be right happy to */
 			var/datum/supply_pack/pack = SSshuttle.supply_packs[id]
 			if(!istype(pack))
 				CRASH("Unknown supply pack id given by express order console ui. ID: [params["id"]]")
+
+			// BLUEMOON ADD - Personal purchase validation
+			if(self_paid && !pack.can_private_buy)
+				say("This cannot be bought privately.")
+				return
+
+			if(pack.goody == PACK_GOODY_PRIVATE && !self_paid)
+				playsound(src, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
+				say("ERROR: Private small crates may only be purchased by private accounts.")
+				return
+
+			var/datum/bank_account/account
+			if(self_paid && isliving(usr))
+				var/mob/living/L = usr
+				var/obj/item/card/id/id_card = L.get_idcard(TRUE)
+				if(!istype(id_card))
+					say("No ID card detected.")
+					return
+				if(istype(id_card, /obj/item/card/id/departmental_budget))
+					say("The [src] rejects [id_card].")
+					return
+				account = id_card.registered_account
+				if(!istype(account))
+					say("Invalid bank account.")
+					return
+			// BLUEMOON ADD END
+
 			var/name = "*None Provided*"
 			var/rank = "*None Provided*"
 			var/ckey = usr.ckey
@@ -211,11 +242,15 @@ i'd be right happy to */
 				rank = "Silicon"
 			var/reason = ""
 			var/list/empty_turfs
-			var/datum/supply_order/SO = new(pack, name, rank, ckey, reason)
+			var/datum/supply_order/SO = new(pack, name, rank, ckey, reason, account)
 			var/points_to_check
 			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-			if(D)
+			// BLUEMOON EDIT - Use personal account balance when self_paid
+			if(self_paid && account)
+				points_to_check = account.account_balance
+			else if(D)
 				points_to_check = D.account_balance
+			// BLUEMOON EDIT END
 			if(!(obj_flags & EMAGGED))
 				if(SO.pack.get_cost() <= points_to_check)
 					var/LZ
@@ -236,15 +271,29 @@ i'd be right happy to */
 							LZ = pick(empty_turfs)
 					if (SO.pack.get_cost() <= points_to_check && LZ)//we need to call the cost check again because of the CHECK_TICK call
 						TIMER_COOLDOWN_START(src, COOLDOWN_EXPRESSPOD_CONSOLE, 5 SECONDS)
-						D.adjust_money(-SO.pack.get_cost())
+						// BLUEMOON EDIT - Charge personal or department account
+						if(self_paid && account)
+							account.adjust_money(-SO.pack.get_cost())
+							say("Order processed. Charged to [account.account_holder]'s account.")
+						else
+							D.adjust_money(-SO.pack.get_cost())
+						// BLUEMOON EDIT END
 						if(pack.special_pod)
 							new /obj/effect/pod_landingzone(LZ, pack.special_pod, SO)
 						else
 							new /obj/effect/pod_landingzone(LZ, podType, SO)
 						. = TRUE
 						update_appearance()
+				// BLUEMOON ADD - Insufficient funds message
+				else
+					if(self_paid)
+						say("Insufficient funds in personal account. Required: [SO.pack.get_cost()] cr.")
+					else
+						say("Insufficient funds in cargo budget. Required: [SO.pack.get_cost()] cr.")
+				// BLUEMOON ADD END
 			else
-				if(SO.pack.get_cost() * (0.72*MAX_EMAG_ROCKETS) <= points_to_check) // bulk discount :^)
+				var/total_cost = SO.pack.get_cost() * (0.72*MAX_EMAG_ROCKETS)
+				if(total_cost <= points_to_check) // bulk discount :^)
 					landingzone = GLOB.areas_by_type[pick(GLOB.the_station_areas)]  //override default landing zone
 					for(var/turf/open/floor/T in landingzone.contents)
 						if(T.is_blocked_turf())
@@ -253,7 +302,12 @@ i'd be right happy to */
 						CHECK_TICK
 					if(empty_turfs?.len)
 						TIMER_COOLDOWN_START(src, COOLDOWN_EXPRESSPOD_CONSOLE, 10 SECONDS)
-						D.adjust_money(-(SO.pack.get_cost() * (0.72*MAX_EMAG_ROCKETS)))
+						// BLUEMOON EDIT - Charge personal or department account (emagged mode)
+						if(self_paid && account)
+							account.adjust_money(-total_cost)
+						else
+							D.adjust_money(-total_cost)
+						// BLUEMOON EDIT END
 
 						SO.generateRequisition(get_turf(src))
 						for(var/i in 1 to MAX_EMAG_ROCKETS)
@@ -266,4 +320,11 @@ i'd be right happy to */
 							. = TRUE
 							update_appearance()
 							CHECK_TICK
+				// BLUEMOON ADD - Insufficient funds message (emagged mode)
+				else
+					if(self_paid)
+						say("Insufficient funds in personal account. Required: [total_cost] cr.")
+					else
+						say("Insufficient funds in cargo budget. Required: [total_cost] cr.")
+				// BLUEMOON ADD END
 
