@@ -1,5 +1,4 @@
 // tgui/packages/tgui/interfaces/Fabricator.tsx
-// Frontend для Protolathe, Circuit Imprinter, Techfab
 
 import { useBackend, useLocalState } from '../backend';
 import { Window } from '../layouts';
@@ -15,6 +14,8 @@ import {
   Tabs,
 } from '../components';
 
+/* ================= TYPES ================= */
+
 type Design = {
   id: string;
   name: string;
@@ -27,10 +28,7 @@ type Design = {
   maxSecurityLevel: number;
   materials: Material[];
   reagents: Reagent[];
-  icon?: string;
-  iconState?: string;
 };
-
 
 type Category = {
   name: string;
@@ -63,7 +61,6 @@ type StoredReagent = {
 };
 
 type FabricatorData = {
-  // Static data
   machineName: string;
   machineType: string;
   departmentTag: string;
@@ -74,7 +71,6 @@ type FabricatorData = {
   fabricatorType: string;
   bypassSecurity?: boolean;
 
-  // Dynamic data
   busy: boolean;
   emagged: boolean;
   disabled: boolean;
@@ -93,6 +89,8 @@ type FabricatorData = {
   isStation: boolean;
 };
 
+/* ================= SECURITY ================= */
+
 const SECURITY_LEVEL_NAMES: Record<number, string> = {
   1: 'Green',
   2: 'Blue',
@@ -109,115 +107,39 @@ const SECURITY_LEVEL_NAMES: Record<number, string> = {
 const formatSecurityRange = (min: number, max: number) => {
   const minName = SECURITY_LEVEL_NAMES[min] || min;
   const maxName = SECURITY_LEVEL_NAMES[max] || max;
-
-  if (min === max) {
-    return minName;
-  }
-
-  return `${minName}–${maxName}`;
+  return min === max ? minName : `${minName}–${maxName}`;
 };
+
+/* ================= MAIN ================= */
 
 export const Fabricator = (props, context) => {
   const { act, data } = useBackend<FabricatorData>(context);
-  const [selectedTab, setSelectedTab] = useLocalState(context, 'tab', 'designs');
-  const [selectedCategory, setSelectedCategory] = useLocalState(
-    context,
-    'category',
-    'All'
-  );
-  const [searchText, setSearchText] = useLocalState(context, 'search', '');
 
-  const getFilteredDesigns = () => {
-    let filtered = data.designs;
+  const [tab, setTab] = useLocalState(context, 'tab', 'designs');
+  const [category, setCategory] = useLocalState(context, 'category', 'All');
+  const [search, setSearch] = useLocalState(context, 'search', '');
 
-    // Filter by category
-    if (selectedCategory !== 'All') {
-      filtered = filtered.filter((d) =>
-        d.categories.includes(selectedCategory)
-      );
+  const filteredDesigns = data.designs.filter((d) => {
+    if (category !== 'All' && !d.categories.includes(category)) {
+      return false;
     }
-
-    // Filter by search
-    if (searchText) {
-      const search = searchText.toLowerCase();
-      filtered = filtered.filter((d) => d.name.toLowerCase().includes(search));
+    if (search && !d.name.toLowerCase().includes(search.toLowerCase())) {
+      return false;
     }
-
-    return filtered;
-  };
-
-  const canBuildDesign = (design: Design) => {
-    if (data.busy) return false;
-    if (!data.materialsConnected) return false;
-    if (data.materialsOnHold) return false;
-
-    // Check security level
-    if (!data.emagged && !data.bypassSecurity && data.isStation) {
-      if (
-        data.securityLevel < design.minSecurityLevel ||
-        data.securityLevel > design.maxSecurityLevel
-      ) {
-        return false;
-      }
-    }
-
-    // Check materials
-    for (const mat of design.materials) {
-      const stored = data.materials.find((m) => m.name === mat.name);
-      if (!stored || stored.amount < mat.amount) {
-        return false;
-      }
-    }
-
-    // Check reagents
-    for (const reagent of design.reagents) {
-      const stored = data.reagents.find((r) => r.type === reagent.type);
-      if (!stored || stored.volume < reagent.amount) {
-        return false;
-      }
-    }
-
     return true;
-  };
-
-  const getMaxBuildable = (design: Design) => {
-    let max = 50;
-
-    for (const mat of design.materials) {
-      const stored = data.materials.find((m) => m.name === mat.name);
-      if (stored) {
-        max = Math.min(max, Math.floor(stored.amount / mat.amount));
-      } else {
-        return 0;
-      }
-    }
-
-    for (const reagent of design.reagents) {
-      const stored = data.reagents.find((r) => r.name === reagent.name);
-      if (stored) {
-        max = Math.min(max, Math.floor(stored.volume / reagent.amount));
-      } else {
-        return 0;
-      }
-    }
-
-    return max;
-  };
+  });
 
   return (
     <Window width={900} height={650}>
       <Window.Content scrollable>
         <Stack vertical fill>
-          {/* Header */}
+
+          {/* HEADER */}
           <Stack.Item>
             <Section
               title={`${data.organization} ${data.departmentTag} ${data.machineName}`}
               buttons={
-                <Button
-                  icon="sync"
-                  content="Sync Research"
-                  onClick={() => act('sync_research')}
-                />
+                <Button icon="sync" content="Sync Research" onClick={() => act('sync_research')} />
               }
             >
               <LabeledList>
@@ -235,12 +157,12 @@ export const Fabricator = (props, context) => {
                     <Box color="bad">NOT CONNECTED</Box>
                   )}
                 </LabeledList.Item>
-                <LabeledList.Item label="Efficiency">
+                <LabeledList.Item label="Material Use (Lower is better)">
                   {data.efficiencyPercent}%
                 </LabeledList.Item>
                 <LabeledList.Item label="Status">
                   {data.busy ? (
-                    <Box color="average">FABRICATING...</Box>
+                    <Box color="average">FABRICATING</Box>
                   ) : (
                     <Box color="good">READY</Box>
                   )}
@@ -252,206 +174,117 @@ export const Fabricator = (props, context) => {
             </Section>
           </Stack.Item>
 
-          {/* Tabs */}
+          {/* TABS */}
           <Stack.Item>
             <Tabs fluid>
-              <Tabs.Tab
-                selected={selectedTab === 'designs'}
-                onClick={() => setSelectedTab('designs')}
-              >
+              <Tabs.Tab selected={tab === 'designs'} onClick={() => setTab('designs')}>
                 <Icon name="wrench" /> Designs
               </Tabs.Tab>
-              <Tabs.Tab
-                selected={selectedTab === 'materials'}
-                onClick={() => setSelectedTab('materials')}
-              >
+              <Tabs.Tab selected={tab === 'materials'} onClick={() => setTab('materials')}>
                 <Icon name="box" /> Materials
               </Tabs.Tab>
-              <Tabs.Tab
-                selected={selectedTab === 'chemicals'}
-                onClick={() => setSelectedTab('chemicals')}
-              >
+              <Tabs.Tab selected={tab === 'chemicals'} onClick={() => setTab('chemicals')}>
                 <Icon name="flask" /> Chemicals
               </Tabs.Tab>
             </Tabs>
           </Stack.Item>
 
-          {/* Content */}
+          {/* CONTENT */}
           <Stack.Item grow>
-            {selectedTab === 'designs' && (
+            {tab === 'designs' && (
               <DesignsTab
                 context={context}
                 data={data}
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-                searchText={searchText}
-                setSearchText={setSearchText}
-                getFilteredDesigns={getFilteredDesigns}
-                canBuildDesign={canBuildDesign}
-                getMaxBuildable={getMaxBuildable}
+                designs={filteredDesigns}
+                category={category}
+                setCategory={setCategory}
+                search={search}
+                setSearch={setSearch}
                 act={act}
               />
             )}
-            {selectedTab === 'materials' && (
-              <MaterialsTab data={data} act={act} />
-            )}
-            {selectedTab === 'chemicals' && (
-              <ChemicalsTab data={data} act={act} />
-            )}
+
+            {tab === 'materials' && <MaterialsTab data={data} act={act} />}
+            {tab === 'chemicals' && <ChemicalsTab data={data} act={act} />}
           </Stack.Item>
+
         </Stack>
       </Window.Content>
     </Window>
   );
 };
 
-const DesignsTab = (props) => {
-  const {
-    data,
-    selectedCategory,
-    setSelectedCategory,
-    searchText,
-    setSearchText,
-    getFilteredDesigns,
-    canBuildDesign,
-    getMaxBuildable,
-    act,
-  } = props;
+/* ================= DESIGNS ================= */
 
-  const [expandedCategories, setExpandedCategories] = useLocalState(
-    props.context,
-    'expanded_categories',
-    []
-  );
-
-  const filteredDesigns = getFilteredDesigns();
-
-  const toggleCategory = (catName: string) => {
-    if (expandedCategories.includes(catName)) {
-      setExpandedCategories(expandedCategories.filter((c) => c !== catName));
-    } else {
-      setExpandedCategories([...expandedCategories, catName]);
-    }
-  };
-
-  const countDesignsInCategory = (category: string) => {
-    return data.designs.filter((d) => d.categories.includes(category)).length;
-  };
+const DesignsTab = ({ context, data, designs, category, setCategory, search, setSearch, act }) => {
+  const [compact, setCompact] = useLocalState(context, 'compact', false);
 
   return (
     <Stack fill>
-      {/* Sidebar with categories */}
       <Stack.Item basis="250px">
-        <Section fill scrollable title="Categories">
+        <Section title="Categories" fill scrollable>
           <Button
             fluid
-            color={selectedCategory === 'All' ? 'good' : 'default'}
-            onClick={() => setSelectedCategory('All')}
-            mb={0.5}
+            selected={category === 'All'}
+            onClick={() => setCategory('All')}
           >
-            <Stack>
-              <Stack.Item grow>All Designs</Stack.Item>
-              <Stack.Item>({data.designs.length})</Stack.Item>
-            </Stack>
+            All Designs ({data.designs.length})
           </Button>
-          {data.categories.map((category) => {
-            const isExpanded = expandedCategories.includes(category.name);
-            const hasSubcats = category.subcategories.length > 0;
-            const count = countDesignsInCategory(category.name);
 
-            return (
-              <Box key={category.name}>
-                <Button
-                  fluid
-                  color={selectedCategory === category.name ? 'good' : 'default'}
-                  onClick={() => {
-                    setSelectedCategory(category.name);
-                    if (hasSubcats) {
-                      toggleCategory(category.name);
-                    }
-                  }}
-                  mb={0.5}
-                >
-                  <Stack>
-                    <Stack.Item>
-                      {hasSubcats && (
-                        <Icon
-                          name={isExpanded ? 'chevron-down' : 'chevron-right'}
-                          mr={0.5}
-                        />
-                      )}
-                    </Stack.Item>
-                    <Stack.Item grow>{category.name}</Stack.Item>
-                    <Stack.Item>({count})</Stack.Item>
-                  </Stack>
-                </Button>
-
-                {/* Subcategories */}
-                {isExpanded &&
-                  hasSubcats &&
-                  category.subcategories.map((subcat) => {
-                    const subCount = countDesignsInCategory(subcat);
-                    return (
-                      <Button
-                        key={subcat}
-                        fluid
-                        color={selectedCategory === subcat ? 'good' : 'default'}
-                        onClick={() => setSelectedCategory(subcat)}
-                        mb={0.5}
-                        ml={2}
-                      >
-                        <Stack>
-                          <Stack.Item grow>{subcat}</Stack.Item>
-                          <Stack.Item>({subCount})</Stack.Item>
-                        </Stack>
-                      </Button>
-                    );
-                  })}
-              </Box>
-            );
-          })}
+          {data.categories.map((c) => (
+            <Button
+              key={c.name}
+              fluid
+              selected={category === c.name}
+              onClick={() => setCategory(c.name)}
+            >
+              {c.name}
+            </Button>
+          ))}
         </Section>
       </Stack.Item>
 
-      {/* Main content */}
       <Stack.Item grow>
-        <Stack vertical fill>
-          {/* Search */}
-          <Stack.Item>
-            <Section>
+        <Section>
+          <Stack>
+            <Stack.Item grow>
               <Input
                 fluid
                 placeholder="Search designs..."
-                value={searchText}
-                onInput={(e, value) => setSearchText(value)}
+                value={search}
+                onInput={(e, v) => setSearch(v)}
               />
-            </Section>
-          </Stack.Item>
+            </Stack.Item>
+            <Stack.Item>
+              <Button
+                icon="compress"
+                content="Compact"
+                selected={compact}
+                onClick={() => setCompact(!compact)}
+              />
+            </Stack.Item>
+          </Stack>
+        </Section>
 
-          {/* Designs grid */}
-          <Stack.Item grow>
-            <Section fill scrollable title={`${selectedCategory} (${filteredDesigns.length})`}>
-              {filteredDesigns.map((design) => (
-                <DesignCard
-                  key={design.id}
-                  design={design}
-                  canBuild={canBuildDesign(design)}
-                  maxBuildable={getMaxBuildable(design)}
-                  data={data}
-                  act={act}
-                />
-              ))}
-            </Section>
-          </Stack.Item>
-        </Stack>
+        <Section fill scrollable title={`${category} (${designs.length})`}>
+          {designs.map((design) => (
+            <DesignCard
+              key={design.id}
+              design={design}
+              data={data}
+              compact={compact}
+              act={act}
+            />
+          ))}
+        </Section>
       </Stack.Item>
     </Stack>
   );
 };
 
-const DesignCard = (props) => {
-  const { design, canBuild, maxBuildable, data, act } = props;
+/* ================= DESIGN CARD ================= */
 
+const DesignCard = ({ design, data, compact, act }) => {
   const hasSecurityIssue =
     !data.emagged &&
     !data.bypassSecurity &&
@@ -459,64 +292,75 @@ const DesignCard = (props) => {
     (data.securityLevel < design.minSecurityLevel ||
       data.securityLevel > design.maxSecurityLevel);
 
+  const buttons = (
+    <>
+      <Button onClick={() => act('build', { id: design.id, amount: 1 })}>x1</Button>
+      <Button onClick={() => act('build', { id: design.id, amount: 5 })}>x5</Button>
+      <Button onClick={() => act('build', { id: design.id, amount: 10 })}>x10</Button>
+      <Button onClick={() => act('build', { id: design.id, amount: 30 })}>x30</Button>
+    </>
+  );
+
+  if (compact) {
+    return (
+      <Box mb={0.5} p={0.5} backgroundColor="rgba(0,0,0,0.33)">
+        <Stack align="center">
+          <Stack.Item grow>
+            <Box bold>{design.name}</Box>
+
+            <Box fontSize="0.9em" mt={0.3}>
+              {design.materials.map((m) => {
+                const stored = data.materials.find((mat) => mat.name === m.name);
+                const hasEnough = stored && stored.amount >= m.amount;
+                return (
+                  <Box key={m.name} inline mr={1} color={hasEnough ? 'good' : 'bad'}>
+                    {m.amount} {m.name}
+                  </Box>
+                );
+              })}
+              {design.reagents.map((r) => {
+                const stored = data.reagents.find((reg) => reg.name === r.name);
+                const hasEnough = stored && stored.volume >= r.amount;
+                return (
+                  <Box key={r.type} inline mr={1} color={hasEnough ? 'average' : 'bad'}>
+                    {r.amount}u {r.name}
+                  </Box>
+                );
+              })}
+              {hasSecurityIssue && (
+                <Box inline color="orange" ml={1}>
+                  <Icon name="exclamation-triangle" mr={0.5} />
+                  {formatSecurityRange(design.minSecurityLevel, design.maxSecurityLevel)}
+                </Box>
+              )}
+            </Box>
+          </Stack.Item>
+          <Stack.Item>{buttons}</Stack.Item>
+        </Stack>
+      </Box>
+    );
+  }
+
   return (
-    <Section
-      title={design.name}
-      buttons={
-        <>
-          {canBuild && (
-            <>
-              <Button
-                icon="hammer"
-                content="x1"
-                onClick={() => act('build', { id: design.id, amount: 1 })}
-              />
-              {maxBuildable >= 5 && (
-                <Button
-                  content="x5"
-                  onClick={() => act('build', { id: design.id, amount: 5 })}
-                />
-              )}
-              {maxBuildable >= 10 && (
-                <Button
-                  content="x10"
-                  onClick={() => act('build', { id: design.id, amount: 10 })}
-                />
-              )}
-              {maxBuildable >= 30 && (
-                <Button
-                  content="x30"
-                  onClick={() => act('build', { id: design.id, amount: 30 })}
-                />
-              )}
-            </>
-          )}
-          {!canBuild && (
-            <Button disabled icon="times" content="Cannot Build" />
-          )}
-        </>
-      }
-      mb={1}
-    >
-      {design.desc && <Box italic mb={1}>{design.desc}</Box>}
+    <Section title={design.name} buttons={buttons} mb={1}>
+      {design.desc && (
+        <Box italic mb={1} color="label">
+          {design.desc}
+        </Box>
+      )}
 
       {/* Materials */}
       {design.materials.length > 0 && (
-        <Box>
-          <Box bold mb={0.5}>
+        <Box mb={0.5}>
+          <Box bold color="label">
             Materials:
           </Box>
-          {design.materials.map((mat) => {
-            const stored = data.materials.find((m) => m.name === mat.name);
-            const hasEnough = stored && stored.amount >= mat.amount;
+          {design.materials.map((m) => {
+            const stored = data.materials.find((mat) => mat.name === m.name);
+            const hasEnough = stored && stored.amount >= m.amount;
             return (
-              <Box
-                key={mat.name}
-                inline
-                mr={1}
-                color={hasEnough ? 'good' : 'bad'}
-              >
-                {mat.amount} {mat.name}
+              <Box key={m.name} inline mr={1} color={hasEnough ? 'good' : 'bad'}>
+                {m.amount} {m.name}
               </Box>
             );
           })}
@@ -525,161 +369,179 @@ const DesignCard = (props) => {
 
       {/* Reagents */}
       {design.reagents.length > 0 && (
-        <Box mt={0.5}>
-          <Box bold mb={0.5}>
+        <Box mb={0.5}>
+          <Box bold color="label">
             Reagents:
           </Box>
-          {design.reagents.map((reagent) => {
-            const stored = data.reagents.find((r) => r.name === reagent.name);
-            const hasEnough = stored && stored.volume >= reagent.amount;
+          {design.reagents.map((r) => {
+            const stored = data.reagents.find((reg) => reg.name === r.name);
+            const hasEnough = stored && stored.volume >= r.amount;
             return (
-              <Box
-                key={reagent.name}
-                inline
-                mr={1}
-                color={hasEnough ? 'good' : 'bad'}
-              >
-                {reagent.amount}u {reagent.name}
+              <Box key={r.type} inline mr={1} color={hasEnough ? 'average' : 'bad'}>
+                {r.amount}u {r.name}
               </Box>
             );
           })}
         </Box>
       )}
 
-      {/* Security warning */}
+      {/* Security level requirement */}
       {hasSecurityIssue && (
-        <Box mt={1} color="average">
-          <Icon name="exclamation-triangle" />
-          Security level required: {formatSecurityRange(
-            design.minSecurityLevel,
-            design.maxSecurityLevel
-          )}
+        <Box color="orange">
+          <Icon name="exclamation-triangle" mr={0.5} />
+          Security level required: {formatSecurityRange(design.minSecurityLevel, design.maxSecurityLevel)}
         </Box>
       )}
     </Section>
   );
 };
 
-const MaterialsTab = (props) => {
-  const { data, act } = props;
+/* ================= MATERIALS ================= */
 
+const MaterialsTab = ({ data, act }) => {
   if (!data.materialsConnected) {
     return (
-      <Section fill title="Materials">
-        <Box color="bad">No material storage connected!</Box>
+      <Section fill title="Material Storage">
+        <Box color="bad">NOT CONNECTED</Box>
       </Section>
     );
   }
 
   return (
     <Section fill scrollable title="Material Storage">
-      {data.materials.map((mat) => (
-        <Section key={mat.ref} title={mat.name} level={2}>
-          <Stack>
-            <Stack.Item grow>
-              <LabeledList>
-                <LabeledList.Item label="Amount">
-                  {mat.amount} cm³
-                </LabeledList.Item>
-                <LabeledList.Item label="Sheets">
-                  {mat.sheets}
-                </LabeledList.Item>
-              </LabeledList>
+      {data.materials.map((m) => (
+        <Box
+          key={m.ref}
+          mb={0.5}
+          p={0.5}
+          backgroundColor="rgba(0,0,0,0.33)"
+        >
+          <Stack align="center">
+            {/* Material name */}
+            <Stack.Item basis="140px">
+              <Box bold>{m.name}</Box>
             </Stack.Item>
-            <Stack.Item>
+
+            {/* Volume */}
+            <Stack.Item basis="110px">
+              {m.amount} cm³
+            </Stack.Item>
+
+            {/* Sheets */}
+            <Stack.Item basis="90px">
+              {m.sheets} sheets
+            </Stack.Item>
+
+            {/* Buttons */}
+            <Stack.Item grow>
               <Stack>
-                {mat.sheets >= 1 && (
-                  <Stack.Item>
-                    <Button
-                      content="1x"
-                      onClick={() =>
-                        act('eject_material', { ref: mat.ref, amount: 1 })
-                      }
-                    />
-                  </Stack.Item>
+                {m.sheets >= 1 && (
+                  <Button
+                    content="1x"
+                    onClick={() =>
+                      act('eject_material', { ref: m.ref, amount: 1 })
+                    }
+                  />
                 )}
-                {mat.sheets >= 5 && (
-                  <Stack.Item>
-                    <Button
-                      content="5x"
-                      onClick={() =>
-                        act('eject_material', { ref: mat.ref, amount: 5 })
-                      }
-                    />
-                  </Stack.Item>
+                {m.sheets >= 5 && (
+                  <Button
+                    content="5x"
+                    onClick={() =>
+                      act('eject_material', { ref: m.ref, amount: 5 })
+                    }
+                  />
                 )}
-                {mat.sheets >= 10 && (
-                  <Stack.Item>
-                    <Button
-                      content="10x"
-                      onClick={() =>
-                        act('eject_material', { ref: mat.ref, amount: 10 })
-                      }
-                    />
-                  </Stack.Item>
+                {m.sheets >= 10 && (
+                  <Button
+                    content="10x"
+                    onClick={() =>
+                      act('eject_material', { ref: m.ref, amount: 10 })
+                    }
+                  />
                 )}
-                {mat.sheets >= 50 && (
-                  <Stack.Item>
-                    <Button
-                      content="Max"
-                      onClick={() =>
-                        act('eject_material', { ref: mat.ref, amount: 50 })
-                      }
-                    />
-                  </Stack.Item>
+                {m.sheets >= 50 && (
+                  <Button
+                    content="Max"
+                    onClick={() =>
+                      act('eject_material', { ref: m.ref, amount: 50 })
+                    }
+                  />
                 )}
               </Stack>
             </Stack.Item>
           </Stack>
-        </Section>
+        </Box>
       ))}
     </Section>
   );
 };
 
-const ChemicalsTab = (props) => {
-  const { data, act } = props;
+/* ================= CHEMICALS ================= */
 
-  return (
-    <Section
-      fill
-      scrollable
-      title="Chemical Storage"
-      buttons={
+const ChemicalsTab = ({ data, act }) => (
+  <Section
+    fill
+    scrollable
+    title="Chemical Storage"
+    buttons={
+      data.reagentsTotalVolume > 0 && (
         <Button
           icon="trash"
           content="Purge All"
           color="bad"
           onClick={() => act('dispose_all_reagents')}
         />
-      }
-    >
-      <ProgressBar
-        value={data.reagentsTotalVolume}
-        maxValue={data.reagentsMaxVolume}
-        mb={1}
-      >
-        {data.reagentsTotalVolume} / {data.reagentsMaxVolume} units
-      </ProgressBar>
+      )
+    }
+  >
+    {/* Capacity info */}
+    <Box mb={0.5}>
+      <Box bold>
+        Chemical Storage Capacity: {data.reagentsMaxVolume} units
+      </Box>
+    </Box>
 
-      {data.reagents.map((reagent) => (
-        <Section key={reagent.type} title={reagent.name} level={2}>
-          <Stack>
-            <Stack.Item grow>
-              <Box>{reagent.volume} units</Box>
-            </Stack.Item>
-            <Stack.Item>
-              <Button
-                icon="trash"
-                content="Purge"
-                onClick={() =>
-                  act('dispose_reagent', { type: reagent.type })
-                }
-              />
-            </Stack.Item>
-          </Stack>
-        </Section>
-      ))}
-    </Section>
-  );
-};
+    {/* Current fill */}
+    <ProgressBar
+      value={data.reagentsTotalVolume}
+      maxValue={data.reagentsMaxVolume}
+      mb={1}
+    >
+      {data.reagentsTotalVolume} / {data.reagentsMaxVolume} units
+    </ProgressBar>
+
+    {/* Reagents list */}
+    {data.reagents.length === 0 && (
+      <Box color="average">No reagents stored.</Box>
+    )}
+
+    {data.reagents.map((r) => (
+      <Box
+        key={r.type}
+        mb={0.5}
+        p={0.5}
+        backgroundColor="rgba(0,0,0,0.33)"
+      >
+        <Stack align="center">
+          <Stack.Item grow>
+            <Box bold>{r.name}</Box>
+          </Stack.Item>
+
+          <Stack.Item>
+            {r.volume} units
+          </Stack.Item>
+
+          <Stack.Item>
+            <Button
+              icon="trash"
+              content="Purge"
+              onClick={() =>
+                act('dispose_reagent', { type: r.type })
+              }
+            />
+          </Stack.Item>
+        </Stack>
+      </Box>
+    ))}
+  </Section>
+);
