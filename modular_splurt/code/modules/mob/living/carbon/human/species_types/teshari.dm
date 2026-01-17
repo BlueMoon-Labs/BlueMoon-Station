@@ -278,3 +278,60 @@
 	var/current_y_offset = y_offset - (observer.y - start_y)
 
 	screen_loc = "CENTER[current_x_offset >= 0 ? "+" : ""][current_x_offset],CENTER[current_y_offset >= 0 ? "+" : ""][current_y_offset]"
+
+
+// ВРЕМЕННЫЙ КОД ДЛЯ ТЕСТИРОВАНИЯ - УДАЛИТЬ ПОСЛЕ ПРОВЕРКИ
+
+/mob/living/carbon/human/proc/test_teshari_hearing()
+	set name = "Test Teshari Hearing"
+	set desc = "Creates dummy mobs to test whisper hearing range"
+	set category = "Debug"
+
+	to_chat(src, "<span class='notice'>Creating test mobs around you...</span>")
+
+	// Создаём тестовых мобов на разных дистанциях
+	var/list/test_distances = list(1, 2, 3, 4, 5)
+
+	for(var/dist in test_distances)
+		var/turf/T = locate(x + dist, y, z)
+		if(!T)
+			continue
+
+		var/mob/living/carbon/human/dummy = new(T)
+		dummy.name = "Test Dummy [dist] tiles"
+		dummy.real_name = "Test Dummy [dist] tiles"
+
+		// Даём dummy команду шептать каждые 3 секунды
+		spawn(0)
+			for(var/i in 1 to 5) // 5 раз прошепчет
+				sleep(30)
+				if(dummy)
+					dummy.whisper("Test whisper from [dist] tiles away")
+
+	to_chat(src, "<span class='notice'>Test mobs created! They will whisper 5 times every 3 seconds.</span>")
+	to_chat(src, "<span class='notice'>Stand still and watch the chat to see at what distance you hear them clearly.</span>")
+
+/mob/living/carbon/human/proc/cleanup_test_dummies()
+	set name = "Cleanup Test Dummies"
+	set desc = "Removes all test dummy mobs"
+	set category = "Debug"
+
+	var/count = 0
+	for(var/mob/living/carbon/human/H in range(20, src))
+		if(findtext(H.name, "Test Dummy"))
+			qdel(H)
+			count++
+
+	to_chat(src, "<span class='notice'>Removed [count] test dummies.</span>")
+
+// Добавляем verb при создании персонажа Тешари
+/datum/species/mammal/teshari/on_species_gain(mob/living/carbon/human/C, datum/species/old_species, pref_load)
+	. = ..()
+	if(ishuman(C))
+		C.verbs += /mob/living/carbon/human/proc/sonar_ping
+		C.verbs += /mob/living/carbon/human/proc/hide
+		C.verbs += /mob/living/carbon/human/proc/test_teshari_hearing // DEBUG
+		C.verbs += /mob/living/carbon/human/proc/cleanup_test_dummies // DEBUG
+		C.setMaxHealth(50)
+		C.physiology.hunger_mod *= 2
+		C.add_movespeed_modifier(/datum/movespeed_modifier/teshari)

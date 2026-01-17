@@ -414,11 +414,37 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	var/rendered = compose_message(src, message_language, message, null, spans, message_mode, FALSE, source)
 	for(var/_AM in listening)
 		var/atom/movable/AM = _AM
-		if(eavesdrop_range && get_dist(source, AM) > message_range && !(the_dead[AM]))
+		// ПАТЧ ТЕШАРИ - проверяем дистанцию для чёткого слуха
+		var/is_teshari_listener = FALSE
+		if(ishuman(AM))
+			var/mob/living/carbon/human/H = AM
+			if(H.dna?.species?.id == SPECIES_TESHARI)
+				is_teshari_listener = TRUE
+
+		var/actual_dist = get_dist(source, AM)
+		var/should_hear_clearly = (actual_dist <= message_range)
+
+		// Тешари слышат шёпот ЧЁТКО на дистанции до 3 клеток (1 + 2 бонус)
+		if(is_teshari_listener && eavesdropping_modes[message_mode])
+			if(actual_dist <= (message_range + 2)) // 1 + 2 = 3 клетки чёткого слуха
+				should_hear_clearly = TRUE
+
+		if(eavesdrop_range && !should_hear_clearly && !(the_dead[AM]))
 			AM.Hear(eavesrendered, src, message_language, eavesdropping, null, spans, message_mode, source)
 		else
 			AM.Hear(rendered, src, message_language, message, null, spans, message_mode, source)
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_LIVING_SAY_SPECIAL, src, message)
+// ====================================================================
+// СТАРЫЙ КОД ДЛЯ СПРАВКИ
+// ====================================================================
+/*
+	for(var/_AM in listening)
+		var/atom/movable/AM = _AM
+		if(eavesdrop_range && get_dist(source, AM) > message_range && !(the_dead[AM]))
+			AM.Hear(eavesrendered, src, message_language, eavesdropping, null, spans, message_mode, source)
+		else
+			AM.Hear(rendered, src, message_language, message, null, spans, message_mode, source)
+*/
 
 	var/is_yell = (say_test(message) == "2")
 	if(client && !eavesdrop_range && is_yell)	// Yell hook
