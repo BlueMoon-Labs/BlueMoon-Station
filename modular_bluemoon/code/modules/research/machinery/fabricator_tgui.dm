@@ -19,97 +19,12 @@
 
 	// Machine info
 	data["machineName"] = name
-	data["machineType"] = type
+	data["machineType"] = "[type]"
 	data["departmentTag"] = department_tag
 	data["organization"] = host_research?.organization || "Unknown"
 
-	// Categories with subcategories
-	var/list/categories_data = list()
-	for(var/category in categories)
-		var/list/subcats = list()
-		// Find all subcategories for this category
-		for(var/design_id in stored_research.researched_designs)
-			var/datum/design/D = SSresearch.techweb_design_by_id(design_id)
-			if(!(D.build_type & allowed_buildtypes))
-				continue
-			if(!(isnull(allowed_department_flags) || (D.departmental_flags & allowed_department_flags)))
-				continue
-
-			for(var/cat in D.category)
-				if(cat == category)
-					continue
-				// Check if this is a subcategory (contains parent category name)
-				if(findtext(cat, category) && !(cat in subcats))
-					subcats += cat
-
-		categories_data += list(list(
-			"name" = category,
-			"subcategories" = subcats
-		))
-
-	data["categories"] = categories_data
-
 	// Build types
 	data["allowedBuildTypes"] = allowed_buildtypes
-
-	// All designs
-	var/icon_path = null
-	var/icon_state = null
-	var/list/designs_data = list()
-	for(var/design_id in stored_research.researched_designs)
-		var/datum/design/D = SSresearch.techweb_design_by_id(design_id)
-
-		// Check if this design is allowed
-		if(!(D.build_type & allowed_buildtypes))
-			continue
-		if(!(isnull(allowed_department_flags) || (D.departmental_flags & allowed_department_flags)))
-			continue
-
-		if (D.build_path)
-			var/obj/O = D.build_path
-			icon_path = initial(O.icon)
-			icon_state = initial(O.icon_state)
-
-		var/list/design_data = list(
-			"id" = D.id,
-			"name" = D.name,
-			"desc" = (D.desc && D.desc != "Desc") ? D.desc : null,
-			"categories" = D.category,
-			"buildPath" = "[D.build_path]",
-			"constructionTime" = D.construction_time,
-			"latheTimeFactor" = D.lathe_time_factor,
-			"minSecurityLevel" = D.min_security_level,
-			"maxSecurityLevel" = D.max_security_level,
-			"departmentalFlags" = D.departmental_flags,
-			"icon" = icon_path ? "[icon_path]" : null,
-			"iconState" = icon_state
-		)
-
-		// Materials
-		var/list/materials_list = list()
-		var/coeff = efficient_with(D.build_path) ? print_cost_coeff : 1
-		for(var/mat in D.materials)
-			var/datum/material/M = mat
-			materials_list += list(list(
-				"name" = M.name,
-				"amount" = D.materials[mat] * coeff,
-				"materialRef" = "[mat]"
-			))
-		design_data["materials"] = materials_list
-
-		// Reagents
-		var/list/reagents_list = list()
-		for(var/reagent in D.reagents_list)
-			reagents_list += list(list(
-				"type" = "[reagent]",
-				"name" = initial(reagent:name),
-				"amount" = D.reagents_list[reagent] * coeff
-			))
-		design_data["reagents"] = reagents_list
-
-		designs_data += list(design_data)
-
-	data["designs"] = designs_data
 
 	return data
 
@@ -126,9 +41,14 @@
 	data["efficiency"] = print_cost_coeff
 	data["efficiencyPercent"] = round(print_cost_coeff * 100)
 
+	// Security level
+	data["securityLevel"] = GLOB.security_level
+	data["securityLevelName"] = NUM2SECLEVEL(GLOB.security_level)
+	data["isStation"] = is_station_level(z)
+
 	// Materials
 	var/list/materials_data = list()
-	if(materials.mat_container)
+	if(materials?.mat_container)
 		data["materialsConnected"] = TRUE
 		data["materialsOnHold"] = materials.on_hold()
 		data["materialsMaxStorage"] = materials.local_size
@@ -161,22 +81,105 @@
 
 	// Reagents
 	var/list/reagents_data = list()
-	data["reagentsMaxVolume"] = reagents.maximum_volume
-	data["reagentsTotalVolume"] = reagents.total_volume
+	data["reagentsMaxVolume"] = reagents?.maximum_volume || 0
+	data["reagentsTotalVolume"] = reagents?.total_volume || 0
 
-	for(var/datum/reagent/R in reagents.reagent_list)
-		reagents_data += list(list(
-			"name" = R.name,
-			"volume" = R.volume,
-			"type" = "[R.type]"
-		))
+	if(reagents)
+		for(var/datum/reagent/R in reagents.reagent_list)
+			reagents_data += list(list(
+				"name" = R.name,
+				"volume" = R.volume,
+				"type" = "[R.type]"
+			))
 
 	data["reagents"] = reagents_data
 
-	// Security level
-	data["securityLevel"] = GLOB.security_level
-	data["securityLevelName"] = NUM2SECLEVEL(GLOB.security_level)
-	data["isStation"] = is_station_level(z)
+	// Categories with subcategories
+	var/list/categories_data = list()
+	for(var/category in categories)
+		var/list/subcats = list()
+		// Find all subcategories for this category
+		for(var/design_id in stored_research.researched_designs)
+			var/datum/design/D = SSresearch.techweb_design_by_id(design_id)
+			if(!(D.build_type & allowed_buildtypes))
+				continue
+			if(!(isnull(allowed_department_flags) || (D.departmental_flags & allowed_department_flags)))
+				continue
+
+			for(var/cat in D.category)
+				if(cat == category)
+					continue
+				// Check if this is a subcategory (contains parent category name)
+				if(findtext(cat, category) && !(cat in subcats))
+					subcats += cat
+
+		categories_data += list(list(
+			"name" = category,
+			"subcategories" = subcats
+		))
+
+	data["categories"] = categories_data
+
+	// All designs
+	var/icon_path = null
+	var/icon_state = null
+	var/list/designs_data = list()
+	for(var/design_id in stored_research.researched_designs)
+		var/datum/design/D = SSresearch.techweb_design_by_id(design_id)
+
+		// Check if this design is allowed
+		if(!(D.build_type & allowed_buildtypes))
+			continue
+		if(!(isnull(allowed_department_flags) || (D.departmental_flags & allowed_department_flags)))
+			continue
+
+		if (D.build_path)
+			var/obj/O = D.build_path
+			icon_path = initial(O.icon)
+			icon_state = initial(O.icon_state)
+
+		var/list/design_data = list(
+			"id" = D.id,
+			"name" = D.name,
+			"desc" = (D.desc && D.desc != "Desc") ? D.desc : null,
+			"categories" = D.category,
+			"buildPath" = "[D.build_path]",
+			"constructionTime" = D.construction_time,
+			"latheTimeFactor" = D.lathe_time_factor,
+			"minSecurityLevel" = D.min_security_level || 0,
+			"maxSecurityLevel" = D.max_security_level || 5,
+			"departmentalFlags" = D.departmental_flags,
+			"icon" = icon_path ? "[icon_path]" : null,
+			"iconState" = icon_state
+		)
+
+		// Materials
+		var/list/materials_list = list()
+		var/coeff = efficient_with(D.build_path) ? print_cost_coeff : 1
+		for(var/mat in D.materials)
+			var/datum/material/M = mat
+			materials_list += list(list(
+				"name" = M.name,
+				"amount" = D.materials[mat] * coeff,
+				"materialRef" = "[mat]"
+			))
+		design_data["materials"] = materials_list
+
+		// Reagents
+		var/list/reagents_list = list()
+		for(var/reagent in D.reagents_list)
+			var/datum/reagent/R = reagent
+			var/reagent_name = initial(R.name)
+			reagents_list += list(list(
+				"type" = "[reagent]",
+				"name" = reagent_name,
+				"amount" = D.reagents_list[reagent] * coeff
+			))
+		design_data["reagents"] = reagents_list
+
+		designs_data += list(design_data)
+
+	data["designs"] = designs_data
 
 	return data
 
@@ -229,6 +232,13 @@
 
 		if("sync_research")
 			update_research()
+
+			// сброс кеша TGUI
+			cached_tgui_designs.Cut()
+
+			// принудительно обновляем все открытые UI этой машины
+			SStgui.update_uis(src)
+
 			say("Research data synchronized.")
 			return TRUE
 
