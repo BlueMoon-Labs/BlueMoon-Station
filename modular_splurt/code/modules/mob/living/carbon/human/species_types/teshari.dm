@@ -140,6 +140,7 @@
 /mob/living/carbon/human
 	var/next_sonar_ping = 0
 	var/hiding = 0
+	var/list/sonar_markers // Список активных маркеров для очистки
 
 /mob/living/carbon/human/proc/hide()
 	set name = "Hide"
@@ -160,9 +161,6 @@
 		plane = GAME_PLANE
 		to_chat(src,"<span class='notice'>You are now hiding.</span>")
 
-
-// АЛЬТЕРНАТИВНЫЙ ВАРИАНТ - через screen objects (100% будет виден)
-// Используйте этот код если предыдущий не работает
 
 /mob/living/carbon/human/proc/sonar_ping()
 	set name = "Listen In"
@@ -212,7 +210,6 @@
 		var/atom/movable/screen/sonar_ping/marker = new()
 		marker.icon = 'icons/effects/effects.dmi'
 		marker.icon_state = "medi_holo"
-		marker.alpha = 0
 
 		// Сохраняем координаты для обновления позиции
 		marker.target_x = target_x
@@ -225,35 +222,38 @@
 		// Обновляем позицию маркера на экране
 		marker.update_position(src, start_x, start_y, start_z)
 
-		// Анимация
-		animate(marker, alpha = 200, time = 5)
-		spawn(5)
-			animate(marker, alpha = 100, time = 10, loop = 5)
-			animate(alpha = 200, time = 10, loop = 5)
+	// Сохраняем список маркеров
+	sonar_markers = markers
 
-	// Обновляем позиции маркеров каждый тик пока они живы
-	spawn(0)
-		for(var/i in 1 to 30) // 30 тиков = 3 секунды
-			sleep(1)
-			if(!client)
-				break
-			for(var/atom/movable/screen/sonar_ping/marker in markers)
-				marker.update_position(src, start_x, start_y, start_z)
+	// Обновляем позиции маркеров
+	addtimer(CALLBACK(src, PROC_REF(update_sonar_positions), markers, start_x, start_y, start_z, 0), 0.1 SECONDS)
 
 	// Удаляем через 3 секунды
-	spawn(30)
-		for(var/atom/movable/screen/S in markers)
-			animate(S, alpha = 0, time = 5)
-		spawn(5)
-			if(client)
-				client.screen -= markers
-			for(var/atom/movable/screen/S in markers)
-				qdel(S)
+	addtimer(CALLBACK(src, PROC_REF(remove_sonar_markers), markers), 3 SECONDS)
 
 	if(!heard_something)
 		to_chat(src, "<span class='notice'>Вы ничего не слышите кроме как себя.</span>")
 	else
 		to_chat(src, "<span class='notice'>Вы улавливаете звуки движения поблизости...</span>")
+
+// Рекурсивное обновление позиций маркеров
+/mob/living/carbon/human/proc/update_sonar_positions(list/markers, start_x, start_y, start_z, iteration)
+	if(iteration >= 30 || !client) // 30 итераций = 3 секунды
+		return
+
+	for(var/atom/movable/screen/sonar_ping/marker in markers)
+		if(!QDELETED(marker))
+			marker.update_position(src, start_x, start_y, start_z)
+
+	// Следующая итерация через 0.1 секунды
+	addtimer(CALLBACK(src, PROC_REF(update_sonar_positions), markers, start_x, start_y, start_z, iteration + 1), 0.1 SECONDS)
+
+// Удаление маркеров
+/mob/living/carbon/human/proc/remove_sonar_markers(list/markers)
+	if(client)
+		client.screen -= markers
+	for(var/atom/movable/screen/S in markers)
+		qdel(S)
 
 /atom/movable/screen/sonar_ping
 	name = ""
@@ -277,5 +277,11 @@
 	var/current_x_offset = x_offset - (observer.x - start_x)
 	var/current_y_offset = y_offset - (observer.y - start_y)
 
-	screen_loc = "CENTER[current_x_offset >= 0 ? "+" : ""][current_x_offset],CENTER[current_y_offset >= 0 ? "+" : ""][current_y_offset]"
+	// Скрываем маркеры которые слишком далеко от центра экрана (за пределами ~15 клеток)
+	if(abs(current_x_offset) > 10 || abs(current_y_offset) > 10)
+		alpha = 0
+		return
+	else
+		alpha = 255 // Показываем маркер
 
+	screen_loc = "CENTER[current_x_offset >= 0 ? "+" : ""][current_x_offset],CENTER[current_y_offset >= 0 ? "+" : ""][current_y_offset]"
