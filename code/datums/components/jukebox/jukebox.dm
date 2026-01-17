@@ -331,7 +331,7 @@
 					var/list/current_playlist = prefs.playlists[current_playlist_name]
 					if(!LAZYLEN(current_playlist))
 						return
-					return add_to_queue(current_playlist, usr, FALSE)
+					return add_to_queue(reverseList(current_playlist), usr, FALSE)
 				if("toggle_favorite")
 					return prefs.favorite_tracks_toggle(track)
 				if("move_favorite")
