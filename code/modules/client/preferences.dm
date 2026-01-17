@@ -4825,8 +4825,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if(href_list["loadout_addheirloom"])
 				// Выбран ли предмет среди категории неприемлемых для реликвии?
 				var/typepath = user_gear[LOADOUT_ITEM]
+				// FIX: Проверяем существование типа перед созданием
+				var/resolved_path = text2path(typepath)
+				if(!ispath(resolved_path, /datum/gear))
+					to_chat(user, "<font color='red'>Предмет лоадаута <b>[typepath]</b> повреждён. Удалите его из лоадаута через вкладку Errors.</font>")
+					ShowChoices(user)
+					return TRUE
 				var/forbidden = FALSE
-				var/datum/gear/temp_gear = new typepath()
+				var/datum/gear/temp_gear = new resolved_path()
 				if (ispath_in_list(temp_gear.path, LOADOUT_IS_DISALLOWED_HEIRLOOM))
 					forbidden = TRUE
 				qdel(temp_gear) // На всякий случай, чтобы не засирало память лишними датумами
@@ -5109,9 +5115,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/L
 	LAZYINITLIST(L)
 	for(var/i in loadout_data["SAVE_[loadout_slot]"])
-		var/datum/gear/G = i[LOADOUT_ITEM]
-		var/occupied_slots = L[initial(G.category)] ? L[initial(G.category)] + 1 : 1
-		LAZYSET(L, initial(G.category), occupied_slots)
+		var/datum/gear/gear_path = text2path(i[LOADOUT_ITEM])
+		if(!ispath(gear_path, /datum/gear))
+			continue
+		var/occupied_slots = L[initial(gear_path.category)] ? L[initial(gear_path.category)] + 1 : 1
+		LAZYSET(L, initial(gear_path.category), occupied_slots)
 	switch(slot)
 		if(ITEM_SLOT_BACKPACK)
 			if(L[LOADOUT_CATEGORY_BACKPACK] < BACKPACK_SLOT_AMT)
