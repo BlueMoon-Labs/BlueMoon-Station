@@ -67,7 +67,7 @@
 		SAVE_TIMER
 
 /datum/preferences/proc/favorite_track_set_index(ui_index, track)
-	. = track_set_index(ui_index, track)
+	. = track_set_index(favorite_tracks, track, ui_index)
 	if(.)
 		SAVE_TIMER
 
