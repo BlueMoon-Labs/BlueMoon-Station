@@ -33,7 +33,7 @@
 
 	mind_traits = list(TRAIT_FENCER)
 
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity, /datum/quirk/blindness, /datum/quirk/illiterate)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity, /datum/quirk/blindness, /datum/quirk/illiterate, /datum/quirk/onelife)
 	threat = 5
 
 	family_heirlooms = list(
