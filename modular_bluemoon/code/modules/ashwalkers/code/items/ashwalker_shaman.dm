@@ -119,7 +119,7 @@
 /obj/item/clothing/neck/necklace/ashwalker
 	name = "ashen necklace"
 	desc = "Ожерелье, изготовленное из пепла и связанное с Некрополисом через ядро Легиона. При ношении оно наделяет обитателей надземного мира неестественным пониманием языка рептилий, родного языка Лаваленда."
-	icon = 'icons/neck.dmi'
+	icon = 'icons/obj/clothing/neck.dmi'
 	icon_state = "ashnecklace"
 	w_class = WEIGHT_CLASS_SMALL //allows this to fit inside of pockets.
 
