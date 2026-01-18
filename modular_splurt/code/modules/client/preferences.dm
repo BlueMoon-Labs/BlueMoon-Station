@@ -1050,6 +1050,8 @@
 							if(loadout_item[LOADOUT_IS_HEIRLOOM])
 								extra_loadout_data += "<BR><a class='linkOn' href='?_src_=prefs;preference=gear;loadout_removeheirloom=1;loadout_gear_name=[html_encode(gear.name)];'>Select as Heirloom</a><BR>"
 							// BLUEMOON ADD END
+						else if(!is_loadout_slot_available(gear.category))
+							class_link = "style='white-space:normal;' class='linkOff'"
 						else if((gear_points - gear.cost) < 0)
 							class_link = "style='white-space:normal;' class='linkOff'"
 						else if(donoritem)
