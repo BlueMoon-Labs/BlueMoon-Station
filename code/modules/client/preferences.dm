@@ -1,6 +1,7 @@
-#define DEFAULT_SLOT_AMT	2
-#define HANDS_SLOT_AMT		2
-#define BACKPACK_SLOT_AMT	4
+#define DEFAULT_SLOT_AMT		2
+#define HANDS_SLOT_AMT			2
+#define BACKPACK_SLOT_AMT		4
+#define GENERAL_UNDER_SLOT_AMT	5
 
 GLOBAL_LIST_EMPTY(preferences_datums)
 
@@ -1070,7 +1071,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "<b>Penis Visibility:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=cock_visibility;task=input'>[features["cock_visibility"]]</a>"
 							dat += "<b>Penis Always Accessible:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=cock_accessible'>[features["cock_accessible"] ? "Yes" : "No"]</a>"
 							dat += "<b>Toys and Egg Stuffing:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=cock_stuffing'>[features["cock_stuffing"] == TRUE ? "Yes" : "No"]</a>" //SPLURT Edit
-						
+
 						dat += "<h3>Testicles</h3>"
 						dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=has_balls'>[features["has_balls"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_balls"])
@@ -1475,7 +1476,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 											extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_addheirloom=1;loadout_gear_name=[html_encode(gear.name)];'>Select as Heirloom</a><BR>"
 										if(ispath(gear.path, /obj/item/clothing/neck/petcollar)) //"name tag" sounds better for me, but in petcollar code "tagname" is used so let it be.
 											extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_tagname=1;loadout_gear_name=[html_encode(gear.name)];'>Name tag</a> [loadout_item["loadout_custom_tagname"] ? loadout_item["loadout_custom_tagname"] : "Name tag is visible for everyone looking at wearer."]"
-									  // BLUEMOON ADD END
+								  // BLUEMOON ADD END
+									else if(!is_loadout_slot_available(gear.category))
+										class_link = "style='white-space:normal;' class='linkOff'"
 									else if((gear_points - gear.cost) < 0)
 										class_link = "style='white-space:normal;' class='linkOff'"
 									else if(donoritem)
@@ -5121,11 +5124,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		var/occupied_slots = L[initial(gear_path.category)] ? L[initial(gear_path.category)] + 1 : 1
 		LAZYSET(L, initial(gear_path.category), occupied_slots)
 	switch(slot)
-		if(ITEM_SLOT_BACKPACK)
+		if(LOADOUT_CATEGORY_BACKPACK)
 			if(L[LOADOUT_CATEGORY_BACKPACK] < BACKPACK_SLOT_AMT)
 				return TRUE
-		if(ITEM_SLOT_HANDS)
+		if(LOADOUT_CATEGORY_HANDS)
 			if(L[LOADOUT_CATEGORY_HANDS] < HANDS_SLOT_AMT)
+				return TRUE
+		if(LOADOUT_CATEGORY_GENERAL_UNDER)
+			if(L[LOADOUT_CATEGORY_GENERAL_UNDER] < GENERAL_UNDER_SLOT_AMT)
 				return TRUE
 		else
 			if(L[slot] < DEFAULT_SLOT_AMT)
@@ -5181,3 +5187,4 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 #undef DEFAULT_SLOT_AMT
 #undef HANDS_SLOT_AMT
 #undef BACKPACK_SLOT_AMT
+#undef GENERAL_UNDER_SLOT_AMT
