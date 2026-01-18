@@ -1987,3 +1987,27 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/imperium_flags
 	ckeywhitelist = list("domilion")
+
+/datum/gear/donator/bm/gestapo_uniform
+	name = "Gestapo Uniform"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/costume/gestapo
+	ckeywhitelist = list("monolith_xxv")
+
+/datum/gear/donator/bm/gestapo_cloak
+	name = "Gestapo cloak"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/neck/cloak/gestapo
+	ckeywhitelist = list("monolith_xxv")
+
+/datum/gear/donator/bm/gestapo_head
+	name = "Gestapo Cap"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/head/gestapo
+	ckeywhitelist = list("monolith_xxv")
+
+/datum/gear/donator/bm/gestapo_mask
+	name = "Gestapo Mask"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/mask/breath/gestapo
+	ckeywhitelist = list("monolith_xxv")
