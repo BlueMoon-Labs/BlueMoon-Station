@@ -40,14 +40,3 @@
 	item_state = "m_mask"
 	permeability_coefficient = 0.01
 	equip_delay_other = 10
-
-/obj/item/clothing/mask/breath/gestapo
-	name = "Gestapo mask"
-	desc = "Filter their blood"
-	icon_state = "gestapo_mask"
-	item_state = "gestapo_mask"
-	icon = 'modular_bluemoon/icons/obj/clothing/masks.dmi'
-	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/masks.dmi'
-	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
-	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
-	flags_cover = MASKCOVERSMOUTH
