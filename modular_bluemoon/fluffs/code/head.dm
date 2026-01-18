@@ -314,7 +314,7 @@
 
 ///////////////////////////////////////////////
 
-/obj/item/clothing/head/gestapo
+/obj/item/clothing/head/donator/bm/gestapo
 	name = "Gestapo cap"
 	desc = "Meine Arbeiter..!~"
 	icon_state = "gestapo_head"

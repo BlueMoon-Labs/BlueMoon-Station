@@ -1991,7 +1991,7 @@
 /datum/gear/donator/bm/gestapo_uniform
 	name = "Gestapo Uniform"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/under/costume/gestapo
+	path = /obj/item/clothing/under/donator/gestapo
 	ckeywhitelist = list("monolithxxv")
 
 /datum/gear/donator/bm/gestapo_cloak

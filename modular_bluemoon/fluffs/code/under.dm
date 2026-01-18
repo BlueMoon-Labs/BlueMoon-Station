@@ -585,7 +585,7 @@
 	body_parts_covered = CHEST|ARMS|GROIN
 	mutantrace_variation = STYLE_DIGITIGRADE
 
-/obj/item/clothing/under/costume/gestapo
+/obj/item/clothing/under/donator/gestapo
 	name = "GestapoUniform"
 	icon_state = "gestapo_uniform"
 	item_state = "gestapo_uniform"
