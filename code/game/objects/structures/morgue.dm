@@ -286,8 +286,8 @@ GLOBAL_LIST_EMPTY(crematoriums)
 			if (M.stat != DEAD)
 				if(!HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
 					M.emote("scream")
-			// BLUEMOON ADDITION AHEAD changeling scream when cremated
-			if (M.mind.has_antag_datum(/datum/antagonist/changeling))
+		// BLUEMOON ADDITION AHEAD changeling scream when cremated
+			if (M.mind?.has_antag_datum(/datum/antagonist/changeling))
 				switch(rand(0,2))
 					if(0)
 						playsound(loc, 'modular_bluemoon/sound/creatures/changeling/changeling_cremation1.ogg', 100, 0.1, ignore_walls = TRUE)
