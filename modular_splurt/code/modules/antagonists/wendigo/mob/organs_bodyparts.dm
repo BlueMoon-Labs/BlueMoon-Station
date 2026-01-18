@@ -22,6 +22,7 @@
 
 /obj/item/organ/eyes/night_vision/wendigo
 	sight_flags = SEE_MOBS
+	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
 
 /obj/item/bodypart/head/wendigo
 	dismemberable = FALSE
