@@ -277,8 +277,8 @@
 	var/current_x_offset = x_offset - (observer.x - start_x)
 	var/current_y_offset = y_offset - (observer.y - start_y)
 
-	// Скрываем маркеры которые слишком далеко от центра экрана (за пределами ~15 клеток)
-	if(abs(current_x_offset) > 10 || abs(current_y_offset) > 10)
+	// Скрываем маркеры которые слишком далеко от центра экрана (за пределами ~7 клеток)
+	if(abs(current_x_offset) > 8 || abs(current_y_offset) > 7)
 		alpha = 0
 		return
 	else
