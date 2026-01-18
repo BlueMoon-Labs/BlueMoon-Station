@@ -367,6 +367,8 @@
 	item_state = "poly_kimono"
 	icon = 'modular_bluemoon/icons/obj/clothing/uniforms.dmi'
     mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniforms.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+    righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	var/list/poly_colors = list("#FFFFFF","#C5302D")
 
