@@ -29,5 +29,6 @@
 	},
 	"editor.bracketPairColorization.enabled": true,
 	"editor.guides.bracketPairs": "active",
-	"errorLens.enabled": false
+	"errorLens.enabled": false,
+	"dotnet.preferCSharpExtension": true
 }

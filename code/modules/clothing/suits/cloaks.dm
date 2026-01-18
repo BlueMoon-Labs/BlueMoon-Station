@@ -238,3 +238,14 @@
 	name = "Regal RD Cloak"
 	desc = "A fancy shawl for nobility, made from high quality materials."
 	icon_state = "royalrdcloak"
+
+/obj/item/clothing/neck/cloak/gestapo
+	name = "Gestapo Cloak"
+	desc = "Great!"
+	icon_state = "gestapo_cloak"
+	item_state = "gestapo_cloak"
+	icon = 'modular_bluemoon/icons/obj/clothing/neck.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/neck.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
