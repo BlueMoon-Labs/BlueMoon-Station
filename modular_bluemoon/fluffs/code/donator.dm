@@ -1996,18 +1996,18 @@
 
 /datum/gear/donator/bm/gestapo_cloak
 	name = "Gestapo cloak"
-	slot = ITEM_SLOT_ICLOTHING
+	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/cloak/gestapo
 	ckeywhitelist = list("monolith_xxv")
 
 /datum/gear/donator/bm/gestapo_head
 	name = "Gestapo Cap"
-	slot = ITEM_SLOT_ICLOTHING
+	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/gestapo
 	ckeywhitelist = list("monolith_xxv")
 
 /datum/gear/donator/bm/gestapo_mask
 	name = "Gestapo Mask"
-	slot = ITEM_SLOT_ICLOTHING
+	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/breath/gestapo
 	ckeywhitelist = list("monolith_xxv")
