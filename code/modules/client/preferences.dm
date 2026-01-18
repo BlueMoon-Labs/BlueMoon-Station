@@ -5124,6 +5124,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		var/occupied_slots = L[initial(gear_path.category)] ? L[initial(gear_path.category)] + 1 : 1
 		LAZYSET(L, initial(gear_path.category), occupied_slots)
 	switch(slot)
+		if(LOADOUT_CATEGORY_DONATOR)
+			return TRUE // No limit for donator items
 		if(LOADOUT_CATEGORY_BACKPACK)
 			if(L[LOADOUT_CATEGORY_BACKPACK] < BACKPACK_SLOT_AMT)
 				return TRUE
