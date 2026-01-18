@@ -1,8 +1,3 @@
-#define DEFAULT_SLOT_AMT		2
-#define HANDS_SLOT_AMT			2
-#define BACKPACK_SLOT_AMT		4
-#define GENERAL_UNDER_SLOT_AMT	5
-
 GLOBAL_LIST_EMPTY(preferences_datums)
 
 /datum/preferences
@@ -5115,29 +5110,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	parent?.ensure_keys_set(src)
 
 /datum/preferences/proc/is_loadout_slot_available(slot)
-	var/list/L
-	LAZYINITLIST(L)
-	for(var/i in loadout_data["SAVE_[loadout_slot]"])
-		var/datum/gear/gear_path = text2path(i[LOADOUT_ITEM])
-		if(!ispath(gear_path, /datum/gear))
-			continue
-		var/occupied_slots = L[initial(gear_path.category)] ? L[initial(gear_path.category)] + 1 : 1
-		LAZYSET(L, initial(gear_path.category), occupied_slots)
-	switch(slot)
-		if(LOADOUT_CATEGORY_DONATOR)
-			return TRUE // No limit for donator items
-		if(LOADOUT_CATEGORY_BACKPACK)
-			if(L[LOADOUT_CATEGORY_BACKPACK] < BACKPACK_SLOT_AMT)
-				return TRUE
-		if(LOADOUT_CATEGORY_HANDS)
-			if(L[LOADOUT_CATEGORY_HANDS] < HANDS_SLOT_AMT)
-				return TRUE
-		if(LOADOUT_CATEGORY_GENERAL_UNDER)
-			if(L[LOADOUT_CATEGORY_GENERAL_UNDER] < GENERAL_UNDER_SLOT_AMT)
-				return TRUE
-		else
-			if(L[slot] < DEFAULT_SLOT_AMT)
-				return TRUE
+	return TRUE // No category limits - loadout points handle balance
 
 // BLUEMOON ADD START - выбор вещей из лодаута как семейной реликвии
 ///Searching for loadout item which `property` ([LOADOUT_ITEM], [LOADOUT_COLOR], etc) equals to `value`; returns this items, or FALSE if no gear matched conditions
@@ -5185,8 +5158,3 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		return FALSE
 
 	return prefs_holder?.prefs.chat_toggles
-
-#undef DEFAULT_SLOT_AMT
-#undef HANDS_SLOT_AMT
-#undef BACKPACK_SLOT_AMT
-#undef GENERAL_UNDER_SLOT_AMT
