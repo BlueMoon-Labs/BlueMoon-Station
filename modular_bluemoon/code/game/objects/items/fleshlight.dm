@@ -1040,7 +1040,14 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 /obj/item/clothing/underwear/briefs/panties/portalpanties/proc/get_short_location_suffix()
 	var/datum/component/genital_equipment/equipment = GetComponent(/datum/component/genital_equipment)
 	if(!equipment?.holder_genital)
-		return ""  // Empty for worn panties
+		// Check if worn as mask or underwear to distinguish multiple devices from same owner
+		if(ishuman(loc))
+			var/mob/living/carbon/human/H = loc
+			if(H.wear_mask == src)
+				return "(маска)"
+			if(H.w_underwear == src)
+				return "(трусы)"
+		return ""  // Not worn, not inserted
 	var/obj/item/organ/genital/G = equipment.holder_genital
 	switch(G.slot)
 		if(ORGAN_SLOT_VAGINA)
