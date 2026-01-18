@@ -50,4 +50,4 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/masks.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
-	flags_cover = MASKCOVERSFACE
+	flags_cover = MASKCOVERSMOUTH
