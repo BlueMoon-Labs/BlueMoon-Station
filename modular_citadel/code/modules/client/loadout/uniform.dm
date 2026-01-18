@@ -728,6 +728,10 @@
 	name = "Sakura kimono"
 	path = /obj/item/clothing/under/costume/kimono/sakura
 
+/datum/gear/uniform/kimono/poly
+	name = "Poly kimono"
+	path = /obj/item/clothing/under/costume/kimono/poly
+
 /datum/gear/uniform/ctlong
 	name = "cargo tech's jumpsuit (long pants)"
 	path = /obj/item/clothing/under/rank/cargo/tech/long

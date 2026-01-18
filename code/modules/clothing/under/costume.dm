@@ -361,6 +361,14 @@
 	icon_state = "sakura_kimono"
 	item_state = "sakura_kimono"
 
+/obj/item/clothing/under/costume/kimono/poly
+	name = "Poly kimono"
+	icon_state = "poly_kimono"
+	item_state = "poly_kimono"
+	icon = 'modular_bluemoon/icons/obj/clothing/uniforms.dmi'
+    mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniforms.dmi'
+	var/list/poly_colors = list("#FFFFFF","#C5302D")
+
 /obj/item/clothing/under/costume/irs
 	name = "internal revenue service outfit"
 	icon_state = "irs_jumpsuit"
