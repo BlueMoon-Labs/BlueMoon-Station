@@ -4949,6 +4949,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	if (features["headshot_link2"])
 		character.dna.headshot_links.Add(features["headshot_link2"])
 	// BLUEMOON ADD START
+	character.dna.headshot_naked_links.Cut()
 	if (features["headshot_naked_link"])
 		character.dna.headshot_naked_links.Add(features["headshot_naked_link"])
 	if (features["headshot_naked_link1"])
