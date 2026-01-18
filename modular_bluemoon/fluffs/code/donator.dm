@@ -2003,7 +2003,7 @@
 /datum/gear/donator/bm/gestapo_head
 	name = "Gestapo Cap"
 	slot = ITEM_SLOT_HEAD
-	path = /obj/item/clothing/head/gestapo
+	path = /obj/item/clothing/head/donator/bm/gestapo
 	ckeywhitelist = list("monolithxxv")
 
 /datum/gear/donator/bm/gestapo_mask
