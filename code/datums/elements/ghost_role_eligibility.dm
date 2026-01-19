@@ -5,25 +5,28 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 /datum/element/ghost_role_eligibility
 	element_flags = ELEMENT_DETACH | ELEMENT_BESPOKE
 	id_arg_index = 2
+	var/role_eligible = TRUE
 	var/penalizing = FALSE
 	var/free_ghost = FALSE
 
-/datum/element/ghost_role_eligibility/Attach(datum/target,free_ghosting = FALSE, penalize_on_ghost = FALSE)
+/datum/element/ghost_role_eligibility/Attach(datum/target,free_ghosting = FALSE, penalize_on_ghost = FALSE, _role_eligible)
 	. = ..()
 	if(!ismob(target))
 		return ELEMENT_INCOMPATIBLE
 	penalizing = penalize_on_ghost
 	free_ghost = free_ghosting
+	if(!isnull(_role_eligible))
+		role_eligible = _role_eligible
 	var/mob/M = target
-	if(!(M in GLOB.ghost_eligible_mobs))
+	if(role_eligible && !(M in GLOB.ghost_eligible_mobs))
 		GLOB.ghost_eligible_mobs += M
-		RegisterSignal(M, COMSIG_MOB_GHOSTIZE, PROC_REF(get_ghost_flags))
+	RegisterSignal(M, COMSIG_MOB_GHOSTIZE, PROC_REF(get_ghost_flags))
 
 /datum/element/ghost_role_eligibility/Detach(mob/M)
 	. = ..()
 	if(M in GLOB.ghost_eligible_mobs)
 		GLOB.ghost_eligible_mobs -= M
-		UnregisterSignal(M, COMSIG_MOB_GHOSTIZE)
+	UnregisterSignal(M, COMSIG_MOB_GHOSTIZE)
 
 /proc/get_all_ghost_role_eligible(silent = FALSE)
 	var/list/candidates = list()
