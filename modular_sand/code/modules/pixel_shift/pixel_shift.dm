@@ -41,6 +41,11 @@
 		client?.pixel_x = 0
 		pixel_y = get_standard_pixel_y_offset() + base_pixel_y
 		client?.pixel_y = 0
+	// BLUEMOON ADD
+	if(is_tilted)
+		transform = transform.Turn(-is_tilted)
+		is_tilted = 0
+	// BLUEMOON ADD END
 
 /mob/proc/pixel_shift(direction)
 	return
@@ -55,6 +60,22 @@
 
 /mob/living/pixel_shift(direction)
 	passthroughable = NONE
+
+	// BLUEMOON ADD
+	if(tilting)
+		if(CHECK_BITFIELD(direction, EAST))
+			if(is_tilted < 45)
+				transform = transform.Turn(1)
+				is_tilted++
+				is_shifted = TRUE
+		else if(CHECK_BITFIELD(direction, WEST))
+			if(is_tilted > -45)
+				transform = transform.Turn(-1)
+				is_tilted--
+				is_shifted = TRUE
+		return
+	// BLUEMOON ADD END
+
 	// switch(direction) // diagonal pixel-shifting, rejoice
 	if(CHECK_BITFIELD(direction, NORTH))
 		if(pixel_y <= PIXEL_SHIFT_MAXIMUM + base_pixel_y)

@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from 'common/redux';
+
 import { selectEmotes } from './selectors';
 
 export const useEmotes = context => {

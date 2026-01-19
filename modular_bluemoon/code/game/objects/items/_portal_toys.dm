@@ -920,6 +920,7 @@ GLOBAL_LIST_EMPTY(portal_networks)
 	portal_settings.add_to_history(user, "активировал стоп-слово")
 	// Disconnect
 	LAZYCLEARLIST(portallight)
+	LAZYCLEARLIST(remote_vibrations)  // Clear remote vibrations to stop all incoming effects
 	private_pair = null
 	stop_vibration()
 	portal_settings.connection_mode = PORTAL_MODE_DISABLED
@@ -1031,6 +1032,11 @@ GLOBAL_LIST_EMPTY(portal_networks)
 	portal_settings.parent_device = WEAKREF(src)
 
 /obj/item/portallight/Destroy()
+	// Clean up connections before destruction
+	if(portalunderwear)
+		portalunderwear.unregister_remote_vibration(src)
+		portalunderwear.portallight -= src
+		portalunderwear = null
 	QDEL_NULL(portal_settings)
 	QDEL_NULL(held_target_action)
 	private_pair = null
@@ -1155,6 +1161,7 @@ GLOBAL_LIST_EMPTY(portal_networks)
 		if(partner)
 			to_chat(partner, span_warning("Партнёр использовал стоп-слово. Соединение разорвано."))
 		target_panties.portal_settings?.add_to_history(user, "стоп-слово")
+		target_panties.unregister_remote_vibration(src)  // Remove our remote vibration before disconnecting
 		target_panties.portallight -= src
 	portal_settings.add_to_history(user, "активировал стоп-слово")
 	// Disconnect
@@ -1387,7 +1394,11 @@ GLOBAL_LIST_EMPTY(portal_networks)
 				// Disconnect all current connections if switching away from public
 				if(mode == PORTAL_MODE_DISABLED)
 					notify_all_connected("Подключения отключены владельцем устройства.")
+					// Unregister all remote vibrations before clearing
+					for(var/obj/item/portallight/PL in portallight)
+						unregister_remote_vibration(PL)
 					LAZYCLEARLIST(portallight)
+					LAZYCLEARLIST(remote_vibrations)  // Clear any orphaned remote vibrations
 			// Update network GROUP mode index when mode changes
 			if(portal_settings.network && (old_mode == PORTAL_MODE_GROUP || mode == PORTAL_MODE_GROUP))
 				portal_settings.network.update_group_panties_index(portal_settings)
@@ -1513,7 +1524,8 @@ GLOBAL_LIST_EMPTY(portal_networks)
 			// Record history
 			portal_settings?.add_to_history(holder, "отключён")
 			PL.portal_settings?.add_to_history(user, "отключил")
-			// Remove from list
+			// Remove remote vibration and from list
+			unregister_remote_vibration(PL)
 			portallight -= PL
 			PL.portalunderwear = null
 			PL.icon_state = "unpaired"
@@ -1526,10 +1538,12 @@ GLOBAL_LIST_EMPTY(portal_networks)
 				var/mob/living/carbon/human/holder = get_fleshlight_holder(PL)
 				if(holder)
 					to_chat(holder, span_warning("Портальное соединение разорвано."))
+				unregister_remote_vibration(PL)
 				PL.portalunderwear = null
 				PL.icon_state = "unpaired"
 				PL.update_appearance()
 			LAZYCLEARLIST(portallight)
+			LAZYCLEARLIST(remote_vibrations)  // Clear any orphaned remote vibrations
 			private_pair = null
 			return TRUE
 		// Control mode actions (only Self and Partner modes - mutual removed as redundant)
@@ -1870,6 +1884,10 @@ GLOBAL_LIST_EMPTY(portal_networks)
 		added_refs += pp_ref
 		var/mob/living/carbon/human/wearer = get_panties_wearer(PP)
 		var/display_name = get_portal_nickname(wearer, PP.name)
+		// Add location suffix if inserted to distinguish multiple devices from same owner
+		var/location_suffix = PP.get_short_location_suffix()
+		if(location_suffix)
+			display_name += " [location_suffix]"
 		available += list(list("name" = display_name, "ref" = pp_ref))
 	// Add panties in GROUP mode from the network's indexed list (no global scan needed)
 	if(portal_settings?.network)
@@ -1880,6 +1898,10 @@ GLOBAL_LIST_EMPTY(portal_networks)
 			added_refs += pp_ref
 			var/mob/living/carbon/human/wearer = get_panties_wearer(PP)
 			var/display_name = get_portal_nickname(wearer, PP.name)
+			// Add location suffix if inserted to distinguish multiple devices from same owner
+			var/location_suffix = PP.get_short_location_suffix()
+			if(location_suffix)
+				display_name += " [location_suffix]"
 			available += list(list("name" = display_name, "ref" = pp_ref))
 	data["available_panties"] = available
 	// Vibration patterns with descriptions

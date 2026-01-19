@@ -5,6 +5,7 @@
  */
 
 import { classes, pureComponentHooks } from 'common/react';
+
 import { IS_IE8 } from '../byond';
 import { Box, unit } from './Box';
 

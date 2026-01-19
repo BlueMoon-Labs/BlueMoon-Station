@@ -1,7 +1,7 @@
 // BLUEMOON ADDED
-import { Section, Flex, Divider, Collapsible, Box, Tooltip, LabeledList, ByondUi, Button } from "../components";
-import { Window } from "../layouts";
 import { useBackend } from "../backend";
+import { Collapsible, Flex, LabeledList, Section, Tooltip } from "../components";
+import { Window } from "../layouts";
 
 const getTagColor = (erptag) => {
   switch (erptag) {

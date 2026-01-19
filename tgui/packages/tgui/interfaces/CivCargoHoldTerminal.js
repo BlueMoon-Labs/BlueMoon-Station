@@ -98,7 +98,7 @@ const BountyPickBox = (props, context) => {
         {id_bounty_names.map((name, i) => (
           <Flex.Item
             key={i}
-            basis="30%"   // Три кнопки в ряд
+            basis="30%" // Три кнопки в ряд
             grow={0}
             shrink={0}
             px={0.5}

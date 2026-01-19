@@ -4,7 +4,7 @@ import { multiline } from 'common/string';
 
 import { resolveAsset } from '../assets';
 import { useBackend, useLocalState } from '../backend';
-import { Box, Button, Divider, Flex, Icon, Input, Section, Collapsible } from '../components';
+import { Box, Button, Collapsible, Divider, Flex, Icon, Input, Section } from '../components';
 import { Window } from '../layouts';
 
 const PATTERN_NUMBER = / \(([0-9]+)\)$/;
@@ -105,7 +105,7 @@ export const Orbit = (props, context) => {
     ghosts,
     misc,
     npcs,
-    ghost_roles
+    ghost_roles,
   } = data;
 
   const [searchText, setSearchText] = useLocalState(context, "searchText", "");

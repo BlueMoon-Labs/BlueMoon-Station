@@ -1,7 +1,6 @@
 import { useBackend } from '../backend';
-import { Box, Button, LabeledList, NoticeBox, NumberInput, Section, TextArea} from '../components';
+import { Box, Button, LabeledList, NoticeBox, NumberInput, Section, TextArea } from '../components';
 import { NtosWindow } from '../layouts';
-import { Input } from '../paracode_components';
 
 export const NtosNetMonitor = (props, context) => {
   const { act, data } = useBackend(context);
@@ -89,7 +88,7 @@ export const NtosNetMonitor = (props, context) => {
                 <Button
                   icon={config_systemcontrol ? 'power-off' : 'times'}
                   onClick={() => act('blocked_by_adress')} />
-              )}/>
+              )} />
                 <TextArea
                 height="50px"
                 value={input}

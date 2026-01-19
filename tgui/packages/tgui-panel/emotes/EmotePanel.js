@@ -1,12 +1,13 @@
-import { Button, Flex, Section } from 'tgui/components';
 import { sendMessage } from 'tgui/backend';
+import { Button, Flex, Section } from 'tgui/components';
+
 import { useEmotes } from './hooks';
 
 
 export const EmotePanel = (props, context) => {
-  const TGUI_PANEL_EMOTE_TYPE_DEFAULT = 1
-  const TGUI_PANEL_EMOTE_TYPE_CUSTOM = 2
-  const TGUI_PANEL_EMOTE_TYPE_ME = 3
+  const TGUI_PANEL_EMOTE_TYPE_DEFAULT = 1;
+  const TGUI_PANEL_EMOTE_TYPE_CUSTOM = 2;
+  const TGUI_PANEL_EMOTE_TYPE_ME = 3;
 
   const emotes = useEmotes(context);
 
@@ -63,7 +64,7 @@ export const EmotePanel = (props, context) => {
                 tooltip = `"${emote.message}"`;
                 break;
               default:
-                tooltip = "ОШИБКА: НЕИЗВЕСТНЫЙ ТИП ЭМОЦИИ'"
+                tooltip = "ОШИБКА: НЕИЗВЕСТНЫЙ ТИП ЭМОЦИИ'";
                 break;
             }
             return (
@@ -76,10 +77,10 @@ export const EmotePanel = (props, context) => {
                     emoteContextAction(emote.name);
                   }}
                   tooltip={tooltip}
-                  color = {color}
+                  color={color}
                 />
               </Flex.Item>
-            )
+            );
         })}
         <Flex.Item mx={0.5} mt={1}>
           <Button

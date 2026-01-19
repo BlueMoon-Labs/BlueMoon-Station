@@ -1,6 +1,6 @@
-import { Section, Flex, Collapsible, Box, Tooltip, LabeledList, ByondUi, Button } from "../components";
-import { Window } from "../layouts";
 import { useBackend, useLocalState } from "../backend";
+import { Box, Button, ByondUi, Collapsible, Flex, LabeledList, Section, Tooltip } from "../components";
+import { Window } from "../layouts";
 
 const getTagColor = (erptag) => {
   switch (erptag) {
@@ -50,7 +50,7 @@ export const CharacterProfile = (props, context) => {
   const { data } = useBackend<CharacterProfileContext>(context);
 
   const tags = [
-    { name: "ERP Verbs", title: "ЕРП механики", value: data.erp_verbs },  // BLUEMOON - mechanical_erp_verbs_examine
+    { name: "ERP Verbs", title: "ЕРП механики", value: data.erp_verbs }, // BLUEMOON - mechanical_erp_verbs_examine
     { name: "ERP", title: "Эротический отыгрыш", value: data.erp_tag },
     { name: "Non-Con", title: "Изнасилование", value: data.nc_tag },
     { name: "Vore", title: "Поедание/Проглатывание", value: data.vore_tag },
@@ -81,7 +81,7 @@ export const CharacterProfile = (props, context) => {
                 <Section style={{ "white-space": "pre-line" }}>
                   {data.flavortext_naked || "———"}
                 </Section>
-              </Collapsible>
+               </Collapsible>
             ) : (<Box />)}
 
             {data.security_records ? (
@@ -135,12 +135,12 @@ const CharacterProfileImageElement = (props, context) => {
   const headshot_links =
     [
       ...(data.headshot_links || []),
-      ...(data.headshot_naked_links || [])
+      ...(data.headshot_naked_links || []),
     ].filter(link => link?.length) || [];
 
   const [
     selectedHeadshot,
-    selectHeadshot
+    selectHeadshot,
   ] = useLocalState(context, 'selectedHeadshot', 0);
 
   const prevHeadshot = () => selectHeadshot(
@@ -150,7 +150,7 @@ const CharacterProfileImageElement = (props, context) => {
     (selectedHeadshot + 1) % headshot_links.length
   );
 
-  if (headshot_links.length) return (
+  if (headshot_links.length) { return (
     <Section title="Арт персонажа" pb="12" textAlign="center">
       <Box mb={1}>
         <img src={headshot_links[selectedHeadshot]} height="256px" width="256px" />
@@ -158,12 +158,12 @@ const CharacterProfileImageElement = (props, context) => {
       {headshot_links.length > 1 ? (
         <Box>
           <Button onClick={prevHeadshot} icon="arrow-left" />
-          <span style={{margin: "0 8px"}}><b>{selectedHeadshot + 1} / {headshot_links.length}</b></span>
+          <span style={{ margin: "0 8px" }}><b>{selectedHeadshot + 1} / {headshot_links.length}</b></span>
           <Button onClick={nextHeadshot} icon="arrow-right" />
         </Box>
       ) : (<Box />)}
     </Section>
-  );
+  ); }
   return (<Box />);
 };
 
@@ -172,7 +172,7 @@ const CharacterModelImageElement = (props, context) => {
 
     const { config } = useBackend(context);
   if(config.status < 2)
-    return
+    { return; }
   return (
     <Section title="Модель персонажа" pb="12" textAlign="center">
       <Box mb={1}>

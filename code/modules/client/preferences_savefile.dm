@@ -653,6 +653,17 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!GLOB.keybindings_by_name[bindname])
 			modless_key_bindings -= key
 
+	// BLUEMOON ADD - По идее оно должно назначить клавишу для людей которые переподклюлись после обновы.
+	if(GLOB.keybindings_by_name["pixel_tilt"])
+		var/has_pixel_tilt = FALSE
+		for(var/key in key_bindings)
+			if("pixel_tilt" in key_bindings[key])
+				has_pixel_tilt = TRUE
+				break
+		if(!has_pixel_tilt)
+			LAZYADD(key_bindings["N"], "pixel_tilt")
+	// BLUEMOON ADD END
+
 /datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
 	if(!path)
 		return FALSE

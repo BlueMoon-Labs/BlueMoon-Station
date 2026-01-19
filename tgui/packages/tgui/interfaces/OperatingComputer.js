@@ -1,7 +1,7 @@
 import { Fragment } from 'inferno';
 
 import { useBackend, useSharedState } from '../backend';
-import { AnimatedNumber, Button, LabeledList, NoticeBox, ProgressBar, Section, Tabs, Divider } from '../components';
+import { AnimatedNumber, Button, Divider, LabeledList, NoticeBox, ProgressBar, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
 const damageTypes = [

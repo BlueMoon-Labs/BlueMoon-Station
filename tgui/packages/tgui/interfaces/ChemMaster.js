@@ -267,7 +267,7 @@ const PackagingControls = (props, context) => {
             <Box mx={-1} className={pill.className} />
           </Button>
         ))}
-        </LabeledList.Item>
+                  </LabeledList.Item>
       )}
       {!condi && (<LabeledList.Item label="Тип пластыря">
         {patchStyles.map(patch => (
@@ -281,7 +281,7 @@ const PackagingControls = (props, context) => {
             <Box mx={-1} className={patch.className} />
           </Button>
         ))}
-        </LabeledList.Item>
+                  </LabeledList.Item>
       )}
       {!condi && (
         <PackagingControlsItem

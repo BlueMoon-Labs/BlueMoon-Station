@@ -18,12 +18,12 @@ import { setupHotReloading } from 'tgui-dev-server/link/client.cjs';
 
 import { audioMiddleware, audioReducer } from './audio';
 import { chatMiddleware, chatReducer } from './chat';
+import { emotesReducer } from './emotes'; // BLUEMOON ADD
 import { gameMiddleware, gameReducer } from './game';
 import { setupPanelFocusHacks } from './panelFocus';
 import { pingMiddleware, pingReducer } from './ping';
 import { settingsMiddleware, settingsReducer } from './settings';
 import { telemetryMiddleware } from './telemetry';
-import { emotesReducer } from './emotes'; // BLUEMOON ADD
 
 perf.mark('inception', window.performance?.timing?.navigationStart);
 perf.mark('init');

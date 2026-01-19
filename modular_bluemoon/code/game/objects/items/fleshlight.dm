@@ -471,7 +471,7 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		if(ishuman(user))
 			portal_settings?.owner = user
 			START_PROCESSING(SSobj, src)
-			RegisterSignal(user, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear))
+			RegisterSignal(user, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear), override = TRUE)
 			// Grant control action for worn panties
 			if(!worn_control_action)
 				worn_control_action = new /datum/action/portal_device_control(src)
@@ -484,6 +484,20 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 /obj/item/clothing/underwear/briefs/panties/portalpanties/dropped(mob/user)
 	. = ..()
 	UnregisterSignal(user, COMSIG_MOVABLE_HEAR)
+	// Notify connected flashlights that panties are being removed
+	if(LAZYLEN(portallight))
+		for(var/obj/item/portallight/PL in portallight)
+			var/mob/living/carbon/human/holder = get_fleshlight_holder(PL)
+			if(holder)
+				to_chat(holder, span_warning("Портальное соединение потеряно - трусики были сняты!"))
+			// Clear the flashlight's connection to us
+			unregister_remote_vibration(PL)
+			PL.portalunderwear = null
+			PL.icon_state = "unpaired"
+			PL.update_appearance()
+		LAZYCLEARLIST(portallight)
+	// Clear any remaining remote vibrations
+	LAZYCLEARLIST(remote_vibrations)
 	portal_settings?.owner = null
 	STOP_PROCESSING(SSobj, src)
 	// Revoke control action for worn panties
@@ -612,7 +626,7 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		inserted_target_action.Grant(G.owner)
 		register_climax_signal(G.owner)
 		// Register for safeword hearing
-		RegisterSignal(G.owner, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear))
+		RegisterSignal(G.owner, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear), override = TRUE)
 		portal_settings?.owner = G.owner
 		START_PROCESSING(SSobj, src)
 	return TRUE
@@ -627,6 +641,20 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	// Reset target to default
 	targetting = CUM_TARGET_VAGINA
 	update_portal()
+	// Notify connected flashlights that panties are being removed
+	if(LAZYLEN(portallight))
+		for(var/obj/item/portallight/PL in portallight)
+			var/mob/living/carbon/human/holder = get_fleshlight_holder(PL)
+			if(holder)
+				to_chat(holder, span_warning("Портальное соединение потеряно - трусики были извлечены!"))
+			// Clear the flashlight's connection to us
+			unregister_remote_vibration(PL)
+			PL.portalunderwear = null
+			PL.icon_state = "unpaired"
+			PL.update_appearance()
+		LAZYCLEARLIST(portallight)
+	// Clear any remaining remote vibrations
+	LAZYCLEARLIST(remote_vibrations)
 	// Remove control action and unregister signals
 	if(G.owner)
 		unregister_climax_signal(G.owner)
@@ -725,7 +753,7 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		inserted_target_action.Grant(G.owner)
 		register_climax_signal(G.owner)
 		// Register for safeword hearing
-		RegisterSignal(G.owner, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear))
+		RegisterSignal(G.owner, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear), override = TRUE)
 		portal_settings?.owner = G.owner
 		START_PROCESSING(SSobj, src)
 	return TRUE
@@ -790,6 +818,9 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 			if(fl_equipment?.holder_genital)
 				fl_holder = fl_equipment.get_wearer()
 				fleshlight_is_inserted = TRUE
+		// Only relay if flashlight is actively engaged (inserted or vibration enabled)
+		if(!fleshlight_is_inserted && !PL.portal_settings?.vibration_enabled)
+			continue  // Skip inactive held flashlights - don't send sensations to devices just sitting in pocket
 		if(!fl_holder || fl_holder == wearer || fl_holder == partner)
 			continue
 		if(!(fl_holder.client?.prefs?.toggles & VERB_CONSENT))
@@ -1004,6 +1035,28 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		if(ORGAN_SLOT_PENIS)
 			return "в уретре"
 	return "внутри"
+
+/// Get a short location suffix for display in device lists (e.g., "(вагина)")
+/obj/item/clothing/underwear/briefs/panties/portalpanties/proc/get_short_location_suffix()
+	var/datum/component/genital_equipment/equipment = GetComponent(/datum/component/genital_equipment)
+	if(!equipment?.holder_genital)
+		// Check if worn as mask or underwear to distinguish multiple devices from same owner
+		if(ishuman(loc))
+			var/mob/living/carbon/human/H = loc
+			if(H.wear_mask == src)
+				return "(маска)"
+			if(H.w_underwear == src)
+				return "(трусы)"
+		return ""  // Not worn, not inserted
+	var/obj/item/organ/genital/G = equipment.holder_genital
+	switch(G.slot)
+		if(ORGAN_SLOT_VAGINA)
+			return "(вагина)"
+		if(ORGAN_SLOT_ANUS)
+			return "(анус)"
+		if(ORGAN_SLOT_PENIS)
+			return "(уретра)"
+	return "(внутри)"
 
 /obj/item/portallight/proc/get_insertion_location_text()
 	var/datum/component/genital_equipment/equipment = GetComponent(/datum/component/genital_equipment)

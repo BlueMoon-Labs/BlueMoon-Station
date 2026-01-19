@@ -593,7 +593,7 @@ const PageMain = (props, context) => {
                   {slave.name}
                 </Flex.Item>
 
-                <Flex.Item color = "average">
+                <Flex.Item color="average">
                   {!slave.can_bought && !slave.bought
                     ? `${'Suspended: ' + slave.bought_timer}`
                     : slave.toggleransomfeedback}
