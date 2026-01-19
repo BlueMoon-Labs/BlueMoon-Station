@@ -1031,7 +1031,7 @@ const GenomeSequencer = (props, context) => {
         {pairs}
       </Box>
       <Box color="label" mt={1}>
-        <b>Подсказка:</b> Ctrl+Click по гену для выставления X. <br></br>
+        <b>Подсказка:</b> Ctrl+Click по гену для выставления X. <br />
         Кликните ПКМ для прокрутки в обратном порядке.
       </Box>
     </Fragment>

@@ -1,5 +1,5 @@
 import { useBackend, useSharedState } from '../backend';
-import { Box, Button, Icon, Section, Tooltip, Tabs } from '../components';
+import { Box, Button, Icon, Section, Tabs, Tooltip } from '../components';
 import { Window } from '../layouts';
 
 export const SpawnersMenu = (props, context) => {

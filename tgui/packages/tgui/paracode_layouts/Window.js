@@ -7,6 +7,7 @@
 import { classes } from 'common/react';
 import { decodeHtmlEntities, toTitleCase } from 'common/string';
 import { Component, Fragment } from 'inferno';
+
 import { useBackend } from '../backend';
 import { IS_IE8, runCommand, winset } from '../byond';
 import { Icon } from '../components';

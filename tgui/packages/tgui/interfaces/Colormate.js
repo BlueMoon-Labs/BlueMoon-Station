@@ -1,5 +1,5 @@
 import { useBackend, useLocalState } from '../backend';
-import { Button, Icon, NoticeBox, NumberInput, Section, Slider, Table, Tabs, Dropdown, Flex, Stack } from '../components';
+import { Button, Dropdown, Flex, Icon, NoticeBox, NumberInput, Section, Slider, Stack, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
 export const Colormate = (props, context) => {

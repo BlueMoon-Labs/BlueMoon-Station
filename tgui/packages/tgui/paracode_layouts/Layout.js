@@ -5,6 +5,7 @@
  */
 
 import { classes } from 'common/react';
+
 import { IS_IE8 } from '../byond';
 
 /**

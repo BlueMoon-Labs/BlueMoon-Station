@@ -1,3 +1,4 @@
+import { useBackend, useLocalState } from '../backend';
 import {
   Box,
   Button,
@@ -6,12 +7,8 @@ import {
   NumberInput,
   Section,
   Stack,
-  Table,
   Tabs,
-  Tooltip,
 } from '../components';
-
-import { useBackend, useLocalState } from '../backend';
 import { Window } from '../layouts';
 
 type RoomsData = {
@@ -303,7 +300,7 @@ export const CheckoutMenu = (props, context) => {
       context,
       'selectedTab',
       0
-    )
+    );
   const tabContent = [
     <RoomsTab
       key="misc"
@@ -360,8 +357,7 @@ export const CheckoutMenu = (props, context) => {
           minHeight: 0, // This is important for Firefox
           scrollbarWidth: 'none',
         }}
-      >
-      </Box>
+       />
     </Box>
   );
 
@@ -375,7 +371,7 @@ const RoomsTab = (props, context) => {
       context,
       'selectedRoom',
       null
-    )
+    );
 
   const targetCategory = category.toLowerCase();
   const filteredRooms = hotel_map_list.filter(

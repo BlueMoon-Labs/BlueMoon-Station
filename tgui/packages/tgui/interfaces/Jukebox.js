@@ -1,15 +1,15 @@
-import { useBackend, useSharedState, useLocalState } from '../backend';
+import { useBackend, useLocalState, useSharedState } from '../backend';
 import {
   Box,
   Button,
+  Dropdown,
   Input,
   Knob,
   LabeledList,
+  NumberInput,
   Section,
   Stack,
   Tabs,
-  NumberInput,
-  Dropdown,
 } from '../components';
 import { Window } from '../layouts';
 
@@ -84,7 +84,7 @@ export const Jukebox = (props, context) => {
   };
 
   const onChangePlaylist = () => {
-    setTab('tracks')
+    setTab('tracks');
     setPlaylist('');
     setPage(1);
     setInputPage(1);
@@ -219,7 +219,7 @@ export const Jukebox = (props, context) => {
                   disabled={!playlist}
                   tooltip="Удалить плейлист"
                   onClick={() => {
-                    act('change_playlist', { playlist, delete: true })
+                    act('change_playlist', { playlist, delete: true });
                     onChangePlaylist();
                   }}
                 />
