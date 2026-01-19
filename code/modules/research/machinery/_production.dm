@@ -272,6 +272,8 @@
 /obj/machinery/rnd/production/proc/user_try_print_id(id, amount)
 	if((!istype(linked_console) && requires_console) || !id)
 		return FALSE
+	if(busy)
+		return FALSE
 	if(istext(amount))
 		amount = text2num(amount)
 	if(isnull(amount))
