@@ -265,25 +265,45 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
     let el = MaterialDockTooltip.renderedDock;
     if (!el) {
       el = document.createElement('div');
-      el.className = 'MaterialDockTooltip'; // можно потом оформить в scss
+      el.className = 'MaterialDockTooltip';
       el.style.position = 'absolute';
       el.style.zIndex = '999999';
       el.style.opacity = '0';
-      el.style.pointerEvents = 'auto';
+
+      // ВАЖНО: скрытый док не должен ловить мышь
+      el.style.pointerEvents = 'none';
+
       document.body.appendChild(el);
 
-      // держим открытым, когда курсор на самом доке
       el.addEventListener('mouseenter', () => {
+        // если док закрыт (нет якоря) — вообще не реагируем
+        if (!MaterialDockTooltip.currentAnchor) return;
+
         MaterialDockTooltip.dockHovered = true;
         el!.style.opacity = '1';
+        el!.style.pointerEvents = 'auto';
       });
-      el.addEventListener('mouseleave', () => {
+
+      el.addEventListener('mouseleave', (e: MouseEvent) => {
+        const to = e.relatedTarget as Node | null;
+        const anchor = MaterialDockTooltip.currentAnchor;
+
         MaterialDockTooltip.dockHovered = false;
-        // закрываем, если якорь уже не активен
+
+        // Если ушли с дока обратно на якорь — НЕ закрываем
+        if (anchor && to && anchor.contains(to)) return;
+
         if (!MaterialDockTooltip.currentAnchor) {
           el!.style.opacity = '0';
+          el!.style.pointerEvents = 'none';
+        } else {
+          // якорь есть, но мы не на доке — закрываем
+          MaterialDockTooltip.currentAnchor = undefined;
+          el!.style.opacity = '0';
+          el!.style.pointerEvents = 'none';
         }
       });
+
 
       MaterialDockTooltip.renderedDock = el;
     }
@@ -293,20 +313,24 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
   open(anchor: Element) {
     const el = this.ensureDockEl();
     MaterialDockTooltip.currentAnchor = anchor;
+
     el.style.opacity = '1';
+    el.style.pointerEvents = 'auto';
+
     this.renderDock();
   }
 
   close(anchor: Element) {
-    // закрываем только если это текущий якорь
     if (MaterialDockTooltip.currentAnchor !== anchor) return;
-
-    // если мышь на доке — не закрываем
     if (MaterialDockTooltip.dockHovered) return;
 
     MaterialDockTooltip.currentAnchor = undefined;
+
     const el = MaterialDockTooltip.renderedDock;
-    if (el) el.style.opacity = '0';
+    if (el) {
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none'; // ВАЖНО
+    }
   }
 
   renderDock() {
@@ -345,7 +369,16 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
     if (!anchor) return;
 
     anchor.addEventListener('mouseenter', () => this.open(anchor));
-    anchor.addEventListener('mouseleave', () => this.close(anchor));
+
+    anchor.addEventListener('mouseleave', (e: MouseEvent) => {
+      const to = e.relatedTarget as Node | null;
+      const dock = MaterialDockTooltip.renderedDock;
+
+      // Если ушли курсором в док — НЕ закрываем
+      if (dock && to && dock.contains(to)) return;
+
+      this.close(anchor);
+    });
   }
 
   componentDidUpdate() {
@@ -355,6 +388,7 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
   }
 
   componentWillUnmount() {
+    MaterialDockTooltip.dockHovered = false;
     const anchor = this.getDOMNode();
     if (anchor) this.close(anchor);
   }
