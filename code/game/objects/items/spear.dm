@@ -227,7 +227,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK
 	reach = 2
-	throwforce = 59
+	throwforce = 60
 	embedding = list("embedded_impact_pain_multiplier" = 3)
 	armour_penetration = 25				//Enhanced armor piercing
 	custom_materials = null
