@@ -218,7 +218,7 @@
 	AddComponent(/datum/component/two_handed, force_unwielded=11, force_wielded=20, icon_wielded="[icon_prefix]1")
 
 /obj/item/spear/bonespear/Khasal	//An artifact of the Ashwalker tribe, one of a kind
-	icon_state = "bonemetal_spear1"
+	icon_state = "bonemetal_spear0"
 	lefthand_file = 'icons/mob/inhands/weapons/polearms_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/polearms_righthand.dmi'
 	name = "Khasal"
