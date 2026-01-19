@@ -213,7 +213,7 @@ export const Fabricator = (props, context) => {
   const { busy } = data;
 
   return (
-    <Window width={790} height={800}>
+    <Window width={900} height={800}>
       {!!busy && (
         <Dimmer fontSize="32px">
           <Icon name="cog" spin={1} />
