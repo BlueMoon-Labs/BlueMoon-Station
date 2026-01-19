@@ -413,14 +413,13 @@
 	w_class = WEIGHT_CLASS_SMALL
 	breakouttime = 50
 
+/obj/item/restraints/legcuffs/bola/energy/on_removed()
+	do_sparks(1, TRUE, src)
+	qdel(src)
+
 /obj/item/restraints/legcuffs/bola/bone //Lavaland variant
 	name = "tribal bola"
 	desc = "A tibal bone weapon designed to be thrown at the target. Upon connecting with said target, it will wrap around their legs, making it difficult for them to move quickly."
 	icon_state = "bone_bola"
 	breakouttime = 35
 	gender = NEUTER
-	var/knockdown = 0
-
-/obj/item/restraints/legcuffs/bola/energy/on_removed()
-	do_sparks(1, TRUE, src)
-	qdel(src)
