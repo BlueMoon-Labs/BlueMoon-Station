@@ -471,7 +471,7 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		if(ishuman(user))
 			portal_settings?.owner = user
 			START_PROCESSING(SSobj, src)
-			RegisterSignal(user, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear))
+			RegisterSignal(user, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear), override = TRUE)
 			// Grant control action for worn panties
 			if(!worn_control_action)
 				worn_control_action = new /datum/action/portal_device_control(src)
@@ -626,7 +626,7 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		inserted_target_action.Grant(G.owner)
 		register_climax_signal(G.owner)
 		// Register for safeword hearing
-		RegisterSignal(G.owner, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear))
+		RegisterSignal(G.owner, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear), override = TRUE)
 		portal_settings?.owner = G.owner
 		START_PROCESSING(SSobj, src)
 	return TRUE
@@ -753,7 +753,7 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		inserted_target_action.Grant(G.owner)
 		register_climax_signal(G.owner)
 		// Register for safeword hearing
-		RegisterSignal(G.owner, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear))
+		RegisterSignal(G.owner, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear), override = TRUE)
 		portal_settings?.owner = G.owner
 		START_PROCESSING(SSobj, src)
 	return TRUE
