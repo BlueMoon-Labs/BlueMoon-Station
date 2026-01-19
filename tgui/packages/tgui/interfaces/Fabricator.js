@@ -504,11 +504,9 @@ const ItemList = (props, context) => {
                     {`Max: x${maxBuild}`}
                   </Box>
                 }
-
                 onCommit={(e, value) => {
                   // value приходит строкой
                   const raw = Number(value);
-
                   act('build', { id: item.id, amount: raw });
                 }}
               />
