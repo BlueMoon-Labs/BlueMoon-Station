@@ -216,3 +216,26 @@
 /obj/item/spear/bonespear/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/two_handed, force_unwielded=11, force_wielded=20, icon_wielded="[icon_prefix]1")
+
+/obj/item/spear/bonespear/Khasal	//An artifact of the Ashwalker tribe, one of a kind
+	icon_state = "bonemetal_spear1"
+	lefthand_file = 'icons/mob/inhands/weapons/polearms_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/polearms_righthand.dmi'
+	name = "Khasal"
+	desc = "A deadly spear that passes down through the tribe from Cycle to Cycle. Like its original wielder, it is forced to shed blood until the end of time."
+	force = 18
+	w_class = WEIGHT_CLASS_BULKY
+	slot_flags = ITEM_SLOT_BACK
+	reach = 2
+	throwforce = 60
+	embedding = list("embedded_impact_pain_multiplier" = 3)
+	armour_penetration = 25				//Enhanced armor piercing
+	custom_materials = null
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	attack_verb = list("attacked", "poked", "jabbed", "torn", "gored")
+	sharpness = SHARP_EDGED
+	icon_prefix = "bonemetal_spear1"
+
+/obj/item/spear/bonespear/Khasal/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=18, force_wielded=27, icon_wielded="[icon_prefix]1")
