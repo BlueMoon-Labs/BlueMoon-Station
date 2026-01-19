@@ -77,7 +77,7 @@
 	. = ..()
 	AddComponent(/datum/component/two_handed, force_unwielded=5, force_wielded=23, icon_wielded="bone_axe1")
 
-/obj/item/fireaxe/boneaxe/Shis`har  //An artifact of the Ashwalker tribe, one of a kind.
+/obj/item/fireaxe/boneaxe/Shis-Har  //An artifact of the Ashwalker tribe, one of a kind.
 	icon_state = "bonemetal_axe0"
 	name = "Shis`har"
 	desc = "Forged from Lavaland's depths, this axe slays only intelligent beings."
