@@ -1,22 +1,43 @@
 // ============================================================
-// BlueMoon - Knotting core (standalone) //By Stasdvrz
+// BlueMoon - Knotting core (REFACTORED) //By Stasdvrz
 // ============================================================
 #include "bm_knotting_defines.dm"
 
+// ============================================================
+// CONFIGURATION DEFINES
+// ============================================================
+#define KNOT_BASE_CHANCE 20
+#define KNOT_SIZE_MULTIPLIER 8
+#define KNOT_STRENGTH_MULTIPLIER 4
+#define KNOT_AROUSAL_BONUS_MAX 20
+#define KNOT_ESTRUS_BONUS 10
+#define KNOT_VAGINAL_BONUS 10
+#define KNOT_ANAL_PENALTY 5
+#define KNOT_ORAL_PENALTY 15
+#define KNOT_RESIST_COOLDOWN 50 // 5 seconds
+#define KNOT_DISTANCE_CHECK_INTERVAL 5 SECONDS
+#define KNOT_AROUSAL_TICK_INTERVAL 5 SECONDS
+#define KNOT_MOVEMENT_CHECK_COOLDOWN 10 // 1 second
+
+// ============================================================
+// MOB VARIABLES
+// ============================================================
 /mob/living
-	var/tmp/knot_resist_cd_until = 0   // антиспам для Resist
-	//var/tmp/knot_action_cd_until = 0   // антиспам для попытки заузлиться (новый верб)
+	var/tmp/knot_resist_cd_until = 0
+	var/tmp/in_knot_check = FALSE
 
-
+// ============================================================
+// PENIS ORGAN EXTENSION
+// ============================================================
 /obj/item/organ/genital/penis
-	// 0 — нет узла; 1 — обычный узел; 2 — «hemi»/усиленный
 	var/knot_size = 0
 	var/knot_locked = FALSE
-	var/knot_until = 0      // world.time, когда спадёт
-	var/knot_strength = 1   // на будущее
+	var/knot_until = 0
+	var/knot_strength = 1
 	var/knot_state = 0
 	var/mob/living/knot_partner = null
 	var/last_knot_check = 0
+	var/last_tug_time = 0
 
 /obj/item/organ/genital/penis/Initialize(mapload)
 	. = ..()
@@ -26,11 +47,15 @@
 	. = ..()
 	update_knotting_from_shape()
 
+/obj/item/organ/genital/penis/Destroy()
+	if(knot_locked && !QDELETED(knot_partner))
+		release_knot(owner, knot_partner, knot_state, TRUE)
+	return ..()
+
 /obj/item/organ/genital/penis/proc/update_knotting_from_shape()
 	var/datum/sprite_accessory/S = GLOB.cock_shapes_list[shape]
 	var/state = lowertext(S ? S.icon_state : "[shape]")
 
-	// Taur shape check
 	var/tauric_shape = FALSE
 	var/datum/sprite_accessory/taur/T = GLOB.taur_list[src.owner?.dna.features["taur"]]
 	if(istype(T) && S)
@@ -46,162 +71,173 @@
 /obj/item/organ/genital/penis/proc/can_pull_out()
 	return !knot_locked
 
-
 // ============================================================
-// 🔗 Основная механика узла
+// MAIN KNOTTING LOGIC (REFACTORED)
 // ============================================================
-
 /obj/item/organ/genital/penis/proc/do_knotting(mob/living/user, mob/living/partner, target_zone, force_success = FALSE)
-	if(!knot_size || knot_locked || !user || !partner)
+	if(!validate_knotting_conditions(user, partner))
 		return FALSE
 
-	// 🔥 Проверка возбуждения
-	if(ishuman(user))
-		var/mob/living/carbon/human/HU = user
-		if(!HU.lust || HU.lust < 60)
-			return FALSE
-
-	// базовый шанс
-	var/knot_chance = 20 + (knot_size * 8) + (knot_strength * 4)
-
-	// возбуждение через органы
-	var/total_genitals = 0
-	var/aroused_genitals = 0
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		for(var/obj/item/organ/genital/G in H.internal_organs)
-			if(G.genital_flags & GENITAL_CAN_AROUSE)
-				total_genitals++
-				if(G.aroused_state)
-					aroused_genitals++
-	var/arousal_ratio = (total_genitals > 0) ? (aroused_genitals / total_genitals) : 0
-	if(arousal_ratio >= 0.8)
-		knot_chance += round(20 * ((arousal_ratio - 0.8) / 0.2))
-
-	// эстральный бонус
-	if(HAS_TRAIT(partner, TRAIT_ESTROUS_ACTIVE))
-		knot_chance += 10
-		to_chat(user, span_love("Тело [partner] отзывчивее из-за эстрального цикла."))
-
-	knot_chance = clamp(knot_chance, 0, KNOTTING_MAX_CHANCE)
-
-	// зона и длительность
-	var/zone_text = ""
-	var/duration_min = 600 SECONDS
-	var/duration_max = 900 SECONDS
-	if(target_zone == CUM_TARGET_VAGINA)
-		if(!partner.has_vagina()) return FALSE
-		zone_text = "влагалище"
-		knot_chance += 10
-	else if(target_zone == CUM_TARGET_ANUS)
-		if(!partner.has_anus()) return FALSE
-		zone_text = "анус"
-		knot_chance -= 5
-		duration_min *= 0.8
-		duration_max *= 0.9
-	else if(target_zone == CUM_TARGET_MOUTH)
-		if(!partner.has_mouth()) return FALSE
-		zone_text = "рот"
-		knot_chance -= 15
-		duration_min *= 0.1
-		duration_max *= 0.2
-	else
-		return FALSE
-
-	// 🚫 У партнёра уже активен узел
-	if(ishuman(partner))
-		var/mob/living/carbon/human/Hp = partner
-		for(var/obj/item/organ/genital/penis/otherP in Hp.internal_organs)
-			if(otherP.knot_locked && otherP.knot_state == target_zone)
-				knot_chance = 0
-				break
+	var/knot_chance = calculate_knot_chance(user, partner, target_zone)
 
 	if(!force_success && !prob(knot_chance))
 		return FALSE
 
-	// === активация узла ===
+	var/duration = calculate_knot_duration(target_zone)
+
+	activate_knot(user, partner, target_zone, duration)
+	setup_knot_signals(user, partner)
+	apply_knot_effects(user, partner, target_zone)
+
+	schedule_knot_processes(user, partner, target_zone, duration)
+
+	return TRUE
+
+// ============================================================
+// VALIDATION
+// ============================================================
+/obj/item/organ/genital/penis/proc/validate_knotting_conditions(mob/living/user, mob/living/partner)
+	if(!knot_size || knot_locked || !user || !partner)
+		return FALSE
+
+	if(QDELETED(user) || QDELETED(partner))
+		return FALSE
+
+	if(!ishuman(user))
+		return FALSE
+
+	var/mob/living/carbon/human/HU = user
+	if(!HU.lust || HU.lust < 60)
+		return FALSE
+
+	return TRUE
+
+// ============================================================
+// CHANCE CALCULATION
+// ============================================================
+/obj/item/organ/genital/penis/proc/calculate_knot_chance(mob/living/user, mob/living/partner, target_zone)
+	var/chance = KNOT_BASE_CHANCE + (knot_size * KNOT_SIZE_MULTIPLIER) + (knot_strength * KNOT_STRENGTH_MULTIPLIER)
+
+	chance += calculate_arousal_bonus(user)
+	chance += calculate_zone_modifier(partner, target_zone)
+	chance += calculate_estrus_bonus(partner)
+	chance -= calculate_existing_knot_penalty(partner, target_zone)
+
+	return clamp(chance, 0, KNOTTING_MAX_CHANCE)
+
+/obj/item/organ/genital/penis/proc/calculate_arousal_bonus(mob/living/user)
+	if(!ishuman(user))
+		return 0
+
+	var/mob/living/carbon/human/H = user
+	var/total_genitals = 0
+	var/aroused_genitals = 0
+
+	for(var/obj/item/organ/genital/G in H.internal_organs)
+		if(G.genital_flags & GENITAL_CAN_AROUSE)
+			total_genitals++
+			if(G.aroused_state)
+				aroused_genitals++
+
+	if(total_genitals <= 0)
+		return 0
+
+	var/arousal_ratio = aroused_genitals / total_genitals
+	if(arousal_ratio < 0.8)
+		return 0
+
+	return round(KNOT_AROUSAL_BONUS_MAX * ((arousal_ratio - 0.8) / 0.2))
+
+/obj/item/organ/genital/penis/proc/calculate_zone_modifier(mob/living/partner, target_zone)
+	switch(target_zone)
+		if(CUM_TARGET_VAGINA)
+			if(!partner.has_vagina())
+				return -100 // Impossible
+			return KNOT_VAGINAL_BONUS
+		if(CUM_TARGET_ANUS)
+			if(!partner.has_anus())
+				return -100
+			return -KNOT_ANAL_PENALTY
+		if(CUM_TARGET_MOUTH)
+			if(!partner.has_mouth())
+				return -100
+			return -KNOT_ORAL_PENALTY
+	return -100
+
+/obj/item/organ/genital/penis/proc/calculate_estrus_bonus(mob/living/partner)
+	if(HAS_TRAIT(partner, TRAIT_ESTROUS_ACTIVE))
+		return KNOT_ESTRUS_BONUS
+	return 0
+
+/obj/item/organ/genital/penis/proc/calculate_existing_knot_penalty(mob/living/partner, target_zone)
+	if(!ishuman(partner))
+		return 0
+
+	var/mob/living/carbon/human/Hp = partner
+	for(var/obj/item/organ/genital/penis/otherP in Hp.internal_organs)
+		if(otherP.knot_locked && otherP.knot_state == target_zone)
+			return 100 // Block completely
+
+	return 0
+
+// ============================================================
+// DURATION CALCULATION
+// ============================================================
+/obj/item/organ/genital/penis/proc/calculate_knot_duration(target_zone)
+	var/duration_min = 600 SECONDS
+	var/duration_max = 900 SECONDS
+
+	switch(target_zone)
+		if(CUM_TARGET_ANUS)
+			duration_min *= 0.8
+			duration_max *= 0.9
+		if(CUM_TARGET_MOUTH)
+			duration_min *= 0.1
+			duration_max *= 0.2
+
+	return rand(duration_min, duration_max)
+
+// ============================================================
+// KNOT ACTIVATION
+// ============================================================
+/obj/item/organ/genital/penis/proc/activate_knot(mob/living/user, mob/living/partner, target_zone, duration)
 	knot_locked = TRUE
 	knot_partner = partner
 	knot_state = target_zone
-	var/dur = rand(duration_min, duration_max)
-	knot_until = world.time + dur
+	knot_until = world.time + duration
 
-	// поводковая механика
-	if(istype(user, /mob/living) && istype(partner, /mob/living))
-		var/mob/living/master = user
-		var/mob/living/pet = partner
-		if(!pet.has_movespeed_modifier(/datum/movespeed_modifier/leash))
-			pet.add_movespeed_modifier(/datum/movespeed_modifier/leash)
-		RegisterSignal(master, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move), TRUE)
-		RegisterSignal(pet, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move), TRUE)
+/obj/item/organ/genital/penis/proc/setup_knot_signals(mob/living/user, mob/living/partner)
+	if(!istype(partner, /mob/living))
+		return
 
-	// оповещение
+	if(!partner.has_movespeed_modifier(/datum/movespeed_modifier/leash))
+		partner.add_movespeed_modifier(/datum/movespeed_modifier/leash)
+
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move), TRUE)
+	RegisterSignal(partner, COMSIG_MOVABLE_MOVED, PROC_REF(on_knot_move), TRUE)
+
+// ============================================================
+// KNOT EFFECTS
+// ============================================================
+/obj/item/organ/genital/penis/proc/apply_knot_effects(mob/living/user, mob/living/partner, target_zone)
+	var/zone_text = get_zone_text(target_zone)
+
+	send_knot_messages(user, partner, zone_text)
+	apply_mood_effects(user, partner, TRUE)
+	apply_aphrodisiac_effects(user, partner)
+	handle_post_knot_arousal(user, partner)
+
+/obj/item/organ/genital/penis/proc/send_knot_messages(mob/living/user, mob/living/partner, zone_text)
 	visible_message(list(user, partner),
 		span_love("<b>[user]</b> застревает узлом в [zone_text] <b>[partner]</b>!"),
 		span_love("Твой узел набухает и фиксируется внутри [partner].")
 	)
 
-	// 💭 Положительный mood
-	if(ishuman(user))
-		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "knotting_satisfied", /datum/mood_event/knotting_satisfied)
-	if(ishuman(partner))
-		SEND_SIGNAL(partner, COMSIG_ADD_MOOD_EVENT, "knotting_linked", /datum/mood_event/knotting_linked)
+	to_chat(partner, span_love("<font color='#ff7ff5'><b>Узел блокирует выход — вы соединены с [user]!</b></font>"))
+	to_chat(partner, span_love("[get_partner_sensation_message(knot_state)]"))
 
-	// Афродизиачный эффект при узлировании
-	for(var/mob/living/M in list(user, partner))
-		if(!M?.client?.prefs?.arousable || (M.client?.prefs?.cit_toggles & NO_APHRO))
-			continue
-
-		// случайные стоны / эмоуты
-		if(prob(10))
-			if(prob(50))
-				M.say(pick("Ох-мхх...", "Ахх-р...", "Амрфпф...", "Мрр-ах...", "Ааах...", "Мнх...", "Ммм..."))
-			else
-				M.emote(pick("moan", "blush", "pant"))
-
-		// чувственные тексты
-		if(prob(15))
-			var/msg = pick(
-				"Ты чувствуешь, как всё внутри горит от удовольствия...",
-				"Каждое движение узла усиливает твоё желание...",
-				"Твоё тело отзывается на каждую пульсацию...")
-			to_chat(M, span_love(msg))
-
-		// усиление возбуждения + ограничение роста lust
-		if(ishuman(M))
-			var/mob/living/carbon/human/HM = M
-			HM.adjust_arousal(100, "knotting", aphro = TRUE)
-
-			if(hascall(HM, "get_lust") && hascall(HM, "get_climax_threshold"))
-				var/max_lust = HM.get_climax_threshold()
-				if(max_lust <= 0)
-					max_lust = 100
-
-				var/current_lust = HM.get_lust()
-				if(current_lust < max_lust)
-					var/to_add = NORMAL_LUST
-					if(current_lust + to_add > max_lust)
-						to_add = max_lust - current_lust
-					if(to_add > 0)
-						HM.add_lust(to_add)
-			else
-				HM.add_lust(NORMAL_LUST)
-		else
-			M.add_lust(NORMAL_LUST)
-
-		var/climax_threshold = hascall(M, "get_climax_threshold") ? M.get_climax_threshold() : 100
-		if(climax_threshold <= 0)
-			climax_threshold = 100
-		if(M.lust / climax_threshold < 0.65)
-			M.add_lust(NORMAL_LUST)
-
-		REMOVE_TRAIT(M, TRAIT_NEVERBONER, "KNOT_AROUSAL")
-
-	// ⚡ Периодическое усиление возбуждения (авто-стимуляция узла)
-	addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), 4 SECONDS)
-
-	// партнёрское сообщение
-	var/list/messages = list()
+/obj/item/organ/genital/penis/proc/get_partner_sensation_message(target_zone)
+	var/list/messages
 	switch(target_zone)
 		if(CUM_TARGET_VAGINA)
 			messages = list(
@@ -224,26 +260,105 @@
 		else
 			messages = list("Ты чувствуешь, как узел пульсирует внутри, соединяя вас крепче...")
 
-	to_chat(partner, span_love("<font color='#ff7ff5'><b>Узел блокирует выход — вы соединены с [user]!</b></font>"))
-	to_chat(partner, span_love("[pick(messages)]"))
+	return pick(messages)
 
-	// возбуждение при узловке
+/obj/item/organ/genital/penis/proc/apply_mood_effects(mob/living/user, mob/living/partner, positive = TRUE)
+	if(!ishuman(user) || !ishuman(partner))
+		return
+
+	if(positive)
+		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "knotting_satisfied", /datum/mood_event/knotting_satisfied)
+		SEND_SIGNAL(partner, COMSIG_ADD_MOOD_EVENT, "knotting_linked", /datum/mood_event/knotting_linked)
+	else
+		SEND_SIGNAL(user, COMSIG_CLEAR_MOOD_EVENT, "knotting_satisfied")
+		SEND_SIGNAL(user, COMSIG_CLEAR_MOOD_EVENT, "knotting_linked")
+		SEND_SIGNAL(partner, COMSIG_CLEAR_MOOD_EVENT, "knotting_satisfied")
+		SEND_SIGNAL(partner, COMSIG_CLEAR_MOOD_EVENT, "knotting_linked")
+
+/obj/item/organ/genital/penis/proc/apply_aphrodisiac_effects(mob/living/user, mob/living/partner)
+	for(var/mob/living/M in list(user, partner))
+		if(!should_apply_aphrodisiac(M))
+			continue
+
+		trigger_random_reactions(M)
+		send_sensual_messages(M)
+		apply_lust_increase(M)
+
+/obj/item/organ/genital/penis/proc/should_apply_aphrodisiac(mob/living/M)
+	if(!M?.client?.prefs?.arousable)
+		return FALSE
+	if(M.client?.prefs?.cit_toggles & NO_APHRO)
+		return FALSE
+	return TRUE
+
+/obj/item/organ/genital/penis/proc/trigger_random_reactions(mob/living/M)
+	if(prob(10))
+		if(prob(50))
+			M.say(pick("Ох-мхх...", "Ахх-р...", "Амрфпф...", "Мрр-ах...", "Ааах...", "Мнх...", "Ммм..."))
+		else
+			M.emote(pick("moan", "blush", "pant"))
+
+/obj/item/organ/genital/penis/proc/send_sensual_messages(mob/living/M)
+	if(!prob(15))
+		return
+
+	var/msg = pick("Ты чувствуешь, как всё внутри горит от удовольствия...","Каждое движение узла усиливает твоё желание...","Твоё тело отзывается на каждую пульсацию...")
+	to_chat(M, span_love(msg))
+
+/obj/item/organ/genital/penis/proc/apply_lust_increase(mob/living/M)
+	if(ishuman(M))
+		var/mob/living/carbon/human/HM = M
+		HM.adjust_arousal(100, "knotting", aphro = TRUE)
+		HM.safe_add_capped_lust(NORMAL_LUST)
+	else
+		M.add_lust(NORMAL_LUST)
+
+	REMOVE_TRAIT(M, TRAIT_NEVERBONER, "KNOT_AROUSAL")
+
+/mob/living/carbon/human/proc/safe_add_capped_lust(amount)
+	if(!ishuman(src))
+		add_lust(amount)
+		return
+
+	if(!hascall(src, "get_lust") || !hascall(src, "get_climax_threshold"))
+		add_lust(amount)
+		return
+
+	var/max_lust = get_climax_threshold()
+	if(max_lust <= 0)
+		max_lust = 100
+
+	var/current_lust = get_lust()
+	if(current_lust >= max_lust)
+		return
+
+	amount = min(amount, max_lust - current_lust)
+	if(amount > 0)
+		add_lust(amount)
+
+/obj/item/organ/genital/penis/proc/handle_post_knot_arousal(mob/living/user, mob/living/partner)
 	if(ishuman(user))
-		var/mob/living/carbon/human/HU2 = user
-		HU2.handle_post_sex(NORMAL_LUST, null, partner)
+		var/mob/living/carbon/human/HU = user
+		HU.handle_post_sex(NORMAL_LUST, null, partner)
+
 	if(ishuman(partner))
 		var/mob/living/carbon/human/HP = partner
 		HP.handle_post_sex(NORMAL_LUST, null, user)
 
-	addtimer(CALLBACK(src, PROC_REF(release_knot), user, partner, target_zone, FALSE), dur)
-	addtimer(CALLBACK(src, PROC_REF(knot_distance_loop), user), 5 SECONDS)
-	return TRUE
+// ============================================================
+// PROCESS SCHEDULING
+// ============================================================
+/obj/item/organ/genital/penis/proc/schedule_knot_processes(mob/living/user, mob/living/partner, target_zone, duration)
+	addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), KNOT_AROUSAL_TICK_INTERVAL)
+	addtimer(CALLBACK(src, PROC_REF(release_knot), user, partner, target_zone, FALSE), duration)
+	addtimer(CALLBACK(src, PROC_REF(knot_distance_loop), user), KNOT_DISTANCE_CHECK_INTERVAL)
 
-
-// 🔁 повторяющийся эффект возбуждения, пока узел активен
+// ============================================================
+// PERIODIC AROUSAL TICK
+// ============================================================
 /obj/item/organ/genital/penis/proc/knot_arousal_tick(mob/living/user, mob/living/partner)
 	if(QDELETED(src) || !knot_locked || QDELETED(user) || QDELETED(partner))
-		return // узел снят, выходим
+		return
 
 	for(var/mob/living/M in list(user, partner))
 		if(!M?.client?.prefs?.arousable)
@@ -251,301 +366,251 @@
 
 		var/add_amount = rand(10, 20)
 
-		if(ishuman(M) && hascall(M, "get_lust") && hascall(M, "get_climax_threshold"))
-			var/max_lust = M.get_climax_threshold()
-			if(max_lust <= 0)
-				max_lust = 100
-
-			var/current_lust = M.get_lust()
-			if(current_lust >= max_lust)
-				continue
-
-			if(current_lust + add_amount > max_lust)
-				add_amount = max_lust - current_lust
-			if(add_amount <= 0)
-				continue
-
-			M.add_lust(add_amount)
+		if(ishuman(M))
+			var/mob/living/carbon/human/HM = M
+			HM.safe_add_capped_lust(add_amount)
 		else
 			M.add_lust(add_amount)
 
 		if(prob(8))
-			M.emote(pick("moan","pant","blush"))
+			M.emote(pick("moan", "pant", "blush"))
 
-	// продолжаем, пока активен узел
-	addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), 5 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(knot_arousal_tick), user, partner), KNOT_AROUSAL_TICK_INTERVAL)
 
 // ============================================================
-//  Release: мягкий спад и силовой разрыв
+// KNOT RELEASE (REFACTORED)
 // ============================================================
-
 /obj/item/organ/genital/penis/proc/release_knot(mob/living/user, mob/living/partner, target_zone, forceful = FALSE)
 	if(!knot_locked)
 		return
 
-	// сохраняем локальные ссылки до зануления
 	var/mob/living/Luser = user
 	var/mob/living/Lpartner = partner
 
-	// сбрасываем состояние узла
+	cleanup_knot_state(Luser, Lpartner)
+
+	var/zone_text = get_zone_text(target_zone)
+
+	if(forceful)
+		apply_forceful_release(Luser, Lpartner, zone_text)
+	else
+		apply_gentle_release(Luser, Lpartner, zone_text)
+
+/obj/item/organ/genital/penis/proc/cleanup_knot_state(mob/living/user, mob/living/partner)
 	knot_locked = FALSE
-	knot_state  = 0
+	knot_state = 0
 	knot_partner = null
-	knot_until  = 0
+	knot_until = 0
 
-	var/zone_text = "тела"
+	if(istype(user, /mob/living))
+		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+
+	if(istype(partner, /mob/living))
+		UnregisterSignal(partner, COMSIG_MOVABLE_MOVED)
+		if(partner.has_movespeed_modifier(/datum/movespeed_modifier/leash))
+			partner.remove_movespeed_modifier(/datum/movespeed_modifier/leash)
+
+/obj/item/organ/genital/penis/proc/get_zone_text(target_zone)
 	switch(target_zone)
-		if(CUM_TARGET_VAGINA) zone_text = "влагалища"
-		if(CUM_TARGET_ANUS)   zone_text = "ануса"
-		if(CUM_TARGET_MOUTH, CUM_TARGET_THROAT) zone_text = "рта"
+		if(CUM_TARGET_VAGINA) return "влагалища"
+		if(CUM_TARGET_ANUS) return "ануса"
+		if(CUM_TARGET_MOUTH, CUM_TARGET_THROAT) return "рта"
+	return "тела"
 
-	if(forceful)
-		//  Силовой разрыв
-		playsound(get_turf(Luser), 'sound/effects/snap01.ogg', 100, TRUE)
-		Luser.visible_message(
-			span_danger(" Узел [Luser] с силой вырывается из [zone_text] [Lpartner]!"),
-			span_warning("Ты резко выдёргиваешь узел из [Lpartner]! Это больно обоим.")
-		)
-		to_chat(Lpartner, span_userdanger("Ты чувствуешь резкую боль, когда узел [Luser] рвётся!"))
-		Lpartner.emote("scream")
+/obj/item/organ/genital/penis/proc/apply_forceful_release(mob/living/user, mob/living/partner, zone_text)
+	playsound(get_turf(user), 'sound/effects/snap01.ogg', 100, TRUE)
 
-		if(istype(Lpartner, /mob/living))
-			Lpartner.Stun(40)
-			if(prob(40))
-				to_chat(Lpartner, span_danger(" Узел вырвался слишком резко, оставив боль."))
-	else
-		//  Мягкий спад
-		playsound(get_turf(Luser), 'sound/effects/snap01.ogg', 50, 1)
-		Luser.visible_message(
-			span_lewd(" Узел [Luser] постепенно спадает, освобождая [Lpartner] из [zone_text]."),
-			span_love("Ты чувствуешь, как узел спадает, освобождая [Lpartner].")
-		)
-		to_chat(Lpartner, span_lewd("<font color='#ee6bee'>Ты ощущаешь, как узел [Luser] мягко выходит из твоего [zone_text].</font>"))
-		if(prob(25)) Lpartner.emote("moan")
+	user.visible_message(
+		span_danger("Узел [user] с силой вырывается из [zone_text] [partner]!"),
+		span_warning("Ты резко выдёргиваешь узел из [partner]! Это больно обоим.")
+	)
 
-	// 💭 очищаем положительные эффекты (если были)
-	if(ishuman(Luser))
-		SEND_SIGNAL(Luser, COMSIG_CLEAR_MOOD_EVENT, "knotting_satisfied")
-		SEND_SIGNAL(Luser, COMSIG_CLEAR_MOOD_EVENT, "knotting_linked")
-	if(ishuman(Lpartner))
-		SEND_SIGNAL(Lpartner, COMSIG_CLEAR_MOOD_EVENT, "knotting_satisfied")
-		SEND_SIGNAL(Lpartner, COMSIG_CLEAR_MOOD_EVENT, "knotting_linked")
+	to_chat(partner, span_userdanger("Ты чувствуешь резкую боль, когда узел [user] рвётся!"))
+	partner.emote("scream")
+	partner.Stun(40)
 
-	// FIX: негатив добавляем ТОЛЬКО при силовом разрыве.
-	// При мягком — можно дать «облегчение», если у тебя есть такой datum; иначе ничего не даём.
-	if(forceful)
-		if(ishuman(Luser))
-			SEND_SIGNAL(Luser, COMSIG_ADD_MOOD_EVENT, "knotting_painful", /datum/mood_event/knotting_painful)
-		if(ishuman(Lpartner))
-			SEND_SIGNAL(Lpartner, COMSIG_ADD_MOOD_EVENT, "knotting_painful", /datum/mood_event/knotting_painful)
-	else
-		if(ishuman(Luser))
-			SEND_SIGNAL(Luser, COMSIG_ADD_MOOD_EVENT, "knotting_satisfied", /datum/mood_event/knotting_satisfied)
-		if(ishuman(Lpartner))
-			SEND_SIGNAL(Lpartner, COMSIG_ADD_MOOD_EVENT, "knotting_linked", /datum/mood_event/knotting_linked)
+	if(ishuman(user))
+		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "knotting_painful", /datum/mood_event/knotting_painful)
+	if(ishuman(partner))
+		SEND_SIGNAL(partner, COMSIG_ADD_MOOD_EVENT, "knotting_painful", /datum/mood_event/knotting_painful)
 
-	// FIX: снимаем «поводок» и отписываемся от сигналов, используя partner из аргумента,
-	// а не занулённый knot_partner.
-	if(istype(Lpartner, /mob/living))
-		if(Lpartner.has_movespeed_modifier(/datum/movespeed_modifier/leash))
-			Lpartner.remove_movespeed_modifier(/datum/movespeed_modifier/leash)
+/obj/item/organ/genital/penis/proc/apply_gentle_release(mob/living/user, mob/living/partner, zone_text)
+	playsound(get_turf(user), 'sound/effects/snap01.ogg', 50, TRUE)
 
-	if(istype(Luser, /mob/living))
-		UnregisterSignal(Luser, COMSIG_MOVABLE_MOVED)
-	if(istype(Lpartner, /mob/living))
-		UnregisterSignal(Lpartner, COMSIG_MOVABLE_MOVED)
+	user.visible_message(
+		span_lewd("Узел [user] постепенно спадает, освобождая [partner] из [zone_text]."),
+		span_love("Ты чувствуешь, как узел спадает, освобождая [partner].")
+	)
 
+	to_chat(partner, span_lewd("<font color='#ee6bee'>Ты ощущаешь, как узел [user] мягко выходит из твоего [zone_text].</font>"))
+
+	if(prob(25))
+		partner.emote("moan")
+
+	if(ishuman(user))
+		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "knotting_satisfied", /datum/mood_event/knotting_satisfied)
+	if(ishuman(partner))
+		SEND_SIGNAL(partner, COMSIG_ADD_MOOD_EVENT, "knotting_linked", /datum/mood_event/knotting_linked)
 
 // ============================================================
-// 🔁 Циклическая проверка дистанции (≤1 тайл) — безопасный цикл
+// DISTANCE CHECKING (SIMPLIFIED)
 // ============================================================
-
 /obj/item/organ/genital/penis/proc/knot_distance_loop(mob/living/who)
-	// орган или партнёр удалены / узел уже снят — выходим без перепланировки
 	if(QDELETED(src) || !knot_locked || QDELETED(knot_partner))
 		return
 
-	// если не передали, берём владельца органа
-	if(!who && ismob(owner))
+	if(!who && istype(owner, /mob/living))
 		who = owner
 
-	// страхуемся от некорректного типа
 	if(istype(who, /mob/living))
-		// эта проверка на /mob/living — там уже защита по состоянию узла
-		who.check_knot_distance()
+		check_knot_distance_safe(who)
 
-	// если узел всё ещё активен — перепланируем цикл
 	if(!QDELETED(src) && knot_locked && !QDELETED(knot_partner))
-		addtimer(CALLBACK(src, PROC_REF(knot_distance_loop), who), 5 SECONDS)
+		addtimer(CALLBACK(src, PROC_REF(knot_distance_loop), who), KNOT_DISTANCE_CHECK_INTERVAL)
 
-
-
-// ============================================================
-// 🚷 Автоматическая проверка дистанции
-// ============================================================
-
-/mob/living/var/tmp/in_knot_check = FALSE
-
-/mob/living/proc/check_knot_distance()
-	// ⚠️ Предотвращаем рекурсивные вызовы
-	if(in_knot_check)
-		return
-	in_knot_check = TRUE
-
-	var/obj/item/organ/genital/penis/P = getorganslot(ORGAN_SLOT_PENIS)
-	if(!P || !P.knot_locked || !P.knot_partner)
-		in_knot_check = FALSE
+/obj/item/organ/genital/penis/proc/check_knot_distance_safe(mob/living/user)
+	if(QDELETED(user) || QDELETED(knot_partner))
 		return
 
-	var/mob/living/partner = P.knot_partner
-	if(!istype(partner))
-		in_knot_check = FALSE
-		return
-
-	var/dist = get_dist(src, partner)
+	var/dist = get_dist(user, knot_partner)
 	if(dist <= 1)
-		in_knot_check = FALSE
 		return
 
-	var/zone_text = "тела"
-	switch(P.knot_state)
-		if(CUM_TARGET_VAGINA) zone_text = "влагалища"
-		if(CUM_TARGET_ANUS) zone_text = "ануса"
-		if(CUM_TARGET_MOUTH, CUM_TARGET_THROAT) zone_text = "рта"
+	var/zone_text = get_zone_text(knot_state)
 
-	to_chat(src, span_warning(" Узел болезненно натягивается в области [zone_text]!"))
-	to_chat(partner, span_danger(" Ты чувствуешь, как узел внутри твоего [zone_text] натягивается и причиняет боль!"))
-
-	visible_message(
-		list(src, partner),
-		span_danger(" Между [src] и [partner] натянулся узел — связь вот-вот порвётся!"),
-		span_notice("Ты ощущаешь сильное напряжение между ними...")
-	)
-
-	//  80% шанс на силовой разрыв
-	if(prob(80))
-		var/zone = P.knot_state ? P.knot_state : CUM_TARGET_VAGINA
-		P.release_knot(src, partner, zone, TRUE)
-		to_chat(src, span_danger(" Узел не выдерживает и резко вырывается!"))
-		to_chat(partner, span_userdanger(" Узел резко вырывается из твоего [zone_text]!"))
+	if(dist == 2)
+		handle_knot_strain(user, knot_partner, zone_text)
 	else
-		to_chat(src, span_warning("Ты чувствуешь, что узел вот-вот сорвётся..."))
+		handle_knot_break(user, knot_partner, zone_text)
 
-	// ✅ Двусторонняя проверка — вызываем у партнёра, если он не в процессе
-	if(!partner.in_knot_check && istype(partner, /mob/living))
-		partner.check_knot_distance()
+/obj/item/organ/genital/penis/proc/handle_knot_strain(mob/living/user, mob/living/partner, zone_text)
+	to_chat(user, span_warning("Узел натягивается между тобой и [partner]!"))
+	to_chat(partner, span_danger("Ты чувствуешь, как узел внутри натягивается и причиняет боль!"))
 
-	in_knot_check = FALSE
+	if(prob(25))
+		partner.emote("whimper")
 
+	user.apply_damage(rand(10, 20), STAMINA)
+	user.apply_damage(rand(2, 6), BRUTE)
+	partner.apply_damage(rand(5, 10), STAMINA)
+	partner.apply_damage(rand(1, 3), BRUTE)
+
+	if(prob(20))
+		partner.Stun(10)
+		if(prob(10))
+			user.Stun(15)
+
+	if(prob(10))
+		release_knot(user, partner, knot_state, TRUE)
+		return
+
+	if(prob(70))
+		apply_tug_to_partner(partner, user)
+
+/obj/item/organ/genital/penis/proc/handle_knot_break(mob/living/user, mob/living/partner, zone_text)
+	to_chat(user, span_danger("Узел не выдерживает и рвётся!"))
+	to_chat(partner, span_userdanger("Узел резко вырывается из тебя!"))
+
+	user.apply_damage(rand(15, 25), STAMINA)
+	user.apply_damage(rand(5, 10), BRUTE)
+	partner.apply_damage(rand(10, 20), STAMINA)
+	partner.apply_damage(rand(3, 6), BRUTE)
+
+	if(prob(50))
+		user.emote("scream")
+	if(prob(25))
+		partner.emote("moan")
+
+	release_knot(user, partner, knot_state, TRUE)
+
+/obj/item/organ/genital/penis/proc/apply_tug_to_partner(mob/living/partner, mob/living/user)
+	if(world.time - last_tug_time < 10)
+		return
+
+	last_tug_time = world.time
+
+	// Простое подтягивание партнёра на 1 тайл ближе
+	// Если у вас есть система поводков, интегрируйте её здесь
+	step_towards(partner, user)
+
+// ============================================================
+// MOVEMENT HANDLER
+// ============================================================
 /obj/item/organ/genital/penis/proc/on_knot_move()
 	SIGNAL_HANDLER
 
 	if(QDELETED(src) || !knot_locked || QDELETED(knot_partner))
-		UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
-		if(istype(knot_partner, /mob/living))
-			UnregisterSignal(knot_partner, COMSIG_MOVABLE_MOVED)
+		cleanup_movement_signals()
+		return
+
+	if(!istype(owner, /mob/living))
 		return
 
 	var/mob/living/user = owner
-	if(!user || !knot_partner || !knot_locked)
+
+	if(world.time < last_knot_check + KNOT_MOVEMENT_CHECK_COOLDOWN)
 		return
 
-	var/mob/living/partner = knot_partner
-	if(QDELETED(user) || QDELETED(partner))
-		return
+	last_knot_check = world.time
 
-	var/dist = get_dist(user, partner)
-	if(dist <= 1)
-		return
+	check_knot_distance_safe(user)
 
-	// 🔁 Антиспам проверка (не чаще раза в секунду)
-	if(!src.last_knot_check)
-		src.last_knot_check = 0
-	if(world.time < src.last_knot_check + 10)
-		return
-	src.last_knot_check = world.time
-
-	// ⚠️ Если они немного натянули узел
-	if(dist == 2)
-		to_chat(user, span_warning(" Узел натягивается между тобой и [partner]!"))
-		to_chat(partner, span_danger(" Ты чувствуешь, как узел внутри натягивается и причиняет боль!"))
-
-		if(prob(25))
-			partner.emote("whimper")
-
-		// 💢 Урон от натяжения
-		var/stam_damage = rand(5, 10)
-		var/brute_damage = rand(1, 3)
-		user.apply_damage(stam_damage * 2, STAMINA)     // держатель узла страдает сильнее
-		user.apply_damage(brute_damage * 2, BRUTE)
-		partner.apply_damage(stam_damage, STAMINA)
-		partner.apply_damage(brute_damage, BRUTE)
-
-		// 🔸 Возможность короткого "оглушения" при боли
-		if(prob(20))
-			partner.Stun(10)
-			if(prob(10))
-				user.Stun(15)
-
-		// 🔹 Малый шанс самопроизвольного разрыва
-		if(prob(10))
-			to_chat(user, span_danger(" Узел не выдерживает и рвётся!"))
-			to_chat(partner, span_userdanger(" Узел резко вырывается из тебя!"))
-			release_knot(user, partner, (knot_state ? knot_state : CUM_TARGET_VAGINA), TRUE)
-			return
-
-		// 🔹 Небольшое «подтягивание» партнёра
-		if(prob(70))
-			apply_tug_mob_to_mob(partner, user, 1)
-
-	//  Если ушли дальше чем на 2 тайла — гарантированный разрыв
-	else if(dist > 2)
-		to_chat(user, span_danger(" Узел не выдерживает и рвётся!"))
-		to_chat(partner, span_userdanger(" Узел резко вырывается из тебя!"))
-		release_knot(user, partner, (knot_state ? knot_state : CUM_TARGET_VAGINA), TRUE)
-
-		//  Боль и травма при разрыве
-		user.apply_damage(rand(15, 25), STAMINA)
-		user.apply_damage(rand(5, 10), BRUTE)
-		partner.apply_damage(rand(10, 20), STAMINA)
-		partner.apply_damage(rand(3, 6), BRUTE)
-
-		to_chat(user, span_danger(" Ты чувствуешь резкую боль — узел вырывается наружу!"))
-		to_chat(partner, span_danger(" Твоя плоть горит болью от резкого разрыва узла!"))
-		if(prob(50))
-			user.emote("scream")
-		if(prob(25))
-			partner.emote("moan")
+/obj/item/organ/genital/penis/proc/cleanup_movement_signals()
+	if(istype(owner, /mob/living))
+		UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
+	if(istype(knot_partner, /mob/living))
+		UnregisterSignal(knot_partner, COMSIG_MOVABLE_MOVED)
 
 // ============================================================
-//  Grab-style Resist (оба могут освободиться)
+// RESIST MECHANIC
 // ============================================================
-
 /obj/item/organ/genital/penis/proc/start_resist_attempt(mob/living/user)
 	if(!knot_locked)
 		to_chat(user, span_notice("Узел уже спал."))
 		return
 
-	var/mob/living/pen_owner   = owner
-	var/mob/living/pen_partner = knot_partner
-	if(!pen_owner || !pen_partner)
+	if(!owner || QDELETED(owner) || !knot_partner || QDELETED(knot_partner))
 		to_chat(user, span_warning("Цель отсутствует."))
 		return
 
-	//  антиспам: активный do_after?
-	if(DOING_INTERACTION_WITH_TARGET(user, owner) || DOING_INTERACTION_WITH_TARGET(user, knot_partner))
+	var/mob/living/pen_owner = owner
+	var/mob/living/pen_partner = knot_partner
+
+	if(DOING_INTERACTION_WITH_TARGET(user, pen_owner) || DOING_INTERACTION_WITH_TARGET(user, pen_partner))
 		to_chat(user, span_warning("Ты уже пытаешься освободиться — не дёргайся!"))
 		return
 
-	//  антиспам: локальный кулдаун на нажатия (5 секунд)
 	if(world.time < user.knot_resist_cd_until)
 		to_chat(user, span_warning("Ты только что пытался освободиться — подожди немного..."))
 		return
-	user.knot_resist_cd_until = world.time + 50  // 5 SECONDS
+
+	user.knot_resist_cd_until = world.time + KNOT_RESIST_COOLDOWN
 
 	var/is_partner = (user == pen_partner)
+	var/duration = is_partner ? 4 SECONDS : 3 SECONDS
 
-	// сообщение начала попытки
+	send_resist_start_messages(user, pen_owner, pen_partner, is_partner)
+
+	if(prob(35))
+		to_chat(user, span_danger("Тебе не удаётся найти удобное положение..."))
+		if(prob(40))
+			user.emote(pick("pant", "whimper"))
+		return
+
+	if(!do_after(user, duration, target = is_partner ? pen_owner : pen_partner))
+		to_chat(user, span_danger("Ты не смог освободиться от узла!"))
+		if(prob(40))
+			user.emote(pick("scream", "pant"))
+		return
+
+	if(!knot_locked)
+		to_chat(user, span_notice("Ты уже свободен."))
+		return
+
+	release_knot(pen_owner, pen_partner, knot_state, FALSE)
+	send_resist_success_messages(user, pen_owner, pen_partner, is_partner)
+
+/obj/item/organ/genital/penis/proc/send_resist_start_messages(mob/living/user, mob/living/pen_owner, mob/living/pen_partner, is_partner)
 	var/msg_start
 	if(is_partner)
 		msg_start = "[user] начинает извиваться, пытаясь вытолкнуть узел [pen_owner]."
@@ -557,137 +622,61 @@
 		span_notice("Ты начинаешь попытку освободиться от узла...")
 	)
 
-	var/duration = is_partner ? 4 SECONDS : 3 SECONDS
 	to_chat(user, span_warning("Ты пытаешься освободиться... Не двигайся!"))
 
-	// 🔸 шанс на неудачу попытки
-	if(prob(35))
-		to_chat(user, span_danger("Тебе не удаётся найти удобное положение..."))
-		if(prob(40)) user.emote(pick("pant","whimper"))
-		return
-
-	// сам процесс
-	if(!do_after(user, duration, target = is_partner ? pen_owner : pen_partner))
-		to_chat(user, span_danger("Ты не смог освободиться от узла!"))
-		if(prob(40)) user.emote(pick("scream","pant"))
-		return
-
-	// успех — мягкий спад
-	if(!knot_locked)
-		to_chat(user, span_notice("Ты уже свободен."))
-		return
-
-	var/zone = knot_state ? knot_state : CUM_TARGET_VAGINA
-	release_knot(pen_owner, pen_partner, zone, FALSE)
-
+/obj/item/organ/genital/penis/proc/send_resist_success_messages(mob/living/user, mob/living/pen_owner, mob/living/pen_partner, is_partner)
 	if(is_partner)
 		to_chat(user, span_love("Узел постепенно выходит, принося облегчение."))
-		if(prob(40)) user.emote(pick("moan","blush"))
-		if(prob(20)) pen_owner.emote(pick("groan","pant"))
+		if(prob(40))
+			user.emote(pick("moan", "blush"))
+		if(prob(20))
+			pen_owner.emote(pick("groan", "pant"))
 	else
 		to_chat(user, span_love("Ты осторожно помогаешь узлу сойти."))
-		if(prob(25)) user.emote(pick("sigh"))
-		if(prob(25)) pen_partner.emote(pick("moan","blush"))
+		if(prob(25))
+			user.emote(pick("sigh"))
+		if(prob(25))
+			pen_partner.emote(pick("moan", "blush"))
 
 // ============================================================
-// Верб: Resist Knot (обёртка над обычным Resist)
+// HUMAN VERB INTEGRATION
 // ============================================================
-
 /mob/living/carbon/human/verb/knot_resist()
 	set name = "Resist Knot"
 	set category = "IC"
 	set desc = "Попытаться освободиться от узла (если застрял)."
 
-	// Просто вызываем стандартный Resist, который уже умеет
-	// проверять узел и запускать start_resist_attempt().
 	resist()
 
-/* // Оставлю на потом (не работает блятьц)
-// ============================================================
-// Verb: Try Knot (ручное заузливание)
-// ============================================================
-
-/mob/living/carbon/human/verb/knot_attempt()
-	set name = "Try Knot"
-	set category = "IC"
-	set desc = "Попробовать заузлить узелом партнёра рядом."
-
-	var/mob/living/carbon/human/H = src
-
-	// антиспам / проверка на активное взаимодействие
-	for(var/mob/living/L in view(1, H))
-		if(DOING_INTERACTION_WITH_TARGET(H, L))
-			to_chat(H, span_warning("Ты уже выполняешь другое действие — подожди немного."))
-			return
-
-	var/obj/item/organ/genital/penis/P = H.getorganslot(ORGAN_SLOT_PENIS)
-	if(!P || P.knot_locked)
-		to_chat(H, span_warning("Твой узел не готов или уже зафиксирован."))
-		return
-
-	// выбор цели рядом
-	var/list/moblist = list()
-	for(var/mob/living/carbon/human/M in view(1, H))
-		if(M != H)
-			moblist += M
-	if(!length(moblist))
-		to_chat(H, span_notice("Рядом нет подходящих целей."))
-		return
-
-	var/mob/living/carbon/human/target = input(H, "Кого заузлить?", "Try Knot") as null|anything in moblist
-	if(!target)
-		return
-
-	// проверка валидности зоны
-	var/list/L = list("влагалище" = CUM_TARGET_VAGINA, "анус" = CUM_TARGET_ANUS, "рот" = CUM_TARGET_MOUTH)
-	var/choice = input(H, "Куда заузлить?", "Try Knot") as null|anything in L
-	if(!choice)
-		return
-
-	var/zone = L[choice]
-
-	to_chat(H, span_notice("Ты пытаешься заузлить [target]..."))
-	if(do_after(H, 3 SECONDS, target = target))
-		if(!P.knot_locked)
-			P.do_knotting(H, target, zone)
-	else
-		to_chat(H, span_warning("Ты не смог завершить попытку заузливания."))
-*/
 /mob/living/carbon/human/resist()
-	//  Узловая проверка перед стандартным Resist
 	var/obj/item/organ/genital/penis/P = getorganslot(ORGAN_SLOT_PENIS)
 	if(P && P.knot_locked)
 		to_chat(src, span_love("Ты пытаешься освободиться от узла..."))
 		P.start_resist_attempt(src)
 		return
 
-	// Если у кого-то рядом узел с тобой
 	for(var/mob/living/carbon/human/other in view(1, src))
-		if(other == src) continue
+		if(other == src)
+			continue
 		var/obj/item/organ/genital/penis/P2 = other.getorganslot(ORGAN_SLOT_PENIS)
 		if(P2 && P2.knot_locked && P2.knot_partner == src)
 			to_chat(src, span_love("Ты пытаешься вырваться из узла [other]!"))
 			P2.start_resist_attempt(src)
 			return
 
-	..()
+	return ..()
 
 // ============================================================
-// 🌐 Универсальный прок: попытка активировать узел при сексе
+// GLOBAL HELPER PROC
 // ============================================================
-
-// force_override — игнорировать префы
-// force_knot     — гарантировать срабатывание узла (если технически возможно)
 /proc/try_apply_knot(mob/living/user, mob/living/partner, target_zone, force_override = FALSE, force_knot = FALSE)
-	// Проверка корректных типов
 	if(!ishuman(user) || !ishuman(partner))
 		return
-
-	// Проверка префов
+/*
 	if(!force_override)
-		if(!user?.client?.prefs.sexknotting || !partner?.client?.prefs.sexknotting)
+		if(!user?.client?.prefs?.sexknotting || !partner?.client?.prefs?.sexknotting)
 			return
-
+*/
 	var/static/list/valid_orifices = list(
 		CUM_TARGET_VAGINA,
 		CUM_TARGET_ANUS,
@@ -702,34 +691,41 @@
 	var/mob/living/carbon/human/receiver = partner
 	var/obj/item/organ/genital/penis/P = null
 
-	var/source = initiator.last_genital
-	if(istype(source, /obj/item/organ/genital/penis))
-		P = source
-	else if(istype(receiver.last_genital, /obj/item/organ/genital/penis))
-		P = receiver.last_genital
-		var/tmp = initiator
-		initiator = receiver
-		receiver = tmp
-	else
+	// FIX: правильная проверка типа last_genital
+	if(initiator.last_genital)
+		var/obj/item/organ/genital/temp_organ = initiator.last_genital
+		if(istype(temp_organ, /obj/item/organ/genital/penis))
+			if(!QDELETED(temp_organ))
+				P = temp_organ
+
+	// Если не нашли у initiator, проверяем receiver
+	if(!P && receiver.last_genital)
+		var/obj/item/organ/genital/temp_organ2 = receiver.last_genital
+		if(istype(temp_organ2, /obj/item/organ/genital/penis))
+			if(!QDELETED(temp_organ2))
+				P = temp_organ2
+				// Меняем местами
+				var/mob/living/carbon/human/swap_temp = initiator
+				initiator = receiver
+				receiver = swap_temp
+
+	if(!P)
 		return
 
-	// Проверка на блокировку
 	if(!P.knot_size || P.knot_locked)
 		return
 
-	// 🎯 Проверка возбуждения владельца
 	var/effective_lust = 0
-	if(istype(initiator, /mob/living/carbon))
-		var/mob/living/carbon/C = initiator
-		if(hascall(C, "get_lust") && hascall(C, "get_climax_threshold"))
-			var/max_lust = C.get_climax_threshold()
-			if(max_lust > 0)
-				effective_lust = (C.get_lust() / max_lust) * 100
+	if(ishuman(initiator))
+		var/mob/living/carbon/human/H = initiator
+		if(hascall(H, "get_lust") && hascall(H, "get_climax_threshold"))
+			var/threshold = H.get_climax_threshold()
+			if(threshold > 0)
+				effective_lust = (H.get_lust() / threshold) * 100
 
 	if(effective_lust < 65 && !force_knot)
 		return
 
-	// 🎲 Шанс узла
 	var/chance = 10 + (P.knot_size * 10)
 	if(effective_lust >= 80)
 		chance += 10
@@ -738,12 +734,11 @@
 
 	chance = clamp(chance, 5, 60)
 
-	// Если явно попросили — делаем 100% шанс
 	if(force_knot)
 		chance = 100
 
 	if(force_knot || prob(chance))
 		if(P.do_knotting(initiator, receiver, target_zone, force_knot))
-			to_chat(initiator, span_love(" Ты чувствуешь, как узел набухает внутри [receiver]!"))
-			to_chat(receiver, span_love(" Ты ощущаешь, как узел [initiator] застревает внутри!"))
+			to_chat(initiator, span_love("Ты чувствуешь, как узел набухает внутри [receiver]!"))
+			to_chat(receiver, span_love("Ты ощущаешь, как узел [initiator] застревает внутри!"))
 			GLOB.knottings++
