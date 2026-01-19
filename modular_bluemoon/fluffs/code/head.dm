@@ -315,8 +315,8 @@
 ///////////////////////////////////////////////
 
 /obj/item/clothing/head/donator/bm/gestapo
-	name = "Gestapo cap"
-	desc = "Meine Arbeiter..!~"
+	name = "Truth Enforcer cap"
+	desc = "Bring Justice..!~"
 	icon_state = "gestapo_head"
 	item_state = "gestapo_head"
 	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'

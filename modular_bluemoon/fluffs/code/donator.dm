@@ -1989,25 +1989,25 @@
 	ckeywhitelist = list("domilion")
 
 /datum/gear/donator/bm/gestapo_uniform
-	name = "Gestapo Uniform"
+	name = "Truth Enforcer Uniform"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/gestapo
 	ckeywhitelist = list("monolithxxv")
 
 /datum/gear/donator/bm/gestapo_cloak
-	name = "Gestapo cloak"
+	name = "Truth Enforcer cloak"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/cloak/gestapo
 	ckeywhitelist = list("monolithxxv")
 
 /datum/gear/donator/bm/gestapo_head
-	name = "Gestapo Cap"
+	name = "Truth Enforcer Cap"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/gestapo
 	ckeywhitelist = list("monolithxxv")
 
 /datum/gear/donator/bm/gestapo_mask
-	name = "Gestapo Mask"
+	name = "Truth Enforcer Mask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/breath/gestapo
 	ckeywhitelist = list("monolithxxv")

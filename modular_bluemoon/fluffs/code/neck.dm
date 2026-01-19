@@ -65,7 +65,7 @@
 	alternate_worn_layer = SUIT_LAYER
 
 /obj/item/clothing/neck/cloak/gestapo
-	name = "Gestapo Cloak"
+	name = "Truth Enforcer Cloak"
 	desc = "Great!"
 	icon_state = "gestapo_cloak"
 	item_state = "gestapo_cloak"

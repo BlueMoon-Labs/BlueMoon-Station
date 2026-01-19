@@ -586,7 +586,7 @@
 	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/donator/gestapo
-	name = "GestapoUniform"
+	name = "Truth Enforcer Uniform"
 	icon_state = "gestapo_uniform"
 	item_state = "gestapo_uniform"
 	icon = 'modular_bluemoon/icons/obj/clothing/uniforms.dmi'

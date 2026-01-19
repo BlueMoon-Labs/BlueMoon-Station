@@ -65,8 +65,8 @@
 	body_parts_covered = NONE
 
 /obj/item/clothing/mask/breath/gestapo
-	name = "Gestapo mask"
-	desc = "Filter their blood"
+	name = "Truth Enforcer mask"
+	desc = "Filter their thoughts"
 	icon_state = "gestapo_mask"
 	item_state = "gestapo_mask"
 	icon = 'modular_bluemoon/icons/obj/clothing/masks.dmi'
