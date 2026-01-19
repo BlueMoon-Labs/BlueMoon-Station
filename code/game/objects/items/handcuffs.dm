@@ -421,4 +421,3 @@
 	icon_state = "bone_bola"
 	breakouttime = 35
 	gender = NEUTER
-	var/knockdown = 0
