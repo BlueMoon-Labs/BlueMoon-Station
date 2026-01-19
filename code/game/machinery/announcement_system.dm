@@ -182,3 +182,10 @@ GLOBAL_LIST_EMPTY(announcement_systems)
 	obj_flags |= EMAGGED
 	act_up()
 	return TRUE
+
+/obj/machinery/announcement_system/proc/announce_critical(name, rank, area)
+	if(!is_operational())
+		return
+
+	var/msg = "КРИТИЧЕСКОЕ СОСТОЯНИЕ: [name] ([rank]) в [area]"
+	radio.talk_into(src, msg, RADIO_CHANNEL_MEDICAL)

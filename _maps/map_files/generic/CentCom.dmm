@@ -17782,11 +17782,6 @@
 	},
 /obj/effect/turf_decal/tile/neutral/full,
 /obj/effect/turf_decal/tile/neutral/full,
-/obj/machinery/light/floor{
-	bulb_colour = "#6496FA";
-	bulb_emergency_colour = "#6496FA";
-	color = "#6496FA"
-	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/centcom/holding)
 "jBV" = (

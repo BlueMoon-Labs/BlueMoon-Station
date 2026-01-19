@@ -1,15 +1,15 @@
-import { useBackend, useSharedState, useLocalState } from '../backend';
+import { useBackend, useLocalState, useSharedState } from '../backend';
 import {
   Box,
   Button,
+  Dropdown,
   Input,
   Knob,
   LabeledList,
+  NumberInput,
   Section,
   Stack,
   Tabs,
-  NumberInput,
-  Dropdown,
 } from '../components';
 import { Window } from '../layouts';
 
@@ -54,6 +54,11 @@ export const Jukebox = (props, context) => {
     ? [...playlistTracks].reverse()
     : (inFavoritesMode ? [...favorite_tracks].reverse() : songs);
 
+  const baseIndexByTrack = {};
+  for (let idx = 0; idx < baseTracks.length; idx++) {
+    baseIndexByTrack[baseTracks[idx]] = idx;
+  }
+
   const filteredSongs = !query
     ? baseTracks
     : baseTracks.filter(name => name.toLowerCase().includes(query.toLowerCase()));
@@ -79,7 +84,7 @@ export const Jukebox = (props, context) => {
   };
 
   const onChangePlaylist = () => {
-    setTab('tracks')
+    setTab('tracks');
     setPlaylist('');
     setPage(1);
     setInputPage(1);
@@ -214,7 +219,7 @@ export const Jukebox = (props, context) => {
                   disabled={!playlist}
                   tooltip="Удалить плейлист"
                   onClick={() => {
-                    act('change_playlist', { playlist, delete: true })
+                    act('change_playlist', { playlist, delete: true });
                     onChangePlaylist();
                   }}
                 />
@@ -315,6 +320,7 @@ export const Jukebox = (props, context) => {
                 const onIndexChange = isPlaylistMode
                   ? (value) => act('set_playlist_index', { track, playlist, index: value })
                   : (value) => act('set_favorite_index', { track, index: value });
+                const baseIndex = baseIndexByTrack[track]+1;
 
                 let actions = null;
                 if (isPlaylistMode) {
@@ -380,10 +386,10 @@ export const Jukebox = (props, context) => {
                         <NumberInput
                           width="40px"
                           textAlign="center"
-                          value={i + 1}
+                          value={baseIndex}
                           showBar={false}
                           minValue={-1}
-                          maxValue={currentSongs.length + 1}
+                          maxValue={baseTracks.length + 1}
                           onChange={(e, value) => onIndexChange(value)}
                         />
                       </Stack.Item>

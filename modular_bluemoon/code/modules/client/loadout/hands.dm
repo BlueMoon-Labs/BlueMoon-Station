@@ -47,3 +47,9 @@
 	name = "Neko Wallet"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/wallet/cat_alch
+
+/datum/gear/hands/lawyerbriefcase
+	name = "Battered Briefcase"
+	path = /obj/item/storage/briefcase/lawyer/family/loadout
+	slot = ITEM_SLOT_HANDS
+	cost = 3

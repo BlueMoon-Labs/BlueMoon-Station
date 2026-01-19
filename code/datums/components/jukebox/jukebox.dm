@@ -32,8 +32,9 @@
 	var/obj/box = parent
 	if(box.obj_flags & EMAGGED)
 		emag_act(silent = TRUE)
-	RegisterSignal(parent, COMSIG_MOUSEDROP_ONTO, PROC_REF(on_mouse_dropped))
+	RegisterSignal(parent, COMSIG_MOUSEDROP_ONTO, PROC_REF(on_mouse_dropped)) // Для удобства
 	RegisterSignal(parent, COMSIG_ITEM_ATTACK_SELF, PROC_REF(interact)) // Для предметов
+	RegisterSignal(parent, COMSIG_ATOM_ATTACK_GHOST, PROC_REF(interact)) // Для гостов
 	RegisterSignal(parent, COMSIG_ATOM_ATTACK_HAND, PROC_REF(on_attack_hand)) // Для машинерии
 	RegisterSignal(parent, COMSIG_ATOM_UPDATE_ICON_STATE, PROC_REF(on_update_icon_state))
 	RegisterSignal(parent, COMSIG_ATOM_EMAG_ACT, PROC_REF(on_emag_act))
@@ -330,7 +331,7 @@
 					var/list/current_playlist = prefs.playlists[current_playlist_name]
 					if(!LAZYLEN(current_playlist))
 						return
-					return add_to_queue(current_playlist, usr, FALSE)
+					return add_to_queue(reverseList(current_playlist), usr, FALSE)
 				if("toggle_favorite")
 					return prefs.favorite_tracks_toggle(track)
 				if("move_favorite")
@@ -377,6 +378,7 @@
 			if(!box_machine.can_transact(id_card))
 				if(COOLDOWN_FINISHED(src, error_message_cooldown))
 					playsound(box, 'sound/misc/compiler-failure.ogg', 25, TRUE)
+					COOLDOWN_START(src, error_message_cooldown, error_message_cooldown_time)
 				break
 			if(!box_machine.attempt_transact(id_card, queuecost))
 				if(COOLDOWN_FINISHED(src, error_message_cooldown))
@@ -418,7 +420,9 @@
 		return FALSE
 	// BLUEMOON ADD - Making sure not to play track if all jukebox channels are busy. That shouldn't happen.
 	if(!SSjukeboxes.freejukeboxchannels.len)
-		box.say("Не удается воспроизвести песню: превышен лимит воспроизводимых в данный момент треков.")
+		if(COOLDOWN_FINISHED(src, error_message_cooldown))
+			box.say("Не удается воспроизвести песню: превышен лимит воспроизводимых в данный момент треков.")
+			COOLDOWN_START(src, error_message_cooldown, error_message_cooldown_time)
 		return FALSE
 	if(!check_area())
 		return FALSE
@@ -454,8 +458,9 @@
 	var/obj/box = parent
 	var/area/juke_area = get_area(box)
 	if(juke_area.jukebox_privatized_by && juke_area.jukebox_privatized_by != box)
-		if(!silent)
+		if(!silent && COOLDOWN_FINISHED(src, error_message_cooldown))
 			box.say("Ошибка датчика вибрации. Необходимо сократить количество музыкальных автоматов в этом районе.")
+			COOLDOWN_START(src, error_message_cooldown, error_message_cooldown_time)
 		return FALSE
 
 /datum/component/jukebox/proc/dance_over()

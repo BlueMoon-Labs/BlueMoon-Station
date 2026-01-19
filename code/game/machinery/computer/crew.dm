@@ -28,6 +28,7 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 	var/list/data_by_z = list()
 	var/list/last_update = list()
 	var/selected_jobs = -1
+	var/list/last_crit_alert = list()
 
 /datum/crewmonitor/New()
 	. = ..()
@@ -93,9 +94,6 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 	jobs["Assistant"] = 999 //Unknowns/custom jobs should appear after civilians, and before assistants
 
 	src.jobs = jobs
-
-/datum/crewmonitor/Destroy()
-	return ..()
 
 /datum/crewmonitor/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -212,6 +210,30 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 				else
 					results_undamaged[++results_undamaged.len] = total_list
 
+// --- CRITICAL ALERT ---
+				if((nanite_sensors || U.sensor_mode >= SENSOR_VITALS) && (H.stat == SOFT_CRIT || H.stat == DEAD || H.health <= -20))
+					var/ck = H.ckey
+					if(!last_crit_alert[ck] || world.time > last_crit_alert[ck] + 1200)
+						last_crit_alert[ck] = world.time
+
+						var/area_name = get_area_name(H, TRUE)
+						var/realname = I ? I.registered_name : H.real_name
+						var/job = I ? I.get_assignment_name() : "Unknown"
+
+						var/obj/machinery/announcement_system/AAS = null
+						for(var/obj/machinery/announcement_system/S in GLOB.announcement_systems)
+							if(S.z == z && S.is_operational())
+								AAS = S
+								break
+
+						// Найдём все crew мониторы на этом Z и заставим их пикнуть
+						for(var/obj/machinery/computer/crew/C in GLOB.crew_sensor_monitors)
+							if(C.z == z && C.is_operational())
+								playsound(C, 'sound/machines/beep.ogg', 50, FALSE)
+
+						if(AAS)
+							AAS.announce_critical(realname, job, area_name)
+
 	var/list/returning = sortTim(results_damaged,GLOBAL_PROC_REF(damage_compare)) + sortTim(results_undamaged,GLOBAL_PROC_REF(ijob_compare))
 
 	data_by_z["[z]"] = returning
@@ -260,5 +282,14 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 
 	src.jobs = jobs
 
+GLOBAL_LIST_EMPTY(crew_sensor_monitors)
+
+/obj/machinery/computer/crew/Initialize()
+	. = ..()
+	GLOB.crew_sensor_monitors += src
+
+/obj/machinery/computer/crew/Destroy()
+	GLOB.crew_sensor_monitors -= src
+	. = ..()
 
 #undef SENSORS_UPDATE_PERIOD

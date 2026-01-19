@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Box, Button, ProgressBar, Section, NoticeBox, Stack, Icon, Tooltip } from '../components';
+import { Box, Button, Icon, NoticeBox, ProgressBar, Section, Stack, Tooltip } from '../components';
 import { Window } from '../layouts';
 
 export const BloodBankGen = (props, context) => {

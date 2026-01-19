@@ -39,7 +39,7 @@
 
 	mind_traits = list(TRAIT_LAW_ENFORCEMENT_METABOLISM, TRAIT_FENCER)
 
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/illiterate)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/illiterate, /datum/quirk/onelife)
 
 	display_order = JOB_DISPLAY_ORDER_NTR
 	departments = DEPARTMENT_BITFLAG_LAW

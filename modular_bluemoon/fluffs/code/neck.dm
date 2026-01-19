@@ -63,3 +63,13 @@
 	poly_states = 2
 	poly_colors = list("#c71b00")
 	alternate_worn_layer = SUIT_LAYER
+
+/obj/item/clothing/neck/cloak/gestapo
+	name = "Truth Enforcer Cloak"
+	desc = "Great!"
+	icon_state = "gestapo_cloak"
+	item_state = "gestapo_cloak"
+	icon = 'modular_bluemoon/icons/obj/clothing/neck.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/neck.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'

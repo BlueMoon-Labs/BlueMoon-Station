@@ -5,6 +5,7 @@
  */
 
 import { classes } from 'common/react';
+
 import { Flex } from './Flex';
 
 export const Stack = props => {

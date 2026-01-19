@@ -16,7 +16,7 @@ export const BeakerContents = props => {
       {beakerContents.map(chemical => (
         <Box key={chemical.name} color="label">
           <AnimatedNumber
-            initial={0}a
+            initial={0} a
             value={chemical.volume} />
           {"u "+chemical.name}
           {chemical.purity < 1 && "(Purity: "+chemical.purity+")"}

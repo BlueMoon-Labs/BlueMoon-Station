@@ -91,6 +91,32 @@
 	mob_overlay_icon = 'icons/mob/clothing/belt.dmi'
 	icon_state = "webbingds"
 	item_state = "webbingds"
+	custom_premium_price = 450 // потому что это улучшенная версия пояса которая вмещает всё что нужно
+
+/obj/item/storage/belt/security/webbing/ds/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 7
+	STR.max_w_class = WEIGHT_CLASS_NORMAL
+	STR.can_hold = typecacheof(list(
+		/obj/item/melee/baton,
+		/obj/item/melee/classic_baton,
+		/obj/item/grenade,
+		/obj/item/reagent_containers/spray/pepper,
+		/obj/item/restraints/handcuffs,
+		/obj/item/assembly/flash/handheld,
+		/obj/item/clothing/glasses,
+		/obj/item/ammo_casing/shotgun,
+		/obj/item/ammo_box,
+		/obj/item/reagent_containers/food/snacks/donut,
+		/obj/item/kitchen/knife/combat,
+		/obj/item/flashlight/seclite,
+		/obj/item/melee/classic_baton/telescopic,
+		/obj/item/radio,
+		/obj/item/clothing/gloves,
+		/obj/item/restraints/legcuffs/bola,
+		/obj/item/holosign_creator/security
+		))
 
 /obj/item/clothing/suit/armor/bulletproof/old
 	icon = 'icons/obj/clothing/suits.dmi'

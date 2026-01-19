@@ -1,7 +1,7 @@
 import { classes } from 'common/react';
 
 import { useBackend, useLocalState } from '../backend';
-import { Box, Button, Section, Table, Flex } from '../components';
+import { Box, Button, Flex, Section, Table } from '../components';
 import { Window } from '../layouts';
 
 export const MiningVendor = (props, context) => {
@@ -14,7 +14,7 @@ export const MiningVendor = (props, context) => {
 
   const allProducts = data?.product_records || [];
   const dataCategories = data?.categories || [];
-  {/* Фильтруем список от категорий без преметов, cuz големный */}
+  { /* Фильтруем список от категорий без преметов, cuz големный */ }
   const categories = dataCategories.filter(category =>
     allProducts.some(p => p.category === category)
   );
@@ -22,7 +22,7 @@ export const MiningVendor = (props, context) => {
     ? allProducts.filter(p => p.category === selectedCategory)
     : allProducts;
 
-  {/* Сортировка инвентаря по ценнику, cuz в .dm порядка нет */}
+  { /* Сортировка инвентаря по ценнику, cuz в .dm порядка нет */ }
   inventory.sort((a, b) =>
     a.price - b.price
     );
@@ -103,7 +103,7 @@ export const MiningVendor = (props, context) => {
                           disabled={!data.user
                             || product.price > data.user.points}
                           onClick={() => act('purchase', {
-                            ref: product.ref
+                            ref: product.ref,
                           })} >
                           {product.price} points
                         </Button>
@@ -113,8 +113,8 @@ export const MiningVendor = (props, context) => {
                 </Table>
               </Flex.Item>
             </Flex>
-          </Section>
-        </Window.Content>
-      </Window>
+        </Section>
+      </Window.Content>
+    </Window>
     );
   };

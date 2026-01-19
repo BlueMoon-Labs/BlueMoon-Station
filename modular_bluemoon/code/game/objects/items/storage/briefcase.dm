@@ -10,7 +10,8 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_w_class = WEIGHT_CLASS_NORMAL
-	STR.max_combined_w_class = 14
+	STR.max_combined_w_class = 7
+	STR.max_items = 4
 	STR.allow_other_storages = FALSE
 
 /obj/item/storage/briefcase/lawyer/family/loadout/PopulateContents()

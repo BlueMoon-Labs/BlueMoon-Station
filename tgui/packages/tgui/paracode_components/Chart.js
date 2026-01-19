@@ -7,6 +7,7 @@
 import { map, zipWith } from 'common/collections';
 import { pureComponentHooks } from 'common/react';
 import { Component, createRef } from 'inferno';
+
 import { IS_IE8 } from '../byond';
 import { Box } from './Box';
 

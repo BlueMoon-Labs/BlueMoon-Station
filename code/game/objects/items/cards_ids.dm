@@ -448,7 +448,7 @@
 			. += "<span class='info'>Количество: [registered_account.bounty_num()]</span>"
 			. += "<span class='info'>Награда: [registered_account.bounty_value()]</span>"
 		if(registered_account.account_holder == user.real_name)
-			. += "<span class='boldnotice'>Если вы потеряете эту ID-карте, вы можете восстановить свой аккаунт, нажав Alt-Click по пустой ID-карту, держа её в руках, и введя номер своего банковского счёта.</span>"
+			. += "<span class='boldnotice'>Если вы потеряете эту ID-карту, вы можете восстановить свой аккаунт, нажав Alt-Click по пустой ID-карту, держа её в руках, и введя номер своего банковского счёта.</span>"
 	else
 		. += "<span class='info'>Нет зарегистрированного аккаунта. Alt-Click, чтобы добавить.</span>"
 

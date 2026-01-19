@@ -67,7 +67,7 @@
 		SAVE_TIMER
 
 /datum/preferences/proc/favorite_track_set_index(ui_index, track)
-	. = track_set_index(ui_index, track)
+	. = track_set_index(favorite_tracks, track, ui_index)
 	if(.)
 		SAVE_TIMER
 
@@ -113,7 +113,7 @@
 	if(new_playlist_name in playlists)
 		tgui_alert_async(parent, "Такой плейлист уже существует!")
 		return
-	if(playlists >= PLAYLIST_MAX_COUNT)
+	if(playlists.len >= PLAYLIST_MAX_COUNT)
 		tgui_alert_async(parent, "Уже достигнут максимум в [PLAYLIST_MAX_COUNT] плейлистов!")
 		return
 	playlists[new_playlist_name] = list()
@@ -209,17 +209,19 @@
 			save_preferences()
 			return TRUE
 
-		var/choise = tgui_alert(parent, "Создать новый плейлист или хотите добавить треки в существующий?", "Импорт плейлистов", list("Новый", "Существующий"))
-		if(!choise)
-			return
 		var/current_playlist_name
 		var/list/track_list
-		if(choise == "Существующий")
-			current_playlist_name = tgui_input_list(parent, "В какой плейлист добавить треки?", "Плейлисты", playlists)
-			if(!(current_playlist_name in playlists))
+		var/choise
+		if(playlists.len)
+			choise = tgui_alert(parent, "Создать новый плейлист или хотите добавить треки в существующий?", "Импорт плейлистов", list("Новый", "Существующий"))
+			if(!choise)
 				return
-			track_list = playlists[current_playlist_name]
-		else if(choise == "Новый")
+			if(choise == "Существующий")
+				current_playlist_name = tgui_input_list(parent, "В какой плейлист добавить треки?", "Плейлисты", playlists)
+				if(!(current_playlist_name in playlists))
+					return
+				track_list = playlists[current_playlist_name]
+		if(!playlists.len || choise == "Новый")
 			current_playlist_name = playlists_new()
 			if(!current_playlist_name)
 				return

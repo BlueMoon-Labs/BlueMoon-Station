@@ -1,6 +1,6 @@
 import { resolveAsset } from '../assets';
 import { useBackend, useSharedState } from '../backend';
-import { Button, NoticeBox, Section, Stack, Tabs, Input } from '../components';
+import { Button, Input, NoticeBox, Section, Stack, Tabs } from '../components';
 import { NtosWindow } from '../layouts';
 
 export const NtosPortraitPrinter = (props, context) => {
@@ -55,9 +55,9 @@ export const NtosPortraitPrinter = (props, context) => {
     },
     {
       name: 'Favorite',
-      asset_prefix: null,               // префикс берём из самих портретов
+      asset_prefix: null, // префикс берём из самих портретов
       list: favoritesList,
-      always: true,                     // показывать вкладку даже если пока пусто
+      always: true, // показывать вкладку даже если пока пусто
     },
   ];
   const baseList = TABS[tabIndex].list || [];

@@ -29,7 +29,7 @@
 	mind_traits = list(TRAIT_LAW_ENFORCEMENT_METABOLISM, TRAIT_KNOW_MED_SURGERY_T2) //BLUEMOON EDIT added surgery trait
 
 	display_order = JOB_DISPLAY_ORDER_BRIG_PHYSICIAN
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/blindness, /datum/quirk/monophobia)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/onelife)
 	threat = 2
 
 /datum/outfit/job/brigdoc

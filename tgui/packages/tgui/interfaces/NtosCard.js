@@ -137,7 +137,7 @@ export const NtosCardContent = (props, context) => {
                   color="bad"
                   onClick={() => act('PRG_terminate')} />
               )}>
-              {/*<Button.Input
+              {/* <Button.Input
                 fluid
                 content="Custom..."
                 placeholder={id_custom_job}

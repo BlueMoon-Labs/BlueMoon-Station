@@ -56,9 +56,7 @@
 		if(91 to INFINITY)
 			new_size = 5
 
-	if(linked_organ)
-		linked_organ.size = clamp(size, BALLS_SIZE_MIN, BALLS_SIZE_MAX) //SPLURT Edit. No more randomly massive balls
-		linked_organ.update()
+	// Раньше тут была проверка на размер яиц после увелечения члена, теперь вот так вот.
 	size = new_size
 
 	if(owner)

@@ -36,6 +36,9 @@
 	},
 /turf/open/indestructible/hoteltile,
 /area/hilbertshotel)
+"eI" = (
+/turf/open/floor/catwalk_floor,
+/area/hilbertshotel)
 "fv" = (
 /obj/structure/table/reinforced,
 /obj/item/paper{
@@ -256,7 +259,7 @@
 /turf/open/indestructible/hotelwood,
 /area/hilbertshotel)
 "Si" = (
-/turf/closed/indestructible/hotelwall,
+/turf/closed/indestructible/wall,
 /area/hilbertshotel)
 "Tt" = (
 /turf/open/floor/plasteel/stairs/right,
@@ -275,6 +278,10 @@
 	anchored = 1
 	},
 /turf/open/indestructible/hotelwood,
+/area/hilbertshotel)
+"Vl" = (
+/obj/machinery/telecomms/relay/preset/auto,
+/turf/open/floor/catwalk_floor,
 /area/hilbertshotel)
 "VT" = (
 /obj/structure/table/reinforced,
@@ -320,9 +327,11 @@ GW
 GW
 GW
 GW
+GW
 "}
 (2,1,1) = {"
 GW
+Vl
 Si
 Si
 Si
@@ -340,6 +349,7 @@ GW
 "}
 (3,1,1) = {"
 GW
+eI
 Si
 Uc
 yh
@@ -357,6 +367,7 @@ GW
 "}
 (4,1,1) = {"
 GW
+eI
 Si
 Mt
 qH
@@ -374,6 +385,7 @@ GW
 "}
 (5,1,1) = {"
 GW
+eI
 Si
 Ir
 Ce
@@ -391,6 +403,7 @@ GW
 "}
 (6,1,1) = {"
 GW
+eI
 Si
 Mt
 Tt
@@ -407,6 +420,7 @@ Si
 GW
 "}
 (7,1,1) = {"
+GW
 GW
 Si
 zD
@@ -425,6 +439,7 @@ GW
 "}
 (8,1,1) = {"
 GW
+GW
 Si
 Si
 Si
@@ -441,6 +456,7 @@ Si
 GW
 "}
 (9,1,1) = {"
+GW
 GW
 Si
 Uc
@@ -459,6 +475,7 @@ GW
 "}
 (10,1,1) = {"
 GW
+GW
 Si
 BG
 Zx
@@ -475,6 +492,7 @@ Si
 GW
 "}
 (11,1,1) = {"
+GW
 GW
 Si
 JK
@@ -493,6 +511,7 @@ GW
 "}
 (12,1,1) = {"
 GW
+GW
 Si
 BG
 Zx
@@ -509,6 +528,7 @@ Si
 GW
 "}
 (13,1,1) = {"
+GW
 GW
 Si
 Ld
@@ -527,6 +547,7 @@ GW
 "}
 (14,1,1) = {"
 GW
+GW
 Si
 Ii
 Us
@@ -544,6 +565,7 @@ GW
 "}
 (15,1,1) = {"
 GW
+GW
 Si
 Si
 Si
@@ -560,6 +582,7 @@ Si
 GW
 "}
 (16,1,1) = {"
+GW
 GW
 GW
 GW

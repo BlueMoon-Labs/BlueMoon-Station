@@ -362,3 +362,17 @@
 /datum/gear/accessory/uglyxmas
 	name = "Ugly Xmas Sweater"
 	path = /obj/item/clothing/accessory/sweater/uglyxmas
+
+/datum/gear/accessory/fannypack
+	name = "leather fanny pack"
+	slot = ITEM_SLOT_BELT
+	cost = 2
+	path = /obj/item/storage/belt/fannypack
+
+/datum/gear/accessory/fannypack/black
+	name = "black fanny pack"
+	path = /obj/item/storage/belt/fannypack/black
+
+/datum/gear/accessory/fannypack/white
+	name = "white fanny pack"
+	path = /obj/item/storage/belt/fannypack/white
