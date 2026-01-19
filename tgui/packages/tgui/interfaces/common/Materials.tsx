@@ -265,7 +265,7 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
     let el = MaterialDockTooltip.renderedDock;
     if (!el) {
       el = document.createElement('div');
-      el.className = 'MaterialDockTooltip';
+      el.className = 'MaterialDockTooltip'; // можно потом оформить в scss
       el.style.position = 'absolute';
       el.style.zIndex = '999999';
       el.style.opacity = '0';
