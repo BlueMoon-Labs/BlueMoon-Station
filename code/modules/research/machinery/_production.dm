@@ -15,9 +15,6 @@
 	var/datum/techweb/stored_research
 	var/datum/techweb/host_research
 
-	//var/screen = RESEARCH_FABRICATOR_SCREEN_MAIN
-	var/selected_category
-
 	var/offstation_security_levels
 
 	var/lathe_prod_time = 0.5
@@ -37,7 +34,7 @@
 	cached_designs = list()
 	stored_research = new
 	host_research = SSresearch.science_tech
-	update_research()
+	INVOKE_ASYNC(src, PROC_REF(update_research))
 	materials = AddComponent(/datum/component/remote_materials, "lathe", mapload, _after_insert=CALLBACK(src, PROC_REF(AfterMaterialInsert)))
 	RefreshParts()
 
@@ -47,6 +44,20 @@
 	matching_designs = null
 	QDEL_NULL(stored_research)
 	host_research = null
+	return ..()
+
+/obj/machinery/rnd/production/examine(mob/user)
+	. = ..()
+	var/datum/component/remote_materials/materials = GetComponent(/datum/component/remote_materials)
+	if(in_range(user, src) || isobserver(user))
+		. += "<span class='notice'>Статус-дисплей сообщает: \n\
+		- Хранится до <b>[materials.local_size]</b> m/u локально.\n\
+		- Затраты материалов: <b>[print_cost_coeff*100]%</b>.</span>"
+
+//we eject the materials upon deconstruction.
+/obj/machinery/rnd/production/on_deconstruction()
+	for(var/obj/item/reagent_containers/glass/G in component_parts)
+		reagents.trans_to(G, G.reagents.maximum_volume)
 	return ..()
 
 /obj/machinery/rnd/production/update_overlays()
@@ -78,14 +89,6 @@
 	if(!ui)
 		ui = new(user, src, "Fabricator", "[host_research?.organization] [department_tag] [name]")
 		ui.open()
-	/*
-	if(!consoleless_interface)
-		return ..()
-	user.set_machine(src)
-	var/datum/browser/popup = new(user, "rndconsole", name, 460, 550)
-	popup.set_content(generate_ui())
-	popup.open()
-	*/
 
 /obj/machinery/rnd/production/ui_assets(mob/user)
 	. = list(
@@ -237,20 +240,6 @@
 		manips++
 	print_cost_coeff = STANDARD_PART_LEVEL_LATHE_COEFFICIENT(total_manip_rating / (manips? manips : 1))
 
-/obj/machinery/rnd/production/examine(mob/user)
-	. = ..()
-	var/datum/component/remote_materials/materials = GetComponent(/datum/component/remote_materials)
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>Статус-дисплей сообщает: \n\
-		- Хранится до <b>[materials.local_size]</b> m/u локально.\n\
-		- Затраты материалов: <b>[print_cost_coeff*100]%</b>.</span>"
-
-//we eject the materials upon deconstruction.
-/obj/machinery/rnd/production/on_deconstruction()
-	for(var/obj/item/reagent_containers/glass/G in component_parts)
-		reagents.trans_to(G, G.reagents.maximum_volume)
-	return ..()
-
 /obj/machinery/rnd/production/proc/do_print(path, amount, list/matlist, notify_admins, mob/user)
 	if(notify_admins)
 		message_admins("[ADMIN_LOOKUPFLW(user)] has built [amount] of [path] at a [src]([type]).")
@@ -399,217 +388,3 @@
 		for(var/n in D.min_security_level to D.max_security_level)
 			levels += NUM2SECLEVEL(n)
 		. += english_list(levels, and_text = ", ")
-/*
-/obj/machinery/rnd/production/proc/search(string)
-	matching_designs.Cut()
-	for(var/v in stored_research.researched_designs)
-		var/datum/design/D = SSresearch.techweb_design_by_id(v)
-		if(!(D.build_type & allowed_buildtypes) || !(isnull(allowed_department_flags) || (D.departmental_flags & allowed_department_flags)))
-			continue
-		if(findtext(D.name,string))
-			matching_designs.Add(D)
-
-/obj/machinery/rnd/production/proc/generate_ui()
-	var/list/ui = list()
-	ui += ui_header()
-	switch(screen)
-		if(RESEARCH_FABRICATOR_SCREEN_MATERIALS)
-			ui += ui_screen_materials()
-		if(RESEARCH_FABRICATOR_SCREEN_CHEMICALS)
-			ui += ui_screen_chemicals()
-		if(RESEARCH_FABRICATOR_SCREEN_SEARCH)
-			ui += ui_screen_search()
-		if(RESEARCH_FABRICATOR_SCREEN_CATEGORYVIEW)
-			ui += ui_screen_category_view()
-		else
-			ui += ui_screen_main()
-	for(var/i in 1 to length(ui))
-		if(!findtextEx(ui[i], RDSCREEN_NOBREAK))
-			ui[i] += "<br>"
-		ui[i] = replacetextEx(ui[i], RDSCREEN_NOBREAK, "")
-	return ui.Join("")
-
-/obj/machinery/rnd/production/proc/ui_header()
-	var/list/l = list()
-	l += "<div class='statusDisplay'><b>[host_research.organization] [department_tag] Department Lathe</b>"
-	l += "Протоколы безопасности: [(obj_flags & EMAGGED)? "<font color='red'>отключены</font>" : "<font color='green'>включены</font>"]"
-	if (materials.mat_container)
-		l += "<A href='?src=[REF(src)];switch_screen=[RESEARCH_FABRICATOR_SCREEN_MATERIALS]'><B>Кол-во материалов:</B> [materials.format_amount()]</A>"
-	else
-		l += "<font color='red'>No material storage connected, please contact the quartermaster.</font>"
-	l += "<A href='?src=[REF(src)];switch_screen=[RESEARCH_FABRICATOR_SCREEN_CHEMICALS]'><B>Объём химикатов:</B> [reagents.total_volume] / [reagents.maximum_volume]</A>"
-	l += "<a href='?src=[REF(src)];sync_research=1'>Синхронизация исследований</a>"
-	l += "<a href='?src=[REF(src)];switch_screen=[RESEARCH_FABRICATOR_SCREEN_MAIN]'>Главное меню</a></div>[RDSCREEN_NOBREAK]"
-	return l
-
-/obj/machinery/rnd/production/proc/ui_screen_materials()
-	if (!materials.mat_container)
-		screen = RESEARCH_FABRICATOR_SCREEN_MAIN
-		return ui_screen_main()
-	var/list/l = list()
-	l += "<div class='statusDisplay'><h3>Хранилище материалов:</h3>"
-	for(var/mat_id in materials.mat_container.materials)
-		var/datum/material/M = mat_id
-		var/amount = materials.mat_container.materials[mat_id]
-		var/ref = REF(M)
-		l += "* [amount] см³ [material_to_ru_genitive(M.name)]: "
-		if(amount >= MINERAL_MATERIAL_AMOUNT) l += "<A href='?src=[REF(src)];ejectsheet=[ref];eject_amt=1'>1x</A> [RDSCREEN_NOBREAK]"
-		if(amount >= MINERAL_MATERIAL_AMOUNT*5) l += "<A href='?src=[REF(src)];ejectsheet=[ref];eject_amt=5'>5x</A> [RDSCREEN_NOBREAK]"
-		if(amount >= MINERAL_MATERIAL_AMOUNT*10) l += "<A href='?src=[REF(src)];ejectsheet=[ref];eject_amt=10'>10x</A> [RDSCREEN_NOBREAK]"
-		if(amount >= MINERAL_MATERIAL_AMOUNT*20) l += "<A href='?src=[REF(src)];ejectsheet=[ref];eject_amt=20'>20x</A> [RDSCREEN_NOBREAK]"
-		if(amount >= MINERAL_MATERIAL_AMOUNT*50) l += "<A href='?src=[REF(src)];ejectsheet=[ref];eject_amt=50'>50x</A> [RDSCREEN_NOBREAK]"
-		if(amount >= MINERAL_MATERIAL_AMOUNT) l += "<A href='?src=[REF(src)];ejectsheet=[ref];eject_amt=50'>Max Stack</A>[RDSCREEN_NOBREAK]"
-		l += ""
-	l += "</div>[RDSCREEN_NOBREAK]"
-	return l
-
-/obj/machinery/rnd/production/proc/ui_screen_chemicals()
-	var/list/l = list()
-	l += "<div class='statusDisplay'><A href='?src=[REF(src)];disposeall=1'>Утилизировать все химикаты хранилища</A>"
-	l += "<h3>Хранилище химикатов:</h3>"
-	for(var/datum/reagent/R in reagents.reagent_list)
-		l += "[R.name]: [R.volume]"
-		l += "<A href='?src=[REF(src)];dispose=[R.type]'>Purge</A>"
-	l += "</div>"
-	return l
-
-/obj/machinery/rnd/production/proc/ui_screen_search()
-	var/list/l = list()
-	var/coeff = print_cost_coeff
-	l += "<h2>Результаты поиска:</h2>"
-	l += "<form name='search' action='?src=[REF(src)]'>\
-	<input type='hidden' name='src' value='[REF(src)]'>\
-	<input type='hidden' name='search' value='to_search'>\
-	<input type='text' name='to_search'>\
-	<input type='submit' value='Поиск'>\
-	</form><HR>"
-	for(var/datum/design/D in matching_designs)
-		l += design_menu_entry(D, coeff)
-	l += "</div>"
-	return l
-
-/obj/machinery/rnd/production/proc/design_menu_entry(datum/design/D, coeff)
-	if(!istype(D))
-		return
-	if(!coeff)
-		coeff = print_cost_coeff
-	if(!efficient_with(D.build_path))
-		coeff = 1
-	var/list/l = list()
-	var/temp_material
-	var/c = 50
-	var/t
-	var/all_materials = D.materials + D.reagents_list
-	for(var/M in all_materials)
-		t = check_mat(D, M)
-		temp_material += " | "
-		if (t < 1)
-			temp_material += "<span class='bad'>[all_materials[M] * coeff] [CallMaterialName_RuGenitive(M)]</span>"
-		else
-			temp_material += " [all_materials[M] * coeff] [CallMaterialName_RuGenitive(M)]"
-		c = min(c,t)
-
-	var/on_station = is_station_level(z)
-	var/obj/machinery/rnd/production/protolathe/hacked_p
-	var/clearance = !(obj_flags & EMAGGED) && on_station
-	if(!on_station)
-		// Если продакшн машин вне станции, разрешаем только предметы без требований к коду
-		if(D.min_security_level <= SEC_LEVEL_GREEN || src.type == hacked_p)
-			clearance = TRUE
-		else
-			clearance = FALSE
-
-	var/sec_text = design_sec_level_desc(D)
-
-	if(c >= 1 && clearance && ISINRANGE(GLOB.security_level, D.min_security_level, D.max_security_level))
-		l += "<A href='?src=[REF(src)];build=[D.id];amount=1'>[D.name]</A>[RDSCREEN_NOBREAK]"
-		if(c >= 5)
-			l += "<A href='?src=[REF(src)];build=[D.id];amount=5'>x5</A>[RDSCREEN_NOBREAK]"
-		if(c >= 10)
-			l += "<A href='?src=[REF(src)];build=[D.id];amount=10'>x10</A>[RDSCREEN_NOBREAK]"
-		//SPLURT EDIT: Print x30 stock parts at once
-		if(c >= 30 && selected_category == "Stock Parts")
-			l += "<A href='?src=[REF(src)];build=[D.id];amount=30'>x30</A>[RDSCREEN_NOBREAK]"
-		l += "[temp_material][sec_text][RDSCREEN_NOBREAK]"
-	else
-		l += "<span class='linkOff'>[D.name]</span>[temp_material][sec_text][RDSCREEN_NOBREAK]"
-	l += ""
-	return l
-
-/obj/machinery/rnd/production/Topic(raw, ls)
-	if(..())
-		return
-	add_fingerprint(usr)
-	usr.set_machine(src)
-	if(ls["switch_screen"])
-		screen = text2num(ls["switch_screen"])
-	if(ls["build"]) //Causes the Protolathe to build something.
-		if(busy)
-			say("Warning: Fabricators busy!")
-		else
-			user_try_print_id(ls["build"], ls["amount"])
-	if(ls["search"]) //Search for designs with name matching pattern
-		search(ls["to_search"])
-		screen = RESEARCH_FABRICATOR_SCREEN_SEARCH
-	if(ls["sync_research"])
-		update_research()
-		say("Синхронизация исследований с базой данных научно-исследовательского отдела.")
-	if(ls["category"])
-		selected_category = ls["category"]
-	if(ls["dispose"])  //Causes the protolathe to dispose of a single reagent (all of it)
-		reagents.del_reagent(ls["dispose"])
-	if(ls["disposeall"]) //Causes the protolathe to dispose of all it's reagents.
-		reagents.clear_reagents()
-	if(ls["ejectsheet"]) //Causes the protolathe to eject a sheet of material
-		var/datum/material/M = locate(ls["ejectsheet"])
-		eject_sheets(M, ls["eject_amt"])
-	updateUsrDialog()
-
-/obj/machinery/rnd/production/proc/ui_screen_main()
-	var/list/l = list()
-	l += "<form name='search' action='?src=[REF(src)]'>\
-	<input type='hidden' name='src' value='[REF(src)]'>\
-	<input type='hidden' name='search' value='to_search'>\
-	<input type='hidden' name='type' value='proto'>\
-	<input type='text' name='to_search'>\
-	<input type='submit' value='Поиск'>\
-	</form><HR>"
-
-	l += list_categories(categories, RESEARCH_FABRICATOR_SCREEN_CATEGORYVIEW)
-
-	return l
-
-/obj/machinery/rnd/production/proc/ui_screen_category_view()
-	if(!selected_category)
-		return ui_screen_main()
-	var/list/l = list()
-	l += "<div class='statusDisplay'><h3>Категория: [selected_category]</h3>"
-	var/coeff = print_cost_coeff
-	for(var/v in stored_research.researched_designs)
-		var/datum/design/D = SSresearch.techweb_design_by_id(v)
-		if(!(selected_category in D.category)|| !(D.build_type & allowed_buildtypes))
-			continue
-		if(!(isnull(allowed_department_flags) || (D.departmental_flags & allowed_department_flags)))
-			continue
-		l += design_menu_entry(D, coeff)
-	l += "</div>"
-	return l
-
-/obj/machinery/rnd/production/proc/list_categories(list/categories, menu_num)
-	if(!categories)
-		return
-
-	var/line_length = 1
-	var/list/l = "<table style='width:100%' align='center'><tr>"
-
-	for(var/C in categories)
-		if(line_length > 2)
-			l += "</tr><tr>"
-			line_length = 1
-
-		l += "<td><A href='?src=[REF(src)];category=[C];switch_screen=[menu_num]'>[C]</A></td>"
-		line_length++
-
-	l += "</tr></table></div>"
-	return l
-*/
