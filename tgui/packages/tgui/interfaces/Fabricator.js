@@ -183,7 +183,7 @@ const costTooltipNode = (item, amt, materialsObj, chemsHaveById, chemsNameById) 
       })}
 
       {hasChems && (
-        <Section title="Chems">
+        <Section title="Chemicals">
           {chemList.map((chem) => {
             const id = chem?.id;
             if (!id) return null;
