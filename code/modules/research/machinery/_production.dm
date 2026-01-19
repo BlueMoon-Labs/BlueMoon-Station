@@ -15,7 +15,7 @@
 	var/datum/techweb/stored_research
 	var/datum/techweb/host_research
 
-	var/screen = RESEARCH_FABRICATOR_SCREEN_MAIN
+	//var/screen = RESEARCH_FABRICATOR_SCREEN_MAIN
 	var/selected_category
 
 	var/offstation_security_levels
@@ -24,12 +24,15 @@
 
 	/// What color is this machine's stripe? Leave null to not have a stripe.
 	var/stripe_color = null
+	COOLDOWN_DECLARE(cooldown_say)
+	var/const/cooldown_say_time = 1.5 SECONDS
+	var/const/max_build_amount = 60 // Отвечает за максимум в кнопке [Max: XXX] TGUI и максимум пердметов на печать в 1 пачке
 
 /obj/machinery/rnd/production/Initialize(mapload)
 	if(mapload && offstation_security_levels)
 		log_mapping("Depricated var named \"offstation_security_levels\" at ([x], [y], [z])!")
 	. = ..()
-	create_reagents(0, OPENCONTAINER)
+	create_reagents(0, OPENCONTAINER | NO_REACT)
 	matching_designs = list()
 	cached_designs = list()
 	stored_research = new
@@ -57,7 +60,6 @@
 	. += stripe
 
 /obj/machinery/rnd/production/proc/update_research()
-	set waitfor = FALSE
 	host_research.copy_research_to(stored_research, TRUE)
 	update_designs()
 
@@ -71,13 +73,151 @@
 /obj/machinery/rnd/production/RefreshParts()
 	calculate_efficiency()
 
-/obj/machinery/rnd/production/ui_interact(mob/user)
+/obj/machinery/rnd/production/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "Fabricator", "[host_research?.organization] [department_tag] [name]")
+		ui.open()
+	/*
 	if(!consoleless_interface)
 		return ..()
 	user.set_machine(src)
 	var/datum/browser/popup = new(user, "rndconsole", name, 460, 550)
 	popup.set_content(generate_ui())
 	popup.open()
+	*/
+
+/obj/machinery/rnd/production/ui_assets(mob/user)
+	. = list(
+		get_asset_datum(/datum/asset/spritesheet/research_designs),
+		get_asset_datum(/datum/asset/spritesheet/sheetmaterials),
+	)
+
+/obj/machinery/rnd/production/ui_data(mob/user)
+	. = list()
+	.["current_sec_level"] = GLOB.security_level
+	.["busy"] = busy
+	.["materials"] = list()
+	.["materials_text"] = ""
+	.["onHold"] = FALSE
+	if(materials?.mat_container)
+		.["materials"] = materials.mat_container.ui_data(user)
+		.["materials_text"] = materials.format_amount()
+		.["onHold"] = materials.on_hold()
+
+	.["chems"] = list()
+	.["chems_maximum"] = reagents?.maximum_volume
+	.["chems_total_volume"] = reagents?.total_volume
+	if(reagents)
+		var/list/chems = reagents.reagent_list
+		for(var/datum/reagent/R in chems)
+			.["chems"] += list(list("name" = R.name, "id" = R.type, "amount" = R.volume))
+
+/obj/machinery/rnd/production/ui_static_data(mob/user)
+	. = list()
+	.["categories"] = list()
+	.["hacked"] = (obj_flags & EMAGGED)
+	.["maxBuildButtonAmount"] = max_build_amount // Отвечает за максимум в кнопке [Max: XXX]
+	// Разворачиваем плоский лист категорий в ассоц.
+	var/list/all_categories = categories.Copy()
+	for(var/V in all_categories)
+		all_categories[V] = list()
+
+	// Проходимся по категориям дизайнов и добавляем их к нам
+	for(var/datum/design/D in cached_designs)
+		for(var/C in all_categories)
+			if(C in D.category)
+				all_categories[C] += D
+
+	// Сокращаем названия формата Machine Design (XXX)
+	var/static/list/replace_item_name_category = list(
+			"Computer Boards",
+			"Research Machinery",
+			"Misc. Machinery",
+			"Engineering Machinery",
+			"Medical Machinery",
+			"Teleportation Machinery",
+			"Hydroponics Machinery",
+		)
+
+	for(var/category in all_categories)
+		var/list/cat = list(
+			"name" = category,
+			"items" = list())
+		var/replace_item_name = replace_item_name_category.Find(category)
+		for(var/datum/design/D in all_categories[category])
+			if(!D.build_path)
+				continue
+			var/obj/item_path = D.build_path // ispath
+
+			// Формируем стоимость в материалах
+			var/coeff = efficient_with(D.build_path) ? print_cost_coeff : 1
+			var/list/cost = list()
+			for(var/datum/material/M in D.materials)
+				cost[M.name] = D.materials[M] * coeff
+
+			// Формируем стоимость в химикатах
+			var/list/cost_chem = list()
+			for(var/R_path in D.reagents_list)
+				var/datum/reagent/R = R_path // ispath
+				cost_chem += list(list("name" = initial(R.name), "id" = R, "amount" = D.reagents_list[R]))
+
+			// Делаем описание для плат
+			var/desc
+			if(ispath(item_path, /obj/item/circuitboard))
+				var/obj/item/circuitboard/circuit = item_path // ispath
+				var/obj/circuit_build_path = circuit.build_path // ispath
+				desc = strip_html_tags(initial(circuit_build_path.desc))
+			if(!desc)
+				desc = strip_html_tags(initial(item_path.desc))
+
+			cat["items"] += list(list(
+				"id" = D.id,
+				"name" = replace_item_name ? initial(item_path.name) : D.name,
+				"desc" = desc,
+				"cost" = cost,
+				"cost_chem" = cost_chem,
+				"sec_desc" = design_sec_level_desc(D),
+				"min_sec_level" = D.min_security_level,
+				"max_sec_level" = D.max_security_level,
+			))
+		if(LAZYLEN(cat["items"]))
+			.["categories"] += list(cat)
+
+/obj/machinery/rnd/production/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(.)
+		return
+	switch(action)
+		if("sync_research")
+			if(!COOLDOWN_FINISHED(src, cooldown_say))
+				return
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			update_research()
+			update_static_data_for_all_viewers()
+			say("Синхронизация исследований с базой данных научно-исследовательского отдела.")
+			return TRUE
+		if("remove_mat")
+			var/datum/material/M = locate(params["ref"])
+			var/amount = params["amount"]
+			if(!amount || !M)
+				return
+			return !!eject_sheets(M, amount)
+		if("purge_chem")
+			var/chem_path = params["chem"]
+			if(!chem_path)
+				return
+			else if(chem_path == "all")
+				reagents.clear_reagents()
+			else
+				reagents.del_reagent(text2path(chem_path))
+			return TRUE
+		if("build")
+			var/build_id = params["id"]
+			var/amount = params["amount"]
+			if(!build_id || !amount)
+				return
+			return user_try_print_id(build_id, amount)
 
 /obj/machinery/rnd/production/proc/calculate_efficiency()
 	var/total_manip_rating = 0
@@ -147,26 +287,43 @@
 		amount = text2num(amount)
 	if(isnull(amount))
 		amount = 1
+	if(amount > max_build_amount)
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("Warning: Printing failed: The request is too big!")
+		return FALSE
 	var/datum/design/D = (linked_console || requires_console)? (linked_console.stored_research.researched_designs[id]? SSresearch.techweb_design_by_id(id) : null) : SSresearch.techweb_design_by_id(id)
 	if(!istype(D))
 		return FALSE
 	if(!(isnull(allowed_department_flags) || (D.departmental_flags & allowed_department_flags)))
-		say("Warning: Printing failed: This fabricator does not have the necessary keys to decrypt design schematics. Please update the research data with the on-screen button and contact Nanotrasen Support!")
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("Warning: Printing failed: This fabricator does not have the necessary keys to decrypt design schematics. Please update the research data with the on-screen button and contact Nanotrasen Support!")
 		return FALSE
 	if(D.build_type && !(D.build_type & allowed_buildtypes))
-		say("This machine does not have the necessary manipulation systems for this design. Please contact Nanotrasen Support!")
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("This machine does not have the necessary manipulation systems for this design. Please contact Nanotrasen Support!")
 		return FALSE
 	if(!(obj_flags & EMAGGED) && (offstation_security_levels || is_station_level(z)))
 		if(GLOB.security_level < D.min_security_level)
-			say("Minimum security alert level required to print this design not met, please contact the command staff.")
+			if(COOLDOWN_FINISHED(src, cooldown_say))
+				COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+				say("Minimum security alert level required to print this design not met, please contact the command staff.")
 			return FALSE
 		if(GLOB.security_level > D.max_security_level)
-			say("Exceeded maximum security alert level required to print this design, please contact the command staff.")
+			if(COOLDOWN_FINISHED(src, cooldown_say))
+				COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+				say("Exceeded maximum security alert level required to print this design, please contact the command staff.")
 	if(!materials.mat_container)
-		say("No connection to material storage, please contact the quartermaster.")
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("No connection to material storage, please contact the quartermaster.")
 		return FALSE
 	if(materials.on_hold())
-		say("Mineral access is on hold, please contact the quartermaster.")
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("Mineral access is on hold, please contact the quartermaster.")
 		return FALSE
 	var/power = 1000
 	amount = clamp(amount, 1, 50)
@@ -179,11 +336,15 @@
 	for(var/MAT in D.materials)
 		efficient_mats[MAT] = D.materials[MAT] * coeff
 	if(!materials.mat_container.has_materials(efficient_mats, amount))
-		say("Not enough materials to complete prototype[amount > 1? "s" : ""].")
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("Not enough materials to complete prototype[amount > 1? "s" : ""].")
 		return FALSE
 	for(var/R in D.reagents_list)
 		if(!reagents.has_reagent(R, D.reagents_list[R] * amount * coeff))
-			say("Not enough reagents to complete prototype[amount > 1? "s" : ""].")
+			if(COOLDOWN_FINISHED(src, cooldown_say))
+				COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+				say("Not enough reagents to complete prototype[amount > 1? "s" : ""].")
 			return FALSE
 	materials.mat_container.use_materials(efficient_mats, amount)
 	materials.silo_log(src, "built", -amount, "[D.name]", efficient_mats)
@@ -198,6 +359,47 @@
 	playsound(src, 'sound/machines/prod.ogg', 50)
 	return TRUE
 
+/obj/machinery/rnd/production/proc/eject_sheets(eject_sheet, eject_amt)
+	var/datum/component/material_container/mat_container = materials.mat_container
+	if (!mat_container)
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("Нет доступа к хранилищу материалов, пожалуйста, свяжитесь с завхозом.")
+		return FALSE
+	if (materials.on_hold())
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("Доступ к материалам приостановлен, ожалуйста, свяжитесь с завхозом.")
+		return FALSE
+	var/count = mat_container.retrieve_sheets(text2num(eject_amt), eject_sheet, drop_location())
+	var/list/matlist = list()
+	matlist[eject_sheet] = MINERAL_MATERIAL_AMOUNT
+	materials.silo_log(src, "ejected", -count, "sheets", matlist)
+	return count
+
+/obj/machinery/rnd/production/proc/design_sec_level_desc(datum/design/D)
+	. = ""
+	if(!istype(D))
+		return
+
+	var/clearance = is_station_level(z)
+	if(!clearance)
+		// Если продакшн машин вне станции, разрешаем только предметы без требований к коду
+		if(D.min_security_level <= SEC_LEVEL_GREEN || src.type == /obj/machinery/rnd/production/protolathe)
+			clearance = TRUE
+		else
+			clearance = FALSE
+
+	if(obj_flags & EMAGGED)
+		clearance = FALSE
+
+	if(clearance && (D.min_security_level > SEC_LEVEL_GREEN || D.max_security_level < SEC_LEVEL_DELTA))
+		. = "Только при уровнях тревоги: "
+		var/list/levels = list()
+		for(var/n in D.min_security_level to D.max_security_level)
+			levels += NUM2SECLEVEL(n)
+		. += english_list(levels, and_text = ", ")
+/*
 /obj/machinery/rnd/production/proc/search(string)
 	matching_designs.Cut()
 	for(var/v in stored_research.researched_designs)
@@ -317,14 +519,7 @@
 		else
 			clearance = FALSE
 
-	var/sec_text = ""
-	if(clearance && (D.min_security_level > SEC_LEVEL_GREEN || D.max_security_level < SEC_LEVEL_DELTA))
-		sec_text = " (При уровнях тревоги: "
-		for(var/n in D.min_security_level to D.max_security_level)
-			sec_text += NUM2SECLEVEL(n)
-			if(n + 1 <= D.max_security_level)
-				sec_text += ", "
-		sec_text += ")"
+	var/sec_text = design_sec_level_desc(D)
 
 	if(c >= 1 && clearance && ISINRANGE(GLOB.security_level, D.min_security_level, D.max_security_level))
 		l += "<A href='?src=[REF(src)];build=[D.id];amount=1'>[D.name]</A>[RDSCREEN_NOBREAK]"
@@ -369,20 +564,6 @@
 		var/datum/material/M = locate(ls["ejectsheet"])
 		eject_sheets(M, ls["eject_amt"])
 	updateUsrDialog()
-
-/obj/machinery/rnd/production/proc/eject_sheets(eject_sheet, eject_amt)
-	var/datum/component/material_container/mat_container = materials.mat_container
-	if (!mat_container)
-		say("Нет доступа к хранилищу материалов, пожалуйста, свяжитесь с завхозом.")
-		return FALSE
-	if (materials.on_hold())
-		say("Доступ к материалам приостановлен, ожалуйста, свяжитесь с завхозом.")
-		return FALSE
-	var/count = mat_container.retrieve_sheets(text2num(eject_amt), eject_sheet, drop_location())
-	var/list/matlist = list()
-	matlist[eject_sheet] = MINERAL_MATERIAL_AMOUNT
-	materials.silo_log(src, "ejected", -count, "sheets", matlist)
-	return count
 
 /obj/machinery/rnd/production/proc/ui_screen_main()
 	var/list/l = list()
@@ -431,3 +612,4 @@
 
 	l += "</tr></table></div>"
 	return l
+*/

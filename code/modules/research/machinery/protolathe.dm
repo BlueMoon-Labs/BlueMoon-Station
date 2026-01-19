@@ -26,6 +26,7 @@
 	linked_console.linked_lathe = null
 	..()
 
+/*
 /obj/machinery/rnd/production/protolathe/design_menu_entry(datum/design/D, coeff) // Это необходимо для обхода ограничения по коду у станционных production машин
 	if(!istype(D))
 		return
@@ -72,3 +73,4 @@
 		l += "<span class='linkOff'>[D.name]</span>[temp_material][sec_text][RDSCREEN_NOBREAK]"
 	l += ""
 	return l
+*/

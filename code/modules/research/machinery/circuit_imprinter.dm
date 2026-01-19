@@ -33,6 +33,7 @@
 	circuit = /obj/item/circuitboard/machine/circuit_imprinter/hacked
 	requires_console = 0
 
+/*
 /obj/machinery/rnd/production/circuit_imprinter/hacked/design_menu_entry(datum/design/D, coeff) // Это необходимо для обхода ограничения по коду у обычных production машин
 	if(!istype(D))
 		return
@@ -79,3 +80,4 @@
 		l += "<span class='linkOff'>[D.name]</span>[temp_material][sec_text][RDSCREEN_NOBREAK]"
 	l += ""
 	return l
+*/
