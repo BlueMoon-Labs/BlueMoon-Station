@@ -55,8 +55,6 @@ const getSheetsFloat = (material: Material) => {
   return amount / MINERAL_MATERIAL_AMOUNT;
 };
 
-const getSheetsInt = (material: Material) => Math.floor(getSheetsFloat(material));
-
 const MaterialEjectDock = (props: {
   readonly material: Material;
   readonly onEject: (amount: number) => void;
@@ -81,41 +79,52 @@ const MaterialEjectDock = (props: {
     if (need > sheetsInt) return 'bad';
     return false;
   };
+
   const BUTTON_WIDTH = 6
+  const BUTTON_AMOUNTS = [5, 10, 25]
+  const min_sheets_to_round = 10
 
   const dockContent = (
-    <Flex align="center" direction="column" backgroundColor="rgba(27, 27, 27, 1)">
-      <Flex.Item>
+  <Flex align="center" direction="column" backgroundColor="rgba(27, 27, 27, 1)">
+    {BUTTON_AMOUNTS.map((amt) => (
+      <Flex.Item key={amt}>
         <Button
           width={BUTTON_WIDTH}
           align="center"
           color="transparent"
-          content={<Box color={getBtnTextColor(10)}>&times;10</Box>}
-          onClick={() => { if (canEject && sheetsInt >= 10) eject(10); }}
+          content={
+            <Box color={getBtnTextColor(amt)}>
+              &times;{amt}
+            </Box>
+          }
+          onClick={() => {
+            if (canEject && sheetsInt >= amt) {
+              eject(amt);
+            }
+          }}
         />
       </Flex.Item>
+    ))}
 
-      <Flex.Item>
-        <Button
-          width={BUTTON_WIDTH}
-          align="center"
-          color="transparent"
-          content={<Box color={getBtnTextColor(25)}>&times;25</Box>}
-          onClick={() => { if (canEject && sheetsInt >= 25) eject(25); }}
-        />
-      </Flex.Item>
-
-      <Flex.Item>
-        <Button
-          width={BUTTON_WIDTH}
-          align="center"
-          color="transparent"
-          content={<Box color={getBtnTextColor(maxQty)}>Max [x{maxQty}]</Box>}
-          onClick={() => { if (canEject && maxQty >= 1) eject(maxQty); }}
-        />
-      </Flex.Item>
-    </Flex>
-  );
+    <Flex.Item>
+      <Button
+        width={BUTTON_WIDTH}
+        align="center"
+        color="transparent"
+        content={
+          <Box color={getBtnTextColor(maxQty)}>
+            Max [x{maxQty}]
+          </Box>
+        }
+        onClick={() => {
+          if (canEject && maxQty >= 1) {
+            eject(maxQty);
+          }
+        }}
+      />
+    </Flex.Item>
+  </Flex>
+);
 
   return (
     <div style={{ width: '100%' }}>
@@ -132,7 +141,7 @@ const MaterialEjectDock = (props: {
                 <MaterialIcon material={material.name} />
               </Flex.Item>
               <Flex.Item>
-                {sheetsFloat}
+                {(sheetsFloat < min_sheets_to_round) ? sheetsFloat : sheetsInt}
               </Flex.Item>
             </Flex>
           }

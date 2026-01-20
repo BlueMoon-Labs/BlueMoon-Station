@@ -14,8 +14,6 @@ import {
   Table,
   Tabs,
   Collapsible,
-  LabeledList,
-  Tooltip
 } from '../components';
 import { Window } from '../layouts';
 
@@ -276,6 +274,7 @@ export const FabricatorContent = (props, context) => {
       <Flex direction="column">
         <Flex.Item>
           <Collapsible
+            open
             title={materials_text
               ? `Materials: ${materials_text}${onHold ? " (RESOURCES ON HOLD)" : ""}`
               : 'No material storage connected, please contact the quartermaster.'
