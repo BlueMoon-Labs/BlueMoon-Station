@@ -2011,3 +2011,9 @@
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/breath/gestapo
 	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/cultist_poly
+	name = "Aged Robe"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/cultist_poly
+	ckeywhitelist = list("monolithxxv")

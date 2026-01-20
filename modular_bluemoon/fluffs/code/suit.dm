@@ -535,3 +535,23 @@
 	item_state = "lsweater"
 	togglename = "buttons"
 	alternate_worn_layer = SUIT_STORE_LAYER
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/donator/bm/cultist_poly
+	name = "Aged Robe"
+	desc = "Роба пахнующая пылью и до невозможного современна"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/icons/fluffs/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST|GROIN|ARMS
+	icon_state = "cultist_poly"
+	item_state = "cultist_poly"
+	var/list/poly_colors = list("#2A2A2A","#A52F29")
+
+/obj/item/clothing/suit/donator/bm/cultist_poly/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
