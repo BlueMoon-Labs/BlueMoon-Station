@@ -9154,11 +9154,6 @@
 /area/mine/storage)
 "hFe" = (
 /obj/structure/stone_tile/slab,
-/obj/structure/fluff/drake_statue{
-	desc = "A towering basalt sculpture of a proud ShihSsa. Its eyes are six glowing gemstones. And she's watching you.";
-	name = ShihSsa;
-	pixel_y = 24
-	},
 /obj/structure/table/reinforced/brass,
 /obj/item/reagent_containers/food/snacks/grown/ash_flora/cactus_fruit{
 	pixel_x = -5;
@@ -24828,6 +24823,13 @@
 /obj/effect/mapping_helpers/airlock/locked,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
+"tPK" = (
+/obj/structure/fluff/drake_statue{
+	name = "ancient drake statue";
+	pixel_y = -9
+	},
+/turf/closed/indestructible/riveted/boss,
+/area/ruin/lavaland/unpowered/ash_walkers)
 "tQL" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 8
@@ -156664,7 +156666,7 @@ vAU
 "}
 (237,1,2) = {"
 klq
-klq
+tPK
 hFe
 vbl
 mIq
