@@ -211,7 +211,7 @@ export const MaterialAmount = (props: {
       amountDisplay = amount.toLocaleString();
       break;
     case MaterialFormatting.Sheets:
-      amountDisplay = amount / MINERAL_MATERIAL_AMOUNT;
+      amountDisplay = Math.round((amount / MINERAL_MATERIAL_AMOUNT) * 1000) / 1000; // Округляем до 3х знаков
       break;
     default:
       amountDisplay = amount;
