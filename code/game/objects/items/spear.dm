@@ -234,7 +234,7 @@
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	attack_verb = list("attacked", "poked", "jabbed", "torn", "gored")
 	sharpness = SHARP_EDGED
-	icon_prefix = "bonemetal_spear1"
+	icon_prefix = "bonemetal_spear"
 
 /obj/item/spear/bonespear/Khasal/ComponentInitialize()
 	. = ..()
