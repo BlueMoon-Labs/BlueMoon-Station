@@ -526,14 +526,6 @@
 /obj/structure/closet/crate/necropolis/tendril,
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
-"axQ" = (
-/obj/structure/statue/creepy_statue/scorn{
-	desc = "������� ������ ����������� ������� ��������. ��� ������� ���������� ��� "������", � ���� �������� "���-���-������-������" ";
-	name = "Usshaas";
-	pixel_y = -8
-	},
-/turf/closed/indestructible/riveted/boss,
-/area/ruin/lavaland/unpowered/ash_walkers)
 "ayj" = (
 /obj/structure/sign/poster/official/random{
 	pixel_x = -32
@@ -148961,7 +148953,7 @@ vAU
 vAU
 "}
 (207,1,2) = {"
-axQ
+klq
 blg
 vbl
 jtF
