@@ -9155,8 +9155,8 @@
 "hFe" = (
 /obj/structure/stone_tile/slab,
 /obj/structure/fluff/drake_statue{
-	desc = Чёрная статуя посвящённая некоему божеству драконоподобного вида. У самых лап выбито имя "Ших-Сса" и чуть ниже "Мать Всего";
-	name = Shih-Ssa;
+	desc = "A towering basalt sculpture of a proud ShihSsa. Its eyes are six glowing gemstones. And she's watching you.";
+	name = ShihSsa;
 	pixel_y = 24
 	},
 /obj/structure/table/reinforced/brass,
