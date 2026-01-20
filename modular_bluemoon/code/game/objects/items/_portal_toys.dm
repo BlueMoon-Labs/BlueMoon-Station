@@ -789,6 +789,14 @@ GLOBAL_LIST_EMPTY(portal_networks)
 /obj/item/clothing/underwear/briefs/panties/portalpanties/process(delta_time)
 	if(!portal_settings?.owner)
 		return PROCESS_KILL
+
+	// Throttle processing to reduce per-tick overhead (process 10 times per second)
+	process_accumulated_time += delta_time
+	if(process_accumulated_time < 0.1)
+		return
+	var/accumulated_delta = process_accumulated_time
+	process_accumulated_time = 0
+
 	portal_settings.update_mood()
 
 	// Determine effective vibration - use MAX of local and remote intensities
@@ -819,7 +827,7 @@ GLOBAL_LIST_EMPTY(portal_networks)
 		portal_settings.vibration_intensity = effective_intensity
 		portal_settings.vibration_pattern = effective_pattern
 
-		portal_settings.process_vibration(delta_time, get_insertion_location_text())
+		portal_settings.process_vibration(accumulated_delta, get_insertion_location_text())
 
 		portal_settings.vibration_enabled = saved_enabled
 		portal_settings.vibration_intensity = saved_intensity
@@ -1074,10 +1082,18 @@ GLOBAL_LIST_EMPTY(portal_networks)
 /obj/item/portallight/process(delta_time)
 	if(!portal_settings?.owner)
 		return PROCESS_KILL
+
+	// Throttle processing to reduce per-tick overhead (process 10 times per second)
+	process_accumulated_time += delta_time
+	if(process_accumulated_time < 0.1)
+		return
+	var/accumulated_delta = process_accumulated_time
+	process_accumulated_time = 0
+
 	portal_settings.update_mood()
 	// Handle vibration using shared code
 	if(portal_settings.vibration_enabled)
-		portal_settings.process_vibration(delta_time, get_insertion_location_text())
+		portal_settings.process_vibration(accumulated_delta, get_insertion_location_text())
 
 /obj/item/portallight/proc/start_vibration(mob/living/carbon/human/initiator = null)
 	portal_settings.vibration_enabled = TRUE

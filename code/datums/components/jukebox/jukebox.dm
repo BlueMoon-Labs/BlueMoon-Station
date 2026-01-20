@@ -509,7 +509,7 @@
 	if(!.)
 		return
 	dance_setup()
-	lights_spin()
+	INVOKE_ASYNC(src, PROC_REF(lights_spin))
 
 /datum/component/jukebox/disco/proc/dance_setup()
 	var/turf/cen = get_turf(parent)
@@ -576,6 +576,7 @@
 #define DISCO_INFENO_RANGE (rand(85, 115)*0.01)
 
 /datum/component/jukebox/disco/proc/lights_spin()
+	set waitfor = FALSE
 	for(var/i in 1 to 25)
 		if(QDELETED(src) || QDELETED(parent) || !active)
 			return

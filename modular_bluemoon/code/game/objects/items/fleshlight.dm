@@ -236,6 +236,8 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	/// Ассоциативный список активных удалённых вибраций от fleshlights
 	/// Формат: list(REF(fleshlight) = list("nickname", "intensity", "pattern"))
 	var/list/remote_vibrations
+	/// Accumulated delta time for throttled processing (performance optimization)
+	var/process_accumulated_time = 0
 
 /// Check if panties are in passive mode (worn or inserted - limited control)
 /// Returns FALSE when held in hand (setup mode - full control)
@@ -679,6 +681,8 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	var/datum/portal_settings/portal_settings
 	/// Private paired panties
 	var/obj/item/clothing/underwear/briefs/panties/portalpanties/private_pair
+	/// Accumulated delta time for throttled processing (performance optimization)
+	var/process_accumulated_time = 0
 
 /obj/item/portallight/ComponentInitialize()
 	. = ..()
