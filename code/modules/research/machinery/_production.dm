@@ -70,10 +70,6 @@
 	stripe.color = stripe_color
 	. += stripe
 
-/obj/machinery/rnd/production/RefreshParts()
-	. = ..()
-	update_static_data_for_all_viewers()
-
 /obj/machinery/rnd/production/proc/update_research()
 	host_research.copy_research_to(stored_research, TRUE)
 	update_designs()
@@ -86,7 +82,9 @@
 			cached_designs |= d
 
 /obj/machinery/rnd/production/RefreshParts()
+	. = ..()
 	calculate_efficiency()
+	update_static_data_for_all_viewers()
 
 /obj/machinery/rnd/production/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
