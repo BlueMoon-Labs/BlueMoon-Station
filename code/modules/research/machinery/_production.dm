@@ -70,6 +70,10 @@
 	stripe.color = stripe_color
 	. += stripe
 
+/obj/machinery/rnd/production/RefreshParts()
+	. = ..()
+	update_static_data_for_all_viewers()
+
 /obj/machinery/rnd/production/proc/update_research()
 	host_research.copy_research_to(stored_research, TRUE)
 	update_designs()
