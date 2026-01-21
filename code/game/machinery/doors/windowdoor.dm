@@ -46,6 +46,8 @@
 	QDEL_LIST(debris)
 	if(obj_integrity == 0)
 		playsound(src, "shatter", 70, 1)
+	if(electronics && !QDELETED(electronics))
+		log_qdel("Windowdoor [type] at [COORD(src)] destroyed with non-null electronics [electronics.type]")
 	electronics = null
 	return ..()
 
@@ -377,6 +379,11 @@
 	explosion_block = 1
 	wave_explosion_block = EXPLOSION_BLOCK_REINFORCED_WINDOW
 	wave_explosion_multiply = EXPLOSION_DAMPEN_REINFORCED_WINDOW
+
+/obj/machinery/door/window/brigdoor/Destroy()
+	for(var/obj/machinery/door_timer/timer in GLOB.celltimers_list)
+		timer.targets -= src
+	return ..()
 
 /obj/machinery/door/window/brigdoor/security/cell
 	name = "cell door"

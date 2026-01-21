@@ -768,9 +768,6 @@
 	. = ..()
 	register_context()
 
-/obj/structure/table/optable/Destroy()
-	stop_process()
-	. = ..()
 
 /obj/structure/table/optable/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Unbuckle patient")
@@ -894,6 +891,13 @@
 	if(mask)
 		mask.forceMove(loc)
 		mask = null
+	if(patient)
+		if(patient.internal == tank)
+			patient.internal = null
+		patient = null
+	if(computer)
+		computer.table = null
+		computer = null
 	STOP_PROCESSING(SSobj, src)
 	. = ..()
 

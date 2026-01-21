@@ -18,6 +18,17 @@
 	linked_techweb = SSresearch.science_tech
 	find_table()
 
+/obj/machinery/computer/operating/Destroy()
+	if(table)
+		if(table.computer && table.computer != src)
+			stack_trace("Operating computer at [COORD(src)] has mismatched table.computer reference (table.computer=[REF(table.computer)], src=[REF(src)])")
+		table.computer = null
+		table = null
+	patient = null
+	linked_techweb = null
+	advanced_surgeries = null
+	return ..()
+
 /obj/machinery/computer/operating/attackby(obj/item/O, mob/user, params)
 	if(istype(O, /obj/item/disk/surgery))
 		user.visible_message("[user] begins to load \the [O] in \the [src]...",
