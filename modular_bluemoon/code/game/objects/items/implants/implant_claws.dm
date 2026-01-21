@@ -190,16 +190,17 @@
 	// Квирковые когти не имеют звуков и не меняют визуал
 	if(knife_mode)
 		knife_mode = FALSE
+		icon_state = "precision_claw"
+		item_state = "precision_claw"
 		tool_behaviour = TOOL_WIRECUTTER
 		to_chat(user, "<span class='notice'>Вы втягиваете когти для более точной работы.</span>")
 	else
 		knife_mode = TRUE
+		icon_state = "claw"
+		item_state = "claw"
 		tool_behaviour = TOOL_KNIFE
 		to_chat(user, "<span class='notice'>Вы выпускаете когти для боя.</span>")
 
-	// ВСЕГДА держим одну текстуру
-	icon_state = "claw"
-	item_state = "claw"
 
 	if(ismob(loc))
 		var/mob/M = loc
@@ -365,7 +366,7 @@
 	icon_state = "wolverine_emag"
 	item_state = "wolverine_emag"
 
-	name = "перегруженные [initial(name)]"
+	name = "Перегруженные [initial(name)]"
 	desc = "[initial(desc)] <span class='warning'>Они потрескивают от опасной энергии!</span>"
 
 	to_chat(user, "<span class='warning'>Вы перегружаете [src]! Защитные ограничители отключены!</span>")
@@ -517,7 +518,7 @@
 		"<span class='notice'>Вы выпускаете [holder] из вашей [zone == BODY_ZONE_R_ARM ? "правой" : "левой"] руки.</span>"
 	)
 	// Тихий органический звук вместо механического
-	playsound(get_turf(owner), 'sound/items/unsheath.ogg', 20, TRUE)
+	playsound(get_turf(owner), 'sound/items/unsheath.ogg', 5, TRUE)
 	return TRUE
 
 // Полностью переопределяем Retract для натуральных когтей (без механических звуков)
@@ -533,7 +534,7 @@
 	owner.transferItemToLoc(holder, src, TRUE)
 	holder = null
 	// Тихий органический звук вместо механического
-	playsound(get_turf(owner), 'sound/items/sheath.ogg', 20, TRUE)
+	playsound(get_turf(owner), 'sound/items/sheath.ogg', 5, TRUE)
 
 /obj/item/organ/cyberimp/arm/claws/left
 	zone = BODY_ZONE_L_ARM
