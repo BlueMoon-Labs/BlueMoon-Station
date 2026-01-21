@@ -353,6 +353,31 @@
 		return NONE
 	return ..()
 
+/obj/item/nullrod/mimicry_sword
+	name = "Mimicry Sword"
+	desc = "Влажный и грязный, как будто, если бы ваше желание сымитировать человека остановилось на жадности. От взгляда его таинственных глаз вас охватит дрожь."
+	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "mimicry_sword"
+	item_state = "mimicry_sword"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
+	w_class = WEIGHT_CLASS_HUGE
+	slot_flags = ITEM_SLOT_BACK
+	block_chance = 30
+	sharpness = SHARP_EDGED
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
+
+/obj/item/nullrod/mimicry_sword/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
+	if(attack_type & ATTACK_TYPE_PROJECTILE)
+		if(prob(20))
+			return ..()
+		return NONE
+	return ..()
+
+
+
 /obj/item/nullrod/claymore/darkblade
 	icon_state = "cultblade"
 	item_state = "cultblade"
