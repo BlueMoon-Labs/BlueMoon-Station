@@ -4345,6 +4345,7 @@
 #include "modular_bluemoon\code\game\objects\items\devices\PDA\cart.dm"
 #include "modular_bluemoon\code\game\objects\items\devices\PDA\PDA_types.dm"
 #include "modular_bluemoon\code\game\objects\items\implants\implant_anchor.dm"
+#include "modular_bluemoon\code\game\objects\items\implants\implant_claws.dm"
 #include "modular_bluemoon\code\game\objects\items\implants\implant_deathrattle.dm"
 #include "modular_bluemoon\code\game\objects\items\lewd_items\book_of_stealing.dm"
 #include "modular_bluemoon\code\game\objects\items\lewd_items\rope.dm"
