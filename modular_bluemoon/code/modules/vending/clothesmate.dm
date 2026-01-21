@@ -184,6 +184,7 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 			"icon" = "person-dress",
 			"products" = list(
 				/obj/item/clothing/under/costume/kimono/poly = 3,
+				/obj/item/clothing/glasses/sunglasses/fake = 3,
 				/obj/item/clothing/under/bluedress = 3,
 				/obj/item/clothing/under/blutigen_undergarment = 3,
 				/obj/item/clothing/under/costume/allies = 7,

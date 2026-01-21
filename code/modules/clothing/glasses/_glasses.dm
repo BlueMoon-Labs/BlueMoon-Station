@@ -625,3 +625,18 @@
 	desc = "Lookin' cool."
 	icon_state = "phantom_glasses"
 	item_state = "phantom_glasses"
+
+/obj/item/clothing/glasses/veil
+	name = "Veil"
+	desc = "Furui's company have brought this from far lands using culture of Jingdai"
+	icon_state = "veil"
+	item_state = "veil"
+	icon = 'modular_bluemoon/icons/obj/clothing/glasses.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/eyes.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	var/list/poly_colors = list("#FFFFFF","#C5302D")
+
+/obj/item/clothing/glasses/veil/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, poly_colors, 1)
