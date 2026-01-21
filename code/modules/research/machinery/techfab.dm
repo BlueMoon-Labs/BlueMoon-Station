@@ -28,7 +28,8 @@
 								"Misc. Machinery",
 								"Organic Designs", //BLUEMOON ADD: New category for fleshcrafting.
 								"Computer Parts",
-								"MODsuit Designs"
+								"MODsuit Designs",
+								"Shuttle Machinery",
 								)
 	console_link = FALSE
 	production_animation = "protolathe_n"

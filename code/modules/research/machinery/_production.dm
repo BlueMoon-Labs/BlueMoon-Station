@@ -143,6 +143,7 @@
 			"Medical Machinery",
 			"Teleportation Machinery",
 			"Hydroponics Machinery",
+			"Shuttle Machinery",
 		)
 
 	for(var/category in all_categories)
