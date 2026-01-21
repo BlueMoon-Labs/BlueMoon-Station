@@ -234,6 +234,8 @@ const RoomCheckIn = ({
         </Stack.Item>
         <Stack.Item width="120px">
           <NumberInput
+            autoFocus
+            showBar={false}
             width="100%"
             minValue={1}
             maxValue={1000000000}
@@ -248,13 +250,14 @@ const RoomCheckIn = ({
             lineHeight={1.8}
             fontSize="20px"
           />
-          <Button.Confirm
+          <Button
             style={{ cursor: 'pointer' }}
+            icon="right-to-bracket"
             width="100%"
             fluid
             textAlign="center"
             mt={1}
-            confirmContent={'Confirm?'}
+            content={'Check-in'}
             onClick={() =>
               act('checkin', {
                 room: current_room,
@@ -262,10 +265,7 @@ const RoomCheckIn = ({
               })
             }
             lineHeight={2}
-            icon="right-to-bracket"
-          >
-            Check-in
-          </Button.Confirm>
+          />
         </Stack.Item>
       </Stack>
     </Section>
