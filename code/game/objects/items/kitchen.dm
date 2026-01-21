@@ -268,13 +268,7 @@
 	name = "dueling dagger"
 	item_state = "bone_ritual1"
 	icon_state = "bone_ritual1"
-	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	desc = "A dueling dagger of the Ashwalker tribe. For when words lose all meaning."
-	embedding = list("pain_mult" = 4, "embed_chance" = 35, "fall_chance" = 10)
-	force = 15
-	throwforce = 15
-	custom_materials = null
 
 /obj/item/kitchen/knife/combat/bone/plastic
 	name = "plastic knife"

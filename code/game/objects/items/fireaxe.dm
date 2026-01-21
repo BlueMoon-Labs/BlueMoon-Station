@@ -82,9 +82,6 @@
 	name = "ShisHar"
 	desc = "Forged from Lavalands depths, this axe slays only intelligent beings."
 
-/obj/item/fireaxe/boneaxe/ShisHar/update_icon_state()
-	icon_state = "bonemetal_axe0"
-
 /obj/item/fireaxe/boneaxe/ShisHar/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/two_handed, force_unwielded=12, force_wielded=35, icon_wielded="bonemetal_axe1")

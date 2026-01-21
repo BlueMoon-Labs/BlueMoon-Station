@@ -56,7 +56,7 @@
 				 /obj/item/stack/sheet/sinew = 1)
 	category = CAT_PRIMAL
 
-/datum/crafting_recipe/bola/bone
+/datum/crafting_recipe/bonebola
 	name = "Tribal Bola"
 	result = /obj/item/restraints/legcuffs/bola/bone
 	time = 15

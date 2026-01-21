@@ -421,5 +421,4 @@
 	name = "tribal bola"
 	desc = "A tibal bone weapon designed to be thrown at the target. Upon connecting with said target, it will wrap around their legs, making it difficult for them to move quickly."
 	icon_state = "bone_bola"
-	breakouttime = 35
-	gender = NEUTER
+
