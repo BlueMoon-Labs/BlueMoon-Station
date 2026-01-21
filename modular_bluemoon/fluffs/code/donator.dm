@@ -2018,3 +2018,10 @@
 	path = /obj/item/clothing/suit/donator/bm/cultist_poly
 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
 	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/cultist_poly
+	name = "Exo Legs"
+	slot = ITEM_SLOT_FEET
+	path = /obj/item/clothing/shoes/exo_legs
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	ckeywhitelist = list("monolithxxv")

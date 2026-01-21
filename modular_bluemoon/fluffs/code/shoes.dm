@@ -49,3 +49,23 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
 	icon_state = "mu88_boots"
 	item_state = "mu88_boots"
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/shoes/exo_legs
+	name = "Exo-legs"
+	desc = "Адаптирующие вес под собой, современные протезы для ходьбы"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	body_parts_covered = GROIN
+	icon_state = "exo_legs"
+	item_state = "exo_legs"
+	var/list/poly_colors = list("#ffffff")
+
+/obj/item/clothing/shoes/exo_legs/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/squeak, list('sound/effects/footstep/exo_footstep-1.ogg' = 1,'sound/effects/footstep/exo_footstep-2.ogg' = 1), 100)
+	AddElement(/datum/element/polychromic, poly_colors, 1)
