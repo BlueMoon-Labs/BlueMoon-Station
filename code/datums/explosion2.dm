@@ -141,20 +141,22 @@
 		// 3/7/14 will calculate to 80 + 35
 
 		if(!silent)
-			for(var/mob/M in GLOB.player_list)
-				// Double check for client
+			for(var/mob/M as anything in GLOB.player_list)
+				// Early z-level filter before expensive get_turf()
+				if(M.z != z0)
+					continue
 				var/turf/M_turf = get_turf(M)
-				if(M_turf && M_turf.z == z0)
-					var/dist = get_dist(M_turf, starting)
-					if(isnull(mob_potential_shake[M]))
-						mob_potential_shake[M] = dist
-						closest_to[M] = starting
-					else if(mob_potential_shake[M] < dist)
-						mob_potential_shake[M] = dist
-						closest_to[M] = starting
+				if(!M_turf)
+					continue
+				var/dist = get_dist(M_turf, starting)
+				if(isnull(mob_potential_shake[M]))
+					mob_potential_shake[M] = dist
+					closest_to[M] = starting
+				else if(mob_potential_shake[M] < dist)
+					mob_potential_shake[M] = dist
+					closest_to[M] = starting
 
-		for(var/array in GLOB.doppler_arrays)
-			var/obj/machinery/doppler_array/A = array
+		for(var/obj/machinery/doppler_array/A as anything in GLOB.doppler_arrays)
 			A.sense_wave_explosion(starting, power_initial, cycle_speed)
 
 		// Flash mobs
@@ -169,7 +171,7 @@
 
 		var/far_dist = sqrt(power_initial) * 7.5
 
-		for(var/mob/M in mob_potential_shake)
+		for(var/mob/M as anything in mob_potential_shake)
 			var/dist = mob_potential_shake[M]
 			var/baseshakeamount
 			if(sqrt(power_initial) - dist > 0)
@@ -187,8 +189,7 @@
 				if(baseshakeamount > 0)
 					shake_camera(M, 10, clamp(baseshakeamount*0.25, 0, 2.5))
 
-	for(var/i in 1 to to_flash.len)
-		var/mob/living/L = to_flash[i]
+	for(var/mob/living/L as anything in to_flash)
 		L.flash_act()
 
 	SSblackbox.record_feedback("associative", "wave_explosion", 1, feedback)
@@ -203,12 +204,13 @@
 /datum/wave_explosion/proc/stop(delete = TRUE)
 	SSexplosions.active_wave_explosions -= src
 	SSexplosions.currentrun -= src
-	edges = null
-	powers = null
-	exploded_last = null
+	edges?.Cut()
+	powers?.Cut()
+	exploded_last?.Cut()
 	cycle = null
 	running = FALSE
-	qdel(src)
+	if(delete)
+		qdel(src)
 
 #define SHOULD_SUSPEND ((cycle_start + cycle_speed) > world.time)
 
@@ -219,6 +221,9 @@
 /datum/wave_explosion/proc/tick()
 	/// Each tick goes through one full cycle.
 	// This can be changed to a "continuous process" system where indexes are tracked if needed.
+	if(!running)
+		stack_trace("Wave explosion [id] tick() called while not running (finished=[finished])")
+		return TRUE
 	if(!src.edges.len)
 		// we're done
 		finished = TRUE
@@ -349,8 +354,10 @@
 
 	// to_chat(world, "DEBUG: cycle end edges_next [english_list_assoc(edges_next)]")
 
-	// flush lists
-	src.exploded_last = edges + diagonals
+	// flush lists - reuse exploded_last list instead of creating new one
+	exploded_last.Cut()
+	exploded_last += edges
+	exploded_last += diagonals
 	src.edges = edges_next
 	src.powers = powers_next
 	cycle++

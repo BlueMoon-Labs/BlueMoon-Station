@@ -290,6 +290,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 /obj/item/wave_ex_act(power, datum/wave_explosion/explosion, dir)
 	. = ..()
+	if(QDELETED(src))
+		return
 	if(!anchored)
 		var/throw_dist = round(rand(3, max(3, 2.5 * sqrt(power))), 1)
 		throw_speed = EXPLOSION_THROW_SPEED
