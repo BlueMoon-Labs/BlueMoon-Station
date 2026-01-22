@@ -1199,6 +1199,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	//gear loadout
 	if(istext(S["loadout"]))
 		loadout_data = safe_json_decode(S["loadout"])
+		if(!loadout_data)
+			loadout_data = list()
 		var/list/sanitize_current_slot = loadout_data["SAVE_[loadout_slot]"]
 		if(LAZYLEN(sanitize_current_slot))
 			for(var/list/entry in sanitize_current_slot)

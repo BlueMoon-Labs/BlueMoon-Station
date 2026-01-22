@@ -301,21 +301,37 @@
 	can_adjust = FALSE
 	mutantrace_variation = NONE
 
+///////////////////////////////////////////////
+
 /obj/item/clothing/under/donator/bm/inlaid_data_dress
 	name = "Inlaid Data Dress"
 	desc = "Съемный модуль для синтетика. Корпус изготовлен из легкого но прочного металла. \
 			Два резервуара для хладагента на уровне груди покрытые титаном. \
 			На обратной стороне изображен стеклянный цилиндр с синим космическим кристаллом внутри. \
 			В юбку встроен радар внешнего обзора. Иногда происходит пространственное смещение... стоп ЧТО?!"
-	icon_state = "InlaidDataDress"
-	actions_types = list(/datum/action/item_action/degree_distortion_effect, /datum/action/item_action/toggle_echo_effect_dress)
+	icon_state = "InlaidDataDress_default"
+	actions_types = list(
+		/datum/action/item_action/degree_distortion_effect,
+		/datum/action/item_action/toggle_echo_effect_dress,
+		/datum/action/item_action/toggle_particle_effect_dress
+	)
 	can_adjust = TRUE
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	species_restricted = list("I.P.C.", "Synthetic Lizardperson", "Synthetic", "Military Synth")
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	always_reskinnable = TRUE
+	repairable_by = /obj/item/stack/sheet/metal
+	species_restricted = list("I.P.C.", "Synthetic Lizardperson", "Synthetic", "Military Synth", "Synthetic Anthropomorph")
+	unique_reskin = list(
+		"Roselia" = list("icon_state" = "InlaidDataDress_default", "skin" = "default"),
+		"Rose-1" = list("icon_state" = "InlaidDataDress_battle", "skin" = "battle", "active_echo" = FALSE),
+		"Rose-4" = list("icon_state" = "InlaidDataDress_lust", "skin" = "lust", "can_adjust" = FALSE, "body_parts_covered" = NONE, "active_echo" = FALSE),
+	)
+	var/equipped_slot = FALSE
 	var/obj/effect/distortion_effect/filter_on_user
 	var/obj/effect/dress_particle_holder/particle_effect_holder
 	var/obj/echo
 	var/active_echo = TRUE
+	var/skin = "default"
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/New()
 	. = ..()
@@ -333,6 +349,11 @@
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/equipped(mob/user, slot)
 	. = ..()
+
+	if(slot != ITEM_SLOT_ICLOTHING)
+		return
+
+	equipped_slot = TRUE
 	LAZYADD(user.vis_contents, filter_on_user)
 	LAZYADD(user.vis_contents, particle_effect_holder)
 	LAZYADD(user.vis_contents, echo)
@@ -340,6 +361,11 @@
 	echo.render_source = user.render_target
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/dropped(mob/user)
+
+	if(!equipped_slot)
+		return ..()
+
+	equipped_slot = FALSE
 	LAZYREMOVE(user.vis_contents, filter_on_user)
 	LAZYREMOVE(user.vis_contents, particle_effect_holder)
 	LAZYREMOVE(user.vis_contents, echo)
@@ -349,12 +375,12 @@
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/toggle_jumpsuit_adjust()
 	if(!body_parts_covered)
-		icon_state = "InlaidDataDress"
-		item_state = "InlaidDataDress"
+		icon_state = "InlaidDataDress_[skin]"
+		item_state = "InlaidDataDress_[skin]"
 		body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	else
-		icon_state = "InlaidDataDress_open"
-		item_state = "InlaidDataDress_open"
+		icon_state = "InlaidDataDress_[skin]_open"
+		item_state = "InlaidDataDress_[skin]_open"
 		body_parts_covered = NONE
 	return TRUE
 
@@ -375,7 +401,7 @@
 		particle_effect_holder.remove_atom_colour(coloration, colour_priority)
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/process(delta_time)
-	if(active_echo)
+	if(active_echo && equipped_slot)
 		echo_animation()
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/proc/echo_animation()
@@ -390,7 +416,7 @@
 	icon_state = "distortion_a"
 	pixel_x = 0
 	pixel_y = 0
-	alpha = 120
+	alpha = 60
 	plane = GRAVITY_PULSE_PLANE
 	appearance_flags = PIXEL_SCALE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
@@ -433,6 +459,27 @@
 
 	T.active_echo = !T.active_echo
 
+/datum/action/item_action/toggle_particle_effect_dress
+	name = "Toggle Particle"
+
+/datum/action/item_action/toggle_particle_effect_dress/Trigger()
+
+	if(!..())
+		return FALSE
+
+	var/obj/item/clothing/under/donator/bm/inlaid_data_dress/T = target
+
+	if(!T || !istype(T))
+		return FALSE
+
+	if(!T.particle_effect_holder)
+		return FALSE
+
+	if(T.particle_effect_holder.alpha == 150)
+		T.particle_effect_holder.alpha = 0
+	else
+		T.particle_effect_holder.alpha = 150
+
 /obj/effect/dress_particle_holder
 	pixel_y = -8
 	alpha = 150
@@ -457,6 +504,8 @@
 	position = generator("circle", 0, 10)
 	velocity = generator("circle", 0.3, 1)
 	fade = 1
+
+///////////////////////////////////////////////
 
 /obj/item/clothing/under/donator/bm/saareuni
 	name = "SAARE BDU G3"

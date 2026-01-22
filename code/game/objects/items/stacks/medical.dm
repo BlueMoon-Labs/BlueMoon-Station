@@ -15,61 +15,297 @@
 	var/self_delay = 50
 	var/other_delay = 0
 	var/repeating = FALSE
-	/// How much brute we heal per application
+	/// Сколько физического урона лечим за применение
 	var/heal_brute
-	/// How much burn we heal per application
+	/// Сколько урона от ожогов лечим за применение
 	var/heal_burn
-	/// How much we reduce bleeding per application on cut wounds
+	/// Насколько уменьшаем кровотечение за применение при порезах
 	var/stop_bleeding
-	/// How much sanitization to apply to burns on application
+	/// Сколько санитизации применяем к ожогам за применение
 	var/sanitization
-	/// How much we add to flesh_healing for burn wounds on application
+	/// Сколько добавляем к flesh_healing для ожоговых ран за применение
 	var/flesh_regeneration
-	var/heal_dead = FALSE //can we heal dead body
-	var/heal_dead_multiplier = 1 // The effectiveness of treating the dead
+	var/heal_dead = FALSE // можем ли мы лечить мёртвое тело
+	var/heal_dead_multiplier = 1 // Эффективность лечения мёртвых
 
 /obj/item/stack/medical/attack(mob/living/M, mob/user)
 	. = ..()
-	INVOKE_ASYNC(src, PROC_REF(try_heal), M, user)
+	INVOKE_ASYNC(src, PROC_REF(begin_heal_loop), M, user, TRUE)
 
-/obj/item/stack/medical/proc/try_heal(mob/living/M, mob/user, silent = FALSE)
-	if(!M.can_inject(user, TRUE) || INTERACTING_WITH(user, M))
-		return
-	if(M == user)
+/// Используется для запуска рекурсивного цикла лечения. Возвращает TRUE если мы вошли в цикл, FALSE если нет
+/obj/item/stack/medical/proc/begin_heal_loop(mob/living/patient, mob/living/user, auto_change_zone = TRUE)
+	if(INTERACTING_WITH(user, patient))
+		return FALSE
+	if(iscarbon(patient))
+		var/mob/living/carbon/carbon_patient = patient
+		if(!has_healable_damage(carbon_patient))
+			patient.balloon_alert(user, "нечего лечить")
+			return FALSE
+
+	var/heal_zone = check_zone(user.zone_selected)
+
+	// Проверяем выбранную зону
+	if(!try_heal_checks(patient, user, heal_zone, silent = TRUE))
+		// Если выбранная зона не нуждается в лечении и включен автоматический режим
+		if(iscarbon(patient) && auto_change_zone)
+			// Ищем любую поврежденную часть тела
+			var/mob/living/carbon/carbon_patient = patient
+			var/list/damaged_limbs = list()
+			for(var/obj/item/bodypart/limb as anything in carbon_patient.bodyparts)
+				if(try_heal_checks(patient, user, limb.body_zone, silent = TRUE))
+					damaged_limbs += limb.body_zone
+
+			if(!length(damaged_limbs))
+				if(carbon_patient.getBruteLoss_nonProsthetic() > 0 || carbon_patient.getFireLoss_nonProsthetic() > 0)
+					return FALSE
+				patient.balloon_alert(user, "полностью здоров[patient.ru_a()]")
+				return FALSE
+
+			// Берем первую поврежденную часть
+			heal_zone = damaged_limbs[1]
+			patient.balloon_alert(user, "лечим [ru_parse_zone(heal_zone)]...")
+		else
+			// В ручном режиме или для не-карбонов просто выходим
+			return FALSE
+	else
+		// Выбранная часть тела повреждена, начинаем лечение
+		pass()
+
+	INVOKE_ASYNC(src, PROC_REF(try_heal), patient, user, heal_zone, FALSE, iscarbon(patient) && auto_change_zone)
+	return TRUE
+
+/**
+ * Процедура, которая обрабатывает вывод сообщения о начале лечения и саму попытку лечения
+ * Эта процедура рекурсивно вызывается, пока не закончатся заряды ИЛИ пока пациент не будет полностью вылечен
+ * ИЛИ пока целевая зона не будет полностью вылечена (если auto_change_zone = FALSE)
+ *
+ * Аргументы:
+ * * patient - моб, которого мы пытаемся вылечить
+ * * user - моб, который пытается вылечить пациента
+ * * healed_zone - зона, которую мы пытаемся вылечить на пациенте. Игнорируется если auto_change_zone = TRUE
+ * * silent - если TRUE, не выводим сообщение о начале лечения пациента
+ * * auto_change_zone - управляет поведением когда мы заканчиваем лечение зоны
+ *   Если TRUE, выбирает следующую наиболее повреждённую зону. Если FALSE, даёт пользователю возможность выбрать новую зону
+ * * continuous - если установлено в TRUE, будет проигрываться непрерывный звук лечения
+ */
+/obj/item/stack/medical/proc/try_heal(mob/living/patient, mob/living/user, healed_zone, silent = FALSE, auto_change_zone = TRUE, continuous = FALSE)
+	if(patient == user)
 		if(!silent)
 			user.visible_message("<span class='notice'>[user] начинает наносить \the [src] на себя...</span>", "<span class='notice'>Вы начали наносить \the [src] на себя...</span>")
-		if(!do_mob(user, M, self_delay, extra_checks=CALLBACK(M, TYPE_PROC_REF(/mob/living, can_inject), user, TRUE)))
+		if(!do_mob(user, patient, self_delay * (auto_change_zone ? 1 : 0.9), extra_checks=CALLBACK(src, PROC_REF(can_heal), patient, user, healed_zone)))
+			return
+		if(!auto_change_zone)
+			healed_zone = check_zone(user.zone_selected)
+		if(!try_heal_checks(patient, user, healed_zone))
 			return
 	else if(other_delay)
 		if(!silent)
-			user.visible_message("<span class='notice'>[user] начинает наносить \the [src] на [M].</span>", "<span class='notice'>Вы начали наносить \the [src] на [M]...</span>")
-		if(!do_mob(user, M, other_delay, extra_checks=CALLBACK(M, TYPE_PROC_REF(/mob/living, can_inject), user, TRUE)))
+			user.visible_message("<span class='notice'>[user] начинает наносить \the [src] на [patient].</span>", "<span class='notice'>Вы начали наносить \the [src] на [patient]...</span>")
+		if(!do_mob(user, patient, other_delay * (auto_change_zone ? 1 : 0.9), extra_checks=CALLBACK(src, PROC_REF(can_heal), patient, user, healed_zone)))
 			return
+		if(!auto_change_zone)
+			healed_zone = check_zone(user.zone_selected)
+		if(!try_heal_checks(patient, user, healed_zone))
+			return
+	else
+		if(!silent)
+			user.visible_message("<span class='notice'>[user] наносит \the [src] на [patient].</span>", "<span class='notice'>Вы наносите \the [src] на [patient].</span>")
 
-	if(heal(M, user))
-		log_combat(user, M, "healed", src.name)
-		use(1)
-		if(repeating && amount > 0)
-			try_heal(M, user, TRUE)
+	if(iscarbon(patient))
+		if(!heal_carbon_new(patient, user, healed_zone))
+			return
+	else if(isanimal(patient))
+		if(!heal_animal(patient, user))
+			return
+	else
+		return
 
+	if(!use(1) || !repeating || amount <= 0)
+		return
+
+	log_combat(user, patient, "healed", src.name)
+
+	// first, just try looping - we can keep healing the current target or user changed their target
+	var/preferred_target = check_zone(user.zone_selected)
+	if(try_heal_checks(patient, user, preferred_target, silent = TRUE))
+		if(preferred_target != healed_zone)
+			patient.balloon_alert(user, "переключаем на [ru_parse_zone(preferred_target)]...")
+		try_heal(patient, user, preferred_target, TRUE, auto_change_zone, TRUE)
+		return
+
+	// second, handle what happens otherwise
+	if(!iscarbon(patient))
+		// behavior 0: non-carbons have no limbs so we can assume they are fully healed
+		patient.balloon_alert(user, "полностью вылечен[patient.ru_a()]")
+	else if(auto_change_zone)
+		// behavior 1: automatically pick another zone to heal
+		try_heal_auto_change_zone(patient, user, preferred_target, healed_zone)
+	else
+		// behavior 2: assess injury, giving the user time to manually pick another zone
+		try_heal_manual_target(patient, user)
+
+/obj/item/stack/medical/proc/try_heal_auto_change_zone(mob/living/carbon/patient, mob/living/user, preferred_target, last_zone)
+	var/list/other_affected_limbs = list()
+	for(var/obj/item/bodypart/limb as anything in patient.bodyparts)
+		if(!try_heal_checks(patient, user, limb.body_zone, silent = TRUE))
+			continue
+		other_affected_limbs += limb.body_zone
+
+	if(!length(other_affected_limbs))
+		if(patient.getBruteLoss_nonProsthetic() > 0 || patient.getFireLoss_nonProsthetic() > 0)
+			return
+		patient.balloon_alert(user, "полностью вылечен[patient.ru_a()]")
+		return
+
+	var/next_picked = (preferred_target in other_affected_limbs) ? preferred_target : other_affected_limbs[1]
+	if(next_picked != last_zone)
+		patient.balloon_alert(user, "переключаем на [ru_parse_zone(next_picked)]...")
+	try_heal(patient, user, next_picked, silent = TRUE, auto_change_zone = TRUE, continuous = TRUE)
+
+/obj/item/stack/medical/proc/try_heal_manual_target(mob/living/carbon/patient, mob/living/user)
+	patient.balloon_alert(user, "оцениваем состояние...")
+	if(!do_after(user, 1 SECONDS, patient))
+		return
+	var/new_zone = check_zone(user.zone_selected)
+	if(!try_heal_checks(patient, user, new_zone))
+		return
+	patient.balloon_alert(user, "лечим [ru_parse_zone(new_zone)]...")
+	try_heal(patient, user, new_zone, silent = TRUE, auto_change_zone = FALSE, continuous = TRUE)
+
+
+/obj/item/stack/medical/proc/can_heal(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
+	return patient.can_inject(user, !silent)
+
+/obj/item/stack/medical/proc/has_healable_damage(mob/living/carbon/patient)
+	if(heal_brute && patient.getBruteLoss_nonProsthetic() > 0)
+		return TRUE
+	if(heal_burn && patient.getFireLoss_nonProsthetic() > 0)
+		return TRUE
+
+	if((stop_bleeding || flesh_regeneration || sanitization) && LAZYLEN(patient.all_wounds))
+		return TRUE
+
+	return FALSE
+
+/// Проверяет множество условий для определения возможности лечения пациента, включая can_heal
+/// Даёт обратную связь если мы не можем вылечить пациента (если только silent не TRUE)
+/obj/item/stack/medical/proc/try_heal_checks(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
+	if(!can_heal(patient, user, healed_zone, silent))
+		return FALSE
+
+	if(!heal_dead && patient.stat == DEAD)
+		if(!silent)
+			to_chat(user, "<span class='warning'>[patient] мертв[patient.ru_a()]! Вы не можете [patient.ru_emu()] помочь.</span>")
+		return FALSE
+
+	if(iscarbon(patient))
+		var/mob/living/carbon/carbon_patient = patient
+		var/obj/item/bodypart/affecting = carbon_patient.get_bodypart(healed_zone)
+		if(!affecting)
+			if(!silent)
+				to_chat(user, "<span class='warning'>У [patient] отсутствует \a [ru_parse_zone(healed_zone)]!</span>")
+			return FALSE
+		if(!affecting.is_organic_limb(FALSE))
+			if(!silent)
+				to_chat(user, "<span class='notice'>\The [src] не сработает для механической конечности!</span>")
+			return FALSE
+
+		var/can_heal_brute = heal_brute && affecting.brute_dam > 0
+		var/can_heal_burn = heal_burn && affecting.burn_dam > 0
+		var/can_suture_bleeding = stop_bleeding && LAZYLEN(affecting.wounds)
+		var/can_heal_burn_wounds = (flesh_regeneration || sanitization) && LAZYLEN(affecting.wounds)
+
+		if(!can_heal_brute && !can_heal_burn && !can_heal_burn_wounds && !can_suture_bleeding)
+			if(!silent)
+				if(!can_heal_brute && stop_bleeding)
+					to_chat(user, "<span class='notice'>[ru_kogo_zone(user.zone_selected)] [patient] не требует перевязки или лечения ушибов!</span>")
+				else if(!can_heal_burn && (flesh_regeneration || sanitization))
+					to_chat(user, "<span class='notice'>[ru_kogo_zone(user.zone_selected)] [patient] полностью обработан[patient.ru_a()], дайте время на заживление!</span>")
+				else if(!affecting.brute_dam && !affecting.burn_dam)
+					to_chat(user, "<span class='notice'>[ru_kogo_zone(user.zone_selected)] [patient] не повреждён[patient.ru_a()]!</span>")
+				else
+					to_chat(user, "<span class='notice'>[ru_kogo_zone(user.zone_selected)] [patient] нельзя вылечить при помощи \the [src].</span>")
+			return FALSE
+		return TRUE
+
+	if(isanimal(patient))
+		if(!heal_brute)
+			if(!silent)
+				to_chat(user, "<span class='warning'>Вы не можете вылечить [patient] при помощи \the [src]!</span>")
+			return FALSE
+		var/mob/living/simple_animal/critter = patient
+		if(!critter.healable)
+			if(!silent)
+				to_chat(user, "<span class='notice'>Вы не можете применить \the [src] на [patient]!</span>")
+			return FALSE
+		if(critter.health == critter.maxHealth)
+			if(!silent)
+				to_chat(user, "<span class='notice'>[patient] полностью здоров[patient.ru_a()].</span>")
+			return FALSE
+		return TRUE
+
+	return FALSE
+
+/obj/item/stack/medical/proc/heal_carbon_new(mob/living/carbon/C, mob/user, healed_zone)
+	var/efficiency = 1
+	if(C.stat == DEAD)
+		efficiency = heal_dead_multiplier
+
+	var/obj/item/bodypart/affecting = C.get_bodypart(healed_zone)
+	if(!affecting)
+		return FALSE
+
+	if(!affecting.is_organic_limb(FALSE))
+		return FALSE
+
+	var/healed_something = FALSE
+
+	if((affecting.brute_dam && heal_brute) || (affecting.burn_dam && heal_burn))
+		user.visible_message("<span class='green'>[user] наносит \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>", "<span class='green'>Вы наносите \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>")
+		if(affecting.heal_damage(heal_brute*efficiency, heal_burn*efficiency))
+			C.update_damage_overlays()
+		healed_something = TRUE
+
+	if(LAZYLEN(affecting.wounds))
+		for(var/datum/wound/iter_wound as anything in affecting.wounds)
+			if(stop_bleeding > 0 && (istype(iter_wound, /datum/wound/slash) || istype(iter_wound, /datum/wound/pierce)))
+				iter_wound.blood_flow -= stop_bleeding * efficiency
+				if(!healed_something)
+					user.visible_message("<span class='green'>[user] обрабатывает раны на [ru_kogo_zone(affecting.name)] [C].</span>", "<span class='green'>Вы обрабатываете раны на [ru_kogo_zone(affecting.name)] [C].</span>")
+				healed_something = TRUE
+
+			if((flesh_regeneration > 0 || sanitization > 0) && istype(iter_wound, /datum/wound/burn))
+				var/datum/wound/burn/burn_wound = iter_wound
+				if(flesh_regeneration > 0)
+					burn_wound.flesh_healing += flesh_regeneration * efficiency
+				if(sanitization > 0)
+					burn_wound.sanitization += sanitization * efficiency
+				if(!healed_something)
+					user.visible_message("<span class='green'>[user] обрабатывает раны на [ru_kogo_zone(affecting.name)] [C].</span>", "<span class='green'>Вы обрабатываете раны на [ru_kogo_zone(affecting.name)] [C].</span>")
+				healed_something = TRUE
+
+	return healed_something
+
+/obj/item/stack/medical/proc/heal_animal(mob/living/simple_animal/M, mob/user)
+	var/efficiency = 1
+	if(M.stat == DEAD)
+		if(!heal_dead)
+			return FALSE
+		efficiency = heal_dead_multiplier
+
+	if(!M.healable)
+		return FALSE
+	if(M.health == M.maxHealth)
+		return FALSE
+
+	user.visible_message("<span class='green'>[user] наносит \the [src] на [M].</span>", "<span class='green'>Вы наносите \the [src] на [M].</span>")
+	if(AmBloodsucker(M))
+		return TRUE
+	M.heal_bodypart_damage((heal_brute/2)*efficiency)
+	return TRUE
 
 /obj/item/stack/medical/proc/heal(mob/living/M, mob/user)
 	return
-
-/obj/item/stack/medical/proc/heal_carbon(mob/living/carbon/C, mob/user, brute, burn)
-	var/obj/item/bodypart/affecting = C.get_bodypart(check_zone(user.zone_selected))
-	if(!affecting) //Missing limb?
-		to_chat(user, "<span class='warning'>У [C] отсутствует \a [ru_parse_zone(user.zone_selected)]!</span>")
-		return
-	if(affecting.is_organic_limb(FALSE)) //Limb must be organic to be healed - RR
-		if(affecting.brute_dam && brute || affecting.burn_dam && burn)
-			user.visible_message("<span class='green'>[user] наносит \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>", "<span class='green'>Вы наносите \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>")
-			if(affecting.heal_damage(brute, burn))
-				C.update_damage_overlays()
-			return TRUE
-		to_chat(user, "<span class='notice'>[ru_kogo_zone(user.zone_selected)] [C] нельзя вылечить при помощи \the [src].</span>")
-		return
-	to_chat(user, "<span class='notice'>\The [src] не сработает для механической конечности!</span>")
 
 /obj/item/stack/medical/get_belt_overlay()
 	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "pouch")
@@ -88,31 +324,6 @@
 
 /obj/item/stack/medical/bruise_pack/one
 	amount = 1
-
-/obj/item/stack/medical/bruise_pack/heal(mob/living/M, mob/user)
-	var/efficiency = 1
-	if(M.stat == DEAD)
-		if(!heal_dead)
-			to_chat(user, "<span class='warning'>[M] мертв[M.ru_a()]! Вы не можете [M.ru_emu()] помочь.</span>")
-			return
-		efficiency = heal_dead_multiplier
-	if(isanimal(M))
-		var/mob/living/simple_animal/critter = M
-		if (!(critter.healable))
-			to_chat(user, "<span class='notice'> Вы не можете применить \the [src] на [M]!</span>")
-			return FALSE
-		else if (critter.health == critter.maxHealth)
-			to_chat(user, "<span class='notice'> [M] полностью здоров[M.ru_a()].</span>")
-			return FALSE
-		user.visible_message("<span class='green'>[user] наносит \the [src] на [M].</span>", "<span class='green'>Вы наносите \the [src] на [M].</span>")
-		if(AmBloodsucker(M))
-			return
-		M.heal_bodypart_damage((heal_brute/2)*efficiency)
-		return TRUE
-	if(iscarbon(M))
-		return heal_carbon(M, user, heal_brute*efficiency, heal_burn*efficiency)
-	to_chat(user, "<span class='warning'>Вы не можете вылечить [M] при помощи \the [src]!</span>")
-	to_chat(user, "<span class='notice'>Вы неможете вылечить [M] при помощи \the [src]!</span>")
 
 /obj/item/stack/medical/bruise_pack/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] is bludgeoning себя with [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")
@@ -135,8 +346,8 @@
 	custom_price = PRICE_REALLY_CHEAP
 	grind_results = list(/datum/reagent/cellulose = 2)
 
-// gauze is only relevant for wounds, which are handled in the wounds themselves
-/obj/item/stack/medical/gauze/try_heal(mob/living/M, mob/user, silent)
+// Марля актуальна только для ран, которые обрабатываются самими ранами
+/obj/item/stack/medical/gauze/try_heal(mob/living/M, mob/user, healed_zone, silent = FALSE, auto_change_zone = TRUE, continuous = FALSE)
 	var/obj/item/bodypart/limb = M.get_bodypart(check_zone(user.zone_selected))
 	if(!limb)
 		to_chat(user, "<span class='notice'>Нечего перевязывать!</span>")
@@ -155,7 +366,7 @@
 		to_chat(user, "<span class='notice'>[user==M ? "Ваша [limb.ru_name]" : "[limb.ru_name_capital] персонажа [M]"] не требует перевязки!</span>")
 		return
 
-	if(limb.current_gauze && (limb.current_gauze.absorption_capacity * 0.8 > absorption_capacity)) // ignore if our new wrap is < 20% better than the current one, so someone doesn't bandage it 5 times in a row
+	if(limb.current_gauze && (limb.current_gauze.absorption_capacity * 0.8 > absorption_capacity)) // игнорируем если новая повязка меньше чем на 20% лучше текущей, чтобы кто-то не перевязывал её 5 раз подряд
 		to_chat(user, "<span class='warning'>Повязка, что наложена на [user==M ? "вашей [limb.ru_name_v]" : "[limb.ru_name_v] персонажа[M]"], пока ещё хорошем состоянии!</span>")
 		return
 
@@ -270,29 +481,6 @@
 /obj/item/stack/medical/suture/one
 	amount = 1
 
-/obj/item/stack/medical/suture/heal(mob/living/M, mob/user)
-	. = ..()
-	var/efficiency = 1
-	if(M.stat == DEAD)
-		if(!heal_dead)
-			to_chat(user, "<span class='warning'>[M] мертв[M.ru_a()]! Вы не можете [M.ru_emu()] помочь.</span>")
-			return
-		efficiency = heal_dead_multiplier
-	if(iscarbon(M))
-		return heal_carbon(M, user, heal_brute*efficiency, 0*efficiency)
-	if(isanimal(M))
-		var/mob/living/simple_animal/critter = M
-		if (!(critter.healable))
-			to_chat(user, "<span class='warning'>Вы не можете вылечить [M] при помощи \the [src]!</span>")
-			return FALSE
-		else if (critter.health == critter.maxHealth)
-			to_chat(user, "<span class='notice'>[M] полностью здоров[M.ru_a()].</span>")
-			return FALSE
-		user.visible_message("<span class='green'>[user] зашивает раны [M] с помощью \the [src].</span>", "<span class='green'>Вы зашиваете раны [M] с помощью \the [src]</span>")
-		M.heal_bodypart_damage(heal_brute*efficiency)
-		return TRUE
-	to_chat(user, "<span class='warning'>Вы не можете вылечить [M] при помощи \the [src]!</span>")
-
 /obj/item/stack/medical/ointment
 	name = "ointment"
 	desc = "Стандартная мазь от ожогов, вполне эфффективная против ожогов второй степени при бинтовании, впрочем, также стабилизирует и более серьёзные ожоги. Не прям хороша для полного заживления ожогов."
@@ -310,17 +498,6 @@
 	flesh_regeneration = 2.5
 	sanitization = 0.4
 	grind_results = list(/datum/reagent/medicine/kelotane = 10)
-
-/obj/item/stack/medical/ointment/heal(mob/living/M, mob/user)
-	var/efficiency = 1
-	if(M.stat == DEAD)
-		if(!heal_dead)
-			to_chat(user, "<span class='warning'>Вы не можете вылечить [M] при помощи \the [src]!</span>")
-			return
-		efficiency = heal_dead_multiplier
-	if(iscarbon(M))
-		return heal_carbon(M, user, heal_brute*efficiency, heal_burn*efficiency)
-	to_chat(user, "<span class='warning'>Вы не можете вылечить [M] при помощи \the [src]!</span>")
 
 /obj/item/stack/medical/ointment/suicide_act(mob/living/user)
 	user.visible_message("<span class='suicide'>[user] выдавливает \the [src] в свой рот! Он[user.ru_a()] вообще знает, что оно ядовито?!</span>")
@@ -340,7 +517,7 @@
 	repeating = TRUE
 	sanitization = 0.75
 	flesh_regeneration = 3
-	var/is_open = TRUE ///This var determines if the sterile packaging of the mesh has been opened.
+	var/is_open = TRUE /// Эта переменная определяет, была ли открыта стерильная упаковка сетки.
 	grind_results = list(/datum/reagent/medicine/spaceacillin = 2)
 
 /obj/item/stack/medical/mesh/one
@@ -367,7 +544,7 @@
 
 /obj/item/stack/medical/mesh/Initialize(mapload)
 	. = ..()
-	if(amount == max_amount)	 //only seal full mesh packs
+	if(amount == max_amount)	 // запечатываем только полные упаковки сетки
 		is_open = FALSE
 		update_icon()
 
@@ -383,24 +560,12 @@
 	else
 		return ..()
 
-/obj/item/stack/medical/mesh/heal(mob/living/M, mob/user)
-	. = ..()
-	var/efficiency = 1
-	if(M.stat == DEAD)
-		if(!heal_dead)
-			to_chat(user, "<span class='warning'>[M] мертв[M.ru_a()]! Вы не можете [M.ru_emu()] помочь.</span>")
-			return
-		efficiency = heal_dead_multiplier
-	if(iscarbon(M))
-		return heal_carbon(M, user, heal_brute*efficiency, heal_burn*efficiency)
-	to_chat(user, "<span class='warning'>Вы не можете вылечить [M] при помощи \the [src]!</span>")
-
-
-/obj/item/stack/medical/mesh/try_heal(mob/living/M, mob/user, silent = FALSE)
+/obj/item/stack/medical/mesh/try_heal_checks(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
 	if(!is_open)
-		to_chat(user, "<span class='warning'>Вам нужно для начала раскрыть [src].</span>")
-		return
-	. = ..()
+		if(!silent)
+			to_chat(user, "<span class='warning'>Вам нужно для начала раскрыть [src].</span>")
+		return FALSE
+	return ..()
 
 /obj/item/stack/medical/mesh/AltClick(mob/living/user)
 	if(!is_open)
@@ -481,71 +646,44 @@
 	amount = 20
 	max_amount = 20
 	var/heal = 3
+	heal_brute = 3
+	heal_burn = 3
 	grind_results = list(/datum/reagent/consumable/aloejuice = 1)
-
-/obj/item/stack/medical/aloe/heal(mob/living/M, mob/user)
-	. = ..()
-	var/efficiency = 1
-	if(M.stat == DEAD)
-		if(!heal_dead)
-			to_chat(user, "<span class='warning'>[M] мертв[M.ru_a()]! Вы не можете [M.ru_emu()] помочь.</span>")
-			return FALSE
-		efficiency = heal_dead_multiplier
-	if(iscarbon(M))
-		return heal_carbon(M, user, heal*efficiency, heal*efficiency)
-	if(isanimal(M))
-		var/mob/living/simple_animal/critter = M
-		if (!(critter.healable))
-			to_chat(user, "Вы не можете использовать \the [src] на [M]!</span>")
-			return FALSE
-		else if (critter.health == critter.maxHealth)
-			to_chat(user, "<span class='notice'>[M] не требует ухода.</span>")
-			return FALSE
-		user.visible_message("<span class='green'>[user] намазывает \the [src] на [M].</span>", "<span class='green'>Вы намазываете \the [src] на [M].</span>")
-		M.heal_bodypart_damage(heal*efficiency, heal*efficiency)
-		return TRUE
-
-	to_chat(user, "<span class='warning'>Вы не можете вылечить [M] при помощи \the [src]!</span>")
 
 /obj/item/stack/medical/nanogel
 	name = "nanogel"
 	singular_name = "nanogel"
 	desc = "Высокотехнологичный гель, при применении на отремонтированную снаружи роботическую конечность - нейтрализует остаточные внутренние повреждения, позволяя дальнейшее обслуживание без хирургии."
-	self_delay = 150	//Agonizingly slow if used on self, but, not completely forbidden because antags with robolimbs need a way to handle their thresholds.
-	other_delay = 30	//Pretty fast if used on others.
+	self_delay = 150	// Мучительно медленно при использовании на себе, но не полностью запрещено, потому что антагонистам с роболимбами нужен способ справляться с порогами.
+	other_delay = 30	// Довольно быстро при использовании на других.
 	amount = 12
-	max_amount = 12	//Two synths worth of fixing, if every single bodypart of them has internal damage. Usually, probably more like 6-12.
+	max_amount = 12	// Две синтетические конечности стоит починки, если каждая часть тела имеет внутренние повреждения. Обычно, вероятно, больше 6-12.
 	icon_state = "nanogel"
-	var/being_applied = FALSE	//No doafter stacking.
+	var/being_applied = FALSE	// Запрет на накопление doafter.
 
 /obj/item/stack/medical/nanogel/one
 	amount = 1
 
-/obj/item/stack/medical/nanogel/try_heal(mob/living/M, mob/user, silent = FALSE)
-	if(being_applied)
-		to_chat(user, "<span class='warning'>Вы уже намазываете [src]!</span>")
-		return
-	if(!iscarbon(M))
-		to_chat(user, "<span class='warning'>Оно не поможет [M]!</span>")
-		return
-	being_applied = TRUE
-	..()
-	being_applied = FALSE
+/obj/item/stack/medical/nanogel/try_heal_checks(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
+	if(!iscarbon(patient))
+		if(!silent)
+			to_chat(user, "<span class='warning'>Оно не поможет [patient]!</span>")
+		return FALSE
+	return ..()
 
-/obj/item/stack/medical/nanogel/heal(mob/living/M, mob/user)
-	var/mob/living/carbon/C = M	//Only carbons should be able to get here
+/obj/item/stack/medical/nanogel/heal_carbon_new(mob/living/carbon/C, mob/user, healed_zone)
 	if(!C)
-		return
-	var/obj/item/bodypart/affecting = C.get_bodypart(check_zone(user.zone_selected))
-	if(!affecting) //Missing limb?
-		to_chat(user, "<span class='warning'>[C] не имеет \a [parse_zone(user.zone_selected)]!</span>")
-		return
+		return FALSE
+	var/obj/item/bodypart/affecting = C.get_bodypart(healed_zone)
+	if(!affecting) // Отсутствует конечность?
+		to_chat(user, "<span class='warning'>[C] не имеет \a [ru_parse_zone(healed_zone)]!</span>")
+		return FALSE
 	if(!affecting.is_robotic_limb())
 		to_chat(user, "<span class='warning'>Это не поможет нероботическим конечностям!</span>")
-		return
+		return FALSE
 	if(!affecting.threshhold_brute_passed && !affecting.threshhold_burn_passed)
 		to_chat(user, "<span class='warning'>Нет нужды намазывать гель на [affecting].</span>")
-		return
+		return FALSE
 	if(affecting.threshhold_brute_passed && affecting.brute_dam == affecting.threshhold_passed_mindamage)
 		. = TRUE
 		affecting.threshhold_brute_passed = FALSE
@@ -553,7 +691,8 @@
 		. = TRUE
 		affecting.threshhold_burn_passed = FALSE
 	if(.)
-		user.visible_message("<span class='green'>Наногель вступает в реакцию на теле [C], ремонтируя внутренние повреждения [affecting].</span>", "<span_class='green'>Вы наблюдаете как наногель начинает работу по ремонту внутренних повреждений [affecting]</span>")
-		return
-	//If it gets here: It failed, lets tell the user why.
-	to_chat(user, "<span class='warning'>[src] терпит неудачу в с [affecting] из-за остаточного урона [(affecting.threshhold_burn_passed && affecting.threshhold_burn_passed) ? "травм и ожогов" : "[affecting.threshhold_burn_passed ? "ожогами" : "травмами"]"]! Проведите внешне обслуживание перед применением.</span>")
+		user.visible_message("<span class='green'>Наногель вступает в реакцию на теле [C], ремонтируя внутренние повреждения [affecting].</span>", "<span class='green'>Вы наблюдаете как наногель начинает работу по ремонту внутренних повреждений [affecting]</span>")
+		return TRUE
+	// Если дошли сюда: Провал, давайте скажем пользователю почему.
+	to_chat(user, "<span class='warning'>[src] терпит неудачу в с [affecting] из-за остаточного урона [(affecting.threshhold_brute_passed && affecting.threshhold_burn_passed) ? "травм и ожогов" : "[affecting.threshhold_burn_passed ? "ожогами" : "травмами"]"]! Проведите внешне обслуживание перед применением.</span>")
+	return FALSE

@@ -1020,8 +1020,19 @@
 					dat += "<td style='vertical-align:top'><b>Cost</b></td>"
 					dat += "<td width=10%><font size=2><b>Restrictions</b></font></td>"
 					dat += "<td width=80%><font size=2><b>Description</b></font></td></tr>"
-					for(var/name in GLOB.loadout_items[gear_category][gear_subcategory])
-						var/datum/gear/gear = GLOB.loadout_items[gear_category][gear_subcategory][name]
+					// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory has no items
+					var/list/category_items = GLOB.loadout_items[gear_category]
+					var/list/subcategory_items = category_items ? category_items[gear_subcategory] : null
+					if(!length(subcategory_items))
+						// Only log if category SHOULD exist (defined in loadout_categories) but has no items (initialization failure)
+						if(GLOB.loadout_categories[gear_category] && (gear_subcategory in GLOB.loadout_categories[gear_category]))
+							stack_trace("Loadout init failure (splurt): Category '[gear_category]'/subcategory '[gear_subcategory]' defined but has no items (user: [user?.ckey])")
+						dat += "<tr><td colspan=4><center><i style=\"color: grey;\">No items available in this category.</i></center></td></tr>"
+					// BLUEMOON FIX END
+					for(var/name in subcategory_items)
+						var/datum/gear/gear = subcategory_items[name]
+						if(!gear)
+							continue
 						var/donoritem = gear.donoritem
 						if(donoritem && !gear.donator_ckey_check(user.ckey))
 							continue

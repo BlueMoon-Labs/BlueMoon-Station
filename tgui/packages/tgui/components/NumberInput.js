@@ -139,6 +139,31 @@ export class NumberInput extends Component {
     };
   }
 
+  componentDidMount() {
+    const input = this.inputRef?.current;
+    if (!input) return;
+
+    if (this.props.autoFocus) {
+      // Включаем режим редактирования, иначе input скрыт
+      this.setState((prev) => ({
+        editing: true,
+        // чтобы в инпуте было что выделять
+        internalValue: prev.internalValue ?? this.props.value,
+      }), () => {
+        // Проставляем значение в DOM-инпут и выделяем всё
+        setTimeout(() => {
+          const i = this.inputRef?.current;
+          if (!i) return;
+          i.value = String(this.state.internalValue ?? this.props.value ?? '');
+          try {
+            i.focus();
+            i.select(); // как при обычном клике — выделить всё
+          } catch { }
+        }, 1);
+      });
+    }
+  }
+
   render() {
     const {
       dragging,
@@ -289,4 +314,5 @@ NumberInput.defaultProps = {
   stepPixelSize: 1,
   suppressFlicker: 50,
   showBar: true,
+  autoFocus: false,
 };

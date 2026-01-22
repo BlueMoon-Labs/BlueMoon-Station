@@ -375,7 +375,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	///loadout stuff
 	var/gear_points = 20 // Больше очков - сочнее персонажи.
 	var/list/gear_categories
-	var/list/loadout_data
+	var/list/loadout_data = list()
 	var/list/unlockable_loadout_data = list()
 	var/loadout_slot = 1 //goes from 1 to MAXIMUM_LOADOUT_SAVES
 	var/gear_category
@@ -1431,8 +1431,19 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<td width=80%><font size=2><b>Description</b></font></td></tr>"
 								dat += "</center>"
 
-								for(var/name in GLOB.loadout_items[gear_category][gear_subcategory])
-									var/datum/gear/gear = GLOB.loadout_items[gear_category][gear_subcategory][name]
+								// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory has no items
+								var/list/category_items = GLOB.loadout_items[gear_category]
+								var/list/subcategory_items = category_items ? category_items[gear_subcategory] : null
+								if(!length(subcategory_items))
+									// Only log if category SHOULD exist (defined in loadout_categories) but has no items (initialization failure)
+									if(GLOB.loadout_categories[gear_category] && (gear_subcategory in GLOB.loadout_categories[gear_category]))
+										stack_trace("Loadout init failure: Category '[gear_category]'/subcategory '[gear_subcategory]' defined but has no items (user: [user?.ckey])")
+									dat += "<tr><td colspan=4><center><i style=\"color: grey;\">No items available in this category.</i></center></td></tr>"
+								// BLUEMOON FIX END
+								for(var/name in subcategory_items)
+									var/datum/gear/gear = subcategory_items[name]
+									if(!gear)
+										continue
 									var/donoritem = gear.donoritem
 									if(donoritem && !gear.donator_ckey_check(user.ckey))
 										continue
@@ -4714,11 +4725,21 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			save_preferences()
 		if(href_list["select_category"])
 			gear_category = html_decode(href_list["select_category"])
-			gear_subcategory = GLOB.loadout_categories[gear_category][1]
+			// BLUEMOON FIX - Add null check to prevent runtime when category doesn't exist
+			var/list/subcategories = GLOB.loadout_categories[gear_category]
+			if(length(subcategories))
+				gear_subcategory = subcategories[1]
+			else
+				stack_trace("Loadout topic: Invalid category '[gear_category]' selected (user: [user?.ckey])")
+				gear_subcategory = LOADOUT_SUBCATEGORY_NONE
 		if(href_list["select_subcategory"])
 			gear_subcategory = html_decode(href_list["select_subcategory"])
 		if(href_list["toggle_gear_path"])
 			var/name = html_decode(href_list["toggle_gear_path"])
+			// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory doesn't exist
+			if(!GLOB.loadout_items[gear_category] || !GLOB.loadout_items[gear_category][gear_subcategory])
+				stack_trace("Loadout toggle: Missing category '[gear_category]'/subcategory '[gear_subcategory]' for item '[name]' (user: [user?.ckey])")
+				return
 			var/datum/gear/G = GLOB.loadout_items[gear_category][gear_subcategory][name]
 			if(!G)
 				return
@@ -4764,6 +4785,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 			//if the gear doesn't exist, or they don't have it, ignore the request
 			var/name = html_decode(href_list["loadout_gear_name"])
+			// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory doesn't exist
+			if(!GLOB.loadout_items[gear_category] || !GLOB.loadout_items[gear_category][gear_subcategory])
+				stack_trace("Loadout customize: Missing category '[gear_category]'/subcategory '[gear_subcategory]' for item '[name]' (user: [user?.ckey])")
+				return
 			var/datum/gear/G = GLOB.loadout_items[gear_category][gear_subcategory][name]
 			if(!G)
 				return
