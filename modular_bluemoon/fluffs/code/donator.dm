@@ -2020,7 +2020,7 @@
 	loadout_initial_colors = list("#202020", "#C5302D")
 	ckeywhitelist = list("monolithxxv")
 
-/datum/gear/donator/bm/cultist_poly
+/datum/gear/donator/bm/exo_legs
 	name = "Exo Legs"
 	slot = ITEM_SLOT_FEET
 	path = /obj/item/clothing/shoes/exo_legs
