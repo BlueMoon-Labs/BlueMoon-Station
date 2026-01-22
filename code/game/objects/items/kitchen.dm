@@ -268,8 +268,6 @@
 	name = "dueling dagger"
 	item_state = "bone_ritual1"
 	icon_state = "bone_ritual1"
-	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	desc = "A dueling dagger of the Ashwalker tribe. For when words lose all meaning."
 
 /obj/item/kitchen/knife/combat/bone/plastic
