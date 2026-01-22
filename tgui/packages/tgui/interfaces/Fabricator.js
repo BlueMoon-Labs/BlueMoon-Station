@@ -257,8 +257,9 @@ export const FabricatorContent = (props, context) => {
 
   const testSearch = createSearch(searchText, (item) => item.name);
   const MAX_SEARCH_RESULTS = 80;
+  const searchIsActive = searchText.length > 1
 
-  const items = (searchText.length > 0
+  const items = (searchIsActive
     ? categories
       .flatMap((c) => c.items || [])
       .filter(testSearch)
@@ -343,7 +344,7 @@ export const FabricatorContent = (props, context) => {
             )}
           >
             <Flex>
-              {searchText.length === 0 && (
+              {!searchIsActive && (
                 <Flex.Item>
                   <Tabs vertical>
                     {categories
@@ -369,7 +370,7 @@ export const FabricatorContent = (props, context) => {
               <Flex.Item grow={1} basis={0}>
                 {items.length === 0 && (
                   <NoticeBox>
-                    {searchText.length === 0
+                    {!searchIsActive
                       ? 'No items in this category.'
                       : 'No results found.'}
                   </NoticeBox>
