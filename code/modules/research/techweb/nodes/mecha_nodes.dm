@@ -81,8 +81,8 @@
 	display_name = "Advanced Exosuit Equipment"
 	description = "Tools for high level mech suits"
 	prereq_ids = list("adv_mecha")
-	design_ids = list("mech_rcd", "mech_thrusters")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
+	design_ids = list("mech_rcd", "mech_thrusters", "ripley_mk2_kit")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3000)
 
 /datum/techweb_node/med_mech_tools
 	id = "med_mech_tools"

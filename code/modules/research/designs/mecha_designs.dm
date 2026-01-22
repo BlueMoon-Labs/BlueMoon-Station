@@ -500,6 +500,16 @@
 	construction_time = 100
 	category = list("Exosuit Equipment")
 
+/datum/design/ripleyupgrade
+	name = "Ripley MK-II Conversion Kit"
+	desc = "A pressurized canopy attachment kit for an Autonomous Power Loader Unit \"Ripley\" MK-I mecha, to convert it to the slower, but space-worthy MK-II design. This kit cannot be removed, once applied."
+	id = "ripley_mk2_kit"
+	build_type = MECHFAB
+	build_path = /obj/item/mecha_parts/mecha_equipment/ripleyupgrade
+	materials = list(/datum/material/titanium=15000)
+	construction_time = 200
+	category = list("Exosuit Equipment")
+
 /datum/design/combat_mech_beacon
 	name = "Combat Mech Beacon"
 	desc = "Combat Mech Beacon"
