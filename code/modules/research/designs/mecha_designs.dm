@@ -508,7 +508,7 @@
 	build_path = /obj/item/choice_beacon/pact_mecha
 	materials = list(/datum/material/iron=200000,/datum/material/gold=15000,/datum/material/uranium=15000, /datum/material/titanium=15000, /datum/material/diamond=15000)
 	construction_time = 20
-	category = list("Exosuit Modules")
+	category = list("Bluespace Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_RED
 
