@@ -48,6 +48,7 @@
 /obj/item/kitchen/knife/claws/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/butchering, 80 - force, 100, force - 10)
+	ADD_TRAIT(src, TRAIT_NODROP, ABSTRACT_ITEM_TRAIT)
 
 /obj/item/kitchen/knife/claws/attack_self(mob/user)
 	if(emagged)
@@ -259,6 +260,8 @@
 /obj/item/kitchen/knife/razor_claws/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/butchering, 80 - force, 100, force - 10)
+	// Добавляем TRAIT_NODROP чтобы нельзя было выбросить/передать
+	ADD_TRAIT(src, TRAIT_NODROP, ABSTRACT_ITEM_TRAIT)
 
 /obj/item/kitchen/knife/razor_claws/attack_self(mob/user)
 	if(emagged)
