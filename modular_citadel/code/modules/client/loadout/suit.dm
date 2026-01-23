@@ -13,9 +13,27 @@
 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
 	loadout_initial_colors = list("#2A2A2A","#A52F29")
 
+/datum/gear/suit/empire_suit
+	name = "Katzen Suit"
+	path = /obj/item/clothing/suit/empire_suit
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_initial_colors = list("#2A2A2A","#e42929")
+
 /datum/gear/suit/ponchogreen
 	name = "Green poncho"
 	path = /obj/item/clothing/suit/poncho/green
+
+/datum/gear/suit/poly_armored_poncho
+	name = "Poly Nanotech Poncho"
+	path = /obj/item/clothing/suit/poly_armored_poncho
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_initial_colors = list("#2A2A2A","#e42929")
+
+/datum/gear/suit/poly_poncho
+	name = "Poly Poncho"
+	path = /obj/item/clothing/suit/poly_poncho
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_initial_colors = list("#2A2A2A","#e42929")
 
 /datum/gear/suit/ponchored
 	name = "Red poncho"

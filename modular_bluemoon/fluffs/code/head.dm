@@ -323,3 +323,85 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/bee_cap
+	name = "Aged Hat"
+	desc = "Головной убор с сеткой, слегка прозрачную, но скрывающее ваше лико. На внутренней стороне этикетка - Furui.tm, свыше присутствуют застёжки для высвобождения ушей."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "bee_cap"
+	item_state = "bee_cap"
+	flags_inv = HIDEHAIR|HIDEEARS
+	var/adjusted = FALSE
+	var/list/poly_colors = list("#2A2A2A","#A52F29")
+
+/obj/item/clothing/head/bee_cap/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+/obj/item/clothing/head/bee_cap/AltClick(mob/user)
+	. = ..()
+	adjusted = !adjusted
+	flags_inv = adjusted ? (HIDEHAIR) : (HIDEHAIR|HIDEEARS)
+	user.update_inv_head()
+	to_chat(user, span_info("Вы поправили головной убор, изменяя комфорт ваших ушей в нём."))
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/empire_head
+	name = "Katzen Helmet"
+	desc = "Полиморфический шлем, не имеющий никакой защиты. На внутренней стороне этикетка - Furui.tm, свыше присутствуют застёжки для высвобождения ушей."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "empire_head"
+	item_state = "empire_head"
+	flags_inv = HIDEHAIR|HIDEEARS
+	var/adjusted = FALSE
+	var/list/poly_colors = list("#2A2A2A","#A52F29")
+
+/obj/item/clothing/head/empire_head/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+/obj/item/clothing/head/empire_head/AltClick(mob/user)
+	. = ..()
+	adjusted = !adjusted
+	flags_inv = adjusted ? (HIDEHAIR) : (HIDEHAIR|HIDEEARS)
+	user.update_inv_head()
+	to_chat(user, span_info("Вы поправили головной убор, изменяя комфорт ваших ушей в нём."))
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/helmet/sec/empire_head
+	name = "Katzen Steel Helmet"
+	desc = "Полиморфический шлем. На внутренней стороне этикетка - Furui.tm, свыше присутствуют застёжки для высвобождения ушей."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "empire_head"
+	item_state = "empire_head"
+	armor = list(MELEE = 20, BULLET = 5, LASER = 10,ENERGY = 0, BOMB = 40, BIO = 0, RAD = 0, FIRE = 5, ACID = 0, WOUND = 20)
+	flags_inv = HIDEHAIR|HIDEEARS
+	var/adjusted = FALSE
+	var/list/poly_colors = list("#2A2A2A","#A52F29")
+
+/obj/item/clothing/head/empire_head/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+/obj/item/clothing/head/empire_head/AltClick(mob/user)
+	. = ..()
+	adjusted = !adjusted
+	flags_inv = adjusted ? (HIDEHAIR) : (HIDEHAIR|HIDEEARS)
+	user.update_inv_head()
+	to_chat(user, span_info("Вы поправили головной убор, изменяя комфорт ваших ушей в нём."))

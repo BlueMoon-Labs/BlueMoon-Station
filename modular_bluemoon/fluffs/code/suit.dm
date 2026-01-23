@@ -555,3 +555,63 @@
 /obj/item/clothing/suit/donator/bm/cultist_poly/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/empire_suit
+	name = "Katzen Suit"
+	desc = "Современный дизайн, попытайтесь пойти в штыковую!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST|GROIN|ARMS
+	icon_state = "empire_suit"
+	item_state = "empire_suit"
+	var/list/poly_colors = list("#2A2A2A", "#A52F29", "#eeaf28")
+
+/obj/item/clothing/suit/empire_suit/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29", "#eeaf28"), 3)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/poly_poncho
+	name = "Poly Poncho"
+	desc = "Poly, fucking, poncho"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST|GROIN|ARMS
+	icon_state = "poly_poncho"
+	item_state = "poly_poncho"
+	var/list/poly_colors = list("#ffffff")
+
+/obj/item/clothing/suit/poly_poncho/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, poly_colors, 1)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/poly_armored_poncho
+	name = "Poly Nanotech Poncho"
+	desc = "Poly, fucking, poncho"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST|GROIN|ARMS
+	icon_state = "poly_armored_poncho"
+	item_state = "poly_armored_poncho"
+	var/list/poly_colors = list("#2A2A2A", "#A52F29")
+
+/obj/item/clothing/suit/poly_armored_poncho/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
