@@ -12,7 +12,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/items/razorclaws_righthand.dmi'
 
 	flags_1 = CONDUCT_1
-	force = 12
+	force = 13
 	throwforce = 10
 	w_class = WEIGHT_CLASS_HUGE
 	throw_speed = 3
@@ -33,7 +33,7 @@
 
 	// Внутренние переменные для переключения режимов
 	var/knife_mode = TRUE
-	var/knife_force = 12
+	var/knife_force = 13
 	var/knife_wound_bonus = 5
 	var/knife_bare_wound_bonus = 5
 
