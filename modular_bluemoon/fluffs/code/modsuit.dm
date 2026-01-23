@@ -77,3 +77,41 @@
 	)
 
 //////////////////////////////////////////////////////////
+
+/obj/item/mod/control/pre_equipped/magnate/heavy
+	theme = /datum/mod_theme/magnate/heavy
+
+/obj/item/mod/construction/armor/magnate/heavy
+	theme = /datum/mod_theme/magnate/heavy
+
+/datum/mod_theme/magnate/heavy
+	name = "heavy magnate"
+	ui_theme = "magnateHeavy"
+	default_skin = "magnateHeavy"
+	skins = list(
+		"magnateHeavy" = list(
+			HELMET_LAYER = NECK_LAYER,
+			HELMET_FLAGS = list(
+				UNSEALED_CLOTHING = NONE,
+				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
+				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
+				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDESNOUT,
+				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
+			),
+			CHESTPLATE_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+				SEALED_INVISIBILITY = HIDEJUMPSUIT,
+			),
+			GAUNTLETS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+			BOOTS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+		),
+	)
+
+//////////////////////////////////////////////////////////
