@@ -45,6 +45,8 @@
 	var/dogborg = FALSE
 	var/hasrest = FALSE //For the new borgs who are not dogs
 	var/drakerest = FALSE //For the new drakemech resting icons
+	/// Даём модулям киборга опцию иметь трейты
+	var/list/cyborg_traits
 
 /obj/item/robot_module/Initialize(mapload)
 	. = ..()
@@ -211,6 +213,14 @@
 			add_module(I, FALSE, FALSE)
 	for(var/obj/item/I in added_modules)
 		add_module(I, FALSE, FALSE)
+	if(cyborg_traits) // Если есть трейты в списке
+		for(var/trait in R)
+			REMOVE_TRAITS_IN(R, CYBORG_MODULE_TRAIT) // Убираем все трейты У КИБОРГА такого источника
+		for(var/trait in cyborg_traits)
+			ADD_TRAIT(R, trait, CYBORG_MODULE_TRAIT) // И добавляем из списка
+	else // Если их нет в списке переменной
+		for(var/trait in R)
+			REMOVE_TRAITS_IN(R, CYBORG_MODULE_TRAIT)
 	for(var/i in held_modules)
 		if(i)
 			R.activate_module(i)
@@ -684,6 +694,7 @@
 	moduleselect_icon = "engineer"
 	magpulsing = TRUE
 	hat_offset = -4
+	cyborg_traits = list(TRAIT_KNOW_ENGI_WIRES)
 
 /obj/item/robot_module/engineering/be_transformed_to(obj/item/robot_module/old_module)
 	var/mob/living/silicon/robot/R = loc
@@ -2291,6 +2302,7 @@
 	magpulsing = TRUE
 	hat_offset = -4
 	canDispose = TRUE
+	cyborg_traits = list(TRAIT_KNOW_ENGI_WIRES)
 
 /obj/item/robot_module/syndicate/inteq
 	name = "InteQ Assault"

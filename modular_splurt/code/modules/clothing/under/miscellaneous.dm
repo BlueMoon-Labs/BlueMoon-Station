@@ -275,8 +275,9 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 	icon_state = "pentatop"
 	item_state = "pentatop"
-	body_parts_covered = CHEST
+	body_parts_covered = CHEST|GROIN
 	can_adjust = FALSE
+	fitted = FEMALE_UNIFORM_TOP
 
 // GWTB-inspired stuff wooo
 /obj/item/clothing/under/goner

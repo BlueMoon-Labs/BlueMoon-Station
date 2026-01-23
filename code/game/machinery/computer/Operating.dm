@@ -83,16 +83,16 @@
 		patient = table.patient
 		switch(patient.stat)
 			if(CONSCIOUS)
-				data["patient"]["stat"] = "Conscious"
+				data["patient"]["stat"] = "В сознании"
 				data["patient"]["statstate"] = "good"
 			if(SOFT_CRIT)
-				data["patient"]["stat"] = "Conscious"
+				data["patient"]["stat"] = "В сознании"
 				data["patient"]["statstate"] = "average"
 			if(UNCONSCIOUS)
-				data["patient"]["stat"] = "Unconscious"
+				data["patient"]["stat"] = "Без сознания"
 				data["patient"]["statstate"] = "average"
 			if(DEAD)
-				data["patient"]["stat"] = "Dead"
+				data["patient"]["stat"] = "М[table.patient.gender == FEMALE ? "ертва" : "ёртв"]"
 				data["patient"]["statstate"] = "bad"
 		data["patient"]["health"] = patient.health
 		data["patient"]["blood_type"] = patient.dna.blood_type

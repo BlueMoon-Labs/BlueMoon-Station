@@ -368,6 +368,7 @@
 #define BOOK_TRAIT "granter (book)" // knowledge is power
 #define TURF_TRAIT "turf"
 #define STATION_TRAIT "station-trait"
+#define CYBORG_MODULE_TRAIT "cyborg_module"
 
 // unique trait sources, still defines
 #define STATUE_TRAIT "statue"
