@@ -196,7 +196,7 @@
 #define ETHEREAL_CHARGE_DANGEROUS 150
 
 // Slime evolution threshold. Controls how fast slimes can split/grow
-#define SLIME_EVOLUTION_THRESHOLD 10
+#define SLIME_EVOLUTION_THRESHOLD 8
 
 // Slime extract crossing. Controls how many extracts is required to feed to a slime to core-cross.
 #define SLIME_EXTRACT_CROSSING_REQUIRED 10
