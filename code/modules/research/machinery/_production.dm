@@ -21,7 +21,7 @@
 
 	/// What color is this machine's stripe? Leave null to not have a stripe.
 	var/stripe_color = null
-	COOLDOWN_DECLARE(cooldown_say)
+	COOLDOWN_DECLARE(cooldown_say) // Отвечает за КД SAY машины и за КД update_research()
 	var/const/cooldown_say_time = 1.5 SECONDS
 	var/const/max_build_amount = 60 // Отвечает за максимум в кнопке [Max: XXX] TGUI и максимум пердметов на печать в 1 пачке
 
