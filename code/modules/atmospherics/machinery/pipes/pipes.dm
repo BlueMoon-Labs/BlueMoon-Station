@@ -28,7 +28,11 @@
 	QDEL_NULL(parent)
 
 /obj/machinery/atmospherics/pipe/build_network()
+	if(QDELETED(src))
+		return // Pipe was destroyed, don't rebuild
 	if(QDELETED(parent))
+		if(parent && QDESTROYING(parent))
+			investigate_log("[type] at [COORD(src)] rebuilding network while parent pipeline is being destroyed", INVESTIGATE_ATMOS)
 		parent = new
 		parent.build_pipeline(src)
 
@@ -49,18 +53,18 @@
 		air_update_turf()
 
 /obj/machinery/atmospherics/pipe/return_air()
-	return parent.air
+	return parent?.air
 
 /obj/machinery/atmospherics/pipe/return_analyzable_air()
 	if(air_temporary)
 		return air_temporary
-	return parent.air
+	return parent?.air
 
 /obj/machinery/atmospherics/pipe/remove_air(amount)
-	return parent.air.remove(amount)
+	return parent?.air?.remove(amount)
 
 /obj/machinery/atmospherics/pipe/remove_air_ratio(ratio)
-	return parent.air.remove_ratio(ratio)
+	return parent?.air?.remove_ratio(ratio)
 
 /obj/machinery/atmospherics/pipe/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/pipe_meter))
@@ -71,6 +75,9 @@
 		return ..()
 
 /obj/machinery/atmospherics/pipe/analyzer_act(mob/living/user, obj/item/I)
+	if(!parent?.air)
+		to_chat(user, "<span class='warning'>[src] is not connected to a pipenet.</span>")
+		return FALSE
 	atmosanalyzer_scan(parent.air, user, src)
 	return TRUE
 
@@ -126,7 +133,7 @@
 
 /obj/machinery/atmospherics/pipe/attack_ghost(mob/dead/observer/O)
 	. = ..()
-	if(parent)
+	if(parent?.air)
 		atmosanalyzer_scan(parent.air, O, src, FALSE)
 	else
 		to_chat(O, "<span class='warning'>[src] doesn't have a pipenet, which is probably a bug.</span>")

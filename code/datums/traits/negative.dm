@@ -428,6 +428,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 
 /datum/quirk/blindness/add()
 	quirk_holder.become_blind(ROUNDSTART_TRAIT)
+	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine_holder))
 
 /datum/quirk/blindness/on_spawn()
 	var/mob/living/carbon/human/H = quirk_holder
@@ -437,7 +438,13 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	H.regenerate_icons()
 
 /datum/quirk/blindness/remove()
-	quirk_holder?.cure_blind(ROUNDSTART_TRAIT)
+	if(!quirk_holder)
+		return
+	quirk_holder.cure_blind(ROUNDSTART_TRAIT)
+	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
+
+/datum/quirk/blindness/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
+	examine_list += "<span class='warning'>[quirk_holder.ru_ego(TRUE)] глаза мутные и остекленелые...</span>"
 
 /datum/quirk/coldblooded
 	name = "Холоднокровие"

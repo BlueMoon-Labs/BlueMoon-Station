@@ -541,14 +541,12 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		affecting_level = 2
 	else
 		affecting_level = 1
-	var/atom/A
-	for(var/i in contents)
+	for(var/atom/A as anything in contents)
 		if(. <= 0)
 			return FALSE
-		A = i
-		if(!QDELETED(A) && A.level >= affecting_level)
-			.  = A.wave_explode(., explosion, dir)
-	maptext = MAPTEXT("[.]")
+		if(QDELETED(A) || A.level < affecting_level)
+			continue
+		. = A.wave_explode(., explosion, dir)
 
 /turf/narsie_act(force, ignore_mobs, probability = 20)
 	. = (prob(probability) || force)

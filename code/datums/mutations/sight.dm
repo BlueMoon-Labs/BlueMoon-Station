@@ -27,12 +27,16 @@
 	if(..())
 		return
 	owner.become_blind(GENETIC_MUTATION)
+	RegisterSignal(owner, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine_holder))
 
 /datum/mutation/human/blind/on_losing(mob/living/carbon/human/owner)
 	if(..())
 		return
 	owner.cure_blind(GENETIC_MUTATION)
+	UnregisterSignal(owner, COMSIG_PARENT_EXAMINE)
 
+/datum/mutation/human/blind/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
+	examine_list += "<span class='warning'>[owner.ru_ego(TRUE)] глаза мутные и остекленелые...</span>"
 
 ///Thermal Vision lets you see mobs through walls
 /datum/mutation/human/thermal

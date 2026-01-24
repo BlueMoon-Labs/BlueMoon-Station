@@ -46,13 +46,16 @@
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/Destroy()
 	var/area/A = get_base_area(src)
-	if (A)
+	if(A)
 		A.air_scrub_names -= id_tag
 		A.air_scrub_info -= id_tag
+	else if(id_tag)
+		log_mapping("[type] [id_tag] destroyed without valid area at [COORD(src)]")
 
 	SSradio.remove_object(src,frequency)
 	radio_connection = null
 	adjacent_turfs.Cut()
+	UnregisterSignal(SSdcs, COMSIG_GLOB_NEW_GAS)
 	return ..()
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/auto_use_power()
