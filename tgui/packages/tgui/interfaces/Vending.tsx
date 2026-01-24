@@ -1,8 +1,8 @@
 // Bluemoon Edit:  Vending Update
 import { BooleanLike, classes } from '../../common/react';
-import { capitalizeAll, createSearch  } from '../../common/string';
+import { capitalizeAll, createSearch } from '../../common/string';
 import { useBackend, useLocalState } from '../backend';
-import { Box, Button, Icon, LabeledList, NoticeBox, Section, Stack, Table, Input } from '../components';
+import { Box, Button, Icon, Input, LabeledList, NoticeBox, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
 
 type VendingData = {

@@ -628,28 +628,71 @@ There are several things that need to be remembered:
 		update_mutant_bodyparts(block_recursive_calls)
 
 /mob/living/carbon/human/update_inv_belt()
-	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
-		remove_overlay(BELT_LAYER)
+	if(HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
+		return
 
-		if(client && hud_used)
-			var/atom/movable/screen/inventory/inv = hud_used.inv_slots[TOBITSHIFT(ITEM_SLOT_BELT) + 1]
-			inv.update_icon()
+	remove_overlay(BELT_LAYER)
 
-		if(belt)
-			belt.screen_loc = ui_belt
-			if(client && hud_used && hud_used.hud_shown)
-				client.screen += belt
-			update_observer_view(belt)
-			var/icon_chosen = 'icons/mob/clothing/belt.dmi'
-			if(dna.species.icon_belt)
-				icon_chosen = dna.species.icon_belt
-			overlays_standing[BELT_LAYER] = belt.build_worn_icon(default_layer = BELT_LAYER, default_icon_file = icon_chosen)
-			var/mutable_appearance/belt_overlay = overlays_standing[BELT_LAYER]
-			if(OFFSET_BELT in dna.species.offset_features)
-				belt_overlay.pixel_x += dna.species.offset_features[OFFSET_BELT][1]
-				belt_overlay.pixel_y += dna.species.offset_features[OFFSET_BELT][2]
-			overlays_standing[BELT_LAYER] = belt_overlay
-		apply_overlay(BELT_LAYER)
+	if(client && hud_used)
+		var/atom/movable/screen/inventory/inv = hud_used.inv_slots[TOBITSHIFT(ITEM_SLOT_BELT) + 1]
+		inv.update_icon()
+
+	if(belt)
+		var/obj/item/B = belt
+
+		B.screen_loc = ui_belt
+		if(client && hud_used && hud_used.hud_shown)
+			client.screen += B
+		update_observer_view(B)
+
+		var/worn_icon = B.mob_overlay_icon || 'icons/mob/clothing/belt.dmi'
+		if(dna.species.icon_belt)
+			worn_icon = dna.species.icon_belt
+
+		var/worn_state = B.item_state || B.icon_state
+		var/center = FALSE
+		var/dimension_x = world.icon_size // 32
+		var/dimension_y = world.icon_size // 32
+		var/variation_flag = NONE
+
+		var/datum/sprite_accessory/taur/T
+		if(dna.species.mutant_bodyparts["taur"])
+			T = GLOB.taur_list[dna.features["taur"]]
+
+		if(B.mutantrace_variation)
+			if(T?.taur_mode)
+				var/init_worn_icon = worn_icon
+
+				variation_flag |= (B.mutantrace_variation & T.taur_mode) || (B.mutantrace_variation & T.alt_taur_mode)
+
+				if(variation_flag & (STYLE_HOOF_TAURIC | STYLE_SNEK_TAURIC | STYLE_PAW_TAURIC))
+					worn_icon = 'icons/mob/clothing/belt_taur.dmi'
+
+				if(worn_icon != init_worn_icon)
+					if(B.taur_mob_worn_overlay)
+						switch(variation_flag)
+							if(STYLE_HOOF_TAURIC)
+								worn_state += "_hooved"
+							if(STYLE_SNEK_TAURIC)
+								worn_state += "_naga"
+							if(STYLE_PAW_TAURIC)
+								worn_state += "_paws"
+						worn_icon = B.taur_mob_worn_overlay
+					center = T.center
+					dimension_x = T.dimension_x
+					dimension_y = T.dimension_y
+
+		overlays_standing[BELT_LAYER] = B.build_worn_icon(BELT_LAYER, worn_icon, override_state = worn_state, style_flags = variation_flag, use_mob_overlay_icon = FALSE)
+
+		var/mutable_appearance/belt_overlay = overlays_standing[BELT_LAYER]
+		if(OFFSET_BELT in dna.species.offset_features)
+			belt_overlay.pixel_x += dna.species.offset_features[OFFSET_BELT][1]
+			belt_overlay.pixel_y += dna.species.offset_features[OFFSET_BELT][2]
+		if(center)
+			belt_overlay = center_image(belt_overlay, dimension_x, dimension_y)
+		overlays_standing[BELT_LAYER] = belt_overlay
+
+	apply_overlay(BELT_LAYER)
 
 /mob/living/carbon/human/update_inv_wear_suit(block_recursive_calls = FALSE)
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))

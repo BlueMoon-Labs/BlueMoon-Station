@@ -9716,6 +9716,82 @@
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "asj" = (
+/obj/structure/safe/floor/syndi/armory{
+	pixel_x = 32;
+	pixel_y = 2;
+	dir = 8
+	},
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/storage/firstaid,
+/obj/item/storage/firstaid/brute,
+/obj/item/storage/firstaid/toxin,
+/obj/item/storage/firstaid/fire,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
 /obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
@@ -36474,6 +36550,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
+/obj/structure/sign/plaques/kiddie/library{
+	pixel_y = -32
+	},
 /turf/open/floor/carpet,
 /area/service/library)
 "bvX" = (
@@ -36779,6 +36858,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
+/obj/machinery/modular_computer/console/preset/curator,
 /turf/open/floor/wood,
 /area/service/library)
 "bxD" = (
@@ -38114,6 +38194,9 @@
 /obj/item/taperecorder,
 /obj/item/storage/photo_album,
 /obj/item/camera,
+/obj/structure/sign/painting/library{
+	pixel_y = -32
+	},
 /turf/open/floor/plasteel/cult,
 /area/service/library)
 "bCK" = (
@@ -42377,15 +42460,13 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
-/obj/structure/sign/plaques/kiddie/library{
-	pixel_y = -32
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
+/obj/structure/sign/painting/large/library/directional/south,
 /turf/open/floor/carpet,
 /area/service/library)
 "bMX" = (
@@ -75051,6 +75132,10 @@
 	},
 /turf/open/floor/wood,
 /area/service/bar)
+"kIs" = (
+/obj/structure/sign/painting/large/library_private/directional/north,
+/turf/open/floor/plasteel/cult,
+/area/service/library)
 "kIA" = (
 /obj/structure/table/wood/poker,
 /obj/item/toy/cards/deck,
@@ -80344,6 +80429,13 @@
 "oge" = (
 /turf/open/floor/plasteel/dark,
 /area/medical/morgue)
+"ogs" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/sign/painting/large/library/directional/south,
+/turf/open/floor/carpet,
+/area/service/library)
 "ogu" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/cable{
@@ -82057,6 +82149,12 @@
 	},
 /turf/open/floor/plating,
 /area/hallway/secondary/entry)
+"pmS" = (
+/obj/structure/sign/painting/library{
+	pixel_y = -32
+	},
+/turf/open/floor/carpet,
+/area/service/library)
 "pnm" = (
 /obj/effect/landmark/event_spawn,
 /obj/effect/turf_decal/tile/neutral,
@@ -83481,6 +83579,12 @@
 "qit" = (
 /turf/open/openspace,
 /area/space)
+"qiT" = (
+/obj/structure/sign/painting/library{
+	pixel_y = 32
+	},
+/turf/open/floor/carpet,
+/area/service/library)
 "qjg" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
@@ -84804,6 +84908,15 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/aft)
+"rgu" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/sign/painting/library{
+	pixel_x = 32
+	},
+/turf/open/floor/carpet,
+/area/service/library)
 "rgw" = (
 /obj/effect/landmark/xeno_spawn,
 /turf/open/floor/plating,
@@ -144362,8 +144475,8 @@ urx
 bDG
 bDO
 brA
-bsg
-bsg
+qiT
+pmS
 brA
 bxy
 bQh
@@ -145648,13 +145761,13 @@ bsE
 bsE
 bsE
 bsg
-bEW
-bwL
+ogs
+brA
 bxC
 bsE
 bzK
 brA
-eIr
+kIs
 bCG
 brA
 cDB
@@ -147955,7 +148068,7 @@ bQb
 bzb
 brZ
 bzV
-buR
+rgu
 bsJ
 bts
 btZ

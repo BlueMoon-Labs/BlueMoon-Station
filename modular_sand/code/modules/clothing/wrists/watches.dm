@@ -4,7 +4,7 @@
 	gender = MALE
 	icon_state = "clockwork_slab"
 	item_state = "clockwork_slab"
-	body_parts_covered = HAND_LEFT | ARM_LEFT
+	//body_parts_covered = HAND_LEFT | ARM_LEFT //BLUEMOON COMMENTED
 	attack_verb = list("показывает время")
 
 /obj/item/clothing/wrists/clockwork_watch/red
@@ -13,7 +13,7 @@
 	gender = MALE
 	icon_state = "redwork_slab"
 	item_state = "redwork_slab"
-	body_parts_covered = HAND_LEFT | ARM_LEFT
+	//body_parts_covered = HAND_LEFT | ARM_LEFT //BLUEMOON COMMENTED
 	attack_verb = list("показывает время")
 
 /obj/item/clothing/wrists/clockwork_watch/examine(mob/user)

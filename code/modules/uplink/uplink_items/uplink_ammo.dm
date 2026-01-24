@@ -144,6 +144,12 @@
 			Cuts through like a hot knife through butter."
 	item = /obj/item/ammo_box/a357/ap
 
+/datum/uplink_item/ammo/revolver/dumdum
+	name = ".357 DumDum Speed Loader"
+	desc = "A speed loader that contains seven additional .357 DumDum Magnum rounds; usable with the Syndicate revolver. \
+			Rip and tear the flash."
+	item = /obj/item/ammo_box/a357/dumdum
+
 /datum/uplink_item/ammo/a40mm
 	name = "40mm Grenade"
 	desc = "A 40mm HE grenade for use with the M-90gl's under-barrel grenade launcher. \

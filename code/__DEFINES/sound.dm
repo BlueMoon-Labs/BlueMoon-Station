@@ -278,5 +278,10 @@ GLOBAL_LIST_INIT(deathgasp_sounds, list(
 	"Свинья" =				'modular_bluemoon/sound/voice/death_gasps/pig.ogg',
 	"Свинья 2" =				'modular_bluemoon/sound/voice/death_gasps/pig2.ogg',
 	"Фрэнк" =				'modular_bluemoon/sound/voice/death_gasps/frank.ogg',
-	"Сьюзи" =				'modular_bluemoon/sound/voice/death_gasps/susie.ogg'
+	"Сьюзи" =				'modular_bluemoon/sound/voice/death_gasps/susie.ogg',
+	"Наёмник" =				'modular_bluemoon/sound/voice/death_gasps/mercenary.ogg',
+	"Бандит 1" =			'modular_bluemoon/sound/voice/death_gasps/bandit1.ogg',
+	"Бандит 2" =			'modular_bluemoon/sound/voice/death_gasps/bandit2.ogg',
+	"Смерть в богатстве" =	'modular_bluemoon/sound/voice/death_gasps/richstalker.ogg',
+	"Зомбированный сталкер" =	'modular_bluemoon/sound/voice/death_gasps/stalkerzombie.ogg'
 	))

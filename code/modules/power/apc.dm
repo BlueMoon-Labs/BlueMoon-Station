@@ -109,7 +109,7 @@
 
 /obj/machinery/power/apc
 	name = "area power controller"
-	desc = "A control terminal for the area's electrical systems."
+	desc = "Терминалу управления электросистемами соответствующей ему зоны."
 	plane = ABOVE_WALL_PLANE
 
 	icon_state = "apc0"
@@ -363,10 +363,10 @@
 	if(integration_cog && is_servant_of_ratvar(user))
 		. += "<span class='brass'>There is an integration cog installed!</span>"
 
-	. += "<span class='notice'>Alt-Click the APC to [ locked ? "unlock" : "lock"] the interface.</span>"
+	. += "<span class='notice'>Alt-Click для [ locked ? "разблокировки" : "блокировки"] интерфейса.</span>"
 
 	if(area.hasSiliconAccessInArea(user))
-		. += "<span class='notice'>Ctrl-Click the APC to switch the breaker [ operating ? "off" : "on"].</span>"
+		. += "<span class='notice'>Ctrl-Click для [ operating ? "выключения" : "включения"] энергорубильника.</span>"
 
 // update the APC icon to show the three base states
 // also add overlays for indicator lights

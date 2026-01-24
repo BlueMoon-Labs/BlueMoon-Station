@@ -232,7 +232,7 @@
 			//END OF SKYRAT EDIT
 
 			//Gardelin0 Addoon
-			dat += 	"Mob-Sex : <a href='?_src_=prefs;preference=mobsex_pref'>[mobsexpref]</a><br>"
+			dat += 	"Mob Non-Con Sex : <a href='?_src_=prefs;preference=mobsex_pref'>[mobsexpref]</a><br>"
 			dat += 	"Horny Antags : <a href='?_src_=prefs;preference=hornyantags_pref'>[hornyantagspref]</a><br>"
 			//END OF Gardelin0 Addoon
 
@@ -959,7 +959,7 @@
 
 		if(LOADOUT_TAB)
 			//calculate your gear points from the chosen item
-			gear_points = CONFIG_GET(number/initial_gear_points)
+			gear_points = CONFIG_GET(number/initial_gear_points) + (IS_CKEY_DONATOR_GROUP(user.ckey, DONATOR_GROUP_TIER_1) ? CONFIG_GET(number/subscriber_extra_gear_points) : 0) + (IS_CKEY_DONATOR_GROUP(user.ckey, DONATOR_GROUP_TIER_2) ? CONFIG_GET(number/sponsor_extra_gear_points) : 0)
 			var/list/chosen_gear = loadout_data["SAVE_[loadout_slot]"]
 			if(chosen_gear)
 				for(var/loadout_item in chosen_gear)
@@ -1020,8 +1020,19 @@
 					dat += "<td style='vertical-align:top'><b>Cost</b></td>"
 					dat += "<td width=10%><font size=2><b>Restrictions</b></font></td>"
 					dat += "<td width=80%><font size=2><b>Description</b></font></td></tr>"
-					for(var/name in GLOB.loadout_items[gear_category][gear_subcategory])
-						var/datum/gear/gear = GLOB.loadout_items[gear_category][gear_subcategory][name]
+					// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory has no items
+					var/list/category_items = GLOB.loadout_items[gear_category]
+					var/list/subcategory_items = category_items ? category_items[gear_subcategory] : null
+					if(!length(subcategory_items))
+						// Only log if category SHOULD exist (defined in loadout_categories) but has no items (initialization failure)
+						if(GLOB.loadout_categories[gear_category] && (gear_subcategory in GLOB.loadout_categories[gear_category]))
+							stack_trace("Loadout init failure (splurt): Category '[gear_category]'/subcategory '[gear_subcategory]' defined but has no items (user: [user?.ckey])")
+						dat += "<tr><td colspan=4><center><i style=\"color: grey;\">No items available in this category.</i></center></td></tr>"
+					// BLUEMOON FIX END
+					for(var/name in subcategory_items)
+						var/datum/gear/gear = subcategory_items[name]
+						if(!gear)
+							continue
 						var/donoritem = gear.donoritem
 						if(donoritem && !gear.donator_ckey_check(user.ckey))
 							continue
@@ -1050,6 +1061,8 @@
 							if(loadout_item[LOADOUT_IS_HEIRLOOM])
 								extra_loadout_data += "<BR><a class='linkOn' href='?_src_=prefs;preference=gear;loadout_removeheirloom=1;loadout_gear_name=[html_encode(gear.name)];'>Select as Heirloom</a><BR>"
 							// BLUEMOON ADD END
+						else if(!is_loadout_slot_available(gear.category))
+							class_link = "style='white-space:normal;' class='linkOff'"
 						else if((gear_points - gear.cost) < 0)
 							class_link = "style='white-space:normal;' class='linkOff'"
 						else if(donoritem)

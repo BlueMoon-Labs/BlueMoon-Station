@@ -5,14 +5,14 @@
 	alt_titles = list("Head Engineer", "Construction Coordinator", "Project Manager", "Power Plant Director")
 
 /datum/job/engineer
-	alt_titles = list("Maintenance Technician", "Engine Technician", "Electrician", "Structural Engineer", "Mechanic",  "Station Architect", "Nuclear Plant Operator")
+	alt_titles = list("Maintenance Technician", "Engine Technician", "Electrician", "Structural Engineer", "Mechanic",  "Station Architect", "Damage Control Technician", "Nuclear Plant Operator")
 
 /datum/job/atmos
 	alt_titles = list("Firefighter", "Life Support Specialist", "Disposals Technician")
 
 //Service
 /datum/job/assistant
-	alt_titles = list("Civilian", "Morale Officer", "Off-Duty", "Visitor", "Businessman", "Trader", "Entertainer", "Tourist")
+	alt_titles = list("Civilian", "Morale Officer", "Off-Duty", "Visitor", "Private Eye", "Businessman", "Trader", "Entertainer", "Tourist")
 
 /datum/job/cook
 	alt_titles = list("Culinary Artist", "Butcher", "Chef de partie", "Poissonier", "Baker", "Taste Tester")
@@ -56,7 +56,7 @@
 	alt_titles = list("Medical Director", "Medical Administrator")
 
 /datum/job/doctor
-	alt_titles = list("Nurse", "Surgeon", "Physician", "Paramedic", "Trophologist", "Nutritionist", "Therapist", "Psychiatrist")
+	alt_titles = list("Nurse", "Medical Examiner", "Surgeon", "Physician", "Paramedic", "Trophologist", "Nutritionist", "Therapist", "Psychiatrist")
 
 /datum/job/chemist
 	alt_titles = list("Pharmacist", "Pharmacologist")
@@ -69,13 +69,13 @@
 
 //Security
 /datum/job/hos
-	alt_titles = list("Chief of Security", "Security Commander", "Sheriff")
+	alt_titles = list("Security Director", "Chief of Security", "Security Commander", "Sheriff")
 
 /datum/job/warden
 	alt_titles = list("Prison Chief", "Armory Manager", "Prison Administrator", "Brig Superintendent")
 
 /datum/job/officer
-	alt_titles = list("Security Agent", "Probation Officer", "Security Peacekeeper", "Security Guard", "Guardsman", "Security Cadet")
+	alt_titles = list("Security Agent", "Security Technician", "Riot Control Officer", "Explosives Specialist", "Probation Officer", "Security Peacekeeper", "Security Guard", "Guardsman")
 
 /datum/job/detective
 	alt_titles = list("Forensics Technician", "Private Investigator", "Gumshoe")
@@ -93,7 +93,7 @@
 
 //Command
 /datum/job/captain
-	alt_titles = list("Station Director", "Station Commander", "Station Overseer", "Stationmaster", "Commissar")
+	alt_titles = list("Station Director", "Site Director", "Station Commander", "Station Overseer", "Stationmaster", "Commissar")
 
 /datum/job/hop
-	alt_titles = list("Personnel Manager", "Staff Administrator", "Records Administrator")
+	alt_titles = list("Personnel Manager", "Assistant Site Director", "Staff Administrator", "Records Administrator")

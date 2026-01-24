@@ -1360,3 +1360,49 @@
 	dump_in_space(owner)
 
 #undef HEALING_SLEEP_DEFAULT
+
+/////////////////////////////////////////////////////
+//////////////////BOLA STATUS EFFECT///////////////////
+
+/datum/status_effect/bola_snared
+	id = "bola_snared"
+	status_type = STATUS_EFFECT_UNIQUE
+	alert_type = null
+	var/was_teleported = FALSE // для проверки на факт телепортации
+	var/obj/item/restraints/legcuffs/bola/bola
+
+/datum/status_effect/bola_snared/on_creation(mob/living/new_owner, obj/item/restraints/legcuffs/bola/B)
+	bola = B
+	return ..()
+
+/datum/status_effect/bola_snared/on_apply()
+	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(bola_trip))
+	RegisterSignal(owner, COMSIG_MOVABLE_TELEPORTED, PROC_REF(bola_teleport))
+	return ..()
+
+/datum/status_effect/bola_snared/on_remove()
+	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(owner, COMSIG_MOVABLE_TELEPORTED)
+	return ..()
+
+/datum/status_effect/bola_snared/proc/bola_trip(mob/living/carbon/C)
+	SIGNAL_HANDLER
+	if(!C.legcuffed) // если мы сняли болу, то эффекта нет
+		C.remove_status_effect(src)
+		return
+	if(C.movement_type & CRAWLING || C.m_intent == MOVE_INTENT_WALK) // если мы ползаем, то эффекта нет
+		return
+	if(was_teleported) // если мы передвинулись телепортом, то эффекта нет
+		was_teleported = FALSE
+		return
+	if(prob(12)) // сам эффект: шанс и последствия ходьбы с болой на ногах
+		C.Paralyze(5)
+		C.Knockdown(30)
+		SEND_SIGNAL(C, COMSIG_ADD_MOOD_EVENT, "trip", /datum/mood_event/tripped/bola)
+		owner.visible_message(span_danger("[owner] запутывается в своих ногах из-за болы и падает!"), span_userdanger("Вы теряете равновесие из-за болы и падаете!"))
+
+/datum/status_effect/bola_snared/proc/bola_teleport(channel, turf/origin, turf/destination)
+	SIGNAL_HANDLER
+	was_teleported = TRUE
+
+/////////////////////////////////////////////////////

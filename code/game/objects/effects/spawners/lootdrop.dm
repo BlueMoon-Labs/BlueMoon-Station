@@ -1,3 +1,8 @@
+#define ILLEGAL_LOOT_DELAY_MIN 210 SECONDS // Минимум времени на спавн теховской контрабанде
+#define ILLEGAL_LOOT_DELAY_MAX 1200 SECONDS // Максимум времени
+#define ILLEGAL_LOOT_DELAY_ROUND 30 SECONDS // Для округления рандомно выбранного числа из значений выше. Округляет до цельной половины минуты
+#define ILLEGAL_LOOT_DELAY_CHANCE 25 // С каким шансом лут будет доступен раундстарт
+
 /obj/effect/spawner/lootdrop
 	icon = 'icons/effects/landmarks_static.dmi'
 	icon_state = "random_loot"
@@ -9,19 +14,60 @@
 	var/list/loot			//a list of possible items to spawn e.g. list(/obj/item, /obj/structure, /obj/effect)
 	var/fan_out_items = FALSE //Whether the items should be distributed to offsets 0,1,-1,2,-2,3,-3.. This overrides pixel_x/y on the spawner itself
 
+	/// Является ли лутспавн отложенным во времени
+	var/delayed_spawn = FALSE
+	/// Кешированный турф для лутдропа с отложенным спавном
+	var/x_cached
+	var/y_cached
+	var/z_cached
+	/// Время отложенного спавна
+	var/item_spawn_delay = null
+
 /obj/effect/spawner/lootdrop/Initialize(mapload)
 	..()
-	if(should_spawn_on_init())
+	if(!src.x || !src.y || !src.z)
+		return INITIALIZE_HINT_QDEL // Failcheck на случай ублюдочного маппинга "Внутри коробки, которая внутри шкафчика"
+	if(delayed_spawn && should_spawn_on_init())
+		x_cached = src.loc.x ///
+		y_cached = src.loc.y // Кешируем координаты турфа
+		z_cached = src.loc.z ///
+		layer = MID_LANDMARK_LAYER // Это и ниже - для неинтерактивности объекта при отложенности
+		anchored = TRUE
+		invisibility = INVISIBILITY_ABSTRACT
+		addtimer(CALLBACK(src, PROC_REF(do_delayed_spawn)), item_spawn_delay)
+	else if (should_spawn_on_init())
 		spawn_loot()
-	return INITIALIZE_HINT_QDEL
+		return INITIALIZE_HINT_QDEL
 
 /obj/effect/spawner/lootdrop/proc/should_spawn_on_init()
 	return spawn_on_init
 
-/obj/effect/spawner/lootdrop/proc/spawn_loot(lootcount_override)
+/// Работает с аддтаймером для доппроверок
+/obj/effect/spawner/lootdrop/proc/do_delayed_spawn()
+	var/turf/cached_turf = locate(x_cached, y_cached, z_cached)
+	if(!cached_turf || istype(cached_turf, /turf/open/space) || cached_turf.density)
+		return qdel(src) // Если у спавнера после таймера под жопой космос или стена - удаляем
+	if(spawner_is_observed(cached_turf))
+		addtimer(CALLBACK(src, PROC_REF(do_delayed_spawn)), 3 SECONDS) // Есть наблюдатели? Откладываем на 3 секунды спавн
+		return
+	spawn_loot(turf_cache = cached_turf)
+	qdel(src)
+
+/// Проверяет, наблюдает ли кто-нибудь за спавнером
+/obj/effect/spawner/lootdrop/proc/spawner_is_observed(cached_turf)
+	for(var/mob/living/M in fov_viewers(9, cached_turf))
+		if(M.stat == CONSCIOUS && M.key)
+			return TRUE
+	return FALSE
+
+/obj/effect/spawner/lootdrop/proc/spawn_loot(lootcount_override, turf/turf_cache)
 	var/lootcount = isnull(lootcount_override) ? src.lootcount : lootcount_override
 	if(loot && loot.len)
-		var/atom/A = spawn_on_turf ? get_turf(src) : loc
+		var/atom/A
+		if(delayed_spawn)
+			A = turf_cache
+		else
+			A = spawn_on_turf ? get_turf(src) : loc
 		var/loot_spawned = 0
 		while((lootcount-loot_spawned) > 0 && loot.len)
 			var/lootspawn = pickweight(loot)
@@ -30,6 +76,12 @@
 
 			if(lootspawn)
 				var/atom/movable/spawned_loot = new lootspawn(A)
+				if(delayed_spawn)
+					for(var/obj/structure/closet/container in A) // Проверка на то, находится ли закрытый шкаф/крейт на турфе. Если да - лут будет там
+						if(container.opened)
+							continue
+						spawned_loot.forceMove(container)
+						break
 				if (!fan_out_items)
 					if (pixel_x != 0)
 						spawned_loot.pixel_x = pixel_x
@@ -75,8 +127,10 @@
 	name = "Syndicate Present from Technical Tunnels"
 	icon_state = "esword_dual"
 	lootdoubles = FALSE
+	delayed_spawn = TRUE
 	loot = list(
 				/obj/item/poster/random_contraband = 120,
+				/obj/item/poster/random_contraband/inteq = 100,
 //				/obj/item/reagent_containers/hypospray/medipen/magillitis = 2, / BLUEMOON REMOVAL - убираем манчерские вещи из техов
 				/obj/item/storage/box/syndie_kit/space = 3,
 				/obj/item/storage/toolbox/syndicate = 5,
@@ -92,14 +146,33 @@
 				/obj/item/soap/inteq = 4,
 				/obj/item/sign/flag/inteq = 1,
 				/obj/item/sign/flag/syndicate = 2,
-//				/obj/item/storage/fancy/cigarettes/cigpack_inteq = 1, / BLUEMOON REMOVAL - убираем манчерские вещи из техов
+				/obj/item/storage/fancy/cigarettes/cigpack_inteq = 2,
 				/obj/item/storage/backpack/guitarbag/loaded = 2,
 				/obj/structure/reagent_dispensers/kvass_barrel = 2,
 				/obj/structure/reagent_dispensers/beerkeg = 12,
 				/obj/item/reagent_containers/pill/labebium = 12,
 				/obj/item/gun/ballistic/automatic/pistol = 2,
 				/obj/item/ammo_box/magazine/m10mm = 8,
+				/obj/item/storage/secure/briefcase/syndie = 7,
+				/obj/item/storage/belt/military/green = 3,
+				/obj/item/clothing/accessory/padding = 5,
+				/obj/item/clothing/accessory/kevlar = 5,
+				/obj/item/clothing/accessory/plastics = 5,
+				/obj/item/cartridge/virus/syndicate = 2,
+				/obj/item/multitool/ai_detect = 2,
+				/obj/item/pen/edagger = 3,
+				/obj/item/storage/box/inteq_kit/conversion_kit = 1,
+				/obj/item/headsetupgrader = 6,
+				/obj/item/storage/box/syndie_kit/imp_storage = 1,
+				/obj/item/storage/box/syndie_kit/cutouts = 8
 				)
+
+/obj/effect/spawner/lootdrop/syndicate_present/Initialize(mapload)
+	if(prob(ILLEGAL_LOOT_DELAY_CHANCE)) // Четверть всего лута будет доступна раундстарт
+		delayed_spawn = FALSE
+	else
+		item_spawn_delay = round(rand(ILLEGAL_LOOT_DELAY_MIN, ILLEGAL_LOOT_DELAY_MAX), ILLEGAL_LOOT_DELAY_ROUND)
+	. = ..()
 
 /obj/effect/spawner/lootdrop/prison_contraband
 	name = "prison contraband loot spawner"
@@ -313,7 +386,7 @@
 	name = "8 x maintenance loot spawner"
 	lootcount = 8
 
-/obj/effect/spawner/lootdrop/maintenance/spawn_loot(lootcount_override)
+/obj/effect/spawner/lootdrop/maintenance/spawn_loot(lootcount_override, turf_cache)
 	if(isnull(lootcount_override))
 		if(HAS_TRAIT(SSstation, STATION_TRAIT_FILLED_MAINT))
 			lootcount_override = round(lootcount * 1.5)
@@ -1012,3 +1085,8 @@
 		/obj/item/surgicaldrill/alien = 1,
 		/obj/item/cautery/alien = 1
 	)
+
+#undef ILLEGAL_LOOT_DELAY_MIN
+#undef ILLEGAL_LOOT_DELAY_MAX
+#undef ILLEGAL_LOOT_DELAY_ROUND
+#undef ILLEGAL_LOOT_DELAY_CHANCE

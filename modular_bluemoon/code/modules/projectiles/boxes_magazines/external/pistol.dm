@@ -9,6 +9,7 @@
 	desc = "An extended Mk. 58 magazine."
 	max_ammo = 12
 	w_class = WEIGHT_CLASS_SMALL
+	custom_materials = list(/datum/material/iron = 17000)
 
 /obj/item/ammo_box/magazine/e45/e45_extended/update_icon()
 	..()
@@ -18,6 +19,7 @@
 	name = "Extended Enforcer magazine"
 	desc = "An extended Mk. 58 magazine."
 	start_empty = 1
+	custom_materials = list(/datum/material/iron = 1200)
 
 /obj/item/ammo_box/magazine/e45/e45_drum
 	name = "Drum Enforcer magazine (.45 Rubber)"
@@ -28,6 +30,7 @@
 	desc = "A drum Mk. 58 magazine, mostly known for it jams."
 	max_ammo = 28
 	w_class = WEIGHT_CLASS_NORMAL
+	custom_materials = list(/datum/material/iron = 30000)
 
 /obj/item/ammo_box/magazine/e45/e45_drum/update_icon()
 	..()
@@ -37,6 +40,7 @@
 	name = "Drum Enforcer magazine"
 	desc = "A drum Mk. 58 magazine, mostly known for it jams."
 	start_empty = 1
+	custom_materials = list(/datum/material/iron = 17000)
 
 /obj/item/ammo_box/magazine/e45/e45_drum/lethal
 	name = "Enforcer drum (.45 Lethal)"

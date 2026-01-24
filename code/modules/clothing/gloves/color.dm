@@ -226,7 +226,7 @@
 
 /obj/item/clothing/gloves/color/latex
 	name = "Latex Gloves"
-	desc = "Cheap sterile gloves made from latex. Transfers basic paramedical knowledge to the wearer via the use of nanochips."
+	desc = "Дешёвые стерильные перчатки из латекса. Наночипы, при ношении, дают навыки базовой парамедической подготовки о переносе пациентов."
 	icon_state = "latex"
 	item_state = "lgloves"
 	siemens_coefficient = 0.3
@@ -246,7 +246,7 @@
 
 /obj/item/clothing/gloves/color/latex/nitrile
 	name = "nitrile gloves"
-	desc = "Pricy sterile gloves that are stronger than latex. Transfers advanced paramedical knowledge to the wearer via the use of nanochips."
+	desc = "Стерильные перчатки, более дорогого образца и прочнее латексных. Наночипы, при ношении, дают навыки продвинутой парамедической подготовки о переносе пациентов."
 	icon_state = "nitrile"
 	item_state = "nitrilegloves"
 	transfer_prints = FALSE

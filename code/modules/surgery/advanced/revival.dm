@@ -12,6 +12,7 @@
 	target_mobtypes = list(/mob/living/carbon/human, /mob/living/carbon/monkey)
 	possible_locs = list(BODY_ZONE_HEAD)
 	requires_bodypart_type = 0
+	icon = 'icons/obj/defibrillators.dmi'
 	icon_state = "defibpaddles0"
 	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EMERGENCY
 
@@ -90,8 +91,8 @@
 		return FALSE
 
 /datum/surgery_step/revive/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='notice'>You shock [target]'s brain with [tool], but [target.ru_who()] doesn't react.</span>",
 		"[user] send a powerful shock to [target]'s brain with [tool], but [target.ru_who()] doesn't react.",
 		"[user] send a powerful shock to [target]'s brain with [tool], but [target.ru_who()] doesn't react.")
 	target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 15, 199)
-	return FALSE

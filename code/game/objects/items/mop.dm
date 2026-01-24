@@ -19,10 +19,14 @@
 	force_string = "robust... against germs"
 	var/insertable = TRUE
 
-/obj/item/mop/New()
-	..()
+/obj/item/mop/Initialize(mapload)
+	. = ..()
 	create_reagents(mopcap, NONE, NO_REAGENTS_VALUE)
+	GLOB.janitor_devices += src
 
+/obj/item/mop/Destroy(force)
+	GLOB.janitor_devices -= src
+	return ..()
 
 /obj/item/mop/proc/clean(turf/A, mob/user)
 	if(reagents.has_reagent(/datum/reagent/water, 1) || reagents.has_reagent(/datum/reagent/water/holywater, 1) || reagents.has_reagent(/datum/reagent/consumable/ethanol/vodka, 1) || reagents.has_reagent(/datum/reagent/space_cleaner, 1))

@@ -283,6 +283,5 @@
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_MOUTH, partner, ORGAN_SLOT_PENIS)
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, "mouth")
 
-	//  Почти гарантированное узлирование, но с проверкой префов
-	if(prob(85))
-		try_apply_knot(user, partner, CUM_TARGET_MOUTH)
+	// гарантированное узлирование, но с проверкой префов
+		try_apply_knot(user, partner, CUM_TARGET_MOUTH, FALSE, TRUE)

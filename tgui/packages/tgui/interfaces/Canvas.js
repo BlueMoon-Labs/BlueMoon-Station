@@ -4,7 +4,7 @@ import { useBackend } from '../backend';
 import { Box, Button } from '../components';
 import { Window } from '../layouts';
 
-const PX_PER_UNIT = 24;
+const PX_PER_UNIT = 20;
 
 class PaintCanvas extends Component {
   constructor(props) {
@@ -52,8 +52,8 @@ class PaintCanvas extends Component {
     const y_size = this.props.value[0].length;
     const x_scale = this.canvasRef.current.width / x_size;
     const y_scale = this.canvasRef.current.height / y_size;
-    const x = Math.floor(event.offsetX / x_scale)+1;
-    const y = Math.floor(event.offsetY / y_scale)+1;
+    const x = Math.floor(event.offsetX / x_scale) + 1;
+    const y = Math.floor(event.offsetY / y_scale) + 1;
     this.onCVClick(x, y);
   }
 
@@ -90,8 +90,8 @@ export const Canvas = (props, context) => {
   const [width, height] = getImageSize(data.grid);
   return (
     <Window
-      width={Math.min(700, width * dotsize + 72)}
-      height={Math.min(700, height * dotsize + 72)}>
+      width={Math.min(1280, width * dotsize + 72)}
+      height={Math.min(720, height * dotsize + 72)}>
       <Window.Content>
         <Box textAlign="center">
           <PaintCanvas
@@ -99,12 +99,27 @@ export const Canvas = (props, context) => {
             dotsize={dotsize}
             onCanvasClick={(x, y) => act("paint", { x, y })} />
           <Box>
+            {data.finalized
+              ? <Box inline mr={1}>{data.name}</Box>
+              : null
+            }
             {!data.finalized && (
-              <Button.Confirm
-                onClick={() => act("finalize")}
-                content="Finalize" />
+              <>
+                <Button.Confirm
+                  onClick={() => act("finalize")}
+                  icon="paintbrush"
+                  color="green"
+                  content="Finalize" />
+                <Button
+                  onClick={() => act("import")}
+                  icon="file-import"
+                  content="Import" />
+              </>
             )}
-            {data.name}
+            <Button
+              onClick={() => act("export")}
+              icon="file-arrow-up"
+              content="Export" />
           </Box>
         </Box>
       </Window.Content>

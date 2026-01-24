@@ -119,7 +119,7 @@
 						span_lewd("\The <b>[user]</b> бережно обжимает соски <b>[target]</b>."),
 						span_lewd("\The <b>[user]</b> деликатно сжимает сосок <b>[target]</b>."),
 						span_lewd("\The <b>[user]</b> нежно ощупывает грудь <b>[target]</b>.")))
-		if(prob(5 + target.get_lust()))
+		if(prob(target.get_lust() / target.get_climax_threshold() * 50)) // 50%
 			if(target.a_intent == INTENT_HELP)
 				user.visible_message(
 					pick(span_lewd("\The <b>[target]</b> дрожит от возбуждения."),

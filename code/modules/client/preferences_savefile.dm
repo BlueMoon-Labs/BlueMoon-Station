@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	60
+#define SAVEFILE_VERSION_MAX	62
 
 /*
 SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Carn
@@ -65,6 +65,17 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Input had a bad reception anyways, this way people won't even have to look into it.
 	if(current_version < 59)
 		hotkeys = TRUE
+
+	// BLUEMOON ADD - миграция кейбинда pixel_tilt
+	if(current_version < 62)
+		if(GLOB.keybindings_by_name["pixel_tilt"])
+			var/has_pixel_tilt = FALSE
+			for(var/key in key_bindings)
+				if("pixel_tilt" in key_bindings[key])
+					has_pixel_tilt = TRUE
+					break
+			if(!has_pixel_tilt)
+				LAZYADD(key_bindings["N"], "pixel_tilt")
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -486,7 +497,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["ghost_hud"] >> ghost_hud
 	S["inquisitive_ghost"] >> inquisitive_ghost
 	S["uses_glasses_colour"]>> uses_glasses_colour
+	S["auto_capitalize_enabled"]>> auto_capitalize_enabled
 	S["surgical_disable_radial"]>> surgical_disable_radial // BLUEMOON ADD
+	S["color_presets_tint"]>> color_presets_tint // BLUEMOON ADD
+	S["color_presets_hsv"]>> color_presets_hsv // BLUEMOON ADD
+	S["color_presets_matrix"]>> color_presets_matrix // BLUEMOON ADD
 	S["clientfps"] >> clientfps
 	S["parallax"] >> parallax
 	S["ambientocclusion"] >> ambientocclusion
@@ -590,6 +605,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	key_bindings = sanitize_islist(key_bindings, list())
 	modless_key_bindings = sanitize_islist(modless_key_bindings, list())
 	favorite_outfits = SANITIZE_LIST(favorite_outfits)
+	color_presets_tint = SANITIZE_LIST(color_presets_tint) // BLUEMOON ADD
+	color_presets_hsv = SANITIZE_LIST(color_presets_hsv) // BLUEMOON ADD
+	color_presets_matrix = SANITIZE_LIST(color_presets_matrix) // BLUEMOON ADD
 	screentip_color = sanitize_hexcolor(screentip_color, 6, 1, initial(screentip_color))
 	screentip_pref = sanitize_inlist(screentip_pref, GLOB.screentip_pref_options, SCREENTIP_PREFERENCE_ENABLED)
 
@@ -646,6 +664,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!GLOB.keybindings_by_name[bindname])
 			modless_key_bindings -= key
 
+
 /datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
 	if(!path)
 		return FALSE
@@ -698,7 +717,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["ghost_hud"], ghost_hud)
 	WRITE_FILE(S["inquisitive_ghost"], inquisitive_ghost)
 	WRITE_FILE(S["uses_glasses_colour"], uses_glasses_colour)
+	WRITE_FILE(S["auto_capitalize_enabled"], auto_capitalize_enabled)
 	WRITE_FILE(S["surgical_disable_radial"], surgical_disable_radial) // BLUEMOON ADD
+	WRITE_FILE(S["color_presets_tint"], color_presets_tint) // BLUEMOON ADD
+	WRITE_FILE(S["color_presets_hsv"], color_presets_hsv) // BLUEMOON ADD
+	WRITE_FILE(S["color_presets_matrix"], color_presets_matrix) // BLUEMOON ADD
 	WRITE_FILE(S["clientfps"], clientfps)
 	WRITE_FILE(S["parallax"], parallax)
 	WRITE_FILE(S["ambientocclusion"], ambientocclusion)
@@ -1176,6 +1199,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	//gear loadout
 	if(istext(S["loadout"]))
 		loadout_data = safe_json_decode(S["loadout"])
+		if(!loadout_data)
+			loadout_data = list()
 		var/list/sanitize_current_slot = loadout_data["SAVE_[loadout_slot]"]
 		if(LAZYLEN(sanitize_current_slot))
 			for(var/list/entry in sanitize_current_slot)
@@ -1462,6 +1487,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	bluemoon_character_pref_load(S)
 
+	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
+
 	return S
 
 /datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
@@ -1747,6 +1774,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	splurt_character_pref_save(S)
 
 	bluemoon_character_pref_save(S)
+
+	save_tattoo_prefs(S) // BLUEMOON ADD - сохранение татуировок
 
 	if(parent)
 		if(ishuman(parent?.mob))

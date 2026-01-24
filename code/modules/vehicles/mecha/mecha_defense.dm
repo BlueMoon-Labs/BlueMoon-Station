@@ -298,29 +298,26 @@
 		return
 	. = TRUE
 	if (user in occupants)
-		to_chat(user, "<span class='notice'>You can't reach damaged parts from inside!</span>")
+		to_chat(user, "<span class='notice'>Внешние повреждения не починить изнутри!</span>")
 		return
 	if(internal_damage & MECHA_INT_TANK_BREACH)
 		if(!W.use_tool(src, user, 0, volume=50, amount=1))
 			return
 		clearInternalDamage(MECHA_INT_TANK_BREACH)
-		to_chat(user, "<span class='notice'>You repair the damaged gas tank.</span>")
+		to_chat(user, "<span class='notice'>Вы починили повреждённую газовую канистру.</span>")
 		return
 	if(obj_integrity < max_integrity)
-		if(!W.use_tool(src, user, 0, volume=50, amount=1))
+		if(INTERACTING_WITH(user, src))
 			return
-		user.visible_message("<span class='notice'>[user] repairs some damage to [name].</span>", "<span class='notice'>You repair some damage to [src].</span>")
+		var/proficient_worker = HAS_TRAIT(user.mind, TRAIT_MECHA_EXPERT)
+		if(!W.use_tool(src, user, proficient_worker ? 3 SECONDS : 6 SECONDS, volume=50, amount=1))
+			return
+		user.visible_message("<span class='notice'>[user] чинит часть повреждений [name].</span>", "<span class='notice'>Вы чините часть повреждений [src].</span>")
 		obj_integrity += min(10, max_integrity-obj_integrity)
-		// BLUEMOON ADDITION AHEAD balancing instarepair abuse
-		if(HAS_TRAIT(user.mind, TRAIT_MECHA_EXPERT))
-			user.DelayNextAction(10)
-		else
-			user.DelayNextAction(20)
-		// BLUEMOON ADDITION END
 		if(obj_integrity == max_integrity)
-			to_chat(user, "<span class='notice'>It looks to be fully repaired now.</span>")
+			to_chat(user, "<span class='notice'>Похоже, повреждений больше нет.</span>")
 		return
-	to_chat(user, "<span class='warning'>The [name] is at full integrity!</span>")
+	to_chat(user, "<span class='warning'>Целостность [name] не нарушена!</span>")
 
 /obj/vehicle/sealed/mecha/proc/mech_toxin_damage(mob/living/target)
 	playsound(src, 'sound/effects/spray2.ogg', 50, TRUE)

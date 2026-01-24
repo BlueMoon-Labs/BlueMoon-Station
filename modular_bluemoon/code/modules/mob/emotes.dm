@@ -391,6 +391,23 @@
 	sound = 'modular_bluemoon/sound/emotes/meow6.ogg'
 	emote_cooldown = 0.5 SECONDS
 
+/datum/emote/sound/human/meow7
+	key = "meow7"
+	key_third_person = "meow7"
+	message = "мяукает как сервал."
+	message_mime = "безмолвно мяукает."
+	sound = 'modular_bluemoon/sound/emotes/meow7_1.ogg'
+	emote_cooldown = 0.75 SECONDS
+
+/datum/emote/sound/human/meow7/run_emote(mob/user, params)
+	sound = pick(
+	'modular_bluemoon/sound/emotes/meow7_1.ogg',
+	'modular_bluemoon/sound/emotes/meow7_2.ogg',
+	'modular_bluemoon/sound/emotes/meow7_3.ogg',
+	'modular_bluemoon/sound/emotes/meow7_4.ogg',
+	'modular_bluemoon/sound/emotes/meow7_5.ogg')
+	. = ..()
+
 /datum/emote/sound/human/catscream1
 	key = "catscream1"
 	key_third_person = "catscreams1"
@@ -465,7 +482,7 @@
 	message = "разминает суставы."
 	message_mime = "делает вид, что разминает суставы."
 	sound = 'modular_bluemoon/sound/emotes/bonecrack.ogg'
-	emote_cooldown = 11.6 SECONDS
+	emote_cooldown = 3 SECONDS
 
 /datum/emote/sound/human/ohyes
 	key = "ohyes"
@@ -562,6 +579,16 @@
 	message = "шипит!"
 	sound = 'modular_bluemoon/sound/emotes/felinid_hiss.ogg'
 	emote_cooldown = 1 SECONDS
+
+/datum/emote/sound/human/dexter
+	key = "dexter"
+	key_third_person = "dextered"
+	message = "неистово подозревает в чем-то"
+	message_mime = "пронзает взглядом, неистово подозревая в чем-то"
+	emote_type = EMOTE_AUDIBLE
+	sound = 'modular_bluemoon/sound/emotes/dexter-song.ogg'
+	emote_cooldown = 5 SECONDS
+
 
 /*
  * XENO EMOTES START
@@ -704,3 +731,49 @@
 /*
  * XENO EMOTES END
  */
+
+
+/datum/emote/sound/human/fox_bark_1
+	key = "foxbark1"
+	key_third_person = "foxbark1"
+	message = "тяфкает"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_bark_1.ogg'
+	emote_cooldown = 0.75 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_scream
+	key = "foxscream"
+	key_third_person = "foxscream"
+	message = "издает лисий вопль"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_scream.ogg'
+	emote_cooldown = 2 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_trill
+	key = "foxtrill"
+	key_third_person = "foxtrill"
+	message = "издает довольную лисью трель"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_trill.ogg'
+	emote_cooldown = 3 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_aaugh
+	key = "foxaaugh"
+	key_third_person = "foxaaugh"
+	message = "издаёт лисьи звуки!"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_aaugh.ogg'
+	emote_cooldown = 1 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/memee
+	key = "memee"
+	key_third_person = "memee"
+	message = "издаёт жалостливые звуки"
+	message_mime = null
+	sound = 'sound/fox/Voice/memee.ogg'
+	emote_cooldown = 1 SECONDS
+	emote_type = EMOTE_AUDIBLE

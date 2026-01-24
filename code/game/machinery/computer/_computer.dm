@@ -19,14 +19,112 @@
 	///Does this computer have a unique icon_state? Prevents the changing of icons from alternative computer construction
 	var/unique_icon = FALSE
 	var/authenticated = FALSE
+	var/list/typing_users = null
+	var/typing = FALSE
+	var/last_topic_time = 0 // Время последнего Topic взаимодействия
+	var/static/list/keyboard_sounds = list(
+		'sound/machines/computer/keyboard_clicks_1.ogg',
+		'sound/machines/computer/keyboard_clicks_2.ogg',
+		'sound/machines/computer/keyboard_clicks_3.ogg',
+		'sound/machines/computer/keyboard_clicks_4.ogg',
+		'sound/machines/computer/keyboard_clicks_5.ogg',
+		'sound/machines/computer/keyboard_clicks_6.ogg',
+		'sound/machines/computer/keyboard_clicks_7.ogg'
+	)
 
 /obj/machinery/computer/Initialize(mapload, obj/item/circuitboard/C)
 	. = ..()
 	power_change()
 
+/obj/machinery/computer/attack_hand(mob/user)
+	. = ..()
+	if(.)
+		return
+
+	start_typing(user)
+
+/obj/machinery/computer/proc/start_typing(mob/user)
+	if(machine_stat & (NOPOWER|BROKEN))
+		return
+
+	if(!typing_users)
+		typing_users = list()
+
+	if(!(user in typing_users))
+		typing_users += user
+
+	if(!typing)
+		typing = TRUE
+		spawn_typing_loop()
+
+/obj/machinery/computer/ui_interact(mob/user, datum/tgui/ui)
+	. = ..()
+	if(!typing)
+		start_typing(user)
+
+/obj/machinery/computer/ui_close(mob/user)
+	. = ..()
+	stop_typing(user)
+
+/obj/machinery/computer/Topic(href, href_list)
+	. = ..()
+	// Обновляем время последнего взаимодействия при любом Topic вызове
+	last_topic_time = world.time
+
+/obj/machinery/computer/proc/spawn_typing_loop()
+	set waitfor = FALSE
+
+	while(typing)
+		// Проверяем есть ли пользователи
+		if(!typing_users || !typing_users.len)
+			typing = FALSE
+			return
+
+		// Проверяем состояние компьютера
+		if(machine_stat & (NOPOWER|BROKEN))
+			typing = FALSE
+			return
+
+		// Проверяем, есть ли активные зрители рядом
+		if(!has_active_viewers())
+			typing = FALSE
+			return
+
+		// КРИТИЧЕСКАЯ ПРОВЕРКА: если прошло больше 5 секунд без Topic взаимодействия
+		// значит пользователь просто смотрит на открытое окно и не взаимодействует
+		if(last_topic_time > 0 && world.time - last_topic_time > 50) // 50 deciseconds = 5 seconds
+			typing = FALSE
+			return
+
+		var/volume = min(30 + (typing_users.len * 5), 60)
+		playsound(src, pick(keyboard_sounds), volume, FALSE)
+
+		sleep(rand(3,6))
+
+/obj/machinery/computer/proc/stop_typing(mob/user)
+	if(!typing_users)
+		return
+
+	typing_users -= user
+
+	if(!typing_users.len)
+		typing = FALSE
+
+/obj/machinery/computer/proc/has_active_viewers()
+	for(var/mob/M in viewers(src))
+		if(M.client && get_dist(src, M) <= 1)
+			return TRUE
+	return FALSE
+
 /obj/machinery/computer/process()
 	if(machine_stat & (NOPOWER|BROKEN))
+		typing = FALSE
 		return FALSE
+
+	// Дополнительная проверка в процессе
+	if(typing && !has_active_viewers())
+		typing = FALSE
+
 	return TRUE
 
 /obj/machinery/computer/ratvar_act()
@@ -58,10 +156,9 @@
 		. += mutable_appearance(icon, "[icon_state]_broken")
 		return // If we don't do this broken computers glow in the dark.
 
-	if(machine_stat & NOPOWER) // Your screen can't be on if you've got no damn charge
+	if(machine_stat & NOPOWER)  // Your screen can't be on if you've got no damn charge
 		return
 
-	// This lets screens ignore lighting and be visible even in the darkest room
 	if(icon_screen)
 		. += mutable_appearance(icon, icon_screen)
 		. += emissive_appearance(icon, icon_screen)
@@ -70,6 +167,7 @@
 	..()
 	if(machine_stat & NOPOWER)
 		set_light(0)
+		typing = FALSE
 	else
 		set_light(brightness_on)
 	update_icon()
@@ -84,7 +182,6 @@
 			deconstruct(TRUE, user)
 	return TRUE
 
-
 /obj/machinery/computer/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
 	switch(damage_type)
 		if(BRUTE)
@@ -96,11 +193,12 @@
 			playsound(src.loc, 'sound/items/welder.ogg', 100, TRUE)
 
 /obj/machinery/computer/obj_break(damage_flag)
-	if(!circuit) //no circuit, no breaking
+	if(!circuit)
 		return
 	. = ..()
 	if(. && !(machine_stat & BROKEN))
 		machine_stat |= BROKEN
+		typing = FALSE
 		playsound(loc, 'sound/effects/glassbr3.ogg', 100, TRUE)
 		set_light(0)
 		update_icon()

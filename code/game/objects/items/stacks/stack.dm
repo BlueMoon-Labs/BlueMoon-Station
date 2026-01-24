@@ -161,14 +161,14 @@
 		return
 	if(singular_name)
 		if(get_amount()>1)
-			. += "There are [get_amount()] [singular_name]\s in the stack."
+			. += "Здесь есть [get_amount()] [singular_name]\s."
 		else
-			. += "There is [get_amount()] [singular_name] in the stack."
+			. += "Осталась [get_amount()] [singular_name]."
 	else if(get_amount()>1)
-		. += "There are [get_amount()] in the stack."
+		. += "Здесь есть [get_amount()] шт."
 	else
-		. += "There is [get_amount()] in the stack."
-	. += "<span class='notice'>Alt-click to take a custom amount.</span>"
+		. += "Осталась [get_amount()] штука."
+	. += "<span class='notice'>Alt-click для выбора количества из стопки.</span>"
 
 /obj/item/stack/equipped(mob/user, slot)
 	. = ..()
@@ -231,6 +231,22 @@
 			if(is_valid_recipe(R, L.recipes))
 				return TRUE
 	return FALSE
+
+// BLUEMOON ADD START Не открыть список рецептов, если он пуст
+/obj/item/stack/ui_status(mob/user)
+	var/static/list/recipes_list_cache = list()
+
+	var/list/current_recipes_list = recipes_list_cache[type]
+	if(!current_recipes_list)
+		current_recipes_list = recursively_build_recipes(recipes)
+		recipes_list_cache[type] = current_recipes_list
+
+	if(!current_recipes_list.len)
+		return UI_CLOSE
+
+	return ..()
+
+// BLUEMOON ADD END
 
 /obj/item/stack/ui_state(mob/user)
 	return GLOB.hands_state

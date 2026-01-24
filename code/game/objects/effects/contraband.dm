@@ -37,6 +37,9 @@
 	poster_type = /obj/structure/sign/poster/contraband/random
 	icon_state = "rolled_contraband"
 
+/obj/item/poster/random_contraband/inteq
+	poster_type = /obj/structure/sign/poster/contraband/random/inteq
+
 /obj/item/poster/random_official
 	name = "random official poster"
 	poster_type = /obj/structure/sign/poster/official/random
@@ -204,6 +207,13 @@
 	icon_state = "random_contraband"
 	never_random = TRUE
 	random_basetype = /obj/structure/sign/poster/contraband
+
+/obj/structure/sign/poster/contraband/inteq
+	icon = 'modular_bluemoon/icons/obj/contraband.dmi'
+
+/obj/structure/sign/poster/contraband/random/inteq
+	icon = 'modular_bluemoon/icons/obj/contraband.dmi'
+	random_basetype = /obj/structure/sign/poster/contraband/inteq
 
 /obj/structure/sign/poster/contraband/free_tonto
 	name = "Free Tonto"
@@ -783,6 +793,7 @@
 	name = "No ERP"
 	desc = "This poster reminds the crew that Eroticism, Rape and Pornography are banned on Nanotrasen stations."
 	icon_state = "poster_noerp"
+	never_random = TRUE // BLUEMOON ADD
 
 /obj/structure/sign/poster/official/wtf_is_co2
 	name = "Carbon Dioxide"

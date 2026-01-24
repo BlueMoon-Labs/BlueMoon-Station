@@ -98,6 +98,11 @@
 	path = /obj/item/bdsm_whip/ridingcrop
 	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_TOYS
 
+/datum/gear/backpack/belt_belly_riding
+	name = "belly riding harness"
+	path = /obj/item/storage/belt/belly_riding
+	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_TOYS
+
 /datum/gear/backpack/strapon_strap
 	name = "Strapon strap"
 	path = /obj/item/strapon_strap
@@ -147,8 +152,3 @@
 	name = "Clipboard"
 	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_GENERAL
 	path = /obj/item/clipboard
-
-/datum/gear/backpack/lawyerbriefcase
-	name = "Battered Briefcase"
-	path = /obj/item/storage/briefcase/lawyer/family/loadout
-	cost = 3

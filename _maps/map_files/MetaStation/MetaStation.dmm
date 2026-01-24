@@ -65760,41 +65760,85 @@
 /area/engineering/atmos)
 "lXD" = (
 /obj/structure/safe/floor/syndi/armory{
-	pixel_y = 0;
-	dir = 8;
-	pixel_x = 2
+	pixel_x = 2;
+	pixel_y = 2;
+	dir = 8
 	},
-/obj/item/gun/ballistic/automatic/acr5m30,
-/obj/item/gun/ballistic/automatic/acr5m30{
-	pixel_y = -5
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
 	},
-/obj/item/gun/ballistic/automatic/acr5m30{
-	pixel_y = -10
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
 	},
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/hp,
-/obj/item/ammo_box/magazine/acr5m30/hp,
-/obj/item/ammo_box/magazine/acr5m30/hp,
-/obj/effect/turf_decal/tile/red/full,
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/storage/firstaid,
+/obj/item/storage/firstaid/brute,
+/obj/item/storage/firstaid/toxin,
+/obj/item/storage/firstaid/fire,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
 /obj/structure/extinguisher_cabinet{
 	pixel_x = 27
 	},
-/obj/effect/turf_decal/delivery,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/plasteel/textured/large,
 /area/ai_monitored/security/armory)
 "lXR" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
@@ -78927,6 +78971,7 @@
 	fax_name = "General Fax";
 	name = "General Fax"
 	},
+/obj/structure/sign/painting/large/library_private/directional/south,
 /turf/open/floor/wood,
 /area/service/library)
 "rSi" = (
@@ -80449,6 +80494,9 @@
 	pixel_y = 7
 	},
 /obj/item/pen/invisible,
+/obj/structure/sign/painting/library_private{
+	pixel_y = -32
+	},
 /turf/open/floor/engine/cult,
 /area/service/library)
 "sBo" = (
@@ -86701,6 +86749,10 @@
 	dir = 1
 	},
 /area/medical/surgery)
+"vxd" = (
+/obj/structure/sign/painting/large/library/directional/north,
+/turf/open/floor/wood,
+/area/service/library)
 "vxf" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/light{
@@ -86797,11 +86849,6 @@
 /turf/open/floor/engine,
 /area/science/xenobiology)
 "vzE" = (
-/obj/structure/table/wood,
-/obj/item/flashlight/lamp/green{
-	pixel_x = 1;
-	pixel_y = 5
-	},
 /obj/structure/window/reinforced{
 	dir = 8
 	},
@@ -86809,6 +86856,7 @@
 	dir = 1;
 	layer = 2.9
 	},
+/obj/machinery/modular_computer/console/preset/curator,
 /turf/open/floor/wood,
 /area/service/library)
 "vAp" = (
@@ -89106,6 +89154,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/service)
+"wCt" = (
+/obj/structure/sign/painting/large/library/directional/south,
+/turf/open/floor/wood,
+/area/service/library)
 "wCQ" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -93101,6 +93153,10 @@
 /obj/structure/window/reinforced{
 	dir = 1;
 	layer = 2.9
+	},
+/obj/item/flashlight/lamp/green{
+	pixel_x = 1;
+	pixel_y = 5
 	},
 /turf/open/floor/wood,
 /area/service/library)
@@ -113855,8 +113911,8 @@ boe
 bql
 bsH
 glc
-qwv
-dRL
+vxd
+wCt
 glc
 snU
 yhY
@@ -114112,8 +114168,8 @@ bof
 bqu
 bsz
 glc
-qwv
-dRL
+fEX
+fEX
 glc
 xuF
 yhY

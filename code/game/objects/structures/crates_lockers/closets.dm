@@ -165,22 +165,34 @@
 /obj/structure/closet/examine(mob/user)
 	. = ..()
 	if(welded)
-		. += "<span class='notice'>It's welded shut.</span>"
+		. += span_notice("Шкафчик заварен.")
 	if(anchored)
-		. += "<span class='notice'>It is <b>bolted</b> to the ground.</span>"
+		. += span_notice("Шкафчик <b>прикручен</b> к полу.")
 	if(opened)
-		. += "<span class='notice'>The parts are <b>welded</b> together.</span>"
+		switch(cutting_tool)
+			if(TOOL_WELDER)
+				. += span_notice("Части [src] <b>сварены</b> инструментом.")
+			if(TOOL_WIRECUTTER)
+				. += span_notice("Части [src] можно <b>перекусить</b> инструментом.")
+			if(TOOL_CROWBAR)
+				. += span_notice("Части [src] можно <b>вскрыть</b> инструментом.")
+			if(TOOL_WRENCH)
+				. += span_notice("Части [src] можно <b>раскрутить</b> инструментом.")
+			if(TOOL_SCREWDRIVER)
+				. += span_notice("Части [src] можно <b>развинтить</b> инструментом.")
+			else
+				. += span_notice("Части [src] можно <b>разобрать</b> инструментом.")
 	else if(secure && !opened)
-		. += "<span class='notice'>Alt-click to [locked ? "unlock" : "lock"].</span>"
+		. += span_notice("Alt-click, чтобы [locked ? "открыть" : "закрыть"].")
 	else if(broken)
-		. += "<span class='notice'>The lock is <b>screwed</b> in.</span>"
+		. += span_notice("Замок <b>вкручен</b> внутрь.")
 
 	if(isobserver(user))
-		. += "<span class='info'>It contains: [english_list(contents)].</span>"
+		. += span_info("Внутри находится: [english_list(contents)].")
 		investigate_log("had its contents examined by [user] as a ghost.", INVESTIGATE_GHOST)
 
 	if(HAS_TRAIT(user, TRAIT_SKITTISH))
-		. += "<span class='notice'>If you bump into [p_them()] while running, you will jump inside.</span>"
+		. += span_notice("If you bump into [p_them()] while running, you will jump inside.")
 
 /obj/structure/closet/CanAllowThrough(atom/movable/mover, turf/target)
 	. = ..()
@@ -196,7 +208,7 @@
 	for(var/mob/living/L in T)
 		if(L.anchored || L.move_resist >= MOVE_FORCE_VERY_STRONG || (horizontal && L.mob_size > MOB_SIZE_TINY && L.density))
 			if(user)
-				to_chat(user, "<span class='danger'>There's something large on top of [src], preventing it from opening.</span>" )
+				to_chat(user, span_danger("Что-то большое поверх [src] мешает открыть шкафчик."))
 			return FALSE
 	return TRUE
 
@@ -208,7 +220,7 @@
 	for(var/mob/living/L in T)
 		if(L.anchored || L.move_resist >= MOVE_FORCE_VERY_STRONG || (horizontal && L.mob_size > MOB_SIZE_TINY && L.density))
 			if(user)
-				to_chat(user, "<span class='danger'>There's something too large in [src], preventing it from closing.</span>")
+				to_chat(user, span_danger("Что-то слишком большое внутри [src] мешает закрыть шкафчик."))
 			return FALSE
 	// BLUEMOON ADD START - крутое ЕРТ кропило против сатанистов
 	for(var/obj/item/aspergillum/ert/holy_thing)
@@ -365,30 +377,30 @@
 		if(W.tool_behaviour == cutting_tool)
 			// eigen check
 			if(eigen_teleport)
-				to_chat(user, "<span class='notice'>The unstable nature of \the [src] makes it impossible to deconstruct!</span>")
+				to_chat(user, span_notice("The unstable nature of \the [src] makes it impossible to deconstruct!"))
 				return
 
 			if(W.tool_behaviour == TOOL_WELDER)
 				if(!W.tool_start_check(user, amount=0))
 					return
-				to_chat(user, "<span class='notice'>You begin cutting \the [src] apart...</span>")
+				to_chat(user, span_notice("You begin cutting \the [src] apart..."))
 				if(W.use_tool(src, user, 40, volume=50))
 					if(!opened)
 						return
-					user.visible_message("<span class='notice'>[user] slices apart \the [src].</span>",
-									"<span class='notice'>You cut \the [src] apart with \the [W].</span>",
-									"<span class='hear'>You hear welding.</span>")
+					user.visible_message(span_notice("[user] slices apart \the [src]."),
+									span_notice("You cut \the [src] apart with \the [W]."),
+									span_hear("You hear welding."))
 					deconstruct(TRUE)
 				return
 			else if(W.tool_behaviour == TOOL_WIRECUTTER)
 				W.use_tool(src, user, 40, volume=50)
-				user.visible_message("<span class='notice'>[user] cut apart \the [src].</span>", \
-									"<span class='notice'>You cut \the [src] apart with \the [W].</span>")
+				user.visible_message(span_notice("[user] cut apart \the [src]."), \
+									span_notice("You cut \the [src] apart with \the [W]."))
 				deconstruct(TRUE)
 				return
 			W.use_tool(src, user, 40, volume=50)
-			user.visible_message("<span class='notice'>[user] deconstructed \the [src].</span>", \
-									"<span class='notice'>You deconstructed \the [src] with \the [W].</span>")
+			user.visible_message(span_notice("[user] deconstructed \the [src]."), \
+									span_notice("You deconstructed \the [src] with \the [W]."))
 			deconstruct(TRUE) //Honestly by this point, if all checks were right and this is the cutting tool, just cut it
 			return
 		if(user.transferItemToLoc(W, drop_location())) // so we put in unlit welder too
@@ -406,20 +418,20 @@
 	else if(W.tool_behaviour == TOOL_WELDER && can_weld_shut)
 		// eigen check
 		if(eigen_teleport)
-			to_chat(user, "<span class='notice'>The unstable nature of \the [src] makes it impossible to deconstruct!</span>")
+			to_chat(user, span_notice("The unstable nature of \the [src] makes it impossible to deconstruct!"))
 			return
 		if(!W.tool_start_check(user, amount=0))
 			return
 
-		to_chat(user, "<span class='notice'>You begin [welded ? "unwelding":"welding"] \the [src]...</span>")
+		to_chat(user, span_notice("You begin [welded ? "unwelding":"welding"] \the [src]..."))
 		if(W.use_tool(src, user, 40, volume=50))
 			if(opened)
 				return
 			welded = !welded
 			after_weld(welded)
-			user.visible_message("<span class='notice'>[user] [welded ? "welds shut" : "unwelded"] \the [src].</span>",
-							"<span class='notice'>You [welded ? "weld" : "unwelded"] \the [src] with \the [W].</span>",
-							"<span class='hear'>You hear welding.</span>")
+			user.visible_message(span_notice("[user] [welded ? "welds shut" : "unwelded"] \the [src]."),
+							span_notice("You [welded ? "weld" : "unwelded"] \the [src] with \the [W]."),
+							span_hear("You hear welding."))
 			log_game("[key_name(user)] [welded ? "welded":"unwelded"] closet [src] with [W] at [AREACOORD(src)]")
 			update_icon()
 	else if(W.tool_behaviour == TOOL_WRENCH && anchorable)
@@ -427,9 +439,9 @@
 			return
 		set_anchored(!anchored)
 		W.play_tool_sound(src, 75)
-		user.visible_message("<span class='notice'>[user] [anchored ? "anchored" : "unanchored"] \the [src] [anchored ? "to" : "from"] the ground.</span>", \
-						"<span class='notice'>You [anchored ? "anchored" : "unanchored"] \the [src] [anchored ? "to" : "from"] the ground.</span>", \
-						"<span class='hear'>You hear a ratchet.</span>")
+		user.visible_message(span_notice("[user] [anchored ? "anchored" : "unanchored"] \the [src] [anchored ? "to" : "from"] the ground."), \
+						span_notice("You [anchored ? "anchored" : "unanchored"] \the [src] [anchored ? "to" : "from"] the ground."), \
+						span_hear("You hear a ratchet."))
 	// cit addons
 	else if(istype(W, /obj/item/electronics/airlock))
 		handle_lock_addition(user, W)
@@ -468,18 +480,20 @@
 		span_warning("You [actuallyismob ? "try to ":""]stuff [O] into [src]."), \
 		span_hear("You hear clanging."))
 	if(actuallyismob)
-		if(do_after(user, 3 SECONDS, O)) // BLUEMOON EDIT - CLOSET DROP RUNTIME FIX - WAS if(!do_after(user, 3 SECONDS, target = targets, timed_action_flags = (IGNORE_HELD_ITEM | IGNORE_INCAPACITATED), extra_checks = CALLBACK(user, TYPE_PROC_REF(/mob/living/carbon, cuff_resist_check))))
+		var/is_bodybag = istype(src, /obj/structure/closet/body_bag) // BLUEMOON ADD
+		if(is_bodybag || do_after(user, 3 SECONDS, O)) // BLUEMOON EDIT - CLOSET DROP RUNTIME FIX - WAS if(!do_after(user, 3 SECONDS, target = targets, timed_action_flags = (IGNORE_HELD_ITEM | IGNORE_INCAPACITATED), extra_checks = CALLBACK(user, TYPE_PROC_REF(/mob/living/carbon, cuff_resist_check))))
 			user.visible_message(span_notice("[user] stuffs [O] into [src]."), \
 				span_notice("You stuff [O] into [src]."), \
-				span_hear("You hear a loud metal bang."))
+				is_bodybag ? span_hear("You hear a loud metal bang.") : null)
 			var/mob/living/L = O
-			if(!issilicon(L))
+			if(!is_bodybag && !issilicon(L))
 				L.DefaultCombatKnockdown(40)
 			if(istype(src, /obj/structure/closet/supplypod/extractionpod))
 				O.forceMove(src)
 			else
 				O.forceMove(T)
-				close()
+				if(!is_bodybag)
+					close()
 			log_combat(user, O, "stuffed", addition = "inside of [src]") // BLUEMOON ADD - CLOSET DROP RUNTIME FIX
 	else
 		O.forceMove(T)
@@ -490,7 +504,7 @@
 	if(locked)
 		if(message_cooldown <= world.time)
 			message_cooldown = world.time + 50
-			to_chat(user, "<span class='warning'>[src]'s door won't budge!</span>")
+			to_chat(user, span_warning("[src]'s door won't budge!"))
 		return
 	container_resist(user)
 
@@ -524,7 +538,7 @@
 	if(iscarbon(usr) || issilicon(usr) || isdrone(usr))
 		return toggle(usr)
 	else
-		to_chat(usr, "<span class='warning'>This mob type can't use this verb.</span>")
+		to_chat(usr, span_warning("This mob type can't use this verb."))
 
 // Objects that try to exit a locker by stepping were doing so successfully,
 // and due to an oversight in turf/Enter() were going through walls.  That
@@ -611,13 +625,13 @@
 			if(iscarbon(user))
 				add_fingerprint(user)
 			locked = !locked
-			user.visible_message("<span class='notice'>[user] [locked ? null : "un"]locks [src].</span>",
-							"<span class='notice'>You [locked ? null : "un"]lock [src].</span>")
+			user.visible_message(span_notice("[user] [locked ? null : "un"]locks [src]."),
+							span_notice("You [locked ? null : "un"]lock [src]."))
 			update_icon()
 		else if(!silent)
-			to_chat(user, "<span class='alert'>Access Denied.</span>")
+			to_chat(user, span_alert("Access Denied."))
 	else if(secure && broken)
-		to_chat(user, "<span class='warning'>\The [src] is broken!</span>")
+		to_chat(user, span_warning("\The [src] is broken!"))
 
 /obj/structure/closet/CtrlShiftClick(mob/living/user)
 	if(!HAS_TRAIT(user, TRAIT_SKITTISH))
@@ -631,9 +645,9 @@
 	if(!secure || broken)
 		return
 	if(user)
-		user.visible_message("<span class='warning'>Sparks fly from [src]!</span>",
-						"<span class='warning'>You scramble [src]'s lock, breaking it open!</span>",
-						"<span class='hear'>You hear a faint electrical spark.</span>")
+		user.visible_message(span_warning("Sparks fly from [src]!"),
+						span_warning("You scramble [src]'s lock, breaking it open!"),
+						span_hear("You hear a faint electrical spark."))
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	playsound(src, "sparks", 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 	broken = TRUE
@@ -690,19 +704,19 @@
 		if(locked)
 			togglelock(user, TRUE)
 		if(!open(user))
-			to_chat(user, "<span class='warning'>It won't budge!</span>")
+			to_chat(user, span_warning("It won't budge!"))
 			return
 	step_towards(user, T2)
 	T1 = get_turf(user)
 	if(T1 == T2)
 		user.set_resting(TRUE, TRUE)
 		if(!close(user))
-			to_chat(user, "<span class='warning'>You can't get [src] to close!</span>")
+			to_chat(user, span_warning("You can't get [src] to close!"))
 			user.set_resting(FALSE, TRUE)
 			return
 		user.set_resting(FALSE, TRUE)
 		togglelock(user)
-		T1.visible_message("<span class='warning'>[user] dives into [src]!</span>")
+		T1.visible_message(span_warning("[user] dives into [src]!"))
 
 /obj/structure/closet/canReachInto(atom/user, atom/target, list/next, view_only, obj/item/tool)
 	return (user in src)
@@ -712,24 +726,24 @@
 /obj/structure/closet/proc/handle_lock_addition(mob/user, obj/item/electronics/airlock/E)
 	add_fingerprint(user)
 	if(lock_in_use)
-		to_chat(user, "<span class='notice'>Wait for work on [src] to be done first!</span>")
+		to_chat(user, span_notice("Wait for work on [src] to be done first!"))
 		return
 	if(secure)
-		to_chat(user, "<span class='notice'>This locker already has a lock!</span>")
+		to_chat(user, span_notice("This locker already has a lock!"))
 		return
 	if(broken)
-		to_chat(user, "<span class='notice'><b>Unscrew</b> the broken lock first!</span>")
+		to_chat(user, span_notice("<b>Unscrew</b> the broken lock first!"))
 		return
 	if(!istype(E))
 		return
-	user.visible_message("<span class='notice'>[user] begins installing a lock on [src]...</span>","<span class='notice'>You begin installing a lock on [src]...</span>")
+	user.visible_message(span_notice("[user] begins installing a lock on [src]..."),span_notice("You begin installing a lock on [src]..."))
 	lock_in_use = TRUE
 	playsound(loc, 'sound/items/screwdriver.ogg', 50, 1)
 	if(!do_after(user, 60, target = src))
 		lock_in_use = FALSE
 		return
 	lock_in_use = FALSE
-	to_chat(user, "<span class='notice'>You finish the lock on [src]!</span>")
+	to_chat(user, span_notice("You finish the lock on [src]!"))
 	E.forceMove(src)
 	lockerelectronics = E
 	req_access = E.accesses
@@ -741,24 +755,24 @@
 	if(!S.tool_behaviour == TOOL_SCREWDRIVER)
 		return
 	if(lock_in_use)
-		to_chat(user, "<span class='notice'>Wait for work on [src] to be done first!</span>")
+		to_chat(user, span_notice("Wait for work on [src] to be done first!"))
 		return
 	if(locked)
-		to_chat(user, "<span class='notice'>Unlock it first!</span>")
+		to_chat(user, span_notice("Unlock it first!"))
 		return
 	if(!secure)
-		to_chat(user, "<span class='notice'>[src] doesn't have a lock that you can remove!</span>")
+		to_chat(user, span_notice("[src] doesn't have a lock that you can remove!"))
 		return
 	if(!istype(S))
 		return
 	var/brokenword = broken ? "broken " : null
-	user.visible_message("<span class='notice'>[user] begins removing the [brokenword]lock on [src]...</span>","<span class='notice'>You begin removing the [brokenword]lock on [src]...</span>")
+	user.visible_message(span_notice("[user] begins removing the [brokenword]lock on [src]..."),span_notice("You begin removing the [brokenword]lock on [src]..."))
 	playsound(loc, S.usesound, 50, 1)
 	lock_in_use = TRUE
 	if(!do_after(user, 100 * S.toolspeed, target = src))
 		lock_in_use = FALSE
 		return
-	to_chat(user, "<span class='notice'>You remove the [brokenword]lock from [src]!</span>")
+	to_chat(user, span_notice("You remove the [brokenword]lock from [src]!"))
 	if(!QDELETED(lockerelectronics))
 		lockerelectronics.add_fingerprint(user)
 		lockerelectronics.forceMove(user.loc)
@@ -775,16 +789,16 @@
 	if(!secure)
 		return FALSE
 	if(broken)
-		to_chat(user, "<span class='notice'>[src] is broken!</span>")
+		to_chat(user, span_notice("[src] is broken!"))
 		return FALSE
 	if(QDELETED(lockerelectronics) && !locked) //We want to be able to unlock it regardless of electronics, but only lockable with electronics
-		to_chat(user, "<span class='notice'>[src] is missing locker electronics!</span>")
+		to_chat(user, span_notice("[src] is missing locker electronics!"))
 		return FALSE
 	if(!check_access)
 		return TRUE
 	if(allowed(user))
 		return TRUE
-	to_chat(user, "<span class='notice'>Access denied.</span>")
+	to_chat(user, span_notice("Access denied."))
 
 /obj/structure/closet/on_object_saved(depth)
 	if(depth >= 10)

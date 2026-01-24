@@ -1,16 +1,15 @@
 import { useBackend, useLocalState } from '../backend';
 import {
-  Section,
-  Button,
-  NoticeBox,
-  LabeledList,
   Box,
-  Table,
+  Button,
   Dropdown,
   Flex,
+  Input,
+  LabeledList,
+  NoticeBox,
   ProgressBar,
-  Input
-} from '../components';
+  Section,
+  Table } from '../components';
 import { Window } from '../layouts';
 
 export const AdminTicketStats = (props, context) => {
@@ -40,7 +39,7 @@ export const TicketStatsPanel = (props, context) => {
     default_end_date,
     available_columns,
     grouping_options,
-    admin_list
+    admin_list,
   } = data;
 
   return (
@@ -98,7 +97,7 @@ export const FilterControls = (props, context) => {
     grouping_options,
     admin_list,
     available_columns,
-    loading
+    loading,
   } = props;
 
   const [startDate, setStartDate] = useLocalState(context, 'startDate', default_start_date);

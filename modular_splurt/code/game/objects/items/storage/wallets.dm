@@ -34,13 +34,29 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_items = 6
-	STR.can_hold += typecacheof(list( // Extra items that can go in tailbags, more than wallets
+	STR.can_hold |= typecacheof(list( // Extra items that can go in tailbags, more than wallets
 	/obj/item/restraints/handcuffs,
 	/obj/item/assembly/flash,
 	/obj/item/laser_pointer,
 	/obj/item/pda,
 	/obj/item/paicard,
-	/obj/item/storage/fancy/cigarettes
+	/obj/item/storage/fancy/cigarettes,
+	/obj/item/clothing/accessory/necklace,
+	/obj/item/clothing/accessory/medal,
+	/obj/item/clothing/accessory/lawyers_badge,
+	/obj/item/clothing/accessory/talisman,
+	/obj/item/clothing/accessory/pride,
+	/obj/item/clothing/accessory/fireresist,
+	/obj/item/clothing/accessory/lavawalk,
+	/obj/item/clothing/accessory/badge,
+	/obj/item/clothing/accessory/badge_nt,
+	/obj/item/clothing/accessory/badge_syndi,
+	/obj/item/clothing/accessory/booma_patch,
+	/obj/item/clothing/accessory/skull_patch,
+	/obj/item/clothing/accessory/ac_patch,
+	/obj/item/clothing/accessory/monolith_patch,
+	/obj/item/clothing/accessory/tratch_patch,
+	/obj/item/clothing/accessory/paws_patch,
 	))
 
 /obj/item/storage/wallet/tailbag/xtralg

@@ -953,7 +953,8 @@
 	colour = "light pink"
 
 /datum/status_effect/stabilized/lightpink/on_apply()
-	ADD_TRAIT(owner, TRAIT_FREESPRINT, "stabilized_slime")
+	ADD_TRAIT(owner, TRAIT_PACIFISM, STABILIZED_LIGHT_PINK_TRAIT)
+	ADD_TRAIT(owner, TRAIT_FREESPRINT, STABILIZED_LIGHT_PINK_TRAIT)
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/status_effect/slime/light_pink)
 	return ..()
 
@@ -972,7 +973,8 @@
 	return ..()
 
 /datum/status_effect/stabilized/lightpink/on_remove()
-	REMOVE_TRAIT(owner, TRAIT_FREESPRINT, "stabilized_slime")
+	REMOVE_TRAIT(owner, TRAIT_PACIFISM, STABILIZED_LIGHT_PINK_TRAIT)
+	REMOVE_TRAIT(owner, TRAIT_FREESPRINT, STABILIZED_LIGHT_PINK_TRAIT)
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/status_effect/slime/light_pink)
 	return ..()
 

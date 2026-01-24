@@ -66,6 +66,14 @@
 	build_path = /obj/item/pipe_dispenser
 	category = list("hacked", "Construction")
 
+/datum/design/mini_RPED
+	name = "Mini Rapid Part Exchange Device (RPED)"
+	id = "mini_rped"
+	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	materials = list(/datum/material/iron = 5000, /datum/material/glass = 5000)
+	build_path = /obj/item/storage/part_replacer/mini
+	category = list("hacked", "Machinery")
+
 /datum/design/handcuffs
 	name = "Handcuffs"
 	id = "handcuffs"
@@ -113,6 +121,14 @@
 	materials = list(/datum/material/iron = 8000)
 	build_path = /obj/item/ammo_casing/shotgun/incendiary
 	category = list("hacked", "Security")
+
+/datum/design/extended_emergency
+	name = "Extended emergency oxygen tank"
+	id = "extendedemergency"
+	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	materials = list(/datum/material/iron = 1500, /datum/material/titanium = 500)
+	build_path = /obj/item/tank/internals/emergency_oxygen/engi/empty
+	category = list("hacked", "Misc")
 
 /////////////////
 //   Bullets   //

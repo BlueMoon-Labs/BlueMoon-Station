@@ -42,3 +42,7 @@
 /datum/gear/neck/scarf/cow
 	name = "Holly's Scarf"
 	path = /obj/item/clothing/neck/scarf/cow
+
+/datum/gear/neck/scarf/christmas
+	name = "Christmas Scarf"
+	path = /obj/item/clothing/neck/scarf/christmas

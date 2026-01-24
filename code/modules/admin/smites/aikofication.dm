@@ -25,7 +25,7 @@
 			var/obj/item/card/id/W = human_target.wear_id?.GetID()
 			if(W)
 				W.registered_name = human_target.real_name
-				W.update_label(W.registered_name, W.assignment)
+				W.update_label()
 				if(worn)
 					if(istype(worn, /obj/item/pda))
 						worn.owner = W.registered_name

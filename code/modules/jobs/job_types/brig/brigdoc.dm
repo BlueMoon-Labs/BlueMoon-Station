@@ -29,7 +29,7 @@
 	mind_traits = list(TRAIT_LAW_ENFORCEMENT_METABOLISM, TRAIT_KNOW_MED_SURGERY_T2) //BLUEMOON EDIT added surgery trait
 
 	display_order = JOB_DISPLAY_ORDER_BRIG_PHYSICIAN
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/blindness, /datum/quirk/monophobia)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/onelife)
 	threat = 2
 
 /datum/outfit/job/brigdoc
@@ -48,8 +48,8 @@
 		/obj/item/storage/firstaid/regular,
 		/obj/item/sensor_device_security,
 		/obj/item/melee/classic_baton/telescopic,
-		/obj/item/choice_beacon/copgun, //BLUEMOON ADD
-		/obj/item/clothing/accessory/permit/special/security = 1)
+		/obj/item/choice_beacon/copgun
+		)
 
 	backpack = /obj/item/storage/backpack/security
 	satchel = /obj/item/storage/backpack/satchel/sec
@@ -57,6 +57,8 @@
 	box = /obj/item/storage/box/survival/security
 
 	implants = list(/obj/item/implant/mindshield)
+
+	accessory = list(/obj/item/clothing/accessory/permit/special/security)
 
 	chameleon_extras = list(/obj/item/storage/firstaid/regular)
 
@@ -78,12 +80,13 @@
 							/obj/item/melee/classic_baton/telescopic,
 							/obj/item/sensor_device_security,
 							/obj/item/choice_beacon/copgun,
-							/obj/item/syndicate_uplink_high=1,
-							/obj/item/clothing/accessory/permit/special/security = 1)
+							/obj/item/syndicate_uplink_high=1
+							)
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med
 	box = /obj/item/storage/box/survival/syndie
+	accessory = list(/obj/item/clothing/accessory/permit/special/security)
 	pda_slot = ITEM_SLOT_BELT
 
 /datum/outfit/plasmaman/brigdoc

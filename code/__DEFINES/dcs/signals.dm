@@ -842,3 +842,7 @@
 #define COMSIG_KB_LIVING_JUMP "keybind_jump"
 #define COMSIG_TURF_JUMP_ENDED_HERE "turf_jump_ended_here"      //from datum/element/jump/end_jump(): (jumper)
 #define COMSIG_KB_ACTIVATED (1<<0)
+
+// BLUEMOON ADD — pregnancy signals
+#define COMSIG_PREGNANCY_STARTED "pregnancy_started"
+#define COMSIG_PREGNANCY_ENDED "pregnancy_ended"

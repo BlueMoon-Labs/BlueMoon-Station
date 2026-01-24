@@ -41072,13 +41072,15 @@
 /turf/open/floor/plating,
 /area/cargo/sorting)
 "bTv" = (
-/obj/structure/table/wood/fancy/green,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer3,
 /obj/structure/window/reinforced{
 	pixel_y = 1
 	},
 /obj/structure/window/reinforced{
 	dir = 8
+	},
+/obj/machinery/modular_computer/console/preset/curator{
+	dir = 1
 	},
 /turf/open/indestructible/hotelwood,
 /area/commons/lounge)
@@ -41833,12 +41835,14 @@
 /turf/open/indestructible/hotelwood,
 /area/commons/lounge)
 "bUZ" = (
-/obj/machinery/libraryscanner,
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
 /obj/machinery/light/small{
 	dir = 1
+	},
+/obj/structure/sign/painting/library_private{
+	pixel_y = 32
 	},
 /turf/open/indestructible/hotelwood,
 /area/commons/lounge)
@@ -41849,6 +41853,7 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
+/obj/machinery/libraryscanner,
 /turf/open/indestructible/hotelwood,
 /area/commons/lounge)
 "bVb" = (
@@ -43033,6 +43038,9 @@
 /area/commons/lounge)
 "bXU" = (
 /obj/effect/decal/festive/christmas_ivy_string,
+/obj/structure/sign/painting/library{
+	pixel_y = 32
+	},
 /turf/open/floor/wood,
 /area/commons/lounge)
 "bXV" = (
@@ -43490,6 +43498,9 @@
 /area/service/library)
 "bZn" = (
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer3,
+/obj/machinery/newscaster{
+	pixel_y = 32
+	},
 /turf/open/floor/wood,
 /area/service/library)
 "bZo" = (
@@ -43976,9 +43987,7 @@
 /turf/open/floor/wood,
 /area/service/library)
 "cak" = (
-/obj/machinery/newscaster{
-	pixel_x = 32
-	},
+/obj/structure/sign/painting/large/library_private/directional/east,
 /turf/open/floor/wood,
 /area/service/library)
 "cal" = (
@@ -57508,6 +57517,13 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/science/robotics/mechbay)
+"iXS" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/sign/painting/large/library/directional/east,
+/turf/open/floor/wood,
+/area/commons/lounge)
 "iYc" = (
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer3,
 /turf/closed/festive/whitebrick,
@@ -59064,6 +59080,10 @@
 	},
 /turf/open/floor/festive/alleyway,
 /area/edina/street/primary/progress)
+"mqz" = (
+/obj/structure/sign/painting/large/library/directional/west,
+/turf/open/floor/wood,
+/area/commons/lounge)
 "mrd" = (
 /obj/structure/table/wood,
 /obj/machinery/microwave,
@@ -93585,7 +93605,7 @@ bXQ
 bXQ
 bYZ
 bXQ
-bXQ
+iXS
 cbT
 cnV
 beA
@@ -95898,7 +95918,7 @@ bXT
 bWT
 bYY
 bWT
-bWT
+mqz
 bUf
 cnO
 beA

@@ -211,7 +211,7 @@
 	var/hitsound_on = 'sound/weapons/bladeslice.ogg'
 	armour_penetration = 50
 	light_color = "#ff0000"//BLOOD RED
-	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
+	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "teared", "diced", "cut")
 	block_chance = 0
 	var/block_chance_on = 50
 	max_integrity = 400
@@ -222,6 +222,7 @@
 	var/total_mass_on = TOTAL_MASS_MEDIEVAL_WEAPON
 	var/wielded
 	var/item_state_on = "crucible1"
+	var/simpleanimal_bonus = 30
 
 /obj/item/crucible/Initialize(mapload)
 	. = ..()
@@ -230,7 +231,7 @@
 
 /obj/item/crucible/ComponentInitialize()
 	. = ..()
-	AddComponent(/datum/component/two_handed, force_unwielded=5, force_wielded=25, icon_wielded="crucible1", wieldsound = 'sound/weapons/saberon.ogg', unwieldsound = 'sound/weapons/saberoff.ogg')
+	AddComponent(/datum/component/two_handed, force_unwielded=5, force_wielded=30, icon_wielded="crucible1", wieldsound = 'sound/weapons/saberon.ogg', unwieldsound = 'sound/weapons/saberoff.ogg')
 
 /obj/item/crucible/suicide_act(mob/living/carbon/user)
 	if(wielded)
@@ -264,7 +265,7 @@
 		icon_state = "crucible0"
 	clean_blood()
 
-/obj/item/crucible/attack(mob/target, mob/living/carbon/human/user)
+/obj/item/crucible/attack(mob/living/target, mob/living/carbon/human/user)
 	var/def_zone = user.zone_selected
 	if(ishuman(target))
 		var/mob/living/carbon/human/H = target
@@ -284,6 +285,9 @@
 			bodyp.drop_limb()
 		else
 			..()
+	else if(isanimal(target) && wielded)
+		target.apply_damage(simpleanimal_bonus, BRUTE) // Без баффа это оружие слабее даже обычного крашера в пересчёте цифр, хотя падает с босса
+		..()
 	else
 		..()
 
@@ -990,7 +994,10 @@
 	hitsound = 'modular_sand/sound/sif/sif_slash.ogg'
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut", "gutted", "gored")
 	sharpness = SHARP_EDGED
+	wound_bonus = 10
+	bare_wound_bonus = 12
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	var/simpleanimal_bonus = 15
 
 //Enables the sword to butcher bodies
 /obj/item/melee/sword_of_the_forsaken/Initialize(mapload)
@@ -1003,6 +1010,10 @@
 		final_block_chance = 10 //half as much what you get in melee
 	return ..()
 
+/obj/item/melee/sword_of_the_forsaken/attack(mob/living/target, mob/living/user)
+	..()
+	if(isanimal(target))
+		target.apply_damage(simpleanimal_bonus, BRUTE) // Чтобы не быть зубочисткой на лаве
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=End of Sworf Of The Forsaken=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=//
 
 

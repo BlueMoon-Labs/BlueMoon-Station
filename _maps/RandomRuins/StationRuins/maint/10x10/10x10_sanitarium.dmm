@@ -80,7 +80,7 @@
 /obj/item/bedsheet,
 /obj/structure/bed,
 /obj/structure/curtain,
-/obj/structure/sign/poster/official/no_erp{
+/obj/structure/sign/poster/contraband/yes_erp{
 	pixel_x = 30
 	},
 /turf/open/floor/carpet/cyan,

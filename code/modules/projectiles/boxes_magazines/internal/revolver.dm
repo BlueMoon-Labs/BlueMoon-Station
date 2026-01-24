@@ -9,6 +9,7 @@
 	ammo_type = /obj/item/ammo_casing/n762
 	caliber = list("n762")
 	max_ammo = 7
+	multiload = 0 //заряжание через камору
 
 /obj/item/ammo_box/magazine/internal/cylinder/rus357
 	name = "\improper Russian revolver cylinder"

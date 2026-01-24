@@ -10,7 +10,7 @@
 
 /obj/machinery/clonepod
 	name = "cloning pod"
-	desc = "An electronically-lockable pod for growing organic tissue."
+	desc = "Капсула с электронно-контролируемым замком для выращивания тканей органической природы."
 	density = TRUE
 	icon = 'icons/obj/machines/cloning.dmi'
 	icon_state = "pod_0"
@@ -80,16 +80,18 @@
 /obj/machinery/clonepod/examine(mob/user)
 	. = ..()
 	var/mob/living/mob_occupant = occupant
-	. += "<span class='notice'>The <i>linking</i> device can be <i>scanned<i> with a multitool.</span>"
+	. += span_notice("<i>Связующее</i> устройство может быть <i>отсканировано</i> мультитулом.</span>")
 	if(mess)
-		. += "It's filled with blood and viscera. You swear you can see it moving..."
+		. += "Наполнено кровю и потрохами. Вы покляться можете, что оно двинулось..."
 	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Cloning speed at <b>[speed_coeff*50]%</b>.<br>Predicted amount of cellular damage: <b>[100-heal_level]%</b>.</span>"
+		. += span_notice("Статус-дисплей сообщает: \n\
+		- Скорость клонирования: <b>[speed_coeff*50]%</b> \n\
+		- Ожидаемые клеточные травмы: <b>[100-heal_level]%</b>.")
 		if(efficiency > 5)
-			to_chat(user, "<span class='notice'>Pod has been upgraded to support autoprocessing.<span>")
+			to_chat(user, span_notice("Капсула улучшена и поддерживает автообработку."))
 	if(is_operational() && mob_occupant)
 		if(mob_occupant.stat != DEAD)
-			. += "Current clone cycle is [round(get_completion())]% complete."
+			. += "Текущий цикл клонирования завершён на [round(get_completion())]%"
 
 /obj/machinery/clonepod/return_air()
 	// We want to simulate the clone not being in contact with
@@ -177,11 +179,11 @@
 
 	if(grab_ghost_when == CLONER_FRESH_CLONE)
 		H.grab_ghost()
-		to_chat(H, "<span class='notice'><b>Consciousness slowly creeps over you as your body regenerates.</b><br><i>So this is what cloning feels like?</i></span>")
+		to_chat(H, "<span class='notice'><b>Сознание медленно подкрадывается к вам с регенерацией вашего тела.</b><br><i>Так вот как ощущается клонирование?</i></span>")
 
 	if(grab_ghost_when == CLONER_MATURE_CLONE)
 		H.ghostize(TRUE)	//Only does anything if they were still in their old body and not already a ghost
-		to_chat(H.get_ghost(TRUE), "<span class='notice'>Your body is beginning to regenerate in a cloning pod. You will become conscious when it is complete.</span>")
+		to_chat(H.get_ghost(TRUE), "<span class='notice'>Ваше тело начинает регенерировать в капсуле клонирования. Вы придёте в сознание как только это завершится.</span>")
 
 	if(H)
 		H.faction |= factions
@@ -205,7 +207,7 @@
 
 /obj/machinery/clonepod/proc/poll_for_mind(mob/living/carbon/human/H, clonename)
 	set waitfor = FALSE
-	var/list/candidates = pollCandidatesForMob("Do you want to play as [clonename]'s defective clone? (Don't ERP without permission from the original)", null, null, null, 100, H, POLL_IGNORE_CLONE)
+	var/list/candidates = pollCandidatesForMob("Хотите ли взять роль дефективного клона [clonename]? (Не занимайтесь ERP без разрешения оригинала)", null, null, null, 100, H, POLL_IGNORE_CLONE)
 	if(LAZYLEN(candidates))
 		var/mob/C = pick(candidates)
 		H.key = C.key
@@ -218,28 +220,28 @@
 		if(mob_occupant)
 			go_out()
 			mob_occupant.copy_from_prefs_vr()
-			connected_message("Clone Ejected: Loss of power.")
+			connected_message("Клон извлечён: потеряна энергия.")
 
 	else if(mob_occupant && (mob_occupant.loc == src))
 		if(SSeconomy.full_ancap)
 			if(!current_insurance)
 				go_out()
-				connected_message("Clone Ejected: No bank account.")
+				connected_message("Клон извлечён: нет банковского аккаунта.")
 				if(internal_radio)
-					SPEAK("The cloning of [mob_occupant.real_name] has been terminated due to no bank account to draw payment from.")
+					SPEAK("Клонирование субъекта [mob_occupant.real_name] было отменено ввиду отсутствия банковского аккаунта для взымания оплаты.")
 			else if(!current_insurance.adjust_money(-fair_market_price))
 				go_out()
-				connected_message("Clone Ejected: Out of Money.")
+				connected_message("CКлон извлечён: недостаточно средств.")
 				if(internal_radio)
-					SPEAK("The cloning of [mob_occupant.real_name] has been ended prematurely due to being unable to pay.")
+					SPEAK("Клонирование субъекта [mob_occupant.real_name] было заранее отменено ввиду отсутствия средств для оплаты.")
 			else
 				var/datum/bank_account/D = SSeconomy.get_dep_account(payment_department)
 				if(D)
 					D.adjust_money(fair_market_price)
 		if(mob_occupant && (mob_occupant.stat == DEAD) || (mob_occupant.suiciding) || mob_occupant.hellbound)  //Autoeject corpses and suiciding dudes.			connected_message("Clone Rejected: Deceased.")
 			if(internal_radio)
-				SPEAK("The cloning has been \
-					aborted due to unrecoverable tissue failure.")
+				SPEAK("Клонирование было \
+					отменено ввиду невосстановимого отказа тканей.")
 			go_out()
 			mob_occupant.copy_from_prefs_vr()
 
@@ -268,9 +270,9 @@
 			use_power(7500) //This might need tweaking.
 
 		else if((mob_occupant && mob_occupant.cloneloss <= (100 - heal_level)))
-			connected_message("Cloning Process Complete.")
+			connected_message("Процесс клонирования завершён.")
 			if(internal_radio)
-				SPEAK("The cloning cycle is complete.")
+				SPEAK("Цикл клонирования завершён.")
 
 			// If the cloner is upgraded to debugging high levels, sometimes
 			// organs and limbs can be missing.
@@ -304,31 +306,31 @@
 	if(W.tool_behaviour == TOOL_MULTITOOL)
 		if(istype(W.buffer, /obj/machinery/computer/cloning))
 			if(get_area(W.buffer) != get_area(src))
-				to_chat(user, "<font color = #666633>-% Cannot link machines across power zones. Buffer cleared %-</font color>")
+				to_chat(user, "<font color = #666633>-% Нельзя соединить машинерию между зонами питания. Буфер очищен %-</font color>")
 				W.buffer = null
 				return
-			to_chat(user, "<font color = #666633>-% Successfully linked [W.buffer] with [src] %-</font color>")
+			to_chat(user, "<font color = #666633>-% Успешно соединено [W.buffer] с [src] %-</font color>")
 			var/obj/machinery/computer/cloning/comp = W.buffer
 			if(connected)
 				connected.DetachCloner(src)
 			comp.AttachCloner(src)
 		else
 			W.buffer = src
-			to_chat(user, "<font color = #666633>-% Successfully stored [REF(W.buffer)] [W.buffer] in buffer %-</font color>")
+			to_chat(user, "<font color = #666633>-% Успешно сохранено [REF(W.buffer)] [W.buffer] в буфер обмена %-</font color>")
 		return
 
 	var/mob/living/mob_occupant = occupant
 	if(W.GetID())
 		if(!check_access(W))
-			to_chat(user, "<span class='danger'>Access Denied.</span>")
+			to_chat(user, "<span class='danger'>В доступе отказано.</span>")
 			return
 		if(!(mob_occupant || mess))
-			to_chat(user, "<span class='danger'>Error: Pod has no occupant.</span>")
+			to_chat(user, "<span class='danger'>Ошибка: капсула не имеет пациента.</span>")
 			return
 		else
 			connected_message("Emergency Ejection")
-			SPEAK("An emergency ejection of the current clone has occurred. Survival not guaranteed.")
-			to_chat(user, "<span class='notice'>You force an emergency ejection. </span>")
+			SPEAK("Экстренное извлечение текущего клона. Выживание не гарантируется.")
+			to_chat(user, "<span class='notice'>Вы вынудили экстренное извлечение. </span>")
 			go_out()
 			mob_occupant.copy_from_prefs_vr()
 	else
@@ -339,7 +341,7 @@
 	if(!occupant)
 		return
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
-	to_chat(user, "<span class='warning'>You corrupt the genetic compiler.</span>")
+	to_chat(user, "<span class='warning'>Вы испортили генетические процессы компиляции.</span>")
 	malfunction()
 	return TRUE
 
@@ -350,7 +352,7 @@
 	if (!message)
 		return FALSE
 
-	connected.temp = message
+	connected.cloning_message = message
 	connected.updateUsrDialog()
 	return TRUE
 
@@ -369,7 +371,7 @@
 		mess = FALSE
 		if(mob_occupant)
 			mob_occupant.spawn_gibs()
-		audible_message("<span class='italics'>You hear a splat.</span>")
+		audible_message("<span class='italics'>Вы слышите шлепок.</span>")
 		update_icon()
 		return
 
@@ -386,7 +388,7 @@
 
 	if(grab_ghost_when == CLONER_MATURE_CLONE)
 		mob_occupant.grab_ghost()
-		to_chat(occupant, "<span class='notice'><b>There is a bright flash!</b><br><i>You feel like a new being.</i></span>")
+		to_chat(occupant, "<span class='notice'><b>Появляется яркая вспышка!</b><br><i>Вы ощущаетесь новым существом.</i></span>")
 		mob_occupant.flash_act()
 
 	var/list/policies = CONFIG_GET(keyed_list/policy)
@@ -408,9 +410,8 @@
 /obj/machinery/clonepod/proc/malfunction()
 	var/mob/living/mob_occupant = occupant
 	if(mob_occupant)
-		connected_message("Critical Error!")
-		SPEAK("Critical error! Please contact a Thinktronic Systems \
-			technician, as your warranty may be affected.")
+		connected_message("Критическая ошибка!")
+		SPEAK("Критическая ошибка! Пожалуйста, сообщите технику Thinktronic Systems, ввиду возможного случая вашей гарантии.")
 		mess = TRUE
 		maim_clone(mob_occupant)	//Remove every bit that's grown back so far to drop later, also destroys bits that haven't grown yet
 		update_icon()
@@ -418,7 +419,7 @@
 			clonemind.transfer_to(mob_occupant)
 		mob_occupant.grab_ghost() // We really just want to make you suffer.
 		flash_color(mob_occupant, flash_color="#960000", flash_time=100)
-		to_chat(mob_occupant, "<span class='warning'><b>Agony blazes across your consciousness as your body is torn apart.</b><br><i>Is this what dying is like? Yes it is.</i></span>")
+		to_chat(mob_occupant, "<span class='warning'><b>Агония полыхает в сознании, пока ваше тело рвёт на части.</b><br><i>Так вот, каково умирать? Именно так.</i></span>")
 		playsound(src.loc, 'sound/machines/warning-buzzer.ogg', 50, 0)
 		SEND_SOUND(mob_occupant, sound('sound/hallucinations/veryfar_noise.ogg',0,1,50))
 		QDEL_IN(mob_occupant, 40)
@@ -435,8 +436,8 @@
 	if (!(. & EMP_PROTECT_SELF))
 		var/mob/living/mob_occupant = occupant
 		if(mob_occupant && prob((25+severity/1.34)/efficiency))
-			connected_message(Gibberish("EMP-caused Accidental Ejection", 0))
-			SPEAK(Gibberish("Exposure to electromagnetic fields has caused the ejection of, ERROR: John Doe, prematurely." ,0))
+			connected_message(Gibberish("ЭМИ-спровоцированное случайное извлечение", 0))
+			SPEAK(Gibberish("Воздействие электромагнитного возмущения спровоцировало извлечение, ОШИБКА: Ивана Иванова, преждевременно." ,0))
 			mob_occupant.copy_from_prefs_vr()
 			go_out()
 
@@ -544,7 +545,7 @@
 //Experimental cloner; clones a body regardless of the owner's status, letting a ghost control it instead
 /obj/machinery/clonepod/experimental
 	name = "experimental cloning pod"
-	desc = "An ancient cloning pod. It seems to be an early prototype of the experimental cloners used in Nanotrasen Stations."
+	desc = "Древняя капсула клонирования. Выглядит как ранний прототип экспериментальных клонерок, что были на объектах Nanotrasen Stations."
 	icon = 'icons/obj/machines/cloning.dmi'
 	icon_state = "pod_0"
 	req_access = null

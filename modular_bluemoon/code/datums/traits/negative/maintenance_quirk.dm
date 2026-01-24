@@ -18,11 +18,11 @@
 		qdel(src)
 
 /datum/job/roboticist/New()
-	var/list/extra_mind_traits = list(QUALIFIED_ROBOTIC_MAINTER)
+	var/list/extra_mind_traits = list(TRAIT_QUALIFIED_ROBOTIC_MAINTER)
 	LAZYADD(mind_traits, extra_mind_traits)
 	. = ..()
 
 /datum/job/rd/New()
-	var/list/extra_mind_traits = list(QUALIFIED_ROBOTIC_MAINTER)
+	var/list/extra_mind_traits = list(TRAIT_QUALIFIED_ROBOTIC_MAINTER)
 	LAZYADD(mind_traits, extra_mind_traits)
 	. = ..()

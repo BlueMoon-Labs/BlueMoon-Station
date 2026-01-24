@@ -6,7 +6,7 @@
 	materials = list(/datum/material/plasma = 5000, /datum/material/iron = 7500)
 	build_path = /obj/item/ammo_box/magazine/m10mm/fire
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/m10mm
 	name = "pistol magazine (10mm)"
@@ -16,7 +16,7 @@
 	materials = list(/datum/material/iron = 6000)
 	build_path = /obj/item/ammo_box/magazine/m10mm
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/m10mm/hp
 	name = "pistol magazine (10mm HP)"
@@ -26,7 +26,7 @@
 	materials = list(/datum/material/iron = 7500, /datum/material/glass = 5000)
 	build_path = /obj/item/ammo_box/magazine/m10mm/hp
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/m10mm/ap
 	name = "pistol magazine (10mm AP)"
@@ -36,7 +36,7 @@
 	materials = list(/datum/material/iron = 7500, /datum/material/titanium = 6500)
 	build_path = /obj/item/ammo_box/magazine/m10mm/ap
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/bolt_clip
 	name = "Surplus Rifle Clip"
@@ -46,7 +46,7 @@
 	materials = list(/datum/material/iron = 8000)
 	build_path = /obj/item/ammo_box/a762
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/m45 //Kinda NT in theory
 	name = "handgun magazine (.45)"
@@ -55,7 +55,7 @@
 	materials = list(/datum/material/iron = 8000)
 	build_path = /obj/item/ammo_box/magazine/m45
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/pistolm9mm
 	name = "pistol magazine (9mm)"
@@ -65,7 +65,7 @@
 	materials = list(/datum/material/iron = 7500)
 	build_path = /obj/item/ammo_box/magazine/pistolm9mm
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/sl357
 	name = "revolver speedloader (.357)"
@@ -75,7 +75,7 @@
 	materials = list(/datum/material/iron = 30000)
 	build_path = /obj/item/ammo_box/a357
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/sl357ap
 	name = "revolver speedloader (.357 AP)"
@@ -85,7 +85,17 @@
 	materials = list(/datum/material/iron = 30000, /datum/material/titanium = 5000)
 	build_path = /obj/item/ammo_box/a357/ap
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/sl357dumdum
+	name = "revolver speedloader (.357 DumDum)"
+	desc = "A revolver speedloader. Rip and tar the naked flash."
+	id = "sl357dumdum"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 30000, /datum/material/glass = 5000)
+	build_path = /obj/item/ammo_box/a357/dumdum
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/m10apbox
 	name = "ammo box (10mm Armour Piercing)"
@@ -95,7 +105,7 @@
 	materials = list(/datum/material/iron = 30000, /datum/material/titanium = 6000)
 	build_path = /obj/item/ammo_box/c10mm/ap
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/m10firebox
 	name = "ammo box (10mm Incendiary)"
@@ -105,7 +115,7 @@
 	materials = list(/datum/material/iron = 30000, /datum/material/plasma = 6000)
 	build_path = /obj/item/ammo_box/c10mm/fire
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/m10hpbox
 	name = "ammo box (10mm Hollowpoint)"
@@ -115,4 +125,4 @@
 	materials = list(/datum/material/iron = 30000, /datum/material/glass = 6000)
 	build_path = /obj/item/ammo_box/c10mm/hp
 	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE

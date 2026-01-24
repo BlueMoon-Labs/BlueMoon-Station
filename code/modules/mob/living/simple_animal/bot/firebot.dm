@@ -6,7 +6,7 @@
 
 /mob/living/simple_animal/bot/firebot
 	name = "\improper Firebot"
-	desc = "A little fire extinguishing bot. He looks rather anxious."
+	desc = "Небольшой робот-пожарный, выглядит на взводе."
 	icon = 'icons/mob/aibots.dmi'
 	icon_state = "firebot"
 	density = FALSE
@@ -100,17 +100,17 @@
 	last_found = world.time
 	update_icon()
 
-/mob/living/simple_animal/bot/firebot/set_custom_texts()
-	text_hack = "You corrupt [name]'s safety protocols."
-	text_dehack = "You detect errors in [name] and reset his programming."
-	text_dehack_fail = "[name] is not responding to reset commands!"
+/mob/living/simple_animal/bot/floorbot/set_custom_texts()
+	text_hack = "Вы взломали протоколы безопасности у [name]."
+	text_dehack = "Вы заметили ошибки в программе [name] и сбросили их до заводских настроек."
+	text_dehack_fail = "[name] не отвечает на запросы сброса настроек!"
 
 /mob/living/simple_animal/bot/firebot/emag_act(mob/user)
 	. = ..()
 	if(emagged == 1)
 		if(user)
-			to_chat(user, "<span class='danger'>[src] buzzes and beeps.</span>")
-		audible_message("<span class='danger'>[src] buzzes oddly!</span>")
+			to_chat(user, "<span class='danger'>[src] пищит и жужжит.</span>")
+		audible_message("<span class='danger'>[src] странно жужжит!</span>")
 		playsound(src, "sparks", 75, TRUE)
 		if(user)
 			old_target_fire = user
@@ -258,7 +258,7 @@
 
 	if(is_burning(scan_target))
 		if((detected_cooldown + DETECTED_VOICE_INTERVAL) < world.time)
-			speak("Fire detected!")
+			speak("Обнаружен пожар!")
 			playsound(src, "sound/voice/firebot/detected.ogg", 50, 0)
 			detected_cooldown = world.time
 		result = scan_target
@@ -293,7 +293,7 @@
 
 /mob/living/simple_animal/bot/firebot/explode()
 	on = FALSE
-	visible_message("<span class='boldannounce'>[src] blows apart!</span>")
+	visible_message("<span class='boldannounce'>[src] разлетаеся на части!</span>")
 
 	var/atom/Tsec = drop_location()
 

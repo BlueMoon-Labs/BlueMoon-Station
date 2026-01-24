@@ -208,6 +208,7 @@ GLOBAL_LIST_INIT(library_section_names, list("Any", "Fiction", "Non-Fiction", "A
 	icon_state = "binder"
 	anchored = 1
 	density = 1
+	var/checking_var = TRUE
 
 /obj/machinery/bookbinder/attackby(obj/item/I, mob/user)
 	var/obj/item/paper/P = I
@@ -226,7 +227,7 @@ GLOBAL_LIST_INIT(library_section_names, list("Any", "Fiction", "Non-Fiction", "A
 		src.visible_message("[src] whirs as it prints and binds a new book.")
 		var/obj/item/book/b = new(loc)
 		for(var/datum/paper_input/line in P.raw_text_inputs)
-			b.dat += line.to_raw_html() + "\n"
+			b.dat += replacetext(line.to_raw_html(), "\n", "<BR>") + "<br>"
 		b.name = "Print Job #[rand(100, 999)]"
 		b.icon_state = "book[rand(1,16)]"
 		qdel(P)

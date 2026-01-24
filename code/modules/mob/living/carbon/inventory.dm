@@ -16,7 +16,7 @@
 
 /mob/living/carbon/proc/equip_in_one_of_slots(obj/item/I, list/slots, qdel_on_fail = 1, critical = FALSE)
 	for(var/slot in slots)
-		if(equip_to_slot_if_possible(I, slots[slot], qdel_on_fail = 0, disable_warning = TRUE))
+		if(equip_to_slot_if_possible(I, slots[slot], qdel_on_fail = FALSE, disable_warning = TRUE))
 			return slot
 	if(critical) //it is CRITICAL they get this item, no matter what
 		//do they have a backpack?
@@ -25,11 +25,13 @@
 			//nothing on their back
 			backpack = new /obj/item/storage/backpack(get_turf(src))
 			if(equip_to_slot(backpack, ITEM_SLOT_BACK)) //worst-case-scenario, something that shouldnt wear a backpack gets one
-				I.forceMove(backpack)
+				if(!SEND_SIGNAL(backpack, COMSIG_TRY_STORAGE_INSERT, I, src, TRUE, TRUE))
+					I.forceMove(backpack)
 				return ITEM_SLOT_BACK
 		else if(istype(backpack) && SEND_SIGNAL(backpack, COMSIG_CONTAINS_STORAGE))
 			//place it in here, regardless of storage capacity
-			I.forceMove(backpack)
+			if(!SEND_SIGNAL(backpack, COMSIG_TRY_STORAGE_INSERT, I, src, TRUE, TRUE))
+				I.forceMove(backpack)
 			return ITEM_SLOT_BACK
 		else
 			//this should NEVER happen, but if it does, report it with the appropriate information

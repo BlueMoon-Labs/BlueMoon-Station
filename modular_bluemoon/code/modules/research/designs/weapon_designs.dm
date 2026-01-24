@@ -52,7 +52,7 @@
 	materials = list(/datum/material/iron = 25000)
 	build_path = /obj/item/ammo_box/magazine/m556
 	category = list("Imported")
-
+/*
 //////////////////
 //ACR5m30 design//
 //////////////////
@@ -106,7 +106,7 @@
 	build_path = /obj/item/ammo_box/a58mm/hs
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-
+*/
 
 ////////////////////////
 //Enforcer drum design//
@@ -117,7 +117,7 @@
 	desc = "A drum mag of .45 rubber for the Mk. 58 Enforcer"
 	id = "e45_drum"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 20000,)
+	materials = list(/datum/material/iron = 35000)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
@@ -127,7 +127,7 @@
 	name = "Drum Enforcer magazine (Empty)"
 	desc = "A drum Mk. 58 magazine, mostly known for it jams."
 	id = "e45_drum_empty"
-	materials = list(/datum/material/iron = 6500)
+	materials = list(/datum/material/iron = 20000)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/empty
 
 /datum/design/e45_drum/lethal
@@ -135,7 +135,7 @@
 	desc = "A drum mag of .45 Lethal for the Mk. 58 Enforcer"
 	id = "e45_drum_lethal"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 25000)
+	materials = list(/datum/material/iron = 35000)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/lethal
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
@@ -145,7 +145,7 @@
 	desc = "A drum mag of .45 Taser for the Mk. 58 Enforcer"
 	id = "e45_drum_taser"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 25000)
+	materials = list(/datum/material/iron = 35000)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/taser
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
@@ -155,7 +155,7 @@
 	desc = "A drum mag of .45 Tracking for the Mk. 58 Enforcer"
 	id = "e45_drum_trac"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 18000)
+	materials = list(/datum/material/iron = 35000)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/trac
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
@@ -165,7 +165,7 @@
 	desc = "A drum mag of .45 Hotshot for the Mk. 58 Enforcer"
 	id = "e45_drum_hot"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 25000)
+	materials = list(/datum/material/iron = 35000)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/hotshot
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
@@ -175,7 +175,7 @@
 	desc = "A drum mag of .45 Hydra-Shock for the Mk. 58 Enforcer"
 	id = "e45_drum_hydra"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 25000)
+	materials = list(/datum/material/iron = 35000)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/hydra
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
@@ -185,7 +185,7 @@
 	desc = "A drum mag of .45 Ion for the Mk. 58 Enforcer"
 	id = "e45_drum_ion"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 20000, /datum/material/uranium = 1650)
+	materials = list(/datum/material/iron = 35000, /datum/material/uranium = 1650)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/ion
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
@@ -195,7 +195,7 @@
 	desc = "A drum mag of .45 Stun for the Mk. 58 Enforcer"
 	id = "e45_drum_stun"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 18000, /datum/material/uranium = 1650)
+	materials = list(/datum/material/iron = 35000, /datum/material/uranium = 1650)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/stun
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
@@ -206,7 +206,7 @@
 	desc = "A drum mag of .45 Laser for the Mk. 58 Enforcer"
 	id = "e45_drum_laser"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 25000, /datum/material/uranium = 1650)
+	materials = list(/datum/material/iron = 35000, /datum/material/uranium = 1650)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/laser
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY

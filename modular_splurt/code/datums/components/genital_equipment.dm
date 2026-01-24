@@ -18,14 +18,14 @@
 	if(!holder_genital)
 		return
 
-	if(istype(holder_genital))
-		return holder_genital.owner
+	if(!istype(holder_genital))
+		return
 
-	return holder_genital["wearer"]
+	return holder_genital.owner
 
 /datum/component/genital_equipment/proc/insert_genital(obj/item/organ/genital/G, mob/user)
 	if(!genital_slot.Find(G.slot))
-		to_chat(user, span_warning("You can't put that there!"))
+		to_chat(user, span_warning("Вы не можете вставить это туда!"))
 		return FALSE
 
 	var/datum/callback/pre_insert = LAZYACCESS(procs_list, "before_inserting")
@@ -45,9 +45,9 @@
 /datum/component/genital_equipment/proc/remove_genital(obj/item/organ/genital/G, mob/user)
 	var/datum/callback/pre_remove = LAZYACCESS(procs_list, "before_removing")
 	. = pre_remove?.Invoke(parent, G, user)
-	. = isnull(.) || .
-	if(!(isnull(.) || .))
+	if(. == FALSE)
 		return FALSE
+	. = TRUE
 
 	holder_genital = null
 

@@ -7,7 +7,7 @@
 //Food items that aren't eaten normally and leave an empty container behind.
 /obj/item/reagent_containers/food/condiment
 	name = "condiment container"
-	desc = "Just your average condiment container."
+	desc = "Простая среднестатистическая упаковка для приправ."
 	icon = 'icons/obj/food/containers.dmi'
 	icon_state = "emptycondiment"
 	reagent_flags = OPENCONTAINER
@@ -30,27 +30,27 @@
 	var/originalname = "condiment" //Can't use initial(name) for this. This stores the name set by condimasters.
 
 /obj/item/reagent_containers/food/condiment/suicide_act(mob/living/carbon/user)
-	user.visible_message("<span class='suicide'>[user] is trying to eat the entire [src]! It looks like [user.ru_who()] forgot how food works!</span>")
+	user.visible_message("<span class='suicide'>[user] пытается съесть [src] целиком! Похоже, [user.ru_who()] забыл[user.ru_a()] как правильно есть!</span>")
 	return OXYLOSS
 
 /obj/item/reagent_containers/food/condiment/attack(mob/M, mob/user, def_zone)
 
 	if(!reagents || !reagents.total_volume)
-		to_chat(user, "<span class='warning'>None of [src] left, oh no!</span>")
+		to_chat(user, "<span class='warning'>Внутри [src] ничего не осталось, о нет!</span>")
 		return FALSE
 
 	if(!canconsume(M, user))
 		return FALSE
 
 	if(M == user)
-		user.visible_message("<span class='notice'>[user] swallows some of contents of \the [src].</span>", "<span class='notice'>You swallow some of contents of \the [src].</span>")
+		user.visible_message("<span class='notice'>[user] глотает часть содержимого \the [src].</span>", "<span class='notice'>Вы отхлебнули часть содержимого \the [src].</span>")
 	else
-		user.visible_message("<span class='warning'>[user] attempts to feed [M] from [src].</span>")
+		user.visible_message("<span class='warning'>[user] пытается накормить [M] из [src].</span>")
 		if(!do_mob(user, M))
 			return
 		if(!reagents || !reagents.total_volume)
 			return // The condiment might be empty after the delay.
-		user.visible_message("<span class='warning'>[user] feeds [M] from [src].</span>")
+		user.visible_message("<span class='warning'>[user] кормит [M] из [src].</span>")
 		log_combat(user, M, "fed", reagents.log_list())
 
 	var/fraction = min(10/reagents.total_volume, 1)
@@ -66,26 +66,26 @@
 	if(istype(target, /obj/structure/reagent_dispensers)) //A dispenser. Transfer FROM it TO us.
 
 		if(!target.reagents.total_volume)
-			to_chat(user, "<span class='warning'>[target] is empty!</span>")
+			to_chat(user, "<span class='warning'>Внутри [target] пусто!</span>")
 			return
 
 		if(reagents.total_volume >= reagents.maximum_volume)
-			to_chat(user, "<span class='warning'>[src] is full!</span>")
+			to_chat(user, "<span class='warning'>Больше в [src] не влезет!</span>")
 			return
 
 		var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, log = TRUE)
-		to_chat(user, "<span class='notice'>You fill [src] with [trans] units of the contents of [target].</span>")
+		to_chat(user, "<span class='notice'>Вы наполнили [src] на [trans]u содержимого [target].</span>")
 
 	//Something like a glass or a food item. Player probably wants to transfer TO it.
 	else if(target.is_drainable() || istype(target, /obj/item/reagent_containers/food/snacks))
 		if(!reagents.total_volume)
-			to_chat(user, "<span class='warning'>[src] is empty!</span>")
+			to_chat(user, "<span class='warning'>Внутри [src] пусто!</span>")
 			return
 		if(target.reagents.total_volume >= target.reagents.maximum_volume)
-			to_chat(user, "<span class='warning'>you can't add anymore to [target]!</span>")
+			to_chat(user, "<span class='warning'>Больше в [target] не влезет!</span>")
 			return
 		var/trans = src.reagents.trans_to(target, amount_per_transfer_from_this, log = TRUE)
-		to_chat(user, "<span class='notice'>You transfer [trans] units of the condiment to [target].</span>")
+		to_chat(user, "<span class='notice'>Вы перелили [trans]u приправы в [target].</span>")
 
 /obj/item/reagent_containers/food/condiment/on_reagent_change(changetype)
 	if(!possible_states.len)
@@ -102,30 +102,52 @@
 			name = "[originalname] bottle"
 			main_reagent = reagents.get_master_reagent_name()
 			if (reagents.reagent_list.len==1)
-				desc = "Looks like it is [lowertext(main_reagent)], but you are not sure."
+				desc = "Похоже, внутри находится [lowertext(main_reagent)], но вы не уверены."
 			else
-				desc = "A mixture of various condiments. [lowertext(main_reagent)] is one of them."
+				desc = "Смесь чего-то разного. Из него одно похоже на [lowertext(main_reagent)]."
 			icon_state = "mixedcondiments"
 	else
 		icon_state = "emptycondiment"
 		name = "condiment bottle"
-		desc = "An empty condiment bottle."
+		desc = "Пустая бутылка для приправ."
 		return
 
 /obj/item/reagent_containers/food/condiment/enzyme
 	name = "universal enzyme"
-	desc = "Used in cooking various dishes."
+	desc = "Ферментатив. Нужен для приготовления разнообразных блюд."
 	icon_state = "enzyme"
 	list_reagents = list(/datum/reagent/consumable/enzyme = 50)
 
 /obj/item/reagent_containers/food/condiment/sugar
-	name = "sugar bottle"
-	desc = "Tasty spacey sugar!"
+	name = "sugar pack"
+	desc = "Вкуснятина-космосахар! Незаменим в приготовлении любого десерта."
+	icon = 'modular_bluemoon/icons/obj/food/containers.dmi'
+	icon_state = "sugarsackbasic"
 	list_reagents = list(/datum/reagent/consumable/sugar = 50)
+
+/obj/item/reagent_containers/food/condiment/sugar/Initialize(mapload)
+	. = ..()
+	icon_state = "sugarsack_[pick(1,3)]"
+
+/obj/item/reagent_containers/food/condiment/sugar/on_reagent_change(changetype)
+	if(!possible_states.len)
+		return
+	if(reagents.reagent_list.len > 0)
+		var/main_reagent = reagents.get_master_reagent_id()
+		main_reagent = reagents.get_master_reagent_name()
+		name = "sugar sack"
+		if (reagents.reagent_list.len==1)
+			desc = "Похоже, внутри находится [lowertext(main_reagent)], но вы не уверены."
+		else
+			desc = "Смесь чего-то разного. Из него одно похоже на [lowertext(main_reagent)]."
+	else
+		name = "empty sugar pack"
+		desc = "Пустая пачка сахара."
+		return
 
 /obj/item/reagent_containers/food/condiment/saltshaker		//Separate from above since it's a small shaker rather then
 	name = "salt shaker"											//	a large one.
-	desc = "Salt. From space oceans, presumably."
+	desc = "Соль. Предположительно, космоокеаническая."
 	icon_state = "saltshakersmall"
 	possible_transfer_amounts = list(1,20) //for clown turning the lid off
 	amount_per_transfer_from_this = 1
@@ -154,16 +176,16 @@
 		return
 	if(isturf(target))
 		if(!reagents.has_reagent(/datum/reagent/consumable/sodiumchloride, 2))
-			to_chat(user, "<span class='warning'>You don't have enough salt to make a pile!</span>")
+			to_chat(user, "<span class='warning'>Недостаточно соли для формирования горки!</span>")
 			return
-		user.visible_message("<span class='notice'>[user] shakes some salt onto [target].</span>", "<span class='notice'>You shake some salt onto [target].</span>")
+		user.visible_message("<span class='notice'>[user] сыпет соль на [target].</span>", "<span class='notice'>Вы насыпали немного соли на [target].</span>")
 		reagents.remove_reagent(/datum/reagent/consumable/sodiumchloride, 2)
 		new/obj/effect/decal/cleanable/salt(target)
 		return
 
 /obj/item/reagent_containers/food/condiment/peppermill
 	name = "pepper mill"
-	desc = "Often used to flavor food or make people sneeze."
+	desc = "Часто используется для приправления блюд или чтобы заставить кого-то чихать."
 	icon_state = "peppermillsmall"
 	possible_transfer_amounts = list(1,20) //for clown turning the lid off
 	amount_per_transfer_from_this = 1
@@ -179,7 +201,7 @@
 
 /obj/item/reagent_containers/food/condiment/milk
 	name = "space milk"
-	desc = "It's milk. White and nutritious goodness!"
+	desc = "Молоко. Белая и питательная благодать!"
 	icon_state = "milk"
 	item_state = "carton"
 	lefthand_file = 'icons/mob/inhands/equipment/kitchen_lefthand.dmi'
@@ -189,7 +211,7 @@
 
 /obj/item/reagent_containers/food/condiment/flour
 	name = "flour sack"
-	desc = "A big bag of flour. Good for baking!"
+	desc = "Большая пачка муки. Само то для выпечки!"
 	icon_state = "flour"
 	item_state = "flour"
 	list_reagents = list(/datum/reagent/consumable/flour = 30)
@@ -197,7 +219,7 @@
 
 /obj/item/reagent_containers/food/condiment/soymilk
 	name = "soy milk"
-	desc = "It's soy milk. White and nutritious goodness!"
+	desc = "Соевое молоко. Веганская благодать!"
 	icon_state = "soymilk"
 	item_state = "carton"
 	lefthand_file = 'icons/mob/inhands/equipment/kitchen_lefthand.dmi'
@@ -231,7 +253,7 @@
 
 /obj/item/reagent_containers/food/condiment/pack
 	name = "condiment pack"
-	desc = "A small plastic pack with condiments to put on your food."
+	desc = "Небольшая пластиковая упаковка с приправами для вашей пищи."
 	icon_state = "condi_empty"
 	volume = 10
 	amount_per_transfer_from_this = 10
@@ -280,10 +302,10 @@
 			desc = temp_list[3]
 		else
 			icon_state = "condi_mixed"
-			desc = "A small condiment pack. The label says it contains [originalname]"
+			desc = "Небольшая упаковка приправ. На этикетке написано: \"содержит [originalname]\""
 	else
 		icon_state = "condi_empty"
-		desc = "A small condiment pack. It is empty."
+		desc = "Небольшая упаковка приправ. Она пустая."
 
 //Ketchup
 /obj/item/reagent_containers/food/condiment/pack/ketchup

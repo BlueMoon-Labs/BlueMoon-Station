@@ -18,7 +18,7 @@
 	var/datum/weakref/holder //owner of the martial art
 	var/display_combos = FALSE //shows combo meter if true
 	var/combo_timer = 6 SECONDS
-
+	var/resist_grab_chance = 30 // шанс на резист агрограбу
 	var/timerid
 
 /datum/martial_art/proc/disarm_act(mob/living/carbon/human/A, mob/living/carbon/human/D)

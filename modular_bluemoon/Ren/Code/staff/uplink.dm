@@ -26,7 +26,7 @@
 	name = "The Greatest of the Greys"
 	desc = "Вещи величайшего грейтайдера. Его копьё впитало в себя столько крови, страха и превозмогания, что стало великим артефактом равным которому нет в бою. С этим даже один человек сможет стать целым тайфуном."
 	item = /obj/item/storage/box/syndie_kit/grayhero
-	cost = 20
+	cost = 14
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/explosives/bombcollar

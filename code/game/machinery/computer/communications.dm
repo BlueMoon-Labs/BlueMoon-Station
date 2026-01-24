@@ -59,6 +59,17 @@
 /obj/machinery/computer/communications/syndicate/emag_act(mob/user, obj/item/card/emag/emag_card)
 	return
 
+/obj/machinery/computer/communications/inteq
+	name = "InteQ Communications Console"
+	icon_screen = "comminteq"
+	icon_keyboard = "inteq_key"
+	req_access = list(ACCESS_INTEQ_LEADER)
+	light_color = LIGHT_COLOR_YELLOW
+	obj_flags = EMAGGED
+
+/obj/machinery/computer/communications/inteq/emag_act(mob/user, obj/item/card/emag/emag_card)
+	return
+
 /obj/machinery/computer/communications/syndicate/authenticated_as_silicon_or_captain(mob/user)
 	return FALSE
 	/// Cooldown between printing announcement papers
@@ -441,7 +452,7 @@
 				if (check_access(id_card))
 					authenticated = TRUE
 					authorize_access = id_card.access
-					authorize_name = "[id_card.registered_name] - [id_card.assignment]"
+					authorize_name = "[id_card.registered_name] - [id_card.get_assignment_name()]"
 
 			state = STATE_MAIN
 			playsound(src, 'sound/machines/terminal_on.ogg', 50, FALSE)
@@ -469,20 +480,25 @@
 					var/datum/bank_account/bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
 					if(bank)
 						if(C.bought)
+							var/announce_message = "Станция отменяет плату [GLOB.slavers_team_name] в [C.price] кредитов за [M.real_name]."
+							var/slaver_message = "Станция отказалась платить [GLOB.slavers_team_name] за [C.loc.name]."
 							bank.adjust_money(C.price)
 							C.setBought(FALSE)
+							C.nextboughtChance = world.time + 5 MINUTES
 
 							for(var/obj/machinery/computer/slavery/tracked_slave_console in GLOB.tracked_slave_consoles)
-								priority_announce("Станция отменяет плату в [C.price] кредитов за [M.real_name].", sender_override = GLOB.slavers_team_name)
-								tracked_slave_console.radioAnnounce("Станция отказалась платить за [C.loc.name].")
+								priority_announce(announce_message, sender_override = GLOB.station_name)
+								tracked_slave_console.radioAnnounce(slaver_message)
 
 						else
+							var/announce_message = "Станция оплачивает возвращение [M.real_name] у [GLOB.slavers_team_name] за [C.price] кредитов."
+							var/slaver_message = "Станция заплатила выкуп [GLOB.slavers_team_name] за [C.loc.name]."
 							bank.adjust_money(-C.price)
 							C.setBought(TRUE)
 
 							for(var/obj/machinery/computer/slavery/tracked_slave_console in GLOB.tracked_slave_consoles)
-								priority_announce("Станция оплачивает возвращение [M.real_name] за [C.price] кредитов.", sender_override = GLOB.slavers_team_name)
-								tracked_slave_console.radioAnnounce("Станция заплатила выкуп за [C.loc.name].")
+								priority_announce(announce_message, sender_override = GLOB.station_name)
+								tracked_slave_console.radioAnnounce(slaver_message)
 					break
 
 /obj/machinery/computer/communications/ui_data(mob/user)
@@ -557,15 +573,17 @@
 					var/list/slave = list()
 					slave["id"] = REF(C)
 					slave["name"] = L.real_name
-					slave["bought"] = C.bought
 					slave["price"] = C.price
+					slave["bought"] = C.bought
+					slave["can_bought"] = C.nextboughtChance <= world.time
+					slave["bought_timer"] = seconds_to_clock(max(0, round(C.nextboughtChance - world.time) / 10))
 
 					var/canToggleRansom = FALSE
 					var/ransomFeedback = ""
 					var/ransomChangeCooldown = C.nextRansomChange - world.time
 
 					if(ransomChangeCooldown > 0) // On cooldown.
-						ransomFeedback += " (can undo in [round(ransomChangeCooldown / 10)])"
+						ransomFeedback = "Can undo in [seconds_to_clock(max(0, round(ransomChangeCooldown / 10)))]"
 					else if (C.bought || (bank && bank.account_balance >= C.price)) // Slave already bought
 						canToggleRansom = TRUE
 

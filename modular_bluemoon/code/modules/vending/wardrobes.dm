@@ -139,7 +139,7 @@
 
 /obj/machinery/vending/wardrobe/medi_wardrobe
 	name = "\improper MediDrobe"
-	desc = "A vending machine rumoured to be capable of dispensing clothing for medical personnel."
+	desc = "Вендомат, по слухам, выдающий одежду медперсоналу."
 	icon_state = "medidrobe"
 	product_slogans = "Сделайте пятна крови модными!!!"
 	vend_reply = "Спасибо за использование MediDrobe!"
@@ -417,7 +417,7 @@
 		/obj/item/clothing/head/press_helmet = 1,
 	)
 	premium = list(
-		/obj/item/card/id/heresy = 5,
+		/obj/item/card_sticker/heresy = 5,
 	)
 	refill_canister = /obj/item/vending_refill/wardrobe/curator_wardrobe
 	payment_department = ACCOUNT_SRV
@@ -483,7 +483,7 @@
 		/obj/item/clothing/gloves/color/white = 3,
 	)
 	contraband = list(
-		/obj/item/card/id/muck = 2,
+		/obj/item/card_sticker/muck = 2,
 	)
 	refill_canister = /obj/item/vending_refill/wardrobe/chef_wardrobe
 	payment_department = ACCOUNT_SRV
@@ -611,7 +611,7 @@
 		/obj/item/sign/flag/ravenheart = 3, // Bluemoon edition - Флаг Воронье Сердце,
 		/obj/item/sign/flag/ravenheart/alt = 3, // Bluemoon edition - Флаг-баннер Воронье Сердце,
 		/obj/item/storage/box/raven_box/posters = 3, // Bluemoon edition - Постеры,
-		/obj/item/card/id/agony = 5,
+		/obj/item/card_sticker/agony = 5,
 		/obj/item/choice_beacon/box/creepy_statue_kit = 6,
 		/obj/item/choice_beacon/box/creepy_statue_kit/big = 1,
 	)
@@ -634,7 +634,7 @@
 
 /obj/machinery/vending/wardrobe/chem_wardrobe
 	name = "ChemDrobe"
-	desc = "A vending machine for dispensing chemistry related clothing."
+	desc = "Вендор для выдачи одежды, связанной с химической дисциплиной."
 	icon_state = "chemdrobe"
 	product_slogans = "Наша одежда на 0,5% более устойчива к воздействию кислот! Приобретайте прямо сейчас!"
 	vend_reply = "TСпасибо за использование ChemDrobe!"
@@ -658,7 +658,7 @@
 
 /obj/machinery/vending/wardrobe/gene_wardrobe
 	name = "GeneDrobe"
-	desc = "A machine for dispensing clothing related to genetics."
+	desc = "Вендор для выдачи одежды, связанной с генетической дисциплиной."
 	icon_state = "genedrobe"
 	product_slogans = "Идеально подходит для безумного ученого!"
 	vend_reply = "Спасибо за использование GeneDrobe!"
@@ -679,7 +679,7 @@
 
 /obj/machinery/vending/wardrobe/viro_wardrobe
 	name = "ViroDrobe"
-	desc = "An unsterilized machine for dispending virology related clothing."
+	desc = "Нестерелизрованная машина для выдачи вирусологической одежды."
 	icon_state = "virodrobe"
 	product_slogans = " Вирусы донимают вас? Тогда перейдите на стерильную одежду уже сегодня!"
 	vend_reply = "Спасибо за использование ViroDrobe"
@@ -730,7 +730,10 @@
 		/obj/item/clothing/gloves/color/black = 2,
 		/obj/item/clothing/gloves/color/latex = 2,
 		/obj/item/reagent_containers/food/drinks/flask/det = 2,
-		/obj/item/storage/fancy/cigarettes = 5
+		/obj/item/storage/fancy/cigarettes = 5,
+		/obj/item/storage/backpack/detective = 2,
+		/obj/item/storage/backpack/satchel/detective = 2,
+		/obj/item/storage/backpack/duffelbag/detective = 2
 	)
 	premium = list(
 		/obj/item/clothing/head/flatcap = 1,
@@ -812,6 +815,8 @@
 		/obj/item/clothing/head/soft/sec/syndicate = 3,
 		/obj/item/clothing/head/beret/sec/syndicate = 3,
 		/obj/item/clothing/neck/cloak/syndiecap = 1,
+		/obj/item/armorkit/syndicate = 5,
+		/obj/item/armorkit/helmet/syndicate = 5,
 	)
 	contraband = list(
 		/obj/item/kitchen/knife/combat = 4,
@@ -927,7 +932,7 @@
 		/obj/item/clothing/head/maid/syndicate/civil = 5,
 		/obj/item/clothing/head/helmet/swat/ds/civil = 5,
 		/obj/item/clothing/head/hats/warden/syndicate/civil = 5,
-		/obj/item/card/id/syndicate_citizen = 5
+		/obj/item/card_sticker/syndicate = 5
 	)
 	refill_canister = /obj/item/vending_refill/wardrobe/syndie_wardrobe/civil
 	light_color = COLOR_MOSTLY_PURE_RED

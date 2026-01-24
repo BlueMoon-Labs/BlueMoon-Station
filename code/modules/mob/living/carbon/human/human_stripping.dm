@@ -36,7 +36,7 @@ GLOBAL_LIST_INIT(strippable_human_items, create_strippable_list(list(
 
 	if (ishuman(user))
 		var/mob/living/carbon/human/human_user = user
-		return !human_user.can_be_firemanned(src)
+		return !human_user.can_be_firemanned(src) && !human_user.can_belly_ride(src)
 
 	return TRUE
 

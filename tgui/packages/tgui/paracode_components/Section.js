@@ -5,6 +5,7 @@
  */
 
 import { classes, isFalsy, pureComponentHooks } from 'common/react';
+
 import { Box } from './Box';
 
 export const Section = props => {

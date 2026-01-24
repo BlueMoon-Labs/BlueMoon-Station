@@ -180,7 +180,7 @@
 	taste_description = "hopelessness"
 	value = REAGENT_VALUE_GLORIOUS
 
-/datum/reagent/sandparasite/reaction_mob(mob/living/L, method=TOUCH, reac_volume)
+/datum/reagent/sandparasite/reaction_mob(mob/living/L, method=TOUCH, reac_volume, affected_bodypart)
 	L.ForceContractDisease(new /datum/disease/transformation/sand(), FALSE, TRUE)
 
 /datum/disease/transformation/sand

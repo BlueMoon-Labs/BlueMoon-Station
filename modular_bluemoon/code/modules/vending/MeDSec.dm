@@ -25,6 +25,7 @@
 					/obj/item/storage/hypospraykit/o2 = 2,
 					/obj/item/storage/hypospraykit/brute = 2,
 					/obj/item/reagent_containers/glass/bottle/vial/small = 2,
+					/obj/item/reagent_containers/hypospray/medipen = 4,
 					/obj/item/stack/medical/ointment = 2,
 					/obj/item/stack/medical/suture = 2,
 					/obj/item/stack/medical/bone_gel = 1,

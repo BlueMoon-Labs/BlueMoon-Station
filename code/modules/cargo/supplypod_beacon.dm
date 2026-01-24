@@ -7,6 +7,7 @@
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
+	max_integrity = 400
 	var/obj/machinery/computer/cargo/express/express_console
 	var/linked = FALSE
 	var/ready = FALSE

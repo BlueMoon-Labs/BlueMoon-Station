@@ -422,6 +422,9 @@
 		qdel(src)
 		P.clashing = FALSE
 
+///////////////////////////////////////////////
+#define LOVE_INTERACTION_COOLDOWN 10 SECONDS
+
 /obj/item/toy/plush/bm/lissara
 	name = "Lissara plush"
 	desc = "Очаровательная мягкая игрушка в форме миниатюрной ламии. Её гладкое тело приятно тянется под пальцами, а хвост — гибкий, словно зовёт обвиться вокруг запястья. При лёгком нажатии на животик игрушка тихо шипит, а её тонкий язычок чуть высовывается наружу."
@@ -437,9 +440,9 @@
 	. = ..()
 
 	// Ограничение по процессу и времени на срабатывания
-	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= 100)
+	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 		var/obj/item/toy/plush/bm/araminta/P = locate() in range(1, src)
-		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= 100)
+		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 			spawn(1) // Что-то меняет пиксельную позицую после и так решаем приколы с бросками
 				if(istype(src.loc, /turf/open) && istype(P.loc, /turf/open)) // Изъятие из контейнера изначально считается как на открытом турфе, поэтому перепроверяем еще раз
 					loving_interaction(P)
@@ -483,8 +486,8 @@
 	var/distance = sqrt(dx * dx + dy * dy)
 
 	// Целевое расстояние между игрушками
-	var/target_distance = 16
-	var/tolerance = 5
+	var/const/target_distance = 16
+	var/const/tolerance = 5
 
 	// Нужно ли анимировать
 	var/need_animate = abs(distance - target_distance) > tolerance
@@ -549,26 +552,25 @@
 			src.say(pick(heart_broken_say))
 			partner.say(pick(heart_broken_say))
 			heart_broken = TRUE
-			goto cleanup
+			break
 		new /obj/effect/temp_visual/heart(get_turf(src))
 		new /obj/effect/temp_visual/heart(get_turf(partner))
 		if(i % 2 == 0)
-			playlewdinteractionsound(partner.loc, pick(GLOB.lewd_kiss_sounds), 90, 1, -1)
+			playsound(partner.loc, pick(GLOB.lewd_kiss_sounds), 90, TRUE, -1)
 		else
-			playlewdinteractionsound(src.loc, pick(GLOB.lewd_kiss_sounds), 90, 1, -1)
+			playsound(src.loc, pick(GLOB.lewd_kiss_sounds), 90, TRUE, -1)
 		sleep(8)
 
-	cleanup:
-		if(need_animate)
-			for(var/obj/item/toy/plush/plushe in list(src, partner))
-				var/list/offsets = original_pixel_offsets[plushe]
-				if(heart_broken)
-					plushe.pixel_x = offsets["pixel_x"]
-					plushe.pixel_y = offsets["pixel_y"]
-				else
-					animate(plushe, pixel_x = offsets["pixel_x"], pixel_y = offsets["pixel_y"], time = 6)
-		love_target = null
-		partner.love_target = null
+	if(need_animate)
+		for(var/obj/item/toy/plush/plushe in list(src, partner))
+			var/list/offsets = original_pixel_offsets[plushe]
+			if(heart_broken)
+				plushe.pixel_x = offsets["pixel_x"]
+				plushe.pixel_y = offsets["pixel_y"]
+			else
+				animate(plushe, pixel_x = offsets["pixel_x"], pixel_y = offsets["pixel_y"], time = 6)
+	love_target = null
+	partner.love_target = null
 
 
 /obj/item/toy/plush/bm/araminta
@@ -586,12 +588,15 @@
 	. = ..()
 
 	// Ограничение по процессу и времени на срабатывания
-	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= 100)
+	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 		var/obj/item/toy/plush/bm/lissara/P = locate() in range(1, src)
-		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= 100)
+		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 			spawn(1) // Что-то меняет пиксельную позицую после и так решаем приколы с бросками
 				if(istype(src.loc, /turf/open) && istype(P.loc, /turf/open)) // Изъятие из контейнера изначально считается как на открытом турфе, поэтому перепроверяем еще раз
 					P.loving_interaction(src)
+
+#undef LOVE_INTERACTION_COOLDOWN
+///////////////////////////////////////////////
 
 /obj/item/toy/plush/bm/stasik/artemq
 	name = "Artems toy plush"
@@ -646,3 +651,47 @@
 	desc = "Это камень. Ее зовут Рокси. Выглядит миленько с бантиком."
 	icon_state = "roxie"
 	attack_verb = list("Smash")
+
+/obj/item/toy/plush/bm/Sheya
+	name = "Vampire"
+	desc = "Вампирша, одетая в готическую одежду"
+	icon_state = "sheya"
+	icon = 'modular_bluemoon/icons/obj/toys/plushies 32x48.dmi'
+	attack_verb = list("bit")
+	can_you_fuck_plush = FALSE
+
+/obj/item/toy/plush/bm/Sheya/slime
+	name = "Sheya"
+	desc = "Слайм, выглядящая как лиса, представляющая что она тигр."
+	icon_state = "sheya_slime"
+	icon = 'modular_bluemoon/icons/obj/toys/plushies 32x48.dmi'
+	attack_verb = list("squish", "glorp", "blorp")
+	squeak_override = list('modular_bluemoon/sound/voice/fleshy_squish.ogg' = 1)
+	can_you_fuck_plush = FALSE
+
+/obj/item/toy/plush/bm/Sheya/melting
+	name = "Melting love"
+	desc = "Слайм с сердцем на груди и на голове, вместо ног у неё лужа слизи."
+	icon_state = "sheya_melting"
+	icon = 'modular_bluemoon/icons/obj/toys/plushes.dmi'
+	attack_verb = list("squish", "glorp", "blorp")
+	squeak_override = list('modular_bluemoon/sound/voice/fleshy_squish.ogg' = 1)
+	can_you_fuck_plush = FALSE
+
+/obj/item/toy/plush/bm/vella
+	name = "Vella plushie"
+	desc = "Почти плюшевая игрушка, наполнение которой по каким-то неведомым законам физики стало прозрачным. На ощупь очень сильно напоминает слизьку, а запах выдаёт гамму разнообразных ягодных ноток."
+	icon_state = "vella"
+	squeak_override = list('modular_splurt/sound/voice/catpeople/cat_mrrp1.ogg' = 1)
+
+/obj/item/toy/plush/bm/belfor
+	name = "Belfor plushie"
+	desc = "Белая как сахарная вата игрушка кота-учёного Синдиката. Его пушистый хвост в форме запятой лишь добавляет контраста. От него пахнет бридингом. Стоп.. что такое бридинг?"
+	icon_state = "belfor"
+	squeak_override = list('modular_splurt/sound/voice/meow_meme.ogg' = 1, 'modular_splurt/sound/voice/woof.ogg' = 1)
+
+/obj/item/toy/plush/bm/koteykomya
+	name = "Silly kitty plushie"
+	desc = "У неё осуждающий взгляд, как будто она в курсе всего, что вы когда-либо делали не так."
+	icon_state = "koteykomya"
+	squeak_override = list('modular_bluemoon/sound/plush/Koteyko_bad_smell.ogg' = 1, 'modular_bluemoon/sound/plush/Koteyko_rotting.ogg' = 1, 'modular_bluemoon/sound/plush/Koteyko_dicks_and_butts.ogg' = 1)

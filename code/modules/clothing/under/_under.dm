@@ -42,6 +42,9 @@
 
 /obj/item/clothing/under/attackby(obj/item/I, mob/user, params)
 	if((sensordamage || (has_sensor < HAS_SENSORS && has_sensor != NO_SENSORS)) && istype(I, /obj/item/stack/cable_coil))
+		if(current_equipped_slot && (current_equipped_slot in user.check_obscured_slots()))
+			to_chat(user, "<span class='warning'>You are unable to repair [src] sensors while wearing other garments over it!</span>")
+			return
 		if(damaged_clothes == CLOTHING_SHREDDED)
 			to_chat(user,"<span class='warning'>[src] is too damaged to have its suit sensors repaired! Repair it first.</span>")
 			return FALSE
@@ -59,6 +62,9 @@
 /obj/item/clothing/under/take_damage_zone(def_zone, damage_amount, damage_type, armour_penetration)
 	..()
 	if(sensormaxintegrity == 0 || has_sensor == NO_SENSORS || sensordamage >= sensormaxintegrity) return //sensors are invincible if max integrity is 0
+	var/mob/living/carbon/human/H = src.loc
+	if(istype(H) && clothing_protected(H, def_zone, damage_type))
+		return
 	var/damage_dealt = take_damage(damage_amount * 0.1, damage_type, armour_penetration, FALSE) * 10 // only deal 10% of the damage to the general integrity damage, then multiply it by 10 so we know how much to deal to limb
 	sensordamage += damage_dealt
 	var/integ = has_sensor
@@ -95,6 +101,19 @@
 			if(sensor_mode > SENSOR_LIVING) sensor_mode = SENSOR_LIVING
 		if(BROKEN_SENSORS)
 			sensor_mode = NO_SENSORS
+
+/// Прок проверяет закрытую часть тела на предмет одежды (Включая слои, униформа + костюм; шлем + противогаз)
+/// После этого производится проверка на броню. Если найденный armor лазера у носимой одежды больше 25, то униформа не повредится
+/obj/item/clothing/under/proc/clothing_protected(mob/living/carbon/human/H, def_zone, damage_type)
+	var/list/clothing_armor = list(H.w_uniform, H.wear_suit, H.gloves, H.shoes)
+	for(var/obj/item/clothing/clothing_piece in clothing_armor)
+		if(!clothing_piece || !((clothing_piece.body_parts_covered & zone2body_parts_covered_complicated(def_zone)))) // Нет одежды? Не проверяем. Одежда не покрывает часть тела? Не проверяем.
+			continue
+		var/protection = clothing_piece.get_armor_rating(LASER)
+		if(protection >= 25)
+			return TRUE
+
+	return FALSE
 
 
 /obj/item/clothing/under/update_clothes_damaged_state()
@@ -146,7 +165,7 @@
 	..()
 
 
-/obj/item/clothing/under/proc/attach_accessory(obj/item/I, mob/user, notifyAttach = 1)
+/obj/item/clothing/under/attach_accessory(obj/item/I, mob/user, notifyAttach = TRUE)
 	. = FALSE
 	if(istype(I, /obj/item/clothing/accessory) && !istype(I, /obj/item/clothing/accessory/ring))
 		var/obj/item/clothing/accessory/A = I
@@ -154,7 +173,7 @@
 		// Проверка на общее количество
 		if(length(attached_accessories) >= max_accessories)
 			if(user)
-				to_chat(user, "<span class='warning'>[src] already has [length(attached_accessories)] accessories.</span>")
+				to_chat(user, "<span class='warning'>[src] уже имеет [length(attached_accessories)] аксессуаров.</span>")
 			return
 		// Проверка на количество особых / боевых
 		if(A.restricted_accessory && length(attached_accessories))
@@ -188,7 +207,7 @@
 
 		if(dummy_thick)
 			if(user)
-				to_chat(user, "<span class='warning'>[src] is too bulky and cannot have accessories attached to it!</span>")
+				to_chat(user, "<span class='warning'>[src] слишком громоздкое, к нему нельзя крепить аксессуары!</span>")
 			return
 		else
 			if(user && !user.temporarilyRemoveItemFromInventory(I))
@@ -197,7 +216,7 @@
 				return
 
 			if(user && notifyAttach)
-				to_chat(user, "<span class='notice'>You attach [I] to [src].</span>")
+				to_chat(user, "<span class='notice'>Вы прикрепили [I] к [src].</span>")
 
 			if((flags_inv & HIDEACCESSORY) || (A.flags_inv & HIDEACCESSORY))
 				return TRUE
@@ -234,9 +253,9 @@
 	//SKYRAT EDIT END
 		A.detach(src, user)
 		if(user.put_in_hands(A))
-			to_chat(user, "<span class='notice'>You detach [A] from [src].</span>")
+			to_chat(user, "<span class='notice'>Вы открепили [A] от [src].</span>")
 		else
-			to_chat(user, "<span class='notice'>You detach [A] from [src] and it falls on the floor.</span>")
+			to_chat(user, "<span class='notice'>Вы открепили [A] от [src] с падением предмета на пол.</span>")
 
 		if(ishuman(loc))
 			var/mob/living/carbon/human/H = loc
@@ -248,29 +267,29 @@
 	. = ..()
 	if(can_adjust)
 		if(adjusted == ALT_STYLE)
-			. += "Alt-click on [src] to wear it normally."
+			. += "Alt-click для нормального стиля ношения."
 		else
-			. += "Alt-click on [src] to wear it casually."
+			. += "Alt-click для повседневного стиля ношения."
 	switch(has_sensor)
 		if(BROKEN_SENSORS)
-			. += "<span class='warning'>Its sensors appear to be shorted out completely. It can be repaired using cable.</span>"
+			. += "<span class='warning'>Сенсоры полностью вышли из строя. Их можно починить кабелем.</span>"
 		if(DAMAGED_SENSORS_LIVING)
-			. += "<span class='warning'>Its sensors appear to have its tracking beacon and vital tracker broken. It can be repaired using cable.</span>"
+			. += "<span class='warning'>Сенсоры и маячок слежения повреждены, и не передают информацию. Это можно исправить кабелем.</span>"
 		if(DAMAGED_SENSORS_VITALS)
-			. += "<span class='warning'>Its sensors appear to have its tracking beacon broken. It can be repaired using cable.</span>"
+			. += "<span class='warning'>Маячок слежения повреждён, невозможно отслеживать локацию владельца. Это можно исправить кабелем</span>"
 	if(has_sensor > NO_SENSORS)
 		switch(sensor_mode)
 			if(SENSOR_OFF)
-				. += "Its sensors appear to be disabled."
+				. += "Сенсоры одежды выключены."
 			if(SENSOR_LIVING)
-				. += "Its binary life sensors appear to be enabled."
+				. += "Бинарные сенсоры статуса смерти включены."
 			if(SENSOR_VITALS)
-				. += "Its vital tracker appears to be enabled."
+				. += "Сенсоры жизненных показателей выключены."
 			if(SENSOR_COORDS)
-				. += "Its vital tracker and tracking beacon appear to be enabled."
+				. += "Сенсоры жизненных показателей и маячок местонахождения включены."
 	if(length(attached_accessories))
 		for(var/obj/item/clothing/accessory/attached_accessory in attached_accessories)
-			. += "\A [attached_accessory] is attached to it."
+			. += "\A [attached_accessory] находится на униформе."
 	//SKYRAT EDIT END
 
 /obj/item/clothing/under/verb/toggle()
@@ -283,47 +302,47 @@
 	if (!can_use(M))
 		return
 	if(src.has_sensor == BROKEN_SENSORS)
-		to_chat(usr, "The sensors have shorted out!")
+		to_chat(usr, "Сенсоры вышли из строя!")
 		return FALSE
 	if(src.sensor_flags & SENSOR_LOCKED)
-		to_chat(usr, "The controls are locked.")
+		to_chat(usr, "Настройки заблокированы.")
 		return FALSE
 	if(src.has_sensor <= NO_SENSORS)
-		to_chat(usr, "This suit does not have any sensors.")
+		to_chat(usr, "На униформе нет сенсоров.")
 		return FALSE
 
 	var/list/modes = list("Off", "Binary vitals", "Exact vitals", "Tracking beacon")
-	var/switchMode = input("Select a sensor mode:", "Suit Sensor Mode", modes[sensor_mode + 1]) in modes
+	var/switchMode = input("Выберите режим сенсоров:", "Режим сенсоров униформы", modes[sensor_mode + 1]) in modes
 	if(get_dist(usr, src) > 1)
-		to_chat(usr, "<span class='warning'>You have moved too far away!</span>")
+		to_chat(usr, "<span class='warning'>Вы отошли слишком далеко!</span>")
 		return
 	sensor_mode_intended = modes.Find(switchMode) - 1
 
 	if (src.loc == usr)
 		switch(sensor_mode_intended)
 			if(0)
-				to_chat(usr, "<span class='notice'>You disable your suit's remote sensing equipment.</span>")
+				to_chat(usr, "<span class='notice'>Вы отключили сенсорное оборудование вашей униформы.</span>")
 				sensor_mode = sensor_mode_intended
 			if(1)
-				to_chat(usr, "<span class='notice'>Your suit will now only report whether you are alive or dead.</span>")
+				to_chat(usr, "<span class='notice'>Ваша униформа будет сообщать только смерть своего владельца.</span>")
 				sensor_mode = sensor_mode_intended
 			if(2)
 				if(src.has_sensor == DAMAGED_SENSORS_LIVING)
-					to_chat(usr, "<span class='warning'>Your suit's vital tracker is broken, so it will only report whether you are alive or dead.</span>")
+					to_chat(usr, "<span class='warning'>Сенсоры вашей униформы сломались. Сообщается только смерть владельца.</span>")
 					sensor_mode = SENSOR_LIVING
 				else
-					to_chat(usr, "<span class='notice'>Your suit will now only report your exact vital lifesigns.</span>")
+					to_chat(usr, "<span class='notice'>Ваша униформа будет отслеживать точное состояние жизненных показателей.</span>")
 					sensor_mode = sensor_mode_intended
 			if(3)
 				switch(src.has_sensor)
 					if(DAMAGED_SENSORS_LIVING)
-						to_chat(usr, "<span class='warning'>Your suit's tracking beacon and vital tracker is broken, so it will only report whether you are alive or dead.</span>")
+						to_chat(usr, "<span class='warning'>Сенсоры и маячок слежения вашей униформы сломались. Сообщается только смерть владельца.</span>")
 						sensor_mode = SENSOR_LIVING
 					if(DAMAGED_SENSORS_VITALS)
-						to_chat(usr, "<span class='warning'>Your suit's tracking beacon is broken, so it will only report your vital lifesigns.</span>")
+						to_chat(usr, "<span class='warning'>Маячок слежения вашей униформы сломался. Сообщается только состояние жизненных показателей.</span>")
 						sensor_mode = SENSOR_VITALS
 					if(HAS_SENSORS)
-						to_chat(usr, "<span class='notice'>Your suit will now report your exact vital lifesigns as well as your coordinate position.</span>")
+						to_chat(usr, "<span class='notice'>Ваша униформа теперь сообщает точное состояние жизненных показателей и координатную позицию.</span>")
 						sensor_mode = sensor_mode_intended
 
 	if(ishuman(loc))
@@ -342,26 +361,26 @@
 		return
 
 	if(src.has_sensor == BROKEN_SENSORS)
-		to_chat(usr, "The sensors have shorted out!")
+		to_chat(usr, "Сенсоры вышли из строя!")
 		return FALSE
 	if(src.sensor_flags & SENSOR_LOCKED)
-		to_chat(usr, "The controls are locked.")
+		to_chat(usr, "Настройки заблокированы.")
 		return FALSE
 	if(has_sensor <= NO_SENSORS)
-		to_chat(user, "This suit does not have any sensors.")
+		to_chat(usr, "На униформе нет сенсоров.")
 		return
 
 	sensor_mode_intended = SENSOR_COORDS
 
 	switch(src.has_sensor)
 		if(DAMAGED_SENSORS_LIVING)
-			to_chat(usr, "<span class='warning'>Your suit's tracking beacon and vital tracker is broken, so it will only report whether you are alive or dead.</span>")
+			to_chat(usr, "<span class='warning'>Сенсоры и маячок слежения вашей униформы сломались. Сообщается только смерть владельца.</span>")
 			sensor_mode = SENSOR_LIVING
 		if(DAMAGED_SENSORS_VITALS)
-			to_chat(usr, "<span class='warning'>Your suit's tracking beacon is broken, so it will only report your vital lifesigns.</span>")
+			to_chat(usr, "<span class='warning'>Маячок слежения вашей униформы сломался. Сообщается только состояние жизненных показателей.</span>")
 			sensor_mode = SENSOR_VITALS
 		if(HAS_SENSORS)
-			to_chat(usr, "<span class='notice'>Your suit will now report your exact vital lifesigns as well as your coordinate position.</span>")
+			to_chat(usr, "<span class='notice'>Ваша униформа теперь сообщает точное состояние жизненных показателей и координатную позицию.</span>")
 			sensor_mode = sensor_mode_intended
 
 	if(ishuman(user))
@@ -371,7 +390,7 @@
 
 /obj/item/clothing/under/AltClick(mob/user)
 	. = ..()
-	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 	if(length(attached_accessories)) //SKYRAT EDIT
 		remove_accessory(user)
@@ -394,19 +413,19 @@
 
 /obj/item/clothing/under/proc/toggle_jumpsuit_adjust()
 	if(!can_adjust)
-		to_chat(usr, "<span class='warning'>You cannot wear this suit any differently!</span>")
+		to_chat(usr, "<span class='warning'>Вы не можете как-либо особенно сложить эту одежду!</span>")
 		return FALSE
 	adjusted = !adjusted
 
 	if(adjusted)
-		to_chat(usr, "<span class='notice'>You adjust the suit to wear it more casually.</span>")
+		to_chat(usr, "<span class='notice'>Вы сложили складки одежды для повседневного стиля ношения.</span>")
 		if(fitted != FEMALE_UNIFORM_TOP)
 			fitted = NO_FEMALE_UNIFORM
 		if(!alt_covers_chest) // for the special snowflake suits that expose the chest when adjusted
 			body_parts_covered &= ~CHEST
 			mutantrace_variation &= ~USE_TAUR_CLIP_MASK //How are we supposed to see the uniform otherwise?
 	else
-		to_chat(usr, "<span class='notice'>You adjust the suit back to normal.</span>")
+		to_chat(usr, "<span class='notice'>Вы поправили одежду в её привычный вид.</span>")
 		fitted = initial(fitted)
 		if(!alt_covers_chest)
 			body_parts_covered |= CHEST
@@ -420,7 +439,7 @@
 	if (!(item_flags & IN_INVENTORY))
 		return
 
-	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 
 	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Set to highest sensor")

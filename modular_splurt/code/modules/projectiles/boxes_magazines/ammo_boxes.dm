@@ -102,6 +102,7 @@
 	desc = "A stripper clip."
 	icon_state = "762"
 	ammo_type = /obj/item/ammo_casing/a308
+	custom_materials = list(/datum/material/iron = 5600) // 5000 bullets + 600 clip (10%)
 	max_ammo = 5
 	multiple_sprites = 1
 
@@ -262,10 +263,10 @@
 	category = list("hacked", "Security")
 
 /datum/design/a308
-	name = "Ammo Box (.308)"
+	name = "Stripper clip (.308)"
 	id = "a308"
 	build_type = AUTOLATHE | NO_PUBLIC_LATHE
-	materials = list(/datum/material/iron = 35000)
+	materials = list(/datum/material/iron = 5600)
 	build_path = /obj/item/ammo_box/a308
 	category = list("hacked", "Security")
 

@@ -328,6 +328,81 @@
 /turf/open/space,
 /area/space/nearstation)
 "agL" = (
+/obj/structure/safe/floor/syndi/armory{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/storage/firstaid,
+/obj/item/storage/firstaid/brute,
+/obj/item/storage/firstaid/toxin,
+/obj/item/storage/firstaid/fire,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
@@ -733,7 +808,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/structure/sign/poster/official/no_erp{
+/obj/structure/sign/poster/contraband/yes_erp{
 	pixel_y = 32
 	},
 /turf/open/floor/plasteel,
@@ -3355,6 +3430,17 @@
 	dir = 5
 	},
 /area/engineering/main)
+"bhr" = (
+/mob/living/simple_animal/bot/secbot{
+	arrest_type = 1;
+	health = 45;
+	icon_state = "secbot1";
+	idcheck = 1;
+	name = "Sergeant-at-Armsky";
+	weaponscheck = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/ai_monitored/security/armory)
 "bhB" = (
 /turf/open/floor/carpet,
 /area/security/prison/rec)
@@ -21404,20 +21490,14 @@
 /turf/open/floor/plasteel/dark,
 /area/security/prison/cells)
 "hsw" = (
-/obj/structure/table/wood,
-/obj/item/paper_bin/bundlenatural{
-	pixel_x = 6;
-	pixel_y = 4
-	},
-/obj/item/paper_bin{
-	pixel_x = -6;
-	pixel_y = 4
-	},
-/obj/item/pen/fountain,
 /obj/item/radio/intercom{
 	name = "Station Intercom (General)";
 	pixel_y = 22
 	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/machinery/modular_computer/console/preset/curator,
 /turf/open/floor/wood/wood_large,
 /area/service/library)
 "hsH" = (
@@ -28961,6 +29041,10 @@
 /obj/item/stock_parts/manipulator,
 /turf/open/floor/plasteel/dark/telecomms,
 /area/tcommsat/server)
+"kct" = (
+/obj/structure/sign/painting/large/library/directional/north,
+/turf/open/floor/carpet/black,
+/area/service/library)
 "kcu" = (
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel,
@@ -43213,9 +43297,7 @@
 /obj/effect/turf_decal/tile/bar{
 	dir = 1
 	},
-/obj/machinery/jukebox{
-	volume = 140
-	},
+/obj/machinery/jukebox,
 /obj/machinery/door/window/southright{
 	dir = 1;
 	name = "Jukebox Access";
@@ -44352,9 +44434,6 @@
 /turf/open/floor/plasteel,
 /area/security/brig)
 "pqY" = (
-/obj/structure/sign/painting/library{
-	pixel_x = 32
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 9
 	},
@@ -45223,17 +45302,17 @@
 /area/maintenance/bar)
 "pIh" = (
 /obj/structure/table/wood,
-/obj/item/camera_film{
-	pixel_x = -3;
-	pixel_y = 5
-	},
-/obj/item/camera_film{
-	pixel_x = 3;
-	pixel_y = 3
-	},
-/obj/item/camera/spooky,
 /obj/structure/window/reinforced{
 	dir = 4
+	},
+/obj/item/paper_bin/bundlenatural{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/obj/item/pen/fountain,
+/obj/item/paper_bin{
+	pixel_x = -6;
+	pixel_y = 4
 	},
 /turf/open/floor/wood/wood_large,
 /area/service/library)
@@ -45405,9 +45484,7 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "pLK" = (
-/obj/structure/sign/painting/library{
-	pixel_x = 32
-	},
+/obj/structure/sign/painting/large/library/directional/east,
 /turf/open/floor/wood/wood_large,
 /area/service/library)
 "pMh" = (
@@ -51127,12 +51204,20 @@
 /obj/machinery/atmospherics/pipe/simple/yellow/hidden{
 	dir = 8
 	},
-/obj/item/book/manual/random,
 /obj/structure/table/wood,
 /obj/structure/window/reinforced{
 	dir = 4
 	},
 /obj/structure/window/reinforced,
+/obj/item/camera/spooky,
+/obj/item/camera_film{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/camera_film{
+	pixel_x = -3;
+	pixel_y = 5
+	},
 /turf/open/floor/wood/wood_large,
 /area/service/library)
 "rIK" = (
@@ -63309,14 +63394,6 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "vLG" = (
-/mob/living/simple_animal/bot/secbot{
-	arrest_type = 1;
-	health = 45;
-	icon_state = "secbot1";
-	idcheck = 1;
-	name = "Sergeant-at-Armsky";
-	weaponscheck = 1
-	},
 /obj/machinery/holopad,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
@@ -63352,6 +63429,9 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /obj/structure/bed,
 /obj/item/bedsheet/black,
+/obj/structure/sign/painting/library_private{
+	pixel_x = 32
+	},
 /turf/open/floor/carpet,
 /area/service/library)
 "vMn" = (
@@ -66068,6 +66148,7 @@
 	default_raw_text = "As her shirt was lifted, and those two, twin melons were relased...";
 	name = "Suspicious Paper"
 	},
+/obj/structure/sign/painting/large/library_private/directional/north,
 /turf/open/floor/carpet/black,
 /area/service/library)
 "wEb" = (
@@ -67477,6 +67558,7 @@
 	name = "Library Desk Door";
 	req_access_txt = "37"
 	},
+/obj/item/book/manual/random,
 /turf/open/floor/wood/wood_large,
 /area/service/library)
 "xby" = (
@@ -93890,7 +93972,7 @@ nkZ
 hCH
 afP
 afP
-afP
+bhr
 epu
 bVo
 tqs
@@ -113962,7 +114044,7 @@ pqY
 pLK
 pXL
 yeD
-qNc
+kct
 roG
 ccX
 ccX

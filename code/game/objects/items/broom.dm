@@ -62,7 +62,7 @@
 	icon_state = "broom0"
 
 /**
- * Handles registering the sweep proc when the broom is wielded
+ * Handles registering the do_sweep proc when the broom is wielded
  *
  * Arguments:
  * * source - The source of the on_wield proc call
@@ -72,10 +72,10 @@
 	SIGNAL_HANDLER
 
 	to_chat(user, span_notice("Хватаю [src.name] обеими руками и готовлюсь толкать МУСОР."))
-	RegisterSignal(user, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(sweep))
+	RegisterSignal(user, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(do_sweep))
 
 /**
- * Handles unregistering the sweep proc when the broom is unwielded
+ * Handles unregistering the do_sweep proc when the broom is unwielded
  *
  * Arguments:
  * * source - The source of the on_unwield proc call
@@ -92,6 +92,10 @@
 		return
 	sweep(user, A)
 
+/obj/item/broom/proc/do_sweep(mob/user, atom/A)
+	sweep(user, user.loc)
+	sweep(user, A)
+
 /**
  * Attempts to push up to BROOM_PUSH_LIMIT atoms from a given location the user's faced direction
  *
@@ -106,6 +110,10 @@
 	if (!isturf(current_item_loc))
 		return
 	var/turf/new_item_loc = get_step(current_item_loc, user.dir)
+	/*
+	for(var/i = 0 to add_dist)
+		new_item_loc = get_step(new_item_loc, user.dir)
+	*/
 	var/obj/machinery/disposal/bin/target_bin = locate(/obj/machinery/disposal/bin) in new_item_loc.contents
 	var/i = 1
 	for (var/obj/item/garbage in current_item_loc.contents)

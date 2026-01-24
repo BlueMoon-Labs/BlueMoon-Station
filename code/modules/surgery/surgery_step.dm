@@ -42,7 +42,7 @@
 			if(get_location_accessible(target, target_zone) || surgery.ignore_clothes)
 				return initiate(user, target, target_zone, tool, surgery, try_to_fail)
 			else
-				to_chat(user, "<span class='warning'>You need to expose [target]'s [parse_zone(target_zone)] to perform surgery on it!</span>")
+				target.balloon_alert(user, "Одежда мешает!")
 				return TRUE	//returns TRUE so we don't stab the guy in the dick or wherever.
 	if(repeatable)
 		var/datum/surgery_step/next_step = surgery.get_surgery_next_step()
@@ -84,6 +84,10 @@
 		else
 			display_results(user, self_message = "<span class='warning'>You begin performing a surgery on yourself without any painkillers, you take your time due to the pain.</span>")
 			delay = delay * 15
+	if(HAS_TRAIT(target, TRAIT_BLUEMOON_COMPLEX_MAINTENANCE)) // Если оперируется синтет с квирком сложного обслуживания - необученному персоналу будет дольше
+		if(!HAS_TRAIT(user.mind, TRAIT_QUALIFIED_ROBOTIC_MAINTER) && !user.mind.antag_datums) // гост роли и обученный персонал могут оперировать таких синтов
+			if(HAS_TRAIT(user.mind, TRAIT_GUIDED_ROBOTIC_MAINTER))
+				delay = delay * 4
 	if(do_after(user, delay, target = target))
 		var/prob_chance = get_chance(target, user, surgery = surgery, silent = FALSE)
 		/*
@@ -93,7 +97,7 @@
 		// BLUEMOON ADD START - самооперирование - чертовски сложное дело
 		if(HAS_TRAIT(target, TRAIT_BLUEMOON_COMPLEX_MAINTENANCE)) // только роботехники, РД и борги могут ремонтировать таких роботов
 			if(HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
-				if(!HAS_TRAIT(user.mind, QUALIFIED_ROBOTIC_MAINTER) && !user.mind.antag_datums) // гост роли и обученный персонал могут оперировать таких синтов
+				if(!HAS_TRAIT(user.mind, TRAIT_QUALIFIED_ROBOTIC_MAINTER) && !user.mind.antag_datums && istype(user, /mob/living/carbon/integral)) // гост роли и обученный персонал могут оперировать таких синтов. А еще интегралка тоже может)
 					to_chat(user, span_warning("Этот протез выглядит слишком сложно... Здесь необходим специалист!"))
 					prob_chance = 0
 		if(target == user)
@@ -165,9 +169,7 @@
 	playsound(get_turf(target), success_sound, 75, TRUE, falloff_exponent = 12, falloff_distance = 1)
 
 /datum/surgery_step/proc/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	display_results(user, target, "<span class='warning'>You screw up! Repeat the step!</span>", // BLUEMOON EDIT - добавлено про повтор
-		"<span class='warning'>[user] screws up!</span>",
-		"[user] finishes.", TRUE) //By default the patient will notice if the wrong thing has been cut
+	target.balloon_alert(user, span_balloon_warning("[pick("Ошибка!", "Провал!", "Неудача!")]"))
 	return FALSE
 
 /datum/surgery_step/proc/play_failure_sound(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
@@ -261,14 +263,17 @@
 	// BLUEMOON ADD START - самооперирование - чертовски сложное дело
 	if(HAS_TRAIT(target, TRAIT_BLUEMOON_COMPLEX_MAINTENANCE)) // только роботехники, РД и борги могут ремонтировать таких роботов
 		if(HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
-			if(!HAS_TRAIT(user.mind, QUALIFIED_ROBOTIC_MAINTER) && !user.mind.antag_datums) // гост роли и обученный персонал могут оперировать таких синтов
+			if(!HAS_TRAIT(user.mind, TRAIT_QUALIFIED_ROBOTIC_MAINTER) && !user.mind.antag_datums) // гост роли и обученный персонал могут оперировать таких синтов
 				if(!silent)
 					to_chat(user, span_warning("Этот протез выглядит слишком сложно... Здесь необходим специалист!"))
-				prob_chance = 0
+				if(HAS_TRAIT(user.mind, TRAIT_GUIDED_ROBOTIC_MAINTER)) // при наличии роботик процессора
+					prob_chance = min(prob_chance, 90)
+				else
+					prob_chance = 0
 	if(target == user)
 		if(HAS_TRAIT(target, CAN_BE_OPERATED_WITHOUT_PAIN)) // Роботам и некоторым другим расам даётся проще. Они не чувствуют боли
 			if(!silent)
-				display_results(target, self_message = "<span class='notice'>Вы пытаетесь [HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM) ? "отремонтироваться" : "вылечитья"] самостоятельно. Это не так сложно, как было бы [HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM) ? "органикам" : "другим расам"], но неудобно.</span>")
+				display_results(target, self_message = "<span class='notice'>Вы пытаетесь [HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM) ? "отремонтироваться" : "оперироваться"] самостоятельно. Это не так сложно, как было бы [HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM) ? "органикам" : "другим видам"], но неудобно.</span>")
 			prob_chance = min(prob_chance, 80)
 		else if(HAS_TRAIT(target, TRAIT_BLUEMOON_FEAR_OF_SURGEONS))
 			if(!silent)

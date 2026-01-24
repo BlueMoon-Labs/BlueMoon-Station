@@ -7,6 +7,7 @@
 import { clamp01, keyOfMatchingRange, scale, toFixed } from 'common/math';
 import { classes, pureComponentHooks } from 'common/react';
 import { Component } from 'inferno';
+
 import { computeBoxClassName, computeBoxProps } from './Box';
 
 export const ProgressBar = props => {

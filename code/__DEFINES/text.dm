@@ -241,3 +241,91 @@ GLOBAL_LIST_INIT(ddlc_chars, list(
 		span_colossus("НИКТО МЕНЯ НЕ ОСТАНОВИТ!"), \
 		span_colossus("ТЫ НЕ СМОЖЕШЬ БЕЖАТЬ ВЕЧНО!!!"), \
 	)
+
+/// Лист-словарь для examine string'а материалов в именительном падеже
+GLOBAL_LIST_INIT(mat_ru_nominative, list(
+    "iron" = "железо",
+    "glass" = "стекло",
+    "plasma" = "плазма",
+    "gold" = "золото",
+    "silver" = "серебро",
+    "diamond" = "алмазы",
+    "uranium" = "уран",
+    "titanium" = "титан",
+    "plasma glass" = "плазменное стекло",
+    "reinforced glass" = "закалённое стекло",
+    "bluespace crystal" = "блюспейс-кристаллы",
+    "bananium" = "бананиум",
+	"runite" = "рунит",
+	"plastic" = "пластик",
+	"biomass" = "биомасса",
+	"wood" = "дерево",
+	"adamantine" = "адамантин",
+	"mythril" = "мифрил",
+	"sand" = "песк",
+	"sandstone" = "песчаник",
+	"snow" = "снег",
+	"runed metal" = "рунный металл",
+	"brass" = "латунь",
+	"bronze" = "бронза",
+	"paper" = "бумага",
+	"cardboard" = "картон",
+	"bone" = "кость",
+	"bamboo" = "бамбук",
+	"rigid material" = "твёрдый материал",
+))
+
+/// Лист-словарь для examine string'а материалов в родительном падеже
+GLOBAL_LIST_INIT(mat_ru_genitive, list(
+    "iron" = "железа",
+    "glass" = "стекла",
+    "plasma" = "плазмы",
+    "gold" = "золота",
+    "silver" = "серебра",
+    "diamond" = "алмазов",
+    "uranium" = "урана",
+    "titanium" = "титана",
+    "plasma glass" = "плазменного стекла",
+    "reinforced glass" = "закалённого стекла",
+    "bluespace crystal" = "блюспейс-кристаллов",
+    "bananium" = "бананиума",
+	"runite" = "рунита",
+	"plastic" = "пластика",
+	"biomass" = "биомассы",
+	"wood" = "дерева",
+	"adamantine" = "адамантина",
+	"mythril" = "мифрила",
+	"sand" = "песка",
+	"sandstone" = "песчаника",
+	"snow" = "снега",
+	"runed metal" = "рунного металла",
+	"brass" = "латуни",
+	"bronze" = "бронзы",
+	"paper" = "бумаги",
+	"cardboard" = "картона",
+	"bone" = "кости",
+	"bamboo" = "бамбука",
+	"rigid material" = "твёрдого материала",
+))
+
+/// Лист-словарь для examine string'а бюджетов
+
+GLOBAL_LIST_INIT(budget_ru_nominative, list(
+	"civil budget" = "Гражданский бюджет",
+	"engineering budget" = "Бюджет инженерного отдела",
+	"scientific budget" = "Бюджет научного отдела",
+	"medical budget" = "Бюджет медицинского отдела",
+	"service budget" = "Бюджет отдела сервиса",
+	"cargo budget" = "Бюджет отдела карго",
+	"defense budget" = "Бюджет службы безопасности",
+))
+
+GLOBAL_LIST_INIT(budget_ru_genitive, list(
+	"civil budget" = "гражданского отдела",
+	"engineering budget" = "инженерного отдела",
+	"scientific budget" = "научного отдела",
+	"medical budget" = "медицинского отдела",
+	"service budget" = "отдела сервиса",
+	"cargo budget" = "отдела карго",
+	"defense budget" = "отдела службы безопасности",
+))

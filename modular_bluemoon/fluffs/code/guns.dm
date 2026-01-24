@@ -752,7 +752,9 @@
 /obj/item/modkit/dreadmk3_kit
 	name = "Законодатель MK3 Kit"
 	desc = "A modkit for making a MultiPhase Energy Gun into Законодатель MK3."
-	product = /obj/item/gun/energy/e_gun/hos/dreadmk3
+	icon = 'icons/obj/device.dmi'
+	icon_state = "modkit"
+	product = /obj/item/gun/energy/e_gun/hos/dreadmk3/talking
 	fromitem = list(/obj/item/gun/energy/e_gun/hos)
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -773,6 +775,8 @@
 /obj/item/modkit/institute_kit
 	name = "Карабин Института Kit"
 	desc = "A modkit for making a Energy Gun into Карабин Института."
+	icon = 'icons/obj/device.dmi'
+	icon_state = "modkit"
 	product = /obj/item/gun/energy/e_gun/institute
 	fromitem = list(/obj/item/gun/energy/e_gun)
 
@@ -791,6 +795,8 @@
 /obj/item/modkit/old_laser_kit
 	name = "Лазер AER9 Kit"
 	desc = "A modkit for making a laser carbine into Лазер AER9."
+	icon = 'icons/obj/device.dmi'
+	icon_state = "modkit"
 	product = /obj/item/gun/energy/laser/carbine/old
 	fromitem = list(/obj/item/gun/energy/laser/carbine/nopin, /obj/item/gun/energy/laser/carbine)
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -820,6 +826,25 @@
 	desc = "A modkit for making a Heavy crowbar into Heavy pocket hammer."
 	product = /obj/item/crowbar/large/heavy/hammercrowbar
 	fromitem = list(/obj/item/crowbar/large/heavy)
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+/obj/item/modkit/p320_kit
+	name = "Magnetic Pistol p320 Kit"
+	desc = "A modkit for making an Enforcer into a Magnetic Pistol p320."
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/p320
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/p320
+	name = "\improper P320"
+	desc = "P320 — модульный полуавтоматический пистолет. Данная версия пистолета была собрана под .45 калибр."
+	icon = 'modular_bluemoon/fluffs/icons/obj/P320.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	icon_state = "p320"
+	item_state = "p320"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/archivo.ogg'
+	unique_reskin = null
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -901,3 +926,27 @@
 	desc = "A modkit for making a .38 Mars Special into a RSH-Future."
 	product = /obj/item/gun/ballistic/revolver/detective/rsh_future
 	fromitem = list (/obj/item/gun/ballistic/revolver/detective)
+
+///////////////////////////////////////////////
+
+/obj/item/gun/ballistic/automatic/wt550/stg56
+	name = "\improper StG-56"
+	desc = "Recreated from old blueprints using the latest materials and a pinch of technology. This rifle will still serve well in its lifetime."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	icon_state = "stg56"
+	item_state = "stg56"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/stg56_shoot.ogg'
+	can_bayonet = FALSE
+
+/obj/item/gun/ballistic/automatic/wt550/stg56/update_icon_state()
+	icon_state = "stg56[magazine ? "" : "-e"]"
+
+/obj/item/modkit/stg56
+	name = "\improper StG-56 Kit"
+	desc = "A modkit for making a WT-550 into a Sturmgewehr-56."
+	product = /obj/item/gun/ballistic/automatic/wt550/stg56
+	fromitem = list(/obj/item/gun/ballistic/automatic/wt550)
+
+///////////////////////////////////////////////

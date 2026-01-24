@@ -647,17 +647,17 @@ GLOBAL_LIST_EMPTY(allCasters)
 			if(istype(human_user.wear_id, /obj/item/pda))
 				var/obj/item/pda/P = human_user.wear_id
 				if(P.id)
-					scanned_user = "[P.id.registered_name] ([P.id.assignment])"
+					scanned_user = "[P.id.registered_name] ([P.id.get_assignment_name()])"
 				else
 					scanned_user = "Unknown"
 			else if(istype(human_user.wear_id, /obj/item/card/id) )
 				var/obj/item/card/id/ID = human_user.wear_id
-				scanned_user ="[ID.registered_name] ([ID.assignment])"
+				scanned_user ="[ID.registered_name] ([ID.get_assignment_name()])"
 			else
 				scanned_user ="Unknown"
 		else if(human_user.wear_neck?.GetID())
 			var/obj/item/card/id/ID = human_user.wear_neck.GetID()
-			scanned_user ="[ID.registered_name] ([ID.assignment])"
+			scanned_user ="[ID.registered_name] ([ID.get_assignment_name()])"
 		else
 			scanned_user ="Unknown"
 	else if(issilicon(user))

@@ -17,7 +17,7 @@
 	new /obj/item/assembly/flash(src)
 	new /obj/item/melee/classic_baton/telescopic(src)
 	new /obj/item/reagent_containers/hypospray/medipen/survival(src)
-	new /obj/item/pen/sleepy(src)
+	new /obj/item/reagent_containers/hypospray/medipen/lewdsleepy(src)
 	new /obj/item/slaver/gizmo(src)
 
 //Copy of above in crate version
@@ -38,5 +38,14 @@
 	new /obj/item/assembly/flash(src)
 	new /obj/item/melee/classic_baton/telescopic(src)
 	new /obj/item/reagent_containers/hypospray/medipen/survival(src)
-	new /obj/item/pen/sleepy(src)
+	new /obj/item/reagent_containers/hypospray/medipen/lewdsleepy(src)
 	new /obj/item/slaver/gizmo(src)
+
+/obj/structure/closet/crate/slave_kink
+	name = "Kinkmate Supply"
+
+/obj/structure/closet/crate/slave_kink/PopulateContents()
+	. = ..()
+
+	new /obj/item/vending_refill/kink(src)
+	new /obj/item/vending_refill/kink(src)

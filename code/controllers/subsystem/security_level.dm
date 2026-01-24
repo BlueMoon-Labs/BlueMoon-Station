@@ -119,10 +119,13 @@ SUBSYSTEM_DEF(security_level)
 						SSshuttle.emergency.modTimer(1.6)
 				GLOB.security_level = SEC_LEVEL_AMBER
 				var/obj/machinery/computer/communications/C = locate() in GLOB.machines
-				if(C)
-					C.post_status("alert", "amberalert")
+				if(prob(90))
+					C?.post_status("alert", "amberalert")
+					sound_to_playing_players('sound/misc/alerts/amber.ogg', volume = 50)
+				else
+					C?.post_status("alert", "amberalert_secret")
+					sound_to_playing_players('sound/misc/alerts/amber_secret.ogg')
 				unset_stationwide_emergency_lighting()
-				sound_to_playing_players('sound/misc/alerts/amber.ogg', volume = 50)
 				for(var/obj/machinery/firealarm/FA in GLOB.machines)
 					if(is_station_level(FA.z))
 						FA.update_icon()

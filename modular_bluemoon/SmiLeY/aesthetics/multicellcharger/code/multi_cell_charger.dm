@@ -18,6 +18,24 @@
 	var/obj/item/stock_parts/cell/charging = null
 	var/recharge_coeff = 1
 
+/obj/machinery/cell_charger_multi/Initialize(mapload)
+	. = ..()
+	register_context()
+
+/obj/machinery/cell_charger_multi/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	. = CONTEXTUAL_SCREENTIP_SET
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Извлечь все батареи")
+
+	if(held_item?.tool_behaviour == TOOL_SCREWDRIVER)
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, panel_open ? "Закрутить панель" : "Открутить панель")
+		return .
+	if(held_item?.tool_behaviour == TOOL_WRENCH)
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, anchored ? "Открутить" : "Прикрутить")
+		return .
+
+	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Вставить батарею")
+
 /obj/machinery/cell_charger_multi/update_overlays()
 	. = ..()
 
@@ -34,17 +52,14 @@
 		. += new /mutable_appearance(charge_overlay)
 		. += new /mutable_appearance(cell_overlay)
 
-/obj/machinery/proc/altafterattack(atom/target, mob/user, proximity_flag, click_parameters)
-	SEND_SIGNAL(src, COMSIG_ITEM_ALT_AFTERATTACK, target, user, proximity_flag, click_parameters)
-	return FALSE
-
-/obj/machinery/cell_charger_multi/altafterattack(mob/user, list/modifiers)
-	if(!right_click_overridden || !can_interact(user) || !charging_batteries.len)
+/obj/machinery/cell_charger_multi/AltClick(mob/user)
+	. = ..()
+	if(!user.canUseTopic(src, BE_CLOSE) || !charging_batteries.len)
 		return
 	to_chat(user, span_notice("You press the quick release as all the cells pop out!"))
 	for(var/i in charging_batteries)
 		removecell()
-	return COMPONENT_CANCEL_ATTACK_CHAIN
+	return TRUE
 
 /obj/machinery/cell_charger_multi/examine(mob/user)
 	. = ..()
@@ -56,7 +71,7 @@
 			. += "There's [charging] cell in the charger, current charge: [round(charging.percent(), 1)]%."
 	if(in_range(user, src) || isobserver(user))
 		. += span_notice("The status display reads: Charging speed: <b>[recharge_coeff*100]%</b>.")
-	. += span_notice("Right click it to remove all the cells at once!")
+	. += span_notice("Alt click it to remove all the cells at once!")
 
 /obj/machinery/cell_charger_multi/attackby(obj/item/tool, mob/user, params)
 	if(istype(tool, /obj/item/stock_parts/cell) && !panel_open)
@@ -158,6 +173,8 @@
 /obj/machinery/cell_charger_multi/proc/removecell(mob/user)
 	if(!charging_batteries.len)
 		return FALSE
+	// Это все только замедляет время работы с машинерией, первая батарейка в большинстве случаев и так будет самой заряженной
+	/*
 	var/obj/item/stock_parts/cell/charging
 	if(charging_batteries.len > 1 && user)
 		var/list/buttons = list()
@@ -166,7 +183,8 @@
 		var/cell_name = tgui_input_list(user, "Please choose what cell you'd like to remove.", "Remove a cell", buttons)
 		charging = buttons[cell_name]
 	else
-		charging = charging_batteries[1]
+	*/
+	charging = charging_batteries[1]
 	if(!charging)
 		return FALSE
 	charging.forceMove(drop_location())

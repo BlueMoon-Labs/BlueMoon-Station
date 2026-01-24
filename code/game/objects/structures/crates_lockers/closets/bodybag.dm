@@ -60,8 +60,6 @@
 	if(over_object == usr && Adjacent(usr) && (in_range(src, usr) || usr.contents.Find(src)))
 		if(!ishuman(usr))
 			return FALSE
-		if(opened)
-			return FALSE
 		if(contents.len)
 			return FALSE
 		visible_message("<span class='notice'>[usr] folds up [src].</span>")
@@ -82,8 +80,6 @@
 	. = ..()
 	if(over_object == usr && Adjacent(usr) && (in_range(src, usr) || usr.contents.Find(src)))
 		if(!ishuman(usr))
-			return FALSE
-		if(opened)
 			return FALSE
 		if(contents.len >= mob_storage_capacity / 2)
 			to_chat(usr, "<span class='warning'>There are too many things inside of [src] to fold it up!</span>")

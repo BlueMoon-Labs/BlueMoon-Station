@@ -659,10 +659,10 @@
 /turf/open/floor/wood,
 /area/survivalpod)
 "gL" = (
-/obj/structure/table/optable/abductor,
 /obj/effect/turf_decal/siding/blue{
 	dir = 1
 	},
+/obj/structure/table/optable,
 /turf/open/floor/plasteel/white/smooth/half,
 /area/survivalpod)
 "gT" = (

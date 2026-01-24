@@ -33,3 +33,10 @@
 	design_ids = list("borg_upgrade_syndircd")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)
 
+/datum/techweb_node/borg_upgrade_advgasanalyzer
+	id = "borg_upgrade_advgasanalyzer"
+	display_name = "Cyborg Upgrades: Advanced Gas Analyzer Module"
+	description = "Atmospheric analyzer would implement efficiency into cyborg duty with ability to range-scan gas properties."
+	prereq_ids = list("cyborg_upg_util", "exp_tools")
+	design_ids = list("borg_upgrade_advgasanalyzer")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)

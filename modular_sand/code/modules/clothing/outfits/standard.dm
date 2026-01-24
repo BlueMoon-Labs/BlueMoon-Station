@@ -51,8 +51,31 @@
 /obj/item/storage/belt/military/abductor/full/debug
 	name = "\improper Bluespace Tech's belt"
 
+/obj/item/storage/belt/military/abductor/full/debug/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_w_class = MAX_WEIGHT_CLASS_BAG_OF_HOLDING
+	STR.storage_flags = STORAGE_FLAGS_LEGACY_DEFAULT
+	STR.max_volume = STORAGE_VOLUME_BAG_OF_HOLDING_DEBUG
+	STR.max_combined_w_class = 25
+	STR.max_items = 12
+
+/obj/item/storage/belt/military/abductor/full/debug/PopulateContents()
+	new /obj/item/screwdriver/abductor(src)
+	new /obj/item/wrench/abductor(src)
+	new /obj/item/weldingtool/abductor(src)
+	new /obj/item/crowbar/abductor(src)
+	new /obj/item/wirecutters/abductor(src)
+	new /obj/item/multitool/abductor(src)
+	new /obj/item/stack/cable_coil(src,30,"white")
+	new /obj/item/lightreplacer/blue(src)
+	new /obj/item/analyzer/ranged(src)
+	new /obj/item/extinguisher/advanced(src)
+	new /obj/item/holosign_creator/combifan(src)
+	new /obj/item/pipe_dispenser/bluespace(src)
+
 /datum/outfit/debug/bst //Debug objs
-	name = "Bluespace Tech"
+	name = "!Bluespace Tech"
 	uniform = /obj/item/clothing/under/syndicate/combat
 	suit = /obj/item/clothing/suit/armor/vest/darkcarapace/debug
 	glasses = null
@@ -69,11 +92,6 @@
 		/obj/item/melee/transforming/energy/axe=1,\
 		/obj/item/storage/part_replacer/bluespace/tier5=1,\
 		/obj/item/debug/human_spawner=1,\
-		/obj/item/holosign_creator/combifan=1,\
-		/obj/item/analyzer/ranged=1,\
-		/obj/item/extinguisher/advanced=1,\
-		/obj/item/pipe_dispenser/bluespace=1,\
-		/obj/item/lightreplacer/blue=1,\
 		/obj/item/gun/energy/taser/debug=1,\
 		/obj/item/clothing/glasses/debug,\
 		/obj/item/clothing/mask/gas/welding/up,\
@@ -82,7 +100,7 @@
 	implants = list(/obj/item/implant/mindshield, /obj/item/implant/deathrattle/centcom, /obj/item/implant/weapons_auth, /obj/item/implant/radio/centcom)
 
 /datum/outfit/debug/bsthardsuit //Debug objs plus hardsuit
-	name = "Bluespace Tech (Hardsuit)"
+	name = "!Bluespace Tech (Hardsuit)"
 	uniform = /obj/item/clothing/under/syndicate/combat
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/debug
 	glasses = /obj/item/clothing/glasses/debug
@@ -99,11 +117,6 @@
 	backpack_contents = list(
 		/obj/item/melee/transforming/energy/axe=1,\
 		/obj/item/storage/part_replacer/bluespace/tier5=1,\
-		/obj/item/holosign_creator/combifan=1,\
-		/obj/item/analyzer/ranged=1,\
-		/obj/item/extinguisher/advanced=1,\
-		/obj/item/pipe_dispenser/bluespace=1,\
-		/obj/item/lightreplacer/blue=1,\
 		/obj/item/debug/human_spawner=1,\
 		/obj/item/gun/energy/pulse=1,\
 		/obj/item/storage/lockbox/anti_singulo=1,\
@@ -133,4 +146,4 @@
 	W.access += get_centcom_access("TED Agent")//Let's add their alloted CentCom access.
 	W.assignment = "Timeline Eradication Agent"
 	W.registered_name = H.real_name
-	W.update_label(W.registered_name, W.assignment)
+	W.update_label()

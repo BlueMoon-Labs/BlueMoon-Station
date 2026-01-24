@@ -15,7 +15,7 @@
 	new /obj/item/tank/internals/oxygen/black(src)
 
 /obj/item/tank/internals/oxygen/black
-	desc = "A tank of oxygen, this one is black."
+	desc = "Баллон кислорода чёрного цвета."
 	icon = 'modular_bluemoon/SmiLeY/icons/obj/obj.dmi'
 	icon_state = "oxygen_black"
 	dog_fashion = null

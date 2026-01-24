@@ -6,7 +6,7 @@
 	layer = ABOVE_NORMAL_TURF_LAYER
 	icon = 'modular_sand/icons/obj/genitals/effects.dmi'
 	icon_state = "drip1"
-	random_icon_states = list("drip1", "drip2", "drip3", "drip4")
+	random_icon_states = list("drip1", "drip2", "drip3", "drip4", "drip5")
 
 /obj/effect/decal/cleanable/semendrip/replace_decal(obj/effect/decal/cleanable/semendrip/C)
 	. = ..()

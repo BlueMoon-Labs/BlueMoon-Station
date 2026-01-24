@@ -1,6 +1,5 @@
-import { Stack } from '../components';
-
 import { useBackend } from '../backend';
+import { Stack } from '../components';
 import { Window } from '../layouts';
 import { ChemFilterPane } from './ChemFilter';
 

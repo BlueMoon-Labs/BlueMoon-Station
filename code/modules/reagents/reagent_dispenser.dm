@@ -28,6 +28,19 @@
 		reagents.add_reagent(reagent_id, tank_volume)
 	. = ..()
 
+// BLUEMOON ADD START
+/obj/structure/reagent_dispensers/examine(mob/user)
+	. = ..()
+	if(anchored)
+		. += span_notice("It is <b>bolted</b> to the floor.")
+
+/obj/structure/reagent_dispensers/wrench_act(mob/living/user, obj/item/I)
+	. = ..()
+	if(density)
+		default_unfasten_wrench(user, I)
+		return TRUE
+// BLUEMOON ADD END
+
 //BLUEMOON CHANGE - FUELTANK
 /obj/structure/reagent_dispensers/proc/boom()
 	var/datum/reagent/fuel/volatiles = reagents.has_reagent(/datum/reagent/fuel)
@@ -82,7 +95,24 @@
 	name = "high-capacity water tank"
 	desc = "A highly pressurized water tank made to hold gargantuan amounts of water."
 	icon_state = "water_high" //I was gonna clean my room...
-	tank_volume = 100000
+	tank_volume = 3000
+
+/obj/structure/reagent_dispensers/watertank/holy
+	name = "BIG HOLY FLASK"
+	desc = "A VERY large and VERY holy flask, pure holy waterness!"
+	icon_state = "holyflask"
+	reagent_id = /datum/reagent/water/holywater
+	layer = ABOVE_ALL_MOB_LAYER // Big sprite
+
+/obj/structure/reagent_dispensers/watertank/holy/Initialize(mapload)
+	. = ..()
+	var/const/scale = 2
+	var/matrix/m = matrix()
+	m.Scale(scale)
+	// смещаем спрайт вверх
+	var/shift = (scale - 1) * 16
+	m.Translate(0, shift)
+	transform = m
 
 /obj/structure/reagent_dispensers/foamtank
 	name = "firefighting foam tank"
@@ -449,7 +479,8 @@
 	name = "Space Cleaner Refiller"
 	desc = "Refills space cleaner bottles."
 	icon_state = "cleaner"
-	anchored = 1
-	density = 0
+	anchored = TRUE
+	density = FALSE
+	plane = ABOVE_WALL_PLANE
 	tank_volume = 5000
 	reagent_id = /datum/reagent/space_cleaner

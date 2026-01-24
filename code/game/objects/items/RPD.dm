@@ -340,13 +340,14 @@ GLOBAL_LIST_INIT(fluid_duct_recipes, list(
 		// 	ducting_layer = text2num(params["ducting_layer"])
 		// 	playeffect = FALSE
 		if("pipe_type")
-			var/static/list/recipes
-			if(!recipes)
-				if(has_bluespace_pipe) // skyrat hack
-					recipes = GLOB.disposal_pipe_recipes + GLOB.bsatmos_pipe_recipes + GLOB.transit_tube_recipes
-				else
-					recipes = GLOB.disposal_pipe_recipes + GLOB.atmos_pipe_recipes + GLOB.transit_tube_recipes
-			recipe = recipes[params["category"]][text2num(params["pipe_type"])]
+			var/static/list/recipes_cache = list()
+			var/cache_name = has_bluespace_pipe ? "BS_RPD" : "RPD"
+			if(!recipes_cache[cache_name])
+				recipes_cache[cache_name] = \
+					GLOB.disposal_pipe_recipes +\
+				 	(has_bluespace_pipe ? GLOB.bsatmos_pipe_recipes : GLOB.atmos_pipe_recipes) +\
+					GLOB.transit_tube_recipes
+			recipe = recipes_cache[cache_name][params["category"]][text2num(params["pipe_type"])]
 			p_dir = NORTH
 		if("setdir")
 			p_dir = text2dir(params["dir"])

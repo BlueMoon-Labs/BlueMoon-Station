@@ -63,3 +63,13 @@
 	icon_state = "hair_module_mask"
 	item_state = "hair_module_mask"
 	body_parts_covered = NONE
+
+/obj/item/clothing/mask/breath/gestapo
+	name = "Truth Enforcer mask"
+	desc = "Filter their thoughts"
+	icon_state = "gestapo_mask"
+	item_state = "gestapo_mask"
+	icon = 'modular_bluemoon/icons/obj/clothing/masks.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/masks.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'

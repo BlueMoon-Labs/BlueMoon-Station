@@ -36161,6 +36161,7 @@
 	dir = 1;
 	name = "air vent"
 	},
+/obj/structure/sign/painting/large/library_private/directional/south,
 /turf/open/floor/carpet{
 	icon_state = "carpetsymbol"
 	},
@@ -39660,7 +39661,7 @@
 /area/maintenance/starboard/aft)
 "cmP" = (
 /obj/structure/window/reinforced/spawner/north,
-/obj/structure/table/wood,
+/obj/machinery/modular_computer/console/preset/curator,
 /turf/open/floor/carpet{
 	icon_state = "carpetsymbol"
 	},
@@ -55307,6 +55308,9 @@
 	dir = 4;
 	pixel_x = -28
 	},
+/obj/structure/sign/painting/library_private{
+	pixel_y = -32
+	},
 /turf/open/floor/carpet/black,
 /area/service/library)
 "eNE" = (
@@ -55780,6 +55784,10 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
+"eWx" = (
+/obj/structure/sign/painting/large/library/directional/west,
+/turf/open/floor/wood,
+/area/service/library)
 "eWC" = (
 /obj/structure/table/wood,
 /obj/item/flashlight/lamp{
@@ -66506,6 +66514,10 @@
 	dir = 1
 	},
 /obj/machinery/disposal/bin,
+/obj/machinery/firealarm{
+	dir = 1;
+	pixel_y = -26
+	},
 /turf/open/floor/carpet{
 	icon_state = "carpetsymbol"
 	},
@@ -84390,6 +84402,10 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
 /area/security/prison/work)
+"pnS" = (
+/obj/structure/sign/painting/large/library/directional/east,
+/turf/open/floor/wood,
+/area/service/library)
 "pof" = (
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
@@ -86201,10 +86217,6 @@
 /turf/open/space/basic,
 /area/space/nearstation)
 "pSx" = (
-/obj/machinery/firealarm{
-	dir = 1;
-	pixel_y = -26
-	},
 /turf/open/floor/carpet{
 	icon_state = "carpetsymbol"
 	},
@@ -135279,8 +135291,8 @@ bJm
 bZH
 hRm
 qlz
-qlz
-qlz
+bZF
+eWx
 bZF
 bax
 cea
@@ -135793,8 +135805,8 @@ bJm
 bZH
 lUt
 uVp
-uVp
-uVp
+bZF
+pnS
 bZF
 tRH
 baX

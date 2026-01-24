@@ -167,7 +167,7 @@
 
 	return ..()
 
-/obj/machinery/door/firedoor/try_to_activate_door(mob/user)
+/obj/machinery/door/firedoor/try_to_activate_door(mob/user, access_bypass = FALSE)
 	return
 
 /obj/machinery/door/firedoor/try_to_weld(obj/item/W, mob/user)

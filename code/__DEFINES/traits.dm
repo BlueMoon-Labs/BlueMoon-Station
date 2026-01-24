@@ -292,6 +292,8 @@
 
 #define TRAIT_AKIMBO	"akimbo"
 
+#define TRAIT_COMPATIBLE_WITH_NANOMACHINES "compatible_with_nanomachines"
+
 
 // mobility flag traits
 // IN THE FUTURE, IT WOULD BE NICE TO DO SOMETHING SIMILAR TO https://github.com/tgstation/tgstation/pull/48923/files (ofcourse not nearly the same because I have my.. thoughts on it)
@@ -366,6 +368,7 @@
 #define BOOK_TRAIT "granter (book)" // knowledge is power
 #define TURF_TRAIT "turf"
 #define STATION_TRAIT "station-trait"
+#define CYBORG_MODULE_TRAIT "cyborg_module"
 
 // unique trait sources, still defines
 #define STATUE_TRAIT "statue"

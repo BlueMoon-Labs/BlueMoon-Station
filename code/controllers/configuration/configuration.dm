@@ -295,9 +295,9 @@ special keywords defined in _DEFINES/admin.dm
 
 Example config:
 {
-    "Assistant" : "Don't kill everyone",
-    "/datum/antagonist/highlander" : "<b>Kill everyone</b>",
-    "Ash Walker" : "Kill all spacemans"
+	"Assistant" : "Don't kill everyone",
+	"/datum/antagonist/highlander" : "<b>Kill everyone</b>",
+	"Ash Walker" : "Kill all spacemans"
 }
 
 */
@@ -450,6 +450,34 @@ Example config:
 			runnable_modes[M] = probabilities[M.config_tag]
 	return runnable_modes
 
+// Экранирует спецсимволы regex в слове
+/proc/regex_escape(text)
+	if(!istext(text)) return text
+	text = replacetext(text, "\\", "\\\\")
+	var/list/meta = list(".", "^", "$", "*", "+", "?", "(", ")", "[", "]", "{", "}", "|")
+	for(var/m in meta)
+		text = replacetext(text, m, "\\" + m)
+	return text
+
+// Есть ли целое слово
+/proc/has_whole_word(text, word, case_insensitive = TRUE)
+	if(!text || !word) return FALSE
+	var/static/WORDCLASS = "A-Za-z0-9_А-Яа-яЁё"
+	var/safe = regex_escape(word)
+	var/pattern = "(^|\[^" + WORDCLASS + "\])" + safe + "($|\[^" + WORDCLASS + "\])"
+	var/flags = case_insensitive ? "i" : null
+	var/regex/R = regex(pattern, flags)
+	if(!R.Find(text)) return FALSE
+	return findtext(lowertext(R.match), lowertext(word)) > 0
+
+// Найти любое слово из списка
+/proc/find_any_whole_word(text, list/words, case_insensitive = TRUE)
+	if(!text || !islist(words) || !words.len) return null
+	for(var/w in words)
+		if(istext(w) && length(w) && has_whole_word(text, w, case_insensitive))
+			return w
+	return null
+
 /datum/controller/configuration/proc/LoadChatFilter()
 	var/list/in_character_filter = list()
 	if(!fexists("[directory]/in_character_filter.txt"))
@@ -460,8 +488,10 @@ Example config:
 			continue
 		if(findtextEx(line,"#",1,2))
 			continue
-		in_character_filter += REGEX_QUOTE(line)
-	ic_filter_regex = in_character_filter.len ? regex("\\b([jointext(in_character_filter, "|")])\\b", "i") : null
+		in_character_filter += trim(line)
+
+	ic_filter_regex = in_character_filter.len ? in_character_filter : null
+	log_config("IC filter loaded: [in_character_filter.len] words")
 
 //Message admins when you can.
 /datum/controller/configuration/proc/DelayedMessageAdmins(text)

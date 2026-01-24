@@ -394,11 +394,18 @@
 		human_pragency_start(carrier)
 	ADD_TRAIT(carrier, TRAIT_PREGNANT, PREGNANCY_TRAIT)
 
+	// === BLUEMOON ADD ===
+	if(HAS_TRAIT(carrier, TRAIT_ESTROUS_ACTIVE))
+		SEND_SIGNAL(carrier, COMSIG_PREGNANCY_STARTED)
+
 /datum/component/pregnancy/proc/generic_pragency_end()
 	REMOVE_TRAIT(carrier, TRAIT_PREGNANT, PREGNANCY_TRAIT)
 	carrier.remove_status_effect(/datum/status_effect/pregnancy)
 	if(ishuman(carrier))
 		human_pragency_end(carrier)
+
+	// BLUEMOON ADD
+	SEND_SIGNAL(carrier, COMSIG_PREGNANCY_ENDED)
 
 /datum/component/pregnancy/proc/human_pragency_start(mob/living/carbon/human/gregnant)
 	if(pregnancy_breast_growth)

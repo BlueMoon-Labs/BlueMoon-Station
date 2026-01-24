@@ -1,10 +1,13 @@
 /obj/item/toy/cards/deck
 	icon = 'modular_splurt/icons/obj/toy.dmi'
 	original_size = 54
+	var/alt_tooltip = "to remove unwanted cards."
+	var/list/card_types = list("Hearts", "Spades", "Clubs", "Diamonds", "Joker", "Ace", "King", "Queen", "Jack", "2", "3", "4", "5", "6", "7", "8", "9", "10")
 
 /obj/item/toy/cards/deck/examine()
 	. = ..()
-	. += span_notice("Alt-click [src] to remove unwanted cards.")
+	if(alt_tooltip)
+		. += span_notice("Alt-click [src] [alt_tooltip]")
 
 /obj/item/toy/cards/deck/populate_deck()
 	. = ..()

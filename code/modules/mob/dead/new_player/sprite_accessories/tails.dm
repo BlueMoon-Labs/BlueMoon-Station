@@ -174,6 +174,20 @@
 	color_src = MATRIXED
 	matrixed_sections = MATRIX_RED
 
+/datum/sprite_accessory/tails/human/alttwocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
+/datum/sprite_accessory/tails_animated/human/alttwocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
 /datum/sprite_accessory/tails/human/carp // BLUEMOON CHANGE ' /shark' to ' /carp' and 'name = ' to carp
 	name = "Carp"
 	icon_state = "carp"
@@ -707,6 +721,16 @@
 	name = "Cat, Double"
 	icon_state = "twocat"
 	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/tails/mam_tails/twocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	matrixed_sections = MATRIX_RED_BLUE
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/twocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	matrixed_sections = MATRIX_RED_BLUE
 
 /datum/sprite_accessory/tails/mam_tails/carp // BLUEMOON CHANGE ' /shark' to ' /carp' and 'name = ' to carp
 	name = "Carp"

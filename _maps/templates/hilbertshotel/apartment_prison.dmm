@@ -1,0 +1,1947 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ax" = (
+/obj/effect/turf_decal/stripes/red{
+	dir = 9
+	},
+/turf/open/floor/padded,
+/area/hilbertshotel)
+"bE" = (
+/obj/structure/flora/junglebush,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"bG" = (
+/obj/structure/window/reinforced/tinted,
+/obj/structure/toilet{
+	dir = 4
+	},
+/turf/open/floor/plasteel/freezer,
+/area/hilbertshotel)
+"cd" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/railing{
+	dir = 1;
+	icon_state = "railing"
+	},
+/obj/structure/railing,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"ds" = (
+/obj/structure/chair/office{
+	dir = 4;
+	pixel_x = 9
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"eO" = (
+/obj/structure/chair/office{
+	dir = 8;
+	pixel_x = -9
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"go" = (
+/obj/structure/closet/secure_closet/freezer/kitchen{
+	req_access = null
+	},
+/obj/item/reagent_containers/food/snacks/breadslice/plain,
+/obj/item/reagent_containers/food/snacks/breadslice/plain,
+/obj/item/reagent_containers/food/snacks/breadslice/plain,
+/obj/item/reagent_containers/food/snacks/grown/potato,
+/obj/item/reagent_containers/food/snacks/grown/potato,
+/obj/effect/spawner/lootdrop/prison_loot_toilet,
+/obj/item/reagent_containers/food/snacks/grown/onion,
+/obj/item/reagent_containers/food/snacks/grown/onion,
+/obj/item/choice_beacon/ingredients,
+/obj/item/choice_beacon/ingredients,
+/obj/effect/turf_decal/bot/white,
+/obj/item/storage/box/ingredients/carnivore,
+/obj/item/storage/box/ingredients/wildcard,
+/obj/item/storage/fancy/egg_box,
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
+"gr" = (
+/obj/structure/table,
+/obj/item/camera{
+	pixel_y = 11
+	},
+/obj/item/camera_film{
+	pixel_x = 9;
+	pixel_y = 7
+	},
+/obj/item/restraints/handcuffs/fake/kinky{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/restraints/handcuffs/fake/kinky,
+/obj/effect/turf_decal/siding/wood{
+	dir = 10
+	},
+/turf/open/floor/plasteel/grimy,
+/area/hilbertshotel)
+"gE" = (
+/obj/machinery/door/airlock/centcom{
+	name = "prison door";
+	req_access_txt = "12";
+	pixel_x = 0;
+	pixel_y = 0;
+	id_tag = "main-prison-door"
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"hw" = (
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"hx" = (
+/obj/item/clothing/under/rank/security/skirt/slut/pink,
+/obj/item/clothing/shoes/jackboots,
+/obj/item/storage/belt/slut,
+/obj/structure/closet/secure_closet/personal{
+	req_access = list(12)
+	},
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/item/clothing/under/rank/security/officer{
+	armor = null
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"ig" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"iq" = (
+/turf/open/floor/plasteel/grimy,
+/area/hilbertshotel)
+"iV" = (
+/obj/effect/turf_decal/tile/yellow,
+/obj/effect/turf_decal/tile/yellow,
+/obj/effect/turf_decal/tile/yellow{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"iW" = (
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"jg" = (
+/obj/structure/flora/junglebush/large,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"lA" = (
+/obj/structure/table,
+/obj/item/bdsm_whip/ridingcrop,
+/obj/item/restraints/handcuffs,
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"lE" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red,
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"lL" = (
+/obj/structure/chair/office{
+	dir = 8;
+	pixel_x = -9
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"lN" = (
+/obj/structure/bed{
+	dir = 1;
+	pixel_y = 3;
+	pixel_x = 3
+	},
+/obj/structure/bed{
+	dir = 1;
+	pixel_y = 13;
+	pixel_x = 3
+	},
+/obj/structure/fluff/railing{
+	dir = 4;
+	pixel_x = -22
+	},
+/obj/structure/fluff/railing{
+	dir = 8;
+	pixel_x = 29
+	},
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
+"lU" = (
+/obj/structure/table,
+/obj/item/dildo/knotted{
+	pixel_y = 2
+	},
+/obj/item/dildo/random{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/assembly/signaler{
+	pixel_x = 7;
+	pixel_y = 9
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 6
+	},
+/obj/item/storage/box/fancy_maid_kit,
+/turf/open/floor/plasteel/grimy,
+/area/hilbertshotel)
+"mk" = (
+/turf/closed/wall,
+/area/hilbertshotel)
+"mC" = (
+/obj/structure/flora/rock/pile,
+/turf/open/water/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"nC" = (
+/obj/structure/flora/spookyrock,
+/obj/machinery/light/floor,
+/turf/open/water/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"oo" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/structure/chair/gloryhole,
+/obj/machinery/light{
+	dir = 1;
+	light_color = "#cee5d2"
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"ot" = (
+/obj/structure/closet/secure_closet/personal{
+	name = "prisoner closet";
+	req_access = list(12)
+	},
+/obj/effect/turf_decal/bot/white,
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/item/clothing/under/rank/prisoner/skirt,
+/obj/item/clothing/under/rank/prisoner,
+/obj/item/clothing/shoes/sneakers/orange,
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"oL" = (
+/turf/closed/indestructible/wall,
+/area/hilbertshotel)
+"oY" = (
+/obj/machinery/light/small{
+	armor = list("melee"=40,"bullet"=40,"laser"=40,"energy"=100,"bomb"=30,"bio"=100,"rad"=100,"fire"=90,"acid"=50);
+	dir = 1;
+	light_color = "#ffc1c1";
+	name = "Reinforced Light Fixture"
+	},
+/turf/open/floor/padded,
+/area/hilbertshotel)
+"qg" = (
+/obj/structure/chair/office{
+	dir = 4;
+	pixel_x = 9
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"qI" = (
+/obj/structure/bed{
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/machinery/light{
+	dir = 1;
+	light_color = "#cee5d2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
+"rw" = (
+/obj/structure/flora/tree/jungle/small{
+	icon_state = "tree6"
+	},
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"ry" = (
+/obj/structure/railing{
+	dir = 5;
+	icon_state = "railing"
+	},
+/obj/structure/lattice/catwalk,
+/obj/structure/railing/corner{
+	dir = 8
+	},
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"rW" = (
+/obj/machinery/light/floor,
+/obj/structure/flora/junglebush/large,
+/turf/open/water/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"st" = (
+/obj/structure/flora/junglebush/large,
+/turf/open/water/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"sy" = (
+/obj/machinery/door/airlock/centcom{
+	req_access_txt = "12";
+	name = "re-education room 2"
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"sQ" = (
+/obj/structure/flora/rock/jungle,
+/turf/open/water/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"tm" = (
+/obj/machinery/door/airlock/centcom{
+	name = "evidence room";
+	req_access_txt = "12"
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"tz" = (
+/obj/structure/table,
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/item/storage/fancy/donut_box{
+	pixel_x = -3
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"ue" = (
+/obj/item/reagent_containers/glass/bucket,
+/obj/machinery/hydroponics/soil{
+	pixel_y = 5
+	},
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"uy" = (
+/obj/structure/table,
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/machinery/computer/security/telescreen{
+	dir = 1;
+	network = list("prison-dorm");
+	name = "improper Telescreen"
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"wd" = (
+/turf/open/water/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"wR" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/machinery/jukebox{
+	req_one_access = null
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"wT" = (
+/turf/open/floor/plasteel/freezer,
+/area/hilbertshotel)
+"xv" = (
+/obj/structure/table,
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/machinery/button/door{
+	id = "prison-window_dorm";
+	name = "Prison windows";
+	pixel_y = -2;
+	pixel_x = -7
+	},
+/obj/item/dildo/flared/gigantic{
+	pixel_y = 2;
+	pixel_x = 6
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"xU" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/item/leash,
+/obj/item/electropack/shockcollar/security,
+/obj/item/clothing/neck/petcollar/locked/security,
+/obj/machinery/camera{
+	dir = 9;
+	network = list("prison-dorm");
+	c_tag = "sec room"
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"yn" = (
+/obj/structure/chair/comfy/plywood{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/turf/open/floor/wood,
+/area/hilbertshotel)
+"yM" = (
+/obj/structure/table,
+/obj/item/book/manual/chef_recipes,
+/obj/item/reagent_containers/food/condiment/saltshaker{
+	layer = 3.1;
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/item/reagent_containers/food/condiment/peppermill{
+	desc = "Often used to flavor food or make people sneeze. Fashionably moved to the left side of the table.";
+	pixel_x = -8;
+	pixel_y = 2
+	},
+/obj/item/reagent_containers/food/condiment/enzyme{
+	pixel_x = 9;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral,
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"yY" = (
+/obj/structure/chair/stool,
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"zr" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"zz" = (
+/obj/structure/chair/comfy/black,
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/hilbertshotel)
+"zB" = (
+/obj/effect/turf_decal/stripes/red{
+	dir = 4
+	},
+/turf/open/floor/padded,
+/area/hilbertshotel)
+"zM" = (
+/obj/structure/flora/junglebush/c,
+/obj/machinery/light/floor,
+/turf/open/water/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"zQ" = (
+/obj/structure/window/reinforced/tinted{
+	dir = 1
+	},
+/obj/structure/curtain,
+/turf/open/floor/plasteel/freezer,
+/area/hilbertshotel)
+"zS" = (
+/obj/machinery/door/airlock/centcom{
+	name = "prison door";
+	pixel_x = 0;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"Az" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/railing{
+	dir = 10;
+	icon_state = "railing"
+	},
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"Bi" = (
+/obj/structure/table/wood,
+/obj/item/paper_bin,
+/obj/machinery/camera{
+	c_tag = "library";
+	dir = 10;
+	network = list("prison-dorm")
+	},
+/turf/open/floor/wood,
+/area/hilbertshotel)
+"Bo" = (
+/obj/structure/table,
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/item/restraints/handcuffs/kinky,
+/obj/item/restraints/handcuffs/kinky{
+	pixel_y = 7;
+	pixel_x = -4
+	},
+/obj/item/restraints/handcuffs/kinky{
+	pixel_y = -5;
+	pixel_x = 3
+	},
+/obj/machinery/light{
+	dir = 1;
+	light_color = "#cee5d2"
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"Bq" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/obj/structure/closet/crate/bin,
+/obj/item/mop,
+/obj/item/storage/bag/trash,
+/obj/effect/spawner/lootdrop/prison_contraband,
+/turf/open/floor/wood,
+/area/hilbertshotel)
+"BN" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/plasteel/grimy,
+/area/hilbertshotel)
+"Ch" = (
+/obj/effect/turf_decal/tile/yellow{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"CB" = (
+/obj/item/bdsm_whip/ridingcrop,
+/obj/item/bdsm_whip,
+/obj/item/clothing/head/dominatrixcap,
+/obj/structure/table,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/grimy,
+/area/hilbertshotel)
+"CS" = (
+/obj/structure/chair/office/dark,
+/obj/item/toy/plush/bm/silly_neko_plushie{
+	pixel_y = 6;
+	pixel_x = 3
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"Da" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/plasteel/grimy,
+/area/hilbertshotel)
+"DV" = (
+/obj/structure/sink{
+	dir = 8;
+	pixel_x = -12;
+	pixel_y = 0
+	},
+/obj/item/kitchen/fork,
+/obj/structure/table,
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
+"Ei" = (
+/obj/machinery/door/airlock/centcom{
+	req_access_txt = "12";
+	name = "re-education room 1"
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"Et" = (
+/obj/structure/flora/tree/jungle/small,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"EP" = (
+/obj/structure/flora/tree/jungle,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"Fc" = (
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"FG" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/bed/matress/clean_pillowed,
+/turf/open/floor/padded,
+/area/hilbertshotel)
+"GF" = (
+/obj/machinery/seed_extractor,
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
+"HY" = (
+/obj/machinery/hydroponics/soil,
+/obj/item/cultivator,
+/obj/item/shovel/spade,
+/obj/item/plant_analyzer,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"HZ" = (
+/obj/machinery/microwave,
+/obj/structure/table,
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
+"Ik" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red,
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"IY" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 5
+	},
+/turf/open/floor/plasteel/terracotta/small,
+/area/hilbertshotel)
+"Ka" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 6
+	},
+/turf/open/floor/plasteel/terracotta/small,
+/area/hilbertshotel)
+"Kh" = (
+/obj/structure/closet/secure_closet/personal{
+	name = "prisoner closet";
+	req_access = list(12)
+	},
+/obj/effect/turf_decal/bot/white,
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/item/clothing/under/rank/prisoner/skirt,
+/obj/item/clothing/under/rank/prisoner,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/machinery/camera{
+	dir = 10;
+	network = list("prison-dorm");
+	c_tag = "evidence room"
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"Ko" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"Kw" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"Kx" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"KG" = (
+/obj/effect/turf_decal/stripes/red{
+	dir = 10
+	},
+/turf/open/floor/padded,
+/area/hilbertshotel)
+"KO" = (
+/obj/machinery/shower{
+	desc = "Despite their age, they seem clean and capable of providing hot water just as well as their modern counterparts. Hopefully Nanotrasen cleaned the water pipes this well...";
+	dir = 4
+	},
+/obj/item/soap,
+/turf/open/floor/plasteel/freezer,
+/area/hilbertshotel)
+"Lg" = (
+/obj/machinery/vending/kink{
+	extended_inventory = 1;
+	shut_up = 1
+	},
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"Lj" = (
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/plasteel/freezer,
+/area/hilbertshotel)
+"Ms" = (
+/obj/structure/flora/junglebush/b,
+/obj/machinery/light/floor,
+/turf/open/water/lavaland_jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"MC" = (
+/obj/structure/dresser{
+	pixel_y = 0;
+	pixel_x = 2
+	},
+/obj/item/flashlight/lamp/green{
+	pixel_x = -2;
+	pixel_y = 15
+	},
+/obj/machinery/camera{
+	c_tag = "bedroom";
+	network = list("prison-dorm")
+	},
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
+"MH" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/obj/machinery/vending/games,
+/turf/open/floor/wood,
+/area/hilbertshotel)
+"MP" = (
+/obj/item/book/manual/wiki/splurt/splurt_space_law,
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = -10
+	},
+/turf/open/floor/wood,
+/area/hilbertshotel)
+"MW" = (
+/obj/structure/table,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"Na" = (
+/obj/structure/closet/crate/hydroponics,
+/obj/item/paper/guides/jobs/hydroponics,
+/obj/item/seeds/onion,
+/obj/item/seeds/garlic,
+/obj/item/seeds/potato,
+/obj/item/seeds/tomato,
+/obj/item/seeds/carrot,
+/obj/item/seeds/grass,
+/obj/item/seeds/ambrosia,
+/obj/item/seeds/wheat,
+/obj/item/seeds/pumpkin,
+/obj/item/seeds/wheat,
+/obj/effect/spawner/lootdrop/prison_contraband,
+/obj/item/seeds/wheat,
+/obj/item/reagent_containers/glass/bottle/ammonia,
+/obj/effect/spawner/lootdrop/prison_contraband,
+/obj/structure/window/reinforced/tinted,
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
+"NI" = (
+/turf/open/floor/padded,
+/area/hilbertshotel)
+"NR" = (
+/obj/machinery/vending/kink{
+	extended_inventory = 1;
+	shut_up = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 9
+	},
+/obj/machinery/camera{
+	c_tag = "re-educationroom2";
+	dir = 6;
+	network = list("prison-dorm")
+	},
+/turf/open/floor/plasteel/grimy,
+/area/hilbertshotel)
+"Pf" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"Pg" = (
+/obj/item/gloryhole_kit{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/item/gloryhole_kit{
+	pixel_x = 6;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/structure/table,
+/obj/item/gloryhole_kit{
+	pixel_x = 6;
+	pixel_y = 11
+	},
+/obj/machinery/camera{
+	c_tag = "re-educationroom1";
+	dir = 4;
+	network = list("prison-dorm")
+	},
+/obj/item/wrench,
+/obj/item/screwdriver,
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"PG" = (
+/turf/closed/indestructible/hoteldoor{
+	icon_state = "door_closed";
+	icon = 'icons/obj/doors/puzzledoor/default.dmi'
+	},
+/area/hilbertshotel)
+"Qw" = (
+/obj/machinery/computer/arcade/tetris{
+	dir = 1
+	},
+/obj/machinery/light/cold/directional,
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"Rn" = (
+/obj/structure/spacevine,
+/turf/closed/indestructible/rock,
+/area/hilbertshotel)
+"Rw" = (
+/obj/machinery/camera{
+	dir = 9;
+	c_tag = "Isolation Cell";
+	network = list("prison-dorm")
+	},
+/turf/open/floor/padded,
+/area/hilbertshotel)
+"RH" = (
+/obj/machinery/biogenerator,
+/obj/item/reagent_containers/glass/beaker/large,
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
+"RP" = (
+/obj/structure/table,
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/item/clothing/mask/muzzle/ballgag{
+	pixel_y = 7
+	},
+/obj/item/clothing/mask/muzzle/ballgag{
+	pixel_y = 9
+	},
+/obj/item/clothing/mask/muzzle/ballgag{
+	pixel_y = 11
+	},
+/obj/item/clothing/glasses/sunglasses/blindfold{
+	pixel_y = -7;
+	pixel_x = -1
+	},
+/obj/item/clothing/glasses/sunglasses/blindfold{
+	pixel_y = -1;
+	pixel_x = -1
+	},
+/obj/item/clothing/glasses/sunglasses/blindfold{
+	pixel_x = -1;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"RS" = (
+/obj/structure/table,
+/obj/machinery/computer/security/telescreen{
+	dir = 8;
+	network = list("prison-dorm");
+	name = "improper Telescreen"
+	},
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"Si" = (
+/obj/structure/table,
+/obj/item/storage/box/prisoner{
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"Sr" = (
+/obj/effect/spawner/structure/window/reinforced/indestructable,
+/turf/open/floor/plating,
+/area/hilbertshotel)
+"St" = (
+/obj/effect/turf_decal/tile/yellow,
+/obj/effect/turf_decal/tile/yellow,
+/obj/effect/turf_decal/tile/yellow{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"SW" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/lattice/catwalk,
+/obj/structure/railing/corner{
+	dir = 4
+	},
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"Tx" = (
+/obj/structure/railing,
+/obj/structure/lattice/catwalk,
+/obj/item/card/id/stowaway_stolen{
+	pixel_y = 27;
+	pixel_x = 1;
+	name = "Warden ID Card"
+	},
+/obj/item/card/id/stowaway_stolen{
+	pixel_y = 38;
+	name = "Warden ID Card"
+	},
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"TF" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"TH" = (
+/obj/structure/table,
+/obj/item/storage/bag/tray/cafeteria,
+/obj/item/storage/bag/tray/cafeteria,
+/obj/item/storage/bag/tray/cafeteria,
+/obj/item/storage/bag/tray/cafeteria,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
+"UC" = (
+/obj/machinery/door/airlock/centcom{
+	req_access_txt = "12";
+	name = "isolator";
+	id_tag = "isolator-prison-door"
+	},
+/turf/open/floor/padded,
+/area/hilbertshotel)
+"UQ" = (
+/obj/machinery/door/airlock/centcom{
+	name = "sec room";
+	req_access_txt = "12"
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"Vd" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/railing{
+	dir = 4;
+	icon_state = "railing"
+	},
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"Vu" = (
+/obj/structure/rack,
+/obj/item/dildo/random,
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"Vz" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/machinery/research_table,
+/turf/open/floor/plasteel/grimy,
+/area/hilbertshotel)
+"VI" = (
+/obj/machinery/vr_sleeper{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/white{
+	dir = 10
+	},
+/obj/machinery/light/cold/directional{
+	dir = 4
+	},
+/turf/open/floor/plasteel/terracotta/small,
+/area/hilbertshotel)
+"VZ" = (
+/obj/effect/turf_decal/tile/yellow{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/yellow,
+/obj/effect/turf_decal/tile/yellow,
+/obj/machinery/light{
+	pixel_x = 15
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"Wc" = (
+/obj/machinery/telecomms/relay/preset/auto,
+/turf/open/floor/catwalk_floor,
+/area/hilbertshotel)
+"WD" = (
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"WI" = (
+/obj/effect/spawner/structure/window/reinforced/indestructable,
+/obj/machinery/door/poddoor/preopen{
+	id = "prison-window_dorm";
+	name = "space shutters"
+	},
+/turf/open/floor/plating,
+/area/hilbertshotel)
+"WX" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/railing{
+	dir = 1;
+	icon_state = "railing"
+	},
+/obj/structure/rack,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"Xj" = (
+/obj/item/storage/box/drinkingglasses,
+/obj/item/kitchen/rollingpin,
+/obj/item/kitchen/knife,
+/obj/machinery/camera{
+	c_tag = "main room";
+	network = list("prison-dorm")
+	},
+/obj/structure/table,
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
+"Xr" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"Yn" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/machinery/light/cold/directional{
+	dir = 4;
+	pixel_y = -15
+	},
+/obj/machinery/light/cold/directional{
+	dir = 4;
+	pixel_y = -15
+	},
+/turf/open/floor/plasteel,
+/area/hilbertshotel)
+"YK" = (
+/obj/machinery/light/small,
+/obj/structure/bookcase/random/adult,
+/turf/open/floor/wood,
+/area/hilbertshotel)
+"Zr" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/machinery/light{
+	dir = 1;
+	light_color = "#cee5d2"
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/hilbertshotel)
+"ZC" = (
+/obj/structure/flora/rock/jungle,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/hilbertshotel)
+"ZL" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 9
+	},
+/obj/machinery/vr_sleeper{
+	dir = 8
+	},
+/turf/open/floor/plasteel/terracotta/small,
+/area/hilbertshotel)
+
+(1,1,1) = {"
+Wc
+Rn
+Rn
+Rn
+Rn
+PG
+Rn
+Rn
+Rn
+Rn
+Rn
+Rn
+oL
+oL
+oL
+oL
+"}
+(2,1,1) = {"
+Rn
+Rn
+rW
+jg
+ZC
+cd
+nC
+bE
+wd
+Et
+zM
+Rn
+mk
+FG
+NI
+oL
+"}
+(3,1,1) = {"
+oL
+oL
+oL
+oL
+rw
+ry
+Vd
+Vd
+SW
+Az
+ZC
+Rn
+mk
+oY
+Rw
+oL
+"}
+(4,1,1) = {"
+oL
+bG
+KO
+oL
+WD
+EP
+Ms
+st
+WX
+Tx
+Rn
+oL
+oL
+UC
+oL
+oL
+"}
+(5,1,1) = {"
+oL
+Lj
+wT
+oL
+Rn
+mC
+sQ
+mk
+mk
+tm
+mk
+mk
+KG
+zB
+ax
+oL
+"}
+(6,1,1) = {"
+oL
+oL
+zQ
+oL
+mk
+WI
+WI
+mk
+Si
+Ko
+ot
+oL
+NR
+BN
+gr
+oL
+"}
+(7,1,1) = {"
+oL
+lN
+iW
+Sr
+Bq
+MP
+Bi
+mk
+Bo
+iW
+Kh
+mk
+CB
+iq
+Vz
+oL
+"}
+(8,1,1) = {"
+oL
+MC
+iW
+zS
+iW
+yn
+YK
+mk
+RP
+iW
+ot
+mk
+zz
+Da
+lU
+oL
+"}
+(9,1,1) = {"
+oL
+qI
+iW
+Sr
+iW
+iW
+MH
+mk
+mk
+tm
+mk
+mk
+oL
+sy
+oL
+oL
+"}
+(10,1,1) = {"
+oL
+oL
+oL
+oL
+wR
+iW
+Kw
+gE
+Kx
+iW
+zr
+lE
+Ch
+iW
+VZ
+oL
+"}
+(11,1,1) = {"
+oL
+HZ
+DV
+go
+ig
+iW
+TF
+gE
+Ik
+iW
+Ik
+Yn
+St
+iW
+iV
+oL
+"}
+(12,1,1) = {"
+oL
+Xj
+ds
+qg
+ig
+iW
+Pf
+oL
+oL
+UQ
+oL
+oL
+oL
+Ei
+oL
+oL
+"}
+(13,1,1) = {"
+oL
+TH
+MW
+yM
+ig
+yY
+Qw
+oL
+hx
+Fc
+xv
+oL
+Pg
+Fc
+Vu
+oL
+"}
+(14,1,1) = {"
+oL
+GF
+eO
+lL
+ig
+Ka
+IY
+oL
+Zr
+CS
+uy
+oL
+oo
+Fc
+Lg
+oL
+"}
+(15,1,1) = {"
+oL
+RH
+HY
+ue
+Na
+VI
+ZL
+oL
+xU
+RS
+tz
+oL
+lA
+hw
+Xr
+oL
+"}
+(16,1,1) = {"
+oL
+oL
+oL
+oL
+oL
+oL
+oL
+oL
+oL
+oL
+oL
+oL
+oL
+oL
+oL
+oL
+"}

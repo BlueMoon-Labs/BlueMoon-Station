@@ -6,6 +6,7 @@
 	caliber = "357"
 	max_ammo = 7
 	multiple_sprites = 1
+	speedloader = TRUE
 
 /obj/item/ammo_box/a357/match
 	name = "speed loader (.357 Match)"
@@ -30,6 +31,7 @@
 	max_ammo = 6
 	multiple_sprites = 1
 	custom_materials = list(/datum/material/iron = 20000)
+	speedloader = TRUE
 
 /obj/item/ammo_box/c38/lethal
 	name = "speed loader (.38)"

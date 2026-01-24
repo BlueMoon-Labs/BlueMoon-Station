@@ -116,7 +116,7 @@
 	if(!equipment.holder_genital)
 		return FALSE
 
-	var/mob/living/carbon/human/H = istype(G) ? G.owner : G["wearer"]
+	var/mob/living/carbon/human/H = G.owner
 
 	var/obj/item/I = user.get_active_held_item()
 

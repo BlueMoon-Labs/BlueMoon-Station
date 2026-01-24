@@ -209,7 +209,7 @@
 // BLUEMOON EDIT AHEAD - changing desc for beautiful structured box + localisation
 	var/missiondesc = ""
 	missiondesc += "<p class='medium'><B><font size=3 color=red>Вы – [name].</font></B><BR></p>\n"
-	missiondesc += "<p>Ваш отряд отправляется на объект \"[station_name()]\" Отделом Специальных Операций Пакта.</p>"
+	missiondesc += "<p>Ваш отряд отправляется на объект \"[station_name()]\" Отделом Специальных Операций ПАКТа.</p>"
 	missiondesc += "<p>Ваша роль в отряде: <font size=3 color=green><b>[role]</b></font></p>"
 	if(leader) //If Squad Leader
 		missiondesc += "<li>Командуйте вашим отрядом для успешного выполнения миссии. Погрузитесь в шаттл по готовности вашей команды.</li>"

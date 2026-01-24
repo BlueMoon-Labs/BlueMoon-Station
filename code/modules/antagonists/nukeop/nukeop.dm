@@ -41,17 +41,24 @@
 		return
 	if(!istype(H))
 		return
-	if(GLOB.master_mode == "Extended")
+	var/is_extended = GLOB.master_mode == "Extended"
+	if(is_extended)
 		H.equipOutfit(/datum/outfit/syndicate/lone)
 		priority_announce("Приветствую, Станция. Мы отправляем к вам Специалиста по Защите Ядерного Диска ввиду того, что заметили недостаточную его безопасность. Bстречайте.", "Фрегат [title] ССО Синдиката")
 	else
 		H.equipOutfit(nukeop_outfit)
-		H.grant_language(/datum/language/old_codes, source = LANGUAGE_MIND)
 
 	if(name == "Lone Operative")
-		var/load_character = alert(H.client, "Желаете загрузить текущего своего выбранного персонажа?", "Играть своим персонажем!", "Да", "Нет")
+		var/load_character = tgui_alert(H.client, "Желаете загрузить текущего своего выбранного персонажа?", "Играть своим персонажем!", list("Да", "Нет"), 10 SECONDS, TRUE)
 		if(load_character == "Да")
 			H.load_client_appearance(H.client)
+
+	// BLUEMOON ADD START // Загрузка куклы сбрасывает языки
+	if(is_extended) // Syndicate
+		H.grant_language(/datum/language/codespeak, source = LANGUAGE_MIND)
+	else // InteQ
+		H.grant_language(/datum/language/old_codes, source = LANGUAGE_MIND)
+	// BLUEMOON ADD END
 
 	give_alias()
 

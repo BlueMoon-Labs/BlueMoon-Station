@@ -1,0 +1,7524 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/machinery/power/smes,
+/obj/structure/cable,
+/obj/structure/sign/poster/contraband/tools{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"ac" = (
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"af" = (
+/obj/structure/closet/secure_closet/lethalshots{
+	populate = 0
+	},
+/obj/item/ammo_box/c45,
+/obj/item/ammo_box/c45,
+/obj/item/ammo_box/magazine/m45,
+/obj/item/ammo_box/magazine/m45,
+/obj/item/ammo_box/magazine/m45,
+/obj/item/ammo_box/magazine/m45,
+/obj/structure/cable{
+	icon_state = "0-6"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"al" = (
+/obj/structure/table/glass,
+/obj/item/flashlight/lamp{
+	pixel_y = 1;
+	pixel_x = -7
+	},
+/obj/item/paicard{
+	pixel_x = 6;
+	pixel_y = -8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"am" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"an" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"aq" = (
+/obj/machinery/button/door{
+	pixel_y = 14;
+	pixel_x = 22;
+	id = "obai2";
+	name = "AI core blast door button";
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/button/door{
+	pixel_y = -15;
+	pixel_x = 22;
+	id = "obai";
+	name = "AI core window shutters button";
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"az" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"aE" = (
+/obj/machinery/washing_machine,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/frigate)
+"aH" = (
+/obj/machinery/light/small/directional/south,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"aM" = (
+/obj/machinery/camera/autoname{
+	dir = 8
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"aO" = (
+/obj/structure/sign/poster/contraband/borg_fancy_2{
+	pixel_x = 28
+	},
+/obj/machinery/shieldgen,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"aQ" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/wood/wood_parquet,
+/area/shuttle/solfed/frigate)
+"aZ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"bh" = (
+/obj/structure/frame/machine,
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"bt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"bu" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/oil{
+	icon_state = "streak5"
+	},
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"bX" = (
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/door/poddoor{
+	id = "obmine11"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"bZ" = (
+/obj/machinery/atmospherics/components/unary/thermomachine{
+	piping_layer = 2;
+	dir = 8
+	},
+/obj/machinery/camera/autoname{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"ca" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/greenglow,
+/obj/vehicle/sealed/mecha/combat/durand/zeus,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"cd" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent1"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"cg" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"ci" = (
+/obj/structure/rack,
+/obj/item/mecha_parts/mecha_equipment/mining_scanner,
+/obj/item/mecha_parts/mecha_equipment/generator,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"cj" = (
+/obj/structure/bed,
+/obj/item/bedsheet/blue,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"cn" = (
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"cE" = (
+/obj/structure/rack,
+/obj/item/storage/belt/utility,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"cF" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/railing{
+	dir = 8;
+	layer = 3.1
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"cI" = (
+/obj/machinery/button/door{
+	dir = 4;
+	name = "Engineering Storage Lock";
+	pixel_y = -7;
+	pixel_x = -21;
+	id = "obengi"
+	},
+/obj/structure/closet/crate/engineering/electrical,
+/obj/item/storage/box/lights/mixed,
+/obj/item/mecha_parts/mecha_equipment/extinguisher,
+/obj/item/mecha_parts/mecha_equipment/extinguisher,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"cJ" = (
+/obj/structure/rack,
+/obj/machinery/door/window/brigdoor/westright{
+	dir = 4
+	},
+/obj/item/circuitboard/aicore,
+/obj/item/stack/sheet/rglass,
+/obj/item/stack/sheet/rglass,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"cK" = (
+/obj/structure/musician/piano/unanchored,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/pod/dark,
+/area/shuttle/solfed/frigate)
+"cT" = (
+/obj/structure/rack,
+/obj/item/chair,
+/obj/item/chair,
+/obj/item/chair,
+/obj/item/chair,
+/obj/item/chair,
+/obj/item/chair,
+/obj/item/chair,
+/obj/item/chair,
+/obj/item/chair,
+/obj/item/chair,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"cW" = (
+/obj/machinery/mech_bay_recharge_port{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"dc" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"dd" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"df" = (
+/obj/structure/cable{
+	icon_state = "5-8"
+	},
+/obj/structure/cable{
+	icon_state = "6-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"dh" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"dp" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"dq" = (
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/machinery/computer/monitor{
+	dir = 4;
+	icon_state = "computer-left"
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"ds" = (
+/obj/structure/closet/crate/science{
+	name = "G.Station Science Kit"
+	},
+/obj/item/circuitboard/machine/rdserver,
+/obj/item/circuitboard/computer/rdconsole,
+/obj/item/clothing/head/papersack/smiley,
+/obj/item/clothing/head/papersack/smiley,
+/obj/item/clothing/head/papersack/smiley,
+/obj/item/clothing/head/papersack/smiley,
+/obj/item/clothing/head/papersack/smiley,
+/obj/item/clothing/head/papersack/smiley,
+/obj/item/circuitboard/machine/circuit_imprinter/department/science,
+/obj/item/circuitboard/machine/protolathe/department/science,
+/turf/open/floor/pod/dark,
+/area/shuttle/solfed/frigate)
+"dt" = (
+/obj/structure/sink{
+	dir = 4;
+	pixel_x = -12
+	},
+/obj/structure/mirror{
+	pixel_x = -28
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"dx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"dB" = (
+/obj/machinery/door/firedoor/window,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "vela_lablock";
+	dir = 4
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"dC" = (
+/obj/structure/closet/secure_closet{
+	name = "captain's locker";
+	icon_state = "cap";
+	req_access_txt = "20"
+	},
+/obj/item/clothing/shoes/combat,
+/obj/item/clothing/glasses/sunglasses,
+/obj/item/gun/ballistic/automatic/pistol/m1911,
+/obj/item/storage/backpack,
+/obj/item/storage/backpack/satchel,
+/obj/item/binoculars,
+/obj/item/door_remote/captain,
+/turf/open/floor/carpet/royalblack,
+/area/shuttle/solfed/frigate)
+"dF" = (
+/obj/machinery/door/airlock/external,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"dL" = (
+/obj/machinery/camera/autoname,
+/obj/machinery/light/directional/north{
+	pixel_y = 28
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"dN" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"dV" = (
+/obj/effect/turf_decal/arrows{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"dW" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"ea" = (
+/obj/machinery/door/poddoor{
+	id = "obcargo"
+	},
+/obj/structure/cable,
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"ee" = (
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"eq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"eB" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/sign/poster/random{
+	pixel_y = 30
+	},
+/obj/item/kirbyplants/random{
+	pixel_y = 12
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"eI" = (
+/obj/structure/cable,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/frigate)
+"eJ" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/airlock{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"eM" = (
+/obj/structure/closet/crate/engineering,
+/obj/item/stack/conveyor/thirty,
+/obj/item/stack/conveyor/thirty,
+/obj/item/crowbar,
+/obj/item/screwdriver,
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/item/conveyor_switch_construct,
+/obj/item/conveyor_switch_construct,
+/obj/effect/decal/cleanable/generic,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"eR" = (
+/obj/structure/window/plasma/reinforced{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/door/poddoor/shutters{
+	name = "Engine Shutters";
+	id = "obengines";
+	dir = 4
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"eS" = (
+/obj/machinery/power/smes,
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"eT" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"eV" = (
+/obj/structure/closet/radiation,
+/obj/item/picket_sign,
+/obj/item/picket_sign,
+/obj/item/picket_sign,
+/obj/machinery/firealarm{
+	pixel_y = 28
+	},
+/obj/machinery/light/small/broken/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"eZ" = (
+/obj/structure/sign/poster/official/cleanliness{
+	pixel_y = 32
+	},
+/obj/machinery/portable_atmospherics/canister/air,
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer3{
+	dir = 4
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"fh" = (
+/obj/effect/decal/cleanable/oil{
+	icon_state = "floor6"
+	},
+/obj/machinery/computer/atmos_alert,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"fi" = (
+/obj/structure/rack,
+/obj/item/mecha_parts/mecha_equipment/thrusters/gas,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/obj/item/mecha_parts/mecha_equipment/mining_scanner,
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"fj" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/railing{
+	dir = 8;
+	layer = 3.1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"fk" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"fl" = (
+/obj/machinery/grill/unwrenched,
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"fm" = (
+/obj/item/kirbyplants/random{
+	pixel_y = 5;
+	pixel_x = 2
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"fr" = (
+/obj/structure/sign/painting/library{
+	pixel_y = 28
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"fz" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/item/kirbyplants/random,
+/obj/machinery/camera/autoname,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"fF" = (
+/obj/effect/turf_decal/big_sign/solgov/cb,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"fH" = (
+/obj/machinery/door/window/brigdoor/westleft{
+	req_access_txt = list("2");
+	id = "vela"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"fW" = (
+/obj/machinery/light/small/directional/east,
+/obj/structure/sign/warning/vacuum/external{
+	pixel_y = 11;
+	pixel_x = 28
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"fY" = (
+/obj/machinery/door/poddoor{
+	id = "obcargo"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"gh" = (
+/obj/structure/rack,
+/obj/machinery/airalarm/directional/south,
+/obj/item/stock_parts/cell/high,
+/obj/item/stock_parts/cell/high,
+/obj/item/stock_parts/cell/high,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"gx" = (
+/turf/open/floor/wood/wood_parquet,
+/area/shuttle/solfed/frigate)
+"gB" = (
+/obj/structure/closet/emcloset/wall{
+	dir = 1;
+	pixel_y = -28
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"gL" = (
+/obj/machinery/door/poddoor{
+	id = "obair"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"gQ" = (
+/obj/structure/railing{
+	dir = 1;
+	layer = 3.1
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"gV" = (
+/obj/machinery/ai_slipper,
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"gX" = (
+/obj/machinery/vending/snack/random,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"hf" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = 9;
+	pixel_y = -6
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"hk" = (
+/obj/machinery/cryopod{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/north,
+/obj/structure/railing{
+	dir = 4;
+	layer = 2.8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"hm" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"ho" = (
+/obj/machinery/vending/cigarette,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"hv" = (
+/obj/structure/table,
+/obj/item/pen{
+	pixel_x = 11;
+	pixel_y = 9
+	},
+/obj/item/paper/crumpled{
+	pixel_x = -4;
+	pixel_y = -3
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"hH" = (
+/obj/effect/turf_decal/arrows,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"hJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"hP" = (
+/obj/effect/decal/cleanable/oil{
+	icon_state = "floor6"
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"hR" = (
+/obj/machinery/light/directional/south,
+/obj/machinery/computer/communications/syndicate{
+	dir = 8
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"hS" = (
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"hX" = (
+/obj/machinery/vending/cola/space_up,
+/obj/machinery/light/small/directional/south,
+/obj/machinery/camera/autoname{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"ib" = (
+/obj/structure/extinguisher_cabinet/directional/west,
+/obj/machinery/vending/coffee,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"ic" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/railing/corner{
+	dir = 4;
+	layer = 3.1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"il" = (
+/obj/machinery/camera/autoname{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"in" = (
+/obj/machinery/door/window/brigdoor/westleft{
+	dir = 4;
+	req_access = list(3)
+	},
+/obj/structure/cable{
+	icon_state = "4-9"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"is" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"iu" = (
+/obj/structure/rack,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"iw" = (
+/obj/effect/decal/cleanable/oil,
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"iy" = (
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"iz" = (
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"iD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"iG" = (
+/obj/item/kirbyplants/random{
+	pixel_x = -4;
+	pixel_y = 11
+	},
+/obj/machinery/firealarm/directional/west,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"iL" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"iQ" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"iR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"jf" = (
+/obj/structure/table,
+/obj/item/reagent_containers/food/snacks/honeybar{
+	pixel_x = 7;
+	pixel_y = 1
+	},
+/obj/item/storage/fancy/cigarettes/cigpack_uplift{
+	pixel_x = -7
+	},
+/obj/item/lighter{
+	pixel_x = -4;
+	pixel_y = -2
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = 11;
+	pixel_y = 3
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"jh" = (
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 1
+	},
+/area/shuttle/solfed/frigate)
+"jj" = (
+/obj/structure/cable,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"jm" = (
+/turf/open/floor/circuit/green,
+/area/shuttle/solfed/frigate)
+"jn" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/fifty,
+/obj/item/stack/sheet/metal/fifty,
+/obj/item/stack/sheet/glass/fifty,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"jr" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"jx" = (
+/obj/structure/closet/secure_closet/engineering_personal{
+	anchored = 1
+	},
+/obj/effect/turf_decal/box,
+/obj/structure/sign/poster/contraband/tools{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"jD" = (
+/obj/structure/rack,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/obj/item/mecha_parts/mecha_equipment/thrusters/gas,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"jP" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/shuttle/engine/propulsion{
+	dir = 8
+	},
+/turf/open/floor/engine/hull,
+/area/shuttle/solfed/frigate)
+"jS" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/railing{
+	dir = 1;
+	layer = 3.1
+	},
+/obj/machinery/camera/autoname{
+	dir = 10
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"jY" = (
+/obj/machinery/camera/autoname{
+	dir = 4
+	},
+/obj/machinery/light_switch{
+	pixel_y = 23;
+	pixel_x = -9
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"kd" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/frigate)
+"ke" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"kg" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"kh" = (
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/airlock/security{
+	req_access = list(1)
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"ko" = (
+/obj/structure/rack,
+/obj/machinery/door/window/brigdoor/westleft{
+	dir = 4
+	},
+/obj/item/stack/cable_coil/red{
+	amount = 4
+	},
+/obj/item/stack/sheet/rglass,
+/obj/item/stack/sheet/rglass,
+/obj/item/storage/toolbox/electrical{
+	pixel_y = 10
+	},
+/obj/item/mmi/posibrain,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"kq" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"kr" = (
+/obj/structure/filingcabinet,
+/obj/machinery/airalarm/directional/north,
+/obj/item/clothing/mask/cigarette/cigar/havana,
+/obj/item/clothing/mask/cigarette/cigar/havana,
+/obj/item/clothing/mask/cigarette/cigar/havana,
+/obj/item/clothing/mask/cigarette/cigar/havana,
+/obj/item/clothing/mask/cigarette/cigar/havana,
+/obj/item/clothing/mask/cigarette/cigar/havana,
+/obj/structure/sign/poster/official/cohiba_robusto_ad{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"kv" = (
+/obj/effect/turf_decal/big_sign/solgov/bc,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"kw" = (
+/obj/structure/railing{
+	dir = 4;
+	layer = 4.6;
+	pixel_y = -3
+	},
+/obj/structure/railing,
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"ky" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"kF" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/effect/turf_decal/box,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"kS" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/effect/turf_decal/box,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"kW" = (
+/obj/item/reagent_containers/glass/beaker{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/glass/beaker{
+	pixel_x = 6;
+	pixel_y = 11
+	},
+/obj/item/reagent_containers/glass/beaker{
+	pixel_x = 7
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"kZ" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"la" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/item/paper/crumpled,
+/obj/machinery/camera/autoname{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"ld" = (
+/obj/machinery/camera/autoname,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"lk" = (
+/turf/open/floor/plasteel/stairs{
+	dir = 8
+	},
+/area/shuttle/solfed/frigate)
+"lm" = (
+/obj/machinery/firealarm/directional/north,
+/obj/item/kirbyplants{
+	icon_state = "plant-04";
+	pixel_x = -7;
+	pixel_y = 22
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"lp" = (
+/obj/structure/railing,
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"lq" = (
+/turf/closed/wall/mineral/titanium,
+/area/space)
+"lu" = (
+/obj/machinery/light/directional/south,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"lv" = (
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "obendo"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"lx" = (
+/obj/structure/closet/secure_closet/engineering_electrical{
+	anchored = 1
+	},
+/obj/effect/turf_decal/box,
+/obj/structure/extinguisher_cabinet/directional/south,
+/obj/machinery/light/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"lz" = (
+/obj/machinery/firealarm/directional/west,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"lB" = (
+/obj/machinery/washing_machine,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/frigate)
+"lE" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/sign/poster/contraband/power{
+	pixel_y = 32;
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"lH" = (
+/obj/machinery/door/airlock/external,
+/obj/machinery/atmospherics/pipe/layer_manifold,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "vela_labeva"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"lM" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/camera/autoname{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"lQ" = (
+/obj/machinery/mech_bay_recharge_port,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"ml" = (
+/obj/machinery/vending/games,
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"mq" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"mC" = (
+/obj/machinery/modular_computer/console/preset/engineering{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"mK" = (
+/obj/machinery/door/airlock/command{
+	dir = 4;
+	req_access = list(19)
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"mN" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"mO" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"mP" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"mS" = (
+/obj/machinery/door/poddoor/shutters{
+	id = "obfront";
+	name = "Window Shutters";
+	dir = 4
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"mW" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/small/directional/south,
+/obj/item/reagent_containers/glass/maunamug{
+	pixel_y = 6;
+	pixel_x = 8
+	},
+/obj/item/paper_bin{
+	pixel_x = -6;
+	pixel_y = 1
+	},
+/obj/item/pen/fourcolor{
+	pixel_x = -6;
+	pixel_y = 2
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"nh" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/power/floodlight,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"ni" = (
+/obj/machinery/cryopod{
+	dir = 8
+	},
+/obj/structure/railing{
+	dir = 4;
+	layer = 2.8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"no" = (
+/obj/structure/janitorialcart,
+/obj/item/mop,
+/obj/item/reagent_containers/glass/bucket,
+/obj/structure/mopbucket,
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"np" = (
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"nq" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"nr" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"nA" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"nF" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"nP" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent2"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/airlock/mining,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"nQ" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/airlock{
+	name = "Showers";
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"nV" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"oa" = (
+/obj/structure/closet/firecloset/wall{
+	dir = 8;
+	pixel_x = 28
+	},
+/obj/machinery/button/door{
+	dir = 8;
+	pixel_x = 22;
+	pixel_y = -16;
+	id = "vela_labeva";
+	name = "airlock shutters";
+	req_access = list(1)
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"oC" = (
+/obj/structure/extinguisher_cabinet/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"oJ" = (
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"oT" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"oU" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"oZ" = (
+/obj/machinery/ai_slipper,
+/obj/effect/turf_decal/box,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"pd" = (
+/obj/machinery/meter{
+	target_layer = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"pe" = (
+/obj/machinery/camera/autoname{
+	dir = 4
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"pf" = (
+/obj/machinery/atmospherics/pipe/layer_manifold,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/solfed/frigate)
+"pk" = (
+/obj/structure/table/wood,
+/obj/item/trash/plate{
+	pixel_x = 9
+	},
+/obj/item/newspaper{
+	pixel_x = -6;
+	pixel_y = 2
+	},
+/obj/item/newspaper{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/cigarette/dromedary{
+	pixel_x = 7;
+	pixel_y = 10
+	},
+/obj/effect/decal/cleanable/vomit/old{
+	pixel_x = 9;
+	pixel_y = 18
+	},
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"pp" = (
+/obj/item/clothing/shoes/workboots/mining,
+/obj/item/clothing/glasses/meson,
+/obj/item/clothing/glasses/meson/prescription,
+/obj/structure/closet/secure_closet/miner{
+	populate = 0;
+	name = "pilot's equipment"
+	},
+/obj/item/gps/mining,
+/obj/item/stock_parts/cell/high/plus,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"pw" = (
+/obj/structure/chair/sofa/left{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/wrapping,
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"pA" = (
+/obj/structure/table,
+/obj/item/storage/fancy/cigarettes/cigpack_robust{
+	pixel_x = -4
+	},
+/obj/item/lighter{
+	pixel_x = -9;
+	pixel_y = -4
+	},
+/obj/item/newspaper{
+	pixel_x = 5;
+	pixel_y = 9
+	},
+/obj/item/holosign_creator/security{
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = -8;
+	pixel_y = 14
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"pC" = (
+/obj/structure/noticeboard/qm{
+	name = "Supply Officer's Notice Board";
+	desc = "Important notices from the Supply Officer";
+	pixel_y = 28
+	},
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"pK" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"pU" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/frigate)
+"pW" = (
+/obj/machinery/camera/autoname{
+	dir = 9
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"pX" = (
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"qa" = (
+/obj/structure/table,
+/obj/item/newspaper{
+	pixel_x = -6;
+	pixel_y = 9
+	},
+/obj/item/reagent_containers/food/drinks/mug{
+	pixel_x = -9
+	},
+/obj/item/toy/figure/scientist{
+	pixel_x = 8;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"qc" = (
+/obj/machinery/light/directional/west,
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"qe" = (
+/obj/machinery/computer/monitor{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/structure/sign/warning/enginesafety{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"qm" = (
+/obj/structure/closet/wall{
+	dir = 4;
+	pixel_y = 0;
+	pixel_x = -28;
+	name = "spare uniforms"
+	},
+/obj/item/radio,
+/obj/item/radio,
+/obj/item/radio,
+/obj/item/radio,
+/obj/item/radio,
+/obj/item/radio,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"qy" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent2"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/airlock/mining,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"qB" = (
+/obj/structure/sign/poster/official/report_crimes{
+	pixel_y = -32
+	},
+/obj/item/clothing/shoes/workboots/mining,
+/obj/item/clothing/glasses/meson,
+/obj/item/clothing/glasses/meson/prescription,
+/obj/structure/closet/secure_closet/miner{
+	populate = 0;
+	name = "pilot's equipment"
+	},
+/obj/item/gps/mining,
+/obj/item/stock_parts/cell/high/plus,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"qC" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"qF" = (
+/obj/structure/table/wood,
+/obj/item/paper_bin{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/toy/cards/deck{
+	pixel_x = 6;
+	pixel_y = 1
+	},
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"qJ" = (
+/obj/structure/table/reinforced,
+/obj/item/gps{
+	pixel_y = -2;
+	pixel_x = -5;
+	gpstag = "GOLD-VHEV"
+	},
+/obj/machinery/button/door{
+	dir = 8;
+	pixel_y = 4;
+	pixel_x = 8;
+	id = "obfront";
+	name = "Window Shutters"
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"qO" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"qR" = (
+/obj/machinery/computer/communications/syndicate{
+	dir = 8
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/solfed/frigate)
+"qT" = (
+/obj/structure/sign/poster/official/bless_this_spess{
+	pixel_x = -32
+	},
+/obj/machinery/camera/autoname{
+	dir = 5
+	},
+/obj/item/reagent_containers/food/drinks/bottle/trappist,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"qU" = (
+/obj/effect/turf_decal/arrows{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"qX" = (
+/obj/item/clipboard,
+/obj/machinery/light/small/directional/west,
+/obj/effect/turf_decal/box,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"qY" = (
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/structure/closet/secure_closet{
+	name = "bridge officer's locker";
+	icon_state = "cap";
+	req_access_txt = "19"
+	},
+/obj/effect/turf_decal/box,
+/obj/machinery/light/small/directional/west,
+/obj/item/binoculars,
+/obj/item/megaphone,
+/obj/item/clothing/glasses/sunglasses,
+/obj/item/clothing/shoes/combat,
+/obj/item/storage/backpack,
+/obj/item/storage/backpack/satchel,
+/obj/item/clipboard,
+/obj/item/reagent_containers/spray/pepper,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"rb" = (
+/obj/machinery/computer/security{
+	dir = 8
+	},
+/obj/effect/turf_decal/box/red,
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"rd" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"rm" = (
+/obj/structure/closet/secure_closet/security{
+	populate = 0
+	},
+/obj/item/reagent_containers/spray/pepper,
+/obj/item/storage/belt/security/full,
+/obj/item/restraints/handcuffs,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"rr" = (
+/obj/machinery/shower{
+	pixel_y = 16
+	},
+/obj/structure/window/reinforced/tinted{
+	dir = 4
+	},
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"rs" = (
+/obj/structure/rack,
+/obj/machinery/door/window/brigdoor/northleft,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"rw" = (
+/obj/structure/chair/sofa/right{
+	dir = 4
+	},
+/obj/machinery/light/small/directional/west,
+/obj/item/kirbyplants{
+	icon_state = "plant-22";
+	pixel_x = -8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"rx" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"ry" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"rA" = (
+/obj/structure/closet/secure_closet/engineering_welding{
+	anchored = 1
+	},
+/obj/effect/turf_decal/box,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"rB" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"rO" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/airlock/research{
+	name = "Science Lab";
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"rR" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"rT" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/door/airlock{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"sa" = (
+/obj/machinery/portable_atmospherics/pump,
+/obj/effect/decal/cleanable/generic,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"sc" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent1"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent1"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"si" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"sn" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/sign/warning/fire{
+	pixel_y = 24;
+	pixel_x = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"sr" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"sD" = (
+/obj/structure/sign/poster/official/cohiba_robusto_ad{
+	pixel_y = -32
+	},
+/obj/structure/closet/secure_closet/freezer/meat,
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"sM" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"sN" = (
+/obj/machinery/atmospherics/pipe/layer_manifold{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/airlock{
+	name = "Airlock Access";
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"sV" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/stairs{
+	dir = 8
+	},
+/area/shuttle/solfed/frigate)
+"ta" = (
+/obj/machinery/door/poddoor{
+	id = "obmine11"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"tb" = (
+/obj/machinery/light/directional/west,
+/obj/structure/table/reinforced,
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"tc" = (
+/obj/structure/railing,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"tf" = (
+/obj/machinery/door/airlock/external,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "vela_labeva"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"tk" = (
+/obj/machinery/camera/autoname{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"tm" = (
+/obj/structure/closet/crate/freezer{
+	name = "food supplies"
+	},
+/obj/item/pizzabox/pineapple,
+/obj/item/pizzabox/pineapple,
+/obj/item/pizzabox/pineapple,
+/obj/item/storage/box/donkpockets,
+/obj/item/pestle,
+/obj/item/reagent_containers/food/condiment/saltshaker,
+/obj/item/reagent_containers/food/condiment/saltshaker,
+/obj/item/reagent_containers/food/condiment/peppermill,
+/obj/item/reagent_containers/food/condiment/peppermill,
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"tn" = (
+/obj/machinery/blackbox_recorder,
+/obj/machinery/door/window/brigdoor/eastright,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"tq" = (
+/obj/machinery/door/poddoor/shutters{
+	id = "vela_cap"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"tx" = (
+/obj/structure/frame/machine,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"tA" = (
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"tI" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"tJ" = (
+/obj/structure/window/reinforced,
+/obj/structure/rack,
+/obj/machinery/door/window/brigdoor/eastleft,
+/obj/item/gps{
+	pixel_y = -2;
+	pixel_x = -5;
+	gpstag = "GOLD-VHEV"
+	},
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/item/multitool,
+/obj/item/storage/toolbox/mechanical,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"tO" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/airlock/mining{
+	name = "Cargo Bay"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"tP" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"tW" = (
+/obj/machinery/airalarm/directional/west,
+/obj/machinery/microwave{
+	anchored = 0
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/solfed/frigate)
+"tY" = (
+/obj/machinery/button/door{
+	pixel_y = 23;
+	pixel_x = -7;
+	name = "Bay 1 Doors";
+	id = "obmine11"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"uc" = (
+/obj/structure/chair/office{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"ue" = (
+/obj/structure/urinal{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"ul" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/wood{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"uo" = (
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_y = 8;
+	pixel_x = -3
+	},
+/obj/item/paper/crumpled{
+	pixel_x = 9;
+	pixel_y = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"up" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"uq" = (
+/obj/machinery/button/door{
+	dir = 8;
+	pixel_y = -5;
+	pixel_x = 25;
+	id = "obcargo";
+	name = "Cargo Shutters"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"ur" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/item/weldingtool/mini,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"us" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"uw" = (
+/obj/structure/railing{
+	dir = 8;
+	layer = 3.1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"uQ" = (
+/obj/structure/closet/secure_closet/freezer/fridge/open,
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"uR" = (
+/obj/effect/decal/cleanable/generic,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"uT" = (
+/obj/item/clothing/shoes/workboots/mining,
+/obj/item/clothing/glasses/meson,
+/obj/item/clothing/glasses/meson/prescription,
+/obj/structure/closet/secure_closet/miner{
+	populate = 0;
+	name = "pilot's equipment"
+	},
+/obj/item/gps/mining,
+/obj/item/stock_parts/cell/high/plus,
+/obj/structure/sign/poster/official/safety_eye_protection{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"vD" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer3{
+	dir = 8
+	},
+/obj/machinery/button/door{
+	pixel_y = 23;
+	pixel_x = 7;
+	name = "Bay 1 Doors";
+	id = "obmine11"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"vK" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"vM" = (
+/obj/structure/chair/sofa/left{
+	dir = 8
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"vO" = (
+/obj/structure/sink{
+	dir = 4;
+	pixel_x = -12
+	},
+/obj/structure/mirror{
+	pixel_x = -28
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"vS" = (
+/obj/machinery/camera/autoname{
+	dir = 5
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"vV" = (
+/obj/structure/rack,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/structure/table_frame/wood,
+/obj/item/stack/sheet/mineral/wood{
+	amount = 30
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"wa" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"wh" = (
+/obj/structure/table,
+/obj/item/clothing/mask/cigarette/cigar/havana{
+	pixel_y = -1;
+	pixel_x = 8
+	},
+/obj/item/lighter,
+/obj/machinery/button/door{
+	name = "Engine Shutters";
+	id = "obengines";
+	dir = 4;
+	pixel_y = 7;
+	pixel_x = -24
+	},
+/obj/structure/sign/poster/contraband/hacking_guide{
+	pixel_y = -30
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"wk" = (
+/obj/structure/closet/wall{
+	dir = 1;
+	pixel_y = -28
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/frigate)
+"wl" = (
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"wn" = (
+/obj/structure/falsewall/plastitanium,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"wr" = (
+/obj/effect/decal/cleanable/oil,
+/obj/structure/railing/corner{
+	dir = 4;
+	layer = 3.1
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"wv" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/shuttle/solfed/frigate)
+"ww" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"wA" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/solfed/frigate)
+"wB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/generic,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"wD" = (
+/obj/effect/turf_decal/big_sign/solgov/ca,
+/obj/structure/railing,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"wF" = (
+/obj/structure/window/plasma/reinforced{
+	dir = 8
+	},
+/obj/machinery/light_switch{
+	pixel_y = 23;
+	pixel_x = -5
+	},
+/obj/machinery/firealarm/directional/north{
+	pixel_x = 6
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"wH" = (
+/obj/structure/table,
+/obj/item/paper_bin,
+/obj/item/pen,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"wO" = (
+/obj/machinery/modular_computer/console/preset/civilian,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"wZ" = (
+/obj/machinery/door/airlock/command{
+	name = "Bridge";
+	req_access_txt = "19";
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"xc" = (
+/obj/structure/table,
+/obj/item/canvas/nineteenXnineteen,
+/obj/item/canvas/nineteenXnineteen,
+/obj/item/canvas/nineteenXnineteen,
+/obj/item/storage/crayons,
+/obj/item/toy/crayon/spraycan,
+/obj/effect/turf_decal/siding/wood/end{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"xh" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"xm" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/railing/corner{
+	dir = 1;
+	layer = 3.1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"xA" = (
+/obj/structure/railing{
+	dir = 2;
+	layer = 2.1
+	},
+/turf/open/floor/plasteel/stairs{
+	dir = 8
+	},
+/area/shuttle/solfed/frigate)
+"xC" = (
+/obj/structure/railing{
+	dir = 1;
+	layer = 3.1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"xH" = (
+/obj/structure/sink{
+	dir = 8;
+	pixel_y = 0;
+	pixel_x = 13
+	},
+/obj/structure/mirror{
+	pixel_x = 28
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"xI" = (
+/obj/machinery/button/door{
+	pixel_y = 24;
+	pixel_x = 8;
+	id = "obai2";
+	name = "AI core blast door button";
+	req_access = list(19)
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"xK" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"xM" = (
+/obj/structure/toilet{
+	pixel_y = 12
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"xN" = (
+/obj/structure/table,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/item/stack/sheet/metal/twenty{
+	pixel_y = 14
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"xR" = (
+/obj/machinery/camera/autoname{
+	dir = 5
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"xT" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent21";
+	dir = 4
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"xU" = (
+/obj/structure/bed,
+/obj/item/bedsheet/blue,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"yd" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"yg" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"yi" = (
+/obj/machinery/button/door{
+	pixel_y = -22;
+	pixel_x = -4;
+	name = "umbilical window shutters";
+	id = "obhangarent11";
+	dir = 1
+	},
+/obj/machinery/button/door{
+	pixel_y = -22;
+	pixel_x = 9;
+	name = "pod lockdown";
+	id = "obhangarent1";
+	dir = 1;
+	req_access_txt = list(1)
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"yj" = (
+/obj/machinery/holopad/secure,
+/obj/effect/turf_decal/box,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"yk" = (
+/obj/structure/rack,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"ym" = (
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"yn" = (
+/obj/machinery/computer/shuttle/solfed/frigate{
+	dir = 8
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"yo" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent1"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/airlock/research,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"yt" = (
+/obj/effect/turf_decal/box,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"yv" = (
+/obj/machinery/atmospherics/components/unary/tank/air{
+	dir = 4;
+	piping_layer = 2
+	},
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"yx" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/oil{
+	icon_state = "floor6"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"yD" = (
+/obj/machinery/shower{
+	pixel_y = 16
+	},
+/obj/structure/window/reinforced/tinted{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"yG" = (
+/obj/structure/sign/warning/vacuum/external{
+	pixel_y = -24
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"yH" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"yI" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"zi" = (
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/door/poddoor{
+	id = "obmine12"
+	},
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"zk" = (
+/obj/item/kirbyplants/random,
+/obj/structure/sign/warning/securearea{
+	pixel_y = 8;
+	pixel_x = -26
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"zl" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/airlock{
+	name = "Dormitory"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/shuttle/solfed/frigate)
+"zr" = (
+/obj/structure/frame/machine,
+/obj/machinery/firealarm/directional/south,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"zs" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"zy" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4;
+	name = "Operations"
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"zB" = (
+/obj/effect/turf_decal/big_sign/solgov/ba,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"zF" = (
+/obj/structure/frame/computer{
+	dir = 1
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"zJ" = (
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"zK" = (
+/obj/structure/chair/sofa/corner,
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"zR" = (
+/obj/structure/closet/firecloset/wall{
+	dir = 1;
+	pixel_y = -28
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/storage/firstaid/fire,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"zX" = (
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Ab" = (
+/obj/structure/table/reinforced,
+/obj/structure/cable,
+/obj/item/paper_bin{
+	pixel_x = 6;
+	pixel_y = 3
+	},
+/obj/item/paper_bin/carbon{
+	pixel_x = -9;
+	pixel_y = 3
+	},
+/obj/item/pen/blue{
+	pixel_x = 7;
+	pixel_y = 4
+	},
+/obj/item/pen/fountain{
+	pixel_x = 5
+	},
+/obj/item/pen/fourcolor{
+	pixel_x = 10;
+	pixel_y = 7
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"Ai" = (
+/obj/effect/turf_decal/siding/wood/corner,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Ak" = (
+/obj/structure/grille,
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"An" = (
+/obj/structure/rack,
+/obj/machinery/door/window/brigdoor/northright,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Aq" = (
+/obj/machinery/mineral/ore_redemption,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Au" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
+	},
+/obj/structure/railing{
+	dir = 8;
+	layer = 3.1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Av" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"AB" = (
+/obj/item/analyzer,
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"AO" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/airlock{
+	name = "Restroom"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"AR" = (
+/turf/open/floor/pod/dark,
+/area/shuttle/solfed/frigate)
+"AS" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/shuttle/solfed/frigate)
+"Bc" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Bh" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Br" = (
+/obj/structure/chair/comfy/brown{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"BB" = (
+/obj/item/kirbyplants/random{
+	pixel_x = 8
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"BH" = (
+/obj/structure/chair/sofa,
+/obj/machinery/light/small/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"BN" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/airlock,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"BO" = (
+/obj/machinery/camera/autoname{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"BQ" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"BR" = (
+/obj/structure/closet/secure_closet/engineering_personal{
+	anchored = 1
+	},
+/obj/effect/turf_decal/box,
+/obj/item/pipe_dispenser,
+/obj/machinery/light/small/directional/east,
+/obj/structure/sign/poster/contraband/random{
+	pixel_y = 30
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"BW" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"BX" = (
+/obj/structure/chair/sofa,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"BY" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/airlock,
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Ca" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Cp" = (
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Cu" = (
+/obj/structure/reagent_dispensers/peppertank{
+	pixel_y = -28
+	},
+/obj/structure/cable{
+	icon_state = "5-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Cw" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4;
+	name = "Helm"
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"Cz" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"CD" = (
+/obj/machinery/light/small/directional/south,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"CF" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"CG" = (
+/obj/structure/frame/machine,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"CI" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"CK" = (
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"CM" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"CN" = (
+/obj/structure/frame/machine,
+/obj/machinery/button/door{
+	dir = 8;
+	pixel_x = 22;
+	pixel_y = 7;
+	id = "vela_lablock"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"CO" = (
+/obj/machinery/cryopod,
+/obj/structure/railing{
+	dir = 1;
+	layer = 2.8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"CS" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"CW" = (
+/obj/structure/table,
+/obj/item/toy/cards/deck,
+/obj/effect/turf_decal/siding/thinplating/dark/corner,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"CX" = (
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Dd" = (
+/obj/structure/sign/poster/random{
+	pixel_y = 30
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/shuttle/solfed/frigate)
+"Dr" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/airlock/command{
+	name = "Captain's Quarters";
+	req_access = list(20)
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"Dt" = (
+/obj/structure/closet/firecloset/full{
+	anchored = 1
+	},
+/obj/structure/sign/directions/engineering{
+	dir = 8;
+	pixel_y = 7;
+	pixel_x = -32
+	},
+/obj/structure/sign/directions/command{
+	dir = 4;
+	pixel_x = -32
+	},
+/obj/structure/sign/directions/supply{
+	pixel_y = -7;
+	pixel_x = -32;
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Dw" = (
+/obj/structure/dresser,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Dy" = (
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"DD" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"DM" = (
+/obj/machinery/camera/autoname{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Eb" = (
+/obj/machinery/portable_atmospherics/canister/air,
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer3{
+	dir = 8
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ec" = (
+/obj/machinery/airalarm/directional/east,
+/obj/structure/cable,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ed" = (
+/obj/machinery/shieldgen,
+/obj/machinery/light/small/broken/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Ef" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"El" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"En" = (
+/obj/structure/chair/sofa{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"Eo" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/power/floodlight,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Ex" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Ey" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/camera/autoname{
+	dir = 10
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Ez" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"EC" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"EE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"EG" = (
+/obj/structure/window/reinforced,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"EJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"EK" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/camera/autoname{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"EM" = (
+/obj/effect/turf_decal/big_sign/solgov/ab,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"ER" = (
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/machinery/camera/autoname,
+/obj/structure/sign/warning/electricshock{
+	pixel_y = 30
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Fl" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent1"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/airlock/research,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Fx" = (
+/obj/structure/railing/corner{
+	dir = 1;
+	layer = 3.1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Fy" = (
+/obj/vehicle/sealed/mecha/combat/durand/zeus,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Fz" = (
+/obj/item/bedsheet/cosmos,
+/obj/structure/bed,
+/turf/open/floor/carpet/royalblack,
+/area/shuttle/solfed/frigate)
+"FC" = (
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/airlock/research,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"FF" = (
+/obj/machinery/portable_atmospherics/scrubber/huge/movable,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"FJ" = (
+/obj/machinery/reagentgrinder{
+	pixel_y = 11
+	},
+/obj/item/reagent_containers/food/snacks/grown/citrus/lemon{
+	pixel_y = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"FK" = (
+/obj/machinery/airalarm/directional/south,
+/obj/structure/table/reinforced,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"FR" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"FS" = (
+/obj/structure/closet/secure_closet{
+	name = "foreman's locker";
+	icon_state = "cap";
+	req_access = list(56)
+	},
+/obj/item/storage/backpack,
+/obj/item/storage/backpack/satchel,
+/obj/item/clothing/glasses/sunglasses,
+/obj/item/clothing/shoes/combat,
+/obj/item/megaphone,
+/obj/item/binoculars,
+/obj/effect/turf_decal/box,
+/obj/item/clothing/glasses/meson/engine,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"Gb" = (
+/obj/structure/table,
+/obj/machinery/firealarm/directional/south,
+/obj/item/book/manual/wiki/security_space_law{
+	pixel_x = 9;
+	pixel_y = 4
+	},
+/obj/item/flashlight/lamp{
+	pixel_y = 4;
+	pixel_x = -7
+	},
+/obj/item/storage/fancy/donut_box{
+	pixel_x = 1;
+	pixel_y = 3
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ge" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/table,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Gg" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/oil,
+/obj/effect/turf_decal/arrows,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Gi" = (
+/obj/structure/frame/computer,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Go" = (
+/obj/effect/turf_decal/siding/wood,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Gt" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent1"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Gx" = (
+/obj/machinery/autolathe,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"GA" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"GB" = (
+/obj/item/kirbyplants/random,
+/obj/structure/extinguisher_cabinet/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"GD" = (
+/obj/effect/turf_decal/arrows{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"GF" = (
+/obj/effect/decal/cleanable/oil{
+	icon_state = "floor4"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"GH" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent11";
+	dir = 4
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"GS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Hb" = (
+/obj/machinery/airalarm/directional/south,
+/obj/structure/rack,
+/obj/item/mecha_parts/mecha_equipment/thrusters/gas,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/obj/item/mecha_parts/mecha_equipment/mining_scanner,
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Hc" = (
+/obj/structure/closet/secure_closet/freezer/kitchen,
+/obj/machinery/light/directional/north,
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"Hf" = (
+/obj/structure/closet/emcloset/anchored,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Hk" = (
+/obj/machinery/airalarm/directional/south,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ht" = (
+/obj/effect/turf_decal/big_sign/solgov/ac,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"Hw" = (
+/obj/item/clipboard,
+/obj/structure/table/reinforced,
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"HB" = (
+/obj/machinery/door/firedoor/window,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "vela_lablock"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"HH" = (
+/obj/effect/decal/cleanable/oil{
+	icon_state = "floor4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"HK" = (
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/structure/cable{
+	icon_state = "0-10"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"HO" = (
+/obj/structure/closet/wall{
+	dir = 1;
+	pixel_y = -28
+	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/frigate)
+"HQ" = (
+/obj/structure/closet/secure_closet/security{
+	populate = 0
+	},
+/obj/item/reagent_containers/spray/pepper,
+/obj/item/storage/belt/security/full,
+/obj/item/restraints/handcuffs,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"HV" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"HW" = (
+/obj/structure/noticeboard{
+	dir = 8;
+	pixel_x = 28
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ia" = (
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"Ih" = (
+/obj/structure/table/reinforced,
+/obj/machinery/turretid{
+	pixel_y = 3
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"In" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Io" = (
+/obj/effect/decal/cleanable/glass,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Iu" = (
+/obj/structure/table/wood,
+/obj/item/storage/book/bible/booze{
+	pixel_x = -5
+	},
+/obj/item/flashlight/lamp/green{
+	pixel_y = 9;
+	pixel_x = 6
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Iy" = (
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"Iz" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"IC" = (
+/obj/machinery/computer/security{
+	dir = 4;
+	icon_state = "computer-middle"
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"ID" = (
+/obj/machinery/airalarm/directional/north,
+/obj/structure/chair/office{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"IE" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/table,
+/obj/item/radio/intercom{
+	dir = 4;
+	pixel_x = 13;
+	pixel_y = 1
+	},
+/obj/machinery/button/door{
+	dir = 8;
+	pixel_y = 5;
+	pixel_x = -6;
+	id = "obendo";
+	name = "Office Shutters"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"IF" = (
+/obj/item/storage/toolbox/electrical{
+	pixel_x = -10;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"II" = (
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"IJ" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/item/wrench,
+/obj/machinery/meter{
+	target_layer = 2
+	},
+/obj/effect/decal/cleanable/generic,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"IM" = (
+/turf/open/floor/carpet/royalblack,
+/area/shuttle/solfed/frigate)
+"IZ" = (
+/obj/structure/girder,
+/obj/structure/grille,
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"Ja" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Jk" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Jo" = (
+/obj/machinery/shower{
+	pixel_y = 16
+	},
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ju" = (
+/obj/structure/table,
+/obj/item/paper_bin{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_y = 4;
+	pixel_x = 5
+	},
+/obj/item/stamp/hos{
+	pixel_y = 9;
+	pixel_x = 8
+	},
+/obj/machinery/recharger{
+	pixel_x = -8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Jw" = (
+/obj/machinery/computer/mech_bay_power_console,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"JH" = (
+/obj/structure/window/reinforced,
+/obj/machinery/camera/autoname{
+	dir = 4
+	},
+/obj/machinery/computer/card{
+	dir = 4;
+	icon_state = "computer-right"
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"JI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/vehicle/sealed/mecha/combat/durand/zeus,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"JM" = (
+/obj/structure/window/reinforced,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"JN" = (
+/obj/machinery/door/poddoor/shutters{
+	id = "obai"
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"JV" = (
+/obj/machinery/light/small/directional/west,
+/obj/structure/sign/warning/vacuum/external{
+	pixel_y = 11;
+	pixel_x = -28
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"JY" = (
+/obj/machinery/button/door{
+	pixel_y = 25;
+	pixel_x = 7;
+	name = "Bay Doors";
+	id = "obmine12"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Kd" = (
+/obj/effect/decal/cleanable/wrapping,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Kk" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Kq" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Kr" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ks" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/circuit/green,
+/area/shuttle/solfed/frigate)
+"KC" = (
+/turf/open/floor/plasteel/stairs/medium,
+/area/shuttle/solfed/frigate)
+"KE" = (
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"KN" = (
+/obj/structure/railing/corner{
+	dir = 1;
+	layer = 3.1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Lb" = (
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Le" = (
+/obj/machinery/door/poddoor{
+	id = "obmine12"
+	},
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"Ln" = (
+/obj/machinery/vending/sovietsoda{
+	anchored = 0
+	},
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"Lx" = (
+/obj/structure/urinal{
+	pixel_y = 32
+	},
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"LB" = (
+/obj/machinery/computer/cargo/express{
+	dir = 8
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"LJ" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/window/brigdoor/westleft{
+	req_access_txt = list("1")
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"LK" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/pod/dark,
+/area/shuttle/solfed/frigate)
+"LL" = (
+/obj/structure/sign/poster/random{
+	pixel_y = 30
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"LS" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/wrapping,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"LT" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"LU" = (
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Mc" = (
+/obj/structure/railing{
+	dir = 4;
+	layer = 4.6;
+	pixel_y = -3
+	},
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"Mi" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 4;
+	name = "Input to Mech Refill"
+	},
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Mj" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/glass/five,
+/obj/item/stack/sheet/glass/five,
+/obj/item/stack/sheet/plastic/twenty,
+/obj/structure/sign/poster/contraband/free_drone{
+	pixel_y = 32
+	},
+/obj/item/rcl/pre_loaded,
+/obj/item/rcl/pre_loaded,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Mu" = (
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Mv" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/mineral/ore_redemption,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Mw" = (
+/obj/structure/window/plasma/reinforced,
+/obj/machinery/button/door{
+	dir = 8;
+	pixel_y = -2;
+	pixel_x = 22;
+	id = "obair";
+	name = "Blast Door Controller"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"MB" = (
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"MC" = (
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "obendo"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/stairs{
+	dir = 1
+	},
+/area/shuttle/solfed/frigate)
+"MF" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/airlock/security{
+	req_access = list(1)
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"MJ" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/shuttle/solfed/frigate)
+"MP" = (
+/obj/structure/railing/corner{
+	dir = 1;
+	layer = 3.1
+	},
+/obj/structure/cable{
+	icon_state = "1-10"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"MU" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/arrows,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"MW" = (
+/obj/item/megaphone/command,
+/obj/structure/table/reinforced,
+/obj/structure/table/reinforced,
+/obj/structure/table/reinforced,
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"MY" = (
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"MZ" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/item/paper_bin,
+/obj/item/pen/blue,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Na" = (
+/obj/structure/grille,
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"Nd" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Nf" = (
+/obj/machinery/button/door{
+	dir = 8;
+	name = "Engineering Storage Lock";
+	pixel_y = -7;
+	pixel_x = 22;
+	id = "obengi"
+	},
+/obj/structure/table,
+/obj/machinery/light_switch{
+	pixel_y = 23;
+	pixel_x = -9
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Nh" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/sign/departments/engineering{
+	pixel_y = -32
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Nk" = (
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/closet/secure_closet/brig{
+	id = "vela"
+	},
+/obj/machinery/door_timer{
+	pixel_y = 28;
+	id = "vela"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Nl" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/airlock/engineering{
+	req_access = list(10)
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Nm" = (
+/obj/structure/table,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/electrical{
+	pixel_y = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Nn" = (
+/obj/item/kirbyplants/random,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"No" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/sign/departments/security{
+	pixel_y = -28
+	},
+/obj/structure/railing{
+	dir = 1;
+	layer = 3.1
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Nq" = (
+/obj/effect/decal/cleanable/oil{
+	icon_state = "streak5"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Nr" = (
+/obj/structure/table,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/frigate)
+"Nv" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Nw" = (
+/obj/effect/decal/cleanable/wrapping,
+/obj/machinery/jukebox,
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"Nx" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/chair/office{
+	dir = 4
+	},
+/obj/machinery/light_switch{
+	dir = 8;
+	pixel_x = 25;
+	pixel_y = -5
+	},
+/obj/effect/turf_decal/box,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ny" = (
+/obj/effect/turf_decal/big_sign/solgov/aa,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"NC" = (
+/obj/structure/window/plasma/reinforced,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"ND" = (
+/obj/machinery/light/small/directional/west,
+/obj/machinery/light_switch{
+	dir = 4;
+	pixel_y = -10;
+	pixel_x = -21
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"NF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"NJ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/bookcase/manuals,
+/obj/machinery/button/door{
+	pixel_y = 23;
+	pixel_x = 8;
+	id = "vela_cap";
+	name = "window shutters"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"NQ" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/chair/office{
+	dir = 4
+	},
+/obj/structure/sign/warning/fire{
+	pixel_y = 24;
+	pixel_x = -8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"NS" = (
+/obj/structure/window/plasma/reinforced{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/safety_eye_protection{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"NU" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Oe" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/arrows,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"Om" = (
+/obj/machinery/door/airlock/command{
+	name = "Bridge";
+	req_access_txt = "19";
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"Ou" = (
+/obj/structure/table/glass,
+/obj/item/paper_bin{
+	pixel_y = 2
+	},
+/obj/item/pen/blue{
+	name = "science pen"
+	},
+/obj/item/clipboard{
+	pixel_y = 3;
+	pixel_x = 7
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ox" = (
+/obj/structure/closet/emcloset/wall{
+	dir = 1;
+	pixel_y = -28
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"OL" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"OM" = (
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "obendo";
+	dir = 4
+	},
+/obj/machinery/door/airlock/engineering{
+	dir = 4;
+	req_access = list(10)
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"OP" = (
+/obj/machinery/porta_turret/syndicate/shuttle{
+	faction = list("InteQ")
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/solfed/frigate)
+"OR" = (
+/obj/structure/window/plasma/reinforced,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"OS" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/effect/decal/cleanable/oil{
+	icon_state = "streak5"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"OT" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 8;
+	name = "Input to Mech Refill"
+	},
+/obj/structure/railing{
+	dir = 8;
+	layer = 3.1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"OV" = (
+/obj/structure/window/reinforced,
+/obj/structure/table/wood,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Pe" = (
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 1
+	},
+/obj/machinery/camera/autoname{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Pp" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Pq" = (
+/obj/structure/extinguisher_cabinet/directional/west,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Pv" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/railing,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Px" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/airlock{
+	name = "Rec Room"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"PA" = (
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"PC" = (
+/obj/structure/window/plasma/reinforced,
+/obj/machinery/atmospherics/components/trinary/mixer/airmix{
+	dir = 4;
+	piping_layer = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"PD" = (
+/obj/machinery/computer/camera_advanced/shuttle_docker/solfed/frigate{
+	dir = 8
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"PG" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
+	},
+/obj/structure/railing{
+	dir = 8;
+	layer = 3.1
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"PL" = (
+/obj/effect/decal/cleanable/ash,
+/obj/structure/table,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"PO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"PT" = (
+/obj/machinery/door/airlock{
+	id_tag = "obt";
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"PZ" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/airlock,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Qa" = (
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/mineral/coal/ten,
+/obj/item/stack/sheet/mineral/coal/ten,
+/turf/open/floor/pod/dark,
+/area/shuttle/solfed/frigate)
+"Qj" = (
+/obj/structure/sign/departments/security{
+	pixel_x = -28
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Qm" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Qq" = (
+/obj/structure/bed,
+/obj/item/bedsheet/red,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Qy" = (
+/obj/item/tank/internals/oxygen,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"QF" = (
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = 4;
+	pixel_y = 5
+	},
+/obj/item/clipboard{
+	pixel_x = -6
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 6
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"QG" = (
+/obj/machinery/atmospherics/pipe/layer_manifold,
+/obj/machinery/door/airlock/external,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"QN" = (
+/obj/machinery/holopad/secure,
+/obj/effect/turf_decal/box,
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"QO" = (
+/obj/machinery/mecha_part_fabricator,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"QR" = (
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"QV" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Re" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Rf" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/easel,
+/obj/item/canvas/twentythreeXtwentythree,
+/obj/structure/sign/painting/library{
+	pixel_y = 28
+	},
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"Rg" = (
+/obj/machinery/autolathe,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Rj" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/airlock/research{
+	name = "Breakroom";
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Rl" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Rm" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Rq" = (
+/obj/machinery/vending/cola/space_up,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ru" = (
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"RG" = (
+/obj/item/paper/pamphlet/violent_video_games,
+/obj/machinery/computer/arcade/orion_trail{
+	dir = 8
+	},
+/obj/item/stack/arcadeticket,
+/obj/item/stack/arcadeticket,
+/obj/structure/extinguisher_cabinet/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"RQ" = (
+/obj/structure/chair/office{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"RY" = (
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Sb" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/frigate)
+"Sd" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Sf" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer3{
+	dir = 4
+	},
+/obj/machinery/button/door{
+	pixel_y = 25;
+	pixel_x = -7;
+	name = "Bay Doors";
+	id = "obmine12"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Sk" = (
+/obj/structure/railing{
+	dir = 8;
+	layer = 3.1
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/cell_charger,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Sm" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/solfed/frigate)
+"Sw" = (
+/obj/structure/chair/office{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Sy" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent2"
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"SE" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/airlock/research{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"SM" = (
+/obj/machinery/light_switch{
+	dir = 4;
+	pixel_x = -22;
+	pixel_y = -12
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/shuttle/solfed/frigate)
+"SN" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/door/airlock{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"SU" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"SW" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/glass/maunamug{
+	pixel_y = 5;
+	pixel_x = 5
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"SY" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/machinery/light_switch{
+	dir = 1;
+	pixel_y = -21;
+	pixel_x = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Tb" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/holopad/secure,
+/obj/effect/turf_decal/box,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"Tf" = (
+/obj/machinery/light/directional/north{
+	pixel_y = 28
+	},
+/turf/open/floor/engine/hull/reinforced,
+/area/shuttle/solfed/frigate)
+"Th" = (
+/obj/structure/guncase,
+/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
+/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ti" = (
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Tn" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/effect/turf_decal/siding/wood/corner,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Ts" = (
+/obj/machinery/light/small/directional/south,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Tx" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"TG" = (
+/obj/machinery/holopad/secure,
+/obj/effect/turf_decal/box,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"TH" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"TQ" = (
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"TR" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/railing/corner{
+	dir = 4;
+	layer = 3.1
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"TY" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Uf" = (
+/obj/machinery/camera/autoname{
+	dir = 10
+	},
+/obj/structure/closet/firecloset/wall{
+	dir = 1;
+	pixel_y = -28
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Uw" = (
+/obj/structure/closet/firecloset/wall{
+	dir = 4;
+	pixel_x = -28
+	},
+/obj/item/storage/box/gum/happiness,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Uz" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/airlock/command{
+	name = "Captain's Quarters";
+	req_access = list(20)
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/solfed/frigate)
+"UC" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/airlock/security{
+	req_access = list(1);
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"UM" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/railing{
+	dir = 1;
+	layer = 3.1
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"UQ" = (
+/obj/structure/reagent_dispensers/beerkeg,
+/obj/structure/sign/departments/cargo{
+	pixel_y = 32
+	},
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"Va" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Vh" = (
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = -32
+	},
+/obj/machinery/camera/autoname{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Vi" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/carpet/royalblack,
+/area/shuttle/solfed/frigate)
+"Vp" = (
+/obj/item/kirbyplants/random,
+/obj/machinery/button/door{
+	pixel_y = 24;
+	pixel_x = -4;
+	name = "umbilical window shutters";
+	id = "obhangarent21"
+	},
+/obj/machinery/button/door{
+	pixel_y = 24;
+	pixel_x = 9;
+	name = "pod lockdown";
+	id = "obhangarent2";
+	req_access = list(1)
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"VC" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"VH" = (
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"VM" = (
+/obj/structure/chair,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/solfed/frigate)
+"VO" = (
+/obj/structure/chair/sofa/right,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"VP" = (
+/obj/effect/decal/cleanable/oil,
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"VR" = (
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"VZ" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/wrapping,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Wb" = (
+/obj/structure/table/wood,
+/obj/item/trash/candy{
+	pixel_x = 3;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/food/drinks/soda_cans/cola{
+	pixel_x = -8;
+	pixel_y = 7
+	},
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"We" = (
+/turf/template_noop,
+/area/template_noop)
+"Wg" = (
+/obj/structure/sign/warning/securearea{
+	pixel_x = -26;
+	pixel_y = -4
+	},
+/obj/machinery/light/small/directional/west{
+	pixel_y = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Wj" = (
+/obj/machinery/light/floor,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"Wk" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/poddoor/preopen{
+	id = "obhangarent2"
+	},
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Wl" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/structure/railing,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Wq" = (
+/obj/structure/sink/kitchen{
+	dir = 4;
+	pixel_x = -16;
+	pixel_y = 19
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/white,
+/area/shuttle/solfed/frigate)
+"Wr" = (
+/obj/machinery/cryopod,
+/obj/machinery/light/small/directional/east,
+/obj/structure/railing{
+	dir = 1;
+	layer = 2.8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Wt" = (
+/obj/structure/cable{
+	icon_state = "0-9"
+	},
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Ww" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Wz" = (
+/obj/machinery/door/poddoor{
+	id = "obengi";
+	name = "Engineering Storage";
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"WP" = (
+/obj/item/reagent_containers/food/drinks/bottle/orangejuice{
+	pixel_y = 12;
+	pixel_x = 5
+	},
+/obj/item/reagent_containers/food/drinks/bottle/limejuice{
+	pixel_y = 15;
+	pixel_x = -8
+	},
+/obj/item/reagent_containers/food/snacks/pizzaslice/pineapple{
+	pixel_y = 2;
+	pixel_x = -7
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"WR" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"WX" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"WY" = (
+/obj/effect/turf_decal/big_sign/solgov/cc,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"Xe" = (
+/obj/structure/ore_box,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Xh" = (
+/obj/effect/decal/cleanable/oil{
+	icon_state = "floor2"
+	},
+/obj/machinery/door/window/brigdoor{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Xv" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/item/reagent_containers/food/drinks/soda_cans/cola{
+	pixel_y = 8;
+	pixel_x = 8
+	},
+/obj/item/paper/crumpled,
+/obj/item/pen/charcoal,
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"Xz" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "obendo"
+	},
+/turf/open/floor/plasteel/stairs,
+/area/shuttle/solfed/frigate)
+"XA" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"XC" = (
+/obj/structure/table,
+/obj/item/book/manual/wiki/engineering_guide,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"XJ" = (
+/obj/structure/filingcabinet,
+/obj/item/pen/fountain,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"XR" = (
+/obj/structure/railing{
+	dir = 8;
+	layer = 3.1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"XT" = (
+/obj/machinery/portable_atmospherics/canister/toxins,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"XY" = (
+/obj/machinery/door/poddoor/shutters{
+	id = "vela_cap";
+	dir = 4
+	},
+/obj/effect/spawner/structure/window/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"XZ" = (
+/obj/structure/closet/crate,
+/obj/item/circuitboard/machine/deep_fryer,
+/obj/item/rollingpaper,
+/obj/item/rollingpaper,
+/obj/item/rollingpaper,
+/obj/item/rollingpaper,
+/obj/item/reagent_containers/food/snacks/grown/tobacco,
+/obj/item/reagent_containers/food/snacks/grown/tobacco,
+/obj/item/reagent_containers/food/snacks/grown/tobacco,
+/obj/item/reagent_containers/food/snacks/grown/tobacco,
+/turf/open/floor/pod,
+/area/shuttle/solfed/frigate)
+"Yk" = (
+/obj/structure/table/glass,
+/obj/item/paper/fluff/awaymissions/moonoutpost19/research/larva_social{
+	pixel_x = -6
+	},
+/obj/item/clothing/glasses/science{
+	pixel_y = 10;
+	pixel_x = 2
+	},
+/obj/item/assembly/igniter{
+	pixel_x = 9;
+	pixel_y = -3
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Yl" = (
+/obj/machinery/door/airlock/command{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/poddoor{
+	id = "obai2";
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Yp" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"Yr" = (
+/obj/effect/turf_decal/big_sign/solgov/bb,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/solfed/frigate)
+"YJ" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"YP" = (
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"YS" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"YU" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine,
+/area/shuttle/solfed/frigate)
+"YV" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/railing{
+	dir = 1;
+	layer = 3.1
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/solfed/frigate)
+"YY" = (
+/obj/machinery/door/poddoor{
+	id = "obengi";
+	name = "Engineering Storage";
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"YZ" = (
+/obj/structure/chair/stool,
+/obj/machinery/camera/autoname,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Za" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/oil{
+	icon_state = "floor4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Zj" = (
+/obj/structure/chair/sofa/corner{
+	dir = 4
+	},
+/obj/structure/sign/poster/random{
+	pixel_x = -28
+	},
+/turf/open/floor/carpet,
+/area/shuttle/solfed/frigate)
+"Zn" = (
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/airlock{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/frigate)
+"Zo" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/wood,
+/area/shuttle/solfed/frigate)
+"Zw" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/machinery/light/small/directional/south,
+/obj/structure/sign/poster/random{
+	pixel_x = -28
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/shuttle/solfed/frigate)
+"ZQ" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/wood/wood_parquet,
+/area/shuttle/solfed/frigate)
+
+(1,1,1) = {"
+We
+We
+We
+We
+We
+IZ
+IZ
+IZ
+IZ
+We
+We
+OP
+We
+We
+OP
+We
+We
+OP
+jP
+OP
+jP
+OP
+We
+We
+OP
+We
+We
+OP
+We
+We
+IZ
+IZ
+IZ
+IZ
+We
+We
+We
+We
+We
+We
+"}
+(2,1,1) = {"
+We
+We
+We
+We
+We
+IZ
+We
+aM
+We
+We
+We
+Sm
+jP
+jP
+Sm
+We
+Sm
+Sm
+eR
+Sm
+eR
+Sm
+Sm
+We
+Sm
+jP
+jP
+Sm
+We
+We
+We
+pW
+We
+IZ
+We
+We
+We
+We
+We
+We
+"}
+(3,1,1) = {"
+We
+We
+We
+We
+We
+IZ
+Iy
+OP
+Sm
+Sm
+Sm
+Sm
+eR
+eR
+Sm
+II
+Sm
+kr
+kF
+ym
+Nx
+wh
+Sm
+II
+Sm
+eR
+eR
+Sm
+Sm
+Sm
+Sm
+OP
+Iy
+IZ
+We
+We
+We
+We
+We
+We
+"}
+(4,1,1) = {"
+We
+We
+We
+We
+We
+IZ
+We
+Sm
+jY
+Lb
+Qm
+Sm
+YS
+YS
+Sm
+Sm
+Sm
+XJ
+Kk
+wH
+IE
+QF
+Sm
+Sm
+Sm
+YS
+SY
+Sm
+yv
+OR
+II
+gL
+We
+IZ
+We
+We
+We
+We
+We
+We
+"}
+(5,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+Sm
+CW
+II
+II
+wA
+sn
+NU
+iw
+Uw
+lv
+LU
+nV
+HV
+nV
+Za
+lv
+ym
+iL
+Re
+Ge
+NF
+IJ
+NC
+II
+gL
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(6,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+OP
+Sm
+Mu
+TH
+Nl
+nq
+Tx
+LT
+TH
+MC
+tI
+GA
+tI
+kq
+TH
+Xz
+Rm
+sr
+hJ
+fh
+yH
+iD
+PC
+II
+gL
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(7,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+Sm
+Sm
+iz
+Sm
+NQ
+Ru
+qC
+Bh
+lv
+xN
+Gx
+Nm
+rx
+rA
+VR
+ld
+DD
+EE
+aZ
+pd
+PO
+Mw
+II
+gL
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(8,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+OP
+Sm
+Sm
+qe
+mC
+qC
+DM
+Sm
+an
+yx
+Sd
+rx
+lx
+Sm
+Nf
+dN
+uR
+AB
+bZ
+Sm
+Sm
+Sm
+OP
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(9,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+Sm
+Sm
+Sm
+wF
+Xh
+NS
+Sm
+Sm
+yg
+yH
+Ey
+Sm
+Sm
+Sm
+Wz
+YY
+Sm
+Sm
+Sm
+Sm
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(10,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+OP
+Sm
+eS
+YJ
+OS
+TY
+ab
+Sm
+jx
+ym
+qC
+Sm
+eV
+cI
+qC
+bt
+sa
+Sm
+OP
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(11,1,1) = {"
+We
+We
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+We
+We
+Sm
+VP
+TY
+kS
+jr
+hP
+Sm
+yt
+ym
+qC
+Sm
+Mj
+eM
+EJ
+GF
+FF
+Sm
+We
+We
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+We
+We
+We
+"}
+(12,1,1) = {"
+We
+We
+IZ
+We
+aM
+We
+We
+Iy
+We
+We
+We
+Sm
+ER
+lE
+df
+TY
+Ec
+Sm
+BR
+HW
+qC
+Sm
+yk
+nh
+wB
+Dy
+XT
+Sm
+We
+We
+We
+Iy
+We
+We
+pW
+We
+IZ
+We
+We
+We
+"}
+(13,1,1) = {"
+We
+We
+We
+We
+OP
+lq
+lq
+OP
+We
+We
+We
+OP
+Sm
+HK
+PL
+Wt
+Sm
+Sm
+Sm
+Sm
+OM
+Sm
+jn
+Eo
+ac
+aO
+Ed
+Sm
+We
+We
+We
+OP
+Sm
+Sm
+OP
+We
+We
+We
+IZ
+We
+"}
+(14,1,1) = {"
+We
+We
+OP
+Sm
+Sm
+Xe
+Xe
+Sm
+Sm
+We
+We
+Sm
+Sm
+Sm
+Sm
+Sm
+Sm
+lB
+aE
+Sm
+Nh
+Sm
+Sm
+Sm
+Sm
+Sm
+Sm
+Sm
+We
+We
+OP
+Sm
+ko
+cJ
+Sm
+Sm
+OP
+Iy
+IZ
+We
+"}
+(15,1,1) = {"
+We
+We
+Sm
+eZ
+Qy
+yH
+yH
+qT
+Sm
+OP
+We
+We
+Sm
+ZQ
+aQ
+Zw
+Sm
+Sb
+eI
+OP
+Ja
+OP
+Qq
+OV
+af
+Th
+Sm
+We
+We
+OP
+Sm
+iG
+ym
+ym
+TG
+rs
+Sm
+We
+IZ
+We
+"}
+(16,1,1) = {"
+We
+We
+Sm
+Mi
+ee
+ee
+Kr
+ic
+gB
+Sm
+Sm
+VR
+Sm
+Dd
+gx
+wv
+PZ
+kd
+Nr
+Sm
+qC
+Sm
+ym
+JM
+np
+in
+Sm
+VR
+Sm
+Sm
+xI
+BQ
+gV
+YJ
+Jk
+An
+Sm
+Iy
+IZ
+We
+"}
+(17,1,1) = {"
+Ak
+Ak
+Sm
+vD
+Fy
+cW
+Jw
+yH
+HH
+fi
+Sm
+We
+Sm
+cj
+zX
+MJ
+Sm
+Sm
+Sm
+Sm
+In
+Sm
+Nk
+fH
+xC
+Hk
+Sm
+We
+Sm
+Sm
+Yl
+Sm
+Sm
+Sm
+mK
+Sm
+Sm
+We
+IZ
+We
+"}
+(18,1,1) = {"
+We
+Wj
+bX
+pK
+CM
+ur
+YJ
+Nq
+ym
+pp
+Sm
+We
+Sm
+cj
+zX
+AS
+SM
+zl
+tI
+tI
+TR
+MF
+YJ
+Jk
+xC
+Cu
+Sm
+We
+Sm
+jm
+Kk
+jm
+JN
+Wg
+Kk
+zk
+Sm
+We
+We
+We
+"}
+(19,1,1) = {"
+We
+qU
+ta
+dV
+YU
+hH
+Aq
+MU
+ym
+Hb
+Sm
+We
+Sm
+xU
+zX
+eT
+Dw
+Sm
+Rf
+ul
+No
+Sm
+OL
+Cz
+MP
+Gb
+Sm
+We
+Sm
+Ks
+aq
+Ks
+JN
+ym
+Tb
+jj
+Sm
+OP
+We
+We
+"}
+(20,1,1) = {"
+We
+Wj
+bX
+pK
+pK
+bu
+YJ
+Ww
+ym
+qB
+Sm
+We
+Sm
+Sm
+Zn
+Sm
+Sm
+Sm
+yd
+Xv
+YV
+Sm
+HQ
+ym
+Sw
+Ju
+Sm
+We
+Sm
+Sm
+Sm
+Sm
+Sm
+lm
+uc
+YJ
+oT
+Sm
+We
+We
+"}
+(21,1,1) = {"
+Na
+Na
+Sm
+tY
+Fy
+cW
+Jw
+mN
+zR
+Sm
+Sm
+VR
+Sm
+CO
+ym
+qm
+hX
+Sm
+fr
+xc
+jS
+Sm
+rm
+ym
+rb
+pA
+Sm
+VR
+Sm
+Sm
+qX
+ym
+kh
+ym
+qa
+jf
+wa
+Sm
+We
+We
+"}
+(22,1,1) = {"
+We
+OP
+Sm
+Sk
+Sk
+uw
+XR
+KN
+qO
+Sm
+We
+We
+Sm
+Wr
+ym
+ym
+Sm
+OP
+zX
+zX
+UM
+OP
+Sm
+UC
+Sm
+Sm
+Sm
+We
+We
+Sm
+Sw
+ym
+Sm
+MY
+WR
+tP
+VH
+Sm
+We
+We
+"}
+(23,1,1) = {"
+We
+Sm
+az
+WR
+YJ
+YJ
+hf
+Rl
+hJ
+Sm
+xT
+xT
+Sm
+Sm
+hk
+ni
+Sm
+ID
+zX
+RQ
+UM
+Dt
+Sm
+oC
+Qj
+Nn
+Sm
+GH
+GH
+Sm
+LJ
+MZ
+Sm
+Sm
+Rj
+Sm
+Sm
+Sm
+OP
+We
+"}
+(24,1,1) = {"
+We
+Sm
+QO
+Kk
+ym
+ym
+hJ
+iR
+hJ
+nP
+II
+II
+Sm
+Sm
+Sm
+Sm
+Sm
+RG
+zX
+XC
+UM
+Hf
+Sm
+an
+ym
+ym
+cd
+KC
+KC
+yo
+WR
+YJ
+lz
+mP
+El
+yg
+Sm
+ym
+lH
+We
+"}
+(25,1,1) = {"
+We
+Sm
+Rg
+iR
+hJ
+ym
+ym
+Ez
+YJ
+qy
+mO
+mO
+Wk
+Pq
+mP
+YJ
+BY
+cF
+WX
+cF
+xm
+WX
+BN
+YJ
+YJ
+YJ
+sc
+Au
+PG
+Fl
+rd
+oZ
+ym
+ym
+yj
+yG
+Sm
+ym
+Sm
+We
+"}
+(26,1,1) = {"
+We
+Sm
+CX
+dx
+hJ
+ym
+ym
+GS
+yH
+nP
+jh
+jh
+Sy
+ym
+ym
+ym
+Sm
+YZ
+ym
+yH
+mN
+FR
+Sm
+an
+ym
+ym
+Gt
+KC
+KC
+yo
+Cz
+vK
+Nv
+rB
+Jk
+oa
+tf
+ym
+pf
+We
+"}
+(27,1,1) = {"
+We
+Sm
+iu
+yH
+ym
+IF
+ym
+iR
+yH
+Sm
+xT
+xT
+Sm
+Vp
+xK
+BO
+Sm
+gX
+ml
+ym
+DD
+eq
+Sm
+yg
+xK
+yi
+Sm
+GH
+GH
+Sm
+Sm
+Sm
+Sm
+Sm
+rO
+Sm
+Sm
+Sm
+OP
+We
+"}
+(28,1,1) = {"
+We
+OP
+Sm
+CK
+oJ
+QR
+ee
+wr
+FR
+Sm
+We
+We
+Sm
+Sm
+Sm
+Sm
+Sm
+Sm
+Sm
+eJ
+rT
+Sm
+Sm
+Sm
+Sm
+Sm
+Sm
+We
+We
+Sm
+qc
+ym
+FC
+ND
+Cz
+jj
+zr
+Sm
+We
+We
+"}
+(29,1,1) = {"
+Ak
+Ak
+Sm
+JY
+JI
+cW
+Gi
+mN
+Uf
+Sm
+Sm
+VR
+Sm
+yD
+BW
+HO
+Sm
+cT
+Tn
+us
+yI
+dh
+Wl
+tk
+tb
+nr
+Sm
+VR
+Sm
+Sm
+oC
+ym
+HB
+Yk
+yj
+ym
+zF
+Sm
+We
+We
+"}
+(30,1,1) = {"
+We
+Wj
+zi
+Yp
+EC
+CM
+EE
+ke
+ym
+pp
+Sm
+We
+Sm
+rr
+ym
+wk
+Sm
+vV
+dW
+VM
+pU
+VM
+Pv
+iy
+iy
+Wq
+Sm
+We
+Sm
+kW
+ym
+FJ
+HB
+wO
+ym
+ym
+CN
+Sm
+We
+We
+"}
+(31,1,1) = {"
+We
+qU
+Le
+GD
+Iz
+Oe
+Mv
+Gg
+ym
+gh
+Sm
+We
+Sm
+Jo
+Av
+wk
+Sm
+iu
+dW
+VM
+pU
+VM
+Pv
+Hw
+iy
+KE
+Sm
+We
+Sm
+WP
+Sw
+ym
+HB
+wO
+Sw
+iQ
+Sm
+OP
+We
+We
+"}
+(32,1,1) = {"
+We
+Wj
+zi
+pK
+zs
+zs
+Io
+El
+yH
+cE
+Sm
+We
+Sm
+Sm
+Sm
+nQ
+Sm
+fz
+RY
+VM
+pU
+VM
+Pv
+MW
+QN
+iy
+Sm
+We
+Sm
+Ti
+ym
+Av
+HB
+al
+Ou
+tA
+Sm
+We
+We
+We
+"}
+(33,1,1) = {"
+Na
+Na
+Sm
+Sf
+ca
+cW
+Gi
+yH
+ym
+uT
+Sm
+We
+Sm
+Zj
+rw
+ww
+Sm
+LL
+Go
+VM
+pU
+VM
+Pv
+iy
+iy
+dc
+Sm
+We
+Sm
+Sm
+Sm
+Sm
+Sm
+dB
+dB
+SE
+Sm
+We
+IZ
+We
+"}
+(34,1,1) = {"
+We
+We
+Sm
+OT
+uw
+uw
+fj
+Fx
+Ox
+Sm
+Sm
+VR
+Sm
+BX
+pk
+ww
+Sm
+dp
+Go
+VM
+pU
+VM
+Pv
+lp
+lk
+lu
+Sm
+VR
+Sm
+Sm
+CG
+BW
+yj
+ym
+ym
+ym
+Sm
+Iy
+IZ
+We
+"}
+(35,1,1) = {"
+We
+We
+Sm
+Eb
+ym
+yH
+yH
+Vh
+Sm
+OP
+We
+We
+Sm
+BH
+Wb
+Pp
+Px
+mq
+Ca
+VM
+pU
+VM
+Pv
+kw
+lk
+Mc
+Sm
+We
+We
+Sm
+tx
+Cp
+ym
+ym
+ym
+CD
+Sm
+We
+IZ
+We
+"}
+(36,1,1) = {"
+We
+We
+OP
+Sm
+Sm
+jD
+ci
+Sm
+Sm
+We
+We
+We
+Sm
+zK
+pw
+up
+Sm
+GB
+cn
+sM
+Nd
+oU
+Pe
+Kq
+nF
+oU
+Sm
+We
+We
+OP
+Sm
+Sm
+bh
+tx
+Sm
+Sm
+OP
+Iy
+IZ
+We
+"}
+(37,1,1) = {"
+We
+We
+We
+We
+OP
+Sm
+Sm
+OP
+We
+We
+We
+We
+Sm
+gX
+zX
+Ts
+Sm
+Sm
+Sm
+Sm
+SN
+eJ
+Sm
+Sm
+Sm
+Sm
+Sm
+OP
+We
+We
+We
+OP
+Sm
+Sm
+OP
+We
+We
+We
+IZ
+We
+"}
+(38,1,1) = {"
+We
+We
+IZ
+We
+xR
+We
+We
+Iy
+We
+IZ
+We
+OP
+Sm
+Rq
+zX
+EK
+Sm
+vO
+dt
+OP
+cg
+Ca
+OP
+no
+tW
+cK
+uQ
+Sm
+We
+IZ
+We
+Iy
+We
+We
+Iy
+We
+IZ
+We
+We
+We
+"}
+(39,1,1) = {"
+We
+We
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+We
+VR
+VO
+qF
+zJ
+Ex
+AO
+YJ
+jj
+Sm
+is
+kZ
+Sm
+Hc
+AR
+Qa
+ry
+Sm
+We
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+We
+We
+We
+"}
+(40,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+VR
+zK
+En
+vM
+zX
+Sm
+ue
+MB
+Sm
+fk
+CS
+Sm
+tm
+AR
+LK
+Nw
+Sm
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(41,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+OP
+Sm
+Sm
+Sm
+Sm
+sN
+Sm
+Lx
+PA
+Sm
+Va
+CS
+Sm
+UQ
+AR
+ds
+sD
+Sm
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(42,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+QG
+ym
+BW
+dF
+JV
+ym
+Sm
+Sm
+PT
+Sm
+eB
+VC
+tO
+YJ
+VZ
+YJ
+Bc
+Sm
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(43,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+QG
+ym
+Av
+dF
+fW
+ym
+Sm
+xM
+xH
+Sm
+Va
+CS
+Sm
+pC
+fl
+ym
+la
+Sm
+Tf
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(44,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+Sm
+Sm
+Sm
+Sm
+Sm
+sN
+Sm
+Sm
+Sm
+Sm
+kg
+ky
+Sm
+XZ
+Ln
+yg
+si
+ea
+Iy
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(45,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+Sm
+dC
+Vi
+rR
+qR
+YP
+oU
+dd
+ib
+ho
+pX
+kZ
+Sm
+Jw
+Kd
+hv
+LS
+fY
+Iy
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(46,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+Sm
+Fz
+IM
+cg
+Dr
+XA
+Zo
+Ai
+xh
+hm
+lM
+QV
+Sm
+lQ
+ym
+uo
+Cz
+ea
+Iy
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(47,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+Sm
+Sm
+NJ
+aH
+Sm
+Sm
+Sm
+Om
+Sm
+Sm
+Sm
+wZ
+Sm
+wl
+Cp
+il
+uq
+Sm
+dL
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(48,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+tq
+Br
+zX
+Sm
+tn
+tJ
+ym
+dq
+IC
+JH
+Kk
+Sm
+wn
+Sm
+Sm
+Sm
+OP
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(49,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+tq
+Iu
+eT
+Uz
+hS
+EG
+ym
+Ia
+Ef
+EG
+Kk
+qY
+FS
+OP
+Sm
+OP
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(50,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+Sm
+XY
+Sm
+OP
+SU
+tc
+xA
+Ny
+zB
+wD
+sV
+gQ
+hS
+FK
+Sm
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(51,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+OP
+Sm
+fm
+TQ
+TQ
+EM
+Yr
+fF
+CF
+nA
+BB
+Ab
+Sm
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(52,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+Iy
+OP
+Sm
+SW
+Cw
+Ht
+kv
+WY
+zy
+Ih
+Sm
+Sm
+Sm
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(53,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+Iy
+We
+Sm
+CI
+yn
+hR
+PD
+qJ
+LB
+mW
+Sm
+We
+Iy
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(54,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+Iy
+We
+OP
+mS
+mS
+mS
+OP
+mS
+mS
+mS
+OP
+We
+Iy
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(55,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+IZ
+IZ
+IZ
+We
+pe
+We
+We
+We
+am
+We
+We
+We
+vS
+We
+IZ
+IZ
+IZ
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}
+(56,1,1) = {"
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+IZ
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+We
+"}

@@ -68,3 +68,17 @@
 	icon = 'modular_bluemoon/icons/mob/snout.dmi'
 	icon_state = "mouse"
 	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/snouts/mam_snouts/synth_catcrin
+	name = "Synthetic catcrin snout 1"
+	icon = 'modular_bluemoon/icons/mob/mam_snouts.dmi'
+	icon_state = "catcrin_synth1"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/snouts/mam_snouts/synth_catcrin/two
+	name = "Synthetic catcrin snout 2"
+	icon_state = "catcrin_synth2"
+
+/datum/sprite_accessory/snouts/mam_snouts/synth_catcrin/three
+	name = "Synthetic catcrin snout 3"
+	icon_state = "catcrin_synth3"

@@ -1,7 +1,7 @@
 /mob/living/Moved()
+	update_pixel_shifting(TRUE)
 	. = ..()
 	update_turf_movespeed(loc)
-	update_pixel_shifting(TRUE)
 
 /mob/living/setDir(newdir, ismousemovement)
 	. = ..()

@@ -106,3 +106,11 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
 	icon_state = "geranium_crown"
 	item_state = "geranium_crown"
+
+/obj/item/clothing/head/laurel_crown
+	name = "Golden laurel wreath"
+	desc = "A wreath of bay leaves made of gold."
+	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
+	icon_state = "laurel_crown"
+	item_state = "laurel_crown"

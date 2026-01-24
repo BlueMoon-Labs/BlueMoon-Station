@@ -115,24 +115,6 @@
 
 // end bluemoon edit - Katana Zero
 
-/obj/item/card/id/sol_citizen
-	name = "SolFed Citizen ID"
-	desc = "An ID made to recognize Solar Federation habbitants and tourists."
-	icon_state = "sol"
-	assignment = "Sol"
-	uses_overlays = FALSE
-	card_sticker = TRUE
-	special_assignment = "sol" // BLUEMOON ADD
-
-/obj/item/card/id/nri_citizen
-	name = "NRI Citizen ID"
-	desc = "An ID made to recognize Novaya Rossiyskya Imperia habbitants and tourists."
-	icon_state = "nri"
-	assignment = "NRI"
-	uses_overlays = FALSE
-	card_sticker = TRUE
-	special_assignment = "nri" // BLUEMOON ADD
-
 //// The default nun robe change to uniform slot
 
 

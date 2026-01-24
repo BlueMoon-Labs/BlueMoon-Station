@@ -38,7 +38,7 @@
 	display_order = JOB_DISPLAY_ORDER_RESEARCH_DIRECTOR
 	starting_modifiers = list(/datum/skill_modifier/job/level/wiring/basic) //BLUEMOON CHANGE job/level to basic
 	mind_traits = list(TRAIT_KNOW_CYBORG_WIRES, TRAIT_MECHA_EXPERT) //BLUEMOON ADD use #define TRAIT system
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity, /datum/quirk/illiterate)
 	threat = 5
 
 	family_heirlooms = list(
@@ -64,7 +64,7 @@
 	l_hand = /obj/item/clipboard
 	l_pocket = /obj/item/laser_pointer
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced=1)
-	accessory = /obj/item/clothing/accessory/permit/special/research_director
+	accessory = list(/obj/item/clothing/accessory/permit/special/research_director)
 
 	backpack = /obj/item/storage/backpack/science
 	box = /obj/item/storage/box/survival/command
@@ -92,7 +92,7 @@
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/syndicate_uplink_high=1)
-	accessory = /obj/item/clothing/accessory/permit/special/research_director
+	accessory = list(/obj/item/clothing/accessory/permit/special/research_director)
 
 	neck = /obj/item/clothing/neck/cloak/syndiecap
 

@@ -4,53 +4,27 @@ GLOBAL_VAR_INIT(slavers_credits_balance, 5000)
 GLOBAL_VAR_INIT(slavers_credits_total, 0)
 GLOBAL_VAR_INIT(slavers_slaves_sold, 0)
 
-#define SLAVER_STANDARD_RANSOM 20000
-
 /// Price table for when trying to set slave prices automatically
 GLOBAL_LIST_INIT(slavers_ransom_values, list(
-	"Captain" 					= 250000,
-	"NanoTrasen Representative" = 250000, //Bluemoon edit
-	"Head of Personnel" 		= 100000,
-	"Blueshield" 				= 100000,
-	"Head of Security" 			= 75000,
-	"Chief Engineer" 			= 50000,
-	"Research Director" 		= 50000,
-	"Chief Medical Officer" 	= 50000,
-	"Bridge Officer" 			= 75000,
-	"Warden" 					= 75000,
-	"Brig Physician" 			= 40000,
-	"Security Officer" 			= 40000,
-	"Detective" 				= 40000,
-	"Quartermaster" 			= 40000,
-	"Cargo Technician" 			= SLAVER_STANDARD_RANSOM,
-	"Shaft Miner"				= SLAVER_STANDARD_RANSOM,
-	"Assistant" 				= SLAVER_STANDARD_RANSOM,
-	"Bartender"					= SLAVER_STANDARD_RANSOM,
-	"Cook"						= SLAVER_STANDARD_RANSOM,
-	"Botanist"					= SLAVER_STANDARD_RANSOM,
-	"Janitor"					= SLAVER_STANDARD_RANSOM,
-	"Clown"						= SLAVER_STANDARD_RANSOM,
-	"Mime"						= SLAVER_STANDARD_RANSOM,
-	"Curator"					= SLAVER_STANDARD_RANSOM,
-	"Internal Affairs Agent"	= SLAVER_STANDARD_RANSOM,
-	"Chaplain"					= SLAVER_STANDARD_RANSOM,
-	"Station Engineer"			= SLAVER_STANDARD_RANSOM,
-	"Atmospheric Technician"	= SLAVER_STANDARD_RANSOM,
-	"Medical Doctor" 			= SLAVER_STANDARD_RANSOM,
-	"Paramedic" 				= SLAVER_STANDARD_RANSOM,
-	"Chemist"					= SLAVER_STANDARD_RANSOM,
-	"Virologist"				= SLAVER_STANDARD_RANSOM,
-	"Geneticist"				= SLAVER_STANDARD_RANSOM,
-	"Scientist"					= SLAVER_STANDARD_RANSOM,
-	"Roboticist"				= SLAVER_STANDARD_RANSOM,
-	"Prisoner"					= SLAVER_STANDARD_RANSOM,
-	"Stowaway"					= SLAVER_STANDARD_RANSOM,
-	"Curator"					= SLAVER_STANDARD_RANSOM,
-	"Chaplain"					= SLAVER_STANDARD_RANSOM,
-	"Bouncer"					= SLAVER_STANDARD_RANSOM,
+	"Captain" 					= list("maxPrice" = SLAVER_RANSOM_HEAD_VALUABLE, "percent" = 0.9),
+	"NanoTrasen Representative" = list("maxPrice" = SLAVER_RANSOM_HEAD_VALUABLE, "percent" = 0.9),
+	"Head of Security" 			= list("maxPrice" = SLAVER_RANSOM_HEAD_VALUABLE/2, "percent" = 0.5),
+	"Head of Personnel" 		= list("maxPrice" = SLAVER_RANSOM_HEAD, "percent" = 0.25),
+	"Chief Engineer" 			= list("maxPrice" = SLAVER_RANSOM_HEAD, "percent" = 0.25),
+	"Research Director" 		= list("maxPrice" = SLAVER_RANSOM_HEAD, "percent" = 0.25),
+	"Chief Medical Officer" 	= list("maxPrice" = SLAVER_RANSOM_HEAD, "percent" = 0.25),
+	"Quartermaster" 			= list("maxPrice" = SLAVER_RANSOM_HEAD, "percent" = 0.25),
+	"Blueshield" 				= list("maxPrice" = SLAVER_RANSOM_VALUABLE, "percent" = 0.15),
+	"Bridge Officer" 			= list("maxPrice" = SLAVER_RANSOM_VALUABLE, "percent" = 0.15),
+	"Warden" 					= list("maxPrice" = SLAVER_RANSOM_VALUABLE, "percent" = 0.15),
+	"Brig Physician" 			= list("maxPrice" = SLAVER_RANSOM_VALUABLE, "percent" = 0.1),
+	"Security Officer" 			= list("maxPrice" = SLAVER_RANSOM_VALUABLE, "percent" = 0.1),
+	"Peacekeeper" 				= list("maxPrice" = SLAVER_RANSOM_VALUABLE, "percent" = 0.1),
+	"Detective" 				= list("maxPrice" = SLAVER_RANSOM_VALUABLE, "percent" = 0.1),
+	"Internal Affairs Agent"	= list("maxPrice" = SLAVER_RANSOM_VALUABLE, "percent" = 0.1),
+	"Stowaway"					= list("maxPrice" = 500, "percent" = 0.01),
+	"Other" 					= list("maxPrice" = SLAVER_RANSOM_STANDARD, "percent" = SLAVER_RANSOM_STANDARD_PERCENT), // Для прайс листа в консоли
 ))
-
-#undef SLAVER_STANDARD_RANSOM
 
 /datum/antagonist/slaver
 	name = "Slave Trader"
@@ -95,7 +69,6 @@ GLOBAL_LIST_INIT(slavers_ransom_values, list(
 	owner.assigned_role = ROLE_SLAVER
 	owner.current.playsound_local(get_turf(owner.current), 'modular_splurt/sound/ambience/antag/slavers.ogg',100,0)
 	to_chat(owner, "<B>You are a Slave Trader!</B>")
-	spawnText()
 
 	var/mob/living/carbon/human/H = owner.current
 	if(istype(H))
@@ -159,20 +132,12 @@ GLOBAL_LIST_INIT(slavers_ransom_values, list(
 /datum/antagonist/slaver/leader/greet()
 	owner.assigned_role = ROLE_SLAVER_LEADER
 	owner.current.playsound_local(get_turf(owner.current), 'modular_splurt/sound/ambience/antag/slavers.ogg',100,0)
-	to_chat(owner, "<B>You are the Slave Master!</B>")
-	spawnText()
 
 	var/mob/living/carbon/human/H = owner.current
 	if(istype(H))
 		H.set_antag_target_indicator() // Hide consent of this player, they are an antag and can't be a target
 
 	addtimer(CALLBACK(src, PROC_REF(slavers_name_assign)), 1)
-
-/datum/antagonist/slaver/proc/spawnText()
-	to_chat(owner, "<br><B>You are tasked with infiltrating the station and kidnapping members of the crew. Once brought back to the hideout, they can be collared and priced using the console.</B>")
-	to_chat(owner, "<B>The station can choose whether to pay the ransom, and if they do, you can take the slave to the green floor and use the console to 'export' them back, where the ransom will then be paid to your crew to buy new gear. Make sure you give all of the slave's items back before exporting them.</B>")
-	to_chat(owner, "<br><B><span class='adminhelp'>Important:</span> This role does NOT mean you can break server rules. Additionally to avoid round removing people, you can <span class='adminnotice'>only kidnap crew who consent OOC</span> or attack you.</B>")
-	to_chat(owner, "<B>You have a special HUD that shows consent for each player at the bottom right of their sprite. A tick means you can kidnap them. A cross means do not. A question mark means ask first.</B>")
 
 /datum/antagonist/slaver/leader/proc/slavers_name_assign()
 	GLOB.slavers_team_name = ask_name()

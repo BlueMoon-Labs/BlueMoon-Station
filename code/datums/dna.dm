@@ -136,6 +136,15 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 /datum/dna/proc/check_mutation(mutation_type)
 	return get_mutation(mutation_type)
 
+// BLUEMOON ADD Знаете что? Я не понимаю почему нельзя было это сделать и не трюхать мозг
+/mob/living/proc/check_mutation(mutation_type)
+	return FALSE
+
+/mob/living/carbon/check_mutation(mutation_type)
+	if(dna)
+		return dna.check_mutation(mutation_type)
+// BLUEMOON ADD END
+
 /datum/dna/proc/remove_all_mutations(list/classes = list(MUT_NORMAL, MUT_EXTRA, MUT_OTHER), mutadone = FALSE)
 	remove_mutation_group(mutations, classes, mutadone)
 	scrambled = FALSE

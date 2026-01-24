@@ -936,7 +936,7 @@ SUBSYSTEM_DEF(vote)
 		if(isnum(chaos))
 			total_chaos += chaos
 
-	var/list/available_hard = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD)
+	var/list/available_hard = list(ROUNDTYPE_DYNAMIC_HARD)
 	var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM)
 	// var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) - last_dynamic_type
 

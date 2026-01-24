@@ -54,6 +54,8 @@
 /obj/item/modkit/t51armor_kit
 	name = "Old Power Armor Kit"
 	desc = "A modkit for making a security hardsuit into a T-51 Power Armor."
+	icon = 'icons/obj/device.dmi'
+	icon_state = "modkit"
 	product = /obj/item/clothing/suit/space/hardsuit/security/t51power
 	fromitem = list(/obj/item/clothing/suit/space/hardsuit/security)
 

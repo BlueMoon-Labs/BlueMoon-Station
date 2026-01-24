@@ -217,10 +217,10 @@
 /obj/item/paper/proc/add_field_input(user, field_id, text, font, color, bold, signature_name, overwrite = FALSE)
 	var/datum/paper_field/field_data_datum = null
 
-	var/is_signature = ((text == "%sign") || (text == "%s"))
-	var/is_time = ((text == "%time") || (text == "%t"))
-	var/is_date = ((text == "%data") ||(text == "%d"))
-	var/is_job = ((text == "%job") ||(text == "%j"))
+	var/is_signature = ((text == "%sign") || (text == "%Sign") || (text == "%s") || (text == "%S"))
+	var/is_time = ((text == "%time") || (text == "%Time") || (text == "%t") || (text == "%T"))
+	var/is_date = ((text == "%data") || (text == "%Data") || (text == "%d") || (text == "%D"))
+	var/is_job = ((text == "%job") || (text == "%Job") || (text == "%j") || (text == "%J"))
 
 
 	var/field_text = text
@@ -236,7 +236,7 @@
 		id_card = H.wear_neck?.GetID()
 
 	if(istype(id_card))
-		field_text = is_job ? id_card.assignment : field_text
+		field_text = is_job ? id_card.get_assignment_name() : field_text
 
 	for(var/datum/paper_field/field_input in raw_field_input_data)
 		if(field_input.field_index == field_id)

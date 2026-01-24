@@ -61,7 +61,7 @@
 
 /obj/item/extinguisher/advanced
 	name = "advanced fire extinguisher"
-	desc = "Used to stop thermonuclear fires from spreading inside your engine."
+	desc = "Used to stop thermonuclear fires from spreading inside your engine. Refuel it from specialized foam tank"
 	icon_state = "foam_extinguisher0"
 	item_state = "foam_extinguisher"
 	dog_fashion = null

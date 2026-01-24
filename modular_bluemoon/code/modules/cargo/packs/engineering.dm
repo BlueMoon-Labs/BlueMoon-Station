@@ -1,10 +1,12 @@
 /datum/supply_pack/engineering/gasminer
 	name = "Gas miner"
 	desc = "Here's a gas miner circuitboard, that can generate any of four next gases - oxygen, nitrogen, plasma and carbon dioxide. Requires activated pyroclastic anomaly core."
-	cost = 5000
+	cost = 10000
 	contains = list(/obj/item/circuitboard/machine/gas_miner)
 	crate_name = "gas miner circuitboard"
 	crate_type = /obj/structure/closet/crate/secure/engineering
+
+//////////////////////////////////////////////////////////////////////////////
 
 /datum/supply_pack/engineering/bfl
 	name = "BFL assembly crate"
@@ -47,3 +49,13 @@
 	new item(C)
 	var/datum/station_goal/bfl/B = locate() in SSticker.mode.station_goals
 	B?.completed = TRUE
+
+//////////////////////////////////////////////////////////////////////////////
+
+/datum/supply_pack/engineering/cyborg_advexting
+	name = "Cyborg Upgrade Module (Advanced Fire Extinguisher)"
+	desc = "Atmospheric Technician-grade extinguisher for cyborg use. Can surpass most dangerous flames. Requires specialized foam tank to refill."
+	cost = 12000
+	contains = list(/obj/item/borg/upgrade/extinguisher_adv)
+	crate_name = "Cyborg Upgrade Module"
+	crate_type = /obj/structure/closet/crate/secure/engineering

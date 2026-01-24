@@ -26,6 +26,7 @@
 	name = "Enforcer magazine"
 	desc = "A Mk. 58 magazine."
 	start_empty = 1
+	custom_materials = list(/datum/material/iron = 600)
 
 /obj/item/ammo_box/magazine/e45/lethal
 	name = "Enforcer magazine (.45 Lethal)"

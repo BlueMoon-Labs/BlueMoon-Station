@@ -44,7 +44,7 @@
 	builtin_bodycamera = new(user)
 	builtin_bodycamera.internal_light = FALSE
 	builtin_bodycamera.network = list("ss13")
-	builtin_bodycamera.c_tag = "-Body Camera: [(id_card.registered_name)] ([id_card.assignment])"
+	builtin_bodycamera.c_tag = "-Body Camera: [(id_card.registered_name)] ([id_card.get_assignment_name()])"
 	playsound(loc, 'sound/machines/beep.ogg', get_clamped_volume(), TRUE, -1)
 	if(user)
 		user.balloon_alert(user, "bodycamera activated")

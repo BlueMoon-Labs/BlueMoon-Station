@@ -104,15 +104,15 @@
 			message_admins("[key_name_admin(holder)] has removed the cap on security officers.")
 		//Buttons for helpful stuff. This is where people land in the tgui
 		if("clear_virus")
-			var/choice = input("Are you sure you want to cure all disease?") in list("Yes", "Cancel")
-			if(choice == "Yes")
+			var/choice = input("Are you sure you want to cure all disease?") in list("Да", "Отмена")
+			if(choice == "Да")
 				message_admins("[key_name_admin(holder)] has cured all diseases.")
 				for(var/thing in SSdisease.active_diseases)
 					var/datum/disease/D = thing
 					D.cure(0)
 		if("mass_rejuvenate")
-			var/choice = input("Are you sure you want to rejuvenate all players?") in list("Yes", "Cancel")
-			if(choice == "Yes")
+			var/choice = input("Are you sure you want to rejuvenate all players?") in list("Да", "Отмена")
+			if(choice == "Да")
 				message_admins("[key_name_admin(holder)] has rejuvenated all players.")
 				for(var/mob/living/M in GLOB.mob_list)
 					M.revive(full_heal = 1, admin_revive = 1)
@@ -169,15 +169,15 @@
 		if("ctfbutton")
 			toggle_all_ctf(holder)
 		if("tdomereset")
-			var/delete_mobs = alert("Clear all mobs?","Confirm","Да","Нет","Cancel")
-			if(delete_mobs == "Cancel")
+			var/delete_mobs = alert("Clear all mobs?","Confirm","Да","Нет","Отмена")
+			if(delete_mobs == "Отмена")
 				return
 
 			log_admin("[key_name(holder)] reset the thunderdome to default with delete_mobs==[delete_mobs].", 1)
 			message_admins("<span class='adminnotice'>[key_name_admin(holder)] reset the thunderdome to default with delete_mobs==[delete_mobs].</span>")
 
 			var/area/thunderdome = GLOB.areas_by_type[/area/tdome/arena]
-			if(delete_mobs == "Yes")
+			if(delete_mobs == "Да")
 				for(var/mob/living/mob in thunderdome)
 					qdel(mob) //Clear mobs
 			for(var/obj/obj in thunderdome)
@@ -402,12 +402,13 @@
 		if("aikofication")
 			if(!is_funmin)
 				return
+			var/choice = alert(usr, "Только для станции или для всех?","Подумай дважды","Для всех", "Для станции")
 			var/amount_modified = 0
 			for(var/mob/living/carbon/human/H in GLOB.player_list)
 				if(!GLOB.dna_for_copying || !istype(GLOB.dna_for_copying, /datum/dna))
 					alert(usr, "ERROR: There's nothing to copy!")
 					return
-				if(!is_station_level(H.z))
+				if(choice == "Для станции" && !is_station_level(H.z))
 					continue
 				GLOB.dna_for_copying.transfer_identity(H, TRUE)
 				H.real_name = H.dna.real_name
@@ -415,7 +416,7 @@
 				var/obj/item/card/id/W = H.wear_id?.GetID()
 				if(W)
 					W.registered_name = H.real_name
-					W.update_label(W.registered_name, W.assignment)
+					W.update_label()
 					if(worn)
 						if(istype(worn, /obj/item/pda))
 							worn.owner = W.registered_name
@@ -483,15 +484,15 @@
 
 				var/list/candidates = list()
 
-				if (prefs["offerghosts"]["value"] == "Yes")
+				if (prefs["offerghosts"]["value"] == "Да")
 					candidates = pollGhostCandidates(replacetext(prefs["ghostpoll"]["value"], "%TYPE%", initial(pathToSpawn.name)), ROLE_TRAITOR)
 
-				if (prefs["playersonly"]["value"] == "Yes" && length(candidates) < prefs["minplayers"]["value"])
+				if (prefs["playersonly"]["value"] == "Да" && length(candidates) < prefs["minplayers"]["value"])
 					message_admins("Not enough players signed up to create a portal storm, the minimum was [prefs["minplayers"]["value"]] and the number of signups [length(candidates)]")
 					return
 
-				if (prefs["announce_players"]["value"] == "Yes")
-					portalAnnounce(prefs["announcement"]["value"], (prefs["playlightning"]["value"] == "Yes" ? TRUE : FALSE))
+				if (prefs["announce_players"]["value"] == "Да")
+					portalAnnounce(prefs["announcement"]["value"], (prefs["playlightning"]["value"] == "Да" ? TRUE : FALSE))
 
 				var/mutable_appearance/storm = mutable_appearance('icons/obj/tesla_engine/energy_ball.dmi', "energy_ball_fast", FLY_LAYER)
 				storm.color = prefs["color"]["value"]
@@ -509,7 +510,7 @@
 						for (var/j in 1 to min(prefs["amount"]["value"], length(candidates)))
 							ghostcandidates += pick_n_take(candidates)
 							addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(doPortalSpawn), get_random_station_turf(), pathToSpawn, length(ghostcandidates), storm, ghostcandidates, outfit), i*prefs["delay"]["value"])
-					else if (prefs["playersonly"]["value"] != "Yes")
+					else if (prefs["playersonly"]["value"] != "Да")
 						addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(doPortalSpawn), get_random_station_turf(), pathToSpawn, prefs["amount"]["value"], storm, null, outfit), i*prefs["delay"]["value"])
 		if("changebombcap")
 			if(!is_funmin)
@@ -581,13 +582,13 @@
 		if("anime")
 			if(!is_funmin)
 				return
-			var/animetype = alert("Would you like to have the clothes be changed?",,"Да","Нет","Cancel")
+			var/animetype = alert("Would you like to have the clothes be changed?",,"Да","Нет","Отмена")
 
 			var/droptype
-			if(animetype =="Yes")
-				droptype = alert("Make the uniforms Nodrop?",,"Да","Нет","Cancel")
+			if(animetype =="Да")
+				droptype = alert("Make the uniforms Nodrop?",,"Да","Нет","Отмена")
 
-			if(animetype == "Cancel" || droptype == "Cancel")
+			if(animetype == "Отмена" || droptype == "Отмена")
 				return
 			SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Chinese Cartoons"))
 			message_admins("[key_name_admin(holder)] made everything kawaii.")
@@ -607,14 +608,14 @@
 					var/newname = "[forename]-[pick(honorifics["[H.gender]"])]"
 					H.fully_replace_character_name(H.real_name,newname)
 					H.update_mutant_bodyparts()
-					if(animetype == "Yes")
+					if(animetype == "Да")
 						var/seifuku = pick(typesof(/obj/item/clothing/under/costume/schoolgirl))
 						var/obj/item/clothing/under/costume/schoolgirl/I = new seifuku
 						var/olduniform = H.w_uniform
 						H.temporarilyRemoveItemFromInventory(H.w_uniform, TRUE, FALSE)
 						H.equip_to_slot_or_del(I, ITEM_SLOT_ICLOTHING)
 						qdel(olduniform)
-						if(droptype == "Yes")
+						if(droptype == "Да")
 							ADD_TRAIT(I, TRAIT_NODROP, ADMIN_TRAIT)
 				else
 					to_chat(H, "<span class='warning'>You're not kawaii enough for this!</span>", confidential = TRUE)
@@ -650,13 +651,13 @@
 	if(E)
 		E.processing = FALSE
 		if(E.announce_when>0)
-			switch(alert(holder, "Would you like to alert the crew?", "Alert", "Yes", "No", "Cancel"))
-				if("Yes")
+			switch(alert(holder, "Would you like to alert the crew?", "Alert", "Да", "Нет", "Отмена"))
+				if("Да")
 					E.announce_chance = 100
-				if("Cancel")
+				if("Отмена")
 					E.kill()
 					return
-				if("No")
+				if("Нет")
 					E.announce_chance = 0
 		E.processing = TRUE
 	if(holder)

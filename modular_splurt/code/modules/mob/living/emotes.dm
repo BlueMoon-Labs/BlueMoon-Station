@@ -1687,3 +1687,13 @@ To add randomization to your emote, copy and paste this line of code:
 	emote_type = EMOTE_AUDIBLE
 	sound = 'modular_splurt/sound/voice/malaysia.ogg'
 	emote_cooldown = 2 SECONDS
+
+/datum/emote/sound/human/fur_den_kaiser
+	name = "Fur Den Kaiser"
+	key = "fur_den_kaiser"
+	key_third_person = "fur_den_kaiser"
+	message = "воодушевлённо выкрикивает Für den Kaiser!"
+	message_mime = "безмолвно выкрикивает Für den Kaiser!"
+	emote_type = EMOTE_AUDIBLE
+	sound = 'modular_splurt/sound/voice/fur_den_kaiser.ogg'
+	emote_cooldown = 2 SECONDS

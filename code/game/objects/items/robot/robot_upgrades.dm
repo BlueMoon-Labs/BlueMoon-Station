@@ -222,7 +222,7 @@
 	for(D in R.module)
 		R.module.modules.Swap(DD_index, D_index)
 		R.module.basic_modules.Swap(DD_index, D_index)
-	R.module.remove_module(DD, TRUE)
+		R.module.remove_module(DD, TRUE)
 
 /obj/item/borg/upgrade/advcutter
 	name = "mining cyborg advanced plasma cutter"
@@ -356,7 +356,7 @@
 	for(oldbag in R.module)
 		R.module.modules.Swap(bsbag_index, oldbag_index)
 		R.module.basic_modules.Swap(bsbag_index, oldbag_index)
-	R.module.remove_module(bsbag, TRUE)
+		R.module.remove_module(bsbag, TRUE)
 
 /obj/item/borg/upgrade/amop
 	name = "janitor cyborg advanced mop"
@@ -415,7 +415,7 @@
 	for(oldmop in R.module)
 		R.module.modules.Swap(advmop_index, oldmop_index)
 		R.module.basic_modules.Swap(advmop_index, oldmop_index)
-	R.module.remove_module(advmop, TRUE)
+		R.module.remove_module(advmop, TRUE)
 
 /obj/item/borg/upgrade/syndicate
 	name = "illegal equipment module"
@@ -715,7 +715,7 @@
 	for(AHBasic in R.module)
 		R.module.modules.Swap(AHAdv_index, AHBasic_index)
 		R.module.basic_modules.Swap(AHAdv_index, AHBasic_index)
-	R.module.remove_module(AHAdv, TRUE)
+		R.module.remove_module(AHAdv, TRUE)
 
 /obj/item/borg/upgrade/ai
 	name = "B.O.R.I.S. module"

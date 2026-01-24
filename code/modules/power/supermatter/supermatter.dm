@@ -126,7 +126,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	var/damage_penalty_point = 550
 
 	///A scaling value that affects the severity of explosions.
-	var/explosion_power = 50
+	var/explosion_power = 35
 	///Time in 1/10th of seconds since the last sent warning
 	var/lastwarning = 0
 	///Refered to as eer on the moniter. This value effects gas output, heat, damage, and radiation.
@@ -994,7 +994,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	icon_state = "sm_shard"
 	anchored = FALSE
 	gasefficency = 0.125
-	explosion_power = 25
+	explosion_power = 12
 	layer = ABOVE_MOB_LAYER
 	moveable = TRUE
 

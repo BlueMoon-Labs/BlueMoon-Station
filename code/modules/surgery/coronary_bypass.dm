@@ -45,6 +45,7 @@
 	return TRUE
 
 /datum/surgery_step/incise_heart/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	if(ishuman(target))
 		var/mob/living/carbon/human/H = target
 		display_results(user, target, span_warning("Вы облажались, прорезав сердце слишком глубоко!"),
@@ -84,6 +85,7 @@
 		display_results(user, target, span_warning("Вы допустили ошибку при формировании шунта и он оторвался, вместе с кусочком сердца!"),
 			span_warning("[user] ошибается, вызывая фонтан крови, вырвавшийся из груди [H]!"),
 			span_warning("[user] ошибается, вызывая фонтан крови, вырвавшийся из груди [H]!"))
+		..()
 		H.adjustOrganLoss(ORGAN_SLOT_HEART, 20)
 		var/obj/item/bodypart/BP = H.get_bodypart(target_zone)
 		BP.generic_bleedstacks += 30

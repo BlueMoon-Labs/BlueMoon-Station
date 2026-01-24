@@ -3255,6 +3255,16 @@
 	},
 /turf/open/floor/plasteel/stairs/medium,
 /area/science)
+"aBX" = (
+/obj/effect/turf_decal/loading_area{
+	color = "#55391A";
+	dir = 8;
+	icon_state = "siding_wood_line";
+	name = "wood"
+	},
+/obj/structure/sign/painting/large/library_private/directional/south,
+/turf/open/floor/carpet,
+/area/service/library)
 "aCe" = (
 /obj/structure/flora/ausbushes/ppflowers,
 /turf/open/floor/grass/grass3,
@@ -30597,6 +30607,8 @@
 	name = "scrubbers pipe"
 	},
 /obj/structure/window/reinforced,
+/obj/item/camera_film,
+/obj/item/camera_film,
 /turf/open/floor/carpet,
 /area/service/library)
 "eyq" = (
@@ -36915,6 +36927,9 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer3{
 	dir = 4;
 	name = "air vent"
+	},
+/obj/structure/sign/painting/library_private{
+	pixel_x = -32
 	},
 /turf/open/floor/wood{
 	icon_state = "wood_parquet";
@@ -133400,6 +133415,13 @@
 	},
 /turf/open/floor/plating,
 /area/commons/dorms)
+"tqo" = (
+/obj/structure/sign/painting/large/library/directional/south,
+/turf/open/floor/wood{
+	icon_state = "wood_parquet";
+	name = "parquet"
+	},
+/area/service/library)
 "tqs" = (
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
@@ -139164,6 +139186,7 @@
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/structure/sign/painting/large/library/directional/west,
 /turf/open/floor/wood,
 /area/service/library)
 "ugE" = (
@@ -162518,10 +162541,10 @@
 	},
 /area/science/robotics/lab)
 "xDf" = (
-/obj/structure/table/wood,
-/obj/item/camera_film,
-/obj/item/camera_film,
 /obj/structure/window/reinforced,
+/obj/machinery/modular_computer/console/preset/curator{
+	dir = 1
+	},
 /turf/open/floor/carpet,
 /area/service/library)
 "xDp" = (
@@ -166708,7 +166731,7 @@
 	dir = 1
 	},
 /obj/item/reagent_containers/food/drinks/bottle/vodka/badminka,
-/obj/structure/sign/poster/official/no_erp{
+/obj/structure/sign/poster/contraband/yes_erp{
 	pixel_y = 32
 	},
 /turf/open/floor/plasteel/showroomfloor,
@@ -257644,7 +257667,7 @@ aAa
 eZg
 emv
 vZA
-cPK
+tqo
 eFA
 wEM
 oXU
@@ -260721,7 +260744,7 @@ jrS
 eFA
 nbG
 rob
-rob
+aBX
 eFA
 ruW
 cDE

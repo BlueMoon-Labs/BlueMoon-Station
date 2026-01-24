@@ -1,4 +1,4 @@
-/datum/reagent/consumable/semen/reaction_mob(mob/living/M, method, reac_volume) //splashing or ingesting
+/datum/reagent/consumable/semen/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart) //splashing or ingesting
 	. = ..()
 	if(!.)
 		return
@@ -28,7 +28,7 @@
 			to_chat(M, span_notice(pick("Mmmm~ boy's milk feels so good inside me~", "Ahh~ boy's milk~")))
 			M.emote("purr")
 
-/datum/reagent/consumable/ethanol/cum_in_a_hot_tub/semen/reaction_mob(mob/living/carbon/M)
+/datum/reagent/consumable/ethanol/cum_in_a_hot_tub/semen/reaction_mob(mob/living/carbon/M, affected_bodypart)
 	. = ..()
 	if(!.)
 		return

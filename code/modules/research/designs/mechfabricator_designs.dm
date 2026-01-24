@@ -858,16 +858,6 @@
 	construction_time = 120
 	category = list("Cyborg Upgrade Modules")
 
-/datum/design/borg_upgrade_broomer
-	name = "Experimental Broomer"
-	desc = "При активации позволяет толкать предметы перед собой в большой куче."
-	id = "borg_upgrade_broomer"
-	build_type = MECHFAB
-	build_path = /obj/item/borg/upgrade/broomer
-	materials = list(/datum/material/iron = 4000, /datum/material/glass = 500)
-	construction_time = 120
-	category = list("Cyborg Upgrade Modules")
-
 /datum/design/borg_upgrade_advhealth
 	name = "Cyborg Upgrade (Advance Health Scanner)"
 	id = "borg_upgrade_advhealth"

@@ -124,6 +124,8 @@
 		else
 			msg = "Your Energy Katana lands at your feet!"
 
+	jaunt.Grant(user, src)
+
 	if(msg)
 		to_chat(user, "<span class='notice'>[msg]</span>")
 
@@ -276,6 +278,8 @@
 		else
 			msg = "Your Energy Naginata lands at your feet!"
 
+	jaunt_ronin.Grant(user, src)
+
 	if(msg)
 		to_chat(user, "<span class='notice'>[msg]</span>")
 
@@ -290,9 +294,7 @@
 		else
 			user.adjustBruteLoss(rand(force/2,force))
 	if(!wielded)
-		force = rand(25, 40)
-	else
-		force = 40
+		target.apply_damage(rand(0, 15), BRUTE)
 	..()
 
 /obj/item/energy_naginata/proc/explode()

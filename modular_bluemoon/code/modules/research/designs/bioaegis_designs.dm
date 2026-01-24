@@ -5,7 +5,7 @@
 	id = "bioaegisboard"
 	build_path = /obj/item/circuitboard/machine/protolathe/bioaegis
 	category = list("Research Machinery")
-	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
 
 //Xenomorphic organs in bio-organic printer. Cheaper since this machine is *designed* to work with flesh specifically.
 /datum/design/plasmavessel_alt
@@ -138,6 +138,7 @@
 	build_path = /obj/item/organ/heart/tier2
 	category = list("Advanced Designs")
 	materials = list (/datum/material/plasma = 30000)
+	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/lungstier2
 	name = "changed lungs"
@@ -149,6 +150,7 @@
 	build_path = /obj/item/organ/lungs/tier2
 	category = list("Advanced Designs")
 	materials = list (/datum/material/plasma = 30000)
+	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/livertier2
 	name = "changed liver"
@@ -160,6 +162,7 @@
 	build_path = /obj/item/organ/liver/tier2
 	category = list("Advanced Designs")
 	materials = list (/datum/material/plasma = 30000)
+	min_security_level = SEC_LEVEL_BLUE
 
 //TIER3
 /datum/design/livertier3
@@ -172,7 +175,7 @@
 	build_path = /obj/item/organ/liver/tier3
 	category = list("Experimental Designs")
 	materials = list (/datum/material/plasma = 30000)
-	min_security_level = SEC_LEVEL_BLUE
+	min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/lungstier3
 	name = "exalted lungs"
@@ -184,7 +187,7 @@
 	build_path = /obj/item/organ/lungs/tier3
 	category = list("Experimental Designs")
 	materials = list (/datum/material/plasma = 30000)
-	min_security_level = SEC_LEVEL_BLUE
+	min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/hearttier3
 	name = "exalted heart"
@@ -196,7 +199,7 @@
 	build_path = /obj/item/organ/heart/tier3
 	category = list("Experimental Designs")
 	materials = list (/datum/material/plasma = 30000)
-	min_security_level = SEC_LEVEL_BLUE
+	min_security_level = SEC_LEVEL_AMBER
 
 //SPECIALIZED
 /datum/design/darkveilorgan
@@ -266,4 +269,15 @@
 	build_path = /obj/item/organ/neuralderanger
 	category = list("Dangerous Designs")
 	min_security_level = SEC_LEVEL_RED
+	materials = list (/datum/material/plasma = 15000)
+
+/datum/design/vocalbabylon
+	name = "Babylon's Vocal Cords"
+	id = "babyloncords"
+	desc = "A design for biological organ."
+	build_type = BIOAEGIS
+	construction_time = 150
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/advbionanites = 50)
+	build_path = /obj/item/organ/vocal_cords/babyloncords
+	category = list("Species-specific Designs")
 	materials = list (/datum/material/plasma = 15000)

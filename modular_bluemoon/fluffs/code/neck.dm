@@ -50,3 +50,26 @@
 /obj/item/clothing/neck/cloak/cybersun/civil
 	desc = "Souvenir version without protection of cloack worn by High-Ranking Cybersun Personnel, the cybersun shall rise!"
 	armor = null
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/neck/petcollar/longtie
+	name = "Long tie"
+	desc = "Some long tie"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/neck.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
+	icon_state = "longtie"
+	item_state  = "longtie"
+	poly_states = 2
+	poly_colors = list("#c71b00")
+	alternate_worn_layer = SUIT_LAYER
+
+/obj/item/clothing/neck/cloak/gestapo
+	name = "Truth Enforcer Cloak"
+	desc = "Great!"
+	icon_state = "gestapo_cloak"
+	item_state = "gestapo_cloak"
+	icon = 'modular_bluemoon/icons/obj/clothing/neck.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/neck.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'

@@ -1,7 +1,3 @@
-#define DEFAULT_SLOT_AMT	2
-#define HANDS_SLOT_AMT		2
-#define BACKPACK_SLOT_AMT	4
-
 GLOBAL_LIST_EMPTY(preferences_datums)
 
 /datum/preferences
@@ -118,6 +114,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/uses_glasses_colour = 0
 	var/surgical_disable_radial = FALSE 		// BLUEMOON ADD
 
+	// BLUEMOON ADD START || Colormate presets
+	// Листы состоят из ключа, типа предмета и листа с именами престов и настройками цвета
+	var/list/color_presets_tint = list() // Пример: list(/obj/item/clothing = list("Стандарт" = "#ffffff"))
+	var/list/color_presets_hsv = list() // Пример: list(/obj/item/clothing = list("Стандарт" = list("hue" = 0, "sat" = 1, "val" = 1)))
+	var/list/color_presets_matrix = list() // Пример: list(/obj/item/clothing = list("Стандарт" = list(1,0,0,0,1,0,0,0,1,0,0,0)))
+	// BLUEMOON ADD END
+
 	//character preferences
 	var/real_name							//our character's name
 	var/nameless = FALSE					//whether or not our character is nameless
@@ -131,6 +134,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/vorepref = "Ask"
 	var/mobsexpref = "No" 					//Added by Gardelin0 - Sex(mostly non-con) with hostile mobs(tentacles)
 	var/hornyantagspref = "No" 				//Added by Gardelin0 - Interactions(mostly non-con) with horny antags(Qareen)
+	var/tattoopref = "Ask"					//BLUEMOON ADD - Tattoo consent preference
 	var/extremepref = "No" 					//This is for extreme shit, maybe even literal shit, better to keep it on no by default
 	var/extremeharm = "No" 					//If "extreme content" is enabled, this option serves as a toggle for the related interactions to cause damage or not
 	var/see_chat_emotes = TRUE
@@ -371,7 +375,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	///loadout stuff
 	var/gear_points = 20 // Больше очков - сочнее персонажи.
 	var/list/gear_categories
-	var/list/loadout_data
+	var/list/loadout_data = list()
 	var/list/unlockable_loadout_data = list()
 	var/loadout_slot = 1 //goes from 1 to MAXIMUM_LOADOUT_SAVES
 	var/gear_category
@@ -429,6 +433,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/silicon_lawset
 
 	var/preferred_chaos_level = 2
+	var/auto_capitalize_enabled = FALSE
 
 /datum/preferences/New(client/C)
 	parent = C
@@ -567,7 +572,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			dat += "</td>"
 			if(character_settings_tab == LOADOUT_CHAR_TAB) //if loadout
 				//calculate your gear points from the chosen item
-				gear_points = CONFIG_GET(number/initial_gear_points)
+				gear_points = CONFIG_GET(number/initial_gear_points) + (IS_CKEY_DONATOR_GROUP(user.ckey, DONATOR_GROUP_TIER_1) ? CONFIG_GET(number/subscriber_extra_gear_points) : 0) + (IS_CKEY_DONATOR_GROUP(user.ckey, DONATOR_GROUP_TIER_2) ? CONFIG_GET(number/sponsor_extra_gear_points) : 0)
 				var/list/chosen_gear = loadout_data["SAVE_[loadout_slot]"]
 				if(islist(chosen_gear))
 					loadout_errors = 0
@@ -1009,7 +1014,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "ERP : <a href='?_src_=prefs;preference=erp_pref'>[erppref]</a><br>"
 					dat += "Non-Con : <a href='?_src_=prefs;preference=noncon_pref'>[nonconpref]</a><br>"
 					dat += "Vore : <a href='?_src_=prefs;preference=vore_pref'>[vorepref]</a><br>"
-					dat += "Mob-Sex : <a href='?_src_=prefs;preference=mobsex_pref'>[mobsexpref]</a><br>"
+					dat += "Mob Non-Con Sex : <a href='?_src_=prefs;preference=mobsex_pref'>[mobsexpref]</a><br>"
 					dat += "Horny Antags : <a href='?_src_=prefs;preference=hornyantags_pref'>[hornyantagspref]</a><br>"
 
 					dat += "<h2>Lewd preferences</h2>"
@@ -1061,29 +1066,32 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "<b>Penis Visibility:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=cock_visibility;task=input'>[features["cock_visibility"]]</a>"
 							dat += "<b>Penis Always Accessible:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=cock_accessible'>[features["cock_accessible"] ? "Yes" : "No"]</a>"
 							dat += "<b>Toys and Egg Stuffing:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=cock_stuffing'>[features["cock_stuffing"] == TRUE ? "Yes" : "No"]</a>" //SPLURT Edit
-							dat += "<b>Has Testicles:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_balls'>[features["has_balls"] == TRUE ? "Yes" : "No"]</a>"
-							if(features["has_balls"])
-								if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
-									dat += "<b>Testicles Color:</b></a><BR>"
-									dat += "<span style='border: 1px solid #161616; background-color: [SKINTONE2HEX(skin_tone)];'><font color='[color_hex2num(SKINTONE2HEX(skin_tone)) < 200 ? "FFFFFF" : "000000"]'>[SKINTONE2HEX(skin_tone)]</font></span>(Skin tone overriding)<br>"
-								else
-									dat += "<b>Testicles Color:</b></a><BR>"
-									dat += "<span style='border: 1px solid #161616; background-color: #[features["balls_color"]];'><font color='[color_hex2num(features["balls_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["balls_color"]]</font></span> <a href='?_src_=prefs;preference=balls_color;task=input'>Change</a><br>"
-								dat += "<b>Testicles Shape:</b> <a style='display:block;width:120px' href='?_src_=prefs;preference=balls_shape;task=input'>[features["balls_shape"]]</a>"
-								dat += "<b>Testicles Visibility:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=balls_visibility;task=input'>[features["balls_visibility"]]</a>"
-								dat += "<b>Testicles Always Accessible:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=balls_accessible'>[features["balls_accessible"] ? "Yes" : "No"]</a>"
 
-								//SPLURT Edit
-								dat += "<b>Toys and Egg Stuffing:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_stuffing'>[features["balls_stuffing"] == TRUE ? "Yes" : "No"]</a>"
-								dat += "<b>Max Size:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_max_size;task=input'>[features["balls_max_size"] ? features["balls_max_size"] : "Disabled"]</a>"
-								dat += "<b>Min Size:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_min_size;task=input'>[features["balls_min_size"] ? features["balls_min_size"] : "Disabled"]</a>"
-								dat += "<b>Produces:</b>"
-								var/datum/reagent/balls_fluid = find_reagent_object_from_type(features["balls_fluid"])
-								if(balls_fluid && (balls_fluid in GLOB.genital_fluids_list))
-									dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>[balls_fluid.name]</a>"
-								else
-									dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>Nothing?</a>"
-								//SPLURT Edit end
+						dat += "<h3>Testicles</h3>"
+						dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=has_balls'>[features["has_balls"] == TRUE ? "Yes" : "No"]</a>"
+						if(features["has_balls"])
+							if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
+								dat += "<b>Testicles Color:</b></a><BR>"
+								dat += "<span style='border: 1px solid #161616; background-color: [SKINTONE2HEX(skin_tone)];'><font color='[color_hex2num(SKINTONE2HEX(skin_tone)) < 200 ? "FFFFFF" : "000000"]'>[SKINTONE2HEX(skin_tone)]</font></span>(Skin tone overriding)<br>"
+							else
+								dat += "<b>Testicles Color:</b></a><BR>"
+								dat += "<span style='border: 1px solid #161616; background-color: #[features["balls_color"]];'><font color='[color_hex2num(features["balls_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["balls_color"]]</font></span> <a href='?_src_=prefs;preference=balls_color;task=input'>Change</a><br>"
+							dat += "<b>Testicles Shape:</b> <a style='display:block;width:120px' href='?_src_=prefs;preference=balls_shape;task=input'>[features["balls_shape"]]</a>"
+							dat += "<b>Testicles Size:</b> <a style='display:block;width:120px' href='?_src_=prefs;preference=balls_size;task=input'>[features["balls_size"]]</a>"
+							dat += "<b>Testicles Visibility:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=balls_visibility;task=input'>[features["balls_visibility"]]</a>"
+							dat += "<b>Testicles Always Accessible:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=balls_accessible'>[features["balls_accessible"] ? "Yes" : "No"]</a>"
+
+							//SPLURT Edit
+							dat += "<b>Toys and Egg Stuffing:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_stuffing'>[features["balls_stuffing"] == TRUE ? "Yes" : "No"]</a>"
+							dat += "<b>Max Size:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_max_size;task=input'>[features["balls_max_size"] ? features["balls_max_size"] : "Disabled"]</a>"
+							dat += "<b>Min Size:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_min_size;task=input'>[features["balls_min_size"] ? features["balls_min_size"] : "Disabled"]</a>"
+							dat += "<b>Produces:</b>"
+							var/datum/reagent/balls_fluid = find_reagent_object_from_type(features["balls_fluid"])
+							if(balls_fluid && (balls_fluid in GLOB.genital_fluids_list))
+								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>[balls_fluid.name]</a>"
+							else
+								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>Nothing?</a>"
+							//SPLURT Edit end
 
 						dat += "</td>"
 						dat += APPEARANCE_CATEGORY_COLUMN
@@ -1204,6 +1212,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "</tr></table>"
 				//Markings
 				if(MARKINGS_CHAR_TAB)
+					// BLUEMOON ADD - Tattoo Manager Button
+					dat += "<center>"
+					dat += "<h3>Татуировки персонажа</h3>"
+					dat += "<a href='?_src_=prefs;preference=open_tattoo_manager'>Просмотр и удаление татуировок</a>"
+					dat += "</center>"
+					dat += "<hr>"
+					// BLUEMOON ADD END
 					var/iterated_markings = 0
 					var/total_pages = 0
 					// rp marking selection
@@ -1416,8 +1431,19 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<td width=80%><font size=2><b>Description</b></font></td></tr>"
 								dat += "</center>"
 
-								for(var/name in GLOB.loadout_items[gear_category][gear_subcategory])
-									var/datum/gear/gear = GLOB.loadout_items[gear_category][gear_subcategory][name]
+								// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory has no items
+								var/list/category_items = GLOB.loadout_items[gear_category]
+								var/list/subcategory_items = category_items ? category_items[gear_subcategory] : null
+								if(!length(subcategory_items))
+									// Only log if category SHOULD exist (defined in loadout_categories) but has no items (initialization failure)
+									if(GLOB.loadout_categories[gear_category] && (gear_subcategory in GLOB.loadout_categories[gear_category]))
+										stack_trace("Loadout init failure: Category '[gear_category]'/subcategory '[gear_subcategory]' defined but has no items (user: [user?.ckey])")
+									dat += "<tr><td colspan=4><center><i style=\"color: grey;\">No items available in this category.</i></center></td></tr>"
+								// BLUEMOON FIX END
+								for(var/name in subcategory_items)
+									var/datum/gear/gear = subcategory_items[name]
+									if(!gear)
+										continue
 									var/donoritem = gear.donoritem
 									if(donoritem && !gear.donator_ckey_check(user.ckey))
 										continue
@@ -1456,7 +1482,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 											extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_addheirloom=1;loadout_gear_name=[html_encode(gear.name)];'>Select as Heirloom</a><BR>"
 										if(ispath(gear.path, /obj/item/clothing/neck/petcollar)) //"name tag" sounds better for me, but in petcollar code "tagname" is used so let it be.
 											extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_tagname=1;loadout_gear_name=[html_encode(gear.name)];'>Name tag</a> [loadout_item["loadout_custom_tagname"] ? loadout_item["loadout_custom_tagname"] : "Name tag is visible for everyone looking at wearer."]"
-									  // BLUEMOON ADD END
+								  // BLUEMOON ADD END
+									else if(!is_loadout_slot_available(gear.category))
+										class_link = "style='white-space:normal;' class='linkOff'"
 									else if((gear_points - gear.cost) < 0)
 										class_link = "style='white-space:normal;' class='linkOff'"
 									else if(donoritem)
@@ -1549,7 +1577,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>Ghost Whispers:</b> <a href='?_src_=prefs;preference=ghost_whispers'>[(chat_toggles & CHAT_GHOSTWHISPER) ? "All Speech" : "Nearest Creatures"]</a><br>"
 					dat += "<b>Ghost PDA:</b> <a href='?_src_=prefs;preference=ghost_pda'>[(chat_toggles & CHAT_GHOSTPDA) ? "All Messages" : "Nearest Creatures"]</a><br>"
 					dat += "<br>"
-					dat += "<b>Preferred Chaos Level:</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=preferred_chaos_level;task=input'>[preferred_chaos_level]</a><br>"
+					dat += "<b>Auto-Capitalize Speech:</b> <a href='?_src_=prefs;preference=auto_capitalize_enabled'>[(auto_capitalize_enabled ? "Enabled" : "Disabled")]</a><br>"
+					dat += "<b>Preferred Chaos Level:</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=preferred_chaos_level'>[preferred_chaos_level]</a><br>"
 
 					dat += "</td>"
 
@@ -1741,6 +1770,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<table><tr><td width='340px' height='300px' valign='top'>"
 					dat += "<h2>Fetish content prefs</h2>"
 					dat += "<b>Allow Lewd Verbs:</b> <a href='?_src_=prefs;preference=verb_consent'>[(toggles & VERB_CONSENT) ? "Yes":"No"]</a><br>" // Skyrat - ERP Mechanic Addition
+					dat += "<b>Allow Lewd Ranged Verbs:</b> <a href='?_src_=prefs;preference=ranged_verb_consent'>[(toggles & RANGED_VERBS_CONSENT) ? "Yes":"No"]</a><br>" // BLUEMOON ADD интеракты с расстояния
 					dat += "<b>Lewd Verb Sounds:</b> <a href='?_src_=prefs;preference=lewd_verb_sounds'>[(toggles & LEWD_VERB_SOUNDS) ? "Yes":"No"]</a><br>" // Sandstorm - ERP Mechanic Addition
 					dat += "<b>Arousal:</b><a href='?_src_=prefs;preference=arousable'>[arousable == TRUE ? "Enabled" : "Disabled"]</a><BR>"
 					dat += "<b>Allow Knotting:</b><a href='?_src_=prefs;preference=sexknotting'>[sexknotting == TRUE ? "Enabled" : "Disabled"]</a><BR>"
@@ -1785,6 +1815,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					//END OF SANDSTORM EDIT
 					dat += "<b>Automatic Wagging:</b> <a href='?_src_=prefs;preference=auto_wag'>[(cit_toggles & NO_AUTO_WAG) ? "Disabled" : "Enabled"]</a><br>"
 					dat += "<b>Dance Near Disco Ball:</b> <a href='?_src_=prefs;preference=disco_dance'>[(cit_toggles & NO_DISCO_DANCE) ? "Disabled" : "Enabled"]</a><br>"
+					dat += "<b>Tattoos from others:</b> <a href='?_src_=prefs;preference=tattoo_pref'>[tattoopref]</a><br>" // BLUEMOON ADD - tattoo consent
 					dat += "<span style='border-radius: 2px;border:1px dotted white;cursor:help;' title='If anyone cums a blacklisted fluid into you, it uses the default fluid for that genital.'>?</span> "
 					dat += "<b><a href='?_src_=prefs;preference=gfluid_black;task=input'>Genital Fluid Blacklist</a></b><br>"
 					if(gfluid_blacklist?.len)
@@ -3366,6 +3397,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(new_shape)
 						features["balls_shape"] = new_shape
 
+				if("balls_size")
+					var/new_size = tgui_input_number(user, "Testicles Size:\n([BALLS_SIZE_MIN]-[BALLS_SIZE_MAX])", "Character Preference", features["balls_size"], BALLS_SIZE_MAX, BALLS_SIZE_MIN)
+					if(new_size)
+						features["balls_size"] = clamp(round(new_size), BALLS_SIZE_MIN, BALLS_SIZE_MAX)
+
 				if("balls_visibility")
 					var/n_vis = tgui_input_list(user, "Testicles Visibility", "Character Preference", CONFIG_GET(str_list/safe_visibility_toggles))
 					if(n_vis)
@@ -3700,17 +3736,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/desiredlength = input(user, "Choose the max character length of shown Runechat messages. Valid range is 1 to [CHAT_MESSAGE_MAX_LENGTH] (default: [initial(max_chat_length)]))", "Character Preference", max_chat_length)  as null|num
 					if (!isnull(desiredlength))
 						max_chat_length = clamp(desiredlength, 1, CHAT_MESSAGE_MAX_LENGTH)
-				if ("preferred_chaos_level")
-					var/chaos_level = tgui_input_number(user, "Выбирайте число в зависимости от своих предпочтений \
-										к стилю игры. От предпочтений к Хаосу зависит режим Динамика, \
-										который будет выбран. \
-										0. - ничего не ожидайте от меня. Я убегу при первой же возможности. \
-										1. - предпочитаю спокойную игру, но могу ввязаться в неприятности, если потребуется. \
-										2. - не против Хаоса и неожиданных ситуаций, готов рисковать ради интереса. \
-										3. - СЛАВА ХАОСУ НЕДЕЛИМОМУ. Готов к любым безумствам и опасностям.", "Предпочитаемый Уровень Хаоса", 2, 3, 0)
-					if(preferred_chaos_level)
-						preferred_chaos_level = chaos_level
-
 				//Sandstorm changes begin
 				if("personal_chat_color")
 					var/new_chat_color = input(user, "Choose your character's runechat color:", "Character Preference",personal_chat_color) as color|null
@@ -4106,6 +4131,16 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							erppref = "No"
 						if("No")
 							erppref = "Yes"
+				// BLUEMOON EDIT - tattoo consent
+				if("tattoo_pref")
+					switch(tattoopref)
+						if("Yes")
+							tattoopref = "Ask"
+						if("Ask")
+							tattoopref = "No"
+						if("No")
+							tattoopref = "Yes"
+				// BLUEMOON EDIT END
 				if("noncon_pref")
 					var/nonconpref_old = nonconpref
 					switch(nonconpref)
@@ -4348,6 +4383,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("verb_consent") // Skyrat - ERP Mechanic Addition
 					toggles ^= VERB_CONSENT // Skyrat - ERP Mechanic Addition
 
+				if("ranged_verb_consent") // BLUEMOON ADD интеракты с расстояния
+					toggles ^= RANGED_VERBS_CONSENT // BLUEMOON ADD END
+
 				if("lewd_verb_sounds") // Skyrat - ERP Mechanic Addition
 					toggles ^= LEWD_VERB_SOUNDS // Skyrat - ERP Mechanic Addition
 
@@ -4482,6 +4520,23 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("hud_toggle_flash")
 					hud_toggle_flash = !hud_toggle_flash
+
+				if ("preferred_chaos_level")
+					var/chaos_level = tgui_input_number(user, \
+										"Выбирайте число в зависимости от своих предпочтений \
+										к стилю игры.\n От предпочтений к Хаосу зависит режим Динамика, \
+										который будет выбран. \n\
+										0. - ничего не ожидайте от меня. Я убегу при первой же возможности. \n\
+										1. - предпочитаю спокойную игру, но могу ввязаться в неприятности, если потребуется. \n\
+										2. - не против Хаоса и неожиданных ситуаций, готов рисковать ради интереса. \n\
+										3. - СЛАВА ХАОСУ НЕДЕЛИМОМУ. Готов к любым безумствам и опасностям.",\
+										"Предпочитаемый Уровень Хаоса", 2, 3, 0, round_value = TRUE)
+
+					if(isnum(chaos_level))
+						preferred_chaos_level = chaos_level
+
+				if("auto_capitalize_enabled")
+					auto_capitalize_enabled = !auto_capitalize_enabled
 
 				if("barkpreview")
 					if(SSticker.current_state == GAME_STATE_STARTUP) //Timers don't tick at all during game startup, so let's just give an error message
@@ -4670,11 +4725,21 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			save_preferences()
 		if(href_list["select_category"])
 			gear_category = html_decode(href_list["select_category"])
-			gear_subcategory = GLOB.loadout_categories[gear_category][1]
+			// BLUEMOON FIX - Add null check to prevent runtime when category doesn't exist
+			var/list/subcategories = GLOB.loadout_categories[gear_category]
+			if(length(subcategories))
+				gear_subcategory = subcategories[1]
+			else
+				stack_trace("Loadout topic: Invalid category '[gear_category]' selected (user: [user?.ckey])")
+				gear_subcategory = LOADOUT_SUBCATEGORY_NONE
 		if(href_list["select_subcategory"])
 			gear_subcategory = html_decode(href_list["select_subcategory"])
 		if(href_list["toggle_gear_path"])
 			var/name = html_decode(href_list["toggle_gear_path"])
+			// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory doesn't exist
+			if(!GLOB.loadout_items[gear_category] || !GLOB.loadout_items[gear_category][gear_subcategory])
+				stack_trace("Loadout toggle: Missing category '[gear_category]'/subcategory '[gear_subcategory]' for item '[name]' (user: [user?.ckey])")
+				return
 			var/datum/gear/G = GLOB.loadout_items[gear_category][gear_subcategory][name]
 			if(!G)
 				return
@@ -4720,6 +4785,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 			//if the gear doesn't exist, or they don't have it, ignore the request
 			var/name = html_decode(href_list["loadout_gear_name"])
+			// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory doesn't exist
+			if(!GLOB.loadout_items[gear_category] || !GLOB.loadout_items[gear_category][gear_subcategory])
+				stack_trace("Loadout customize: Missing category '[gear_category]'/subcategory '[gear_subcategory]' for item '[name]' (user: [user?.ckey])")
+				return
 			var/datum/gear/G = GLOB.loadout_items[gear_category][gear_subcategory][name]
 			if(!G)
 				return
@@ -4777,12 +4846,27 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					user_gear[LOADOUT_CUSTOM_DESCRIPTION] = new_description
 			// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
 			if(href_list["loadout_addheirloom"])
+				// Выбран ли предмет среди категории неприемлемых для реликвии?
+				var/typepath = user_gear[LOADOUT_ITEM]
+				// FIX: Проверяем существование типа перед созданием
+				var/resolved_path = text2path(typepath)
+				if(!ispath(resolved_path, /datum/gear))
+					to_chat(user, "<font color='red'>Предмет лоадаута <b>[typepath]</b> повреждён. Удалите его из лоадаута через вкладку Errors.</font>")
+					ShowChoices(user)
+					return TRUE
+				var/forbidden = FALSE
+				var/datum/gear/temp_gear = new resolved_path()
+				if (ispath_in_list(temp_gear.path, LOADOUT_IS_DISALLOWED_HEIRLOOM))
+					forbidden = TRUE
+				qdel(temp_gear) // На всякий случай, чтобы не засирало память лишними датумами
 				// Выбран ли какой-либо другой предмет как семейная реликвия, и если да, то какой?
 				var/existing = find_gear_with_property(loadout_slot, LOADOUT_IS_HEIRLOOM, TRUE)
-				if(!existing)
+				if(!existing && !forbidden)
 					user_gear[LOADOUT_IS_HEIRLOOM] = TRUE
-				else
+				else if(existing)
 					to_chat(user, "<font color='red'>У вас уже выбрана ваша семейная реликвия!</font>")
+				else if(forbidden)
+					to_chat(user, "<font color ='red'>Это не подойдёт в качестве семейной реликвии!</font>")
 			if(href_list["loadout_removeheirloom"])
 				user_gear[LOADOUT_IS_HEIRLOOM] = FALSE
 			// BLUEMOON ADD END
@@ -4890,6 +4974,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	if (features["headshot_link2"])
 		character.dna.headshot_links.Add(features["headshot_link2"])
 	// BLUEMOON ADD START
+	character.dna.headshot_naked_links.Cut()
 	if (features["headshot_naked_link"])
 		character.dna.headshot_naked_links.Add(features["headshot_naked_link"])
 	if (features["headshot_naked_link1"])
@@ -5051,22 +5136,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	parent?.ensure_keys_set(src)
 
 /datum/preferences/proc/is_loadout_slot_available(slot)
-	var/list/L
-	LAZYINITLIST(L)
-	for(var/i in loadout_data["SAVE_[loadout_slot]"])
-		var/datum/gear/G = i[LOADOUT_ITEM]
-		var/occupied_slots = L[initial(G.category)] ? L[initial(G.category)] + 1 : 1
-		LAZYSET(L, initial(G.category), occupied_slots)
-	switch(slot)
-		if(ITEM_SLOT_BACKPACK)
-			if(L[LOADOUT_CATEGORY_BACKPACK] < BACKPACK_SLOT_AMT)
-				return TRUE
-		if(ITEM_SLOT_HANDS)
-			if(L[LOADOUT_CATEGORY_HANDS] < HANDS_SLOT_AMT)
-				return TRUE
-		else
-			if(L[slot] < DEFAULT_SLOT_AMT)
-				return TRUE
+	return TRUE // No category limits - loadout points handle balance
 
 // BLUEMOON ADD START - выбор вещей из лодаута как семейной реликвии
 ///Searching for loadout item which `property` ([LOADOUT_ITEM], [LOADOUT_COLOR], etc) equals to `value`; returns this items, or FALSE if no gear matched conditions
@@ -5114,7 +5184,3 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		return FALSE
 
 	return prefs_holder?.prefs.chat_toggles
-
-#undef DEFAULT_SLOT_AMT
-#undef HANDS_SLOT_AMT
-#undef BACKPACK_SLOT_AMT

@@ -41,7 +41,7 @@
 	required_temp = 380
 
 /datum/chemical_reaction/xenochimericprecursor
-	id = "xenochimericprecursor" 
+	id = "xenochimericprecursor"
 	results = list(/datum/reagent/consumable/organicprecursor/xenochimeric = 1)
 	required_reagents = list(/datum/reagent/aslimetoxin = 1, /datum/reagent/toxin/mutagen = 1, /datum/reagent/consumable/organicprecursor = 1) //This unlocks capabilities to print stuff, so good luck.
 	required_temp = 500

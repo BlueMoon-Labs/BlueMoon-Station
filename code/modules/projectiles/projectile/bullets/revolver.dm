@@ -137,7 +137,7 @@
 
 /obj/item/projectile/bullet/a357/dumdum
 	name = ".357 DumDum bullet" // the warcrime bullet
-	damage = 40
+	damage = 85
 	armour_penetration = -20
 	wound_bonus = 45
 	bare_wound_bonus = 45

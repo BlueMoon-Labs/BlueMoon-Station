@@ -1028,7 +1028,7 @@
 "dO" = (
 /obj/structure/table,
 /obj/machinery/light,
-/obj/item/storage/firstaid,
+/obj/item/storage/firstaid/regular,
 /turf/open/floor/plasteel,
 /area/commons/storage/primary)
 "dP" = (
@@ -2501,6 +2501,10 @@
 "vm" = (
 /turf/closed/wall/r_wall,
 /area/maintenance/aft)
+"vr" = (
+/obj/machinery/piratepad/civilian,
+/turf/open/floor/plasteel,
+/area/cargo/storage)
 "vs" = (
 /obj/machinery/door/airlock,
 /obj/structure/cable{
@@ -3749,6 +3753,12 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/miningoffice)
+"ZE" = (
+/obj/machinery/computer/piratepad_control/civilian{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/cargo/storage)
 "ZI" = (
 /obj/machinery/door/airlock/public/glass,
 /obj/structure/cable{
@@ -9601,8 +9611,8 @@ by
 cm
 es
 by
-eu
-eu
+Gc
+Go
 eG
 eP
 fY
@@ -9610,9 +9620,9 @@ eZ
 eu
 fq
 fr
+ZE
+vr
 nb
-Go
-Gc
 et
 Wu
 fO

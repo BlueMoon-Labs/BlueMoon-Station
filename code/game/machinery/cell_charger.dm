@@ -1,6 +1,6 @@
 /obj/machinery/cell_charger
 	name = "cell charger"
-	desc = "It charges power cells."
+	desc = "Заряжает батареи."
 	icon = 'icons/obj/power.dmi'
 	icon_state = "ccharger"
 	use_power = IDLE_POWER_USE
@@ -12,6 +12,32 @@
 	var/obj/item/stock_parts/cell/charging = null
 	var/charge_rate = 250
 	var/recharge_coeff = 1
+
+/obj/machinery/cell_charger/Initialize(mapload)
+	. = ..()
+	register_context()
+
+/obj/machinery/cell_charger/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	. = CONTEXTUAL_SCREENTIP_SET
+
+	if(held_item?.tool_behaviour == TOOL_SCREWDRIVER)
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, panel_open ? "Закрутить панель" : "Открутить панель")
+		return .
+	if(held_item?.tool_behaviour == TOOL_WRENCH)
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, anchored ? "Открутить" : "Прикрутить")
+		return .
+
+	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Вставить батарею")
+
+/obj/machinery/cell_charger/examine(mob/user)
+	. = ..()
+	. += "В слоте [charging ? "находится \a [charging]" : "отсутствует батарея"]."
+	if(charging)
+		. += "Текущий заряд: [round(charging.percent(), 1)]%."
+	if(in_range(user, src) || isobserver(user))
+		. += span_notice("Статус-дисплей сообщает: \n\
+		- Скорость зарядки: <b>[recharge_coeff*100]%</b>.")
 
 /obj/machinery/cell_charger/update_overlays()
 	. = ..()
@@ -27,14 +53,6 @@
 	else
 		.+= image('icons/obj/power.dmi', charging.charging_icon)
 
-/obj/machinery/cell_charger/examine(mob/user)
-	. = ..()
-	. += "There's [charging ? "\a [charging]" : "no cell"] in the charger."
-	if(charging)
-		. += "Current charge: [round(charging.percent(), 1)]%."
-	if(in_range(user, src) || isobserver(user))
-		. += span_notice("The status display reads: Charging speed: <b>[recharge_coeff*100]%</b>.")
-
 /obj/machinery/cell_charger/wrench_act(mob/living/user, obj/item/tool)
 	. = ..()
 	if(charging)
@@ -46,18 +64,18 @@
 /obj/machinery/cell_charger/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/stock_parts/cell) && !panel_open)
 		if(machine_stat & BROKEN)
-			to_chat(user, "<span class='warning'>[src] is broken!</span>")
+			to_chat(user, "<span class='warning'>Устройство сломано!</span>")
 			return
 		if(!anchored)
-			to_chat(user, span_warning("[src] isn't attached to the ground!"))
+			to_chat(user, span_warning("Устройство не прикручено к полу!"))
 			return
 		if(charging)
-			to_chat(user, span_warning("There is already a cell in the charger!"))
+			to_chat(user, span_warning("Здесь уже находится батарея!"))
 			return
 		//SKYRAT EDIT ADDITION
 		var/obj/item/stock_parts/cell/inserting_cell = W
 		if(inserting_cell.chargerate <= 0)
-			to_chat(user, span_warning("[inserting_cell] cannot be recharged!"))
+			to_chat(user, span_warning("[inserting_cell] не может заряжаться!"))
 			return
 		//SKYRAT EDIT END
 		else
@@ -65,13 +83,13 @@
 			if(!isarea(a))
 				return
 			if(a.power_equip == 0) // There's no APC in this area, don't try to cheat power!
-				to_chat(user, span_warning("[src] blinks red as you try to insert the cell!"))
+				to_chat(user, span_warning("[src] мигаети красным при попытке вставить батарею!"))
 				return
 			if(!user.transferItemToLoc(W,src))
 				return
 
 			charging = W
-			user.visible_message(span_notice("[user] inserts a cell into [src]."), span_notice("You insert a cell into [src]."))
+			user.visible_message(span_notice("[user] вставляет батарею в [src]."), span_notice("Вы вставили батарею в [src]."))
 			update_appearance()
 	else
 		if(!charging && default_deconstruction_screwdriver(user, icon_state, icon_state, W))
@@ -104,7 +122,7 @@
 	user.put_in_hands(charging)
 	charging.add_fingerprint(user)
 
-	user.visible_message(span_notice("[user] removes [charging] from [src]."), span_notice("You remove [charging] from [src]."))
+	user.visible_message(span_notice("[user] извлекает [charging] из [src]."), span_notice("Вы извлекли [charging] из [src]."))
 
 	removecell()
 
@@ -114,7 +132,7 @@
 		return
 
 	charging.forceMove(loc)
-	to_chat(user, span_notice("You telekinetically remove [charging] from [src]."))
+	to_chat(user, span_notice("Вы извлекли телекинезом [charging] из [src]."))
 
 	removecell()
 	return COMPONENT_CANCEL_ATTACK_CHAIN

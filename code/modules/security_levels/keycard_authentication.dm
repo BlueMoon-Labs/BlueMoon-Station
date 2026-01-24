@@ -4,6 +4,8 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 #define KEYCARD_EMERGENCY_MAINTENANCE_ACCESS "Emergency Maintenance Access"
 #define KEYCARD_BSA_UNLOCK "Bluespace Artillery Unlock"
 
+#define ACCESS_GRANTING_COOLDOWN (30 SECONDS)
+
 /obj/machinery/keycard_auth
 	name = "Keycard Authentication Device"
 	desc = "This device is used to trigger station functions, which require more than one ID card to authenticate."
@@ -25,6 +27,8 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	var/mob/triggerer = null
 	var/obj/item/card/id/first_id = null
 	var/waiting = 0
+
+	COOLDOWN_DECLARE(access_grant_cooldown)
 
 /obj/machinery/keycard_auth/Initialize(mapload)
 	. = ..()
@@ -91,6 +95,24 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 				sendEvent(KEYCARD_BSA_UNLOCK, ID)
 				playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
 				. = TRUE
+		if("give_janitor_access")
+			if(!COOLDOWN_FINISHED(src, access_grant_cooldown))
+				balloon_alert(usr, "on cooldown!")
+				return TRUE
+
+			var/list/region_access = list()
+			var/region = 0 // check get_region_accesses(code)
+			for(var/i in list(ACCESS_CAPTAIN, ACCESS_HOP, ACCESS_HOS, ACCESS_CMO, ACCESS_RD, ACCESS_CE, ACCESS_QM))
+				if(i in ID.access)
+					region_access += region
+					if(region == 0)
+						break
+				region++
+			if(region_access.len)
+				COOLDOWN_START(src, access_grant_cooldown, ACCESS_GRANTING_COOLDOWN)
+				SEND_GLOBAL_SIGNAL(COMSIG_ON_DEPARTMENT_ACCESS, region_access)
+				balloon_alert(usr, "key access sent")
+			return
 
 /obj/machinery/keycard_auth/proc/sendEvent(event_type, trigger_id)
 	triggerer = usr
@@ -156,6 +178,7 @@ GLOBAL_VAR_INIT(emergency_access, FALSE)
 	minor_announce("Протоколы стрельбы Блюспейс Артиллерии были [GLOB.bsa_unlock? "разблокированы" : "заблокированы"]", "Оружейные системы:")
 	SSblackbox.record_feedback("nested tally", "keycard_auths", 1, list("bluespace artillery", GLOB.bsa_unlock? "unlocked" : "locked"))
 
+#undef ACCESS_GRANTING_COOLDOWN
 #undef KEYCARD_RED_ALERT
 #undef KEYCARD_EMERGENCY_MAINTENANCE_ACCESS
 #undef KEYCARD_BSA_UNLOCK
