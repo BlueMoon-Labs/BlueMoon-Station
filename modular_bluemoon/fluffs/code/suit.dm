@@ -587,7 +587,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 	blood_overlay_type = "armor"
-	body_parts_covered = CHEST|GROIN|ARMS
+	body_parts_covered = CHEST|GROIN
 	icon_state = "poly_poncho"
 	item_state = "poly_poncho"
 	var/list/poly_colors = list("#ffffff")
@@ -607,7 +607,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 	blood_overlay_type = "armor"
-	body_parts_covered = CHEST|GROIN|ARMS
+	body_parts_covered = CHEST|GROIN
 	icon_state = "poly_armored_poncho"
 	item_state = "poly_armored_poncho"
 	var/list/poly_colors = list("#2A2A2A", "#A52F29")
