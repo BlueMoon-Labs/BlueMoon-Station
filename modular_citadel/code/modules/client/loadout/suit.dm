@@ -17,7 +17,7 @@
 	name = "Katzen Suit"
 	path = /obj/item/clothing/suit/empire_suit
 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
-	loadout_initial_colors = list("#2A2A2A","#e42929")
+	loadout_initial_colors = list("#2A2A2A","#e42929", "#e0bf28")
 
 /datum/gear/suit/ponchogreen
 	name = "Green poncho"

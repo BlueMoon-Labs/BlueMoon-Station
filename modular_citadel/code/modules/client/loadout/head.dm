@@ -11,7 +11,7 @@
 	name = "Beanie"
 	path = /obj/item/clothing/head/beanie
 
-/datum/gear/suit/empire_head
+/datum/gear/head/empire_head
 	name = "Katzen Helmet"
 	path = /obj/item/clothing/head/empire_head
 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
