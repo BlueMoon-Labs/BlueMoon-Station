@@ -33,7 +33,7 @@
 	name = "Poly Poncho"
 	path = /obj/item/clothing/suit/poly_poncho
 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
-	loadout_initial_colors = list("#2A2A2A","#e42929")
+	loadout_initial_colors = list("#2A2A2A")
 
 /datum/gear/suit/ponchored
 	name = "Red poncho"
