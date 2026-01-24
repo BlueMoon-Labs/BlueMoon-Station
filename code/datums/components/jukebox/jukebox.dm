@@ -11,7 +11,7 @@
 	var/list/queuedplaylist = list()
 	var/repeat = FALSE // BLUEMOON ADD зацикливание плейлистов
 	var/area/privatized_area = null // BLUEMOON ADD зона которая будет забрана для конкретного джукбокса
-	var/list/emagged_ckey_allowed = list("smileycom") // BLUEMOON ADD Список сикеев, которым разерешено пользоваться взломанной, ручной колонкой
+	var/list/emagged_ckey_allowed = list("SmiLeYcom") // BLUEMOON ADD Список сикеев, которым разерешено пользоваться взломанной, ручной колонкой
 	var/need_anchored = FALSE // Обзательно ли прикручивать для работы
 	COOLDOWN_DECLARE(error_message_cooldown)
 	var/const/error_message_cooldown_time = 5 SECONDS
