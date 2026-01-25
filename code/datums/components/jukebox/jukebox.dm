@@ -107,7 +107,7 @@
 
 	var/obj/box = parent
 	// Ручная, емагнутая колонка. Сkey не в списке и не антаг
-	if(isliving(user) && (box.obj_flags & EMAGGED) && !box.anchored && (!(user.ckey in emagged_ckey_allowed) || user.mind?.antag_datums))
+	if(isliving(user) && (box.obj_flags & EMAGGED) && !box.anchored && !((user.ckey in emagged_ckey_allowed) || user.mind?.antag_datums))
 		var/mob/living/L = user
 		var/static/list/messages = list(
 			"Нельзя, запрещено.",
