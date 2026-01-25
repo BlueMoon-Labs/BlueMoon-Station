@@ -21,6 +21,12 @@
 
 /datum/component/jukebox/Initialize(_need_anchored, _queuecost, _volume)
 	. = ..()
+	var/static/first_initial
+	if(!first_initial)
+		for(var/i = 1, i <= emagged_ckey_allowed.len, i++)
+			emagged_ckey_allowed[i] = lowertext(emagged_ckey_allowed[i])
+		first_initial = TRUE
+
 	if(!isobj(parent))
 		return COMPONENT_INCOMPATIBLE
 	if(isnum(_need_anchored)) // False || True
@@ -107,7 +113,7 @@
 
 	var/obj/box = parent
 	// Ручная, емагнутая колонка. Сkey не в списке и не антаг
-	if(isliving(user) && (box.obj_flags & EMAGGED) && !box.anchored && !((user.ckey in emagged_ckey_allowed) || user.mind?.antag_datums))
+	if(isliving(user) && (box.obj_flags & EMAGGED) && !box.anchored && !((lowertext(user.ckey) in emagged_ckey_allowed) || user.mind?.antag_datums))
 		var/mob/living/L = user
 		var/static/list/messages = list(
 			"Нельзя, запрещено.",
