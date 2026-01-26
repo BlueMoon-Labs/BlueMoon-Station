@@ -405,3 +405,19 @@
 	flags_inv = adjusted ? (HIDEHAIR) : (HIDEHAIR|HIDEEARS)
 	user.update_inv_head()
 	to_chat(user, span_info("Вы поправили головной убор, изменяя комфорт ваших ушей в нём."))
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/officerian_cap
+	name = "Officerian Cap"
+	desc = "Головной убор ветеранов и действующих офицеров"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "officerian_cap"
+	item_state = "officerian_cap"
+	var/list/poly_colors = list("#2A2A2A","#303030","#575757","#d4d4d4")
+
+/obj/item/clothing/head/officerian_cap/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A","#303030","#575757","#d4d4d4"), 4)
