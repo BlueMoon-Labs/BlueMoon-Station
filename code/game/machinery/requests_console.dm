@@ -553,7 +553,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 		if(!ID)
 			return
 		if(screen == 9)
-			msgVerified = "Авторизовано с помощью карты: [ID.registered_name] ([ID.assignment])"
+			msgVerified = "Авторизовано с помощью карты: [ID.registered_name] ([ID.get_assignment_name()])"
 			playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
 			updateUsrDialog()
 		if(screen == 10)

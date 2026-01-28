@@ -634,27 +634,22 @@
 	path = /obj/item/clothing/under/misc/gear_harness
 
 //Christmas
-/*Commenting out Until next Christmas or made automatic
 /datum/gear/uniform/christmasmaler
-	name = "Red Masculine Christmas Suit"
-	category = ITEM_SLOT_ICLOTHING
+	name = "Red Christmas Suit"
 	path = /obj/item/clothing/under/costume/christmas
 
 /datum/gear/uniform/christmasmaleg
-	name = "Green Masculine Christmas Suit"
-	category = ITEM_SLOT_ICLOTHING
+	name = "Green Christmas Suit"
 	path = /obj/item/clothing/under/costume/christmas/green
 
 /datum/gear/uniform/christmasfemaler
-	name = "Red Feminine Christmas Suit"
-	category = ITEM_SLOT_ICLOTHING
+	name = "Red Croptop Christmas Suit"
 	path = /obj/item/clothing/under/costume/christmas/croptop
 
 /datum/gear/uniform/christmasfemaleg
-	name = "Green Feminine Christmas Suit"
-	category = ITEM_SLOT_ICLOTHING
+	name = "Green Croptop Christmas Suit"
 	path = /obj/item/clothing/under/costume/christmas/croptop/green
-*/
+
 /datum/gear/uniform/pinkstripper
 	name = "Pink stripper outfit"
 	path = /obj/item/clothing/under/misc/stripper
@@ -732,6 +727,12 @@
 /datum/gear/uniform/kimono/sakura
 	name = "Sakura kimono"
 	path = /obj/item/clothing/under/costume/kimono/sakura
+
+/datum/gear/uniform/kimono/poly
+	name = "Poly kimono"
+	path = /obj/item/clothing/under/costume/kimono/poly
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_initial_colors = list("#FFFFFF", "#C5302D")
 
 /datum/gear/uniform/ctlong
 	name = "cargo tech's jumpsuit (long pants)"

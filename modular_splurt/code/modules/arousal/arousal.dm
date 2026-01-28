@@ -38,24 +38,26 @@
 
 	var/virility = partner?.client?.prefs?.virility || 0
 	var/fertility = client?.prefs?.fertility || 0
+
 	if(!fertility || is_type_in_typecache(src.type, GLOB.pregnancy_blocked_mob_typecache))
 		return
 
-	// Базовый шанс Делаем в пользу женщин.. Почему ? Потому что девочки у нас вынашивают. и если у них фертильность 100 то пусть потом не удивляюьтся что залетели от парня.
-	var/chance = min(virility * 0.8, fertility * 1.2) * (1 + (rand(-15, 15) / 100)) // Обновил формулу для большей точности
+	// Базовый шанс с балансом в пользу женщин.. Почему ? Потому что девочки у нас вынашивают. и если у них фертильность 100 то пусть потом не удивляюьтся что залетели от парня.
+	var/chance = min(virility * 0.8, fertility * 1.2) * (1 + (rand(-15, 15) / 100))
 
-	// Делаем квирк Эстральный цикл пизже
+	// Бонус от эстрального цикла
 	var/estrus_total_bonus = 0
 
-	// Проверяем квирк у партнёра (вносителя)
-	if(HAS_TRAIT(partner, TRAIT_ESTROUS_ACTIVE))
-		var/datum/quirk/estrous_active/Qp = partner.get_quirk(/datum/quirk/estrous_active)
-		if(Qp)
-			var/estrus_bonus_p = round((0.05 + Qp.time_bonus) * 100)
-			estrus_total_bonus += estrus_bonus_p
+	// Проверяем квирк у ПОЛУЧАТЕЛЯ
+	if(HAS_TRAIT(src, TRAIT_ESTROUS_ACTIVE))
+		var/datum/quirk/estrous_active/Q = get_quirk(/datum/quirk/estrous_active)
+		if(Q && !QDELETED(Q))
+			// Базовый бонус 5% + накопленный бонус от времени
+			var/estrus_bonus = round((0.05 + Q.time_bonus) * 100)
+			estrus_total_bonus += estrus_bonus
 
 	// Добавляем итоговый бонус
-	if(estrus_total_bonus)
+	if(estrus_total_bonus > 0)
 		chance += estrus_total_bonus
 
 	chance = clamp(chance, 0, 100)

@@ -457,36 +457,6 @@
 		),
 	)
 
-/datum/mod_theme/security/syndicate
-	ui_theme = "syndicate"
-	default_skin = "syndicate"
-	skins = list(
-		"syndicate" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEEARS|HIDEHAIR|HIDESNOUT,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEYES|HIDEFACE,
-				UNSEALED_COVER = HEADCOVERSMOUTH,
-				SEALED_COVER = HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-	)
-
 /datum/mod_theme/safeguard
 	name = "safeguard"
 	desc = "An Apadyne Technologies advanced security suit, offering greater speed and fire protection than the standard security model."

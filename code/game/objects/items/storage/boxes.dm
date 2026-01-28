@@ -25,7 +25,7 @@
 
 /obj/item/storage/box
 	name = "Box"
-	desc = "It's just an ordinary box."
+	desc = "Самая обыкновенная коробка."
 	icon_state = "box"
 	item_state = "syringe_kit"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
@@ -518,7 +518,7 @@
 
 /obj/item/storage/box/trackimp
 	name = "boxed tracking implant kit"
-	desc = "Box full of scum-bag tracking utensils."
+	desc = "Коробка с отслеживающими имплантами для ваших подонков."
 	illustration = "implant"
 
 /obj/item/storage/box/trackimp/PopulateContents()
@@ -530,7 +530,7 @@
 
 /obj/item/storage/box/minertracker
 	name = "boxed tracking implant kit"
-	desc = "For finding those who have died on the accursed lavaworld."
+	desc = "Для нахождения померших на многократно клятом Лаваленде."
 	illustration = "implant"
 
 /obj/item/storage/box/minertracker/PopulateContents()
@@ -542,7 +542,7 @@
 
 /obj/item/storage/box/chemimp
 	name = "boxed chemical implant kit"
-	desc = "Box of stuff used to implant chemicals."
+	desc = "Коробка вещей для имплантации отложенных препаратов."
 	illustration = "implant"
 
 /obj/item/storage/box/chemimp/PopulateContents()
@@ -563,7 +563,7 @@
 
 /obj/item/storage/box/bodybags
 	name = "body bags"
-	desc = "The label indicates that it contains body bags."
+	desc = "Этикетка даёт знать, что внутри мешки для трупов."
 	illustration = "bodybags"
 
 /obj/item/storage/box/bodybags/PopulateContents()
@@ -573,7 +573,7 @@
 
 /obj/item/storage/box/rxglasses
 	name = "box of prescription glasses"
-	desc = "This box contains nerd glasses."
+	desc = "В этой коробке полно ботанских очков!"
 	illustration = "glasses"
 
 /obj/item/storage/box/rxglasses/PopulateContents()
@@ -1611,6 +1611,15 @@
 	for (var/i in 1 to 5)
 		new /obj/item/reagent_containers/food/snacks/marshmallow(src)
 
+/obj/item/storage/box/material/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_w_class = MAX_WEIGHT_CLASS_BACKPACK
+	STR.storage_flags = STORAGE_FLAGS_LEGACY_DEFAULT
+	STR.max_volume = STORAGE_VOLUME_BAG_OF_HOLDING_DEBUG
+	STR.max_combined_w_class = 50
+	STR.max_items = 20
+
 /obj/item/storage/box/material/PopulateContents() 	//less uranium because radioactive
 	var/static/items_inside = list(
 		/obj/item/stack/sheet/metal/fifty=1,\
@@ -1638,6 +1647,15 @@
 /obj/item/storage/box/debugtools
 	name = "box of debug tools"
 	icon_state = "syndiebox"
+
+/obj/item/storage/box/debugtools/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_w_class = MAX_WEIGHT_CLASS_BACKPACK
+	STR.storage_flags = STORAGE_FLAGS_LEGACY_DEFAULT
+	STR.max_volume = STORAGE_VOLUME_BAG_OF_HOLDING_DEBUG
+	STR.max_combined_w_class = 50
+	STR.max_items = 16
 
 /obj/item/storage/box/debugtools/PopulateContents()
 	var/static/items_inside = list(
@@ -1717,10 +1735,10 @@
 
 /obj/item/storage/box/coffeepack
 	name = "Arabica Beans"
-	desc = "A bag containing fresh, dry coffee arabica beans. Ethically sourced and packaged by Waffle Corp."
+	desc = "Пачка свежих, сухих зёрен кофе-арабики. Собранных и упакованных фирмой Waffle Corp с учётом этических норм."
 	icon_state = "arabica_beans"
 	illustration = null
-	icon = 'icons/obj/food/containers.dmi'
+	icon = 'modular_bluemoon/icons/obj/food/containers.dmi'
 	var/beantype = /obj/item/reagent_containers/food/snacks/grown/coffee
 
 /obj/item/storage/box/coffeepack/ComponentInitialize()
@@ -1736,7 +1754,8 @@
 
 /obj/item/storage/box/coffeepack/robusta
 	name = "Robusta Beans"
-	desc = "A bag containing fresh, dry coffee robusta beans. Ethically sourced and packaged by Waffle Corp."
+	desc = "Пачка свежих, сухих зёрен кофе-робасты. Собранных и упакованных фирмой Waffle Corp с учётом этических норм."
+	icon = 'modular_bluemoon/icons/obj/food/containers.dmi'
 	icon_state = "robusta_beans"
 	beantype = /obj/item/reagent_containers/food/snacks/grown/coffee/robusta
 

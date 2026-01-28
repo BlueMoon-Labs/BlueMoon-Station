@@ -435,7 +435,7 @@
 	set_pin_data(IC_OUTPUT, 2, materials.total_amount)
 	for(var/I in 1 to mtypes.len)
 		var/datum/material/M = materials.materials[SSmaterials.GetMaterialRef(I)]
-		var/amount = materials[M]
+		var/amount = materials.materials[M]
 		if(M)
 			set_pin_data(IC_OUTPUT, I+2, amount)
 	push_data()

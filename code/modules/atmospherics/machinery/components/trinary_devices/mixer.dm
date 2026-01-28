@@ -51,7 +51,7 @@
 
 /obj/machinery/atmospherics/components/trinary/mixer/process_atmos()
 	..()
-	if(!on || !(nodes[1] && nodes[2] && nodes[3]) && !is_operational())
+	if(!on || !(nodes[1] && nodes[2] && nodes[3]) || !is_operational())
 		return
 
 	//Get those gases, mah boiiii
@@ -103,16 +103,11 @@
 
 	if(transfer_moles1)
 		air1.transfer_to(air3, transfer_moles1)
-		var/datum/pipeline/parent1 = parents[1]
-		parent1.update = TRUE
 
 	if(transfer_moles2)
 		air2.transfer_to(air3, transfer_moles2)
-		var/datum/pipeline/parent2 = parents[2]
-		parent2.update = TRUE
 
-	var/datum/pipeline/parent3 = parents[3]
-	parent3.update = TRUE
+	update_parents()
 
 /obj/machinery/atmospherics/components/trinary/mixer/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)

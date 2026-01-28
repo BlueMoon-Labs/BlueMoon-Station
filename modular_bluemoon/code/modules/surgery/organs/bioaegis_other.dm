@@ -102,3 +102,14 @@
 			lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
 			sight_flags &= ~SEE_BLACKNESS
 	owner.update_sight()
+
+/obj/item/organ/vocal_cords/babyloncords
+	name = "Babylon's Vocal Cords"
+	desc = "They carry the voice of everyone who has ever lived."
+	icon_state = "babylon_cords"
+	decay_factor = 0
+
+/obj/item/organ/vocal_cords/babyloncords/Insert(mob/living/carbon/M, drop_if_replaced = TRUE)
+	to_chat(owner, "<span class='synth'>Ваши уста вещают тысячи голосов......</span>\n")
+	M.grant_all_languages(source = LANGUAGE_CURATOR)
+	M.remove_blocked_language(GLOB.all_languages, source=LANGUAGE_ALL)

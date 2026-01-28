@@ -121,6 +121,19 @@
 			. += {"<span class='cult'>This is a coffin which your master can use to shield himself from the unforgiving sun.\n
 			You yourself are still human and dont need it. Yet.</span>"} */
 
+/obj/structure/closet/crate/coffin/attacked_by(obj/item/I, mob/living/user)
+	. = ..()
+	if(!istype(I, /obj/item/sign/flag) || opened)
+		return
+	var/obj/item/sign/flag/flag = I
+	flag.lock_coffin(src)
+
+/obj/structure/closet/crate/coffin/bust_open()
+	. = ..()
+	icon = initial(icon)
+	icon_state = initial(icon_state)
+	update_icon()
+
 /obj/structure/closet/crate/internals
 	desc = "An internals crate."
 	name = "internals crate"

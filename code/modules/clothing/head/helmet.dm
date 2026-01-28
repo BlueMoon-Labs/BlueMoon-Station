@@ -10,6 +10,7 @@
 	max_heat_protection_temperature = HELMET_MAX_TEMP_PROTECT
 	strip_delay = 60
 	resistance_flags = NONE
+	clothing_flags = THICKMATERIAL
 	flags_cover = HEADCOVERSEYES
 	flags_inv = HIDEHAIR|HIDEEARS
 	dynamic_hair_suffix = ""
@@ -213,6 +214,7 @@
 	toggle_cooldown = 0
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	visor_flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	clothing_flags = null
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
 	dog_fashion = null
@@ -385,6 +387,7 @@
 	dynamic_fhair_suffix = ""
 	armor = list(MELEE = 25, BULLET = 0, LASER = 25, ENERGY = 10, BOMB = 10, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
 	resistance_flags = FIRE_PROOF
+	clothing_flags = null
 	icon_state = "roman"
 	item_state = "roman"
 	strip_delay = 100
@@ -420,6 +423,7 @@
 	desc = "They have chosen their own end."
 	icon_state = "redtaghelm"
 	flags_cover = HEADCOVERSEYES
+	clothing_flags = null
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
 	item_state = "redtaghelm"
@@ -431,6 +435,7 @@
 	name = "blue laser tag Helmet"
 	desc = "They'll need more men."
 	icon_state = "bluetaghelm"
+	clothing_flags = null
 	flags_cover = HEADCOVERSEYES
 	item_state = "bluetaghelm"
 	armor = list(MELEE = 15, BULLET = 10, LASER = 20,ENERGY = 10, BOMB = 20, BIO = 0, RAD = 0, FIRE = 0, ACID = 50)
@@ -442,15 +447,15 @@
 	desc = "A classic metal helmet."
 	icon_state = "knight_green"
 	item_state = "knight_green"
-	armor = list(MELEE = 41, BULLET = 15, LASER = 5,ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 0, ACID = 50)
+	armor = list(MELEE = 60, BULLET = 35, LASER = 5,ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 0, ACID = 50)
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDESNOUT
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	clothing_flags = null
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
 	strip_delay = 80
 	dog_fashion = null
 	mutantrace_variation = STYLE_MUZZLE
-
 
 /obj/item/clothing/head/helmet/knight/Initialize(mapload)
 	. = ..()
@@ -600,6 +605,7 @@
 	icon_state = "durathread"
 	item_state = "durathread"
 	armor = list(MELEE = 25, BULLET = 10, LASER = 20,ENERGY = 10, BOMB = 30, BIO = 15, RAD = 20, FIRE = 100, ACID = 50)
+	clothing_flags = null
 
 /obj/item/clothing/head/helmet/rus_helmet
 	name = "Russian Helmet"
@@ -610,6 +616,7 @@
 	flags_inv = HIDEEARS
 	//armor = list(MELEE = 30, BULLET = 25, LASER = 20,ENERGY = 10, BOMB = 25, BIO = 0, RAD = 20, FIRE = 30, ACID = 50)
 	pocket_storage_component_path = /datum/component/storage/concrete/pockets/small/rushelmet
+	clothing_flags = null
 
 /obj/item/clothing/head/helmet/rus_cap
 	name = "Russian Officer's Hat"

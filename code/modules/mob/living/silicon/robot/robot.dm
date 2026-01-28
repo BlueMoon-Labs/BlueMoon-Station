@@ -130,11 +130,7 @@
 
 /mob/living/silicon/robot/Topic(href, href_list)
 	. = ..()
-	// BLUEMOON ADD START - профиль для боргов
 	if(href_list["cyborg_profile"])
-		ui_interact(usr)
-	// BLUEMOON ADD END
-	if(href_list["character_profile"])
 		if(!profile)
 			profile = new(src)
 		profile.ui_interact(usr)
@@ -143,32 +139,6 @@
 		alert_control.ui_interact(src)
 
 	return
-
-// BLUEMOON ADD START - профиль для боргов
-// Да, это проклято и должно быть перенесено в отдельный датум, но...
-/mob/living/silicon/robot/ui_interact(mob/user, datum/tgui/ui)
-	ui = SStgui.try_update_ui(user, src, ui)
-	if(!ui)
-		ui = new(user, src, "CyborgProfile", "Профиль юнита [src]")
-		ui.open()
-
-/mob/living/silicon/robot/ui_static_data(mob/user, datum/tgui/ui, datum/ui_state/state)
-	. = ..()
-	var/data[0]
-	if(!src || !istype(src))
-		return
-	data["silicon_flavor_text"] = mind?.silicon_flavor_text || ""
-	data["oocnotes"] = mind?.ooc_notes || ""
-	data["vore_tag"] = client?.prefs?.vorepref || "No"
-	data["erp_tag"] = client?.prefs?.erppref || "No"
-	data["mob_tag"] = client?.prefs?.mobsexpref || "No"
-	data["nc_tag"] = client?.prefs?.nonconpref || "No"
-	data["unholy_tag"] = client?.prefs?.unholypref || "No"
-	data["extreme_tag"] = client?.prefs?.extremepref || "No"
-	data["very_extreme_tag"] = client?.prefs?.extremeharm || "No"
-
-	return data
-// BLUEMOON ADD END
 
 /mob/living/silicon/robot/proc/pick_module()
 	if(module.type != /obj/item/robot_module)
@@ -197,10 +167,6 @@
 		return
 
 	module.transform_to(modulelist[input_module])
-
-	// Добавляем видимость проводки инженерным киборгам
-	if(istype(module, /obj/item/robot_module/engineering) || istype(module, /obj/item/robot_module/saboteur))
-		ADD_TRAIT(src, TRAIT_KNOW_ENGI_WIRES, JOB_TRAIT)
 
 /mob/living/silicon/robot/proc/updatename(client/C)
 	if(shell)
@@ -637,9 +603,6 @@
 		new /obj/item/bodypart/l_arm/robot(drop_to)
 		new /obj/item/bodypart/r_arm/robot(drop_to)
 		new /obj/item/bodypart/head/robot(drop_to)
-		for(var/i in 1 to 2)
-			var/obj/item/assembly/flash/handheld/borgeye = new(drop_to)
-			borgeye.burn_out()
 
 	cell?.forceMove(drop_to) // Cell can be null, if removed beforehand
 	radio?.keyslot?.forceMove(drop_to)
@@ -865,12 +828,14 @@
 		if(DISCONNECT) //Tampering with the wires
 			to_chat(connected_ai, "<br><br><span class='notice'>NOTICE - Remote telemetry lost with [name].</span><br>")
 
-/mob/living/silicon/robot/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE)
+/mob/living/silicon/robot/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE, silent = FALSE)
 	if(stat || locked_down || low_power_mode)
-		to_chat(src, "<span class='warning'>You can't do that right now!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
 		return FALSE
 	if(be_close && !in_range(M, src))
-		to_chat(src, "<span class='warning'>You are too far away!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>You are too far away!</span>")
 		return FALSE
 	return TRUE
 

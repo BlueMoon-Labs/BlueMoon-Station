@@ -1240,6 +1240,7 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/rnd/production/techfab/department/security,
+/obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
 "aek" = (
@@ -1532,6 +1533,7 @@
 	dir = 4;
 	light_color = "#c1caff"
 	},
+/obj/effect/turf_decal/tile/red,
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
 "aeU" = (
@@ -51801,35 +51803,89 @@
 "hzl" = (
 /obj/structure/safe/floor/syndi/armory{
 	pixel_x = 32;
-	pixel_y = 2
+	pixel_y = 2;
+	dir = 8
 	},
-/obj/item/gun/ballistic/automatic/acr5m30,
-/obj/item/gun/ballistic/automatic/acr5m30{
-	pixel_y = -5
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
 	},
-/obj/item/gun/ballistic/automatic/acr5m30{
-	pixel_y = -10
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
 	},
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/hp,
-/obj/item/ammo_box/magazine/acr5m30/hp,
-/obj/item/ammo_box/magazine/acr5m30/hp,
-/obj/effect/turf_decal/delivery,
-/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/storage/firstaid,
+/obj/item/storage/firstaid/brute,
+/obj/item/storage/firstaid/toxin,
+/obj/item/storage/firstaid/fire,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
 "hzC" = (
@@ -57597,6 +57653,9 @@
 "lJS" = (
 /obj/item/radio/intercom{
 	pixel_x = -30
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)

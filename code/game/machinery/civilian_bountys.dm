@@ -5,6 +5,8 @@
 	name = "civilian bounty pad"
 	desc = "A machine designed to send civilian bounty targets to centcom."
 	layer = TABLE_LAYER
+	warmup_time = 3 SECONDS
+	circuit = /obj/item/circuitboard/machine/bountypad
 
 ///Computer for assigning new civilian bounties, and sending bounties for collection.
 /obj/machinery/computer/piratepad_control/civilian
@@ -13,7 +15,7 @@
 	status_report = "Ready for delivery."
 	icon_screen = "civ_bounty"
 	icon_keyboard = "id_key"
-	warmup_time = 3 SECONDS
+	circuit = /obj/item/circuitboard/computer/bountypad
 	var/obj/item/card/id/inserted_scan_id
 
 /obj/machinery/computer/piratepad_control/civilian/Initialize()
@@ -305,7 +307,7 @@
 	bounty_value = my_bounty.reward
 	bounty_name = my_bounty.name
 	bounty_holder = holder_id.registered_name
-	bounty_holder_job = holder_id.assignment
+	bounty_holder_job = holder_id.get_assignment_name()
 	bounty_holder_account = holder_id.registered_account
 	name = "\improper [bounty_value] cr [name]"
 	desc += " The sales tag indicates it was <i>[bounty_holder] ([bounty_holder_job])</i>'s reward for completing the <i>[bounty_name]</i> bounty."

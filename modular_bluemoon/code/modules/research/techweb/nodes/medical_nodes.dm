@@ -44,9 +44,9 @@
 	id = "bioaegis1"
 	display_name = "Bio-Organic Theory"
 	description = "It was known that with certain technology it was possible to replicate flesh, or even improve it - but as NanoTrasen department declared, it was barely legal."
-	prereq_ids = list("syndicate_basic")
+	prereq_ids = list("adv_biotech")
 	design_ids = list("bioaegisboard", "hearttier1", "livertier1", "lungstier1")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 25000) //A gateway to better organs. Gaining points with all 5-6 options is really that easy, so steel yourself.
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 12500) //Шо то на зарубежном было. Убрал этот ваш гейтвей для реализации механа НЕ ТОЛЬКО в режим экстендет
 
 /datum/techweb_node/bioaegis2 //Better versions. Faster-better-stronger.
 	id = "bioaegis2"
@@ -69,7 +69,7 @@
 	display_name = "Specialized Organic Designs"
 	description = "During research it was known that we can alter some capabilities of certain species to improve their ability to survive in hostile environment."
 	prereq_ids = list("bioaegis2")
-	design_ids = list("adaptiveeyes", "thermalaegiseyes", "darkveilorgan", "optisiaorgan")
+	design_ids = list("adaptiveeyes", "thermalaegiseyes", "darkveilorgan", "optisiaorgan", "babyloncords")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
 
 datum/techweb_node/bioaegis_danger //Dangerous ones, that might kill you.

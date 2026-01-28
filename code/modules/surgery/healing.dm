@@ -88,6 +88,7 @@
 	return TRUE
 
 /datum/surgery_step/heal/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='warning'>You screwed up!</span>",
 		"<span class='warning'>[user] screws up!</span>",
 		"<span class='notice'>[user] fixes some of [target]'s wounds.</span>", TRUE)
@@ -98,7 +99,6 @@
 		urdamageamt_burn += round((target.getFireLoss()/ (missinghpbonus*2)),0.1)
 
 	target.take_bodypart_damage(urdamageamt_brute, urdamageamt_burn, wound_bonus=CANT_WOUND)
-	return FALSE
 
 /***************************BRUTE***************************/
 /datum/surgery/healing/brute
@@ -219,6 +219,7 @@
 	missinghpbonus = 2.5
 
 /datum/surgery_step/heal/combo/upgraded/femto/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='warning'>You screwed up!</span>",
 		"<span class='warning'>[user] screws up!</span>",
 		"<span class='notice'>[user] fixes some of [target]'s wounds.</span>", TRUE)

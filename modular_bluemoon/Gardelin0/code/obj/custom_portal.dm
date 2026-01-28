@@ -14,7 +14,9 @@
 	if(isnull(AM))
 		return
 
-	for(var/obj/item/hilbertshotel/ghostdojo/g in world)
+	for(var/obj/item/hilbertshotel/ghostdojo/g in SShilbertshotel.all_hilbert_spheres)
+		if(g.is_ghost_cafe || g.ruinSpawned)
+			continue
 		AM.forceMove(g.loc)
 		playsound(src.loc, get_sfx("spark"), 100, 1)
 

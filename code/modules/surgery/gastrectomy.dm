@@ -46,6 +46,7 @@
 		display_results(user, target, span_warning("Вы облажались, не сумев удалить поврежденную долю желудка [H]!"),
 			span_warning("[user] допускает ошибку при операции!"),
 			span_warning("[user] допускает ошибку при операции!"))
+		..()
 		H.losebreath += 4
 		H.adjustOrganLoss(ORGAN_SLOT_STOMACH, 10)
 		var/obj/item/bodypart/BP = H.get_bodypart(target_zone)

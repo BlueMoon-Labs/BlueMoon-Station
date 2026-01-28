@@ -1,5 +1,5 @@
 import { useBackend } from "../backend";
-import { LabeledList, Box, Button, ProgressBar } from "../components";
+import { Box, Button, LabeledList, ProgressBar } from "../components";
 import { Window } from "../layouts";
 
 export const ChemImplantSec = (props, context) => {

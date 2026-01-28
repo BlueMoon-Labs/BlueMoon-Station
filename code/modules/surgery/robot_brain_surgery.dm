@@ -48,6 +48,7 @@
 			"[user] completes the surgery on [target]'s posibrain.")
 		target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 60)
 		target.gain_trauma_type(BRAIN_TRAUMA_SEVERE, TRAUMA_RESILIENCE_LOBOTOMY)
+		..()
 	else
 		user.visible_message("<span class='warning'>[user] suddenly notices that the posibrain [user.ru_who()] [user.p_were()] working on is not there anymore.", "<span class='warning'>You suddenly notice that the posibrain you were working on is not there anymore.</span>")
 	return FALSE

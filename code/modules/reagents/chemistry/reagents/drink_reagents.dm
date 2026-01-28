@@ -657,7 +657,7 @@
 		M.reagents.add_reagent(/datum/reagent/consumable/honey,1)
 	..()
 
-/datum/reagent/consumable/buzz_fuzz/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/consumable/buzz_fuzz/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method in list(TOUCH, VAPOR, PATCH))
 		M.sterilize(10, 1 MINUTES * reac_volume/5) // +10% success probability on each step, compared to bacchus' blessing's ~46%
 	..()

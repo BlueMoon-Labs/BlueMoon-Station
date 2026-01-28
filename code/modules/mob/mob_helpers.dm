@@ -629,12 +629,24 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 		client = src.client
 	var/old_name = real_name
 	SEND_SOUND(src, 'sound/misc/server-ready.ogg')
+	// BLUEMOON ADD START - загрузка татуировок для ghost roles
+	client.prefs.apply_tattoos_to_human(src)
+	// BLUEMOON ADD END
 	client.prefs.copy_to(src)
 	SSquirks.AssignQuirks(src, client, TRUE, FALSE, job, FALSE)//This Assigns the selected character's quirks
 	var/obj/item/card/id/id_card = get_idcard() //Time to change their ID card as well if they have one.
 	if(id_card)
 		id_card.registered_name = real_name
-		id_card.update_label(real_name, id_card.assignment)
+		id_card.update_label()
+
+	// Переоформление пермитов, если у нас была загрузка из префов
+	if(istype(w_uniform, /obj/item/clothing/under))
+		var/obj/item/clothing/under/U = w_uniform
+		for(var/obj/item/clothing/accessory/permit/special/permit in U.attached_accessories)
+			if(permit.first_inited && permit.owner_name == real_name)
+				continue
+			permit.bind_to_user(src, TRUE)
+
 	fully_replace_character_name(old_name, real_name)
 	ADD_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT) //Makes sure they are exempt from health events.
 	ADD_TRAIT(src, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)

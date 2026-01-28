@@ -19,11 +19,6 @@
 		holder.icon_state = null
 		return
 
-	var/datum/antagonist/slaver/S = locate() in H.mind.antag_datums
-	if(S) // Is a slaver antag. Slavers do not need to see eachother's consent prefs.
-		holder.icon_state = null
-		return
-
 	if(client && client?.prefs.nonconpref)
 		switch(client && client?.prefs.nonconpref)
 			if("No")

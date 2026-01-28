@@ -6,6 +6,7 @@
 
 import { classes, pureComponentHooks } from 'common/react';
 import { Component, createRef } from 'inferno';
+
 import { IS_IE8 } from '../byond';
 import { KEY_ENTER, KEY_ESCAPE, KEY_SPACE } from '../hotkeys';
 import { refocusLayout } from '../layouts';

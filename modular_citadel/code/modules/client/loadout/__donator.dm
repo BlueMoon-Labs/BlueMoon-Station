@@ -8,6 +8,13 @@
 	subcategory = LOADOUT_SUBCATEGORIES_DON01
 	donator_group_id = DONATOR_GROUP_TIER_1
 
+/datum/gear/donator/maskscream
+	name = "Mask Scream"
+	slot = ITEM_SLOT_MASK
+	path = /obj/item/clothing/mask/screammask
+	donator_group_id = DONATOR_GROUP_TIER_2
+	subcategory = LOADOUT_SUBCATEGORIES_DON02
+
 /datum/gear/donator/deskbox
 	name = "Desk Box"
 	slot = ITEM_SLOT_BACKPACK
@@ -149,14 +156,6 @@
 	cost = 1
 	donator_group_id = DONATOR_GROUP_TIER_1
 
-/datum/gear/donator/raiqbawks
-	name = "Miami Boombox"
-	slot = ITEM_SLOT_HANDS
-	cost = 2
-	path = /obj/item/boombox/raiq
-	ckeywhitelist = list()
-	donator_group_id = DONATOR_GROUP_TIER_1
-
 /datum/gear/donator/neck_gaiter
 	name = "The Neck Gaiter"
 	slot = ITEM_SLOT_MASK
@@ -172,9 +171,9 @@
 	donator_group_id = DONATOR_GROUP_TIER_1
 
 /datum/gear/donator/agent_card
-	name = "Syndicate Employee ID Card" //BLUEMOON CHANGES
+	name = "Syndicate Employee Card sticker" //BLUEMOON CHANGES
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/card/id/syndicate_citizen  //BLUEMOON CHANGES
+	path = /obj/item/card_sticker/syndicate/loadout //BLUEMOON CHANGES
 	ckeywhitelist = list()
 	donator_group_id = DONATOR_GROUP_TIER_1
 

@@ -19,15 +19,90 @@
 	///Does this computer have a unique icon_state? Prevents the changing of icons from alternative computer construction
 	var/unique_icon = FALSE
 	var/authenticated = FALSE
+	var/list/typing_users = list() // list(user = last_typing_time)
+	var/typing = FALSE
+	var/datum/looping_sound/computer_typing/soundloop_press
 
 /obj/machinery/computer/Initialize(mapload, obj/item/circuitboard/C)
 	. = ..()
+	soundloop_press = new(src)
 	power_change()
 
-/obj/machinery/computer/process()
-	if(machine_stat & (NOPOWER|BROKEN))
+/obj/machinery/computer/Destroy()
+	. = ..()
+	QDEL_NULL(soundloop_press)
+
+/obj/machinery/computer/ui_close(mob/user)
+	. = ..()
+	stop_typing(user)
+
+/obj/machinery/computer/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	start_typing(usr)
+	if(typing)
+		soundloop_press.play(soundloop_press.get_sound(), 100)
+
+/obj/machinery/computer/Topic(href, href_list)
+	. = ..()
+	start_typing(usr)
+	if(. && typing)
+		soundloop_press.play(soundloop_press.get_sound(), 100)
+
+/obj/machinery/computer/proc/check_typing(check_only = FALSE)
+	// Смотрим, когда пользователь в последний раз взаимодействовал
+	for(var/mob/living/user in typing_users)
+		if(world.time - typing_users[user] > 4 SECONDS)
+			stop_typing(user, no_check = TRUE)
+
+	// Проверяем есть ли пользователи
+	if(!typing_users.len)
+		if(!check_only)
+			typing = FALSE
 		return FALSE
+
+	// Проверяем состояние компьютера
+	if(machine_stat & (NOPOWER|BROKEN))
+		if(!check_only)
+			typing = FALSE
+		return FALSE
+
+	// Проверяем, есть ли активные зрители рядом
+	if(!has_active_viewers())
+		if(!check_only)
+			typing = FALSE
+		return FALSE
+
+	if(!check_only)
+		typing = TRUE
 	return TRUE
+
+/obj/machinery/computer/proc/start_typing(mob/living/user)
+	if((machine_stat & (NOPOWER|BROKEN)) || !istype(user))
+		return
+
+	typing_users[user] = world.time
+	check_typing()
+
+/obj/machinery/computer/proc/stop_typing(mob/living/user, no_check = FALSE)
+	if(!istype(user))
+		return
+	typing_users -= user
+	check_typing()
+
+/obj/machinery/computer/proc/has_active_viewers()
+	for(var/mob/living/M in fov_viewers(1, src))
+		if(M.client && get_dist(src, M) <= 1)
+			return TRUE
+	return FALSE
+
+/obj/machinery/computer/process()
+	. = !(machine_stat & (NOPOWER|BROKEN))
+
+	check_typing()
+	if(typing)
+		soundloop_press.start()
+	else
+		soundloop_press.stop()
 
 /obj/machinery/computer/ratvar_act()
 	if(!clockwork)
@@ -58,10 +133,9 @@
 		. += mutable_appearance(icon, "[icon_state]_broken")
 		return // If we don't do this broken computers glow in the dark.
 
-	if(machine_stat & NOPOWER) // Your screen can't be on if you've got no damn charge
+	if(machine_stat & NOPOWER)  // Your screen can't be on if you've got no damn charge
 		return
 
-	// This lets screens ignore lighting and be visible even in the darkest room
 	if(icon_screen)
 		. += mutable_appearance(icon, icon_screen)
 		. += emissive_appearance(icon, icon_screen)
@@ -70,6 +144,7 @@
 	..()
 	if(machine_stat & NOPOWER)
 		set_light(0)
+		typing = FALSE
 	else
 		set_light(brightness_on)
 	update_icon()
@@ -84,7 +159,6 @@
 			deconstruct(TRUE, user)
 	return TRUE
 
-
 /obj/machinery/computer/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
 	switch(damage_type)
 		if(BRUTE)
@@ -96,11 +170,12 @@
 			playsound(src.loc, 'sound/items/welder.ogg', 100, TRUE)
 
 /obj/machinery/computer/obj_break(damage_flag)
-	if(!circuit) //no circuit, no breaking
+	if(!circuit)
 		return
 	. = ..()
 	if(. && !(machine_stat & BROKEN))
 		machine_stat |= BROKEN
+		typing = FALSE
 		playsound(loc, 'sound/effects/glassbr3.ogg', 100, TRUE)
 		set_light(0)
 		update_icon()

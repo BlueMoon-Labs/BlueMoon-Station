@@ -231,7 +231,7 @@
 
 	if(ishuman(owner.current))
 		owner.current.visible_message("<span class='deconversion_message'>[owner.current], похоже, отринул[owner.ru_a()] мятежные идеи!</span>", null, null, null, owner.current)
-		to_chat(owner, "<span class='userdanger'>Вы больше не революционер! Ваши воспоминания с момента пребывания восставшим размыты... Похоже, вы не способны назвать ни своих кураторов, ни соратников...</span>")
+		to_chat(owner, "<span class='userdanger'>Вы больше не революционер! Ваши воспоминания с момента становления революционером и вплоть до сейчас были забыты... похоже, вы не способны назвать ни своих кураторов, ни соратников...</span>")
 	else if(issilicon(owner.current))
 		owner.current.visible_message("<span class='deconversion_message'>Корпус робота издает несколько сигналов, пока из него удаляются вредоносные энграммы.</span>", null, null, null, owner.current)
 		to_chat(owner, "<span class='userdanger'>Внутренняя защита обнаружает и удаляет вредоносные энграммы из вашего ПО! Вы не помните ничего из того, что происходило и что вы слышали, пока были перепрограммированы...</span>")
@@ -395,24 +395,24 @@
 	SSshuttle.clearHostileEnvironment(src)
 	save_members()
 
-	// Remove everyone as a revolutionary
-	// for (var/_rev_mind in members)
-	// 	var/datum/mind/rev_mind = _rev_mind
-	// 	if (rev_mind.has_antag_datum(/datum/antagonist/rev))
-	// 		var/datum/antagonist/rev/rev_antag = rev_mind.has_antag_datum(/datum/antagonist/rev)
-	// 		rev_antag.remove_revolutionary(FALSE, . == STATION_VICTORY ? DECONVERTER_STATION_WIN : DECONVERTER_REVS_WIN)
-	// 		LAZYADD(rev_mind.special_statuses, "<span class='bad'>Former [(rev_mind in ex_headrevs) ? "head revolutionary" : "revolutionary"]</span>")
-
 	if (. == STATION_VICTORY)
 		// If the revolution was quelled, make rev heads unable to be revived through pods
+		// Remove everyone as a revolutionary
+		for (var/_rev_mind in members)
+			var/datum/mind/rev_mind = _rev_mind
+			if (rev_mind.has_antag_datum(/datum/antagonist/rev))
+				var/datum/antagonist/rev/rev_antag = rev_mind.has_antag_datum(/datum/antagonist/rev)
+				rev_antag.remove_revolutionary(FALSE, DECONVERTER_STATION_WIN)
+				LAZYADD(rev_mind.special_statuses, "<span class='bad'>Former [(rev_mind in ex_headrevs) ? "head revolutionary" : "revolutionary"]</span>")
+
 		for (var/_rev_head_mind in ex_revs)
 			var/datum/mind/rev_head_mind = _rev_head_mind
 			var/mob/living/carbon/rev_head_body = rev_head_mind.current
 			if(istype(rev_head_body) && rev_head_body.stat == DEAD)
 				rev_head_body.makeUncloneable()
+				rev_head_body.client?.prefs?.dnr_triggered = TRUE
+		priority_announce("Похоже, что мятеж на станции был подавлен. Пожалуйста, возвращайтесь к своим предыдущим обязанностям.", null, 'sound/announcer/classic/attention.ogg', null, "Отдел мониторинга лояльности Центрального Командования")
 
-		priority_announce("Похоже, что мятеж на станции был подавлен. Пожалуйста, возвращайтесь к своим предыдущим обязанностям. \
-		Мы дистанционно внесли медицинские записи разжигателей беспорядков в чёрный список, чтобы предотвратить их случайную реанимацию.", null, 'sound/announcer/classic/attention.ogg', null, "Central Command Loyalty Monitoring Division")
 	else
 		for (var/_player in GLOB.player_list)
 			var/mob/player = _player
@@ -433,6 +433,7 @@
 
 			if (target_body.stat == DEAD)
 				target_body.makeUncloneable()
+				target_body.client?.prefs?.dnr_triggered = TRUE
 			else
 				mind.add_antag_datum(/datum/antagonist/rev)
 				mind.announce_objectives()

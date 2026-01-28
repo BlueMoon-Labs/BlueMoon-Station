@@ -77,6 +77,7 @@
 	return TRUE
 
 /datum/surgery_step/ventricular_electrotherapy/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	playsound(src, 'sound/machines/defib_zap.ogg', 75, 1, -1)
 	playsound(src, "bodyfall", 50, 1)
 	var/mob/living/carbon/human/H = target

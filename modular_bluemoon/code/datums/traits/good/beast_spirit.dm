@@ -113,13 +113,13 @@
 	B.update_icon()
 
 /datum/movespeed_modifier/beastspirit
-	multiplicative_slowdown = -2.5
+	multiplicative_slowdown = -0.5
 	priority = 500
 	complex_calculation = TRUE
 	absolute_max_tiles_per_second = 7
 
 /datum/movespeed_modifier/beastspirit_main
-	multiplicative_slowdown = -1
+	multiplicative_slowdown = 0.5
 	priority = 500
 	complex_calculation = TRUE
 	absolute_max_tiles_per_second = 7

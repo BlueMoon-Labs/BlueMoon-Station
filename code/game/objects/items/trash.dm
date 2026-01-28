@@ -13,30 +13,37 @@
 
 /obj/item/trash/raisins
 	name = "\improper 4no raisins"
+	icon = 'modular_bluemoon/icons/obj/janitor.dmi'
 	icon_state= "4no_raisins"
 
 /obj/item/trash/candy
 	name = "candy"
+	icon = 'modular_bluemoon/icons/obj/janitor.dmi'
 	icon_state= "candy"
 
 /obj/item/trash/cheesie
 	name = "cheesie honkers"
+	icon = 'modular_bluemoon/icons/obj/janitor.dmi'
 	icon_state = "cheesie_honkers"
 
 /obj/item/trash/chips
 	name = "chips"
+	icon = 'modular_bluemoon/icons/obj/janitor.dmi'
 	icon_state = "chips"
 
 /obj/item/trash/popcorn
 	name = "popcorn"
+	icon = 'modular_bluemoon/icons/obj/janitor.dmi'
 	icon_state = "popcorn"
 
 /obj/item/trash/sosjerky
 	name = "\improper Scaredy's Private Reserve Beef Jerky"
+	icon = 'modular_bluemoon/icons/obj/janitor.dmi'
 	icon_state = "sosjerky"
 
 /obj/item/trash/syndi_cakes
 	name = "syndi-cakes"
+	icon = 'modular_bluemoon/icons/obj/janitor.dmi'
 	icon_state = "syndi_cakes"
 
 /obj/item/trash/energybar
@@ -58,10 +65,12 @@
 
 /obj/item/trash/pistachios
 	name = "pistachios pack"
+	icon = 'modular_bluemoon/icons/obj/janitor.dmi'
 	icon_state = "pistachios_pack"
 
 /obj/item/trash/semki
 	name = "semki pack"
+	icon = 'modular_bluemoon/icons/obj/janitor.dmi'
 	icon_state = "semki_pack"
 
 /obj/item/trash/tray
@@ -84,3 +93,8 @@
 	name = "boritos bag"
 	icon_state = "boritos"
 	grind_results = list(/datum/reagent/aluminium = 1) //from the mylar bag
+
+/obj/item/trash/brancereal
+	name = "cereal box"
+	icon = 'modular_bluemoon/icons/obj/janitor.dmi'
+	icon_state = "brancereal"

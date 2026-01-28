@@ -952,6 +952,10 @@
 	cell_type = /obj/item/stock_parts/cell/secborg
 	charge_delay = 5
 
+/obj/item/gun/energy/plasmacutter/cyborg/emagged
+	desc = "A basic variation of the plasma cutter, compressed into a cyborg chassis. Safety protocols of this one seems to be broken."
+	ammo_type = list(/obj/item/ammo_casing/energy/plasma/mech)
+
 /obj/item/cyborg_clamp
 	name = "cyborg loading clamp"
 	desc = "Equipment for supply cyborgs. Lifts objects and loads them into cargo. Will not carry living beings."

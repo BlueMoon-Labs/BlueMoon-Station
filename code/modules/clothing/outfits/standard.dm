@@ -138,7 +138,7 @@
 	W.access = get_all_accesses()
 	W.assignment = "Tunnel Clown!"
 	W.registered_name = H.real_name
-	W.update_label(H.real_name)
+	W.update_label()
 
 /datum/outfit/psycho
 	name = "Masked Killer"
@@ -174,11 +174,9 @@
 	l_hand = /obj/item/storage/secure/briefcase
 	id = /obj/item/card/id/syndicate
 	belt = /obj/item/pda/heads
+	accessory = list(/obj/item/clothing/accessory/waistcoat)
 
 /datum/outfit/assassin/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-	var/obj/item/clothing/under/U = H.w_uniform
-	U.attach_accessory(new /obj/item/clothing/accessory/waistcoat(H))
-
 	if(visualsOnly)
 		return
 
@@ -202,7 +200,7 @@
 	W.access = get_all_accesses()
 	W.assignment = "Reaper"
 	W.registered_name = H.real_name
-	W.update_label(H.real_name)
+	W.update_label()
 
 /datum/outfit/centcom_commander
 	name = "CentCom Commander"

@@ -33,6 +33,7 @@
 	crusher_loot = /obj/item/crusher_trophy/watcher_wing
 	stat_attack = UNCONSCIOUS
 	robust_searching = TRUE
+	sharpness = SHARP_EDGED
 	/// Message for when the wolf decides to start running away
 	var/retreat_message_said = FALSE
 

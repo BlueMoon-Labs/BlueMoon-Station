@@ -1,19 +1,61 @@
-import { useBackend } from '../backend';
-import { Button, Icon, NoticeBox, NumberInput, Section, Slider, Table, Tabs } from '../components';
+import { useBackend, useLocalState } from '../backend';
+import { Button, Dropdown, Flex, Icon, NoticeBox, NumberInput, Section, Slider, Stack, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
 export const Colormate = (props, context) => {
   const { act, data } = useBackend(context);
-  const { activemode, temp } = data;
+  const { activemode, temp_message } = data;
   const item = data.item || [];
+
+  // Пресеты покрасок (только для текущего вставленного предмета)
+  // Cсписок имён, например ["Default","Dark",...]
+  const presets_tint = data.presets_tint || [];
+  const presets_hsv = data.presets_hsv || [];
+  const presets_matrix = data.presets_matrix || [];
+
+  const currentPresetList =
+    activemode === 1 ? presets_tint
+      : activemode === 2 ? presets_hsv
+        : presets_matrix;
+
+  const [selectedPreset, setSelectedPreset] = useLocalState(context, 'selectedPreset', '');
+
+  const currentPresetIdx = selectedPreset
+    ? currentPresetList.indexOf(selectedPreset)
+    : -1;
+
+  const canPrevPreset = currentPresetList.length > 0 && currentPresetIdx > 0;
+  const canNextPreset = currentPresetList.length > 0 && currentPresetIdx < currentPresetList.length - 1;
+
+  const onSelectPreset = (name) => {
+    setSelectedPreset(name);
+    act('preset_select', { name });
+  };
+
+  const selectPresetByIndex = (idx) => {
+    const name = currentPresetList[idx];
+    if (!name) return;
+    onSelectPreset(name);
+  };
+
+  const onDeletePreset = () => {
+    if (!selectedPreset) return;
+    act('preset_delete', { name: selectedPreset });
+    setSelectedPreset('');
+  };
+
+  const onModeChanges = (mode) => {
+    act('switch_modes', { mode });
+    setSelectedPreset('');
+  };
+
   return (
-    <Window width="980" height="720" resizable>
+    <Window width="980" height="745" resizable>
       <Window.Content overflow="auto">
-        <Section>
-          {temp ? (
-            <NoticeBox>{temp}</NoticeBox>
-          ) : (null)}
-          {Object.keys(item).length ? (
+
+        {Object.keys(item).length ? (
+          <Section>
+            {temp_message ? <NoticeBox>{temp_message}</NoticeBox> : null}
             <>
               <Table>
                 <Table.Cell width="50%">
@@ -45,29 +87,73 @@ export const Colormate = (props, context) => {
                 <Tabs.Tab
                   key="1"
                   selected={activemode === 1}
-                  onClick={() => act('switch_modes', {
-                    mode: 1,
-                  })} >
+                  onClick={() => onModeChanges(1)} >
                   Tint coloring (Simple)
                 </Tabs.Tab>
                 <Tabs.Tab
                   key="2"
                   selected={activemode === 2}
-                  onClick={() => act('switch_modes', {
-                    mode: 2,
-                  })} >
+                  onClick={() => onModeChanges(2)} >
                   HSV coloring (Normal)
                 </Tabs.Tab>
                 <Tabs.Tab
                   key="3"
                   selected={activemode === 3}
-                  onClick={() => act('switch_modes', {
-                    mode: 3,
-                  })} >
+                  onClick={() => onModeChanges(3)} >
                   Matrix coloring (Advanced)
                 </Tabs.Tab>
               </Tabs>
-              <center>Coloring: {item.name}</center>
+              <Section
+                title="Presets"
+                buttons={
+                  <Flex>
+                    <Flex.Item>
+                      <Button
+                        icon="save"
+                        content="Save"
+                        color="good"
+                        onClick={() => act('preset_save', { name: selectedPreset })}
+                      />
+                    </Flex.Item>
+                    <Flex.Item ml={1}>
+                      <Button
+                        icon="trash"
+                        content="Delete"
+                        color="bad"
+                        disabled={!selectedPreset}
+                        onClick={onDeletePreset}
+                      />
+                    </Flex.Item>
+                  </Flex>
+                }
+              >
+                <Flex align="center">
+                  <Flex.Item>
+                    <Button
+                      icon="chevron-left"
+                      disabled={!canPrevPreset}
+                      onClick={() => selectPresetByIndex(currentPresetIdx - 1)}
+                    />
+                  </Flex.Item>
+                  <Flex.Item ml={1} mr={1}>
+                    <Button
+                      icon="chevron-right"
+                      disabled={!canNextPreset}
+                      onClick={() => selectPresetByIndex(currentPresetIdx + 1)}
+                    />
+                  </Flex.Item>
+                  <Flex.Item grow>
+                    <Dropdown
+                      width="100%"
+                      selected={selectedPreset}
+                      displayText={selectedPreset || 'Select preset...'}
+                      options={currentPresetList}
+                      onSelected={onSelectPreset}
+                      placeholder="Select preset..."
+                    />
+                  </Flex.Item>
+                </Flex>
+              </Section>
               <Table mt={1}>
                 <Table.Cell width="33%">
                   <Button
@@ -97,12 +183,24 @@ export const Colormate = (props, context) => {
                 </Table.Cell>
               </Table>
             </>
-          ) : (
-            <center>No item inserted.</center>
-          )}
-        </Section>
+          </Section>
+        ) : (
+          <Stack fill vertical align="center" justify="center" height="100%">
+            <Stack.Item>
+              <Button
+                px={25}
+                py={4}
+                fontSize={3}
+                icon="arrow-right-to-bracket"
+                color="good"
+                content="Insert item"
+                onClick={() => act('insert')}
+              />
+            </Stack.Item>
+          </Stack>
+        )}
       </Window.Content>
-    </Window>
+    </Window >
   );
 };
 

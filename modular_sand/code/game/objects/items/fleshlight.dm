@@ -127,7 +127,7 @@
 	var/list/available_panties = list()
 
 /obj/item/portallight/attack_self(mob/user)
-	. = ..()
+	// BLUEMOON EDIT: Don't call parent to prevent interact() from opening UI
 	switch(targetting)
 		if(CUM_TARGET_PENIS)
 			targetting = CUM_TARGET_VAGINA
@@ -137,7 +137,7 @@
 			targetting = CUM_TARGET_URETHRA
 		if(CUM_TARGET_URETHRA)
 			targetting = CUM_TARGET_PENIS
-	to_chat(user, "<span class='notice'>Теперь вы нацелены на [targetting].</span>")
+	user.balloon_alert(user, "target: [targetting]")
 
 /obj/item/portallight/examine(mob/user)
 	. = ..()
@@ -146,7 +146,7 @@
 	else
 		. += "<span class='notice'>Устройство сопряжено и ожидает использования по прямому назначению.</span>"
 	if(available_panties.len)
-		. += "Alt-Click to choose panties."
+		. += "Alt-Click для выбора трусиков."
 
 /obj/item/portallight/update_appearance(updates)
 	. = ..()
@@ -161,7 +161,14 @@
 	var/user_lust_amt = NONE
 	var/target_lust_amt = NONE
 	var/target
-	var/mob/living/carbon/human/portal_target = ishuman(portalunderwear.loc) && (portalunderwear.current_equipped_slot & (ITEM_SLOT_UNDERWEAR | ITEM_SLOT_MASK)) ? portalunderwear.loc : null
+	// BLUEMOON EDIT: Also check for genital insertion
+	var/mob/living/carbon/human/portal_target
+	if(ishuman(portalunderwear.loc) && (portalunderwear.current_equipped_slot & (ITEM_SLOT_UNDERWEAR | ITEM_SLOT_MASK)))
+		portal_target = portalunderwear.loc
+	else
+		var/datum/component/genital_equipment/equipment = portalunderwear.GetComponent(/datum/component/genital_equipment)
+		if(equipment?.holder_genital)
+			portal_target = equipment.get_wearer()
 
 	// Fluid tranfser inside partner. Also if it is FALSE, it nullifies "orifice" variable in handle_post_sex() to make it work properly, since "cum_inside" variable actually doesn't work correctly today.
 	var/p_to_f = FALSE	//from panties to fleshlight
@@ -650,6 +657,19 @@
 			if(M != portal_target && user.a_intent == INTENT_HARM && (portal_target.client?.prefs.cit_toggles & SEX_JITTER)) //By Gardelin0
 			// BLUEMOON EDIT END
 				portal_target.do_jitter_animation() //make your partner shake too!
+			// BLUEMOON ADD: Chain interactions - notify other connected fleshlights
+			if(portalunderwear?.portallight?.len > 1)
+				for(var/obj/item/portallight/other_fleshlight in portalunderwear.portallight)
+					if(other_fleshlight == src)
+						continue  // Skip self
+					var/datum/component/genital_equipment/fl_equipment = other_fleshlight.GetComponent(/datum/component/genital_equipment)
+					if(fl_equipment?.holder_genital)
+						var/mob/living/carbon/human/chain_target = fl_equipment.get_wearer()
+						if(chain_target && chain_target != portal_target && chain_target != M)
+							to_chat(chain_target, span_lewd("Вы ощущаете что-то через подключённое портальное устройство..."))
+							chain_target.handle_post_sex(round(target_lust_amt / 2), null, M, null, FALSE, TRUE)
+							if(user.a_intent == INTENT_HARM && (chain_target.client?.prefs.cit_toggles & SEX_JITTER))
+								chain_target.do_jitter_animation()
 		else
 			user.visible_message("<span class='warning'><b>'[src]'</b> подает звуковой сигнал и не позволяет <b>[M]</b> войти.</span>")
 	else if(user.a_intent == INTENT_HARM)
@@ -662,7 +682,12 @@
 	var/mob/living/carbon/human/H = null
 	if(portalunderwear && ishuman(portalunderwear.loc))
 		H = portalunderwear.loc
-	else
+	// BLUEMOON ADD: Also check for genital insertion
+	else if(portalunderwear)
+		var/datum/component/genital_equipment/equipment = portalunderwear.GetComponent(/datum/component/genital_equipment)
+		if(equipment?.holder_genital)
+			H = equipment.get_wearer()
+	if(!H)
 		useable = FALSE
 		return
 	var/obj/item/organ/genital/G
@@ -678,7 +703,10 @@
 			useable = FALSE
 			return
 	if(H) //if the portal panties are on someone.
-		if(!(portalunderwear.current_equipped_slot & (ITEM_SLOT_UNDERWEAR | ITEM_SLOT_MASK)))
+		// BLUEMOON EDIT: Also check for genital insertion
+		var/datum/component/genital_equipment/equipment = portalunderwear.GetComponent(/datum/component/genital_equipment)
+		var/is_in_genital = equipment?.holder_genital != null
+		if(!(portalunderwear.current_equipped_slot & (ITEM_SLOT_UNDERWEAR | ITEM_SLOT_MASK)) && !is_in_genital)
 			useable = FALSE
 			return
 
@@ -748,7 +776,6 @@
 					if("hemi", "hemiknot")
 						organ = mutable_appearance('modular_sand/icons/obj/dildo.dmi', "hemi")
 				organ.color = G.color
-				organ.color = G.color
 			if(CUM_TARGET_MOUTH)
 				add_overlay(mutable_appearance('modular_sand/icons/obj/fleshlight.dmi', "portal_mouth"))
 				organ = mutable_appearance('modular_sand/icons/obj/fleshlight.dmi', "portal_mouth_lips") // TODO: find someone to replace shitty programmer art при помощи good shit
@@ -805,7 +832,7 @@
 		if(isliving(portalunderwear.loc))
 			portalunderwear.audible_message("[icon2html(portalunderwear, hearers(portalunderwear))] *beep* *beep* *beep*")
 			playsound(portalunderwear, 'sound/machines/triple_beep.ogg', ASSEMBLY_BEEP_VOLUME, TRUE)
-			to_chat(portalunderwear.loc, "<span class='notice'>The panties beep as the link to the <b>'[src]'</b> is lost.</span>")
+			to_chat(portalunderwear.loc, "<span class='notice'>Трусики издают сигнал - связь с <b>'[src]'</b> потеряна.</span>")
 	. = ..()
 
 /**
@@ -825,7 +852,7 @@
 	equip_delay_other = 5 SECONDS
 
 /obj/item/clothing/underwear/briefs/panties/portalpanties/attack_self(mob/user)
-	. = ..()
+	// BLUEMOON EDIT: Don't call parent to prevent interact() from opening UI
 	switch(targetting)
 		if(CUM_TARGET_VAGINA)
 			targetting = CUM_TARGET_ANUS
@@ -858,7 +885,17 @@
 		. += "<span class='notice'>Устройство не сопряжено, для сопряжения проведите фонариком по этой паре портальных трусиков (TM) или переведите устройство в <b>публичный режим</b> и ожидайте. </span>"
 	else
 		. += "<span class='notice'>Устройство сопряжено и ожидает использования по прямому назначению. Количество сопряженных устройств: <b>[portallight.len]</b>.</span>"
-	. += "<span class='notice'>Публичный доступ к устройству <b>[free_use ? "включен" : "отключен"]</b>. (Alt+Click для смены режима)</span>"
+	var/mode_text = "закрыт"
+	switch(portal_settings?.connection_mode)
+		if(PORTAL_MODE_PUBLIC)
+			mode_text = "публичный"
+		if(PORTAL_MODE_PRIVATE)
+			mode_text = "приватный"
+		if(PORTAL_MODE_GROUP)
+			mode_text = "групповой"
+		if(PORTAL_MODE_DISABLED)
+			mode_text = "закрыт"
+	. += span_notice("Режим доступа: <b>[mode_text]</b>. (Alt+Click для настроек)")
 	. += span_notice("Использование \"Latex Adjustment Override\" переключает возможность снятия предмета.")
 
 /obj/item/clothing/underwear/briefs/panties/portalpanties/attackby(obj/item/I, mob/living/user) //pairing
@@ -917,6 +954,11 @@
 	switch(slot)
 		if(ITEM_SLOT_UNDERWEAR, ITEM_SLOT_MASK)
 			RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(drop_out))
+			// Portal settings setup
+			if(ishuman(user))
+				portal_settings?.owner = user
+				START_PROCESSING(SSobj, src)
+				RegisterSignal(user, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear))
 			if(!portallight.len)
 				audible_message("[icon2html(src, hearers(src))] *beep* *beep* *beep*")
 				playsound(src, 'sound/machines/triple_beep.ogg', ASSEMBLY_BEEP_VOLUME, TRUE)
@@ -926,12 +968,21 @@
 		else
 			update_portal()
 			UnregisterSignal(user, COMSIG_PARENT_QDELETING)
+			// Clear portal settings when not properly worn
+			if(ishuman(user))
+				UnregisterSignal(user, COMSIG_MOVABLE_HEAR)
+				portal_settings?.owner = null
+				STOP_PROCESSING(SSobj, src)
 
-// already processed in /equipped()
-// /obj/item/clothing/underwear/briefs/panties/portalpanties/dropped(mob/user)
-// 	UnregisterSignal(user, COMSIG_PARENT_QDELETING)
-// 	. = ..()
-// 	update_portal()
+/obj/item/clothing/underwear/briefs/panties/portalpanties/dropped(mob/user)
+	UnregisterSignal(user, COMSIG_PARENT_QDELETING)
+	. = ..()
+	update_portal()
+	// Clear portal settings owner
+	if(ishuman(user))
+		UnregisterSignal(user, COMSIG_MOVABLE_HEAR)
+		portal_settings?.owner = null
+		STOP_PROCESSING(SSobj, src)
 
 /obj/item/clothing/underwear/briefs/panties/portalpanties/Destroy()
 	if(portallight.len)

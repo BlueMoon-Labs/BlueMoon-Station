@@ -103,8 +103,8 @@
 	var/salute_delay = 60 SECONDS
 
 	//emotes/speech stuff
-	var/patrol_emote = "Engaging patrol mode."
-	var/patrol_fail_emote = "Unable to start patrol."
+	var/patrol_emote = "Включение режима патруля."
+	var/patrol_fail_emote = "Невозможно начать патруль."
 
 /mob/living/simple_animal/bot/proc/get_mode()
 	if(client) //Player bots do not have modes, thus the override. Also an easy way for PDA users/AI to know when a bot is a player.
@@ -235,11 +235,11 @@
 	. = ..()
 	if(health < maxHealth)
 		if(health > maxHealth/3)
-			. += "[src]'s parts look loose."
+			. += span_warning("[src] выглядит разболтанным.")
 		else
-			. += "[src]'s parts look very loose!"
+			. += span_warning("[src] имеет пробоины в корпусе!")
 	else
-		. += "[src] is in pristine condition."
+		. += span_info("[src] в отличном состоянии.")
 
 /mob/living/simple_animal/bot/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
@@ -299,7 +299,7 @@
 	if(!topic_denied(user))
 		ui_interact(user)
 	else
-		to_chat(user, "<span class='warning'>[src]'s interface is not responding!</span>")
+		to_chat(user, "<span class='warning'>Интерфейс [src] не отвечает!</span>")
 
 /mob/living/simple_animal/bot/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -311,38 +311,38 @@
 	if(W.tool_behaviour == TOOL_SCREWDRIVER)
 		if(!locked)
 			open = !open
-			to_chat(user, "<span class='notice'>The maintenance panel is now [open ? "opened" : "closed"].</span>")
+			to_chat(user, "<span class='notice'>Панель технического обслуживания [open ? "открыта" : "закрыта"].</span>")
 		else
-			to_chat(user, "<span class='warning'>The maintenance panel is locked.</span>")
+			to_chat(user, "<span class='warning'>Панель тех-обслуживания закрыта.</span>")
 	else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/pda))
 		if(bot_core.allowed(user) && !open && !emagged)
 			locked = !locked
-			to_chat(user, "Controls are now [locked ? "locked." : "unlocked."]")
+			to_chat(user, "Управление робота теперь [locked ? "заблокировано." : "разблокировано."]")
 		else
 			if(emagged)
-				to_chat(user, "<span class='danger'>ERROR</span>")
+				to_chat(user, "<span class='danger'>ОШИБКА</span>")
 			if(open)
-				to_chat(user, "<span class='warning'>Please close the access panel before locking it.</span>")
+				to_chat(user, "<span class='warning'>Пожалуйста, закройте панель доступа перед тем, как блокировать её.</span>")
 			else
 				to_chat(user, "<span class='warning'>Доступ запрещён.</span>")
 	else if(istype(W, /obj/item/paicard))
 		insertpai(user, W)
 	else if(W.tool_behaviour == TOOL_HEMOSTAT && paicard)
 		if(open)
-			to_chat(user, "<span class='warning'>Close the access panel before manipulating the personality slot!</span>")
+			to_chat(user, "<span class='warning'>Закройте панель доступа перед взаимодействием со слотом личности!</span>")
 		else
-			to_chat(user, "<span class='notice'>You attempt to pull [paicard] free...</span>")
+			to_chat(user, "<span class='notice'>Вы пытаетесь вытащить [paicard]...</span>")
 			if(do_after(user, 30, target = src))
 				if (paicard)
-					user.visible_message("<span class='notice'>[user] uses [W] to pull [paicard] out of [bot_name]!</span>","<span class='notice'>You pull [paicard] out of [bot_name] with [W].</span>")
+					user.visible_message("<span class='notice'>[user] использует [W], чтобы вытащить [paicard] из [bot_name]!</span>","<span class='notice'>You pull [paicard] out of [bot_name] with [W].</span>")
 					ejectpai(user)
 	else
 		if(W.tool_behaviour == TOOL_WELDER && user.a_intent != INTENT_HARM)
 			if(health >= maxHealth)
-				to_chat(user, "<span class='warning'>[src] does not need a repair!</span>")
+				to_chat(user, "<span class='warning'>[src] не требует ремонта!</span>")
 				return
 			if(!open)
-				to_chat(user, "<span class='warning'>Unable to repair with the maintenance panel closed!</span>")
+				to_chat(user, "<span class='warning'>Невозможно чинить с закрытой панелью тех-обслуживания!</span>")
 				return
 
 			if(W.use_tool(src, user, 0, volume=40))
@@ -368,7 +368,7 @@
 	new /obj/effect/temp_visual/emp(loc)
 	if(paicard)
 		paicard.emp_act(severity)
-		src.visible_message("[paicard] is flies out of [bot_name]!","<span class='warning'>You are forcefully ejected from [bot_name]!</span>")
+		src.visible_message("[paicard] вылетает из [bot_name]!","<span class='warning'>Вы были вытащены из [bot_name]!</span>")
 		ejectpai(0)
 	if(on)
 		turn_off()
@@ -378,9 +378,9 @@
 			turn_on()
 
 /mob/living/simple_animal/bot/proc/set_custom_texts() //Superclass for setting hack texts. Appears only if a set is not given to a bot locally.
-	text_hack = "You hack [name]."
-	text_dehack = "You reset [name]."
-	text_dehack_fail = "You fail to reset [name]."
+	text_hack = "Вы взломали [name]."
+	text_dehack = "Вы сбросили [name] до заводскихи настроек."
+	text_dehack_fail = "Вы не можете сбросить настройки [name] до заводских..."
 
 /mob/living/simple_animal/bot/proc/speak(message,channel) //Pass a message to have the bot say() it. Pass a frequency to say it on the radio.
 	if((!on) || (!message))

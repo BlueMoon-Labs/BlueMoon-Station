@@ -1,6 +1,6 @@
 /obj/machinery/dna_scannernew
 	name = "\improper DNA scanner"
-	desc = "It scans DNA structures."
+	desc = "Эта машина сканирует цепочки ДНК."
 	icon = 'icons/obj/Cryogenic2.dmi'
 	icon_state = "scanner"
 	density = TRUE
@@ -31,9 +31,11 @@
 /obj/machinery/dna_scannernew/examine(mob/user)
 	. = ..()
 	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Radiation pulse accuracy increased by factor <b>[precision_coeff**2]</b>.<br>Radiation pulse damage decreased by factor <b>[damage_coeff**2]</b>.</span>"
+		. += span_notice("Статус-дисплей сообщает: \n\
+		- Точность импульса увеличена в <b>[precision_coeff**2]</b> раз(а). \n\
+		- Объём облучения уменьшен в <b>[damage_coeff**2]</b> раз(а).")
 		if(scan_level >= 3)
-			. += "<span class='notice'>Scanner has been upgraded to support autoprocessing.</span>"
+			. += span_notice("- Сканер улучшен и поддерживает автообработку.")
 
 /obj/machinery/dna_scannernew/update_icon_state()
 	//no power or maintenance
@@ -55,7 +57,7 @@
 
 /obj/machinery/dna_scannernew/proc/toggle_open(mob/user)
 	if(panel_open)
-		to_chat(user, "<span class='notice'>Close the maintenance panel first.</span>")
+		to_chat(user, "<span class='notice'>Для начала закройте панель техобслуживания.</span>")
 		return
 
 	if(state_open)
@@ -63,7 +65,7 @@
 		return
 
 	else if(locked)
-		to_chat(user, "<span class='notice'>The bolts are locked down, securing the door shut.</span>")
+		to_chat(user, "<span class='notice'>Болты опущены, держа створки запертыми.</span>")
 		return
 
 	open_machine()
@@ -72,18 +74,18 @@
 	if(!locked)
 		open_machine()
 		return
-	user.visible_message("<span class='notice'>You see [user] kicking against the door of [src]!</span>", \
-		"<span class='notice'>You lean on the back of [src] and start pushing the door open... (this will take about [DisplayTimeText(breakout_time)].)</span>", \
-		"<span class='hear'>You hear a metallic creaking from [src].</span>")
+	user.visible_message("<span class='notice'>Вы видите как [user] пинает створки [src]!</span>", \
+		"<span class='notice'>Вы прислонились к стенке [src] и начали выдавливать дверь наружу... (это займёт примерно [DisplayTimeText(breakout_time)].)</span>", \
+		"<span class='hear'>Вы слышите металлический лязг от [src].</span>")
 	if(INTERACTING_WITH(user, src))
-		to_chat(user, span_warning("You're already interacting with [src]!"))
+		to_chat(user, span_warning("Вы уже взаимодействуете с [src]!"))
 		return
 	if(do_after(user,(breakout_time), target = src))
 		if(!user || user.stat != CONSCIOUS || user.loc != src || state_open || !locked)
 			return
 		locked = FALSE
-		user.visible_message("<span class='warning'>[user] successfully broke out of [src]!</span>", \
-			"<span class='notice'>You successfully break out of [src]!</span>")
+		user.visible_message("<span class='warning'>[user] успешно выбирается из [src]!</span>", \
+			"<span class='notice'>Вы успешно выбрались из [src]!</span>")
 		open_machine()
 
 /obj/machinery/dna_scannernew/proc/locate_computer(type_)
@@ -104,7 +106,7 @@
 	if(istype(mob_occupant))
 		if(locate_computer(/obj/machinery/computer/cloning))
 			if(!mob_occupant.suiciding && !(HAS_TRAIT(mob_occupant, TRAIT_NOCLONE)) && !mob_occupant.hellbound)
-				mob_occupant.notify_ghost_cloning("Your corpse has been placed into a cloning scanner. Re-enter your corpse if you want to be cloned!", source = src)
+				mob_occupant.notify_ghost_cloning("Ваш труп поместили в сканер клонирования. Вернитесь в тело, если хотите быть клонированными!", source = src)
 
 	// DNA manipulators cannot operate on severed heads or brains
 	if(iscarbon(occupant))
@@ -128,7 +130,7 @@
 	if(user.stat || locked)
 		if(message_cooldown <= world.time)
 			message_cooldown = world.time + 50
-			to_chat(user, "<span class='warning'>[src]'s door won't budge!</span>")
+			to_chat(user, "<span class='warning'>Створки [src] не поддаются!</span>")
 		return
 	open_machine()
 
@@ -159,6 +161,7 @@
 //Just for transferring between genetics machines.
 /obj/item/disk/data
 	name = "DNA data disk"
+	desc = "Дискета для хранения генетической информации, работы любого генетика."
 	icon_state = "datadisk0" //Gosh I hope syndies don't mistake them for the nuke disk.
 	var/list/genetic_makeup_buffer = list()
 	var/list/fields = list()
@@ -173,8 +176,8 @@
 
 /obj/item/disk/data/attack_self(mob/user)
 	read_only = !read_only
-	to_chat(user, "<span class='notice'>You flip the write-protect tab to [read_only ? "protected" : "unprotected"].</span>")
+	to_chat(user, "<span class='notice'Вы перевели ползунок защиты данных в положение [read_only ? "защищено" : "незащищено"].</span>")
 
 /obj/item/disk/data/examine(mob/user)
 	. = ..()
-	. += "The write-protect tab is set to [read_only ? "protected" : "unprotected"]."
+	. += "Ползунок защиты данных в положении [read_only ? "защищено" : "незащищено"]."

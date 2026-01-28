@@ -99,6 +99,7 @@
 #define span_singing(str) ("<span class='singing'>" + str + "</span>")
 #define span_slime(str) ("<span class='slime'>" + str + "</span>")
 #define span_small(str) ("<span class='small'>" + str + "</span>")
+#define span_smalldanger(str) ("<span class='smalldanger'>" + str + "</span>")
 #define span_smallnotice(str) ("<span class='smallnotice'>" + str + "</span>")
 #define span_smallnoticeital(str) ("<span class='smallnoticeital'>" + str + "</span>")
 #define span_spider(str) ("<span class='spider'>" + str + "</span>")
@@ -118,3 +119,6 @@
 #define span_yellowteamradio(str) ("<span class='yellowteamradio'>" + str + "</span>")
 #define span_marooned(str) ("<span class='marooned'>" + str + "</span>")
 #define span_header(str) ("<span class='header'>" + str + "</span>")
+
+//For balloons (they dont use CSS)
+#define span_balloon_warning(str) ("<span style='color:#c51e1e'>" + str + "</span>")

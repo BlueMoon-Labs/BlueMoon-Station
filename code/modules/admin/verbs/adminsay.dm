@@ -27,7 +27,7 @@
 	mob.log_talk(msg, LOG_ASAY)
 
 	msg = keywords_lookup(msg)
-	msg = "<span class='adminsay'><span class='prefix'>ADMIN:</span> <EM>[key_name(usr, 1)]</EM> [ADMIN_FLW(mob)]: <span class='message linkify'>[msg]</span></span>"
+	msg = "<span class='adminsay'><span class='prefix'>ADMIN:</span> <EM>[key_name(usr, 1)]</EM> [ADMIN_FLW(mob)]: <span class='message linkify'><font color='[prefs.ooccolor ? prefs.ooccolor : "#ff4500"]'>[msg]</font></span></span>"
 	to_chat(GLOB.admins, msg, confidential = TRUE)
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Asay") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!

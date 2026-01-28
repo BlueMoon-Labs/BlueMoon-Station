@@ -21,6 +21,8 @@
 #define TRAIT_COMMON_PREGNANCY				"common_pregnancy"
 #define TRAIT_BONDAGED						"bondaged"
 #define TRAIT_IMAGINARYFRIEND				"imaginaryfriend"
+#define TRAIT_TK_POTENTIAL					"TK_potential"
+#define TRAIT_RETRACTABLE_CLAWS				"claws"
 
 // Отдельные наименования для квирков, чтобы не повторять их в настройках
 #define BLUEMOON_TRAIT_NAME_SHRIEK				"Крикун"
@@ -38,7 +40,8 @@
 #define CAN_BE_OPERATED_WITHOUT_PAIN		"can_be_operated_without_pain"
 
 // Трейты для профессий
-#define QUALIFIED_ROBOTIC_MAINTER			"qualified_robotic_maintner"
+#define TRAIT_QUALIFIED_ROBOTIC_MAINTER		"qualified_robotic_mainter"
+#define TRAIT_GUIDED_ROBOTIC_MAINTER		"guided_robotic_mainter"
 #define TRAIT_REAGENT_EXPERT				"reagent_expert"
 #define TRAIT_MECHA_EXPERT 					"mecha_expert"
 #define TRAIT_FENCER		 				"fencer"
@@ -61,3 +64,5 @@
 
 /// Whether syscorruption cleaner from TRAIT_BLUEMOON_SYSCLEANER is working RIGHT NOW
 #define TRAIT_SYSCLEANER_IN_PROGRESS "nanobot_syscleaner_in_progress"
+
+

@@ -25,7 +25,7 @@
 	name = "MOPP gloves"
 	desc = "Mission Oriented Protective Posture. Thick black gloves design for working in hazardous combat environments. Still not shock proof"
 //	icon_state = "combat" // BLUEMOON COMMENTED OUT using own states in module
-	armor = list("melee" = 10, "bullet" = 0, "laser" = 10,"energy" = 10, "bomb" = 10, "bio" = 100, "rad" = 100, "fire" = 40, "acid" = 100)
+	armor = list("melee" = 10, "bullet" = 0, "laser" = 10,"energy" = 10, "bomb" = 10, "bio" = 100, "rad" = 75, "fire" = 40, "acid" = 100)
 	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL
 
 /obj/item/clothing/gloves/cbrn/mopp/advance

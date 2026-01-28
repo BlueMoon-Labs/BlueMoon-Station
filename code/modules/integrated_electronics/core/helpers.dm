@@ -20,12 +20,12 @@
 			io_list.Add(new io_type(src, io_entry, default_data, pin_type,i))
 
 
-/obj/item/integrated_circuit/proc/set_pin_data(pin_type, pin_number, datum/new_data)
+/obj/item/integrated_circuit/proc/set_pin_data(pin_type, pin_number, new_data)
 	if(islist(new_data))
 		for(var/i in 1 to length(new_data))
-			if (istype(new_data) && !isweakref(new_data))
+			if(isdatum(new_data) && !isweakref(new_data))
 				new_data[i] = WEAKREF(new_data[i])
-	if (istype(new_data) && !isweakref(new_data))
+	if(isdatum(new_data) && !isweakref(new_data))
 		new_data = WEAKREF(new_data)
 	var/datum/integrated_io/pin = get_pin_ref(pin_type, pin_number)
 	return pin.write_data_to_pin(new_data)
@@ -63,9 +63,12 @@
 
 /datum/integrated_io/proc/get_data()
 	if(islist(data))
+		var/list/data_list = data
 		for(var/i in 1 to length(data))
-			if(isweakref(data[i]))
-				data[i] = data[i].resolve()
+			var/datum/weakref/i_ref = data_list[i]
+			if(istype(i_ref))
+				data_list[i] = i_ref.resolve()
+		data = data_list
 	if(isweakref(data))
 		return data.resolve()
 	return data

@@ -26,7 +26,6 @@
 	// in memoriam "Your balls finally feel full, again." ??-2020
 
 /obj/item/organ/genital/testicles/upon_link()
-	size = linked_organ.size
 	update_size()
 	update_appearance()
 
@@ -91,6 +90,7 @@
 	else
 		color = "#[D.features["balls_color"]]"
 	shape = D.features["balls_shape"]
+	size = D.features["balls_size"]
 	fluid_rate = D.features["balls_cum_rate"]
 	fluid_mult = D.features["balls_cum_mult"]
 	fluid_efficiency = D.features["balls_efficiency"]

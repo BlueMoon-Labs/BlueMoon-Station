@@ -6,19 +6,19 @@ export const BeakerContents = props => {
     <Box>
       {!beakerLoaded && (
         <Box color="label">
-          No beaker loaded.
+          Реагенты отсутствуют.
         </Box>
       ) || beakerContents.length === 0 && (
         <Box color="label">
-          Beaker is empty.
+          Ёмкость пустая.
         </Box>
       )}
       {beakerContents.map(chemical => (
         <Box key={chemical.name} color="label">
           <AnimatedNumber
-            initial={0}
+            initial={0} a
             value={chemical.volume} />
-          {" units of "+chemical.name}
+          {"u "+chemical.name}
           {chemical.purity < 1 && "(Purity: "+chemical.purity+")"}
         </Box>
       ))}

@@ -1,6 +1,6 @@
 /obj/item/reagent_containers/hypospray
 	name = "hypospray"
-	desc = "The DeForest Medical Corporation hypospray is a sterile, air-needle autoinjector for rapid administration of drugs to patients."
+	desc = "Гипоспрей компании DeForest Medical Corporation - стерильный, воздушный инъектор. Предназначендля экстренного введения препаратов пациентам."
 	icon = 'icons/obj/syringe.dmi'
 	item_state = "hypo"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
@@ -30,7 +30,7 @@
 
 /obj/item/reagent_containers/hypospray/attack(mob/living/M, mob/user)
 	if(!reagents.total_volume)
-		to_chat(user, "<span class='warning'>[src] is empty!</span>")
+		to_chat(user, "<span class='warning'>[src] пуст!</span>")
 		return
 	if(!iscarbon(M))
 		return
@@ -43,8 +43,8 @@
 	log_combat(user, M, "attempted to inject", src, "([contained])")
 
 	if(reagents.total_volume && (ignore_flags || M.can_inject(user, 1))) // Ignore flag should be checked first or there will be an error message.
-		to_chat(M, "<span class='warning'>You feel a tiny prick!</span>")
-		to_chat(user, "<span class='notice'>You inject [M] with [src].</span>")
+		to_chat(M, "<span class='warning'>Вы ощущаете лёгкий укол!</span>")
+		to_chat(user, "<span class='notice'>Вы сделали инъекцию [M] при помощи [src].</span>")
 		playsound(loc, 'sound/items/medi/hypo.ogg', 80, 0)
 
 		var/fraction = min(amount_per_transfer_from_this/reagents.total_volume, 1)
@@ -56,7 +56,7 @@
 			else
 				trans = reagents.copy_to(M, amount_per_transfer_from_this)
 
-			to_chat(user, "<span class='notice'>[trans] unit\s injected.  [reagents.total_volume] unit\s remaining in [src].</span>")
+			to_chat(user, "<span class='notice'>[trans]u введено. [reagents.total_volume]u осталось в [src].</span>")
 
 
 			log_combat(user, M, "injected", src, "([contained])")
@@ -67,7 +67,7 @@
 
 /obj/item/reagent_containers/hypospray/combat
 	name = "combat stimulant injector"
-	desc = "A modified air-needle autoinjector, used by support operatives to quickly heal injuries in combat and get people back in the fight."
+	desc = "Модифицированный пневматический игольный автоинъектор для поддержки оперативников. Нацелен на быстрое закрытие ран в бою и возвращение солдат в строй."
 	amount_per_transfer_from_this = 10
 	item_state = "combat_hypo"
 	icon_state = "combat_hypo"
@@ -76,13 +76,13 @@
 	list_reagents = list(/datum/reagent/medicine/epinephrine = 30, /datum/reagent/medicine/lesser_syndicate_nanites = 40, /datum/reagent/medicine/leporazine = 15, /datum/reagent/medicine/atropine = 15)
 
 /obj/item/reagent_containers/hypospray/combat/omnizine // owned idiot
-	desc = "A modified air-needle autoinjector, used by underfunded support operatives to slowly heal injuries in combat and limp away from a fight."
+	desc = "Модифицированный пневматический игольный автоинъектор, используется недофинансированными военными частями для латания ран в бою и выковыливания прочь из боя."
 	volume = 90
 	list_reagents = list(/datum/reagent/medicine/epinephrine = 30, /datum/reagent/medicine/omnizine = 30, /datum/reagent/medicine/leporazine = 15, /datum/reagent/medicine/atropine = 15)
 
 /obj/item/reagent_containers/hypospray/combat/nanites
 	name = "experimental combat stimulant injector"
-	desc = "A modified air-needle autoinjector for use in combat situations. Prefilled with experimental medical nanites and a stimulant for rapid healing and a combat boost."
+	desc = "Модифицированный пневматический игольный автоинъектор для использования в боевых условиях. Заполнен экспериментальными мед-нанитами и стимуляторами для быстрого лечения и повышения эффективности в условиях боя."
 	item_state = "nanite_hypo"
 	icon_state = "nanite_hypo"
 	volume = 100
@@ -97,7 +97,7 @@
 
 /obj/item/reagent_containers/hypospray/combat/heresypurge
 	name = "holy water piercing injector"
-	desc = "A modified air-needle autoinjector for use in combat situations. Prefilled with 5 doses of a holy water and pacifier mixture. Not for use on your teammates."
+	desc = "Модифицированный пневматический игольный автоинъектор для использования в боевых условиях. Заполнен пятью дозами святой воды и пацифицирующей смесью. Не используйте на своих товарищах."
 	item_state = "holy_hypo"
 	icon_state = "holy_hypo"
 	volume = 250
@@ -108,7 +108,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen
 	name = "epinephrine medipen"
-	desc = "A rapid and safe way to stabilize patients in critical condition for personnel without advanced medical knowledge. Contains a powerful preservative that can delay decomposition when applied to a dead body."
+	desc = "Стремительный и стабильный способ стабилизации пациентов в критическом состоянии для экипажа без знаний медицины. Содержит сильный консервант, способный задерживать разложение мёртвого тела."
 	icon_state = "medipen"
 	item_state = "medipen"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
@@ -122,12 +122,12 @@
 	custom_premium_price = PRICE_ALMOST_EXPENSIVE
 
 /obj/item/reagent_containers/hypospray/medipen/suicide_act(mob/living/carbon/user)
-	user.visible_message("<span class='suicide'>[user] begins to choke on \the [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")
+	user.visible_message("<span class='suicide'>[user] начинает давиться [src]! Похоже, [user.ru_who()] пытаются совершить суицид!</span>")
 	return OXYLOSS//ironic. he could save others from oxyloss, but not himself.
 
 /obj/item/reagent_containers/hypospray/medipen/attack(mob/M, mob/user)
 	if(!reagents.total_volume)
-		to_chat(user, "<span class='warning'>[src] is empty!</span>")
+		to_chat(user, "<span class='warning'>[src] пуст!</span>")
 		return
 	..()
 	if(!iscyborg(user))
@@ -155,13 +155,13 @@
 /obj/item/reagent_containers/hypospray/medipen/examine()
 	. = ..()
 	if(reagents && reagents.reagent_list.len)
-		. += "<span class='notice'>It is currently loaded.</span>"
+		. += "<span class='notice'>Заряжен и готов к применению.</span>"
 	else
-		. += "<span class='notice'>It is spent.</span>"
+		. += "<span class='notice'>Потрачен!</span>"
 
 /obj/item/reagent_containers/hypospray/medipen/ekit
 	name = "emergency first-aid autoinjector"
-	desc = "An epinephrine medipen with extra coagulant and antibiotics to help stabilize bad cuts and burns."
+	desc = "Эпинефриновый медипен. Содержит дозу коагулянта и антибиотиков для стабилизации тяжёлых травм и ожогов."
 	icon_state = "healthpen"
 	item_state = "healthpen"
 	volume = 15
@@ -170,7 +170,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/blood_loss
 	name = "hypovolemic-response autoinjector"
-	desc = "A medipen designed to stabilize and rapidly reverse severe bloodloss."
+	desc = "Медипен для стабилизации пациента и обращения последствий тяжёлых кровопотерь."
 	icon_state = "hypovolemic"
 	item_state = "hypovolemic"
 	volume = 15
@@ -179,7 +179,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/stimulants
 	name = "stimpack medipen"
-	desc = "Contains stimulants."
+	desc = "Содержит стимуляторы."
 	icon_state = "syndipen"
 	item_state = "syndipen"
 	volume = 50
@@ -188,7 +188,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/stimulants/baseball
 	name = "the reason the syndicate major league team wins"
-	desc = "They say drugs never win, but look where you are now, then where they are."
+	desc = "Говорят, химия никогда не решает, но, посмотри где ты сейчас, а потом - где они."
 	icon_state = "baseballstim"
 	volume = 50
 	amount_per_transfer_from_this = 50
@@ -196,7 +196,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/stimpack //goliath kiting
 	name = "stimpack medipen"
-	desc = "A rapid way to stimulate your body's adrenaline, allowing for freer movement in restrictive armor."
+	desc = "Способ быстрой стимуляции организм на выброс адреналина, позволяя двигаться свободнее в сковывающей броне."
 	icon_state = "stimpen"
 	item_state = "stimpen"
 	volume = 20
@@ -204,12 +204,12 @@
 	list_reagents = list(/datum/reagent/medicine/ephedrine = 10, /datum/reagent/consumable/coffee = 10)
 
 /obj/item/reagent_containers/hypospray/medipen/stimpack/traitor
-	desc = "A modified stimulants autoinjector for use in combat situations. Has a mild healing effect."
+	desc = "Модифицированный автоинъектор стимуляторов для боевых условий. Смесь немного затягивает раны пациента."
 	list_reagents = list(/datum/reagent/medicine/stimulants = 10, /datum/reagent/medicine/omnizine = 10)
 
 /obj/item/reagent_containers/hypospray/medipen/morphine
 	name = "morphine medipen"
-	desc = "A rapid way to get you out of a tight situation and fast! You'll feel rather drowsy, though."
+	desc = "Быстрый способ выбраться из сложной ситуации! Ценой ощущения сильной заторможенности."
 	icon_state = "morphen"
 	item_state = "morphen"
 	volume = 10
@@ -218,7 +218,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/penacid
 	name = "pentetic acid medipen"
-	desc = "A autoinjector containing pentetic acid, used to reduce high levels of radiations and moderate toxins."
+	desc = "Автоинъектор с пентеновой кислотой, она же ДТПА, для стабилизации высоких доз радиации и средних интоксикаций."
 	icon_state = "penacid"
 	item_state = "penacid"
 	volume = 10
@@ -227,7 +227,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/atropine
 	name = "atropine autoinjector"
-	desc = "A rapid way to save a person from a critical injury state!"
+	desc = "Быстрый способ спасти кого-то в критическом состоянии!"
 	icon_state = "atropen"
 	item_state = "atropen"
 	volume = 10
@@ -236,7 +236,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/salacid
 	name = "salicyclic acid medipen"
-	desc = "A autoinjector containing salicyclic acid, used to treat severe brute damage."
+	desc = "Автоинъектор с салициловой кислотой, для стабилизации тяжелейших травм."
 	icon_state = "salacid"
 	item_state = "salacid"
 	volume = 10
@@ -245,7 +245,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/oxandrolone
 	name = "oxandrolone medipen"
-	desc = "A autoinjector containing oxandrolone, used to treat severe burns."
+	desc = "Автоинъектор с оксандролоном, для стабилизации тяжелейших ожогов."
 	icon_state = "oxapen"
 	item_state = "oxapen"
 	volume = 10
@@ -254,7 +254,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/salbutamol
 	name = "salbutamol medipen"
-	desc = "A autoinjector containing salbutamol, used to heal oxygen damage quickly."
+	desc = "Автоинъектор с сальбутамолом, для быстрой стабилизации гипоксии любой тяжести."
 	icon_state = "salpen"
 	item_state = "salpen"
 	volume = 10
@@ -263,7 +263,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/tuberculosiscure
 	name = "BVAK autoinjector"
-	desc = "Bio Virus Antidote Kit autoinjector. Has a two use system for yourself, and someone else. Inject when infected."
+	desc = "Автоинъектор \"Bio Virus Antidote Kit\". Имеет две системы: для вас и для кого-то ещё. Применять при инфекционном заражении."
 	icon_state = "tbpen"
 	item_state = "tbpen"
 	volume = 60
@@ -281,7 +281,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/survival
 	name = "survival medipen"
-	desc = "A medipen for surviving in the harshest of environments, heals and protects from environmental hazards. WARNING: Do not inject more than one pen in quick succession."
+	desc = "Медипен-инъектор для выживания в самых тяжёлых условиях, лечит и защищает от угроз окружающей среды. ВНИМАНИЕ: не делать более одной инъекции за короткое время."
 	icon_state = "minepen"
 	item_state = "minepen"
 	volume = 52
@@ -290,7 +290,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/firelocker
 	name = "fire treatment medipen"
-	desc = "A medipen that has been fulled with burn healing chemicals for personnel without advanced medical knowledge."
+	desc = "Медипен-инъектор, наполненный препаратами для лечения ожогов для экипажа без знаний медицины."
 	icon_state = "firepen"
 	item_state = "firepen"
 	volume = 15
@@ -299,7 +299,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/magillitis
 	name = "experimental autoinjector"
-	desc = "A custom-frame needle injector with a small single-use reservoir, containing an experimental serum. Unlike the more common medipen frame, it cannot pierce through protective armor or hardsuits, nor can the chemical inside be extracted."
+	desc = "Игольный инъектор ручной работы с одноразовым резервуаром, содержащим экспериментальную смесь. В отличие от привычных инъекторов, не пробивает толстый слой одежды или скафандры и не может быть опустошён без утери содержимого."
 	icon_state = "gorillapen"
 	item_state = "gorillapen"
 	volume = 5
@@ -330,7 +330,7 @@
 	name = "hypospray mk.II"
 	icon_state = "hypo2"
 	icon = 'icons/obj/syringe.dmi'
-	desc = "A new development from DeForest Medical, this hypospray takes 30-unit vials as the drug supply for easy swapping."
+	desc = "Новая разработка DeForest Medical, этот гипоспрей принимает гипоампулы по 30u и поддерживает функцию быстрой перезарядки."
 	w_class = WEIGHT_CLASS_TINY
 	var/list/allowed_containers = list(/obj/item/reagent_containers/glass/bottle/vial/tiny, /obj/item/reagent_containers/glass/bottle/vial/small)
 	var/mode = HYPO_INJECT
@@ -366,7 +366,7 @@
 	name = "hypospray mk.II deluxe"
 	allowed_containers = list(/obj/item/reagent_containers/glass/bottle/vial/tiny, /obj/item/reagent_containers/glass/bottle/vial/small, /obj/item/reagent_containers/glass/bottle/vial/large)
 	icon_state = "cmo2"
-	desc = "The Deluxe Hypospray can take larger-size vials. It also acts faster and delivers more reagents per spray."
+	desc = "Deluxe-модель гипроспрея, способная принимать ампулы большого размера. Помимо этого, работает быстре и доставляет больше препаратов за раз."
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/CMO
 	inject_wait = DELUXE_WAIT_INJECT
@@ -376,7 +376,7 @@
 
 /obj/item/hypospray/mkii/CMO/combat
 	name = "combat hypospray mk.II"
-	desc = "A combat-ready deluxe hypospray that acts almost instantly. It can be tactically reloaded by using a vial on it."
+	desc = "Готовый к бою deluxe-гипоспрей, делающий укол почти мгновенно. Может быть тактически перезаряжен другой ампулой в руках."
 	icon_state = "combat2"
 	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/combat
 	inject_wait = COMBAT_WAIT_INJECT
@@ -411,15 +411,15 @@
 	. = ..()
 	// Did you know that clicking something while you're holding it is the same as attack_self()?
 	if(vial && (held_item == src))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Remove [vial]")
-	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Set to [mode ? "spray" : "inject"]")
-	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Set transfer amount")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Убрать [vial]")
+	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Режим: [mode ? "спрей" : "инъекция"]")
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Задать объем передачи")
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/hypospray/mkii/add_item_context(obj/item/source, list/context, atom/target, mob/living/user)
 	. = ..()
 	if(iscarbon(target))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, mode ? "Inject" : "Spray")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, mode ? "Инъекция" : "Спрей")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/hypospray/mkii/ComponentInitialize()
@@ -432,44 +432,44 @@
 /obj/item/hypospray/mkii/examine(mob/user)
 	. = ..()
 	if(vial)
-		. += "[vial] has [vial.reagents.total_volume]u remaining."
+		. += "В [vial] осталось [vial.reagents.total_volume]u."
 	else
-		. += "It has no vial loaded in."
-	. += "[src] is set to [mode ? "Inject" : "Spray"] contents on application."
+		. += "Внутри нет ампулы."
+	. += span_info("[src] выставлен в режим [mode ? "инъекции" : "спрея тела"] пациента.")
 
 /obj/item/hypospray/mkii/proc/unload_hypo(obj/item/I, mob/user)
 	if((istype(I, /obj/item/reagent_containers/glass/bottle/vial)))
 		var/obj/item/reagent_containers/glass/bottle/vial/V = I
 		V.forceMove(user.loc)
 		user.put_in_hands(V)
-		to_chat(user, "<span class='notice'>You remove [vial] from [src].</span>")
+		to_chat(user, "<span class='notice'>Вы извлекли [vial] из [src].</span>")
 		vial = null
 		update_icon()
 		playsound(loc, 'sound/weapons/empty.ogg', 50, 1)
 	else
-		to_chat(user, "<span class='notice'>This hypo isn't loaded!</span>")
+		to_chat(user, "<span class='notice'>Этот гипоспрей не заряжен!</span>")
 		return
 
 /obj/item/hypospray/mkii/attackby(obj/item/I, mob/living/user)
 	if((istype(I, /obj/item/reagent_containers/glass/bottle/vial) && vial != null))
 		if(!quickload)
-			to_chat(user, "<span class='warning'>[src] can not hold more than one vial!</span>")
+			to_chat(user, "<span class='warning'>[src] не может держать больше одной ампулы!</span>")
 			return FALSE
 		unload_hypo(vial, user)
 	if((istype(I, /obj/item/reagent_containers/glass/bottle/vial)))
 		var/obj/item/reagent_containers/glass/bottle/vial/V = I
 		if(!is_type_in_list(V, allowed_containers))
-			to_chat(user, "<span class='notice'>[src] doesn't accept this type of vial.</span>")
+			to_chat(user, "<span class='notice'>[src] не принимает этот тип ампул.</span>")
 			return FALSE
 		if(!user.transferItemToLoc(V,src))
 			return FALSE
 		vial = V
-		user.visible_message("<span class='notice'>[user] has loaded a vial into [src].</span>","<span class='notice'>You have loaded [vial] into [src].</span>")
+		user.visible_message("<span class='notice'>[user] зарядил ампулу в [src].</span>","<span class='notice'>Вы зарядили [vial] в [src].</span>")
 		update_icon()
 		playsound(loc, 'sound/weapons/autoguninsert.ogg', 35, 1)
 		return TRUE
 	else
-		to_chat(user, "<span class='notice'>This doesn't fit in [src].</span>")
+		to_chat(user, "<span class='notice'>Это не поместится в [src].</span>")
 		return FALSE
 
 /obj/item/hypospray/mkii/AltClick(mob/user)
@@ -482,14 +482,14 @@
 /obj/item/hypospray/mkii/emag_act(mob/user)
 	. = ..()
 	if(obj_flags & EMAGGED)
-		to_chat(user, "[src] happens to be already overcharged.")
+		to_chat(user, "[src], оказывается, уже перегружен.")
 		return
 	inject_wait = COMBAT_WAIT_INJECT
 	spray_wait = COMBAT_WAIT_SPRAY
 	spray_self = COMBAT_SELF_INJECT
 	inject_self = COMBAT_SELF_SPRAY
 	penetrates = TRUE
-	to_chat(user, "You overcharge [src]'s control circuit.")
+	to_chat(user, "Вы перегрузили схемы управления [src].")
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	return TRUE
@@ -512,56 +512,56 @@
 	if(!L.reagents || !L.can_inject(user, TRUE, user.zone_selected, penetrates))
 		return
 
+	var/obj/item/bodypart/affecting = L.get_bodypart(check_zone(user.zone_selected))
 	if(iscarbon(L))
-		var/obj/item/bodypart/affecting = L.get_bodypart(check_zone(user.zone_selected))
 		if(!affecting)
-			to_chat(user, "<span class='warning'>The limb is missing!</span>")
+			to_chat(user, "<span class='warning'>Конечность отсутствует!</span>")
 			return
 		if(!affecting.is_organic_limb())
-			to_chat(user, "<span class='notice'>Medicine won't work on a robotic limb!</span>")
+			to_chat(user, "<span class='notice'>Препараты не работают на роботических конечностях!</span>")
 			return
 		else if(!affecting.is_organic_limb(FALSE) && mode != HYPO_INJECT)
-			to_chat(user, "<span class='notice'>Biomechanical limbs can only be treated via their integrated injection port, not via spraying!</span>")
+			to_chat(user, "<span class='notice'>Биомеханические конечности могут быть обслужены только через их интегрированный порт для инъекций, не спреем!</span>")
 			return
 	//Always log attemped injections for admins
 	var/contained = vial.reagents.log_list()
 	log_combat(user, L, "attemped to inject", src, addition="which had [contained]")
 
 	if(!vial)
-		to_chat(user, "<span class='notice'>[src] doesn't have any vial installed!</span>")
+		to_chat(user, "<span class='notice'>[src] не имеет какой-либо ампулы!</span>")
 		return
 	if(!vial.reagents.total_volume)
-		to_chat(user, "<span class='notice'>[src]'s vial is empty!</span>")
+		to_chat(user, "<span class='notice'>Ампула внутри [src] пуста!</span>")
 		return
 
-	var/fp_verb = mode == HYPO_SPRAY ? "spray" : "inject"
+	var/fp_verb = mode == HYPO_SPRAY ? "нанести спрей" : "сделать инъекцию"
 	var/method = mode == HYPO_SPRAY ? PATCH : INJECT	//Medsprays use patch when spraying, feels like an inconsistancy here.
 
 	if(L != user)
-		L.visible_message("<span class='danger'>[user] is trying to [fp_verb] [L] with [src]!</span>", \
-						"<span class='userdanger'>[user] is trying to [fp_verb] you with [src]!</span>")
+		L.visible_message("<span class='danger'>[user] пытается [fp_verb] [L] при помощи [src]!</span>", \
+						"<span class='userdanger'>[user] пытается [fp_verb] вам при помощи [src]!</span>")
 	if(!do_mob(user, L, inject_wait, extra_checks = CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject), user, FALSE, user.zone_selected, penetrates)))
 		return
 	if(!vial.reagents.total_volume)
 		return
 	log_attack("<font color='red'>[user.name] ([user.ckey]) applied [src] to [L.name] ([L.ckey]), which had [contained] (INTENT: [uppertext(user.a_intent)]) (MODE: [mode])</font>")
 	if(L != user)
-		L.visible_message("<span class='danger'>[user] uses the [src] on [L]!</span>", \
-						"<span class='userdanger'>[user] uses the [src] on you!</span>")
+		L.visible_message("<span class='danger'>[user] использует [src] на [L]!</span>", \
+						"<span class='userdanger'>[user] использует [src] на вас!</span>")
 
 	var/fraction = min(vial.amount_per_transfer_from_this/vial.reagents.total_volume, 1)
-	vial.reagents.reaction(L, method, fraction)
+	vial.reagents.reaction(L, method, fraction, affected_bodypart = affecting)
 	vial.reagents.trans_to(target, vial.amount_per_transfer_from_this, log = "hypospray fill")
 	var/long_sound = vial.amount_per_transfer_from_this >= 15
 	playsound(loc, long_sound ? 'sound/items/medi/hypospray_long.ogg' : pick('sound/items/medi/hypospray.ogg','sound/items/medi/hypospray2.ogg'), 50, 1, -1)
-	to_chat(user, "<span class='notice'>You [fp_verb] [vial.amount_per_transfer_from_this] units of the solution. The hypospray's cartridge now contains [vial.reagents.total_volume] units.</span>")
+	to_chat(user, "<span class='notice'>Вы истратили [vial.amount_per_transfer_from_this]u смеси. Ампула гипоспрея теперь содержит [vial.reagents.total_volume]u.</span>")
 
 /obj/item/hypospray/mkii/attack_self(mob/living/user)
 	if(user)
 		if(user.incapacitated())
 			return
 		else if(!vial)
-			to_chat(user, "This Hypo needs to be loaded first!")
+			to_chat(user, "Гипоспрей сначала должен быть заряжен!")
 			return
 		else
 			unload_hypo(vial,user)
@@ -572,15 +572,15 @@
 		switch(mode)
 			if(HYPO_SPRAY)
 				mode = HYPO_INJECT
-				to_chat(user, "[src] is now set to inject contents on application.")
+				to_chat(user, "[src] теперь будет производить инъекции пациенту.")
 			if(HYPO_INJECT)
 				mode = HYPO_SPRAY
-				to_chat(user, "[src] is now set to spray contents on application.")
+				to_chat(user, "[src] теперь будет спреить участок тела пациента.")
 		return TRUE
 
 /obj/item/hypospray/mkii/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'><b>Ctrl-Click</b> it to toggle its mode from spraying to injecting and vice versa.</span>"
+	. += "<span class='notice'><b>Ctrl-Click</b> для переключения режима со спрея на инъекции и наоборот.</span>"
 
 #undef HYPO_SPRAY
 #undef HYPO_INJECT

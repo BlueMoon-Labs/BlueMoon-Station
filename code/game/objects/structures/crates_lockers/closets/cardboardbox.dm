@@ -1,7 +1,7 @@
 #define SNAKE_SPAM_TICKS 600 //how long between cardboard box openings that trigger the '!'
 /obj/structure/closet/cardboard
 	name = "large cardboard box"
-	desc = "Just a box..."
+	desc = "Просто коробка..."
 	icon = 'modular_bluemoon/icons/obj/cardboardbox.dmi'
 	icon_state = "cardboard"
 	has_door_icon = FALSE
@@ -49,10 +49,10 @@
 	. = ..()
 	if(opened && can_sit_inside)
 		if(!has_buckled_mobs())
-			. += "<span class='notice'>Drag your sprite to sit in it.</span>"
+			. += span_notice("Перетащите себя на коробку, чтобы залезть.")
 		else
-			. += "<span class='notice'><b>[buckled_mobs[1]]</b> is sitting inside.</span>"
-			. += "<span class='notice'>Alt-click to take creatures out of it.</span>"
+			. += span_notice("Внутри находится <b>[buckled_mobs[1]]</b>.")
+			. += span_notice("Alt-click, чтобы излечь существо наружу.")
 
 /obj/structure/closet/cardboard/proc/GetFront()
 	return mutable_appearance(icon, "cardboard_front")
@@ -73,11 +73,11 @@
 /obj/structure/closet/cardboard/proc/sitting_inside(mob/living/M)
 	for(M in buckled_mobs)
 		if(iscatperson(M))
-			to_chat(M, "<span class = 'notice'>Surprisingly, it feels quite comfortable here...</span>")
+			to_chat(M, span_notice("На удивление, здесь довольно уютно..."))
 		while(iscatperson(M) && M.buckled && opened)
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "hide_in_box", /datum/mood_event/hide_in_box)
 			if(prob(50))
-				to_chat(M, "<span class = 'notice'>[pick("They won't get me if I hide inside.","I might look silly, but I don't care.","It would be nice if someone patted me...")]</span>")
+				to_chat(M, span_notice(pick("Меня не достанут, если я тут спрячусь.","Наверное, я выгляжу глупо, но мне всё равно.","Вот бы меня кто-нибудь погладил...")))
 			sleep(30 SECONDS)
 
 /obj/structure/closet/cardboard/post_unbuckle_mob(mob/living/M)
@@ -111,12 +111,12 @@
 /obj/structure/closet/cardboard/process()
 	for(var/mob/living/carbon/H in contents)
 		if(iscatperson(H))
-			//to_chat(H, "<span class = 'notice'>You feel quite safe inside your box.</span>")
+			//to_chat(H, span_notice("You feel quite safe inside your box.</span>")
 			SEND_SIGNAL(H, COMSIG_ADD_MOOD_EVENT, "hide_in_box", /datum/mood_event/hide_in_box)
 			if(prob(10))
 				H.emote("purr")
 			if(prob(10))
-				to_chat(H, "<span class = 'notice'>[pick("Awww~ So comfy~", "I could sleep here if I wanted to...","My little shelter from this cruel world.","I'm feeling safe inside.")]</span>")
+				to_chat(H, span_notice(pick("Ах-х-~ Как уютно~", "Я бы мог[H.gender == FEMALE? "ла" : ""] уснуть тут, если бы хотел[H.ru_a()]...","Моё маленькое убежище от жестокого мира.","Я чувствую себя в безопасности.")))
 			//sleep(8 SECONDS)
 
 /obj/structure/closet/cardboard/open()
@@ -179,7 +179,7 @@
 	. = ..()
 	for(var/mob/living/carbon/H in contents)
 		if(iscatperson(H))
-			to_chat(H, "<span class = 'notice'>You feel quite safe inside your box.</span>")
+			to_chat(H, span_notice("Вы чувствуете себя в безопасности внутри своей коробки."))
 
 /obj/structure/closet/cardboard/set_spooky_trap()	//boxes are for felinids, not for skeletonts
 	return

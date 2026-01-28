@@ -146,7 +146,13 @@
 	if(user.pulling)
 		AM = user.pulling
 		AM.forceMove(T)
-	user.forceMove(T)
+	if(user.buckled && !user.buckled.anchored)
+		var/atom/movable/seating = user.buckled
+		seating.forceMove(T)
+		user.forceMove(T)
+		seating.buckle_mob(user, TRUE, TRUE)
+	else
+		user.forceMove(T)
 	if(AM)
 		user.start_pulling(AM)
 

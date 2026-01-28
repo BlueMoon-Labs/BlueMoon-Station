@@ -566,7 +566,7 @@
 /datum/reagent/drug/aphrodisiac/on_mob_life(mob/living/M)
 	if(M && M.client?.prefs.arousable && !(M.client?.prefs.cit_toggles & NO_APHRO))
 		if((prob(min(current_cycle/2,5))))
-			M.emote(pick("moan","blush"))
+			M.emote(pick("moan","blushh"))
 		if(prob(min(current_cycle/4,10)))
 			var/aroused_message = pick("Вам немного жарко.", "Вы испытываете сильное сексуальное влечение.", "Вы чувствуете себя в хорошем настроении.", "Вы готовы напрыгнуть на кого-то.")
 			to_chat(M, "<span class='userlove'>[aroused_message]</span>")
@@ -594,7 +594,7 @@
 			if(prob(current_cycle))
 				M.say(pick("Ох-мхх...", "Ахх-р...", "Амрфпф...", "Мрр-ах..."))
 			else
-				M.emote(pick("moan","blush"))
+				M.emote(pick("moan","blushh"))
 		if(prob(5))
 			var/aroused_message
 			if(current_cycle>25)

@@ -89,3 +89,15 @@
 	ammo_type = /obj/item/ammo_casing/a762x39/rubber
 
 ////////////////////////////////////////////////////////////////////
+// .50 sniper magazines
+
+/obj/item/ammo_box/magazine/sniper_rounds/soporific/lewd
+	name = "sniper rounds (crocin)"
+	desc = "Магазин кроциновых патрон, метрический калибр 12.7 мм. Идеально подходит для тихой и спокойной охоты на сексуальную дичь..."
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = ".50lewd"
+	ammo_type = /obj/item/ammo_casing/p50/lewd
+	max_ammo = 3
+	caliber = ".50"
+
+////////////////////////////////////////////////////////////////////

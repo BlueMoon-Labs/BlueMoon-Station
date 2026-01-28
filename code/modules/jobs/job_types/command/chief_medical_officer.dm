@@ -70,7 +70,7 @@
 	suit_store = /obj/item/flashlight/pen/paramedic
 	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1)
 	box = /obj/item/storage/box/survival/command
-	accessory = /obj/item/clothing/accessory/permit/special/chief_medic
+	accessory = list(/obj/item/clothing/accessory/permit/special/chief_medic)
 
 	backpack = /obj/item/storage/backpack/medic
 	satchel = /obj/item/storage/backpack/satchel/med
@@ -100,7 +100,7 @@
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/syndicate_uplink_high=1)
-	accessory = /obj/item/clothing/accessory/permit/special/chief_medic
+	accessory = list(/obj/item/clothing/accessory/permit/special/chief_medic)
 
 	backpack = /obj/item/storage/backpack/medic
 	satchel = /obj/item/storage/backpack/satchel/med

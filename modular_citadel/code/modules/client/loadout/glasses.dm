@@ -22,6 +22,12 @@
 	name = "Eyepatch"
 	path = /obj/item/clothing/glasses/eyepatch
 
+/datum/gear/glasses/veil
+	name = "Veil"
+	path = /obj/item/clothing/glasses/veil
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_initial_colors = list("#FFFFFF")
+
 /datum/gear/glasses/heat
 	name = "Heat goggles"
 	path = /obj/item/clothing/glasses/heat

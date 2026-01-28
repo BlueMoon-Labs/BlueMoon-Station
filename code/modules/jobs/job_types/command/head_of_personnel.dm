@@ -62,7 +62,7 @@
 	head = /obj/item/clothing/head/hopcap
 	backpack_contents = list(/obj/item/storage/box/ids=1, /obj/item/modular_computer/tablet/preset/advanced = 1)
 	box = /obj/item/storage/box/survival/command
-	accessory = /obj/item/clothing/accessory/permit/special/head_of_personnel
+	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_personnel)
 
 	chameleon_extras = list(/obj/item/gun/energy/e_gun, /obj/item/stamp/hop)
 
@@ -85,7 +85,7 @@
 	pda_slot = ITEM_SLOT_BELT
 	backpack_contents = list(/obj/item/storage/box/ids=1, /obj/item/syndicate_uplink_high=1,\
 		/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced = 1)
-	accessory = /obj/item/clothing/accessory/permit/special/head_of_personnel
+	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_personnel)
 
 //only pet worth reviving
 /datum/job/hop/get_mail_goodies(mob/recipient)

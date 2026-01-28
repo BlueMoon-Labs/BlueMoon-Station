@@ -21,18 +21,18 @@ export const Limbgrower = (props, context) => {
   return (
     <Window
       title="Limb Grower"
-      width={500}
+      width={600}
       height={760}>
       {!!busy && (
         <Dimmer fontSize="32px">
           <Icon name="cog" spin={1} />
-          {' Building...'}
+          {' Создание...'}
         </Dimmer>
       )}
       <Window.Content overflow="auto">
-        <Section title="Data Disk" buttons={
+        <Section title="Дата-диск" buttons={
           <Button
-            content="Eject Disk"
+            content="Извлечь диск"
             icon="eject"
             onClick={() => act('eject_disk')}
             disabled={!disk['disk']}
@@ -45,13 +45,13 @@ export const Limbgrower = (props, context) => {
               Any Synthetic Frameworks created will
               overwrite the race category selected.
             </div>
-          ) : disk['disk'] ? "No data." : "No disk."}
+          ) : disk['disk'] ? "Отсутствуют данные." : "Отсутствует диск."}
         </Section>
-        <Section title="Reagents">
+        <Section title="Запас реагентов">
           <Box mb={1}>
             {/* Total_reagents could be null or undefined, so let's be safe */
-              `Total Reagents/Maximum Reagents:
-            ${total_reagents ? total_reagents : 0}/${max_reagents}`
+              `Всего реагентов / Максимум реагентов:
+            ${total_reagents ? total_reagents : 0}u / ${max_reagents}u`
             }
             <ProgressBar value={(total_reagents && max_reagents)
               ? (total_reagents / max_reagents) : 0} />
@@ -65,7 +65,7 @@ export const Limbgrower = (props, context) => {
                   <Button.Confirm
                     key={`remove_${reagent.reagent_name}`}
                     textAlign="center"
-                    content="Remove Reagent"
+                    content="Удалить реагент"
                     icon="fill-drip"
                     color="bad"
                     onClick={() => {
@@ -78,7 +78,7 @@ export const Limbgrower = (props, context) => {
             ))}
           </LabeledList>
         </Section>
-        <Section title="Designs">
+        <Section title="Органы">
           <Tabs>
             {categories.map(category => (
               <Tabs.Tab
@@ -97,7 +97,7 @@ export const Limbgrower = (props, context) => {
                 label={design.name}
                 buttons={(
                   <Button
-                    content="Make"
+                    content="Создать"
                     onClick={() => act('make_limb', {
                       design_id: design.id,
                       active_tab: design.parent_category,

@@ -236,10 +236,10 @@
 
 	H.grant_language(/datum/language/modular_sand/solcommon, TRUE, TRUE)
 
-	var/obj/item/card/id/sol_citizen/W = H.wear_id
+	var/obj/item/card/id/W = H.wear_id
 	W.registered_name = H.real_name
 	W.access = get_all_inteq_access()
-	W.update_label(W.registered_name)
+	W.update_label()
 
 /datum/outfit/sol_diplomacy/slut
 	name = "SolFed Secretary?"

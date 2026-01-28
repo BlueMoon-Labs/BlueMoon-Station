@@ -631,3 +631,6 @@ GLOBAL_LIST_INIT(payed_ert, list(
 
 GLOBAL_LIST_INIT(month_names, list("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
 GLOBAL_LIST_INIT(day_names, list("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+
+/// Это лист для всевозможных контейнеров реагентов закрытого типа, принимаемого кемдиспенсерами, кеммастерами и т.д.
+#define CLOSED_CONTAINERS_OPERABLE list(/obj/item/reagent_containers/glass/bottle/vial)

@@ -9000,6 +9000,10 @@
 	icon_state = "platingdmg3"
 	},
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_atmos)
+"WG" = (
+/obj/structure/shield/golden,
+/turf/template_noop,
+/area/template_noop)
 "WH" = (
 /obj/machinery/door/airlock/external{
 	name = "InteQ ship airlock";
@@ -9654,89 +9658,89 @@
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_outpost)
 
 (1,1,1) = {"
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
 "}
 (2,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -9815,10 +9819,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (3,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -9897,10 +9901,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (4,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -9979,10 +9983,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (5,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -10061,10 +10065,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (6,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -10143,10 +10147,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (7,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -10225,10 +10229,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (8,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -10307,10 +10311,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (9,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -10389,10 +10393,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (10,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -10471,58 +10475,24 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (11,1,1) = {"
-sz
-sz
-sz
-sz
-sz
-sz
-lO
-lO
-Jc
-Jc
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
+WG
 sz
 sz
 sz
 sz
 sz
 lO
+lO
 Jc
 Jc
-Jc
-ye
-ye
-ye
-ye
-Jc
-Jc
-Jc
-Jc
-ye
-ye
-ye
 sz
 sz
-lO
-lO
-ye
-ye
-ye
-Jc
-Jc
-Jc
+sz
+sz
+sz
 sz
 sz
 sz
@@ -10533,6 +10503,40 @@ sz
 sz
 sz
 lO
+Jc
+Jc
+Jc
+ye
+ye
+ye
+ye
+Jc
+Jc
+Jc
+Jc
+ye
+ye
+ye
+sz
+sz
+lO
+lO
+ye
+ye
+ye
+Jc
+Jc
+Jc
+sz
+sz
+sz
+sz
+sz
+sz
+sz
+sz
+sz
+lO
 lO
 ye
 ye
@@ -10553,10 +10557,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (12,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -10635,10 +10639,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (13,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -10717,10 +10721,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (14,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -10799,10 +10803,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (15,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -10881,10 +10885,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (16,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -10963,10 +10967,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (17,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11045,10 +11049,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (18,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11127,10 +11131,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (19,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11209,10 +11213,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (20,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11291,10 +11295,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (21,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11373,10 +11377,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (22,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11455,10 +11459,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (23,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11537,10 +11541,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (24,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11619,10 +11623,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (25,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11701,10 +11705,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (26,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11783,10 +11787,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (27,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11865,10 +11869,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (28,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -11947,10 +11951,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (29,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12029,10 +12033,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (30,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12111,10 +12115,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (31,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12193,10 +12197,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (32,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12275,10 +12279,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (33,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12357,10 +12361,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (34,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12439,10 +12443,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (35,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12521,10 +12525,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (36,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12603,10 +12607,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (37,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12685,10 +12689,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (38,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12767,10 +12771,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (39,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12849,10 +12853,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (40,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -12931,10 +12935,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (41,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13013,10 +13017,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (42,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13095,10 +13099,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (43,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13177,10 +13181,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (44,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13259,10 +13263,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (45,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13341,10 +13345,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (46,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13423,10 +13427,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (47,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13505,10 +13509,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (48,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13587,10 +13591,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (49,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13669,10 +13673,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (50,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13751,10 +13755,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (51,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13833,10 +13837,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (52,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13915,10 +13919,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (53,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -13997,10 +14001,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (54,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14079,10 +14083,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (55,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14161,10 +14165,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (56,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14243,10 +14247,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (57,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14325,10 +14329,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (58,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14407,10 +14411,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (59,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14489,10 +14493,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (60,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14571,10 +14575,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (61,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14653,10 +14657,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (62,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14735,10 +14739,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (63,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14817,10 +14821,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (64,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14899,10 +14903,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (65,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -14981,10 +14985,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (66,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15063,10 +15067,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (67,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15145,10 +15149,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (68,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15227,10 +15231,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (69,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15309,10 +15313,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (70,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15391,10 +15395,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (71,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15473,10 +15477,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (72,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15555,10 +15559,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (73,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15637,10 +15641,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (74,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15719,10 +15723,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (75,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15801,10 +15805,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (76,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15883,10 +15887,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (77,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -15965,10 +15969,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (78,1,1) = {"
-sz
+WG
 sz
 sz
 sz
@@ -16047,9 +16051,10 @@ sz
 sz
 sz
 sz
-sz
+WG
 "}
 (79,1,1) = {"
+WG
 sz
 sz
 sz
@@ -16128,88 +16133,87 @@ sz
 sz
 sz
 sz
-sz
-sz
+WG
 "}
 (80,1,1) = {"
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
-sz
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
+WG
 "}

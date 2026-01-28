@@ -185,7 +185,7 @@ SUBSYSTEM_DEF(ticker)
 				window_flash(C, ignorepref = TRUE) //let them know lobby has opened up.
 			to_chat(world, "<span class='boldnotice'>Добро пожаловать на [station_name()]!</span>")
 			if(!SSpersistence.CheckGracefulEnding())
-				send2chat(new /datum/tgs_message_content("Производится реролл карты в связи с крашем сервера..."), CONFIG_GET(string/chat_announce_new_game))
+				send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/chat_reboot_role)]> | Производится реролл карты в связи с крашем сервера..."), CONFIG_GET(string/chat_announce_new_game))
 			else
 				send2chat(new /datum/tgs_message_content("Новый раунд начинается на [SSmapping.config.map_name], голосование за режим полным ходом!"), CONFIG_GET(string/chat_announce_new_game))
 			current_state = GAME_STATE_PREGAME
@@ -633,7 +633,7 @@ SUBSYSTEM_DEF(ticker)
 
 /datum/controller/subsystem/ticker/proc/send_news_report()
 	var/news_message
-	var/news_source = "Новости Пакта Синие Луны"
+	var/news_source = "Новости ПАКТа Синие Луны"
 	switch(news_report)
 		if(NUKE_SYNDICATE_BASE)
 			news_message = "Во время недавней попытки Рейдерского Захвата [station_name()] со стороны ИнтеКью, станции удалось уничтожить отряд тяжело вооружённых Террористов."
@@ -679,7 +679,7 @@ SUBSYSTEM_DEF(ticker)
 		if(SHUTTLE_HIJACK)
 			news_message = "Во время плановой эвакуации на аварийном шаттле [station_name()] были повреждены навигационные протоколы и он сбился с курса, но вскоре был восстановлен, а все сотрудники были благополучно эвакуированы и сейчас наслаждаются отдыхом."
 		if(GANG_OPERATING)
-			news_message = "Пакт хотел бы заявить, что любые слухи об организации преступного сообщества на станциях типа [station_name()] являются ложью и не подлежат подражанию."
+			news_message = "ПАКТ хотел бы заявить, что любые слухи об организации преступного сообщества на станциях типа [station_name()] являются ложью и не подлежат подражанию."
 		if(GANG_DESTROYED)
 			news_message = "Экипаж [station_name()] благодарит полицейский департамент Звездной Коалиции за оперативное устранение незначительной террористической угрозы для станции."
 

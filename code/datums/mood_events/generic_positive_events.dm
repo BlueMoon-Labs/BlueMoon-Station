@@ -278,3 +278,8 @@
 	description = span_love("Сладкое ощущение связи и близости... Ваши тела едины.\n")
 	mood_change = 2
 	timeout = 4 MINUTES
+
+/datum/mood_event/maso_medicine
+	description = span_love("Лекарства делают своё дело. Боль от неё крайне приятная.\n")
+	mood_change = 2
+	timeout = 1 MINUTES

@@ -41,7 +41,7 @@
 	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
 	r_pocket = /obj/item/kitchen/knife/combat
 	l_pocket = /obj/item/pda
-	accessory = /obj/item/clothing/accessory/permit/special/explorer
+	accessory = list(/obj/item/clothing/accessory/permit/special/explorer)
 	backpack_contents = list(/obj/item/storage/firstaid/regular = 1)
 
 /datum/outfit/job/expeditor/syndicate
@@ -65,7 +65,7 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = /obj/item/clothing/accessory/permit/special/explorer
+	accessory = list(/obj/item/clothing/accessory/permit/special/explorer)
 	backpack_contents = list(/obj/item/syndicate_uplink=1, /obj/item/storage/firstaid/regular = 1)
 
 /obj/item/radio/headset/headset_exp

@@ -106,7 +106,7 @@
 /area/ruin/space/has_grav/hilbertresearchfacility)
 "t" = (
 /obj/structure/displaycase{
-	start_showpiece_type = /obj/item/hilbertshotel
+	start_showpiece_type = /obj/item/hilbertshotel/researchfacility
 	},
 /turf/open/floor/plasteel/vaporwave,
 /area/ruin/space/has_grav/hilbertresearchfacility)

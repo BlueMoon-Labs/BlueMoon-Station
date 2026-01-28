@@ -387,8 +387,7 @@ const FunTab = (props, context) => {
               lineHeight={lineHeightNormal}
               width={buttonWidthNormal}
               content="Synd Displays!"
-              onClick={() => act("synd_displays")}>
-            </Button>
+              onClick={() => act("synd_displays")} />
           </Stack.Item>
         </Stack>
       </Stack.Item>
@@ -417,8 +416,7 @@ const FunTab = (props, context) => {
               lineHeight={lineHeightNormal}
               width={buttonWidthNormal}
               content="Mass Aikofication!"
-              onClick={() => act("aikofication")}>
-            </Button>
+              onClick={() => act("aikofication")} />
           </Stack.Item>
         </Stack>
       </Stack.Item>

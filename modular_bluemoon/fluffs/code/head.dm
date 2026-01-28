@@ -101,6 +101,40 @@
 	flags_cover = HEADCOVERSEYES
 	flags_inv = HIDEHAIR|HIDEEARS|HIDESNOUT
 	mutantrace_variation = STYLE_MUZZLE
+	actions_types = list(/datum/action/item_action/dread_lawgiver)
+
+	/// Cooldown between voice lines
+	var/voice_cooldown = 0
+	/// Cooldown duration (3 seconds)
+	var/voice_cooldown_duration = 30
+
+/obj/item/clothing/head/HoS/dread_helmet/ui_action_click(mob/user, action)
+	if(istype(action, /datum/action/item_action/dread_lawgiver))
+		announce_law(user)
+	else
+		return ..()
+
+/obj/item/clothing/head/HoS/dread_helmet/proc/announce_law(mob/living/user)
+	if(!isliving(user))
+		return
+
+	// Проверка кулдауна
+	if(world.time < voice_cooldown)
+		to_chat(user, "<span class='warning'>Системы голосового модуля перезаряжаются...</span>")
+		return
+
+	// Объявляем ЗАКОН
+	user.audible_message("<font color='red' size='4'><b>Я. ЕСТЬ. ЗАКОН!</b></font>")
+	playsound(src.loc, 'sound/voice/complionator/dredd.ogg', 100, FALSE, 4)
+
+	voice_cooldown = world.time + voice_cooldown_duration
+
+// Action button для шлема
+/datum/action/item_action/dread_lawgiver
+	name = "I AM THE LAW!"
+	desc = "Объявить что вы - ЗАКОН."
+	button_icon_state = "sechailer"
+	background_icon_state = "bg_default"
 
 /obj/item/clothing/head/donator/bm/royal_hunters
 	name = "Royal hunters hat"
@@ -279,3 +313,111 @@
 	to_chat(user, span_info("Вы поправили шлем, изменяя комфорт ваших ушей в нём."))
 
 ///////////////////////////////////////////////
+
+/obj/item/clothing/head/donator/bm/gestapo
+	name = "Truth Enforcer cap"
+	desc = "Bring Justice..!~"
+	icon_state = "gestapo_head"
+	item_state = "gestapo_head"
+	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/bee_cap
+	name = "Aged Hat"
+	desc = "Головной убор с сеткой, слегка прозрачную, но скрывающее ваше лико. На внутренней стороне этикетка - Furui.tm, свыше присутствуют застёжки для высвобождения ушей."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "bee_cap"
+	item_state = "bee_cap"
+	flags_inv = HIDEHAIR|HIDEEARS
+	var/adjusted = FALSE
+	var/list/poly_colors = list("#2A2A2A","#A52F29")
+
+/obj/item/clothing/head/bee_cap/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+/obj/item/clothing/head/bee_cap/AltClick(mob/user)
+	. = ..()
+	adjusted = !adjusted
+	flags_inv = adjusted ? (HIDEHAIR) : (HIDEHAIR|HIDEEARS)
+	user.update_inv_head()
+	to_chat(user, span_info("Вы поправили головной убор, изменяя комфорт ваших ушей в нём."))
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/empire_head
+	name = "Katzen Helmet"
+	desc = "Полиморфический шлем, не имеющий никакой защиты. На внутренней стороне этикетка - Furui.tm, свыше присутствуют застёжки для высвобождения ушей."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "empire_head"
+	item_state = "empire_head"
+	flags_inv = HIDEHAIR|HIDEEARS
+	var/adjusted = FALSE
+	var/list/poly_colors = list("#2A2A2A","#A52F29")
+
+/obj/item/clothing/head/empire_head/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+/obj/item/clothing/head/empire_head/AltClick(mob/user)
+	. = ..()
+	adjusted = !adjusted
+	flags_inv = adjusted ? (HIDEHAIR) : (HIDEHAIR|HIDEEARS)
+	user.update_inv_head()
+	to_chat(user, span_info("Вы поправили головной убор, изменяя комфорт ваших ушей в нём."))
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/helmet/sec/empire_head
+	name = "Katzen Steel Helmet"
+	desc = "Полиморфический шлем. На внутренней стороне этикетка - Furui.tm, свыше присутствуют застёжки для высвобождения ушей."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "empire_head"
+	item_state = "empire_head"
+	armor = list(MELEE = 20, BULLET = 5, LASER = 10,ENERGY = 0, BOMB = 40, BIO = 0, RAD = 0, FIRE = 5, ACID = 0, WOUND = 20)
+	flags_inv = HIDEHAIR|HIDEEARS
+	var/adjusted = FALSE
+	var/list/poly_colors = list("#2A2A2A","#A52F29")
+
+/obj/item/clothing/head/empire_head/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+/obj/item/clothing/head/empire_head/AltClick(mob/user)
+	. = ..()
+	adjusted = !adjusted
+	flags_inv = adjusted ? (HIDEHAIR) : (HIDEHAIR|HIDEEARS)
+	user.update_inv_head()
+	to_chat(user, span_info("Вы поправили головной убор, изменяя комфорт ваших ушей в нём."))
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/officerian_cap
+	name = "Officerian Cap"
+	desc = "Головной убор ветеранов и действующих офицеров"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "officerian_cap"
+	item_state = "officerian_cap"
+	var/list/poly_colors = list("#2A2A2A","#303030","#575757","#d4d4d4")
+
+/obj/item/clothing/head/officerian_cap/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A","#303030","#575757","#d4d4d4"), 4)

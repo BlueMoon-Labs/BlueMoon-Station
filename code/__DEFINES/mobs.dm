@@ -411,3 +411,9 @@
 #define STATUS_UPDATE_NEARSIGHTED 64
 #define STATUS_UPDATE_NONE 0
 #define STATUS_UPDATE_ALL (~0)
+
+// Pain statuses
+#define PAIN_NO 0 // painkillers or robot
+#define PAIN_LOW 1 // TRAIT_BLUEMOON_HIGH_PAIN_THRESHOLD
+#define PAIN_MEDIUM 2 // drunkenness
+#define PAIN_FULL 3

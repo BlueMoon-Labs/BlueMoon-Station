@@ -105,7 +105,7 @@
 	last_color_index = (last_color_index % colors.len) + 1
 
 	var/message = "<span style='color: [colors[last_color_index]]; text-align: center; font-size: 24pt'>"
-	message += "HEY!<br>An admin is trying to talk to you!<br>Check your chat window,<br>and click their name to respond!"
+	message += "АЛЛО!<br>Администратор выходит<br>с тобой на связь!<br>Проверь чат-лог и нажми<br>на моё имя для ответа!"
 	message += "</span>"
 
 	maptext = MAPTEXT(message)
@@ -118,7 +118,7 @@
 
 	var/datum/admin_help/current_ticket = target.current_ticket
 	if (!current_ticket)
-		to_chat(admin, span_warning("[key_name(target)] had no active ahelp, aborting."))
+		to_chat(admin, span_warning("[key_name(target)] не имеет активного ahelp, отмена."))
 		return
 
 	admin.cmd_admin_pm(target, message)

@@ -86,10 +86,16 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 	// BLUEMOON EDIT START - превью для вещей в лодауте
 	if(!description && path)
 		description = initial(path.desc)
-	var/init_icon = item_icon ? item_icon : initial(path.icon)
-	var/init_icon_state = item_icon_state ? item_icon_state : initial(path.icon_state)
-	CHECK_TICK // проблемное место со случайными рантаймами, время от времени не может открыть savefile buffer
-	base64icon = icon2base64(icon(init_icon, init_icon_state, SOUTH, 1, FALSE))
+	// BLUEMOON FIX - Wrap icon generation in try-catch to prevent initialization failures from runtime errors
+	try
+		var/init_icon = item_icon ? item_icon : initial(path.icon)
+		var/init_icon_state = item_icon_state ? item_icon_state : initial(path.icon_state)
+		CHECK_TICK
+		if(init_icon && init_icon_state)
+			base64icon = icon2base64(icon(init_icon, init_icon_state, SOUTH, 1, FALSE))
+	catch(var/exception/e)
+		stack_trace("Loadout icon generation failed for [name] ([type]): [e]")
+		base64icon = null  // Item will work without preview icon
 	// BLUEMOON EDIT END
 
 

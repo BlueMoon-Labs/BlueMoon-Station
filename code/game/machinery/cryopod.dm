@@ -540,6 +540,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 /obj/effect/mob_spawn
 	/// For figuring out where the local cryopod computer is. Must be set for cryo computer announcements.
 	var/area/computer_area
+	var/addition_warning = "<span class='boldwarning'>В режим игры Extended станцию посещать допустимо, в Dynamic — запрещено!</span>"
 
 /obj/machinery/computer/cryopod/proc/announce(message_type, user, rank)
 	switch(message_type)

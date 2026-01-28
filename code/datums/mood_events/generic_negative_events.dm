@@ -186,7 +186,7 @@
 	description = span_warning("Меня только что вырвало на себя. Мерзость.</span>\n")
 
 /datum/mood_event/painful_medicine
-	description = span_warning("Лекарства делают свои дело, но боль ещё не успела затихнуть.\n")
+	description = span_warning("Лекарства делают своё дело, но боль ещё не успела затихнуть.\n")
 	mood_change = -5
 	timeout = 1 MINUTES
 
@@ -366,6 +366,11 @@
 	description = span_boldwarning("Не могу поверить, что меня провели этим старым как мир трюком!</span>\n")
 	mood_change = -6
 	timeout = 2 MINUTES
+
+/datum/mood_event/tripped/bola
+	description = span_boldwarning("Чёртова бола!</span>\n")
+	mood_change = -6
+	timeout = 1 MINUTES
 
 /datum/mood_event/untied
 	description = span_boldwarning("Ненавижу, когда моя обувь развязана!</span>\n")

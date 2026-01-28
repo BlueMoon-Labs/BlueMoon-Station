@@ -527,11 +527,11 @@
 /obj/item/robotic_processor
 	name = "\improper Robotic Processor"
 	desc = "A device for scanning and initiating new synthetic parts to help fix problems even for unqualified personnel."
-	icon = 'icons/obj/device.dmi'
+	icon = 'modular_bluemoon/icons/obj/device.dmi'
 	icon_state = "roboscan"
 	item_flags = NOBLUDGEON | SURGICAL_TOOL
 	slot_flags = ITEM_SLOT_BELT
-	var/const/tmp_qualification = QUALIFIED_ROBOTIC_MAINTER
+	var/const/tmp_qualification = TRAIT_GUIDED_ROBOTIC_MAINTER
 	var/list/already_notified = list()         // для pickup
 	var/list/dropped_notified = list()         // для dropped
 
@@ -539,16 +539,16 @@
 	. = ..()
 	if(user?.mind && !HAS_TRAIT(user.mind, tmp_qualification))
 		ADD_TRAIT(user.mind, tmp_qualification, src)
-		if(!(user.mind in already_notified))
-			to_chat(user, "<span class='notice' style='font-size:125%'>С помощью [src] вы теперь можете обслуживать синтетиков со сложным техобслуживанием.</span>")
+		if(!(user.mind in dropped_notified) && !HAS_TRAIT(user.mind, TRAIT_QUALIFIED_ROBOTIC_MAINTER))
+			to_chat(user, span_warning("С помощью [src] вы можете пытаться обслуживать синтетиков со сложным техобслуживанием."))
 			already_notified += user.mind
 
 /obj/item/robotic_processor/dropped(mob/user)
 	. = ..()
 	if(user?.mind && HAS_TRAIT(user.mind, tmp_qualification))
 		REMOVE_TRAIT(user.mind, tmp_qualification, src)
-		if(!(user.mind in dropped_notified))
-			to_chat(user, "<span class='warning' style='font-size:125%'>Без [src] вы больше не можете обслуживать синтетиков со сложным техобслуживанием.</span>")
+		if(!(user.mind in dropped_notified) && !HAS_TRAIT(user.mind, TRAIT_QUALIFIED_ROBOTIC_MAINTER))
+			to_chat(user, span_warning("Без [src] вы больше не можете обслуживать синтетиков со сложным техобслуживанием."))
 			dropped_notified += user.mind
 
 /obj/item/blood_filter

@@ -132,14 +132,11 @@
 	//or moving objects, things that should never happen
 	var/atom/parent = src.parent
 	var/list/seeing_mobs = can_see_contents()
+	var/obj/item/removed_item = isitem(AM) && AM
 	for(var/mob/M in seeing_mobs)
 		M.client.screen -= AM
-	if(isitem(AM))
-		var/obj/item/removed_item = AM
+	if(removed_item)
 		removed_item.item_flags &= ~IN_STORAGE
-		if(ismob(parent.loc))
-			var/mob/carrying_mob = parent.loc
-			removed_item.dropped(carrying_mob, TRUE)
 	if(new_location)
 		//Reset the items values
 		_removal_reset(AM)
@@ -149,6 +146,9 @@
 	else
 		//Being destroyed, just move to nullspace now (so it's not in contents for the icon update)
 		AM.moveToNullspace()
+	if(removed_item && ismob(parent.loc))
+		var/mob/carrying_mob = parent.loc
+		removed_item.dropped(carrying_mob, TRUE)
 	refresh_mob_views()
 	if(isobj(parent))
 		var/obj/O = parent

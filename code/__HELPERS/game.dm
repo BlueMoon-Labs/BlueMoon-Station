@@ -605,6 +605,33 @@
 	if(pressure <= LAVALAND_EQUIPMENT_EFFECT_PRESSURE)
 		. = TRUE
 
+/**
+ * Расчёт мультипликатора урона при атмосферном давлении ниже 1-й атмосферы.
+ *
+ * Аргументы:
+ * - turf/T - турф, в котором произошёл выстрел/расчёт урона/e.t.c.
+ * - pressure_treshold - давление в кПа, ниже которого урон не уменьшается.
+ * - decrease_mult - мультипликатор урона, обычно как переменная у отдельно взятого айтема.
+ *
+ * На выходе идёт линейное LERP()/lerp() уменьшение урона интерполяцией, без округлений числа.
+ */
+/proc/get_pressure_damage_multiplier(turf/T, pressure_treshold, decrease_mult)
+	if(!istype(T))
+		return 1
+
+	var/datum/gas_mixture/environment = T.return_air()
+	if(!istype(environment) || (pressure_treshold >= ONE_ATMOSPHERE))
+		return 1
+
+	var/pressure = environment.return_pressure()
+	if(pressure <= pressure_treshold) // Не только лаваленд, но и любой турф с давлением ниже дефайна
+		return 1
+	if(pressure >= ONE_ATMOSPHERE)
+		return decrease_mult
+
+	var/t = (pressure - pressure_treshold)/(ONE_ATMOSPHERE - pressure_treshold)
+	return LERP(1, decrease_mult, t)
+
 /proc/ispipewire(item)
 	var/static/list/pipe_wire = list(
 		/obj/machinery/atmospherics,

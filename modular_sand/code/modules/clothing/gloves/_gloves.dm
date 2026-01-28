@@ -23,7 +23,7 @@
 
 /obj/item/clothing/gloves/AltClick(mob/user)
 	. = ..()
-	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 	if(length(attached_accessories))
 		remove_accessory(user)
@@ -40,7 +40,7 @@
 		attached_accessory.on_uniform_dropped(src, user)
 	..()
 
-/obj/item/clothing/gloves/proc/attach_accessory(obj/item/clothing/accessory/ring/accessory, mob/user, notifyAttach = 1)
+/obj/item/clothing/gloves/attach_accessory(obj/item/clothing/accessory/ring/accessory, mob/user, notifyAttach = TRUE)
 	. = FALSE
 	if(!istype(accessory))
 		return

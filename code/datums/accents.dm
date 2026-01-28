@@ -3,116 +3,99 @@
 /datum/accent/proc/modify_speech(list/speech_args, datum/source, mob/living/carbon/owner) //transforms the message in some way
 	return speech_args
 
-/datum/accent/proc/add_accent(message, var/map_accent)
-	var/message_length // Длинна текущего сообщения
-	var/current_char // Текущий символ обрабатываемой строки
-	var/current_char_ascii // HTML код символа
-	var/accented_message // Сообщение с акцентом
-
-	message_length = length(message)
-
-	for(var/i = 1, i <= message_length, i += length(current_char))
-		current_char = message[i]
-		current_char_ascii = num2text(text2ascii(message[i]))
-
-		if (current_char_ascii in map_accent)
-			accented_message += pick(map_accent[current_char_ascii])
-		else
-			accented_message += current_char
-
-	return accented_message
-
-//   Converter
-//   https://www.rapidtables.com/convert/number/ascii-hex-bin-dec-converter.html
+/datum/accent/proc/applyAccent(message,list/replacements)
+	for (var/to_replace in replacements)
+		var/replacement = replacements[to_replace]
+		if (islist(replacement))
+			replacement = pick(replacement)
+		message = replacetextEx(message, to_replace, replacement)
+	message = trim(message)
+	return message
 
 /datum/accent/lizard
-	var/map_accent = list(
-		"115" = list("ss", "sss","ssss"),	// s
-		"83" = list("SS", "SSS","SSSS"),	// S
-		"99" = list("cc", "ccc","cccc"),	// c
-		"67" = list("СС", "ССС","СССС"),	// C
-		"1095" = list("щщ", "щщщщ", "щщщщ"),// ч
-		"1063" = list("ЩЩ", "ЩЩЩ", "ЩЩЩЩ"),	// Ч
-		"1078" = list("шш", "шшш","шшшш"),	// ж
-		"1046" = list("ШШ", "ШШШ","ШШШШ"),	// Ж
-		"1089" = list("сс", "ссс","сссс"),	// с
-		"1057" = list("СС", "ССС","СССС"),	// С
-		"1096" = list("шш", "шшш","шшшш"),	// ш
-		"1064" = list("ШШ", "ШШШ","ШШШШ"),	// Ш
-		"1097" = list("щщ", "щщщ","щщщщ"),	// щ
-		"1065" = list("ЩЩ", "ЩЩЩ","ЩЩЩЩ"),	// Щ
-		"1079" = list("сс", "ссс","сссс"),	// з
-		"1047" = list("СС", "ССС","СССС"),	// З
-		"1093" = list("хх", "ххх"),			// х
-		"1061" = list("ХХ", "ХХХ"),			// Х
-	)
+	var/static/list/replacements = list(
+		new /regex("s+", "g") = "sss",
+		new /regex("S+", "g") = "SSS",
+		new /regex(@"(\w)x", "g") = "$1kss",
+		new /regex(@"\bx([\-|r|R]|\b)", "g") = "ecks$1",
+		new /regex(@"\bX([\-|r|R]|\b)", "g") = "ECKS$1",
+		new /regex(@"(\w)x", "g") = "$1kss",
+		new /regex(@"\bx([\-|r|R]|\b)", "g") = "ecks$1",
+		new /regex(@"\bX([\-|r|R]|\b)", "g") = "ECKS$1",
+		new /regex("с+", "g") = "ссс",
+		new /regex("С+", "g") = "ССС",
+		"з" = "с",
+		"З" = "С",
+		"ж" = "ш",
+		"Ж" = "Ш",
+		)
 
 /datum/accent/lizard/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
-	if(message[1] != "*" && message[1] != "!" && message[1] != "!")
-		speech_args[SPEECH_MESSAGE] = add_accent(speech_args[SPEECH_MESSAGE], map_accent)
+	if(message[1] != "*" && message[1] != "!")
+		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 
 /datum/accent/canine
-	var/map_accent = list(
-		"114" = list("r","rr", "rrr","rrrr"),	// r
-		"82" = list("R","RR", "RRR","RRRR"),	// R
-		"1088" = list("р","рр", "ррр","рррр"),	// р
-		"1056" = list("Р","РР", "РРР","РРРР"),	// Р
-	)
+	var/static/list/replacements = list(
+		new /regex("r+", "g") = "rrr",
+		new /regex("R+", "g") = "RRR",
+		new /regex("р+", "g") = "ррр",
+		new /regex("Р+", "g") = "РРР",
+		)
 
 /datum/accent/canine/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
 	if(message[1] != "*" && message[1] != "!")
-		speech_args[SPEECH_MESSAGE] = add_accent(speech_args[SPEECH_MESSAGE], map_accent)
+		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 
 /datum/accent/feline
-	var/map_accent = list(
-		"114" = list("rr", "rrr"),	// r
-		"82" = list("RR", "RRR"),	// R
-		"1088" = list("рр", "ррр"),	// р
-		"1056" = list("РР", "РРР"),	// Р
-		"1089" = list("с", "сс"),	// с
-		"1057" = list("С", "СС"),	// С
-	)
+	var/static/list/replacements = list(
+		new /regex("r+", "g") = "rrr",
+		new /regex("R+", "g") = "RRR",
+		new /regex("р+", "g") = "ррр",
+		new /regex("Р+", "g") = "РРР",
+		new /regex("с+", "g") = "ссс",
+		new /regex("С+", "g") = "ССС",
+		)
 
 /datum/accent/feline/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
 	if(message[1] != "*" && message[1] != "!")
-		speech_args[SPEECH_MESSAGE] = add_accent(speech_args[SPEECH_MESSAGE], map_accent)
+		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 
 /datum/accent/bird
-	var/map_accent = list(
-		"107" = list("k", "kk", "kik"),	// k
-		"75" = list("K", "KK", "KKK"),	// K
-		"1095" = list("ч", "чч", "чич"),// ч
-		"1063" = list("Ч", "ЧЧ", "ЧЧЧ"),// Ч
-		"1082" = list("к", "кк", "кик"),// к
-		"1050" = list("К", "КК", "КИК"),// К
-	)
+	var/static/list/replacements = list(
+		new /regex("k+", "g") = "kik",
+		new /regex("K+", "g") = "Kik",
+		new /regex("ч+", "g") = "чич",
+		new /regex("Ч+", "g") = "Чич",
+		new /regex("к+", "g") = "кик",
+		new /regex("К+", "g") = "Кик",
+		)
 
 /datum/accent/bird/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
-	if(message[1] != "*" && message[1] != "!")
-		speech_args[SPEECH_MESSAGE] = add_accent(speech_args[SPEECH_MESSAGE], map_accent)
+	if(message[1] != "*" && message[1] != "!")\
+		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 
 /datum/accent/fly
-	var/map_accent = list(
-		"122" = list("z","zz", "zzz","zzzz"),	// z
-		"90" = list("Z","ZZ", "ZZZ","ZZZZ"),	// Z
-		"1079" = list("з","зз", "ззз","зззз"),	// з
-		"1047" = list("З","ЗЗ", "ЗЗЗ","ЗЗЗЗ"),	// З
-		"1078" = list("ж","жж", "жжж", "жжжж"),	// ж
-		"1046" = list("Ж","ЖЖ", "ЖЖЖ", "ЖЖЖЖ"),	// Ж
-	)
+	var/static/list/replacements = list(
+		new /regex("z+", "g") = "zzz",
+		new /regex("Z+", "g") = "ZZZ",
+		new /regex("з+", "g") = "ззз",
+		new /regex("З+", "g") = "ЗЗЗ",
+		new /regex("ж+", "g") = "жжж",
+		new /regex("Ж+", "g") = "ЖЖЖ",
+		)
 
 /datum/accent/fly/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
 	if(message[1] != "*" && message[1] != "!")
-		speech_args[SPEECH_MESSAGE] = add_accent(speech_args[SPEECH_MESSAGE], map_accent)
+		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 
 /datum/accent/abductor/modify_speech(list/speech_args, datum/source)
@@ -155,48 +138,27 @@
 	return speech_args
 
 /datum/accent/fluffy
-	var/map_accent = list(
-		"ne" = list("nye"),
-		"nu" = list("nyu"),
-		"na" = list("nya"),
-		"no" = list("nyo"),
-		"ove" = list("uv"),
-		"l" = list("w"),
-		"r" = list("w"),
-
-		"не" = list("ня"),
-		"ну" = list("ню"),
-		"на" = list("ня"),
-		"но" = list("ню"),
-		"ов" = list("ув"),
-		"р" = list("ря"),
-		"мо" = list("мя"),
-	)
+	var/static/list/replacements = list(
+		"ne" = "ney",
+		"nu" = "nyu",
+		"na" = "nya",
+		"no" = "nyo",
+		"ove" = "uv",
+		"l" = "w",
+		"r" = "w",
+		"не" = "ня",
+		"ну" = "ню",
+		"на" = "ня",
+		"но" = "ню",
+		"ов" = "ув",
+		"р" = "ря",
+		"мо" = "мя",
+		)
 
 /datum/accent/fluffy/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
-
 	if(message[1] != "*" && message[1] != "!")
-
-		speech_args[SPEECH_MESSAGE] = lowertext(message)
-
-		message = replacetext(message, "ne", "nye")
-		message = replacetext(message, "nu", "nyu")
-		message = replacetext(message, "na", "nya")
-		message = replacetext(message, "no", "nyo")
-		message = replacetext(message, "ove", "uv")
-		message = replacetext(message, "l", "w")
-		message = replacetext(message, "r", "w")
-
-		message = replacetext(message, "не", "ня")
-		message = replacetext(message, "ну", "ню")
-		message = replacetext(message, "на", "ня")
-		message = replacetext(message, "но", "ню")
-		message = replacetext(message, "ов", "ув")
-		message = replacetext(message, "р", "ря")
-		message = replacetext(message, "мо", "мя")
-
-	speech_args[SPEECH_MESSAGE] = message
+		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 
 /datum/accent/span

@@ -213,9 +213,9 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 		take_damage(20, BRUTE, MELEE, 0)
 		var/mob/living/carbon/human/pro_user = user
 		if(user.active_hand_index == 1)
-			pro_user.apply_damage(10, BRUTE, BODY_ZONE_L_ARM, wound_bonus = 15)
+			pro_user.apply_damage(10, BRUTE, BODY_ZONE_L_ARM, wound_bonus = 10)
 		else
-			pro_user.apply_damage(10, BRUTE, BODY_ZONE_R_ARM, wound_bonus = 15)
+			pro_user.apply_damage(10, BRUTE, BODY_ZONE_R_ARM, wound_bonus = 10)
 		playsound(src, 'sound/effects/Glassknock.ogg', 100, 1)
 	else if(user.a_intent != INTENT_HARM)
 		user.visible_message("[user] стучится в [src].")

@@ -3,7 +3,7 @@
 
 /obj/machinery/iv_drip
 	name = "\improper IV drip"
-	desc = "An IV drip with an advanced infusion pump that can both drain blood into and inject liquids from attached containers. Blood packs are processed at an accelerated rate. Alt-Click to change the transfer rate."
+	desc = "Капельница с продвинутой помпой впрыска, способной как брать кровь, так и делать инъекции препаратов из подсоединённых ёмкостей. Пакеты крови обрабатываются ускоренно."
 	icon = 'icons/obj/iv_drip.dmi'
 	icon_state = "iv_drip"
 	anchored = FALSE
@@ -75,36 +75,36 @@
 		return
 
 	if(attached)
-		visible_message("<span class='warning'>[attached] is detached from [src].</span>")
+		visible_message("<span class='warning'>[attached] был[attached.ru_a()] отсоединена от [src].</span>")
 		attached = null
 		update_icon()
 		return
 
 	if(!target.has_dna())
-		to_chat(usr, "<span class='danger'>The drip beeps: Warning, incompatible creature!</span>")
+		to_chat(usr, "<span class='danger'>Капельница пищит: \"Внимание, неподходящее существо\"!</span>")
 		return
 
 	if(Adjacent(target) && usr.Adjacent(target))
 		if(beaker)
-			usr.visible_message("<span class='warning'>[usr] attaches [src] to [target].</span>", "<span class='notice'>You attach [src] to [target].</span>")
+			usr.visible_message("<span class='warning'>[usr] присоединяет [src] к [target].</span>", "<span class='notice'>Вы подсоединяете [src] к [target].</span>")
 			log_combat(usr, target, "attached", src, "containing: [beaker.name] - ([beaker.reagents.log_list()])")
 			add_fingerprint(usr)
 			attached = target
 			START_PROCESSING(SSmachines, src)
 			update_icon()
 		else
-			to_chat(usr, "<span class='warning'>There's nothing attached to the IV drip!</span>")
+			to_chat(usr, "<span class='warning'>У Капельнице нет ёмкости для работы!</span>")
 
 
 /obj/machinery/iv_drip/attackby(obj/item/W, mob/user, params)
 	if(is_type_in_typecache(W, drip_containers))
 		if(beaker)
-			to_chat(user, "<span class='warning'>There is already a reagent container loaded!</span>")
+			to_chat(user, "<span class='warning'>Уже прикреплена ёмкость для работы!</span>")
 			return
 		if(!user.transferItemToLoc(W, src))
 			return
 		beaker = W
-		to_chat(user, "<span class='notice'>You attach [W] to [src].</span>")
+		to_chat(user, "<span class='notice'>Вы прикрепили [W] к [src].</span>")
 		user.log_message("attached a [W] to [src] at [AREACOORD(src)] containing ([beaker.reagents.log_list()])", LOG_ATTACK)
 		add_fingerprint(user)
 		update_icon()
@@ -122,7 +122,7 @@
 		return PROCESS_KILL
 
 	if(!(get_dist(src, attached) <= 1 && isturf(attached.loc)))
-		to_chat(attached, "<span class='userdanger'>The IV drip needle is ripped out of you!</span>")
+		to_chat(attached, "<span class='userdanger'>Шприц капельницы вырывается из вас!</span>")
 		attached.apply_damage(3, BRUTE, pick(BODY_ZONE_R_ARM, BODY_ZONE_L_ARM))
 		attached = null
 		update_icon()
@@ -150,20 +150,20 @@
 			// If the beaker is full, ping
 			if(!amount)
 				if(prob(5))
-					visible_message("[src] pings.")
+					visible_message("[src] звенит.")
 					playsound(loc, 'sound/machines/beep.ogg', 50, 1)
 				return
 
 			// If the human is losing too much blood, beep.
 			if(attached.blood_volume < ((BLOOD_VOLUME_SAFE*attached.blood_ratio) && prob(5) && ishuman(attached))) //really couldn't care less about monkeys
-				visible_message("[src] beeps loudly.")
+				visible_message("[src] гудит.")
 				playsound(loc, 'sound/machines/twobeep.ogg', 50, 1)
 			attached.transfer_blood_to(beaker, amount)
 			update_icon()
 
 /obj/machinery/iv_drip/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(attached)
-		visible_message("[attached] is detached from [src]")
+		visible_message("[attached] отсоединён от [src]")
 		attached = null
 		update_icon()
 		return
@@ -177,10 +177,10 @@
 		return
 	if(dripfeed)
 		dripfeed = FALSE
-		to_chat(usr, "<span class='notice'>You loosen the valve to speed up the [src].</span>")
+		to_chat(usr, "<span class='notice'>Вы ослабляете клапан для ускорения работы [src].</span>")
 	else
 		dripfeed = TRUE
-		to_chat(usr, "<span class='notice'>You tighten the valve to slowly drip-feed the contents of [src].</span>")
+		to_chat(usr, "<span class='notice'>Вы затягиваете клапан для медленного прокапывания препаратов [src].</span>")
 
 /obj/machinery/iv_drip/attack_robot(mob/user)
 	if(Adjacent(user))
@@ -192,7 +192,7 @@
 	set src in view(1)
 
 	if(!isliving(usr))
-		to_chat(usr, "<span class='warning'>You can't do that!</span>")
+		to_chat(usr, "<span class='warning'>Вы не можете этого сделать!</span>")
 		return
 
 	if(usr.incapacitated())
@@ -212,35 +212,35 @@
 	set src in view(1)
 
 	if(!isliving(usr))
-		to_chat(usr, "<span class='warning'>You can't do that!</span>")
+		to_chat(usr, "<span class='warning'>Вы не можете этого сделать!</span>")
 		return
 
 	if(usr.incapacitated())
 		return
 	mode = !mode
-	to_chat(usr, "The IV drip is now [mode ? "injecting" : "taking blood"].")
+	to_chat(usr, span_info("Капельница теперь [mode ? "проводит инъекции" : "берёт кровь"]."))
 	update_icon()
 
 /obj/machinery/iv_drip/examine(mob/user)
 	. = ..()
 	if(get_dist(user, src) > 2)
 		return
-
-	. += "[src] is [mode ? "injecting" : "taking blood"].\n"
+	. += span_notice("Alt-Click при наличии ёмкости для настройки объёмов инъекции.")
+	. += span_notice("[src] в режиме [mode ? "инъекции препаратов" : "сбора крови"].")
 
 	if(beaker)
 		if(beaker.reagents && beaker.reagents.reagent_list.len)
-			. += "<span class='notice'>Attached is \a [beaker] with [beaker.reagents.total_volume] units of liquid.</span>\n"
+			. += "<span class='notice'>Прикреплена ёмкость, \a [beaker], внутри видно [beaker.reagents.total_volume]u веществ.</span>"
 		else
-			. += "<span class='notice'>Attached is an empty [beaker.name].</span>\n"
+			. += "<span class='notice'>Прикреплена ёмкость. Внутри [beaker.name] пусто.</span>"
 	else
-		. += "<span class='notice'>No chemicals are attached.</span>\n"
+		. += "<span class='notice'>Ёмкость не прикреплена.</span>"
 
-	. += "<span class='notice'>[attached ? attached : "No one"] is attached.</span>"
+	. += "<span class='notice'>[attached ? attached : "Никто не"] присоедин[(attached && attached.gender == FEMALE) ? "ена" : "ён"] к капельнице.</span>"
 
 /obj/machinery/iv_drip/telescopic
 	name = "telescopic IV drip"
-	desc = "An IV drip with an advanced infusion pump that can both drain blood into and inject liquids from attached containers. Blood packs are processed at an accelerated rate. This one is telescopic, and can be picked up and put down.Alt-Click with a beaker attached to change the transfer rate."
+	desc = "Капельница с продвинутой помпой впрыска, способной как брать кровь, так и делать инъекции препаратов из подсоединённых ёмкостей. Пакеты крови обрабатываются ускоренно. У этой телескопическая конструкция, которую можно сложить."
 	icon_state = "iv_drip"
 
 /obj/machinery/iv_drip/telescopic/update_icon_state()

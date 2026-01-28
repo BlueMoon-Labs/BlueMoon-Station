@@ -11,6 +11,11 @@
 	/// A holder of the electronics, in case of them working as an integrated part
 	var/holder
 
+/obj/item/electronics/airlock/Destroy()
+	accesses = null
+	holder = null
+	return ..()
+
 /obj/item/electronics/airlock/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>Has a neat <i>selection menu</i> for modifying airlock access levels.</span>"

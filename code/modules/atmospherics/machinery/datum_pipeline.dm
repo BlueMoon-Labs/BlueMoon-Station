@@ -20,7 +20,15 @@
 	for(var/obj/machinery/atmospherics/pipe/P in members)
 		P.parent = null
 	for(var/obj/machinery/atmospherics/components/C in other_atmosmch)
-		C.nullifyPipenet(src)
+		if(!C.parents)
+			continue
+		for(var/i in 1 to length(C.parents))
+			if(C.parents[i] == src)
+				C.parents[i] = null
+	members.Cut()
+	other_atmosmch.Cut()
+	other_airs.Cut()
+	air = null
 	return ..()
 
 /datum/pipeline/process()
@@ -31,8 +39,9 @@
 	update = air?.react(src)
 
 /datum/pipeline/proc/build_pipeline(obj/machinery/atmospherics/base)
-	if(QDELETED(base))	//	BLUEMOON EDIT: TODO:runtime
-		return	//	BLUEMOON EDIT: TODO:runtime
+	if(QDELETED(base))
+		stack_trace("build_pipeline() called with QDELETED base [base?.type] at [base ? COORD(base) : "null"]")
+		return
 	var/volume = 0
 	if(istype(base, /obj/machinery/atmospherics/pipe))
 		var/obj/machinery/atmospherics/pipe/E = base
@@ -95,6 +104,7 @@
 	if (!length(returned_airs) || (null in returned_airs))
 		stack_trace("addMachineryMember: Nonexistent (empty list) or null machinery gasmix added to pipeline datum from [C] \
 		which is of type [C.type]. Nearby: ([C.x], [C.y], [C.z])")
+		listclearnulls(returned_airs)
 	other_airs |= returned_airs
 
 /datum/pipeline/proc/addMember(obj/machinery/atmospherics/A, obj/machinery/atmospherics/N)
@@ -127,6 +137,9 @@
 	for(var/obj/machinery/atmospherics/components/C in E.other_atmosmch)
 		C.replacePipenet(E, src)
 	other_atmosmch |= E.other_atmosmch
+	if(null in E.other_airs)
+		stack_trace("merge(): Pipeline [E]([REF(E)]) contains null gas mixtures in other_airs. Cleaning before merge.")
+		listclearnulls(E.other_airs)
 	other_airs |= E.other_airs
 	E.members.Cut()
 	E.other_atmosmch.Cut()
@@ -215,7 +228,9 @@
 	update = TRUE
 
 /datum/pipeline/proc/return_air()
-	. = other_airs + air
+	. = other_airs.Copy()
+	if(air)
+		. += air
 	if(null in .)
 		listclearnulls(.)
 		stack_trace("[src]([REF(src)]) has one or more null gas mixtures, which may cause bugs. Null mixtures will not be considered in reconcile_air().")

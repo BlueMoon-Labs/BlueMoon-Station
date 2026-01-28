@@ -19,6 +19,8 @@
 
 	if (total_damage == 0) // Раз метаболизм не лечит окси урон, не нужно прогонять прок при его наличии
 		return
+	if (H.nutrition <= 100) // Если голодаем - ВОССТАНОВИТЕЛЬНОМУ метаболизму не из чего восстанавливать тело
+		return
 	var/consumed_damage = H.getFireLoss() * 2 + H.getBruteLoss() // the damage, the person have. Burn is bad for regeneration, so its multiplied
 	var/heal_multiplier = quirk_holder.getMaxHealth() / 100 // the heal is scaled by persons health, big guys heals faster
 	var/bruteheal = -0.6
@@ -29,4 +31,4 @@
 	H.adjustBruteLoss(bruteheal * heal_multiplier, forced = TRUE)
 	H.adjustFireLoss(burnheal * heal_multiplier, forced = TRUE)
 	H.adjustToxLoss(toxheal * heal_multiplier, forced = TRUE)
-	H.adjust_nutrition(-0.6)
+	H.adjust_nutrition(-0.5)

@@ -889,6 +889,17 @@
 	required_reagents = list(/datum/reagent/cellulose = 1)
 	required_temp = 512
 
+//////////////////////////////////// EggYollk ///////////////////////////////////////////
+
+/datum/chemical_reaction/eggyollk
+	name = "Egg Yollk"
+	id = /datum/reagent/consumable/eggyolk
+	results = list(/datum/reagent/consumable/eggyolk = 3)
+	required_reagents = list(/datum/reagent/blood = 1, /datum/reagent/medicine/synthflesh = 1, /datum/reagent/consumable/sugar = 1)
+
+/datum/chemical_reaction/eggyollk/synth
+	id = "EggYollk_2"
+	required_reagents = list(/datum/reagent/blood/synthetics = 1, /datum/reagent/medicine/synthflesh = 1, /datum/reagent/consumable/sugar = 1)
 //Nerdy card shit
 
 /datum/chemical_reaction/card_powder/blue

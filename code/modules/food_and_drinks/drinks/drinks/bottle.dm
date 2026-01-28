@@ -96,6 +96,7 @@
 							'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1)
 		if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
 			new /obj/effect/temp_visual/heart(target.loc)
+
 /obj/item/reagent_containers/food/drinks/bottle/attack(mob/living/target, mob/living/user)
 
 	if(!target)

@@ -1,6 +1,6 @@
 /obj/item/choice_beacon/pact_mecha
 	name = "Combat Mech Beacon"
-	desc = "Благодаря этому маячку вы сможете вызвать один из мехов с Фрегатов Туманности Синие Луны. За Пакт!"
+	desc = "Благодаря этому маячку вы сможете вызвать один из мехов с Фрегатов Туманности Синие Луны. За ПАКТ!"
 	var/pact_mecha_list = list("Main Battle Mech Durand Mk1A1" = /obj/vehicle/sealed/mecha/combat/durand/loaded,
 					"Main Battle Mech mk. I" = /obj/vehicle/sealed/mecha/combat/gygax/loaded)
 
@@ -12,6 +12,11 @@
 			var/atom/A = V
 			pact_mecha_list[initial(A.name)] = A
 	return pact_mecha_list
+
+/obj/item/choice_beacon/pact_mecha/spawn_option(atom/choice, mob/living/M)
+	. = ..()
+	var/obj/effect/pod_landingzone/effect = .
+	effect.say("Stand by for TitanFall!")
 
 /obj/item/choice_beacon/pact_mecha/medical
 	name = "Medical Pact Mech Beacon"

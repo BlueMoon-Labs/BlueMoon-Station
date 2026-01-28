@@ -53,8 +53,8 @@
 		return FALSE
 
 /datum/surgery_step/force_reboot/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='notice'>You attempt to reboot [target]'s posibrain, but [target.ru_who()] doesn't react.</span>",
 		"[user] attempts to reboot [target]'s posibrain, but [target.ru_who()] doesn't react.",
 		"[user] attempts to reboot [target]'s posibrain, but [target.ru_who()] doesn't react")
 	target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 15, 199)
-	return FALSE

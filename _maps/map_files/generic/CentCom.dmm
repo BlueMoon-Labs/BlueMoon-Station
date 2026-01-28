@@ -7399,6 +7399,10 @@
 /obj/item/gun/energy/e_gun/erotaser,
 /turf/open/floor/plasteel/dark,
 /area/slavers)
+"aPI" = (
+/obj/structure/micro_brick/small_house,
+/turf/open/floor/plating/dirt,
+/area/centcom/holding)
 "aPJ" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
@@ -9515,7 +9519,7 @@
 /turf/open/floor/plating,
 /area/syndicate_mothership/control)
 "aZI" = (
-/obj/machinery/computer/shuttle/slaver/recall,
+/obj/machinery/computer/shuttle/slaver,
 /obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
@@ -9763,14 +9767,6 @@
 	},
 /turf/open/floor/plating,
 /area/syndicate_mothership/control)
-"bjT" = (
-/obj/structure/micro_brick/Road_turn{
-	dir = 1
-	},
-/turf/open/indestructible/cobble/side{
-	dir = 8
-	},
-/area/centcom/holding)
 "bkJ" = (
 /obj/structure/flora/tree/jungle/small,
 /obj/effect/turf_decal/siding/wood{
@@ -10577,7 +10573,9 @@
 /turf/closed/indestructible/riveted,
 /area/tdome/arena_source)
 "cbj" = (
-/turf/open/floor/spooktime/cobble/cornerSW,
+/turf/open/indestructible/cobble/side{
+	dir = 10
+	},
 /area/centcom/holding)
 "cbn" = (
 /obj/structure/reagent_dispensers/keg/milk,
@@ -10700,11 +10698,10 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
 "cgt" = (
-/obj/structure/micro_brick/road_straight,
-/obj/item/toy/mecha/mauler,
-/turf/open/indestructible/cobble/side{
-	dir = 8
+/obj/structure/micro_brick/Road_turn{
+	dir = 1
 	},
+/turf/open/floor/plating/dirt,
 /area/centcom/holding)
 "cgS" = (
 /obj/machinery/computer/atmos_control{
@@ -11406,8 +11403,8 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/indestructible/cobble/corner{
-	dir = 1
+/turf/open/indestructible/cobble/side{
+	dir = 9
 	},
 /area/centcom/holding)
 "cUo" = (
@@ -12447,6 +12444,11 @@
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /turf/open/floor/plasteel/white,
 /area/syndicate_mothership/control)
+"dWG" = (
+/turf/open/indestructible/cobble/side{
+	dir = 6
+	},
+/area/centcom/holding)
 "dXW" = (
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
@@ -15354,8 +15356,8 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership)
 "gXy" = (
-/obj/structure/micro_brick/small_business,
-/turf/open/indestructible/cobble,
+/obj/structure/micro_brick/road_straight,
+/turf/open/floor/plating/dirt,
 /area/centcom/holding)
 "gXE" = (
 /obj/machinery/light/floor,
@@ -16101,7 +16103,9 @@
 /obj/structure/railing/corner{
 	dir = 8
 	},
-/turf/open/indestructible/cobble,
+/turf/open/indestructible/cobble/corner{
+	dir = 8
+	},
 /area/centcom/holding)
 "hKJ" = (
 /obj/structure/chair/comfy/black,
@@ -16446,23 +16450,8 @@
 /turf/open/floor/plasteel/white,
 /area/centcom/control)
 "ihW" = (
-/obj/structure/micro_brick/road_straight,
-/mob/living/simple_animal/hostile/retaliate/frog{
-	pixel_x = 0;
-	wander = 0;
-	dir = 1
-	},
-/obj/item/storage/bag/trash/cyborg{
-	pixel_x = 8;
-	pixel_y = -13
-	},
-/obj/item/storage/bag/trash/cyborg{
-	pixel_x = -10;
-	pixel_y = -13
-	},
-/turf/open/indestructible/cobble/side{
-	dir = 8
-	},
+/obj/structure/micro_brick/small_warehouse,
+/turf/open/floor/plating/dirt,
 /area/centcom/holding)
 "ihX" = (
 /obj/item/kirbyplants/random,
@@ -17782,11 +17771,6 @@
 	},
 /obj/effect/turf_decal/tile/neutral/full,
 /obj/effect/turf_decal/tile/neutral/full,
-/obj/machinery/light/floor{
-	bulb_colour = "#6496FA";
-	bulb_emergency_colour = "#6496FA";
-	color = "#6496FA"
-	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/centcom/holding)
 "jBV" = (
@@ -17816,12 +17800,8 @@
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
 "jDz" = (
-/obj/structure/micro_brick/road_straight{
-	dir = 4
-	},
-/turf/open/indestructible/cobble/side{
-	dir = 1
-	},
+/obj/structure/micro_brick/small_business,
+/turf/open/floor/plating/dirt,
 /area/centcom/holding)
 "jDX" = (
 /obj/structure/artilleryplaceholder{
@@ -17869,7 +17849,9 @@
 /obj/structure/railing/corner{
 	dir = 4
 	},
-/turf/open/indestructible/cobble,
+/turf/open/indestructible/cobble/corner{
+	dir = 4
+	},
 /area/centcom/holding)
 "jFX" = (
 /obj/effect/turf_decal/tile/dark_green/anticorner{
@@ -19674,8 +19656,8 @@
 /area/syndicate_mothership/control)
 "luN" = (
 /obj/structure/streetdecor/lamp,
-/turf/open/indestructible/cobble/corner{
-	dir = 4
+/turf/open/indestructible/cobble/side{
+	dir = 6
 	},
 /area/centcom/holding)
 "luY" = (
@@ -20077,8 +20059,10 @@
 /turf/open/indestructible/cobble/corner,
 /area/centcom/holding)
 "lRw" = (
-/obj/structure/micro_brick/small_museum,
-/turf/open/indestructible/cobble,
+/obj/structure/micro_brick/road_threeway{
+	dir = 8
+	},
+/turf/open/floor/plating/dirt,
 /area/centcom/holding)
 "lRW" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -21509,10 +21493,8 @@
 /turf/open/floor/wood,
 /area/centcom/control)
 "nyV" = (
-/obj/structure/micro_brick/road_straight{
-	dir = 4
-	},
-/turf/open/indestructible/cobble,
+/obj/structure/micro_brick/small_museum,
+/turf/open/floor/plating/dirt,
 /area/centcom/holding)
 "nzf" = (
 /obj/machinery/libraryscanner{
@@ -23887,10 +23869,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/centcom/control)
-"pYU" = (
-/obj/structure/micro_brick/road_straight,
-/turf/open/water/safe,
-/area/centcom/holding)
 "qau" = (
 /obj/item/paper/crumpled/muddy/fluff/elephant_graveyard/rnd_notes{
 	name = "Secrets of the Universe";
@@ -24641,7 +24619,9 @@
 /obj/structure/railing/corner{
 	dir = 1
 	},
-/turf/open/indestructible/cobble,
+/turf/open/indestructible/cobble/corner{
+	dir = 1
+	},
 /area/centcom/holding)
 "qID" = (
 /obj/effect/turf_decal/tile/dark_blue/half,
@@ -25288,8 +25268,8 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/indestructible/cobble/corner{
-	dir = 8
+/turf/open/indestructible/cobble/side{
+	dir = 10
 	},
 /area/centcom/holding)
 "rrg" = (
@@ -25399,10 +25379,6 @@
 /turf/open/floor/plasteel/textured/half{
 	dir = 1
 	},
-/area/centcom/holding)
-"rwC" = (
-/obj/structure/micro_brick/small_warehouse,
-/turf/open/indestructible/cobble/side,
 /area/centcom/holding)
 "rxp" = (
 /obj/machinery/door/airlock{
@@ -25898,7 +25874,7 @@
 /area/centcom/control)
 "rSz" = (
 /obj/structure/railing/corner,
-/turf/open/indestructible/cobble,
+/turf/open/indestructible/cobble/corner,
 /area/centcom/holding)
 "rTv" = (
 /obj/machinery/light/floor,
@@ -26448,7 +26424,9 @@
 "svK" = (
 /obj/structure/bed,
 /obj/item/bedsheet/vulp/vulp3,
-/turf/open/indestructible/cobble/corner,
+/turf/open/indestructible/cobble/side{
+	dir = 5
+	},
 /area/centcom/holding)
 "svX" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -27094,7 +27072,7 @@
 /turf/open/floor/plasteel/dark,
 /area/centcom/evac)
 "sZJ" = (
-/obj/structure/sign/poster/official/no_erp{
+/obj/structure/sign/poster/contraband/yes_erp{
 	pixel_x = 32
 	},
 /turf/open/floor/plasteel/dark,
@@ -28040,7 +28018,9 @@
 "ubq" = (
 /obj/structure/flora/rock/pile,
 /obj/structure/streetdecor/lamp,
-/turf/open/indestructible/cobble/corner,
+/turf/open/indestructible/cobble/side{
+	dir = 5
+	},
 /area/centcom/holding)
 "ubD" = (
 /obj/vehicle/sealed/mecha/combat/durand/zeus{
@@ -28247,9 +28227,12 @@
 /turf/open/floor/plasteel/textured/corner,
 /area/centcom/holding)
 "umw" = (
-/obj/structure/micro_brick/small_house,
 /obj/machinery/light/warm/directional/east,
-/turf/open/indestructible/cobble,
+/mob/living/simple_animal/hostile/retaliate/frog,
+/obj/structure/micro_brick/road_threeway{
+	dir = 8
+	},
+/turf/open/floor/plating/dirt,
 /area/centcom/holding)
 "umz" = (
 /obj/structure/chair/sofa/corp/right{
@@ -29700,6 +29683,11 @@
 /obj/item/clothing/shoes/sandal,
 /turf/open/floor/plasteel/showroomfloor,
 /area/centcom/holding)
+"vGX" = (
+/turf/open/indestructible/cobble/side{
+	dir = 5
+	},
+/area/centcom/holding)
 "vHr" = (
 /obj/item/pizzabox/meat{
 	pixel_y = 10
@@ -30428,15 +30416,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/prison)
-"wyf" = (
-/obj/structure/micro_brick/road_threeway{
-	dir = 4
-	},
-/obj/item/toy/mecha/mauler,
-/turf/open/indestructible/cobble/corner{
-	dir = 1
-	},
-/area/centcom/holding)
 "wyi" = (
 /obj/structure/reagent_dispensers/cooking_oil,
 /turf/open/floor/plasteel/showroomfloor,
@@ -31288,6 +31267,11 @@
 	},
 /turf/open/floor/wood/wood_parquet,
 /area/syndicate_mothership/control)
+"xrf" = (
+/turf/open/indestructible/cobble/side{
+	dir = 9
+	},
+/area/centcom/holding)
 "xri" = (
 /obj/machinery/mech_bay_recharge_port,
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -45725,7 +45709,7 @@ aFe
 hrl
 xCf
 aFe
-sIU
+xrf
 tmb
 tmb
 tmb
@@ -45735,7 +45719,7 @@ tmb
 tmb
 tmb
 tmb
-iLR
+cbj
 fON
 iPB
 xni
@@ -45983,7 +45967,7 @@ juE
 cyF
 aFe
 pKy
-lgf
+lRm
 bQT
 bQT
 bQT
@@ -45991,7 +45975,7 @@ bQT
 bQT
 bQT
 bQT
-lgf
+iGk
 tbC
 fON
 iPB
@@ -48039,7 +48023,7 @@ oom
 oom
 ryB
 pKy
-lgf
+iLR
 tmb
 tmb
 tmb
@@ -48047,7 +48031,7 @@ ibo
 tmb
 tmb
 tmb
-lgf
+sIU
 tbC
 fON
 fON
@@ -48305,7 +48289,7 @@ ldr
 wTR
 mFQ
 bQT
-iGk
+dWG
 fON
 fON
 fON
@@ -53438,8 +53422,8 @@ tmb
 tmb
 tmb
 tmb
-lgf
-lgf
+sIU
+iLR
 tmb
 tmb
 tmb
@@ -53695,7 +53679,7 @@ xRf
 xRf
 xRf
 fql
-lgf
+iGk
 rSz
 xRf
 xRf
@@ -54200,13 +54184,13 @@ oEH
 rnA
 xXp
 wJH
-pYU
-wyf
-cgt
+uUD
+uUD
+aPI
 cgt
 ihW
-bjT
-iLR
+uUD
+uUD
 uUD
 qLI
 pKy
@@ -54217,7 +54201,7 @@ uUD
 fON
 fON
 pDh
-lgf
+lRm
 luN
 aFe
 aFe
@@ -54463,7 +54447,7 @@ gXy
 umw
 lRw
 nyV
-rwC
+uUD
 uUD
 bPp
 pKy
@@ -54731,7 +54715,7 @@ fON
 fON
 vpn
 pDh
-lgf
+iLR
 cbj
 mcX
 oom
@@ -54980,7 +54964,7 @@ egZ
 lzU
 wJH
 cTP
-lgf
+sIU
 eUO
 fON
 fON
@@ -54988,8 +54972,8 @@ fON
 fON
 fON
 pDh
-lgf
-iGk
+lRm
+dWG
 aFe
 qtI
 oom
@@ -55495,14 +55479,14 @@ rQT
 wJH
 kAQ
 lgf
-lgf
+lRm
 bQT
 bQT
 bQT
 bQT
-lgf
-lgf
 iGk
+lgf
+dWG
 fON
 fON
 fON
@@ -55751,14 +55735,14 @@ lXj
 aAf
 wJH
 ubq
-lgf
+iGk
 tbC
 fON
 fON
 fON
 aFe
-lRm
-iGk
+vGX
+dWG
 aFe
 fON
 fON
@@ -60635,7 +60619,7 @@ fON
 fON
 fON
 pKy
-lgf
+iLR
 tmb
 tmb
 tmb
@@ -60891,7 +60875,7 @@ fON
 fON
 fON
 fON
-lRm
+vGX
 bQT
 bQT
 bQT

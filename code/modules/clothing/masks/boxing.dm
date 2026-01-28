@@ -24,6 +24,28 @@
 	icon_state = "goal"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
+/obj/item/clothing/mask/screammask
+	name = "Scream Mask"
+	desc = "ЧУВАААААК."
+	mob_overlay_icon = 'icons/mob/clothing/custom_w.dmi'
+	icon_state = "krik"
+	item_state = "krik"
+	clothing_flags = ALLOWINTERNALS
+	flags_inv = HIDEFACE|HIDEFACIALHAIR
+	unique_reskin = list(
+		"Standart" = list(
+			"icon_state" = "krik",
+			"item_state" = "krik",
+			"name" = "Scream Mask"
+		),
+		"Freak" = list(
+			"icon_state" = "krikfreak",
+			"item_state" = "krikfreak",
+			"name" = "Freak Scream Mask"
+		)
+	)
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
 //Bluemoon donator add end
 
 /obj/item/clothing/mask/infiltrator

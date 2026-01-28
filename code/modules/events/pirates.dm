@@ -95,7 +95,7 @@
 			else
 				notify_ghosts("The pirate ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
 
-	priority_announce("В секторе обнаружен вооруженный корабль.", "Отдел ССО Пакта Синих Лун", 'modular_bluemoon/phenyamomota/sound/announcer/pirate_incoming.ogg')
+	priority_announce("В секторе обнаружен вооруженный корабль.", "Отдел ССО ПАКТа Синих Лун", 'modular_bluemoon/phenyamomota/sound/announcer/pirate_incoming.ogg')
 
 //Shuttle equipment
 
@@ -256,6 +256,7 @@
 	var/idle_state = "lpad-idle"
 	var/warmup_state = "lpad-idle"
 	var/sending_state = "lpad-beam"
+	var/warmup_time = 10 SECONDS
 	var/cargo_hold_id
 
 /obj/machinery/piratepad/multitool_act(mob/living/user, obj/item/multitool/I)
@@ -275,12 +276,25 @@
 	default_deconstruction_crowbar(tool)
 	return TRUE
 
+/obj/machinery/piratepad/RefreshParts()
+	warmup_time = initial(warmup_time)
+
+	var/parts_rating = 0
+	var/i = 0
+	for(var/obj/item/stock_parts/L in component_parts)
+		parts_rating += L.rating
+		++i
+	// Average rating of all details 
+	var/rating = round_down(parts_rating / i)
+	var/const/speed_up_per_rating = 26.6 // T4 = 80% speed up
+	var/speed_up_ratio = max(ceil((rating-1) * speed_up_per_rating),0)/100
+	warmup_time -= warmup_time*speed_up_ratio
+	warmup_time = max(round(warmup_time, 0.1), 0)
 
 /obj/machinery/computer/piratepad_control
 	name = "cargo hold control terminal"
 	var/status_report = "Ready for delivery."
 	var/obj/machinery/piratepad/pad
-	var/warmup_time = 100
 	var/sending = FALSE
 	var/points = 0
 	var/datum/export_report/total_report
@@ -422,7 +436,10 @@
 	status_report = "Sending... "
 	pad.visible_message("<span class='notice'>[pad] starts charging up.</span>")
 	pad.icon_state = pad.warmup_state
-	sending_timer = addtimer(CALLBACK(src,PROC_REF(send)),warmup_time, TIMER_STOPPABLE)
+	if(pad.warmup_time)
+		sending_timer = addtimer(CALLBACK(src,PROC_REF(send)),pad.warmup_time, TIMER_STOPPABLE)
+	else
+		send()
 
 /obj/machinery/computer/piratepad_control/proc/stop_sending(custom_report)
 	if(!sending)

@@ -11,7 +11,7 @@
 
 /obj/structure/table_frame
 	name = "table frame"
-	desc = "Four metal legs with four framing rods for a table. You could easily pass through this."
+	desc = "Четырёхножный металлический жёрдочный каркас. Можно с лёгкостью пройти насквозь."
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "table_frame"
 	density = FALSE

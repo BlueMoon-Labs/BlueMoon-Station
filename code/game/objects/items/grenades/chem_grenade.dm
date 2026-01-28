@@ -4,7 +4,7 @@
 
 /obj/item/grenade/chem_grenade
 	name = "chemical grenade"
-	desc = "A custom made grenade."
+	desc = "Нештампованная качественная граната."
 	icon_state = "chemg"
 	item_state = "flashbang"
 	w_class = WEIGHT_CLASS_SMALL
@@ -18,7 +18,7 @@
 	var/ignition_temp = 10 // The amount of heat added to the reagents when this grenade goes off.
 	var/threatscale = 1 // Used by advanced grenades to make them slightly more worthy.
 	var/no_splash = FALSE //If the grenade deletes even if it has no reagents to splash with. Used for slime core reactions.
-	var/casedesc = "This basic model accepts both beakers and bottles. It heats contents by 10°K upon ignition." // Appears when examining empty casings.
+	var/casedesc = "Этот стандартный корпус принимает и мензурки, и бутылки. При взведении нагревает содержимое на 10°K." // Appears when examining empty casings.
 
 /obj/item/grenade/chem_grenade/Initialize(mapload)
 	. = ..()
@@ -31,15 +31,15 @@
 	if(user.can_see_reagents())
 		var/count = 0
 		if(beakers.len)
-			. += "<span class='notice'>You scan the grenade and detect the following reagents:</span>"
+			. += "<span class='notice'>Вы просканировали гранату и обнаружили следующее:</span>"
 			for(var/obj/item/reagent_containers/glass/G in beakers)
 				var/textcount = thtotext(++count)
 				for(var/datum/reagent/R in G.reagents.reagent_list)
-					. += "<span class='notice'>[R.volume] units of [R.name] in the [textcount] beaker.</span>"
+					. += "<span class='notice'>[R.volume] u [R.name] в ёмкости №[textcount].</span>"
 			if(beakers.len == 1)
-				. += "<span class='notice'>You detect no second beaker in the grenade.</span>"
+				. += "<span class='notice'>Вторая ёмкость в гранате отсутствует.</span>"
 		else
-			. += "<span class='notice'>You scan the grenade, but detect nothing.</span>"
+			. += "<span class='notice'>Вы просканировали гранату, но не нашли ничего интересного.</span>"
 
 
 /obj/item/grenade/chem_grenade/attack_self(mob/user)
@@ -55,28 +55,28 @@
 		if(stage == WIRED)
 			if(beakers.len)
 				stage_change(READY)
-				to_chat(user, "<span class='notice'>You lock the [initial(name)] assembly.</span>")
+				to_chat(user, "<span class='notice'>Вы запломбировали заготовку [initial(name)].</span>")
 				I.play_tool_sound(src, 25)
 			else
-				to_chat(user, "<span class='warning'>You need to add at least one beaker before locking the [initial(name)] assembly!</span>")
+				to_chat(user, "<span class='warning'>Нужно добавить хотя бы одну ёмкость перед пломбированием заготовки [initial(name)]!</span>")
 		else if(stage == EMPTY)
-			to_chat(user, "<span class='warning'>You need to add an activation mechanism!</span>")
+			to_chat(user, "<span class='warning'>Вам нужно добавить механизм взведения!</span>")
 
 	else if(stage == WIRED && is_type_in_list(I, allowed_containers))
 		. = 1 //no afterattack
 		if(beakers.len == 2)
-			to_chat(user, "<span class='warning'>[src] can not hold more containers!</span>")
+			to_chat(user, "<span class='warning'>Больше ёмкостей в [src] не поместится!</span>")
 			return
 		else
 			if(I.reagents.total_volume)
 				if(!user.transferItemToLoc(I, src))
 					return
-				to_chat(user, "<span class='notice'>You add [I] to the [initial(name)] assembly.</span>")
+				to_chat(user, "<span class='notice'>Вы добавили [I] в конструкцию [initial(name)].</span>")
 				beakers += I
 				var/reagent_list = pretty_string_from_reagent_list(I.reagents)
 				user.log_message("inserted [I] ([reagent_list]) into [src]",LOG_GAME)
 			else
-				to_chat(user, "<span class='warning'>[I] is empty!</span>")
+				to_chat(user, "<span class='warning'>Внутри [I] ничего нет!</span>")
 
 	else if(stage == EMPTY && istype(I, /obj/item/assembly_holder))
 		. = 1 // no afterattack
@@ -91,20 +91,20 @@
 		assemblyattacher = user.ckey
 
 		stage_change(WIRED)
-		to_chat(user, "<span class='notice'>You add [A] to the [initial(name)] assembly.</span>")
+		to_chat(user, "<span class='notice'>Вы добавили [A] в конструкцию сборки [initial(name)].</span>")
 
 	else if(stage == EMPTY && istype(I, /obj/item/stack/cable_coil))
 		if (I.use_tool(src, user, 0, 1, skill_gain_mult = TRIVIAL_USE_TOOL_MULT))
 			det_time = 50 // In case the cable_coil was removed and readded.
 			stage_change(WIRED)
-			to_chat(user, "<span class='notice'>You rig the [initial(name)] assembly.</span>")
+			to_chat(user, "<span class='notice'>You взводите сборку [initial(name)].</span>")
 		else
-			to_chat(user, "<span class='warning'>You need one length of coil to wire the assembly!</span>")
+			to_chat(user, "<span class='warning'>Для взведения проводкой, нужен хотя бы метр кабеля!</span>")
 			return
 
 	else if(stage == READY && I.tool_behaviour == TOOL_WIRECUTTER && !active)
 		stage_change(WIRED)
-		to_chat(user, "<span class='notice'>You unlock the [initial(name)] assembly.</span>")
+		to_chat(user, "<span class='notice'>Вы обезвредили сборку [initial(name)].</span>")
 
 	else if(stage == WIRED && I.tool_behaviour == TOOL_WRENCH)
 		if(beakers.len)
@@ -115,7 +115,7 @@
 				var/reagent_list = pretty_string_from_reagent_list(O.reagents)
 				user.log_message("removed [O] ([reagent_list]) from [src]", LOG_GAME)
 			beakers = list()
-			to_chat(user, "<span class='notice'>You open the [initial(name)] assembly and remove the payload.</span>")
+			to_chat(user, "<span class='notice'>Вы вскрыли конструкцию [initial(name)] и вытащили содержимое.</span>")
 			return // First use of the wrench remove beakers, then use the wrench to remove the activation mechanism.
 		if(nadeassembly)
 			nadeassembly.forceMove(drop_location())
@@ -124,7 +124,7 @@
 		else // If "nadeassembly = null && stage == WIRED", then it most have been cable_coil that was used.
 			new /obj/item/stack/cable_coil(get_turf(src),1)
 		stage_change(EMPTY)
-		to_chat(user, "<span class='notice'>You remove the activation mechanism from the [initial(name)] assembly.</span>")
+		to_chat(user, "<span class='notice'>Вы убрали механизм взведения из конструкции [initial(name)].</span>")
 	else
 		return ..()
 
@@ -133,11 +133,11 @@
 		stage = N
 	if(stage == EMPTY)
 		name = "[initial(name)] casing"
-		desc = "A do it yourself [initial(name)]! [initial(casedesc)]"
+		desc = "\"Собери сам\" [initial(name)]! [initial(casedesc)]"
 		icon_state = initial(icon_state)
 	else if(stage == WIRED)
 		name = "unsecured [initial(name)]"
-		desc = "An unsecured [initial(name)] assembly."
+		desc = "недособранная заготовка [initial(name)]."
 		icon_state = "[initial(icon_state)]_ass"
 	else if(stage == READY)
 		name = initial(name)
@@ -207,8 +207,8 @@
 //Large chem grenades accept slime cores and use the appropriately.
 /obj/item/grenade/chem_grenade/large
 	name = "large grenade"
-	desc = "A custom made large grenade. Larger splash range and increased ignition temperature compared to basic grenades. Fits exotic containers."
-	casedesc = "This casing affects a larger area than the basic model and can fit exotic containers, including slime cores. Heats contents by 25°K upon ignition."
+	desc = "Нештампованная большая граната. Больший радиус поражения и увеличенный нагрев при взведении. Вмещает экзотические ёмкости."
+	casedesc = "Этот корпус гранаты покрывает большую территорию, чем обычная модель, и может вмещать экзотические ёмкости, включая ядра слаймов. Нагревает содержимое на 25°K при взведении."
 	icon_state = "large_grenade"
 	allowed_containers = list(/obj/item/reagent_containers/glass, /obj/item/reagent_containers/food/condiment, /obj/item/reagent_containers/food/drinks)
 	affected_area = 5
@@ -244,30 +244,30 @@
 	if(istype(I, /obj/item/slime_extract) && stage == WIRED)
 		if(!user.transferItemToLoc(I, src))
 			return
-		to_chat(user, "<span class='notice'>You add [I] to the [initial(name)] assembly.</span>")
+		to_chat(user, "<span class='notice'>Вы добавили [I] в конструкцию [initial(name)].</span>")
 		beakers += I
 	else
 		return ..()
 
 /obj/item/grenade/chem_grenade/cryo // Intended for rare cryogenic mixes. Cools the area moderately upon detonation.
 	name = "cryo grenade"
-	desc = "A custom made cryogenic grenade. Rapidly cools contents upon ignition."
-	casedesc = "Upon ignition, it rapidly cools contents by 100°K. Smaller splash range than regular casings."
+	desc = "Нештампованная криограната. Стремительно охлаждает своё содержимое при взведении."
+	casedesc = "При взведении, охлаждает содержимое на 100°K. Меньший радиус поражения, чем у обычных моделей."
 	icon_state = "cryog"
 	affected_area = 2
 	ignition_temp = -100
 
 /obj/item/grenade/chem_grenade/pyro // Intended for pyrotechnical mixes. Produces a small fire upon detonation, igniting potentially flammable mixtures.
 	name = "pyro grenade"
-	desc = "A custom made pyrotechnical grenade. Heats up contents upon ignition."
-	casedesc = "Upon ignition, it rapidly heats contents by 500°K."
+	desc = "Нештампованная пиротехническая граната. Нагревает своё содержимое при взведении."
+	casedesc = "При взведении, нагревает содержимое на 500°K."
 	icon_state = "pyrog"
 	ignition_temp = 500 // This is enough to expose a hotspot.
 
 /obj/item/grenade/chem_grenade/adv_release // Intended for weaker, but longer lasting effects. Could have some interesting uses.
 	name = "advanced release grenade"
-	desc = "A custom made advanced release grenade. It is able to be detonated more than once. Can be configured using a multitool."
-	casedesc = "This casing is able to detonate more than once. Can be configured using a multitool."
+	desc = "Нештампованная продвинутая граната. Способна быть использована более одного раза. Может быть настроена мультитулом."
+	casedesc = "Этот корпус может быть использована несколько раз. Её можно настроить мультитулом."
 	icon_state = "timeg"
 	var/unit_spread = 10 // Amount of units per repeat. Can be altered with a multitool.
 
@@ -280,7 +280,7 @@
 				unit_spread += 25
 			else
 				unit_spread = 5
-		to_chat(user, "<span class='notice'> You set the time release to [unit_spread] units per detonation.</span>")
+		to_chat(user, "<span class='notice'> Вы настроили схему гранаты использовать [unit_spread] u содержимого при детонации.</span>")
 		return
 	..()
 
@@ -323,7 +323,7 @@
 
 /obj/item/grenade/chem_grenade/metalfoam
 	name = "metal foam grenade"
-	desc = "Used for emergency sealing of hull breaches."
+	desc = "Для аварийной герметизации пробоин в обшивке."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/metalfoam/Initialize(mapload)
@@ -341,7 +341,7 @@
 
 /obj/item/grenade/chem_grenade/smart_metal_foam
 	name = "smart metal foam grenade"
-	desc = "Used for emergency sealing of hull breaches, while keeping areas accessible."
+	desc = "Для аварийной герметизации пробоин в обшивке с сохранением проходимости между зонами."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/smart_metal_foam/Initialize(mapload)
@@ -359,7 +359,7 @@
 
 /obj/item/grenade/chem_grenade/incendiary
 	name = "incendiary grenade"
-	desc = "Used for clearing rooms of living things."
+	desc = "Для зачистки помещений от всего живого."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/incendiary/Initialize(mapload)
@@ -377,7 +377,7 @@
 
 /obj/item/grenade/chem_grenade/antiweed
 	name = "weedkiller grenade"
-	desc = "Used for purging large areas of invasive plant species. Contents under pressure. Do not directly inhale contents."
+	desc = "Для очищения больших пространств от инвазивных растительных видов. Содержимое под давлением. Не вдыхать."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/antiweed/Initialize(mapload)
@@ -397,7 +397,7 @@
 /obj/item/grenade/chem_grenade/cleaner
 	name = "cleaner grenade"
 	icon_state = "cleaner_grenade"
-	desc = "BLAM!-brand foaming space cleaner. In a special applicator for rapid cleaning of wide areas."
+	desc = "Очистительная приспособа бренда \"BLAM!\". В специальной пенистой форме для быстрого очищения больших пространств."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/cleaner/Initialize(mapload)
@@ -416,7 +416,7 @@
 /obj/item/grenade/chem_grenade/ez_clean
 	name = "cleaner grenade"
 	icon_state = "cleaner_grenade"
-	desc = "Waffle Co.-brand foaming space cleaner. In a special applicator for rapid cleaning of wide areas."
+	desc = "Пенистый очиститель фирмы Waffle Co. В специальной форме для быстрого очищения больших пространств."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/ez_clean/Initialize(mapload)
@@ -435,7 +435,7 @@
 
 /obj/item/grenade/chem_grenade/teargas
 	name = "teargas grenade"
-	desc = "Used for nonlethal riot control. Contents under pressure. Do not directly inhale contents."
+	desc = "Для нелетального подавленя бунтов. Содержимое под давлением. Не вдыхать."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/teargas/Initialize(mapload)
@@ -454,7 +454,7 @@
 
 /obj/item/grenade/chem_grenade/facid
 	name = "acid grenade"
-	desc = "Used for melting armoured opponents."
+	desc = "Для плавления бронированного противника."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/facid/Initialize(mapload)
@@ -474,7 +474,7 @@
 
 /obj/item/grenade/chem_grenade/colorful
 	name = "colorful grenade"
-	desc = "Used for wide scale painting projects."
+	desc = "Для широкоформатных художественных проектов."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/colorful/Initialize(mapload)
@@ -511,22 +511,22 @@
 
 /obj/item/grenade/chem_grenade/glitter/pink
 	name = "pink glitter bomb"
-	desc = "For that HOT glittery look."
+	desc = "Для того самого ГОРЯЧЕГО блеска в образе."
 	glitter_type = /datum/reagent/glitter/pink
 
 /obj/item/grenade/chem_grenade/glitter/blue
 	name = "blue glitter bomb"
-	desc = "For that COOL glittery look."
+	desc = "Для того самого ПРОХЛАДНОГО блеска в образе."
 	glitter_type = /datum/reagent/glitter/blue
 
 /obj/item/grenade/chem_grenade/glitter/white
 	name = "white glitter bomb"
-	desc = "For that somnolent glittery look."
+	desc = "Для того самого сонливого блеска в образе"
 	glitter_type = /datum/reagent/glitter/white
 
 /obj/item/grenade/chem_grenade/clf3
 	name = "clf3 grenade"
-	desc = "BURN!-brand foaming clf3. In a special applicator for rapid purging of wide areas."
+	desc = "Вспенивающийся состав clf3 бренда \"BURN!\" В специальной форме для быстрой очистки больших пространств."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/clf3/Initialize(mapload)
@@ -544,7 +544,7 @@
 
 /obj/item/grenade/chem_grenade/bioterrorfoam
 	name = "Bio terror foam grenade"
-	desc = "Tiger Cooperative chemical foam grenade. Causes temporary irration, blindness, confusion, mutism, and mutations to carbon based life forms. Contains additional spore toxin."
+	desc = "Вспенивающийся состав объединения Tiger Cooperative. Причиняет временное раздражение, слепоту, спутанность, немоту и мутации у углеродных форм жизни. Вдобавок, содержит спористый токсин."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/bioterrorfoam/Initialize(mapload)
@@ -564,7 +564,7 @@
 
 /obj/item/grenade/chem_grenade/tuberculosis
 	name = "Fungal tuberculosis grenade"
-	desc = "WARNING: GRENADE WILL RELEASE DEADLY SPORES CONTAINING ACTIVE AGENTS. SEAL SUIT AND AIRFLOW BEFORE USE."
+	desc = "ВНИМАНИЕ: ГРАНАТА ВЫБРАСЫВАЕТ СМЕРТЕЛЬНО ОПАСНЫЕ СПОРЫ, СОДЕРЖАЩИЕ АКТИВНЫЕ ВЕЩЕСТВА. ПЕРЕД ИСПОЛЬЗОВАНИЕМ НАДЕВАЙТЕ ГЕРМЕТИЧНЫЙ КОСТЮМ С ЗАМКНУТОЙ СИСТЕМОЙ ДЫХАНИЯ."
 	stage = READY
 
 /obj/item/grenade/chem_grenade/tuberculosis/Initialize(mapload)
@@ -583,7 +583,7 @@
 
 /obj/item/grenade/chem_grenade/holy
 	name = "holy hand grenade"
-	desc = "A vessel of concentrated religious might."
+	desc = "Сосуд концентрированной религиозной мощи."
 	icon_state = "holy_grenade"
 	stage = READY
 

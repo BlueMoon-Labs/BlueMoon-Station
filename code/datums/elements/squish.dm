@@ -13,6 +13,8 @@
 	var/was_lying = (C.lying != 0)
 	addtimer(CALLBACK(src, PROC_REF(Detach), C, was_lying), duration)
 
+	if(!was_lying)
+		C.pixel_y -= 4
 	C.transform = C.transform.Scale(TALL, SHORT)
 
 /datum/element/squish/Detach(mob/living/carbon/C, was_lying)
@@ -23,6 +25,7 @@
 			C.transform = C.transform.Scale(SHORT, TALL)
 		else
 			C.transform = C.transform.Scale(TALL, SHORT)
+	C.pixel_y = initial(C.pixel_y)
 
 #undef SHORT
 #undef TALL

@@ -24,7 +24,7 @@ export const ChemHeater = (props, context) => {
       resizable>
       <Window.Content overflow="auto">
         <Section
-          title="Thermostat"
+          title="Термостат"
           buttons={(
             <Button
               icon={isActive ? 'power-off' : 'times'}
@@ -33,7 +33,7 @@ export const ChemHeater = (props, context) => {
               onClick={() => act('power')} />
           )}>
           <LabeledList>
-            <LabeledList.Item label="Target">
+            <LabeledList.Item label="Цель">
               <NumberInput
                 width="65px"
                 unit="K"
@@ -46,7 +46,7 @@ export const ChemHeater = (props, context) => {
                   target: value,
                 })} />
             </LabeledList.Item>
-            <LabeledList.Item label="Reading">
+            <LabeledList.Item label="Нагрето до">
               <Box
                 width="60px"
                 textAlign="right">
@@ -60,15 +60,15 @@ export const ChemHeater = (props, context) => {
           </LabeledList>
         </Section>
         <Section
-          title="Beaker"
+          title="Ёмкость"
           buttons={!!isBeakerLoaded && (
             <Fragment>
               <Box inline color="label" mr={2}>
-                {beakerCurrentVolume} / {beakerMaxVolume} units
+                {beakerCurrentVolume} / {beakerMaxVolume} u
               </Box>
               <Button
                 icon="eject"
-                content="Eject"
+                content="Извлечь"
                 onClick={() => act('eject')} />
             </Fragment>
           )}>

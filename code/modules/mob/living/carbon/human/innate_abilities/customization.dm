@@ -25,7 +25,7 @@
 /datum/action/innate/ability/humanoid_customization/proc/change_form()
 	var/mob/living/carbon/human/H = owner
 
-	var/select_alteration = input(owner, "Select what part of your form to alter", "Form Alteration", "cancel") in list("Body Color", "Eye Color","Hair Style", "Genitals", "Tail", "Snout", "Wings", "Markings", "Ears", "Taur body", "Penis", "Vagina", "Penis Length", "Breast Size", "Breast Shape", "Butt Size", "Belly Size", "Body Size", "Genital Color", "Horns", "Hair Color", "Skin Tone (Non-Mutant)", "Gender & Lewd", "Legs", "Cancel")
+	var/select_alteration = input(owner, "Select what part of your form to alter", "Form Alteration", "cancel") in list("Body Color", "Eye Color","Hair Style", "Genitals", "Tail", "Snout", "Wings", "Markings", "Ears", "Taur body", "Penis", "Testicles", "Vagina", "Penis Length", "Breast Size", "Breast Shape", "Testicles Size", "Butt Size", "Belly Size", "Body Size", "Genital Color", "Horns", "Hair Color", "Skin Tone (Non-Mutant)", "Gender & Lewd", "Legs", "Cancel")
 
 	if(select_alteration == "Body Color")
 		var/new_color = input(owner, "Choose your skin color:", "Race change","#"+H.dna.features["mcolor"]) as color|null
@@ -198,8 +198,18 @@
 		if(new_shape)
 			H.dna.features["cock_shape"] = new_shape
 		H.update_genitals()
-		H.give_genital(/obj/item/organ/genital/testicles)
 		H.give_genital(/obj/item/organ/genital/penis)
+		H.apply_overlay()
+
+	else if (select_alteration == "Testicles")
+		for(var/obj/item/organ/genital/testicles/X in H.internal_organs)
+			qdel(X)
+		var/new_shape
+		new_shape = input(owner, "Choose your character's testicles", "Genital Alteration") as null|anything in GLOB.balls_shapes_list
+		if(new_shape)
+			H.dna.features["balls_shape"] = new_shape
+		H.update_genitals()
+		H.give_genital(/obj/item/organ/genital/testicles)
 		H.apply_overlay()
 
 
@@ -225,7 +235,6 @@
 			H.dna.features["cock_length"] = clamp(round(new_length), min_D, max_D)
 		H.update_genitals()
 		H.apply_overlay()
-		H.give_genital(/obj/item/organ/genital/testicles)
 		H.give_genital(/obj/item/organ/genital/penis)
 
 	else if (select_alteration == "Breast Size")
@@ -248,6 +257,22 @@
 		H.update_genitals()
 		H.apply_overlay()
 		H.give_genital(/obj/item/organ/genital/breasts)
+
+	else if (select_alteration == "Testicles Size")
+		var/min_B = BALLS_SIZE_MIN
+		var/max_B = BALLS_SIZE_MAX
+		var/new_size = input(owner, "Testicles size:\n([min_B]-[max_B])", "Genital Alteration") as num|null
+		if(new_size)
+			H.dna.features["balls_size"] = clamp(round(new_size), min_B, max_B)
+			var/obj/item/organ/genital/testicles/T = H.getorganslot(ORGAN_SLOT_TESTICLES)
+			if(T)
+				T.size = H.dna.features["balls_size"]
+				T.update_size()
+				T.update_appearance()
+			H.update_genitals()
+			H.apply_overlay()
+
+
 /// SPLURT EDIT START
 	else if (select_alteration == "Butt Size")
 		for(var/obj/item/organ/genital/butt/X in H.internal_organs)

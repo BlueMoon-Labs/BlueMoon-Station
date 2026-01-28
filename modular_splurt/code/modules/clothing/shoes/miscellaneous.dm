@@ -86,7 +86,7 @@
 /obj/item/clothing/shoes/jackboots/cbrn/mopp
 	name = "MOPP boots"
 	desc = "Mission Oriented Protective Posture. Thick black boots design for working in hazardous combat environments."
-	armor = list("melee" = 10, "bullet" = 0, "laser" = 10,"energy" = 10, "bomb" = 10, "bio" = 100, "rad" = 100, "fire" = 40, "acid" = 100)
+	armor = list("melee" = 10, "bullet" = 0, "laser" = 10,"energy" = 10, "bomb" = 10, "bio" = 100, "rad" = 75, "fire" = 40, "acid" = 100)
 	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL
 	max_heat_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
 	cold_protection = FEET

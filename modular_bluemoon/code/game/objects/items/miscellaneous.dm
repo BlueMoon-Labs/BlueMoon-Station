@@ -72,6 +72,9 @@
 		"Space Alta" = /mob/living/simple_animal/pet/cat/space/alta,
 		"Zlat" = /mob/living/simple_animal/pet/dog/corgi/Lisa/zlatchek)
 
+/obj/item/choice_beacon/pet/dar
+	pets = list("Dar Jr" = /mob/living/simple_animal/pet/cat/alta/dar)
+
 /obj/item/choice_beacon/pet/emma
 	pets = list("Crab" = /mob/living/simple_animal/crab,
 		"Cat" = /mob/living/simple_animal/pet/cat,
@@ -94,3 +97,8 @@
 
 /obj/item/choice_beacon/pet/wertyanmoth
 	pets = list("Wertyan" = /mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth)
+
+/obj/item/choice_beacon/pet/lilmoth
+	pets = list("Little moth" = /mob/living/simple_animal/pet/dog/corgi/mothroach/lilmoth,
+				"Little moth with funny hat"  = /mob/living/simple_animal/pet/dog/corgi/mothroach/lilmoth/dressed,
+				)

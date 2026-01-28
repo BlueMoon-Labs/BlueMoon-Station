@@ -124,6 +124,8 @@
 		else
 			msg = "Your Energy Katana lands at your feet!"
 
+	jaunt.Grant(user, src)
+
 	if(msg)
 		to_chat(user, "<span class='notice'>[msg]</span>")
 
@@ -275,6 +277,8 @@
 			msg = "You catch your Energy Naginata!"
 		else
 			msg = "Your Energy Naginata lands at your feet!"
+
+	jaunt_ronin.Grant(user, src)
 
 	if(msg)
 		to_chat(user, "<span class='notice'>[msg]</span>")

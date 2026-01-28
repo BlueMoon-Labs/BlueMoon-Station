@@ -5,6 +5,73 @@
 	name = "Civilian Syndicate Card"
 	uses = 1
 
+/obj/item/card/id/syndicate/one_access_copy/loadout
+	var/registred = FALSE
+
+// Используется именно такая функция, т.к. при выдаче через лодаут карта помещается в рюкзак
+/obj/item/card/id/syndicate/one_access_copy/loadout/on_enter_storage(datum/component/storage/concrete/S)
+
+	if(!registred)
+		registred = TRUE
+		var/mob/living/carbon/human/my_owner = null
+
+		// Проверяем инветарь куклы, ее сумки и возможной коробки в сумке
+		var/atom/movable/cur = loc
+		for(var/i = 1, i <= 3, i++)
+			if(!cur)
+				break
+
+			if(ishuman(cur))
+				my_owner = cur
+				break
+
+			// дальше поднимаемся только если следующий loc тоже movable
+			if(!istype(cur.loc, /atom/movable))
+				break
+
+			cur = cur.loc
+
+		if(my_owner) // копирование свойств старой карты и её замена
+			var/obj/item/card/id/id_card = my_owner.get_item_by_slot(ITEM_SLOT_ID)
+
+			// Если взять эту карту из лодаута и зайти на авейку, она может удалить старую карту у персонажа, что приведёт к нежелательным последствиям
+			if(istype(id_card, /obj/item/card/id/inteq) || istype(id_card, /obj/item/card/id/syndicate))
+				to_chat(my_owner, span_warning("Ваша карта уже обладает свойствами, доступными гражданской карте синдиката! Лишняя была удалена."))
+				qdel(src)
+				return
+
+			// Зэкам эта карта не положена
+			if(istype(id_card, /obj/item/card/id/prisoner))
+				to_chat(my_owner, span_warning("Ваша основная карта принадлежит заключенному! Лишняя была удалена."))
+				qdel(src)
+				return
+
+			//if(id_card?.access.len)
+			var/obj/item/card_sticker/card_sticker = id_card.sticker
+			if(card_sticker)
+				card_sticker.unwrap(id_card, my_owner, silent = TRUE, force = TRUE)
+
+			assignment = id_card.assignment
+			custom_job = id_card.custom_job
+
+			access |= id_card.access
+			registered_account = id_card.registered_account
+			registered_name = id_card.registered_name
+			name = id_card.name
+
+			if(card_sticker)
+				card_sticker.wrap(src, my_owner, silent = TRUE, force = TRUE)
+
+			update_label()
+
+			qdel(id_card)
+			my_owner.equip_to_slot_if_possible(src, ITEM_SLOT_ID, disable_warning = TRUE, bypass_equip_delay_self = TRUE)
+
+		if(src != my_owner?.get_item_by_slot(ITEM_SLOT_ID)) // Если в будущем что-то переделают и карта будет спавниться в отдельной коробке или вроде того
+			visible_message(span_warning("ID карта из лодаута не нашла цель для копирования доступа, сообщите в службу поддержки."))
+
+	return ..()
+
 /obj/item/card/id/callsign
 	name = "сallsign id card"
 	desc = "A card used to provide ID and determine access across various facilities. This one belongs to NanoTrasen and has a small graved in label, marking it as \"Callsing Changing ID\"."
@@ -73,6 +140,8 @@
 
 		if(my_owner) // копирование свойств старой карты и её замена
 			var/obj/item/card/id/id_card = my_owner.get_item_by_slot(ITEM_SLOT_ID)
+			if(!istype(id_card))
+				return
 
 			// Если взять эту карту из лодаута и зайти на авейку, она может удалить старую карту у персонажа, что приведёт к нежелательным последствиям
 			if(istype(id_card, /obj/item/card/id/inteq) || istype(id_card, /obj/item/card/id/syndicate))
@@ -90,7 +159,6 @@
 				access |= id_card.access
 				assignment = id_card.assignment
 				registered_account = id_card.registered_account
-				rank = id_card.rank
 				registered_name = id_card.registered_name
 				name = id_card.name
 				update_icon()
@@ -102,7 +170,7 @@
 
 		if(src != my_owner?.get_item_by_slot(ITEM_SLOT_ID)) // Если в будущем что-то переделают и карта будет спавниться в отдельной коробке или вроде того
 			visible_message(span_warning("ID карта из лодаута не нашла цель для копирования доступа, сообщите разработчикам."))
-	. = ..()
+	return ..()
 
 //////////////////////////////////////////////////////
 
@@ -131,61 +199,3 @@
 /obj/item/card/id/sol/Initialize(mapload)
 	access = get_all_accesses()+get_ert_access("commander")-ACCESS_CHANGE_IDS
 	. = ..()
-
-/obj/item/card/id/heresy
-	icon = 'modular_bluemoon/icons/obj/card.dmi'
-	name = "Occult ID Card"
-	desc = "ID for research related to occult activities whose nature of phenomena is poorly supported by scientific evidence."
-	icon_state = "occult_id"
-	assignment = "Herecit"
-	uses_overlays = FALSE
-	card_sticker = TRUE
-	special_assignment = "heresy"
-
-/obj/item/card/id/lust
-	icon = 'modular_bluemoon/icons/obj/card.dmi'
-	name = "Sex Worker ID"
-	desc = "ID for employee of Silver Love Co."
-	icon_state = "lust_id"
-	assignment = "Sex worker"
-	uses_overlays = FALSE
-	card_sticker = TRUE
-	special_assignment = "lust"
-
-/obj/item/card/id/agony
-	icon = 'modular_bluemoon/icons/obj/card.dmi'
-	name = "Ravenheart Resident ID"
-	desc = "ID for research related to extreme activities whose nature of agony is strictly prohibited by scientific evidence."
-	icon_state = "agony_id"
-	assignment = "Ravenheart Resident"
-	uses_overlays = FALSE
-	card_sticker = TRUE
-	special_assignment = "agony"
-
-/obj/item/card/id/muck
-	icon = 'modular_bluemoon/icons/obj/card.dmi'
-	name = "Muck ID Card"
-	desc = "Жрать гавно."
-	icon_state = "muck_id"
-	assignment = "Mucker"
-	uses_overlays = FALSE
-	card_sticker = TRUE
-	special_assignment = "muck"
-
-/obj/item/card/id/blumenland_citizen
-	name = "Blumenland Citizen ID"
-	desc = "An ID made to recognize Blumenland Confederation habbitants and tourists."
-	icon_state = "blumland"
-	assignment = "Blumenland Citizen"
-	uses_overlays = FALSE
-	card_sticker = TRUE
-	special_assignment = "bmland"
-
-/obj/item/card/id/syndicate_citizen
-	name = "Syndicate Employee ID"
-	desc = "An ID made to recognize Triglav Syndicate off-duty agents and supportives."
-	icon_state = "card_black"
-	assignment = "Syndicate Employee"
-	uses_overlays = FALSE
-	card_sticker = TRUE
-	special_assignment = "syndicate"

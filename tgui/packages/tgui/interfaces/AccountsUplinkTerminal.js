@@ -1,5 +1,6 @@
 
 import { Fragment } from 'inferno';
+
 import { useBackend, useLocalState } from '../backend';
 import { Button, Flex, Icon, Input, LabeledList, Section, Table } from '../components';
 import { Window } from '../layouts';
@@ -113,8 +114,8 @@ const AccountsRecordList = (_props, context) => {
                   if (account.account_index === -1) {
                     act('view_account_detail', {
                       index: -1,
-                      dep_index: account.dep_index,   // ✅ добавили
-                      dep_id: account.dep_id,         // ✅ добавили
+                      dep_index: account.dep_index, // ✅ добавили
+                      dep_id: account.dep_id, // ✅ добавили
                       // target_name: account.target_name, // можно, но уже не обязательно
                     });
                   } else {
