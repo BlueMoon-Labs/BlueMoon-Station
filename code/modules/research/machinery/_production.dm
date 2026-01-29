@@ -164,14 +164,7 @@
 
 		if(LAZYLEN(cat["items"]))
 			_ui_cached_designs += list(cat)
-/*
-// Check if user can use machine
-	if(!user.can_use_production(src))
-		// Warn in local chat and return
-		say("Access denied: No valid departmental or mineral credentials detected.")
-		return
-		allowed
-*/
+
 /obj/machinery/rnd/production/RefreshParts()
 	. = ..()
 	calculate_efficiency()
