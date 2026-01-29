@@ -9,8 +9,8 @@
 	var/allowed_department_flags = ALL
 	var/production_animation				//What's flick()'d on print.
 	var/allowed_buildtypes = NONE
-	var/list/datum/design/cached_designs
-	var/list/datum/design/matching_designs
+	var/list/cached_designs = list()
+	var/list/_ui_cached_designs = list()
 	var/department_tag = "Unidentified"			//used for material distribution among other things.
 	var/datum/techweb/stored_research
 	var/datum/techweb/host_research
@@ -30,8 +30,7 @@
 		log_mapping("Depricated var named \"offstation_security_levels\" at ([x], [y], [z])!")
 	. = ..()
 	create_reagents(0, OPENCONTAINER | NO_REACT)
-	matching_designs = list()
-	cached_designs = list()
+	gen_access()
 	stored_research = new
 	host_research = SSresearch.science_tech
 	INVOKE_ASYNC(src, PROC_REF(update_research))
@@ -41,7 +40,6 @@
 /obj/machinery/rnd/production/Destroy()
 	materials = null
 	cached_designs = null
-	matching_designs = null
 	QDEL_NULL(stored_research)
 	host_research = null
 	return ..()
@@ -70,9 +68,20 @@
 	stripe.color = stripe_color
 	. += stripe
 
+/obj/machinery/rnd/production/emag_act()
+	if(obj_flags & EMAGGED)
+		return
+	. = ..()
+	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
+	obj_flags |= EMAGGED
+	req_access = list()
+	req_one_access = list()
+	update_research()
+
 /obj/machinery/rnd/production/proc/update_research()
 	host_research.copy_research_to(stored_research, TRUE)
 	update_designs()
+	update_static_data_for_all_viewers()
 
 /obj/machinery/rnd/production/proc/update_designs()
 	cached_designs.Cut()
@@ -81,6 +90,88 @@
 		if((isnull(allowed_department_flags) || (d.departmental_flags & allowed_department_flags)) && (d.build_type & allowed_buildtypes))
 			cached_designs |= d
 
+	_ui_cached_designs.Cut()
+	// Разворачиваем плоский лист категорий в ассоц.
+	var/list/all_categories = categories.Copy()
+	for(var/V in all_categories)
+		all_categories[V] = list()
+
+	// Проходимся по категориям дизайнов и добавляем их к нам
+	for(var/datum/design/D in cached_designs)
+		for(var/C in all_categories)
+			if(C in D.category)
+				all_categories[C] += D
+
+	// Сокращаем названия формата Machine Design (XXX)
+	var/static/list/replace_item_name_category = list(
+			"Computer Boards",
+			"Research Machinery",
+			"Misc. Machinery",
+			"Engineering Machinery",
+			"Medical Machinery",
+			"Teleportation Machinery",
+			"Hydroponics Machinery",
+			"Shuttle Machinery",
+		)
+	var/hide_sec_designs = !is_station_level(z) && !(LAZYLEN(req_access) || LAZYLEN(req_one_access))
+	for(var/category in all_categories)
+		var/list/cat = list(
+			"name" = category,
+			"items" = list())
+		var/replace_item_name = replace_item_name_category.Find(category)
+		for(var/datum/design/D in all_categories[category])
+			if(!D.build_path)
+				continue
+			var/obj/item_path = D.build_path // ispath
+
+			// Формируем стоимость в материалах
+			var/coeff = efficient_with(D.build_path) ? print_cost_coeff : 1
+			var/list/cost = list()
+			for(var/datum/material/M in D.materials)
+				cost[M.name] = D.materials[M] * coeff
+
+			// Формируем стоимость в химикатах
+			var/list/cost_chem = list()
+			for(var/R_path in D.reagents_list)
+				var/datum/reagent/R = R_path // ispath
+				cost_chem += list(list("name" = initial(R.name), "id" = R, "amount" = D.reagents_list[R]))
+
+			// Делаем описание для плат
+			var/desc = ""
+			if(ispath(item_path, /obj/item/circuitboard))
+				var/obj/item/circuitboard/circuit = item_path // ispath
+				var/obj/circuit_build_path = circuit.build_path // ispath
+				desc = strip_html_tags(initial(circuit_build_path.desc))
+			if(!desc)
+				desc = strip_html_tags(initial(item_path.desc))
+
+			// Проверка дизайна на ограничение по коду + его описание в одном проке
+			var/sec_desc = design_sec_level_desc(D)
+			// Если продакшн вне станции и не имеет доступов, разрешаем только предметы без требований к коду
+			if(sec_desc && hide_sec_designs)
+				continue
+
+			cat["items"] += list(list(
+				"id" = D.id,
+				"name" = replace_item_name ? initial(item_path.name) : D.name,
+				"desc" = desc,
+				"cost" = cost,
+				"cost_chem" = cost_chem,
+				"sec_desc" = sec_desc,
+				"min_sec_level" = D.min_security_level,
+				"max_sec_level" = D.max_security_level,
+			))
+
+		if(LAZYLEN(cat["items"]))
+			_ui_cached_designs += list(cat)
+/*
+// Check if user can use machine
+	if(!user.can_use_production(src))
+		// Warn in local chat and return
+		say("Access denied: No valid departmental or mineral credentials detected.")
+		return
+		allowed
+*/
 /obj/machinery/rnd/production/RefreshParts()
 	. = ..()
 	calculate_efficiency()
@@ -120,79 +211,20 @@
 
 /obj/machinery/rnd/production/ui_static_data(mob/user)
 	. = list()
-	.["categories"] = list()
 	.["hacked"] = (obj_flags & EMAGGED)
-	.["maxBuildButtonAmount"] = max_build_amount // Отвечает за максимум в кнопке [Max: XXX]
-	// Разворачиваем плоский лист категорий в ассоц.
-	var/list/all_categories = categories.Copy()
-	for(var/V in all_categories)
-		all_categories[V] = list()
-
-	// Проходимся по категориям дизайнов и добавляем их к нам
-	for(var/datum/design/D in cached_designs)
-		for(var/C in all_categories)
-			if(C in D.category)
-				all_categories[C] += D
-
-	// Сокращаем названия формата Machine Design (XXX)
-	var/static/list/replace_item_name_category = list(
-			"Computer Boards",
-			"Research Machinery",
-			"Misc. Machinery",
-			"Engineering Machinery",
-			"Medical Machinery",
-			"Teleportation Machinery",
-			"Hydroponics Machinery",
-			"Shuttle Machinery",
-		)
-
-	for(var/category in all_categories)
-		var/list/cat = list(
-			"name" = category,
-			"items" = list())
-		var/replace_item_name = replace_item_name_category.Find(category)
-		for(var/datum/design/D in all_categories[category])
-			if(!D.build_path)
-				continue
-			var/obj/item_path = D.build_path // ispath
-
-			// Формируем стоимость в материалах
-			var/coeff = efficient_with(D.build_path) ? print_cost_coeff : 1
-			var/list/cost = list()
-			for(var/datum/material/M in D.materials)
-				cost[M.name] = D.materials[M] * coeff
-
-			// Формируем стоимость в химикатах
-			var/list/cost_chem = list()
-			for(var/R_path in D.reagents_list)
-				var/datum/reagent/R = R_path // ispath
-				cost_chem += list(list("name" = initial(R.name), "id" = R, "amount" = D.reagents_list[R]))
-
-			// Делаем описание для плат
-			var/desc
-			if(ispath(item_path, /obj/item/circuitboard))
-				var/obj/item/circuitboard/circuit = item_path // ispath
-				var/obj/circuit_build_path = circuit.build_path // ispath
-				desc = strip_html_tags(initial(circuit_build_path.desc))
-			if(!desc)
-				desc = strip_html_tags(initial(item_path.desc))
-
-			cat["items"] += list(list(
-				"id" = D.id,
-				"name" = replace_item_name ? initial(item_path.name) : D.name,
-				"desc" = desc,
-				"cost" = cost,
-				"cost_chem" = cost_chem,
-				"sec_desc" = design_sec_level_desc(D),
-				"min_sec_level" = D.min_security_level,
-				"max_sec_level" = D.max_security_level,
-			))
-		if(LAZYLEN(cat["items"]))
-			.["categories"] += list(cat)
+	.["maxBuildButtonAmount"] = max_build_amount
+	.["categories"] = _ui_cached_designs
 
 /obj/machinery/rnd/production/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
+		return
+	var/mob/living/user = usr
+	if(!user?.can_use_production_topic(src, action))
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			say("В доступе отказано.")
+			playsound(loc, 'sound/machines/uplinkerror.ogg', 70, 0)
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
 		return
 	switch(action)
 		if("sync_research")
@@ -200,7 +232,6 @@
 				return
 			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
 			update_research()
-			update_static_data_for_all_viewers()
 			say("Синхронизация исследований с базой данных научно-исследовательского отдела.")
 			return TRUE
 		if("remove_mat")
@@ -373,23 +404,13 @@
 
 /obj/machinery/rnd/production/proc/design_sec_level_desc(datum/design/D)
 	. = ""
-	if(!istype(D))
+	if(obj_flags & EMAGGED || !istype(D))
+		return
+	if(!(D.min_security_level > SEC_LEVEL_GREEN || D.max_security_level < SEC_LEVEL_DELTA))
 		return
 
-	var/clearance = is_station_level(z)
-	if(!clearance)
-		// Если продакшн машин вне станции, разрешаем только предметы без требований к коду
-		if(D.min_security_level <= SEC_LEVEL_GREEN || src.type == /obj/machinery/rnd/production/protolathe)
-			clearance = TRUE
-		else
-			clearance = FALSE
-
-	if(obj_flags & EMAGGED)
-		clearance = FALSE
-
-	if(clearance && (D.min_security_level > SEC_LEVEL_GREEN || D.max_security_level < SEC_LEVEL_DELTA))
-		. = "Только при уровнях тревоги: "
-		var/list/levels = list()
-		for(var/n in D.min_security_level to D.max_security_level)
-			levels += NUM2SECLEVEL(n)
-		. += english_list(levels, and_text = ", ")
+	. = "Только при уровнях тревоги: "
+	var/list/levels = list()
+	for(var/n in D.min_security_level to D.max_security_level)
+		levels += NUM2SECLEVEL(n)
+	. += english_list(levels, and_text = ", ")

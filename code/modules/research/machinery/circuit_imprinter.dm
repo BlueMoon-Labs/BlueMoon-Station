@@ -1,5 +1,5 @@
 /obj/machinery/rnd/production/circuit_imprinter
-	name = "circuit imprinter"
+	name = "Circuit Imprinter"
 	desc = "Производит электронные платы для сбора машинерии."
 	icon_state = "circuit_imprinter"
 	circuit = /obj/item/circuitboard/machine/circuit_imprinter
@@ -33,3 +33,4 @@
 	desc = "Производит электронные платы для сбора машинерии. Конкретно этот тип принтеров запрещён к использованию во многих корпорациях с делением власти между множеством отделов.."
 	circuit = /obj/item/circuitboard/machine/circuit_imprinter/hacked
 	requires_console = 0
+	obj_flags = CAN_BE_HIT | EMAGGED

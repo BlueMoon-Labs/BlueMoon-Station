@@ -22,6 +22,12 @@
 	production_animation = "protolathe_n"
 	allowed_buildtypes = PROTOLATHE
 
+/obj/machinery/rnd/production/protolathe/Initialize(mapload)
+	// Да, это костыль, т.к. этот тип используется как реальный объект. Но я не хочу править все пути и платы
+	if(src.type == /obj/machinery/rnd/production/protolathe)
+		obj_flags |= EMAGGED
+	. = ..()
+
 /obj/machinery/rnd/production/protolathe/disconnect_console()
 	linked_console.linked_lathe = null
 	..()
