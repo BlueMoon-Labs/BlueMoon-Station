@@ -15,8 +15,6 @@
 	var/datum/techweb/stored_research
 	var/datum/techweb/host_research
 
-	var/offstation_security_levels
-
 	var/lathe_prod_time = 0.5
 
 	/// What color is this machine's stripe? Leave null to not have a stripe.
@@ -26,8 +24,6 @@
 	var/const/max_build_amount = 60 // Отвечает за максимум в кнопке [Max: XXX] TGUI и максимум пердметов на печать в 1 пачке
 
 /obj/machinery/rnd/production/Initialize(mapload)
-	if(mapload && offstation_security_levels)
-		log_mapping("Depricated var named \"offstation_security_levels\" at ([x], [y], [z])!")
 	. = ..()
 	create_reagents(0, OPENCONTAINER | NO_REACT)
 	gen_access()
@@ -323,7 +319,7 @@
 			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
 			say("This machine does not have the necessary manipulation systems for this design. Please contact Nanotrasen Support!")
 		return FALSE
-	if(!(obj_flags & EMAGGED) && (offstation_security_levels || is_station_level(z)))
+	if(!(obj_flags & EMAGGED) && is_station_level(z))
 		if(GLOB.security_level < D.min_security_level)
 			if(COOLDOWN_FINISHED(src, cooldown_say))
 				COOLDOWN_START(src, cooldown_say, cooldown_say_time)
