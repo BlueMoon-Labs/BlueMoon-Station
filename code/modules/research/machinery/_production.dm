@@ -77,7 +77,6 @@
 /obj/machinery/rnd/production/proc/update_research()
 	host_research.copy_research_to(stored_research, TRUE)
 	update_designs()
-	update_static_data_for_all_viewers()
 
 /obj/machinery/rnd/production/proc/update_designs()
 	cached_designs.Cut()
@@ -86,6 +85,9 @@
 		if((isnull(allowed_department_flags) || (d.departmental_flags & allowed_department_flags)) && (d.build_type & allowed_buildtypes))
 			cached_designs |= d
 
+	update_designs_ui()
+
+/obj/machinery/rnd/production/proc/update_designs_ui()
 	_ui_cached_designs.Cut()
 	// Разворачиваем плоский лист категорий в ассоц.
 	var/list/all_categories = categories.Copy()
@@ -161,10 +163,12 @@
 		if(LAZYLEN(cat["items"]))
 			_ui_cached_designs += list(cat)
 
+	update_static_data_for_all_viewers()
+
 /obj/machinery/rnd/production/RefreshParts()
 	. = ..()
 	calculate_efficiency()
-	update_static_data_for_all_viewers()
+	update_designs_ui()
 
 /obj/machinery/rnd/production/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
