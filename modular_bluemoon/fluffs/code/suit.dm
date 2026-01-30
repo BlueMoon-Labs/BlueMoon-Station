@@ -615,3 +615,39 @@
 /obj/item/clothing/suit/poly_armored_poncho/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat
+	name = "Poly Coat"
+	desc = "A coat with polychromic leather"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	blood_overlay_type = "coat"
+	icon_state = "officerian_coat"
+	item_state = "officerian_coat"
+	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	var/list/poly_colors = list("#2A2A2A", "#A52F29")
+
+/obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat_oversized
+	name = "Poly Oversized Coat"
+	desc = "A bit oversized coat with polychromic leather"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	blood_overlay_type = "coat"
+	icon_state = "officerian_coat_oversized"
+	item_state = "officerian_coat_oversized"
+	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	var/list/poly_colors = list("#2A2A2A", "#A52F29")
+
+/obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat_oversized/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)

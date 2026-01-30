@@ -63,14 +63,10 @@
 /turf/open/floor/plasteel/white,
 /area/hilbertshotel)
 "cV" = (
-/obj/machinery/shower{
-	desc = "Despite their age, they seem clean and capable of providing hot water just as well as their modern counterparts. Hopefully Nanotrasen cleaned the water pipes this well...";
-	dir = 4
+/obj/machinery/light/floor{
+	light_color = "#f27d0c"
 	},
-/obj/machinery/light{
-	color = "FFB43A"
-	},
-/turf/open/floor/plasteel/white/smooth/large,
+/turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "dl" = (
 /obj/machinery/light_switch/directional/south,
@@ -187,11 +183,7 @@
 /turf/open/floor/plasteel/white/smooth/diagonal,
 /area/hilbertshotel)
 "oa" = (
-/obj/machinery/light/floor{
-	light_color = "#f27d0c";
-	color = "FFB43A"
-	},
-/turf/open/floor/wood/wood_tiled,
+/turf/open/space/bluespace,
 /area/hilbertshotel)
 "oK" = (
 /obj/structure/table,
@@ -395,12 +387,13 @@
 /turf/open/floor/plasteel/white/textured,
 /area/hilbertshotel)
 "Gi" = (
-/obj/machinery/light{
-	dir = 1;
-	color = "FFB43A"
+/obj/machinery/shower{
+	desc = "Despite their age, they seem clean and capable of providing hot water just as well as their modern counterparts. Hopefully Nanotrasen cleaned the water pipes this well...";
+	dir = 4
 	},
-/obj/structure/bedsheetbin/towel,
-/obj/structure/table,
+/obj/machinery/light{
+	light_color = "#FFB43A"
+	},
 /turf/open/floor/plasteel/white/smooth/large,
 /area/hilbertshotel)
 "Gk" = (
@@ -611,6 +604,15 @@
 	},
 /turf/open/floor/festive/alleyway/safe,
 /area/hilbertshotel)
+"SV" = (
+/obj/machinery/light{
+	dir = 1;
+	light_color = "#FFB43A"
+	},
+/obj/structure/bedsheetbin/towel,
+/obj/structure/table,
+/turf/open/floor/plasteel/white/smooth/large,
+/area/hilbertshotel)
 "SZ" = (
 /obj/structure/closet/crate/bin{
 	pixel_x = 9
@@ -757,6 +759,27 @@
 /area/hilbertshotel)
 
 (1,1,1) = {"
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+"}
+(2,1,1) = {"
+oa
 Zg
 Zg
 Zg
@@ -773,8 +796,10 @@ Zg
 Zg
 Zg
 Zg
+oa
 "}
-(2,1,1) = {"
+(3,1,1) = {"
+oa
 Zg
 HZ
 xn
@@ -791,8 +816,10 @@ Jk
 Wp
 SH
 Zg
+oa
 "}
-(3,1,1) = {"
+(4,1,1) = {"
+oa
 Zg
 MJ
 CD
@@ -809,8 +836,10 @@ JT
 JT
 JT
 Zg
+oa
 "}
-(4,1,1) = {"
+(5,1,1) = {"
+oa
 Zg
 id
 CD
@@ -827,8 +856,10 @@ Lp
 nF
 bI
 Zg
+oa
 "}
-(5,1,1) = {"
+(6,1,1) = {"
+oa
 Zg
 Zg
 jC
@@ -845,8 +876,10 @@ gj
 Zg
 Zg
 Zg
+oa
 "}
-(6,1,1) = {"
+(7,1,1) = {"
+oa
 Zg
 Ym
 ry
@@ -863,8 +896,10 @@ fq
 kg
 Zg
 dQ
+oa
 "}
-(7,1,1) = {"
+(8,1,1) = {"
+oa
 Zg
 dx
 Fi
@@ -881,8 +916,10 @@ bt
 bt
 Zg
 kd
+oa
 "}
-(8,1,1) = {"
+(9,1,1) = {"
+oa
 Zg
 Si
 Fi
@@ -899,8 +936,10 @@ bU
 bU
 Zg
 kd
+oa
 "}
-(9,1,1) = {"
+(10,1,1) = {"
+oa
 Zg
 Hp
 Fi
@@ -917,8 +956,10 @@ bU
 tQ
 Zg
 kd
+oa
 "}
-(10,1,1) = {"
+(11,1,1) = {"
+oa
 Zg
 Sx
 Jy
@@ -935,8 +976,10 @@ gj
 Zg
 Zg
 kd
+oa
 "}
-(11,1,1) = {"
+(12,1,1) = {"
+oa
 Zg
 Zg
 Zg
@@ -953,13 +996,15 @@ bU
 bU
 Zg
 Zg
+oa
 "}
-(12,1,1) = {"
+(13,1,1) = {"
+oa
 Zg
 qK
 Fh
 nA
-cV
+Gi
 Zg
 Zg
 Zg
@@ -971,11 +1016,13 @@ bU
 bU
 IJ
 Zg
+oa
 "}
-(13,1,1) = {"
+(14,1,1) = {"
+oa
 Zg
 ww
-oa
+cV
 aq
 Dd
 Zg
@@ -989,8 +1036,10 @@ Ul
 Ul
 Tw
 Zg
+oa
 "}
-(14,1,1) = {"
+(15,1,1) = {"
+oa
 Zg
 aA
 bi
@@ -1007,10 +1056,12 @@ cH
 lq
 Of
 Zg
+oa
 "}
-(15,1,1) = {"
+(16,1,1) = {"
+oa
 Zg
-Gi
+SV
 fr
 Dd
 Dd
@@ -1025,8 +1076,10 @@ fB
 MR
 sV
 Zg
+oa
 "}
-(16,1,1) = {"
+(17,1,1) = {"
+oa
 Zg
 Zg
 Zg
@@ -1043,4 +1096,25 @@ Zg
 Zg
 Zg
 Zg
+oa
+"}
+(18,1,1) = {"
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
+oa
 "}

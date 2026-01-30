@@ -17,6 +17,12 @@
 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
 	loadout_initial_colors = list("#2A2A2A","#e4b829")
 
+/datum/gear/head/officerian_cap
+	name = "Officerian_cap"
+	path = /obj/item/clothing/head/officerian_cap
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_initial_colors = list("#2A2A2A","#303030","#575757","#d4d4d4")
+
 /datum/gear/head/beret
 	name = "Black beret"
 	path = /obj/item/clothing/head/beret/black

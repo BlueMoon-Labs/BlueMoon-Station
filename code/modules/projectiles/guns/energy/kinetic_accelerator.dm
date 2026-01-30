@@ -234,9 +234,11 @@
 		var/list/mods = kinetic_gun.modkits
 		for(var/obj/item/borg/upgrade/modkit/modkit in mods)
 			modkit.projectile_prehit(src, target, kinetic_gun)
-	if(!pressure_decrease_active && !lavaland_equipment_pressure_check(get_turf(target)))
+	var/hit_turf = get_turf(target)
+	if(!pressure_decrease_active && !lavaland_equipment_pressure_check(hit_turf))
 		name = "weakened [name]"
-		damage = damage * pressure_decrease
+		var/pressure_mult = get_pressure_damage_multiplier(hit_turf, LAVALAND_EQUIPMENT_EFFECT_PRESSURE, pressure_decrease)
+		damage = round(damage * pressure_mult, 0.5) // Рассчитываем линейно от давления и округляем к ближайшему целому 0.5
 		pressure_decrease_active = TRUE
 
 /obj/item/projectile/kinetic/on_range()

@@ -56,6 +56,14 @@
 				 /obj/item/stack/sheet/sinew = 1)
 	category = CAT_PRIMAL
 
+/datum/crafting_recipe/bonebola
+	name = "Tribal Bola"
+	result = /obj/item/restraints/legcuffs/bola/bone
+	time = 15
+	reqs = list(/obj/item/stack/sheet/bone = 3,
+				 /obj/item/stack/sheet/sinew = 1)
+	category = CAT_PRIMAL
+
 /datum/crafting_recipe/boneaxe
 	name = "Bone Axe"
 	result = /obj/item/fireaxe/boneaxe

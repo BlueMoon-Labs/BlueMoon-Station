@@ -11,16 +11,22 @@
 	var/list/queuedplaylist = list()
 	var/repeat = FALSE // BLUEMOON ADD зацикливание плейлистов
 	var/area/privatized_area = null // BLUEMOON ADD зона которая будет забрана для конкретного джукбокса
-	var/list/emagged_ckey_allowed = list("SmiLeYcom") // BLUEMOON ADD Список сикеев, которым разерешено пользоваться взломанной, ручной колонкой
+	var/static/list/emagged_ckey_allowed = list("SmiLeYcom") // BLUEMOON ADD Список сикеев, которым разерешено пользоваться взломанной, ручной колонкой
 	var/need_anchored = FALSE // Обзательно ли прикручивать для работы
 	COOLDOWN_DECLARE(error_message_cooldown)
 	var/const/error_message_cooldown_time = 5 SECONDS
-	COOLDOWN_DECLARE(queuecooldown) // This exists solely to prevent accidental repeats of John Mulaney's 'What's New Pussycat?' incident. Intentional, however......
+	COOLDOWN_DECLARE(queuecooldown)
 	var/const/queuecooldown_time = 1 SECONDS
 	var/const/queuecooldown_time_max = 12 SECONDS
 
 /datum/component/jukebox/Initialize(_need_anchored, _queuecost, _volume)
 	. = ..()
+	var/static/first_initial
+	if(!first_initial)
+		for(var/i = 1, i <= emagged_ckey_allowed.len, i++)
+			emagged_ckey_allowed[i] = lowertext(emagged_ckey_allowed[i])
+		first_initial = TRUE
+
 	if(!isobj(parent))
 		return COMPONENT_INCOMPATIBLE
 	if(isnum(_need_anchored)) // False || True
@@ -82,7 +88,7 @@
 
 	if(user)
 		log_admin("[key_name(user)] emagged [box] at [AREACOORD(box)]")
-		to_chat(user, "<span class='notice'>You've bypassed [box]'s audio volume limiter, and enabled free play.</span>")
+		to_chat(user, span_warning("Вы обошли ограничитель громкости звука в [box] и включили бесплатное воспроизведение."))
 
 /datum/component/jukebox/proc/on_mouse_dropped(atom/source, atom/dropping, mob/user)
 	SIGNAL_HANDLER
@@ -107,7 +113,7 @@
 
 	var/obj/box = parent
 	// Ручная, емагнутая колонка. Сkey не в списке и не антаг
-	if(isliving(user) && user.canUseTopic(box, TRUE, silent = TRUE) && box.obj_flags & EMAGGED && !box.anchored && (!(user.ckey in emagged_ckey_allowed) || !user.mind?.antag_datums))
+	if(isliving(user) && (box.obj_flags & EMAGGED) && !box.anchored && !((lowertext(user.ckey) in emagged_ckey_allowed) || user.mind?.antag_datums))
 		var/mob/living/L = user
 		var/static/list/messages = list(
 			"Нельзя, запрещено.",
@@ -179,14 +185,14 @@
 	if(!box)
 		return UI_CLOSE
 	if(need_anchored && !box.anchored)
-		to_chat(user, span_warning("This device must be anchored by a wrench!"))
+		to_chat(user, span_warning("Это устройство должно быть прикручено к полу!"))
 		return UI_CLOSE
 	if((queuecost < 0 && !box.allowed(user)) && !isobserver(user))
-		to_chat(user,span_warning("Error: Access Denied."))
+		to_chat(user,span_warning("Недостаточный уровень допуска."))
 		user.playsound_local(box, 'sound/misc/compiler-failure.ogg', 25, TRUE)
 		return UI_CLOSE
 	if(!SSjukeboxes.songs.len && !isobserver(user))
-		to_chat(user, span_warning("Error: No music tracks have been authorized for your station. Petition Central Command to resolve this issue."))
+		to_chat(user, span_warning("Для вашей станции нет одобренных музыкальных треков. Обратитесь к центральному командованию с запросом на одобрение."))
 		playsound(box, 'sound/misc/compiler-failure.ogg', 25, TRUE)
 		return UI_CLOSE
 	return ..()
@@ -456,6 +462,8 @@
 /datum/component/jukebox/proc/check_area(silent = FALSE)
 	. = TRUE
 	var/obj/box = parent
+	if(box.obj_flags & EMAGGED) // Без проверки для взломанных колонок
+		return
 	var/area/juke_area = get_area(box)
 	if(juke_area.jukebox_privatized_by && juke_area.jukebox_privatized_by != box)
 		if(!silent && COOLDOWN_FINISHED(src, error_message_cooldown))

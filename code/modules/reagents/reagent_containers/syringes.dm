@@ -150,7 +150,7 @@
 					if(L.reagents.total_volume >= L.reagents.maximum_volume)
 						return
 					L.visible_message("<span class='danger'>[user] сделал[user.ru_a()] инъекцию [L] шприцом!", \
-									"<span class='userdanger'>[user] сделал[user.ru_a()] инъекцию [L] шприцо!</span>")
+									"<span class='userdanger'>[user] сделал[user.ru_a()] инъекцию [L] шприцом!</span>")
 
 				if(L != user)
 					log_combat(user, L, "injected", src, addition="which had [contained]")

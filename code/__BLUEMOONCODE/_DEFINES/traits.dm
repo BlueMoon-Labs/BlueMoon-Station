@@ -22,6 +22,7 @@
 #define TRAIT_BONDAGED						"bondaged"
 #define TRAIT_IMAGINARYFRIEND				"imaginaryfriend"
 #define TRAIT_TK_POTENTIAL					"TK_potential"
+#define TRAIT_RETRACTABLE_CLAWS				"claws"
 
 // Отдельные наименования для квирков, чтобы не повторять их в настройках
 #define BLUEMOON_TRAIT_NAME_SHRIEK				"Крикун"
@@ -63,3 +64,5 @@
 
 /// Whether syscorruption cleaner from TRAIT_BLUEMOON_SYSCLEANER is working RIGHT NOW
 #define TRAIT_SYSCLEANER_IN_PROGRESS "nanobot_syscleaner_in_progress"
+
+

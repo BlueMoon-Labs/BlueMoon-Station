@@ -14,7 +14,9 @@
 /turf/open/floor/carpet/royalblue,
 /area/hilbertshotel)
 "cH" = (
-/obj/machinery/light/directional/east,
+/obj/machinery/light/directional/east{
+	invisibility = 60
+	},
 /turf/open/floor/plating/beach/water,
 /area/hilbertshotel)
 "cR" = (
@@ -22,11 +24,7 @@
 /turf/open/floor/holofloor/wood,
 /area/hilbertshotel)
 "dP" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/item/kirbyplants/random,
-/turf/open/floor/wood/wood_large,
+/turf/open/space/bluespace,
 /area/hilbertshotel)
 "go" = (
 /obj/structure/toilet{
@@ -71,7 +69,12 @@
 /area/hilbertshotel)
 "is" = (
 /obj/structure/lattice,
-/turf/closed/indestructible/sandstone,
+/turf/closed/indestructible/sandstone{
+	icon = 'modular_bluemoon/icons/turf/floors/beach.dmi';
+	icon_state = "water";
+	color = "DDDDDD";
+	name = "water"
+	},
 /area/hilbertshotel)
 "iE" = (
 /obj/item/toy/beach_ball,
@@ -83,6 +86,14 @@
 	light_color = "#e8eaff"
 	},
 /turf/open/floor/carpet/red,
+/area/hilbertshotel)
+"jK" = (
+/turf/closed/indestructible/sandstone{
+	icon = 'modular_bluemoon/icons/turf/floors/beach.dmi';
+	icon_state = "water";
+	color = "DDDDDD";
+	name = "water"
+	},
 /area/hilbertshotel)
 "jP" = (
 /obj/machinery/light{
@@ -99,18 +110,33 @@
 	},
 /turf/open/floor/plasteel/white/smooth/large,
 /area/hilbertshotel)
+"kt" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/hilbertshotel)
 "kU" = (
-/obj/machinery/light/directional/west,
-/turf/open/floor/plating/beach/sand,
+/obj/machinery/light/directional/west{
+	invisibility = 60
+	},
+/turf/open/floor/plating/beach/coastline_t{
+	dir = 5
+	},
 /area/hilbertshotel)
 "li" = (
-/obj/effect/turf_decal/siding/wood{
+/obj/effect/turf_decal/siding/wood/thin{
 	dir = 8
 	},
 /turf/open/floor/plasteel/white,
 /area/hilbertshotel)
 "lK" = (
-/obj/machinery/light/directional/west,
+/obj/machinery/light/directional/west{
+	invisibility = 60
+	},
 /turf/open/floor/plating/beach/coastline_t/sandwater_inner{
 	dir = 8
 	},
@@ -133,7 +159,12 @@
 /turf/open/floor/wood/wood_large,
 /area/hilbertshotel)
 "oh" = (
-/turf/closed/indestructible/sandstone,
+/turf/closed/indestructible/sandstone{
+	icon = 'modular_bluemoon/icons/turf/floors/sand.dmi';
+	icon_state = "sand";
+	color = "DDDDDD";
+	name = "sand"
+	},
 /area/hilbertshotel)
 "oK" = (
 /obj/structure/curtain{
@@ -174,7 +205,9 @@
 /turf/open/floor/wood/wood_large,
 /area/hilbertshotel)
 "xW" = (
-/obj/machinery/light/directional/west,
+/obj/machinery/light/directional/west{
+	invisibility = 60
+	},
 /turf/open/floor/plating/beach/water,
 /area/hilbertshotel)
 "ya" = (
@@ -232,7 +265,9 @@
 /turf/open/floor/plating/beach/sand,
 /area/hilbertshotel)
 "Ec" = (
-/obj/machinery/light/directional/east,
+/obj/machinery/light/directional/east{
+	invisibility = 60
+	},
 /turf/open/floor/plating/beach/coastline_t{
 	dir = 1
 	},
@@ -295,7 +330,9 @@
 /turf/open/floor/catwalk_floor,
 /area/hilbertshotel)
 "OM" = (
-/obj/machinery/light/directional/north,
+/obj/machinery/light/directional/north{
+	invisibility = 60
+	},
 /turf/open/floor/plating/beach/water,
 /area/hilbertshotel)
 "Pb" = (
@@ -305,13 +342,10 @@
 	},
 /area/hilbertshotel)
 "Pw" = (
-/obj/machinery/light{
+/obj/effect/turf_decal/siding/wood/thin{
 	dir = 1
 	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/plasteel/white,
+/turf/open/floor/wood/wood_large,
 /area/hilbertshotel)
 "PX" = (
 /turf/open/floor/plating/beach/sand,
@@ -340,6 +374,15 @@
 "Sc" = (
 /obj/structure/mineral_door/wood,
 /turf/open/floor/holofloor/wood,
+/area/hilbertshotel)
+"SE" = (
+/turf/closed/indestructible/sandstone{
+	icon = 'modular_bluemoon/icons/turf/floors/beach.dmi';
+	icon_state = "beach";
+	color = "DDDDDD";
+	name = "coastline";
+	dir = 1
+	},
 /area/hilbertshotel)
 "SJ" = (
 /obj/machinery/vending/boozeomat{
@@ -410,11 +453,14 @@
 /obj/structure/chair/sofa/right{
 	dir = 1
 	},
-/obj/machinery/light/directional/east,
+/obj/machinery/light/directional/east{
+	invisibility = 60
+	},
 /turf/open/floor/plating/beach/sand,
 /area/hilbertshotel)
 "Yw" = (
-/obj/effect/turf_decal/siding/wood{
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/siding/wood/thin{
 	dir = 1
 	},
 /turf/open/floor/wood/wood_large,
@@ -441,33 +487,56 @@
 /area/hilbertshotel)
 
 (1,1,1) = {"
-is
-is
-is
-oh
-oh
-oh
-oh
-oh
-oh
-YR
-YR
-YR
-YR
-ED
-ED
-ED
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
 "}
 (2,1,1) = {"
+dP
+is
+is
+is
+jK
+jK
+jK
+SE
+oh
+oh
+YR
+YR
+YR
+YR
+ED
+ED
+ED
+dP
+"}
+(3,1,1) = {"
+dP
 is
 OM
 Dh
+xW
+xW
 Dh
-xW
-xW
-TP
-lK
 kU
+lK
+PX
 YR
 ri
 YR
@@ -475,8 +544,10 @@ Ua
 jQ
 go
 ED
+dP
 "}
-(3,1,1) = {"
+(4,1,1) = {"
+dP
 is
 Dh
 Dh
@@ -493,9 +564,11 @@ YK
 rs
 rs
 ED
+dP
 "}
-(4,1,1) = {"
-oh
+(5,1,1) = {"
+dP
+jK
 Dh
 Dh
 Dh
@@ -511,9 +584,11 @@ YR
 cR
 YR
 YR
+dP
 "}
-(5,1,1) = {"
-oh
+(6,1,1) = {"
+dP
+jK
 OM
 Dh
 Dh
@@ -529,9 +604,11 @@ QT
 Ha
 oS
 Pb
+dP
 "}
-(6,1,1) = {"
-oh
+(7,1,1) = {"
+dP
+jK
 OM
 Dh
 Dh
@@ -547,9 +624,11 @@ no
 Ha
 no
 YR
+dP
 "}
-(7,1,1) = {"
-oh
+(8,1,1) = {"
+dP
+jK
 Dh
 Dh
 Dh
@@ -565,9 +644,11 @@ Rk
 Ha
 Ha
 YR
+dP
 "}
-(8,1,1) = {"
-oh
+(9,1,1) = {"
+dP
+jK
 OM
 Dh
 Dh
@@ -583,9 +664,11 @@ Ha
 Et
 vj
 YR
+dP
 "}
-(9,1,1) = {"
-oh
+(10,1,1) = {"
+dP
+jK
 OM
 Dh
 Dh
@@ -601,9 +684,11 @@ Ha
 UO
 cq
 YR
+dP
 "}
-(10,1,1) = {"
-oh
+(11,1,1) = {"
+dP
+jK
 Dh
 Dh
 Dh
@@ -611,7 +696,7 @@ iE
 TP
 AL
 YR
-Pw
+kt
 li
 li
 YR
@@ -619,9 +704,11 @@ Ha
 Gq
 hd
 YR
+dP
 "}
-(11,1,1) = {"
-oh
+(12,1,1) = {"
+dP
+jK
 OM
 Dh
 Dh
@@ -637,9 +724,11 @@ Rk
 Ms
 Gu
 YR
+dP
 "}
-(12,1,1) = {"
-oh
+(13,1,1) = {"
+dP
+jK
 OM
 Dh
 Dh
@@ -655,9 +744,11 @@ hp
 YR
 YR
 YR
+dP
 "}
-(13,1,1) = {"
-oh
+(14,1,1) = {"
+dP
+jK
 Dh
 Dh
 Dh
@@ -668,13 +759,15 @@ DB
 FI
 Ce
 jf
-Yw
+Pw
 Ha
 hR
 me
 YR
+dP
 "}
-(14,1,1) = {"
+(15,1,1) = {"
+dP
 is
 Dh
 Dh
@@ -686,13 +779,15 @@ DE
 FI
 oK
 oS
-Yw
+Pw
 lY
 YR
 YR
 YR
+dP
 "}
-(15,1,1) = {"
+(16,1,1) = {"
+dP
 is
 OM
 Dh
@@ -704,20 +799,22 @@ Ys
 FI
 XO
 oS
-dP
+Yw
 ri
 YR
 YR
 oQ
+dP
 "}
-(16,1,1) = {"
+(17,1,1) = {"
+dP
 is
 is
 is
-oh
-oh
-oh
-oh
+jK
+jK
+jK
+SE
 oh
 YR
 YR
@@ -727,4 +824,25 @@ YR
 YR
 Ow
 Ow
+dP
+"}
+(18,1,1) = {"
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
+dP
 "}

@@ -8,8 +8,7 @@
 /turf/open/misc/grass,
 /area/hilbertshotel)
 "aP" = (
-/obj/structure/bed/double,
-/turf/open/floor/plating/beach/sand,
+/turf/open/space/bluespace,
 /area/hilbertshotel)
 "br" = (
 /obj/structure/flora/tree/spookylog{
@@ -82,7 +81,9 @@
 	},
 /area/hilbertshotel)
 "hD" = (
-/turf/open/floor/spooktime/cobble/sideW,
+/turf/open/indestructible/cobble/side{
+	dir = 8
+	},
 /area/hilbertshotel)
 "hY" = (
 /obj/structure/flora/ausbushes/fullgrass,
@@ -171,7 +172,9 @@
 /turf/open/floor/grass,
 /area/hilbertshotel)
 "pd" = (
-/turf/open/floor/spooktime/cobble/sideN,
+/turf/open/indestructible/cobble/side{
+	dir = 1
+	},
 /area/hilbertshotel)
 "pH" = (
 /obj/structure/flora/ausbushes/brflowers,
@@ -213,7 +216,9 @@
 /turf/open/floor/plating/beach/sand,
 /area/hilbertshotel)
 "tX" = (
-/turf/open/floor/spooktime/cobble/cornerNE,
+/turf/open/indestructible/cobble/side{
+	dir = 5
+	},
 /area/hilbertshotel)
 "uz" = (
 /obj/item/toy/cards/deck,
@@ -225,6 +230,12 @@
 	},
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
+"vn" = (
+/obj/structure/bed/double{
+	dir = 8
+	},
+/turf/open/floor/plating/beach/sand,
+/area/hilbertshotel)
 "vx" = (
 /obj/structure/flora/biolumi/mine,
 /obj/effect/turf_decal/weather/sand{
@@ -233,7 +244,9 @@
 /turf/open/floor/grass/grass3,
 /area/hilbertshotel)
 "we" = (
-/turf/open/floor/spooktime/cobble/sideE,
+/turf/open/indestructible/cobble/side{
+	dir = 4
+	},
 /area/hilbertshotel)
 "xr" = (
 /obj/structure/flora/ausbushes/grassybush,
@@ -266,7 +279,9 @@
 	},
 /area/hilbertshotel)
 "yU" = (
-/turf/open/floor/spooktime/cobble/cornerNW,
+/turf/open/indestructible/cobble/side{
+	dir = 9
+	},
 /area/hilbertshotel)
 "yV" = (
 /obj/machinery/vending/kink{
@@ -329,7 +344,9 @@
 /turf/open/floor/plating/beach/sand,
 /area/hilbertshotel)
 "DA" = (
-/turf/open/floor/spooktime/cobble/cornerSE,
+/turf/open/indestructible/cobble/side{
+	dir = 6
+	},
 /area/hilbertshotel)
 "Ew" = (
 /obj/structure/flora/ausbushes/fullgrass,
@@ -403,7 +420,7 @@
 "MC" = (
 /obj/structure/bonfire,
 /obj/item/lighter/gold,
-/turf/open/floor/spooktime/cobble,
+/turf/open/indestructible/cobble,
 /area/hilbertshotel)
 "Ng" = (
 /obj/structure/flora/biolumi/mine,
@@ -530,7 +547,9 @@
 /turf/open/floor/grass/grass2,
 /area/hilbertshotel)
 "YF" = (
-/turf/open/floor/spooktime/cobble/cornerSW,
+/turf/open/indestructible/cobble/side{
+	dir = 10
+	},
 /area/hilbertshotel)
 "YH" = (
 /obj/structure/flora/ausbushes/fullgrass,
@@ -547,24 +566,47 @@
 /area/hilbertshotel)
 
 (1,1,1) = {"
-yr
-yr
-yr
-yr
-yr
-yr
-yr
-yr
-yr
-yr
-yr
-yr
-yr
-yr
-yr
-yr
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
 "}
 (2,1,1) = {"
+aP
+yr
+yr
+yr
+yr
+yr
+yr
+yr
+yr
+yr
+yr
+yr
+yr
+yr
+yr
+yr
+yr
+aP
+"}
+(3,1,1) = {"
+aP
 yr
 cI
 rE
@@ -581,8 +623,10 @@ cC
 Ex
 yr
 yr
+aP
 "}
-(3,1,1) = {"
+(4,1,1) = {"
+aP
 yr
 yr
 mz
@@ -599,8 +643,10 @@ Ex
 QR
 gX
 yr
+aP
 "}
-(4,1,1) = {"
+(5,1,1) = {"
+aP
 yr
 yr
 yr
@@ -617,8 +663,10 @@ Qp
 XA
 Ex
 yr
+aP
 "}
-(5,1,1) = {"
+(6,1,1) = {"
+aP
 yr
 yr
 yr
@@ -635,11 +683,13 @@ Vt
 uz
 Ex
 yr
-"}
-(6,1,1) = {"
-yr
 aP
-cI
+"}
+(7,1,1) = {"
+aP
+yr
+vn
+yr
 kf
 Ah
 Iy
@@ -653,8 +703,10 @@ Ex
 Po
 Ex
 yr
+aP
 "}
-(7,1,1) = {"
+(8,1,1) = {"
+aP
 yr
 cI
 PZ
@@ -671,8 +723,10 @@ Ew
 JC
 Po
 Dl
+aP
 "}
-(8,1,1) = {"
+(9,1,1) = {"
+aP
 yr
 cI
 cI
@@ -689,8 +743,10 @@ kS
 Wx
 Zs
 yr
+aP
 "}
-(9,1,1) = {"
+(10,1,1) = {"
+aP
 yr
 cI
 cI
@@ -707,8 +763,10 @@ We
 YH
 Ex
 yr
+aP
 "}
-(10,1,1) = {"
+(11,1,1) = {"
+aP
 yr
 yV
 yr
@@ -725,8 +783,10 @@ CR
 ag
 Ex
 yr
+aP
 "}
-(11,1,1) = {"
+(12,1,1) = {"
+aP
 yr
 yr
 yr
@@ -743,8 +803,10 @@ sx
 sx
 Ex
 yr
+aP
 "}
-(12,1,1) = {"
+(13,1,1) = {"
+aP
 yr
 yr
 Qo
@@ -761,8 +823,10 @@ Po
 Wx
 RQ
 yr
+aP
 "}
-(13,1,1) = {"
+(14,1,1) = {"
+aP
 yr
 Ex
 vx
@@ -779,8 +843,10 @@ fN
 GU
 Wx
 yr
+aP
 "}
-(14,1,1) = {"
+(15,1,1) = {"
+aP
 yr
 Ex
 GU
@@ -797,8 +863,10 @@ Ex
 Ng
 Ex
 yr
+aP
 "}
-(15,1,1) = {"
+(16,1,1) = {"
+aP
 yr
 eS
 Ex
@@ -815,8 +883,10 @@ Fu
 Ex
 yr
 yr
+aP
 "}
-(16,1,1) = {"
+(17,1,1) = {"
+aP
 yr
 yr
 yr
@@ -833,4 +903,25 @@ yr
 yr
 yr
 jw
+aP
+"}
+(18,1,1) = {"
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
+aP
 "}
