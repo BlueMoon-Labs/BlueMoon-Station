@@ -68,6 +68,7 @@
 	if(obj_flags & EMAGGED)
 		return
 	. = ..()
+	balloon_alert(usr, span_balloon_warning("emagged"))
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	req_access = list()
