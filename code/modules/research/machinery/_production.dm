@@ -64,6 +64,7 @@
 	stripe.color = stripe_color
 	. += stripe
 
+/*
 /obj/machinery/rnd/production/emag_act()
 	if(obj_flags & EMAGGED)
 		return
@@ -74,6 +75,7 @@
 	req_access = list()
 	req_one_access = list()
 	update_research()
+*/
 
 /obj/machinery/rnd/production/proc/update_research()
 	host_research.copy_research_to(stored_research, TRUE)
