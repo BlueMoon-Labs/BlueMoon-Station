@@ -33,22 +33,21 @@
 		to_chat(user, span_notice("Вы настроили автоматический подрыв полей через 2 секунды."))
 		mode = RESONATOR_MODE_AUTO
 
-/obj/item/resonator/proc/create_resonance(target, mob/user)
+/obj/item/resonator/proc/create_resonance(target, mob/user, burst_only = FALSE)
 	var/turf/target_turf = get_turf(target)
 	var/obj/effect/temp_visual/resonance/resonance_field = locate(/obj/effect/temp_visual/resonance) in target_turf
 	if(resonance_field)
 		resonance_field.damage_multiplier = quick_burst_mod
 		resonance_field.burst()
-		return
-	if(LAZYLEN(fields) < fieldlimit)
+		user.DelayNextAction(CLICK_CD_MELEE)
+	else if(!burst_only && LAZYLEN(fields) < fieldlimit)
 		new /obj/effect/temp_visual/resonance(target_turf, user, src, mode, adding_failure)
-		//user.DelayNextAction(CLICK_CD_MELEE) TEST
 
 /obj/item/resonator/pre_attack(atom/target, mob/user, params)
+	. = ..()
 	if(check_allowed_items(target, TRUE))
 		user.changeNext_move(attack_speed)
-		create_resonance(target, user)
-	return ..()
+		create_resonance(target, user, (. & STOP_ATTACK_PROC_CHAIN))
 
 //resonance field, crushes rock, damages mobs
 /obj/effect/temp_visual/resonance
