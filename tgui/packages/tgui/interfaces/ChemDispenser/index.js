@@ -5,6 +5,7 @@ import { useBackend, useLocalState } from '../../backend';
 import {
   Box,
   Button,
+  ColorBox,
   Collapsible,
   Icon,
   Input,
@@ -30,9 +31,11 @@ export const ChemDispenser = (props, context) => {
   const [activeTab, setActiveTab] = useLocalState(context, 'chem_tab', 'chemicals');
   const [favorites, setFavorites] = useLocalState(context, 'chem_favorites', []);
   const [recentChemicals, setRecentChemicals] = useLocalState(context, 'chem_recent', []);
+  const classicView = data.classicView !== undefined ? data.classicView : true;
   const [expandedCategories, setExpandedCategories] = useLocalState(context, 'chem_expanded', {
     elements: true, compounds: true, consumables: true,
-    toxins: false, medicine: false, drugs: false, other: false,
+    toxins: true, medicine: true, drugs: true, other: true,
+    slime_extracts: true,
   });
 
   const {
@@ -152,6 +155,17 @@ export const ChemDispenser = (props, context) => {
                       onClick={() => setSearchQuery('')}
                     />
                   </Stack.Item>
+                  {activeTab === 'chemicals' && (
+                    <Stack.Item>
+                      <Button
+                        compact
+                        icon={classicView ? 'th' : 'list'}
+                        tooltip={classicView
+                          ? 'Категории' : 'Обычная таблица'}
+                        onClick={() => act('toggle_view')}
+                      />
+                    </Stack.Item>
+                  )}
                 </Stack>
               </Stack.Item>
 
@@ -191,80 +205,78 @@ export const ChemDispenser = (props, context) => {
               <Stack.Item grow>
                 {activeTab === 'chemicals' && (
                   <Section fill scrollable>
-                    {favoriteChemicals.length > 0 && !searchQuery && (
-                      <Box mb={1}>
-                        <Box color="label" mb={0.5}>
-                          <Icon name="star" mr={0.5} />
-                          Избранное:
-                        </Box>
-                        <Box>
-                          {favoriteChemicals.map(chemical => (
-                            <ChemicalButton
-                              key={chemical.id}
-                              chemical={chemical}
-                              onDispense={handleDispense}
-                              onToggleFavorite={toggleFavorite}
-                              isFavorite
-                            />
-                          ))}
-                        </Box>
-                      </Box>
-                    )}
-
-                    {recentChemicalsList.length > 0 && !searchQuery && (
-                      <Box mb={1}>
-                        <Box color="label" mb={0.5}>
-                          <Icon name="history" mr={0.5} />
-                          Недавние:
-                        </Box>
-                        <Box>
-                          {recentChemicalsList.map(chemical => (
-                            <ChemicalButton
-                              key={chemical.id}
-                              chemical={chemical}
-                              onDispense={handleDispense}
-                              onToggleFavorite={toggleFavorite}
-                              isFavorite={favorites.includes(chemical.id)}
-                              compact
-                            />
-                          ))}
-                        </Box>
-                      </Box>
-                    )}
-
-                    {searchQuery ? (
-                      <Box>
-                        {filteredChemicals.length === 0 ? (
+                    {classicView ? (
+                      <Box mr={-1}>
+                        {filteredChemicals.length === 0 && searchQuery ? (
                           <NoticeBox>Ничего не найдено</NoticeBox>
                         ) : (
-                          filteredChemicals.map(chemical => (
-                            <ChemicalButton
+                          [...filteredChemicals].sort((a, b) =>
+                            a.title.localeCompare(b.title)
+                          ).map(chemical => (
+                            <Button
                               key={chemical.id}
-                              chemical={chemical}
-                              onDispense={handleDispense}
-                              onToggleFavorite={toggleFavorite}
-                              isFavorite={favorites.includes(chemical.id)}
-                            />
+                              width="129.5px"
+                              lineHeight={1.75}
+                              tooltip={'pH: ' + chemical.pH}
+                              onClick={() => handleDispense(chemical.id)}>
+                              <ColorBox
+                                color={chemical.pHCol}
+                                mr={0.5}
+                              />
+                              {chemical.title}
+                            </Button>
                           ))
                         )}
                       </Box>
                     ) : (
-                      sortedCategories.map(category => {
-                        const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.other;
-                        const categoryChemicals = chemicalsByCategory[category];
-                        return (
-                          <Collapsible
-                            key={category}
-                            title={
-                              <span>
-                                <Icon name={config.icon} mr={0.5} />
-                                {config.title} ({categoryChemicals.length})
-                              </span>
-                            }
-                            open={expandedCategories[category]}
-                            onToggle={() => toggleCategory(category)}>
+                      <>
+                        {favoriteChemicals.length > 0 && !searchQuery && (
+                          <Box mb={1}>
+                            <Box color="label" mb={0.5}>
+                              <Icon name="star" mr={0.5} />
+                              Избранное:
+                            </Box>
                             <Box>
-                              {categoryChemicals.map(chemical => (
+                              {favoriteChemicals.map(chemical => (
+                                <ChemicalButton
+                                  key={chemical.id}
+                                  chemical={chemical}
+                                  onDispense={handleDispense}
+                                  onToggleFavorite={toggleFavorite}
+                                  isFavorite
+                                />
+                              ))}
+                            </Box>
+                          </Box>
+                        )}
+
+                        {recentChemicalsList.length > 0 && !searchQuery && (
+                          <Box mb={1}>
+                            <Box color="label" mb={0.5}>
+                              <Icon name="history" mr={0.5} />
+                              Недавние:
+                            </Box>
+                            <Box>
+                              {recentChemicalsList.map(chemical => (
+                                <ChemicalButton
+                                  key={chemical.id}
+                                  chemical={chemical}
+                                  onDispense={handleDispense}
+                                  onToggleFavorite={toggleFavorite}
+                                  isFavorite={favorites.includes(chemical.id)}
+                                  compact
+                                />
+                              ))}
+                            </Box>
+                          </Box>
+                        )}
+
+                        {searchQuery ? (
+                          <Box>
+                            {filteredChemicals.length === 0 ? (
+                              <NoticeBox>Ничего не найдено</NoticeBox>
+                            ) : (
+                              filteredChemicals.map(chemical => (
                                 <ChemicalButton
                                   key={chemical.id}
                                   chemical={chemical}
@@ -272,11 +284,40 @@ export const ChemDispenser = (props, context) => {
                                   onToggleFavorite={toggleFavorite}
                                   isFavorite={favorites.includes(chemical.id)}
                                 />
-                              ))}
-                            </Box>
-                          </Collapsible>
-                        );
-                      })
+                              ))
+                            )}
+                          </Box>
+                        ) : (
+                          sortedCategories.map(category => {
+                            const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.other;
+                            const categoryChemicals = chemicalsByCategory[category];
+                            return (
+                              <Collapsible
+                                key={category}
+                                title={
+                                  <span>
+                                    <Icon name={config.icon} mr={0.5} />
+                                    {config.title} ({categoryChemicals.length})
+                                  </span>
+                                }
+                                open={expandedCategories[category]}
+                                onToggle={() => toggleCategory(category)}>
+                                <Box>
+                                  {categoryChemicals.map(chemical => (
+                                    <ChemicalButton
+                                      key={chemical.id}
+                                      chemical={chemical}
+                                      onDispense={handleDispense}
+                                      onToggleFavorite={toggleFavorite}
+                                      isFavorite={favorites.includes(chemical.id)}
+                                    />
+                                  ))}
+                                </Box>
+                              </Collapsible>
+                            );
+                          })
+                        )}
+                      </>
                     )}
                   </Section>
                 )}

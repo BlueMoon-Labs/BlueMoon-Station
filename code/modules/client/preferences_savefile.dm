@@ -499,6 +499,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["uses_glasses_colour"]>> uses_glasses_colour
 	S["auto_capitalize_enabled"]>> auto_capitalize_enabled
 	S["surgical_disable_radial"]>> surgical_disable_radial // BLUEMOON ADD
+	S["chem_dispenser_classic_view"]>> chem_dispenser_classic_view // BLUEMOON ADD
 	S["color_presets_tint"]>> color_presets_tint // BLUEMOON ADD
 	S["color_presets_hsv"]>> color_presets_hsv // BLUEMOON ADD
 	S["color_presets_matrix"]>> color_presets_matrix // BLUEMOON ADD
@@ -719,6 +720,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["uses_glasses_colour"], uses_glasses_colour)
 	WRITE_FILE(S["auto_capitalize_enabled"], auto_capitalize_enabled)
 	WRITE_FILE(S["surgical_disable_radial"], surgical_disable_radial) // BLUEMOON ADD
+	WRITE_FILE(S["chem_dispenser_classic_view"], chem_dispenser_classic_view) // BLUEMOON ADD
 	WRITE_FILE(S["color_presets_tint"], color_presets_tint) // BLUEMOON ADD
 	WRITE_FILE(S["color_presets_hsv"], color_presets_hsv) // BLUEMOON ADD
 	WRITE_FILE(S["color_presets_matrix"], color_presets_matrix) // BLUEMOON ADD

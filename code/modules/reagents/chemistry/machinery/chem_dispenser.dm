@@ -565,6 +565,12 @@
 				chemicals.Add(list(list("title" = chemname, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH), "category" = category)))
 		data["chemicals"] = chemicals
 
+	var/mob/living/L = user
+	if(istype(L) && L.client && L.client.prefs)
+		data["classicView"] = L.client.prefs.chem_dispenser_classic_view
+	else
+		data["classicView"] = TRUE
+
 	data["recipes"] = saved_recipes
 
 	data["recordingRecipe"] = recording_recipe
@@ -699,6 +705,12 @@
 	if(..())
 		return
 	switch(action)
+		if("toggle_view")
+			var/mob/living/L = usr
+			if(istype(L) && L.client && L.client.prefs)
+				L.client.prefs.chem_dispenser_classic_view = !L.client.prefs.chem_dispenser_classic_view
+				L.client.prefs.save_preferences()
+			. = TRUE
 		if("amount")
 			if(!is_operational() || QDELETED(beaker))
 				return

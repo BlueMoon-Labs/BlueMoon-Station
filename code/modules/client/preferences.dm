@@ -113,6 +113,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	var/uses_glasses_colour = 0
 	var/surgical_disable_radial = FALSE 		// BLUEMOON ADD
+	var/chem_dispenser_classic_view = TRUE		// BLUEMOON ADD - classic flat grid vs categorized view
 
 	// BLUEMOON ADD START || Colormate presets
 	// Листы состоят из ключа, типа предмета и листа с именами престов и настройками цвета
