@@ -23,6 +23,7 @@
 #include "code\world.dm"
 #include "code\__BLUEMOONCODE\plug13.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\bloodsuckers.dm"
+#include "code\__BLUEMOONCODE\_DEFINES\chemistry.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\custom_emote_panel.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\death.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\economy.dm"

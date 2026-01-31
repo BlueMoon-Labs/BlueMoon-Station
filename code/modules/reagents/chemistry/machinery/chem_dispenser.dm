@@ -24,10 +24,10 @@
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	circuit = /obj/item/circuitboard/machine/chem_dispenser
 	var/obj/item/stock_parts/cell/cell
-	var/powerefficiency = 0.0666666
-	var/dispenceUnit = 5
+	var/powerefficiency = CHEM_DISPENSER_BASE_EFFICIENCY
+	var/dispenseUnit = 5
 	var/amount = 30
-	var/recharge_amount = 300 // BLUEMOON EDIT
+	var/recharge_amount = CHEM_DISPENSER_BASE_RECHARGE
 	var/recharge_counter = 0
 	var/canStore = TRUE//If this can hold reagents or not
 	var/mutable_appearance/beaker_overlay
@@ -93,6 +93,162 @@
 
 	var/list/saved_recipes = list()
 
+	/// Static cache for game recipes data - computed once, shared across all dispensers
+	var/static/list/cached_game_recipes_data
+	/// Static cache mapping result reagent types to recipes that produce them
+	var/static/list/recipes_by_result
+	/// Static cache mapping recipe datum -> its name in normalized_chemical_reactions_list
+	var/static/list/recipe_to_name
+
+	/// Instance cache for this dispenser's computed game recipes (depends on dispensable_reagents)
+	var/list/cached_dispenser_game_recipes
+	/// Hash of dispensable_reagents when cache was last built (for invalidation)
+	var/cached_dispensable_reagents_hash = ""
+	/// Current manipulator tier (1-6) - determines which recipes can be auto-dispensed
+	var/manipulator_tier = 1
+
+/// Builds the static game recipes cache. Called lazily on first UI access.
+/// This caches the expensive O(n²) sub_recipes computation that was killing performance.
+/obj/machinery/chem_dispenser/proc/build_game_recipes_cache()
+	if(cached_game_recipes_data)
+		return
+
+	cached_game_recipes_data = list()
+	build_recipes_by_result_cache()
+
+	for(var/recipe_name in GLOB.normalized_chemical_reactions_list)
+		var/datum/chemical_reaction/R = GLOB.normalized_chemical_reactions_list[recipe_name]
+		if(R.is_secret)
+			continue
+		// Skip recipes with no reagent results
+		if(!length(R.results))
+			continue
+
+		var/recipe_category = "other"
+		var/recipe_desc = ""
+		var/result_amount = 1
+		var/result_type = R.results[1]
+		result_amount = R.results[result_type] || 1
+		var/datum/reagent/result_reagent = GLOB.chemical_reagents_list[result_type]
+		if(result_reagent)
+			recipe_desc = result_reagent.description
+		recipe_category = get_reagent_category(result_type)
+
+		var/is_extract_recipe = FALSE
+		var/extract_container_name = ""
+		if(ispath(R.required_container, /obj/item/slime_extract))
+			is_extract_recipe = TRUE
+			recipe_category = "slime_extracts"
+			var/obj/item/slime_extract/extract_type = R.required_container
+			extract_container_name = initial(extract_type.name)
+
+		var/list/required = list()
+		for(var/reagent_type in R.required_reagents)
+			var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
+			var/reagent_name = reagent ? reagent.name : "[reagent_type]"
+			required[reagent_name] = R.required_reagents[reagent_type]
+
+		var/list/sub_recipes = list()
+		for(var/reagent_type in R.required_reagents)
+			var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
+			var/reagent_name = reagent ? reagent.name : "[reagent_type]"
+
+			var/list/producing_recipes = recipes_by_result[reagent_type]
+			if(length(producing_recipes))
+				for(var/datum/chemical_reaction/sub_R as anything in producing_recipes)
+					if(sub_R.is_secret)
+						continue
+					var/list/sub_required = list()
+					for(var/sub_reagent_type in sub_R.required_reagents)
+						var/datum/reagent/sub_reagent = GLOB.chemical_reagents_list[sub_reagent_type]
+						var/sub_reagent_name = sub_reagent ? sub_reagent.name : "[sub_reagent_type]"
+						sub_required[sub_reagent_name] = sub_R.required_reagents[sub_reagent_type]
+					var/sub_recipe_name = recipe_to_name[sub_R]
+					sub_recipes[reagent_name] = list(
+						"recipe_name" = sub_recipe_name,
+						"required" = sub_required,
+						"temp" = sub_R.required_temp,
+						"is_cold" = sub_R.is_cold_recipe
+					)
+					break
+
+		var/list/catalysts = list()
+		for(var/reagent_type in R.required_catalysts)
+			var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
+			var/reagent_name = reagent ? reagent.name : "[reagent_type]"
+			catalysts[reagent_name] = R.required_catalysts[reagent_type]
+
+		cached_game_recipes_data[recipe_name] = list(
+			"required" = required,
+			"catalysts" = catalysts,
+			"category" = recipe_category,
+			"temp" = R.required_temp,
+			"is_cold" = R.is_cold_recipe,
+			"desc" = recipe_desc,
+			"result_amount" = result_amount,
+			"sub_recipes" = sub_recipes,
+			"is_fermichem" = R.FermiChem,
+			"optimal_temp_min" = R.OptimalTempMin,
+			"optimal_temp_max" = R.OptimalTempMax,
+			"explode_temp" = R.ExplodeTemp,
+			"optimal_ph_min" = R.OptimalpHMin,
+			"optimal_ph_max" = R.OptimalpHMax,
+			"react_ph_lim" = R.ReactpHLim,
+			"purity_min" = R.PurityMin,
+			"thermic_constant" = R.ThermicConstant,
+			"h_ion_release" = R.HIonRelease,
+			"fermi_explode" = R.FermiExplode,
+			"is_extract_recipe" = is_extract_recipe,
+			"extract_container_name" = extract_container_name
+		)
+
+/// Builds a reverse index: reagent_type -> list of recipes that produce it
+/// This fixes cascade recipe lookups which need to find recipes by their RESULT, not by required reagents
+/obj/machinery/chem_dispenser/proc/build_recipes_by_result_cache()
+	if(recipes_by_result)
+		return
+	recipes_by_result = list()
+	recipe_to_name = list()
+	for(var/recipe_name in GLOB.normalized_chemical_reactions_list)
+		var/datum/chemical_reaction/R = GLOB.normalized_chemical_reactions_list[recipe_name]
+		recipe_to_name[R] = recipe_name
+		if(R.is_secret)
+			continue
+		for(var/result_type in R.results)
+			if(!recipes_by_result[result_type])
+				recipes_by_result[result_type] = list()
+			recipes_by_result[result_type] += R
+
+/// Calculates the minimum manipulator tier required to auto-dispense a recipe.
+/// reagent_tiers is a mapping of reagent_type -> minimum tier needed to dispense it.
+/// A reagent dispensable at tier N contributes N-1 depth so that recipes requiring
+/// higher-tier reagents are properly gated behind those tiers.
+/obj/machinery/chem_dispenser/proc/calculate_recipe_tier(datum/chemical_reaction/R, list/reagent_tiers, list/checked)
+	if(!checked)
+		checked = list()
+	if(R in checked)
+		return 1
+	checked += R
+
+	var/max_depth = 0
+	build_recipes_by_result_cache()
+	for(var/reagent_type in R.required_reagents)
+		var/best_depth = CHEM_RECIPE_MAX_TIER
+		if(reagent_type in reagent_tiers)
+			best_depth = reagent_tiers[reagent_type] - 1
+		var/list/producing_recipes = recipes_by_result[reagent_type]
+		if(length(producing_recipes))
+			for(var/datum/chemical_reaction/sub_R as anything in producing_recipes)
+				if(sub_R.is_secret)
+					continue
+				var/sub_depth = calculate_recipe_tier(sub_R, reagent_tiers, checked)
+				best_depth = min(best_depth, sub_depth)
+				break
+		if(best_depth < CHEM_RECIPE_MAX_TIER)
+			max_depth = max(max_depth, best_depth)
+
+	return clamp(max_depth + 1, 1, CHEM_RECIPE_MAX_TIER)
+
 /obj/machinery/chem_dispenser/Initialize(mapload)
 	. = ..()
 	dispensable_reagents = sort_list(dispensable_reagents, GLOBAL_PROC_REF(cmp_reagents_asc))
@@ -106,9 +262,11 @@
 		upgrade_reagents3 = sort_list(upgrade_reagents3, GLOBAL_PROC_REF(cmp_reagents_asc))
 	if(upgrade_reagents4)
 		upgrade_reagents4 = sort_list(upgrade_reagents4, GLOBAL_PROC_REF(cmp_reagents_asc))
-	dispensable_reagents = sort_list(dispensable_reagents, GLOBAL_PROC_REF(cmp_reagents_asc))
-	create_reagents(200, NO_REACT)
+	create_reagents(CHEM_DISPENSER_BASE_STORAGE, NO_REACT)
 	update_icon()
+	// Pre-warm recipe caches during map load to avoid slow first UI open
+	build_game_recipes_cache()
+	build_dispenser_recipes_cache()
 
 /obj/machinery/chem_dispenser/Destroy()
 	QDEL_NULL(beaker)
@@ -125,8 +283,8 @@
 		- Энергоэффективность повышена на <b>[round((powerefficiency*1000)-100, 1)]%</b>.</span>"
 
 /obj/machinery/chem_dispenser/process()
-	if (recharge_counter >= 4)
-		if(!is_operational())
+	if (recharge_counter >= CHEM_DISPENSER_RECHARGE_INTERVAL)
+		if(!is_operational() || !cell)
 			if(use_power == ACTIVE_POWER_USE)
 				use_power = IDLE_POWER_USE
 			return
@@ -171,6 +329,7 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	dispensable_reagents |= emagged_reagents//add the emagged reagents to the dispensable ones
 	obj_flags |= EMAGGED
+	update_static_data_for_all_viewers()
 	return TRUE
 
 /obj/machinery/chem_dispenser/ex_act(severity, target, origin)
@@ -189,10 +348,9 @@
 		update_icon()
 
 /obj/machinery/chem_dispenser/ui_interact(mob/user, datum/tgui/ui)
-	if(name == "Chem Dispenser" || name == "Reagent Synthesizer")
-		if(HAS_TRAIT(user, TRAIT_PACIFISM))
-			to_chat(user, span_notice("Я боюсь использовать [src]... Вдруг это приведёт к катастрофическим последствиям?"))
-			return
+	if(HAS_TRAIT(user, TRAIT_PACIFISM) && !istype(src, /obj/machinery/chem_dispenser/drinks) && !istype(src, /obj/machinery/chem_dispenser/mutagen) && !istype(src, /obj/machinery/chem_dispenser/mutagensaltpeter))
+		to_chat(user, span_notice("Я боюсь использовать [src]... Вдруг это приведёт к катастрофическим последствиям?"))
+		return
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "ChemDispenser", name)
@@ -201,30 +359,180 @@
 		ui.open()
 
 		var/client/client = user.client
-		if (CONFIG_GET(flag/use_exp_tracking) && client && client.get_exp_living(TRUE) < 480) // Player with less than 8 hours playtime is using this machine.
+		if (CONFIG_GET(flag/use_exp_tracking) && client && client.get_exp_living(TRUE) < CHEM_DISPENSER_GRIEF_PLAYTIME_THRESHOLD)
 			if(client.next_chem_grief_warning < world.time)
 				if(!istype(src, /obj/machinery/chem_dispenser/drinks) && !istype(src, /obj/machinery/chem_dispenser/mutagen) && !istype(src, /obj/machinery/chem_dispenser/mutagensaltpeter) && !istype(src, /obj/machinery/chem_dispenser/abductor)) // These types aren't used for grief
 					var/turf/T = get_turf(src)
-					client.next_chem_grief_warning = world.time + 15 MINUTES // Wait 15 minutes before alerting admins again
+					client.next_chem_grief_warning = world.time + CHEM_DISPENSER_GRIEF_ALERT_COOLDOWN
 					message_admins("<span class='adminhelp'>ANTI-GRIEF:</span> New player [ADMIN_LOOKUPFLW(user)] used \a [src] at [ADMIN_VERBOSEJMP(T)].")
 					client.used_chem_dispenser = TRUE
+
+/// Recursively resolves recipe ingredients to base dispensable reagents
+/// Returns a list of reagent_type -> amount that can be dispensed
+/obj/machinery/chem_dispenser/proc/get_base_ingredients(list/required_reagents, multiplier = 1, list/already_checked)
+	if(!already_checked)
+		already_checked = list()
+
+	var/list/result = list()
+	for(var/reagent_type in required_reagents)
+		var/needed_amount = required_reagents[reagent_type] * multiplier
+
+		if(reagent_type in dispensable_reagents)
+			if(result[reagent_type])
+				result[reagent_type] += needed_amount
+			else
+				result[reagent_type] = needed_amount
+			continue
+
+		if(reagent_type in already_checked)
+			continue
+		already_checked += reagent_type
+
+		build_recipes_by_result_cache()
+		var/list/recipes = recipes_by_result[reagent_type]
+		if(length(recipes))
+			for(var/recipe in recipes)
+				var/datum/chemical_reaction/sub_R = recipe
+				if(sub_R.is_secret)
+					continue
+				var/yield_per_reaction = sub_R.results[reagent_type] || 1
+				var/reactions_needed = CEILING(needed_amount / yield_per_reaction, 1)
+
+				var/list/sub_ingredients = get_base_ingredients(sub_R.required_reagents, reactions_needed, already_checked)
+				for(var/sub_type in sub_ingredients)
+					if(result[sub_type])
+						result[sub_type] += sub_ingredients[sub_type]
+					else
+						result[sub_type] = sub_ingredients[sub_type]
+				break
+
+	return result
+
+/// Gets flattened base ingredients for UI display, with yield info for scaling
+/obj/machinery/chem_dispenser/proc/get_recipe_base_ingredients_data(datum/chemical_reaction/R)
+	var/list/base = list()          // reagent_type -> total amount for 1x
+	var/list/yield_info = list()    // reagent_type -> list(need, yield, input) for scaling
+	var/list/checked = list()
+	var/list/intermediates = list() // tree: list of list(name, amount, yield, parent) where parent is 1-indexed or 0 for top-level
+
+	for(var/reagent_type in R.required_reagents)
+		var/amount = R.required_reagents[reagent_type]
+		resolve_to_base_with_yield(reagent_type, amount, base, yield_info, checked, 0, 1, 0, intermediates, 0)
+
+	var/list/ingredients = list()
+	for(var/reagent_type in base)
+		var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
+		var/reagent_name = reagent ? reagent.name : "[reagent_type]"
+		var/can_dispense = (reagent_type in dispensable_reagents)
+		var/list/info = yield_info[reagent_type]
+		ingredients[reagent_name] = list(
+			"amount" = base[reagent_type],
+			"can_dispense" = can_dispense,
+			"need" = info ? info["need"] : base[reagent_type],
+			"yield" = info ? info["yield"] : 1,
+			"input" = info ? info["input"] : base[reagent_type]
+		)
+
+	return list("ingredients" = ingredients, "intermediate_yields" = intermediates)
+
+/// Recursively resolve a reagent to base dispensable ingredients, tracking yield info
+/obj/machinery/chem_dispenser/proc/resolve_to_base_with_yield(reagent_type, amount, list/base, list/yield_info, list/checked, parent_need = 0, parent_yield = 1, parent_input = 0, list/intermediates = null, parent_intermediate_idx = 0)
+	if(reagent_type in dispensable_reagents)
+		if(base[reagent_type])
+			base[reagent_type] += amount
+		else
+			base[reagent_type] = amount
+		if(parent_yield > 1)
+			if(!yield_info[reagent_type])
+				yield_info[reagent_type] = list("need" = parent_need, "yield" = parent_yield, "input" = parent_input)
+		else
+			if(!yield_info[reagent_type])
+				yield_info[reagent_type] = list("need" = 1, "yield" = 1, "input" = amount)
+		return TRUE
+
+	if(reagent_type in checked)
+		return FALSE
+	checked += reagent_type
+
+	build_recipes_by_result_cache()
+	var/list/recipes = recipes_by_result[reagent_type]
+	if(length(recipes))
+		for(var/recipe in recipes)
+			var/datum/chemical_reaction/sub_R = recipe
+			if(sub_R.is_secret)
+				continue
+			var/yield_per_reaction = sub_R.results[reagent_type] || 1
+			var/reactions_needed = CEILING(amount / yield_per_reaction, 1)
+
+			var/my_intermediate_idx = 0
+			if(intermediates && yield_per_reaction > 1)
+				var/datum/reagent/inter_reagent = GLOB.chemical_reagents_list[reagent_type]
+				var/inter_name = inter_reagent ? inter_reagent.name : "[reagent_type]"
+				intermediates += list(list("name" = inter_name, "amount" = amount, "yield" = yield_per_reaction, "parent" = parent_intermediate_idx))
+				my_intermediate_idx = length(intermediates)
+
+			for(var/sub_type in sub_R.required_reagents)
+				var/sub_amount = sub_R.required_reagents[sub_type] * reactions_needed
+				var/input_per_reaction = sub_R.required_reagents[sub_type]
+				resolve_to_base_with_yield(sub_type, sub_amount, base, yield_info, checked, amount, yield_per_reaction, input_per_reaction, intermediates, my_intermediate_idx)
+			return TRUE
+
+	if(base[reagent_type])
+		base[reagent_type] += amount
+	else
+		base[reagent_type] = amount
+	if(!yield_info[reagent_type])
+		yield_info[reagent_type] = list("need" = 1, "yield" = 1, "input" = amount)
+	return FALSE
+
+/obj/machinery/chem_dispenser/ui_static_data(mob/user)
+	var/list/data = list()
+	build_game_recipes_cache()
+	build_dispenser_recipes_cache()
+	data["gameRecipes"] = cached_dispenser_game_recipes
+
+	var/chemicals[0]
+	for(var/re in dispensable_reagents)
+		var/datum/reagent/temp = GLOB.chemical_reagents_list[re]
+		if(temp)
+			var/category = get_reagent_category(re)
+			chemicals.Add(list(list("title" = temp.name, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH), "category" = category)))
+	data["chemicals"] = chemicals
+
+	var/datum/reagent/best_acid = null
+	var/datum/reagent/best_base = null
+	for(var/re in dispensable_reagents)
+		var/datum/reagent/temp = GLOB.chemical_reagents_list[re]
+		if(!temp)
+			continue
+		if(!best_acid || temp.pH < best_acid.pH)
+			best_acid = temp
+		if(!best_base || temp.pH > best_base.pH)
+			best_base = temp
+	data["phAcidName"] = best_acid?.name
+	data["phAcidPH"] = best_acid?.pH
+	data["phBaseName"] = best_base?.name
+	data["phBasePH"] = best_base?.pH
+
+	return data
 
 /obj/machinery/chem_dispenser/ui_data(mob/user)
 	var/data = list()
 	data["amount"] = amount
-	data["energy"] = cell.charge ? cell.charge * powerefficiency : "0" //To prevent NaN in the UI.
-	data["maxEnergy"] = cell.maxcharge * powerefficiency
+	data["manipulatorTier"] = manipulator_tier
+	data["energy"] = (cell && cell.charge) ? cell.charge * powerefficiency : 0
+	data["maxEnergy"] = (cell && cell.maxcharge) ? cell.maxcharge * powerefficiency : 0
 	data["storedVol"] = reagents.total_volume
 	data["maxVol"] = reagents.maximum_volume
 	data["isBeakerLoaded"] = beaker ? 1 : 0
-	data["stepAmount"] = dispenceUnit
+	data["stepAmount"] = dispenseUnit
 	data["canStore"] = canStore
 
 	var/beakerContents[0]
 	var/beakerCurrentVolume = 0
 	if(beaker && beaker.reagents && beaker.reagents.reagent_list.len)
 		for(var/datum/reagent/R in beaker.reagents.reagent_list)
-			beakerContents.Add(list(list("name" = R.name, "id" = R.type, "volume" = round(R.volume, 0.01)))) // list in a list because Byond merges the first list...
+			beakerContents.Add(list(list("name" = R.name, "id" = R.type, "volume" = round(R.volume, 0.01), "pH" = R.pH, "pHCol" = ConvertpHToCol(R.pH)))) // list in a list because Byond merges the first list...
 			beakerCurrentVolume += R.volume
 	data["beakerContents"] = beakerContents
 
@@ -234,26 +542,29 @@
 		data["beakerTransferAmounts"] = beaker.possible_transfer_amounts
 		//pH accuracy
 		for(var/obj/item/stock_parts/capacitor/C in component_parts)
-			data["beakerCurrentpH"] = round(beaker.reagents.pH, 10**-(C.rating+1))
+			var/rounded_ph = round(beaker.reagents.pH, 10**-(C.rating+1))
+			data["beakerCurrentpH"] = rounded_ph
+			data["beakerCurrentpHCol"] = ConvertpHToCol(rounded_ph)
 
 	else
 		data["beakerCurrentVolume"] = null
 		data["beakerMaxVolume"] = null
 		data["beakerTransferAmounts"] = null
 		data["beakerCurrentpH"] = null
+		data["beakerCurrentpHCol"] = null
 
-	var/chemicals[0]
-	var/is_hallucinating = FALSE
 	if(user.hallucinating())
-		is_hallucinating = TRUE
-	for(var/re in dispensable_reagents)
-		var/datum/reagent/temp = GLOB.chemical_reagents_list[re]
-		if(temp)
-			var/chemname = temp.name
-			if(is_hallucinating && prob(5))
-				chemname = "[pick_list_replacements("hallucination.json", "chemicals")]"
-			chemicals.Add(list(list("title" = chemname, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH))))
-	data["chemicals"] = chemicals
+		var/chemicals[0]
+		for(var/re in dispensable_reagents)
+			var/datum/reagent/temp = GLOB.chemical_reagents_list[re]
+			if(temp)
+				var/chemname = temp.name
+				if(prob(5))
+					chemname = "[pick_list_replacements("hallucination.json", "chemicals")]"
+				var/category = get_reagent_category(re)
+				chemicals.Add(list(list("title" = chemname, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH), "category" = category)))
+		data["chemicals"] = chemicals
+
 	data["recipes"] = saved_recipes
 
 	data["recordingRecipe"] = recording_recipe
@@ -261,9 +572,128 @@
 	var/storedContents[0]
 	if(reagents.total_volume)
 		for(var/datum/reagent/N in reagents.reagent_list)
-			storedContents.Add(list(list("name" = N.name, "id" = N.type, "volume" = N.volume)))
+			storedContents.Add(list(list("name" = N.name, "id" = N.type, "volume" = N.volume, "pH" = N.pH, "pHCol" = ConvertpHToCol(N.pH))))
 	data["storedContents"] = storedContents
+
 	return data
+
+/// Builds the instance-level cache for dispenser-specific recipe data.
+/// Invalidates when dispensable_reagents list changes (upgrades/emag).
+/obj/machinery/chem_dispenser/proc/build_dispenser_recipes_cache()
+	var/current_hash = "[length(dispensable_reagents)]:[jointext(dispensable_reagents, "|")]"
+	if(cached_dispenser_game_recipes && current_hash == cached_dispensable_reagents_hash)
+		return
+
+	cached_dispenser_game_recipes = list()
+	cached_dispensable_reagents_hash = current_hash
+
+	// reagent_type -> minimum tier needed to dispense it
+	var/list/reagent_tiers = list()
+	for(var/r in dispensable_reagents)
+		reagent_tiers[r] = 1
+	if(upgrade_reagents)
+		for(var/r in upgrade_reagents)
+			if(!(r in reagent_tiers))
+				reagent_tiers[r] = 2
+	if(upgrade_reagents2)
+		for(var/r in upgrade_reagents2)
+			if(!(r in reagent_tiers))
+				reagent_tiers[r] = 3
+	if(upgrade_reagents3)
+		for(var/r in upgrade_reagents3)
+			if(!(r in reagent_tiers))
+				reagent_tiers[r] = 4
+	if(upgrade_reagents4)
+		for(var/r in upgrade_reagents4)
+			if(!(r in reagent_tiers))
+				reagent_tiers[r] = 5
+	if(emagged_reagents)
+		for(var/r in emagged_reagents)
+			if(!(r in reagent_tiers))
+				reagent_tiers[r] = 6
+
+	for(var/recipe_name in cached_game_recipes_data)
+		var/list/cached_recipe = cached_game_recipes_data[recipe_name]
+		var/datum/chemical_reaction/R = GLOB.normalized_chemical_reactions_list[recipe_name]
+
+		var/list/base_data = get_recipe_base_ingredients_data(R)
+		var/list/base_ingredients = base_data["ingredients"]
+		var/list/intermediate_yields = base_data["intermediate_yields"]
+
+		var/can_make = TRUE
+		for(var/reagent_name in base_ingredients)
+			if(!base_ingredients[reagent_name]["can_dispense"])
+				can_make = FALSE
+				break
+
+		var/list/enriched_sub_recipes = list()
+		var/list/original_sub_recipes = cached_recipe["sub_recipes"]
+		if(length(original_sub_recipes))
+			for(var/reagent_name in original_sub_recipes)
+				var/list/sub_data = original_sub_recipes[reagent_name]
+				var/sub_recipe_name = sub_data["recipe_name"]
+				var/datum/chemical_reaction/sub_R = GLOB.normalized_chemical_reactions_list[sub_recipe_name]
+				if(!sub_R)
+					enriched_sub_recipes[reagent_name] = sub_data
+					continue
+
+				var/list/sub_base = get_base_ingredients(sub_R.required_reagents, 1)
+				var/list/sub_base_with_info = list()
+				for(var/sub_reagent_type in sub_base)
+					var/datum/reagent/sub_reagent = GLOB.chemical_reagents_list[sub_reagent_type]
+					var/sub_reagent_name = sub_reagent ? sub_reagent.name : "[sub_reagent_type]"
+					var/sub_can_dispense = (sub_reagent_type in dispensable_reagents)
+					sub_base_with_info[sub_reagent_name] = list(
+						"amount" = sub_base[sub_reagent_type],
+						"can_dispense" = sub_can_dispense
+					)
+
+				var/result_type = null
+				for(var/rtype in sub_R.results)
+					var/datum/reagent/check = GLOB.chemical_reagents_list[rtype]
+					if(check && check.name == reagent_name)
+						result_type = rtype
+						break
+				var/sub_result_amount = result_type ? (sub_R.results[result_type] || 1) : 1
+
+				enriched_sub_recipes[reagent_name] = list(
+					"recipe_name" = sub_data["recipe_name"],
+					"required" = sub_data["required"],
+					"temp" = sub_data["temp"],
+					"is_cold" = sub_data["is_cold"],
+					"base_ingredients" = sub_base_with_info,
+					"result_amount" = sub_result_amount
+				)
+
+		var/recipe_tier = calculate_recipe_tier(R, reagent_tiers)
+
+		cached_dispenser_game_recipes[recipe_name] = list(
+			"required" = cached_recipe["required"],
+			"catalysts" = cached_recipe["catalysts"],
+			"category" = cached_recipe["category"],
+			"temp" = cached_recipe["temp"],
+			"is_cold" = cached_recipe["is_cold"],
+			"can_make" = can_make,
+			"tier" = recipe_tier,
+			"desc" = cached_recipe["desc"],
+			"result_amount" = cached_recipe["result_amount"],
+			"sub_recipes" = enriched_sub_recipes,
+			"base_ingredients" = base_ingredients,
+			"intermediate_yields" = intermediate_yields,
+			"is_fermichem" = cached_recipe["is_fermichem"],
+			"optimal_temp_min" = cached_recipe["optimal_temp_min"],
+			"optimal_temp_max" = cached_recipe["optimal_temp_max"],
+			"explode_temp" = cached_recipe["explode_temp"],
+			"optimal_ph_min" = cached_recipe["optimal_ph_min"],
+			"optimal_ph_max" = cached_recipe["optimal_ph_max"],
+			"react_ph_lim" = cached_recipe["react_ph_lim"],
+			"purity_min" = cached_recipe["purity_min"],
+			"thermic_constant" = cached_recipe["thermic_constant"],
+			"h_ion_release" = cached_recipe["h_ion_release"],
+			"fermi_explode" = cached_recipe["fermi_explode"],
+			"is_extract_recipe" = cached_recipe["is_extract_recipe"],
+			"extract_container_name" = cached_recipe["extract_container_name"]
+		)
 
 /obj/machinery/chem_dispenser/ui_act(action, params)
 	if(..())
@@ -297,12 +727,49 @@
 			else
 				recording_recipe[reagent_name] += amount
 			. = TRUE
-		if("remove")
-			if(!is_operational() || recording_recipe)
+		if("dispense_ph")
+			if(!is_operational() || QDELETED(cell) || !beaker || recording_recipe)
 				return
-			var/amount = text2num(params["amount"])
-			beaker.reagents.remove_all(amount) //This should be set correctly in "amount"
+			var/reagent_type
+			if(params["type"] == "acid")
+				var/best_ph = INFINITY
+				for(var/re in dispensable_reagents)
+					var/datum/reagent/temp = GLOB.chemical_reagents_list[re]
+					if(temp && temp.pH < best_ph)
+						best_ph = temp.pH
+						reagent_type = re
+			else
+				var/best_ph = -INFINITY
+				for(var/re in dispensable_reagents)
+					var/datum/reagent/temp = GLOB.chemical_reagents_list[re]
+					if(temp && temp.pH > best_ph)
+						best_ph = temp.pH
+						reagent_type = re
+			if(!reagent_type)
+				say("Реагент недоступен!")
+				return
+			var/datum/reagents/R = beaker.reagents
+			var/free = R.maximum_volume - R.total_volume
+			if(free < 1)
+				say("Ёмкость заполнена!")
+				return
+			if(!cell.use(1 / powerefficiency))
+				say("Недостаточно энергии!")
+				return
+			R.add_reagent(reagent_type, 1)
 			work_animation()
+			. = TRUE
+		if("remove")
+			if(!is_operational() || recording_recipe || !beaker)
+				return
+			var/remove_amount
+			if(params["all"])
+				remove_amount = beaker.reagents.total_volume
+			else
+				remove_amount = text2num(params["amount"])
+			if(remove_amount > 0)
+				beaker.reagents.remove_all(remove_amount)
+				work_animation()
 			. = TRUE
 		if("eject")
 			replace_beaker(usr)
@@ -340,12 +807,167 @@
 			if(!recording_recipe)
 				log_reagent("DISPENSER: [key_name(usr)] dispensed recipe [params["recipe"]] with chemicals [logstring] to [beaker] ([REF(beaker)])[earlyabort? " (aborted early)":""]")
 			. = TRUE
+		if("dispense_recipe_game")
+			if(!is_operational() || QDELETED(cell) || !beaker)
+				return
+			var/recipe_name = params["recipe"]
+			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, 100)
+			var/datum/chemical_reaction/R = GLOB.normalized_chemical_reactions_list[recipe_name]
+			if(!R)
+				return
+			var/list/recipe_data = cached_dispenser_game_recipes[recipe_name]
+			if(recipe_data && recipe_data["tier"] > manipulator_tier)
+				say("Недостаточный уровень манипулятора для этого рецепта!")
+				return
+
+			var/list/base_ingredients = get_base_ingredients(R.required_reagents, multiplier)
+			if(!length(base_ingredients))
+				say("Невозможно выдать ингредиенты для этого рецепта!")
+				return
+
+			var/list/logstring = list()
+			for(var/reagent_type in base_ingredients)
+				var/needed_amount = base_ingredients[reagent_type]
+				var/datum/reagents/BR = beaker.reagents
+				var/free = BR.maximum_volume - BR.total_volume
+				var/actual = min(needed_amount, (cell.charge * powerefficiency) * 10, free)
+				if(actual <= 0)
+					continue
+				if(!cell.use(actual / powerefficiency))
+					say("Недостаточно энергии!")
+					break
+				BR.add_reagent(reagent_type, actual)
+				logstring += "[reagent_type] = [actual]"
+			work_animation()
+			log_reagent("DISPENSER: [key_name(usr)] dispensed game recipe [recipe_name] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
+			. = TRUE
+		if("dispense_sub_recipe")
+			if(!is_operational() || QDELETED(cell) || !beaker)
+				return
+			var/recipe_name = params["recipe"]
+			var/sub_reagent_name = params["sub_reagent"]
+			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, 100)
+
+			var/datum/chemical_reaction/R = GLOB.normalized_chemical_reactions_list[recipe_name]
+			if(!R)
+				return
+			var/list/recipe_data_sub = cached_dispenser_game_recipes[recipe_name]
+			if(recipe_data_sub && recipe_data_sub["tier"] > manipulator_tier)
+				say("Недостаточный уровень манипулятора для этого рецепта!")
+				return
+
+			var/target_reagent_type = null
+			for(var/reagent_type in R.required_reagents)
+				var/datum/reagent/check = GLOB.chemical_reagents_list[reagent_type]
+				if(check && check.name == sub_reagent_name)
+					target_reagent_type = reagent_type
+					break
+
+			if(!target_reagent_type)
+				return
+
+			build_recipes_by_result_cache()
+			var/list/recipes = recipes_by_result[target_reagent_type]
+			if(!length(recipes))
+				return
+
+			var/datum/chemical_reaction/sub_R = null
+			for(var/recipe in recipes)
+				var/datum/chemical_reaction/check_R = recipe
+				if(!check_R.is_secret)
+					sub_R = check_R
+					break
+
+			if(!sub_R)
+				return
+
+			var/needed_amount = R.required_reagents[target_reagent_type] * multiplier
+			var/yield_per_reaction = sub_R.results[target_reagent_type] || 1
+			var/reactions_needed = CEILING(needed_amount / yield_per_reaction, 1)
+
+			var/list/base_ingredients = get_base_ingredients(sub_R.required_reagents, reactions_needed)
+			if(!length(base_ingredients))
+				say("Невозможно выдать ингредиенты!")
+				return
+
+			var/list/logstring = list()
+			for(var/reagent_type in base_ingredients)
+				var/reagent_amount = base_ingredients[reagent_type]
+				var/datum/reagents/BR = beaker.reagents
+				var/free = BR.maximum_volume - BR.total_volume
+				var/actual = min(reagent_amount, (cell.charge * powerefficiency) * 10, free)
+				if(actual <= 0)
+					continue
+				if(!cell.use(actual / powerefficiency))
+					say("Недостаточно энергии!")
+					break
+				BR.add_reagent(reagent_type, actual)
+				logstring += "[reagent_type] = [actual]"
+			work_animation()
+			log_reagent("DISPENSER: [key_name(usr)] dispensed sub-recipe [sub_reagent_name] for [recipe_name] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
+			. = TRUE
+		if("dispense_final_step")
+			// Skip true intermediates (in sub_recipes AND not directly dispensable)
+			if(!is_operational() || QDELETED(cell) || !beaker)
+				return
+			var/recipe_name = params["recipe"]
+			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, 100)
+
+			var/datum/chemical_reaction/R = GLOB.normalized_chemical_reactions_list[recipe_name]
+			if(!R)
+				return
+			var/list/recipe_data_final = cached_dispenser_game_recipes[recipe_name]
+			if(recipe_data_final && recipe_data_final["tier"] > manipulator_tier)
+				say("Недостаточный уровень манипулятора для этого рецепта!")
+				return
+
+			build_dispenser_recipes_cache()
+			var/list/recipe_data = cached_dispenser_game_recipes[recipe_name]
+			var/list/this_recipe_sub_recipes = recipe_data ? recipe_data["sub_recipes"] : list()
+
+			var/list/logstring = list()
+			for(var/reagent_type in R.required_reagents)
+				var/can_dispense = (reagent_type in dispensable_reagents)
+				var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
+				var/reagent_name = reagent ? reagent.name : null
+
+				// Skip true intermediates (has sub-recipe, can't dispense directly)
+				if(reagent_name && this_recipe_sub_recipes[reagent_name] && !can_dispense)
+					continue
+				if(!can_dispense)
+					continue
+
+				var/needed_amount = R.required_reagents[reagent_type] * multiplier
+				var/datum/reagents/BR = beaker.reagents
+				var/free = BR.maximum_volume - BR.total_volume
+				var/actual = min(needed_amount, (cell.charge * powerefficiency) * 10, free)
+				if(actual <= 0)
+					continue
+				if(!cell.use(actual / powerefficiency))
+					say("Недостаточно энергии!")
+					break
+				BR.add_reagent(reagent_type, actual)
+				logstring += "[reagent_type] = [actual]"
+			work_animation()
+			log_reagent("DISPENSER: [key_name(usr)] dispensed final step for [recipe_name] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
+			. = TRUE
 		if("clear_recipes")
 			if(!is_operational())
 				return
-			var/yesno = alert("Очистить все рецепты?",, "Да","Нет")
-			if(yesno == "Да")
-				saved_recipes = list()
+			var/yesno = tgui_alert(usr, "Очистить все рецепты?", name, list("Да", "Нет"))
+			if(yesno != "Да")
+				return
+			if(!usr.canUseTopic(src, !hasSiliconAccessInArea(usr)))
+				return
+			saved_recipes = list()
+			. = TRUE
+		if("delete_recipe")
+			if(!is_operational())
+				return
+			var/recipe_name = params["recipe"]
+			if(recipe_name && saved_recipes[recipe_name])
+				saved_recipes -= recipe_name
+				log_reagent("DISPENSER: [key_name(usr)] deleted recipe [recipe_name]")
 			. = TRUE
 		if("record_recipe")
 			if(!is_operational())
@@ -358,7 +980,7 @@
 			var/name = stripped_input(usr,"Имя","Введите название рецепта", "Рецепт", MAX_NAME_LEN)
 			if(!usr.canUseTopic(src, !hasSiliconAccessInArea(usr)))
 				return
-			if(saved_recipes[name] && alert("Рецепт \"[name]\" уже существует, хотите перезаписать?",, "Да", "Нет") == "Нет")
+			if(saved_recipes[name] && tgui_alert(usr, "Рецепт \"[name]\" уже существует, хотите перезаписать?", src.name, list("Да", "Нет")) != "Да")
 				return
 			if(name && recording_recipe)
 				var/list/logstring = list()
@@ -395,10 +1017,11 @@
 				return
 			var/reagent = text2path(params["id"])
 			var/datum/reagent/R = beaker.reagents.has_reagent(reagent)
-			var/potentialAmount = min(amount, R.volume)
-			if(reagents.total_volume+potentialAmount > reagents.maximum_volume)
+			var/freeSpace = reagents.maximum_volume - reagents.total_volume
+			if(freeSpace <= 0)
 				say("В хранилище нет места!")
 				return
+			var/potentialAmount = min(amount, R.volume, freeSpace)
 			beaker.reagents.trans_id_to(src, R.type, potentialAmount)
 			work_animation()
 			. = TRUE
@@ -417,13 +1040,52 @@
 			work_animation()
 			. = TRUE
 
+		if("store_all")
+			if(!is_operational() || QDELETED(cell))
+				return
+			if(!beaker || !canStore)
+				return
+			if(recording_recipe)
+				say("Хранилище недоступно во время записи рецепта!")
+				return
+			if(beaker.reagents.fermiIsReacting)
+				say("Хранилище недоступно во время реакции веществ!")
+				return
+			if(!beaker.reagents.total_volume)
+				return
+			beaker.reagents.trans_to(src, beaker.reagents.total_volume, no_react = TRUE)
+			work_animation()
+			. = TRUE
+
+		if("unstore_all")
+			if(!is_operational() || QDELETED(cell))
+				return
+			if(!beaker)
+				return
+			if(recording_recipe)
+				say("Невозможно выдать реагенты!")
+				return
+			if(!reagents.total_volume)
+				return
+			reagents.trans_to(beaker, reagents.total_volume)
+			work_animation()
+			. = TRUE
+
+		if("clear_storage")
+			if(!is_operational())
+				return
+			if(!reagents.total_volume)
+				return
+			reagents.remove_all(reagents.total_volume)
+			. = TRUE
+
 /obj/machinery/chem_dispenser/proc/SetAmount(inputAmount)
 	if(inputAmount % 5 == 0) //Always allow 5u values
 		amount = inputAmount
 		return
-	inputAmount -= inputAmount % dispenceUnit
+	inputAmount -= inputAmount % dispenseUnit
 	if(inputAmount == 0) //Prevent ghost entries in macros
-		amount = dispenceUnit
+		amount = dispenseUnit
 		return
 	amount = inputAmount
 
@@ -483,12 +1145,13 @@
 		else
 			qdel(GetComponent(/datum/component/radioactive))
 	for(var/obj/item/stock_parts/matter_bin/M in component_parts)
-		newpowereff += 0.0166666666*M.rating
+		newpowereff += CHEM_DISPENSER_EFFICIENCY_PER_RATING*M.rating
 		if(reagents)
-			reagents.maximum_volume = 200*(M.rating)
+			reagents.maximum_volume = CHEM_DISPENSER_BASE_STORAGE*(M.rating)
 	for(var/obj/item/stock_parts/capacitor/C in component_parts)
 		recharge_amount *= C.rating
 	for(var/obj/item/stock_parts/manipulator/M in component_parts)
+		manipulator_tier = M.rating
 		if(M.rating > 1) //T2
 			dispensable_reagents |= upgrade_reagents
 		if(M.rating > 2) //T3
@@ -501,14 +1164,15 @@
 			dispensable_reagents |= emagged_reagents
 		switch(M.rating)
 			if(-INFINITY to 1)
-				dispenceUnit = 5
+				dispenseUnit = 5
 			if(2)
-				dispenceUnit = 3
+				dispenseUnit = 3
 			if(3)
-				dispenceUnit = 2
+				dispenseUnit = 2
 			if(4 to INFINITY)
-				dispenceUnit = 1
+				dispenseUnit = 1
 	powerefficiency = round(newpowereff, 0.01)
+	update_static_data_for_all_viewers()
 
 /obj/machinery/chem_dispenser/proc/replace_beaker(mob/living/user, obj/item/reagent_containers/new_beaker)
 	if(beaker)
@@ -562,6 +1226,33 @@
 			return "violet"
 		if(12.5 to INFINITY)
 			return "purple"
+
+/// Returns the category string for a reagent type path
+/obj/machinery/chem_dispenser/proc/get_reagent_category(reagent_type)
+	if(ispath(reagent_type, /datum/reagent/medicine))
+		return "medicine"
+	if(ispath(reagent_type, /datum/reagent/toxin))
+		return "toxins"
+	if(ispath(reagent_type, /datum/reagent/drug))
+		return "drugs"
+	if(ispath(reagent_type, /datum/reagent/consumable))
+		return "consumables"
+	if(reagent_type in list(
+		/datum/reagent/water,
+		/datum/reagent/fuel,
+		/datum/reagent/stable_plasma,
+		/datum/reagent/oil,
+		/datum/reagent/ammonia,
+		/datum/reagent/ash,
+		/datum/reagent/acetone,
+		/datum/reagent/phenol,
+		/datum/reagent/diethylamine,
+		/datum/reagent/saltpetre
+	))
+		return "compounds"
+	if(ispath(reagent_type, /datum/reagent))
+		return "elements"
+	return "other"
 
 
 /obj/machinery/chem_dispenser/drinks/Initialize(mapload)
@@ -827,7 +1518,7 @@
 	nopower_state = "minidispenser_nopower"
 	circuit = /obj/item/circuitboard/machine/chem_dispenser/apothecary
 	canStore = FALSE
-	powerefficiency = 0.0833333
+	powerefficiency = CHEM_DISPENSER_APOTHECARY_EFFICIENCY
 	dispensable_reagents = list( //radium and stable plasma moved to upgrade tier 1 and 2, they've little to do with most medicines anyway.
 		/datum/reagent/hydrogen,
 		/datum/reagent/lithium,
