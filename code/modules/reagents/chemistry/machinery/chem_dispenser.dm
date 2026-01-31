@@ -520,6 +520,7 @@
 	var/data = list()
 	data["amount"] = amount
 	data["manipulatorTier"] = manipulator_tier
+	data["isEmagged"] = !!(obj_flags & EMAGGED)
 	data["energy"] = (cell && cell.charge) ? cell.charge * powerefficiency : 0
 	data["maxEnergy"] = (cell && cell.maxcharge) ? cell.maxcharge * powerefficiency : 0
 	data["storedVol"] = reagents.total_volume
@@ -594,9 +595,9 @@
 	cached_dispensable_reagents_hash = current_hash
 
 	// reagent_type -> minimum tier needed to dispense it
+	// Assign upgrade tiers first so that reagents added to dispensable_reagents
+	// by RefreshParts() keep their proper tier instead of being marked as tier 1
 	var/list/reagent_tiers = list()
-	for(var/r in dispensable_reagents)
-		reagent_tiers[r] = 1
 	if(upgrade_reagents)
 		for(var/r in upgrade_reagents)
 			if(!(r in reagent_tiers))
@@ -617,6 +618,9 @@
 		for(var/r in emagged_reagents)
 			if(!(r in reagent_tiers))
 				reagent_tiers[r] = 6
+	for(var/r in dispensable_reagents)
+		if(!(r in reagent_tiers))
+			reagent_tiers[r] = 1
 
 	for(var/recipe_name in cached_game_recipes_data)
 		var/list/cached_recipe = cached_game_recipes_data[recipe_name]
@@ -828,7 +832,12 @@
 			if(!R)
 				return
 			var/list/recipe_data = cached_dispenser_game_recipes[recipe_name]
-			if(recipe_data && recipe_data["tier"] > manipulator_tier)
+			var/recipe_tier = recipe_data ? recipe_data["tier"] : 0
+			if(recipe_tier >= CHEM_RECIPE_EMAG_TIER)
+				if(!(obj_flags & EMAGGED))
+					say("Требуется взлом протоколов безопасности!")
+					return
+			else if(recipe_tier > manipulator_tier)
 				say("Недостаточный уровень манипулятора для этого рецепта!")
 				return
 
@@ -1172,8 +1181,7 @@
 			dispensable_reagents |= upgrade_reagents3
 		if(M.rating > 4) //T5
 			dispensable_reagents |= upgrade_reagents4
-		if(M.rating > 5) //T6
-			dispensable_reagents |= emagged_reagents
+		// Emag reagents are only accessible via emag_act(), not through manipulator upgrades
 		switch(M.rating)
 			if(-INFINITY to 1)
 				dispenseUnit = 5

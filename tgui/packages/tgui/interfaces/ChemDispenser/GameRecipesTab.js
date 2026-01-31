@@ -29,7 +29,7 @@ import {
 
 export const GameRecipesTab = (props, context) => {
   const { act } = useBackend(context);
-  const { gameRecipes, searchQuery, isBeakerLoaded, beakerContents = [], beakerCurrentVolume, beakerMaxVolume, manipulatorTier = 1 } = props;
+  const { gameRecipes, searchQuery, isBeakerLoaded, beakerContents = [], beakerCurrentVolume, beakerMaxVolume, manipulatorTier = 1, isEmagged = false } = props;
 
   const [multiplier, setMultiplier] = useLocalState(context, 'recipe_multiplier', 1);
   const [expandedCats, setExpandedCats] = useLocalState(context, 'recipe_cats', {
@@ -66,7 +66,7 @@ export const GameRecipesTab = (props, context) => {
 
   if (showOnlyMakeable) {
     filteredRecipes = filteredRecipes.filter(([, recipe]) =>
-      recipe.is_extract_recipe || (manipulatorTier >= (recipe.tier || 1) && canMakeRecipe(recipe)));
+      recipe.is_extract_recipe || (((recipe.tier || 1) >= 6 ? isEmagged : manipulatorTier >= (recipe.tier || 1)) && canMakeRecipe(recipe)));
   }
 
   const favoriteRecipesList = filteredRecipes.filter(([name]) =>
@@ -171,7 +171,8 @@ export const GameRecipesTab = (props, context) => {
     const isFermiChem = !!recipe.is_fermichem;
     const isRecipeFavorite = recipeFavorites.includes(name);
     const requiredTier = recipe.tier || 1;
-    const isUnlocked = manipulatorTier >= requiredTier;
+    const isEmagTier = requiredTier >= 6;
+    const isUnlocked = isEmagTier ? isEmagged : manipulatorTier >= requiredTier;
 
     // Check if has sub-recipes (base differs from required)
     const requiredKeys = Object.keys(recipe.required || {});
@@ -223,9 +224,11 @@ export const GameRecipesTab = (props, context) => {
               )}
               {isFermiChem && <FermiChemBadge />}
               {requiredTier > 1 && (
-                <Tooltip content={isUnlocked
-                  ? `Манипулятор T${requiredTier} (разблокировано)`
-                  : `Требуется манипулятор T${requiredTier}`}>
+                <Tooltip content={isEmagTier
+                  ? (isUnlocked ? 'EMAG (разблокировано)' : 'Требуется EMAG')
+                  : (isUnlocked
+                    ? `Манипулятор T${requiredTier} (разблокировано)`
+                    : `Требуется манипулятор T${requiredTier}`)}>
                   <Box
                     as="span"
                     ml={0.5}
@@ -233,7 +236,7 @@ export const GameRecipesTab = (props, context) => {
                     backgroundColor={isUnlocked ? 'teal' : 'bad'}
                     style={{ borderRadius: '3px', fontSize: '10px' }}>
                     {!isUnlocked && <Icon name="lock" mr={0.3} />}
-                    T{requiredTier}
+                    {isEmagTier ? 'EMAG' : `T${requiredTier}`}
                   </Box>
                 </Tooltip>
               )}
@@ -298,7 +301,7 @@ export const GameRecipesTab = (props, context) => {
                   color={!isUnlocked ? "bad" : (canMake ? (willOverflow ? "average" : "green") : "bad")}
                   disabled={!isBeakerLoaded || !canMake || !isUnlocked}
                   tooltip={!isUnlocked
-                    ? `Заблокировано! Требуется манипулятор T${requiredTier}+`
+                    ? (isEmagTier ? 'Заблокировано! Требуется EMAG' : `Заблокировано! Требуется манипулятор T${requiredTier}+`)
                     : !canMake
                       ? "Недостаточно ингредиентов (проверьте ёмкость)"
                       : willOverflow
@@ -390,7 +393,7 @@ export const GameRecipesTab = (props, context) => {
     <Section
       fill
       scrollable
-      title="Игровые рецепты"
+      title="Известные рецепты"
       buttons={
         <Stack align="center">
           <Stack.Item>

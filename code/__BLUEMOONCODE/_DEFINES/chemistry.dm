@@ -16,5 +16,7 @@
 #define CHEM_DISPENSER_GRIEF_PLAYTIME_THRESHOLD 480
 /// Cooldown between anti-grief admin alerts
 #define CHEM_DISPENSER_GRIEF_ALERT_COOLDOWN (15 MINUTES)
-/// Maximum recipe tier for auto-dispensing (matches max manipulator rating)
+/// Maximum recipe tier for auto-dispensing
 #define CHEM_RECIPE_MAX_TIER 6
+/// Tier value indicating recipe requires emag (not reachable via manipulator upgrades)
+#define CHEM_RECIPE_EMAG_TIER 6

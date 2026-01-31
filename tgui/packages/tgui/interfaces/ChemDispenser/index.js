@@ -5,8 +5,8 @@ import { useBackend, useLocalState } from '../../backend';
 import {
   Box,
   Button,
-  ColorBox,
   Collapsible,
+  ColorBox,
   Icon,
   Input,
   NoticeBox,
@@ -331,6 +331,7 @@ export const ChemDispenser = (props, context) => {
                     beakerCurrentVolume={data.beakerCurrentVolume}
                     beakerMaxVolume={data.beakerMaxVolume}
                     manipulatorTier={data.manipulatorTier || 1}
+                    isEmagged={!!data.isEmagged}
                   />
                 )}
 
