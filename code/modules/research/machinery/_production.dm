@@ -216,7 +216,9 @@
 	if(.)
 		return
 	var/mob/living/user = usr
-	if(!user?.can_use_production_topic(src, action))
+	if(!istype(user))
+		return
+	if(!user.can_use_production_topic(src, action))
 		if(COOLDOWN_FINISHED(src, cooldown_say))
 			say("В доступе отказано.")
 			playsound(loc, 'sound/machines/uplinkerror.ogg', 70, 0)
