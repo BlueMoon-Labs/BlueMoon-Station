@@ -1,13 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aq" = (
-/obj/structure/flora/rock,
-/obj/structure/flora/ausbushes/ywflowers,
-/obj/structure/flora/ausbushes/brflowers,
-/turf/open/floor/grass/grass0,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "bB" = (
 /obj/structure/chair/pew{
-	dir = 1
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
@@ -40,11 +43,18 @@
 /obj/structure/flora/ausbushes/ywflowers,
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
-"gZ" = (
-/obj/structure/chair/pew{
+"gJ" = (
+/obj/structure/chair/pew/right{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
 	dir = 8
 	},
 /turf/open/floor/wood/wood_tiled,
+/area/hilbertshotel)
+"gZ" = (
+/obj/effect/turf_decal/siding/wood/thin/end,
+/turf/open/floor/carpet/royalblue,
 /area/hilbertshotel)
 "hq" = (
 /obj/structure/flora/ausbushes/sparsegrass,
@@ -105,19 +115,34 @@
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "mr" = (
-/obj/structure/chair/pew{
+/obj/structure/flora/rock,
+/turf/open/floor/grass/grass3,
+/area/hilbertshotel)
+"mI" = (
+/obj/structure/chair/pew/left{
 	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "nw" = (
-/obj/structure/chair/pew/left,
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 1
+	},
 /turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "oc" = (
 /obj/structure/flora/ausbushes/sparsegrass,
 /obj/structure/flora/ausbushes/ywflowers,
 /turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"oB" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "pU" = (
 /obj/structure/flora/tree/spookylog,
@@ -138,9 +163,10 @@
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "rg" = (
-/obj/structure/flora/rock,
-/obj/structure/flora/ausbushes/brflowers,
-/turf/open/floor/grass/grass0,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "rh" = (
 /obj/structure/flora/ausbushes/ppflowers,
@@ -171,10 +197,8 @@
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "vo" = (
-/obj/effect/turf_decal/siding/dark/end{
-	dir = 8
-	},
-/turf/open/floor/carpet/royalblue,
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "vR" = (
 /obj/structure/flora/ausbushes/sparsegrass,
@@ -188,6 +212,15 @@
 /obj/structure/flora/ausbushes/brflowers,
 /obj/structure/flora/biolumi/lamp,
 /turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"ym" = (
+/obj/structure/chair/pew/left{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "yI" = (
 /obj/structure/flora/ausbushes/sparsegrass,
@@ -254,17 +287,34 @@
 /obj/structure/flora/ausbushes/brflowers,
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
+"CU" = (
+/obj/structure/chair/pew/left{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/wood/wood_tiled,
+/area/hilbertshotel)
+"Dj" = (
+/obj/structure/flora/ausbushes/sparsegrass,
+/obj/structure/flora/ausbushes/brflowers,
+/obj/structure/flora/rock,
+/turf/open/floor/grass/grass0,
+/area/hilbertshotel)
 "Ds" = (
-/obj/structure/chair/pew/right{
+/obj/structure/flora/ausbushes/brflowers,
+/obj/structure/flora/rock,
+/turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"Dw" = (
+/obj/structure/chair/pew/right,
+/obj/effect/turf_decal/siding/wood/thin{
 	dir = 1
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
-"Dw" = (
-/obj/structure/chair/pew/left{
-	dir = 1
-	},
-/turf/open/floor/wood/wood_tiled,
+"DL" = (
+/obj/structure/flora/ausbushes/brflowers,
+/turf/closed/indestructible/wood,
 /area/hilbertshotel)
 "DP" = (
 /obj/structure/flora/ausbushes/sparsegrass,
@@ -285,7 +335,17 @@
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "Ex" = (
+/obj/structure/chair/pew/right{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin,
 /turf/open/floor/wood/wood_tiled,
+/area/hilbertshotel)
+"Fm" = (
+/obj/structure/flora/ausbushes/ywflowers,
+/obj/structure/flora/ausbushes/brflowers,
+/obj/structure/flora/rock,
+/turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "FZ" = (
 /obj/structure/flora/ausbushes/sparsegrass,
@@ -294,11 +354,25 @@
 /obj/structure/flora/ausbushes/brflowers,
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
-"Ig" = (
-/obj/structure/flora/rock,
+"HM" = (
 /obj/machinery/light/floor,
 /obj/structure/flora/ausbushes/brflowers,
 /turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"Ib" = (
+/obj/structure/chair/pew/right{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/hilbertshotel)
+"Ig" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "Iw" = (
 /obj/structure/flora/ausbushes/ywflowers,
@@ -306,9 +380,10 @@
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "IS" = (
-/obj/structure/flora/rock,
-/obj/machinery/atmospherics/components/unary/vent_pump/on,
-/turf/open/floor/grass/grass3,
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "Ku" = (
 /obj/structure/flora/tree/spookylog,
@@ -318,29 +393,34 @@
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "KI" = (
-/obj/effect/turf_decal/siding/dark/end{
+/obj/structure/chair/pew{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/hilbertshotel)
+"KJ" = (
+/obj/effect/turf_decal/siding/wood/thin/end{
 	dir = 1
 	},
 /turf/open/floor/carpet/royalblue,
 /area/hilbertshotel)
-"KJ" = (
-/obj/structure/chair/pew/left{
+"Mn" = (
+/obj/effect/turf_decal/siding/wood/thin{
 	dir = 8
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
-"Mn" = (
-/obj/effect/turf_decal/siding/dark/end,
-/turf/open/floor/carpet/royalblue,
-/area/hilbertshotel)
 "MP" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
 /turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "Nm" = (
-/obj/structure/chair/pew/right{
-	dir = 8
-	},
+/obj/effect/turf_decal/siding/wood/thin/corner,
 /turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "NS" = (
@@ -351,8 +431,9 @@
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "Ov" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/item/candle/infinite,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
 /turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "OC" = (
@@ -374,14 +455,15 @@
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "QY" = (
-/obj/effect/turf_decal/siding/dark/end{
-	dir = 4
+/obj/structure/chair/pew{
+	dir = 1
 	},
-/turf/open/floor/carpet/royalblue,
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "RJ" = (
-/obj/structure/lattice,
-/turf/open/space/bluespace,
+/obj/structure/flora/ausbushes/ywflowers,
+/turf/closed/indestructible/wood,
 /area/hilbertshotel)
 "Sb" = (
 /obj/structure/spacevine,
@@ -390,10 +472,8 @@
 /turf/closed/indestructible/wood,
 /area/hilbertshotel)
 "Td" = (
-/obj/structure/chair/pew/right{
-	dir = 4
-	},
-/turf/open/floor/wood/wood_tiled,
+/obj/structure/flora/ausbushes/ppflowers,
+/turf/closed/indestructible/wood,
 /area/hilbertshotel)
 "Tf" = (
 /obj/structure/flora/tree/spookylog,
@@ -411,12 +491,18 @@
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "TG" = (
-/obj/structure/spacevine,
-/turf/closed/indestructible/wood,
+/turf/open/space/bluespace,
 /area/hilbertshotel)
 "TK" = (
 /obj/structure/flora/ausbushes/ywflowers,
 /turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"Uc" = (
+/obj/structure/chair/pew,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
 "UT" = (
 /obj/structure/flora/ausbushes/sparsegrass,
@@ -425,8 +511,10 @@
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "Vw" = (
-/obj/structure/chair/pew,
-/turf/open/floor/wood/wood_tiled,
+/obj/effect/turf_decal/siding/wood/thin/end{
+	dir = 8
+	},
+/turf/open/floor/carpet/royalblue,
 /area/hilbertshotel)
 "WU" = (
 /obj/structure/flora/ausbushes/ywflowers,
@@ -441,8 +529,10 @@
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
 "Yx" = (
-/obj/structure/chair/pew/right,
-/turf/open/floor/wood/wood_tiled,
+/obj/effect/turf_decal/siding/wood/thin/end{
+	dir = 4
+	},
+/turf/open/floor/carpet/royalblue,
 /area/hilbertshotel)
 "Yy" = (
 /obj/structure/flora/ausbushes/ppflowers,
@@ -450,9 +540,16 @@
 /obj/structure/flora/ausbushes/brflowers,
 /turf/open/floor/grass/grass0,
 /area/hilbertshotel)
+"YJ" = (
+/obj/structure/chair/pew/left,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/hilbertshotel)
 "YO" = (
-/obj/structure/chair/pew/left{
-	dir = 4
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/hilbertshotel)
@@ -489,26 +586,49 @@
 /area/hilbertshotel)
 
 (1,1,1) = {"
-RJ
-RJ
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+"}
+(2,1,1) = {"
+TG
+TG
+TG
 RJ
 ZP
 OS
 BR
+cV
+Sb
+cV
+jP
+Sb
+jP
+cV
+DL
 TG
-Sb
-cV
-jP
-Sb
-jP
-cV
-RJ
-RJ
-RJ
+TG
+TG
 "}
-(2,1,1) = {"
-RJ
-RJ
+(3,1,1) = {"
+TG
+TG
+Td
 Bb
 BZ
 qc
@@ -521,11 +641,13 @@ le
 mg
 UT
 jP
-RJ
-RJ
+Td
+TG
+TG
 "}
-(3,1,1) = {"
-RJ
+(4,1,1) = {"
+TG
+DL
 jP
 DP
 oc
@@ -541,194 +663,216 @@ eG
 BZ
 Sb
 RJ
+TG
 "}
-(4,1,1) = {"
+(5,1,1) = {"
+TG
 Sb
 Yy
-aq
+Fm
 oc
 Zj
-Ex
-Td
-mr
-mr
-YO
-Ex
+oB
+gJ
+KI
+KI
+mI
+Ov
 vR
 oc
 sq
 hO
 jP
+TG
 "}
-(5,1,1) = {"
+(6,1,1) = {"
+TG
 jP
 bS
 fP
 yI
-Ex
-Ex
+oB
+nw
 st
-KI
-Mn
+KJ
+gZ
 st
-Ex
-Ex
+MP
+Ov
 yI
 oc
 BZ
 jP
+TG
 "}
-(6,1,1) = {"
+(7,1,1) = {"
+TG
 ZP
 iz
 OV
-Ex
-Ex
-Ex
-Ex
-Ex
-Ex
-Ex
-Ex
-Ex
-Ex
-rh
-BZ
-OS
-"}
-(7,1,1) = {"
-Bb
-xr
-so
+oB
 nw
-st
-Ex
-Bw
-lW
-Bw
+Nm
+rg
+rg
+rg
+rg
 IS
 MP
 Ov
-Dw
+rh
+BZ
+OS
+TG
+"}
+(8,1,1) = {"
+TG
+Bb
+xr
+so
+YJ
+st
+vo
+Bw
+lW
+Bw
+mr
+YO
+st
+CU
 Zi
 iz
 jw
+TG
 "}
-(8,1,1) = {"
+(9,1,1) = {"
+TG
 jP
 fD
 NS
+Uc
 Vw
 vo
-Ex
 Bw
 Bw
 CK
 Bw
-Ex
-vo
-bB
+YO
+Vw
+QY
 fP
 BZ
 Sb
+TG
 "}
-(9,1,1) = {"
+(10,1,1) = {"
+TG
 jw
 ZK
 BZ
-Vw
-QY
-Ex
+Uc
+Yx
+vo
 Bw
 Bw
 Bw
 lW
-Ex
+YO
+Yx
 QY
-bB
 ZK
 ZZ
 cV
+TG
 "}
-(10,1,1) = {"
+(11,1,1) = {"
+TG
 jP
 Ku
 XC
-Yx
+Dw
 st
-Ex
+vo
 lW
 Bw
 OC
 Bw
-Ex
+YO
 st
-Ds
+Ex
 ZK
 UT
 ZP
+TG
 "}
-(11,1,1) = {"
+(12,1,1) = {"
+TG
 jP
 us
 BZ
-Ex
-Ex
-Ex
-Ex
-Ex
-Ex
-Ex
-Ex
-Ex
-Ex
+aq
+IS
+MP
+Mn
+Mn
+Mn
+Mn
+nw
+Nm
+Ig
 ZK
 TK
 jw
+TG
 "}
-(12,1,1) = {"
+(13,1,1) = {"
+TG
 OS
 iz
 Ev
 Zj
-Ex
-Ex
+aq
+IS
 st
-KI
-Mn
+KJ
+gZ
 st
-Ex
-Ex
+Nm
+Ig
 vR
 CP
 BZ
 ZP
+TG
 "}
-(13,1,1) = {"
+(14,1,1) = {"
+TG
 Sb
 BZ
 WU
 An
+HM
+aq
+ym
+bB
+bB
+Ib
 Ig
-Ex
-KJ
-gZ
-gZ
-Nm
-Ex
 FZ
 CP
-rg
+Ds
 DP
 jP
+TG
 "}
-(14,1,1) = {"
+(15,1,1) = {"
+TG
 RJ
 ZP
 bS
 BZ
 qt
-qt
+Dj
 yM
 oc
 hq
@@ -738,11 +882,13 @@ iz
 us
 qt
 ZP
-RJ
+Td
+TG
 "}
-(15,1,1) = {"
-RJ
-RJ
+(16,1,1) = {"
+TG
+TG
+Td
 jP
 UT
 eG
@@ -757,11 +903,13 @@ qt
 ZP
 RJ
 zn
+TG
 "}
-(16,1,1) = {"
-RJ
-RJ
-RJ
+(17,1,1) = {"
+TG
+TG
+TG
+DL
 ZP
 Bb
 Sb
@@ -772,7 +920,28 @@ OS
 jP
 Sb
 OS
-RJ
-RJ
-RJ
+Td
+TG
+TG
+TG
+"}
+(18,1,1) = {"
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
+TG
 "}

@@ -426,6 +426,17 @@
 /////////////////////////////////////////
 //////////Cybernetic Implants////////////
 /////////////////////////////////////////
+/datum/design/cyberimp_claws
+	name = "Имплант когтей"
+	desc = "Набор из двух пар острых когтей, созданных из лёгких сплавов. Когда хочешь стать тем самым героем из старых фильмов."
+	id = "ci_claws"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 6000, /datum/material/titanium = 4000, /datum/material/glass = 1000)
+	build_path = /obj/item/organ/cyberimp/arm/razor_claws
+	category = list("Misc", "Medical Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
 
 /datum/design/cyberimp_welding
 	name = "Welding Shield Eyes"

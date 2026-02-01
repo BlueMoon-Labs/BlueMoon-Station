@@ -9,8 +9,8 @@
 /obj/item/tattoo_gun
 	name = "tattoo gun"
 	desc = "Профессиональная тату-машинка для нанесения перманентных татуировок. Татуировки можно удалить только хирургическим путём."
-	icon = 'icons/obj/bureaucracy.dmi'
-	icon_state = "pen"
+	icon = 'icons/obj/tools.dmi'
+	icon_state = "tattoo_gun"
 	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL

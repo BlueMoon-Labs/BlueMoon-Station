@@ -93,14 +93,44 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	hitsound = 'modular_bluemoon/fluffs/sound/weapon/Abomination.ogg'
 
-// /obj/item/modkit/esword_kit
-// 	name = "Energy sword Kit"
-// 	desc = "A modkit for making a plasma sword into an energy sword."
-// 	product = /obj/item/melee/transforming/energy/sword/saber
-// 	fromitem = list(/obj/item/melee/transforming/plasmasword)
+/obj/item/modkit/dark_sabre_kit
+	name = "Dark Omen Sword Kit"
+	desc = "A modkit for making a energy/plasma sword into an Dark Omen Sword."
+	product = /obj/item/melee/transforming/energy/sword/saber/dark_sabre
+	fromitem = list(/obj/item/melee/transforming/plasmasword, /obj/item/melee/transforming/energy/sword/saber, /obj/item/melee/transforming/energy/sword/saber/red)
 
-// /obj/item/modkit/desword_kit
-// 	name = "Double-bladed energy sword Kit"
-// 	desc = "A modkit for making a plasma scythe into an double-bladed energy sword."
-// 	product = /obj/item/dualsaber
-// 	fromitem = list(/obj/item/plasmascythe)
+/obj/item/melee/transforming/energy/sword/saber/dark_sabre
+	name = "Dark Omen Sword"
+	desc = "Необычная рукоять из тяжёлого неизвестного материала. На ней выгравирована мелким шрифтом странная фраза: \n<span class='danger'>«ТАМ, ГДЕ БЫЛ СТРАХ, ОСТАНУСЬ ТОЛЬКО Я»</span>\nПри включении, появляется леденящий душу чёрный клинок. От него исходит низкий, резонирующий гул. Последнее, что слышали многие жертвы этого орудия."
+	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
+	icon_state = "dark_sabre0"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/48x32_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/48x32_right.dmi'
+	inhand_x_dimension = 48
+	transform_on_sound = 'modular_bluemoon/fluffs/sound/weapon/dark_sabre_on.ogg'
+	transform_off_sound = 'modular_bluemoon/fluffs/sound/weapon/dark_sabre_off.ogg'
+	hitsound_on = 'modular_bluemoon/fluffs/sound/weapon/dark_sabre_hit.ogg'
+	light_color = "#3333AA"
+	possible_colors = null
+	unique_reskin = null
+	var/image/transform_overlay
+
+/obj/item/melee/transforming/energy/sword/saber/dark_sabre/transform_weapon(mob/living/user, supress_message_text)
+	. = ..()
+	flick("dark_sabre[active ? "1" : "0"]_anim", src)
+	icon_state = "blank"
+	var/mob/living/carbon/human/H = loc
+	if(!istype(H))
+		icon_state = "dark_sabre[active ? "1" : "0"]"
+		return
+	transform_overlay = image(H.held_index_to_dir(H.active_hand_index) == "r" ? righthand_file : lefthand_file, H, "dark_sabre[active ? "1" : "0"]_anim")
+	transform_overlay = center_image(transform_overlay, inhand_x_dimension, inhand_y_dimension)
+	flick_overlay(transform_overlay, GLOB.clients, 5)
+	addtimer(CALLBACK(src, PROC_REF(change_state)), 5)
+
+/obj/item/melee/transforming/energy/sword/saber/dark_sabre/proc/change_state()
+	icon_state = "dark_sabre[active ? "1" : "0"]"
+	var/mob/living/carbon/human/H = loc
+	if(istype(H))
+		H.update_inv_hands()
+	qdel(transform_overlay)

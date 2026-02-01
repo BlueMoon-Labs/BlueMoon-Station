@@ -2035,3 +2035,9 @@
 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
 	loadout_initial_colors = list("#202020", "#C5302D")
 	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/dark_sabre_kit
+	name = "Dark Omen Sword Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/dark_sabre_kit
+	ckeywhitelist = list("hellsinggc")

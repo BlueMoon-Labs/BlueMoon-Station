@@ -170,22 +170,10 @@
 /turf/open/floor/carpet/red,
 /area/hilbertshotel)
 "my" = (
-/obj/effect/turf_decal/siding/wood{
+/obj/effect/turf_decal/siding/wood/thin{
 	dir = 8
 	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/wood/wood_parquet,
-/area/hilbertshotel)
-"mN" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/wood{
+/obj/effect/turf_decal/siding/wood/thin{
 	dir = 4
 	},
 /turf/open/floor/wood/wood_parquet,
@@ -310,12 +298,6 @@
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
-	dir = 4;
-	piping_layer = 3;
-	pixel_x = 5;
-	pixel_y = 5
-	},
 /obj/machinery/light{
 	dir = 4
 	},
@@ -380,13 +362,13 @@
 /turf/open/floor/light/red,
 /area/hilbertshotel)
 "AT" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/wood/corner{
+/obj/machinery/light_switch/directional/south,
+/obj/effect/turf_decal/siding/wood/thin/corner{
 	dir = 4
 	},
-/obj/machinery/light_switch/directional/south,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/hilbertshotel)
 "Bj" = (
@@ -595,11 +577,11 @@
 /turf/open/floor/carpet/red,
 /area/hilbertshotel)
 "YS" = (
-/obj/effect/turf_decal/siding/wood{
+/obj/effect/turf_decal/siding/wood/thin{
 	dir = 8
 	},
-/obj/effect/turf_decal/siding/wood/corner,
-/obj/effect/turf_decal/siding/wood/corner{
+/obj/effect/turf_decal/siding/wood/thin/corner,
+/obj/effect/turf_decal/siding/wood/thin/corner{
 	dir = 4
 	},
 /turf/open/floor/wood/wood_parquet,
@@ -719,7 +701,7 @@ Op
 ah
 ah
 Op
-mN
+my
 my
 YS
 my

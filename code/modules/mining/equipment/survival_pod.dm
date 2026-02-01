@@ -299,7 +299,7 @@
 	layer = ABOVE_NORMAL_TURF_LAYER
 	density = FALSE
 	icon_state = "fan_tiny"
-	buildstackamount = 2
+	buildstackamount = 10
 
 /obj/structure/fans/Initialize(mapload)
 	. = ..()

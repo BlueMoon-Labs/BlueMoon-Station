@@ -5,7 +5,7 @@
 	icon = 'icons/turf/decals.dmi'
 	icon_state = "arrows_red"
 	invisibility = 100					// показывваем только избранным
-	flags_1 = NO_SCREENTIPS_1
+	flags_1 = NO_SCREENTIPS_1|BLOCK_FACE_ATOM_1
 	var/image/projection
 	var/projection_state = "stand"		// если null (ну или FALSE), то принимается название для спрайта без приписки и лишних _
 	var/list/viewers = list()			// зрители проекции
@@ -38,13 +38,22 @@
 	switch(dir)
 		if(NORTH)
 			projection.pixel_y = 64
-			projection.pixel_x = -353
+			projection.pixel_x = -352
 		if(SOUTH)
 			projection.pixel_y = -224
-			projection.pixel_x = -353
+			projection.pixel_x = -352
 	projection.pixel_y += projection_pixel_y_offset
 	projection.pixel_x += projection_pixel_x_offset
 	. += projection
+
+/obj/effect/projector/skyscraper
+	color = null
+	projection_icon = 'modular_bluemoon/icons/projection/skyscraper_width.dmi'
+	projection_icon_state = "window"
+	projection_state = null
+
+/obj/effect/projector/skyscraper/height
+	projection_icon = 'modular_bluemoon/icons/projection/skyscraper_height.dmi'
 
 /area/hilbertshotel
 	var/list/projectors = list()

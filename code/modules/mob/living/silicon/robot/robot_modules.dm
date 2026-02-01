@@ -1969,7 +1969,7 @@
 		/obj/item/weldingtool/mini/cyborg,
 		/obj/item/crowbar/cyborg,
 		/obj/item/gps/cyborg)
-	emag_modules = list(/obj/item/borg/stun)
+	emag_modules = list(/obj/item/gun/energy/plasmacutter/cyborg/emagged)
 	ratvar_modules = list(
 		/obj/item/clockwork/slab/cyborg/miner,
 		/obj/item/clockwork/weapon/ratvarian_spear,

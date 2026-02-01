@@ -166,7 +166,6 @@
 		// BLUEMOON EDIT END
 		if(assignedrole)
 			M.mind.assigned_role = assignedrole
-		special(M, name)
 		if(ishuman(M) && load_character)
 			var/mob/living/carbon/human/H = M
 			if (H.client)
@@ -180,6 +179,7 @@
 		special_post_appearance(M, name) // BLUEMOON ADD
 		if(M.client && ishuman(M) && load_character)
 			SSlanguage.AssignLanguage(M, M.client)
+		special(M, name)
 	if(uses > 0)
 		uses--
 	if(!permanent && !uses)
