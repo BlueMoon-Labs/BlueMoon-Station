@@ -254,7 +254,7 @@
 	name = "Anti-Glow"
 	desc = "Your skin seems to attract and absorb nearby light creating 'darkness' around you."
 	text_gain_indication = "<span class='notice'>Your light around you seems to disappear.</span>"
-	glow_range = 1.5
+	glow_range = 1
 	glow_power = -2 //Slightly stronger, since negating light tends to be harder than making it.
 	locked = TRUE
 
