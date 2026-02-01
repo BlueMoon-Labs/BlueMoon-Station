@@ -157,9 +157,15 @@
 
 //Called on buckle_mob()
 /atom/movable/proc/post_buckle_mob(mob/living/M)
+	if(!HAS_TRAIT(M, IGNORE_FAKE_Z_AXIS))
+		M.pseudo_z_axis = get_fake_z()
+		M.pixel_z = M.pseudo_z_axis
 
 //same but for unbuckle
 /atom/movable/proc/post_unbuckle_mob(mob/living/M)
+	if(!HAS_TRAIT(M, IGNORE_FAKE_Z_AXIS))
+		M.pseudo_z_axis = get_fake_z()
+		M.pixel_z = M.pseudo_z_axis
 
 //Wrapper procs that handle sanity and user feedback
 /atom/movable/proc/user_buckle_mob(mob/living/M, mob/user, check_loc = TRUE)

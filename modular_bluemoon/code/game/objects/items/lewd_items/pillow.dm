@@ -1,94 +1,185 @@
-//WARNING - Lot's of shitcode here. I'm not the best coder but this stuff works and I'm happy. Improve it if you want, but don't break anything.
-
 /*
-*	CODE FOR PILLOW ITEM
+*	ГЛОБАЛЬНЫЙ ХЕЛПЕР
 */
 
-/obj/item/fancy_pillow
-	name = "pillow"
-	desc = "A big, soft pillow."
-	icon = 'modular_splurt/icons/obj/lewd_items/lewd_items.dmi'
-	lefthand_file = 'modular_splurt/icons/mob/inhands/lewd_items/lewd_inhand_left.dmi'
-	righthand_file = 'modular_splurt/icons/mob/inhands/lewd_items/lewd_inhand_right.dmi'
-	icon_state = "pillow_pink_round"
-	base_icon_state = "pillow"
-	var/datum/effect_system/feathers/pillow_feathers
-	var/current_color = "pink"
-	var/current_form = "round"
-	var/color_changed = FALSE
-	var/form_changed = FALSE
-	var/static/list/pillow_colors
-	var/static/list/pillow_forms
-	w_class = WEIGHT_CLASS_SMALL
+GLOBAL_DATUM_INIT(pillow_piles, /datum/pillow_pile_helper, new)
 
-// Create radial menu
-/obj/item/fancy_pillow/proc/populate_pillow_colors()
-	pillow_colors = list(
-		"pink" = image (icon = src.icon, icon_state = "pillow_pink_round"),
-		"teal" = image(icon = src.icon, icon_state = "pillow_teal_round"))
+/datum/pillow_pile_helper
 
-// Create radial menu, BUT for forms. I'm smort
-/obj/item/fancy_pillow/proc/populate_pillow_forms()
-	pillow_forms = list(
-		"square" = image (icon = src.icon, icon_state = "pillow_pink_square"),
-		"round" = image(icon = src.icon, icon_state = "pillow_pink_round"))
+/// Гарантирует: pillows содержит expected подушек.
+/datum/pillow_pile_helper/proc/ensure(obj/structure/pile, list/pillows, expected)
+	if(!pillows)
+		return
 
-/obj/item/fancy_pillow/AltClick(mob/user)
-	if(!color_changed)
-		var/choice = show_radial_menu(user, src, pillow_colors, custom_check = CALLBACK(src, PROC_REF(check_menu), user), radius = 36, require_near = TRUE)
-		if(!choice)
-			return FALSE
-		current_color = choice
-		update_icon()
-		color_changed = TRUE
-		update_icon_state()
+	while(pillows.len < expected)
+		pillows += new /obj/item/fancy_pillow(pile)
+
+/// Цвет кучи = цвет первой подушки, иначе default_color, иначе дефолт из /obj/item/fancy_pillow::current_color
+/datum/pillow_pile_helper/proc/pile_color(list/pillows, default_color)
+	var/obj/item/fancy_pillow/pillow = pillows?.len && pillows[1]
+	if(istype(pillow))
+		return pillow.current_color
+	return default_color || /obj/item/fancy_pillow::current_color
+
+/// Синхронизация иконки для tiny: требуется цвет+форма.
+/// default_color/default_form: если NULL -> берём из /obj/item/fancy_pillow::current_color/form
+/datum/pillow_pile_helper/proc/sync_tiny(obj/structure/bed/pillow_tiny/pile, default_color, default_form)
+	if(!pile.pillows || !pile.pillows.len)
+		var/color = default_color || /obj/item/fancy_pillow::current_color
+		var/form = default_form || /obj/item/fancy_pillow::current_form
+		pile.icon_state = "[pile.base_icon_state]_[color]_[form]"
+		pile.update_icon()
+		return
+
+	var/obj/item/fancy_pillow/P = pile.pillows[1]
+	pile.icon_state = "[pile.base_icon_state]_[P.current_color]_[P.current_form]"
+	pile.update_icon()
+
+/// Синхронизация иконки для small/large: нужен только цвет.
+/datum/pillow_pile_helper/proc/sync_pile(obj/structure/pile, list/pillows, default_color)
+	var/c = pile_color(pillows, default_color)
+	pile.icon_state = "[pile.base_icon_state]_[c]"
+	pile.update_icon()
+
+/*
+*	ОБЩИЕ ДЕЙСТВИЯ КУЧ
+*/
+
+/// "Снять подушку/разобрать кучу" (AltClick).
+/// Возвращает TRUE если обработано.
+/datum/pillow_pile_helper/proc/detach(obj/structure/pile, mob/user)
+	// tiny -> item
+	if(istype(pile, /obj/structure/bed/pillow_tiny))
+		var/obj/structure/bed/pillow_tiny/tiny = pile
+		to_chat(user, span_notice("You pick up [tiny]."))
+
+		ensure(tiny, tiny.pillows, 1)
+
+		var/obj/item/fancy_pillow/taken = tiny.pillows[1]
+		tiny.pillows.Cut()
+
+		taken.forceMove(user)
+		user.put_in_hands(taken)
+
+		qdel(tiny)
 		return TRUE
-	else
-		if(form_changed)
-			return FALSE
-		var/choice = show_radial_menu(user, src, pillow_forms, custom_check = CALLBACK(src, PROC_REF(check_menu), user), radius = 36, require_near = TRUE)
-		if(!choice)
-			return FALSE
-		current_form = choice
-		update_icon()
-		form_changed = TRUE
-		update_icon_state()
+
+	// small -> tiny + item
+	if(istype(pile, /obj/structure/chair/pillow_small))
+		var/obj/structure/chair/pillow_small/small = pile
+		to_chat(user, span_notice("You take [small] from the pile."))
+
+		ensure(small, small.pillows, 2)
+
+		var/obj/item/fancy_pillow/taken = small.pillows[2]
+		small.pillows.Cut(2, 3)
+
+		taken.forceMove(user)
+		user.put_in_hands(taken)
+
+		var/obj/structure/bed/pillow_tiny/new_tiny = new(get_turf(small))
+		var/obj/item/fancy_pillow/pillow = small.pillows[1]
+
+		new_tiny.pillows = list(pillow)
+		new_tiny.setDir(user.dir)
+		pillow.forceMove(new_tiny)
+
+		sync_tiny(new_tiny)
+
+		qdel(small)
 		return TRUE
 
+	// large -> small + item
+	if(istype(pile, /obj/structure/bed/pillow_large))
+		var/obj/structure/bed/pillow_large/large = pile
+		to_chat(user, span_notice("You take [large] from the pile."))
 
-//to check if we can change pillow's model
-/obj/item/fancy_pillow/proc/check_menu(mob/living/user)
-	if(!istype(user))
+		ensure(large, large.pillows, 3)
+
+		var/obj/item/fancy_pillow/taken = large.pillows[3]
+		large.pillows.Cut(3, 4)
+
+		taken.forceMove(user)
+		user.put_in_hands(taken)
+
+		var/obj/structure/chair/pillow_small/new_small = new(get_turf(large))
+		new_small.pillows = large.pillows.Copy()
+
+		for(var/obj/item/fancy_pillow/P in new_small.pillows)
+			P.forceMove(new_small)
+
+		sync_pile(new_small, new_small.pillows)
+
+		qdel(large)
+		return TRUE
+
+	return FALSE
+
+/// "Прицепить подушку к куче" (attackby).
+/// Возвращает TRUE если обработано (даже если отказали по цвету).
+/datum/pillow_pile_helper/proc/attach(obj/structure/pile, obj/item/fancy_pillow/used_item, mob/living/user)
+	if(!istype(used_item, /obj/item/fancy_pillow))
 		return FALSE
-	if(user.incapacitated())
-		return FALSE
-	return TRUE
 
-/obj/item/fancy_pillow/Initialize(mapload)
-	. = ..()
-	AddElement(/datum/element/update_icon_updates_onmob)
-	update_icon_state()
-	update_icon()
-	if(!length(pillow_colors))
-		populate_pillow_colors()
-	if(!length(pillow_forms))
-		populate_pillow_forms()
-	//part of code for feathers spawn on hit
-	pillow_feathers = new
-	pillow_feathers.set_up(2, 0, src)
-	pillow_feathers.attach(src)
+	// tiny + pillow -> small
+	if(istype(pile, /obj/structure/bed/pillow_tiny))
+		var/obj/structure/bed/pillow_tiny/tiny = pile
+		ensure(tiny, tiny.pillows, 1)
 
-/obj/item/fancy_pillow/update_icon_state()
-	. = ..()
-	icon_state = "[base_icon_state]_[current_color]_[current_form]"
+		var/obj/item/fancy_pillow/used_pillow = used_item
+		var/obj/item/fancy_pillow/own_pillow  = tiny.pillows[1]
 
-/obj/item/fancy_pillow/Destroy()
-	if(pillow_feathers)
-		qdel(pillow_feathers)
-		pillow_feathers = null
-	return ..()
+		if(used_pillow.current_color != own_pillow.current_color)
+			to_chat(user, span_notice("You feel that those colours would clash..."))
+			return TRUE
 
-//feathers effect on hit
+		to_chat(user, span_notice("You add [tiny] to a pile."))
+
+		var/obj/structure/chair/pillow_small/new_small = new(get_turf(tiny))
+		new_small.pillows = list(own_pillow, used_pillow)
+
+		own_pillow.forceMove(new_small)
+		used_pillow.forceMove(new_small)
+
+		sync_pile(new_small, new_small.pillows)
+
+		qdel(tiny)
+		return TRUE
+
+	// small + pillow -> large
+	if(istype(pile, /obj/structure/chair/pillow_small))
+		var/obj/structure/chair/pillow_small/small = pile
+		ensure(small, small.pillows, 2)
+
+		var/obj/item/fancy_pillow/used_pillow = used_item
+		var/obj/item/fancy_pillow/pillow = small.pillows[1]
+
+		if(used_pillow.current_color != pillow.current_color)
+			to_chat(user, span_notice("You feel that those colours would clash..."))
+			return TRUE
+
+		to_chat(user, span_notice("You add [small] to the pile."))
+
+		var/obj/structure/bed/pillow_large/new_large = new(get_turf(small))
+		new_large.pillows = small.pillows.Copy()
+
+		for(var/obj/item/fancy_pillow/P in new_large.pillows)
+			P.forceMove(new_large)
+
+		used_pillow.forceMove(new_large)
+		new_large.pillows += used_pillow
+
+		sync_pile(new_large, new_large.pillows)
+
+		qdel(small)
+		return TRUE
+
+	// large не апгрейдится
+	return FALSE
+
+/// ---------------------------------------------------------------------------
+///  Визуальный эффект перьев
+/// ---------------------------------------------------------------------------
 
 /obj/effect/temp_visual/feathers
 	name = "feathers"
@@ -99,61 +190,195 @@
 /datum/effect_system/feathers
 	effect_type = /obj/effect/temp_visual/feathers
 
-/obj/item/fancy_pillow/attack(mob/living/carbon/human/affected_mob, mob/living/carbon/human/user)
+/*
+*	ITEM
+*/
+
+/// ---------------------------------------------------------------------------
+///  Fancy pillow item
+/// ---------------------------------------------------------------------------
+
+/obj/item/fancy_pillow
+	name = "pillow"
+	desc = "A big, soft pillow."
+	icon = 'modular_splurt/icons/obj/lewd_items/lewd_items.dmi'
+	lefthand_file = 'modular_splurt/icons/mob/inhands/lewd_items/lewd_inhand_left.dmi'
+	righthand_file = 'modular_splurt/icons/mob/inhands/lewd_items/lewd_inhand_right.dmi'
+	icon_state = "pillow_pink_round"
+	base_icon_state = "pillow"
+
+	w_class = WEIGHT_CLASS_SMALL
+	resistance_flags = FLAMMABLE
+
+	custom_materials = list(/datum/material/cloth = MINERAL_MATERIAL_AMOUNT*3)
+
+	var/datum/effect_system/feathers/pillow_feathers
+
+	var/current_color = "pink"
+	var/current_form = "round"
+
+	/// Общие радиалки (создаются один раз)
+	var/static/list/pillow_colors
+	var/static/list/pillow_forms
+
+/obj/item/fancy_pillow/Initialize(mapload)
 	. = ..()
-	if(!istype(affected_mob, /mob/living/carbon/human))
+	AddElement(/datum/element/update_icon_updates_onmob)
+
+	if(!length(pillow_colors))
+		_init_radial_colors()
+	if(!length(pillow_forms))
+		_init_radial_forms()
+
+	update_icon()
+
+	pillow_feathers = new
+	pillow_feathers.set_up(2, 0, src)
+	pillow_feathers.attach(src)
+
+/obj/item/fancy_pillow/Destroy()
+	QDEL_NULL(pillow_feathers)
+	return ..()
+
+/obj/item/fancy_pillow/examine(mob/user)
+	. = ..()
+	. += span_notice("<b>Alt-click</b>, чтобы изменить цвет и форму.")
+
+/obj/item/fancy_pillow/update_icon_state()
+	. = ..()
+	icon_state = "[base_icon_state]_[current_color]_[current_form]"
+
+/obj/item/fancy_pillow/proc/_can_open_menu(mob/living/user)
+	return istype(user) && !user.incapacitated()
+
+/obj/item/fancy_pillow/proc/_init_radial_colors()
+	var/icon_file = initial(icon)
+	pillow_colors = list(
+		"pink" = image(icon = icon_file, icon_state = "pillow_pink_round"),
+		"teal" = image(icon = icon_file, icon_state = "pillow_teal_round"),
+	)
+
+/obj/item/fancy_pillow/proc/_init_radial_forms()
+	var/icon_file = initial(icon)
+	pillow_forms = list(
+		"square" = image(icon = icon_file, icon_state = "pillow_pink_square"),
+		"round"  = image(icon = icon_file, icon_state = "pillow_pink_round"),
+	)
+
+/obj/item/fancy_pillow/AltClick(mob/user)
+	. = ..()
+	var/list/choice_lists = list("colors" = pillow_colors, "forms" = pillow_forms)
+	for(var/key in choice_lists)
+		var/list/menu = choice_lists[key]
+		var/choice = show_radial_menu(
+			user,
+			src,
+			menu,
+			custom_check = CALLBACK(src, PROC_REF(_can_open_menu), user),
+			radius = 36,
+			require_near = TRUE
+		)
+		if(!choice)
+			break
+
+		switch(key)
+			if("colors")
+				current_color = choice
+			if("forms")
+				current_form = choice
+
+		update_icon()
+
+/// ---------------------------------------------------------------------------
+///  Удар подушкой
+/// ---------------------------------------------------------------------------
+
+/obj/item/fancy_pillow/attack(mob/living/carbon/human/H, mob/living/carbon/human/user)
+	. = ..()
+	if(!istype(H))
 		return
 
-/*
-	if(prob(1.5)) // 1.5% chance of special tickling feather spawning. No idea why, i was thinking that this is funny idea. Do not erase it plz
-		new /obj/item/tickle_feather(loc)
-*/
-//and there is code for successful check, so we are hitting someone with a pillow
-	pillow_feathers.start()
-	switch(user.zone_selected) //to let code know what part of body we gonna hit
+	pillow_feathers?.start()
 
+	var/msg = _build_pillow_hit_message(user, H)
+
+	if(prob(10))
+		H.emote(pick("laugh_soft", "giggle"))
+
+	user.visible_message(span_notice("[user] [msg]!"))
+	playsound(loc, 'modular_sand/sound/interactions/hug.ogg', 50, 1, -1)
+
+
+/obj/item/fancy_pillow/proc/_build_pillow_hit_message(mob/living/carbon/human/user, mob/living/carbon/human/target)
+	var/is_self = (user == target)
+
+	switch(user.zone_selected)
 		if(BODY_ZONE_HEAD)
-			var/message = ""
-			message = (user == affected_mob) ? pick("hits [affected_mob.p_them()]self with [src]", "hits [affected_mob.p_their()] head with [src]") : pick("hits [affected_mob] with [src]", "hits [affected_mob] over the head with [src]! Luckily, [src] is soft.")
-			if(prob(30))
-				affected_mob.emote(pick("laugh", "giggle"))
-			user.visible_message(span_notice("[user] [message]!"))
-			playsound(loc, 'modular_sand/sound/interactions/hug.ogg', 50, 1, -1)
+			return is_self \
+				? pick(
+					"hits [target.p_them()]self with [src]",
+					"hits [target.p_their()] head with [src]") \
+				: pick(
+					"hits [target] with [src]",
+					"hits [target] over the head with [src]! Luckily, [src] is soft.")
 
 		if(BODY_ZONE_CHEST)
-			var/message = ""
-			message = (user == affected_mob) ? pick("has a solo pillow fight, hitting [affected_mob.p_them()]self with [src]", "hits [affected_mob.p_them()]self with [src]") : pick("hits [affected_mob] in the chest with [src]", "playfully hits [affected_mob]'s chest with [src]")
-			if(prob(30))
-				affected_mob.emote(pick("laugh", "giggle"))
-			user.visible_message(span_notice("[user] [message]!"))
-			playsound(loc, 'modular_sand/sound/interactions/hug.ogg', 50, 1, -1)
+			return is_self \
+				? pick(
+					"has a solo pillow fight, hitting [target.p_them()]self with [src]",
+					"hits [target.p_them()]self with [src]") \
+				: pick(
+					"hits [target] in the chest with [src]",
+					"playfully hits [target]'s chest with [src]")
 
 		else
-			var/message = ""
-			message = (user == affected_mob) ? pick("hits [affected_mob.p_them()]self with [src]", "playfully hits [affected_mob.p_them()]self with a [src]", "grabs [src], hitting [affected_mob.p_them()]self with it") : pick("hits [affected_mob] with [src]", "playfully hits [affected_mob] with [src].", "hits [affected_mob] with [src]. Looks like fun")
-			if(prob(30))
-				affected_mob.emote(pick("laugh", "giggle"))
-			user.visible_message(span_notice("[user] [message]!"))
-			playsound(loc, 'modular_sand/sound/interactions/hug.ogg', 50, 1, -1)
+			return is_self \
+				? pick(
+					"hits [target.p_them()]self with [src]",
+					"playfully hits [target.p_them()]self with a [src]",
+					"grabs [src], hitting [target.p_them()]self with it") \
+				: pick(
+					"hits [target] with [src]",
+					"playfully hits [target] with [src].",
+					"hits [target] with [src]. Looks like fun")
 
-//spawning pillow on the ground when clicking on pillow	by LBM
+
+/// ---------------------------------------------------------------------------
+///  Положить подушку на пол => tiny-куча, внутрь переносится тот же предмет
+/// ---------------------------------------------------------------------------
 
 /obj/item/fancy_pillow/attack_self(mob/user)
-	if(IN_INVENTORY)
-		to_chat(user, span_notice("You set [src] down on the floor."))
-		var/obj/structure/bed/pillow_tiny/pillow_pile = new(get_turf(src))
-		pillow_pile.current_color = current_color
-		pillow_pile.current_form = current_form
-		pillow_pile.color_changed = color_changed
-		pillow_pile.form_changed = form_changed
-		pillow_pile.update_icon_state()
-		pillow_pile.update_icon()
-		qdel(src)
-	return
+	. = ..()
+	var/turf/T = get_turf(src)
+	// Если на тайле уже есть куча подушек, просто улучшаем ее
+	var/static/list/pile_types = list(
+									/obj/structure/bed/pillow_tiny,
+									/obj/structure/chair/pillow_small,
+									/obj/structure/bed/pillow_large,
+								)
+	var/some_pile
+	for(var/pile_type in pile_types)
+		some_pile = locate(pile_type) in T
+		if(some_pile)
+			GLOB.pillow_piles.attach(some_pile, src, user)
+			return
+
+	// Если подушек нет, создаем новую
+	var/obj/structure/bed/pillow_tiny/pile = new(T)
+	pile.pillows = list(src)
+	pile.setDir(user.dir)
+	forceMove(pile)
+
+	GLOB.pillow_piles.sync_tiny(pile)
+	to_chat(user, span_notice("You set [src] down on the floor."))
 
 /*
 *	TINY
 */
+
+/// ---------------------------------------------------------------------------
+///  Tiny-куча (bed): хранит 1 подушку (лениво)
+/// ---------------------------------------------------------------------------
 
 /obj/structure/bed/pillow_tiny
 	name = "pillow"
@@ -161,86 +386,48 @@
 	icon = 'modular_bluemoon/icons/obj/pillows.dmi'
 	icon_state = "pillow_pink_round"
 	base_icon_state = "pillow"
-	var/current_color = "pink"
-	var/current_form = "round"
+	bolts = FALSE
 
-	var/color_changed = FALSE
-	var/form_changed = FALSE
+	max_integrity = 40
+	resistance_flags = FLAMMABLE
+
+	var/list/pillows = list()
 
 	buildstacktype = /obj/item/stack/sheet/cloth
+	custom_materials = list(/datum/material/cloth = MINERAL_MATERIAL_AMOUNT*3)
+	buildstackamount = 3
 
 /obj/structure/bed/pillow_tiny/Initialize(mapload)
-	.=..()
-	update_icon_state()
-	update_icon()
-
-/obj/structure/bed/pillow_tiny/update_icon_state()
 	. = ..()
-	icon_state = "[base_icon_state]_[current_color]_[current_form]"
+	GLOB.pillow_piles.sync_tiny(src)
 
-//picking up the pillow
+/obj/structure/bed/pillow_tiny/examine(mob/user)
+	. = ..()
+	. += span_notice("<b>Alt-click</b>, чтобы забрать подушку.")
 
 /obj/structure/bed/pillow_tiny/AltClick(mob/user)
-	to_chat(user, span_notice("You pick up [src]."))
-	var/obj/item/fancy_pillow/taken_pillow = new()
-	user.put_in_hands(taken_pillow)
-
-	taken_pillow.current_form = current_form
-	taken_pillow.current_color = current_color
-	taken_pillow.color_changed = color_changed
-	taken_pillow.form_changed = form_changed
-
-	taken_pillow.update_icon_state()
-	taken_pillow.update_icon()
-	qdel(src)
-	return TRUE
-
-//when we lay on it
-
-/obj/structure/bed/pillow_tiny/post_buckle_mob(mob/living/affected_mob)
 	. = ..()
-	density = TRUE
-	//Push them up from the normal lying position
-	affected_mob.pixel_y = affected_mob.base_pixel_y + 2
+	GLOB.pillow_piles.detach(src, user)
 
-/obj/structure/bed/pillow_tiny/post_unbuckle_mob(mob/living/affected_mob)
+/obj/structure/bed/pillow_tiny/post_buckle_mob(mob/living/M)
 	. = ..()
-	density = FALSE
-	//Set them back down to the normal lying position
-	affected_mob.pixel_y = affected_mob.base_pixel_y
+	M.pixel_y = M.get_standard_pixel_y_offset(TRUE) + 5
 
-//"Upgrading" pillow
+/obj/structure/bed/pillow_tiny/post_unbuckle_mob(mob/living/M)
+	. = ..()
+	M.pixel_y = M.get_standard_pixel_y_offset(TRUE)
+
 /obj/structure/bed/pillow_tiny/attackby(obj/item/used_item, mob/living/user, params)
-	if(istype(used_item, /obj/item/fancy_pillow))
-		var/obj/item/fancy_pillow/used_pillow = used_item
-		var/obj/structure/chair/pillow_small/pillow_pile
-		if(used_pillow.current_color == current_color)
-			to_chat(user, span_notice("You add [src] to a pile."))
-			pillow_pile = new(get_turf(src))
-			pillow_pile.current_color = current_color
-			pillow_pile.pillow2_color = used_pillow.current_color
-			pillow_pile.pillow1_color = current_color
-			pillow_pile.pillow1_form = current_form
-			pillow_pile.pillow2_form = used_pillow.current_form
-
-			pillow_pile.pillow1_color_changed = color_changed
-			pillow_pile.pillow1_form_changed = color_changed
-			pillow_pile.pillow2_color_changed = used_pillow.color_changed
-			pillow_pile.pillow2_form_changed = used_pillow.color_changed
-
-			pillow_pile.update_icon_state()
-			pillow_pile.update_icon()
-			qdel(src)
-			qdel(used_pillow)
-		else
-			to_chat(user, span_notice("You feel that those colours would clash...")) //Too lazy to add multicolor pillow pile sprites.
-			return
-	else
+	if(!GLOB.pillow_piles.attach(src, used_item, user))
 		return ..()
 
 /*
 *	SMALL
 */
+
+/// ---------------------------------------------------------------------------
+///  Small-куча (chair): хранит 2 подушки (лениво)
+/// ---------------------------------------------------------------------------
 
 /obj/structure/chair/pillow_small
 	name = "small pillow pile"
@@ -248,110 +435,60 @@
 	icon = 'modular_bluemoon/icons/obj/pillows.dmi'
 	icon_state = "pillowpile_small_pink"
 	base_icon_state = "pillowpile_small"
+	bolts = FALSE
+
+	max_integrity = 60
+	resistance_flags = FLAMMABLE
+
 	pseudo_z_axis = 4
-	var/current_color = "pink"
-//	has_armrest = TRUE
 
-	//Containing pillows that we have here.
-	var/pillow1_color = "pink"
-	var/pillow2_color = "pink"
-
-	var/pillow1_color_changed = FALSE
-	var/pillow2_color_changed = FALSE
-
-	var/pillow1_form = "round"
-	var/pillow2_form = "round"
-
-	var/pillow1_form_changed = FALSE
-	var/pillow2_form_changed = FALSE
+	var/list/pillows = list()
 
 	buildstacktype = /obj/item/stack/sheet/cloth
+	custom_materials = list(/datum/material/cloth = MINERAL_MATERIAL_AMOUNT*6)
+	buildstackamount = 6
+	item_chair = null
 
 /obj/structure/chair/pillow_small/Initialize(mapload)
-	update_icon()
-	return ..()
-
-/obj/structure/chair/pillow_small/post_buckle_mob(mob/living/affected_mob)
 	. = ..()
-	density = TRUE
-	//Push them up from the normal lying position
-//	affected_mob.add_offsets("pillow_pile", 0, 0, 2, 0)
+	GLOB.pillow_piles.sync_pile(src, pillows)
 
-/obj/structure/chair/pillow_small/post_unbuckle_mob(mob/living/affected_mob)
+/obj/structure/chair/pillow_small/ComponentInitialize()
 	. = ..()
-	density = FALSE
-	//Set them back down to the normal lying position
-//	affected_mob.remove_offsets("pillow_pile")
+	qdel(GetComponent(/datum/component/simple_rotation))
 
-/obj/structure/chair/pillow_small/update_icon_state()
+/obj/structure/chair/pillow_small/examine(mob/user)
 	. = ..()
-	icon_state = "[base_icon_state]_[current_color]"
+	. += span_notice("<b>Alt-click</b>, чтобы забрать подушку.")
 
-//Removing pillow from a pile
+/obj/structure/chair/pillow_small/update_overlays()
+	. = ..()
+	. += mutable_appearance(icon, "[icon_state]_armrest", ABOVE_MOB_LAYER, src, appearance_flags = KEEP_APART)
+
 /obj/structure/chair/pillow_small/AltClick(mob/user)
-	to_chat(user, span_notice("You take [src] from the pile."))
-	var/obj/item/fancy_pillow/taken_pillow = new()
-	var/obj/structure/bed/pillow_tiny/pillow_pile = new(get_turf(src))
-	user.put_in_hands(taken_pillow)
-	//magic
-	taken_pillow.current_color = pillow2_color
-	taken_pillow.current_form = pillow2_form
-	pillow_pile.current_color = pillow1_color
-	pillow_pile.current_form = pillow1_form
+	. = ..()
+	GLOB.pillow_piles.detach(src, user)
 
-	pillow_pile.color_changed = pillow1_color_changed
-	pillow_pile.form_changed = pillow1_form_changed
-	taken_pillow.color_changed = pillow2_color_changed
-	taken_pillow.form_changed = pillow2_form_changed
-
-	//magic
-	taken_pillow.update_icon_state()
-	taken_pillow.update_icon()
-	pillow_pile.update_icon_state()
-	pillow_pile.update_icon()
-	qdel(src)
-	return TRUE
-
-//Upgrading pillow pile to a PILLOW PILE!
 /obj/structure/chair/pillow_small/attackby(obj/item/used_item, mob/living/user, params)
-	if(istype(used_item, /obj/item/fancy_pillow))
-		var/obj/item/fancy_pillow/used_pillow = used_item
-		var/obj/structure/bed/pillow_large/pillow_pile
-		if(used_pillow.current_color == current_color)
-			to_chat(user, span_notice("You add [src] to the pile."))
-			pillow_pile = new(get_turf(src))
-			pillow_pile.current_color = current_color
-			pillow_pile.pillow3_color = used_pillow.current_color
-			pillow_pile.pillow2_color = pillow2_color
-			pillow_pile.pillow1_color = pillow1_color
-			pillow_pile.pillow3_form = used_pillow.current_form
-			pillow_pile.pillow1_form = pillow1_form
-			pillow_pile.pillow2_form = pillow2_form
-
-			pillow_pile.pillow1_color_changed = pillow1_color_changed
-			pillow_pile.pillow1_form_changed = pillow1_form_changed
-			pillow_pile.pillow2_color_changed = pillow2_color_changed
-			pillow_pile.pillow2_form_changed = pillow2_form_changed
-			pillow_pile.pillow3_color_changed = used_pillow.color_changed
-			pillow_pile.pillow3_form_changed = used_pillow.form_changed
-
-			pillow_pile.update_icon_state()
-			pillow_pile.update_icon()
-			qdel(src)
-			qdel(used_pillow)
-		else
-			to_chat(user, span_notice("You feel that those colours would clash...")) //Too lazy to add multicolor pillow pile sprites.
-			return
-	else
+	if(!GLOB.pillow_piles.attach(src, used_item, user))
 		return ..()
 
-//to prevent creating metal chair from pillow
-/obj/structure/chair/pillow_small/MouseDrop(over_object, src_location, over_location)
-	return
+// Мы сидим на куче подушек, поэтому мешаем пройти + пропозти
+/obj/structure/chair/pillow_small/post_buckle_mob(mob/living/M)
+	. = ..()
+	density = TRUE
+
+/obj/structure/chair/pillow_small/post_unbuckle_mob(mob/living/M)
+	. = ..()
+	density = FALSE
 
 /*
-*	BED
+*	LARGE (BED)
 */
+
+/// ---------------------------------------------------------------------------
+///  Large-куча (bed): хранит 3 подушки (лениво)
+/// ---------------------------------------------------------------------------
 
 /obj/structure/bed/pillow_large
 	name = "large pillow pile"
@@ -359,80 +496,31 @@
 	icon = 'modular_bluemoon/icons/obj/pillows.dmi'
 	icon_state = "pillowpile_large_pink"
 	base_icon_state = "pillowpile_large"
+	bolts = FALSE
+
+	resistance_flags = FLAMMABLE
+	max_integrity = 80
+
 	pseudo_z_axis = 4
-	var/current_color = "pink"
-	//Containing pillows that we have here
-	var/pillow1_color = "pink"
-	var/pillow2_color = "pink"
-	var/pillow3_color = "pink"
 
-	var/pillow1_color_changed = FALSE
-	var/pillow2_color_changed = FALSE
-	var/pillow3_color_changed = FALSE
-
-	var/pillow1_form = "round"
-	var/pillow2_form = "round"
-	var/pillow3_form = "round"
-
-	var/pillow1_form_changed = FALSE
-	var/pillow2_form_changed = FALSE
-	var/pillow3_form_changed = FALSE
+	var/list/pillows = list()
 
 	buildstacktype = /obj/item/stack/sheet/cloth
+	custom_materials = list(/datum/material/cloth = MINERAL_MATERIAL_AMOUNT*9)
+	buildstackamount = 9
 
 /obj/structure/bed/pillow_large/Initialize(mapload)
-	update_icon()
-	return ..()
-
-/obj/structure/bed/pillow_large/post_buckle_mob(mob/living/affected_mob)
 	. = ..()
-	update_icon()
-	density = TRUE
-	//Push them up from the normal lying position
-//	affected_mob.add_offsets("pillow_pile", 0, 0, 0.5, 0)
+	GLOB.pillow_piles.sync_pile(src, pillows)
+
+/obj/structure/bed/pillow_large/examine(mob/user)
+	. = ..()
+	. += span_notice("<b>Alt-click</b>, чтобы забрать подушку.")
 
 /obj/structure/bed/pillow_large/update_overlays()
 	. = ..()
-	if(!has_buckled_mobs())
-		return
 	. += mutable_appearance(icon, "[icon_state]_armrest", ABOVE_MOB_LAYER, src, appearance_flags = KEEP_APART)
 
-/obj/structure/bed/pillow_large/post_unbuckle_mob(mob/living/affected_mob)
-	. = ..()
-	density = FALSE
-	//Set them back down to the normal lying position
-//	affected_mob.remove_offsets("pillow_pile")
-
-/obj/structure/bed/pillow_large/update_icon_state()
-	. = ..()
-	icon_state = "[base_icon_state]_[current_color]"
-
-//Removing pillow from a pile
 /obj/structure/bed/pillow_large/AltClick(mob/user)
-	to_chat(user, span_notice("You take [src] from the pile."))
-	var/obj/item/fancy_pillow/taken_pillow = new()
-	var/obj/structure/chair/pillow_small/pillow_pile = new(get_turf(src))
-	user.put_in_hands(taken_pillow)
-	//magic
-	pillow_pile.current_color = current_color
-	taken_pillow.current_color = pillow3_color
-	taken_pillow.current_form = pillow3_form
-	pillow_pile.pillow2_form = pillow2_form
-	pillow_pile.pillow2_color = pillow2_color
-	pillow_pile.pillow1_form = pillow1_form
-	pillow_pile.pillow1_color = pillow1_color
-
-	pillow_pile.pillow1_color_changed = pillow1_color_changed
-	pillow_pile.pillow2_color_changed = pillow2_color_changed
-	pillow_pile.pillow1_form_changed = pillow1_form_changed
-	pillow_pile.pillow2_form_changed = pillow2_form_changed
-	taken_pillow.color_changed = pillow3_color_changed
-	taken_pillow.form_changed = pillow3_form_changed
-
-	//magic
-	taken_pillow.update_icon_state()
-	taken_pillow.update_icon()
-	pillow_pile.update_icon_state()
-	pillow_pile.update_icon()
-	qdel(src)
-	return TRUE
+	. = ..()
+	GLOB.pillow_piles.detach(src, user)

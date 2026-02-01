@@ -54,9 +54,11 @@
 		return ..()
 
 /obj/structure/bed/post_buckle_mob(mob/living/target)
+	. = ..()
 	target.pixel_y = target.get_standard_pixel_y_offset(TRUE)
 
 /obj/structure/bed/double/post_unbuckle_mob(mob/living/target)
+	. = ..()
 	target.pixel_y = target.get_standard_pixel_y_offset(FALSE)
 
 /*
