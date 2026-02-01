@@ -60,12 +60,16 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 	var/sound/S = sound(get_sfx(soundin))
 	var/maxdistance = SOUND_RANGE + extrarange
 	var/source_z = turf_source.z
-	var/list/listeners = SSmobs.clients_by_zlevel[source_z].Copy()
-
 	var/turf/above_turf = SSmapping.get_turf_above(turf_source)
 	var/turf/below_turf = SSmapping.get_turf_below(turf_source)
 
+	var/list/listeners
+	// Extra listener lists to iterate separately when we can avoid Copy()
+	var/list/extra_listeners_1
+	var/list/extra_listeners_2
+
 	if(!ignore_walls) //these sounds don't carry through walls
+		listeners = SSmobs.clients_by_zlevel[source_z].Copy()
 		listeners = listeners & hearers(maxdistance,turf_source)
 
 		if(above_turf && istransparentturf(above_turf))
@@ -75,20 +79,31 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 			listeners += hearers(maxdistance,below_turf)
 
 	else
+		// No Copy needed — iterate the original list plus extras separately
+		listeners = SSmobs.clients_by_zlevel[source_z]
+
 		if(above_turf && istransparentturf(above_turf))
-			listeners += SSmobs.clients_by_zlevel[above_turf.z]
+			extra_listeners_1 = SSmobs.clients_by_zlevel[above_turf.z]
 
 		if(below_turf && istransparentturf(turf_source))
-			listeners += SSmobs.clients_by_zlevel[below_turf.z]
+			extra_listeners_2 = SSmobs.clients_by_zlevel[below_turf.z]
 
-	for(var/P in listeners)
-		var/mob/M = P
-		if(get_dist(M, turf_source) <= maxdistance)
-			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, get_dist(M, turf_source) <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
-	for(var/P in SSmobs.dead_players_by_zlevel[source_z])
-		var/mob/M = P
-		if(get_dist(M, turf_source) <= maxdistance)
-			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, get_dist(M, turf_source) <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
+	for(var/mob/M as anything in listeners)
+		var/dist = get_dist(M, turf_source)
+		if(dist <= maxdistance)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
+	for(var/mob/M as anything in extra_listeners_1)
+		var/dist = get_dist(M, turf_source)
+		if(dist <= maxdistance)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
+	for(var/mob/M as anything in extra_listeners_2)
+		var/dist = get_dist(M, turf_source)
+		if(dist <= maxdistance)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
+	for(var/mob/M as anything in SSmobs.dead_players_by_zlevel[source_z])
+		var/dist = get_dist(M, turf_source)
+		if(dist <= maxdistance)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
 
 /*! playsound
 
@@ -216,9 +231,8 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 /proc/sound_to_playing_players(soundin, volume = 100, vary = FALSE, frequency = 0, channel = 0, pressure_affected = FALSE, sound/S)
 	if(!S)
 		S = sound(get_sfx(soundin))
-	for(var/m in GLOB.player_list)
-		if(ismob(m) && !isnewplayer(m))
-			var/mob/M = m
+	for(var/mob/M as anything in GLOB.player_list)
+		if(!isnewplayer(M))
 			M.playsound_local(M, null, volume, vary, frequency, null, channel, pressure_affected, S)
 
 /mob/proc/stop_sound_channel(chan)
