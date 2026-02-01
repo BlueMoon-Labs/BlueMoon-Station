@@ -431,7 +431,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "gosei"
 	item_state = "gosei"
-	armor = list(MELEE = 25, BULLET = 15, LASER = 5,ENERGY = 0, BOMB = 45, BIO = 75, RAD = 50, FIRE = 50, ACID = 75, WOUND = 10)
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	clothing_flags = ALLOWINTERNALS
