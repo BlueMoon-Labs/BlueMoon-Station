@@ -248,8 +248,11 @@
 		var/datum/pipeline/P = PL[i]
 		if(!P)
 			continue
-		GL += P.return_air()
-		for(var/atmosmch in P.other_atmosmch)
+		if(length(P.other_airs))
+			GL += P.other_airs
+		if(P.air)
+			GL += P.air
+		for(var/obj/machinery/atmospherics/components/atmosmch as anything in P.other_atmosmch)
 			if (istype(atmosmch, /obj/machinery/atmospherics/components/binary/valve))
 				var/obj/machinery/atmospherics/components/binary/valve/V = atmosmch
 				if(V.on)
@@ -268,4 +271,6 @@
 
 /datum/pipeline/proc/reconcile_air()
 	var/list/datum/gas_mixture/GL = get_all_connected_airs()
+	if(null in GL)
+		listclearnulls(GL)
 	equalize_all_gases_in_list(GL)
