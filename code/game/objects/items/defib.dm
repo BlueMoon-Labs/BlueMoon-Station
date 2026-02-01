@@ -351,6 +351,8 @@
 	wielded = FALSE
 
 /obj/item/shockpaddles/Destroy()
+	if(ismob(loc))
+		UnregisterSignal(loc, COMSIG_MOVABLE_MOVED)
 	defib = null
 	return ..()
 

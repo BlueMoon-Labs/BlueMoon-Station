@@ -37,6 +37,7 @@
 	air_update_turf(TRUE)
 
 /obj/structure/windoor_assembly/Destroy()
+	QDEL_NULL(electronics)
 	density = FALSE
 	air_update_turf(TRUE)
 	return ..()
