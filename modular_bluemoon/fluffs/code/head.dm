@@ -421,3 +421,19 @@
 /obj/item/clothing/head/officerian_cap/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#2A2A2A","#303030","#575757","#d4d4d4"), 4)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/helmet/sec/gosei
+	name = "Gosei.H.mk27"
+	desc = "Безымянный шлем покрывающий лицо, предназначенный для защиты от внешних био-химических угроз, оснащённый внутривстроенным интерфейсом, съёмными батарейками, IFF опознавательными знаками"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "gosei"
+	item_state = "gosei"
+	armor = list(MELEE = 25, BULLET = 15, LASER = 5,ENERGY = 0, BOMB = 45, BIO = 75, RAD = 50, FIRE = 50, ACID = 75, WOUND = 10)
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	clothing_flags = ALLOWINTERNALS
+	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
+	unique_reskin = null

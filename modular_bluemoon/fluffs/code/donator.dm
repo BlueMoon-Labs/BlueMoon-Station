@@ -2041,3 +2041,10 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/dark_sabre_kit
 	ckeywhitelist = list("hellsinggc")
+
+/datum/gear/donator/bm/gosei
+	name = "Gosei.H.mk27"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/helmet/sec/gosei
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
+	ckeywhitelist = list("monolithxxv")

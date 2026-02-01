@@ -35,12 +35,6 @@
 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
 	loadout_initial_colors = list("#2A2A2A")
 
-/datum/gear/suit/poly_poncho
-	name = "Poly Oversized Coat"
-	path = /obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat_oversized
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
-	loadout_initial_colors = list("#2A2A2A","#e42929")
-
 /datum/gear/suit/officerian_coat
 	name = "Poly Coat"
 	path = /obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat
