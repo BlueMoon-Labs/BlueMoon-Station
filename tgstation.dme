@@ -4334,6 +4334,7 @@
 #include "modular_bluemoon\code\game\objects\items\mop.dm"
 #include "modular_bluemoon\code\game\objects\items\pinpointer.dm"
 #include "modular_bluemoon\code\game\objects\items\plushes.dm"
+#include "modular_bluemoon\code\game\objects\items\research_pergament.dm"
 #include "modular_bluemoon\code\game\objects\items\shieldbelt.dm"
 #include "modular_bluemoon\code\game\objects\items\sizetool.dm"
 #include "modular_bluemoon\code\game\objects\items\summon_chalk.dm"
