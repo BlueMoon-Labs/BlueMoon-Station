@@ -20,17 +20,15 @@ SUBSYSTEM_DEF(activity)
 	threats = deferred_threats.Copy()
 	deferred_threats.Cut()
 	threats["antagonists"] = 0
-	for(var/datum/antagonist/A in GLOB.antagonists)
+	for(var/datum/antagonist/A as anything in GLOB.antagonists)
 		if(A?.owner?.current && A.owner.current.stat != DEAD)
 			threats["antagonists"] += A.threat()
 	threats["events"] = 0
-	for(var/r in SSevents.running)
-		var/datum/round_event/R = r
+	for(var/datum/round_event/R as anything in SSevents.running)
 		threats["events"] += R.threat()
 	threats["players"] = 0
 	SEND_SIGNAL(src, COMSIG_THREAT_CALC, threats)
-	for(var/m in GLOB.player_list)
-		var/mob/M = m
+	for(var/mob/M as anything in GLOB.player_list)
 		if (M?.mind?.assigned_role && M.stat != DEAD)
 			var/datum/job/J = SSjob.GetJob(M.mind.assigned_role)
 			if(J)
@@ -43,8 +41,9 @@ SUBSYSTEM_DEF(activity)
 	current_threat = 0
 	for(var/threat_type in threats)
 		current_threat += threats[threat_type]
-	threat_history += "[world.time]"
-	threat_history["[world.time]"] = current_threat
+	var/time_key = "[world.time]"
+	threat_history += time_key
+	threat_history[time_key] = current_threat
 
 /datum/controller/subsystem/activity/proc/get_average_threat()
 	if(!length(threat_history))

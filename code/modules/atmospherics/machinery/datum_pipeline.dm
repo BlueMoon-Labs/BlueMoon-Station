@@ -17,9 +17,9 @@
 	SSair.networks -= src
 	if(air?.return_volume())  //	BLUEMOON EDIT: TODO:runtime
 		temporarily_store_air()
-	for(var/obj/machinery/atmospherics/pipe/P in members)
+	for(var/obj/machinery/atmospherics/pipe/P as anything in members)
 		P.parent = null
-	for(var/obj/machinery/atmospherics/components/C in other_atmosmch)
+	for(var/obj/machinery/atmospherics/components/C as anything in other_atmosmch)
 		if(!C.parents)
 			continue
 		for(var/i in 1 to length(C.parents))
@@ -131,10 +131,10 @@
 		return
 	air.set_volume(air.return_volume() + E.air.return_volume())
 	members.Add(E.members)
-	for(var/obj/machinery/atmospherics/pipe/S in E.members)
+	for(var/obj/machinery/atmospherics/pipe/S as anything in E.members)
 		S.parent = src
 	air.merge(E.air)
-	for(var/obj/machinery/atmospherics/components/C in E.other_atmosmch)
+	for(var/obj/machinery/atmospherics/components/C as anything in E.other_atmosmch)
 		C.replacePipenet(E, src)
 	other_atmosmch |= E.other_atmosmch
 	if(null in E.other_airs)
@@ -162,7 +162,7 @@
 /datum/pipeline/proc/temporarily_store_air()
 	//Update individual gas_mixtures by volume ratio
 
-	for(var/obj/machinery/atmospherics/pipe/member in members)
+	for(var/obj/machinery/atmospherics/pipe/member as anything in members)
 		member.air_temporary = new
 		member.air_temporary.set_volume(member.volume)
 		member.air_temporary.copy_from(air)
