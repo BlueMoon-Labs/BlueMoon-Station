@@ -9,7 +9,7 @@
 
 /obj/effect/anomaly/flux/Initialize(mapload, new_lifespan, _explosive)
 	. = ..()
-	if(_explosive)
+	if(!isnull(_explosive))
 		explosive = _explosive
 	var/static/list/loc_connections = list(
 		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
