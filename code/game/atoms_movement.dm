@@ -33,7 +33,7 @@
 	if(oldarea != newarea)
 		oldarea.Exited(src, newloc)
 
-	if(length(oldloc))
+	if(length(oldloc.contents))
 		for(var/atom/movable/thing as anything in oldloc)
 			if(thing == src) // Multi tile objects
 				continue
@@ -43,7 +43,7 @@
 	if(oldarea != newarea)
 		newarea.Entered(src, oldloc)
 
-	if(length(loc))
+	if(length(loc.contents))
 		for(var/atom/movable/thing as anything in loc)
 			if(thing == src) // Multi tile objects
 				continue
@@ -257,7 +257,7 @@
 				oldloc.Exited(src, destination)
 				if(old_area && old_area != destarea)
 					old_area.Exited(src, destination)
-			if(length(oldloc))
+			if(oldloc && length(oldloc.contents))
 				for(var/atom/movable/AM as anything in oldloc)
 					AM.Uncrossed(src)
 			var/turf/oldturf = get_turf(oldloc)
@@ -270,7 +270,7 @@
 			if(destarea && old_area != destarea)
 				destarea.Entered(src, oldloc)
 
-			if(length(destination))
+			if(length(destination.contents))
 				for(var/atom/movable/AM as anything in destination)
 					if(AM == src)
 						continue
