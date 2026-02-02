@@ -1077,7 +1077,7 @@
 	name = "Special .38 Mars Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/rsh_future
-	ckeywhitelist = list("xaeshkavd", "sosnovskii")
+	ckeywhitelist = list("xaeshkavd", "sosnovskii","hellsinggc")
 
 /datum/gear/donator/bm/rawk_sat
 	name = "Rawk Satchel"
@@ -1096,7 +1096,7 @@
 	name = "Officer token"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/neck/tie/oftok
-	ckeywhitelist = list("xaeshkavd", "akinight", "heathkit1", "scramblescream", "definitelynotnesuby", "sosnovskii")
+	ckeywhitelist = list("xaeshkavd", "akinight", "heathkit1", "scramblescream", "definitelynotnesuby", "sosnovskii","hellsinggc")
 
 /datum/gear/donator/bm/agentcape
 	name = "Marketing agent's cape"

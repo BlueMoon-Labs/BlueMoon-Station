@@ -493,6 +493,9 @@ GLOBAL_LIST_INIT(cloth_recipes, list ( \
 /obj/item/stack/sheet/cloth/thirty
 	amount = 30
 
+/obj/item/stack/sheet/cloth/fifty
+	amount = 50
+
 /*
  * Durathread
  */

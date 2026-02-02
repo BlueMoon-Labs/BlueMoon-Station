@@ -1,0 +1,1468 @@
+/*
+ * Modern theme for Character Setup (preferences_browser).
+ * Scoped under .csetup-root.csetup-theme-modern to avoid affecting other browser UIs.
+ *
+ * Target: compact layout (closer to PR #2535 feel).
+ */
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	min-height: 100%;
+}
+
+body {
+	overflow-y: auto;
+	scroll-behavior: auto;
+	overflow-anchor: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	/* Firefox */
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 255, 255, 0.22) rgba(0, 0, 0, 0.25);
+
+	/* Legacy (old IE-style props; some BYOND configurations still respect these) */
+	scrollbar-base-color: #121212;
+	scrollbar-face-color: #2a2a2a;
+	scrollbar-track-color: #171717;
+	scrollbar-arrow-color: #a8a8a8;
+	scrollbar-highlight-color: #2f2f2f;
+	scrollbar-shadow-color: #2a2a2a;
+	scrollbar-3dlight-color: #2a2a2a;
+}
+
+.csetup-root.csetup-theme-modern ::selection,
+.csetup-root.csetup-theme-classic ::selection {
+	background: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.35);
+	color: var(--csetup-text);
+}
+
+/* WebKit / Chromium */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0.25);
+}
+
+::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.18);
+	border: 2px solid rgba(0, 0, 0, 0.25);
+	border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: rgba(77, 163, 255, 0.45);
+}
+
+::-webkit-scrollbar-corner {
+	background: rgba(0, 0, 0, 0.25);
+}
+
+/*
+ * Classic theme (New UI baseline)
+ *
+ * The New (classic) character creator uses the same HTML node structure as Modern
+ * (e.g. .csetup_character_node/.csetup_character_label/.csetup_character_input),
+ * but without these layout rules it can render "shifted"/misaligned.
+ *
+ * Keep this strictly scoped so it doesn't affect Old creator or Modern look.
+ */
+
+.csetup-root.csetup-theme-classic .csetup_character_node {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.csetup-root.csetup-theme-classic .csetup_character_label {
+	flex: 1 1 auto;
+	min-width: 160px;
+}
+
+.csetup-root.csetup-theme-classic .csetup_character_input {
+	flex: 0 0 auto;
+	text-align: right;
+	white-space: nowrap;
+}
+
+/* Needed for the top-right theme picker positioning */
+.csetup-root {
+	position: relative;
+	overflow-anchor: none;
+}
+
+.csetup-root.csetup-theme-classic,
+.csetup-root.csetup-theme-modern:not(.csetup-scheme-neutral) {
+	color-scheme: dark;
+}
+
+.csetup-root.csetup-theme-modern.csetup-scheme-neutral {
+	color-scheme: light;
+}
+
+.csetup-root.csetup-theme-modern {
+	/* PR theme: "dark" */
+	--csetup-bg: #121212;
+	--csetup-panel: #1c1c1c;
+	--csetup-panel-2: #1c1c1c;
+	--csetup-border: #2f2f2f;
+	--csetup-text: #e6e6e6;
+	--csetup-muted: #a8a8a8;
+	--csetup-accent: #4da3ff;
+	--csetup-accent-rgb: 77, 163, 255;
+	--csetup-danger: #ff6b6b;
+	--csetup-btn-bg: #1f1f1f;
+	--csetup-btn-hover: #2a2a2a;
+	--csetup-btn-active: #4da3ff;
+	--csetup-btn-active-text: #0b1c2f;
+	--csetup-btn-radius: 7px;
+	--csetup-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+	background-color: var(--csetup-bg);
+	background-image: none;
+	background-size: auto;
+	padding: 6px;
+	min-height: 100vh;
+
+	color: var(--csetup-text);
+	font-family: Verdana, Tahoma, Arial, sans-serif;
+	font-size: 12px;
+	line-height: 1.2;
+}
+
+/* Modern: per-client button shape presets (set by DM via csetup-btnshape-*) */
+.csetup-root.csetup-theme-modern.csetup-btnshape-rect { --csetup-btn-radius: 0px; }
+.csetup-root.csetup-theme-modern.csetup-btnshape-soft { --csetup-btn-radius: 4px; }
+.csetup-root.csetup-theme-modern.csetup-btnshape-round { --csetup-btn-radius: 7px; }
+
+/* Explicit "dark" scheme class (mostly for DM-side clarity) */
+.csetup-root.csetup-theme-modern.csetup-scheme-dark {
+	background-color: var(--csetup-bg);
+	background-image: none;
+}
+
+/* Full palette schemes for Modern */
+.csetup-root.csetup-theme-modern.csetup-scheme-purple {
+	--csetup-bg: #251a33;
+	--csetup-panel: #2f2141;
+	--csetup-panel-2: #2f2141;
+	--csetup-border: #4a3562;
+	--csetup-text: #f7f1ff;
+	--csetup-muted: #e1d1f5;
+	--csetup-btn-bg: #36244b;
+	--csetup-btn-hover: #422b5e;
+	--csetup-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+	background-color: var(--csetup-bg);
+	background-image: none;
+}
+
+.csetup-root.csetup-theme-modern.csetup-scheme-green {
+	--csetup-bg: #12261a;
+	--csetup-panel: #193322;
+	--csetup-panel-2: #193322;
+	--csetup-border: #2a4f37;
+	--csetup-text: #effff6;
+	--csetup-muted: #cdefdc;
+	--csetup-btn-bg: #1f3e2a;
+	--csetup-btn-hover: #275036;
+	--csetup-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+	background-color: var(--csetup-bg);
+	background-image: none;
+}
+
+/* Classic scheme for Modern (PR theme: "classic" palette, but kept in modern layout) */
+.csetup-root.csetup-theme-modern.csetup-scheme-classic {
+	--csetup-bg: #272727;
+	--csetup-panel: #1a1a1a;
+	--csetup-panel-2: #1a1a1a;
+	--csetup-border: #161616;
+	--csetup-text: #ffffff;
+	--csetup-muted: #c0c0c0;
+	--csetup-accent: #40628a;
+	--csetup-accent-rgb: 64, 98, 138;
+	--csetup-btn-bg: #40628a;
+	--csetup-btn-hover: #2f943c;
+	--csetup-btn-active: #2f943c;
+	--csetup-btn-active-text: #ffffff;
+
+	background-color: var(--csetup-bg);
+	background-image: none;
+}
+
+/* PR theme: "classic" (New UI baseline with BYOND-ish palette) */
+.csetup-root.csetup-theme-classic {
+	--csetup-bg: #272727;
+	--csetup-panel: #1a1a1a;
+	--csetup-panel-2: #1a1a1a;
+	--csetup-border: #161616;
+	--csetup-text: #ffffff;
+	--csetup-muted: #c0c0c0;
+	--csetup-accent: #40628a;
+	--csetup-accent-rgb: 64, 98, 138;
+	--csetup-danger: #ff6b6b;
+	--csetup-btn-bg: #40628a;
+	--csetup-btn-hover: #2f943c;
+	--csetup-btn-active: #2f943c;
+	--csetup-btn-active-text: #ffffff;
+	--csetup-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+
+	background-color: var(--csetup-bg);
+	background-image: none;
+	background-size: auto;
+	padding: 6px;
+
+	color: var(--csetup-text);
+	font-family: Verdana, Tahoma, Arial, sans-serif;
+	font-size: 12px;
+	line-height: 1.2;
+}
+
+/* Neutral (light) scheme for Modern, inspired by PR #2535 "neutral" */
+.csetup-root.csetup-theme-modern.csetup-scheme-neutral {
+	/* PR theme: "neutral" */
+	--csetup-bg: #f2f2f2;
+	--csetup-panel: #ffffff;
+	--csetup-panel-2: #ffffff;
+	--csetup-border: #cccccc;
+	--csetup-text: #222222;
+	--csetup-muted: #555555;
+	--csetup-danger: #d33b3b;
+	--csetup-btn-bg: #e4e4e4;
+	--csetup-btn-hover: #d9d9d9;
+	--csetup-btn-active: #e0e7ff;
+	--csetup-btn-active-text: #1f2b4d;
+	--csetup-shadow: 0 12px 40px rgba(0, 0, 0, 0.20);
+
+	background-color: var(--csetup-bg);
+	background-image: none;
+	background-size: auto;
+}
+
+/* Accent variants (applied via extra classes on .csetup-root) */
+.csetup-root.csetup-theme-modern.csetup-accent-blue {
+	--csetup-accent: #4da3ff;
+	--csetup-accent-rgb: 77, 163, 255;
+	--csetup-btn-active: #4da3ff;
+	--csetup-btn-active-text: #0b1c2f;
+}
+
+.csetup-root.csetup-theme-modern.csetup-accent-purple {
+	--csetup-accent: #c19bff;
+	--csetup-accent-rgb: 193, 155, 255;
+	--csetup-btn-active: rgba(193, 155, 255, 0.95);
+	--csetup-btn-active-text: #1a0b2f;
+}
+
+.csetup-root.csetup-theme-modern.csetup-accent-green {
+	--csetup-accent: #8bffb1;
+	--csetup-accent-rgb: 139, 255, 177;
+	--csetup-btn-active: rgba(139, 255, 177, 0.95);
+	--csetup-btn-active-text: #062014;
+}
+
+/* Accent used for the neutral/light scheme (slightly more restrained). */
+.csetup-root.csetup-theme-modern.csetup-accent-neutral {
+	--csetup-accent: #6a8cff;
+	--csetup-accent-rgb: 106, 140, 255;
+	--csetup-btn-active: rgba(106, 140, 255, 0.92);
+	--csetup-btn-active-text: #111a33;
+}
+
+.csetup-root.csetup-theme-modern *,
+.csetup-root.csetup-theme-classic * {
+	box-sizing: border-box;
+}
+
+.csetup-root.csetup-theme-modern hr,
+.csetup-root.csetup-theme-classic hr {
+	border: none;
+	height: 1px;
+	background: var(--csetup-border);
+	margin: 10px 0;
+}
+
+/* Button-like links */
+.csetup-root.csetup-theme-modern a,
+.csetup-root.csetup-theme-modern a:link,
+.csetup-root.csetup-theme-modern a:visited,
+.csetup-root.csetup-theme-classic a,
+.csetup-root.csetup-theme-classic a:link,
+.csetup-root.csetup-theme-classic a:visited {
+	color: var(--csetup-text);
+	text-decoration: none;
+	padding: 4px 8px;
+	margin: 1px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--csetup-btn-bg);
+	border-radius: var(--csetup-btn-radius, 7px);
+	border: 1px solid var(--csetup-border);
+	transition: background-color 0.12s ease-out, border-color 0.12s ease-out, color 0.12s ease-out;
+	cursor: pointer;
+	font-size: 12px;
+	vertical-align: middle;
+	line-height: 1.1;
+	outline: none;
+	transform: none;
+}
+
+.csetup-root.csetup-theme-modern a,
+.csetup-root.csetup-theme-modern a:link,
+.csetup-root.csetup-theme-modern a:visited {
+	font-weight: 600;
+}
+
+.csetup-root.csetup-theme-modern a:hover,
+.csetup-root.csetup-theme-classic a:hover {
+	background-color: var(--csetup-btn-hover);
+	transform: none;
+}
+
+.csetup-root.csetup-theme-modern a:active,
+.csetup-root.csetup-theme-modern a:focus {
+	transform: none;
+	outline: none;
+}
+
+.csetup-root.csetup-theme-modern a:focus-visible,
+.csetup-root.csetup-theme-classic a:focus-visible {
+	outline: 2px solid var(--csetup-accent, #4da3ff);
+	outline-offset: 1px;
+}
+
+/* Fix cramped tiny value buttons (legacy inline width=30px in DM).
+ * Example: Hardsuit With Tail / Age value pills.
+ * In Modern we want the button to size to its content.
+ */
+.csetup-root.csetup-theme-modern a[style*="width:30px"],
+.csetup-root.csetup-theme-modern a[style*="width: 30px"] {
+	display: inline-block !important;
+	width: auto !important;
+	min-width: 44px;
+	text-align: center;
+	white-space: nowrap;
+	padding-left: 10px;
+	padding-right: 10px;
+	margin-left: 6px;
+}
+
+/* Inline name row (Modern): name + dice button on one line */
+.csetup-root.csetup-theme-modern .csetup-name-row {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.csetup-root.csetup-theme-modern a.csetup-dice-btn {
+	padding: 2px 6px;
+	border-radius: var(--csetup-btn-radius, 8px);
+	font-size: 14px;
+	line-height: 1;
+	transform: none;
+}
+
+.csetup-root.csetup-theme-modern a.csetup-dice-btn:hover {
+	transform: none;
+}
+
+.csetup-root.csetup-theme-modern a.linkOff,
+.csetup-root.csetup-theme-modern .linkOff,
+.csetup-root.csetup-theme-classic a.linkOff,
+.csetup-root.csetup-theme-classic .linkOff {
+	color: var(--csetup-muted);
+	cursor: not-allowed;
+	opacity: 0.55;
+}
+
+/* Markings (Modern only)
+ * Keep selectors strictly scoped to .csetup-theme-modern.
+ */
+.csetup-root.csetup-theme-modern .csetup-markings {
+	margin-top: 6px;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings-classic {
+	display: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-markings-grid {
+	column-count: 2;
+	column-gap: 8px;
+	column-width: 320px;
+	margin: 6px 0 0 0;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings h3 {
+	margin: 10px 0 6px 0;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	align-items: center;
+	justify-content: center;
+	margin: 8px 0 12px 0;
+	padding: 0;
+	background: transparent;
+	border: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings-toolbar .csetup-toolbar-label {
+	font-size: 12px;
+	color: var(--csetup-muted);
+	margin-right: 6px;
+	user-select: none;
+	padding: 2px 6px;
+	border-radius: 8px;
+	background: rgba(0, 0, 0, 0.18);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Cards per limb */
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-card {
+	margin: 0;
+	display: inline-block;
+	width: 100%;
+	break-inside: avoid;
+	margin: 0 0 8px 0;
+	background: var(--csetup-panel);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-card:hover {
+	border-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.35);
+	background: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.03);
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 4px 8px;
+	background: transparent;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-card-title {
+	font-weight: 700;
+	font-size: 11px;
+	color: var(--csetup-text);
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-card-actions {
+	display: flex;
+	gap: 4px;
+	flex-wrap: wrap;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings a.csetup-mini-action {
+	padding: 1px 6px;
+	border-radius: 10px;
+	font-size: 10px;
+	line-height: 1.2;
+	transform: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings a.csetup-mini-action.csetup-mini-danger {
+	background-color: rgba(255, 107, 107, 0.12);
+	border-color: rgba(255, 107, 107, 0.45);
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings a.csetup-mini-action.csetup-mini-danger:hover {
+	background-color: rgba(255, 107, 107, 0.20);
+}
+
+/* Table inside card */
+.csetup-root.csetup-theme-modern .csetup-markings table.csetup-marking-table {
+	width: 100%;
+	table-layout: fixed;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-table-head th {
+	padding: 5px 8px;
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--csetup-muted);
+	text-align: left;
+	background-color: rgba(0, 0, 0, 0.10);
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings table.csetup-marking-table td {
+	padding: 4px 8px;
+	border-top: 1px solid rgba(255, 255, 255, 0.07);
+	vertical-align: middle;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings tr.csetup-marking-row:nth-child(even) td {
+	background-color: rgba(0, 0, 0, 0.12);
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings tr.csetup-marking-row:hover td {
+	background-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.08);
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-col-index {
+	width: 35px;
+	color: var(--csetup-muted);
+	font-size: 11px;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-col-move {
+	width: 100px;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-col-colors {
+	width: 110px;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-col-del {
+	width: 44px;
+	text-align: right;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-move {
+	white-space: nowrap;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-table td,
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-table th {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-move a {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	padding: 0;
+	margin: 0 3px 0 0;
+	border-radius: 999px;
+	font-size: 11px;
+	line-height: 1;
+	background-color: rgba(0, 0, 0, 0.22);
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	box-shadow: none;
+	transform: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-move a:hover {
+	background-color: rgba(255, 255, 255, 0.06);
+	transform: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings a.csetup-marking-del {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	padding: 0;
+	border-radius: 999px;
+	background-color: rgba(120, 20, 20, 0.25);
+	border: 1px solid rgba(255, 107, 107, 0.60);
+	color: rgba(255, 170, 170, 0.95);
+	font-weight: 700;
+	box-shadow: none;
+	transform: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings a.csetup-marking-del:hover {
+	background-color: rgba(255, 107, 107, 0.18);
+	transform: none;
+}
+
+/* Color chips */
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-col-colors {
+	white-space: nowrap;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings a.csetup-marking-chip-link {
+	padding: 0;
+	border: none;
+	background: transparent;
+	box-shadow: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings a.csetup-marking-chip-link:hover {
+	background: transparent;
+	transform: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-chip {
+	display: inline-block;
+	width: 11px;
+	height: 11px;
+	border-radius: 999px;
+	border: 1px solid rgba(0, 0, 0, 0.45);
+	box-shadow: none;
+	vertical-align: middle;
+	margin-right: 4px;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-row-empty .csetup-marking-empty {
+	padding: 10px 8px;
+	color: var(--csetup-muted);
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-danger-zone {
+	margin-top: 10px;
+	padding: 12px 12px;
+	border-radius: 12px;
+	border: 1px solid rgba(255, 107, 107, 0.65);
+	background: rgba(255, 107, 107, 0.12);
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-danger-zone-title {
+	font-weight: 700;
+	color: rgba(255, 180, 180, 0.95);
+	margin: 0 0 6px 0;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-danger-zone a {
+	background-color: rgba(255, 107, 107, 0.18);
+	border-color: rgba(255, 107, 107, 0.55);
+	transform: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-danger-zone a:hover {
+	background-color: rgba(255, 107, 107, 0.26);
+}
+
+/* Active tab */
+/* Modern: KSS-like selected highlight (always green, high-contrast).
+ * Keep !important to override any DM-injected inline palette styles.
+ */
+.csetup-root.csetup-theme-modern .linkOn,
+.csetup-root.csetup-theme-modern a.linkOn:link,
+.csetup-root.csetup-theme-modern a.linkOn:visited,
+.csetup-root.csetup-theme-modern a.linkOn:active {
+	background-color: #2f943c !important;
+	border: 1px solid rgba(47, 148, 60, 0.60) !important;
+	box-shadow: none !important;
+	color: #ffffff !important;
+	font-weight: 600;
+}
+
+/* Classic: preserve theme accent behavior */
+.csetup-root.csetup-theme-classic .linkOn,
+.csetup-root.csetup-theme-classic a.linkOn:link,
+.csetup-root.csetup-theme-classic a.linkOn:visited,
+.csetup-root.csetup-theme-classic a.linkOn:active {
+	background-color: var(--csetup-btn-active);
+	border: 1px solid rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.35);
+	box-shadow: none;
+	color: var(--csetup-btn-active-text);
+	font-weight: bold;
+}
+
+.csetup-root.csetup-theme-modern center,
+.csetup-root.csetup-theme-classic center {
+	margin: 6px 0;
+}
+
+.csetup-root.csetup-theme-modern h2,
+.csetup-root.csetup-theme-modern h3,
+.csetup-root.csetup-theme-classic h2,
+.csetup-root.csetup-theme-classic h3 {
+	color: var(--csetup-accent);
+	margin-top: 10px;
+	margin-bottom: 6px;
+}
+
+.csetup-root.csetup-theme-modern h2,
+.csetup-root.csetup-theme-classic h2 { font-size: 14px; }
+.csetup-root.csetup-theme-modern h3,
+.csetup-root.csetup-theme-classic h3 { font-size: 13px; }
+
+.csetup-root.csetup-theme-modern h2::after,
+.csetup-root.csetup-theme-classic h2::after {
+	content: "";
+	display: block;
+	margin-top: 4px;
+	width: 36px;
+	height: 2px;
+	border-radius: 2px;
+	background: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.6);
+}
+
+/* Generic “card” look for the character setup nodes */
+.csetup-root.csetup-theme-modern .csetup_character_node,
+.csetup-root.csetup-theme-classic .csetup_character_node {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 6px 8px;
+	margin: 4px 0;
+	background: var(--csetup-panel);
+	border: 1px solid var(--csetup-border);
+	border-radius: 10px;
+	transition: background-color 0.12s ease-out, border-color 0.12s ease-out;
+}
+
+.csetup-root.csetup-theme-modern .csetup_character_node:hover,
+.csetup-root.csetup-theme-classic .csetup_character_node:hover {
+	border-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.45);
+	background-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.06);
+}
+
+.csetup-root.csetup-theme-modern .csetup_character_label,
+.csetup-root.csetup-theme-classic .csetup_character_label {
+	color: var(--csetup-muted);
+	font-weight: 600;
+}
+
+.csetup-root.csetup-theme-modern .csetup_character_input,
+.csetup-root.csetup-theme-classic .csetup_character_input {
+	text-align: right;
+	white-space: nowrap;
+}
+
+/* Notices */
+.csetup-root.csetup-theme-modern .notice,
+.csetup-root.csetup-theme-classic .notice {
+	margin: 8px auto;
+	padding: 8px 10px;
+	max-width: 520px;
+	background: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.12);
+	border: 1px solid rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.25);
+	border-radius: 10px;
+	box-shadow: none;
+	color: var(--csetup-text);
+}
+
+/* General tab: quirks summary (bigger + more readable) */
+.csetup-root.csetup-theme-modern .csetup-quirks-summary {
+	max-width: 760px;
+	font-size: 13px;
+	line-height: 1.35;
+	padding: 12px 14px;
+	background: rgba(0, 0, 0, 0.55);
+	border: 1px solid rgba(0, 0, 0, 0.85);
+	box-shadow: none;
+	color: var(--csetup-text);
+}
+
+/* Quirks tab: help/description card above list */
+.csetup-root.csetup-theme-modern .notice.csetup-quirks-help {
+	max-width: 760px;
+	font-size: 13px;
+	line-height: 1.35;
+	padding: 12px 14px;
+	background: rgba(0, 0, 0, 0.55);
+	border: 1px solid rgba(0, 0, 0, 0.85);
+	box-shadow: none;
+	color: var(--csetup-text);
+}
+
+/* Quirks tab: settings as one-line buttons */
+.csetup-root.csetup-theme-modern .csetup-quirk-settings {
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+	flex-wrap: wrap;
+	margin: 6px auto 10px;
+	max-width: 980px;
+}
+
+.csetup-root.csetup-theme-modern a.csetup-quirk-setting {
+	padding: 7px 10px;
+	border-radius: 10px;
+	border: 1px solid rgba(0, 0, 0, 0.85);
+	background: rgba(0, 0, 0, 0.45);
+	box-shadow: none;
+	white-space: nowrap;
+	color: var(--csetup-text);
+}
+
+.csetup-root.csetup-theme-modern a.csetup-quirk-setting:hover {
+	background: rgba(0, 0, 0, 0.55);
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirks-summary-title {
+	font-size: 14px;
+	margin-bottom: 6px;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirks-summary-current {
+	color: var(--csetup-text);
+	opacity: 0.95;
+	margin-bottom: 10px;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirks-summary-meta {
+	color: rgba(231, 238, 252, 0.88);
+	line-height: 1.25;
+}
+
+/* Slightly brighter summary text (theme-aware) */
+.csetup-root.csetup-theme-modern:not(.csetup-scheme-neutral) .csetup-quirks-summary-current,
+.csetup-root.csetup-theme-modern:not(.csetup-scheme-neutral) .csetup-quirks-summary-meta {
+	color: rgba(255, 255, 255, 0.96);
+}
+
+.csetup-root.csetup-theme-modern.csetup-scheme-neutral .csetup-quirks-summary-current,
+.csetup-root.csetup-theme-modern.csetup-scheme-neutral .csetup-quirks-summary-meta {
+	color: #111111;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirks-summary-actions a {
+	padding: 6px 10px;
+}
+
+/* Tables */
+.csetup-root.csetup-theme-modern table {
+	background-color: var(--csetup-panel);
+	border-collapse: collapse;
+	width: 100%;
+	border: 1px solid var(--csetup-border);
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.csetup-root.csetup-theme-modern table tr:hover td,
+.csetup-root.csetup-theme-classic table tr:hover td {
+	background-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.06);
+}
+
+.csetup-root.csetup-theme-modern td,
+.csetup-root.csetup-theme-modern th {
+	padding: 6px 8px;
+	color: var(--csetup-text);
+	text-align: left;
+	border-bottom: 1px solid var(--csetup-border);
+	border-right: 1px solid var(--csetup-border);
+}
+
+.csetup-root.csetup-theme-modern td:last-child,
+.csetup-root.csetup-theme-modern th:last-child {
+	border-right: none;
+}
+
+/* Theme picker (top-right), matching the older PR #2535 UX (small menu + squares). */
+.csetup-root .theme-selector {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 6px;
+	border-radius: 10px;
+	background-color: var(--csetup-panel, rgba(255, 255, 255, 0.06));
+	border: 1px solid var(--csetup-border, rgba(0, 0, 0, 0.25));
+	box-shadow: none;
+	overflow: hidden;
+	max-width: 640px;
+	min-width: 28px; /*UI tweak*/
+	white-space: nowrap;
+	transition: max-width 150ms ease-out;
+	z-index: 20;
+}
+
+@keyframes csetupThemePickerCollapseWidth {
+	from { max-width: 640px; padding: 5px 6px; }
+	to { max-width: 28px; padding: 0; } /*UI tweak*/
+}
+
+@keyframes csetupThemePickerExpandWidth {
+	from { max-width: 28px; padding: 0; } /*UI tweak*/
+	to { max-width: 640px; padding: 5px 6px; }
+}
+
+@keyframes csetupThemePickerFadeOut {
+	from { opacity: 1; transform: translateX(0); }
+	to { opacity: 0; transform: translateX(16px); }
+}
+
+@keyframes csetupThemePickerFadeIn {
+	from { opacity: 0; transform: translateX(16px); }
+	to { opacity: 1; transform: translateX(0); }
+}
+
+.csetup-root .theme-selector.anim.collapsed {
+	animation: none;
+}
+
+.csetup-root .theme-selector.anim:not(.collapsed) {
+	animation: none;
+}
+
+.csetup-root .theme-selector.anim.collapsed .theme-body {
+	animation: none;
+}
+
+.csetup-root .theme-selector.anim:not(.collapsed) .theme-body {
+	animation: none;
+}
+
+.csetup-root .theme-icon-stack {
+	position: relative;
+	z-index: 12;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+}
+
+.csetup-root .theme-icon-stack a.theme-emoji-btn {
+	margin: 0 !important;
+}
+
+.csetup-root a.theme-emoji-btn {
+	padding: 0 !important;
+	margin: 0 4px 0 0 !important;
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	line-height: 1;
+}
+
+.csetup-root a.theme-settings-btn {
+	font-size: 13px;
+	opacity: 0.9;
+}
+
+.csetup-root a.theme-settings-btn:hover {
+	opacity: 1;
+}
+
+.csetup-root .theme-body {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	opacity: 1;
+	transform: translateX(0);
+	transition: none;
+}
+
+.csetup-root a.theme-collapse-hint {
+	padding: 0 !important;
+	margin: 0 2px 0 0 !important;
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+	font-size: 12px;
+	line-height: 1;
+	opacity: 0.85;
+	text-decoration: none;
+}
+
+.csetup-root a.theme-collapse-hint:hover {
+	opacity: 1;
+}
+
+.csetup-root .theme-selector.collapsed {
+	max-width: 28px; /*UI tweak*/
+	padding: 0;
+	gap: 0;
+}
+/*UI tweak start*/
+.csetup-root .theme-selector.collapsed a.theme-emoji-btn {
+	margin: 0 !important;
+	width: 26px;
+	height: 26px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	font-size: 16px;
+	line-height: 26px;
+}
+
+.csetup-root .theme-selector.collapsed a.theme-settings-btn {
+	font-size: 14px;
+}
+/*UI tweak end*/
+
+.csetup-root .theme-selector.collapsed .theme-body {
+	opacity: 0;
+	transform: translateX(16px);
+	pointer-events: none;
+}
+
+.csetup-root .theme-label {
+	font-size: 11px;
+	letter-spacing: 0.2px;
+	opacity: 0.92;
+	user-select: none;
+}
+
+.csetup-root .theme-label-custom {
+	opacity: 0.95;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.8px;
+}
+
+.csetup-root .theme-sep {
+	width: 1px;
+	height: 18px;
+	background: var(--csetup-border, rgba(0, 0, 0, 0.35));
+	opacity: 0.8;
+	margin: 0 4px;
+	display: inline-block;
+}
+
+.csetup-root .theme-custom-group {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 3px 6px;
+	border-radius: 10px;
+	background: rgba(0, 0, 0, 0.22);
+	border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.csetup-root a.theme-swatch {
+	padding: 0 !important;
+	margin: 0 2px;
+	width: 16px;
+	height: 16px;
+	border-radius: var(--csetup-btn-radius, 5px);
+	border: 2px solid var(--csetup-border, rgba(0, 0, 0, 0.30));
+	background-color: transparent;
+	box-shadow: none;
+}
+
+.csetup-root a.theme-swatch--custom {
+	width: 18px;
+	height: 18px;
+	border-radius: var(--csetup-btn-radius, 6px);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	font-weight: 800;
+	color: rgba(255, 255, 255, 0.92);
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.70);
+}
+
+.csetup-root a.theme-swatch:hover {
+	transform: none;
+}
+
+.csetup-root a.theme-swatch.active {
+	border-color: var(--csetup-accent, #4da3ff);
+	box-shadow: none;
+}
+
+.csetup-root a.theme-gear {
+	padding: 0 !important;
+	margin: 0 2px 0 0;
+	width: 18px;
+	height: 18px;
+	border-radius: var(--csetup-btn-radius, 6px);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 13px;
+	line-height: 1;
+}
+
+/* Quick settings popover (WIP): frame shape + language */
+.csetup-root .theme-settings-panel {
+	position: absolute;
+	top: 58px;
+	right: 8px;
+	width: 260px;
+	padding: 8px 8px 10px;
+	border-radius: 12px;
+	background-color: var(--csetup-panel, rgba(0, 0, 0, 0.35));
+	border: 1px solid var(--csetup-border, rgba(0, 0, 0, 0.25));
+	box-shadow: none;
+	z-index: 11;
+}
+
+.csetup-root .theme-settings-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 6px;
+}
+
+.csetup-root .theme-settings-hint {
+	font-size: 11px;
+	opacity: 0.75;
+}
+
+.csetup-root .theme-settings-group {
+	margin-top: 8px;
+}
+
+.csetup-root .theme-settings-label {
+	font-size: 11px;
+	letter-spacing: 0.2px;
+	opacity: 0.9;
+	margin-bottom: 5px;
+}
+
+.csetup-root .theme-settings-options {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.csetup-root .theme-settings-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 3px 7px;
+	border-radius: var(--csetup-btn-radius, 999px);
+	background: rgba(0, 0, 0, 0.22);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	color: var(--csetup-text);
+	font-size: 12px;
+	opacity: 0.9;
+	user-select: none;
+}
+
+.csetup-root .theme-settings-pill:hover {
+	background: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.10);
+	border-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.25);
+}
+
+.csetup-root .theme-settings-pill.linkOn {
+	background: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.18);
+	border-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.35);
+}
+
+.csetup-root .theme-settings-pill::before {
+	content: "";
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	background: rgba(255, 255, 255, 0.10);
+	border: 1px solid rgba(0, 0, 0, 0.35);
+	box-shadow: none;
+}
+
+.csetup-root .theme-settings-pill.is-rect::before { border-radius: 0px; }
+.csetup-root .theme-settings-pill.is-soft::before { border-radius: 4px; }
+.csetup-root .theme-settings-pill.is-round::before { border-radius: 7px; }
+
+.csetup-root .theme-custom-editor {
+	position: absolute;
+	top: 55px; /* UI tweak */
+	right: 8px;
+	width: 290px; /* UI tweak */
+	padding: 8px 8px 6px;
+	border-radius: 12px;
+	background-color: var(--csetup-panel, rgba(0, 0, 0, 0.35));
+	border: 1px solid var(--csetup-border, rgba(0, 0, 0, 0.25));
+	box-shadow: none;
+	z-index: 11;
+}
+
+.csetup-root .theme-custom-editor-title {
+	margin-bottom: 6px;
+}
+
+.csetup-root .theme-custom-editor-hint {
+	font-size: 11px;
+	opacity: 0.8;
+}
+
+.csetup-root .theme-custom-editor-actions {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	margin-bottom: 6px;
+}
+
+.csetup-root .theme-custom-editor-actions a {
+	padding: 3px 7px;
+	border-radius: var(--csetup-btn-radius, 8px);
+}
+
+/* Foolproof: keep the editor action buttons readable even if the user makes the palette very flat. */
+.csetup-root .theme-custom-editor-actions a.theme-action {
+	background-color: #2b2b2b !important;
+	color: rgba(255, 255, 255, 0.92) !important;
+	border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+.csetup-root .theme-custom-editor-actions a.theme-action:hover {
+	background-color: #3a3a3a !important;
+}
+
+.csetup-root .theme-custom-editor-actions a.theme-action-reset {
+	background-color: #7a1f1f !important;
+	border-color: rgba(255, 107, 107, 0.85) !important;
+}
+
+.csetup-root .theme-custom-editor-actions a.theme-action-reset:hover {
+	background-color: #9a2626 !important;
+}
+
+.csetup-root .theme-custom-editor-table {
+	width: 100%;
+	border-collapse: collapse;
+	background: transparent;
+	border: none;
+}
+
+.csetup-root .theme-custom-editor-table td {
+	padding: 4px 6px;
+	border: none;
+	vertical-align: middle;
+}
+
+.csetup-root .theme-custom-editor-table td.k {
+	white-space: nowrap;
+	opacity: 0.9;
+}
+
+.csetup-root .theme-custom-editor-table td.v {
+	font-family: Consolas, "Courier New", monospace;
+	font-size: 11px;
+	opacity: 0.95;
+}
+
+.csetup-root .theme-custom-editor-table td.a {
+	text-align: right;
+}
+
+.csetup-root .theme-custom-editor-table .colorbox {
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	border-radius: 4px;
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	margin-right: 6px;
+	vertical-align: -2px;
+	cursor: pointer;
+}
+
+/* Override the global "all links are buttons" styling injected by DM for the tiny color chips. */
+.csetup-root .theme-custom-editor-table a.colorbox {
+	padding: 0 !important;
+	margin: 0 6px 0 0 !important;
+	/* Don't override inline background-color; only remove button-like link styling. */
+	background-color: transparent;
+	border-radius: 4px !important;
+	box-shadow: none !important;
+}
+
+.csetup-root .theme-custom-editor-table a.colorbox:hover {
+	transform: none;
+	border-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.65);
+	box-shadow: none;
+}
+
+/* --- Quirks (Modern inline UI) --- */
+.csetup-root.csetup-theme-modern .csetup-quirks {
+	max-width: 980px;
+	margin: 0 auto;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-tabs {
+	display: flex;
+	gap: 6px;
+	justify-content: center;
+	flex-wrap: wrap;
+	margin: 6px 0 10px;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-tabs a {
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: rgba(0, 0, 0, 0.35);
+	border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-tabs a.linkOn {
+	background: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.18) !important;
+	border-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.35) !important;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-list {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-row {
+	position: relative;
+	overflow: hidden;
+	background: rgba(0, 0, 0, 0.45);
+	border: 1px solid rgba(0, 0, 0, 0.85);
+	border-radius: 12px;
+	padding: 8px 10px;
+	box-shadow: none;
+	transition: background-color 0.12s ease-out, border-color 0.12s ease-out;
+	color: var(--csetup-text);
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-row .csetup-quirk-hitbox {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: inherit;
+	background: transparent;
+	border: none;
+	padding: 0;
+	margin: 0;
+	z-index: 3;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-row:not(.is-locked) {
+	cursor: pointer;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-row:hover {
+	transform: none;
+	border-color: rgba(var(--csetup-accent-rgb), 0.28);
+	box-shadow: none;
+	background-color: rgba(var(--csetup-accent-rgb), 0.08);
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-row.is-selected {
+	border-color: rgba(0, 0, 0, 0.85);
+	box-shadow: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-row.is-locked {
+	opacity: 0.90;
+	cursor: not-allowed;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-row.is-locked::before {
+	content: "";
+	position: absolute;
+	top: 10px;
+	bottom: 10px;
+	left: 0;
+	width: 6px;
+	border-radius: 6px;
+	background: #ff5c5c;
+	box-shadow: none;
+	pointer-events: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-row.is-selected::before {
+	content: "";
+	position: absolute;
+	top: 10px;
+	bottom: 10px;
+	left: 0;
+	width: 6px;
+	border-radius: 6px;
+	background: #3bd76b;
+	box-shadow: none;
+	pointer-events: none;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-head {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-title {
+	font-weight: 700;
+	color: var(--csetup-text);
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-cost {
+	font-size: 11px;
+	padding: 2px 8px;
+	border-radius: 999px;
+	border: 1px solid var(--csetup-border);
+	background: rgba(255, 255, 255, 0.06);
+	color: var(--csetup-muted);
+	white-space: nowrap;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-cost.is-positive {
+	border-color: rgba(139, 255, 177, 0.35);
+	background: rgba(139, 255, 177, 0.10);
+	color: #bfffd4;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-cost.is-negative {
+	border-color: rgba(255, 107, 107, 0.35);
+	background: rgba(255, 107, 107, 0.10);
+	color: #ffd0d0;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-cost.is-neutral {
+	border-color: rgba(193, 155, 255, 0.30);
+	background: rgba(193, 155, 255, 0.08);
+	color: #eadcff;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-actions {
+	margin-top: 6px;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-actions a {
+	padding: 4px 10px;
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-actions a:hover {
+	background-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.12);
+}
+
+.csetup-root.csetup-theme-modern .csetup-quirk-desc {
+	position: relative;
+	z-index: 1;
+	margin-top: 6px;
+	color: var(--csetup-muted);
+	line-height: 1.25;
+}
+
+.csetup-root.csetup-theme-modern a.theme-swatch:hover {
+	transform: none;
+}
+
+.csetup-root.csetup-theme-modern a.theme-swatch.active {
+	border-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.75);
+	box-shadow: none;
+}
+
+/* Optional utility classes you can use later for custom buttons */
+.csetup-root.csetup-theme-modern .csetup-btn {
+	display: inline-block;
+	padding: 5px 8px;
+	border-radius: 8px;
+	background: var(--csetup-panel-2);
+	border: 1px solid var(--csetup-border);
+	color: var(--csetup-text);
+}
+
+.csetup-root.csetup-theme-modern .csetup-btn--danger {
+	background: rgba(255, 107, 107, 0.12);
+	border-color: rgba(255, 107, 107, 0.28);
+	color: var(--csetup-text);
+}
