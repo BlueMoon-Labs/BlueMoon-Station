@@ -61,10 +61,13 @@ GLOBAL_LIST_EMPTY(simple_research)
 
 /datum/simple_research/inducer
 	research_item = /obj/item/inducer
-	required_items = list(/datum/simple_research/cell)
+	skilled_item = /obj/item/inducer/syndicate
+	required_items = list(
+		/datum/simple_research/cell,
+	)
 
 /datum/simple_research/pacman
-	research_item = /obj/machinery/power/port_gen/pacman
+	research_item = /obj/item/circuitboard/machine/pacman
 	required_items = list(/datum/simple_research/cell)
 
 /datum/simple_research/smes
@@ -84,6 +87,14 @@ GLOBAL_LIST_EMPTY(simple_research)
 
 /datum/simple_research/multitool
 	research_item = /obj/item/multitool
+	skilled_item = /obj/item/multitool/abductor
+
+/datum/simple_research/pipe_dispenser
+	research_item = /obj/item/pipe_dispenser
+	skilled_item = /obj/item/pipe_dispenser/bluespace
+	required_items = list(
+		/datum/simple_research/multitool,
+	)
 
 // ============================================
 // RESEARCH PAPER ITEM
@@ -125,7 +136,7 @@ GLOBAL_LIST_EMPTY(simple_research)
 
 	// ПРОВЕРКА: Может ли персонаж использовать research paper через TRAIT
 	if(!HAS_TRAIT(user, TRAIT_KNOWS_RESEARCH))
-		to_chat(user, "<span class='warning'>Вы не знаете, как использовать этот странный метод исследования.!</span>")
+		to_chat(user, "<span class='warning'>Вы не знаете, как использовать этот странный метод исследования!</span>")
 		return
 
 	var/research_level = get_research_level(user)
