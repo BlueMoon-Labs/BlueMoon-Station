@@ -8,6 +8,11 @@
 	var/randomdir = TRUE
 	var/timerid
 
+/obj/effect/temp_visual/New(loc, _duration, ...)
+	if(!isnull(_duration))
+		duration = _duration
+	return ..()
+
 /obj/effect/temp_visual/Initialize(mapload)
 	. = ..()
 	if(randomdir)
