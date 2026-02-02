@@ -4,12 +4,12 @@
 	icon_state = "hallucination"
 	aSignal = /obj/item/assembly/signaler/anomaly/poly
 	drops_core = FALSE
-	var/const/work_range = 4
+	var/const/work_range = 3
 	var/const/detonate_range = 16
 
 /obj/effect/anomaly/poly/anomalyEffect(seconds_per_tick)
 	. = ..()
-	for(var/mob/living/carbon/human/H in range(work_range, src))
+	for(var/mob/living/carbon/human/H in view(work_range, src))
 		randomize_appearance(H)
 	spawn_mass_effects(work_range, 15)
 
