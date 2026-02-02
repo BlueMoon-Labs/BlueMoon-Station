@@ -17,7 +17,7 @@
 	. = ..()
 	for(var/mob/living/carbon/human/H in range(detonate_range, src))
 		randomize_appearance(H)
-	spawn_mass_effects(detonate_range, 70)
+	spawn_mass_effects(detonate_range, 80, TRUE)
 
 	playsound(get_turf(src), 'sound/effects/magic.ogg', 100, TRUE)
 	priority_announce("Обнаружен вспеск полиморф частиц.", "ВНИМАНИЕ: АНОМАЛИЯ")
@@ -35,7 +35,7 @@
 
 // Генерим ожидаемое кол-во спавнов и раскидываем случайно.
 // chance=10 означает примерно 10% площади квадрата orange.
-/obj/effect/anomaly/poly/proc/spawn_mass_effects(range, chance = 10)
+/obj/effect/anomaly/poly/proc/spawn_mass_effects(range, chance = 10, long = FALSE)
 	if(QDELETED(src) || range <= 0 || chance <= 0)
 		return
 
@@ -67,5 +67,8 @@
 			continue
 
 		used[T] = TRUE
-		new /obj/effect/temp_visual/revenant(T)
+		if(long)
+			new /obj/effect/temp_visual/revenant/fivesecond(T)
+		else
+			new /obj/effect/temp_visual/revenant(T)
 		target--
