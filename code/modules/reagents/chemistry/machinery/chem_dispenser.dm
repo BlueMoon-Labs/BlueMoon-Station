@@ -99,6 +99,8 @@
 	var/static/list/recipes_by_result
 	/// Static cache mapping recipe datum -> its name in normalized_chemical_reactions_list
 	var/static/list/recipe_to_name
+	/// Static cache mapping "recipe_name|alt_index" -> datum/chemical_reaction for alt recipe lookups
+	var/static/list/alt_recipe_datums
 
 	/// Instance cache for this dispenser's computed game recipes (depends on dispensable_reagents)
 	var/list/cached_dispenser_game_recipes
@@ -114,7 +116,11 @@
 		return
 
 	cached_game_recipes_data = list()
+	alt_recipe_datums = list()
 	build_recipes_by_result_cache()
+
+	// Track which reaction datums we've already processed (to avoid duplicates from alt recipes)
+	var/list/processed_reactions = list()
 
 	for(var/recipe_name in GLOB.normalized_chemical_reactions_list)
 		var/datum/chemical_reaction/R = GLOB.normalized_chemical_reactions_list[recipe_name]
@@ -123,6 +129,8 @@
 		// Skip recipes with no reagent results
 		if(!length(R.results))
 			continue
+
+		processed_reactions[R] = TRUE
 
 		var/recipe_category = "other"
 		var/recipe_desc = ""
@@ -178,6 +186,80 @@
 			var/reagent_name = reagent ? reagent.name : "[reagent_type]"
 			catalysts[reagent_name] = R.required_catalysts[reagent_type]
 
+		// Collect alternative recipes that produce the same primary result
+		var/list/alt_recipes = list()
+		var/list/alt_producing = recipes_by_result[result_type]
+		if(length(alt_producing))
+			var/alt_index = 1
+			for(var/datum/chemical_reaction/alt_R as anything in alt_producing)
+				if(alt_R == R || alt_R.is_secret || processed_reactions[alt_R])
+					continue
+				if(!length(alt_R.results))
+					continue
+				// Skip slime extract recipes - they belong in their own category and can't be made in a dispenser
+				if(ispath(alt_R.required_container, /obj/item/slime_extract))
+					continue
+				processed_reactions[alt_R] = TRUE
+
+				var/list/alt_required = list()
+				for(var/reagent_type in alt_R.required_reagents)
+					var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
+					var/reagent_name = reagent ? reagent.name : "[reagent_type]"
+					alt_required[reagent_name] = alt_R.required_reagents[reagent_type]
+
+				var/list/alt_sub_recipes = list()
+				for(var/reagent_type in alt_R.required_reagents)
+					var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
+					var/reagent_name = reagent ? reagent.name : "[reagent_type]"
+					var/list/alt_producing_sub = recipes_by_result[reagent_type]
+					if(length(alt_producing_sub))
+						for(var/datum/chemical_reaction/alt_sub_R as anything in alt_producing_sub)
+							if(alt_sub_R.is_secret)
+								continue
+							var/list/alt_sub_required = list()
+							for(var/sub_reagent_type in alt_sub_R.required_reagents)
+								var/datum/reagent/sub_reagent = GLOB.chemical_reagents_list[sub_reagent_type]
+								var/sub_reagent_name = sub_reagent ? sub_reagent.name : "[sub_reagent_type]"
+								alt_sub_required[sub_reagent_name] = alt_sub_R.required_reagents[sub_reagent_type]
+							var/alt_sub_recipe_name = recipe_to_name[alt_sub_R]
+							alt_sub_recipes[reagent_name] = list(
+								"recipe_name" = alt_sub_recipe_name,
+								"required" = alt_sub_required,
+								"temp" = alt_sub_R.required_temp,
+								"is_cold" = alt_sub_R.is_cold_recipe
+							)
+							break
+
+				var/list/alt_catalysts = list()
+				for(var/reagent_type in alt_R.required_catalysts)
+					var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
+					var/reagent_name = reagent ? reagent.name : "[reagent_type]"
+					alt_catalysts[reagent_name] = alt_R.required_catalysts[reagent_type]
+
+				alt_recipes += list(list(
+					"required" = alt_required,
+					"catalysts" = alt_catalysts,
+					"temp" = alt_R.required_temp,
+					"is_cold" = alt_R.is_cold_recipe,
+					"result_amount" = alt_R.results[result_type] || 1,
+					"sub_recipes" = alt_sub_recipes,
+					"is_fermichem" = alt_R.FermiChem,
+					"optimal_temp_min" = alt_R.OptimalTempMin,
+					"optimal_temp_max" = alt_R.OptimalTempMax,
+					"explode_temp" = alt_R.ExplodeTemp,
+					"optimal_ph_min" = alt_R.OptimalpHMin,
+					"optimal_ph_max" = alt_R.OptimalpHMax,
+					"react_ph_lim" = alt_R.ReactpHLim,
+					"purity_min" = alt_R.PurityMin,
+					"thermic_constant" = alt_R.ThermicConstant,
+					"h_ion_release" = alt_R.HIonRelease,
+					"fermi_explode" = alt_R.FermiExplode,
+					"fermi_explode" = alt_R.FermiExplode
+				))
+				// Store the datum for backend dispense lookup
+				alt_recipe_datums["[recipe_name]|[alt_index]"] = alt_R
+				alt_index++
+
 		cached_game_recipes_data[recipe_name] = list(
 			"required" = required,
 			"catalysts" = catalysts,
@@ -199,25 +281,40 @@
 			"h_ion_release" = R.HIonRelease,
 			"fermi_explode" = R.FermiExplode,
 			"is_extract_recipe" = is_extract_recipe,
-			"extract_container_name" = extract_container_name
+			"extract_container_name" = extract_container_name,
+			"alt_recipes" = alt_recipes
 		)
 
 /// Builds a reverse index: reagent_type -> list of recipes that produce it
 /// This fixes cascade recipe lookups which need to find recipes by their RESULT, not by required reagents
+/// Iterates all chemical reactions (not just normalized_chemical_reactions_list) to capture
+/// alternative recipes that produce the same reagent (e.g. Strange Reagent has 2 recipes)
 /obj/machinery/chem_dispenser/proc/build_recipes_by_result_cache()
 	if(recipes_by_result)
 		return
 	recipes_by_result = list()
 	recipe_to_name = list()
-	for(var/recipe_name in GLOB.normalized_chemical_reactions_list)
-		var/datum/chemical_reaction/R = GLOB.normalized_chemical_reactions_list[recipe_name]
-		recipe_to_name[R] = recipe_name
-		if(R.is_secret)
-			continue
-		for(var/result_type in R.results)
-			if(!recipes_by_result[result_type])
-				recipes_by_result[result_type] = list()
-			recipes_by_result[result_type] += R
+
+	// Collect all unique reaction datums from chemical_reactions_list
+	var/list/all_reactions = list()
+	for(var/reagent_id in GLOB.chemical_reactions_list)
+		for(var/datum/chemical_reaction/R as anything in GLOB.chemical_reactions_list[reagent_id])
+			if(all_reactions[R])
+				continue
+			all_reactions[R] = TRUE
+			// Build name from result reagent for recipe_to_name mapping
+			if(R.id && !R.is_secret && ispath(R.id, /datum/reagent))
+				var/datum/reagent/r = R.id
+				var/rname = initial(r.name)
+				if(!recipe_to_name[R])
+					recipe_to_name[R] = rname
+			if(R.is_secret)
+				continue
+			for(var/result_type in R.results)
+				if(!recipes_by_result[result_type])
+					recipes_by_result[result_type] = list()
+				if(!(R in recipes_by_result[result_type]))
+					recipes_by_result[result_type] += R
 
 /// Calculates the minimum manipulator tier required to auto-dispense a recipe.
 /// reagent_tiers is a mapping of reagent_type -> minimum tier needed to dispense it.
@@ -677,6 +774,92 @@
 
 		var/recipe_tier = calculate_recipe_tier(R, reagent_tiers)
 
+		// Enrich alt_recipes with base_ingredients/tier/can_make
+		var/list/enriched_alt_recipes = list()
+		var/list/cached_alt_recipes = cached_recipe["alt_recipes"]
+		if(length(cached_alt_recipes))
+			var/alt_idx = 1
+			for(var/list/alt_recipe as anything in cached_alt_recipes)
+				var/datum/chemical_reaction/alt_R = alt_recipe_datums["[recipe_name]|[alt_idx]"]
+				alt_idx++
+				if(!alt_R)
+					continue
+
+				var/list/alt_base_data = get_recipe_base_ingredients_data(alt_R)
+				var/list/alt_base_ingredients = alt_base_data["ingredients"]
+				var/list/alt_intermediate_yields = alt_base_data["intermediate_yields"]
+
+				var/alt_can_make = TRUE
+				for(var/alt_reagent_name in alt_base_ingredients)
+					if(!alt_base_ingredients[alt_reagent_name]["can_dispense"])
+						alt_can_make = FALSE
+						break
+
+				var/list/alt_enriched_sub_recipes = list()
+				var/list/alt_original_sub_recipes = alt_recipe["sub_recipes"]
+				if(length(alt_original_sub_recipes))
+					for(var/alt_reagent_name in alt_original_sub_recipes)
+						var/list/alt_sub_data = alt_original_sub_recipes[alt_reagent_name]
+						var/alt_sub_recipe_name = alt_sub_data["recipe_name"]
+						var/datum/chemical_reaction/alt_sub_R = GLOB.normalized_chemical_reactions_list[alt_sub_recipe_name]
+						if(!alt_sub_R)
+							alt_enriched_sub_recipes[alt_reagent_name] = alt_sub_data
+							continue
+
+						var/list/alt_sub_base = get_base_ingredients(alt_sub_R.required_reagents, 1)
+						var/list/alt_sub_base_with_info = list()
+						for(var/alt_sub_reagent_type in alt_sub_base)
+							var/datum/reagent/alt_sub_reagent = GLOB.chemical_reagents_list[alt_sub_reagent_type]
+							var/alt_sub_reagent_name = alt_sub_reagent ? alt_sub_reagent.name : "[alt_sub_reagent_type]"
+							var/alt_sub_can_dispense = (alt_sub_reagent_type in dispensable_reagents)
+							alt_sub_base_with_info[alt_sub_reagent_name] = list(
+								"amount" = alt_sub_base[alt_sub_reagent_type],
+								"can_dispense" = alt_sub_can_dispense
+							)
+
+						var/alt_result_type = null
+						for(var/rtype in alt_sub_R.results)
+							var/datum/reagent/check = GLOB.chemical_reagents_list[rtype]
+							if(check && check.name == alt_reagent_name)
+								alt_result_type = rtype
+								break
+						var/alt_sub_result_amount = alt_result_type ? (alt_sub_R.results[alt_result_type] || 1) : 1
+
+						alt_enriched_sub_recipes[alt_reagent_name] = list(
+							"recipe_name" = alt_sub_data["recipe_name"],
+							"required" = alt_sub_data["required"],
+							"temp" = alt_sub_data["temp"],
+							"is_cold" = alt_sub_data["is_cold"],
+							"base_ingredients" = alt_sub_base_with_info,
+							"result_amount" = alt_sub_result_amount
+						)
+
+				var/alt_recipe_tier = calculate_recipe_tier(alt_R, reagent_tiers)
+
+				enriched_alt_recipes += list(list(
+					"required" = alt_recipe["required"],
+					"catalysts" = alt_recipe["catalysts"],
+					"temp" = alt_recipe["temp"],
+					"is_cold" = alt_recipe["is_cold"],
+					"can_make" = alt_can_make,
+					"tier" = alt_recipe_tier,
+					"result_amount" = alt_recipe["result_amount"],
+					"sub_recipes" = alt_enriched_sub_recipes,
+					"base_ingredients" = alt_base_ingredients,
+					"intermediate_yields" = alt_intermediate_yields,
+					"is_fermichem" = alt_recipe["is_fermichem"],
+					"optimal_temp_min" = alt_recipe["optimal_temp_min"],
+					"optimal_temp_max" = alt_recipe["optimal_temp_max"],
+					"explode_temp" = alt_recipe["explode_temp"],
+					"optimal_ph_min" = alt_recipe["optimal_ph_min"],
+					"optimal_ph_max" = alt_recipe["optimal_ph_max"],
+					"react_ph_lim" = alt_recipe["react_ph_lim"],
+					"purity_min" = alt_recipe["purity_min"],
+					"thermic_constant" = alt_recipe["thermic_constant"],
+					"h_ion_release" = alt_recipe["h_ion_release"],
+					"fermi_explode" = alt_recipe["fermi_explode"]
+				))
+
 		cached_dispenser_game_recipes[recipe_name] = list(
 			"required" = cached_recipe["required"],
 			"catalysts" = cached_recipe["catalysts"],
@@ -702,7 +885,8 @@
 			"h_ion_release" = cached_recipe["h_ion_release"],
 			"fermi_explode" = cached_recipe["fermi_explode"],
 			"is_extract_recipe" = cached_recipe["is_extract_recipe"],
-			"extract_container_name" = cached_recipe["extract_container_name"]
+			"extract_container_name" = cached_recipe["extract_container_name"],
+			"alt_recipes" = enriched_alt_recipes
 		)
 
 /obj/machinery/chem_dispenser/ui_act(action, params)
@@ -828,11 +1012,28 @@
 				return
 			var/recipe_name = params["recipe"]
 			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, 100)
-			var/datum/chemical_reaction/R = GLOB.normalized_chemical_reactions_list[recipe_name]
+			var/alt_index = text2num(params["alt_index"]) || 0
+
+			var/datum/chemical_reaction/R
+			var/list/recipe_data = cached_dispenser_game_recipes[recipe_name]
+			if(!recipe_data)
+				return
+			if(alt_index > 0)
+				R = alt_recipe_datums["[recipe_name]|[alt_index]"]
+			else
+				R = GLOB.normalized_chemical_reactions_list[recipe_name]
 			if(!R)
 				return
-			var/list/recipe_data = cached_dispenser_game_recipes[recipe_name]
-			var/recipe_tier = recipe_data ? recipe_data["tier"] : 0
+
+			var/recipe_tier
+			if(alt_index > 0)
+				var/list/alt_recipes = recipe_data["alt_recipes"]
+				if(!length(alt_recipes) || alt_index > length(alt_recipes))
+					return
+				recipe_tier = alt_recipes[alt_index]["tier"] || 0
+			else
+				recipe_tier = recipe_data["tier"] || 0
+
 			if(recipe_tier >= CHEM_RECIPE_EMAG_TIER)
 				if(!(obj_flags & EMAGGED))
 					say("Требуется взлом протоколов безопасности!")
@@ -860,7 +1061,7 @@
 				BR.add_reagent(reagent_type, actual)
 				logstring += "[reagent_type] = [actual]"
 			work_animation()
-			log_reagent("DISPENSER: [key_name(usr)] dispensed game recipe [recipe_name] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
+			log_reagent("DISPENSER: [key_name(usr)] dispensed game recipe [recipe_name][alt_index ? " alt#[alt_index]" : ""] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
 			. = TRUE
 		if("dispense_sub_recipe")
 			if(!is_operational() || QDELETED(cell) || !beaker)
@@ -868,12 +1069,27 @@
 			var/recipe_name = params["recipe"]
 			var/sub_reagent_name = params["sub_reagent"]
 			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, 100)
+			var/alt_index = text2num(params["alt_index"]) || 0
 
-			var/datum/chemical_reaction/R = GLOB.normalized_chemical_reactions_list[recipe_name]
+			var/datum/chemical_reaction/R
+			if(alt_index > 0)
+				R = alt_recipe_datums["[recipe_name]|[alt_index]"]
+			else
+				R = GLOB.normalized_chemical_reactions_list[recipe_name]
 			if(!R)
 				return
 			var/list/recipe_data_sub = cached_dispenser_game_recipes[recipe_name]
-			if(recipe_data_sub && recipe_data_sub["tier"] > manipulator_tier)
+			if(!recipe_data_sub)
+				return
+			var/check_tier
+			if(alt_index > 0)
+				var/list/alt_recipes = recipe_data_sub["alt_recipes"]
+				if(!length(alt_recipes) || alt_index > length(alt_recipes))
+					return
+				check_tier = alt_recipes[alt_index]["tier"] || 0
+			else
+				check_tier = recipe_data_sub["tier"] || 0
+			if(check_tier > manipulator_tier)
 				say("Недостаточный уровень манипулятора для этого рецепта!")
 				return
 
@@ -925,7 +1141,7 @@
 				BR.add_reagent(reagent_type, actual)
 				logstring += "[reagent_type] = [actual]"
 			work_animation()
-			log_reagent("DISPENSER: [key_name(usr)] dispensed sub-recipe [sub_reagent_name] for [recipe_name] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
+			log_reagent("DISPENSER: [key_name(usr)] dispensed sub-recipe [sub_reagent_name] for [recipe_name][alt_index ? " alt#[alt_index]" : ""] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
 			. = TRUE
 		if("dispense_final_step")
 			// Skip true intermediates (in sub_recipes AND not directly dispensable)
@@ -933,18 +1149,38 @@
 				return
 			var/recipe_name = params["recipe"]
 			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, 100)
+			var/alt_index = text2num(params["alt_index"]) || 0
 
-			var/datum/chemical_reaction/R = GLOB.normalized_chemical_reactions_list[recipe_name]
+			var/datum/chemical_reaction/R
+			if(alt_index > 0)
+				R = alt_recipe_datums["[recipe_name]|[alt_index]"]
+			else
+				R = GLOB.normalized_chemical_reactions_list[recipe_name]
 			if(!R)
 				return
 			var/list/recipe_data_final = cached_dispenser_game_recipes[recipe_name]
-			if(recipe_data_final && recipe_data_final["tier"] > manipulator_tier)
+			if(!recipe_data_final)
+				return
+			var/check_tier
+			if(alt_index > 0)
+				var/list/alt_recipes = recipe_data_final["alt_recipes"]
+				if(!length(alt_recipes) || alt_index > length(alt_recipes))
+					return
+				check_tier = alt_recipes[alt_index]["tier"] || 0
+			else
+				check_tier = recipe_data_final["tier"] || 0
+			if(check_tier > manipulator_tier)
 				say("Недостаточный уровень манипулятора для этого рецепта!")
 				return
 
 			build_dispenser_recipes_cache()
 			var/list/recipe_data = cached_dispenser_game_recipes[recipe_name]
-			var/list/this_recipe_sub_recipes = recipe_data ? recipe_data["sub_recipes"] : list()
+			var/list/this_recipe_sub_recipes
+			if(alt_index > 0)
+				var/list/alt_recipes_data = recipe_data ? recipe_data["alt_recipes"] : list()
+				this_recipe_sub_recipes = (length(alt_recipes_data) >= alt_index) ? alt_recipes_data[alt_index]["sub_recipes"] : list()
+			else
+				this_recipe_sub_recipes = recipe_data ? recipe_data["sub_recipes"] : list()
 
 			var/list/logstring = list()
 			for(var/reagent_type in R.required_reagents)
@@ -970,7 +1206,7 @@
 				BR.add_reagent(reagent_type, actual)
 				logstring += "[reagent_type] = [actual]"
 			work_animation()
-			log_reagent("DISPENSER: [key_name(usr)] dispensed final step for [recipe_name] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
+			log_reagent("DISPENSER: [key_name(usr)] dispensed final step for [recipe_name][alt_index ? " alt#[alt_index]" : ""] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
 			. = TRUE
 		if("clear_recipes")
 			if(!is_operational())
@@ -1101,6 +1337,9 @@
 			. = TRUE
 
 /obj/machinery/chem_dispenser/proc/SetAmount(inputAmount)
+	if(inputAmount <= 1) //Always allow 1u dosage
+		amount = max(inputAmount, 1)
+		return
 	if(inputAmount % 5 == 0) //Always allow 5u values
 		amount = inputAmount
 		return

@@ -4,7 +4,6 @@ import {
   Button,
   Divider,
   Icon,
-  Stack,
   Tooltip,
 } from '../../components';
 
@@ -39,7 +38,7 @@ export const FermiChemDetails = (props) => {
   const getThermicInfo = (constant) => {
     if (constant <= -10) return { text: 'Сильно охлаждает', color: 'blue', icon: 'snowflake' };
     if (constant < -1) return { text: 'Охлаждает', color: 'teal', icon: 'temperature-low' };
-    if (constant <= 1) return { text: 'Нагрев: нет', color: 'label', icon: 'minus' };
+    if (constant <= 1) return { text: 'Нейтрально', color: 'label', icon: 'minus' };
     if (constant < 10) return { text: 'Нагревает', color: 'orange', icon: 'temperature-high' };
     return { text: 'Сильно нагревает', color: 'red', icon: 'fire' };
   };
@@ -47,7 +46,7 @@ export const FermiChemDetails = (props) => {
   const getPhDriftInfo = (release) => {
     if (release <= -0.05) return { text: 'Ощелачивает', color: 'blue', icon: 'arrow-up' };
     if (release >= 0.05) return { text: 'Окисляет', color: 'orange', icon: 'arrow-down' };
-    return { text: 'pH: стабильно', color: 'label', icon: 'minus' };
+    return { text: 'pH стабильно', color: 'label', icon: 'minus' };
   };
 
   const thermic = getThermicInfo(recipe.thermic_constant);
@@ -55,73 +54,56 @@ export const FermiChemDetails = (props) => {
 
   return (
     <Box
-      fontSize="11px"
-      mt={0.5}
-      py={0.3}
-      style={{ borderLeft: '3px solid #8844aa', paddingLeft: '6px' }}>
-      <Stack mb={0.3}>
-        <Stack.Item>
-          <Icon name="thermometer-half" color="orange" mr={0.5} />
-          <Box as="span" color="label">Темп: </Box>
-          <Box as="span" color={isTempNarrow ? 'bad' : 'good'} bold={isTempNarrow}>
-            {recipe.optimal_temp_min}-{recipe.optimal_temp_max}K
-          </Box>
-          {isTempNarrow && (
-            <Tooltip content="Узкий диапазон температуры!">
-              <Icon name="exclamation-triangle" color="yellow" ml={0.3} />
-            </Tooltip>
-          )}
-          <Box as="span" ml={0.5} color="label">&middot;</Box>
-          <Box as="span" ml={0.5}>
-            <Icon name="bomb" color="red" mr={0.3} />
-            <Box as="span" color="label">Взрыв: </Box>
-            <Box as="span" color="bad">{recipe.explode_temp}K</Box>
-          </Box>
-        </Stack.Item>
-        <Stack.Item ml={2}>
-          <Icon name="tint" color="teal" mr={0.5} />
-          <Box as="span" color="label">pH: </Box>
-          <Box as="span" color={isPhNarrow ? 'bad' : 'good'} bold={isPhNarrow}>
-            {recipe.optimal_ph_min.toFixed(1)}-{recipe.optimal_ph_max.toFixed(1)}
-          </Box>
-          {isPhNarrow && (
-            <Tooltip content="Узкий диапазон pH!">
-              <Icon name="exclamation-triangle" color="yellow" ml={0.3} />
-            </Tooltip>
-          )}
-          <Tooltip content={`Эффективные границы: ${phMin.toFixed(1)}-${phMax.toFixed(1)}`}>
-            <Icon name="info-circle" color="label" ml={0.3} size={0.9} />
-          </Tooltip>
-        </Stack.Item>
-      </Stack>
-
+      fontSize="10px"
+      mt={0.3}
+      py={0.2}
+      style={{ borderLeft: '2px solid #8844aa', paddingLeft: '5px' }}>
       <Box>
+        <Icon name="thermometer-half" color="orange" mr={0.3} />
+        <Box as="span" color={isTempNarrow ? 'bad' : 'good'} bold={isTempNarrow}>
+          {recipe.optimal_temp_min}-{recipe.optimal_temp_max}K
+        </Box>
+        {isTempNarrow && (
+          <Icon name="exclamation-triangle" color="yellow" ml={0.3} />
+        )}
+        <Box as="span" color="label" mx={0.3}>&middot;</Box>
+        <Icon name="bomb" color="red" mr={0.3} />
+        <Box as="span" color="bad">{recipe.explode_temp}K</Box>
+        <Box as="span" color="label" mx={0.3}>&middot;</Box>
+        <Icon name="tint" color="teal" mr={0.3} />
+        <Box as="span" color={isPhNarrow ? 'bad' : 'good'} bold={isPhNarrow}>
+          {recipe.optimal_ph_min.toFixed(1)}-{recipe.optimal_ph_max.toFixed(1)}
+        </Box>
+        {isPhNarrow && (
+          <Icon name="exclamation-triangle" color="yellow" ml={0.3} />
+        )}
+        <Tooltip content={`Эффективные границы pH: ${phMin.toFixed(1)}-${phMax.toFixed(1)}`}>
+          <Icon name="info-circle" color="label" ml={0.3} size={0.8} />
+        </Tooltip>
+        <Box as="span" color="label" mx={0.3}>&middot;</Box>
         <Icon name={thermic.icon} color={thermic.color} mr={0.3} />
         <Box as="span" color={thermic.color}>{thermic.text}</Box>
-        <Box as="span" color="label" mx={0.5}>&middot;</Box>
+        <Box as="span" color="label" mx={0.3}>&middot;</Box>
         <Icon name={phDrift.icon} color={phDrift.color} mr={0.3} />
         <Box as="span" color={phDrift.color}>{phDrift.text}</Box>
+        {(hasPurityRisk || hasSpecialExplosion) && (
+          <>
+            <Box as="span" color="label" mx={0.3}>&middot;</Box>
+            {hasPurityRisk && (
+              <Box as="span" color="yellow">
+                <Icon name="exclamation-triangle" mr={0.3} />
+                Чистота &ge;{(recipe.purity_min * 100).toFixed(0)}%
+              </Box>
+            )}
+            {hasSpecialExplosion && (
+              <Box as="span" color="red" bold ml={hasPurityRisk ? 0.3 : 0}>
+                <Icon name="radiation" mr={0.3} />
+                Взрыв!
+              </Box>
+            )}
+          </>
+        )}
       </Box>
-
-      {(hasPurityRisk || hasSpecialExplosion) && (
-        <Box mt={0.3}>
-          {hasPurityRisk && (
-            <Box as="span" color="yellow">
-              <Icon name="exclamation-triangle" mr={0.3} />
-              Чистота &ge;{(recipe.purity_min * 100).toFixed(0)}%
-            </Box>
-          )}
-          {hasPurityRisk && hasSpecialExplosion && (
-            <Box as="span" color="label" mx={0.5}>&middot;</Box>
-          )}
-          {hasSpecialExplosion && (
-            <Box as="span" color="red" bold>
-              <Icon name="radiation" mr={0.3} />
-              Особый взрыв при перегреве
-            </Box>
-          )}
-        </Box>
-      )}
     </Box>
   );
 };
@@ -136,6 +118,7 @@ export const SubRecipeDispenseButton = (props, context) => {
     isBeakerLoaded,
     beakerByName,
     isUnlocked = true,
+    altIndex = 0,
   } = props;
 
   const baseIngredients = subRecipe.base_ingredients || {};
@@ -193,6 +176,7 @@ export const SubRecipeDispenseButton = (props, context) => {
         recipe: recipeName,
         sub_reagent: reagentName,
         multiplier: multiplier,
+        ...(altIndex > 0 ? { alt_index: altIndex } : {}),
       })}>
       {reagentName}
       {temp > 0 && (
@@ -223,6 +207,7 @@ export const FinalStepButton = (props, context) => {
     isBeakerLoaded,
     beakerByName,
     isUnlocked = true,
+    altIndex = 0,
   } = props;
 
   // TRUE intermediate = in sub_recipes AND not directly dispensable
@@ -267,6 +252,7 @@ export const FinalStepButton = (props, context) => {
       onClick={() => act('dispense_final_step', {
         recipe: recipeName,
         multiplier: multiplier,
+        ...(altIndex > 0 ? { alt_index: altIndex } : {}),
       })}>
       +Финал
     </Button>
@@ -274,7 +260,7 @@ export const FinalStepButton = (props, context) => {
 };
 
 export const SubRecipesChain = (props) => {
-  const { recipe, name, multiplier, isBeakerLoaded, beakerByName, isUnlocked = true } = props;
+  const { recipe, name, multiplier, isBeakerLoaded, beakerByName, isUnlocked = true, altIndex = 0 } = props;
   const baseIngredients = recipe.base_ingredients || {};
 
   // Only show intermediates that must be synthesized (not directly dispensable)
@@ -312,6 +298,7 @@ export const SubRecipesChain = (props) => {
               isBeakerLoaded={isBeakerLoaded}
               beakerByName={beakerByName}
               isUnlocked={isUnlocked}
+              altIndex={altIndex}
             />
           </span>
         ))}
@@ -325,6 +312,7 @@ export const SubRecipesChain = (props) => {
               isBeakerLoaded={isBeakerLoaded}
               beakerByName={beakerByName}
               isUnlocked={isUnlocked}
+              altIndex={altIndex}
             />
           </>
         )}
