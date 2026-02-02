@@ -55,6 +55,7 @@
 
 	var/list/used = list() // set: turf => TRUE
 	var/tries = target * 6 // чтобы выбить нужное кол-во уникальных точек
+	var/effect = long ? /obj/effect/temp_visual/revenant/fivesecond : /obj/effect/temp_visual/revenant
 
 	while(target > 0 && tries-- > 0)
 		var/dx = rand(-range, range)
@@ -67,8 +68,5 @@
 			continue
 
 		used[T] = TRUE
-		if(long)
-			new /obj/effect/temp_visual/revenant/fivesecond(T)
-		else
-			new /obj/effect/temp_visual/revenant(T)
+		new effect(T)
 		target--
