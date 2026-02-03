@@ -1996,55 +1996,8 @@
 	path = /obj/item/storage/box/imperium_flags
 	ckeywhitelist = list("domilion")
 
-/datum/gear/donator/bm/gestapo_uniform
-	name = "Truth Enforcer Uniform"
-	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/under/donator/gestapo
-	ckeywhitelist = list("monolithxxv")
-
-/datum/gear/donator/bm/gestapo_cloak
-	name = "Truth Enforcer cloak"
-	slot = ITEM_SLOT_NECK
-	path = /obj/item/clothing/neck/cloak/gestapo
-	ckeywhitelist = list("monolithxxv")
-
-/datum/gear/donator/bm/gestapo_head
-	name = "Truth Enforcer Cap"
-	slot = ITEM_SLOT_HEAD
-	path = /obj/item/clothing/head/donator/bm/gestapo
-	ckeywhitelist = list("monolithxxv")
-
-/datum/gear/donator/bm/gestapo_mask
-	name = "Truth Enforcer Mask"
-	slot = ITEM_SLOT_MASK
-	path = /obj/item/clothing/mask/breath/gestapo
-	ckeywhitelist = list("monolithxxv")
-
-/datum/gear/donator/bm/cultist_poly
-	name = "Aged Robe"
-	slot = ITEM_SLOT_OCLOTHING
-	path = /obj/item/clothing/suit/donator/bm/cultist_poly
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
-	loadout_initial_colors = list("#202020", "#C5302D")
-	ckeywhitelist = list("monolithxxv")
-
-/datum/gear/donator/bm/exo_legs
-	name = "Exo Legs"
-	slot = ITEM_SLOT_FEET
-	path = /obj/item/clothing/shoes/exo_legs
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
-	loadout_initial_colors = list("#202020", "#C5302D")
-	ckeywhitelist = list("monolithxxv")
-
 /datum/gear/donator/bm/dark_sabre_kit
 	name = "Dark Omen Sword Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/dark_sabre_kit
 	ckeywhitelist = list("hellsinggc")
-
-/datum/gear/donator/bm/gosei
-	name = "Gosei.H.mk27"
-	slot = ITEM_SLOT_HEAD
-	path = /obj/item/clothing/head/helmet/sec/gosei
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
-	ckeywhitelist = list("monolithxxv")
