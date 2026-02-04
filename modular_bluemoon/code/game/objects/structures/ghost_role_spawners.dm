@@ -38,6 +38,11 @@
 
 
 mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
+	var/static/list/buttons = list(
+		/datum/action/toggle_dead_chat_mob,
+		/datum/action/disguise,
+		/datum/action/cooldown/ghost_role_eligible,
+	)
 	if(switch_on)
 		AddElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _low_priority = TRUE)
 		AddElement(/datum/element/dusts_on_catatonia)
@@ -50,10 +55,9 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		ADD_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
 		ADD_TRAIT(src, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT) //The mob can't be made into a random antag, they are still eligible for ghost roles popups.
 
-		var/datum/action/toggle_dead_chat_mob/D = new(src)
-		D.Grant(src)
-		var/datum/action/disguise/disguise_action = new(src)
-		disguise_action.Grant(src)
+		for(var/path in buttons)
+			var/datum/action/D = new path(src)
+			D.Grant(src)
 
 	else
 		RemoveElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _low_priority = TRUE)
@@ -68,14 +72,16 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		REMOVE_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
 		REMOVE_TRAIT(src, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)
 
-		var/datum/action/toggle_dead_chat_mob/D = locate(/datum/action/toggle_dead_chat_mob) in actions
-		if(D)
+		for(var/path in buttons)
+			var/datum/action/D = locate(path) in actions
+			if(!D)
+				continue
+
+			if(istype(D, /datum/action/disguise))
+				var/datum/action/disguise/Ddisg = D
+				if(Ddisg.currently_disguised)
+					remove_alt_appearance("ghost_cafe_disguise")
 			D.Remove(src)
-		var/datum/action/disguise/disguise_action = locate(/datum/action/disguise) in actions
-		if(disguise_action)
-			if(disguise_action.currently_disguised)
-				remove_alt_appearance("ghost_cafe_disguise")
-			disguise_action.Remove(src)
 
 /obj/effect/mob_spawn/qareen/attack_ghost(mob/user, latejoinercalling)
 	if(GLOB.master_mode == "Extended")
