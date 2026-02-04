@@ -315,11 +315,11 @@
 		return TRUE
 
 	var/turf/T = get_turf(src)
-	if(length(T) && (locate(/obj/structure/lattice) in T))
+	if(length(T.contents) && (locate(/obj/structure/lattice) in T))
 		return TRUE
 	for(var/dir in GLOB.alldirs)
 		var/turf/adj = get_step(T, dir)
-		if(adj && length(adj) && (locate(/obj/structure/lattice) in adj))
+		if(adj && length(adj.contents) && (locate(/obj/structure/lattice) in adj))
 			return TRUE
 
 	return FALSE
