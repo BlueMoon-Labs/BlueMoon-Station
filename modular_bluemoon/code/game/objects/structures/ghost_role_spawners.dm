@@ -39,7 +39,7 @@
 
 mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	if(switch_on)
-		AddElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _role_eligible = (GLOB.master_mode == ROUNDTYPE_EXTENDED))
+		AddElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _low_priority = TRUE)
 		AddElement(/datum/element/dusts_on_catatonia)
 		var/list/Not_dust_area = list(/area/centcom/holding/exterior,  /area/hilbertshotel)
 		if(additional_area)
@@ -56,7 +56,7 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		disguise_action.Grant(src)
 
 	else
-		RemoveElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _role_eligible = (GLOB.master_mode == ROUNDTYPE_EXTENDED))
+		RemoveElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _low_priority = TRUE)
 		RemoveElement(/datum/element/dusts_on_catatonia)
 		var/datum/antagonist/ghost_role/ghost_cafe/GC = mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe)
 		if(GC)

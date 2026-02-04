@@ -1,15 +1,17 @@
 GLOBAL_LIST_EMPTY(ghost_eligible_mobs)
+GLOBAL_LIST_EMPTY(ghost_eligible_mobs_priority)
 
 GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 
 /datum/element/ghost_role_eligibility
 	element_flags = ELEMENT_DETACH | ELEMENT_BESPOKE
 	id_arg_index = 2
-	var/role_eligible = TRUE
+	var/role_eligible = TRUE // Может ли моб участвовать в розыгрышах ролей
+	var/low_priority = FALSE // Является ли моб менее приоритетным, по отношению ко всем остальным (для Гост кафе)
 	var/penalizing = FALSE
 	var/free_ghost = FALSE
 
-/datum/element/ghost_role_eligibility/Attach(datum/target,free_ghosting = FALSE, penalize_on_ghost = FALSE, _role_eligible)
+/datum/element/ghost_role_eligibility/Attach(datum/target,free_ghosting = FALSE, penalize_on_ghost = FALSE, _role_eligible, _low_priority)
 	. = ..()
 	if(!ismob(target))
 		return ELEMENT_INCOMPATIBLE
@@ -17,20 +19,28 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 	free_ghost = free_ghosting
 	if(!isnull(_role_eligible))
 		role_eligible = _role_eligible
+	if(!isnull(_low_priority))
+		low_priority = _low_priority
 	var/mob/M = target
-	if(role_eligible && !(M in GLOB.ghost_eligible_mobs))
-		GLOB.ghost_eligible_mobs += M
+	if(role_eligible)
+		if(!(M in GLOB.ghost_eligible_mobs))
+			GLOB.ghost_eligible_mobs += M
+		if(!low_priority && !(M in GLOB.ghost_eligible_mobs_priority))
+			GLOB.ghost_eligible_mobs_priority += M
 	RegisterSignal(M, COMSIG_MOB_GHOSTIZE, PROC_REF(get_ghost_flags))
 
 /datum/element/ghost_role_eligibility/Detach(mob/M)
 	. = ..()
 	if(M in GLOB.ghost_eligible_mobs)
 		GLOB.ghost_eligible_mobs -= M
+	if(M in GLOB.ghost_eligible_mobs_priority)
+		GLOB.ghost_eligible_mobs_priority -= M
 	UnregisterSignal(M, COMSIG_MOB_GHOSTIZE)
 
-/proc/get_all_ghost_role_eligible(silent = FALSE)
+/proc/get_all_ghost_role_eligible(silent = FALSE, priority_only = FALSE)
+	var/list/possible_candidates = priority_only ? GLOB.ghost_eligible_mobs_priority : GLOB.ghost_eligible_mobs
 	var/list/candidates = list()
-	for(var/m in GLOB.ghost_eligible_mobs)
+	for(var/m in possible_candidates)
 		var/mob/M = m
 		if(M.can_reenter_round(TRUE))
 			candidates += M
