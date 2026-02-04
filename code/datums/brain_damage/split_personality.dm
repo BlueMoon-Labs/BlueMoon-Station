@@ -35,7 +35,7 @@
 /datum/brain_trauma/severe/split_personality/proc/get_ghost()
 	set waitfor = FALSE
 	last_attempt = world.time	//BLUEMOON ADD
-	var/list/mob/candidates = pollCandidatesForMob("Do you want to play as [owner]'s split personality?", ROLE_PAI, null, null, 100, stranger_backseat, POLL_IGNORE_SPLITPERSONALITY) //BLUEMOON CHANGE
+	var/list/mob/candidates = pollCandidatesForMob("Do you want to play as [owner]'s split personality?", ROLE_PAI, null, null, 100, stranger_backseat, POLL_IGNORE_SPLITPERSONALITY, priority_check = FALSE) //BLUEMOON CHANGE
 	if(LAZYLEN(candidates))
 		var/mob/C = pick(candidates)
 		C.transfer_ckey(stranger_backseat, FALSE)
