@@ -154,7 +154,6 @@
 	item = /obj/item/autosurgeon/syndicate/biomorphedheart
 	purchasable_from = UPLINK_SYNDICATE
 
-
 /datum/uplink_item/implants/biomorphedliver/syndie
 	name = "Biomorphed Liver"
 	desc = "Экспериментальный орган, что используется некоторыми отрядами супер-солдат в различных 'чёрных операциях'. Даёт усиленное восстановление от токсинов и уменьшает изнурение."
