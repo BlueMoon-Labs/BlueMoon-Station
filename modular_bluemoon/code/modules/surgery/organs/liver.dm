@@ -131,14 +131,3 @@
 
 	if(damage > 10 && prob(damage/3))//the higher the damage the higher the probability
 		to_chat(owner, "<span class='warning'>You feel a dull pain in your abdomen.</span>")
-
-/obj/item/autosurgeon/syndicate/inteq/biomorphedliver
-	uses = 1
-	starting_organ = /obj/item/organ/liver/tier3/antag
-
-/datum/uplink_item/implants/biomorphedliver
-	name = "Biomorphed Liver"
-	desc = "Экспериментальный орган, что используется некоторыми отрядами супер-солдат в различных 'чёрных операциях'. Даёт усиленное восстановление от токсинов и уменьшает изнурение."
-	item = /obj/item/autosurgeon/syndicate/inteq/biomorphedliver
-	cost = 5
-	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
