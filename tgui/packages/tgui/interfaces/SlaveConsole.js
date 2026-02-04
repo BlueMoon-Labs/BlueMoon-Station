@@ -260,7 +260,7 @@ const RansomPanel = (props, context) => {
       <NoticeBox danger>
         Цены устанавливаются автоматически по прайс-листу
       </NoticeBox>
-      {ransom_multiplayer != 1 && (
+      {ransom_multiplayer !== 1 && (
         <NoticeBox info>
           Действует увеличение получаемых кредитов! Множитель: x{ransom_multiplayer}
         </NoticeBox>
