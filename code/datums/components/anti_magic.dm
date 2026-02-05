@@ -62,3 +62,5 @@
 		qdel(src)
 	else
 		EXPIRE_TIMER
+
+#undef EXPIRE_TIMER
