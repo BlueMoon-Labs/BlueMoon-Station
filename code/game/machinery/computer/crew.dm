@@ -9,11 +9,25 @@
 	idle_power_usage = 250
 	active_power_usage = 500
 	circuit = /obj/item/circuitboard/computer/crew
+	var/obj/item/radio/headset/radio = /obj/item/radio/headset/headset_med
 
 	light_color = LIGHT_COLOR_BLUE
 
+/obj/machinery/computer/crew/Initialize()
+	. = ..()
+	if(radio)
+		radio = new radio(src)
+
+/obj/machinery/computer/crew/Destroy()
+	QDEL_NULL(radio)
+	return ..()
+
+/obj/machinery/computer/crew/proc/radioAnnounce(message)
+	radio?.talk_into(src, message, MODE_DEPARTMENT)
+
 /obj/machinery/computer/crew/syndie
 	icon_keyboard = "syndie_key"
+	radio = null
 
 /obj/machinery/computer/crew/interact(mob/user)
 	GLOB.crewmonitor.show(user,src)
@@ -211,28 +225,25 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 					results_undamaged[++results_undamaged.len] = total_list
 
 // --- CRITICAL ALERT ---
-				if((nanite_sensors || U.sensor_mode >= SENSOR_VITALS) && (H.stat == SOFT_CRIT || H.stat == DEAD || H.health <= -20))
+				if((nanite_sensors || U.sensor_mode >= SENSOR_COORDS) && (H.stat >= SOFT_CRIT))
 					var/ck = H.ckey
 					if(!last_crit_alert[ck] || world.time > last_crit_alert[ck] + 1200)
 						last_crit_alert[ck] = world.time
 
-						var/area_name = get_area_name(H, TRUE)
-						var/realname = I ? I.registered_name : H.real_name
-						var/job = I ? I.get_assignment_name() : "Unknown"
-
-						var/obj/machinery/announcement_system/AAS = null
-						for(var/obj/machinery/announcement_system/S in GLOB.announcement_systems)
-							if(S.z == z && S.is_operational())
-								AAS = S
-								break
-
-						// Найдём все crew мониторы на этом Z и заставим их пикнуть
+						// Найдём все crew мониторы на этом Z и заставим их пикнуть + сказать сообщение
+						var/obj/machinery/computer/crew/working_terminal
 						for(var/obj/machinery/computer/crew/C in GLOB.crew_sensor_monitors)
 							if(C.z == z && C.is_operational())
-								playsound(C, 'sound/machines/beep.ogg', 50, FALSE)
+								playsound(C, 'sound/machines/twobeep.ogg', 80, FALSE)
+								C.say("Обнаружен пациент в критическом состоянии!")
+								if(!working_terminal && C.radio)
+									working_terminal = C
 
-						if(AAS)
-							AAS.announce_critical(realname, job, area_name)
+						if(working_terminal)
+							var/area_name = get_area_name(H, TRUE)
+							var/Hname = I ? I.registered_name : H.name
+							var/job = I ? I.get_assignment_name() : "Unknown"
+							working_terminal.radioAnnounce("КРИТИЧЕСКОЕ СОСТОЯНИЕ: [Hname] ([job]) в [area_name]")
 
 	var/list/returning = sortTim(results_damaged,GLOBAL_PROC_REF(damage_compare)) + sortTim(results_undamaged,GLOBAL_PROC_REF(ijob_compare))
 
