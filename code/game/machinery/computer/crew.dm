@@ -239,9 +239,9 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 
 				// --- CRITICAL ALERT ---
 				if((nanite_sensors || U.sensor_mode >= SENSOR_VITALS))
-					// Уровень повреждений как в TGUI. 3 это оранжевый
+					// Уровень повреждений как в TGUI. 3 это оранжевый, 4+ красные
 					var/damage_level = min(max(ceil(totaldam / 25), 0), 4)
-					if(damage_level >= 3 || H.stat >= SOFT_CRIT)
+					if(damage_level >= 4)
 						var/wkref = WEAKREF(H)
 						if(!last_crit_alert[wkref] || world.time > last_crit_alert[wkref] + crit_check_cd_time)
 							last_crit_alert[wkref] = world.time
