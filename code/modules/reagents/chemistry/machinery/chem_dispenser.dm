@@ -1868,6 +1868,9 @@
 		return "toxins"
 	if(ispath(reagent_type, /datum/reagent/drug))
 		return "drugs"
+	// Organic precursors (printing nanites, etc.) are not drinks
+	if(ispath(reagent_type, /datum/reagent/consumable/organicprecursor))
+		return "other"
 	// Split consumables into alcoholic and soft drinks for better categorization
 	if(ispath(reagent_type, /datum/reagent/consumable/ethanol))
 		return "alcoholic_drinks"
