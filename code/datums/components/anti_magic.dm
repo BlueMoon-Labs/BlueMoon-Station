@@ -1,4 +1,5 @@
 #define EXPIRE_TIMER addtimer(CALLBACK(src, PROC_REF(adjustCharges), -1), charge_expire_time)
+#define EXPIRE_TIMER_CHECK if(charge_expire_time) EXPIRE_TIMER
 
 /datum/component/anti_magic
 	var/magic = FALSE
@@ -61,6 +62,7 @@
 		expire?.Invoke(user)
 		qdel(src)
 	else
-		EXPIRE_TIMER
+		EXPIRE_TIMER_CHECK
 
 #undef EXPIRE_TIMER
+#undef EXPIRE_TIMER_CHECK
