@@ -95,8 +95,8 @@
 			return TRUE
 	return FALSE
 
-/obj/machinery/computer/process()
-	. = !(machine_stat & (NOPOWER|BROKEN))
+/obj/machinery/computer/process(delta_time)
+	. = is_operational()
 
 	check_typing()
 	if(typing)
