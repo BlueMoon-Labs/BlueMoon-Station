@@ -190,7 +190,7 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 					I = H.wear_neck ? H.wear_neck.GetID() : null
 
 				if (I)
-					name = I.registered_name
+					name = I.registered_name || H.name
 					assignment = I.get_assignment_name()
 					ijob = jobs[GetJobName(I.assignment)]
 				else
