@@ -189,14 +189,14 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 				if(!I)
 					I = H.wear_neck ? H.wear_neck.GetID() : null
 
-				if (I)
-					name = I.registered_name || H.name
+				if(I)
 					assignment = I.get_assignment_name()
 					ijob = jobs[GetJobName(I.assignment)]
 				else
-					name = "Unknown"
 					assignment = ""
 					ijob = 80
+
+				name = I?.registered_name || H.name || "Unknown"
 
 				if (selected_jobs != -1 && round(ijob / 10) - selected_jobs != 0)
 					continue
