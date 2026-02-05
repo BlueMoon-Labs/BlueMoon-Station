@@ -25,16 +25,67 @@ import {
   calculateTotalInputVolume,
   calculateWasteInfo,
   CATEGORY_CONFIG,
+  DISPENSER_TYPE_BOOZE,
+  DISPENSER_TYPE_SODA,
+  DRINK_CATEGORY_CONFIG,
+  hasCrossDispenserReqs,
+  isRecipeUnlocked,
+  russianPlural,
 } from './utils';
 
-// Russian plural forms helper
-const russianPlural = (n, one, few, many) => {
-  const abs = Math.abs(n) % 100;
-  const lastDigit = abs % 10;
-  if (abs > 10 && abs < 20) return many;
-  if (lastDigit > 1 && lastDigit < 5) return few;
-  if (lastDigit === 1) return one;
-  return many;
+// Items limit per category - balance between performance and usability
+const ITEMS_PER_CATEGORY = 50;
+const MAX_SEARCH_RESULTS = 30;
+
+// Module-level cache: gameRecipes is static data, so pre-compute search strings once
+let _searchCache = { key: null, strings: null, entries: null };
+
+const ensureSearchCache = (gameRecipes) => {
+  if (_searchCache.key === gameRecipes) return;
+  _searchCache.key = gameRecipes;
+  _searchCache.entries = Object.entries(gameRecipes);
+  _searchCache.strings = new Map();
+  for (const entry of _searchCache.entries) {
+    _searchCache.strings.set(entry[0], buildRecipeSearchString(entry));
+  }
+};
+
+// Builds a searchable string from a recipe entry for contextual search
+const buildRecipeSearchString = ([name, recipe]) => {
+  const parts = [name];
+
+  if (recipe.desc) {
+    parts.push(recipe.desc);
+  }
+
+  if (recipe.required) {
+    parts.push(...Object.keys(recipe.required));
+  }
+
+  if (recipe.base_ingredients) {
+    parts.push(...Object.keys(recipe.base_ingredients));
+  }
+
+  if (recipe.catalysts) {
+    parts.push(...Object.keys(recipe.catalysts));
+  }
+
+  if (recipe.sub_recipes) {
+    parts.push(...Object.keys(recipe.sub_recipes));
+  }
+
+  if (recipe.alt_recipes) {
+    for (const altRecipe of recipe.alt_recipes) {
+      if (altRecipe.required) {
+        parts.push(...Object.keys(altRecipe.required));
+      }
+      if (altRecipe.base_ingredients) {
+        parts.push(...Object.keys(altRecipe.base_ingredients));
+      }
+    }
+  }
+
+  return parts.join(' ');
 };
 
 // Shared recipe name component with star, tooltip, shift-click
@@ -72,16 +123,84 @@ const RecipeName = ({ name, desc, isFavorite, onToggleFavorite, children }) => {
   );
 };
 
+// Cross-dispenser badge component for drink dispensers
+const CrossDispenserBadge = ({ type, tooltip }) => {
+  const configs = {
+    soda: { label: 'SODA', color: 'blue', icon: 'mug-hot' },
+    booze: { label: 'BOOZE', color: 'purple', icon: 'wine-glass' },
+    enzyme: { label: 'ENZYME', color: 'olive', icon: 'vial' },
+    chem: { label: 'CHEM', color: 'red', icon: 'flask' },
+  };
+  const config = configs[type];
+  if (!config) return null;
+
+  return (
+    <Tooltip content={tooltip}>
+      <Box
+        as="span"
+        ml={0.5}
+        px={0.5}
+        backgroundColor={config.color}
+        style={{ borderRadius: '3px', fontSize: '10px' }}>
+        <Icon name={config.icon} mr={0.3} />
+        {config.label}
+      </Box>
+    </Tooltip>
+  );
+};
+
+// Category badge for search results context
+const CategoryBadge = ({ category, isDrinkDispenser }) => {
+  const catConfig = isDrinkDispenser ? DRINK_CATEGORY_CONFIG : CATEGORY_CONFIG;
+  const config = catConfig[category] || catConfig.other;
+  return (
+    <Box
+      as="span"
+      ml={0.5}
+      px={0.5}
+      color="label"
+      style={{ borderRadius: '3px', fontSize: '9px' }}>
+      <Icon name={config.icon} mr={0.3} />
+      {config.title}
+    </Box>
+  );
+};
+
+// Build context-aware tooltip for disabled dispense button on cross-dispenser recipes
+const buildCrossDispenserTooltip = (crossDispenser, dispenserType) => {
+  const parts = ['Требуются ингредиенты из другого диспенсера:'];
+  const isSoda = dispenserType === DISPENSER_TYPE_SODA;
+  const isBooze = dispenserType === DISPENSER_TYPE_BOOZE;
+
+  if (isSoda && !!crossDispenser.requires_booze) {
+    parts.push('- Booze Dispenser (алкоголь)');
+  }
+  if (isBooze && !!crossDispenser.requires_soda) {
+    parts.push('- Soda Dispenser (безалк.)');
+  }
+  if (crossDispenser.requires_enzyme) {
+    parts.push('- Энзим (катализатор)');
+  }
+  if (crossDispenser.requires_chem) {
+    parts.push('- Chem Dispenser');
+  }
+  parts.push('Используйте «Частично» для выдачи доступных.');
+  return parts.join('\n');
+};
+
 export const GameRecipesTab = (props, context) => {
   const { act } = useBackend(context);
-  const { gameRecipes, searchQuery, isBeakerLoaded, beakerContents = [], beakerCurrentVolume, beakerMaxVolume, manipulatorTier = 1, isEmagged = false } = props;
+  const { gameRecipes, searchQuery, isBeakerLoaded, beakerContents = [], beakerCurrentVolume, beakerMaxVolume, manipulatorTier = 1, isEmagged = false, isDrinkDispenser = false, dispenserType = 0 } = props;
 
   const [multiplier, setMultiplier] = useLocalState(context, 'recipe_multiplier', 1);
-  const [expandedCats, setExpandedCats] = useLocalState(context, 'recipe_cats', {
-    medicine: true, consumables: false, toxins: false, drugs: false, other: false,
-  });
+  // Default expanded categories depend on dispenser type
+  const defaultExpandedCats = isDrinkDispenser
+    ? { alcoholic_drinks: true, soft_drinks: true }
+    : { medicine: true };
+  const [expandedCats, setExpandedCats] = useLocalState(context, 'recipe_cats_v2', defaultExpandedCats);
   const [recipeFavorites, setRecipeFavorites] = useLocalState(context, 'recipe_favorites', []);
   const [showOnlyMakeable, setShowOnlyMakeable] = useLocalState(context, 'recipe_filter_makeable', false);
+  const [expandedPages, setExpandedPages] = useLocalState(context, 'recipe_pages', {});
 
   const beakerByName = buildBeakerLookup(beakerContents);
 
@@ -103,15 +222,30 @@ export const GameRecipesTab = (props, context) => {
     }
   };
 
-  const recipesArray = Object.entries(gameRecipes);
-  const searchFilter = createSearch(searchQuery, ([name]) => name);
+  ensureSearchCache(gameRecipes);
+  const recipesArray = _searchCache.entries;
+  const searchFilter = createSearch(searchQuery, ([name]) => _searchCache.strings.get(name));
+
+  // For drink dispensers, only show drink categories (alcoholic_drinks and soft_drinks)
+  const drinkCategories = ['alcoholic_drinks', 'soft_drinks'];
+
   let filteredRecipes = searchQuery
     ? recipesArray.filter(searchFilter)
     : recipesArray;
 
+  // Pre-filter by category for drink dispensers
+  if (isDrinkDispenser) {
+    filteredRecipes = filteredRecipes.filter(([, recipe]) =>
+      drinkCategories.includes(recipe.category || 'other'));
+  }
+
   if (showOnlyMakeable) {
     filteredRecipes = filteredRecipes.filter(([, recipe]) =>
-      recipe.is_extract_recipe || (((recipe.tier || 1) >= 6 ? isEmagged : manipulatorTier >= (recipe.tier || 1)) && canMakeRecipe(recipe)));
+      recipe.is_extract_recipe || (
+        // Skip tier checks for drink dispensers (they don't have meaningful upgrades)
+        (isDrinkDispenser || ((recipe.tier || 1) >= 6 ? isEmagged : manipulatorTier >= (recipe.tier || 1)))
+        && canMakeRecipe(recipe)
+      ));
   }
 
   const favoriteRecipesList = filteredRecipes.filter(([name]) =>
@@ -125,11 +259,20 @@ export const GameRecipesTab = (props, context) => {
     byCategory[cat].push([name, recipe]);
   });
 
+  // Use drink-specific category order for drink dispensers
+  const categoryConfig = isDrinkDispenser ? DRINK_CATEGORY_CONFIG : CATEGORY_CONFIG;
+
+  // Categories are already filtered by pre-filter above, so just sort them
   const sortedCats = Object.keys(byCategory).sort((a, b) => {
-    const orderA = CATEGORY_CONFIG[a]?.order || 99;
-    const orderB = CATEGORY_CONFIG[b]?.order || 99;
+    const orderA = categoryConfig[a]?.order || 99;
+    const orderB = categoryConfig[b]?.order || 99;
     return orderA - orderB;
   });
+
+  // Check if category should be expanded
+  const isCatExpanded = (cat) => {
+    return !!expandedCats[cat];
+  };
 
   const toggleCat = (cat) => {
     setExpandedCats({ ...expandedCats, [cat]: !expandedCats[cat] });
@@ -173,15 +316,28 @@ export const GameRecipesTab = (props, context) => {
     );
   };
 
-  const renderBadges = (variantRecipe) => {
+  const renderBadges = (variantRecipe, crossDispenser = null) => {
     const isFermiChem = !!variantRecipe.is_fermichem;
     const requiredTier = variantRecipe.tier || 1;
     const isEmagTier = requiredTier >= 6;
-    const isUnlocked = isEmagTier ? isEmagged : manipulatorTier >= requiredTier;
+    // Determine which cross-dispenser badges to show (only for drink dispensers)
+    const isSodaDispenser = dispenserType === DISPENSER_TYPE_SODA;
+    const isBoozeDispenser = dispenserType === DISPENSER_TYPE_BOOZE;
+    const showCrossDispenserBadges = isDrinkDispenser && crossDispenser;
+    const badgeHasCrossReqs = showCrossDispenserBadges && hasCrossDispenserReqs(crossDispenser, dispenserType);
+    const isUnlocked = isRecipeUnlocked({ tier: requiredTier, isDrinkDispenser, isEmagged, manipulatorTier, hasCrossReqs: badgeHasCrossReqs });
+
+    // Note: DM sends FALSE as 0, so we need explicit boolean checks (!!value)
+    const needsSoda = showCrossDispenserBadges && isBoozeDispenser && !!crossDispenser.requires_soda;
+    const needsBooze = showCrossDispenserBadges && isSodaDispenser && !!crossDispenser.requires_booze;
+    const needsEnzyme = showCrossDispenserBadges && !!crossDispenser.requires_enzyme;
+    const needsChem = showCrossDispenserBadges && !!crossDispenser.requires_chem;
+
     return (
       <>
         {isFermiChem && <FermiChemBadge />}
-        {requiredTier > 1 && (
+        {/* Hide tier badges on drink dispensers - they have no meaningful upgrades */}
+        {!isDrinkDispenser && requiredTier > 1 && (
           <Tooltip content={isEmagTier
             ? (isUnlocked ? 'EMAG (разблокировано)' : 'Требуется EMAG')
             : (isUnlocked
@@ -197,6 +353,19 @@ export const GameRecipesTab = (props, context) => {
               {isEmagTier ? 'EMAG' : `T${requiredTier}`}
             </Box>
           </Tooltip>
+        )}
+        {/* Cross-dispenser badges for drink dispensers */}
+        {needsSoda && (
+          <CrossDispenserBadge type="soda" tooltip="Требуются ингредиенты из Soda Dispenser" />
+        )}
+        {needsBooze && (
+          <CrossDispenserBadge type="booze" tooltip="Требуются ингредиенты из Booze Dispenser" />
+        )}
+        {needsEnzyme && (
+          <CrossDispenserBadge type="enzyme" tooltip="Требуется энзим (катализатор)" />
+        )}
+        {needsChem && (
+          <CrossDispenserBadge type="chem" tooltip="Требуются ингредиенты из Chem Dispenser" />
         )}
         {!isFermiChem && variantRecipe.temp > 0 && (
           <Box as="span" color={variantRecipe.is_cold ? "blue" : "orange"} ml={0.5} fontSize="10px">
@@ -214,11 +383,10 @@ export const GameRecipesTab = (props, context) => {
     );
   };
 
-  const renderDispenseControls = (variantRecipe, name, altIndex) => {
+  const renderDispenseControls = (variantRecipe, name, altIndex, crossDispenser = null) => {
     const baseIngredients = variantRecipe.base_ingredients || {};
     const requiredTier = variantRecipe.tier || 1;
     const isEmagTier = requiredTier >= 6;
-    const isUnlocked = isEmagTier ? isEmagged : manipulatorTier >= requiredTier;
     const wasteInfo = calculateWasteInfo(variantRecipe, multiplier);
     const canMake = canMakeRecipe(variantRecipe);
     const totalInputVol = calculateTotalInputVolume(baseIngredients, multiplier);
@@ -229,6 +397,17 @@ export const GameRecipesTab = (props, context) => {
     if (altIndex > 0) {
       dispenseParams.alt_index = altIndex;
     }
+
+    // For drink dispensers: check if we can partial dispense
+    // (some ingredients available on this dispenser, but not all)
+    const needsCrossDispenser = isDrinkDispenser && hasCrossDispenserReqs(crossDispenser, dispenserType);
+    // Cross-dispenser recipes with EMAG tier are accessible since those ingredients come from elsewhere
+    const isUnlocked = isRecipeUnlocked({ tier: requiredTier, isDrinkDispenser, isEmagged, manipulatorTier, hasCrossReqs: needsCrossDispenser });
+
+    // Check if there are any ingredients we CAN dispense from this dispenser
+    const canPartialDispense = needsCrossDispenser && Object.values(baseIngredients).some(
+      data => data.can_dispense
+    );
 
     return (
       <Box inline style={{ whiteSpace: 'nowrap' }}>
@@ -242,19 +421,11 @@ export const GameRecipesTab = (props, context) => {
               {wasteInfo.map(w => (
                 <Box key={w.name}>{w.name}: {w.amount}u</Box>
               ))}
-              {(() => {
-                const clean = [];
-                for (let n = 1; n <= 100 && clean.length < 4; n++) {
-                  if (calculateWasteInfo(variantRecipe, n).length === 0) {
-                    clean.push(n);
-                  }
-                }
-                return clean.length > 0 && (
-                  <Box mt={0.5} color="label">
-                    Чистые партии: {clean.join(', ')}x
-                  </Box>
-                );
-              })()}
+              {variantRecipe.clean_batches && variantRecipe.clean_batches.length > 0 && (
+                <Box mt={0.5} color="label">
+                  Чистые партии: {variantRecipe.clean_batches.join(', ')}x
+                </Box>
+              )}
             </Box>
           }>
             <Box as="span" color="average" ml={0.3}>
@@ -265,30 +436,88 @@ export const GameRecipesTab = (props, context) => {
         <Box as="span" color="label" fontSize="10px" ml={0.5}>
           ({totalInputVol}u вх.)
         </Box>
-        <Button
-          compact
-          ml={0.5}
-          icon={isUnlocked ? "flask" : "lock"}
-          content={multiplier > 1 ? `x${multiplier}` : "Выдать"}
-          color={!isUnlocked ? "bad" : (canMake ? (willOverflow ? "average" : "green") : "bad")}
-          disabled={!isBeakerLoaded || !canMake || !isUnlocked}
-          tooltip={!isUnlocked
-            ? (isEmagTier ? 'Заблокировано! Требуется EMAG' : `Заблокировано! Требуется манипулятор T${requiredTier}+`)
-            : !canMake
-              ? "Недостаточно ингредиентов (проверьте ёмкость)"
-              : willOverflow
-                ? `Недостаточно места! Нужно ${totalInputVol}u, свободно ${toFixed(freeSpace)}u`
-                : "Выдать все базовые ингредиенты"}
-          onClick={() => act('dispense_recipe_game', dispenseParams)}
-        />
+        {/* Cross-dispenser recipes: partial = primary, full = secondary */}
+        {needsCrossDispenser ? (
+          <>
+            {canPartialDispense && (
+              <Button
+                compact
+                ml={0.5}
+                icon="flask"
+                content={multiplier > 1 ? `x${multiplier}` : 'Выдать доступные'}
+                color={isBeakerLoaded ? 'green' : 'default'}
+                disabled={!isBeakerLoaded}
+                tooltip="Выдать только доступные на этом диспенсере ингредиенты"
+                onClick={() => act('dispense_recipe_partial', dispenseParams)}
+              />
+            )}
+            {(() => {
+              const totalIngredients = Object.keys(baseIngredients).length;
+              const readyIngredients = Object.entries(baseIngredients).filter(
+                ([ingredientName, data]) => {
+                  if (data.can_dispense) return true;
+                  const needed = calculateActualAmount(data, multiplier);
+                  return (beakerByName[ingredientName] || 0) >= needed;
+                }
+              ).length;
+              return readyIngredients < totalIngredients && (
+                <Box as="span" color="label" fontSize="10px" ml={0.3}>
+                  [{readyIngredients}/{totalIngredients}]
+                </Box>
+              );
+            })()}
+            <Button
+              compact
+              ml={0.3}
+              icon={isUnlocked ? 'flask' : 'lock'}
+              color={!isUnlocked ? 'bad' : (canMake ? (willOverflow ? 'average' : 'teal') : 'default')}
+              disabled={!isBeakerLoaded || !canMake || !isUnlocked}
+              tooltip={!isUnlocked
+                ? (isEmagTier ? 'Заблокировано! Требуется EMAG' : `Заблокировано! Требуется манипулятор T${requiredTier}+`)
+                : !canMake
+                  ? buildCrossDispenserTooltip(crossDispenser, dispenserType)
+                  : willOverflow
+                    ? `Недостаточно места! Нужно ${totalInputVol}u, свободно ${toFixed(freeSpace)}u`
+                    : 'Выдать все ингредиенты (требуется содержимое из другого диспенсера в ёмкости)'}
+              onClick={() => act('dispense_recipe_game', dispenseParams)}
+            />
+          </>
+        ) : (
+          <>
+            {/* Non-cross-dispenser: standard partial + full buttons */}
+            {canPartialDispense && (
+              <Button
+                compact
+                ml={0.5}
+                icon="clock"
+                content="Частично"
+                color="teal"
+                disabled={!isBeakerLoaded}
+                tooltip="Выдать только доступные на этом диспенсере ингредиенты"
+                onClick={() => act('dispense_recipe_partial', dispenseParams)}
+              />
+            )}
+            <Button
+              compact
+              ml={0.5}
+              icon={isUnlocked ? 'flask' : 'lock'}
+              content={multiplier > 1 ? `x${multiplier}` : 'Выдать'}
+              color={!isUnlocked ? 'bad' : (canMake ? (willOverflow ? 'average' : 'green') : 'bad')}
+              disabled={!isBeakerLoaded || !canMake || !isUnlocked}
+              tooltip={!isUnlocked
+                ? (isEmagTier ? 'Заблокировано! Требуется EMAG' : `Заблокировано! Требуется манипулятор T${requiredTier}+`)
+                : !canMake
+                  ? 'Недостаточно ингредиентов (проверьте ёмкость)'
+                  : willOverflow
+                    ? `Недостаточно места! Нужно ${totalInputVol}u, свободно ${toFixed(freeSpace)}u`
+                    : 'Выдать все базовые ингредиенты'}
+              onClick={() => act('dispense_recipe_game', dispenseParams)}
+            />
+          </>
+        )}
         {wasteInfo.length > 0 && (() => {
-          let nextClean = 0;
-          for (let n = multiplier + 1; n <= 100; n++) {
-            if (calculateWasteInfo(variantRecipe, n).length === 0) {
-              nextClean = n;
-              break;
-            }
-          }
+          const cleanBatches = variantRecipe.clean_batches || [];
+          const nextClean = cleanBatches.find(n => n > multiplier) || 0;
           return nextClean > 0 && (
             <Button
               compact
@@ -307,8 +536,9 @@ export const GameRecipesTab = (props, context) => {
     const baseIngredients = variantRecipe.base_ingredients || {};
     const isFermiChem = !!variantRecipe.is_fermichem;
     const requiredTier = variantRecipe.tier || 1;
-    const isEmagTier = requiredTier >= 6;
-    const isUnlocked = isEmagTier ? isEmagged : manipulatorTier >= requiredTier;
+    // Drink dispensers: always unlock for sub-recipe chain display
+    // Main unlock gating is handled by renderRecipeRow and renderDispenseControls
+    const isUnlocked = isDrinkDispenser || isRecipeUnlocked({ tier: requiredTier, isDrinkDispenser: false, isEmagged, manipulatorTier });
 
     const requiredKeys = Object.keys(variantRecipe.required || {});
     const baseKeys = Object.keys(baseIngredients);
@@ -368,6 +598,8 @@ export const GameRecipesTab = (props, context) => {
             beakerByName={beakerByName}
             isUnlocked={isUnlocked}
             altIndex={altIndex}
+            dispenserType={dispenserType}
+            isDrinkDispenser={isDrinkDispenser}
           />
         )}
       </>
@@ -383,9 +615,10 @@ export const GameRecipesTab = (props, context) => {
     const altRecipes = recipe.alt_recipes || [];
     const hasAlts = altRecipes.length > 0;
 
-    const singleTier = recipe.tier || 1;
-    const singleEmagTier = singleTier >= 6;
-    const singleUnlocked = hasAlts ? true : (singleEmagTier ? isEmagged : manipulatorTier >= singleTier);
+    // For drink dispensers: cross-dispenser recipes with EMAG tier are still accessible
+    // because the EMAG-tier ingredients come from external sources (chem dispenser etc.)
+    const hasCrossReqs = isDrinkDispenser && hasCrossDispenserReqs(recipe.cross_dispenser, dispenserType);
+    const singleUnlocked = hasAlts ? true : isRecipeUnlocked({ tier: recipe.tier, isDrinkDispenser, isEmagged, manipulatorTier, hasCrossReqs });
 
     return (
       <Box key={name} className="candystripe" py={0.5} px={0.3}
@@ -398,15 +631,16 @@ export const GameRecipesTab = (props, context) => {
                 desc={recipe.desc}
                 isFavorite={isRecipeFavorite}
                 onToggleFavorite={toggleRecipeFavorite}>
+                {searchQuery && recipe.category && (
+                  <CategoryBadge category={recipe.category} isDrinkDispenser={isDrinkDispenser} />
+                )}
                 <Box as="span" ml={0.5} color="label" fontSize="10px">
                   ({altRecipes.length + 1} {russianPlural(altRecipes.length + 1, 'рецепт', 'рецепта', 'рецептов')})
                 </Box>
               </RecipeName>
             </Box>
             {[recipe, ...altRecipes].map((variantRecipe, idx) => {
-              const vTier = variantRecipe.tier || 1;
-              const vEmagTier = vTier >= 6;
-              const vUnlocked = vEmagTier ? isEmagged : manipulatorTier >= vTier;
+              const vUnlocked = isRecipeUnlocked({ tier: variantRecipe.tier, isDrinkDispenser, isEmagged, manipulatorTier, hasCrossReqs });
               const vCanMake = vUnlocked && canMakeRecipe(variantRecipe);
               const borderColor = !vUnlocked
                 ? 'rgba(255,80,80,0.4)'
@@ -433,12 +667,12 @@ export const GameRecipesTab = (props, context) => {
                     </Stack.Item>
                     <Stack.Item shrink={0}>
                       <Box inline fontSize="10px">
-                        {renderBadges(variantRecipe)}
+                        {renderBadges(variantRecipe, recipe.cross_dispenser)}
                       </Box>
                     </Stack.Item>
                     <Stack.Item grow basis={0} />
                     <Stack.Item shrink={0} ml={1}>
-                      {renderDispenseControls(variantRecipe, name, altIndex)}
+                      {renderDispenseControls(variantRecipe, name, altIndex, recipe.cross_dispenser)}
                     </Stack.Item>
                   </Stack>
                   {renderRecipeBody(variantRecipe, name, altIndex)}
@@ -448,18 +682,21 @@ export const GameRecipesTab = (props, context) => {
           </>
         ) : (
           <>
-            <Stack align="center">
-              <Stack.Item grow basis={0}>
+            <Stack align="center" wrap="wrap">
+              <Stack.Item grow basis={0} style={{ minWidth: '120px' }}>
                 <RecipeName
                   name={name}
                   desc={recipe.desc}
                   isFavorite={isRecipeFavorite}
                   onToggleFavorite={toggleRecipeFavorite}>
-                  {renderBadges(recipe)}
+                  {searchQuery && recipe.category && (
+                    <CategoryBadge category={recipe.category} isDrinkDispenser={isDrinkDispenser} />
+                  )}
+                  {renderBadges(recipe, recipe.cross_dispenser)}
                 </RecipeName>
               </Stack.Item>
               <Stack.Item shrink={0} ml={1}>
-                {renderDispenseControls(recipe, name, 0)}
+                {renderDispenseControls(recipe, name, 0, recipe.cross_dispenser)}
               </Stack.Item>
             </Stack>
             {renderRecipeBody(recipe, name, 0)}
@@ -499,7 +736,7 @@ export const GameRecipesTab = (props, context) => {
                     width="55px"
                     value={multiplier}
                     minValue={1}
-                    maxValue={100}
+                    maxValue={300}
                     step={1}
                     onChange={(e, value) => setMultiplier(value)}
                   />
@@ -527,24 +764,68 @@ export const GameRecipesTab = (props, context) => {
             </Box>
           )}
 
-          {sortedCats.map(cat => {
-            const config = CATEGORY_CONFIG[cat] || CATEGORY_CONFIG.other;
-            const catRecipes = byCategory[cat];
-            return (
-              <Collapsible
-                key={cat}
-                title={
-                  <span>
-                    <Icon name={config.icon} mr={0.5} />
-                    {config.title} ({catRecipes.length})
-                  </span>
-                }
-                open={expandedCats[cat]}
-                onToggle={() => toggleCat(cat)}>
-                {catRecipes.map(renderRecipeRow)}
-              </Collapsible>
-            );
-          })}
+          {searchQuery ? (
+            // Flat list for search results - sorted alphabetically, capped for performance
+            (() => {
+              const sorted = [...filteredRecipes].sort((a, b) => a[0].localeCompare(b[0]));
+              const showAll = expandedPages['__search'];
+              const visible = showAll ? sorted : sorted.slice(0, MAX_SEARCH_RESULTS);
+              const remaining = sorted.length - MAX_SEARCH_RESULTS;
+              return (
+                <>
+                  {sorted.length > MAX_SEARCH_RESULTS && (
+                    <Box color="label" fontSize="10px" mb={0.5}>
+                      Найдено: {sorted.length}
+                    </Box>
+                  )}
+                  {visible.map(renderRecipeRow)}
+                  {!showAll && remaining > 0 && (
+                    <Box textAlign="center" py={0.5}>
+                      <Button
+                        icon="chevron-down"
+                        content={`Показать ещё ${remaining}...`}
+                        color="transparent"
+                        onClick={() => setExpandedPages({ ...expandedPages, '__search': true })}
+                      />
+                    </Box>
+                  )}
+                </>
+              );
+            })()
+          ) : (
+            // Categories with Collapsible for non-search mode
+            sortedCats.map(cat => {
+              const config = categoryConfig[cat] || categoryConfig.other;
+              const catRecipes = byCategory[cat];
+              const isExpanded = isCatExpanded(cat);
+              const showAll = expandedPages[cat];
+              const visibleRecipes = showAll ? catRecipes : catRecipes.slice(0, ITEMS_PER_CATEGORY);
+              const hasMore = !showAll && catRecipes.length > ITEMS_PER_CATEGORY;
+              return (
+                <Collapsible
+                  key={cat}
+                  title={
+                    <span>
+                      <Icon name={config.icon} mr={0.5} />
+                      {config.title} ({catRecipes.length})
+                    </span>
+                  }
+                  open={isExpanded}>
+                  {visibleRecipes.map(renderRecipeRow)}
+                  {hasMore && (
+                    <Box textAlign="center" py={0.5}>
+                      <Button
+                        icon="chevron-down"
+                        content={`Показать ещё ${catRecipes.length - ITEMS_PER_CATEGORY}...`}
+                        color="transparent"
+                        onClick={() => setExpandedPages({ ...expandedPages, [cat]: true })}
+                      />
+                    </Box>
+                  )}
+                </Collapsible>
+              );
+            })
+          )}
         </>
       )}
     </Section>

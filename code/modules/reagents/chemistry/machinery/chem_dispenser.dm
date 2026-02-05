@@ -108,6 +108,131 @@
 	var/cached_dispensable_reagents_hash = ""
 	/// Current manipulator tier (1-6) - determines which recipes can be auto-dispensed
 	var/manipulator_tier = 1
+	/// Type of this dispenser (DISPENSER_TYPE_CHEM, DISPENSER_TYPE_SODA, DISPENSER_TYPE_BOOZE)
+	var/dispenser_type = DISPENSER_TYPE_CHEM
+
+	/// Static cache mapping reagent type -> dispenser type bitflags (which dispensers have it)
+	var/static/list/reagent_to_dispenser_type
+	/// Static list of all soda dispenser base reagents (for cross-dispenser analysis)
+	var/static/list/soda_dispenser_reagents
+	/// Static list of all booze dispenser base reagents (for cross-dispenser analysis)
+	var/static/list/booze_dispenser_reagents
+
+/// Checks if a recipe should be skipped for dispenser purposes.
+/// Returns TRUE if the recipe is secret or requires a slime extract container.
+/proc/should_skip_recipe_for_dispenser(datum/chemical_reaction/R)
+	if(R.is_secret)
+		return TRUE
+	if(ispath(R.required_container, /obj/item/slime_extract))
+		return TRUE
+	return FALSE
+
+/// Builds the static reagent-to-dispenser mapping cache.
+/// Maps each reagent type to which dispenser type(s) can provide it.
+/obj/machinery/chem_dispenser/proc/build_reagent_dispenser_mapping()
+	if(reagent_to_dispenser_type)
+		return
+
+	reagent_to_dispenser_type = list()
+
+	// Build soda dispenser reagents list - must match /obj/machinery/chem_dispenser/drinks
+	soda_dispenser_reagents = list(
+		// Base dispensable_reagents
+		/datum/reagent/water,
+		/datum/reagent/consumable/ice,
+		/datum/reagent/consumable/coffee,
+		/datum/reagent/consumable/cream,
+		/datum/reagent/consumable/tea,
+		/datum/reagent/consumable/icetea,
+		/datum/reagent/consumable/space_cola,
+		/datum/reagent/consumable/spacemountainwind,
+		/datum/reagent/consumable/dr_gibb,
+		/datum/reagent/consumable/space_up,
+		/datum/reagent/consumable/tonic,
+		/datum/reagent/consumable/sodawater,
+		/datum/reagent/consumable/lemon_lime,
+		/datum/reagent/consumable/pwr_game,
+		/datum/reagent/consumable/shamblers,
+		/datum/reagent/consumable/sugar,
+		/datum/reagent/consumable/pineapplejuice,
+		/datum/reagent/consumable/orangejuice,
+		/datum/reagent/consumable/grenadine,
+		/datum/reagent/consumable/limejuice,
+		/datum/reagent/consumable/tomatojuice,
+		/datum/reagent/consumable/lemonjuice,
+		/datum/reagent/consumable/menthol,
+		/datum/reagent/consumable/synthdrink,
+		// upgrade_reagents
+		/datum/reagent/consumable/banana,
+		/datum/reagent/consumable/berryjuice,
+		/datum/reagent/consumable/strawberryjuice,
+		// upgrade_reagents2
+		/datum/reagent/consumable/applejuice,
+		/datum/reagent/consumable/carrotjuice,
+		/datum/reagent/consumable/pumpkinjuice,
+		/datum/reagent/consumable/watermelonjuice,
+		/datum/reagent/consumable/melonjuice,
+		// upgrade_reagents3
+		/datum/reagent/drug/mushroomhallucinogen,
+		/datum/reagent/consumable/nothing,
+		/datum/reagent/consumable/peachjuice,
+		/datum/reagent/consumable/blumpkinjuice,
+		/datum/reagent/consumable/coco,
+		// emagged_reagents
+		/datum/reagent/toxin/mindbreaker,
+		/datum/reagent/toxin/staminatoxin,
+		/datum/reagent/medicine/cryoxadone,
+		/datum/reagent/iron
+	)
+
+	// Build booze dispenser reagents list - must match /obj/machinery/chem_dispenser/drinks/beer
+	booze_dispenser_reagents = list(
+		// Base dispensable_reagents
+		/datum/reagent/consumable/ethanol/beer,
+		/datum/reagent/consumable/ethanol/kahlua,
+		/datum/reagent/consumable/ethanol/whiskey,
+		/datum/reagent/consumable/ethanol/wine,
+		/datum/reagent/consumable/ethanol/vodka,
+		/datum/reagent/consumable/ethanol/gin,
+		/datum/reagent/consumable/ethanol/rum,
+		/datum/reagent/consumable/ethanol/tequila,
+		/datum/reagent/consumable/ethanol/vermouth,
+		/datum/reagent/consumable/ethanol/cognac,
+		/datum/reagent/consumable/ethanol/ale,
+		/datum/reagent/consumable/ethanol/absinthe,
+		/datum/reagent/consumable/ethanol/hcider,
+		/datum/reagent/consumable/ethanol/creme_de_menthe,
+		/datum/reagent/consumable/ethanol/creme_de_cacao,
+		/datum/reagent/consumable/ethanol/creme_de_coconut,
+		/datum/reagent/consumable/ethanol/triple_sec,
+		/datum/reagent/consumable/ethanol/sake,
+		/datum/reagent/consumable/ethanol/applejack,
+		// upgrade_reagents
+		/datum/reagent/consumable/ethanol,
+		/datum/reagent/consumable/ethanol/fernet,
+		/datum/reagent/consumable/synthdrink/synthanol,
+		// emagged_reagents
+		/datum/reagent/consumable/ethanol/alexander,
+		/datum/reagent/consumable/clownstears,
+		/datum/reagent/toxin/minttoxin,
+		/datum/reagent/consumable/ethanol/atomicbomb,
+		/datum/reagent/consumable/ethanol/thirteenloko,
+		/datum/reagent/consumable/ethanol/changelingsting
+	)
+
+	// Map each reagent to its dispenser type(s)
+	for(var/reagent_type in soda_dispenser_reagents)
+		if(!reagent_to_dispenser_type[reagent_type])
+			reagent_to_dispenser_type[reagent_type] = 0
+		reagent_to_dispenser_type[reagent_type] |= DISPENSER_TYPE_SODA
+
+	for(var/reagent_type in booze_dispenser_reagents)
+		if(!reagent_to_dispenser_type[reagent_type])
+			reagent_to_dispenser_type[reagent_type] = 0
+		reagent_to_dispenser_type[reagent_type] |= DISPENSER_TYPE_BOOZE
+
+	// Note: We don't map chem dispenser reagents here since that would be a huge list
+	// Instead, we'll mark anything NOT in soda/booze as requiring chem or external
 
 /// Builds the static game recipes cache. Called lazily on first UI access.
 /// This caches the expensive O(n²) sub_recipes computation that was killing performance.
@@ -118,6 +243,7 @@
 	cached_game_recipes_data = list()
 	alt_recipe_datums = list()
 	build_recipes_by_result_cache()
+	build_reagent_dispenser_mapping()
 
 	// Track which reaction datums we've already processed (to avoid duplicates from alt recipes)
 	var/list/processed_reactions = list()
@@ -164,7 +290,7 @@
 			var/list/producing_recipes = recipes_by_result[reagent_type]
 			if(length(producing_recipes))
 				for(var/datum/chemical_reaction/sub_R as anything in producing_recipes)
-					if(sub_R.is_secret)
+					if(should_skip_recipe_for_dispenser(sub_R))
 						continue
 					var/list/sub_required = list()
 					for(var/sub_reagent_type in sub_R.required_reagents)
@@ -192,12 +318,9 @@
 		if(length(alt_producing))
 			var/alt_index = 1
 			for(var/datum/chemical_reaction/alt_R as anything in alt_producing)
-				if(alt_R == R || alt_R.is_secret || processed_reactions[alt_R])
+				if(alt_R == R || should_skip_recipe_for_dispenser(alt_R) || processed_reactions[alt_R])
 					continue
 				if(!length(alt_R.results))
-					continue
-				// Skip slime extract recipes - they belong in their own category and can't be made in a dispenser
-				if(ispath(alt_R.required_container, /obj/item/slime_extract))
 					continue
 				processed_reactions[alt_R] = TRUE
 
@@ -214,7 +337,7 @@
 					var/list/alt_producing_sub = recipes_by_result[reagent_type]
 					if(length(alt_producing_sub))
 						for(var/datum/chemical_reaction/alt_sub_R as anything in alt_producing_sub)
-							if(alt_sub_R.is_secret)
+							if(should_skip_recipe_for_dispenser(alt_sub_R))
 								continue
 							var/list/alt_sub_required = list()
 							for(var/sub_reagent_type in alt_sub_R.required_reagents)
@@ -253,7 +376,6 @@
 					"purity_min" = alt_R.PurityMin,
 					"thermic_constant" = alt_R.ThermicConstant,
 					"h_ion_release" = alt_R.HIonRelease,
-					"fermi_explode" = alt_R.FermiExplode,
 					"fermi_explode" = alt_R.FermiExplode
 				))
 				// Store the datum for backend dispense lookup
@@ -320,6 +442,8 @@
 /// reagent_tiers is a mapping of reagent_type -> minimum tier needed to dispense it.
 /// A reagent dispensable at tier N contributes N-1 depth so that recipes requiring
 /// higher-tier reagents are properly gated behind those tiers.
+/// For drink dispensers: ingredients available from other sources (chem dispenser, other
+/// drink dispenser) don't contribute to tier, since they'll come from elsewhere.
 /obj/machinery/chem_dispenser/proc/calculate_recipe_tier(datum/chemical_reaction/R, list/reagent_tiers, list/checked)
 	if(!checked)
 		checked = list()
@@ -327,16 +451,24 @@
 		return 1
 	checked += R
 
+	var/is_drink = (dispenser_type & DISPENSER_TYPE_DRINKS)
+
 	var/max_depth = 0
 	build_recipes_by_result_cache()
 	for(var/reagent_type in R.required_reagents)
 		var/best_depth = CHEM_RECIPE_MAX_TIER
 		if(reagent_type in reagent_tiers)
 			best_depth = reagent_tiers[reagent_type] - 1
+		// For drink dispensers: if this ingredient requires EMAG tier (5 = tier 6 - 1)
+		// but is available from other sources, skip it - it will come from elsewhere
+		if(is_drink && best_depth >= (CHEM_RECIPE_MAX_TIER - 1))
+			if(!(reagent_type in dispensable_reagents))
+				// Not currently dispensable here at all - external ingredient, skip tier contribution
+				continue
 		var/list/producing_recipes = recipes_by_result[reagent_type]
 		if(length(producing_recipes))
 			for(var/datum/chemical_reaction/sub_R as anything in producing_recipes)
-				if(sub_R.is_secret)
+				if(should_skip_recipe_for_dispenser(sub_R))
 					continue
 				var/sub_depth = calculate_recipe_tier(sub_R, reagent_tiers, checked)
 				best_depth = min(best_depth, sub_depth)
@@ -464,6 +596,59 @@
 					message_admins("<span class='adminhelp'>ANTI-GRIEF:</span> New player [ADMIN_LOOKUPFLW(user)] used \a [src] at [ADMIN_VERBOSEJMP(T)].")
 					client.used_chem_dispenser = TRUE
 
+/// Recursively resolves recipe ingredients to base dispensable reagents using GLOBAL drink dispenser lists
+/// Used for cross-dispenser analysis where we need to check ALL drink dispensers, not just this one
+/// Returns a list of reagent_type -> amount
+/obj/machinery/chem_dispenser/proc/get_global_base_ingredients(list/required_reagents, multiplier = 1, list/already_checked)
+	if(!already_checked)
+		already_checked = list()
+
+	// Ensure mapping is built
+	build_reagent_dispenser_mapping()
+
+	var/list/result = list()
+	for(var/reagent_type in required_reagents)
+		var/needed_amount = required_reagents[reagent_type] * multiplier
+
+		// Check if reagent is available on ANY drink dispenser (soda or booze)
+		if((reagent_type in soda_dispenser_reagents) || (reagent_type in booze_dispenser_reagents))
+			if(result[reagent_type])
+				result[reagent_type] += needed_amount
+			else
+				result[reagent_type] = needed_amount
+			continue
+
+		if(reagent_type in already_checked)
+			continue
+		already_checked += reagent_type
+
+		// Try to resolve via sub-recipe
+		build_recipes_by_result_cache()
+		var/list/recipes = recipes_by_result[reagent_type]
+		if(length(recipes))
+			for(var/recipe in recipes)
+				var/datum/chemical_reaction/sub_R = recipe
+				if(should_skip_recipe_for_dispenser(sub_R))
+					continue
+				var/yield_per_reaction = sub_R.results[reagent_type] || 1
+				var/reactions_needed = CEILING(needed_amount / yield_per_reaction, 1)
+
+				var/list/sub_ingredients = get_global_base_ingredients(sub_R.required_reagents, reactions_needed, already_checked)
+				for(var/sub_type in sub_ingredients)
+					if(result[sub_type])
+						result[sub_type] += sub_ingredients[sub_type]
+					else
+						result[sub_type] = sub_ingredients[sub_type]
+				break
+		else
+			// Reagent not in drink dispensers and no sub-recipe found - it's external (chem/grind/etc)
+			if(result[reagent_type])
+				result[reagent_type] += needed_amount
+			else
+				result[reagent_type] = needed_amount
+
+	return result
+
 /// Recursively resolves recipe ingredients to base dispensable reagents
 /// Returns a list of reagent_type -> amount that can be dispensed
 /obj/machinery/chem_dispenser/proc/get_base_ingredients(list/required_reagents, multiplier = 1, list/already_checked)
@@ -490,8 +675,17 @@
 		if(length(recipes))
 			for(var/recipe in recipes)
 				var/datum/chemical_reaction/sub_R = recipe
-				if(sub_R.is_secret)
+				if(should_skip_recipe_for_dispenser(sub_R))
 					continue
+				// For drink dispensers: skip if none of the recipe's ingredients are available here
+				if(dispenser_type & DISPENSER_TYPE_DRINKS)
+					var/any_local = FALSE
+					for(var/req_type in sub_R.required_reagents)
+						if((req_type in dispensable_reagents) || (emagged_reagents && (req_type in emagged_reagents)))
+							any_local = TRUE
+							break
+					if(!any_local)
+						continue
 				var/yield_per_reaction = sub_R.results[reagent_type] || 1
 				var/reactions_needed = CEILING(needed_amount / yield_per_reaction, 1)
 
@@ -517,20 +711,58 @@
 		resolve_to_base_with_yield(reagent_type, amount, base, yield_info, checked, 0, 1, 0, intermediates, 0)
 
 	var/list/ingredients = list()
+	build_reagent_dispenser_mapping()
 	for(var/reagent_type in base)
 		var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
 		var/reagent_name = reagent ? reagent.name : "[reagent_type]"
 		var/can_dispense = (reagent_type in dispensable_reagents)
 		var/list/info = yield_info[reagent_type]
+		var/source_flags = reagent_to_dispenser_type ? reagent_to_dispenser_type[reagent_type] : 0
 		ingredients[reagent_name] = list(
 			"amount" = base[reagent_type],
 			"can_dispense" = can_dispense,
 			"need" = info ? info["need"] : base[reagent_type],
 			"yield" = info ? info["yield"] : 1,
-			"input" = info ? info["input"] : base[reagent_type]
+			"input" = info ? info["input"] : base[reagent_type],
+			"source_dispenser" = source_flags || 0
 		)
 
 	return list("ingredients" = ingredients, "intermediate_yields" = intermediates)
+
+/// Compute "clean batch" multipliers - batches that produce no waste from intermediate reactions
+/// Returns a list of up to max_clean multipliers (1-max_check) that result in zero intermediate waste
+/obj/machinery/chem_dispenser/proc/compute_clean_batches(list/intermediate_yields, max_check = 100, max_clean = 4)
+	if(!length(intermediate_yields))
+		return null // No intermediates = all batches are clean, no need to show hint
+
+	var/list/clean_batches = list()
+	for(var/m in 1 to max_check)
+		if(length(clean_batches) >= max_clean)
+			break
+
+		var/has_waste = FALSE
+		var/list/reactions = list()
+
+		for(var/i in 1 to length(intermediate_yields))
+			var/list/entry = intermediate_yields[i]
+			var/total_needed
+			if(entry["parent"] == 0)
+				total_needed = entry["amount"] * m
+			else
+				total_needed = reactions[entry["parent"]] * entry["amount"]
+
+			var/reaction_count = CEILING(total_needed / entry["yield"], 1)
+			reactions += reaction_count
+
+			var/produced = reaction_count * entry["yield"]
+			if(produced > total_needed)
+				has_waste = TRUE
+				break
+
+		if(!has_waste)
+			clean_batches += m
+
+	return length(clean_batches) ? clean_batches : null
 
 /// Recursively resolve a reagent to base dispensable ingredients, tracking yield info
 /obj/machinery/chem_dispenser/proc/resolve_to_base_with_yield(reagent_type, amount, list/base, list/yield_info, list/checked, parent_need = 0, parent_yield = 1, parent_input = 0, list/intermediates = null, parent_intermediate_idx = 0)
@@ -556,8 +788,20 @@
 	if(length(recipes))
 		for(var/recipe in recipes)
 			var/datum/chemical_reaction/sub_R = recipe
-			if(sub_R.is_secret)
+			if(should_skip_recipe_for_dispenser(sub_R))
 				continue
+			// For drink dispensers: skip recipe resolution if none of its direct ingredients
+			// are available on this dispenser — the reagent is external (from another dispenser).
+			// e.g. Black Russian on a soda dispenser: its ingredients (Vodka, Kahlua) aren't on soda,
+			// so don't resolve through the recipe — the user brings Black Russian pre-made.
+			if(dispenser_type & DISPENSER_TYPE_DRINKS)
+				var/any_local = FALSE
+				for(var/req_type in sub_R.required_reagents)
+					if((req_type in dispensable_reagents) || (emagged_reagents && (req_type in emagged_reagents)))
+						any_local = TRUE
+						break
+				if(!any_local)
+					continue
 			var/yield_per_reaction = sub_R.results[reagent_type] || 1
 			var/reactions_needed = CEILING(amount / yield_per_reaction, 1)
 
@@ -588,12 +832,16 @@
 	build_dispenser_recipes_cache()
 	data["gameRecipes"] = cached_dispenser_game_recipes
 
+	// Send dispenser type for UI customization (drink dispensers hide pH, show cross-dispenser badges)
+	data["dispenserType"] = dispenser_type
+	data["isDrinkDispenser"] = !!(dispenser_type & DISPENSER_TYPE_DRINKS)
+
 	var/chemicals[0]
 	for(var/re in dispensable_reagents)
 		var/datum/reagent/temp = GLOB.chemical_reagents_list[re]
 		if(temp)
 			var/category = get_reagent_category(re)
-			chemicals.Add(list(list("title" = temp.name, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH), "category" = category)))
+			chemicals.Add(list(list("title" = temp.name, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH), "reagentColor" = temp.color, "category" = category)))
 	data["chemicals"] = chemicals
 
 	var/datum/reagent/best_acid = null
@@ -630,7 +878,7 @@
 	var/beakerCurrentVolume = 0
 	if(beaker && beaker.reagents && beaker.reagents.reagent_list.len)
 		for(var/datum/reagent/R in beaker.reagents.reagent_list)
-			beakerContents.Add(list(list("name" = R.name, "id" = R.type, "volume" = round(R.volume, 0.01), "pH" = R.pH, "pHCol" = ConvertpHToCol(R.pH)))) // list in a list because Byond merges the first list...
+			beakerContents.Add(list(list("name" = R.name, "id" = R.type, "volume" = round(R.volume, 0.01), "pH" = R.pH, "pHCol" = ConvertpHToCol(R.pH), "reagentColor" = R.color))) // list in a list because Byond merges the first list...
 			beakerCurrentVolume += R.volume
 	data["beakerContents"] = beakerContents
 
@@ -638,6 +886,7 @@
 		data["beakerCurrentVolume"] = round(beakerCurrentVolume, 0.01)
 		data["beakerMaxVolume"] = beaker.volume
 		data["beakerTransferAmounts"] = beaker.possible_transfer_amounts
+		data["beakerDoseAmounts"] = beaker.possible_transfer_amounts
 		//pH accuracy
 		for(var/obj/item/stock_parts/capacitor/C in component_parts)
 			var/rounded_ph = round(beaker.reagents.pH, 10**-(C.rating+1))
@@ -648,6 +897,7 @@
 		data["beakerCurrentVolume"] = null
 		data["beakerMaxVolume"] = null
 		data["beakerTransferAmounts"] = null
+		data["beakerDoseAmounts"] = null
 		data["beakerCurrentpH"] = null
 		data["beakerCurrentpHCol"] = null
 
@@ -660,14 +910,18 @@
 				if(prob(5))
 					chemname = "[pick_list_replacements("hallucination.json", "chemicals")]"
 				var/category = get_reagent_category(re)
-				chemicals.Add(list(list("title" = chemname, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH), "category" = category)))
+				chemicals.Add(list(list("title" = chemname, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH), "reagentColor" = temp.color, "category" = category)))
 		data["chemicals"] = chemicals
 
 	var/mob/living/L = user
 	if(istype(L) && L.client && L.client.prefs)
 		data["classicView"] = L.client.prefs.chem_dispenser_classic_view
+		data["useReagentColor"] = L.client.prefs.chem_dispenser_use_reagent_color
+		data["showIcons"] = L.client.prefs.chem_dispenser_show_icons
 	else
 		data["classicView"] = TRUE
+		data["useReagentColor"] = TRUE
+		data["showIcons"] = TRUE
 
 	data["recipes"] = saved_recipes
 
@@ -676,10 +930,47 @@
 	var/storedContents[0]
 	if(reagents.total_volume)
 		for(var/datum/reagent/N in reagents.reagent_list)
-			storedContents.Add(list(list("name" = N.name, "id" = N.type, "volume" = N.volume, "pH" = N.pH, "pHCol" = ConvertpHToCol(N.pH))))
+			storedContents.Add(list(list("name" = N.name, "id" = N.type, "volume" = N.volume, "pH" = N.pH, "pHCol" = ConvertpHToCol(N.pH), "reagentColor" = N.color)))
 	data["storedContents"] = storedContents
 
 	return data
+
+/// Analyzes which dispenser types are required for a recipe's ingredients.
+/// Returns list with keys: requires_soda, requires_booze, requires_chem, requires_enzyme, requires_external
+/obj/machinery/chem_dispenser/proc/analyze_recipe_dispenser_requirements(datum/chemical_reaction/R)
+	var/list/result = list(
+		"requires_soda" = FALSE,
+		"requires_booze" = FALSE,
+		"requires_chem" = FALSE,
+		"requires_enzyme" = FALSE,
+		"requires_external" = FALSE
+	)
+
+	// Check if recipe requires enzyme catalyst
+	if(length(R.required_catalysts))
+		for(var/catalyst_type in R.required_catalysts)
+			if(ispath(catalyst_type, /datum/reagent/consumable/enzyme))
+				result["requires_enzyme"] = TRUE
+				break
+
+	// Analyze all required reagents (including those from sub-recipes)
+	// Use global resolution - not instance-specific get_base_ingredients which filters by this dispenser
+	var/list/all_base_reagents = get_global_base_ingredients(R.required_reagents, 1)
+
+	for(var/reagent_type in all_base_reagents)
+		var/dispenser_flags = reagent_to_dispenser_type[reagent_type]
+
+		if(!dispenser_flags)
+			// Not available on any drink dispenser - check if it's a chem dispenser reagent
+			// For simplicity, mark as requiring chem or external
+			result["requires_chem"] = TRUE
+		else
+			if(dispenser_flags & DISPENSER_TYPE_SODA)
+				result["requires_soda"] = TRUE
+			if(dispenser_flags & DISPENSER_TYPE_BOOZE)
+				result["requires_booze"] = TRUE
+
+	return result
 
 /// Builds the instance-level cache for dispenser-specific recipe data.
 /// Invalidates when dispensable_reagents list changes (upgrades/emag).
@@ -727,6 +1018,11 @@
 		var/list/base_ingredients = base_data["ingredients"]
 		var/list/intermediate_yields = base_data["intermediate_yields"]
 
+		// Analyze cross-dispenser requirements (only for drink dispensers)
+		var/list/cross_dispenser = null
+		if(dispenser_type & DISPENSER_TYPE_DRINKS)
+			cross_dispenser = analyze_recipe_dispenser_requirements(R)
+
 		var/can_make = TRUE
 		for(var/reagent_name in base_ingredients)
 			if(!base_ingredients[reagent_name]["can_dispense"])
@@ -750,9 +1046,11 @@
 					var/datum/reagent/sub_reagent = GLOB.chemical_reagents_list[sub_reagent_type]
 					var/sub_reagent_name = sub_reagent ? sub_reagent.name : "[sub_reagent_type]"
 					var/sub_can_dispense = (sub_reagent_type in dispensable_reagents)
+					var/sub_source_flags = reagent_to_dispenser_type ? reagent_to_dispenser_type[sub_reagent_type] : 0
 					sub_base_with_info[sub_reagent_name] = list(
 						"amount" = sub_base[sub_reagent_type],
-						"can_dispense" = sub_can_dispense
+						"can_dispense" = sub_can_dispense,
+						"source_dispenser" = sub_source_flags || 0
 					)
 
 				var/result_type = null
@@ -812,9 +1110,11 @@
 							var/datum/reagent/alt_sub_reagent = GLOB.chemical_reagents_list[alt_sub_reagent_type]
 							var/alt_sub_reagent_name = alt_sub_reagent ? alt_sub_reagent.name : "[alt_sub_reagent_type]"
 							var/alt_sub_can_dispense = (alt_sub_reagent_type in dispensable_reagents)
+							var/alt_sub_source_flags = reagent_to_dispenser_type ? reagent_to_dispenser_type[alt_sub_reagent_type] : 0
 							alt_sub_base_with_info[alt_sub_reagent_name] = list(
 								"amount" = alt_sub_base[alt_sub_reagent_type],
-								"can_dispense" = alt_sub_can_dispense
+								"can_dispense" = alt_sub_can_dispense,
+								"source_dispenser" = alt_sub_source_flags || 0
 							)
 
 						var/alt_result_type = null
@@ -847,6 +1147,7 @@
 					"sub_recipes" = alt_enriched_sub_recipes,
 					"base_ingredients" = alt_base_ingredients,
 					"intermediate_yields" = alt_intermediate_yields,
+					"clean_batches" = compute_clean_batches(alt_intermediate_yields),
 					"is_fermichem" = alt_recipe["is_fermichem"],
 					"optimal_temp_min" = alt_recipe["optimal_temp_min"],
 					"optimal_temp_max" = alt_recipe["optimal_temp_max"],
@@ -873,6 +1174,7 @@
 			"sub_recipes" = enriched_sub_recipes,
 			"base_ingredients" = base_ingredients,
 			"intermediate_yields" = intermediate_yields,
+			"clean_batches" = compute_clean_batches(intermediate_yields),
 			"is_fermichem" = cached_recipe["is_fermichem"],
 			"optimal_temp_min" = cached_recipe["optimal_temp_min"],
 			"optimal_temp_max" = cached_recipe["optimal_temp_max"],
@@ -886,7 +1188,8 @@
 			"fermi_explode" = cached_recipe["fermi_explode"],
 			"is_extract_recipe" = cached_recipe["is_extract_recipe"],
 			"extract_container_name" = cached_recipe["extract_container_name"],
-			"alt_recipes" = enriched_alt_recipes
+			"alt_recipes" = enriched_alt_recipes,
+			"cross_dispenser" = cross_dispenser
 		)
 
 /obj/machinery/chem_dispenser/ui_act(action, params)
@@ -897,6 +1200,18 @@
 			var/mob/living/L = usr
 			if(istype(L) && L.client && L.client.prefs)
 				L.client.prefs.chem_dispenser_classic_view = !L.client.prefs.chem_dispenser_classic_view
+				L.client.prefs.save_preferences()
+			. = TRUE
+		if("toggle_color_mode")
+			var/mob/living/L = usr
+			if(istype(L) && L.client && L.client.prefs)
+				L.client.prefs.chem_dispenser_use_reagent_color = !L.client.prefs.chem_dispenser_use_reagent_color
+				L.client.prefs.save_preferences()
+			. = TRUE
+		if("toggle_icons")
+			var/mob/living/L = usr
+			if(istype(L) && L.client && L.client.prefs)
+				L.client.prefs.chem_dispenser_show_icons = !L.client.prefs.chem_dispenser_show_icons
 				L.client.prefs.save_preferences()
 			. = TRUE
 		if("amount")
@@ -1011,7 +1326,7 @@
 			if(!is_operational() || QDELETED(cell) || !beaker)
 				return
 			var/recipe_name = params["recipe"]
-			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, 100)
+			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, CHEM_RECIPE_MAX_BATCH)
 			var/alt_index = text2num(params["alt_index"]) || 0
 
 			var/datum/chemical_reaction/R
@@ -1038,7 +1353,8 @@
 				if(!(obj_flags & EMAGGED))
 					say("Требуется взлом протоколов безопасности!")
 					return
-			else if(recipe_tier > manipulator_tier)
+			// Skip tier check for drink dispensers - they don't have meaningful manipulator upgrades
+			else if(!(dispenser_type & DISPENSER_TYPE_DRINKS) && recipe_tier > manipulator_tier)
 				say("Недостаточный уровень манипулятора для этого рецепта!")
 				return
 
@@ -1063,12 +1379,69 @@
 			work_animation()
 			log_reagent("DISPENSER: [key_name(usr)] dispensed game recipe [recipe_name][alt_index ? " alt#[alt_index]" : ""] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
 			. = TRUE
+		if("dispense_recipe_partial")
+			// Partial dispense - only dispense ingredients available on THIS dispenser
+			// Used for cross-dispenser recipes where user needs to visit multiple dispensers
+			if(!is_operational() || QDELETED(cell) || !beaker)
+				return
+			var/recipe_name = params["recipe"]
+			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, CHEM_RECIPE_MAX_BATCH)
+			var/alt_index = text2num(params["alt_index"]) || 0
+
+			var/datum/chemical_reaction/R
+			var/list/recipe_data = cached_dispenser_game_recipes[recipe_name]
+			if(!recipe_data)
+				return
+			if(alt_index > 0)
+				R = alt_recipe_datums["[recipe_name]|[alt_index]"]
+			else
+				R = GLOB.normalized_chemical_reactions_list[recipe_name]
+			if(!R)
+				return
+
+			var/list/base_ingredients = get_base_ingredients(R.required_reagents, multiplier)
+			if(!length(base_ingredients))
+				say("Невозможно выдать ингредиенты для этого рецепта!")
+				return
+
+			var/list/logstring = list()
+			var/dispensed_any = FALSE
+			for(var/reagent_type in base_ingredients)
+				// Only dispense if this dispenser can dispense this reagent
+				if(!(reagent_type in dispensable_reagents))
+					continue
+
+				var/needed_amount = base_ingredients[reagent_type]
+				// Check if already have enough in beaker
+				var/current_amount = beaker.reagents.get_reagent_amount(reagent_type)
+				if(current_amount >= needed_amount)
+					continue
+
+				var/to_dispense = needed_amount - current_amount
+				var/datum/reagents/BR = beaker.reagents
+				var/free = BR.maximum_volume - BR.total_volume
+				var/actual = min(to_dispense, (cell.charge * powerefficiency) * 10, free)
+				if(actual <= 0)
+					continue
+				if(!cell.use(actual / powerefficiency))
+					say("Недостаточно энергии!")
+					break
+				BR.add_reagent(reagent_type, actual)
+				logstring += "[reagent_type] = [actual]"
+				dispensed_any = TRUE
+
+			if(dispensed_any)
+				work_animation()
+				log_reagent("DISPENSER: [key_name(usr)] partial dispensed game recipe [recipe_name][alt_index ? " alt#[alt_index]" : ""] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
+			else
+				say("Нет доступных ингредиентов для выдачи!")
+			. = TRUE
 		if("dispense_sub_recipe")
 			if(!is_operational() || QDELETED(cell) || !beaker)
 				return
 			var/recipe_name = params["recipe"]
 			var/sub_reagent_name = params["sub_reagent"]
-			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, 100)
+			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, CHEM_RECIPE_MAX_BATCH)
 			var/alt_index = text2num(params["alt_index"]) || 0
 
 			var/datum/chemical_reaction/R
@@ -1089,7 +1462,8 @@
 				check_tier = alt_recipes[alt_index]["tier"] || 0
 			else
 				check_tier = recipe_data_sub["tier"] || 0
-			if(check_tier > manipulator_tier)
+			// Skip tier check for drink dispensers - they don't have meaningful manipulator upgrades
+			if(!(dispenser_type & DISPENSER_TYPE_DRINKS) && check_tier > manipulator_tier)
 				say("Недостаточный уровень манипулятора для этого рецепта!")
 				return
 
@@ -1148,7 +1522,7 @@
 			if(!is_operational() || QDELETED(cell) || !beaker)
 				return
 			var/recipe_name = params["recipe"]
-			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, 100)
+			var/multiplier = clamp(text2num(params["multiplier"]) || 1, 1, CHEM_RECIPE_MAX_BATCH)
 			var/alt_index = text2num(params["alt_index"]) || 0
 
 			var/datum/chemical_reaction/R
@@ -1494,8 +1868,11 @@
 		return "toxins"
 	if(ispath(reagent_type, /datum/reagent/drug))
 		return "drugs"
+	// Split consumables into alcoholic and soft drinks for better categorization
+	if(ispath(reagent_type, /datum/reagent/consumable/ethanol))
+		return "alcoholic_drinks"
 	if(ispath(reagent_type, /datum/reagent/consumable))
-		return "consumables"
+		return "soft_drinks"
 	if(reagent_type in list(
 		/datum/reagent/water,
 		/datum/reagent/fuel,
@@ -1556,6 +1933,7 @@
 	nopower_state = null
 	pass_flags = PASSTABLE
 	canStore = FALSE
+	dispenser_type = DISPENSER_TYPE_SODA
 	dispensable_reagents = list(
 		/datum/reagent/water,
 		/datum/reagent/consumable/ice,
@@ -1624,6 +2002,7 @@
 	icon = 'icons/obj/chemical.dmi'
 	icon_state = "booze_dispenser"
 	circuit = /obj/item/circuitboard/machine/chem_dispenser/drinks/beer
+	dispenser_type = DISPENSER_TYPE_BOOZE
 	dispensable_reagents = list(
 		/datum/reagent/consumable/ethanol/beer,
 		/datum/reagent/consumable/ethanol/kahlua,

@@ -1,5 +1,6 @@
 /datum/chemical_reaction/sodiumchloride2
 	id = "sodiumchloride2"
+	is_secret = TRUE // BLUEMOON FIX - exclude from dispenser UI to prevent interference with glucose recipes
 	results = list(/datum/reagent/consumable/sodiumchloride = 1)
 	required_reagents = list(/datum/reagent/ash = 1, /datum/reagent/consumable/ethanol/beer = 1)
 	required_temp = 373.15

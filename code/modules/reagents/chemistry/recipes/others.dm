@@ -80,7 +80,7 @@
 
 /datum/chemical_reaction/preservahyde
 	name = "Preservahyde"
-	id = "preservahyde"
+	id = /datum/reagent/preservahyde
 	results = list(/datum/reagent/preservahyde = 3)
 	required_reagents = list(/datum/reagent/water = 1, /datum/reagent/toxin/formaldehyde = 1, /datum/reagent/bromine = 1)
 

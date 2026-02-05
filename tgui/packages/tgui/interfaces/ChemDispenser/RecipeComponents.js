@@ -6,6 +6,7 @@ import {
   Icon,
   Tooltip,
 } from '../../components';
+import { DISPENSER_TYPE_BOOZE, DISPENSER_TYPE_SODA } from './utils';
 
 export const FermiChemBadge = () => (
   <Tooltip content="FermiChem - сложная реакция с особыми условиями">
@@ -119,6 +120,8 @@ export const SubRecipeDispenseButton = (props, context) => {
     beakerByName,
     isUnlocked = true,
     altIndex = 0,
+    dispenserType = 0,
+    isDrinkDispenser = false,
   } = props;
 
   const baseIngredients = subRecipe.base_ingredients || {};
@@ -135,6 +138,16 @@ export const SubRecipeDispenseButton = (props, context) => {
   const neededAmount = multiplier;
   const reactionsNeeded = Math.ceil(neededAmount / resultAmount);
   const outputAmount = reactionsNeeded * resultAmount;
+
+  // Determine if this sub-recipe needs ingredients from another dispenser
+  const needsSoda = isDrinkDispenser && dispenserType === DISPENSER_TYPE_BOOZE
+    && Object.values(baseIngredients).some(d =>
+      d.source_dispenser && (d.source_dispenser & DISPENSER_TYPE_SODA)
+      && !(d.source_dispenser & DISPENSER_TYPE_BOOZE));
+  const needsBooze = isDrinkDispenser && dispenserType === DISPENSER_TYPE_SODA
+    && Object.values(baseIngredients).some(d =>
+      d.source_dispenser && (d.source_dispenser & DISPENSER_TYPE_BOOZE)
+      && !(d.source_dispenser & DISPENSER_TYPE_SODA));
 
   const buttonColor = temp > 0 ? (isCold ? 'blue' : 'orange') : 'default';
 
@@ -182,6 +195,12 @@ export const SubRecipeDispenseButton = (props, context) => {
       {temp > 0 && (
         <span style={{ fontSize: '9px', marginLeft: '3px', opacity: 0.8 }}>
           {isCold ? '\u2264' : '\u2265'}{temp}K
+        </span>
+      )}
+      {(needsSoda || needsBooze) && (
+        <span style={{ fontSize: '9px', marginLeft: '3px' }}>
+          {needsSoda && <Icon name="mug-hot" color="blue" size={0.7} />}
+          {needsBooze && <Icon name="wine-glass" color="purple" size={0.7} />}
         </span>
       )}
     </Button>
@@ -260,7 +279,7 @@ export const FinalStepButton = (props, context) => {
 };
 
 export const SubRecipesChain = (props) => {
-  const { recipe, name, multiplier, isBeakerLoaded, beakerByName, isUnlocked = true, altIndex = 0 } = props;
+  const { recipe, name, multiplier, isBeakerLoaded, beakerByName, isUnlocked = true, altIndex = 0, dispenserType = 0, isDrinkDispenser = false } = props;
   const baseIngredients = recipe.base_ingredients || {};
 
   // Only show intermediates that must be synthesized (not directly dispensable)
@@ -299,6 +318,8 @@ export const SubRecipesChain = (props) => {
               beakerByName={beakerByName}
               isUnlocked={isUnlocked}
               altIndex={altIndex}
+              dispenserType={dispenserType}
+              isDrinkDispenser={isDrinkDispenser}
             />
           </span>
         ))}

@@ -31,7 +31,11 @@ export const BeakerSidePanel = (props, context) => {
     phAcidPH,
     phBaseName,
     phBasePH,
+    isDrinkDispenser = false,
   } = props;
+
+  // Hide pH display for drink dispensers (soda/booze) as it's irrelevant
+  const showPH = !isDrinkDispenser;
 
   const freeSpace = Math.max(0, (beakerMaxVolume || 0) - (beakerCurrentVolume || 0));
 
@@ -86,7 +90,7 @@ export const BeakerSidePanel = (props, context) => {
             </Box>
           </ProgressBar>
 
-          {beakerCurrentpH !== null && (
+          {showPH && beakerCurrentpH !== null && (
             <Stack mb={1} align="center">
               <Stack.Item>
                 <Icon name="tint" mr={0.5} />
@@ -103,7 +107,7 @@ export const BeakerSidePanel = (props, context) => {
             </Stack>
           )}
 
-          {isBeakerLoaded && (
+          {showPH && isBeakerLoaded && (
             <Box mb={1}>
               <Box color="label" fontSize="10px" mb={0.5}>Коррекция pH (1u):</Box>
               <Stack>

@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Collapsible,
-  ColorBox,
   Icon,
   Input,
   NoticeBox,
@@ -21,36 +20,58 @@ import { BeakerSidePanel } from './BeakerSidePanel';
 import { GameRecipesTab } from './GameRecipesTab';
 import { SavedRecipesTab } from './SavedRecipesTab';
 import { StorageSidePanel } from './StorageSidePanel';
-import { AMOUNT_PRESETS, CATEGORY_CONFIG } from './utils';
+import { AMOUNT_PRESETS, CATEGORY_CONFIG, DRINK_CATEGORY_CONFIG } from './utils';
 
 export const ChemDispenser = (props, context) => {
   const { act, data } = useBackend(context);
   const recording = !!data.recordingRecipe;
 
-  const [searchQuery, setSearchQuery] = useLocalState(context, 'chem_search', '');
+  // Per-tab search states
+  const [chemSearchQuery, setChemSearchQuery] = useLocalState(context, 'chem_search_chemicals', '');
+  const [recipeSearchQuery, setRecipeSearchQuery] = useLocalState(context, 'chem_search_recipes', '');
+  const [savedSearchQuery, setSavedSearchQuery] = useLocalState(context, 'chem_search_saved', '');
+
   const [activeTab, setActiveTab] = useLocalState(context, 'chem_tab', 'chemicals');
   const [favorites, setFavorites] = useLocalState(context, 'chem_favorites', []);
   const [recentChemicals, setRecentChemicals] = useLocalState(context, 'chem_recent', []);
   const classicView = data.classicView !== undefined ? data.classicView : true;
+  const useReagentColor = data.useReagentColor !== undefined ? data.useReagentColor : true;
+  const showIcons = data.showIcons !== undefined ? data.showIcons : true;
   const [expandedCategories, setExpandedCategories] = useLocalState(context, 'chem_expanded', {
+    alcoholic_drinks: true, soft_drinks: true,
     elements: true, compounds: true, consumables: true,
     toxins: true, medicine: true, drugs: true, other: true,
     slime_extracts: true,
   });
 
+  // Get current tab's search state
+  const [searchQuery, setSearchQuery] =
+    activeTab === 'gameRecipes' ? [recipeSearchQuery, setRecipeSearchQuery]
+    : activeTab === 'savedRecipes' ? [savedSearchQuery, setSavedSearchQuery]
+    : [chemSearchQuery, setChemSearchQuery];
+
   const {
     chemicals = [],
     storedContents = [],
     beakerTransferAmounts = [],
+    beakerDoseAmounts = null,
     gameRecipes = {},
+    isDrinkDispenser = false,
   } = data;
+
+  // Hide pH display for drink dispensers (soda/booze) as it's irrelevant
+  const showPH = !isDrinkDispenser;
 
   const savedRecipes = Object.keys(data.recipes || {}).map(name => ({
     name,
     contents: data.recipes[name],
   }));
 
-  const gameRecipesCount = Object.keys(gameRecipes).length;
+  // Count only relevant recipes for drink dispensers
+  const drinkCategories = ['alcoholic_drinks', 'soft_drinks'];
+  const gameRecipesCount = isDrinkDispenser
+    ? Object.values(gameRecipes).filter(r => drinkCategories.includes(r.category)).length
+    : Object.keys(gameRecipes).length;
 
   const beakerContents = recording
     ? Object.keys(data.recordingRecipe || {}).map(id => ({
@@ -74,9 +95,11 @@ export const ChemDispenser = (props, context) => {
     chemicalsByCategory[category].push(chemical);
   });
 
+  // Use drink-specific category order for drink dispensers
+  const categoryConfig = isDrinkDispenser ? DRINK_CATEGORY_CONFIG : CATEGORY_CONFIG;
   const sortedCategories = Object.keys(chemicalsByCategory).sort((a, b) => {
-    const orderA = CATEGORY_CONFIG[a]?.order || 99;
-    const orderB = CATEGORY_CONFIG[b]?.order || 99;
+    const orderA = categoryConfig[a]?.order || 99;
+    const orderB = categoryConfig[b]?.order || 99;
     return orderA - orderB;
   });
 
@@ -156,15 +179,37 @@ export const ChemDispenser = (props, context) => {
                     />
                   </Stack.Item>
                   {activeTab === 'chemicals' && (
-                    <Stack.Item>
-                      <Button
-                        compact
-                        icon={classicView ? 'th' : 'list'}
-                        tooltip={classicView
-                          ? 'Категории' : 'Обычная таблица'}
-                        onClick={() => act('toggle_view')}
-                      />
-                    </Stack.Item>
+                    <>
+                      <Stack.Item>
+                        <Button
+                          compact
+                          icon={showIcons ? 'eye' : 'eye-slash'}
+                          tooltip={showIcons
+                            ? 'Скрыть иконки'
+                            : 'Показать иконки'}
+                          onClick={() => act('toggle_icons')}
+                        />
+                      </Stack.Item>
+                      <Stack.Item>
+                        <Button
+                          compact
+                          icon={useReagentColor ? 'palette' : 'tint'}
+                          tooltip={useReagentColor
+                            ? 'Цвета реагентов (нажмите для pH)'
+                            : 'pH цвета (нажмите для цвета реагента)'}
+                          onClick={() => act('toggle_color_mode')}
+                        />
+                      </Stack.Item>
+                      <Stack.Item>
+                        <Button
+                          compact
+                          icon={classicView ? 'th' : 'list'}
+                          tooltip={classicView
+                            ? 'Категории' : 'Обычная таблица'}
+                          onClick={() => act('toggle_view')}
+                        />
+                      </Stack.Item>
+                    </>
                   )}
                 </Stack>
               </Stack.Item>
@@ -176,6 +221,7 @@ export const ChemDispenser = (props, context) => {
                   isBeakerLoaded={data.isBeakerLoaded}
                   beakerMaxVolume={data.beakerMaxVolume}
                   beakerCurrentVolume={data.beakerCurrentVolume}
+                  beakerDoseAmounts={beakerDoseAmounts}
                 />
               </Stack.Item>
 
@@ -217,12 +263,15 @@ export const ChemDispenser = (props, context) => {
                               key={chemical.id}
                               width="129.5px"
                               lineHeight={1.75}
-                              tooltip={'pH: ' + chemical.pH}
+                              tooltip={showPH ? ('pH: ' + chemical.pH) : chemical.title}
                               onClick={() => handleDispense(chemical.id)}>
-                              <ColorBox
-                                color={chemical.pHCol}
-                                mr={0.5}
-                              />
+                              {!!showIcons && (
+                                <Icon
+                                  name="tint"
+                                  color={useReagentColor ? chemical.reagentColor : chemical.pHCol}
+                                  mr={0.5}
+                                />
+                              )}
                               {chemical.title}
                             </Button>
                           ))
@@ -244,6 +293,9 @@ export const ChemDispenser = (props, context) => {
                                   onDispense={handleDispense}
                                   onToggleFavorite={toggleFavorite}
                                   isFavorite
+                                  useReagentColor={useReagentColor}
+                                  showIcons={showIcons}
+                                  showPH={showPH}
                                 />
                               ))}
                             </Box>
@@ -265,6 +317,9 @@ export const ChemDispenser = (props, context) => {
                                   onToggleFavorite={toggleFavorite}
                                   isFavorite={favorites.includes(chemical.id)}
                                   compact
+                                  useReagentColor={useReagentColor}
+                                  showIcons={showIcons}
+                                  showPH={showPH}
                                 />
                               ))}
                             </Box>
@@ -283,13 +338,16 @@ export const ChemDispenser = (props, context) => {
                                   onDispense={handleDispense}
                                   onToggleFavorite={toggleFavorite}
                                   isFavorite={favorites.includes(chemical.id)}
+                                  useReagentColor={useReagentColor}
+                                  showIcons={showIcons}
+                                  showPH={showPH}
                                 />
                               ))
                             )}
                           </Box>
                         ) : (
                           sortedCategories.map(category => {
-                            const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.other;
+                            const config = categoryConfig[category] || categoryConfig.other;
                             const categoryChemicals = chemicalsByCategory[category];
                             return (
                               <Collapsible
@@ -310,6 +368,9 @@ export const ChemDispenser = (props, context) => {
                                       onDispense={handleDispense}
                                       onToggleFavorite={toggleFavorite}
                                       isFavorite={favorites.includes(chemical.id)}
+                                      useReagentColor={useReagentColor}
+                                      showIcons={showIcons}
+                                      showPH={showPH}
                                     />
                                   ))}
                                 </Box>
@@ -322,7 +383,8 @@ export const ChemDispenser = (props, context) => {
                   </Section>
                 )}
 
-                {activeTab === 'gameRecipes' && (
+                {/* Keep GameRecipesTab mounted to preserve state and avoid re-renders */}
+                <Box style={{ display: activeTab === 'gameRecipes' ? 'block' : 'none', height: '100%' }}>
                   <GameRecipesTab
                     gameRecipes={gameRecipes}
                     searchQuery={searchQuery}
@@ -332,8 +394,10 @@ export const ChemDispenser = (props, context) => {
                     beakerMaxVolume={data.beakerMaxVolume}
                     manipulatorTier={data.manipulatorTier || 1}
                     isEmagged={!!data.isEmagged}
+                    isDrinkDispenser={!!data.isDrinkDispenser}
+                    dispenserType={data.dispenserType || 0}
                   />
-                )}
+                </Box>
 
                 {activeTab === 'savedRecipes' && (
                   <SavedRecipesTab
@@ -363,6 +427,7 @@ export const ChemDispenser = (props, context) => {
                   phAcidPH={data.phAcidPH}
                   phBaseName={data.phBaseName}
                   phBasePH={data.phBasePH}
+                  isDrinkDispenser={!!data.isDrinkDispenser}
                 />
               </Stack.Item>
 
@@ -388,19 +453,36 @@ export const ChemDispenser = (props, context) => {
 
 const AmountControls = (props, context) => {
   const { act } = useBackend(context);
-  const { amount, stepAmount, isBeakerLoaded, beakerMaxVolume, beakerCurrentVolume } = props;
+  const { amount, stepAmount, isBeakerLoaded, beakerMaxVolume, beakerCurrentVolume, beakerDoseAmounts } = props;
+
+  // Convert beakerDoseAmounts to array of numbers (DM lists come as objects)
+  let beakerAmounts = [];
+  if (beakerDoseAmounts) {
+    if (Array.isArray(beakerDoseAmounts)) {
+      beakerAmounts = beakerDoseAmounts;
+    } else if (typeof beakerDoseAmounts === 'object') {
+      // Filter only numeric values from object
+      beakerAmounts = Object.values(beakerDoseAmounts).filter(v => typeof v === 'number');
+    }
+  }
+
+  // Use beaker dose amounts if available, otherwise fall back to defaults
+  // Use filter for deduplication instead of Set (Set spread doesn't work in this environment)
+  const doseAmounts = beakerAmounts.length > 0
+    ? [1, ...beakerAmounts].filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b)
+    : AMOUNT_PRESETS;
 
   return (
     <Section
       title={<span><Icon name="flask" mr={1} />Доза: <b>{amount}</b> u</span>}>
       <Stack align="center">
         <Stack.Item grow>
-          {AMOUNT_PRESETS.map(amt => (
+          {doseAmounts.map(amt => (
             <Button
               key={amt}
               compact
               selected={amount === amt}
-              content={amt}
+              content={'+' + amt}
               onClick={() => act('amount', { target: amt })}
             />
           ))}
@@ -433,20 +515,17 @@ const AmountControls = (props, context) => {
 };
 
 const ChemicalButton = (props) => {
-  const { chemical, onDispense, onToggleFavorite, isFavorite, compact } = props;
+  const { chemical, onDispense, onToggleFavorite, isFavorite, compact, useReagentColor, showIcons, showPH = true } = props;
+  const displayColor = useReagentColor ? chemical.reagentColor : chemical.pHCol;
 
   return (
     <Button
       m={0.25}
       lineHeight={1.5}
-      backgroundColor={chemical.pHCol}
-      style={{
-        textShadow: '1px 1px 1px rgba(0,0,0,0.8)',
-      }}
       tooltip={
         <Box>
           <Box bold>{chemical.title}</Box>
-          <Box color="label">pH: {chemical.pH}</Box>
+          {showPH && <Box color="label">pH: {chemical.pH}</Box>}
           <Box color="label" fontSize="10px" mt={0.5}>
             Shift+Click - избранное
           </Box>
@@ -460,6 +539,7 @@ const ChemicalButton = (props) => {
         }
       }}>
       {isFavorite && <Icon name="star" mr={0.5} />}
+      {!!showIcons && <Icon name="tint" color={displayColor} mr={0.5} />}
       {chemical.title}
     </Button>
   );

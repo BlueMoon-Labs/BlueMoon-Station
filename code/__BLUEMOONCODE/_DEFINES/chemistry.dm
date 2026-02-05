@@ -20,3 +20,15 @@
 #define CHEM_RECIPE_MAX_TIER 6
 /// Tier value indicating recipe requires emag (not reachable via manipulator upgrades)
 #define CHEM_RECIPE_EMAG_TIER 6
+/// Maximum batch multiplier for recipe dispensing (supports large beakers up to 900u)
+#define CHEM_RECIPE_MAX_BATCH 300
+
+// -- Dispenser type flags (for cross-dispenser recipe analysis) --
+/// Standard chemistry dispenser
+#define DISPENSER_TYPE_CHEM   (1<<0)
+/// Soda dispenser (non-alcoholic drinks)
+#define DISPENSER_TYPE_SODA   (1<<1)
+/// Booze dispenser (alcoholic drinks)
+#define DISPENSER_TYPE_BOOZE  (1<<2)
+/// Both drink dispensers combined
+#define DISPENSER_TYPE_DRINKS (DISPENSER_TYPE_SODA | DISPENSER_TYPE_BOOZE)

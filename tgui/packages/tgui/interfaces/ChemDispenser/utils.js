@@ -1,13 +1,37 @@
 export const CATEGORY_CONFIG = {
-  elements: { title: 'Элементы', icon: 'atom', order: 1 },
-  compounds: { title: 'Соединения', icon: 'flask', order: 2 },
-  consumables: { title: 'Расходники', icon: 'coffee', order: 3 },
+  // Chemistry categories (standard order for chem dispensers)
+  medicine: { title: 'Медицина', icon: 'pills', order: 1 },
+  elements: { title: 'Элементы', icon: 'atom', order: 2 },
+  compounds: { title: 'Соединения', icon: 'flask', order: 3 },
   toxins: { title: 'Токсины', icon: 'skull-crossbones', order: 4 },
-  medicine: { title: 'Медицина', icon: 'pills', order: 5 },
-  drugs: { title: 'Препараты', icon: 'cannabis', order: 6 },
-  other: { title: 'Прочее', icon: 'question', order: 7 },
-  slime_extracts: { title: 'Экстракты слаймов', icon: 'droplet', order: 8 },
+  drugs: { title: 'Препараты', icon: 'cannabis', order: 5 },
+  // Drink categories (for drink dispensers)
+  alcoholic_drinks: { title: 'Алкоголь', icon: 'wine-glass', order: 6 },
+  soft_drinks: { title: 'Безалкогольные', icon: 'mug-hot', order: 7 },
+  consumables: { title: 'Расходники', icon: 'coffee', order: 8 }, // Legacy, kept for backwards compatibility
+  other: { title: 'Прочее', icon: 'question', order: 9 },
+  slime_extracts: { title: 'Экстракты слаймов', icon: 'droplet', order: 10 },
 };
+
+// Category config for drink dispensers (drinks first)
+export const DRINK_CATEGORY_CONFIG = {
+  alcoholic_drinks: { title: 'Алкоголь', icon: 'wine-glass', order: 1 },
+  soft_drinks: { title: 'Безалкогольные', icon: 'mug-hot', order: 2 },
+  consumables: { title: 'Расходники', icon: 'coffee', order: 3 },
+  medicine: { title: 'Медицина', icon: 'pills', order: 4 },
+  elements: { title: 'Элементы', icon: 'atom', order: 5 },
+  compounds: { title: 'Соединения', icon: 'flask', order: 6 },
+  toxins: { title: 'Токсины', icon: 'skull-crossbones', order: 7 },
+  drugs: { title: 'Препараты', icon: 'cannabis', order: 8 },
+  other: { title: 'Прочее', icon: 'question', order: 9 },
+  slime_extracts: { title: 'Экстракты слаймов', icon: 'droplet', order: 10 },
+};
+
+// Dispenser type flags (must match DM defines)
+export const DISPENSER_TYPE_CHEM = 1;
+export const DISPENSER_TYPE_SODA = 2;
+export const DISPENSER_TYPE_BOOZE = 4;
+export const DISPENSER_TYPE_DRINKS = DISPENSER_TYPE_SODA | DISPENSER_TYPE_BOOZE;
 
 export const AMOUNT_PRESETS = [1, 5, 10, 15, 20, 25, 30, 40, 50, 60];
 
@@ -61,9 +85,10 @@ export const calculateWasteInfo = (recipe, multiplier) => {
 
 export const buildBeakerLookup = (beakerContents) => {
   const lookup = {};
-  beakerContents.forEach(item => {
+  for (let i = 0; i < beakerContents.length; i++) {
+    const item = beakerContents[i];
     lookup[item.name] = (lookup[item.name] || 0) + item.volume;
-  });
+  }
   return lookup;
 };
 
@@ -73,4 +98,36 @@ export const calculateTotalInputVolume = (baseIngredients, multiplier) => {
     total += calculateActualAmount(data, multiplier);
   }
   return total;
+};
+
+// Russian plural forms helper
+export const russianPlural = (n, one, few, many) => {
+  const abs = Math.abs(n) % 100;
+  const lastDigit = abs % 10;
+  if (abs > 10 && abs < 20) return many;
+  if (lastDigit > 1 && lastDigit < 5) return few;
+  if (lastDigit === 1) return one;
+  return many;
+};
+
+/**
+ * Check if a recipe is unlocked based on tier, emag status, and dispenser type.
+ */
+export const isRecipeUnlocked = ({ tier, isDrinkDispenser, isEmagged, manipulatorTier, hasCrossReqs }) => {
+  const requiredTier = tier || 1;
+  const isEmagTier = requiredTier >= 6;
+  if (isDrinkDispenser) return isEmagTier ? (isEmagged || !!hasCrossReqs) : true;
+  return isEmagTier ? isEmagged : manipulatorTier >= requiredTier;
+};
+
+/**
+ * Check if a recipe requires ingredients from another dispenser type.
+ */
+export const hasCrossDispenserReqs = (crossDispenser, dispenserType) => {
+  if (!crossDispenser) return false;
+  return (
+    (dispenserType === DISPENSER_TYPE_SODA && !!crossDispenser.requires_booze) ||
+    (dispenserType === DISPENSER_TYPE_BOOZE && !!crossDispenser.requires_soda) ||
+    !!crossDispenser.requires_chem
+  );
 };
