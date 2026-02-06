@@ -36,7 +36,7 @@
 
 //////////////////////// МЕХИ ////////////////////////
 /obj/item/choice_beacon/vehicle/pact_mech
-	name = "Mech Beacon"
+	name = "PACT Mech Beacon"
 	desc = "Благодаря этому маячку вы сможете вызвать один из мехов с Фрегатов Туманности Синие Луны. За ПАКТ!"
 	group_path = /obj/item/choice_beacon/vehicle/pact_mech
 
