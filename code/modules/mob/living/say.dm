@@ -353,9 +353,15 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	SEND_SIGNAL(src, COMSIG_MOVABLE_HEAR, args) //parent calls can't overwrite the current proc args.
 	if(!client && !audiovisual_redirect)
 		return
+	// BLUEMOON EDIT START - sign language is visual, deaf people should understand it
+	var/is_sign_language = (message_language == /datum/language/signlanguage)
+	// BLUEMOON EDIT END
 	var/deaf_message
 	var/deaf_type
-	if(speaker != src)
+	if(is_sign_language)
+		deaf_message = null
+		deaf_type = null
+	else if(speaker != src)
 		if(!radio_freq) //These checks have to be seperate, else people talking on the radio will make "You can't hear yourself!" appear when hearing people over the radio while deaf.
 			deaf_message = "<span class='name'>[speaker]</span> [speaker.verb_say] something but you cannot hear [speaker.ru_na()]."
 			deaf_type = 1
@@ -364,13 +370,14 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		deaf_type = 2 // Since you should be able to hear yourself without looking
 
 	// Create map text prior to modifying message for goonchat
-	if (client?.prefs.chat_on_map && stat != UNCONSCIOUS && (client.prefs.see_chat_non_mob || ismob(speaker)) && can_hear())
+	// BLUEMOON EDIT - sign language uses vision instead of hearing for map text
+	if (client?.prefs.chat_on_map && stat != UNCONSCIOUS && (client.prefs.see_chat_non_mob || ismob(speaker)) && (is_sign_language ? !eye_blind : can_hear()))
 		create_chat_message(speaker, message_language, raw_message, spans, message_mode)
 
 	// Recompose message for AI hrefs, language incomprehension.
 	message = compose_message(speaker, message_language, raw_message, radio_freq, spans, message_mode, FALSE, source)
 
-	show_message(message, MSG_AUDIBLE, deaf_message, deaf_type)
+	show_message(message, is_sign_language ? MSG_VISUAL : MSG_AUDIBLE, deaf_message, deaf_type)
 	return message
 
 /mob/living/send_speech(message, message_range = 6, obj/source = src, bubble_type = bubble_icon, list/spans, datum/language/message_language=null, message_mode)
