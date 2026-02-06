@@ -2,6 +2,25 @@
 
 GLOBAL_LIST_EMPTY(PDAs)
 
+// Ассоциативный список рингтонов и их звуковых файлов
+GLOBAL_LIST_INIT(pda_ringtones, list(
+	"beep" = 'sound/machines/twobeep.ogg',
+	"boom" = 'sound/effects/explosion1.ogg',
+	"honk" = 'sound/items/bikehorn.ogg',
+	"SKREE" = 'sound/voice/shriek1.ogg',
+	"xeno" = 'sound/voice/hiss2.ogg',
+	"clown" = 'sound/items/AirHorn2.ogg',
+	"bzzt" = 'sound/machines/buzz-sigh.ogg',
+	"ding" = 'sound/machines/ding.ogg',
+	"chirp" = 'sound/machines/chime.ogg',
+	"pew" = 'sound/weapons/laser.ogg',
+	"boop" = 'sound/machines/terminal_select.ogg',
+	"ping" = 'sound/machines/ping.ogg',
+	"synth" = 'sound/misc/interference.ogg',
+	"stalker" = 'sound/items/PDA/stalk1.ogg',
+	"newquest" = 'sound/items/PDA/stalk2.ogg'
+))
+
 #define PDA_SCANNER_NONE		0
 #define PDA_SCANNER_MEDICAL		1
 #define PDA_SCANNER_FORENSICS	2 //unused
@@ -661,6 +680,16 @@ GLOBAL_LIST_EMPTY(PDAs)
 						return
 					else
 						ttone = t
+						// НОВОЕ: Воспроизводим превью звука при смене рингтона
+						var/sound_preview = get_ringtone_sound(ttone)
+						if(sound_preview && sound_preview != 'sound/machines/twobeep.ogg' && !silent)
+							playsound(src, sound_preview, 50, 1)
+							to_chat(U, "<span class='notice'>[icon2html(src, U)] Рингтон установлен на '[ttone]'.</span>")
+						else if(sound_preview == 'sound/machines/twobeep.ogg' && ttone != "beep")
+							to_chat(U, "<span class='notice'>[icon2html(src, U)] Рингтон установлен на '[ttone]' (только текст, звук не найден).</span>")
+						else if(!silent)
+							playsound(src, sound_preview, 50, 1)
+							to_chat(U, "<span class='notice'>[icon2html(src, U)] Рингтон установлен на '[ttone]'.</span>")
 				else
 					U << browse(null, "window=pda")
 					return
@@ -852,10 +881,49 @@ GLOBAL_LIST_EMPTY(PDAs)
 	if (everyone)
 		last_everyone = world.time
 
+// Вспомогательная функция для получения звука рингтона
+/obj/item/pda/proc/get_ringtone_sound(ringtone)
+	// Используем switch для надежности вместо GLOB
+	switch(ringtone)
+		if("beep")
+			return 'sound/machines/twobeep.ogg'
+		if("boom")
+			return 'sound/effects/explosion1.ogg'
+		if("honk")
+			return 'sound/items/bikehorn.ogg'
+		if("SKREE")
+			return 'sound/voice/shriek1.ogg'
+		if("xeno")
+			return 'sound/voice/hiss2.ogg'
+		if("clown")
+			return 'sound/items/AirHorn2.ogg'
+		if("bzzt")
+			return 'sound/machines/buzz-sigh.ogg'
+		if("ding")
+			return 'sound/machines/ding.ogg'
+		if("chirp")
+			return 'sound/machines/chime.ogg'
+		if("pew")
+			return 'sound/weapons/laser.ogg'
+		if("boop")
+			return 'sound/machines/terminal_select.ogg'
+		if("ping")
+			return 'sound/machines/ping.ogg'
+		if("synth")
+			return 'sound/misc/interference.ogg'
+		if("stalker")
+			return 'sound/items/PDA/stalk1.ogg'
+		if("newquest")
+			return 'sound/items/PDA/stalk2.ogg'
+		else
+			return 'sound/machines/twobeep.ogg' // Дефолтный звук для неизвестных рингтонов
+
 /obj/item/pda/proc/receive_message(datum/signal/subspace/pda/signal)
 	tnote += "<i><b>&larr; From <a href='byond://?src=[REF(src)];choice=Message;target=[REF(signal.source)]'>[signal.data["name"]]</a> ([signal.data["job"]]):</b></i> <a href='byond://?src=[REF(src)];choice=toggle_block;target=[signal.data["name"]]'>(BLOCK/UNBLOCK)</a><br>[signal.format_message()]<br>"
 	if (!silent)
-		playsound(src, 'sound/machines/twobeep.ogg', 50, 1)
+		// НОВАЯ ЛОГИКА: Воспроизводим звук на основе выбранного рингтона
+		var/sound_to_play = get_ringtone_sound(ttone)
+		playsound(src, sound_to_play, 50, 1)
 		audible_message("[icon2html(src, hearers(src))] *[ttone]*", null, 3)
 	//Search for holder of the PDA.
 	var/mob/living/L = null
