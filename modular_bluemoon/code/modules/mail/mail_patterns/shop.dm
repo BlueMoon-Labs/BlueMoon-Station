@@ -132,6 +132,8 @@
 	letter_html = {"Представьте, в наш век технологий вы можете стать пушистым, как таяр или вульпа! Специально для вас скидка 70% на смену расы!<br>
 					Подпишите договор с ближайшим центром актуализации и станьте горячим и пушистым!"}
 
+	whitelisted_species = list(/datum/species/human)
+
 	initial_contents = list(
 		/obj/item/clothing/head/rabbitears,
 		/obj/item/clothing/head/kitty,
