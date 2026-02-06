@@ -10,7 +10,7 @@
 	if(!vehicle_list_cache)
 		vehicle_list_cache = list()
 		var/list/created_beacons = list()
-		for(var/path in subtypesof(/obj/item/choice_beacon/vehicle))
+		for(var/path in typesof(/obj/item/choice_beacon/vehicle))
 			var/obj/item/choice_beacon/vehicle/beacon = new path(null)
 			created_beacons += beacon
 
@@ -18,7 +18,7 @@
 		QDEL_LIST(created_beacons)
 
 	if(type == group_path)
-		for(var/path in vehicle_list_cache)
+		for(var/path in typesof(type))
 			merge_assoc_list(vehicle_list, vehicle_list_cache[path])
 	return ..()
 
