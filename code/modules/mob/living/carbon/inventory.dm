@@ -229,7 +229,7 @@
 		return
 	if(I.on_offer_taken(offerer, src)) // see if the item has special behavior for being accepted
 		return
-	if(!offerer.temporarilyRemoveItemFromInventory(I))
+	if((I.item_flags & ABSTRACT) || !offerer.temporarilyRemoveItemFromInventory(I))
 		visible_message("<span class='notice'>[offerer] tries to hand over [I] but it's stuck to them....", \
 						"<span class'notice'> You make a fool of yourself trying to give away an item stuck to your hands")
 		return
