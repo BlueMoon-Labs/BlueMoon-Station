@@ -9,13 +9,10 @@
 	var/static/list/vehicle_list_cache
 	if(!vehicle_list_cache)
 		vehicle_list_cache = list()
-		var/list/created_beacons = list()
 		for(var/path in typesof(/obj/item/choice_beacon/vehicle))
 			var/obj/item/choice_beacon/vehicle/beacon = new path(null)
-			created_beacons += beacon
-
 			vehicle_list_cache[beacon.type] = LAZYCOPY(beacon.vehicle_list)
-		QDEL_LIST(created_beacons)
+			qdel(beacon)
 
 	if(type == group_path)
 		for(var/path in typesof(type))
