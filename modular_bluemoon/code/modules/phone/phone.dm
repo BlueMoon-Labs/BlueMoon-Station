@@ -457,7 +457,7 @@ GLOBAL_LIST_EMPTY_TYPED(transmitters, /obj/structure/transmitter)
 		return
 	var/message = speech_args[SPEECH_MESSAGE]
 	var/datum/language/L = speech_args[SPEECH_LANGUAGE]
-	if(L == /datum/language/signlanguage)
+	if(L && initial(L.visual_language))
 		return
 	var/obj/item/telephone/P = T.attached_to
 	if(!P || !attached_to)

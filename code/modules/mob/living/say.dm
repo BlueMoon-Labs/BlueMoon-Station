@@ -353,9 +353,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	SEND_SIGNAL(src, COMSIG_MOVABLE_HEAR, args) //parent calls can't overwrite the current proc args.
 	if(!client && !audiovisual_redirect)
 		return
-	// BLUEMOON EDIT START - sign language is visual, deaf people should understand it
-	var/is_sign_language = (message_language == /datum/language/signlanguage)
-	// BLUEMOON EDIT END
+	// BLUEMOON EDIT - sign language is visual, deaf people should understand it
+	var/is_sign_language = initial(message_language.visual_language)
 	var/deaf_message
 	var/deaf_type
 	if(is_sign_language)
@@ -529,10 +528,12 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 /mob/living/proc/can_speak_vocal(message) //Check AFTER handling of xeno and ling channels
 	var/obj/item/bodypart/leftarm = get_bodypart(BODY_ZONE_L_ARM)
 	var/obj/item/bodypart/rightarm = get_bodypart(BODY_ZONE_R_ARM)
-	if(HAS_TRAIT(src, TRAIT_MUTE) && get_selected_language() != /datum/language/signlanguage)
+	var/datum/language/selected_lang = get_selected_language()
+	var/is_visual = selected_lang && initial(selected_lang.visual_language)
+	if(HAS_TRAIT(src, TRAIT_MUTE) && !is_visual)
 		return FALSE
 
-	if (get_selected_language() == /datum/language/signlanguage)
+	if(is_visual)
 		var/left_disabled = FALSE
 		var/right_disabled = FALSE
 		if (istype(leftarm)) // Need to check if the arms exist first before checking if they are disabled or else it will runtime

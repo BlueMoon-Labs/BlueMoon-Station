@@ -5,6 +5,7 @@
 	whisper_verb = "gestures"
 	key = "9"
 	flags = TONGUELESS_SPEECH
+	visual_language = TRUE
 
 	syllables = list(".")
 

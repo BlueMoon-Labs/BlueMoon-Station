@@ -82,7 +82,7 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 /obj/item/radio/headset/talk_into(mob/living/M, message, channel, list/spans,datum/language/language)
 	if (!listening)
 		return ITALICS | REDUCE_RANGE
-	if (language != /datum/language/signlanguage)
+	if (!language || !initial(language.visual_language))
 		return ..()
 
 /obj/item/radio/headset/can_receive(freq, level, AIuser)
