@@ -450,13 +450,21 @@
 /datum/quirk/retractable_claws/add()
 	var/mob/living/carbon/human/H = quirk_holder
 
-	// Создаем имплант для ЛЕВОЙ руки
-	var/obj/item/organ/cyberimp/arm/claws/left/L = new()
-	L.Insert(H)
+	var/arm = H.get_bodypart(BODY_ZONE_L_ARM)
+	if(arm)
+		var/impl = H.getorganslot(ORGAN_SLOT_LEFT_ARM_AUG)
+		if(!impl)
+			// Создаем имплант для ЛЕВОЙ руки
+			var/obj/item/organ/cyberimp/arm/claws/left/L = new()
+			L.Insert(H)
 
-	// Создаем имплант для ПРАВОЙ руки
-	var/obj/item/organ/cyberimp/arm/claws/R = new()
-	R.Insert(H)
+	arm = H.get_bodypart(BODY_ZONE_R_ARM)
+	if(arm)
+		var/impl = H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG)
+		if(!impl)
+			// Создаем имплант для ПРАВОЙ руки
+			var/obj/item/organ/cyberimp/arm/claws/R = new()
+			R.Insert(H)
 
 /datum/quirk/retractable_claws/remove()
 	var/mob/living/carbon/human/H = quirk_holder
