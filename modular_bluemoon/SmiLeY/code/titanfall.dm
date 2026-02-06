@@ -61,7 +61,7 @@
 	)
 
 /obj/item/choice_beacon/vehicle/misc_mech/nri
-	name = "NRI mech beacon"
+	name = "NRI Mech Beacon"
 	desc = "To summon your own steel titan. For the Emperor!"
 	vehicle_list = list(
 		"TU-802 Solntsepyok" = /obj/vehicle/sealed/mecha/combat/durand/tu802,
@@ -69,7 +69,7 @@
 	)
 
 /obj/item/choice_beacon/vehicle/misc_mech/sol
-	name = "SolFed mech beacon"
+	name = "SolFed Mech Beacon"
 	desc = "Feel the power of the tesla. Glory to the Humanity!"
 	vehicle_list = list(
 		"TU-802 Solntsepyok" = /obj/vehicle/sealed/mecha/combat/durand/tu802,
