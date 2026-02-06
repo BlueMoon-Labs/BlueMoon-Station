@@ -515,7 +515,7 @@
 	desc = "Combat Mech Beacon"
 	id = "combat_mech_beacon"
 	build_type = PROTOLATHE
-	build_path = /obj/item/choice_beacon/pact_mecha
+	build_path = /obj/item/choice_beacon/vehicle/pact_mech/combat
 	materials = list(/datum/material/iron=200000,/datum/material/gold=15000,/datum/material/uranium=15000, /datum/material/titanium=15000, /datum/material/diamond=15000)
 	construction_time = 20
 	category = list("Bluespace Designs")
@@ -526,7 +526,7 @@
 	name = "Medical Mech Beacon"
 	desc = "Medical Mech Beacon"
 	id = "medical_mech_beacon"
-	build_path = /obj/item/choice_beacon/pact_mecha/medical
+	build_path = /obj/item/choice_beacon/vehicle/pact_mech/medical
 	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENT_BITFLAG_SCIENCE
 	min_security_level = SEC_LEVEL_BLUE
@@ -535,7 +535,7 @@
 	name = "Cargo Mech Beacon"
 	desc = "Cargo Mech Beacon"
 	id = "cargo_mech_beacon"
-	build_path = /obj/item/choice_beacon/pact_mecha/cargo
+	build_path = /obj/item/choice_beacon/vehicle/pact_mech/cargo
 	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO | DEPARTMENT_BITFLAG_SCIENCE
 	min_security_level = SEC_LEVEL_BLUE
@@ -544,7 +544,7 @@
 	name = "Engineer Mech Beacon"
 	desc = "Engineer Mech Beacon"
 	id = "engineer_mech_beacon"
-	build_path = /obj/item/choice_beacon/pact_mecha/engineer
+	build_path = /obj/item/choice_beacon/vehicle/pact_mech/engineer
 	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 	min_security_level = SEC_LEVEL_BLUE

@@ -66,7 +66,7 @@
 			You can ram any spacemen you come across and stuff them into your car, kidnapping them and locking them inside until \
 			someone saves them or they manage to crawl out. Be sure not to ram into any walls or vending machines, as the springloaded seats \
 			are very sensetive. Now with our included lube defense mechanism which will protect you against any angry shitcurity!"
-	item = /obj/vehicle/sealed/car/clowncar
+	item = /obj/item/choice_beacon/vehicle/clown_car
 	cost = 16
 	restricted_roles = list("Clown")
 

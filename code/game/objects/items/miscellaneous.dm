@@ -28,7 +28,9 @@
 		return
 	// BLEMOON EDIT START
 	var/choice
-	if(radial_menu)
+	if(stored_options.len == 1)
+		choice = stored_options[1]
+	else if(radial_menu)
 		var/list/stored_options_radial = list()
 		for(var/listed in stored_options)
 			stored_options_radial[listed] = new /mutable_appearance(stored_options[listed])

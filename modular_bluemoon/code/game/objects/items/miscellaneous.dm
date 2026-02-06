@@ -28,6 +28,12 @@
 			nri_mech_list[initial(A.name)] = A
 	return nri_mech_list
 
+/obj/item/choice_beacon/nri_mech/spawn_option(atom/choice, mob/living/M)
+	. = ..()
+	if(ispath(choice, /obj/vehicle/sealed/mecha) || istype(choice, /obj/vehicle/sealed/mecha))
+		var/obj/effect/pod_landingzone/effect = .
+		effect.say("Stand by for TitanFall!")
+
 /obj/item/choice_beacon/sol_mech
 	name = "SolFed mech beacon"
 	desc = "Feel the power of the tesla. Glory to the Humanity!"
