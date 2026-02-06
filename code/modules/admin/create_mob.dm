@@ -10,14 +10,16 @@
 
 	user << browse(create_panel_helper(create_mob_html), "window=create_mob;size=425x475")
 
-/proc/randomize_human(mob/living/carbon/human/H)
-	H.gender = pick(MALE, FEMALE)
-	H.real_name = random_unique_name(H.gender)
-	H.name = H.real_name
-	H.underwear = random_underwear(H.gender)
-	H.undie_color = random_short_color()
-	H.undershirt = random_undershirt(H.gender)
-	H.shirt_color = random_short_color()
+/proc/randomize_human(mob/living/carbon/human/H, soft = FALSE)
+	if(!soft)
+		H.gender = pick(MALE, FEMALE)
+		H.real_name = random_unique_name(H.gender)
+		H.name = H.real_name
+		H.underwear = random_underwear(H.gender)
+		H.undie_color = random_short_color()
+		H.undershirt = random_undershirt(H.gender)
+		H.shirt_color = random_short_color()
+		H.dna.blood_type = random_blood_type()
 	H.dna.skin_tone_override = null
 	H.skin_tone = random_skin_tone()
 	H.hair_style = random_hair_style(H.gender)
@@ -27,7 +29,7 @@
 	var/random_eye_color = random_eye_color()
 	H.left_eye_color = random_eye_color
 	H.right_eye_color = random_eye_color
-	H.dna.blood_type = random_blood_type()
+
 	/*
 	H.saved_underwear = H.underwear
 	H.saved_undershirt = H.undershirt

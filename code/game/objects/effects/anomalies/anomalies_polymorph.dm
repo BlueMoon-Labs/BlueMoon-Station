@@ -31,7 +31,7 @@
 
 /obj/effect/anomaly/poly/proc/randomize_appearance(mob/living/carbon/human/H)
 	new /obj/effect/temp_visual/revenant(H.loc)
-	randomize_human(H)
+	randomize_human(H, soft = TRUE)
 
 // Генерим ожидаемое кол-во спавнов и раскидываем случайно.
 // chance=10 означает примерно 10% площади квадрата orange.
