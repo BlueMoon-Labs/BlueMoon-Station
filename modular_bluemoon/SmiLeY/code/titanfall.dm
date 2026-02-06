@@ -23,19 +23,55 @@
 
 /obj/item/choice_beacon/vehicle/pact_mech/combat
 	name = "Combat Mech Beacon"
-	vehicle_list = list("Main Battle Mech Durand Mk1A1" = /obj/vehicle/sealed/mecha/combat/durand/loaded,
-					"Main Battle Mech mk. I" = /obj/vehicle/sealed/mecha/combat/gygax/loaded)
+	vehicle_list = list(
+		"Main Battle Mech Durand Mk1A1" = /obj/vehicle/sealed/mecha/combat/durand/loaded,
+		"Main Battle Mech mk. I" = /obj/vehicle/sealed/mecha/combat/gygax/loaded
+	)
 
 /obj/item/choice_beacon/vehicle/pact_mech/medical
 	name = "Medical Pact Mech Beacon"
-	vehicle_list = list("Vey-Med Odysseus" = /obj/vehicle/sealed/mecha/medical/odysseus/loaded,
-					"Vey-Med Gygax" = /obj/vehicle/sealed/mecha/medical/medigax/loaded)
+	vehicle_list = list(
+		"Vey-Med Odysseus" = /obj/vehicle/sealed/mecha/medical/odysseus/loaded,
+		"Vey-Med Gygax" = /obj/vehicle/sealed/mecha/medical/medigax/loaded
+	)
 
 /obj/item/choice_beacon/vehicle/pact_mech/cargo
 	name = "Cargo Pact Mech Beacon"
-	vehicle_list = list("Autonomous Power Loader Unit MK-I" = /obj/vehicle/sealed/mecha/working/ripley/loaded,
-					"Autonomous Power Loader Unit MK-II" = /obj/vehicle/sealed/mecha/working/ripley/mkii/loaded)
+	vehicle_list = list(
+		"Autonomous Power Loader Unit MK-I" = /obj/vehicle/sealed/mecha/working/ripley/loaded,
+		"Autonomous Power Loader Unit MK-II" = /obj/vehicle/sealed/mecha/working/ripley/mkii/loaded
+	)
 
 /obj/item/choice_beacon/vehicle/pact_mech/engineer
 	name = "Engineer Pact Mech Beacon"
-	vehicle_list = list("Autonomous Power Loader Unit MK-II-F" = /obj/vehicle/sealed/mecha/working/ripley/firefighter/loaded)
+	vehicle_list = list(
+		"Autonomous Power Loader Unit MK-II-F" = /obj/vehicle/sealed/mecha/working/ripley/firefighter/loaded
+	)
+
+/obj/item/choice_beacon/vehicle/misc_mech
+	name = "Mech Beacon"
+	desc = "To summon your own steel titan."
+
+/obj/item/choice_beacon/vehicle/misc_mech/ert
+	name = "ERT Mech Beacon"
+	desc = "To summon your own steel titan."
+	vehicle_list = list(
+		"Marauder" = /obj/vehicle/sealed/mecha/combat/marauder/loaded,
+		"Seraph" = /obj/vehicle/sealed/mecha/combat/marauder/seraph
+	)
+
+/obj/item/choice_beacon/vehicle/misc_mech/nri
+	name = "NRI mech beacon"
+	desc = "To summon your own steel titan. For the Emperor!"
+	vehicle_list = list(
+		"TU-802 Solntsepyok" = /obj/vehicle/sealed/mecha/combat/durand/tu802,
+		"Savannah-Ivanov" = /obj/vehicle/sealed/mecha/combat/savannah_ivanov/loaded
+	)
+
+/obj/item/choice_beacon/vehicle/misc_mech/sol
+	name = "SolFed mech beacon"
+	desc = "Feel the power of the tesla. Glory to the Humanity!"
+	vehicle_list = list(
+		"TU-802 Solntsepyok" = /obj/vehicle/sealed/mecha/combat/durand/tu802,
+		"Savannah-Ivanov" = /obj/vehicle/sealed/mecha/combat/savannah_ivanov/loaded
+	)
