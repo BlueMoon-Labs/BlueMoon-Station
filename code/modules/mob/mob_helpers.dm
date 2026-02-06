@@ -624,7 +624,7 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 		return
 	return TRUE
 
-/mob/living/carbon/human/proc/load_client_appearance(client/client)
+/mob/living/carbon/human/proc/load_client_appearance(client/client, quirks = TRUE)
 	if(!client)
 		client = src.client
 	var/old_name = real_name
@@ -633,7 +633,8 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 	client.prefs.apply_tattoos_to_human(src)
 	// BLUEMOON ADD END
 	client.prefs.copy_to(src)
-	SSquirks.AssignQuirks(src, client, TRUE, FALSE, job, FALSE)//This Assigns the selected character's quirks
+	if(quirks)
+		load_client_quirks(client)
 	var/obj/item/card/id/id_card = get_idcard() //Time to change their ID card as well if they have one.
 	if(id_card)
 		id_card.registered_name = real_name
@@ -655,6 +656,12 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 	log_game("[key_name(src)] has loaded their default appearance for a ghost role.")
 	message_admins("[ADMIN_LOOKUPFLW(src)] has loaded their default appearance for a ghost role.")
 	return
+
+//This Assigns the selected character's quirks
+/mob/living/carbon/human/proc/load_client_quirks(client/client)
+	if(!client)
+		client = src.client
+	SSquirks.AssignQuirks(src, client, TRUE, FALSE, job, FALSE)
 
 ///Returns a mob's real name between brackets. Useful when you want to display a mob's name alongside their real name
 /mob/proc/get_realname_string()
