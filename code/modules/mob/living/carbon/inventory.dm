@@ -199,6 +199,10 @@
 		to_chat(src, span_warning("You're already offering up something!"))
 		return
 
+	if(offered_item.item_flags & ABSTRACT)
+		to_chat(src, span_warning("You can't offer this!"))
+		return
+
 	if(offered_item.on_offered(src)) // see if the item interrupts with its own behavior
 		return
 
