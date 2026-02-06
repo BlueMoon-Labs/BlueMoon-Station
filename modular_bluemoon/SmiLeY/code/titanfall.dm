@@ -1,7 +1,26 @@
 /obj/item/choice_beacon/vehicle
 	name = "Vehicle Beacon"
 	desc = "Благодаря этому маячку вы сможете вызвать транспорт"
-	var/vehicle_list = list()
+	var/list/vehicle_list = list()
+	var/group_path = /obj/item/choice_beacon/vehicle // Маяки этого типа будут содержать все vehicle_list своих подтипов
+
+/obj/item/choice_beacon/vehicle/Initialize(mapload)
+	// Понятия не имею, как написать это по другому. Ни через оператор : ни через initial нельзя получить переменную /list
+	var/static/list/vehicle_list_cache
+	if(!vehicle_list_cache)
+		vehicle_list_cache = list()
+		var/list/created_beacons = list()
+		for(var/path in subtypesof(/obj/item/choice_beacon/vehicle))
+			var/obj/item/choice_beacon/vehicle/beacon = new path(null)
+			created_beacons += beacon
+
+			vehicle_list_cache[beacon.type] = LAZYCOPY(beacon.vehicle_list)
+		QDEL_LIST(created_beacons)
+
+	if(type == group_path)
+		for(var/path in vehicle_list_cache)
+			merge_assoc_list(vehicle_list, vehicle_list_cache[path])
+	return ..()
 
 /obj/item/choice_beacon/vehicle/generate_display_names()
 	return vehicle_list
@@ -14,12 +33,15 @@
 
 /obj/item/choice_beacon/vehicle/clown_car
 	name = "Clown Car Beacon"
-	vehicle_list = list("Clown car" = /obj/vehicle/sealed/car/clowncar)
+	vehicle_list = list(
+		"Clown car" = /obj/vehicle/sealed/car/clowncar
+	)
 
 //////////////////////// МЕХИ ////////////////////////
 /obj/item/choice_beacon/vehicle/pact_mech
 	name = "Mech Beacon"
 	desc = "Благодаря этому маячку вы сможете вызвать один из мехов с Фрегатов Туманности Синие Луны. За ПАКТ!"
+	group_path = /obj/item/choice_beacon/vehicle/pact_mech
 
 /obj/item/choice_beacon/vehicle/pact_mech/combat
 	name = "Combat Mech Beacon"
@@ -51,6 +73,7 @@
 /obj/item/choice_beacon/vehicle/misc_mech
 	name = "Mech Beacon"
 	desc = "To summon your own steel titan."
+	group_path = /obj/item/choice_beacon/vehicle/misc_mech
 
 /obj/item/choice_beacon/vehicle/misc_mech/ert
 	name = "ERT Mech Beacon"
