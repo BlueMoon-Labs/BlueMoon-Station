@@ -69,9 +69,8 @@
 	var/uses = 1
 	var/const/charges_expire_time = 2 MINUTES
 	if(seed)
-		uses = round(seed.potency / 20)
-	if(uses)
-		AddComponent(/datum/component/anti_magic, TRUE, TRUE, FALSE, ITEM_SLOT_HANDS, uses, TRUE, CALLBACK(src, PROC_REF(block_magic)), CALLBACK(src, PROC_REF(expire)), charges_expire_time, CALLBACK(src, PROC_REF(on_charges_change))) //deliver us from evil o melon god
+		uses = max(1, ceil(seed.potency / 20))
+	AddComponent(/datum/component/anti_magic, TRUE, TRUE, FALSE, ITEM_SLOT_HANDS, uses, TRUE, CALLBACK(src, PROC_REF(block_magic)), CALLBACK(src, PROC_REF(expire)), charges_expire_time, CALLBACK(src, PROC_REF(on_charges_change))) //deliver us from evil o melon god
 	icon_state = icon_state + "-[clamp(uses, 1, 5)]"
 
 /obj/item/reagent_containers/food/snacks/grown/holymelon/proc/block_magic(mob/user, major)
