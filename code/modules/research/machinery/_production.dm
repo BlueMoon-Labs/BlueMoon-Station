@@ -16,6 +16,7 @@
 	var/datum/techweb/host_research
 
 	var/lathe_prod_time = 0.5
+	var/emaggable = FALSE
 
 	/// What color is this machine's stripe? Leave null to not have a stripe.
 	var/stripe_color = null
@@ -64,9 +65,8 @@
 	stripe.color = stripe_color
 	. += stripe
 
-/*
 /obj/machinery/rnd/production/emag_act()
-	if(obj_flags & EMAGGED)
+	if(!emaggable || obj_flags & EMAGGED)
 		return
 	. = ..()
 	balloon_alert(usr, span_balloon_warning("emagged"))
@@ -75,7 +75,6 @@
 	req_access = list()
 	req_one_access = list()
 	update_research()
-*/
 
 /obj/machinery/rnd/production/proc/update_research()
 	host_research.copy_research_to(stored_research, TRUE)
