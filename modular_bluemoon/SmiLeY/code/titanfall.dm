@@ -1,6 +1,7 @@
 /obj/item/choice_beacon/vehicle
 	name = "Vehicle Beacon"
 	desc = "Благодаря этому маячку вы сможете вызвать транспорт."
+	radial_menu = TRUE
 	var/list/vehicle_list = list()
 	var/group_path = /obj/item/choice_beacon/vehicle // Маяки этого типа будут содержать все vehicle_list своих подтипов
 
@@ -102,34 +103,40 @@
 		"Clown car" = /obj/vehicle/sealed/car/clowncar
 	)
 
-//////////////////////// МЕХИ ////////////////////////
-/obj/item/choice_beacon/vehicle/pact_mech
+////////////////////////	ПАКТ	////////////////////////
+/obj/item/choice_beacon/vehicle/pact
+	name = "PACT Vehicle Beacon"
+	desc = "Благодаря этому маячку вы сможете вызвать транспорт с Фрегатов Туманности Синие Луны. За ПАКТ!"
+	group_path = /obj/item/choice_beacon/vehicle/pact
+
+////////////////////////	МЕХИ	////////////////////////
+/obj/item/choice_beacon/vehicle/pact/mech
 	name = "PACT Mech Beacon"
 	desc = "Благодаря этому маячку вы сможете вызвать один из мехов с Фрегатов Туманности Синие Луны. За ПАКТ!"
-	group_path = /obj/item/choice_beacon/vehicle/pact_mech
+	group_path = /obj/item/choice_beacon/vehicle/pact/mech
 
-/obj/item/choice_beacon/vehicle/pact_mech/combat
+/obj/item/choice_beacon/vehicle/pact/mech/combat
 	name = "Combat Mech Beacon"
 	vehicle_list = list(
 		"Main Battle Mech Durand Mk1A1" = /obj/vehicle/sealed/mecha/combat/durand/loaded,
 		"Main Battle Mech mk. I" = /obj/vehicle/sealed/mecha/combat/gygax/loaded
 	)
 
-/obj/item/choice_beacon/vehicle/pact_mech/medical
+/obj/item/choice_beacon/vehicle/pact/mech/medical
 	name = "Medical Pact Mech Beacon"
 	vehicle_list = list(
 		"Vey-Med Odysseus" = /obj/vehicle/sealed/mecha/medical/odysseus/loaded,
 		"Vey-Med Gygax" = /obj/vehicle/sealed/mecha/medical/medigax/loaded
 	)
 
-/obj/item/choice_beacon/vehicle/pact_mech/cargo
+/obj/item/choice_beacon/vehicle/pact/mech/cargo
 	name = "Cargo Pact Mech Beacon"
 	vehicle_list = list(
 		"Autonomous Power Loader Unit MK-I" = /obj/vehicle/sealed/mecha/working/ripley/loaded,
 		"Autonomous Power Loader Unit MK-II" = /obj/vehicle/sealed/mecha/working/ripley/mkii/loaded
 	)
 
-/obj/item/choice_beacon/vehicle/pact_mech/engineer
+/obj/item/choice_beacon/vehicle/pact/mech/engineer
 	name = "Engineer Pact Mech Beacon"
 	vehicle_list = list(
 		"Autonomous Power Loader Unit MK-II-F" = /obj/vehicle/sealed/mecha/working/ripley/firefighter/loaded
