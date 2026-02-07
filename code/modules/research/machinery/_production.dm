@@ -134,7 +134,7 @@
 			var/list/cost_chem = list()
 			for(var/R_path in D.reagents_list)
 				var/datum/reagent/R = R_path // ispath
-				cost_chem += list(list("name" = initial(R.name), "id" = R, "amount" = D.reagents_list[R]))
+				cost_chem += list(list("name" = initial(R.name), "id" = R, "amount" = D.reagents_list[R] * coeff))
 
 			// Делаем описание для плат
 			var/desc = ""
@@ -307,7 +307,7 @@
 		return FALSE
 	if(istext(amount))
 		amount = text2num(amount)
-	if(isnull(amount))
+	if(amount <= 0)
 		amount = 1
 	if(amount > max_build_amount)
 		if(COOLDOWN_FINISHED(src, cooldown_say))
@@ -348,7 +348,6 @@
 			say("Mineral access is on hold, please contact the quartermaster.")
 		return FALSE
 	var/power = 1000
-	amount = clamp(amount, 1, 50)
 	for(var/M in D.materials)
 		power += round(D.materials[M] * amount / 35)
 	power = min(3000, power)
