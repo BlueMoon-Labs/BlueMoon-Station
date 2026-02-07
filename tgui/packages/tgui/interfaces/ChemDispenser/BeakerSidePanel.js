@@ -32,6 +32,7 @@ export const BeakerSidePanel = (props, context) => {
     phBaseName,
     phBasePH,
     isDrinkDispenser = false,
+    onOptimisticRemove,
   } = props;
 
   // Hide pH display for drink dispensers (soda/booze) as it's irrelevant
@@ -149,7 +150,10 @@ export const BeakerSidePanel = (props, context) => {
                   icon="minus"
                   content={amount}
                   disabled={recording}
-                  onClick={() => act('remove', { amount })}
+                  onClick={() => {
+                    if (onOptimisticRemove) onOptimisticRemove(amount, false);
+                    act('remove', { amount });
+                  }}
                 />
               ))}
               <Button
@@ -158,7 +162,10 @@ export const BeakerSidePanel = (props, context) => {
                 color="bad"
                 tooltip="Слить всё"
                 disabled={recording || !beakerCurrentVolume}
-                onClick={() => act('remove', { all: true })}
+                onClick={() => {
+                  if (onOptimisticRemove) onOptimisticRemove(0, true);
+                  act('remove', { all: true });
+                }}
               />
             </Box>
           </Box>

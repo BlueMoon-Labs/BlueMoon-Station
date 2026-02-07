@@ -108,6 +108,8 @@
 	var/cached_dispensable_reagents_hash = ""
 	/// Current manipulator tier (1-6) - determines which recipes can be auto-dispensed
 	var/manipulator_tier = 1
+	/// Cached capacitor rating for pH display precision (avoids iterating component_parts per ui_data call)
+	var/capacitor_rating = 1
 	/// Type of this dispenser (DISPENSER_TYPE_CHEM, DISPENSER_TYPE_SODA, DISPENSER_TYPE_BOOZE)
 	var/dispenser_type = DISPENSER_TYPE_CHEM
 
@@ -888,10 +890,9 @@
 		data["beakerTransferAmounts"] = beaker.possible_transfer_amounts
 		data["beakerDoseAmounts"] = beaker.possible_transfer_amounts
 		//pH accuracy
-		for(var/obj/item/stock_parts/capacitor/C in component_parts)
-			var/rounded_ph = round(beaker.reagents.pH, 10**-(C.rating+1))
-			data["beakerCurrentpH"] = rounded_ph
-			data["beakerCurrentpHCol"] = ConvertpHToCol(rounded_ph)
+		var/rounded_ph = round(beaker.reagents.pH, 10**-(capacitor_rating+1))
+		data["beakerCurrentpH"] = rounded_ph
+		data["beakerCurrentpHCol"] = ConvertpHToCol(rounded_ph)
 
 	else
 		data["beakerCurrentVolume"] = null
@@ -1231,13 +1232,11 @@
 					var/datum/reagents/R = beaker.reagents
 					var/free = R.maximum_volume - R.total_volume
 					var/actual = min(amount, (cell.charge * powerefficiency)*10, free)
-
 					if(!cell.use(actual / powerefficiency))
 						say("Недостаточно энергии для задачи!")
 						return
 					R.add_reagent(reagent, actual)
 					log_reagent("DISPENSER: ([COORD(src)]) ([REF(src)]) [key_name(usr)] dispensed [actual] of [reagent] to [beaker] ([REF(beaker)]).")
-
 					work_animation()
 			else
 				recording_recipe[reagent_name] += amount
@@ -1297,6 +1296,7 @@
 				return
 			var/list/logstring = list()
 			var/earlyabort = FALSE
+			var/datum/reagents/BR = !recording_recipe && beaker ? beaker.reagents : null
 			for(var/key in chemicals_to_dispense)
 				var/reagent = GLOB.name2reagent[translate_legacy_chem_id(key)]
 				var/dispense_amount = chemicals_to_dispense[key]
@@ -1304,20 +1304,23 @@
 				if(!dispensable_reagents.Find(reagent))
 					break
 				if(!recording_recipe)
-					if(!beaker)
+					if(!BR)
 						return
-					var/datum/reagents/R = beaker.reagents
-					var/free = R.maximum_volume - R.total_volume
+					var/free = BR.maximum_volume - BR.total_volume
 					var/actual = min(dispense_amount, (cell.charge * powerefficiency)*10, free)
 					if(actual)
 						if(!cell.use(actual / powerefficiency))
 							say("Недостаточно энергии для задачи!")
 							earlyabort = TRUE
 							break
-						R.add_reagent(reagent, actual)
+						BR.add_reagent(reagent, actual, no_react = TRUE)
 						work_animation()
 				else
 					recording_recipe[key] += dispense_amount
+
+			if(BR)
+				BR.handle_reactions()
+
 			logstring = logstring.Join(", ")
 			if(!recording_recipe)
 				log_reagent("DISPENSER: [key_name(usr)] dispensed recipe [params["recipe"]] with chemicals [logstring] to [beaker] ([REF(beaker)])[earlyabort? " (aborted early)":""]")
@@ -1364,9 +1367,9 @@
 				return
 
 			var/list/logstring = list()
+			var/datum/reagents/BR = beaker.reagents
 			for(var/reagent_type in base_ingredients)
 				var/needed_amount = base_ingredients[reagent_type]
-				var/datum/reagents/BR = beaker.reagents
 				var/free = BR.maximum_volume - BR.total_volume
 				var/actual = min(needed_amount, (cell.charge * powerefficiency) * 10, free)
 				if(actual <= 0)
@@ -1374,8 +1377,9 @@
 				if(!cell.use(actual / powerefficiency))
 					say("Недостаточно энергии!")
 					break
-				BR.add_reagent(reagent_type, actual)
+				BR.add_reagent(reagent_type, actual, no_react = TRUE)
 				logstring += "[reagent_type] = [actual]"
+			BR.handle_reactions()
 			work_animation()
 			log_reagent("DISPENSER: [key_name(usr)] dispensed game recipe [recipe_name][alt_index ? " alt#[alt_index]" : ""] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
 			. = TRUE
@@ -1406,6 +1410,7 @@
 
 			var/list/logstring = list()
 			var/dispensed_any = FALSE
+			var/datum/reagents/BR = beaker.reagents
 			for(var/reagent_type in base_ingredients)
 				// Only dispense if this dispenser can dispense this reagent
 				if(!(reagent_type in dispensable_reagents))
@@ -1413,12 +1418,11 @@
 
 				var/needed_amount = base_ingredients[reagent_type]
 				// Check if already have enough in beaker
-				var/current_amount = beaker.reagents.get_reagent_amount(reagent_type)
+				var/current_amount = BR.get_reagent_amount(reagent_type)
 				if(current_amount >= needed_amount)
 					continue
 
 				var/to_dispense = needed_amount - current_amount
-				var/datum/reagents/BR = beaker.reagents
 				var/free = BR.maximum_volume - BR.total_volume
 				var/actual = min(to_dispense, (cell.charge * powerefficiency) * 10, free)
 				if(actual <= 0)
@@ -1426,11 +1430,11 @@
 				if(!cell.use(actual / powerefficiency))
 					say("Недостаточно энергии!")
 					break
-				BR.add_reagent(reagent_type, actual)
+				BR.add_reagent(reagent_type, actual, no_react = TRUE)
 				logstring += "[reagent_type] = [actual]"
 				dispensed_any = TRUE
-
 			if(dispensed_any)
+				BR.handle_reactions()
 				work_animation()
 				log_reagent("DISPENSER: [key_name(usr)] partial dispensed game recipe [recipe_name][alt_index ? " alt#[alt_index]" : ""] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
 			else
@@ -1502,9 +1506,9 @@
 				return
 
 			var/list/logstring = list()
+			var/datum/reagents/BR = beaker.reagents
 			for(var/reagent_type in base_ingredients)
 				var/reagent_amount = base_ingredients[reagent_type]
-				var/datum/reagents/BR = beaker.reagents
 				var/free = BR.maximum_volume - BR.total_volume
 				var/actual = min(reagent_amount, (cell.charge * powerefficiency) * 10, free)
 				if(actual <= 0)
@@ -1512,8 +1516,9 @@
 				if(!cell.use(actual / powerefficiency))
 					say("Недостаточно энергии!")
 					break
-				BR.add_reagent(reagent_type, actual)
+				BR.add_reagent(reagent_type, actual, no_react = TRUE)
 				logstring += "[reagent_type] = [actual]"
+			BR.handle_reactions()
 			work_animation()
 			log_reagent("DISPENSER: [key_name(usr)] dispensed sub-recipe [sub_reagent_name] for [recipe_name][alt_index ? " alt#[alt_index]" : ""] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
 			. = TRUE
@@ -1557,6 +1562,7 @@
 				this_recipe_sub_recipes = recipe_data ? recipe_data["sub_recipes"] : list()
 
 			var/list/logstring = list()
+			var/datum/reagents/BR = beaker.reagents
 			for(var/reagent_type in R.required_reagents)
 				var/can_dispense = (reagent_type in dispensable_reagents)
 				var/datum/reagent/reagent = GLOB.chemical_reagents_list[reagent_type]
@@ -1569,7 +1575,6 @@
 					continue
 
 				var/needed_amount = R.required_reagents[reagent_type] * multiplier
-				var/datum/reagents/BR = beaker.reagents
 				var/free = BR.maximum_volume - BR.total_volume
 				var/actual = min(needed_amount, (cell.charge * powerefficiency) * 10, free)
 				if(actual <= 0)
@@ -1577,8 +1582,9 @@
 				if(!cell.use(actual / powerefficiency))
 					say("Недостаточно энергии!")
 					break
-				BR.add_reagent(reagent_type, actual)
+				BR.add_reagent(reagent_type, actual, no_react = TRUE)
 				logstring += "[reagent_type] = [actual]"
+			BR.handle_reactions()
 			work_animation()
 			log_reagent("DISPENSER: [key_name(usr)] dispensed final step for [recipe_name][alt_index ? " alt#[alt_index]" : ""] x[multiplier] with chemicals [logstring.Join(", ")] to [beaker] ([REF(beaker)])")
 			. = TRUE
@@ -1591,6 +1597,7 @@
 			if(!usr.canUseTopic(src, !hasSiliconAccessInArea(usr)))
 				return
 			saved_recipes = list()
+
 			. = TRUE
 		if("delete_recipe")
 			if(!is_operational())
@@ -1598,6 +1605,7 @@
 			var/recipe_name = params["recipe"]
 			if(recipe_name && saved_recipes[recipe_name])
 				saved_recipes -= recipe_name
+	
 				log_reagent("DISPENSER: [key_name(usr)] deleted recipe [recipe_name]")
 			. = TRUE
 		if("record_recipe")
@@ -1624,6 +1632,7 @@
 						playsound(src, 'sound/machines/buzz-two.ogg', 50, TRUE)
 						return
 				saved_recipes[name] = recording_recipe
+	
 				logstring = logstring.Join(", ")
 				recording_recipe = null
 				log_reagent("DISPENSER: [key_name(usr)] recorded recipe [name] with chemicals [logstring]")
@@ -1784,6 +1793,7 @@
 			reagents.maximum_volume = CHEM_DISPENSER_BASE_STORAGE*(M.rating)
 	for(var/obj/item/stock_parts/capacitor/C in component_parts)
 		recharge_amount *= C.rating
+		capacitor_rating = C.rating
 	for(var/obj/item/stock_parts/manipulator/M in component_parts)
 		manipulator_tier = M.rating
 		if(M.rating > 1) //T2

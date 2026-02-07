@@ -190,7 +190,20 @@ const buildCrossDispenserTooltip = (crossDispenser, dispenserType) => {
 
 export const GameRecipesTab = (props, context) => {
   const { act } = useBackend(context);
-  const { gameRecipes, searchQuery, isBeakerLoaded, beakerContents = [], beakerCurrentVolume, beakerMaxVolume, manipulatorTier = 1, isEmagged = false, isDrinkDispenser = false, dispenserType = 0 } = props;
+  const { gameRecipes, searchQuery, isBeakerLoaded, beakerContents = [], beakerCurrentVolume, beakerMaxVolume, manipulatorTier = 1, isEmagged = false, isDrinkDispenser = false, dispenserType = 0, onOptimisticRecipe } = props;
+
+  const triggerOptimisticRecipe = (baseIngredients, mult) => {
+    if (!onOptimisticRecipe) return;
+    let totalVol = 0;
+    for (const data of Object.values(baseIngredients)) {
+      if (data.can_dispense) {
+        totalVol += calculateActualAmount(data, mult);
+      }
+    }
+    if (totalVol > 0) {
+      onOptimisticRecipe(totalVol, totalVol);
+    }
+  };
 
   const [multiplier, setMultiplier] = useLocalState(context, 'recipe_multiplier', 1);
   // Default expanded categories depend on dispenser type
@@ -448,7 +461,10 @@ export const GameRecipesTab = (props, context) => {
                 color={isBeakerLoaded ? 'green' : 'default'}
                 disabled={!isBeakerLoaded}
                 tooltip="Выдать только доступные на этом диспенсере ингредиенты"
-                onClick={() => act('dispense_recipe_partial', dispenseParams)}
+                onClick={() => {
+                  triggerOptimisticRecipe(baseIngredients, multiplier);
+                  act('dispense_recipe_partial', dispenseParams);
+                }}
               />
             )}
             {(() => {
@@ -479,7 +495,10 @@ export const GameRecipesTab = (props, context) => {
                   : willOverflow
                     ? `Недостаточно места! Нужно ${totalInputVol}u, свободно ${toFixed(freeSpace)}u`
                     : 'Выдать все ингредиенты (требуется содержимое из другого диспенсера в ёмкости)'}
-              onClick={() => act('dispense_recipe_game', dispenseParams)}
+              onClick={() => {
+                triggerOptimisticRecipe(baseIngredients, multiplier);
+                act('dispense_recipe_game', dispenseParams);
+              }}
             />
           </>
         ) : (
@@ -494,7 +513,10 @@ export const GameRecipesTab = (props, context) => {
                 color="teal"
                 disabled={!isBeakerLoaded}
                 tooltip="Выдать только доступные на этом диспенсере ингредиенты"
-                onClick={() => act('dispense_recipe_partial', dispenseParams)}
+                onClick={() => {
+                  triggerOptimisticRecipe(baseIngredients, multiplier);
+                  act('dispense_recipe_partial', dispenseParams);
+                }}
               />
             )}
             <Button
@@ -511,7 +533,10 @@ export const GameRecipesTab = (props, context) => {
                   : willOverflow
                     ? `Недостаточно места! Нужно ${totalInputVol}u, свободно ${toFixed(freeSpace)}u`
                     : 'Выдать все базовые ингредиенты'}
-              onClick={() => act('dispense_recipe_game', dispenseParams)}
+              onClick={() => {
+                triggerOptimisticRecipe(baseIngredients, multiplier);
+                act('dispense_recipe_game', dispenseParams);
+              }}
             />
           </>
         )}

@@ -22,6 +22,82 @@ import { SavedRecipesTab } from './SavedRecipesTab';
 import { StorageSidePanel } from './StorageSidePanel';
 import { AMOUNT_PRESETS, CATEGORY_CONFIG, DRINK_CATEGORY_CONFIG } from './utils';
 
+/**
+ * Checks if optimistic state is still valid (server hasn't changed yet and timeout hasn't expired).
+ */
+const checkOptimisticActive = (optimistic, data) => {
+  return optimistic
+    && data.energy === optimistic.serverEnergy
+    && (data.beakerCurrentVolume || 0) === optimistic.serverVolume
+    && data.isBeakerLoaded
+    && Date.now() - optimistic.timestamp < 2000;
+};
+
+/**
+ * Merges optimistic dispense predictions into actual beaker contents.
+ * Used to show instant feedback before server confirms.
+ */
+const mergeOptimisticBeaker = (serverContents, optimisticDispenses) => {
+  const merged = serverContents.map(c => ({ ...c }));
+  for (const disp of optimisticDispenses) {
+    const existing = merged.find(c => c.name === disp.name);
+    if (existing) {
+      existing.volume = Math.round((existing.volume + disp.volume) * 100) / 100;
+    } else {
+      merged.push({
+        name: disp.name,
+        volume: Math.round(disp.volume * 100) / 100,
+        pH: disp.pH,
+        pHCol: disp.pHCol,
+        reagentColor: disp.reagentColor,
+      });
+    }
+  }
+  return merged;
+};
+
+/**
+ * Applies optimistic remove: proportionally reduces all reagent volumes.
+ * Mirrors server-side remove_all() behavior.
+ */
+const applyOptimisticRemove = (contents, totalVolume, removeAmount, removeAll) => {
+  if (removeAll || removeAmount >= totalVolume) return [];
+  if (!removeAmount || totalVolume <= 0) return contents;
+  const ratio = Math.max(0, 1 - removeAmount / totalVolume);
+  return contents.map(c => ({
+    ...c,
+    volume: Math.round(c.volume * ratio * 100) / 100,
+  })).filter(c => c.volume > 0);
+};
+
+/**
+ * Computes display values (beaker contents, volume, energy) with optimistic overrides.
+ */
+const computeDisplayValues = (data, beakerContents, optimistic, isOptimisticActive) => {
+  if (!isOptimisticActive) {
+    return {
+      contents: beakerContents,
+      volume: data.beakerCurrentVolume,
+      energy: data.energy,
+    };
+  }
+  const addVol = optimistic.dispenses.reduce((s, d) => s + d.volume, 0) + (optimistic.volumeDelta || 0);
+  const rmAmt = optimistic.removeAmount || 0;
+  const rmAll = optimistic.removeAll;
+  const merged = applyOptimisticRemove(
+    mergeOptimisticBeaker(beakerContents, optimistic.dispenses),
+    (data.beakerCurrentVolume || 0) + addVol,
+    rmAmt,
+    rmAll
+  );
+  const vol = rmAll ? 0 : Math.max(0, Math.round(((data.beakerCurrentVolume || 0) + addVol - rmAmt) * 100) / 100);
+  return {
+    contents: merged,
+    volume: vol,
+    energy: data.energy - (optimistic.energyDelta || 0),
+  };
+};
+
 export const ChemDispenser = (props, context) => {
   const { act, data } = useBackend(context);
   const recording = !!data.recordingRecipe;
@@ -34,15 +110,21 @@ export const ChemDispenser = (props, context) => {
   const [activeTab, setActiveTab] = useLocalState(context, 'chem_tab', 'chemicals');
   const [favorites, setFavorites] = useLocalState(context, 'chem_favorites', []);
   const [recentChemicals, setRecentChemicals] = useLocalState(context, 'chem_recent', []);
-  const classicView = data.classicView !== undefined ? data.classicView : true;
-  const useReagentColor = data.useReagentColor !== undefined ? data.useReagentColor : true;
-  const showIcons = data.showIcons !== undefined ? data.showIcons : true;
+  const classicView = data.classicView ?? true;
+  const useReagentColor = data.useReagentColor ?? true;
+  const showIcons = data.showIcons ?? true;
   const [expandedCategories, setExpandedCategories] = useLocalState(context, 'chem_expanded', {
     alcoholic_drinks: true, soft_drinks: true,
     elements: true, compounds: true, consumables: true,
     toxins: true, medicine: true, drugs: true, other: true,
     slime_extracts: true,
   });
+
+  // Optimistic UI state: shows predicted beaker/energy changes before server confirms
+  const [optimistic, setOptimistic] = useLocalState(context, 'chem_optimistic', null);
+
+  // Derived validity check — no render-during-render side-effect.
+  const isOptimisticActive = checkOptimisticActive(optimistic, data);
 
   // Get current tab's search state
   const [searchQuery, setSearchQuery] =
@@ -126,12 +208,83 @@ export const ChemDispenser = (props, context) => {
   const handleDispense = (chemId) => {
     act('dispense', { reagent: chemId });
     addToRecent(chemId);
+
+    // Optimistic update: predict the result immediately
+    if (data.isBeakerLoaded && !recording) {
+      const chemical = chemicals.find(c => c.id === chemId);
+      if (chemical) {
+        const cur = isOptimisticActive && !optimistic.removeAmount && !optimistic.removeAll && !optimistic.volumeDelta
+          ? optimistic
+          : { dispenses: [], energyDelta: 0, removeAmount: 0, removeAll: false, volumeDelta: 0, serverEnergy: data.energy, serverVolume: data.beakerCurrentVolume || 0, timestamp: Date.now() };
+        const optimisticVolume = cur.dispenses.reduce((s, d) => s + d.volume, 0);
+        const freeSpace = Math.max(0, (data.beakerMaxVolume || 0) - (data.beakerCurrentVolume || 0) - optimisticVolume);
+        const availableEnergy = data.energy - cur.energyDelta;
+        const actual = Math.min(data.amount, availableEnergy, freeSpace);
+        if (actual > 0) {
+          setOptimistic({
+            serverEnergy: cur.serverEnergy,
+            serverVolume: cur.serverVolume,
+            timestamp: Date.now(),
+            energyDelta: cur.energyDelta + actual,
+            removeAmount: 0,
+            removeAll: false,
+            volumeDelta: 0,
+            dispenses: [...cur.dispenses, {
+              name: chemical.title,
+              volume: actual,
+              pH: chemical.pH,
+              pHCol: chemical.pHCol,
+              reagentColor: chemical.reagentColor,
+            }],
+          });
+        }
+      }
+    }
+  };
+
+  const handleOptimisticRecipe = (volumeDelta, energyDelta) => {
+    if (data.isBeakerLoaded && !recording && volumeDelta > 0) {
+      setOptimistic({
+        serverEnergy: data.energy,
+        serverVolume: data.beakerCurrentVolume || 0,
+        timestamp: Date.now(),
+        energyDelta,
+        dispenses: [],
+        removeAmount: 0,
+        removeAll: false,
+        volumeDelta,
+      });
+    }
+  };
+
+  const handleRemove = (amount, isAll) => {
+    if (data.isBeakerLoaded && !recording) {
+      const currentVolume = data.beakerCurrentVolume || 0;
+      if (currentVolume > 0) {
+        setOptimistic({
+          serverEnergy: data.energy,
+          serverVolume: currentVolume,
+          timestamp: Date.now(),
+          energyDelta: 0,
+          dispenses: [],
+          removeAmount: isAll ? currentVolume : Math.min(amount, currentVolume),
+          removeAll: !!isAll,
+          volumeDelta: 0,
+        });
+      }
+    }
   };
 
   const favoriteChemicals = chemicals.filter(c => favorites.includes(c.id));
   const recentChemicalsList = recentChemicals
     .map(id => chemicals.find(c => c.id === id))
     .filter(Boolean);
+
+  // Compute display values with optimistic overrides
+  const display = computeDisplayValues(data, beakerContents, optimistic, isOptimisticActive);
+  const displayBeakerContents = display.contents;
+  const displayBeakerVolume = display.volume;
+  const displayEnergy = display.energy;
 
   return (
     <Window width={850} height={700} resizable>
@@ -154,9 +307,9 @@ export const ChemDispenser = (props, context) => {
                     </span>
                   }>
                   <ProgressBar
-                    value={data.energy / data.maxEnergy}
+                    value={displayEnergy / data.maxEnergy}
                     ranges={{ good: [0.5, Infinity], average: [0.25, 0.5], bad: [-Infinity, 0.25] }}>
-                    {toFixed(data.energy)} / {toFixed(data.maxEnergy)} u
+                    {toFixed(displayEnergy)} / {toFixed(data.maxEnergy)} u
                   </ProgressBar>
                 </Section>
               </Stack.Item>
@@ -389,13 +542,14 @@ export const ChemDispenser = (props, context) => {
                     gameRecipes={gameRecipes}
                     searchQuery={searchQuery}
                     isBeakerLoaded={data.isBeakerLoaded}
-                    beakerContents={beakerContents}
-                    beakerCurrentVolume={data.beakerCurrentVolume}
-                    beakerMaxVolume={data.beakerMaxVolume}
+                    beakerContents={activeTab === 'gameRecipes' ? beakerContents : undefined}
+                    beakerCurrentVolume={activeTab === 'gameRecipes' ? data.beakerCurrentVolume : undefined}
+                    beakerMaxVolume={activeTab === 'gameRecipes' ? data.beakerMaxVolume : undefined}
                     manipulatorTier={data.manipulatorTier || 1}
                     isEmagged={!!data.isEmagged}
                     isDrinkDispenser={!!data.isDrinkDispenser}
                     dispenserType={data.dispenserType || 0}
+                    onOptimisticRecipe={handleOptimisticRecipe}
                   />
                 </Box>
 
@@ -416,8 +570,8 @@ export const ChemDispenser = (props, context) => {
                 <BeakerSidePanel
                   recording={recording}
                   isBeakerLoaded={data.isBeakerLoaded}
-                  beakerContents={beakerContents}
-                  beakerCurrentVolume={data.beakerCurrentVolume}
+                  beakerContents={displayBeakerContents}
+                  beakerCurrentVolume={displayBeakerVolume}
                   beakerMaxVolume={data.beakerMaxVolume}
                   beakerCurrentpH={data.beakerCurrentpH}
                   beakerCurrentpHCol={data.beakerCurrentpHCol}
@@ -428,6 +582,7 @@ export const ChemDispenser = (props, context) => {
                   phBaseName={data.phBaseName}
                   phBasePH={data.phBasePH}
                   isDrinkDispenser={!!data.isDrinkDispenser}
+                  onOptimisticRemove={handleRemove}
                 />
               </Stack.Item>
 
