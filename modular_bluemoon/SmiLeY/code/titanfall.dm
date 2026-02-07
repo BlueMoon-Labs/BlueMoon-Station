@@ -28,26 +28,6 @@
 	. = ..()
 	if(ispath(choice, /obj/vehicle/sealed/mecha) || istype(choice, /obj/vehicle/sealed/mecha))
 		var/obj/effect/pod_landingzone/effect = .
-		/*
-		var/static/last_titanfall_sound
-		var/static/list/titanfall_sounds = list(
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall1.ogg',
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall2.ogg',
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall3.ogg',
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall_female1.ogg',
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall_female2.ogg',
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall_female3.ogg',
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall_male1.ogg',
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall_male2.ogg',
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall_male3.ogg',
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall_male4.ogg',
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall_male5.ogg',
-			'modular_bluemoon/SmiLeY/sounds/titanfall/titanfall_male6.ogg',
-		)
-		var/list/possible_sounds = titanfall_sounds.Copy() - last_titanfall_sound
-		last_titanfall_sound = pick(possible_sounds) // Сразу запишем и используем, что бы не делать новый var/
-		playsound(get_turf(effect), last_titanfall_sound, 100, FALSE)
-		*/
 		var/sound = pick_titanfall_sound()
 		if(sound)
 			playsound(get_turf(effect), sound, 100, FALSE)
