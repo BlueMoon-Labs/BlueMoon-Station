@@ -169,10 +169,11 @@
 		if(ishuman(M) && load_character)
 			var/mob/living/carbon/human/H = M
 			if (H.client)
-				H.load_client_appearance(H.client)
+				H.load_client_appearance(H.client, quirks = FALSE)
 				if (loadout_enabled == TRUE)
 					SSjob.equip_loadout(null, H)
 					SSjob.post_equip_loadout(null, H)
+				H.load_client_quirks(H.client) // Грузим квирки после лодаута, если он есть, из-за квирка семейная реликвия
 		MM.name = M.real_name
 		if(make_bank_account)
 			handlebank(M, starting_money)

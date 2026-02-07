@@ -749,7 +749,7 @@ SUBSYSTEM_DEF(job)
 	var/heirloomer = FALSE
 	if(!is_dummy)
 		var/list/my_quirks = the_mob.client.prefs.all_quirks.Copy()
-		if("Семейная реликвия" in my_quirks)
+		if(/datum/quirk/family_heirloom::name in my_quirks)
 			heirloomer = TRUE
 	if(the_mob.client && the_mob.client.prefs && (chosen_gear && chosen_gear.len))
 		if(!ishuman(M))//no silicons allowed
@@ -851,7 +851,7 @@ SUBSYSTEM_DEF(job)
 	var/heirloomer = FALSE
 	if(!is_dummy)
 		var/list/my_quirks = the_mob.client.prefs.all_quirks.Copy()
-		if("Семейная реликвия" in my_quirks)
+		if(/datum/quirk/family_heirloom::name in my_quirks)
 			heirloomer = TRUE
 	if(the_mob.client && the_mob.client.prefs && (chosen_gear && chosen_gear.len))
 		if(!ishuman(M))//no silicons allowed

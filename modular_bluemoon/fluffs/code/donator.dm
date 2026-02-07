@@ -1669,32 +1669,32 @@
 	name = "SAARE BDU G3"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/under/donator/bm/saareuni
-	ckeywhitelist = list("pingvas", "ordinarylife", "leony24", "kennedykiller", "theatlasplay", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "hateredsoul", "theatlasgaming")
+	ckeywhitelist = list("pingvas", "ordinarylife", "leony24", "kennedykiller", "theatlasplay", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "hateredsoul", "theatlasgaming", "silyamg")
 
 /datum/gear/donator/bm/saareflag
 	name = "SAARE flag"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/sign/flag/saaref
-	ckeywhitelist = list("pingvas", "ordinarylife", "leony24", "kennedykiller", "theatlasplay", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "hateredsoul", "theatlasgaming")
+	ckeywhitelist = list("pingvas", "ordinarylife", "leony24", "kennedykiller", "theatlasplay", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "hateredsoul", "theatlasgaming", "silyamg")
 
 /datum/gear/donator/bm/saarepatch
 	name = "SFP Armpatch"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/accessory/armband/sfparmband
-	ckeywhitelist = list("pingvas", "ordinarylife", "leony24", "kennedykiller", "theatlasplay", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus")
+	ckeywhitelist = list("pingvas", "ordinarylife", "leony24", "kennedykiller", "theatlasplay", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "silyamg")
 
 /datum/gear/donator/bm/bongepop_boxers
 	name = "Bongepop Boxers"
 	slot = ITEM_SLOT_UNDERWEAR
 	path = /obj/item/clothing/underwear/briefs/bongepop
 	ckeywhitelist = list("ordinarylife", "leony24", "kennedykiller", "theatlasplay", "ninjapikachushka", \
-	"devildeadspace", "trustmeimengineer", "izakfromrus", "hazzi", "dolbajob", "vulpshiro")
+	"devildeadspace", "trustmeimengineer", "izakfromrus", "hazzi", "dolbajob", "vulpshiro", "pingvas", "silyamg")
 
 /datum/gear/donator/bm/breadboots
 	name = "Breadshoe"
 	slot = ITEM_SLOT_FEET
 	path = /obj/item/clothing/shoes/breadboots
-	ckeywhitelist = list("ordinarylife")
+	ckeywhitelist = list("ordinarylife", "pingvas", "architect0r", "silyamg")
 
 /datum/gear/donator/bm/breadboots/baguette
 	name = "Baguetteshoe"
@@ -1704,7 +1704,7 @@
 	name = "Breadpack"
 	slot = ITEM_SLOT_HANDS
 	path = /obj/item/storage/backpack/breadpack
-	ckeywhitelist = list("ordinarylife")
+	ckeywhitelist = list("ordinarylife", "pingvas", "architect0r", "silyamg")
 
 /datum/gear/donator/bm/pet_emma
 	name = "Emma Fox"

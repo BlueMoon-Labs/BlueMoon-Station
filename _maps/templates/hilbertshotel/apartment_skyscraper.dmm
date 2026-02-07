@@ -988,7 +988,9 @@
 /area/hilbertshotel)
 "Tg" = (
 /obj/structure/marker_beacon/indigo,
-/obj/machinery/jukebox,
+/obj/machinery/jukebox{
+	req_one_access = null
+	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/hilbertshotel)
 "Ti" = (
@@ -1161,7 +1163,7 @@
 /area/hilbertshotel)
 "YQ" = (
 /obj/structure/table/bronze,
-/obj/machinery/computer/security/wooden_tv{
+/obj/structure/showcase/machinery/tv{
 	pixel_x = 15;
 	pixel_y = 8
 	},

@@ -73,3 +73,9 @@
 	desc = "The neutralized core of an ectoplasmic anomaly. When you hold it close, you can hear faint murmuring from inside. It'd probably be valuable for research."
 	icon_state = "dimensional_core"
 	anomaly_type = /obj/effect/anomaly/ectoplasm
+
+/obj/item/assembly/signaler/anomaly/poly
+	name = "\improper polymorph anomaly core"
+	desc = "The neutralized core of a polymorph anomaly. It feels much heavier than it looks. It'd probably be valuable for research."
+	icon_state = "vortex_core"
+	anomaly_type = /obj/effect/anomaly/poly

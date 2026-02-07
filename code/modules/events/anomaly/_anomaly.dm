@@ -5,6 +5,7 @@
 	min_players = 1
 	max_occurrences = 0 //This one probably shouldn't occur! It'd work, but it wouldn't be very fun.
 	weight = 15
+	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_ANOMALIES
 	description = "This anomaly shocks and explodes. This is the base type."
 	admin_setup = list(/datum/event_admin_setup/set_location/anomaly)

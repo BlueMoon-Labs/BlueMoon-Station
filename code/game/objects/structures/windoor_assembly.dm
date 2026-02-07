@@ -191,7 +191,7 @@
 						return
 
 					to_chat(user, "<span class='notice'>You cut the windoor wires.</span>")
-					new/obj/item/stack/cable_coil(get_turf(user), 1)
+					new /obj/item/stack/cable_coil(get_turf(user), 1)
 					state = "01"
 					if(secure)
 						name = "secure anchored windoor assembly"

@@ -40,8 +40,13 @@
 	. += "<span class = 'notice> It resembles a [tool_behaviour == TOOL_RETRACTOR ? "retractor" : "hemostat"]. </span>"
 
 /obj/item/retractor/augment
-	name = "retractor"
+	name = "titanium retractor"
 	desc = "Micro-mechanical manipulator for retracting stuff."
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "retractor_t2"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
+	item_state = "retractor_t2"
 	custom_materials = list(/datum/material/iron=6000, /datum/material/glass=3000)
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_TINY
@@ -76,8 +81,13 @@
 	return ..()
 
 /obj/item/hemostat/augment
-	name = "hemostat"
+	name = "silvered hemostat"
 	desc = "Tiny servos power a pair of pincers to stop bleeding."
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "hemostat_t2"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
+	item_state = "hemostat_t2"
 	custom_materials = list(/datum/material/iron=5000, /datum/material/glass=2500)
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_TINY
@@ -115,8 +125,13 @@
 	return ..()
 
 /obj/item/cautery/augment
-	name = "cautery"
+	name = "high heat cautery"
 	desc = "A heated element that cauterizes wounds."
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "cautery_t2"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
+	item_state = "cautery_t2"
 	custom_materials = list(/datum/material/iron=2500, /datum/material/glass=750)
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_TINY
@@ -262,8 +277,13 @@
 	. += "<span class = 'notice> It's set to [tool_behaviour == TOOL_SCALPEL ? "scalpel" : "saw"] mode. </span>"
 
 /obj/item/scalpel/augment
-	name = "scalpel"
+	name = "vibration scalpel"
 	desc = "Ultra-sharp blade attached directly to your bone for extra-accuracy."
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "scalpel_t2"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
+	item_state = "scalpel_t2"
 	flags_1 = CONDUCT_1
 	force = 10
 	w_class = WEIGHT_CLASS_TINY
@@ -311,10 +331,12 @@
 	toolspeed = 1
 	wound_bonus = 8
 	bare_wound_bonus = 10
+	var/butchery_tool = TRUE
 
 /obj/item/circular_saw/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/butchering, 40 * toolspeed, 100, 5, 'sound/weapons/circsawhit.ogg') //saws are very accurate and fast at butchering
+	if(butchery_tool)
+		AddComponent(/datum/component/butchering, 40 * toolspeed, 100, 5, 'sound/weapons/circsawhit.ogg') //saws are very accurate and fast at butchering
 
 /obj/item/circular_saw/attack(mob/living/L, mob/user)
 	if(user.a_intent == INTENT_HELP)
@@ -323,9 +345,14 @@
 	return ..()
 
 /obj/item/circular_saw/augment
-	name = "circular saw"
+	name = "oscillating saw"
 	desc = "A small but very fast spinning saw. Edges dulled to prevent accidental cutting inside of the surgeon."
-	hitsound = 'sound/weapons/circsawhit.ogg'
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "saw_t2"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
+	item_state = "saw_t2"
+	hitsound = null
 	mob_throw_hit_sound =  'sound/weapons/pierce.ogg'
 	flags_1 = CONDUCT_1
 	force = 10
@@ -336,7 +363,7 @@
 	custom_materials = list(/datum/material/iron=10000, /datum/material/glass=6000)
 	toolspeed = 0.5
 	attack_verb = list("attacked", "slashed", "sawed", "cut")
-	sharpness = SHARP_EDGED
+	sharpness = SHARP_NONE
 
 /obj/item/circular_saw/ashwalker
 	name = "diamond bonesaw"
