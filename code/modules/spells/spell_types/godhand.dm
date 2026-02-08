@@ -89,8 +89,8 @@
 	desc = "This hand of mine glows with an awesome power!"
 	catchphrase = "EI NECR!!"
 	on_use_sound = 'sound/magic/Mutate.ogg'
-	icon_state = "disintegrate"
-	item_state = "disintegrate"
+	icon_state = "necrohand"
+	item_state = "necrohand"
 
 /obj/item/melee/touch_attack/alive_bones/afterattack(atom/target, mob/living/carbon/user, proximity)
 	if(!ishuman(target) || !hand_spell_check(target, user, proximity))
@@ -113,7 +113,7 @@
 	if(H.anti_magic_check())
 		to_chat(user, span_warning("The spell can't seem to affect [H]!"))
 		to_chat(H, span_warning("You feel like your skelet PAINFULL wants to break free, but it calms down."))
-		H.pain_emote(realagony = TRUE)
+		H.pain_emote()
 		return ..()
 	to_chat(H, span_userdanger("МОЙ СКЕЛЕТ, ААААААААА!!!"))
 
