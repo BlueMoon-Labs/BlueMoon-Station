@@ -103,6 +103,7 @@
 			continue
 		bodyparts_count++
 	if(bodyparts_count <= 1)
+		to_chat(user, span_warning("У [H] недостаточно конечностей, чтобы создать скелета!"))
 		return
 
 	do_sparks(4, FALSE, H.loc)
