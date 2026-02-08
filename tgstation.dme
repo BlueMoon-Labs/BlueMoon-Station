@@ -5674,6 +5674,7 @@
 #include "modular_splurt\code\modules\antagonists\wendigo\mob\organs_bodyparts.dm"
 #include "modular_splurt\code\modules\antagonists\wendigo\mob\wendigo_defense.dm"
 #include "modular_splurt\code\modules\antagonists\wendigo\mob\wendigo_update_icons.dm"
+#include "modular_splurt\code\modules\antagonists\wizard\equipment\spellbook.dm"
 #include "modular_splurt\code\modules\arousal\arousal.dm"
 #include "modular_splurt\code\modules\arousal\genitals.dm"
 #include "modular_splurt\code\modules\arousal\organs\anus.dm"
