@@ -58,9 +58,11 @@
 			I.forceMove(Tsec)
 			I.throw_at(get_edge_target_turf(src,pick(GLOB.alldirs)),rand(1,3),5)
 
-/mob/living/carbon/spread_bodyparts(no_brain, no_organs, datum/explosion/was_explosion)
+/mob/living/carbon/spread_bodyparts(keep_head = FALSE, datum/explosion/was_explosion)
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/BP = X
+		if(keep_head && BP.body_part == HEAD)
+			continue
 		if(was_explosion)
 			LAZYADD(BP.acted_explosions, was_explosion.explosion_id)
 		BP.drop_limb()

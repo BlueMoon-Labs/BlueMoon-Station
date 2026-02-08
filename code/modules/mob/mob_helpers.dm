@@ -377,6 +377,9 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 			if("apprentice")
 				if(M.mind in SSticker.mode.apprentices)
 					return 2
+			if("alive_bones")
+				if(M.mind.has_antag_datum(/datum/antagonist/alive_bones, TRUE))
+					return 2
 			if("monkey")
 				if(isliving(M))
 					var/mob/living/L = M

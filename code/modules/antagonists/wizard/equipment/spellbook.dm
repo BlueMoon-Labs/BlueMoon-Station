@@ -133,6 +133,10 @@
 	spell_type = /obj/effect/proc_holder/spell/targeted/projectile/magic_missile
 	category = SPELL_CATEGORY_DEFEND
 
+/datum/spellbook_entry/alive_bones
+	name = "Alive bones"
+	spell_type = /obj/effect/proc_holder/spell/targeted/touch/alive_bones
+
 /datum/spellbook_entry/disintegrate
 	name = "Disintegrate"
 	spell_type = /obj/effect/proc_holder/spell/targeted/touch/disintegrate
@@ -293,6 +297,7 @@
 	name = "Summon Soap"
 	spell_type = /obj/effect/proc_holder/spell/targeted/conjure_item/soap
 	category = SPELL_CATEGORY_DEFEND
+	cost = 1
 
 
 /datum/spellbook_entry/item
@@ -300,7 +305,6 @@
 	refundable = 0
 	buy_word = "Summon"
 	var/item_path= null
-
 
 /datum/spellbook_entry/item/Buy(mob/living/carbon/human/user,obj/item/spellbook/book)
 	new item_path(get_turf(user))
