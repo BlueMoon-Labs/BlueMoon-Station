@@ -113,6 +113,9 @@
 	/// Type of this dispenser (DISPENSER_TYPE_CHEM, DISPENSER_TYPE_SODA, DISPENSER_TYPE_BOOZE)
 	var/dispenser_type = DISPENSER_TYPE_CHEM
 
+	/// Static shared cache: reagent hash -> computed recipe data (shared across dispensers with same reagents)
+	var/static/list/shared_dispenser_recipe_caches
+
 	/// Static cache mapping reagent type -> dispenser type bitflags (which dispensers have it)
 	var/static/list/reagent_to_dispenser_type
 	/// Static list of all soda dispenser base reagents (for cross-dispenser analysis)
@@ -975,9 +978,18 @@
 
 /// Builds the instance-level cache for dispenser-specific recipe data.
 /// Invalidates when dispensable_reagents list changes (upgrades/emag).
+/// Uses a static shared cache so dispensers with the same reagent set share results.
 /obj/machinery/chem_dispenser/proc/build_dispenser_recipes_cache()
 	var/current_hash = "[length(dispensable_reagents)]:[jointext(dispensable_reagents, "|")]"
 	if(cached_dispenser_game_recipes && current_hash == cached_dispensable_reagents_hash)
+		return
+
+	// Check the shared static cache — another dispenser with the same reagents may have already computed this
+	if(!shared_dispenser_recipe_caches)
+		shared_dispenser_recipe_caches = list()
+	if(shared_dispenser_recipe_caches[current_hash])
+		cached_dispenser_game_recipes = shared_dispenser_recipe_caches[current_hash]
+		cached_dispensable_reagents_hash = current_hash
 		return
 
 	cached_dispenser_game_recipes = list()
@@ -1192,6 +1204,9 @@
 			"alt_recipes" = enriched_alt_recipes,
 			"cross_dispenser" = cross_dispenser
 		)
+
+	// Store in shared static cache for other dispensers with the same reagent configuration
+	shared_dispenser_recipe_caches[current_hash] = cached_dispenser_game_recipes
 
 /obj/machinery/chem_dispenser/ui_act(action, params)
 	if(..())

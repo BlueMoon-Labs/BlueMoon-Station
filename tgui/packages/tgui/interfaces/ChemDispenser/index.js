@@ -22,6 +22,27 @@ import { SavedRecipesTab } from './SavedRecipesTab';
 import { StorageSidePanel } from './StorageSidePanel';
 import { AMOUNT_PRESETS, CATEGORY_CONFIG, DRINK_CATEGORY_CONFIG } from './utils';
 
+// Module-level cache for gameRecipesCount (avoids filtering all recipes on every render)
+let _recipesCountCache = { key: null, count: 0, drinkCount: 0 };
+
+const getRecipesCount = (gameRecipes, isDrinkDispenser) => {
+  if (_recipesCountCache.key !== gameRecipes) {
+    _recipesCountCache.key = gameRecipes;
+    const drinkCategories = ['alcoholic_drinks', 'soft_drinks'];
+    let drinkCount = 0;
+    let totalCount = 0;
+    for (const name in gameRecipes) {
+      totalCount++;
+      if (drinkCategories.includes(gameRecipes[name].category)) {
+        drinkCount++;
+      }
+    }
+    _recipesCountCache.count = totalCount;
+    _recipesCountCache.drinkCount = drinkCount;
+  }
+  return isDrinkDispenser ? _recipesCountCache.drinkCount : _recipesCountCache.count;
+};
+
 /**
  * Checks if optimistic state is still valid (server hasn't changed yet and timeout hasn't expired).
  */
@@ -149,11 +170,7 @@ export const ChemDispenser = (props, context) => {
     contents: data.recipes[name],
   }));
 
-  // Count only relevant recipes for drink dispensers
-  const drinkCategories = ['alcoholic_drinks', 'soft_drinks'];
-  const gameRecipesCount = isDrinkDispenser
-    ? Object.values(gameRecipes).filter(r => drinkCategories.includes(r.category)).length
-    : Object.keys(gameRecipes).length;
+  const gameRecipesCount = getRecipesCount(gameRecipes, isDrinkDispenser);
 
   const beakerContents = recording
     ? Object.keys(data.recordingRecipe || {}).map(id => ({
@@ -536,22 +553,21 @@ export const ChemDispenser = (props, context) => {
                   </Section>
                 )}
 
-                {/* Keep GameRecipesTab mounted to preserve state and avoid re-renders */}
-                <Box style={{ display: activeTab === 'gameRecipes' ? 'block' : 'none', height: '100%' }}>
+                {activeTab === 'gameRecipes' && (
                   <GameRecipesTab
                     gameRecipes={gameRecipes}
                     searchQuery={searchQuery}
                     isBeakerLoaded={data.isBeakerLoaded}
-                    beakerContents={activeTab === 'gameRecipes' ? beakerContents : undefined}
-                    beakerCurrentVolume={activeTab === 'gameRecipes' ? data.beakerCurrentVolume : undefined}
-                    beakerMaxVolume={activeTab === 'gameRecipes' ? data.beakerMaxVolume : undefined}
+                    beakerContents={beakerContents}
+                    beakerCurrentVolume={data.beakerCurrentVolume}
+                    beakerMaxVolume={data.beakerMaxVolume}
                     manipulatorTier={data.manipulatorTier || 1}
                     isEmagged={!!data.isEmagged}
                     isDrinkDispenser={!!data.isDrinkDispenser}
                     dispenserType={data.dispenserType || 0}
                     onOptimisticRecipe={handleOptimisticRecipe}
                   />
-                </Box>
+                )}
 
                 {activeTab === 'savedRecipes' && (
                   <SavedRecipesTab
