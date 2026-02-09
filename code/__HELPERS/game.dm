@@ -482,7 +482,7 @@
 		else
 			candidates -= M
 
-/proc/pollGhostCandidates(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, ignore_category = null, flashwindow = TRUE, minimum_required = 1, priority_check)
+/proc/pollGhostCandidates(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 30 SECONDS, ignore_category = null, flashwindow = TRUE, minimum_required = 1, priority_check)
 	var/list/candidates
 	// Если не определили заранее, то выбираем в зависимости от режима
 	if(isnull(priority_check))
@@ -495,8 +495,11 @@
 			return
 		candidates = get_all_ghost_role_eligible(priority_only = FALSE)
 		candidates -= priority_candidates
-		
-		var/list/low_priority_candidates = pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category, flashwindow, candidates)
+
+		// Для выбора в ГК снижаем время, т.к. может быть критично в динамик
+		var/const/min_low_pool_time = 6 SECONDS
+		var/low_pool_time = poll_time <= min_low_pool_time ? poll_time : max(min_low_pool_time, round(poll_time/2))
+		var/list/low_priority_candidates = pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, low_pool_time, ignore_category, flashwindow, candidates)
 		// Добираем недобор или возвращаем всех кандидатов
 		if(!result_len)
 			return low_priority_candidates
