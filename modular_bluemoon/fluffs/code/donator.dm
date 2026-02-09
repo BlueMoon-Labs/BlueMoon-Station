@@ -126,19 +126,19 @@
 	name = "cerberus helmet"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/cerberus_helmet
-	ckeywhitelist = list("krashly", "stgs", "hazzi", "dolbajob")
+	ckeywhitelist = list("krashly", "stgs", "hazzi", "dolbajob", "ordinarylife")
 
 /datum/gear/donator/bm/cerberus_suit
 	name = "cerberus suit"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/cerberus_suit
-	ckeywhitelist = list("krashly", "stgs", "hazzi", "dolbajob")
+	ckeywhitelist = list("krashly", "stgs", "hazzi", "dolbajob", "ordinarylife")
 
 /datum/gear/donator/bm/censor_fem_suit
 	name = "censor suit"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/censor_fem_suit
-	ckeywhitelist = list("krashly", "stgs", "hazzi", "dolbajob")
+	ckeywhitelist = list("krashly", "stgs", "hazzi", "dolbajob", "ordinarylife")
 
 /datum/gear/donator/bm/belinsky_plushie
 	name = "Belinsky plushie"
@@ -407,7 +407,7 @@
 	name = "Boomah Turtleneck"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/booma
-	ckeywhitelist = list("vulpshiro", "dolbajob", "ordinarylife")
+	ckeywhitelist = list("vulpshiro", "dolbajob", "ordinarylife", "architect0r")
 
 /datum/gear/donator/bm/silky_body
 	name = "Silky Body"
@@ -438,28 +438,28 @@
 	name = "Kovac Gun"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/Kovac_Kit
-	ckeywhitelist = list("stgs", "krashly", "dolbajob", "hazzi", "devildeadspace", "enigma418", "mihana964")
+	ckeywhitelist = list("stgs", "krashly", "dolbajob", "hazzi", "devildeadspace", "enigma418", "mihana964", "ordinarylife")
 	subcategory = LOADOUT_SUBCATEGORIES_DON04
 
 /datum/gear/donator/bm/auto9_gun
 	name = "Auto 9 Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/auto9_kit
-	ckeywhitelist = list("stgs", "sodastrike", "dolbajob", "hazzi", "krashly", "devildeadspace", "enigma418")
+	ckeywhitelist = list("stgs", "sodastrike", "dolbajob", "hazzi", "krashly", "devildeadspace", "enigma418","ordinarylife")
 	subcategory = LOADOUT_SUBCATEGORIES_DON04
 
 /datum/gear/donator/bm/m240_gun
 	name = "M240 Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/m240_kit
-	ckeywhitelist = list("stgs", "sodastrike", "dolbajob", "hazzi", "krashly", "devildeadspace", "enigma418")
+	ckeywhitelist = list("stgs", "sodastrike", "dolbajob", "hazzi", "krashly", "devildeadspace", "enigma418", "ordinarylife")
 	subcategory = LOADOUT_SUBCATEGORIES_DON04
 
 /datum/gear/donator/bm/luftkuss_gun
 	name = "Luftkuss Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/old_kit
-	ckeywhitelist = list("stgs", "sodastrike", "dolbajob", "hazzi", "krashly", "fiaskin", "devildeadspace", "enigma418")
+	ckeywhitelist = list("stgs", "sodastrike", "dolbajob", "hazzi", "krashly", "fiaskin", "devildeadspace", "enigma418", "ordinarylife")
 	subcategory = LOADOUT_SUBCATEGORIES_DON04
 
 /datum/gear/donator/bm/dominator
