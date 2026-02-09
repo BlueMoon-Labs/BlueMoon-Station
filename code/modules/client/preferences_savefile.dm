@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	62
+#define SAVEFILE_VERSION_MAX	63
 
 /*
 SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Carn
@@ -76,6 +76,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 					break
 			if(!has_pixel_tilt)
 				LAZYADD(key_bindings["N"], "pixel_tilt")
+
+	// BLUEMOON ADD - перевод Character Setup UI на Modern
+	if(current_version < 63)
+		new_character_creator = TRUE
+		if(!istext(charcreation_theme) || !findtext(charcreation_theme, "modern"))
+			charcreation_theme = "modern"
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -542,6 +548,22 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["use_new_playerpanel"]	>> use_new_playerpanel
 	S["gfluid_blacklist"]		>> gfluid_blacklist
 	S["new_character_creator"]	>> new_character_creator
+	S["charcreation_theme"]		>> charcreation_theme
+	S["modern_button_shape"]	>> modern_button_shape
+	S["modern_custom_enabled"]	>> modern_custom_enabled
+	S["modern_custom_bg_primary"]	>> modern_custom_bg_primary
+	S["modern_custom_bg_secondary"]	>> modern_custom_bg_secondary
+	S["modern_custom_text_primary"]	>> modern_custom_text_primary
+	S["modern_custom_text_secondary"]	>> modern_custom_text_secondary
+	S["modern_custom_button_bg"]	>> modern_custom_button_bg
+	S["modern_custom_button_hover"]	>> modern_custom_button_hover
+	S["modern_custom_button_active"]	>> modern_custom_button_active
+	S["modern_custom_button_text"]	>> modern_custom_button_text
+	S["modern_custom_border_color"]	>> modern_custom_border_color
+	S["modern_custom_accent_color"]	>> modern_custom_accent_color
+	S["modern_custom_bg_pattern"]	>> modern_custom_bg_pattern
+	S["modern_ui_language"]		>> modern_ui_language
+	S["collapse_empty_character_slots"] >> collapse_empty_character_slots
 	S["view_pixelshift"]		>> view_pixelshift
 
 	//favorite outfits
@@ -620,6 +642,22 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//SPLURT CHANGES BEGIN
 	gfluid_blacklist = sanitize_islist(gfluid_blacklist, list())
+	charcreation_theme = sanitize_inlist(charcreation_theme, list("classic", "modern", "modern_classic", "modern_purple", "modern_green", "modern_neutral", "modern_custom"), "classic")
+	modern_button_shape = sanitize_inlist(modern_button_shape, list("rect", "soft", "round"), initial(modern_button_shape))
+	modern_custom_enabled = sanitize_integer(modern_custom_enabled, 0, 1, initial(modern_custom_enabled))
+	modern_custom_bg_primary = sanitize_hexcolor(modern_custom_bg_primary, 6, FALSE, initial(modern_custom_bg_primary))
+	modern_custom_bg_secondary = sanitize_hexcolor(modern_custom_bg_secondary, 6, FALSE, initial(modern_custom_bg_secondary))
+	modern_custom_text_primary = sanitize_hexcolor(modern_custom_text_primary, 6, FALSE, initial(modern_custom_text_primary))
+	modern_custom_text_secondary = sanitize_hexcolor(modern_custom_text_secondary, 6, FALSE, initial(modern_custom_text_secondary))
+	modern_custom_button_bg = sanitize_hexcolor(modern_custom_button_bg, 6, FALSE, initial(modern_custom_button_bg))
+	modern_custom_button_hover = sanitize_hexcolor(modern_custom_button_hover, 6, FALSE, initial(modern_custom_button_hover))
+	modern_custom_button_active = sanitize_hexcolor(modern_custom_button_active, 6, FALSE, initial(modern_custom_button_active))
+	modern_custom_button_text = sanitize_hexcolor(modern_custom_button_text, 6, FALSE, initial(modern_custom_button_text))
+	modern_custom_border_color = sanitize_hexcolor(modern_custom_border_color, 6, FALSE, initial(modern_custom_border_color))
+	modern_custom_accent_color = sanitize_hexcolor(modern_custom_accent_color, 6, FALSE, initial(modern_custom_accent_color))
+	modern_custom_bg_pattern = sanitize_integer(modern_custom_bg_pattern, 0, 1, initial(modern_custom_bg_pattern))
+	modern_ui_language = sanitize_integer(modern_ui_language, 0, 1, initial(modern_ui_language))
+	collapse_empty_character_slots = sanitize_integer(collapse_empty_character_slots, 0, 1, initial(collapse_empty_character_slots))
 	//SPLURT CHANGES END
 
 	verify_keybindings_valid()		// one of these days this will runtime and you'll be glad that i put it in a different proc so no one gets their saves wiped
@@ -763,6 +801,22 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["use_new_playerpanel"], use_new_playerpanel)
 	WRITE_FILE(S["gfluid_blacklist"], gfluid_blacklist)
 	WRITE_FILE(S["new_character_creator"], new_character_creator)
+	WRITE_FILE(S["charcreation_theme"], charcreation_theme)
+	WRITE_FILE(S["modern_button_shape"], modern_button_shape)
+	WRITE_FILE(S["modern_custom_enabled"], modern_custom_enabled)
+	WRITE_FILE(S["modern_custom_bg_primary"], modern_custom_bg_primary)
+	WRITE_FILE(S["modern_custom_bg_secondary"], modern_custom_bg_secondary)
+	WRITE_FILE(S["modern_custom_text_primary"], modern_custom_text_primary)
+	WRITE_FILE(S["modern_custom_text_secondary"], modern_custom_text_secondary)
+	WRITE_FILE(S["modern_custom_button_bg"], modern_custom_button_bg)
+	WRITE_FILE(S["modern_custom_button_hover"], modern_custom_button_hover)
+	WRITE_FILE(S["modern_custom_button_active"], modern_custom_button_active)
+	WRITE_FILE(S["modern_custom_button_text"], modern_custom_button_text)
+	WRITE_FILE(S["modern_custom_border_color"], modern_custom_border_color)
+	WRITE_FILE(S["modern_custom_accent_color"], modern_custom_accent_color)
+	WRITE_FILE(S["modern_custom_bg_pattern"], modern_custom_bg_pattern)
+	WRITE_FILE(S["modern_ui_language"], modern_ui_language)
+	WRITE_FILE(S["collapse_empty_character_slots"], collapse_empty_character_slots)
 	WRITE_FILE(S["view_pixelshift"], view_pixelshift)
 	WRITE_FILE(S["eorg_enabled"], eorg_enabled)
 
@@ -1205,37 +1259,46 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	//gear loadout
 	if(istext(S["loadout"]))
 		loadout_data = safe_json_decode(S["loadout"])
-		if(!loadout_data)
+		if(!islist(loadout_data))
 			loadout_data = list()
-		var/list/sanitize_current_slot = loadout_data["SAVE_[loadout_slot]"]
-		if(LAZYLEN(sanitize_current_slot))
-			for(var/list/entry in sanitize_current_slot)
-				for(var/setting in entry)
-					switch(setting)
-						if(LOADOUT_ITEM)
-							if(!ispath(entry[setting]))
-								continue
-						if(LOADOUT_COLOR)
-							if(islist(entry[setting]))
-								for(var/polychromic in entry[setting])
-									if(!findtext(polychromic, GLOB.is_color))
-										polychromic = "#FFFFFF"
-							else
-								entry -= setting
 
-						if(LOADOUT_CUSTOM_NAME)
-							entry[setting] = trim(html_encode(entry[setting]), MAX_NAME_LEN)
-						if(LOADOUT_CUSTOM_DESCRIPTION)
-							entry[setting] = trim(html_encode(entry[setting]), 500)
+		for(var/loadout_save_index = 1, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
+			var/save_key = "SAVE_[loadout_save_index]"
+			var/list/sanitize_entries = loadout_data[save_key]
+			if(islist(sanitize_entries) && LAZYLEN(sanitize_entries))
+				for(var/list/entry in sanitize_entries)
+					for(var/setting in entry)
+						switch(setting)
+							if(LOADOUT_ITEM)
+								if(!ispath(entry[setting]))
+									continue
+							if(LOADOUT_COLOR)
+								if(islist(entry[setting]))
+									var/list/colors = entry[setting]
+									if(!LAZYLEN(colors))
+										entry[setting] = list("#FFFFFF")
+									else
+										for(var/i in 1 to colors.len)
+											var/polychromic = colors[i]
+											if(istext(polychromic) && !findtext(polychromic, GLOB.is_color))
+												colors[i] = "#FFFFFF"
+								else
+									entry -= setting
 
-			loadout_data["SAVE_[loadout_slot]"] = sanitize_current_slot.Copy()
-		else
-			loadout_data["SAVE_[loadout_slot]"] = list()
-	else
-		loadout_data = list()
+							if(LOADOUT_CUSTOM_NAME)
+								entry[setting] = trim(html_encode(entry[setting]), MAX_NAME_LEN)
+							if(LOADOUT_CUSTOM_DESCRIPTION)
+								entry[setting] = trim(html_encode(entry[setting]), 500)
+
+				loadout_data[save_key] = sanitize_entries.Copy()
+			else
+				loadout_data[save_key] = list()
 
 	//let's remember their last used slot, i'm sure "oops i brought the wrong stuff" will be an issue now
 	S["loadout_slot"] >> loadout_slot
+	// BLUEMOON ADD - загрузка переключателя лодаута
+	S["loadout_enabled"] >> loadout_enabled
+	// BLUEMOON ADD END
 
 	//try to fix any outdated data if necessary
 	//preference updating will handle saving the updated data for us.
@@ -1479,6 +1542,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	//SPLURT EDIT END
 
 	loadout_slot = sanitize_num_clamp(loadout_slot, 1, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
+	loadout_enabled = sanitize_integer(loadout_enabled, FALSE, TRUE, TRUE) // BLUEMOON ADD
 
 	alt_titles_preferences = SANITIZE_LIST(alt_titles_preferences)
 	if(SSjob)
@@ -1496,6 +1560,49 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
 
 	return S
+
+/// Удаляет слот персонажа из сейвфайла. Очищает директорию /character[slot].
+/// Если удаляется текущий слот — переключается на ближайший непустой, или на слот 1.
+/datum/preferences/proc/delete_character(slot)
+	if(!path)
+		return FALSE
+	slot = sanitize_integer(slot, 1, max_save_slots, 1)
+	var/savefile/S = new /savefile(path)
+	if(!S)
+		return FALSE
+
+	// Проверяем, что в слоте действительно есть персонаж
+	S.cd = "/character[slot]"
+	var/check_name
+	S["real_name"] >> check_name
+	if(!check_name)
+		return FALSE // слот уже пуст
+
+	// Удаляем директорию персонажа из сейвфайла
+	S.cd = "/"
+	S.dir.Remove("character[slot]")
+
+	// Если удалили текущий слот — нужно переключиться на другой
+	if(slot == default_slot)
+		var/new_slot = 0
+		// Ищем ближайший непустой слот
+		for(var/i in 1 to max_save_slots)
+			if(i == slot)
+				continue
+			S.cd = "/character[i]"
+			var/name
+			S["real_name"] >> name
+			if(name)
+				new_slot = i
+				break
+		// Если не нашли непустой — просто переключаемся на слот 1
+		if(!new_slot)
+			new_slot = 1
+		default_slot = new_slot
+		load_character(new_slot)
+
+	save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	return TRUE
 
 /datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
 	if(!path)
@@ -1764,6 +1871,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	else
 		S["loadout"] << safe_json_encode(list())
 	WRITE_FILE(S["loadout_slot"], loadout_slot)
+	WRITE_FILE(S["loadout_enabled"], loadout_enabled) // BLUEMOON ADD
 
 	if(length(tcg_cards))
 		S["tcg_cards"] << safe_json_encode(tcg_cards)

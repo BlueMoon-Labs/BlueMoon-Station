@@ -1,6 +1,6 @@
 /obj/machinery/rnd/production/techfab
-	name = "technology fabricator"
-	desc = "Produces researched prototypes with raw materials and energy."
+	name = "Hacked Fabricator"
+	desc = "Принтер с абсолютным доступом к большинству технологий. Запрещён к использованию во многих корпорациях с делением власти между множеством отделов."
 	icon_state = "protolathe"
 	circuit = /obj/item/circuitboard/machine/techfab
 	categories = list(
@@ -28,9 +28,16 @@
 								"Misc. Machinery",
 								"Organic Designs", //BLUEMOON ADD: New category for fleshcrafting.
 								"Computer Parts",
-								"MODsuit Designs"
+								"MODsuit Designs",
+								"Shuttle Machinery",
 								)
 	console_link = FALSE
 	production_animation = "protolathe_n"
 	requires_console = FALSE
 	allowed_buildtypes = PROTOLATHE | IMPRINTER
+
+/obj/machinery/rnd/production/techfab/Initialize(mapload)
+	// Да, это костыль, т.к. этот тип используется как реальный объект. Но я не хочу править все пути и платы
+	if(src.type == /obj/machinery/rnd/production/techfab)
+		obj_flags |= EMAGGED
+	. = ..()

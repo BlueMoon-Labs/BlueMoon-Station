@@ -14,6 +14,8 @@
 	var/obj/item/melee/smith/coiled_sword/sword
 	var/legendary_sword = FALSE
 	var/healing_power = BONFIRE_HEALING_POWER_MEDIUM
+	var/global/list/travel_bonfires = list()
+	COOLDOWN_DECLARE(travel_cd)
 
 /obj/structure/bonfire/prelit/ash/Initialize(mapload, obj/item/melee/smith/coiled_sword/S)
 	. = ..()
@@ -25,6 +27,7 @@
 	begin_restoration()
 
 /obj/structure/bonfire/prelit/ash/Destroy()
+	travel_bonfires -= src
 	visible_message("<i>Пепел затухает навсегда, теряя свои необычные свойства, а меч покрывается еле-заметными трещинами.</i>")
 	for(var/i = 1 to 5)
 		new /obj/effect/decal/cleanable/ash(get_turf(src))
@@ -42,7 +45,7 @@
 	else
 		switch(healing_power)
 			if(BONFIRE_HEALING_POWER_SMALL)
-				. += span_engradio("Слабое пламя едва колышется от малейшего дуновения ветра...")
+				. += span_engradio("Слабое пламя трепетно колышется от малейшего дуновения ветра...")
 			if(BONFIRE_HEALING_POWER_MEDIUM)
 				. += span_engradio("Умеренное пламя ощущается стабильным и спокойным.")
 			if(BONFIRE_HEALING_POWER_HIGH)
@@ -111,6 +114,104 @@
 /obj/structure/bonfire/prelit/ash/extinguish()
 	. = ..()
 	qdel(src)
+
+/obj/structure/bonfire/prelit/ash/on_attack_hand(mob/user, act_intent, unarmed_attack_flags)
+	if(!ishuman(user))
+		return
+	if(healing_power < BONFIRE_HEALING_POWER_MEDIUM)
+		return
+	if(!travel_bonfires[src])
+		if(tgui_alert(user, "Позволить ли костру перемещать существ? Достаточно лишь прикоснуться к клинку...", \
+							"Костры перемещения", \
+							list("Позволить", "Оставить как есть")) == "Позволить")
+			var/bonfire_name = tgui_input_text(user, null, "Название костра", max_length = MAX_NAME_LEN, encode = TRUE)
+			if(!bonfire_name)
+				return
+			for(var/b in travel_bonfires)
+				if(travel_bonfires[b] == bonfire_name)
+					to_chat(user, span_warning("Костер с таким именем уже существует."))
+					return
+			travel_bonfires[src] = bonfire_name
+			playsound(user, 'modular_bluemoon/sound/effects/bonfire_lit.ogg', 100, FALSE)
+			to_chat(user, span_engradio("Отныне костер является точкой перемещения."))
+		return
+	/**
+	 * travel_bonfires[объект] = название
+	 * Игроку должен выводиться список названий костров.
+	 * Так как я не нашел процедуры поиска ключа по значению (объекта по названию), приходится импровизировать.
+	 * Создаем новый список, меняя местами названия и объекты. Названия уникальны, поэтому проблем быть не должно.
+	 * available_travel_bonfires[название] = объект
+	 */
+	var/list/available_travel_bonfires = list()
+	for(var/obj/structure/bonfire/prelit/ash/b in (travel_bonfires - src))
+		if(is_centcom_level(b.z))
+			continue
+		available_travel_bonfires[travel_bonfires[b]] += b
+	if(isemptylist(available_travel_bonfires))
+		to_chat(user, span_warning("Нет доступных костров для перемещения."))
+		return
+	var/obj/structure/bonfire/prelit/ash/travel_to = tgui_input_list(user, "Выберите один из доступных костров перемещения", "Костры перемещения", available_travel_bonfires)
+	travel_to = available_travel_bonfires[travel_to]
+	if(!istype(travel_to))
+		return
+	if(!COOLDOWN_FINISHED(src, travel_cd))
+		to_chat(user, span_warning("Пламя костра пока что не готово перенести еще одну душу. Подожди немного."))
+		return
+	var/list/tiles_around = list()
+	for(var/A in orange(1, get_turf(travel_to)))
+		if(istype(A, /turf/open/floor))
+			var/turf/T = A
+			if(T.is_blocked_turf())
+				continue
+			tiles_around += T
+	if(isemptylist(tiles_around))
+		to_chat(user, span_warning("Выбранный костер не имеет подходящего места для перемещения."))
+		return
+	if(QDELETED(user) || QDELETED(src) || QDELETED(travel_to) || !Adjacent(user) || user.incapacitated() || user.stat >= UNCONSCIOUS)
+		return
+	COOLDOWN_START(src, travel_cd, 30 SECONDS)
+	bonfire_travel(user, travel_to, tiles_around)
+
+/obj/structure/bonfire/prelit/ash/proc/bonfire_travel(mob/living/carbon/human/user, obj/structure/bonfire/prelit/ash/travel_to, list/tiles_around)
+	playsound(user, 'modular_bluemoon/sound/effects/bonfire_lit.ogg', 100, FALSE)
+	// just like warp whistle
+	user.status_flags |= GODMODE
+	ADD_TRAIT(user, TRAIT_MOBILITY_NOMOVE, "bonfire")
+	ADD_TRAIT(user, TRAIT_MOBILITY_NOUSE, "bonfire")
+	ADD_TRAIT(user, TRAIT_MOBILITY_NOPICKUP, "bonfire")
+	user.update_mobility()
+	ADD_TRAIT(user, TRAIT_LIVING_NO_DENSITY, "bonfire")
+	user.update_density()
+	var/image/fog_animation = image('icons/effects/chemsmoke.dmi', src, "", layer = GASFIRE_LAYER, pixel_x = -32, pixel_y = -32)
+	fog_animation.color = COLOR_LIGHT_ORANGE
+	fog_animation.alpha = 150
+	flick_overlay(fog_animation, GLOB.clients, 7 SECONDS)
+	var/user_alpha = user.alpha
+	animate(user, alpha = 10, 5 SECONDS)
+	sleep(6 SECONDS)
+	if(QDELETED(user))
+		return
+	if(QDELETED(travel_to) || user.mob_transforming)
+		to_chat(user, span_warning("Что-то случилось... перемещение не удалось."))
+	else if(do_teleport(user, pick(tiles_around), channel = TELEPORT_CHANNEL_MAGIC))
+		COOLDOWN_START(travel_to, travel_cd, 35 SECONDS)
+		playsound(user, 'modular_bluemoon/sound/effects/bonfire_lit.ogg', 100, FALSE)
+		fog_animation = image('icons/effects/chemsmoke.dmi', travel_to, "", layer = GASFIRE_LAYER, pixel_x = -32, pixel_y = -32)
+		fog_animation.color = COLOR_LIGHT_ORANGE
+		fog_animation.alpha = 150
+		flick_overlay(fog_animation, GLOB.clients, 6 SECONDS)
+	else
+		to_chat(user, span_warning("Что-то случилось... перемещение не удалось."))
+	if(user.alpha == 10) // если за 6 секунд прозрачность перонажа изменилась по неизвестным причинам, то лучше не трогать
+		animate(user, alpha = user_alpha, 5 SECONDS)
+	sleep(5 SECONDS)
+	REMOVE_TRAIT(user, TRAIT_MOBILITY_NOMOVE, "bonfire")
+	REMOVE_TRAIT(user, TRAIT_MOBILITY_NOUSE, "bonfire")
+	REMOVE_TRAIT(user, TRAIT_MOBILITY_NOPICKUP, "bonfire")
+	user.update_mobility()
+	REMOVE_TRAIT(user, TRAIT_LIVING_NO_DENSITY, "bonfire")
+	user.update_density()
+	user.status_flags &= ~GODMODE
 
 #undef BONFIRE_HEALING_POWER_SMALL
 #undef BONFIRE_HEALING_POWER_MEDIUM

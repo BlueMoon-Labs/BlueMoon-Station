@@ -100,10 +100,20 @@
 /datum/design/board/thermomachine
 	name = "Machine Design (Freezer/Heater Board)"
 	desc = "The circuit board for a freezer/heater."
-	id = "thermomachine"
-	build_path = /obj/item/circuitboard/machine/thermomachine
 	category = list ("Engineering Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/thermomachine/heater
+	name = "Machine Design (Heater Board)"
+	desc = "The circuit board for a heater."
+	id = "heater"
+	build_path = /obj/item/circuitboard/machine/thermomachine/heater
+
+/datum/design/board/thermomachine/freezer
+	name = "Machine Design (Freezer Board)"
+	desc = "The circuit board for a freezer."
+	id = "freezer"
+	build_path = /obj/item/circuitboard/machine/thermomachine/freezer
 
 /datum/design/board/stasis
 	name = "Machine Design (Lifeform Stasis Unit)"

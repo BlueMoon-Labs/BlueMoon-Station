@@ -1131,7 +1131,9 @@
 	return ..()
 
 /datum/dynamic_ruleset/midround/pirates/execute()
-	send_pirate_threat()
+	var/datum/round_event_control/event = locate(/datum/round_event_control/pirates) in SSevents.control
+	if(event)
+		SSevents.TriggerEvent(event)
 	return ..()
 
 //////////////////////////////////////////////
@@ -1158,7 +1160,9 @@
 	return ..()
 
 /datum/dynamic_ruleset/midround/raiders/execute()
-	send_raider_threat()
+	var/datum/round_event_control/event = locate(/datum/round_event_control/raiders) in SSevents.control
+	if(event)
+		SSevents.TriggerEvent(event)
 	return ..()
 
 // BLUEMOON ADD START

@@ -34995,7 +34995,7 @@
 	name = "storage marker"
 	},
 /obj/item/storage/belt/utility,
-/obj/item/choice_beacon/pact_mecha/cargo,
+/obj/item/choice_beacon/vehicle/pact_mech/cargo,
 /turf/open/floor/plasteel/smooth/corner{
 	dir = 1
 	},
@@ -76967,7 +76967,7 @@
 /area/ai_monitored/turret_protected/ai_upload_foyer)
 "nTp" = (
 /obj/structure/table,
-/obj/item/choice_beacon/pact_mecha/cargo{
+/obj/item/choice_beacon/vehicle/pact_mech/cargo{
 	pixel_y = 4
 	},
 /obj/effect/turf_decal/trimline/brown/filled/warning{
@@ -129491,7 +129491,7 @@
 /obj/structure/table,
 /obj/item/storage/belt/utility,
 /obj/item/pipe_dispenser,
-/obj/item/choice_beacon/pact_mecha/engineer{
+/obj/item/choice_beacon/vehicle/pact_mech/engineer{
 	pixel_y = 5
 	},
 /turf/open/floor/plasteel/dark,

@@ -17,6 +17,7 @@ export const SlaveConsole = (props, context) => {
     intercomrecharging,
     cargo_credits,
     credits,
+    ransom_multiplayer,
     currentCoords,
     value_table,
   } = data;
@@ -99,7 +100,9 @@ export const SlaveConsole = (props, context) => {
         )}
         {tab === 3 && (
           <RansomPanel
-            value_table={value_table} />
+            value_table={value_table}
+            ransom_multiplayer={ransom_multiplayer}
+          />
         )}
 
       </Window.Content>
@@ -242,6 +245,7 @@ const SupplyPanel = (props, context) => {
 const RansomPanel = (props, context) => {
   const { data } = useBackend(context);
   const value_table = props.value_table || {};
+  const ransom_multiplayer = props.ransom_multiplayer || 1
 
   const value_table_converted = Object.entries(value_table).map(
     ([rank, cfg]) => ({
@@ -256,6 +260,11 @@ const RansomPanel = (props, context) => {
       <NoticeBox danger>
         Цены устанавливаются автоматически по прайс-листу
       </NoticeBox>
+      {ransom_multiplayer !== 1 && (
+        <NoticeBox info>
+          Действует увеличение получаемых кредитов! Множитель: x{ransom_multiplayer}
+        </NoticeBox>
+      )}
       <NoticeBox info>
         Должность: Процент от счета карго; Максимальная сумма выкупа
       </NoticeBox>

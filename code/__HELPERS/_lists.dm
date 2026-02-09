@@ -341,6 +341,14 @@
 		result = first - second
 	return result
 
+//Add all key and value from assoc list B in assoc list L
+/proc/merge_assoc_list(list/L, list/B)
+	if(!is_assoc_list(B) || !islist(L))
+		return FALSE
+	for(var/k in B)
+		L[k] = B[k]
+	return TRUE
+
 /*
  * Returns list containing entries that are in either list but not both.
  * If skipref = 1, repeated elements are treated as one.

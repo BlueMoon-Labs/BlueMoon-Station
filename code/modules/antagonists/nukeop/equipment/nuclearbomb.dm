@@ -749,3 +749,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 /obj/item/disk/nuclear/fake/obvious
 	name = "cheap plastic imitation of the nuclear authentication disk"
 	desc = "How anyone could mistake this for the real thing is beyond you."
+	resistance_flags = NONE
+	armor = null
+
+/obj/item/disk/nuclear/fake/obvious/mail
+	name = "nuclearning auth disk"

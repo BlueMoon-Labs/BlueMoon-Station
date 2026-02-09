@@ -11,6 +11,7 @@
 		if(path != root)
 			choices.Insert(1,"/")
 
+		choices = sort_list(choices)
 		var/choice = tgui_input_list(src,"Choose a file to access:","Download",choices)
 		switch(choice)
 			if(null)

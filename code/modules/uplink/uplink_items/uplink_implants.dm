@@ -142,3 +142,36 @@
 	cost = 15
 	surplus = 0
 	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
+
+/datum/uplink_item/implants/biomorphedheart
+	name = "Biomorphed Heart"
+	desc = "Экспериментальный орган, что используется некоторыми отрядами супер-солдат в различных 'чёрных операциях'. Даёт усиленную регенерацию, и защиту от сердечного приступа."
+	item = /obj/item/autosurgeon/syndicate/inteq/biomorphedheart
+	cost = 5
+	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
+
+/datum/uplink_item/implants/biomorphedheart/syndie
+	item = /obj/item/autosurgeon/syndicate/biomorphedheart
+	purchasable_from = UPLINK_SYNDICATE
+
+/datum/uplink_item/implants/biomorphedliver/syndie
+	name = "Biomorphed Liver"
+	desc = "Экспериментальный орган, что используется некоторыми отрядами супер-солдат в различных 'чёрных операциях'. Даёт усиленное восстановление от токсинов и уменьшает изнурение."
+	item = /obj/item/autosurgeon/syndicate/inteq/biomorphedliver
+	cost = 5
+	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
+
+/datum/uplink_item/implants/biomorphedliver/syndie
+	item = /obj/item/autosurgeon/syndicate/biomorphedliver
+	purchasable_from = UPLINK_SYNDICATE
+
+/datum/uplink_item/implants/biomorphedlungs
+	name = "Biomorphed Lungs"
+	desc = "Экспериментальный орган, что используется некоторыми отрядами супер-солдат в различных 'чёрных операциях'. Даёт усиленное восстановление от изнурения и частичную защиту от атмосферных угроз для дыхания."
+	item = /obj/item/autosurgeon/syndicate/inteq/biomorphedlungs
+	cost = 5
+	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
+
+/datum/uplink_item/implants/biomorphedlungs/syndie
+	item = /obj/item/autosurgeon/syndicate/biomorphedlungs
+	purchasable_from = UPLINK_SYNDICATE

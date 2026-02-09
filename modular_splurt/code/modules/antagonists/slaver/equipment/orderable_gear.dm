@@ -179,21 +179,21 @@ GLOBAL_LIST_INIT(slaver_gear, subtypesof(/datum/slaver_gear))
 /datum/slaver_gear/implant_heart
 	name = "Biomorphed Heart"
 	description = "Экспериментальный орган, что используется некоторыми отрядами супер-солдат в различных 'чёрных операциях'. Даёт усиленную регенерацию, и защиту от сердечного приступа."
-	build_path = /datum/uplink_item/implants/biomorphedheart
+	build_path = /obj/item/autosurgeon/syndicate/biomorphedheart
 	category = "Implants"
 	cost = 10000
 
 /datum/slaver_gear/implant_liver
 	name = "Biomorphed Liver"
 	description = "Экспериментальный орган, что используется некоторыми отрядами супер-солдат в различных 'чёрных операциях'. Даёт усиленное восстановление от токсинов и уменьшает изнурение."
-	build_path = /datum/uplink_item/implants/biomorphedliver
+	build_path = /obj/item/autosurgeon/syndicate/biomorphedliver
 	category = "Implants"
 	cost = 10000
 
 /datum/slaver_gear/implant_lungs
 	name = "Biomorphed Lungs"
 	description = "Экспериментальный орган, что используется некоторыми отрядами супер-солдат в различных 'чёрных операциях'. Даёт усиленное восстановление от изнурения и частичную защиту от атмосферных угроз для дыхания."
-	build_path = /datum/uplink_item/implants/biomorphedlungs
+	build_path = /obj/item/autosurgeon/syndicate/biomorphedlungs
 	category = "Implants"
 	cost = 10000
 
@@ -300,11 +300,13 @@ GLOBAL_LIST_INIT(slaver_gear, subtypesof(/datum/slaver_gear))
 /datum/slaver_gear/elitehardsuits
 	name = "elite syndicate hardsuit"
 	description = "Upgraded military suit supplied by our Syndicate sponsors. But there is only ONE!"
+	build_path = /obj/item/clothing/suit/space/hardsuit/syndi/elite
 	category = "Advanced"
 	cost = 10500
 
 /datum/slaver_gear/headsetUpgrader
 	name = "Headset Upgrader"
 	description = "Upgrader for hedset supplied by our Syndicate sponsors."
+	build_path = /obj/item/headsetupgrader
 	category = "Advanced"
 	cost = 500

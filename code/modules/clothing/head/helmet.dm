@@ -248,12 +248,27 @@
 	toggle_message = "You turn off the lights on"
 	alt_toggle_message = "You turn on the lights on"
 	actions_types = list(/datum/action/item_action/toggle_helmet_light)
-	can_toggle = 1
+	var/datum/looping_sound/siren/weewooloop
+	can_toggle = TRUE
 	toggle_cooldown = 20
-	active_sound = 'sound/items/weeoo1.ogg'
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
 	dog_fashion = null
+
+/obj/item/clothing/head/helmet/justice/Initialize(mapload)
+	. = ..()
+	weewooloop = new(src, FALSE, FALSE)
+
+/obj/item/clothing/head/helmet/justice/Destroy()
+	QDEL_NULL(weewooloop)
+	return ..()
+
+/obj/item/clothing/head/helmet/justice/attack_self(mob/user)
+	. = ..()
+	if(up)
+		weewooloop.start()
+	else
+		weewooloop.stop()
 
 /obj/item/clothing/head/helmet/justice/escape
 	name = "alarm Helmet"

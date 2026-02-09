@@ -938,7 +938,10 @@
 		to_chat(user, "<span class='notice'>You retrieve some of [src]\'s internal organs!</span>")
 
 /mob/living/carbon/ExtinguishMob()
-	for(var/X in get_equipped_items())
+	var/list/items_to_check = get_equipped_items() + held_items
+	for(var/X in items_to_check)
+		if(!X)
+			continue
 		var/obj/item/I = X
 		var/datum/component/acid/acid = I.GetComponent(/datum/component/acid)
 		if(acid)

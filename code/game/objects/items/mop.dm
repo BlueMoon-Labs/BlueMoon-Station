@@ -23,10 +23,37 @@
 	. = ..()
 	create_reagents(mopcap, NONE, NO_REAGENTS_VALUE)
 	GLOB.janitor_devices += src
+	RegisterSignal(src, COMSIG_TWOHANDED_WIELD, PROC_REF(on_wield))
+	RegisterSignal(src, COMSIG_TWOHANDED_UNWIELD, PROC_REF(on_unwield))
+
+/obj/item/mop/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=3, force_wielded=6)
 
 /obj/item/mop/Destroy(force)
 	GLOB.janitor_devices -= src
 	return ..()
+
+/obj/item/mop/examine(mob/user)
+	. = ..()
+	. += span_notice("Можно взяться двумя руками, чтобы мыть пол на ходу.")
+
+/obj/item/mop/proc/on_wield(obj/item/source, mob/user)
+	SIGNAL_HANDLER
+	user.add_movespeed_modifier(/datum/movespeed_modifier/mop_broom_slowdown)
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(do_mop))
+
+/obj/item/mop/proc/on_unwield(obj/item/source, mob/user)
+	SIGNAL_HANDLER
+	user.remove_movespeed_modifier(/datum/movespeed_modifier/mop_broom_slowdown)
+	UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+
+/obj/item/mop/proc/do_mop(mob/user, OldLoc, Dir, Forced)
+	SIGNAL_HANDLER
+	user.face_atom(OldLoc)
+	var/turf/T = get_turf(OldLoc)
+	if(user.CanReach(T) && isfloorturf(T))
+		melee_attack_chain(user, T)
 
 /obj/item/mop/proc/clean(turf/A, mob/user)
 	if(reagents.has_reagent(/datum/reagent/water, 1) || reagents.has_reagent(/datum/reagent/water/holywater, 1) || reagents.has_reagent(/datum/reagent/consumable/ethanol/vodka, 1) || reagents.has_reagent(/datum/reagent/space_cleaner, 1))
@@ -116,7 +143,7 @@
 	..()
 	START_PROCESSING(SSobj, src)
 
-/obj/item/mop/advanced/attack_self(mob/user)
+/obj/item/mop/advanced/AltClick(mob/user)
 	refill_enabled = !refill_enabled
 	if(refill_enabled)
 		START_PROCESSING(SSobj, src)
@@ -132,7 +159,7 @@
 
 /obj/item/mop/advanced/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>The condenser switch is set to <b>[refill_enabled ? "ON" : "OFF"]</b>.</span>"
+	. += span_notice("The condenser switch is set to <b>[refill_enabled ? "ON" : "OFF"]</b>. Alt-Click to toggle.")
 
 /obj/item/mop/advanced/Destroy()
 	if(refill_enabled)

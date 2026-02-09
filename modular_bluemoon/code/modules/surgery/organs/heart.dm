@@ -78,14 +78,3 @@
 	owner.adjustBruteLoss(-2, FALSE)
 	owner.adjustFireLoss(-2, FALSE)
 	owner.adjustStaminaLoss(-3, 0)
-
-/obj/item/autosurgeon/syndicate/inteq/biomorphedheart
-	uses = 1
-	starting_organ = /obj/item/organ/heart/tier3/antag
-
-/datum/uplink_item/implants/biomorphedheart
-	name = "Biomorphed Heart"
-	desc = "Экспериментальный орган, что используется некоторыми отрядами супер-солдат в различных 'чёрных операциях'. Даёт усиленную регенерацию, и защиту от сердечного приступа."
-	item = /obj/item/autosurgeon/syndicate/inteq/biomorphedheart
-	cost = 5
-	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)

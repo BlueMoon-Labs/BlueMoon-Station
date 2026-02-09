@@ -235,7 +235,7 @@
 		return
 	if(!M.IsVocal())
 		return
-	if(language == /datum/language/signlanguage)
+	if(language && initial(language.visual_language))
 		return
 
 	if(use_command)

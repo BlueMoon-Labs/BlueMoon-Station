@@ -196,26 +196,21 @@
 	letter_desc = "Почерк кажется очень нернвым, большая часть письма нечитаема из-за разводов от слёз. Может быть, оно не по адресу?..."
 	letter_html = "...и уехал! подл.... я подам в су...."
 	sender = "Ты знаешь, от кого!!!"
-	letter_sign = null
+	letter_sign = ""
 
 	blacklisted_species = MAIL_RECIPIENT_SYNTH
+	whitelisted_gender = list(MALE)
 
 	initial_contents = list()
 
 /datum/mail_pattern/lewd/pregnancy/apply(mob/living/carbon/human/recipient)
 	var/obj/item/pregnancytest/tester = new(parent)
+	tester.name = "positive pregnancy test"
 	tester.results = "positive"
 	tester.update_appearance()
 	. = ..()
 
-/datum/mail_pattern/lewd/pregnancy/regenerate_weight(mob/living/carbon/human/recipient)
-	. = ..()
-	if(!.)
-		return 0
-	if(recipient.gender != MALE)
-		return 0
-
-/datum/mail_pattern/lewd/pregnancy
+/datum/mail_pattern/lewd/sex_toys
 	name = "Секс-игрушки"
 	description = "Посылка с набором секс-игрушек. Очень оригинально, да?"
 

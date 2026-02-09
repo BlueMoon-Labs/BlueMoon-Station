@@ -18,14 +18,14 @@
 /datum/round_event/raiders/start()
 	send_raider_threat()
 
-/proc/send_raider_threat()
+/datum/round_event/raiders/proc/send_raider_threat()
 	var/datum/comm_message/threat_msg = new
 	var/payoff = 0
 	var/payoff_min = 25000 //documented this time
 	var/ship_template
 	var/ship_name = "Admiral Brown's fleet battlecruiser"
 	var/initial_send_time = world.time
-	var/response_max_time = 3 MINUTES
+	var/response_max_time = 5 MINUTES
 
 	ship_name = pick(strings(PIRATE_NAMES_FILE, "rogue_names"))
 
@@ -40,10 +40,11 @@
 		threat_msg.content = "Джамбо, уроды. Мы тут пролетали неподалеку, и заметили красно-синих голубков. Расклад прост. Гоните [payoff] кредитов, в противном случае мы не поленимся проложить курс нашего крейсера напрямую через вашу станцию."
 		threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
 
-	threat_msg.answer_callback = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(raiders_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
+	threat_msg.answer_callback = CALLBACK(src, PROC_REF(raiders_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg,unique = TRUE)
+	addtimer(CALLBACK(src, PROC_REF(spawn_raiders), threat_msg, ship_template), response_max_time)
 
-/proc/raiders_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
+/datum/round_event/raiders/proc/raiders_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	if(world.time > initial_send_time + response_max_time)
 		priority_announce("Поговорим на языке силы.", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_raiders(threat_msg, ship_template, TRUE)
@@ -61,7 +62,7 @@
 		priority_announce("Здесь не хватает кредитов, козлы. Молитесь.", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_raiders(threat_msg, ship_template, TRUE)
 
-/proc/spawn_raiders(datum/comm_message/threat_msg, ship_template, skip_answer_check)
+/datum/round_event/raiders/proc/spawn_raiders(datum/comm_message/threat_msg, ship_template, skip_answer_check)
 	if(!skip_answer_check && threat_msg?.answered == 1)
 		return
 

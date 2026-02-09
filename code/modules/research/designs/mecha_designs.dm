@@ -500,15 +500,25 @@
 	construction_time = 100
 	category = list("Exosuit Equipment")
 
+/datum/design/ripleyupgrade
+	name = "Ripley MK-II Conversion Kit"
+	desc = "A pressurized canopy attachment kit for an Autonomous Power Loader Unit \"Ripley\" MK-I mecha, to convert it to the slower, but space-worthy MK-II design. This kit cannot be removed, once applied."
+	id = "ripley_mk2_kit"
+	build_type = MECHFAB
+	build_path = /obj/item/mecha_parts/mecha_equipment/ripleyupgrade
+	materials = list(/datum/material/titanium=15000)
+	construction_time = 200
+	category = list("Exosuit Equipment")
+
 /datum/design/combat_mech_beacon
 	name = "Combat Mech Beacon"
 	desc = "Combat Mech Beacon"
 	id = "combat_mech_beacon"
 	build_type = PROTOLATHE
-	build_path = /obj/item/choice_beacon/pact_mecha
+	build_path = /obj/item/choice_beacon/vehicle/pact_mech/combat
 	materials = list(/datum/material/iron=200000,/datum/material/gold=15000,/datum/material/uranium=15000, /datum/material/titanium=15000, /datum/material/diamond=15000)
 	construction_time = 20
-	category = list("Exosuit Modules")
+	category = list("Bluespace Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_RED
 
@@ -516,7 +526,7 @@
 	name = "Medical Mech Beacon"
 	desc = "Medical Mech Beacon"
 	id = "medical_mech_beacon"
-	build_path = /obj/item/choice_beacon/pact_mecha/medical
+	build_path = /obj/item/choice_beacon/vehicle/pact_mech/medical
 	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENT_BITFLAG_SCIENCE
 	min_security_level = SEC_LEVEL_BLUE
@@ -525,7 +535,7 @@
 	name = "Cargo Mech Beacon"
 	desc = "Cargo Mech Beacon"
 	id = "cargo_mech_beacon"
-	build_path = /obj/item/choice_beacon/pact_mecha/cargo
+	build_path = /obj/item/choice_beacon/vehicle/pact_mech/cargo
 	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO | DEPARTMENT_BITFLAG_SCIENCE
 	min_security_level = SEC_LEVEL_BLUE
@@ -534,7 +544,7 @@
 	name = "Engineer Mech Beacon"
 	desc = "Engineer Mech Beacon"
 	id = "engineer_mech_beacon"
-	build_path = /obj/item/choice_beacon/pact_mecha/engineer
+	build_path = /obj/item/choice_beacon/vehicle/pact_mech/engineer
 	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 	min_security_level = SEC_LEVEL_BLUE

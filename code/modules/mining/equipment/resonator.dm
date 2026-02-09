@@ -1,6 +1,9 @@
 #define RESONATOR_MODE_AUTO 1
 #define RESONATOR_MODE_MANUAL 2
 #define RESONATOR_MODE_MATRIX 3
+// Кулдауны рук для крашера в децисекундах (Десятых частях секунды). Стандартный КД рук = 8
+#define RESONATOR_CD_PRESSURE 8
+#define RESONATOR_CD_NOPRESSURE 4
 
 /**********************Resonator**********************/
 /obj/item/resonator
@@ -37,16 +40,17 @@
 	var/turf/target_turf = get_turf(target)
 	var/obj/effect/temp_visual/resonance/resonance_field = locate(/obj/effect/temp_visual/resonance) in target_turf
 	if(resonance_field)
+		var/cooldown_time = lavaland_equipment_pressure_check(target_turf) ? RESONATOR_CD_NOPRESSURE : RESONATOR_CD_PRESSURE // проверяем атмосферу. Условия Лавы = низкий КД
 		resonance_field.damage_multiplier = quick_burst_mod
 		resonance_field.burst()
-		return
+		user.DelayNextAction(cooldown_time)
+		return STOP_ATTACK_PROC_CHAIN
 	if(LAZYLEN(fields) < fieldlimit)
 		new /obj/effect/temp_visual/resonance(target_turf, user, src, mode, adding_failure)
-		//user.DelayNextAction(CLICK_CD_MELEE) TEST
+		return STOP_ATTACK_PROC_CHAIN
 
 /obj/item/resonator/pre_attack(atom/target, mob/user, params)
 	if(check_allowed_items(target, TRUE))
-		user.changeNext_move(attack_speed)
 		create_resonance(target, user)
 	return ..()
 
@@ -58,7 +62,7 @@
 	layer = ABOVE_ALL_MOB_LAYER
 	duration = 5 SECONDS
 	/// the amount of damage living beings will take whilst inside the field during its burst
-	var/resonance_damage = 20
+	var/resonance_damage = 60
 	/// the modifier to resonance_damage; affected by the quick_burst_mod from the resonator
 	var/damage_multiplier = 1
 	/// the parent creator (user) of this field
@@ -106,11 +110,12 @@
 	if(!proj_turf)
 		proj_turf = get_turf(src)
 	resonance_damage = initial(resonance_damage)
-	if(lavaland_equipment_pressure_check(proj_turf))
-		name = "strong [initial(name)]"
-		resonance_damage *= 3
-	else
+	if(!lavaland_equipment_pressure_check(proj_turf))
 		name = initial(name)
+		var/pressure_mult = get_pressure_damage_multiplier(proj_turf, LAVALAND_EQUIPMENT_EFFECT_PRESSURE, 0.3334)
+		resonance_damage = round(resonance_damage * pressure_mult, 0.5) // Округляем к ближайшему целому 0.5
+	else
+		name = "strong [initial(name)]"
 	resonance_damage *= damage_multiplier
 
 /obj/effect/temp_visual/resonance/proc/burst()
@@ -173,3 +178,5 @@
 #undef RESONATOR_MODE_AUTO
 #undef RESONATOR_MODE_MANUAL
 #undef RESONATOR_MODE_MATRIX
+#undef RESONATOR_CD_PRESSURE
+#undef RESONATOR_CD_NOPRESSURE

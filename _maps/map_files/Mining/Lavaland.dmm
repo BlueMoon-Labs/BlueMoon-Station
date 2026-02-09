@@ -11469,13 +11469,7 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "jxk" = (
-/obj/machinery/camera{
-	c_tag = "Sleeper Room";
-	dir = 8;
-	network = list("mine")
-	},
-/obj/structure/table,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/machinery/computer/crew,
 /turf/open/floor/plasteel/white,
 /area/mine/living_quarters)
 "jxE" = (
@@ -17609,6 +17603,11 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
+"nVU" = (
+/obj/structure/table,
+/obj/item/storage/backpack/duffelbag/med/surgery,
+/turf/open/floor/plasteel/white,
+/area/mine/living_quarters)
 "nWq" = (
 /obj/structure/stone_tile/surrounding_tile{
 	dir = 8
@@ -18262,6 +18261,12 @@
 /obj/item/clothing/shoes/clockwork,
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
+"ovd" = (
+/obj/structure/chair/office/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/mine/living_quarters)
 "ovQ" = (
 /obj/structure/railing,
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -133508,7 +133513,7 @@ fAr
 cLH
 hAO
 jxk
-gqn
+ovd
 rIe
 vUy
 abn
@@ -133765,8 +133770,8 @@ hGR
 okz
 abn
 abn
-abn
-abn
+nVU
+gqn
 abn
 abn
 llq
@@ -134022,9 +134027,9 @@ fAr
 cLH
 xTx
 abn
-llq
-llq
-llq
+abn
+abn
+abn
 llq
 llq
 gIl

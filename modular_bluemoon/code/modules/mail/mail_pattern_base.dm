@@ -66,6 +66,10 @@
 	/// List of blacklisted jobs. Pattern will not be available if owner assigned role is one of them
 	var/list/blacklisted_jobs = list()
 
+	// ... НА ГЕНДЕР
+	var/list/whitelisted_gender = list()
+	var/list/blacklisted_gender = list()
+
 	// ... НА МАЙНДШИЛД
 
 	/// Will the mindshield implant in the recipient disable this pattern?
@@ -146,7 +150,7 @@
 			parent.included_letter = letter
 	// 25% шанс получить неправильного адресата
 	if(prob(25))
-		sender = pick(list("Центральное Командование", "N/A", "Не указан", "УДАЛЕНО", "НЕИЗВЕСТНО", MAIL_SENDER_RANDOM_NAME))
+		sender = pick(list(MAIL_SENDER_CENTCOM, "N/A", "Не указан", "УДАЛЕНО", "НЕИЗВЕСТНО", MAIL_SENDER_RANDOM_NAME))
 	parent.sender_name = sender
 
 	for(var/good in initial_contents)
@@ -205,6 +209,14 @@
 			return 0
 	if(blacklisted_jobs.len)
 		if(recipient.mind.assigned_role in blacklisted_jobs)
+			return 0
+
+	// Фильтр на гендер
+	if(whitelisted_gender.len)
+		if(!(recipient.gender in whitelisted_gender))
+			return 0
+	if(blacklisted_gender.len)
+		if(recipient.gender in blacklisted_gender)
 			return 0
 
 	// Фильтр на майндшилд

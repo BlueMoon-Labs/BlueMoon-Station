@@ -101,6 +101,11 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 		message_admins("[key_name(usr)] modified gas mixture [REF(src)]: Changed volume to [volume].")
 		set_volume(volume)
 
+/datum/gas_mixture/Destroy()
+	reaction_results = null
+	analyzer_results = null
+	return ..()
+
 /*
 we use a hook instead
 /datum/gas_mixture/Del()

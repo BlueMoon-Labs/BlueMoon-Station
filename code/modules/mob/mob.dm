@@ -518,6 +518,14 @@
 	if(I)
 		I.attack_self(src)
 		update_inv_hands()
+		return
+
+	// Активация имплантов в руке
+	if(!istype(src, /mob/living/carbon))
+		return
+	var/mob/living/carbon/C = src
+	I = C.getorganslot((C.active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
+	I?.ui_action_click(src)
 
 /**
  * Get the notes of this mob

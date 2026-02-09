@@ -49,6 +49,7 @@
 #define TRAIT_RESTORATIVE_METABOLISM	"restorative_metabolism"
 #define TRAIT_KISS_SLUT					"kiss_slut"
 #define TRAIT_HYDRA_HEADS				"hydrahead" //Hydra head port.
+#define TRAIT_WADDLING					"trait_waddling"
 
 // Chastity traits
 #define TRAIT_CHASTENED_ANUS "chastened_anus"

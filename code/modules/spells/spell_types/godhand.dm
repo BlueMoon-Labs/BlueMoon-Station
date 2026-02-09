@@ -15,10 +15,6 @@
 	throw_speed = 0
 	var/charges = 1
 
-/obj/item/melee/touch_attack/Initialize(mapload)
-	. = ..()
-	ADD_TRAIT(src, TRAIT_NODROP, ABSTRACT_ITEM_TRAIT)
-
 /obj/item/melee/touch_attack/attack(mob/target, mob/living/carbon/user)
 	if(!iscarbon(user)) //Look ma, no hands
 		return
@@ -32,12 +28,16 @@
 	user.say(catchphrase, forced = "spell")
 	playsound(get_turf(user), on_use_sound,50,1)
 	charges--
-	if(charges <= 0)
-		qdel(src)
+	charges_check()
+
+/obj/item/melee/touch_attack/proc/charges_check()
+	if(charges > 0)
+		return
+	attached_spell?.on_hand_destroy(src)
+	qdel(src)
 
 /obj/item/melee/touch_attack/Destroy()
-	if(attached_spell)
-		attached_spell.on_hand_destroy(src)
+	attached_spell?.cancel_cast()
 	return ..()
 
 /obj/item/melee/touch_attack/disintegrate
@@ -130,8 +130,7 @@
 			M.Jitter(500*mul)
 
 	charges--
-	if(charges <= 0)
-		qdel(src)
+	charges_check()
 
 /obj/item/melee/touch_attack/megahonk/attack_self(mob/user)
 	. = ..()
@@ -180,8 +179,7 @@
 
 		charges--
 
-	if(charges <= 0)
-		qdel(src)
+	charges_check()
 
 /obj/item/melee/touch_attack/nuclearfist
 	name = "\improper PURE MANLINESS"

@@ -14,7 +14,7 @@
 	var/mob/living/carbon/human/H = quirk_holder
 	if(H.mob_biotypes == MOB_ROBOTIC)
 		return FALSE //Lol, lmao, even
-	H.mob_biotypes += MOB_UNDEAD
+	H.mob_biotypes |= MOB_UNDEAD
 	for(var/A = 1, A <= zperks.len, A++)
 		ADD_TRAIT(H,zperks[A],ROUNDSTART_TRAIT)
 
@@ -25,9 +25,9 @@
 	if(!H)
 		return
 	// BLUEMOON EDIT END
-	H.mob_biotypes -= MOB_UNDEAD
+	H.mob_biotypes &= MOB_UNDEAD
 	for(var/A = 1, A <= zperks.len, A++)
-		REMOVE_TRAIT(H,zperks[A], null)
+		REMOVE_TRAIT(H,zperks[A], ROUNDSTART_TRAIT)
 
 /datum/quirk/undead/on_process()
 	. = ..()

@@ -110,6 +110,9 @@
 		qdel(src)
 
 /datum/wound/pierce/treat(obj/item/I, mob/user)
+	if(!victim.can_inject())
+		to_chat(user, span_danger("Одежда на теле [victim] не позволяет применить [I]!</span>"))
+		return
 	if(istype(I, /obj/item/stack/medical/suture))
 		suture(I, user)
 	else if(I.tool_behaviour == TOOL_CAUTERY || I.get_temperature() > 300)

@@ -7,24 +7,60 @@
 	var/power_produced = 10000
 	var/raw_power = 0
 	var/obj/structure/chair/pedalgen/Pedals = null
+	/**
+	 * apc may have constant powerload, so this way I ensure pedalgen won't get stuck in an endless cycle of only apc charging.
+	 * apc will be prioritized only when its charge is dropped below certain amount and will be fully charged after that.
+	*/
+	var/prioritise_apc = FALSE
+	var/direct_apc_charge_mult = 0.01 // 1%/sec on excessive_charge (raw_power>10)
 	invisibility = 70
 	circuit = /obj/item/circuitboard/machine/pedalgen
+	panel_open = TRUE //rped
 
 /obj/machinery/power/dynamo/process()
-	Pedals.update_icon()
 	if (raw_power>0)
 		if (raw_power>10)
 			raw_power -= 3
-			add_avail(power_produced * 2)
+			give_power(TRUE)
 		else
 			raw_power --
-			add_avail(power_produced)
+			give_power(FALSE)
+	Pedals.update_icon()
+
+/// this proc ensures that apc in this current area will be the first to get pedalgen's power.
+/obj/machinery/power/dynamo/proc/give_power(excessive_charge = FALSE)
+	if(!powernet)
+		return
+	var/power_to_give = power_produced
+	var/final_apc_charge_mult = direct_apc_charge_mult
+	if(excessive_charge)
+		power_to_give *= 2
+		final_apc_charge_mult *= 2
+	var/area/area = get_area(src)
+	var/obj/machinery/power/apc/apc = area?.get_apc()
+	var/obj/machinery/power/terminal/t = apc?.terminal
+	if(istype(t) && (t in powernet.nodes))
+		var/obj/item/stock_parts/cell/c = apc.get_cell()
+		if(istype(c))
+			if(c.charge < 0.9*c.maxcharge)
+				prioritise_apc = TRUE
+		else
+			prioritise_apc = FALSE
+		if(prioritise_apc)
+			c.give(min(power_to_give, final_apc_charge_mult*c.maxcharge))
+			c.update_icon()
+			if(c.charge == c.maxcharge)
+				prioritise_apc = FALSE
+			return
+	prioritise_apc = FALSE // direct apc is lost
+	add_avail(power_to_give)
 
 /obj/machinery/power/dynamo/RefreshParts()
 	var/parts_mult = 0
 	for(var/obj/item/stock_parts/S in component_parts)
 		parts_mult += S.rating
 	power_produced = round(initial(power_produced) * parts_mult)
+	direct_apc_charge_mult = 0.005*parts_mult
 
 // /obj/machinery/power/dynamo/deconstruct(disassembled) //stock parts shold be dropped on destruction. perhaps it shall be done later.
 // 	. = ..()
@@ -43,6 +79,7 @@
 	buildstacktype = null
 	buildstackamount = 0
 	custom_materials = list(/datum/material/iron=20000)
+	bolts = FALSE
 	var/obj/machinery/power/dynamo/Generator = null
 	var/next_pedal = 0
 	// var/pedal_left_leg = FALSE
@@ -62,15 +99,15 @@
 
 /obj/structure/chair/pedalgen/examine(mob/user)
 	. = ..()
-	. += "Due to weird and fragile design features you can't disassemble it without crushing its inner parts. Also you can't upgrade it from the distance."
-	. += span_notice("[src] is <b>[anchored ? "" : "not "]</b>anchored.")
+	. += "Из-за странного и хрупкого устройства внутренних компонентов их можно заменять только вплотную при помощи RPED. По той же причине данный механизм явно неразборный."
+	. += span_notice("[src] <b>[anchored ? "" : "не "]</b>прикручен к полу.")
 	if(!Generator.powernet)
-		. += span_danger("[src] is not connected to any power network.")
-	. += span_notice("Use movement keys or click on [src] to start generating power.")
+		. += span_danger("[src] не подключен к проводу питания.")
 	if(Generator.raw_power > 0)
-		. += "It has [Generator.raw_power] raw power stored and it generates [Generator.raw_power > 10 ? "[2*Generator.power_produced/1000]" : "[Generator.power_produced/1000]"]k energy!"
+		. += "<b>[Generator.raw_power]</b> мощи накоплено, и генератор вырабатывает <b>[Generator.raw_power > 10 ? "[2*Generator.power_produced/1000]" : "[Generator.power_produced/1000]"]k</b> электроэнергии!"
 	else
-		. += "Generator stands still. Someone need to pedal that thing."
+		. += "Генератор затих. Кто-то должен крутить педали!"
+	. += span_notice("Используй клавиши передвижения или кликай по [src] для выработки энергии.")
 
 /obj/structure/chair/pedalgen/update_icon_state()
 	switch(Generator.raw_power)
@@ -128,7 +165,7 @@
 	if(ismonkey(C))
 		if(!C.handcuffed)
 			unbuckle_mob(C)
-			visible_message(span_warning("[C] escaped from [src]!"))
+			visible_message(span_warning("[C] спрыгивает с [src]!"))
 			return FALSE
 	next_pedal = world.time + 4
 	playsound(src, 'sound/items/ratchet.ogg', 10)
@@ -136,10 +173,10 @@
 	C.doSprintLossTiles(4)
 	if(C.nutrition <= NUTRITION_LEVEL_STARVING || C.thirst <= THIRST_LEVEL_PARCHED)
 		if(ismonkey(C))
-			C.visible_message(span_warning("[C] loses it's conscious due to extreme fatigue."))
+			C.visible_message(span_warning("[C] теряет сознание из-за голода и жажды."))
 			C.Unconscious(30 SECONDS)
 		else
-			to_chat(user, "You are too exausted to pedal that thing. You should eat and drink something.")
+			to_chat(user, span_danger("Вы слишком истощены. Необходимо поесть и попить."))
 			C.DefaultCombatKnockdown(300)
 	// var/mob/living/carbon/human/pedaler = buckled_mobs[1]
 	// if(ishuman(pedaler))
@@ -205,7 +242,7 @@
 
 /obj/structure/chair/pedalgen/proc/apply_motivation(mob/living/carbon/monkey/M, obj/item/I, mob/living/L, params)
 	SIGNAL_HANDLER
-	if(I.force >= 10 && istype(M))
+	if(I.force >= 5 && istype(M))
 		if(M.IsUnconscious())
 			M.SetUnconscious(0)
 		M.emote("scream")

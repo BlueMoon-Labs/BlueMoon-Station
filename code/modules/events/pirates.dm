@@ -22,7 +22,7 @@
 /datum/round_event/pirates/start()
 	send_pirate_threat()
 
-/proc/send_pirate_threat()
+/datum/round_event/pirates/proc/send_pirate_threat()
 	var/pirate_type = PIRATES_ROGUES //pick(PIRATES_ROGUES, PIRATES_SILVERSCALES, PIRATES_DUTCHMAN)
 	var/datum/comm_message/threat_msg = new
 	var/payoff = 0
@@ -30,7 +30,7 @@
 	var/ship_template
 	var/ship_name = "Space Privateers Association"
 	var/initial_send_time = world.time
-	var/response_max_time = 3 MINUTES
+	var/response_max_time = 5 MINUTES
 	switch(pirate_type)
 		if(PIRATES_ROGUES)
 			ship_name = pick(strings(PIRATE_NAMES_FILE, "rogue_names"))
@@ -46,10 +46,11 @@
 			threat_msg.content = "Приветствуем вас с корабля [ship_name]. Ваш сектор нуждается в защите, заплатите нам [payoff] кредитов или на вас наверняка кто-то нападёт."
 			threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
 
-	threat_msg.answer_callback = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(pirates_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
+	threat_msg.answer_callback = CALLBACK(src, PROC_REF(pirates_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg,unique = TRUE)
+	addtimer(CALLBACK(src, PROC_REF(spawn_pirates), threat_msg, ship_template), response_max_time)
 
-/proc/pirates_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
+/datum/round_event/pirates/proc/pirates_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	if(world.time > initial_send_time + response_max_time)
 		priority_announce("Слишком поздно умолять о пощаде!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
@@ -67,7 +68,7 @@
 		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
 
-/proc/spawn_pirates(datum/comm_message/threat_msg, ship_template, skip_answer_check)
+/datum/round_event/pirates/proc/spawn_pirates(datum/comm_message/threat_msg, ship_template, skip_answer_check)
 	if(!skip_answer_check && threat_msg?.answered == 1)
 		return
 
@@ -284,7 +285,7 @@
 	for(var/obj/item/stock_parts/L in component_parts)
 		parts_rating += L.rating
 		++i
-	// Average rating of all details 
+	// Average rating of all details
 	var/rating = round_down(parts_rating / i)
 	var/const/speed_up_per_rating = 26.6 // T4 = 80% speed up
 	var/speed_up_ratio = max(ceil((rating-1) * speed_up_per_rating),0)/100

@@ -216,6 +216,10 @@
 /obj/item/circuitboard/machine/mining_equipment_vendor/golem,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/awaymission/challenge)
+"xC" = (
+/obj/effect/mapping_helpers/no_lava,
+/turf/closed/mineral/volcanic/lava_land_surface,
+/area/lavaland/surface/outdoors)
 "yv" = (
 /obj/structure/window/reinforced/spawner,
 /obj/machinery/atmospherics/components/unary/outlet_injector/layer1,
@@ -635,7 +639,7 @@ QQ
 QQ
 "}
 (9,1,1) = {"
-ha
+QQ
 Qn
 Dz
 zr
@@ -653,7 +657,7 @@ QQ
 QQ
 "}
 (10,1,1) = {"
-ha
+QQ
 FM
 Qn
 UA
@@ -704,10 +708,10 @@ zr
 Qn
 Qn
 Qn
-Qn
+QQ
 "}
 (13,1,1) = {"
-ha
+QQ
 Qn
 Qn
 uP
@@ -866,7 +870,7 @@ Qn
 Qn
 Qn
 Qn
-Qn
+xC
 "}
 (22,1,1) = {"
 QQ
@@ -941,16 +945,16 @@ QQ
 QQ
 "}
 (26,1,1) = {"
-ha
-ha
-ha
-Qn
-Qn
-Qn
-Dz
-Qn
-Qn
-Qn
+QQ
+QQ
+QQ
+QQ
+QQ
+QQ
+QQ
+QQ
+QQ
+QQ
 QQ
 QQ
 QQ

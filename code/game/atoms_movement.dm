@@ -33,21 +33,21 @@
 	if(oldarea != newarea)
 		oldarea.Exited(src, newloc)
 
-	for(var/i in oldloc)
-		if(i == src) // Multi tile objects
-			continue
-		var/atom/movable/thing = i
-		thing.Uncrossed(src)
+	if(length(oldloc.contents))
+		for(var/atom/movable/thing as anything in oldloc)
+			if(thing == src) // Multi tile objects
+				continue
+			thing.Uncrossed(src)
 
 	newloc.Entered(src, oldloc)
 	if(oldarea != newarea)
 		newarea.Entered(src, oldloc)
 
-	for(var/i in loc)
-		if(i == src) // Multi tile objects
-			continue
-		var/atom/movable/thing = i
-		thing.Crossed(src)
+	if(length(loc.contents))
+		for(var/atom/movable/thing as anything in loc)
+			if(thing == src) // Multi tile objects
+				continue
+			thing.Crossed(src)
 
 /**
  * meant for movement with zero side effects. only use for objects that are supposed to move "invisibly" (like camera mobs or ghosts)
@@ -159,8 +159,7 @@
 		return FALSE
 
 /atom/movable/proc/handle_buckled_mob_movement(newloc, direct, glide_size_override)
-	for(var/m in buckled_mobs)
-		var/mob/living/buckled_mob = m
+	for(var/mob/living/buckled_mob as anything in buckled_mobs)
 		if(!buckled_mob.Move(newloc, direct, glide_size_override))
 			forceMove(buckled_mob.loc)
 			last_move = buckled_mob.last_move
@@ -215,8 +214,7 @@
 
 /atom/movable/proc/onTransitZ(old_z,new_z)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_Z_CHANGED, old_z, new_z)
-	for (var/item in src) // Notify contents of Z-transition. This can be overridden IF we know the items contents do not care.
-		var/atom/movable/AM = item
+	for (var/atom/movable/AM as anything in src) // Notify contents of Z-transition. This can be overridden IF we know the items contents do not care.
 		AM.onTransitZ(old_z,new_z)
 
 ///Proc to modify the movement_type and hook behavior associated with it changing.
@@ -259,8 +257,9 @@
 				oldloc.Exited(src, destination)
 				if(old_area && old_area != destarea)
 					old_area.Exited(src, destination)
-			for(var/atom/movable/AM in oldloc)
-				AM.Uncrossed(src)
+			if(oldloc && length(oldloc.contents))
+				for(var/atom/movable/AM as anything in oldloc)
+					AM.Uncrossed(src)
 			var/turf/oldturf = get_turf(oldloc)
 			var/turf/destturf = get_turf(destination)
 			var/old_z = (oldturf ? oldturf.z : null)
@@ -271,10 +270,11 @@
 			if(destarea && old_area != destarea)
 				destarea.Entered(src, oldloc)
 
-			for(var/atom/movable/AM in destination)
-				if(AM == src)
-					continue
-				AM.Crossed(src, oldloc)
+			if(length(destination.contents))
+				for(var/atom/movable/AM as anything in destination)
+					if(AM == src)
+						continue
+					AM.Crossed(src, oldloc)
 
 		Moved(oldloc, NONE, TRUE)
 		. = TRUE
@@ -314,8 +314,13 @@
 	if(!isturf(loc))
 		return TRUE
 
-	if(locate(/obj/structure/lattice) in range(1, get_turf(src))) //Not realistic but makes pushing things in space easier
+	var/turf/T = get_turf(src)
+	if(length(T.contents) && (locate(/obj/structure/lattice) in T))
 		return TRUE
+	for(var/dir in GLOB.alldirs)
+		var/turf/adj = get_step(T, dir)
+		if(adj && length(adj.contents) && (locate(/obj/structure/lattice) in adj))
+			return TRUE
 
 	return FALSE
 

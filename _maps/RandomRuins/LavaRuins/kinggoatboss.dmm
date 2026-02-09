@@ -6,8 +6,8 @@
 /turf/open/indestructible/diamond,
 /area/ruin/lavaland/powered/kinggoat_arena)
 "c" = (
-/obj/structure/chair/bronze,
 /mob/living/simple_animal/hostile/megafauna/king,
+/obj/structure/chair/bronze,
 /turf/open/indestructible/diamond,
 /area/ruin/lavaland/powered/kinggoat_arena)
 "d" = (
@@ -202,8 +202,8 @@ k
 "}
 (7,1,1) = {"
 a
-c
 b
+c
 b
 b
 b
@@ -221,8 +221,8 @@ o
 "}
 (8,1,1) = {"
 a
-d
 b
+d
 b
 b
 b

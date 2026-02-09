@@ -643,3 +643,47 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/under/poly_maniac
+	name = "Total Pants"
+	desc = "Brought by Gosei, too lazy for digi version, suck it Catcrins!"
+	icon_state = "poly_maniac"
+	item_state = "poly_maniac"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	var/list/poly_colors = list("#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb")
+
+/obj/item/clothing/under/poly_maniac/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb"), 5)
+
+/obj/item/clothing/under/poly_unia
+	name = "Poly Pants"
+	desc = "Brought by Gosei, too lazy for digi version, suck it Catcrins!"
+	icon_state = "poly_unia"
+	item_state = "poly_unia"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	var/list/poly_colors = list("#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb")
+
+/obj/item/clothing/under/poly_unia/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb"), 4)
+
+/obj/item/clothing/under/poly_cargo
+	name = "Poly Cargo"
+	desc = "Brought by Gosei, too lazy for digi version, suck it Catcrins!"
+	icon_state = "poly_cargo"
+	item_state = "poly_cargo"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	var/list/poly_colors = list("#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb")
+
+/obj/item/clothing/under/poly_cargo/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb"), 9)

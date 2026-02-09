@@ -93,14 +93,3 @@
 	owner.adjustOxyLoss(-5, FALSE)
 	owner.adjustFireLoss(-1.5, FALSE)
 	owner.adjustStaminaLoss(-7.5, 0)
-
-/obj/item/autosurgeon/syndicate/inteq/biomorphedlungs
-	uses = 1
-	starting_organ = /obj/item/organ/lungs/tier3/antag
-
-/datum/uplink_item/implants/biomorphedlungs
-	name = "Biomorphed Lungs"
-	desc = "Экспериментальный орган, что используется некоторыми отрядами супер-солдат в различных 'чёрных операциях'. Даёт усиленное восстановление от изнурения и частичную защиту от атмосферных угроз для дыхания."
-	item = /obj/item/autosurgeon/syndicate/inteq/biomorphedlungs
-	cost = 5
-	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)

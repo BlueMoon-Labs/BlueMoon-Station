@@ -288,7 +288,7 @@
 	new /obj/item/crowbar/power(src)
 	new /obj/item/weldingtool/experimental(src)
 	new /obj/item/multitool/tricorder(src)
-	new /obj/item/stack/cable_coil(src,30,pick("red","yellow","orange"))
+	new /obj/item/stack/cable_coil(src, 30, TRUE, pick("red","yellow","orange"))
 	new /obj/item/extinguisher/mini(src)
 
 /obj/effect/mob_spawn/human/black_mesa/hecu/lost

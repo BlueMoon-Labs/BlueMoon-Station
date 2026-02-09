@@ -3,7 +3,7 @@
 // ============================================================================
 
 /obj/item/kitchen/knife/claws
-	name = "когти"
+	name = "Claws"
 	desc = "У вас есть острые когти, они втягиваются и вытягиваются на ваших кончиках пальцев с помощью ваших же мышц. Довольно опасные если еще и заточить их."
 	icon = 'modular_bluemoon/icons/mob/actions/razorclaws.dmi'
 	icon_state = "wolverine"
@@ -43,15 +43,13 @@
 
 	// Переменные для емага
 	var/emag_force = 30 // Как у энергомеча
-	var/emagged = FALSE
 
 /obj/item/kitchen/knife/claws/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/butchering, 80 - force, 100, force - 10)
-	ADD_TRAIT(src, TRAIT_NODROP, ABSTRACT_ITEM_TRAIT)
 
 /obj/item/kitchen/knife/claws/attack_self(mob/user)
-	if(emagged)
+	if(obj_flags & EMAGGED)
 		to_chat(user, "<span class='warning'>Протоколы взломаны и режим заблокирован в режиме нарезки!</span>")
 		return
 
@@ -93,7 +91,7 @@
 /obj/item/kitchen/knife/claws/attackby(obj/item/weapon, mob/user, params)
 	// Поддержка точильных камней
 	if(istype(weapon, /obj/item/sharpener))
-		if(emagged)
+		if(obj_flags & EMAGGED)
 			to_chat(user, "<span class='warning'>Протоколы безопасности уже взломаны!</span>")
 			return TRUE
 
@@ -140,11 +138,12 @@
 
 	return ..()
 
-/obj/item/kitchen/knife/claws/emag_act(mob/user)
-	if(emagged)
+/obj/item/kitchen/knife/claws/emag_act()
+	. = ..()
+	if(obj_flags & EMAGGED || !(flags_1 & CONDUCT_1))
 		return
 
-	emagged = TRUE
+	obj_flags |= EMAGGED
 	knife_mode = TRUE
 	tool_behaviour = TOOL_KNIFE
 
@@ -163,7 +162,10 @@
 	name = "взломанные [initial(name)]"
 	desc = "[initial(desc)] <span class='warning'>Они излучают опасную энергию!</span>"
 
-	to_chat(user, "<span class='warning'>Вы подключаете провода к плате когтей! Защитные протоколы отключены!</span>")
+	var/mob/user = usr
+	if(user)
+		to_chat(user, "<span class='warning'>Вы подключаете провода к плате когтей! Защитные протоколы отключены!</span>")
+		log_admin("[key_name(user)] emagged [src] at [AREACOORD(src)]")
 
 	if(ismob(loc))
 		var/mob/M = loc
@@ -181,11 +183,11 @@
 
 // Натуральные когти для квирка (без механических звуков)
 /obj/item/kitchen/knife/claws/natural
-	name = "Втягиваемые когти"
+	name = "Retractable claws"
 	desc = "У вас есть острые когти, они втягиваются и вытягиваются на ваших кончиках пальцев с помощью ваших же мышц. Довольно опасные если еще и заточить их."
 	icon_state = "claw"
 	item_state = "claw"
-	emagged = FALSE
+	flags_1 = NONE
 
 /obj/item/kitchen/knife/claws/natural/attack_self(mob/user)
 	// Квирковые когти не имеют звуков и не меняют визуал
@@ -207,16 +209,12 @@
 		var/mob/M = loc
 		M.update_inv_hands()
 
-/obj/item/kitchen/knife/claws/natural/emag_act(mob/user)
-	to_chat(user, "<span class='warning'>Эти когти являются частью тела и не имеют электроники.</span>")
-	return FALSE
-
 // ============================================================================
 // ИМПЛАНТ ВЕРСИЯ (для покупки в аплинке и т.д.)
 // ============================================================================
 
 /obj/item/kitchen/knife/razor_claws
-	name = "Имплантированные бритвенные когти"
+	name = "Implanted razor claws"
 	desc = "Набор острых втягивающихся когтей, встроенных в кончики пальцев, пять обоюдоострых лезвий гарантированно превратят людей в фарш. Способны переключаться в 'Точный' режим, действуя как кусачки."
 	icon = 'modular_bluemoon/icons/mob/actions/razorclaws.dmi'
 	icon_state = "wolverine"
@@ -255,16 +253,13 @@
 	var/cutter_bare_wound_bonus = 0
 
 	var/emag_force = 30
-	var/emagged = FALSE
 
 /obj/item/kitchen/knife/razor_claws/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/butchering, 80 - force, 100, force - 10)
-	// Добавляем TRAIT_NODROP чтобы нельзя было выбросить/передать
-	ADD_TRAIT(src, TRAIT_NODROP, ABSTRACT_ITEM_TRAIT)
 
 /obj/item/kitchen/knife/razor_claws/attack_self(mob/user)
-	if(emagged)
+	if(obj_flags & EMAGGED)
 		to_chat(user, "<span class='warning'>Подключаясь к карте [src], вы сломали защитные протоколы, ломая при этом режим резки проводов!</span>")
 		return
 
@@ -303,7 +298,7 @@
 
 /obj/item/kitchen/knife/razor_claws/attackby(obj/item/weapon, mob/user, params)
 	if(istype(weapon, /obj/item/sharpener))
-		if(emagged)
+		if(obj_flags & EMAGGED)
 			to_chat(user, "<span class='warning'>Протоколы безопасности уже взломаны!</span>")
 			return TRUE
 
@@ -350,11 +345,12 @@
 
 	return ..()
 
-/obj/item/kitchen/knife/razor_claws/emag_act(mob/user)
-	if(emagged)
+/obj/item/kitchen/knife/razor_claws/emag_act()
+	. = ..()
+	if(obj_flags & EMAGGED)
 		return
 
-	emagged = TRUE
+	obj_flags |= EMAGGED
 	knife_mode = TRUE
 	tool_behaviour = TOOL_KNIFE
 
@@ -372,7 +368,10 @@
 	name = "Перегруженные [initial(name)]"
 	desc = "[initial(desc)] <span class='warning'>Они потрескивают от опасной энергии!</span>"
 
-	to_chat(user, "<span class='warning'>Вы перегружаете [src]! Защитные ограничители отключены!</span>")
+	var/mob/user = usr
+	if(user)
+		to_chat(user, "<span class='warning'>Вы перегружаете [src]! Защитные ограничители отключены!</span>")
+		log_admin("[key_name(user)] emagged [src] at [AREACOORD(src)]")
 
 	if(ismob(loc))
 		var/mob/M = loc
@@ -393,47 +392,44 @@
 // ============================================================================
 
 /obj/item/organ/cyberimp/arm/razor_claws
-	name = "Имплант когтей"
+	name = "Claws implant"
 	desc = "Набор из двух пар острых когтей, созданных из лёгких сплавов. Когда хочешь стать тем самым героем из старых фильмов."
 	icon = 'modular_bluemoon/icons/mob/actions/razorclaws.dmi'
 	icon_state = "wolverine"
 	zone = BODY_ZONE_R_ARM
 	holder = /obj/item/kitchen/knife/razor_claws
-	var/emagged = FALSE
 
-/obj/item/organ/cyberimp/arm/razor_claws/Extend(obj/item/item)
+/obj/item/organ/cyberimp/arm/razor_claws/ExtendPlaySound(obj/item/I)
 	. = ..()
-	if(.)
-		// Громкие звуки если имплант взломан
-		if(emagged)
-			playsound(get_turf(owner), 'sound/items/unsheath.ogg', 100, TRUE)
-			playsound(get_turf(owner), 'sound/machines/warning-buzzer.ogg', 35, TRUE)
-		else
-			playsound(get_turf(owner), 'sound/items/unsheath.ogg', 100, TRUE)
+	if(obj_flags & EMAGGED)
+		playsound(get_turf(owner), 'sound/items/unsheath.ogg', 100, TRUE)
+		playsound(get_turf(owner), 'sound/machines/warning-buzzer.ogg', 35, TRUE)
+	else
+		playsound(get_turf(owner), 'sound/items/unsheath.ogg', 100, TRUE)
 
-/obj/item/organ/cyberimp/arm/razor_claws/Retract()
-	if(holder && !(holder in src))
-		// Громкие звуки если имплант взломан
-		if(emagged)
-			playsound(get_turf(owner), 'sound/items/sheath.ogg', 75, TRUE)
-		else
-			playsound(get_turf(owner), 'sound/items/sheath.ogg', 50, TRUE)
+/obj/item/organ/cyberimp/arm/razor_claws/RetractPLaySound()
+	// Громкие звуки если имплант взломан
+	if(obj_flags & EMAGGED)
+		playsound(get_turf(owner), 'sound/items/sheath.ogg', 75, TRUE)
+	else
+		playsound(get_turf(owner), 'sound/items/sheath.ogg', 50, TRUE)
 	return ..()
 
-/obj/item/organ/cyberimp/arm/razor_claws/emag_act(mob/user)
-	if(emagged)
+/obj/item/organ/cyberimp/arm/razor_claws/emag_act()
+	. = ..()
+	if(obj_flags & EMAGGED)
 		return
 
-	emagged = TRUE
+	obj_flags |= EMAGGED
 
-	// Если когти уже выдвинуты, взламываем их прямо сейчас
-	if(holder && !(holder in src))
-		var/obj/item/kitchen/knife/razor_claws/claws = holder
-		if(istype(claws))
-			claws.emag_act(user)
+	for(var/obj/item/I in items_list)
+		I.emag_act()
 
-	to_chat(user, "<span class='warning'>Вы взламываете [src]! Теперь имплант работает на максимальной мощности и издаёт громкие звуки!</span>")
-	playsound(get_turf(user), 'sound/machines/warning-buzzer.ogg', 50, TRUE)
+	var/mob/user = usr
+	if(user)
+		to_chat(user, "<span class='warning'>Вы взламываете [src]! Теперь имплант работает на максимальной мощности и издаёт громкие звуки!</span>")
+		log_admin("[key_name(user)] emagged [src] at [AREACOORD(src)]")
+		playsound(get_turf(user), 'sound/machines/warning-buzzer.ogg', 50, TRUE)
 
 /obj/item/organ/cyberimp/arm/razor_claws/left
 	zone = BODY_ZONE_L_ARM
@@ -454,26 +450,34 @@
 /datum/quirk/retractable_claws/add()
 	var/mob/living/carbon/human/H = quirk_holder
 
-	// Создаем имплант для ЛЕВОЙ руки
-	var/obj/item/organ/cyberimp/arm/claws/left/L = new()
-	L.Insert(H)
+	var/arm = H.get_bodypart(BODY_ZONE_L_ARM)
+	if(arm)
+		var/impl = H.getorganslot(ORGAN_SLOT_LEFT_ARM_AUG)
+		if(!impl)
+			// Создаем имплант для ЛЕВОЙ руки
+			var/obj/item/organ/cyberimp/arm/claws/left/L = new()
+			L.Insert(H)
 
-	// Создаем имплант для ПРАВОЙ руки
-	var/obj/item/organ/cyberimp/arm/claws/R = new()
-	R.Insert(H)
+	arm = H.get_bodypart(BODY_ZONE_R_ARM)
+	if(arm)
+		var/impl = H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG)
+		if(!impl)
+			// Создаем имплант для ПРАВОЙ руки
+			var/obj/item/organ/cyberimp/arm/claws/R = new()
+			R.Insert(H)
 
 /datum/quirk/retractable_claws/remove()
 	var/mob/living/carbon/human/H = quirk_holder
 
 	// Удаляем имплант из ЛЕВОЙ руки
-	var/obj/item/organ/cyberimp/arm/claws/left/L = H.getorganslot(ORGAN_SLOT_LEFT_ARM_AUG)
-	if(L)
+	var/obj/item/organ/cyberimp/arm/claws/L = H.getorganslot(ORGAN_SLOT_LEFT_ARM_AUG)
+	if(istype(L))
 		L.Remove(H)
 		qdel(L)
 
 	// Удаляем имплант из ПРАВОЙ руки
 	var/obj/item/organ/cyberimp/arm/claws/R = H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG)
-	if(R)
+	if(istype(R))
 		R.Remove(H)
 		qdel(R)
 
@@ -482,65 +486,20 @@
 // ============================================================================
 
 /obj/item/organ/cyberimp/arm/claws
-	name = "Втягиваемые когти"
+	name = "Retractable claws"
 	desc = "У вас есть острые когти, они втягиваются и вытягиваются на ваших кончиках пальцев с помощью ваших же мышц."
 	icon = 'modular_bluemoon/icons/mob/actions/razorclaws.dmi'
 	icon_state = "claw"
 	zone = BODY_ZONE_R_ARM
 	holder = /obj/item/kitchen/knife/claws/natural
 
-// Полностью переопределяем Extend для натуральных когтей (без механических звуков)
-/obj/item/organ/cyberimp/arm/claws/Extend(obj/item/item)
-	if(!(item in src))
-		return
-
-	holder = item
-
-	holder.resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
-	holder.slot_flags = null
-	holder.set_custom_materials(null)
-
-	var/obj/item/arm_item = owner.get_active_held_item()
-
-	if(arm_item)
-		if(!owner.dropItemToGround(arm_item))
-			to_chat(owner, "<span class='warning'>Ваш [arm_item] мешает выдвинуть [src]!</span>")
-			return
-		else
-			to_chat(owner, "<span class='notice'>Вы роняете [arm_item], чтобы выдвинуть [src]!</span>")
-
-	var/result = (zone == BODY_ZONE_R_ARM ? owner.put_in_r_hand(holder) : owner.put_in_l_hand(holder))
-	if(!result)
-		to_chat(owner, "<span class='warning'>Ваши [name] не удалось выдвинуть!</span>")
-		return
-
-	owner.swap_hand(result)
-
-	owner.visible_message(
-		"<span class='notice'>[owner] выпускает [holder] из [owner.ru_ego()] [zone == BODY_ZONE_R_ARM ? "правой" : "левой"] руки.</span>",
-		"<span class='notice'>Вы выпускаете [holder] из вашей [zone == BODY_ZONE_R_ARM ? "правой" : "левой"] руки.</span>"
-	)
-	// Тихий органический звук вместо механического
+// Тихий органический звук вместо механического
+/obj/item/organ/cyberimp/arm/claws/ExtendPlaySound(obj/item/I)
 	playsound(get_turf(owner), 'sound/items/unsheath.ogg', 5, TRUE)
-	return TRUE
 
-// Полностью переопределяем Retract для натуральных когтей (без механических звуков)
-/obj/item/organ/cyberimp/arm/claws/Retract()
-	if(!holder || (holder in src))
-		return
-
-	owner.visible_message(
-		"<span class='notice'>[owner] втягивает [holder] обратно в [owner.ru_ego()] [zone == BODY_ZONE_R_ARM ? "правую" : "левую"] руку.</span>",
-		"<span class='notice'>[capitalize(holder.name)] скользят обратно в вашу [zone == BODY_ZONE_R_ARM ? "правую" : "левую"] руку.</span>"
-	)
-
-	owner.transferItemToLoc(holder, src, TRUE)
-	holder = null
-	// Тихий органический звук вместо механического
+// Тихий органический звук вместо механического
+/obj/item/organ/cyberimp/arm/claws/RetractPLaySound()
 	playsound(get_turf(owner), 'sound/items/sheath.ogg', 5, TRUE)
 
 /obj/item/organ/cyberimp/arm/claws/left
 	zone = BODY_ZONE_L_ARM
-
-/obj/item/organ/cyberimp/arm/claws/right
-	zone = BODY_ZONE_R_ARM

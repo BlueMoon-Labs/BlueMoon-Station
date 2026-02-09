@@ -67,7 +67,7 @@
 	new /obj/item/crowbar/abductor(src)
 	new /obj/item/wirecutters/abductor(src)
 	new /obj/item/multitool/abductor(src)
-	new /obj/item/stack/cable_coil(src,30,"white")
+	new /obj/item/stack/cable_coil(src, 30, TRUE, "white")
 	new /obj/item/lightreplacer/blue(src)
 	new /obj/item/analyzer/ranged(src)
 	new /obj/item/extinguisher/advanced(src)

@@ -441,9 +441,16 @@ class ChatRenderer {
     let cssText = '';
     const styleSheets = document.styleSheets;
     for (let i = 0; i < styleSheets.length; i++) {
-      const cssRules = styleSheets[i].cssRules;
-      for (let i = 0; i < cssRules.length; i++) {
-        const rule = cssRules[i];
+      let cssRules;
+      try {
+        cssRules = styleSheets[i].cssRules;
+      }
+      catch (e) {
+        // Some stylesheets may be inaccessible due to origin restrictions.
+        continue;
+      }
+      for (let j = 0; j < cssRules.length; j++) {
+        const rule = cssRules[j];
         if (rule && typeof rule.cssText === 'string') {
           cssText += rule.cssText + '\n';
         }

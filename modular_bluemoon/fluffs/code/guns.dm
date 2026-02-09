@@ -913,7 +913,7 @@
 
 /obj/item/gun/ballistic/revolver/detective/rsh_future
 	name = "RSH-Future"
-	desc = " A custom-made revolver .38 caliber, engraved on the cylinder of the drum - 228321. The special body of this revolver, made of an unusual list of materials, allows you to muffle the sound of shots of this caliber, by about 25 percent. But still, there is a minus - a strong recoil, what a without a strong grip - It will be painfully."
+	desc = "An unusual revolver, clearly custom-made, the RuSH to the Future! Lightweight body is made of materials that not only make it easier to handle, but also absorb the sound of the shot, ensuring the further use of 38 caliber"
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "rsh_future"
 	item_state = "rsh_future"

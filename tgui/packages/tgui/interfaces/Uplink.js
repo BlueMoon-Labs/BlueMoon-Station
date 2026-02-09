@@ -93,6 +93,7 @@ export const GenericUplink = (props, context) => {
             <Tabs vertical>
               {categories.map(category => (
                 <Tabs.Tab
+                  mr={2}
                   key={category.name}
                   selected={category.name === selectedCategory}
                   onClick={() => setSelectedCategory(category.name)}>
