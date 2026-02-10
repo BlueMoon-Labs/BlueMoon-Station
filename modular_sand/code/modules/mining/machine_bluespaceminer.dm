@@ -114,8 +114,11 @@
 
 		var/instability_onzlevel = get_instability_onzlevel()
 		var/instability_onzlevel_text = "[instability_onzlevel]%"
-		instability_onzlevel_text = instability_onzlevel >= INSTABILITY_ON_ZLEVEL_TO_EVENT ? span_danger(instability_onzlevel_text) : span_green(instability_onzlevel_text)
+		var/sector_stable = instability_onzlevel < INSTABILITY_ON_ZLEVEL_TO_EVENT
+		instability_onzlevel_text = !sector_stable ? span_danger(instability_onzlevel_text) : span_green(instability_onzlevel_text)
 		display_list += "Нестабильность пространства в регионе: [span_bold(instability_onzlevel_text)]"
+		if(!sector_stable)
+			display_list += span_boldwarning("ВНИМАНИЕ! Слишком высокая нестабильность, возможны аномалии!")
 		. += span_notice(jointext(display_list, "\n-"))
 	if(!bs_core)
 		. += span_warning("Bluespace ядро не установлено, без него машина не будет работать.")
@@ -386,4 +389,19 @@
 
 #undef BLUESPACE_MINER_BONUS_MULT
 #undef BLUESPACE_MINER_CRYSTAL_TIER
+#undef BLUESPACE_MINER_BONUS_MULT
+#undef BLUESPACE_MINER_CRYSTAL_TIER
+#undef TIME_TO_CORE_DESTROY
+#undef CORE_CHANSE_NO_DAMAGE
+#undef INSTABILITY_COOLDOWN_TIME
+#undef CORE_DAMAGE_PER_SECOND
+#undef CORE_INTEGRITY_PERCENT
+#undef BLUESPACE_MINER_INSTABILITY
+#undef INSTABILITY_ON_ZLEVEL_TO_EVENT
+#undef INSTABILITY_CHANSE_FOR_PERCENT
 #undef CORE_INSERT_REG_SIGNAL
+#undef INSTABILITY_EVENT_ANOMALY_WEIGHT
+#undef INSTABILITY_EVENT_PORTAL_WEIGHT
+#undef INSTABILITY_EVENT_TEAR_WEIGHT
+#undef INSTABILITY_SETTINGS_PERCENT
+#undef INSTABILITY_SETTINGS_VALUE
