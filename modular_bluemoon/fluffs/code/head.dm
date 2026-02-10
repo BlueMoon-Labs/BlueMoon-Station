@@ -437,3 +437,47 @@
 	clothing_flags = ALLOWINTERNALS
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
 	unique_reskin = null
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/donator/bm/chetky_cap
+	name = "sport cap"
+	desc = "krutaya kepka."
+	icon_state = "chetky_cap"
+	item_state = "chetky_cap"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	var/flipped = FALSE
+
+/obj/item/clothing/head/donator/bm/chetky_cap/AltClick(mob/user)
+	. = ..()
+	if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+		return
+	flip(user)
+	return TRUE
+
+/obj/item/clothing/head/donator/bm/chetky_cap/dropped(mob/user)
+	. = ..()
+	icon_state = "chetky_cap"
+	item_state = "chetky_cap"
+	flipped = FALSE
+
+/obj/item/clothing/head/donator/bm/chetky_cap/proc/flip(mob/user)
+	if(!user.incapacitated())
+		flipped = !flipped
+		if(flipped)
+			icon_state = "chetky_cap_flipped"
+			item_state = "chetky_cap_flipped"
+			to_chat(user, span_notice("Вы развернули кепку козырьком назад."))
+		else
+			icon_state = "chetky_cap"
+			item_state = "chetky_cap"
+			to_chat(user, span_notice("Вы надели кепку как обычно."))
+		user.update_inv_head()
+
+/obj/item/clothing/head/donator/bm/chetky_cap/examine(mob/user)
+	. = ..()
+	. += span_notice("Alt-click, чтобы развернуть кепку [flipped ? "вперёд" : "назад"].")

@@ -114,24 +114,21 @@
 	. += "<span class='notice'>Зарядов осталось: <b>[uses ? uses : "0"]</b>.</span>"
 
 /obj/item/card/id/examine_more(mob/user)
-	var/list/msg = list("<span class='notice'><i>Вы осмотрели [src] поближе и заметили следующее...</i></span>")
-
+	. = ..()
 	if(mining_points)
-		msg += "У карты в наличии [mining_points] ед. очков шахтёрского оборудования."
+		. += "У карты в наличии [mining_points] ед. очков шахтёрского оборудования."
 	if(registered_account)
-		msg += "Привязанный к ID-карте аккаунт записан на имя \"[registered_account.account_holder]\" и сообщает о балансе [registered_account.account_balance] кр."
+		. += "Привязанный к ID-карте аккаунт записан на имя \"[registered_account.account_holder]\" и сообщает о балансе [registered_account.account_balance] кр."
 		if(registered_account.account_job)
 			var/datum/bank_account/D = SSeconomy.get_dep_account(registered_account.account_job.paycheck_department)
 			if(D)
-				msg += "На балансе [budget_to_ru_genitive(D.account_holder)] находится [D.account_balance] кр."
-		msg += "<span class='info'>Alt-Click по ID, чтобы достать деньги из аккаунта в форме голочипов.</span>"
-		msg += "<span class='info'>Вы может добавить кредиты на аккаунт, прижимая голочипы, наличные или монеты к ID.</span>"
+				. += "На балансе [budget_to_ru_genitive(D.account_holder)] находится [D.account_balance] кр."
+		. += "<span class='info'>Alt-Click по ID, чтобы достать деньги из аккаунта в форме голочипов.</span>"
+		. += "<span class='info'>Вы может добавить кредиты на аккаунт, прижимая голочипы, наличные или монеты к ID.</span>"
 		if(registered_account.account_holder == user.real_name)
-			msg += "<span class='boldnotice'>Если вы потеряете эту ID-карту, вы можете переподключить свой аккаунт путём Alt-Click по пустой карте, держа её и введя свой ID-номер.</span>"
+			. += "<span class='boldnotice'>Если вы потеряете эту ID-карту, вы можете переподключить свой аккаунт путём Alt-Click по пустой карте, держа её и введя свой ID-номер.</span>"
 	else
-		msg += "<span class='info'>У данной карты нет зарегистрированного акканта. Alt-Click, чтобы добавить.</span>"
-
-	return msg
+		. += "<span class='info'>У данной карты нет зарегистрированного акканта. Alt-Click, чтобы добавить.</span>"
 
 /obj/item/card/emag/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/emagrecharge))

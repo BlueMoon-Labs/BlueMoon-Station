@@ -1538,7 +1538,7 @@
 	name = "Dar Jr beacon"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/choice_beacon/pet/dar
-	ckeywhitelist = list("avtobuspng", "dimofon", "definitelynotnesuby")
+	ckeywhitelist = list("avtobuspng", "dimofon", "definitelynotnesuby", "angelnedemon")
 
 /datum/gear/donator/bm/pawpack
 	name = "Paw Backpack"
@@ -2048,3 +2048,27 @@
 	path = /obj/item/clothing/head/helmet/sec/gosei
 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/chetky_cap
+	name = "Chetky Cap"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/chetky_cap
+	ckeywhitelist = list("ordinarylife", "pingvas", "leony24", "kennedykiller", "theatlasplay", "theatlasgaming", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "hateredsoul", "vulpshiro", "dolbajob", "stgs")
+
+/datum/gear/donator/bm/chetky_g3jacket
+	name = "Chetky G3 Jacket"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/chetky_g3jacket
+	ckeywhitelist = list("ordinarylife", "pingvas", "leony24", "kennedykiller", "theatlasplay", "theatlasgaming", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "hateredsoul", "vulpshiro", "dolbajob", "stgs")
+
+/datum/gear/donator/bm/lizared_exposed
+	name = "LIZARED Open Panties"
+	slot = ITEM_SLOT_UNDERWEAR
+	path = /obj/item/clothing/underwear/briefs/panties/lizared/exposed
+	ckeywhitelist = list("pingvas")
+
+/datum/gear/donator/bm/custom_vape
+	name = "Custom E-Cigarette"
+	slot = ITEM_SLOT_MASK
+	path = /obj/item/clothing/mask/vape/custom
+	ckeywhitelist = list("ordinarylife", "pingvas", "leony24", "kennedykiller", "theatlasplay", "theatlasgaming", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "hateredsoul", "vulpshiro", "dolbajob", "stgs", "silyamg", "tblkba", "dimofon")

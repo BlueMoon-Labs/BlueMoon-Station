@@ -35,6 +35,7 @@
 #define BLUEMOON_TRAIT_NAME_COOLANT_GENERATOR	"Генератор Хладагента"
 #define BLUEMOON_TRAIT_NAME_WATER_VULNERABILITY	"Уязвимость к Воде"
 #define BLUEMOON_TRAIT_NAME_EMP_VULNERABILITY	"Некачественное Экранирование"
+#define TRAIT_KNOWS_RESEARCH 					"Знанине использования Пергаментом"
 
 // Трейты для рас
 #define CAN_BE_OPERATED_WITHOUT_PAIN		"can_be_operated_without_pain"

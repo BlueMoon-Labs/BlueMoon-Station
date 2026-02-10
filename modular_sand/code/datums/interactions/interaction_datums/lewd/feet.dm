@@ -189,7 +189,7 @@
 
 	//var/u_His = user.ru_ego()
 
-	var/shoes = partner.get_shoes(TRUE)
+	var/shoes = user.get_shoes(TRUE)
 
 	if(partner.is_fucking(user, CUM_TARGET_FEET))
 		message = "[pick("трёт клитор <b>[partner]</b> своими [shoes ? shoes : pick("ножками", "ступнями")].",

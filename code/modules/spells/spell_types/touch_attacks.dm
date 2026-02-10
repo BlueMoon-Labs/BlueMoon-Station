@@ -75,6 +75,18 @@
 
 	action_icon_state = "gib"
 
+/obj/effect/proc_holder/spell/targeted/touch/alive_bones
+	name = "Alive bones"
+	desc = "This spell charges your hand with necromancy energy, which rips the skeleton out of the victim's body and revives it. \
+			The victim is left without limbs and bones."
+	hand_path = /obj/item/melee/touch_attack/alive_bones
+
+	school = "necromancy"
+	charge_max = 600
+	cooldown_min = 200 //100 deciseconds reduction per rank
+
+	action_icon_state = "zap"
+
 /obj/effect/proc_holder/spell/targeted/touch/flesh_to_stone
 	name = "Flesh to Stone"
 	desc = "This spell charges your hand with the power to turn victims into inert statues for a long period of time."

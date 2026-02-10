@@ -245,7 +245,7 @@ const SupplyPanel = (props, context) => {
 const RansomPanel = (props, context) => {
   const { data } = useBackend(context);
   const value_table = props.value_table || {};
-  const ransom_multiplayer = props.ransom_multiplayer || 1
+  const ransom_multiplayer = props.ransom_multiplayer || 1;
 
   const value_table_converted = Object.entries(value_table).map(
     ([rank, cfg]) => ({

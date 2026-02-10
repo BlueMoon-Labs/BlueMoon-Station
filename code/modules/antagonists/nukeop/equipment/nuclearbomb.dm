@@ -636,6 +636,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	var/fake = FALSE
+	var/stationloving = TRUE
 	var/turf/lastlocation
 	var/last_disk_move
 	var/process_tick = 0
@@ -651,7 +652,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 /obj/item/disk/nuclear/ComponentInitialize()
 	. = ..()
-	AddComponent(/datum/component/stationloving, !fake)
+	if(stationloving)
+		AddComponent(/datum/component/stationloving, !fake)
 
 /obj/item/disk/nuclear/process()
 	process_tick++
@@ -693,11 +695,15 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 /obj/item/disk/nuclear/examine(mob/user)
 	. = ..()
-	if(!fake)
-		return
+	if(isobserver(user) && fake)
+		. += "It's a fake. Nice job captain, ha-ha."
 
-	if(isobserver(user) || HAS_TRAIT(user.mind, TRAIT_DISK_VERIFIER))
-		. += "<span class='warning'>The serial numbers on [src] are incorrect.</span>"
+/obj/item/disk/nuclear/examine_more(mob/user)
+	. = ..()
+	if(HAS_TRAIT(user?.mind, TRAIT_DISK_VERIFIER))
+		. += span_notice("The serial numbers on [src] are [fake ? "in" : ""]correct.")
+	else
+		. += span_notice("It has a serial number on it, but it doesn't mean anything to you.")
 
 /*
  * You can't accidentally eat the nuke disk, bro
@@ -749,8 +755,10 @@ This is here to make the tiles around the station mininuke change when it's arme
 /obj/item/disk/nuclear/fake/obvious
 	name = "cheap plastic imitation of the nuclear authentication disk"
 	desc = "How anyone could mistake this for the real thing is beyond you."
+	stationloving = FALSE
 	resistance_flags = NONE
 	armor = null
 
 /obj/item/disk/nuclear/fake/obvious/mail
 	name = "nuclearning auth disk"
+	desc = "Better keep this safe."

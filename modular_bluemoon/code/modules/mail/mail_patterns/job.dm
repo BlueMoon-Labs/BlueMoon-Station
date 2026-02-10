@@ -4,7 +4,17 @@
  *
  */
 
-/datum/mail_pattern/job/fake_nuke_disk
+/datum/mail_pattern/job/heads
+	whitelisted_jobs = list(
+		"Captain",
+		"Chief Engineer",
+		"Research Director",
+		"Head of Personnel",
+		"Chief Medical Officer",
+		"Head Of Security",
+	)
+
+/datum/mail_pattern/job/heads/fake_nuke_disk
 	name = "Фальшивый ядерный диск"
 	description = "Содержит пластиковый ядерный диск и письмо от мошенников."
 
@@ -34,36 +44,48 @@
 					</div>
 					</font>"}
 
-	whitelisted_jobs = list(
-		"Captain",
-		"Chief Engineer",
-		"Research Director",
-		"Head of Personnel",
-		"Chief Medical Officer",
-		"Head Of Security",
-	)
-
 	initial_contents = list(
 		/obj/item/disk/nuclear/fake/obvious/mail
 	)
 
-/datum/mail_pattern/job/mime_nothing
+/datum/mail_pattern/job/mime/
+	whitelisted_jobs = list(
+		"Mime"
+	)
+
+/datum/mail_pattern/job/mime/nothing
 	name = "Набор для мима"
 	description = "Содержит латексную перчатку-шарик, маску мима и бутылку «Ничего»."
 
-	weight = MAIL_WEIGHT_UNCOMMON
+	weight = MAIL_WEIGHT_DEFAULT
 
 	sender = ""
 	letter_sign = ""
 	letter_title = "Silence"
 	letter_html = {""}
 
-	whitelisted_jobs = list(
-		"Mime"
-	)
-
 	initial_contents = list(
 		/obj/item/reagent_containers/food/drinks/bottle/bottleofnothing,
 		/obj/item/latexballon,
 		/obj/item/clothing/mask/gas/mime,
+	)
+
+/datum/mail_pattern/job/ntr
+	whitelisted_jobs = list(
+		"NanoTrasen Representative"
+	)
+
+/datum/mail_pattern/job/ntr/watching
+	name = "Картинка «Наблюдай» для НТРа"
+	description = "Содержит картинку «Продолжайте наблюдение» и 100 кредитов."
+
+	weight = MAIL_WEIGHT_DEFAULT
+
+	sender = MAIL_SENDER_CENTCOM
+	letter_sign = ""
+	letter_title = "Продолжайте наблюдение"
+	letter_html = "<img src='https://i.ibb.co/V0GvJnd0/image.png'>"
+
+	initial_contents = list(
+		/obj/item/stack/spacecash/c100,
 	)

@@ -69,7 +69,7 @@ SUBSYSTEM_DEF(mail)
 		for(var/P in types_of_category)
 			var/datum/mail_pattern/pattern_path = P
 			// Избавляемся от базовых паттернов
-			if(pattern_path.type in MAIL_BASE_TYPE_LIST)
+			if(!pattern_path.name)
 				continue
 			var/datum/mail_pattern/new_pattern = new pattern_path()
 			all_patterns[new_pattern.name] = new_pattern
@@ -108,6 +108,10 @@ SUBSYSTEM_DEF(mail)
 		restriction_string += " - Доступен только для пола: [jointext(pattern.whitelisted_gender, ", ")].\n"
 	if(pattern.blacklisted_gender.len)
 		restriction_string += " - Недоступен для пола: [jointext(pattern.blacklisted_gender, ", ")].\n"
+	if(pattern.whitelisted_genitals.len)
+		restriction_string += " - Доступен только для обладателей гениталий: [jointext(pattern.whitelisted_genitals, " и ")].\n"
+	if(pattern.blacklisted_genitals.len)
+		restriction_string += " - Недоступен для обладателей гениталий: [jointext(pattern.blacklisted_genitals, ", ")].\n"
 	if(pattern.whitelisted_species.len)
 		var/list/species_names = list()
 		for(var/S in pattern.whitelisted_species)

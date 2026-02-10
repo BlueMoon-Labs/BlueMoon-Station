@@ -760,6 +760,42 @@
 	emote_cooldown = 3 SECONDS
 	emote_type = EMOTE_AUDIBLE
 
+/datum/emote/sound/human/fox_trill_2
+	key = "foxtrill2"
+	key_third_person = "foxtrill2"
+	message = "издает лисью трель"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_trill_2.ogg'
+	emote_cooldown = 2 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_cacle
+	key = "foxcacle"
+	key_third_person = "foxcacle"
+	message = "гогочет по-лисьи"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_cacle.ogg'
+	emote_cooldown = 5 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_laugh
+	key = "foxlaugh"
+	key_third_person = "foxlaugh"
+	message = "заливается смехом по-лисьи"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_laugh.ogg'
+	emote_cooldown = 3 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_chatter
+	key = "foxchatter"
+	key_third_person = "foxchatter"
+	message = "воркует как лиса"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_chatter.ogg'
+	emote_cooldown = 5 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
 /datum/emote/sound/human/fox_aaugh
 	key = "foxaaugh"
 	key_third_person = "foxaaugh"
@@ -767,6 +803,15 @@
 	message_mime = null
 	sound = 'sound/fox/Voice/fox_aaugh.ogg'
 	emote_cooldown = 1 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_growl
+	key = "foxgrowl"
+	key_third_person = "foxgrowl"
+	message = "агрессивно рычит"
+	message_mime = "злобно скалится!"
+	sound = 'sound/fox/Voice/fox_growl.ogg'
+	emote_cooldown = 3 SECONDS
 	emote_type = EMOTE_AUDIBLE
 
 /datum/emote/sound/human/memee

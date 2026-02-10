@@ -15,6 +15,10 @@
 	var/under_type = /obj/item/clothing/underwear //i don't know what i'm gonna use this for
 	var/fitted = FEMALE_UNIFORM_TOP
 
+/obj/item/genital_equipment/condom/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/trash)
+
 /obj/item/clothing/underwear/Move()
 	..()
 	setDir(SOUTH) //should prevent underwear from facing any direction but south while on the floor, uses same code as pipes, PLEASE, THIS IS A BAD SOLUTION, SOMEONE MAKE ME UNDERWEAR SPRITES ASAP

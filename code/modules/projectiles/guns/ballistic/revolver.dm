@@ -414,24 +414,27 @@
 // ---------- Code originally from VoreStation ----------
 /obj/item/gun/ballistic/revolver/mws
 	name = "MWS-01 'Big Iron'"
-	desc = "Modular Weapon System-01, does fit on your hip."
+	desc = "Modular Weapon System-01, помещается на вашем бедре."
 	icon = 'icons/obj/guns/projectile.dmi'
 	icon_state = "mws"
 	fire_sound = 'sound/weapons/MWSfire.ogg' //i spent 1 hour making a cool sound but byond just compresses it to shit so have this instead >:(
 	mag_type = /obj/item/ammo_box/magazine/mws_mag
 	spawnwithmagazine = FALSE
 	recoil = 0
+	can_flashlight = 1
+	flight_x_offset = 21
+	flight_y_offset = 10
 
 	var/charge_sections = 6
 
 /obj/item/gun/ballistic/revolver/mws/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Alt-click to remove the magazine.</span>"
+	. += span_notice("Alt-click для извлечения магазина.")
 
 /obj/item/gun/ballistic/revolver/mws/shoot_with_empty_chamber(mob/living/user as mob|obj)
 	process_chamber(user)
 	if(!chambered || !chambered.BB)
-		to_chat(user, "<span class='danger'>*click*</span>")
+		to_chat(user, span_danger("*click*"))
 		playsound(src, "gun_dry_fire", 30, 1)
 
 
@@ -451,9 +454,9 @@
 /obj/item/gun/ballistic/revolver/mws/proc/switch_to(obj/item/ammo_casing/mws_batt/new_batt, mob/living/user)
 	if(ishuman(user))
 		if(chambered && new_batt.type == chambered.type)
-			to_chat(user,"<span class='warning'>[src] is now using the next [new_batt.type_name] power cell.</span>")
+			to_chat(user, span_warning("[src] начинает тратить следующую батарею, [new_batt.type_name]."))
 		else
-			to_chat(user,"<span class='warning'>[src] is now firing [new_batt.type_name].</span>")
+			to_chat(user, span_warning("[src] теперь использует [new_batt.type_name]."))
 
 	chambered = new_batt
 	update_icon()
@@ -487,7 +490,7 @@
 		else
 			playsound(src, "gun_remove_empty_magazine", 70, 1)
 		magazine = null
-		to_chat(user, "<span class='notice'>You pull the magazine out of [src].</span>")
+		to_chat(user, span_notice("Вы извлекли магазин из [src]."))
 		if(chambered)
 			chambered = null
 		update_icon()

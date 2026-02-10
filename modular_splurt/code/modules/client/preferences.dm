@@ -1187,7 +1187,7 @@
 						else if((gear_points - gear.cost) < 0)
 							class_link = "style='white-space:normal;' class='linkOff'"
 						else if(donoritem)
-							class_link = "style='white-space:normal;background:#ebc42e;' href='?_src_=prefs;preference=gear;toggle_gear_path=[url_encode(name)];toggle_gear=1'"
+							class_link = "style='white-space:normal;background:#2e6eeb;' href='?_src_=prefs;preference=gear;toggle_gear_path=[url_encode(name)];toggle_gear=1'"
 						else if(!istype(gear, /datum/gear/unlockable) || can_use_unlockable(gear))
 							class_link = "style='white-space:normal;' href='?_src_=prefs;preference=gear;toggle_gear_path=[url_encode(name)];toggle_gear=1'"
 						else

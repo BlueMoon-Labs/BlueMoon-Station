@@ -1,6 +1,6 @@
 /obj/item/inducer
 	name = "Engineer inducer"
-	desc = "A tool for inductively charging internal power cells."
+	desc = "Инструмент для индуктивного заряжания внешних аккумуляторов."
 	icon = 'icons/obj/tools.dmi'
 	icon_state = "inducer-engi"
 	item_state = "inducer-engi"
@@ -34,72 +34,32 @@
 
 /obj/item/inducer/emp_act(severity)
 	. = ..()
+	if(!opened)
+		severity *= 0.75
 	if(cell && !(. & EMP_PROTECT_CONTENTS))
 		cell.emp_act(severity)
 
-/obj/item/inducer/attack_obj(obj/O, mob/living/carbon/user)
-	if(user.a_intent == INTENT_HARM)
-		return ..()
-
-	if(cantbeused(user))
-		return
-
-	if(recharge(O, user))
-		return
-
-	return ..()
 
 /obj/item/inducer/proc/cantbeused(mob/user)
 	if(!user.IsAdvancedToolUser())
-		to_chat(user, "<span class='warning'>You don't have the dexterity to use [src]!</span>")
+		to_chat(user, span_warning("Вам не хватит ловкости рук для использования [src]!"))
 		return TRUE
 
 	if(!cell)
-		to_chat(user, "<span class='warning'>[src] doesn't have a power cell installed!</span>")
+		to_chat(user, span_warning("При использовании [src] ничего не происходит!"))
 		return TRUE
 
 	if(!cell.charge)
-		to_chat(user, "<span class='warning'>[src]'s battery is dead!</span>")
+		to_chat(user, span_warning("[src] издаёт негромкий низкий гул!"))
 		return TRUE
 	return FALSE
 
 
-/obj/item/inducer/attackby(obj/item/W, mob/user)
-	if(W.tool_behaviour == TOOL_SCREWDRIVER)
-		W.play_tool_sound(src)
-		if(!opened)
-			to_chat(user, "<span class='notice'>You unscrew the battery compartment.</span>")
-			opened = TRUE
-			update_icon()
-			return
-		else
-			to_chat(user, "<span class='notice'>You close the battery compartment.</span>")
-			opened = FALSE
-			update_icon()
-			return
-	if(istype(W, /obj/item/stock_parts/cell))
-		if(opened)
-			if(!cell)
-				if(!user.transferItemToLoc(W, src))
-					return
-				to_chat(user, "<span class='notice'>You insert [W] into [src].</span>")
-				cell = W
-				update_icon()
-				return
-			else
-				to_chat(user, "<span class='notice'>[src] already has \a [cell] installed!</span>")
-				return
-
-	if(cantbeused(user))
-		return
-
-	if(recharge(W, user))
-		return
-
-	return ..()
-
 /obj/item/inducer/proc/recharge(atom/movable/A, mob/user)
 	if(!isturf(A) && user.loc == A)
+		return FALSE
+	if(istype(A, /obj/item/gun/energy) && gun_charger != TRUE)
+		to_chat(user, span_warning("ОШИБКА: невозможно соединиться с устройством."))
 		return FALSE
 	if(recharging)
 		return TRUE
@@ -108,29 +68,27 @@
 	var/obj/item/stock_parts/cell/C = A.get_cell()
 	var/obj/O
 	var/coefficient = 1
-	if(istype(A, /obj/item/gun/energy) && gun_charger != TRUE)
-		to_chat(user,"Error unable to interface with device")
-		return FALSE
 	if(istype(A, /obj))
 		O = A
 	if(C)
 		var/done_any = FALSE
 		if(C.charge >= C.maxcharge)
-			to_chat(user, "<span class='notice'>[A] is fully charged!</span>")
+			to_chat(user, span_notice("Заряд [A] на максимуме!</span>"))
 			recharging = FALSE
 			return TRUE
-		user.visible_message("[user] starts recharging [A] with [src].","<span class='notice'>You start recharging [A] with [src].</span>")
+		user.visible_message("[user] начинает заряжать [A] при помощи [src].", span_notice("Вы начали заряжать [A] при помощи [src]."))
 		while(C.charge < C.maxcharge)
 			if(do_after(user, 10, target = user) && cell.charge)
 				done_any = TRUE
 				induce(C, coefficient)
-				do_sparks(1, FALSE, A)
+				if(opened)
+					do_sparks(1, FALSE, A)
 				if(O)
 					O.update_icon()
 			else
 				break
 		if(done_any) // Only show a message if we succeeded at least once
-			user.visible_message("[user] recharged [A]!","<span class='notice'>You recharged [A]!</span>")
+			user.visible_message("[user] перезарядил [A]!", span_notice("Вы перезарядили [A]!"))
 		recharging = FALSE
 		return TRUE
 	recharging = FALSE
@@ -140,31 +98,68 @@
 	if(user.a_intent == INTENT_HARM)
 		return ..()
 
+/obj/item/inducer/attackby(obj/item/W, mob/user)
+	if(W.tool_behaviour == TOOL_SCREWDRIVER)
+		W.play_tool_sound(src)
+		if(!opened)
+			to_chat(user, span_notice("Вы отвинтили батарейный слот."))
+			opened = TRUE
+			update_icon()
+			return
+		else
+			to_chat(user, span_notice("Вы закрыли батарейный слот."))
+			opened = FALSE
+			update_icon()
+			return
+	if(istype(W, /obj/item/stock_parts/cell))
+		if(opened)
+			if(!cell)
+				if(!user.transferItemToLoc(W, src))
+					return
+				to_chat(user, span_notice("Вы вставили [W] внутрь [src]."))
+				cell = W
+				update_icon()
+				return
+			else
+				to_chat(user, span_notice("[src] уже имеет внутри \a [cell]!"))
+				return
+
 	if(cantbeused(user))
 		return
 
-	if(recharge(M, user))
-		return
 	return ..()
 
+/obj/item/inducer/attack_obj(obj/O, mob/living/carbon/user)
+	if(user.a_intent == INTENT_HARM)
+		return ..()
 
 /obj/item/inducer/attack_self(mob/user)
 	if(opened && cell)
-		user.visible_message("[user] removes [cell] from [src]!","<span class='notice'>You remove [cell].</span>")
+		user.visible_message("[user] извлекает [cell] из [src]!", span_notice("Вы извлекли [cell]."))
 		cell.update_icon()
 		user.put_in_hands(cell)
 		cell = null
 		update_icon()
 
+/obj/item/inducer/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	. = ..()
+	if(user.a_intent == INTENT_HARM)
+		return
+
+	if(cantbeused(user))
+		return
+
+	if(recharge(target, user))
+		return
 
 /obj/item/inducer/examine(mob/living/M)
 	. = ..()
 	if(cell)
-		. += "<span class='notice'>Its display shows: [DisplayEnergy(cell.charge)].</span>"
+		. += span_notice("Дисплей сообщает заряд в [DisplayEnergy(cell.charge)].")
 	else
-		. += "<span class='notice'>Its display is dark.</span>"
+		. += span_notice("Дисплей матово-тёмный.")
 	if(opened)
-		. += "<span class='notice'>Its battery compartment is open.</span>"
+		. += span_notice("Слот батареи открыт.")
 
 /obj/item/inducer/update_overlays()
 	. = ..()
@@ -187,7 +182,7 @@
 	name = "Science inducer"
 	icon_state = "inducer-sci"
 	item_state = "inducer-sci"
-	desc = "A tool for inductively charging internal power cells. This one has a science color scheme, and is less potent than its engineering counterpart."
+	desc = "Инструмент для индуктивного заряжания внешних аккумуляторов. Этот окрашен в цвета научно-исследовательского отдела и, похоже, менее мощный в сравнении с инженерным аналогом."
 	cell_type = null
 	powertransfer = 500
 	opened = TRUE
@@ -202,9 +197,8 @@
 	item_state = "inducer-combat"
 	slot_flags = ITEM_SLOT_BELT
 	w_class = WEIGHT_CLASS_NORMAL
-	desc = "A tool for inductively charging internal power cells. This one has been modified and upgraded, but cost weight to be able to charge into guns as well as normal electronics."
+	desc = "Инструмент для индуктивного заряжания внешних аккумуляторов. Видны модификации и улучшения, которые утяжеляют индусер взамен на возможность зарядки энергооружия."
 	cell_type = /obj/item/stock_parts/cell/hyper
-	powertransfer = 1300
 	opened = FALSE
 	gun_charger = TRUE
 
@@ -228,7 +222,7 @@
 	name = "Syndicate inducer"
 	icon_state = "inducer-syndi"
 	item_state = "inducer-syndi"
-	desc = "A tool for inductively charging internal power cells. This one has a suspicious colour scheme, and seems to be rigged to transfer charge at a much faster rate."
+	desc = "Инструмент для индуктивного заряжания внешних аккумуляторов. У этого.. Какая-то знакомая цветовая схема. С ним явно как-то \"пошаманили\" для максимальной скорости зарядки."
 	powertransfer = 2000
 	cell_type = /obj/item/stock_parts/cell/super
 
