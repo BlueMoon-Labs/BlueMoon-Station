@@ -88,9 +88,8 @@
 	name = "netherworld link"
 	desc = "Прямая связь с другим измерением, полным существ, которые явно не рады тебе. \
 	<span class='boldwarning'>Входить туда - очень плохая идея.</span>\
-	\n<span class='nicegreen'>Но может быть там есть что-то ценное...</span>"
+	\n<span class='nicegreen'><i>Но может быть там есть что-то ценное...</i></span>"
 	icon_state = "nether"
-	max_integrity = 50
 	spawn_time = 1 MINUTES //1 minute
 	max_mobs = 15
 	icon = 'icons/mob/nest.dmi'

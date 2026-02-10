@@ -3,11 +3,23 @@
 	name = "anomaly core"
 	desc = "The neutralized core of an anomaly. It'd probably be valuable for research."
 	icon_state = "anomaly_core"
+	max_integrity = 1000
 	//item_state = "electronic"
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
 	resistance_flags = FIRE_PROOF
 	var/anomaly_type = /obj/effect/anomaly
+
+/obj/item/assembly/signaler/anomaly/examine(mob/user)
+	. = ..()
+	var/healthpercent = (obj_integrity/max_integrity) * 100
+	switch(healthpercent)
+		if(50 to 99)
+			. += span_warning("Выглядит слегка поврежденным.")
+		if(25 to 50)
+			. += span_warning("Выглядит крайне поврежденным.")
+		if(0 to 25)
+			. += span_warning("Вот-вот развалится!")
 
 /obj/item/assembly/signaler/anomaly/receive_signal(datum/signal/signal)
 	if(!signal)
@@ -19,6 +31,11 @@
 	for(var/obj/effect/anomaly/A in get_turf(src))
 		A.anomalyNeutralize()
 	return TRUE
+
+/obj/item/assembly/signaler/anomaly/deconstruct(disassembled)
+	if(!disassembled)
+		new /obj/effect/decal/cleanable/ash(get_turf(src))
+	return ..()
 
 /obj/item/assembly/signaler/anomaly/manual_suicide(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user]'s [src] is reacting to the radio signal, warping [user.ru_ego()] body!</span>")

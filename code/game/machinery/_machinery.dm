@@ -692,11 +692,11 @@ Class Procs:
 		var/healthpercent = (obj_integrity/max_integrity) * 100
 		switch(healthpercent)
 			if(50 to 99)
-				. += "Выглядит слегка поврежденным."
+				. += span_warning("Выглядит слегка поврежденным.")
 			if(25 to 50)
-				. += "Выглядит крайне поврежденным."
+				. += span_warning("Выглядит крайне поврежденным.")
 			if(0 to 25)
-				. += "<span class='warning'>Вот-вот развалится!</span>"
+				. += span_warning("Вот-вот развалится!")
 	if(user.research_scanner && component_parts)
 		. += display_parts(user, TRUE)
 
