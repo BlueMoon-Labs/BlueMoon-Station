@@ -42,8 +42,8 @@
 	circuit = /obj/item/circuitboard/machine/bluespace_miner
 	layer = BELOW_OBJ_LAYER
 	init_process = TRUE
-	idle_power_usage = 5000
-	active_power_usage = 10000
+	idle_power_usage = 100
+	active_power_usage = 5000
 
 	var/obj/item/assembly/signaler/anomaly/bluespace/bs_core
 
