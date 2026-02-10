@@ -363,6 +363,7 @@
 
 	face_atom(A)
 	var/list/result
+	var/examine_more = FALSE
 	if(client)
 		LAZYINITLIST(client.recent_examines)
 		if(isnull(client.recent_examines[A]) || client.recent_examines[A] < world.time)
@@ -372,16 +373,23 @@
 			addtimer(CALLBACK(src, PROC_REF(clear_from_recent_examines), A), EXAMINE_MORE_TIME)
 			handle_eye_contact(A)
 		else
+			examine_more = TRUE
 			result = A.examine_more(src)
 	else
 		result = A.examine(src) // if a tree is examined but no client is there to see it, did the tree ever really exist?
 
-	if(result && result.len) // BLUEMOON EDIT - sanity check
+	if(LAZYLEN(result)) // BLUEMOON EDIT - sanity check
+		if(!islist(result))
+			result = list(result)
+		if(examine_more)
+			result.Insert(1, span_notice("<i>Вы осматриваете - [A] - получше, и замечаете:</i>"))
 		for(var/i = 1, i <= result.len, i++)
 			if(!findtext(result[i], "<hr>"))
 				result[i] += "\n"
+	else if(examine_more)
+		result = list(span_notice("<i>Вы осматриваете - [A] - получше, но более не находите ничего интересного...</i>"))
 	else
-		result = list("You examine \the [A], seems like noone really cares about it.")
+		result = list("Вы осматриваете [A], но видите лишь серую посредственность...")
 
 	to_chat(src, examine_block("<span class='infoplain'>[result.Join()]</span>"))
 	SEND_SIGNAL(src, COMSIG_MOB_EXAMINATE, A)
