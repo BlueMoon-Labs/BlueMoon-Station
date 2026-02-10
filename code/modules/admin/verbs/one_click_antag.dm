@@ -252,88 +252,91 @@
 
 	return FALSE
 
+#define MIN_AGENTS_REQ 3
+#define MAX_AGENTS_REQ 5
+
 /datum/admins/proc/makeNukeTeam()
+	. = FALSE
 	var/datum/game_mode/nuclear/temp = new
-	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for a nuke team being sent in?", ROLE_OPERATIVE, temp)
+	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for a nuke team being sent in?", ROLE_OPERATIVE, temp, minimum_required = MAX_AGENTS_REQ)
 	var/list/mob/chosen = list()
 	var/mob/theghost = null
 
-	if(candidates.len)
-		var/numagents = 5
-		var/agentcount = 0
+	if(!candidates.len)
+		return
+	var/agentcount = 0
 
-		for(var/i = 0, i<numagents,i++)
-			shuffle_inplace(candidates) //More shuffles means more randoms
-			for(var/mob/j in candidates)
-				if(!j || !j.client)
-					candidates.Remove(j)
-					continue
+	for(var/i = 0, i < MAX_AGENTS_REQ, i++)
+		shuffle_inplace(candidates) //More shuffles means more randoms
+		for(var/mob/j in candidates)
+			if(!j || !j.client)
+				candidates.Remove(j)
+				continue
 
-				theghost = j
-				candidates.Remove(theghost)
-				chosen += theghost
-				agentcount++
-				break
-		//Making sure we have atleast 3 Nuke agents, because less than that is kinda bad
-		if(agentcount < 3)
-			return FALSE
+			theghost = j
+			candidates.Remove(theghost)
+			chosen += theghost
+			agentcount++
+			break
+	//Making sure we have atleast 3 Nuke agents, because less than that is kinda bad
+	if(agentcount < MIN_AGENTS_REQ)
+		return
 
-		//Let's find the spawn locations
-		var/leader_chosen = FALSE
-		var/datum/team/nuclear/nuke_team
-		for(var/mob/c in chosen)
-			var/mob/living/carbon/human/new_character=makeBody(c)
-			if(!leader_chosen)
-				leader_chosen = TRUE
-				var/datum/antagonist/nukeop/N = new_character.mind.add_antag_datum(/datum/antagonist/nukeop/leader)
-				nuke_team = N.nuke_team
-			else
-				new_character.mind.add_antag_datum(/datum/antagonist/nukeop,nuke_team)
-		return TRUE
-	else
-		return FALSE
+	//Let's find the spawn locations
+	var/leader_chosen = FALSE
+	var/datum/team/nuclear/nuke_team
+	for(var/mob/c in chosen)
+		var/mob/living/carbon/human/new_character=makeBody(c)
+		if(!leader_chosen)
+			leader_chosen = TRUE
+			var/datum/antagonist/nukeop/N = new_character.mind.add_antag_datum(/datum/antagonist/nukeop/leader)
+			nuke_team = N.nuke_team
+		else
+			new_character.mind.add_antag_datum(/datum/antagonist/nukeop,nuke_team)
+	return TRUE
 
 /datum/admins/proc/makeSyndicateTeam()
+	. = FALSE
 	var/datum/game_mode/nuclear/temp = new
-	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for a nuke team being sent in?", ROLE_OPERATIVE, temp)
+	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for a nuke team being sent in?", ROLE_OPERATIVE, temp, minimum_required = MAX_AGENTS_REQ)
 	var/list/mob/chosen = list()
 	var/mob/theghost = null
 
-	if(candidates.len)
-		var/numagents = 5
-		var/agentcount = 0
+	if(!candidates.len)
+		return
+	var/agentcount = 0
 
-		for(var/i = 0, i<numagents,i++)
-			shuffle_inplace(candidates) //More shuffles means more randoms
-			for(var/mob/j in candidates)
-				if(!j || !j.client)
-					candidates.Remove(j)
-					continue
+	for(var/i = 0, i < MAX_AGENTS_REQ,i++)
+		shuffle_inplace(candidates) //More shuffles means more randoms
+		for(var/mob/j in candidates)
+			if(!j || !j.client)
+				candidates.Remove(j)
+				continue
 
-				theghost = j
-				candidates.Remove(theghost)
-				chosen += theghost
-				agentcount++
-				break
-		//Making sure we have atleast 3 Nuke agents, because less than that is kinda bad
-		if(agentcount < 3)
-			return 0
+			theghost = j
+			candidates.Remove(theghost)
+			chosen += theghost
+			agentcount++
+			break
+	//Making sure we have atleast 3 Nuke agents, because less than that is kinda bad
+	if(agentcount < MIN_AGENTS_REQ)
+		return
 
-		//Let's find the spawn locations
-		var/leader_chosen = FALSE
-		var/datum/team/nuclear/nuke_team
-		for(var/mob/c in chosen)
-			var/mob/living/carbon/human/new_character=makeBody(c)
-			if(!leader_chosen)
-				leader_chosen = TRUE
-				var/datum/antagonist/syndicate_op/N = new_character.mind.add_antag_datum(/datum/antagonist/syndicate_op/leader)
-				nuke_team = N.nuke_team
-			else
-				new_character.mind.add_antag_datum(/datum/antagonist/syndicate_op,nuke_team)
-		return 1
-	else
-		return 0
+	//Let's find the spawn locations
+	var/leader_chosen = FALSE
+	var/datum/team/nuclear/nuke_team
+	for(var/mob/c in chosen)
+		var/mob/living/carbon/human/new_character=makeBody(c)
+		if(!leader_chosen)
+			leader_chosen = TRUE
+			var/datum/antagonist/syndicate_op/N = new_character.mind.add_antag_datum(/datum/antagonist/syndicate_op/leader)
+			nuke_team = N.nuke_team
+		else
+			new_character.mind.add_antag_datum(/datum/antagonist/syndicate_op,nuke_team)
+	return TRUE
 
+#undef MIN_AGENTS_REQ
+#undef MAX_AGENTS_REQ
 
 //Abductors
 ///datum/admins/proc/makeAbductorTeam()
@@ -470,7 +473,7 @@
 		if(ertemplate.notify_players)
 			priority_announce("Внимание, [station_name()]. Мы формируем [ertemplate.polldesc] для отправки на станцию. Ожидайте.", "Инициализирован протокол ОБР", 'modular_bluemoon/sound/ert/ert_send.ogg') //BlueMoon sound
 
-		var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null)
+		var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null, minimum_required = ertemplate.teamsize)
 		var/teamSpawned = FALSE
 		if(candidates.len > 0)
 			//Pick the (un)lucky players

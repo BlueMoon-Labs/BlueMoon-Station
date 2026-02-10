@@ -391,7 +391,7 @@ GLOBAL_VAR(families_override_theme)
 				announcer = "Spinward Stellar Coalition National Guard"
 
 	priority_announce(announcement_message, announcer, 'sound/effects/families_police.ogg')
-	var/list/candidates = pollGhostCandidates("Do you want to help clean up crime on this station?", "deathsquad")
+	var/list/candidates = pollGhostCandidates("Do you want to help clean up crime on this station?", "deathsquad", minimum_required = team_size)
 
 
 	if(candidates.len)
