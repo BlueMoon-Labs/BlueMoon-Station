@@ -204,6 +204,8 @@
 		bs_core.take_damage(CORE_DAMAGE_PER_SECOND*delta_time, sound_effect = FALSE)
 
 	instability_check(delta_time)
+	if(DT_PROB(0.1, delta_time))
+		playsound(src, pick(GLOB.otherworld_sounds), 100, TRUE)
 
 	if(length(SSmachines.bluespaceminer_by_zlevel[src.z]) >= 5 && prob(0.0005))
 		var/datum/round_event_control/anomaly/anomaly_bluespace/bluespace_anomaly = new/datum/round_event_control/anomaly/anomaly_bluespace
