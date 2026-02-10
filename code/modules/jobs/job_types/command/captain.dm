@@ -26,12 +26,10 @@
 	paycheck = PAYCHECK_COMMAND
 	paycheck_department = ACCOUNT_SEC
 
-	mind_traits = list(TRAIT_CAPTAIN_METABOLISM, TRAIT_DISK_VERIFIER)
-
 	display_order = JOB_DISPLAY_ORDER_CAPTAIN
 	departments = DEPARTMENT_BITFLAG_COMMAND
 
-	mind_traits = list(TRAIT_FENCER)
+	mind_traits = list(TRAIT_FENCER, TRAIT_CAPTAIN_METABOLISM, TRAIT_DISK_VERIFIER)
 
 	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity, /datum/quirk/blindness, /datum/quirk/illiterate, /datum/quirk/onelife)
 	threat = 5

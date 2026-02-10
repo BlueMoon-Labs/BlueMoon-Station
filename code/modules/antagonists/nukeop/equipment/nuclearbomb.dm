@@ -700,7 +700,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 /obj/item/disk/nuclear/examine_more(mob/user)
 	. = ..()
-	if(HAS_TRAIT(user, TRAIT_DISK_VERIFIER))
+	if(HAS_TRAIT(user?.mind, TRAIT_DISK_VERIFIER))
 		. += span_notice("The serial numbers on [src] are [fake ? "in" : ""]correct.")
 	else
 		. += span_notice("It has a serial number on it, but it doesn't mean anything to you.")
@@ -761,3 +761,4 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 /obj/item/disk/nuclear/fake/obvious/mail
 	name = "nuclearning auth disk"
+	desc = "Better keep this safe."
