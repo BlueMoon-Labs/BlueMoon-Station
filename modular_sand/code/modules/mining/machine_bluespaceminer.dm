@@ -74,7 +74,7 @@
 	var/no_core_damage = FALSE
 
 	// Нет необходимости пересчитывать урон ядру постоянно, конфиг не меняется обычно. Так, что делаем КД и выносим в прок
-	var/static/core_damage_per_tick = 1
+	var/static/core_damage_per_tick
 	COOLDOWN_DECLARE_STATIC(core_damage_updt_cooldown)
 	var/const/core_damage_updt_cooldown_time = 1 MINUTES
 
