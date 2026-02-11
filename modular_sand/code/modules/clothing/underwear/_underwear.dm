@@ -15,7 +15,7 @@
 	var/under_type = /obj/item/clothing/underwear //i don't know what i'm gonna use this for
 	var/fitted = FEMALE_UNIFORM_TOP
 
-/obj/item/genital_equipment/condom/ComponentInitialize()
+/obj/item/genital_equipment/condom/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/trash)
 
