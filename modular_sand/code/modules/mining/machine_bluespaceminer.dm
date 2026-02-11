@@ -24,8 +24,8 @@
 #define CORE_INSERT_REG_SIGNAL RegisterSignal(bs_core, COMSIG_PARENT_QDELETING, PROC_REF(on_core_remove))
 
 // Веса различных типов ивентов при нестабильности
-#define INSTABILITY_EVENT_ANOMALY_WEIGHT 20
-#define INSTABILITY_EVENT_PORTAL_WEIGHT 5
+#define INSTABILITY_EVENT_ANOMALY_WEIGHT 100
+#define INSTABILITY_EVENT_PORTAL_WEIGHT 20
 #define INSTABILITY_EVENT_TEAR_WEIGHT 1
 
 // Названия для instability_settings
