@@ -1,7 +1,8 @@
 // Configuration defines
 #define BLUESPACE_MINER_BONUS_MULT		CONFIG_GET(number/bluespaceminer_mult_output)
 #define BLUESPACE_MINER_CRYSTAL_TIER	CONFIG_GET(number/bluespaceminer_crystal_tier)
-#define TIME_TO_CORE_DESTROY 			(CONFIG_GET(number/bluespaceminer_core_work_time_minutes) MINUTES)
+#define TIME_TO_CORE_DESTROY_MINUTES	CONFIG_GET(number/bluespaceminer_core_work_time_minutes)
+#define TIME_TO_CORE_DESTROY 			(TIME_TO_CORE_DESTROY_MINUTES MINUTES)
 // Вносит частичку хаоса
 #define CORE_CHANSE_NO_DAMAGE			CONFIG_GET(number/bluespaceminer_core_work_chanse_no_damage)
 #define INSTABILITY_COOLDOWN_TIME		CONFIG_GET(number/bluespaceminer_instability_cooldown)
@@ -20,18 +21,34 @@
 // Какой шанс (в секунду) вызвать аномалию, если порог в INSTABILITY_ON_ZLEVEL_TO_EVENT превышен, за 1 процент
 #define INSTABILITY_CHANSE_FOR_PERCENT 0.1
 
+// Шанс (в секунду) на playsound при работе
+#define BLUESPACE_MINER_SOUND_CHANCE 1
+
 // Сигнал при установке ядра
 #define CORE_INSERT_REG_SIGNAL RegisterSignal(bs_core, COMSIG_PARENT_QDELETING, PROC_REF(on_core_remove))
 
 // Веса различных типов ивентов при нестабильности
-#define INSTABILITY_EVENT_ANOMALY_WEIGHT 100
+#define INSTABILITY_EVENT_ANOMALY_WEIGHT 50
 #define INSTABILITY_EVENT_PORTAL_WEIGHT 20
 #define INSTABILITY_EVENT_TEAR_WEIGHT 1
 
 // Названия для instability_settings
+/// Процент распада ядра, для уровня нестабильности
 #define INSTABILITY_SETTINGS_PERCENT "percent"
+/// Сколько процентов к нестабильности дает уровень
 #define INSTABILITY_SETTINGS_VALUE "instability"
-#define INSTABILITY_LIST_ADD(percent, instability) list(INSTABILITY_SETTINGS_PERCENT = percent, INSTABILITY_SETTINGS_VALUE = instability)
+/// Суффикс для оверлея ядра. Если нужен стандартный вписать ""
+#define INSTABILITY_SETTINGS_CORE_ICON_STATE "add_core_state"
+/// Каким цветом будет текст экзамайна, при достижении уровня
+#define INSTABILITY_SETTINGS_EXAMINE_COLOR "examine_color"
+#define INSTABILITY_LIST_ADD(percent, instability, core_state, examine_color) list(\
+		INSTABILITY_SETTINGS_PERCENT = percent,\
+		INSTABILITY_SETTINGS_VALUE = instability,\
+		INSTABILITY_SETTINGS_CORE_ICON_STATE = core_state,\
+		INSTABILITY_SETTINGS_EXAMINE_COLOR = examine_color,\
+	)
+
+#define MINER_UPDATE_ICON update_icon(UPDATE_ICON_STATE | UPDATE_OVERLAYS)
 
 /obj/machinery/mineral/bluespace_miner
 	name = "bluespace mining machine"
@@ -81,9 +98,9 @@
 	COOLDOWN_DECLARE_STATIC(instability_cooldown)
 	// ВАЖНО, что бы уровни нестабильности шли по убыванию percent: 90, 80, 70 и т.д.
 	var/static/list/instability_settings = list(
-		INSTABILITY_LIST_ADD(60, 10),
-		INSTABILITY_LIST_ADD(30, 20),
-		INSTABILITY_LIST_ADD(5, 50),
+		INSTABILITY_LIST_ADD(60, 10, "inst1", "#c5641e"),
+		INSTABILITY_LIST_ADD(30, 20, "inst2", "#c51e1e"),
+		INSTABILITY_LIST_ADD(5, 50, "inst3", "#c51e1e"),
 	)
 
 #undef INSTABILITY_LIST_ADD
@@ -97,7 +114,6 @@
 
 	// Set initial multiplier based on config
 	multiplier *= BLUESPACE_MINER_BONUS_MULT
-	round_down()
 
 /obj/machinery/mineral/bluespace_miner/examine(mob/user)
 	. = ..()
@@ -105,16 +121,16 @@
 
 		var/list/display_list = list("Статус дисплей показывает:")
 		display_list += "Эффективность: <b>[PERCENT(multiplier)]%</b>. \
-		Добыча Bluespace кристаллов: [span_bold("[multiplier >= BLUESPACE_MINER_CRYSTAL_TIER ? span_green("Активна") : span_danger("Неактивна")]")]"
+		Добыча Bluespace кристаллов: <b>[multiplier >= BLUESPACE_MINER_CRYSTAL_TIER ? span_green("Активна") : span_danger("Неактивна")]</b>"
 		if(no_core_damage)
 			display_list += "Установлен [span_bold(span_green("стабилизатор"))], ядро [span_bold(span_green("не будет"))] повреждаться при работе."
+		else
+			display_list += "Ожидаемое время работы целого ядра <b>~[TIME_TO_CORE_DESTROY_MINUTES]</b> минут."
 		if(bs_core)
-			var/core_integrity = CORE_INTEGRITY_PERCENT
-			var/percent_core_integrity_text = span_bold("[core_integrity]%")
-			if(core_integrity <= 30)
-				percent_core_integrity_text = span_danger(percent_core_integrity_text)
-			else if(core_integrity <= 60)
-				percent_core_integrity_text = "<span style='color:#c5641e'>[percent_core_integrity_text]</span>"
+			var/list/inst_pattern = LAZYACCESS(instability_settings, get_instability_level())
+			var/percent_core_integrity_text = span_bold("[CORE_INTEGRITY_PERCENT]%")
+			if(inst_pattern)
+				percent_core_integrity_text = "<span style='color:[inst_pattern[INSTABILITY_SETTINGS_EXAMINE_COLOR]]'>[percent_core_integrity_text]</span>"
 			else
 				percent_core_integrity_text = span_green(percent_core_integrity_text)
 
@@ -129,9 +145,12 @@
 		display_list += "Нестабильность пространства в регионе: [span_bold(instability_onzlevel_text)]"
 		if(!sector_stable)
 			display_list += span_boldwarning("ВНИМАНИЕ! Слишком высокая нестабильность, возможны аномалии!")
+		else
+			display_list += "В секторе начнуться аномалии при нестабильности <b>[INSTABILITY_ON_ZLEVEL_TO_EVENT]%</b>"
+
 		. += span_notice(jointext(display_list, "\n-"))
 	else
-		. += span_notice("На машине есть небольшой экранчик, но вам нужно подойти ближе, чтобы разглядеть его.")
+		. += span_notice("На машине есть небольшой дисплей, но вам нужно подойти ближе, чтобы разглядеть его.")
 	if(!bs_core)
 		. += span_warning("Bluespace ядро не установлено, без него машина не будет работать.")
 	if(!anchored)
@@ -184,13 +203,44 @@
 		return FALSE
 
 /obj/machinery/mineral/bluespace_miner/update_icon_state()
-	icon_state = initial(icon_state)
-	if(!is_operational())
-		if(!bs_core)
-			icon_state += "-nocore"
-		icon_state += "-unpowered"
+	icon_state = initial(icon_state) + (is_operational() ? "-work" : "")
+	return ..()
+
+/obj/machinery/mineral/bluespace_miner/update_overlays()
+	. = ..()
+	var/static/list/instability_overlay_colors = list(
+		"#49C25B",
+		"#81B73E",
+		"#E4C23B",
+		"#F4A029",
+		"#CD1616"
+	)
+
+	var/suffix = is_operational() ? "-work" : ""
+
+	var/inst = clamp(get_instability_onzlevel(), 0, INSTABILITY_ON_ZLEVEL_TO_EVENT)
+
+	if(inst)
+		var/idx = min(5, floor(inst / (INSTABILITY_ON_ZLEVEL_TO_EVENT / 4)) + 1) // От 1 до 5. 5 только, когда inst == INSTABILITY_ON_ZLEVEL_TO_EVENT
+		// Не хочу копировать 5 оверлеев на 5 уровней. Если кто будет делать спрайт с большими отличиями, перепишите
+		for(var/i=1, i<=idx, i++)
+			var/mutable_appearance/MA = mutable_appearance(icon, "overlay-instability[suffix]", color = instability_overlay_colors[idx])
+			MA.pixel_y += 2*(i-1)
+			. += MA
+
+	if(!(panel_open || bs_core))
+		return
+
+	if(bs_core)
+		var/add_core_state = ""
+		var/list/inst_pattern = LAZYACCESS(instability_settings, get_instability_level())
+		if(inst_pattern)
+			add_core_state = inst_pattern[INSTABILITY_SETTINGS_CORE_ICON_STATE]
+			add_core_state = add_core_state ? "-[add_core_state]" : ""
+		. += mutable_appearance(icon, "overlay-core[add_core_state][suffix]")
+
 	if(panel_open)
-		icon_state += "-maintenance"
+		. += mutable_appearance(icon, "overlay-maintenance[suffix]")
 
 /obj/machinery/mineral/bluespace_miner/attackby(obj/item/I, mob/living/user, params)
 	if(bs_core || !istype(I, ANOMALY_CORE_BLUESPACE))
@@ -206,7 +256,7 @@
 		CORE_INSERT_REG_SIGNAL
 
 /obj/machinery/mineral/bluespace_miner/process(delta_time)
-	update_icon(UPDATE_ICON_STATE)
+	MINER_UPDATE_ICON
 	core_damage_updt(delta_time)
 	var/operational = is_operational()
 	zlevel_reg(!operational)
@@ -218,7 +268,7 @@
 
 	if(instability_check(delta_time) && QDELETED(src))
 		return PROCESS_KILL
-	if(DT_PROB(0.4, delta_time))
+	if(DT_PROB(BLUESPACE_MINER_SOUND_CHANCE, delta_time))
 		playsound(src, pick(GLOB.otherworld_sounds), 100, TRUE)
 
 	if(length(SSmachines.bluespaceminer_by_zlevel[src.z]) >= 5 && prob(0.0005))
@@ -373,11 +423,11 @@
 		return
 	. = TRUE
 
-	if(!anchored)
+	if(!anchored && panel_open)
 		balloon_alert(user, span_balloon_warning("Прикрути!"))
 		return
 	if(default_deconstruction_screwdriver(user, I = I))
-		update_icon(UPDATE_ICON_STATE)
+		MINER_UPDATE_ICON
 		return
 
 /obj/machinery/mineral/bluespace_miner/can_be_unfasten_wrench(mob/user, silent = FALSE)
@@ -440,3 +490,5 @@
 #undef INSTABILITY_EVENT_TEAR_WEIGHT
 #undef INSTABILITY_SETTINGS_PERCENT
 #undef INSTABILITY_SETTINGS_VALUE
+#undef INSTABILITY_SETTINGS_EXAMINE_COLOR
+#undef MINER_UPDATE_ICON

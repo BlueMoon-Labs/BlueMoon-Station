@@ -41,7 +41,6 @@
 		/obj/item/stock_parts/manipulator = 5,
 		/obj/item/stock_parts/scanning_module = 5,
 		/obj/item/stack/ore/bluespace_crystal = 5)
-	needs_anchored = FALSE
 
 /obj/item/circuitboard/machine/telecomms/message_server
 	name = "Message Server (Machine Board)"
