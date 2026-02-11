@@ -110,13 +110,13 @@
 			display_list += "Установлен [span_bold(span_green("стабилизатор"))], ядро [span_bold(span_green("не будет"))] повреждаться при работе."
 		if(bs_core)
 			var/core_integrity = CORE_INTEGRITY_PERCENT
-			var/percent_core_integrity_text = "[core_integrity]%"
+			var/percent_core_integrity_text = span_bold("[core_integrity]%")
 			if(core_integrity <= 30)
-				percent_core_integrity_text = span_bold(span_danger(percent_core_integrity_text))
+				percent_core_integrity_text = span_danger(percent_core_integrity_text)
 			else if(core_integrity <= 60)
-				percent_core_integrity_text = "<span style='color:#c51e1e'><b>[core_integrity]</b></span>"
+				percent_core_integrity_text = "<span style='color:#c5641e'>[percent_core_integrity_text]</span>"
 			else
-				percent_core_integrity_text = span_bold(span_green(percent_core_integrity_text))
+				percent_core_integrity_text = span_green(percent_core_integrity_text)
 
 			display_list += "Состояние Bluespace ядра: [percent_core_integrity_text]"
 
