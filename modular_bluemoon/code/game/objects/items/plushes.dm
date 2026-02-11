@@ -695,3 +695,9 @@
 	desc = "У неё осуждающий взгляд, как будто она в курсе всего, что вы когда-либо делали не так."
 	icon_state = "koteykomya"
 	squeak_override = list('modular_bluemoon/sound/plush/Koteyko_bad_smell.ogg' = 1, 'modular_bluemoon/sound/plush/Koteyko_rotting.ogg' = 1, 'modular_bluemoon/sound/plush/Koteyko_dicks_and_butts.ogg' = 1)
+
+/obj/item/toy/plush/bm/leia
+	name = "Mini Leia"
+	desc = "Плюшевая игрушка изготовленная из дешевых но приятных на ощюпь материалов. Сшита на темных мануфактурах ручками бедных кеткринских детей."
+	icon_state = "leia"
+	squeak_override = list('modular_bluemoon/sound/plush/leia_giggle.ogg' = 1, 'modular_bluemoon/sound/plush/leia_nyah.ogg' = 1, 'modular_bluemoon/sound/plush/leia_plan.ogg' = 1)

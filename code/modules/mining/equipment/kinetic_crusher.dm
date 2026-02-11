@@ -280,7 +280,8 @@
 	. += "According to a very small display, the currently loaded style is \"[active_style.name]\"."
 
 /obj/item/kinetic_crusher/glaive/gauntlets/examine_more(mob/user)
-	return active_style.examine_more_info()
+	. = ..()
+	. += active_style.examine_more_info()
 
 /obj/item/kinetic_crusher/glaive/gauntlets/proc/style_change(datum/gauntlet_style/new_style)
 	new_style.on_apply(src)

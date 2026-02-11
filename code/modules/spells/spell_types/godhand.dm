@@ -36,6 +36,21 @@
 	attached_spell?.on_hand_destroy(src)
 	qdel(src)
 
+/obj/item/melee/touch_attack/proc/hand_spell_check(mob/living/target, mob/living/carbon/user, proximity, speak_check = TRUE, cuffed_check = TRUE, allow_self_touch = FALSE, silence = FALSE)
+	. = FALSE
+	if(!proximity || (!allow_self_touch && target == user) || !istype(target) || !istype(user))
+		return
+	if(cuffed_check && (user.lying || user.handcuffed))
+		if(!silence)
+			to_chat(user, span_warning("You can't reach out!"))
+		return
+	if(speak_check && !user.can_speak_vocal())
+		if(!silence)
+			to_chat(user, span_warning("You can't get the words out!"))
+		return
+
+	return TRUE
+
 /obj/item/melee/touch_attack/Destroy()
 	attached_spell?.cancel_cast()
 	return ..()
@@ -49,10 +64,7 @@
 	item_state = "disintegrate"
 
 /obj/item/melee/touch_attack/disintegrate/afterattack(atom/target, mob/living/carbon/user, proximity)
-	if(!proximity || target == user || !ismob(target) || !iscarbon(user) || user.lying || user.handcuffed) //exploding after touching yourself would be bad
-		return
-	if(!user.can_speak_vocal())
-		to_chat(user, "<span class='notice'>You can't get the words out!</span>")
+	if(!hand_spell_check(target, user, proximity))
 		return
 	var/mob/M = target
 	do_sparks(4, FALSE, M.loc)
@@ -72,6 +84,71 @@
 	M.gib()
 	return ..()
 
+/obj/item/melee/touch_attack/alive_bones
+	name = "\improper alive bones touch"
+	desc = "This hand of mine glows with an awesome power!"
+	catchphrase = "EI NECR!!"
+	on_use_sound = 'sound/magic/Mutate.ogg'
+	icon_state = "necrohand"
+	item_state = "necrohand"
+
+/obj/item/melee/touch_attack/alive_bones/afterattack(atom/target, mob/living/carbon/user, proximity)
+	if(!ishuman(target) || !hand_spell_check(target, user, proximity))
+		return
+	var/mob/living/carbon/human/H = target
+	var/static/list/bodyparts_check = list(BODY_ZONE_L_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_ARM, BODY_ZONE_R_LEG)
+	var/bodyparts_count = 0
+	for(var/zone in bodyparts_check)
+		if(!H.get_bodypart(zone))
+			continue
+		bodyparts_count++
+	if(bodyparts_count <= 1)
+		to_chat(user, span_warning("У [H] недостаточно конечностей, чтобы создать скелета!"))
+		return
+
+	do_sparks(4, FALSE, H.loc)
+	for(var/mob/living/L in view(src, 7))
+		if(L != user)
+			L.flash_act(affect_silicon = FALSE)
+	if(H.anti_magic_check())
+		to_chat(user, span_warning("The spell can't seem to affect [H]!"))
+		to_chat(H, span_warning("You feel like your skelet PAINFULL wants to break free, but it calms down."))
+		H.pain_emote()
+		return ..()
+	to_chat(H, span_userdanger("МОЙ СКЕЛЕТ, ААААААААА!!!"))
+
+	var/is_robot = HAS_TRAIT(H, TRAIT_ROBOTIC_ORGANISM)
+	var/turf/T = get_turf(H)
+	// Отрываем конечности
+	H.spread_bodyparts(keep_head = TRUE)
+	new /obj/effect/gibspawner/human/bodypartless(T, H)
+
+	// Переломы
+	H.adjustBruteLoss(40)
+	var/obj/item/bodypart/BP = H.get_bodypart(BODY_ZONE_HEAD)
+	if(BP)
+		var/datum/wound/blunt/critical/trauma = new
+		trauma.apply_wound(BP)
+
+	BP = H.get_bodypart(BODY_ZONE_CHEST)
+	if(BP)
+		var/datum/wound/blunt/critical/trauma = new
+		trauma.apply_wound(BP)
+
+	// Больно, ТОЛЬКО если НЕ робот (обезбол намеренно не учитываем)
+	if(!is_robot)
+		H.pain_emote(PAIN_FULL, realagony = TRUE)
+
+	// Создаем скелета
+	var/mob/living/simple_animal/hostile/skeleton/alive_bones/skelet = new(T)
+	skelet.name += " of [H.real_name]"
+	skelet.set_mage_servant(user)
+	if(is_robot)
+		skelet.add_atom_colour("#404040", FIXED_COLOUR_PRIORITY)
+		skelet.name = "metal " + skelet.name
+
+	return ..()
+
 /obj/item/melee/touch_attack/fleshtostone
 	name = "\improper petrifying touch"
 	desc = "That's the bottom line, because flesh to stone said so!"
@@ -81,24 +158,48 @@
 	item_state = "fleshtostone"
 
 /obj/item/melee/touch_attack/fleshtostone/afterattack(atom/target, mob/living/carbon/user, proximity)
-	if(!proximity || target == user || !isliving(target) || !iscarbon(user) || user.lying || user.handcuffed) //getting hard after touching yourself would also be bad
-		return
-	if(user.lying || user.handcuffed)
-		to_chat(user, "<span class='warning'>You can't reach out!</span>")
-		return
-	if(!user.can_speak_vocal())
-		to_chat(user, "<span class='notice'>You can't get the words out!</span>")
+	if(!hand_spell_check(target, user, proximity))
 		return
 	var/mob/living/M = target
 	if(M.anti_magic_check())
 		to_chat(user, "<span class='warning'>The spell can't seem to affect [M]!</span>")
 		to_chat(M, "<span class='warning'>You feel your flesh turn to stone for a moment, then revert back!</span>")
-		..()
-		return
+		return ..()
 	M.Stun(40)
 	M.petrify()
 	return ..()
 
+/obj/item/melee/touch_attack/nuclearfist
+	name = "\improper PURE MANLINESS"
+	desc = "SHOW THEM RAW POWER"
+	catchphrase = "I CAST FIST!"
+	on_use_sound = 'sound/weapons/nuclear_fist.ogg'
+	icon_state = "disintegrate"
+	item_state = "disintegrate"
+
+/obj/item/melee/touch_attack/nuclearfist/afterattack(atom/movable/target, mob/living/carbon/user, proximity)
+	if(!hand_spell_check(target, user, proximity))
+		return
+	var/mob/M = target
+	var/atom/A = M.anti_magic_check()
+	if(A)
+		if(isitem(A))
+			target.visible_message("<span class='warning'>[target]'s [A] glows brightly as it wards off the spell!</span>")
+		user.visible_message("<span class='warning'>The feedback blows [user]'s arm off!</span>","<span class='userdanger'>The spell bounces from [M]'s skin back into your arm!</span>")
+		user.flash_act()
+		var/obj/item/bodypart/part = user.get_holding_bodypart_of_item(src)
+		if(part)
+			part.dismember()
+		return ..()
+	var/angle = dir2angle(get_dir(src, get_step_away(target, src)))
+	var/obj/item/projectile/magic/nuclear/P = new(get_turf(src))
+	P.victim = target
+	target.forceMove(P)
+	P.setAngle(angle)
+	P.original = user
+	P.firer = user
+	P.fire()
+	return ..()
 
 /obj/item/melee/touch_attack/megahonk
 	name = "\improper honkmother's blessing"
@@ -180,38 +281,3 @@
 		charges--
 
 	charges_check()
-
-/obj/item/melee/touch_attack/nuclearfist
-	name = "\improper PURE MANLINESS"
-	desc = "SHOW THEM RAW POWER"
-	catchphrase = "I CAST FIST!"
-	on_use_sound = 'sound/weapons/nuclear_fist.ogg'
-	icon_state = "disintegrate"
-	item_state = "disintegrate"
-
-/obj/item/melee/touch_attack/nuclearfist/afterattack(atom/movable/target, mob/living/carbon/user, proximity)
-	if(!proximity || target == user || !ismob(target) || !iscarbon(user) || user.lying || user.handcuffed) //exploding after touching yourself would be bad
-		return
-	if(!user.can_speak_vocal())
-		to_chat(user, "<span class='notice'>You can't get the words out!</span>")
-		return
-	var/mob/M = target
-	var/atom/A = M.anti_magic_check()
-	if(A)
-		if(isitem(A))
-			target.visible_message("<span class='warning'>[target]'s [A] glows brightly as it wards off the spell!</span>")
-		user.visible_message("<span class='warning'>The feedback blows [user]'s arm off!</span>","<span class='userdanger'>The spell bounces from [M]'s skin back into your arm!</span>")
-		user.flash_act()
-		var/obj/item/bodypart/part = user.get_holding_bodypart_of_item(src)
-		if(part)
-			part.dismember()
-		return ..()
-	var/angle = dir2angle(get_dir(src, get_step_away(target, src)))
-	var/obj/item/projectile/magic/nuclear/P = new(get_turf(src))
-	P.victim = target
-	target.forceMove(P)
-	P.setAngle(angle)
-	P.original = user
-	P.firer = user
-	P.fire()
-	return ..()

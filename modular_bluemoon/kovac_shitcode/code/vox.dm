@@ -75,11 +75,11 @@
 /datum/species/mammal/vox
 	name = "Vox"
 	id = SPECIES_VOX
-	inherent_biotypes = MOB_ORGANIC|MOB_HUMANOID|MOB_REPTILE
+	inherent_biotypes = MOB_ROBOTIC|MOB_ORGANIC|MOB_HUMANOID|MOB_REPTILE // Их биология гибридна
 	say_mod = "says"
 	eye_type = "vox"
 	mutant_bodyparts = list("mcolor" = "F8F8F8", "mcolor2" = "F8F8F8", "mcolor3" = "F8F8F8", "mam_snouts" = "Vox",  "mam_tail" = "Vox", "deco_wings" = "None",
-						"horns" = "None", "legs" = "Digitigrade", "meat_type" = "Mammalian")
+						"horns" = "None", "legs" = "Digitigrade", "meat_type" = "Mammalian", "mam_body_markings" = list())
 	allowed_limb_ids = null
 
 	limbs_id = SPECIES_VOX
@@ -101,9 +101,10 @@
 	mutant_brain = /obj/item/organ/brain/vox
 	mutantliver = /obj/item/organ/liver/vox
 	mutantstomach = /obj/item/organ/stomach/vox
+	mutantappendix = null // аппендикс? убран!
 
 	disliked_food = null
-	liked_food = GROSS | MEAT
+	liked_food = GROSS | TOXIC | MEAT | RAW // Пофиг чё жрать, хоть от мусора кайфуйте
 
 	icon_eyes = 'modular_splurt/icons/mob/clothing/species/vox/eyes.dmi'
 	icon_head = 'icons/mob/clothing/head_vox.dmi'
@@ -127,7 +128,7 @@
 	no_equip = list(ITEM_SLOT_GLOVES) // Запрещаем носить перчатки - ручища не позволяют
 	species_language_holder = /datum/language_holder/vox // Воксы изначально знают свой язык
 
-	species_traits = list(NOGENITALS,HAS_BONE,HAS_FLESH,EYECOLOR,LIPS,HAIR) // Фактически воксы бесполые
+	species_traits = list(HAS_BONE,HAS_FLESH,EYECOLOR,LIPS,HAIR,NOAROUSAL)
 	inherent_traits = list(TRAIT_RESISTCOLD,TRAIT_STABLEHEART,TRAIT_STABLELIVER,TRAIT_EASYDISMEMBER,TRAIT_SILENT_STEP,TRAIT_DNC_ORDER) //Сердце и печень не гниют, устойчивость к холоду, тихий шаг. Вдобавок к минусам выше - конечности проще отрываются
 ///25.08.2023 - убрана защита от космоса, но не баланса ради - воксов тупо невозможно содержать в местах навроде пермабрига. В компенсанцию снижены множителя урона по воксам.
 

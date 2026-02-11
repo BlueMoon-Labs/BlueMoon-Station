@@ -271,10 +271,6 @@
 	if(!broken && !burnt)
 		if(smooth)
 			queue_smooth(src)
-	else
-		make_plating()
-		if(smooth)
-			queue_smooth_neighbors(src)
 
 /turf/open/floor/carpet/black
 	icon = 'icons/turf/floors/carpet_black.dmi'
@@ -396,12 +392,10 @@
 			A.narsie_act()
 
 /turf/open/floor/carpet/break_tile()
-	broken = TRUE
-	update_icon()
+	make_plating()
 
 /turf/open/floor/carpet/burn_tile()
-	burnt = TRUE
-	update_icon()
+	make_plating()
 
 /turf/open/floor/carpet/get_smooth_underlay_icon(mutable_appearance/underlay_appearance, turf/asking_turf, adjacency_dir)
 	return FALSE

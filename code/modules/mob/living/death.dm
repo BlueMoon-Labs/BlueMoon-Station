@@ -9,7 +9,7 @@
 	spill_organs(no_brain, no_organs, no_bodyparts, was_explosion)
 
 	if(!no_bodyparts)
-		spread_bodyparts(no_brain, no_organs, was_explosion)
+		spread_bodyparts(was_explosion = was_explosion)
 
 	for(var/X in implants)
 		var/obj/item/implant/I = X
@@ -31,7 +31,7 @@
 /mob/living/proc/spill_organs()
 	return
 
-/mob/living/proc/spread_bodyparts(no_brain, no_organs, datum/explosion/was_explosion)
+/mob/living/proc/spread_bodyparts(keep_head = FALSE, datum/explosion/was_explosion)
 	return
 
 /mob/living/dust(just_ash, drop_items, force)

@@ -497,6 +497,8 @@
 //attack with an item - open/close cover, insert cell, or (un)lock interface
 
 /obj/machinery/power/apc/crowbar_act(mob/user, obj/item/W)
+	if(user.a_intent == INTENT_HARM)
+		return
 	. = TRUE
 	if (opened)
 		if (has_electronics == APC_ELECTRONICS_INSTALLED)

@@ -369,51 +369,60 @@
 		generate_states()
 	icon_state = pick(states)
 
+#define WEIGHT_COMMON 10
+#define WEIGHT_UNCOMMON 5
+#define WEIGHT_SECRET 1
+
 /obj/item/kirbyplants/Initialize(mapload)
 	. = ..()
 	if(!mapload)
 		return
 	var/static/list/random_stuff = list(
-		/obj/item/reagent_containers/syringe/heroin = 5,
-		/obj/item/toy/plush/teddybear = 5,
-		/obj/item/reagent_containers/pill/labebium = 1,
-		/obj/item/reagent_containers/food/snacks/grown/mushroom/schizoshroom = 5,
-		/obj/item/toy/plush/bm/millie = 5,
-		/obj/item/genital_equipment/condom = 10,
-		/obj/item/assembly/mousetrap/armed = 5,
-		/obj/item/reagent_containers/food/snacks/special_candy = 5,
-		/obj/item/buttplug/small = 5,
-		/obj/item/reagent_containers/food/snacks/donut/semen = 10,
-		/obj/item/reagent_containers/glass/bottle/semen = 1,
-		/obj/item/restraints/handcuffs/fake/kinky = 10,
-		/obj/item/reagent_containers/pill/pendosovka = 5,
-		/obj/item/reagent_containers/pill/zvezdochka = 5,
-		/obj/item/reagent_containers/food/snacks/cube/tentacles = 5,
-		/obj/item/clothing/underwear/briefs/tentacle/female = 1,
-		/obj/item/seeds/cannabis = 5,
-		/obj/item/reagent_containers/syringe/contraband/methamphetamine = 1,
-		/obj/item/reagent_containers/pill/lsd = 5,
-		/obj/item/reagent_containers/pill/mdma = 5,
-		/obj/item/mod/construction/broken_core = 5,
-		/obj/item/trash/candy = 10,
-		/obj/item/trash/syndi_cakes = 5,
-		/obj/item/trash/candle = 10,
-		/obj/item/soap = 10,
-		/mob/living/simple_animal/pet/dog/corgi/puppy/slime = 1,
-		/obj/item/slime_cookie/pink = 5,
-		/obj/item/clothing/mask/cigarette/shadyjims = 5,
-		/obj/item/clothing/head/kitty = 5,
-		/obj/item/reagent_containers/food/snacks/intecookies = 5,
-		/obj/item/binoculars = 1,
-		/obj/structure/sign/poster/contraband/paws = 5,
-		/obj/item/restraints/legcuffs/bola/energy = 1,
-		/obj/item/stack/medical/suture/five = 5,
-		/obj/item/sign/flag/rus = 1, // Пасхалко
-		/obj/item/toy/figure/inteq = 1,
-		/obj/item/reagent_containers/food/snacks/chips = 5)
+		/obj/item/reagent_containers/syringe/heroin = WEIGHT_UNCOMMON,
+		/obj/item/toy/plush/teddybear = WEIGHT_UNCOMMON,
+		/obj/item/reagent_containers/pill/labebium = WEIGHT_SECRET,
+		/obj/item/reagent_containers/food/snacks/grown/mushroom/schizoshroom = WEIGHT_UNCOMMON,
+		/obj/item/toy/plush/bm/millie = WEIGHT_UNCOMMON,
+		/obj/item/genital_equipment/condom = WEIGHT_UNCOMMON,
+		/obj/item/genital_equipment/condom/open/used = WEIGHT_COMMON,
+		/obj/item/assembly/mousetrap/armed = WEIGHT_UNCOMMON,
+		/obj/item/reagent_containers/food/snacks/special_candy = WEIGHT_UNCOMMON,
+		/obj/item/buttplug/small = WEIGHT_UNCOMMON,
+		/obj/item/reagent_containers/food/snacks/donut/semen = WEIGHT_COMMON,
+		/obj/item/reagent_containers/glass/bottle/semen = WEIGHT_SECRET,
+		/obj/item/restraints/handcuffs/fake/kinky = WEIGHT_COMMON,
+		/obj/item/reagent_containers/pill/pendosovka = WEIGHT_UNCOMMON,
+		/obj/item/reagent_containers/pill/zvezdochka = WEIGHT_UNCOMMON,
+		/obj/item/reagent_containers/food/snacks/cube/tentacles = WEIGHT_UNCOMMON,
+		/obj/item/clothing/underwear/briefs/tentacle/female = WEIGHT_SECRET,
+		/obj/item/seeds/cannabis = WEIGHT_UNCOMMON,
+		/obj/item/reagent_containers/syringe/contraband/methamphetamine = WEIGHT_SECRET,
+		/obj/item/reagent_containers/pill/lsd = WEIGHT_UNCOMMON,
+		/obj/item/reagent_containers/pill/mdma = WEIGHT_UNCOMMON,
+		/obj/item/mod/construction/broken_core = WEIGHT_UNCOMMON,
+		/obj/item/trash/candy = WEIGHT_COMMON,
+		/obj/item/trash/syndi_cakes = WEIGHT_UNCOMMON,
+		/obj/item/trash/candle = WEIGHT_COMMON,
+		/obj/item/soap = WEIGHT_COMMON,
+		/mob/living/simple_animal/pet/dog/corgi/puppy/slime = WEIGHT_SECRET,
+		/obj/item/slime_cookie/pink = WEIGHT_UNCOMMON,
+		/obj/item/clothing/mask/cigarette/shadyjims = WEIGHT_UNCOMMON,
+		/obj/item/clothing/head/kitty = WEIGHT_UNCOMMON,
+		/obj/item/reagent_containers/food/snacks/intecookies = WEIGHT_UNCOMMON,
+		/obj/item/binoculars = WEIGHT_SECRET,
+		/obj/structure/sign/poster/contraband/paws = WEIGHT_UNCOMMON,
+		/obj/item/restraints/legcuffs/bola/energy = WEIGHT_SECRET,
+		/obj/item/stack/medical/suture/five = WEIGHT_UNCOMMON,
+		/obj/item/sign/flag/rus = WEIGHT_SECRET, // Пасхалко
+		/obj/item/toy/figure/inteq = WEIGHT_SECRET,
+		/obj/item/reagent_containers/food/snacks/chips = WEIGHT_UNCOMMON)
 	if(prob(40))
 		var/picked = pickweight(random_stuff)
 		new picked(src)
+
+#undef WEIGHT_COMMON
+#undef WEIGHT_UNCOMMON
+#undef WEIGHT_SECRET
 
 /obj/item/kirbyplants/random/proc/generate_states()
 	states = list()

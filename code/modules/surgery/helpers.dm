@@ -105,7 +105,7 @@
 				sorted[key] = choices[key]
 			choices = sorted
 
-			var/radial_radius = 27 + min(max(choices.len - 5, 0), 3) * 3 // 6 = 30, 7 = 33, 8+ = 36
+			var/radial_radius = 27 + clamp(choices.len - 5, 0, 3) * 3 // 6 = 30, 7 = 33, 8+ = 36
 
 			P = show_radial_menu(user, M, choices, require_near = TRUE, radius = radial_radius, tooltips = TRUE)
 

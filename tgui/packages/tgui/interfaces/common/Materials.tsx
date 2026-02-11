@@ -3,7 +3,6 @@ import { BooleanLike } from 'common/react';
 import { classes } from 'common/react';
 import { Component, findDOMfromVNode, render } from 'inferno';
 
-import { useSharedState } from '../../backend';
 import { Box, Button, Flex } from '../../components';
 import { BoxProps } from '../../components/Box';
 import { formatMoney, formatSiUnit } from '../../format';
@@ -80,9 +79,9 @@ const MaterialEjectDock = (props: {
     return false;
   };
 
-  const BUTTON_WIDTH = 6
-  const BUTTON_AMOUNTS = [5, 10, 25]
-  const min_sheets_to_round = 10
+  const BUTTON_WIDTH = 6;
+  const BUTTON_AMOUNTS = [5, 10, 25];
+  const min_sheets_to_round = 10;
 
   const dockContent = (
   <Flex align="center" direction="column" backgroundColor="rgba(27, 27, 27, 1)">
@@ -196,7 +195,7 @@ export const MaterialAmount = (props: {
     style,
   } = props;
 
-  const MINERAL_MATERIAL_AMOUNT = 2000
+  const MINERAL_MATERIAL_AMOUNT = 2000;
 
   let amountDisplay;
 

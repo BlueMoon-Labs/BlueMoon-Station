@@ -97,3 +97,20 @@
 	for(var/path in list(/obj/item/sign/flag/imperium, /obj/item/sign/flag/imperium/gray))
 		for(var/i = 1 to 3)
 			new path(src)
+
+////////////////////////
+
+/obj/item/clothing/mask/vape/custom
+	name = "Custom E-Cigarette"
+	desc = "Электронная сигарета с кастомным корпусом."
+	icon = 'modular_bluemoon/fluffs/icons/obj/items.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/items_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/items_right.dmi'
+	icon_state = "odnorazka"
+	item_state = "odnorazka"
+
+/obj/item/clothing/mask/vape/custom/Initialize(mapload, param_color)
+	. = ..()
+	icon = 'modular_bluemoon/fluffs/icons/obj/items.dmi'
+	icon_state = "odnorazka"
+	item_state = "odnorazka"

@@ -5,6 +5,7 @@ import { useBackend, useLocalState } from '../backend';
 import {
   Box,
   Button,
+  Collapsible,
   Dimmer,
   Flex,
   Icon,
@@ -13,11 +14,9 @@ import {
   Section,
   Table,
   Tabs,
-  Collapsible,
 } from '../components';
 import { Window } from '../layouts';
-
-import { Materials, MaterialAmount, MaterialFormatting } from './common/Materials';
+import { MaterialAmount, MaterialFormatting, Materials } from './common/Materials';
 
 const COLOR_NONE = 0;
 const COLOR_AVERAGE = 1;
@@ -257,7 +256,7 @@ export const FabricatorContent = (props, context) => {
 
   const testSearch = createSearch(searchText, (item) => item.name);
   const MAX_SEARCH_RESULTS = 80;
-  const searchIsActive = searchText.length > 1
+  const searchIsActive = searchText.length > 1;
 
   const items = (searchIsActive
     ? categories
@@ -411,7 +410,7 @@ const ItemList = (props, context) => {
 
   return (items || []).map((item) => {
     const color1 = calcTextColor(materialsObj, chemsHaveById, item, 1);
-    const secLevelAllow = curSecLevel >= item.min_sec_level && curSecLevel <= item.max_sec_level
+    const secLevelAllow = curSecLevel >= item.min_sec_level && curSecLevel <= item.max_sec_level;
     const maxBuild = calcMaxBuild(materialsObj, chemsHaveById, item, maxBuildButtonAmount);
 
     return (

@@ -34,21 +34,14 @@
 #define MAIL_SENDER_RANDOM_MALE "random_male"
 #define MAIL_SENDER_CENTCOM "Центральное Командование"
 
+#define MAIL_GENITALS_MALE list(ORGAN_SLOT_PENIS)
+#define MAIL_GENITALS_MALE_FULL list(ORGAN_SLOT_PENIS, ORGAN_SLOT_TESTICLES)
+#define MAIL_GENITALS_FEMALE list(ORGAN_SLOT_VAGINA)
+#define MAIL_GENITALS_FEMALE_FULL list(ORGAN_SLOT_PENIS, ORGAN_SLOT_WOMB)
+
 #define MAIL_MOOD "mail"
 
 #define MAIL_RECIPIENT_SYNTH list( \
 		/datum/species/mammal/synthetic, \
 		/datum/species/ipc, \
 		/datum/species/synthliz)
-
-// Используется при инициализации системы почты
-#define MAIL_BASE_TYPE_LIST list( \
-		/datum/mail_pattern, \
-		/datum/mail_pattern/antag, \
-		/datum/mail_pattern/family, \
-		/datum/mail_pattern/job, \
-		/datum/mail_pattern/lewd, \
-		/datum/mail_pattern/misc, \
-		/datum/mail_pattern/money, \
-		/datum/mail_pattern/shop, \
-		/datum/mail_pattern/spam)

@@ -104,7 +104,7 @@
           return TRUE
     if ("start-thunderome")
       SStgui.close_uis(src)
-      var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for Thunderome?", "Thunderome", null)
+      var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for Thunderome?", "Thunderome", null, priority_check = FALSE)
       if(candidates.len > 0)
         var/team_1_coeff = team_1_size / (team_2_size + team_1_size)
         var/team_1_players_num = round_down(team_1_coeff * candidates.len)

@@ -53,7 +53,7 @@
 		bodies += M
 
 	var/question = "Would you like to be [group_name]?"
-	var/list/candidates = pollCandidatesForMobs(question, ROLE_PAI, null, FALSE, 100, bodies)
+	var/list/candidates = pollCandidatesForMob(question, ROLE_PAI, null, FALSE, 100, bodies, priority_check = FALSE)
 	while(LAZYLEN(candidates) && LAZYLEN(bodies))
 		var/mob/C = pick_n_take(candidates)
 		var/mob/living/body = pick_n_take(bodies)

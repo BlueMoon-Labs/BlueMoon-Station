@@ -100,7 +100,9 @@
 	var/ambition_limit = 6
 	/// Time when new ambition can be rolled
 	var/ambition_cooldown_end = 0
-
+	// Research exp for specific item
+	var/research_exp = null
+	var/can_use_research_paper = FALSE
 	// BLUEMOON ADD END
 
 /datum/mind/New(key)
