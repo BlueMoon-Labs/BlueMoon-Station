@@ -944,11 +944,12 @@
 
 				//deadmin
 				dat += "<h2>Deadmin While Playing</h2>"
+				dat += "<b>Deadmin On Login:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_onlogin'>[(deadmin & DEADMIN_ONLOGIN)?"Enabled":"Disabled"]</a><br>"
 				if(CONFIG_GET(flag/auto_deadmin_players))
-					dat += "<b>Always Deadmin:</b> FORCED</a><br>"
+					dat += "<b>Deadmin On Spawn:</b> FORCED</a><br>"
 				else
-					dat += "<b>Always Deadmin:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_always'>[(deadmin & DEADMIN_ALWAYS)?"Enabled":"Disabled"]</a><br>"
-					if(!(deadmin & DEADMIN_ALWAYS))
+					dat += "<b>Deadmin On Spawn:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_onspawn'>[(deadmin & DEADMIN_ONSPAWN)?"Enabled":"Disabled"]</a><br>"
+					if(!(deadmin & DEADMIN_ONSPAWN))
 						dat += "<br>"
 						if(!CONFIG_GET(flag/auto_deadmin_antagonists))
 							dat += "<b>As Antag:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_antag'>[(deadmin & DEADMIN_ANTAGONIST)?"Deadmin":"Keep Admin"]</a><br>"

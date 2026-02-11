@@ -2637,7 +2637,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/no_change_label = src.use_modern_translations ? get_modern_text("no_change", src) : "No Change"
 					var/use_modern_player_panel_label = src.use_modern_translations ? get_modern_text("use_modern_player_panel", src) : "Use Modern Player Panel"
 					var/deadmin_while_playing_label = src.use_modern_translations ? get_modern_text("deadmin_while_playing", src) : "Deadmin While Playing"
-					var/always_deadmin_label = src.use_modern_translations ? get_modern_text("always_deadmin", src) : "Always Deadmin"
+					var/onlogin_deadmin_label = src.use_modern_translations ? get_modern_text("onlogin_deadmin", src) : "Deadmin On Login"
+					var/onspawn_deadmin_label = src.use_modern_translations ? get_modern_text("onspawn_deadmin", src) : "Deadmin On Spawn"
 					var/forced_label = src.use_modern_translations ? get_modern_text("forced", src) : "FORCED"
 					var/as_antag_label = src.use_modern_translations ? get_modern_text("as_antag", src) : "As Antag"
 					var/as_command_label = src.use_modern_translations ? get_modern_text("as_command", src) : "As Command"
@@ -2670,11 +2671,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 						//deadmin
 						dat += "<h2>[deadmin_while_playing_label]</h2>"
+						dat += "<b>[onlogin_deadmin_label]:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_onlogin'>[(deadmin & DEADMIN_ONLOGIN)? enabled_label : disabled_label]</a><br>"
 						if(CONFIG_GET(flag/auto_deadmin_players))
-							dat += "<b>[always_deadmin_label]:</b> [forced_label]</a><br>"
+							dat += "<b>[onspawn_deadmin_label]:</b> [forced_label]</a><br>"
 						else
-							dat += "<b>[always_deadmin_label]:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_always'>[(deadmin & DEADMIN_ALWAYS)? enabled_label : disabled_label]</a><br>"
-							if(!(deadmin & DEADMIN_ALWAYS))
+							dat += "<b>[onspawn_deadmin_label]:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_onspawn'>[(deadmin & DEADMIN_ONSPAWN)? enabled_label : disabled_label]</a><br>"
+							if(!(deadmin & DEADMIN_ONSPAWN))
 								dat += "<br>"
 								if(!CONFIG_GET(flag/auto_deadmin_antagonists))
 									dat += "<b>[as_antag_label]:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_antag'>[(deadmin & DEADMIN_ANTAGONIST)? deadmin_label : keep_admin_label]</a><br>"
@@ -5872,8 +5874,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					use_new_playerpanel = !use_new_playerpanel
 
 				// Deadmin preferences
-				if("toggle_deadmin_always")
-					deadmin ^= DEADMIN_ALWAYS
+				if("toggle_deadmin_onlogin")
+					deadmin ^= DEADMIN_ONLOGIN
+				if("toggle_deadmin_onspawn")
+					deadmin ^= DEADMIN_ONSPAWN
 				if("toggle_deadmin_antag")
 					deadmin ^= DEADMIN_ANTAGONIST
 				if("toggle_deadmin_head")
