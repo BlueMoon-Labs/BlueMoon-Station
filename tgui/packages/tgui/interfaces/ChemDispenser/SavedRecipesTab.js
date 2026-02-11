@@ -12,7 +12,51 @@ import {
 
 export const SavedRecipesTab = (props, context) => {
   const { act } = useBackend(context);
-  const { recipes, recording, isBeakerLoaded } = props;
+  const {
+    recipes,
+    recording,
+    isBeakerLoaded,
+    onOptimisticRecipe,
+    markPending,
+    isActionPending,
+    beginRecipeAction,
+    onDeleteRecipe,
+    onStartRecording,
+    onCancelRecording,
+    chemMetadata,
+  } = props;
+
+  const handleDispenseSaved = (recipe) => {
+    const pendingKey = `saved_${recipe.name}`;
+    if (isActionPending && isActionPending('__recipe_global')) return;
+    if (beginRecipeAction) {
+      if (!beginRecipeAction(pendingKey)) return;
+    } else if (markPending) {
+      markPending(pendingKey);
+    }
+    if (onOptimisticRecipe) {
+      const dispenses = [];
+      const metaById = chemMetadata ? chemMetadata.byId : {};
+      let totalVol = 0;
+      for (const [chemId, amount] of Object.entries(recipe.contents)) {
+        if (amount > 0) {
+          const meta = metaById[chemId] || {};
+          dispenses.push({
+            name: toTitleCase(chemId.replace(/_/g, ' ')),
+            volume: amount,
+            pH: meta.pH || 7,
+            pHCol: meta.pHCol || null,
+            reagentColor: meta.reagentColor || null,
+          });
+          totalVol += amount;
+        }
+      }
+      if (dispenses.length > 0) {
+        onOptimisticRecipe(dispenses, totalVol);
+      }
+    }
+    act('dispense_recipe', { recipe: recipe.name });
+  };
 
   return (
     <Section
@@ -29,7 +73,7 @@ export const SavedRecipesTab = (props, context) => {
                   color="red"
                   disabled={!isBeakerLoaded}
                   content="Записать"
-                  onClick={() => act('record_recipe')}
+                  onClick={onStartRecording || (() => act('record_recipe'))}
                 />
               </Stack.Item>
               <Stack.Item>
@@ -57,7 +101,7 @@ export const SavedRecipesTab = (props, context) => {
                   icon="ban"
                   color="bad"
                   content="Отмена"
-                  onClick={() => act('cancel_recording')}
+                  onClick={onCancelRecording || (() => act('cancel_recording'))}
                 />
               </Stack.Item>
             </>
@@ -72,35 +116,44 @@ export const SavedRecipesTab = (props, context) => {
         </Box>
       ) : (
         <Table>
-          {recipes.map(recipe => (
-            <Table.Row key={recipe.name} className="candystripe">
-              <Table.Cell>
-                <Button
-                  fluid
-                  icon="flask"
-                  content={recipe.name}
-                  tooltip={
-                    <Box>
-                      <Box bold mb={0.5}>{recipe.name}</Box>
-                      {Object.entries(recipe.contents).map(([name, amount]) => (
-                        <Box key={name} color="label">
-                          {toTitleCase(name.replace(/_/g, ' '))}: {amount}u
-                        </Box>
-                      ))}
-                    </Box>
-                  }
-                  onClick={() => act('dispense_recipe', { recipe: recipe.name })}
-                />
-              </Table.Cell>
-              <Table.Cell collapsing>
-                <Button
-                  icon="trash"
-                  color="transparent"
-                  onClick={() => act('delete_recipe', { recipe: recipe.name })}
-                />
-              </Table.Cell>
-            </Table.Row>
-          ))}
+          {recipes.map(recipe => {
+            const pendingKey = `saved_${recipe.name}`;
+            const isGlobalPending = isActionPending && isActionPending('__recipe_global');
+            const isPending = isGlobalPending || (isActionPending && isActionPending(pendingKey));
+            return (
+              <Table.Row key={recipe.name} className="candystripe">
+                <Table.Cell>
+                  <Button
+                    fluid
+                    icon={isPending ? 'spinner' : 'flask'}
+                    iconSpin={isPending}
+                    content={recipe.name}
+                    disabled={isPending}
+                    tooltip={
+                      <Box>
+                        <Box bold mb={0.5}>{recipe.name}</Box>
+                        {Object.entries(recipe.contents).map(([name, amount]) => (
+                          <Box key={name} color="label">
+                            {toTitleCase(name.replace(/_/g, ' '))}: {amount}u
+                          </Box>
+                        ))}
+                      </Box>
+                    }
+                    onClick={() => handleDispenseSaved(recipe)}
+                  />
+                </Table.Cell>
+                <Table.Cell collapsing>
+                  <Button
+                    icon="trash"
+                    color="transparent"
+                    onClick={() => onDeleteRecipe
+                      ? onDeleteRecipe(recipe.name)
+                      : act('delete_recipe', { recipe: recipe.name })}
+                  />
+                </Table.Cell>
+              </Table.Row>
+            );
+          })}
         </Table>
       )}
     </Section>

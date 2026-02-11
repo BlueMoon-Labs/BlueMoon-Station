@@ -33,9 +33,13 @@ export const BeakerSidePanel = (props, context) => {
     phBasePH,
     isDrinkDispenser = false,
     onOptimisticRemove,
+    onEject,
+    onDispensePH,
+    onStore,
+    onStoreAll,
+    isEjecting,
   } = props;
 
-  // Hide pH display for drink dispensers (soda/booze) as it's irrelevant
   const showPH = !isDrinkDispenser;
 
   const freeSpace = Math.max(0, (beakerMaxVolume || 0) - (beakerCurrentVolume || 0));
@@ -60,8 +64,8 @@ export const BeakerSidePanel = (props, context) => {
                     icon="upload"
                     compact
                     tooltip="Сохранить все"
-                    disabled={recording}
-                    onClick={() => act('store_all')}
+                    disabled={recording || isEjecting}
+                    onClick={() => onStoreAll ? onStoreAll() : act('store_all')}
                   />
                 </Stack.Item>
               )}
@@ -70,7 +74,7 @@ export const BeakerSidePanel = (props, context) => {
                   icon="eject"
                   compact
                   tooltip="Извлечь"
-                  onClick={() => act('eject')}
+                  onClick={() => onEject ? onEject() : act('eject')}
                 />
               </Stack.Item>
             </>
@@ -118,8 +122,8 @@ export const BeakerSidePanel = (props, context) => {
                     icon="arrow-down"
                     color="orange"
                     tooltip={`${phAcidName} 1u (pH ${phAcidPH}) - понижает pH`}
-                    disabled={recording}
-                    onClick={() => act('dispense_ph', { type: 'acid' })}>
+                    disabled={recording || isEjecting}
+                    onClick={() => onDispensePH ? onDispensePH('acid') : act('dispense_ph', { type: 'acid' })}>
                     -pH
                   </Button>
                 </Stack.Item>
@@ -129,8 +133,8 @@ export const BeakerSidePanel = (props, context) => {
                     icon="arrow-up"
                     color="blue"
                     tooltip={`${phBaseName} 1u (pH ${phBasePH}) - повышает pH`}
-                    disabled={recording}
-                    onClick={() => act('dispense_ph', { type: 'base' })}>
+                    disabled={recording || isEjecting}
+                    onClick={() => onDispensePH ? onDispensePH('base') : act('dispense_ph', { type: 'base' })}>
                     +pH
                   </Button>
                 </Stack.Item>
@@ -149,7 +153,7 @@ export const BeakerSidePanel = (props, context) => {
                   compact
                   icon="minus"
                   content={amount}
-                  disabled={recording}
+                  disabled={recording || isEjecting}
                   onClick={() => {
                     if (onOptimisticRemove) onOptimisticRemove(amount, false);
                     act('remove', { amount });
@@ -161,7 +165,7 @@ export const BeakerSidePanel = (props, context) => {
                 icon="trash"
                 color="bad"
                 tooltip="Слить всё"
-                disabled={recording || !beakerCurrentVolume}
+                disabled={recording || !beakerCurrentVolume || isEjecting}
                 onClick={() => {
                   if (onOptimisticRemove) onOptimisticRemove(0, true);
                   act('remove', { all: true });
@@ -201,8 +205,8 @@ export const BeakerSidePanel = (props, context) => {
                           compact
                           icon="upload"
                           tooltip="Сохранить"
-                          disabled={recording}
-                          onClick={() => act('store', { id: chemical.id })}
+                          disabled={recording || isEjecting}
+                          onClick={() => onStore ? onStore(chemical.id) : act('store', { id: chemical.id })}
                         />
                       </Table.Cell>
                     )}

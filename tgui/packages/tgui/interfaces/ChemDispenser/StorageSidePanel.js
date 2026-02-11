@@ -15,7 +15,17 @@ import {
 
 export const StorageSidePanel = (props, context) => {
   const { act } = useBackend(context);
-  const { storedContents, storedVol, maxVol, recording, isBeakerLoaded } = props;
+  const {
+    storedContents,
+    storedVol,
+    maxVol,
+    recording,
+    isBeakerLoaded,
+    onUnstore,
+    onUnstoreAll,
+    onClearStorage,
+    isEjecting,
+  } = props;
 
   const freeSpace = Math.max(0, maxVol - storedVol);
 
@@ -38,8 +48,8 @@ export const StorageSidePanel = (props, context) => {
                   icon="download"
                   compact
                   tooltip="Извлечь все"
-                  disabled={recording || !isBeakerLoaded}
-                  onClick={() => act('unstore_all')}
+                  disabled={recording || !isBeakerLoaded || isEjecting}
+                  onClick={() => onUnstoreAll ? onUnstoreAll() : act('unstore_all')}
                 />
               </Stack.Item>
               <Stack.Item>
@@ -48,7 +58,8 @@ export const StorageSidePanel = (props, context) => {
                   compact
                   color="bad"
                   tooltip="Очистить"
-                  onClick={() => act('clear_storage')}
+                  disabled={isEjecting}
+                  onClick={() => onClearStorage ? onClearStorage() : act('clear_storage')}
                 />
               </Stack.Item>
             </>
@@ -93,8 +104,8 @@ export const StorageSidePanel = (props, context) => {
                     compact
                     icon="download"
                     tooltip="Извлечь"
-                    disabled={recording || !isBeakerLoaded}
-                    onClick={() => act('unstore', { id: chemical.id })}
+                    disabled={recording || !isBeakerLoaded || isEjecting}
+                    onClick={() => onUnstore ? onUnstore(chemical.id) : act('unstore', { id: chemical.id })}
                   />
                 </Table.Cell>
               </Table.Row>

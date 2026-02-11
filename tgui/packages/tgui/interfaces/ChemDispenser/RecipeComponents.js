@@ -122,7 +122,15 @@ export const SubRecipeDispenseButton = (props, context) => {
     altIndex = 0,
     dispenserType = 0,
     isDrinkDispenser = false,
+    markPending,
+    isActionPending,
+    beginRecipeAction,
+    onOptimisticRecipe,
+    chemMetadata,
   } = props;
+  const pendingKey = `sub_${recipeName}_${altIndex}_${reagentName}`;
+  const isGlobalPending = isActionPending && isActionPending('__recipe_global');
+  const isPending = isGlobalPending || (isActionPending && isActionPending(pendingKey));
 
   const baseIngredients = subRecipe.base_ingredients || {};
   const temp = subRecipe.temp || 0;
@@ -139,7 +147,6 @@ export const SubRecipeDispenseButton = (props, context) => {
   const reactionsNeeded = Math.ceil(neededAmount / resultAmount);
   const outputAmount = reactionsNeeded * resultAmount;
 
-  // Determine if this sub-recipe needs ingredients from another dispenser
   const needsSoda = isDrinkDispenser && dispenserType === DISPENSER_TYPE_BOOZE
     && Object.values(baseIngredients).some(d =>
       d.source_dispenser && (d.source_dispenser & DISPENSER_TYPE_SODA)
@@ -154,9 +161,10 @@ export const SubRecipeDispenseButton = (props, context) => {
   return (
     <Button
       compact
-      icon={isUnlocked ? "vial" : "lock"}
+      icon={isPending ? 'spinner' : (isUnlocked ? "vial" : "lock")}
+      iconSpin={isPending}
       color={!isUnlocked ? 'bad' : (canMake ? buttonColor : 'bad')}
-      disabled={!isBeakerLoaded || !canMake || !isUnlocked}
+      disabled={!isBeakerLoaded || !canMake || !isUnlocked || isPending}
       tooltip={
         <Box>
           <Box bold mb={0.5}>{reagentName}</Box>
@@ -185,12 +193,42 @@ export const SubRecipeDispenseButton = (props, context) => {
           <Box color="good">&rarr; {outputAmount}u {reagentName}</Box>
         </Box>
       }
-      onClick={() => act('dispense_sub_recipe', {
-        recipe: recipeName,
-        sub_reagent: reagentName,
-        multiplier: multiplier,
-        ...(altIndex > 0 ? { alt_index: altIndex } : {}),
-      })}>
+      onClick={() => {
+        if (isActionPending && isActionPending('__recipe_global')) return;
+        if (beginRecipeAction) {
+          if (!beginRecipeAction(pendingKey)) return;
+        } else if (markPending) {
+          markPending(pendingKey);
+        }
+        if (onOptimisticRecipe) {
+          const dispenses = [];
+          const metaByTitle = chemMetadata ? chemMetadata.byTitle : {};
+          let totalVol = 0;
+          for (const [name, data] of Object.entries(baseIngredients)) {
+            if (data.can_dispense) {
+              const vol = data.amount * reactionsNeeded;
+              if (vol > 0) {
+                const meta = metaByTitle[name] || {};
+                dispenses.push({
+                  name,
+                  volume: vol,
+                  pH: meta.pH || 7,
+                  pHCol: meta.pHCol || null,
+                  reagentColor: meta.reagentColor || null,
+                });
+                totalVol += vol;
+              }
+            }
+          }
+          if (dispenses.length > 0) onOptimisticRecipe(dispenses, totalVol);
+        }
+        act('dispense_sub_recipe', {
+          recipe: recipeName,
+          sub_reagent: reagentName,
+          multiplier: multiplier,
+          ...(altIndex > 0 ? { alt_index: altIndex } : {}),
+        });
+      }}>
       {reagentName}
       {temp > 0 && (
         <span style={{ fontSize: '9px', marginLeft: '3px', opacity: 0.8 }}>
@@ -227,9 +265,17 @@ export const FinalStepButton = (props, context) => {
     beakerByName,
     isUnlocked = true,
     altIndex = 0,
+    markPending,
+    isActionPending,
+    beginRecipeAction,
+    onOptimisticRecipe,
+    chemMetadata,
   } = props;
+  const pendingKey = `final_${recipeName}_${altIndex}`;
+  const isGlobalPending = isActionPending && isActionPending('__recipe_global');
+  const isPending = isGlobalPending || (isActionPending && isActionPending(pendingKey));
 
-  // TRUE intermediate = in sub_recipes AND not directly dispensable
+  // Intermediates are sub-recipes that are not directly dispensable.
   const subRecipes = recipe.sub_recipes || {};
   const baseIngredients = recipe.base_ingredients || {};
   const directIngredients = Object.entries(recipe.required || {})
@@ -254,9 +300,10 @@ export const FinalStepButton = (props, context) => {
   return (
     <Button
       compact
-      icon={isUnlocked ? "check" : "lock"}
+      icon={isPending ? 'spinner' : (isUnlocked ? "check" : "lock")}
+      iconSpin={isPending}
       color={!isUnlocked ? 'bad' : (canMake ? 'good' : 'bad')}
-      disabled={!isBeakerLoaded || !canMake || !isUnlocked}
+      disabled={!isBeakerLoaded || !canMake || !isUnlocked || isPending}
       tooltip={
         <Box>
           <Box bold mb={0.5}>Финальный шаг</Box>
@@ -268,21 +315,51 @@ export const FinalStepButton = (props, context) => {
           ))}
         </Box>
       }
-      onClick={() => act('dispense_final_step', {
-        recipe: recipeName,
-        multiplier: multiplier,
-        ...(altIndex > 0 ? { alt_index: altIndex } : {}),
-      })}>
+      onClick={() => {
+        if (isActionPending && isActionPending('__recipe_global')) return;
+        if (beginRecipeAction) {
+          if (!beginRecipeAction(pendingKey)) return;
+        } else if (markPending) {
+          markPending(pendingKey);
+        }
+        if (onOptimisticRecipe) {
+          const dispenses = [];
+          const metaByTitle = chemMetadata ? chemMetadata.byTitle : {};
+          let totalVol = 0;
+          for (const [name] of directIngredients) {
+            const baseData = baseIngredients[name];
+            if (baseData && baseData.can_dispense) {
+              const vol = baseData.amount * multiplier;
+              if (vol > 0) {
+                const meta = metaByTitle[name] || {};
+                dispenses.push({
+                  name,
+                  volume: vol,
+                  pH: meta.pH || 7,
+                  pHCol: meta.pHCol || null,
+                  reagentColor: meta.reagentColor || null,
+                });
+                totalVol += vol;
+              }
+            }
+          }
+          if (dispenses.length > 0) onOptimisticRecipe(dispenses, totalVol);
+        }
+        act('dispense_final_step', {
+          recipe: recipeName,
+          multiplier: multiplier,
+          ...(altIndex > 0 ? { alt_index: altIndex } : {}),
+        });
+      }}>
       +Финал
     </Button>
   );
 };
 
 export const SubRecipesChain = (props) => {
-  const { recipe, name, multiplier, isBeakerLoaded, beakerByName, isUnlocked = true, altIndex = 0, dispenserType = 0, isDrinkDispenser = false } = props;
+  const { recipe, name, multiplier, isBeakerLoaded, beakerByName, isUnlocked = true, altIndex = 0, dispenserType = 0, isDrinkDispenser = false, markPending, isActionPending, beginRecipeAction, onOptimisticRecipe, chemMetadata } = props;
   const baseIngredients = recipe.base_ingredients || {};
 
-  // Only show intermediates that must be synthesized (not directly dispensable)
   const baseIngredientNames = Object.keys(baseIngredients);
   const intermediates = Object.entries(recipe.sub_recipes || {})
     .filter(([reagentName, data]) => {
@@ -320,6 +397,11 @@ export const SubRecipesChain = (props) => {
               altIndex={altIndex}
               dispenserType={dispenserType}
               isDrinkDispenser={isDrinkDispenser}
+              markPending={markPending}
+              isActionPending={isActionPending}
+              beginRecipeAction={beginRecipeAction}
+              onOptimisticRecipe={onOptimisticRecipe}
+              chemMetadata={chemMetadata}
             />
           </span>
         ))}
@@ -334,6 +416,11 @@ export const SubRecipesChain = (props) => {
               beakerByName={beakerByName}
               isUnlocked={isUnlocked}
               altIndex={altIndex}
+              markPending={markPending}
+              isActionPending={isActionPending}
+              beginRecipeAction={beginRecipeAction}
+              onOptimisticRecipe={onOptimisticRecipe}
+              chemMetadata={chemMetadata}
             />
           </>
         )}

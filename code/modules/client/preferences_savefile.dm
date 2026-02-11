@@ -508,6 +508,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["chem_dispenser_classic_view"]>> chem_dispenser_classic_view // BLUEMOON ADD
 	S["chem_dispenser_use_reagent_color"]>> chem_dispenser_use_reagent_color // BLUEMOON ADD
 	S["chem_dispenser_show_icons"]>> chem_dispenser_show_icons // BLUEMOON ADD
+	S["chem_dispenser_alphabetical_sort"]>> chem_dispenser_alphabetical_sort // BLUEMOON ADD
 	S["color_presets_tint"]>> color_presets_tint // BLUEMOON ADD
 	S["color_presets_hsv"]>> color_presets_hsv // BLUEMOON ADD
 	S["color_presets_matrix"]>> color_presets_matrix // BLUEMOON ADD
@@ -763,6 +764,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["chem_dispenser_classic_view"], chem_dispenser_classic_view) // BLUEMOON ADD
 	WRITE_FILE(S["chem_dispenser_use_reagent_color"], chem_dispenser_use_reagent_color) // BLUEMOON ADD
 	WRITE_FILE(S["chem_dispenser_show_icons"], chem_dispenser_show_icons) // BLUEMOON ADD
+	WRITE_FILE(S["chem_dispenser_alphabetical_sort"], chem_dispenser_alphabetical_sort) // BLUEMOON ADD
 	WRITE_FILE(S["color_presets_tint"], color_presets_tint) // BLUEMOON ADD
 	WRITE_FILE(S["color_presets_hsv"], color_presets_hsv) // BLUEMOON ADD
 	WRITE_FILE(S["color_presets_matrix"], color_presets_matrix) // BLUEMOON ADD
