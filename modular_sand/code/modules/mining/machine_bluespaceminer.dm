@@ -1,14 +1,15 @@
 // Configuration defines
 #define BLUESPACE_MINER_BONUS_MULT		CONFIG_GET(number/bluespaceminer_mult_output)
 #define BLUESPACE_MINER_CRYSTAL_TIER	CONFIG_GET(number/bluespaceminer_crystal_tier)
-#define TIME_TO_CORE_DESTROY 			CONFIG_GET(number/bluespaceminer_core_work_time_minutes) MINUTES
+#define TIME_TO_CORE_DESTROY 			(CONFIG_GET(number/bluespaceminer_core_work_time_minutes) MINUTES)
 // Вносит частичку хаоса
 #define CORE_CHANSE_NO_DAMAGE			CONFIG_GET(number/bluespaceminer_core_work_chanse_no_damage)
 #define INSTABILITY_COOLDOWN_TIME		CONFIG_GET(number/bluespaceminer_instability_cooldown)
 
-// Считаем урон в секунду, что бы разрушить ядро (базовое, если захотят сделать версию круче) в указанное время
-#define CORE_DAMAGE_PER_SECOND round(TIME_TO_CORE_DESTROY / /obj/item/assembly/signaler/anomaly/bluespace::max_integrity * 100) / 100
 #define CORE_INTEGRITY_PERCENT bs_core ? PERCENT(bs_core.obj_integrity / bs_core.max_integrity) : 0
+// Считаем урон в секунду, что бы разрушить ядро (базовое, если захотят сделать версию круче) в указанное время
+#define CORE_DAMAGE_PER_SECOND (round(((/obj/item/assembly/signaler/anomaly/bluespace::max_integrity SECONDS) / TIME_TO_CORE_DESTROY) * 10000)/10000)
+#define CORE_DAMAGE_DT(DT) (round(CORE_DAMAGE_PER_SECOND*DT*10000)/10000)
 
 // Сколько дает нестабильности БС майнер при работе
 #define BLUESPACE_MINER_INSTABILITY 10
@@ -51,6 +52,10 @@
 	COOLDOWN_DECLARE(z_reg_cooldown)
 	var/const/z_reg_cooldown_time = 20 SECONDS
 
+	COOLDOWN_DECLARE(z_check_cooldown)
+	var/const/z_check_cooldown_time = 2 MINUTES
+	var/last_z_check = FALSE
+
 	var/list/ore_rates = list(
 		/datum/material/iron = 0.05,
 		/datum/material/glass = 0.05,
@@ -67,6 +72,11 @@
 	var/multiplier = 0 //Multiplier by tier, has been made fair and everything
 	// Будет ли ядро получать урон? Для авеек и прочего
 	var/no_core_damage = FALSE
+
+	// Нет необходимости пересчитывать урон ядру постоянно, конфиг не меняется обычно. Так, что делаем КД и выносим в прок
+	var/static/core_damage_per_tick = 1
+	COOLDOWN_DECLARE_STATIC(core_damage_updt_cooldown)
+	var/const/core_damage_updt_cooldown_time = 1 MINUTES
 
 	COOLDOWN_DECLARE_STATIC(instability_cooldown)
 	// ВАЖНО, что бы уровни нестабильности шли по убыванию percent: 90, 80, 70 и т.д.
@@ -110,7 +120,7 @@
 
 			display_list += "Состояние Bluespace ядра: [percent_core_integrity_text]"
 
-		display_list += "Машина создает [get_instability()]% нестабильности в секторе."
+		display_list += "Машина создает <b>[get_instability()]%</b> нестабильности в секторе."
 
 		var/instability_onzlevel = get_instability_onzlevel()
 		var/instability_onzlevel_text = "[instability_onzlevel]%"
@@ -120,6 +130,8 @@
 		if(!sector_stable)
 			display_list += span_boldwarning("ВНИМАНИЕ! Слишком высокая нестабильность, возможны аномалии!")
 		. += span_notice(jointext(display_list, "\n-"))
+	else
+		. += span_notice("На машине есть небольшой экранчик, но вам нужно подойти ближе, чтобы разглядеть его.")
 	if(!bs_core)
 		. += span_warning("Bluespace ядро не установлено, без него машина не будет работать.")
 	if(!anchored)
@@ -195,16 +207,18 @@
 
 /obj/machinery/mineral/bluespace_miner/process(delta_time)
 	update_icon(UPDATE_ICON_STATE)
+	core_damage_updt(delta_time)
 	var/operational = is_operational()
 	zlevel_reg(!operational)
 	if(!operational)
 		return
 
 	if(!no_core_damage && !DT_PROB(CORE_CHANSE_NO_DAMAGE, delta_time))
-		bs_core.take_damage(CORE_DAMAGE_PER_SECOND*delta_time, sound_effect = FALSE)
+		bs_core.take_damage(core_damage_per_tick, sound_effect = FALSE)
 
-	instability_check(delta_time)
-	if(DT_PROB(0.1, delta_time))
+	if(instability_check(delta_time) && QDELETED(src))
+		return PROCESS_KILL
+	if(DT_PROB(0.4, delta_time))
 		playsound(src, pick(GLOB.otherworld_sounds), 100, TRUE)
 
 	if(length(SSmachines.bluespaceminer_by_zlevel[src.z]) >= 5 && prob(0.0005))
@@ -215,6 +229,11 @@
 	var/datum/material/ore = pick(ore_rates)
 	var/datum/component/material_container/mat_container = materials.mat_container
 	mat_container.bsm_insert(((ore_rates[ore] * 1000) * multiplier), ore)
+
+/obj/machinery/mineral/bluespace_miner/proc/core_damage_updt(delta_time)
+	if(COOLDOWN_FINISHED(src, core_damage_updt_cooldown) || !core_damage_per_tick)
+		COOLDOWN_START(src, core_damage_updt_cooldown, core_damage_updt_cooldown_time)
+		core_damage_per_tick = CORE_DAMAGE_DT(delta_time)
 
 /obj/machinery/mineral/bluespace_miner/proc/zlevel_reg(unreg = FALSE)
 	// Ставим задержку только на выключение. При перебоях света, майнер 1 раз вычеркнется из списков, но повторное удаление произойдет по КД
@@ -252,6 +271,15 @@
 		if(core_integrity <= inst_settings[INSTABILITY_SETTINGS_PERCENT])
 			return i
 
+/obj/machinery/mineral/bluespace_miner/proc/z_check(force = FALSE)
+	if(!force && !COOLDOWN_FINISHED(src, z_check_cooldown))
+		return last_z_check
+	else
+		COOLDOWN_START(src, z_check_cooldown, z_check_cooldown_time)
+		last_z_check = is_station_level(z) || is_mining_level(z)
+
+	return last_z_check
+
 /obj/machinery/mineral/bluespace_miner/proc/instability_check(delta_time = 1)
 	if(!COOLDOWN_FINISHED(src, instability_cooldown))
 		return
@@ -265,8 +293,15 @@
 		return
 	COOLDOWN_START(src, instability_cooldown, INSTABILITY_COOLDOWN_TIME)
 	instability_event_start()
+	return TRUE
 
 /obj/machinery/mineral/bluespace_miner/proc/instability_event_start()
+
+	if(!z_check(TRUE))
+		explosion(get_turf(src), 0, 1, 5, flame_range = 5)
+		qdel(src)
+		return
+
 	var/static/list/possible_events_types
 	if(!LAZYLEN(possible_events_types))
 		possible_events_types = list()
