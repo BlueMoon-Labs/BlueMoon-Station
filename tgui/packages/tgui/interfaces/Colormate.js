@@ -49,6 +49,11 @@ export const Colormate = (props, context) => {
     setSelectedPreset('');
   };
 
+  const onEjectItem = () => {
+    act('drop');
+    setSelectedPreset('');
+  }
+
   return (
     <Window width="980" height="745" resizable>
       <Window.Content overflow="auto">
@@ -170,7 +175,7 @@ export const Colormate = (props, context) => {
                     fluid
                     content="Eject"
                     icon="eject"
-                    onClick={() => act('drop')} />
+                    onClick={onEjectItem} />
                 </Table.Cell>
                 <Table.Cell width="66%">
                   {activemode === 1 ? (
