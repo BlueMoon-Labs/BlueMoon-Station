@@ -32,38 +32,40 @@
 	return ..()
 
 
-/datum/element/crawl_under/proc/check_crawl(obj/structure/source, mob/living/user) //not checking if it's a structure. y'all should know better.
+/datum/element/crawl_under/proc/check_crawl(obj/structure/source, mob/living/target, mob/living/user) //not checking if it's a structure. y'all should know better.
 	SIGNAL_HANDLER
 
-	if(!istype(user)) //valid user, also checks for if it exists
+	if(target != user) // Self only
 		return
-	if(user.mobility_flags & MOBILITY_STAND || user.incapacitated(TRUE, FALSE, TRUE))
+	if(!istype(target) || istype(user)) //valid user, also checks for if it exists
 		return
-	if((user.pass_flags & PASSCRAWL) || HAS_TRAIT_FROM(user, TRAIT_FLOORED, ELEMENT_CRAWL_UNDER)) //already under
+	if(target.mobility_flags & MOBILITY_STAND || target.incapacitated(TRUE, FALSE, TRUE))
+		return
+	if((target.pass_flags & PASSCRAWL) || HAS_TRAIT_FROM(target, TRAIT_FLOORED, ELEMENT_CRAWL_UNDER)) //already under
 		return
 
 	INVOKE_ASYNC(src, PROC_REF(do_crawl), source, user)
 	return COMSIG_MOB_CANCEL_CLICKON
 
-/datum/element/crawl_under/proc/do_crawl(obj/structure/source, mob/living/user)
-	if(QDELETED(source) || QDELETED(user)) //sanity
+/datum/element/crawl_under/proc/do_crawl(obj/structure/source, mob/living/target)
+	if(QDELETED(source) || QDELETED(target)) //sanity
 		return
-	to_chat(user, span_notice("Вы начинаете лезть под [source]..."))
-	if(!do_after(user, 20, source) || (user.mobility_flags & MOBILITY_STAND || user.incapacitated(TRUE, FALSE, TRUE)))
-		to_chat(user, span_warning("У вас не получилось залезть под [source]!"))
+	to_chat(target, span_notice("Вы начинаете лезть под [source]..."))
+	if(!do_after(target, 20, source) || (target.mobility_flags & MOBILITY_STAND || target.incapacitated(TRUE, FALSE, TRUE)))
+		to_chat(target, span_warning("У вас не получилось залезть под [source]!"))
 		return
 
-	user.pass_flags |= PASSCRAWL
-	ADD_TRAIT(user, IGNORE_FAKE_Z_AXIS, ELEMENT_CRAWL_UNDER)
-	step(user, get_dir(user, source))
-	if(!(source in user.loc))
-		REMOVE_TRAIT(user, IGNORE_FAKE_Z_AXIS, ELEMENT_CRAWL_UNDER)
-		user.pass_flags &= ~PASSCRAWL
+	target.pass_flags |= PASSCRAWL
+	ADD_TRAIT(target, IGNORE_FAKE_Z_AXIS, ELEMENT_CRAWL_UNDER)
+	step(target, get_dir(target, source))
+	if(!(source in target.loc))
+		REMOVE_TRAIT(target, IGNORE_FAKE_Z_AXIS, ELEMENT_CRAWL_UNDER)
+		target.pass_flags &= ~PASSCRAWL
 		return
-	ADD_TRAIT(user, TRAIT_FLOORED, ELEMENT_CRAWL_UNDER)
-	user.layer = source.layer - 0.01 //just a lil under it
-	user.pass_flags |= PASSCRAWL
-	step(user, get_dir(user, source))
+	ADD_TRAIT(target, TRAIT_FLOORED, ELEMENT_CRAWL_UNDER)
+	target.layer = source.layer - 0.01 //just a lil under it
+	target.pass_flags |= PASSCRAWL
+	step(target, get_dir(target, source))
 
 /datum/element/crawl_under/proc/uncrawl_from(obj/structure/source, atom/movable/movable)
 	if(QDELETED(source) || QDELETED(movable) || !get_turf(movable)) //sanity
