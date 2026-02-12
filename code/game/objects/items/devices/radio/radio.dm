@@ -359,10 +359,9 @@
 
 /obj/item/radio/examine(mob/user)
 	. = ..()
-	if (unscrewed)
-		. += "<span class='notice'>It can be attached and modified.</span>"
-	else
-		. += "<span class='notice'>It cannot be modified or attached.</span>"
+	. += span_notice("[unscrewed ? "" : "Не "]может быть модифицировано или подключено.")
+	. += span_info("<b>Alt-click</b> для [broadcasting ? "выключения" : "включения"] микрофона.")
+	. += span_info("<b>Crtk-click</b> для [listening ? "выключения" : "включения"] динамика.")
 
 /obj/item/radio/update_overlays()
 	. = ..()
@@ -389,12 +388,14 @@
 	if(!user.canUseTopic(src, TRUE, TRUE, FALSE, TRUE))
 		return
 	broadcasting = !broadcasting
+	user.balloon_alert(user, "Микрофон [broadcasting ? "включен" : "выключен"]")
 
 /obj/item/radio/CtrlClick(mob/user)
 	. = ..()
 	if(!user.canUseTopic(src, TRUE, TRUE, FALSE, TRUE))
 		return
 	listening = !listening
+	user.balloon_alert(user, "Динамик [listening ? "включен" : "выключен"]")
 
 /obj/item/radio/emp_act(severity)
 	. = ..()

@@ -62,7 +62,7 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 		. += "<span class='notice'>A small screen on the headset displays the following available frequencies:\n[english_list(avail_chans)]."
 
 		if(command)
-			. += "<span class='info'>Alt-click to toggle the high-volume mode.</span>"
+			. += "<span class='info'>CtrlShift-click to toggle the high-volume mode.</span>"
 	else
 		. += "<span class='notice'>A small screen on the headset flashes, it's too small to read without holding or wearing the headset.</span>"
 
@@ -360,6 +360,7 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 	name = "\improper CentCom headset"
 	desc = "A headset used by the upper echelons of Nanotrasen."
 	icon_state = "cent_headset"
+	command = TRUE
 	keyslot = new /obj/item/encryptionkey/headset_com
 	keyslot2 = new /obj/item/encryptionkey/headset_cent
 
@@ -486,7 +487,7 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 	for(var/ch_name in channels)
 		secure_radio_connections[ch_name] = add_radio(src, GLOB.radiochannels[ch_name])
 
-/obj/item/radio/headset/AltClick(mob/living/user)
+/obj/item/radio/headset/CtrlShiftClick(mob/living/user)
 	. = ..()
 	if(!istype(user) || !Adjacent(user) || user.incapacitated())
 		return
