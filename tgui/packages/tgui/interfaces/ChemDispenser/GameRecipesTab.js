@@ -1,7 +1,6 @@
-import { toFixed } from 'common/math';
 import { createSearch } from 'common/string';
 
-import { useBackend, useLocalState } from '../../backend';
+import { useLocalState } from '../../backend';
 import {
   Box,
   Button,
@@ -17,13 +16,12 @@ import {
 import {
   FermiChemBadge,
   FermiChemDetails,
+  RecipeDispenseControls,
   SubRecipesChain,
 } from './RecipeComponents';
 import {
   buildBeakerLookup,
   calculateActualAmount,
-  calculateTotalInputVolume,
-  calculateWasteInfo,
   CATEGORY_CONFIG,
   DISPENSER_TYPE_BOOZE,
   DISPENSER_TYPE_SODA,
@@ -165,29 +163,7 @@ const CategoryBadge = ({ category, isDrinkDispenser }) => {
   );
 };
 
-const buildCrossDispenserTooltip = (crossDispenser, dispenserType) => {
-  const parts = ['Требуются ингредиенты из другого диспенсера:'];
-  const isSoda = dispenserType === DISPENSER_TYPE_SODA;
-  const isBooze = dispenserType === DISPENSER_TYPE_BOOZE;
-
-  if (isSoda && !!crossDispenser.requires_booze) {
-    parts.push('- Booze Dispenser (алкоголь)');
-  }
-  if (isBooze && !!crossDispenser.requires_soda) {
-    parts.push('- Soda Dispenser (безалк.)');
-  }
-  if (crossDispenser.requires_enzyme) {
-    parts.push('- Энзим (катализатор)');
-  }
-  if (crossDispenser.requires_chem) {
-    parts.push('- Chem Dispenser');
-  }
-  parts.push('Используйте «Частично» для выдачи доступных.');
-  return parts.join('\n');
-};
-
 export const GameRecipesTab = (props, context) => {
-  const { act } = useBackend(context);
   const { gameRecipes, searchQuery, isBeakerLoaded, beakerContents = [], beakerCurrentVolume, beakerMaxVolume, manipulatorTier = 1, isEmagged = false, isDrinkDispenser = false, dispenserType = 0, onOptimisticRecipe, markPending, isActionPending, beginRecipeAction, chemMetadata } = props;
 
   const triggerOptimisticRecipe = (baseIngredients, mult) => {
@@ -401,171 +377,6 @@ export const GameRecipesTab = (props, context) => {
     );
   };
 
-  const renderDispenseControls = (variantRecipe, name, altIndex, crossDispenser = null) => {
-    const baseIngredients = variantRecipe.base_ingredients || {};
-    const requiredTier = variantRecipe.tier || 1;
-    const isEmagTier = requiredTier >= 6;
-    const wasteInfo = calculateWasteInfo(variantRecipe, multiplier);
-    const canMake = canMakeCached(variantRecipe);
-    const totalInputVol = calculateTotalInputVolume(baseIngredients, multiplier);
-    const freeSpace = Math.max(0, (beakerMaxVolume || 0) - (beakerCurrentVolume || 0));
-    const willOverflow = isBeakerLoaded && totalInputVol > freeSpace;
-    const pendingKey = `recipe_${name}_${altIndex}`;
-    const isGlobalPending = isActionPending && isActionPending('__recipe_global');
-    const isPending = isGlobalPending || (isActionPending && isActionPending(pendingKey));
-
-    const dispenseParams = { recipe: name, multiplier };
-    if (altIndex > 0) {
-      dispenseParams.alt_index = altIndex;
-    }
-
-    const needsCrossDispenser = isDrinkDispenser && hasCrossDispenserReqs(crossDispenser, dispenserType);
-    const isUnlocked = isRecipeUnlocked({ tier: requiredTier, isDrinkDispenser, isEmagged, manipulatorTier, hasCrossReqs: needsCrossDispenser });
-
-    const canPartialDispense = needsCrossDispenser && Object.values(baseIngredients).some(
-      data => data.can_dispense
-    );
-
-    const doDispense = (actName) => {
-      if (isActionPending && isActionPending('__recipe_global')) {
-        return;
-      }
-      if (beginRecipeAction) {
-        if (!beginRecipeAction(pendingKey)) {
-          return;
-        }
-      } else if (markPending) {
-        markPending(pendingKey);
-      }
-      triggerOptimisticRecipe(baseIngredients, multiplier);
-      act(actName, dispenseParams);
-    };
-
-    return (
-      <Box inline style={{ whiteSpace: 'nowrap' }}>
-        <Box as="span" color="good" bold>
-          &rarr; {(variantRecipe.result_amount || 1) * multiplier}u
-        </Box>
-        {wasteInfo.length > 0 && (
-          <Tooltip content={
-            <Box>
-              <Box bold mb={0.5}>Остаток:</Box>
-              {wasteInfo.map(w => (
-                <Box key={w.name}>{w.name}: {w.amount}u</Box>
-              ))}
-              {variantRecipe.clean_batches && variantRecipe.clean_batches.length > 0 && (
-                <Box mt={0.5} color="label">
-                  Чистые партии: {variantRecipe.clean_batches.join(', ')}x
-                </Box>
-              )}
-            </Box>
-          }>
-            <Box as="span" color="average" ml={0.3}>
-              (+{wasteInfo.reduce((sum, w) => sum + w.amount, 0)}u)
-            </Box>
-          </Tooltip>
-        )}
-        <Box as="span" color="label" fontSize="10px" ml={0.5}>
-          ({totalInputVol}u вх.)
-        </Box>
-        {needsCrossDispenser ? (
-          <>
-            {canPartialDispense && (
-              <Button
-                compact
-                ml={0.5}
-                icon={isPending ? 'spinner' : 'flask'}
-                iconSpin={isPending}
-                content={multiplier > 1 ? `x${multiplier}` : 'Выдать доступные'}
-                color={isBeakerLoaded ? 'green' : 'default'}
-                disabled={!isBeakerLoaded || isPending}
-                tooltip="Выдать только доступные на этом диспенсере ингредиенты"
-                onClick={() => doDispense('dispense_recipe_partial')}
-              />
-            )}
-            {(() => {
-              const totalIngredients = Object.keys(baseIngredients).length;
-              const readyIngredients = Object.entries(baseIngredients).filter(
-                ([ingredientName, data]) => {
-                  if (data.can_dispense) return true;
-                  const needed = calculateActualAmount(data, multiplier);
-                  return (beakerByName[ingredientName] || 0) >= needed;
-                }
-              ).length;
-              return readyIngredients < totalIngredients && (
-                <Box as="span" color="label" fontSize="10px" ml={0.3}>
-                  [{readyIngredients}/{totalIngredients}]
-                </Box>
-              );
-            })()}
-            <Button
-              compact
-              ml={0.3}
-              icon={isPending ? 'spinner' : (isUnlocked ? 'flask' : 'lock')}
-              iconSpin={isPending}
-              color={!isUnlocked ? 'bad' : (canMake ? (willOverflow ? 'average' : 'teal') : 'default')}
-              disabled={!isBeakerLoaded || !canMake || !isUnlocked || isPending}
-              tooltip={!isUnlocked
-                ? (isEmagTier ? 'Заблокировано! Требуется EMAG' : `Заблокировано! Требуется манипулятор T${requiredTier}+`)
-                : !canMake
-                  ? buildCrossDispenserTooltip(crossDispenser, dispenserType)
-                  : willOverflow
-                    ? `Недостаточно места! Нужно ${totalInputVol}u, свободно ${toFixed(freeSpace)}u`
-                    : 'Выдать все ингредиенты (требуется содержимое из другого диспенсера в ёмкости)'}
-              onClick={() => doDispense('dispense_recipe_game')}
-            />
-          </>
-        ) : (
-          <>
-            {canPartialDispense && (
-              <Button
-                compact
-                ml={0.5}
-                icon={isPending ? 'spinner' : 'clock'}
-                iconSpin={isPending}
-                content="Частично"
-                color="teal"
-                disabled={!isBeakerLoaded || isPending}
-                tooltip="Выдать только доступные на этом диспенсере ингредиенты"
-                onClick={() => doDispense('dispense_recipe_partial')}
-              />
-            )}
-            <Button
-              compact
-              ml={0.5}
-              icon={isPending ? 'spinner' : (isUnlocked ? 'flask' : 'lock')}
-              iconSpin={isPending}
-              content={multiplier > 1 ? `x${multiplier}` : 'Выдать'}
-              color={!isUnlocked ? 'bad' : (canMake ? (willOverflow ? 'average' : 'green') : 'bad')}
-              disabled={!isBeakerLoaded || !canMake || !isUnlocked || isPending}
-              tooltip={!isUnlocked
-                ? (isEmagTier ? 'Заблокировано! Требуется EMAG' : `Заблокировано! Требуется манипулятор T${requiredTier}+`)
-                : !canMake
-                  ? 'Недостаточно ингредиентов (проверьте ёмкость)'
-                  : willOverflow
-                    ? `Недостаточно места! Нужно ${totalInputVol}u, свободно ${toFixed(freeSpace)}u`
-                    : 'Выдать все базовые ингредиенты'}
-              onClick={() => doDispense('dispense_recipe_game')}
-            />
-          </>
-        )}
-        {wasteInfo.length > 0 && (() => {
-          const cleanBatches = variantRecipe.clean_batches || [];
-          const nextClean = cleanBatches.find(n => n > multiplier) || 0;
-          return nextClean > 0 && (
-            <Button
-              compact
-              ml={0.3}
-              icon="sync"
-              tooltip={`Округлить до ${nextClean}x (без остатка)`}
-              onClick={() => setMultiplier(nextClean)}
-            />
-          );
-        })()}
-      </Box>
-    );
-  };
-
   const renderRecipeBody = (variantRecipe, name, altIndex) => {
     const baseIngredients = variantRecipe.base_ingredients || {};
     const isFermiChem = !!variantRecipe.is_fermichem;
@@ -707,7 +518,27 @@ export const GameRecipesTab = (props, context) => {
                     </Stack.Item>
                     <Stack.Item grow basis={0} />
                     <Stack.Item shrink={0} ml={1}>
-                      {renderDispenseControls(variantRecipe, name, altIndex, recipe.cross_dispenser)}
+                      <RecipeDispenseControls
+                        variantRecipe={variantRecipe}
+                        recipeName={name}
+                        altIndex={altIndex}
+                        crossDispenser={recipe.cross_dispenser}
+                        multiplier={multiplier}
+                        isBeakerLoaded={isBeakerLoaded}
+                        beakerByName={beakerByName}
+                        beakerCurrentVolume={beakerCurrentVolume}
+                        beakerMaxVolume={beakerMaxVolume}
+                        dispenserType={dispenserType}
+                        isDrinkDispenser={isDrinkDispenser}
+                        isEmagged={isEmagged}
+                        manipulatorTier={manipulatorTier}
+                        canMakeCached={canMakeCached}
+                        markPending={markPending}
+                        isActionPending={isActionPending}
+                        beginRecipeAction={beginRecipeAction}
+                        onOptimisticRecipe={triggerOptimisticRecipe}
+                        setMultiplier={setMultiplier}
+                      />
                     </Stack.Item>
                   </Stack>
                   {renderRecipeBody(variantRecipe, name, altIndex)}
@@ -731,7 +562,27 @@ export const GameRecipesTab = (props, context) => {
                 </RecipeName>
               </Stack.Item>
               <Stack.Item shrink={0} ml={1}>
-                {renderDispenseControls(recipe, name, 0, recipe.cross_dispenser)}
+                <RecipeDispenseControls
+                  variantRecipe={recipe}
+                  recipeName={name}
+                  altIndex={0}
+                  crossDispenser={recipe.cross_dispenser}
+                  multiplier={multiplier}
+                  isBeakerLoaded={isBeakerLoaded}
+                  beakerByName={beakerByName}
+                  beakerCurrentVolume={beakerCurrentVolume}
+                  beakerMaxVolume={beakerMaxVolume}
+                  dispenserType={dispenserType}
+                  isDrinkDispenser={isDrinkDispenser}
+                  isEmagged={isEmagged}
+                  manipulatorTier={manipulatorTier}
+                  canMakeCached={canMakeCached}
+                  markPending={markPending}
+                  isActionPending={isActionPending}
+                  beginRecipeAction={beginRecipeAction}
+                  onOptimisticRecipe={triggerOptimisticRecipe}
+                  setMultiplier={setMultiplier}
+                />
               </Stack.Item>
             </Stack>
             {renderRecipeBody(recipe, name, 0)}

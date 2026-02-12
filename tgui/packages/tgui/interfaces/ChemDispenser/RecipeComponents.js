@@ -1,3 +1,5 @@
+import { toFixed } from 'common/math';
+
 import { useBackend } from '../../backend';
 import {
   Box,
@@ -6,7 +8,15 @@ import {
   Icon,
   Tooltip,
 } from '../../components';
-import { DISPENSER_TYPE_BOOZE, DISPENSER_TYPE_SODA } from './utils';
+import {
+  calculateActualAmount,
+  calculateTotalInputVolume,
+  calculateWasteInfo,
+  DISPENSER_TYPE_BOOZE,
+  DISPENSER_TYPE_SODA,
+  hasCrossDispenserReqs,
+  isRecipeUnlocked,
+} from './utils';
 
 export const FermiChemBadge = () => (
   <Tooltip content="FermiChem - сложная реакция с особыми условиями">
@@ -105,6 +115,272 @@ export const FermiChemDetails = (props) => {
           </>
         )}
       </Box>
+    </Box>
+  );
+};
+
+const buildCrossDispenserTooltip = (crossDispenser, dispenserType) => {
+  const parts = ['Требуются ингредиенты из другого диспенсера:'];
+  const isSoda = dispenserType === DISPENSER_TYPE_SODA;
+  const isBooze = dispenserType === DISPENSER_TYPE_BOOZE;
+
+  if (isSoda && !!crossDispenser.requires_booze) {
+    parts.push('- Booze Dispenser (алкоголь)');
+  }
+  if (isBooze && !!crossDispenser.requires_soda) {
+    parts.push('- Soda Dispenser (безалк.)');
+  }
+  if (crossDispenser.requires_enzyme) {
+    parts.push('- Энзим (катализатор)');
+  }
+  if (crossDispenser.requires_chem) {
+    parts.push('- Chem Dispenser');
+  }
+  parts.push('Используйте «Частично» для выдачи доступных.');
+  return parts.join('\n');
+};
+
+const getLockTooltip = (isEmagTier, requiredTier) => {
+  if (isEmagTier) {
+    return 'Заблокировано! Требуется EMAG';
+  }
+  return `Заблокировано! Требуется манипулятор T${requiredTier}+`;
+};
+
+const getRecipeDispenseTooltip = ({
+  isUnlocked,
+  isEmagTier,
+  requiredTier,
+  needsCrossDispenser,
+  canMake,
+  crossDispenser,
+  dispenserType,
+  willOverflow,
+  totalInputVol,
+  freeSpace,
+}) => {
+  if (!isUnlocked) {
+    return getLockTooltip(isEmagTier, requiredTier);
+  }
+  if (!canMake) {
+    if (needsCrossDispenser) {
+      return buildCrossDispenserTooltip(crossDispenser, dispenserType);
+    }
+    return 'Недостаточно ингредиентов (проверьте ёмкость)';
+  }
+  if (willOverflow) {
+    return `Недостаточно места! Нужно ${totalInputVol}u, свободно ${toFixed(freeSpace)}u`;
+  }
+  if (needsCrossDispenser) {
+    return 'Выдать все ингредиенты (требуется содержимое из другого диспенсера в ёмкости)';
+  }
+  return 'Выдать все базовые ингредиенты';
+};
+
+const getRecipeDispenseColor = ({
+  isUnlocked,
+  canMake,
+  willOverflow,
+  needsCrossDispenser,
+}) => {
+  if (!isUnlocked) {
+    return 'bad';
+  }
+  if (!canMake) {
+    return needsCrossDispenser ? 'default' : 'bad';
+  }
+  if (willOverflow) {
+    return 'average';
+  }
+  return needsCrossDispenser ? 'teal' : 'green';
+};
+
+const getReadyIngredientsProgress = (baseIngredients, beakerByName, multiplier) => {
+  const totalIngredients = Object.keys(baseIngredients).length;
+  const readyIngredients = Object.entries(baseIngredients).filter(
+    ([ingredientName, data]) => {
+      if (data.can_dispense) return true;
+      const needed = calculateActualAmount(data, multiplier);
+      return (beakerByName[ingredientName] || 0) >= needed;
+    }
+  ).length;
+
+  if (readyIngredients >= totalIngredients) {
+    return null;
+  }
+
+  return {
+    readyIngredients,
+    totalIngredients,
+  };
+};
+
+const getNextCleanBatch = (cleanBatches, multiplier) => {
+  return cleanBatches.find((n) => n > multiplier) || 0;
+};
+
+export const RecipeDispenseControls = (props, context) => {
+  const { act } = useBackend(context);
+  const {
+    variantRecipe,
+    recipeName,
+    altIndex = 0,
+    crossDispenser = null,
+    multiplier,
+    isBeakerLoaded,
+    beakerByName,
+    beakerCurrentVolume,
+    beakerMaxVolume,
+    dispenserType = 0,
+    isDrinkDispenser = false,
+    isEmagged = false,
+    manipulatorTier = 1,
+    canMakeCached,
+    markPending,
+    isActionPending,
+    beginRecipeAction,
+    onOptimisticRecipe,
+    setMultiplier,
+  } = props;
+
+  const baseIngredients = variantRecipe.base_ingredients || {};
+  const requiredTier = variantRecipe.tier || 1;
+  const isEmagTier = requiredTier >= 6;
+  const wasteInfo = calculateWasteInfo(variantRecipe, multiplier);
+  const canMake = canMakeCached(variantRecipe);
+  const totalInputVol = calculateTotalInputVolume(baseIngredients, multiplier);
+  const freeSpace = Math.max(0, (beakerMaxVolume || 0) - (beakerCurrentVolume || 0));
+  const willOverflow = isBeakerLoaded && totalInputVol > freeSpace;
+  const pendingKey = `recipe_${recipeName}_${altIndex}`;
+  const isGlobalPending = isActionPending && isActionPending('__recipe_global');
+  const isPending = isGlobalPending || (isActionPending && isActionPending(pendingKey));
+
+  const needsCrossDispenser = isDrinkDispenser
+    && hasCrossDispenserReqs(crossDispenser, dispenserType);
+  const isUnlocked = isRecipeUnlocked({
+    tier: requiredTier,
+    isDrinkDispenser,
+    isEmagged,
+    manipulatorTier,
+    hasCrossReqs: needsCrossDispenser,
+  });
+  const canPartialDispense = needsCrossDispenser
+    && Object.values(baseIngredients).some((data) => data.can_dispense);
+  const progress = needsCrossDispenser
+    ? getReadyIngredientsProgress(baseIngredients, beakerByName, multiplier)
+    : null;
+  const cleanBatches = variantRecipe.clean_batches || [];
+  const nextClean = wasteInfo.length > 0
+    ? getNextCleanBatch(cleanBatches, multiplier)
+    : 0;
+  const wasteAmount = wasteInfo.reduce((sum, w) => sum + w.amount, 0);
+
+  const tooltip = getRecipeDispenseTooltip({
+    isUnlocked,
+    isEmagTier,
+    requiredTier,
+    needsCrossDispenser,
+    canMake,
+    crossDispenser,
+    dispenserType,
+    willOverflow,
+    totalInputVol,
+    freeSpace,
+  });
+  const buttonColor = getRecipeDispenseColor({
+    isUnlocked,
+    canMake,
+    willOverflow,
+    needsCrossDispenser,
+  });
+
+  const doDispense = (actName) => {
+    if (isActionPending && isActionPending('__recipe_global')) {
+      return;
+    }
+    if (beginRecipeAction) {
+      if (!beginRecipeAction(pendingKey)) {
+        return;
+      }
+    } else if (markPending) {
+      markPending(pendingKey);
+    }
+    if (onOptimisticRecipe) {
+      onOptimisticRecipe(baseIngredients, multiplier);
+    }
+    const dispenseParams = { recipe: recipeName, multiplier };
+    if (altIndex > 0) {
+      dispenseParams.alt_index = altIndex;
+    }
+    act(actName, dispenseParams);
+  };
+
+  return (
+    <Box inline style={{ whiteSpace: 'nowrap' }}>
+      <Box as="span" color="good" bold>
+        &rarr; {(variantRecipe.result_amount || 1) * multiplier}u
+      </Box>
+      {wasteInfo.length > 0 && (
+        <Tooltip content={
+          <Box>
+            <Box bold mb={0.5}>Остаток:</Box>
+            {wasteInfo.map((w) => (
+              <Box key={w.name}>{w.name}: {w.amount}u</Box>
+            ))}
+            {cleanBatches.length > 0 && (
+              <Box mt={0.5} color="label">
+                Чистые партии: {cleanBatches.join(', ')}x
+              </Box>
+            )}
+          </Box>
+        }>
+          <Box as="span" color="average" ml={0.3}>
+            (+{wasteAmount}u)
+          </Box>
+        </Tooltip>
+      )}
+      <Box as="span" color="label" fontSize="10px" ml={0.5}>
+        ({totalInputVol}u вх.)
+      </Box>
+
+      {canPartialDispense && (
+        <Button
+          compact
+          ml={0.5}
+          icon={isPending ? 'spinner' : 'flask'}
+          iconSpin={isPending}
+          content={multiplier > 1 ? `x${multiplier}` : 'Выдать доступные'}
+          color={isBeakerLoaded ? 'green' : 'default'}
+          disabled={!isBeakerLoaded || isPending}
+          tooltip="Выдать только доступные на этом диспенсере ингредиенты"
+          onClick={() => doDispense('dispense_recipe_partial')}
+        />
+      )}
+      {progress && (
+        <Box as="span" color="label" fontSize="10px" ml={0.3}>
+          [{progress.readyIngredients}/{progress.totalIngredients}]
+        </Box>
+      )}
+      <Button
+        compact
+        ml={needsCrossDispenser ? 0.3 : 0.5}
+        icon={isPending ? 'spinner' : (isUnlocked ? 'flask' : 'lock')}
+        iconSpin={isPending}
+        content={needsCrossDispenser ? null : (multiplier > 1 ? `x${multiplier}` : 'Выдать')}
+        color={buttonColor}
+        disabled={!isBeakerLoaded || !canMake || !isUnlocked || isPending}
+        tooltip={tooltip}
+        onClick={() => doDispense('dispense_recipe_game')}
+      />
+      {nextClean > 0 && (
+        <Button
+          compact
+          ml={0.3}
+          icon="sync"
+          tooltip={`Округлить до ${nextClean}x (без остатка)`}
+          onClick={() => setMultiplier(nextClean)}
+        />
+      )}
     </Box>
   );
 };
