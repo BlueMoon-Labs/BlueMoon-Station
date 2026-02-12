@@ -384,6 +384,18 @@
 	else
 		return ..()
 
+/obj/item/radio/AltClick(mob/user)
+	. = ..()
+	if(!user.canUseTopic(src, TRUE, TRUE, FALSE, TRUE))
+		return
+	broadcasting = !broadcasting
+
+/obj/item/radio/CtrlClick(mob/user)
+	. = ..()
+	if(!user.canUseTopic(src, TRUE, TRUE, FALSE, TRUE))
+		return
+	listening = !listening
+
 /obj/item/radio/emp_act(severity)
 	. = ..()
 	if (. & EMP_PROTECT_SELF)
