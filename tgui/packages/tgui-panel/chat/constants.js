@@ -32,6 +32,7 @@ export const MESSAGE_TYPE_ADMINPM = 'adminpm';
 export const MESSAGE_TYPE_COMBAT = 'combat';
 export const MESSAGE_TYPE_LEWD = 'lewd';
 export const MESSAGE_TYPE_ADMINCHAT = 'adminchat';
+export const MESSAGE_TYPE_ADMINLOOC = 'adminlooc';
 export const MESSAGE_TYPE_MODCHAT = 'modchat';
 export const MESSAGE_TYPE_EVENTCHAT = 'eventchat';
 export const MESSAGE_TYPE_ADMINLOG = 'adminlog';
@@ -67,7 +68,7 @@ export const MESSAGE_TYPES = [
     name: 'Info',
     description: 'Non-urgent messages from the game and items',
     selector:
-      '.notice:not(.pm), .adminnotice, .info, .sinister, .cult, .infoplain, .announce, .hear, .smallnotice, .holoparasite, .boldnotice',
+      '.notice:not(.pm), .info, .sinister, .cult, .infoplain, .announce, .hear, .smallnotice, .holoparasite, .boldnotice, .votepanel',
   },
   {
     type: MESSAGE_TYPE_WARNING,
@@ -130,6 +131,7 @@ export const MESSAGE_TYPES = [
     selector: '.admin_channel, .adminsay',
     admin: true,
   },
+  /* Такого типа у нас нету
   {
     type: MESSAGE_TYPE_MODCHAT,
     name: 'Mod Chat',
@@ -137,25 +139,38 @@ export const MESSAGE_TYPES = [
     selector: '.mod_channel',
     admin: true,
   },
+  */
+  {
+    type: MESSAGE_TYPE_ADMINLOOC,
+    name: '(R)LOOC',
+    description: 'Global LOOC',
+    selector: '.adminlooc',
+    admin: true,
+  },
   {
     type: MESSAGE_TYPE_ADMINLOG,
     name: 'Admin Log',
     description: 'ADMIN LOG: Urist McAdmin has jumped to coordinates X, Y, Z',
-    selector: '.log_message',
+    selector: '.log_message, .filter_adminlog, .antigrif, .adminnotice',
     admin: true,
   },
+  /* Такого типа у нас нету
   {
     type: MESSAGE_TYPE_ATTACKLOG,
     name: 'Attack Log',
     description: 'Urist McTraitor has shot John Doe',
     admin: true,
   },
+  */
+ /* Такого типа у нас нету
   {
     type: MESSAGE_TYPE_DEBUG,
     name: 'Debug Log',
     description: 'DEBUG: SSPlanets subsystem Recover().',
+    selector: '.admindebug',
     admin: true,
   },
+  */
   // Mentor
   {
     type: MESSAGE_TYPE_MENTORSAY,

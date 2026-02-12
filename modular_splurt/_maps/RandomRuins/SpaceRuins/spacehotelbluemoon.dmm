@@ -5157,10 +5157,10 @@
 	specialfunctions = 4;
 	pixel_x = -24
 	},
-/obj/item/kirbyplants/hedge{
-	pixel_y = 28;
+/obj/structure/hedge{
 	layer = 3;
-	anchored = 1
+	pixel_x = 0;
+	pixel_y = 28
 	},
 /turf/open/floor/carpet/royalblack,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
@@ -6219,10 +6219,10 @@
 /turf/open/floor/carpet/royalblack,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
 "Li" = (
-/obj/item/kirbyplants/hedge{
-	pixel_y = 28;
+/obj/structure/hedge{
 	layer = 3;
-	anchored = 1
+	pixel_x = 0;
+	pixel_y = 28
 	},
 /turf/open/floor/carpet/royalblack,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
@@ -6991,10 +6991,10 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
-/obj/item/kirbyplants/hedge{
-	pixel_y = 28;
+/obj/structure/hedge{
 	layer = 3;
-	anchored = 1
+	pixel_x = 0;
+	pixel_y = 28
 	},
 /turf/open/floor/carpet/royalblack,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)

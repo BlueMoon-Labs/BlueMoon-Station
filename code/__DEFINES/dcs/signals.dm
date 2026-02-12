@@ -846,3 +846,7 @@
 // BLUEMOON ADD — pregnancy signals
 #define COMSIG_PREGNANCY_STARTED "pregnancy_started"
 #define COMSIG_PREGNANCY_ENDED "pregnancy_ended"
+
+// interaction signals
+#define COMSIG_INTERACTION_ADJACENT "interaction_adjacent"
+#define COMSIG_INTERACTION_KISS		"interaction_kiss"

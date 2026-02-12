@@ -50141,7 +50141,7 @@
 /turf/open/floor/plasteel,
 /area/science/storage)
 "dIF" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
 	external_pressure_bound = 140;
 	name = "server vent";
 	pressure_checks = 0

@@ -145,9 +145,8 @@
 	righthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_r.dmi'
 //индуктор
 /obj/item/inducer/inteq
-	icon_state = "inducer"
+	icon_state = "inducer-inteq"
 	item_state = "inducer"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/infiltrator.dmi'
 	lefthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_l.dmi'
 	righthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_r.dmi'
 	powertransfer = 2000

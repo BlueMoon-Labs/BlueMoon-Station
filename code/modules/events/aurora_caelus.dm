@@ -15,7 +15,7 @@
 /datum/round_event/aurora_caelus
 	announce_when = 1
 	start_when = 9
-	end_when = 50
+	end_when = 90
 	var/list/aurora_colors = list("#A2FF80", "#A2FF8B", "#A2FF96", "#A2FFA5", "#A2FFB6", "#A2FFC7", "#A2FFDE", "#A2FFEE")
 	var/aurora_progress = 0 //this cycles from 1 to 8, slowly changing colors from gentle green to gentle blue
 	var/list/ion_overlays = list()
@@ -37,7 +37,8 @@
 				S.set_light(S.light_range * 3, S.light_power * 0.5)
 	for(var/V in GLOB.player_list)
 		var/mob/M = V
-		ADD_TRAIT(M, TRAIT_PACIFISM, "event_effect")
+		if(is_station_level(M.z))
+			ADD_TRAIT(M, TRAIT_PACIFISM, "event_effect")
 	for(var/client/C in GLOB.clients)
 		if(!C.mob || !is_station_level(C.mob.z))
 			continue
@@ -65,7 +66,8 @@
 				fade_to_black(S)
 	for(var/V in GLOB.player_list)
 		var/mob/M = V
-		REMOVE_TRAIT(M, TRAIT_PACIFISM, "event_effect")
+		if(is_station_level(M.z))
+			REMOVE_TRAIT(M, TRAIT_PACIFISM, "event_effect")
 	// Частицы продолжают летать ещё ~минуту после завершения события
 	lingering_ion_fadeout()
 	priority_announce("Событие, связанное с Космическим Сиянием, заканчивается. Звездный свет постепенно возвращается в нормальное состояние. Возвращайтесь на свое рабочее место и продолжайте работать в обычном режиме. Приятной смены [station_name()] и спасибо, что посмотрели за этим событием с нами.",

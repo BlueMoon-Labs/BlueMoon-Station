@@ -2072,3 +2072,16 @@
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/vape/custom
 	ckeywhitelist = list("ordinarylife", "pingvas", "leony24", "kennedykiller", "theatlasplay", "theatlasgaming", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "hateredsoul", "vulpshiro", "dolbajob", "stgs", "silyamg", "tblkba", "dimofon")
+
+/datum/gear/donator/bm/crocinsmoke
+	name = "Crocin smoke"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/book/granter/spell/smoke/crocin
+	ckeywhitelist = list("deadlizard")
+	cost = 2
+
+/datum/gear/donator/bm/crocinsmoke/on_spawn(mob/living/carbon/human/user, obj/item/book/granter/spell/smoke/crocin/I)
+	if(!istype(user))
+		return
+	I.on_reading_finished(user)
+	qdel(I)

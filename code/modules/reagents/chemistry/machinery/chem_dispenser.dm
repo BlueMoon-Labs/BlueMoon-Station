@@ -568,7 +568,7 @@
 				if(!istype(src, /obj/machinery/chem_dispenser/drinks) && !istype(src, /obj/machinery/chem_dispenser/mutagen) && !istype(src, /obj/machinery/chem_dispenser/mutagensaltpeter) && !istype(src, /obj/machinery/chem_dispenser/abductor)) // These types are not used for grief.
 					var/turf/T = get_turf(src)
 					client.next_chem_grief_warning = world.time + CHEM_DISPENSER_GRIEF_ALERT_COOLDOWN
-					message_admins("<span class='adminhelp'>ANTI-GRIEF:</span> New player [ADMIN_LOOKUPFLW(user)] used \a [src] at [ADMIN_VERBOSEJMP(T)].")
+					message_antigrif("New player [ADMIN_LOOKUPFLW(user)] used \a [src] at [ADMIN_VERBOSEJMP(T)].")
 					client.used_chem_dispenser = TRUE
 
 /// Resolves ingredients to base reagents using all drink-dispenser reagent lists.

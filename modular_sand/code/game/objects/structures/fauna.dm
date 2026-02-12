@@ -20,5 +20,15 @@
 /obj/item/kirbyplants/hedge
 	name = "Hedge"
 	desc = "A large bushy hedge."
-	icon = 'modular_sand/icons/obj/flora/plants.dmi'
-	icon_state = "hedge-0"
+	icon = 'icons/obj/smooth_structures/hedge.dmi'
+	icon_state = "hedge"
+
+/obj/structure/hedge
+	name = "Hedge"
+	desc = "A large bushy hedge."
+	icon = 'icons/obj/smooth_structures/hedge.dmi'
+	icon_state = "hedge"
+	smooth = SMOOTH_TRUE
+	canSmoothWith = list(/obj/structure/hedge)
+	anchored = TRUE
+	max_integrity = 80

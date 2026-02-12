@@ -85,6 +85,7 @@
 					do_sparks(1, FALSE, A)
 				if(O)
 					O.update_icon()
+				update_icon()
 			else
 				break
 		if(done_any) // Only show a message if we succeeded at least once
@@ -143,6 +144,9 @@
 
 /obj/item/inducer/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
+	if(!proximity_flag)
+		return
+
 	if(user.a_intent == INTENT_HARM)
 		return
 
@@ -155,9 +159,9 @@
 /obj/item/inducer/examine(mob/living/M)
 	. = ..()
 	if(cell)
-		. += span_notice("Дисплей сообщает заряд в [DisplayEnergy(cell.charge)].")
+		. += span_notice("Дисплей сообщает о наличии батареи внутри: [cell.name].")
 	else
-		. += span_notice("Дисплей матово-тёмный.")
+		. += span_notice("Дисплей устройства матово-тёмный.")
 	if(opened)
 		. += span_notice("Слот батареи открыт.")
 
@@ -168,7 +172,30 @@
 	if(!cell)
 		. += "inducer-nobat"
 	else
-		. += "inducer-bat"
+		var/charge_percent = cell.percent()
+		if(charge_percent >= 98) // Первый слой в списке: статус заряда батареи индусера
+			. += "inducer-charge_full"
+		else if(charge_percent >= 6)
+			. += "inducer-charge_mid"
+		else if(charge_percent >= 1)
+			. += "inducer-charge_midblink"
+		else
+			. += "inducer-charge_no"
+
+		if(istype(cell, /obj/item/stock_parts/cell/bluespace) || istype(cell, /obj/item/stock_parts/cell/bluespacereactor))  // Второй слой в списке: тип батареи в индусере. Он кладётся ПОВЕРХ предыдущего слоя
+			. += "inducer-bat_bscell"
+		else if(istype(cell, /obj/item/stock_parts/cell/vortex))
+			. += "inducer-bat_vcell"
+		else if(istype(cell, /obj/item/stock_parts/cell/hyper))
+			. += "inducer-bat_hpcell"
+		else if(istype(cell, /obj/item/stock_parts/cell/super))
+			. += "inducer-bat_scell"
+		else if(istype(cell, /obj/item/stock_parts/cell/high/plus))
+			. += "inducer-bat_h+cell"
+		else if(istype(cell, /obj/item/stock_parts/cell/high))
+			. += "inducer-bat_hcell"
+		else
+			. += "inducer-bat"
 
 /obj/item/inducer/dry
 	cell_type = null

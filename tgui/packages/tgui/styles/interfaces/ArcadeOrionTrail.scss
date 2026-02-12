@@ -1,0 +1,155 @@
+// ---- Orion Trail Arcade ----
+// Space-themed Oregon Trail roguelike
+
+.ArcadeOrionTrail {
+  // ---- Start Screen ----
+  &__start {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(100, 149, 237, 0.3);
+    border-radius: 4px;
+    padding: 16px;
+  }
+
+  &__title {
+    color: #87ceeb;
+    text-shadow: 0 0 10px rgba(100, 149, 237, 0.6);
+    letter-spacing: 2px;
+    animation: ot-float 3s ease-in-out infinite;
+  }
+
+  &__start-btn {
+    font-size: 16px;
+    padding: 8px 24px !important;
+    animation: ot-pulse 2s ease-in-out infinite;
+  }
+
+  // ---- Stop / Journey ----
+  &__stop {
+    border-left: 3px solid #87ceeb;
+  }
+
+  // ---- Crew Badges ----
+  &__crew-badge {
+    background: rgba(100, 149, 237, 0.15);
+    border: 1px solid rgba(100, 149, 237, 0.3);
+    border-radius: 3px;
+    font-size: 12px;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(100, 149, 237, 0.25);
+    }
+  }
+
+  // ---- Event Panel ----
+  &__event {
+    background: rgba(50, 30, 0, 0.2);
+    border: 1px solid rgba(255, 165, 0, 0.4);
+    border-radius: 4px;
+    animation: ot-event-in 0.3s ease-out;
+  }
+
+  &__event-line {
+    padding: 2px 0;
+    color: #ddd;
+    animation: ot-line-fade 0.4s ease-out;
+
+    &:first-child {
+      font-weight: bold;
+      color: #ffa500;
+    }
+  }
+
+  // ---- Game Over ----
+  &__gameover {
+    background: rgba(80, 0, 0, 0.2);
+    border: 1px solid rgba(255, 0, 0, 0.3);
+    border-radius: 4px;
+    animation: ot-gameover 0.6s ease-out;
+  }
+
+  // ---- Emagged Variant ----
+  &--emagged {
+    border: 1px solid rgba(255, 0, 0, 0.4);
+    box-shadow: inset 0 0 30px rgba(255, 0, 0, 0.08);
+
+    .ArcadeOrionTrail__title {
+      color: #ff4444;
+      text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+    }
+
+    .ArcadeOrionTrail__stop {
+      border-left-color: #ff4444;
+    }
+
+    .ArcadeOrionTrail__crew-badge {
+      border-color: rgba(255, 0, 0, 0.3);
+      background: rgba(255, 0, 0, 0.1);
+
+      &:hover {
+        background: rgba(255, 0, 0, 0.2);
+      }
+    }
+
+    .ArcadeOrionTrail__event {
+      border-color: rgba(255, 0, 0, 0.5);
+    }
+  }
+}
+
+// ---- Animations ----
+@keyframes ot-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes ot-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 4px rgba(100, 149, 237, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(100, 149, 237, 0.6);
+  }
+}
+
+@keyframes ot-event-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ot-line-fade {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes ot-gameover {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  60% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

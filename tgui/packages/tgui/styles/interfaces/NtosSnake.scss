@@ -1,0 +1,180 @@
+// ═══════════════════════════════════════════════════
+//  NtosSnake — Змейка для планшета TGUI
+//  Flexbox-based rows (no CSS grid)
+// ═══════════════════════════════════════════════════
+
+.NtosSnake {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 4px;
+  padding: 4px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #66ff66;
+  }
+
+  &__score {
+    font-size: 13px;
+    color: #ddd;
+  }
+
+  &__highscore {
+    color: #ffd700;
+  }
+
+  // ── Game Field ──
+  &__field-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    background: #111;
+    border: 2px solid #333;
+    border-radius: 4px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+  }
+
+  &__row {
+    display: flex;
+    flex-direction: row;
+  }
+
+  // ── Cells ──
+  &__cell {
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-sizing: border-box;
+
+    &--head {
+      background: #44ff44;
+      border-color: #66ff66;
+      border-radius: 3px;
+      box-shadow: 0 0 6px rgba(68, 255, 68, 0.6);
+    }
+
+    &--body {
+      background: #22aa22;
+      border-color: #33bb33;
+      border-radius: 2px;
+    }
+
+    &--food {
+      background: #ff4444;
+      border-color: #ff6666;
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(255, 68, 68, 0.6);
+      animation: snake-food-pulse 1s ease-in-out infinite;
+    }
+  }
+
+  // ── Overlay ──
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 4px;
+    gap: 6px;
+    z-index: 10;
+
+    &--dead {
+      background: rgba(80, 0, 0, 0.75);
+    }
+  }
+
+  &__overlay-text {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  &__overlay-reason {
+    font-size: 13px;
+    color: #ccc;
+  }
+
+  &__overlay-score {
+    font-size: 15px;
+    color: #66ff66;
+    font-weight: bold;
+  }
+
+  // ── Controls ──
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 8px;
+  }
+
+  &__dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  &__dpad-row {
+    display: flex;
+    gap: 2px;
+  }
+
+  &__dpad-btn {
+    width: 36px !important;
+    height: 32px !important;
+    min-width: 36px !important;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__action-btns {
+    flex: 1;
+  }
+
+  &__btn-start,
+  &__btn-pause {
+    font-size: 14px;
+    padding: 8px !important;
+  }
+}
+
+@keyframes snake-food-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.85);
+  }
+}

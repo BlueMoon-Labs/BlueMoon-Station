@@ -691,13 +691,39 @@
 	else
 		. = ..()
 
+/obj/structure/table/reinforced/rglass
+	name = "reinforced glass table"
+	desc = "A reinforced version of the glass table."
+	icon = 'icons/obj/smooth_structures/rglass_table.dmi'
+	icon_state = "rglass_table"
+	buildstack = /obj/item/stack/sheet/rglass
+	canSmoothWith = null
+	max_integrity = 150
+
+/obj/structure/table/reinforced/plasmarglass
+	name = "reinforced plasma glass table"
+	desc = "A reinforced version of the plasma glass table."
+	icon = 'icons/obj/smooth_structures/rplasmaglass_table.dmi'
+	icon_state = "rplasmaglass_table"
+	buildstack = /obj/item/stack/sheet/plasmarglass
+	canSmoothWith = null
+
+/obj/structure/table/reinforced/titaniumglass
+	name = "titanium glass table"
+	desc = "A titanium reinforced glass table, with a fresh coat of NT white paint."
+	icon = 'icons/obj/smooth_structures/titaniumglass_table.dmi'
+	icon_state = "titaniumglass_table"
+	buildstack = /obj/item/stack/sheet/titaniumglass
+	canSmoothWith = null
+	max_integrity = 250
+
 /obj/structure/table/reinforced/plastitaniumglass
 	name = "Plastitanium Glass Table"
+	desc = "Стол из силикат-плазменного композита с титановым усилением. Прочно так же, как и звучит."
 	icon = 'icons/obj/smooth_structures/plastitaniumglass_table.dmi'
 	icon_state = "plastitaniumglass_table"
-	canSmoothWith = list(/obj/structure/table/reinforced/plastitaniumglass)
-	desc = "Стол из силикат-плазменного композита с титановым усилением. Прочно так же, как и звучит."
 	buildstack = /obj/item/stack/sheet/plastitaniumglass
+	canSmoothWith = null
 	max_integrity = 300
 
 /obj/structure/table/reinforced/brass
