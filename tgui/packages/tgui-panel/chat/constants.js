@@ -128,7 +128,7 @@ export const MESSAGE_TYPES = [
     type: MESSAGE_TYPE_ADMINCHAT,
     name: 'Admin Chat',
     description: 'ASAY messages',
-    selector: '.admin_channel, .adminsay',
+    selector: '.admin_channel, .adminsay, .message_to_admin',
     admin: true,
   },
   /* Такого типа у нас нету
