@@ -32,11 +32,13 @@
 		if(FOOTSTEP_MOB_SHOE)
 			footstep_sounds = GLOB.footstep
 		if(FOOTSTEP_MOB_SLIME)
-			footstep_sounds = 'sound/effects/footstep/slime1.ogg'
+			footstep_sounds = FOOTSTEP_SOUND_SLIME
 		if(FOOTSTEP_MOB_CRAWL)
-			footstep_sounds = 'sound/effects/footstep/crawl1.ogg'
+			footstep_sounds = FOOTSTEP_SOUND_CRAWL
+		if(FOOTSTEP_MOB_BONE)
+			footstep_sounds = FOOTSTEP_SOUND_BONE
 		if(FOOTSTEP_OBJ_ROBOT)
-			footstep_sounds = 'sound/effects/tank_treads.ogg'
+			footstep_sounds = FOOTSTEP_SOUND_OBJ_ROBOT
 			RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(play_simplestep_machine))
 			return
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(play_simplestep)) //Note that this doesn't get called for humans.
@@ -50,7 +52,7 @@
 	var/mob/living/LM = parent
 	if(!T.footstep || LM.buckled || !CHECK_MOBILITY(LM, MOBILITY_STAND) || LM.throwing || (LM.movement_type & (VENTCRAWLING | FLYING)))
 		if(LM.lying && !LM.buckled)
-			playsound(T, 'sound/effects/footstep/crawl1.ogg', 15 * volume, falloff_distance = 1)
+			playsound(T, FOOTSTEP_SOUND_CRAWL, 15 * volume, falloff_distance = 1)
 		return
 
 	if(HAS_TRAIT(LM, TRAIT_SILENT_STEP))
@@ -80,7 +82,10 @@
 	if(!T)
 		return
 	if(isfile(footstep_sounds) || istext(footstep_sounds))
-		playsound(T, footstep_sounds, volume, falloff_distance = 1)
+		var/vol = volume
+		if(footstep_type == FOOTSTEP_MOB_BONE)
+			vol *= 50
+		playsound(T, footstep_sounds, vol, falloff_distance = 1)
 	else
 		var/turf_footstep
 		switch(footstep_type)
@@ -128,11 +133,11 @@
 				turf_footstep = T.footstep
 				L = GLOB.footstep
 			if(FOOTSTEP_MOB_SLIME)
-				playsound(T, 'sound/effects/footstep/slime1.ogg', 50 * volume, falloff_distance = 1)
+				playsound(T, FOOTSTEP_SOUND_SLIME, 50 * volume, falloff_distance = 1)
 				play_fov_effect(H, 3, "footstep", dir = H.dir, ignore_self = FALSE)
 				return
 			if(FOOTSTEP_MOB_CRAWL)
-				playsound(T, 'sound/effects/footstep/crawl1.ogg', 50 * volume, falloff_distance = 1)
+				playsound(T, FOOTSTEP_SOUND_CRAWL, 50 * volume, falloff_distance = 1)
 				play_fov_effect(H, 3, "footstep", dir = H.dir, ignore_self = FALSE, time = 3 SECONDS)
 				return
 		special = TRUE

@@ -36,7 +36,17 @@
 	del_on_death = 1
 	loot = list(/obj/effect/decal/remains/human)
 
-	footstep_type = FOOTSTEP_MOB_SHOE
+	vocal_bark_id = "skelly"
+	vocal_pitch = 1.4
+	vocal_pitch_range = 0.4
+	vocal_speed = 8
+
+	footstep_type = FOOTSTEP_MOB_BONE
+
+/mob/living/simple_animal/hostile/skeleton/Initialize(mapload)
+	vocal_pitch = rand(10, 14) / 10
+	vocal_pitch_range = rand(3, 4) / 10
+	return ..()
 
 /mob/living/simple_animal/hostile/skeleton/eskimo
 	name = "undead eskimo"
