@@ -168,7 +168,9 @@
 	user.name = newname
 	user.real_name = newname
 	desc = "Salt. From dead crew, presumably."
-	return (TOXLOSS)
+	user.dust(TRUE, TRUE)
+	set_light(1, 2) // Like a ghosts
+	return MANUAL_SUICIDE
 
 /obj/item/reagent_containers/food/condiment/saltshaker/afterattack(obj/target, mob/living/user, proximity)
 	. = ..()
