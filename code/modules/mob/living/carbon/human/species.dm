@@ -1617,7 +1617,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 	//The fucking TRAIT_FAT mutation is the dumbest shit ever. It makes the code so difficult to work with
 	if(HAS_TRAIT(H, TRAIT_FAT))//I share your pain, past coder.
-		if(H.overeatduration < 100)
+		if(H.overeatduration < 100 || H.nutrition < NUTRITION_LEVEL_WELL_FED)
 			to_chat(H, span_notice("Я чувствую себя гораздо лучше!"))
 			REMOVE_TRAIT(H, TRAIT_FAT, OBESITY)
 			H.remove_movespeed_modifier(/datum/movespeed_modifier/obesity)
