@@ -1,3 +1,5 @@
+GLOBAL_VAR_INIT(bsminers_lock, FALSE)	//Miners locked by head ID swipes
+
 // Configuration defines
 #define BLUESPACE_MINER_BONUS_MULT		CONFIG_GET(number/bluespaceminer_mult_output)
 #define BLUESPACE_MINER_CRYSTAL_TIER	CONFIG_GET(number/bluespaceminer_crystal_tier)
@@ -201,6 +203,8 @@
 		return
 	if(!anchored || !bs_core || !materials?.silo || !materials?.mat_container || materials?.on_hold())
 		return FALSE
+	if(GLOB.bsminers_lock && z_check(TRUE))
+		return FALSE
 
 /obj/machinery/mineral/bluespace_miner/update_icon_state()
 	icon_state = initial(icon_state) + (is_operational() ? "-work" : "")
@@ -326,7 +330,7 @@
 		return last_z_check
 	else
 		COOLDOWN_START(src, z_check_cooldown, z_check_cooldown_time)
-		last_z_check = is_station_level(z) || is_mining_level(z)
+		last_z_check = is_station_level(z)// || is_mining_level(z)
 
 	return last_z_check
 
