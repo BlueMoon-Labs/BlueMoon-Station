@@ -14,6 +14,7 @@
 	strip_delay = 600
 	actions_types = list()
 	mutantrace_variation = STYLE_MUZZLE
+	unique_reskin = null
 
 /obj/item/clothing/suit/space/hardsuit/cybersun
 	name = "Cybersun Hardsuit"
@@ -33,3 +34,8 @@
 	actions_types = list(/datum/action/item_action/toggle_helmet)
 	jetpack = /obj/item/tank/jetpack/suit
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
+	unique_reskin = null
+
+/obj/item/clothing/suit/space/hardsuit/cybersun/Initialize()
+	. = ..()
+	allowed = GLOB.security_hardsuit_allowed

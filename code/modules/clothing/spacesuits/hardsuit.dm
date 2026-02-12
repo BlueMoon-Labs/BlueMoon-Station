@@ -622,6 +622,7 @@
 	item_state = "hardsuit0-blueshield"
 	hardsuit_type = "blueshield"
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
+	unique_reskin = null
 
 /obj/item/clothing/suit/space/hardsuit/blue_shield
 	name = "Blue Shield hardsuit"
@@ -636,6 +637,11 @@
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/blue_shield
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
+	unique_reskin = null
+
+/obj/item/clothing/suit/space/hardsuit/blue_shield/Initialize()
+	. = ..()
+	allowed = GLOB.security_hardsuit_allowed
 
 	//Security hardsuit
 /obj/item/clothing/head/helmet/space/hardsuit/security
