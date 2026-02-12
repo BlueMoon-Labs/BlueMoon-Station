@@ -2085,3 +2085,10 @@
 		return
 	I.on_reading_finished(user)
 	qdel(I)
+
+/datum/gear/donator/bm/twilight_spike
+	name = "Twilight Spike"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/donator/bm/twilight_spike
+	ckeywhitelist = list("dragon9090", "hellsinggc")
+	cost = 4

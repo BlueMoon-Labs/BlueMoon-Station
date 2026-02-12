@@ -14,12 +14,17 @@
 		to_chat(user,"<span class='warning'>[O] is already modified!")
 		return
 	if(O.type in fromitem) //makes sure O is the right thing
-		new product(usr.loc) //spawns the product
+		var/result = new product(usr.loc) //spawns the product
 		user.visible_message("<span class='warning'>[user] modifies [O]!","<span class='warning'>You modify the [O]!")
+		on_item_replace(O, result)
 		qdel(O) //Gets rid of the baton
 		qdel(src) //gets rid of the kit
 	else
 		to_chat(user, "<span class='warning'> You can't modify [O] with this kit!</span>")
+
+// may be useful for gun/stunbaton/etc modkits
+/obj/item/modkit/proc/on_item_replace(obj/old_item, obj/modified_item)
+	return
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
