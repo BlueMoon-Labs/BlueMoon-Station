@@ -1,19 +1,24 @@
 ////////////////////////////////
 /proc/message_admins(msg)
-	msg = "<span class=\"admin filter_adminlog\"><span class=\"prefix\">ADMIN LOG:</span> <span class=\"message linkify\">[msg]</span></span>"
+	msg = span_filter_adminlog("<span class=\"prefix\">ADMIN LOG:</span> <span class=\"message linkify\">[msg]</span>")
 	to_chat(GLOB.admins, msg, confidential = TRUE)
 
 /proc/relay_msg_admins(msg)
-	msg = "<span class=\"admin filter_adminlog\"><span class=\"prefix\">RELAY:</span> <span class=\"message linkify\">[msg]</span></span>"
+	msg = span_filter_adminlog("<span class=\"prefix\">RELAY:</span> <span class=\"message linkify\">[msg]</span>")
 	to_chat(GLOB.admins, msg, confidential = TRUE)
 
+/* Это сейчас нигде не используется, раскоментите если нужно будет и чат фильтр в constants.js по поиску: MESSAGE_TYPE_DEBUG
 /proc/message_debug(msg)
 	log_world("DEBUG: [msg]")
-	msg = "<span class=\"admindebug\"><span class=\"prefix\">DEBUG:</span> <span class=\"message linkify\">[msg]</span></span>"
+	msg = span_admindebug("<span class=\"prefix\">DEBUG:</span> <span class=\"message linkify\">[msg]</span>")
 	to_chat(GLOB.admins,
 		html = msg,
 		confidential = TRUE)
+*/
 
+/proc/message_antigrif(msg)
+	msg = span_antigrif("ANTI-GRIEF:")+msg
+	message_admins(msg)
 ///////////////////////////////////////////////////////////////////////////////////////////////Panels
 
 /datum/admins/proc/show_player_panel(mob/M in GLOB.mob_list)

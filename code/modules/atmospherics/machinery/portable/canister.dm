@@ -348,7 +348,7 @@
 			if(client.next_canister_grief_warning < world.time)
 				var/turf/T = get_turf(src)
 				client.next_canister_grief_warning = world.time + 15 MINUTES // Wait 15 minutes before alerting admins again
-				message_admins("<span class='adminhelp'>ANTI-GRIEF:</span> New player [ADMIN_LOOKUPFLW(user)] has touched \a [src] at [ADMIN_VERBOSEJMP(T)].")
+				message_antigrif("New player [ADMIN_LOOKUPFLW(user)] has touched \a [src] at [ADMIN_VERBOSEJMP(T)].")
 				client.touched_canister = TRUE
 
 /obj/machinery/portable_atmospherics/canister/ui_static_data(mob/user)

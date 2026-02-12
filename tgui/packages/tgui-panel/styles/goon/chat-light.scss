@@ -305,7 +305,7 @@ em {
   font-weight: bold;
 }
 
-.looc {
+.looc, .adminlooc {
   color: #6699CC;
   font-weight: bold;
 }
@@ -336,7 +336,7 @@ em {
   font-weight: bold;
 }
 
-.admin {
+.admin, .filter_adminlog {
   color: #4473ff;
   font-weight: bold;
 }
@@ -477,7 +477,7 @@ h1.alert, h2.alert {
   font-weight: bold;
 }
 
-.danger {
+.danger, .admindanger {
   color: #ff0000;
 }
 
@@ -586,7 +586,7 @@ blockquote.notice {
   color: #0000ff;
 }
 
-.adminhelp {
+.adminhelp, .antigrif {
   color: #ff0000;
   font-weight: bold;
 }
