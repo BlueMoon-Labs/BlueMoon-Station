@@ -474,6 +474,49 @@ blockquote.warning {
   font-weight: bold;
 }
 
+.chat-tooltip {
+  cursor: help;
+  display: inline-block;
+  position: relative;
+  min-width: 0.9em;
+  text-align: center;
+  transition: background-color 120ms ease-out, text-shadow 120ms ease-out;
+}
+
+.chat-tooltip:hover {
+  background-color: rgba(197, 30, 30, 0.2);
+  text-shadow: 0 0 2px currentColor;
+}
+
+.chat-tooltip__content {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 4px);
+  transform: translateX(-50%);
+  z-index: 5;
+  max-width: 260px;
+  padding: 2px 6px;
+  border: 1px solid #9b2929;
+  border-radius: 3px;
+  background-color: rgba(18, 18, 22, 0.96);
+  color: #f3f3f3;
+  text-shadow: none;
+  line-height: 1.2;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+
+.chat-tooltip:hover .chat-tooltip__content {
+  opacity: 1;
+}
+
+.chat-tooltip--warning {
+  color: #c51e1e;
+  font-weight: bold;
+}
+
 .announce {
   color: #c51e1e;
   font-weight: bold;

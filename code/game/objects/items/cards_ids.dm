@@ -481,7 +481,10 @@
 
 /obj/item/card/id/get_examine_string(mob/user, thats = FALSE)
 	if(uses_overlays)
-		return "[icon2html(get_cached_flat_icon(), user)] [thats? "That's ":""][get_examine_name(user)]" //displays all overlays in chat
+		var/job_tooltip = ""
+		if(assignment && get_assignment_name() != assignment)
+			job_tooltip = " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[html_encode(assignment)]</span></span>"
+		return "[icon2html(get_cached_flat_icon(), user)] [thats? "That's ":""][get_examine_name(user)][job_tooltip]" //displays all overlays in chat
 	return ..()
 
 /obj/item/card/id/proc/update_label(newname, newjob)
