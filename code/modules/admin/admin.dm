@@ -1,5 +1,5 @@
 ////////////////////////////////
-/proc/message_admins(msg, log = FALSE)
+/proc/message_admins(msg, log = TRUE)
 	var/prefix = log ? "ADMIN LOG" : "ADMIN MESSAGE"
 	msg = "<span class=\"prefix\">[prefix]:</span> <span class=\"message linkify\">[msg]</span>"
 	if(log)
