@@ -37,7 +37,7 @@
 
 	if(target != user) // Self only
 		return
-	if(!istype(target) || istype(user)) //valid user, also checks for if it exists
+	if(!istype(target) || !istype(user)) //valid user, also checks for if it exists
 		return
 	if(target.mobility_flags & MOBILITY_STAND || target.incapacitated(TRUE, FALSE, TRUE))
 		return
