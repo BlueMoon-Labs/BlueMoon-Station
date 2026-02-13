@@ -470,7 +470,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	if(handler && handler != usr.ckey)
 		var/response = tgui_alert(usr, "Тикет уже взят админом [handler]. Всё равно взять?", "Тикет уже назначен", list("Да", "Нет"))
-		if(!response || response == "Нет")
+		if(response != "Да")
 			return FALSE
 
 	var/msg = span_adminhelp("Ваш тикет был взят [usr?.client?.holder?.fakekey ? usr?.client?.holder?.fakekey : "администратором"]! Пожалуйста, подождите, пока вам напишут ответ и/или соберут причастную информацию.")
@@ -480,7 +480,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	SSblackbox.record_feedback("tally", "ahelp_stats", 1, "handling")
 	msg = "Тикет [TicketHref("#[id]")] был взят админом [key_name]"
-	message_admins(msg)
+	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
 	AddInteraction("<u>Было взято админом</u> [key_name]", "<u>Было взято админом</u> [key_name_admin(usr, FALSE)]")
 
