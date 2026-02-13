@@ -407,15 +407,16 @@
 
 /obj/item/surgical_drapes/AltClick(mob/user)
 	. = ..()
-	if(iscarbon(user))
-		var/mob/living/carbon/C = user
-		if(C.client?.prefs)
-			C.client.prefs.surgical_disable_radial = !C.client.prefs.surgical_disable_radial
-			if(C.client.prefs.surgical_disable_radial)
-				to_chat(C, "You will now use list menu.")
-			else
-				to_chat(C, "You will now use radial menu.")
-			return TRUE
+	if(!isliving(user))
+		return
+	var/mob/living/M = user
+	if(M.client?.prefs)
+		M.client.prefs.surgical_disable_radial = !M.client.prefs.surgical_disable_radial
+		if(M.client.prefs.surgical_disable_radial)
+			to_chat(M, "You will now use list menu.")
+		else
+			to_chat(M, "You will now use radial menu.")
+		return TRUE
 
 /obj/item/surgical_drapes/advanced
 	name = "smart surgical drapes"
