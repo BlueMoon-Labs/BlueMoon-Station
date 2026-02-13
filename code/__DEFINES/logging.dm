@@ -40,10 +40,11 @@
 #define LOG_ADMIN_PRIVATE (1 << 14)
 #define LOG_ASAY		(1 << 15)
 #define LOG_VIRUS		(1 << 16)
-#define LOG_MECHA (1 << 17)
+#define LOG_MECHA		(1 << 17)
 #define LOG_SHUTTLE		(1 << 18)
-#define LOG_VICTIM 		(1 << 19)
+#define LOG_VICTIM		(1 << 19)
 #define LOG_ECON		(1 << 20)
+#define LOG_UPLINK		(1 << 21)
 
 //Individual logging panel pages
 #define INDIVIDUAL_ATTACK_LOG		(LOG_ATTACK | LOG_VICTIM)
