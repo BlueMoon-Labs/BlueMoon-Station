@@ -71,7 +71,7 @@
 		var/datum/action/A = X
 		A.Grant(M)
 	STOP_PROCESSING(SSobj, src)
-
+	log_game("Organ Interaction: [src] has been inserted into [key_name(owner)]|[owner]")
 	return TRUE
 
 //Special is for instant replacement like autosurgeons
@@ -89,6 +89,7 @@
 	SEND_SIGNAL(src, COMSIG_ORGAN_REMOVED)//SPLURT EDIT ADD - gregnancy
 	owner = null
 	START_PROCESSING(SSobj, src)
+	log_game("Organ Interaction: [src] has been removed from [key_name(owner)]|[owner]")
 
 /obj/item/organ/proc/on_find(mob/living/finder)
 	return
