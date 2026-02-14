@@ -475,7 +475,7 @@
 
 		var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null, minimum_required = ertemplate.teamsize)
 		var/team_name = ertemplate.polldesc || ertemplate.rename_team || ertemplate.code
-		message_admins("Выбрано [candidates.len] игроков для [team_name], минимум необходимо: [ertemplate.teamsize]")
+		message_admins("Выбрано игроков: [candidates.len], для [team_name], минимум необходимо: [ertemplate.teamsize]")
 		var/teamSpawned = FALSE
 		if(candidates.len > 0)
 			//Pick the (un)lucky players
