@@ -98,7 +98,7 @@ export const MESSAGE_TYPES = [
     type: 'antagooc',
     name: 'AOOC',
     description: 'Antag OOC Chat.',
-    selector: '.filter_aooc, .antagooc',
+    selector: '.filter_aooc, .antagooc, .adminantagooc',
   },
   {
     type: MESSAGE_TYPE_ADMINPM,

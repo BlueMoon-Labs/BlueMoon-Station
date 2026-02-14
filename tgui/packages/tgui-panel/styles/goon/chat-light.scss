@@ -300,7 +300,7 @@ em {
   font-weight: bold;
 }
 
-.ooc {
+.ooc, .adminooc {
   color: #002eb8;
   font-weight: bold;
 }
@@ -310,7 +310,7 @@ em {
   font-weight: bold;
 }
 
-.antagooc {
+.antagooc, .adminantagooc {
   color: #b8002e;
   font-weight: bold;
 }
@@ -320,10 +320,10 @@ em {
   font-weight: bold;
 }
 
-.adminooc {
-  color: #700038;
-  font-weight: bold;
-}
+//.adminooc {
+//  color: #700038;
+//  font-weight: bold;
+//}
 
 .adminsay {
   color: #ff4500;
