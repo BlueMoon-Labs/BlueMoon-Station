@@ -696,7 +696,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 /obj/item/disk/nuclear/examine(mob/user)
 	. = ..()
 	if(isobserver(user) && fake)
-		. += "It's a fake. Nice job captain, ha-ha."
+		. += span_notice("It's a fake! Nice job captain, ha-ha.")
 
 /obj/item/disk/nuclear/examine_more(mob/user)
 	. = ..()
