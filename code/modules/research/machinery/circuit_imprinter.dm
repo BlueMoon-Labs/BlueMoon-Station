@@ -4,18 +4,19 @@
 	icon_state = "circuit_imprinter"
 	circuit = /obj/item/circuitboard/machine/circuit_imprinter
 	categories = list(
-								"AI Modules",
-								"Computer Boards",
-								"Teleportation Machinery",
-								"Medical Machinery",
-								"Engineering Machinery",
-								"Exosuit Modules",
-								"Hydroponics Machinery",
-								"Subspace Telecomms",
-								"Research Machinery",
-								"Misc. Machinery",
-								"Computer Parts",
-								"Shuttle Machinery",
+							"Computer Boards",
+							"Teleportation Machinery",
+							"Subspace Telecomms",
+							"Research Machinery",
+							"Medical Machinery",
+							"Engineering Machinery",
+							"Production Machinery",
+							"Shuttle Machinery",
+							"Hydroponics Machinery",
+							"Culinary Machinery",
+							"Computer Parts",
+							"Cargo Machinery",
+							"Misc. Machinery",
 								)
 	production_animation = "circuit_imprinter_ani"
 	allowed_buildtypes = IMPRINTER
@@ -34,3 +35,20 @@
 	circuit = /obj/item/circuitboard/machine/circuit_imprinter/hacked
 	requires_console = 0
 	obj_flags = CAN_BE_HIT | EMAGGED
+	categories = list(
+							"AI Modules",
+							"Computer Boards",
+							"Teleportation Machinery",
+							"Medical Machinery",
+							"Engineering Machinery",
+							"Exosuit Modules",
+							"Hydroponics Machinery",
+							"Subspace Telecomms",
+							"Research Machinery",
+							"Computer Parts",
+							"Shuttle Machinery",
+							"Production Machinery",
+							"Cargo Machinery",
+							"Culinary Machinery",
+							"Misc. Machinery",
+								)

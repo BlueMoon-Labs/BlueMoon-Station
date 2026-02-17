@@ -26127,7 +26127,6 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/aft)
 "bnO" = (
-/obj/machinery/rnd/production/circuit_imprinter,
 /obj/machinery/light{
 	dir = 8
 	},
@@ -26145,6 +26144,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
 /turf/open/floor/plasteel/dark,
 /area/science/robotics/lab)
 "bnP" = (

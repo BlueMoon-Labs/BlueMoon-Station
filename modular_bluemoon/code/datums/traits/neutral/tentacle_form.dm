@@ -47,7 +47,7 @@
 // 	caster.shake_animation(2)
 // 	caster.Stun(30)
 
-// 	playsound(caster, 'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/splat.ogg', 50, 0)
+// 	playsound(caster, 'sound/effects/splat.ogg', 50, 0)
 
 // 	sleep(30)
 
@@ -67,7 +67,7 @@
 // 	tentacle.update_icon()
 
 // 	if(has_clothes_to_rip)
-// 		playsound(caster, 'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang6.ogg', 50, 1)
+// 		playsound(caster, 'modular_sand/sound/interactions/bang6.ogg', 50, 1)
 
 
 // 	clothes_req = NONE

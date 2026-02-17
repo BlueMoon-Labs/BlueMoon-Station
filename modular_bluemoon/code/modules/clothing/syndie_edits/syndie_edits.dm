@@ -165,8 +165,8 @@
 /obj/item/clothing/under/syndicate/maid_revealing
 	name = "Revealing Tactical Maid Outfit"
 	desc = "A 'tactical' skirtleneck fashioned to the likeness of a maid outfit. Why the Syndicate has these, you'll never know."
-	icon = 'modular_bluemoon/Gardelin0/icons/clothing/object/uniforms.dmi'
-	mob_overlay_icon = 'modular_bluemoon/Gardelin0/icons/clothing/worn/uniform.dmi'
+	icon = 'modular_bluemoon/icons/obj/clothing/uniforms.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniform.dmi'
 	icon_state = "maid_revealing"
 	item_state = "maid_revealing"
 	fitted = NO_FEMALE_UNIFORM

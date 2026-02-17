@@ -998,6 +998,10 @@
 	icon_state = "science"
 	build_path = /obj/machinery/rnd/production/circuit_imprinter/department/science
 
+/obj/item/circuitboard/machine/circuit_imprinter/department/science/robotic
+	name = "Departmental Circuit Imprinter - Robotics (Machine Board)"
+	build_path = /obj/machinery/rnd/production/circuit_imprinter/department/science/robotic
+
 /obj/item/circuitboard/machine/cyborgrecharger
 	name = "Cyborg Recharger (Machine Board)"
 	icon_state = "science"

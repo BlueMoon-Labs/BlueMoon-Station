@@ -29,6 +29,9 @@
 								"Organic Designs", //BLUEMOON ADD: New category for fleshcrafting.
 								"Computer Parts",
 								"MODsuit Designs",
+								"Production Machinery",
+								"Culinary Machinery",
+								"Cargo Machinery",
 								"Shuttle Machinery",
 								)
 	console_link = FALSE

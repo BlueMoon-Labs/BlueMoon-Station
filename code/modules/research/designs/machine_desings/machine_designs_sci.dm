@@ -103,7 +103,7 @@
 	desc = "The circuit board for an Exosuit Fabricator."
 	id = "mechfab"
 	build_path = /obj/item/circuitboard/machine/mechfab
-	category = list("Research Machinery")
+	category = list("Production Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/board/cyborgrecharger
@@ -154,12 +154,20 @@
 	category = list("Research Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
-/datum/design/board/circuit_imprinter
-	name = "Machine Design (Circuit Imprinter Board)"
-	desc = "The circuit board for a circuit imprinter."
-	id = "circuit_imprinter"
-	build_path = /obj/item/circuitboard/machine/circuit_imprinter
-	category = list("Research Machinery")
+/datum/design/board/circuit_imprinter_science
+	name = "Machine Design (Science Circuit Imprinter Board)"
+	desc = "The circuit board for a circuit imprinter of the science department."
+	id = "circuit_imprinter_science"
+	build_path = /obj/item/circuitboard/machine/circuit_imprinter/department/science
+	category = list("Production Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/circuit_imprinter_robotic
+	name = "Machine Design (Robotic Circuit Imprinter Board)"
+	desc = "The circuit board for a circuit imprinter of the robotechnician corpus."
+	id = "circuit_imprinter_robotic"
+	build_path = /obj/machinery/rnd/production/circuit_imprinter/department/science/robotic
+	category = list("Production Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/board/explosive_compressor

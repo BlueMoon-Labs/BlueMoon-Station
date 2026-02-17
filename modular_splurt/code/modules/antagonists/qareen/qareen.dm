@@ -12,7 +12,7 @@
 /mob/living/simple_animal/qareen
 	name = "Qareen"
 	desc = "A horny spirit."
-	icon = 'modular_bluemoon/Gardelin0/icons/mob/qareen.dmi'	//It looks pretty tho! - Gardelin0
+	icon = 'modular_bluemoon/icons/mob/qareen.dmi'	//It looks pretty tho! - Gardelin0
 	icon_state = "qareen_none_idle"
 	var/icon_idle = "qareen_none_idle"
 	var/icon_reveal = "qareen_none_revealed"

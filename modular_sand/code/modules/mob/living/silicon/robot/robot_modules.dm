@@ -84,10 +84,10 @@
 		"Chesty" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "chesty"), // SPLURT Addon (Skyrat Port)
 		"RoboMaid" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "robomaid_synd"), // SPLURT Addon (Old Skyrat Port)
 		"BootyNukie" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootynukie"), // SPLURT Addon (Hyper Port)
-		"Meka Ninja" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "mekaninja"), //Krashly Request
-		"FMeka Ninja" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "fmekaninja"), // Lyoll Request (Skyrat Port)
-		"K4 Ninja" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "k4tninja"), // Lyoll Request (Skyrat Port)
-		"MMeka Ninja" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "mmekaninja"), // Lyoll Request (Skyrat Port)
+		"Meka Ninja" = image(icon = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi', icon_state = "mekaninja"), //Krashly Request
+		"FMeka Ninja" = image(icon = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi', icon_state = "fmekaninja"), // Lyoll Request (Skyrat Port)
+		"K4 Ninja" = image(icon = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi', icon_state = "k4tninja"), // Lyoll Request (Skyrat Port)
+		"MMeka Ninja" = image(icon = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi', icon_state = "mmekaninja"), // Lyoll Request (Skyrat Port)
 		"Drakemech" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakebox"),	//DarkSer request by Gardelin0
 		"BootyGorlex" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootygorlex"), // SPLURT Addon (Hyper Port)
 		"Meka" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "mekasyndi"), // SPLURT Addon (Bubbers Port)
@@ -130,19 +130,19 @@
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots.dmi'
 		if("Meka Ninja") //Krashly Request
 			cyborg_base_icon = "mekaninja"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi'
 			hasrest = TRUE
 		if("FMeka Ninja") //Lyoll Request (Skyrat Port)
 			cyborg_base_icon = "fmekaninja"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi'
 			hasrest = TRUE
 		if("K4 Ninja") //Lyoll Request (Skyrat Port)
 			cyborg_base_icon = "k4tninja"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi'
 			hasrest = TRUE
 		if("MMeka Ninja") //Lyoll Request (Skyrat Port)
 			cyborg_base_icon = "mmekaninja"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi'
 			hasrest = TRUE
 		if("Drakemech") //DarkSer request by Gardelin0
 			cyborg_base_icon = "drake"

@@ -4,7 +4,7 @@
 	desc = "Allows for the construction of circuit boards for experimental printing technology."
 	id = "bioaegisboard"
 	build_path = /obj/item/circuitboard/machine/protolathe/bioaegis
-	category = list("Research Machinery")
+	category = list("Production Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
 
 //Xenomorphic organs in bio-organic printer. Cheaper since this machine is *designed* to work with flesh specifically.

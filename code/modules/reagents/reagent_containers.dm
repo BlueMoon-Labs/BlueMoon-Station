@@ -16,6 +16,7 @@
 	var/container_flags = APTFT_ALTCLICK|APTFT_VERB //the container item flags
 	var/container_HP = 2
 	var/cached_icon
+	var/consume_sound = null
 
 /obj/item/reagent_containers/Initialize(mapload, vol)
 	. = ..()

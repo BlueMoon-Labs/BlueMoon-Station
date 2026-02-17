@@ -23511,11 +23511,11 @@
 /turf/open/floor/plasteel,
 /area/science/robotics/lab)
 "bgi" = (
-/obj/machinery/rnd/production/circuit_imprinter,
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 4
 	},
 /obj/machinery/light/small,
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
 /turf/open/floor/plasteel,
 /area/science/robotics/lab)
 "bgj" = (

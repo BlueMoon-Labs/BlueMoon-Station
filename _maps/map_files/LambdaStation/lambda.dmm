@@ -5007,10 +5007,10 @@
 /turf/open/floor/plasteel/white,
 /area/science/mixing)
 "akC" = (
-/obj/machinery/rnd/production/circuit_imprinter/department/science,
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
 /turf/open/floor/plasteel,
 /area/science/robotics/lab)
 "akD" = (

@@ -271,7 +271,7 @@
 	name = "PMC Skull Patch"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/accessory/skull_patch
-	ckeywhitelist = list("krashly", "stgs", "hazzi", "dolbajob", "leony24", "snacksman", "sodastrike", "vulpshiro", "lonofera", "hellsinggc", "mihana964", "devildeadspace", "enigma418")
+	ckeywhitelist = list("krashly", "stgs", "hazzi", "dolbajob", "leony24", "snacksman", "sodastrike", "vulpshiro", "lonofera", "hellsinggc", "mihana964", "devildeadspace", "enigma418", "ordinarylife")
 
 /datum/gear/donator/bm/monolith_patch
 	name = "Monolith Patch"
@@ -967,7 +967,13 @@
 	name = "P320 kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/p320_kit
-	ckeywhitelist = list("pingvas", "ty4kahahebe", "scorpionch")
+	ckeywhitelist = list("pingvas", "ty4kahahebe")
+
+/datum/gear/donator/bm/M9_tempest_kit
+	name = "M-9 Tempest kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/M9tempest_kit
+	ckeywhitelist = list("pingvas", "ty4kahahebe")
 
 /datum/gear/donator/bm/dedication_kit
 	name = "Dedication kit"
@@ -2059,7 +2065,7 @@
 	name = "LIZARED Open Panties"
 	slot = ITEM_SLOT_UNDERWEAR
 	path = /obj/item/clothing/underwear/briefs/panties/lizared/exposed
-	ckeywhitelist = list("pingvas")
+	ckeywhitelist = list("pingvas", "ty4kahahebe")
 
 /datum/gear/donator/bm/custom_vape
 	name = "Custom E-Cigarette"
