@@ -2086,3 +2086,10 @@
 	path = /obj/item/storage/box/donator/bm/twilight_spike
 	ckeywhitelist = list("dragon9090", "hellsinggc")
 	cost = 4
+
+/datum/gear/donator/bm/sf_coat
+	name = "S.F. Coat"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/sf_coat
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
+	ckeywhitelist = list("hihitect")
