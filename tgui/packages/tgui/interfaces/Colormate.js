@@ -52,7 +52,7 @@ export const Colormate = (props, context) => {
   const onEjectItem = () => {
     act('drop');
     setSelectedPreset('');
-  }
+  };
 
   return (
     <Window width="980" height="745" resizable>
