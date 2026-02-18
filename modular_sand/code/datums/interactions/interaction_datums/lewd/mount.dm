@@ -21,9 +21,16 @@
 		message = "резко всовывает [genital_name] <b>[partner]</b> в своё влагалище и удовлетворённо выдыхает."
 		partner.set_is_fucking(user, CUM_TARGET_VAGINA, partner.getorganslot(ORGAN_SLOT_PENIS))
 		try_apply_knot(partner, user, CUM_TARGET_VAGINA) // Проверка на узлирование (mount)
-	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1)
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, user, ORGAN_SLOT_PENIS) //SPLURT edit
@@ -55,9 +62,11 @@
 		message = "резко всовывает [genital_name] <b>[partner]</b> в своё анальное кольцо и удовлетворённо выдыхает."
 		partner.set_is_fucking(user, CUM_TARGET_ANUS, partner.getorganslot(ORGAN_SLOT_PENIS))
 		try_apply_knot(partner, user, CUM_TARGET_ANUS) // Проверка на узлирование (mountass)
-	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/DryFlopQuick1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick5.ogg'), 100, 1, -1)
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, user, ORGAN_SLOT_PENIS) //SPLURT edit
@@ -94,7 +103,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/squelch1.ogg',
 						'modular_sand/sound/interactions/squelch2.ogg',
-						'modular_sand/sound/interactions/squelch3.ogg'), 70, 1, -1)
+						'modular_sand/sound/interactions/squelch3.ogg'), 100, 1, -1)
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	user.handle_post_sex(LOW_LUST, null, partner)
 
@@ -176,15 +185,15 @@
 					user.set_is_fucking(partner, CUM_TARGET_MOUTH, genital)
 			// BLUEMOON EDIT END
 
-	var/file = pick('modular_sand/sound/interactions/bj10.ogg',
-					'modular_sand/sound/interactions/bj3.ogg',
+	var/file = pick('modular_bluemoon/sound/interactions/sfx/bj10.ogg',
+					'modular_bluemoon/sound/interactions/sfx/bj3.ogg',
 					'modular_sand/sound/interactions/foot_wet1.ogg',
 					'modular_sand/sound/interactions/foot_dry3.ogg')
 	playlewdinteractionsound(get_turf(user), file, 70, 1, -1)
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	// BLUEMOON EDIT START
-	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/oral1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/oral2.ogg'), 100, 1, -1)
 	if(fucktarget == "penis")
 		if(user.has_strapon())
 			var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()

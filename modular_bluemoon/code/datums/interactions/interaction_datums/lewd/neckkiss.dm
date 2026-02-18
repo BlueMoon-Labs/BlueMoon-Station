@@ -37,8 +37,17 @@
 	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
 		new /obj/effect/temp_visual/heart(target.loc)
 	playlewdinteractionsound(target, pick(
-		'modular_splurt/sound/interactions/kiss/kiss1.ogg',
-		'modular_splurt/sound/interactions/kiss/kiss2.ogg',
-		'modular_splurt/sound/interactions/kiss/kiss3.ogg',
-		'modular_splurt/sound/interactions/kiss/kiss4.ogg',
-		'modular_splurt/sound/interactions/kiss/kiss5.ogg'), 50, 1, -1, ignored_mobs = user.get_unconsenting())
+		'modular_bluemoon/sound/interactions/sfx/kiss1.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss2.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss3.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss4.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss5.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss6.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss7.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss8.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss9.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss10.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss11.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss12.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss13.ogg',
+		'modular_bluemoon/sound/interactions/sfx/kiss14.ogg'), 100, 1, -1, ignored_mobs = user.get_unconsenting())

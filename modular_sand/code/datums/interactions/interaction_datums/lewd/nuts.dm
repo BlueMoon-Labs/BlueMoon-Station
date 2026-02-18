@@ -28,8 +28,8 @@
 		user.set_is_fucking(partner, NUTS_TO_FACE, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
-						'modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg',), 70, 1, -1) //These files don't even exist but nobody noticed because double-quotes were used instead of single.
+						'modular_bluemoon/sound/interactions/sfx/oral1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/oral2.ogg',), 100, 1, -1) //These files don't even exist but nobody noticed because double-quotes were used instead of single.
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	// BLUEMOON EDIT START
 	user.handle_post_sex(HAS_TRAIT(user, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST, NUTS_TO_FACE, partner, ORGAN_SLOT_PENIS)

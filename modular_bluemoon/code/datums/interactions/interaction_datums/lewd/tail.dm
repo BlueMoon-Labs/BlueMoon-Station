@@ -71,9 +71,11 @@
 	write_log_target = "dick tailjerked by"
 	target_organ = ORGAN_SLOT_PENIS
 	try_milking = TRUE
-	lewd_sounds = list('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg')
+	lewd_sounds = list('modular_bluemoon/sound/interactions/sfx/fap1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap5.ogg')
 
 /datum/interaction/lewd/simplified_interaction/tail/dick/lust_granted(mob/living/partner)
 	return partner.has_penis()
@@ -133,8 +135,16 @@
 		"USER с силой вбивает хвост в вагину TARGET с безжалостной силой, не давая ей ни секунды покоя.",
 		"USER резко проникает хвостом в вагину TARGET, растягивая её и причиняя дискомфорт."
 	)
-	lewd_sounds = list('modular_sand/sound/interactions/champ1.ogg',
-						'modular_sand/sound/interactions/champ2.ogg')
+	lewd_sounds = list('modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg')
 
 /datum/interaction/lewd/simplified_interaction/tail/ass
 	description = "Хвост. Проникнуть в задницу."
@@ -163,9 +173,11 @@
 		"USER с силой проникает хвостом в анальное отверстие TARGET, причиняя тому болезненные ощущения.",
 		"USER грубо вбивает хвост в задний проход TARGET, действуя с напором и без капли жалости."
 	)
-	lewd_sounds = list('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg')
+	lewd_sounds = list('modular_bluemoon/sound/interactions/sfx/DryFlopQuick1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick5.ogg')
 
 /datum/interaction/lewd/simplified_interaction/tail/urethra
 	description = "Хвост. Проникнуть в уретру."
@@ -174,12 +186,16 @@
 	target_organ = ORGAN_SLOT_PENIS
 	write_log_user = "tailsounding urehtra"
 	write_log_target = "urehtra tailsounded by"
-	lewd_sounds = list('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg',
-						'modular_sand/sound/interactions/bang4.ogg',
-						'modular_sand/sound/interactions/bang5.ogg',
-						'modular_sand/sound/interactions/bang6.ogg',)
+	lewd_sounds = list('modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg')
 	p13target_strength_base_point = PLUG13_STRENGTH_MEDIUM
 
 /datum/interaction/lewd/simplified_interaction/tail/urethra/lust_granted(mob/living/partner)
@@ -219,9 +235,11 @@
 	interaction_flags = INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_USER_IS_TARGET
 	write_log_user = "tailjerked own dick"
 	write_log_target = null
-	lewd_sounds = list('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg')
+	lewd_sounds = list('modular_bluemoon/sound/interactions/sfx/fap1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap5.ogg')
 
 /datum/interaction/lewd/simplified_interaction/tail/dick/self/text_picker(mob/living/user, mob/living/partner)
 	var/has_penis = user.has_penis()
@@ -276,8 +294,16 @@
 		"USER с напором вбивает хвост в себя, будто нарочно причиняя себе боль.",
 		"USER грубо раздвигает собственную вагину хвостом, действуя резко и без пощады."
 	)
-	lewd_sounds = list('modular_sand/sound/interactions/champ1.ogg',
-						'modular_sand/sound/interactions/champ2.ogg')
+	lewd_sounds = list('modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg')
 
 /datum/interaction/lewd/simplified_interaction/tail/ass/self
 	description = "Хвост. Проникнуть в свою задницу."
@@ -306,9 +332,11 @@
 		"USER безжалостно вгоняет хвост в свой анус, не давая себе ни малейшего отдыха.",
 		"USER с силой продавливает хвост в задний проход, будто стремясь разорвать себя изнутри."
 	)
-	lewd_sounds = list('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg')
+	lewd_sounds = list('modular_bluemoon/sound/interactions/sfx/DryFlopQuick1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick5.ogg')
 
 /datum/interaction/lewd/simplified_interaction/tail/urethra/self
 	description = "Хвост. Проникнуть в свою уретру."
@@ -317,12 +345,16 @@
 	interaction_flags = INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_USER_IS_TARGET
 	write_log_user = "tailsounding own urehtra"
 	write_log_target = null
-	lewd_sounds = list('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg',
-						'modular_sand/sound/interactions/bang4.ogg',
-						'modular_sand/sound/interactions/bang5.ogg',
-						'modular_sand/sound/interactions/bang6.ogg',)
+	lewd_sounds = list('modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg')
 
 /datum/interaction/lewd/simplified_interaction/tail/urethra/self/text_picker(mob/living/user, mob/living/partner)
 	var/has_penis = user.has_penis()

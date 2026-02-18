@@ -114,6 +114,6 @@
 						span_lewd("<b>[target]</b> шлёпает <b>[user]</b>.")))
 	target.dir = get_dir(target, user)
 	user.dir = get_dir(user, target)
-	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/oral1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/oral2.ogg'), 100, 1, -1)
 	return

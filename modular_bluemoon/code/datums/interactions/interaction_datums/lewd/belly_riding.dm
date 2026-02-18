@@ -74,8 +74,16 @@
 	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_exposed = INTERACTION_REQUIRE_VAGINA
 	interaction_sound = list(
-		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/champ2.ogg')
+		'modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg')
 	p13user_emote = PLUG13_EMOTE_PENIS
 	p13target_emote = PLUG13_EMOTE_VAGINA
 	additional_details = list(
@@ -105,9 +113,11 @@
 	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_exposed = INTERACTION_REQUIRE_ANUS
 	interaction_sound = list(
-		'modular_sand/sound/interactions/bang1.ogg',
-		'modular_sand/sound/interactions/bang2.ogg',
-		'modular_sand/sound/interactions/bang3.ogg')
+		'modular_bluemoon/sound/interactions/sfx/DryFlopQuick1.ogg',
+		'modular_bluemoon/sound/interactions/sfx/DryFlopQuick2.ogg',
+		'modular_bluemoon/sound/interactions/sfx/DryFlopQuick3.ogg',
+		'modular_bluemoon/sound/interactions/sfx/DryFlopQuick4.ogg',
+		'modular_bluemoon/sound/interactions/sfx/DryFlopQuick5.ogg')
 	p13user_emote = PLUG13_EMOTE_PENIS
 	p13target_emote = PLUG13_EMOTE_BREASTS
 	target_organ = CUM_TARGET_ANUS

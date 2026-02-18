@@ -38,8 +38,8 @@
 		message = "<span class='lewd'>\The <b>[user]</b> [pick(lines)]</span>"
 		user.visible_message(message, ignored_mobs = user.get_unconsenting())
 		user.handle_post_sex(LOW_LUST, null, target, ORGAN_SLOT_BREASTS)
-		playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-							'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
+		playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/oral1.ogg',
+							'modular_bluemoon/sound/interactions/sfx/oral2.ogg'), 100, 1, -1)
 
 		target.reagents.add_reagent(milktype, rand(1,3 * milkers.get_lactation_amount_modifier()))
 	else
@@ -50,8 +50,8 @@
 		message = "<span class='lewd'>\The <b>[user]</b> [pick(lines)]</span>"
 		user.visible_message(message, ignored_mobs = user.get_unconsenting())
 		user.handle_post_sex(LOW_LUST, null, target, ORGAN_SLOT_BREASTS)
-		playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-							'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
+		playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/oral1.ogg',
+							'modular_bluemoon/sound/interactions/sfx/oral2.ogg'), 100, 1, -1)
 
 /datum/interaction/lewd/titgrope
 	description = "Грудь. Сжать в ладони."
@@ -92,7 +92,7 @@
 			else
 				user.visible_message(span_lewd("<b>[user]</b> пытается выдоить содержимое груди <b>[target]</b> в [liquid_container], но ничего не выходит...."), ignored_mobs = user.get_unconsenting())
 				target.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
-				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', 50, 1, -1)
+				playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/fingering01.ogg','modular_bluemoon/sound/interactions/sfx/fingering02.ogg','modular_bluemoon/sound/interactions/sfx/fingering03.ogg','modular_bluemoon/sound/interactions/sfx/fingering04.ogg','modular_bluemoon/sound/interactions/sfx/fingering05.ogg','modular_bluemoon/sound/interactions/sfx/fingering06.ogg','modular_bluemoon/sound/interactions/sfx/fingering07.ogg','modular_bluemoon/sound/interactions/sfx/fingering08.ogg','modular_bluemoon/sound/interactions/sfx/fingering09.ogg','modular_bluemoon/sound/interactions/sfx/fingering10.ogg','modular_bluemoon/sound/interactions/sfx/fingering11.ogg','modular_bluemoon/sound/interactions/sfx/fingering12.ogg','modular_bluemoon/sound/interactions/sfx/fingering13.ogg'), 100, 1, -1)
 
 	else
 		target.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, user, CUM_TARGET_BREASTS)

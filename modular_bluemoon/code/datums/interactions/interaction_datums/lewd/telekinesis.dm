@@ -119,9 +119,11 @@
 	required_from_target_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_unexposed = INTERACTION_REQUIRE_PENIS
 	target_organ = ORGAN_SLOT_PENIS
-	lewd_sounds = list('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg')
+	lewd_sounds = list('modular_bluemoon/sound/interactions/sfx/fap1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fap5.ogg')
 	write_log_user = "TK-penis-groped"
 	write_log_target = "was TK-penis-groped by"
 	p13target_emote = PLUG13_EMOTE_PENIS
@@ -141,7 +143,19 @@
 	write_log_user = "TK-vagina-groped"
 	write_log_target = "was TK-vagina-groped by"
 	p13target_emote = PLUG13_EMOTE_PENIS
-	lewd_sounds = 'modular_sand/sound/interactions/champ_fingering.ogg'
+	lewd_sounds = list('modular_bluemoon/sound/interactions/sfx/fingering01.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering02.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering03.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering04.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering05.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering06.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering07.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering08.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering09.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering10.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering11.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering12.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering13.ogg')
 	start_text = "Что-то упирается в чувствительные губки TARGET."
 	help_text = "Что-то невесомо ощупывает лепестки TARGET."
 	grab_text = "Что-то обхватывает с двух сторон чувствительную горошину TARGET."

@@ -38,7 +38,7 @@
 		message = "вводят свои тентакли в промежность <b>[partner]</b>."
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1)
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner)
@@ -75,7 +75,7 @@
 		message = "вводят свои тентакли в отверстия <b>[partner]</b>."
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg','modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1)
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner)
@@ -109,7 +109,7 @@
 			"сильно извиваются вокруг \the <b>[partner]</b>, стимулируя член.")]"
 		user.set_is_fucking(partner, CUM_TARGET_PENIS, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/fap1.ogg','modular_bluemoon/sound/interactions/sfx/fap2.ogg','modular_bluemoon/sound/interactions/sfx/fap3.ogg','modular_bluemoon/sound/interactions/sfx/fap4.ogg','modular_bluemoon/sound/interactions/sfx/fap5.ogg'), 100, 1, -1)
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner)

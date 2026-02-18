@@ -35,8 +35,16 @@
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick(
-		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/champ2.ogg'), 70, 1, -1)
+		'modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1)
 
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	if(user.can_penetrating_genital_cum())
@@ -99,9 +107,11 @@
 	//BLUEMOON EDIT END
 		user.set_is_fucking(partner, CUM_TARGET_ANUS, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/DryFlopQuick1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick5.ogg'), 100, 1, -1)
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS) //SPLURT edit
@@ -163,9 +173,13 @@
 		message = "игриво толкает <b>[partner]</b>, крепко хватается за грудь и сжимает ими свой [genital_name]."
 		user.set_is_fucking(partner, CUM_TARGET_BREASTS, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/DryFlop1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop5.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop6.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop7.ogg'), 100, 1, -1)
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 
 	if(user.can_penetrating_genital_cum())
@@ -309,8 +323,16 @@
 		user.set_is_fucking(partner, CUM_TARGET_ANUS, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick(
-		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+		'modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1)
 
 	user.visible_message(
 		span_lewd("<b>\The [user]</b> [message]"),
@@ -359,8 +381,16 @@
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick(
-		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/champ2.ogg'), 70, 1, -1)
+		'modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1)
 
 	user.visible_message(
 		span_lewd("<b>\The [user]</b> [message]"),
@@ -403,8 +433,11 @@
 		user.set_is_fucking(partner, CUM_TARGET_ANUS, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick(
-		'modular_sand/sound/interactions/bang1.ogg',
-		'modular_sand/sound/interactions/bang2.ogg'), 70, 1, -1)
+		'modular_bluemoon/sound/interactions/sfx/DryFlopQuick1.ogg',
+		'modular_bluemoon/sound/interactions/sfx/DryFlopQuick2.ogg',
+		'modular_bluemoon/sound/interactions/sfx/DryFlopQuick3.ogg',
+		'modular_bluemoon/sound/interactions/sfx/DryFlopQuick4.ogg',
+		'modular_bluemoon/sound/interactions/sfx/DryFlopQuick5.ogg'), 100, 1, -1)
 
 	user.visible_message(
 		span_lewd("<b>\The [user]</b> [message]"),
@@ -448,8 +481,16 @@
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick(
-		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/champ2.ogg'), 70, 1, -1)
+		'modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1)
 
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 
@@ -487,8 +528,16 @@
 		user.set_is_fucking(partner, CUM_TARGET_ANUS, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick(
-		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+		'modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1)
 
 	user.visible_message(span_lewd("<b>\\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 

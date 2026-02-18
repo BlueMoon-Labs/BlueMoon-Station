@@ -38,11 +38,20 @@ GLOBAL_LIST_INIT(lewd_softmoans_female, list(
 // BLUEMOON ADD END
 // Kissing sounds
 GLOBAL_LIST_INIT(lewd_kiss_sounds, list(
-	'modular_sand/sound/interactions/kiss1.ogg',
-	'modular_sand/sound/interactions/kiss2.ogg',
-	'modular_sand/sound/interactions/kiss3.ogg',
-	'modular_sand/sound/interactions/kiss4.ogg',
-	'modular_sand/sound/interactions/kiss5.ogg'
+	'modular_bluemoon/sound/interactions/sfx/kiss1.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss2.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss3.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss4.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss5.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss6.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss7.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss8.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss9.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss10.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss11.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss12.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss13.ogg',
+	'modular_bluemoon/sound/interactions/sfx/kiss14.ogg'
 ))
 GLOBAL_LIST_INIT(interaction_speeds, list(
 	4 SECONDS,

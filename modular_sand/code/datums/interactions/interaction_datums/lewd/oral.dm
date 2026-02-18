@@ -124,17 +124,17 @@
 		partner.set_is_fucking(user, CUM_TARGET_MOUTH, genital)
 		try_apply_knot(partner, user, CUM_TARGET_MOUTH)
 
-	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bj1.ogg',
-									'modular_sand/sound/interactions/bj2.ogg',
-									'modular_sand/sound/interactions/bj3.ogg',
-									'modular_sand/sound/interactions/bj4.ogg',
-									'modular_sand/sound/interactions/bj5.ogg',
-									'modular_sand/sound/interactions/bj6.ogg',
-									'modular_sand/sound/interactions/bj7.ogg',
-									'modular_sand/sound/interactions/bj8.ogg',
-									'modular_sand/sound/interactions/bj9.ogg',
-									'modular_sand/sound/interactions/bj10.ogg',
-									'modular_sand/sound/interactions/bj11.ogg'), 50, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/bj1.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj2.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj3.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj4.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj5.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj6.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj7.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj8.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj9.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj10.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj11.ogg'), 100, 1, -1)
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 //BLUEMOON EDIT START
 //SPLURT EDIT START

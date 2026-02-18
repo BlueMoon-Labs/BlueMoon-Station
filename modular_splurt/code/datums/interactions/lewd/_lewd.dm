@@ -365,17 +365,17 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 						peepee = pardner.getorganslot(ORGAN_SLOT_PENIS)
 		user.set_is_fucking(src, CUM_TARGET_MOUTH, peepee)
 
-	playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/bj1.ogg',
-									'modular_sand/sound/interactions/bj2.ogg',
-									'modular_sand/sound/interactions/bj3.ogg',
-									'modular_sand/sound/interactions/bj4.ogg',
-									'modular_sand/sound/interactions/bj5.ogg',
-									'modular_sand/sound/interactions/bj6.ogg',
-									'modular_sand/sound/interactions/bj7.ogg',
-									'modular_sand/sound/interactions/bj8.ogg',
-									'modular_sand/sound/interactions/bj9.ogg',
-									'modular_sand/sound/interactions/bj10.ogg',
-									'modular_sand/sound/interactions/bj11.ogg'), 50, 1, -1)
+	playlewdinteractionsound(get_turf(src), pick('modular_bluemoon/sound/interactions/sfx/bj1.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj2.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj3.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj4.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj5.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj6.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj7.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj8.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj9.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj10.ogg',
+									'modular_bluemoon/sound/interactions/sfx/bj11.ogg'), 100, 1, -1)
 	visible_message(message = "<span class='lewd'><b>\The [src]</b> [message]</span>", ignored_mobs = get_unconsenting())
 	//BLUEMOON EDIT START
 	if(fucktarget == "vagina")
@@ -405,9 +405,13 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		//BLUEMOON EDIT END
 		set_is_fucking(user, CUM_TARGET_BREASTS, getorganslot(ORGAN_SLOT_PENIS) ? getorganslot(ORGAN_SLOT_PENIS) : null)
 
-	playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(loc, pick('modular_bluemoon/sound/interactions/sfx/DryFlop1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop5.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop6.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop7.ogg'), 100, 1, -1)
 	visible_message(message = span_lewd("<b>\The [src]</b> [message]"), ignored_mobs = get_unconsenting())
 	// BLUEMOON EDIT START
 	if(has_penis)
@@ -447,8 +451,16 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		message = "приподнимает свой [genital_name] и вводит его в ожидающий пупок \the <b>[partner]</b>."
 		set_is_fucking(partner, CUM_TARGET_BELLY, getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/champ1.ogg',
-						'modular_sand/sound/interactions/champ2.ogg'), 50, 1, -1)
+	playlewdinteractionsound(loc, pick('modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1)
 	visible_message(message = "<span class='lewd'><b>\The [src]</b> [message]</span>", ignored_mobs = get_unconsenting())
 	if(can_penetrating_genital_cum())
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_BELLY, partner, ORGAN_SLOT_PENIS)
@@ -465,9 +477,13 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b> [pick(lines)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting())
-	playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(loc, pick('modular_bluemoon/sound/interactions/sfx/DryFlop1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop5.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop6.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop7.ogg'), 100, 1, -1)
 
 /mob/living/proc/lick_sweat(mob/living/target)
 	var/message
@@ -479,7 +495,19 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b> [pick(lines)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting())
-	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/champ_fingering.ogg', 50, 1, -1)
+	playlewdinteractionsound(loc, pick('modular_bluemoon/sound/interactions/sfx/fingering01.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering02.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering03.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering04.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering05.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering06.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering07.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering08.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering09.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering10.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering11.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering12.ogg',
+						'modular_bluemoon/sound/interactions/sfx/fingering13.ogg'), 100, 1, -1)
 
 /mob/living/proc/smother_armpit(mob/living/target)
 	var/message
@@ -496,7 +524,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	playlewdinteractionsound(loc, pick(
 		'modular_sand/sound/interactions/squelch1.ogg',
 		'modular_sand/sound/interactions/squelch2.ogg',
-		'modular_sand/sound/interactions/squelch3.ogg'), 50, 1, -1)
+		'modular_sand/sound/interactions/squelch3.ogg'), 100, 1, -1)
 
 /mob/living/proc/lick_armpit(mob/living/target)
 	var/message
@@ -513,7 +541,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	playlewdinteractionsound(loc, pick(
 		'modular_sand/sound/interactions/squelch1.ogg',
 		'modular_sand/sound/interactions/squelch2.ogg',
-		'modular_sand/sound/interactions/squelch3.ogg'), 50, 1, -1)
+		'modular_sand/sound/interactions/squelch3.ogg'), 100, 1, -1)
 
 /mob/living/proc/fuck_armpit(mob/living/target)
 	var/message
@@ -545,9 +573,11 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b>[pick(lines)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting())
-	playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(loc, pick('modular_bluemoon/sound/interactions/sfx/DryFlopQuick1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlopQuick5.ogg'), 100, 1, -1)
 	if(can_penetrating_genital_cum())
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_ARMPIT, target, ORGAN_SLOT_PENIS)
 
@@ -581,9 +611,13 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b> [pick(lines)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting())
-	playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(loc, pick('modular_bluemoon/sound/interactions/sfx/DryFlop1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop5.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop6.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop7.ogg'), 100, 1, -1)
 	if(target.can_penetrating_genital_cum())
 		target.handle_post_sex(NORMAL_LUST, CUM_TARGET_ARMPIT, src, ORGAN_SLOT_PENIS)
 
@@ -612,9 +646,13 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b> [pick(lines)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting())
-	playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(loc, pick('modular_bluemoon/sound/interactions/sfx/DryFlop1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop5.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop6.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop7.ogg'), 100, 1, -1)
 	if(target.can_penetrating_genital_cum())
 		target.handle_post_sex(NORMAL_LUST, CUM_TARGET_BREASTS, src, CUM_TARGET_PENIS) // BLUEMOON EDIT
 	if(HAS_TRAIT(src, TRAIT_NYMPHO))
@@ -644,7 +682,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b> [pick(lines)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting())
-	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/swallow.ogg', 70, 1, -1)
+	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/swallow.ogg', 100, 1, -1)
 	target.handle_post_sex(HAS_TRAIT(target, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST, NUTS_TO_FACE, src, ORGAN_SLOT_PENIS) // BLUEMOON EDIT
 	if(HAS_TRAIT(src, TRAIT_NYMPHO))
 		handle_post_sex(LOW_LUST, partner = target)
@@ -663,12 +701,16 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/target_has_balls = target.has_balls()
 	// BLUEMOON ADD END
 	var/list/noises = list(
-		'modular_sand/sound/interactions/bang1.ogg',
-		'modular_sand/sound/interactions/bang2.ogg',
-		'modular_sand/sound/interactions/bang3.ogg',
-		'modular_sand/sound/interactions/bang4.ogg',
-		'modular_sand/sound/interactions/bang5.ogg',
-		'modular_sand/sound/interactions/bang6.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+		'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg',
 	)
 
 	if(is_fucking(target, CUM_TARGET_URETHRA))
@@ -732,9 +774,16 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b> [pick(lines)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting())
-	playlewdinteractionsound(src, pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(src, pick('modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1)
 	if(can_penetrating_genital_cum())
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_NIPPLE, target, ORGAN_SLOT_PENIS)
 	//BLUEMON EDIT START
@@ -768,9 +817,13 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b> [pick(lines)]</span>" //BLUEMOON EDIT
 	visible_message(message, ignored_mobs = get_unconsenting())
-	playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(loc, pick('modular_bluemoon/sound/interactions/sfx/DryFlop1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop2.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop3.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop4.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop5.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop6.ogg',
+						'modular_bluemoon/sound/interactions/sfx/DryFlop7.ogg'), 100, 1, -1)
 	if(can_penetrating_genital_cum())
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_THIGHS, target, ORGAN_SLOT_PENIS)
 	target.handle_post_sex(LOW_LUST, CUM_TARGET_PENIS, src)
@@ -798,9 +851,13 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b> [pick(lines)]</span>" //BLUEMOON EDIT
 	visible_message(message, ignored_mobs = get_unconsenting())
-	playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/bang1.ogg',
-								'modular_sand/sound/interactions/bang2.ogg',
-								'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
+	playlewdinteractionsound(loc, pick('modular_bluemoon/sound/interactions/sfx/DryFlop1.ogg',
+								'modular_bluemoon/sound/interactions/sfx/DryFlop2.ogg',
+								'modular_bluemoon/sound/interactions/sfx/DryFlop3.ogg',
+								'modular_bluemoon/sound/interactions/sfx/DryFlop4.ogg',
+								'modular_bluemoon/sound/interactions/sfx/DryFlop5.ogg',
+								'modular_bluemoon/sound/interactions/sfx/DryFlop6.ogg',
+								'modular_bluemoon/sound/interactions/sfx/DryFlop7.ogg'), 100, 1, -1)
 	handle_post_sex(LOW_LUST, CUM_TARGET_PENIS, target)
 	if(target.can_penetrating_genital_cum())
 		target.handle_post_sex(NORMAL_LUST, CUM_TARGET_THIGHS, src, ORGAN_SLOT_PENIS)
@@ -834,11 +891,11 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b>[pick(hell)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE))
-	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/swallow.ogg', 70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/swallow.ogg', 100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/assbrap1.ogg',
 						'modular_bluemoon/sound/interactions/assbrap2.ogg',
 						'modular_bluemoon/sound/interactions/assbrap3.ogg'),
-						70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+						100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	if(!is_fucking(target, GRINDING_FACE_WITH_ANUS))
 		set_is_fucking(target, GRINDING_FACE_WITH_ANUS, null)
 	handle_post_sex(LOW_LUST, null, src)
@@ -857,7 +914,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/assbrap1.ogg',
 						'modular_bluemoon/sound/interactions/assbrap2.ogg',
 						'modular_bluemoon/sound/interactions/assbrap3.ogg'),
-						70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+						100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	if(!target.is_fucking(src, CUM_TARGET_ANUS))
 		var/obj/item/organ/genital/genital = target.has_penis() == HAS_EXPOSED_GENITAL ? target.getorganslot(ORGAN_SLOT_PENIS) : (target.has_vagina() == HAS_EXPOSED_GENITAL ? target.getorganslot(ORGAN_SLOT_VAGINA) : null)
 		target.set_is_fucking(src, CUM_TARGET_ANUS, genital)
@@ -911,13 +968,17 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/assbrap1.ogg',
 						'modular_bluemoon/sound/interactions/assbrap2.ogg',
 						'modular_bluemoon/sound/interactions/assbrap3.ogg'),
-						70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
-	playlewdinteractionsound(target.loc, pick('modular_sand/sound/interactions/bang1.ogg',
-						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg',
-						'modular_sand/sound/interactions/bang4.ogg',
-						'modular_sand/sound/interactions/bang5.ogg',
-						'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+						100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+						'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	if(can_penetrating_genital_cum())
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, target, ORGAN_SLOT_PENIS)
 	target.handle_post_sex(NORMAL_LUST, null, src)
@@ -946,11 +1007,11 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b> [pick(hell)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE))
-	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/swallow.ogg', 70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/swallow.ogg', 100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/assbrap1.ogg',
 						'modular_bluemoon/sound/interactions/assbrap2.ogg',
 						'modular_bluemoon/sound/interactions/assbrap3.ogg'),
-						70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+						100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	target.handle_post_sex(NORMAL_LUST, null, src)
 
 /mob/living/proc/do_faceshit(mob/living/carbon/target)
@@ -972,11 +1033,11 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b> [pick(hell)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE))
-	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/swallow.ogg', 70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/swallow.ogg', 100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/asscrap1.ogg',
 						'modular_bluemoon/sound/interactions/asscrap2.ogg',
 						'modular_bluemoon/sound/interactions/asscrap3.ogg'),
-						70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+						100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	if(!is_fucking(target, GRINDING_FACE_WITH_ANUS))
 		set_is_fucking(target, GRINDING_FACE_WITH_ANUS, null)
 	handle_post_sex(LOW_LUST, null, src)
@@ -995,7 +1056,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/asscrap1.ogg',
 						'modular_bluemoon/sound/interactions/asscrap2.ogg',
 						'modular_bluemoon/sound/interactions/asscrap3.ogg'),
-						70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+						100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 
 	var/obj/item/organ/genital/G = target.has_penis() == HAS_EXPOSED_GENITAL ? target.getorganslot(ORGAN_SLOT_PENIS) : (target.has_vagina() == HAS_EXPOSED_GENITAL ? target.getorganslot(ORGAN_SLOT_VAGINA) : null)
 	if(!target.is_fucking(src, CUM_TARGET_ANUS))
@@ -1041,13 +1102,17 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/asscrap1.ogg',
 						'modular_bluemoon/sound/interactions/asscrap2.ogg',
 						'modular_bluemoon/sound/interactions/asscrap3.ogg'),
-						70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
-	playlewdinteractionsound(target.loc, pick('modular_sand/sound/interactions/bang1.ogg',
-					'modular_sand/sound/interactions/bang2.ogg',
-					'modular_sand/sound/interactions/bang3.ogg',
-					'modular_sand/sound/interactions/bang4.ogg',
-					'modular_sand/sound/interactions/bang5.ogg',
-					'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+						100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/sfx/WetPlap01.ogg',
+					'modular_bluemoon/sound/interactions/sfx/WetPlap02.ogg',
+					'modular_bluemoon/sound/interactions/sfx/WetPlap03.ogg',
+					'modular_bluemoon/sound/interactions/sfx/WetPlap04.ogg',
+					'modular_bluemoon/sound/interactions/sfx/WetPlap05.ogg',
+					'modular_bluemoon/sound/interactions/sfx/WetPlap06.ogg',
+					'modular_bluemoon/sound/interactions/sfx/WetPlap07.ogg',
+					'modular_bluemoon/sound/interactions/sfx/WetPlap08.ogg',
+					'modular_bluemoon/sound/interactions/sfx/WetPlap09.ogg',
+					'modular_bluemoon/sound/interactions/sfx/WetPlap10.ogg'), 100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	if(can_penetrating_genital_cum())
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, target, ORGAN_SLOT_PENIS)
 	target.handle_post_sex(NORMAL_LUST, null, src)
@@ -1075,9 +1140,9 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>\The <b>[src]</b> [pick(hell)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE))
-	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/swallow.ogg', 70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/swallow.ogg', 100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/crapjob.ogg',
-									'modular_bluemoon/sound/interactions/crapjob1.ogg'), 90, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+									'modular_bluemoon/sound/interactions/crapjob1.ogg'), 100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	target.handle_post_sex(NORMAL_LUST, null, src, ORGAN_SLOT_ANUS)
 
 /mob/living/proc/piss_over(mob/living/target)
@@ -1095,7 +1160,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	//BLUEMOON EDIT START
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/watering1.ogg',
 											'modular_bluemoon/sound/interactions/watering2.ogg',
-											'modular_bluemoon/sound/interactions/watering3.ogg'), 70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+											'modular_bluemoon/sound/interactions/watering3.ogg'), 100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	handle_post_sex(LOW_LUST, CUM_TARGET_BREASTS, target, pee_pee)
 	//BLUEMOON EDIT END
 
@@ -1114,7 +1179,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/swallow.ogg', 100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/watering1.ogg',
 											'modular_bluemoon/sound/interactions/watering2.ogg',
-											'modular_bluemoon/sound/interactions/watering3.ogg'), 70, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
+											'modular_bluemoon/sound/interactions/watering3.ogg'), 100, 1, -1, ignored_mobs = get_unconsenting(unholy = TRUE))
 	//BLUEMOON EDIT END
 	if(!is_fucking(target, CUM_TARGET_MOUTH))
 		set_is_fucking(target, CUM_TARGET_MOUTH, pee_pee)

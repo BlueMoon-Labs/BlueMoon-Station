@@ -106,8 +106,8 @@
 		user.set_is_fucking(partner, CUM_TARGET_MOUTH, genital)
 		try_apply_knot(user, partner, CUM_TARGET_MOUTH) // Проверка на узлирование.
 
-	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/oral1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/oral2.ogg'), 100, 1, -1)
 	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	if(retaliation_message)
 		user.visible_message("<font color=red><b>\The <b>[partner]</b></b> [retaliation_message]</span>", ignored_mobs = user.get_unconsenting())
@@ -185,8 +185,8 @@
 		try_apply_knot(user, partner, CUM_TARGET_THROAT) // Проверка на узлирование.
 
 	partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
-	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
+	playlewdinteractionsound(get_turf(user), pick('modular_bluemoon/sound/interactions/sfx/oral1.ogg',
+						'modular_bluemoon/sound/interactions/sfx/oral2.ogg'), 100, 1, -1)
 	user.visible_message(message = span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 	if(retaliation_message)
 		user.visible_message(message = "<font color=red><b>\The <b>[partner]</b></b> [retaliation_message]</span>", ignored_mobs = user.get_unconsenting())
@@ -207,7 +207,7 @@
 	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
 	write_log_user = "double oral fucked"
 	write_log_target = "was double oral fucked by"
-	interaction_sound = 'modular_sand/sound/interactions/oral1.ogg'
+	interaction_sound = 'modular_bluemoon/sound/interactions/sfx/oral1.ogg'
 
 /datum/interaction/lewd/double_oral/display_interaction(mob/living/user, mob/living/partner)
 	var/message
@@ -228,8 +228,8 @@
 		user.set_is_fucking(partner, CUM_TARGET_MOUTH, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick(
-		'modular_sand/sound/interactions/oral1.ogg',
-		'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
+		'modular_bluemoon/sound/interactions/sfx/oral1.ogg',
+		'modular_bluemoon/sound/interactions/sfx/oral2.ogg'), 100, 1, -1)
 
 	user.visible_message(
 		span_lewd("<b>\The [user]</b> [message]"),
@@ -254,7 +254,7 @@
 	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
 	write_log_user = "knot oral fucked"
 	write_log_target = "was knot oral fucked by"
-	interaction_sound = 'modular_sand/sound/interactions/champ2.ogg'
+	interaction_sound = 'modular_bluemoon/sound/interactions/sfx/bj2.ogg'
 
 /datum/interaction/lewd/knot_oral/display_interaction(mob/living/user, mob/living/partner)
 	var/message
@@ -274,8 +274,17 @@
 		user.set_is_fucking(partner, CUM_TARGET_MOUTH, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick(
-		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/champ2.ogg'), 70, 1, -1)
+		'modular_bluemoon/sound/interactions/sfx/bj1.ogg',
+		'modular_bluemoon/sound/interactions/sfx/bj2.ogg',
+		'modular_bluemoon/sound/interactions/sfx/bj3.ogg',
+		'modular_bluemoon/sound/interactions/sfx/bj4.ogg',
+		'modular_bluemoon/sound/interactions/sfx/bj5.ogg',
+		'modular_bluemoon/sound/interactions/sfx/bj6.ogg',
+		'modular_bluemoon/sound/interactions/sfx/bj7.ogg',
+		'modular_bluemoon/sound/interactions/sfx/bj8.ogg',
+		'modular_bluemoon/sound/interactions/sfx/bj9.ogg',
+		'modular_bluemoon/sound/interactions/sfx/bj10.ogg',
+		'modular_bluemoon/sound/interactions/sfx/bj11.ogg'), 100, 1, -1)
 
 	user.visible_message(span_lewd("<b>\\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
 
