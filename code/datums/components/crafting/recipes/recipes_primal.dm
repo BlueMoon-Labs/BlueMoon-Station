@@ -326,7 +326,7 @@
 				 /obj/item/stack/sheet/leather = 2)
 	category = CAT_PRIMAL
 
-/datum/crafting_recipe/bonfire
+/datum/crafting_recipe/primitive_centrifuge
 	name = "Primitive centrifuge"
 	time = 30
 	reqs = list(/obj/item/stack/sheet/mineral/wood = 5)
