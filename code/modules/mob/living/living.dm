@@ -855,11 +855,6 @@
 		log_combat(src, buckled, "resisted buckle")
 		return resist_buckle()
 
-	// CIT CHANGE - climbing out of a gut.
-	if(attempt_vr(src,"vore_process_resist",args))
-		//Sure, give clickdelay for anti spam. shouldn't be combat voring anyways.
-		return TRUE
-
 	//Breaking out of a container (Locker, sleeper, cryo...)
 	if(isobj(loc))
 		var/obj/C = loc

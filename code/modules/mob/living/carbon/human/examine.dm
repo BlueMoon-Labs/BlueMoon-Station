@@ -185,7 +185,7 @@
 					var/datum/reagent/cummies = find_reagent_object_from_type(dicc?.get_fluid_id())
 					. += "Вы чувствуете, как от [t_ego] тела пахнет <b>'<span style='color:[cummies.color]';>[cummies.name]</span>'</b>..."
 	if(user.client?.prefs.cit_toggles & VORE_EXAMINE)
-		var/cursed_stuff = attempt_vr(src,"examine_bellies",args) //vore Code
+		var/cursed_stuff = examine_bellies()
 		if(cursed_stuff)
 			. += cursed_stuff
 	//END OF CIT CHANGES

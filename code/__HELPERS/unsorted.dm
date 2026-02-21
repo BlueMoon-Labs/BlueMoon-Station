@@ -1103,10 +1103,12 @@ B --><-- A
 
 //gives us the stack trace from CRASH() without ending the current proc.
 /proc/stack_trace(msg)
-	CRASH(msg)
+	//CRASH(msg)
+	return
 
 /datum/proc/stack_trace(msg)
-	CRASH(msg)
+	//CRASH(msg)
+	return
 
 GLOBAL_REAL_VAR(list/stack_trace_storage)
 /proc/gib_stack_trace()
