@@ -21,6 +21,7 @@
 /obj/item/projectile/bullet/c10mm
 	name = "10mm bullet"
 	damage = 30
+	armour_penetration = 20
 
 /obj/item/projectile/bullet/c10mm_ap
 	name = "10mm armor-piercing bullet"
@@ -29,7 +30,7 @@
 
 /obj/item/projectile/bullet/c10mm_hp
 	name = "10mm hollow-point bullet"
-	damage = 40
+	damage = 50
 	armour_penetration = -25 // BLUEMOON EDIT balancing, was -50
 
 /obj/item/projectile/bullet/incendiary/c10mm
@@ -40,8 +41,8 @@
 /obj/item/projectile/bullet/c10mm/soporific
 	name ="10mm soporific bullet"
 	nodamage = TRUE
-	stamina = 25
-	armour_penetration = -50
+	stamina = 30
+	armour_penetration = -30
 
 /obj/item/projectile/bullet/c10mm/soporific/on_hit(atom/target, blocked = FALSE)
 	. = ..()

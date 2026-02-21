@@ -3,6 +3,7 @@
 /obj/item/projectile/bullet/n762
 	name = "7.62x38mmR bullet"
 	damage = 60
+	armour_penetration = 10
 	wound_bonus = 10
 	bare_wound_bonus = 4
 
@@ -11,6 +12,7 @@
 /obj/item/projectile/bullet/a50AE
 	name = ".50AE bullet"
 	damage = 60
+	armour_penetration = 20
 	wound_bonus = 15
 	bare_wound_bonus = 5
 
@@ -18,11 +20,12 @@
 
 /obj/item/projectile/bullet/c38
 	name = ".38 bullet"
-	damage = 25
+	damage = 30
+	armour_penetration = 10
 	ricochets_max = 2
-	ricochet_chance = 50
-	ricochet_auto_aim_angle = 10
-	ricochet_auto_aim_range = 3
+	ricochet_chance = 100
+	ricochet_auto_aim_angle = 30
+	ricochet_auto_aim_range = 6
 	wound_bonus = 5
 	bare_wound_bonus = 8
 	embedding = list(embed_chance=15, fall_chance=2, jostle_chance=2, ignore_throwspeed_threshold=TRUE, pain_stam_pct=0.4, pain_mult=3, jostle_pain_mult=5, rip_time=10)
@@ -31,15 +34,15 @@
 	name = ".38 Match bullet"
 	ricochets_max = 4
 	ricochet_chance = 100
-	ricochet_auto_aim_angle = 40
-	ricochet_auto_aim_range = 5
+	ricochet_auto_aim_angle = 45
+	ricochet_auto_aim_range = 8
 	ricochet_incidence_leeway = 50
 	ricochet_decay_chance = 1
 	ricochet_decay_damage = 1
 	wound_bonus = 7
 
 /obj/item/projectile/bullet/c38/match/bouncy
-	name = ".38 Rubber bullet"
+	name = ".38 Bouncy bullet" // уточняем название, чтобы не путули с резиной
 	damage = 10
 	stamina = 30
 	armour_penetration = -30
@@ -65,9 +68,9 @@
 	embed_falloff_tile = -15
 
 /obj/item/projectile/bullet/c38/rubber
-	name = ".38 rubber bullet"
-	damage = 15
-	stamina = 48
+	name = ".38 Rubber bullet"
+	damage = 2 // Зачем такой дикий урон резине???
+	stamina = 50
 	shrapnel_type = NONE
 	sharpness = SHARP_NONE
 	embedding = null
@@ -90,7 +93,7 @@
 
 /obj/item/projectile/bullet/c38/hotshot //similar to incendiary bullets, but do not leave a flaming trail
 	name = ".38 Hot Shot bullet"
-	damage = 20
+	damage = 30
 	ricochets_max = 0
 
 /obj/item/projectile/bullet/c38/hotshot/on_hit(atom/target, blocked = FALSE)
@@ -117,12 +120,15 @@
 
 /obj/item/projectile/bullet/a357
 	name = ".357 bullet"
-	damage = 60
-	wound_bonus = 10
+	damage = 65
+	wound_bonus = 25
+	ricochets_max = 2
+	ricochet_chance = 100
+	ricochet_damage_mod = 1.1
 
 /obj/item/projectile/bullet/a357/ap
 	name = ".357 armor-piercing bullet"
-	damage = 45
+	damage = 50
 	armour_penetration = 45
 
 // admin only really, for ocelot memes
