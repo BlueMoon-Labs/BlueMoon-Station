@@ -17,6 +17,9 @@
 								"Firing Pins",
 								"Computer Parts",
 								"MODsuit Designs",
+								"Production Machinery",
+								"Culinary Machinery",
+								"Cargo Machinery",
 								"Organic Designs" //BLUEMOON ADD: New category for fleshcrafting and some heinous shit to ever exist.
 								)
 	production_animation = "protolathe_n"

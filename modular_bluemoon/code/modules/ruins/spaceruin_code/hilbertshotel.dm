@@ -138,7 +138,7 @@
 /obj/hotel_things/train/fake_door
 	name = "door"
 	desc = "An extremely sturdy metal ladder."
-	icon = 'modular_bluemoon/smiley/aesthetics/airlock/icons/airlocks/hatch/centcom.dmi'
+	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/hatch/centcom.dmi'
 	icon_state = "fake_on"
 	resistance_flags = INDESTRUCTIBLE
 	anchored = TRUE

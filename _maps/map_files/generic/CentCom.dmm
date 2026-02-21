@@ -7401,7 +7401,9 @@
 /area/slavers)
 "aPI" = (
 /obj/structure/micro_brick/small_house,
-/turf/open/floor/plating/dirt,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/centcom/holding)
 "aPJ" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -10701,7 +10703,9 @@
 /obj/structure/micro_brick/Road_turn{
 	dir = 1
 	},
-/turf/open/floor/plating/dirt,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/centcom/holding)
 "cgS" = (
 /obj/machinery/computer/atmos_control{
@@ -15357,7 +15361,9 @@
 /area/syndicate_mothership)
 "gXy" = (
 /obj/structure/micro_brick/road_straight,
-/turf/open/floor/plating/dirt,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/centcom/holding)
 "gXE" = (
 /obj/machinery/light/floor,
@@ -16451,7 +16457,9 @@
 /area/centcom/control)
 "ihW" = (
 /obj/structure/micro_brick/small_warehouse,
-/turf/open/floor/plating/dirt,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/centcom/holding)
 "ihX" = (
 /obj/item/kirbyplants/random,
@@ -17801,7 +17809,9 @@
 /area/centcom/control)
 "jDz" = (
 /obj/structure/micro_brick/small_business,
-/turf/open/floor/plating/dirt,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/centcom/holding)
 "jDX" = (
 /obj/structure/artilleryplaceholder{
@@ -20062,7 +20072,9 @@
 /obj/structure/micro_brick/road_threeway{
 	dir = 8
 	},
-/turf/open/floor/plating/dirt,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/centcom/holding)
 "lRW" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -21494,7 +21506,9 @@
 /area/centcom/control)
 "nyV" = (
 /obj/structure/micro_brick/small_museum,
-/turf/open/floor/plating/dirt,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/centcom/holding)
 "nzf" = (
 /obj/machinery/libraryscanner{
@@ -28232,7 +28246,9 @@
 /obj/structure/micro_brick/road_threeway{
 	dir = 8
 	},
-/turf/open/floor/plating/dirt,
+/turf/open/floor/plating/dirt/dark/jungle{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
 /area/centcom/holding)
 "umz" = (
 /obj/structure/chair/sofa/corp/right{

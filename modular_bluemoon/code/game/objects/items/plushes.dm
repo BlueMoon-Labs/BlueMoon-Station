@@ -101,16 +101,16 @@
 	icon_state = "allta"
 	item_state = "aiko"
 	squeak_override = list(
-		'modular_bluemoon/SmiLeY/sounds/allta_mew1.ogg' = 1,
-		'modular_bluemoon/SmiLeY/sounds/allta_mew2.ogg' = 1,
-		'modular_bluemoon/SmiLeY/sounds/allta_mew3.ogg' = 1
+		'modular_bluemoon/sound/plush/allta_mew1.ogg' = 1,
+		'modular_bluemoon/sound/plush/allta_mew2.ogg' = 1,
+		'modular_bluemoon/sound/plush/allta_mew3.ogg' = 1
 	)
 
 /obj/item/toy/plush/bm/emma/zlatchek
 	name = "Zlat plushie"
 	desc = "Прапорщик - Ебучий койот. Примечание: Не доверяйте ему огнестрельное оружие."
 	icon_state = "zlat"
-	squeak_override = list('modular_bluemoon/SmiLeY/sounds/zlatchek.ogg' = 1)
+	squeak_override = list('modular_bluemoon/sound/plush/zlatchek.ogg' = 1)
 
 /obj/item/toy/plush/bm/tiamat
 	name = "Tiamat plushie"
@@ -120,11 +120,11 @@
 	squeak_override = list(
 		'modular_splurt/sound/voice/mrowl.ogg' = 1,
 		'modular_splurt/sound/voice/meow_meme.ogg' = 1,
-		'modular_bluemoon/SmiLeY/sounds/tiamat_mrrp1.ogg' = 1,
-		'modular_bluemoon/SmiLeY/sounds/tiamat_mrrp2.ogg' = 1,
-		'modular_bluemoon/SmiLeY/sounds/tiamat_meow1.ogg' = 1,
-		'modular_bluemoon/SmiLeY/sounds/tiamat_meow2.ogg' = 1,
-		'modular_bluemoon/SmiLeY/sounds/tiamat_meow3.ogg' = 1
+		'modular_bluemoon/sound/plush/tiamat_mrrp1.ogg' = 1,
+		'modular_bluemoon/sound/plush/tiamat_mrrp2.ogg' = 1,
+		'modular_bluemoon/sound/plush/tiamat_meow1.ogg' = 1,
+		'modular_bluemoon/sound/plush/tiamat_meow2.ogg' = 1,
+		'modular_bluemoon/sound/plush/tiamat_meow3.ogg' = 1
 	)
 
 /obj/item/toy/plush/bm/manul
@@ -136,8 +136,8 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/items/plushes_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/items/plushes_righthand.dmi'
 	squeak_override = list(
-		'modular_bluemoon/SmiLeY/sounds/manul1.ogg' = 1,
-		'modular_bluemoon/SmiLeY/sounds/manul2.ogg' = 1
+		'modular_bluemoon/sound/plush/manul1.ogg' = 1,
+		'modular_bluemoon/sound/plush/manul2.ogg' = 1
 	)
 
 /obj/item/toy/plush/bm/stasik
@@ -151,7 +151,7 @@
 	desc = "Нанотехнологическая игрушка, созданная в стенах научных комплексов НТ. Видимо яркие переливающиеся цвета их рук дело."
 	icon_state = "rainbow"
 	item_state = "rainbow"
-	squeak_override = list('modular_bluemoon/SmiLeY/sounds/allta_mew1.ogg' = 1)
+	squeak_override = list('modular_bluemoon/sound/plush/allta_mew1.ogg' = 1)
 
 /obj/item/toy/plush/bm/atmosian
 	name = "Atmosian Plushie"
@@ -165,9 +165,9 @@
 	desc = " Мягкая игрушка в форме кошки легко утолит вашу жажду объятий и ласки, от неё вы можете почувствовать легкий аромат пепла и сладковато ягодного вкуса."
 	icon_state = "laska"
 	squeak_override = list(
-		'modular_bluemoon/SmiLeY/sounds/tiamat_mrrp1.ogg' = 1,
-		'modular_bluemoon/SmiLeY/sounds/tiamat_mrrp2.ogg' = 1,
-		'modular_bluemoon/SmiLeY/sounds/tiamat_meow1.ogg' = 1
+		'modular_bluemoon/sound/plush/tiamat_mrrp1.ogg' = 1,
+		'modular_bluemoon/sound/plush/tiamat_mrrp2.ogg' = 1,
+		'modular_bluemoon/sound/plush/tiamat_meow1.ogg' = 1
 	)
 
 /obj/item/toy/plush/bm/plushy_savannah
@@ -578,7 +578,7 @@
 	desc = "Плюшевая игрушка, вооруженная белыми лапками, готова совершить величайшее ограбление — украсть ваше свободное время."
 	icon_state = "araminta"
 	attack_verb = list("meow", "nya", "purrs")
-	squeak_override = list('modular_bluemoon/SmiLeY/sounds/allta_mew1.ogg' = 1,
+	squeak_override = list('modular_bluemoon/sound/plush/allta_mew1.ogg' = 1,
 	'modular_bluemoon/sound/voice/short_purr_silent.ogg' = 1
 	)
 	var/obj/item/toy/plush/bm/lissara/love_target
@@ -700,4 +700,4 @@
 	name = "Mini Leia"
 	desc = "Плюшевая игрушка изготовленная из дешевых но приятных на ощюпь материалов. Сшита на темных мануфактурах ручками бедных кеткринских детей."
 	icon_state = "leia"
-	squeak_override = list('modular_bluemoon/sound/plush/leia_giggle.ogg' = 1, 'modular_bluemoon/sound/plush/leia_nyah.ogg' = 1, 'modular_bluemoon/sound/plush/leia_plan.ogg' = 1)
+	squeak_override = list('modular_bluemoon/sound/plush/leia_giggle.ogg' = 8, 'modular_bluemoon/sound/plush/leia_nyah.ogg' = 9, 'modular_bluemoon/sound/plush/leia_plan.ogg' = 1)

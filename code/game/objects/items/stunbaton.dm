@@ -30,6 +30,9 @@
 	var/status_duration = 3 SECONDS //how long our status effects last for otherwise
 	COOLDOWN_DECLARE(shove_cooldown)
 
+	var/hit_sound = 'sound/weapons/egloves.ogg'
+	var/turn_on_sound = "sparks"
+
 /obj/item/melee/baton/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>Right click attack while in combat mode to knockdown, but only once per [cooldown_duration / 10] seconds.</span>"
@@ -88,7 +91,7 @@
 	if(turned_on != new_status)
 		turned_on = new_status
 		if(!silent)
-			playsound(loc, "sparks", 75, 1, -1)
+			playsound(loc, turn_on_sound, 75, 1, -1)
 		if(turned_on)
 			START_PROCESSING(SSobj, src)
 		else
@@ -265,7 +268,7 @@
 								"<span class='userdanger'>[user] has [shoved ? "brutally stunnned" : "stunned"] you with [src]!</span>")
 		log_combat(user, L, shoved ? "stunned and attempted knockdown" : "stunned")
 
-	playsound(loc, 'sound/weapons/egloves.ogg', 50, 1, -1)
+	playsound(loc, hit_sound, 50, 1, -1)
 
 	if(ishuman(L))
 		var/mob/living/carbon/human/H = L

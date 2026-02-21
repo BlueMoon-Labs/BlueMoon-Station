@@ -1,7 +1,8 @@
 
 #define A_BIG_NUMBER			9999999
-#define STATE_COUNT_NORMAL		4
-#define STATE_COUNT_DIAGONAL	7
+#define STATE_COUNT_NORMAL				4
+#define STATE_COUNT_ROTATION_STRICT		5
+#define STATE_COUNT_DIAGONAL			7
 
 
 /mob/verb/ChooseDMI(dmi as file)
@@ -23,9 +24,11 @@
 			if(cont == "No")
 				return
 		if(STATE_COUNT_NORMAL)
-			world << "4 States, running in Non-Diagonal mode"
+			world << "[STATE_COUNT_NORMAL] States, running in Non-Diagonal mode with line rotation"
+		if(STATE_COUNT_ROTATION_STRICT)
+			world << "[STATE_COUNT_ROTATION_STRICT] States, running in Non-Diagonal mode without line rotation"
 		if(STATE_COUNT_DIAGONAL)
-			world << "5 States, running in Diagonal mode"
+			world << "[STATE_COUNT_DIAGONAL] States, running in Diagonal mode"
 		if((STATE_COUNT_DIAGONAL + 1) to A_BIG_NUMBER)
 			var/cont = alert(usr, "Too many states: [states.len],  expected [STATE_COUNT_NORMAL] (Non-Diagonal) or [STATE_COUNT_DIAGONAL] (Diagonal), Continue?", "Unexpected Amount of States", "Yes", "No")
 			if(cont == "No")
@@ -109,6 +112,55 @@
 				outputIcon.Insert(line4e, "4-e")
 
 				world << "Line: \icon[line] -> \icon[line1n] \icon[line2n] \icon[line3s] \icon[line4s] \icon[line1w] \icon[line2e] \icon[line3w] \icon[line4e]"
+
+			if("line_v") //Vertical
+				var/icon/line = icon(sourceIcon, state)
+
+				var/icon/line1n = icon(line)
+				line1n.DrawBox(null, 1, 1, 32, 16)
+				line1n.DrawBox(null, 17, 1, 32, 32)
+				outputIcon.Insert(line1n, "1-n")
+
+				var/icon/line2n = icon(line)
+				line2n.DrawBox(null, 1, 1, 16, 32)
+				line2n.DrawBox(null, 17, 1, 32, 16)
+				outputIcon.Insert(line2n, "2-n")
+
+				var/icon/line3s = icon(line)
+				line3s.DrawBox(null, 1, 32, 32, 17)
+				line3s.DrawBox(null, 17, 32, 32, 1)
+				outputIcon.Insert(line3s, "3-s")
+
+				var/icon/line4s = icon(line)
+				line4s.DrawBox(null, 1, 1, 16, 32)
+				line4s.DrawBox(null, 17, 17, 32, 32)
+				outputIcon.Insert(line4s, "4-s")
+				world << "Line Vertical: \icon[line] -> \icon[line1n] \icon[line2n] \icon[line3s] \icon[line4s]"
+
+			if("line_h") //Horizontal
+				var/icon/line = icon(sourceIcon, state)
+
+				var/icon/line1w = icon(line) //Correct
+				line1w.DrawBox(null, 1, 1, 32, 16)
+				line1w.DrawBox(null, 17, 1, 32, 32)
+				outputIcon.Insert(line1w, "1-w")
+
+				var/icon/line2e = icon(line)
+				line2e.DrawBox(null, 1, 1, 16, 32)
+				line2e.DrawBox(null, 17, 1, 32, 16)
+				outputIcon.Insert(line2e, "2-e")
+
+				var/icon/line3w = icon(line)
+				line3w.DrawBox(null, 1, 32, 32, 17)
+				line3w.DrawBox(null, 17, 32, 32, 1)
+				outputIcon.Insert(line3w, "3-w")
+
+				var/icon/line4e = icon(line)
+				line4e.DrawBox(null, 1, 1, 16, 32)
+				line4e.DrawBox(null, 17, 17, 32, 32)
+				outputIcon.Insert(line4e, "4-e")
+
+				world << "Line Horizontal: \icon[line] -> \icon[line1w] \icon[line2e] \icon[line3w] \icon[line4e]"
 
 			if("center_4")
 				var/icon/center4 = icon(sourceIcon, state)

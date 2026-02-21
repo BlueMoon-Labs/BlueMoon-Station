@@ -489,20 +489,6 @@
 	var/list/cached_reagents_amount
 	var/previous_typepath
 
-/obj/item/reagent_containers/food/snacks/donkpocket/Initialize(mapload)
-	. = ..()
-	if(!cooked_type) //maploaded cooked donk pockets won't cool down anyway.
-		desc += " This one will stay warm for a long time, great."
-
-/obj/item/reagent_containers/food/snacks/donkpocket/initialize_cooked_food(obj/item/reagent_containers/food/snacks/donkpocket/S, cooking_efficiency = 1)
-	. = ..()
-	if(istype(S))
-		S.desc = initial(S.desc) //reset the desc since will now cool down.
-		for(var/R in S.bonus_reagents)
-			LAZYSET(S.cached_reagents_amount, R, S.reagents.get_reagent_amount(R))
-		S.previous_typepath = type
-		addtimer(CALLBACK(S, PROC_REF(cool_down)), 7 MINUTES) //canonically they reverted back to normal after 7 minutes.
-
 /obj/item/reagent_containers/food/snacks/donkpocket/proc/cool_down()
 	if(!previous_typepath) //This shouldn't happen.
 		qdel(src)
@@ -529,6 +515,18 @@
 	cooked_type = null
 	tastes = list("meat" = 2, "dough" = 2, "laziness" = 1)
 	foodtype = GRAIN | ANTITOXIC
+
+/obj/item/reagent_containers/food/snacks/donkpocket/warm/on_microwave_cooked(datum/source, atom/source_item, cooking_efficiency = 1)
+	. = ..()
+	for(var/R in bonus_reagents)
+		LAZYSET(cached_reagents_amount, R, reagents.get_reagent_amount(R))
+	previous_typepath = source_item.type
+	addtimer(CALLBACK(src, PROC_REF(cool_down)), 7 MINUTES) //canonically they reverted back to normal after 7 minutes.
+
+/obj/item/reagent_containers/food/snacks/donkpocket/warm/examine(mob/user)
+	. = ..()
+	if(!cooked_type && !previous_typepath) //maploaded cooked donk pockets won't cool down anyway.
+		. += span_info("This one will stay warm for a long time, great.")
 
 /obj/item/reagent_containers/food/snacks/dankpocket
 	name = "\improper Dank-pocket"

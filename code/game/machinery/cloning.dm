@@ -207,7 +207,7 @@
 
 /obj/machinery/clonepod/proc/poll_for_mind(mob/living/carbon/human/H, clonename)
 	set waitfor = FALSE
-	var/list/candidates = pollCandidatesForMob("Хотите ли взять роль дефективного клона [clonename]? (Не занимайтесь ERP без разрешения оригинала)", null, null, null, 100, H, POLL_IGNORE_CLONE)
+	var/list/candidates = pollCandidatesForMob("Хотите ли взять роль дефективного клона [clonename]? (Не занимайтесь ERP без разрешения оригинала)", null, null, null, 100, H, POLL_IGNORE_CLONE, priority_check = FALSE)
 	if(LAZYLEN(candidates))
 		var/mob/C = pick(candidates)
 		H.key = C.key

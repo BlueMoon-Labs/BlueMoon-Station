@@ -885,7 +885,7 @@
 
 /datum/action/toggle_dead_chat_mob
 	icon_icon = 'icons/mob/mob.dmi'
-	button_icon_state = "ghost"
+	button_icon_state = "ghost1"
 	name = "Toggle deadchat"
 	desc = "Turn off or on your ability to hear ghosts."
 

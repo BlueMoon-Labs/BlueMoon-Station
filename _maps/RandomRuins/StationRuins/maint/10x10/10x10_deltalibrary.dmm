@@ -158,7 +158,7 @@
 /area/template_noop)
 "aK" = (
 /obj/effect/decal/cleanable/blood/old,
-/obj/item/organ/tongue/bone,
+/obj/item/organ/tongue/bone/chatter,
 /turf/open/floor/plating,
 /area/template_noop)
 "aL" = (

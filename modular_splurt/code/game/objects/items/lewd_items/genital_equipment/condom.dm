@@ -13,13 +13,9 @@
 	genital_slot 		= ORGAN_SLOT_PENIS
 	var/const/max_volume = 300
 
-/obj/item/genital_equipment/condom/Initialize()
+/obj/item/genital_equipment/condom/Initialize(mapload)
 	create_reagents(max_volume, DRAWABLE|TRANSPARENT|NO_REACT)
 	return ..()
-
-/obj/item/genital_equipment/condom/ComponentInitialize()
-	. = ..()
-	AddElement(/datum/element/trash)
 
 /obj/item/genital_equipment/condom/item_inserting(datum/source, obj/item/organ/genital/G, mob/user)
 	. = TRUE

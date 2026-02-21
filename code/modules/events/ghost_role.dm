@@ -63,10 +63,10 @@
 	// Returns a list of candidates in priority order, with candidates from
 	// `priority_candidates` first, and ghost roles randomly shuffled and
 	// appended after
-	var/list/mob/dead/observer/regular_candidates
+	var/list/regular_candidates
 	// don't get their hopes up
 	if(priority_candidates.len < minimum_required)
-		regular_candidates = pollGhostCandidates("Хотите ли вы занять роль '[role_name]'?", jobban, gametypecheck, be_special)
+		regular_candidates = pollGhostCandidates("Хотите ли вы занять роль '[role_name]'?", jobban, gametypecheck, be_special, minimum_required = minimum_required)
 	else
 		regular_candidates = list()
 

@@ -7681,6 +7681,14 @@
 "fBj" = (
 /turf/closed/wall,
 /area/hallway/secondary/entry)
+"fBL" = (
+/obj/effect/turf_decal/tile/purple,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
+/turf/open/floor/plasteel/white,
+/area/science/lab)
 "fBN" = (
 /turf/open/floor/plasteel/dark,
 /area/command/teleporter)
@@ -67536,7 +67544,7 @@ dWC
 vxa
 nkf
 xrV
-vOj
+fBL
 rDu
 dUs
 mYR

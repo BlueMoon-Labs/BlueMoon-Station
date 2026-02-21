@@ -14,12 +14,17 @@
 		to_chat(user,"<span class='warning'>[O] is already modified!")
 		return
 	if(O.type in fromitem) //makes sure O is the right thing
-		new product(usr.loc) //spawns the product
+		var/result = new product(usr.loc) //spawns the product
 		user.visible_message("<span class='warning'>[user] modifies [O]!","<span class='warning'>You modify the [O]!")
+		on_item_replace(O, result)
 		qdel(O) //Gets rid of the baton
 		qdel(src) //gets rid of the kit
 	else
 		to_chat(user, "<span class='warning'> You can't modify [O] with this kit!</span>")
+
+// may be useful for gun/stunbaton/etc modkits
+/obj/item/modkit/proc/on_item_replace(obj/old_item, obj/modified_item)
+	return
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -844,7 +849,33 @@
 	icon_state = "p320"
 	item_state = "p320"
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/archivo.ogg'
-	unique_reskin = null
+	unique_reskin = list(
+		"Black" = list(
+			"icon_state" = "p320b",
+			"item_state" = "p320b",
+			"name" = "Black P320"
+		),
+		"Millie" = list(
+			"icon_state" = "mil",
+			"item_state" = "mil",
+			"name" = "Millie P320"
+		)
+	)
+
+/obj/item/modkit/M9tempest_kit
+	name = "M-9 Tempest Kit"
+	desc = "A modkit for making a hybrid taser into a M-9 Tempest."
+	product = /obj/item/gun/energy/e_gun/advtaser/M9tempest
+	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
+
+/obj/item/gun/energy/e_gun/advtaser/M9tempest
+	name = "\improper M-9 Tempest"
+	icon_state = "M9tempest"
+	item_state = "M9tempest"
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	ammo_x_offset = 0
 
 ////////////////////////////////////////////////////////////////////////////////////////
 

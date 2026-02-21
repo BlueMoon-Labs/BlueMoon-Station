@@ -127,7 +127,7 @@
 /datum/sprite_accessory/hair/zoey/katara
 	name = "Katara"
 	icon_state = "hair_katara_s"
-	icon = 'modular_bluemoon/SmiLeY/icons/mob/hairs.dmi'
+	icon = 'modular_bluemoon/icons/mob/hairs.dmi'
 
 /datum/sprite_accessory/hair/zoey/katara/ponytail_80
 	name = "Ponytail 80s"

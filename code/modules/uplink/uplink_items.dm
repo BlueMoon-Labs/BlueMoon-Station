@@ -103,8 +103,14 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 /datum/uplink_item/proc/get_discount()
 	return pick(4;0.75,2;0.5,1;0.25)
 
-/datum/uplink_item/proc/purchase(mob/user, datum/component/uplink/U)
+/datum/uplink_item/proc/purchase(mob/user, datum/component/uplink/U, atom/source)
 	var/atom/A = spawn_item(item, user, U)
+	var/turf/T = get_turf(user)
+	var/atom/uplink = U.parent
+	var/vr_text = is_vr_level(T.z) ? " in VR" : ""
+	log_uplink("[key_name(user)] purchased [A.name] for [cost] telecrystals from [uplink?.name][vr_text]")
+	if(!vr_text && !is_centcom_level(T.z) && GLOB.master_mode == ROUNDTYPE_EXTENDED)
+		message_antigrif("[ADMIN_LOOKUPFLW(user)] purchased [A.name] at [ADMIN_VERBOSEJMP(T)].")
 	if(purchase_log_vis && U.purchase_log)
 		U.purchase_log.LogPurchase(A, src, cost)
 

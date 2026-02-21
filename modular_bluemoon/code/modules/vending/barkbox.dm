@@ -19,6 +19,7 @@
 		/obj/item/clothing/neck/petcollar/holo = 5,
 		/obj/item/clothing/neck/petcollar/casino = 5,
 		/obj/item/clothing/neck/petcollar/handmade = 5,
+		/obj/item/reagent_containers/food/snacks/customizable/pet_bowl = 5,
 	)
 	contraband = list(
 		/obj/item/clothing/neck/petcollar/locked = 2,

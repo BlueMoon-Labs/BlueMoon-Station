@@ -271,7 +271,7 @@
 	name = "PMC Skull Patch"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/accessory/skull_patch
-	ckeywhitelist = list("krashly", "stgs", "hazzi", "dolbajob", "leony24", "snacksman", "sodastrike", "vulpshiro", "lonofera", "hellsinggc", "mihana964", "devildeadspace", "enigma418")
+	ckeywhitelist = list("krashly", "stgs", "hazzi", "dolbajob", "leony24", "snacksman", "sodastrike", "vulpshiro", "lonofera", "hellsinggc", "mihana964", "devildeadspace", "enigma418", "ordinarylife")
 
 /datum/gear/donator/bm/monolith_patch
 	name = "Monolith Patch"
@@ -967,7 +967,13 @@
 	name = "P320 kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/p320_kit
-	ckeywhitelist = list("pingvas", "ty4kahahebe", "scorpionch")
+	ckeywhitelist = list("pingvas", "ty4kahahebe")
+
+/datum/gear/donator/bm/M9_tempest_kit
+	name = "M-9 Tempest kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/M9tempest_kit
+	ckeywhitelist = list("pingvas", "ty4kahahebe")
 
 /datum/gear/donator/bm/dedication_kit
 	name = "Dedication kit"
@@ -1827,18 +1833,14 @@
 /datum/gear/donator/bm/mu88
 	name = "M.U. 88 New hope coat"
 	slot = ITEM_SLOT_OCLOTHING
-	path = /obj/item/clothing/suit/armor/vest/bluesheid/mu88
+	path = /obj/item/clothing/suit/donator/bm/mu88
 	ckeywhitelist = list("milidead", "hateredsoul")
-	restricted_desc = "Brig Physician, Blueshield."
-	restricted_roles = list("Brig Physician, Blueshield.")
 
 /datum/gear/donator/bm/mu88_swimsuit
-	name = "M.U. 88 New hope swimcoat"
+	name = "M.U. 88 New hope swimsuit"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/under/rank/brigdoc/mu88_swimsuit
+	path = /obj/item/clothing/under/donator/bm/mu88_swimsuit
 	ckeywhitelist = list("milidead", "hateredsoul")
-	restricted_desc = "Brig Physician, Blueshield."
-	restricted_roles = list("Brig Physician, Blueshield.")
 
 /datum/gear/donator/bm/mu88_boots
 	name = "M.U. 88 New hope boots"
@@ -1849,10 +1851,8 @@
 /datum/gear/donator/bm/mu88_horns
 	name = "M.U. 88 New hope horns"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/head/blueshield/mu88_horns
+	path = /obj/item/clothing/head/donator/bm/mu88_horns
 	ckeywhitelist = list("milidead", "hateredsoul")
-	restricted_desc = "Brig Physician, Blueshield."
-	restricted_roles = list("Brig Physician, Blueshield.")
 
 /datum/gear/donator/bm/mu88_tie
 	name = "M.U. 88 New hope tie"
@@ -2065,10 +2065,43 @@
 	name = "LIZARED Open Panties"
 	slot = ITEM_SLOT_UNDERWEAR
 	path = /obj/item/clothing/underwear/briefs/panties/lizared/exposed
-	ckeywhitelist = list("pingvas")
+	ckeywhitelist = list("pingvas", "ty4kahahebe")
 
 /datum/gear/donator/bm/custom_vape
 	name = "Custom E-Cigarette"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/vape/custom
 	ckeywhitelist = list("ordinarylife", "pingvas", "leony24", "kennedykiller", "theatlasplay", "theatlasgaming", "ninjapikachushka", "devildeadspace", "trustmeimengineer", "izakfromrus", "hateredsoul", "vulpshiro", "dolbajob", "stgs", "silyamg", "tblkba", "dimofon")
+
+/datum/gear/donator/bm/crocinsmoke
+	name = "Crocin smoke"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/book/granter/spell/smoke/crocin
+	ckeywhitelist = list("deadlizard")
+	cost = 2
+
+/datum/gear/donator/bm/crocinsmoke/on_spawn(mob/living/carbon/human/user, obj/item/book/granter/spell/smoke/crocin/I)
+	if(!istype(user))
+		return
+	I.on_reading_finished(user)
+	qdel(I)
+
+/datum/gear/donator/bm/twilight_spike
+	name = "Twilight Spike"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/donator/bm/twilight_spike
+	ckeywhitelist = list("dragon9090", "hellsinggc")
+	cost = 4
+
+/datum/gear/donator/bm/sf_coat
+	name = "S.F. Coat"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/sf_coat
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
+	ckeywhitelist = list("hihitect")
+
+/datum/gear/donator/bm/freak_case
+	name = "Cool Case With Presents"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/backpack/case/command/freak
+	ckeywhitelist = list("freakowo")

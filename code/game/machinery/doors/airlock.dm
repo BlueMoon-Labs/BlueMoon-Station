@@ -1634,7 +1634,7 @@
 		set_electrified(ELECTRIFIED_PERMANENT)
 
 /obj/machinery/door/airlock/proc/toggle_bolt(mob/user)
-	if(!user_allowed(user))
+	if(user && !user_allowed(user))
 		return
 	if(wires.is_cut(WIRE_BOLTS))
 		to_chat(user, "<span class='warning'>The door bolt drop wire is cut - you can't toggle the door bolts.</span>")
@@ -1648,13 +1648,13 @@
 		bolt()
 
 /obj/machinery/door/airlock/proc/toggle_emergency(mob/user)
-	if(!user_allowed(user))
+	if(user && !user_allowed(user))
 		return
 	emergency = !emergency
 	update_icon()
 
 /obj/machinery/door/airlock/proc/user_toggle_open(mob/user)
-	if(!user_allowed(user))
+	if(user && !user_allowed(user))
 		return
 	if(welded)
 		to_chat(user, text("The airlock has been welded shut!"))

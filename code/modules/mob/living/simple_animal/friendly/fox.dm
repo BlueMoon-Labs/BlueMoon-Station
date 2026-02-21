@@ -48,7 +48,7 @@
 	mob_biotypes = MOB_ROBOTIC
 	blood_volume = 0
 	desc = "It's a Cybersun MiniVix robotic model wearing a microsized syndicate MODsuit and a cute little cap. Quite pretty."
-	icon = 'modular_bluemoon/SmiLeY/icons/mob/pets.dmi'
+	icon = 'modular_bluemoon/icons/mob/smiley_pets.dmi'
 	icon_state = "syndifox"
 	icon_living = "syndifox"
 	icon_dead = "syndifox_dead"
@@ -74,7 +74,7 @@
 /mob/living/simple_animal/hostile/tegu
 	name = "tegu"
 	desc = "That's a tegu."
-	icon = 'modular_bluemoon/SmiLeY/icons/mob/pets.dmi'
+	icon = 'modular_bluemoon/icons/mob/smiley_pets.dmi'
 	icon_state = "tegu"
 	icon_living = "tegu"
 	icon_dead ="tegu_dead"
@@ -104,7 +104,7 @@
 /mob/living/simple_animal/tegu/entertains_the_hostages //not a hostile, harmless
 	name = "Entertains-The-Hostages"
 	desc = "Безобидная ящерка синдиката, позволяющая одиноким заключенным не сойти с ума"
-	icon = 'modular_bluemoon/SmiLeY/icons/mob/pets.dmi'
+	icon = 'modular_bluemoon/icons/mob/smiley_pets.dmi'
 	icon_state = "tegu"
 	icon_living = "tegu"
 	icon_dead ="tegu_dead"

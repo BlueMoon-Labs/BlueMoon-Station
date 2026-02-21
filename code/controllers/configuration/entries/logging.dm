@@ -35,6 +35,10 @@
 /datum/config_entry/flag/log_mecha
 	default = TRUE
 
+/// log uplink data
+/datum/config_entry/flag/log_uplink
+	default = TRUE
+
 /// log virology data
 /datum/config_entry/flag/log_virus
 	default = TRUE

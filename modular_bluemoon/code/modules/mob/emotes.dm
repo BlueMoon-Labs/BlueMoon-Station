@@ -215,19 +215,19 @@
 		if(ishuman(user))
 			user.adjustOxyLoss(10)
 			if(user.gender != FEMALE && !(user.gender == PLURAL && isfeminine(user)))
-				sound = pick('modular_bluemoon/smiley/sounds/emotes/agony_male_1.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_2.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_3.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_4.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_5.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_6.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_7.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_8.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_9.ogg')
+				sound = pick('modular_bluemoon/sound/emotes/agony_male_1.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_2.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_3.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_4.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_5.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_6.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_7.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_8.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_9.ogg')
 			else
-				sound = pick('modular_bluemoon/smiley/sounds/emotes/agony_female_1.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_female_2.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_female_3.ogg')
+				sound = pick('modular_bluemoon/sound/emotes/agony_female_1.ogg',\
+						'modular_bluemoon/sound/emotes/agony_female_2.ogg',\
+						'modular_bluemoon/sound/emotes/agony_female_3.ogg')
 			if(is_species(user, /datum/species/android) || is_species(user, /datum/species/synth) || is_species(user, /datum/species/ipc))
 				sound = 'modular_citadel/sound/voice/scream_silicon.ogg'
 			if(is_species(user, /datum/species/skeleton))
@@ -589,6 +589,15 @@
 	sound = 'modular_bluemoon/sound/emotes/dexter-song.ogg'
 	emote_cooldown = 5 SECONDS
 
+/datum/emote/sound/human/animewow
+	key = "animewow"
+	key_third_person = "animewows"
+	message = "восхищается!"
+	message_mime = "изображает восхищение!"
+	sound = 'modular_bluemoon/sound/emotes/animewow.ogg'
+	emote_volume = 100
+	emote_cooldown = 5 SECONDS
+	emote_pitch_variance = FALSE
 
 /*
  * XENO EMOTES START

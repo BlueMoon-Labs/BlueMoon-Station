@@ -70,8 +70,8 @@
 /obj/item/clothing/gloves/toggled/hug/poly_evening
 	name = "Polychromic evening gloves"
 	desc = "Thin, pretty polychromic gloves intended for use in regal feminine attire."
-	icon = 'modular_bluemoon/Gardelin0/icons/clothing/object/gloves.dmi'
-	mob_overlay_icon = 'modular_bluemoon/Gardelin0/icons/clothing/worn/hands.dmi'
+	icon = 'modular_bluemoon/icons/obj/clothing/gloves.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hands.dmi'
 	icon_state = "poly_evening"
 	item_state = "poly_evening"
 	cold_protection = HANDS

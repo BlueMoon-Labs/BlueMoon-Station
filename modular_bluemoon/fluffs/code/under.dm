@@ -548,8 +548,8 @@
 	item_state = "syndicate-black"
 	can_adjust = FALSE
 
-/obj/item/clothing/under/rank/brigdoc/mu88_swimsuit
-	name = "M.U. 88 New hope swimcoat"
+/obj/item/clothing/under/donator/bm/mu88_swimsuit
+	name = "M.U. 88 New hope swimsuit"
 	desc = "Лёгкое и незамысловатое одеяние, похожее на женский купальник белого цвета, имеющее подобие корсета из двух чёрных ремешков у пояса. Сделано из гибрида синтетических волокон, делая носку приятной, а сам элемент одежды - прочным и износостойким. На внутренней части имеется небольшой логотип производителя в виде чёрной розы, а рядом надпись - Black Rose atelier."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'

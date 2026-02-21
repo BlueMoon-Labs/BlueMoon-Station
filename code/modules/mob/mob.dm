@@ -725,7 +725,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	if(!canface())
 		return FALSE
 	setDir(EAST)
-	client.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
+	client?.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
 	return TRUE
 
 /mob/verb/westface()
@@ -733,7 +733,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	if(!canface())
 		return FALSE
 	setDir(WEST)
-	client.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
+	client?.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
 	return TRUE
 
 /mob/verb/northface()
@@ -741,7 +741,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	if(!canface())
 		return FALSE
 	setDir(NORTH)
-	client.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
+	client?.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
 	return TRUE
 
 /mob/verb/southface()
@@ -749,7 +749,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	if(!canface())
 		return FALSE
 	setDir(SOUTH)
-	client.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
+	client?.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
 	return TRUE
 
 /mob/verb/eastshift()

@@ -12,3 +12,14 @@
 	allowed_department_flags = DEPARTMENTAL_FLAG_ALL|DEPARTMENTAL_FLAG_SCIENCE
 	req_one_access = list(ACCESS_RESEARCH, ACCESS_AWAY_GENERAL, ACCESS_SYNDICATE)
 	department_tag = "Science"
+
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic
+	name = "Department Circuit Imprinter (Robotic)"
+	circuit = /obj/item/circuitboard/machine/circuit_imprinter/department/science/robotic
+	allowed_department_flags = DEPARTMENTAL_FLAG_ALL|DEPARTMENTAL_FLAG_SCIENCE
+	req_one_access = list(ACCESS_RESEARCH, ACCESS_AWAY_GENERAL, ACCESS_SYNDICATE)
+	department_tag = "Science"
+	categories = list(
+				"AI Modules",
+				"Exosuit Modules",
+					)

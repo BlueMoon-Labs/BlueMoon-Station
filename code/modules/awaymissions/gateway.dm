@@ -183,7 +183,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 /obj/item/key/gateway
 	name = "global recall key"
 	desc = "Recall to the Global Gateway."
-	icon = 'modular_bluemoon/smiley/icons/abductorkey.dmi'
+	icon = 'modular_bluemoon/icons/obj/abductorkey.dmi'
 	icon_state = "gateway_key"
 	resistance_flags = INDESTRUCTIBLE
 

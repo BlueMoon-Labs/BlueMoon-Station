@@ -209,7 +209,6 @@
 	. += "[icon_state]-[result]"
 
 /obj/item/dice/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	. = ..()
 	if(can_be_rigged)
 		rigged = result
-	..(microwave_source)
+	return ..() | COMPONENT_MICROWAVE_SUCCESS

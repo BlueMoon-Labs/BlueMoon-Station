@@ -1492,6 +1492,10 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 		)
 	return pick(subtypesof(/obj/item/reagent_containers/food/drinks) - blocked)
 
+/proc/get_random_drug()
+    var/list/drugs = subtypesof(/obj/item/reagent_containers/syringe/contraband)
+    return pick(drugs)
+
 //For these two procs refs MUST be ref = TRUE format like typecaches!
 /proc/weakref_filter_list(list/things, list/refs)
 	if(!islist(things) || !islist(refs))

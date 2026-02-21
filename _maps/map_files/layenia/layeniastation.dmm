@@ -91868,7 +91868,7 @@
 	pixel_x = 8;
 	pixel_y = 6
 	},
-/obj/machinery/rnd/production/circuit_imprinter/department/science,
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
 /turf/open/floor/plasteel/white,
 /area/science/robotics/lab)
 "nmW" = (

@@ -48891,13 +48891,13 @@
 /turf/open/floor/plasteel,
 /area/science/robotics/lab)
 "dGe" = (
-/obj/machinery/rnd/production/circuit_imprinter,
 /obj/item/reagent_containers/glass/beaker/sulphuric,
 /obj/machinery/airalarm{
 	dir = 8;
 	pixel_x = 24
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
 /turf/open/floor/plasteel,
 /area/science/robotics/lab)
 "dGf" = (
@@ -50141,7 +50141,7 @@
 /turf/open/floor/plasteel,
 /area/science/storage)
 "dIF" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
 	external_pressure_bound = 140;
 	name = "server vent";
 	pressure_checks = 0
@@ -95194,6 +95194,10 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
+/obj/item/paper/fluff/ruins/security_arsenal{
+	pixel_x = -2;
+	pixel_y = 3
+	},
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
 "nVI" = (
@@ -111838,7 +111842,7 @@
 /area/command/bridge)
 "sIx" = (
 /obj/effect/decal/cleanable/blood/old,
-/obj/item/organ/tongue/bone,
+/obj/item/organ/tongue/bone/chatter,
 /turf/open/floor/plating,
 /area/service/library/abandoned)
 "sIG" = (

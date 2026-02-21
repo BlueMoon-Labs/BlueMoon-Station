@@ -53,7 +53,7 @@
 	user.face_atom(OldLoc)
 	var/turf/T = get_turf(OldLoc)
 	if(user.CanReach(T) && isfloorturf(T))
-		melee_attack_chain(user, T)
+		afterattack(T, user, TRUE)
 
 /obj/item/mop/proc/clean(turf/A, mob/user)
 	if(reagents.has_reagent(/datum/reagent/water, 1) || reagents.has_reagent(/datum/reagent/water/holywater, 1) || reagents.has_reagent(/datum/reagent/consumable/ethanol/vodka, 1) || reagents.has_reagent(/datum/reagent/space_cleaner, 1))

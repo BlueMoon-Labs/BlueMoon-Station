@@ -43,7 +43,7 @@
 	if(oldarea != newarea)
 		newarea.Entered(src, oldloc)
 
-	if(length(loc.contents))
+	if(loc && length(loc.contents))
 		for(var/atom/movable/thing as anything in loc)
 			if(thing == src) // Multi tile objects
 				continue

@@ -112,6 +112,9 @@
 			"Teleportation Machinery",
 			"Hydroponics Machinery",
 			"Shuttle Machinery",
+			"Production Machinery",
+			"Culinary Machinery",
+			"Cargo Machinery",
 		)
 	var/hide_sec_designs = !is_station_level(z) && !(LAZYLEN(req_access) || LAZYLEN(req_one_access))
 	for(var/category in all_categories)

@@ -135,7 +135,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 
 	var/sparks_spread = 0
 	var/sparks_amt = 0 //cropped at 10
-	var/smoke_spread = 0 //1 - harmless, 2 - harmful
+	var/datum/effect_system/smoke_spread/smoke_type = null
 	var/smoke_amt = 0 //cropped at 10
 
 	var/centcom_cancast = 1 //Whether or not the spell should be allowed on z2
@@ -291,19 +291,10 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 			message_admins("[target] cast spell. [message]")
 		if(sparks_spread)
 			do_sparks(sparks_amt, FALSE, location)
-		if(smoke_spread)
-			if(smoke_spread == 1)
-				var/datum/effect_system/smoke_spread/smoke = new
-				smoke.set_up(smoke_amt, location)
-				smoke.start()
-			else if(smoke_spread == 2)
-				var/datum/effect_system/smoke_spread/bad/smoke = new
-				smoke.set_up(smoke_amt, location)
-				smoke.start()
-			else if(smoke_spread == 3)
-				var/datum/effect_system/smoke_spread/sleeping/smoke = new
-				smoke.set_up(smoke_amt, location)
-				smoke.start()
+		if(smoke_type)
+			var/datum/effect_system/smoke_spread/smoke = new smoke_type
+			smoke.set_up(smoke_amt, location)
+			smoke.start()
 
 
 /obj/effect/proc_holder/spell/proc/cast(list/targets,mob/user = usr)

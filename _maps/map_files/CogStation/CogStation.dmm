@@ -52238,7 +52238,6 @@
 /turf/open/floor/carpet/green,
 /area/command/bridge/mid)
 "dKo" = (
-/obj/machinery/rnd/production/circuit_imprinter,
 /obj/machinery/atmospherics/pipe/simple/supplymain/hidden{
 	dir = 4;
 	name = "high pressure supply"
@@ -52246,6 +52245,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 10
 	},
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
 /turf/open/floor/plasteel,
 /area/science/robotics/lab)
 "dKs" = (

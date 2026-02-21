@@ -392,7 +392,7 @@
 		"Haydee" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "haydeemedical"), // SPLURT Addon (Hyper Port)
 		"Borgi" = image(icon = 'modular_splurt/icons/mob/widerobot.dmi', icon_state = "borgi-medi-b"), // SPLURT Adoon (Skyrat Port)
 		"Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakemedbox"),
-		"Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-medic"), //Gardelin0 Addon
+		"Fembot" = image(icon = 'modular_bluemoon/icons/mob/robot/robots.dmi', icon_state = "fembot-medic"), //Gardelin0 Addon
 		"Assaultron" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "assaultron_medical"), // SPLURT Addon
 		"Meka" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "mekamed"), // SPLURT Addon
 		"Meka (alt)" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "mekamed_alt"), // SPLURT Addon (Bubbers Port)
@@ -547,7 +547,7 @@
 			drakerest = TRUE
 		if("Fembot") // //Gardelin0 Addon
 			cyborg_base_icon = "fembot-medic"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/robots.dmi'
 		if("Assaultron") // SPLURT Addon (Hyper Port)
 			cyborg_base_icon = "assaultron_medical"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots.dmi'
@@ -725,8 +725,8 @@
 		"Engihound Dark" = image(icon = 'modular_splurt/icons/mob/widerobot.dmi', icon_state = "engihounddark-b"), // SPLURT Adoon (Skyrat Port)
 		"Otie" = image(icon = 'modular_splurt/icons/mob/widerobot.dmi', icon_state = "otiee-b"), // SPLURT Adoon (Skyrat Port)
 		"Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakeengbox"),
-		"Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-engineering"), //Gardelin0 Addon
-		"Meka" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "mekaengi"), //Krashly Request
+		"Fembot" = image(icon = 'modular_bluemoon/icons/mob/robot/robots.dmi', icon_state = "fembot-engineering"), //Gardelin0 Addon
+		"Meka" = image(icon = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi', icon_state = "mekaengi"), //Krashly Request
 		"Assaultron" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "assaultron_engi"), // SPLURT Addon
 		"Meka" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "mekaengi"), // SPLURT Addon
 		"Meka (alt)" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "mekaengi_alt"), // SPLURT Addon (Bubbers Port)
@@ -872,10 +872,10 @@
 			drakerest = TRUE
 		if("Fembot") // //Gardelin0 Addon
 			cyborg_base_icon = "fembot-engineering"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/robots.dmi'
 		if("Meka") //Krashly Request
 			cyborg_base_icon = "mekaengi"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi'
 			hasrest = TRUE
 		if("Assaultron") // SPLURT Addon (Hyper Port)
 			cyborg_base_icon = "assaultron_engi"
@@ -1008,7 +1008,7 @@
 		"EdgyGirl" = image(icon = 'modular_splurt/icons/mob/widerobot.dmi', icon_state = "prettyboi-b"), // SPLURT Addon (VIRGO Port)
 		"Syndicate" = image(icon = 'modular_splurt/icons/mob/widerobot_synd.dmi', icon_state = "syndihounddark"), // BLUEMOON Addon
 		"Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakesecbox"),
-		"Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-security"), //Gardelin0 Addon
+		"Fembot" = image(icon = 'modular_bluemoon/icons/mob/robot/robots.dmi', icon_state = "fembot-security"), //Gardelin0 Addon
 		"Assaultron" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "assaultron_sec"), // SPLURT Addon
 		"Meka" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "mekasec"), // SPLURT Addon (Bubbers Port)
 		"M-Meka" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "mmekasec"), // SPLURT Addon (Bubbers Port)
@@ -1020,7 +1020,7 @@
 		"Handy" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "handy_security"), // SPLURT Addon (Fallout 13)
 		"Sentry Bot" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "sentrybot"), // SPLURT Addon (Fallout 13)
 		"Securitron" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "securitron"), // SPLURT Addon (Fallout 13)
-		"FMeka Syndie" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "fmekasyndi"), // Lyoll Request (Skyrat Port) & Добавлен дополнительно в СБ-борги по запросу SmiLeY
+		"FMeka Syndie" = image(icon = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi', icon_state = "fmekasyndi"), // Lyoll Request (Skyrat Port) & Добавлен дополнительно в СБ-борги по запросу SmiLeY
 		"Mechoid" = image(icon = 'modular_bluemoon/icons/mob/robots.dmi', icon_state = "mechoid-security"), // Danaiyka request
 		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahanpeace"),
 		"Catborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_security.dmi', icon_state = "sec"),
@@ -1167,7 +1167,7 @@
 			drakerest = TRUE
 		if("Fembot") // //Gardelin0 Addon
 			cyborg_base_icon = "fembot-security"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/robots.dmi'
 		if("Assaultron") // SPLURT Addon
 			cyborg_base_icon = "assaultron_sec"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots.dmi'
@@ -1204,7 +1204,7 @@
 			dogborg = TRUE
 		if("FMeka Syndie") //Lyoll Request (Skyrat Port) & Добавлен дополнительно в СБ-борги по запросу SmiLeY
 			cyborg_base_icon = "fmekasyndi"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi'
 			hasrest = TRUE
 		if("Mechoid") //Danaiyka request
 			cyborg_base_icon = "mechoid-security"
@@ -1284,7 +1284,7 @@
 		"Vale" = image(icon = 'modular_splurt/icons/mob/widerobot.dmi', icon_state = "valepeace-b"), // SPLURT Adoon (Skyrat Port)
 		"Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakepeacebox"),
 
-		"Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-peace"), //Gardelin0 Addon
+		"Fembot" = image(icon = 'modular_bluemoon/icons/mob/robot/robots.dmi', icon_state = "fembot-peace"), //Gardelin0 Addon
 		"Assaultron" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "assaultron_peacekeeper"), // SPLURT Adoon
 		"Haydee" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "haydeepk"), // SPLURT Addon
 		"Meka" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "mekapeace"), // SPLURT Addon
@@ -1362,7 +1362,7 @@
 			drakerest = TRUE
 		if("Fembot") // //Gardelin0 Addon
 			cyborg_base_icon = "fembot-peace"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/robots.dmi'
 		if("Assaultron") // SPLURT Addon
 			cyborg_base_icon = "assaultron_peacekeeper"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots.dmi'
@@ -1569,7 +1569,7 @@
 		"(Janitor) BootyS" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootyjanitorS"), // SPLURT Addon (Hyper Port)
 		"(Janitor) Borgi" = image(icon = 'modular_splurt/icons/mob/widerobot.dmi', icon_state = "borgi-jani-b"), // SPLURT Addon (Skyrat Port)
 		"(Janitor) Otie" = image(icon = 'modular_splurt/icons/mob/widerobot.dmi', icon_state = "otiej-b"), // SPLURT Addon (Skyrat Port)
-		"(Janitor) Ratge" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/ratge.dmi', icon_state = "ratge"), //CassiusRogue Request
+		"(Janitor) Ratge" = image(icon = 'modular_bluemoon/icons/mob/robot/ratge.dmi', icon_state = "ratge"), //CassiusRogue Request
 		"(Janitor) Fembot" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "fembot-service"), // SPLURT Addon
 		"(Janitor) Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakejanitbox"),
 		"Assaultron" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "assaultron_service"), // SPLURT Addon
@@ -1695,7 +1695,7 @@
 			dogborg = TRUE
 		if("(Service) Fembot") // //Gardelin0 Addon
 			cyborg_base_icon = "fembot-service"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/robots.dmi'
 		if("(Service) M-Meka")
 			cyborg_base_icon = "mmekaserv"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
@@ -1828,10 +1828,10 @@
 			drakerest = TRUE
 		if("(Janitor) Fembot") // //Gardelin0 Addon
 			cyborg_base_icon = "fembot-janitor"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/robots.dmi'
 		if("(Janitor) Ratge") // //CassiusRogue request
 			cyborg_base_icon = "ratge"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/ratge.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/ratge.dmi'
 			hasrest = TRUE
 		if("Assaultron") // SPLURT Addon
 			cyborg_base_icon = "assaultron_service"
@@ -2003,7 +2003,7 @@
 		"Cargohound Dark" = image(icon = 'modular_splurt/icons/mob/widerobot.dmi', icon_state = "cargohounddark-b"), // SPLURT Adoon (Skyrat Port)
 		"Otie" = image(icon = 'modular_splurt/icons/mob/widerobot.dmi', icon_state = "otiec-b"), // SPLURT Adoon (Skyrat Port)
 		"Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakeminebox"),
-		"Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-miner"), //Gardelin0 Addon
+		"Fembot" = image(icon = 'modular_bluemoon/icons/mob/robot/robots.dmi', icon_state = "fembot-miner"), //Gardelin0 Addon
 		"Assaultron" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "assaultron_mining"), // SPLURT
 		"Haydee" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "haydeeminer"), // SPLURT Addon
 		"Meka" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "mekamine"), // SPLURT Addon
@@ -2126,7 +2126,7 @@
 			drakerest = TRUE
 		if("Fembot") // //Gardelin0 Addon
 			cyborg_base_icon = "fembot-miner"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/robots.dmi'
 		if("Assaultron") // SPLURT Addon
 			cyborg_base_icon = "assaultron_mining"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots.dmi'

@@ -63,7 +63,7 @@
 	include_user = 1
 	cooldown_min = 20 //25 deciseconds reduction per rank
 
-	smoke_spread = 2
+	smoke_type = /datum/effect_system/smoke_spread/bad
 	smoke_amt = 4
 
 	action_icon_state = "smoke"
@@ -81,7 +81,7 @@
 	range = -1
 	include_user = 1
 
-	smoke_spread = 1
+	smoke_type = /datum/effect_system/smoke_spread
 	smoke_amt = 2
 
 	action_icon_state = "smoke"
@@ -112,7 +112,7 @@
 	cooldown_min = 5 //4 deciseconds reduction per rank
 
 
-	smoke_spread = 1
+	smoke_type = /datum/effect_system/smoke_spread
 	smoke_amt = 0
 
 	inner_tele_radius = 0
@@ -140,7 +140,7 @@
 	include_user = 1
 	cooldown_min = 200 //100 deciseconds reduction per rank
 
-	smoke_spread = 1
+	smoke_type = /datum/effect_system/smoke_spread
 	smoke_amt = 2
 	sound1 = 'sound/magic/teleport_diss.ogg'
 	sound2 = 'sound/magic/teleport_app.ogg'
