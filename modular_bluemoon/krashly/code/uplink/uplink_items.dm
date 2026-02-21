@@ -13,7 +13,7 @@
 	name = "InteQ Starter Pack"
 	desc = "Полная одежды и брони, коробка, являющаяся брендом ЧВК InteQ. Убийственный дрип."
 	item = /obj/item/storage/box/inteq_box/inteq_clothes
-	cost = 4
+	cost = 3
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/suits/space_suit/inteq
@@ -22,7 +22,7 @@
 			fits inside bags, and has a weapon slot. Nanotrasen crew members are trained to report brown space suit \
 			sightings, however."
 	item = /obj/item/storage/box/syndie_kit/space/inteq
-	cost = 4
+	cost = 3
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/suits/hardsuit/elite // Traitor ELITE EXPENSIVE hardsuit, not for the nuke ops

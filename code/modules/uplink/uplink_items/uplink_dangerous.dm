@@ -26,7 +26,7 @@
 	name = "Revolver Kit"
 	desc = "A sleek box containing a brutally simple Syndicate revolver that fires .357 Magnum rounds and has 7 chambers, and an extra speedloader."
 	item = /obj/item/storage/box/syndie_kit/revolver
-	cost = 13
+	cost = 10
 	player_minimum = 15
 	surplus = 50
 	purchasable_from = UPLINK_SYNDICATE
@@ -35,7 +35,7 @@
 	name = "InteQ Revolver Kit"
 	desc = "Простой и брутальный револьвер под патрон .357 Magnum. 7 выстрелов для 7 трупов, скорозарядник с дополнительным боезопасом в комплекте."
 	item = /obj/item/storage/box/inteq_kit/revolver
-	cost = 13
+	cost = 10
 	player_minimum = 15
 	surplus = 50
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
@@ -288,7 +288,7 @@
 	with your fists, and be able to slam people through tables with immense force. \
 	Unfortunately, due to the size of the gloves you will be unable to wield firearms with them equipped."
 	item = /obj/item/clothing/gloves/fingerless/pugilist/mauler
-	cost = 10
+	cost = 8
 
 /datum/uplink_item/dangerous/powerfist
 	name = "Power Fist"
@@ -297,7 +297,7 @@
 		Using a wrench on the piston valve will allow you to tweak the amount of gas used per punch to \
 		deal extra damage and hit targets further. Use a screwdriver to take out any attached tanks."
 	item = /obj/item/melee/powerfist
-	cost = 8
+	cost = 5
 
 /datum/uplink_item/dangerous/death_lipstick
 	name = "Kiss of Death"
