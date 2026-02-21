@@ -12,7 +12,7 @@
 	desc = "A sleek box containing a small, easily concealable handgun that uses 10mm auto rounds in 8-round magazines. The handgun is compatible \
 			with suppressors."
 	item = /obj/item/storage/box/syndie_kit/pistol
-	cost = 4
+	cost = 3
 	purchasable_from = ~UPLINK_CLOWN_OPS
 
 /datum/uplink_item/dangerous/aps_pistol
