@@ -138,7 +138,7 @@
 			return FALSE
 	..()
 
-/obj/item/gun/ballistic/revolver/detective/screwdriver_act(mob/living/user, obj/item/I)
+/obj/item/gun/ballistic/revolver/detective/wrench_act(mob/living/user, obj/item/I)
 	if(..())
 		return TRUE
 	if("38" in magazine.caliber)
