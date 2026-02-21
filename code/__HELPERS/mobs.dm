@@ -644,3 +644,15 @@ GLOBAL_LIST_EMPTY(species_datums)
 
 		else return "необычной формы член"
 
+/// Прок проверяет наличие трейта, присваемого СИЛЬНЫМИ источниками невидимости. Это небольшой костыль, лучше делать контроллер с сравнением источников, как на TGMC.
+/proc/check_strong_alpha_sources(mob/holder)
+	// Мы должны проверять именно внешние источники, по типу костюма ниндзя
+	if(HAS_TRAIT(holder, TRAIT_STRONG_INVISIBILITY))
+		return TRUE
+	return FALSE
+
+/proc/check_weak_alpha_sources(mob/holder)
+	// Мы должны проверять именно внешние источники, по типу костюма ниндзя
+	if(HAS_TRAIT(holder, TRAIT_WEAK_INVISIBILITY))
+		return TRUE
+	return FALSE

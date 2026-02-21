@@ -26,7 +26,7 @@ SUBSYSTEM_DEF(ticket_ping)
 		return
 
 	message_admins("У нас сейчас [valid_ahelps] [valid_ahelps == 1 ? "не взятый на рассмотрение тикет" : "не взятых на рассмотрение тикетов"].",\
-	log = TRUE)
+	islog = FALSE, prefix = "AHELP")
 
 	for(var/client/staff as anything in GLOB.admins)
 		var/sound_pick = rand(0, 1)

@@ -104,7 +104,8 @@ GLOBAL_LIST_EMPTY(uplinks)
 	var/amt = TC.amount
 	telecrystals += amt
 	TC.use(amt)
-	// log_uplink("[key_name(user)] loaded [amt] telecrystals into [parent]'s uplink")
+	var/atom/uplink = parent
+	log_uplink("[key_name(user)] loaded [amt] telecrystals into [uplink?.name]")
 
 /datum/component/uplink/proc/OnAttackBy(datum/source, obj/item/I, mob/user)
 	SIGNAL_HANDLER
@@ -130,7 +131,8 @@ GLOBAL_LIST_EMPTY(uplinks)
 			var/cost = UI.refund_amount || UI.cost
 			if(I.type == path && UI.refundable && I.check_uplink_validity())
 				telecrystals += cost
-				// log_uplink("[key_name(user)] refunded [UI] for [cost] telecrystals using [parent]'s uplink")
+				var/atom/uplink = parent
+				log_uplink("[key_name(user)] refunded [I.name] for [cost] telecrystals using [uplink?.name]")
 				if(purchase_log)
 					purchase_log.total_spent -= cost
 				to_chat(user, span_notice("[I] refunded."))

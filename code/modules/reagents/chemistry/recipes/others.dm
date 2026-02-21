@@ -74,13 +74,13 @@
 
 /datum/chemical_reaction/sodiumchloride
 	name = "Sodium Chloride"
-	id = "sodiumchloride"
+	id = /datum/reagent/consumable/sodiumchloride
 	results = list(/datum/reagent/consumable/sodiumchloride = 3)
 	required_reagents = list(/datum/reagent/water = 1, /datum/reagent/sodium = 1, /datum/reagent/chlorine = 1)
 
 /datum/chemical_reaction/preservahyde
 	name = "Preservahyde"
-	id = "preservahyde"
+	id = /datum/reagent/preservahyde
 	results = list(/datum/reagent/preservahyde = 3)
 	required_reagents = list(/datum/reagent/water = 1, /datum/reagent/toxin/formaldehyde = 1, /datum/reagent/bromine = 1)
 
@@ -460,7 +460,7 @@
 
 /datum/chemical_reaction/surfactant
 	name = "Foam surfactant"
-	id = "foam surfactant"
+	id = /datum/reagent/fluorosurfactant
 	results = list(/datum/reagent/fluorosurfactant = 5)
 	required_reagents = list(/datum/reagent/fluorine = 2, /datum/reagent/carbon = 2, /datum/reagent/toxin/acid = 1)
 

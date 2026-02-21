@@ -75,7 +75,7 @@
 		if("game_over")
 			playsound(src, 'modular_bluemoon/sound/machines/tetris/game_over.ogg', 50, TRUE, extrarange = -2)
 		if("high_score")
-			playsound(src, 'modular_bluemoon/sound/machines/tetris/high_score.ogg', 55, TRUE, extrarange = -2)
+			playsound(src, 'modular_bluemoon/sound/machines/tetris/game_over.ogg', 55, TRUE, extrarange = -2)
 
 /obj/machinery/computer/arcade/tetris/ui_data(mob/user)
 	var/list/data = list()

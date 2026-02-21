@@ -1,12 +1,23 @@
 ////////////////////////////////
-/proc/message_admins(msg, log = FALSE)
-	var/prefix = log ? "ADMIN LOG" : "ADMIN MESSAGE"
+/proc/message_admins(msg, islog = TRUE, prefix, list/ignore_ckey)
+	if(!prefix)
+		prefix = islog ? "ADMIN LOG" : "ADMIN MESSAGE"
 	msg = "<span class=\"prefix\">[prefix]:</span> <span class=\"message linkify\">[msg]</span>"
-	if(log)
+	if(islog)
 		msg = span_filter_adminlog(msg)
 	else
 		msg = span_message_to_admin(msg)
-	to_chat(GLOB.admins, msg, confidential = TRUE)
+	
+	var/list/targets
+	if(LAZYLEN(ignore_ckey))		
+		targets = list()
+		for(var/client/X in GLOB.admins)
+			if(X.key in ignore_ckey)
+				continue
+			targets += X
+	else
+		targets = GLOB.admins
+	to_chat(targets, msg, confidential = TRUE)
 
 /proc/relay_msg_admins(msg)
 	msg = span_filter_adminlog("<span class=\"prefix\">RELAY:</span> <span class=\"message linkify\">[msg]</span>")

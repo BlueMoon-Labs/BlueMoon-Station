@@ -641,8 +641,8 @@ export const ArcadeOrionTrail = (props, context) => {
   return (
     <Window
       title="Тропа Ориона"
-      width={480}
-      height={560}>
+      width={540}
+      height={640}>
       <Window.Content className={windowClass} scrollable>
         {content}
       </Window.Content>

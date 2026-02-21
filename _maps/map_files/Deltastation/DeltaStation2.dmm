@@ -111838,7 +111838,7 @@
 /area/command/bridge)
 "sIx" = (
 /obj/effect/decal/cleanable/blood/old,
-/obj/item/organ/tongue/bone,
+/obj/item/organ/tongue/bone/chatter,
 /turf/open/floor/plating,
 /area/service/library/abandoned)
 "sIG" = (

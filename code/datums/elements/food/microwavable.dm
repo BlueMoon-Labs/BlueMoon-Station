@@ -2,21 +2,27 @@
 /datum/element/microwavable
 	element_flags = ELEMENT_BESPOKE
 	id_arg_index = 2
-	/// The typepath we default to if we were passed no microwave result
-	var/atom/default_typepath = /obj/item/reagent_containers/food/snacks/badrecipe
 	/// Resulting atom typepath on a completed microwave.
 	var/atom/result_typepath
+	/// Reagents that should be added to the result
+	var/list/added_reagents
+	/// Whether this is a bad recipe or not. It affects some checks.
+	var/bad_recipe
 
-/datum/element/microwavable/Attach(datum/target, microwave_type)
+/datum/element/microwavable/Attach(obj/item/target, result, list/reagents, bad_recipe = FALSE)
 	. = ..()
-	if(!isitem(target))
+	if(!istype(target))
 		return ELEMENT_INCOMPATIBLE
+	if(!result)
+		CRASH("microwavable element attached without a result arg")
 
-	result_typepath = microwave_type || default_typepath
+	result_typepath = result
+	added_reagents = reagents
+	src.bad_recipe = bad_recipe
 
 	RegisterSignal(target, COMSIG_ITEM_MICROWAVE_ACT, PROC_REF(on_microwaved))
 
-	if(!ispath(result_typepath, default_typepath))
+	if(!bad_recipe)
 		RegisterSignal(target, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine))
 
 /datum/element/microwavable/Detach(datum/source)
@@ -35,26 +41,31 @@
 	if(isstack(source))
 		var/obj/item/stack/stack_source = source
 		result = new result_typepath(result_loc, stack_source.amount)
-
 	else
 		result = new result_typepath(result_loc)
 
 	var/efficiency = istype(used_microwave) ? used_microwave.efficiency : 1
-	SEND_SIGNAL(result, COMSIG_ITEM_MICROWAVE_COOKED, source, efficiency)
 
-	if(IS_EDIBLE(result))
+	if(IS_EDIBLE(result) && !bad_recipe)
+		BLACKBOX_LOG_FOOD_MADE(result.type)
+
 		if(microwaver && microwaver.mind)
 			ADD_TRAIT(result, TRAIT_FOOD_CHEF_MADE, REF(microwaver.mind))
 
-		result.reagents?.multiply_reagents(efficiency * CRAFTED_FOOD_BASE_REAGENT_MODIFIER)
-		source.reagents?.trans_to(result, source.reagents.total_volume)
+	//make space and tranfer reagents if it has any, also let any bad result handle removing or converting the transferred reagents on its own terms
+	if(result.reagents && source.reagents)
+		result.reagents.clear_reagents()
+		source.reagents.trans_to(result, source.reagents.total_volume)
+		if(added_reagents) // Add any new reagents that should be added
+			result.reagents.add_reagent_list(added_reagents)
 
-		BLACKBOX_LOG_FOOD_MADE(result.type)
+	SEND_SIGNAL(result, COMSIG_ITEM_MICROWAVE_COOKED, source, efficiency)
+	SEND_SIGNAL(source, COMSIG_ITEM_MICROWAVE_COOKED_FROM, result, efficiency)
 
 	qdel(source)
 
 	var/recipe_result = COMPONENT_MICROWAVE_SUCCESS
-	if(istype(result, default_typepath))
+	if(bad_recipe)
 		recipe_result |= COMPONENT_MICROWAVE_BAD_RECIPE
 
 	if(randomize_pixel_offset && isitem(result))
@@ -66,13 +77,10 @@
 	return recipe_result
 
 /**
- * Signal proc for [COMSIG_PARENT_EXAMINE].
+ * Signal proc for [COMSIG_ATOM_EXAMINE].
  * Lets examiners know we can be microwaved if we're not the default mess type
  */
 /datum/element/microwavable/proc/on_examine(atom/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
 
-	if(initial(result_typepath.gender) == PLURAL)
-		examine_list += span_notice("[source] can be [span_bold("microwaved")] into some [initial(result_typepath.name)].")
-	else
-		examine_list += span_notice("[source] can be [span_bold("microwaved")] into \a [initial(result_typepath.name)].")
+	examine_list += span_notice("Возможно разогреть в [span_bold("микроволновке")] в [initial(result_typepath.name)].")

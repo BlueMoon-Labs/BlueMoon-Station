@@ -22,6 +22,9 @@ LOG_GAME
 ## log mecha actions
 LOG_MECHA
 
+## log uplink purchase
+LOG_APLINK
+
 ## log player votes
 LOG_VOTE
 

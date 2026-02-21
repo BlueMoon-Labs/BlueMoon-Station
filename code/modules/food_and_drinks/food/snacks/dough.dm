@@ -13,30 +13,8 @@
 	tastes = list("dough" = 1)
 	foodtype = GRAIN
 
-
-// Dough + rolling pin = flat dough
-/obj/item/reagent_containers/food/snacks/dough/attackby(obj/item/I, mob/user, params)
-	if(istype(I, /obj/item/kitchen/rollingpin))
-		if(isturf(loc))
-			new /obj/item/reagent_containers/food/snacks/flatdough(loc)
-			to_chat(user, "<span class='notice'>You flatten [src].</span>")
-			qdel(src)
-		else
-			to_chat(user, "<span class='warning'>You need to put [src] on a surface to roll it out!</span>")
-	else
-		..()
-
-/obj/item/reagent_containers/food/snacks/flatdough/attackby(obj/item/I, mob/user, params)
-	if(istype(I, /obj/item/kitchen/unrollingpin))
-		if(isturf(loc))
-			new /obj/item/reagent_containers/food/snacks/dough(loc)
-			to_chat(user, "<span class='notice'>You unflatten [src].</span>")
-			qdel(src)
-		else
-			to_chat(user, "<span class='warning'>You need to put [src] on a surface to undo the rolling!</span>")
-	else
-		..()
-
+/obj/item/reagent_containers/food/snacks/dough/make_processable()
+	AddElement(/datum/element/processable, TOOL_ROLLINGPIN, /obj/item/reagent_containers/food/snacks/flatdough, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Flatten", sound_to_play = SFX_ROLLING_PIN_ROLLING)
 
 // sliceable into 3xdoughslices
 /obj/item/reagent_containers/food/snacks/flatdough
@@ -51,6 +29,9 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	tastes = list("dough" = 1)
 	foodtype = GRAIN
+
+/obj/item/reagent_containers/food/snacks/flatdough/make_processable()
+	AddElement(/datum/element/processable, TOOL_UNROLLINGPIN, /obj/item/reagent_containers/food/snacks/dough, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Flatten", sound_to_play = SFX_ROLLING_PIN_ROLLING)
 
 /obj/item/reagent_containers/food/snacks/pizzabread
 	name = "pizza bread"
@@ -97,17 +78,8 @@
 	tastes = list("batter" = 1)
 	foodtype = GRAIN | DAIRY
 
-// Cake batter + rolling pin = pie dough
-/obj/item/reagent_containers/food/snacks/cakebatter/attackby(obj/item/I, mob/user, params)
-	if(istype(I, /obj/item/kitchen/rollingpin))
-		if(isturf(loc))
-			new /obj/item/reagent_containers/food/snacks/piedough(loc)
-			to_chat(user, "<span class='notice'>You flatten [src].</span>")
-			qdel(src)
-		else
-			to_chat(user, "<span class='warning'>You need to put [src] on a surface to roll it out!</span>")
-	else
-		..()
+/obj/item/reagent_containers/food/snacks/cakebatter/make_processable()
+	AddElement(/datum/element/processable, TOOL_ROLLINGPIN, /obj/item/reagent_containers/food/snacks/piedough, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Flatten", sound_to_play = SFX_ROLLING_PIN_ROLLING)
 
 /obj/item/reagent_containers/food/snacks/piedough/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/kitchen/unrollingpin))
@@ -119,6 +91,9 @@
 			to_chat(user, "<span class='warning'>You need to put [src] on a surface to undo the rolling!</span>")
 	else
 		..()
+
+/obj/item/reagent_containers/food/snacks/piedough/make_processable()
+	AddElement(/datum/element/processable, TOOL_UNROLLINGPIN, /obj/item/reagent_containers/food/snacks/cakebatter, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Flatten", sound_to_play = SFX_ROLLING_PIN_ROLLING)
 
 /obj/item/reagent_containers/food/snacks/piedough
 	name = "pie dough"

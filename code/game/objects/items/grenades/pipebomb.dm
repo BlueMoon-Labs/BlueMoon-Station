@@ -87,9 +87,8 @@
 	activator.toggle_secure()
 	update_icon(UPDATE_ICON_STATE)
 
-/obj/item/grenade/iedcasing/pipebomb/tool_act(mob/living/user, obj/item/I, tool_behaviour)
-	if(tool_behaviour == TOOL_SCREWDRIVER)
-		return
+/obj/item/grenade/iedcasing/pipebomb/screwdriver_act(mob/living/user, obj/item/I, tool_behaviour)
+	return
 
 //assembly handling end
 

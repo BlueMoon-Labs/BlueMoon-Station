@@ -510,13 +510,15 @@
 
 	return L
 
-//same, but returns nothing and acts on list in place
+//same, but returns nothing and acts on list in place, and returns same list
 /proc/shuffle_inplace(list/L)
 	if(!L)
 		return
 
 	for(var/i=1, i<L.len, ++i)
 		L.Swap(i,rand(i,L.len))
+
+	return L
 
 //Return a list with no duplicate entries
 /proc/uniqueList(list/L)

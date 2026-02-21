@@ -173,6 +173,13 @@
 	filling_color = "#FFFFFF"
 	foodtype = GRAIN
 
+/obj/item/reagent_containers/food/snacks/breadslice/custom/OnCreatedFromProcessing(mob/living/user, obj/item/work_tool, list/chosen_option, obj/item/reagent_containers/food/snacks/original_atom)
+	..()
+	if(!istype(original_atom))
+		return
+	filling_color = original_atom.filling_color
+	update_snack_overlays(src)
+
 /obj/item/reagent_containers/food/snacks/baguette
 	name = "baguette"
 	desc = "Bon appetit!"

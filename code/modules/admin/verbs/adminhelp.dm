@@ -339,7 +339,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	AddInteraction("<font color='purple'><u>Переоткрыто админом</u> [key_name_admin(usr)]</font>")
 	var/msg = "<span class='adminhelp'>Тикет [TicketHref("#[id]")] был переоткрыт админом [key_name_admin(usr)].</span>"
-	message_admins(msg)
+	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
 	SSblackbox.LogAhelp(id, "Reopened", "Reopened by [usr.key]", usr.ckey) //BLUEMOON EDIT, enable ticket logging
 	SSblackbox.record_feedback("tally", "ahelp_stats", 1, "reopened")
@@ -369,7 +369,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	if(!silent)
 		SSblackbox.record_feedback("tally", "ahelp_stats", 1, "closed")
 		var/msg = "Тикет [TicketHref("#[id]")] закрыт админом [key_name]."
-		message_admins(msg)
+		message_admins(msg, islog = FALSE, prefix = "AHELP")
 		SSblackbox.LogAhelp(id, "Closed", "Closed by [usr.key]", null, usr.ckey) //BLUEMOON EDIT, enable ticket logging
 		log_admin_private(msg)
 	TicketPanel()
@@ -389,7 +389,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	if(!silent)
 		SSblackbox.record_feedback("tally", "ahelp_stats", 1, "resolved")
 		var/msg = "Тикет [TicketHref("#[id]")] решён админом [key_name]"
-		message_admins(msg)
+		message_admins(msg, islog = FALSE, prefix = "AHELP")
 		SSblackbox.LogAhelp(id, "Resolved", "Resolved by [usr.key]", null, usr.ckey) //BLUEMOON EDIT, enable ticket logging
 		log_admin_private(msg)
 	TicketPanel()
@@ -412,7 +412,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	SSblackbox.record_feedback("tally", "ahelp_stats", 1, "rejected")
 	var/msg = "Тикет [TicketHref("#[id]")] отклонён админом [key_name]"
-	message_admins(msg)
+	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
 	AddInteraction("<u>Отклонено админом</u> [key_name].")
 	SSblackbox.LogAhelp(id, "Rejected", "Rejected by [usr.key]", null, usr.ckey) //BLUEMOON EDIT, enable ticket logging
@@ -433,7 +433,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	SSblackbox.record_feedback("tally", "ahelp_stats", 1, "IC")
 	msg = "Тикет [TicketHref("#[id]")] отмечен как IC админом [key_name]"
-	message_admins(msg)
+	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
 	AddInteraction("<u>Помечено как IC issue админом</u> [key_name]")
 	SSblackbox.LogAhelp(id, "IC Issue", "Marked as IC issue by [usr.key]", null,  usr.ckey) //BLUEMOON EDIT, enable ticket logging
@@ -454,7 +454,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	SSblackbox.record_feedback("tally", "ahelp_stats", 1, "SI")
 	msg = "Тикет [TicketHref("#[id]")] был отмечен как Skill Issue админом [key_name]"
-	message_admins(msg)
+	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
 	AddInteraction("<u>Помечено как Skill issue админом</u> [key_name]")
 	Resolve(silent = TRUE)
@@ -470,7 +470,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	if(handler && handler != usr.ckey)
 		var/response = tgui_alert(usr, "Тикет уже взят админом [handler]. Всё равно взять?", "Тикет уже назначен", list("Да", "Нет"))
-		if(!response || response == "Нет")
+		if(response != "Да")
 			return FALSE
 
 	var/msg = span_adminhelp("Ваш тикет был взят [usr?.client?.holder?.fakekey ? usr?.client?.holder?.fakekey : "администратором"]! Пожалуйста, подождите, пока вам напишут ответ и/или соберут причастную информацию.")
@@ -480,7 +480,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	SSblackbox.record_feedback("tally", "ahelp_stats", 1, "handling")
 	msg = "Тикет [TicketHref("#[id]")] был взят админом [key_name]"
-	message_admins(msg)
+	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
 	AddInteraction("<u>Было взято админом</u> [key_name]", "<u>Было взято админом</u> [key_name_admin(usr, FALSE)]")
 
@@ -527,7 +527,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		name = new_title
 		//not saying the original name cause it could be a long ass message
 		var/msg = "Тикет [TicketHref("#[id]")] был назван \"[name]\" админом [key_name_admin(usr)]"
-		message_admins(msg)
+		message_admins(msg, islog = FALSE, prefix = "AHELP")
 		log_admin_private(msg)
 	TicketPanel()	//we have to be here to do this
 
@@ -559,7 +559,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 			ticket_ping_stop = !ticket_ping_stop
 			SSblackbox.record_feedback("tally", "ahelp_stats", 1, "pingmute")
 			var/msg = "Ticket [TicketHref("#[id]")] has been [ticket_ping_stop ? "" : "un"]muted from the Ticket Ping Subsystem by [key_name_admin(usr)]."
-			message_admins(msg)
+			message_admins(msg, islog = FALSE, prefix = "AHELP")
 			log_admin_private(msg)
 
 //

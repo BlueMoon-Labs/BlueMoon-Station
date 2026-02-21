@@ -83,6 +83,10 @@
 	if (CONFIG_GET(flag/log_mecha))
 		WRITE_LOG(GLOB.world_mecha_log, "MECHA: [text]")
 
+/proc/log_uplink(text)
+	if (CONFIG_GET(flag/log_uplink))
+		WRITE_LOG(GLOB.uplink_log, "UPLINK: [text]")
+
 /proc/log_virus(text)
 	if (CONFIG_GET(flag/log_virus))
 		WRITE_LOG(GLOB.world_virus_log, "VIRUS: [text]")

@@ -6,6 +6,7 @@
 	icon_state = "deck_unum_full"
 	deckstyle = "unum"
 	original_size = 108
+	card_types = null
 
 //Populate the deck.
 /obj/item/toy/cards/deck/unum/populate_deck()

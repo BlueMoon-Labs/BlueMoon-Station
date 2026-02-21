@@ -176,7 +176,7 @@
 	else
 		return ..()
 
-/obj/machinery/autodoc/tool_act(mob/living/user, obj/item/I, tool_type)
+/obj/machinery/autodoc/tool_act(mob/living/user, obj/item/I)
 	if(user == occupant)
 		return FALSE
 	else

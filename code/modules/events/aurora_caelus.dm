@@ -1,9 +1,9 @@
 /datum/round_event_control/aurora_caelus
 	name = "Aurora Caelus"
 	typepath = /datum/round_event/aurora_caelus
-	max_occurrences = 4
-	weight = 10
-	earliest_start = 5 MINUTES
+	max_occurrences = 1
+	weight = 5
+	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "A colourful display can be seen through select windows. And the kitchen."
 

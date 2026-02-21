@@ -960,7 +960,7 @@ GENETICS SCANNER
 
 /obj/item/analyzer/ranged/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
-	if(target.tool_act(user, src, tool_behaviour))
+	if(target.tool_act(user, src, click_parameters))
 		return
 	// Tool act didn't scan it, so let's get it's turf.
 	var/turf/location = get_turf(target)

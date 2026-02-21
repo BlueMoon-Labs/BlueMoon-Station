@@ -40,7 +40,7 @@
 	/// Причина смерти
 	var/death_reason = ""
 	/// Скорость (deciseconds между шагами)
-	var/speed = 3
+	var/speed = 5
 	/// ID таймера шага
 	var/step_timer = null
 
@@ -71,7 +71,7 @@
 	death_reason = ""
 	game_active = TRUE
 	paused = FALSE
-	speed = 3
+	speed = 5
 	spawn_food()
 	schedule_step()
 
@@ -146,8 +146,8 @@
 		if(computer)
 			playsound(computer.loc, 'sound/arcade/mana.ogg', 30, TRUE)
 		spawn_food()
-		// Ускорение каждые 5 очков
-		if(score % 5 == 0 && speed > 1)
+		// Ускорение каждые 7 очков
+		if(score % 7 == 0 && speed > 2)
 			speed--
 	else
 		body.Cut(1, 2)
@@ -200,6 +200,32 @@
 				if(SNAKE_DIR_RIGHT)
 					if(current_dir != SNAKE_DIR_LEFT)
 						queued_dir = new_dir
+			return TRUE
+		if("turn_left")
+			if(!game_active || paused)
+				return
+			switch(current_dir)
+				if(SNAKE_DIR_UP)
+					queued_dir = SNAKE_DIR_LEFT
+				if(SNAKE_DIR_LEFT)
+					queued_dir = SNAKE_DIR_DOWN
+				if(SNAKE_DIR_DOWN)
+					queued_dir = SNAKE_DIR_RIGHT
+				if(SNAKE_DIR_RIGHT)
+					queued_dir = SNAKE_DIR_UP
+			return TRUE
+		if("turn_right")
+			if(!game_active || paused)
+				return
+			switch(current_dir)
+				if(SNAKE_DIR_UP)
+					queued_dir = SNAKE_DIR_RIGHT
+				if(SNAKE_DIR_RIGHT)
+					queued_dir = SNAKE_DIR_DOWN
+				if(SNAKE_DIR_DOWN)
+					queued_dir = SNAKE_DIR_LEFT
+				if(SNAKE_DIR_LEFT)
+					queued_dir = SNAKE_DIR_UP
 			return TRUE
 
 #undef SNAKE_GRID_W

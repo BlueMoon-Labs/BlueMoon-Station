@@ -5,16 +5,22 @@
 */
 //I'm sorry, lewd should not have mob procs such as life() and such in it. //NO SHIT IT SHOULDNT I REMOVED THEM
 
-/proc/playlewdinteractionsound(turf/turf_source, soundin, vol as num, vary, extrarange as num, frequency, falloff, channel = 0, pressure_affected = TRUE, sound/S, envwet = -10000, envdry = 0, manual_x, manual_y, list/ignored_mobs)
+/proc/playlewdinteractionsound(turf/turf_source, soundin, vol as num, vary, extrarange as num, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, envwet = -10000, envdry = 0, manual_x, manual_y, list/ignored_mobs)
+	if(!turf_source || !soundin)
+		return
+	var/sound/sound_to_play = sound(get_sfx(soundin))
+	var/max_distance = SOUND_RANGE + extrarange
+	var/falloff_distance = 3 // Full volume within 3 tiles (lewd sounds are close-range)
+	channel = channel || SSsounds.random_available_channel()
 	var/list/hearing_mobs
-	for(var/mob/H in get_hearers_in_view(4, turf_source))
+	for(var/mob/H in get_hearers_in_view(max_distance, turf_source))
 		if(!H.client || !(H.client.prefs.toggles & LEWD_VERB_SOUNDS))
 			continue
 		LAZYADD(hearing_mobs, H)
 	if(ignored_mobs?.len)
 		LAZYREMOVE(hearing_mobs, ignored_mobs)
 	for(var/mob/H in hearing_mobs)
-		H.playsound_local(turf_source, soundin, vol, vary, frequency, falloff)
+		H.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, sound_to_play, max_distance, falloff_distance)
 
 /mob/living
 	var/has_penis = FALSE

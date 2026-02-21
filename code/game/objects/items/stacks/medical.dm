@@ -685,6 +685,9 @@
 	heal_burn = 3
 	grind_results = list(/datum/reagent/consumable/aloejuice = 1)
 
+/obj/item/stack/medical/aloe/fresh
+	amount = 2
+
 /obj/item/stack/medical/nanogel
 	name = "nanogel"
 	singular_name = "nanogel"

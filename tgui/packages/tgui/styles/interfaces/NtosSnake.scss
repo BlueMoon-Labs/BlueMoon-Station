@@ -129,28 +129,24 @@
   // ── Controls ──
   &__controls {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     padding: 4px 8px;
   }
 
-  &__dpad {
+  &__turn-controls {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
   }
 
-  &__dpad-row {
-    display: flex;
-    gap: 2px;
-  }
-
-  &__dpad-btn {
-    width: 36px !important;
-    height: 32px !important;
-    min-width: 36px !important;
-    font-size: 14px;
+  &__turn-btn {
+    flex: 0 0 auto;
+    width: 60px !important;
+    height: 44px !important;
+    font-size: 22px !important;
     display: flex;
     align-items: center;
     justify-content: center;

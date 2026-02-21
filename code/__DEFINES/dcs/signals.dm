@@ -236,7 +236,7 @@
 // /atom/movable signals
 #define COMSIG_MOVABLE_PRE_MOVE "movable_pre_move"					///from base of atom/movable/Moved(): (/atom)
 	#define COMPONENT_MOVABLE_BLOCK_PRE_MOVE 1
-#define COMSIG_MOVABLE_MOVED "movable_moved"					//from base of atom/movable/Moved(): (/atom, dir)
+#define COMSIG_MOVABLE_MOVED "movable_moved"					//from base of atom/movable/Moved(): (/atom, /atom/OldLoc, Dir, Forced)
 #define COMSIG_MOVABLE_CROSS "movable_cross"					//from base of atom/movable/Cross(): (/atom/movable)
 #define COMSIG_MOVABLE_CROSSED "movable_crossed"                //from base of atom/movable/Crossed(): (/atom/movable)
 #define COMSIG_MOVABLE_UNCROSS "movable_uncross"				//from base of atom/movable/Uncross(): (/atom/movable)
@@ -515,6 +515,8 @@
 #define COMPONENT_MICROWAVE_SUCCESS (1<<0)
 ///called on item when created through microwaving (): (obj/machinery/microwave/M, cooking_efficiency)
 #define COMSIG_ITEM_MICROWAVE_COOKED "microwave_cooked"
+///called on the ingredient through microwawing: (result)
+#define COMSIG_ITEM_MICROWAVE_COOKED_FROM "item_microwave_cooked_from"
 /// Returned on "failure" - an item was produced but it was the default fail recipe
 #define COMPONENT_MICROWAVE_BAD_RECIPE (1<<1)
 // /obj/item signals for economy

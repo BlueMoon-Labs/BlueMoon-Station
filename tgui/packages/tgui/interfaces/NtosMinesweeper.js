@@ -37,8 +37,8 @@ export const NtosMinesweeper = (props, context) => {
     String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
 
   // Размер окна по сложности
-  const winW = Math.max(300, grid_w * 26 + 60);
-  const winH = Math.max(400, grid_h * 26 + 220);
+  const winW = Math.max(380, grid_w * 32 + 80);
+  const winH = Math.max(480, grid_h * 32 + 240);
 
   // Рендерим строки поля
   const fieldRows = [];

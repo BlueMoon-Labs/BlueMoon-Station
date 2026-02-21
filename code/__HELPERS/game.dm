@@ -503,10 +503,12 @@
 		// Добираем недобор или возвращаем всех кандидатов
 		if(!result_len)
 			return low_priority_candidates
-		else
-			for(var/i = (minimum_required - result_len), i < minimum_required, i++)
-				. += pick_n_take(low_priority_candidates)
-			return
+
+		var/need = minimum_required - result_len
+		while(need-- > 0 && LAZYLEN(low_priority_candidates))
+			. += pick_n_take(low_priority_candidates)
+		return
+
 	else
 		candidates = get_all_ghost_role_eligible(priority_only = FALSE)
 		return pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category, flashwindow, candidates)

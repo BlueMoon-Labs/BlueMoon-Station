@@ -8,7 +8,7 @@
 	icon_state = null
 	lefthand_file = 'icons/mob/inhands/misc/food_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/food_righthand.dmi'
-	reagent_flags = OPENCONTAINER
+	reagent_flags = OPENCONTAINER|DUNKABLE
 	reagent_value = DEFAULT_REAGENTS_VALUE
 	var/gulp_size = 5 //Максимум выпиваемый из-за количества реагентов
 	possible_transfer_amounts = list(5,10,15,20,25,30,50)

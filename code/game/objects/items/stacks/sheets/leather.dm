@@ -142,6 +142,10 @@ GLOBAL_LIST_INIT(xeno_recipes, list ( \
 	var/wetness = 30 //Reduced when exposed to high temperautres
 	var/drying_threshold_temperature = 500 //Kelvin to start drying
 
+/obj/item/stack/sheet/wetleather/Initialize(mapload, new_amount, merge)
+	. = ..()
+	AddElement(/datum/element/microwavable, /obj/item/stack/sheet/leather)
+
 /*
  * Leather SHeet
  */
@@ -255,8 +259,3 @@ GLOBAL_LIST_INIT(sinew_recipes, list ( \
 			new /obj/item/stack/sheet/leather(drop_location(), 1)
 			wetness = initial(wetness)
 			use(1)
-
-/obj/item/stack/sheet/wetleather/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	. = ..()
-	new /obj/item/stack/sheet/leather(drop_location(), amount)
-	qdel(src)

@@ -619,7 +619,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 				else
 					to_chat(user, span_warning("Нечего пополнять!"))
 			return
-	if(compartmentLoadAccessCheck(user) && !user.combat_mode)
+	if(compartmentLoadAccessCheck(user) && !SEND_SIGNAL(user, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
 		if(canLoadItem(I))
 			loadingAttempt(I,user)
 
@@ -802,8 +802,6 @@ GLOBAL_LIST_EMPTY(vending_products)
 	unbuckle_all_mobs(TRUE)
 
 	tilted = FALSE
-	panel_open = FALSE
-	set_anchored(TRUE)
 	layer = initial(layer)
 
 	var/matrix/M = matrix()

@@ -5570,7 +5570,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel)
 "zr" = (
-/obj/machinery/mineral/bluespace_miner,
+/obj/machinery/mineral/bluespace_miner/with_core/infinity,
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/bluemoon/hotel)
 "zu" = (

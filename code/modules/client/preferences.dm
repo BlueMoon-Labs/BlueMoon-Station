@@ -30,6 +30,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/cached_holoform_icons
 	var/last_custom_holoform = 0
 
+	// Character Directory
+	var/show_in_directory = 1	//Show in Character Directory
+	var/directory_tag = "Unset" //Sorting tag to use in character directory
+	var/directory_erptag = "Unset"	//ditto, but for non-vore scenes
+	var/directory_gendertag = "Unset"	//Gender tag for character directory
+	var/directory_ad = ""		//Advertisement stuff to show in character directory.
+
 	//Cooldowns for saving/loading. These are four are all separate due to loading code calling these one after another
 	COOLDOWN_DECLARE(saveprefcooldown)
 	COOLDOWN_DECLARE(loadprefcooldown)
@@ -38,6 +45,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	//game-preferences
 	var/lastchangelog = ""				//Saved changlog filesize to detect if there was a change
+	var/custom_colors = TOGGLES_DEFAULT_CUSTOM_COLORS
 	var/ooccolor = "#c43b23"
 	var/aooccolor = "#ce254f"
 	var/enable_tips = TRUE
@@ -113,6 +121,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	var/uses_glasses_colour = 0
 	var/surgical_disable_radial = FALSE 		// BLUEMOON ADD
+	var/chem_dispenser_classic_view = TRUE		// BLUEMOON ADD - classic flat grid vs categorized view
+	var/chem_dispenser_use_reagent_color = TRUE	// BLUEMOON ADD - show reagent color vs pH color on buttons
+	var/chem_dispenser_show_icons = TRUE		// BLUEMOON ADD - show/hide reagent icons on buttons
+	var/chem_dispenser_alphabetical_sort = TRUE	// BLUEMOON ADD - alphabetical vs declaration order in classic view
 
 	// BLUEMOON ADD START || Colormate presets
 	// Листы состоят из ключа, типа предмета и листа с именами престов и настройками цвета
@@ -2627,7 +2639,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/byond_publicity_label = src.use_modern_translations ? get_modern_text("byond_membership_publicity", src) : "BYOND Membership Publicity"
 					var/public_label = src.use_modern_translations ? get_modern_text("public", src) : "Public"
 					var/hidden_label = src.use_modern_translations ? get_modern_text("hidden", src) : "Hidden"
+					var/custom_color_ooc_label = src.use_modern_translations ? get_modern_text("custom_color_ooc", src) : "Custom OOC Color"
 					var/ooc_color_label = src.use_modern_translations ? get_modern_text("ooc_color", src) : "OOC Color"
+					var/custom_color_aooc_label = src.use_modern_translations ? get_modern_text("custom_color_aooc", src) : "Custom AOOC Color"
 					var/antag_ooc_color_label = src.use_modern_translations ? get_modern_text("antag_ooc_color", src) : "Antag OOC Color"
 					var/admin_settings_label = src.use_modern_translations ? get_modern_text("admin_settings", src) : "Admin Settings"
 					var/adminhelp_sounds_label = src.use_modern_translations ? get_modern_text("adminhelp_sounds", src) : "Adminhelp Sounds"
@@ -2658,8 +2672,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						if(unlock_content)
 							dat += "<b>[byond_publicity_label]:</b> <a href='?_src_=prefs;preference=publicity'>[(toggles & MEMBER_PUBLIC) ? public_label : hidden_label]</a><br>"
 						if(unlock_content || is_admin(user.client))
-							dat += "<b>[ooc_color_label]:</b> <span style='border: 1px solid #161616; background-color: [ooccolor ? ooccolor : GLOB.normal_ooc_colour];'><font color='[color_hex2num(ooccolor ? ooccolor : GLOB.normal_ooc_colour) < 200 ? "FFFFFF" : "000000"]'>[ooccolor ? ooccolor : GLOB.normal_ooc_colour]</font></span> <a href='?_src_=prefs;preference=ooccolor;task=input'>[change_label]</a><br>"
-							dat += "<b>[antag_ooc_color_label]:</b> <span style='border: 1px solid #161616; background-color: [aooccolor ? aooccolor : GLOB.normal_aooc_colour];'><font color='[color_hex2num(aooccolor ? aooccolor : GLOB.normal_aooc_colour) < 200 ? "FFFFFF" : "000000"]'>[aooccolor ? aooccolor : GLOB.normal_aooc_colour]</font></span> <a href='?_src_=prefs;preference=aooccolor;task=input'>[change_label]</a><br>"
+							dat += "<b>[custom_color_ooc_label]:</b> <a href='?_src_=prefs;preference=custom_color_ooc'>[(custom_colors & CUSTOM_OOC)? enabled_label : disabled_label]</a><br>"
+							if(custom_colors & CUSTOM_OOC)
+								dat += "<b>[ooc_color_label]:</b> <span style='border: 1px solid #161616; background-color: [ooccolor ? ooccolor : GLOB.normal_ooc_colour];'><font color='[color_hex2num(ooccolor ? ooccolor : GLOB.normal_ooc_colour) < 200 ? "FFFFFF" : "000000"]'>[ooccolor ? ooccolor : GLOB.normal_ooc_colour]</font></span> <a href='?_src_=prefs;preference=ooccolor;task=input'>[change_label]</a><br>"
+							dat += "<b>[custom_color_aooc_label]:</b> <a href='?_src_=prefs;preference=custom_color_aooc'>[(custom_colors & CUSTOM_AOOC)? enabled_label : disabled_label]</a><br>"
+							if(custom_colors & CUSTOM_AOOC)
+								dat += "<b>[antag_ooc_color_label]:</b> <span style='border: 1px solid #161616; background-color: [aooccolor ? aooccolor : GLOB.normal_aooc_colour];'><font color='[color_hex2num(aooccolor ? aooccolor : GLOB.normal_aooc_colour) < 200 ? "FFFFFF" : "000000"]'>[aooccolor ? aooccolor : GLOB.normal_aooc_colour]</font></span> <a href='?_src_=prefs;preference=aooccolor;task=input'>[change_label]</a><br>"
 
 					if(is_admin(user.client))
 						dat += "<h2>[admin_settings_label]</h2>"
@@ -5872,6 +5890,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					toggles ^= COMBOHUD_LIGHTING
 				if("use_new_playerpanel")
 					use_new_playerpanel = !use_new_playerpanel
+
+				// Colors pref
+				if("custom_color_ooc")
+					custom_colors ^= CUSTOM_OOC
+				if("custom_color_aooc")
+					custom_colors ^= CUSTOM_AOOC
 
 				// Deadmin preferences
 				if("toggle_deadmin_onlogin")

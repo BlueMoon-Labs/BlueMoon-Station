@@ -15,6 +15,7 @@
 	icon = 'icons/obj/toys/toy.dmi'
 	icon_state = "deck_caswhite_full"
 	deckstyle = "caswhite"
+	card_types = null
 	var/card_face = "cas_white"
 	var/blanks = 25
 	var/decksize = 150
@@ -57,26 +58,14 @@
 		cards += P
 	shuffle_inplace(cards) // distribute blank cards throughout deck
 
-/obj/item/toy/cards/deck/cas/draw_card(mob/user)
-	if(user.lying)
-		return
-	if(cards.len == 0)
-		to_chat(user, "<span class='warning'>There are no more cards to draw!</span>")
-		return
-	var/obj/item/toy/cards/singlecard/cas/H = new/obj/item/toy/cards/singlecard/cas(user.loc)
-	var/datum/playingcard/choice = cards[1]
-	if (choice.name == "Blank Card")
-		H.blank = 1
-	H.name = choice.name
-	H.buffertext = choice.name
-	H.icon_state = choice.card_icon
-	H.card_face = choice.card_icon
-	H.parentdeck = src
-	src.cards -= choice
-	H.pickup(user)
-	user.put_in_hands(H)
-	user.visible_message("[user] draws a card from the deck.", "<span class='notice'>You draw a card from the deck.</span>")
-	update_icon()
+/obj/item/toy/cards/deck/cas/draw(mob/living/user, card, card_type = /obj/item/toy/cards/singlecard/cas)
+	. = ..()
+	var/obj/item/toy/cards/singlecard/cas/S = .
+	if(S)
+		if(S.cardname == "Blank card")
+			S.blank = TRUE
+			S.update_icon()
+	return S
 
 /obj/item/toy/cards/deck/cas/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/toy/cards/singlecard/cas))
@@ -94,6 +83,7 @@
 	update_icon()
 
 /obj/item/toy/cards/deck/cas/update_icon_state()
+	. = ..()
 	if(cards.len < 26)
 		icon_state = "deck_[deckstyle]_low"
 
@@ -101,9 +91,10 @@
 	name = "CAS card"
 	desc = "A CAS card."
 	icon_state = "cas_white"
-	flipped = 0
+	flipped = FALSE
+	allow_merge = FALSE
 	var/card_face = "cas_white"
-	var/blank = 0
+	var/blank = FALSE
 	var/buffertext = "A funny bit of text."
 
 /obj/item/toy/cards/singlecard/cas/examine(mob/user)
@@ -116,23 +107,13 @@
 		. += "<span class='notice'>The card reads: [name]</span>"
 	. += "<span class='notice'>Alt-click to flip it.</span>"
 
-/obj/item/toy/cards/singlecard/cas/Flip()
-	set name = "Flip Card"
-	set category = "Object"
-	set src in range(1)
-	if(!ishuman(usr) || !usr.canUseTopic(src, BE_CLOSE))
-		return
-	if(!flipped)
-		name = "CAS card"
-	else if(flipped)
-		name = buffertext
-	flipped = !flipped
-	update_icon()
-
 /obj/item/toy/cards/singlecard/cas/update_icon_state()
+	. = ..()
 	if(flipped)
+		name = buffertext
 		icon_state = "[card_face]_flipped"
 	else
+		name = "CAS card"
 		icon_state = "[card_face]"
 
 /obj/item/toy/cards/singlecard/cas/attackby(obj/item/I, mob/living/user, params)
@@ -148,4 +129,4 @@
 			return
 		name = cardtext
 		buffertext = cardtext
-		blank = 0
+		blank = FALSE

@@ -341,8 +341,6 @@ DEFINE_BITFIELD(turret_flags, list(
 		else
 			to_chat(user, "<span class='alert'>Доступ запрещён.</span>")
 	else if(I.tool_behaviour == TOOL_MULTITOOL && !locked)
-		if(!multitool_check_buffer(user, I))
-			return
 		I.buffer = src
 		to_chat(user, "<span class='notice'>You add [src] to [I]'s buffer.</span>")
 	else
@@ -412,7 +410,7 @@ DEFINE_BITFIELD(turret_flags, list(
 
 /obj/machinery/porta_turret/welder_act(mob/living/user, obj/item/I)
 	. = TRUE
-	if(obj_integrity < max_integrity) //BLUEMOON EDIT: removed cover && since it broke the logic and considered the turret to be at 100% at all times. This bug is from 2021, hello. 
+	if(obj_integrity < max_integrity) //BLUEMOON EDIT: removed cover && since it broke the logic and considered the turret to be at 100% at all times. This bug is from 2021, hello.
 		if(!I.tool_start_check(user, amount=0))
 			return
 		user.visible_message("[user] чинит турель сваркой.", \
@@ -992,8 +990,6 @@ DEFINE_BITFIELD(turret_flags, list(
 		return
 
 	if(I.tool_behaviour == TOOL_MULTITOOL)
-		if(!multitool_check_buffer(user, I))
-			return
 		if(I.buffer && istype(I.buffer, /obj/machinery/porta_turret))
 			turrets |= I.buffer
 			to_chat(user, "<span class='notice'>You link \the [I.buffer] with \the [src].</span>")

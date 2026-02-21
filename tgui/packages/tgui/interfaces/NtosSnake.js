@@ -2,11 +2,6 @@ import { useBackend } from '../backend';
 import { Button } from '../components';
 import { NtosWindow } from '../layouts';
 
-const DIR_UP = 1;
-const DIR_DOWN = 2;
-const DIR_LEFT = 3;
-const DIR_RIGHT = 4;
-
 export const NtosSnake = (props, context) => {
   const { act, data } = useBackend(context);
   const {
@@ -51,7 +46,7 @@ export const NtosSnake = (props, context) => {
   }
 
   return (
-    <NtosWindow width={480} height={500}>
+    <NtosWindow width={480} height={560}>
       <NtosWindow.Content>
         <div className="NtosSnake">
           {/* Заголовок */}
@@ -105,35 +100,25 @@ export const NtosSnake = (props, context) => {
 
           {/* Управление */}
           <div className="NtosSnake__controls">
-            <div className="NtosSnake__dpad">
-              <div className="NtosSnake__dpad-row">
-                <Button
-                  className="NtosSnake__dpad-btn"
-                  onClick={() => act('dir', { dir: DIR_UP })}
-                  disabled={!game_active || !!paused}>
-                  {'▲'}
-                </Button>
-              </div>
-              <div className="NtosSnake__dpad-row">
-                <Button
-                  className="NtosSnake__dpad-btn"
-                  onClick={() => act('dir', { dir: DIR_LEFT })}
-                  disabled={!game_active || !!paused}>
-                  {'◄'}
-                </Button>
-                <Button
-                  className="NtosSnake__dpad-btn"
-                  onClick={() => act('dir', { dir: DIR_DOWN })}
-                  disabled={!game_active || !!paused}>
-                  {'▼'}
-                </Button>
-                <Button
-                  className="NtosSnake__dpad-btn"
-                  onClick={() => act('dir', { dir: DIR_RIGHT })}
-                  disabled={!game_active || !!paused}>
-                  {'►'}
-                </Button>
-              </div>
+            <div className="NtosSnake__turn-controls">
+              <Button
+                className="NtosSnake__turn-btn"
+                onClick={() => act('turn_left')}
+                disabled={!game_active || !!paused}
+                bold
+                fontSize="22px"
+                color="blue">
+                {'↶'}
+              </Button>
+              <Button
+                className="NtosSnake__turn-btn"
+                onClick={() => act('turn_right')}
+                disabled={!game_active || !!paused}
+                bold
+                fontSize="22px"
+                color="blue">
+                {'↷'}
+              </Button>
             </div>
             <div className="NtosSnake__action-btns">
               {!game_active ? (

@@ -16,10 +16,10 @@
 #define HOLOCHIP 1
 #define COIN 2
 #define MAX_HISTORY 5
-#define BONUS_CHANCE 2 // percent chance to trigger bonus on 2-match
+#define BONUS_CHANCE 1 // percent chance to trigger bonus on 2-match
 #define SYMBOL_WILD "wild"
 #define SYMBOL_SCATTER "scatter"
-#define SCATTER_WIN_BASE 10
+#define SCATTER_WIN_BASE 5
 
 /obj/machinery/computer/slot_machine
 	name = "slot machine"
@@ -74,6 +74,10 @@
 	var/active_lines = 1
 	/// Which payline produced the win (0 = none, 1-5)
 	var/winning_line = 0
+	/// Free spins remaining (actual free auto-spins)
+	var/free_spins_remaining = 0
+	/// Consecutive losses counter (for excitement mechanic)
+	var/loss_streak = 0
 
 /obj/machinery/computer/slot_machine/Initialize(mapload)
 	. = ..()
@@ -193,6 +197,8 @@
 	data["session_winnings"] = session_winnings
 	data["auto_spin"] = auto_spin
 	data["auto_spin_remaining"] = auto_spin_remaining
+	data["free_spins_remaining"] = free_spins_remaining
+	data["loss_streak"] = loss_streak
 
 	var/list/reel_data = list()
 	for(var/list/reel in reels)
@@ -230,8 +236,10 @@
 				balance = 0
 				session_winnings = 0
 				win_streak = 0
+				loss_streak = 0
 				auto_spin = FALSE
 				auto_spin_remaining = 0
+				free_spins_remaining = 0
 			. = TRUE
 		if("set_bet")
 			var/new_bet = text2num(params["amount"])
@@ -314,8 +322,11 @@
 	else
 		the_name = "Exaybachay"
 
-	balance -= bet_amount
-	money += bet_amount
+	if(free_spins_remaining > 0)
+		free_spins_remaining--
+	else
+		balance -= bet_amount
+		money += bet_amount
 	plays += 1
 	working = TRUE
 	result_message = ""
@@ -351,6 +362,10 @@
 	give_prizes(the_name, user)
 	update_icon()
 	SStgui.update_uis(src)
+	// Free spins logic — trigger next free spin automatically
+	if(free_spins_remaining > 0)
+		addtimer(CALLBACK(src, PROC_REF(spin), user), 15)
+		return
 	// Auto-spin logic
 	if(auto_spin && auto_spin_remaining > 0)
 		auto_spin_remaining--
@@ -370,7 +385,7 @@
 	if(working)
 		to_chat(user, "<span class='warning'>You need to wait until the machine stops spinning before you can play again!</span>")
 		return FALSE
-	if(balance < bet_amount)
+	if(balance < bet_amount && free_spins_remaining <= 0)
 		to_chat(user, "<span class='warning'>Insufficient credits! You need at least [bet_amount] to play!</span>")
 		return FALSE
 	return TRUE
@@ -402,7 +417,10 @@
 	gamble_amount = 0
 
 	var/pair_count = check_pairs()
-	if(pair_count >= 2 && linelength < 3 && prob(BONUS_CHANCE))
+	var/effective_bonus_chance = BONUS_CHANCE
+	if(loss_streak >= 5)
+		effective_bonus_chance = min(BONUS_CHANCE + (loss_streak - 4) * 2, 15)
+	if(pair_count >= 2 && linelength < 3 && prob(effective_bonus_chance))
 		bonus_multiplier = pick(2, 2, 2, 3, 3, 5)
 		bonus_active = TRUE
 		playsound(src, 'modular_bluemoon/sound/machines/slot-machine/bonus.ogg', 60, TRUE)
@@ -426,6 +444,7 @@
 		result_message = "🎉 MEGA JACKPOT! 7-7-7-7-7! +" + "[won_amount] cr!"
 		result_type = "jackpot"
 		win_streak++
+		loss_streak = 0
 		session_winnings += won_amount
 		show_confetti = TRUE
 
@@ -438,6 +457,7 @@
 			result_message += " (x[bonus_multiplier] BONUS!)"
 		result_type = "win"
 		win_streak++
+		loss_streak = 0
 		session_winnings += won_amount
 		show_confetti = TRUE
 		gamble_available = TRUE
@@ -453,25 +473,25 @@
 			result_message += " (x[bonus_multiplier] BONUS!)"
 		result_type = "win"
 		win_streak++
+		loss_streak = 0
 		session_winnings += won_amount
 		gamble_available = TRUE
 		gamble_amount = won_amount
 		give_money(won_amount)
 
 	else if(linelength == 3)
-		var/free_spins = 1
+		var/free_spins = rand(1, 3)
 		if(bonus_active)
 			free_spins = free_spins * bonus_multiplier
+		free_spins_remaining += free_spins
 		playsound(src, 'modular_bluemoon/sound/machines/slot-machine/bonus.ogg', 50, TRUE)
-		to_chat(user, "<span class='notice'>You win [free_spins] free games!</span>")
-		var/free_credits = bet_amount * free_spins
-		balance += free_credits
-		result_message = "[free_spins] Free Spins!"
+		to_chat(user, "<span class='notice'>Вы выиграли [free_spins] бесплатных вращений!</span>")
+		result_message = "🎰 [free_spins] Free Spins!"
 		if(bonus_active)
 			result_message += " (x[bonus_multiplier] BONUS!)"
 		result_type = "small"
 		win_streak++
-		session_winnings += free_credits
+		loss_streak = 0
 
 	else if(bonus_active)
 		playsound(src, 'modular_bluemoon/sound/machines/slot-machine/bonus.ogg', 60, TRUE)
@@ -479,15 +499,20 @@
 		result_message = "BONUS x[bonus_multiplier]! +[won_amount] cr!"
 		result_type = "bonus"
 		win_streak++
+		loss_streak = 0
 		session_winnings += won_amount
 		gamble_available = TRUE
 		gamble_amount = won_amount
 		give_money(won_amount)
 
 	else
-		result_message = "No luck... Try again!"
 		result_type = "lose"
 		win_streak = 0
+		loss_streak++
+		if(loss_streak >= 5)
+			result_message = "🔥 Hot Machine! [loss_streak] losses... Bonus chance UP!"
+		else
+			result_message = "No luck... Try again!"
 		if(prob(1))
 			playsound(src, 'modular_bluemoon/sound/machines/slot-machine/casino_fuck.ogg', 50, TRUE)
 

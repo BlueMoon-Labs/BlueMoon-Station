@@ -883,3 +883,66 @@
 
 /datum/status_effect/terror/food_regen/tick()
 	owner.adjustBruteLoss(-(owner.maxHealth/20))
+
+/////////////////////////
+// Спасибо дефайнам - можно легко менять
+#define CHAMELEON_QUIRK_PLUS_MUTATION_MIN_ALPHA 30 // если будет мутация хамелеона из генетики
+#define CHAMELEON_QUIRK_PLUS_MUTATION_MID_ALPHA 115
+#define CHAMELEON_QUIRK_MIN_ALPHA 115
+#define CHAMELEON_QUIRK_MID_ALPHA 180
+
+/datum/status_effect/chameleon_quirk
+	id = "chameleon_quirk"
+	alert_type = null
+	tick_interval = 1.2 SECONDS
+	var/cloaking_timer
+	var/slowdown_modifier = /datum/movespeed_modifier/quirk_chameleon_slowdown
+	var/is_cloaked = FALSE
+
+/datum/status_effect/chameleon_quirk/on_apply()
+	RegisterSignals(owner, list(COMSIG_MOB_ITEM_AFTERATTACK, COMSIG_MOVABLE_MOVED, COMSIG_HUMAN_MELEE_UNARMED_ATTACK), PROC_REF(obstruct_cloaking))
+	if(!check_strong_alpha_sources(owner))
+		animate(owner, alpha = CHAMELEON_QUIRK_MID_ALPHA, time = 0.5 SECONDS)
+	return ..()
+
+/datum/status_effect/chameleon_quirk/on_remove()
+	. = ..()
+	if(!check_strong_alpha_sources(owner))
+		animate(owner, alpha = 255, time = 0.5 SECONDS)
+	if(owner.has_movespeed_modifier(slowdown_modifier))
+		owner.remove_movespeed_modifier(slowdown_modifier)
+	UnregisterSignal(owner, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_ITEM_AFTERATTACK, COMSIG_HUMAN_MELEE_UNARMED_ATTACK))
+	deltimer(cloaking_timer)
+	return ..()
+
+/datum/status_effect/chameleon_quirk/tick()
+	. = ..()
+	if(check_strong_alpha_sources(owner) || is_cloaked)
+		return
+	if(!cloaking_timer)
+		cloaking_timer = addtimer(CALLBACK(src, PROC_REF(cloak)), 1.3 SECONDS, TIMER_STOPPABLE)
+
+/datum/status_effect/chameleon_quirk/proc/cloak()
+	cloaking_timer = null
+	is_cloaked = TRUE
+	if(!check_strong_alpha_sources(owner) && owner.alpha >= CHAMELEON_QUIRK_MIN_ALPHA)
+		// Идёт учёт на то, есть ли генетическая мутация хамелеона
+		animate(owner, alpha = (owner.check_mutation(CHAMELEON) ? CHAMELEON_QUIRK_PLUS_MUTATION_MIN_ALPHA : CHAMELEON_QUIRK_MIN_ALPHA), time = 2 SECONDS)
+	if(!owner.has_movespeed_modifier(slowdown_modifier))
+		owner.add_movespeed_modifier(slowdown_modifier)
+
+/datum/status_effect/chameleon_quirk/proc/obstruct_cloaking(datum/source)
+	SIGNAL_HANDLER
+	if(!owner)
+		return
+	deltimer(cloaking_timer)
+	cloaking_timer = null
+	is_cloaked = FALSE
+	if(check_strong_alpha_sources(owner) && owner.alpha < CHAMELEON_QUIRK_MID_ALPHA)
+		animate(owner, alpha = (owner.check_mutation(CHAMELEON) ? CHAMELEON_QUIRK_PLUS_MUTATION_MID_ALPHA : CHAMELEON_QUIRK_MID_ALPHA), time = 0.5 SECONDS)
+
+#undef CHAMELEON_QUIRK_PLUS_MUTATION_MIN_ALPHA
+#undef CHAMELEON_QUIRK_PLUS_MUTATION_MID_ALPHA
+#undef CHAMELEON_QUIRK_MIN_ALPHA
+#undef CHAMELEON_QUIRK_MID_ALPHA
+/////////////////////////

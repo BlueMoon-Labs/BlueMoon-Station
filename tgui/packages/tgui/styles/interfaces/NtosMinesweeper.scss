@@ -104,12 +104,12 @@
 
   // ── Cells ──
   &__cell {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: bold;
     cursor: pointer;
     user-select: none;
@@ -135,20 +135,20 @@
     &--flagged {
       background: #556;
       border: 1px solid rgba(255, 200, 0, 0.3);
-      font-size: 14px;
+      font-size: 16px;
     }
 
     &--revealed {
       background: #2a2a2e;
       border: 1px solid rgba(255, 255, 255, 0.05);
       cursor: default;
-      font-size: 14px;
+      font-size: 16px;
     }
 
     &--mine {
       background: #661111;
       border: 1px solid #ff4444;
-      font-size: 14px;
+      font-size: 16px;
       animation: mine-reveal 0.3s ease-out;
     }
   }
@@ -156,7 +156,7 @@
   // ── Number colors ──
   &__num {
     font-weight: bold;
-    font-size: 14px;
+    font-size: 16px;
 
     &--n1 { color: #4444ff; }
     &--n2 { color: #008200; }

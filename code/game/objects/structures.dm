@@ -134,12 +134,12 @@
 	var/healthpercent = (obj_integrity/max_integrity) * 100
 	switch(healthpercent)
 		if(50 to 99)
-			return  "Выглядит слегка повреждённым."
+			return  span_warning("Выглядит слегка повреждённым.")
 		if(25 to 50)
-			return  "Выглядит тяжело повреждённым."
+			return  span_warning("Выглядит тяжело повреждённым.")
 		if(0 to 25)
 			if(!broken)
-				return  "<span class='warning'>Оно разваливается на части!</span>"
+				return  span_warning("Оно разваливается на части!")
 
 /obj/structure/rust_heretic_act()
 	take_damage(500, BRUTE, MELEE, 1)

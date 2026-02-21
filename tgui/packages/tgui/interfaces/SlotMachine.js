@@ -140,6 +140,8 @@ export const SlotMachine = (props, context) => {
     session_winnings,
     auto_spin,
     auto_spin_remaining,
+    free_spins_remaining,
+    loss_streak,
     spin_history,
     gamble_available,
     gamble_amount,
@@ -300,6 +302,41 @@ export const SlotMachine = (props, context) => {
             </Stack.Item>
           )}
 
+          {/* Free spins indicator */}
+          {free_spins_remaining > 0 && (
+            <Stack.Item>
+              <div style={{
+                'text-align': 'center',
+                'padding': '6px',
+                'background': 'rgba(0,200,0,0.15)',
+                'border': '1px solid rgba(0,200,0,0.4)',
+                'border-radius': '4px',
+                'color': '#4f4',
+                'font-weight': 'bold',
+                'font-size': '14px',
+              }}>
+                🎰 FREE SPINS: {free_spins_remaining} remaining!
+              </div>
+            </Stack.Item>
+          )}
+
+          {/* Hot machine indicator */}
+          {loss_streak >= 5 && !working && (
+            <Stack.Item>
+              <div style={{
+                'text-align': 'center',
+                'padding': '4px',
+                'background': 'rgba(255,100,0,0.15)',
+                'border': '1px solid rgba(255,100,0,0.4)',
+                'border-radius': '4px',
+                'color': '#fa3',
+                'font-size': '12px',
+              }}>
+                🔥 HOT MACHINE — {loss_streak} losses in a row! Enhanced bonus chance!
+              </div>
+            </Stack.Item>
+          )}
+
           {/* Gamble (Double or Nothing) */}
           {!!gamble_available && !working && (
             <Stack.Item>
@@ -417,7 +454,9 @@ export const SlotMachine = (props, context) => {
                         onClick={() => act('spin')}>
                         {working
                           ? (auto_spin ? 'AUTO...' : 'SPINNING...')
-                          : ('SPIN ' + bet_amount + ' cr')}
+                          : (free_spins_remaining > 0
+                            ? ('🎰 FREE SPIN!')
+                            : ('SPIN ' + bet_amount + ' cr'))}
                       </Button>
                     </Stack.Item>
                     <Stack.Item>
