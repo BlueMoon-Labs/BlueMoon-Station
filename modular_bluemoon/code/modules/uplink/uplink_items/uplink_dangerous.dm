@@ -2,5 +2,5 @@
 	name = "KS-23 shotgun"
 	desc = "War crimes are fun!"
 	item = /obj/item/gun/ballistic/shotgun/KS23
-	cost = 14
+	cost = 9
 	purchasable_from = ~(UPLINK_SYNDICATE)

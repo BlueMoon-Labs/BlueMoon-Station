@@ -284,14 +284,14 @@
 	name = "KS-23 shotgun"
 	desc = "War crimes are fun!"
 	item = /obj/item/gun/ballistic/shotgun/KS23/Inquisitor
-	cost = 7
+	cost = 5
 	restricted_roles = list("Chaplain")
 
 /datum/uplink_item/role_restricted/slug23
 	name = "KS-23 slug box"
 	desc = "8 lead slugs."
 	item = /obj/item/ammo_box/slug23
-	cost = 2
+	cost = 1
 	restricted_roles = list("Chaplain")
 
 /datum/uplink_item/role_restricted/slug_rubber23

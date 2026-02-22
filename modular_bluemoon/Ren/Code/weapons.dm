@@ -350,7 +350,7 @@
 	desc = "Ammo for KS23."
 	id = "ammo_ks23"
 	build_type = AUTOLATHE
-	materials = list(/datum/material/iron = 28000)
+	materials = list(/datum/material/iron = 42000)
 	build_path = /obj/item/ammo_box/slug23
 	category = list("Imported")
 
