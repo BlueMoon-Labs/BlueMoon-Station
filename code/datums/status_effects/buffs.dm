@@ -890,6 +890,12 @@
 #define CHAMELEON_QUIRK_PLUS_MUTATION_MID_ALPHA 115
 #define CHAMELEON_QUIRK_MIN_ALPHA 115
 #define CHAMELEON_QUIRK_MID_ALPHA 180
+// Чтобы было легче редактировать
+#define CHAMELEON_QUIRK_SINGALS COMSIG_MOB_ITEM_AFTERATTACK, \
+									COMSIG_MOVABLE_MOVED, \
+									COMSIG_HUMAN_MELEE_UNARMED_ATTACK, \
+									COMSIG_MOB_THROW, \
+									COMSIG_CARBON_TACKLED
 
 /datum/status_effect/chameleon_quirk
 	id = "chameleon_quirk"
@@ -900,7 +906,7 @@
 	var/is_cloaked = FALSE
 
 /datum/status_effect/chameleon_quirk/on_apply()
-	RegisterSignals(owner, list(COMSIG_MOB_ITEM_AFTERATTACK, COMSIG_MOVABLE_MOVED, COMSIG_HUMAN_MELEE_UNARMED_ATTACK), PROC_REF(obstruct_cloaking))
+	RegisterSignals(owner, list(CHAMELEON_QUIRK_SINGALS), PROC_REF(obstruct_cloaking))
 	if(!check_strong_alpha_sources(owner))
 		animate(owner, alpha = CHAMELEON_QUIRK_MID_ALPHA, time = 0.5 SECONDS)
 	return ..()
@@ -911,7 +917,7 @@
 		animate(owner, alpha = 255, time = 0.5 SECONDS)
 	if(owner.has_movespeed_modifier(slowdown_modifier))
 		owner.remove_movespeed_modifier(slowdown_modifier)
-	UnregisterSignal(owner, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_ITEM_AFTERATTACK, COMSIG_HUMAN_MELEE_UNARMED_ATTACK))
+	UnregisterSignal(owner, list(CHAMELEON_QUIRK_SINGALS))
 	deltimer(cloaking_timer)
 	return ..()
 
@@ -938,11 +944,12 @@
 	deltimer(cloaking_timer)
 	cloaking_timer = null
 	is_cloaked = FALSE
-	if(check_strong_alpha_sources(owner) && owner.alpha < CHAMELEON_QUIRK_MID_ALPHA)
+	if(!check_strong_alpha_sources(owner) && owner.alpha < CHAMELEON_QUIRK_MID_ALPHA)
 		animate(owner, alpha = (owner.check_mutation(CHAMELEON) ? CHAMELEON_QUIRK_PLUS_MUTATION_MID_ALPHA : CHAMELEON_QUIRK_MID_ALPHA), time = 0.5 SECONDS)
 
 #undef CHAMELEON_QUIRK_PLUS_MUTATION_MIN_ALPHA
 #undef CHAMELEON_QUIRK_PLUS_MUTATION_MID_ALPHA
 #undef CHAMELEON_QUIRK_MIN_ALPHA
 #undef CHAMELEON_QUIRK_MID_ALPHA
+#undef CHAMELEON_QUIRK_SINGALS
 /////////////////////////

@@ -288,9 +288,6 @@ GLOBAL_LIST_INIT(deathgasp_sounds, list(
 	"Зомбированный сталкер" =	'modular_bluemoon/sound/voice/death_gasps/stalkerzombie.ogg'
 	))
 
-#define SFX_ROLLING_PIN_ROLLING "rolling_pin_rolling"
-#define SFX_KNIFE_SLICE "knife_slice"
-
 GLOBAL_LIST_INIT(otherworld_sounds, list(
 		'sound/items/bubblewrap.ogg',
 		'sound/items/change_jaws.ogg',
@@ -451,3 +448,62 @@ GLOBAL_LIST_INIT(otherworld_sounds, list(
 		'sound/announcer/classic/shuttlecalled.ogg',
 		'sound/announcer/classic/aimalf.ogg',
 	))
+
+/**
+# assoc list of datum by key
+* k = SFX_KEY (see below)
+* v = singleton sound_effect datum ref
+* initialized in SSsounds init
+*/
+GLOBAL_LIST_EMPTY(sfx_datum_by_key)
+
+/* List of all of our sound keys.
+	used with /datum/sound_effect as the key
+	see code\game\sound_keys.dm
+*/
+
+#define SFX_SHATTER "shatter"
+#define SFX_EXPLOSION "explosion"
+#define SFX_EXPLOSION_CREAKING "explosion_creaking"
+#define SFX_HULL_CREAKING "hull_creaking"
+#define SFX_SPARKS "sparks"
+#define SFX_RUSTLE "rustle"
+#define SFX_BODYFALL "bodyfall"
+#define SFX_PUNCH "punch"
+#define SFX_CLOWN_STEP "clownstep"
+#define SFX_SUIT_STEP "suitstep"
+#define SFX_SWING_HIT "swing_hit"
+#define SFX_HISS "hiss"
+#define SFX_PAGE_TURN "pageturn"
+#define SFX_GUNSHOT "gunshot"
+#define SFX_RICOCHET "ricochet"
+#define SFX_TERMINAL_TYPE "terminal_type"
+#define SFX_DESECRATION "desceration"
+#define SFX_IM_HERE "im_here"
+#define SFX_CAN_OPEN "can_open"
+#define SFX_BULLET_MISS "bullet_miss"
+#define SFX_GUN_DRY_FIRE "gun_dry_fire"
+#define SFX_GUN_INSERT_EMPTY_MAGAZINE "gun_insert_empty_magazine"
+#define SFX_GUN_INSERT_FULL_MAGAZINE "gun_insert_full_magazine"
+#define SFX_GUN_REMOVE_EMPTY_MAGAZINE "gun_remove_empty_magazine"
+#define SFX_GUN_SLIDE_LOCK "gun_slide_lock"
+#define SFX_LAW "law"
+#define SFX_HONKBOT_E "honkbot_e"
+#define SFX_GOOSE "goose"
+#define SFX_WATER_WADE "water_wade"
+#define SFX_VORE_STRUGGLE "struggle_sound"
+#define SFX_VORE_PREY_STRUGGLE "prey_struggle"
+#define SFX_VORE_DIGEST_PRED "digest_pred"
+#define SFX_VORE_DEATH_PRED "death_pred"
+#define SFX_VORE_DIGEST_PREY "digest_prey"
+#define SFX_VORE_DEATH_PREY "death_prey"
+#define SFX_VORE_HUNGER "hunger_sounds"
+#define SFX_CLANG "clang"
+#define SFX_CLANGSMALL "clangsmall"
+#define SFX_SLOSH "slosh"
+#define SFX_SMCALM "smcalm"
+#define SFX_SMDELAM "smdelam"
+#define SFX_DRAWER_OPEN "drawer_open"
+#define SFX_DRAWER_CLOSE "drawer_close"
+#define SFX_ROLLING_PIN_ROLLING "rolling_pin_rolling"
+#define SFX_KNIFE_SLICE "knife_slice"

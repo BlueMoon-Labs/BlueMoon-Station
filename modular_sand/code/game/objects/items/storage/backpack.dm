@@ -27,6 +27,29 @@
 	icon_state = "infiltrator_case_command"
 	item_state = "infiltrator_case_command"
 
+/obj/item/storage/backpack/case/command/freak/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_w_class = WEIGHT_CLASS_NORMAL
+	STR.max_combined_w_class = 15
+	STR.max_items = 15
+	STR.can_hold = typecacheof(list(/obj/item/reagent_containers/food))
+
+/obj/item/storage/backpack/case/command/freak/PopulateContents()
+	..()
+	for(var/i in 1 to 5)
+		var/food_path = get_random_food()
+		if(food_path)
+			new food_path(src)
+	for(var/i in 1 to 5)
+		var/drink_path = get_random_drink()
+		if(drink_path)
+			new drink_path(src)
+	for(var/i in 1 to 5)
+		var/drug_path = get_random_drug()
+		if(drug_path)
+			new drug_path(src)
+
 /obj/item/storage/backpack/case/medical
 	name = "medical compartment case"
 	desc = "It's a case especially designed for keeping everything to save a fellow co-worker."

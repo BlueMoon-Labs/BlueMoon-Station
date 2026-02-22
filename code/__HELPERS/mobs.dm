@@ -652,7 +652,6 @@ GLOBAL_LIST_EMPTY(species_datums)
 	return FALSE
 
 /proc/check_weak_alpha_sources(mob/holder)
-	// Мы должны проверять именно внешние источники, по типу костюма ниндзя
 	if(HAS_TRAIT(holder, TRAIT_WEAK_INVISIBILITY))
 		return TRUE
 	return FALSE

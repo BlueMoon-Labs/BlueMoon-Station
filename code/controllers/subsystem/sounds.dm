@@ -25,6 +25,7 @@ SUBSYSTEM_DEF(sounds)
 
 /datum/controller/subsystem/sounds/Initialize()
 	setup_available_channels()
+	init_sound_keys()
 	return ..()
 
 /datum/controller/subsystem/sounds/proc/setup_available_channels()
@@ -131,5 +132,11 @@ SUBSYSTEM_DEF(sounds)
 /// How many channels we have left.
 /datum/controller/subsystem/sounds/proc/available_channels_left()
 	return length(channel_list) - random_channels_min
+
+/datum/controller/subsystem/sounds/proc/init_sound_keys()
+	for(var/datum/sound_effect/sfx as anything in subtypesof(/datum/sound_effect))
+		// this is for the assoc subtype
+		if(!isnull(sfx.key))
+			GLOB.sfx_datum_by_key[sfx.key] = new sfx()
 
 #undef DATUMLESS

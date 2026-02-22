@@ -95194,6 +95194,10 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
+/obj/item/paper/fluff/ruins/security_arsenal{
+	pixel_x = -2;
+	pixel_y = 3
+	},
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
 "nVI" = (

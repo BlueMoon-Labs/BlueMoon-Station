@@ -1,17 +1,18 @@
-/obj/item/reagent_containers/cup/primitive_centrifuge
+/obj/item/reagent_containers/glass/beaker/primitive_centrifuge
 	name = "primitive centrifuge"
 	desc = "Небольшая чашка, которая позволяет человеку медленно выливать жидкости, которые ему не нравятся."
 	icon = 'modular_bluemoon/code/modules/ashwalkers/icons/misc_tools.dmi'
 	icon_state = "primitive_centrifuge"
 	volume = 100
-	material_flags = MATERIAL_ADD_PREFIX | MATERIAL_COLOR
+	possible_transfer_amounts = list(5,10,15,20,25,30,50,100)
+	material_flags = APTFT_ALTCLICK|APTFT_VERB
 
-/obj/item/reagent_containers/cup/primitive_centrifuge/examine()
+/obj/item/reagent_containers/glass/beaker/primitive_centrifuge/examine()
 	. = ..()
 	. += span_notice("<b>Ctrl + Click</b> для выбора химических веществ, которые необходимо удалить.")
 	. += span_notice("<b>Alt + Clickk</b>, чтобы выбрать химическое вещество, которое нужно сохранить, а остальные удалить.")
 
-/obj/item/reagent_containers/cup/primitive_centrifuge/CtrlClick(mob/user)
+/obj/item/reagent_containers/glass/beaker/primitive_centrifuge/CtrlClick(mob/user)
 	if(!length(reagents.reagent_list))
 		return
 
@@ -32,7 +33,7 @@
 	reagents.del_reagent(user_input.type)
 	balloon_alert(user, "удален реагент из [src]")
 
-/obj/item/reagent_containers/cup/primitive_centrifuge/AltClick(mob/user)
+/obj/item/reagent_containers/glass/beaker/primitive_centrifuge/AltClick(mob/user)
 	if(!length(reagents.reagent_list))
 		return
 

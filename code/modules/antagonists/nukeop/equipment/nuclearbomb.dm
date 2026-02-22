@@ -159,6 +159,39 @@
 					STOP_PROCESSING(SSobj, core)
 					update_icon()
 				return
+		if(NUKESTATE_CORE_REMOVED)
+			if(istype(I, /obj/item/nuke_core) && !istype(I, /obj/item/nuke_core/supermatter_sliver))
+				if(core)
+					return
+				to_chat(user, "<span class='notice'>You start placing the plutonium core back into [src]...</span>")
+				if(do_after(user, 50, target=src))
+					if(core)
+						return
+					if(!user.transferItemToLoc(I, src))
+						return
+					core = I
+					deconstruction_state = NUKESTATE_CORE_EXPOSED
+					START_PROCESSING(SSobj, core)
+					update_icon()
+					to_chat(user, "<span class='notice'>You place the plutonium core back into [src].</span>")
+				return
+			if(istype(I, /obj/item/nuke_core_container))
+				var/obj/item/nuke_core_container/core_box = I
+				if(!core_box.core || istype(core_box.core, /obj/item/nuke_core/supermatter_sliver))
+					return
+				to_chat(user, "<span class='notice'>You start reinserting the plutonium core from [core_box] into [src]...</span>")
+				if(do_after(user, 50, target=src))
+					if(core || !core_box.core)
+						return
+					core = core_box.core
+					core_box.core.forceMove(src)
+					core_box.core = null
+					core_box.icon_state = "core_container_empty"
+					deconstruction_state = NUKESTATE_CORE_EXPOSED
+					START_PROCESSING(SSobj, core)
+					update_icon()
+					to_chat(user, "<span class='notice'>You reinsert the plutonium core from [core_box] into [src].</span>")
+				return
 	. = ..()
 
 /obj/machinery/nuclearbomb/crowbar_act(mob/user, obj/item/tool)

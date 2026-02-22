@@ -330,5 +330,5 @@
 	name = "Primitive centrifuge"
 	time = 30
 	reqs = list(/obj/item/stack/sheet/mineral/wood = 5)
-	result = /obj/item/reagent_containers/cup/primitive_centrifuge
+	result = /obj/item/reagent_containers/glass/beaker/primitive_centrifuge
 	category = CAT_PRIMAL

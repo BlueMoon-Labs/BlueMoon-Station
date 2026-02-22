@@ -878,7 +878,6 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			else
 				add_overlay(mutable_appearance(icon, "santa_hat", 3))
 			return COMPONENT_CANCEL_ATTACK_CHAIN
-		return NONE
 	if(istype(W, /obj/item/scalpel/supermatter))
 		var/obj/item/scalpel/supermatter/scalpel = W
 		to_chat(user, "<span class='notice'>You carefully begin to scrape \the [src] with \the [W]...</span>")

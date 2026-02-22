@@ -72,7 +72,6 @@
 	desc = "Генератор высокотемпературной плазмы, предназначенный для производственных нужд, но после внедрения технологий NT получил возможность отправлять сгусток плазмы в полёт. Имеет два режима стрельбы"
 	item = /obj/item/gun/energy/pulse/pistol/inteq
 	cost = 10
-	limited_stock = 1
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/inteq/canceller

@@ -253,13 +253,16 @@
 
 //Энергетический щит
 /obj/item/shield/inteq_energy
-	name = "Old energy shield"
-	desc = "Устаревшая на несколько поколений модель энергетического щита. Использует механические ограничители силового поля и эргономика немного страдает, но всё ещё является желанным элементом экипировки."
+	name = "Old Energy Shield"
+	desc = "Устаревшая на несколько поколений модель энергетического щита; компенсируется своей надёжностью и универсальностью. Использует механические ограничители силового поля и эргономика немного страдает, но всё ещё является желанным элементом экипировки."
 	icon = 'modular_bluemoon/Ren/Icons/Obj/misc.dmi'
 	lefthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_l.dmi'
 	righthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_r.dmi'
 	w_class = WEIGHT_CLASS_TINY
 	base_icon_state = "shield"
+	melee_block = 50
+	bullet_block = 50
+	laser_block = 50
 	var/on_force = 10
 	var/on_throwforce = 8
 	var/on_throw_speed = 2

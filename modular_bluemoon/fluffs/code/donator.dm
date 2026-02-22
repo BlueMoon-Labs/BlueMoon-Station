@@ -2099,3 +2099,9 @@
 	path = /obj/item/clothing/suit/donator/bm/sf_coat
 	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	ckeywhitelist = list("hihitect")
+
+/datum/gear/donator/bm/freak_case
+	name = "Cool Case With Presents"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/backpack/case/command/freak
+	ckeywhitelist = list("freakowo")

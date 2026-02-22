@@ -14,6 +14,7 @@
 	foodtype = GRAIN
 
 /obj/item/reagent_containers/food/snacks/dough/make_processable()
+	..()
 	AddElement(/datum/element/processable, TOOL_ROLLINGPIN, /obj/item/reagent_containers/food/snacks/flatdough, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Flatten", sound_to_play = SFX_ROLLING_PIN_ROLLING)
 
 // sliceable into 3xdoughslices
@@ -31,6 +32,7 @@
 	foodtype = GRAIN
 
 /obj/item/reagent_containers/food/snacks/flatdough/make_processable()
+	..()
 	AddElement(/datum/element/processable, TOOL_UNROLLINGPIN, /obj/item/reagent_containers/food/snacks/dough, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Flatten", sound_to_play = SFX_ROLLING_PIN_ROLLING)
 
 /obj/item/reagent_containers/food/snacks/pizzabread
@@ -79,6 +81,7 @@
 	foodtype = GRAIN | DAIRY
 
 /obj/item/reagent_containers/food/snacks/cakebatter/make_processable()
+	..()
 	AddElement(/datum/element/processable, TOOL_ROLLINGPIN, /obj/item/reagent_containers/food/snacks/piedough, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Flatten", sound_to_play = SFX_ROLLING_PIN_ROLLING)
 
 /obj/item/reagent_containers/food/snacks/piedough/attackby(obj/item/I, mob/user, params)
@@ -93,6 +96,7 @@
 		..()
 
 /obj/item/reagent_containers/food/snacks/piedough/make_processable()
+	..()
 	AddElement(/datum/element/processable, TOOL_UNROLLINGPIN, /obj/item/reagent_containers/food/snacks/cakebatter, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Flatten", sound_to_play = SFX_ROLLING_PIN_ROLLING)
 
 /obj/item/reagent_containers/food/snacks/piedough

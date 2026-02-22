@@ -1,7 +1,18 @@
 // Crew has to build a bluespace cannon
 // Cargo orders part for high price
-// Requires high amount of power
+// Requires high amount of power (modular: power scales with energy fed to BSA)
 // Requires high level stock parts
+
+// BSA modular system states and constants
+#define BSA_SYSTEM_READY "SYSTEM READY"
+#define BSA_SYSTEM_PREFIRE "! SYSTEM PREFIRING !"
+#define BSA_SYSTEM_FIRING "SYSTEM FIRING"
+#define BSA_SYSTEM_RELOADING "SYSTEM RELOADING"
+#define BSA_SYSTEM_LOW_POWER "SYSTEM POWER LOW"
+#define BSA_SYSTEM_CHARGE_CAPACITORS "SYSTEM CHARGING CAPACITORS"
+#define BSA_RELOAD_TIME 20 SECONDS
+#define BSA_FIRE_POWER_THRESHOLD 1000000 // 1 MW minimum to fire
+
 /datum/station_goal/bluespace_cannon
 	name = "Bluespace Artillery"
 
@@ -123,18 +134,46 @@
 
 /obj/machinery/bsa/full
 	name = "Bluespace Artillery"
-	desc = "Long range bluespace artillery."
+	desc = "Long range bluespace artillery. Modular: blast power scales with energy fed into the capacitors."
 	icon = 'icons/obj/lavaland/cannon.dmi'
 	icon_state = "orbital_cannon1"
-	var/static/mutable_appearance/top_layer
-	var/ex_power = 3
-	var/power_used_per_shot = 2000000 //enough to kil standard apc - todo : make this use wires instead and scale explosion power with it
-	var/ready
+	use_power = NO_POWER_USE
 	pixel_y = -32
 	pixel_x = -192
 	bound_width = 352
 	bound_x = -192
-	appearance_flags = NONE //Removes default TILE_BOUND
+	appearance_flags = NONE
+	max_integrity = 2000
+
+	var/static/mutable_appearance/top_layer
+	var/capacitor_power = 0
+	var/power_suck_cap = 1000000
+	var/target_power = 1000000
+	var/max_charge = 300000000 // 300 MW
+	var/system_state = BSA_SYSTEM_READY
+	var/obj/machinery/computer/bsa_control/control_computer
+
+/obj/machinery/bsa/full/Initialize(mapload, cannon_direction = WEST)
+	. = ..()
+	top_layer = top_layer || mutable_appearance(icon, layer = ABOVE_MOB_LAYER)
+	switch(cannon_direction)
+		if(WEST)
+			setDir(WEST)
+			top_layer.icon_state = "top_west"
+			icon_state = "cannon_west"
+		if(EAST)
+			setDir(EAST)
+			pixel_x = -128
+			bound_x = -128
+			top_layer.icon_state = "top_east"
+			icon_state = "cannon_east"
+	add_overlay(top_layer)
+	reload()
+	START_PROCESSING(SSobj, src)
+
+/obj/machinery/bsa/full/Destroy()
+	control_computer = null
+	return ..()
 
 /obj/machinery/bsa/full/wrench_act(mob/living/user, obj/item/I)
 	return FALSE
@@ -163,66 +202,121 @@
 			return locate(world.maxx,y,z)
 	return get_turf(src)
 
-/obj/machinery/bsa/full/Initialize(mapload, cannon_direction = WEST)
-	. = ..()
-	top_layer = top_layer || mutable_appearance(icon, layer = ABOVE_MOB_LAYER)
-	switch(cannon_direction)
-		if(WEST)
-			setDir(WEST)
-			top_layer.icon_state = "top_west"
-			icon_state = "cannon_west"
-		if(EAST)
-			setDir(EAST)
-			pixel_x = -128
-			bound_x = -128
-			top_layer.icon_state = "top_east"
-			icon_state = "cannon_east"
-	add_overlay(top_layer)
-	reload()
+/obj/machinery/bsa/full/proc/charge_capacitors()
+	if(capacitor_power >= target_power)
+		if(capacitor_power < BSA_FIRE_POWER_THRESHOLD)
+			system_state = BSA_SYSTEM_LOW_POWER
+		else
+			system_state = BSA_SYSTEM_READY
+		return
+	var/area/our_area = get_area(src)
+	if(!our_area)
+		return
+	var/obj/machinery/power/apc/our_apc = our_area.get_apc()
+	if(!our_apc)
+		return
+	var/obj/machinery/power/terminal/our_terminal = our_apc.terminal
+	if(!our_terminal)
+		return
+	var/datum/powernet/our_powernet = our_terminal.powernet
+	if(!our_powernet)
+		return
+	var/charge_to_pull = power_suck_cap
+	var/charge_to_full = max_charge - capacitor_power
+	if(charge_to_full < power_suck_cap)
+		charge_to_pull = charge_to_full
+	var/max_power_draw = charge_to_pull > our_powernet.avail ? our_powernet.avail : charge_to_pull
+	our_powernet.avail -= max_power_draw
+	capacitor_power += max_power_draw
+
+/obj/machinery/bsa/full/proc/get_available_powercap()
+	var/area/our_area = get_area(src)
+	if(!our_area)
+		return
+	var/obj/machinery/power/apc/our_apc = our_area.get_apc()
+	if(!our_apc)
+		return
+	var/obj/machinery/power/terminal/our_terminal = our_apc.terminal
+	if(!our_terminal)
+		return
+	var/datum/powernet/our_powernet = our_terminal.powernet
+	if(!our_powernet)
+		return
+	return our_powernet.avail
+
+/obj/machinery/bsa/full/process()
+	if(system_state == BSA_SYSTEM_CHARGE_CAPACITORS)
+		charge_capacitors()
+		if(capacitor_power >= target_power)
+			return
+
+/obj/machinery/bsa/full/proc/pre_fire(mob/user, turf/bullseye)
+	if(system_state != BSA_SYSTEM_READY)
+		return
+	system_state = BSA_SYSTEM_PREFIRE
+	priority_announce("ПАРАМЕТРЫ НАЦЕЛЕНИВАНИЯ BSA УСТАНОВЛЕНЫ, ПРОВОДИТСЯ ПОДГОТОВКА К ВЫСТРЕЛУ... ЗАРЯД КОНДЕНСАТОРА НА [round(capacitor_power / 1000000, 0.1)] МВт, ВЫСТРЕЛ ЧЕРЕЗ 20 СЕКУНД!", "ВНИМАНИЕ: БЛЮСПЕЙС-АРТИЛЛЕРИЯ")
+	sound_to_playing_players('sound/effects/bsa/superlaser_prefire.ogg', 80)
+	message_admins("[user] has started the fire cycle of [src]! Firing at: [ADMIN_VERBOSEJMP(bullseye)]")
+	set_light(5, 5, "#6A97B0")
+	addtimer(CALLBACK(src, PROC_REF(fire), user, bullseye), 20 SECONDS, TIMER_CLIENT_TIME)
 
 /obj/machinery/bsa/full/proc/fire(mob/user, turf/bullseye)
+	if(system_state != BSA_SYSTEM_PREFIRE || machine_stat)
+		minor_announce("ВЫСТРЕЛ ИЗ БЛЮСПЕЙС-АРТИЛЛЕРИИ НЕУДАЧЕН!", "ВНИМАНИЕ: Блюспейс-Артиллерия", TRUE)
+		system_state = BSA_SYSTEM_READY
+		return
+	system_state = BSA_SYSTEM_FIRING
 	reload()
-
 	var/turf/point = get_front_turf()
 	var/turf/target = get_target_turf()
 	var/atom/movable/blocker
-	for(var/T in getline(get_step(point, dir), target))
-		var/turf/tile = T
-		if(SEND_SIGNAL(tile, COMSIG_ATOM_BSA_BEAM) & COMSIG_ATOM_BLOCKS_BSA_BEAM)
-			blocker = tile
+	for(var/turf/iterating_turf in get_line(get_step(point, dir), target))
+		if(SEND_SIGNAL(iterating_turf, COMSIG_ATOM_BSA_BEAM) & COMSIG_ATOM_BLOCKS_BSA_BEAM)
+			blocker = iterating_turf
 		else
-			for(var/AM in tile)
-				var/atom/movable/stuff = AM
-				if(SEND_SIGNAL(stuff, COMSIG_ATOM_BSA_BEAM) & COMSIG_ATOM_BLOCKS_BSA_BEAM)
-					blocker = stuff
+			for(var/atom/movable/iterating_atom in iterating_turf)
+				if(SEND_SIGNAL(iterating_atom, COMSIG_ATOM_BSA_BEAM) & COMSIG_ATOM_BLOCKS_BSA_BEAM)
+					blocker = iterating_atom
 					break
 		if(blocker)
-			target = tile
+			target = iterating_turf
 			break
 		else
-			tile.ex_act(EXPLODE_DEVASTATE)
-	point.Beam(target, icon_state = "bsa_beam", time = 50, maxdistance = world.maxx) //ZZZAP
+			iterating_turf.ex_act(EXPLODE_DEVASTATE)
+	point.Beam(target, icon_state = "bsa_beam", time = 5 SECONDS, maxdistance = world.maxx)
 	new /obj/effect/temp_visual/bsa_splash(point, dir)
 
 	if(!blocker)
 		message_admins("[ADMIN_LOOKUPFLW(user)] has launched an artillery strike targeting [ADMIN_VERBOSEJMP(bullseye)].")
 		log_game("[key_name(user)] has launched an artillery strike targeting [AREACOORD(bullseye)].")
-		explosion(bullseye, ex_power, ex_power*2, ex_power*4)
+		minor_announce("ВЫСТРЕЛ ИЗ БЛЮСПЕЙС-АРТИЛЛЕРИИ УСПЕШЕН! ПРЯМОЕ ПОПАДАНИЕ!", "ВНИМАНИЕ: Блюспейс-Артиллерия", TRUE)
+		sound_to_playing_players('sound/effects/bsa/superlaser_firing.ogg', 80)
+		create_calculated_explosion(bullseye)
+		capacitor_power = 0
 		if(is_station_level(z) || is_mining_level(z))
 			var/datum/station_goal/bluespace_cannon/B = locate() in SSticker.mode?.station_goals
 			B?.completed = TRUE
 	else
 		message_admins("[ADMIN_LOOKUPFLW(user)] has launched an artillery strike targeting [ADMIN_VERBOSEJMP(bullseye)] but it was blocked by [blocker] at [ADMIN_VERBOSEJMP(target)].")
 		log_game("[key_name(user)] has launched an artillery strike targeting [AREACOORD(bullseye)] but it was blocked by [blocker] at [AREACOORD(target)].")
+		minor_announce("БЛЮСПЕЙС-АРТИЛЛЕРИЯ НЕИСПРАВНА!", "ВНИМАНИЕ: Блюспейс-Артиллерия", TRUE)
 
+/obj/machinery/bsa/full/proc/create_calculated_explosion(atom/target)
+	var/calculated_explosion_power = capacitor_power / 10000000
+	explosion(target, calculated_explosion_power, calculated_explosion_power * 2, calculated_explosion_power * 4, ignorecap = TRUE)
 
 /obj/machinery/bsa/full/proc/reload()
-	ready = FALSE
-	use_power(power_used_per_shot)
-	addtimer(CALLBACK(src, PROC_REF(ready_cannon)),600)
+	system_state = BSA_SYSTEM_RELOADING
+	set_light(0)
+	STOP_PROCESSING(SSobj, src)
+	addtimer(CALLBACK(src, PROC_REF(ready_cannon)), BSA_RELOAD_TIME)
 
 /obj/machinery/bsa/full/proc/ready_cannon()
-	ready = TRUE
+	if(capacitor_power < BSA_FIRE_POWER_THRESHOLD)
+		system_state = BSA_SYSTEM_LOW_POWER
+	else
+		system_state = BSA_SYSTEM_READY
+	STOP_PROCESSING(SSobj, src)
 
 /obj/structure/filler
 	name = "big machinery part"
@@ -243,10 +337,10 @@
 	unique_icon = TRUE
 	icon_keyboard = null
 
-	var/obj/machinery/bsa/full/cannon
+	var/datum/weakref/connected_cannon
 	var/notice
 	var/target
-	var/area_aim = FALSE //should also show areas for targeting
+	var/area_aim = FALSE
 
 /obj/machinery/computer/bsa_control/ui_state(mob/user)
 	return GLOB.physical_state
@@ -259,10 +353,16 @@
 
 /obj/machinery/computer/bsa_control/ui_data()
 	var/list/data = list()
-	data["ready"] = cannon ? cannon.ready : FALSE
+	var/obj/machinery/bsa/full/cannon = connected_cannon?.resolve()
 	data["connected"] = cannon
 	data["notice"] = notice
 	data["unlocked"] = GLOB.bsa_unlock
+	data["powernet_power"] = cannon?.get_available_powercap()
+	data["power_suck_cap"] = cannon?.power_suck_cap
+	data["status"] = cannon?.system_state
+	data["capacitor_charge"] = cannon?.capacitor_power
+	data["target_capacitor_charge"] = cannon?.target_power
+	data["max_capacitor_charge"] = cannon?.max_charge
 	if(target)
 		data["target"] = get_target_name()
 	return data
@@ -272,7 +372,7 @@
 		return
 	switch(action)
 		if("build")
-			cannon = deploy()
+			deploy()
 			. = TRUE
 		if("fire")
 			fire(usr)
@@ -280,7 +380,29 @@
 		if("recalibrate")
 			calibrate(usr)
 			. = TRUE
+		if("charge")
+			charge()
+			. = TRUE
+		if("capacitor_target_change")
+			change_capacitor_target(params["capacitor_target"])
+			. = TRUE
 	update_icon()
+
+/obj/machinery/computer/bsa_control/proc/change_capacitor_target(new_target)
+	var/obj/machinery/bsa/full/cannon = connected_cannon?.resolve()
+	if(!cannon)
+		return
+	var/num = text2num(new_target)
+	cannon.target_power = min(cannon.max_charge, max(BSA_FIRE_POWER_THRESHOLD, num))
+
+/obj/machinery/computer/bsa_control/proc/charge()
+	var/obj/machinery/bsa/full/cannon = connected_cannon?.resolve()
+	if(!cannon)
+		return
+	if(cannon.system_state != BSA_SYSTEM_READY && cannon.system_state != BSA_SYSTEM_LOW_POWER)
+		return
+	cannon.system_state = BSA_SYSTEM_CHARGE_CAPACITORS
+	START_PROCESSING(SSobj, cannon)
 
 /obj/machinery/computer/bsa_control/proc/calibrate(mob/user)
 	if(!GLOB.bsa_unlock)
@@ -312,30 +434,41 @@
 		return get_turf(G.parent)
 
 /obj/machinery/computer/bsa_control/proc/fire(mob/user)
-	if(cannon.machine_stat)
+	var/obj/machinery/bsa/full/cannon = connected_cannon?.resolve()
+	if(!cannon)
+		notice = "System error"
+		return
+	if(cannon.machine_stat & BROKEN)
+		notice = "Cannon integrity failure!"
+		return
+	if(cannon.machine_stat & NOPOWER)
 		notice = "Cannon unpowered!"
 		return
-	notice = null
-	cannon.fire(user, get_impact_turf())
+	var/turf/target_turf = get_impact_turf()
+	notice = cannon.pre_fire(user, target_turf)
 
 /obj/machinery/computer/bsa_control/proc/deploy(force=FALSE)
-	var/obj/machinery/bsa/full/prebuilt = locate() in range(7) //In case of adminspawn
+	var/obj/machinery/bsa/full/prebuilt = locate() in range(7)
 	if(prebuilt)
-		return prebuilt
+		prebuilt.control_computer = src
+		connected_cannon = WEAKREF(prebuilt)
+		return
 
 	var/obj/machinery/bsa/middle/centerpiece = locate() in range(7)
 	if(!centerpiece)
 		notice = "No BSA parts detected nearby."
-		return null
+		return
 	notice = centerpiece.check_completion()
 	if(notice)
-		return null
-	//Totally nanite construction system not an immersion breaking spawning
+		return
 	var/datum/effect_system/smoke_spread/s = new
-	s.set_up(4,get_turf(centerpiece))
+	s.set_up(4, get_turf(centerpiece))
 	s.start()
-	var/obj/machinery/bsa/full/cannon = new(get_turf(centerpiece),centerpiece.get_cannon_direction())
-	qdel(centerpiece.front)
-	qdel(centerpiece.back)
+	var/obj/machinery/bsa/full/cannon = new(get_turf(centerpiece), centerpiece.get_cannon_direction())
+	cannon.control_computer = src
+	if(centerpiece.front)
+		qdel(centerpiece.front)
+	if(centerpiece.back)
+		qdel(centerpiece.back)
 	qdel(centerpiece)
-	return cannon
+	connected_cannon = WEAKREF(cannon)
