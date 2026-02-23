@@ -5,7 +5,7 @@
 "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", \
 "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", \
 "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", \
-"ailhate", "kingdeaths", "mentaleater"
+"ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Слот головы.
 
