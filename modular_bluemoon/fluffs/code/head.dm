@@ -481,3 +481,17 @@
 /obj/item/clothing/head/donator/bm/chetky_cap/examine(mob/user)
 	. = ..()
 	. += span_notice("Alt-click, чтобы развернуть кепку [flipped ? "вперёд" : "назад"].")
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/donator/bm/fire_blossom
+	name = "Fire blossom"
+	desc = "Огненный цветок, растущий в дальних участках лаваленда при определённых условиях, не повторимых искусственно"
+	icon_state = "fire_blossom"
+	light_color = "#ff6929"
+	light_power = 0.5
+	light_range = 0.75
+
+/obj/item/clothing/head/donator/bm/fire_blossom/Initialize(mapload)
+	. = ..()
+	set_light()
