@@ -421,3 +421,17 @@
 /obj/item/clothing/head/officerian_cap/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#2A2A2A","#303030","#575757","#d4d4d4"), 4)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/donator/bm/fire_blossom
+	name = "Fire blossom"
+	desc = "Огненный цветок, растущий в дальних участках лаваленда при определённых условиях."
+	icon_state = "fire_blossom"
+	light_color = "#FF6929"
+	light_power = 0.5
+	light_range = 0.75
+
+/obj/item/clothing/head/donator/bm/fire_blossom/Initialize()
+	. = ..()
+	set_light()

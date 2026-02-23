@@ -2041,3 +2041,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/dark_sabre_kit
 	ckeywhitelist = list("hellsinggc")
+
+/datum/gear/donator/bm/fire_blossom
+	name = "Fire Blossom"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/fire_blossom
+	ckeywhitelist = list("sheya, dagran")
