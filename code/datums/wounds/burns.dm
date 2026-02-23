@@ -220,11 +220,14 @@
 		to_chat(user, "<span class='notice'>На конечности персонажа [victim] нет инфекции!</span>")
 		return
 
-	user.visible_message("<span class='notice'>[user] подсвечивает ожоги персонажа [victim] с помощью [I].</span>", "<span class='notice'>Вы подсвечиваете ожоги [user == victim ? "на вашей конечности" : "конечности персонажа [victim]"] с помощью [I].</span>", vision_distance=COMBAT_MESSAGE_RANGE)
+	user.visible_message("<span class='notice'>[user] просвечивает ожоги персонажа [victim] с помощью [I].</span>", "<span class='notice'>Вы подсвечиваете ожоги [user == victim ? "на вашей конечности" : "конечности персонажа [victim]"] с помощью [I].</span>", vision_distance=COMBAT_MESSAGE_RANGE)
 	sanitization += I.uv_power
 	COOLDOWN_START(I, uv_cooldown, I.uv_cooldown_length)
 
 /datum/wound/burn/treat(obj/item/I, mob/user)
+	if(!victim.can_inject())
+		to_chat(user, span_danger("Одежда на теле [victim] не позволяет применить [I]!</span>"))
+		return
 	if(istype(I, /obj/item/stack/medical/ointment))
 		ointment(I, user)
 	else if(istype(I, /obj/item/stack/medical/mesh))

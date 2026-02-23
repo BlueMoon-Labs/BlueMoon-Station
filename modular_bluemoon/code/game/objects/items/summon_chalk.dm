@@ -1,7 +1,7 @@
 /obj/item/summon_chalk
 	name = "summon chalk"
 	desc = "A weird chalk covered in ectoplasm."
-	icon = 'modular_bluemoon/Gardelin0/icons/items/qareen_chalk.dmi'
+	icon = 'modular_bluemoon/icons/obj/lewd_items/qareen_chalk.dmi'
 	icon_state = "chalk_pink"
 	throw_speed = 3
 	throw_range = 5
@@ -22,7 +22,7 @@
 /obj/effect/summon_rune
 	name = "Lewd summon rune"
 	desc = "It is believed this rune is capable of summoning horny creatures!"
-	icon = 'modular_bluemoon/Gardelin0/icons/items/qareen_chalk.dmi'
+	icon = 'modular_bluemoon/icons/obj/lewd_items/qareen_chalk.dmi'
 	icon_state = "rune_pink"
 	light_color = LIGHT_COLOR_PINK
 	var/cooldown = 0
@@ -129,7 +129,7 @@
 			if(target.mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe))
 				target.ghost_cafe_traits(FALSE) // Выдаём и забираем трэйты в разных места для ситуаций ухода госта обратно домой
 
-	playsound(loc, "modular_bluemoon/Gardelin0/sound/effect/spook.ogg", 50, 1)
+	playsound(loc, 'modular_bluemoon/sound/effects/spook.ogg', 50, 1)
 	new /obj/effect/temp_visual/yellowsparkles(target.loc)
 	if(transfer_target_items)
 		transfer_items(target)

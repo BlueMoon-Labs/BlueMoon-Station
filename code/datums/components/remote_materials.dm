@@ -117,6 +117,8 @@ handles linking back and forth.
 
 /datum/component/remote_materials/proc/format_amount()
 	if(mat_container)
+		if(silo && mat_container.max_amount == INFINITY)
+			return "Неограниченно (Сило)"
 		return "[mat_container.total_amount] / [mat_container.max_amount == INFINITY ? "Неограниченно" : mat_container.max_amount] [silo ? "(Сило)" : ""]"
 	else
 		return "0 / 0"

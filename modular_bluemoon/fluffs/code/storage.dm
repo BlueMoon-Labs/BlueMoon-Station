@@ -38,6 +38,15 @@
 	opened = !opened
 	update_icon()
 
+/obj/item/storage/box/donator/bm/twilight_spike
+	name = "twilight spike modkits"
+	desc = "Содержит четыре набора для модификации дубинки."
+
+/obj/item/storage/box/donator/bm/twilight_spike/PopulateContents()
+	. = ..()
+	for(var/i in 1 to 4)
+		new /obj/item/modkit/twilight_spike(src)
+
 /obj/item/storage/backpack/martian
 	name = "Martian Backpack"
 	desc = "Некий Марсианский Артефакт, использующийся в качестве рюкзака. Ткань ощущается довольно прочной. Это точно можно использовать в качестве оружия!"

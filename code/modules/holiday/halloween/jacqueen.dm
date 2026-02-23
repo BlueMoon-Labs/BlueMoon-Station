@@ -455,7 +455,6 @@
 //Blame Fel
 /mob/living/simple_animal/jacq/proc/dating_start(mob/living/carbon/C, gender)
 	var/candies = pollGhostCandidates("Do you want to go on a date with [C] as Jacqueline the great pumpqueen?")
-	//sleep(30) //If the poll doesn't autopause.
 	if(candies)
 		candies = shuffle(candies)//Shake those ghosts up!
 		for(var/mob/dead/observer/C2 in candies)

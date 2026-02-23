@@ -23,8 +23,6 @@
 
 	bad_feeling = "Письмо пахнет дешёвыми духами. Это чтобы что-то скрыть?"
 
-	initial_contents = list()
-
 	blacklisted_species = MAIL_RECIPIENT_SYNTH
 
 /datum/mail_pattern/lewd/heart_cum/apply(mob/living/carbon/human/recipient)
@@ -59,8 +57,6 @@
 
 	letter_icon = 'icons/obj/toy.dmi'
 	letter_icon_state = "sc_Ace of Hearts_syndicate"
-
-	initial_contents = list()
 
 /datum/mail_pattern/lewd/lewd_message/apply(mob/living/carbon/human/recipient)
 	initial_contents += pick(
@@ -186,36 +182,110 @@
 
 /datum/mail_pattern/lewd/pregnancy
 	name = "Оповещение о беременности"
-	description = "Посылка с использованным тестером на беременность. Приходит только парням."
+	description = "Посылка с использованным тестером на беременность."
 
 	weight = MAIL_WEIGHT_RARE
 
 	envelope_type = MAIL_TYPE_ENVELOPE
 
+	letter_icon_state = "scrap"
+
 	letter_title = "!!!"
 	letter_desc = "Почерк кажется очень нернвым, большая часть письма нечитаема из-за разводов от слёз. Может быть, оно не по адресу?..."
-	letter_html = "...и уехал! подл.... я подам в су...."
+	letter_html = "...и уеха...! подл.... я подам в су...."
 	sender = "Ты знаешь, от кого!!!"
-	letter_sign = null
+	letter_sign = ""
 
 	blacklisted_species = MAIL_RECIPIENT_SYNTH
-
-	initial_contents = list()
+	whitelisted_genitals = MAIL_GENITALS_MALE_FULL
 
 /datum/mail_pattern/lewd/pregnancy/apply(mob/living/carbon/human/recipient)
 	var/obj/item/pregnancytest/tester = new(parent)
+	tester.name = "positive pregnancy test"
 	tester.results = "positive"
 	tester.update_appearance()
 	. = ..()
 
-/datum/mail_pattern/lewd/pregnancy/regenerate_weight(mob/living/carbon/human/recipient)
-	. = ..()
-	if(!.)
-		return 0
-	if(recipient.gender != MALE)
-		return 0
+/datum/mail_pattern/lewd/used_condom
+	name = "Использованный презерватив"
+	description = "Письмо с просьбой не оставлять больше презерватив и использованный презерватив"
 
-/datum/mail_pattern/lewd/pregnancy
+	weight = MAIL_WEIGHT_DEFAULT
+
+	letter_title = "Признание"
+	letter_desc = "Черт, не могу вспомнить..."
+	letter_html = "%%гневное письмо%%"
+	sender = MAIL_SENDER_RANDOM_NAME
+	letter_sign = ""
+
+	bad_feeling = "Кажется, письмо слегка липкое..."
+
+	blacklisted_species = MAIL_RECIPIENT_SYNTH
+	whitelisted_genitals = MAIL_GENITALS_MALE_FULL
+
+/datum/mail_pattern/lewd/used_condom/apply(mob/living/carbon/human/recipient)
+	var/obj/item/organ/genital/testicles/balls = recipient.getorganslot(ORGAN_SLOT_TESTICLES)
+	var/datum/reagent/liuqid = balls?.fluid_id
+	if(liuqid)
+		var/obj/item/genital_equipment/condom/open/condom = new(parent)
+		var/amount = balls?.get_fluid() || rand(1, condom.reagents.maximum_volume)
+		condom.reagents.add_reagent(liuqid, amount)
+	else
+		new /obj/item/genital_equipment/condom/open/used(parent)
+
+	// Выбираем пол отправителя
+	if(pick(50))
+		// ЖЕНСКИЙ
+		sender = MAIL_SENDER_RANDOM_FEMALE
+		letter_html = pick(
+			"Ты оставил[recipient.ru_a()] это во мне!\n\
+			Я не собираюсь разбираться с последствиями!!\n\
+			Забирай своё обратно и больше не пиши!\n\
+			Ты отвратител[recipient.ru_en()]!!!", \
+			\
+			"Ты улетел[recipient.ru_a()], оставив после себя мусор в моей киске!\n\
+			Настолько наплевательского отношения я ещё не видела.\n\
+			Забирай своё обратно и не приближайся ко мне больше!", \
+			\
+			"Ты умудри[recipient.ru_sya()] оставить это во мне и просто свалить!\n\
+			Такое поведение говорит о тебе всё.\n\
+			И больше со мной не связывайся, животное!", \
+			\
+			"А ты мне понрави[recipient.ru_sya()] слад[recipient.ru_aya_iy()]~\n\
+			Заходи еще в гости, как будешь рядом.\n\
+			А это твой трофей, на пямять.", \
+			\
+			"Заставила своего «парня» вылизывать мою киску после тебя.\n\
+			Ты бы видел[recipient.ru_a()], как он искренне наслаждался. А сразу после, кончил от прикосновения моей ножки, хах.\n\
+			И да, классно, что ты предохраняешься, но не оставляй такие штуки внутри."\
+		)
+	else
+		// МУЖСКОЙ
+		sender = MAIL_SENDER_RANDOM_FEMALE
+		letter_html = pick(
+			"Ты оставил[recipient.ru_a()] после себя мусор в моей девушке!\n\
+			Я не знаю, как ты вообще до этого докатил[recipient.ru_sya()], но забирай своё обратно и держись подальше!\n\
+			Увижу, набю морду!!!", \
+			\
+			"Ты оставил[recipient.ru_a()] это в моей девушке. Я не собираюсь убирать за тобой.\n\
+			Был[recipient.ru_a()] бы ты радом, запихал бы тебе этот гондон в глотку!! Подавись своим обратно и исчезни!", \
+			\
+			"Ты умудри[recipient.ru_sya()] оставить это в моей шлюшке, ну ты и свиня, хах.\n\
+			А классно ты ее отодрал[recipient.ru_a()], придется ей разрабатываь другие места, пока не восстановит форму после твоей дуры.\n\
+			Если захочешь групповушку, пиши, разложим ее вместе.", \
+			\
+			"Ты что-то забыл[recipient.ru_a()] после себя в моей, эээ... Подруге.\n\
+			Это твоя ответственность, но надеюсь обойдется...\n\
+			Так что забери обратно и не появляйся больше рядом с ней... Пожалуйста", \
+			\
+			"Я 30 минут чистил после тебя прекрасную киску своей госпожи, ах-х-х~...\n\
+			Не знаю, как ты умудри[recipient.ru_sya()] затолкать его так далеко, но уже под конец я вытащил его своим язычком.\n\
+			Она приказала отправить тебе и приглашает еще в гости..."\
+		)
+
+	return ..()
+
+/datum/mail_pattern/lewd/sex_toys
 	name = "Секс-игрушки"
 	description = "Посылка с набором секс-игрушек. Очень оригинально, да?"
 
@@ -253,8 +323,6 @@
 	letter_html = {"Спасибо, что скинул%%А%% свой адрес. Как и обещал."}
 	sender = "???"
 	letter_sign = null
-
-	initial_contents = list()
 
 /datum/mail_pattern/lewd/bag_of_dildos/apply(mob/living/carbon/human/recipient)
 	. = ..()

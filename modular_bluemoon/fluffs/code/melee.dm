@@ -134,3 +134,40 @@
 	if(istype(H))
 		H.update_inv_hands()
 	qdel(transform_overlay)
+
+/obj/item/modkit/twilight_spike
+	name = "Twilight Spike"
+	desc = "A modkit for making stunbaton into Twilight Spike."
+	product = /obj/item/melee/baton/twilight_spike
+	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
+
+/obj/item/modkit/twilight_spike/on_item_replace(obj/item/melee/baton/baton, obj/item/melee/baton/twilight_spike)
+	if(!baton.cell || twilight_spike.cell)
+		return
+	twilight_spike.cell = baton.cell
+	baton.cell.forceMove(twilight_spike)
+	baton.cell = null
+	update_icon_state()
+
+/obj/item/melee/baton/twilight_spike
+	name = "Twilight Spike"
+	desc = "Тонкий, стремительный клинок, напоминающий заострённый шип. Его лезвие будто накапливает энергию, а при ударе высвобождает краткий парализующий импульс. \
+	Лёгкий и отлично сбалансированный, он создан для тех, кто предпочитает скорость и точность грубой силе."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "twilight"
+	item_state = "twilight"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	turn_on_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_on.ogg'
+	hit_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_hit.ogg'
+
+/obj/item/melee/baton/twilight_spike/update_icon_state()
+	if(turned_on)
+		icon_state = "[initial(icon_state)]_active"
+		item_state = "[initial(item_state)]_active"
+	else if(!cell)
+		icon_state = "[initial(icon_state)]_nocell"
+		item_state = "[initial(item_state)]"
+	else
+		icon_state = "[initial(icon_state)]"
+		item_state = "[initial(item_state)]"

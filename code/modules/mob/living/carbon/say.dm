@@ -10,7 +10,8 @@
 /mob/living/carbon/can_speak_vocal(message)
 	if(silent)
 		return FALSE
-	if(get_selected_language() == /datum/language/signlanguage && handcuffed)
+	var/datum/language/selected_lang = get_selected_language()
+	if(selected_lang && initial(selected_lang.visual_language) && handcuffed)
 		return FALSE
 	return ..()
 

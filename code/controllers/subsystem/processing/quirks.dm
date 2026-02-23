@@ -67,6 +67,8 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 	var/badquirk = FALSE
 	var/list/my_quirks = cli.prefs.all_quirks.Copy()
 	var/list/cut
+	if(istext(job))
+		job = SSjob.GetJob(job)
 
 	// Обнуляем квирки, если по какой-либо причине у нас будут выбраны конфликтующие пары из блэклиста выше.
 	// Обнуление, а не вырезание пар, важно ввиду возможного удаления дорогих отрицательных квирков из-за дешёвых позитивных.

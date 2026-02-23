@@ -1,4 +1,5 @@
-#define TRAIT_POISONOUS_FANGS = "poisonous fangs"
+#define TRAIT_POISONOUS_FANGS "poisonous fangs"
+#define NORMAL_TRANSFER_PER_USE 5
 
 /datum/quirk/bite
 	name = "Ядовитые зубы"
@@ -52,7 +53,7 @@
 
 /datum/action/cooldown/bite
 	name = "Ядовитый укус"
-	desc = "Схватив свою жертву вы можете впрыснуть небольшое количество яда в кровь. Но для этого вам нужно крепко держать её."
+	desc = "Схватив свою жертву вы можете впрыснуть небольшое количество яда в кровь. Но для этого вам нужно крепко держать её. \n Альтернативно можно вколоть реагенты в удерживаемый в активной руке предмет."
 	icon_icon = 'modular_bluemoon/icons/mob/actions/venom_bite.dmi'
 	button_icon_state = "bite"
 	cooldown_time = 30 SECONDS
@@ -93,11 +94,6 @@
 				return
 
 	var/mob/living/carbon/action_owner = owner
-
-	if(!action_owner.pulling)
-		to_chat(action_owner, span_warning("Тебе нужна жертва для этого!"))
-		return
-
 	if(action_owner.is_muzzled())
 		to_chat(action_owner, span_notice("Вы не можете кусаться с намордником!"))
 		return
@@ -106,6 +102,35 @@
 		to_chat(action_owner, span_notice("Вы не можете укусить, пока ваш рот прикрыт!"))
 		return
 
+	if(action_owner.pulling)
+		try_mob_bite(action_owner)
+	else if(try_item_bite(action_owner))
+		return
+	else
+		to_chat(action_owner, span_warning("Тебе нужна жертва для этого!"))
+
+/datum/action/cooldown/bite/proc/check_reagents()
+	if(venom_bank.total_volume < 10)
+		to_chat(owner, span_warning(span_danger("У тебя недостаточно реагентов, чтобы их вколоть! Такое случается, когда реагент не был выбран изначально, ИЛИ после того, как вы слишком часто пользовались способностью.")))
+		return FALSE
+	return TRUE
+
+/datum/action/cooldown/bite/proc/try_item_bite(mob/living/carbon/action_owner)
+	var/obj/item/I = action_owner.get_active_held_item()
+	if(!I || !I.is_injectable())
+		return FALSE
+	if(!check_reagents())
+		return TRUE
+	if(I.reagents.maximum_volume == I.reagents.total_volume)
+		to_chat(owner, span_warning(span_danger("Внутри [I] нет свободного места для яда.")))
+		return TRUE
+	action_owner.visible_message(span_notice("[action_owner] прижимает ко рту и вливает что-то в [I]"), \
+								span_notice("Ты прижимаешь ко рту и вливаешь свой яд в [I]."))
+	venom_bank.trans_to(I, NORMAL_TRANSFER_PER_USE)
+	StartCooldown()
+	return TRUE
+
+/datum/action/cooldown/bite/proc/try_mob_bite(mob/living/carbon/action_owner)
 	var/pull_target = action_owner.pulling
 	var/mob/living/carbon/human/bite_target
 
@@ -211,15 +236,16 @@
 			return
 	else
 		// Проверка: есть ли реагенты в venom_bank для вкалывания
-		if(venom_bank.total_volume < 10)  // Минимум 10 единиц;
-			to_chat(action_owner, span_warning(span_danger("У тебя недостаточно реагентов, чтобы их вколоть! Такое случается, когда реагент не был выбран изначально, ИЛИ после того, как вы слишком часто пользовались способностью.")))
+		if(!check_reagents())
 			StartCooldown()
 			return
 
 		// Вкалываем реагенты в жертву
-		var/injected_amount = 5 // Количество вкалываемых реагентов;
+		var/injected_amount = NORMAL_TRANSFER_PER_USE // Количество вкалываемых реагентов;
 		venom_bank.trans_to(bite_target, injected_amount)  // Трансфер из venom_bank в реагенты жертвы
 		to_chat(bite_target, span_danger("[action_owner] вкалывает через укус что-то в [target_zone_name]!"))
 		to_chat(action_owner, span_notice("Вы успешно вкололи через укус яд в [bite_target]'s [target_zone_name]!"))
 
 		StartCooldown()
+
+#undef NORMAL_TRANSFER_PER_USE

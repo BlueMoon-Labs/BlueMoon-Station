@@ -67,6 +67,7 @@
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
+/*
 /datum/design/sl357
 	name = "revolver speedloader (.357)"
 	desc = "A revolver speedloader."
@@ -96,6 +97,7 @@
 	build_path = /obj/item/ammo_box/a357/dumdum
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
+*/
 
 /datum/design/m10apbox
 	name = "ammo box (10mm Armour Piercing)"

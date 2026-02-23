@@ -223,25 +223,48 @@
 	desc = "Шприц с какой-то неизвестным коктейлем препаратов."
 
 /obj/item/reagent_containers/syringe/contraband/space_drugs
+	name = "SD syringe"
 	list_reagents = list(/datum/reagent/drug/space_drugs = 15)
 
 /obj/item/reagent_containers/syringe/contraband/krokodil
+	name = "K syringe"
 	list_reagents = list(/datum/reagent/drug/krokodil = 15)
 
 /obj/item/reagent_containers/syringe/contraband/crank
+	name = "C syringe"
 	list_reagents = list(/datum/reagent/drug/crank = 15)
 
 /obj/item/reagent_containers/syringe/contraband/methamphetamine
+	name = "MM syringe"
 	list_reagents = list(/datum/reagent/drug/methamphetamine = 15)
 
 /obj/item/reagent_containers/syringe/contraband/bath_salts
+	name = "B syringe"
 	list_reagents = list(/datum/reagent/drug/bath_salts = 15)
 
 /obj/item/reagent_containers/syringe/contraband/fentanyl
+	name = "F syringe"
 	list_reagents = list(/datum/reagent/toxin/fentanyl = 15)
 
 /obj/item/reagent_containers/syringe/contraband/morphine
+	name = "M syringe"
 	list_reagents = list(/datum/reagent/medicine/morphine = 15)
+
+/obj/item/reagent_containers/syringe/contraband/labebium
+	name = "L syringe"
+	list_reagents = list(/datum/reagent/drug/labebium = 15)
+
+/obj/item/reagent_containers/syringe/contraband/pendosovka
+	name = "USA syringe"
+	list_reagents = list(/datum/reagent/drug/pendosovka = 15)
+
+/obj/item/reagent_containers/syringe/contraband/zvezdochka
+	name = "USSR syringe"
+	list_reagents = list(/datum/reagent/drug/zvezdochka = 15)
+
+/obj/item/reagent_containers/syringe/contraband/heroin
+	name = "H syringe"
+	list_reagents = list(/datum/reagent/drug/heroin = 15)
 
 /obj/item/reagent_containers/syringe/calomel
 	name = "syringe (calomel)"

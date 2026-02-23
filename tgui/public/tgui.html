@@ -193,10 +193,22 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
   var loadedAssetByUrl = {};
 
   var isStyleSheetLoaded = function (node, url) {
+    var getRuleCount = function (styleSheet) {
+      try {
+        var rules = styleSheet.cssRules || styleSheet.rules;
+        return rules ? rules.length : 0;
+      }
+      catch (e) {
+        // In some environments, accessing rules/cssRules can throw SecurityError
+        // (e.g. origin restrictions). If the onload fired, treat it as loaded.
+        return -1;
+      }
+    };
     // Method #1 (works on IE10+)
     var styleSheet = node.sheet;
     if (styleSheet) {
-      return styleSheet.rules.length > 0;
+      var count = getRuleCount(styleSheet);
+      return count !== 0;
     }
     // Method #2
     var styleSheets = document.styleSheets;
@@ -206,7 +218,8 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
       if(styleSheet.href === undefined)
         continue;
       if (styleSheet.href.indexOf(url) !== -1) {
-        return styleSheet.rules.length > 0;
+        var count = getRuleCount(styleSheet);
+        return count !== 0;
       }
     }
     // All methods failed

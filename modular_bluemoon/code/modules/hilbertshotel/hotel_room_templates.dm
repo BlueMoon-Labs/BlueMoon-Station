@@ -133,6 +133,13 @@
 	landingZoneRelativeY = 2
 	category = GHC_MISC
 
+/datum/map_template/hilbertshotel/apartment/skyscraper
+	name = "Apartment-Skyscraper"
+	mappath = '_maps/templates/hilbertshotel/apartment_skyscraper.dmm'
+	landingZoneRelativeX = 10
+	landingZoneRelativeY = 2
+	category = GHC_APARTMENT
+
 #undef GHC_MISC
 #undef GHC_APARTMENT
 #undef GHC_BEACH

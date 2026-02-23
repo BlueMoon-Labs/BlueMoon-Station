@@ -733,7 +733,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			var/mutable_appearance/facial_overlay = mutable_appearance(fhair_file, fhair_state, -HAIR_LAYER)
 			facial_overlay.category = "HEAD"
 
-			if(!forced_colour)
+			if(!forced_colour && S.do_colouration)
 				if(hair_color)
 					if(hair_color == "mutcolor")
 						facial_overlay.color = "#" + H.dna.features["mcolor"]
@@ -799,7 +799,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				hair_overlay.icon = hair_file
 				hair_overlay.icon_state = hair_state
 
-				if(!forced_colour)
+				if(!forced_colour && S.do_colouration)
 					if(hair_color)
 						if(hair_color == "mutcolor")
 							hair_overlay.color = "#" + H.dna.features["mcolor"]
@@ -1103,7 +1103,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				H.dna.features[tertiary_string] = advanced_color_system ? H.dna.features["mcolor3"] : "FFFFFF"
 
 			if(!husk)
-				if(!forced_colour)
+				if(!forced_colour && S.do_colouration)
 					switch(S.color_src)
 						if(SKINTONE)
 							accessory_overlay.color = SKINTONE2HEX(H.skin_tone)
@@ -1617,7 +1617,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 	//The fucking TRAIT_FAT mutation is the dumbest shit ever. It makes the code so difficult to work with
 	if(HAS_TRAIT(H, TRAIT_FAT))//I share your pain, past coder.
-		if(H.overeatduration < 100)
+		if(H.overeatduration < 100 || H.nutrition < NUTRITION_LEVEL_WELL_FED)
 			to_chat(H, span_notice("Я чувствую себя гораздо лучше!"))
 			REMOVE_TRAIT(H, TRAIT_FAT, OBESITY)
 			H.remove_movespeed_modifier(/datum/movespeed_modifier/obesity)

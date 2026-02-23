@@ -2,6 +2,7 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 
 /client
 	COOLDOWN_DECLARE(char_directory_cooldown)
+	var/list/directory_notes
 
 /client/verb/show_character_directory()
 	set name = "Character Directory"
@@ -39,14 +40,30 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 		data["personalVisibility"] = user.mind.show_in_directory
 		data["personalTag"] = user.mind.directory_tag || "Unset"
 		data["personalErpTag"] = user.mind.directory_erptag || "Unset"
+		data["personalGenderTag"] = user.mind.directory_gendertag || "Unset"
 		data["prefsOnly"] = FALSE
 	else if (user?.client?.prefs)
 		data["personalVisibility"] = user.client.prefs.show_in_directory
 		data["personalTag"] = user.client.prefs.directory_tag || "Unset"
 		data["personalErpTag"] = user.client.prefs.directory_erptag || "Unset"
+		data["personalGenderTag"] = user.client.prefs.directory_gendertag || "Unset"
 		data["prefsOnly"] = TRUE
 
+	// Preference-based tags (always from prefs)
+	if (user?.client?.prefs)
+		data["personalNonconTag"] = user.client.prefs.nonconpref || "No"
+		data["personalUnholyTag"] = user.client.prefs.unholypref || "No"
+		data["personalExtremeTag"] = user.client.prefs.extremepref || "No"
+		data["personalExtremeHarmTag"] = user.client.prefs.extremeharm || "No"
+		data["personalHornyAntagsTag"] = user.client.prefs.hornyantagspref || "No"
+
 	data["canOrbit"] = isobserver(user)
+
+	// Personal notes
+	if(user?.client)
+		if(!user.client.directory_notes)
+			user.client.directory_notes = load_player_notes(user.client.ckey)
+		data["directory_notes"] = user.client.directory_notes
 
 	return data
 
@@ -68,16 +85,31 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 		var/flavor_text = null
 		var/tag
 		var/erptag
+		var/gendertag
 		var/character_ad
+		var/noncon_tag
+		var/unholy_tag
+		var/extreme_tag
+		var/extreme_harm_tag
+		var/hornyantags_tag
+		var/list/headshot_links = list()
 		var/ref = REF(C?.mob)
 		if (C.mob?.mind) //could use ternary for all three but this is more efficient
 			tag = C.mob.mind.directory_tag || "Unset"
 			erptag = C.mob.mind.directory_erptag || "Unset"
+			gendertag = C.mob.mind.directory_gendertag || "Unset"
 			character_ad = C.mob.mind.directory_ad
 		else
 			tag = C.prefs.directory_tag || "Unset"
 			erptag = C.prefs.directory_erptag || "Unset"
+			gendertag = C.prefs.directory_gendertag || "Unset"
 			character_ad = C.prefs.directory_ad
+		// Preference-based tags (always from prefs)
+		noncon_tag = C.prefs?.nonconpref || "No"
+		unholy_tag = C.prefs?.unholypref || "No"
+		extreme_tag = C.prefs?.extremepref || "No"
+		extreme_harm_tag = C.prefs?.extremeharm || "No"
+		hornyantags_tag = C.prefs?.hornyantagspref || "No"
 
 		if(ishuman(C.mob))
 			var/mob/living/carbon/human/H = C.mob
@@ -88,6 +120,8 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			species = "[H.custom_species ? H.custom_species : H.dna.species]"
 			ooc_notes = H.mind.ooc_notes
 			flavor_text = H.mind.flavor_text
+			if(H.dna?.headshot_links)
+				headshot_links = H.dna.headshot_links.Copy()
 
 		if(isAI(C.mob))
 			var/mob/living/silicon/ai/A = C.mob
@@ -112,12 +146,20 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 
 		directory_mobs.Add(list(list(
 			"name" = name,
+			"ckey" = C.ckey,
 			"species" = species,
 			"ooc_notes" = ooc_notes,
 			"tag" = tag,
 			"erptag" = erptag,
+			"gender_tag" = gendertag,
 			"character_ad" = character_ad,
 			"flavor_text" = flavor_text,
+			"noncon_tag" = noncon_tag,
+			"unholy_tag" = unholy_tag,
+			"extreme_tag" = extreme_tag,
+			"extreme_harm_tag" = extreme_harm_tag,
+			"hornyantags_tag" = hornyantags_tag,
+			"headshot_links" = headshot_links,
 			"ref" = ref
 		)))
 
@@ -149,6 +191,69 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			ghost.ManualFollow(poi)
 			ghost.reset_perspective(null)
 			return TRUE
+		if("setNonconTag")
+			if(!usr.client?.prefs)
+				return
+			var/new_val = tgui_input_list(usr, "Выберите настройку Non-Con", "Non-Con", GLOB.lewd_prefs_choices)
+			if(!new_val)
+				return
+			usr.client.prefs.nonconpref = new_val
+			usr.client.prefs.save_character()
+			return TRUE
+		if("setUnholyTag")
+			if(!usr.client?.prefs)
+				return
+			var/new_val = tgui_input_list(usr, "Выберите настройку Unholy", "Unholy", GLOB.lewd_prefs_choices)
+			if(!new_val)
+				return
+			usr.client.prefs.unholypref = new_val
+			usr.client.prefs.save_character()
+			return TRUE
+		if("setExtremeTag")
+			if(!usr.client?.prefs)
+				return
+			var/new_val = tgui_input_list(usr, "Выберите настройку Extreme", "Extreme", GLOB.lewd_prefs_choices)
+			if(!new_val)
+				return
+			usr.client.prefs.extremepref = new_val
+			usr.client.prefs.save_character()
+			return TRUE
+		if("setExtremeHarmTag")
+			if(!usr.client?.prefs)
+				return
+			var/new_val = tgui_input_list(usr, "Выберите настройку Extreme Harm", "Extreme Harm", GLOB.lewd_prefs_choices)
+			if(!new_val)
+				return
+			usr.client.prefs.extremeharm = new_val
+			usr.client.prefs.save_character()
+			return TRUE
+		if("setHornyAntagsTag")
+			if(!usr.client?.prefs)
+				return
+			var/new_val = tgui_input_list(usr, "Выберите настройку Horny Antags", "Horny Antags", GLOB.lewd_prefs_choices)
+			if(!new_val)
+				return
+			usr.client.prefs.hornyantagspref = new_val
+			usr.client.prefs.save_character()
+			return TRUE
+		if("editNote")
+			if(!usr?.client)
+				return
+			var/target_ckey = params["target_ckey"]
+			if(!target_ckey)
+				return
+			if(!usr.client.directory_notes)
+				usr.client.directory_notes = load_player_notes(usr.client.ckey)
+			var/current_note = usr.client.directory_notes?[target_ckey]
+			var/new_note = strip_html_simple(tgui_input_text(usr, "Заметка об этом игроке", "Личная заметка", current_note, MAX_FLAVOR_LEN, multiline = TRUE, prevent_enter = TRUE), MAX_FLAVOR_LEN)
+			if(isnull(new_note))
+				return
+			if(length(new_note) > 0)
+				usr.client.directory_notes[target_ckey] = new_note
+			else
+				usr.client.directory_notes -= target_ckey
+			save_player_notes(usr.client.ckey, usr.client.directory_notes)
+			return TRUE
 		else
 			return check_for_mind_or_prefs(usr, action, params["overwrite_prefs"])
 
@@ -172,6 +277,11 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			if(!new_erptag)
 				return
 			return set_for_mind_or_prefs(user, action, new_erptag, can_set_prefs, can_set_mind)
+		if ("setGenderTag")
+			var/list/new_gendertag = tgui_input_list(usr, "Pick a gender tag for the character directory", "Gender Tag", GLOB.char_directory_gendertags)
+			if(!new_gendertag)
+				return
+			return set_for_mind_or_prefs(user, action, new_gendertag, can_set_prefs, can_set_mind)
 		if ("setVisible")
 			var/visible = TRUE
 			if (can_set_mind)
@@ -210,6 +320,13 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			if (can_set_mind)
 				user.mind.directory_erptag = new_value
 			return TRUE
+		if ("setGenderTag")
+			if (can_set_prefs)
+				user.client.prefs.directory_gendertag = new_value
+				user.client.prefs.save_character()
+			if (can_set_mind)
+				user.mind.directory_gendertag = new_value
+			return TRUE
 		if ("setVisible")
 			if (can_set_prefs)
 				user.client.prefs.show_in_directory = new_value
@@ -224,3 +341,20 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			if (can_set_mind)
 				user.mind.directory_ad = new_value
 			return TRUE
+
+/datum/character_directory/proc/load_player_notes(ckey)
+	var/json_file = file("data/player_saves/[ckey[1]]/[ckey]/directory_notes.json")
+	if(!fexists(json_file))
+		return list()
+	var/raw = file2text(json_file)
+	if(!raw)
+		return list()
+	var/list/data = json_decode(raw)
+	if(!islist(data))
+		return list()
+	return data
+
+/datum/character_directory/proc/save_player_notes(ckey, list/notes)
+	var/json_file = file("data/player_saves/[ckey[1]]/[ckey]/directory_notes.json")
+	fdel(json_file)
+	WRITE_FILE(json_file, json_encode(notes))

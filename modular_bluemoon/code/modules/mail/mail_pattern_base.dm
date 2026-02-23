@@ -1,6 +1,6 @@
 /datum/mail_pattern
-	var/name = "_Дефолтный паттерн"
-	var/description = "Базовый паттерн для писем"
+	var/name = ""
+	var/description = ""
 
 	var/sender = MAIL_SENDER_RANDOM_NAME
 
@@ -65,6 +65,22 @@
 	var/list/whitelisted_jobs = list()
 	/// List of blacklisted jobs. Pattern will not be available if owner assigned role is one of them
 	var/list/blacklisted_jobs = list()
+
+	// ... НА ГЕНДЕР
+	/// (Необходимо, когда письмо подвязано к полу, без учета гениталий. Например от магазина секс игрушек т.к. они не должны IC точно знать какой пол)
+
+	// Список разрешенных гендеров. Паттерн сработает, если гендер получателя в списке
+	var/list/whitelisted_gender = list()
+	// Список запрещенных гендеров. Паттерн НЕ сработает, если гендер получателя в списке
+	var/list/blacklisted_gender = list()
+
+	// ... НА ГЕНИТАЛИИ (Необходимо, когда письмо подвязано к полу, без учета гениталий)
+	/// (Необходимо, когда письмо подвязано к гениталиям, без учета пола. Например письмо с тестом на беременность от «подруги»)
+
+	/// Список необходимых органов (getorganslot). Паттерн сработает, только, если у получателя будут ВСЕ органы из списка
+	var/list/whitelisted_genitals = list()
+	/// Список запрещенных органов (getorganslot). Паттерн НЕ сработает, если у получателя будет ОДИН орган из списка
+	var/list/blacklisted_genitals = list()
 
 	// ... НА МАЙНДШИЛД
 
@@ -146,7 +162,7 @@
 			parent.included_letter = letter
 	// 25% шанс получить неправильного адресата
 	if(prob(25))
-		sender = pick(list("Центральное Командование", "N/A", "Не указан", "УДАЛЕНО", "НЕИЗВЕСТНО", MAIL_SENDER_RANDOM_NAME))
+		sender = pick(list(MAIL_SENDER_CENTCOM, "N/A", "Не указан", "УДАЛЕНО", "НЕИЗВЕСТНО", MAIL_SENDER_RANDOM_NAME))
 	parent.sender_name = sender
 
 	for(var/good in initial_contents)
@@ -207,6 +223,24 @@
 		if(recipient.mind.assigned_role in blacklisted_jobs)
 			return 0
 
+	// Фильтр на гендер
+	if(whitelisted_gender.len)
+		if(!(recipient.gender in whitelisted_gender))
+			return 0
+	if(blacklisted_gender.len)
+		if(recipient.gender in blacklisted_gender)
+			return 0
+
+	// Фильтр на гениталии
+	if(whitelisted_genitals.len)
+		for(var/slot in whitelisted_genitals)
+			if(!recipient.getorganslot(slot))
+				return 0
+	if(blacklisted_genitals.len)
+		for(var/slot in blacklisted_genitals)
+			if(recipient.getorganslot(slot))
+				return 0
+
 	// Фильтр на майндшилд
 
 	if(mindshield_prohibited && HAS_TRAIT(recipient, TRAIT_MINDSHIELD))
@@ -219,6 +253,11 @@
 /// Special effects of pattern, when envelope is opened
 /datum/mail_pattern/proc/on_mail_open(mob/living/carbon/human/recipient)
 	return
+
+// Для кастомных писем администрации
+/datum/mail_pattern/base
+	name = "_Дефолтный паттерн"
+	description = "Базовый паттерн для писем"
 
 /datum/mail_pattern/misc
 	category = MAIL_CATEGORY_MISC

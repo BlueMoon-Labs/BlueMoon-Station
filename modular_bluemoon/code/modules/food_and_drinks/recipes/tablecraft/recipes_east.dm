@@ -35,14 +35,6 @@
 	result = /obj/item/reagent_containers/food/snacks/spaghetti/rawnoodles
 	category = CAT_EAST*/
 
-//replaced preceeding code for now with something that works
-
-///////////   GRINDER   ///////////
-/datum/crafting_recipe/food/bonito
-	reqs = list(/obj/item/reagent_containers/food/snacks/dried_fish = 1)
-	result = /datum/reagent/consumable/bonito
-	subcategory = CAT_EAST
-
 ///////////   KNIFE   ///////////
 
 /datum/crafting_recipe/food/raw_noodles
@@ -60,14 +52,13 @@
 	result = /obj/item/reagent_containers/food/snacks/rice_dough
 	subcategory = CAT_EAST
 
-/datum/crafting_recipe/food/worcestershire_sauce
-	name = "Worcestershire Sauce"
+/datum/crafting_recipe/food/tonkatsuwurst
+	name = "Tonkatsuwurst"
 	reqs = list(
-		// /datum/reagent/consumable/onion_juice = 1, нету сока из чеснока увы
-		/datum/reagent/consumable/garlic = 1,
-		/datum/reagent/consumable/vinegar = 1,
-		/datum/reagent/consumable/bonito = 1,
-		/datum/reagent/consumable/sugar = 1,
-		)
+		/obj/item/reagent_containers/food/snacks/sausage = 1,
+		/obj/item/reagent_containers/food/snacks/fries = 1,
+		/datum/reagent/consumable/worcestershire = 3,
+		/datum/reagent/consumable/red_bay = 2,
+	)
 	result = /obj/item/reagent_containers/food/snacks/tonkatsuwurst
 	subcategory = CAT_EAST

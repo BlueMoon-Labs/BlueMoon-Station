@@ -114,24 +114,21 @@
 	. += "<span class='notice'>Зарядов осталось: <b>[uses ? uses : "0"]</b>.</span>"
 
 /obj/item/card/id/examine_more(mob/user)
-	var/list/msg = list("<span class='notice'><i>Вы осмотрели [src] поближе и заметили следующее...</i></span>")
-
+	. = ..()
 	if(mining_points)
-		msg += "У карты в наличии [mining_points] ед. очков шахтёрского оборудования."
+		. += "У карты в наличии [mining_points] ед. очков шахтёрского оборудования."
 	if(registered_account)
-		msg += "Привязанный к ID-карте аккаунт записан на имя \"[registered_account.account_holder]\" и сообщает о балансе [registered_account.account_balance] кр."
+		. += "Привязанный к ID-карте аккаунт записан на имя \"[registered_account.account_holder]\" и сообщает о балансе [registered_account.account_balance] кр."
 		if(registered_account.account_job)
 			var/datum/bank_account/D = SSeconomy.get_dep_account(registered_account.account_job.paycheck_department)
 			if(D)
-				msg += "На балансе [budget_to_ru_genitive(D.account_holder)] находится [D.account_balance] кр."
-		msg += "<span class='info'>Alt-Click по ID, чтобы достать деньги из аккаунта в форме голочипов.</span>"
-		msg += "<span class='info'>Вы может добавить кредиты на аккаунт, прижимая голочипы, наличные или монеты к ID.</span>"
+				. += "На балансе [budget_to_ru_genitive(D.account_holder)] находится [D.account_balance] кр."
+		. += "<span class='info'>Alt-Click по ID, чтобы достать деньги из аккаунта в форме голочипов.</span>"
+		. += "<span class='info'>Вы может добавить кредиты на аккаунт, прижимая голочипы, наличные или монеты к ID.</span>"
 		if(registered_account.account_holder == user.real_name)
-			msg += "<span class='boldnotice'>Если вы потеряете эту ID-карту, вы можете переподключить свой аккаунт путём Alt-Click по пустой карте, держа её и введя свой ID-номер.</span>"
+			. += "<span class='boldnotice'>Если вы потеряете эту ID-карту, вы можете переподключить свой аккаунт путём Alt-Click по пустой карте, держа её и введя свой ID-номер.</span>"
 	else
-		msg += "<span class='info'>У данной карты нет зарегистрированного акканта. Alt-Click, чтобы добавить.</span>"
-
-	return msg
+		. += "<span class='info'>У данной карты нет зарегистрированного акканта. Alt-Click, чтобы добавить.</span>"
 
 /obj/item/card/emag/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/emagrecharge))
@@ -484,7 +481,10 @@
 
 /obj/item/card/id/get_examine_string(mob/user, thats = FALSE)
 	if(uses_overlays)
-		return "[icon2html(get_cached_flat_icon(), user)] [thats? "That's ":""][get_examine_name(user)]" //displays all overlays in chat
+		var/job_tooltip = ""
+		if(assignment && get_assignment_name() != assignment)
+			job_tooltip = " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[html_encode(assignment)]</span></span>"
+		return "[icon2html(get_cached_flat_icon(), user)] [thats? "That's ":""][get_examine_name(user)][job_tooltip]" //displays all overlays in chat
 	return ..()
 
 /obj/item/card/id/proc/update_label(newname, newjob)
@@ -599,8 +599,8 @@
 		if(!user.canUseTopic(src, BE_CLOSE, FALSE))
 			return
 		if(popup_input == "Forge/Reset" && !forged)
-			var/input_name = stripped_input(user, "Какое имя вы хотите присвоить карте? Оставьте пустым для случайной генерации.", "Имя агентской карточки", registered_name ? registered_name : (ishuman(user) ? user.real_name : user.name), MAX_NAME_LEN)
-			input_name = reject_bad_name(input_name)
+			var/input_name = tgui_input_text(user, "Какое имя вы хотите присвоить карте? Оставьте пустым для случайной генерации.", "Имя агентской карточки", registered_name ? registered_name : (ishuman(user) ? user.real_name : user.name), MAX_NAME_LEN)
+			input_name = reject_bad_name(input_name, TRUE)
 			if(!input_name)
 				// Invalid/blank names give a randomly generated one.
 				if(user.gender == MALE)
@@ -610,7 +610,7 @@
 				else
 					input_name = "[pick(GLOB.first_names)] [pick(GLOB.last_names)]"
 
-			var/target_occupation = stripped_input(user, "Какую должность вы хотите присвоить карте?\nИмейте ввиду: это не даст соответствующих доступов.", "Должность агентской карточки", assignment ? assignment : "Assistant", MAX_MESSAGE_LEN)
+			var/target_occupation = tgui_input_text(user, "Какую должность вы хотите присвоить карте?\nИмейте ввиду: это не даст соответствующих доступов.", "Должность агентской карточки", assignment ? assignment : "Assistant", MAX_MESSAGE_LEN, encode = TRUE)
 			if(!target_occupation)
 				return
 			registered_name = input_name

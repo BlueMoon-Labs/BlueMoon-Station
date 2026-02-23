@@ -716,6 +716,9 @@
 	dir = 8
 	},
 /area/ruin/lavaland/powered/beach)
+"BO" = (
+/turf/closed/mineral/random/low_chance/volcanic,
+/area/template_noop)
 "Ec" = (
 /obj/machinery/door/airlock/sandstone{
 	name = "Beach Access"
@@ -939,25 +942,27 @@ aa
 aa
 aa
 aa
-bW
 aa
-bW
-lF
-bW
-bW
-bW
-bW
-pI
-bW
-pI
-bW
-bW
-bW
-bW
-lF
-bW
 aa
-bW
+aa
+aa
+aa
+aa
+aa
+aa
+BO
+BO
+BO
+BO
+BO
+BO
+aa
+aa
+aa
+aa
+aa
+aa
+aa
 aa
 aa
 aa
@@ -965,6 +970,41 @@ aa
 aa
 "}
 (2,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+bW
+aa
+bW
+lF
+bW
+bW
+bW
+bW
+pI
+bW
+pI
+bW
+bW
+bW
+bW
+lF
+bW
+aa
+bW
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(3,1,1) = {"
+aa
 aa
 aa
 aa
@@ -995,8 +1035,10 @@ aa
 aa
 aa
 aa
+aa
 "}
-(3,1,1) = {"
+(4,1,1) = {"
+aa
 aa
 aa
 aa
@@ -1027,8 +1069,10 @@ bW
 aa
 aa
 aa
+aa
 "}
-(4,1,1) = {"
+(5,1,1) = {"
+aa
 aa
 aa
 bW
@@ -1059,8 +1103,10 @@ bW
 bW
 aa
 aa
+aa
 "}
-(5,1,1) = {"
+(6,1,1) = {"
+aa
 aa
 bW
 bW
@@ -1091,8 +1137,10 @@ bW
 bW
 bW
 aa
+aa
 "}
-(6,1,1) = {"
+(7,1,1) = {"
+aa
 aa
 bW
 bW
@@ -1123,8 +1171,10 @@ bU
 bW
 bW
 aa
+aa
 "}
-(7,1,1) = {"
+(8,1,1) = {"
+aa
 bW
 bW
 bW
@@ -1155,8 +1205,10 @@ ct
 bW
 bW
 bW
+aa
 "}
-(8,1,1) = {"
+(9,1,1) = {"
+aa
 bW
 bW
 az
@@ -1187,8 +1239,10 @@ bU
 bU
 bW
 bW
+aa
 "}
-(9,1,1) = {"
+(10,1,1) = {"
+aa
 bW
 bW
 cd
@@ -1219,8 +1273,10 @@ bU
 bU
 fY
 aa
+aa
 "}
-(10,1,1) = {"
+(11,1,1) = {"
+aa
 bW
 bW
 ae
@@ -1251,8 +1307,10 @@ bU
 bU
 fY
 aa
+aa
 "}
-(11,1,1) = {"
+(12,1,1) = {"
+aa
 bW
 bW
 af
@@ -1283,8 +1341,10 @@ bU
 bU
 bW
 bW
+aa
 "}
-(12,1,1) = {"
+(13,1,1) = {"
+aa
 bW
 bW
 ag
@@ -1315,8 +1375,10 @@ bU
 ct
 bW
 bW
+aa
 "}
-(13,1,1) = {"
+(14,1,1) = {"
+aa
 bW
 bW
 ah
@@ -1347,8 +1409,10 @@ bU
 bU
 bW
 bW
+aa
 "}
-(14,1,1) = {"
+(15,1,1) = {"
+aa
 bW
 bW
 ai
@@ -1379,8 +1443,10 @@ bU
 bU
 bW
 Mx
+aa
 "}
-(15,1,1) = {"
+(16,1,1) = {"
+aa
 bW
 bW
 aj
@@ -1411,8 +1477,10 @@ bU
 bU
 bW
 bW
+aa
 "}
-(16,1,1) = {"
+(17,1,1) = {"
+aa
 bW
 bW
 ak
@@ -1443,8 +1511,10 @@ bU
 bU
 bW
 bW
+aa
 "}
-(17,1,1) = {"
+(18,1,1) = {"
+aa
 bW
 bW
 aj
@@ -1475,8 +1545,10 @@ bU
 bU
 bW
 Fm
+aa
 "}
-(18,1,1) = {"
+(19,1,1) = {"
+aa
 bW
 bW
 al
@@ -1507,8 +1579,10 @@ bU
 ct
 bW
 bW
+aa
 "}
-(19,1,1) = {"
+(20,1,1) = {"
+aa
 bW
 bW
 am
@@ -1539,8 +1613,10 @@ bU
 bU
 bW
 bW
+aa
 "}
-(20,1,1) = {"
+(21,1,1) = {"
+aa
 bW
 bW
 an
@@ -1571,8 +1647,10 @@ bU
 bU
 bW
 bW
+aa
 "}
-(21,1,1) = {"
+(22,1,1) = {"
+aa
 bW
 bW
 ao
@@ -1603,8 +1681,10 @@ bU
 bU
 fY
 aa
+aa
 "}
-(22,1,1) = {"
+(23,1,1) = {"
+aa
 bW
 bW
 bW
@@ -1635,8 +1715,10 @@ bV
 bU
 fY
 aa
+aa
 "}
-(23,1,1) = {"
+(24,1,1) = {"
+aa
 bW
 bW
 gg
@@ -1667,8 +1749,10 @@ bU
 bU
 bW
 bW
+aa
 "}
-(24,1,1) = {"
+(25,1,1) = {"
+aa
 bW
 bW
 bW
@@ -1699,8 +1783,10 @@ ct
 bW
 bW
 bW
+aa
 "}
-(25,1,1) = {"
+(26,1,1) = {"
+aa
 aa
 bW
 bW
@@ -1731,8 +1817,10 @@ bU
 bW
 bW
 aa
+aa
 "}
-(26,1,1) = {"
+(27,1,1) = {"
+aa
 aa
 bW
 bW
@@ -1763,8 +1851,10 @@ bW
 bW
 bW
 aa
+aa
 "}
-(27,1,1) = {"
+(28,1,1) = {"
+aa
 aa
 aa
 bW
@@ -1795,8 +1885,10 @@ bW
 bW
 aa
 aa
+aa
 "}
-(28,1,1) = {"
+(29,1,1) = {"
+aa
 aa
 aa
 aa
@@ -1827,8 +1919,10 @@ bW
 aa
 aa
 aa
+aa
 "}
-(29,1,1) = {"
+(30,1,1) = {"
+aa
 aa
 aa
 aa
@@ -1859,8 +1953,10 @@ aa
 aa
 aa
 aa
+aa
 "}
-(30,1,1) = {"
+(31,1,1) = {"
+aa
 aa
 aa
 aa
@@ -1886,6 +1982,41 @@ TP
 bW
 aa
 bW
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(32,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+BO
+BO
+BO
+BO
+BO
+BO
+BO
+BO
+BO
+BO
+aa
+aa
+aa
+aa
+aa
+aa
 aa
 aa
 aa

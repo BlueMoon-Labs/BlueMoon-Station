@@ -647,6 +647,7 @@
 	return TRUE
 
 /datum/component/storage/proc/on_attack_hand(datum/source, mob/user)
+	SIGNAL_HANDLER
 	var/atom/A = parent
 	if(!attack_hand_interact)
 		return
@@ -655,23 +656,8 @@
 		close(user)
 		. = COMPONENT_NO_ATTACK_HAND
 		return
-
 	if(rustle_sound)
 		playsound(A, "rustle", 50, 1, -5)
-
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		if(H.l_store == A && !H.get_active_held_item())	//Prevents opening if it's in a pocket.
-			. = COMPONENT_NO_ATTACK_HAND
-			H.put_in_hands(A)
-			H.l_store = null
-			return
-		if(H.r_store == A && !H.get_active_held_item())
-			. = COMPONENT_NO_ATTACK_HAND
-			H.put_in_hands(A)
-			H.r_store = null
-			return
-
 	if(A.loc == user)
 		. = COMPONENT_NO_ATTACK_HAND
 		if(!check_locked(source, user, TRUE))

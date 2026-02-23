@@ -119,7 +119,7 @@
 	new /obj/item/crowbar/power(src)
 	new /obj/item/weldingtool/experimental(src)//This can be changed if this is too much
 	new /obj/item/multitool/tricorder(src)
-	new /obj/item/stack/cable_coil(src,30,pick("red","yellow","orange"))
+	new /obj/item/stack/cable_coil(src, 30, TRUE, pick("red","yellow","orange"))
 	new /obj/item/extinguisher/mini(src)
 	new /obj/item/analyzer/ranged(src)
 	//much roomier now that we've managed to remove two tools
@@ -131,7 +131,7 @@
 	new /obj/item/crowbar(src)
 	new /obj/item/wirecutters(src)
 	new /obj/item/multitool(src)
-	new /obj/item/stack/cable_coil(src,30,pick("red","yellow","orange"))
+	new /obj/item/stack/cable_coil(src, 30, TRUE, pick("red","yellow","orange"))
 
 /obj/item/storage/belt/utility/full/engi/PopulateContents()
 	new /obj/item/screwdriver(src)
@@ -140,7 +140,7 @@
 	new /obj/item/crowbar(src)
 	new /obj/item/wirecutters(src)
 	new /obj/item/multitool(src)
-	new /obj/item/stack/cable_coil(src,30,pick("red","yellow","orange"))
+	new /obj/item/stack/cable_coil(src, 30, TRUE, pick("red","yellow","orange"))
 
 
 /obj/item/storage/belt/utility/atmostech/PopulateContents()
@@ -159,7 +159,7 @@
 	new /obj/item/crowbar/brass(src)
 	new /obj/item/weldingtool/experimental/brass(src)
 	new /obj/item/multitool/advanced/brass(src)
-	new /obj/item/stack/cable_coil(src, 30, "yellow")
+	new /obj/item/stack/cable_coil(src, 30, TRUE, "yellow")
 
 /obj/item/storage/belt/medical
 	name = "medical belt"
@@ -494,7 +494,7 @@
 	new /obj/item/crowbar/abductor(src)
 	new /obj/item/wirecutters/abductor(src)
 	new /obj/item/multitool/abductor(src)
-	new /obj/item/stack/cable_coil(src,30,"white")
+	new /obj/item/stack/cable_coil(src, 30, TRUE, "white")
 
 /obj/item/storage/belt/military/army
 	name = "army belt"

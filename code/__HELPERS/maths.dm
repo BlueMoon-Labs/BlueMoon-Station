@@ -43,3 +43,28 @@
 			current_y_step += y_distance_sign
 			line += locate(current_x_step, current_y_step, starting_z)
 	return line
+
+/**
+ * Calculate the Greatest Common Divisor of two numbers using Euclidean algorithm.
+ */
+/proc/gcd(a, b)
+	a = round(a)
+	b = round(b)
+	if(a == 0 && b == 0)
+		return 1
+	while(b != 0)
+		var/t = b
+		b = a % b
+		a = t
+	return a
+
+/**
+ * Calculate the Least Common Multiple of two numbers.
+ */
+/proc/lcm(a, b)
+	if(a == 0 || b == 0)
+		return 1
+	var/d = gcd(a, b)
+	if(d == 0)
+		return abs(a * b)
+	return abs(a * b) / d

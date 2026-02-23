@@ -4,7 +4,7 @@
 /obj/structure/tentacles/node
 	name = "tentacles node"
 	desc = "Looks like their roots."
-	icon = 'modular_bluemoon/Gardelin0/icons/mob/tentacles.dmi'
+	icon = 'modular_bluemoon/icons/mob/tentacles.dmi'
 	icon_state = "node"
 	max_integrity = 200
 	CanAtmosPass = ATMOS_PASS_DENSITY
@@ -12,7 +12,7 @@
 /mob/living/simple_animal/hostile/tentacles
 	name = "Tentacles"
 	desc = "I have seen enough space hentai to know..."
-	icon = 'modular_bluemoon/Gardelin0/icons/mob/tentacles.dmi'
+	icon = 'modular_bluemoon/icons/mob/tentacles.dmi'
 	icon_state = "tentacles"
 	icon_living = "tentacles"
 	icon_dead = "tentacles_dead"
@@ -263,7 +263,7 @@
 		M.reagents.add_reagent(/datum/reagent/drug/aphrodisiacplus, 5) //Cum contains hexocrocin
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playsound(loc, "modular_bluemoon/Gardelin0/sound/effect/lewd/splast.ogg", 30, 1, -1)
+	playsound(loc, 'sound/effects/splat.ogg', 30, 1, -1)
 	visible_message("<font color=purple><b>\The [src]</b> [message]</font>")
 	shake_camera(M, 6, 1)
 	set_is_fucking(null ,null)
@@ -290,7 +290,7 @@
 /obj/item/storage/box/tentaclescubes
 	name = "Instante tentacles box"
 	desc = "Drymate brand tentacles cubes. Just add water!"
-	icon = 'modular_bluemoon/Gardelin0/icons/mob/tentacles.dmi'
+	icon = 'modular_bluemoon/icons/mob/tentacles.dmi'
 	icon_state = "tentaclecubebox"
 	illustration = null
 	custom_price = 1500 //So people will stop spamming it

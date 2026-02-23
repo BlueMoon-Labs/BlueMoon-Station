@@ -32,14 +32,18 @@ export const NumberInputModal = (_, context) => {
     }
     setInput(value);
   };
-  // Dynamically changes the window height based on the message.
+  // Dynamically changes the window height and width based on the message and title.
   const windowHeight
     = 140
     + (message.length > 30 ? Math.ceil(message.length / 3) : 0)
-    + (message.length && large_buttons ? 5 : 0);
+    + (message.length && large_buttons ? 5 : 0)
+    + ((message.split('\n').length - 1) * 10);
+  const windowWidth
+    = 270
+    + (title.length > 21 ? title.length * 2 : 0);
 
   return (
-    <Window title={title} width={270} height={windowHeight}>
+    <Window title={title} width={windowWidth} height={windowHeight}>
       {timeout && <Loader value={timeout} />}
       <Window.Content
         onKeyDown={(event) => {
@@ -54,7 +58,7 @@ export const NumberInputModal = (_, context) => {
         <Section fill>
           <Stack fill vertical>
             <Stack.Item grow>
-              <Box color="label">{message}</Box>
+            <Box color="label" preserveWhitespace> {message} </Box>
             </Stack.Item>
             <Stack.Item>
               <InputArea input={input} onClick={onClick} onChange={onChange} />

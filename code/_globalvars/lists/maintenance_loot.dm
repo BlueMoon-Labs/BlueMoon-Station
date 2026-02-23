@@ -123,6 +123,7 @@ GLOBAL_LIST_INIT(maintenance_loot, list(
 	/obj/item/reagent_containers/pill/labebium = 15,
 	/obj/item/organ/tongue/bone/chatter = 1,
 	//SPLURT EDIT END
+	/obj/item/toy/cards/deck/tarot/haunted = 1, // есть на оффах = легит
 	"" = 3
 	))
 

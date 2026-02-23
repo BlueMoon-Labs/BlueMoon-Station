@@ -38,6 +38,15 @@
 #define FOOTSTEP_MOB_CRAWL 7
 #define FOOTSTEP_OBJ_MACHINE 8
 #define FOOTSTEP_OBJ_ROBOT 9
+#define FOOTSTEP_MOB_BONE 10
+
+
+// Для одиночных звуков
+#define FOOTSTEP_SOUND_SLIME 'sound/effects/footstep/slime1.ogg'
+#define FOOTSTEP_SOUND_CRAWL 'sound/effects/footstep/crawl1.ogg'
+#define FOOTSTEP_SOUND_BONE 'sound/effects/footstep/bone_step.ogg'
+#define FOOTSTEP_SOUND_OBJ_ROBOT 'sound/effects/tank_treads.ogg'
+
 
 /*
 

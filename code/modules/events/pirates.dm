@@ -22,7 +22,7 @@
 /datum/round_event/pirates/start()
 	send_pirate_threat()
 
-/proc/send_pirate_threat()
+/datum/round_event/pirates/proc/send_pirate_threat()
 	var/pirate_type = PIRATES_ROGUES //pick(PIRATES_ROGUES, PIRATES_SILVERSCALES, PIRATES_DUTCHMAN)
 	var/datum/comm_message/threat_msg = new
 	var/payoff = 0
@@ -30,7 +30,7 @@
 	var/ship_template
 	var/ship_name = "Space Privateers Association"
 	var/initial_send_time = world.time
-	var/response_max_time = 3 MINUTES
+	var/response_max_time = 5 MINUTES
 	switch(pirate_type)
 		if(PIRATES_ROGUES)
 			ship_name = pick(strings(PIRATE_NAMES_FILE, "rogue_names"))
@@ -46,10 +46,11 @@
 			threat_msg.content = "Приветствуем вас с корабля [ship_name]. Ваш сектор нуждается в защите, заплатите нам [payoff] кредитов или на вас наверняка кто-то нападёт."
 			threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
 
-	threat_msg.answer_callback = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(pirates_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
+	threat_msg.answer_callback = CALLBACK(src, PROC_REF(pirates_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg,unique = TRUE)
+	addtimer(CALLBACK(src, PROC_REF(spawn_pirates), threat_msg, ship_template), response_max_time)
 
-/proc/pirates_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
+/datum/round_event/pirates/proc/pirates_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	if(world.time > initial_send_time + response_max_time)
 		priority_announce("Слишком поздно умолять о пощаде!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
@@ -67,12 +68,9 @@
 		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
 
-/proc/spawn_pirates(datum/comm_message/threat_msg, ship_template, skip_answer_check)
+/datum/round_event/pirates/proc/spawn_pirates(datum/comm_message/threat_msg, ship_template, skip_answer_check)
 	if(!skip_answer_check && threat_msg?.answered == 1)
 		return
-
-	var/list/candidates = pollGhostCandidates("Вы желаете стать пиратом?", ROLE_TRAITOR)
-	shuffle_inplace(candidates)
 
 	var/datum/map_template/shuttle/pirate/ship = new ship_template
 	var/x = rand(TRANSITIONEDGE, world.maxx - TRANSITIONEDGE - ship.width)
@@ -85,15 +83,20 @@
 	if(!ship.load(T))
 		CRASH("Loading pirate ship failed!")
 
+	var/list/spawners_list = list()
 	for(var/turf/A in ship.get_affected_turfs(T))
 		for(var/obj/effect/mob_spawn/human/pirate/spawner in A)
-			if(candidates.len > 0)
-				var/mob/our_candidate = candidates[1]
-				spawner.create(our_candidate.ckey)
-				candidates -= our_candidate
-				notify_ghosts("The pirate ship has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
-			else
-				notify_ghosts("The pirate ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
+			spawners_list += spawner
+
+	var/list/candidates = pollGhostCandidates("Вы желаете стать пиратом?", ROLE_TRAITOR, minimum_required = spawners_list.len)
+
+	for(var/obj/effect/mob_spawn/human/spawner in spawners_list)
+		if(LAZYLEN(candidates))
+			var/mob/our_candidate = pick_n_take(candidates)
+			spawner.create(our_candidate.ckey)
+			notify_ghosts("The pirate ship has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
+		else
+			notify_ghosts("The pirate ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
 
 	priority_announce("В секторе обнаружен вооруженный корабль.", "Отдел ССО ПАКТа Синих Лун", 'modular_bluemoon/phenyamomota/sound/announcer/pirate_incoming.ogg')
 
@@ -284,7 +287,7 @@
 	for(var/obj/item/stock_parts/L in component_parts)
 		parts_rating += L.rating
 		++i
-	// Average rating of all details 
+	// Average rating of all details
 	var/rating = round_down(parts_rating / i)
 	var/const/speed_up_per_rating = 26.6 // T4 = 80% speed up
 	var/speed_up_ratio = max(ceil((rating-1) * speed_up_per_rating),0)/100

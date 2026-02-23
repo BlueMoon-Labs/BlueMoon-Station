@@ -147,6 +147,7 @@ GLOBAL_LIST_INIT(dye_registry, list(
 	can_buckle = TRUE
 	buckle_lying = FALSE
 	max_buckled_mobs = 1
+	buckle_prevents_pull = TRUE
 	obj_flags = CAN_BE_HIT|SHOVABLE_ONTO
 	var/mutable_appearance/upper_half
 	var/mob_is_immobilized = FALSE //to avoid healing miracles
@@ -450,10 +451,9 @@ GLOBAL_LIST_INIT(dye_registry, list(
 	if(user.mob_size > mob_size_limit)
 		return FALSE
 	var/stuck_chance = (iscatperson(user) || HAS_TRAIT(user, TRAIT_CLUMSY) || HAS_TRAIT(user, TRAIT_FAT) || HAS_TRAIT(user, TRAIT_CURSED) || HAS_TRAIT(user, TRAIT_NYMPHO) || isclownjob(user)) ? unusual_chance : usual_chance
-	if((user.client && user.client?.prefs.erppref == "Yes" && CHECK_BITFIELD(user.client?.prefs.toggles, VERB_CONSENT) && user.client?.prefs.nonconpref == "Yes"))
+	if((user.client && user.client.prefs?.nonconpref == "Yes"))
 		stuck_chance = stuck_chance * 2 //non-con enjoyers will get what they want.
-	if(prob(stuck_chance))
-		buckle_mob(user)
+	if(prob(stuck_chance) && buckle_mob(user))
 		return TRUE
 	else
 		return FALSE
@@ -498,24 +498,36 @@ GLOBAL_LIST_INIT(dye_registry, list(
 
 /obj/machinery/washing_machine/pre_buckle_mob(mob/living/M)
 	if(!ishuman(M))
-		return
+		return FALSE
 	. = ..()
 
 /obj/machinery/washing_machine/post_buckle_mob(mob/living/M)
 	. = ..()
-	M.northface()
-	if(M.IsImmobilized())
-		mob_is_immobilized = TRUE
-	else
-		M.Immobilize(INFINITY, ignore_canstun = TRUE)
+	M.setDir(NORTH)
+	mob_is_immobilized = M.AmountImmobilized()
+	M.Immobilize(INFINITY, ignore_canstun = TRUE)
 	add_overlay(upper_half)
+	RegisterSignal(M, COMSIG_ATOM_DIR_AFTER_CHANGE, PROC_REF(force_rotate_mob))
 
 /obj/machinery/washing_machine/post_unbuckle_mob(mob/living/M)
 	. = ..()
-	if(!M) //better safe than sorry
-		return
-	if(mob_is_immobilized)
-		mob_is_immobilized = FALSE
-	else
-		M.SetImmobilized(0, ignore_canstun = TRUE)
+	UnregisterSignal(M, COMSIG_ATOM_DIR_AFTER_CHANGE)
+	M.SetImmobilized(mob_is_immobilized, ignore_canstun = TRUE)
+	mob_is_immobilized = FALSE
 	cut_overlay(upper_half)
+
+/obj/machinery/washing_machine/proc/force_rotate_mob(mob/living/M)
+	SIGNAL_HANDLER
+	if(QDELETED(M) || !(M in buckled_mobs))
+		UnregisterSignal(M, COMSIG_ATOM_DIR_AFTER_CHANGE)
+		return
+	if(M.dir != NORTH)
+		M.setDir(NORTH) // to ignore immobilized status
+
+/obj/machinery/washing_machine/shove_act(mob/living/target, mob/living/user)
+	. = ..()
+	if(target.y <= y && buckle_mob(target)) // изначально планировалось "target.y < y", но на половине карт стиралки "смотрят" в стену, поэтому увы во имя механа.
+		user.visible_message(span_danger("[user.name] заталкивает [target.name] внутрь \the [src]!"),
+							span_danger("Вы впихиваете [target.name] внутрь \the [src]!"), null, COMBAT_MESSAGE_RANGE)
+		log_combat(user, target, "shoved", "into [src] (washing machine)")
+		return TRUE

@@ -229,6 +229,11 @@
 	mood_change = 2
 	timeout = 2 MINUTES
 
+/datum/mood_event/inspiration
+	description = "<span class='nicegreen'>Меня переполняет вдохновение! Хочется творить.</span>\n"
+	mood_change = 3
+	timeout = 10 MINUTES
+
 /datum/mood_event/artgood
 	description = "<span class='nicegreen'>Какой воодушевляющий рисунок. Я его на какое-то время запомню.</span>\n"
 	mood_change = 3

@@ -186,6 +186,13 @@
 	program_type = /datum/nanite_program/purging
 	category = list("Medical Nanites")
 
+/datum/design/nanites/purging_corruption
+	name = "Purge Corruption"
+	desc = "Nanites clean the circuits in the host's positronic brain from corrosion."
+	id = "purging_synth_nanites"
+	program_type = /datum/nanite_program/purging_synth
+	category = list("Medical Nanites")
+
 /datum/design/nanites/purging_advanced
 	name = "Selective Blood Purification"
 	desc = "The nanites purge toxins and dangerous chemicals from the host's bloodstream, while ignoring beneficial chemicals. \
@@ -227,6 +234,13 @@
 	desc = "The nanites, when triggered, send a defibrillating shock to the host's heart."
 	id = "defib_nanites"
 	program_type = /datum/nanite_program/defib
+	category = list("Medical Nanites")
+
+/datum/design/nanites/hard_reboot
+	name = "Hard Reboot Protocol"
+	desc = "Nanomachines store protocols for rebooting the host's positronic brain."
+	id = "hard_reboot_nanites"
+	program_type = /datum/nanite_program/hard_reboot
 	category = list("Medical Nanites")
 
 

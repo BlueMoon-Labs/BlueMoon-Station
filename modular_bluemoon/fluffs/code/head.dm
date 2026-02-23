@@ -281,7 +281,7 @@
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
 	unique_reskin = null
 
-/obj/item/clothing/head/blueshield/mu88_horns
+/obj/item/clothing/head/donator/bm/mu88_horns
 	name = "M.U. 88 New hope horns"
 	desc = "Ещё один элемент комплекта 'New hope'. Несмотря на то, что данная вещь скорее носит декоративный характер, имеет в себе скрытые и важные функции. Сами рога выполнены из прочного сплава металлов неизвестного образца. В основную часть встроены антенны для перехвата сигналов с системой датчиков жизнеобеспечения костюмов и скафандров поблизости. Также излучают небольшую сферу сильного магнитного поля, покрывающее пространство головы и 25 сантиметров по радиусу вокруг. Поле имеет защитный функционал, останавливающие все попадающие объекты со скоростью выше выставленного порога, благодаря чему по защитных характеристикам не уступает обычному баллистическому шлему. Не смотря на встроенные механизмы не требует внешней подзарядки. Под креплением расположен небольшой логотип в виде чёрной розы, а также надпись - Black Rose atelier."
 	icon_state = "mu88_horns"
@@ -424,14 +424,60 @@
 
 ///////////////////////////////////////////////
 
-/obj/item/clothing/head/donator/bm/fire_blossom
-	name = "Fire blossom"
-	desc = "Огненный цветок, растущий в дальних участках лаваленда при определённых условиях."
-	icon_state = "fire_blossom"
-	light_color = "#FF6929"
-	light_power = 0.5
-	light_range = 0.75
+/obj/item/clothing/head/helmet/sec/gosei
+	name = "Gosei.H.mk27"
+	desc = "Безымянный шлем покрывающий лицо, предназначенный для защиты от внешних био-химических угроз, оснащённый внутривстроенным интерфейсом, съёмными батарейками, IFF опознавательными знаками"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "gosei"
+	item_state = "gosei"
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	clothing_flags = ALLOWINTERNALS
+	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
+	unique_reskin = null
 
-/obj/item/clothing/head/donator/bm/fire_blossom/Initialize()
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/donator/bm/chetky_cap
+	name = "sport cap"
+	desc = "krutaya kepka."
+	icon_state = "chetky_cap"
+	item_state = "chetky_cap"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	var/flipped = FALSE
+
+/obj/item/clothing/head/donator/bm/chetky_cap/AltClick(mob/user)
 	. = ..()
-	set_light()
+	if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+		return
+	flip(user)
+	return TRUE
+
+/obj/item/clothing/head/donator/bm/chetky_cap/dropped(mob/user)
+	. = ..()
+	icon_state = "chetky_cap"
+	item_state = "chetky_cap"
+	flipped = FALSE
+
+/obj/item/clothing/head/donator/bm/chetky_cap/proc/flip(mob/user)
+	if(!user.incapacitated())
+		flipped = !flipped
+		if(flipped)
+			icon_state = "chetky_cap_flipped"
+			item_state = "chetky_cap_flipped"
+			to_chat(user, span_notice("Вы развернули кепку козырьком назад."))
+		else
+			icon_state = "chetky_cap"
+			item_state = "chetky_cap"
+			to_chat(user, span_notice("Вы надели кепку как обычно."))
+		user.update_inv_head()
+
+/obj/item/clothing/head/donator/bm/chetky_cap/examine(mob/user)
+	. = ..()
+	. += span_notice("Alt-click, чтобы развернуть кепку [flipped ? "вперёд" : "назад"].")

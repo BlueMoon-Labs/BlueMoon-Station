@@ -23,8 +23,6 @@
 	var/list/obj/item/ticket_machine_ticket/tickets = list()
 
 /obj/machinery/ticket_machine/multitool_act(mob/living/user, obj/item/I)
-	if(!multitool_check_buffer(user, I)) //make sure it has a data buffer
-		return
 	var/obj/item/multitool/M = I
 	M.buffer = src
 	to_chat(user, "<span class='notice'>You store linkage information in [I]'s buffer.</span>")

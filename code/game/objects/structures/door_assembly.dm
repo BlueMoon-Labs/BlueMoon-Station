@@ -22,6 +22,10 @@
 	/// Airlock with glass version, but cannot be modified with sheets
 	var/nomineral = FALSE
 
+/obj/structure/door_assembly/Destroy()
+	QDEL_NULL(electronics)
+	return ..()
+
 /obj/structure/door_assembly/New()
 	update_icon()
 	update_name()

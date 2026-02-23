@@ -819,7 +819,7 @@
 			if(istype(target, /obj/item/canvas)) //dont color our canvas neon green when im trying to paint please
 				return
 			var/list/hsl = rgb2hsl(hex2num(copytext(paint_color,2,4)),hex2num(copytext(paint_color,4,6)),hex2num(copytext(paint_color,6,8)))
-			var/static/whitelisted = typecacheof(list(/obj/structure/window,
+			var/static/list/whitelisted = typecacheof(list(/obj/structure/window,
 										/obj/effect/decal/cleanable/crayon,
 										/obj/machinery/door/window)
 									)

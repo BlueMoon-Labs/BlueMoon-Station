@@ -42,8 +42,6 @@
 		return
 	if(!panel_open)
 		return
-	if(!multitool_check_buffer(user, tool))
-		return
 	tool.buffer = src
 	to_chat(user, "<span class='notice'>You save the data in the [tool.name]'s buffer.</span>")
 	return TRUE

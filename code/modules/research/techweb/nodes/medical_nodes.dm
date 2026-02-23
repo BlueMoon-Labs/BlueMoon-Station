@@ -143,8 +143,8 @@
 	id = "advance_surgerytools"
 	display_name = "Advanced Surgery Tools"
 	description = "Refined and improved redesigns for the run-of-the-mill medical utensils."
-	prereq_ids = list("basic_tools", "adv_biotech", "adv_surgery") // BLUEMOON ADD basic_tools for order consistency
-	design_ids = list("retractor_adv", "surgicaldrill_adv", "scalpel_adv", "surgical_tape")
+	prereq_ids = list("upgraded_surgerytools", "adv_surgery") // BLUEMOON ADD basic_tools for order consistency
+	design_ids = list("retractor_adv", "surgicaldrill_adv", "scalpel_adv")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/exp_surgery

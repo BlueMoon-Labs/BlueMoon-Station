@@ -52,7 +52,7 @@
 	releasedelay = 2
 	move_force = MOVE_FORCE_OVERPOWERING
 
-/obj/effect/anomaly/pyro/big/Initialize(mapload, new_lifespan, drops_core)
+/obj/effect/anomaly/pyro/big/Initialize(mapload, new_lifespan)
 	. = ..()
 
 	transform *= 3

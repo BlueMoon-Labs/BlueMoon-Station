@@ -12,21 +12,21 @@
 	desc = "A sleek box containing a small, easily concealable handgun that uses 10mm auto rounds in 8-round magazines. The handgun is compatible \
 			with suppressors."
 	item = /obj/item/storage/box/syndie_kit/pistol
-	cost = 4
+	cost = 3
 	purchasable_from = ~UPLINK_CLOWN_OPS
 
 /datum/uplink_item/dangerous/aps_pistol
 	name = "Stechkin Pistol"
 	desc = "The original Russian version of a widely used Syndicate sidearm. Uses 9mm ammo. Has a threaded barrel for suppressors."
 	item = /obj/item/storage/box/syndie_kit/aps_pistol
-	cost = 7
+	cost = 5
 	purchasable_from = ~UPLINK_CLOWN_OPS
 
 /datum/uplink_item/dangerous/revolver
 	name = "Revolver Kit"
 	desc = "A sleek box containing a brutally simple Syndicate revolver that fires .357 Magnum rounds and has 7 chambers, and an extra speedloader."
 	item = /obj/item/storage/box/syndie_kit/revolver
-	cost = 13
+	cost = 10
 	player_minimum = 15
 	surplus = 50
 	purchasable_from = UPLINK_SYNDICATE
@@ -35,7 +35,7 @@
 	name = "InteQ Revolver Kit"
 	desc = "Простой и брутальный револьвер под патрон .357 Magnum. 7 выстрелов для 7 трупов, скорозарядник с дополнительным боезопасом в комплекте."
 	item = /obj/item/storage/box/inteq_kit/revolver
-	cost = 13
+	cost = 10
 	player_minimum = 15
 	surplus = 50
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
@@ -183,13 +183,14 @@
 	purchasable_from = UPLINK_SYNDICATE
 
 /datum/uplink_item/dangerous/shield
-	name = "Ballistic Shield"
-	desc = "An incredibly useful personal shield projector, capable of reflecting ballistic projectiles and defending \
-			against other attacks. Pair with an Plasma Sword for a killer combination."
+	name = "Energy Shield"
+	desc = "Устаревшая на несколько поколений модель энергетического щита; компенсируется своей надёжностью и универсальностью. \
+	Использует механические ограничители силового поля и эргономика немного страдает, но всё ещё является желанным элементом экипировки. \
+	В сочетании с плазменным мечом - убийственная комбинация."
 	item = /obj/item/shield/inteq_energy
 	cost = 16
 	surplus = 20
-	purchasable_from = UPLINK_NUKE_OPS
+	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/dangerous/rapier
 	name = "Rapier"
@@ -287,7 +288,7 @@
 	with your fists, and be able to slam people through tables with immense force. \
 	Unfortunately, due to the size of the gloves you will be unable to wield firearms with them equipped."
 	item = /obj/item/clothing/gloves/fingerless/pugilist/mauler
-	cost = 10
+	cost = 8
 
 /datum/uplink_item/dangerous/powerfist
 	name = "Power Fist"
@@ -296,7 +297,7 @@
 		Using a wrench on the piston valve will allow you to tweak the amount of gas used per punch to \
 		deal extra damage and hit targets further. Use a screwdriver to take out any attached tanks."
 	item = /obj/item/melee/powerfist
-	cost = 8
+	cost = 5
 
 /datum/uplink_item/dangerous/death_lipstick
 	name = "Kiss of Death"

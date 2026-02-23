@@ -206,6 +206,9 @@
 ///has one pipe input that only takes, example is manual output pipe
 /datum/component/plumbing/simple_demand
 	demand_connects = NORTH
+///accepts pipe connections from any direction (for limb grower, chem dispensers, etc.)
+/datum/component/plumbing/simple_demand/all_dirs
+	demand_connects = NORTH | SOUTH | EAST | WEST
 ///has one pipe output that only supplies. example is liquid pump and manual input pipe
 /datum/component/plumbing/simple_supply
 	supply_connects = NORTH

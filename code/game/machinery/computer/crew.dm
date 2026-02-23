@@ -1,4 +1,4 @@
-#define SENSORS_UPDATE_PERIOD 100 //How often the sensor data updates.
+#define SENSORS_UPDATE_PERIOD 10 SECONDS //How often the sensor data updates.
 
 /obj/machinery/computer/crew
 	name = "crew monitoring console"
@@ -9,11 +9,37 @@
 	idle_power_usage = 250
 	active_power_usage = 500
 	circuit = /obj/item/circuitboard/computer/crew
-
+	var/obj/item/radio/headset/radio = /obj/item/radio/headset/headset_med
 	light_color = LIGHT_COLOR_BLUE
+	COOLDOWN_DECLARE(data_update_cooldown)
+
+/obj/machinery/computer/crew/Initialize()
+	. = ..()
+	if(radio)
+		radio = new radio(src)
+
+/obj/machinery/computer/crew/Destroy()
+	QDEL_NULL(radio)
+	return ..()
+
+/obj/machinery/computer/crew/proc/radioAnnounce(message)
+	radio?.talk_into(src, message, MODE_DEPARTMENT)
+
+/obj/machinery/computer/crew/process(delta_time)
+	. = ..()
+	if(!.)
+		return
+	if(COOLDOWN_FINISHED(src, data_update_cooldown))
+		COOLDOWN_START(src, data_update_cooldown, SENSORS_UPDATE_PERIOD)
+		var/sector = z
+		if(!sector)
+			var/turf/T = get_turf(src)
+			sector = T.z
+		GLOB.crewmonitor.update_data(sector)
 
 /obj/machinery/computer/crew/syndie
 	icon_keyboard = "syndie_key"
+	radio = null
 
 /obj/machinery/computer/crew/interact(mob/user)
 	GLOB.crewmonitor.show(user,src)
@@ -28,7 +54,8 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 	var/list/data_by_z = list()
 	var/list/last_update = list()
 	var/selected_jobs = -1
-	var/list/last_crit_alert = list()
+	var/static/list/last_crit_alert = list()
+	var/const/crit_check_cd_time = 120 SECONDS
 
 /datum/crewmonitor/New()
 	. = ..()
@@ -162,14 +189,14 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 				if(!I)
 					I = H.wear_neck ? H.wear_neck.GetID() : null
 
-				if (I)
-					name = I.registered_name
+				if(I)
 					assignment = I.get_assignment_name()
 					ijob = jobs[GetJobName(I.assignment)]
 				else
-					name = "Unknown"
 					assignment = ""
 					ijob = 80
+
+				name = I?.registered_name || H.name || "Unknown"
 
 				if (selected_jobs != -1 && round(ijob / 10) - selected_jobs != 0)
 					continue
@@ -210,29 +237,29 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 				else
 					results_undamaged[++results_undamaged.len] = total_list
 
-// --- CRITICAL ALERT ---
-				if((nanite_sensors || U.sensor_mode >= SENSOR_VITALS) && (H.stat == SOFT_CRIT || H.stat == DEAD || H.health <= -20))
-					var/ck = H.ckey
-					if(!last_crit_alert[ck] || world.time > last_crit_alert[ck] + 1200)
-						last_crit_alert[ck] = world.time
+				// --- CRITICAL ALERT ---
+				if((nanite_sensors || U.sensor_mode >= SENSOR_VITALS))
+					// Уровень повреждений как в TGUI. 3 это оранжевый, 4+ красные
+					var/damage_level = min(max(ceil(totaldam / 25), 0), 4)
+					if(damage_level >= 4)
+						var/wkref = WEAKREF(H)
+						if(!last_crit_alert[wkref] || world.time > last_crit_alert[wkref] + crit_check_cd_time)
+							last_crit_alert[wkref] = world.time
 
-						var/area_name = get_area_name(H, TRUE)
-						var/realname = I ? I.registered_name : H.real_name
-						var/job = I ? I.get_assignment_name() : "Unknown"
+							// Найдём все crew мониторы на этом Z и заставим их пикнуть + сказать сообщение
+							var/obj/machinery/computer/crew/working_terminal
+							for(var/obj/machinery/computer/crew/C in GLOB.crew_sensor_monitors)
+								if(C.z == z && C.is_operational())
+									playsound(C, 'sound/machines/twobeep.ogg', 80, FALSE)
+									C.say("Обнаружен пациент в критическом состоянии!")
+									if(!working_terminal && C.radio)
+										working_terminal = C
 
-						var/obj/machinery/announcement_system/AAS = null
-						for(var/obj/machinery/announcement_system/S in GLOB.announcement_systems)
-							if(S.z == z && S.is_operational())
-								AAS = S
-								break
-
-						// Найдём все crew мониторы на этом Z и заставим их пикнуть
-						for(var/obj/machinery/computer/crew/C in GLOB.crew_sensor_monitors)
-							if(C.z == z && C.is_operational())
-								playsound(C, 'sound/machines/beep.ogg', 50, FALSE)
-
-						if(AAS)
-							AAS.announce_critical(realname, job, area_name)
+							if(working_terminal)
+								var/area_msg = U.sensor_mode >= SENSOR_COORDS ? " в [get_area_name(H, TRUE)]" : ""
+								var/Hname = I ? I.registered_name : H.name
+								var/job = I ? I.get_assignment_name() : "Unknown"
+								working_terminal.radioAnnounce("КРИТИЧЕСКОЕ СОСТОЯНИЕ: [Hname] ([job])[area_msg]")
 
 	var/list/returning = sortTim(results_damaged,GLOBAL_PROC_REF(damage_compare)) + sortTim(results_undamaged,GLOBAL_PROC_REF(ijob_compare))
 

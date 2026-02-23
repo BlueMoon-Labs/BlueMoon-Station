@@ -1,7 +1,7 @@
 /obj/item/ashtray
 	name = "ashtray"
 	desc = "A thing to keep your butts in."
-	icon = 'modular_bluemoon/Gardelin0/icons/obj/ashtray.dmi'
+	icon = 'modular_bluemoon/icons/obj/ashtray.dmi'
 	icon_state = "ashtray"
 	color = "#5c5454"
 	throw_speed = 2

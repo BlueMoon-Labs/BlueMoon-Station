@@ -14,7 +14,7 @@
 	tastes = list("fish" = 1, "dried meat" = 1)
 	foodtype = SEAFOOD
 	w_class = WEIGHT_CLASS_SMALL
-	grind_results = list(/datum/reagent/consumable/bonito = 20,)
+	grind_results = list(/datum/reagent/consumable/bonito = 20)
 
 /obj/item/reagent_containers/food/snacks/katsu_fillet
 	name = "katsu fillet"
@@ -29,7 +29,7 @@
 	foodtype = MEAT | GRAIN
 	w_class = WEIGHT_CLASS_SMALL
 
-/obj/item/reagent_containers/food/snacks/red_bay // Это тоже под заказ с ЦК
+/obj/item/reagent_containers/food/red_bay // Это тоже под заказ с ЦК
 	name = "\improper Red Bay seasoning"
 	icon = 'modular_bluemoon/icons/obj/food/containers.dmi'
 	desc = "Mars' favourite seasoning."

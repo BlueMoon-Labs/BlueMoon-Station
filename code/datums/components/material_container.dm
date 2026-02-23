@@ -442,3 +442,23 @@
 	if(!istype(mat))
 		mat = SSmaterials.GetMaterialRef(mat)
 	return(materials[mat])
+
+/datum/component/material_container/ui_static_data(mob/user)
+	. = list()
+	.["SHEET_MATERIAL_AMOUNT"] = SHEET_MATERIAL_AMOUNT
+
+/// List format is list(material_name = list(amount = ..., ref = ..., etc.))
+/datum/component/material_container/ui_data(mob/user)
+	. = list()
+
+	for(var/datum/material/M in materials)
+		var/amount = materials[M]
+
+		. += list(list(
+			"name" = M.name,
+			"ref" = REF(M),
+			"amount" = amount,
+			"sheets" = round(amount / MINERAL_MATERIAL_AMOUNT),
+			"removable" = amount >= MINERAL_MATERIAL_AMOUNT,
+			"color" = M.color
+		))

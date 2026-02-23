@@ -527,9 +527,7 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 			tlist[i] = line
 		// end for
 
-		t = tlist[1]
-		for(var/i = 2, i <= tlistlen, i++)
-			t += "\n" + tlist[i]
+		t = jointext(tlist, "\n")
 
 		while(listlevel >= 0)
 			t += "</ul>"

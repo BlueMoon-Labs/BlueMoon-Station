@@ -132,21 +132,18 @@
 		var/obj/item/I = loc
 		I.grenade_prime_react(src)
 
-/obj/item/grenade/tool_act(mob/living/user, obj/item/I, tool_behaviour)
-	if(tool_behaviour == TOOL_SCREWDRIVER)
-		switch(det_time)
-			if(1)
-				det_time = 3 SECONDS
-				to_chat(user, span_notice("Вы настроили время взведения [name] на 3 секунды."))
-			if(3 SECONDS)
-				det_time = 5 SECONDS
-				to_chat(user, span_notice("Вы настроили время взведения [name] на 5 секунд."))
-			if(5 SECONDS)
-				det_time = 1
-				to_chat(user, span_notice("Вы настроили [name] на мгновенный взвод детонатора."))
-		add_fingerprint(user)
-	else
-		return ..()
+/obj/item/grenade/screwdriver_act(mob/living/user, obj/item/I, tool_behaviour)
+	switch(det_time)
+		if(1)
+			det_time = 3 SECONDS
+			to_chat(user, span_notice("Вы настроили время взведения [name] на 3 секунды."))
+		if(3 SECONDS)
+			det_time = 5 SECONDS
+			to_chat(user, span_notice("Вы настроили время взведения [name] на 5 секунд."))
+		if(5 SECONDS)
+			det_time = 1
+			to_chat(user, span_notice("Вы настроили [name] на мгновенный взвод детонатора."))
+	add_fingerprint(user)
 
 /obj/item/grenade/attack_paw(mob/user)
 	return attack_hand(user)

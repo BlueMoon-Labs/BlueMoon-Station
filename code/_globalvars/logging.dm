@@ -62,6 +62,8 @@ GLOBAL_LIST_EMPTY(bombers)
 GLOBAL_PROTECT(bombers)
 GLOBAL_LIST_EMPTY(admin_log)
 GLOBAL_PROTECT(admin_log)
+GLOBAL_LIST_EMPTY(uplink_log)
+GLOBAL_PROTECT(uplink_log)
 GLOBAL_LIST_EMPTY(lastsignalers)	//keeps last 100 signals here in format: "[src] used [REF(src)] @ location [src.loc]: [freq]/[code]"
 GLOBAL_PROTECT(lastsignalers)
 GLOBAL_LIST_EMPTY(lawchanges) //Stores who uploaded laws to which silicon-based lifeform, and what the law was

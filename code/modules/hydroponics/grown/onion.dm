@@ -48,15 +48,14 @@
 	slice_path = /obj/item/reagent_containers/food/snacks/onion_slice/red
 	wine_power = 60
 
-/obj/item/reagent_containers/food/snacks/grown/onion/slice(accuracy, obj/item/W, mob/user)
+/obj/item/reagent_containers/food/snacks/grown/onion/UsedforProcessing(mob/living/user, obj/item/I, list/chosen_option, list/created_atoms)
 	var/datum/effect_system/smoke_spread/chem/S = new	//Since the onion is destroyed when it's sliced,
 	var/splat_location = get_turf(src)	//we need to set up the smoke beforehand
 	S.attach(splat_location)
 	S.set_up(reagents, 0, splat_location, 0)
-	if(..())
-		S.start()
-		return TRUE
+	S.start()
 	qdel(S)
+	return ..()
 
 /obj/item/reagent_containers/food/snacks/onion_slice
 	name = "onion slices"

@@ -273,7 +273,7 @@
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF
 	armor = list(MELEE = 30, BULLET = 5, LASER = 10, ENERGY = 5, BOMB = 50, BIO = 100, RAD = 50, FIRE = 50, ACID = 75, WOUND = 25)
-	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage/bag/ore, /obj/item/pickaxe)
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage/bag/ore, /obj/item/pickaxe, /obj/item/resonator, /obj/item/gun/energy/kinetic_accelerator)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/mining
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
@@ -622,6 +622,7 @@
 	item_state = "hardsuit0-blueshield"
 	hardsuit_type = "blueshield"
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
+	unique_reskin = null
 
 /obj/item/clothing/suit/space/hardsuit/blue_shield
 	name = "Blue Shield hardsuit"
@@ -636,6 +637,11 @@
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/blue_shield
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
+	unique_reskin = null
+
+/obj/item/clothing/suit/space/hardsuit/blue_shield/Initialize()
+	. = ..()
+	allowed = GLOB.security_hardsuit_allowed
 
 	//Security hardsuit
 /obj/item/clothing/head/helmet/space/hardsuit/security

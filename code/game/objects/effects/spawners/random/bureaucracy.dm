@@ -1,6 +1,6 @@
 /obj/effect/spawner/lootdrop/random/bureaucracy
 	name = "bureaucracy loot spawner"
-	icon = 'modular_bluemoon/SmiLeY/icons/misc/random_spawners.dmi'
+	icon = 'modular_bluemoon/icons/misc/random_spawners.dmi'
 	desc = "For the exotic art of paper shuffling."
 
 /obj/effect/spawner/lootdrop/random/bureaucracy/pen

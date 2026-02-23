@@ -122,6 +122,8 @@
 	)
 
 /datum/mail_pattern/antag/hogwarts/apply(mob/living/carbon/human/recipient)
+	if(prob(50))
+		letter_html = "<img src='https://i.ibb.co/tTHRTY3z/image.png'>" // ВЖУХ
 	if(recipient.gender == FEMALE)
 		initial_contents += /obj/item/clothing/suit/wizrobe/marisa
 		initial_contents += /obj/item/clothing/head/wizard/marisa
@@ -140,3 +142,31 @@
 	recipient.visible_message(span_abductor("[recipient] обдаёт магической энергией из [parent]!"), span_abductor("Вас обдаёт магической энергией из [parent]!"))
 	playsound(parent, 'sound/effects/magic.ogg')
 	message_admins("[ADMIN_LOOKUPFLW(recipient)] получил магическую книжку письмом из Хогвартса!")
+
+/datum/mail_pattern/antag/clown_car
+	name = "Клоунская машинка"
+	description = "Содержит клоунскую машинку и мегафон. Доступно только в эксту, но если ты хочешь щитспавнить в динамик креативно..."
+
+	envelope_type = MAIL_TYPE_PACKAGE
+
+	bad_feeling = "Вы чувствуете как от посылки исходит аура хонка..."
+
+	weight = MAIL_WEIGHT_EXTREMELY_RARE
+
+	letter_icon_state = "scrap"
+	letter_title = "Письмо от Хонкоматери"
+	letter_html = {"Ты знаешь что делать, сын мой."}
+	letter_sign = ""
+	sender = "HONK"
+
+	whitelisted_roundtypes = list(
+		ROUNDTYPE_EXTENDED
+	)
+	whitelisted_jobs = list(
+		"Clown"
+	)
+
+	initial_contents = list(
+		/obj/item/choice_beacon/vehicle/clown_car,
+		/obj/item/megaphone/clown,
+	)

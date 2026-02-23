@@ -42,6 +42,9 @@
 			p13target_duration
 		)
 
+	if(interaction_flags & INTERACTION_FLAG_ADJACENT && user != target)
+		SEND_SIGNAL(user, COMSIG_INTERACTION_ADJACENT, target)
+		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
 
 /datum/interaction/proc/get_lust_modifier(mob/living/user)
 	return (20 * (user.get_lust() / user.get_lust_tolerance())) - 10

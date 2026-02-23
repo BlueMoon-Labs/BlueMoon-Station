@@ -57,8 +57,6 @@
 /obj/machinery/computer/mechpad/multitool_act(mob/living/user, obj/item/tool)
 	if(!tool.tool_behaviour == TOOL_MULTITOOL)
 		return
-	if(!multitool_check_buffer(user, tool))
-		return
 	if(istype(tool.buffer, /obj/machinery/mechpad))
 		var/obj/machinery/mechpad/buffered_console = tool.buffer
 		if(!(mechpads.len < maximum_pads))

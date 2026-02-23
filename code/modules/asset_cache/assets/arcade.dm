@@ -6,4 +6,6 @@
 		"boss4.gif" = 'icons/ui_icons/arcade/boss4.gif',
 		"boss5.gif" = 'icons/ui_icons/arcade/boss5.gif',
 		"boss6.gif" = 'icons/ui_icons/arcade/boss6.gif',
+		"shopkeeper.png" = 'icons/ui_icons/arcade/shopkeeper.png',
+		"fireplace.png" = 'icons/ui_icons/arcade/fireplace.png',
 	)

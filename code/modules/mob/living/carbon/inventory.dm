@@ -199,6 +199,10 @@
 		to_chat(src, span_warning("You're already offering up something!"))
 		return
 
+	if(offered_item.item_flags & ABSTRACT)
+		to_chat(src, span_warning("You can't offer this!"))
+		return
+
 	if(offered_item.on_offered(src)) // see if the item interrupts with its own behavior
 		return
 
@@ -229,7 +233,7 @@
 		return
 	if(I.on_offer_taken(offerer, src)) // see if the item has special behavior for being accepted
 		return
-	if(!offerer.temporarilyRemoveItemFromInventory(I))
+	if((I.item_flags & ABSTRACT) || !offerer.temporarilyRemoveItemFromInventory(I))
 		visible_message("<span class='notice'>[offerer] tries to hand over [I] but it's stuck to them....", \
 						"<span class'notice'> You make a fool of yourself trying to give away an item stuck to your hands")
 		return

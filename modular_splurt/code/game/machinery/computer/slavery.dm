@@ -32,6 +32,8 @@
 	var/list/filtered_modules = list()
 	for(var/path in GLOB.slaver_gear)
 		var/datum/slaver_gear/SG = new path
+		if(!SG.build_path)
+			continue
 		if(!filtered_modules[SG.category])
 			filtered_modules[SG.category] = list()
 		filtered_modules[SG.category][SG] = SG
@@ -49,6 +51,7 @@
 	var/turf/curr = get_turf(src)
 	data["currentCoords"] = "[curr.x], [curr.y], [curr.z]"
 	data["value_table"] = GLOB.slavers_ransom_values
+	data["ransom_multiplayer"] = SLAVER_RANSOM_MULTIPLIER
 	data["categories"] = list()
 	for(var/category in possible_gear)
 		var/list/cat = list(
@@ -222,8 +225,9 @@
 			collar.nextRecruitChance = 0 // If the popup box closes a strange way such as a disconnect, do nothing and re-enable the chance to open it again
 
 		if("export")
-			editBalance(collar.price)
-			GLOB.slavers_credits_total += collar.price * SLAVER_RANSOM_MULTIPLIER
+			var/total_ransom = collar.price * SLAVER_RANSOM_MULTIPLIER
+			editBalance(total_ransom)
+			GLOB.slavers_credits_total += total_ransom
 			GLOB.slavers_slaves_sold++
 
 
@@ -237,7 +241,7 @@
 			var/mob/living/M = collar.loc
 
 			priority_announce("Возвращают [M.real_name] на Космическую Станцию[GLOB.master_mode == ROUNDTYPE_EXTENDED ? "" : " за [collar.price] кредитов"].", sender_override = GLOB.slavers_team_name)
-			radioAnnounce("За возврат [M.real_name] на счет поступило [collar.price * SLAVER_RANSOM_MULTIPLIER] кредитов.")
+			radioAnnounce("За возврат [M.real_name] на счет поступило [total_ransom] кредитов.")
 			var/obj/structure/closet/supplypod/centcompod/exportPod = new(pick(get_area_turfs(pod_storage_area)))
 			var/obj/effect/landmark/observer_start/dropzone = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
 			M.forceMove(exportPod)

@@ -58,6 +58,12 @@ BLUESPACEMINER_MULT_OUTPUT 1
 ## What is the minimum stock part tier to produce bluespace crystals?
 BLUESPACEMINER_CRYSTAL_TIER 5
 
+## Time IN MINUTES to full integrity bs core destroy
+BLUESPACEMINER_CORE_WORK_TIME_MINUTES 30
+
+## The chance (per second) that the core will not take damage during operation. Introduces a bit of chaos
+BLUESPACEMINER_CORE_WORK_CHANSE_NO_DAMAGE 5
+
 ###
 ## TETRIS
 ###

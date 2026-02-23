@@ -12,7 +12,7 @@
 /mob/living/simple_animal/qareen
 	name = "Qareen"
 	desc = "A horny spirit."
-	icon = 'modular_bluemoon/Gardelin0/icons/mob/qareen.dmi'	//It looks pretty tho! - Gardelin0
+	icon = 'modular_bluemoon/icons/mob/qareen.dmi'	//It looks pretty tho! - Gardelin0
 	icon_state = "qareen_none_idle"
 	var/icon_idle = "qareen_none_idle"
 	var/icon_reveal = "qareen_none_revealed"
@@ -420,7 +420,7 @@
 				break
 	if(!key_of_qareen)
 		message_admins("The new qareen's old client either could not be found or is in a new, living mob - grabbing a random candidate instead...")
-		var/list/candidates = pollCandidatesForMob("Do you want to be [qareen.name] (reforming)?", ROLE_QAREEN, null, ROLE_QAREEN, 50, qareen)
+		var/list/candidates = pollCandidatesForMob("Do you want to be [qareen.name] (reforming)?", ROLE_QAREEN, null, ROLE_QAREEN, 50, qareen, priority_check = FALSE)
 		if(!LAZYLEN(candidates))
 			qdel(qareen)
 			message_admins("No candidates were found for the new qareen. Oh well!")

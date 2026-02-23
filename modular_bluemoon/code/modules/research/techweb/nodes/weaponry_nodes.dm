@@ -65,3 +65,23 @@
 	design_ids = list("vector")
 	prereq_ids = list("mk60")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
+
+//////////////////
+//MWS-01 design//
+////////////////
+
+/datum/techweb_node/mws01_basic
+	id = "mws01_basic"
+	display_name = "MWS-01 Ammunition"
+	description = "Базовая аммуниция адаптивного оружия MWS-01 в виде батарей и магазина-порта к ним."
+	design_ids = list("mws01_battery_mag", "mws01_battery_lethal", "mws01_battery_disabler", "mws01_battery_taser")
+	prereq_ids = list("adv_weaponry")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 4000)
+
+/datum/techweb_node/mws01_adv
+	id = "mws01_adv"
+	display_name = "MWS-01 Advanced Batteries"
+	description = "Продвинутые боеприпасы для модульного оружия корпуса Синих Щитов."
+	design_ids = list("mws01_battery_ion", "mws01_battery_xray")
+	prereq_ids = list("mws01_basic", "radioactive_weapons", "electronic_weapons")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)

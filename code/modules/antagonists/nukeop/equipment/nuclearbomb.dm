@@ -159,6 +159,39 @@
 					STOP_PROCESSING(SSobj, core)
 					update_icon()
 				return
+		if(NUKESTATE_CORE_REMOVED)
+			if(istype(I, /obj/item/nuke_core) && !istype(I, /obj/item/nuke_core/supermatter_sliver))
+				if(core)
+					return
+				to_chat(user, "<span class='notice'>You start placing the plutonium core back into [src]...</span>")
+				if(do_after(user, 50, target=src))
+					if(core)
+						return
+					if(!user.transferItemToLoc(I, src))
+						return
+					core = I
+					deconstruction_state = NUKESTATE_CORE_EXPOSED
+					START_PROCESSING(SSobj, core)
+					update_icon()
+					to_chat(user, "<span class='notice'>You place the plutonium core back into [src].</span>")
+				return
+			if(istype(I, /obj/item/nuke_core_container))
+				var/obj/item/nuke_core_container/core_box = I
+				if(!core_box.core || istype(core_box.core, /obj/item/nuke_core/supermatter_sliver))
+					return
+				to_chat(user, "<span class='notice'>You start reinserting the plutonium core from [core_box] into [src]...</span>")
+				if(do_after(user, 50, target=src))
+					if(core || !core_box.core)
+						return
+					core = core_box.core
+					core_box.core.forceMove(src)
+					core_box.core = null
+					core_box.icon_state = "core_container_empty"
+					deconstruction_state = NUKESTATE_CORE_EXPOSED
+					START_PROCESSING(SSobj, core)
+					update_icon()
+					to_chat(user, "<span class='notice'>You reinsert the plutonium core from [core_box] into [src].</span>")
+				return
 	. = ..()
 
 /obj/machinery/nuclearbomb/crowbar_act(mob/user, obj/item/tool)
@@ -636,6 +669,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	var/fake = FALSE
+	var/stationloving = TRUE
 	var/turf/lastlocation
 	var/last_disk_move
 	var/process_tick = 0
@@ -651,7 +685,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 /obj/item/disk/nuclear/ComponentInitialize()
 	. = ..()
-	AddComponent(/datum/component/stationloving, !fake)
+	if(stationloving)
+		AddComponent(/datum/component/stationloving, !fake)
 
 /obj/item/disk/nuclear/process()
 	process_tick++
@@ -693,11 +728,15 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 /obj/item/disk/nuclear/examine(mob/user)
 	. = ..()
-	if(!fake)
-		return
+	if(isobserver(user) && fake)
+		. += span_notice("It's a fake! Nice job captain, ha-ha.")
 
-	if(isobserver(user) || HAS_TRAIT(user.mind, TRAIT_DISK_VERIFIER))
-		. += "<span class='warning'>The serial numbers on [src] are incorrect.</span>"
+/obj/item/disk/nuclear/examine_more(mob/user)
+	. = ..()
+	if(HAS_TRAIT(user?.mind, TRAIT_DISK_VERIFIER))
+		. += span_notice("The serial numbers on [src] are [fake ? "in" : ""]correct.")
+	else
+		. += span_notice("It has a serial number on it, but it doesn't mean anything to you.")
 
 /*
  * You can't accidentally eat the nuke disk, bro
@@ -749,3 +788,10 @@ This is here to make the tiles around the station mininuke change when it's arme
 /obj/item/disk/nuclear/fake/obvious
 	name = "cheap plastic imitation of the nuclear authentication disk"
 	desc = "How anyone could mistake this for the real thing is beyond you."
+	stationloving = FALSE
+	resistance_flags = NONE
+	armor = null
+
+/obj/item/disk/nuclear/fake/obvious/mail
+	name = "nuclearning auth disk"
+	desc = "Better keep this safe."

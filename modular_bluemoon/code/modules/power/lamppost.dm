@@ -91,7 +91,7 @@
 	update_lamp_positions()
 
 	if(light_on_init)
-		addtimer(CALLBACK(src, .proc/try_initial_lighting), 10)
+		addtimer(CALLBACK(src, PROC_REF(try_initial_lighting)), 10)
 
 /obj/machinery/power/floodlight/lamppost/proc/try_initial_lighting()
 	var/total_power_needed = lamp_power_usage * number_of_lamps

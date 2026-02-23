@@ -225,7 +225,7 @@
 /datum/dimension_theme/proc/apply_materials(turf/affected_turf)
 	PROTECTED_PROC(TRUE)
 
-	var/list/custom_materials = list(GET_MATERIAL_REF(material) = SHEET_MATERIAL_AMOUNT)
+	var/list/custom_materials = list(GET_MATERIAL_REF(material) = MINERAL_MATERIAL_AMOUNT)
 
 	if (istype(affected_turf, /turf/open/floor/material) || istype(affected_turf, /turf/closed/wall/material))
 		affected_turf.set_custom_materials(custom_materials)
@@ -467,8 +467,9 @@
 	replace_floors = list(/turf/open/floor/mineral/abductor = 1)
 	replace_objs = list(
 		/obj/structure/chair = list(/obj/structure/chair/greyscale = 9, /obj/structure/bed/abductor = 1),
-		/obj/machinery/door/airlock = list(/obj/machinery/door/airlock/abductor = 2),
-		/obj/structure/table = list(/obj/structure/table/greyscale = 9, /obj/structure/table/abductor = 1),
+		/obj/structure/bed = list(/obj/structure/bed/abductor = 1),
+		/obj/machinery/door/airlock = list(/obj/machinery/door/airlock/abductor = 1),
+		/obj/structure/table = list(/obj/structure/table/abductor = 1),
 		/obj/structure/toilet = list(/obj/structure/toilet/greyscale = 1),
 	)
 

@@ -3,6 +3,7 @@
 	desc = "На этом вы сидите. По своей воле или нет."
 	icon = 'icons/obj/chairs.dmi'
 	icon_state = "chair"
+	layer = OBJ_LAYER
 	anchored = TRUE
 	can_buckle = 1
 	buckle_lying = 0 //you sit in a chair, not lay
@@ -13,11 +14,12 @@
 	var/buildstacktype = /obj/item/stack/sheet/metal
 	var/buildstackamount = 1
 	var/item_chair = /obj/item/chair // if null it can't be picked up
-	layer = OBJ_LAYER
+	var/bolts = TRUE
 
 /obj/structure/chair/examine(mob/user)
 	. = ..()
-	. += span_notice("Оно держится на нескольких <b>болтах</b>.")
+	if(bolts)
+		. += span_notice("Оно держится на нескольких <b>болтах</b>.")
 	if(!has_buckled_mobs())
 		. += span_notice("Перетащите свой спрайт, чтобы усесться.")
 
@@ -148,7 +150,7 @@
 		deconstruct(FALSE)
 	// BLUEMOON ADDITION END
 
-/obj/structure/chair/post_unbuckle_mob()
+/obj/structure/chair/post_unbuckle_mob(mob/living/M)
 	. = ..()
 	handle_layer()
 
