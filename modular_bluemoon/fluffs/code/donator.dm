@@ -2105,3 +2105,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/backpack/case/command/freak
 	ckeywhitelist = list("freakowo")
+
+/datum/gear/donator/bm/desert_nanosuit
+	name = "Desert Nanosuit"
+	slot = ITEM_SLOT_UNDERWEAR
+	path = /obj/item/clothing/underwear/briefs/nano_suit
+	ckeywhitelist = list("lindaastereih", "kingdeaths", "heathkit1")
