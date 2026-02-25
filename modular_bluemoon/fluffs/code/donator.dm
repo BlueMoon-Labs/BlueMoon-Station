@@ -2110,7 +2110,7 @@
 	name = "Fire blossom"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/fire_blossom
-	ckeywhitelist = list("sheya, dagran")
+	ckeywhitelist = list("sheya", "dagran")
 
 /datum/gear/donator/bm/desert_nanosuit
 	name = "Desert Nanosuit"
