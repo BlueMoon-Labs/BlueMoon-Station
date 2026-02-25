@@ -404,3 +404,14 @@
 	name = "Cybertechnical Jacket"
 	path = /obj/item/clothing/suit/syndie_jacket
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
+
+/datum/gear/suit/cropped_jacket_main
+	name = "Cropped jacket"
+	path = /obj/item/clothing/suit/toggle/cropped_jacket_main
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
+
+/datum/gear/suit/shoulder_sweater
+	name = "Off shoulder sweater"
+	path = /obj/item/clothing/suit/shoulder_sweater
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION

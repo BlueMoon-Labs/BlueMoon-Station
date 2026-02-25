@@ -675,3 +675,24 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+///////////////////////////////////////////////////
+
+/obj/item/clothing/suit/toggle/cropped_jacket_main
+	name = "Cropped jacket"
+	desc = "A cropped jacket"
+	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "cropped_jacket_main"
+	item_state = "cropped_jacket_main"
+	togglename = "buttons"
+
+/obj/item/clothing/suit/shoulder_sweater
+	name = "Off shoulder sweater"
+	desc = "A cropped jacket"
+	icon_state = "shoulder_sweater_main"
+	item_state = "shoulder_sweater_main"
+	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
