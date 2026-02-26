@@ -115,6 +115,7 @@
 	icon_state = "detective"
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/rev38
 	obj_flags = UNIQUE_RENAME
+	casing_ejector = TRUE // Чтобы формула подсчёта взрыва на 357 работала, нужно выкинуть из учета Гильзы. Меньше стиля, но меньше кода
 	unique_reskin = list(
 		"Default" = list("icon_state" = "detective"),
 		"Leopard Spots" = list("icon_state" = "detective_leopard"),
@@ -130,10 +131,10 @@
 
 /obj/item/gun/ballistic/revolver/detective/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 	if(chambered && !(chambered.caliber in safe_calibers))
-		if(prob(70 - (magazine.ammo_count() * 10)))	//minimum probability of 10, maximum of 60
+		if(prob(65 - (magazine.ammo_count() * 10)))	//minimum probability of 5, maximum of 55
 			playsound(user, fire_sound, 50, 1)
 			to_chat(user, "<span class='userdanger'>[src] blows up in your face!</span>")
-			user.take_bodypart_damage(0,20)
+			user.take_bodypart_damage(10,10)
 			user.dropItemToGround(src)
 			return FALSE
 	..()
