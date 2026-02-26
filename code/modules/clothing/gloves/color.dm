@@ -140,7 +140,7 @@
 	var/can_be_cut = TRUE
 	strip_mod = 1.2
 
-	/obj/item/clothing/gloves/color/black/forensic
+/obj/item/clothing/gloves/color/black/forensic
 	desc = "Перчатки детектива. Они не оставляют следов, где их и так уже хватает."
 	name = "forensic black gloves"
 	icon_state = "black"
