@@ -277,9 +277,10 @@
 		human_victim.grant_language(/datum/language/draconic, source = LANGUAGE_ASHSLAVE)
 		ash_lungs.Insert(human_victim)
 		to_chat(human_victim, span_mind_control("Вы послушный раб пеплоходцев. Вы можете не повиноваться их воле, но вы никоим образе не хотите им вредить. Вы забываете всю вашу вражду с ними и вы не желаете вернуться на станцию без весомых причин."))
-	else if(choice == "Сопротивляться" && !(GLOB.master_mode == ROUNDTYPE_EXTENDED || GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT))
-		human_victim.death()
-	else if(choice == "Сопротивляться" && (GLOB.master_mode == ROUNDTYPE_EXTENDED || GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT))
-		var/point_tp=locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
-		do_teleport(human_victim, point_tp, no_effects = TRUE, channel = TELEPORT_CHANNEL_FREE)
+	else if(choice == "Сопротивляться")
+		if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
+			var/point_tp = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
+			do_teleport(human_victim, point_tp, no_effects = TRUE, channel = TELEPORT_CHANNEL_FREE)
+		else
+			human_victim.death()
 
