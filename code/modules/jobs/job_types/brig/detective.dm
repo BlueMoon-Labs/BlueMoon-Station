@@ -93,11 +93,11 @@
 	l_pocket = /obj/item/toy/crayon/white
 	r_pocket = /obj/item/lighter
 	backpack_contents = list(
-		/obj/item/storage/box/evidence
-		/obj/item/detective_scanner
-		/obj/item/storage/ifak
-		/obj/item/storage/box/sec_kit
-		/obj/item/melee/classic_baton
+		/obj/item/storage/box/evidence,
+		/obj/item/detective_scanner,
+		/obj/item/storage/ifak,
+		/obj/item/storage/box/sec_kit,
+		/obj/item/melee/classic_baton,
 		/obj/item/stamp/security)
 	mask = /obj/item/clothing/mask/cigarette/cigar/havana
 
