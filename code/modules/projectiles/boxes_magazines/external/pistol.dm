@@ -56,12 +56,12 @@
 	max_ammo = 16
 	multiple_sprites = 2
 /obj/item/ammo_box/magazine/pistolm9mm/ap
-	name = "pistol magazine (9mm)"
+	name = "pistol magazine (9mm AP)"
 	icon_state = "9x19pA"
 	ammo_type = /obj/item/ammo_casing/c9mm/ap
 
 /obj/item/ammo_box/magazine/pistolm9mm/inc
-	name = "pistol magazine (9mm)"
+	name = "pistol magazine (9mm incendiary)"
 	icon_state = "9x19pI"
 	ammo_type = /obj/item/ammo_casing/c9mm/inc
 
