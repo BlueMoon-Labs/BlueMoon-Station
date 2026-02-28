@@ -6,6 +6,7 @@
 	icon_state = "hypovial"
 	spillable = FALSE
 	volume = 10
+	amount_per_transfer_from_this = 5
 	possible_transfer_amounts = list(1,2,5,10)
 	container_flags = APTFT_VERB
 	obj_flags = UNIQUE_RENAME

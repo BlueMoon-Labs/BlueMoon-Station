@@ -106,6 +106,7 @@
 	name = "sterilizer spray"
 	desc = "Медицинский спрей для с нетоксичным стерилизатором-антисептиком. Незаменим для подготовки операции."
 	list_reagents = list(/datum/reagent/space_cleaner/sterilizine = 60)
+	amount_per_transfer_from_this = 5
 
 /obj/item/reagent_containers/medspray/synthtissue
 	name = "Synthtissue young culture spray"
