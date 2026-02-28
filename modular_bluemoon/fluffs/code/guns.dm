@@ -654,10 +654,10 @@
 /obj/item/modkit/rs14_kit
 	name = "RS14 Kit"
 	desc = "A modkit for making an Rsha12 into a RS14."
-	product = /obj/item/gun/ballistic/shotgun/rsh12/rs14
-	fromitem = list(/obj/item/gun/ballistic/shotgun/rsh12)
+	product = /obj/item/gun/ballistic/shotgun/automatic/rsh12/rs14
+	fromitem = list(/obj/item/gun/ballistic/shotgun/automatic/rsh12)
 
-/obj/item/gun/ballistic/shotgun/rsh12/rs14
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/rs14
 	name = "RS14"
 	desc = "Shotgun revolver. It was formerly a hunting weapon, but has since been adopted by the Rohai armies because of its ease of use, effectiveness and cheapness. This model uses 12 gauge."
 	item_state = "rs14"
