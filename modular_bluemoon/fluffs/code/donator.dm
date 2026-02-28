@@ -1902,6 +1902,18 @@
 	path = /obj/item/toy/plush/bm/belfor
 	ckeywhitelist = list("belf0r")
 
+/datum/gear/donator/bm/nova_plush
+	name = "Nova plushie"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/toy/plush/bm/nova
+	ckeywhitelist = list("architect0r")
+
+/datum/gear/donator/bm/zetta_plush
+	name = "Zetta plushie"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/toy/plush/bm/zetta
+	ckeywhitelist = list("hellsinggc")
+
 ///////////////////////////////////////////////
 
 /datum/gear/donator/bm/dm_pzuniform
