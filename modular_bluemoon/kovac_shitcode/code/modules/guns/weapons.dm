@@ -59,7 +59,7 @@
 	ammo_type = /obj/item/ammo_casing/shotgun/rubbershot
 	max_ammo = 6
 
-/obj/item/gun/ballistic/shotgun/automatic/rsh12
+/obj/item/gun/ballistic/shotgun/automatic/combat/rsh12
 	name = "RSH-12"
 	desc = "A moden Russian-made semi-automatic revolver, intended to used with 12 gauge."
 	icon_state = "rsh12"
