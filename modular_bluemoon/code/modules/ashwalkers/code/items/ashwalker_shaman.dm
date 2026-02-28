@@ -23,11 +23,11 @@
 	var/timer = 0
 	var/static/list/banned_turfs = typecacheof(list(/turf/open/space/transit, /turf/closed))
 
-/obj/item/lava_staff/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+/obj/item/ash_staff/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
 	INVOKE_ASYNC(src, PROC_REF(attempt_lava_shaman), target, user, proximity_flag, click_parameters)
 
-/obj/item/lava_staff/proc/attempt_lava_shaman(atom/target, mob/user, proximity_flag, click_parameters)
+/obj/item/ash_staff/proc/attempt_lava_shaman(atom/target, mob/user, proximity_flag, click_parameters)
 	if(timer > world.time)
 		return
 
@@ -49,8 +49,8 @@
 				var/old_name = T.name
 				if(T.TerraformTurf(turf_type, flags = CHANGETURF_INHERIT_AIR))
 					user.visible_message("<span class='danger'>[user] turns \the [old_name] into [transform_string]!</span>")
-					message_admins("[ADMIN_LOOKUPFLW(user)] fired the lava staff at [ADMIN_VERBOSEJMP(T)]")
-					log_game("[key_name(user)] fired the lava staff at [AREACOORD(T)].")
+					message_admins("[ADMIN_LOOKUPFLW(user)] fired the ash staff at [ADMIN_VERBOSEJMP(T)]")
+					log_game("[key_name(user)] fired the ash staff at [AREACOORD(T)].")
 					timer = world.time + create_cooldown
 					playsound(T,'sound/magic/fireball.ogg', 200, 1)
 			else
@@ -63,9 +63,6 @@
 				timer = world.time + reset_cooldown
 				playsound(T,'sound/magic/fireball.ogg', 200, 1)
 
-/obj/effect/temp_visual/lavastaff
-	icon_state = "lavastaff_warn"
-	duration = 50
 /obj/item/cursed_dagger
 	name = "cursed ash dagger"
 	desc = "Тупой кинжал, который, кажется, заставляет дрожать тени рядом с ним."
