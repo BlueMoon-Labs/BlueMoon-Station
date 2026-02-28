@@ -57,6 +57,7 @@
 	name = "Machine Design (Vendor Board)"
 	desc = "The circuit board for a Vendor. Use a screwdriver to turn the \"brand selection\" dial."
 	id = "vendor"
+	build_type = PROTOLATHE | AUTOLATHE
 	build_path = /obj/item/circuitboard/machine/vendor
 	category = list ("Cargo Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL

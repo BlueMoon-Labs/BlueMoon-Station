@@ -6053,7 +6053,6 @@
 #include "modular_splurt\code\modules\research\techweb\nodes\mecha_nodes.dm"
 #include "modular_splurt\code\modules\research\techweb\nodes\medical_nodes.dm"
 #include "modular_splurt\code\modules\research\techweb\nodes\nanites_nodes.dm"
-#include "modular_splurt\code\modules\research\techweb\nodes\robotic_nodes.dm"
 #include "modular_splurt\code\modules\research\techweb\nodes\weaponry_nodes.dm"
 #include "modular_splurt\code\modules\research\xenoarch\artifact.dm"
 #include "modular_splurt\code\modules\research\xenoarch\artifact_list.dm"

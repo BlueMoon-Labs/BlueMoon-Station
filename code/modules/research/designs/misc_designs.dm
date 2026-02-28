@@ -185,6 +185,16 @@
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
+/datum/design/flora_gun
+	name = "Floral Somatoray"
+	desc = "A tool that discharges controlled radiation which induces mutation in plant cells. Harmless to other organic life."
+	id = "flora_gun"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 2000, /datum/material/glass = 500, /datum/material/uranium = 2000)
+	build_path = /obj/item/gun/energy/floragun
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_SERVICE | DEPARTMENTAL_FLAG_SCIENCE
+
 /datum/design/emptybottle
 	name = "Glass Bottle"
 	desc = "A small, empty bottle for storing liquids."

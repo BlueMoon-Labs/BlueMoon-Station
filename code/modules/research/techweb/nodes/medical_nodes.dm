@@ -67,14 +67,6 @@
 	design_ids = list("adv_l_arm", "adv_r_arm", "adv_r_leg", "adv_l_leg")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1250)
 
-/datum/techweb_node/subdermal_implants
-	id = "subdermal_implants"
-	display_name = "Subdermal Implants"
-	description = "Electronic implants buried beneath the skin."
-	prereq_ids = list("biotech", "datatheory")
-	design_ids = list("Implanter", "implantcase", "implant_chem", "implant_tracking", "locator", "c38_trac")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
-
 /datum/techweb_node/basic_cyber_organs
 	id = "basic_cyber_organs"
 	starting_node = TRUE

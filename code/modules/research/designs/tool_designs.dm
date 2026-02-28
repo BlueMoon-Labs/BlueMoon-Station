@@ -282,7 +282,7 @@
 	name = "Plastic Drapes"
 	desc = "A large surgery drape made of plastic."
 	id = "drapes"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | AUTOLATHE
 	materials = list(/datum/material/plastic = 2500)
 	build_path = /obj/item/surgical_drapes
 	category = list("Tool Designs")

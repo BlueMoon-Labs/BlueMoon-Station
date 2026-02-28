@@ -288,7 +288,7 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 300, /datum/material/glass = 100, /datum/material/silver=50)
 	build_path = /obj/item/disk/data
-	category = list("Medical Designs")
+	category = list("Electronics")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/organbox
@@ -427,7 +427,7 @@
 //////////Cybernetic Implants////////////
 /////////////////////////////////////////
 /datum/design/cyberimp_claws
-	name = "Имплант когтей"
+	name = "Claws implant"
 	desc = "Набор из двух пар острых когтей, созданных из лёгких сплавов. Когда хочешь стать тем самым героем из старых фильмов."
 	id = "ci_claws"
 	build_type = PROTOLATHE | MECHFAB
@@ -1161,6 +1161,30 @@
 ////////////     Plumbing      //////////
 /////////////////////////////////////////
 
+/datum/design/plumb_rcd
+	name = "Plumbed Autoconstruction Device"
+	desc = "A RCD for plumbing machines! Cannot make ducts."
+	id = "plumb_rcd"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 20000, /datum/material/glass = 10000, /datum/material/plastic = 20000, /datum/material/titanium = 2000, /datum/material/diamond = 800, /datum/material/gold = 2000, /datum/material/silver = 2000)
+	construction_time = 150
+	build_path = /obj/item/construction/plumbing
+	category = list("Misc","Medical Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/rplunger
+    name = "Reinforced Plunger"
+    desc = "A plunger designed for heavy duty clogs."
+    id = "rplunger"
+    build_type = PROTOLATHE
+    materials = list(/datum/material/plasma = 1000, /datum/material/iron = 1000, /datum/material/glass = 1000)
+    construction_time = 15
+    build_path = /obj/item/plunger/reinforced
+    category = list ("Misc","Medical Designs")
+    departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_CARGO
+
+// Накой фиг оно тут надо, если есть пламбер РЦД
+/*
 /datum/design/acclimator
 	name = "Plumbing Acclimator"
 	desc = "A heating and cooling device for pipes!"
@@ -1303,25 +1327,4 @@
 	build_path = /obj/machinery/plumbing/tank
 	category = list("Misc","Medical Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
-
-/datum/design/plumb_rcd
-	name = "Plumbed Autoconstruction Device"
-	desc = "A RCD for plumbing machines! Cannot make ducts."
-	id = "plumb_rcd"
-	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 20000, /datum/material/glass = 10000, /datum/material/plastic = 20000, /datum/material/titanium = 2000, /datum/material/diamond = 800, /datum/material/gold = 2000, /datum/material/silver = 2000)
-	construction_time = 150
-	build_path = /obj/item/construction/plumbing
-	category = list("Misc","Medical Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
-
-/datum/design/rplunger
-    name = "Reinforced Plunger"
-    desc = "A plunger designed for heavy duty clogs."
-    id = "rplunger"
-    build_type = PROTOLATHE
-    materials = list(/datum/material/plasma = 1000, /datum/material/iron = 1000, /datum/material/glass = 1000)
-    construction_time = 15
-    build_path = /obj/item/plunger/reinforced
-    category = list ("Misc","Medical Designs")
-    departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_CARGO
+*/
