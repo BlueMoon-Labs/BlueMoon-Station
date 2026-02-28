@@ -483,9 +483,11 @@
 /obj/item/storage/belt/organbox/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_items = 16
+	STR.max_items = 30
 	STR.max_w_class = WEIGHT_CLASS_BULKY
-	STR.max_combined_w_class = 20
+	STR.max_combined_w_class = 30
+	STR.allow_quick_gather = TRUE
+	STR.allow_quick_empty = TRUE
 	STR.can_hold = typecacheof(list(
 	/obj/item/storage/pill_bottle,
 	/obj/item/reagent_containers/hypospray,
@@ -507,6 +509,7 @@
 	/obj/item/bonesetter,
 	/obj/item/autosurgeon,
 	/obj/item/organ,
+	/obj/item/bodypart,
 	/obj/item/implant,
 	/obj/item/implantpad,
 	/obj/item/implantcase,
