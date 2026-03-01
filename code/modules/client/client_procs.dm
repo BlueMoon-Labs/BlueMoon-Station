@@ -66,6 +66,14 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	if(tgui_Topic(href_list))
 		return
 
+	if(href_list["legacy_zoom_set"])
+		set_ui_zoom(href_list["legacy_zoom_key"], text2num(href_list["legacy_zoom_value"]))
+		return
+
+	if(href_list["statbrowser_zoom_save"])
+		set_ui_zoom("statbrowser", text2num(href_list["zoom_value"]))
+		return
+
 	// Rate limiting
 	var/mtl = CONFIG_GET(number/minute_topic_limit)
 	if (!holder && mtl)
@@ -570,13 +578,230 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		return 1
 	return window_scaling
 
-/// Returns a <style> tag with body zoom compensation for high-DPI displays.
-/// Use this in raw browse() HTML that doesn't go through /datum/browser.
-/client/proc/dpi_style_tag()
-	var/scaling = get_window_scaling()
-	if(scaling != 1)
-		return {"<style>body{zoom:[100 / scaling]%;}</style>"}
-	return ""
+/client/proc/get_ui_zoom(window_key, default_zoom = 1)
+	if(!istext(window_key))
+		return clamp(round(isnum(default_zoom) ? default_zoom : 1, 0.01), 0.5, 2.0)
+
+	var/safe_window_key = copytext(window_key, 1, 65)
+	if(!length(safe_window_key))
+		return clamp(round(isnum(default_zoom) ? default_zoom : 1, 0.01), 0.5, 2.0)
+
+	var/safe_default_zoom = clamp(round(isnum(default_zoom) ? default_zoom : 1, 0.01), 0.5, 2.0)
+	if(!prefs || !islist(prefs.ui_zoom_preferences))
+		return safe_default_zoom
+
+	var/stored_zoom = prefs.ui_zoom_preferences[safe_window_key]
+	if(!isnum(stored_zoom))
+		return safe_default_zoom
+	return clamp(round(stored_zoom, 0.01), 0.5, 2.0)
+
+/client/proc/set_ui_zoom(window_key, zoom)
+	if(!prefs || !istext(window_key))
+		return FALSE
+
+	var/safe_window_key = copytext(window_key, 1, 65)
+	if(!length(safe_window_key))
+		return FALSE
+
+	if(!isnum(zoom))
+		return FALSE
+	var/safe_zoom = clamp(round(zoom, 0.01), 0.5, 2.0)
+
+	LAZYINITLIST(prefs.ui_zoom_preferences)
+	var/current_zoom = prefs.ui_zoom_preferences[safe_window_key]
+	if(isnum(current_zoom))
+		current_zoom = clamp(round(current_zoom, 0.01), 0.5, 2.0)
+		if(current_zoom == safe_zoom)
+			return TRUE
+	if(isnull(current_zoom) && prefs.ui_zoom_preferences.len >= 64)
+		return FALSE
+
+	prefs.ui_zoom_preferences[safe_window_key] = safe_zoom
+	prefs.save_preferences(silent = TRUE)
+	return TRUE
+
+/client/proc/legacy_zoom_head(window_key, base_zoom = 100)
+	if(!window_key)
+		return ""
+
+	var/key_json = json_encode("[window_key]")
+	var/topic_base_json = json_encode("?src=_legacybrowser_;legacy_zoom_set=1")
+	var/initial_zoom = get_ui_zoom(window_key)
+	return {"
+		<style>
+			#legacyZoomIndicator {
+				position: fixed;
+				top: 12px;
+				right: 12px;
+				z-index: 2147483647;
+				padding: 6px 10px;
+				border-radius: 6px;
+				background: rgba(0, 0, 0, 0.75);
+				color: #fff;
+				font: 12px/1.2 Verdana, sans-serif;
+				pointer-events: none;
+				opacity: 0;
+				transition: opacity 120ms linear;
+			}
+		</style>
+		<script>
+			(function() {
+				var windowKey = [key_json];
+				var topicBase = [topic_base_json];
+				var baseZoom = [base_zoom];
+				var minZoom = 0.5;
+				var maxZoom = 2.0;
+				var zoomStep = 0.1;
+				var userZoom = [initial_zoom];
+				var indicator = null;
+				var hideTimer = null;
+				var persistTimer = null;
+
+				function clampZoom(value) {
+					return Math.min(maxZoom, Math.max(minZoom, value));
+				}
+
+				function sendByondTopic(href) {
+					var protocolUrl = 'byond://' + href;
+
+					function tryBridgeCall(method, firstArg, secondArg) {
+						if (typeof method !== 'function') {
+							return false;
+						}
+
+						try {
+							method.call(bridge, firstArg);
+							return true;
+						} catch (error) {}
+
+						try {
+							method.call(bridge, secondArg);
+							return true;
+						} catch (error) {}
+
+						return false;
+					}
+
+					if (window.cef_to_byond) {
+						try {
+							window.cef_to_byond(protocolUrl);
+							return true;
+						} catch (error) {}
+					}
+
+					var bridge = window.BYOND;
+					if (bridge) {
+						if (tryBridgeCall(bridge, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.callByond, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.byond, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.call, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.topic, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.sendMessage, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.send, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.postMessage, protocolUrl, href)) {
+							return true;
+						}
+					}
+
+					try {
+						window.location.href = protocolUrl;
+						return true;
+					} catch (error) {}
+
+					return false;
+				}
+
+				function ensureIndicator() {
+					if (indicator || !document.body) {
+						return;
+					}
+					indicator = document.createElement('div');
+					indicator.id = 'legacyZoomIndicator';
+					document.body.appendChild(indicator);
+				}
+
+				function showIndicator() {
+					ensureIndicator();
+					if (!indicator) {
+						return;
+					}
+					indicator.textContent = 'Scale: ' + Math.round(userZoom * 100) + '%';
+					indicator.style.opacity = '1';
+					clearTimeout(hideTimer);
+					hideTimer = setTimeout(function() {
+						if (indicator) {
+							indicator.style.opacity = '0';
+						}
+					}, 1200);
+				}
+
+				function applyZoom() {
+					if (!document.body) {
+						return;
+					}
+					document.body.style.zoom = (baseZoom * userZoom) + '%';
+				}
+
+				function schedulePersistZoom() {
+					clearTimeout(persistTimer);
+					persistTimer = setTimeout(function() {
+						sendByondTopic(
+							topicBase
+							+ ';legacy_zoom_key=' + encodeURIComponent(windowKey)
+							+ ';legacy_zoom_value=' + encodeURIComponent(String(userZoom))
+						);
+					}, 200);
+				}
+
+				function adjustZoom(delta) {
+					userZoom = clampZoom(Math.round((userZoom + delta) * 100) / 100);
+					applyZoom();
+					schedulePersistZoom();
+					showIndicator();
+				}
+
+				function handleWheel(event) {
+					if (!event.ctrlKey) {
+						return;
+					}
+
+					var direction = Math.sign(event.deltaY);
+					if (!direction) {
+						return;
+					}
+
+					event.preventDefault();
+					adjustZoom(direction < 0 ? zoomStep : -zoomStep);
+				}
+
+				function init() {
+					applyZoom();
+					ensureIndicator();
+					window.addEventListener('wheel', handleWheel, { passive: false });
+				}
+
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', init, { once: true });
+				} else {
+					init();
+				}
+			})();
+		</script>
+	"}
 
 /client/proc/acquire_dpi(max_retries = 3, retry_delay = 2 SECONDS, retrying = FALSE)
 	if(!retrying)
@@ -1233,6 +1458,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 /client/proc/init_verbs()
 	if(IsAdminAdvancedProcCall())
 		return
+	src << output(get_ui_zoom("statbrowser"), "statbrowser:set_zoom_pref")
 	var/list/verblist = list()
 	var/list/verbstoprocess = verbs.Copy()
 	if(mob)

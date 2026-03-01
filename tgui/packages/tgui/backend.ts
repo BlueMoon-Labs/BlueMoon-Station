@@ -246,7 +246,7 @@ export const backendMiddleware = store => {
       // Signal renderer that we have resumed
       resumeRenderer();
       // Setup drag
-      setupDrag();
+      setupDrag(payload.config?.window?.scale);
       // We schedule this for the next tick here because resizing and unhiding
       // during the same tick will flash with a white background.
       defer(async () => {

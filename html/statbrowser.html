@@ -623,9 +623,90 @@
 // DPI compensation — scale content down on high-DPI displays,
 // matching the approach used by TGUI (drag.js) and /datum/browser.
 var pixelRatio = window.devicePixelRatio || 1;
-if (pixelRatio !== 1) {
-	document.body.style.zoom = (100 / pixelRatio) + '%';
+var statbrowserBaseZoom = pixelRatio !== 1 ? (100 / pixelRatio) : 100;
+var statbrowserUserZoom = 1;
+var statbrowserIndicator = null;
+var statbrowserHideTimer = null;
+var statbrowserPersistTimer = null;
+
+function clampStatbrowserZoom(value) {
+	return Math.min(2.0, Math.max(0.5, value));
 }
+
+function ensureStatbrowserIndicator() {
+	if (statbrowserIndicator || !document.body) {
+		return;
+	}
+
+	statbrowserIndicator = document.createElement('div');
+	statbrowserIndicator.id = 'legacyZoomIndicator';
+	statbrowserIndicator.style.cssText = 'position:fixed;top:12px;right:12px;z-index:2147483647;padding:6px 10px;border-radius:6px;background:rgba(0,0,0,0.75);color:#fff;font:12px/1.2 Verdana,sans-serif;pointer-events:none;opacity:0;transition:opacity 120ms linear;';
+	document.body.appendChild(statbrowserIndicator);
+}
+
+function showStatbrowserIndicator() {
+	ensureStatbrowserIndicator();
+	if (!statbrowserIndicator) {
+		return;
+	}
+
+	statbrowserIndicator.textContent = 'Scale: ' + Math.round(statbrowserUserZoom * 100) + '%';
+	statbrowserIndicator.style.opacity = '1';
+	clearTimeout(statbrowserHideTimer);
+	statbrowserHideTimer = setTimeout(function() {
+		if (statbrowserIndicator) {
+			statbrowserIndicator.style.opacity = '0';
+		}
+	}, 1200);
+}
+
+function applyStatbrowserZoom() {
+	document.body.style.zoom = (statbrowserBaseZoom * statbrowserUserZoom) + '%';
+}
+
+function scheduleStatbrowserZoomPersist() {
+	clearTimeout(statbrowserPersistTimer);
+	statbrowserPersistTimer = setTimeout(function() {
+		byond_topic(
+			'?src=_statpanel_;statbrowser_zoom_save=1;zoom_value='
+			+ encodeURIComponent(String(statbrowserUserZoom))
+		);
+	}, 200);
+}
+
+function set_zoom_pref(value) {
+	var parsedZoom = Number(value);
+	if (!isFinite(parsedZoom) || parsedZoom <= 0) {
+		return;
+	}
+
+	statbrowserUserZoom = clampStatbrowserZoom(parsedZoom);
+	applyStatbrowserZoom();
+}
+
+function updateStatbrowserZoom(delta) {
+	statbrowserUserZoom = clampStatbrowserZoom(Math.round((statbrowserUserZoom + delta) * 100) / 100);
+	applyStatbrowserZoom();
+	scheduleStatbrowserZoomPersist();
+	showStatbrowserIndicator();
+}
+
+window.addEventListener('wheel', function(event) {
+	if (!event.ctrlKey) {
+		return;
+	}
+
+	var direction = Math.sign(event.deltaY);
+	if (!direction) {
+		return;
+	}
+
+	event.preventDefault();
+	updateStatbrowserZoom(direction < 0 ? 0.1 : -0.1);
+}, { passive: false });
+
+applyStatbrowserZoom();
+ensureStatbrowserIndicator();
 
 // Status panel implementation ------------------------------------------------
 var status_tab_parts = ["Loading..."];

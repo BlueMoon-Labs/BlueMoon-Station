@@ -304,8 +304,8 @@ GLOBAL_LIST_INIT(pda_ringtone_list, list(
 
 	user.set_machine(src)
 
-	var/dpi_style = user.client?.dpi_style_tag() || ""
-	var/dat = "<!DOCTYPE html><html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>Personal Data Assistant</title><link href=\"https://fonts.googleapis.com/css?family=Orbitron|Share+Tech+Mono|VT323\" rel=\"stylesheet\">[dpi_style]</head><body bgcolor=\"" + background_color + "\"><style>body{" + font_mode + "}ul,ol{list-style-type: none;}a, a:link, a:visited, a:active, a:hover { color: #000000;text-decoration:none; }img {border-style:none;}a img{padding-right: 9px;}</style>"
+	var/zoom_head = user.client?.legacy_zoom_head("pda") || ""
+	var/dat = "<!DOCTYPE html><html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>Personal Data Assistant</title><link href=\"https://fonts.googleapis.com/css?family=Orbitron|Share+Tech+Mono|VT323\" rel=\"stylesheet\">[zoom_head]</head><body bgcolor=\"" + background_color + "\"><style>body{" + font_mode + "}ul,ol{list-style-type: none;}a, a:link, a:visited, a:active, a:hover { color: #000000;text-decoration:none; }img {border-style:none;}a img{padding-right: 9px;}</style>"
 	dat += assets.css_tag()
 	dat += emoji_s.css_tag()
 
@@ -1384,8 +1384,8 @@ GLOBAL_LIST_INIT(pda_ringtone_list, list(
 	if(incapacitated())
 		return
 	if(!isnull(aiPDA))
-		var/dpi_style = user.client?.dpi_style_tag() || ""
-		var/HTML = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>AI PDA Message Log</title>[dpi_style]</head><body>[aiPDA.tnote]</body></html>"
+		var/zoom_head = user.client?.legacy_zoom_head("pda_log") || ""
+		var/HTML = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>AI PDA Message Log</title>[zoom_head]</head><body>[aiPDA.tnote]</body></html>"
 		user << browse(HTML, "window=log;size=400x444;border=1;can_resize=1;can_close=1;can_minimize=0")
 	else
 		to_chat(user, "У вас нет PDA. Вам следует сделать донос о проблеме.")
@@ -1450,8 +1450,8 @@ GLOBAL_LIST_INIT(pda_ringtone_list, list(
 	if(incapacitated())
 		return
 	if(!isnull(aiPDA))
-		var/dpi_style = user.client?.dpi_style_tag() || ""
-		var/HTML = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>AI PDA Message Log</title>[dpi_style]</head><body>[aiPDA.tnote]</body></html>"
+		var/zoom_head = user.client?.legacy_zoom_head("pda_log") || ""
+		var/HTML = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>AI PDA Message Log</title>[zoom_head]</head><body>[aiPDA.tnote]</body></html>"
 		user << browse(HTML, "window=log;size=400x444;border=1;can_resize=1;can_close=1;can_minimize=0")
 	else
 		to_chat(user, "У вас нет PDA. Вам следует сделать донос о проблеме.")

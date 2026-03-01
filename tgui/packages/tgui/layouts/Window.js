@@ -22,6 +22,11 @@ import { Layout } from './Layout';
 const logger = createLogger('Window');
 
 const DEFAULT_SIZE = [400, 600];
+const getZoomKey = config => (
+  config.window?.zoom_key
+  || (config.interface && `tgui:${config.interface}`)
+  || 'tgui'
+);
 
 export class Window extends Component {
   componentDidMount() {
@@ -30,6 +35,7 @@ export class Window extends Component {
     this._wasSuspended = suspended;
     this._lastWindowKey = config.window?.key;
     this._lastWindowScale = config.window?.scale;
+    this._lastZoomKey = getZoomKey(config);
     if (suspended) {
       return;
     }
@@ -43,12 +49,14 @@ export class Window extends Component {
   componentDidUpdate(prevProps) {
     const { suspended, config } = useBackend(this.context);
     const wasSuspended = this._wasSuspended;
+    const zoomKey = getZoomKey(config);
     const shouldUpdateGeometry = (
       this.props.width !== prevProps.width
       || this.props.height !== prevProps.height
       || (wasSuspended && !suspended)
       || this._lastWindowKey !== config.window?.key
       || this._lastWindowScale !== config.window?.scale
+      || this._lastZoomKey !== zoomKey
     );
     if (!suspended && shouldUpdateGeometry) {
       this.updateGeometry();
@@ -56,6 +64,7 @@ export class Window extends Component {
     this._wasSuspended = suspended;
     this._lastWindowKey = config.window?.key;
     this._lastWindowScale = config.window?.scale;
+    this._lastZoomKey = zoomKey;
   }
 
   updateGeometry() {
@@ -67,6 +76,7 @@ export class Window extends Component {
     if (this.props.width && this.props.height) {
       options.size = [this.props.width, this.props.height];
     }
+    options.zoom_key = getZoomKey(config);
     if (config.window?.key) {
       setWindowKey(config.window.key);
     }

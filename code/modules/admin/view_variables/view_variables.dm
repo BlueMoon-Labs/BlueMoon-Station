@@ -126,7 +126,6 @@
 			if(thing.can_vv_get(varname))
 				variable_html += thing.vv_get_var(varname)
 
-	var/dpi_style = usr?.client?.dpi_style_tag() || ""
 	var/html = {"
 <!DOCTYPE html>
 <html>
@@ -134,7 +133,7 @@
 		<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
 		<title>[title]</title>
 		<link rel="stylesheet" type="text/css" href="[SSassets.transport.get_asset_url("view_variables.css")]">
-		[dpi_style]
+		[usr?.client?.legacy_zoom_head("view_variables") || ""]
 	</head>
 	<body onload='selectTextField()' onkeydown='return handle_keydown()' onkeyup='handle_keyup()'>
 		<script type="text/javascript">

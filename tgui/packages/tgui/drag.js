@@ -22,7 +22,13 @@ let dragPointOffset;
 let resizeMatrix;
 let initialSize;
 let size;
-let cachedPixelRatio = 1;
+let appScale = 1;
+let cachedAppScale = 1;
+let zoomKey = window.__windowId__;
+let userZoom = 1;
+let zoomControlsInstalled = false;
+let zoomIndicator;
+let zoomIndicatorHideTimer;
 
 export const isDragOrResizeActive = () => dragging || resizing;
 
@@ -52,16 +58,118 @@ export const setWindowKey = key => {
 export const waitForInitialGeometryReady = () => initialGeometryReadyPromise;
 resetInitialGeometryReady();
 
+const getBrowserPixelRatio = () => window.devicePixelRatio ?? 1;
+const MIN_USER_ZOOM = 0.5;
+const MAX_USER_ZOOM = 2.0;
+const USER_ZOOM_STEP = 0.1;
+
+const resolveAppScale = scale => {
+  const parsedScale = Number(scale);
+  if (Number.isFinite(parsedScale) && parsedScale > 0) {
+    return parsedScale;
+  }
+
+  const browserPixelRatio = getBrowserPixelRatio();
+  if (Number.isFinite(browserPixelRatio) && browserPixelRatio > 0) {
+    return browserPixelRatio;
+  }
+
+  return 1;
+};
+
+const clampUserZoom = zoom => (
+  Math.min(MAX_USER_ZOOM, Math.max(MIN_USER_ZOOM, zoom))
+);
+
+const getZoomStorageKey = () => `zoom:${zoomKey}`;
+
+const ensureZoomIndicator = () => {
+  if (zoomIndicator || !document.body) {
+    return;
+  }
+
+  zoomIndicator = document.createElement('div');
+  zoomIndicator.id = 'tguiZoomIndicator';
+  zoomIndicator.style.cssText = 'position:fixed;top:12px;right:12px;z-index:2147483647;padding:6px 10px;border-radius:6px;background:rgba(0,0,0,0.75);color:#fff;font:12px/1.2 Verdana,sans-serif;pointer-events:none;opacity:0;transition:opacity 120ms linear;';
+  document.body.appendChild(zoomIndicator);
+};
+
+const showZoomIndicator = () => {
+  ensureZoomIndicator();
+  if (!zoomIndicator) {
+    return;
+  }
+
+  zoomIndicator.textContent = `Scale: ${Math.round(userZoom * 100)}%`;
+  zoomIndicator.style.opacity = '1';
+  clearTimeout(zoomIndicatorHideTimer);
+  zoomIndicatorHideTimer = setTimeout(() => {
+    if (zoomIndicator) {
+      zoomIndicator.style.opacity = '0';
+    }
+  }, 1200);
+};
+
+const persistUserZoom = () => {
+  storage.set(getZoomStorageKey(), userZoom).catch(() => {});
+};
+
+const applyBodyZoom = () => {
+  const effectiveZoom = (100 / resolveAppScale(appScale)) * userZoom;
+  document.body.style.zoom = `${effectiveZoom}%`;
+};
+
+const loadUserZoom = async () => {
+  userZoom = 1;
+  try {
+    const storedZoom = Number(await storage.get(getZoomStorageKey()));
+    if (Number.isFinite(storedZoom) && storedZoom > 0) {
+      userZoom = clampUserZoom(storedZoom);
+    }
+  }
+  catch {}
+};
+
+const adjustUserZoom = delta => {
+  userZoom = clampUserZoom(Math.round((userZoom + delta) * 100) / 100);
+  applyBodyZoom();
+  persistUserZoom();
+  showZoomIndicator();
+};
+
+const handleZoomWheel = event => {
+  if (!event.ctrlKey) {
+    return;
+  }
+
+  const direction = Math.sign(event.deltaY);
+  if (!direction) {
+    return;
+  }
+
+  event.preventDefault();
+  adjustUserZoom(direction < 0 ? USER_ZOOM_STEP : -USER_ZOOM_STEP);
+};
+
+const installZoomControls = () => {
+  if (zoomControlsInstalled) {
+    return;
+  }
+
+  window.addEventListener('wheel', handleZoomWheel, { passive: false });
+  zoomControlsInstalled = true;
+};
+
 export const getWindowPosition = () => {
-  const pr = window.devicePixelRatio ?? 1;
+  const scale = resolveAppScale(appScale);
   return [
-    Math.round(window.screenLeft * pr),
-    Math.round(window.screenTop * pr),
+    Math.round(window.screenLeft * scale),
+    Math.round(window.screenTop * scale),
   ];
 };
 
 export const getWindowSize = () => {
-  const pr = window.devicePixelRatio ?? 1;
+  const pr = getBrowserPixelRatio();
   return [
     Math.round(window.innerWidth * pr),
     Math.round(window.innerHeight * pr),
@@ -73,7 +181,7 @@ export const getWindowSize = () => {
 const SIZE_APPLY_TIMEOUT_MS = 1500;
 
 const isWindowSizeApplied = targetSize => {
-  const pr = window.devicePixelRatio ?? 1;
+  const pr = getBrowserPixelRatio();
   return isWindowSizeAppliedUtil(targetSize, getWindowSize(), pr);
 };
 
@@ -217,10 +325,10 @@ export const getScreenPosition = () => [
 ];
 
 export const getScreenSize = () => {
-  const pr = window.devicePixelRatio ?? 1;
+  const scale = resolveAppScale(appScale);
   return [
-    Math.round(window.screen.availWidth * pr),
-    Math.round(window.screen.availHeight * pr),
+    Math.round(window.screen.availWidth * scale),
+    Math.round(window.screen.availHeight * scale),
   ];
 };
 
@@ -247,10 +355,12 @@ export const recallWindowGeometry = async (options = {}) => {
   let geometry;
   let geometryReadyForReveal = false;
   try {
+    appScale = resolveAppScale(options.scale);
+    zoomKey = options.zoom_key || options.key || windowKey;
+    await loadUserZoom();
     // Use legacy zoom mode: scale content down to compensate for DPI.
     // This preserves physical window size at any DPI, matching browser.dm behavior.
-    const pixelRatio = window.devicePixelRatio ?? 1;
-    document.body.style.zoom = `${100 / pixelRatio}%`;
+    applyBodyZoom();
     // Only recall geometry in fancy mode
     if (options.fancy) {
       try {
@@ -267,8 +377,8 @@ export const recallWindowGeometry = async (options = {}) => {
     await screenOffsetPromise;
     // All coordinates are physical (BYOND) pixels.
     const areaAvailable = [
-      Math.round(window.screen.availWidth * pixelRatio),
-      Math.round(window.screen.availHeight * pixelRatio),
+      Math.round(window.screen.availWidth * appScale),
+      Math.round(window.screen.availHeight * appScale),
     ];
     // Set window size
     if (size) {
@@ -311,7 +421,9 @@ export const recallWindowGeometry = async (options = {}) => {
   }
 };
 
-export const setupDrag = async () => {
+export const setupDrag = async (scale) => {
+  appScale = resolveAppScale(scale);
+  installZoomControls();
   // Calculate screen offset caused by the windows taskbar.
   // Both Byond.winget and getWindowPosition return physical pixels.
   const windowPosition = getWindowPosition();
@@ -335,11 +447,11 @@ const constraintPositionOnScreen = (pos, size) => {
 export const dragStartHandler = event => {
   logger.log('drag start');
   dragging = true;
-  cachedPixelRatio = window.devicePixelRatio ?? 1;
+  cachedAppScale = resolveAppScale(appScale);
   const winPos = getWindowPosition();
   dragPointOffset = [
-    event.screenX * cachedPixelRatio - winPos[0],
-    event.screenY * cachedPixelRatio - winPos[1],
+    event.screenX * cachedAppScale - winPos[0],
+    event.screenY * cachedAppScale - winPos[1],
   ];
   // Focus click target
   event.target?.focus();
@@ -362,8 +474,8 @@ const dragEndHandler = event => {
 
 const applyDragPosition = (screenX, screenY) => {
   setWindowPositionFast(
-    screenX * cachedPixelRatio - dragPointOffset[0],
-    screenY * cachedPixelRatio - dragPointOffset[1]);
+    screenX * cachedAppScale - dragPointOffset[0],
+    screenY * cachedAppScale - dragPointOffset[1]);
 };
 
 const dragMoveHandler = event => {
@@ -378,11 +490,11 @@ export const resizeStartHandler = (x, y) => event => {
   resizeMatrix = [x, y];
   logger.log('resize start', resizeMatrix);
   resizing = true;
-  cachedPixelRatio = window.devicePixelRatio ?? 1;
+  cachedAppScale = resolveAppScale(appScale);
   const winPos = getWindowPosition();
   dragPointOffset = [
-    event.screenX * cachedPixelRatio - winPos[0],
-    event.screenY * cachedPixelRatio - winPos[1],
+    event.screenX * cachedAppScale - winPos[0],
+    event.screenY * cachedAppScale - winPos[1],
   ];
   initialSize = getWindowSize();
   // Focus click target
@@ -406,8 +518,8 @@ const resizeEndHandler = event => {
 
 const applyResizeSize = (screenX, screenY) => {
   const winPos = getWindowPosition();
-  const offsetX = screenX * cachedPixelRatio - winPos[0];
-  const offsetY = screenY * cachedPixelRatio - winPos[1];
+  const offsetX = screenX * cachedAppScale - winPos[0];
+  const offsetY = screenY * cachedAppScale - winPos[1];
   const deltaX = offsetX - dragPointOffset[0];
   const deltaY = offsetY - dragPointOffset[1];
   // Extra 1x1 area is added to ensure the browser can see the cursor.

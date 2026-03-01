@@ -76,8 +76,8 @@
 		to_chat(user, "<span class='warning'>[src] seems to be blank...</span>")
 		return
 	user << browse_rsc(picture.picture_image, "tmp_photo.png")
-	var/dpi_style = user.client?.dpi_style_tag() || ""
-	user << browse("<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>[name]</title>[dpi_style]</head>" \
+	var/zoom_head = user.client?.legacy_zoom_head("photo_showing") || ""
+	user << browse("<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>[name]</title>[zoom_head]</head>" \
 		+ "<body style='overflow:hidden;margin:0;text-align:center'>" \
 		+ "<img src='tmp_photo.png' width='480' style='image-rendering:pixelated' />" \
 		+ "[scribble ? "<br>Written on the back:<br><i>[scribble]</i>" : ""]"\

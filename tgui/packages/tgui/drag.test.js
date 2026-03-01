@@ -1,7 +1,10 @@
+import { storage } from 'common/storage';
+
 import {
   getScreenSize,
   getWindowPosition,
   getWindowSize,
+  recallWindowGeometry,
 } from './drag';
 import {
   constraintPosition,
@@ -11,12 +14,15 @@ import {
 
 // Save and restore window properties between tests
 const originalDescriptors = {};
+const originalStorageGet = storage.get;
+const originalStorageSet = storage.set;
 const windowProps = [
   'devicePixelRatio',
   'screenLeft',
   'screenTop',
   'innerWidth',
   'innerHeight',
+  'screen',
 ];
 
 beforeEach(() => {
@@ -33,6 +39,9 @@ afterEach(() => {
       delete window[prop];
     }
   }
+  storage.get = originalStorageGet;
+  storage.set = originalStorageSet;
+  document.body.style.zoom = '';
 });
 
 const setWindowProp = (prop, value) => {
@@ -48,75 +57,70 @@ const setWindowProp = (prop, value) => {
 // --------------------------------------------------------
 
 describe('getWindowPosition', () => {
-  test('returns screenLeft and screenTop multiplied by devicePixelRatio', () => {
+  test('returns screenLeft and screenTop multiplied by app scale', async () => {
     setWindowProp('screenLeft', 100);
     setWindowProp('screenTop', 200);
-    setWindowProp('devicePixelRatio', 2);
+    setWindowProp('devicePixelRatio', 3);
+    await recallWindowGeometry({ scale: 2 });
 
     const [x, y] = getWindowPosition();
     expect(x).toBe(200);
     expect(y).toBe(400);
   });
 
-  test('falls back to pixelRatio 1 when undefined', () => {
+  test('falls back to browser pixel ratio when scale is undefined', async () => {
     setWindowProp('screenLeft', 100);
     setWindowProp('screenTop', 50);
-    setWindowProp('devicePixelRatio', undefined);
+    setWindowProp('devicePixelRatio', 1.25);
+    await recallWindowGeometry({});
+
+    const [x, y] = getWindowPosition();
+    expect(x).toBe(125);
+    expect(y).toBe(Math.round(50 * 1.25));
+  });
+
+  test('falls back to 1 when scale and browser pixel ratio are invalid', async () => {
+    setWindowProp('screenLeft', 100);
+    setWindowProp('screenTop', 50);
+    setWindowProp('devicePixelRatio', 0);
+    await recallWindowGeometry({});
 
     const [x, y] = getWindowPosition();
     expect(x).toBe(100);
     expect(y).toBe(50);
   });
 
-  test('falls back to pixelRatio 1 when null', () => {
-    setWindowProp('screenLeft', 100);
-    setWindowProp('screenTop', 50);
-    setWindowProp('devicePixelRatio', null);
-
-    const [x, y] = getWindowPosition();
-    expect(x).toBe(100);
-    expect(y).toBe(50);
-  });
-
-  test('rounds to integers', () => {
+  test('rounds to integers', async () => {
     setWindowProp('screenLeft', 100.7);
     setWindowProp('screenTop', 200.3);
     setWindowProp('devicePixelRatio', 1.5);
+    await recallWindowGeometry({ scale: 1.25 });
 
     const [x, y] = getWindowPosition();
-    expect(x).toBe(Math.round(100.7 * 1.5));
-    expect(y).toBe(Math.round(200.3 * 1.5));
+    expect(x).toBe(Math.round(100.7 * 1.25));
+    expect(y).toBe(Math.round(200.3 * 1.25));
   });
 
-  test('handles fractional DPI 1.25', () => {
+  test('handles fractional app scale 1.25', async () => {
     setWindowProp('screenLeft', 100);
     setWindowProp('screenTop', 100);
-    setWindowProp('devicePixelRatio', 1.25);
+    setWindowProp('devicePixelRatio', 1.875);
+    await recallWindowGeometry({ scale: 1.25 });
 
     const [x, y] = getWindowPosition();
     expect(x).toBe(125);
     expect(y).toBe(125);
   });
 
-  test('handles high DPI 4.0', () => {
+  test('handles high app scale 4.0', async () => {
     setWindowProp('screenLeft', 50);
     setWindowProp('screenTop', 50);
-    setWindowProp('devicePixelRatio', 4);
+    setWindowProp('devicePixelRatio', 5);
+    await recallWindowGeometry({ scale: 4 });
 
     const [x, y] = getWindowPosition();
     expect(x).toBe(200);
     expect(y).toBe(200);
-  });
-
-  test('DPI=0 causes all coordinates to be 0 (not guarded by ??)', () => {
-    setWindowProp('screenLeft', 500);
-    setWindowProp('screenTop', 300);
-    setWindowProp('devicePixelRatio', 0);
-
-    // ?? only catches null/undefined, not 0
-    const [x, y] = getWindowPosition();
-    expect(x).toBe(0);
-    expect(y).toBe(0);
   });
 });
 
@@ -153,28 +157,30 @@ describe('getWindowSize', () => {
 });
 
 describe('getScreenSize', () => {
-  test('returns availWidth and availHeight multiplied by devicePixelRatio', () => {
+  test('returns availWidth and availHeight multiplied by app scale', async () => {
     Object.defineProperty(window, 'screen', {
       configurable: true,
       value: { availWidth: 1920, availHeight: 1080 },
     });
-    setWindowProp('devicePixelRatio', 1.5);
+    setWindowProp('devicePixelRatio', 2.0);
+    await recallWindowGeometry({ scale: 1.5 });
 
     const [w, h] = getScreenSize();
     expect(w).toBe(2880);
     expect(h).toBe(1620);
   });
 
-  test('falls back to pixelRatio 1 when undefined', () => {
+  test('falls back to browser pixel ratio when scale is missing', async () => {
     Object.defineProperty(window, 'screen', {
       configurable: true,
       value: { availWidth: 1920, availHeight: 1080 },
     });
-    setWindowProp('devicePixelRatio', undefined);
+    setWindowProp('devicePixelRatio', 1.25);
+    await recallWindowGeometry({});
 
     const [w, h] = getScreenSize();
-    expect(w).toBe(1920);
-    expect(h).toBe(1080);
+    expect(w).toBe(2400);
+    expect(h).toBe(1350);
   });
 });
 
@@ -391,6 +397,34 @@ describe('zoom compensation', () => {
     expect(100 / 0.5).toBe(200);
     expect(100 / 4.0).toBe(25);
   });
+
+  test('recallWindowGeometry uses options.scale instead of browser pixel ratio', async () => {
+    setWindowProp('devicePixelRatio', 1.875);
+
+    await recallWindowGeometry({ scale: 1.5 });
+
+    expect(document.body.style.zoom).toBe(`${100 / 1.5}%`);
+  });
+
+  test('recallWindowGeometry restores saved user zoom from storage', async () => {
+    setWindowProp('devicePixelRatio', 1.875);
+    storage.get = jest.fn(async () => 1.2);
+    storage.set = jest.fn(async () => undefined);
+
+    await recallWindowGeometry({ scale: 1.5 });
+
+    expect(document.body.style.zoom).toBe('80%');
+  });
+
+  test('recallWindowGeometry uses zoom_key for persistent zoom storage', async () => {
+    setWindowProp('devicePixelRatio', 1.5);
+    storage.get = jest.fn(async () => 1.1);
+    storage.set = jest.fn(async () => undefined);
+
+    await recallWindowGeometry({ scale: 1.5, zoom_key: 'tgui:chem_dispenser' });
+
+    expect(storage.get).toHaveBeenCalledWith('zoom:tgui:chem_dispenser');
+  });
 });
 
 // --------------------------------------------------------
@@ -439,6 +473,47 @@ describe('drag math', () => {
     const newPosY = screenY * ratio - offset[1]; // 450
     expect(newPosX).toBe(winPos[0]);
     expect(newPosY).toBe(winPos[1]);
+  });
+
+  test('drag remains stable when app scale and browser zoom diverge', async () => {
+    setWindowProp('screenLeft', 500);
+    setWindowProp('screenTop', 300);
+    setWindowProp('devicePixelRatio', 1.875);
+
+    await recallWindowGeometry({ scale: 1.5 });
+
+    const screenX = 500;
+    const screenY = 300;
+    const appScale = 1.5;
+    const winPos = getWindowPosition();
+
+    expect(winPos).toEqual([750, 450]);
+
+    const offset = [screenX * appScale - winPos[0], screenY * appScale - winPos[1]];
+    expect(offset).toEqual([0, 0]);
+
+    const newPosX = screenX * appScale - offset[0];
+    const newPosY = screenY * appScale - offset[1];
+    expect(newPosX).toBe(winPos[0]);
+    expect(newPosY).toBe(winPos[1]);
+  });
+});
+
+describe('split scale model', () => {
+  test('getWindowSize still uses browser pixel ratio while positions use app scale', async () => {
+    setWindowProp('screenLeft', 100);
+    setWindowProp('screenTop', 80);
+    setWindowProp('innerWidth', 400);
+    setWindowProp('innerHeight', 300);
+    setWindowProp('devicePixelRatio', 1.875);
+
+    await recallWindowGeometry({ scale: 1.5 });
+
+    expect(getWindowPosition()).toEqual([150, 120]);
+    expect(getWindowSize()).toEqual([
+      Math.round(400 * 1.875),
+      Math.round(300 * 1.875),
+    ]);
   });
 });
 

@@ -492,6 +492,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["tgui_swapped_buttons"]	>> tgui_swapped_buttons
 	S["tgui_panel_theme"]		>> tgui_panel_theme
 	S["tgui_panel_state"]		>> tgui_panel_state
+	S["ui_zoom_preferences"]	>> ui_zoom_preferences
 	S["windowflash"] 			>> windowflashing
 	S["windownoise"] 			>> windownoise
 	S["be_special"] 			>> be_special
@@ -613,6 +614,25 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	tgui_panel_state = sanitize_text(tgui_panel_state, initial(tgui_panel_state))
 	if(length(tgui_panel_state) > 16384)
 		tgui_panel_state = initial(tgui_panel_state)
+	if(!islist(ui_zoom_preferences))
+		ui_zoom_preferences = list()
+	else
+		var/list/sanitized_ui_zoom_preferences = list()
+		var/ui_zoom_count = 0
+		for(var/ui_zoom_key in ui_zoom_preferences)
+			if(ui_zoom_count >= 64)
+				break
+			if(!istext(ui_zoom_key))
+				continue
+			var/safe_ui_zoom_key = copytext(ui_zoom_key, 1, 65)
+			if(!length(safe_ui_zoom_key))
+				continue
+			var/safe_ui_zoom_value = ui_zoom_preferences[ui_zoom_key]
+			if(isnum(safe_ui_zoom_value))
+				safe_ui_zoom_value = round(clamp(safe_ui_zoom_value, 0.5, 2.0), 0.01)
+				sanitized_ui_zoom_preferences[safe_ui_zoom_key] = safe_ui_zoom_value
+				ui_zoom_count++
+		ui_zoom_preferences = sanitized_ui_zoom_preferences
 	windowflashing = sanitize_integer(windowflashing, 0, 1, initial(windowflashing))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
@@ -761,6 +781,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["tgui_swapped_buttons"], tgui_swapped_buttons)
 	WRITE_FILE(S["tgui_panel_theme"], tgui_panel_theme)
 	WRITE_FILE(S["tgui_panel_state"], tgui_panel_state)
+	WRITE_FILE(S["ui_zoom_preferences"], ui_zoom_preferences)
 	WRITE_FILE(S["windowflash"], windowflashing)
 	WRITE_FILE(S["windownoise"], windownoise)
 	WRITE_FILE(S["be_special"], be_special)
