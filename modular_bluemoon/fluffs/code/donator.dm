@@ -2128,7 +2128,7 @@
 	name = "Desert Nanosuit"
 	slot = ITEM_SLOT_UNDERWEAR
 	path = /obj/item/clothing/underwear/briefs/nano_suit
-	ckeywhitelist = list("lindaastereih", "kingdeaths", "heathkit1")
+	ckeywhitelist = list("lindaastereih", "kingdeaths", "heathkit1", "dimofon")
 
 /datum/gear/donator/bm/bear_patch
 	name = "BEAR Patch"
@@ -2141,3 +2141,15 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/accessory/usec_patch
 	ckeywhitelist = list("hihitect", "hateredsoul", "hellsinggc", "silyamg", "dimofon", "xaeshkavd")
+
+/datum/gear/donator/bm/transparent_gloves
+	name = "Transparent Gloves"
+	path = /obj/item/clothing/gloves/color/black/transparent
+	slot = ITEM_SLOT_GLOVES
+	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/winter_mask
+	name = "Ami's Winter Mask"
+	slot = ITEM_SLOT_MASK
+	path = /obj/item/clothing/mask/gas/syndicate/cool_version/winter_mask
+	ckeywhitelist = list("lindaastereih")
