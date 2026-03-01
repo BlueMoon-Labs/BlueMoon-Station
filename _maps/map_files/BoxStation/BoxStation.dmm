@@ -41260,6 +41260,25 @@
 "fAA" = (
 /turf/open/floor/plasteel/rivets/half,
 /area/science/robotics/lab)
+"fAC" = (
+/obj/effect/turf_decal/delivery,
+/obj/structure/rack,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/item/storage/belt/shamshir{
+	pixel_y = 8;
+	pixel_x = -4
+	},
+/obj/item/storage/belt/shamshir{
+	pixel_y = -2;
+	pixel_x = -4
+	},
+/turf/open/floor/plasteel/textured/large,
+/area/ai_monitored/security/armory)
 "fAI" = (
 /obj/structure/chair{
 	dir = 1
@@ -114186,7 +114205,7 @@ whb
 wqc
 wqc
 qkv
-qkv
+ppc
 whb
 ewT
 umt
@@ -114440,7 +114459,7 @@ xzJ
 mBm
 qpU
 whb
-ppc
+fAC
 tnS
 xFH
 ybD

@@ -2781,6 +2781,14 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
+/obj/item/storage/box/flashbangs{
+	pixel_x = 1;
+	pixel_y = -1
+	},
+/obj/item/storage/box/teargas{
+	pixel_x = -1;
+	pixel_y = 1
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
 "ahT" = (
@@ -73301,19 +73309,19 @@
 /area/security/prison/upper)
 "xdY" = (
 /obj/structure/rack,
-/obj/item/storage/box/teargas{
-	pixel_x = -1;
-	pixel_y = 1
-	},
-/obj/item/storage/box/flashbangs{
-	pixel_x = 1;
-	pixel_y = -1
-	},
 /obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/red{
 	dir = 8
+	},
+/obj/item/storage/belt/shamshir{
+	pixel_y = 8;
+	pixel_x = -4
+	},
+/obj/item/storage/belt/shamshir{
+	pixel_y = -2;
+	pixel_x = -4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)

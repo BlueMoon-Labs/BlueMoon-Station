@@ -284,3 +284,10 @@
 	cost = 1400
 	contains = list(/obj/item/grenade/stingbang)
 
+/datum/supply_pack/security/shamshir_blades
+	name = "Shamshir sabres crate"
+	desc = "Содержит пару смертоносных клинков, постовляемых вместе с ножнами. Требуется доступ безопасности, чтобы открыть.."
+	cost = 3000
+	contains = list(/obj/item/storage/belt/shamshir,
+					/obj/item/storage/belt/shamshir)
+	crate_name = "Shamshir sabres crate"

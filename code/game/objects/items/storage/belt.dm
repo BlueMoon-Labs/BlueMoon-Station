@@ -893,7 +893,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	content_overlays = TRUE
 	onmob_overlays = TRUE
-	var/list/fitting_swords = list(/obj/item/melee/sabre, /obj/item/melee/baton/stunsword)
+	var/list/fitting_swords = list(/obj/item/melee/sabre, /obj/item/melee/baton/stunsword, /obj/item/melee/shamshir)
 	var/starting_sword = /obj/item/melee/sabre
 
 /obj/item/storage/belt/sabre/ComponentInitialize()
