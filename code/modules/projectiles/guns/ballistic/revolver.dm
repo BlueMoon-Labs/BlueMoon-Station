@@ -115,7 +115,6 @@
 	icon_state = "detective"
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/rev38
 	obj_flags = UNIQUE_RENAME
-	casing_ejector = TRUE // Чтобы формула подсчёта взрыва на 357 работала, нужно выкинуть из учета Гильзы. Меньше стиля, но меньше кода
 	unique_reskin = list(
 		"Default" = list("icon_state" = "detective"),
 		"Leopard Spots" = list("icon_state" = "detective_leopard"),
