@@ -126,9 +126,9 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/map_view)
 		return FALSE
 	for(var/atom/movable/screen/screen_obj in screen_maps[map_name])
 		screen_maps[map_name] -= screen_obj
-		screen_obj.screen_loc = null
 		screen -= screen_obj
 		if(screen_obj.del_on_map_removal)
+			screen_obj.screen_loc = null
 			qdel(screen_obj)
 	screen_maps -= map_name
 

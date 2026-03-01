@@ -179,7 +179,7 @@ export const Colormate = (props, context) => {
           </Section>
         ) : (
           <Stack fill vertical align="center" justify="center" height="100%">
-            <Stack.Item>
+            <Stack.Item grow={0}>
               <Button
                 px={25}
                 py={4}
