@@ -461,7 +461,7 @@
 	construction_time = 150
 	build_path = /obj/item/construction/plumbing
 	category = list("Misc","Medical Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/rplunger
     name = "Reinforced Plunger"
@@ -472,7 +472,18 @@
     construction_time = 15
     build_path = /obj/item/plunger/reinforced
     category = list ("Misc","Medical Designs")
-    departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_CARGO
+    departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_SERVICE
+
+/datum/design/duct_print
+	name = "Plumbing Ducts"
+	desc = "Ducts for plumbing! Now lathed for efficiency."
+	id = "duct_print"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/plastic = 400)
+	construction_time = 1
+	build_path = /obj/item/stack/ducts
+	category = list("Misc","Medical Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SERVICE
 
 // Накой фиг оно тут надо, если есть пламбер РЦД
 /*
@@ -539,17 +550,6 @@
 	materials = list(/datum/material/iron = 1000, /datum/material/glass = 500)
 	construction_time = 15
 	build_path = /obj/machinery/plumbing/reaction_chamber
-	category = list("Misc","Medical Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
-
-/datum/design/duct_print
-	name = "Plumbing Ducts"
-	desc = "Ducts for plumbing! Now lathed for efficiency."
-	id = "duct_print"
-	build_type = PROTOLATHE
-	materials = list(/datum/material/plastic = 400)
-	construction_time = 1
-	build_path = /obj/item/stack/ducts
 	category = list("Misc","Medical Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
