@@ -374,6 +374,8 @@
 
 /obj/item/storage/lockbox/weapon/rapidsyringe
 	name = "Lockbox with Rapid Syringe Gun"
+	req_access = null
+	req_one_access = list(ACCESS_ARMORY, ACCESS_CMO)
 
 /obj/item/storage/lockbox/weapon/rapidsyringe/PopulateContents()
 	new /obj/item/gun/syringe/rapidsyringe(src)
