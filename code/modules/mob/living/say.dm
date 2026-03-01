@@ -418,6 +418,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		eavesrendered = compose_message(src, message_language, eavesdropping, null, spans, message_mode, FALSE, source)
 
 	var/rendered = compose_message(src, message_language, message, null, spans, message_mode, FALSE, source)
+	play_fov_effect(src, 6, "talk", ignore_self = TRUE, override_list = listening)
 	for(var/_AM in listening)
 		var/atom/movable/AM = _AM
 		// ПАТЧ ТЕШАРИ - проверяем дистанцию для чёткого слуха

@@ -87298,8 +87298,8 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
-/obj/structure/bed/dogbed,
-/mob/living/simple_animal/pet/fox/fennec,
+/obj/machinery/suit_storage_unit/open,
+/obj/item/mod/control/pre_equipped/corporate,
 /turf/open/floor/wood,
 /area/service/lawoffice)
 "lRy" = (
@@ -125443,6 +125443,8 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 6
 	},
+/obj/structure/bed/dogbed,
+/mob/living/simple_animal/pet/fox/fennec,
 /turf/open/floor/carpet,
 /area/service/lawoffice)
 "wyB" = (

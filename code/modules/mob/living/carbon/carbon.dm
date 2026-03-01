@@ -583,7 +583,7 @@
 	UpdateStaminaBuffer()
 	update_health_hud()
 
-/mob/living/carbon/update_sight()
+/mob/living/carbon/update_sight(forced = TRUE)
 	if(!client)
 		return
 	if(stat == DEAD)

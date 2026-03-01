@@ -868,7 +868,7 @@
 
 	previous_health = health
 
-/mob/living/silicon/robot/update_sight()
+/mob/living/silicon/robot/update_sight(forced = TRUE)
 	if(!client)
 		return
 	if(stat == DEAD)

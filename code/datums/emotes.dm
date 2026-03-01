@@ -77,6 +77,9 @@
 	//msg = "<b>[user]</b> " + msg //SKYRAT CHANGE
 	var/dchatmsg = "<span class='emote'><b>[user]</b> [msg]</span>" //SKYRAT CHANGE
 
+	var/blind_msg = "<span class='emote'><b>Кто-то</b> [msg]</span>"
+	if(emote_type != EMOTE_VISIBLE)
+		play_fov_effect(user, 3, "talk", ignore_self = FALSE)
 	if(user.client)
 		for(var/mob/M in GLOB.dead_mob_list)
 			if(!M.client || isnewplayer(M))
@@ -90,7 +93,7 @@
 	else if(emote_type == EMOTE_VISIBLE)
 		user.visible_message(dchatmsg, runechat_popup = chat_popup, rune_msg = msg)
 	else if(emote_type == EMOTE_BOTH)
-		user.visible_message(dchatmsg, blind_message = msg, runechat_popup = chat_popup, rune_msg = msg)
+		user.visible_message(dchatmsg, blind_message = blind_msg, runechat_popup = chat_popup, rune_msg = msg)
 	else if(emote_type == EMOTE_OMNI)
 		user.visible_message(dchatmsg, omni = TRUE, runechat_popup = chat_popup, rune_msg = msg)
 	//Skyrat change

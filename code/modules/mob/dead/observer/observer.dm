@@ -651,7 +651,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 	update_sight()
 
-/mob/dead/observer/update_sight()
+/mob/dead/observer/update_sight(forced = TRUE)
 	if(client)
 		ghost_others = client.prefs.ghost_others //A quick update just in case this setting was changed right before calling the proc
 

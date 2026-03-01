@@ -198,7 +198,7 @@
 		if(visible_message_flags & EMOTE_MESSAGE && !M.is_blind())
 			M.create_chat_message(src, raw_message = raw_msg)
 
-		M.show_message(msg, MSG_VISUAL, blind_message, MSG_AUDIBLE) //SKYRAT CHANGE
+		M.show_message(msg, MSG_VISUAL, in_range(T,M) ? msg : blind_message, MSG_AUDIBLE) //SKYRAT CHANGE
 
 ///Adds the functionality to self_message.
 /mob/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags)
@@ -983,7 +983,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /mob/proc/update_health_hud()
 	return
 
-/mob/proc/update_sight()
+/mob/proc/update_sight(forced = TRUE)
 	SEND_SIGNAL(src, COMSIG_MOB_UPDATE_SIGHT)
 
 	sync_lighting_plane_alpha()

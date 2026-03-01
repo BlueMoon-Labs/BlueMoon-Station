@@ -61116,9 +61116,10 @@
 /turf/open/floor/plasteel/textured/half,
 /area/hallway/primary/port)
 "nDw" = (
-/obj/structure/dresser,
 /obj/structure/window/reinforced,
 /obj/effect/turf_decal/siding/wood/thin,
+/obj/machinery/suit_storage_unit/open,
+/obj/item/mod/control/pre_equipped/corporate,
 /turf/open/floor/carpet/red,
 /area/command/heads_quarters/ntr)
 "nDz" = (

@@ -40221,6 +40221,8 @@
 /obj/machinery/light{
 	dir = 4
 	},
+/obj/machinery/suit_storage_unit/open,
+/obj/item/mod/control/pre_equipped/corporate,
 /turf/open/floor/plasteel/grimy,
 /area/command/bridge)
 "bHQ" = (

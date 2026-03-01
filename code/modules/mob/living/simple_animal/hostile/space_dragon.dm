@@ -63,6 +63,7 @@
 	maxbodytemp = 1500
 	faction = list("carp")
 	pressure_resistance = 200
+	see_in_dark = 6
 	pass_flags = PASSTABLE
 	/// Current time since the the last rift was activated.  If set to -1, does not increment.
 	var/riftTimer = 0

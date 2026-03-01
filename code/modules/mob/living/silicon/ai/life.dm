@@ -84,7 +84,7 @@
 	diag_hud_set_status()
 	..()
 
-/mob/living/silicon/ai/update_sight()
+/mob/living/silicon/ai/update_sight(forced = TRUE)
 	see_invisible = initial(see_invisible)
 	see_in_dark = initial(see_in_dark)
 	sight = initial(sight)

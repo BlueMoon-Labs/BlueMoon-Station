@@ -39,6 +39,7 @@
 	pressure_resistance = 200
 	gold_core_spawnable = HOSTILE_SPAWN
 	sharpness = SHARP_POINTY
+	see_in_dark = 4
 	//some carps heal over time
 	var/regen_cooldown = 0 //Used for how long it takes before a healing will take place default in 60 seconds
 	var/regen_amount = 0 //How much is healed pre regen cooldown
@@ -96,6 +97,8 @@
 	obj_damage = 80
 	melee_damage_lower = 20
 	melee_damage_upper = 20
+
+	see_in_dark = 5
 
 /mob/living/simple_animal/hostile/carp/megacarp/Initialize(mapload)
 	. = ..()

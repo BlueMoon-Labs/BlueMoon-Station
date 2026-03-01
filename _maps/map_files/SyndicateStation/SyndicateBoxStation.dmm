@@ -54239,6 +54239,11 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
+"joJ" = (
+/obj/machinery/suit_storage_unit/open,
+/obj/item/mod/control/pre_equipped/corporate,
+/turf/open/floor/mineral/plastitanium,
+/area/command/heads_quarters/ntr)
 "joX" = (
 /obj/structure/closet,
 /obj/effect/spawner/lootdrop/syndicate_present,
@@ -102214,7 +102219,7 @@ gkH
 sgT
 kaM
 cGM
-iTX
+joJ
 vrj
 rxP
 ayW
@@ -102985,7 +102990,7 @@ lXL
 sgT
 xpf
 lnB
-arW
+iTX
 fFv
 qjg
 xCk
