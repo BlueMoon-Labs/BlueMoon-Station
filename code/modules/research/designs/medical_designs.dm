@@ -460,7 +460,7 @@
 	materials = list(/datum/material/iron = 20000, /datum/material/glass = 10000, /datum/material/plastic = 20000, /datum/material/titanium = 2000, /datum/material/diamond = 800, /datum/material/gold = 2000, /datum/material/silver = 2000)
 	construction_time = 150
 	build_path = /obj/item/construction/plumbing
-	category = list("Misc","Medical Designs")
+	category = list("Misc","Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/rplunger
@@ -471,7 +471,7 @@
     materials = list(/datum/material/plasma = 1000, /datum/material/iron = 1000, /datum/material/glass = 1000)
     construction_time = 15
     build_path = /obj/item/plunger/reinforced
-    category = list ("Misc","Medical Designs")
+    category = list ("Misc","Equipment")
     departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/duct_print
@@ -482,7 +482,7 @@
 	materials = list(/datum/material/plastic = 400)
 	construction_time = 1
 	build_path = /obj/item/stack/ducts
-	category = list("Misc","Medical Designs")
+	category = list("Misc","Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SERVICE
 
 // Накой фиг оно тут надо, если есть пламбер РЦД
