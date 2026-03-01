@@ -4,7 +4,8 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 2500)
 	build_path = /obj/item/storage/backpack/case
-	category = list("initial","Tools")
+	category = list("initial","Tools", "Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/infiltrator_case_security
 	name = "Secure Compartment Case"
@@ -12,7 +13,8 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 2500)
 	build_path = /obj/item/storage/backpack/case/security
-	category = list("initial","Tools")
+	category = list("initial","Tools", "Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/infiltrator_case_command
 	name = "Command Compartment Case"
@@ -20,7 +22,8 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 2500)
 	build_path = /obj/item/storage/backpack/case/command
-	category = list("initial","Tools")
+	category = list("initial","Tools", "Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/infiltrator_case_medic
 	name = "Medical Compartment Case"
@@ -28,7 +31,8 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 2500)
 	build_path = /obj/item/storage/backpack/case/medical
-	category = list("initial","Tools")
+	category = list("initial","Tools", "Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/infiltrator_case_engineering
 	name = "Industrial Compartment Case"
@@ -36,7 +40,8 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 2500)
 	build_path = /obj/item/storage/backpack/case/engineering
-	category = list("initial","Tools")
+	category = list("initial","Tools", "Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/infiltrator_case_mining
 	name = "Mining Compartment Case"
@@ -44,7 +49,8 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 2500)
 	build_path = /obj/item/storage/backpack/case/mining
-	category = list("initial","Tools")
+	category = list("initial","Tools", "Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO
 
 /datum/design/infiltrator_case_science
 	name = "Science Compartment Case"
@@ -52,4 +58,5 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 2500)
 	build_path = /obj/item/storage/backpack/case/science
-	category = list("initial","Tools")
+	category = list("initial","Tools", "Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE

@@ -846,7 +846,9 @@
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING
 
-// Ключи Связи для наушников.
+///////////////////////////////////
+/////Headset Encryption////////////
+///////////////////////////////////
 
 /datum/design/encryptionkey_sec
 	name = "Security Radio Encryption Key"

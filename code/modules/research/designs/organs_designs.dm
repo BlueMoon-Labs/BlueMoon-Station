@@ -9,7 +9,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 400)
 	build_path = /obj/item/organ/eyes/robotic/shield
-	category = list("Misc", "Organs")
+	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/cyberimp_gloweyes
@@ -20,8 +20,15 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 1000)
 	build_path = /obj/item/organ/eyes/robotic/glow
-	category = list("Misc", "Organs")
+	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
+
+// Derivative of glow eyes
+/datum/design/cyberimp_gloweyes/cyberimp_hypnoeyes
+	name = "Mesmer Eyes"
+	desc = "Cybernetic eyes with integrated memetic sub-systems."
+	id = "ci-hypnoeyes"
+	build_path = /obj/item/organ/eyes/robotic/hypno
 
 ///datum/design/cyberimp_xray
 //	name = "X-ray Eyes"
@@ -31,7 +38,7 @@
 //	construction_time = 60
 //	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 600, /datum/material/gold = 600, /datum/material/plasma = 1000, /datum/material/uranium = 1000, /datum/material/diamond = 1000, /datum/material/bluespace = 1000)
 //	build_path = /obj/item/organ/eyes/robotic/xray
-//	category = list("Misc", "Organs")
+//	category = list("Cybernetics", "Organs")
 //	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/cyberimp_thermals
@@ -42,7 +49,7 @@
 	construction_time = 60
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 600, /datum/material/gold = 600, /datum/material/plasma = 1000, /datum/material/diamond = 2000)
 	build_path = /obj/item/organ/eyes/robotic/thermals
-	category = list("Misc", "Organs")
+	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_RED
 
@@ -58,7 +65,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 500, /datum/material/glass = 500)
 	build_path = /obj/item/organ/liver/cybernetic
-	category = list("Misc", "Organs")
+	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/cybernetic_liver/tier2
@@ -84,7 +91,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 500, /datum/material/glass = 500)
 	build_path = /obj/item/organ/heart/cybernetic
-	category = list("Misc", "Organs")
+	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/cybernetic_heart/tier2
@@ -110,7 +117,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 500, /datum/material/glass = 500)
 	build_path = /obj/item/organ/lungs/cybernetic
-	category = list("Misc", "Organs")
+	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/cybernetic_lungs/tier2
@@ -136,7 +143,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 500, /datum/material/glass = 500)
 	build_path = /obj/item/organ/stomach/cybernetic
-	category = list("Misc", "Organs")
+	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/cybernetic_stomach/tier2
@@ -161,7 +168,7 @@
 	build_type = PROTOLATHE | MECHFAB
 	materials = list(/datum/material/iron = 500, /datum/material/glass = 500)
 	build_path = /obj/item/organ/tongue/cybernetic
-	category = list("Misc", "Organs")
+	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/cybernetic_ears
@@ -172,7 +179,7 @@
 	construction_time = 30
 	materials = list(/datum/material/iron = 250, /datum/material/glass = 400)
 	build_path = /obj/item/organ/ears/cybernetic
-	category = list("Misc", "Organs")
+	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/cybernetic_ears_u
@@ -183,7 +190,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 500, /datum/material/glass = 500, /datum/material/silver = 500)
 	build_path = /obj/item/organ/ears/cybernetic/upgraded
-	category = list("Misc", "Organs")
+	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /////////////////////
@@ -213,7 +220,7 @@
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 2500)
 	construction_time = 20
 	build_path = /obj/item/bodypart/l_arm/robot/surplus
-	category = list("Misc", "Organs")
+	category = list("Prosthetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/basic_r_arm
@@ -224,7 +231,7 @@
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 2500)
 	construction_time = 20
 	build_path = /obj/item/bodypart/r_arm/robot/surplus
-	category = list("Misc", "Organs")
+	category = list("Prosthetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/basic_l_leg
@@ -235,7 +242,7 @@
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 2500)
 	construction_time = 20
 	build_path = /obj/item/bodypart/l_leg/robot/surplus
-	category = list("Misc", "Organs")
+	category = list("Prosthetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/basic_r_leg
@@ -246,7 +253,7 @@
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 2500)
 	construction_time = 20
 	build_path = /obj/item/bodypart/r_leg/robot/surplus
-	category = list("Misc", "Organs")
+	category = list("Prosthetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/adv_r_leg
@@ -257,7 +264,7 @@
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 3500, /datum/material/gold = 500, /datum/material/titanium = 800)
 	construction_time = 40
 	build_path = /obj/item/bodypart/r_leg/robot/surplus_upgraded
-	category = list("Misc", "Organs")
+	category = list("Prosthetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/adv_l_leg
@@ -268,7 +275,7 @@
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 3500, /datum/material/gold = 500, /datum/material/titanium = 800)
 	construction_time = 40
 	build_path = /obj/item/bodypart/l_leg/robot/surplus_upgraded
-	category = list("Misc", "Organs")
+	category = list("Prosthetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/adv_l_arm
@@ -279,7 +286,7 @@
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 3500, /datum/material/gold = 500, /datum/material/titanium = 800)
 	construction_time = 40
 	build_path = /obj/item/bodypart/l_arm/robot/surplus_upgraded
-	category = list("Misc", "Organs")
+	category = list("Prosthetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/adv_r_arm
@@ -290,5 +297,101 @@
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 3500, /datum/material/gold = 500, /datum/material/titanium = 800)
 	construction_time = 40
 	build_path = /obj/item/bodypart/r_arm/robot/surplus_upgraded
-	category = list("Misc", "Organs")
+	category = list("Prosthetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
+
+/////////////////////////////////////////
+//////////////Organic Designs////////////
+/////////////////////////////////////////
+//Xeno organs for hand-made hives and stuff//
+/datum/design/plasmavessel
+	name = "Plasma Vessel"
+	id = "plasmavessel"
+	desc = "A design for xenochimeric plasma vessel."
+	build_type = PROTOLATHE
+	construction_time = 150
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/xenochimeric = 200)
+	build_path = /obj/item/organ/alien/plasmavessel/large/queen
+	category = list("Organic Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+	materials = list (/datum/material/glass = 30000, /datum/material/plasma = 10000)
+	min_security_level = SEC_LEVEL_RED
+
+/datum/design/resinspinner
+	name = "Resin Spinner"
+	id = "resinspinner"
+	desc = "A design for xenochimeric resin spinner."
+	build_type = PROTOLATHE
+	construction_time = 150
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/xenochimeric = 200)
+	build_path = /obj/item/organ/alien/resinspinner
+	category = list("Organic Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+	materials = list (/datum/material/glass = 30000, /datum/material/plasma = 10000)
+	min_security_level = SEC_LEVEL_RED
+
+/datum/design/acidgland
+	name = "Acid Gland"
+	id = "acidgland"
+	desc = "A design for xenochimeric acid gland."
+	build_type = PROTOLATHE
+	construction_time = 150
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/xenochimeric = 200)
+	build_path = /obj/item/organ/alien/acid
+	category = list("Organic Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+	materials = list (/datum/material/glass = 30000, /datum/material/plasma = 10000)
+	min_security_level = SEC_LEVEL_RED
+
+/datum/design/neurotoxingland
+	name = "Neurotoxin Gland"
+	id = "neurotoxin"
+	desc = "A design for xenochimeric neurotoxin gland."
+	build_type = PROTOLATHE
+	construction_time = 150
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/xenochimeric = 200)
+	build_path = /obj/item/organ/alien/neurotoxin
+	category = list("Organic Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+	materials = list (/datum/material/glass = 30000, /datum/material/plasma = 10000)
+	min_security_level = SEC_LEVEL_RED
+
+/datum/design/eggsac
+	name = "Egg Sac"
+	id = "eggsac"
+	desc = "A design for xenochimeric egg sac."
+	build_type = PROTOLATHE
+	construction_time = 150
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/xenochimeric = 200)
+	build_path = /obj/item/organ/alien/eggsac
+	category = list("Organic Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+	materials = list (/datum/material/glass = 30000, /datum/material/plasma = 10000)
+	min_security_level = SEC_LEVEL_RED
+
+/datum/design/hivenode
+	name = "Hive node"
+	id = "hivenode"
+	desc = "A design for xenochimeric hive node."
+	build_type = PROTOLATHE
+	construction_time = 150
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/xenochimeric = 200)
+	build_path = /obj/item/organ/alien/hivenode
+	category = list("Organic Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+	materials = list (/datum/material/glass = 30000, /datum/material/plasma = 10000)
+	min_security_level = SEC_LEVEL_RED
+
+/datum/design/alientongue
+	name = "Alien Tongue"
+	id = "alientongue"
+	desc = "A design for xenochimeric alien tongue."
+	build_type = PROTOLATHE
+	construction_time = 150
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/xenochimeric = 200)
+	build_path = /obj/item/organ/tongue/alien
+	category = list("Organic Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+	materials = list (/datum/material/glass = 30000, /datum/material/plasma = 10000)
+	min_security_level = SEC_LEVEL_RED
