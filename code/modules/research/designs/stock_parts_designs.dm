@@ -102,7 +102,7 @@
 	build_path = /obj/item/stock_parts/manipulator
 	category = list("Stock Parts","Machinery","initial")
 	lathe_time_factor = 0.2
-	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/nano_mani
 	name = "Nano Manipulator"
