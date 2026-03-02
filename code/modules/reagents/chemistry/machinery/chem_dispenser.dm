@@ -1619,6 +1619,8 @@
 				return
 			var/reagent = text2path(params["id"])
 			var/datum/reagent/R = beaker.reagents.has_reagent(reagent)
+			if(!R)
+				return
 			var/freeSpace = reagents.maximum_volume - reagents.total_volume
 			if(freeSpace <= 0)
 				say("В хранилище нет места!")
@@ -1638,6 +1640,8 @@
 				return
 			var/reagent = text2path(params["id"])
 			var/datum/reagent/R = reagents.has_reagent(reagent)
+			if(!R)
+				return
 			reagents.trans_id_to(beaker, R.type, amount)
 			work_animation()
 			. = TRUE

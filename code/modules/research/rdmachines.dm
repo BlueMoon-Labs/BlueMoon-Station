@@ -23,6 +23,8 @@
 	set_wires(new /datum/wires/rnd(src))
 
 /obj/machinery/rnd/Destroy()
+	if(linked_console)
+		disconnect_console()
 	QDEL_NULL(wires)
 	return ..()
 

@@ -96,14 +96,16 @@
 	var/mob/M = parent
 	if(!QDELETED(fov))
 		if(M.client)
-			UnregisterSignal(M, list(COMSIG_ATOM_DIR_CHANGE, COMSIG_MOVABLE_MOVED, COMSIG_MOB_DEATH, COMSIG_LIVING_REVIVE))
 			M.client.images -= owner_mask
 			M.client.images -= shadow_mask
 			M.client.images -= visual_shadow
 			M.client.images -= adj_mask
+		UnregisterSignal(M, list(COMSIG_ATOM_DIR_CHANGE, COMSIG_MOVABLE_MOVED, COMSIG_MOB_DEATH, COMSIG_LIVING_REVIVE, COMSIG_ROBOT_UPDATE_ICONS))
 		qdel(fov, TRUE) // Forced.
 		fov = null
 		QDEL_NULL(owner_mask)
+		QDEL_NULL(shadow_mask)
+		QDEL_NULL(visual_shadow)
 		QDEL_NULL(adj_mask)
 	if(length(nested_locs))
 		UNREGISTER_NESTED_LOCS(nested_locs, COMSIG_MOVABLE_MOVED, 1)

@@ -17,6 +17,13 @@
 	var/breakout_time = 1200
 	var/obj/machinery/computer/scan_consolenew/linked_console = null
 
+/obj/machinery/dna_scannernew/Destroy()
+	if(linked_console?.connected_scanner == src)
+		linked_console.connected_scanner = null
+		linked_console.scanner_occupant = null
+	linked_console = null
+	return ..()
+
 /obj/machinery/dna_scannernew/RefreshParts()
 	scan_level = 0
 	damage_coeff = 0

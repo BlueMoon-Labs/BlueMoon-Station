@@ -1010,7 +1010,9 @@
 			dat += "<td width='20%'><a href='?src=[REF(src)];[HrefToken()];jobban3=[ROLE_RESPAWN];jobban4=[REF(M)]'>Respawns</a></td>"
 
 		dat += "</tr></table>"
-		usr << browse(dat, "window=jobban2;size=800x450")
+		var/datum/browser/popup = new(usr, "jobban2", "Job Bans", 800, 450)
+		popup.set_content(dat)
+		popup.open(FALSE)
 		return
 
 	//JOBBAN'S INNARDS
@@ -2620,6 +2622,11 @@
 		src.admincaster_screen = 12
 		src.access_news_network()
 
+	else if(href_list["gc_queue_refresh"])
+		if(!check_rights(R_DEBUG))
+			return
+		usr.client?.cmd_display_gc_queue()
+
 	else if(href_list["ac_refresh"])
 		if(!check_rights(R_ADMIN))
 			return
@@ -2738,6 +2745,42 @@
 		else
 			error_viewer.show_to(owner, null, href_list["viewruntime_linear"])
 
+	else if(href_list["viewgcfailure_worldscan"])
+		var/datum/gc_failure_viewer/gc_failure_entry/entry = locate(href_list["viewgcfailure_worldscan"])
+		if(!istype(entry))
+			to_chat(usr, span_warning("GC failure entry больше не существует."))
+			return
+		INVOKE_ASYNC(entry, TYPE_PROC_REF(/datum/gc_failure_viewer/gc_failure_entry, trigger_world_scan), owner, null)
+
+	else if(href_list["viewgcfailure_refscan"])
+		var/datum/gc_failure_viewer/gc_failure_entry/entry = locate(href_list["viewgcfailure_refscan"])
+		if(!istype(entry))
+			to_chat(usr, span_warning("GC failure entry больше не существует."))
+			return
+		if(!entry.datum_ref)
+			to_chat(usr, span_warning("Нет ссылки на объект для сканирования."))
+			return
+		var/response = tgui_alert(usr, "Сканирование ссылок пройдёт по всем GLOB-переменным, подсистемам и соседним объектам. Это может вызвать лаг на несколько секунд. Продолжить?", "Сканирование ссылок", list("Да", "Нет"))
+		if(response != "Да")
+			return
+		var/datum/D = locate(entry.datum_ref)
+		if(!D || D.type != text2path(entry.type_path))
+			to_chat(usr, span_warning("Объект больше не существует, сканирование невозможно."))
+			return
+		entry.build_reference_info(D)
+		entry.show_to(owner)
+
+	else if(href_list["viewgcfailure"])
+		var/datum/gc_failure_viewer/viewer = locate(href_list["viewgcfailure"])
+		if(!istype(viewer))
+			to_chat(usr, "<span class='warning'>That GC failure viewer no longer exists.</span>")
+			return
+
+		if(href_list["viewgcfailure_backto"])
+			viewer.show_to(owner, locate(href_list["viewgcfailure_backto"]), href_list["viewgcfailure_linear"])
+		else
+			viewer.show_to(owner, null, href_list["viewgcfailure_linear"])
+
 	else if(href_list["showrelatedacc"])
 		if(!check_rights(R_ADMIN))
 			return
@@ -2753,7 +2796,9 @@
 		var/list/dat = list("Related accounts by [uppertext(href_list["showrelatedacc"])]:")
 		dat += thing_to_check
 
-		usr << browse(dat.Join("<br>"), "window=related_[C];size=420x300")
+		var/datum/browser/popup = new(usr, "related_[C]", "Related Accounts", 420, 300)
+		popup.set_content(dat.Join("<br>"))
+		popup.open(FALSE)
 
 	else if(href_list["centcomlookup"])
 		if(!check_rights(R_ADMIN))
@@ -2894,7 +2939,9 @@
 	dat += {"<A href='?src=[REF(src)];[HrefToken()];c_mode2=secret'>Secret</A><br>"}
 	dat += {"<A href='?src=[REF(src)];[HrefToken()];c_mode2=random'>Random</A><br>"}
 	dat += {"Now: [GLOB.master_mode]"}
-	usr << browse(dat, "window=c_mode")
+	var/datum/browser/popup = new(usr, "c_mode", "Change Game Mode")
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 /datum/admins/proc/HandleFSecret()
 	if(!check_rights(R_ADMIN))
@@ -2909,7 +2956,9 @@
 		dat += {"<A href='?src=[REF(src)];[HrefToken()];f_secret2=[mode]'>[config.mode_names[mode]]</A><br>"}
 	dat += {"<A href='?src=[REF(src)];[HrefToken()];f_secret2=secret'>Random (default)</A><br>"}
 	dat += {"Now: [GLOB.secret_force_mode]"}
-	usr << browse(dat, "window=f_secret")
+	var/datum/browser/popup = new(usr, "f_secret", "Force Secret Mode")
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 /datum/admins/proc/makeMentor(ckey)
 	if(!usr.client)

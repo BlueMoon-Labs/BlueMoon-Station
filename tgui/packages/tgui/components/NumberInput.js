@@ -4,6 +4,7 @@
  * @license MIT
  */
 
+import { KEY_ENTER, KEY_ESCAPE } from 'common/keycodes';
 import { clamp } from 'common/math';
 import { classes, pureComponentHooks } from 'common/react';
 import { Component, createRef } from 'inferno';
@@ -76,7 +77,10 @@ export class NumberInput extends Component {
       const { minValue, maxValue, step, stepPixelSize } = this.props;
       this.setState(prevState => {
         const state = { ...prevState };
-        const offset = state.origin - e.screenY;
+        // DPI fix: screenY is in physical pixels; divide by DPR to normalize
+        // drag sensitivity so stepPixelSize behaves consistently at any DPI.
+        const dpr = window.devicePixelRatio ?? 1;
+        const offset = (state.origin - e.screenY) / dpr;
         if (prevState.dragging) {
           const stepOffset = Number.isFinite(minValue)
             ? minValue % step
@@ -127,14 +131,16 @@ export class NumberInput extends Component {
       }
       else if (this.inputRef) {
         const input = this.inputRef.current;
-        input.value = internalValue;
-        // IE8: Dies when trying to focus a hidden element
-        // (Error: Object does not support this action)
-        try {
-          input.focus();
-          input.select();
+        if (input) {
+          setTimeout(() => {
+            input.value = internalValue;
+            try {
+              input.focus();
+              input.select();
+            }
+            catch { }
+          }, 1);
         }
-        catch { }
       }
     };
   }
@@ -192,11 +198,8 @@ export class NumberInput extends Component {
     if (dragging || suppressingFlicker) {
       displayValue = intermediateValue;
     }
-    // IE8: Use an "unselectable" prop because "user-select" doesn't work.
     const renderContentElement = value => (
-      <div
-        className="NumberInput__content"
-        unselectable={Byond.IS_LTE_IE8}>
+      <div className="NumberInput__content">
         {value + (unit ? ' ' + unit : '')}
       </div>
     );
@@ -272,7 +275,7 @@ export class NumberInput extends Component {
             }
           }}
           onKeyDown={e => {
-            if (e.keyCode === 13) {
+            if (e.key === KEY_ENTER) {
               const value = clamp(
                 parseFloat(e.target.value),
                 minValue,
@@ -294,7 +297,7 @@ export class NumberInput extends Component {
               }
               return;
             }
-            if (e.keyCode === 27) {
+            if (e.key === KEY_ESCAPE) {
               this.setState({
                 editing: false,
               });

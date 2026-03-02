@@ -78,6 +78,8 @@
 /obj/machinery/atmospherics/Destroy()
 	for(var/i in 1 to device_type)
 		nullifyNode(i)
+	// Break any residual reference cycles between connected atmos machines.
+	nodes = null
 
 
 	SSair.stop_processing_machine(src)
@@ -197,10 +199,14 @@
 	return
 
 /obj/machinery/atmospherics/proc/disconnect(obj/machinery/atmospherics/reference)
+	if(!nodes)
+		return
 	if(istype(reference, /obj/machinery/atmospherics/pipe))
 		var/obj/machinery/atmospherics/pipe/P = reference
 		P.destroy_network()
-	nodes[nodes.Find(reference)] = null
+	var/node_index = nodes.Find(reference)
+	if(node_index)
+		nodes[node_index] = null
 	update_icon()
 
 /obj/machinery/atmospherics/attackby(obj/item/W, mob/user, params)
@@ -226,7 +232,9 @@
 	add_fingerprint(user)
 
 	var/unsafe_wrenching = FALSE
-	var/internal_pressure = int_air.return_pressure()-env_air.return_pressure()
+	var/internal_pressure = 0
+	if(int_air && env_air)
+		internal_pressure = int_air.return_pressure() - env_air.return_pressure()
 
 	to_chat(user, "<span class='notice'>You begin to unfasten \the [src]...</span>")
 
@@ -257,7 +265,10 @@
 	if(!pressures)
 		var/datum/gas_mixture/int_air = return_air()
 		var/datum/gas_mixture/env_air = loc.return_air()
-		pressures = int_air.return_pressure() - env_air.return_pressure()
+		if(int_air && env_air)
+			pressures = int_air.return_pressure() - env_air.return_pressure()
+		else
+			pressures = 0
 
 	user.visible_message("<span class='danger'>[user] is sent flying by pressure!</span>","<span class='userdanger'>The pressure sends you flying!</span>")
 

@@ -42,6 +42,7 @@
 	var/efficiency
 
 /obj/machinery/power/compressor/Destroy()
+	QDEL_NULL(gas_contained)
 	if(turbine && turbine.compressor == src)
 		turbine.compressor = null
 	turbine = null

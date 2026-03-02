@@ -30,7 +30,7 @@
 			continue
 		if(istype(bp, /obj/item/clothing))
 			var/obj/item/clothing/C = bp
-			if(C.body_parts_covered & def_zone.body_part && C.armor)
+			if(C.body_parts_covered & def_zone.body_part && istype(C.armor, /datum/armor))
 				protection += C.armor.getRating(d_type)
 	protection += physiology.armor.getRating(d_type)
 	return protection

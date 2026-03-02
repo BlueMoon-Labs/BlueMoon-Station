@@ -325,5 +325,8 @@ export const paginate = <T>(collection: T[], maxPerPage: number): T[][] => {
       page = [];
     }
   }
+  if (page.length > 0) {
+    pages.push(page);
+  }
   return pages;
 };

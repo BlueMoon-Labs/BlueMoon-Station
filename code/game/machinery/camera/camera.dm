@@ -402,3 +402,13 @@
 		user.sight = 0
 		user.see_in_dark = 2
 	return TRUE
+
+// (ADD) Pe4henika bluemoon -- start
+/obj/machinery/camera/update_icon_state()
+    if(!status)
+        icon_state = "[initial(icon_state)]1"
+    else if (machine_stat & EMPED)
+        icon_state = "[initial(icon_state)]emp"
+    else
+        icon_state = "[initial(icon_state)][in_use_lights > 0 ? "_in_use" : ""]"
+// (ADD) Pe4henika bluemoon -- end

@@ -87,17 +87,17 @@
 	icon_state = "broadcurls"
 	relevant_layers = list(HORNS_LAYER, BODY_FRONT_LAYER)
 
-/datum/sprite_accessory/horns/big/paintedpoints
+/datum/sprite_accessory/horns/paintedpoints
 	name = "Painted Points"
 	icon = 'modular_splurt/icons/mob/32x48_mutant_bodyparts.dmi'
 	icon_state = "paintedpoints"
 
-/datum/sprite_accessory/horns/big/whoshorns
+/datum/sprite_accessory/horns/whoshorns
 	name = "Who's Horns?"
 	icon = 'modular_splurt/icons/mob/32x48_mutant_bodyparts.dmi'
 	icon_state = "whoshorns"
 
-/datum/sprite_accessory/horns/big/highrisehorns
+/datum/sprite_accessory/horns/highrisehorns
 	name = "High-rise Horns"
 	icon = 'modular_splurt/icons/mob/32x48_mutant_bodyparts.dmi'
 	icon_state = "highrisehorns"

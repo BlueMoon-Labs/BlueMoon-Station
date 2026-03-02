@@ -40,14 +40,15 @@ function task-install {
   yarn install
 }
 
-## Runs webpack
-function task-webpack {
-  yarn run webpack-cli @Args
+## Runs vite build for both bundles
+function task-build {
+  yarn run vite build --config "vite.tgui.config.cjs" @Args
+  yarn run vite build --config "vite.tgui-panel.config.cjs" @Args
 }
 
-## Runs a development server
+## Runs development watchers
 function task-dev-server {
-  yarn node --experimental-modules "packages/tgui-dev-server/index.js" @Args
+  yarn run tgui:dev @Args
 }
 
 ## Run a linter through all packages
@@ -71,7 +72,6 @@ function task-clean {
   ## Yarn artifacts
   Remove-Quiet -Recurse -Force ".yarn\cache"
   Remove-Quiet -Recurse -Force ".yarn\unplugged"
-  Remove-Quiet -Recurse -Force ".yarn\webpack"
   Remove-Quiet -Force ".yarn\build-state.yml"
   Remove-Quiet -Force ".yarn\install-state.gz"
   Remove-Quiet -Force ".yarn\install-target"
@@ -129,19 +129,19 @@ if ($Args.Length -gt 0) {
   ## Analyze the bundle
   if ($Args[0] -eq "--analyze") {
     task-install
-    task-webpack --mode=production --analyze
+    task-build --mode=production --sourcemap
     exit 0
   }
 }
 
-## Make a production webpack build
+## Make a production build
 if ($Args.Length -eq 0) {
   task-install
   task-lint
-  task-webpack --mode=production
+  task-build --mode=production
   exit 0
 }
 
-## Run webpack with custom flags
+## Run vite with custom flags
 task-install
-task-webpack @Args
+task-build @Args

@@ -64,12 +64,12 @@
 		ratvar_modules -= i
 
 /obj/item/robot_module/Destroy()
-	basic_modules.Cut()
-	emag_modules.Cut()
-	ratvar_modules.Cut()
 	modules.Cut()
-	added_modules.Cut()
-	storages.Cut()
+	QDEL_LIST(basic_modules)
+	QDEL_LIST(emag_modules)
+	QDEL_LIST(ratvar_modules)
+	QDEL_LIST(added_modules)
+	QDEL_LIST(storages)
 	return ..()
 
 /obj/item/robot_module/emp_act(severity)
@@ -126,34 +126,29 @@
 
 	var/mechanics = CONFIG_GET(flag/enable_dogborg_sleepers)
 	if (mechanics)
-		// Normal sleepers
 		if(istype(src, /obj/item/robot_module/security))
 			I = new /obj/item/dogborg/sleeper/K9(src)
-
-		if(istype(src, /obj/item/robot_module/medical))
+		else if(istype(src, /obj/item/robot_module/medical))
 			I = new /obj/item/dogborg/sleeper(src)
-
-		// "Unimplemented sleepers"
-		if(istype(src, /obj/item/robot_module/engineering))
+		else if(istype(src, /obj/item/robot_module/engineering))
 			I = new /obj/item/dogborg/sleeper/compactor(src)
 			I.icon_state = "decompiler"
-		if(istype(src, /obj/item/robot_module/butler))
+		else if(istype(src, /obj/item/robot_module/butler))
 			I = new /obj/item/dogborg/sleeper/compactor(src)
 			I.icon_state = "servicer"
 			if(cyborg_base_icon in list("scrubpup", "drakejanit"))
 				I.icon_state = "compactor"
+		else
+			I = new /obj/item/dogborg/sleeper/K9/flavour(src)
 	else
-		I = new /obj/item/dogborg/sleeper/K9/flavour(src) //If mechanics is a no-no, revert to flavour
-		// Recreational sleepers
+		I = new /obj/item/dogborg/sleeper/K9/flavour(src)
 		if(istype(src, /obj/item/robot_module/security))
 			I.icon_state = "sleeperb"
-		if(istype(src, /obj/item/robot_module/medical))
+		else if(istype(src, /obj/item/robot_module/medical))
 			I.icon_state = "sleeper"
-
-		// Unimplemented sleepers
-		if(istype(src, /obj/item/robot_module/engineering))
+		else if(istype(src, /obj/item/robot_module/engineering))
 			I.icon_state = "decompiler"
-		if(istype(src, /obj/item/robot_module/butler))
+		else if(istype(src, /obj/item/robot_module/butler))
 			I.icon_state = "servicer"
 			if(cyborg_base_icon in list("scrubpup", "drakejanit"))
 				I.icon_state = "compactor"
@@ -2240,7 +2235,7 @@
 		/obj/item/crowbar/cyborg,
 		/obj/item/reagent_containers/borghypo/syndicate,
 		/obj/item/gripper/medical,
-		/obj/item/shockpaddles/syndicate,
+		/obj/item/shockpaddles/syndicate/cyborg,
 		/obj/item/healthanalyzer/advanced/cyborg,
 		/obj/item/surgical_drapes/advanced,
 		/obj/item/retractor/advanced,
@@ -2389,7 +2384,7 @@
 		/obj/item/crowbar/cyborg,
 		/obj/item/reagent_containers/borghypo/syndicate,
 		/obj/item/gripper/medical,
-		/obj/item/shockpaddles/syndicate,
+		/obj/item/shockpaddles/syndicate/cyborg,
 		/obj/item/healthanalyzer/advanced,
 		/obj/item/surgical_drapes/advanced,
 		/obj/item/retractor,

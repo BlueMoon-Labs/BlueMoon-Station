@@ -2,8 +2,7 @@
 <html>
 <head>
 	<title>Tooltip</title>
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel='stylesheet' href='THE_FONT_GOES_HERE!!!!!!!!!!!!!!!' >
 	<style type="text/css">
 		body, html {
@@ -120,6 +119,91 @@
 	</div>
 	<script type="text/javascript" src="jquery.min.js"></script>
 	<script type="text/javascript">
+		function byond_bridge_call(path, params) {
+			var query = "";
+			var i = 0;
+			if (params) {
+				for (var key in params) {
+					if (!params.hasOwnProperty(key)) {
+						continue;
+					}
+					if (i++ > 0) {
+						query += "&";
+					}
+					var value = params[key];
+					if (value === null || typeof value === "undefined") {
+						value = "";
+					}
+					query += encodeURIComponent(key) + "=" + encodeURIComponent(value);
+				}
+			}
+
+			var rawUrl = (path || "") + "?" + query;
+			var protocolUrl = "byond://" + rawUrl;
+
+			if (window.cef_to_byond) {
+				try {
+					window.cef_to_byond(protocolUrl);
+					return true;
+				} catch (e) {}
+			}
+
+			var bridge = window.BYOND;
+			if (bridge) {
+				var callTargets = [];
+				if (typeof bridge === "function") {
+					callTargets.push(bridge);
+				}
+				var methodNames = [
+					"callByond",
+					"byond",
+					"call",
+					"topic",
+					"sendMessage",
+					"send",
+					"postMessage"
+				];
+				for (var m = 0; m < methodNames.length; m++) {
+					var method = bridge[methodNames[m]];
+					if (typeof method === "function") {
+						callTargets.push(method);
+					}
+				}
+				for (var c = 0; c < callTargets.length; c++) {
+					try {
+						callTargets[c].call(bridge, rawUrl);
+						return true;
+					} catch (e1) {}
+					try {
+						callTargets[c].call(bridge, protocolUrl);
+						return true;
+					} catch (e2) {}
+				}
+			}
+
+			try {
+				window.location.href = protocolUrl;
+				return true;
+			} catch (e3) {}
+
+			try {
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", rawUrl);
+				xhr.send();
+				return true;
+			} catch (e4) {}
+
+			return false;
+		}
+
+		function byond_winset(params) {
+			byond_bridge_call("winset", params || {});
+		}
+
+		function byond_winget(params) {
+			byond_bridge_call("winget", params || {});
+		}
+
 		var tooltip = {
 			'tileSize': 32,
 			'control': '',
@@ -134,7 +218,7 @@
 				tooltip.control = control;
 			},
 			hide: function() {
-				window.location = 'byond://winset?id='+tooltip.control+';is-visible=false';
+				byond_winset({ id: tooltip.control, "is-visible": "false" });
 			},
 			updateCallback: function(map) {
 				if (typeof map === 'undefined' || !map) {return false;}
@@ -142,7 +226,7 @@
 				//alert(tooltip.params+' | '+tooltip.clientView+' | '+tooltip.text+' | '+tooltip.theme); //DEBUG
 
 				//Some reset stuff to avoid fringe issues with sizing
-				window.location = 'byond://winset?id='+tooltip.control+';anchor1=0,0;size=999x999';
+				byond_winset({ id: tooltip.control, anchor1: "0,0", size: "999x999" });
 
 				//Get the real icon size according to the client view
 				//FYI, this bit is even more borrowed from goon, our widescreen broke tooltips so I took a look at how they do it
@@ -255,15 +339,31 @@
 
 				$wrap.width($wrap.width() + 2); //Dumb hack to fix a bizarre sizing bug
 
-				var docWidth	= $wrap.outerWidth(),
-					docHeight	= $wrap.outerHeight();
+				// DPI fix: jQuery returns CSS pixels but byond_winset expects physical (BYOND) pixels.
+				// At high DPI (e.g. 150%), CSS pixels are smaller than physical pixels by devicePixelRatio.
+				var dpr = window.devicePixelRatio || 1;
+				var docWidth	= Math.ceil($wrap.outerWidth() * dpr),
+					docHeight	= Math.ceil($wrap.outerHeight() * dpr);
 
 				if (posY + docHeight > map.size.y) { //Is the bottom edge below the window? Snap it up if so
 					posY = (posY - docHeight) - realIconSizeY - tooltip.padding;
 				}
 
+				//Clamp to prevent going off-screen on the left or top
+				if (posX < tooltip.padding) {
+					posX = tooltip.padding;
+				}
+				if (posY < tooltip.padding) {
+					posY = tooltip.padding;
+				}
+
 				//Actually size, move and show the tooltip box
-				window.location = 'byond://winset?id='+tooltip.control+';size='+docWidth+'x'+docHeight+';pos='+posX+','+posY+';is-visible=true';
+				byond_winset({
+					id: tooltip.control,
+					size: docWidth + "x" + docHeight,
+					pos: posX + "," + posY,
+					"is-visible": "true"
+				});
 
 				$content.on('mouseover', function() {
 					tooltip.hide();
@@ -279,7 +379,11 @@
 				tooltip.special = special;
 
 				//Go get the map details
-				window.location = 'byond://winget?callback=tooltip.updateCallback;id=mapwindow.map;property=size,view-size';
+				byond_winget({
+					callback: "tooltip.updateCallback",
+					id: "mapwindow.map",
+					property: "size,view-size"
+				});
 			},
 		};
 	</script>

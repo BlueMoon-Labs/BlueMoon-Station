@@ -139,10 +139,13 @@
 			if(length(comps))
 				for(var/i in comps)
 					var/datum/component/comp = i
+					if(!comp)
+						continue
 					comp.UnregisterSignal(src, sig)
 			else
 				var/datum/component/comp = comps
-				comp.UnregisterSignal(src, sig)
+				if(comp)
+					comp.UnregisterSignal(src, sig)
 		comp_lookup = lookup = null
 
 	for(var/target in signal_procs)

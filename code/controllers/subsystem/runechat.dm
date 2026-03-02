@@ -107,6 +107,8 @@ SUBSYSTEM_DEF(runechat)
 			var/datum/timedevent/head = bucket_list[bucket_pos]
 			if (!head)
 				bucket_list[bucket_pos] = cm
+				cm.in_runechat_queue = TRUE
+				cm.in_runechat_second_queue = FALSE
 				cm.next = null
 				cm.prev = null
 				continue
@@ -117,6 +119,8 @@ SUBSYSTEM_DEF(runechat)
 			cm.prev = head.prev
 			cm.next.prev = cm
 			cm.prev.next = cm
+			cm.in_runechat_queue = TRUE
+			cm.in_runechat_second_queue = FALSE
 		if (i)
 			second_queue.Cut(1, i + 1)
 		cm = null
@@ -145,8 +149,8 @@ SUBSYSTEM_DEF(runechat)
 	var/list/second_queue = SSrunechat.second_queue
 
 	// When necessary, de-list the chatmessage from its previous position
-	if (new_sched_destruction)
-		if (scheduled_destruction >= BUCKET_LIMIT)
+	if (new_sched_destruction && in_runechat_queue)
+		if (in_runechat_second_queue)
 			second_queue -= src
 		else
 			SSrunechat.bucket_count--
@@ -162,6 +166,10 @@ SUBSYSTEM_DEF(runechat)
 				prev?.next = null
 				next?.prev = null
 			prev = next = null
+		in_runechat_queue = FALSE
+		in_runechat_second_queue = FALSE
+		scheduled_destruction = new_sched_destruction
+	else if (new_sched_destruction)
 		scheduled_destruction = new_sched_destruction
 
 	// Ensure the scheduled destruction time is properly bound to avoid missing a scheduled event
@@ -170,6 +178,8 @@ SUBSYSTEM_DEF(runechat)
 	// Handle insertion into the secondary queue if the required time is outside our tracked amounts
 	if (scheduled_destruction >= BUCKET_LIMIT)
 		BINARY_INSERT(src, SSrunechat.second_queue, /datum/chatmessage, src, scheduled_destruction, COMPARE_KEY)
+		in_runechat_queue = TRUE
+		in_runechat_second_queue = TRUE
 		return
 
 	// Get bucket position and a local reference to the datum var, it's faster to access this way
@@ -182,6 +192,8 @@ SUBSYSTEM_DEF(runechat)
 	// If there is no existing head of this bucket, we can set this message to be that head
 	if (!bucket_head)
 		bucket_list[bucket_pos] = src
+		in_runechat_queue = TRUE
+		in_runechat_second_queue = FALSE
 		return
 
 	// Otherwise it's a simple insertion into the circularly doubly-linked list
@@ -191,37 +203,33 @@ SUBSYSTEM_DEF(runechat)
 	prev = bucket_head.prev
 	next.prev = src
 	prev.next = src
+	in_runechat_queue = TRUE
+	in_runechat_second_queue = FALSE
 
 
 /**
  * Removes this chatmessage datum from the runechat subsystem
  */
 /datum/chatmessage/proc/leave_subsystem()
-	// Attempt to find the bucket that contains this chat message
-	var/bucket_pos = BUCKET_POS(scheduled_destruction)
+	if(!in_runechat_queue)
+		prev = next = null
+		return
 
 	// Get local references to the subsystem's vars, faster than accessing on the datum
 	var/list/bucket_list = SSrunechat.bucket_list
 	var/list/second_queue = SSrunechat.second_queue
 
-	// Attempt to get the head of the bucket
-	var/datum/chatmessage/bucket_head
-	if (bucket_pos > 0)
-		bucket_head = bucket_list[bucket_pos]
-
-	// Decrement the number of messages in buckets if the message is
-	// the head of the bucket, or has a SD less than BUCKET_LIMIT implying it fits
-	// into an existing bucket, or is otherwise not present in the secondary queue
-	if(bucket_head == src)
-		bucket_list[bucket_pos] = next
-		SSrunechat.bucket_count--
-	else if(scheduled_destruction < BUCKET_LIMIT)
-		SSrunechat.bucket_count--
-	else
-		var/l = length(second_queue)
+	if(in_runechat_second_queue)
 		second_queue -= src
-		if(l == length(second_queue))
-			SSrunechat.bucket_count--
+	else
+		// Attempt to find the bucket that contains this chat message
+		var/bucket_pos = BUCKET_POS(scheduled_destruction)
+		var/datum/chatmessage/bucket_head
+		if (bucket_pos > 0)
+			bucket_head = bucket_list[bucket_pos]
+		if(bucket_head == src)
+			bucket_list[bucket_pos] = next
+		SSrunechat.bucket_count--
 
 	// Remove the message from the bucket, ensuring to maintain
 	// the integrity of the bucket's list if relevant
@@ -232,6 +240,8 @@ SUBSYSTEM_DEF(runechat)
 		prev?.next = null
 		next?.prev = null
 	prev = next = null
+	in_runechat_queue = FALSE
+	in_runechat_second_queue = FALSE
 
 #undef BUCKET_LEN
 #undef BUCKET_POS

@@ -54,6 +54,8 @@ GLOBAL_PROTECT(world_econ_log)
 
 GLOBAL_VAR(perf_log)
 GLOBAL_PROTECT(perf_log)
+GLOBAL_VAR(ping_perf_log)
+GLOBAL_PROTECT(ping_perf_log)
 
 // GLOBAL_VAR(demo_log)
 // GLOBAL_PROTECT(demo_log)

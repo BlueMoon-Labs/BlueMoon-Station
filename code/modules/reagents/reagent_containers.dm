@@ -140,7 +140,7 @@
 		log_reagent("SPLASH: [src] mob SplashReagents() onto [key_name(target)] at [TT] ([AREACOORD(TT)])[throwerstring] - [R]")
 		if(ishuman(target))
 			var/mob/living/carbon/human/H = target
-			var/obj/item/bodypart/affecting = H.get_bodypart(check_zone(thrown_by.zone_selected))
+			var/obj/item/bodypart/affecting = H.get_bodypart(check_zone(thrown_by?.zone_selected))
 			reagents.reaction(M, TOUCH, affected_bodypart = affecting)
 		else
 			reagents.reaction(M, TOUCH)

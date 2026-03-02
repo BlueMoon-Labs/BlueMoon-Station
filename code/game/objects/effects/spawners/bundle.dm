@@ -7,12 +7,15 @@
 	var/list/items
 
 /obj/effect/spawner/bundle/Initialize(mapload)
-	..()
+	. = ..()
+	do_spawning()
+	return INITIALIZE_HINT_QDEL
+
+/obj/effect/spawner/bundle/proc/do_spawning()
 	if(items && items.len)
 		var/turf/T = get_turf(src)
 		for(var/path in items)
 			new path(T)
-	return INITIALIZE_HINT_QDEL
 
 /obj/effect/spawner/bundle/costume/chicken
 	name = "chicken costume spawner"
@@ -173,7 +176,9 @@
 	var/pickone = FALSE
 
 /obj/effect/spawner/bundle/crate/Initialize(mapload)
-	SHOULD_CALL_PARENT(FALSE)
+	return ..()
+
+/obj/effect/spawner/bundle/crate/do_spawning()
 	if(items && items.len)
 		var/turf/T = get_turf(src)
 		var/obj/structure/closet/LC = locate(/obj/structure/closet) in T
@@ -184,7 +189,6 @@
 			else
 				for(var/path in items)
 					new path(LC)
-	return INITIALIZE_HINT_QDEL
 
 /obj/effect/spawner/bundle/crate/mosin
 	name = "Mosin-Nagant spawner"

@@ -32,7 +32,7 @@
 	remove_from_dead_mob_list()
 	remove_from_alive_mob_list()
 	QDEL_LIST(mob_spell_list)
-	QDEL_LIST(actions)
+	QDEL_LAZYLIST(actions)
 	GLOB.all_clockwork_mobs -= src
 	// remove_from_mob_suicide_list()
 	focus = null
@@ -49,6 +49,7 @@
 	dispose_rendering()
 	qdel(hud_used)
 	QDEL_LIST(client_colours)
+	clear_typing_indicator()
 	ghostize()
 	if(mind?.current == src) //Let's just be safe yeah? This will occasionally be cleared, but not always. Can't do it with ghostize without changing behavior
 		mind.set_current(null)
@@ -368,6 +369,8 @@
 		LAZYINITLIST(client.recent_examines)
 		if(isnull(client.recent_examines[A]) || client.recent_examines[A] < world.time)
 			result = A.examine(src)
+			if(!client)
+				return
 			client.recent_examines[A] = world.time + EXAMINE_MORE_TIME // set the value to when the examine cooldown ends
 			RegisterSignal(A, COMSIG_PARENT_QDELETING, PROC_REF(clear_from_recent_examines), override=TRUE) // to flush the value if deleted early
 			addtimer(CALLBACK(src, PROC_REF(clear_from_recent_examines), A), EXAMINE_MORE_TIME)
@@ -1003,7 +1006,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 		client.mouse_pointer_icon = pull_cursor_icon
 	else if(throw_cursor_icon && throw_mode != 0)
 		client.mouse_pointer_icon = throw_cursor_icon
-	else if(combat_cursor_icon && SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
+	else if(combat_cursor_icon && usr && SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
 		if(!client.prefs || !client.prefs.disable_combat_cursor) // Don't show the combat cursor for people who have it disabled in prefs.
 			client.mouse_pointer_icon = combat_cursor_icon
 	else if(examine_cursor_icon && client.keys_held["Shift"]) //mouse shit is hardcoded, make this non hard-coded once we make mouse modifiers bindable

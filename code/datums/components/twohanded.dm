@@ -16,7 +16,8 @@
 	var/require_twohands = FALSE					/// Does it have to be held in both hands
 	var/icon_wielded = FALSE						/// The icon that will be used when wielded
 	var/obj/item/offhand/offhand_item = null		/// Reference to the offhand created for the item
-	var/sharpened_increase = 0						/// The amount of increase recived from sharpening the item
+	var/mob/living/carbon/wield_user = null		/// Reference to the mob currently wielding this item (for signal cleanup)
+	var/sharpened_increase = 0					/// The amount of increase recived from sharpening the item
 
 /**
  * Two Handed component
@@ -92,21 +93,17 @@
 								COMSIG_ITEM_SHARPEN_ACT,
 								COMSIG_ITEM_CHECK_WIELDED))
 
-/// Triggered on equip of the item containing the component
-/datum/component/two_handed/proc/on_equip(datum/source, mob/user, slot)
-	if(require_twohands && slot == ITEM_SLOT_HANDS) // force equip the item
-		wield(user)
-	if(!user.is_holding(parent) && wielded && !require_twohands)
-		unwield(user)
-
-/// Triggered on drop of item containing the component
-/datum/component/two_handed/proc/on_drop(datum/source, mob/user)
-	if(require_twohands)
-		unwield(user, show_message=TRUE)
-	if(wielded)
-		unwield(user)
-	if(source == offhand_item && !QDELETED(src))
-		qdel(src)
+/datum/component/two_handed/Destroy()
+	// Cleanup the MOB_SWAP_HANDS signal registered during wield()
+	if(wield_user)
+		UnregisterSignal(wield_user, COMSIG_MOB_SWAP_HANDS)
+		wield_user = null
+	if(offhand_item)
+		UnregisterSignal(offhand_item, COMSIG_ITEM_DROPPED)
+		if(!QDELETED(offhand_item))
+			qdel(offhand_item)
+		offhand_item = null
+	return ..()
 
 /// Triggered on attack self of the item containing the component
 /datum/component/two_handed/proc/on_attack_self(datum/source, mob/user)
@@ -146,6 +143,7 @@
 	if(SEND_SIGNAL(parent, COMSIG_TWOHANDED_WIELD, user) & COMPONENT_TWOHANDED_BLOCK_WIELD)
 		return // blocked wield from item
 	wielded = TRUE
+	wield_user = user
 	ADD_TRAIT(parent, TRAIT_WIELDED, REF(src))
 	RegisterSignal(user, COMSIG_MOB_SWAP_HANDS, PROC_REF(on_swap_hands))
 
@@ -190,6 +188,7 @@
 
 	// wield update status
 	wielded = FALSE
+	wield_user = null
 	UnregisterSignal(user, COMSIG_MOB_SWAP_HANDS)
 	SEND_SIGNAL(parent, COMSIG_TWOHANDED_UNWIELD, user)
 	REMOVE_TRAIT(parent, TRAIT_WIELDED, REF(src))
@@ -274,6 +273,24 @@
  */
 /datum/component/two_handed/proc/on_moved(datum/source, mob/user, dir)
 	unwield(user)
+
+/**
+ * on_equip Triggers when the parent item gets equipped to any slot
+ * Unwields if the item was wielded (e.g. put into backpack while wielded)
+ */
+/datum/component/two_handed/proc/on_equip(datum/source, mob/living/carbon/user, slot)
+	SIGNAL_HANDLER
+	if(wielded)
+		unwield(user)
+
+/**
+ * on_drop Triggers when the parent item or offhand item is dropped
+ * Unwields if the item was wielded
+ */
+/datum/component/two_handed/proc/on_drop(datum/source, mob/living/carbon/user)
+	SIGNAL_HANDLER
+	if(wielded)
+		unwield(user)
 
 /**
  * on_swap_hands Triggers on swapping hands, blocks swap if the other hand is busy

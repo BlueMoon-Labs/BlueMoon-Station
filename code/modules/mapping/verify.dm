@@ -39,7 +39,9 @@
 				html += "<ul><li>[messages.Join("</li><li>")]</li></ul>"
 			html += "</li>"
 		html += "</ul></p>"
-	C << browse(html.Join(), "window=[tag];size=600x400")
+	var/datum/browser/popup = new(C, "[tag]", "Map Report", 600, 400)
+	popup.set_content(html.Join())
+	popup.open()
 
 /datum/map_report/Topic(href, href_list)
 	. = ..()

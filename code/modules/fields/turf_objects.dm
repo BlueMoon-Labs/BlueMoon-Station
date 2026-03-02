@@ -15,6 +15,10 @@
 		parent = _monitor
 	return ..()
 
+/obj/effect/abstract/proximity_checker/advanced/Destroy()
+	parent = null
+	return ..()
+
 /obj/effect/abstract/proximity_checker/advanced/center
 	name = "field anchor"
 	desc = "No."

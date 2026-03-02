@@ -34,6 +34,8 @@
 
 /atom/movable/screen/storage/close/Click()
 	var/datum/component/storage/S = master
+	if(!S)
+		return
 	S.close(usr)
 	return TRUE
 
@@ -56,20 +58,34 @@
 	var/obj/item/our_item
 
 /atom/movable/screen/storage/volumetric_box/Initialize(mapload, datum/hud/hud_owner, new_master, obj/item/our_item)
-	src.our_item = our_item
-	RegisterSignal(our_item, COMSIG_ITEM_MOUSE_ENTER, PROC_REF(on_item_mouse_enter))
-	RegisterSignal(our_item, COMSIG_ITEM_MOUSE_EXIT, PROC_REF(on_item_mouse_exit))
+	set_item(our_item)
 	return ..()
 
 /atom/movable/screen/storage/volumetric_box/Destroy()
 	makeItemInactive()
+	if(our_item)
+		UnregisterSignal(our_item, list(COMSIG_ITEM_MOUSE_ENTER, COMSIG_ITEM_MOUSE_EXIT))
 	our_item = null
 	return ..()
 
+/atom/movable/screen/storage/volumetric_box/proc/set_item(obj/item/new_item)
+	if(our_item == new_item)
+		return
+	if(our_item)
+		UnregisterSignal(our_item, list(COMSIG_ITEM_MOUSE_ENTER, COMSIG_ITEM_MOUSE_EXIT))
+	our_item = new_item
+	if(our_item)
+		RegisterSignal(our_item, COMSIG_ITEM_MOUSE_ENTER, PROC_REF(on_item_mouse_enter))
+		RegisterSignal(our_item, COMSIG_ITEM_MOUSE_EXIT, PROC_REF(on_item_mouse_exit))
+
 /atom/movable/screen/storage/volumetric_box/Click(location, control, params)
+	if(!our_item)
+		return
 	return our_item.Click(location, control, params)
 
 /atom/movable/screen/storage/volumetric_box/MouseDrop(atom/over, src_location, over_location, src_control, over_control, params)
+	if(!our_item)
+		return
 	return our_item.MouseDrop(over, src_location, over_location, src_control, over_control, params)
 
 /atom/movable/screen/storage/volumetric_box/MouseExited(location, control, params)
@@ -113,6 +129,14 @@
 /atom/movable/screen/storage/volumetric_box/center/proc/on_screen_objects()
 	return list(src)
 
+/atom/movable/screen/storage/volumetric_box/center/set_item(obj/item/new_item)
+	. = ..()
+	if(!holder)
+		return
+	holder.set_item(new_item)
+	if(new_item)
+		makeItemInactive()
+
 /**
   * Sets the size of this box screen object and regenerates its left/right borders. This includes the actual border's size!
   */
@@ -126,14 +150,18 @@
 	var/multiplier = (pixels - (VOLUMETRIC_STORAGE_BOX_BORDER_SIZE * 2)) / VOLUMETRIC_STORAGE_BOX_ICON_SIZE
 	transform = matrix(multiplier, 0, 0, 0, 1, 0)
 	if(our_item)
-		if(holder)
-			qdel(holder)
-		holder = new(null, hud, src, our_item)
+		if(!holder)
+			holder = new(null, hud, src, our_item)
+		else
+			holder.set_new_hud(hud)
+			holder.master = src
+			holder.set_item(our_item)
 		holder.transform = matrix(1 / multiplier, 0, 0, 0, 1, 0)
 		holder.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 		holder.appearance_flags &= ~RESET_TRANSFORM
 		makeItemInactive()
-	vis_contents += holder
+	if(holder)
+		vis_contents += holder
 	left.pixel_x = -((pixels - VOLUMETRIC_STORAGE_BOX_ICON_SIZE) * 0.5) - VOLUMETRIC_STORAGE_BOX_BORDER_SIZE
 	right.pixel_x = ((pixels - VOLUMETRIC_STORAGE_BOX_ICON_SIZE) * 0.5) + VOLUMETRIC_STORAGE_BOX_BORDER_SIZE
 	add_overlay(left)
@@ -146,7 +174,7 @@
 	holder.plane = VOLUMETRIC_STORAGE_ITEM_PLANE
 
 /atom/movable/screen/storage/volumetric_box/center/makeItemActive()
-	if(!holder)
+	if(!holder || !holder.our_item)
 		return
 	holder.our_item.layer = VOLUMETRIC_STORAGE_ACTIVE_ITEM_LAYER		//make sure we display infront of the others!
 	holder.our_item.plane = VOLUMETRIC_STORAGE_ACTIVE_ITEM_PLANE
@@ -185,13 +213,20 @@
 
 /atom/movable/screen/storage/item_holder/Initialize(mapload, datum/hud/hud_owner, new_master, obj/item/I)
 	. = ..()
-	our_item = I
-	vis_contents += I
+	set_item(I)
 
 /atom/movable/screen/storage/item_holder/Destroy()
 	vis_contents.Cut()
 	our_item = null
 	return ..()
+
+/atom/movable/screen/storage/item_holder/proc/set_item(obj/item/I)
+	if(our_item == I)
+		return
+	vis_contents.Cut()
+	our_item = I
+	if(I)
+		vis_contents += I
 
 /atom/movable/screen/storage/item_holder/Click(location, control, params)
 	if (!our_item)

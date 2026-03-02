@@ -31,6 +31,10 @@ export const captureExternalLinks = () => {
     if (isByondLink) {
       return;
     }
+    // Leave blob: and data: URLs alone (document-scoped, e.g. blob downloads)
+    if (hrefAttr.startsWith('blob:') || hrefAttr.startsWith('data:')) {
+      return;
+    }
     // Prevent default action
     e.preventDefault();
     // Normalize the URL

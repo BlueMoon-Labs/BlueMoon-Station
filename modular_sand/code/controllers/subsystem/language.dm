@@ -1,4 +1,6 @@
 /datum/controller/subsystem/language/proc/AssignLanguage(mob/living/user, client/client)
+	if(!client)
+		return
 	if(!CONFIG_GET(number/max_languages) == 0)	//Simply disables everything
 		var/list/languages = client.prefs.language.Copy()
 		var/list/valid_languages

@@ -85,6 +85,10 @@
 	icon = 'icons/turf/debug.dmi'
 	icon_state = "genturf"
 
+/turf/open/genturf/visibilityChanged()
+	// Generator placeholder turf: no camera visibility bookkeeping needed.
+	return
+
 /area/mine/planetgeneration
 	name = "planet generation area"
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED

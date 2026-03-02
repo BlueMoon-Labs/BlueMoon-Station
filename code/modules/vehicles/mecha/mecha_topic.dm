@@ -183,11 +183,10 @@
 			continue //there's some strange access without a name
 		. += "[a_name] - <a href='?src=[REF(src)];add_req_access=[a];user=[REF(user)];id_card=[REF(id_card)]'>Add</a><br>"
 	. +={"<hr><a href='?src=[REF(src)];finish_req_access=1;user=[REF(user)]'>Lock ID panel</a><br>
-		<span class='danger'>(Warning! The ID upload panel can be unlocked only through Exosuit Interface.)</span>
-		</body>
-		</html>"}
-	user << browse(., "window=exosuit_add_access")
-	onclose(user, "exosuit_add_access")
+		<span class='danger'>(Warning! The ID upload panel can be unlocked only through Exosuit Interface.)</span>"}
+	var/datum/browser/popup = new(user, "exosuit_add_access", "Exosuit Access")
+	popup.set_content(.)
+	popup.open()
 
 
 /obj/vehicle/sealed/mecha/proc/output_maintenance_dialog(obj/item/card/id/id_card,mob/user)

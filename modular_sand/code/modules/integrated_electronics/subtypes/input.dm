@@ -165,7 +165,7 @@
 		if(!paicard.pai) // Please, don't do this, have a mob.
 			return
 		user = paicard.pai
-	else if(ismob(assembly.loc)) // Last priority, the location, which means you SHOULD be holding it to gain the button.
+	else if(assembly && ismob(assembly.loc)) // Last priority, the location, which means you SHOULD be holding it to gain the button.
 		user = assembly.loc
 	else if(circuit.owner) // If you're none of these, we take the button back and give it to nobody.
 		circuit.Remove(circuit.owner)

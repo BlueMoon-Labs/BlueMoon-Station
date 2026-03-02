@@ -42,6 +42,13 @@
 //Trust me, you need one. Period. If you don't think you do, you're doing something extremely wrong.
 /atom/movable/screen/plane_master/proc/backdrop(mob/mymob)
 
+/atom/movable/screen/plane_master/Destroy()
+	for(var/filter_name in list("singularity_0", "singularity_1", "singularity_2", "singularity_3"))
+		var/filter = get_filter(filter_name)
+		if(filter)
+			animate(filter)
+	return ..()
+
 ///Things rendered on "openspace"; holes in multi-z
 /atom/movable/screen/plane_master/openspace
 	name = "open space plane master"

@@ -54,6 +54,10 @@
 	teleport.Grant(src)
 	AddSpell(new /obj/effect/proc_holder/spell/targeted/night_vision(src))
 
+/mob/living/simple_animal/hostile/carp/Destroy()
+	QDEL_NULL(teleport)
+	return ..()
+
 /mob/living/simple_animal/hostile/carp/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
 	if(regen_amount)

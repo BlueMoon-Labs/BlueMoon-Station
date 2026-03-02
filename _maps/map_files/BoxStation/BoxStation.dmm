@@ -29869,7 +29869,6 @@
 /turf/open/floor/plating,
 /area/engineering/main)
 "cpg" = (
-/obj/machinery/hydroponics/constructable,
 /obj/machinery/firealarm{
 	pixel_x = 27
 	},
@@ -29879,6 +29878,8 @@
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 8
 	},
+/obj/structure/table,
+/obj/machinery/reagentgrinder,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/service/hydroponics)
 "cph" = (
@@ -36817,13 +36818,11 @@
 	},
 /area/security/office)
 "dKa" = (
-/obj/effect/turf_decal/tile/green/half{
+/obj/effect/turf_decal/tile/green/half/contrasted{
 	dir = 8
 	},
-/obj/effect/turf_decal/stripes/yellow/line,
-/obj/effect/turf_decal/siding/green,
-/turf/open/floor/plasteel/textured/half{
-	dir = 8
+/turf/open/floor/plasteel/textured/edge{
+	dir = 4
 	},
 /area/service/hydroponics)
 "dKj" = (
@@ -40290,6 +40289,12 @@
 	dir = 4
 	},
 /area/medical/medbay/central)
+"fjt" = (
+/obj/structure/reagent_dispensers/watertank/high,
+/obj/item/reagent_containers/glass/bucket,
+/obj/effect/turf_decal/siding/thinplating/dark,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/service/hydroponics)
 "fjE" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
@@ -41272,8 +41277,14 @@
 	},
 /area/security/courtroom)
 "fAQ" = (
-/obj/machinery/chem_master/condimaster,
-/turf/open/floor/plasteel/dark/textured/large,
+/obj/effect/turf_decal/siding/green,
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/turf_decal/tile/green/half{
+	dir = 8
+	},
+/turf/open/floor/plasteel/textured/half{
+	dir = 8
+	},
 /area/service/hydroponics)
 "fBl" = (
 /obj/structure/table/reinforced,
@@ -42714,15 +42725,10 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
-/obj/effect/turf_decal/tile/green/half{
+/obj/effect/turf_decal/tile/green/anticorner{
 	dir = 1
 	},
-/obj/effect/turf_decal/tile/green{
-	dir = 8
-	},
-/turf/open/floor/plasteel/textured/edge{
-	dir = 1
-	},
+/turf/open/floor/plasteel/textured/corner,
 /area/service/hydroponics)
 "gef" = (
 /obj/machinery/light{
@@ -52574,12 +52580,6 @@
 "kck" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/green{
-	dir = 8
-	},
 /turf/open/floor/plasteel/textured/large,
 /area/service/hydroponics)
 "kcp" = (
@@ -57551,6 +57551,13 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/science/circuit)
+"miW" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 9
+	},
+/obj/machinery/hydroponics/constructable,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/service/hydroponics)
 "mjy" = (
 /obj/machinery/firealarm{
 	dir = 4;
@@ -61157,8 +61164,6 @@
 /turf/open/floor/plasteel/dark/textured/half,
 /area/security/prison/cells)
 "nEX" = (
-/obj/structure/table,
-/obj/machinery/reagentgrinder,
 /obj/machinery/airalarm{
 	dir = 8;
 	pixel_x = 23
@@ -61166,6 +61171,7 @@
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 8
 	},
+/obj/machinery/chem_master/condimaster,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/service/hydroponics)
 "nEZ" = (
@@ -71516,8 +71522,7 @@
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
 	},
-/obj/structure/reagent_dispensers/watertank/high,
-/obj/item/reagent_containers/glass/bucket,
+/obj/machinery/hydroponics/constructable,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/service/hydroponics)
 "sad" = (
@@ -73968,9 +73973,7 @@
 	dir = 2
 	},
 /obj/machinery/disposal/bin,
-/obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 10
-	},
+/obj/effect/turf_decal/siding/thinplating/dark,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/service/hydroponics)
 "tcj" = (
@@ -126816,7 +126819,7 @@ gon
 foq
 kWT
 aIp
-aWd
+fjt
 gdJ
 dKa
 fAQ
@@ -127075,8 +127078,8 @@ gMN
 aIp
 tbF
 mMP
-kKE
 kck
+kKE
 vTT
 wnT
 bBs
@@ -128363,7 +128366,7 @@ aEx
 rZx
 rZx
 swE
-rrY
+miW
 cpg
 nEX
 nNf

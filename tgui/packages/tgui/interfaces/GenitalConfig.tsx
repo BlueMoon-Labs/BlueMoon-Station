@@ -4,7 +4,7 @@ import { flow } from 'common/fp';
 import { createSearch } from 'common/string';
 
 import { useBackend, useLocalState } from '../backend';
-import { Button, Input, NumberInput, ProgressBar, Section, Stack, Table, Tabs } from '../components';
+import { Button, Input, NumberInput, PixelArtImage, ProgressBar, Section, Stack, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
 
@@ -135,12 +135,10 @@ const SelfConfig = (props, context) => {
       <Stack grow>
         {genital.img ? (
           <Stack.Item>
-            <img
-              src={`data:image/jpeg;base64,${genital.img}`}
-              style={{
-                'vertical-align': 'middle',
-                'horizontal-align': 'middle',
-              }} />
+            <PixelArtImage
+              src={`data:image/png;base64,${genital.img}`}
+              maxWidth={220}
+            />
           </Stack.Item>
         ) : null}
         {typeof genital.max_size === "number" ? (

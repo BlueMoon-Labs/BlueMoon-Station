@@ -200,13 +200,6 @@
 /obj/machinery/computer/rdservercontrol/ui_interact(mob/user)
 	. = ..()
 	var/dat = ""
-	dat += "<html><head><title>R&D Server Control</title>"
-	dat += "<style>"
-	dat += "body { background-color: #000000; color: #00FF00; font-family: 'Courier New', monospace; font-size: 13px; }"
-	dat += "hr { border: 1px solid #00FF00; }"
-	dat += "b { color: #80FF80; }"
-	dat += ".dim { color: #007700; }"
-	dat += "</style></head><body>"
 
 	switch(screen)
 		if(0)
@@ -242,10 +235,10 @@
 			dat += "C:\\>System ready.<br>"
 			dat += "C:\\>"
 
-	dat += "</body></html>"
-
-	user << browse(dat, "window=server_control;size=600x450")
-	onclose(user, "server_control")
+	var/datum/browser/popup = new(user, "server_control", "R&D Server Control", 600, 450)
+	popup.add_head_content({"<style>body { background-color: #000000; color: #00FF00; font-family: 'Courier New', monospace; font-size: 13px; } hr { border: 1px solid #00FF00; } b { color: #80FF80; } .dim { color: #007700; }</style>"})
+	popup.set_content(dat)
+	popup.open()
 	return
 
 /obj/machinery/computer/rdservercontrol/attackby(obj/item/D, mob/user, params)

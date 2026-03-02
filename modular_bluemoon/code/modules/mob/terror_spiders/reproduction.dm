@@ -92,7 +92,8 @@
 		var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/S = new grow_as(T)
 		S.spider_myqueen = spider_myqueen
 		S.spider_mymother = spider_mymother
-		S.enemies = enemies
+		for(var/atom/movable/the_enemy in enemies)
+			S.add_enemy(the_enemy)
 		qdel(src)
 	if(movement_disabled)
 		return
@@ -186,8 +187,7 @@
 	if(spider_growinstantly)
 		C.amount_grown = 250
 		C.spider_growinstantly = TRUE
-	spawn(10)
-		stop_automated_movement = 0
+	addtimer(CALLBACK(src, PROC_REF(resume_automated_movement)), 10, TIMER_DELETE_ME)
 
 /obj/structure/spider/eggcluster/terror_eggcluster
 	name = "terror egg cluster"

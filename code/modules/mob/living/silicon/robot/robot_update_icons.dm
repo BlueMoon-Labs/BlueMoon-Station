@@ -1,6 +1,8 @@
 /// this is bad code
 /mob/living/silicon/robot/update_icons()
 	cut_overlays()
+	if(!module)
+		return
 	icon_state = module.cyborg_base_icon
 	//Citadel changes start here - Allows modules to use different icon files, and allows modules to specify a pixel offset
 	icon = (module.cyborg_icon_override ? module.cyborg_icon_override : initial(icon))

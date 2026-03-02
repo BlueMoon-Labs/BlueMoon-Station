@@ -1,0 +1,548 @@
+/**
+ * Chat Customization Styles
+ * Styles for chat visual presets, animations, hover effects,
+ * custom color properties, timestamps, search, and gamification.
+ */
+
+// ============================================================
+// Custom color & appearance properties (set via JS on .Chat root)
+// ============================================================
+
+.Chat {
+  background-color: var(--chat-bg, transparent);
+  color: var(--chat-text, #abc6ec);
+  font-weight: var(--chat-font-weight, inherit);
+  letter-spacing: var(--chat-letter-spacing, inherit);
+  text-shadow: var(--chat-glow, none);
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+.Chat__badge {
+  background-color: var(--chat-accent, crimson);
+}
+
+.ChatMessage {
+  margin-bottom: var(--chat-msg-spacing, 0);
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+
+// ============================================================
+// Hover effect
+// ============================================================
+
+.Chat--hover > .ChatMessage:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  transition: background-color 150ms ease;
+}
+
+// ============================================================
+// Chat Style: Bubbles
+// ============================================================
+
+.Chat--style-bubbles > .ChatMessage {
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--chat-border-radius, 8px);
+  padding: 4px 8px;
+  margin-bottom: var(--chat-msg-spacing, 2px);
+}
+
+.Chat--style-bubbles > .ChatMessage--highlighted {
+  border-left: 3px solid rgba(255, 221, 68, 0.8);
+}
+
+// ============================================================
+// Chat Style: Compact
+// ============================================================
+
+.Chat--style-compact > .ChatMessage {
+  padding: 0;
+  margin: 0;
+  line-height: 1.1;
+  font-size: 0.92em;
+}
+
+// ============================================================
+// Chat Style: Terminal
+// ============================================================
+
+.Chat--style-terminal {
+  font-family: 'Courier New', 'Lucida Console', monospace !important;
+  color: var(--chat-text, #33ff33);
+  background-color: var(--chat-bg, rgba(0, 20, 0, 0.3));
+}
+
+.Chat--style-terminal > .ChatMessage {
+  border-left: 2px solid rgba(51, 255, 51, 0.25);
+  padding-left: 6px;
+  margin-bottom: var(--chat-msg-spacing, 1px);
+}
+
+.Chat--style-terminal .Chat__badge {
+  background-color: var(--chat-accent, #33ff33);
+  color: #000;
+}
+
+// ============================================================
+// Chat Style: Cozy
+// ============================================================
+
+.Chat--style-cozy > .ChatMessage {
+  padding: 5px 10px;
+  margin-bottom: var(--chat-msg-spacing, 3px);
+  border-radius: var(--chat-border-radius, 4px);
+  line-height: 1.5;
+}
+
+.Chat--style-cozy > .ChatMessage:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+// ============================================================
+// Chat Style: Glass (glassmorphism)
+// ============================================================
+
+.Chat--style-glass > .ChatMessage {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--chat-border-radius, 8px);
+  padding: 4px 8px;
+  margin-bottom: var(--chat-msg-spacing, 2px);
+}
+
+.Chat--style-glass > .ChatMessage--highlighted {
+  border-left: 3px solid rgba(255, 221, 68, 0.6);
+}
+
+// ============================================================
+// Chat Style: Neon
+// ============================================================
+
+.Chat--style-neon > .ChatMessage {
+  border-left: 2px solid var(--chat-accent, #00ffff);
+  padding-left: 8px;
+  margin-bottom: var(--chat-msg-spacing, 2px);
+  text-shadow: 0 0 2px currentColor;
+}
+
+.Chat--style-neon .Chat__badge {
+  background-color: var(--chat-accent, #00ffff);
+  color: #000;
+  box-shadow: 0 0 6px var(--chat-accent, #00ffff);
+}
+
+// ============================================================
+// Chat Style: Retro (CRT)
+// ============================================================
+
+.Chat--style-retro {
+  font-family: 'Courier New', monospace !important;
+  color: var(--chat-text, #ffb000);
+  background-color: var(--chat-bg, rgba(0, 0, 0, 0.9));
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+.Chat--style-retro > .ChatMessage {
+  padding-left: 4px;
+  margin-bottom: var(--chat-msg-spacing, 1px);
+}
+
+.Chat--style-retro .Chat__badge {
+  background-color: var(--chat-accent, #ffb000);
+  color: #000;
+}
+
+// ============================================================
+// Chat Style: Dark Pro
+// ============================================================
+
+.Chat--style-darkpro > .ChatMessage {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.02) 0%,
+    transparent 100%
+  );
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+  padding: 3px 8px;
+  margin-bottom: var(--chat-msg-spacing, 1px);
+}
+
+.Chat--style-darkpro > .ChatMessage--highlighted {
+  border-left-color: rgba(255, 221, 68, 0.6);
+}
+
+// ============================================================
+// Chat Style: Cyberpunk
+// ============================================================
+
+.Chat--style-cyberpunk {
+  background-color: var(--chat-bg, rgba(10, 0, 20, 0.95));
+  color: var(--chat-text, #00ffd5);
+  font-family: 'Courier New', monospace !important;
+}
+
+.Chat--style-cyberpunk > .ChatMessage {
+  border-left: 2px solid rgba(255, 0, 128, 0.6);
+  padding-left: 8px;
+  margin-bottom: var(--chat-msg-spacing, 2px);
+  text-shadow: 0 0 3px rgba(0, 255, 213, 0.3);
+}
+
+.Chat--style-cyberpunk > .ChatMessage--highlighted {
+  border-left-color: rgba(255, 0, 128, 0.9);
+}
+
+.Chat--style-cyberpunk .Chat__badge {
+  background-color: #ff0080;
+  box-shadow: 0 0 6px #ff0080;
+}
+
+// ============================================================
+// Chat Style: Sakura
+// ============================================================
+
+.Chat--style-sakura {
+  background-color: var(--chat-bg, rgba(40, 20, 25, 0.9));
+  color: var(--chat-text, #f0d0d8);
+}
+
+.Chat--style-sakura > .ChatMessage {
+  border-left: 2px solid rgba(255, 150, 180, 0.3);
+  padding: 3px 8px;
+  margin-bottom: var(--chat-msg-spacing, 2px);
+  border-radius: var(--chat-border-radius, 6px);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 150, 180, 0.04) 0%,
+    transparent 100%
+  );
+}
+
+.Chat--style-sakura > .ChatMessage:nth-child(even) {
+  border-left-color: rgba(255, 180, 200, 0.2);
+}
+
+.Chat--style-sakura > .ChatMessage--highlighted {
+  border-left-color: rgba(255, 150, 180, 0.7);
+}
+
+.Chat--style-sakura .Chat__badge {
+  background-color: #ff8fa3;
+  color: #3a0a15;
+}
+
+// ============================================================
+// Chat Style: Space
+// ============================================================
+
+.Chat--style-space {
+  background-color: var(--chat-bg, rgba(8, 5, 30, 0.95));
+  color: var(--chat-text, #c8d0ff);
+  background-image: radial-gradient(
+      1px 1px at 20% 30%,
+      rgba(255, 255, 255, 0.15) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      1px 1px at 70% 60%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      1px 1px at 40% 80%,
+      rgba(200, 200, 255, 0.1) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      1px 1px at 85% 15%,
+      rgba(255, 255, 200, 0.08) 0%,
+      transparent 100%
+    );
+}
+
+.Chat--style-space > .ChatMessage {
+  border-left: 2px solid rgba(100, 120, 255, 0.2);
+  padding-left: 8px;
+  margin-bottom: var(--chat-msg-spacing, 2px);
+}
+
+.Chat--style-space > .ChatMessage--highlighted {
+  border-left-color: rgba(100, 120, 255, 0.6);
+}
+
+.Chat--style-space .Chat__badge {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+}
+
+// ============================================================
+// Chat Style: Vaporwave
+// ============================================================
+
+.Chat--style-vaporwave {
+  background-color: var(--chat-bg, rgba(20, 0, 40, 0.95));
+  color: var(--chat-text, #e0d0ff);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 100, 200, 0.03) 0%,
+    rgba(100, 200, 255, 0.03) 100%
+  );
+}
+
+.Chat--style-vaporwave > .ChatMessage {
+  border-left: 2px solid;
+  border-image: linear-gradient(180deg, #ff69b4, #00d4ff) 1;
+  padding-left: 8px;
+  margin-bottom: var(--chat-msg-spacing, 2px);
+}
+
+.Chat--style-vaporwave > .ChatMessage--highlighted {
+  border-image: linear-gradient(180deg, #ff69b4, #ffd700) 1;
+}
+
+.Chat--style-vaporwave .Chat__badge {
+  background: linear-gradient(135deg, #ff69b4, #00d4ff);
+  color: #000;
+}
+
+// ============================================================
+// Per-style scrollbar colors (via data-chat-style on scroll node)
+// ============================================================
+
+.Layout__content--scrollable[data-chat-style='terminal']::-webkit-scrollbar-thumb {
+  background: rgba(51, 255, 51, 0.3);
+}
+
+.Layout__content--scrollable[data-chat-style='neon']::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.3);
+}
+
+.Layout__content--scrollable[data-chat-style='retro']::-webkit-scrollbar-thumb {
+  background: rgba(255, 176, 0, 0.3);
+}
+
+.Layout__content--scrollable[data-chat-style='cyberpunk']::-webkit-scrollbar-thumb {
+  background: rgba(255, 0, 128, 0.3);
+}
+
+.Layout__content--scrollable[data-chat-style='sakura']::-webkit-scrollbar-thumb {
+  background: rgba(255, 150, 180, 0.3);
+}
+
+.Layout__content--scrollable[data-chat-style='space']::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+.Layout__content--scrollable[data-chat-style='vaporwave']::-webkit-scrollbar-thumb {
+  background: rgba(255, 105, 180, 0.3);
+}
+
+// ============================================================
+// Message timestamps
+// ============================================================
+
+.ChatMessage__timestamp {
+  display: inline-block;
+  font-size: 0.75em;
+  opacity: 0.5;
+  margin-right: 0.4em;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+// ============================================================
+// Time dividers
+// ============================================================
+
+.Chat__timeDivider {
+  text-align: center;
+  font-size: 0.75em;
+  color: var(--chat-accent, rgba(255, 255, 255, 0.3));
+  margin: 0.5em 0;
+  position: relative;
+  user-select: none;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30%;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.3;
+  }
+
+  &::before {
+    left: 5%;
+  }
+
+  &::after {
+    right: 5%;
+  }
+}
+
+// ============================================================
+// In-chat search
+// ============================================================
+
+.Chat__searchBar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(30, 30, 30, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.Chat__searchCount {
+  font-size: 0.8em;
+  opacity: 0.6;
+  white-space: nowrap;
+  min-width: 4em;
+  text-align: center;
+}
+
+.Chat__searchMatch {
+  background-color: rgba(255, 200, 0, 0.3);
+  border-radius: 2px;
+  outline: 1px solid rgba(255, 200, 0, 0.5);
+}
+
+.Chat__searchMatch--active {
+  background-color: rgba(255, 200, 0, 0.6);
+  outline: 2px solid rgba(255, 200, 0, 0.9);
+}
+
+// ============================================================
+// Message entrance animations
+// All animations use --chat-anim-speed CSS variable
+// ============================================================
+
+// Fade In
+.ChatMessage--anim-fadein {
+  animation: chatFadeIn var(--chat-anim-speed, 200ms) ease-out;
+}
+
+@keyframes chatFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Slide In
+.ChatMessage--anim-slidein {
+  animation: chatSlideIn var(--chat-anim-speed, 200ms) ease-out;
+}
+
+@keyframes chatSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Bounce
+.ChatMessage--anim-bounce {
+  animation: chatBounce var(--chat-anim-speed, 200ms) ease-out;
+}
+
+@keyframes chatBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Drop (from top)
+.ChatMessage--anim-drop {
+  animation: chatDrop var(--chat-anim-speed, 200ms) ease-out;
+}
+
+@keyframes chatDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Zoom In
+.ChatMessage--anim-zoomin {
+  animation: chatZoomIn var(--chat-anim-speed, 200ms) ease-out;
+}
+
+@keyframes chatZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Pop
+.ChatMessage--anim-pop {
+  animation: chatPop var(--chat-anim-speed, 200ms) ease-out;
+}
+
+@keyframes chatPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Glow In
+.ChatMessage--anim-glowin {
+  animation: chatGlowIn var(--chat-anim-speed, 200ms) ease-out;
+}
+
+@keyframes chatGlowIn {
+  from {
+    opacity: 0;
+    text-shadow: 0 0 20px currentColor;
+  }
+  to {
+    opacity: 1;
+    text-shadow: none;
+  }
+}

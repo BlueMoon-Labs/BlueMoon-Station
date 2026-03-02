@@ -2,10 +2,66 @@
  * A screen object, which acts as a container for turfs and other things
  * you want to show on the map, which you usually attach to "vis_contents".
  */
+INITIALIZE_IMMEDIATE(/atom/movable/screen/map_view)
 /atom/movable/screen/map_view
 	// Map view has to be on the lowest plane to enable proper lighting
 	layer = GAME_PLANE
 	plane = GAME_PLANE
+	del_on_map_removal = FALSE
+
+	/// Plane masters popup map
+	var/list/atom/movable/screen/plane_master/popup_plane_masters
+	/// Client this map_view was displayed to, for cleanup on Destroy
+	var/client/registered_client
+
+/atom/movable/screen/map_view/Destroy()
+	if(registered_client)
+		registered_client.clear_map(assigned_map)
+		registered_client = null
+	for(var/atom/movable/screen/plane_master/pm as anything in popup_plane_masters)
+		pm.screen_loc = null
+	QDEL_LIST(popup_plane_masters)
+	return ..()
+
+/atom/movable/screen/map_view/proc/generate_view(map_key)
+	assigned_map = map_key
+	set_position(1, 1)
+
+// дисплей ту с сплюртов
+/atom/movable/screen/map_view/proc/display_to(mob/show_to, datum/tgui_window/window)
+	if(window && !window.visible)
+		RegisterSignal(window, COMSIG_TGUI_WINDOW_VISIBLE, PROC_REF(on_window_visible))
+	else
+		display_to_client(show_to.client)
+
+/atom/movable/screen/map_view/proc/on_window_visible(datum/tgui_window/window, client/show_to)
+	SIGNAL_HANDLER
+	display_to_client(show_to)
+	UnregisterSignal(window, COMSIG_TGUI_WINDOW_VISIBLE)
+
+/atom/movable/screen/map_view/proc/display_to_client(client/show_to)
+	if(!show_to)
+		return
+	registered_client = show_to
+	show_to.register_map_obj(src)
+	if(!LAZYLEN(popup_plane_masters))
+		popup_plane_masters = list()
+		for(var/plane_master_type in subtypesof(/atom/movable/screen/plane_master))
+			var/atom/movable/screen/plane_master/pm = new plane_master_type()
+			pm.assigned_map = assigned_map
+			pm.del_on_map_removal = FALSE
+			pm.screen_loc = "[assigned_map]:CENTER"
+			popup_plane_masters += pm
+	for(var/atom/movable/screen/plane_master/pm as anything in popup_plane_masters)
+		show_to.register_map_obj(pm)
+
+/atom/movable/screen/map_view/proc/hide_from(mob/hide_from)
+	var/client/target_client = hide_from?.client || registered_client
+	if(!target_client)
+		registered_client = null
+		return
+	target_client.clear_map(assigned_map)
+	registered_client = null
 
 /**
  * A generic background object.
@@ -70,7 +126,9 @@
 		return FALSE
 	for(var/atom/movable/screen/screen_obj in screen_maps[map_name])
 		screen_maps[map_name] -= screen_obj
+		screen -= screen_obj
 		if(screen_obj.del_on_map_removal)
+			screen_obj.screen_loc = null
 			qdel(screen_obj)
 	screen_maps -= map_name
 

@@ -1,6 +1,6 @@
 import { resolveAsset } from '../assets';
 import { useBackend, useLocalState } from '../backend';
-import { Button, Flex, NoticeBox, Section, Tabs } from '../components';
+import { Button, Flex, NoticeBox, PixelArtImage, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
 export const PortraitPicker = (props, context) => {
@@ -65,14 +65,11 @@ export const PortraitPicker = (props, context) => {
                 justify="center"
                 direction="column">
                 <Flex.Item>
-                  <img
+                  <PixelArtImage
                     src={resolveAsset(current_portrait_asset_name)}
-                    height="96px"
-                    width="96px"
-                    style={{
-                      'vertical-align': 'middle',
-                      '-ms-interpolation-mode': 'nearest-neighbor',
-                    }} />
+                    fit="contain"
+                    maxHeight={96}
+                    maxWidth={96} />
                 </Flex.Item>
                 <Flex.Item className="Section__titleText">
                   {current_portrait_title}

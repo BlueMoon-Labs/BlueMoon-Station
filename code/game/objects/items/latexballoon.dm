@@ -20,6 +20,10 @@
 	to_chat(user, "<span class='notice'>You blow up [src] with [tank].</span>")
 	air_contents = tank.remove_air_volume(3)
 
+/obj/item/latexballon/Destroy()
+	QDEL_NULL(air_contents)
+	return ..()
+
 /obj/item/latexballon/proc/burst()
 	if (!air_contents || icon_state != "latexballon_blow")
 		return
@@ -30,6 +34,7 @@
 		var/mob/living/user = src.loc
 		user.update_inv_hands()
 	loc.assume_air(air_contents)
+	QDEL_NULL(air_contents)
 
 /obj/item/latexballon/ex_act(severity, target, origin)
 	burst()

@@ -640,6 +640,8 @@
 	. = ..()
 	if (breath)
 		var/total_moles = breath.total_moles()
+		if(!total_moles)
+			return
 		var/pressure = breath.return_pressure()
 		var/plasma_pp = PP(breath, GAS_PLASMA)
 		owner.adjust_integration_blood(0.2 * plasma_pp) // 10/s when breathing literally nothing but plasma, which will suffocate you.

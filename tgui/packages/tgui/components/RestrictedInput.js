@@ -65,7 +65,7 @@ export class RestrictedInput extends Component {
     };
     this.handleKeyDown = (e) => {
       const { maxValue, minValue, onChange, onEnter } = this.props;
-      if (e.keyCode === KEY_ENTER) {
+      if (e.key === KEY_ENTER) {
         const safeNum = getClampedNumber(e.target.value, minValue, maxValue);
         this.setEditing(false);
         if (onChange) {
@@ -77,7 +77,7 @@ export class RestrictedInput extends Component {
         e.target.blur();
         return;
       }
-      if (e.keyCode === KEY_ESCAPE) {
+      if (e.key === KEY_ESCAPE) {
         if (this.props.onEscape) {
           this.props.onEscape(e);
           return;
@@ -147,7 +147,8 @@ export class RestrictedInput extends Component {
           onBlur={this.handleBlur}
           onKeyDown={this.handleKeyDown}
           ref={this.inputRef}
-          type="number"
+          type="text"
+          inputMode="numeric"
         />
       </Box>
     );

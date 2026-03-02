@@ -7,6 +7,7 @@
 	var/list/enemies = list()
 	var/mob/living/target
 	var/obj/item/pickupTarget
+	var/obj/item/pickupTargetSignalTarget
 	var/mode = MONKEY_IDLE
 	var/list/myPath = list()
 	var/list/blacklistItems = list()
@@ -22,6 +23,31 @@
 
 /mob/living/carbon/monkey/proc/IsStandingStill()
 	return resisting || pickpocketing || disposing_body
+
+/mob/living/carbon/monkey/proc/set_pickup_target(obj/item/new_target)
+	if(pickupTargetSignalTarget && pickupTargetSignalTarget != new_target)
+		UnregisterSignal(pickupTargetSignalTarget, COMSIG_PARENT_QDELETING)
+		pickupTargetSignalTarget = null
+
+	pickupTarget = new_target
+	if(!pickupTarget)
+		pickupTimer = 0
+		return
+
+	if(pickupTargetSignalTarget != pickupTarget)
+		RegisterSignal(pickupTarget, COMSIG_PARENT_QDELETING, PROC_REF(on_pickup_target_qdeleting))
+		pickupTargetSignalTarget = pickupTarget
+
+/mob/living/carbon/monkey/proc/on_pickup_target_qdeleting(obj/item/deleted_target)
+	SIGNAL_HANDLER
+
+	if(deleted_target == pickupTargetSignalTarget)
+		UnregisterSignal(deleted_target, COMSIG_PARENT_QDELETING)
+		pickupTargetSignalTarget = null
+
+	if(deleted_target == pickupTarget)
+		pickupTarget = null
+		pickupTimer = 0
 
 // blocks
 // taken from /mob/living/carbon/human/interactive/
@@ -74,12 +100,12 @@
 	if(I.force >= best_force)
 		best_force = I.force
 	else
-		addtimer(CALLBACK(src, PROC_REF(pickup_and_wear), I), 5)
+		addtimer(CALLBACK(src, PROC_REF(pickup_and_wear), I), 5, TIMER_DELETE_ME)
 
 	return TRUE
 
 /mob/living/carbon/monkey/proc/pickup_and_wear(obj/item/I)
-	if(QDELETED(I) || I.loc != src)
+	if(QDELETED(src) || QDELETED(I) || I.loc != src)
 		return
 	equip_to_appropriate_slot(I, TRUE)
 
@@ -107,23 +133,29 @@
 	return FALSE
 
 /mob/living/carbon/monkey/proc/handle_combat()
+	if(QDELETED(target))
+		target = null
+	if(QDELETED(pickupTarget))
+		set_pickup_target(null)
+	if(QDELETED(bodyDisposal))
+		bodyDisposal = null
 	if(pickupTarget)
 		if(restrained() || blacklistItems[pickupTarget] || HAS_TRAIT(pickupTarget, TRAIT_NODROP))
-			pickupTarget = null
+			set_pickup_target(null)
 		else if(!isobj(loc) || istype(loc, /obj/item/clothing/head/mob_holder))
 			pickupTimer++
 			if(pickupTimer >= 4)
 				blacklistItems[pickupTarget] ++
-				pickupTarget = null
-				pickupTimer = 0
+				set_pickup_target(null)
 			else
 				INVOKE_ASYNC(src, PROC_REF(walk2derpless), pickupTarget.loc)
 				if(Adjacent(pickupTarget) || Adjacent(pickupTarget.loc)) // next to target
 					drop_all_held_items() // who cares about these items, i want that one!
-					if(isturf(pickupTarget.loc)) // on floor
+					if(QDELETED(pickupTarget))
+						set_pickup_target(null)
+					else if(isturf(pickupTarget.loc)) // on floor
 						equip_item(pickupTarget)
-						pickupTarget = null
-						pickupTimer = 0
+						set_pickup_target(null)
 					else if(ismob(pickupTarget.loc)) // in someones hand
 						if(istype(pickupTarget, /obj/item/clothing/head/mob_holder))
 							return//dont let them pickpocket themselves or hold other monkys.
@@ -155,11 +187,11 @@
 			if(!pickupTarget)
 				var/obj/item/I = locate(/obj/item/) in oview(2,src)
 				if(I && !blacklistItems[I])
-					pickupTarget = I
+					set_pickup_target(I)
 				else
 					var/mob/living/carbon/human/H = locate(/mob/living/carbon/human/) in oview(2,src)
 					if(H)
-						pickupTarget = pick(H.held_items)
+						set_pickup_target(pick(H.held_items))
 
 		if(MONKEY_HUNT)		// hunting for attacker
 			if(health < MONKEY_FLEE_HEALTH)
@@ -175,7 +207,7 @@
 				if(!locate(/obj/item) in held_items)
 					best_force = 0
 				if(W && !blacklistItems[W] && W.force > best_force)
-					pickupTarget = W
+					set_pickup_target(W)
 
 			// recruit other monkies
 			var/list/around = view(src, MONKEY_ENEMY_VISION)
@@ -208,7 +240,7 @@
 
 					// if the target has a weapon, chance to disarm them
 					if(W && prob(MONKEY_ATTACK_DISARM_PROB))
-						pickupTarget = W
+						set_pickup_target(W)
 						a_intent = INTENT_DISARM
 						monkey_attack(target)
 
@@ -269,7 +301,7 @@
 
 				if(Adjacent(bodyDisposal))
 					disposing_body = TRUE
-					addtimer(CALLBACK(src, PROC_REF(stuff_mob_in)), 5)
+					addtimer(CALLBACK(src, PROC_REF(stuff_mob_in)), 5, TIMER_DELETE_ME)
 
 				else
 					var/turf/olddist = get_dist(src, bodyDisposal)
@@ -293,10 +325,11 @@
 				else
 					M.visible_message("<span class='danger'>[src] tried to snatch [pickupTarget] from [M], but failed!</span>", "<span class='userdanger'>[src] tried to grab [pickupTarget]!</span>")
 	pickpocketing = FALSE
-	pickupTarget = null
-	pickupTimer = 0
+	set_pickup_target(null)
 
 /mob/living/carbon/monkey/proc/stuff_mob_in()
+	if(QDELETED(src))
+		return
 	if(bodyDisposal && target && Adjacent(bodyDisposal))
 		bodyDisposal.stuff_mob_in(target, src)
 	disposing_body = FALSE

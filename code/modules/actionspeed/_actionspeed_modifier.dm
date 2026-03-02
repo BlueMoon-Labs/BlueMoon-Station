@@ -79,7 +79,9 @@ GLOBAL_LIST_EMPTY(actionspeed_modification_cache)
 /mob/proc/remove_actionspeed_modifier(datum/actionspeed_modifier/type_id_datum, update = TRUE)
 	var/key
 	if(ispath(type_id_datum))
-		key = initial(type_id_datum.id) || "[type_id_datum]"		//id if set, path set to string if not.
+		key = initial(type_id_datum.id)		//id if set, path set to string if not.
+		if(!key)
+			key = "[type_id_datum]"
 	else if(!istext(type_id_datum))		//if it isn't text it has to be a datum, as it isn't a type.
 		key = type_id_datum.id
 	else								//assume it's an id
@@ -110,7 +112,10 @@ GLOBAL_LIST_EMPTY(actionspeed_modification_cache)
 	else if(ispath(type_id_datum))
 		if(!initial(type_id_datum.variable))
 			CRASH("Not a variable modifier")
-		final = LAZYACCESS(actionspeed_modification, initial(type_id_datum.id) || "[type_id_datum]")
+		var/key = initial(type_id_datum.id)
+		if(!key)
+			key = "[type_id_datum]"
+		final = LAZYACCESS(actionspeed_modification, key)
 		if(!final)
 			final = new type_id_datum
 			inject = TRUE
@@ -135,7 +140,9 @@ GLOBAL_LIST_EMPTY(actionspeed_modification_cache)
 /mob/proc/has_actionspeed_modifier(datum/actionspeed_modifier/datum_type_id)
 	var/key
 	if(ispath(datum_type_id))
-		key = initial(datum_type_id.id) || "[datum_type_id]"
+		key = initial(datum_type_id.id)
+		if(!key)
+			key = "[datum_type_id]"
 	else if(istext(datum_type_id))
 		key = datum_type_id
 	else

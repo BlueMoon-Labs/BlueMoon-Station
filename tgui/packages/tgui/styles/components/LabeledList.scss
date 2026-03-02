@@ -7,7 +7,6 @@
 
 .LabeledList {
   display: table;
-  // IE8: Does not support calc
   width: 100%;
   // Compensate for negative margin
   width: calc(100% + 1em);

@@ -241,6 +241,10 @@
 	. = "[perf_info.Join(",")]\n"
 	WRITE_LOG_NO_FORMAT(GLOB.perf_log, .)
 
+/proc/log_ping_perf(list/perf_info)
+	. = "[perf_info.Join(",")]\n"
+	WRITE_LOG_NO_FORMAT(GLOB.ping_perf_log, .)
+
 /proc/log_reagent(text)
 	WRITE_LOG(GLOB.reagent_log, text)
 

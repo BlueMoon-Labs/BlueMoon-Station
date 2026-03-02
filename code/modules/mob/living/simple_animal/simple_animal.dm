@@ -177,7 +177,7 @@
 
 /mob/living/simple_animal/Destroy()
 	GLOB.simple_animals[AIStatus] -= src
-	if (SSnpcpool.state == SS_PAUSED && LAZYLEN(SSnpcpool.currentrun))
+	if (LAZYLEN(SSnpcpool.currentrun))
 		SSnpcpool.currentrun -= src
 
 	if(nest)
@@ -185,8 +185,18 @@
 		nest = null
 
 	var/turf/T = get_turf(src)
-	if (T && AIStatus == AI_Z_OFF)
-		SSidlenpcpool.idle_mobs_by_zlevel[T.z] -= src
+	if (AIStatus == AI_Z_OFF && islist(SSidlenpcpool.idle_mobs_by_zlevel))
+		if (T)
+			var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[T.z]
+			if(islist(idle_z_list))
+				idle_z_list -= src
+		else
+			// If we were moved to nullspace before Destroy(), we can no longer resolve our z-level.
+			// Remove from every idle z-list to avoid a dangling subsystem reference blocking GC.
+			for (var/i in 1 to SSidlenpcpool.idle_mobs_by_zlevel.len)
+				var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[i]
+				if(islist(idle_z_list))
+					idle_z_list -= src
 
 	return ..()
 

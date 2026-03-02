@@ -49,19 +49,14 @@ export const AlertModal = (_, context) => {
       {!!timeout && <Loader value={timeout} />}
       <Window.Content
         onKeyDown={(e) => {
-          const keyCode = window.event ? e.which : e.keyCode;
-          /**
-           * Simulate a click when pressing space or enter,
-           * allow keyboard navigation, override tab behavior
-           */
-          if (keyCode === KEY_SPACE || keyCode === KEY_ENTER) {
+          if (e.key === KEY_SPACE || e.key === KEY_ENTER) {
             act('choose', { choice: buttons[selected] });
-          } else if (keyCode === KEY_ESCAPE) {
+          } else if (e.key === KEY_ESCAPE) {
             act('cancel');
-          } else if (keyCode === KEY_LEFT) {
+          } else if (e.key === KEY_LEFT) {
             e.preventDefault();
             onKey(KEY_DECREMENT);
-          } else if (keyCode === KEY_TAB || keyCode === KEY_RIGHT) {
+          } else if (e.key === KEY_TAB || e.key === KEY_RIGHT) {
             e.preventDefault();
             onKey(KEY_INCREMENT);
           }

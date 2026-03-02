@@ -24,8 +24,9 @@
 	dat += "<B>Four uses, use them wisely:</B><BR>"
 	dat += "<A href='byond://?src=[REF(src)];spell_teleport=1'>Teleport</A><BR>"
 	dat += "Kind regards,<br>Wizards Federation<br><br>P.S. Don't forget to bring your gear, you'll need it to cast most spells.<HR>"
-	user << browse(dat, "window=scroll")
-	onclose(user, "scroll")
+	var/datum/browser/popup = new(user, "scroll", "Teleportation Scroll")
+	popup.set_content(dat)
+	popup.open()
 	return
 
 /obj/item/teleportation_scroll/Topic(href, href_list)

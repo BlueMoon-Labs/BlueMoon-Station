@@ -84,6 +84,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/tgui_input_mode = TRUE			// All the Input Boxes (Text,Number,List,Alert)
 	var/tgui_large_buttons = TRUE
 	var/tgui_swapped_buttons = FALSE
+	var/tgui_panel_theme = "default"
+	var/tgui_panel_state = ""
+	var/list/ui_zoom_preferences = list()
 	var/windowflashing = TRUE
 	var/windownoise = TRUE
 	var/toggles = TOGGLES_DEFAULT
@@ -699,7 +702,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/is_modern_theme = (new_character_creator && !!findtext(charcreation_theme, "modern"))
 	var/list/dat
 	if(new_character_creator)
-		// Compact inline CSS: конкретные значения цветов для IE/Trident-совместимости BYOND-браузера.
+		// Compact inline CSS: конкретные значения цветов для BYOND-браузера.
 		// Enhanced decoration — CSS-класс .csetup-decoration-enhanced (переключается без inline CSS).
 		var/modern_palette_css = ""
 		if(is_modern_theme)
@@ -1647,7 +1650,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					for(var/mutant_part in GLOB.all_mutant_parts)
 						if(mutant_part == "mam_body_markings")
 							continue
-						if(parent.can_have_part(mutant_part))
+						if(parent?.can_have_part(mutant_part))
 							if(!mutant_category)
 								dat += APPEARANCE_CATEGORY_COLUMN
 							var/mutant_part_label = src.use_modern_translations ? get_modern_text(mutant_part, src) : GLOB.all_mutant_parts[mutant_part]
@@ -1857,7 +1860,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/tauric_shape = FALSE
 							if(features["cock_taur"])
 								var/datum/sprite_accessory/penis/P = GLOB.cock_shapes_list[features["cock_shape"]]
-								if(P?.taur_icon && parent.can_have_part("taur"))
+								if(P?.taur_icon && parent?.can_have_part("taur"))
 									var/datum/sprite_accessory/taur/T = GLOB.taur_list[features["taur"]]
 									if(T.taur_mode & P.accepted_taurs)
 										tauric_shape = TRUE
@@ -2041,7 +2044,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					// rp marking selection
 					// assume you can only have mam markings or regular markings or none, never both
 					var/marking_type
-					if(parent.can_have_part("mam_body_markings"))
+					if(parent?.can_have_part("mam_body_markings"))
 						marking_type = "mam_body_markings"
 					if(marking_type)
 						dat += APPEARANCE_CATEGORY_COLUMN
@@ -2833,7 +2836,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>[ghosts_of_others_label]:</b> <a href='?_src_=prefs;task=input;preference=ghostothers'>[button_name]</a><br>"
 					dat += "<br>"
 
-					dat += "<b>[fps_label]:</b> <a href='?_src_=prefs;preference=clientfps;task=input'>[clientfps]</a><br>"
+					dat += "<b>[fps_label]:</b> <a href='?_src_=prefs;preference=clientfps;task=input'>[clientfps ? clientfps : "Авто ([CONFIG_GET(number/fps)])"]</a><br>"
 
 					dat += "<b>[income_updates_label]:</b> <a href='?_src_=prefs;preference=income_pings'>[(chat_toggles & CHAT_BANKCARD) ? allowed_label : muted_label]</a><br>"
 					dat += "<br>"
@@ -3012,6 +3015,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	if(new_character_creator)
 		dat += "</div>"
+
+	if(!user?.client)
+		return
 
 	winshow(user, "preferences_window", TRUE)
 	var/datum/browser/popup = new(user, "preferences_browser", "<div align='center'>Character Setup</div>", 640, 770)
@@ -4413,12 +4419,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						pref_species = new newtype()
 						//let's ensure that no weird shit happens on species swapping.
 						custom_species = null
-						if(!parent.can_have_part("mam_body_markings"))
+						if(!parent?.can_have_part("mam_body_markings"))
 							features["mam_body_markings"] = list()
-						if(parent.can_have_part("mam_body_markings"))
+						if(parent?.can_have_part("mam_body_markings"))
 							if(features["mam_body_markings"] == "None")
 								features["mam_body_markings"] = list()
-						if(parent.can_have_part("tail_lizard"))
+						if(parent?.can_have_part("tail_lizard"))
 							features["tail_lizard"] = "Smooth"
 						if(pref_species.id == "felinid")
 							features["mam_tail"] = "Cat"
@@ -4862,7 +4868,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("cock_shape")
 					var/new_shape
 					var/list/hockeys = list()
-					if(parent.can_have_part("taur"))
+					if(parent?.can_have_part("taur"))
 						var/datum/sprite_accessory/taur/T = GLOB.taur_list[features["taur"]]
 						for(var/A in GLOB.cock_shapes_list)
 							var/datum/sprite_accessory/penis/P = GLOB.cock_shapes_list[A]
@@ -5195,8 +5201,26 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/pickedvictim = tgui_input_list(user, "Are you ok with antagonists interacting with you (e.g. kidnapping)? ERP consent is seperate: This setting does NOT mean they are allowed to rape you.", "Antag Victim Consent", list(BEVICTIM_NO,BEVICTIM_ASK,BEVICTIM_YES))
 					be_victim = pickedvictim
 				if ("clientfps")
-					var/desiredfps = input(user, "Choose your desired fps. (0 = synced with server tick rate (currently:[world.fps]))", "Character Preference", clientfps)  as null|num
-					if (!isnull(desiredfps))
+					var/config_fps = CONFIG_GET(number/fps)
+					var/list/fps_options = list(
+						"0 (синхронизация с сервером: [config_fps])" = 0,
+						"60" = 60,
+						"120 (рекомендуется)" = 120,
+						"180" = 180,
+						"240" = 240,
+						"300" = 300,
+						"360" = 360,
+						"420" = 420,
+						"480" = 480,
+					)
+					var/current_label
+					for(var/label in fps_options)
+						if(fps_options[label] == clientfps)
+							current_label = label
+							break
+					var/picked = tgui_input_list(user, "Выберите желаемый FPS. Рекомендуется 120.", "FPS", fps_options, current_label)
+					if(!isnull(picked))
+						var/desiredfps = fps_options[picked]
 						clientfps = desiredfps
 						parent.fps = desiredfps
 				if("ui")
@@ -6554,10 +6578,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	if(isdwarf(character))
 		character.dna.features["body_size"] = RESIZE_DEFAULT_SIZE
 
-	if((parent && parent.can_have_part("meat_type")) || pref_species.mutant_bodyparts["meat_type"])
+	if(parent?.can_have_part("meat_type") || pref_species.mutant_bodyparts["meat_type"])
 		character.type_of_meat = GLOB.meat_types[features["meat_type"]]
 
-	if(((parent && parent.can_have_part("legs")) || pref_species.mutant_bodyparts["legs"])  && (character.dna.features["legs"] == "Digitigrade" || character.dna.features["legs"] == "Avian"))
+	if((parent?.can_have_part("legs") || pref_species.mutant_bodyparts["legs"])  && (character.dna.features["legs"] == "Digitigrade" || character.dna.features["legs"] == "Avian"))
 		pref_species.species_traits |= DIGITIGRADE
 	else
 		pref_species.species_traits -= DIGITIGRADE

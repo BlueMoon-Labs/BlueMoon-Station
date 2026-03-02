@@ -23,8 +23,10 @@
 		return
 	H.physiology.hunger_mod *= 1.05
 
-/datum/quirk/powersaving/remove()
+/datum/quirk/powersharing/remove()
 	var/mob/living/carbon/human/H = quirk_holder
 	if(!istype(H) || !isrobotic(H))
+		return
+	if(!H.physiology)
 		return
 	H.physiology.hunger_mod /= 1.05

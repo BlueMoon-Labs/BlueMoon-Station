@@ -72,6 +72,7 @@ SUBSYSTEM_DEF(vis_overlays)
 	thing.vis_contents -= overlays
 	if(!isatom(thing))
 		return
-	thing.managed_vis_overlays -= overlays
-	if(!length(thing.managed_vis_overlays))
-		thing.managed_vis_overlays = null
+	if(thing.managed_vis_overlays)
+		thing.managed_vis_overlays -= overlays
+		if(!length(thing.managed_vis_overlays))
+			thing.managed_vis_overlays = null

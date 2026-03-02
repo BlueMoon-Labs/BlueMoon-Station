@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta charset="utf-8">
 
 <!-- Inlined data -->
@@ -18,6 +17,8 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
 }
 
 (function () {
+  var TGUI_DEBUG_VERSION = 'bridge-localhost-fallback-v2';
+
   // Utility functions
   var hasOwn = Object.prototype.hasOwnProperty;
   var assign = function (target) {
@@ -32,54 +33,186 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
     return target;
   };
 
+  var debugNow = function () {
+    return Date.now ? Date.now() : +new Date();
+  };
+
+  var debugState = window.__tguiDebug__ = window.__tguiDebug__ || {
+    startedAt: debugNow(),
+    version: TGUI_DEBUG_VERSION,
+    events: [],
+    transportAttempts: [],
+    hasAnyMessage: false,
+    hasBackendUpdate: false,
+    hasUpdate: false,
+    incomingCount: 0,
+  };
+
+  var pushDebugEvent = window.__pushTguiDebugEvent__ = function (kind, payload) {
+    var events = debugState.events;
+    if (!events) {
+      events = debugState.events = [];
+    }
+    events.push({
+      at: debugNow(),
+      kind: kind,
+      payload: payload || null,
+    });
+    if (events.length > 64) {
+      events.shift();
+    }
+  };
+
+  var pushTransportAttempt = function (name, ok, detail) {
+    var attempts = debugState.transportAttempts;
+    if (!attempts) {
+      attempts = debugState.transportAttempts = [];
+    }
+    attempts.push({
+      at: debugNow(),
+      name: name,
+      ok: !!ok,
+      detail: detail || '',
+    });
+    if (attempts.length > 64) {
+      attempts.shift();
+    }
+  };
+
+  var objectKeysSafe = function (obj) {
+    var keys = [];
+    if (!obj) {
+      return keys;
+    }
+    try {
+      for (var key in obj) {
+        if (hasOwn.call(obj, key)) {
+          keys.push(key);
+        }
+      }
+    }
+    catch (err) {
+      keys.push('<error: ' + (err && err.message ? err.message : err) + '>');
+    }
+    return keys;
+  };
+
   // BYOND API object
   // ------------------------------------------------------
 
   var Byond = window.Byond = {};
-  // Trident engine version
-  var tridentVersion = (function () {
-    var groups = navigator.userAgent.match(/Trident\/(\d+).+?;/i);
-    var majorVersion = groups && groups[1];
-    return majorVersion
-      ? parseInt(majorVersion, 10)
-      : null;
-  })();
+
+  var byondBridgeKeys = objectKeysSafe(window.BYOND);
+  var hasKnownBridge = !!window.cef_to_byond
+    || !!window.BYOND;
+  var locationHost = location.hostname;
+  var hostLooksLocal = locationHost === '127.0.0.1'
+    || locationHost === 'localhost'
+    || locationHost === '';
 
   // Basic checks to detect whether this page runs in BYOND
-  var isByond = (tridentVersion !== null || window.cef_to_byond)
-    && location.hostname === '127.0.0.1'
+  // BYOND webclient: cef_to_byond, BYOND 516+: WebView2 (window.BYOND).
+  // Some clients expose no JS bridge object, but still support byond:// transport
+  // from the local DreamSeeker-served page.
+  var isByond = (hasKnownBridge || hostLooksLocal)
     && location.search !== '?external';
-    //As of BYOND 515 the path doesn't seem to include tmp dir anymore if you're trying to open tgui in external browser and looking why it doesn't work
-    //&& location.pathname.indexOf('/tmp') === 0
+  // 516 migration: keep WebView2 JS bridge opt-in only for diagnostics.
+  // Default transport is location.href / xhr, which is stable in this fork.
+  var useWebViewBridge = location.search.indexOf('byond_bridge=1') !== -1;
 
   // Version constants
   Byond.IS_BYOND = isByond;
-  Byond.IS_LTE_IE8 = tridentVersion !== null && tridentVersion <= 4;
-  Byond.IS_LTE_IE9 = tridentVersion !== null && tridentVersion <= 5;
-  Byond.IS_LTE_IE10 = tridentVersion !== null && tridentVersion <= 6;
-  Byond.IS_LTE_IE11 = tridentVersion !== null && tridentVersion <= 7;
+  Byond.BRIDGE_KEYS = byondBridgeKeys;
+
+  pushDebugEvent('env', {
+    version: TGUI_DEBUG_VERSION,
+    host: locationHost,
+    hostLooksLocal: hostLooksLocal,
+    search: location.search,
+    hasCefBridge: !!window.cef_to_byond,
+    hasByondBridge: !!window.BYOND,
+    byondBridgeKeys: byondBridgeKeys,
+    isByond: isByond,
+    useWebViewBridge: useWebViewBridge,
+    userAgent: navigator.userAgent,
+  });
 
   // Callbacks for asynchronous calls
   Byond.__callbacks__ = [];
 
   // Reviver for BYOND JSON
-  // IE8: No reviver for you!
   // See: https://stackoverflow.com/questions/1288962
-  var byondJsonReviver;
-  if (!Byond.IS_LTE_IE8) {
-    byondJsonReviver = function (key, value) {
-      if (typeof value === 'object' && value !== null && value.__number__) {
-        return parseFloat(value.__number__);
-      }
-      return value;
-    };
-  }
+  var byondJsonReviver = function (key, value) {
+    if (typeof value === 'object' && value !== null && value.__number__) {
+      return parseFloat(value.__number__);
+    }
+    return value;
+  };
 
   // Makes a BYOND call.
   // See: https://secure.byond.com/docs/ref/skinparams.html
+  var callViaWebViewBridge = function (protocolUrl, rawUrl) {
+    var bridge = window.BYOND;
+    if (!bridge) {
+      return false;
+    }
+
+    var invokeBridge = function (target, methodName, arg) {
+      try {
+        target.call(bridge, arg);
+        pushTransportAttempt('window.BYOND.' + methodName, true, String(arg));
+        return true;
+      }
+      catch (err) {
+        pushTransportAttempt(
+          'window.BYOND.' + methodName,
+          false,
+          err && err.message ? err.message : String(err));
+        return false;
+      }
+    };
+
+    // Some hosts expose BYOND as a direct callable.
+    if (typeof bridge === 'function') {
+      if (invokeBridge(bridge, 'call', rawUrl)) {
+        return true;
+      }
+      if (invokeBridge(bridge, 'call', protocolUrl)) {
+        return true;
+      }
+    }
+
+    var methodNames = [
+      'callByond',
+      'byond',
+      'call',
+      'topic',
+      'sendMessage',
+      'send',
+      'postMessage',
+    ];
+    for (var i = 0; i < methodNames.length; i++) {
+      var methodName = methodNames[i];
+      var method = bridge[methodName];
+      if (typeof method !== 'function') {
+        continue;
+      }
+      if (invokeBridge(method, methodName, rawUrl)) {
+        return true;
+      }
+      if (invokeBridge(method, methodName, protocolUrl)) {
+        return true;
+      }
+    }
+
+    pushTransportAttempt('window.BYOND', false, 'no compatible callable methods');
+    return false;
+  };
+
   Byond.call = function (path, params) {
     // Not running in BYOND, abort.
     if (!isByond) {
+      pushTransportAttempt('skip/notByond', false, locationHost + location.search);
       return;
     }
     // Build the URL
@@ -100,23 +233,56 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
         }
       }
     }
+    var protocolUrl = 'byond://' + url;
+    var callViaHttp = function (requestUrl) {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', requestUrl);
+        xhr.send();
+        pushTransportAttempt('xmlhttprequest', true, requestUrl);
+        return true;
+      }
+      catch (err) {
+        pushTransportAttempt('xmlhttprequest', false, err && err.message ? err.message : String(err));
+        return false;
+      }
+    };
 
     // If we're a Chromium client, just use the fancy method
     if (window.cef_to_byond) {
-      cef_to_byond('byond://' + url);
-      return;
+      try {
+        cef_to_byond(protocolUrl);
+        pushTransportAttempt('cef_to_byond', true, protocolUrl);
+        return;
+      }
+      catch (err) {
+        pushTransportAttempt('cef_to_byond', false, err && err.message ? err.message : String(err));
+      }
+    }
+
+    // BYOND 516+ WebView2 bridge fallback (opt-in).
+    if (useWebViewBridge) {
+      if (callViaWebViewBridge(protocolUrl, url)) {
+        return;
+      }
     }
 
     // Perform a standard call via location.href
     if (url.length < 2048) {
-      location.href = 'byond://' + url;
-      return;
+      try {
+        location.href = protocolUrl;
+        pushTransportAttempt('location.href', true, protocolUrl);
+        return;
+      }
+      catch (err) {
+        pushTransportAttempt('location.href', false, err && err.message ? err.message : String(err));
+      }
     }
     // Send an HTTP request to DreamSeeker's HTTP server.
     // Allows sending much bigger payloads.
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url);
-    xhr.send();
+    if (callViaHttp(url)) {
+      return;
+    }
   };
 
   Byond.callAsync = function (path, params) {
@@ -138,6 +304,18 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
   };
 
   Byond.command = function (command) {
+    // BYOND 516+ native API — required for WebView2 command execution.
+    // location.href transport does not reliably deliver winset commands
+    // in WebView2, so prefer the native bridge when available.
+    if (window.BYOND && typeof window.BYOND.command === 'function') {
+      try {
+        window.BYOND.command(command);
+        return;
+      }
+      catch (err) {
+        // fall through to legacy transport
+      }
+    }
     return Byond.call('winset', {
       command: command,
     });
@@ -189,8 +367,14 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
   var RETRY_ATTEMPTS = 5;
   var RETRY_WAIT_INITIAL = 500;
   var RETRY_WAIT_INCREMENT = 500;
+  var JS_LOAD_TIMEOUT = 15000;
 
   var loadedAssetByUrl = {};
+  var pushAssetEvent = function (kind, payload) {
+    if (window.__pushTguiDebugEvent__) {
+      window.__pushTguiDebugEvent__('asset/' + kind, payload || null);
+    }
+  };
 
   var isStyleSheetLoaded = function (node, url) {
     var getRuleCount = function (styleSheet) {
@@ -204,7 +388,7 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
         return -1;
       }
     };
-    // Method #1 (works on IE10+)
+    // Method #1
     var styleSheet = node.sheet;
     if (styleSheet) {
       var count = getRuleCount(styleSheet);
@@ -228,6 +412,11 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
 
   var injectNode = function (node) {
     if (!document.body) {
+      var head = document.head || document.getElementsByTagName('head')[0];
+      if (head) {
+        head.appendChild(node);
+        return;
+      }
       setTimeout(function () {
         injectNode(node);
       });
@@ -243,6 +432,13 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
     var type = options.type;
     var sync = options.sync;
     var attempt = options.attempt || 0;
+    pushAssetEvent('loadBegin', {
+      url: url,
+      type: type,
+      sync: !!sync,
+      attempt: attempt,
+      readyState: document.readyState,
+    });
     if (loadedAssetByUrl[url]) {
       return;
     }
@@ -252,6 +448,11 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
       if (attempt >= RETRY_ATTEMPTS) {
         var errorMessage = "Error: Failed to load the asset "
           + "'" + url + "' after several attempts.";
+        pushAssetEvent('retryGiveUp', {
+          url: url,
+          type: type,
+          attempt: attempt,
+        });
         if (type === 'css') {
           errorMessage += + "\nStylesheet was either not found, "
             + "or you're trying to load an empty stylesheet "
@@ -259,6 +460,11 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
         }
         throw new Error(errorMessage);
       }
+      pushAssetEvent('retryScheduled', {
+        url: url,
+        type: type,
+        nextAttempt: attempt + 1,
+      });
       setTimeout(function () {
         loadedAssetByUrl[url] = null;
         options.attempt += 1;
@@ -269,23 +475,67 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
     if (type === 'js') {
       var node = document.createElement('script');
       node.type = 'text/javascript';
-      // IE8: Prefer non-https protocols
-      node.src = Byond.IS_LTE_IE9
-        ? url.replace('https://', 'http://')
-        : url;
+      node.src = url;
       if (sync) {
-        node.defer = true;
+        node.async = false;
       }
       else {
         node.async = true;
       }
+      var loadTimeout = setTimeout(function () {
+        pushAssetEvent('jsTimeout', {
+          url: url,
+          attempt: attempt,
+          timeoutMs: JS_LOAD_TIMEOUT,
+        });
+        if (node) {
+          node.onload = null;
+          node.onerror = null;
+          if (node.parentNode) {
+            node.parentNode.removeChild(node);
+          }
+          node = null;
+        }
+        retry();
+      }, JS_LOAD_TIMEOUT);
+      node.onload = function () {
+        clearTimeout(loadTimeout);
+        pushAssetEvent('jsOnload', {
+          url: url,
+          attempt: attempt,
+        });
+      };
       node.onerror = function () {
+        clearTimeout(loadTimeout);
+        pushAssetEvent('jsOnerror', {
+          url: url,
+          attempt: attempt,
+        });
         node.onerror = null;
-        node.parentNode.removeChild(node);
+        if (node.parentNode) {
+          node.parentNode.removeChild(node);
+        }
         node = null;
         retry();
       };
-      injectNode(node);
+      try {
+        injectNode(node);
+        pushAssetEvent('injected', {
+          url: url,
+          type: type,
+          attempt: attempt,
+        });
+      }
+      catch (err) {
+        clearTimeout(loadTimeout);
+        pushAssetEvent('injectError', {
+          url: url,
+          type: type,
+          attempt: attempt,
+          message: err && err.message ? err.message : String(err),
+        });
+        retry();
+      }
       return;
     }
     // CSS specific code
@@ -293,10 +543,7 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
       var node = document.createElement('link');
       node.type = 'text/css';
       node.rel = 'stylesheet';
-      // IE8: Prefer non-https protocols
-      node.href = Byond.IS_LTE_IE9
-        ? url.replace('https://', 'http://')
-        : url;
+      node.href = url;
       // Temporarily set media to something inapplicable
       // to ensure it'll fetch without blocking render
       if (!sync) {
@@ -305,16 +552,56 @@ if (window.__windowId__ === '[' + 'tgui:windowId' + ']') {
       node.onload = function () {
         node.onload = null;
         if (isStyleSheetLoaded(node, url)) {
+          pushAssetEvent('cssOnload', {
+            url: url,
+            attempt: attempt,
+            loaded: true,
+          });
           // Render the stylesheet
           node.media = 'all';
           return;
         }
+        pushAssetEvent('cssOnload', {
+          url: url,
+          attempt: attempt,
+          loaded: false,
+        });
         // Try again
-        node.parentNode.removeChild(node);
+        if (node.parentNode) {
+          node.parentNode.removeChild(node);
+        }
         node = null;
         retry();
       };
-      injectNode(node);
+      node.onerror = function () {
+        pushAssetEvent('cssOnerror', {
+          url: url,
+          attempt: attempt,
+        });
+        node.onerror = null;
+        if (node.parentNode) {
+          node.parentNode.removeChild(node);
+        }
+        node = null;
+        retry();
+      };
+      try {
+        injectNode(node);
+        pushAssetEvent('injected', {
+          url: url,
+          type: type,
+          attempt: attempt,
+        });
+      }
+      catch (err) {
+        pushAssetEvent('injectError', {
+          url: url,
+          type: type,
+          attempt: attempt,
+          message: err && err.message ? err.message : String(err),
+        });
+        retry();
+      }
       return;
     }
   };
@@ -352,8 +639,7 @@ window.onerror = function (msg, url, line, col, error) {
     else {
       window.onerror.__stack__ = stack;
     }
-    var textProp = Byond.IS_LTE_IE8 ? 'innerText' : 'textContent';
-    errorStack[textProp] = window.onerror.__stack__;
+    errorStack.textContent = window.onerror.__stack__;
   }
   // Set window geometry
   var setFatalErrorGeometry = function () {
@@ -394,68 +680,289 @@ window.onunhandledrejection = function (e) {
 };
 
 // Helper for augmenting stack traces on fatal errors
+window.__stringifyTguiDebug__ = function () {
+  var debug = window.__tguiDebug__ || {};
+  try {
+    return JSON.stringify(debug);
+  }
+  catch (err) {
+    return '[tgui debug stringify error: ' + (err && err.message ? err.message : err) + ']';
+  }
+};
+
 window.__augmentStack__ = function (stack, error) {
-  return stack + '\nUser Agent: ' + navigator.userAgent;
+  var debugStr = window.__stringifyTguiDebug__();
+  return stack
+    + '\nUser Agent: ' + navigator.userAgent
+    + '\nTGUI Debug: ' + debugStr;
+};
+
+window.__showTguiDebugOverlay__ = function (reason) {
+  var existing = document.getElementById('TguiDebugOverlay');
+  if (existing) {
+    return;
+  }
+
+  var dismissInterval = null;
+  var dismissOverlay = function () {
+    if (dismissInterval) {
+      clearInterval(dismissInterval);
+      dismissInterval = null;
+    }
+    var overlay = document.getElementById('TguiDebugOverlay');
+    if (overlay && overlay.parentNode) {
+      overlay.parentNode.removeChild(overlay);
+    }
+  };
+
+  var render = function () {
+    if (!document.body) {
+      setTimeout(render, 100);
+      return;
+    }
+    var debug = window.__tguiDebug__ || {};
+    var lines = [];
+    lines.push('TGUI bridge debug overlay');
+    lines.push('Reason: ' + reason);
+    lines.push('Window ID: ' + window.__windowId__);
+    lines.push('Location: ' + location.href);
+    lines.push('Host: ' + location.hostname);
+    lines.push('Search: ' + location.search);
+    lines.push('User Agent: ' + navigator.userAgent);
+    lines.push('');
+    lines.push('Transport attempts:');
+    var attempts = debug.transportAttempts || [];
+    if (!attempts.length) {
+      lines.push('- <none>');
+    }
+    for (var i = 0; i < attempts.length; i++) {
+      var a = attempts[i];
+      lines.push('- ' + a.at + ' | ' + a.name + ' | ok=' + a.ok + ' | ' + a.detail);
+    }
+    lines.push('');
+    lines.push('Events:');
+    var events = debug.events || [];
+    if (!events.length) {
+      lines.push('- <none>');
+    }
+    for (var j = 0; j < events.length; j++) {
+      var e = events[j];
+      var payloadStr = '{}';
+      if (e.payload) {
+        try {
+          payloadStr = JSON.stringify(e.payload);
+        }
+        catch (err) {
+          payloadStr = '[payload stringify error: ' + (err && err.message ? err.message : err) + ']';
+        }
+      }
+      lines.push('- ' + e.at + ' | ' + e.kind + ' | ' + payloadStr);
+    }
+
+    var node = document.createElement('div');
+    node.id = 'TguiDebugOverlay';
+    node.className = 'TguiDebugOverlay';
+    node.textContent = lines.join('\n');
+
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'TguiDebugOverlay__close';
+    closeBtn.textContent = '\u2715 Close';
+    closeBtn.onclick = dismissOverlay;
+    node.insertBefore(closeBtn, node.firstChild);
+
+    document.body.appendChild(node);
+
+    // Auto-dismiss when the app eventually boots
+    dismissInterval = setInterval(function () {
+      if (window.__tguiAppBooted__) {
+        dismissOverlay();
+      }
+    }, 500);
+  };
+
+  render();
 };
 
 // Early initialization
 window.__updateQueue__ = [];
+window.__recordIncomingTguiMessage__ = function (message) {
+  if (window.__tguiDebug__) {
+    var debug = window.__tguiDebug__;
+    debug.hasAnyMessage = true;
+    debug.lastMessageAt = Date.now ? Date.now() : +new Date();
+    debug.incomingCount = (debug.incomingCount || 0) + 1;
+    var incomingType = '<parse_error>';
+    try {
+      var parsed = Byond.parseJson(message);
+      incomingType = parsed && parsed.type || '<no_type>';
+    }
+    catch (err) {
+      incomingType = '<parse_error>';
+    }
+    if (window.__pushTguiDebugEvent__ && debug.incomingCount <= 8) {
+      window.__pushTguiDebugEvent__('incoming', {
+        index: debug.incomingCount,
+        type: incomingType,
+        messageLength: message && message.length || 0,
+      });
+    }
+    if (incomingType === 'update') {
+      if (!debug.hasBackendUpdate && window.__pushTguiDebugEvent__) {
+        window.__pushTguiDebugEvent__('firstBackendUpdate', {
+          index: debug.incomingCount,
+        });
+      }
+      debug.hasBackendUpdate = true;
+      debug.hasUpdate = true;
+      debug.lastUpdateAt = Date.now ? Date.now() : +new Date();
+    }
+  }
+};
 window.update = function (message) {
+  window.__recordIncomingTguiMessage__(message);
   window.__updateQueue__.push(message);
 };
-Byond.topic({
-  tgui: 1,
-  window_id: window.__windowId__,
-  type: 'ready',
-});
+var sendReady = function (reason) {
+  if (window.__tguiDebug__) {
+    var now = Date.now ? Date.now() : +new Date();
+    if (!window.__tguiDebug__.readySentAt) {
+      window.__tguiDebug__.readySentAt = now;
+    }
+    window.__tguiDebug__.lastReadyAt = now;
+    window.__tguiDebug__.readySentCount = (window.__tguiDebug__.readySentCount || 0) + 1;
+  }
+  if (window.__pushTguiDebugEvent__) {
+    window.__pushTguiDebugEvent__('sendReady', {
+      windowId: window.__windowId__,
+      reason: reason || 'unknown',
+      readyState: document.readyState,
+    });
+  }
+  Byond.topic({
+    tgui: 1,
+    window_id: window.__windowId__,
+    type: 'ready',
+  });
+};
 
-// Necessary polyfill to make Webpack code splitting work on IE8
-if (!Function.prototype.bind) (function () {
-  var slice = Array.prototype.slice;
-  Function.prototype.bind = function () {
-    var thatFunc = this, thatArg = arguments[0];
-    var args = slice.call(arguments, 1);
-    if (typeof thatFunc !== 'function') {
-      // closest thing possible to the ECMAScript 5
-      // internal IsCallable function
-      throw new TypeError('Function.prototype.bind - ' +
-        'what is trying to be bound is not callable');
-    }
-    return function () {
-      var funcArgs = args.concat(slice.call(arguments))
-      return thatFunc.apply(thatArg, funcArgs);
-    };
-  };
-})();
+var onDomContentLoaded = function () {
+  if (window.__pushTguiDebugEvent__) {
+    window.__pushTguiDebugEvent__('domContentLoaded', {
+      hasBody: !!document.body,
+      readyState: document.readyState,
+    });
+  }
+  sendReady('domContentLoaded');
+};
 
-if (!Array.prototype['forEach']) {
-  Array.prototype.forEach = function (callback, thisArg) {
-    if (this == null) {
-      throw new TypeError('Array.prototype.forEach called on null or undefined');
-    }
-    var T, k;
-    var O = Object(this);
-    var len = O.length >>> 0;
-    if (typeof callback !== "function") {
-      throw new TypeError(callback + ' is not a function');
-    }
-    if (arguments.length > 1) {
-      T = thisArg;
-    }
-    k = 0;
-    while (k < len) {
-      var kValue;
-      if (k in O) {
-        kValue = O[k];
-        callback.call(T, kValue, k, O);
-      }
-      k++;
-    }
-  };
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', onDomContentLoaded);
 }
+else {
+  onDomContentLoaded();
+}
+
+// Retry ready every 2s until backend responds.
+// location.href transport can be unreliable in WebView2 during connection burst,
+// and DM rate limiting may drop the first attempt.
+var readyRetryTimer = setInterval(function () {
+  var debug = window.__tguiDebug__;
+  if (debug && debug.hasAnyMessage) {
+    clearInterval(readyRetryTimer);
+    return;
+  }
+  sendReady('retry');
+}, 2000);
+// Stop retrying after 30s
+setTimeout(function () {
+  clearInterval(readyRetryTimer);
+}, 30000);
+// Watchdog: show debug overlay if no backend update after 8s (informational only, retries continue)
+setTimeout(function () {
+  var debug = window.__tguiDebug__;
+  if (debug && !debug.hasAnyMessage) {
+    if (window.__pushTguiDebugEvent__) {
+      window.__pushTguiDebugEvent__('watchdog/noBackendUpdate', {
+        waitedMs: 8000,
+        hasAnyMessage: !!debug.hasAnyMessage,
+        incomingCount: debug.incomingCount || 0,
+      });
+    }
+    window.__showTguiDebugOverlay__('No backend update within 8 seconds after ready (retrying...)');
+    try {
+      Byond.topic({
+        tgui: 1,
+        window_id: window.__windowId__,
+        type: 'log',
+        message: 'TGUI watchdog: no backend update. Debug=' + window.__stringifyTguiDebug__(),
+      });
+    }
+    catch (err) {}
+  }
+}, 8000);
+setTimeout(function () {
+  var debug = window.__tguiDebug__;
+  // Separate watchdog: backend updates may be arriving, but bundle bootstrap can still fail.
+  if (debug && !window.__tguiAppBooted__) {
+    if (window.__pushTguiDebugEvent__) {
+      window.__pushTguiDebugEvent__('watchdog/appNotBooted', {
+        waitedMs: 8000,
+        hasAnyMessage: !!debug.hasAnyMessage,
+        hasBackendUpdate: !!debug.hasBackendUpdate,
+        incomingCount: debug.incomingCount || 0,
+      });
+    }
+    window.__showTguiDebugOverlay__('Frontend bundle did not boot within 8 seconds');
+    try {
+      Byond.topic({
+        tgui: 1,
+        window_id: window.__windowId__,
+        type: 'log',
+        message: 'TGUI watchdog: app not booted. Debug=' + window.__stringifyTguiDebug__(),
+      });
+    }
+    catch (err) {}
+  }
+}, 8000);
+
 </script>
 
 <style>
+.TguiDebugOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px;
+  font-size: 12px;
+  font-family: Consolas, monospace;
+  color: #111111;
+  background-color: #ffffff;
+  z-index: 1200;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.TguiDebugOverlay__close {
+  position: sticky;
+  top: 0;
+  float: right;
+  padding: 4px 12px;
+  font-size: 14px;
+  font-family: Consolas, monospace;
+  color: #ffffff;
+  background-color: #cc0000;
+  border: none;
+  cursor: pointer;
+  z-index: 1201;
+}
+
+.TguiDebugOverlay__close:hover {
+  background-color: #ff0000;
+}
+
 .FatalError {
   display: none;
   position: absolute;

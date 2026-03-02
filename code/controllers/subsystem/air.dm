@@ -103,13 +103,23 @@ SUBSYSTEM_DEF(air)
 /proc/fix_corrupted_atmos()
 
 /datum/admins/proc/fixcorruption()
-	set category = "Debug"
+	set category = "Debug.3) Fixing"
 	set desc="Fixes air that has weird NaNs (-1.#IND and such). Hopefully."
 	set name="Fix Infinite Air"
 	fix_corrupted_atmos()
 
 /datum/controller/subsystem/air/fire(resumed = 0)
 	var/timer = TICK_USAGE_REAL
+
+	// Adaptive throttling: reduce atmos processing intensity when server is lagging
+	if(!resumed && SStime_track?.initialized)
+		var/dilation = SStime_track.time_dilation_avg_fast
+		if(dilation > 40)
+			share_max_steps = 1
+		else if(dilation > 20)
+			share_max_steps = max(1, share_max_steps_target - 1)
+		else
+			share_max_steps = share_max_steps_target
 
 	thread_wait_ticks = MC_AVERAGE(thread_wait_ticks, cur_thread_wait_ticks)
 	cur_thread_wait_ticks = 0
@@ -236,7 +246,7 @@ SUBSYSTEM_DEF(air)
 			return
 
 /datum/controller/subsystem/air/proc/add_to_rebuild_queue(atmos_machine)
-	if(istype(atmos_machine, /obj/machinery/atmospherics))
+	if(istype(atmos_machine, /obj/machinery/atmospherics) && !(atmos_machine in pipenets_needing_rebuilt))
 		pipenets_needing_rebuilt += atmos_machine
 
 /datum/controller/subsystem/air/proc/process_atmos_machinery(resumed = 0)

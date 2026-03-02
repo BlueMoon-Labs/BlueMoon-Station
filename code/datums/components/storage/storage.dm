@@ -51,6 +51,9 @@
 
 	/// Ui objects by person. mob = list(objects)
 	var/list/ui_by_mob = list()
+	/// Reusable UI screen objects to reduce qdel/new churn for storage displays
+	var/list/atom/movable/screen/storage/item_holder/pooled_item_holders = list()
+	var/list/atom/movable/screen/storage/volumetric_box/center/pooled_volumetric_boxes = list()
 
 	var/allow_big_nesting = FALSE					//allow storage objects of the same or greater size.
 
@@ -128,6 +131,8 @@
 		var/list/objects = ui_by_mob[i]
 		QDEL_LIST(objects)
 	ui_by_mob.Cut()
+	QDEL_LIST(pooled_item_holders)
+	QDEL_LIST(pooled_volumetric_boxes)
 
 /datum/component/storage/PreTransfer()
 	update_actions()

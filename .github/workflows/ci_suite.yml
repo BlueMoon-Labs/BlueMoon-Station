@@ -11,7 +11,7 @@ jobs:
   run_linters:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Run Linters
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Restore SpacemanDMM cache
@@ -54,7 +54,7 @@ jobs:
   compile_all_maps:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Compile Maps
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Restore BYOND cache
@@ -70,7 +70,7 @@ jobs:
   find_all_maps:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Find Maps to Test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       maps: ${{ steps.map_finder.outputs.maps }}
     steps:
@@ -85,7 +85,7 @@ jobs:
   run_all_tests:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Integration Tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [find_all_maps]
     strategy:
       fail-fast: false

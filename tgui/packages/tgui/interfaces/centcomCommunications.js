@@ -1,5 +1,7 @@
+import { Fragment } from 'inferno';
+
 import { useBackend } from '../backend';
-import { Box, Button, ColorBox, Fragment, LabeledList, Section } from '../components';
+import { Box, Button, ColorBox, LabeledList, Section } from '../components';
 import { Window } from '../layouts';
 
 export const centcomCommunications = (props, context) => {

@@ -126,6 +126,33 @@
 			"label": "Build All (LOWMEMORYMODE TRACY)"
 		},
 		{
+			"type": "process",
+			"command": "tools/build/build",
+			"windows": {
+				"command": ".\\tools\\build\\build.bat"
+			},
+			"options": {
+				"env": {
+					"DM_EXE": "${config:dreammaker.byondPath}"
+				}
+			},
+			"problemMatcher": [
+				"$dreammaker",
+				"$tsc",
+				"$eslint-stylish"
+			],
+			"group": {
+				"kind": "build"
+			},
+			"dependsOn": "dm: reparse",
+			"args": [
+				"-DTESTING",
+				"-DREFERENCE_TRACKING",
+				"-DGC_FAILURE_HARD_LOOKUP"
+			],
+			"label": "Build All (REFERENCE_TRACKING)"
+		},
+		{
 			"type": "dreammaker",
 			"dme": "tgstation.dme",
 			"problemMatcher": [

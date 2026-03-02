@@ -263,7 +263,9 @@
 			turfNumber++
 	parentSphere.storedRooms["[roomnumber]"] = storage
 	parentSphere.activeRooms -= "[roomnumber]"
-	qdel(reservation)
+	var/datum/turf_reservation/old_res = reservation
+	reservation = null
+	qdel(old_res)
 
 /area/hilbertshotel/proc/update_light_switches() //SPLURT ADDITION: This will update all light switches in the given area
 	for(var/obj/machinery/light_switch/LS in src)
@@ -312,12 +314,15 @@
 				qdel(A)
 
 	// Place the STORED atoms back into the room
+	var/list/stored_data = storedRooms["[roomNumber]"]
+	var/stored_size = length(stored_data)
 	var/turfNumber = 1
 	for(var/i in 0 to mapTemplate.width - 1)
 		for(var/j in 0 to mapTemplate.height - 1)
-			for(var/atom/movable/A in storedRooms["[roomNumber]"][turfNumber])
-				if(istype(A.loc, /obj/item/abstracthotelstorage)) // Don't want to recall something that's been moved
-					A.forceMove(locate(roomReservation.bottom_left_coords[1] + i, roomReservation.bottom_left_coords[2] + j, roomReservation.bottom_left_coords[3]))
+			if(turfNumber <= stored_size)
+				for(var/atom/movable/A in stored_data[turfNumber])
+					if(istype(A.loc, /obj/item/abstracthotelstorage)) // Don't want to recall something that's been moved
+						A.forceMove(locate(roomReservation.bottom_left_coords[1] + i, roomReservation.bottom_left_coords[2] + j, roomReservation.bottom_left_coords[3]))
 			turfNumber++
 	for(var/obj/item/abstracthotelstorage/S in SShilbertshotel.storageTurf)
 		if((S.roomNumber == roomNumber) && (S.parentSphere == src))
@@ -453,8 +458,9 @@
 						var/_y = rand(min,max)
 						var/turf/T = locate(_x, _y, _z)
 						A.forceMove(T)
-			qdel(room)
-
+			var/area/hilbertshotel/roomArea = get_area(locate(room.bottom_left_coords[1], room.bottom_left_coords[2], room.bottom_left_coords[3]))
+			if(roomArea)
+				roomArea.reservation = null
 	if(storedRooms.len)
 		for(var/x in storedRooms)
 			var/list/atomList = storedRooms[x]

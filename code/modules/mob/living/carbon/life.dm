@@ -138,6 +138,7 @@
 
 	if(breath)
 		loc.assume_air(breath)
+		qdel(breath)
 		air_update_turf()
 
 /mob/living/carbon/proc/has_smoke_protection()
@@ -376,6 +377,7 @@
 	stank.set_temperature(BODYTEMP_NORMAL)
 
 	miasma_turf.assume_air(stank)
+	qdel(stank)
 
 	miasma_turf.air_update_turf()
 
@@ -515,7 +517,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 //this updates all special effects: stun, sleeping, knockdown, druggy, stuttering, etc..
 /mob/living/carbon/handle_status_effects()
 	..()
-	if(getStaminaLoss() && !HAS_TRAIT(src, TRAIT_NO_STAMINA_REGENERATION))
+	if(staminaloss > 0 && !HAS_TRAIT(src, TRAIT_NO_STAMINA_REGENERATION))
 		adjustStaminaLoss((!CHECK_MOBILITY(src, MOBILITY_STAND) ? ((combat_flags & COMBAT_FLAG_HARD_STAMCRIT) ? STAM_RECOVERY_STAM_CRIT : STAM_RECOVERY_RESTING) : STAM_RECOVERY_NORMAL))
 
 	if(!(combat_flags & COMBAT_FLAG_HARD_STAMCRIT) && incomingstammult != 1)

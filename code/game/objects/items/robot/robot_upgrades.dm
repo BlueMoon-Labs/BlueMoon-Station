@@ -795,6 +795,11 @@
 	// Новый БСРПЕД
 	var/obj/item/storage/part_replacer/bluespace/cyborg/BSRPED
 
+/obj/item/borg/upgrade/rped/Destroy()
+	RPED = null
+	BSRPED = null
+	return ..()
+
 /obj/item/borg/upgrade/rped/action(mob/living/silicon/robot/R, user = usr)
 	. = ..()
 	if(!.)
@@ -821,6 +826,7 @@
 		R.module.basic_modules.Swap(RPED_index, BSRPED_index) // как и `basic_modules +=` и `add.module` выше
 	SEND_SIGNAL(RPED, COMSIG_TRY_STORAGE_QUICK_EMPTY)
 	R.module.remove_module(RPED, TRUE) // Замена произошла - избавляемся от старого инструмента
+	RPED = null
 
 /obj/item/borg/upgrade/rped/deactivate(mob/living/silicon/robot/R, user = usr)
 	. = ..()
@@ -843,6 +849,7 @@
 		R.module.basic_modules.Swap(BSRPED_index, RPED_index)
 	SEND_SIGNAL(BSRPED, COMSIG_TRY_STORAGE_QUICK_EMPTY)
 	R.module.remove_module(BSRPED, TRUE)
+	BSRPED = null
 
 
 /obj/item/borg/upgrade/pinpointer

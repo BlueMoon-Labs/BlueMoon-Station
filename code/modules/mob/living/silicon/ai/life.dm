@@ -178,7 +178,7 @@
 	blind_eyes(1)
 	update_sight()
 	to_chat(src, "You've lost power!")
-	addtimer(CALLBACK(src, PROC_REF(start_RestorePowerRoutine)), 20)
+	addtimer(CALLBACK(src, PROC_REF(start_RestorePowerRoutine)), 20, TIMER_DELETE_ME)
 
 #undef POWER_RESTORATION_OFF
 #undef POWER_RESTORATION_START

@@ -50,6 +50,9 @@ GLOBAL_LIST_EMPTY(escape_menus)
 		GLOB.escape_menus[ckey] = src
 
 /datum/escape_menu/Destroy(force, ...)
+	if(client)
+		UnregisterSignal(client, list(COMSIG_PARENT_QDELETING, COMSIG_CLIENT_MOB_LOGIN))
+
 	QDEL_NULL(base_holder)
 	QDEL_NULL(page_holder)
 
@@ -146,6 +149,9 @@ GLOBAL_LIST_EMPTY(escape_menus)
 	plane = ESCAPE_MENU_PLANE
 	layer = ESCAPE_MENU_DEFAULT_LAYER
 	clear_with_screen = FALSE
+
+/atom/movable/screen/escape_menu/Initialize(mapload, ...)
+	. = ..(mapload)
 
 // The escape menu can be opened before SSatoms
 INITIALIZE_IMMEDIATE(/atom/movable/screen/escape_menu)

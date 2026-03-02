@@ -237,6 +237,8 @@
 
 /obj/item/defibrillator/proc/cooldowncheck(mob/user)
 	spawn(50)
+		if(QDELETED(src) || QDELETED(paddles))
+			return
 		if(cell)
 			if(cell.charge >= paddles.revivecost)
 				user.visible_message("<span class='notice'>[src] beeps: Unit ready.</span>")
@@ -324,6 +326,8 @@
 	base_icon_state = "defibpaddles"
 	var/disarm_shock_time = 10
 	var/wielded = FALSE // track wielded status on item
+	/// Mob we registered COMSIG_MOVABLE_MOVED on for range checks.
+	var/mob/signal_owner
 
 /obj/item/shockpaddles/Initialize(mapload)
 	. = ..()
@@ -351,8 +355,12 @@
 	wielded = FALSE
 
 /obj/item/shockpaddles/Destroy()
-	if(ismob(loc))
-		UnregisterSignal(loc, COMSIG_MOVABLE_MOVED)
+	if(signal_owner)
+		UnregisterSignal(signal_owner, COMSIG_MOVABLE_MOVED)
+		signal_owner = null
+	if(defib?.paddles == src)
+		defib.paddles = null
+		defib.on = FALSE
 	defib = null
 	return ..()
 
@@ -360,6 +368,9 @@
 	. = ..()
 	if(!req_defib)
 		return
+	if(signal_owner)
+		UnregisterSignal(signal_owner, COMSIG_MOVABLE_MOVED)
+	signal_owner = user
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(check_range))
 
 /obj/item/shockpaddles/Moved()
@@ -404,8 +415,9 @@
 
 /obj/item/shockpaddles/dropped(mob/user)
 	. = ..()
-	if(user)
-		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+	if(signal_owner)
+		UnregisterSignal(signal_owner, COMSIG_MOVABLE_MOVED)
+		signal_owner = null
 	if(req_defib)
 		if(user)
 			to_chat(user, span_notice("The paddles snap back into the main unit."))
@@ -414,6 +426,9 @@
 /obj/item/shockpaddles/proc/snap_back()
 	if(!defib)
 		return
+	if(signal_owner)
+		UnregisterSignal(signal_owner, COMSIG_MOVABLE_MOVED)
+		signal_owner = null
 	defib.on = FALSE
 	forceMove(defib)
 	defib.update_power()
@@ -755,6 +770,9 @@
 	icon_state = "syndiepaddles0"
 	item_state = "syndiepaddles0"
 	base_icon_state = "syndiepaddles"
+
+/obj/item/shockpaddles/syndicate/cyborg
+	req_defib = FALSE
 
 ///////////////////////////////////////////
 /////////Defibrillator Disks//////////////

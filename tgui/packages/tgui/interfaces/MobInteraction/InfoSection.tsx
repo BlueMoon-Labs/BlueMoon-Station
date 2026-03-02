@@ -40,7 +40,7 @@ export const InfoSection = (props, context) => {
     <Section title={`Interacting with ${isTargetSelf ? "yourself" : target}...`} fill>
       <Stack vertical fill>
         <Stack.Item grow basis={0}>
-          <Section fill overflow="auto">
+          <Section scrollable fill>
             <Stack>
               <Stack.Item>
                 <BlockQuote>

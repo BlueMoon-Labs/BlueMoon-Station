@@ -49,7 +49,7 @@
 		var/to_add = charges >= 1 ? shield_state : broken_state
 		if(to_add)
 			var/layer = (L.layer > MOB_LAYER ? L.layer : MOB_LAYER) + 0.01
-			SSvis_overlays.add_vis_overlay(L, 'icons/effects/effects.dmi', to_add, layer, GAME_PLANE, L.dir)
+			cached_vis_overlay = SSvis_overlays.add_vis_overlay(L, 'icons/effects/effects.dmi', to_add, layer, GAME_PLANE, L.dir)
 
 /datum/component/shielded/UnregisterFromParent()
 	. = ..()
@@ -105,7 +105,7 @@
 		cached_vis_overlay = null
 	if(to_add)
 		var/layer = (holder.layer > MOB_LAYER ? holder.layer : MOB_LAYER) + 0.01
-		SSvis_overlays.add_vis_overlay(holder, 'icons/effects/effects.dmi', to_add, layer, GAME_PLANE, holder.dir)
+		cached_vis_overlay = SSvis_overlays.add_vis_overlay(holder, 'icons/effects/effects.dmi', to_add, layer, GAME_PLANE, holder.dir)
 
 /datum/component/shielded/proc/on_equip(obj/item/source, mob/living/equipper, slot)
 	if(!(accepted_slots & slot))

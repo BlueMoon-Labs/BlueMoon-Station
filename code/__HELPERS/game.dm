@@ -642,7 +642,7 @@
  * - pressure_treshold - давление в кПа, ниже которого урон не уменьшается.
  * - decrease_mult - мультипликатор урона, обычно как переменная у отдельно взятого айтема.
  *
- * На выходе идёт линейное LERP()/lerp() уменьшение урона интерполяцией, без округлений числа.
+ * На выходе идёт линейное lerp() уменьшение урона интерполяцией, без округлений числа.
  */
 /proc/get_pressure_damage_multiplier(turf/T, pressure_treshold, decrease_mult)
 	if(!istype(T))
@@ -659,7 +659,7 @@
 		return decrease_mult
 
 	var/t = (pressure - pressure_treshold)/(ONE_ATMOSPHERE - pressure_treshold)
-	return LERP(1, decrease_mult, t)
+	return lerp(1, decrease_mult, t)
 
 /proc/ispipewire(item)
 	var/static/list/pipe_wire = list(

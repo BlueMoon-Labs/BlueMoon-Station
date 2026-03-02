@@ -55,8 +55,10 @@
 
 	current_range = range
 
+	if(!checkers)
+		checkers = list()
 	var/list/checkers_local = checkers
-	var/old_checkers_len = checkers_local.len
+	var/old_checkers_len = length(checkers_local)
 
 	var/atom/_host = host
 
@@ -68,12 +70,14 @@
 			var/obj/effect/abstract/proximity_checker/pc
 			if(old_checkers_len)
 				pc = checkers_local[old_checkers_len]
-				--checkers_local.len
-				QDEL_LAZYLIST(checkers_local)
+				var/list/to_delete = checkers_local - pc
+				checkers_local.Cut()
+				checkers_local += pc
+				for(var/thing in to_delete)
+					qdel(thing)
 			else
 				pc = new(loc_to_use, src)
-
-			checkers_local += pc	//only check the host's loc
+				checkers_local += pc
 		return
 
 	var/list/turfs = RANGE_TURFS(range, loc_to_use)
@@ -81,19 +85,20 @@
 	var/old_checkers_used = min(turfs_len, old_checkers_len)
 
 	//reuse what we can
-	for(var/I in 1 to old_checkers_len)
-		if(I <= old_checkers_used)
-			var/obj/effect/abstract/proximity_checker/pc = checkers_local[I]
-			pc.forceMove(turfs[I])
-		else
-			qdel(checkers_local[I])	//delete the leftovers
+	for(var/I in 1 to old_checkers_used)
+		var/obj/effect/abstract/proximity_checker/pc = checkers_local[I]
+		pc.forceMove(turfs[I])
+
+	//delete excess checkers in reverse to avoid index shifting from LAZYREMOVE
+	for(var/I = old_checkers_len, I > old_checkers_used, I--)
+		qdel(checkers_local[I])
 
 	if(old_checkers_len < turfs_len)
 		//create what we lack
 		for(var/I in (old_checkers_used + 1) to turfs_len)
 			checkers_local += new /obj/effect/abstract/proximity_checker(turfs[I], src)
-	else
-		checkers_local.Cut(old_checkers_used + 1, old_checkers_len)
+	else if(length(checkers_local) > old_checkers_used)
+		checkers_local.Cut(old_checkers_used + 1)
 
 /obj/effect/abstract/proximity_checker
 	invisibility = INVISIBILITY_ABSTRACT
@@ -109,7 +114,8 @@
 		return INITIALIZE_HINT_QDEL
 
 /obj/effect/abstract/proximity_checker/Destroy()
-	LAZYREMOVE(monitor.checkers, src)
+	if(!isnull(monitor))
+		LAZYREMOVE(monitor.checkers, src)
 	monitor = null
 	return ..()
 

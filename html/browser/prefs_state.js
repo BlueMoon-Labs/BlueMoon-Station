@@ -1,71 +1,98 @@
-// Preserves scroll position in BYOND browser windows across content refreshes.
-// Loaded only for the character preferences browser.
+// Автоскролл
 (function () {
 	'use strict';
 
 	var KEY = 'bm_prefs_scroll';
+	var RESTORE_TIMEOUT_MS = 2000;
 
-	function getScrollTop() {
-		return (document.documentElement && document.documentElement.scrollTop) || document.body.scrollTop || 0;
+	function store(y) {
+		var s = String(y | 0);
+		try { localStorage.setItem(KEY, s); } catch (_) {}
+		try { sessionStorage.setItem(KEY, s); } catch (_) {}
 	}
 
-	function setScrollTop(y) {
-		try {
-			if (document.documentElement) document.documentElement.scrollTop = y;
-			if (document.body) document.body.scrollTop = y;
-			window.scrollTo(0, y);
-		} catch (e) {
-			// ignore
+	function recall() {
+		var v;
+		try { v = localStorage.getItem(KEY); } catch (_) { v = null; }
+		if (v == null) {
+			try { v = sessionStorage.getItem(KEY); } catch (_) { v = null; }
+		}
+		if (v == null) {
+			try {
+				var m = (window.name || '').match(/bm_prefs_scroll=(\d+)/);
+				if (m) v = m[1];
+			} catch (_) {}
+		}
+		var n = parseInt(v, 10);
+		return (n > 0) ? n : 0;
+	}
+
+	function getScroll() {
+		return window.pageYOffset
+			|| (document.documentElement && document.documentElement.scrollTop)
+			|| (document.body && document.body.scrollTop)
+			|| 0;
+	}
+
+	function setScroll(y) {
+		window.scrollTo(0, y);
+		if (document.documentElement) document.documentElement.scrollTop = y;
+		if (document.body) document.body.scrollTop = y;
+	}
+
+	var rafPending = false;
+
+	function saveImmediate() {
+		rafPending = false;
+		store(getScroll());
+	}
+
+	function saveOnScroll() {
+		if (!rafPending) {
+			rafPending = true;
+			(window.requestAnimationFrame || setTimeout)(saveImmediate);
 		}
 	}
 
-	function save() {
-		var y = getScrollTop();
-		try {
-			if (window.sessionStorage) {
-				window.sessionStorage.setItem(KEY, String(y));
+	function restore() {
+		var target = recall();
+		if (target <= 0) return;
+
+		var deadline = Date.now() + RESTORE_TIMEOUT_MS;
+		var raf = window.requestAnimationFrame
+			|| function (fn) { setTimeout(fn, 16); };
+
+		(function attempt() {
+			setScroll(target);
+
+			var actual = getScroll();
+			if (actual >= target - 1 || Date.now() >= deadline) {
 				return;
 			}
-		} catch (e) {
-			// fallback
-		}
-		try {
-			window.name = KEY + '=' + String(y);
-		} catch (e2) {
-			// ignore
-		}
+
+			raf(attempt);
+		})();
 	}
 
-	function load() {
-		var stored = null;
-		try {
-			if (window.sessionStorage) stored = window.sessionStorage.getItem(KEY);
-		} catch (e) {
-			stored = null;
-		}
+	document.addEventListener('scroll', saveOnScroll, { passive: true });
 
-		if (stored == null) {
-			try {
-				var m = (window.name || '').match(new RegExp(KEY + '=(\\d+)'));
-				if (m) stored = m[1];
-			} catch (e2) {
-				stored = null;
-			}
-		}
+	document.addEventListener('mousedown', saveImmediate);
+	document.addEventListener('touchstart', saveImmediate, { passive: true });
 
-		var y = parseInt(stored, 10);
-		if (!isNaN(y) && y > 0) {
-			// Delay until layout has settled.
-			setTimeout(function () { setScrollTop(y); }, 0);
-		}
-	}
+	document.addEventListener('keydown', function (e) {
+		var k = e.keyCode || e.which;
+		if (k === 13 /* Enter */ || k === 32 /* Space */) saveImmediate();
+	});
 
-	try {
-		load();
-		window.onscroll = save;
-		window.onbeforeunload = save;
-		window.onunload = save;
-	} catch (e) {
-		// ignore
+	window.addEventListener('beforeunload', saveImmediate);
+	window.addEventListener('pagehide', saveImmediate);
+	window.addEventListener('visibilitychange', function () {
+		if (document.hidden) saveImmediate();
+	});
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', restore);
+	} else {
+		restore();
 	}
 })();

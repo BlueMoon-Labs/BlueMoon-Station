@@ -66,9 +66,13 @@
  *
  * Callback for handling incoming tgui messages.
  */
-/datum/tgui_panel/proc/on_message(type, payload)
+/datum/tgui_panel/proc/on_message(type, payload, href_list)
 	if(type == "ready")
 		broken = FALSE
+		// Switch to new UI now that the panel is actually loaded.
+		// Respects the user's explicit choice to use legacy chat.
+		if(!client.use_legacy_chat)
+			winset(client, "legacy_output_selector", "left=output_browser")
 		window.send_message("update", list(
 			"config" = list(
 				"client" = list(
@@ -79,9 +83,47 @@
 				"window" = list(
 					"fancy" = FALSE,
 					"locked" = FALSE,
+					"scale" = client.get_window_scaling(),
 				),
 			),
 		))
+		var/theme = "default"
+		if(client?.prefs?.tgui_panel_theme in list("default", "light", "dark"))
+			theme = client.prefs.tgui_panel_theme
+		window.send_message("panel/theme", list(
+			"theme" = theme,
+		))
+		// Restore saved panel state (chat tabs, filters, settings)
+		if(client?.prefs?.tgui_panel_state && length(client.prefs.tgui_panel_state) > 2)
+			window.send_message("panel/state", list(
+				"state" = client.prefs.tgui_panel_state,
+			))
+		return TRUE
+	if(type == "panel/state_set")
+		// State JSON is sent as a direct href parameter (not inside payload)
+		// to avoid double-JSON-encoding that inflates the topic URL size.
+		var/state_json = href_list?["panel_state"]
+		// Fallback: legacy payload path for backward compatibility
+		if(!state_json && islist(payload))
+			state_json = payload["state"]
+		if(!istext(state_json) || length(state_json) > 16384)
+			if(client && istext(state_json))
+				window.send_message("panel/state_error", list("reason" = "too_large", "size" = length(state_json)))
+			return TRUE
+		if(client?.prefs && client.prefs.tgui_panel_state != state_json)
+			client.prefs.tgui_panel_state = state_json
+			client.prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+		return TRUE
+	if(type == "panel/theme_set")
+		var/theme
+		if(islist(payload))
+			theme = payload["theme"]
+		if(!istext(theme) && islist(href_list))
+			theme = href_list["theme"]
+		if(theme in list("default", "light", "dark"))
+			if(client?.prefs && client.prefs.tgui_panel_theme != theme)
+				client.prefs.tgui_panel_theme = theme
+				client.prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 		return TRUE
 	if(type == "audio/setAdminMusicVolume")
 		client.admin_music_volume = payload["volume"]

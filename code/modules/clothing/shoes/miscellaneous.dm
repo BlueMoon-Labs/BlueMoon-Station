@@ -390,7 +390,8 @@
 
 /obj/item/clothing/shoes/wheelys/dropped(mob/user)
 	if(wheelToggle)
-		W.unbuckle_mob(user)
+		if(W.is_occupant(user))
+			W.unbuckle_mob(user)
 		wheelToggle = FALSE
 	..()
 

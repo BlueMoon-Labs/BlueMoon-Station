@@ -91,3 +91,11 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/gloves.dmi'
 	icon_state = "sovietblackgloves"
 	item_state = "sovietblackgloves"
+
+/obj/item/clothing/gloves/color/black/transparent
+	name = "Transparent Gloves"
+	desc = "Regular gloves made of transparent material."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/gloves.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/gloves.dmi'
+	icon_state = "transparent_gloves"
+	item_state = "transparent_gloves"

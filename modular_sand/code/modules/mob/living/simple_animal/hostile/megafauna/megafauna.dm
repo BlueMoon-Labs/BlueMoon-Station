@@ -9,7 +9,7 @@
 		if(!L.stat)
 			return L
 		else
-			enemies -= L
+			remove_enemy(L)
 	else if(ismecha(A))
 		var/obj/vehicle/sealed/mecha/M = A
 		if(LAZYLEN(M.occupants))
@@ -28,7 +28,7 @@
 		if(isliving(A))
 			var/mob/living/M = A
 			if((faction_check_mob(M) && attack_same) || (!faction_check_mob(M)) || (!ismegafauna(M)))
-				enemies |= M
+				add_enemy(M)
 				if(!retaliated)
 					src.visible_message("<span class='userdanger'>[src] seems pretty pissed off at [M]!</span>")
 					retaliated = TRUE
@@ -37,11 +37,11 @@
 			var/obj/vehicle/sealed/mecha/M = A
 			var/list/occupants = LAZYCOPY(M.occupants)
 			if(occupants.len)
-				enemies |= M
+				add_enemy(M)
 				for(var/mob/living/living in occupants)
 					if(!living.client)
 						continue
-					enemies |= living
+					add_enemy(living)
 					if(!retaliated)
 						visible_message("<span class='userdanger'>[src] seems pretty pissed off at [M]!</span>")
 						retaliated = TRUE
@@ -49,7 +49,8 @@
 
 	for(var/mob/living/simple_animal/hostile/megafauna/H in around)
 		if(faction_check_mob(H) && !attack_same && !H.attack_same)
-			H.enemies |= enemies
+			for(var/atom/movable/the_enemy in enemies)
+				H.add_enemy(the_enemy)
 	return FALSE
 
 /mob/living/simple_animal/hostile/megafauna/adjustHealth(amount, updating_health = TRUE, forced = FALSE)

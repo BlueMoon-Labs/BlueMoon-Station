@@ -396,7 +396,7 @@
 			// rp marking selection
 			// assume you can only have mam markings or regular markings or none, never both
 			var/marking_type
-			if(parent.can_have_part("mam_body_markings"))
+			if(parent?.can_have_part("mam_body_markings"))
 				marking_type = "mam_body_markings"
 			if(marking_type)
 				dat += APPEARANCE_CATEGORY_COLUMN
@@ -463,7 +463,7 @@
 			for(var/mutant_part in GLOB.all_mutant_parts)
 				if(mutant_part == "mam_body_markings")
 					continue
-				if(parent.can_have_part(mutant_part))
+				if(parent?.can_have_part(mutant_part))
 					if(!mutant_category)
 						dat += APPEARANCE_CATEGORY_COLUMN
 					var/mutant_part_label = src.use_modern_translations ? get_modern_text(mutant_part, src) : GLOB.all_mutant_parts[mutant_part]
@@ -668,7 +668,7 @@
 					var/tauric_shape = FALSE
 					if(features["cock_taur"])
 						var/datum/sprite_accessory/penis/P = GLOB.cock_shapes_list[features["cock_shape"]]
-						if(P.taur_icon && parent.can_have_part("taur"))
+						if(P.taur_icon && parent?.can_have_part("taur"))
 							var/datum/sprite_accessory/taur/T = GLOB.taur_list[features["taur"]]
 							if(T.taur_mode & P.accepted_taurs)
 								tauric_shape = TRUE

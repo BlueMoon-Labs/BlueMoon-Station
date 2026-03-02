@@ -142,7 +142,9 @@ GLOBAL_LIST_EMPTY(dirty_vars)
 					output += "<li><font color='red'>Camera not connected to wall at [ADMIN_VERBOSEJMP(C1)] Network: [json_encode(C1.network)]</font></li>"
 
 	output += "</ul>"
-	usr << browse(output,"window=airreport;size=1000x500")
+	var/datum/browser/popup = new(usr, "airreport", "Camera Report", 1000, 500)
+	popup.set_content(output)
+	popup.open(FALSE)
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Show Camera Report") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/intercom_view()
@@ -176,7 +178,9 @@ GLOBAL_LIST_EMPTY(dirty_vars)
 		dat += "[ADMIN_VERBOSEJMP(T)]\n"
 		dat += "<br>"
 
-	usr << browse(dat, "window=at_list")
+	var/datum/browser/popup = new(usr, "at_list", "Active Turfs")
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Show Roundstart Active Turfs") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
@@ -201,7 +205,7 @@ GLOBAL_LIST_EMPTY(dirty_vars)
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Show Roundstart Active Turf Markers")
 
 /client/proc/enable_debug_verbs()
-	set category = "Debug"
+	set category = "Debug.9) Debug Verbs"
 	set name = "Debug verbs - Enable"
 	if(!check_rights(R_DEBUG))
 		return
@@ -210,7 +214,7 @@ GLOBAL_LIST_EMPTY(dirty_vars)
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Enable Debug Verbs") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/disable_debug_verbs()
-	set category = "Debug"
+	set category = "Debug.9) Debug Verbs"
 	set name = "Debug verbs - Disable"
 	remove_verb(src, list(/client/proc/disable_debug_verbs, GLOB.admin_verbs_debug_mapping))
 	add_verb(src, /client/proc/enable_debug_verbs)

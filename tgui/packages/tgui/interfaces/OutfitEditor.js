@@ -17,9 +17,9 @@ export const OutfitEditor = (props, context) => {
           height="100%"
           opacity={0.5}
           py={3}
-          src={`data:image/jpeg;base64,${dummy64}`}
+          src={`data:image/png;base64,${dummy64}`}
           style={{
-            '-ms-interpolation-mode': 'nearest-neighbor',
+            imageRendering: 'pixelated',
           }} />
         <Section
           fill
@@ -128,10 +128,10 @@ const OutfitSlot = (props, context) => {
           <>
             <Box
               as="img"
-              src={`data:image/jpeg;base64,${currItem?.sprite}`}
+              src={`data:image/png;base64,${currItem?.sprite}`}
               title={currItem?.desc}
               style={{
-                '-ms-interpolation-mode': 'nearest-neighbor',
+                imageRendering: 'pixelated',
               }} />
             <Icon
               position="absolute"

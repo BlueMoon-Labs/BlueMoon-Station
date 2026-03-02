@@ -93,7 +93,7 @@
 		return TRUE
 
 /datum/antagonist/heretic/process()
-	if(owner.current.stat == DEAD)
+	if(!owner?.current || owner.current.stat == DEAD)
 		return
 
 	for(var/X in researched_knowledge)
@@ -102,6 +102,8 @@
 
 ///What happens to the heretic once he dies, used to remove any custom perks
 /datum/antagonist/heretic/proc/on_death()
+	if(!owner?.current)
+		return
 
 	for(var/X in researched_knowledge)
 		var/datum/eldritch_knowledge/EK = researched_knowledge[X]

@@ -117,8 +117,9 @@
 	if(href_list["eject"])
 		go_out()
 	if(href_list["view_stats"])
-		usr << browse(get_patient_stats(),"window=msleeper")
-		onclose(usr, "msleeper")
+		var/datum/browser/popup = new(usr, "msleeper", "Sleeper")
+		popup.set_content(get_patient_stats())
+		popup.open()
 		return
 	if(href_list["inject"])
 		var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/SG = locate() in chassis
@@ -383,7 +384,9 @@
 	if (href_list["show_reagents"])
 		if(!(usr in chassis.occupants))
 			return
-		usr << browse(get_reagents_page(),"window=msyringegun")
+		var/datum/browser/popup = new(usr, "msyringegun", "Syringe Gun")
+		popup.set_content(get_reagents_page())
+		popup.open()
 	if (href_list["purge_reagent"])
 		var/reagent = href_list["purge_reagent"]
 		if(reagent)

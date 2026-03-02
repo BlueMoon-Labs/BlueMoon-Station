@@ -81,7 +81,7 @@
 	offset,
 	on_click_callback,
 )
-	. = ..()
+	. = ..(mapload, null)
 
 	src.escape_menu = escape_menu
 	src.on_click_callback = on_click_callback
@@ -97,8 +97,14 @@
 	transform = transform.Scale(6, 1)
 
 /atom/movable/screen/escape_menu/home_button/Destroy()
+	maptext = null
+	filters = null
+	if(home_button_text)
+		vis_contents -= home_button_text
+		home_button_text.moveToNullspace()
 	escape_menu = null
 	QDEL_NULL(on_click_callback)
+	QDEL_NULL(home_button_text)
 
 	return ..()
 
@@ -106,13 +112,16 @@
 	if (!enabled())
 		return
 
-	on_click_callback.InvokeAsync()
+	if(on_click_callback)
+		on_click_callback.InvokeAsync()
 
 /atom/movable/screen/escape_menu/home_button/MouseEntered(location, control, params)
-	home_button_text.set_hovered(TRUE)
+	if(home_button_text)
+		home_button_text.set_hovered(TRUE)
 
 /atom/movable/screen/escape_menu/home_button/MouseExited(location, control, params)
-	home_button_text.set_hovered(FALSE)
+	if(home_button_text)
+		home_button_text.set_hovered(FALSE)
 
 /atom/movable/screen/escape_menu/home_button/proc/text_color()
 	return enabled() ? "white" : "gray"
@@ -131,7 +140,7 @@
 		hovered = FALSE
 
 /atom/movable/screen/escape_menu/home_button_text/Initialize(mapload, button_text)
-	. = ..()
+	. = ..(mapload, null)
 
 	src.button_text = button_text
 	update_text()
@@ -165,6 +174,11 @@
 
 	if(escape_menu?.client)
 		RegisterSignal(escape_menu.client, COMSIG_CLIENT_MOB_LOGIN, PROC_REF(on_client_mob_login))
+
+/atom/movable/screen/escape_menu/home_button/leave_body/Destroy()
+	if(escape_menu?.client)
+		UnregisterSignal(escape_menu.client, COMSIG_CLIENT_MOB_LOGIN)
+	return ..()
 
 /atom/movable/screen/escape_menu/home_button/leave_body/enabled()
 	if (!..())

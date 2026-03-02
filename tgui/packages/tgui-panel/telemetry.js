@@ -8,15 +8,11 @@ import { storage } from 'common/storage';
 import { sendMessage } from 'tgui/backend';
 import { createLogger } from 'tgui/logging';
 
+import { connectionsMatch } from './telemetry.utils';
+
 const logger = createLogger('telemetry');
 
 const MAX_CONNECTIONS_STORED = 10;
-
-const connectionsMatch = (a, b) => (
-  a.ckey === b.ckey
-    && a.address === b.address
-    && a.computer_id === b.computer_id
-);
 
 export const telemetryMiddleware = store => {
   let telemetry;

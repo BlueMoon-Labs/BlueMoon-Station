@@ -611,6 +611,15 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 //DO NOT CALL THIS PROC DIRECTLY, CALL wipe_reservations().
 /datum/controller/subsystem/mapping/proc/do_wipe_turf_reservations()
 	UNTIL(initialized)							//This proc is for AFTER init, before init turf reservations won't even exist and using this will likely break things.
+	// Detach shuttle-held reservation references before force-qdeling reservations.
+	if(SSshuttle.preview_reservation)
+		SSshuttle.preview_reservation = null
+	for(var/i in SSshuttle.transit)
+		var/obj/docking_port/stationary/transit/T = i
+		if(!istype(T))
+			continue
+		if(T.reserved_area)
+			T.reserved_area = null
 	for(var/i in turf_reservations)
 		var/datum/turf_reservation/TR = i
 		if(!QDELETED(TR))

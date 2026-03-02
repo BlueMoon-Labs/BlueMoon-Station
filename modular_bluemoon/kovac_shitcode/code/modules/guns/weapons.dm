@@ -59,7 +59,7 @@
 	ammo_type = /obj/item/ammo_casing/shotgun/rubbershot
 	max_ammo = 6
 
-/obj/item/gun/ballistic/shotgun/automatic/combat/rsh12
+/obj/item/gun/ballistic/shotgun/automatic/rsh12
 	name = "RSH-12"
 	desc = "A moden Russian-made semi-automatic revolver, intended to used with 12 gauge."
 	icon_state = "rsh12"
@@ -297,11 +297,13 @@
 		return
 	..()
 	if((wielded) && prob(50))
-		INVOKE_ASYNC(src, PROC_REF(slash), user)
+		INVOKE_ASYNC(src, PROC_REF(slash), user, target)
 
 /obj/item/inteq_sledgehammer/proc/slash(mob/living/user, mob/living/target)
-		user.do_attack_animation(target, ATTACK_EFFECT_KICK)
-		sleep(1)
+	if(!user || !target)
+		return
+	user.do_attack_animation(target, ATTACK_EFFECT_KICK)
+	sleep(1)
 
 /obj/item/inteq_sledgehammer/afterattack(atom/A, mob/user, proximity)
 	. = ..()

@@ -544,20 +544,21 @@ SUBSYSTEM_DEF(job)
 	if(tcg_cards)
 		var/obj/item/tcgcard_binder/binder = new(get_turf(H))
 		H.equip_to_slot_if_possible(binder, ITEM_SLOT_BACKPACK, disable_warning = TRUE, bypass_equip_delay_self = TRUE)
-		for(var/card_type in N.client.prefs.tcg_cards)
+		for(var/card_type in tcg_cards)
 			if(card_type)
-				if(islist(H.client.prefs.tcg_cards[card_type]))
-					for(var/duplicate in N.client.prefs.tcg_cards[card_type])
+				if(islist(tcg_cards[card_type]))
+					for(var/duplicate in tcg_cards[card_type])
 						var/obj/item/tcg_card/card = new(get_turf(H), card_type, duplicate)
 						card.forceMove(binder)
 						binder.cards.Add(card)
 				else
-					var/obj/item/tcg_card/card = new(get_turf(H), card_type, N.client.prefs.tcg_cards[card_type])
+					var/obj/item/tcg_card/card = new(get_turf(H), card_type, tcg_cards[card_type])
 					card.forceMove(binder)
 					binder.cards.Add(card)
 		binder.check_for_exodia()
-		if(length(N.client.prefs.tcg_decks))
-			binder.decks = N.client.prefs.tcg_decks
+		var/list/tcg_decks = H.client?.prefs?.tcg_decks || N?.client?.prefs?.tcg_decks
+		if(length(tcg_decks))
+			binder.decks = tcg_decks
 
 	if(ambition_text)
 		to_chat(M, span_notice(ambition_text))

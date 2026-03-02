@@ -33,6 +33,8 @@
 
 		if(my_owner) // копирование свойств старой карты и её замена
 			var/obj/item/card/id/id_card = my_owner.get_item_by_slot(ITEM_SLOT_ID)
+			if(!istype(id_card))
+				return ..()
 
 			// Если взять эту карту из лодаута и зайти на авейку, она может удалить старую карту у персонажа, что приведёт к нежелательным последствиям
 			if(istype(id_card, /obj/item/card/id/inteq) || istype(id_card, /obj/item/card/id/syndicate))

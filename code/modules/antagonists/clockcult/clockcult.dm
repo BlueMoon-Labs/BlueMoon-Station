@@ -181,7 +181,7 @@
 		current = mob_override
 	GLOB.all_clockwork_mobs -= current
 	current.faction -= "ratvar"
-	current.remove_language(/datum/language/ratvar, TRUE, TRUE, LANGUAGE_CLOCKIE)
+	current.remove_language(/datum/language/ratvar, source = LANGUAGE_CLOCKIE)
 	current.clear_alert("clockinfo")
 	for(var/datum/action/innate/clockwork_armaments/C in owner.current.actions) //Removes any bound clockwork armor
 		qdel(C)

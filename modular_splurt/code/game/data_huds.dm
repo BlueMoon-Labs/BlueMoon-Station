@@ -6,26 +6,25 @@
 ************************************************/
 
 /mob/living/carbon/human/proc/set_antag_target_indicator()
-	var/image/holder = hud_list[ANTAGTARGET_HUD]
+	var/image/holder = hud_list?[ANTAGTARGET_HUD]
+	if(!holder)
+		return
+
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 
-	if(!client || !client.prefs) // No client / prefs, show nothing
+	if(!client?.prefs)
 		holder.icon_state = null
 		return
 
-	var/mob/living/carbon/human/H = client.mob
-	if(!istype(H)) // Not human, show nothing
+	if(!ishuman(client.mob))
 		holder.icon_state = null
 		return
 
-	if(client && client?.prefs.nonconpref)
-		switch(client && client?.prefs.nonconpref)
-			if("No")
-				holder.icon_state = "hudtarget-no"
-				return
-			if("Yes")
-				holder.icon_state = "hudtarget-yes"
-				return
-
-	holder.icon_state = "hudtarget-ask"
+	switch(client.prefs.nonconpref)
+		if("No")
+			holder.icon_state = "hudtarget-no"
+		if("Yes")
+			holder.icon_state = "hudtarget-yes"
+		else
+			holder.icon_state = "hudtarget-ask"

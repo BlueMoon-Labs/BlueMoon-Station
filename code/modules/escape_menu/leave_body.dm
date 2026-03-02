@@ -92,7 +92,7 @@
 	on_click_callback,
 	button_overlay,
 )
-	. = ..()
+	. = ..(mapload, null)
 
 	src.on_click_callback = on_click_callback
 	src.tooltip_text = tooltip_text

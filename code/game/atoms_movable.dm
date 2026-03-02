@@ -106,6 +106,9 @@
 	QDEL_NULL(proximity_monitor)
 	QDEL_NULL(language_holder)
 	QDEL_NULL(em_block)
+	// Break hidden render pipeline references (render_target/render_source can keep movables harddeling).
+	render_target = null
+	render_source = null
 
 	unbuckle_all_mobs(force = TRUE)
 
@@ -121,8 +124,16 @@
 
 	invisibility = INVISIBILITY_ABSTRACT
 
+	if(inertia_dir)
+		inertia_dir = 0
+		inertia_last_loc = null
+		SSspacedrift.processing -= src
+
 	if(pulledby)
 		pulledby.stop_pulling()
+
+	if(pulling)
+		stop_pulling()
 
 	if(orbiting)
 		orbiting.end_orbit(src)
@@ -410,7 +421,7 @@
 	. = FALSE
 
 	if(QDELETED(src))
-		CRASH("Qdeleted thing being thrown around.")
+		return
 
 	if (!target || speed <= 0)
 		return
