@@ -130,7 +130,8 @@
 
 /obj/item/gun/ballistic/revolver/detective/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 	if(chambered && !(chambered.caliber in safe_calibers))
-		if(prob(65 - (magazine.ammo_count() * 10)))	//minimum probability of 5, maximum of 55
+		var/real_ammo_count = magazine ? magazine.ammo_count(0) : 0
+		if(prob(65 - (real_ammo_count * 10)))	//минимум 5, максимум 55
 			playsound(user, fire_sound, 50, 1)
 			to_chat(user, "<span class='userdanger'>[src] blows up in your face!</span>")
 			user.take_bodypart_damage(10,10)
