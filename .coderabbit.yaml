@@ -25,6 +25,24 @@ reviews:
     - "!*.ogg"
     - "!*.mp3"
     - "!*.wav"
+    - "!*.dmb"
+    - "!*.rsc"
+    - "!*.dll"
+    - "!*.so"
+    - "!*.pdb"
+    - "!*.lk"
+    - "!*.bdb"
+    - "!*.sav"
+    - "!*.eot"
+    - "!*.ttf"
+    - "!*.woff"
+    - "!*.woff2"
+    - "!*.psd"
+    - "!*.mid"
+    - "!*.map"
+    - "!*.exe"
+    - "!*.gz"
+    - "!*.zip"
 
   path_instructions:
     - path: "**/*.dm"
@@ -111,6 +129,12 @@ reviews:
         StonedMC subsystems using SUBSYSTEM_DEF(X) macro.
         Check SS_NO_INIT, SS_NO_FIRE, SS_BACKGROUND flags.
         Long loops should use MC_TICK_CHECK to yield CPU.
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
 
   auto_review:
     enabled: true
