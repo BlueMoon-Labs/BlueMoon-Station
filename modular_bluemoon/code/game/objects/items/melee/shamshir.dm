@@ -8,7 +8,7 @@
 	onmob_overlays = TRUE
 	var/list/fitting_swords = list(/obj/item/melee/sabre, /obj/item/melee/baton/stunsword, /obj/item/melee/shamshir)
 	var/starting_sword = /obj/item/melee/shamshir
-
+	custom_premium_price = 1000 // потому что ебать его в рот КЛИНОК
 /obj/item/storage/belt/shamshir/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)

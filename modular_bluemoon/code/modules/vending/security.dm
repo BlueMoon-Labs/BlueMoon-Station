@@ -62,6 +62,7 @@
 		/obj/item/storage/bag/ammo = 3,
 		/obj/item/stamp/security = 3,
 		/obj/item/storage/belt/security/webbing/ds = 6,
+		/obj/item/storage/belt/shamshir = 2
 	)
 	refill_canister = /obj/item/vending_refill/security
 	default_price = PRICE_ALMOST_EXPENSIVE
