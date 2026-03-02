@@ -13,7 +13,6 @@ reviews:
   path_filters:
     - "!icons/**"
     - "!sound/**"
-    - "!_maps/**/*.dmm"
     - "!tgui/.yarn/**"
     - "!tgui/public/**"
     - "!html/changelogs/**"
@@ -53,7 +52,7 @@ reviews:
         - Absolute type paths only (/datum/thing, never relative)
         - snake_case for paths and variables
         - Tabs for indentation, never spaces
-        - No : operator — cast to proper type
+        - No dynamic member access via : operator (obj:var, obj:proc()) — cast to proper type instead. Note: ?: (null-coalescing) and ?. (null-conditional) are different operators and ARE allowed
         - Early return over deep nesting
         - No magic numbers — use #define constants
         - Descriptive variable names (user not M, target not A)
