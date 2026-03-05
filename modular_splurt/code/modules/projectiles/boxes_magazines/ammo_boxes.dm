@@ -249,7 +249,7 @@
 /datum/design/c9mmr
 	name = "Ammo Box (9mm Rubber)"
 	id = "c9mmr"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 30000)
 	build_path = /obj/item/ammo_box/c9mm/rubber
 	category = list("hacked", "Security")
@@ -257,7 +257,7 @@
 /datum/design/g45l
 	name = "Ammo Box (.45 Long Rubber)"
 	id = "g45l"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 30000)
 	build_path = /obj/item/ammo_box/g45l
 	category = list("hacked", "Security")

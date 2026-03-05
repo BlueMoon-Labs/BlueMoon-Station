@@ -285,7 +285,7 @@
 	build_type = PROTOLATHE | AUTOLATHE
 	materials = list(/datum/material/plastic = 2500)
 	build_path = /obj/item/surgical_drapes
-	category = list("Tool Designs")
+	category = list("Initial", "Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/retractor_adv
