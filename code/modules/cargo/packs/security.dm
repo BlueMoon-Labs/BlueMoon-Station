@@ -284,3 +284,18 @@
 	cost = 1400
 	contains = list(/obj/item/grenade/stingbang)
 
+/datum/supply_pack/security/shamshir_blades
+	name = "Shamshir sabres crate"
+	desc = "Содержит пару смертоносных клинков, постовляемых вместе с ножнами. Требуется доступ безопасности, чтобы открыть.."
+	cost = 5000
+	contains = list(/obj/item/storage/belt/shamshir,
+					/obj/item/storage/belt/shamshir)
+	crate_name = "Shamshir sabres crate"
+
+/datum/supply_pack/security/cryo_blades
+	name = "Cryo-katans crate"
+	desc = "Крио технологии на службе службы безопасности! Постовляются вместе с ножнами. Требуется доступ безопасности, чтобы открыть.."
+	cost = 4000
+	contains = list(/obj/item/storage/belt/sheath/security,
+					/obj/item/storage/belt/sheath/security)
+	crate_name = "Cryo-katans crate"

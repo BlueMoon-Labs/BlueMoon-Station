@@ -67,6 +67,7 @@
 	new /obj/item/mod/module/holster(src)
 	new /obj/item/storage/garment_case/hos(src) //Bluemoon add
 	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add
+	new /obj/item/storage/belt/sheath/security/hos(src) //BLUEMOON ADD
 
 /obj/structure/closet/secure_closet/warden
 	name = "\proper warden's locker"
@@ -247,6 +248,8 @@
 	..()
 	new /obj/item/electrostaff(src)
 	new /obj/item/electrostaff(src)
+	new /obj/item/storage/belt/shamshir
+	new /obj/item/storage/belt/shamshir
 	for(var/i in 1 to 3)
 		new /obj/item/storage/box/lethalshot(src)
 	for(var/k in 1 to 9)

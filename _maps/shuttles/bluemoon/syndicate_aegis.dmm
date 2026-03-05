@@ -175,7 +175,7 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/syndicate/frigate)
 "eG" = (
-/obj/machinery/vending/security/syndicate,
+/obj/machinery/vending/syndicate,
 /turf/open/floor/mineral/plastitanium/red{
 	icon_state = "plastitanium"
 	},
@@ -317,7 +317,7 @@
 	brightness = 3
 	},
 /obj/machinery/firealarm/directional/south,
-/obj/machinery/vending/security/syndicate,
+/obj/machinery/vending/syndicate,
 /turf/open/floor/mineral/plastitanium/red{
 	icon_state = "plastitanium"
 	},
@@ -1982,7 +1982,7 @@
 "NS" = (
 /obj/machinery/light/small/directional/east,
 /obj/machinery/airalarm/directional/east,
-/obj/machinery/vending/security/syndicate,
+/obj/machinery/vending/syndicate,
 /turf/open/floor/mineral/plastitanium/red{
 	icon_state = "plastitanium"
 	},

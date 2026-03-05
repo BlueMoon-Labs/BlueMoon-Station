@@ -61,8 +61,7 @@
 		/obj/item/storage/backpack/hipbag/green = 1,
 		/obj/item/storage/bag/ammo = 3,
 		/obj/item/stamp/security = 3,
-		/obj/item/storage/belt/security/webbing/ds = 6,
-		/obj/item/storage/belt/shamshir = 2
+		/obj/item/storage/belt/security/webbing/ds = 6
 	)
 	refill_canister = /obj/item/vending_refill/security
 	default_price = PRICE_ALMOST_EXPENSIVE
@@ -81,3 +80,33 @@
 /obj/item/vending_refill/security
 	machine_name = "SecTech"
 	icon_state = "refill_sec"
+
+/obj/machinery/vending/security/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/melee_voucher))
+		RedeemVoucher(I, user)
+		return
+	return ..()
+
+/obj/machinery/vending/security/proc/RedeemVoucher(obj/item/mining_voucher/voucher, mob/redeemer)
+	var/items = list(	"Cryo-blade Kit" = image(icon = 'modular_bluemoon/icons/obj/white/items_and_weapons.dmi', icon_state = "security_katana"),
+						"Baton Kit" = image(icon = 'icons/obj/items_and_weapons.dmi', icon_state = "stunbaton"))
+
+	var/selection = show_radial_menu(redeemer, src, items, require_near = TRUE, tooltips = TRUE)
+	if(!selection || !Adjacent(redeemer) || QDELETED(voucher) || voucher.loc != redeemer)
+		return
+	var/drop_location = drop_location()
+	switch(selection)
+		if("Cryo-blade Kit")
+			new /obj/item/storage/belt/sheath/security(drop_location)
+		if("Baton Kit")
+			new /obj/item/melee/baton(drop_location)
+	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
+	SSblackbox.record_feedback("tally", "mining_voucher_redeemed", 1, selection)
+	qdel(voucher)
+
+/obj/item/melee_voucher
+	name = "security officer melee equipment voucher"
+	desc = "A token to redeem for a security officer melee equipment. Use it on a SecTech equipment vendor."
+	icon = 'icons/obj/mining.dmi'
+	icon_state = "mining_voucher"
+	w_class = WEIGHT_CLASS_TINY

@@ -40,7 +40,7 @@
 	payment_department = ACCOUNT_SEC
 	light_mask = "liberation-light-mask"
 
-/obj/machinery/vending/security/syndicate
+/obj/machinery/vending/syndicate
 	name = "\improper Syndicate Station"
 	desc = "Специальный терминал для выдачи вооружения. Вставьте свою Карточку на Вооружение в приёмник и выбирайте свою пушку!"
 	product_slogans = "Станция Синдиката: Ваш универсальный магазин для всех вещей, связанных со второй поправкой!;Будь Оперативником сегодня, возьми оружие!;Качественное оружие по низким ценам!;Лучше мертвый, чем жёлтый!;Плавать как космонавт, жалить как пуля!;Вырази свою вторую поправку сегодня!;Оружие не убивает людей, но ты можешь!;Кому нужна ответственность, когда у тебя есть оружие?"
@@ -69,13 +69,13 @@
 		"Bulldog Shotgun" = /obj/item/gun/ballistic/automatic/shotgun/bulldog
 	)
 
-/obj/machinery/vending/security/syndicate/attackby(obj/item/I, mob/user, params) //WS edit: THERE IS NO GOD. THERE IS ONLY GUNS. REPENT. //shiptest: i should remove this comment, but its funny
+/obj/machinery/vending/syndicate/attackby(obj/item/I, mob/user, params) //WS edit: THERE IS NO GOD. THERE IS ONLY GUNS. REPENT. //shiptest: i should remove this comment, but its funny
 	if(istype(I, /obj/item/gun_voucher))
 		RedeemVoucher(I, user)
 		return
 	return..()
 
-/obj/machinery/vending/security/syndicate/proc/RedeemVoucher(obj/item/gun_voucher/voucher, mob/redeemer)
+/obj/machinery/vending/syndicate/proc/RedeemVoucher(obj/item/gun_voucher/voucher, mob/redeemer)
 	var/selection = show_radial_menu(redeemer, src, voucher_items, require_near = TRUE, tooltips = TRUE)
 	if(!selection || !Adjacent(redeemer) || QDELETED(voucher) || voucher.loc != redeemer)
 		return
