@@ -145,9 +145,9 @@
 /datum/design/cable_coil
 	name = "Cable Coil"
 	id = "cable_coil"
-	build_type = AUTOLATHE | PROTOLATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 10, /datum/material/glass = 5)
-	build_path = /obj/item/stack/cable_coil/random/five
+	build_path = /obj/item/stack/cable_coil/random/one
 	category = list("initial","Tools","Stock Parts")
 	maxstack = 60
 
