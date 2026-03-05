@@ -120,7 +120,7 @@
 	build_path = /obj/item/ammo_box/magazine/e45/e45_extended
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_GREEN
+	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/e45_extended/empty
 	name = "Extended Enforcer magazine (Empty)"
@@ -145,11 +145,13 @@
 	build_path = /obj/item/ammo_box/magazine/e45/e45_extended/ion
 	materials = list(/datum/material/iron = 17000, /datum/material/uranium = 800)
 
+/*
 /datum/design/e45_extended/tracking
 	name = "Extended Enforcer magazine (.45 Tracking)"
 	id = "c45_ext_tracking"
 	build_path = /obj/item/ammo_box/magazine/e45/e45_extended/trac
 	min_security_level = SEC_LEVEL_BLUE
+*/
 
 /datum/design/e45_extended/lethal
 	name = "Extended Enforcer magazine (.45 Lethal)"
@@ -207,11 +209,13 @@
 	id = "e45_drum_taser"
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/taser
 
+/*
 /datum/design/e45_drum/trac
 	name = "Drum Enforcer magazine (.45 Tracking)"
 	desc = "A drum mag of .45 Tracking for the Mk. 58 Enforcer"
 	id = "e45_drum_trac"
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/trac
+*/
 
 /datum/design/e45_drum/hotshot
 	name = "Drum Enforcer magazine (.45 Hotshot)"
