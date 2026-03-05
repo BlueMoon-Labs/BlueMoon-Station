@@ -9,77 +9,73 @@
 
 /datum/uplink_item/ammo/derringer
 	name = "Ammo Box - .45-70 GOVT"
-	desc = "Contains 10 additional .45-70 GOVT rounds. Caliber is exceedingly rare, and thus, comes at a premium."
+	desc = "Содержит 10 дополнительных патронов .45-70 GOVT. Калибр крайне редкий, поэтому и цена соответствующая."
 	item = /obj/item/ammo_box/g4570
 	cost = 5
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/pistol
 	name = "10mm Handgun Magazine"
-	desc = "An additional 8-round 10mm magazine; compatible with the Stechkin Pistol. These rounds \
-			are dirt cheap but are half as effective as .357 rounds."
+	desc = "Дополнительный магазин на 8 патронов 10mm для пистолета Стечкин. Патроны дешёвые как грязь, но вдвое слабее .357."
 	item = /obj/item/ammo_box/magazine/m10mm
 	cost = 1
 	purchasable_from = ~UPLINK_CLOWN_OPS
 
 /datum/uplink_item/ammo/pistol/box
 	name = "Ammo Box - 10mm"
-	desc = "An additional box of 10mm ammo. The box has 20 cases inside, does not come with a magazine."
+	desc = "Дополнительная коробка патронов 10mm. В коробке 20 штук, магазин не прилагается."
 	item = /obj/item/ammo_box/c10mm
 	illegal_tech = FALSE
 
 /datum/uplink_item/ammo/pistolap
 	name = "10mm Armour Piercing Magazine"
-	desc = "An additional 8-round 10mm magazine; compatible with the Stechkin Pistol. \
-			These rounds are less effective at injuring the target but penetrate protective gear."
+	desc = "Дополнительный магазин на 8 бронебойных патронов 10mm для пистолета Стечкин. Хуже ранят, зато пробивают защиту."
 	item = /obj/item/ammo_box/magazine/m10mm/ap
 	cost = 2
 	purchasable_from = ~UPLINK_CLOWN_OPS
 
 /datum/uplink_item/ammo/pistolap/box
 	name = "Ammo Box - 10mm Armour Piercing"
-	desc = "An additional box of 10mm Armour Piercing ammo. The box has 20 cases inside, does not come with a magazine."
+	desc = "Дополнительная коробка бронебойных патронов 10mm. В коробке 20 штук, магазин не прилагается."
 	item = /obj/item/ammo_box/c10mm/ap
 	illegal_tech = FALSE
 
 /datum/uplink_item/ammo/pistolhp
 	name = "10mm Hollow Point Magazine"
-	desc = "An additional 8-round 10mm magazine; compatible with the Stechkin Pistol. \
-			These rounds are more damaging but ineffective against armour."
+	desc = "Дополнительный магазин на 8 экспансивных патронов 10mm для пистолета Стечкин. Наносят больше урона, но бесполезны против брони."
 	item = /obj/item/ammo_box/magazine/m10mm/hp
 	cost = 3
 	purchasable_from = ~UPLINK_CLOWN_OPS
 
 /datum/uplink_item/ammo/pistolhp/box
 	name = "Ammo Box - 10mm Hollow Point"
-	desc = "An additional box of 10mm Hollow Point ammo. The box has 20 cases inside, does not come with a magazine."
+	desc = "Дополнительная коробка экспансивных патронов 10mm. В коробке 20 штук, магазин не прилагается."
 	item = /obj/item/ammo_box/c10mm/hp
 	illegal_tech = FALSE
 
 /datum/uplink_item/ammo/pistolfire
 	name = "10mm Incendiary Magazine"
-	desc = "An additional 8-round 10mm magazine; compatible with the Stechkin Pistol. \
-			Loaded with incendiary rounds which inflict little damage, but ignite the target."
+	desc = "Дополнительный магазин на 8 зажигательных патронов 10mm для пистолета Стечкин. Урон небольшой, зато поджигают цель."
 	item = /obj/item/ammo_box/magazine/m10mm/fire
 	cost = 2
 	purchasable_from = ~UPLINK_CLOWN_OPS
 
 /datum/uplink_item/ammo/pistolfire/box
 	name = "Ammo Box - 10mm Incendiary"
-	desc = "An additional box of 10mm Incendiary ammo. The box has 20 cases inside, does not come with a magazine."
+	desc = "Дополнительная коробка зажигательных патронов 10mm. В коробке 20 штук, магазин не прилагается."
 	item = /obj/item/ammo_box/magazine/m10mm/fire
 	illegal_tech = FALSE
 
 /datum/uplink_item/ammo/pistolzzz
 	name = "10mm Soporific Magazine"
-	desc = "An additional 8-round 10mm magazine; compatible with the Stechkin Pistol. Loaded with soporific rounds that put the target to sleep. \
-			NOTE: Soporific is not instant acting due to the constraints of the round's scale. Will usually require three shots to take effect."
+	desc = "Дополнительный магазин на 8 усыпляющих патронов 10mm для пистолета Стечкин. Вырубают цель в сон. \
+			ВНИМАНИЕ: усыпляющий эффект не мгновенный из-за ограничений калибра. Обычно нужно три попадания."
 	item = /obj/item/ammo_box/magazine/m10mm/soporific
 	cost = 2
 
 /datum/uplink_item/ammo/pistolzzz/box
 	name = "Ammo Box - 10mm Soporific"
-	desc = "An additional box of 10mm Soporific ammo. The box has 20 cases inside, does not come with a magazine."
+	desc = "Дополнительная коробка усыпляющих патронов 10mm. В коробке 20 штук, магазин не прилагается."
 	item = /obj/item/ammo_box/c10mm/soporific
 	illegal_tech = FALSE
 
@@ -89,85 +85,85 @@
 
 /datum/uplink_item/ammo/shotgun/bag
 	name = "12g Ammo Duffel Bag"
-	desc = "A duffel bag filled with enough 12g ammo to supply an entire team, at a discounted price."
+	desc = "Спортивная сумка, набитая патронами 12g на целую команду, по сниженной цене."
 	item = /obj/item/storage/backpack/duffelbag/syndie/ammo/shotgun
 	cost = 12
 
 /datum/uplink_item/ammo/shotgun/bioterror
 	name = "12g Bioterror Dart Drum"
-	desc = "An additional 8-round bioterror dart magazine for use with the Bulldog shotgun. \
-			Pierces armor and injects are horrid cocktail of death into your target. Be careful about friendly fire."
+	desc = "Дополнительный барабан на 8 биотеррор-дротиков для дробовика Bulldog. \
+			Пробивает броню и впрыскивает жуткий коктейль смерти в цель. Осторожнее с огнём по своим."
 	cost = 6 //legacy price
 	item = /obj/item/ammo_box/magazine/m12g/bioterror
 
 /datum/uplink_item/ammo/shotgun/buck
 	name = "12g Buckshot Drum"
-	desc = "An additional 8-round buckshot magazine for use with the Bulldog shotgun. Front towards enemy."
+	desc = "Дополнительный барабан на 8 картечных патронов для дробовика Bulldog. Этой стороной к противнику."
 	item = /obj/item/ammo_box/magazine/m12g
 
 /datum/uplink_item/ammo/shotgun/dragon
 	name = "12g Dragon's Breath Drum"
-	desc = "An alternative 8-round dragon's breath magazine for use in the Bulldog shotgun. \
-			'I'm a fire starter, twisted fire starter!'"
+	desc = "Альтернативный барабан на 8 зажигательных патронов Dragon's Breath для дробовика Bulldog. \
+			Я поджигатель, чокнутый поджигатель!"
 	item = /obj/item/ammo_box/magazine/m12g/dragon
 
 /datum/uplink_item/ammo/shotgun/meteor
 	name = "12g Meteorslug Shells"
-	desc = "An alternative 8-round meteorslug magazine for use in the Bulldog shotgun. \
-			Great for blasting airlocks off their frames and knocking down enemies."
+	desc = "Альтернативный барабан на 8 метеорных снарядов для дробовика Bulldog. \
+			Отлично выбивает шлюзы с петель и сбивает врагов с ног."
 	item = /obj/item/ammo_box/magazine/m12g/meteor
 
 /datum/uplink_item/ammo/shotgun/slug
 	name = "12g Slug Drum"
-	desc = "An additional 8-round slug magazine for use with the Bulldog shotgun. \
-			Now 8 times less likely to shoot your pals."
+	desc = "Дополнительный барабан на 8 пулевых патронов для дробовика Bulldog. \
+			Теперь в 8 раз меньше шансов подстрелить своих."
 	cost = 3
 	item = /obj/item/ammo_box/magazine/m12g/slug
 
 /datum/uplink_item/ammo/shotgun/stun
 	name = "12g Stun Slug Drum"
-	desc = "An alternative 8-round stun slug magazine for use with the Bulldog shotgun. \
-			Saying that they're completely non-lethal would be lying."
+	desc = "Альтернативный барабан на 8 оглушающих пулевых патронов для дробовика Bulldog. \
+			Сказать, что они полностью нелетальные - было бы враньём."
 	item = /obj/item/ammo_box/magazine/m12g/stun
 
 /datum/uplink_item/ammo/revolver
 	name = ".357 Speed Loader"
-	desc = "A speed loader that contains seven additional .357 Magnum rounds, and can be further reloaded with individual bullets; usable with the Syndicate revolver. \
-			For when you really need a lot of things dead."
+	desc = "Быстрозарядник на семь патронов .357 Magnum, можно дозарядить отдельными пулями. \
+			Подходит для револьвера Syndicate. Когда действительно нужно, чтобы куча народу перестала шевелиться."
 	item = /obj/item/ammo_box/a357
 	cost = 3
 	purchasable_from = ~UPLINK_CLOWN_OPS
 
 /datum/uplink_item/ammo/revolver/ap
 	name = ".357 Armor Piercing Speed Loader"
-	desc = "A speed loader that contains seven additional .357 AP Magnum rounds; usable with the Syndicate revolver. \
-			Cuts through like a hot knife through butter."
+	desc = "Быстрозарядник на семь бронебойных патронов .357 AP Magnum для револьвера Syndicate. \
+			Прошибает как горячий нож сквозь масло."
 	item = /obj/item/ammo_box/a357/ap
 
 /datum/uplink_item/ammo/revolver/dumdum
 	name = ".357 DumDum Speed Loader"
-	desc = "A speed loader that contains seven additional .357 DumDum Magnum rounds; usable with the Syndicate revolver. \
-			Rip and tear the flash."
+	desc = "Быстрозарядник на семь разрывных патронов .357 DumDum Magnum для револьвера Syndicate. \
+			Рви и кромсай."
 	item = /obj/item/ammo_box/a357/dumdum
 
 /datum/uplink_item/ammo/a40mm
 	name = "40mm Grenade"
-	desc = "A 40mm HE grenade for use with the M-90gl's under-barrel grenade launcher. \
-			Your teammates will ask you to not shoot these down small hallways."
+	desc = "Осколочно-фугасная граната 40mm для подствольного гранатомёта M-90gl. \
+			Сокомандники попросят не стрелять ими в узких коридорах."
 	item = /obj/item/ammo_casing/a40mm
 	cost = 2
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/smg/bag
 	name = ".45 Ammo Duffel Bag"
-	desc = "A duffel bag filled with enough .45 ammo to supply an entire team, at a discounted price."
+	desc = "Спортивная сумка, набитая патронами .45 на целую команду, по сниженной цене."
 	item = /obj/item/storage/backpack/duffelbag/syndie/ammo/smg
 	cost = 20 //instead of 27 TC
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/smg
 	name = ".45 SMG Magazine"
-	desc = "An additional 24-round .45 magazine suitable for use with the C-20r submachine gun."
+	desc = "Дополнительный магазин на 24 патрона .45 для пистолета-пулемёта C-20r."
 	item = /obj/item/ammo_box/magazine/smgm45
 	cost = 3
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
@@ -178,34 +174,34 @@
 
 /datum/uplink_item/ammo/sniper/basic
 	name = ".50 Magazine"
-	desc = "An additional standard 6-round magazine for use with .50 sniper rifles."
+	desc = "Дополнительный стандартный магазин на 6 патронов .50 для снайперских винтовок."
 	item = /obj/item/ammo_box/magazine/sniper_rounds
 
 /datum/uplink_item/ammo/sniper/penetrator
 	name = ".50 Penetrator Magazine"
-	desc = "A 5-round magazine of penetrator ammo designed for use with .50 sniper rifles. \
-			Can pierce walls and multiple enemies."
+	desc = "Магазин на 5 бронебойных патронов .50 для снайперских винтовок. \
+			Пробивает стены и нескольких врагов насквозь."
 	item = /obj/item/ammo_box/magazine/sniper_rounds/penetrator
 	cost = 5
 
 /datum/uplink_item/ammo/sniper/soporific
 	name = ".50 Soporific Magazine"
-	desc = "A 3-round magazine of soporific ammo designed for use with .50 sniper rifles. Put your enemies to sleep today!"
+	desc = "Магазин на 3 усыпляющих патрона .50 для снайперских винтовок. Усыпите своих врагов уже сегодня!"
 	item = /obj/item/ammo_box/magazine/sniper_rounds/soporific
 	cost = 6
 
 /datum/uplink_item/ammo/carbine
 	name = "5.56mm Toploader Magazine"
-	desc = "An additional 30-round 5.56mm magazine; suitable for use with the M-90gl carbine. \
-			These bullets pack less punch than 7.12x82mm rounds, but they still offer more power than .45 ammo."
+	desc = "Дополнительный магазин на 30 патронов 5.56mm для карабина M-90gl. \
+			Бьют слабее 7.12x82mm, но всё равно мощнее .45."
 	item = /obj/item/ammo_box/magazine/m556
 	cost = 4
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/machinegun/match
 	name = "7.12x82mm (Match) Box Magazine"
-	desc = "A 50-round magazine of 7.12x82mm ammunition for use in the L6 SAW; you didn't know there was a demand for match grade \
-			precision bullet hose ammo, but these rounds are finely tuned and perfect for ricocheting off walls all fancy-like."
+	desc = "Магазин на 50 матчевых патронов 7.12x82mm для пулемёта L6 SAW. Не знали, что на точные патроны \
+			для пулемёта есть спрос? Эти пули идеально подогнаны и красиво рикошетят от стен."
 	item = /obj/item/ammo_box/magazine/mm712x82/match
 	cost = 10
 
@@ -216,27 +212,27 @@
 
 /datum/uplink_item/ammo/machinegun/basic
 	name = "7.12x82mm Box Magazine"
-	desc = "A 50-round magazine of 7.12x82mm ammunition for use with the L6 SAW. \
-			By the time you need to use this, you'll already be standing on a pile of corpses"
+	desc = "Магазин на 50 патронов 7.12x82mm для пулемёта L6 SAW. \
+			К моменту, когда он понадобится, вы уже будете стоять на горе трупов."
 	item = /obj/item/ammo_box/magazine/mm712x82
 
 /datum/uplink_item/ammo/machinegun/ap
 	name = "7.12x82mm (Armor Penetrating) Box Magazine"
-	desc = "A 50-round magazine of 7.12x82mm ammunition for use in the L6 SAW; equipped with special properties \
-			to puncture even the most durable armor."
+	desc = "Магазин на 50 бронебойных патронов 7.12x82mm для пулемёта L6 SAW. \
+			Пробивают даже самую крепкую броню."
 	item = /obj/item/ammo_box/magazine/mm712x82/ap
 	cost = 9
 
 /datum/uplink_item/ammo/machinegun/hollow
 	name = "7.12x82mm (Hollow-Point) Box Magazine"
-	desc = "A 50-round magazine of 7.12x82mm ammunition for use in the L6 SAW; equipped with hollow-point tips to help \
-			with the unarmored masses of crew."
+	desc = "Магазин на 50 экспансивных патронов 7.12x82mm для пулемёта L6 SAW. \
+			Отлично справляются с небронированными толпами экипажа."
 	item = /obj/item/ammo_box/magazine/mm712x82/hollow
 
 /datum/uplink_item/ammo/machinegun/incen
 	name = "7.12x82mm (Incendiary) Box Magazine"
-	desc = "A 50-round magazine of 7.12x82mm ammunition for use in the L6 SAW; tipped with a special flammable \
-			mixture that'll ignite anyone struck by the bullet. Some men just want to watch the world burn."
+	desc = "Магазин на 50 зажигательных патронов 7.12x82mm для пулемёта L6 SAW. \
+			Поджигают каждого, в кого попадут. Некоторые просто хотят смотреть, как мир горит."
 	item = /obj/item/ammo_box/magazine/mm712x82/incen
 
 /datum/uplink_item/ammo/rocket
@@ -244,50 +240,50 @@
 
 /datum/uplink_item/ammo/rocket/basic
 	name = "84mm HE Rocket"
-	desc = "A low-yield anti-personnel HE rocket. Gonna take you out in style!"
+	desc = "Маломощная осколочная ракета 84mm. Отправим вас на тот свет со стилем!"
 	item = /obj/item/ammo_casing/caseless/rocket
 	cost = 4
 
 /datum/uplink_item/ammo/rocket/hedp
 	name = "84mm HEDP Rocket"
-	desc = "A high-yield HEDP rocket; extremely effective against armored targets, as well as surrounding personnel. \
-			Strike fear into the hearts of your enemies."
+	desc = "Мощная кумулятивно-осколочная ракета 84mm HEDP. Крайне эффективна против бронированных целей \
+			и всех, кто стоит рядом. Вселяйте страх в сердца врагов."
 	item = /obj/item/ammo_casing/caseless/rocket/hedp
 	cost = 6
 
 /datum/uplink_item/ammo/pistolaps
 	name = "9mm Handgun Magazine"
-	desc = "An additional 15-round 9mm magazine, compatible with the Stechkin APS pistol."
+	desc = "Дополнительный магазин на 15 патронов 9mm для пистолета Стечкин АПС."
 	item = /obj/item/ammo_box/magazine/pistolm9mm
 	cost = 2
 	purchasable_from = ~UPLINK_CLOWN_OPS
 
 /datum/uplink_item/ammo/pistolaps
 	name = "Ammo Box - 9mm"
-	desc = "An additional box of 9mm ammo. The box has 30 cases inside, does not come with a magazine."
+	desc = "Дополнительная коробка патронов 9mm. В коробке 30 штук, магазин не прилагается."
 	item = /obj/item/ammo_box/c9mm
 	illegal_tech = FALSE
 
 /datum/uplink_item/ammo/flechetteap
 	name = "Armor Piercing Flechette Magazine"
-	desc = "An additional 40-round flechette magazine; compatible with the Flechette Launcer. \
-			Loaded with armor piercing flechettes that very nearly ignore armor, but are not very effective against flesh."
+	desc = "Дополнительный магазин на 40 флешетт для установки Flechette. \
+			Бронебойные флешетты почти игнорируют броню, но слабо действуют по плоти."
 	item = /obj/item/ammo_box/magazine/flechette
 	cost = 2
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/flechettes
 	name = "Serrated Flechette Magazine"
-	desc = "An additional 40-round flechette magazine; compatible with the Flechette Launcer. \
-			Loaded with serrated flechettes that shreds flesh, but is stopped dead in its tracks by armor. \
-			These flechettes are highly likely to sever arteries, and even limbs."
+	desc = "Дополнительный магазин на 40 флешетт для установки Flechette. \
+			Зазубренные флешетты кромсают плоть, но намертво застревают в броне. \
+			С высокой вероятностью рассекают артерии и даже отрубают конечности."
 	item = /obj/item/ammo_box/magazine/flechette/s
 	cost = 2
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/toydarts
 	name = "Box of Riot Darts"
-	desc = "A box of 40 Donksoft riot darts, for reloading any compatible foam dart magazine. Don't forget to share!"
+	desc = "Коробка из 40 бунтовых дротиков Donksoft для перезарядки совместимых магазинов. Не забудьте поделиться!"
 	item = /obj/item/ammo_box/foambox/riot
 	cost = 2
 	surplus = 0
@@ -295,50 +291,50 @@
 
 /datum/uplink_item/ammo/bioterror
 	name = "Box of Bioterror Syringes"
-	desc = "A box full of preloaded syringes, containing various chemicals that seize up the victim's motor \
-			and broca systems, making it impossible for them to move or speak for some time."
+	desc = "Коробка предзаряженных шприцов с химикатами, которые блокируют моторные и речевые \
+			функции жертвы, лишая её возможности двигаться и говорить на некоторое время."
 	item = /obj/item/storage/box/syndie_kit/bioterror
 	cost = 6
 	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
 
 /datum/uplink_item/ammo/bolt_action
 	name = "Surplus Rifle Clip"
-	desc = "A stripper clip used to quickly load bolt action rifles. Contains 5 rounds."
+	desc = "Обойма для быстрой зарядки винтовок с продольно-скользящим затвором. Содержит 5 патронов."
 	item = /obj/item/ammo_box/a762
 	cost = 1
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/bolt_action_bulk
 	name = "Surplus Rifle Clip Box"
-	desc = "An ammo box we found in a warehouse, holding 7 clips of 5 rounds for bolt-action rifles. Yes, the cheap ones."
+	desc = "Ящик с патронами, найденный на складе. Содержит 7 обойм по 5 патронов для винтовок с затвором. Да, тех самых дешёвых."
 	item = /obj/item/storage/toolbox/ammo
 	cost = 4
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/dark_gygax/bag
 	name = "Dark Gygax Ammo Bag"
-	desc = "A duffel bag containing ammo for three full reloads of the incendiary carbine and flash bang launcher that are equipped on a standard Dark Gygax exosuit."
+	desc = "Спортивная сумка с боеприпасами на три полных перезарядки зажигательного карабина и светошумовой пусковой установки экзоскелета Dark Gygax."
 	item = /obj/item/storage/backpack/duffelbag/syndie/ammo/dark_gygax
 	cost = 4
 	purchasable_from = UPLINK_SYNDICATE
 
 /datum/uplink_item/ammo/mauler/bag
 	name = "Mauler Ammo Bag"
-	desc = "A duffel bag containing ammo for three full reloads of the LMG, scattershot carbine, and SRM-8 missile laucher that are equipped on a standard Mauler exosuit."
+	desc = "Спортивная сумка с боеприпасами на три полных перезарядки пулемёта, картечного карабина и ракетной установки SRM-8 экзоскелета Mauler."
 	item = /obj/item/storage/backpack/duffelbag/syndie/ammo/mauler
 	cost = 6
 	purchasable_from = UPLINK_SYNDICATE
 
 /datum/uplink_item/ammo/hermes/bag
 	name = "Hermes Ammo Bag"
-	desc = "A duffel bag containing ammo for three full reloads of the incendiary carbine and flash bang launcher that are equipped on a standard Hermes exosuit."
+	desc = "Спортивная сумка с боеприпасами на три полных перезарядки зажигательного карабина и светошумовой пусковой установки, установленных на стандартном экзоскелете Hermes."
 	item = /obj/item/storage/backpack/duffelbag/syndie/inteq/ammo/hermes
 	cost = 4
 	purchasable_from = UPLINK_NUKE_OPS
 
 /datum/uplink_item/ammo/ares/bag
 	name = "Ares Ammo Bag"
-	desc = "A duffel bag containing ammo for three full reloads of the LMG, scattershot carbine, and SRM-8 missile laucher that are equipped on a standard Ares exosuit."
+	desc = "Спортивная сумка с боеприпасами на три полных перезарядки пулемёта, дробовой винтовки и ракетной установки SRM-8, установленных на стандартном экзоскелете Ares."
 	item = /obj/item/storage/backpack/duffelbag/syndie/inteq/ammo/ares
 	cost = 6
 	purchasable_from = UPLINK_NUKE_OPS

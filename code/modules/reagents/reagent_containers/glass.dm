@@ -3,7 +3,7 @@
 	amount_per_transfer_from_this = 10
 	possible_transfer_amounts = list(5, 10, 15, 20, 25, 30, 50)
 	volume = 50
-	reagent_flags = OPENCONTAINER
+	reagent_flags = OPENCONTAINER|DUNKABLE
 	spillable = TRUE
 	resistance_flags = ACID_PROOF
 	container_HP = 2
@@ -168,7 +168,7 @@
 	if(!cached_icon)
 		cached_icon = icon_state
 
-	if(reagents.total_volume)
+	if(reagents && reagents.total_volume)
 		var/mutable_appearance/filling = mutable_appearance('icons/obj/reagentfillings.dmi', "[cached_icon]10", color = mix_color_from_reagents(reagents.reagent_list))
 
 		var/percent = round((reagents.total_volume / volume) * 100)

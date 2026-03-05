@@ -291,7 +291,7 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 #define PIPING_LAYER_DEFAULT 2
 #define PIPING_LAYER_P_X 5
 #define PIPING_LAYER_P_Y 5
-#define PIPING_LAYER_LCHANGE 0.05
+#define PIPING_LAYER_LCHANGE 0.005
 
 #define PIPING_ALL_LAYER				(1<<0)	//intended to connect with all layers, check for all instead of just one.
 #define PIPING_ONE_PER_TURF				(1<<1) 	//can only be built if nothing else with this flag is on the tile already.

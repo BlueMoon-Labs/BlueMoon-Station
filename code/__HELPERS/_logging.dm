@@ -83,6 +83,10 @@
 	if (CONFIG_GET(flag/log_mecha))
 		WRITE_LOG(GLOB.world_mecha_log, "MECHA: [text]")
 
+/proc/log_uplink(text)
+	if (CONFIG_GET(flag/log_uplink))
+		WRITE_LOG(GLOB.uplink_log, "UPLINK: [text]")
+
 /proc/log_virus(text)
 	if (CONFIG_GET(flag/log_virus))
 		WRITE_LOG(GLOB.world_virus_log, "VIRUS: [text]")
@@ -236,6 +240,10 @@
 /proc/log_perf(list/perf_info)
 	. = "[perf_info.Join(",")]\n"
 	WRITE_LOG_NO_FORMAT(GLOB.perf_log, .)
+
+/proc/log_ping_perf(list/perf_info)
+	. = "[perf_info.Join(",")]\n"
+	WRITE_LOG_NO_FORMAT(GLOB.ping_perf_log, .)
 
 /proc/log_reagent(text)
 	WRITE_LOG(GLOB.reagent_log, text)

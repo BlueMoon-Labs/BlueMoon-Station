@@ -114,9 +114,11 @@
 
 /datum/component/wet_floor/process()
 	var/turf/open/T = parent
+	var/datum/gas_mixture/environment = T.return_air()
 	var/diff = world.time - last_process
 	var/decrease = 0
 	var/t = T.GetTemperature()
+	var/p = environment.return_pressure()
 	switch(t)
 		if(-INFINITY to T0C)
 			add_wet(TURF_WET_ICE, max_time_left())			//Water freezes into ice!
@@ -125,7 +127,7 @@
 		if(T0C + 100 to INFINITY)
 			decrease = INFINITY
 	decrease = max(0, decrease)
-	if((is_wet() & TURF_WET_ICE) && t > T0C)		//Ice melts into water!
+	if((is_wet() & TURF_WET_ICE) && (t > T0C || p < ONE_ATMOSPHERE / 3))		//Ice melts into water! От давления тоже
 		for(var/obj/O in T.contents)
 			if(O.obj_flags & FROZEN)
 				O.make_unfrozen()

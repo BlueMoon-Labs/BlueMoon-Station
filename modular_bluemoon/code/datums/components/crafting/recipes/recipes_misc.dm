@@ -16,3 +16,11 @@
 	reqs = list(/obj/item/stack/sheet/mineral/wood = 1)
 	subcategory = CAT_MISCELLANEOUS
 	category = CAT_MISCELLANEOUS
+
+/datum/crafting_recipe/urethral_tube
+	name = "Уретральная трубка"
+	reqs = list(/obj/item/stack/sheet/plastic = 2, /obj/item/stack/cable_coil = 1)
+	result = /obj/item/reagent_containers/urethral_tube
+	time = 20
+	subcategory = CAT_MISCELLANEOUS
+	category = CAT_MISCELLANEOUS

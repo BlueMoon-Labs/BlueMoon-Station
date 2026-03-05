@@ -52,6 +52,16 @@
 /obj/effect/turf_decal/bot/blue/left
 	icon_state = "bot_left_blue"
 
+/obj/effect/turf_decal/siding/wood/thin
+	icon_state = "siding_wood_thin"
+	color = "#653923"
+
+/obj/effect/turf_decal/siding/wood/thin/corner
+	icon_state = "siding_wood_corner_thin"
+
+/obj/effect/turf_decal/siding/wood/thin/end
+	icon_state = "siding_wood_end_thin"
+
 /obj/effect/turf_decal/siding/wideplating/terracotta
 	icon_state = "siding_wideplating_line"
 	color = "#b84221"

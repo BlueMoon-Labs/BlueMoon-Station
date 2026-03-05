@@ -45,6 +45,7 @@
 		/datum/language/modular_bluemoon/german, // BM German language
 		/datum/language/modular_bluemoon/vox, // BM Vox language
 		/datum/language/modular_bluemoon/felinid, // BM Felinid language
+		/datum/language/modular_bluemoon/skrell, // BM Skrell language
 		/datum/language/modular_splurt/avian, //SPLURT change - peep peep!
 		/datum/language/old_codes, //Bluemoon change inteq
 		/datum/language/modular_bluemoon/acratarian, // BLUEMOON ADD - язык акрадоров

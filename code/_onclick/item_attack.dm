@@ -14,9 +14,7 @@
 			to_chat(L, "<span class='warning'>You are unable to swing [src] right now!</span>")
 			return
 	. = attackchain_flags
-	if(tool_behaviour && ((. = target.tool_act(user, src, tool_behaviour)) & STOP_ATTACK_PROC_CHAIN))
-		if(tool_behaviour == TOOL_MULTITOOL)
-			update_icon()
+	if((. = target.base_item_interaction(user, src, params)) & STOP_ATTACK_PROC_CHAIN)
 		return
 	if((. |= pre_attack(target, user, params, ., damage_multiplier)) & STOP_ATTACK_PROC_CHAIN)
 		return

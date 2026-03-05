@@ -50,6 +50,7 @@
 	desc = "This thing can be used to cross lava rivers... I guess. Alt click to turn into back into a shield."
 	icon = 'modular_sand/icons/obj/shields.dmi'
 	icon_state = "raft"
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 
 /obj/vehicle/ridden/lavaboat/dragon/gladiator/Initialize(mapload)
 	. = ..()
@@ -70,7 +71,7 @@
 	new /obj/item/clothing/suit/space/hostile_environment(src)
 	new /obj/item/clothing/head/helmet/space/hostile_environment(src)
 	new /obj/item/borg/upgrade/modkit/shotgun(src)
-	new /obj/item/gun/magic/staff/spellblade(src)
+	new /obj/item/gun/magic/staff/spellblade/weak(src)
 	new /obj/item/crucible(src)
 	new /obj/item/gun/ballistic/revolver/doublebarrel/super(src)
 	new /obj/item/clothing/suit/space/hardsuit/deathsquad/praetor(src)
@@ -80,7 +81,7 @@
 	new /obj/item/clothing/suit/space/hostile_environment(src)
 	new /obj/item/clothing/head/helmet/space/hostile_environment(src)
 	new /obj/item/crusher_trophy/demon_claws(src)
-	new /obj/item/gun/magic/staff/spellblade(src)
+	new /obj/item/gun/magic/staff/spellblade/weak(src)
 	new /obj/item/crucible(src)
 	new /obj/item/gun/ballistic/revolver/doublebarrel/super(src)
 	new /obj/item/clothing/suit/space/hardsuit/deathsquad/praetor(src)

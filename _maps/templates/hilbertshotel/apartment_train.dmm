@@ -946,6 +946,9 @@
 	},
 /turf/closed/indestructible/fakedoor,
 /area/hilbertshotel)
+"Jp" = (
+/turf/open/space/bluespace,
+/area/hilbertshotel)
 "JC" = (
 /obj/structure/grille/indestructable/fake{
 	pixel_y = 32
@@ -1434,6 +1437,27 @@
 /area/hilbertshotel)
 
 (1,1,1) = {"
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+"}
+(2,1,1) = {"
+Jp
 zU
 GV
 zU
@@ -1450,8 +1474,10 @@ MQ
 ll
 MQ
 MQ
+Jp
 "}
-(2,1,1) = {"
+(3,1,1) = {"
+Jp
 zU
 pO
 rE
@@ -1468,8 +1494,10 @@ bp
 Po
 lC
 uf
+Jp
 "}
-(3,1,1) = {"
+(4,1,1) = {"
+Jp
 zU
 Iy
 MC
@@ -1486,8 +1514,10 @@ Dx
 Nl
 mb
 MQ
+Jp
 "}
-(4,1,1) = {"
+(5,1,1) = {"
+Jp
 zU
 Tp
 mz
@@ -1504,8 +1534,10 @@ Vt
 JY
 bp
 MQ
+Jp
 "}
-(5,1,1) = {"
+(6,1,1) = {"
+Jp
 zU
 GV
 zU
@@ -1522,8 +1554,10 @@ kY
 JY
 Po
 MQ
+Jp
 "}
-(6,1,1) = {"
+(7,1,1) = {"
+Jp
 zU
 gm
 Ng
@@ -1540,8 +1574,10 @@ Su
 JY
 lC
 MQ
+Jp
 "}
-(7,1,1) = {"
+(8,1,1) = {"
+Jp
 zU
 BZ
 Ex
@@ -1558,8 +1594,10 @@ Og
 JY
 pJ
 Dl
+Jp
 "}
-(8,1,1) = {"
+(9,1,1) = {"
+Jp
 zU
 aP
 Ex
@@ -1576,8 +1614,10 @@ lI
 nL
 ZR
 MQ
+Jp
 "}
-(9,1,1) = {"
+(10,1,1) = {"
+Jp
 zU
 VM
 wp
@@ -1594,8 +1634,10 @@ zU
 yr
 ez
 zU
+Jp
 "}
-(10,1,1) = {"
+(11,1,1) = {"
+Jp
 zU
 GV
 zU
@@ -1612,8 +1654,10 @@ Hw
 Sy
 Ty
 zU
+Jp
 "}
-(11,1,1) = {"
+(12,1,1) = {"
+Jp
 zU
 Ah
 Yd
@@ -1630,8 +1674,10 @@ DX
 sx
 we
 zU
+Jp
 "}
-(12,1,1) = {"
+(13,1,1) = {"
+Jp
 zU
 JC
 Px
@@ -1648,8 +1694,10 @@ jc
 nY
 ez
 zU
+Jp
 "}
-(13,1,1) = {"
+(14,1,1) = {"
+Jp
 zU
 GV
 zU
@@ -1666,8 +1714,10 @@ Hw
 Hw
 CR
 zU
+Jp
 "}
-(14,1,1) = {"
+(15,1,1) = {"
+Jp
 Sp
 pM
 Hw
@@ -1684,8 +1734,10 @@ gq
 br
 pd
 zU
+Jp
 "}
-(15,1,1) = {"
+(16,1,1) = {"
+Jp
 zU
 eS
 YF
@@ -1702,8 +1754,10 @@ zU
 hq
 zU
 zU
+Jp
 "}
-(16,1,1) = {"
+(17,1,1) = {"
+Jp
 zU
 zU
 zU
@@ -1720,4 +1774,25 @@ zU
 zU
 zU
 jw
+Jp
+"}
+(18,1,1) = {"
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
+Jp
 "}

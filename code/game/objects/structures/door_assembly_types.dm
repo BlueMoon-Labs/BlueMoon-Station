@@ -255,7 +255,7 @@
 
 /obj/structure/door_assembly/door_assembly_material
 	name = "airlock assembly"
-	icon = 'modular_bluemoon/SmiLeY/aesthetics/airlock/icons/airlocks/station/silver.dmi' // it need to be white for proper material color
+	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/silver.dmi' // it need to be white for proper material color
 	airlock_type = /obj/machinery/door/airlock/material
 	glass_type = /obj/machinery/door/airlock/material/glass
 	nomineral = TRUE

@@ -2643,18 +2643,18 @@
 
 	if(istype(src, /datum/reagent/consumable/semen/femcum)) //let it be here
 		var/obj/effect/decal/cleanable/semen/femcum/F = (locate(/obj/effect/decal/cleanable/semen/femcum) in location) || new(location)
-		if(F.reagents.add_reagent(type, volume, data))
+		if(F.reagents?.add_reagent(type, volume, data))
 			F.update_icon()
 			return
 
 	var/obj/effect/decal/cleanable/semen/S = locate(/obj/effect/decal/cleanable/semen) in location
 	if(S && !istype(S, /obj/effect/decal/cleanable/semen/femcum))
-		if(S.reagents.add_reagent(type, volume, data))
+		if(S.reagents?.add_reagent(type, volume, data))
 			S.update_icon()
 			return
 
 	var/obj/effect/decal/cleanable/semendrip/drip = (locate(/obj/effect/decal/cleanable/semendrip) in location) || new(location)
-	if(drip.reagents.add_reagent(type, volume, data))
+	if(drip.reagents?.add_reagent(type, volume, data))
 		drip.update_icon()
 		if(drip.reagents.total_volume >= 10)
 			S = new(location)

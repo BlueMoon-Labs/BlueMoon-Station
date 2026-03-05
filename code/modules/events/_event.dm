@@ -129,7 +129,7 @@ Runs the event
 * - random: shows if the event was triggered randomly, or by on purpose by an admin or an item
 * - announce_chance_override: if the value is not null, overrides the announcement chance when an admin calls an event
 */
-/datum/round_event_control/proc/runEvent(random = FALSE, announce_chance_override = null, admin_forced = FALSE)
+/datum/round_event_control/proc/runEvent(random = FALSE, announce_chance_override = null, admin_forced = FALSE, increase_occurrences = TRUE)
 	var/datum/round_event/E = new typepath()
 	if(admin_forced && length(admin_setup))
 		//not part of the signal because it's conditional and relies on usr heavily
@@ -138,7 +138,8 @@ Runs the event
 	E.current_players = get_active_player_count(alive_check = 1, afk_check = 1, human_check = 1)
 	E.control = src
 	SSblackbox.record_feedback("tally", "event_ran", 1, "[E]")
-	occurrences++
+	if(increase_occurrences)
+		occurrences++
 
 	if(announce_chance_override != null)
 		E.announce_chance = announce_chance_override

@@ -255,12 +255,12 @@
 	cold_protection = ARMS|HANDS
 	min_cold_protection_temperature = GLOVES_MIN_TEMP_PROTECT
 	max_heat_protection_temperature = GLOVES_MAX_TEMP_PROTECT
-	armor = list(MELEE = 30, BULLET = 30, LASER = 10, ENERGY = 10, BOMB = 55, BIO = 15, RAD = 15, FIRE = 80, ACID = 50)
+	armor = list(MELEE = 35, BULLET = 35, LASER = 20, ENERGY = 10, BOMB = 55, BIO = 15, RAD = 15, FIRE = 100, ACID = 50)
 	siemens_coefficient = 0
 	permeability_coefficient = 0.05
 	strip_delay = 80
-	enhancement = 12 // same as the changeling gauntlets but without changeling utility
-	wound_enhancement = 12
+	enhancement = 16 // same as the changeling gauntlets but without changeling utility
+	wound_enhancement = 16
 	silent = TRUE
 	inherited_trait = TRAIT_CHUNKYFINGERS // your fingers are fat because the gloves are
 	secondary_trait = TRAIT_MAULER // commit table slam

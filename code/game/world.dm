@@ -139,7 +139,7 @@ GLOBAL_LIST(topic_status_cache)
 	GLOB.world_crafting_log = "[GLOB.log_directory]/crafting.log"
 	GLOB.click_log = "[GLOB.log_directory]/click.log"
 	GLOB.admin_log = "[GLOB.log_directory]/admin_log.log"
-
+	GLOB.uplink_log = "[GLOB.log_directory]/uplink.log"
 
 #ifdef UNIT_TESTS
 	GLOB.test_log = "[GLOB.log_directory]/tests.log"
@@ -362,7 +362,7 @@ GLOBAL_LIST(topic_status_cache)
 	var/defaultstation = CONFIG_GET(string/stationname)
 	if(servername || stationname != defaultstation)
 		. += (servername ? "<b>[servername]" : "<b>")
-		. += (stationname != defaultstation ? "[servername ? " &#8212 " : ""][stationname]</b>\] " : "</b>\] ")
+		. += (stationname != defaultstation ? "[servername ? " &#8212; " : ""][SSmapping?.config.map_name]</b>\] " : "</b>\] ")
 
 	var/communityname = CONFIG_GET(string/communityshortname)
 	var/communitylink = CONFIG_GET(string/communitylink)

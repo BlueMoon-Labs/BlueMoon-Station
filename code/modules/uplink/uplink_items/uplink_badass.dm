@@ -83,7 +83,7 @@
 
 /datum/uplink_item/badass/inteqcigs // Bluemoon Changes
 	name = "InteQ Smokes"
-	desc = "Strong flavor, dense smoke, infused with omnizine."
+	desc = "Крепкий вкус, густой дым, пропитано омнизином."
 	item = /obj/item/storage/fancy/cigarettes/cigpack_inteq
 	cost = 2
 	illegal_tech = FALSE
@@ -113,7 +113,7 @@
 
 /datum/uplink_item/badass/toy_inteq
 	name = "InteQ Operative Toy"
-	desc = "Show them who is the boss."
+	desc = "Покажи им, кто тут главный."
 	item = /obj/item/toy/figure/inteq
 	cost = 1
 	cant_discount = TRUE

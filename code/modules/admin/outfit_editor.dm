@@ -79,7 +79,7 @@
 		dummy_key = dummy_key,
 		showDirs = list(SOUTH),
 		outfit_override = drip)
-	data["dummy64"] = icon2base64(dummysprite)
+	data["dummy64"] = icon2base64_scaled(dummysprite, 2)
 
 	return data
 

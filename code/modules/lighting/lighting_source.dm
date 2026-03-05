@@ -53,11 +53,12 @@
 	update()
 
 /datum/light_source/Destroy(force)
-	remove_lum()
+	if (applied || affecting_turfs || effect_str)
+		remove_lum()
 	if (source_atom)
 		LAZYREMOVE(source_atom.light_sources, src)
 
-	if (top_atom)
+	if (top_atom && top_atom != source_atom)
 		LAZYREMOVE(top_atom.light_sources, src)
 
 	if (needs_update)
@@ -67,7 +68,8 @@
 	source_atom = null
 	source_turf = null
 	pixel_turf = null
-	. = ..()
+	..()
+	return QDEL_HINT_IWILLGC
 
 // Yes this doesn't align correctly on anything other than 4 width tabs.
 // If you want it to go switch everybody to elastic tab stops.

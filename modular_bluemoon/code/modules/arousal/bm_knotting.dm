@@ -672,11 +672,11 @@
 /proc/try_apply_knot(mob/living/user, mob/living/partner, target_zone, force_override = FALSE, force_knot = FALSE)
 	if(!ishuman(user) || !ishuman(partner))
 		return
-/*
+
 	if(!force_override)
 		if(!user?.client?.prefs?.sexknotting || !partner?.client?.prefs?.sexknotting)
 			return
-*/
+
 	var/static/list/valid_orifices = list(
 		CUM_TARGET_VAGINA,
 		CUM_TARGET_ANUS,

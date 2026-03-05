@@ -56,7 +56,7 @@
 
 			proxy_view.appearance = editing_mod.appearance
 			proxy_view.color = null
-			user.client.register_map_obj(proxy_view)
+			proxy_view.display_to_client(user.client)
 			ui_interact(user)
 			return STOP_ATTACK_PROC_CHAIN
 
@@ -74,6 +74,8 @@
 /obj/item/mod/paint/ui_close(mob/user)
 	. = ..()
 	editing_mod = null
+	if(proxy_view && user?.client)
+		user.client.clear_map(proxy_view.assigned_map)
 	QDEL_NULL(proxy_view)
 	current_color = color_matrix_identity()
 
@@ -109,7 +111,7 @@
 				return
 			var/total_color_value = 0
 			var/list/total_colors = current_color.Copy()
-			total_colors.Cut(13, length(total_colors)) // 13 to 20 are just a and c, dont want to count them
+			total_colors.Cut(13) // 13 to 20 are just a and c, dont want to count them
 			var/red_value = current_color[1] + current_color[5] + current_color[9] //rr + gr + br
 			var/green_value = current_color[2] + current_color[6] + current_color[10] //rg + gg + bg
 			var/blue_value = current_color[3] + current_color[7] + current_color[11] //rb + gb + bb

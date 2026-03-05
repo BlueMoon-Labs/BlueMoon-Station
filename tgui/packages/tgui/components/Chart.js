@@ -26,7 +26,11 @@ const normalizeData = (data, scale, rangeX, rangeY) => {
   }
   const normalized = map(point => {
     return zipWith((value, min, max, scale) => {
-      return (value - min) / (max - min) * scale;
+      const span = max - min;
+      if (!Number.isFinite(span) || span === 0) {
+        return 0;
+      }
+      return (value - min) / span * scale;
     })(point, min, max, scale);
   })(data);
   return normalized;
@@ -119,9 +123,6 @@ class LineChart extends Component {
 
 LineChart.defaultHooks = pureComponentHooks;
 
-const Stub = props => null;
-
-// IE8: No inline svg support
 export const Chart = {
-  Line: Byond.IS_LTE_IE8 ? Stub : LineChart,
+  Line: LineChart,
 };

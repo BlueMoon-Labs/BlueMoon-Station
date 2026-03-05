@@ -82,7 +82,7 @@
 /obj/structure/closet/secure_closet/personal/togglelock(mob/living/user, silent)
 	if(secure && !broken && registered_name && ishuman(user))
 		var/mob/living/carbon/human/H = user
-		var/obj/item/card/id/I = H.wear_id.GetID()
+		var/obj/item/card/id/I = H.wear_id?.GetID()
 		if(istype(I) && (registered_name == I.registered_name))
 			add_fingerprint(user)
 			locked = !locked

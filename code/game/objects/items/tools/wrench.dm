@@ -174,6 +174,14 @@
 
 	return OXYLOSS
 
+/obj/item/wrench/bolter
+	name = "bolter wrench"
+	desc = "A wrench designed to grab into airlock's bolting system and raise it regardless of the airlock's power status."
+	icon = 'modular_bluemoon/icons/obj/tools_bolter.dmi'
+	icon_state = "bolter_wrench"
+	item_state = "bolter_wrench"
+	w_class = WEIGHT_CLASS_NORMAL
+
 /obj/item/wrench/advanced
 	name = "advanced wrench"
 	desc = "A wrench that uses the same magnetic technology that abductor tools use, but slightly more ineffeciently."

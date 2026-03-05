@@ -12,15 +12,7 @@ import { addChatPage, changeChatPage } from './actions';
 import { selectChatPages, selectCurrentChatPage } from './selectors';
 
 const UnreadCountWidget = ({ value }) => (
-  <Box
-    style={{
-      'font-size': '0.7em',
-      'border-radius': '0.25em',
-      'width': '1.7em',
-      'line-height': '1.55em',
-      'background-color': 'crimson',
-      'color': '#fff',
-    }}>
+  <Box className="Chat__unreadBadge">
     {Math.min(value, 99)}
   </Box>
 );

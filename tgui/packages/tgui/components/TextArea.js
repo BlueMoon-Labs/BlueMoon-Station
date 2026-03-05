@@ -5,7 +5,7 @@
  * @license MIT
  */
 
-import { KEY_ESCAPE } from 'common/keycodes';
+import { KEY_ESCAPE, KEY_TAB } from 'common/keycodes';
 import { classes } from 'common/react';
 import { Component, createRef } from 'inferno';
 
@@ -56,7 +56,7 @@ export class TextArea extends Component {
     this.handleKeyDown = e => {
       const { editing } = this.state;
       const { onKeyDown } = this.props;
-      if (e.keyCode === KEY_ESCAPE) {
+      if (e.key === KEY_ESCAPE) {
         this.setEditing(false);
         e.target.value = toInputValue(this.props.value);
         e.target.blur();
@@ -66,8 +66,7 @@ export class TextArea extends Component {
         this.setEditing(true);
       }
       if (!dontUseTabForIndent) {
-        const keyCode = e.keyCode || e.which;
-        if (keyCode === 9) {
+        if (e.key === KEY_TAB) {
           e.preventDefault();
           const { value, selectionStart, selectionEnd } = e.target;
           e.target.value = (
@@ -85,6 +84,42 @@ export class TextArea extends Component {
       const { editing } = this.state;
       if (!editing) {
         this.setEditing(true);
+      }
+    };
+    // BYOND 516 WebView2 fix: explicitly handle paste to ensure the full
+    // clipboard content is inserted. Without this, large pastes may be
+    // silently truncated or injected in small chunks by the host browser.
+    this.handleOnPaste = e => {
+      const cb = e.clipboardData || window.clipboardData;
+      if (!cb) {
+        return;
+      }
+      const text = cb.getData('text');
+      if (!text) {
+        return;
+      }
+      e.preventDefault();
+      const ta = this.textareaRef.current;
+      if (!ta) {
+        return;
+      }
+      const start = ta.selectionStart !== null ? ta.selectionStart : ta.value.length;
+      const end = ta.selectionEnd !== null ? ta.selectionEnd : ta.value.length;
+      let newVal = ta.value.substring(0, start) + text + ta.value.substring(end);
+      const maxLen = this.props.maxLength;
+      if (maxLen && newVal.length > maxLen) {
+        newVal = newVal.substring(0, maxLen);
+      }
+      ta.value = newVal;
+      const newPos = Math.min(start + text.length, newVal.length);
+      ta.selectionStart = newPos;
+      ta.selectionEnd = newPos;
+      if (!this.state.editing) {
+        this.setEditing(true);
+      }
+      const { onInput } = this.props;
+      if (onInput) {
+        onInput(e, ta.value);
       }
     };
     this.handleBlur = e => {
@@ -165,6 +200,7 @@ export class TextArea extends Component {
           onKeyDown={this.handleKeyDown}
           onKeyPress={this.handleKeyPress}
           onInput={this.handleOnInput}
+          onPaste={this.handleOnPaste}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
           maxLength={maxLength} />

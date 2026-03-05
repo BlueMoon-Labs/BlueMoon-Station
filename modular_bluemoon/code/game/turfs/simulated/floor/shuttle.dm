@@ -113,3 +113,8 @@
 	name = "Shuttle Floor"
 	icon = 'modular_bluemoon/icons/turf/cargo.dmi'
 	icon_state = "floor"
+
+/turf/open/floor/plasteel/shuttle/evac
+	name = "Shuttle Floor"
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi'
+	icon_state = "floor"

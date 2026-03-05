@@ -104,10 +104,7 @@
 	cam_background.assigned_map = map_name
 	cam_background.del_on_map_removal = TRUE
 	refreshView()
-	holder.register_map_obj(cam_screen)
-	for(var/plane in cam_plane_masters)
-		holder.register_map_obj(plane)
-	holder.register_map_obj(cam_background)
+	// Map objects will be registered in ui_interact after window becomes visible (BYOND 516 fix)
 
 /datum/centcom_podlauncher/ui_state(mob/user)
 	if (SSticker.current_state >= GAME_STATE_FINISHED)
@@ -119,12 +116,27 @@
 		get_asset_datum(/datum/asset/spritesheet/supplypods),
 	)
 
+/datum/centcom_podlauncher/proc/register_map_to_holder()
+	holder.register_map_obj(cam_screen)
+	for(var/plane in cam_plane_masters)
+		holder.register_map_obj(plane)
+	holder.register_map_obj(cam_background)
+
+/datum/centcom_podlauncher/proc/on_map_window_visible(datum/tgui_window/window, client/show_to)
+	SIGNAL_HANDLER
+	register_map_to_holder()
+	UnregisterSignal(window, COMSIG_TGUI_WINDOW_VISIBLE)
+
 /datum/centcom_podlauncher/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		// Open UI
 		ui = new(user, src, "CentcomPodLauncher")
 		ui.open()
+		if(ui.window && !ui.window.visible)
+			RegisterSignal(ui.window, COMSIG_TGUI_WINDOW_VISIBLE, PROC_REF(on_map_window_visible))
+		else
+			register_map_to_holder()
 		refreshView()
 
 /datum/centcom_podlauncher/ui_static_data(mob/user)
@@ -501,6 +513,7 @@
 			. = TRUE
 		if("refreshView")
 			initMap()
+			register_map_to_holder()
 			refreshView()
 			. = TRUE
 		if("renderLighting")
@@ -771,10 +784,9 @@
 /datum/centcom_podlauncher/proc/clearBay() //Clear all objs and mobs from the selected bay
 	for (var/obj/O in bay.GetAllContents())
 		qdel(O)
-	for (var/mob/M in bay.GetAllContents())
+	for (var/mob/living/M in bay.GetAllContents())
 		qdel(M)
-	for (var/bayturf in bay)
-		var/turf/turf_to_clear = bayturf
+	for (var/turf/open/space/turf_to_clear in bay)
 		turf_to_clear.ChangeTurf(/turf/open/floor/plasteel)
 
 /datum/centcom_podlauncher/Destroy() //The Destroy() proc. This is called by ui_close proc, or whenever the user leaves the game
@@ -782,6 +794,13 @@
 	QDEL_NULL(temp_pod) //Delete the temp_pod
 	QDEL_NULL(selector) //Delete the selector effect
 	QDEL_NULL(indicator)
+	if(cam_screen)
+		cam_screen.screen_loc = null
+		QDEL_NULL(cam_screen)
+	for(var/atom/movable/screen/P in cam_plane_masters)
+		P.screen_loc = null
+	QDEL_LIST(cam_plane_masters)
+	QDEL_NULL(cam_background)
 	. = ..()
 
 /datum/centcom_podlauncher/proc/supplypod_punish_log(list/whoDyin)

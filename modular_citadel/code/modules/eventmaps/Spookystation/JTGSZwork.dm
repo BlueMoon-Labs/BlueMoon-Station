@@ -154,15 +154,6 @@
 	icon_state = "grass_clump"
 	turf_type = /turf/open/floor/spooktime/nonspooktimegrass
 	resistance_flags = FLAMMABLE
-/* BLUEMOON DELETE фуфуфу бяку использовать
-/obj/item/stack/tile/normalasssand
-	name = "piles of sand"
-	singular_name = "pile of sand"
-	desc = "This is a pile of sand"
-	icon = 'modular_citadel/code/modules/eventmaps/Spookystation/iconfile32.dmi'
-	icon_state = "sand_clump"
-	turf_type = /turf/open/floor/spooktime/beach
-*/
 /*
 	IMPORTANT TURFS */
 
@@ -843,114 +834,7 @@ GLOBAL_LIST_EMPTY(rain_sounds)
 
 /turf/open/floor/wood/damturf/broken7
 	icon_state = "wood-broken7"
-/* BLUEMOON DELETE фу-фу-фу брось бяку использовать
-//Parent that goes into coasts too
-/turf/open/floor/spooktime/beach //laketime
-	gender = PLURAL
-	name = "sand"
-	desc = "ITS SAND!"
-	icon = 'modular_citadel/code/modules/eventmaps/Spookystation/iconfile32.dmi'
-	icon_state = "sand"
-	bullet_bounce_sound = null
-	tiled_dirt = 0
-	var/turfverb = "dig up"
 
-	baseturfs = /turf/open/floor/plating/spookbase/sandattachmentpoint //Alas, now people can dig out lakes.
-
-/turf/open/floor/spooktime/beach/attackby(obj/item/C, mob/user, params) //We dig it out with a shovel.
-	if((C.tool_behaviour == TOOL_SHOVEL) && params) //And beneath it we reveal dirt
-		new /obj/item/stack/tile/normalasssand(src) //EDIT THIS
-		user.visible_message("[user] digs up [src].", "<span class='notice'>You [turfverb] [src].</span>")
-		playsound(src, 'sound/effects/shovel_dig.ogg', 50, 1)
-		make_plating()
-	if(..())
-		return
-
-//Beaches and coasts and sand and shit.
-/turf/open/floor/spooktime/beach/coasts
-	gender = NEUTER
-	name = "coastline"
-	desc = "The coastline of a sandy shore"
-	icon_state = "sandwater_t_S"
-
-/turf/open/floor/spooktime/beach/coasts/attackby(obj/item/C, mob/user, params)
-	return //Upon testing, digging out the coasts makes the map look like ass.
-
-//The water that follows the coastline also animated.
-/turf/open/floor/spooktime/beach/coasts/coastS
-	icon_state = "sandwater_t_S"
-/turf/open/floor/spooktime/beach/coasts/coastN
-	icon_state = "sandwater_t_N"
-/turf/open/floor/spooktime/beach/coasts/coastE
-	icon_state = "sandwater_t_E"
-/turf/open/floor/spooktime/beach/coasts/coastW
-	icon_state = "sandwater_t_W"
-/turf/open/floor/spooktime/beach/coasts/coastSE
-	icon_state = "sandwater_t_SE"
-/turf/open/floor/spooktime/beach/coasts/coastSW
-	icon_state = "sandwater_t_SW"
-/turf/open/floor/spooktime/beach/coasts/coastNE
-	icon_state = "sandwater_t_NE"
-/turf/open/floor/spooktime/beach/coasts/coastNW
-	icon_state = "sandwater_t_NW"
-
-//The coastline itself with sand
-/turf/open/floor/spooktime/beach/coasts/watercoastS
-	icon_state = "sandwater_b_S"
-/turf/open/floor/spooktime/beach/coasts/watercoastN
-	icon_state = "sandwater_b_N"
-/turf/open/floor/spooktime/beach/coasts/watercoastW
-	icon_state = "sandwater_b_W"
-/turf/open/floor/spooktime/beach/coasts/watercoastE
-	icon_state = "sandwater_b_E"
-/turf/open/floor/spooktime/beach/coasts/watercoastSE
-	icon_state = "sandwater_b_SE"
-/turf/open/floor/spooktime/beach/coasts/watercoastSW
-	icon_state = "sandwater_b_SW"
-/turf/open/floor/spooktime/beach/coasts/watercoastNE
-	icon_state = "sandwater_b_NE"
-/turf/open/floor/spooktime/beach/coasts/watercoastNW
-	icon_state = "sandwater_b_NW"
-
-//Beach corners
-/turf/open/floor/spooktime/beach/coasts/innerN
-	icon_state = "sandwater_inner_N"
-/turf/open/floor/spooktime/beach/coasts/innerS
-	icon_state = "sandwater_inner_S"
-/turf/open/floor/spooktime/beach/coasts/innerE
-	icon_state = "sandwater_inner_E"
-/turf/open/floor/spooktime/beach/coasts/innerW
-	icon_state = "sandwater_inner_W"
-
-//Shallow water same color as beach water
-/turf/open/floor/spooktime/beach/water
-	name = "water"
-	desc = "Its water that seems to be a bit deep, still can wade through though."
-	icon_state = "water"
-	bullet_sizzle = 1
-	footstep = FOOTSTEP_WATER
-	barefootstep = FOOTSTEP_WATER
-	clawfootstep = FOOTSTEP_WATER
-	heavyfootstep = FOOTSTEP_WATER
-
-/turf/open/floor/spooktime/beach/water/attackby(obj/item/C, mob/user, params)
-	return //haha nope
-
-//Slightly darker than the beach water color.
-/turf/open/floor/spooktime/beach/watersolid //Gotta stop you at a certain point man
-	name = "water"
-	desc = "Water thats deep enough to where your spaceman ass cannot swim."
-	icon_state = "water2" //Now its darker lol
-	bullet_sizzle = 1
-	density = 1 //We are now dense
-	footstep = FOOTSTEP_WATER
-	barefootstep = FOOTSTEP_WATER
-	clawfootstep = FOOTSTEP_WATER
-	heavyfootstep = FOOTSTEP_WATER
-
-/turf/open/floor/spooktime/beach/watersolid/attackby(obj/item/C, mob/user, params)
-	return //You aren't digging my lake out unless I want you to fool.
-*/ // BLUEMOON DELETE END
 //Motion river water with the lighting on it.
 /turf/open/floor/spooktime/riverwatermotion
 	gender = PLURAL
@@ -969,55 +853,6 @@ GLOBAL_LIST_EMPTY(rain_sounds)
 //No motion river water with the lighting on it.
 /turf/open/floor/spooktime/riverwatermotion/nomotion
 	icon_state = "riverwater"
-
-//Cobblestone and all of its directions tied to the parent.
-/turf/open/floor/spooktime/cobble //Middle and parent
-	name = "cobblestone path" //We don't use directional varedits otherwise the map can load them incorrect.
-	desc = "A simple but beautiful path made of various sized stones."
-	icon = 'modular_citadel/code/modules/eventmaps/Spookystation/iconfile32.dmi'
-	icon_state = "cobble_mid" //as to why? Sometimes it will spawn the turf elsewhere and move it into place.
-	//That means the direction will change because of this movement, usually when theres things ontop of it.
-	footstep = FOOTSTEP_FLOOR
-	barefootstep = FOOTSTEP_HARD_BAREFOOT
-	clawfootstep = FOOTSTEP_HARD_CLAW
-	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = 0
-
-/turf/open/floor/spooktime/cobble/cornerNW //First corner
-	icon_state = "cobble_corner_nw"
-/turf/open/floor/spooktime/cobble/cornerNE //Now that these are hardcoded individuals.
-	icon_state = "cobble_corner_ne"			//Movement won't change what they are on mapload.
-/turf/open/floor/spooktime/cobble/cornerSW
-	icon_state = "cobble_corner_sw"
-/turf/open/floor/spooktime/cobble/cornerSE //I found i don't need most of these but still lol.
-	icon_state = "cobble_corner_se"
-
-/turf/open/floor/spooktime/cobble/sideN //First Side
-	icon_state = "cobble_side_n"
-/turf/open/floor/spooktime/cobble/sideS
-	icon_state = "cobble_side_s"
-/turf/open/floor/spooktime/cobble/sideE
-	icon_state = "cobble_side_e"
-/turf/open/floor/spooktime/cobble/sideW
-	icon_state = "cobble_side_w"
-
-//A tiny tiny bit of the total road icon file from f13 edited for grass not desert hastily.
-//Theres something like 30 pieces including crosswalks, sidewalks, potholes and other shit in it man.
-/turf/open/floor/spooktime/cobble/roadmid //Center piece
-	name = "road"
-	desc = "Its asphault alright"
-	icon_state = "road"
-
-/turf/open/floor/spooktime/cobble/roadsideN //road edges, I have a lot of these
-	icon_state = "road_side_N"
-/turf/open/floor/spooktime/cobble/roadsideS //But i don't feel like adding them all for a temp map.
-	icon_state = "road_side_S"
-/turf/open/floor/spooktime/cobble/roadsideE
-	icon_state = "road_side_E"
-/turf/open/floor/spooktime/cobble/roadsideW
-	icon_state = "road_side_W"
-/turf/open/floor/spooktime/cobble/roadcornerSW
-	icon_state = "road_corner_sw"
 
 /turf/open/indestructible/spooknecropolis
 	name = "necropolis floor"

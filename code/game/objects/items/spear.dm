@@ -6,6 +6,7 @@
 	name = "spear"
 	desc = "A haphazardly-constructed yet still deadly weapon of ancient design."
 	force = 10
+	reach = 2
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK
 	throwforce = 40
@@ -203,7 +204,6 @@
 	force = 11
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK
-	reach = 2
 	throwforce = 50
 	embedding = list("embedded_impact_pain_multiplier" = 3)
 	armour_penetration = 15				//Enhanced armor piercing
@@ -216,3 +216,16 @@
 /obj/item/spear/bonespear/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/two_handed, force_unwielded=11, force_wielded=20, icon_wielded="[icon_prefix]1")
+
+/obj/item/spear/bonespear/Khasal	//An artifact of the Ashwalker tribe, one of a kind
+	icon_state = "bonemetal_spear0"
+	name = "Khasal"
+	desc = "A deadly spear that passes down through the tribe from Cycle to Cycle. Like its original wielder, it is forced to shed blood until the end of time."
+	force = 18
+	throwforce = 60
+	armour_penetration = 25				//Enhanced armor piercing
+	icon_prefix = "bonemetal_spear"
+
+/obj/item/spear/bonespear/Khasal/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=18, force_wielded=27, icon_wielded="[icon_prefix]1")

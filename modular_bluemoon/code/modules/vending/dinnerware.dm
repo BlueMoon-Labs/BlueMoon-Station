@@ -31,6 +31,7 @@
 			"icon" = "plate-wheat",
 			"products" = list(
 				/obj/item/reagent_containers/glass/bowl = 30,
+				/obj/item/reagent_containers/food/snacks/customizable/pet_bowl = 5,
 				/obj/item/reagent_containers/food/drinks/drinkingglass = 8,
 				/obj/item/storage/box/cups = 2,
 			),

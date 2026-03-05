@@ -3895,8 +3895,8 @@
 /area/security/prison)
 "bur" = (
 /obj/structure/streetdecor/lamp,
-/turf/open/indestructible/cobble/corner{
-	dir = 8
+/turf/open/indestructible/cobble/side{
+	dir = 10
 	},
 /area/commons/fitness/pool)
 "but" = (
@@ -11490,7 +11490,9 @@
 "eeX" = (
 /obj/structure/bed,
 /obj/item/bedsheet/vulp/vulp3,
-/turf/open/indestructible/cobble/corner,
+/turf/open/indestructible/cobble/side{
+	dir = 5
+	},
 /area/commons/fitness/pool)
 "efk" = (
 /obj/structure/table/wood,
@@ -21224,6 +21226,11 @@
 	},
 /turf/open/floor/plasteel,
 /area/command/bridge)
+"hFK" = (
+/turf/open/indestructible/cobble/corner{
+	dir = 1
+	},
+/area/commons/fitness/pool)
 "hFL" = (
 /obj/structure/table/wood,
 /turf/open/floor/plating/rust,
@@ -29770,8 +29777,8 @@
 /obj/structure/disposalpipe/trunk{
 	dir = 1
 	},
-/turf/open/indestructible/cobble/corner{
-	dir = 4
+/turf/open/indestructible/cobble/side{
+	dir = 6
 	},
 /area/commons/fitness/pool)
 "kIJ" = (
@@ -39545,8 +39552,8 @@
 /area/hallway/primary/fore)
 "ocr" = (
 /obj/structure/streetdecor/lamp,
-/turf/open/indestructible/cobble/corner{
-	dir = 1
+/turf/open/indestructible/cobble/side{
+	dir = 9
 	},
 /area/commons/fitness/pool)
 "ocu" = (
@@ -50006,7 +50013,9 @@
 /turf/open/floor/plating/rust,
 /area/ruin/lavaland/powered)
 "rSw" = (
-/turf/open/indestructible/cobble,
+/turf/open/indestructible/cobble/corner{
+	dir = 4
+	},
 /area/commons/fitness/pool)
 "rSz" = (
 /obj/structure/sign/warning/securearea,
@@ -55912,7 +55921,9 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/turf/open/indestructible/cobble,
+/turf/open/indestructible/cobble/corner{
+	dir = 8
+	},
 /area/commons/fitness/pool)
 "tRN" = (
 /obj/effect/turf_decal/stripes/yellow/corner,
@@ -67181,6 +67192,9 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
+"yja" = (
+/turf/open/indestructible/cobble/corner,
+/area/commons/fitness/pool)
 "yje" = (
 /obj/structure/railing/corner,
 /turf/open/floor/festive/alleyway/safe,
@@ -120082,7 +120096,7 @@ cZh
 ycG
 whO
 jlR
-rSw
+yja
 fJM
 fJM
 fJM
@@ -122506,7 +122520,7 @@ iib
 lmI
 lmI
 lmI
-rSw
+hFK
 exw
 whO
 rRu

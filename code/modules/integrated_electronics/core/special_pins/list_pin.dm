@@ -23,7 +23,9 @@
 		t += "#[i] | [display_data(line)]  |  "
 		t += "<a href='?src=[REF(src)];edit=1;pos=[i]'>\[Edit\]</a>  |  "
 		t += "<a href='?src=[REF(src)];remove=1;pos=[i]'>\[Remove\]</a><br>"
-	user << browse(t, "window=list_pin_[REF(src)];size=500x400")
+	var/datum/browser/popup = new(user, "list_pin_[REF(src)]", "List Pin", 500, 400)
+	popup.set_content(t)
+	popup.open()
 
 /datum/integrated_io/lists/proc/add_to_list(mob/user, var/new_entry)
 	if(!new_entry && user)

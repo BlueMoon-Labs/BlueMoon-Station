@@ -1139,6 +1139,22 @@
 		. = 1
 	..()
 
+/datum/reagent/medicine/sansufentanyl
+	name = "Sansufentanyl"
+	description = "Used to treat Hereditary Manifold Sickness. Temporary side effects include - nausea, dizziness, impaired motor coordination."
+	color = "#07e4d1"
+	pH = 6.2
+
+/datum/reagent/medicine/sansufentanyl/on_mob_life(mob/living/carbon/M)
+	. = ..()
+	M.Dizzy(3 * REM)
+	M.Jitter(6 * REM)
+	M.adjustStaminaLoss(1 * REM, 0)
+	if(prob(10))
+		to_chat(M, "You feel confused and disoriented.")
+		if(prob(30))
+			SEND_SOUND(M, sound('sound/effects/genetics.ogg'))
+
 /datum/reagent/medicine/strange_reagent
 	name = "Strange Reagent"
 	description = "A miracle drug capable of bringing the dead back to life. Only functions when applied by patch or spray, if the target has less than 100 brute and burn damage (independent of one another) and hasn't been husked. Causes slight damage to the living."

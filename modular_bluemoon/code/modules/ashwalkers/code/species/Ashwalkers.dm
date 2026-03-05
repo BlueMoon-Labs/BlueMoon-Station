@@ -67,6 +67,7 @@
 			species_target.coldmod *= 0.9
 		if(3)
 			ADD_TRAIT(human_target, TRAIT_LAVA_IMMUNE, REF(src))
+			species_target.burnmod *= 0.25
 			to_chat(human_target, span_notice("Ты чувствуешь, как тело становится горячее..."))
 		if(4)
 			if(human_target.mind)

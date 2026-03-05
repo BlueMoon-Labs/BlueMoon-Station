@@ -1,64 +1,79 @@
 {
 	"version": "0.2.0",
 	"configurations": [
-	  {
-		"type": "byond",
-		"request": "launch",
-		"name": "Launch DreamSeeker",
-		"preLaunchTask": "Build All",
-		"dmb": "${workspaceFolder}/${command:CurrentDMB}"
-	  },
-		  {
-		"type": "byond",
-		"request": "launch",
-		"name": "Launch DreamSeeker (TRACY)",
-		"preLaunchTask": "Build All (TRACY)",
-		"dmb": "${workspaceFolder}/${command:CurrentDMB}"
-	  },
-	  {
-		"type": "byond",
-		"request": "launch",
-		"name": "Launch DreamDaemon",
-		"preLaunchTask": "Build All",
-		"dmb": "${workspaceFolder}/${command:CurrentDMB}",
-		"dreamDaemon": true
-	  },
-	  {
-		"type": "byond",
-		"request": "launch",
-		"name": "Launch DreamSeeker (TESTING)",
-		"preLaunchTask": "Build All (TESTING)",
-		"dmb": "${workspaceFolder}/${command:CurrentDMB}"
-	  },
-	  {
-		"type": "byond",
-		"request": "launch",
-		"name": "Launch DreamDaemon (TESTING)",
-		"preLaunchTask": "Build All (TESTING)",
-		"dmb": "${workspaceFolder}/${command:CurrentDMB}",
-		"dreamDaemon": true
-	  },
-	  {
-		"type": "byond",
-		"request": "launch",
-		"name": "Launch DreamSeeker (LOWMEMORYMODE)",
-		"preLaunchTask": "Build All (LOWMEMORYMODE)",
-		"dmb": "${workspaceFolder}/${command:CurrentDMB}"
-	  },
-	  {
-		"type": "byond",
-		"request": "launch",
-		"name": "Launch DreamDaemon (LOWMEMORYMODE)",
-		"preLaunchTask": "Build All (LOWMEMORYMODE)",
-		"dmb": "${workspaceFolder}/${command:CurrentDMB}",
-		"dreamDaemon": true
-	  },
-		  {
-		"type": "byond",
-		"request": "launch",
-		"name": "Launch DreamSeeker (LOWMEMORYMODE + TRACY)",
-		"preLaunchTask": "Build All (LOWMEMORYMODE TRACY)",
-		"dmb": "${workspaceFolder}/${command:CurrentDMB}"
-	  }
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamSeeker",
+			"preLaunchTask": "Build All",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}"
+		},
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamSeeker (TRACY)",
+			"preLaunchTask": "Build All (TRACY)",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}"
+		},
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamDaemon",
+			"preLaunchTask": "Build All",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}",
+			"dreamDaemon": true
+		},
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamSeeker (TESTING)",
+			"preLaunchTask": "Build All (TESTING)",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}"
+		},
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamDaemon (TESTING)",
+			"preLaunchTask": "Build All (TESTING)",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}",
+			"dreamDaemon": true
+		},
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamSeeker (REFERENCE_TRACKING)",
+			"preLaunchTask": "Build All (REFERENCE_TRACKING)",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}"
+		},
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamDaemon (REFERENCE_TRACKING)",
+			"preLaunchTask": "Build All (REFERENCE_TRACKING)",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}",
+			"dreamDaemon": true
+		},
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamSeeker (LOWMEMORYMODE)",
+			"preLaunchTask": "Build All (LOWMEMORYMODE)",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}"
+		},
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamDaemon (LOWMEMORYMODE)",
+			"preLaunchTask": "Build All (LOWMEMORYMODE)",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}",
+			"dreamDaemon": true
+		},
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamSeeker (LOWMEMORYMODE + TRACY)",
+			"preLaunchTask": "Build All (LOWMEMORYMODE TRACY)",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}"
+		}
 	]
-  }
+}

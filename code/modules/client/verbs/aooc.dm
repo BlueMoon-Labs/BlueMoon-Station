@@ -70,7 +70,7 @@ GLOBAL_VAR_INIT(normal_aooc_colour, "#ce254f")
 	var/keyname = key
 	if(prefs.unlock_content)
 		if(prefs.toggles & MEMBER_PUBLIC)
-			keyname = "<font color='[prefs.aooccolor ? prefs.aooccolor : GLOB.normal_aooc_colour]'>[icon2html('icons/member_content.dmi', world, "blag")][keyname]</font>"
+			keyname = "<font color='[prefs.aooccolor && (prefs.custom_colors & CUSTOM_AOOC) ? prefs.aooccolor : GLOB.normal_aooc_colour]'>[icon2html('icons/member_content.dmi', world, "blag")][keyname]</font>"
 	//The linkify span classes and linkify=TRUE below make ooc text get clickable chat href links if you pass in something resembling a url
 
 	var/antaglisting = list()
@@ -90,7 +90,7 @@ GLOBAL_VAR_INIT(normal_aooc_colour, "#ce254f")
 		if(holder)
 			if(!holder.fakekey || C.holder)
 				if(check_rights_for(src, R_ADMIN))
-					to_chat(C, "<span class='adminooc'>[CONFIG_GET(flag/allow_admin_ooccolor) && prefs.ooccolor ? "<font color=[prefs.ooccolor]>" :"" ]<span class='prefix'>Antag OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[msg]</span></span></font>")
+					to_chat(C, "<span class='adminantagooc'>[CONFIG_GET(flag/allow_admin_ooccolor) && prefs.ooccolor && (prefs.custom_colors & CUSTOM_OOC) ? "<font color=[prefs.ooccolor]>" :"" ]<span class='prefix'>Antag OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[msg]</span></span></font>")
 				else
 					to_chat(C, "<span class='adminobserverooc'><span class='prefix'>Antag OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[msg]</span></span>")
 			else

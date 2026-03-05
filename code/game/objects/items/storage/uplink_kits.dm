@@ -455,6 +455,8 @@
 /obj/item/storage/box/syndie_kit/revolver/PopulateContents()
 	new /obj/item/gun/ballistic/revolver/syndicate(src)
 	new /obj/item/ammo_box/a357(src)
+	new /obj/item/ammo_box/a357/ap(src)
+	new /obj/item/ammo_box/a357/dumdum(src)
 
 /obj/item/storage/box/syndie_kit/pistol
 
@@ -462,11 +464,14 @@
 	new /obj/item/gun/ballistic/automatic/pistol(src)
 	new /obj/item/ammo_box/magazine/m10mm(src)
 	new /obj/item/ammo_box/magazine/m10mm(src)
+	new /obj/item/ammo_box/magazine/m10mm/ap(src)
 
 /obj/item/storage/box/syndie_kit/aps_pistol
 
 /obj/item/storage/box/syndie_kit/aps_pistol/PopulateContents()
 	new /obj/item/gun/ballistic/automatic/pistol/APS(src)
+	new /obj/item/ammo_box/magazine/pistolm9mm(src)
+	new /obj/item/ammo_box/magazine/pistolm9mm(src)
 	new /obj/item/ammo_box/magazine/pistolm9mm(src)
 	new /obj/item/ammo_box/magazine/pistolm9mm(src)
 

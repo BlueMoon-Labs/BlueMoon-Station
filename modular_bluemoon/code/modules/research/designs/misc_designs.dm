@@ -5,7 +5,7 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 4000)
 	build_path = /obj/item/roller
-	category = list("Medical Designs")
+	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/roller_heavy
@@ -15,7 +15,7 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 8000)
 	build_path = /obj/item/roller/heavy
-	category = list("Medical Designs")
+	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/roller_stasis
@@ -25,7 +25,7 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 4000, /datum/material/glass = 400, /datum/material/silver = 2000)
 	build_path = /obj/item/roller/stasis
-	category = list("Medical Designs")
+	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SECURITY
 
 /datum/techweb_node/base/New()

@@ -166,20 +166,21 @@
 		// BLUEMOON EDIT END
 		if(assignedrole)
 			M.mind.assigned_role = assignedrole
-		special(M, name)
 		if(ishuman(M) && load_character)
 			var/mob/living/carbon/human/H = M
 			if (H.client)
-				H.load_client_appearance(H.client)
+				H.load_client_appearance(H.client, quirks = FALSE)
 				if (loadout_enabled == TRUE)
 					SSjob.equip_loadout(null, H)
 					SSjob.post_equip_loadout(null, H)
+				H.load_client_quirks(H.client) // Грузим квирки после лодаута, если он есть, из-за квирка семейная реликвия
 		MM.name = M.real_name
 		if(make_bank_account)
 			handlebank(M, starting_money)
 		special_post_appearance(M, name) // BLUEMOON ADD
 		if(M.client && ishuman(M) && load_character)
 			SSlanguage.AssignLanguage(M, M.client)
+		special(M, name)
 	if(uses > 0)
 		uses--
 	if(!permanent && !uses)

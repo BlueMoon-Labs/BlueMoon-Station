@@ -65,7 +65,7 @@ export const CharacterProfile = (props, context) => {
     <Window resizable width={950} height={740}>
       <Window.Content scrollable>
         <Flex>
-          <Flex.Item>
+          <Flex.Item width="276px" shrink={0} style={{ overflow: 'hidden' }}>
             <CharacterProfileImageElement />
             <CharacterModelImageElement />
           </Flex.Item>
@@ -143,22 +143,35 @@ const CharacterProfileImageElement = (props, context) => {
     selectHeadshot,
   ] = useLocalState(context, 'selectedHeadshot', 0);
 
+  const safeSelectedHeadshot = headshot_links.length > 0
+    ? selectedHeadshot % headshot_links.length
+    : 0;
+
   const prevHeadshot = () => selectHeadshot(
-    (selectedHeadshot + headshot_links.length - 1) % headshot_links.length
+    (safeSelectedHeadshot + headshot_links.length - 1) % headshot_links.length
   );
   const nextHeadshot = () => selectHeadshot(
-    (selectedHeadshot + 1) % headshot_links.length
+    (safeSelectedHeadshot + 1) % headshot_links.length
   );
 
   if (headshot_links.length) { return (
     <Section title="Арт персонажа" pb="12" textAlign="center">
       <Box mb={1}>
-        <img src={headshot_links[selectedHeadshot]} height="256px" width="256px" />
+        <img
+          src={headshot_links[safeSelectedHeadshot]}
+          style={{
+            width: '256px',
+            height: '256px',
+            'max-width': '256px',
+            'max-height': '256px',
+            'object-fit': 'contain',
+          }}
+        />
       </Box>
       {headshot_links.length > 1 ? (
         <Box>
           <Button onClick={prevHeadshot} icon="arrow-left" />
-          <span style={{ margin: "0 8px" }}><b>{selectedHeadshot + 1} / {headshot_links.length}</b></span>
+          <span style={{ margin: "0 8px" }}><b>{safeSelectedHeadshot + 1} / {headshot_links.length}</b></span>
           <Button onClick={nextHeadshot} icon="arrow-right" />
         </Box>
       ) : (<Box />)}
@@ -168,17 +181,16 @@ const CharacterProfileImageElement = (props, context) => {
 };
 
 const CharacterModelImageElement = (props, context) => {
-  const { act, data } = useBackend<CharacterProfileContext>(context);
+  const { act, data, config } = useBackend<CharacterProfileContext>(context);
 
-    const { config } = useBackend(context);
   if(config.status < 2)
-    { return; }
+    { return null; }
   return (
     <Section title="Модель персонажа" pb="12" textAlign="center">
       <Box mb={1}>
         <ByondUi
           height="256px" width="256px"
-          params={{ id: data.character_ref, type: 'map' }}
+          params={{ id: data.character_ref, type: 'map', zoom: 0 }}
         />
       </Box>
       <Box>

@@ -105,3 +105,19 @@
 	mob_overlay_icon = 'modular_bluemoon/krashly/icons/mob/clothing/patch.dmi'
 	icon_state = "paws_patch"
 	item_state = "paws_patch"
+
+/obj/item/clothing/accessory/bear_patch
+	name = "BEAR Patch"
+	desc = "BEAR - Symbols of the 446th Special Reconnaissance Group of the USCM Charlie Detachment."
+	icon = 'modular_bluemoon/krashly/icons/obj/clothing/patch.dmi'
+	mob_overlay_icon = 'modular_bluemoon/krashly/icons/mob/clothing/patch.dmi'
+	icon_state = "bear_patch"
+	item_state = "bear_patch"
+
+/obj/item/clothing/accessory/usec_patch
+	name = "USEC Patch"
+	desc = "USEC - Standard symbolism of PCCMG contract soldiers. As they say: Always on guard. Always on surveillance."
+	icon = 'modular_bluemoon/krashly/icons/obj/clothing/patch.dmi'
+	mob_overlay_icon = 'modular_bluemoon/krashly/icons/mob/clothing/patch.dmi'
+	icon_state = "usec_patch"
+	item_state = "usec_patch"

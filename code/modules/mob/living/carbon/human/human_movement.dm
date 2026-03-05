@@ -42,12 +42,12 @@
 			. = 1
 
 /mob/living/carbon/human/mob_negates_gravity()
-	return ((shoes && shoes.negates_gravity()) || (dna.species.negates_gravity(src)))
+	return ((shoes && shoes.negates_gravity()) || (dna?.species?.negates_gravity(src)))
 
 /mob/living/carbon/human/Move(NewLoc, direct)
 	var/oldpseudoheight = pseudo_z_axis
 	. = ..()
-	for(var/datum/mutation/human/HM in dna.mutations)
+	for(var/datum/mutation/human/HM in dna?.mutations)
 		HM.on_move(NewLoc)
 	if(. && (combat_flags & COMBAT_FLAG_SPRINT_ACTIVE) && !(movement_type & FLYING) && CHECK_ALL_MOBILITY(src, MOBILITY_MOVE|MOBILITY_STAND) && m_intent == MOVE_INTENT_RUN && has_gravity(loc) && (!pulledby || (pulledby.pulledby == src)))
 		if(!HAS_TRAIT(src, TRAIT_FREESPRINT))
@@ -97,7 +97,7 @@
 		dirt_buildup()
 
 /mob/living/carbon/human/Process_Spacemove(movement_dir = 0) //Temporary laziness thing. Will change to handles by species reee.
-	if(dna.species.space_move(src))
+	if(dna?.species?.space_move(src))
 		return TRUE
 	return ..()
 

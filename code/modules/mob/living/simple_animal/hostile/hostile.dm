@@ -75,10 +75,30 @@
 
 
 /mob/living/simple_animal/hostile/Destroy()
+	deltimer(lose_patience_timer_id)
+	deltimer(search_objects_timer_id)
 	targets_from = null
+	target = null
 	friends = null
 	foes = null
+	for(var/atom/movable/the_enemy in enemies)
+		UnregisterSignal(the_enemy, COMSIG_PARENT_QDELETING)
+	enemies = null
 	return ..()
+
+/mob/living/simple_animal/hostile/proc/add_enemy(atom/movable/the_enemy)
+	if(the_enemy in enemies)
+		return
+	enemies += the_enemy
+	RegisterSignal(the_enemy, COMSIG_PARENT_QDELETING, PROC_REF(on_enemy_qdeleting))
+
+/mob/living/simple_animal/hostile/proc/remove_enemy(atom/movable/the_enemy)
+	enemies -= the_enemy
+	UnregisterSignal(the_enemy, COMSIG_PARENT_QDELETING)
+
+/mob/living/simple_animal/hostile/proc/on_enemy_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	enemies -= source
 
 /mob/living/simple_animal/hostile/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))
@@ -409,12 +429,17 @@
 /mob/living/simple_animal/hostile/proc/summon_backup(distance, exact_faction_match)
 	do_alert_animation(src)
 	playsound(loc, 'sound/machines/chime.ogg', 50, 1, -1)
+	// Avoid passing a mob as a walk_to target; allied AI can otherwise keep a hard ref
+	// to a soon-to-be-qdel'd caller inside movement/pathing state.
+	var/turf/rally_point = get_turf(targets_from || src)
+	if(!rally_point)
+		return
 	for(var/mob/living/simple_animal/hostile/M in oview(distance, targets_from))
 		if(faction_check_mob(M, TRUE))
 			if(M.AIStatus == AI_OFF)
 				return
 			else
-				M.Goto(src,M.move_to_delay,M.minimum_distance)
+				M.Goto(rally_point, M.move_to_delay, M.minimum_distance)
 
 /mob/living/simple_animal/hostile/proc/CheckFriendlyFire(atom/A)
 	if(check_friendly_fire)
@@ -441,7 +466,7 @@
 
 
 /mob/living/simple_animal/hostile/proc/Shoot(atom/targeted_atom)
-	if( QDELETED(targeted_atom) || targeted_atom == targets_from.loc || targeted_atom == targets_from )
+	if(QDELETED(src) || QDELETED(targeted_atom) || targeted_atom == targets_from?.loc || targeted_atom == targets_from)
 		return
 	var/turf/startloc = get_turf(targets_from)
 	if(casingtype)

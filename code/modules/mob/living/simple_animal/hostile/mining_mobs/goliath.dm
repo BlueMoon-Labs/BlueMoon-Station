@@ -160,7 +160,11 @@
 	icon = 'icons/mob/lavaland/lavaland_monsters.dmi'
 	icon_state = "Goliath_tentacle_spawn"
 	layer = BELOW_MOB_LAYER
-	var/mob/living/spawner
+	/// Weak reference so tentacles don't keep their owner alive through timer callbacks.
+	var/datum/weakref/spawner_ref
+
+/obj/effect/temp_visual/goliath_tentacle/proc/get_spawner()
+	return spawner_ref?.resolve()
 
 /obj/effect/temp_visual/goliath_tentacle/Initialize(mapload, mob/living/new_spawner)
 	. = ..()
@@ -168,7 +172,7 @@
 		if(T != src)
 			return INITIALIZE_HINT_QDEL
 	if(!QDELETED(new_spawner))
-		spawner = new_spawner
+		spawner_ref = WEAKREF(new_spawner)
 	if(ismineralturf(loc))
 		var/turf/closed/mineral/M = loc
 		M.gets_drilled()
@@ -177,6 +181,7 @@
 
 /obj/effect/temp_visual/goliath_tentacle/original/Initialize(mapload, new_spawner)
 	. = ..()
+	var/mob/living/spawner = get_spawner()
 	var/list/directions = GLOB.cardinals.Copy()
 	for(var/i in 1 to 3)
 		var/spawndir = pick_n_take(directions)
@@ -191,8 +196,9 @@
 
 /obj/effect/temp_visual/goliath_tentacle/proc/trip()
 	var/latched = FALSE
+	var/mob/living/spawner = get_spawner()
 	for(var/mob/living/L in loc)
-		if((!QDELETED(spawner) && spawner.faction_check_mob(L)) || L.stat == DEAD)
+		if((spawner && spawner.faction_check_mob(L)) || L.stat == DEAD)
 			continue
 		visible_message("<span class='danger'>[src] grabs hold of [L]!</span>")
 		var/mob/living/carbon/C = L

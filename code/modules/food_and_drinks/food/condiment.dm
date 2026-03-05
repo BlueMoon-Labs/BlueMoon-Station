@@ -168,7 +168,9 @@
 	user.name = newname
 	user.real_name = newname
 	desc = "Salt. From dead crew, presumably."
-	return (TOXLOSS)
+	user.dust(TRUE, TRUE)
+	set_light(1, 2) // Like a ghosts
+	return MANUAL_SUICIDE
 
 /obj/item/reagent_containers/food/condiment/saltshaker/afterattack(obj/target, mob/living/user, proximity)
 	. = ..()
@@ -181,6 +183,13 @@
 		user.visible_message("<span class='notice'>[user] сыпет соль на [target].</span>", "<span class='notice'>Вы насыпали немного соли на [target].</span>")
 		reagents.remove_reagent(/datum/reagent/consumable/sodiumchloride, 2)
 		new/obj/effect/decal/cleanable/salt(target)
+		var/mob/living/simple_animal/qareen/Q = locate(/mob/living/simple_animal/qareen) in get_turf(target)
+		if(istype(Q))
+			Q.reveal(5 SECONDS)
+			Q.stun(5 SECONDS)
+			Q.visible_message(span_danger("Брошенный пучок соли потрясает нечистую силу - [Q]!"))
+			Q.adjustBruteLoss(Q.essence_regen_cap/5)
+			playsound(Q, 'sound/effects/screech.ogg', 100, TRUE)
 		return
 
 /obj/item/reagent_containers/food/condiment/peppermill

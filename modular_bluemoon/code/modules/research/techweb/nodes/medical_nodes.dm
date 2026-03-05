@@ -79,3 +79,12 @@ datum/techweb_node/bioaegis_danger //Dangerous ones, that might kill you.
 	prereq_ids = list("bioaegis3")
 	design_ids = list("neuralderanger", "bodyoverload")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
+
+/////////////////// Инструменты ///////////////////
+/datum/techweb_node/upgraded_surgerytools
+	id = "upgraded_surgerytools"
+	display_name = "Upgraded Surgery Tools"
+	description = "Улучшенные базовые инструменты, использующие вибрационные и плазменные технологии."
+	prereq_ids = list("basic_tools", "adv_biotech")
+	design_ids = list("scalpel_upgraded", "circularsaw_upgraded", "retractor_upgraded", "hemostat_upgraded", "cautery_upgraded", "surgical_tape")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1250)

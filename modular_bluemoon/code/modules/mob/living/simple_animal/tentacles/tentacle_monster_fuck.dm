@@ -12,12 +12,7 @@
 		M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, NORMAL_LUST * 2)
 		M.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, src)
 		src.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, M)
-	playsound(loc, pick('modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang1.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang2.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang3.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang4.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang5.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang6.ogg'), 70, 1, -1)
+	playsound(loc, "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
 
 /mob/living/simple_animal/hostile/tentacles/proc/tentacle_vaginal_double(mob/living/carbon/human/M)
 	if(prob(15))
@@ -33,12 +28,7 @@
 		M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, NORMAL_LUST * 2)
 		M.handle_post_sex(HIGH_LUST, CUM_TARGET_PENIS, src)
 		src.handle_post_sex(HIGH_LUST, CUM_TARGET_VAGINA, M)
-	playsound(loc, pick('modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang1.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang2.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang3.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang4.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang5.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang6.ogg'), 70, 1, -1)
+	playsound(loc, "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
 
 /mob/living/simple_animal/hostile/tentacles/proc/tentacle_penis(mob/living/carbon/human/M)
 	if(prob(15))
@@ -54,12 +44,7 @@
 		M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, NORMAL_LUST * 2)
 		M.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, src)
 		src.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, M)
-	playsound(loc, pick('modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang1.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang2.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang3.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang4.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang5.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang6.ogg'), 70, 1, -1)
+	playsound(loc, "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
 
 /mob/living/simple_animal/hostile/tentacles/proc/tentacle_penis_double(mob/living/carbon/human/M)
 	if(prob(15))
@@ -75,12 +60,7 @@
 		M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, NORMAL_LUST * 2)
 		M.handle_post_sex(HIGH_LUST, CUM_TARGET_PENIS, src)
 		src.handle_post_sex(HIGH_LUST, CUM_TARGET_ANUS, M)
-	playsound(loc, pick('modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang1.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang2.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang3.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang4.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang5.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang6.ogg'), 70, 1, -1)
+	playsound(loc, "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
 
 /mob/living/simple_animal/hostile/tentacles/proc/tentacle_anal(mob/living/carbon/human/M)
 	if(prob(15))
@@ -96,9 +76,4 @@
 		M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, NORMAL_LUST * 2)
 		M.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, src)
 		src.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, M)
-	playsound(loc, pick('modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang1.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang2.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang3.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang4.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang5.ogg',
-						'modular_bluemoon/Gardelin0/sound/effect/lewd/interactions/bang6.ogg'), 70, 1, -1)
+	playsound(loc, "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)

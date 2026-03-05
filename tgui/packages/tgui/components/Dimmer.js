@@ -14,7 +14,7 @@ export const Dimmer = props => {
     <Box
       className={classes([
         'Dimmer',
-        ...className,
+        className,
       ])}
       {...rest}>
       <div className="Dimmer__inner">

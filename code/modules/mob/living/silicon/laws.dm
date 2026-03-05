@@ -5,12 +5,25 @@
 	if (!laws)
 		make_laws()
 
+// (EDIT) Pe4henika bluemoon -- start
 /mob/living/silicon/proc/post_lawchange(announce = TRUE)
-	throw_alert("newlaw", /atom/movable/screen/alert/newlaw)
-	if(announce && last_lawchange_announce != world.time)
-		to_chat(src, "<b>Your laws have been changed.</b>")
-		addtimer(CALLBACK(src, PROC_REF(show_laws)), 0)
-		last_lawchange_announce = world.time
+    throw_alert("newlaw", /atom/movable/screen/alert/newlaw)
+    if(announce && last_lawchange_announce != world.time)
+        to_chat(src, "<br><span class='userdanger'><font size=4>ВНИМАНИЕ: Ваши законы были изменены!</font></span>")
+        to_chat(src, "<span class='userdanger'>Проверьте активный набор законов немедленно.</span><br>")
+
+        src << 'sound/machines/terminal_processing.ogg'
+
+        addtimer(CALLBACK(src, PROC_REF(show_laws)), 0, TIMER_DELETE_ME)
+        last_lawchange_announce = world.time
+
+        // Если законы сменились у ИИ, пушим обновление всем боргам в сети
+        if(isAI(src))
+            var/mob/living/silicon/ai/AI = src
+            for(var/mob/living/silicon/robot/R in GLOB.silicon_mobs)
+                if(R.connected_ai == AI && R.lawupdate)
+                    R.lawsync(TRUE) // TRUE передает announce в lawsync
+// (EDIT) Pe4henika bluemoon -- end
 
 /mob/living/silicon/proc/set_law_sixsixsix(law, announce = TRUE)
 	laws_sanity_check()

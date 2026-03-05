@@ -103,6 +103,13 @@
 	. = ..()
 	QDEL_IN(src, 300)
 
+/obj/effect/hallucination/simple/bluespace_stream/Destroy()
+	if(linked_to)
+		linked_to.linked_to = null
+	linked_to = null
+	seer = null
+	return ..()
+
 /obj/effect/hallucination/simple/bluespace_stream/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(user != seer || !linked_to)
 		return

@@ -20,5 +20,5 @@
 	desc = "Allows for the construction of circuit boards used to build a RoboLiquid Generator."
 	id = "roboliq"
 	build_path = /obj/item/circuitboard/machine/robo_liquid_generator
-	category = list("Research Machinery")
+	category = list("Production Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE

@@ -45,8 +45,8 @@ if (!(Test-Path $PythonExe -PathType Leaf)) {
 	Invoke-WebRequest `
 		"https://www.python.org/ftp/python/$PythonVersion/python-$PythonVersion-embed-amd64.zip" `
 		-OutFile $Archive `
+		-UseBasicParsing `
 		-ErrorAction Stop
-		-UseBasicParsing
 
 	[System.IO.Compression.ZipFile]::ExtractToDirectory($Archive, $PythonDir)
 
@@ -66,8 +66,9 @@ if (!(Test-Path $PythonExe -PathType Leaf)) {
 if (!(Test-Path "$PythonDir/Scripts/pip.exe")) {
 	$host.ui.RawUI.WindowTitle = "Downloading Pip..."
 
-	Invoke-WebRequest "https://bootstrap.pypa.io/get-pip.py" ` -UseBasicParsing
+	Invoke-WebRequest "https://bootstrap.pypa.io/get-pip.py" `
 		-OutFile "$Cache/get-pip.py" `
+		-UseBasicParsing `
 		-ErrorAction Stop
 
 	& $PythonExe "$Cache/get-pip.py" --no-warn-script-location

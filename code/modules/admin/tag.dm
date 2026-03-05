@@ -107,7 +107,9 @@
 		dat += "No datums tagged :("
 
 	dat = dat.Join("<br>")
-	usr << browse(dat, "window=tag;size=800x480")
+	var/datum/browser/popup = new(usr, "tag", "Tag Menu", 800, 480)
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 /**
  * Clears tagged datums

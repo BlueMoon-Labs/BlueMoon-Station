@@ -17,6 +17,7 @@
 	build_path = /obj/item/ammo_box/magazine/m10mm
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
+	min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/m10mm/hp
 	name = "pistol magazine (10mm HP)"
@@ -67,6 +68,7 @@
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
+/*
 /datum/design/sl357
 	name = "revolver speedloader (.357)"
 	desc = "A revolver speedloader."
@@ -96,6 +98,7 @@
 	build_path = /obj/item/ammo_box/a357/dumdum
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
+*/
 
 /datum/design/m10apbox
 	name = "ammo box (10mm Armour Piercing)"

@@ -43,7 +43,7 @@
 // 			continue
 // 		if(musiclimit >= 1)
 // 			return
-// 		SEND_SOUND(H, sound('modular_bluemoon/SmiLeY/sounds/Nuclear_Operations.ogg'))
+// 		SEND_SOUND(H, sound('modular_bluemoon/sound/ert/Nuclear_Operations.ogg'))
 // 		musiclimit++
 
 /obj/machinery/computer/shuttle/syndicate/recall

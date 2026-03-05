@@ -1,7 +1,7 @@
 # Component Reference
 
-> Notice: This documentation might be out of date, so always check the source
-> code to see the most up-to-date information.
+> This documentation is maintained manually. If you find discrepancies,
+> check the source code in `packages/tgui/components/`.
 
 <!--
 This table of contents must be manually maintained.
@@ -11,6 +11,8 @@ Make sure to add new items to this list if you document new components.
 - [General Concepts](#general-concepts)
 - [`tgui/components`](#tguicomponents)
   - [`AnimatedNumber`](#animatednumber)
+  - [`Autofocus`](#autofocus)
+  - [`Blink`](#blink)
   - [`BlockQuote`](#blockquote)
   - [`Box`](#box)
   - [`Button`](#button)
@@ -18,10 +20,13 @@ Make sure to add new items to this list if you document new components.
   - [`Button.Confirm`](#buttonconfirm)
   - [`Button.Input`](#buttoninput)
   - [`ByondUi`](#byondui)
+  - [`Chart`](#chart)
+  - [`Chart.Line`](#chartline)
   - [`Collapsible`](#collapsible)
   - [`ColorBox`](#colorbox)
   - [`Dimmer`](#dimmer)
   - [`Divider`](#divider)
+  - [`DraggableControl`](#draggablecontrol)
   - [`Dropdown`](#dropdown)
   - [`Flex`](#flex)
   - [`Flex.Item`](#flexitem)
@@ -29,6 +34,7 @@ Make sure to add new items to this list if you document new components.
   - [`Grid.Column`](#gridcolumn)
   - [`Icon`](#icon)
   - [`Icon.Stack`](#iconstack)
+  - [`InfinitePlane`](#infiniteplane)
   - [`Input`](#input)
   - [`Knob`](#knob)
   - [`LabeledControls`](#labeledcontrols)
@@ -39,7 +45,9 @@ Make sure to add new items to this list if you document new components.
   - [`Modal`](#modal)
   - [`NoticeBox`](#noticebox)
   - [`NumberInput`](#numberinput)
+  - [`PixelArtImage`](#pixelartimage)
   - [`ProgressBar`](#progressbar)
+  - [`RestrictedInput`](#restrictedinput)
   - [`RoundGauge`](#roundgauge)
   - [`Section`](#section)
   - [`Slider`](#slider)
@@ -49,6 +57,8 @@ Make sure to add new items to this list if you document new components.
   - [`Table.Cell`](#tablecell)
   - [`Tabs`](#tabs)
   - [`Tabs.Tab`](#tabstab)
+  - [`TextArea`](#textarea)
+  - [`TimeDisplay`](#timedisplay)
   - [`Tooltip`](#tooltip)
 - [`tgui/layouts`](#tguilayouts)
   - [`Window`](#window)
@@ -69,12 +79,12 @@ listen for browser events. Inferno supports camelcase (`onClick`) and
 lowercase (`onclick`) event names.
 
 - Camel case names are what's called *synthetic* events, and are the
-**preferred way** of handling events in React, for efficiency and
+**preferred way** of handling events in Inferno, for efficiency and
 performance reasons. Please read
 [Inferno Event Handling](https://infernojs.org/docs/guides/event-handling)
 to understand what this is about.
 - Lower case names are native browser events and should be used sparingly,
-for example when you need an explicit IE8 support. **DO NOT** use
+for explicit native event semantics only. **DO NOT** use
 lowercase event handlers unless you really know what you are doing.
 - [Button](#button) component does not support the lowercase `onclick` event.
 Use the camel case `onClick` instead.
@@ -97,6 +107,28 @@ animation.
 - `children: (formattedValue, rawValue) => any` - Pull the animated number to
 animate more complex things deeper in the DOM tree.
   - Example: `(_, value) => <Icon rotation={value} />`
+
+### `Autofocus`
+
+A wrapper component that automatically focuses its content on mount.
+Useful for ensuring keyboard events are captured by a specific part of
+the interface without requiring user interaction first.
+
+**Props:**
+
+- `children: any` - Content to render. The wrapper `div` receives focus.
+
+### `Blink`
+
+Makes its children blink by toggling visibility at a configurable interval.
+Useful for alert indicators or attention-grabbing elements.
+
+**Props:**
+
+- `interval: number` (default: 1000) - Time in milliseconds between blinks.
+- `time: number` (default: 1000) - Duration in milliseconds that content
+stays hidden during each blink cycle.
+- `children: any` - Content to blink.
 
 ### `BlockQuote`
 
@@ -304,6 +336,39 @@ It supports a full set of `Box` properties for layout purposes.
 the `winset` proc call. You can find a full reference of these parameters
 in [BYOND controls and parameters guide](https://secure.byond.com/docs/ref/skinparams.html).
 
+### `Chart`
+
+A namespace containing chart components for data visualization.
+Currently provides `Chart.Line`.
+
+### `Chart.Line`
+
+An SVG-based line/area chart that automatically scales to fit its container.
+Renders data as a polyline with optional fill.
+
+```jsx
+<Chart.Line
+  height="200px"
+  data={[[0, 10], [1, 25], [2, 15], [3, 30]]}
+  rangeX={[0, 3]}
+  rangeY={[0, 50]}
+  fillColor="rgba(0, 200, 0, 0.25)"
+  strokeColor="#00ff00" />
+```
+
+**Props:**
+
+- See inherited props: [Box](#box)
+- `data: [number, number][]` - Array of `[x, y]` data points.
+- `rangeX: [number, number]` - Optional fixed X-axis range `[min, max]`.
+If omitted, auto-scales to data.
+- `rangeY: [number, number]` - Optional fixed Y-axis range `[min, max]`.
+If omitted, auto-scales to data.
+- `fillColor: string` (default: `'none'`) - Fill color for the area under
+the line.
+- `strokeColor: string` (default: `'#ffffff'`) - Stroke color for the line.
+- `strokeWidth: number` (default: 2) - Width of the line stroke.
+
 ### `Collapsible`
 
 Displays contents when open, acts as a fluid button when closed. Click to
@@ -350,6 +415,37 @@ Works like the good old `<hr>` element, but it's fancier.
 - `vertical: boolean` - Divide content vertically.
 - `hidden: boolean` - Divider can divide content without creating a dividing
 line.
+
+### `DraggableControl`
+
+An advanced render-prop component that powers [Knob](#knob), [Slider](#slider),
+and [NumberInput](#numberinput). Provides drag-to-adjust and click-to-edit
+behavior for numeric values. You typically do not use this directly unless
+building a custom numeric input control.
+
+It renders nothing on its own — instead it calls its `children` function
+with render props that you compose into your own UI.
+
+**Props:**
+
+- `value: number` - Current value.
+- `minValue: number` (default: -Infinity) - Lowest possible value.
+- `maxValue: number` (default: +Infinity) - Highest possible value.
+- `step: number` (default: 1) - Value increment per drag step.
+- `stepPixelSize: number` (default: 1) - Screen pixels per step.
+- `dragMatrix: [number, number]` (default: `[1, 0]`) - Determines which
+axis of mouse movement maps to value change.
+`[1, 0]` for horizontal, `[0, 1]` for vertical.
+- `animated: boolean` - Animate the displayed value.
+- `unit: string` - Unit suffix for display.
+- `format: value => value` - Format function for display.
+- `suppressFlicker: number` (default: 50) - Milliseconds to hold the
+displayed value after release, suppressing backend propagation flicker.
+- `onChange: (e, value) => void` - Fires on release or manual entry.
+- `onDrag: (e, value) => void` - Fires periodically during drag.
+- `children: (renderProps) => element` - **Required.** Render function
+receiving: `{ dragging, editing, value, displayValue, displayElement,
+inputElement, handleDragStart }`.
 
 ### `Dropdown`
 
@@ -442,9 +538,9 @@ when they overflow the line.
   have equal space on both sides. The first item will have one unit of space
   against the container edge, but two units of space between the next item
   because that next item has its own spacing that applies.
+  - `center` - items are centered along the main axis.
   - `space-evenly` - items are distributed so that the spacing between any two
   items (and the space to the edges) is equal.
-  - TBD (not all properties are supported in IE11).
 
 ### `Flex.Item`
 
@@ -464,10 +560,8 @@ shrink if necessary. Inverse of `grow`.
 - `basis: number | string` - This defines the default size of an element
 before any flex-related calculations are done. Has to be a length
 (e.g. `20%`, `5rem`), an `auto` or `content` keyword.
-  - **Important:** IE11 flex is buggy, and auto width/height calculations
-  can sometimes end up in a circular dependency. This usually happens, when
-  working with tables inside flex (they have wacky internal widths and such).
-  Setting basis to `0` breaks the loop and fixes all of the problems.
+  - Setting `basis` to `0` is useful when you want flex items to size
+  purely based on their `grow`/`shrink` factors.
 - `align: string` - This allows the default alignment (or the one specified by
 align-items) to be overridden for individual flex items. See: [Flex](#flex).
 
@@ -546,6 +640,26 @@ Renders children icons on top of each other in order to make your own icon.
 
 - See inherited props: [Box](#box)
 - `children: Icon` - Icons to stack.
+
+### `InfinitePlane`
+
+A pannable and zoomable infinite plane with a tiled background image.
+Children are placed on the plane and move/scale with it. Includes built-in
+zoom controls (0.5x–1.5x). Used for interfaces like the Integrated Circuit
+editor.
+
+**Props:**
+
+- See inherited props: [Box](#box)
+- `backgroundImage: string` - URL of the tiled background image.
+- `imageWidth: number` - Base width of the background image tile in pixels.
+- `initialLeft: number` (default: 0) - Initial X offset of the plane.
+- `initialTop: number` (default: 0) - Initial Y offset of the plane.
+- `onBackgroundMoved: (x, y) => void` - Called when the plane is dragged,
+with absolute coordinates.
+- `onZoomChange: (zoom) => void` - Called when zoom level changes.
+- `children: any` - Content to render on the plane (moves and scales
+with pan/zoom).
 
 ### `Input`
 
@@ -740,6 +854,37 @@ the input, or successfully enter a number.
 - `onDrag: (e, value) => void` - An event, which fires about every 500ms
 when you drag the input up and down, on release and on manual editing.
 
+### `PixelArtImage`
+
+A canvas-based image component designed for pixel art. Renders images with
+no smoothing (nearest-neighbor upscale), preserving crisp pixel edges.
+Automatically scales to fit the container width, snapping to integer
+multiples of the natural image size for pixel-perfect display.
+
+DPI-aware: renders at `devicePixelRatio` resolution on high-DPI displays.
+
+```jsx
+<PixelArtImage
+  src={base64ImageData}
+  fit="contain"
+  maxWidth={256}
+  maxHeight={256} />
+```
+
+**Props:**
+
+- `src: string` - Image source (URL or base64 data URI).
+- `fit: string` (default: `'width'`) - Sizing mode:
+  - `'width'` - Scale to fill container width.
+  - `'contain'` - Fit within both `maxWidth` and `maxHeight` while
+  preserving aspect ratio.
+- `maxWidth: number` - Maximum display width in pixels.
+- `maxHeight: number` - Maximum display height in pixels (only used
+with `fit="contain"`).
+- `className: string` - CSS class for the `<canvas>` element.
+- `style: object` - Inline styles for the `<canvas>` element.
+- `containerStyle: object` - Inline styles for the outer `<div>` wrapper.
+
 ### `Popper`
 
 Popper lets you position elements so that they don't go out of the bounds of the window. See [popper.js](https://popper.js.org/) for more information.
@@ -781,6 +926,28 @@ percentage and how filled the bar is.
 based on whether the value lands in the range between `from` and `to`.
 - `color: string` - Color of the progress bar.
 - `children: any` - Content to render inside the progress bar.
+
+### `RestrictedInput`
+
+An integer-only input field that strips non-numeric characters and clamps
+the value to a given range. Supports Enter to commit, Escape to cancel,
+and auto-focus/auto-select on mount.
+
+**Props:**
+
+- See inherited props: [Box](#box)
+- `value: number` - Current value.
+- `minValue: number` (default: 0) - Lowest accepted value.
+- `maxValue: number` (default: 10000) - Highest accepted value.
+- `fluid: boolean` - Fill all available horizontal space.
+- `monospace: boolean` - Use monospace font.
+- `autoFocus: boolean` - Focus the input on mount.
+- `autoSelect: boolean` - Select all text on mount.
+- `onChange: (e, value) => void` - Fires when value is committed
+(blur or Enter).
+- `onInput: (e, value) => void` - Fires on every input change.
+- `onEnter: (e, value) => void` - Fires specifically on Enter key.
+- `onEscape: (e) => void` - Fires on Escape key.
 
 ### `RoundGauge`
 
@@ -1087,6 +1254,43 @@ Intended for usage on interfaces where tab color has relevance.
 - `icon: string` - Tab icon.
 - `children: any` - Tab text.
 - `onClick: function` - Called when element is clicked.
+
+### `TextArea`
+
+A multi-line text input. Supports Tab key for indentation (can be disabled),
+Escape to cancel editing, and auto-focus on mount.
+
+**Props:**
+
+- See inherited props: [Box](#box)
+- `value: string` - Current text value.
+- `placeholder: string` - Placeholder text shown when empty.
+- `maxLength: number` - Maximum character count.
+- `fluid: boolean` - Fill all available horizontal space.
+- `autoFocus: boolean` - Focus the textarea on mount.
+- `dontUseTabForIndent: boolean` - If true, Tab key will not insert
+a tab character (default browser behavior instead).
+- `onChange: (e, value) => void` - Fires on blur (commit).
+- `onInput: (e, value) => void` - Fires on every input change.
+- `onKeyDown: (e, value) => void` - Fires on key down.
+- `onKeyPress: (e, value) => void` - Fires on key press.
+
+### `TimeDisplay`
+
+Displays a time value formatted via `formatTime()` (from `tgui/format`).
+Optionally auto-ticks the displayed time up or down every second,
+independent of backend updates.
+
+```jsx
+<TimeDisplay value={countdown} auto="down" />
+```
+
+**Props:**
+
+- `value: number` - Time in deciseconds (10 = 1 second).
+- `auto: 'up' | 'down'` - If set, the displayed time will automatically
+tick. `'down'` decreases by 1 second per tick (minimum 0), `'up'`
+increases by 1 second per tick.
 
 ### `Tooltip`
 

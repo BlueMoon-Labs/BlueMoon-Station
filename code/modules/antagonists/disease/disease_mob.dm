@@ -75,7 +75,11 @@ the new instance inside the host to be updated to the template's stats.
 	for(var/V in GLOB.sentient_disease_instances)
 		var/datum/disease/advance/sentient_disease/S = V
 		if(S.overmind == src)
+			var/old_id = S.GetDiseaseID()
 			S.overmind = null
+			// Re-register in archive under new ID so antibodies/vaccines still work (cured patients get "...|null" in resistances)
+			SSdisease.archive_diseases -= old_id
+			SSdisease.archive_diseases[S.GetDiseaseID()] = S
 
 /mob/camera/disease/Login()
 	..()

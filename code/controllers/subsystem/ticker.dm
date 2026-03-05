@@ -52,7 +52,7 @@ SUBSYSTEM_DEF(ticker)
 	var/queue_delay = 0
 	var/list/queued_players = list()		//used for join queues when the server exceeds the hard population cap
 
-	var/maprotatechecked = 0
+	var/maprotatechecked = FALSE
 
 	var/news_report
 
@@ -207,7 +207,7 @@ SUBSYSTEM_DEF(ticker)
 				start_immediately = FALSE
 				mapvote_restarter_in_progress = TRUE
 				var/vote_type = CONFIG_GET(string/map_vote_type)
-				SSvote.initiate_vote("map","server", display = SHOW_RESULTS, votesystem = vote_type)
+				SSvote.initiate_vote("map","server", display = SHOW_RESULTS, votesystem = vote_type, forced = TRUE)
 				to_chat(world, span_boldwarning("Активировано голосование за смену карты из-за неудачного завершения прошлого раунда. После его окончания сервер будет перезапущен."))
 				return
 			#endif
@@ -275,7 +275,7 @@ SUBSYSTEM_DEF(ticker)
 		if(GAME_STATE_PLAYING)
 			mode.process(wait * 0.1)
 			check_queue()
-			check_maprotate()
+			//check_maprotate()
 			scripture_states = scripture_unlock_alert(scripture_states)
 			//SSshuttle.autoEnd()
 
@@ -284,6 +284,7 @@ SUBSYSTEM_DEF(ticker)
 				toggle_ooc(TRUE) // Turn it on
 				toggle_aooc(TRUE) // Turn it on
 				toggle_dooc(TRUE)
+				check_maprotate()
 				declare_completion(force_ending)
 				Master.SetRunLevel(RUNLEVEL_POSTGAME)
 
@@ -548,23 +549,23 @@ SUBSYSTEM_DEF(ticker)
 			queue_delay = 0
 
 /datum/controller/subsystem/ticker/proc/check_maprotate()
-	if (!CONFIG_GET(flag/maprotation))
+	if(!CONFIG_GET(flag/maprotation))
 		return
-	if (SSshuttle.emergency && SSshuttle.emergency.mode != SHUTTLE_ESCAPE || SSshuttle.canRecall())
-		return
-	if (maprotatechecked)
+	//if(SSshuttle.emergency && SSshuttle.emergency.mode != SHUTTLE_ESCAPE || SSshuttle.canRecall())
+	//	return
+	if(maprotatechecked)
 		return
 
-	maprotatechecked = 1
+	maprotatechecked = TRUE
 
 	//map rotate chance defaults to 75% of the length of the round (in minutes)
-	if (!prob((world.time/600)*CONFIG_GET(number/maprotatechancedelta)) && CONFIG_GET(flag/tgstyle_maprotation))
+	if(!prob((world.time/600)*CONFIG_GET(number/maprotatechancedelta)) && CONFIG_GET(flag/tgstyle_maprotation))
 		return
 	if(CONFIG_GET(flag/tgstyle_maprotation))
 		INVOKE_ASYNC(SSmapping, TYPE_PROC_REF(/datum/controller/subsystem/mapping, maprotate))
 	else
 		var/vote_type = CONFIG_GET(string/map_vote_type)
-		SSvote.initiate_vote("map","server", display = SHOW_RESULTS, votesystem = vote_type)
+		SSvote.initiate_vote("map","server", display = SHOW_RESULTS, votesystem = vote_type, forced = TRUE)
 
 /datum/controller/subsystem/ticker/proc/HasRoundStarted()
 	return current_state >= GAME_STATE_PLAYING

@@ -9,33 +9,33 @@
 
 /datum/uplink_item/bundles_tc/chemical
 	name = "Bioterror bundle"
-	desc = "For the madman: Contains a handheld Bioterror chem sprayer, a Bioterror foam grenade, a box of lethal chemicals, a dart pistol, \
-			box of syringes, Donksoft assault rifle, and some riot darts. Remember: Seal suit and equip internals before use."
+	desc = "Для настоящего безумца: содержит ручной биотеррор-распылитель, биотеррор-пеногранату, \
+			коробку смертельных химикатов, дротиковый пистолет, коробку шприцев, штурмовую винтовку Donksoft и дротики подавления. \
+			Не забудьте: герметизируйте костюм и подключите баллон перед использованием."
 	item = /obj/item/storage/backpack/duffelbag/syndie/med/bioterrorbundle
 	cost = 30 // normally 42
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/bulldog
 	name = "Bulldog bundle"
-	desc = "Lean and mean: Optimized for people that want to get up close and personal. Contains the popular \
-			Bulldog shotgun, a 12g buckshot drum, a 12g taser slug drum and a pair of Thermal imaging goggles."
+	desc = "Для любителей ближнего боя: содержит дробовик Bulldog, \
+			барабан 12г с картечью, барабан 12г с тейзер-слагами и термоочки."
 	item = /obj/item/storage/backpack/duffelbag/syndie/bulldogbundle
 	cost = 13 // normally 16
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/c20r
 	name = "C-20r bundle"
-	desc = "Old Faithful: The classic C-20r, bundled with two magazines, and a (surplus) suppressor at discount price."
+	desc = "Старая добрая классика: C-20r в комплекте с двумя магазинами и (списанным) глушителем по скидке."
 	item = /obj/item/storage/backpack/duffelbag/syndie/c20rbundle
 	cost = 14 // normally 16
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/contract_kit
 	name = "Contract Kit"
-	desc = "The Nanotrasen enemies have offered you the chance to become a contractor, take on kidnapping contracts for TC and cash payouts. Upon purchase,  \
-			you'll be granted your own contract uplink embedded within the supplied tablet computer. Additionally, you'll be granted \
-			standard contractor gear to help with your mission - comes supplied with the tablet, specialised space suit, chameleon jumpsuit and mask, \
-			specialised contractor baton, and three randomly selected low cost items. Can include otherwise unobtainable items."
+	desc = "Враги Nanotrasen предлагают вам стать контрактником - брать контракты на похищение за TC и наличку. \
+			В комплекте планшет с контрактным аплинком, спецскафандр, хамелеон-комбинезон и маска, \
+			спецдубинка контрактора и три случайных недорогих предмета. Может включать экзотику."
 	item = /obj/item/storage/box/syndie_kit/contract_kit
 	cost = 30
 	player_minimum = 50
@@ -44,18 +44,17 @@
 
 /datum/uplink_item/bundles_tc/northstar_bundle
 	name = "Northstar Bundle"
-	desc = "An item usually reserved for the Gorlex Marauders and their operatives, now available for recreational use.  \
-			These armbands let the user punch people very fast and with the lethality of a legendary martial artist. \
-			Does not improve weapon attack speed or the meaty fists of a hulk, but you will be unmatched in martial power. \
-			Combines with all martial arts, but the user will be unable to bring themselves to use guns, nor remove the armbands."
+	desc = "Предмет, обычно зарезервированный для Gorlex Marauders. \
+			Эти наручи позволяют бить очень быстро со смертоносностью легендарного мастера единоборств. \
+			Совместимы со всеми боевыми искусствами, но носитель не сможет пользоваться огнестрелом и снять наручи."
 	item = /obj/item/storage/box/syndie_kit/northstar
 	cost = 20
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
 /datum/uplink_item/bundles_tc/scarp_bundle
 	name = "Sleeping Carp Bundle"
-	desc = "Become one with your inner carp!  Your ancient fish masters leave behind their legacy, and bestow to you their teachings, sacred uniform, and staff. \
-	Please be aware that you will not be able to use dishonerable ranged weapons."
+	desc = "Станьте едины со своим внутренним карпом! Древние рыбные мастера завещают вам своё учение, священную форму и посох. \
+	Учтите: вы не сможете использовать бесчестное дальнее оружие."
 	item = /obj/item/storage/box/syndie_kit/scarp
 	cost = 20
 	player_minimum = 20
@@ -63,9 +62,9 @@
 
 /datum/uplink_item/suits/infiltrator_bundle
 	name = "Insidious Infiltration Gear Case"
-	desc = "Developed by Roseus Galactic in conjunction with the Gorlex Marauders to produce a functional suit for urban operations, \
-			this suit proves to be cheaper than your standard issue hardsuit, with none of the movement restrictions (or the space proofing) of the outdated spacesuits employed by the company. \
-			Comes with an armored vest, helmet, blood-red sneaksuit, sneakboots, specialized combat gloves and a high-tech balaclava which obfuscates both your voice and your face. The case is also rather useful as a storage container and bludgeoning implement."
+	desc = "Разработан Roseus Galactic совместно с Gorlex Marauders для городских операций. \
+			Дешевле стандартного скафандра, без ограничений подвижности (и без космозащиты). \
+			Включает бронежилет, шлем, скрытный кровавый костюм, скрытные ботинки, спецперчатки и хайтек-балаклаву, скрывающую голос и лицо."
 	item = /obj/item/storage/toolbox/infiltrator
 	cost = 5
 	limited_stock = 1 //you only get one so you don't end up with too many gun cases
@@ -73,57 +72,57 @@
 
 /datum/uplink_item/bundles_tc/cybernetics_bundle
 	name = "Cybernetic Implants Bundle"
-	desc = "A random selection of cybernetic implants. Guaranteed 5 high quality implants. Comes with an autosurgeon."
+	desc = "Случайная подборка кибернетических имплантов. Гарантировано 5 качественных имплантов. В комплекте автохирург."
 	item = /obj/item/storage/box/cyber_implants
 	cost = 40
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/medical
 	name = "Medical bundle"
-	desc = "The support specialist: Aid your fellow operatives with this medical bundle. Contains a tactical medkit, \
-			a Donksoft LMG, a box of riot darts and a pair of magboots to rescue your friends in no-gravity environments."
+	desc = "Для специалиста поддержки: помогите своим союзникам. Содержит тактическую аптечку, \
+			пулемёт Donksoft, коробку дротиков подавления и магботинки для спасения друзей в невесомости."
 	item = /obj/item/storage/backpack/duffelbag/syndie/med/medicalbundle
 	cost = 15 // normally 20
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/modular
 	name = "Modular Pistol Kit"
-	desc = "A heavy briefcase containing one modular pistol (chambered in 10mm), one supressor, and spare ammunition, including a box of soporific ammo. \
-		Includes a suit jacket that is padded with a robust liner."
+	desc = "Тяжёлый кейс с модульным пистолетом (10мм), глушителем и запасными боеприпасами, \
+		включая снотворные патроны. В комплекте пиджак с бронеподкладкой."
 	item = /obj/item/storage/briefcase/modularbundle
 	cost = 12
 
 /datum/uplink_item/bundles_tc/shredderbundle
 	name = "Shredder bundle"
-	desc = "A truly horrific weapon designed simply to maim its victim, the CX Shredder is banned by several intergalactic treaties. \
-			You'll get two of them with this. And spare ammo to boot. And we'll throw in an extra elite hardsuit and chest rig to hold them all!"
+	desc = "По-настоящему ужасное оружие для калечения жертв - CX Shredder запрещён несколькими межгалактическими договорами. \
+			В наборе два шредера, запасные патроны, элитный скафандр и разгрузка."
 	item = /obj/item/storage/backpack/duffelbag/syndie/shredderbundle
 	cost = 30 // normally 41
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/sniper
 	name = "Sniper bundle"
-	desc = "Elegant and refined: Contains a collapsed sniper rifle in an expensive carrying case, \
-			two soporific knockout magazines, a free surplus supressor, and a sharp-looking tactical turtleneck suit. \
-			We'll throw in a free red tie if you order NOW."
+	desc = "Элегантно и утончённо: складная снайперка в дорогом кейсе, \
+			два снотворных магазина, списанный глушитель и стильный тактический водолазковый костюм. \
+			Закажите СЕЙЧАС - и красный галстук в подарок."
 	item = /obj/item/storage/briefcase/sniperbundle
 	cost = 20 // normally 26
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/firestarter
 	name = "Spetsnaz Pyro bundle"
-	desc = "For systematic suppression of carbon lifeforms in close quarters: Contains a lethal New Russian backpack spray, Elite hardsuit, \
-			Stechkin APS pistol, two magazines, a minibomb and a stimulant syringe. \
-			Order NOW and comrade Boris will throw in an extra tracksuit."
+	desc = "Для систематического подавления углеродных форм жизни в ближнем бою: содержит ранцевый распылитель Ново-российского производства, \
+			элитный скафандр, пистолет Стечкин, два магазина, минибомбу и стимулятор. \
+			Закажите СЕЙЧАС - и товарищ Борис подкинет дополнительный спортивный костюм."
 	item = /obj/item/storage/backpack/duffelbag/syndie/firestarter
 	cost = 30
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/bundle
 	name = "Operative Bundle"
-	desc = "Operative Bundles are specialized groups of items that arrive in a plain box. \
-			These items are collectively worth more than 20 credits, but you do not know which specialization \
-			you will receive. May contain discontinued and/or exotic items."
+	desc = "Специализированные наборы предметов в обычной коробке. \
+			Суммарно стоят больше 20 кредитов, но специализация неизвестна заранее. \
+			Могут содержать снятые с производства и/или экзотические предметы."
 	item = /obj/item/storage/box/syndicate
 	cost = 15
 	purchasable_from = ~(UPLINK_TRAITORS | UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
@@ -131,9 +130,9 @@
 
 /datum/uplink_item/bundles_tc/bundle //blumoon add
 	name = "Old hero Bundle"
-	desc = "Operative Bundles are specialized groups of items that arrive in a plain box. \
-			These items are collectively worth more than 20 credits, but you do not know which specialization \
-			you will receive. May contain discontinued and/or exotic items."
+	desc = "Набор оперативника - подборка предметов в обычной коробке. \
+			Суммарная ценность содержимого свыше 20 кредитов, но какую специализацию получите - неизвестно. \
+			Может содержать снятые с производства и/или экзотические предметы."
 	item = /obj/item/storage/box/inteq_kit/new_heroes
 	cost = 17
 	purchasable_from = UPLINK_TRAITORS
@@ -141,8 +140,8 @@
 
 /datum/uplink_item/bundles_tc/surplus
 	name = "Surplus Crate"
-	desc = "A dusty crate from the back of the illegal warehouse. Rumored to contain a valuable assortment of items, \
-			but you never know. Contents are sorted to always be worth 50 CR."
+	desc = "Пыльный ящик с задворок нелегального склада. Говорят, содержит ценный набор предметов, \
+			но кто знает. Содержимое всегда на 50 кредитов."
 	item = /obj/structure/closet/crate
 	cost = 20
 	player_minimum = 25
@@ -152,8 +151,8 @@
 
 /datum/uplink_item/bundles_tc/surplus/super
 	name = "Super Surplus Crate"
-	desc = "A dusty SUPER-SIZED from the back of the illegal warehouse. Rumored to contain a valuable assortment of items, \
-			but you never know. Contents are sorted to always be worth 125 CR."
+	desc = "Пыльный СУПЕР-РАЗМЕРНЫЙ ящик с задворок нелегального склада. Говорят, содержит ценный набор предметов, \
+			но кто знает. Содержимое всегда на 125 кредитов."
 	cost = 40
 	player_minimum = 40
 	starting_crate_value = 125
@@ -182,7 +181,7 @@
 
 /datum/uplink_item/bundles_tc/reroll
 	name = "Renegotiate Contract"
-	desc = "Selecting this will inform your employers that you wish for new objectives. Can only be done twice."
+	desc = "Сообщите работодателям, что хотите новые задания. Можно сделать только дважды."
 	item = /obj/effect/gibspawner/generic
 	cost = 0
 	cant_discount = TRUE
@@ -198,8 +197,8 @@
 
 /datum/uplink_item/bundles_tc/random
 	name = "Random Item"
-	desc = "Picking this will purchase a random item. Useful if you have some TC to spare or if you haven't decided on a strategy yet."
-	item = /obj/effect/gibspawner/generic // non-tangible item because techwebs use this path to determine illegal tech
+	desc = "Купит случайный предмет. Полезно, если есть лишние TC или не определились со стратегией."
+	item = /obj/effect/gibspawner/generic
 	cost = 0
 	cant_discount = TRUE
 
@@ -252,7 +251,7 @@
 
 /datum/uplink_item/bundles_tc/telecrystal/inteq
 	name = "1 Tele Credit"
-	desc = "Golden credit. Can be inserted into Uplink."
+	desc = "Золотой кредит. Можно вставить в аплинк."
 	item = /obj/item/stack/telecrystal/inteq
 	cost = 1
 	surplus = 0
@@ -260,14 +259,14 @@
 
 /datum/uplink_item/bundles_tc/telecrystal/five/inteq
 	name = "5 Tele Credits"
-	desc = "Five golden credits. Can be inserted into Uplink."
+	desc = "Пять золотых кредитов. Можно вставить в аплинк."
 	item = /obj/item/stack/telecrystal/inteq/five
 	cost = 5
 	purchasable_from = ~(UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/telecrystal/twenty/inteq
 	name = "20 Tele Credits"
-	desc = "Twenty golden credits. Can be inserted into Uplink."
+	desc = "Двадцать золотых кредитов. Можно вставить в аплинк."
 	item = /obj/item/stack/telecrystal/inteq/twenty
 	cost = 20
 	purchasable_from = ~(UPLINK_SYNDICATE)

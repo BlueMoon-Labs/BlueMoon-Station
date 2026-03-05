@@ -7,7 +7,7 @@
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 20
 	active_power_usage = 5000
-	req_one_access = list(ACCESS_ROBOTICS, ACCESS_AWAY_GENERAL, ACCESS_SYNDICATE)
+	//req_one_access = list(ACCESS_ROBOTICS, ACCESS_AWAY_GENERAL, ACCESS_SYNDICATE) // Лишнее, у хермитов нед доступа + платы все равно только в импринтере делаются
 	circuit = /obj/item/circuitboard/machine/mechfab
 	// processing_flags = START_PROCESSING_MANUALLY
 
@@ -63,8 +63,13 @@
 								"Cybernetics",
 								"Implants",
 								"Control Interfaces",
-								"Misc"
+								"Misc",
+								"IPC Organs",
+								"Prosthetics",
+								"Savannah-Ivanov"
 								)
+	COOLDOWN_DECLARE(cooldown_say) // Отвечает за КД SAY машины
+	var/const/cooldown_say_time = 1.5 SECONDS
 
 /obj/machinery/mecha_part_fabricator/Initialize(mapload)
 	stored_research = new
@@ -489,9 +494,13 @@
   * Requires an R&D Console visible within 7 tiles. Copies techweb research. Updates tgui's state data.
   */
 /obj/machinery/mecha_part_fabricator/proc/sync()
+	if(!COOLDOWN_FINISHED(src, cooldown_say))
+		return
+	COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+
 	for(var/obj/machinery/computer/rdconsole/RDC in orange(7,src))
 		RDC.stored_research.copy_research_to(stored_research)
-		update_static_data(usr)
+		update_static_data_for_all_viewers()
 		say("Successfully synchronized with R&D server.")
 		return
 
@@ -591,14 +600,20 @@
 	return data
 
 /obj/machinery/mecha_part_fabricator/ui_act(action, var/list/params)
-	if(..())
-		return TRUE
+	. = ..()
+	if(.)
+		return
+	var/mob/living/user = usr
+	if(!istype(user))
+		return
+	if(!user.can_use_mechfab_topic(src, action))
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			say("В доступе отказано.")
+			playsound(loc, 'sound/machines/uplinkerror.ogg', 70, 0)
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+		return
 
 	. = TRUE
-
-	add_fingerprint(usr)
-	usr.set_machine(src)
-
 	switch(action)
 		if("sync_rnd")
 			// Sync with R&D Servers
@@ -686,10 +701,14 @@
 /obj/machinery/mecha_part_fabricator/proc/eject_sheets(eject_sheet, eject_amt)
 	var/datum/component/material_container/mat_container = rmat.mat_container
 	if (!mat_container)
-		say("No access to material storage, please contact the quartermaster.")
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("No access to material storage, please contact the quartermaster.")
 		return FALSE
 	if (rmat.on_hold())
-		say("Mineral access is on hold, please contact the quartermaster.")
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("Mineral access is on hold, please contact the quartermaster.")
 		return FALSE
 	var/count = mat_container.retrieve_sheets(text2num(eject_amt), eject_sheet, drop_location())
 	var/list/matlist = list()
@@ -730,6 +749,8 @@
 
 /obj/machinery/mecha_part_fabricator/maint
 	link_on_init = FALSE
+	req_access = null
 
 /obj/machinery/mecha_part_fabricator/offstation
 	link_on_init = FALSE
+	req_access = null

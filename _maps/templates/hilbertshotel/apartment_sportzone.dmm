@@ -1094,6 +1094,9 @@
 /obj/effect/turf_decal/siding/wood,
 /turf/open/floor/wood,
 /area/hilbertshotel)
+"XJ" = (
+/turf/open/space/bluespace,
+/area/hilbertshotel)
 "YA" = (
 /obj/structure/reagent_dispensers/water_cooler,
 /turf/open/floor/plasteel/dark,
@@ -1143,6 +1146,27 @@
 /area/hilbertshotel)
 
 (1,1,1) = {"
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+"}
+(2,1,1) = {"
+XJ
 aN
 aN
 aN
@@ -1159,8 +1183,10 @@ gV
 aN
 aN
 aN
+XJ
 "}
-(2,1,1) = {"
+(3,1,1) = {"
+XJ
 jP
 Ur
 yE
@@ -1177,8 +1203,10 @@ ix
 aR
 CU
 aN
+XJ
 "}
-(3,1,1) = {"
+(4,1,1) = {"
+XJ
 wJ
 oR
 tB
@@ -1195,8 +1223,10 @@ ZZ
 RY
 Gw
 aN
+XJ
 "}
-(4,1,1) = {"
+(5,1,1) = {"
+XJ
 ed
 KL
 tB
@@ -1213,8 +1243,10 @@ ZZ
 RY
 rg
 aN
+XJ
 "}
-(5,1,1) = {"
+(6,1,1) = {"
+XJ
 xX
 dI
 tB
@@ -1231,8 +1263,10 @@ ZZ
 oz
 Gw
 aN
+XJ
 "}
-(6,1,1) = {"
+(7,1,1) = {"
+XJ
 YV
 YK
 QI
@@ -1249,8 +1283,10 @@ ZZ
 RY
 Gw
 aN
+XJ
 "}
-(7,1,1) = {"
+(8,1,1) = {"
+XJ
 aN
 aN
 cT
@@ -1267,8 +1303,10 @@ ya
 OQ
 vV
 aN
+XJ
 "}
-(8,1,1) = {"
+(9,1,1) = {"
+XJ
 aN
 YA
 OW
@@ -1285,8 +1323,10 @@ bd
 eW
 kq
 aN
+XJ
 "}
-(9,1,1) = {"
+(10,1,1) = {"
+XJ
 aN
 OW
 OW
@@ -1303,8 +1343,10 @@ fo
 fo
 Gy
 aN
+XJ
 "}
-(10,1,1) = {"
+(11,1,1) = {"
+XJ
 aN
 zw
 zw
@@ -1321,8 +1363,10 @@ zJ
 zJ
 aP
 aN
+XJ
 "}
-(11,1,1) = {"
+(12,1,1) = {"
+XJ
 aN
 Rt
 aN
@@ -1339,8 +1383,10 @@ FW
 JW
 uh
 aN
+XJ
 "}
-(12,1,1) = {"
+(13,1,1) = {"
+XJ
 aN
 wD
 aN
@@ -1357,8 +1403,10 @@ aN
 Kz
 aN
 aN
+XJ
 "}
-(13,1,1) = {"
+(14,1,1) = {"
+XJ
 aN
 aN
 aN
@@ -1375,8 +1423,10 @@ aN
 OW
 Bu
 aN
+XJ
 "}
-(14,1,1) = {"
+(15,1,1) = {"
+XJ
 vT
 aN
 hw
@@ -1393,8 +1443,10 @@ aN
 od
 pE
 aN
+XJ
 "}
-(15,1,1) = {"
+(16,1,1) = {"
+XJ
 Si
 aN
 aN
@@ -1411,8 +1463,10 @@ aN
 OW
 BB
 aN
+XJ
 "}
-(16,1,1) = {"
+(17,1,1) = {"
+XJ
 aN
 aN
 aN
@@ -1429,4 +1483,25 @@ aN
 aN
 aN
 aN
+XJ
+"}
+(18,1,1) = {"
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
+XJ
 "}

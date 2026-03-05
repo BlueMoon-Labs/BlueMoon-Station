@@ -58,6 +58,7 @@
 
 /obj/machinery/disposal/Destroy()
 	eject()
+	QDEL_NULL(air_contents)
 	if(trunk)
 		trunk.linked = null
 	return ..()
@@ -82,8 +83,8 @@
 	var/atom/L = loc
 	var/datum/gas_mixture/env = new
 	env.copy_from(L.return_air())
-	var/datum/gas_mixture/removed = env.remove(SEND_PRESSURE + 1)
-	air_contents.merge(removed)
+	env.transfer_to(air_contents, SEND_PRESSURE + 1)
+	qdel(env)
 	trunk_check()
 
 /obj/machinery/disposal/attackby(obj/item/I, mob/user, params)
@@ -461,8 +462,7 @@
 		var/transfer_moles = 0.1 * pressure_delta*air_contents.return_volume()/(env.return_temperature() * R_IDEAL_GAS_EQUATION)
 
 		//Actually transfer the gas
-		var/datum/gas_mixture/removed = env.remove(transfer_moles)
-		air_contents.merge(removed)
+		env.transfer_to(air_contents, transfer_moles)
 		air_update_turf()
 
 

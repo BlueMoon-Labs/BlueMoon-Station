@@ -273,6 +273,8 @@
 	. += "Connected cyborgs: [length(connected_robots)]"
 	for(var/r in connected_robots)
 		var/mob/living/silicon/robot/connected_robot = r
+		if(!connected_robot)
+			continue
 		var/robot_status = "Nominal"
 		if(connected_robot.shell)
 			robot_status = "AI SHELL"

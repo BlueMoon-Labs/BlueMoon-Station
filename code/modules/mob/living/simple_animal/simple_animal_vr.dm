@@ -43,7 +43,7 @@
 
 	vore_fullness = new_fullness
 
-/mob/living/simple_animal/death()
+/mob/living/simple_animal/death(gibbed)
 	release_vore_contents()
 	. = ..()
 

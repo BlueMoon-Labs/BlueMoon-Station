@@ -83,6 +83,7 @@
 	can_load_appearance = TRUE
 	antagonist_type = /datum/antagonist/ghost_role/hermit
 	category = "offstation"
+	outfit = /datum/outfit/wandering_hermit
 
 /obj/effect/mob_spawn/human/wandering_hermit/Destroy()
 	var/obj/structure/fluff/empty_sleeper/S = new(drop_location())
@@ -92,7 +93,14 @@
 /obj/effect/mob_spawn/human/wandering_hermit/special(mob/living/carbon/human/new_spawn)
 	. = ..()
 	ADD_TRAIT(new_spawn,TRAIT_EXEMPT_HEALTH_EVENTS,GHOSTROLE_TRAIT)
+	ADD_TRAIT(new_spawn,TRAIT_KNOWS_RESEARCH,GHOSTROLE_TRAIT)
 	new_spawn.grant_language(/datum/language/draconic)
+
+/datum/outfit/wandering_hermit
+	name = "Wandering Hermit"
+	back = /obj/item/storage/backpack/satchel/bone
+	backpack_contents = list(
+		/obj/item/research_paper = 1,)
 
 //Splurt-Specific Space Hotel Staff
 /obj/effect/mob_spawn/human/hotel_staff/splurt

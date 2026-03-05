@@ -57,3 +57,10 @@
 	icon = 'modular_bluemoon/icons/obj/lavaland/survival_pod.dmi'
 	icon_state = "bed_double"
 
+/obj/structure/bed/medieval
+	desc = "A luxurious bed, inviting you to rest on it, oh traveler."
+	icon = 'modular_bluemoon/icons/obj/structures_64x64.dmi'
+	icon_state = "bed_1x2"
+
+/obj/structure/bed/medieval/bed_2x2
+	icon_state = "bed_2x2"

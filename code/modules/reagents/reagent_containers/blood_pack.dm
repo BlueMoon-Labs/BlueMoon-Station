@@ -35,6 +35,8 @@
 
 /obj/item/reagent_containers/blood/update_overlays()
 	. = ..()
+	if(!reagents)
+		return
 	var/v = min(round(reagents.total_volume / volume * 10), 10)
 	if(v > 0)
 		. += mutable_appearance('icons/obj/reagentfillings.dmi', "bloodpack[v]", color = mix_color_from_reagents(reagents.reagent_list))

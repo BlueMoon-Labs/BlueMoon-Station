@@ -9,6 +9,12 @@ SUBSYSTEM_DEF(server_maint)
 	runlevels = RUNLEVEL_LOBBY | RUNLEVELS_DEFAULT
 	var/list/currentrun
 	var/cleanup_ticker = 0
+	/// Last measured null-cleanup cost in ms.
+	var/cleanup_last_ms = 0
+	/// Running average null-cleanup cost in ms.
+	var/cleanup_avg_ms = 0
+	/// Name of list processed during the last cleanup pass.
+	var/cleanup_target_last = "none"
 
 /datum/controller/subsystem/server_maint/PreInit()
 	world.hub_password = "" //quickly! before the hubbies see us.
@@ -18,27 +24,36 @@ SUBSYSTEM_DEF(server_maint)
 		world.update_hub_visibility(TRUE)
 	return ..()
 
+/datum/controller/subsystem/server_maint/proc/run_null_cleanup(list/target_list, target_name)
+	var/cleanup_start = TICK_USAGE_REAL
+	var/had_nulls = listclearnulls(target_list)
+	var/cleanup_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE_REAL - cleanup_start)
+	cleanup_last_ms = cleanup_cost_ms
+	cleanup_avg_ms = cleanup_avg_ms ? MC_AVERAGE(cleanup_avg_ms, cleanup_cost_ms) : cleanup_cost_ms
+	cleanup_target_last = target_name
+	return had_nulls
+
 /datum/controller/subsystem/server_maint/fire(resumed = FALSE)
 	if(!resumed)
-		if(listclearnulls(GLOB.clients))
+		if(run_null_cleanup(GLOB.clients, "clients"))
 			log_world("Found a null in clients list!")
 		src.currentrun = GLOB.clients.Copy()
 
 		switch (cleanup_ticker) // do only one of these at a time, once per 5 fires
 			if (0)
-				if(listclearnulls(GLOB.player_list))
+				if(run_null_cleanup(GLOB.player_list, "player_list"))
 					log_world("Found a null in player_list!")
 				cleanup_ticker++
 			if (5)
-				if(listclearnulls(GLOB.mob_list))
+				if(run_null_cleanup(GLOB.mob_list, "mob_list"))
 					log_world("Found a null in mob_list!")
 				cleanup_ticker++
 			if (10)
-				if(listclearnulls(GLOB.alive_mob_list))
+				if(run_null_cleanup(GLOB.alive_mob_list, "alive_mob_list"))
 					log_world("Found a null in alive_mob_list!")
 				cleanup_ticker++
 			if (15)
-				if(listclearnulls(GLOB.dead_mob_list))
+				if(run_null_cleanup(GLOB.dead_mob_list, "dead_mob_list"))
 					log_world("Found a null in dead_mob_list!")
 				cleanup_ticker++
 			if (20)
@@ -65,7 +80,7 @@ SUBSYSTEM_DEF(server_maint)
 				continue
 
 		if (!(!C || world.time - C.connection_time < PING_BUFFER_TIME || C.inactivity >= (wait-1)))
-			winset(C, null, "command=.update_ping+[world.time+world.tick_lag*TICK_USAGE_REAL/100]")
+			winset(C, null, "command=.update_ping+[world.time+world.tick_lag*TICK_USAGE_REAL/100]+[REALTIMEOFDAY]")
 
 		if (MC_TICK_CHECK) //one day, when ss13 has 1000 people per server, you guys are gonna be glad I added this tick check
 			return

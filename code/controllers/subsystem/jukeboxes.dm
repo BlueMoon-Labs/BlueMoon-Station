@@ -137,6 +137,9 @@ SUBSYSTEM_DEF(jukeboxes)
 /datum/controller/subsystem/jukeboxes/Initialize()
 	init_channels()
 
+	if(!fexists("config/jukebox_music/sounds/"))
+		return ..()
+
 	var/list/tracks = flist("config/jukebox_music/sounds/")
 	//SPLURT EDIT
 	var/max_tracks = CONFIG_GET(number/max_jukebox_songs)

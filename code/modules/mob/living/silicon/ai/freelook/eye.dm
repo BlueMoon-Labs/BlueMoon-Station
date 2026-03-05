@@ -17,6 +17,7 @@
 	var/static_visibility_range = 16
 	var/ai_detector_visible = TRUE
 	var/ai_detector_color = COLOR_RED
+	var/list/obj/machinery/camera/active_cameras = list() // BLUEMOON ADD (Pe4henika)
 
 /mob/camera/aiEye/Initialize(mapload)
 	. = ..()
@@ -64,6 +65,24 @@
 	var/turf/lowerleft = locate(max(1, x - (view[1] - 1)/2), max(1, y - (view[2] - 1)/2), z)
 	var/turf/upperright = locate(min(world.maxx, lowerleft.x + (view[1] - 1)), min(world.maxy, lowerleft.y + (view[2] - 1)), lowerleft.z)
 	return block(lowerleft, upperright)
+// (ADD) Pe4henika Bluemoon -- start
+/mob/camera/aiEye/proc/update_camera_vis()
+    var/list/obj/machinery/camera/nearby = list()
+
+    for(var/obj/machinery/camera/C in range(6, src))
+        if(C.can_use())
+            nearby += C
+
+    for(var/obj/machinery/camera/C in (active_cameras - nearby))
+        C.in_use_lights--
+        C.update_icon()
+        active_cameras -= C
+
+    for(var/obj/machinery/camera/C in (nearby - active_cameras))
+        C.in_use_lights++
+        C.update_icon()
+        active_cameras += C
+// (ADD) Pe4henika bluemoon -- end
 
 // Use this when setting the aiEye's location.
 // It will also stream the chunk that the new loc is in.
@@ -77,6 +96,7 @@
 			return //we are already here!
 		if (T)
 			forceMove(T)
+			update_camera_vis() // (ADD) Pe4henika Bluemoon
 		else
 			moveToNullspace()
 		if(use_static != USE_STATIC_NONE)
@@ -122,20 +142,27 @@
 		return ai.client
 	return null
 
+// (EDIT) Pe4henika bluemoon -- start
 /mob/camera/aiEye/Destroy()
-	if(ai)
-		ai.all_eyes -= src
-		ai = null
-	for(var/V in visibleCameraChunks)
-		var/datum/camerachunk/c = V
-		c.remove(src)
-	GLOB.aiEyes -= src
-	if(ai_detector_visible)
-		var/datum/atom_hud/ai_detector/hud = GLOB.huds[DATA_HUD_AI_DETECT]
-		hud.remove_from_hud(src)
-		var/list/L = hud_list[AI_DETECT_HUD]
-		QDEL_LIST(L)
-	return ..()
+    for(var/obj/machinery/camera/C in active_cameras)
+        C.in_use_lights--
+        C.update_icon()
+    active_cameras.Cut()
+    if(ai)
+        ai.all_eyes -= src
+        ai = null
+    for(var/V in visibleCameraChunks)
+        var/datum/camerachunk/c = V
+        c.remove(src)
+    GLOB.aiEyes -= src
+    if(ai_detector_visible)
+        var/datum/atom_hud/ai_detector/hud = GLOB.huds[DATA_HUD_AI_DETECT]
+        hud.remove_from_hud(src)
+        var/list/L = hud_list[AI_DETECT_HUD]
+        if(L)
+            QDEL_LIST(L)
+    return ..()
+// (EDIT) Pe4henika bluemoon -- end
 
 /atom/proc/move_camera_by_click()
 	if(isAI(usr))

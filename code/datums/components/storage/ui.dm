@@ -13,6 +13,56 @@
 			ND.number++
 	. = sortTim(., GLOBAL_PROC_REF(cmp_numbered_displays_name_asc), associative = TRUE)
 
+/datum/component/storage/proc/_acquire_item_holder(datum/hud/hud, obj/item/I)
+	var/atom/movable/screen/storage/item_holder/D
+	if(length(pooled_item_holders))
+		D = pooled_item_holders[pooled_item_holders.len]
+		pooled_item_holders.len--
+		D.set_new_hud(hud)
+		D.master = src
+		D.set_item(I)
+	else
+		D = new(null, hud, src, I)
+	return D
+
+/datum/component/storage/proc/_acquire_volumetric_box(datum/hud/hud, obj/item/I)
+	var/atom/movable/screen/storage/volumetric_box/center/B
+	if(length(pooled_volumetric_boxes))
+		B = pooled_volumetric_boxes[pooled_volumetric_boxes.len]
+		pooled_volumetric_boxes.len--
+		B.set_new_hud(hud)
+		B.master = src
+		B.set_item(I)
+		if(B.holder)
+			B.holder.set_new_hud(hud)
+			B.holder.master = B
+	else
+		B = new /atom/movable/screen/storage/volumetric_box/center(null, hud, src, I)
+	return B
+
+/datum/component/storage/proc/_recycle_ui_objects(list/objects)
+	if(!islist(objects))
+		return
+	for(var/atom/movable/screen/S in objects)
+		if(QDELETED(S))
+			continue
+		if(istype(S, /atom/movable/screen/storage/volumetric_box/center))
+			var/atom/movable/screen/storage/volumetric_box/center/B = S
+			B.set_item(null)
+			B.makeItemInactive()
+			B.maptext = null
+			B.screen_loc = initial(B.screen_loc)
+			pooled_volumetric_boxes += B
+			continue
+		if(istype(S, /atom/movable/screen/storage/item_holder))
+			var/atom/movable/screen/storage/item_holder/D = S
+			D.set_item(null)
+			D.maptext = null
+			D.screen_loc = initial(D.screen_loc)
+			pooled_item_holders += D
+			continue
+		qdel(S)
+
 /**
   * Orients all objects in legacy mode, and returns the objects to show to the user.
   */
@@ -62,7 +112,7 @@
 		for(var/obj/O in accessible_items())
 			if(QDELETED(O))
 				continue
-			var/atom/movable/screen/storage/item_holder/D = new(null, user.hud_used, src, O)
+			var/atom/movable/screen/storage/item_holder/D = _acquire_item_holder(user.hud_used, O)
 			// SNOWFLAKE: make O opaque too, pending storage rewrite
 			O.mouse_opacity = MOUSE_OPACITY_OPAQUE
 			D.mouse_opacity = MOUSE_OPACITY_OPAQUE //This is here so storage items that spawn with contents correctly have the "click around item to equip"
@@ -139,7 +189,7 @@
 	for(var/i in percentage_by_item)
 		I = i
 		var/percent = percentage_by_item[I]
-		var/atom/movable/screen/storage/volumetric_box/center/B = new /atom/movable/screen/storage/volumetric_box/center(null, user.hud_used, src, I)
+		var/atom/movable/screen/storage/volumetric_box/center/B = _acquire_volumetric_box(user.hud_used, I)
 		// SNOWFLAKE: force it to icon until we unfuck storage/click passing
 		I.mouse_opacity = MOUSE_OPACITY_ICON
 		var/pixels_to_use = overrun? MINIMUM_PIXELS_PER_ITEM : max(using_horizontal_pixels * percent, MINIMUM_PIXELS_PER_ITEM)
@@ -237,12 +287,12 @@
   * Hides our UI from a mob
   */
 /datum/component/storage/proc/ui_hide(mob/M)
-	if(!M.client)
-		return TRUE
-	UnregisterSignal(M, list(COMSIG_PARENT_QDELETING, COMSIG_MOB_CLIENT_LOGOUT))
-	M.client.screen -= ui_by_mob[M]
 	var/list/objects = ui_by_mob[M]
-	QDEL_LIST(objects)
+	UnregisterSignal(M, list(COMSIG_PARENT_QDELETING, COMSIG_MOB_CLIENT_LOGOUT))
+	if(M.client)
+		M.client.screen -= objects
+	_recycle_ui_objects(objects)
+	ui_by_mob -= M
 	if(M.active_storage == src)
 		M.active_storage = null
 	LAZYREMOVE(is_using, M)

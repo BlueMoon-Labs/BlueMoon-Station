@@ -27,6 +27,23 @@
 			"<span class='danger'>You burst out of [src]!</span>")
 	..()
 
+/// Removes and gibs the head only (e.g. point-blank KS-23/sniper headshot). Used by nutcracker and projectile on_hit.
+/mob/living/carbon/proc/gib_head()
+	var/obj/item/bodypart/head = get_bodypart(BODY_ZONE_HEAD)
+	if(!head)
+		return
+	var/turf/T = get_turf(src)
+	var/list/organs = getorganszone(BODY_ZONE_HEAD) + getorganszone("eyes") + getorganszone("mouth")
+	for(var/internal_organ in organs)
+		var/obj/item/organ/I = internal_organ
+		I.Remove()
+		I.forceMove(T)
+	head.drop_limb()
+	qdel(head)
+	new gib_type(T, 1, get_static_viruses())
+	add_splatter_floor(T)
+	playsound(src, 'sound/effects/splat.ogg', 50, 1)
+
 /mob/living/carbon/spill_organs(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion)
 	var/atom/Tsec = drop_location()
 	if(!no_bodyparts)
@@ -58,9 +75,11 @@
 			I.forceMove(Tsec)
 			I.throw_at(get_edge_target_turf(src,pick(GLOB.alldirs)),rand(1,3),5)
 
-/mob/living/carbon/spread_bodyparts(no_brain, no_organs, datum/explosion/was_explosion)
+/mob/living/carbon/spread_bodyparts(keep_head = FALSE, datum/explosion/was_explosion)
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/BP = X
+		if(keep_head && BP.body_part == HEAD)
+			continue
 		if(was_explosion)
 			LAZYADD(BP.acted_explosions, was_explosion.explosion_id)
 		BP.drop_limb()

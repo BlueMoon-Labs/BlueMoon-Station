@@ -6,6 +6,7 @@
 	item_state = "radio"
 	var/list/stored_options
 	var/force_refresh = FALSE //if set to true, the beacon will recalculate its display options whenever opened
+	var/radial_menu = FALSE // Показывать ли радиальное меню, вместо TGUI выбора
 
 /obj/item/choice_beacon/attack_self(mob/user)
 	if(canUseBeacon(user))
@@ -21,18 +22,23 @@
 		playsound(src, 'sound/machines/buzz-sigh.ogg', 40, 1)
 		return FALSE
 
-/obj/item/choice_beacon/proc/generate_options(mob/living/M, radial_menu = FALSE)
+/obj/item/choice_beacon/proc/generate_options(mob/living/M, _radial_menu)
+	if(isnull(_radial_menu))
+		_radial_menu = radial_menu
 	if(!stored_options || force_refresh)
 		stored_options = generate_display_names()
 	if(!stored_options.len)
 		return
 	// BLEMOON EDIT START
 	var/choice
-	if(radial_menu)
+	if(stored_options.len == 1)
+		choice = stored_options[1]
+	else if(_radial_menu)
 		var/list/stored_options_radial = list()
 		for(var/listed in stored_options)
 			stored_options_radial[listed] = new /mutable_appearance(stored_options[listed])
-		choice = stored_options_radial.len == 1 ? stored_options_radial[1] : show_radial_menu(M, src, stored_options_radial, radius = 40, require_near = TRUE)
+		var/radial_radius = 27 + clamp(stored_options_radial.len - 5, 0, 3) * 4 // 6 = 30, 7 = 33, 8+ = 36
+		choice = stored_options_radial.len == 1 ? stored_options_radial[1] : show_radial_menu(M, src, stored_options_radial, radius = radial_radius, require_near = TRUE)
 	else
 		choice = tgui_input_list(M, "Select an item", "Which item would you like to order?", stored_options)
 	// BLEMOON EDIT END
@@ -69,7 +75,7 @@
 	var/static/list/ingredientboxes
 	if(!ingredientboxes)
 		ingredientboxes = list()
-		var/list/templist = typesof(/obj/item/storage/box/ingredients)
+		var/list/templist = subtypesof(/obj/item/storage/box/ingredients)
 		for(var/V in templist)
 			var/obj/item/storage/box/ingredients/A = V
 			ingredientboxes[initial(A.theme_name)] = A
@@ -177,7 +183,6 @@
 /obj/item/choice_beacon/pet/create_choice_atom(atom/choice, mob/owner)
 	var/obj/item/pet_carrier/carrier = new()
 	var/mob/living/simple_animal/new_choice = new choice(carrier)
-	carrier.add_occupant(new_choice)
 	new_choice.mob_size = MOB_SIZE_TINY //yeah we're not letting you use this roundstart pet to hurt people / knock them down
 	new_choice.pass_flags = PASSTABLE | PASSMOB //your pet is not a bullet/person shield
 	new_choice.density = FALSE
@@ -187,6 +192,7 @@
 	if(pet_name)
 		new_choice.name = pet_name
 		new_choice.unique_name = TRUE
+	carrier.add_occupant(new_choice)
 	return carrier
 
 /obj/item/choice_beacon/pet/spawn_option(atom/choice,mob/living/M)
@@ -213,7 +219,7 @@
 
 /obj/item/choice_beacon/box/plushie/spawn_option(choice,mob/living/M)
 	if(ispath(choice, /obj/item/toy/plush))
-		..() //regular plush, spawn it naturally
+		return ..() //regular plush, spawn it naturally
 	else
 		//snowflake plush
 		var/obj/item/toy/plush/snowflake_plushie = new(get_turf(M))

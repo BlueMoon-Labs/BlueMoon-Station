@@ -8,6 +8,7 @@ import { shallowDiffers } from 'common/react';
 import { debounce } from 'common/timer';
 import { Component, createRef } from 'inferno';
 
+import { sendMessage } from '../backend';
 import { createLogger } from '../logging';
 import { computeBoxProps } from './Box';
 
@@ -16,7 +17,7 @@ const logger = createLogger('ByondUi');
 // Stack of currently allocated BYOND UI element ids.
 const byondUiStack = [];
 
-const createByondUiElement = elementId => {
+const createByondUiElement = (elementId, phonehome = true) => {
   // Reserve an index in the stack
   const index = byondUiStack.length;
   byondUiStack.push(null);
@@ -27,11 +28,17 @@ const createByondUiElement = elementId => {
   return {
     render: params => {
       logger.log(`rendering '${id}'`);
+      if (phonehome) {
+        sendMessage({ type: 'renderByondUi', payload: { renderByondUi: id } });
+      }
       byondUiStack[index] = id;
       Byond.winset(id, params);
     },
     unmount: () => {
       logger.log(`unmounting '${id}'`);
+      if (phonehome) {
+        sendMessage({ type: 'unmountByondUi', payload: { renderByondUi: id } });
+      }
       byondUiStack[index] = null;
       Byond.winset(id, {
         parent: '',
@@ -59,14 +66,17 @@ window.addEventListener('beforeunload', () => {
  */
 const getBoundingBox = element => {
   const rect = element.getBoundingClientRect();
+  // DPI fix: getBoundingClientRect() returns CSS pixels (scaled down by body zoom),
+  // but Byond.winset() expects physical pixels. Multiply by devicePixelRatio.
+  const pr = window.devicePixelRatio ?? 1;
   return {
     pos: [
-      rect.left,
-      rect.top,
+      Math.round(rect.left * pr),
+      Math.round(rect.top * pr),
     ],
     size: [
-      rect.right - rect.left,
-      rect.bottom - rect.top,
+      Math.round((rect.right - rect.left) * pr),
+      Math.round((rect.bottom - rect.top) * pr),
     ],
   };
 };
@@ -75,7 +85,7 @@ export class ByondUi extends Component {
   constructor(props) {
     super(props);
     this.containerRef = createRef();
-    this.byondUiElement = createByondUiElement(props.params?.id);
+    this.byondUiElement = createByondUiElement(props.params?.id, props.phonehome);
     this.handleResize = debounce(() => {
       this.forceUpdate();
     }, 100);
@@ -95,20 +105,12 @@ export class ByondUi extends Component {
   }
 
   componentDidMount() {
-    // IE8: It probably works, but fuck you anyway.
-    if (Byond.IS_LTE_IE10) {
-      return;
-    }
     window.addEventListener('resize', this.handleResize);
     this.componentDidUpdate();
     this.handleResize();
   }
 
   componentDidUpdate() {
-    // IE8: It probably works, but fuck you anyway.
-    if (Byond.IS_LTE_IE10) {
-      return;
-    }
     const {
       params = {},
     } = this.props;
@@ -123,10 +125,6 @@ export class ByondUi extends Component {
   }
 
   componentWillUnmount() {
-    // IE8: It probably works, but fuck you anyway.
-    if (Byond.IS_LTE_IE10) {
-      return;
-    }
     window.removeEventListener('resize', this.handleResize);
     this.byondUiElement.unmount();
   }

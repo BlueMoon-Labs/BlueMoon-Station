@@ -7,6 +7,7 @@ SUBSYSTEM_DEF(statpanels)
 	var/list/currentrun = list()
 	var/encoded_global_data
 	var/mc_data_encoded
+	var/mc_ss_data_encoded
 	var/list/cached_images = list()
 
 /datum/controller/subsystem/statpanels/fire(resumed = FALSE)
@@ -14,59 +15,51 @@ SUBSYSTEM_DEF(statpanels)
 		var/datum/map_config/cached = SSmapping.next_map_config
 		var/round_time = world.time - SSticker.round_start_time
 		var/real_round_time = world.timeofday - SSticker.real_round_start_time
-		/* BLUEMOON REMOVAL START
-		var/list/global_data = list(
-			"Map: [SSmapping.config?.map_name || "Loading..."]",
-			cached ? "Next Map: [cached.map_name]" : null,
-			"Round ID: [GLOB.round_id ? GLOB.round_id : "NULL"]",
-			"Game Mode: [GLOB.master_mode]",
-			"Connected Players: [GLOB.clients.len]",
-			" ",
-			"OOC: [GLOB.ooc_allowed ? "Enabled" : "Disabled"]",
-			" ",
-			"Server Time: [time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")]",
-			"Round Time: [GAMETIMESTAMP("hh:mm:ss", round_time)]",
-			"Actual Round Timer: [time2text(real_round_time, "hh:mm:ss", 0)]", //A back up control to check the round time to see if round time has descyed as well as properly track round time
-			"Station Time: [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)]",
-			"Time Dilation: [round(SStime_track.time_dilation_current,1)]% AVG:([round(SStime_track.time_dilation_avg_fast,1)]%, [round(SStime_track.time_dilation_avg,1)]%, [round(SStime_track.time_dilation_avg_slow,1)]%)"
-		)
-		/ BLUEMOON REMOVAL END */
-		// BLUEMOON ADD START - наша версия стат-панели
-		var/list/global_data = list(
-			"Карта: [SSmapping.config?.map_name || "Loading..."]",
-			cached ? "Следующая карта: [cached.map_name]" : null,
-			"ID раунда: [GLOB.round_id ? GLOB.round_id : "NULL"]",
-			"Игровой Режим: [GLOB.master_mode]",
-			"Предыдущие Режимы: [jointext(SSpersistence.saved_modes, ", ")]", // Because some of us want to know when our favorite mode becomes forced - Flauros
-			"Подключено Игроков: [GLOB.clients.len]",
-			"Отклонения Во Времени: [round(SStime_track.time_dilation_current,1)]% AVG:([round(SStime_track.time_dilation_avg_fast,1)]%, [round(SStime_track.time_dilation_avg,1)]%, [round(SStime_track.time_dilation_avg_slow,1)]%)",
-			"Время Сервера: [time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")]",
-			" ",
-			"Время Раунда: [time2text(round_time, "hh:mm:ss", 0)]",
-			"Настоящее Время Раунда: [time2text(real_round_time, "hh:mm:ss", 0)]", //A back up control to check the round time to see if round time has descyed as well as properly track round time
-			" ",
-			"Дата: [time2text(world.realtime, "MMM DD")] [GLOB.year_integer]",
-			"Время: [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)]",
-			"Время в Солнечной Системе: [SOLAR_TIME_TIMESTAMP("hh:mm:ss", world.time)]"
-		)
-		// BLUEMOON ADD END
-
+		// Structured status data
+		var/list/global_data = list()
+		// Server section
+		var/list/server_section = list(
+			list("\u041A\u0430\u0440\u0442\u0430", SSmapping.config?.map_name || "Loading..."))
+		if(cached)
+			server_section += list(list("\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0430\u044F \u043A\u0430\u0440\u0442\u0430", cached.map_name))
+		server_section += list(
+			list("ID \u0440\u0430\u0443\u043D\u0434\u0430", GLOB.round_id ? GLOB.round_id : "NULL"),
+			list("\u0418\u0433\u0440\u043E\u0432\u043E\u0439 \u0420\u0435\u0436\u0438\u043C", GLOB.master_mode),
+			list("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u0418\u0433\u0440\u043E\u043A\u043E\u0432", GLOB.clients.len),
+			list("\u041F\u0440\u0435\u0434\u044B\u0434\u0443\u0449\u0438\u0435 \u0420\u0435\u0436\u0438\u043C\u044B", jointext(SSpersistence.saved_modes, ", ")))
+		global_data["server"] = server_section
+		// Time section
+		global_data["time"] = list(
+			list("\u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(round_time, "hh:mm:ss", 0)),
+			list("\u041D\u0430\u0441\u0442. \u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(real_round_time, "hh:mm:ss", 0)),
+			list("\u0414\u0430\u0442\u0430", "[time2text(world.realtime, "MMM DD")] [GLOB.year_integer]"),
+			list("\u0412\u0440\u0435\u043C\u044F \u0421\u0442\u0430\u043D\u0446\u0438\u0438", STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)),
+			list("\u0412\u0440\u0435\u043C\u044F \u0432 \u0421\u043E\u043B\u043D\u0435\u0447\u043D\u043E\u0439", SOLAR_TIME_TIMESTAMP("hh:mm:ss", world.time)),
+			list("\u0412\u0440\u0435\u043C\u044F \u0421\u0435\u0440\u0432\u0435\u0440\u0430", time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")))
+		// Time dilation as numbers for color coding on client
+		global_data["tidi"] = list(
+			round(SStime_track.time_dilation_current, 0.1),
+			round(SStime_track.time_dilation_avg_fast, 0.1),
+			round(SStime_track.time_dilation_avg, 0.1),
+			round(SStime_track.time_dilation_avg_slow, 0.1))
+		// Shuttle section (only when active)
 		if(SSshuttle.emergency)
 			var/ETA = SSshuttle.emergency.getModeStr()
 			if(ETA)
-				global_data += "[ETA] [SSshuttle.emergency.getTimerStr()]"
+				global_data["shuttle"] = list(ETA, SSshuttle.emergency.getTimerStr())
 
 		encoded_global_data = url_encode(json_encode(global_data))
 		src.currentrun = GLOB.clients.Copy()
 		mc_data_encoded = null
+		mc_ss_data_encoded = null
 	var/list/currentrun = src.currentrun
 	while(length(currentrun))
 		var/client/target = currentrun[length(currentrun)]
 		currentrun.len--
-		if(!target.statbrowser_ready)
+		if(!target?.statbrowser_ready)
 			continue
 		if(target.stat_tab == "Status")
-			var/ping_str = url_encode("Ping: [round(target.lastping, 1)]ms (Average: [round(target.avgping, 1)]ms)")
+			var/ping_str = url_encode(json_encode(list(round(target.lastping, 1), round(target.avgping, 1))))
 			var/other_str = url_encode(json_encode(target.mob.get_status_tab_items()))
 			target << output("[encoded_global_data];[ping_str];[other_str]", "statbrowser:update")
 			if(SSvote.mode)
@@ -116,7 +109,7 @@ SUBSYSTEM_DEF(statpanels)
 				var/coord_entry = url_encode(COORD(eye_turf))
 				if(!mc_data_encoded)
 					generate_mc_data()
-				target << output("[mc_data_encoded];[coord_entry]", "statbrowser:update_mc")
+				target << output("[mc_data_encoded];[mc_ss_data_encoded];[coord_entry]", "statbrowser:update_mc")
 			if(target.stat_tab == "Tickets")
 				var/list/ahelp_tickets = GLOB.ahelp_tickets.stat_entry()
 				target << output("[url_encode(json_encode(ahelp_tickets))];", "statbrowser:update_tickets")
@@ -186,22 +179,137 @@ SUBSYSTEM_DEF(statpanels)
 
 
 /datum/controller/subsystem/statpanels/proc/generate_mc_data()
-	var/list/mc_data = list(
-		list("CPU:", world.cpu),
-		list("Instances:", "[num2text(world.contents.len, 10)]"),
-		list("World Time:", "[world.time]"),
-		list("Globals:", GLOB.stat_entry(), "\ref[GLOB]"),
-		list("[config]:", config.stat_entry(), "\ref[config]"),
-		list("Byond:", "(FPS:[world.fps]) (TickCount:[world.time/world.tick_lag]) (TickDrift:[round(Master.tickdrift,1)]([round((Master.tickdrift/(world.time/world.tick_lag))*100,0.1)]%)) (Internal Tick Usage: [round(MAPTICK_LAST_INTERNAL_TICK_USAGE,0.1)]%)"),
-		list("Master Controller:", Master.stat_entry(), "\ref[Master]"),
-		list("Failsafe Controller:", Failsafe.stat_entry(), "\ref[Failsafe]"),
-		list("","")
+	// Server/MC metrics as structured data
+	var/list/server_info = list()
+	server_info["cpu"] = world.cpu
+	server_info["instances"] = world.contents.len
+	server_info["world_time"] = world.time
+	server_info["fps"] = world.fps
+	server_info["tick_count"] = round(world.time / world.tick_lag)
+	server_info["tick_drift"] = round(Master.tickdrift, 0.1)
+	server_info["tick_drift_pct"] = round((Master.tickdrift / max(world.time / world.tick_lag, 1)) * 100, 0.1)
+	server_info["internal_tick_usage"] = round(MAPTICK_LAST_INTERNAL_TICK_USAGE, 0.1)
+	// MC state
+	server_info["mc_tick_rate"] = Master.processing
+	server_info["mc_iteration"] = Master.iteration
+	server_info["mc_tick_limit"] = round(Master.current_ticklimit, 0.1)
+	server_info["mc_stat"] = Master.stat_entry()
+	server_info["failsafe_stat"] = Failsafe.stat_entry()
+	// Ping RTT
+	server_info["ping_samples"] = SStime_track.ping_samples
+	server_info["ping_rtt_avg"] = round(SStime_track.ping_rtt_last_avg, 1)
+	server_info["ping_rtt_max"] = round(SStime_track.ping_rtt_last_max, 1)
+	server_info["ping_rtt_avg_avg"] = round(SStime_track.ping_rtt_avg_avg, 1)
+	// Ping tick/server
+	server_info["ping_tick_avg"] = round(SStime_track.ping_tick_last_avg, 1)
+	server_info["ping_tick_max"] = round(SStime_track.ping_tick_last_max, 1)
+	server_info["ping_server_avg"] = round(SStime_track.ping_server_last_avg, 1)
+	server_info["ping_server_max"] = round(SStime_track.ping_server_last_max, 1)
+	// Movement jitter
+	server_info["raw_mult"] = round(SStime_track.raw_multiplier_last, 4)
+	server_info["jitter_last"] = round(SStime_track.raw_multiplier_jitter_abs_last, 2)
+	server_info["jitter_avg"] = round(SStime_track.raw_multiplier_jitter_abs_avg, 2)
+	server_info["jitter_max_wnd"] = round(SStime_track.raw_multiplier_jitter_abs_max_window, 2)
+	server_info["glide_mult"] = round(SStime_track.glide_size_multiplier_current, 4)
+	// Server maintenance
+	server_info["cleanup_last"] = round(SSserver_maint.cleanup_last_ms, 3)
+	server_info["cleanup_avg"] = round(SSserver_maint.cleanup_avg_ms, 3)
+	server_info["cleanup_target"] = SSserver_maint.cleanup_target_last
+	// Time dilation
+	server_info["tidi_current"] = round(SStime_track.time_dilation_current, 0.1)
+	server_info["tidi_avg_fast"] = round(SStime_track.time_dilation_avg_fast, 0.1)
+	server_info["tidi_avg"] = round(SStime_track.time_dilation_avg, 0.1)
+	server_info["tidi_avg_slow"] = round(SStime_track.time_dilation_avg_slow, 0.1)
+	// VV refs
+	server_info["ref_glob"] = "\ref[GLOB]"
+	server_info["ref_config"] = "\ref[config]"
+	server_info["ref_master"] = "\ref[Master]"
+	server_info["ref_failsafe"] = "\ref[Failsafe]"
+	server_info["ref_cameranet"] = "\ref[GLOB.cameranet]"
+	// Camera net
+	server_info["camera_count"] = GLOB.cameranet.cameras.len
+	server_info["camera_chunks"] = GLOB.cameranet.chunks.len
+
+	// Key subsystem structured data
+	var/list/key_ss = list()
+	// Atmospherics
+	key_ss["Atmospherics"] = list(
+		list("\u0412\u044B\u0441\u043E\u043A\u043E\u0435 \u0434\u0430\u0432\u043B\u0435\u043D\u0438\u0435", round(SSair.cost_highpressure, 0.1)),
+		list("\u0413\u043E\u0440\u0435\u043D\u0438\u0435", round(SSair.cost_hotspots, 0.1)),
+		list("\u0421\u0432\u0435\u0440\u0445\u043F\u0440\u043E\u0432\u043E\u0434\u0438\u043C\u043E\u0441\u0442\u044C", round(SSair.cost_superconductivity, 0.1)),
+		list("\u0422\u0440\u0443\u0431\u043E\u043F\u0440\u043E\u0432\u043E\u0434\u044B", round(SSair.cost_pipenets, 0.1)),
+		list("\u0410\u0442\u043C\u043E\u0441. \u043C\u0430\u0448\u0438\u043D\u044B", round(SSair.cost_atmos_machinery, 0.1)),
+		list("\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u0442\u0430\u0439\u043B\u044B", round(SSair.cost_turfs, 0.1)),
+		list("\u041E\u0447\u0430\u0433\u0438", SSair.hotspots.len),
+		list("\u0421\u0435\u0442\u0438", SSair.networks.len),
+		list("\u0412\u044B\u0441 \u0434\u0430\u0432\u043B. \u0442\u0430\u0439\u043B\u044B", SSair.high_pressure_turfs),
+		list("\u041D\u0438\u0437\u043A \u0434\u0430\u0432\u043B. \u0442\u0430\u0439\u043B\u044B", SSair.low_pressure_turfs),
+		list("\u0413\u0430\u0437\u043E\u0432\u044B\u0435 \u0441\u043C\u0435\u0441\u0438", SSair.gas_mixes_count)
 	)
-	for(var/ss in Master.subsystems)
-		var/datum/controller/subsystem/sub_system = ss
-		mc_data[++mc_data.len] = list("\[[sub_system.state_letter()]][sub_system.name]", sub_system.stat_entry(), "\ref[sub_system]")
-	mc_data[++mc_data.len] = list("Camera Net", "Cameras: [GLOB.cameranet.cameras.len] | Chunks: [GLOB.cameranet.chunks.len]", "\ref[GLOB.cameranet]")
-	mc_data_encoded = url_encode(json_encode(mc_data))
+	// Garbage Collector
+	var/gc_ratio = (SSgarbage.totaldels + SSgarbage.totalgcs) ? "[round((SSgarbage.totalgcs / (SSgarbage.totaldels + SSgarbage.totalgcs)) * 100, 0.1)]%" : "n/a"
+	var/list/gc_queue_counts = list()
+	for(var/list/L in SSgarbage.queues)
+		gc_queue_counts += length(L)
+	key_ss["Garbage"] = list(
+		list("\u041E\u0447\u0435\u0440\u0435\u0434\u0438", gc_queue_counts.Join(", ")),
+		list("Del/\u0442\u0438\u043A", SSgarbage.delslasttick),
+		list("GC/\u0442\u0438\u043A", SSgarbage.gcedlasttick),
+		list("\u0412\u0441\u0435\u0433\u043E Del", SSgarbage.totaldels),
+		list("\u0412\u0441\u0435\u0433\u043E GC", SSgarbage.totalgcs),
+		list("GC %", gc_ratio)
+	)
+	// Machines
+	key_ss["Machines"] = list(
+		list("\u0412\u0441\u0435\u0433\u043E \u043C\u0430\u0448\u0438\u043D", SSmachines.get_machine_count()),
+		list("\u0422\u0438\u043F\u043E\u0432", SSmachines.get_machine_type_count()),
+		list("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430", length(SSmachines.processing)),
+		list("\u042D\u043D\u0435\u0440\u0433\u043E\u0441\u0435\u0442\u0438", length(SSmachines.powernets))
+	)
+	// Mobs
+	key_ss["Mobs"] = list(
+		list("\u0416\u0438\u0432\u044B\u0445 \u043C\u043E\u0431\u043E\u0432", length(GLOB.mob_living_list))
+	)
+	// Timer
+	key_ss["Timer"] = list(
+		list("\u0411\u0430\u043A\u0435\u0442\u044B", SStimer.bucket_count),
+		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C", length(SStimer.second_queue)),
+		list("\u0425\u044D\u0448\u0438", length(SStimer.hashes)),
+		list("\u041A\u043B\u0438\u0435\u043D\u0442 \u0442\u0430\u0439\u043C\u0435\u0440\u044B", length(SStimer.clienttime_timers)),
+		list("\u0412\u0441\u0435\u0433\u043E ID", length(SStimer.timer_id_dict))
+	)
+	// Objects (processing subsystem)
+	key_ss["Objects"] = list(
+		list("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430", length(SSobj.processing))
+	)
+	server_info["key_ss"] = key_ss
+
+	mc_data_encoded = url_encode(json_encode(server_info))
+
+	// Subsystem rows: [name, state, cost, tick_usage, tick_overrun, ticks, times_fired, can_fire, is_bg, ref, stat_extra]
+	var/list/ss_data = list()
+	for(var/datum/controller/subsystem/SS as anything in Master.subsystems)
+		var/is_active = (SS.can_fire && !(SS.flags & SS_NO_FIRE)) ? 1 : 0
+		// Extract subsystem-specific stat data (part after \t in stat_entry)
+		var/stat_text = SS.stat_entry()
+		var/stat_extra = ""
+		var/tab_pos = findtext(stat_text, "\t")
+		if(tab_pos)
+			stat_extra = copytext(stat_text, tab_pos + 1)
+		ss_data[++ss_data.len] = list(
+			SS.name,
+			SS.state,
+			round(SS.cost, 0.1),
+			round(SS.tick_usage, 0.1),
+			round(SS.tick_overrun, 0.1),
+			round(SS.ticks, 0.1),
+			SS.times_fired,
+			is_active,
+			(SS.flags & SS_BACKGROUND) ? 1 : 0,
+			"\ref[SS]",
+			stat_extra
+		)
+	mc_ss_data_encoded = url_encode(json_encode(ss_data))
 
 /atom/proc/remove_from_cache()
 	SSstatpanels.cached_images -= REF(src)

@@ -1387,6 +1387,8 @@
 
 /datum/status_effect/bola_snared/proc/bola_trip(mob/living/carbon/C)
 	SIGNAL_HANDLER
+	if(!C.has_gravity()) // нет гравитации? Бола не заставит нас падать
+		return
 	if(!C.legcuffed) // если мы сняли болу, то эффекта нет
 		C.remove_status_effect(src)
 		return

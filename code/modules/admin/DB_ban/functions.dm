@@ -415,13 +415,22 @@
 		to_chat(usr, "<span class='danger'>Failed to establish database connection.</span>")
 		return
 
-	var/output = "<div align='center'><table width='90%'><tr>"
+	var/output = {"<style>
+input, select, textarea {
+	background-color: #1e1e1e;
+	color: #ffffff;
+	border: 1px solid #40628a;
+	padding: 2px 4px;
+}
+th { color: #98B0C3; }
+</style>"}
+	output += "<div align='center'><table width='90%'><tr>"
 
 	output += "<td width='35%' align='center'>"
 	output += "<h1>Banning panel</h1>"
 	output += "</td>"
 
-	output += "<td width='65%' align='center' bgcolor='#f9f9f9'>"
+	output += "<td width='65%' align='center' bgcolor='#2d2d2d'>"
 
 	output += "<form method='GET' action='?src=[REF(src)]'><b>Add custom ban:</b> (ONLY use this if you can't ban through any other method)"
 	output += "<input type='hidden' name='src' value='[REF(src)]'>"
@@ -512,12 +521,12 @@
 				bancount -= bansperpage
 				pagecount++
 			output += "|"
-		var/blcolor = "#ffeeee" //banned light
-		var/bdcolor = "#ffdddd" //banned dark
-		var/ulcolor = "#eeffee" //unbanned light
-		var/udcolor = "#ddffdd" //unbanned dark
+		var/blcolor = "#352222" //banned light
+		var/bdcolor = "#3d2020" //banned dark
+		var/ulcolor = "#223522" //unbanned light
+		var/udcolor = "#203d20" //unbanned dark
 
-		output += "<table width='90%' bgcolor='#e3e3e3' cellpadding='5' cellspacing='0' align='center'>"
+		output += "<table width='90%' bgcolor='#383838' cellpadding='5' cellspacing='0' align='center'>"
 		output += "<tr>"
 		output += "<th width='25%'><b>TYPE</b></th>"
 		output += "<th width='20%'><b>CKEY</b></th>"
@@ -593,12 +602,14 @@
 				output += "</tr>"
 			if(unbanned)
 				output += "<tr bgcolor='[dcolor]'>"
-				output += "<td align='center' colspan='5' bgcolor=''><b>UNBANNED by admin [unban_key] on [unbantime]</b></td>"
+				output += "<td align='center' colspan='5'><b>UNBANNED by admin [unban_key] on [unbantime]</b></td>"
 				output += "</tr>"
 			output += "<tr>"
-			output += "<td colspan='5' bgcolor='white'>&nbsp</td>"
+			output += "<td colspan='5' bgcolor='#1e1e1e'>&nbsp</td>"
 			output += "</tr>"
 		qdel(query_search_bans)
 		output += "</table></div>"
 
-	usr << browse(output,"window=lookupbans;size=900x500")
+	var/datum/browser/popup = new(usr, "lookupbans", "Ban Lookup", 900, 500)
+	popup.set_content(output)
+	popup.open(FALSE)

@@ -2,7 +2,7 @@
 	if(!check_rights())
 		return
 	log_admin("[key_name(usr)] checked the player panel in [usr.loc] and X:[usr.x] Y:[usr.y] Z:[usr.z] coordinate.")
-	var/dat = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>Player Panel</title></head>"
+	var/dat = ""
 
 	//javascript, the part that does most of the work~
 	dat += {"
@@ -68,11 +68,9 @@
 					var span = document.getElementById(id);
 					var ckey = key.toLowerCase().replace(/\[^a-z@0-9\]+/g,"");
 
-					body = "<table><tr><td>";
+					body = "<table><tr><td align='center'>";
 
-					body += "</td><td align='center'>";
-
-					body += "<font size='2'><b>"+job+" "+name+"</b><br><b>Real name "+real_name+"</b><br><b>Played by "+key+" ("+ip+")</b></font>"
+					body += "<b>"+job+" "+name+"</b><br><b>Real name "+real_name+"</b><br><b>Played by "+key+" ("+ip+")</b>"
 
 					body += "</td><td align='center'>";
 
@@ -87,7 +85,7 @@
 					body += "<a href='?_src_=holder;[HrefToken()];adminplayerobservefollow="+ref+"'>FLW</a> - "
 					body += "<a href='?_src_=holder;[HrefToken()];individuallog="+ref+"'>LOGS</a><br>"
 					if(antagonist > 0)
-						body += "<font size='2'><a href='?_src_=holder;[HrefToken()];secrets=check_antagonist'><font color='red'><b>Antagonist</b></font></a></font>";
+						body += "<span class='pp-antag'><a href='?_src_=holder;[HrefToken()];secrets=check_antagonist'>Antagonist</a></span>";
 
 					body += "</td></tr></table>";
 
@@ -102,7 +100,7 @@
 
 						var id = span.getAttribute("id");
 
-						if(!(id.indexOf("item")==0))
+						if(!id || !(id.indexOf("item")==0))
 							continue;
 
 						var pass = 1;
@@ -146,7 +144,7 @@
 						return;
 					locked_tabs.push(id);
 					var notice_span = document.getElementById(notice_span_id);
-					notice_span.innerHTML = "<font color='red'>Locked</font> ";
+					notice_span.innerHTML = "<span class='pp-locked'>Locked</span> ";
 					//link.setAttribute("onClick","attempt('"+id+"','"+link_id+"','"+notice_span_id+"');");
 					//document.write("removeFromLocked('"+id+"','"+link_id+"','"+notice_span_id+"')");
 					//document.write("aa - "+link.getAttribute("onClick"));
@@ -183,13 +181,37 @@
 				}
 
 			</script>
+			<style type='text/css'>
+				.pp-title { color: #98B0C3; font-size: 18px; font-weight: bold; padding: 8px 0; }
+				.pp-subtitle { color: #8a9bae; font-size: 12px; }
+				#filter {
+					background-color: #1e1e1e; color: #ffffff; border: 1px solid #40628a;
+					border-radius: 3px; padding: 4px 8px; font-size: 13px; outline: none;
+					transition: border-color 0.2s;
+				}
+				#filter:focus { border-color: #98B0C3; }
+				#maintable_data { border-collapse: collapse; }
+				.pp-row-even { background-color: #2d2d2d; }
+				.pp-row-odd { background-color: #333333; }
+				.pp-row:hover { background-color: #3a3a4a; }
+				.pp-cell { color: #ffffff; padding: 6px 10px; border-bottom: 1px solid #1e1e1e; }
+				.pp-cell b { color: #ffffff; }
+				.pp-cell a { color: #98B0C3; background: none; border: none; padding: 0; margin: 0; text-decoration: none; cursor: pointer; }
+				.pp-cell a:hover { color: #ffffff; background: none; text-decoration: underline; }
+				.pp-cell span\[id^='item'\] table { background-color: #383838; border: 1px solid #40628a; border-radius: 3px; margin-top: 4px; width: 100%; }
+				.pp-cell span\[id^='item'\] td { color: #ffffff; padding: 4px 8px; }
+				.pp-cell span\[id^='item'\] a { color: #ffffff; background: #40628a; border: 1px solid #161616; padding: 1px 5px; margin: 0 1px; border-radius: 2px; text-decoration: none; font-size: 11px; }
+				.pp-cell span\[id^='item'\] a:hover { background: #ffffff; color: #40628a; text-decoration: none; }
+				.pp-antag { color: #ff4444; font-weight: bold; }
+				.pp-locked { color: #ff4444; font-weight: bold; font-size: 11px; }
+			</style>
 		</head>
 
 
 	"}
 
 	//body tag start + onload and onkeypress (onkeyup) javascript event calls
-	dat += "<body onload='selectTextField(); updateSearch();' onkeyup='updateSearch();'>"
+	dat += "<script>window.onload = function() { selectTextField(); updateSearch(); }; document.onkeyup = function() { updateSearch(); };</script>"
 
 	//title + search bar
 	dat += {"
@@ -197,14 +219,13 @@
 		<table width='560' align='center' cellspacing='0' cellpadding='5' id='maintable'>
 			<tr id='title_tr'>
 				<td align='center'>
-					<font size='5'><b>Player panel</b></font><br>
-					Hover over a line to see more information - <a href='?_src_=holder;[HrefToken()];check_antagonist=1'>Check antagonists</a> - Kick <a href='?_src_=holder;[HrefToken()];kick_all_from_lobby=1;afkonly=0'>everyone</a>/<a href='?_src_=holder;[HrefToken()];kick_all_from_lobby=1;afkonly=1'>AFKers</a> in lobby
-					<p>
+					<div class='pp-title'>Player panel</div>
+					<span class='pp-subtitle'>Hover over a line to see more information - <a href='?_src_=holder;[HrefToken()];check_antagonist=1'>Check antagonists</a> - Kick <a href='?_src_=holder;[HrefToken()];kick_all_from_lobby=1;afkonly=0'>everyone</a>/<a href='?_src_=holder;[HrefToken()];kick_all_from_lobby=1;afkonly=1'>AFKers</a> in lobby</span>
 				</td>
 			</tr>
 			<tr id='search_tr'>
 				<td align='center'>
-					<b>Search:</b> <input type='text' id='filter' value='' style='width:300px;'>
+					<b>Search:</b> <input type='text' id='filter' value='' placeholder='Enter name or ckey...' style='width:300px;'>
 				</td>
 			</tr>
 	</table>
@@ -221,9 +242,9 @@
 	for(var/mob/M in mobs)
 		if(M.ckey)
 
-			var/color = "#e6e6e6"
+			var/row_class = "pp-row pp-row-odd"
 			if(i%2 == 0)
-				color = "#f2f2f2"
+				row_class = "pp-row pp-row-even"
 			var/is_antagonist = is_special_character(M)
 
 			var/M_job = ""
@@ -281,8 +302,8 @@
 			//output for each mob
 			dat += {"
 
-				<tr id='data[i]' name='[i]' onClick="addToLocked('item[i]','data[i]','notice_span[i]')">
-					<td align='center' bgcolor='[color]'>
+				<tr id='data[i]' name='[i]' class='[row_class]' onClick="addToLocked('item[i]','data[i]','notice_span[i]')">
+					<td align='center' class='pp-cell'>
 						<span id='notice_span[i]'></span>
 						<a id='link[i]'
 						onmouseover='expand("item[i]","[M_job]","[M_name]","[M_rname]","--unused--","[M_key]","[M.lastKnownIP]",[is_antagonist],"[REF(M)]")'
@@ -307,7 +328,9 @@
 			var maintable = document.getElementById("maintable_data_archive");
 			var complete_list = maintable.innerHTML;
 		</script>
-	</body></html>
+
 	"}
 
-	usr << browse(dat, "window=players;size=600x480")
+	var/datum/browser/popup = new(usr, "players", 0, 600, 480)
+	popup.set_content(dat)
+	popup.open(FALSE)

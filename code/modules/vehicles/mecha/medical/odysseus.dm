@@ -20,14 +20,10 @@
 
 /obj/vehicle/sealed/mecha/medical/odysseus/remove_occupant(mob/M)
 	if(isliving(M))
-		var/mob/living/L = M
+		// Always balance the add_hud_to from moved_inside.
+		// The reference counter in atom_hud handles multiple sources (implant, glasses, odysseus) correctly.
 		var/datum/atom_hud/hud = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
-		var/mob/living/carbon/human/H = M
-		var/obj/item/organ/cyberimp/eyes/hud/CIH = M.getorgan(/obj/item/organ/cyberimp/eyes/hud)
-		if(istype(H.glasses, /obj/item/clothing/glasses/hud/health) || istype(CIH, /obj/item/organ/cyberimp/eyes/hud/medical))
-			return ..()
-		else
-			hud.remove_hud_from(L)
+		hud.remove_hud_from(M)
 	return ..()
 
 /obj/vehicle/sealed/mecha/medical/odysseus/mmi_moved_inside(obj/item/mmi/M, mob/user)

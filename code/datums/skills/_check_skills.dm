@@ -21,7 +21,7 @@
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "SkillPanel", "[owner.name]'s Skills")
-		ui.set_autoupdate(FALSE) 
+		ui.set_autoupdate(FALSE)
 		ui.open()
 	else if(need_static_data_update)
 		update_static_data(user)
@@ -30,6 +30,8 @@
 /datum/skill_holder/ui_static_data(mob/user)
 	. = list()
 	.["skills"] = list()
+
+	// Добавляем обычные навыки
 	for(var/path in GLOB.skill_datums)
 		var/datum/skill/S = GLOB.skill_datums[path]
 		var/list/dat = S.get_skill_data(src)
@@ -38,6 +40,66 @@
 		dat["percent_base"] = (dat["value_base"] / dat["max_value"])
 		dat["percent_mod"] = (dat["value_mod"] / dat["max_value"])
 		.["skills"] += list(dat)
+
+	// Добавляем Research skill если у персонажа есть TRAIT
+	if(owner?.current && HAS_TRAIT(owner.current, TRAIT_KNOWS_RESEARCH))
+		var/list/research_data = get_research_skill_data()
+		.["skills"] += list(research_data)
+
+/datum/skill_holder/proc/get_research_skill_data()
+	var/list/data = list()
+	data["name"] = "Research"
+	data["desc"] = "Your ability to conduct experimental research and craft advanced technology using shapes"
+	data["path"] = "/datum/skill/research"
+
+	var/exp_value = owner?.research_exp || 0
+
+	data["value_base"] = exp_value
+	data["value_mod"] = exp_value
+
+	var/current_level = round(exp_value / 20)
+	data["max_value"] = 100
+	data["level_based"] = TRUE
+	data["lvl_base_num"] = current_level
+	data["lvl_mod_num"] = current_level
+
+	switch(current_level)
+		if(0)
+			data["lvl_base"] = "Novice"
+		if(1)
+			data["lvl_base"] = "Apprentice"
+		if(2)
+			data["lvl_base"] = "Researcher"
+		if(3)
+			data["lvl_base"] = "Advanced Researcher"
+		if(4)
+			data["lvl_base"] = "Expert Researcher"
+		else
+			data["lvl_base"] = "Master Researcher"
+
+	data["lvl_mod"] = data["lvl_base"]
+
+	if(current_level >= 5)
+		data["xp_next_lvl_base"] = "MAXED"
+	else
+		var/xp_in_level = exp_value - (current_level * 20)
+		data["xp_next_lvl_base"] = "\[[xp_in_level]/20\]"
+
+	data["xp_next_lvl_mod"] = data["xp_next_lvl_base"]
+
+	if(current_level < 3)
+		data["base_readout"] = "Basic items only. Level 3 unlocks advanced item chance."
+	else if(current_level < 5)
+		data["base_readout"] = "50% chance for advanced items. Level 5 unlocks guaranteed advanced items."
+	else
+		data["base_readout"] = "Always creates advanced versions!"
+
+	data["mod_readout"] = data["base_readout"]
+	data["percent_base"] = (exp_value / 100.0)
+	data["percent_mod"] = data["percent_base"]
+	data["modifiers"] = "None"
+
+	return data
 
 /datum/skill_holder/ui_data(mob/user)
 	. = list()

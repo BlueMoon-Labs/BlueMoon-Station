@@ -73,12 +73,13 @@
 
 	//usr << browse_rsc('windowbak.png')		// This has been moved to the mob's Login() proc
 
-
 												// Declaring a doctype is necessary to enable BYOND's crappy browser's more advanced CSS functionality
+	var/zoom_head = usr?.client?.legacy_zoom_head("pai") || ""
 	dat = {"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">
 			<html>
 			<head>
 				<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+				[zoom_head]
 				<style type=\"text/css\">
 					body { background-image:url('html/paigrid.png'); }
 

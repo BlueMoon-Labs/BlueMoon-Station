@@ -51,6 +51,9 @@
 
 	/// Ui objects by person. mob = list(objects)
 	var/list/ui_by_mob = list()
+	/// Reusable UI screen objects to reduce qdel/new churn for storage displays
+	var/list/atom/movable/screen/storage/item_holder/pooled_item_holders = list()
+	var/list/atom/movable/screen/storage/volumetric_box/center/pooled_volumetric_boxes = list()
 
 	var/allow_big_nesting = FALSE					//allow storage objects of the same or greater size.
 
@@ -128,6 +131,8 @@
 		var/list/objects = ui_by_mob[i]
 		QDEL_LIST(objects)
 	ui_by_mob.Cut()
+	QDEL_LIST(pooled_item_holders)
+	QDEL_LIST(pooled_volumetric_boxes)
 
 /datum/component/storage/PreTransfer()
 	update_actions()
@@ -647,6 +652,7 @@
 	return TRUE
 
 /datum/component/storage/proc/on_attack_hand(datum/source, mob/user)
+	SIGNAL_HANDLER
 	var/atom/A = parent
 	if(!attack_hand_interact)
 		return
@@ -655,23 +661,8 @@
 		close(user)
 		. = COMPONENT_NO_ATTACK_HAND
 		return
-
 	if(rustle_sound)
 		playsound(A, "rustle", 50, 1, -5)
-
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		if(H.l_store == A && !H.get_active_held_item())	//Prevents opening if it's in a pocket.
-			. = COMPONENT_NO_ATTACK_HAND
-			H.put_in_hands(A)
-			H.l_store = null
-			return
-		if(H.r_store == A && !H.get_active_held_item())
-			. = COMPONENT_NO_ATTACK_HAND
-			H.put_in_hands(A)
-			H.r_store = null
-			return
-
 	if(A.loc == user)
 		. = COMPONENT_NO_ATTACK_HAND
 		if(!check_locked(source, user, TRUE))

@@ -604,6 +604,10 @@
 	var/list/valid_things = list()
 	if(isweakref(I.data))
 		var/atom/A = I.data.resolve()
+		if(!A)
+			O.push_data()
+			activate_pin(3)
+			return
 		var/desired_type = A.type
 		if(desired_type)
 			for(var/i in nearby_things)

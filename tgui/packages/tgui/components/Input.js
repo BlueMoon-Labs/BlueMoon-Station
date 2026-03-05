@@ -51,7 +51,7 @@ export class Input extends Component {
     };
     this.handleKeyDown = e => {
       const { onInput, onChange, onEnter } = this.props;
-      if (e.keyCode === KEY_ENTER) {
+      if (e.key === KEY_ENTER) {
         this.setEditing(false);
         if (onChange) {
           onChange(e, e.target.value);
@@ -69,7 +69,7 @@ export class Input extends Component {
         }
         return;
       }
-      if (e.keyCode === KEY_ESCAPE) {
+      if (e.key === KEY_ESCAPE) {
         this.setEditing(false);
         e.target.value = toInputValue(this.props.value);
         e.target.blur();

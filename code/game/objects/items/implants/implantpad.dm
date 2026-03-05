@@ -52,8 +52,9 @@
 			dat += "The implant casing is empty."
 	else
 		dat += "Please insert an implant casing!"
-	user << browse(dat, "window=implantpad")
-	onclose(user, "implantpad")
+	var/datum/browser/popup = new(user, "implantpad", "Implant Pad")
+	popup.set_content(dat)
+	popup.open()
 
 
 /obj/item/implantpad/Topic(href, href_list)

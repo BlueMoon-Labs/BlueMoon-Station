@@ -228,7 +228,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /obj/item/Destroy()
 	master = null
 	item_flags &= ~DROPDEL	//prevent reqdels
-	if(ismob(loc))
+	if(ismob(loc) && !QDELING(loc))
 		var/mob/m = loc
 		m.temporarilyRemoveItemFromInventory(src, TRUE)
 	for(var/X in actions)
@@ -937,8 +937,14 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
  //Called BEFORE the object is ground up - use this to change grind results based on conditions
  //Use "return -1" to prevent the grinding from occurring
 /obj/item/proc/on_grind()
+	SHOULD_CALL_PARENT(TRUE)
+
+	return SEND_SIGNAL(src, COMSIG_ITEM_ON_GRIND)
 
 /obj/item/proc/on_juice()
+	SHOULD_CALL_PARENT(TRUE)
+
+	return SEND_SIGNAL(src, COMSIG_ITEM_ON_JUICE)
 
 /obj/item/proc/set_force_string()
 	switch(force)
@@ -971,7 +977,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	SEND_SIGNAL(src, COMSIG_ITEM_MOUSE_ENTER, location, control, params)
 	if(get(src, /mob) == usr && !QDELETED(src))
 		var/mob/living/L = usr
-		if(usr.client.prefs.enable_tips)
+		var/in_open_storage = usr.active_storage?.parent == src.loc // tooltip browser panel overlaps storage items and intercepts mouse events, causing a flicker loop
+		if(usr.client.prefs.enable_tips && !in_open_storage)
 			var/timedelay = usr.client.prefs.tip_delay/100
 			usr.client.tip_timer = addtimer(CALLBACK(src, PROC_REF(openTip), location, control, params, usr), timedelay, TIMER_STOPPABLE)//timer takes delay in deciseconds, but the pref is in milliseconds. dividing by 100 converts it.
 		if(usr.client.prefs.outline_enabled)

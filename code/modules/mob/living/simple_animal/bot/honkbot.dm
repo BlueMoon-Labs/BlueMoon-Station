@@ -57,7 +57,7 @@
 	playsound(src, 'sound/machines/ping.ogg', 50, TRUE, -1) //the first sound upon creation!
 	spam_flag = TRUE
 	sensor_blink()
-	addtimer(CALLBACK(src, PROC_REF(spam_flag_false)), 18) // calibrates before starting the honk
+	addtimer(CALLBACK(src, PROC_REF(spam_flag_false)), 18, TIMER_DELETE_ME) // calibrates before starting the honk
 
 /mob/living/simple_animal/bot/honkbot/proc/react_buzz()
 	playsound(src, 'sound/machines/buzz-sigh.ogg', 50, TRUE, -1)
@@ -97,7 +97,7 @@
 /mob/living/simple_animal/bot/honkbot/on_attack_hand(mob/living/carbon/human/H)
 	if(H.a_intent == INTENT_HARM)
 		retaliate(H)
-		addtimer(CALLBACK(src, PROC_REF(react_buzz)), 5)
+		addtimer(CALLBACK(src, PROC_REF(react_buzz)), 5, TIMER_DELETE_ME)
 	return ..()
 
 
@@ -106,7 +106,7 @@
 		return
 	if(!W.tool_behaviour == TOOL_SCREWDRIVER && (W.force) && (!target) && (W.damtype != STAMINA) ) // Check for welding tool to fix #2432.
 		retaliate(user)
-		addtimer(CALLBACK(src, PROC_REF(react_buzz)), 5)
+		addtimer(CALLBACK(src, PROC_REF(react_buzz)), 5, TIMER_DELETE_ME)
 	..()
 
 /mob/living/simple_animal/bot/honkbot/emag_act(mob/user)

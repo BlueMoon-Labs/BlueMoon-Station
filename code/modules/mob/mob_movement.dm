@@ -118,10 +118,6 @@
 
 	SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_MOVE, src, direction, n, oldloc, add_delay)
 
-/mob/Moved(atom/OldLoc, Dir)
-	. = ..()
-	if(client)
-		client.parallax_holder.Update()
 
 /// Process_Grab(): checks for grab, attempts to break if so. Return TRUE to prevent movement.
 /client/proc/Process_Grab()
@@ -181,7 +177,7 @@
 						return
 				var/target = locate(locx,locy,mobloc.z)
 				if(target)
-					L.loc = target
+					L.forceMove(target)
 					var/limit = 2//For only two trailing shadows.
 					for(var/turf/T in getline(mobloc, L.loc))
 						new /obj/effect/temp_visual/dir_setting/ninja/shadow(T, L.dir)
@@ -199,7 +195,7 @@
 			if(stepTurf)
 				for(var/obj/effect/decal/cleanable/salt/S in stepTurf)
 					to_chat(L, "<span class='warning'>[S] bars your passage!</span>")
-					if(isrevenant(L))
+					if(isrevenant(L) || isqareen(L))
 						var/mob/living/simple_animal/revenant/R = L
 						R.reveal(20)
 						R.stun(20)
@@ -411,6 +407,15 @@
 
 /mob/proc/canZMove(direction, turf/target)
 	return FALSE
+
+/mob/Moved(atom/old_loc, Dir, Forced = FALSE)
+	. = ..()
+	if(!client?.parallax_holder)
+		return
+	var/anim_time = world.tick_lag
+	if(isliving(src) && glide_size > 0)
+		anim_time = world.icon_size / glide_size * world.tick_lag
+	client.parallax_holder.Update(anim_time = anim_time)
 
 /mob/onTransitZ(old_z, new_z)
 	. = ..()

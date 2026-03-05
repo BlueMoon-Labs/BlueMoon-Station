@@ -346,9 +346,44 @@
 	custom_price = PRICE_REALLY_CHEAP
 	grind_results = list(/datum/reagent/cellulose = 2)
 
+/obj/item/stack/medical/gauze/has_healable_damage(mob/living/carbon/patient)
+	if(..())
+		return TRUE
+	for(var/obj/item/bodypart/limb as anything in patient.bodyparts)
+		for(var/datum/wound/W as anything in limb.wounds)
+			if(W.wound_flags & ACCEPTS_GAUZE)
+				return TRUE
+	return FALSE
+
+/obj/item/stack/medical/gauze/try_heal_checks(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
+	if(!can_heal(patient, user, healed_zone, silent))
+		return FALSE
+	if(!heal_dead && patient.stat == DEAD)
+		if(!silent)
+			to_chat(user, "<span class='warning'>[patient] мёртв[patient.ru_a()]! Вы не можете [patient.ru_emu()] помочь.</span>")
+		return FALSE
+	if(!iscarbon(patient))
+		return FALSE
+	var/mob/living/carbon/carbon_patient = patient
+	var/obj/item/bodypart/affecting = carbon_patient.get_bodypart(healed_zone)
+	if(!affecting)
+		if(!silent)
+			to_chat(user, "<span class='warning'>У [patient] отсутствует \a [ru_parse_zone(healed_zone)]!</span>")
+		return FALSE
+	if(heal_brute && affecting.brute_dam > 0)
+		return TRUE
+	if(heal_burn && affecting.burn_dam > 0)
+		return TRUE
+	for(var/datum/wound/W as anything in affecting.wounds)
+		if(W.wound_flags & ACCEPTS_GAUZE)
+			return TRUE
+	if(!silent)
+		to_chat(user, "<span class='notice'>[ru_kogo_zone(user.zone_selected)] [patient] не требует перевязки!</span>")
+	return FALSE
+
 // Марля актуальна только для ран, которые обрабатываются самими ранами
 /obj/item/stack/medical/gauze/try_heal(mob/living/M, mob/user, healed_zone, silent = FALSE, auto_change_zone = TRUE, continuous = FALSE)
-	var/obj/item/bodypart/limb = M.get_bodypart(check_zone(user.zone_selected))
+	var/obj/item/bodypart/limb = M.get_bodypart(healed_zone)
 	if(!limb)
 		to_chat(user, "<span class='notice'>Нечего перевязывать!</span>")
 		return
@@ -649,6 +684,9 @@
 	heal_brute = 3
 	heal_burn = 3
 	grind_results = list(/datum/reagent/consumable/aloejuice = 1)
+
+/obj/item/stack/medical/aloe/fresh
+	amount = 2
 
 /obj/item/stack/medical/nanogel
 	name = "nanogel"

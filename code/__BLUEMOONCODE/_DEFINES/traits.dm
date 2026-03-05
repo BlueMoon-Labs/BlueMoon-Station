@@ -13,6 +13,7 @@
 #define TRAIT_BLUEMOON_COOLANT_GENERATOR	"coolant_generator"
 #define TRAIT_BLUEMOON_WATER_VULNERABILITY	"robotic_water_vulnerability"
 #define TRAIT_BLUEMOON_EMP_VULNERABILITY	"robotic_emp_vulnerability"
+#define TRAIT_BLUEMOON_CROCIN_POISONOUS		"crocin_poisonous"
 #define TRAIT_LEWD_JOB						"lewd_job"
 #define TRAIT_LEWD_SUMMON					"Призываемый"
 #define TRAIT_LEWD_SUMMONED					"lewd_summoned"
@@ -22,6 +23,8 @@
 #define TRAIT_BONDAGED						"bondaged"
 #define TRAIT_IMAGINARYFRIEND				"imaginaryfriend"
 #define TRAIT_TK_POTENTIAL					"TK_potential"
+#define TRAIT_RETRACTABLE_CLAWS				"claws"
+#define TRAIT_CHAMELEON_QUIRK				"chameleon_quirk"
 
 // Отдельные наименования для квирков, чтобы не повторять их в настройках
 #define BLUEMOON_TRAIT_NAME_SHRIEK				"Крикун"
@@ -34,6 +37,7 @@
 #define BLUEMOON_TRAIT_NAME_COOLANT_GENERATOR	"Генератор Хладагента"
 #define BLUEMOON_TRAIT_NAME_WATER_VULNERABILITY	"Уязвимость к Воде"
 #define BLUEMOON_TRAIT_NAME_EMP_VULNERABILITY	"Некачественное Экранирование"
+#define TRAIT_KNOWS_RESEARCH 					"Знанине использования Пергаментом"
 
 // Трейты для рас
 #define CAN_BE_OPERATED_WITHOUT_PAIN		"can_be_operated_without_pain"
@@ -63,3 +67,9 @@
 
 /// Whether syscorruption cleaner from TRAIT_BLUEMOON_SYSCLEANER is working RIGHT NOW
 #define TRAIT_SYSCLEANER_IN_PROGRESS "nanobot_syscleaner_in_progress"
+
+/// Для учёта источников невидимости
+/// Должно присваиваться всем сильным источникам - костюмам, спеллам, тритор айтемам и т.д.
+#define TRAIT_STRONG_INVISIBILITY "external_invisibility"
+/// Для учёта минорных сурсов невидимости - квирки, мутации и т.д.
+#define TRAIT_WEAK_INVISIBILITY "internal_invisibility"

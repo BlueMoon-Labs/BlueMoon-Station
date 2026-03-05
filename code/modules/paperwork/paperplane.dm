@@ -29,6 +29,13 @@
 	throwforce = 20 //same as throwing stars, but no chance of embedding.
 	hit_probability = 100 //guaranteed to cause eye damage when it hits a mob.
 
+/obj/item/paperplane/always_on_fire
+	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
+
+/obj/item/paperplane/always_on_fire/update_overlays()
+	. = ..()
+	. += "paperplane_onfire"
+
 /obj/item/paperplane/Initialize(mapload, obj/item/paper/newPaper)
 	. = ..()
 	pixel_x = base_pixel_x + rand(-9, 9)

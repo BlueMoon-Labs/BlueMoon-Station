@@ -374,6 +374,8 @@
 
 /obj/item/storage/lockbox/weapon/rapidsyringe
 	name = "Lockbox with Rapid Syringe Gun"
+	req_access = null
+	req_one_access = list(ACCESS_ARMORY, ACCESS_CMO)
 
 /obj/item/storage/lockbox/weapon/rapidsyringe/PopulateContents()
 	new /obj/item/gun/syringe/rapidsyringe(src)
@@ -499,16 +501,6 @@
 	build_path = /obj/item/gun/energy/gravity_gun
 	category = list("Weapons")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
-
-/datum/design/flora_gun
-	name = "Floral Somatoray"
-	desc = "A tool that discharges controlled radiation which induces mutation in plant cells. Harmless to other organic life."
-	id = "flora_gun"
-	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 2000, /datum/material/glass = 500, /datum/material/uranium = 2000)
-	build_path = /obj/item/gun/energy/floragun
-	category = list("Weapons")
-	departmental_flags = DEPARTMENTAL_FLAG_SERVICE | DEPARTMENTAL_FLAG_SCIENCE
 
 ///////////
 //Grenades/
@@ -643,3 +635,73 @@
 	category = list("Weapons")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_BLUE
+
+///////////////
+/// MWS-01 ///
+/////////////
+
+/datum/design/mws01_battery_mag
+	name = "MWS-01 Microbattery Magazine"
+	desc = "Магазин-порт аккумуляторов энергоревольвера 'Big Iron'."
+	id = "mws01_battery_mag"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 10000, /datum/material/glass = 4000, /datum/material/silver = 4000, /datum/material/gold = 6000)
+	build_path = /obj/item/ammo_box/magazine/mws_mag
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_BLUE
+
+/datum/design/mws01_battery_disabler
+	name = "MWS-01 Microbattery: Disabler"
+	desc = "Нелетальная обезвреживающая микробатарея энергоревольвера 'Big Iron'."
+	id = "mws01_battery_disabler"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 1000, /datum/material/glass = 6000, /datum/material/silver = 2000)
+	build_path = /obj/item/ammo_casing/mws_batt/stun
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_GREEN
+
+/datum/design/mws01_battery_taser
+	name = "MWS-01 Microbattery: Taser"
+	desc = "Тазерная микробатарея энергоревольвера 'Big Iron'."
+	id = "mws01_battery_taser"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 1000, /datum/material/glass = 6000, /datum/material/gold = 5000)
+	build_path = /obj/item/ammo_casing/mws_batt/taser
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_GREEN
+
+/datum/design/mws01_battery_lethal
+	name = "MWS-01 Microbattery: Lethal"
+	desc = "Лазерная микробатарея энергоревольвера 'Big Iron'."
+	id = "mws01_battery_lethal"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 5000, /datum/material/glass = 8000, /datum/material/gold = 9000, /datum/material/silver = 6000)
+	build_path = /obj/item/ammo_casing/mws_batt/lethal
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER
+
+/datum/design/mws01_battery_xray
+	name = "MWS-01 Microbattery: X-Ray"
+	desc = "Рентген-лазерная микробатарея энергоревольвера 'Big Iron'."
+	id = "mws01_battery_xray"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 5000, /datum/material/glass = 8000, /datum/material/gold = 9000, /datum/material/uranium = 15000)
+	build_path = /obj/item/ammo_casing/mws_batt/xray
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER
+
+/datum/design/mws01_battery_ion
+	name = "MWS-01 Microbattery: Ion"
+	desc = "Ионная микробатарея энергоревольвера 'Big Iron'."
+	id = "mws01_battery_ion"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 5000, /datum/material/glass = 8000, /datum/material/gold = 5000, /datum/material/titanium = 5000, /datum/material/bluespace = 1000)
+	build_path = /obj/item/ammo_casing/mws_batt/ion
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER

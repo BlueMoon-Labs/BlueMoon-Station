@@ -34,9 +34,9 @@
 		. += "It currently holds access to the [department_name] region."
 
 /obj/item/access_key/examine_more(mob/user)
+	. = ..()
 	. += span_notice("Access can be granted through a Keycard Authentication Device.")
 	. += span_notice("This access is limited to one department at a time.")
-	. += ..()
 
 /**
  * Called when attempting to open an airlock.

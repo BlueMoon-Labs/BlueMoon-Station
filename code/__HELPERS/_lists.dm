@@ -341,6 +341,14 @@
 		result = first - second
 	return result
 
+//Add all key and value from assoc list B in assoc list L
+/proc/merge_assoc_list(list/L, list/B)
+	if(!is_assoc_list(B) || !islist(L))
+		return FALSE
+	for(var/k in B)
+		L[k] = B[k]
+	return TRUE
+
 /*
  * Returns list containing entries that are in either list but not both.
  * If skipref = 1, repeated elements are treated as one.
@@ -502,13 +510,15 @@
 
 	return L
 
-//same, but returns nothing and acts on list in place
+//same, but returns nothing and acts on list in place, and returns same list
 /proc/shuffle_inplace(list/L)
 	if(!L)
 		return
 
 	for(var/i=1, i<L.len, ++i)
 		L.Swap(i,rand(i,L.len))
+
+	return L
 
 //Return a list with no duplicate entries
 /proc/uniqueList(list/L)

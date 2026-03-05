@@ -132,7 +132,7 @@
 
 	var/turf/T = get_turf(pick(spawn_locs))
 	var/mob/living/simple_animal/hostile/mannequin/bloodlust/S = new(T)
-	playsound(S, 'modular_bluemoon/Gardelin0/sound/effect/spook.ogg', 75, 1, 1000)
+	playsound(S, 'modular_bluemoon/sound/effects/spook.ogg', 75, 1, 1000)
 	message_admins("An abominable mannequin has been spawned at [COORD(T)][ADMIN_JMP(T)]")
 	log_game("An abominable mannequin has been spawned at [COORD(T)]")
 	return SUCCESSFUL_SPAWN

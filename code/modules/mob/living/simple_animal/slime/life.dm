@@ -2,6 +2,7 @@
 /mob/living/simple_animal/slime
 	var/AIproc = 0 // determines if the AI loop is activated
 	var/Atkcool = 0 // attack cooldown
+	var/atkcool_timer_id
 	var/Tempstun = 0 // temporary temperature stuns
 	var/Discipline = 0 // if a slime has been hit with a freeze gun, or wrestled/attacked off a human, they become disciplined and don't attack anymore for a while
 	var/SStun = 0 // stun variable
@@ -39,7 +40,7 @@
 
 	AIproc = 1
 
-	while(AIproc && stat != DEAD && (attacked || hungry || rabid || buckled))
+	while(AIproc && !QDELETED(src) && stat != DEAD && (attacked || hungry || rabid || buckled))
 		if(!CHECK_MOBILITY(src, MOBILITY_MOVE)) //also covers buckling. Not sure why buckled is in the while condition if we're going to immediately break, honestly
 			break
 
@@ -63,9 +64,7 @@
 				if(!CanFeedon(Target)) //If they're not able to be fed upon, ignore them.
 					if(!Atkcool)
 						Atkcool = 1
-						spawn(45)
-							Atkcool = 0
-
+						atkcool_timer_id = addtimer(CALLBACK(src, PROC_REF(reset_atkcool)), 45, TIMER_STOPPABLE | TIMER_DELETE_ME)
 						if(Target.Adjacent(src))
 							Target.attack_slime(src)
 					break
@@ -74,9 +73,7 @@
 					if(Target.client && Target.health >= 20)
 						if(!Atkcool)
 							Atkcool = 1
-							spawn(45)
-								Atkcool = 0
-
+							atkcool_timer_id = addtimer(CALLBACK(src, PROC_REF(reset_atkcool)), 45, TIMER_STOPPABLE | TIMER_DELETE_ME)
 							if(Target.Adjacent(src))
 								Target.attack_slime(src)
 
@@ -104,6 +101,9 @@
 		sleep(sleeptime + 2) // this is about as fast as a player slime can go
 
 	AIproc = 0
+
+/mob/living/simple_animal/slime/proc/reset_atkcool()
+	Atkcool = 0
 
 /mob/living/simple_animal/slime/handle_environment(datum/gas_mixture/environment)
 	if(!environment)
@@ -184,10 +184,11 @@
 		if(!client)
 			if(!rabid && !attacked)
 				var/mob/living/carbon/their_attacker = M.getLAssailant()
-				if(their_attacker != M)
+				if(their_attacker && their_attacker != M)
 					if(prob(50))
 						if(!(their_attacker in Friends))
 							Friends[their_attacker] = 1
+							RegisterSignal(their_attacker, COMSIG_PARENT_QDELETING, PROC_REF(clear_friend))
 						else
 							++Friends[their_attacker]
 		else

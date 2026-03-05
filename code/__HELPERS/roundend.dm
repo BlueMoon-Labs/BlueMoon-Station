@@ -274,7 +274,7 @@
 
 	// Add AntagHUD to everyone, see who was really evil the whole time!
 	if(CONFIG_GET(flag/reveal_everything))
-		for(var/datum/atom_hud/antag/H in GLOB.huds)
+		for(var/datum/atom_hud/antag/H in GLOB.all_huds)
 			for(var/m in GLOB.player_list)
 				var/mob/M = m
 				H.add_hud_to(M)

@@ -274,10 +274,7 @@
 				mode = BOT_REPAIRING
 				F.ReplaceWithLattice()
 				audible_message("<span class='danger'>[src] делает взволнованный звенящий звук.</span>")
-				spawn(5)
-					anchored = FALSE
-					mode = BOT_IDLE
-					target = null
+				addtimer(CALLBACK(src, PROC_REF(floorbot_emagged_resume)), 5, TIMER_DELETE_ME)
 			path = list()
 			return
 		if(path.len == 0)
@@ -300,6 +297,11 @@
 
 
 	oldloc = loc
+
+/mob/living/simple_animal/bot/floorbot/proc/floorbot_emagged_resume()
+	anchored = FALSE
+	mode = BOT_IDLE
+	target = null
 
 /mob/living/simple_animal/bot/floorbot/proc/is_hull_breach(turf/t) //Ignore space tiles not considered part of a structure, also ignores shuttle docking areas.
 	var/area/t_area = get_area(t)

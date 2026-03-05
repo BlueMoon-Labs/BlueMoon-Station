@@ -65,6 +65,18 @@
 /datum/config_entry/number/bluespaceminer_crystal_tier
 	default = 5
 
+// BSM time IN MINUTES to full integrity bs core destroy
+/datum/config_entry/number/bluespaceminer_core_work_time_minutes
+	default = 30
+
+// The chance (per second) that the core in BSM will not take damage during operation. Introduces a bit of chaos
+/datum/config_entry/number/bluespaceminer_core_work_chanse_no_damage
+	default = 5
+
+// The minimum time after which instability effects can occur after the last trigger
+/datum/config_entry/number/bluespaceminer_instability_cooldown
+	default = 1 MINUTES
+
 /// TETRIS ARCADE MACHINE ///
 // If the machine should skip producing science points
 /datum/config_entry/flag/tetris_no_science

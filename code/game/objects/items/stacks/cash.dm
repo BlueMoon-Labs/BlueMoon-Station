@@ -40,11 +40,14 @@
 		if(!ID.registered_account)
 			to_chat(user, "<span class='warning'>[ID] doesn't have a linked account to deposit into!</span>")
 			return
-		for(var/obj/item/holochip/money in src.loc.contents)
+		var/atom/location = src.loc
+		if(!location)
+			return
+		for(var/obj/item/holochip/money in location.contents)
 			ID.attackby(money, user)
-		for(var/obj/item/stack/spacecash/money in src.loc.contents)
+		for(var/obj/item/stack/spacecash/money in location.contents)
 			ID.attackby(money, user)
-		for(var/obj/item/coin/money in src.loc.contents)
+		for(var/obj/item/coin/money in location.contents)
 			ID.attackby(money, user)
 
 /obj/item/stack/spacecash/c1

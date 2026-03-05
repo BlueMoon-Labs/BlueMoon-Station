@@ -1,9 +1,16 @@
+#define SPELL_CATEGORY_OFFENSIVE "Offensive"
+#define SPELL_CATEGORY_DEFEND "Defensive"
+#define SPELL_CATEGORY_ASSIST "Assistance"
+#define SPELL_CATEGORY_MOBILITY "Mobility"
+#define SPELL_CATEGORY_RITUAL "Rituals"
+#define SPELLCATEGORY_CHALLENGES "Challenges"
+
 /datum/spellbook_entry
 	var/name = "Entry Name"
 
 	var/spell_type = null
 	var/desc = ""
-	var/category = "Offensive"
+	var/category = SPELL_CATEGORY_OFFENSIVE
 	var/cost = 2
 	var/refundable = 1
 	var/surplus = -1 // -1 for infinite, not used by anything atm
@@ -124,7 +131,11 @@
 /datum/spellbook_entry/magicm
 	name = "Magic Missile"
 	spell_type = /obj/effect/proc_holder/spell/targeted/projectile/magic_missile
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
+
+/datum/spellbook_entry/alive_bones
+	name = "Alive bones"
+	spell_type = /obj/effect/proc_holder/spell/targeted/touch/alive_bones
 
 /datum/spellbook_entry/disintegrate
 	name = "Disintegrate"
@@ -137,28 +148,28 @@
 /datum/spellbook_entry/disabletech
 	name = "Disable Tech"
 	spell_type = /obj/effect/proc_holder/spell/targeted/emplosion/disable_tech
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 	cost = 1
 
 /datum/spellbook_entry/repulse
 	name = "Repulse"
 	spell_type = /obj/effect/proc_holder/spell/aoe_turf/repulse
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 
 /datum/spellbook_entry/lightningPacket
 	name = "Lightning bolt!  Lightning bolt!"
 	spell_type = /obj/effect/proc_holder/spell/targeted/conjure_item/spellpacket
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 
 /datum/spellbook_entry/timestop
 	name = "Time Stop"
 	spell_type = /obj/effect/proc_holder/spell/aoe_turf/timestop
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 
 /datum/spellbook_entry/smoke
 	name = "Smoke"
 	spell_type = /obj/effect/proc_holder/spell/targeted/smoke
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 	cost = 1
 
 /datum/spellbook_entry/blind
@@ -169,23 +180,23 @@
 /datum/spellbook_entry/mindswap
 	name = "Mindswap"
 	spell_type = /obj/effect/proc_holder/spell/pointed/mind_transfer
-	category = "Mobility"
+	category = SPELL_CATEGORY_MOBILITY
 
 /datum/spellbook_entry/forcewall
 	name = "Force Wall"
 	spell_type = /obj/effect/proc_holder/spell/targeted/forcewall
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 	cost = 1
 
 /datum/spellbook_entry/blink
 	name = "Blink"
 	spell_type = /obj/effect/proc_holder/spell/targeted/turf_teleport/blink
-	category = "Mobility"
+	category = SPELL_CATEGORY_MOBILITY
 
 /datum/spellbook_entry/teleport
 	name = "Teleport"
 	spell_type = /obj/effect/proc_holder/spell/targeted/area_teleport/teleport
-	category = "Mobility"
+	category = SPELL_CATEGORY_MOBILITY
 
 /datum/spellbook_entry/mutate
 	name = "Mutate"
@@ -198,12 +209,12 @@
 /datum/spellbook_entry/jaunt
 	name = "Ethereal Jaunt"
 	spell_type = /obj/effect/proc_holder/spell/targeted/ethereal_jaunt
-	category = "Mobility"
+	category = SPELL_CATEGORY_MOBILITY
 
 /datum/spellbook_entry/knock
 	name = "Knock"
 	spell_type = /obj/effect/proc_holder/spell/aoe_turf/knock
-	category = "Mobility"
+	category = SPELL_CATEGORY_MOBILITY
 	cost = 1
 
 /datum/spellbook_entry/fleshtostone
@@ -213,13 +224,13 @@
 /datum/spellbook_entry/summonitem
 	name = "Summon Item"
 	spell_type = /obj/effect/proc_holder/spell/targeted/summonitem
-	category = "Assistance"
+	category = SPELL_CATEGORY_ASSIST
 	cost = 1
 
 /datum/spellbook_entry/lichdom
 	name = "Bind Soul"
 	spell_type = /obj/effect/proc_holder/spell/targeted/lichdom
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 
 /datum/spellbook_entry/teslablast
 	name = "Tesla Blast"
@@ -261,25 +272,31 @@
 /datum/spellbook_entry/charge
 	name = "Charge"
 	spell_type = /obj/effect/proc_holder/spell/targeted/charge
-	category = "Assistance"
+	category = SPELL_CATEGORY_ASSIST
 	cost = 1
 
 /datum/spellbook_entry/shapeshift
 	name = "Wild Shapeshift"
 	spell_type = /obj/effect/proc_holder/spell/targeted/shapeshift
-	category = "Assistance"
+	category = SPELL_CATEGORY_ASSIST
 	cost = 1
 
 /datum/spellbook_entry/spacetime_dist
 	name = "Spacetime Distortion"
 	spell_type = /obj/effect/proc_holder/spell/spacetime_dist
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 	cost = 1
 
 /datum/spellbook_entry/the_traps
 	name = "The Traps!"
 	spell_type = /obj/effect/proc_holder/spell/aoe_turf/conjure/the_traps
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
+	cost = 1
+
+/datum/spellbook_entry/summonsoap
+	name = "Summon Soap"
+	spell_type = /obj/effect/proc_holder/spell/targeted/conjure_item/soap
+	category = SPELL_CATEGORY_DEFEND
 	cost = 1
 
 
@@ -288,7 +305,6 @@
 	refundable = 0
 	buy_word = "Summon"
 	var/item_path= null
-
 
 /datum/spellbook_entry/item/Buy(mob/living/carbon/human/user,obj/item/spellbook/book)
 	new item_path(get_turf(user))
@@ -319,7 +335,7 @@
 	name = "Staff of Animation"
 	desc = "An arcane staff capable of shooting bolts of eldritch energy which cause inanimate objects to come to life. This magic doesn't affect machines."
 	item_path = /obj/item/gun/magic/staff/animate
-	category = "Assistance"
+	category = SPELL_CATEGORY_ASSIST
 
 /datum/spellbook_entry/item/staffchaos
 	name = "Staff of Chaos"
@@ -349,32 +365,32 @@
 	desc = "A particular staff that can mold solid metal into ornate doors. Useful for getting around in the absence of other transportation. Does not work on glass."
 	item_path = /obj/item/gun/magic/staff/door
 	cost = 1
-	category = "Mobility"
+	category = SPELL_CATEGORY_MOBILITY
 
 /datum/spellbook_entry/item/staffhealing
 	name = "Staff of Healing"
 	desc = "An altruistic staff that can heal the lame and raise the dead."
 	item_path = /obj/item/gun/magic/staff/healing
 	cost = 1
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 
 /datum/spellbook_entry/item/lockerstaff
 	name = "Staff of the Locker"
 	desc = "A staff that shoots lockers. It eats anyone it hits on its way, leaving a welded locker with your victims behind."
 	item_path = /obj/item/gun/magic/staff/locker
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 
 /datum/spellbook_entry/item/scryingorb
 	name = "Scrying Orb"
 	desc = "An incandescent orb of crackling energy, using it will allow you to ghost while alive, allowing you to spy upon the station with ease. In addition, buying it will permanently grant you X-ray vision."
 	item_path = /obj/item/scrying
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 
 /datum/spellbook_entry/item/soulstones
 	name = "Six Soul Stone Shards and the spell Artificer"
 	desc = "Soul Stone Shards are ancient tools capable of capturing and harnessing the spirits of the dead and dying. The spell Artificer allows you to create arcane machines for the captured souls to pilot."
 	item_path = /obj/item/storage/belt/soulstone/full
-	category = "Assistance"
+	category = SPELL_CATEGORY_ASSIST
 
 /datum/spellbook_entry/item/soulstones/Buy(mob/living/carbon/human/user,obj/item/spellbook/book)
 	. =..()
@@ -386,20 +402,20 @@
 	name = "A Necromantic Stone"
 	desc = "A Necromantic stone is able to resurrect three dead individuals as skeletal thralls for you to command."
 	item_path = /obj/item/necromantic_stone
-	category = "Assistance"
+	category = SPELL_CATEGORY_ASSIST
 
 /datum/spellbook_entry/item/wands
 	name = "Wand Assortment"
 	desc = "A collection of wands that allow for a wide variety of utility. Wands have a limited number of charges, so be conservative in use. Comes in a handy belt."
 	item_path = /obj/item/storage/belt/wands/full
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 	dynamic_requirement = 60
 
 /datum/spellbook_entry/item/armor
 	name = "Mastercrafted Armor Set"
 	desc = "An artefact suit of armor that allows you to cast spells while providing more protection against attacks and the void of space."
 	item_path = /obj/item/clothing/suit/space/hardsuit/wizard
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 
 /datum/spellbook_entry/item/armor/Buy(mob/living/carbon/human/user,obj/item/spellbook/book)
 	. = ..()
@@ -411,7 +427,7 @@
 	name = "Contract of Apprenticeship"
 	desc = "A magical contract binding an apprentice wizard to your service, using it will summon them to your side."
 	item_path = /obj/item/antag_spawner/contract
-	category = "Assistance"
+	category = SPELL_CATEGORY_ASSIST
 	dynamic_requirement = 50
 
 /datum/spellbook_entry/item/plasmafist
@@ -425,7 +441,7 @@
 	desc = "A deck of guardian tarot cards, capable of binding a personal guardian to your body. There are multiple types of guardian available, but all of them will transfer some amount of damage to you. \
 	It would be wise to avoid buying these with anything capable of causing you to swap bodies with others."
 	item_path = /obj/item/guardiancreator/choose/wizard
-	category = "Assistance"
+	category = SPELL_CATEGORY_ASSIST
 
 /datum/spellbook_entry/item/guardian/Buy(mob/living/carbon/human/user,obj/item/spellbook/book)
 	. = ..()
@@ -437,7 +453,7 @@
 	desc = "A bottle of magically infused blood, the smell of which will attract extradimensional beings when broken. Be careful though, the kinds of creatures summoned by blood magic are indiscriminate in their killing, and you yourself may become a victim."
 	item_path = /obj/item/antag_spawner/slaughter_demon
 	limit = 2
-	category = "Assistance"
+	category = SPELL_CATEGORY_ASSIST
 	dynamic_requirement = 60
 
 /datum/spellbook_entry/item/hugbottle
@@ -452,7 +468,7 @@
 	item_path = /obj/item/antag_spawner/slaughter_demon/laughter
 	cost = 1 //non-destructive; it's just a jape, sibling!
 	limit = 3
-	category = "Assistance"
+	category = SPELL_CATEGORY_ASSIST
 	dynamic_requirement = 40
 
 /datum/spellbook_entry/item/mjolnir
@@ -471,25 +487,25 @@
 	item_path = /obj/item/clothing/suit/space/hardsuit/shielded/wizard
 	limit = 1
 	cost = 3
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 
 /datum/spellbook_entry/item/battlemage_charge
 	name = "Battlemage Armour Charges"
 	desc = "A powerful defensive rune, it will grant eight additional charges to a suit of battlemage armour."
 	item_path = /obj/item/wizard_armour_charge
-	category = "Defensive"
+	category = SPELL_CATEGORY_DEFEND
 	cost = 1
 
 /datum/spellbook_entry/item/warpwhistle
 	name = "Warp Whistle"
 	desc = "A strange whistle that will transport you to a distant safe place on the station. There is a window of vulnerability at the beginning of every use."
 	item_path = /obj/item/warpwhistle
-	category = "Mobility"
+	category = SPELL_CATEGORY_MOBILITY
 	cost = 1
 
 /datum/spellbook_entry/summon
 	name = "Summon Stuff"
-	category = "Rituals"
+	category = SPELL_CATEGORY_RITUAL
 	refundable = 0
 	buy_word = "Cast"
 	var/active = 0
@@ -673,30 +689,30 @@
 /obj/item/spellbook/proc/GetCategoryHeader(category)
 	var/dat = ""
 	switch(category)
-		if("Offensive")
+		if(SPELL_CATEGORY_OFFENSIVE)
 			dat += "Spells and items geared towards debilitating and destroying.<BR><BR>"
 			dat += "Items are not bound to you and can be stolen. Additionally they cannot typically be returned once purchased.<BR>"
 			dat += "For spells: the number after the spell name is the cooldown time.<BR>"
 			dat += "You can reduce this number by spending more points on the spell.<BR>"
-		if("Defensive")
+		if(SPELL_CATEGORY_DEFEND)
 			dat += "Spells and items geared towards improving your survivability or reducing foes' ability to attack.<BR><BR>"
 			dat += "Items are not bound to you and can be stolen. Additionally they cannot typically be returned once purchased.<BR>"
 			dat += "For spells: the number after the spell name is the cooldown time.<BR>"
 			dat += "You can reduce this number by spending more points on the spell.<BR>"
-		if("Mobility")
+		if(SPELL_CATEGORY_MOBILITY)
 			dat += "Spells and items geared towards improving your ability to move. It is a good idea to take at least one.<BR><BR>"
 			dat += "Items are not bound to you and can be stolen. Additionally they cannot typically be returned once purchased.<BR>"
 			dat += "For spells: the number after the spell name is the cooldown time.<BR>"
 			dat += "You can reduce this number by spending more points on the spell.<BR>"
-		if("Assistance")
+		if(SPELL_CATEGORY_ASSIST)
 			dat += "Spells and items geared towards bringing in outside forces to aid you or improving upon your other items and abilities.<BR><BR>"
 			dat += "Items are not bound to you and can be stolen. Additionally they cannot typically be returned once purchased.<BR>"
 			dat += "For spells: the number after the spell name is the cooldown time.<BR>"
 			dat += "You can reduce this number by spending more points on the spell.<BR>"
-		if("Challenges")
+		if(SPELLCATEGORY_CHALLENGES)
 			dat += "The Wizard Federation typically has hard limits on the potency and number of spells brought to the station based on risk.<BR>"
 			dat += "Arming the station against you will increases the risk, but will grant you one more charge for your spellbook.<BR>"
-		if("Rituals")
+		if(SPELL_CATEGORY_RITUAL)
 			dat += "These powerful spells change the very fabric of reality. Not always in your favour.<BR>"
 	return dat
 
@@ -800,3 +816,10 @@
 			tab = sanitize(href_list["page"])
 	attack_self(H)
 	return
+
+#undef SPELL_CATEGORY_OFFENSIVE
+#undef SPELL_CATEGORY_DEFEND
+#undef SPELL_CATEGORY_ASSIST
+#undef SPELL_CATEGORY_MOBILITY
+#undef SPELL_CATEGORY_RITUAL
+#undef SPELLCATEGORY_CHALLENGES

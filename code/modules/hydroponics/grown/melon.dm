@@ -29,13 +29,15 @@
 	icon_state = "watermelon"
 	slice_path = /obj/item/reagent_containers/food/snacks/watermelonslice
 	slices_num = 5
-	dried_type = null
 	w_class = WEIGHT_CLASS_NORMAL
 	filling_color = "#008000"
 	bitesize_mod = 3
 	foodtype = FRUIT
 	juice_results = list(/datum/reagent/consumable/watermelonjuice = 0)
 	wine_power = 40
+
+/obj/item/reagent_containers/food/snacks/grown/watermelon/make_dryable()
+	return
 
 // Holymelon
 /obj/item/seeds/watermelon/holy
@@ -56,25 +58,37 @@
 	desc = "The water within this melon has been blessed by some deity that's particularly fond of watermelon."
 	icon_state = "holymelon"
 	filling_color = "#FFD700"
-	dried_type = null
 	wine_power = 70 //Water to wine, baby.
 	wine_flavor = "divinity"
+
+/obj/item/reagent_containers/food/snacks/grown/holymelon/make_dryable()
+	return
+
+/obj/item/reagent_containers/food/snacks/grown/holymelon/examine(user)
+	. = ..()
+	. += span_notice("Святость арбуза постепенно уходит...")
 
 /obj/item/reagent_containers/food/snacks/grown/holymelon/Initialize(mapload)
 	. = ..()
 	var/uses = 1
+	var/const/charges_expire_time = 2 MINUTES
 	if(seed)
-		uses = round(seed.potency / 20)
-	AddComponent(/datum/component/anti_magic, TRUE, TRUE, FALSE, ITEM_SLOT_HANDS, uses, TRUE, CALLBACK(src, PROC_REF(block_magic)), CALLBACK(src, PROC_REF(expire))) //deliver us from evil o melon god
+		uses = max(1, ceil(seed.potency / 20))
+	AddComponent(/datum/component/anti_magic, TRUE, TRUE, FALSE, ITEM_SLOT_HANDS, uses, TRUE, CALLBACK(src, PROC_REF(block_magic)), CALLBACK(src, PROC_REF(expire)), charges_expire_time, CALLBACK(src, PROC_REF(on_charges_change))) //deliver us from evil o melon god
+	icon_state = icon_state + "-[clamp(uses, 1, 5)]"
 
 /obj/item/reagent_containers/food/snacks/grown/holymelon/proc/block_magic(mob/user, major)
 	if(major)
-		to_chat(user, "<span class='warning'>[src] hums slightly, and seems to decay a bit.</span>")
+		to_chat(user, span_warning("[src] hums slightly, and seems to decay a bit."))
 
 /obj/item/reagent_containers/food/snacks/grown/holymelon/proc/expire(mob/user)
-	to_chat(user, "<span class='warning'>[src] rapidly turns into ash!</span>")
-	qdel(src)
+	if(istype(user))
+		to_chat(user, span_warning("[src] rapidly turns into ash!"))
 	new /obj/effect/decal/cleanable/ash(drop_location())
+	qdel(src)
+
+/obj/item/reagent_containers/food/snacks/grown/holymelon/proc/on_charges_change(mob/user, current_charges)
+	icon_state = initial(icon_state) + "-[clamp(current_charges, 1, 5)]"
 
 // BLUEMOON ADD START || melon
 /obj/item/seeds/melon
@@ -107,13 +121,15 @@
 	icon_state = "melon-1"
 	slice_path = /obj/item/reagent_containers/food/snacks/melonslice
 	slices_num = 5
-	dried_type = null
 	w_class = WEIGHT_CLASS_NORMAL
 	filling_color = "#FFCC00"
 	bitesize_mod = 3
 	foodtype = FRUIT
 	juice_results = list(/datum/reagent/consumable/melonjuice = 0)
 	wine_power = 40
+
+/obj/item/reagent_containers/food/snacks/grown/melon/make_dryable()
+	return
 
 /obj/item/reagent_containers/food/snacks/grown/melon/Initialize(mapload, obj/item/seeds/new_seed)
 	. = ..()

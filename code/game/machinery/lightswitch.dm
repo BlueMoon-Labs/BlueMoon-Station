@@ -38,7 +38,7 @@
 		area = locate(text2path("/area/[otherarea]"))
 	if(!area)
 		area = get_area(src)
-	if(autoname)
+	if(autoname && area)
 		name = "light switch ([area.name])"
 	if(building)
 		setDir(ndir)
@@ -50,7 +50,7 @@
 /obj/machinery/light_switch/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(isnull(held_item))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (area.lightswitch ? "Flick off" : "Flick on"))
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (area?.lightswitch ? "Flick off" : "Flick on"))
 		return CONTEXTUAL_SCREENTIP_SET
 	if(held_item.tool_behaviour == TOOL_SCREWDRIVER)
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Deconstruct")
@@ -66,6 +66,8 @@
 	if(machine_stat & NOPOWER)
 		icon_state = "[base_icon_state]-p"
 		return ..()
+	if(!area)
+		return ..()
 	icon_state = "[base_icon_state][area.lightswitch ? 1 : 0]"
 	if(!isemptylist(connected_lights))
 		var/obj/machinery/light/L = connected_lights[1]
@@ -79,7 +81,7 @@
 
 /obj/machinery/light_switch/examine(mob/user)
 	. = ..()
-	. += "It is [area.lightswitch ? "on" : "off"]."
+	. += "It is [area?.lightswitch ? "on" : "off"]."
 	if(!isemptylist(connected_lights))
 		. += "There are [length(connected_lights)] individual lights connected to this switch."
 
@@ -95,6 +97,8 @@
 			A.update_appearance()
 			A.power_change()
 		update_appearance()
+		return
+	if(!area)
 		return
 	area.lightswitch = !area.lightswitch
 	area.update_appearance()

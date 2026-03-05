@@ -16,6 +16,9 @@
 
 /obj/item/assembly/infra/Initialize(mapload)
 	. = ..()
+	item_flags |= NO_PIXEL_RANDOM_DROP
+	pixel_x = base_pixel_x
+	pixel_y = base_pixel_y
 	beams = list()
 	START_PROCESSING(SSobj, src)
 
@@ -72,6 +75,8 @@
 
 /obj/item/assembly/infra/dropped()
 	. = ..()
+	pixel_x = base_pixel_x
+	pixel_y = base_pixel_y
 	if(holder)
 		holder_movement() //sync the dir of the device as well if it's contained in a TTV or an assembly holder
 	else

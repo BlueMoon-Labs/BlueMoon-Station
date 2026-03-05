@@ -56,3 +56,4 @@
 	else // energy output we want is higher than current energy, increase its actual heat
 		methane_puff.set_temperature(energy_ratio * 500)
 	supermatter.assume_air(methane_puff)
+	qdel(methane_puff)

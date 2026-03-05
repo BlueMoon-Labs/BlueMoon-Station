@@ -105,6 +105,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	// BLUEMOON EDIT END
 	// Add to global list
 	GLOB.family_heirlooms += heirloom
+	RegisterSignal(heirloom, COMSIG_PARENT_QDELETING, PROC_REF(on_heirloom_deleted))
 
 /datum/quirk/family_heirloom/post_add()
 	// BLUEMOON EDIT START - выбор вещей из лодаута как family heirloom
@@ -135,10 +136,14 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 		SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom")
 		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "family_heirloom_missing", /datum/mood_event/family_heirloom_missing)
 
-/datum/quirk/item_quirk/family_heirloom/remove()
-	// Clear mood events when removing this quirk
+/datum/quirk/family_heirloom/proc/on_heirloom_deleted()
+	SIGNAL_HANDLER
+	GLOB.family_heirlooms -= heirloom
+
+/datum/quirk/family_heirloom/remove()
 	SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom")
 	SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom_missing")
+	GLOB.family_heirlooms -= heirloom
 
 /datum/quirk/family_heirloom/clone_data()
 	return heirloom

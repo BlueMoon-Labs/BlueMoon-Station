@@ -48,10 +48,12 @@
 		H.maxHealth *= 1.34
 
 		var/datum/action/innate/vomit/act_vomit = locate() in H.actions
-		act_vomit.Remove(H)
+		if(act_vomit)
+			act_vomit.Remove(H)
 
 		var/datum/action/innate/secrete_chemicals/act_secrete_chemicals = locate() in H.actions
-		act_secrete_chemicals.Remove(H)
+		if(act_secrete_chemicals)
+			act_secrete_chemicals.Remove(H)
 
 		UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 		REMOVE_TRAIT(H,TRAIT_BLUEMOON_ANTI_NORMALIZER, ROUNDSTART_TRAIT)

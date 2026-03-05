@@ -98,6 +98,7 @@
 	var/bayonet = FALSE	//Can this be attached to a gun?
 	wound_bonus = 6
 	bare_wound_bonus = 10
+	tool_behaviour = TOOL_KNIFE
 	custom_price = PRICE_NORMAL
 
 /obj/item/kitchen/knife/Initialize(mapload)
@@ -254,8 +255,8 @@
 
 /obj/item/kitchen/knife/combat/bone
 	name = "bone dagger"
-	item_state = "bone_dagger"
-	icon_state = "bone_dagger"
+	item_state = "bone_knife0"
+	icon_state = "bone_knife0"
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	desc = "A sharpened bone. The bare minimum in survival."
@@ -263,6 +264,12 @@
 	force = 15
 	throwforce = 15
 	custom_materials = null
+
+/obj/item/kitchen/knife/combat/bone/ritual
+	name = "dueling dagger"
+	item_state = "bone_ritual1"
+	icon_state = "bone_ritual1"
+	desc = "A dueling dagger of the Ashwalker tribe. For when words lose all meaning."
 
 /obj/item/kitchen/knife/combat/bone/plastic
 	name = "plastic knife"
@@ -347,9 +354,12 @@
 	throw_speed = 3
 	throw_range = 7
 	w_class = WEIGHT_CLASS_NORMAL
+	tool_behaviour = TOOL_ROLLINGPIN
 	custom_materials = list(/datum/material/wood = MINERAL_MATERIAL_AMOUNT * 1.5)
 	attack_verb = list("bashed", "battered", "bludgeoned", "thrashed", "whacked")
 	custom_price = PRICE_ALMOST_CHEAP
+	pickup_sound = 'sound/items/rolling_pin/rolling_pin_pickup.ogg'
+	drop_sound = 'sound/items/rolling_pin/rolling_pin_drop.ogg'
 
 /obj/item/kitchen/rollingpin/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] begins flattening [user.ru_ego()] head with \the [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")
@@ -364,9 +374,12 @@
 	throw_speed = 3
 	throw_range = 7
 	w_class = WEIGHT_CLASS_NORMAL
+	tool_behaviour = TOOL_UNROLLINGPIN
 	custom_materials = list(/datum/material/wood = MINERAL_MATERIAL_AMOUNT * 1.5)
 	attack_verb = list("bashed", "battered", "bludgeoned", "thrashed", "whacked")
 	custom_price = PRICE_ALMOST_CHEAP
+	pickup_sound = 'sound/items/rolling_pin/rolling_pin_pickup.ogg'
+	drop_sound = 'sound/items/rolling_pin/rolling_pin_drop.ogg'
 
 /obj/item/kitchen/unrollingpin/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] begins unflattening [user.ru_ego()] head with \the [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")

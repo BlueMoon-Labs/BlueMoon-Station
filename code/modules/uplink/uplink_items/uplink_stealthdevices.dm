@@ -9,54 +9,52 @@
 
 /datum/uplink_item/stealthy_tools/agent_card
 	name = "Agent Identification Card"
-	desc = "Agent cards prevent artificial intelligences from tracking the wearer, and can copy access \
-			from other identification cards. The access is cumulative, so scanning one card does not erase the \
-			access gained from another. In addition, they can be forged to display a new assignment and name. \
-			This can be done an unlimited amount of times. Some Syndicate areas and devices can only be accessed \
-			with these cards."
+	desc = "Агентская карта не позволяет ИИ отслеживать носителя и может копировать доступ с других ID-карт. \
+			Доступ накапливается — сканирование одной карты не стирает доступ от другой. \
+			Кроме того, карту можно подделать: изменить имя и должность бесконечное количество раз. \
+			Некоторые зоны и устройства Syndicate доступны только с такими картами."
 	item = /obj/item/card/id/syndicate
 	cost = 2
 	purchasable_from = UPLINK_SYNDICATE
 
 /datum/uplink_item/stealthy_tools/agent_card_inteq
 	name = "Agent Identification Card"
-	desc = "Agent cards prevent artificial intelligences from tracking the wearer, and can copy access \
-			from other identification cards. The access is cumulative, so scanning one card does not erase the \
-			access gained from another. In addition, they can be forged to display a new assignment and name. \
-			This can be done an unlimited amount of times. Some Syndicate areas and devices can only be accessed \
-			with these cards."
+	desc = "Агентская карта не позволяет ИИ отслеживать носителя и может копировать доступ с других ID-карт. \
+			Доступ накапливается — сканирование одной карты не стирает доступ от другой. \
+			Кроме того, карту можно подделать: изменить имя и должность неограниченное количество раз. \
+			Некоторые зоны и устройства Syndicate доступны только с такими картами."
 	item = /obj/item/card/id/inteq
 	cost = 2
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/stealthy_tools/ai_detector
 	name = "Artificial Intelligence Detector"
-	desc = "A functional multitool that turns red when it detects an artificial intelligence watching it, and can be \
-			activated to display their exact viewing location and nearby security camera blind spots. Knowing when \
-			an artificial intelligence is watching you is useful for knowing when to maintain cover, and finding nearby \
-			blind spots can help you identify escape routes."
+	desc = "Рабочий мультитул, краснеющий при обнаружении наблюдающего ИИ. \
+			При активации показывает точное место наблюдения ИИ и слепые зоны ближайших камер. \
+			Полезно для поддержания прикрытия и поиска путей отхода."
 	item = /obj/item/multitool/ai_detect
 	cost = 1
 
 /datum/uplink_item/stealthy_tools/chameleon
 	name = "Chameleon Kit"
-	desc = "A set of items that contain chameleon technology allowing you to disguise as pretty much anything on the station, and more! \
-			Due to budget cuts, the shoes don't provide protection against slipping."
+	desc = "Набор предметов с технологией хамелеона, позволяющий маскироваться под почти всё на станции и не только! \
+			Из-за сокращения бюджета обувь не защищает от поскальзывания."
 	item = /obj/item/storage/box/syndie_kit/chameleon
 	cost = 2
 	purchasable_from = ~(UPLINK_CLOWN_OPS)
 
 /datum/uplink_item/stealthy_tools/chameleon_proj
 	name = "Chameleon Projector"
-	desc = "Projects an image across a user, disguising them as an object scanned with it, as long as they don't \
-			move the projector from their hand. Disguised users move slowly, and projectiles pass over them."
+	desc = "Проецирует образ на пользователя, маскируя его под отсканированный объект, \
+			пока проектор не убран из руки. Замаскированные двигаются медленно, а снаряды пролетают мимо."
 	item = /obj/item/chameleon
 	cost = 7
 
 /datum/uplink_item/stealthy_tools/codespeak_manual
 	name = "Codespeak Manual"
-	desc = "Syndicate agents can be trained to use a series of codewords to convey complex information, which sounds like random concepts and drinks to anyone listening. \
-			This manual teaches you this Codespeak. You can also hit someone else with the manual in order to teach them. This is the deluxe edition, which has unlimited uses."
+	desc = "Агенты Syndicate могут быть обучены кодовому языку для передачи сложной информации, \
+			который звучит как случайный набор слов для посторонних. \
+			Это эксклюзивное издание с неограниченным количеством использований. Можно ударить книгой кого-то для обучения."
 	item = /obj/item/codespeak_manual/unlimited
 	cost = 3
 	purchasable_from = UPLINK_SYNDICATE
@@ -80,16 +78,16 @@
 
 /datum/uplink_item/stealthy_tools/emplight
 	name = "EMP Flashlight"
-	desc = "A small, self-recharging, short-ranged EMP device disguised as a working flashlight. \
-		Useful for disrupting headsets, cameras, doors, lockers and borgs during stealth operations. \
-		Attacking a target with this flashlight will direct an EM pulse at it and consumes a charge."
+	desc = "Небольшое самоподзаряжающееся ЭМИ-устройство ближнего действия, замаскированное под рабочий фонарик. \
+		Полезно для вывода из строя гарнитур, камер, дверей, шкафчиков и боргов при скрытных операциях. \
+		Удар по цели направляет ЭМИ на неё и расходует заряд."
 	item = /obj/item/flashlight/emp
 	cost = 2
 	surplus = 30
 
 /datum/uplink_item/stealthy_tools/failsafe
 	name = "Failsafe Uplink Code"
-	desc = "When entered the uplink will self-destruct immidiately."
+	desc = "При вводе аплинк немедленно самоуничтожится."
 	item = /obj/effect/gibspawner/generic
 	cost = 1
 	surplus = 0
@@ -107,8 +105,8 @@
 
 /datum/uplink_item/stealthy_tools/mulligan
 	name = "Mulligan"
-	desc = "Screwed up and have security on your tail? This handy syringe will give you a completely new identity \
-			and appearance."
+	desc = "Облажались и СБ на хвосте? Этот удобный шприц даст вам совершенно новую личность \
+			и внешность."
 	item = /obj/item/reagent_containers/syringe/mulligan
 	cost = 3
 	surplus = 30
@@ -116,8 +114,8 @@
 
 /datum/uplink_item/stealthy_tools/syndigaloshes
 	name = "No-Slip Chameleon Shoes"
-	desc = "These shoes will allow the wearer to run on wet floors and slippery objects without falling down. \
-			They do not work on heavily lubricated surfaces."
+	desc = "Эти ботинки позволяют носителю бегать по мокрым полам и скользким предметам без падений. \
+			Не работают на сильно смазанных поверхностях."
 	item = /obj/item/clothing/shoes/chameleon/noslip
 	cost = 2
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
@@ -129,15 +127,15 @@
 
 /datum/uplink_item/stealthy_tools/jammer
 	name = "Radio Jammer"
-	desc = "This device will disrupt any nearby outgoing radio communication when activated. Does not affect binary chat."
+	desc = "При активации подавляет любую исходящую радиосвязь поблизости. Не влияет на бинарный чат."
 	item = /obj/item/jammer
 	cost = 2
 
 /datum/uplink_item/stealthy_tools/smugglersatchel
 	name = "Smuggler's Satchel"
-	desc = "This satchel is thin enough to be hidden in the gap between plating and tiling; great for stashing \
-			your stolen goods. Comes with a crowbar and a floor tile inside. Properly hidden satchels have been \
-			known to survive intact even beyond the current shift, but this is just a myth. "
+	desc = "Эта сумка достаточно тонкая, чтобы спрятать её в щель между обшивкой и плиткой — отлично подходит для хранения \
+			краденого. В комплекте монтировка и плитка пола. Ходят слухи, что спрятанные сумки \
+			переживают смену, но это лишь миф."
 	item = /obj/item/storage/backpack/satchel/flat/with_tools
 	cost = 1
 	surplus = 30

@@ -19,3 +19,12 @@
 		/datum/reagent/consumable/bonito = 1,
 		/datum/reagent/consumable/sugar = 1,
 		)
+
+/datum/chemical_reaction/food/curd
+	name = "Curd"
+	id = "curd"
+	required_reagents = list(/datum/reagent/consumable/milk = 15, /datum/reagent/consumable/vinegar = 5, /datum/reagent/consumable/cream = 5)
+	mix_message = "The milk curdles into curd."
+	required_temp = 353
+	mob_react = FALSE
+	resulting_food_path = /obj/item/reagent_containers/food/snacks/curd

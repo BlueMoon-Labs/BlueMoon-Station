@@ -1,4 +1,4 @@
-import { KEY_A, KEY_DOWN, KEY_ENTER, KEY_ESCAPE, KEY_UP, KEY_Z } from '../../common/keycodes';
+import { isAlphaKey, KEY_DOWN, KEY_ENTER, KEY_ESCAPE, KEY_UP } from '../../common/keycodes';
 import { useBackend, useLocalState } from '../backend';
 import { Button, Input, Section, Stack } from '../components';
 import { Window } from '../layouts';
@@ -41,7 +41,7 @@ export const ListInputModal = (_, context) => {
   );
   // User presses up or down on keyboard
   // Simulates clicking an item
-  const onArrowKey = (key: number) => {
+  const onArrowKey = (key: string) => {
     const len = filteredItems.length - 1;
     if (key === KEY_DOWN) {
       if (selected === null || selected === len) {
@@ -74,10 +74,9 @@ export const ListInputModal = (_, context) => {
     setSearchBarVisible(true);
   };
   // User presses a letter key with no searchbar visible
-  const onLetterSearch = (key: number) => {
-    const keyChar = String.fromCharCode(key);
+  const onLetterSearch = (key: string) => {
     const foundItem = items.find((item) => {
-      return item?.toLowerCase().startsWith(keyChar?.toLowerCase());
+      return item?.toLowerCase().startsWith(key.toLowerCase());
     });
     if (foundItem) {
       const foundIndex = items.indexOf(foundItem);
@@ -115,20 +114,19 @@ export const ListInputModal = (_, context) => {
       {timeout && <Loader value={timeout} />}
       <Window.Content
         onKeyDown={(event) => {
-          const keyCode = window.event ? event.which : event.keyCode;
-          if (keyCode === KEY_DOWN || keyCode === KEY_UP) {
+          if (event.key === KEY_DOWN || event.key === KEY_UP) {
             event.preventDefault();
-            onArrowKey(keyCode);
+            onArrowKey(event.key);
           }
-          if (keyCode === KEY_ENTER) {
+          if (event.key === KEY_ENTER) {
             event.preventDefault();
             act('submit', { entry: filteredItems[selected] });
           }
-          if (!searchBarVisible && keyCode >= KEY_A && keyCode <= KEY_Z) {
+          if (!searchBarVisible && isAlphaKey(event.key)) {
             event.preventDefault();
-            onLetterSearch(keyCode);
+            onLetterSearch(event.key);
           }
-          if (keyCode === KEY_ESCAPE) {
+          if (event.key === KEY_ESCAPE) {
             event.preventDefault();
             act('cancel');
           }
@@ -203,8 +201,7 @@ const ListDisplay = (props, context) => {
               act('submit', { entry: filteredItems[selected] });
             }}
             onKeyDown={(event) => {
-              const keyCode = window.event ? event.which : event.keyCode;
-              if (searchBarVisible && keyCode >= KEY_A && keyCode <= KEY_Z) {
+              if (searchBarVisible && isAlphaKey(event.key)) {
                 event.preventDefault();
                 onFocusSearch();
               }

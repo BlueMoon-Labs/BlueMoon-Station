@@ -118,9 +118,7 @@
 	if(HAS_TRAIT(loc, TRAIT_ROBOTIC_ORGANISM))
 		mask_type = null
 		internal_type = null
-		medipen_type = null
-		new /obj/item/stack/cable_coil/random/five(src)
-		new /obj/item/weldingtool/mini(src)
+		medipen_type = /obj/item/reagent_containers/hypospray/medipen/ferrocortex
 	if(!isnull(mask_type))
 	// BLUEMOON ADD END
 		new mask_type(src)
@@ -1658,13 +1656,13 @@
 	STR.max_items = 16
 
 /obj/item/storage/box/debugtools/PopulateContents()
-	var/static/items_inside = list(
+	var/static/list/items_inside = list(
 		/obj/item/flashlight/emp/debug=1,\
 		/obj/item/pda=1,\
 		/obj/item/modular_computer/tablet/preset/advanced=1,\
 		/obj/item/geiger_counter=1,\
 		/obj/item/construction/rcd/combat/admin=1,\
-		/obj/item/pipe_dispenser=1,\
+		/obj/item/pipe_dispenser/bluespace =1,\
 		/obj/item/card/emag=1,\
 		/obj/item/healthanalyzer/advanced=1,\
 		/obj/item/disk/tech_disk/debug=1,\
@@ -1674,7 +1672,8 @@
 		/obj/item/storage/box/beakers/variety=1,\
 		/obj/item/storage/box/material=1,\
 		/obj/item/storage/belt/medical/surgery_belt_adv=1,
-		/obj/item/debug/omnitool=1
+		/obj/item/debug/omnitool=1,
+		/obj/item/door_remote/omni=1,
 		)
 	generate_items_inside(items_inside, src)
 

@@ -1762,3 +1762,22 @@
 		remove_signals()
 		owner.dust(TRUE, TRUE)
 //
+
+/datum/mutation/human/bm/waddle
+	name = "Неуклюжесть"
+	desc = "Незначительное отклонение, заставляющее вас подпрыгивать при движении."
+	mob_trait = TRAIT_WADDLING
+	quality = MINOR_NEGATIVE
+	instability = 0
+	text_gain_indication = span_notice("Тебе кажется, что ты передвигаешься как-то по-дурацки.")
+	text_lose_indication = span_notice("Теперь ты передвигаешься нормально.")
+
+/datum/mutation/human/bm/waddle/on_acquiring(mob/living/carbon/human/owner)
+	. = ..()
+	owner.LoadComponent(/datum/component/waddling)
+
+/datum/mutation/human/bm/waddle/on_losing(mob/living/carbon/human/owner)
+	. = ..()
+	if(!HAS_TRAIT(owner, TRAIT_WADDLING))
+		var/datum/component/waddling = GetComponent(/datum/component/waddling)
+		waddling?.RemoveComponent()

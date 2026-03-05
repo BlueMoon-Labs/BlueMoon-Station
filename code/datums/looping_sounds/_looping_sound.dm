@@ -83,6 +83,8 @@
 		play(get_sound(starttime))
 
 /datum/looping_sound/proc/play(soundfile, volume_override)
+	if(!parent)
+		return
 	var/sound/S = sound(soundfile)
 	if(direct)
 		S.channel = SSsounds.random_available_channel()

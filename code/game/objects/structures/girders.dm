@@ -1,5 +1,6 @@
 /obj/structure/girder
 	name = "girder"
+	icon = 'icons/obj/smooth_structures/girder.dmi'
 	icon_state = "girder"
 	desc = "A large structural assembly made out of metal; It requires a layer of metal before it can be considered a wall."
 	anchored = TRUE
@@ -11,6 +12,8 @@
 	max_integrity = 200
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 	rad_insulation = RAD_VERY_LIGHT_INSULATION
+	smooth = SMOOTH_MORE
+	canSmoothWith = list(/obj/structure/girder, /turf/closed/wall, /obj/structure/falsewall)
 
 /obj/structure/girder/examine(mob/user)
 	. = ..()
@@ -330,6 +333,8 @@
 	state = GIRDER_DISPLACED
 	girderpasschance = 25
 	max_integrity = 120
+	smooth = SMOOTH_FALSE
+	canSmoothWith = null
 
 /obj/structure/girder/reinforced
 	name = "reinforced girder"
@@ -337,6 +342,7 @@
 	state = GIRDER_REINF
 	girderpasschance = 0
 	max_integrity = 350
+	icon = 'icons/obj/smooth_structures/reinforced_girder.dmi'
 
 
 
@@ -348,6 +354,8 @@
 	icon = 'icons/obj/cult.dmi'
 	icon_state= "cultgirder"
 	can_displace = FALSE
+	smooth = SMOOTH_FALSE
+	canSmoothWith = null
 
 /obj/structure/girder/cult/attackby(obj/item/W, mob/user, params)
 	add_fingerprint(user)
@@ -428,6 +436,8 @@
 	icon = 'icons/obj/clockwork_objects.dmi'
 	icon_state = "wall_gear"
 	can_displace = FALSE
+	smooth = SMOOTH_FALSE
+	canSmoothWith = null
 
 /obj/structure/girder/bronze/attackby(obj/item/W, mob/living/user, params)
 	add_fingerprint(user)

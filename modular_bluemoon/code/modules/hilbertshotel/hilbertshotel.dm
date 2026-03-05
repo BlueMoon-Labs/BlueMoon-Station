@@ -1,3 +1,6 @@
+#define STATUS_IDLE "idle"
+#define STATUS_ENTERING_ROOM "enter"
+
 /obj/item/hilbertshotel
 	name = "Hilbert's Hotel"
 	desc = "A sphere of what appears to be an intricate network of bluespace. Observing it in detail seems to give you a headache as you try to comprehend the infinite amount of infinitesimally distinct points on its surface."
@@ -44,6 +47,10 @@
 		to_chat(user, span_warning("[M] is not intelligent enough to understand how to use this device!"))
 
 /obj/item/hilbertshotel/attack_self(mob/user)
+	. = ..()
+	ui_interact(user)
+
+/obj/item/hilbertshotel/attackby(obj/item/I, mob/user, params)
 	. = ..()
 	ui_interact(user)
 
@@ -132,13 +139,16 @@
 
 	if(!usr.ckey)
 		return
+	var/mob/living/user = usr
 
-	if(!SShilbertshotel.user_data[usr.ckey])
-		SShilbertshotel.user_data[usr.ckey] = list(
+	if(!SShilbertshotel.user_data[user.ckey])
+		SShilbertshotel.user_data[user.ckey] = list(
 			"room_number" = 1,
-			"template" = SShilbertshotel.default_template
+			"template" = SShilbertshotel.default_template,
+			"status" = STATUS_IDLE
 		)
 
+	user.DelayNextAction(CLICK_CD_RAPID)
 	switch(action)
 		if("update_room")
 			var/new_room = params["room"]
@@ -146,25 +156,28 @@
 				return FALSE
 			if(new_room < 1)
 				return FALSE
-			SShilbertshotel.user_data[usr.ckey]["room_number"] = new_room
+			SShilbertshotel.user_data[user.ckey]["room_number"] = new_room
 			return TRUE
 
 		if("select_room")
 			var/template_name = params["room"]
 			if(!(template_name in SShilbertshotel.hotel_map_list))
 				return FALSE
-			SShilbertshotel.user_data[usr.ckey]["template"] = template_name
+			SShilbertshotel.user_data[user.ckey]["template"] = template_name
 			return TRUE
 
 		if("checkin")
-			var/template = SShilbertshotel.user_data[usr.ckey]["template"] || SShilbertshotel.default_template
-			var/room_number = params["room"] || SShilbertshotel.user_data[usr.ckey]["room_number"] || 1
-			if(!room_number || !(template in SShilbertshotel.hotel_map_list))
+			if(SShilbertshotel.user_data[user.ckey]["status"] ==  STATUS_ENTERING_ROOM)
 				return FALSE
-			var/mob/living/user = usr
+			var/template = SShilbertshotel.user_data[user.ckey]["template"]
+			var/room_number = SShilbertshotel.user_data[user.ckey]["room_number"]
+			if(!room_number || !template || !(template in SShilbertshotel.hotel_map_list))
+				return FALSE
+			SShilbertshotel.user_data[user.ckey]["status"] = STATUS_ENTERING_ROOM
 			if(type == /obj/item/hilbertshotel)
-				user = istype(loc, /mob/living) ? loc : usr
-			promptAndCheckIn(user, usr, room_number, template)
+				user = istype(loc, /mob/living) ? loc : user
+			if(!promptAndCheckIn(user, user, room_number, template))
+				SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 			return TRUE
 
 /obj/item/hilbertshotel/proc/check_user(mob/user)
@@ -190,26 +203,26 @@
 	if(!max_rooms)
 		playsound(src, 'sound/machines/terminal_error.ogg', 15, 1)
 		to_chat(user, span_warning("We're currently not offering service, please come back another day!"))
-		return
+		return FALSE
 
 	if(!mob_dorms[user] || !mob_dorms[user].Find(room_number)) //BLUEMOON ADD владелец комнаты может зайти в комнату даже если она закрыта и активна
 		if(activeRooms.len && activeRooms["[room_number]"])	//лесенка ради удобства восприятия, точно-точно говорю
 			if(lockedRooms.len && lockedRooms["[room_number]"])
 				to_chat(user, span_warning("You cant enter in locked room, contact with room owner."))
-				return												//BLUEMOON ADD END
+				return FALSE										//BLUEMOON ADD END
 	if(max_rooms > 0 && mob_dorms[user]?.len >= max_rooms && !activeRooms["[room_number]"] && !storedRooms["[room_number]"])
 		to_chat(user, span_warning("Your free trial of Hilbert's Hotel has ended! Please select one of the rooms you've already visited."))
 		room_number = input(user, "Select one of your previous rooms", "Room number") as null|anything in mob_dorms[user]
 
 	//SPLURT EDIT END
 	if(!room_number || !user.CanReach(src))
-		return
+		return FALSE
 	if(room_number > SHORT_REAL_LIMIT)
 		to_chat(user, span_warning("You have to check out the first [SHORT_REAL_LIMIT] rooms before you can go to a higher numbered one!"))
-		return
+		return FALSE
 	if((room_number < 1) || (room_number != round(room_number)))
 		to_chat(user, span_warning("That is not a valid room number!"))
-		return
+		return FALSE
 	if(!isturf(loc))
 		if((loc == user) || (loc.loc == user) || (loc.loc in user.contents) || (loc in user.GetAllContents(type)))		//short circuit, first three checks are cheaper and covers almost all cases (loc.loc covers hotel in box in backpack).
 			forceMove(get_turf(user))
@@ -218,9 +231,9 @@
 		SShilbertshotel.setup_storage_turf()
 	checked_in_ckeys |= user.ckey		//if anything below runtimes, guess you're outta luck!
 	if(tryActiveRoom(room_number, user))
-		return
+		return TRUE
 	if(tryStoredRoom(room_number, user))
-		return
+		return TRUE
 	sendToNewRoom(room_number, user, template)
 
 /area/hilbertshotel/proc/storeRoom()
@@ -250,7 +263,9 @@
 			turfNumber++
 	parentSphere.storedRooms["[roomnumber]"] = storage
 	parentSphere.activeRooms -= "[roomnumber]"
-	qdel(reservation)
+	var/datum/turf_reservation/old_res = reservation
+	reservation = null
+	qdel(old_res)
 
 /area/hilbertshotel/proc/update_light_switches() //SPLURT ADDITION: This will update all light switches in the given area
 	for(var/obj/machinery/light_switch/LS in src)
@@ -266,6 +281,7 @@
 
 	do_sparks(3, FALSE, get_turf(user))
 	MobTransfer(user, locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
+	SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 	return TRUE
 
 /obj/item/hilbertshotel/proc/tryStoredRoom(var/roomNumber, var/mob/user)
@@ -298,12 +314,15 @@
 				qdel(A)
 
 	// Place the STORED atoms back into the room
+	var/list/stored_data = storedRooms["[roomNumber]"]
+	var/stored_size = length(stored_data)
 	var/turfNumber = 1
 	for(var/i in 0 to mapTemplate.width - 1)
 		for(var/j in 0 to mapTemplate.height - 1)
-			for(var/atom/movable/A in storedRooms["[roomNumber]"][turfNumber])
-				if(istype(A.loc, /obj/item/abstracthotelstorage)) // Don't want to recall something that's been moved
-					A.forceMove(locate(roomReservation.bottom_left_coords[1] + i, roomReservation.bottom_left_coords[2] + j, roomReservation.bottom_left_coords[3]))
+			if(turfNumber <= stored_size)
+				for(var/atom/movable/A in stored_data[turfNumber])
+					if(istype(A.loc, /obj/item/abstracthotelstorage)) // Don't want to recall something that's been moved
+						A.forceMove(locate(roomReservation.bottom_left_coords[1] + i, roomReservation.bottom_left_coords[2] + j, roomReservation.bottom_left_coords[3]))
 			turfNumber++
 	for(var/obj/item/abstracthotelstorage/S in SShilbertshotel.storageTurf)
 		if((S.roomNumber == roomNumber) && (S.parentSphere == src))
@@ -323,6 +342,7 @@
 	linkTurfs(roomReservation, roomNumber)
 	do_sparks(3, FALSE, get_turf(user))
 	MobTransfer(user, locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
+	SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 	return TRUE
 
 /obj/item/hilbertshotel/proc/MobTransfer(mob/living/user, turf/T, depth = 0)
@@ -398,6 +418,7 @@
 	linkTurfs(roomReservation, roomNumber)
 	do_sparks(3, FALSE, get_turf(user))
 	MobTransfer(user, locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
+	SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 	if(!mob_dorms[user]?.Find(roomNumber))
 		LAZYADD(mob_dorms[user], roomNumber)
 
@@ -437,8 +458,9 @@
 						var/_y = rand(min,max)
 						var/turf/T = locate(_x, _y, _z)
 						A.forceMove(T)
-			qdel(room)
-
+			var/area/hilbertshotel/roomArea = get_area(locate(room.bottom_left_coords[1], room.bottom_left_coords[2], room.bottom_left_coords[3]))
+			if(roomArea)
+				roomArea.reservation = null
 	if(storedRooms.len)
 		for(var/x in storedRooms)
 			var/list/atomList = storedRooms[x]
@@ -536,6 +558,9 @@
 	promptExit(user)
 
 /turf/closed/indestructible/hoteldoor/attack_slime(mob/user)
+	promptExit(user)
+
+/turf/closed/indestructible/hoteldoor/attackby(obj/item/I, mob/user, params)
 	promptExit(user)
 
 /turf/closed/indestructible/hoteldoor/attack_robot(mob/user)
@@ -688,3 +713,6 @@
 	if(ismob(AM))
 		var/mob/M = AM
 		M.mob_transforming = FALSE
+
+#undef STATUS_IDLE
+#undef STATUS_ENTERING_ROOM

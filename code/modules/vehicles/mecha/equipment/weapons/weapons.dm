@@ -51,10 +51,13 @@
 		playsound(chassis, fire_sound, 50, TRUE)
 
 		sleep(max(0, projectile_delay))
+		if(!chassis)
+			break
 
 		if(kickback)
 			chassis.newtonian_move(newtonian_target)
-	chassis.log_message("Fired from [src], targeting [target].", LOG_MECHA)
+	if(chassis)
+		chassis.log_message("Fired from [src], targeting [target].", LOG_MECHA)
 
 //Base energy weapon type
 /obj/item/mecha_parts/mecha_equipment/weapon/energy
@@ -262,7 +265,8 @@
 	if(!.)
 		return
 	projectiles -= projectiles_per_shot
-	send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",src.get_equip_info())
+	if(chassis)
+		send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",src.get_equip_info())
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/carbine
 	name = "\improper FNX-99 \"Hades\" Carbine"

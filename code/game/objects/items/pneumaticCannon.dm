@@ -157,12 +157,14 @@
 		if(user)
 			to_chat(user, "<span class='warning'>\The [src] can't fire without a source of gas.</span>")
 		return
-	if(tank && !tank.air_contents.remove(gasPerThrow * pressureSetting))
+	var/datum/gas_mixture/spent_gas = tank?.air_contents?.remove(gasPerThrow * pressureSetting)
+	if(tank && !spent_gas)
 		if(user)
 			to_chat(user, "<span class='warning'>\The [src] lets out a weak hiss and doesn't react!</span>")
 		else
 			visible_message(src, "<span class='warning'>\The [src] lets out a weak hiss and doesn't react!</span>")
 		return
+	qdel(spent_gas)
 	if(user && HAS_TRAIT(user, TRAIT_CLUMSY) && prob(75) && clumsyCheck && iscarbon(user))
 		var/mob/living/carbon/C = user
 		C.visible_message("<span class='warning'>[C] loses [C.ru_ego()] grip on [src], causing it to go off!</span>", "<span class='userdanger'>[src] slips out of your hands and goes off!</span>")

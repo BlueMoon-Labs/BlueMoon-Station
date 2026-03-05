@@ -34,7 +34,7 @@
 
 /obj/item/broom
 	name = "Broom"
-	desc = "This is my BROOMSTICK! Её можно использовать вручную или взяться за неё двумя руками, чтобы подметать предметы на ходу. Имеет телескопическую ручку для компактного хранения."
+	desc = "This is my BROOMSTICK! Имеет телескопическую ручку для компактного хранения."
 	icon = 'icons/obj/janitor.dmi'
 	icon_state = "broom0"
 	lefthand_file = 'icons/mob/inhands/equipment/custodial_lefthand.dmi'
@@ -61,6 +61,11 @@
 	. = ..()
 	icon_state = "broom0"
 
+/obj/item/broom/examine(mob/user)
+	. = ..()
+	. += "[span_yellowteamradio("GRAB INTENT")][span_notice(" - подмести к себе.")]"
+	. += span_notice("Можно взяться двумя руками, чтобы подметать предметы на ходу.")
+
 /**
  * Handles registering the do_sweep proc when the broom is wielded
  *
@@ -70,7 +75,7 @@
  */
 /obj/item/broom/proc/on_wield(obj/item/source, mob/user)
 	SIGNAL_HANDLER
-
+	user.add_movespeed_modifier(/datum/movespeed_modifier/mop_broom_slowdown)
 	to_chat(user, span_notice("Хватаю [src.name] обеими руками и готовлюсь толкать МУСОР."))
 	RegisterSignal(user, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(do_sweep))
 
@@ -83,7 +88,7 @@
  */
 /obj/item/broom/proc/on_unwield(obj/item/source, mob/user)
 	SIGNAL_HANDLER
-
+	user.remove_movespeed_modifier(/datum/movespeed_modifier/mop_broom_slowdown)
 	UnregisterSignal(user, COMSIG_MOVABLE_PRE_MOVE)
 
 /obj/item/broom/afterattack(atom/A, mob/user, proximity)
@@ -109,7 +114,7 @@
 	var/turf/current_item_loc = isturf(A) ? A : A.loc
 	if (!isturf(current_item_loc))
 		return
-	var/turf/new_item_loc = get_step(current_item_loc, user.dir)
+	var/turf/new_item_loc = user.a_intent == INTENT_GRAB ? get_turf(user) : get_step(current_item_loc, user.dir)
 	/*
 	for(var/i = 0 to add_dist)
 		new_item_loc = get_step(new_item_loc, user.dir)

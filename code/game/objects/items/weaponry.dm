@@ -1051,7 +1051,8 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	on_icon_state = "baseball_bat_telescopic_1"
 	off_icon_state = "baseball_bat_telescopic_0"
 	on_item_state = "baseball_bat_telescopic"
-	force_on = 15
+	force_on = 23 // better then toolbox
+	armour_penetration =  10
 	force_off = 5
 	throwforce_on = 20
 	throwforce_off = 10

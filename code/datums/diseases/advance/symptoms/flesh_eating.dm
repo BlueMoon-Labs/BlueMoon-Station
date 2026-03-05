@@ -20,7 +20,7 @@ Bonus
 	name = "Necrotizing Fasciitis"
 	desc = "The virus aggressively attacks body cells, necrotizing tissues and organs."
 	stealth = -3
-	resistance = -4
+	resistance = -2
 	stage_speed = 0
 	transmittable = -3
 	level = 6

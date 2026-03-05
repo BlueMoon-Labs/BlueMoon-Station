@@ -38,8 +38,13 @@
 
 
 mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
+	var/static/list/buttons = list(
+		/datum/action/toggle_dead_chat_mob,
+		/datum/action/disguise,
+		/datum/action/cooldown/ghost_role_eligible,
+	)
 	if(switch_on)
-		AddElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE)
+		AddElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _low_priority = TRUE)
 		AddElement(/datum/element/dusts_on_catatonia)
 		var/list/Not_dust_area = list(/area/centcom/holding/exterior,  /area/hilbertshotel)
 		if(additional_area)
@@ -50,13 +55,12 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		ADD_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
 		ADD_TRAIT(src, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT) //The mob can't be made into a random antag, they are still eligible for ghost roles popups.
 
-		var/datum/action/toggle_dead_chat_mob/D = new(src)
-		D.Grant(src)
-		var/datum/action/disguise/disguise_action = new(src)
-		disguise_action.Grant(src)
+		for(var/path in buttons)
+			var/datum/action/D = new path(src)
+			D.Grant(src)
 
 	else
-		RemoveElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE)
+		RemoveElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _low_priority = TRUE)
 		RemoveElement(/datum/element/dusts_on_catatonia)
 		var/datum/antagonist/ghost_role/ghost_cafe/GC = mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe)
 		if(GC)
@@ -68,14 +72,16 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		REMOVE_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
 		REMOVE_TRAIT(src, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)
 
-		var/datum/action/toggle_dead_chat_mob/D = locate(/datum/action/toggle_dead_chat_mob) in actions
-		if(D)
+		for(var/path in buttons)
+			var/datum/action/D = locate(path) in actions
+			if(!D)
+				continue
+
+			if(istype(D, /datum/action/disguise))
+				var/datum/action/disguise/Ddisg = D
+				if(Ddisg.currently_disguised)
+					remove_alt_appearance("ghost_cafe_disguise")
 			D.Remove(src)
-		var/datum/action/disguise/disguise_action = locate(/datum/action/disguise) in actions
-		if(disguise_action)
-			if(disguise_action.currently_disguised)
-				remove_alt_appearance("ghost_cafe_disguise")
-			disguise_action.Remove(src)
 
 /obj/effect/mob_spawn/qareen/attack_ghost(mob/user, latejoinercalling)
 	if(GLOB.master_mode == "Extended")
@@ -294,13 +300,15 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 /obj/effect/mob_spawn/human/ds2/syndicate/enginetech/special(mob/living/carbon/human/new_spawn)
 	. = ..()
 	ADD_TRAIT(new_spawn.mind, TRAIT_KNOW_ENGI_WIRES, GHOSTROLE_TRAIT)
-	new_spawn.mind.add_skill_modifier(list(/datum/skill_modifier/job/level/wiring/expert, /datum/skill_modifier/job/affinity/wiring))
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/level/wiring/expert, null)
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/affinity/wiring, null)
 
 /obj/effect/mob_spawn/human/ds2/syndicate/researcher/special(mob/living/carbon/human/new_spawn)
 	. = ..()
 	ADD_TRAIT(new_spawn.mind, TRAIT_KNOW_CYBORG_WIRES, GHOSTROLE_TRAIT)
 	ADD_TRAIT(new_spawn.mind, TRAIT_MECHA_EXPERT, GHOSTROLE_TRAIT)
-	new_spawn.mind.add_skill_modifier(list(/datum/skill_modifier/job/level/wiring/trained, /datum/skill_modifier/job/affinity/wiring))
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/level/wiring/trained, null)
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/affinity/wiring, null)
 
 /obj/effect/mob_spawn/human/ds2/syndicate/stationmed/special(mob/living/carbon/human/new_spawn)
 	. = ..()
@@ -312,7 +320,8 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	. = ..()
 	ADD_TRAIT(new_spawn.mind, TRAIT_KNOW_ENGI_WIRES, GHOSTROLE_TRAIT)
 	ADD_TRAIT(new_spawn.mind, TRAIT_KNOW_CYBORG_WIRES, GHOSTROLE_TRAIT)
-	new_spawn.mind.add_skill_modifier(list(/datum/skill_modifier/job/level/wiring/expert, /datum/skill_modifier/job/affinity/wiring))
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/level/wiring/expert, null)
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/affinity/wiring, null)
 
 ////////////////////////////////////
 

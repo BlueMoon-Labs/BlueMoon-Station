@@ -72,7 +72,13 @@
 
 /obj/item/gun/energy/Destroy()
 	if(cell)
-		QDEL_NULL(cell)
+		if(QDELING(cell))
+			cell = null
+		else
+			QDEL_NULL(cell)
+	for(var/obj/item/ammo_casing/energy/casing in ammo_type)
+		qdel(casing)
+	ammo_type = null
 	STOP_PROCESSING(SSobj, src)
 	return ..()
 

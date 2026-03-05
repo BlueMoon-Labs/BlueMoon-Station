@@ -193,6 +193,7 @@
 		ground_zero.assume_air(bomb_mixture)
 		ground_zero.hotspot_expose(1000, 125)
 
+	qdel(bomb_mixture)
 	ground_zero.air_update_turf()
 
 /obj/item/tank/proc/release()	//This happens when the bomb is not welded. Tank contents are just spat out.

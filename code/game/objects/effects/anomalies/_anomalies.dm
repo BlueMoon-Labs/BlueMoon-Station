@@ -23,7 +23,7 @@
 	///Do we stay in one place?
 	var/immobile = FALSE
 
-/obj/effect/anomaly/Initialize(mapload, new_lifespan, drops_core = TRUE)
+/obj/effect/anomaly/Initialize(mapload, new_lifespan)
 	. = ..()
 
 	START_PROCESSING(SSobj, src)
@@ -32,7 +32,6 @@
 	if (!impact_area)
 		return INITIALIZE_HINT_QDEL
 
-	src.drops_core = drops_core
 	if(aSignal)
 		aSignal = new aSignal(src)
 		aSignal.code = rand(1,100)

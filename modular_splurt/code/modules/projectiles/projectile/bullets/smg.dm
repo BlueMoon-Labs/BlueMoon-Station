@@ -1,7 +1,7 @@
 /obj/item/projectile/bullet/c45 // Yes I know I am changing how .45 weapons work by making the basic ammo less-than-lethal. This just makes this easier in the long run with mags
 	name = ".45 rubber bullet"
-	damage = 5 //10 before
-	stamina = 30
+	damage = 2 //10 before
+	stamina = 33
 	sharpness = NONE
 
 //I am an idiot, fucking coding oversights. If one ever makes a child of a object, MAKE SURE TO ADD IN VALUES TO ADJUST FROM PARENT 	stamina = 30 will be a reminder to that.
@@ -37,6 +37,8 @@
 
 /obj/item/projectile/bullet/c45/trac/on_hit(atom/target, blocked = FALSE)
 	. = ..()
+	if(!iscarbon(target))
+		return
 	var/mob/living/carbon/M = target
 	var/obj/item/implant/tracking/c38/imp
 	for(var/obj/item/implant/tracking/c38/TI in M.implants) //checks if the target already contains a tracking implant
@@ -72,7 +74,7 @@
 
 /obj/item/projectile/bullet/c9mm/rubber
 	name = "9mm Rubber"
-	damage = 5
-	stamina = 30
+	damage = 2
+	stamina = 33
 	sharpness = NONE
 	embedding = null

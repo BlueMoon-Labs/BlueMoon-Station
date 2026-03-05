@@ -723,6 +723,66 @@
 	name = "Ponytail 4 (Alt)"
 	icon_state = "hair_ponytail4alt"
 
+/datum/sprite_accessory/hair/judgement
+	name = "Judgement"
+	icon_state = "hair_judgement"
+
+/datum/sprite_accessory/hair/judgementaltcowlick
+	name = "Judgement (Cowlick)"
+	icon_state = "hair_judgement_alt_cowlick"
+
+/datum/sprite_accessory/hair/judgementalt
+	name = "Judgement (Alt)"
+	icon_state = "hair_judgement_alt"
+
+/datum/sprite_accessory/hair/uniquespiky
+	name = "Unique Spiky"
+	icon_state = "hair_unique_spiky"
+
+/datum/sprite_accessory/hair/uniquespikycowlick
+	name = "Unique Spiky (Cowlick)"
+	icon_state = "hair_unique_spiky_cowlick"
+
+/datum/sprite_accessory/hair/uniquespikycowlick
+	name = "Unique Spiky (Alt Cowlick)"
+	icon_state = "hair_unique_spiky_cowlick_alt"
+
+/datum/sprite_accessory/hair/uniquespikycowlick
+	name = "Unique Spiky (Alt 2 Cowlick)"
+	icon_state = "hair_unique_spiky_cowlick_alt"
+
+/datum/sprite_accessory/hair/hiddeneyes
+	name = "Hidden Eyes"
+	icon_state = "hair_hiddeneyes"
+
+/datum/sprite_accessory/hair/hiddeneyesalt
+	name = "Hidden Eyes (Alt)"
+	icon_state = "hair_hiddeneyes_alt"
+
+/datum/sprite_accessory/hair/hiddeneyesalt2
+	name = "Hidden Eyes (Alt 2)"
+	icon_state = "hair_hiddeneyes_alt2"
+
+/datum/sprite_accessory/hair/sleeper
+	name = "Sleeper"
+	icon_state = "hair_sleeper"
+
+/datum/sprite_accessory/hair/sleeperalt
+	name = "Sleeper (Alt)"
+	icon_state = "hair_sleeper_alt"
+
+/datum/sprite_accessory/hair/uniquefluffy
+	name = "Unique Fluffy"
+	icon_state = "hair_unique_fluffy"
+
+/datum/sprite_accessory/hair/uniquefluffyalt
+	name = "Unique Fluffy (Alt)"
+	icon_state = "hair_unique_fluffy_alt"
+
+/datum/sprite_accessory/hair/uniquefluffytail
+	name = "Unique Fluffy (Alt 2)"
+	icon_state = "hair_unique_fluffy_tail"
+
 /datum/sprite_accessory/hair/ponytail5
 	name = "Ponytail 5"
 	icon_state = "hair_ponytail5"

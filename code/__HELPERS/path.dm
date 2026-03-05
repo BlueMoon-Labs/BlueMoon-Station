@@ -4,6 +4,14 @@
  * cost the same as cardinal moves currently, so paths may look a bit strange, but should still be optimal.
  */
 
+/// Rate-limited warning for invalid path requests that would otherwise spam runtimes.
+/proc/log_invalid_astar_request(atom/movable/path_owner, turf/start, turf/end)
+	var/static/next_log_time = 0
+	if(world.time < next_log_time)
+		return
+	next_log_time = world.time + (5 SECONDS)
+	WARNING("Invalid A* start or destination (suppressed runtime): owner=[path_owner ? "[path_owner] ([path_owner.type])" : "null"], start=[start ? "[start] ([start.type])" : "null"], end=[end ? "[end] ([end.type])" : "null"]")
+
 /**
  * This is the proc you use whenever you want to have pathfinding more complex than "try stepping towards the thing".
  * If no path was found, returns an empty list, which is important for bots like medibots who expect an empty list rather than nothing.
@@ -18,17 +26,25 @@
  * * exclude: If we want to avoid a specific turf, like if we're a mulebot who already got blocked by some turf
  * * skip_first: Whether or not to delete the first item in the path. This would be done because the first item is the starting tile, which can break movement for some creatures.
  */
-/proc/get_path_to(caller, end, max_distance = 30, mintargetdist, id=null, simulated_only = TRUE, turf/exclude, skip_first=TRUE)
-	if(!caller || !get_turf(end))
-		return
+/proc/get_path_to(atom/movable/caller, end, max_distance = 30, mintargetdist, id=null, simulated_only = TRUE, turf/exclude, skip_first=TRUE)
+	var/turf/start_turf = get_turf(caller)
+	var/turf/end_turf = get_turf(end)
+	if(!caller || !start_turf || !end_turf)
+		return list()
 
 	var/l = SSpathfinder.mobs.getfree(caller)
 	while(!l)
 		stoplag(3)
 		l = SSpathfinder.mobs.getfree(caller)
 
+	// Recheck after sleep — caller may have been deleted or moved to nullspace
+	start_turf = get_turf(caller)
+	if(!caller || !start_turf)
+		SSpathfinder.mobs.found(l)
+		return list()
+
 	var/list/path
-	var/datum/pathfind/pathfind_datum = new(caller, end, id, max_distance, mintargetdist, simulated_only, exclude)
+	var/datum/pathfind/pathfind_datum = new(caller, start_turf, end_turf, id, max_distance, mintargetdist, simulated_only, exclude)
 	path = pathfind_datum.search()
 	qdel(pathfind_datum)
 
@@ -44,7 +60,7 @@
  * Note that this can only be used inside the [datum/pathfind][pathfind datum] since it uses variables from said datum.
  * If you really want to optimize things, optimize this, cuz this gets called a lot.
  */
-#define CAN_STEP(cur_turf, next) (next && !next.density && !(simulated_only && SSpathfinder.space_type_cache[next.type]) && !cur_turf.LinkBlockedWithAccess(next,caller, id) && (next != avoid))
+#define CAN_STEP(cur_turf, next) (next && !next.density && !(simulated_only && SSpathfinder.space_type_cache[next.type]) && !cur_turf.LinkBlockedWithAccess(next, src.caller, id) && (next != avoid))
 /// Another helper macro for JPS, for telling when a node has forced neighbors that need expanding
 #define STEP_NOT_HERE_BUT_THERE(cur_turf, dirA, dirB) ((!CAN_STEP(cur_turf, get_step(cur_turf, dirA)) && CAN_STEP(cur_turf, get_step(cur_turf, dirB))))
 
@@ -121,9 +137,10 @@
 	/// A specific turf we're avoiding, like if a mulebot is being blocked by someone t-posing in a doorway we're trying to get through
 	var/turf/avoid
 
-/datum/pathfind/New(atom/movable/caller, atom/goal, id, max_distance, mintargetdist, simulated_only, avoid)
+/datum/pathfind/New(atom/movable/caller, turf/start_turf, turf/goal_turf, id, max_distance, mintargetdist, simulated_only, avoid)
 	src.caller = caller
-	end = get_turf(goal)
+	start = start_turf
+	end = goal_turf
 	open = new /datum/heap(/proc/HeapPathWeightCompare)
 	sources = new()
 	src.id = id
@@ -143,9 +160,7 @@
  * return null, which [/proc/get_path_to] translates to an empty list (notable for simple bots, who need empty lists)
  */
 /datum/pathfind/proc/search()
-	start = get_turf(caller)
 	if(!start || !end)
-		stack_trace("Invalid A* start or destination")
 		return
 	if(start.z != end.z || start == end ) //no pathfinding between z levels
 		return
@@ -159,7 +174,7 @@
 
 	//then run the main loop
 	while(!open.is_empty() && !path)
-		if(!caller)
+		if(!src.caller)
 			return
 		current_processed_node = open.pop() //get the lower f_value turf in the open list
 		if(max_distance && (current_processed_node.number_tiles > max_distance))//if too many steps, don't process that path

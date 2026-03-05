@@ -159,25 +159,18 @@
 	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, .)
 
 /mob/living/carbon/examine_more(mob/user)
-	. = list()
-	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE_MORE, user, .)
+	. = ..()
+	if(!LAZYLEN(all_scars))
+		return
 	var/list/visible_scars
-	if(all_scars)
-		for(var/i in all_scars)
-			var/datum/scar/S = i
-			if(S.is_visible(user))
-				LAZYADD(visible_scars, S)
+	for(var/i in all_scars)
+		var/datum/scar/S = i
+		if(S.is_visible(user))
+			LAZYADD(visible_scars, S)
 
 	if(visible_scars)
-		var/msg = list("<span class='notice'><i>Вы осматриваете [src] получше, и замечаете...</i></span>")
 		for(var/i in visible_scars)
 			var/datum/scar/S = i
 			var/scar_text = S.get_examine_description(user)
 			if(scar_text)
-				msg += "[scar_text]"
-		. += msg
-
-	if(!LAZYLEN(.)) // lol ..length
-		return list("<span class='notice'><i>Вы осматриваете - [src] - получше, но более не находите ничего интересного...</i></span>")
-
-	return
+				. += "[scar_text]"

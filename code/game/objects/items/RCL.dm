@@ -2,8 +2,8 @@
 	name = "rapid cable layer"
 	desc = "A device used to rapidly deploy cables. It has screws on the side which can be removed to slide off the cables. Do not use without insulation!"
 	icon = 'icons/obj/tools.dmi'
-	icon_state = "rcl"
-	item_state = "rcl"
+	icon_state = "rcl-0"
+	item_state = "rcl-0"
 	var/obj/structure/cable/last
 	var/obj/item/stack/cable_coil/loaded
 	opacity = FALSE
@@ -110,17 +110,14 @@
 	return ..()
 
 /obj/item/rcl/update_icon_state()
-	icon_state = initial(icon_state)
-	item_state = initial(item_state)
-	if(!loaded || !loaded.amount)
-		icon_state += "-empty"
-		item_state += "-0"
+	icon_state = "rcl-0"
+	item_state = "rcl-0"
 
 /obj/item/rcl/update_overlays()
 	. = ..()
 	if(!loaded || !loaded.amount)
 		return
-	var/mutable_appearance/cable_overlay = mutable_appearance(icon, "[initial(icon_state)]-[CEILING(loaded.amount/(max_amount/3), 1)]")
+	var/mutable_appearance/cable_overlay = mutable_appearance(icon, "rcl-[10 * CEILING(loaded.amount/(max_amount/3), 1)]")
 	cable_overlay.color = GLOB.cable_colors[colors[current_color_index]]
 	. += cable_overlay
 
@@ -128,7 +125,7 @@
 	. = ..()
 	if(!isinhands || !(loaded?.amount))
 		return
-	var/mutable_appearance/cable_overlay = mutable_appearance(icon_file, "rcl-[CEILING(loaded.amount/(max_amount/3), 1)]")
+	var/mutable_appearance/cable_overlay = mutable_appearance(icon_file, "rcl-[10 * CEILING(loaded.amount/(max_amount/3), 1)]")
 	cable_overlay.color = GLOB.cable_colors[colors[current_color_index]]
 	. += cable_overlay
 

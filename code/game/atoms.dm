@@ -302,6 +302,11 @@
 
 	orbiters = null // The component is attached to us normaly and will be deleted elsewhere
 
+	managed_vis_overlays = null
+	managed_overlays = null
+	remove_overlays = null
+	add_overlays = null
+
 	LAZYCLEARLIST(overlays)
 
 	for(var/i in targeted_by)
@@ -609,6 +614,13 @@
 				. += "<span class='notice'>Внутри находится [reagents.total_volume] u вещества.</span>"
 			else
 				. += "<span class='danger'>Внутри пусто.</span>"
+		else if(isobserver(user) && length(reagents.reagent_list))
+			. += "<b>Внутри находится:</b>"
+			for(var/datum/reagent/R in reagents.reagent_list)
+				. += "[R.volume] u [R.name]"
+			. += span_engradio("Температура: [round(reagents.chem_temp, 1)] K ([round(reagents.chem_temp-T0C, 1)] &deg;C)")
+			. += span_radio("pH: [round(reagents.pH, 0.01)]")
+			. += "<hr>"
 
 	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, .)
 
@@ -623,8 +635,6 @@
 /atom/proc/examine_more(mob/user)
 	. = list()
 	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE_MORE, user, .)
-	if(!LAZYLEN(.)) // lol ..length
-		return list("<span class='notice'><i>Вы осматриваете - [src] - получше, но более не находите ничего интересного...</i></span>")
 
 /**
  * Updates the appearence of the icon
@@ -869,6 +879,8 @@
 	if(!blood_DNA.len)
 		return
 	if(initial(icon) && initial(icon_state))
+		if(blood_splatter_icon)
+			cut_overlay(blood_splatter_icon)
 		blood_splatter_icon = icon(initial(icon), initial(icon_state), , 1)		//we only want to apply blood-splatters to the initial icon_state for each object
 		blood_splatter_icon.Blend("#fff", ICON_ADD) 			//fills the icon_state with white (except where it's transparent)
 		blood_splatter_icon.Blend(icon('icons/effects/blood.dmi', "itemblood"), ICON_MULTIPLY) //adds blood and the remaining white areas become transparant
@@ -1204,55 +1216,6 @@
 /atom/proc/return_temperature()
 	return
 
-// Tool behavior procedure. Redirects to tool-specific procs by default.
-// You can override it to catch all tool interactions, for use in complex deconstruction procs.
-// Just don't forget to return ..() in the end.
-/atom/proc/tool_act(mob/living/user, obj/item/I, tool_type)
-	switch(tool_type)
-		if(TOOL_CROWBAR)
-			return crowbar_act(user, I)
-		if(TOOL_MULTITOOL)
-			return multitool_act(user, I)
-		if(TOOL_SCREWDRIVER)
-			return screwdriver_act(user, I)
-		if(TOOL_WRENCH)
-			return wrench_act(user, I)
-		if(TOOL_WIRECUTTER)
-			return wirecutter_act(user, I)
-		if(TOOL_WELDER)
-			return welder_act(user, I)
-		if(TOOL_ANALYZER)
-			return analyzer_act(user, I)
-
-// Tool-specific behavior procs. To be overridden in subtypes.
-/atom/proc/crowbar_act(mob/living/user, obj/item/I)
-	return
-
-/atom/proc/multitool_act(mob/living/user, obj/item/I)
-	return
-
-/atom/proc/multitool_check_buffer(user, obj/item/I, silent = FALSE)
-	if(!I.tool_behaviour == TOOL_MULTITOOL)
-		if(user && !silent)
-			to_chat(user, "<span class='warning'>[I] has no data buffer!</span>")
-		return FALSE
-	return TRUE
-
-/atom/proc/screwdriver_act(mob/living/user, obj/item/I)
-	SEND_SIGNAL(src, COMSIG_ATOM_SCREWDRIVER_ACT, user, I)
-
-/atom/proc/wrench_act(mob/living/user, obj/item/I)
-	return
-
-/atom/proc/wirecutter_act(mob/living/user, obj/item/I)
-	return
-
-/atom/proc/welder_act(mob/living/user, obj/item/I)
-	return
-
-/atom/proc/analyzer_act(mob/living/user, obj/item/I)
-	return
-
 ///Generate a tag for this /datum, if it implements one
 ///Should be called as early as possible, best would be in New, to avoid weakref mistargets
 ///Really just don't use this, you don't need it, global lists will do just fine MOST of the time
@@ -1312,10 +1275,14 @@
 			log_game(log_text)
 		if(LOG_MECHA)
 			log_mecha(log_text)
+		if(LOG_UPLINK)
+			log_uplink(log_text)
 		if(LOG_SHUTTLE)
 			log_shuttle(log_text)
 		if(LOG_ECON)
 			log_econ(log_text)
+		if(LOG_VICTIM)
+			log_victim(log_text)
 		else
 			stack_trace("Invalid individual logging type: [message_type]. Defaulting to [LOG_GAME] (LOG_GAME).")
 			log_game(log_text)
@@ -1446,8 +1413,12 @@
 	update_action_buttons()
 
 /atom/proc/get_filter(name)
-	if(filter_data && filter_data[name])
-		return filters[filter_data.Find(name)]
+	if(!length(filter_data) || !filter_data[name])
+		return
+	var/filter_index = filter_data.Find(name)
+	if(!filter_index || filter_index > length(filters))
+		return
+	return filters[filter_index]
 
 /// Returns the indice in filters of the given filter name.
 /// If it is not found, returns null.
@@ -1680,8 +1651,12 @@
 
 				if(extra_lines)
 					extra_context = "<br><span class='subcontext'>[lmb_rmb_line][ctrl_lmb_ctrl_rmb_line][alt_lmb_alt_rmb_line][shift_lmb_ctrl_shift_lmb_line]</span>"
-					//first extra line pushes atom name line up 10px, subsequent lines push it up 9px, this offsets that and keeps the first line in the same place
-					active_hud.screentip_text.maptext_y = -1 + (extra_lines - 1) * -9
+					if(screentip_images)
+						//first extra line pushes atom name line up 16px, subsequent lines push it up 12px, this offsets that and keeps the first line in the same place
+						active_hud.screentip_text.maptext_y = -6 + (extra_lines - 1) * -12
+					else
+						//first extra line pushes atom name line up 11px, subsequent lines push it up 8px, this offsets that and keeps the first line in the same place
+						active_hud.screentip_text.maptext_y = -1 + (extra_lines - 1) * -8
 
 	if (screentips_enabled == SCREENTIP_PREFERENCE_CONTEXT_ONLY && extra_context == "")
 		active_hud.screentip_text.maptext = ""

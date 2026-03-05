@@ -5,7 +5,7 @@
 		real_name = name
 	var/datum/atom_hud/data/human/medical/advanced/medhud = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
 	medhud.add_to_hud(src)
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.add_to_hud(src)
 	faction += "[REF(src)]"
 	stamina_buffer = INFINITY
@@ -41,6 +41,7 @@
 	cleanse_trait_datums()
 	GLOB.mob_living_list -= src
 	GLOB.ssd_mob_list -= src
+	SSmobs.currentrun -= src
 	QDEL_LIST(diseases)
 	return ..()
 
@@ -677,6 +678,10 @@
 			for(var/S in mind.spell_list)
 				var/obj/effect/proc_holder/spell/spell = S
 				spell.UpdateButton()
+
+		// Play a local revive sound for the revived mob with a small chance
+		if(prob(5))
+			SEND_SOUND(src, 'modular_bluemoon/sound/effects/re-zero.ogg')
 
 //proc used to remove all immobilisation effects + reset stamina
 /mob/living/proc/remove_CC(should_update_mobility = TRUE)

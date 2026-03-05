@@ -28,10 +28,14 @@
 	if(isdatum(new_data) && !isweakref(new_data))
 		new_data = WEAKREF(new_data)
 	var/datum/integrated_io/pin = get_pin_ref(pin_type, pin_number)
+	if(!pin)
+		return
 	return pin.write_data_to_pin(new_data)
 
 /obj/item/integrated_circuit/proc/get_pin_data(pin_type, pin_number)
 	var/datum/integrated_io/pin = get_pin_ref(pin_type, pin_number)
+	if(!pin)
+		return
 	var/data = pin.get_data()
 	if(istext(data))
 		data = sanitize_text(data)
@@ -39,10 +43,14 @@
 
 /obj/item/integrated_circuit/proc/get_pin_data_as_type(pin_type, pin_number, as_type)
 	var/datum/integrated_io/pin = get_pin_ref(pin_type, pin_number)
+	if(!pin)
+		return
 	return pin.data_as_type(as_type)
 
 /obj/item/integrated_circuit/proc/activate_pin(pin_number)
-	var/datum/integrated_io/activate/A = activators[pin_number]
+	var/datum/integrated_io/activate/A = get_pin_ref(IC_ACTIVATOR, pin_number)
+	if(!A)
+		return
 	A.push_data()
 
 /obj/item/integrated_circuit/proc/get_pin_ref(pin_type, pin_number)

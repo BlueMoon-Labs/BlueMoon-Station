@@ -297,8 +297,9 @@
 		dat += "- <A href='?src=[REF(src)];strengthdown=1'>--</A>|<A href='?src=[REF(src)];strengthup=1'>++</A><BR><BR>"
 
 
-	user << browse(dat, "window=AMcontrol;size=420x500")
-	onclose(user, "AMcontrol")
+	var/datum/browser/popup = new(user, "AMcontrol", "Antimatter Control", 420, 500)
+	popup.set_content(dat)
+	popup.open()
 	return
 
 

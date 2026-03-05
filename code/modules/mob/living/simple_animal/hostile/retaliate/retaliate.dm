@@ -8,7 +8,7 @@
 		if(!L.stat)
 			return L
 		else
-			enemies -= L
+			remove_enemy(L)
 	else if(ismecha(A))
 		var/obj/vehicle/sealed/mecha/M = A
 		if(LAZYLEN(M.occupants))
@@ -30,16 +30,18 @@
 		if(isliving(A))
 			var/mob/living/M = A
 			if(faction_check_mob(M) && attack_same || !faction_check_mob(M))
-				enemies |= M
+				add_enemy(M)
 		else if(ismecha(A))
 			var/obj/vehicle/sealed/mecha/M = A
 			if(LAZYLEN(M.occupants))
-				enemies |= M
-				enemies |= M.occupants
+				add_enemy(M)
+				for(var/mob/living/occupant as anything in M.occupants)
+					add_enemy(occupant)
 
 	for(var/mob/living/simple_animal/hostile/retaliate/H in around)
 		if(faction_check_mob(H) && !attack_same && !H.attack_same)
-			H.enemies |= enemies
+			for(var/atom/movable/the_enemy in enemies)
+				H.add_enemy(the_enemy)
 	return FALSE
 
 /mob/living/simple_animal/hostile/retaliate/adjustHealth(amount, updating_health = TRUE, forced = FALSE)

@@ -37,6 +37,8 @@
 		popup = FALSE
 		if(response == "No")
 			return FALSE
+	if(QDELETED(src) || !imp_in || active)
+		return FALSE
 	addtimer(CALLBACK(src, PROC_REF(timed_explosion), cause), 1)
 
 /obj/item/implant/explosive/implant(mob/living/target)
@@ -53,6 +55,8 @@
 	return ..()
 
 /obj/item/implant/explosive/proc/timed_explosion(cause)
+	if(!imp_in)
+		return FALSE
 	if(cause == "death" && imp_in.stat != DEAD)
 		return FALSE
 	heavy = round(heavy)

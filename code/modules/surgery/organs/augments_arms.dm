@@ -33,6 +33,11 @@
 	if(I in items_list)
 		return
 	I.forceMove(src)
+
+	// Убираем возможность класть предметы на стол и в инвентарь
+	I.item_flags |= ABSTRACT
+	w_class = WEIGHT_CLASS_HUGE
+
 	items_list += I
 	// ayy only dropped signal for performance, we can't possibly have shitcode that doesn't call it when removing items from a mob, right?
 	// .. right??!
@@ -104,6 +109,10 @@
 
 	owner.transferItemToLoc(holder, src, TRUE)
 	holder = null
+	RetractPLaySound()
+
+// If it is necessary to process sounds in a special way
+/obj/item/organ/cyberimp/arm/proc/RetractPLaySound()
 	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 50, 1)
 
 /obj/item/organ/cyberimp/arm/proc/Extend(obj/item/item)
@@ -133,13 +142,17 @@
 	// Activate the hand that now holds our item.
 	owner.swap_hand(result)//... or the 1st hand if the index gets lost somehow
 
-	owner.visible_message("<span class='notice'>[owner] extends [holder] from [owner.ru_ego()] [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>",
-		"<span class='notice'>You extend [holder] from your [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>",
-		"<span class='italics'>You hear a short mechanical noise.</span>")
-	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 50, 1)
+	owner.visible_message(span_notice("[owner] extends [holder] from [owner.ru_ego()] [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm."),
+		span_notice("You extend [holder] from your [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm."),
+		span_notice("You hear a short mechanical noise."))
+	ExtendPlaySound(item)
 	return TRUE
 
-/obj/item/organ/cyberimp/arm/ui_action_click()
+// If it is necessary to process sounds in a special way
+/obj/item/organ/cyberimp/arm/proc/ExtendPlaySound(obj/item/I)
+	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 50, 1)
+
+/obj/item/organ/cyberimp/arm/ui_action_click(mob/user, actiontype)
 	if(crit_fail || (organ_flags & ORGAN_FAILING) || (!holder && !contents.len))
 		to_chat(owner, "<span class='warning'>The implant doesn't respond. It seems to be broken...</span>")
 		return

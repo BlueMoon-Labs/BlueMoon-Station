@@ -9,113 +9,113 @@
 
 /datum/uplink_item/suits/turtlenck
 	name = "Brown Tactical Turtleneck"
-	desc = "A slightly armored conspicious jumpsuit that has no suit sensors attached to them, if someone sees you in this hope they think its a fake."
+	desc = "Слегка бронированный комбинезон без датчиков. Если кто-то увидит вас в нём — остаётся лишь надеяться, что они примут его за подделку."
 	item = /obj/item/clothing/under/inteq
 	cost = 1
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/suits/turtlenck_skirt
 	name = "Brown Tactical Skirtleneck"
-	desc = "A slightly armored conspicious jumpsuit that has no suit sensors attached to them, if someone sees you in this hope they think its a fake."
+	desc = "Слегка бронированный комбинезон без датчиков. Если кто-то увидит вас в нём — остаётся лишь надеяться, что они примут его за подделку."
 	item = /obj/item/clothing/under/inteq/skirt
 	cost = 1
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/suits/padding
 	name = "Soft Padding"
-	desc = "An inconspicious soft padding meant to be worn underneath jumpsuits, will cushion the user from melee harm."
+	desc = "Неприметная мягкая подкладка, носимая под комбинезоном. Смягчает удары в ближнем бою."
 	item = /obj/item/clothing/accessory/padding
 	cost = 1
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
 /datum/uplink_item/suits/kevlar
 	name = "Kevlar Padding"
-	desc = "An inconspicious kevlar padding meant to be worn underneath jumpsuits, will cushion the wearer from ballistic harm."
+	desc = "Неприметная кевларовая подкладка, носимая под комбинезоном. Защищает от баллистического урона."
 	item = /obj/item/clothing/accessory/kevlar
 	cost = 1
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
 /datum/uplink_item/suits/plastic
 	name = "Ablative Padding"
-	desc = "An inconspicious ablative padding meant to be worn underneath jumpsuits, will cushion the wearer from energy lasers harm."
+	desc = "Неприметная аблятивная подкладка, носимая под комбинезоном. Защищает от энергетических лазеров."
 	item = /obj/item/clothing/accessory/plastics
 	cost = 1
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
 /datum/uplink_item/suits/space_suit
 	name = "Syndicate Space Suit"
-	desc = "This red and black Syndicate space suit is less encumbering than Nanotrasen variants, \
-			fits inside bags, and has a weapon slot. Nanotrasen crew members are trained to report red space suit \
-			sightings, however."
+	desc = "Красно-чёрный скафандр Syndicate — менее громоздкий чем аналоги Nanotrasen, \
+			влезает в сумки и имеет слот для оружия. Правда, персонал Nanotrasen обучен \
+			сообщать о красных скафандрах."
 	item = /obj/item/storage/box/syndie_kit/space
 	cost = 4
 	purchasable_from = ~(UPLINK_TRAITORS | UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
 /datum/uplink_item/suits/hardsuit
 	name = "Syndicate Hardsuit"
-	desc = "The feared suit of a Syndicate nuclear agent. Features slightly better armoring and a built in jetpack \
-			that runs off standard atmospheric tanks. Toggling the suit in and out of \
-			combat mode will allow you all the mobility of a loose fitting uniform without sacrificing armoring. \
-			Additionally the suit is collapsible, making it small enough to fit within a backpack. \
-			Nanotrasen crew who spot these suits are known to panic."
+	desc = "Наводящий ужас скафандр ядерного агента Syndicate. Улучшенная броня и встроенный джетпак, \
+			работающий на стандартных атмосферных баллонах. Переключение режима боя \
+			позволяет сохранять мобильность без потери брони. Складывается и влезает в рюкзак. \
+			Экипаж Nanotrasen паникует при виде этих скафандров."
 	item = /obj/item/clothing/suit/space/hardsuit/syndi
 	cost = 6
 	purchasable_from = ~(UPLINK_TRAITORS | UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS) //you can't buy it in nuke, because the elite hardsuit costs the same while being better
 
 /datum/uplink_item/suits/chameleon_hardsuit
 	name = "Chameleon Hardsuit"
-	desc = "A top-tier Hardsuit developed with cooperation of Cybersun Industries and the Gorlex Marauders, a favorite of Syndicate Contractors. \
-	In addition, it has an in-built chameleon system, allowing you to disguise your hardsuit to the most common variations on your mission area. \
-	This one disquised as engineering hardsuit."
+	desc = "Скафандр высшего класса, разработанный совместно Cybersun Industries и Gorlex Marauders, \
+	фаворит контрактников Syndicate. Встроенная система хамелеона позволяет маскировать скафандр под самые \
+	распространённые варианты в зоне операции. Этот замаскирован под инженерный скафандр."
 	cost = 10 //reskinned blood-red hardsuit with chameleon
 	item = /obj/item/storage/box/inteq_kit/chameleon_hardsuit
 
 /datum/uplink_item/suits/hardsuit/elite
 	name = "Elite Syndicate Hardsuit"
-	desc = "An upgraded, elite version of the Syndicate hardsuit. It features fireproofing, and also \
-			provides the user with superior armor and mobility compared to the standard Syndicate hardsuit."
+	desc = "Улучшенная элитная версия скафандра Syndicate. Огнеупорный, с превосходной бронёй \
+			и мобильностью по сравнению со стандартным."
 	item = /obj/item/clothing/suit/space/hardsuit/syndi/elite
 	cost = 8
 	purchasable_from = ~(UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/suits/hardsuit/shielded
 	name = "Shielded Syndicate Hardsuit"
-	desc = "An upgraded version of the standard Syndicate hardsuit. It features a built-in energy shielding system. \
-			The shields can handle up to four impacts within a short duration and will rapidly recharge while not under fire."
+	desc = "Улучшенный скафандр Syndicate со встроенной системой энергетических щитов. \
+			Щиты выдерживают до четырёх попаданий за короткое время и быстро восстанавливаются вне боя."
 	item = /obj/item/clothing/suit/space/hardsuit/shielded/syndi
 	cost = 30
 	purchasable_from = ~(UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/suits/thiefgloves
 	name = "Thieving Gloves"
-	desc = "A pair of gloves that are insulated and frictionless, allowing you to steal easily from anyone you see."
+	desc = "Изолированные и нескользящие перчатки, позволяющие легко обворовывать кого угодно."
 	item = /obj/item/clothing/gloves/thief
 	cost = 4
 
 /datum/uplink_item/suits/wallwalkers
 	name = "Wall Walking Boots"
-	desc = "Through bluespace magic stolen from an organisation that hoards technology, these boots simply allow you to slip through the atoms that make up anything,but only while walking, \
-			for safety reasons.As well as this, they unfortunately cause minor breath loss as the majority of atoms in your lungs are sucked out into any solid object you walk through."
+	desc = "Благодаря украденной блюспейс-магии эти ботинки позволяют проскальзывать сквозь атомы чего угодно, \
+			но только при ходьбе — для безопасности. К сожалению, вызывают незначительную потерю дыхания, \
+			так как большая часть атомов из лёгких высасывается в твёрдые объекты."
 	item = /obj/item/clothing/shoes/wallwalkers
 	cost = 6
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
 /datum/uplink_item/device_tools/guerrillagloves
 	name = "Guerrilla Gloves"
-	desc = "A pair of highly robust combat gripper gloves that excels at performing takedowns at close range, with an added lining of insulation. Careful not to hit a wall!"
+	desc = "Крайне прочные боевые перчатки-хваталки, отличные для ближних захватов, с изоляционной подкладкой. Осторожно — не врежьтесь в стену!"
 	item = /obj/item/clothing/gloves/tackler/combat/insulated
 	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS
 	cost = 2
 
 /datum/uplink_item/device_tools/syndicate_eyepatch
 	name = "Mechanical Eyepatch"
-	desc = "An eyepatch that connects itself to your eye socket, enhancing your shooting to an impossible degree, allowing your bullets to ricochet far more often than usual."
+	desc = "Повязка на глаз, подключающаяся к глазнице и невероятно улучшающая меткость — пули рикошетят гораздо чаще."
 	item = /obj/item/clothing/glasses/eyepatch/syndicate
 	cost = 4
 
 /datum/uplink_item/device_tools/ablative_armwraps
 	name = "Ablative Armwraps"
-	desc = "A pair of highly reinforced armwraps allowing the user to parry almost anything. Fully reflects projectiles, no downsides to failing, but is very hard to parry melee with."
+	desc = "Усиленные наручи, позволяющие парировать почти всё. Полностью отражают снаряды, нет штрафа за промах, но парировать ближний бой очень сложно."
 	cost = 6
 	item = /obj/item/clothing/gloves/fingerless/ablative
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)

@@ -656,8 +656,8 @@ SUBSYSTEM_DEF(vote)
 	var/list/roundtypes = list()
 	var/much_to_check = ROUNDTYPE_MAX_COMBO
 	log_world("SSpersistence.saved_modes contents:")
-	for (var/mode in SSpersistence.saved_modes)
-		log_world("- [mode]: [SSpersistence.saved_modes[mode]]")
+	for(var/i in 1 to SSpersistence.saved_modes.len)
+		log_world("- [i]: [SSpersistence.saved_modes[i]]")
 
 	for (var/mode in SSpersistence.saved_modes)
 		if(!istext(mode))

@@ -320,8 +320,9 @@
 
 	dat += "</tr></table><br>Current Selection: [currTag ? GLOB.TAGGERLOCATIONS[currTag] : "None"]</tt>"
 
-	user << browse(dat, "window=destTagScreen;size=450x350")
-	onclose(user, "destTagScreen")
+	var/datum/browser/popup = new(user, "destTagScreen", "TagMaster 2.2", 450, 350)
+	popup.set_content(dat)
+	popup.open()
 
 /obj/item/dest_tagger/attack_self(mob/user)
 	if(!locked_destination)

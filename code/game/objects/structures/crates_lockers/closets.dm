@@ -76,6 +76,7 @@
 
 /obj/structure/closet/Destroy()
 	dump_contents(override = FALSE)
+	QDEL_NULL(lockerelectronics)
 	QDEL_NULL(door_obj)
 	return ..()
 
@@ -405,16 +406,6 @@
 			return
 		if(user.transferItemToLoc(W, drop_location())) // so we put in unlit welder too
 			return
-	else if(!opened && user.a_intent == INTENT_HELP)
-		var/item_is_id = W.GetID()
-		if(!item_is_id)
-			if(!open(user))
-				togglelock(user)
-				return
-			return
-		if(item_is_id || !toggle(user))
-			togglelock(user)
-			return
 	else if(W.tool_behaviour == TOOL_WELDER && can_weld_shut)
 		// eigen check
 		if(eigen_teleport)
@@ -447,7 +438,12 @@
 		handle_lock_addition(user, W)
 	else if(W.tool_behaviour == TOOL_SCREWDRIVER)
 		handle_lock_removal(user, W)
-
+	else if((/*!user.combat_mode && */user.a_intent != INTENT_HARM) || (W.item_flags & NOBLUDGEON))
+		var/item_is_id = W.GetID()
+		if(!item_is_id)
+			return FALSE
+		if((item_is_id || !toggle(user)) && !opened)
+			togglelock(user)
 	else
 		return FALSE
 

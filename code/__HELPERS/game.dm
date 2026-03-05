@@ -482,15 +482,45 @@
 		else
 			candidates -= M
 
-/proc/pollGhostCandidates(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, ignore_category = null, flashwindow = TRUE)
-	var/list/candidates = get_all_ghost_role_eligible()
-	return pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category, flashwindow, candidates)
+/proc/pollGhostCandidates(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 30 SECONDS, ignore_category = null, flashwindow = TRUE, minimum_required = 1, priority_check)
+	var/list/candidates
+	// Если не определили заранее, то выбираем в зависимости от режима
+	if(isnull(priority_check))
+		priority_check = GLOB.master_mode != ROUNDTYPE_EXTENDED
+	if(priority_check)
+		var/list/priority_candidates = get_all_ghost_role_eligible(priority_only = TRUE)
+		. = pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category, flashwindow, priority_candidates)
+		var/result_len = LAZYLEN(.)
+		if(result_len >= minimum_required)
+			return
+		candidates = get_all_ghost_role_eligible(priority_only = FALSE)
+		candidates -= priority_candidates
+
+		// Для выбора в ГК снижаем время, т.к. может быть критично в динамик
+		var/const/min_low_pool_time = 6 SECONDS
+		var/low_pool_time = poll_time <= min_low_pool_time ? poll_time : max(min_low_pool_time, round(poll_time/2))
+		var/list/low_priority_candidates = pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, low_pool_time, ignore_category, flashwindow, candidates)
+		// Добираем недобор или возвращаем всех кандидатов
+		if(!result_len)
+			return low_priority_candidates
+
+		var/need = minimum_required - result_len
+		while(need-- > 0 && LAZYLEN(low_priority_candidates))
+			. += pick_n_take(low_priority_candidates)
+		return
+
+	else
+		candidates = get_all_ghost_role_eligible(priority_only = FALSE)
+		return pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category, flashwindow, candidates)
 
 /proc/pollCandidates(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, ignore_category = null, flashwindow = TRUE, list/group = null)
-	var/time_passed = world.time
-	if (!Question)
-		Question = "Would you like to be a special role?"
 	var/list/result = list()
+	if(!LAZYLEN(group))
+		return result
+	var/time_passed = world.time
+	if(!Question)
+		Question = "Would you like to be a special role?"
+	var/list/candidates = list()
 	for(var/m in group)
 		var/mob/M = m
 		if(!M.key || !M.client || (ignore_category && GLOB.poll_ignore[ignore_category] && (M.ckey in GLOB.poll_ignore[ignore_category])))
@@ -505,7 +535,13 @@
 			if(jobban_isbanned(M, jobbanType) || QDELETED(M) || jobban_isbanned(M, ROLE_INTEQ) || QDELETED(M))
 				continue
 
+		candidates += M
+	if(!LAZYLEN(candidates))
+		return result
+
+	for(var/mob/M in candidates)
 		showCandidatePollWindow(M, poll_time, Question, result, ignore_category, time_passed, flashwindow)
+
 	sleep(poll_time)
 
 	//Check all our candidates, to make sure they didn't log off or get deleted during the wait period.
@@ -517,24 +553,17 @@
 
 	return result
 
-/proc/pollCandidatesForMob(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, mob/M, ignore_category = null)
-	var/list/L = pollGhostCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category)
-	if(!M || QDELETED(M) || !M.loc)
+/proc/pollCandidatesForMob(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, mob/M, ignore_category = null, flashwindow = TRUE, minimum_required = 1, priority_check)
+	. = pollGhostCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category, flashwindow, minimum_required, priority_check)
+	// т.к. лист используется всего 1 раз, оптимальнее сделать так, чем переделывать под лист
+	if(islist(M))
+		var/list/mobs = M
+		for(var/i = mobs.len, i >= 1, --i)
+			var/atom/A = mobs[i]
+			if(!A || QDELETED(A) || !A.loc)
+				mobs.Cut(i, i + 1)
+	else if(!M || QDELETED(M) || !M.loc)
 		return list()
-	return L
-
-/proc/pollCandidatesForMobs(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, list/mobs, ignore_category = null)
-	var/list/L = pollGhostCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category)
-	var/i=1
-	for(var/v in mobs)
-		var/atom/A = v
-		if(!A || QDELETED(A) || !A.loc)
-			mobs.Cut(i,i+1)
-		else
-			++i
-	return L
-
-/proc/poll_helper(var/mob/living/M)
 
 /proc/makeBody(mob/dead/observer/G_found) // Uses stripped down and bastardized code from respawn character
 	if(!G_found || !G_found.key)
@@ -604,6 +633,33 @@
 	var/pressure = environment.return_pressure()
 	if(pressure <= LAVALAND_EQUIPMENT_EFFECT_PRESSURE)
 		. = TRUE
+
+/**
+ * Расчёт мультипликатора урона при атмосферном давлении ниже 1-й атмосферы.
+ *
+ * Аргументы:
+ * - turf/T - турф, в котором произошёл выстрел/расчёт урона/e.t.c.
+ * - pressure_treshold - давление в кПа, ниже которого урон не уменьшается.
+ * - decrease_mult - мультипликатор урона, обычно как переменная у отдельно взятого айтема.
+ *
+ * На выходе идёт линейное lerp() уменьшение урона интерполяцией, без округлений числа.
+ */
+/proc/get_pressure_damage_multiplier(turf/T, pressure_treshold, decrease_mult)
+	if(!istype(T))
+		return 1
+
+	var/datum/gas_mixture/environment = T.return_air()
+	if(!istype(environment) || (pressure_treshold >= ONE_ATMOSPHERE))
+		return 1
+
+	var/pressure = environment.return_pressure()
+	if(pressure <= pressure_treshold) // Не только лаваленд, но и любой турф с давлением ниже дефайна
+		return 1
+	if(pressure >= ONE_ATMOSPHERE)
+		return decrease_mult
+
+	var/t = (pressure - pressure_treshold)/(ONE_ATMOSPHERE - pressure_treshold)
+	return lerp(1, decrease_mult, t)
 
 /proc/ispipewire(item)
 	var/static/list/pipe_wire = list(

@@ -94,6 +94,8 @@
 			var/turf/closed/mineral/M = T
 			M.gets_drilled(user)
 		T = get_step(T, ogdir)
+		if(!T)
+			return
 		sleep(2)
 
 //shambling miner

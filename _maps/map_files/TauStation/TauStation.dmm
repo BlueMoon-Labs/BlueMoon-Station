@@ -18989,6 +18989,8 @@
 	c_tag = "Bridge West";
 	dir = 8
 	},
+/obj/machinery/suit_storage_unit/open,
+/obj/item/mod/control/pre_equipped/corporate,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/turret_protected/aisat/foyer)
 "gAp" = (
@@ -68547,7 +68549,7 @@
 /obj/structure/noticeboard{
 	pixel_y = 29
 	},
-/obj/machinery/rnd/production/circuit_imprinter,
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
 /turf/open/floor/plasteel/white/side,
 /area/science/robotics/lab)
 "xtl" = (

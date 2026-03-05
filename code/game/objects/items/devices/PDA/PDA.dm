@@ -2,6 +2,44 @@
 
 GLOBAL_LIST_EMPTY(PDAs)
 
+// Ассоциативный список рингтонов и их звуковых файлов
+GLOBAL_LIST_INIT(pda_ringtones, list(
+	"Beep" = 'sound/machines/twobeep.ogg',
+	"Boom" = 'sound/effects/explosion1.ogg',
+	"Honk" = 'sound/items/bikehorn.ogg',
+	"SKREE" = 'sound/voice/shriek1.ogg',
+	"Xeno" = 'sound/voice/hiss2.ogg',
+	"Clown" = 'sound/items/AirHorn2.ogg',
+	"Bzzt" = 'sound/machines/buzz-sigh.ogg',
+	"Ding" = 'sound/machines/ding.ogg',
+	"Chirp" = 'sound/machines/chime.ogg',
+	"Pew" = 'sound/weapons/laser.ogg',
+	"Boop" = 'sound/machines/terminal_select.ogg',
+	"Ping" = 'sound/machines/ping.ogg',
+	"Synth" = 'sound/misc/interference.ogg',
+	"Stalker" = 'sound/items/PDA/stalk1.ogg',
+	"NewQuest" = 'sound/items/PDA/stalk2.ogg'
+))
+
+// Список доступных рингтонов для выбора (для UI)
+GLOBAL_LIST_INIT(pda_ringtone_list, list(
+	"Beep",
+	"Boom",
+	"Honk",
+	"SKREE",
+	"Xeno",
+	"Clown",
+	"Bzzt",
+	"Ding",
+	"Chirp",
+	"Pew",
+	"Boop",
+	"Ping",
+	"Synth",
+	"Stalker",
+	"NewQuest"
+))
+
 #define PDA_SCANNER_NONE		0
 #define PDA_SCANNER_MEDICAL		1
 #define PDA_SCANNER_FORENSICS	2 //unused
@@ -266,7 +304,8 @@ GLOBAL_LIST_EMPTY(PDAs)
 
 	user.set_machine(src)
 
-	var/dat = "<!DOCTYPE html><html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>Personal Data Assistant</title><link href=\"https://fonts.googleapis.com/css?family=Orbitron|Share+Tech+Mono|VT323\" rel=\"stylesheet\"></head><body bgcolor=\"" + background_color + "\"><style>body{" + font_mode + "}ul,ol{list-style-type: none;}a, a:link, a:visited, a:active, a:hover { color: #000000;text-decoration:none; }img {border-style:none;}a img{padding-right: 9px;}</style>"
+	var/zoom_head = user.client?.legacy_zoom_head("pda") || ""
+	var/dat = "<!DOCTYPE html><html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>Personal Data Assistant</title><link href=\"https://fonts.googleapis.com/css?family=Orbitron|Share+Tech+Mono|VT323\" rel=\"stylesheet\">[zoom_head]</head><body bgcolor=\"" + background_color + "\"><style>body{" + font_mode + "}ul,ol{list-style-type: none;}a, a:link, a:visited, a:active, a:hover { color: #000000;text-decoration:none; }img {border-style:none;}a img{padding-right: 9px;}</style>"
 	dat += assets.css_tag()
 	dat += emoji_s.css_tag()
 
@@ -654,13 +693,37 @@ GLOBAL_LIST_EMPTY(PDAs)
 			if("Clear")//Clears messages
 				tnote = null
 			if("Ringtone")
-				var/t = stripped_input(U, "Введите новый рингтон", name, ttone, 20)
+				var/list/available_tones = GLOB.pda_ringtone_list.Copy()
+				available_tones += "--- Свой вариант ---"
+
+				var/choice = input(U, "Выберите рингтон PDA", name, ttone) as null|anything in available_tones
+				if(!choice)
+					return
+
+				var/t = choice
+
+				// Если выбрали кастомный вариант
+				if(choice == "--- Свой вариант ---")
+					t = stripped_input(U, "Введите свой рингтон", name, ttone, 20)
+					if(!t)
+						return
+
 				if(in_range(src, U) && loc == U && t)
 					if(SEND_SIGNAL(src, COMSIG_PDA_CHANGE_RINGTONE, U, t) & COMPONENT_STOP_RINGTONE_CHANGE)
 						U << browse(null, "window=pda")
 						return
 					else
 						ttone = t
+						// Воспроизводим превью звука при смене рингтона
+						var/sound_preview = get_ringtone_sound(ttone)
+						if(sound_preview && !silent)
+							playsound(src, sound_preview, 50, 1)
+
+						// Проверяем есть ли звук для этого рингтона
+						if(t in GLOB.pda_ringtone_list)
+							to_chat(U, "<span class='notice'>[icon2html(src, U)] Рингтон установлен на '[ttone]'.</span>")
+						else
+							to_chat(U, "<span class='notice'>[icon2html(src, U)] Рингтон установлен на '[ttone]' (кастомный, только текст).</span>")
 				else
 					U << browse(null, "window=pda")
 					return
@@ -852,10 +915,110 @@ GLOBAL_LIST_EMPTY(PDAs)
 	if (everyone)
 		last_everyone = world.time
 
+// Вспомогательная функция для получения звука рингтона
+/obj/item/pda/proc/get_ringtone_sound(ringtone)
+	// Используем switch для надежности вместо GLOB
+	switch(ringtone)
+		if("Beep")
+			return 'sound/machines/twobeep.ogg'
+		if("Boom")
+			return 'sound/effects/explosion1.ogg'
+		if("Honk")
+			return 'sound/items/bikehorn.ogg'
+		if("SKREE")
+			return 'sound/voice/shriek1.ogg'
+		if("Xeno")
+			return 'sound/voice/hiss2.ogg'
+		if("Clown")
+			return 'sound/items/AirHorn2.ogg'
+		if("Bzzt")
+			return 'sound/machines/buzz-sigh.ogg'
+		if("Ding")
+			return 'sound/machines/ding.ogg'
+		if("Chirp")
+			return 'sound/machines/chime.ogg'
+		if("Pew")
+			return 'sound/weapons/laser.ogg'
+		if("Boop")
+			return 'sound/machines/terminal_select.ogg'
+		if("Ping")
+			return 'sound/machines/ping.ogg'
+		if("Synth")
+			return 'sound/misc/interference.ogg'
+		if("Stalker")
+			return 'sound/items/PDA/stalk1.ogg'
+		if("NewQuest")
+			return 'sound/items/PDA/stalk2.ogg'
+		else
+			return 'sound/machines/twobeep.ogg' // Дефолтный звук для неизвестных рингтонов
+
+// ============================================================
+// ТЕСТ receive_message - проверка звука при получении сообщения - Закоменченно, если нужно тест, разкоментируйте и не забудьте закоментить после теста
+// ============================================================
+/*
+/obj/item/pda/verb/test_receive_message()
+	set name = "🔔 Test Receive Message"
+	set category = "Object"
+	set src in usr
+
+	if(!owner)
+		owner = "Test User"
+
+	to_chat(usr, "<span class='boldnotice'>========================================</span>")
+	to_chat(usr, "<span class='notice'>ТЕСТИРОВАНИЕ receive_message()</span>")
+	to_chat(usr, "<span class='notice'>Текущий рингтон: '[ttone]'</span>")
+	to_chat(usr, "<span class='notice'>Silent mode: [silent ? "ВКЛ ⚠" : "ВЫКЛ ✓"]</span>")
+	to_chat(usr, "<span class='boldnotice'>========================================</span>")
+
+	if(silent)
+		to_chat(usr, "<span class='warning'>ВНИМАНИЕ: Silent mode включен! Звука не будет.</span>")
+		to_chat(usr, "<span class='notice'>Выключите через: Settings → Toggle Ringer</span>")
+		var/continue_anyway = alert(usr, "Silent mode включен. Продолжить тест?", "Silent Mode", "Да", "Нет")
+		if(continue_anyway != "Да")
+			return
+
+	// Показываем какой звук ожидается
+	var/expected_sound = get_ringtone_sound(ttone)
+	to_chat(usr, "<span class='notice'>Ожидаемый звук: [expected_sound]</span>")
+
+	// Создаем НАСТОЯЩИЙ сигнал как при реальном получении сообщения
+	var/datum/signal/subspace/pda/test_signal = new
+	test_signal.source = src
+	test_signal.data = list(
+		"name" = "Тестовый Отправитель",
+		"job" = "Тестировщик",
+		"message" = "Это тестовое сообщение для проверки звука рингтона '[ttone]'. Если вы слышите звук - всё работает!",
+		"emojis" = FALSE
+	)
+
+	to_chat(usr, "<span class='warning'>→ Вызываем receive_message()...</span>")
+	to_chat(usr, "<span class='warning'>→ СЕЙЧАС ДОЛЖЕН СЫГРАТЬ ЗВУК!</span>")
+
+	// ВЫЗЫВАЕМ ИМЕННО receive_message - ту самую функцию!
+	receive_message(test_signal)
+
+	to_chat(usr, "<span class='warning'>→ receive_message() выполнена!</span>")
+	to_chat(usr, "<span class='boldnotice'>========================================</span>")
+	to_chat(usr, "<span class='notice'>Проверьте:</span>")
+	to_chat(usr, "<span class='notice'>✓ Был ли звук рингтона '[ttone]'?</span>")
+	to_chat(usr, "<span class='notice'>✓ Откройте PDA → Messages → должно быть новое сообщение</span>")
+	to_chat(usr, "<span class='notice'>✓ На PDA должен появиться индикатор Alert (мигающая иконка)</span>")
+	to_chat(usr, "<span class='boldnotice'>========================================</span>")
+
+	if(!silent)
+		to_chat(usr, "<span class='notice'>Если звука не было - проблема в receive_message!</span>")
+	else
+		to_chat(usr, "<span class='warning'>Звук отключен (Silent mode). Проверьте только сообщение.</span>")
+*/
+
+// ============================================================
+
 /obj/item/pda/proc/receive_message(datum/signal/subspace/pda/signal)
 	tnote += "<i><b>&larr; From <a href='byond://?src=[REF(src)];choice=Message;target=[REF(signal.source)]'>[signal.data["name"]]</a> ([signal.data["job"]]):</b></i> <a href='byond://?src=[REF(src)];choice=toggle_block;target=[signal.data["name"]]'>(BLOCK/UNBLOCK)</a><br>[signal.format_message()]<br>"
 	if (!silent)
-		playsound(src, 'sound/machines/twobeep.ogg', 50, 1)
+		// НОВАЯ ЛОГИКА: Воспроизводим звук на основе выбранного рингтона
+		var/sound_to_play = get_ringtone_sound(ttone)
+		playsound(src, sound_to_play, 50, 1)
 		audible_message("[icon2html(src, hearers(src))] *[ttone]*", null, 3)
 	//Search for holder of the PDA.
 	var/mob/living/L = null
@@ -1221,7 +1384,8 @@ GLOBAL_LIST_EMPTY(PDAs)
 	if(incapacitated())
 		return
 	if(!isnull(aiPDA))
-		var/HTML = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>AI PDA Message Log</title></head><body>[aiPDA.tnote]</body></html>"
+		var/zoom_head = user.client?.legacy_zoom_head("pda_log") || ""
+		var/HTML = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>AI PDA Message Log</title>[zoom_head]</head><body>[aiPDA.tnote]</body></html>"
 		user << browse(HTML, "window=log;size=400x444;border=1;can_resize=1;can_close=1;can_minimize=0")
 	else
 		to_chat(user, "У вас нет PDA. Вам следует сделать донос о проблеме.")
@@ -1286,7 +1450,8 @@ GLOBAL_LIST_EMPTY(PDAs)
 	if(incapacitated())
 		return
 	if(!isnull(aiPDA))
-		var/HTML = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>AI PDA Message Log</title></head><body>[aiPDA.tnote]</body></html>"
+		var/zoom_head = user.client?.legacy_zoom_head("pda_log") || ""
+		var/HTML = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>AI PDA Message Log</title>[zoom_head]</head><body>[aiPDA.tnote]</body></html>"
 		user << browse(HTML, "window=log;size=400x444;border=1;can_resize=1;can_close=1;can_minimize=0")
 	else
 		to_chat(user, "У вас нет PDA. Вам следует сделать донос о проблеме.")

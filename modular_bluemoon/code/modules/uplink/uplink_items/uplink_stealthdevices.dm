@@ -5,7 +5,7 @@
 
 /obj/item/device/fingerprinter
 	name = "sales tagger"
-	desc = "A disguised under sales tagger grey-market tool used for scanning fingerprints on things and putting them onto other things."
+	desc = "Замаскированный под ценник серорыночный инструмент для сканирования отпечатков пальцев с предметов и нанесения их на другие вещи."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "salestagger"
 	item_state = "electronic"
@@ -129,6 +129,6 @@
 
 /datum/uplink_item/stealthy_tools/fingerprinter
 	name = "Finger printer"
-	desc = "A tool which allows you to scan and plant fingerprints."
+	desc = "Устройство, позволяющее сканировать и подбрасывать отпечатки пальцев."
 	item = /obj/item/device/fingerprinter
 	cost = 5

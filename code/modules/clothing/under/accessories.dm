@@ -28,6 +28,11 @@
 	var/max_stack_path = null
 	// BLUEMOON ADD END
 
+/obj/item/clothing/accessory/Destroy()
+	current_uniform = null
+	detached_pockets = null
+	return ..()
+
 /obj/item/clothing/accessory/proc/attach(obj/item/clothing/under/U, user)
 	var/datum/component/storage/storage = GetComponent(/datum/component/storage)
 	if(storage)
@@ -551,8 +556,8 @@
 	desc = "Armpatch one of superior forces of Federal Agencies on territory of SolGov. This one belongs to Agent."
 	icon_state = "sfp_patch"
 	item_state = "sfp_patch"
-	icon = 'modular_bluemoon/SmiLeY/icons/sfp_armpatch_obj.dmi'
-	mob_overlay_icon = 'modular_bluemoon/SmiLeY/icons/sfp_armpatch.dmi'
+	icon = 'modular_bluemoon/icons/obj/sfp_armpatch_obj.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/sfp_armpatch.dmi'
 	strip_delay = 60
 	dog_fashion = null
 

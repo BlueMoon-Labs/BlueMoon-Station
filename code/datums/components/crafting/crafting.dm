@@ -413,7 +413,7 @@
 						if(client.next_ied_grief_warning < world.time)
 							var/turf/T = get_turf(user)
 							client.next_ied_grief_warning = world.time + 15 MINUTES // Wait 15 minutes before alerting admins again
-							message_admins("<span class='adminhelp'>ANTI-GRIEF:</span> New player [ADMIN_LOOKUPFLW(user)] has crafted an IED or Molotov at [ADMIN_VERBOSEJMP(T)].")
+							message_antigrif("New player [ADMIN_LOOKUPFLW(user)] has crafted an IED or Molotov at [ADMIN_VERBOSEJMP(T)].")
 							client.crafted_ied = TRUE
 
 			else

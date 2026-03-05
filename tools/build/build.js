@@ -11,6 +11,7 @@
  */
 
 import fs from 'fs';
+import path from 'path';
 import { DreamDaemon, DreamMaker } from './lib/byond.js';
 import { yarn } from './lib/yarn.js';
 import Juke from './juke/index.js';
@@ -61,6 +62,7 @@ export const DmTarget = new Juke.Target({
     'html/**',
     'icons/**',
     'interface/**',
+    'tgui/public/tgui.html',
     "modular_*/**", // BLUEMOON ADD
     `${DME_NAME}.dme`,
     'modular_citadel/**',
@@ -148,7 +150,9 @@ export const TguiTarget = new Juke.Target({
   dependsOn: [YarnTarget],
   inputs: [
     'tgui/.yarn/install-target',
-    'tgui/webpack.config.js',
+    'tgui/vite.base.config.cjs',
+    'tgui/vite.tgui.config.cjs',
+    'tgui/vite.tgui-panel.config.cjs',
     'tgui/**/package.json',
     'tgui/packages/**/*.+(js|cjs|ts|tsx|scss)',
   ],
@@ -159,7 +163,8 @@ export const TguiTarget = new Juke.Target({
     'tgui/public/tgui-panel.bundle.js',
   ],
   executes: async () => {
-    await yarn('webpack-cli', '--mode=production');
+    await yarn('vite', 'build', '--mode=production', '--config', 'vite.tgui.config.cjs');
+    await yarn('vite', 'build', '--mode=production', '--config', 'vite.tgui-panel.config.cjs');
   },
 });
 
@@ -195,14 +200,15 @@ export const TguiLintTarget = new Juke.Target({
 export const TguiDevTarget = new Juke.Target({
   dependsOn: [YarnTarget],
   executes: async ({ args }) => {
-    await yarn('node', 'packages/tgui-dev-server/index.js', ...args);
+    await yarn('run', 'tgui:dev', ...args);
   },
 });
 
 export const TguiAnalyzeTarget = new Juke.Target({
   dependsOn: [YarnTarget],
   executes: async () => {
-    await yarn('webpack-cli', '--mode=production', '--analyze');
+    await yarn('vite', 'build', '--mode=production', '--sourcemap', '--config', 'vite.tgui.config.cjs');
+    await yarn('vite', 'build', '--mode=production', '--sourcemap', '--config', 'vite.tgui-panel.config.cjs');
   },
 });
 
@@ -231,29 +237,45 @@ export const AllTarget = new Juke.Target({
 });
 
 /**
+ * Wrapper around Juke.rm that skips files locked by another process.
+ */
+const safeRm = (pattern, options) => {
+  try {
+    Juke.rm(pattern, options);
+  } catch (err) {
+    if (err.code === 'EBUSY' || err.code === 'EPERM') {
+      Juke.logger.warn(
+        `Cannot remove '${err.path || pattern}': file is busy or locked, skipping`
+      );
+    } else {
+      throw err;
+    }
+  }
+};
+
+/**
  * Removes the immediate build junk to produce clean builds.
  */
 export const CleanTarget = new Juke.Target({
   executes: async () => {
-    Juke.rm('*.dmb');
-    Juke.rm('*.rsc');
-    Juke.rm('*.mdme');
-    Juke.rm('*.mdme*');
-    Juke.rm('*.m.*');
-    Juke.rm('_maps/templates.dm');
-    Juke.rm('tgui/public/.tmp', { recursive: true });
-    Juke.rm('tgui/public/*.map');
-    Juke.rm('tgui/public/*.chunk.*');
-    Juke.rm('tgui/public/*.bundle.*');
-    Juke.rm('tgui/public/*.hot-update.*');
-    Juke.rm('tgui/packages/tgfont/dist', { recursive: true });
-    Juke.rm('tgui/.yarn/cache', { recursive: true });
-    Juke.rm('tgui/.yarn/unplugged', { recursive: true });
-    Juke.rm('tgui/.yarn/webpack', { recursive: true });
-    Juke.rm('tgui/.yarn/build-state.yml');
-    Juke.rm('tgui/.yarn/install-state.gz');
-    Juke.rm('tgui/.yarn/install-target');
-    Juke.rm('tgui/.pnp.*');
+    safeRm('*.dmb');
+    safeRm('*.rsc');
+    safeRm('*.mdme');
+    safeRm('*.mdme*');
+    safeRm('*.m.*');
+    safeRm('_maps/templates.dm');
+    safeRm('tgui/public/.tmp', { recursive: true });
+    safeRm('tgui/public/*.map');
+    safeRm('tgui/public/*.chunk.*');
+    safeRm('tgui/public/*.bundle.*');
+    safeRm('tgui/public/*.hot-update.*');
+    safeRm('tgui/packages/tgfont/dist', { recursive: true });
+    safeRm('tgui/.yarn/cache', { recursive: true });
+    safeRm('tgui/.yarn/unplugged', { recursive: true });
+    safeRm('tgui/.yarn/build-state.yml');
+    safeRm('tgui/.yarn/install-state.gz');
+    safeRm('tgui/.yarn/install-target');
+    safeRm('tgui/.pnp.*');
   },
 });
 
@@ -263,10 +285,43 @@ export const CleanTarget = new Juke.Target({
 export const DistCleanTarget = new Juke.Target({
   dependsOn: [CleanTarget],
   executes: async () => {
+    const bootstrapCacheDir = 'tools/bootstrap/.cache';
+
     Juke.logger.info('Cleaning up data/logs');
-    Juke.rm('data/logs', { recursive: true });
+    safeRm('data/logs', { recursive: true });
+
     Juke.logger.info('Cleaning up bootstrap cache');
-    Juke.rm('tools/bootstrap/.cache', { recursive: true });
+    if (!fs.existsSync(bootstrapCacheDir)) {
+      Juke.logger.info('Bootstrap cache directory not found, skipping');
+    }
+    else {
+      const cacheRealPath = fs.realpathSync(bootstrapCacheDir);
+      const nodeRealPath = fs.realpathSync(process.execPath);
+      const nodeRelativePath = path.relative(cacheRealPath, nodeRealPath);
+      const nodeRunsFromBootstrapCache = nodeRelativePath
+        && !nodeRelativePath.startsWith('..')
+        && !path.isAbsolute(nodeRelativePath);
+
+      if (!nodeRunsFromBootstrapCache) {
+        safeRm(bootstrapCacheDir, { recursive: true });
+      }
+      else {
+        const activeNodeDir = nodeRelativePath.split(path.sep)[0];
+        const entries = fs.readdirSync(bootstrapCacheDir);
+
+        for (const entry of entries) {
+          const isActiveNodeDir = process.platform === 'win32'
+            ? entry.toLowerCase() === activeNodeDir.toLowerCase()
+            : entry === activeNodeDir;
+          if (isActiveNodeDir) {
+            continue;
+          }
+
+          safeRm(path.posix.join(bootstrapCacheDir, entry), { recursive: true });
+        }
+      }
+    }
+
     Juke.logger.info('Cleaning up global yarn cache');
     await yarn('cache', 'clean', '--all');
   },

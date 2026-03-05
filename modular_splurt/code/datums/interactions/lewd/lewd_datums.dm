@@ -510,6 +510,9 @@
 /datum/interaction/lewd/kiss/post_interaction(mob/living/user, mob/living/partner)
 	. = ..()
 
+	SEND_SIGNAL(user, COMSIG_INTERACTION_KISS, partner)
+	SEND_SIGNAL(partner, COMSIG_INTERACTION_KISS, user)
+
 	//SPLURT EDIT START:
 	// Check if user has TRAIT_KISS_SLUT and increase their lust
 	if(HAS_TRAIT(user, TRAIT_KISS_SLUT))

@@ -3,6 +3,7 @@
 /obj/item/projectile/bullet/a556
 	name = "5.56mm bullet"
 	damage = 35
+	armour_penetration = 10
 	wound_bonus = 7
 
 // 7.62 (Nagant Rifle)

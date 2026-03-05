@@ -90,7 +90,8 @@
 	initial_contents = list(
 		/obj/item/kitchen/knife/combat,
 		/obj/item/kitchen/knife/combat,
-		/obj/item/kitchen/knife/combat
+		/obj/item/kitchen/knife/combat,
+		/obj/item/clothing/accessory/permit/special/knifes/mail,
 	)
 
 /datum/mail_pattern/shop/maid_costume
@@ -117,3 +118,27 @@
 		if(is_species(recipient, /datum/species/human/felinid))
 			. *= 2
 
+/datum/mail_pattern/shop/self_act_device
+	name = "Ушки (реклама актуализатора)"
+	description = "Подарок от компании партнера САД. Содержит кошкоушки и кроликоушки."
+
+	weight = MAIL_WEIGHT_RARE
+
+	envelope_type = MAIL_TYPE_PACKAGE
+
+	sender = "Компания партнер"
+
+	letter_title = "Возможному клиенту"
+	letter_html = {"Представьте, в наш век технологий вы можете стать пушистым, как таяр или вульпа! Специально для вас скидка 70% на смену расы!<br>
+					Подпишите договор с ближайшим центром актуализации и станьте горячим и пушистым!"}
+
+	whitelisted_species = list(/datum/species/human)
+
+	initial_contents = list(
+		/obj/item/clothing/head/rabbitears,
+		/obj/item/clothing/head/kitty,
+	)
+
+/datum/mail_pattern/shop/plushes/apply(mob/living/carbon/human/recipient)
+	sender = pick("Veymed", "Cinco")
+	. = ..()

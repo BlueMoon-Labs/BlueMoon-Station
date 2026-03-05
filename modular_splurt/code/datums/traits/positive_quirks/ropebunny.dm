@@ -19,7 +19,7 @@
 		return
 	// BLUEMOON EDIT END
 	var/datum/action/ropebunny/conversion/C = locate() in H.actions
-	C.Remove(H)
+	C?.Remove(H)
 	. = ..()
 
 /datum/action/ropebunny/conversion

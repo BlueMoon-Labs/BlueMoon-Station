@@ -193,7 +193,7 @@
 	//l_hand = /obj/item/melee/powerfist
 	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
 		/obj/item/clothing/mask/gas/sechailer/swat=1,\
-		/obj/item/choice_beacon/ert_mech=1,\
+		/obj/item/choice_beacon/vehicle/misc_mech/ert=1,\
 		/obj/item/storage/box/syndie_kit/revolver=1,\
 		/obj/item/grenade/plastic/x4=1,
 		/obj/item/storage/ifak=1,\
@@ -412,7 +412,7 @@
 	ears = /obj/item/radio/headset/nri/bowman/command
 	r_hand = /obj/item/gun/ballistic/automatic/vss
 	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
-		/obj/item/choice_beacon/nri_mech=1,\
+		/obj/item/choice_beacon/vehicle/misc_mech/nri=1,\
 		/obj/item/storage/box/syndie_kit/revolver=1,\
 		/obj/item/storage/ifak=1,\
 		/obj/item/ammo_box/magazine/vss_mag=4)
@@ -571,7 +571,7 @@
 		/obj/item/storage/ifak=1,\
 		/obj/item/gun/ballistic/automatic/pistol/deagle=1,\
         /obj/item/ammo_box/magazine/m50=2,\
-		/obj/item/choice_beacon/sol_mech=1,\
+		/obj/item/choice_beacon/vehicle/misc_mech/sol=1,\
 		/obj/item/ammo_box/magazine/m12g/slug=4)
 
 // BLUEMOON ADD START - командная коробочка для командира

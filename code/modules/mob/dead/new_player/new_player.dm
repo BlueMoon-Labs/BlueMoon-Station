@@ -770,7 +770,7 @@
 
 
 /mob/dead/new_player/proc/close_spawn_windows()
-
+	client?.clear_character_previews()
 	src << browse(null, "window=latechoices") //closes late choices window
 	src << browse(null, "window=playersetup") //closes the player setup window
 	src << browse(null, "window=preferences") //closes job selection
