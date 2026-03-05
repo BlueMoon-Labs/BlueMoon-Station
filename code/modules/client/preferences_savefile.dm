@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	65
+#define SAVEFILE_VERSION_MAX	66
 
 /*
 SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Carn
@@ -90,6 +90,21 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Возможность выключения кастомного цвета для педалей
 	if(current_version < 65)
 		custom_colors = TOGGLES_DEFAULT_CUSTOM_COLORS
+
+	//Возвращение тильтинга по пикселям
+	if(current_version < 66)
+		var/static/list/dat_to_check = list("pixel_tilt_east", "pixel_tilt_west")
+		for(var/dat_key in dat_to_check)
+			var/datum/keybinding/mob/key_dat = GLOB.keybindings_by_name[dat_key]
+			if(!key_dat)
+				continue
+			for(var/button in key_dat.hotkey_keys)
+				var/list/hotkey_list = key_bindings[button]
+				if(!hotkey_list)
+					var/list/temp = list()
+					key_bindings[button] = temp
+					hotkey_list = temp
+				hotkey_list |= dat_key
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
