@@ -85,9 +85,9 @@
 	if(istype(I, /obj/item/melee_voucher))
 		RedeemVoucher(I, user)
 		return
-	return ..()
+	return..()
 
-/obj/machinery/vending/security/proc/RedeemVoucher(/obj/item/melee_voucher, mob/redeemer)
+/obj/machinery/vending/security/proc/RedeemVoucher(/obj/item/melee_voucher/voucher, mob/redeemer)
 	var/items = list(	"Cryo-blade Kit" = image(icon = 'modular_bluemoon/icons/obj/white/items_and_weapons.dmi', icon_state = "security_katana"),
 						"Baton Kit" = image(icon = 'icons/obj/items_and_weapons.dmi', icon_state = "stunbaton"))
 
@@ -101,12 +101,13 @@
 		if("Baton Kit")
 			new /obj/item/melee/baton/loaded(drop_location)
 	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
-	SSblackbox.record_feedback("tally", "mining_voucher_redeemed", 1, selection)
+
+	SSblackbox.record_feedback("tally", "melee_voucher_redeemed", 1, selection)
 	qdel(voucher)
 
 /obj/item/melee_voucher
 	name = "security officer melee equipment voucher"
 	desc = "A token to redeem for a security officer melee equipment. Use it on a SecTech equipment vendor."
-	icon = 'icons/obj/mining.dmi'
-	icon_state = "mining_voucher"
+	icon = 'icons/obj/vending.dmi'
+	icon_state = "sec-voucher"
 	w_class = WEIGHT_CLASS_TINY
