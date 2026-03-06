@@ -49,6 +49,8 @@ SUBSYSTEM_DEF(npcpool)
 				var/mob/living/simple_animal/hostile/hostile_mob = SA
 				hostile_mob.LoseTarget()
 				SA.toggle_ai(AI_IDLE)
+				invoking = FALSE
+				return
 			else if(istype(SA, /mob/living/simple_animal/bot))
 				var/mob/living/simple_animal/bot/bot_mob = SA
 				if(bot_mob.mode == BOT_IDLE)

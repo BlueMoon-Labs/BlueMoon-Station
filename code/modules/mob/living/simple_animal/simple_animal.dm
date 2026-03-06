@@ -659,7 +659,7 @@
 			stack_trace("Something attempted to set simple animals AI to an invalid state: [togglestatus]")
 
 /// Returns TRUE if any player is within given distance on the same z-level.
-/mob/living/simple_animal/proc/has_nearby_player(distance = 15)
+/mob/living/simple_animal/proc/has_nearby_player(distance = NEARBY_PLAYER_DISTANCE)
 	var/turf/our_turf = get_turf(src)
 	if(!our_turf)
 		return FALSE
