@@ -84,12 +84,47 @@ export class Input extends Component {
     if (input) {
       input.value = toInputValue(nextValue);
     }
-    if (this.props.autoFocus) {
-      setTimeout(() => input.focus(), 1);
+    if (this.props.autoFocus || this.props.autoSelect) {
+      this.setState({ editing: true }, () => {
+        requestAnimationFrame(() => {
+          const input = this.inputRef.current;
+          if (!input) return;
+          input.focus();
+          if (this.props.autoSelect) {
+            input.select();
+            // Re-select when external forces (BYOND window manager) reset selection
+            const reselect = () => {
+              if (document.activeElement === input
+                  && input.selectionStart === input.selectionEnd
+                  && input.value.length > 0) {
+                input.select();
+              }
+            };
+            const cleanup = () => {
+              document.removeEventListener('selectionchange', reselect);
+              input.removeEventListener('mousedown', cleanup);
+              input.removeEventListener('keydown', cleanup);
+            };
+            document.addEventListener('selectionchange', reselect);
+            input.addEventListener('mousedown', cleanup, { once: true });
+            input.addEventListener('keydown', cleanup, { once: true });
+            setTimeout(cleanup, 1000);
+          }
+        });
+      });
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  shouldComponentUpdate(nextProps, nextState) {
+    // While editing, block re-renders from periodic TGUI state updates
+    // to prevent Inferno's DOM patching from resetting input selection
+    if (this.state.editing && nextState.editing) {
+      return false;
+    }
+    return true;
+  }
+
+  componentDidUpdate(prevProps) {
     const { editing } = this.state;
     const prevValue = prevProps.value;
     const nextValue = this.props.value;
@@ -107,6 +142,8 @@ export class Input extends Component {
     const { props } = this;
     // Input only props
     const {
+      autoFocus,
+      autoSelect,
       selfClear,
       onInput,
       onChange,
