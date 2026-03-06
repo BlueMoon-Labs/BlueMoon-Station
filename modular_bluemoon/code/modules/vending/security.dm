@@ -99,7 +99,7 @@
 		if("Cryo-blade Kit")
 			new /obj/item/storage/belt/sheath/security(drop_location)
 		if("Baton Kit")
-			new /obj/item/melee/baton(drop_location)
+			new /obj/item/melee/baton/loaded(drop_location)
 	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 	SSblackbox.record_feedback("tally", "mining_voucher_redeemed", 1, selection)
 	qdel(voucher)
