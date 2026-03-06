@@ -87,7 +87,7 @@
 		return
 	return..()
 
-/obj/machinery/vending/security/proc/RedeemVoucher(obj/item/mining_voucher/voucher
+/obj/machinery/vending/security/proc/RedeemVoucher(obj/item/mining_voucher/voucher, mob/redeemer)
 	var/items = list(	"Cryo-blade Kit" = image(icon = 'modular_bluemoon/icons/obj/white/items_and_weapons.dmi', icon_state = "security_katana"),
 						"Baton Kit" = image(icon = 'icons/obj/items_and_weapons.dmi', icon_state = "stunbaton"))
 
