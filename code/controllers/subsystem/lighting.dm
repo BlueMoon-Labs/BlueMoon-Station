@@ -116,7 +116,7 @@ SUBSYSTEM_DEF(lighting)
 	var/pct_s = total_cost > 0 ? round(cost_sources / total_cost * 100) : 0
 	var/pct_c = total_cost > 0 ? round(cost_corners / total_cost * 100) : 0
 	var/pct_o = total_cost > 0 ? round(cost_objects / total_cost * 100) : 0
-	var/avg_cost_per = avg_sources_processed > 0 ? round(cost_sources / avg_sources_processed, 0.01) : 0
+	var/avg_cost_per = avg_sources_processed >= 0.5 ? round(cost_sources / avg_sources_processed, 0.01) : 0
 	msg = "SL:[length(GLOB.lighting_starlight_queue)]|L:[length(GLOB.lighting_update_lights)]|C:[length(GLOB.lighting_update_corners)]|O:[length(GLOB.lighting_update_objects)]|Cap:[sources_cap]|SL:[round(cost_starlight,0.1)]ms|S:[round(cost_sources,0.1)]([pct_s]%)|C:[round(cost_corners,0.1)]([pct_c]%)|O:[round(cost_objects,0.1)]([pct_o]%)|Avg:[avg_cost_per]ms/src([round(avg_sources_processed)])|Pk:[peak_starlight]/[peak_sources]/[peak_corners]/[peak_objects]|Wst:[round(worst_fire_cost,0.1)]ms"
 	if(bg_current_zlevel)
 		msg += "|BG:Z[bg_current_zlevel]P[bg_phase]"
@@ -447,7 +447,7 @@ SUBSYSTEM_DEF(lighting)
 			else
 				remaining_starlight[S] = TRUE
 			if(MC_TICK_CHECK)
-				GLOB.lighting_deferred_starlight = remaining_starlight
+				GLOB.lighting_deferred_starlight = remaining_starlight + GLOB.lighting_deferred_starlight.Copy(GLOB.lighting_deferred_starlight.Find(S) + 1)
 				return
 		GLOB.lighting_deferred_starlight = remaining_starlight
 		bg_phase = 3

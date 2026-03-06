@@ -311,7 +311,7 @@
 /// The sheet is a 2D list of lists indexed by x/y offsets from the light center.
 /datum/light_source/proc/get_sheet()
 	var/range_step = light_range > 5 ? 0.25 : LIGHTING_SHEET_RANGE_STEP
-	var/range = max(1, round(light_range, range_step))
+	var/range = max(1, CEILING(light_range, range_step))
 	var/height = round(light_height, LIGHTING_SHEET_HEIGHT_STEP)
 	var/key = "[range]-[height]-[GLOB.lighting_falloff_mode]"
 	var/list/hand_back = GLOB.lighting_sheets[key]

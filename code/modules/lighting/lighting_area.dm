@@ -37,6 +37,8 @@
 			return TRUE
 		if(NAMEOF(src, light_temperature), NAMEOF(src, light_contrast), NAMEOF(src, contact_shadow_multiplier), NAMEOF(src, ambient_light))
 			. = ..()
+			if(!.)
+				return
 			// Recalculate blended profiles on all turfs in this area
 			for(var/turf/T in src)
 				T.recalc_area_blend_region()

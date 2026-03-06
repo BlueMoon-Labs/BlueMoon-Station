@@ -545,6 +545,7 @@ SUBSYSTEM_DEF(shuttle)
 	if(!midpoint)
 		GLOB.lighting_defer_active = FALSE
 		GLOB.lighting_deferred_starlight.Cut()
+		QDEL_NULL(proposal)
 		return FALSE
 	var/area/shuttle/transit/A = new()
 	A.parallax_moving = TRUE

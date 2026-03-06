@@ -6086,7 +6086,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("ambientocclusion")
 					ambientocclusion = !ambientocclusion
-					if(parent && parent.screen && parent.screen.len)
+					if(parent?.mob?.hud_used && parent.screen?.len)
 						var/datum/hud/H = parent.mob.hud_used
 						var/atom/movable/screen/plane_master/G = H.plane_masters["[GAME_PLANE]"]
 						var/atom/movable/screen/plane_master/A = H.plane_masters["[ABOVE_WALL_PLANE]"]
@@ -6103,7 +6103,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("lighting_blur")
 					lighting_blur = (lighting_blur + 1) % (LIGHTING_BLUR_MAX + 1)
-					if(parent?.screen?.len)
+					if(parent?.mob?.hud_used && parent.screen?.len)
 						var/datum/hud/H = parent.mob.hud_used
 						var/atom/movable/screen/plane_master/L = H.plane_masters["[LIGHTING_PLANE]"]
 						var/atom/movable/screen/plane_master/G = H.plane_masters["[GAME_PLANE]"]

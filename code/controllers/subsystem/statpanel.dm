@@ -296,7 +296,7 @@ SUBSYSTEM_DEF(statpanels)
 	var/light_pct_s = light_total > 0 ? round(SSlighting.cost_sources / light_total * 100) : 0
 	var/light_pct_c = light_total > 0 ? round(SSlighting.cost_corners / light_total * 100) : 0
 	var/light_pct_o = light_total > 0 ? round(SSlighting.cost_objects / light_total * 100) : 0
-	var/light_avg = SSlighting.avg_sources_processed > 0 ? round(SSlighting.cost_sources / SSlighting.avg_sources_processed, 0.01) : 0
+	var/light_avg = SSlighting.avg_sources_processed >= 0.5 ? round(SSlighting.cost_sources / SSlighting.avg_sources_processed, 0.01) : 0
 	key_ss["Lighting"] = list(
 		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C \u0438\u0441\u0442\u043E\u0447.", length(GLOB.lighting_update_lights)),
 		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C \u0443\u0433\u043B\u043E\u0432", length(GLOB.lighting_update_corners)),
@@ -347,10 +347,11 @@ SUBSYSTEM_DEF(statpanels)
 			ver_shown++
 		var/avg_ping = total_clients ? round(sum_ping / total_clients, 1) : 0
 		var/avg_delay = total_clients ? round(sum_server_delay / total_clients, 1) : 0
+		var/ping_minmax = total_clients ? "[round(min_ping, 1)]/[round(max_ping, 1)]ms" : "n/a"
 		key_ss["Clients"] = list(
 			list("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E", length(GLOB.clients)),
 			list("Ping \u0441\u0440\u0435\u0434\u043D\u0438\u0439", "[avg_ping]ms"),
-			list("Ping \u043C\u0438\u043D/\u043C\u0430\u043A\u0441", "[round(min_ping, 1)]/[round(max_ping, 1)]ms"),
+			list("Ping \u043C\u0438\u043D/\u043C\u0430\u043A\u0441", ping_minmax),
 			list("\u0417\u0430\u0434\u0435\u0440\u0436\u043A\u0430 \u0441\u0435\u0440\u0432\u0435\u0440\u0430", "[avg_delay]ms"),
 			list("FPS \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438", jointext(fps_parts, ", ")),
 			list("BYOND \u0432\u0435\u0440\u0441\u0438\u0438", jointext(ver_parts, ", "))

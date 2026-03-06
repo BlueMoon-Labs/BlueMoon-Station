@@ -839,7 +839,7 @@
 	else
 		should_be_on = A.lightswitch && A.power_light
 	// If light was on and is losing power, play death flicker animation
-	if(on && !should_be_on && status == LIGHT_OK && !power_loss_stage)
+	if(on && !should_be_on && status == LIGHT_OK && !power_loss_stage && !A.power_light)
 		start_power_loss_sequence()
 		return
 	// If power is being restored, cancel any ongoing power loss animation

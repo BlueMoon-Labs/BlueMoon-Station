@@ -26,7 +26,7 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 
 #define LIGHTING_BLUR_MIN 0
 #define LIGHTING_BLUR_MAX 4
-#define LIGHTING_BLUR_DEFAULT 1
+#define LIGHTING_BLUR_DEFAULT 3
 #define LIGHTING_BLUR_BASE 0 // Minimum blur (px) always applied to smooth tile boundaries — GPU-cheap on composited plane master
 #define LIGHTING_BLUR_MULTIPLIER 2 // Edge softening: level * this = blur px (2/4/6/8)
 
