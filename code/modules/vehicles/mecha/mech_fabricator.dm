@@ -71,10 +71,12 @@
 	COOLDOWN_DECLARE(cooldown_say) // Отвечает за КД SAY машины
 	var/const/cooldown_say_time = 1.5 SECONDS
 
+	var/on_station = TRUE
+
 /obj/machinery/mecha_part_fabricator/Initialize(mapload)
 	stored_research = new
 	rmat = AddComponent(/datum/component/remote_materials, "mechfab", mapload && link_on_init, _after_insert=CALLBACK(src, PROC_REF(AfterMaterialInsert)))
-
+	on_station = is_station_level(z) || is_mining_level(z)
 	RefreshParts() //Recalculating local material sizes if the fab isn't linked
 	return ..()
 
@@ -354,6 +356,11 @@
 	if(!D)
 		return FALSE
 
+	if(!design_sec_level_check(D))
+		if(verbose)
+			say("Irrelevant security alert level to build design.")
+		return FALSE
+
 	var/datum/component/material_container/materials = rmat.mat_container
 	if (!materials)
 		if(verbose)
@@ -379,6 +386,13 @@
 	rmat.silo_log(src, "built", -1, "[D.name]", build_materials)
 
 	return TRUE
+
+/obj/machinery/mecha_part_fabricator/proc/design_sec_level_check(datum/design/D)
+	. = TRUE
+	if(!D)
+		return
+	if(on_station && (GLOB.security_level < D.min_security_level || GLOB.security_level > D.max_security_level))
+		return FALSE
 
 /obj/machinery/mecha_part_fabricator/process()
 	// If there's a stored part to dispense due to an obstruction, try to dispense it.
@@ -550,23 +564,26 @@
 
 	for(var/v in stored_research.researched_designs)
 		var/datum/design/D = SSresearch.techweb_design_by_id(v)
-		if(D.build_type & MECHFAB)
-			// This is for us.
-			var/list/part = output_part_info(D, TRUE)
+		if(!(D.build_type & MECHFAB))
+		// Никакой залутки имплантов в обход техфаба (условно заглушка, пока интерфейс не сделают для этого)
+		if(!design_sec_level_check(D))
+			continue
+		// This is for us.
+		var/list/part = output_part_info(D, TRUE)
 
-			if(part["category_override"])
-				for(var/cat in part["category_override"])
-					buildable_parts[cat] += list(part)
-					if(!(cat in part_sets))
-						final_sets += cat
+		if(part["category_override"])
+			for(var/cat in part["category_override"])
+				buildable_parts[cat] += list(part)
+				if(!(cat in part_sets))
+					final_sets += cat
+			continue
+
+		for(var/cat in part_sets)
+			// Find all matching categories.
+			if(!(cat in D.category))
 				continue
 
-			for(var/cat in part_sets)
-				// Find all matching categories.
-				if(!(cat in D.category))
-					continue
-
-				buildable_parts[cat] += list(part)
+			buildable_parts[cat] += list(part)
 
 	data["partSets"] = final_sets
 	data["buildableParts"] = buildable_parts
