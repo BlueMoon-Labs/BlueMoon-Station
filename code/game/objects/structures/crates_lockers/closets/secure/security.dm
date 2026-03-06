@@ -248,8 +248,8 @@
 	..()
 	new /obj/item/electrostaff(src)
 	new /obj/item/electrostaff(src)
-	new /obj/item/storage/belt/shamshir
-	new /obj/item/storage/belt/shamshir
+	new /obj/item/storage/belt/shamshir(src)
+	new /obj/item/storage/belt/shamshir(src)
 	for(var/i in 1 to 3)
 		new /obj/item/storage/box/lethalshot(src)
 	for(var/k in 1 to 9)

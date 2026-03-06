@@ -283,10 +283,6 @@
 
 	return 1
 
-/obj/item/melee/sabre/security/Initialize(mapload)
-	. = ..()
-	AddComponent(/datum/component/butchering, 30, 95, 5) //fast and effective, but as a sword, it might damage the results.
-
 /obj/item/melee/sabre/security/get_belt_overlay()
 	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "seckatana") // todo: make this and its rapier equivalent work for the inhands too
 
