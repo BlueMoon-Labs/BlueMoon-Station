@@ -847,6 +847,8 @@
 	if(should_be_on && power_loss_stage)
 		stop_power_loss_sequence()
 	seton(should_be_on)
+	if(should_be_on && cell && cell.charge < cell.maxcharge)
+		START_PROCESSING(SSmachines, src)
 
 // called when on fire
 
@@ -913,7 +915,7 @@
 	var/base_interval = severe ? LIGHT_FLICKER_INTERVAL_SEVERE : LIGHT_FLICKER_INTERVAL_NORMAL
 
 	if(!has_z_viewers())
-		var/next_interval = base_interval * (0.8 + rand() * 0.4)
+		var/next_interval = base_interval * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)
 		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), next_interval, TIMER_STOPPABLE)
 		return
 
@@ -929,10 +931,10 @@
 	else
 		// Normal flicker — vary power around base
 		var/power_mod = base_bulb_power * (1 + rand(-100, 100) / 100 * power_variance)
-		power_mod = clamp(power_mod, base_bulb_power * 0.3, base_bulb_power * 1.1)
+		power_mod = clamp(power_mod, base_bulb_power * LIGHT_FLICKER_POWER_CLAMP_MIN, base_bulb_power * LIGHT_FLICKER_POWER_CLAMP_MAX)
 		set_light(l_power = power_mod)
 		// Schedule next tick with ±20% interval randomness
-		var/next_interval = base_interval * (0.8 + rand() * 0.4)
+		var/next_interval = base_interval * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)
 		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), next_interval, TIMER_STOPPABLE)
 
 /// Recovers from a dropout, then resumes flicker cycle
@@ -944,7 +946,7 @@
 		var/ratio = obj_integrity / max_integrity
 		var/severe = ratio <= LIGHT_DAMAGE_FLICKER_SEVERE
 		var/base_interval = severe ? LIGHT_FLICKER_INTERVAL_SEVERE : LIGHT_FLICKER_INTERVAL_NORMAL
-		var/next_interval = base_interval * (0.8 + rand() * 0.4)
+		var/next_interval = base_interval * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)
 		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), next_interval, TIMER_STOPPABLE)
 		return
 	// Restore to slightly varied power and continue the cycle
@@ -952,7 +954,7 @@
 	var/ratio = obj_integrity / max_integrity
 	var/severe = ratio <= LIGHT_DAMAGE_FLICKER_SEVERE
 	var/base_interval = severe ? LIGHT_FLICKER_INTERVAL_SEVERE : LIGHT_FLICKER_INTERVAL_NORMAL
-	var/next_interval = base_interval * (0.8 + rand() * 0.4)
+	var/next_interval = base_interval * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)
 	damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), next_interval, TIMER_STOPPABLE)
 
 // --- Power loss animation ---
@@ -987,8 +989,8 @@
 	if(!power_loss_stage)
 		return
 	if(!has_z_viewers())
-		step = 4
-	if(step >= 4)
+		step = LIGHT_DEATH_FLICKER_STEPS
+	if(step >= LIGHT_DEATH_FLICKER_STEPS)
 		// Death flicker done — go dark
 		power_loss_stage = 2
 		on = FALSE
@@ -1004,7 +1006,7 @@
 		return
 	// Toggle between dim and off
 	if(step % 2 == 0)
-		set_light(brightness * 0.4, bulb_power * 0.3, bulb_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
+		set_light(brightness * LIGHT_DEATH_FLICKER_BRIGHTNESS_MUL, bulb_power * LIGHT_DEATH_FLICKER_POWER_MUL, bulb_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
 	else
 		set_light(0, l_cone_angle = 0)
 	power_loss_timer_id = addtimer(CALLBACK(src, PROC_REF(death_flicker_tick), step + 1), LIGHT_DEATH_FLICKER_DURATION, TIMER_STOPPABLE)
@@ -1027,7 +1029,7 @@
 	update_icon()
 	START_PROCESSING(SSmachines, src)
 	// Start subtle emergency flicker
-	var/next_interval = LIGHT_EMERGENCY_FLICKER_INTERVAL * (0.8 + rand() * 0.4)
+	var/next_interval = LIGHT_EMERGENCY_FLICKER_INTERVAL * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)
 	power_loss_timer_id = addtimer(CALLBACK(src, PROC_REF(emergency_flicker_tick)), next_interval, TIMER_STOPPABLE)
 
 /// Subtle power fluctuation on emergency red lights
@@ -1043,15 +1045,15 @@
 		power_loss_timer_id = null
 		return
 	if(!has_z_viewers())
-		var/next_interval = LIGHT_EMERGENCY_FLICKER_INTERVAL * (0.8 + rand() * 0.4)
+		var/next_interval = LIGHT_EMERGENCY_FLICKER_INTERVAL * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)
 		power_loss_timer_id = addtimer(CALLBACK(src, PROC_REF(emergency_flicker_tick)), next_interval, TIMER_STOPPABLE)
 		return
 	// Vary emergency power ±10%
 	var/charge_ratio = cell.charge / cell.maxcharge
 	var/em_power = max(bulb_emergency_pow_min, bulb_emergency_pow_mul * charge_ratio)
-	em_power *= (0.9 + rand() * 0.2)
+	em_power *= (LIGHT_EMERGENCY_POWER_JITTER_MIN + rand() * LIGHT_EMERGENCY_POWER_JITTER_RANGE)
 	set_light(brightness * bulb_emergency_brightness_mul, em_power, bulb_emergency_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
-	var/next_interval = LIGHT_EMERGENCY_FLICKER_INTERVAL * (0.8 + rand() * 0.4)
+	var/next_interval = LIGHT_EMERGENCY_FLICKER_INTERVAL * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)
 	power_loss_timer_id = addtimer(CALLBACK(src, PROC_REF(emergency_flicker_tick)), next_interval, TIMER_STOPPABLE)
 
 // the light item

@@ -370,7 +370,7 @@ SUBSYSTEM_DEF(lighting)
 
 	// Dynamic wait: tick every frame when there's work, relax when idle
 	if(!init_tick_checks)
-		var/pending = GLOB.lighting_deferred_shadow_turfs.len + GLOB.lighting_starlight_queue.len + GLOB.lighting_update_lights.len + GLOB.lighting_update_corners.len + GLOB.lighting_update_objects.len + (bg_queued_zlevels?.len ? 1 : 0) + (bg_current_zlevel ? 1 : 0) + (starlight_color_index ? 1 : 0)
+		var/pending = GLOB.lighting_deferred_shadow_turfs.len + GLOB.lighting_starlight_queue.len + GLOB.lighting_update_blends.len + GLOB.lighting_update_lights.len + GLOB.lighting_update_corners.len + GLOB.lighting_update_objects.len + (bg_queued_zlevels?.len ? 1 : 0) + (bg_current_zlevel ? 1 : 0) + (starlight_color_index ? 1 : 0)
 		wait = pending > LIGHTING_IDLE_WAIT_THRESHOLD ? 1 : 2
 
 /datum/controller/subsystem/lighting/proc/process_bg_zlevel_init()

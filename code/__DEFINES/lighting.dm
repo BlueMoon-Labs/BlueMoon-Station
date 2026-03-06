@@ -97,12 +97,23 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHT_FLICKER_DROPOUT_PROB_SEVERE   15    // % chance per tick of brief dropout (severe)
 #define LIGHT_FLICKER_DROPOUT_POWER         0.2   // Power multiplier during dropout (20%)
 #define LIGHT_FLICKER_DROPOUT_DURATION      2     // Deciseconds of dropout (0.2s)
+#define LIGHT_FLICKER_POWER_CLAMP_MIN       0.3   // Min power multiplier in normal flicker clamp
+#define LIGHT_FLICKER_POWER_CLAMP_MAX       1.1   // Max power multiplier in normal flicker clamp
+
+// Timer interval jitter: multiply base interval by (MIN + rand() * RANGE) for ±20% randomness
+#define LIGHT_INTERVAL_JITTER_MIN           0.8
+#define LIGHT_INTERVAL_JITTER_RANGE         0.4
 
 // Power loss animation
+#define LIGHT_DEATH_FLICKER_STEPS           4     // Number of rapid on/off toggles before going dark
+#define LIGHT_DEATH_FLICKER_BRIGHTNESS_MUL  0.4   // Brightness multiplier during dim phase
+#define LIGHT_DEATH_FLICKER_POWER_MUL       0.3   // Power multiplier during dim phase
 #define LIGHT_DEATH_FLICKER_DURATION        5     // Deciseconds total for death flicker sequence (0.5s)
 #define LIGHT_EMERGENCY_DELAY_MIN           10    // Min deciseconds of darkness before emergency (1.0s)
 #define LIGHT_EMERGENCY_DELAY_MAX           20    // Max deciseconds of darkness before emergency (2.0s)
 #define LIGHT_EMERGENCY_FLICKER_INTERVAL    25    // Deciseconds between emergency light flickers (2.5s)
+#define LIGHT_EMERGENCY_POWER_JITTER_MIN   0.9   // Emergency power variance: min multiplier (±10%)
+#define LIGHT_EMERGENCY_POWER_JITTER_RANGE 0.2   // Emergency power variance: random range
 #define LIGHT_EMERGENCY_DRAIN_RATE          5     // Power drained from cell per process() tick during emergency (~30s total)
 
 
