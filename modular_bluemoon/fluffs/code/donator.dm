@@ -1544,7 +1544,7 @@
 	name = "Dar Jr beacon"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/choice_beacon/pet/dar
-	ckeywhitelist = list("avtobuspng", "dimofon", "definitelynotnesuby", "angelnedemon")
+	ckeywhitelist = list("avtobuspng", "dimofon", "definitelynotnesuby", "angelnedemon", "deltarayx")
 
 /datum/gear/donator/bm/pawpack
 	name = "Paw Backpack"
@@ -1920,25 +1920,25 @@
 	name = "Grenadier uniform"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/dm_pzgrnd_uniform
-	ckeywhitelist = list("dimofon", "devildeadspace", "silverfoxpaws", "oni3288", "definitelynotnesuby", "fryktik")
+	ckeywhitelist = list("dimofon", "devildeadspace", "silverfoxpaws", "oni3288", "definitelynotnesuby", "fryktik", "deltarayx")
 
 /datum/gear/donator/bm/dm_pzsuit
 	name = "Grenadier jacket"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/dm_pzgrnd_suit
-	ckeywhitelist = list("dimofon", "devildeadspace", "silverfoxpaws", "oni3288", "definitelynotnesuby", "fryktik")
+	ckeywhitelist = list("dimofon", "devildeadspace", "silverfoxpaws", "oni3288", "definitelynotnesuby", "fryktik", "deltarayx")
 
 /datum/gear/donator/bm/dm_pzhelmet
 	name = "Pionier helmet"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/dm_pzgrnd_helmet
-	ckeywhitelist = list("dimofon", "devildeadspace", "silverfoxpaws", "oni3288", "definitelynotnesuby", "fryktik")
+	ckeywhitelist = list("dimofon", "devildeadspace", "silverfoxpaws", "oni3288", "definitelynotnesuby", "fryktik", "deltarayx")
 
 /datum/gear/donator/bm/dm_case
 	name = "Infantry clothing case"
 	slot = ITEM_SLOT_HANDS
 	path = /obj/item/storage/backpack/case/dm_staff
-	ckeywhitelist = list("dimofon", "devildeadspace", "silverfoxpaws", "oni3288", "definitelynotnesuby", "fryktik")
+	ckeywhitelist = list("dimofon", "devildeadspace", "silverfoxpaws", "oni3288", "definitelynotnesuby", "fryktik", "deltarayx")
 	cost = 2
 
 /datum/gear/donator/bm/dm_stg56

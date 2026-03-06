@@ -1,7 +1,7 @@
 /obj/item/reagent_containers/spray/bluespace
 	name = "bluespace spray bottle"
 	desc = "A bluespace spray bottle, do not give it to the clown."
-	volume = 250
+	volume = 600
 	amount_per_transfer_from_this = 2
 	stream_amount = 5
 	icon = 'modular_sand/icons/obj/janitor.dmi'

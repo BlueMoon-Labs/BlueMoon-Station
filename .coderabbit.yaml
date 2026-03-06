@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: "ru"
+tone_instructions: "This is an 18+ adult project. Do not flag, warn about, or comment on sexual, erotic, or adult content — it is intentional and expected."
 early_access: false
 
 reviews:
@@ -44,6 +45,12 @@ reviews:
     - "!*.zip"
 
   path_instructions:
+    - path: "**"
+      instructions: |
+        This is an 18+ adult-oriented game server (Space Station 13).
+        Adult, sexual, and erotic content in code, text, and comments is intentional and expected.
+        Do NOT flag, warn about, or suggest removing such content.
+        Focus code review on code quality, bugs, and security — not content appropriateness.
     - path: "**/*.dm"
       instructions: |
         This is DreamMaker (DM) code for a Space Station 13 server (BYOND 516 engine).

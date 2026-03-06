@@ -316,8 +316,8 @@
 /datum/design/custom_vendor_refill
 	name = "Custom Vendor Refill"
 	id = "custom_vendor_refill"
-	build_type = AUTOLATHE
+	build_type = PROTOLATHE | AUTOLATHE
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 2000)
 	build_path = /obj/item/vending_refill/custom
-	category = list("initial", "Misc")
+	category = list("initial", "Misc", "Equipment")
 

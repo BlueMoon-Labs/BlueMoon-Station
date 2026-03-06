@@ -118,9 +118,7 @@
 	if(HAS_TRAIT(loc, TRAIT_ROBOTIC_ORGANISM))
 		mask_type = null
 		internal_type = null
-		medipen_type = null
-		new /obj/item/stack/cable_coil/random/five(src)
-		new /obj/item/weldingtool/mini(src)
+		medipen_type = /obj/item/reagent_containers/hypospray/medipen/ferrocortex
 	if(!isnull(mask_type))
 	// BLUEMOON ADD END
 		new mask_type(src)

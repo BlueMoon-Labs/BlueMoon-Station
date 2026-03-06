@@ -402,7 +402,7 @@
 		update_icon()
 		return
 	if(start_vial)
-		vial = new start_vial
+		vial = new start_vial(src)
 	update_icon()
 	register_context()
 	register_item_context()

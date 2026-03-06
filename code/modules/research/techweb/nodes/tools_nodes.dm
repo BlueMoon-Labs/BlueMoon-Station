@@ -5,7 +5,7 @@
 	display_name = "Basic Tools"
 	description = "Basic mechanical, electronic, surgical and botanical tools."
 	prereq_ids = list("base")
-	design_ids = list("screwdriver", "wrench", "bolter_wrench", "wirecutters", "crowbar", "multitool", "welding_tool", "tscanner", "dirtscanner", "analyzer", "cable_coil", "pipe_painter", "airlock_painter", "decal_painter", "tile_sprayer", "drapes", "scalpel", "circular_saw", "surgicaldrill", "bonesetter", "bloodfilter", "retractor", "cautery", "hemostat", "cultivator", "plant_analyzer", "shovel", "spade", "hatchet", "mop", "broom", "normtrash", "spraycan")
+	design_ids = list("screwdriver", "wrench", "bolter_wrench", "wirecutters", "crowbar", "multitool", "welding_tool", "tscanner", "dirtscanner", "analyzer", "geigercounter", "cable_coil", "pipe_painter", "airlock_painter", "decal_painter", "tile_sprayer", "drapes", "scalpel", "circular_saw", "surgicaldrill", "bonesetter", "bloodfilter", "retractor", "cautery", "hemostat", "cultivator", "plant_analyzer", "shovel", "spade", "hatchet", "mop", "broom", "normtrash", "spraycan")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 500)
 
 /datum/techweb_node/basic_mining

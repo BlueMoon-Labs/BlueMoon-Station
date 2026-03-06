@@ -114130,8 +114130,6 @@
 /area/security/prison/upper)
 "trh" = (
 /obj/structure/closet/secure_closet/CMO,
-/obj/item/clothing/under/rank/medical/doctor/nurse,
-/obj/item/clothing/head/nursehat,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 5
 	},

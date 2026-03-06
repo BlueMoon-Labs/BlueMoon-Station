@@ -1301,40 +1301,26 @@
 	set name = "Switch Rest Style"
 	set category = "Robot Commands"
 	set desc = "Select your resting pose."
-	sitting = 0
-	bellyup = 0
-	deep_rest = 0		//DarkSer request by Gardelin0
-	wag_rest = 0		//DarkSer request by Gardelin0
-	wag_sit = 0			//DarkSer request by Gardelin0
 
-	if(module.drakerest == TRUE)	//DarkSer request by Gardelin0
-		var/choice_drake = tgui_alert(usr, "Select resting pose", "Pose", list("Resting", "Sitting", "Belly up", "Napping", "Resting Wag", "Sitting Wag"))
-		switch(choice_drake)
-			if("Resting")
-				update_icons()
-				return FALSE
-			if("Sitting")
-				sitting = 1
-			if("Belly up")
-				bellyup = 1
-			if("Napping")
-				deep_rest = 1
-			if("Resting Wag")
-				wag_rest = 1
-			if("Sitting Wag")
-				wag_sit = 1
-		update_icons()
-	if(module.drakerest == FALSE)
-		var/choice = tgui_alert(usr, "Select resting pose", "Pose", list("Resting", "Sitting", "Belly up"))
-		switch(choice)
-			if("Resting")
-				update_icons()
-				return FALSE
-			if("Sitting")
-				sitting = 1
-			if("Belly up")
-				bellyup = 1
-		update_icons()
+	var/list/poses = list("Resting", "Sitting", "Belly up")
+	if(module.drakerest)
+		poses.Add("Napping", "Resting Wag", "Sitting Wag")
+
+	var/choice = tgui_input_list(usr, "Select resting pose", "Pose", poses)
+	switch(choice)
+		if("Resting")
+			resting_state = "rest"
+		if("Sitting")
+			resting_state = "sit"
+		if("Belly up")
+			resting_state = "bellyup"
+		if("Napping")
+			resting_state = "rest_deep"
+		if("Resting Wag")
+			resting_state = "rest_alt"
+		if("Sitting Wag")
+			resting_state = "sit_alt"
+	update_icons()
 
 /mob/living/silicon/robot/verb/viewmanifest()
 	set category = "Robot Commands"

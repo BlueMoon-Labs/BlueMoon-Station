@@ -6,6 +6,7 @@
 	icon_state = "hypovial"
 	spillable = FALSE
 	volume = 10
+	amount_per_transfer_from_this = 5
 	possible_transfer_amounts = list(1,2,5,10)
 	container_flags = APTFT_VERB
 	obj_flags = UNIQUE_RENAME
@@ -56,6 +57,7 @@
 	desc = "Большая гипоампула, для моделей гипоспреев \"Делюкс\"."
 	icon_state = "hypoviallarge"
 	volume = 120
+	amount_per_transfer_from_this = 10
 	possible_transfer_amounts = list(1,2,5,10,20)
 	unique_reskin = list(
 		"large hypovial" = list("icon_state" = "hypoviallarge"),
