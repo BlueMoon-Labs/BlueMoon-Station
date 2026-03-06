@@ -729,6 +729,30 @@
 	world.update_status()
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Respawn", "[!new_nores ? "Enabled" : "Disabled"]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
+/datum/admins/proc/togglenightshift()
+	set category = "Server"
+	set desc = "Toggle night shift lighting"
+	set name = "Toggle Night Shift"
+	var/val = tgui_alert(usr, "Установить ночной режим освещения:", "Ночной Режим", list("Вкл", "Выкл", "Авто"))
+	if(!val)
+		return
+	switch(val)
+		if("Авто")
+			if(CONFIG_GET(flag/enable_night_shifts))
+				SSnightshift.can_fire = TRUE
+				SSnightshift.fire()
+			else
+				SSnightshift.update_nightshift(FALSE, TRUE)
+		if("Вкл")
+			SSnightshift.can_fire = FALSE
+			SSnightshift.update_nightshift(TRUE, TRUE)
+		if("Выкл")
+			SSnightshift.can_fire = FALSE
+			SSnightshift.update_nightshift(FALSE, TRUE)
+	log_admin("[key_name(usr)] set night shift to [val].")
+	message_admins("[key_name_admin(usr)] set night shift to [val].")
+	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Night Shift", "[val]"))
+
 /datum/admins/proc/delay()
 	set category = "Server"
 	set desc="Delay the game start"

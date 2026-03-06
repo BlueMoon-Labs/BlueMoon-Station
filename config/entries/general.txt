@@ -360,9 +360,9 @@ OVERFLOW_JOB Clown
 ## Overflow slot cap. Set to -1 for unlimited. If limited, it will still open up if every other job is full.
 OVERFLOW_CAP 5
 
-## Starlight for exterior walls and breaches. Uncomment for starlight!
-## This is disabled by default to make testing quicker, should be enabled on production servers or testing servers messing with lighting
-#STARLIGHT
+## Starlight for exterior walls and breaches.
+## Provides ambient lighting through windows facing space.
+STARLIGHT
 
 ## Uncomment to bring back old grey suit assistants instead of the now default rainbow colored assistants.
 #GREY_ASSISTANTS
@@ -456,7 +456,7 @@ ROUNDSTART_TRAITS
 #DISABLE_HUMAN_MOOD
 
 ## Enable night shifts ##
-#ENABLE_NIGHT_SHIFTS
+ENABLE_NIGHT_SHIFTS
 
 ## Makes night shifts only affect in-code public-flagged areas. Nightshifts hit the level as defined in __DEFINES/misc.dm that this is set to and anything below. ##
 NIGHT_SHIFT_PUBLIC_AREAS_ONLY 0
@@ -466,6 +466,10 @@ NIGHT_SHIFT_PUBLIC_AREAS_ONLY 0
 
 ## Nightshift toggles in public areas REQUIRE APC authorization ##
 NIGHTSHIFT_TOGGLE_PUBLIC_REQUIRES_AUTH
+
+## Enable dynamic starlight color/brightness cycling based on solar time ##
+## Requires both STARLIGHT and ENABLE_NIGHT_SHIFTS ##
+DYNAMIC_STARLIGHT_CYCLE
 
 ## Enable randomized shift start times##
 #RANDOMIZE_SHIFT_TIME

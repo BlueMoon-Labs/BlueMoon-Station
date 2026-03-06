@@ -175,6 +175,9 @@
 	/// whether our browser is ready or not yet
 	var/statbrowser_ready = FALSE
 
+	/// whether remove_admin_tabs has been sent (avoids redundant output() every cycle)
+	var/admin_tabs_cleared = FALSE
+
 	/// list of all tabs
 	var/list/panel_tabs = list()
 

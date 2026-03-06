@@ -264,6 +264,8 @@
 /datum/config_entry/flag/nightshift_toggle_public_requires_auth
 	default = TRUE
 
+/datum/config_entry/flag/dynamic_starlight_cycle
+
 /datum/config_entry/flag/randomize_shift_time
 
 /datum/config_entry/flag/shift_time_realtime

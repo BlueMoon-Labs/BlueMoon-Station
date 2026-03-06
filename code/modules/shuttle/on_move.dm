@@ -148,7 +148,7 @@ All ShuttleMove procs go here
 
 	contents -= oldT
 	underlying_old_area.contents += oldT
-	oldT.change_area(src, underlying_old_area)
+	oldT.change_area(src, underlying_old_area, skip_blend = TRUE)
 	//The old turf has now been given back to the area that turf originaly belonged to
 
 	var/area/old_dest_area = newT.loc
@@ -157,7 +157,7 @@ All ShuttleMove procs go here
 	parallax_move_speed = old_dest_area.parallax_move_speed
 	old_dest_area.contents -= newT
 	contents += newT
-	newT.change_area(old_dest_area, src)
+	newT.change_area(old_dest_area, src, skip_blend = TRUE)
 	return TRUE
 
 // Called on areas after everything has been moved

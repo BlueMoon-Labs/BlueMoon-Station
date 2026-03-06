@@ -350,9 +350,14 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		AM.ex_act(explosion_level)
 
 	// If an opaque movable atom moves around we need to potentially update visibility.
-	if (AM.opacity)
-		has_opaque_atom = TRUE // Make sure to do this before reconsider_lights(), incase we're on instant updates. Guaranteed to be on in this case.
-		reconsider_lights()
+	// During bulk operations (shuttle moves), skip — batch recalc handles it after.
+	if(!GLOB.lighting_defer_active)
+		if(AM.opacity)
+			has_opaque_atom = TRUE // Make sure to do this before reconsider_lights(), incase we're on instant updates. Guaranteed to be on in this case.
+			reconsider_lights()
+		// Non-opaque atoms with shadow_weight still cast partial contact shadows (incremental — no contents scan)
+		else if(AM.shadow_weight > 0)
+			adjust_shadow_weight(AM.shadow_weight)
 
 
 /turf/open/Entered(atom/movable/AM)

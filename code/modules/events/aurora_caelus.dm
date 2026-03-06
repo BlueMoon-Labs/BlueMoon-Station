@@ -30,6 +30,7 @@
 			M.playsound_local(M, 'sound/ambience/aurora_caelus.ogg', 20, FALSE, pressure_affected = FALSE)
 
 /datum/round_event/aurora_caelus/start()
+	SSnightshift.starlight_override = TRUE
 	for(var/area in GLOB.sortedAreas)
 		var/area/A = area
 		if(initial(A.dynamic_lighting) == DYNAMIC_LIGHTING_IFSTARLIGHT)
@@ -59,6 +60,8 @@
 				overlay.update_ion_color(aurora_color)
 
 /datum/round_event/aurora_caelus/end()
+	SSnightshift.starlight_override = FALSE
+	SSnightshift.last_starlight_color = null // Force recalc next fire
 	for(var/area in GLOB.sortedAreas)
 		var/area/A = area
 		if(initial(A.dynamic_lighting) == DYNAMIC_LIGHTING_IFSTARLIGHT)
@@ -80,7 +83,9 @@
 	while(S.light_range > new_light)
 		S.set_light(S.light_range - 0.2)
 		sleep(30)
-	S.set_light(new_light, initial(S.light_power), initial(S.light_color))
+	var/reset_color = GLOB.current_starlight_color || initial(S.light_color)
+	var/reset_power = GLOB.current_starlight_power || initial(S.light_power)
+	S.set_light(new_light, reset_power, reset_color)
 
 /datum/round_event/aurora_caelus/proc/add_ion_overlay(client/C)
 	if(!C || ion_overlays[C])

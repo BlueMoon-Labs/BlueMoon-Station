@@ -10,17 +10,17 @@
 	var/wipe_reservation_on_release = TRUE
 	var/turf_type = /turf/open/space
 	var/borderturf
+	/// Additional flags passed to ChangeTurf during Reserve()
+	var/changeturf_flags = CHANGETURF_SKIP
 
 /datum/turf_reservation/transit
 	turf_type = /turf/open/space/transit
 	borderturf = /turf/open/space/transit/border
 
 /datum/turf_reservation/proc/Release()
-	var/v = reserved_turfs.Copy()
-	for(var/i in reserved_turfs)
-		reserved_turfs -= i
-		SSmapping.used_turfs -= i
-	SSmapping.reserve_turfs(v)
+	SSmapping.used_turfs -= reserved_turfs // bulk removal — O(n) instead of O(n²)
+	SSmapping.reserve_turfs(reserved_turfs)
+	reserved_turfs.Cut()
 
 /datum/turf_reservation/transit/Release()
 	for(var/turf/open/space/transit/T in reserved_turfs)
@@ -62,16 +62,17 @@
 		return FALSE
 	bottom_left_coords = list(BL.x, BL.y, BL.z)
 	top_right_coords = list(TR.x, TR.y, TR.z)
+	var/list/avail_turfs = SSmapping.unused_turfs["[BL.z]"]
 	for(var/i in final)
 		var/turf/T = i
-		reserved_turfs |= T
+		reserved_turfs += T // block() guarantees unique turfs — no dedup needed
 		T.flags_1 &= ~UNUSED_RESERVATION_TURF_1
-		SSmapping.unused_turfs["[T.z]"] -= T
 		SSmapping.used_turfs[T] = src
 		if(borderturf && (T.x == BL.x || T.x == TR.x || T.y == BL.y || T.y == TR.y))
-			T.ChangeTurf(borderturf, borderturf)
+			T.ChangeTurf(borderturf, borderturf, changeturf_flags)
 		else
-			T.ChangeTurf(turf_type, turf_type)
+			T.ChangeTurf(turf_type, turf_type, changeturf_flags)
+	avail_turfs -= final // single bulk O(n+m) instead of per-element O(n*m)
 	src.width = width
 	src.height = height
 	return TRUE

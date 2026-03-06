@@ -4,6 +4,7 @@
 	icon = 'icons/obj/closet.dmi'
 	icon_state = "generic"
 	density = TRUE
+	shadow_weight = 0.5
 	max_integrity = 200
 	integrity_failure = 0.25
 	armor = list(MELEE = 20, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 70, ACID = 60)
@@ -266,6 +267,9 @@
 	if(!dense_when_open)
 		density = FALSE
 	climb_time *= 0.5 //it's faster to climb onto an open thing
+	shadow_weight = 0.15 // Open closet casts less shadow
+	var/turf/T = get_turf(src)
+	T?.recalc_atom_opacity()
 	dump_contents()
 	animate_door(FALSE)
 	update_icon()
@@ -338,6 +342,9 @@
 	playsound(loc, close_sound, 15, TRUE, -3)
 	opened = FALSE
 	density = TRUE
+	shadow_weight = initial(shadow_weight) // Restore full shadow when closed
+	var/turf/T = get_turf(src)
+	T?.recalc_atom_opacity()
 	animate_door(TRUE)
 	update_icon()
 	after_close(user)

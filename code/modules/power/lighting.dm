@@ -197,6 +197,7 @@
 	var/brightness = 8			// luminosity when on, also used in power calculation
 	var/bulb_power = 0.75			// basically the alpha of the emitted light source
 	var/bulb_colour = "#cae2fa"	// befault colour of the light.
+	var/cone_angle = LIGHTING_WALL_TUBE_CONE_ANGLE // Directional cone: light shines away from the wall
 	var/status = LIGHT_OK		// LIGHT_OK, _EMPTY, _BURNED or _BROKEN
 	var/flickering = FALSE
 	var/light_type = /obj/item/light/tube		// the type of light item
@@ -232,6 +233,15 @@
 	 * 		TRUE/FALSE -> area.lightswitch will be ingored and this variable will be checked instead.
 	 */
 	var/individual_switch_state = null
+
+	// Damage flickering state
+	var/damage_flickering = FALSE
+	var/damage_flicker_timer_id = null
+	var/base_bulb_power = 0
+
+	// Power loss animation state
+	var/power_loss_stage = 0 // 0=normal, 1=death flicker, 2=dark, 3=emergency
+	var/power_loss_timer_id = null
 
 /obj/machinery/light/directional/north //Pixel offsets get overwritten on New()
 	dir = NORTH
@@ -272,6 +282,7 @@
 	bulb_colour = "#dcdeff"
 	desc = "A small lighting fixture."
 	light_type = /obj/item/light/bulb
+	cone_angle = LIGHTING_WALL_BULB_CONE_ANGLE
 
 /obj/machinery/light/small/directional/north //Pixel offsets get overwritten on New()
 	dir = NORTH
@@ -293,6 +304,13 @@
 	if(status != LIGHT_BROKEN)
 		break_light_tube(1)
 	return ..()
+
+/obj/machinery/light/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
+	. = ..()
+	// Upgrade light source queue priority to FORCE_UPDATE — guarantees FULL path
+	// with view() recalculation regardless of position detection result.
+	if(light && !QDELETED(light))
+		light.force_update()
 
 /obj/machinery/light/built
 	icon_state = "tube-empty"
@@ -334,6 +352,8 @@
 			update(0)
 
 /obj/machinery/light/Destroy()
+	stop_damage_flicker()
+	stop_power_loss_sequence()
 	var/area/A = get_area(src)
 	if(A)
 		on = FALSE
@@ -375,11 +395,14 @@
 		. += M
 
 // update the icon_state and luminosity of the light depending on its state
-/obj/machinery/light/proc/update(trigger = TRUE)
+/obj/machinery/light/proc/update(trigger = TRUE, silent = FALSE)
 	switch(status)
 		if(LIGHT_BROKEN,LIGHT_BURNED,LIGHT_EMPTY)
 			on = FALSE
-			set_light(0)
+			emergency_mode = FALSE
+			set_light(0, l_cone_angle = 0)
+	if(emergency_mode && !has_power())
+		return // Active emergency lighting — handled by emergency_flicker_tick()
 	emergency_mode = FALSE
 	if(on)
 		var/BR = brightness
@@ -409,17 +432,18 @@
 					burn_out()
 			else
 				use_power = ACTIVE_POWER_USE
-				set_light(BR, PO, CO)
-				playsound(src.loc, 'sound/ambience/light_on.ogg', 65, 1)
+				set_light(BR, PO, CO, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
+				if(!silent)
+					playsound(src.loc, 'sound/ambience/light_on.ogg', 65, 1)
 	else if(has_emergency_power(LIGHT_EMERGENCY_POWER_USE) && !turned_off())
 		use_power = IDLE_POWER_USE
 		on = FALSE
-		set_light(0)
+		set_light(0, l_cone_angle = 0)
 		// emergency_mode = TRUE
 		START_PROCESSING(SSmachines, src)
 	else
 		use_power = IDLE_POWER_USE
-		set_light(0)
+		set_light(0, l_cone_angle = 0)
 	if(fire_mode)
 		set_emergency_lights()
 	update_icon()
@@ -449,7 +473,17 @@
 		if (cell.charge == cell.maxcharge)
 			return PROCESS_KILL
 		cell.charge = min(cell.maxcharge, cell.charge + LIGHT_EMERGENCY_POWER_USE) //Recharge emergency power automatically while not using it
-	if(emergency_mode && use_emergency_power(LIGHT_EMERGENCY_POWER_USE))
+	if(emergency_mode)
+		if(!use_emergency_power(LIGHT_EMERGENCY_DRAIN_RATE))
+			// Cell exhausted — turn off emergency mode
+			emergency_mode = FALSE
+			set_light(0, l_cone_angle = 0)
+			update_icon()
+			if(power_loss_timer_id)
+				deltimer(power_loss_timer_id)
+				power_loss_timer_id = null
+			power_loss_stage = 0
+			return PROCESS_KILL
 		update() //Disables emergency mode and sets the color to normal
 
 /obj/machinery/light/proc/burn_out()
@@ -457,7 +491,7 @@
 		status = LIGHT_BURNED
 		icon_state = "[base_state]-burned"
 		on = FALSE
-		set_light(0)
+		set_light(0, l_cone_angle = 0)
 
 // attempt to set the light's on/off status
 // will not switch on if broken/burned/empty
@@ -586,9 +620,26 @@
 	if(. && !QDELETED(src))
 		if(prob(damage_amount * 5))
 			break_light_tube()
+		else
+			check_damage_flicker()
 
 
 
+
+/obj/machinery/light/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	if(cell)
+		cell.use(cell.charge)
+	if(emergency_mode || power_loss_stage)
+		emergency_mode = FALSE
+		if(power_loss_timer_id)
+			deltimer(power_loss_timer_id)
+			power_loss_timer_id = null
+		power_loss_stage = 0
+		set_light(0, l_cone_angle = 0)
+		update_icon()
 
 /obj/machinery/light/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
 	switch(damage_type)
@@ -636,7 +687,7 @@
 		burn_out()
 		return FALSE
 	cell.use(pwr)
-	set_light(brightness * bulb_emergency_brightness_mul, max(bulb_emergency_pow_min, bulb_emergency_pow_mul * (cell.charge / cell.maxcharge)), bulb_emergency_colour)
+	set_light(brightness * bulb_emergency_brightness_mul, max(bulb_emergency_pow_min, bulb_emergency_pow_mul * (cell.charge / cell.maxcharge)), bulb_emergency_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
 	return TRUE
 
 
@@ -754,7 +805,7 @@
 /obj/machinery/light/proc/break_light_tube(skip_sound_and_sparks = 0)
 	if(status == LIGHT_EMPTY || status == LIGHT_BROKEN)
 		return
-
+	stop_damage_flicker()
 	if(!skip_sound_and_sparks)
 		if(status == LIGHT_OK || status == LIGHT_BURNED)
 			playsound(src.loc, 'sound/effects/glasshit.ogg', 75, 1)
@@ -766,6 +817,7 @@
 /obj/machinery/light/proc/fix()
 	if(status == LIGHT_OK)
 		return
+	stop_damage_flicker()
 	status = LIGHT_OK
 	brightness = initial(brightness)
 	on = TRUE
@@ -781,10 +833,19 @@
 // called when area power state changes
 /obj/machinery/light/power_change()
 	var/area/A = get_area(src)
+	var/should_be_on
 	if(!isnull(individual_switch_state))
-		seton(individual_switch_state && A.power_light)
+		should_be_on = individual_switch_state && A.power_light
 	else
-		seton(A.lightswitch && A.power_light)
+		should_be_on = A.lightswitch && A.power_light
+	// If light was on and is losing power, play death flicker animation
+	if(on && !should_be_on && status == LIGHT_OK && !power_loss_stage)
+		start_power_loss_sequence()
+		return
+	// If power is being restored, cancel any ongoing power loss animation
+	if(should_be_on && power_loss_stage)
+		stop_power_loss_sequence()
+	seton(should_be_on)
 
 // called when on fire
 
@@ -802,6 +863,195 @@
 	explosion(T, 0, 0, 2, 2)
 	sleep(1)
 	qdel(src)
+
+// --- Damage flickering ---
+
+/// Checks if light should start or stop flickering based on damage ratio
+/obj/machinery/light/proc/check_damage_flicker()
+	if(status != LIGHT_OK || !on)
+		stop_damage_flicker()
+		return
+	var/ratio = obj_integrity / max_integrity
+	if(ratio <= LIGHT_DAMAGE_FLICKER_THRESHOLD)
+		if(!damage_flickering)
+			start_damage_flicker()
+	else
+		if(damage_flickering)
+			stop_damage_flicker()
+
+/// Begins the damage flicker cycle, saving base power and starting the timer loop
+/obj/machinery/light/proc/start_damage_flicker()
+	if(damage_flickering)
+		return
+	damage_flickering = TRUE
+	base_bulb_power = bulb_power
+	damage_flicker_tick()
+
+/// Stops damage flickering, restores original bulb power, kills any pending timers
+/obj/machinery/light/proc/stop_damage_flicker()
+	if(!damage_flickering)
+		return
+	damage_flickering = FALSE
+	if(damage_flicker_timer_id)
+		deltimer(damage_flicker_timer_id)
+		damage_flicker_timer_id = null
+	if(base_bulb_power)
+		bulb_power = base_bulb_power
+		if(on && status == LIGHT_OK)
+			set_light(l_power = bulb_power)
+		base_bulb_power = 0
+
+/// One tick of the damage flicker cycle — varies light power, may cause dropout
+/obj/machinery/light/proc/damage_flicker_tick()
+	if(!damage_flickering || !on || status != LIGHT_OK)
+		stop_damage_flicker()
+		return
+
+	var/ratio = obj_integrity / max_integrity
+	var/severe = ratio <= LIGHT_DAMAGE_FLICKER_SEVERE
+	var/base_interval = severe ? LIGHT_FLICKER_INTERVAL_SEVERE : LIGHT_FLICKER_INTERVAL_NORMAL
+
+	if(!has_z_viewers())
+		var/next_interval = base_interval * (0.8 + rand() * 0.4)
+		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), next_interval, TIMER_STOPPABLE)
+		return
+
+	// Determine dropout chance and power variance
+	var/dropout_prob = severe ? LIGHT_FLICKER_DROPOUT_PROB_SEVERE : LIGHT_FLICKER_DROPOUT_PROB_NORMAL
+	var/power_variance = severe ? LIGHT_FLICKER_POWER_VARIANCE_SEVERE : LIGHT_FLICKER_POWER_VARIANCE
+
+	if(prob(dropout_prob))
+		// Dropout — power drops sharply for a brief moment
+		var/dropout_power = base_bulb_power * LIGHT_FLICKER_DROPOUT_POWER
+		set_light(l_power = dropout_power)
+		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_recover)), LIGHT_FLICKER_DROPOUT_DURATION, TIMER_STOPPABLE)
+	else
+		// Normal flicker — vary power around base
+		var/power_mod = base_bulb_power * (1 + rand(-100, 100) / 100 * power_variance)
+		power_mod = clamp(power_mod, base_bulb_power * 0.3, base_bulb_power * 1.1)
+		set_light(l_power = power_mod)
+		// Schedule next tick with ±20% interval randomness
+		var/next_interval = base_interval * (0.8 + rand() * 0.4)
+		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), next_interval, TIMER_STOPPABLE)
+
+/// Recovers from a dropout, then resumes flicker cycle
+/obj/machinery/light/proc/damage_flicker_recover()
+	if(!damage_flickering || !on || status != LIGHT_OK)
+		stop_damage_flicker()
+		return
+	if(!has_z_viewers())
+		var/ratio = obj_integrity / max_integrity
+		var/severe = ratio <= LIGHT_DAMAGE_FLICKER_SEVERE
+		var/base_interval = severe ? LIGHT_FLICKER_INTERVAL_SEVERE : LIGHT_FLICKER_INTERVAL_NORMAL
+		var/next_interval = base_interval * (0.8 + rand() * 0.4)
+		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), next_interval, TIMER_STOPPABLE)
+		return
+	// Restore to slightly varied power and continue the cycle
+	set_light(l_power = base_bulb_power)
+	var/ratio = obj_integrity / max_integrity
+	var/severe = ratio <= LIGHT_DAMAGE_FLICKER_SEVERE
+	var/base_interval = severe ? LIGHT_FLICKER_INTERVAL_SEVERE : LIGHT_FLICKER_INTERVAL_NORMAL
+	var/next_interval = base_interval * (0.8 + rand() * 0.4)
+	damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), next_interval, TIMER_STOPPABLE)
+
+// --- Power loss animation ---
+
+/// Begins the power loss sequence: death flicker → darkness → emergency (if cell available)
+/obj/machinery/light/proc/start_power_loss_sequence()
+	if(power_loss_stage)
+		return
+	stop_damage_flicker()
+	power_loss_stage = 1
+	// Stage 1: Death flicker — rapid dim/off cycling over 0.5s
+	death_flicker_tick(0)
+
+/// Stops any ongoing power loss animation and resets state
+/obj/machinery/light/proc/stop_power_loss_sequence()
+	if(!power_loss_stage)
+		return
+	if(power_loss_timer_id)
+		deltimer(power_loss_timer_id)
+		power_loss_timer_id = null
+	power_loss_stage = 0
+
+/// Returns TRUE if any clients are on this light's z-level
+/obj/machinery/light/proc/has_z_viewers()
+	var/our_z = z
+	if(!our_z || !SSmobs?.initialized)
+		return TRUE
+	return our_z <= length(SSmobs.clients_by_zlevel) && length(SSmobs.clients_by_zlevel[our_z])
+
+/// One step of the death flicker — rapidly toggles light dim/off
+/obj/machinery/light/proc/death_flicker_tick(step)
+	if(!power_loss_stage)
+		return
+	if(!has_z_viewers())
+		step = 4
+	if(step >= 4)
+		// Death flicker done — go dark
+		power_loss_stage = 2
+		on = FALSE
+		set_light(0, l_cone_angle = 0)
+		// Handle static power accounting since we bypass update()
+		if(on_gs)
+			on_gs = FALSE
+			removeStaticPower(static_power_used, STATIC_LIGHT)
+		update_icon()
+		// Schedule emergency activation after a random delay
+		var/delay = rand(LIGHT_EMERGENCY_DELAY_MIN, LIGHT_EMERGENCY_DELAY_MAX)
+		power_loss_timer_id = addtimer(CALLBACK(src, PROC_REF(activate_emergency_lighting)), delay, TIMER_STOPPABLE)
+		return
+	// Toggle between dim and off
+	if(step % 2 == 0)
+		set_light(brightness * 0.4, bulb_power * 0.3, bulb_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
+	else
+		set_light(0, l_cone_angle = 0)
+	power_loss_timer_id = addtimer(CALLBACK(src, PROC_REF(death_flicker_tick), step + 1), LIGHT_DEATH_FLICKER_DURATION, TIMER_STOPPABLE)
+
+/// Activates emergency red lighting after power loss, if cell is available
+/obj/machinery/light/proc/activate_emergency_lighting()
+	if(!power_loss_stage || power_loss_stage != 2)
+		return
+	// Check if we can enter emergency mode
+	if(!has_emergency_power(LIGHT_EMERGENCY_POWER_USE) || turned_off())
+		power_loss_stage = 0
+		power_loss_timer_id = null
+		// No emergency power — just do normal update to handle emergency mode
+		update()
+		return
+	power_loss_stage = 3
+	on = FALSE
+	emergency_mode = TRUE
+	set_light(brightness * bulb_emergency_brightness_mul, max(bulb_emergency_pow_min, bulb_emergency_pow_mul * (cell.charge / cell.maxcharge)), bulb_emergency_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
+	update_icon()
+	START_PROCESSING(SSmachines, src)
+	// Start subtle emergency flicker
+	var/next_interval = LIGHT_EMERGENCY_FLICKER_INTERVAL * (0.8 + rand() * 0.4)
+	power_loss_timer_id = addtimer(CALLBACK(src, PROC_REF(emergency_flicker_tick)), next_interval, TIMER_STOPPABLE)
+
+/// Subtle power fluctuation on emergency red lights
+/obj/machinery/light/proc/emergency_flicker_tick()
+	if(power_loss_stage != 3 || !emergency_mode)
+		power_loss_timer_id = null
+		return
+	if(!cell || !has_emergency_power(LIGHT_EMERGENCY_POWER_USE))
+		emergency_mode = FALSE
+		set_light(0, l_cone_angle = 0)
+		update_icon()
+		power_loss_stage = 0
+		power_loss_timer_id = null
+		return
+	if(!has_z_viewers())
+		var/next_interval = LIGHT_EMERGENCY_FLICKER_INTERVAL * (0.8 + rand() * 0.4)
+		power_loss_timer_id = addtimer(CALLBACK(src, PROC_REF(emergency_flicker_tick)), next_interval, TIMER_STOPPABLE)
+		return
+	// Vary emergency power ±10%
+	var/charge_ratio = cell.charge / cell.maxcharge
+	var/em_power = max(bulb_emergency_pow_min, bulb_emergency_pow_mul * charge_ratio)
+	em_power *= (0.9 + rand() * 0.2)
+	set_light(brightness * bulb_emergency_brightness_mul, em_power, bulb_emergency_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
+	var/next_interval = LIGHT_EMERGENCY_FLICKER_INTERVAL * (0.8 + rand() * 0.4)
+	power_loss_timer_id = addtimer(CALLBACK(src, PROC_REF(emergency_flicker_tick)), next_interval, TIMER_STOPPABLE)
 
 // the light item
 // can be tube or bulb subtypes
@@ -921,6 +1171,7 @@
 	layer = 2.5
 	light_type = /obj/item/light/bulb
 	fitting = "floor" //making deconstruction give out the right type.
+	cone_angle = 0 // Floor lights emit omnidirectional light
 
 // BLUEMOON ADD START - если лампа смотрит вниз, то она находится "под" мобом, чтобы можно было корректно её загораживать своим спрайтом
 /obj/machinery/light/floor/set_layer_by_dir()
@@ -938,11 +1189,11 @@
 		emergency_lights_off(current_area, current_apc)
 		return
 	emergency_mode = TRUE
-	set_light(6, 3, bulb_emergency_colour)
+	set_light(6, 3, bulb_emergency_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
 	RegisterSignal(current_area, COMSIG_AREA_POWER_CHANGE, PROC_REF(update), override = TRUE)
 
 /obj/machinery/light/proc/emergency_lights_off(area/current_area, obj/machinery/power/apc/current_apc)
-	set_light(0, 0, 0) //you, sir, are off!
+	set_light(0, 0, 0, l_cone_angle = 0) //you, sir, are off!
 	if(current_apc)
 		RegisterSignal(current_area, COMSIG_AREA_POWER_CHANGE, PROC_REF(update), override = TRUE)
 
