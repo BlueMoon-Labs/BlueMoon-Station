@@ -271,7 +271,7 @@
 
 /obj/item/melee/sabre/security/proc/cryo(mob/living/L, mob/user)
 	deductcharge(cell_hit_cost)
-	L.adjust_bodytemperature(-60)
+	L.adjust_bodytemperature(-20, min_temp = BODYTEMP_COLD_DAMAGE_LIMIT-1)
 	L.apply_damage(20, STAMINA, BODY_ZONE_CHEST)
 	playsound(src, 'sound/weapons/egloves.ogg', 50, TRUE, -1)
 	if(user)
