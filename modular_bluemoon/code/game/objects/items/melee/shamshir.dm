@@ -123,7 +123,7 @@
 // Сюда же пихну крио-катану
 
 /obj/item/melee/sabre/security
-	name = "Cryo-balde"
+	name = "Cryo-blade"
 	desc = "A cryotechnological device that freezes criminals alive. Facinating!"
 	icon_state = "security_katana"
 	item_state = "security_katana"
