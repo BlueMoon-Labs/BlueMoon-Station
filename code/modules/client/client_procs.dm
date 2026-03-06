@@ -1403,6 +1403,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		var/atom/movable/screen/plane_master/lighting_pm = char_render_holders["plane_master-[LIGHTING_PLANE]"]
 		if(lighting_pm)
 			lighting_pm.alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+			lighting_pm.filters = null
 
 	var/pos = 0
 	for(var/dir in GLOB.cardinals)

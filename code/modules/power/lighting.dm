@@ -400,6 +400,7 @@
 		if(LIGHT_BROKEN,LIGHT_BURNED,LIGHT_EMPTY)
 			on = FALSE
 			emergency_mode = FALSE
+			stop_power_loss_sequence()
 			set_light(0, l_cone_angle = 0)
 	if(emergency_mode && !has_power())
 		return // Active emergency lighting — handled by emergency_flicker_tick()
