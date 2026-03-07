@@ -2102,7 +2102,7 @@
 	name = "Twilight Spike"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/donator/bm/twilight_spike
-	ckeywhitelist = list("dragon9090", "hellsinggc")
+	ckeywhitelist = list("dragon9090", "hellsinggc", "pingvas")
 	cost = 4
 
 /datum/gear/donator/bm/sf_coat
@@ -2153,3 +2153,9 @@
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version/winter_mask
 	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/nebular_kit
+	name = "Nebular-9 Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/nebular_kit
+	ckeywhitelist = list("lapkee")

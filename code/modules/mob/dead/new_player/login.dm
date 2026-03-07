@@ -29,15 +29,3 @@
 	sight |= SEE_TURFS
 
 	client.playtitlemusic()
-
-	var/datum/asset/asset_datum = get_asset_datum(/datum/asset/simple/lobby)
-	asset_datum.send(client)
-
-	if(SSticker.current_state < GAME_STATE_SETTING_UP)
-		var/tl = SSticker.GetTimeLeft()
-		var/postfix
-		if(tl > 0)
-			postfix = "in about [DisplayTimeText(tl)]"
-		else
-			postfix = "soon"
-		to_chat(src, "Please set up your character and select \"Ready\". The game will start [postfix].")

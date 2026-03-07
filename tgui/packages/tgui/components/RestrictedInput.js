@@ -98,14 +98,41 @@ export class RestrictedInput extends Component {
       input.value = getClampedNumber(nextValue, minValue, maxValue);
     }
     if (this.props.autoFocus || this.props.autoSelect) {
-      setTimeout(() => {
-        input.focus();
-
-        if (this.props.autoSelect) {
-          input.select();
-        }
-      }, 1);
+      this.setState({ editing: true }, () => {
+        requestAnimationFrame(() => {
+          const input = this.inputRef.current;
+          if (!input) return;
+          input.focus();
+          if (this.props.autoSelect) {
+            input.select();
+            // Re-select when external forces (BYOND window manager) reset selection
+            const reselect = () => {
+              if (document.activeElement === input
+                  && input.selectionStart === input.selectionEnd
+                  && input.value.length > 0) {
+                input.select();
+              }
+            };
+            const cleanup = () => {
+              document.removeEventListener('selectionchange', reselect);
+              input.removeEventListener('mousedown', cleanup);
+              input.removeEventListener('keydown', cleanup);
+            };
+            document.addEventListener('selectionchange', reselect);
+            input.addEventListener('mousedown', cleanup, { once: true });
+            input.addEventListener('keydown', cleanup, { once: true });
+            setTimeout(cleanup, 1000);
+          }
+        });
+      });
     }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.state.editing && nextState.editing) {
+      return false;
+    }
+    return true;
   }
 
   componentDidUpdate(prevProps, _) {
@@ -127,7 +154,7 @@ export class RestrictedInput extends Component {
 
   render() {
     const { props } = this;
-    const { onChange, onEnter, onInput, value, ...boxProps } = props;
+    const { autoFocus, autoSelect, onChange, onEnter, onInput, value, ...boxProps } = props;
     const { className, fluid, monospace, ...rest } = boxProps;
     return (
       <Box

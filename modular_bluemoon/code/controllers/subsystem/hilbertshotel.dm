@@ -4,7 +4,7 @@ SUBSYSTEM_DEF(hilbertshotel)
 	init_order = INIT_ORDER_HILBERTSHOTEL
 
 	/// List for all hilberts spheres
-	var/list/obj/item/hilbertshotel/all_hilbert_spheres = list()
+	var/list/all_hilbert_spheres = list()
 
 	// Some placeholder templates
 	var/datum/map_template/hilbertshotel/hotel_room_template
@@ -32,7 +32,18 @@ SUBSYSTEM_DEF(hilbertshotel)
 	//RegisterSignal(src, COMSIG_HILBERT_ROOM_UPDATED, PROC_REF(on_room_updated))
 	hhMysteryroom_number = hhMysteryroom_number || rand(1, 999999)
 	prepare_rooms()
+	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(roundtype_check))
+
 	return SS_INIT_SUCCESS
+
+/// Прок для проверки режима игры и действий со сферой при условии того или иного режима
+/datum/controller/subsystem/hilbertshotel/proc/roundtype_check()
+	SIGNAL_HANDLER
+	if(!(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)))
+		for(var/obj/item/hilbertshotel/sphere in all_hilbert_spheres)
+			if(sphere.is_ghost_cafe || sphere.ruinSpawned)
+				continue
+			qdel(sphere)
 
 /datum/controller/subsystem/hilbertshotel/proc/setup_storage_turf()
 	if(storageTurf) // setting up a storage for the room objects

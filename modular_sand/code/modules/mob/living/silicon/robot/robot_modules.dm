@@ -94,7 +94,8 @@
 		"M-Meka" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "mmekasyndi"), // SPLURT Addon (Bubbers Port)
 		"F-Meka" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "fmekasyndi"), // SPLURT Addon (Bubbers Port)
 		"K4T" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "k4tsyndi"), // SPLURT Addon (Bubbers Port)
-		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahansyndi")
+		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahansyndi"),
+		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurninja")
 		))
 	var/syndiejack_icon = show_radial_menu(R, R , syndicatejack_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
 	switch(syndiejack_icon)
@@ -176,6 +177,12 @@
 			cyborg_base_icon = "dullahansyndi"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
 			hat_offset = TALL_HAT_OFFSET
+			hasrest = TRUE
+		if("Dullahan (Taur)")
+			cyborg_base_icon = "dullahantaurninja"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi'
+			hat_offset = DULLAHAN_TAUR_HAT_OFFSET
+			has_snowflake_deadsprite = TRUE
 			hasrest = TRUE
 		else
 			return FALSE

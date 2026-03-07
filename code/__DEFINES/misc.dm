@@ -166,18 +166,6 @@ GLOBAL_LIST_EMPTY(bloody_footprints_cache)
 #define BLOOD_STATE_NOT_BLOODY		"no blood whatsoever"
 #define BLOOD_AMOUNT_PER_DECAL		20
 
-//Blood Decal Colors
-#define BLOOD_COLOR_HUMAN			"#dc0000"
-#define BLOOD_COLOR_XENO			"#9cff75"
-#define BLOOD_COLOR_OIL				"#301d02"
-#define BLOOD_COLOR_SYNTHETIC		"#3f48aa"
-#define BLOOD_COLOR_SLIME			"#00ff90"
-#define BLOOD_COLOR_LIZARD			"#db004D"
-#define BLOOD_COLOR_UNIVERSAL		"#db3300"
-#define BLOOD_COLOR_BUG				"#ffc933"
-#define BLOOD_COLOR_PLANT			"#3d610e"
-
-
 //suit sensors: sensor_mode defines
 
 #define SENSOR_OFF 0

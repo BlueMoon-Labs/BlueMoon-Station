@@ -569,18 +569,19 @@ Class Procs:
 		return TRUE
 
 /obj/machinery/proc/default_deconstruction_screwdriver(mob/user, icon_state_open, icon_state_closed, obj/item/I)
-	if(!(flags_1 & NODECONSTRUCT_1) && I.tool_behaviour == TOOL_SCREWDRIVER)
-		I.play_tool_sound(src, 50)
-		if(!panel_open)
-			panel_open = TRUE
-			icon_state = icon_state_open
-			to_chat(user, "<span class='notice'>Вы скручиваете винты панели обслуживания [src].</span>")
-		else
-			panel_open = FALSE
-			icon_state = icon_state_closed
-			to_chat(user, "<span class='notice'>Вы вкручиваете панель обслуживания [src] обратно.</span>")
-		return TRUE
-	return FALSE
+	if((flags_1 & NODECONSTRUCT_1) || I.tool_behaviour != TOOL_SCREWDRIVER)
+		return FALSE
+
+	I.play_tool_sound(src, 50)
+	panel_open = !panel_open
+	if(panel_open)
+		icon_state = icon_state_open
+		to_chat(user, "<span class='notice'>Вы скручиваете винты панели обслуживания [src].</span>")
+	else
+		icon_state = icon_state_closed
+		to_chat(user, "<span class='notice'>Вы вкручиваете панель обслуживания [src] обратно.</span>")
+	update_icon()
+	return TRUE
 
 /obj/machinery/proc/default_change_direction_wrench(mob/user, obj/item/I)
 	if(panel_open && I.tool_behaviour == TOOL_WRENCH)

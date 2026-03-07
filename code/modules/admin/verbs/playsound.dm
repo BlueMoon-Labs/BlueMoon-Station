@@ -74,7 +74,7 @@
 				to_chat(src, span_warning("For yt-dlp shortcuts like ytsearch: please use the appropriate full url from the website."), confidential = TRUE)
 				return
 			var/shell_scrubbed_input = shell_url_scrub(web_sound_input)
-			var/list/output = world.shelleo("[ytdl] --geo-bypass --format \"bestaudio\[ext=mp3]/best\[ext=mp4]\[height <= 360]/bestaudio\[ext=m4a]/bestaudio\[ext=aac]\" --dump-single-json --no-playlist -- \"[shell_scrubbed_input]\"")
+			var/list/output = world.shelleo("[ytdl] --geo-bypass --format \"bestaudio\[ext=webm]/bestaudio\[ext=mp3]/best\[ext=mp4]\[height <= 360]/bestaudio\[ext=m4a]/bestaudio\[ext=aac]/bestaudio\" --dump-single-json --no-playlist -- \"[shell_scrubbed_input]\"")
 			var/errorlevel = output[SHELLEO_ERRORLEVEL]
 			var/stdout = output[SHELLEO_STDOUT]
 			var/stderr = output[SHELLEO_STDERR]
@@ -168,7 +168,7 @@
 	var/duration = 0
 	if(istext(input))
 		var/shell_scrubbed_input = shell_url_scrub(input)
-		var/list/output = world.shelleo("[ytdl] --geo-bypass --format \"bestaudio\[ext=mp3]/best\[ext=mp4]\[height <= 360]/bestaudio\[ext=m4a]/bestaudio\[ext=aac]\" --dump-single-json --no-playlist -- \"[shell_scrubbed_input]\"")
+		var/list/output = world.shelleo("[ytdl] --geo-bypass --format \"bestaudio\[ext=webm]/bestaudio\[ext=mp3]/best\[ext=mp4]\[height <= 360]/bestaudio\[ext=m4a]/bestaudio\[ext=aac]/bestaudio\" --dump-single-json --no-playlist -- \"[shell_scrubbed_input]\"")
 		var/errorlevel = output[SHELLEO_ERRORLEVEL]
 		var/stdout = output[SHELLEO_STDOUT]
 		var/stderr = output[SHELLEO_STDERR]
@@ -274,6 +274,15 @@
 		web_sound_input = trim(web_sound_input)
 		if(web_sound_input && (findtext(web_sound_input, ":") && !findtext(web_sound_input, GLOB.is_http_protocol)))
 			to_chat(src, "<span class='boldwarning'>Non-http(s) URIs are not allowed.</span>", confidential = TRUE)
+			return
+
+		// YouTube/SoundCloud/etc. требуют yt-dlp для извлечения прямого стрима — направляем туда
+		var/static/regex/youtube_regex = regex("youtu\\.?be")
+		if(youtube_regex.Find(web_sound_input) || findtext(web_sound_input, "soundcloud.com"))
+			if(!CONFIG_GET(string/invoke_youtubedl))
+				to_chat(src, "<span class='boldwarning'>YouTube/SoundCloud требуют yt-dlp, но INVOKE_YOUTUBEDL не настроен в config.txt.</span>", confidential = TRUE)
+				return
+			web_sound(src.mob, web_sound_input)
 			return
 
 		var/list/explode = splittext(web_sound_input, "/") //if url=="https://fixthisshit.com/pogchamp.ogg"then title="pogchamp.ogg"

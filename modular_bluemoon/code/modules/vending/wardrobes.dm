@@ -855,7 +855,7 @@
 		/obj/item/clothing/under/rank/centcom/officer = 3,
 		/obj/item/clothing/under/rank/centcom/officer_alt = 3,
 		/obj/item/clothing/under/rank/centcom/commander = 3,
-		/obj/item/clothing/glasses/eyepatch = 3,
+		/obj/item/clothing/glasses/cover/eyepatch = 3,
 		/obj/item/storage/box/syndie_kit/centcom_costume = 2,
 		/obj/item/mod/control/pre_equipped/corporate = 2,
 	)
@@ -1073,7 +1073,7 @@
 		/obj/item/clothing/under/rank/security/head_of_security/alt = 1,
 		/obj/item/clothing/under/rank/security/head_of_security/alt/skirt = 1,
 		/obj/item/clothing/head/HoS = 1,
-		/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch = 1,
+		/obj/item/clothing/glasses/cover/eyepatch = 1,
 		/obj/item/clothing/glasses/hud/security/sunglasses/gars/supergars = 1,
 		/obj/item/clothing/under/rank/security/head_of_security/grey = 1,
 		/obj/item/clothing/suit/hooded/wintercoat/hos = 1,

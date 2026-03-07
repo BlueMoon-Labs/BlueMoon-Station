@@ -45525,7 +45525,7 @@
 /obj/item/clothing/mask/muzzle,
 /obj/item/clothing/glasses/sunglasses/blindfold,
 /obj/item/clothing/ears/earmuffs,
-/obj/item/clothing/glasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
@@ -101480,14 +101480,6 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/structure/closet/secure_closet/contraband/armory,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/maintenance{
-	lootcount = 8;
-	name = "8maintenance loot spawner"
-	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "pKM" = (
@@ -123254,6 +123246,17 @@
 /obj/machinery/disposal/bin,
 /turf/open/floor/wood,
 /area/command/heads_quarters/hos)
+"vRL" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/rnd/production/techfab/department/security,
+/obj/machinery/door/window/brigdoor,
+/obj/machinery/door/window/brigdoor{
+	dir = 1;
+	name = "Reception Desk";
+	req_access_txt = "3"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ai_monitored/security/armory)
 "vRV" = (
 /obj/structure/rack,
 /obj/effect/spawner/lootdrop/maintenance{
@@ -128694,7 +128697,15 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/machinery/rnd/production/techfab/department/security,
+/obj/structure/closet/secure_closet/contraband/armory,
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 8;
+	name = "8maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/armory_contraband,
+/obj/effect/spawner/lootdrop/armory_contraband,
+/obj/effect/spawner/lootdrop/armory_contraband,
+/obj/effect/spawner/lootdrop/armory_contraband,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "xwf" = (
@@ -186743,7 +186754,7 @@ sXI
 igv
 rWs
 uja
-xqe
+vRL
 iBP
 feL
 lEu

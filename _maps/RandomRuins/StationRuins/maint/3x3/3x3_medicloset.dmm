@@ -23,7 +23,7 @@
 /obj/item/retractor,
 /obj/item/hemostat,
 /obj/item/healthanalyzer,
-/obj/item/clothing/glasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /obj/item/reagent_containers/food/drinks/bottle/vodka{
 	pixel_x = 3;
 	pixel_y = 2

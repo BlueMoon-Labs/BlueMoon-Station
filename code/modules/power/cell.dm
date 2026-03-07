@@ -76,7 +76,7 @@
 /obj/item/stock_parts/cell/proc/irradiate(datum/component/radioactive/Comp)
 	AddComponent(/datum/component/radioactive, 0, src, 0)
 	Comp = GetComponent(/datum/component/radioactive)
-	Comp.strength = round(rad_strength*(charge < maxcharge ? 1 : 0.5), 0.5) // Округляем к ближайшей целой половине
+	Comp.set_strength(round(rad_strength*(charge < maxcharge ? 1 : 0.5), 0.5)) // Округляем к ближайшей целой половине
 
 /obj/item/stock_parts/cell/update_overlays()
 	. = ..()
@@ -399,7 +399,7 @@
 /obj/item/stock_parts/cell/emergency_light
 	name = "miniature power cell"
 	desc = "A tiny power cell with a very low power capacity. Used in light fixtures to power them in the event of an outage."
-	maxcharge = 120 //Emergency lights use 0.2 W per tick, meaning ~10 minutes of emergency power from a cell
+	maxcharge = 120 //Emergency lights drain 5 W per process tick, meaning ~30 seconds of emergency power from a cell
 	custom_materials = list(/datum/material/glass = 20)
 	w_class = WEIGHT_CLASS_TINY
 

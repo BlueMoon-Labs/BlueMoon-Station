@@ -110,7 +110,7 @@
 /datum/uplink_item/device_tools/syndicate_eyepatch
 	name = "Mechanical Eyepatch"
 	desc = "Повязка на глаз, подключающаяся к глазнице и невероятно улучшающая меткость — пули рикошетят гораздо чаще."
-	item = /obj/item/clothing/glasses/eyepatch/syndicate
+	item = /obj/item/clothing/glasses/syndicate_eyepatch
 	cost = 4
 
 /datum/uplink_item/device_tools/ablative_armwraps

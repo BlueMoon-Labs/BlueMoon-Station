@@ -67,3 +67,9 @@
 	HAT_REST_OFFSET = alist("north" = list(16, -6), "south" = list(16, -6), "east" = list(31, -6), "west" = list(1, -6)), \
 	HAT_SIT_OFFSET = alist("north" = list(16, 2), "south" = list(16, 2), "east" = list(23, 3), "west" = list(9, 3)), \
 	HAT_BELLYUP_OFFSET = HAT_NO_RENDER)
+
+#define DULLAHAN_TAUR_HAT_OFFSET alist( \
+	HAT_STAND_OFFSET = alist("north" = list(1, 15), "south" = list(1, 15), "east" = list(7, 15), "west" = list(-7, 15)), \
+	HAT_REST_OFFSET = alist("north" = list(1, 1), "south" = list(1, 1), "east" = list(7, 1), "west" = list(-7, 1)), \
+	HAT_SIT_OFFSET = alist("north" = list(-1, -2), "south" = list(-1, -2), "east" = list(-1, -2), "west" = list(-1, -2)), \
+	HAT_BELLYUP_OFFSET = alist("north" = list(1, 1), "south" = list(1, 1), "east" = list(7, 1), "west" = list(-7, 1)))

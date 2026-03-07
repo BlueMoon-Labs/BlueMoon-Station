@@ -25,7 +25,9 @@ export class AudioPlayer {
       logger.log('canplaythrough');
       this.playing = true;
       this.node.playbackRate = this.options.pitch || 1;
-      this.node.currentTime = this.options.start || 0;
+      if (this.options.start > 0) {
+        this.node.currentTime = this.options.start;
+      }
       this.node.volume = this.volume;
       this.node.play().catch(() => {});
       for (let subscriber of this.onPlaySubscribers) {

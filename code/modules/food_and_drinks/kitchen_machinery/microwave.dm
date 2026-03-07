@@ -376,8 +376,9 @@
 
 /obj/machinery/microwave/proc/eject()
 	var/atom/drop_loc = drop_location()
-	for(var/atom/movable/movable_ingredient as anything in ingredients)
-		movable_ingredient.forceMove(drop_loc)
+	for(var/obj/item/item_ingredient as anything in ingredients)
+		item_ingredient.forceMove(drop_loc)
+		item_ingredient.dropped() //Mob holders can be on the ground if we don't do this
 	open()
 	playsound(loc, 'sound/machines/click.ogg', 15, TRUE, -3)
 
@@ -393,7 +394,7 @@
 		playsound(src, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
 		return
 
-	if(HAS_TRAIT(cooker, TRAIT_CURSED) && prob(10))
+	if(cooker && HAS_TRAIT(cooker, TRAIT_CURSED) && prob(10))
 		muck()
 		return
 	if(prob(max((5 / efficiency) - 5, dirty * 2))) //a clean unupgraded microwave has no risk of failure
@@ -481,7 +482,7 @@
 
 		metal_amount += (cooked_item.custom_materials?[SSmaterials.GetMaterialRef(/datum/material/iron)] || 0)
 
-	if(HAS_TRAIT(cooker, TRAIT_CURSED) && prob(5))
+	if(cooker && HAS_TRAIT(cooker, TRAIT_CURSED) && prob(5))
 		spark()
 		broken = REALLY_BROKEN
 		explosion(src, light_impact_range = 2, flame_range = 1)
@@ -489,10 +490,10 @@
 	if(metal_amount)
 		spark()
 		broken = REALLY_BROKEN
-		if(HAS_TRAIT(cooker, TRAIT_CURSED) || prob(max(metal_amount / 2, 33))) // If we're unlucky and have metal, we're guaranteed to explode
+		if(cooker && HAS_TRAIT(cooker, TRAIT_CURSED) || prob(max(metal_amount / 2, 33))) // If we're unlucky and have metal, we're guaranteed to explode
 			explosion(src, heavy_impact_range = 1, light_impact_range = 2)
 	else
-		dump_inventory_contents()
+		eject()
 
 	after_finish_loop()
 
@@ -512,7 +513,7 @@
 	dirty_anim_playing = FALSE
 	operating = FALSE
 
-	dump_inventory_contents() //BlUEMOON ADD грязная микроволновка выкидывает из себя вещи
+	eject() //BlUEMOON ADD грязная микроволновка выкидывает из себя вещи
 	after_finish_loop()
 
 /obj/machinery/microwave/proc/after_finish_loop()

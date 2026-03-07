@@ -128,21 +128,24 @@
 		if(NAMEOF(src, bonus_value))
 			if(istype(loc, /obj/item/kinetic_crusher))
 				var/datum/component/two_handed/TH = loc.GetComponent(/datum/component/two_handed)
-				TH.force_wielded -= bonus_value
-				TH.force_wielded += var_value
+				if(TH)
+					TH.force_wielded -= bonus_value
+					TH.force_wielded += var_value
 	. = ..()
 
 /obj/item/crusher_trophy/blaster_tubes/mask/add_to(obj/item/kinetic_crusher/H, mob/living/user)
 	. = ..()
 	if(.)
 		var/datum/component/two_handed/TH = H.GetComponent(/datum/component/two_handed)
-		TH.force_wielded += bonus_value
+		if(TH)
+			TH.force_wielded += bonus_value
 
 /obj/item/crusher_trophy/blaster_tubes/mask/remove_from(obj/item/kinetic_crusher/H, mob/living/user)
 	. = ..()
 	if(.)
 		var/datum/component/two_handed/TH = H.GetComponent(/datum/component/two_handed)
-		TH.force_wielded -= bonus_value
+		if(TH)
+			TH.force_wielded -= bonus_value
 
 //lava imp
 /obj/item/crusher_trophy/blaster_tubes/impskull
@@ -259,14 +262,16 @@
 	if(.)
 		var/datum/component/two_handed/TH = H.GetComponent(/datum/component/two_handed)
 		H.charge_time -= 8
-		TH.force_wielded -= 15
+		if(TH)
+			TH.force_wielded -= 15
 
 /obj/item/crusher_trophy/king_goat/remove_from(obj/item/kinetic_crusher/H, mob/living/user)
 	. = ..()
 	if(.)
 		var/datum/component/two_handed/TH = H.GetComponent(/datum/component/two_handed)
 		H.charge_time += 8
-		TH.force_wielded += 15
+		if(TH)
+			TH.force_wielded += 15
 
 //hierophant crusher small changes
 /obj/item/crusher_trophy/vortex_talisman

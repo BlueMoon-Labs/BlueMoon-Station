@@ -22,7 +22,7 @@
 	construction_time=100
 	build_path = /obj/item/stock_parts/cell/high/empty
 	category = list("Misc","Stock Parts")
-	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/super_cell
 	name = "Super-Capacity Power Cell"
@@ -33,7 +33,7 @@
 	construction_time=100
 	build_path = /obj/item/stock_parts/cell/super/empty
 	category = list("Misc","Stock Parts")
-	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/hyper_cell
 	name = "Hyper-Capacity Power Cell"
@@ -44,7 +44,7 @@
 	construction_time=100
 	build_path = /obj/item/stock_parts/cell/hyper/empty
 	category = list("Misc","Stock Parts")
-	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/bluespace_cell
 	name = "Bluespace Power Cell"
@@ -55,7 +55,7 @@
 	construction_time=100
 	build_path = /obj/item/stock_parts/cell/bluespace/empty
 	category = list("Misc","Stock Parts")
-	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/bluespace_cell_reactor
 	name = "Bluespace Reactor P. Cell (DANGER: Radioactive)"
@@ -67,7 +67,7 @@
 	construction_time=100
 	build_path = /obj/item/stock_parts/cell/bluespacereactor
 	category = list("Misc","Stock Parts")
-	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/vortex_cell
 	name = "Vortex Power Cell"
@@ -79,7 +79,7 @@
 	build_path = /obj/item/stock_parts/cell/vortex/empty
 	reagents_list = list(/datum/reagent/liquid_dark_matter = 5, /datum/reagent/bluespace = 5, /datum/reagent/teslium/energized_jelly = 10)
 	category = list("Stock Parts")
-	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/inducer
 	name = "Engineer Inducer"
@@ -135,11 +135,9 @@
 	desc = "The circuit board that for a SUPERPACMAN-type portable generator."
 	id = "superpacman"
 	build_path = /obj/item/circuitboard/machine/pacman/super
-	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/board/pacman/mrs
 	name = "Machine Design (MRSPACMAN-type Generator Board)"
 	desc = "The circuit board that for a MRSPACMAN-type portable generator."
 	id = "mrspacman"
 	build_path = /obj/item/circuitboard/machine/pacman/mrs
-	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING

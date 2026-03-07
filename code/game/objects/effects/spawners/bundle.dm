@@ -119,7 +119,7 @@
 		/obj/item/clothing/under/costume/pirate,
 		/obj/item/clothing/suit/pirate,
 		/obj/effect/spawner/lootdrop/minor/pirate_or_bandana,
-		/obj/item/clothing/glasses/eyepatch)
+		/obj/item/clothing/glasses/cover/eyepatch)
 
 /obj/effect/spawner/bundle/costume/commie
 	name = "commie costume spawner"

@@ -14,7 +14,7 @@
 	display_name = "Enlarged ammunition storage"
 	description = "When situation requires more then 12 shots."
 	prereq_ids = list("advc45_ammo")
-	design_ids = list("e45_drum", "e45_drum_empty", "e45_drum_taser", "e45_drum_lethal", "e45_drum_hydra", "e45_drum_ion", "e45_drum_stun", "e45_drum_laser", "e45_drum_hot", "e45_drum_trac")
+	design_ids = list("e45_drum", "e45_drum_empty", "e45_drum_taser", "e45_drum_lethal", "e45_drum_hydra", "e45_drum_ion", "e45_drum_stun", "e45_drum_laser", "e45_drum_hot", /*"e45_drum_trac"*/)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
 
 ////////////////////////Upgraded weapon technology////////////////////////

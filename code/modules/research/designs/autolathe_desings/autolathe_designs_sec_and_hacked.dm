@@ -37,7 +37,7 @@
 /datum/design/large_welding_tool
 	name = "Industrial Welding Tool"
 	id = "large_welding_tool"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 70, /datum/material/glass = 60)
 	build_path = /obj/item/weldingtool/largetank
 	category = list("hacked", "Tools")
@@ -53,7 +53,7 @@
 /datum/design/rcd
 	name = "Rapid Construction Device (RCD)"
 	id = "rcd"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 30000)
 	build_path = /obj/item/construction/rcd
 	category = list("hacked", "Construction")
@@ -61,7 +61,7 @@
 /datum/design/rpd_autolathe
 	name = "Rapid Pipe Dispenser (RPD)"
 	id = "rpd_autolathe"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 75000, /datum/material/glass = 37500)
 	build_path = /obj/item/pipe_dispenser
 	category = list("hacked", "Construction")
@@ -69,7 +69,7 @@
 /datum/design/mini_RPED
 	name = "Mini Rapid Part Exchange Device (RPED)"
 	id = "mini_rped"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 5000, /datum/material/glass = 5000)
 	build_path = /obj/item/storage/part_replacer/mini
 	category = list("hacked", "Machinery")
@@ -77,7 +77,7 @@
 /datum/design/handcuffs
 	name = "Handcuffs"
 	id = "handcuffs"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 500)
 	build_path = /obj/item/restraints/handcuffs
 	category = list("hacked", "Security")
@@ -85,7 +85,7 @@
 /datum/design/reciever
 	name = "Modular Receiver"
 	id = "modular_receiver"
-	build_type = AUTOLATHE
+	build_type = AUTOLATHE | NO_PUBLIC_LATHE
 	materials = list(/datum/material/iron = 24000)
 	build_path = /obj/item/weaponcrafting/receiver
 	category = list("hacked", "Security")
@@ -125,7 +125,7 @@
 /datum/design/extended_emergency
 	name = "Extended emergency oxygen tank"
 	id = "extendedemergency"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 1500, /datum/material/titanium = 500)
 	build_path = /obj/item/tank/internals/emergency_oxygen/engi/empty
 	category = list("hacked", "Misc")
@@ -209,7 +209,7 @@
 /datum/design/cleaver
 	name = "Butcher's Cleaver"
 	id = "cleaver"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 18000)
 	build_path = /obj/item/kitchen/knife/butcher
 	category = list("hacked", "Dinnerware")

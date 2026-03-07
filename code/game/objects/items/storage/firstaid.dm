@@ -199,14 +199,11 @@
 	if(empty)
 		return
 	new /obj/item/healthanalyzer/advanced(src)
-	new /obj/item/reagent_containers/syringe/piercing(src)
 	new /obj/item/bonesetter(src)
+	new /obj/item/stack/medical/gauze(src)
+	new /obj/item/reagent_containers/medspray/sterilizine(src)
 	new /obj/item/pinpointer/crew(src)
 	new /obj/item/sensor_device(src)
-	new /obj/item/reagent_containers/medspray/sterilizine(src)
-	new /obj/item/reagent_containers/glass/bottle/morphine(src)
-	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
-
 
 /obj/item/storage/firstaid/tactical/ert_second
 	name = "Advanced tactical first-aid kit c2"
@@ -214,15 +211,13 @@
 /obj/item/storage/firstaid/tactical/ert_second/PopulateContents()
 	if(empty)
 		return
-	new /obj/item/stack/medical/gauze(src)
-	new /obj/item/reagent_containers/medspray/sterilizine(src)
-	new /obj/item/reagent_containers/glass/bottle/chloralhydrate(src)
-	new /obj/item/reagent_containers/glass/bottle/chloralhydrate(src)
-	new /obj/item/reagent_containers/glass/bottle/chloralhydrate(src)
+	new /obj/item/reagent_containers/hypospray/medipen/penacid(src)
+	new /obj/item/reagent_containers/hypospray/medipen/penacid(src)
 	new /obj/item/reagent_containers/hypospray/combat/omnizine(src)
-	new /obj/item/reagent_containers/hypospray/medipen/penacid(src)
-	new /obj/item/reagent_containers/hypospray/medipen/penacid(src)
-
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh/painkiller(src)
 
 /obj/item/storage/firstaid/radbgone
 	name = "radiation treatment kit"

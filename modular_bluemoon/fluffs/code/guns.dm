@@ -981,3 +981,17 @@
 	fromitem = list(/obj/item/gun/ballistic/automatic/wt550)
 
 ///////////////////////////////////////////////
+
+/obj/item/modkit/nebular_kit
+	name = "Nebular Gun Kit"
+	desc = "A modkit for making a Enforcer Gun into a Nebular-9."
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/nebular
+	name = "\improper Nebular-9"
+	desc = "Трофей. 45 калибр. Унифицированное оружие самозащиты, выдаваемое каждому без исключения жителю-Касари флота-государства Небулы по окончании ими первой стадии жизни. Крайне редок, в сравнении с иным огнестрельным оружием галактики - штучный товар, использующий замысловатую систему заряжания и некоторые технически трудно реализуемые решения, крайне мешающие реверс-инженерингу и стороннему производству. Благодаря нему каждый житель Небулы может дать отпор неприятелю извне, коих у них полно. Не только эффективно, но и со стилем."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "Nebular-9"
+	can_suppress = TRUE
+	unique_reskin = null

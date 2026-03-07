@@ -938,6 +938,12 @@
 	if(!(user?.client))
 		return
 
+	if(user.get_active_held_item() != src && user.get_inactive_held_item() != src)
+		if(zoomed)
+			forced_zoom = FALSE
+		else
+			return
+
 	if(!isnull(forced_zoom))
 		if(zoomed == forced_zoom)
 			return

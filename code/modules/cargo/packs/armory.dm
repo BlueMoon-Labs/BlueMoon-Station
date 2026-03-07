@@ -76,6 +76,14 @@
 	contains = list(/obj/item/storage/box/exileimp)
 	crate_name = "exile implant crate"
 
+/datum/supply_pack/security/armory/lasercarbine
+	name = "Modular Laser Rifle Carbine Crate"
+	desc = "Содержит один модульный лазерный карабин. Данный карабин обладает возможностью самозарядки, а также обладает 5 видами стрельбы. Для открытия требуется доступ к оружейной."
+	cost = 5000
+	contains = list(/obj/item/gun/energy/modular_laser_rifle/carbine)
+	crate_name = "modular laser rifle carbine crate"
+	crate_type = /obj/structure/closet/crate/secure/plasma
+
 /datum/supply_pack/security/armory/mindshield
 	name = "Mindshield Implants Crate"
 	desc = "Защититесь от радикальных мыслей с помощью трех Mindshield Implants. Для открытия требуется доступ к оружейной."

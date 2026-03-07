@@ -144,6 +144,7 @@ GLOBAL_LIST_EMPTY(escape_menus)
 	for(var/A in plane_master_controller)
 		var/atom/movable/screen/plane_master/P = A
 		P.remove_filter("escape_menu_blur")
+	plane_master_controller = null
 
 /atom/movable/screen/escape_menu
 	plane = ESCAPE_MENU_PLANE
