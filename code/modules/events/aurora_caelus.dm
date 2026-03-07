@@ -1,3 +1,5 @@
+#define TRAIT_SOURCE "aurora_caelus"
+
 /datum/round_event_control/aurora_caelus
 	name = "Aurora Caelus"
 	typepath = /datum/round_event/aurora_caelus
@@ -19,6 +21,7 @@
 	var/list/aurora_colors = list("#A2FF80", "#A2FF8B", "#A2FF96", "#A2FFA5", "#A2FFB6", "#A2FFC7", "#A2FFDE", "#A2FFEE")
 	var/aurora_progress = 0 //this cycles from 1 to 8, slowly changing colors from gentle green to gentle blue
 	var/list/ion_overlays = list()
+	var/list/pacif_mobs = list()
 
 /datum/round_event/aurora_caelus/announce()
 	priority_announce("[station_name()]: Безвредное облако ионов приближается к вашей станции, истощая свою энергию и стукаясь о корпус. NanoTrasen разрешает всем сотрудникам сделать короткий перерыв, чтобы расслабиться и понаблюдать за этим редким событием. В это время звездный свет будет ярким, но мягким, переходя от тихого зеленого к яркому синему цвету. Любой сотрудник, желающий увидеть эти огни самостоятельно, может отправиться в ближайший к ним район с видом на космос. Надеемся, что вам понравится это сияние.",
@@ -38,7 +41,8 @@
 	for(var/V in GLOB.player_list)
 		var/mob/M = V
 		if(is_station_level(M.z))
-			ADD_TRAIT(M, TRAIT_PACIFISM, "event_effect")
+			ADD_TRAIT(M, TRAIT_PACIFISM, TRAIT_SOURCE)
+			pacif_mobs += M
 	for(var/client/C in GLOB.clients)
 		if(!C.mob || !is_station_level(C.mob.z))
 			continue
@@ -64,10 +68,9 @@
 		if(initial(A.dynamic_lighting) == DYNAMIC_LIGHTING_IFSTARLIGHT)
 			for(var/turf/open/space/S in A)
 				fade_to_black(S)
-	for(var/V in GLOB.player_list)
-		var/mob/M = V
-		if(is_station_level(M.z))
-			REMOVE_TRAIT(M, TRAIT_PACIFISM, "event_effect")
+	for(var/mob/M in pacif_mobs)
+		REMOVE_TRAIT(M, TRAIT_PACIFISM, TRAIT_SOURCE)
+	pacif_mobs.Cut()
 	// Частицы продолжают летать ещё ~минуту после завершения события
 	lingering_ion_fadeout()
 	priority_announce("Событие, связанное с Космическим Сиянием, заканчивается. Звездный свет постепенно возвращается в нормальное состояние. Возвращайтесь на свое рабочее место и продолжайте работать в обычном режиме. Приятной смены [station_name()] и спасибо, что посмотрели за этим событием с нами.",
@@ -122,3 +125,4 @@
 			QDEL_IN(overlay, 60)
 	ion_overlays.Cut()
 
+#undef TRAIT_SOURCE
