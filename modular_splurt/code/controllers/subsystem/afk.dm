@@ -28,15 +28,11 @@ SUBSYSTEM_DEF(auto_cryo)
 		while(currentrun_cryo.len)
 			var/mob/living/cryo_mob = currentrun_cryo[currentrun_cryo.len]
 			currentrun_cryo.len--
-			if(QDELETED(cryo_mob) || !isliving(cryo_mob))
-				continue
-			if(!(cryo_mob in GLOB.ssd_mob_list))
-				continue
-			var/afk_time = world.time - cryo_mob.lastclienttime
-			if(afk_time < SUBSYSTEM_CRYO_TIME)
-				continue
-			cryoMob(cryo_mob, is_teleporter = TRUE, effects = TRUE) //BLUEMOON CHANGE было is_teleporter = FALSE (нужно для правильного описания коробки в некоторых ситуациях)
-			log_game("[cryo_mob] was sent to cryo after being SSD for [afk_time] ticks.")
+			if(!QDELETED(cryo_mob) && isliving(cryo_mob) && (cryo_mob in GLOB.ssd_mob_list))
+				var/afk_time = world.time - cryo_mob.lastclienttime
+				if(afk_time >= SUBSYSTEM_CRYO_TIME)
+					cryoMob(cryo_mob, is_teleporter = TRUE, effects = TRUE) //BLUEMOON CHANGE было is_teleporter = FALSE (нужно для правильного описания коробки в некоторых ситуациях)
+					log_game("[cryo_mob] was sent to cryo after being SSD for [afk_time] ticks.")
 			if(MC_TICK_CHECK)
 				return
 
@@ -47,15 +43,11 @@ SUBSYSTEM_DEF(auto_cryo)
 		while(currentrun_ghosts.len)
 			var/mob/dead/observer/ghost_mob = currentrun_ghosts[currentrun_ghosts.len]
 			currentrun_ghosts.len--
-			if(QDELETED(ghost_mob) || !istype(ghost_mob))
-				continue
-			if(ghost_mob.client)
-				continue
-			var/afk_time = world.time - ghost_mob.lastclienttime
-			if(afk_time < SUBSYSTEM_CRYO_GHOST_PERIOD)
-				continue
-			log_game("[ghost_mob] was deleted after being SSD for [afk_time] ticks.")
-			qdel(ghost_mob)
+			if(!QDELETED(ghost_mob) && istype(ghost_mob) && !ghost_mob.client)
+				var/afk_time = world.time - ghost_mob.lastclienttime
+				if(afk_time >= SUBSYSTEM_CRYO_GHOST_PERIOD)
+					log_game("[ghost_mob] was deleted after being SSD for [afk_time] ticks.")
+					qdel(ghost_mob)
 			if(MC_TICK_CHECK)
 				return
 	//BLUEMOON REWORKED END
