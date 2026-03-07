@@ -36,7 +36,6 @@ SUBSYSTEM_DEF(auto_cryo)
 			if(afk_time < SUBSYSTEM_CRYO_TIME)
 				continue
 			cryoMob(cryo_mob, is_teleporter = TRUE, effects = TRUE) //BLUEMOON CHANGE было is_teleporter = FALSE (нужно для правильного описания коробки в некоторых ситуациях)
-			GLOB.ssd_mob_list -= cryo_mob
 			log_game("[cryo_mob] was sent to cryo after being SSD for [afk_time] ticks.")
 			if(MC_TICK_CHECK)
 				return
