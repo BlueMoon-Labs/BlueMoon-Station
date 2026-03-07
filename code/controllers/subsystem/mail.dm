@@ -225,6 +225,8 @@ SUBSYSTEM_DEF(mail)
 		var/mob/living/carbon/human/recipient = pick_n_take(fire_recipients)
 		if(!recipient)
 			break
+		if(QDELETED(recipient) || !recipient.mind)
+			continue
 		if(main_storage.contents.len >= main_storage.storage_capacity)
 			break
 		create_mail_for_recipient(recipient, main_storage)
