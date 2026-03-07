@@ -98,7 +98,7 @@
 	blend_mode = BLEND_OVERLAY
 
 /atom/movable/screen/plane_master/floor/backdrop(mob/mymob)
-	if(mymob?.client?.prefs.ambientocclusion)
+	if(mymob?.client?.prefs?.ambientocclusion)
 		var/blur_lvl = mymob?.client?.prefs?.lighting_blur || 0
 		add_filter("ambient_occlusion", 0, AMBIENT_OCCLUSION_SCALED(2, "#04080F32", blur_lvl))
 	else
@@ -131,7 +131,7 @@
 	appearance_flags = PLANE_MASTER
 
 /atom/movable/screen/plane_master/wall/backdrop(mob/mymob)
-	if(mymob?.client?.prefs.ambientocclusion)
+	if(mymob?.client?.prefs?.ambientocclusion)
 		var/blur_lvl = mymob?.client?.prefs?.lighting_blur || 0
 		add_filter("ambient_occlusion", 0, AMBIENT_OCCLUSION_SCALED(4, "#04080FAA", blur_lvl))
 	else
@@ -166,7 +166,7 @@
 	add_filter("vision_cone", 100, list(type="alpha", render_source=FIELD_OF_VISION_RENDER_TARGET, flags=MASK_INVERSE))
 
 /atom/movable/screen/plane_master/above_wall/backdrop(mob/mymob)
-	if(mymob?.client?.prefs.ambientocclusion)
+	if(mymob?.client?.prefs?.ambientocclusion)
 		var/blur_lvl = mymob?.client?.prefs?.lighting_blur || 0
 		add_filter("ambient_occlusion", 0, AMBIENT_OCCLUSION_SCALED(3, "#04080F64", blur_lvl))
 	else
@@ -204,7 +204,7 @@
 	add_filter("vision_cone", 100, list(type="alpha", render_source=FIELD_OF_VISION_RENDER_TARGET, flags=MASK_INVERSE))
 
 /atom/movable/screen/plane_master/game_world/backdrop(mob/mymob)
-	if(mymob?.client?.prefs.ambientocclusion)
+	if(mymob?.client?.prefs?.ambientocclusion)
 		var/blur_lvl = mymob?.client?.prefs?.lighting_blur || 0
 		add_filter("ambient_occlusion", 0, AMBIENT_OCCLUSION_SCALED(4, "#04080FAA", blur_lvl))
 	else
@@ -246,6 +246,8 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /atom/movable/screen/plane_master/lighting/backdrop(mob/mymob)
+	if(!mymob)
+		return
 	mymob.overlay_fullscreen("lighting_backdrop_lit", /atom/movable/screen/fullscreen/special/lighting_backdrop/lit)
 	mymob.overlay_fullscreen("lighting_backdrop_unlit", /atom/movable/screen/fullscreen/special/lighting_backdrop/unlit)
 	var/blur_level = mymob?.client?.prefs?.lighting_blur || 0

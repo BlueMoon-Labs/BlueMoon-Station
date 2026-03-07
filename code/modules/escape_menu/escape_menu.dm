@@ -114,15 +114,15 @@ GLOBAL_LIST_EMPTY(escape_menus)
 /datum/escape_menu/proc/add_blur()
 	PRIVATE_PROC(TRUE)
 
-	var/list/plane_master_controllers = client?.mob.hud_used.plane_masters
+	var/list/plane_master_controllers = client?.mob?.hud_used?.plane_masters
 	if (isnull(plane_master_controllers))
 		return
 
 	plane_master_controller = list(
-		client?.mob.hud_used.plane_masters["[GAME_PLANE]"],
-		client?.mob.hud_used.plane_masters["[FLOOR_PLANE]"],
-		client?.mob.hud_used.plane_masters["[WALL_PLANE]"],
-		client?.mob.hud_used.plane_masters["[ABOVE_WALL_PLANE]"],
+		plane_master_controllers["[GAME_PLANE]"],
+		plane_master_controllers["[FLOOR_PLANE]"],
+		plane_master_controllers["[WALL_PLANE]"],
+		plane_master_controllers["[ABOVE_WALL_PLANE]"],
 	)
 	for(var/A in plane_master_controller)
 		var/atom/movable/screen/plane_master/P = A
@@ -131,15 +131,15 @@ GLOBAL_LIST_EMPTY(escape_menus)
 /datum/escape_menu/proc/remove_blur()
 	PRIVATE_PROC(TRUE)
 
-	var/list/plane_master_controllers = client?.mob.hud_used.plane_masters
+	var/list/plane_master_controllers = client?.mob?.hud_used?.plane_masters
 	if (isnull(plane_master_controllers))
 		return
 
 	plane_master_controller = list(
-		client?.mob.hud_used.plane_masters["[GAME_PLANE]"],
-		client?.mob.hud_used.plane_masters["[FLOOR_PLANE]"],
-		client?.mob.hud_used.plane_masters["[WALL_PLANE]"],
-		client?.mob.hud_used.plane_masters["[ABOVE_WALL_PLANE]"],
+		plane_master_controllers["[GAME_PLANE]"],
+		plane_master_controllers["[FLOOR_PLANE]"],
+		plane_master_controllers["[WALL_PLANE]"],
+		plane_master_controllers["[ABOVE_WALL_PLANE]"],
 	)
 	for(var/A in plane_master_controller)
 		var/atom/movable/screen/plane_master/P = A
