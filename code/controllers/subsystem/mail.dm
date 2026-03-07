@@ -206,6 +206,8 @@ SUBSYSTEM_DEF(mail)
 /datum/controller/subsystem/mail/proc/generate_mails()
 	if(!istype(main_storage))
 		create_main_storage()
+		if(!istype(main_storage))
+			return
 
 	if(!fire_recipients)
 		fire_recipients = list()
