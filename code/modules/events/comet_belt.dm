@@ -247,7 +247,7 @@
 			C.parallax_holder.Remove()
 			C.parallax_holder.Apply()
 	add_comet_overlays(C)
-	pacif_mobs |= C
+	pacif_mobs |= C.mob
 	ADD_TRAIT(C.mob, TRAIT_PACIFISM, TRAIT_SOURCE)
 	apply_current_state_to_client(C)
 
