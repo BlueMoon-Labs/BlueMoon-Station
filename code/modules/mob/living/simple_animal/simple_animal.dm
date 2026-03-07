@@ -678,7 +678,7 @@
 /mob/living/simple_animal/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
 	if(!ckey && !stat)//Not unconscious
-		if(AIStatus == AI_IDLE)
+		if(AIStatus == AI_IDLE || AIStatus == AI_Z_OFF)
 			toggle_ai(AI_ON)
 
 

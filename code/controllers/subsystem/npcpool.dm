@@ -57,6 +57,7 @@ SUBSYSTEM_DEF(npcpool)
 					invoking = FALSE
 					return
 			else
+				SA.toggle_ai(AI_IDLE)
 				invoking = FALSE
 				return
 		if(SA.stat != DEAD)

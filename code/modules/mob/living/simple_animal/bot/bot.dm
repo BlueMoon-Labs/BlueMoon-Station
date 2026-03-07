@@ -101,10 +101,17 @@
 	var/commissioned = FALSE // Will other (noncommissioned) bots salute this bot?
 	var/can_salute = TRUE
 	var/salute_delay = 60 SECONDS
-
-	//emotes/speech stuff
 	var/patrol_emote = "Включение режима патруля."
 	var/patrol_fail_emote = "Невозможно начать патруль."
+
+/mob/living/simple_animal/bot/proc/set_commissioned(new_value)
+	if(commissioned == new_value)
+		return
+	commissioned = new_value
+	if(commissioned)
+		GLOB.commissioned_bots += src
+	else
+		GLOB.commissioned_bots -= src
 
 /mob/living/simple_animal/bot/proc/get_mode()
 	if(client) //Player bots do not have modes, thus the override. Also an easy way for PDA users/AI to know when a bot is a player.
@@ -192,6 +199,7 @@
 		QDEL_NULL(path_hud)
 		path_hud = null
 	GLOB.bots_list -= src
+	GLOB.commissioned_bots -= src
 	if(paicard)
 		ejectpai()
 	QDEL_NULL(Radio)
@@ -270,6 +278,16 @@
 
 	if(!on || client)
 		return
+
+	if(!commissioned && can_salute && GLOB.commissioned_bots.len)
+		for(var/mob/living/simple_animal/bot/commissioned_bot as anything in GLOB.commissioned_bots)
+			if(commissioned_bot.z != z)
+				continue
+			if(get_dist(src, commissioned_bot) <= 5)
+				visible_message("<b>[src]</b> performs an elaborate salute for [commissioned_bot]!")
+				can_salute = FALSE
+				addtimer(VARSET_CALLBACK(src, can_salute, TRUE), salute_delay)
+				break
 
 	switch(mode) //High-priority overrides are processed first. Bots can do nothing else while under direct command.
 		if(BOT_RESPONDING)	//Called by the AI.

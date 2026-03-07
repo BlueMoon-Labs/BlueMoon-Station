@@ -79,7 +79,7 @@
 			if(title in stolen_valor)
 				working_title += pref[title] + " "
 				if(title in officers)
-					commissioned = TRUE
+					set_commissioned(TRUE)
 				break
 			else
 				ascended = FALSE // we didn't have the first entry in the list if we got here, so we're not achievement worthy yet
