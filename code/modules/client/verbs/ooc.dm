@@ -329,4 +329,17 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	set name = "Fix Stat Panel"
 	set hidden = TRUE
 
+	acquire_dpi()
+	normalize_ui_layout()
+	fit_viewport()
 	init_verbs()
+
+/client/verb/fix_ui_layout()
+	set name = "Fix UI Layout"
+	set category = "OOC"
+	set desc = "Reset splitters and pane layout for high-DPI safety."
+
+	acquire_dpi()
+	normalize_ui_layout()
+	fit_viewport()
+	to_chat(src, span_notice("UI layout has been reset to safe defaults."))

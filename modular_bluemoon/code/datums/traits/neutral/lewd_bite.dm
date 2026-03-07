@@ -23,7 +23,10 @@
 
 /datum/quirk/bite/remove()
 	. = ..()
-	my_action.Remove()
+	if(my_action)
+		my_action.my_quirk = null
+		my_action.Remove(quirk_holder)
+		QDEL_NULL(my_action)
 
 /datum/quirk/bite_lewd
 	name = "Клыки суккуба"
@@ -49,7 +52,10 @@
 
 /datum/quirk/bite_lewd/remove()
 	. = ..()
-	my_action.Remove()
+	if(my_action)
+		my_action.my_quirk = null
+		my_action.Remove(quirk_holder)
+		QDEL_NULL(my_action)
 
 /datum/action/cooldown/bite
 	name = "Ядовитый укус"
@@ -70,6 +76,11 @@
 	var/mob/living/carbon/L = owner
 	my_quirk = locate(type) in L.roundstart_quirks
 	venom_bank = new(100)
+
+/datum/action/cooldown/bite/Destroy()
+	my_quirk = null
+	QDEL_NULL(venom_bank)
+	return ..()
 
 /datum/action/cooldown/bite/Activate()
 	if(owner.progressbars)

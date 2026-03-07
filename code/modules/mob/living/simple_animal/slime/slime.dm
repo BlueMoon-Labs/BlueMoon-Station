@@ -110,11 +110,18 @@
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
 
 /mob/living/simple_animal/slime/Destroy()
+	deltimer(atkcool_timer_id)
+	AIproc = 0
+	for(var/friend in Friends)
+		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
 	for (var/A in actions)
 		var/datum/action/AC = A
 		AC.Remove(src)
 	Target = null
 	Leader = null
+	AIproc = 0
+	for(var/friend in Friends)
+		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
 	Friends.Cut()
 	speech_buffer.Cut()
 	return ..()
@@ -208,8 +215,7 @@
 					if (is_adult || prob(5))
 						O.attack_slime(src)
 						Atkcool = 1
-						spawn(45)
-							Atkcool = 0
+					addtimer(CALLBACK(src, PROC_REF(reset_atkcool)), 45, TIMER_DELETE_ME)
 
 /mob/living/simple_animal/slime/Process_Spacemove(movement_dir = 0)
 	return 2
@@ -353,7 +359,7 @@
 			++Friends[user]
 		else
 			Friends[user] = 1
-		RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(clear_friend))
+			RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(clear_friend))
 		to_chat(user, "<span class='notice'>You feed the slime the plasma. It chirps happily.</span>")
 		var/obj/item/stack/sheet/mineral/plasma/S = W
 		S.use(1)
@@ -477,14 +483,20 @@
 		Feedstop(silent = TRUE) //we unbuckle the slime from the mob it latched onto.
 
 	SStun = world.time + rand(20,60)
-	spawn(0)
-		mobility_flags &= ~(MOBILITY_MOVE)
-		if(user)
-			step_away(src,user,15)
-		sleep(3)
-		if(user)
-			step_away(src,user,15)
-		update_mobility()
+	addtimer(CALLBACK(src, PROC_REF(discipline_push), user), 0, TIMER_DELETE_ME)
+
+/mob/living/simple_animal/slime/proc/discipline_push(mob/user)
+	if(QDELETED(src))
+		return
+	mobility_flags &= ~(MOBILITY_MOVE)
+	if(user && !QDELETED(user))
+		step_away(src, user, 15)
+	sleep(3)
+	if(QDELETED(src))
+		return
+	if(user && !QDELETED(user))
+		step_away(src, user, 15)
+	update_mobility()
 
 /mob/living/simple_animal/slime/pet
 	docile = 1

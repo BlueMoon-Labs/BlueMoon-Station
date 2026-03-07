@@ -82,8 +82,8 @@
 			lowest_y = T.y
 		if(!lowest_x || T.x < lowest_x)
 			lowest_x = T.x
-	var/mean_y = LERP(lowest_y, highest_y, 0.5)
-	var/mean_x = LERP(lowest_x, highest_x, 0.5)
+	var/mean_y = lerp(lowest_y, highest_y, 0.5)
+	var/mean_x = lerp(lowest_x, highest_x, 0.5)
 	if(prob(50))
 		mean_y = CEILING(mean_y, 1)
 	else

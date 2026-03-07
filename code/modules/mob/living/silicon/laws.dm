@@ -14,7 +14,7 @@
 
         src << 'sound/machines/terminal_processing.ogg'
 
-        addtimer(CALLBACK(src, PROC_REF(show_laws)), 0)
+        addtimer(CALLBACK(src, PROC_REF(show_laws)), 0, TIMER_DELETE_ME)
         last_lawchange_announce = world.time
 
         // Если законы сменились у ИИ, пушим обновление всем боргам в сети

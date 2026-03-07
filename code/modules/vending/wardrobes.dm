@@ -713,7 +713,7 @@
 		/obj/item/clothing/under/rank/centcom/officer = 3,
 		/obj/item/clothing/under/rank/centcom/officer_alt = 3,
 		/obj/item/clothing/under/rank/centcom/commander = 3,
-		/obj/item/clothing/glasses/eyepatch = 3,
+		/obj/item/clothing/glasses/cover/eyepatch = 3,
 		/obj/item/storage/box/syndie_kit/centcom_costume = 2,
 		/obj/item/mod/control/pre_equipped/corporate = 2,
 	)

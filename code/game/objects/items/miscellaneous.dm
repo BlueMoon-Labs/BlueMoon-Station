@@ -75,7 +75,7 @@
 	var/static/list/ingredientboxes
 	if(!ingredientboxes)
 		ingredientboxes = list()
-		var/list/templist = typesof(/obj/item/storage/box/ingredients)
+		var/list/templist = subtypesof(/obj/item/storage/box/ingredients)
 		for(var/V in templist)
 			var/obj/item/storage/box/ingredients/A = V
 			ingredientboxes[initial(A.theme_name)] = A

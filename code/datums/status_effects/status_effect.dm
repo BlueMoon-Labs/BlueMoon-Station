@@ -45,11 +45,15 @@
 
 /datum/status_effect/Destroy()
 	STOP_PROCESSING(SSstatus_effects, src)
+	var/atom/movable/screen/alert/status_effect/alert_ref = linked_alert
 	if(owner)
 		owner.clear_alert(id)
 		LAZYREMOVE(owner.status_effects, src)
 		on_remove()
 		owner = null
+	if(alert_ref?.attached_effect == src)
+		alert_ref.attached_effect = null
+	linked_alert = null
 	return ..()
 
 /datum/status_effect/process()
@@ -80,7 +84,11 @@
 	return TRUE
 
 /datum/status_effect/proc/be_replaced() //Called instead of on_remove when a status effect is replaced by itself or when a status effect with on_remove_on_mob_delete = FALSE has its mob deleted
+	var/atom/movable/screen/alert/status_effect/alert_ref = linked_alert
 	owner.clear_alert(id)
+	if(alert_ref?.attached_effect == src)
+		alert_ref.attached_effect = null
+	linked_alert = null
 	LAZYREMOVE(owner.status_effects, src)
 	if(blocks_sprint)
 		REMOVE_TRAIT(owner, TRAIT_SPRINT_LOCKED, src)
@@ -107,6 +115,12 @@
 	name = "Curse of Mundanity"
 	desc = "You don't feel any different..."
 	var/datum/status_effect/attached_effect
+
+/atom/movable/screen/alert/status_effect/Destroy()
+	if(attached_effect?.linked_alert == src)
+		attached_effect.linked_alert = null
+	attached_effect = null
+	return ..()
 
 //////////////////
 // HELPER PROCS //

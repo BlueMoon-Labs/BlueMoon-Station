@@ -7,6 +7,11 @@
 	if(mob_transforming)
 		return
 	. = SEND_SIGNAL(src, COMSIG_LIVING_LIFE, seconds, times_fired)
+	// Dead clientless mobs: only need BiologicalLife for rot/disease/organ decay, skip expensive PhysicalLife and status effects
+	if(stat == DEAD && !client)
+		if(!(. & COMPONENT_INTERRUPT_LIFE_BIOLOGICAL))
+			BiologicalLife(seconds, times_fired)
+		return
 	if(!(. & COMPONENT_INTERRUPT_LIFE_PHYSICAL))
 		PhysicalLife(seconds, times_fired)
 	if(!(. & COMPONENT_INTERRUPT_LIFE_BIOLOGICAL))
@@ -87,6 +92,16 @@
 
 	if(!loc)
 		return FALSE
+
+	// Skip expensive environment/gravity processing for clientless mobs on Z-levels with no players
+	if(!client)
+		var/turf/T = get_turf(src)
+		if(T)
+			var/list/clients_on_z = SSmobs.clients_by_zlevel
+			if(islist(clients_on_z) && T.z <= length(clients_on_z) && !length(clients_on_z[T.z]))
+				if(on_fire)
+					handle_fire()
+				return TRUE
 
 	var/datum/gas_mixture/environment = loc.return_air()
 
@@ -189,8 +204,9 @@
 
 /mob/living/proc/handle_gravity()
 	var/gravity = mob_has_gravity()
-	update_gravity(gravity)
-
+	if(gravity != cached_gravity_value)
+		cached_gravity_value = gravity
+		update_gravity(gravity)
 	if(gravity > STANDARD_GRAVITY)
 		gravity_animate()
 		handle_high_gravity(gravity)

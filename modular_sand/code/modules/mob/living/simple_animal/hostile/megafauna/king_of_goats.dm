@@ -187,11 +187,14 @@ Difficulty: Insanely Hard
 			spellscast++
 			visible_message("<span class='cult'>\The [src] summons the imperial guard to his aid, and they appear in a flash!</span>")
 			var/mob/living/simple_animal/hostile/retaliate/goat/guard/master/M = new(get_step(src,pick(GLOB.cardinals)))
-			M.enemies |= enemies
+			for(var/atom/movable/the_enemy in enemies)
+				M.add_enemy(the_enemy)
 			var/mob/living/simple_animal/hostile/retaliate/goat/guard/G = new(get_step(src,pick(GLOB.cardinals)))
-			G.enemies |= enemies
+			for(var/atom/movable/the_enemy in enemies)
+				G.add_enemy(the_enemy)
 			G = new(get_step(src,pick(GLOB.cardinals)))
-			G.enemies |= enemies
+			for(var/atom/movable/the_enemy in enemies)
+				G.add_enemy(the_enemy)
 
 		else if(prob(5)) //EMP blast
 			spellscast++

@@ -124,8 +124,7 @@
 					path_to_vent = 0
 					stop_automated_movement = 1
 					spider_steps_taken = 0
-					spawn(50)
-						stop_automated_movement = 0
+					addtimer(CALLBACK(src, PROC_REF(resume_automated_movement)), 50, TIMER_DELETE_ME)
 					TSVentCrawlRandom(entry_vent)
 				else
 					spider_steps_taken++
@@ -167,6 +166,9 @@
 			spider_special_action()
 		..()
 
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/resume_automated_movement()
+	stop_automated_movement = 0
+
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/adjustBruteLoss(amount, updating_health = TRUE, forced, only_organic)
 	. = ..()
 	Retaliate()
@@ -187,12 +189,13 @@
 		if(isliving(A))
 			var/mob/living/M = A
 			if(!("terrorspiders" in M.faction))
-				enemies |= M
+				add_enemy(M)
 		else if(istype(A, /obj/vehicle/sealed/mecha))
 			var/obj/vehicle/sealed/mecha/M = A
 			if(M.occupants)
-				enemies |= M
-				enemies |= M.occupants
+				add_enemy(M)
+				for(var/mob/living/occupant as anything in M.occupants)
+					add_enemy(occupant)
 //		else if(istype(A, /obj/spacepod))
 //			var/obj/spacepod/M = A
 //			if(M.pilot)
@@ -205,7 +208,8 @@
 				retaliate_faction_check = 1
 				break
 		if(retaliate_faction_check && !attack_same && !H.attack_same)
-			H.enemies |= enemies
+			for(var/atom/movable/the_enemy in enemies)
+				H.add_enemy(the_enemy)
 	return 0
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/handle_cocoon_target()

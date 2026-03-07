@@ -30,6 +30,9 @@
 /datum/buildmode_mode/proc/get_button_iconstate()
 	return "buildmode_[key]"
 
+/datum/buildmode_mode/proc/get_button_icon()
+	return null
+
 /datum/buildmode_mode/proc/show_help(client/c)
 	CRASH("No help defined, yell at a coder")
 

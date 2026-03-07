@@ -17,6 +17,8 @@
 	var/list/icon/current = list() //the current hud icons
 	var/vision_correction = 0 //does wearing these glasses correct some of our vision defects?
 	var/glass_colour_type //colors your vision when worn
+	/// type of glasses used in modular_bluemoon\code\modules\clothing\glasses\cover_blindfolds.dm
+	var/glasses_type
 
 /obj/item/clothing/glasses/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] is stabbing \the [src] into [user.ru_ego()] eyes! It looks like [user.p_theyre()] trying to commit suicide!</span>")
@@ -71,6 +73,7 @@
 	vision_flags = SEE_TURFS
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
 	glass_colour_type = /datum/client_colour/glass_colour/lightgreen
+	glasses_type = "meson"
 
 /obj/item/clothing/glasses/meson/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] is putting \the [src] to [user.ru_ego()] eyes and overloading the brightness! It looks like [user.p_theyre()] trying to commit suicide!</span>")
@@ -114,11 +117,6 @@
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	sharpness = SHARP_EDGED
 
-/obj/item/clothing/glasses/meson/eyepatch
-	name = "eyepatch mesons"
-	desc = "A meson system that connects directly to the optical nerve of the user, replacing the need for that useless eyeball."
-	icon_state = "mesonpatch"
-
 /obj/item/clothing/glasses/science
 	name = "science goggles"
 	desc = "Пара стильных очков для защиты от брызг химикатов. Со встроенным анализатором вещей и жидкостей."
@@ -129,6 +127,7 @@
 	glass_colour_type = /datum/client_colour/glass_colour/purple
 	resistance_flags = ACID_PROOF
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 80, ACID = 100)
+	glasses_type = "sci"
 
 /obj/item/clothing/glasses/science/item_action_slot_check(slot, mob/user, datum/action/A)
 	if(slot == ITEM_SLOT_EYES)
@@ -161,20 +160,14 @@
 	user.visible_message("<span class='suicide'>[user] is tightening \the [src]'s straps around [user.ru_ego()] neck! It looks like [user.p_theyre()] trying to commit suicide!</span>")
 	return OXYLOSS
 
-/obj/item/clothing/glasses/eyepatch
-	name = "eyepatch"
-	desc = "Yarr."
-	icon_state = "eyepatch"
-	item_state = "eyepatch"
-
-/obj/item/clothing/glasses/eyepatch/syndicate
+/obj/item/clothing/glasses/syndicate_eyepatch
 	name = "cybernetic eyepatch"
 	desc = "An eyepatch used to enhance one's aim with guns."
 	icon_state = "syndicatepatch"
 	item_state = "syndicatepatch"
 	resistance_flags = ACID_PROOF
 
-/obj/item/clothing/glasses/eyepatch/syndicate/equipped(mob/living/carbon/human/user, slot)
+/obj/item/clothing/glasses/syndicate_eyepatch/equipped(mob/living/carbon/human/user, slot)
 	. = ..()
 	if(slot == ITEM_SLOT_EYES)
 		user.visible_message("<span class='warning'>Circuitry from the eyepatch links itself to your brain as you put on the eyepatch.")
@@ -183,7 +176,7 @@
 		ADD_TRAIT(user, TRAIT_INSANE_AIM, "SYNDICATE_EYEPATCH_AIM")
 		ADD_TRAIT(src, TRAIT_NODROP, "SYNDICATE_EYEPATCH_NODROP")
 
-/obj/item/clothing/glasses/eyepatch/syndicate/dropped(mob/living/carbon/human/user)
+/obj/item/clothing/glasses/syndicate_eyepatch/dropped(mob/living/carbon/human/user)
 	. = ..()
 	if(user.get_item_by_slot(ITEM_SLOT_EYES) != src)
 		return
@@ -389,12 +382,6 @@
 /obj/item/clothing/glasses/sunglasses/blindfold/dropped(mob/living/carbon/human/user)
 	..()
 	user.cure_blind("blindfold_[REF(src)]")
-
-/obj/item/clothing/glasses/fakeblindfold
-	name = "thin blindfold"
-	desc = "Covers the eyes, but not thick enough to obscure vision. Mostly for aesthetic."
-	icon_state = "blindfoldwhite"
-	item_state = "blindfoldwhite"
 
 /obj/item/clothing/glasses/sunglasses/blindfold/white
 	name = "blind personnel blindfold"

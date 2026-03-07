@@ -15627,7 +15627,7 @@
 	},
 /obj/item/melee/baseball_bat/ablative,
 /obj/item/clothing/suit/yakuza,
-/obj/item/clothing/glasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
 "fpT" = (

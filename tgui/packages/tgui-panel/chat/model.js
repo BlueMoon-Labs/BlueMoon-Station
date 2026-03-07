@@ -46,6 +46,6 @@ export const serializeMessage = message => ({
 });
 
 export const isSameMessage = (a, b) => (
-  typeof a.text === 'string' && a.text === b.text
-  || typeof a.html === 'string' && a.html === b.html
+  typeof a.text === 'string' && a.text.length > 0 && a.text === b.text
+  || typeof a.html === 'string' && a.html.length > 0 && a.html === b.html
 );

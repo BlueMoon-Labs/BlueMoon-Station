@@ -15,6 +15,8 @@
 	var/client/owner
 	/// The parallax object we're currently rendering
 	var/datum/parallax/parallax
+	/// TRUE if [parallax] is a shared subsystem template and must not be qdel'd by this holder
+	var/parallax_is_template = FALSE
 	/// Eye we were last anchored to - used to detect eye changes
 	var/atom/cached_eye
 	/// force this eye as the "real" eye - useful for secondary maps
@@ -55,13 +57,17 @@
 			owner.parallax_holder = null
 		Remove()
 	HardResetAnimations()
+	QDEL_LIST(layers)
 	QDEL_NULL(vis_holder)
-	QDEL_NULL(parallax)
+	if(!parallax_is_template)
+		QDEL_NULL(parallax)
 	layers = null
 	vis = null
 	last = null
 	forced_eye = cached_eye = null
 	owner = null
+	parallax = null
+	parallax_is_template = FALSE
 	return ..()
 
 /datum/parallax_holder/proc/Reset(auto_z_change, force)
@@ -81,13 +87,13 @@
 	last = T
 	last_area = T.loc
 	// rebuild parallax
-	SetParallax(SSparallax.get_parallax_datum(T.z), null, auto_z_change, force)
+	SetParallax(SSparallax.get_parallax_template(T.z), null, auto_z_change, force, TRUE)
 	// hard reset positions to correct positions
 	for(var/atom/movable/screen/parallax_layer/L in layers)
 		L.ResetPosition(T.x, T.y)
 
 // better updates via client_mobs_in_contents can be created again when important recursive contents is ported!
-/datum/parallax_holder/proc/Update(full)
+/datum/parallax_holder/proc/Update(full, anim_time = 0)
 	if(!full && !cached_eye || (get_turf(cached_eye) == last))
 		return
 	if(!owner)	// why are we here
@@ -99,6 +105,9 @@
 		Reset()
 		return
 	var/turf/T = get_turf(cached_eye)
+	if(!T)
+		Reset()
+		return
 	if(!last || T.z != last.z)
 		// z mismatch, reset
 		Reset()
@@ -108,9 +117,13 @@
 	var/rel_y = T.y - last.y
 	// set last
 	last = T
+	// Only animate for single-tile moves when not scrolling
+	var/effective_anim_time = 0
+	if(anim_time > 0 && !scrolling && abs(rel_x) <= 1 && abs(rel_y) <= 1)
+		effective_anim_time = anim_time
 	// move
 	for(var/atom/movable/screen/parallax_layer/L in layers)
-		L.RelativePosition(T.x, T.y, rel_x, rel_y)
+		L.RelativePosition(T.x, T.y, rel_x, rel_y, effective_anim_time)
 	// process scrolling/movedir
 	if(last_area != T.loc)
 		last_area = T.loc
@@ -136,9 +149,8 @@
  * Also ensures movedirs are correct for the eye's pos.
  */
 /datum/parallax_holder/proc/Sync(auto_z_change, force)
-	layers = list()
-	for(var/atom/movable/screen/parallax_layer/L in parallax.objects)
-		layers += L
+	layers = parallax?.GetObjects() || list()
+	for(var/atom/movable/screen/parallax_layer/L in layers)
 		L.map_id = secondary_map
 	if(!istype(vis_holder))
 		vis_holder = new /atom/movable/screen/parallax_vis
@@ -197,16 +209,26 @@
 /datum/parallax_holder/proc/SetParallaxType(path)
 	if(!ispath(path, /datum/parallax))
 		CRASH("Invalid path")
-	SetParallax(new path)
+	SetParallax(new path, TRUE, null, null, FALSE)
 
-/datum/parallax_holder/proc/SetParallax(datum/parallax/P, delete_old = TRUE, auto_z_change, force)
+/datum/parallax_holder/proc/SetParallax(datum/parallax/P, delete_old = TRUE, auto_z_change, force, shared_template = FALSE)
 	if(P == parallax)
+		if(!parallax)
+			return
+		Remove()
+		QDEL_LIST(layers)
+		HardResetAnimations()
+		parallax_is_template = shared_template
+		Sync(auto_z_change, force)
+		Apply()
 		return
 	Remove()
-	if(delete_old && istype(parallax) && !QDELETED(parallax))
+	QDEL_LIST(layers)
+	if(delete_old && !parallax_is_template && istype(parallax) && !QDELETED(parallax))
 		qdel(parallax)
 	HardResetAnimations()
 	parallax = P
+	parallax_is_template = shared_template
 	if(!parallax)
 		return
 	Sync(auto_z_change, force)

@@ -4,7 +4,6 @@
  */
 
 .Flex {
-  display: -ms-flexbox;
   display: flex;
 }
 
@@ -12,41 +11,8 @@
   display: inline-flex;
 }
 
-.Flex--iefix {
-  display: table !important;
-  width: 105%;
-  border-collapse: collapse;
-  border-spacing: 0;
-
-  &:after {
-    content: '';
-    display: table-cell;
-    width: 5%;
-  }
-}
-
-.Flex--iefix--column {
-  display: table !important;
-  width: 100% !important;
-  height: 100% !important;
-  border-collapse: collapse;
-  border-spacing: 0;
-
-  & > .Flex__item--iefix {
-    display: table-row !important;
-  }
-
-  & > .Flex__item--iefix--grow {
-    height: 100% !important;
-  }
-}
-
-.Flex__item--iefix {
-  display: table-cell !important;
-  width: 1% !important;
-  min-width: 99%;
-}
-
-.Flex__item--iefix--grow {
-  width: auto !important;
+// A large amount of legacy TGUI assumes a single child inside Flex
+// should naturally fill the available width.
+.Flex > .Flex__item:only-child {
+  flex: 1 1 auto;
 }

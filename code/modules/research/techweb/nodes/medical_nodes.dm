@@ -35,19 +35,11 @@
 /datum/techweb_node/plumbing
 	id = "plumbing"
 	display_name = "Reagent Plumbing Technology"
-	description = "Plastic tubes, and machinery used for manipulating things in them."
-	prereq_ids = list("base")
-	design_ids = list("acclimator", "disposer", "plumb_filter", "plumb_synth", "plumb_grinder", "reaction_chamber", "duct_print", "plumb_splitter", "pill_press", "plumb_pump", "plumb_in", "plumb_out", "plumb_tank", "medipen_refiller")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
-
-
-/datum/techweb_node/advplumbing
-	id = "advplumbing"
-	display_name = "Advanced Plumbing Technology"
-	description = "Plumbing RCD."
-	prereq_ids = list("plumbing", "adv_engi")
-	design_ids = list("plumb_rcd", "autohydrotray", "rplunger")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
+	description = "Tubes, and machinery used for manipulating things in them."
+	prereq_ids = list("adv_engi")
+	//design_ids = list("acclimator", "disposer", "plumb_filter", "plumb_synth", "plumb_grinder", "reaction_chamber", "duct_print", "plumb_splitter", "pill_press", "plumb_pump", "plumb_in", "plumb_out", "plumb_tank", "medipen_refiller")
+	design_ids = list("medipen_refiller", "plumb_rcd", "autohydrotray", "rplunger")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3000)
 
 //////////////////////Cybernetics/////////////////////
 
@@ -66,14 +58,6 @@
 	prereq_ids = list("adv_biotech", "surplus_limbs")
 	design_ids = list("adv_l_arm", "adv_r_arm", "adv_r_leg", "adv_l_leg")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1250)
-
-/datum/techweb_node/subdermal_implants
-	id = "subdermal_implants"
-	display_name = "Subdermal Implants"
-	description = "Electronic implants buried beneath the skin."
-	prereq_ids = list("biotech", "datatheory")
-	design_ids = list("Implanter", "implantcase", "implant_chem", "implant_tracking", "locator", "c38_trac")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/basic_cyber_organs
 	id = "basic_cyber_organs"

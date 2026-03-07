@@ -348,7 +348,7 @@
 		return
 	if(!istype(current.loc, /obj/item/mmi))
 		return
-	var/obj/item/mmi/B = current.loc.loc
+	var/obj/item/mmi/B = current.loc
 	if(!istype(B.laws, /datum/ai_laws/ratvar))
 		remove_servant_of_ratvar(current, TRUE)
 

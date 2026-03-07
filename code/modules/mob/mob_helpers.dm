@@ -630,6 +630,8 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 /mob/living/carbon/human/proc/load_client_appearance(client/client, quirks = TRUE)
 	if(!client)
 		client = src.client
+	if(!client)
+		return
 	var/old_name = real_name
 	SEND_SOUND(src, 'sound/misc/server-ready.ogg')
 	// BLUEMOON ADD START - загрузка татуировок для ghost roles

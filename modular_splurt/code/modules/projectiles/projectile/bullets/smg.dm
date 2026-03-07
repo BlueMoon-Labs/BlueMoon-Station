@@ -37,6 +37,8 @@
 
 /obj/item/projectile/bullet/c45/trac/on_hit(atom/target, blocked = FALSE)
 	. = ..()
+	if(!iscarbon(target))
+		return
 	var/mob/living/carbon/M = target
 	var/obj/item/implant/tracking/c38/imp
 	for(var/obj/item/implant/tracking/c38/TI in M.implants) //checks if the target already contains a tracking implant

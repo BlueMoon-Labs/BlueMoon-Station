@@ -103,13 +103,23 @@ SUBSYSTEM_DEF(air)
 /proc/fix_corrupted_atmos()
 
 /datum/admins/proc/fixcorruption()
-	set category = "Debug"
+	set category = "Debug.3) Fixing"
 	set desc="Fixes air that has weird NaNs (-1.#IND and such). Hopefully."
 	set name="Fix Infinite Air"
 	fix_corrupted_atmos()
 
 /datum/controller/subsystem/air/fire(resumed = 0)
 	var/timer = TICK_USAGE_REAL
+
+	// Adaptive throttling: reduce atmos processing intensity when server is lagging
+	if(!resumed && SStime_track?.initialized)
+		var/dilation = SStime_track.time_dilation_avg_fast
+		if(dilation > 40)
+			share_max_steps = 1
+		else if(dilation > 20)
+			share_max_steps = max(1, share_max_steps_target - 1)
+		else
+			share_max_steps = share_max_steps_target
 
 	thread_wait_ticks = MC_AVERAGE(thread_wait_ticks, cur_thread_wait_ticks)
 	cur_thread_wait_ticks = 0
@@ -119,16 +129,13 @@ SUBSYSTEM_DEF(air)
 
 	if(currentpart == SSAIR_REBUILD_PIPENETS)
 		timer = TICK_USAGE_REAL
-		var/list/pipenet_rebuilds = pipenets_needing_rebuilt
-		for(var/thing as anything in pipenet_rebuilds)
-			var/obj/machinery/atmospherics/AT = thing
-			if(!istype(AT) || QDELETED(AT))
-				continue
-			AT.build_network()
-		cost_rebuilds = MC_AVERAGE(cost_rebuilds, TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer))
-		pipenets_needing_rebuilt.Cut()
+		if(!resumed)
+			cached_cost = 0
+		process_rebuild_queue(resumed)
+		cached_cost += TICK_USAGE_REAL - timer
 		if(state != SS_RUNNING)
 			return
+		cost_rebuilds = MC_AVERAGE(cost_rebuilds, TICK_DELTA_TO_MS(cached_cost))
 		resumed = FALSE
 		currentpart = SSAIR_PIPENETS
 
@@ -220,6 +227,20 @@ SUBSYSTEM_DEF(air)
 		resumed = 0
 		currentpart = SSAIR_REBUILD_PIPENETS
 
+/datum/controller/subsystem/air/proc/process_rebuild_queue(resumed = FALSE)
+	if(!resumed)
+		src.currentrun = pipenets_needing_rebuilt.Copy()
+		pipenets_needing_rebuilt.Cut()
+	var/list/currentrun = src.currentrun
+	while(currentrun.len)
+		var/obj/machinery/atmospherics/AT = currentrun[currentrun.len]
+		currentrun.len--
+		if(QDELETED(AT))
+			continue
+		AT.build_network()
+		if(MC_TICK_CHECK)
+			return
+
 /datum/controller/subsystem/air/proc/process_pipenets(resumed = 0)
 	if (!resumed)
 		src.currentrun = networks.Copy()
@@ -236,7 +257,7 @@ SUBSYSTEM_DEF(air)
 			return
 
 /datum/controller/subsystem/air/proc/add_to_rebuild_queue(atmos_machine)
-	if(istype(atmos_machine, /obj/machinery/atmospherics))
+	if(istype(atmos_machine, /obj/machinery/atmospherics) && !(atmos_machine in pipenets_needing_rebuilt))
 		pipenets_needing_rebuilt += atmos_machine
 
 /datum/controller/subsystem/air/proc/process_atmos_machinery(resumed = 0)

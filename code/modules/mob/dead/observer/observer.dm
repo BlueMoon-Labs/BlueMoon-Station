@@ -22,12 +22,10 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	hud_type = /datum/hud/ghost
 	movement_type = GROUND | FLYING
 	var/can_reenter_corpse
-	var/datum/hud/living/carbon/hud = null // hud
 	var/bootime = 0
 	var/started_as_observer //This variable is set to 1 when you enter the game as an observer.
 							//If you died in the game and are a ghsot - this will remain as null.
 							//Note that this is not a reliable way to determine if admins started as observers, since they change mobs a lot.
-	var/atom/movable/following = null
 	var/fun_verbs = 0
 	var/image/ghostimage_default = null //this mobs ghost image without accessories and dirs
 	var/image/ghostimage_simple = null //this mob with the simple white ghost sprite
@@ -153,13 +151,13 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	var/old_color = color
 	color = "#960000"
 	animate(src, color = old_color, time = 10, flags = ANIMATION_PARALLEL)
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 10)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 10, TIMER_DELETE_ME)
 
 /mob/dead/observer/ratvar_act()
 	var/old_color = color
 	color = "#FAE48C"
 	animate(src, color = old_color, time = 10, flags = ANIMATION_PARALLEL)
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 10)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 10, TIMER_DELETE_ME)
 
 /mob/dead/observer/Destroy()
 	//BLUEMOON ADD проверяем клиента на все болячки и ссылаем его в лобби при наличии его в госте или удаляем сикей, чтобы при заходе его отправило в лобби (fix undeleting ghosts)
@@ -168,8 +166,46 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	if(ckey)
 		ckey = null
 	//BLUEMOON ADD END
+
+	// Очищаем двустороннюю ссылку observetarget/observers (на случай если Logout не отработал)
+	if(observetarget)
+		var/mob/target = observetarget
+		observetarget = null
+		if(target.observers)
+			target.observers -= src
+			UNSETEMPTY(target.observers)
+
+	// Очищаем регистрацию z-уровня (на случай если Logout не вызвал update_z)
+	if(registered_z)
+		update_z(null)
+
 	if(data_huds_on)
 		remove_data_huds()
+
+	// Ghost accessories are mutable appearances kept in both dedicated vars and managed_overlays.
+	// Clear them explicitly before parent Destroy() to avoid lingering soft GC failures.
+	if(hair_overlay || facial_hair_overlay || managed_overlays)
+		cut_overlays()
+	hair_overlay = null
+	facial_hair_overlay = null
+	managed_overlays = null
+	realized_overlays = null
+	realized_underlays = null
+
+	var/image/departing_default = ghostimage_default
+	var/image/departing_simple = ghostimage_simple
+	// updateghostimages() removes using the current global ghost image lists, so once
+	// the departing images are removed from GLOB.ghost_images_* they would stay in
+	// other observer client.images unless we explicitly remove them first.
+	if(departing_default || departing_simple)
+		for(var/mob/dead/observer/O in GLOB.player_list)
+			if(!O.client)
+				continue
+			if(departing_default)
+				O.client.images -= departing_default
+			if(departing_simple)
+				O.client.images -= departing_simple
+
 	GLOB.ghost_images_default -= ghostimage_default
 	QDEL_NULL(ghostimage_default)
 
@@ -180,6 +216,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 	QDEL_NULL(orbit_menu)
 	QDEL_NULL(spawners_menu)
+	mind = null
 	return ..()
 
 /*
@@ -390,27 +427,28 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			return
 		ghostize(0, penalize = TRUE)
 
-/mob/dead/observer/Move(NewLoc, direct)
-	if (SEND_SIGNAL(src, COMSIG_MOVABLE_PRE_MOVE, NewLoc) & COMPONENT_MOVABLE_BLOCK_PRE_MOVE)
-		return
+/mob/dead/observer/Move(NewLoc, direct, glide_size_override)
+	if(SEND_SIGNAL(src, COMSIG_MOVABLE_PRE_MOVE, NewLoc) & COMPONENT_MOVABLE_BLOCK_PRE_MOVE)
+		return FALSE
 	if(updatedir)
-		setDir(direct)//only update dir if we actually need it, so overlays won't spin on base sprites that don't have directions of their own
-	var/oldloc = loc
-
+		setDir(direct) //only update dir if we actually need it, so overlays won't spin on base sprites that don't have directions of their own
+	if(glide_size_override)
+		set_glide_size(glide_size_override)
 	if(NewLoc)
-		forceMove(NewLoc)
+		abstract_move(NewLoc)
 	else
-		forceMove(get_turf(src))  //Get out of closets and such as a ghost
+		// get_turf(src) handles getting out of closets/containers
+		var/turf/destination = get_turf(src)
 		if((direct & NORTH) && y < world.maxy)
-			y++
+			destination = get_step(destination, NORTH)
 		else if((direct & SOUTH) && y > 1)
-			y--
+			destination = get_step(destination, SOUTH)
 		if((direct & EAST) && x < world.maxx)
-			x++
+			destination = get_step(destination, EAST)
 		else if((direct & WEST) && x > 1)
-			x--
-
-	Moved(oldloc, direct)
+			destination = get_step(destination, WEST)
+		abstract_move(destination)
+	return TRUE
 
 /mob/dead/observer/verb/reenter_corpse()
 	set category = "Ghost"
@@ -1002,6 +1040,9 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	set category = "Ghost"
 	if(!started_as_observer && can_reenter_corpse)
 		to_chat(src, "You cannot see this info unless you are an observer or you've chosen Do Not Resuscitate!")
+		return
+	if(!SSticker?.mode)
+		to_chat(src, "The game hasn't started yet!")
 		return
 	var/list/stuff = list("[SSticker.mode.name]")
 	stuff += "Antagonists:\n"

@@ -14,6 +14,8 @@
 	RegisterSignal(client, COMSIG_PARENT_QDELETING, PROC_REF(on_parent_qdel))
 
 /datum/screen_object_holder/Destroy()
+	if(client)
+		UnregisterSignal(client, COMSIG_PARENT_QDELETING)
 	clear()
 	client = null
 
@@ -42,6 +44,11 @@
 	client?.screen -= screen_object
 
 /datum/screen_object_holder/proc/clear()
+	for(var/atom/movable/screen/S in screen_objects)
+		S.screen_loc = null
+	// Protected objects are singletons managed externally - don't null their screen_loc
+	// or they'll be invisible next time they're shown (screen_loc won't auto-restore)
+
 	client?.screen -= screen_objects
 	client?.screen -= protected_screen_objects
 

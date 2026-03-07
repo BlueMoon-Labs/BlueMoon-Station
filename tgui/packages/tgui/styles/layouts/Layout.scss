@@ -8,37 +8,46 @@
 
 $scrollbar-color-multiplier: 1 !default;
 
+$_scrollbar-track: color.scale(
+  base.$color-bg,
+  $lightness: -25% * $scrollbar-color-multiplier
+);
+$_scrollbar-thumb: color.scale(
+  base.$color-bg,
+  $lightness: 10% * $scrollbar-color-multiplier
+);
+$_scrollbar-thumb-hover: color.scale(
+  base.$color-bg,
+  $lightness: 25% * $scrollbar-color-multiplier
+);
+
 .Layout,
 .Layout * {
-  // Fancy scrollbar
-  scrollbar-base-color: color.scale(
-    base.$color-bg,
-    $lightness: -25% * $scrollbar-color-multiplier
-  );
-  scrollbar-face-color: color.scale(
-    base.$color-bg,
-    $lightness: 10% * $scrollbar-color-multiplier
-  );
-  scrollbar-3dlight-color: color.scale(
-    base.$color-bg,
-    $lightness: 0% * $scrollbar-color-multiplier
-  );
-  scrollbar-highlight-color: color.scale(
-    base.$color-bg,
-    $lightness: 0% * $scrollbar-color-multiplier
-  );
-  scrollbar-track-color: color.scale(
-    base.$color-bg,
-    $lightness: -25% * $scrollbar-color-multiplier
-  );
-  scrollbar-arrow-color: color.scale(
-    base.$color-bg,
-    $lightness: 50% * $scrollbar-color-multiplier
-  );
-  scrollbar-shadow-color: color.scale(
-    base.$color-bg,
-    $lightness: 10% * $scrollbar-color-multiplier
-  );
+  // Standard scrollbar properties (Firefox 64+, Chrome 121+)
+  scrollbar-color: $_scrollbar-thumb $_scrollbar-track;
+
+  // WebKit scrollbar pseudo-elements (Chrome/WebView2)
+  &::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $_scrollbar-track;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $_scrollbar-thumb;
+    border-radius: 2px;
+
+    &:hover {
+      background: $_scrollbar-thumb-hover;
+    }
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: $_scrollbar-track;
+  }
 }
 
 .Layout__content {

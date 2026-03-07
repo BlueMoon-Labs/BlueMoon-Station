@@ -68,7 +68,9 @@
 		dat += "</td></tr>"
 
 	dat += "</table><hr><a href='?src=[REF(src)];done'>Finalize Airlock Construction</a> | <a href='?src=[REF(src)];cancel'>Cancel and Destroy Airlock</a>"
-	usr << browse(dat,"window=airlockmaker")
+	var/datum/browser/popup = new(usr, "airlockmaker", "Airlock Maker")
+	popup.set_content(dat)
+	popup.open()
 
 /datum/airlock_maker/Topic(var/href,var/list/href_list)
 	if(!usr)

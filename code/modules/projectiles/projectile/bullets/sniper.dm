@@ -12,6 +12,8 @@
 	armour_penetration = 50
 	zone_accuracy_factor = 100		//guarunteed 100%
 	var/breakthings = TRUE
+	/// Может ли этот тип патрона отрубать голову при попадании в голову с близкой дистанции
+	var/can_head_gib = TRUE
 	wound_bonus = 20
 	bare_wound_bonus = 10
 
@@ -22,7 +24,7 @@
 	. = ..()
 	if(blocked >= 100)
 		return .
-	if(iscarbon(target))
+	if(iscarbon(target) && can_head_gib)
 		var/mob/living/carbon/C = target
 		if(def_zone == BODY_ZONE_HEAD && starting && get_dist(starting, get_turf(C)) <= SNIPER_HEAD_GIB_CLOSE_RANGE && prob(SNIPER_HEAD_GIB_CHANCE))
 			C.gib_head()
@@ -35,6 +37,7 @@
 	dismemberment = 0
 	knockdown = 0
 	breakthings = FALSE
+	can_head_gib = FALSE
 	wound_bonus = 5
 	bare_wound_bonus = 0
 

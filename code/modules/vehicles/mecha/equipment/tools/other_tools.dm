@@ -552,9 +552,9 @@
 		return FALSE
 	var/moles = chassis.internal_tank.air_contents.total_moles()
 	if(moles < move_cost)
-		chassis.internal_tank.air_contents.remove(moles)
+		qdel(chassis.internal_tank.air_contents.remove(moles))
 		return FALSE
-	chassis.internal_tank.air_contents.remove(move_cost)
+	qdel(chassis.internal_tank.air_contents.remove(move_cost))
 	generate_effect(movement_dir)
 	return TRUE
 

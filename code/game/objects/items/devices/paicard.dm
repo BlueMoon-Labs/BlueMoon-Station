@@ -61,8 +61,9 @@
 		dat += "No personality installed.<br>"
 		dat += "Searching for a personality... Press view available personalities to notify potential candidates."
 		dat += "<A href='byond://?src=[REF(src)];request=1'>\[View available personalities\]</a><br>"
-	user << browse(dat, "window=paicard")
-	onclose(user, "paicard")
+	var/datum/browser/popup = new(user, "paicard", "pAI Card")
+	popup.set_content(dat)
+	popup.open()
 	return
 
 /obj/item/paicard/Topic(href, href_list)

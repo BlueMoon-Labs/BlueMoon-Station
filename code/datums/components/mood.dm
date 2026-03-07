@@ -104,6 +104,8 @@
 	shown_mood = 0
 	for(var/i in mood_events)
 		var/datum/mood_event/event = mood_events[i]
+		if(!event)
+			continue
 		mood += event.mood_change
 		if(!event.hidden)
 			shown_mood += event.mood_change

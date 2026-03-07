@@ -968,10 +968,11 @@ DEFINE_BITFIELD(turret_flags, list(
 		return
 
 	if(control_area)
-		control_area = get_area_instance_from_text(control_area)
+		var/legacy_control_area = control_area
+		control_area = get_area_instance_from_text(legacy_control_area)
 		if(control_area == null)
 			control_area = get_area(src)
-			stack_trace("Bad control_area path for [src], [src.control_area]")
+			WARNING("Bad control_area path for [src]: [legacy_control_area]. Falling back to [control_area].")
 	else if(!control_area)
 		control_area = get_area(src)
 

@@ -231,10 +231,21 @@
 	if(!user.can_read(src))
 		return
 	if(dat)
-		user << browse("<meta charset='UTF-8'><TT><I>Penned by [author].</I></TT> <BR>" + "[dat]", "window=book[window_size != null ? ";size=[window_size]" : ""]")
+		var/book_w = 0
+		var/book_h = 0
+		if(window_size)
+			var/list/size_parts = splittext(window_size, "x")
+			if(length(size_parts) >= 2)
+				book_w = text2num(size_parts[1])
+				book_h = text2num(size_parts[2])
+		var/datum/browser/popup = new(user, "book", title || "Book", book_w, book_h)
+		var/book_style = "<body style ='background-color: #dddddd'>"
+		book_style += "<TT style='color: black'><I>Penned by [author].</I></TT><BR>"
+		book_style += "<uiContent style='color: black'>[dat]</uiContent></body>"
+		popup.set_content("[book_style]")
+		popup.open()
 		user.visible_message("<span class='notice'>[user] opens a book titled \"[title]\" and begins reading intently.</span>")
 		// SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "book_nerd", /datum/mood_event/book_nerd)
-		onclose(user, "book")
 	else
 		to_chat(user, "<span class='notice'>This book is completely blank!</span>")
 

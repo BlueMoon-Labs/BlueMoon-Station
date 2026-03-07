@@ -2,8 +2,9 @@
 /obj/machinery/processor
 	name = "food processor"
 	desc = "An industrial grinder used to process meat and other foods. Keep hands clear of intake area while operating."
-	icon = 'icons/obj/kitchen.dmi'
-	icon_state = "processor1"
+	icon = 'icons/obj/machines/kitchen.dmi'
+	base_icon_state = "processor"
+	icon_state = "processor"
 	layer = BELOW_OBJ_LAYER
 	density = TRUE
 	use_power = IDLE_POWER_USE
@@ -52,7 +53,7 @@
 	if(processing)
 		to_chat(user, "<span class='warning'>[src] is in the process of processing!</span>")
 		return TRUE
-	if(default_deconstruction_screwdriver(user, "processor", "processor1", O))
+	if(default_deconstruction_screwdriver(user, "[base_icon_state]_open", base_icon_state, O))
 		return
 
 	if(default_pry_open(O))
@@ -119,16 +120,17 @@
 			log_admin("DEBUG: [O] in processor doesn't have a suitable recipe. How did it get in there? Please report it immediately!!!")
 			continue
 		total_time += P.time
-	var/offset = prob(50) ? -2 : 2
-	animate(src, pixel_x = pixel_x + offset, time = 0.2, loop = (total_time / rating_speed)*5) //start shaking
-	sleep(total_time / rating_speed)
+	var/duration = (total_time / rating_speed)
+	Shake(2, 2, duration)
+	addtimer(CALLBACK(src, PROC_REF(complete_processing)), duration)
+
+/obj/machinery/processor/proc/complete_processing()
 	for(var/atom/movable/O in src.contents)
 		var/datum/food_processor_process/P = select_recipe(O)
 		if (!P)
 			log_admin("DEBUG: [O] in processor doesn't have a suitable recipe. How do you put it in?")
 			continue
 		process_food(P, O)
-	pixel_x = initial(pixel_x) //return to its spot after shaking
 	processing = FALSE
 	visible_message("\The [src] finishes processing.")
 
@@ -156,6 +158,8 @@
 /obj/machinery/processor/slime
 	name = "slime processor"
 	desc = "An industrial grinder with a sticker saying appropriated for science department. Keep hands clear of intake area while operating."
+	base_icon_state = "processor_slime"
+	icon_state = "processor_slime"
 	circuit = /obj/item/circuitboard/machine/processor/slime
 
 /obj/machinery/processor/slime/adjust_item_drop_location(atom/movable/AM)

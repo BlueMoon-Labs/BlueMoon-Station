@@ -272,6 +272,11 @@ INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
 	else  // Unidentifiable mob
 		job = "Unknown"
 
+/atom/movable/virtualspeaker/Destroy()
+	source = null
+	radio = null
+	return ..()
+
 /atom/movable/virtualspeaker/GetJob()
 	return job
 

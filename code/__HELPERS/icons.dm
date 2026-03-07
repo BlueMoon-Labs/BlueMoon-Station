@@ -163,7 +163,9 @@ mob
 			// Send the icon to src's local cache
 			src<<browse_rsc(getFlatIcon(src), iconName)
 			// Display the icon in their browser
-			src<<browse("<body bgcolor='#000000'><p><img src='[iconName]'></p></body>")
+			var/datum/browser/popup = new(src, "icon_browser", "Icon")
+		popup.set_content("<body bgcolor='#000000'><p><img src='[iconName]'></p></body>")
+		popup.open()
 
 		Output_Icon()
 			set name = "2. Output Icon"
@@ -1119,10 +1121,46 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 /proc/icon2base64(icon/icon)
 	if (!isicon(icon))
 		return FALSE
-	WRITE_FILE(GLOB.dummySave["dummy"], icon)
-	var/iconData = GLOB.dummySave.ExportText("dummy")
+
+	var/dummy_save_path = "tmp/dummySave.sav"
+	var/dummy_save_lock_path = "[dummy_save_path].lk"
+	var/iconData
+
+	try
+		WRITE_FILE(GLOB.dummySave["dummy"], icon)
+		iconData = GLOB.dummySave.ExportText("dummy")
+	catch(var/exception/e)
+		stack_trace("icon2base64(): dummy savefile cache failed ([e]). Rebuilding [dummy_save_path].")
+		if(fexists(dummy_save_lock_path))
+			fdel(dummy_save_lock_path)
+		if(fexists(dummy_save_path))
+			fdel(dummy_save_path)
+		try
+			GLOB.dummySave = new /savefile(dummy_save_path)
+			WRITE_FILE(GLOB.dummySave["dummy"], icon)
+			iconData = GLOB.dummySave.ExportText("dummy")
+		catch(var/exception/retry_error)
+			stack_trace("icon2base64(): dummy savefile cache rebuild failed ([retry_error])")
+			return FALSE
+
+	if(!istext(iconData))
+		return FALSE
 	var/list/partial = splittext(iconData, "{")
+	if(!islist(partial) || length(partial) < 2)
+		return FALSE
 	return replacetext(copytext_char(partial[2], 3, -5), "\n", "")
+
+/// Converts an icon to base64 after optional integer upscale to improve browser rendering.
+/proc/icon2base64_scaled(icon/icon, scale = 1)
+	if (!isicon(icon))
+		return FALSE
+
+	var/icon/to_encode = icon
+	if (isnum(scale) && scale > 1)
+		to_encode = new(icon)
+		to_encode.Scale(round(icon.Width() * scale), round(icon.Height() * scale))
+
+	return icon2base64(to_encode)
 
 /proc/icon2html(thing, target, icon_state, dir = SOUTH, frame = 1, moving = FALSE, sourceonly = FALSE)
 	if (!thing)

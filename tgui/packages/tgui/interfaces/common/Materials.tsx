@@ -1,7 +1,7 @@
 import { createPopper } from '@popperjs/core';
 import { BooleanLike } from 'common/react';
 import { classes } from 'common/react';
-import { Component, findDOMfromVNode, render } from 'inferno';
+import { Component, findDOMFromVNode, render } from 'inferno';
 
 import { Box, Button, Flex } from '../../components';
 import { BoxProps } from '../../components/Box';
@@ -126,7 +126,7 @@ const MaterialEjectDock = (props: {
 );
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '100%', 'text-align': 'center' }}>
       <MaterialDockTooltip content={dockContent} position="bottom">
         <Button
           color="transparent"
@@ -140,7 +140,7 @@ const MaterialEjectDock = (props: {
                 <MaterialIcon material={material.name} />
               </Flex.Item>
               <Flex.Item>
-                {(sheetsFloat < min_sheets_to_round) ? sheetsFloat : sheetsInt}
+                {(sheetsFloat < min_sheets_to_round) ? Math.round(sheetsFloat * 1000) / 1000 : sheetsInt}
               </Flex.Item>
             </Flex>
           }
@@ -259,14 +259,15 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
   static dockHovered = false;
 
   static virtualElement = {
-    getBoundingClientRect: () => (
-      MaterialDockTooltip.currentAnchor?.getBoundingClientRect()
-      ?? DOCK_NULL_RECT
-    ) as DOMRect,
+    getBoundingClientRect: () => {
+      const rect = MaterialDockTooltip.currentAnchor?.getBoundingClientRect();
+      if (!rect) return DOCK_NULL_RECT as DOMRect;
+      return rect;
+    },
   };
 
   getDOMNode() {
-    return findDOMfromVNode(this.$LI, true);
+    return findDOMFromVNode(this.$LI, true);
   }
 
   ensureDockEl() {
@@ -281,7 +282,10 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
       // ВАЖНО: скрытый док не должен ловить мышь
       el.style.pointerEvents = 'none';
 
-      document.body.appendChild(el);
+      // DPI fix: append to <html> instead of <body> to escape body zoom.
+      // Popper.js then works in viewport coords for both positioning and
+      // overflow detection, fixing tooltip shift near screen edges.
+      document.documentElement.appendChild(el);
 
       el.addEventListener('mouseenter', () => {
         // если док закрыт (нет якоря) — вообще не реагируем
@@ -345,8 +349,11 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
     const el = MaterialDockTooltip.renderedDock;
     if (!el) return;
 
+    // DPI fix: apply body zoom to content so it matches the rest of the UI,
+    // since the container is outside body zoom (appended to <html>).
+    const zoom = document.body.style.zoom || '100%';
     render(
-      <div>{this.props.content}</div>,
+      <div style={{ zoom }}>{this.props.content}</div>,
       el,
       () => {
         let pop = MaterialDockTooltip.singletonPopper;
@@ -365,7 +372,7 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
             ...DOCK_DEFAULT_OPTIONS,
             placement: this.props.position || 'bottom',
           });
-          pop.update();
+          pop.forceUpdate();
         }
       },
       this.context,

@@ -199,14 +199,13 @@
 	if(empty)
 		return
 	new /obj/item/healthanalyzer/advanced(src)
-	new /obj/item/reagent_containers/syringe/piercing(src)
 	new /obj/item/bonesetter(src)
+	new /obj/item/stack/medical/gauze(src)
+	new /obj/item/reagent_containers/medspray/sterilizine(src)
 	new /obj/item/pinpointer/crew(src)
 	new /obj/item/sensor_device(src)
-	new /obj/item/reagent_containers/medspray/sterilizine(src)
-	new /obj/item/reagent_containers/glass/bottle/morphine(src)
-	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
-
+	new /obj/item/stack/medical/mesh/advanced(src)
+	new /obj/item/stack/medical/gauze/adv(src)
 
 /obj/item/storage/firstaid/tactical/ert_second
 	name = "Advanced tactical first-aid kit c2"
@@ -214,15 +213,14 @@
 /obj/item/storage/firstaid/tactical/ert_second/PopulateContents()
 	if(empty)
 		return
-	new /obj/item/stack/medical/gauze(src)
-	new /obj/item/reagent_containers/medspray/sterilizine(src)
-	new /obj/item/reagent_containers/glass/bottle/chloralhydrate(src)
-	new /obj/item/reagent_containers/glass/bottle/chloralhydrate(src)
-	new /obj/item/reagent_containers/glass/bottle/chloralhydrate(src)
+	new /obj/item/reagent_containers/hypospray/medipen/penacid(src)
+	new /obj/item/reagent_containers/hypospray/medipen/penacid(src)
 	new /obj/item/reagent_containers/hypospray/combat/omnizine(src)
-	new /obj/item/reagent_containers/hypospray/medipen/penacid(src)
-	new /obj/item/reagent_containers/hypospray/medipen/penacid(src)
-
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh/painkiller(src)
 
 /obj/item/storage/firstaid/radbgone
 	name = "radiation treatment kit"
@@ -483,9 +481,11 @@
 /obj/item/storage/belt/organbox/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_items = 16
+	STR.max_items = 30
 	STR.max_w_class = WEIGHT_CLASS_BULKY
-	STR.max_combined_w_class = 20
+	STR.max_combined_w_class = 30
+	STR.allow_quick_gather = TRUE
+	STR.allow_quick_empty = TRUE
 	STR.can_hold = typecacheof(list(
 	/obj/item/storage/pill_bottle,
 	/obj/item/reagent_containers/hypospray,
@@ -507,6 +507,7 @@
 	/obj/item/bonesetter,
 	/obj/item/autosurgeon,
 	/obj/item/organ,
+	/obj/item/bodypart,
 	/obj/item/implant,
 	/obj/item/implantpad,
 	/obj/item/implantcase,

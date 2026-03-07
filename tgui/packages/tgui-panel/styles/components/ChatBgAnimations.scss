@@ -1,0 +1,441 @@
+/**
+ * Chat Background Animations
+ * Animated background layer using ::before on the .Chat root node.
+ * Applied via CSS classes (Chat--bgAnim-xxx) on .Chat.
+ * The ::before extends with negative inset (-0.5rem) to cover the
+ * margin area of .Window__contentPadding, filling the entire viewport.
+ * Since .Chat grows with content, the animation covers the full
+ * scrollable area, not just the visible viewport.
+ *
+ * IMPORTANT: Each animation MUST use a SINGLE @keyframes that handles
+ * all background-position values. Multiple animations targeting the same
+ * CSS property do NOT compose — only the last one takes effect.
+ */
+
+// Short alias for .Chat with any active background animation
+$bg: '.Chat[class*="Chat--bgAnim-"]';
+
+// ============================================================
+// Base layer setup
+// ============================================================
+
+#{$bg} {
+  position: relative;
+  min-height: 100%;
+
+  &::before {
+    content: '';
+    position: absolute;
+    // Extend beyond .Chat bounds to fill the 0.5rem margin
+    // of .Window__contentPadding, covering the full area
+    inset: -0.5rem;
+    z-index: 0;
+    pointer-events: none;
+    opacity: var(--chat-bg-anim-opacity, 0.5);
+    will-change: background-position, background-size;
+  }
+
+  // Elevate all direct children above the animation layer
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  #{$bg}::before {
+    animation: none !important;
+  }
+}
+
+// ============================================================
+// Animation: Cosmos (Космос)
+// Parallax starfield — distant stars drift slowly,
+// close stars drift faster. Single keyframe for all layers.
+// ============================================================
+
+.Chat.Chat--bgAnim-cosmos::before {
+  background-image:
+    // Distant small stars (slow — small tile)
+    radial-gradient(1px 1px at 10% 25%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 70%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 65% 15%, rgba(200, 220, 255, 0.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 55%, rgba(255, 255, 220, 0.7) 0%, transparent 100%),
+    // Mid-distance stars
+    radial-gradient(1.5px 1.5px at 20% 50%, rgba(255, 255, 200, 0.7) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 55% 80%, rgba(200, 200, 255, 0.7) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 20%, rgba(255, 220, 200, 0.6) 0%, transparent 100%),
+    // Near bright stars (fast — large tile)
+    radial-gradient(2px 2px at 30% 40%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 70% 75%, rgba(200, 220, 255, 0.5) 0%, transparent 100%);
+  background-size:
+    200px 200px, 250px 220px, 220px 250px, 180px 240px,
+    350px 300px, 300px 350px, 320px 280px,
+    500px 450px, 450px 500px;
+  animation: bgAnimCosmos 100s linear infinite;
+}
+
+@keyframes bgAnimCosmos {
+  from {
+    background-position:
+      0 0, 0 0, 0 0, 0 0,
+      0 0, 0 0, 0 0,
+      0 0, 0 0;
+  }
+  to {
+    background-position:
+      -200px 200px, 250px -220px, -220px -250px, 180px 240px,
+      -350px 300px, 300px -350px, -320px 280px,
+      -500px 450px, 450px -500px;
+  }
+}
+
+// ============================================================
+// Animation: Nebula (Туманность)
+// Vibrant colorful gas clouds drifting and morphing
+// ============================================================
+
+.Chat.Chat--bgAnim-nebula::before {
+  background-image:
+    radial-gradient(ellipse 60% 50% at 20% 30%,
+      rgba(140, 50, 255, 0.2) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 70%,
+      rgba(50, 120, 255, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 45% at 50% 50%,
+      rgba(255, 50, 150, 0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 55% at 70% 20%,
+      rgba(50, 220, 200, 0.12) 0%, transparent 70%);
+  background-size: 200% 200%;
+  animation: bgAnimNebula 25s ease-in-out infinite alternate;
+}
+
+@keyframes bgAnimNebula {
+  0% {
+    background-position: 0% 0%, 100% 100%, 50% 50%, 80% 20%;
+  }
+  25% {
+    background-position: 40% 60%, 60% 40%, 20% 80%, 60% 50%;
+  }
+  50% {
+    background-position: 80% 30%, 20% 70%, 70% 20%, 40% 80%;
+  }
+  75% {
+    background-position: 60% 80%, 40% 20%, 80% 60%, 20% 40%;
+  }
+  100% {
+    background-position: 100% 100%, 0% 0%, 50% 50%, 20% 70%;
+  }
+}
+
+// ============================================================
+// Animation: Matrix (Матрица)
+// Green falling code lines at different speeds.
+// Each layer moves by its tile height for seamless loop.
+// ============================================================
+
+.Chat.Chat--bgAnim-matrix::before {
+  background-image:
+    // Fast thin lines
+    repeating-linear-gradient(180deg,
+      rgba(0, 255, 70, 0.2) 0px, transparent 3px, transparent 18px),
+    // Medium lines
+    repeating-linear-gradient(180deg,
+      rgba(0, 255, 70, 0.15) 0px, transparent 2px, transparent 28px),
+    // Slow thick lines
+    repeating-linear-gradient(180deg,
+      rgba(0, 200, 100, 0.1) 0px, transparent 4px, transparent 42px);
+  background-size: 18px 60px, 28px 84px, 42px 126px;
+  animation: bgAnimMatrix 3s linear infinite;
+}
+
+@keyframes bgAnimMatrix {
+  from {
+    background-position: 0 0, 10px 0, 5px 0;
+  }
+  to {
+    background-position: 0 60px, 10px 84px, 5px 126px;
+  }
+}
+
+// ============================================================
+// Animation: Aurora (Аврора)
+// Northern lights — vivid color bands sweeping horizontally
+// ============================================================
+
+.Chat.Chat--bgAnim-aurora::before {
+  background-image:
+    linear-gradient(
+      110deg,
+      transparent 15%,
+      rgba(0, 255, 120, 0.15) 30%,
+      rgba(0, 180, 255, 0.18) 45%,
+      rgba(100, 0, 255, 0.12) 60%,
+      transparent 80%
+    ),
+    linear-gradient(
+      70deg,
+      transparent 20%,
+      rgba(0, 220, 180, 0.12) 35%,
+      rgba(150, 0, 255, 0.15) 50%,
+      rgba(0, 200, 220, 0.1) 65%,
+      transparent 80%
+    );
+  background-size: 300% 100%, 250% 100%;
+  animation: bgAnimAurora 12s ease-in-out infinite alternate;
+}
+
+@keyframes bgAnimAurora {
+  0% {
+    background-position: 0% 0%, 100% 0%;
+  }
+  100% {
+    background-position: 100% 0%, 0% 0%;
+  }
+}
+
+// ============================================================
+// Animation: Pulse (Пульс)
+// Breathing radial glow expanding and contracting from center
+// ============================================================
+
+.Chat.Chat--bgAnim-pulse::before {
+  background-image:
+    radial-gradient(circle at 50% 50%,
+      rgba(100, 140, 255, 0.35) 0%,
+      rgba(100, 140, 255, 0.15) 20%,
+      rgba(100, 140, 255, 0.05) 40%,
+      transparent 60%);
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: bgAnimPulse 5s ease-in-out infinite;
+}
+
+@keyframes bgAnimPulse {
+  0%, 100% {
+    background-size: 50% 50%;
+  }
+  50% {
+    background-size: 200% 200%;
+  }
+}
+
+// ============================================================
+// Animation: Waves (Волны)
+// Flowing diagonal wave bands
+// ============================================================
+
+.Chat.Chat--bgAnim-waves::before {
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0%,
+      rgba(0, 150, 220, 0.12) 5%,
+      transparent 10%
+    ),
+    repeating-linear-gradient(
+      135deg,
+      transparent 0%,
+      rgba(0, 100, 200, 0.08) 3%,
+      transparent 6%
+    );
+  background-size: 200% 200%, 150% 150%;
+  animation: bgAnimWaves 10s ease-in-out infinite alternate;
+}
+
+@keyframes bgAnimWaves {
+  0% {
+    background-position: 0% 0%, 100% 100%;
+  }
+  100% {
+    background-position: 100% 100%, 0% 0%;
+  }
+}
+
+// ============================================================
+// Animation: Fireflies (Светлячки)
+// Warm floating dots drifting in organic paths
+// ============================================================
+
+.Chat.Chat--bgAnim-fireflies::before {
+  background-image:
+    radial-gradient(3px 3px at 15% 25%,
+      rgba(255, 220, 100, 0.8) 0%, transparent 100%),
+    radial-gradient(2px 2px at 40% 70%,
+      rgba(255, 200, 50, 0.7) 0%, transparent 100%),
+    radial-gradient(3px 3px at 65% 15%,
+      rgba(200, 255, 100, 0.7) 0%, transparent 100%),
+    radial-gradient(2px 2px at 85% 55%,
+      rgba(255, 230, 120, 0.8) 0%, transparent 100%),
+    radial-gradient(2px 2px at 25% 85%,
+      rgba(255, 200, 80, 0.6) 0%, transparent 100%),
+    radial-gradient(3px 3px at 50% 45%,
+      rgba(200, 255, 150, 0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 75% 80%,
+      rgba(255, 240, 100, 0.7) 0%, transparent 100%);
+  background-size:
+    300px 300px, 250px 350px, 350px 250px,
+    200px 400px, 400px 200px, 330px 280px, 280px 330px;
+  animation: bgAnimFireflies 30s ease-in-out infinite alternate;
+}
+
+@keyframes bgAnimFireflies {
+  0% {
+    background-position:
+      0 0, 50px 20px, -30px 40px,
+      20px -10px, -20px 30px, 10px -15px, -15px 25px;
+  }
+  33% {
+    background-position:
+      80px -60px, -40px 80px, 60px -30px,
+      -50px 70px, 70px -40px, -60px 55px, 45px -50px;
+  }
+  66% {
+    background-position:
+      -50px 70px, 60px -40px, -45px 65px,
+      70px -55px, -60px 60px, 50px -45px, -40px 55px;
+  }
+  100% {
+    background-position:
+      -60px 80px, 70px -50px, -40px 70px,
+      60px -60px, -50px 80px, 55px -60px, -35px 65px;
+  }
+}
+
+// ============================================================
+// Animation: Sakura Petals (Лепестки)
+// Pink spots drifting diagonally downward
+// ============================================================
+
+.Chat.Chat--bgAnim-sakura::before {
+  background-image:
+    radial-gradient(4px 3px at 20% 30%,
+      rgba(255, 180, 200, 0.7) 0%, transparent 100%),
+    radial-gradient(3px 4px at 45% 10%,
+      rgba(255, 150, 180, 0.6) 0%, transparent 100%),
+    radial-gradient(3px 3px at 70% 50%,
+      rgba(255, 200, 210, 0.6) 0%, transparent 100%),
+    radial-gradient(4px 3px at 90% 20%,
+      rgba(255, 160, 190, 0.5) 0%, transparent 100%),
+    radial-gradient(3px 4px at 10% 70%,
+      rgba(255, 180, 200, 0.6) 0%, transparent 100%),
+    radial-gradient(3px 3px at 55% 85%,
+      rgba(255, 150, 170, 0.5) 0%, transparent 100%);
+  background-size:
+    250px 300px, 300px 250px, 200px 350px,
+    350px 280px, 280px 320px, 320px 260px;
+  animation: bgAnimSakura 36s linear infinite;
+}
+
+@keyframes bgAnimSakura {
+  from {
+    background-position:
+      0 0, 0 0, 0 0,
+      0 0, 0 0, 0 0;
+  }
+  to {
+    background-position:
+      250px 600px, 300px 500px, 200px 700px,
+      350px 560px, 280px 640px, 320px 520px;
+  }
+}
+
+// ============================================================
+// Animation: Gradient (Градиент)
+// Slowly shifting rainbow color gradient
+// ============================================================
+
+.Chat.Chat--bgAnim-gradient::before {
+  background: linear-gradient(
+    45deg,
+    rgba(255, 0, 100, 0.15),
+    rgba(255, 160, 0, 0.15),
+    rgba(0, 255, 150, 0.15),
+    rgba(0, 100, 255, 0.15),
+    rgba(150, 0, 255, 0.15),
+    rgba(255, 0, 100, 0.15)
+  );
+  background-size: 400% 400%;
+  animation: bgAnimGradient 15s ease infinite;
+}
+
+@keyframes bgAnimGradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+// ============================================================
+// Animation: Rain (Дождь)
+// Diagonal falling rain streaks at two speeds
+// ============================================================
+
+.Chat.Chat--bgAnim-rain::before {
+  background-image:
+    // Fast thin rain
+    repeating-linear-gradient(
+      105deg,
+      rgba(150, 200, 255, 0.18) 0px,
+      transparent 1px,
+      transparent 10px
+    ),
+    // Slow wider rain
+    repeating-linear-gradient(
+      100deg,
+      rgba(150, 200, 255, 0.12) 0px,
+      transparent 2px,
+      transparent 18px
+    );
+  background-size: 30px 30px, 54px 54px;
+  animation: bgAnimRain 1.5s linear infinite;
+}
+
+@keyframes bgAnimRain {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 30px 30px, 54px 54px;
+  }
+}
+
+// ============================================================
+// Animation: Embers (Угольки)
+// Warm particles rising upward with slight horizontal drift
+// ============================================================
+
+.Chat.Chat--bgAnim-embers::before {
+  background-image:
+    radial-gradient(2px 2px at 20% 80%,
+      rgba(255, 150, 50, 0.8) 0%, transparent 100%),
+    radial-gradient(3px 3px at 50% 60%,
+      rgba(255, 100, 30, 0.7) 0%, transparent 100%),
+    radial-gradient(2px 2px at 75% 75%,
+      rgba(255, 180, 50, 0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 35% 90%,
+      rgba(255, 120, 40, 0.7) 0%, transparent 100%),
+    radial-gradient(3px 3px at 60% 70%,
+      rgba(255, 160, 60, 0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 85% 85%,
+      rgba(255, 140, 30, 0.7) 0%, transparent 100%);
+  background-size:
+    200px 300px, 250px 350px, 300px 250px,
+    220px 320px, 280px 280px, 180px 340px;
+  animation: bgAnimEmbers 8s linear infinite;
+}
+
+@keyframes bgAnimEmbers {
+  from {
+    background-position:
+      0 0, 0 0, 0 0,
+      0 0, 0 0, 0 0;
+  }
+  to {
+    background-position:
+      0 -300px, 0 -350px, 0 -250px,
+      0 -320px, 0 -280px, 0 -340px;
+  }
+}

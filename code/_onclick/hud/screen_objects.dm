@@ -49,8 +49,11 @@
 	set_new_hud(hud_owner)
 
 /atom/movable/screen/Destroy()
+	if(istype(hud) && hud.mymob?.client)
+		hud.mymob.client.screen -= src
+	set_new_hud(null)
 	master = null
-	hud = null
+	vis_contents.Cut()
 	return ..()
 
 /atom/movable/screen/Click(location, control, params)
@@ -677,7 +680,7 @@
 INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 
 /atom/movable/screen/splash/Initialize(mapload, datum/hud/hud_owner, client/C, visible, use_previous_title)
-	. = ..()
+	. = ..(mapload)
 	if(!istype(C))
 		return
 

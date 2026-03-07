@@ -76,6 +76,7 @@
 
 /obj/structure/closet/Destroy()
 	dump_contents(override = FALSE)
+	QDEL_NULL(lockerelectronics)
 	QDEL_NULL(door_obj)
 	return ..()
 

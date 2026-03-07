@@ -17,7 +17,6 @@
 	new /obj/item/door_remote/research_director(src)
 	new /obj/item/circuitboard/machine/techfab/department/science(src)
 	new /obj/item/storage/photo_album/RD(src)
-	new /obj/item/analyzer/hilbertsanalyzer(src)
 	new /obj/item/mod/construction/armor/research(src)
 	new /obj/item/mod/construction/armor/research(src)
 	new /obj/item/storage/garment_case/RD(src)

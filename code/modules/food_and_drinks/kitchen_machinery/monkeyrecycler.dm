@@ -3,7 +3,7 @@ GLOBAL_LIST_EMPTY(monkey_recyclers)
 /obj/machinery/monkey_recycler
 	name = "monkey recycler"
 	desc = "A machine used for recycling dead monkeys into monkey cubes." // except it literally never does
-	icon = 'icons/obj/kitchen.dmi'
+	icon = 'icons/obj/machines/kitchen.dmi'
 	icon_state = "grinder"
 	layer = BELOW_OBJ_LAYER
 	density = TRUE
@@ -19,6 +19,7 @@ GLOBAL_LIST_EMPTY(monkey_recyclers)
 	. = ..()
 	if (mapload)
 		GLOB.monkey_recyclers += src
+	add_overlay("grinder_monkey")
 	locate_camera_console()
 
 /obj/machinery/monkey_recycler/Destroy()
@@ -28,6 +29,21 @@ GLOBAL_LIST_EMPTY(monkey_recyclers)
 		console.connected_recycler = null
 	connected.Cut()
 	return ..()
+
+/obj/machinery/monkey_recycler/update_overlays()
+	. = ..()
+	if(machine_stat & (NOPOWER|BROKEN) || panel_open)
+		return
+
+	if(stored_matter >= 1)
+		. += "grinder_active"
+		. += emissive_appearance(icon, "grinder_active", src, alpha = src.alpha)
+	else if(cube_production >= 6)
+		. += "grinder_loaded"
+		. += emissive_appearance(icon, "grinder_loaded", src, alpha = src.alpha)
+	else
+		. += "grinder_empty"
+		. += emissive_appearance(icon, "grinder_empty", src, alpha = src.alpha)
 
 /obj/machinery/monkey_recycler/proc/locate_camera_console()
 	if(length(connected))
@@ -90,11 +106,10 @@ GLOBAL_LIST_EMPTY(monkey_recyclers)
 	target = null //we sleep in this proc, clear reference NOW
 	to_chat(user, "<span class='notice'>You stuff the monkey into the machine.</span>")
 	playsound(src.loc, 'sound/machines/juicer.ogg', 50, 1)
-	var/offset = prob(50) ? -2 : 2
-	animate(src, pixel_x = pixel_x + offset, time = 0.2, loop = 200) //start shaking
+	Shake(2, 2, 4 SECONDS)
 	use_power(500)
 	stored_matter += cube_production
-	addtimer(VARSET_CALLBACK(src, pixel_x, initial(pixel_x)))
+	update_icon()
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(to_chat), user, "<span class='notice'>The machine now has [stored_matter] monkey\s worth of material stored.</span>"))
 
 /obj/machinery/monkey_recycler/interact(mob/user)
@@ -109,6 +124,7 @@ GLOBAL_LIST_EMPTY(monkey_recyclers)
 		to_chat(user, "<span class='notice'>The machine's display flashes that it has [stored_matter] monkeys worth of material left.</span>")
 	else
 		to_chat(user, "<span class='danger'>The machine needs at least 1 monkey worth of material to produce a monkey cube. It currently has [stored_matter].</span>")
+	update_icon()
 
 /obj/machinery/monkey_recycler/multitool_act(mob/living/user, obj/item/multitool/I)
 	if(istype(I))

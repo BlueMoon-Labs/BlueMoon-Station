@@ -119,8 +119,11 @@
 		UnregisterSignal(weapon, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
 	if(overlay)
 		var/atom/A = parent
-		UnregisterSignal(A,COMSIG_ATOM_UPDATE_OVERLAYS)
+		UnregisterSignal(A, COMSIG_ATOM_UPDATE_OVERLAYS)
+		if(!QDELETED(A))
+			A.update_icon(UPDATE_OVERLAYS)
 		qdel(overlay)
+		overlay = null
 
 	return ..()
 

@@ -37,12 +37,13 @@
 #define ALLOWINTERNALS		  	(1<<3)	//mask allows internals
 #define NOSLIP                  (1<<4)	//prevents from slipping on wet floors, in space etc
 #define NOSLIP_ICE				(1<<5)	 //prevents from slipping on frozen floors
-#define THICKMATERIAL			(1<<6)	//prevents syringes, parapens and hypos if the external suit or helmet (if targeting head) has this flag. Example: space suits, biosuit, bombsuits, thick suits that cover your body.
-#define VOICEBOX_TOGGLABLE 		(1<<7)	//The voicebox in this clothing can be toggled.
-#define VOICEBOX_DISABLED 		(1<<8)	//The voicebox is currently turned off.
-#define IGNORE_HAT_TOSS			(1<<9)	//Hats with negative effects when worn (i.e the tinfoil hat).
-#define SCAN_REAGENTS			(1<<10)	// Allows helmets and glasses to scan reagents.
-#define PLASMAMAN_HELMET_EXEMPT (1<<11) //prevents from placing on plasmaman helmet
+#define NOSLIP_ALL				(1<<6)	 //prevents from slipping from all
+#define THICKMATERIAL			(1<<7)	//prevents syringes, parapens and hypos if the external suit or helmet (if targeting head) has this flag. Example: space suits, biosuit, bombsuits, thick suits that cover your body.
+#define VOICEBOX_TOGGLABLE 		(1<<8)	//The voicebox in this clothing can be toggled.
+#define VOICEBOX_DISABLED 		(1<<9)	//The voicebox is currently turned off.
+#define IGNORE_HAT_TOSS			(1<<10)	//Hats with negative effects when worn (i.e the tinfoil hat).
+#define SCAN_REAGENTS			(1<<11)	// Allows helmets and glasses to scan reagents.
+#define PLASMAMAN_HELMET_EXEMPT (1<<12) //prevents from placing on plasmaman helmet
 
 // Flags for the organ_flags var on /obj/item/organ
 

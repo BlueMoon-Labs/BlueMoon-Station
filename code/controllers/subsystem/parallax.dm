@@ -5,6 +5,8 @@ SUBSYSTEM_DEF(parallax)
 	priority = FIRE_PRIORITY_PARALLAX
 	runlevels = RUNLEVEL_LOBBY | RUNLEVELS_DEFAULT
 	var/list/currentrun
+	/// Cached parallax templates by z-level to reduce qdel/new churn on holder resets
+	var/list/datum/parallax/parallax_templates_by_z = list()
 
 /datum/controller/subsystem/parallax/fire(resumed = FALSE)
 	if (!resumed)
@@ -50,6 +52,20 @@ SUBSYSTEM_DEF(parallax)
 /datum/controller/subsystem/parallax/proc/get_parallax_datum(z)
 	var/datum_type = get_parallax_type(z)
 	return new datum_type
+
+/datum/controller/subsystem/parallax/proc/get_parallax_template(z)
+	var/datum_type = get_parallax_type(z)
+	if(!datum_type)
+		return null
+	var/cache_key = "[z]"
+	var/datum/parallax/P = parallax_templates_by_z[cache_key]
+	if(P && !istype(P, datum_type))
+		qdel(P)
+		P = null
+	if(!P)
+		P = new datum_type
+		parallax_templates_by_z[cache_key] = P
+	return P
 
 /**
  * Gets parallax added vis contents for zlevel

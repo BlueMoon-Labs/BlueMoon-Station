@@ -128,7 +128,7 @@
 "xG" = (
 /obj/effect/decal/cleanable/blood/old,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/grill,
+/obj/machinery/grill/oldschool,
 /turf/open/floor/plasteel/checker,
 /area/template_noop)
 "yw" = (

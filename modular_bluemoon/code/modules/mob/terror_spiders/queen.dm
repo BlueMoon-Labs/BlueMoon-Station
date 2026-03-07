@@ -136,7 +136,8 @@
 	..()
 	for(var/thing in GLOB.ts_spiderlist)
 		var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/T = thing
-		T.enemies |= enemies
+		for(var/atom/movable/the_enemy in enemies)
+			T.add_enemy(the_enemy)
 
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/queen/proc/ai_nest_is_full()

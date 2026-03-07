@@ -1,6 +1,6 @@
 SUBSYSTEM_DEF(mail)
 	name = "Mail"
-	flags = SS_BACKGROUND | SS_NO_TICK_CHECK
+	flags = SS_BACKGROUND
 	priority = FIRE_PRIORITY_MAIL
 	runlevels = RUNLEVEL_GAME
 	init_order = INIT_ORDER_MAIL
@@ -16,6 +16,16 @@ SUBSYSTEM_DEF(mail)
 	var/obj/structure/closet/crate/mail/main_storage = null
 	/// Turf, where main mail storage of SSmail will be spawned
 	var/turf/main_storage_spawnpoint = null
+
+	/// Cached list of all valid job names for recipient filtering
+	var/static/list/cached_all_jobs
+
+	/// Current run state for resumable fire()
+	var/fire_phase = 1
+	/// Remaining mails to generate this fire cycle
+	var/mails_to_generate = 0
+	/// Cached mail recipients for current fire cycle
+	var/list/fire_recipients
 
 
 	/// Assoc list 'mail category' = 'mail category weight'
@@ -63,6 +73,7 @@ SUBSYSTEM_DEF(mail)
 
 /datum/controller/subsystem/mail/Initialize(start_timeofday)
 	. = ..()
+	cached_all_jobs = get_all_jobs()
 	for(var/category in mail_categories_with_weights)
 		all_patterns_by_category[category] = list()
 		var/list/types_of_category = typesof(text2path("/datum/mail_pattern/[category]"))
@@ -84,14 +95,28 @@ SUBSYSTEM_DEF(mail)
 	main_storage_spawnpoint = SSmail.main_storage_spawnpoint
 
 /datum/controller/subsystem/mail/fire(resumed = 0)
-	delete_obsolete_mails()
-	if(sealed_mails.len > MAX_SEALED_MESSAGES)
-		return
-	if(main_storage && mail_waiting >= main_storage.storage_capacity)
-		return
-	var/mail_gen_count = clamp(living_player_count() / rand(1, 5), 1, MAX_MAIL_PER_FIRE)
-	if(mail_gen_count)
-		generate_mails(mail_gen_count)
+	if(!resumed)
+		fire_phase = 1
+		mails_to_generate = 0
+		fire_recipients = null
+
+	// Phase 1: Delete obsolete mails
+	if(fire_phase == 1)
+		delete_obsolete_mails()
+		fire_phase = 2
+		if(MC_TICK_CHECK)
+			return
+
+	// Phase 2: Generate new mails
+	if(fire_phase == 2)
+		if(sealed_mails.len > MAX_SEALED_MESSAGES)
+			return
+		if(main_storage && mail_waiting >= main_storage.storage_capacity)
+			return
+		if(!mails_to_generate)
+			mails_to_generate = clamp(length(GLOB.alive_mob_list) / rand(1, 5), 1, MAX_MAIL_PER_FIRE)
+		if(mails_to_generate)
+			generate_mails()
 
 /datum/controller/subsystem/mail/proc/get_pattern_info(datum/mail_pattern/pattern)
 
@@ -166,41 +191,50 @@ SUBSYSTEM_DEF(mail)
 
 /// Deleting mails from sealed_mails list, which lifetime was expired, calling their mail/disappear() proc
 /datum/controller/subsystem/mail/proc/delete_obsolete_mails()
-	var/deleted_mails_count = 0
-	for(var/obj/item/mail/sealed_mail in sealed_mails)
+	var/list/expired = list()
+	for(var/obj/item/mail/sealed_mail as anything in sealed_mails)
 		if(world.time > sealed_mails[sealed_mail])
-			sealed_mails[sealed_mail] = null
-			sealed_mails -= sealed_mail
-			INVOKE_ASYNC(sealed_mail, TYPE_PROC_REF(/obj/item/mail, disappear))
-			deleted_mails_count++
-	if(deleted_mails_count)
-		log_subsystem(src, "Удалено [deleted_mails_count] старых неоткрытых писем")
+			expired += sealed_mail
+	if(!length(expired))
+		return
+	for(var/obj/item/mail/sealed_mail as anything in expired)
+		sealed_mails -= sealed_mail
+		INVOKE_ASYNC(sealed_mail, TYPE_PROC_REF(/obj/item/mail, disappear))
+	log_subsystem(src, "Удалено [length(expired)] старых неоткрытых писем")
 
-/// Generate 'mail_gen_count' number of mails for random valid recipients in main_storage
-/datum/controller/subsystem/mail/proc/generate_mails(mail_gen_count)
+/// Generate mails for random valid recipients in main_storage. Resumable via fire().
+/datum/controller/subsystem/mail/proc/generate_mails()
 	if(!istype(main_storage))
 		create_main_storage()
+		if(!istype(main_storage))
+			return
 
-	var/list/mail_recipients = list()
+	if(!fire_recipients)
+		fire_recipients = list()
+		for(var/mob/living/carbon/human/human as anything in GLOB.player_list)
+			if(!ishuman(human))
+				continue
+			if(human.stat == DEAD || !human.mind)
+				continue
+			if(!(human.mind.assigned_role in cached_all_jobs))
+				continue
+			fire_recipients += human
 
-	for(var/mob/living/carbon/human/human in GLOB.player_list)
-		if(human.stat == DEAD || !human.mind)
-			continue
-		// Отправляем письма только тем, у кого валидная работа, чтобы отфильтровать всяких ноунеймичей
-		if(!(human.mind.assigned_role in get_all_jobs()))
-			continue
-
-		mail_recipients += human
-
-	for(var/i in 1 to mail_gen_count)
-		var/mob/living/carbon/human/recipient = pick_n_take(mail_recipients)
+	while(mails_to_generate > 0)
+		mails_to_generate--
+		var/mob/living/carbon/human/recipient = pick_n_take(fire_recipients)
 		if(!recipient)
+			break
+		if(QDELETED(recipient) || !recipient.mind)
 			continue
 		if(main_storage.contents.len >= main_storage.storage_capacity)
 			break
 		create_mail_for_recipient(recipient, main_storage)
+		if(MC_TICK_CHECK)
+			return
 
 	main_storage.update_icon()
+	fire_recipients = null
 
 /// Creates a mail for a specific recipient
 /datum/controller/subsystem/mail/proc/create_mail_for_recipient(mob/living/carbon/human/recipient, atom/mail_holder, datum/mail_pattern/pattern = null, add_to_waiting_mails = TRUE)

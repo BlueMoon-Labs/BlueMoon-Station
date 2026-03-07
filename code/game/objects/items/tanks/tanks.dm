@@ -321,6 +321,7 @@
 				return
 			var/datum/gas_mixture/leaked_gas = air_contents.remove_ratio(0.25)
 			T.assume_air(leaked_gas)
+			qdel(leaked_gas)
 		else
 			integrity--
 

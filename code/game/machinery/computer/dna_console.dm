@@ -207,6 +207,16 @@
 
 	eject_disk(user)
 
+/obj/machinery/computer/scan_consolenew/proc/disconnect_from_scanner()
+	if(connected_scanner?.linked_console == src)
+		connected_scanner.linked_console = null
+	connected_scanner = null
+	scanner_occupant = null
+
+/obj/machinery/computer/scan_consolenew/Destroy()
+	disconnect_from_scanner()
+	return ..()
+
 /obj/machinery/computer/scan_consolenew/Initialize(mapload)
 	. = ..()
 
@@ -239,7 +249,7 @@
 		can_use_scanner = TRUE
 	else
 		can_use_scanner = FALSE
-		connected_scanner = null
+		disconnect_from_scanner()
 		is_viable_occupant = FALSE
 
 	// Check for a viable occupant in the scanner.
@@ -1685,6 +1695,8 @@
 /obj/machinery/computer/scan_consolenew/proc/connect_to_scanner()
 	var/obj/machinery/dna_scannernew/test_scanner = null
 	var/obj/machinery/dna_scannernew/broken_scanner = null
+
+	disconnect_from_scanner()
 
 	// Look in each cardinal direction and try and find a DNA Scanner
 	//   If you find a DNA Scanner, check to see if it broken or working

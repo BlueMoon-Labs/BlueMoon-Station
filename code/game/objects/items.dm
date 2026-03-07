@@ -228,7 +228,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /obj/item/Destroy()
 	master = null
 	item_flags &= ~DROPDEL	//prevent reqdels
-	if(ismob(loc))
+	if(ismob(loc) && !QDELING(loc))
 		var/mob/m = loc
 		m.temporarilyRemoveItemFromInventory(src, TRUE)
 	for(var/X in actions)
@@ -300,20 +300,28 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 /obj/item/examine(mob/user) //This might be spammy. Remove?
 	. = ..()
+	var/is_plural = (gender == PLURAL)
+	. += "[is_plural ? "Это вещи" : "Это предмет"] [weight_class_to_text(w_class)] размера."
 
-	. += "[gender == PLURAL ? "Это вещи" : "Это предмет"] [weight_class_to_text(w_class)] размера."
+	if(resistance_flags)
+		var/resistance_text = ""
+		if(resistance_flags & INDESTRUCTIBLE)
+			resistance_text = "Выгляд[is_plural ? "я" : "и"]т особенно прочным[is_plural ? "и" : ""]. Скорее всего, выдерж[is_plural ? "а" : "и"]т что угодно."
+		else
+			var/list/resistance_list = list()
+			if(resistance_flags & LAVA_PROOF)
+				resistance_list += "лаве"
+			if(resistance_flags & (ACID_PROOF | UNACIDABLE))
+				resistance_list += "кислоте"
+			if(resistance_flags & FIRE_PROOF)
+				resistance_list += "огню"
+			if(resistance_flags & FREEZE_PROOF)
+				resistance_list += "экстремальному холоду"
 
-	if(resistance_flags & INDESTRUCTIBLE)
-		. += "[gender == PLURAL ? "Оно" : "Этот предмет"] выглядит особенно прочным! Скорее всего, выдержит что угодно!"
-	else
-		if(resistance_flags & LAVA_PROOF)
-			. += "[gender == PLURAL ? "Эти вещи содержат" : "Этот предмет содержит"] особо огнеупорный материал и, скорее всего, пережив[gender == PLURAL ? "ут" : "ёт"] лаву!"
-		if(resistance_flags & (ACID_PROOF | UNACIDABLE))
-			. += "[gender == PLURAL ? "Эти вещи выглядят устойчивыми" : "Этот предмет выглядит устойчивым"] к кислоте."
-		if(resistance_flags & FREEZE_PROOF)
-			. += "[gender == PLURAL ? "Эти вещи выглядят устойчивыми" : "Этот предмет выглядит устойчивым"] к холоду."
-		if(resistance_flags & FIRE_PROOF)
-			. += "[gender == PLURAL ? "Эти вещи выглядят устойчивыми" : "Этот предмет выглядит устойчивым"] к огню."
+			if(length(resistance_list))
+				resistance_text += "Устойчиво к [english_list(resistance_list)]."
+		if(resistance_text)
+			. += "[is_plural ? "Эти вещи устойчивы" : "Этот предмет устойчив"] к повреждениям. <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[resistance_text]</span></span>"
 
 	if(item_flags & (ITEM_CAN_BLOCK | ITEM_CAN_PARRY))
 		var/datum/block_parry_data/data = return_block_parry_datum(block_parry_data)
@@ -977,7 +985,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	SEND_SIGNAL(src, COMSIG_ITEM_MOUSE_ENTER, location, control, params)
 	if(get(src, /mob) == usr && !QDELETED(src))
 		var/mob/living/L = usr
-		if(usr.client.prefs.enable_tips)
+		var/in_open_storage = usr.active_storage?.parent == src.loc // tooltip browser panel overlaps storage items and intercepts mouse events, causing a flicker loop
+		if(usr.client.prefs.enable_tips && !in_open_storage)
 			var/timedelay = usr.client.prefs.tip_delay/100
 			usr.client.tip_timer = addtimer(CALLBACK(src, PROC_REF(openTip), location, control, params, usr), timedelay, TIMER_STOPPABLE)//timer takes delay in deciseconds, but the pref is in milliseconds. dividing by 100 converts it.
 		if(usr.client.prefs.outline_enabled)

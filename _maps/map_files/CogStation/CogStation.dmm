@@ -23543,7 +23543,7 @@
 	pixel_x = 5
 	},
 /obj/item/pen/fourcolor,
-/obj/item/clothing/glasses/meson/eyepatch{
+/obj/item/clothing/glasses/meson{
 	pixel_x = -13;
 	pixel_y = -5
 	},
@@ -43816,7 +43816,7 @@
 /obj/structure/cable{
 	icon_state = "0-2"
 	},
-/obj/item/clothing/glasses/hud/health/eyepatch{
+/obj/item/clothing/glasses/hud/health{
 	pixel_y = 6
 	},
 /turf/open/floor/carpet/cyan,
@@ -95412,7 +95412,7 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
-/obj/item/clothing/glasses/hud/diagnostic/eyepatch{
+/obj/item/clothing/glasses/hud/diagnostic{
 	pixel_y = 7
 	},
 /turf/open/floor/wood,

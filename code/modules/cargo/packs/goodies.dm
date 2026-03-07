@@ -89,8 +89,8 @@
 	cost = 200
 	contains = list(/obj/item/toy/beach_ball)
 
-/datum/supply_pack/goody/medipen_twopak
-	name = "Medipen Two-Pak"
+/datum/supply_pack/goody/medipen_twopack
+	name = "Medipen Two-Pack"
 	desc = "Содержит один стандартный медипен с эпинефрином и однин старндартный медипен первой помощи. На тот случай, если вы хотите подготовиться к худшему."
 	cost = 500
 	contains = list(/obj/item/reagent_containers/hypospray/medipen,

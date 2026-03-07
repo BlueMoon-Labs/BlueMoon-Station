@@ -14,12 +14,12 @@ import { setupGlobalEvents } from 'tgui/events';
 import { captureExternalLinks } from 'tgui/links';
 import { createRenderer } from 'tgui/renderer';
 import { configureStore, StoreProvider } from 'tgui/store';
-import { setupHotReloading } from 'tgui-dev-server/link/client.cjs';
 
 import { audioMiddleware, audioReducer } from './audio';
 import { chatMiddleware, chatReducer } from './chat';
 import { emotesReducer } from './emotes'; // BLUEMOON ADD
 import { gameMiddleware, gameReducer } from './game';
+import { Panel } from './Panel';
 import { setupPanelFocusHacks } from './panelFocus';
 import { pingMiddleware, pingReducer } from './ping';
 import { settingsMiddleware, settingsReducer } from './settings';
@@ -27,6 +27,11 @@ import { telemetryMiddleware } from './telemetry';
 
 perf.mark('inception', window.performance?.timing?.navigationStart);
 perf.mark('init');
+window.__tguiBundleLoaded__ = true;
+window.__tguiAppBooted__ = false;
+window.__pushTguiDebugEvent__?.('bundleLoaded', {
+  bundle: 'tgui-panel',
+});
 
 const store = configureStore({
   reducer: combineReducers({
@@ -50,7 +55,6 @@ const store = configureStore({
 });
 
 const renderApp = createRenderer(() => {
-  const { Panel } = require('./Panel');
   return (
     <StoreProvider store={store}>
       <Panel />
@@ -74,53 +78,34 @@ const setupApp = () => {
   // Subscribe for Redux state updates
   store.subscribe(renderApp);
 
-  // Subscribe for bankend updates
-  window.update = msg => store.dispatch(Byond.parseJson(msg));
+  // Subscribe for backend updates
+  const dispatchIncomingMessage = msg => {
+    window.__recordIncomingTguiMessage__?.(msg);
+    store.dispatch(Byond.parseJson(msg));
+  };
+  window.update = dispatchIncomingMessage;
 
   // Process the early update queue
+  window.__pushTguiDebugEvent__?.('appSetupBegin', {
+    bundle: 'tgui-panel',
+    queuedBeforeDrain: window.__updateQueue__?.length || 0,
+  });
   while (true) {
     const msg = window.__updateQueue__.shift();
     if (!msg) {
       break;
     }
-    window.update(msg);
+    store.dispatch(Byond.parseJson(msg));
   }
-
-  // Unhide the panel
-  Byond.winset('output', {
-    'is-visible': false,
-  });
-  Byond.winset('browseroutput', {
-    'is-visible': true,
-    'is-disabled': false,
-    'pos': '0x0',
-    'size': '0x0',
+  window.__tguiAppBooted__ = true;
+  window.__pushTguiDebugEvent__?.('appBooted', {
+    bundle: 'tgui-panel',
+    queuedAfterDrain: window.__updateQueue__?.length || 0,
   });
 
-  // Resize the panel to match the non-browser output
-  Byond.winget('output').then(output => {
-    Byond.winset('browseroutput', {
-      'size': output.size,
-    });
-  });
+  // The DM on_message("ready") handler switches to output_browser
+  // when the panel reports ready, respecting the use_legacy_chat flag.
 
-  // Enable hot module reloading
-  if (module.hot) {
-    setupHotReloading();
-    module.hot.accept([
-      './audio',
-      './chat',
-      './emotes', // BLUEMOON ADD
-      './game',
-      './Notifications',
-      './Panel',
-      './ping',
-      './settings',
-      './telemetry',
-    ], () => {
-      renderApp();
-    });
-  }
 };
 
 setupApp();

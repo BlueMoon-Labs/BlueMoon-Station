@@ -39,4 +39,6 @@
 	if(!fexists(F))
 		to_chat(src, "<span class='danger'>No [selected] logfile was found.</span>", confidential = TRUE)
 		return
-	src << browse(F,"window=investigate[selected];size=800x300")
+	var/datum/browser/popup = new(src, "investigate[ckey(selected)]", "Investigate: [selected]", 800, 300)
+	popup.set_content(file2text(F))
+	popup.open(FALSE)

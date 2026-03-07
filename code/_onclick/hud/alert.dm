@@ -82,6 +82,7 @@
 	alerts -= category
 	if(client && hud_used)
 		hud_used.reorganize_alerts()
+		alert.screen_loc = null
 		client.screen -= alert
 	qdel(alert)
 
@@ -941,6 +942,8 @@ so as to remain in compliance with the most up-to-date laws."
 	return TRUE
 
 /atom/movable/screen/alert/Destroy()
+	animate(src)
+	transform = null
 	. = ..()
 	severity = 0
 	master = null

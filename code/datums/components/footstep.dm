@@ -158,6 +158,9 @@
 			play_fov_effect(H, 3, "footstep", dir = H.dir, ignore_self = FALSE)
 			return
 
+	if(!turf_footstep)
+		return
+
 	if(!special && H.dna.species.special_step_sounds)
 		playsound(T, pick(H.dna.species.special_step_sounds), 50, TRUE, falloff_distance = 1)
 	else

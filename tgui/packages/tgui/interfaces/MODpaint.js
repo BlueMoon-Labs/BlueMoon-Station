@@ -50,13 +50,6 @@ const displayText = (param) => {
 export const MODpaint = (props, context) => {
   const { act, data } = useBackend(context);
   const { mapRef, currentColor } = data;
-  const [
-    [rr, rg, rb, ra],
-    [gr, gg, gb, ga],
-    [br, bg, bb, ba],
-    [ar, ag, ab, aa],
-    [cr, cg, cb, ca],
-  ] = currentColor;
   const presets = ['red', 'yellow', 'green', 'teal', 'blue', 'purple'];
   const prefixes = ['r', 'g', 'b'];
   return (
@@ -86,7 +79,7 @@ export const MODpaint = (props, context) => {
                         stepPixelSize={0.75}
                         format={(value) => `${value}%`}
                         onDrag={(e, value) => {
-                          let retColor = currentColor;
+                          let retColor = [...currentColor];
                           retColor[row * 4 + col] = value / 100;
                           act('transition_color', { color: retColor });
                         }}
@@ -99,20 +92,23 @@ export const MODpaint = (props, context) => {
           </Stack.Item>
           <Stack.Item width="25%">
             <Section height="70%" title="Presets">
-              <Box textAlign="center">
+              <Flex wrap="wrap" justify="center">
                 {presets.map((preset) => (
-                  <Button
-                    key={preset}
-                    height="50px"
-                    width="50px"
-                    color={preset}
-                    tooltipPosition="top"
-                    tooltip={capitalize(preset)}
-                    onClick={() =>
-                      act('transition_color', { color: colorToMatrix(preset) })}
-                  />
+                  <Flex.Item key={preset} basis="50px" grow={0} shrink={0}>
+                    <Button
+                      fluid
+                      height="50px"
+                      color={preset}
+                      tooltipPosition="top"
+                      tooltip={capitalize(preset)}
+                      onClick={() =>
+                        act('transition_color', {
+                          color: colorToMatrix(preset),
+                        })}
+                    />
+                  </Flex.Item>
                 ))}
-              </Box>
+              </Flex>
             </Section>
             <Section textAlign="center" fontSize="28px">
               <Button

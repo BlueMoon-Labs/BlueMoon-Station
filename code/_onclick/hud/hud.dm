@@ -128,6 +128,10 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	if(mymob.hud_used == src)
 		mymob.hud_used = null
 
+	if(mymob?.observers?.len)
+		for(var/mob/dead/observer/observe in mymob.observers)
+			observe.reset_perspective(null)
+
 	QDEL_NULL(toggle_palette)
 	QDEL_NULL(palette_down)
 	QDEL_NULL(palette_up)
@@ -136,6 +140,17 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	QDEL_LIST(floating_actions)
 
 	QDEL_NULL(module_store_icon)
+
+	// Remove screen objects from client.screen before qdeling them
+	// to prevent stale references in BYOND's internal screen list causing GC failures
+	if(mymob?.client)
+		var/client/C = mymob.client
+		C.screen -= static_inventory
+		C.screen -= toggleable_inventory
+		C.screen -= extra_inventory
+		C.screen -= hotkeybuttons
+		C.screen -= infodisplay
+		C.screen -= screenoverlays
 	QDEL_LIST(static_inventory)
 
 	inv_slots.Cut()
@@ -166,6 +181,12 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	alien_queen_finder = null
 	combo_display = null
 
+	for(var/key in plane_masters)
+		var/atom/movable/screen/P = plane_masters[key]
+		P.screen_loc = null
+	if(mymob?.client)
+		for(var/key in plane_masters)
+			mymob.client.screen -= plane_masters[key]
 	QDEL_LIST_ASSOC_VAL(plane_masters)
 	QDEL_LIST_ASSOC_VAL(plane_master_controllers)
 	QDEL_LIST(screenoverlays)

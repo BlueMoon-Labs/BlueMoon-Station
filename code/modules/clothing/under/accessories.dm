@@ -28,6 +28,11 @@
 	var/max_stack_path = null
 	// BLUEMOON ADD END
 
+/obj/item/clothing/accessory/Destroy()
+	current_uniform = null
+	detached_pockets = null
+	return ..()
+
 /obj/item/clothing/accessory/proc/attach(obj/item/clothing/under/U, user)
 	var/datum/component/storage/storage = GetComponent(/datum/component/storage)
 	if(storage)

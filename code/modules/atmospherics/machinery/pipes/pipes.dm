@@ -27,6 +27,24 @@
 /obj/machinery/atmospherics/pipe/destroy_network()
 	QDEL_NULL(parent)
 
+/obj/machinery/atmospherics/pipe/proc/prune_stale_pipeline_memberships(datum/pipeline/skip_pipeline = null)
+	var/list/seen_pipelines = list()
+	for(var/list/source as anything in list(SSair.networks, SSair.currentrun))
+		if(!islist(source))
+			continue
+		for(var/thing as anything in source)
+			if(!istype(thing, /datum/pipeline))
+				continue
+			var/datum/pipeline/P = thing
+			if(P in seen_pipelines)
+				continue
+			seen_pipelines += P
+			if(P == skip_pipeline)
+				continue
+			if(src in P.members)
+				P.members -= src
+				P.update = TRUE
+
 /obj/machinery/atmospherics/pipe/build_network()
 	if(QDELETED(src))
 		return // Pipe was destroyed, don't rebuild
@@ -91,6 +109,7 @@
 	return FALSE // they're not really machines in the normal sense, probably shouldn't explode
 
 /obj/machinery/atmospherics/pipe/Destroy()
+	prune_stale_pipeline_memberships(parent)
 	QDEL_NULL(parent)
 
 	releaseAirToTurf()

@@ -15,7 +15,7 @@ const logger = createLogger('hotkeys');
 const byondMacros: Record<string, string> = {};
 
 // Default set of acquired keys, which will not be sent to BYOND.
-const hotKeysAcquired = [
+const hotKeysAcquired: string[] = [
   keycodes.KEY_ESCAPE,
   keycodes.KEY_ENTER,
   keycodes.KEY_SPACE,
@@ -32,35 +32,66 @@ const hotKeysAcquired = [
 // State of passed-through keys.
 const keyState: Record<string, boolean> = {};
 
+// Maps event.key -> BYOND direction names
+const BYOND_DIRECTION_MAP: Record<string, string> = {
+  'ArrowLeft': 'West',
+  'ArrowUp': 'North',
+  'ArrowRight': 'East',
+  'ArrowDown': 'South',
+  'PageUp': 'Northeast',
+  'PageDown': 'Southeast',
+  'End': 'Southwest',
+  'Home': 'Northwest',
+};
+
 /**
- * Converts a browser keycode to BYOND keycode.
+ * Converts a KeyEvent to BYOND key name.
+ *
+ * Uses event.code (physical key) for layout-independent mapping of letters,
+ * digits, and symbols. This ensures hotkeys work regardless of keyboard
+ * layout (e.g. Russian, German QWERTZ, French AZERTY).
  */
-const keyCodeToByond = (keyCode: number) => {
-  if (keyCode === 16) return 'Shift';
-  if (keyCode === 17) return 'Ctrl';
-  if (keyCode === 18) return 'Alt';
-  if (keyCode === 33) return 'Northeast';
-  if (keyCode === 34) return 'Southeast';
-  if (keyCode === 35) return 'Southwest';
-  if (keyCode === 36) return 'Northwest';
-  if (keyCode === 37) return 'West';
-  if (keyCode === 38) return 'North';
-  if (keyCode === 39) return 'East';
-  if (keyCode === 40) return 'South';
-  if (keyCode === 45) return 'Insert';
-  if (keyCode === 46) return 'Delete';
-  if (keyCode >= 48 && keyCode <= 57 || keyCode >= 65 && keyCode <= 90) {
-    return String.fromCharCode(keyCode);
+const keyToByond = (keyEvent: KeyEvent): string | undefined => {
+  const { key, code } = keyEvent;
+
+  // Numpad digits — distinguish via event.code
+  if (/^Numpad\d$/.test(code)) {
+    return 'Numpad' + code.slice(6);
   }
-  if (keyCode >= 96 && keyCode <= 105) {
-    return 'Numpad' + (keyCode - 96);
+
+  // Direction/navigation keys (layout-independent in event.key)
+  if (BYOND_DIRECTION_MAP[key]) {
+    return BYOND_DIRECTION_MAP[key];
   }
-  if (keyCode >= 112 && keyCode <= 123) {
-    return 'F' + (keyCode - 111);
+
+  // Modifier and special keys (layout-independent in event.key)
+  if (key === 'Shift') return 'Shift';
+  if (key === 'Control') return 'Ctrl';
+  if (key === 'Alt') return 'Alt';
+  if (key === 'Insert') return 'Insert';
+  if (key === 'Delete') return 'Delete';
+
+  // Letters — use physical key code (layout-independent)
+  // e.g. 'KeyW' → 'W', works for any keyboard layout
+  if (/^Key[A-Z]$/.test(code)) {
+    return code.charAt(3);
   }
-  if (keyCode === 188) return ',';
-  if (keyCode === 189) return '-';
-  if (keyCode === 190) return '.';
+
+  // Digits — use physical key code (layout-independent)
+  // e.g. 'Digit1' → '1'
+  if (/^Digit\d$/.test(code)) {
+    return code.charAt(5);
+  }
+
+  // F-keys (layout-independent in event.key)
+  if (/^F\d+$/.test(key)) return key;
+
+  // Symbol keys — use physical key code (layout-independent)
+  if (code === 'Comma') return ',';
+  if (code === 'Minus') return '-';
+  if (code === 'Period') return '.';
+
+  return undefined;
 };
 
 /**
@@ -74,17 +105,21 @@ const handlePassthrough = (key: KeyEvent) => {
     location.reload();
     return;
   }
-  // Prevent passthrough on Ctrl+F
+  // Open/toggle the FindBar on Ctrl+F
   if (keyString === 'Ctrl+F') {
+    if (key.isDown()) {
+      key.event.preventDefault();
+      globalEvents.emit('findbar-toggle');
+    }
     return;
   }
-  // NOTE: Alt modifier is pretty bad and sticky in IE11.
+  // NOTE: Alt modifier can be sticky and conflict-prone.
   if (key.event.defaultPrevented
       || key.isModifierKey()
-      || hotKeysAcquired.includes(key.code)) {
+      || hotKeysAcquired.includes(key.key)) {
     return;
   }
-  const byondKeyCode = keyCodeToByond(key.code);
+  const byondKeyCode = keyToByond(key);
   if (!byondKeyCode) {
     return;
   }
@@ -114,15 +149,15 @@ const handlePassthrough = (key: KeyEvent) => {
  * Acquires a lock on the hotkey, which prevents it from being
  * passed through to BYOND.
  */
-export const acquireHotKey = (keyCode: number) => {
-  hotKeysAcquired.push(keyCode);
+export const acquireHotKey = (key: string) => {
+  hotKeysAcquired.push(key);
 };
 
 /**
  * Makes the hotkey available to BYOND again.
  */
-export const releaseHotKey = (keyCode: number) => {
-  const index = hotKeysAcquired.indexOf(keyCode);
+export const releaseHotKey = (key: string) => {
+  const index = hotKeysAcquired.indexOf(key);
   if (index >= 0) {
     hotKeysAcquired.splice(index, 1);
   }
@@ -180,5 +215,35 @@ export const setupHotKeys = () => {
   });
   globalEvents.on('key', (key: KeyEvent) => {
     handlePassthrough(key);
+  });
+  // Fix for stuck keys pressed on the map and released in TGUI.
+  // Raw DOM listeners bypass the canStealFocus filter in events.js.
+  // If keyup has no preceding keydown in this context, the key was
+  // pressed on the map side — forward KeyUp to BYOND.
+  const pressedInBrowser: Record<string, boolean> = {};
+
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    const byondKey = keyToByond(new KeyEvent(e, 'keydown', false));
+    if (byondKey) {
+      pressedInBrowser[byondKey] = true;
+    }
+  });
+
+  document.addEventListener('keyup', (e: KeyboardEvent) => {
+    const byondKey = keyToByond(new KeyEvent(e, 'keyup'));
+    if (!byondKey) {
+      return;
+    }
+    if (!pressedInBrowser[byondKey]) {
+      logger.debug(`forwarding orphaned KeyUp "${byondKey}"`);
+      Byond.command(`KeyUp "${byondKey}"`);
+    }
+    pressedInBrowser[byondKey] = false;
+  });
+
+  window.addEventListener('blur', () => {
+    for (const key of Object.keys(pressedInBrowser)) {
+      pressedInBrowser[key] = false;
+    }
   });
 };

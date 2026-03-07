@@ -395,7 +395,7 @@ They deal 35 brute (armor is considered).
 /obj/effect/step_trigger/gladiator/Trigger(atom/movable/A)
 	if(isliving(A))
 		var/mob/living/bruh = A
-		glady.enemies |= bruh
+		glady.add_enemy(bruh)
 		glady.GiveTarget(bruh)
 		for(var/obj/effect/step_trigger/gladiator/glad in view(7, src))
 			qdel(glad)

@@ -6,6 +6,7 @@
 	dismemberment = 0
 	stamina = 75
 	breakthings = FALSE
+	can_head_gib = FALSE
 	wound_bonus = 0
 	bare_wound_bonus = 1
 

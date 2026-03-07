@@ -113,6 +113,10 @@
 /datum/config_entry/flag/emergency_tgui_logging
 	default = FALSE
 
+/// mirrors tgui output to both browser channels (diagnostics only)
+/datum/config_entry/flag/emergency_tgui_mirror_output
+	default = FALSE
+
 /// The "cooldown" time for each occurrence of a unique error
 /datum/config_entry/number/error_cooldown
 	default = 600

@@ -1,0 +1,69 @@
+/**
+ * Copyright (c) 2025
+ * SPDX-License-Identifier: MIT
+ */
+
+@use '../base.scss';
+
+$background-color: #363636;
+
+.FindBar {
+  position: fixed;
+  top: base.rem(32px);
+  right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: base.rem(4px) base.rem(8px);
+  background-color: $background-color;
+  border-bottom-left-radius: base.$border-radius;
+  box-shadow: 0 base.rem(2px) base.rem(8px) rgba(0, 0, 0, 0.3);
+  gap: base.rem(4px);
+}
+
+.FindBar__input {
+  flex: 1 1 auto;
+  min-width: base.rem(80px);
+  max-width: base.rem(200px);
+  border: 1px solid rgba(#88bfff, 0.75);
+  border-radius: base.$border-radius;
+  background-color: #0a0a0a;
+  color: base.$color-fg;
+  padding: base.rem(2px) base.rem(6px);
+  font-size: base.rem(12px);
+  font-family: Verdana, sans-serif;
+  outline: none;
+
+  &--noMatch {
+    border-color: rgba(#ff4444, 0.75);
+  }
+}
+
+.FindBar__count {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: base.rem(11px);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.FindBar__button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: base.rem(24px);
+  height: base.rem(24px);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  border-radius: base.$border-radius;
+
+  &:hover {
+    color: rgba(255, 255, 255, 1);
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+// ::highlight() styles for CSS Custom Highlight API are injected
+// via JavaScript in FindBar.tsx to bypass SCSS build pipeline.

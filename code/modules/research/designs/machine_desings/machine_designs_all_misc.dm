@@ -57,6 +57,7 @@
 	name = "Machine Design (Vendor Board)"
 	desc = "The circuit board for a Vendor. Use a screwdriver to turn the \"brand selection\" dial."
 	id = "vendor"
+	build_type = PROTOLATHE | AUTOLATHE
 	build_path = /obj/item/circuitboard/machine/vendor
 	category = list ("Cargo Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
@@ -82,7 +83,7 @@
 	desc = "The circuit board for an All-In-One Grinder."
 	id = "reagentgrinder"
 	build_path = /obj/item/circuitboard/machine/reagentgrinder
-	category = list ("Culinary Machinery")
+	category = list ("Medical Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/board/microwave

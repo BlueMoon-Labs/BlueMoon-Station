@@ -92,8 +92,10 @@
 		QDEL_IN(src, timeout)
 
 /datum/tgui_list_input/Destroy(force, ...)
-	SStgui.close_uis(src)
-	QDEL_NULL(items)
+	if(!closed)
+		SStgui.close_uis(src)
+	items = null
+	items_map = null
 	. = ..()
 
 /**

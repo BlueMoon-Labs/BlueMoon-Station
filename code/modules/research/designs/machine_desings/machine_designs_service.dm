@@ -87,7 +87,7 @@
 	id = "autohydrotray"
 	build_path = /obj/item/circuitboard/machine/hydroponics/automagic
 	category = list ("Hydroponics Machinery")
-	departmental_flags = DEPARTMENTAL_FLAG_SERVICE | DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/board/monkey_recycler
 	name = "Machine Design (Monkey Recycler Board)"

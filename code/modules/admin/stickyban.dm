@@ -385,17 +385,13 @@
 		banhtml += "<br /><hr />\n"
 		banhtml += stickyban_gethtml(ckey)
 
-	var/html = {"
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>Sticky Bans</title>
-	</head>
-	<body>
+	var/body_content = {"
 		<h2>All Sticky Bans:</h2> <a href='?_src_=holder;[HrefToken()];stickyban=add'>\[+\]</a><br>
 		[banhtml.Join("")]
-	</body>
 	"}
-	usr << browse(html,"window=stickybans;size=700x400")
+	var/datum/browser/popup = new(usr, "stickybans", "Sticky Bans", 700, 400)
+	popup.set_content(body_content)
+	popup.open(FALSE)
 
 /proc/sticky_banned_ckeys()
 	if (SSdbcore.Connect() || length(SSstickyban.dbcache))

@@ -15,6 +15,7 @@
 
 /datum/pipeline/Destroy()
 	SSair.networks -= src
+	SSair.currentrun -= src
 	if(air?.return_volume())  //	BLUEMOON EDIT: TODO:runtime
 		temporarily_store_air()
 	for(var/obj/machinery/atmospherics/pipe/P as anything in members)
@@ -28,7 +29,7 @@
 	members.Cut()
 	other_atmosmch.Cut()
 	other_airs.Cut()
-	air = null
+	QDEL_NULL(air)
 	return ..()
 
 /datum/pipeline/process()
@@ -81,7 +82,7 @@
 
 							if(item.air_temporary)
 								air.merge(item.air_temporary)
-								item.air_temporary = null
+								QDEL_NULL(item.air_temporary)
 					else
 						P.setPipenet(src, borderline)
 						addMachineryMember(P)
@@ -118,7 +119,8 @@
 			if(I.parent == src)
 				continue
 			var/datum/pipeline/E = I.parent
-			merge(E)
+			if(E)
+				merge(E)
 		if(!members.Find(P))
 			members += P
 			air.set_volume(air.return_volume() + P.volume)
@@ -150,6 +152,8 @@
 	return
 
 /obj/machinery/atmospherics/pipe/addMember(obj/machinery/atmospherics/A)
+	if(!parent)
+		return
 	parent.addMember(A, src)
 
 /obj/machinery/atmospherics/components/addMember(obj/machinery/atmospherics/A)
