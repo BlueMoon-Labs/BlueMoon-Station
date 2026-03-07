@@ -136,3 +136,7 @@
 	path = /obj/item/clothing/suit/jacket/paratrench/black
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_COATS
 	cost = 2
+
+/datum/gear/suit/wizrobe/marisa/fake
+	name = "Witch robe"
+	path = /obj/item/clothing/suit/wizrobe/marisa/fake

@@ -9,12 +9,6 @@
 	tint = 1
 	glass_colour_type = /datum/client_colour/glass_colour/gray
 
-/obj/item/clothing/glasses/eyepatch
-	is_edible = 1
-
-/obj/item/clothing/glasses/sunglasses/blindfold
-	is_edible = 1
-
 /obj/item/clothing/glasses/contact
 	name = "contact lenses"
 	desc = "Prescription contact lenses, a miracle of science."

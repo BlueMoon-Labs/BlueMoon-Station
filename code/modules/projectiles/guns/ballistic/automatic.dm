@@ -114,6 +114,9 @@
 	automatic_burst_overlay = FALSE
 	pin = /obj/item/firing_pin/alert_level
 
+/obj/item/gun/ballistic/automatic/wt550/standart
+	pin = /obj/item/firing_pin
+
 /obj/item/gun/ballistic/automatic/wt550/afterattack()
 	. = ..()
 	empty_alarm()

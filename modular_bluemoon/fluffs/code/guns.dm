@@ -984,7 +984,7 @@
 
 /obj/item/modkit/nebular_kit
 	name = "Nebular Gun Kit"
-	desc = "A modkit for making an Enforcer Gun into a Nebular-9."
+	desc = "A modkit for making a Enforcer Gun into a Nebular-9."
 	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular
 	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
 

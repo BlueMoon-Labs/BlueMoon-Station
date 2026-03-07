@@ -39,6 +39,8 @@
 		/obj/item/valentine,
 		/obj/item/stamp,
 		/obj/item/key,
+		/obj/item/pda,
+		/obj/item/paicard,
 		/obj/item/cartridge,
 		/obj/item/camera_film,
 		/obj/item/stack/ore/bluespace_crystal,
@@ -76,7 +78,16 @@
 /obj/item/storage/wallet/CtrlClick(mob/user)
 	. = ..()
 	for(var/obj/item/I in contents)
-		if(I.GetID())
+		if(!I.GetID())
+			continue
+		if(istype(I, /obj/item/pda))
+			var/obj/item/pda/PDA = I
+			var/obj/item/card/id/taken_id = PDA.RemoveID()
+			if(taken_id)
+				user.put_in_hands(taken_id)
+				refreshID()
+				return TRUE
+		else
 			user.put_in_hands(I)
 			refreshID()
 			return TRUE
@@ -84,7 +95,14 @@
 
 /obj/item/storage/wallet/proc/refreshID()
 	LAZYCLEARLIST(combined_access)
-	if(!(front_id in src))
+	// front_id is valid if it's in contents or inside a PDA in contents
+	var/keep_front_id = (front_id in src)
+	if(!keep_front_id && front_id)
+		for(var/obj/item/pda/PDA in contents)
+			if(PDA.GetID() == front_id)
+				keep_front_id = TRUE
+				break
+	if(!keep_front_id)
 		front_id = null
 	for(var/obj/item/card/id/I in contents)
 		if(!front_id)
@@ -125,7 +143,19 @@
 	if(!front_id)
 		return
 	. = front_id
-	front_id.forceMove(get_turf(src))
+	if(front_id in src)
+		front_id.forceMove(get_turf(src))
+	else
+		for(var/obj/item/pda/PDA in contents)
+			if(PDA.GetID() == front_id)
+				. = PDA.RemoveID()
+				refreshID()
+				return
+		// fallback: not in contents and not from PDA (stale ref) — don't forceMove, reset state
+		front_id = null
+		refreshID()
+		. = null
+		return
 
 /obj/item/storage/wallet/InsertID(obj/item/inserting_item)
 	var/obj/item/card/inserting_id = inserting_item.RemoveID()

@@ -7,8 +7,8 @@
 	name = "scanner"
 	icon = 'icons/obj/wiremod.dmi'
 	icon_state = "setup_small"
-	inhand_icon_state = "electronic"
-	worn_icon_state = "electronic"
+	item_state = "electronic"
+	icon_state = "electronic"
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
 	light_system = MOVABLE_LIGHT_DIRECTIONAL

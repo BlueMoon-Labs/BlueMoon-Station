@@ -50,37 +50,49 @@
 			add_overlay("ov-opencover +c")
 		else
 			add_overlay("ov-opencover -c")
-	if(hat)
-		var/mutable_appearance/head_overlay = hat.build_worn_icon(default_layer = 20, default_icon_file = 'icons/mob/clothing/head.dmi', override_state = hat.icon_state)
-		head_overlay.pixel_y += hat_offset
-		add_overlay(head_overlay)
+
 	update_fire()
 
-	if(client && stat != DEAD && (module.dogborg == TRUE || module.hasrest == TRUE))
+	if(client && stat != DEAD && (module.dogborg || module.hasrest))
 		if(resting)
-			if(sitting)
-				icon_state = "[module.cyborg_base_icon]-sit"
-			if(bellyup)
-				icon_state = "[module.cyborg_base_icon]-bellyup"
-			if(deep_rest)	//DarkSer request by Gardelin0
-				icon_state = "[module.cyborg_base_icon]-rest_deep"
-			if(wag_rest)	//DarkSer request by Gardelin0
-				icon_state = "[module.cyborg_base_icon]-rest_alt"
-			if(wag_sit)	//DarkSer request by Gardelin0
-				icon_state = "[module.cyborg_base_icon]-sit_alt"
-			else if(!sitting && !bellyup && !deep_rest && !wag_rest && !wag_sit)
-				icon_state = "[module.cyborg_base_icon]-rest"
+			icon_state = "[module.cyborg_base_icon]-[resting_state]"
 			cut_overlays()
 		else
 			icon_state = "[module.cyborg_base_icon]"
 
-	if(client && stat != DEAD && module.hasrest == TRUE)	//For the new borgs who are not dogs
-		if(resting)
-			if(sitting)
-				icon_state = "[module.cyborg_base_icon]-sit"
-			else if(!sitting)
-				icon_state = "[module.cyborg_base_icon]-rest"
-			cut_overlays()
-		else
-			icon_state = "[module.cyborg_base_icon]"
+	if(hat)
+		hat_overlay = hat.build_worn_icon(20, default_icon_file = 'icons/mob/clothing/head.dmi', override_state = hat.icon_state)
+		update_worn_icons()
+	else if(hat_overlay)
+		QDEL_NULL(hat_overlay)
+
 	SEND_SIGNAL(src, COMSIG_ROBOT_UPDATE_ICONS)
+
+/mob/living/silicon/robot/proc/update_worn_icons()
+	if(!hat_overlay)
+		return
+	cut_overlay(hat_overlay)
+
+	if(islist(hat_offset))
+		var/alist/offset_state
+		if(resting && module.hasrest)
+			offset_state = hat_offset["hat_offset_[resting_state]"] || hat_offset[HAT_REST_OFFSET]
+		else
+			offset_state = hat_offset[HAT_STAND_OFFSET]
+
+		if(offset_state == HAT_NO_RENDER)
+			return
+		var/list/offset = offset_state[ISDIAGONALDIR(dir) ? dir2text(dir & (WEST|EAST)) : dir2text(dir)]
+		if(offset)
+			hat_overlay.pixel_x = offset[1]
+			hat_overlay.pixel_y = offset[2]
+	else if(isnum(hat_offset)) // legacy compatibility pixel_y
+		hat_overlay.pixel_y = hat_offset
+
+	add_overlay(hat_overlay)
+
+/mob/living/silicon/robot/setDir(newdir, ismousemovement)
+	var/old_dir = dir
+	. = ..()
+	if(. != old_dir)
+		update_worn_icons()

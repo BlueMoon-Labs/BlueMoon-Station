@@ -222,24 +222,29 @@ To add randomization to your emote, copy and paste this line of code:
 
 	// Check for cyborg
 	// Check for buckled mobs
-	if(iscyborg(user) && user.has_buckled_mobs())
+	if(iscyborg(user))
 		// Define cyborg user
 		var/mob/living/silicon/robot/user_cyborg = user
 
-		// Define riding datum
-		var/datum/component/riding/riding_datum = user_cyborg.GetComponent(/datum/component/riding)
+		if(user_cyborg.hat)
+			user_cyborg.hat.forceMove(get_turf(user))
+			user_cyborg.hat = null
 
-		// Check if riding datum exists
-		if(riding_datum)
-			// Iterate over buckled mobs
-			for(var/mob/buckled_mob in user_cyborg.buckled_mobs)
-				// Unbuckle iterated mob
-				riding_datum.force_dismount(buckled_mob)
+		if(user.has_buckled_mobs())
+			// Define riding datum
+			var/datum/component/riding/riding_datum = user_cyborg.GetComponent(/datum/component/riding)
 
-		// Riding datum does not exist
-		else
-			// Unbuckle all mobs
-			user_cyborg.unbuckle_all_mobs()
+			// Check if riding datum exists
+			if(riding_datum)
+				// Iterate over buckled mobs
+				for(var/mob/buckled_mob in user_cyborg.buckled_mobs)
+					// Unbuckle iterated mob
+					riding_datum.force_dismount(buckled_mob)
+
+			// Riding datum does not exist
+			else
+				// Unbuckle all mobs
+				user_cyborg.unbuckle_all_mobs()
 
 /datum/emote/sound/human/chirp
 	key = "chirp"

@@ -98,10 +98,10 @@
 	if(!direction || !open || (can_move >= world.time))
 		return
 
-	// MOVE US
-	if(isturf(loc))
+	var/turf/target_turf = get_step(src, direction)
+	if(isturf(loc) && target_turf && !target_turf.density)
 		can_move = world.time + move_delay
-		forceMove(direction)
+		forceMove(target_turf)
 
 /obj/structure/toilet/skibidi/obj_break(damage_flag)
 	if(trapped)
@@ -172,6 +172,10 @@
 
 /obj/structure/toilet/skibidi/proc/on_trapped_moved(atom/source)
 	SIGNAL_HANDLER
+
+	// Персонаж двигается вместе с туалетом — не считаем это побегом
+	if(trapped?.loc == src)
+		return
 
 	var/mob/living/carbon/human/goodbye = trapped
 	unregister_skibidi(goodbye)

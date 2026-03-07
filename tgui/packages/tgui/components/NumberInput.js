@@ -132,14 +132,14 @@ export class NumberInput extends Component {
       else if (this.inputRef) {
         const input = this.inputRef.current;
         if (input) {
-          setTimeout(() => {
+          requestAnimationFrame(() => {
             input.value = internalValue;
             try {
               input.focus();
               input.select();
             }
             catch { }
-          }, 1);
+          });
         }
       }
     };
@@ -157,7 +157,7 @@ export class NumberInput extends Component {
         internalValue: prev.internalValue ?? this.props.value,
       }), () => {
         // Проставляем значение в DOM-инпут и выделяем всё
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           const i = this.inputRef?.current;
           if (!i) return;
           i.value = String(this.state.internalValue ?? this.props.value ?? '');
@@ -165,7 +165,7 @@ export class NumberInput extends Component {
             i.focus();
             i.select(); // как при обычном клике — выделить всё
           } catch { }
-        }, 1);
+        });
       });
     }
   }

@@ -126,6 +126,7 @@
 	glasses = /obj/item/clothing/glasses/thermal/eyepatch
 	back = /obj/item/storage/backpack/rucksack
 	belt = /obj/item/storage/belt/grenade/fire_grenade
+	shoes = /obj/item/clothing/shoes/magboots/syndie/advance
 	r_hand = /obj/item/gun/energy/laser/hellgun
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/clothing/mask/gas/sechailer/swat=1,\
@@ -163,6 +164,7 @@
 	back = /obj/item/storage/backpack/rucksack
 	belt = /obj/item/storage/belt/grenade/fire_grenade
 	l_hand = /obj/item/gun/energy/laser/hellgun
+	shoes = /obj/item/clothing/shoes/magboots/syndie/advance
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/clothing/mask/gas/sechailer=1,\
 		/obj/machinery/igniter=1,\

@@ -17,6 +17,7 @@
 	build_path = /obj/item/ammo_box/magazine/m10mm
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
+	min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/m10mm/hp
 	name = "pistol magazine (10mm HP)"

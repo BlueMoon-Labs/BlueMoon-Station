@@ -8,7 +8,7 @@
 /datum/design/kitchen_knife
 	name = "Kitchen Knife"
 	id = "kitchen_knife"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 12000)
 	build_path = /obj/item/kitchen/knife
 	category = list("initial","Dinnerware")
@@ -16,7 +16,7 @@
 /datum/design/efink
 	name = "E-Fink"
 	id = "efink"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 12000)
 	build_path = /obj/item/kitchen/efink
 	category = list("initial","Dinnerware")
@@ -169,7 +169,7 @@
 	materials = list(/datum/material/glass = 500)
 	build_path = /obj/item/reagent_containers/glass/beaker
 	category = list("initial", "Medical","Medical Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SERVICE | DEPARTMENTAL_FLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SERVICE | DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/large_beaker
 	name = "Large Beaker"
@@ -178,16 +178,16 @@
 	materials = list(/datum/material/glass = 2500)
 	build_path = /obj/item/reagent_containers/glass/beaker/large
 	category = list("initial", "Medical","Medical Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SERVICE | DEPARTMENTAL_FLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SERVICE | DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/healthanalyzer
 	name = "Health Analyzer"
 	id = "healthanalyzer"
-	build_type = AUTOLATHE | PROTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 500, /datum/material/glass = 50)
 	build_path = /obj/item/healthanalyzer
 	category = list("initial", "Medical")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/pillbottle
 	name = "Pill Bottle"
@@ -195,7 +195,7 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 20, /datum/material/glass = 100)
 	build_path = /obj/item/storage/pill_bottle
-	category = list("initial", "Medical","Medical Designs")
+	category = list("initial", "Medical","Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/syringe
@@ -205,7 +205,7 @@
 	materials = list(/datum/material/iron = 10, /datum/material/glass = 20)
 	build_path = /obj/item/reagent_containers/syringe
 	category = list("initial", "Medical","Medical Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/health_sensor
 	name = "Health Sensor"
@@ -240,4 +240,4 @@
 	materials = list(/datum/material/iron = 200, /datum/material/glass = 1000)
 	build_path = /obj/item/reagent_containers/spray
 	category = list("initial","Medical","Medical Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SERVICE

@@ -618,6 +618,9 @@
 		toggle_ai(AI_Z_OFF)
 		return
 
+	if(!has_nearby_player())
+		return
+
 	var/cheap_search = isturf(T) && !is_station_level(T.z)
 	if (cheap_search)
 		tlist = ListTargetsLazy(T.z)

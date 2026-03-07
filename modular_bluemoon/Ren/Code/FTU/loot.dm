@@ -159,7 +159,7 @@
 			/obj/item/gun/ballistic/revolver/r45l,
 			/obj/item/gun/syringe/rapidsyringe,
 			/obj/item/gun/energy/e_gun/old,
-			/obj/item/gun/ballistic/automatic/wt550,
+			/obj/item/gun/ballistic/automatic/wt550/standart,
 			/obj/item/gun/ballistic/automatic/proto/unrestricted,
 			/obj/item/gun/energy/e_gun/nuclear,
 			/obj/item/gun/medbeam

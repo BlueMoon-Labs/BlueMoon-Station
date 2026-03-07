@@ -8,29 +8,35 @@
 	icon = 'icons/obj/clothing/glasses.dmi'
 	mob_overlay_icon = 'icons/mob/clothing/eyes.dmi'
 	flash_protect = 1
+	hud_type = DATA_HUD_MEDICAL_ADVANCED
+	var/icon_state_no_hud = "sun"
+	var/icon_state_sec_hud = "sunhudsec"
 
 /obj/item/clothing/glasses/hud/blueshield/attack_self(mob/user)
-	if(!ishuman(user))
-		return
-	var/mob/living/carbon/human/wearer = user
-	if (wearer.glasses != src)
+	if(!iscarbon(user))
 		return
 
-	if (hud_type)
+	var/mob/living/carbon/C = user
+	var/wearing = C.glasses == src
+
+	if(hud_type && wearing)
 		var/datum/atom_hud/H = GLOB.huds[hud_type]
 		H.remove_hud_from(user)
 
-	if (hud_type == DATA_HUD_MEDICAL_ADVANCED)
+	if(hud_type == DATA_HUD_MEDICAL_ADVANCED)
 		hud_type = null
-		icon_state = "sun"
-	else if (hud_type == DATA_HUD_SECURITY_ADVANCED)
+		icon_state = icon_state_no_hud
+		glass_colour_type = null
+	else if(hud_type == DATA_HUD_SECURITY_ADVANCED)
 		hud_type = DATA_HUD_MEDICAL_ADVANCED
-		icon_state = "sunhudmed"
+		icon_state = initial(icon_state)
+		glass_colour_type = /datum/client_colour/glass_colour/blue
 	else
 		hud_type = DATA_HUD_SECURITY_ADVANCED
-		icon_state = "sunhudsec"
+		icon_state = icon_state_sec_hud
+		glass_colour_type = /datum/client_colour/glass_colour/red
 
-	if (hud_type)
+	if(hud_type && wearing)
 		var/datum/atom_hud/H = GLOB.huds[hud_type]
 		H.add_hud_to(user)
 
@@ -39,40 +45,11 @@
 /obj/item/clothing/glasses/hud/blueshield/aviators
 	name = "blueshield HUD Aviators"
 	desc = "A HUD with multiple functions. More stylish."
-	actions_types = list(/datum/action/item_action/switch_hud)
 	icon = 'modular_splurt/icons/obj/clothing/glasses.dmi'
 	icon_state = "aviator_med"
 	mob_overlay_icon = 'modular_splurt/icons/mobs/eyes.dmi'
-	flash_protect = 1
-
-/obj/item/clothing/glasses/hud/blueshield/aviators/attack_self(mob/user)
-	if(!ishuman(user))
-		return
-	var/mob/living/carbon/human/wearer = user
-	if (wearer.glasses != src)
-		return
-
-	if (hud_type)
-		var/datum/atom_hud/H = GLOB.huds[hud_type]
-		H.remove_hud_from(user)
-
-	if (hud_type == DATA_HUD_MEDICAL_ADVANCED)
-		hud_type = null
-		icon_state = "aviator"
-	else if (hud_type == DATA_HUD_SECURITY_ADVANCED)
-		hud_type = DATA_HUD_MEDICAL_ADVANCED
-		icon_state = "aviator_med"
-		glass_colour_type = /datum/client_colour/glass_colour/blue
-	else
-		hud_type = DATA_HUD_SECURITY_ADVANCED
-		icon_state = "aviator_sec"
-		glass_colour_type = /datum/client_colour/glass_colour/red
-
-	if (hud_type)
-		var/datum/atom_hud/H = GLOB.huds[hud_type]
-		H.add_hud_to(user)
-
-	user.update_inv_glasses()
+	icon_state_no_hud = "aviator"
+	icon_state_sec_hud = "aviator_sec"
 
 /obj/item/clothing/glasses/hud/blueshield/aviators/prescription
 	name = "prescription blueshield HUD Aviators"
@@ -93,33 +70,8 @@
 	item_state = "holo"
 	mob_overlay_icon = 'modular_splurt/icons/mobs/eyes.dmi'
 	flash_protect = 1
-
-/obj/item/clothing/glasses/hud/blueshield/holo/attack_self(mob/user)
-	if(!ishuman(user))
-		return
-	var/mob/living/carbon/human/wearer = user
-	if (wearer.glasses != src)
-		return
-
-	if (hud_type)
-		var/datum/atom_hud/H = GLOB.huds[hud_type]
-		H.remove_hud_from(user)
-
-	if (hud_type == DATA_HUD_MEDICAL_ADVANCED)
-		hud_type = null
-		icon_state = "holohud"
-	else if (hud_type == DATA_HUD_SECURITY_ADVANCED)
-		hud_type = DATA_HUD_MEDICAL_ADVANCED
-		icon_state = "holohudmed"
-	else
-		hud_type = DATA_HUD_SECURITY_ADVANCED
-		icon_state = "holohudsec"
-
-	if (hud_type)
-		var/datum/atom_hud/H = GLOB.huds[hud_type]
-		H.add_hud_to(user)
-
-	user.update_inv_glasses()
+	icon_state_no_hud = "holohud"
+	icon_state_sec_hud = "holohudsec"
 
 /obj/item/clothing/glasses/hud/blueshield/holo/prescription
 	name = "prescription holo blueshield HUD glasses"

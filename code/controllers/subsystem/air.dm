@@ -129,16 +129,13 @@ SUBSYSTEM_DEF(air)
 
 	if(currentpart == SSAIR_REBUILD_PIPENETS)
 		timer = TICK_USAGE_REAL
-		var/list/pipenet_rebuilds = pipenets_needing_rebuilt
-		for(var/thing as anything in pipenet_rebuilds)
-			var/obj/machinery/atmospherics/AT = thing
-			if(!istype(AT) || QDELETED(AT))
-				continue
-			AT.build_network()
-		cost_rebuilds = MC_AVERAGE(cost_rebuilds, TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer))
-		pipenets_needing_rebuilt.Cut()
+		if(!resumed)
+			cached_cost = 0
+		process_rebuild_queue(resumed)
+		cached_cost += TICK_USAGE_REAL - timer
 		if(state != SS_RUNNING)
 			return
+		cost_rebuilds = MC_AVERAGE(cost_rebuilds, TICK_DELTA_TO_MS(cached_cost))
 		resumed = FALSE
 		currentpart = SSAIR_PIPENETS
 
@@ -229,6 +226,20 @@ SUBSYSTEM_DEF(air)
 			return
 		resumed = 0
 		currentpart = SSAIR_REBUILD_PIPENETS
+
+/datum/controller/subsystem/air/proc/process_rebuild_queue(resumed = FALSE)
+	if(!resumed)
+		src.currentrun = pipenets_needing_rebuilt.Copy()
+		pipenets_needing_rebuilt.Cut()
+	var/list/currentrun = src.currentrun
+	while(currentrun.len)
+		var/obj/machinery/atmospherics/AT = currentrun[currentrun.len]
+		currentrun.len--
+		if(QDELETED(AT))
+			continue
+		AT.build_network()
+		if(MC_TICK_CHECK)
+			return
 
 /datum/controller/subsystem/air/proc/process_pipenets(resumed = 0)
 	if (!resumed)

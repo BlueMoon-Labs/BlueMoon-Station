@@ -584,8 +584,8 @@
 	if(desc)
 		. += desc
 
+	. += "<hr>"
 	if(custom_materials)
-		. += "<hr>"
 		var/list/materials_list = list()
 		for(var/i in custom_materials)
 			var/datum/material/M = i

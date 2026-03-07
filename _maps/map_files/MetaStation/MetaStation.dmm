@@ -31839,7 +31839,7 @@
 /obj/item/clothing/ears/earmuffs,
 /obj/item/clothing/glasses/sunglasses/blindfold,
 /obj/item/clothing/mask/muzzle,
-/obj/item/clothing/glasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /obj/item/gun/syringe/dart,
 /obj/item/storage/belt/medical{
 	pixel_y = 2
@@ -38106,7 +38106,7 @@
 /obj/item/retractor,
 /obj/item/hemostat,
 /obj/item/healthanalyzer,
-/obj/item/clothing/glasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /obj/item/reagent_containers/food/drinks/bottle/vodka{
 	pixel_x = 3;
 	pixel_y = 2
@@ -45359,7 +45359,6 @@
 /turf/open/floor/plating,
 /area/maintenance/port/fore)
 "dhv" = (
-/obj/structure/table/reinforced,
 /obj/machinery/door/window/westleft{
 	base_state = "right";
 	dir = 4;
@@ -45374,9 +45373,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/obj/item/folder/red,
-/obj/item/folder/red,
-/obj/item/poster/random_official,
+/obj/machinery/rnd/production/techfab/department/security,
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
 "dhw" = (
@@ -68864,8 +68861,6 @@
 /obj/item/gun/energy/ionrifle,
 /obj/item/gun/energy/temperature/security,
 /obj/item/clothing/suit/hooded/ablative,
-/obj/item/gun/energy/e_gun/dragnet,
-/obj/item/gun/energy/e_gun/dragnet,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -71999,7 +71994,9 @@
 /turf/open/floor/plasteel/dark,
 /area/service/chapel/main)
 "oPH" = (
-/obj/machinery/rnd/production/techfab/department/security,
+/obj/structure/rack,
+/obj/item/gun/energy/e_gun/dragnet,
+/obj/item/gun/energy/e_gun/dragnet,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "oPO" = (

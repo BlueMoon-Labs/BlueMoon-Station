@@ -138,3 +138,7 @@
 /datum/gear/head/christmashatg
 	name = "Christmas Beanie"
 	path = /obj/item/clothing/head/beanie/christmas
+
+/datum/gear/head/wizard/marisa/fake
+	name = "Witch hat"
+	path = /obj/item/clothing/head/wizard/marisa/fake

@@ -19,7 +19,7 @@
 	var/overflow_probability = 50
 	/// Specific reagent to force all scrubbers to use, null for random reagent choice
 	var/datum/reagent/forced_reagent_type
-	/// A list of scrubbers that will have reagents ejected from them
+	/// A list of scrubbers and vents that will have reagents ejected from them
 	var/list/scrubbers = list()
 	/// The list of chems that scrubbers can produce
 	var/list/safer_chems = list(/datum/reagent/water,
@@ -88,6 +88,18 @@
 			continue
 		scrubbers += temp_vent
 
+	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent in GLOB.machines)
+		var/turf/vent_turf = get_turf(temp_vent)
+		if(!vent_turf)
+			continue
+		if(!is_station_level(vent_turf.z))
+			continue
+		if(temp_vent.welded)
+			continue
+		if(!prob(overflow_probability))
+			continue
+		scrubbers += temp_vent
+
 	if(!scrubbers.len)
 		return kill()
 
@@ -97,13 +109,14 @@
 		return
 	for(var/obj/machinery/atmospherics/components/unary/vent_scrubber/temp_vent in GLOB.machines)
 		var/turf/scrubber_turf = get_turf(temp_vent)
-		if(!scrubber_turf)
+		if(!scrubber_turf || !is_station_level(scrubber_turf.z) || temp_vent.welded)
 			continue
-		if(!is_station_level(scrubber_turf.z))
+		return TRUE
+	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent in GLOB.machines)
+		var/turf/vent_turf = get_turf(temp_vent)
+		if(!vent_turf || !is_station_level(vent_turf.z) || temp_vent.welded)
 			continue
-		if(temp_vent.welded)
-			continue
-		return TRUE //there's at least one. we'll let the codergods handle the rest with prob() i guess.
+		return TRUE
 	return FALSE
 
 /// proc that will run the prob check of the event and return a safe or dangerous reagent based off of that.
@@ -111,7 +124,7 @@
 	return dangerous ? get_random_reagent_id() : pick(safer_chems)
 
 /datum/round_event/scrubber_overflow/start()
-	for(var/obj/machinery/atmospherics/components/unary/vent_scrubber/vent as anything in scrubbers)
+	for(var/obj/machinery/atmospherics/components/unary/vent as anything in scrubbers)
 		if(!vent.loc)
 			CRASH("SCRUBBER SURGE: [vent] has no loc somehow?")
 
