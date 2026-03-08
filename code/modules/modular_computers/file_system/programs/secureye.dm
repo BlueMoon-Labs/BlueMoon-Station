@@ -54,7 +54,11 @@
 	cam_background.del_on_map_removal = FALSE
 
 /datum/computer_file/program/secureye/Destroy()
-	qdel(cam_screen)
+	if(cam_screen)
+		cam_screen.screen_loc = null
+		qdel(cam_screen)
+	for(var/atom/movable/screen/P in cam_plane_masters)
+		P.screen_loc = null
 	QDEL_LIST(cam_plane_masters)
 	qdel(cam_background)
 	return ..()

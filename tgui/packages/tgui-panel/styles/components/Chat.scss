@@ -11,6 +11,20 @@
 $text-color: #abc6ec !default;
 $color-bg-section: base.$color-bg-section !default;
 
+// Thinner scrollbar with transparent track for the chat panel,
+// so it doesn't create a visible gap on the right side.
+.Layout__content--scrollable {
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
 .Chat {
   color: $text-color;
 }
@@ -40,7 +54,8 @@ $color-bg-section: base.$color-bg-section !default;
 }
 
 .Chat__scrollButton {
-  position: fixed;
+  position: absolute;
+  z-index: 2;
   right: 2em;
   bottom: 1em;
 }
@@ -75,6 +90,26 @@ $color-bg-section: base.$color-bg-section !default;
   color: #fff;
   background-color: #a00;
   font-weight: bold;
+}
+
+.Chat__unreadBadge {
+  font-size: 0.7em;
+  border-radius: 0.25em;
+  width: 1.7em;
+  line-height: 1.55em;
+  background-color: crimson;
+  color: #fff;
+  text-align: center;
+  animation: unreadPulse 2s ease-in-out infinite;
+}
+
+@keyframes unreadPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220, 20, 60, 0);
+  }
+  50% {
+    box-shadow: 0 0 6px 2px rgba(220, 20, 60, 0.4);
+  }
 }
 
 .ChatMessage {

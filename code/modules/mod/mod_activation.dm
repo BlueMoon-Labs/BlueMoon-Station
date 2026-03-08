@@ -40,6 +40,12 @@
 /// Deploys a part of the suit onto the user.
 /obj/item/mod/control/proc/deploy(mob/user, part)
 	var/obj/item/piece = part
+	if(piece == helmet && wearer.head)
+		helmet.overslot = wearer.head
+		wearer.transferItemToLoc(helmet.overslot, helmet, force = TRUE)
+	if(piece == chestplate && wearer.wear_suit)
+		chestplate.overslot = wearer.wear_suit
+		wearer.transferItemToLoc(chestplate.overslot, chestplate, force = TRUE)
 	if(piece == gauntlets && wearer.gloves)
 		gauntlets.overslot = wearer.gloves
 		wearer.transferItemToLoc(gauntlets.overslot, gauntlets, force = TRUE)
@@ -73,6 +79,10 @@
 	REMOVE_TRAIT(piece, TRAIT_NODROP, MOD_TRAIT)
 	if(wearer)
 		wearer.transferItemToLoc(piece, src, force = TRUE)
+	if(piece == helmet)
+		helmet.show_overslot()
+	if(piece == chestplate)
+		chestplate.show_overslot()
 	if(piece == gauntlets)
 		gauntlets.show_overslot()
 	if(piece == boots)

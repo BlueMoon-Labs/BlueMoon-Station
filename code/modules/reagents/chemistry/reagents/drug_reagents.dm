@@ -672,7 +672,7 @@
 		if(ishuman(M))
 			var/mob/living/carbon/human/H = M
 			var/list/genits = H.adjust_arousal(-100, "camphor", aphro = TRUE, silent = TRUE)
-			if(genits.len)
+			if(genits && genits.len)
 				to_chat(M, "<span class='notice'>You no longer feel aroused.")
 	..()
 
@@ -690,7 +690,7 @@
 		if(ishuman(M))
 			var/mob/living/carbon/human/H = M
 			var/list/genits = H.adjust_arousal(-100, "hexacamphor", aphro = TRUE, silent = TRUE)
-			if(genits.len)
+			if(genits && genits.len)
 				to_chat(M, "<span class='notice'>You no longer feel aroused.")
 
 	..()

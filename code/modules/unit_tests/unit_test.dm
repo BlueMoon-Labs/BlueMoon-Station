@@ -55,6 +55,8 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	return initial(a.priority) - initial(b.priority)
 
 /datum/unit_test/New()
+	if (QDELETED(reservation))
+		reservation = null
 	if (isnull(reservation))
 		reservation = SSmapping.RequestBlockReservation(5, 5)
 
@@ -221,6 +223,13 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	var/file_name = "data/unit_tests.json"
 	fdel(file_name)
 	file(file_name) << json_encode(test_results)
+
+	var/datum/turf_reservation/shared_reservation = /datum/unit_test::reservation
+	if (QDELETED(shared_reservation))
+		/datum/unit_test::reservation = null
+	else if (!isnull(shared_reservation))
+		qdel(shared_reservation)
+		/datum/unit_test::reservation = null
 
 	SSticker.force_ending = TRUE
 	//We have to call this manually because del_text can preceed us, and SSticker doesn't fire in the post game

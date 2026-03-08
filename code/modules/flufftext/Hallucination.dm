@@ -151,7 +151,9 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /obj/effect/hallucination/simple/Destroy()
 	if(target?.client)
 		target.client.images.Remove(current_image)
+	current_image = null
 	active = FALSE
+	target = null
 	return ..()
 
 #define FAKE_FLOOD_EXPAND_TIME 20

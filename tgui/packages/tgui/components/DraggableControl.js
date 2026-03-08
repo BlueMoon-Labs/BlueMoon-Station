@@ -4,6 +4,7 @@
  * @license MIT
  */
 
+import { KEY_ENTER, KEY_ESCAPE } from 'common/keycodes';
 import { clamp } from 'common/math';
 import { pureComponentHooks } from 'common/react';
 import { Component, createRef } from 'inferno';
@@ -16,7 +17,10 @@ const DEFAULT_UPDATE_RATE = 400;
  * Reduces screen offset to a single number based on the matrix provided.
  */
 const getScalarScreenOffset = (e, matrix) => {
-  return e.screenX * matrix[0] + e.screenY * matrix[1];
+  // DPI fix: screenX/screenY are in physical pixels; divide by DPR to normalize
+  // drag sensitivity so stepPixelSize behaves consistently at any DPI.
+  const dpr = window.devicePixelRatio ?? 1;
+  return (e.screenX * matrix[0] + e.screenY * matrix[1]) / dpr;
 };
 
 export class DraggableControl extends Component {
@@ -150,8 +154,7 @@ export class DraggableControl extends Component {
       else if (this.inputRef) {
         const input = this.inputRef.current;
         input.value = internalValue;
-        // IE8: Dies when trying to focus a hidden element
-        // (Error: Object does not support this action)
+        // Guard focus/select when the input may be hidden.
         try {
           input.focus();
           input.select();
@@ -252,7 +255,7 @@ export class DraggableControl extends Component {
           }
         }}
         onKeyDown={e => {
-          if (e.keyCode === 13) {
+          if (e.key === KEY_ENTER) {
             let value;
             if (unclamped) {
               value = parseFloat(e.target.value);
@@ -282,7 +285,7 @@ export class DraggableControl extends Component {
             }
             return;
           }
-          if (e.keyCode === 27) {
+          if (e.key === KEY_ESCAPE) {
             this.setState({
               editing: false,
             });

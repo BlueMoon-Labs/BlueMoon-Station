@@ -8,7 +8,9 @@ import { useLocalState } from '../backend';
 import { Flex, Section, Tabs } from '../components';
 import { Pane, Window } from '../layouts';
 
-const r = require.context('../stories', false, /\.stories\.js$/);
+const storyModules = import.meta.glob('../stories/*.stories.js', {
+  eager: true,
+});
 
 /**
  * @returns {{
@@ -18,7 +20,9 @@ const r = require.context('../stories', false, /\.stories\.js$/);
  *   },
  * }[]}
  */
-const getStories = () => r.keys().map(path => r(path));
+const getStories = () => Object.keys(storyModules)
+  .sort()
+  .map(path => storyModules[path]);
 
 export const KitchenSink = (props, context) => {
   const { panel } = props;

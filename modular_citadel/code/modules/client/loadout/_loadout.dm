@@ -92,7 +92,13 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 		var/init_icon_state = item_icon_state ? item_icon_state : initial(path.icon_state)
 		CHECK_TICK
 		if(init_icon && init_icon_state)
-			base64icon = icon2base64(icon(init_icon, init_icon_state, SOUTH, 1, FALSE))
+			var/static/list/loadout_icon_cache = list()
+			var/cache_key = "[init_icon]:[init_icon_state]"
+			if(cache_key in loadout_icon_cache)
+				base64icon = loadout_icon_cache[cache_key]
+			else
+				base64icon = icon2base64(icon(init_icon, init_icon_state, SOUTH, 1, FALSE))
+				loadout_icon_cache[cache_key] = base64icon
 	catch(var/exception/e)
 		stack_trace("Loadout icon generation failed for [name] ([type]): [e]")
 		base64icon = null  // Item will work without preview icon

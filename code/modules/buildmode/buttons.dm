@@ -29,6 +29,11 @@
 	return TRUE
 
 /atom/movable/screen/buildmode/mode/update_icon_state()
+	var/icon/I = bd.mode.get_button_icon()
+	if(I)
+		icon = I
+	else
+		icon = initial(icon)
 	icon_state = bd.mode.get_button_iconstate()
 
 /atom/movable/screen/buildmode/help
@@ -59,7 +64,13 @@
 
 /atom/movable/screen/buildmode/modeswitch/New(bld, mt)
 	modetype = mt
-	icon_state = "buildmode_[initial(modetype.key)]"
+	var/state = "buildmode_[initial(modetype.key)]"
+	if(modetype == /datum/buildmode_mode/offercontrol)
+		icon = 'icons/misc/buildmode_offer.dmi'
+	if(!(state in icon_states(icon)))
+		state = "buildmode_basic"
+		icon = initial(icon)
+	icon_state = state
 	name = initial(modetype.key)
 	return ..(bld)
 

@@ -6,6 +6,7 @@
 	icon_state = "hypovial"
 	spillable = FALSE
 	volume = 10
+	amount_per_transfer_from_this = 5
 	possible_transfer_amounts = list(1,2,5,10)
 	container_flags = APTFT_VERB
 	obj_flags = UNIQUE_RENAME
@@ -56,6 +57,7 @@
 	desc = "Большая гипоампула, для моделей гипоспреев \"Делюкс\"."
 	icon_state = "hypoviallarge"
 	volume = 120
+	amount_per_transfer_from_this = 10
 	possible_transfer_amounts = list(1,2,5,10,20)
 	unique_reskin = list(
 		"large hypovial" = list("icon_state" = "hypoviallarge"),
@@ -161,12 +163,15 @@
 	icon_state = "hypoviallarge-k"
 	list_reagents = list(/datum/reagent/medicine/synthflesh = 120)
 
-// BLUEMOON ADD START
 /obj/item/reagent_containers/glass/bottle/vial/large/synthflesh/neo
 	name = "large blue hypovial (neosynth)"
 	icon_state = "hypoviallarge-d"
 	list_reagents = list(/datum/reagent/medicine/synthflesh/neo = 120)
-// BLUEMOON ADD END
+
+/obj/item/reagent_containers/glass/bottle/vial/large/synthflesh/mine_salve
+	name = "large blue hypovial (miners salve)"
+	icon_state = "hypoviallarge-d"
+	list_reagents = list(/datum/reagent/medicine/mine_salve = 120)
 
 /obj/item/reagent_containers/glass/bottle/vial/large/combat
 	name = "combat hypovial"

@@ -4,8 +4,8 @@
 /obj/machinery/reagentgrinder
 	name = "\improper All-In-One Grinder"
 	desc = "От компании BlenderTech. Will It Blend? Давайте проверим!"
-	icon = 'icons/obj/kitchen.dmi'
-	icon_state = "juicer1"
+	icon = 'icons/obj/machines/kitchen.dmi'
+	icon_state = "juicer"
 	layer = BELOW_OBJ_LAYER
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 5
@@ -66,11 +66,14 @@
 		AM.forceMove(drop_location())
 	holdingitems = list()
 
-/obj/machinery/reagentgrinder/update_icon_state()
-	if(beaker)
-		icon_state = "juicer1"
-	else
-		icon_state = "juicer0"
+/obj/machinery/reagentgrinder/update_overlays()
+	. = ..()
+
+	if(!QDELETED(beaker))
+		. += "[icon_state]-beaker"
+
+	if(anchored && !panel_open && is_operational)
+		. += "[icon_state]-on"
 
 /obj/machinery/reagentgrinder/proc/replace_beaker(mob/living/user, obj/item/reagent_containers/new_beaker)
 	if(beaker)
@@ -239,18 +242,8 @@
 	holdingitems -= O
 	qdel(O)
 
-/obj/machinery/reagentgrinder/proc/shake_for(duration)
-	var/offset = prob(50) ? -2 : 2
-	var/old_pixel_x = pixel_x
-	animate(src, pixel_x = pixel_x + offset, time = 0.2, loop = -1) //start shaking
-	addtimer(CALLBACK(src, PROC_REF(stop_shaking), old_pixel_x), duration)
-
-/obj/machinery/reagentgrinder/proc/stop_shaking(old_px)
-	animate(src)
-	pixel_x = old_px
-
 /obj/machinery/reagentgrinder/proc/operate_for(time, silent = FALSE, juicing = FALSE)
-	shake_for(time / speed)
+	Shake(2, 2, time / speed)
 	operating = TRUE
 	if(!silent)
 		if(!juicing)

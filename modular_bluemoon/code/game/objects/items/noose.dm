@@ -91,6 +91,7 @@ ooo++++++++ooymyosh/`````````````````````````````````````````````````..-:/oyddys
 
 /obj/structure/chair/noose/Destroy()
 	STOP_PROCESSING(SSobj, src)
+	QDEL_NULL(over)
 	return ..()
 
 /obj/structure/chair/noose/post_buckle_mob(mob/living/M)

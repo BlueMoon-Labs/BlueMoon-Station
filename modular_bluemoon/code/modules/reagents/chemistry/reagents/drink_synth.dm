@@ -196,7 +196,7 @@
 		return
 	if(!knew_encoded)
 		to_chat(M, "<span class='warning'>С исчезновением реагента из вашей системы вы теряете возможность общаться на закодированном. Увы...</span>")
-		M.remove_language(/datum/language/machine, TRUE, TRUE, LANGUAGE_ALL)
+		M.remove_language(/datum/language/machine, source = LANGUAGE_ALL)
 
 /datum/reagent/consumable/synthdrink/synthanol/codelibre
 	name = "Code Libre"

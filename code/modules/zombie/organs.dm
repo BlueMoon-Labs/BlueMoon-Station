@@ -59,8 +59,7 @@
 		return
 	if (causes_damage && !iszombie(owner) && owner.stat != DEAD)
 		owner.adjustToxLoss(1 * seconds_per_tick)
-		owner.adjustOrganLoss(ORGAN_SLOT_HEART, 10)
-		owner.adjustOrganLoss(ORGAN_SLOT_BRAIN, 10)
+		owner.adjustOrganLoss(ORGAN_SLOT_BRAIN, 1)
 		if (SPT_PROB(5, seconds_per_tick))
 			to_chat(owner, span_danger("Мне плоховато..."))
 	if(timer_id || !owner.getorgan(/obj/item/organ/brain))

@@ -17,8 +17,9 @@ type NumberInputData = {
 
 export const NumberInputModal = (_, context) => {
   const { act, data } = useBackend<NumberInputData>(context);
-  const { init_value, large_buttons, message = "", timeout, title }
-    = data;
+  const { init_value, large_buttons, timeout } = data;
+  const message = data.message ?? '';
+  const title = data.title ?? '';
   const [input, setInput] = useLocalState(context, 'input', init_value);
   const onChange = (value: number) => {
     if (value === input) {
@@ -47,11 +48,10 @@ export const NumberInputModal = (_, context) => {
       {timeout && <Loader value={timeout} />}
       <Window.Content
         onKeyDown={(event) => {
-          const keyCode = window.event ? event.which : event.keyCode;
-          if (keyCode === KEY_ENTER) {
+          if (event.key === KEY_ENTER) {
             act('submit', { entry: input });
           }
-          if (keyCode === KEY_ESCAPE) {
+          if (event.key === KEY_ESCAPE) {
             act('cancel');
           }
         }}>

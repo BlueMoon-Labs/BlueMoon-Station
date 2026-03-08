@@ -101,10 +101,17 @@
 	var/commissioned = FALSE // Will other (noncommissioned) bots salute this bot?
 	var/can_salute = TRUE
 	var/salute_delay = 60 SECONDS
-
-	//emotes/speech stuff
 	var/patrol_emote = "Включение режима патруля."
 	var/patrol_fail_emote = "Невозможно начать патруль."
+
+/mob/living/simple_animal/bot/proc/set_commissioned(new_value)
+	if(commissioned == new_value)
+		return
+	commissioned = new_value
+	if(commissioned)
+		GLOB.commissioned_bots += src
+	else
+		GLOB.commissioned_bots -= src
 
 /mob/living/simple_animal/bot/proc/get_mode()
 	if(client) //Player bots do not have modes, thus the override. Also an easy way for PDA users/AI to know when a bot is a player.
@@ -167,7 +174,7 @@
 
 	//Adds bot to the diagnostic HUD system
 	prepare_huds()
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.add_to_hud(src)
 	diag_hud_set_bothealth()
 	diag_hud_set_botstat()
@@ -192,6 +199,7 @@
 		QDEL_NULL(path_hud)
 		path_hud = null
 	GLOB.bots_list -= src
+	GLOB.commissioned_bots -= src
 	if(paicard)
 		ejectpai()
 	QDEL_NULL(Radio)
@@ -271,10 +279,12 @@
 	if(!on || client)
 		return
 
-	if(!commissioned && can_salute)
-		for(var/mob/living/simple_animal/bot/B in get_hearers_in_view(5, get_turf(src)))
-			if(B.commissioned)
-				visible_message("<b>[src]</b> performs an elaborate salute for [B]!")
+	if(!commissioned && can_salute && GLOB.commissioned_bots.len)
+		for(var/mob/living/simple_animal/bot/commissioned_bot as anything in GLOB.commissioned_bots)
+			if(commissioned_bot.z != z)
+				continue
+			if(get_dist(src, commissioned_bot) <= 5)
+				visible_message("<b>[src]</b> performs an elaborate salute for [commissioned_bot]!")
 				can_salute = FALSE
 				addtimer(VARSET_CALLBACK(src, can_salute, TRUE), salute_delay)
 				break
@@ -372,10 +382,12 @@
 		ejectpai(0)
 	if(on)
 		turn_off()
-	spawn(3 * severity)
-		stat &= ~EMPED
-		if(was_on)
-			turn_on()
+	addtimer(CALLBACK(src, PROC_REF(recover_from_emp), was_on), 3 * severity, TIMER_DELETE_ME)
+
+/mob/living/simple_animal/bot/proc/recover_from_emp(was_on)
+	stat &= ~EMPED
+	if(was_on)
+		turn_on()
 
 /mob/living/simple_animal/bot/proc/set_custom_texts() //Superclass for setting hack texts. Appears only if a set is not given to a bot locally.
 	text_hack = "Вы взломали [name]."
@@ -438,7 +450,7 @@ Example usage: patient = scan(/mob/living/carbon/human, oldpatient, 1)
 The proc would return a human next to the bot to be set to the patient var.
 Pass the desired type path itself, declaring a temporary var beforehand is not required.
 */
-/mob/living/simple_animal/bot/proc/scan(scan_type, old_target, scan_range = DEFAULT_SCAN_RANGE)
+/mob/living/simple_animal/bot/proc/scan(scan_type, old_target, scan_range = DEFAULT_SCAN_RANGE, list/cached_view)
 	var/turf/T = get_turf(src)
 	if(!T)
 		return
@@ -459,7 +471,9 @@ Pass the desired type path itself, declaring a temporary var beforehand is not r
 				var/final_result = checkscan(deepscan,scan_type,old_target)
 				if(final_result)
 					return final_result
-	for (var/scan in shuffle(view(scan_range, src))-adjacent) //Search for something in range!
+	if(!cached_view)
+		cached_view = shuffle(view(scan_range, src))
+	for(var/scan in cached_view - adjacent) //Search for something in range!
 		var/final_result = checkscan(scan,scan_type,old_target)
 		if(final_result)
 			return final_result
@@ -607,10 +621,12 @@ Pass a positive integer as an argument to override a bot's default speed.
 
 /mob/living/simple_animal/bot/proc/bot_patrol()
 	patrol_step()
-	spawn(5)
-		if(mode == BOT_PATROL)
-			patrol_step()
+	addtimer(CALLBACK(src, PROC_REF(deferred_patrol_step)), 5, TIMER_DELETE_ME)
 	return
+
+/mob/living/simple_animal/bot/proc/deferred_patrol_step()
+	if(mode == BOT_PATROL)
+		patrol_step()
 
 /mob/living/simple_animal/bot/proc/start_patrol()
 
@@ -659,16 +675,21 @@ Pass a positive integer as an argument to override a bot's default speed.
 
 		var/moved = bot_move(patrol_target)//step_towards(src, next)	// attempt to move
 		if(!moved) //Couldn't proceed the next step of the path BOT_STEP_MAX_RETRIES times
-			spawn(2)
-				calc_path()
-				if(path.len == 0)
-					find_patrol_target()
-				tries = 0
+			addtimer(CALLBACK(src, PROC_REF(recalc_and_patrol)), 2, TIMER_DELETE_ME)
 
 	else	// no path, so calculate new one
 		mode = BOT_START_PATROL
 
 // finds the nearest beacon to self
+/mob/living/simple_animal/bot/proc/calc_path_start_patrol()
+	if(QDELETED(src))
+		return
+	calc_path()		// Find a route to it
+	if(path.len == 0)
+		patrol_target = null
+		return
+	mode = BOT_PATROL
+
 /mob/living/simple_animal/bot/proc/find_patrol_target()
 	nearest_beacon = null
 	new_destination = null
@@ -689,6 +710,12 @@ Pass a positive integer as an argument to override a bot's default speed.
 			patrol_target = NB.loc //Get its location and set it as the target.
 			next_destination = NB.codes["next_patrol"] //Also get the name of the next beacon in line.
 			return TRUE
+
+/mob/living/simple_animal/bot/proc/recalc_and_patrol()
+	calc_path()
+	if(path.len == 0)
+		find_patrol_target()
+	tries = 0
 
 /mob/living/simple_animal/bot/proc/find_nearest_beacon()
 	for(var/obj/machinery/navbeacon/NB in GLOB.navbeacons["[z]"])
@@ -762,13 +789,21 @@ Pass a positive integer as an argument to override a bot's default speed.
 	check_bot_access()
 	set_path(get_path_to(src, patrol_target, 120, id=access_card, exclude=avoid))
 
+/mob/living/simple_animal/bot/proc/recalc_and_summon()
+	calc_summon_path()
+	tries = 0
+
 /mob/living/simple_animal/bot/proc/calc_summon_path(turf/avoid)
 	check_bot_access()
-	spawn()
-		set_path(get_path_to(src, summon_target, 150, id=access_card, exclude=avoid))
-		if(!path.len) //Cannot reach target. Give up and announce the issue.
-			speak("Summon command failed, destination unreachable.",radio_channel)
-			bot_reset()
+	INVOKE_ASYNC(src, PROC_REF(async_calc_summon_path), avoid)
+
+/mob/living/simple_animal/bot/proc/async_calc_summon_path(turf/avoid)
+	if(QDELETED(src))
+		return
+	set_path(get_path_to(src, summon_target, 150, id=access_card, exclude=avoid))
+	if(!path.len) //Cannot reach target. Give up and announce the issue.
+		speak("Summon command failed, destination unreachable.",radio_channel)
+		bot_reset()
 
 /mob/living/simple_animal/bot/proc/summon_step()
 
@@ -786,9 +821,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 
 		var/moved = bot_move(summon_target, 3)	// Move attempt
 		if(!moved)
-			spawn(2)
-				calc_summon_path()
-				tries = 0
+			addtimer(CALLBACK(src, PROC_REF(recalc_and_summon)), 2, TIMER_DELETE_ME)
 
 	else	// no path, so calculate new one
 		calc_summon_path()

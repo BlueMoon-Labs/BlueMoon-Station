@@ -1,17 +1,27 @@
 /datum/gear/glasses/security/sunglasses/aviators
 	name = "Security HUD Aviators"
 	path = /obj/item/clothing/glasses/hud/security/sunglasses/aviators
-	restricted_roles = list("Peacekeeper", "Security Officer", "Warden", "Head of Security")
+	restricted_roles = list("Peacekeeper", "Security Officer", "Warden", "Head of Security", "NanoTrasen Representative", "Captain", "Blueshield")
 
 /datum/gear/glasses/security/sunglasses/securitygoggles
 	name = "Security HUD Goggles"
 	path = /obj/item/clothing/glasses/hud/securitygoggles
-	restricted_roles = list("Peacekeeper", "Security Officer", "Warden", "Head of Security")
+	restricted_roles = list("Peacekeeper", "Security Officer", "Warden", "Head of Security", "NanoTrasen Representative", "Captain", "Blueshield")
 
 /datum/gear/glasses/security/sunglasses/aviators/prescription
 	name = "Prescription Security HUD Aviators"
 	path = /obj/item/clothing/glasses/hud/security/sunglasses/aviators/prescription
-	restricted_roles = list("Peacekeeper", "Security Officer", "Warden", "Head of Security")
+	restricted_roles = list("Peacekeeper", "Security Officer", "Warden", "Head of Security", "NanoTrasen Representative", "Captain", "Blueshield")
+
+/datum/gear/glasses/security/sunglasses/holo
+	name = "Holo Secuirity HUD Glasses"
+	path = /obj/item/clothing/glasses/hud/security/sunglasses/holo
+	restricted_roles = list("Peacekeeper", "Security Officer", "Warden", "Head of Security", "NanoTrasen Representative", "Captain", "Blueshield") // Add by KiJoking
+
+/datum/gear/glasses/security/sunglasses/holo/prescription
+	name = "Prescription Holo Secuirity HUD Glasses"
+	path = /obj/item/clothing/glasses/hud/security/sunglasses/holo/prescription
+	restricted_roles = list("Peacekeeper", "Security Officer", "Warden", "Head of Security", "NanoTrasen Representative", "Captain", "Blueshield") // Add by KiJoking
 
 /datum/gear/glasses/health/sunglasses/aviators
 	name = "Medical HUD Aviators"
@@ -38,10 +48,6 @@
 	path = /obj/item/clothing/glasses/hud/blueshield/aviators/prescription
 	restricted_roles = list("Blueshield")
 
-// /datum/gear/glasses/aviators убираем очередную защиту от флешек
-// 	name = "Aviators"
-// 	path = /obj/item/clothing/glasses/aviators
-
 /datum/gear/glasses/blueshield/holo
 	name = "Holo Blueshield HUD Glasses"
 	path = /obj/item/clothing/glasses/hud/blueshield/holo
@@ -51,16 +57,6 @@
 	name = "Prescription Holo Blueshield HUD Glasses"
 	path = /obj/item/clothing/glasses/hud/blueshield/holo/prescription
 	restricted_roles = list("Blueshield")
-
-/datum/gear/glasses/security/sunglasses/holo
-	name = "Holo Secuirity HUD Glasses"
-	path = /obj/item/clothing/glasses/hud/security/sunglasses/holo
-	restricted_roles = list("Peacekeeper", "Security Officer", "Warden", "Head of Security", "NanoTrasen Representative", "Captain", "Blueshield") // Add by KiJoking
-
-/datum/gear/glasses/security/sunglasses/holo/prescription
-	name = "Prescription Holo Secuirity HUD Glasses"
-	path = /obj/item/clothing/glasses/hud/security/sunglasses/holo/prescription
-	restricted_roles = list("Peacekeeper", "Security Officer", "Warden", "Head of Security", "NanoTrasen Representative", "Captain", "Blueshield") // Add by KiJoking
 
 //NON-RESTRICTED
 

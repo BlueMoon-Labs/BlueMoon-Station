@@ -2,7 +2,6 @@
 <html>
 <head>
 <title>Stat Browser</title>
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta http-equiv="Cache-Control" content="max-age=15; must-revalidate" />
 <link id="goonStyle" rel="stylesheet" type="text/css" href="browserOutput_white.css" media="all" />
@@ -19,13 +18,38 @@
 	body.dark {
 		background-color: #131313;
 		color: #b2c4dd;
-		scrollbar-base-color: #1c1c1c;
-		scrollbar-face-color: #3b3b3b;
-		scrollbar-3dlight-color: #252525;
-		scrollbar-highlight-color: #252525;
-		scrollbar-track-color: #1c1c1c;
-		scrollbar-arrow-color: #929292;
-		scrollbar-shadow-color: #3b3b3b;
+	}
+
+	::-webkit-scrollbar {
+		width: 12px;
+		height: 12px;
+	}
+
+	::-webkit-scrollbar-track {
+		background: #f0f0f0;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: #c0c0c0;
+		border: 3px solid #f0f0f0;
+		border-radius: 6px;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		background: #a0a0a0;
+	}
+
+	body.dark::-webkit-scrollbar-track {
+		background: #131313;
+	}
+
+	body.dark::-webkit-scrollbar-thumb {
+		background: #333333;
+		border: 3px solid #131313;
+	}
+
+	body.dark::-webkit-scrollbar-thumb:hover {
+		background: #555555;
 	}
 
 	#menu {
@@ -223,13 +247,372 @@
 	}
 
 	img {
-		-ms-interpolation-mode: nearest-neighbor;
 		image-rendering: pixelated;
 	}
 
 	.interview_panel_controls, .interview_panel_stats {
 		margin-bottom: 10px;
 	}
+
+	/* MC Tab Styles */
+	.mc-container { padding: 0; }
+
+	.mc-section-header {
+		font-weight: bold;
+		font-size: 13px;
+		padding: 5px 6px;
+		margin: 0;
+		cursor: pointer;
+		background-color: #e8e8e8;
+		border-bottom: 1px solid #ccc;
+		user-select: none;
+	}
+	.dark .mc-section-header {
+		background-color: #1e1e1e;
+		border-bottom-color: #333;
+	}
+	.mc-section-header:hover { background-color: #ddd; }
+	.dark .mc-section-header:hover { background-color: #282828; }
+
+	.mc-server-table, .mc-ping-table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-bottom: 2px;
+	}
+	.mc-server-table td, .mc-ping-table td {
+		padding: 2px 5px;
+		border-bottom: 1px solid #eee;
+		font-size: 12px;
+	}
+	.dark .mc-server-table td, .dark .mc-ping-table td {
+		border-bottom-color: #222;
+	}
+	.mc-label {
+		font-weight: bold;
+		white-space: nowrap;
+		width: 1%;
+		color: #555;
+		padding-right: 8px;
+	}
+	.dark .mc-label { color: #88a0b8; }
+
+	.mc-filter {
+		width: calc(100% - 12px);
+		margin: 4px 6px;
+		padding: 4px 6px;
+		font-size: 12px;
+		border: 1px solid #ccc;
+		box-sizing: border-box;
+	}
+	.dark .mc-filter {
+		background-color: #1a1a1a;
+		border-color: #333;
+		color: #b2c4dd;
+	}
+
+	/* Key subsystems detail section */
+	.mc-key-section {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		gap: 0;
+		margin-bottom: 4px;
+	}
+	.mc-key-card {
+		padding: 4px 6px;
+		border-bottom: 1px solid #e0e0e0;
+	}
+	.dark .mc-key-card {
+		border-bottom-color: #282828;
+	}
+	.mc-key-header {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+		margin-bottom: 2px;
+	}
+	.mc-key-name {
+		font-weight: bold;
+		font-size: 13px;
+	}
+	.mc-key-name a { font-weight: bold; }
+	.mc-key-stats {
+		font-size: 12px;
+		color: #666;
+		font-family: Consolas, monospace;
+	}
+	.dark .mc-key-stats { color: #7a8a9a; }
+	.mc-key-table {
+		border-collapse: collapse;
+		margin: 2px 0 0 4px;
+	}
+	.mc-key-dlabel {
+		font-size: 12px;
+		color: #666;
+		padding: 0 10px 0 0;
+		white-space: nowrap;
+	}
+	.dark .mc-key-dlabel { color: #7a8a9a; }
+	.mc-key-dval {
+		font-size: 12px;
+		font-family: Consolas, monospace;
+		color: #333;
+		padding: 0;
+	}
+	.dark .mc-key-dval { color: #a0b0c0; }
+
+	.mc-ss-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 12px;
+		table-layout: fixed;
+	}
+	.mc-ss-table th {
+		position: sticky;
+		top: 0;
+		background: #f0f0f0;
+		border-bottom: 2px solid #999;
+		padding: 3px 4px;
+		text-align: left;
+		font-size: 11px;
+		cursor: pointer;
+		user-select: none;
+		white-space: nowrap;
+	}
+	.dark .mc-ss-table th {
+		background: #1a1a1a;
+		border-bottom-color: #444;
+	}
+	.mc-th-sort:hover { background: #ddd; }
+	.dark .mc-th-sort:hover { background: #2a2a2a; }
+	.mc-sorted::after { content: " \25B2"; font-size: 9px; }
+	.mc-sorted.desc::after { content: " \25BC"; }
+
+	/* Column widths */
+	.mc-ss-table th:nth-child(1), .mc-ss-table td:nth-child(1) { width: 20px; text-align: center; }
+	.mc-ss-table th:nth-child(2), .mc-ss-table td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; }
+	.mc-ss-table th:nth-child(3), .mc-ss-table td:nth-child(3) { width: 50px; }
+	.mc-ss-table th:nth-child(4), .mc-ss-table td:nth-child(4) { width: 44px; }
+	.mc-ss-table th:nth-child(5), .mc-ss-table td:nth-child(5) { width: 50px; }
+	.mc-ss-table th:nth-child(6), .mc-ss-table td:nth-child(6) { width: 38px; }
+	.mc-ss-table th:nth-child(7), .mc-ss-table td:nth-child(7) { width: 54px; }
+
+	.mc-ss-table td {
+		padding: 2px 4px;
+		border-bottom: 1px solid #eee;
+		white-space: nowrap;
+		overflow: hidden;
+	}
+	.dark .mc-ss-table td { border-bottom-color: #1e1e1e; }
+	.mc-ss-table tr:hover td { background: #f0f0f0; }
+	.dark .mc-ss-table tr:hover td { background: #1f1f1f; }
+
+	.mc-num { text-align: right; font-family: Consolas, monospace; }
+
+	/* State indicators */
+	.mc-state { font-weight: bold; font-family: Consolas, monospace; }
+	.mc-state-2 { color: #2a2; }
+	.mc-state-1 { color: #888; }
+	.mc-state-3, .mc-state-5 { color: #c80; }
+	.mc-state-4 { color: #66f; }
+	.mc-state-0 { color: #aaa; }
+	.dark .mc-state-2 { color: #4c4; }
+	.dark .mc-state-3, .dark .mc-state-5 { color: #ea0; }
+	.dark .mc-state-4 { color: #88f; }
+
+	/* Health colors */
+	.mc-health-green { color: #080; }
+	.mc-health-yellow { color: #a80; }
+	.mc-health-red { color: #c00; font-weight: bold; }
+	.dark .mc-health-green { color: #4a4; }
+	.dark .mc-health-yellow { color: #db0; }
+	.dark .mc-health-red { color: #f44; }
+
+	.mc-bg a { font-style: italic; opacity: 0.7; }
+	.mc-offline { opacity: 0.4; }
+
+	.mc-val-good { color: #080; }
+	.mc-val-warn { color: #a80; }
+	.mc-val-bad { color: #c00; }
+	.dark .mc-val-good { color: #4a4; }
+	.dark .mc-val-warn { color: #db0; }
+	.dark .mc-val-bad { color: #f44; }
+
+	/* Status Tab Styles */
+	.st-container { padding: 0; }
+
+	.st-ping-bar {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 5px 8px;
+		font-size: 12px;
+		font-family: Consolas, monospace;
+		background-color: #f5f5f5;
+		border-bottom: 1px solid #ddd;
+	}
+	.dark .st-ping-bar {
+		background-color: #1a1a1a;
+		border-bottom-color: #2a2a2a;
+	}
+	.st-ping-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+
+	.st-section-header {
+		font-weight: bold;
+		font-size: 13px;
+		padding: 3px 6px;
+		margin: 0;
+		cursor: pointer;
+		background-color: #e8e8e8;
+		border-bottom: 1px solid #ccc;
+		user-select: none;
+	}
+	.dark .st-section-header {
+		background-color: #1e1e1e;
+		border-bottom-color: #333;
+	}
+	.st-section-header:hover { background-color: #ddd; }
+	.dark .st-section-header:hover { background-color: #282828; }
+
+	.st-table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-bottom: 2px;
+	}
+	.st-table td {
+		padding: 1px 5px;
+		border-bottom: 1px solid #eee;
+		font-size: 12px;
+	}
+	.dark .st-table td {
+		border-bottom-color: #222;
+	}
+	.st-label {
+		font-weight: bold;
+		white-space: nowrap;
+		width: 1%;
+		color: #555;
+		padding-right: 8px;
+	}
+	.dark .st-label { color: #88a0b8; }
+	.st-value {
+		font-family: Consolas, monospace;
+	}
+
+	/* Shared grid layout for Status & MC tabs */
+	.st-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+	}
+	.st-grid-item {
+		padding: 3px 6px;
+		border-bottom: 1px solid #eee;
+		min-width: 0;
+		overflow: hidden;
+	}
+	.dark .st-grid-item { border-bottom-color: #282828; }
+	.st-item-label {
+		font-size: 10px;
+		font-weight: bold;
+		color: #888;
+		text-transform: uppercase;
+		letter-spacing: 0.3px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.dark .st-item-label { color: #7a8a9a; }
+	.st-item-value {
+		font-size: 13px;
+		font-family: Consolas, monospace;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.dark .st-item-value { color: #a0b0c0; }
+	.st-item-value a { font-weight: bold; }
+	.st-grid-wide { grid-column: 1 / -1; }
+
+	.st-shuttle-bar {
+		padding: 6px 8px;
+		font-weight: bold;
+		font-size: 13px;
+		border-bottom: 1px solid #ccc;
+	}
+	.st-shuttle-bar.st-shuttle-warn {
+		background-color: #fff3cd;
+		color: #856404;
+	}
+	.dark .st-shuttle-bar.st-shuttle-warn {
+		background-color: #3d3200;
+		color: #ffc107;
+	}
+	.st-shuttle-bar.st-shuttle-danger {
+		background-color: #f8d7da;
+		color: #721c24;
+	}
+	.dark .st-shuttle-bar.st-shuttle-danger {
+		background-color: #3d0a0a;
+		color: #f55;
+	}
+
+	.st-vote-section {
+		padding: 4px 6px;
+		border-top: 1px solid #ddd;
+	}
+	.dark .st-vote-section { border-top-color: #333; }
+	.st-vote-header {
+		font-weight: bold;
+		font-size: 13px;
+		padding: 4px 0;
+		color: #555;
+	}
+	.dark .st-vote-header { color: #88a0b8; }
+	.st-vote-table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	.st-vote-table td {
+		padding: 2px 4px;
+		font-size: 12px;
+	}
+	.st-vote-table a {
+		text-decoration: none;
+	}
+	.st-vote-table a:hover {
+		text-decoration: underline;
+	}
+
+	.st-val-good { color: #080; }
+	.st-val-warn { color: #a80; }
+	.st-val-bad { color: #c00; font-weight: bold; }
+	.dark .st-val-good { color: #4a4; }
+	.dark .st-val-warn { color: #db0; }
+	.dark .st-val-bad { color: #f44; }
+
+	.st-tidi-row {
+		display: flex;
+		align-items: baseline;
+		gap: 6px;
+		padding: 4px 8px;
+		font-size: 12px;
+		font-family: Consolas, monospace;
+		border-bottom: 1px solid #eee;
+	}
+	.dark .st-tidi-row { border-bottom-color: #222; }
+	.st-tidi-current {
+		font-size: 14px;
+		font-weight: bold;
+	}
+	.st-tidi-avgs {
+		font-size: 11px;
+		color: #777;
+	}
+	.dark .st-tidi-avgs { color: #7a8a9a; }
 </style>
 </head>
 <body>
@@ -237,72 +620,127 @@
 <div id="under_menu"></div>
 <div id="statcontent"></div>
 <script>
-// Polyfills and compatibility ------------------------------------------------
-var decoder = decodeURIComponent || unescape;
-var addEventListenerKey = (document.addEventListener ? 'addEventListener' : 'attachEvent'); // IE8 handling for Wine users
-var textContentKey = (typeof document.body.textContent != 'undefined') ? 'textContent' : 'innerText';
-if(!Array.prototype.includes) {
-	Array.prototype.includes = function(thing) {
-		for(var i = 0; i < this.length; i++) {
-			if(this[i] == thing) return true;
-		}
-		return false;
-	}
-}
-if (!String.prototype.trim) {
-	String.prototype.trim = function () {
-		return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
-	};
-}
-/*\
-|*|
-|*|  Polyfill which enables the passage of arbitrary arguments to the
-|*|  callback functions of JavaScript timers (HTML5 standard syntax).
-|*|
-|*|  https://developer.mozilla.org/en-US/docs/DOM/window.setInterval
-|*|
-|*|  Syntax:
-|*|  var timeoutID = window.setTimeout(func, delay[, arg1, arg2, ...]);
-|*|  var timeoutID = window.setTimeout(code, delay);
-|*|  var intervalID = window.setInterval(func, delay[, arg1, arg2, ...]);
-|*|  var intervalID = window.setInterval(code, delay);
-|*|
-\*/
-(function() {
-  setTimeout(function(arg1) {
-    if (arg1 === 'test') {
-      // feature test is passed, no need for polyfill
-      return;
-    }
-    var __nativeST__ = window.setTimeout;
-    window.setTimeout = function(vCallback, nDelay /*, argumentToPass1, argumentToPass2, etc. */ ) {
-      var aArgs = Array.prototype.slice.call(arguments, 2);
-      return __nativeST__(vCallback instanceof Function ? function() {
-        vCallback.apply(null, aArgs);
-      } : vCallback, nDelay);
-    };
-  }, 0, 'test');
+// DPI compensation — scale content down on high-DPI displays,
+// matching the approach used by TGUI (drag.js) and /datum/browser.
+var pixelRatio = window.devicePixelRatio || 1;
+var statbrowserBaseZoom = pixelRatio !== 1 ? (100 / pixelRatio) : 100;
+var statbrowserUserZoom = 1;
+var statbrowserIndicator = null;
+var statbrowserHideTimer = null;
+var statbrowserPersistTimer = null;
 
-  var interval = setInterval(function(arg1) {
-    clearInterval(interval);
-    if (arg1 === 'test') {
-      // feature test is passed, no need for polyfill
-      return;
-    }
-    var __nativeSI__ = window.setInterval;
-    window.setInterval = function(vCallback, nDelay /*, argumentToPass1, argumentToPass2, etc. */ ) {
-      var aArgs = Array.prototype.slice.call(arguments, 2);
-      return __nativeSI__(vCallback instanceof Function ? function() {
-        vCallback.apply(null, aArgs);
-      } : vCallback, nDelay);
-    };
-  }, 0, 'test');
-}())
+function clampStatbrowserZoom(value) {
+	return Math.min(2.0, Math.max(0.5, value));
+}
+
+function ensureStatbrowserIndicator() {
+	if (statbrowserIndicator || !document.body) {
+		return;
+	}
+
+	statbrowserIndicator = document.createElement('div');
+	statbrowserIndicator.id = 'legacyZoomIndicator';
+	statbrowserIndicator.style.cssText = 'position:fixed;top:12px;right:12px;z-index:2147483647;padding:6px 10px;border-radius:6px;background:rgba(0,0,0,0.75);color:#fff;font:12px/1.2 Verdana,sans-serif;pointer-events:none;opacity:0;transition:opacity 120ms linear;';
+	document.body.appendChild(statbrowserIndicator);
+}
+
+function showStatbrowserIndicator() {
+	ensureStatbrowserIndicator();
+	if (!statbrowserIndicator) {
+		return;
+	}
+
+	statbrowserIndicator.textContent = 'Scale: ' + Math.round(statbrowserUserZoom * 100) + '%';
+	statbrowserIndicator.style.opacity = '1';
+	clearTimeout(statbrowserHideTimer);
+	statbrowserHideTimer = setTimeout(function() {
+		if (statbrowserIndicator) {
+			statbrowserIndicator.style.opacity = '0';
+		}
+	}, 1200);
+}
+
+function applyStatbrowserZoom() {
+	document.body.style.zoom = (statbrowserBaseZoom * statbrowserUserZoom) + '%';
+}
+
+function scheduleStatbrowserZoomPersist() {
+	clearTimeout(statbrowserPersistTimer);
+	statbrowserPersistTimer = setTimeout(function() {
+		byond_topic(
+			'?src=_statpanel_;statbrowser_zoom_save=1;zoom_value='
+			+ encodeURIComponent(String(statbrowserUserZoom))
+		);
+	}, 200);
+}
+
+function set_zoom_pref(value) {
+	var parsedZoom = Number(value);
+	if (!isFinite(parsedZoom) || parsedZoom <= 0) {
+		return;
+	}
+
+	statbrowserUserZoom = clampStatbrowserZoom(parsedZoom);
+	applyStatbrowserZoom();
+}
+
+function updateStatbrowserZoom(delta) {
+	statbrowserUserZoom = clampStatbrowserZoom(Math.round((statbrowserUserZoom + delta) * 100) / 100);
+	applyStatbrowserZoom();
+	scheduleStatbrowserZoomPersist();
+	showStatbrowserIndicator();
+}
+
+window.addEventListener('wheel', function(event) {
+	if (!event.ctrlKey) {
+		return;
+	}
+
+	var direction = Math.sign(event.deltaY);
+	if (!direction) {
+		return;
+	}
+
+	event.preventDefault();
+	updateStatbrowserZoom(direction < 0 ? 0.1 : -0.1);
+}, { passive: false });
+
+applyStatbrowserZoom();
+ensureStatbrowserIndicator();
 
 // Status panel implementation ------------------------------------------------
 var status_tab_parts = ["Loading..."];
 var current_tab = null;
+// Status tab structured data
+var st_global_data = null;
+var st_ping_data = null;
+var st_mob_items = [];
+var st_sections = { round: true, time: true, character: true };
+var st_container = null;
+var st_ping_bar = null;
+var st_server_grid = null;
+var st_time_grid = null;
+var st_tidi_el = null;
+var st_shuttle_el = null;
+var st_char_table = null;
+var st_vote_el = null;
 var mc_tab_parts = [["Loading...", ""]];
+// MC tab structured data
+var mc_server_data = {};
+var mc_ss_data = [];
+var mc_sort_col = 2;
+var mc_sort_asc = false;
+var mc_filter_text = "";
+var mc_sections = { server: true, ping: false, key: true, subsystems: true };
+var mc_container = null;
+var mc_server_grid = null;
+var mc_ping_table = null;
+var mc_ss_table = null;
+var mc_ss_tbody = null;
+var mc_ss_rows = {};
+var mc_filter_input = null;
+var mc_key_section = null;
+var mc_ss_header = null;
 var vote_parts = [[null]];
 var href_token = null;
 var spells = [];
@@ -314,7 +752,10 @@ var interviewManager = {status: "", interviews: []};
 var sdql2 = [];
 var permanent_tabs = []; // tabs that won't be cleared by wipes
 var turfcontents = [];
+var turfcontentsRaw = "";
 var turfname = "";
+var turfTable = null;
+var turfItemNodes = {}; // ref -> container div
 var imageRetryDelay = 500;
 var imageRetryLimit = 50;
 var menu = document.getElementById('menu');
@@ -326,17 +767,157 @@ var split_admin_tabs = false;
 var connected = false;
 var commandQueue = [];
 
+// BYOND bridge helpers ------------------------------------------------------
+function byond_bridge_call(path, params) {
+	var query = "";
+	var i = 0;
+	if (params) {
+		for (var key in params) {
+			if (!params.hasOwnProperty(key)) {
+				continue;
+			}
+			if (i++ > 0) {
+				query += "&";
+			}
+			var value = params[key];
+			if (value === null || typeof value === "undefined") {
+				value = "";
+			}
+			query += encodeURIComponent(key) + "=" + encodeURIComponent(value);
+		}
+	}
+
+	var rawUrl = (path || "") + "?" + query;
+	var protocolUrl = "byond://" + rawUrl;
+
+	if (window.cef_to_byond) {
+		try {
+			window.cef_to_byond(protocolUrl);
+			return true;
+		} catch (e) {}
+	}
+
+	var bridge = window.BYOND;
+	if (bridge) {
+		var callTargets = [];
+		if (typeof bridge === "function") {
+			callTargets.push(bridge);
+		}
+		var methodNames = [
+			"callByond",
+			"byond",
+			"call",
+			"topic",
+			"sendMessage",
+			"send",
+			"postMessage"
+		];
+		for (var m = 0; m < methodNames.length; m++) {
+			var method = bridge[methodNames[m]];
+			if (typeof method === "function") {
+				callTargets.push(method);
+			}
+		}
+		for (var c = 0; c < callTargets.length; c++) {
+			try {
+				callTargets[c].call(bridge, rawUrl);
+				return true;
+			} catch (e1) {}
+			try {
+				callTargets[c].call(bridge, protocolUrl);
+				return true;
+			} catch (e2) {}
+		}
+	}
+
+	try {
+		window.location.href = protocolUrl;
+		return true;
+	} catch (e3) {}
+
+	try {
+		var xhr = new XMLHttpRequest();
+		xhr.open("GET", rawUrl);
+		xhr.send();
+		return true;
+	} catch (e4) {}
+
+	return false;
+}
+
+function byond_winset(params) {
+	byond_bridge_call("winset", params || {});
+}
+
+// Send a pre-formatted Topic href through the BYOND bridge.
+// href should be like "?src=_statpanel_;statpanel_item_target=REF"
+function byond_topic(href) {
+	var protocolUrl = "byond://" + href;
+
+	if (window.cef_to_byond) {
+		try {
+			window.cef_to_byond(protocolUrl);
+			return true;
+		} catch (e) {}
+	}
+
+	var bridge = window.BYOND;
+	if (bridge) {
+		var callTargets = [];
+		if (typeof bridge === "function") {
+			callTargets.push(bridge);
+		}
+		var methodNames = [
+			"callByond",
+			"byond",
+			"call",
+			"topic",
+			"sendMessage",
+			"send",
+			"postMessage"
+		];
+		for (var m = 0; m < methodNames.length; m++) {
+			var method = bridge[methodNames[m]];
+			if (typeof method === "function") {
+				callTargets.push(method);
+			}
+		}
+		for (var c = 0; c < callTargets.length; c++) {
+			try {
+				callTargets[c].call(bridge, href);
+				return true;
+			} catch (e1) {}
+			try {
+				callTargets[c].call(bridge, protocolUrl);
+				return true;
+			} catch (e2) {}
+		}
+	}
+
+	try {
+		window.location.href = protocolUrl;
+		return true;
+	} catch (e3) {}
+
+	try {
+		var xhr = new XMLHttpRequest();
+		xhr.open("GET", href);
+		xhr.send();
+		return true;
+	} catch (e4) {}
+
+	return false;
+}
+
 // Any BYOND verb call must go through this, as if a verb is sent during reconnect then
 // it will cause the reconnect to fail.
 // This function will either call immediately, or queue until
 // BYOND confirms we are connected.
 function send_byond_command(command) {
-	var href = "byond://winset?command=" + command;
-
 	if (connected) {
-		window.location.href = href;
+		byond_winset({ command: command });
 	} else {
-		commandQueue.push(href);
+		commandQueue.push(command);
 	}
 }
 
@@ -355,8 +936,7 @@ function connected_to_server() {
 	connected = true;
 
 	for (var index = 0; index < commandQueue.length; index++) {
-		// This is just setting it a lot, is this not going to cancel?
-		window.location.href = commandQueue[index];
+		byond_winset({ command: commandQueue[index] });
 	}
 
 	commandQueue = [];
@@ -394,7 +974,7 @@ function createStatusTab(name) {
 		this.blur();
 	};
 	B.id = name;
-	B[textContentKey] = name;
+	B.textContent = name;
 	B.className = "button";
 	//ORDERING ALPHABETICALLY
 	B.style.order = name.charCodeAt(0);
@@ -617,11 +1197,14 @@ function TakeTabFromByond(tab) {
 }
 
 function update(global_data, ping_entry, other_entries) {
-	status_tab_parts = [ping_entry];
-	var parsed = JSON.parse(global_data);
-	for(var i = 0; i < parsed.length; i++) if(parsed[i] != null) status_tab_parts.push(parsed[i]);
-	parsed = JSON.parse(other_entries);
-	for(var i = 0; i < parsed.length; i++) if(parsed[i] != null) status_tab_parts.push(parsed[i]);
+	var parsed_global = JSON.parse(global_data);
+	st_global_data = parsed_global;
+	st_ping_data = JSON.parse(ping_entry);
+	var parsed_mob = JSON.parse(other_entries);
+	st_mob_items = [];
+	for (var i = 0; i < parsed_mob.length; i++) {
+		if (parsed_mob[i] != null) st_mob_items.push(parsed_mob[i]);
+	}
 	if(current_tab == "Status")
 		draw_status();
 	else if(current_tab == "Debug Stat Panel")
@@ -634,9 +1217,10 @@ function update_voting(vote_data) {
 		draw_status();
 }
 
-function update_mc(global_mc_data, coords_entry) {
-	mc_tab_parts = JSON.parse(global_mc_data);
-	mc_tab_parts.splice(0,0,["Location:",coords_entry]);
+function update_mc(server_data_encoded, ss_data_encoded, coords_entry) {
+	mc_server_data = JSON.parse(server_data_encoded);
+	mc_ss_data = JSON.parse(ss_data_encoded);
+	mc_server_data.coords = coords_entry;
 	if(!verb_tabs.includes("MC"))
 		verb_tabs.push("MC");
 	createStatusTab("MC");
@@ -729,9 +1313,9 @@ function tab_change(tab) {
 	}else if(tab == turfname) {
 		draw_listedturf();
 	} else {
-		statcontentdiv[textContentKey] = "Loading...";
+		statcontentdiv.textContent = "Loading...";
 	}
-	window.location.href = "byond://winset?statbrowser.is-visible=true";
+	byond_winset({ "statbrowser.is-visible": "true" });
 }
 
 function set_byond_tab(tab){
@@ -739,21 +1323,21 @@ function set_byond_tab(tab){
 }
 
 function draw_debug() {
-	statcontentdiv[textContentKey] = "";
+	statcontentdiv.textContent = "";
 	var wipeverbstabs = document.createElement("div");
 	var link = document.createElement("a");
 	link.onclick = function() {wipe_verbs()};
-	link[textContentKey] = "Wipe All Verbs";
+	link.textContent = "Wipe All Verbs";
 	wipeverbstabs.appendChild(link);
 	document.getElementById("statcontent").appendChild(wipeverbstabs);
 	var wipeUpdateVerbsTabs = document.createElement("div");
 	var updateLink = document.createElement("a");
 	updateLink.onclick = function() {update_verbs()};
-	updateLink[textContentKey] = "Wipe and Update All Verbs";
+	updateLink.textContent = "Wipe and Update All Verbs";
 	wipeUpdateVerbsTabs.appendChild(updateLink);
 	document.getElementById("statcontent").appendChild(wipeUpdateVerbsTabs);
 	var text = document.createElement("div");
-	text[textContentKey] = "Verb Tabs:";
+	text.textContent = "Verb Tabs:";
 	document.getElementById("statcontent").appendChild(text);
 	var table1 = document.createElement("table");
 	for(var i=0; i < verb_tabs.length ; i++) {
@@ -768,118 +1352,794 @@ function draw_debug() {
 		}
 		var tr = document.createElement("tr");
 		var td1 = document.createElement("td");
-		td1[textContentKey] = part;
+		td1.textContent = part;
 		var a = document.createElement("a");
 		a.onclick = function (part) {
 			return function() {removeStatusTab(part)};
 		}(part);
-		a[textContentKey] = " Delete Tab " + part;
+		a.textContent = " Delete Tab " + part;
 		td1.appendChild(a);
 		tr.appendChild(td1);
 		table1.appendChild(tr);
 	}
 	document.getElementById("statcontent").appendChild(table1);
 	var header2 = document.createElement("div");
-	header2[textContentKey] = "Verbs:";
+	header2.textContent = "Verbs:";
 	document.getElementById("statcontent").appendChild(header2);
 	var table2 = document.createElement("table");
 	for(var v = 0; v < verbs.length; v++) {
 		var part2 = verbs[v];
 		var trr = document.createElement("tr");
 		var tdd1 = document.createElement("td");
-		tdd1[textContentKey] = part2[0];
+		tdd1.textContent = part2[0];
 		var tdd2 = document.createElement("td");
-		tdd2[textContentKey] = part2[1];
+		tdd2.textContent = part2[1];
 		trr.appendChild(tdd1);
 		trr.appendChild(tdd2);
 		table2.appendChild(trr);
 	}
 	document.getElementById("statcontent").appendChild(table2);
 	var text3 = document.createElement("div");
-	text3[textContentKey] = "Permanent Tabs:";
+	text3.textContent = "Permanent Tabs:";
 	document.getElementById("statcontent").appendChild(text3);
 	var table3 = document.createElement("table");
 	for(var i=0; i < permanent_tabs.length ; i++) {
 		var part3 = permanent_tabs[i];
 		var trrr = document.createElement("tr");
 		var tddd1 = document.createElement("td");
-		tddd1[textContentKey] = part3;
+		tddd1.textContent = part3;
 		trrr.appendChild(tddd1);
 		table3.appendChild(trrr);
 	}
 	document.getElementById("statcontent").appendChild(table3);
 
 }
+// Status tab helpers
+function st_ping_class(ms) {
+	if (ms >= 200) return "st-val-bad";
+	if (ms >= 100) return "st-val-warn";
+	return "st-val-good";
+}
+function st_ping_color(ms) {
+	if (ms >= 200) return "#c00";
+	if (ms >= 100) return "#a80";
+	return "#080";
+}
+function st_ping_color_dark(ms) {
+	if (ms >= 200) return "#f44";
+	if (ms >= 100) return "#db0";
+	return "#4a4";
+}
+function st_tidi_class(val) {
+	if (val >= 20) return "st-val-bad";
+	if (val >= 5) return "st-val-warn";
+	return "st-val-good";
+}
+
+function st_build_section_header(key, label) {
+	var div = document.createElement("div");
+	div.className = "st-section-header";
+	div.textContent = (st_sections[key] ? "\u25BC " : "\u25B6 ") + label;
+	div.onclick = function() {
+		st_sections[key] = !st_sections[key];
+		div.textContent = (st_sections[key] ? "\u25BC " : "\u25B6 ") + label;
+		st_update_section_visibility(key);
+	};
+	return div;
+}
+
+function st_update_section_visibility(key) {
+	if (key === "round" && st_server_grid)
+		st_server_grid.style.display = st_sections.round ? "" : "none";
+	else if (key === "time" && st_time_grid)
+		st_time_grid.style.display = st_sections.time ? "" : "none";
+	else if (key === "character" && st_char_table)
+		st_char_table.style.display = st_sections.character ? "" : "none";
+}
+
+function st_make_row(label, value) {
+	var tr = document.createElement("tr");
+	var td1 = document.createElement("td");
+	td1.className = "st-label";
+	td1.textContent = label;
+	var td2 = document.createElement("td");
+	td2.className = "st-value";
+	td2.textContent = "" + value;
+	tr.appendChild(td1);
+	tr.appendChild(td2);
+	return tr;
+}
+
+// Shared grid item builder for Status & MC tabs
+function st_make_grid_item(label, value, wide, cls, href) {
+	var item = document.createElement("div");
+	item.className = "st-grid-item" + (wide ? " st-grid-wide" : "");
+	var lbl = document.createElement("div");
+	lbl.className = "st-item-label";
+	lbl.textContent = label;
+	item.appendChild(lbl);
+	var val = document.createElement("div");
+	val.className = "st-item-value";
+	if (href) {
+		var a = document.createElement("a");
+		a.href = "#";
+		a.onclick = (function(h) {
+			return function(e) {
+				e.preventDefault();
+				byond_topic(h);
+				return false;
+			};
+		})(href);
+		a.textContent = value;
+		if (cls) a.className = cls;
+		val.appendChild(a);
+	} else {
+		val.textContent = "" + value;
+		if (cls) val.className += " " + cls;
+	}
+	item.appendChild(val);
+	return item;
+}
+
+function st_fill_grid(container, rows) {
+	container.textContent = "";
+	for (var i = 0; i < rows.length; i++) {
+		var wide = ("" + rows[i][1]).length > 32;
+		container.appendChild(st_make_grid_item(rows[i][0], rows[i][1], wide));
+	}
+}
+
+function st_parse_mob_item(str) {
+	var idx = str.indexOf(": ");
+	if (idx > 0 && idx < 30) {
+		return [str.substring(0, idx), str.substring(idx + 2)];
+	}
+	return null;
+}
+
 function draw_status() {
 	if(!document.getElementById("Status")) {
 		createStatusTab("Status");
 		current_tab = "Status";
 	}
-	statcontentdiv[textContentKey] = '';
-	for(var i = 0; i < status_tab_parts.length; i++) {
-		if(status_tab_parts[i].trim() == "") {
-			document.getElementById("statcontent").appendChild(document.createElement("br"));
-		} else {
-			var div = document.createElement("div");
-			div[textContentKey] = status_tab_parts[i];
-			document.getElementById("statcontent").appendChild(div);
+
+	var d = st_global_data;
+	if (!d) {
+		statcontentdiv.textContent = "Loading...";
+		return;
+	}
+
+	// Build skeleton once, update in-place on subsequent calls
+	if (!st_container || !st_container.parentNode) {
+		statcontentdiv.textContent = "";
+		st_container = document.createElement("div");
+		st_container.className = "st-container";
+
+		// Ping bar
+		st_ping_bar = document.createElement("div");
+		st_ping_bar.className = "st-ping-bar";
+		st_container.appendChild(st_ping_bar);
+
+		// Shuttle bar (hidden by default)
+		st_shuttle_el = document.createElement("div");
+		st_shuttle_el.className = "st-shuttle-bar";
+		st_shuttle_el.style.display = "none";
+		st_container.appendChild(st_shuttle_el);
+
+		// Round section
+		st_container.appendChild(st_build_section_header("round", "\u0420\u0430\u0443\u043D\u0434"));
+		st_server_grid = document.createElement("div");
+		st_server_grid.className = "st-grid";
+		st_container.appendChild(st_server_grid);
+
+		// Time section
+		st_container.appendChild(st_build_section_header("time", "\u0412\u0440\u0435\u043C\u044F"));
+		st_time_grid = document.createElement("div");
+		st_time_grid.className = "st-grid";
+		st_container.appendChild(st_time_grid);
+
+		// Character section
+		st_container.appendChild(st_build_section_header("character", "\u041F\u0435\u0440\u0441\u043E\u043D\u0430\u0436"));
+		st_char_table = document.createElement("table");
+		st_char_table.className = "st-table";
+		st_container.appendChild(st_char_table);
+
+		statcontentdiv.appendChild(st_container);
+
+		// Vote section (outside st_container for BYOND browser link compatibility)
+		st_vote_el = document.createElement("div");
+		st_vote_el.className = "st-vote-section";
+		st_vote_el.style.display = "none";
+		statcontentdiv.appendChild(st_vote_el);
+	}
+
+	// Update ping bar
+	if (st_ping_data) {
+		var ping = st_ping_data[0];
+		var avg = st_ping_data[1];
+		var isDark = document.body.classList.contains("dark");
+		var dotColor = isDark ? st_ping_color_dark(ping) : st_ping_color(ping);
+		st_ping_bar.innerHTML = "";
+		var dot = document.createElement("span");
+		dot.className = "st-ping-dot";
+		dot.style.backgroundColor = dotColor;
+		st_ping_bar.appendChild(dot);
+		var txt = document.createElement("span");
+		txt.className = st_ping_class(ping);
+		txt.textContent = "\u041F\u0438\u043D\u0433: " + ping + "ms";
+		st_ping_bar.appendChild(txt);
+		var avg_txt = document.createElement("span");
+		avg_txt.style.color = "#777";
+		avg_txt.textContent = "(\u0441\u0440\u0435\u0434: " + avg + "ms)";
+		st_ping_bar.appendChild(avg_txt);
+
+		if (d.tidi) {
+			var spacer = document.createElement("span");
+			spacer.style.flexGrow = "1";
+			st_ping_bar.appendChild(spacer);
+
+			var cur = d.tidi[0];
+			var tidiTxt = document.createElement("span");
+			tidiTxt.className = st_tidi_class(cur);
+			tidiTxt.textContent = "\u041E\u0442\u043A\u043B: " + cur + "%";
+			st_ping_bar.appendChild(tidiTxt);
+
+			var tidiAvg = document.createElement("span");
+			tidiAvg.style.color = "#777";
+			tidiAvg.textContent = " (\u0441\u0440: " + d.tidi[2] + "%)";
+			st_ping_bar.appendChild(tidiAvg);
 		}
 	}
-	//voting shitcode. See mc for more info.
-	if(vote_parts && vote_parts[0][0]) { //null verification.
+
+	// Update shuttle bar
+	if (d.shuttle) {
+		st_shuttle_el.style.display = "";
+		st_shuttle_el.textContent = "\uD83D\uDE80 " + d.shuttle[0] + " " + d.shuttle[1];
+		// Use danger style for final countdown-like modes
+		st_shuttle_el.className = "st-shuttle-bar st-shuttle-warn";
+	} else {
+		st_shuttle_el.style.display = "none";
+	}
+
+	// Update server/round section
+	if (st_sections.round && d.server) {
+		st_fill_grid(st_server_grid, d.server);
+		st_server_grid.style.display = "";
+	} else if (!st_sections.round) {
+		st_server_grid.style.display = "none";
+	}
+
+	// Update time section
+	if (st_sections.time && d.time) {
+		st_fill_grid(st_time_grid, d.time);
+		st_time_grid.style.display = "";
+	} else if (!st_sections.time) {
+		st_time_grid.style.display = "none";
+	}
+
+	// Update character section (mob items)
+	if (st_sections.character) {
+		st_char_table.textContent = "";
+		for (var i = 0; i < st_mob_items.length; i++) {
+			var item = st_mob_items[i];
+			if (typeof item !== "string" || item.trim() === "") continue;
+			var parsed = st_parse_mob_item(item);
+			if (parsed) {
+				st_char_table.appendChild(st_make_row(parsed[0], parsed[1]));
+			} else {
+				var tr = document.createElement("tr");
+				var td = document.createElement("td");
+				td.colSpan = 2;
+				td.className = "st-value";
+				td.textContent = item;
+				tr.appendChild(td);
+				st_char_table.appendChild(tr);
+			}
+		}
+		st_char_table.style.display = st_mob_items.length > 0 ? "" : "none";
+		// Also hide the character section header if no items
+		if (st_char_table.previousElementSibling && st_char_table.previousElementSibling.classList.contains("st-section-header")) {
+			st_char_table.previousElementSibling.style.display = st_mob_items.length > 0 ? "" : "none";
+		}
+	} else {
+		st_char_table.style.display = "none";
+	}
+
+	// Update voting section
+	if (vote_parts && vote_parts[0] && vote_parts[0][0]) {
+		st_vote_el.style.display = "";
+		st_vote_el.textContent = "";
 		var table = document.createElement("table");
-		for(var i = 0; i < vote_parts.length; i++) {
+		table.className = "st-vote-table";
+		for (var i = 0; i < vote_parts.length; i++) {
 			var part = vote_parts[i];
 			var tr = document.createElement("tr");
 			var td1 = document.createElement("td");
-			td1[textContentKey] = part[0];
+			td1.textContent = part[0];
 			var td2 = document.createElement("td");
-			if(part[2]) {
+			if (part[2]) {
 				var a = document.createElement("a");
-				if(part[2] === "disabled") {
-					a.href = "byond://winset?command=Vote";
+				a.href = "#";
+				a.style.cursor = "pointer";
+				if (part[2] === "disabled") {
+					a.onclick = function(e) {
+						if (e && e.preventDefault) e.preventDefault();
+						byond_winset({ command: "Vote" });
+						return false;
+					};
 				} else {
-					a.href = "?src=" + part[2];
+					a.onclick = (function(ref) {
+						return function(e) {
+							if (e && e.preventDefault) e.preventDefault();
+							byond_topic("?src=" + ref);
+							return false;
+						};
+					})(part[2]);
 				}
-				a[textContentKey] = part[1];
+				a.textContent = part[1];
 				td2.appendChild(a);
 			} else {
-				td2[textContentKey] = part[1];
+				td2.textContent = part[1];
 			}
 			tr.appendChild(td1);
 			tr.appendChild(td2);
 			table.appendChild(tr);
 		}
-		document.getElementById("statcontent").appendChild(table);
+		st_vote_el.appendChild(table);
+	} else {
+		st_vote_el.style.display = "none";
 	}
-	if(verb_tabs.length == 0 || !verbs)
-	{
+
+	if(verb_tabs.length == 0 || !verbs) {
 		send_byond_command("Fix-Stat-Panel");
 	}
 }
 
-function draw_mc() {
-	statcontentdiv[textContentKey] = "";
-	var table = document.createElement("table");
-	for(var i = 0; i < mc_tab_parts.length; i++) {
-		var part = mc_tab_parts[i];
-		var tr = document.createElement("tr");
-		var td1 = document.createElement("td");
-		td1[textContentKey] = part[0];
-		var td2 = document.createElement("td");
-		if(part[2]) {
-			var a = document.createElement("a");
-			a.href = "?_src_=vars;admin_token=" + href_token + ";Vars=" + part[2];
-			a[textContentKey] = part[1];
-			td2.appendChild(a);
-		} else {
-			td2[textContentKey] = part[1];
-		}
-		tr.appendChild(td1);
-		tr.appendChild(td2);
-		table.appendChild(tr);
+// MC Tab: subsystem data column indices
+var SS_NAME = 0, SS_STATE = 1, SS_COST = 2, SS_TICK = 3, SS_OVERRUN = 4,
+	SS_TICKS = 5, SS_FIRED = 6, SS_CAN_FIRE = 7, SS_IS_BG = 8, SS_REF = 9, SS_EXTRA = 10;
+var STATE_LETTERS = ["  ", "Q", "R", "P", "S", "P"];
+// Key subsystems that get a dedicated detail section
+var MC_KEY_SUBSYSTEMS = ["Atmospherics", "Garbage", "Machines", "Mobs", "Timer", "Objects"];
+
+function mc_health_cost(ms) {
+	if (ms >= 10) return "mc-health-red";
+	if (ms >= 3) return "mc-health-yellow";
+	return "mc-health-green";
+}
+function mc_health_tick(pct) {
+	if (pct >= 20) return "mc-health-red";
+	if (pct >= 8) return "mc-health-yellow";
+	return "mc-health-green";
+}
+function mc_health_overrun(pct) {
+	if (pct >= 5) return "mc-health-red";
+	if (pct >= 1) return "mc-health-yellow";
+	return "";
+}
+function mc_cpu_class(cpu) {
+	if (cpu >= 100) return "mc-val-bad";
+	if (cpu >= 80) return "mc-val-warn";
+	return "mc-val-good";
+}
+function mc_tidi_class(tidi) {
+	if (tidi >= 20) return "mc-val-bad";
+	if (tidi >= 5) return "mc-val-warn";
+	return "mc-val-good";
+}
+
+function mc_set_text(td, val) {
+	var s = "" + val;
+	if (td.textContent !== s) td.textContent = s;
+}
+
+function mc_make_vv_link(ref) {
+	return "?_src_=vars;admin_token=" + href_token + ";Vars=" + ref;
+}
+
+function mc_build_section_header(key, label) {
+	var div = document.createElement("div");
+	div.className = "mc-section-header";
+	div.textContent = (mc_sections[key] ? "\u25BC " : "\u25B6 ") + label;
+	div.onclick = function() {
+		mc_sections[key] = !mc_sections[key];
+		div.textContent = (mc_sections[key] ? "\u25BC " : "\u25B6 ") + label;
+		mc_toggle_section(key);
+	};
+	return div;
+}
+
+function mc_toggle_section(key) {
+	if (key === "server" && mc_server_grid) {
+		mc_server_grid.style.display = mc_sections.server ? "" : "none";
+	} else if (key === "ping" && mc_ping_table) {
+		mc_ping_table.style.display = mc_sections.ping ? "" : "none";
+	} else if (key === "key" && mc_key_section) {
+		mc_key_section.style.display = mc_sections.key ? "" : "none";
+	} else if (key === "subsystems") {
+		if (mc_ss_table) mc_ss_table.style.display = mc_sections.subsystems ? "" : "none";
+		if (mc_filter_input) mc_filter_input.style.display = mc_sections.subsystems ? "" : "none";
 	}
-	document.getElementById("statcontent").appendChild(table);
+}
+
+function mc_make_server_row(label, value, ref, cls) {
+	var tr = document.createElement("tr");
+	var td1 = document.createElement("td");
+	td1.className = "mc-label";
+	td1.textContent = label;
+	var td2 = document.createElement("td");
+	if (ref) {
+		var a = document.createElement("a");
+		a.href = "#";
+		a.onclick = (function(r) {
+			return function(e) {
+				e.preventDefault();
+				byond_topic(mc_make_vv_link(r));
+				return false;
+			};
+		})(ref);
+		a.textContent = value;
+		if (cls) a.className = cls;
+		td2.appendChild(a);
+	} else {
+		td2.textContent = value;
+		if (cls) td2.className = cls;
+	}
+	tr.appendChild(td1);
+	tr.appendChild(td2);
+	return tr;
+}
+
+function mc_update_server_section() {
+	if (!mc_server_grid) return;
+	mc_server_grid.textContent = "";
+	if (!mc_sections.server) return;
+	var d = mc_server_data;
+	// Short metrics — grid cards
+	mc_server_grid.appendChild(st_make_grid_item("XYZ", d.coords, false));
+	mc_server_grid.appendChild(st_make_grid_item("CPU", d.cpu + "%", false, mc_cpu_class(d.cpu)));
+	mc_server_grid.appendChild(st_make_grid_item("\u0423\u0437\u043B\u044B", d.instances, false));
+	// Compound metrics — full-width
+	mc_server_grid.appendChild(st_make_grid_item("BYOND",
+		"FPS:" + d.fps + " | \u0422\u0438\u043A\u0438:" + d.tick_count +
+		" | \u0414\u0440\u0438\u0444\u0442:" + d.tick_drift + "(" + d.tick_drift_pct + "%)" +
+		" | \u0412\u043D\u0443\u0442\u0440.\u0442\u0438\u043A:" + d.internal_tick_usage + "%",
+		true));
+	mc_server_grid.appendChild(st_make_grid_item("TimeDilation",
+		d.tidi_current + "% (" + d.tidi_avg_fast + "%, " + d.tidi_avg + "%, " + d.tidi_avg_slow + "%)",
+		true, mc_tidi_class(d.tidi_current)));
+	mc_server_grid.appendChild(st_make_grid_item("MC",
+		"Rate:" + d.mc_tick_rate + " | Iter:" + d.mc_iteration + " | \u041B\u0438\u043C\u0438\u0442:" + d.mc_tick_limit,
+		true, null, mc_make_vv_link(d.ref_master)));
+	mc_server_grid.appendChild(st_make_grid_item("Failsafe", d.failsafe_stat,
+		true, null, d.ref_failsafe ? mc_make_vv_link(d.ref_failsafe) : null));
+	mc_server_grid.appendChild(st_make_grid_item("\u041A\u0430\u043C\u0435\u0440\u044B",
+		d.camera_count + " | \u0427\u0430\u043D\u043A\u0438:" + d.camera_chunks,
+		true, null, d.ref_cameranet ? mc_make_vv_link(d.ref_cameranet) : null));
+	mc_server_grid.appendChild(st_make_grid_item("\u041E\u0447\u0438\u0441\u0442\u043A\u0430",
+		d.cleanup_last + "ms | Avg:" + d.cleanup_avg + "ms | Target:" + d.cleanup_target,
+		true));
+	mc_server_grid.appendChild(st_make_grid_item("GLOB", "VV",
+		false, null, mc_make_vv_link(d.ref_glob)));
+	mc_server_grid.appendChild(st_make_grid_item("Config", "VV",
+		false, null, mc_make_vv_link(d.ref_config)));
+}
+
+function mc_update_ping_section() {
+	if (!mc_ping_table) return;
+	mc_ping_table.textContent = "";
+	if (!mc_sections.ping) return;
+	var d = mc_server_data;
+	mc_ping_table.appendChild(mc_make_server_row("RTT",
+		"\u0421\u044D\u043C\u043F\u043B:" + d.ping_samples +
+		" | Avg:" + d.ping_rtt_avg + "ms" +
+		" | Max:" + d.ping_rtt_max + "ms" +
+		" | Avg\u0421\u0440:" + d.ping_rtt_avg_avg + "ms",
+		null, null));
+	mc_ping_table.appendChild(mc_make_server_row("\u0422\u0438\u043A/\u0421\u0435\u0440\u0432\u0435\u0440",
+		"\u0422\u0438\u043A Avg:" + d.ping_tick_avg + "ms" +
+		" | \u0422\u0438\u043A Max:" + d.ping_tick_max + "ms" +
+		" | \u0421\u0435\u0440\u0432 Avg:" + d.ping_server_avg + "ms" +
+		" | \u0421\u0435\u0440\u0432 Max:" + d.ping_server_max + "ms",
+		null, null));
+	mc_ping_table.appendChild(mc_make_server_row("\u0414\u0436\u0438\u0442\u0442\u0435\u0440",
+		"Raw:" + d.raw_mult +
+		" | Last:" + d.jitter_last + "%" +
+		" | Avg:" + d.jitter_avg + "%" +
+		" | Max\u041E\u043A\u043D\u043E:" + d.jitter_max_wnd + "%" +
+		" | Glide:" + d.glide_mult,
+		null, null));
+}
+
+function mc_matches_filter(name) {
+	if (!mc_filter_text) return true;
+	return name.toLowerCase().indexOf(mc_filter_text) !== -1;
+}
+
+function mc_apply_filter() {
+	for (var name in mc_ss_rows) {
+		mc_ss_rows[name].style.display = mc_matches_filter(name) ? "" : "none";
+	}
+}
+
+function mc_sort_and_reorder() {
+	var rows = [];
+	for (var name in mc_ss_rows) {
+		rows.push(mc_ss_rows[name]);
+	}
+	var col = mc_sort_col;
+	var asc = mc_sort_asc;
+	rows.sort(function(a, b) {
+		var ad = a._ssData;
+		var bd = b._ssData;
+		// Non-firing subsystems always at the bottom
+		if (ad[SS_CAN_FIRE] !== bd[SS_CAN_FIRE]) return bd[SS_CAN_FIRE] - ad[SS_CAN_FIRE];
+		if (col === SS_NAME) {
+			var av = ("" + ad[col]).toLowerCase();
+			var bv = ("" + bd[col]).toLowerCase();
+			return asc ? (av < bv ? -1 : av > bv ? 1 : 0)
+					   : (bv < av ? -1 : bv > av ? 1 : 0);
+		}
+		var an = parseFloat(ad[col]) || 0;
+		var bn = parseFloat(bd[col]) || 0;
+		return asc ? (an - bn) : (bn - an);
+	});
+	for (var i = 0; i < rows.length; i++) {
+		if (mc_ss_tbody.childNodes[i] !== rows[i]) {
+			mc_ss_tbody.insertBefore(rows[i], mc_ss_tbody.childNodes[i]);
+		}
+	}
+}
+
+function mc_update_sort_indicators() {
+	if (!mc_ss_table) return;
+	var ths = mc_ss_table.getElementsByTagName("th");
+	for (var i = 0; i < ths.length; i++) {
+		var col = parseInt(ths[i].getAttribute("data-col"));
+		if (col === mc_sort_col) {
+			ths[i].className = "mc-th-sort mc-sorted" + (mc_sort_asc ? "" : " desc");
+		} else {
+			ths[i].className = "mc-th-sort";
+		}
+	}
+}
+
+function mc_update_ss_rows() {
+	var seen = {};
+	for (var i = 0; i < mc_ss_data.length; i++) {
+		var row = mc_ss_data[i];
+		var name = row[SS_NAME];
+		seen[name] = true;
+		var tr = mc_ss_rows[name];
+		if (!tr) {
+			tr = document.createElement("tr");
+			for (var c = 0; c < 7; c++) {
+				tr.appendChild(document.createElement("td"));
+			}
+			mc_ss_rows[name] = tr;
+			mc_ss_tbody.appendChild(tr);
+		}
+		var cells = tr.childNodes;
+		var state_letter = STATE_LETTERS[row[SS_STATE]] || "?";
+		var can_fire = row[SS_CAN_FIRE];
+
+		// State
+		mc_set_text(cells[0], state_letter);
+		cells[0].className = "mc-state mc-state-" + row[SS_STATE];
+
+		// Name with VV link
+		var link = tr._nameLink;
+		if (!link) {
+			cells[1].textContent = "";
+			link = document.createElement("a");
+			cells[1].appendChild(link);
+			tr._nameLink = link;
+		}
+		var dname = row[SS_IS_BG] ? name + " [BG]" : name;
+		if (link.textContent !== dname) link.textContent = dname;
+		link.href = "#";
+		link.onclick = (function(r) {
+			return function(e) {
+				e.preventDefault();
+				byond_topic(mc_make_vv_link(r));
+				return false;
+			};
+		})(row[SS_REF]);
+		cells[1].className = !can_fire ? "mc-name mc-offline" : (row[SS_IS_BG] ? "mc-name mc-bg" : "mc-name");
+
+		// Numeric cells
+		if (!can_fire) {
+			mc_set_text(cells[2], "-"); cells[2].className = "mc-num";
+			mc_set_text(cells[3], "-"); cells[3].className = "mc-num";
+			mc_set_text(cells[4], "-"); cells[4].className = "mc-num";
+			mc_set_text(cells[5], "-"); cells[5].className = "mc-num";
+			mc_set_text(cells[6], row[SS_FIRED]); cells[6].className = "mc-num";
+		} else {
+			var cost = row[SS_COST];
+			var tick = row[SS_TICK];
+			var overrun = row[SS_OVERRUN];
+			mc_set_text(cells[2], cost); cells[2].className = "mc-num " + mc_health_cost(cost);
+			mc_set_text(cells[3], tick); cells[3].className = "mc-num " + mc_health_tick(tick);
+			mc_set_text(cells[4], overrun); cells[4].className = "mc-num " + mc_health_overrun(overrun);
+			mc_set_text(cells[5], row[SS_TICKS]); cells[5].className = "mc-num";
+			mc_set_text(cells[6], row[SS_FIRED]); cells[6].className = "mc-num";
+		}
+
+		tr._ssData = row;
+		tr.style.display = mc_matches_filter(name) ? "" : "none";
+	}
+	// Remove stale rows
+	for (var n in mc_ss_rows) {
+		if (!seen[n]) {
+			mc_ss_tbody.removeChild(mc_ss_rows[n]);
+			delete mc_ss_rows[n];
+		}
+	}
+	mc_sort_and_reorder();
+}
+
+function mc_update_key_section() {
+	if (!mc_key_section) return;
+	mc_key_section.textContent = "";
+	if (!mc_sections.key) return;
+	var key_data = mc_server_data.key_ss || {};
+	for (var i = 0; i < mc_ss_data.length; i++) {
+		var row = mc_ss_data[i];
+		var name = row[SS_NAME];
+		if (MC_KEY_SUBSYSTEMS.indexOf(name) === -1) continue;
+		var card = document.createElement("div");
+		card.className = "mc-key-card";
+		// Header line: name + cost/tick stats
+		var header = document.createElement("div");
+		header.className = "mc-key-header";
+		var nameEl = document.createElement("span");
+		nameEl.className = "mc-key-name";
+		var nameLink = document.createElement("a");
+		nameLink.href = "#";
+		nameLink.onclick = (function(r) {
+			return function(e) {
+				e.preventDefault();
+				byond_topic(mc_make_vv_link(r));
+				return false;
+			};
+		})(row[SS_REF]);
+		nameLink.textContent = name;
+		nameEl.appendChild(nameLink);
+		header.appendChild(nameEl);
+		var statsEl = document.createElement("span");
+		statsEl.className = "mc-key-stats";
+		if (row[SS_CAN_FIRE]) {
+			var costCls = mc_health_cost(row[SS_COST]);
+			var tickCls = mc_health_tick(row[SS_TICK]);
+			statsEl.innerHTML = '<span class="' + costCls + '">' + row[SS_COST] + 'ms</span>'
+				+ ' | <span class="' + tickCls + '">' + row[SS_TICK] + '%</span>'
+				+ ' | ' + STATE_LETTERS[row[SS_STATE]];
+		} else {
+			statsEl.textContent = "OFFLINE";
+			statsEl.style.opacity = "0.5";
+		}
+		header.appendChild(statsEl);
+		card.appendChild(header);
+		// Structured detail table from key_ss backend data
+		var details = key_data[name];
+		if (details && details.length) {
+			var dtable = document.createElement("table");
+			dtable.className = "mc-key-table";
+			for (var d = 0; d < details.length; d++) {
+				var dtr = document.createElement("tr");
+				var dtd1 = document.createElement("td");
+				dtd1.className = "mc-key-dlabel";
+				dtd1.textContent = details[d][0];
+				var dtd2 = document.createElement("td");
+				dtd2.className = "mc-key-dval";
+				dtd2.textContent = details[d][1];
+				dtr.appendChild(dtd1);
+				dtr.appendChild(dtd2);
+				dtable.appendChild(dtr);
+			}
+			card.appendChild(dtable);
+		}
+		mc_key_section.appendChild(card);
+	}
+}
+
+function draw_mc() {
+	// Build skeleton once; update in-place on subsequent calls
+	if (!mc_container || !mc_container.parentNode) {
+		statcontentdiv.textContent = "";
+		mc_ss_rows = {};
+		mc_container = document.createElement("div");
+		mc_container.className = "mc-container";
+
+		// Server section
+		mc_container.appendChild(mc_build_section_header("server", "\u0421\u0435\u0440\u0432\u0435\u0440"));
+		mc_server_grid = document.createElement("div");
+		mc_server_grid.className = "st-grid";
+		mc_container.appendChild(mc_server_grid);
+
+		// Ping section
+		mc_container.appendChild(mc_build_section_header("ping", "\u041F\u0438\u043D\u0433 \u0438 \u0421\u0435\u0442\u044C"));
+		mc_ping_table = document.createElement("table");
+		mc_ping_table.className = "mc-ping-table";
+		mc_ping_table.style.display = mc_sections.ping ? "" : "none";
+		mc_container.appendChild(mc_ping_table);
+
+		// Key subsystems section
+		mc_container.appendChild(mc_build_section_header("key", "\u041A\u043B\u044E\u0447\u0435\u0432\u044B\u0435"));
+		mc_key_section = document.createElement("div");
+		mc_key_section.className = "mc-key-section";
+		mc_container.appendChild(mc_key_section);
+
+		// All subsystems section
+		mc_ss_header = mc_build_section_header("subsystems", "\u041F\u043E\u0434\u0441\u0438\u0441\u0442\u0435\u043C\u044B (" + mc_ss_data.length + ")");
+		mc_container.appendChild(mc_ss_header);
+
+		mc_filter_input = document.createElement("input");
+		mc_filter_input.type = "text";
+		mc_filter_input.className = "mc-filter";
+		mc_filter_input.placeholder = "\u0424\u0438\u043B\u044C\u0442\u0440...";
+		mc_filter_input.value = mc_filter_text;
+		mc_filter_input.oninput = function() {
+			mc_filter_text = this.value.toLowerCase();
+			mc_apply_filter();
+		};
+		mc_container.appendChild(mc_filter_input);
+
+		mc_ss_table = document.createElement("table");
+		mc_ss_table.className = "mc-ss-table";
+
+		var thead = document.createElement("thead");
+		var hrow = document.createElement("tr");
+		var cols = [
+			{ label: "", col: SS_STATE, title: "\u0421\u0442\u0430\u0442\u0443\u0441" },
+			{ label: "\u0418\u043C\u044F", col: SS_NAME, title: "\u0418\u043C\u044F" },
+			{ label: "ms", col: SS_COST, title: "\u0421\u0442\u043E\u0438\u043C\u043E\u0441\u0442\u044C (ms)" },
+			{ label: "\u0422\u0438\u043A%", col: SS_TICK, title: "% \u0442\u0438\u043A\u0430" },
+			{ label: "\u041B\u0438\u043C%", col: SS_OVERRUN, title: "\u041F\u0435\u0440\u0435\u0440\u0430\u0441\u0445\u043E\u0434" },
+			{ label: "\u0422\u0438\u043A\u0438", col: SS_TICKS, title: "\u0422\u0438\u043A\u0438 \u0437\u0430 \u0446\u0438\u043A\u043B" },
+			{ label: "#", col: SS_FIRED, title: "\u0417\u0430\u043F\u0443\u0441\u043A\u043E\u0432" }
+		];
+		for (var c = 0; c < cols.length; c++) {
+			var th = document.createElement("th");
+			th.textContent = cols[c].label;
+			th.title = cols[c].title;
+			th.className = "mc-th-sort";
+			th.setAttribute("data-col", cols[c].col);
+			th.onclick = function() {
+				var col = parseInt(this.getAttribute("data-col"));
+				if (mc_sort_col === col) {
+					mc_sort_asc = !mc_sort_asc;
+				} else {
+					mc_sort_col = col;
+					mc_sort_asc = (col === SS_NAME);
+				}
+				mc_update_sort_indicators();
+				mc_sort_and_reorder();
+			};
+			hrow.appendChild(th);
+		}
+		thead.appendChild(hrow);
+		mc_ss_table.appendChild(thead);
+
+		mc_ss_tbody = document.createElement("tbody");
+		mc_ss_table.appendChild(mc_ss_tbody);
+		mc_container.appendChild(mc_ss_table);
+
+		statcontentdiv.appendChild(mc_container);
+		mc_update_sort_indicators();
+	}
+
+	// Update subsystem count in header
+	if (mc_ss_header) {
+		var arrow = mc_sections.subsystems ? "\u25BC " : "\u25B6 ";
+		var new_text = arrow + "\u041F\u043E\u0434\u0441\u0438\u0441\u0442\u0435\u043C\u044B (" + mc_ss_data.length + ")";
+		if (mc_ss_header.textContent !== new_text) mc_ss_header.textContent = new_text;
+	}
+
+	mc_update_server_section();
+	mc_update_ping_section();
+	mc_update_key_section();
+	mc_update_ss_rows();
 }
 function update_tickets(T){
 	tickets = JSON.parse(T);
@@ -948,11 +2208,15 @@ function add_admin_tabs(ht) {
 }
 function create_listedturf(TN) {
 	remove_listedturf(); // remove the last one if we had one
+	turfcontents = [];
 	turfname = JSON.parse(TN);
 	addPermanentTab(turfname);
 	tab_change(turfname);
 }
 function update_listedturf(TC) {
+	if(TC === turfcontentsRaw)
+		return;
+	turfcontentsRaw = TC;
 	turfcontents = JSON.parse(TC);
 	if(current_tab == turfname)
 		draw_listedturf();
@@ -969,92 +2233,113 @@ function iconError() {
 		that.src = null;
 		that.src = src + '#' + current_attempts;
 		that.id++;
-		draw_listedturf();
 	}, imageRetryDelay);
 }
 function draw_listedturf() {
-	statcontentdiv[textContentKey] = "";
-	var table = document.createElement("table");
+	var statcontent = document.getElementById("statcontent");
+	// Ensure persistent table exists and is attached
+	if(!turfTable || !turfTable.parentNode) {
+		statcontentdiv.textContent = "";
+		turfTable = document.createElement("table");
+		turfItemNodes = {};
+		statcontent.appendChild(turfTable);
+	}
+	// Build lookup of new items by ref
+	var newData = {};
+	for(var i = 0; i < turfcontents.length; i++) {
+		newData[turfcontents[i][1]] = turfcontents[i];
+	}
+	// Remove items no longer present
+	for(var ref in turfItemNodes) {
+		if(!(ref in newData)) {
+			turfTable.removeChild(turfItemNodes[ref]);
+			delete turfItemNodes[ref];
+		}
+	}
+	// Add new items, update existing, ensure correct order
+	var nextSibling = turfTable.firstChild;
 	for(var i = 0; i < turfcontents.length; i++) {
 		var part = turfcontents[i];
-		if(storedimages[part[1]] == null && part[2]) {
-			var img = document.createElement("img");
-			img.src = part[2];
-			img.id = part[1];
-			storedimages[part[1]] = part[2];
-			img.onerror = function() {
-				iconError();
-			};
-			table.appendChild(img);
-		} else {
-			var img = document.createElement("img");
-			img.onerror = function() {
-				iconError();
-			};
-			img.src = storedimages[part[1]];
-			img.id = part[1];
-			table.appendChild(img);
-		}
-		var b = document.createElement("div");
-		var clickcatcher = "";
-		b.className = "link";
-		b.onmousedown = function (part) {
-			// The outer function is used to close over a fresh "part" variable,
-			// rather than every onmousedown getting the "part" of the last entry.
-			return function(e) {
-				e.preventDefault();
-				clickcatcher = "?src=_statpanel_;statpanel_item_target=" + part[1];
-				switch(e.button){
-					case 1:
-						clickcatcher += ";statpanel_item_click=middle"
-						break;
-					case 2:
-						clickcatcher += ";statpanel_item_click=right"
-						break;
-					default:
-						clickcatcher += ";statpanel_item_click=left"
-				}
-				if(e.shiftKey){
-					clickcatcher += ";statpanel_item_shiftclick=1";
-				}
-				if(e.ctrlKey){
-					clickcatcher += ";statpanel_item_ctrlclick=1";
-				}
-				if(e.altKey) {
-					clickcatcher += ";statpanel_item_altclick=1";
-				}
-				window.location.href = clickcatcher;
+		var ref = part[1];
+		if(ref in turfItemNodes) {
+			// Existing item — update name if changed, ensure order
+			var container = turfItemNodes[ref];
+			var linkEl = container.childNodes[1];
+			if(linkEl && linkEl.textContent !== part[0]) {
+				linkEl.textContent = part[0];
 			}
-		}(part);
-		b[textContentKey] = part[0];
-		table.appendChild(b);
-		table.appendChild(document.createElement("br"));
+			if(container !== nextSibling) {
+				turfTable.insertBefore(container, nextSibling);
+			} else {
+				nextSibling = nextSibling.nextSibling;
+			}
+		} else {
+			// New item — create container with img + link
+			var container = document.createElement("div");
+			var img = document.createElement("img");
+			if(storedimages[ref] == null && part[2]) {
+				img.src = part[2];
+				storedimages[ref] = part[2];
+			} else if(storedimages[ref]) {
+				img.src = storedimages[ref];
+			}
+			img.onerror = iconError;
+			container.appendChild(img);
+			var b = document.createElement("div");
+			b.className = "link";
+			b.onmousedown = function(part) {
+				return function(e) {
+					e.preventDefault();
+					var clickcatcher = "?src=_statpanel_;statpanel_item_target=" + part[1];
+					switch(e.button){
+						case 1:
+							clickcatcher += ";statpanel_item_click=middle";
+							break;
+						case 2:
+							clickcatcher += ";statpanel_item_click=right";
+							break;
+						default:
+							clickcatcher += ";statpanel_item_click=left";
+					}
+					if(e.shiftKey) clickcatcher += ";statpanel_item_shiftclick=1";
+					if(e.ctrlKey) clickcatcher += ";statpanel_item_ctrlclick=1";
+					if(e.altKey) clickcatcher += ";statpanel_item_altclick=1";
+					byond_topic(clickcatcher);
+				};
+			}(part);
+			b.textContent = part[0];
+			container.appendChild(b);
+			turfItemNodes[ref] = container;
+			turfTable.insertBefore(container, nextSibling);
+		}
 	}
-	document.getElementById("statcontent").appendChild(table);
 }
 
 function remove_listedturf() {
 	removePermanentTab(turfname);
+	turfcontentsRaw = "";
+	turfTable = null;
+	turfItemNodes = {};
 	checkStatusTab();
 	if(current_tab == turfname)
 		tab_change("Status");
 }
 function draw_sdql2(){
-	statcontentdiv[textContentKey] = "";
+	statcontentdiv.textContent = "";
 	var table = document.createElement("table");
 	for(var i = 0; i < sdql2.length; i++) {
 		var part = sdql2[i];
 		var tr = document.createElement("tr");
 		var td1 = document.createElement("td");
-		td1[textContentKey] = part[0];
+		td1.textContent = part[0];
 		var td2 = document.createElement("td");
 		if(part[2]) {
 			var a = document.createElement("a");
 			a.href = "?src=" + "_statpanel_" + ";statpanel_item_target=" + part[2] + ";statpanel_item_click=left";
-			a[textContentKey] = part[1];
+			a.textContent = part[1];
 			td2.appendChild(a);
 		} else {
-			td2[textContentKey] = part[1];
+			td2.textContent = part[1];
 		}
 		tr.appendChild(td1);
 		tr.appendChild(td2);
@@ -1064,7 +2349,7 @@ function draw_sdql2(){
 }
 
 function draw_tickets() {
-	statcontentdiv[textContentKey] = "";
+	statcontentdiv.textContent = "";
 	var table = document.createElement("table");
 	if(!tickets)
 		return;
@@ -1072,20 +2357,32 @@ function draw_tickets() {
 		var part = tickets[i];
 		var tr = document.createElement("tr");
 		var td1 = document.createElement("td");
-		td1[textContentKey] = part[0];
+		td1.textContent = part[0];
 		var td2 = document.createElement("td");
 		if(part[2]) {
 			var a = document.createElement("a");
-			a.href = "?_src_=holder;admin_token=" + href_token + ";ahelp=" + part[2] + ";ahelp_action=ticket;statpanel_item_click=left;action=ticket" ;
-			a[textContentKey] = part[1];
+			a.href = "#";
+			a.onclick = function(ref) {
+				return function(e) {
+					e.preventDefault();
+					byond_topic("?_src_=holder;admin_token=" + href_token + ";ahelp=" + ref + ";ahelp_action=ticket");
+				};
+			}(part[2]);
+			a.textContent = part[1];
 			td2.appendChild(a);
 		} else if(part[3]){
 			var a = document.createElement("a");
-			a.href = "?src=_statpanel_" + ";statpanel_item_target=" + part[3] + ";statpanel_item_click=left";
-			a[textContentKey] = part[1];
+			a.href = "#";
+			a.onclick = function(ref) {
+				return function(e) {
+					e.preventDefault();
+					byond_topic("?src=_statpanel_;statpanel_item_target=" + ref + ";statpanel_item_click=left");
+				};
+			}(part[3]);
+			a.textContent = part[1];
 			td2.appendChild(a);
 		} else {
-			td2[textContentKey] = part[1];
+			td2.textContent = part[1];
 		}
 		tr.appendChild(td1);
 		tr.appendChild(td2);
@@ -1097,12 +2394,12 @@ function draw_tickets() {
 function draw_interviews() {
 	var body = document.createElement("div");
 	var header = document.createElement("h3");
-	header[textContentKey] = "Interviews";
+	header.textContent = "Interviews";
 	body.appendChild(header);
 	var manDiv = document.createElement("div");
 	manDiv.className = "interview_panel_controls"
 	var manLink = document.createElement("a");
-	manLink[textContentKey] = "Open Interview Manager Panel";
+	manLink.textContent = "Open Interview Manager Panel";
 	manLink.href = "?_src_=holder;admin_token=" + href_token + ";interview_man=1;statpanel_item_click=left";
 	manDiv.appendChild(manLink);
 	body.appendChild(manDiv);
@@ -1115,8 +2412,8 @@ function draw_interviews() {
 		var tr = document.createElement("tr");
 		var stat_name = document.createElement("td");
 		var stat_text = document.createElement("td");
-		stat_name[textContentKey] = key;
-		stat_text[textContentKey] = interviewManager.status[key];
+		stat_name.textContent = key;
+		stat_text.textContent = interviewManager.status[key];
 		tr.appendChild(stat_name);
 		tr.appendChild(stat_text);
 		statsDiv.appendChild(tr);
@@ -1134,7 +2431,7 @@ function draw_interviews() {
 		var tr = document.createElement("tr");
 		var td = document.createElement("td");
 		var a = document.createElement("a");
-		a[textContentKey] = part["status"];
+		a.textContent = part["status"];
 		a.href = "?_src_=holder;admin_token=" + href_token + ";interview=" + part["ref"] + ";statpanel_item_click=left";
 		td.appendChild(a);
 		tr.appendChild(td);
@@ -1144,22 +2441,22 @@ function draw_interviews() {
 }
 
 function draw_spells(cat) {
-	statcontentdiv[textContentKey] = "";
+	statcontentdiv.textContent = "";
 	var table = document.createElement("table");
 	for(var i = 0; i < spells.length; i++) {
 		var part = spells[i];
 		if(part[0] != cat) continue;
 		var tr = document.createElement("tr");
 		var td1 = document.createElement("td");
-		td1[textContentKey] = part[1];
+		td1.textContent = part[1];
 		var td2 = document.createElement("td");
 		if(part[3]) {
 			var a = document.createElement("a");
 			a.href = "?src=" + part[3] + ";statpanel_item_click=left";
-			a[textContentKey] = part[2];
+			a.textContent = part[2];
 			td2.appendChild(a);
 		} else {
-			td2[textContentKey] = part[2];
+			td2.textContent = part[2];
 		}
 		tr.appendChild(td1);
 		tr.appendChild(td2);
@@ -1177,7 +2474,7 @@ function make_verb_onclick(command) {
 }
 
 function draw_verbs(cat){
-	statcontentdiv[textContentKey] = "";
+	statcontentdiv.textContent = "";
 	var table = document.createElement("div");
 	var additions = {}; // additional sub-categories to be rendered
 	table.className = "grid-container";
@@ -1211,7 +2508,7 @@ function draw_verbs(cat){
 			a.onclick = make_verb_onclick(command.replace(/\s/g, "-"));
 			a.className = "grid-item";
 			var t = document.createElement("span");
-			t[textContentKey] = command;
+			t.textContent = command;
 			t.className = "grid-item-text";
 			a.appendChild(t);
 			(subCat ? additions[subCat] : table).appendChild(a);
@@ -1227,7 +2524,7 @@ function draw_verbs(cat){
 		if (additions.hasOwnProperty(cat)) {
 			// do addition here
 			var header = document.createElement("h3");
-			header[textContentKey] = cat;
+			header.textContent = cat;
 			content.appendChild(header);
 			content.appendChild(additions[cat]);
 		}
@@ -1260,13 +2557,14 @@ function set_style_sheet(sheet) {
 }
 
 function restoreFocus() {
+	if (document.activeElement && document.activeElement.tagName === "INPUT") return;
 	run_after_focus(function() {
-		window.location.href = "byond://winset?map.focus=true";
+		byond_winset({ "map.focus": "true" });
 	});
 }
 
-document[addEventListenerKey]("mouseup", restoreFocus);
-document[addEventListenerKey]("keyup", restoreFocus);
+document.addEventListener("mouseup", restoreFocus);
+document.addEventListener("keyup", restoreFocus);
 
 if(!current_tab) {
 	addPermanentTab("Status");
@@ -1278,8 +2576,12 @@ window.onload = function() {
 };
 
 function NotifyByondOnload() {
-	window.location.href = "byond://winset?command=Panel-Ready";
+	byond_winset({ command: "Panel-Ready" });
 }
+
+// Retry a few times in case initial onload command races bridge initialization.
+setTimeout(NotifyByondOnload, 500);
+setTimeout(NotifyByondOnload, 1500);
 
 function create_debug(){
 	if(!document.getElementById("Debug Stat Panel")) {
@@ -1296,7 +2598,7 @@ function getCookie(cname) {
 	var c = ca[i];
 	while (c.charAt(0)==' ') c = c.substring(1);
 		if (c.indexOf(name) === 0) {
-			return decoder(c.substring(name.length,c.length));
+			return decodeURIComponent(c.substring(name.length,c.length));
 		}
 	}
 	return '';

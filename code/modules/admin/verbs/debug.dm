@@ -1,5 +1,5 @@
 /client/proc/Debug2()
-	set category = "Debug"
+	set category = "Debug.7) Testing"
 	set name = "Debug-Game"
 	if(!check_rights(R_DEBUG))
 		return
@@ -15,8 +15,22 @@
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Toggle Debug Two") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
+/client/proc/allow_browser_inspect()
+	set category = "Debug.2) Info"
+	set name = "Allow Browser Inspect"
+	if(!check_rights(R_DEBUG))
+		return
+
+	if(byond_version < 516)
+		to_chat(src, span_warning("Эта функция доступна только на BYOND 516 и выше!"))
+		return
+
+	to_chat(src, span_notice("Теперь вы можете использовать инспектор браузера через правый клик."))
+	winset(src, null, "browser-options=+devtools")
+	SSblackbox.record_feedback("tally", "admin_verb", 1, "Allow Browser Inspect") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
 /client/proc/Cell()
-	set category = "Debug"
+	set category = "Debug.9) Debug Verbs"
 	set name = "Air Status in Location"
 	if(!mob)
 		return
@@ -137,7 +151,7 @@
 
 //TODO: merge the vievars version into this or something maybe mayhaps
 /client/proc/cmd_debug_del_all(object as text)
-	set category = "Debug"
+	set category = "Debug.8) Misc"
 	set name = "Del-All"
 
 	var/list/matches = get_fancy_list_of_atom_types()
@@ -161,7 +175,7 @@
 
 
 /client/proc/cmd_debug_make_powernets()
-	set category = "Debug"
+	set category = "Debug.3) Fixing"
 	set name = "Make Powernets"
 	SSmachines.makepowernets()
 	log_admin("[key_name(src)] has remade the powernet. makepowernets() called.")
@@ -540,7 +554,7 @@
 	return dresscode
 
 /client/proc/cmd_admin_rejuvenate(mob/living/M in GLOB.mob_list)
-	set category = "Debug"
+	set category = "Debug.8) Misc"
 	set name = "Rejuvenate"
 
 	if(!check_rights(R_ADMIN))
@@ -561,7 +575,7 @@
 
 /client/proc/startSinglo()
 
-	set category = "Debug"
+	set category = "Debug.9) Debug Verbs"
 	set name = "Start Singularity"
 	set desc = "Sets up the singularity and all machines to get power flowing through the station"
 
@@ -617,7 +631,7 @@
 			SMES.input_attempt = 1
 
 /client/proc/cmd_debug_mob_lists()
-	set category = "Debug"
+	set category = "Debug.2) Info"
 	set name = "Debug Mob Lists"
 	set desc = "For when you just gotta know"
 
@@ -638,7 +652,7 @@
 			to_chat(usr, jointext(GLOB.joined_player_list,","))
 
 /client/proc/cmd_display_del_log()
-	set category = "Debug"
+	set category = "Debug.1) Logs"
 	set name = "Display del() Log"
 	set desc = "Display del's log of everything that's passed through it."
 
@@ -664,24 +678,107 @@
 
 	dellog += "</ol>"
 
-	usr << browse(dellog.Join(), "window=dellog")
+	var/datum/browser/popup = new(usr, "dellog", "Deletion Log")
+	popup.set_content(dellog.Join())
+	popup.open()
+
+/client/proc/cmd_display_gc_queue()
+	set category = "Debug.1) Logs"
+	set name = "Display GC Queue"
+	set desc = "Display current GC queue contents by type."
+
+	var/list/queue_names = list("Soft Delete Queue (GC_QUEUE_CHECK)", "Hard Delete Queue (GC_QUEUE_HARDDELETE)")
+	var/list/output = list("<B>Current GC Queue Contents</B>")
+	output += " — <A href='byond://?src=[REF(holder)];[HrefToken()];gc_queue_refresh=1'>Refresh</A><BR>"
+
+	// --- Queues by type ---
+	for(var/level in 1 to GC_QUEUE_COUNT)
+		var/list/queue = SSgarbage.queues[level]
+		var/queue_len = length(queue)
+		output += "<BR><h3>[queue_names[level]] — [queue_len] items</h3>"
+
+		if(!queue_len)
+			output += "<i>Empty</i>"
+			continue
+
+		var/list/type_counts = list()
+		var/alive_count = 0
+		var/dead_count = 0
+
+		for(var/i in 1 to queue_len)
+			var/list/L = queue[i]
+			if(length(L) < 2)
+				dead_count++
+				continue
+			var/refID = L[2]
+			var/datum/D = locate(refID)
+			if(!D)
+				dead_count++
+				continue
+			alive_count++
+			var/tpath = "[D.type]"
+			type_counts[tpath] = (type_counts[tpath] || 0) + 1
+
+		sortTim(type_counts, cmp = GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
+
+		output += "<b>Alive: [alive_count] | Already GC'd: [dead_count]</b><ol>"
+		var/shown = 0
+		for(var/tpath in type_counts)
+			output += "<li><u>[tpath]</u> — [type_counts[tpath]]</li>"
+			shown++
+			if(shown >= 50)
+				output += "<li><i>...and [length(type_counts) - 50] more types</i></li>"
+				break
+		output += "</ol>"
+
+	// --- Costly types (from qdel_item stats) ---
+	output += "<BR><h3>Top types by Destroy() cost</h3>"
+	var/list/destroy_cost = list()
+	for(var/path in SSgarbage.items)
+		var/datum/qdel_item/I = SSgarbage.items[path]
+		if(I.destroy_time > 0)
+			destroy_cost["[path]"] = I.destroy_time
+	sortTim(destroy_cost, cmp = GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
+	output += "<ol>"
+	var/shown_cost = 0
+	for(var/path in destroy_cost)
+		var/datum/qdel_item/I = SSgarbage.items[text2path(path)]
+		var/extra = ""
+		if(I.failures)
+			extra += " | Failures: [I.failures]"
+		if(I.hard_deletes)
+			extra += " | Hard dels: [I.hard_deletes] ([I.hard_delete_time]ms, max [I.hard_delete_max]ms)"
+		if(I.slept_destroy)
+			extra += " | Sleeps: [I.slept_destroy]"
+		output += "<li><u>[path]</u> — Destroy: [I.destroy_time]ms / [I.qdels] calls ([round(I.destroy_time / max(I.qdels, 1), 0.01)]ms avg)[extra]</li>"
+		shown_cost++
+		if(shown_cost >= 30)
+			output += "<li><i>...and [length(destroy_cost) - 30] more types</i></li>"
+			break
+	output += "</ol>"
+
+	var/datum/browser/popup = new(usr, "gcqueue", "GC Queue Contents", 700, 600)
+	popup.set_content(output.Join())
+	popup.open()
 
 /client/proc/cmd_display_overlay_log()
-	set category = "Debug"
+	set category = "Debug.1) Logs"
 	set name = "Display overlay Log"
 	set desc = "Display SSoverlays log of everything that's passed through it."
 
 	render_stats(SSoverlays.stats, src)
 
 /client/proc/cmd_display_init_log()
-	set category = "Debug"
+	set category = "Debug.1) Logs"
 	set name = "Display Initialize() Log"
 	set desc = "Displays a list of things that didn't handle Initialize() properly"
 
-	usr << browse(replacetext(SSatoms.InitLog(), "\n", "<br>"), "window=initlog")
+	var/datum/browser/popup = new(usr, "initlog", "Initialize Log")
+	popup.set_content(replacetext(SSatoms.InitLog(), "\n", "<br>"))
+	popup.open(FALSE)
 
 /client/proc/debug_huds(i as num)
-	set category = "Debug"
+	set category = "Debug.4) VV"
 	set name = "Debug HUDs"
 	set desc = "Debug the data or antag HUDs"
 
@@ -690,7 +787,7 @@
 	debug_variables(GLOB.huds[i])
 
 /client/proc/jump_to_ruin()
-	set category = "Debug"
+	set category = "Debug.8) Misc"
 	set name = "Jump to Ruin"
 	set desc = "Displays a list of all placed ruins to teleport to."
 	if(!holder)
@@ -722,7 +819,7 @@
 		to_chat(usr, "<span class='italics'>[template.description]</span>")
 
 /client/proc/place_ruin()
-	set category = "Debug"
+	set category = "Debug.9) Debug Verbs"
 	set name = "Spawn Ruin"
 	set desc = "Attempt to randomly place a specific ruin."
 	if (!holder)
@@ -773,7 +870,7 @@
 		to_chat(src, "<span class='warning'>Failed to place [template.name].</span>")
 
 /client/proc/clear_dynamic_transit()
-	set category = "Debug"
+	set category = "Debug.3) Fixing"
 	set name = "Clear Dynamic Turf Reservations"
 	set desc = "Deallocates all reserved space, restoring it to round start conditions."
 	if(!holder)
@@ -787,7 +884,7 @@
 	SSmapping.wipe_reservations()				//this goes after it's logged, incase something horrible happens.
 
 /client/proc/toggle_medal_disable()
-	set category = "Debug"
+	set category = "Debug.6) Tweak"
 	set name = "Toggle Medal Disable"
 	set desc = "Toggles the safety lock on trying to contact the medal hub."
 
@@ -802,7 +899,7 @@
 
 
 /client/proc/view_runtimes()
-	set category = "Debug"
+	set category = "Debug.1) Logs"
 	set name = "View Runtimes"
 	set desc = "Open the runtime Viewer"
 
@@ -811,8 +908,18 @@
 
 	GLOB.error_cache.show_to(src)
 
+/client/proc/view_gc_failures()
+	set category = "Debug.1) Logs"
+	set name = "View GC Failures"
+	set desc = "Open the GC Failure Viewer"
+
+	if(!holder)
+		return
+
+	GLOB.gc_failure_cache.show_to(src)
+
 /client/proc/pump_random_event()
-	set category = "Debug"
+	set category = "Debug.5) Spawn"
 	set name = "Pump Random Event"
 	set desc = "Schedules the event subsystem to fire a new random event immediately. Some events may fire without notification."
 	if(!holder)
@@ -863,7 +970,7 @@
 	profile_show(src, sort)
 
 /client/proc/reload_configuration()
-	set category = "Debug"
+	set category = "Debug.3) Fixing"
 	set name = "Reload Configuration"
 	set desc = "Force config reload to world default"
 	if(!check_rights(R_DEBUG))

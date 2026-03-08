@@ -31,6 +31,8 @@
 	var/message = input(usr, "", "say") as text|null
 	// If they don't type anything just drop the message.
 	clear_typing_indicator()		// clear it immediately!
+	if(QDELETED(src))
+		return
 	if(!length(message))
 		return
 	return say_verb(message)
@@ -58,6 +60,8 @@
 	var/message = input(usr, "", "me") as message|null
 	// If they don't type anything just drop the message.
 	clear_typing_indicator()		// clear it immediately!
+	if(QDELETED(src))
+		return
 	if(!length(message))
 		return
 	return me_verb(message)

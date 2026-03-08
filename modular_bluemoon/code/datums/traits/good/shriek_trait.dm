@@ -108,5 +108,5 @@ GLOBAL_LIST_INIT(shriek_types, list(\
 	if(!H)
 		return
 	var/datum/action/cooldown/shriek/C = locate() in H.actions
-	C.Remove(H)
+	C?.Remove(H)
 	. = ..()

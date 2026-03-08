@@ -12,7 +12,6 @@ img {
   margin: 0;
   padding: 0;
   line-height: 1;
-  -ms-interpolation-mode: nearest-neighbor;
   image-rendering: pixelated;
 }
 
@@ -1301,7 +1300,7 @@ li {
 }
 
 .votewrap {
-	width: fit-content;
+	width: 100%;
 	line-height: 20px;
 	text-align: left;
 	height: 20px;

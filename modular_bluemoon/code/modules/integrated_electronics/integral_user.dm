@@ -26,6 +26,11 @@
 /mob/living/carbon/integral/update_body_parts()
 	return
 
+/mob/living/carbon/integral/Destroy()
+	my_interacter = null
+	QDEL_NULL(mind)
+	return ..()
+
 /mob/living/carbon/integral/Initialize(mapload)
 	. = ..()
 	mind = new /datum/mind
@@ -49,6 +54,10 @@
 	mob_for_using_items = new /mob/living/carbon/integral(src)
 	mob_for_using_items.status_flags ^= GODMODE
 	mob_for_using_items.my_interacter = src
+
+/obj/item/integrated_circuit/manipulation/interacter/Destroy()
+	QDEL_NULL(mob_for_using_items)
+	return ..()
 
 /obj/item/integrated_circuit/manipulation/interacter/do_work()
 	var/intent = get_pin_data(IC_INPUT, 2)

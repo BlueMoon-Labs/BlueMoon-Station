@@ -25,7 +25,9 @@
 	qdel(query_poll_get)
 	output += "</table>"
 	if(!QDELETED(src))
-		src << browse(output,"window=playerpolllist;size=500x300")
+		var/datum/browser/popup = new(src, "playerpolllist", "Polls", 500, 300)
+		popup.set_content(output)
+		popup.open()
 
 /mob/dead/new_player/proc/poll_player(pollid)
 	if(!pollid)
@@ -113,7 +115,9 @@
 				output += "</form>"
 			output += "</div>"
 			src << browse(null ,"window=playerpolllist")
-			src << browse(output,"window=playerpoll;size=500x250")
+			var/datum/browser/popup = new(src, "playerpoll", "Poll", 500, 250)
+			popup.set_content(output)
+			popup.open()
 		if(POLLTYPE_TEXT)
 			var/datum/db_query/query_text_get_votes = SSdbcore.NewQuery({"
 				SELECT replytext
@@ -148,7 +152,9 @@
 			output += "<input type='submit' value='Abstain'></form>"
 
 			src << browse(null ,"window=playerpolllist")
-			src << browse(output,"window=playerpoll;size=500x500")
+			var/datum/browser/popup = new(src, "playerpoll", "Poll", 500, 500)
+			popup.set_content(output)
+			popup.open()
 		if(POLLTYPE_RATING)
 			var/datum/db_query/query_rating_get_votes = SSdbcore.NewQuery({"
 				SELECT o.text, v.rating FROM [format_table_name("poll_option")] o, [format_table_name("poll_vote")] v
@@ -217,7 +223,9 @@
 				output += "<p><input type='submit' value='Submit'></form>"
 			if(!QDELETED(src))
 				src << browse(null ,"window=playerpolllist")
-				src << browse(output,"window=playerpoll;size=500x500")
+				var/datum/browser/popup = new(src, "playerpoll", "Poll", 500, 500)
+				popup.set_content(output)
+				popup.open()
 		if(POLLTYPE_MULTI)
 			var/datum/db_query/query_multi_get_votes = SSdbcore.NewQuery({"
 				SELECT optionid
@@ -282,7 +290,9 @@
 				output += "<p><input type='submit' value='Vote'></form>"
 			output += "</div>"
 			src << browse(null ,"window=playerpolllist")
-			src << browse(output,"window=playerpoll;size=500x250")
+			var/datum/browser/popup = new(src, "playerpoll", "Poll", 500, 250)
+			popup.set_content(output)
+			popup.open()
 		if(POLLTYPE_IRV)
 			var/datum/asset/irv_assets = get_asset_datum(/datum/asset/group/irv)
 			irv_assets.send(src)
@@ -351,8 +361,7 @@
 			var/output = {"
 				<html>
 				<head>
-				<meta http-equiv='X-UA-Compatible' content='IE=edge' />
-				<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
 				<script src="jquery.min.js"></script>
 				<script src="jquery-ui.custom-core-widgit-mouse-sortable-min.js"></script>
 				<style>

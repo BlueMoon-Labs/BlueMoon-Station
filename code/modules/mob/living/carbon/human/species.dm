@@ -1340,7 +1340,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		if(ITEM_SLOT_HANDS)
 			if(H.get_empty_held_indexes())
 				return TRUE
-			return equip_delay_self_check(I, H, bypass_equip_delay_self)
+			return FALSE
 		if(ITEM_SLOT_MASK)
 			if(H.wear_mask)
 				return FALSE

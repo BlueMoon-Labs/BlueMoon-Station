@@ -171,13 +171,14 @@ GLOBAL_LIST_INIT(library_section_names, list("Any", "Fiction", "Non-Fiction", "A
 		dat += "<FONT color=#005500>Data stored in memory.</FONT><BR>"
 	else
 		dat += "No data stored in memory.<BR>"
-	dat += "<A href='?src=[UID()];scan=1'>\[Scan\]</A>"
+	dat += "<a href='byond://?src=[REF(src)];scan=1'>\[Scan\]</A>"
 	if(cache)
-		dat += "       <A href='?src=[UID()];clear=1'>\[Clear Memory\]</A><BR><BR><A href='?src=[UID()];eject=1'>\[Remove Book\]</A>"
+		dat += "       <a href='byond://?src=[REF(src)];clear=1'>\[Clear Memory\]</A><BR><BR><a href='byond://?src=[REF(src)];eject=1'>\[Remove Book\]</A>"
 	else
 		dat += "<BR>"
-	user << browse(dat, "window=scanner")
-	onclose(user, "scanner")
+	var/datum/browser/popup = new(user, "scanner", name, 300, 200)
+	popup.set_content(dat)
+	popup.open()
 
 /obj/machinery/libraryscanner/Topic(href, href_list)
 	if(..())

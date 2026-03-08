@@ -1,27 +1,35 @@
+// (EDIT) Pe4henika bluemoon -- start
 /mob/living/proc/robot_talk(message)
-	log_talk(message, LOG_SAY)
-	var/desig = "Default Cyborg" //ezmode for taters
-	if(issilicon(src))
-		var/mob/living/silicon/S = src
-		desig = trim_left(S.designation + " " + S.job)
-	var/message_a = say_quote(message)
-	var/rendered = "Robotic Talk, <span class='name'>[name]</span> <span class='message'>[message_a]</span>"
-	for(var/mob/M in GLOB.player_list)
-		if(M.binarycheck())
-			if(isAI(M))
-				var/renderedAI = "<span class='binarysay'>Robotic Talk, <a href='?src=[REF(M)];track=[html_encode(name)]'><span class='name'>[name] ([desig])</span></a> <span class='message'>[message_a]</span></span>"
-				to_chat(M, renderedAI)
-			else
-				to_chat(M, "<span class='binarysay'>[rendered]</span>")
-		if(isobserver(M))
-			var/following = src
-			// If the AI talks on binary chat, we still want to follow
-			// it's camera eye, like if it talked on the radio
-			if(isAI(src))
-				var/mob/living/silicon/ai/ai = src
-				following = ai.eyeobj
-			var/link = FOLLOW_LINK(M, following)
-			to_chat(M, "<span class='binarysay'>[link] [rendered]</span>")
+    log_talk(message, LOG_SAY)
+    var/desig = "Default Cyborg"
+    if(issilicon(src))
+        var/mob/living/silicon/S = src
+        desig = trim_left(S.designation + " " + S.job)
+
+    var/message_a = say_quote(message)
+    var/is_ai = isAI(src)
+
+    var/rendered_name = is_ai ? "<font size=3><b>[name]</b></font>" : "<span class='name'>[name]</span>"
+    var/rendered_msg = is_ai ? "<font size=3><span class='command'><b>[message_a]</b></span></font>" : "<span class='message'>[message_a]</span>"
+
+    var/header = "<span class='binarysay'>Robotic Talk,</span>"
+
+    for(var/mob/M in GLOB.player_list)
+        if(M.binarycheck())
+            if(isAI(M))
+                var/ai_name_link = is_ai ? "<font size=3><a href='?src=[REF(M)];track=[html_encode(name)]'><b>[name] ([desig])</b></a></font>" : "<a href='?src=[REF(M)];track=[html_encode(name)]'><span class='name'>[name] ([desig])</span></a>"
+                to_chat(M, "<span class='binarysay'>[header] [ai_name_link] [rendered_msg]</span>")
+            else
+                to_chat(M, "<span class='binarysay'>[header] [rendered_name] [rendered_msg]</span>")
+
+        if(isobserver(M))
+            var/following = src
+            if(is_ai)
+                var/mob/living/silicon/ai/ai = src
+                following = ai.eyeobj
+            var/link = FOLLOW_LINK(M, following)
+            to_chat(M, "<span class='binarysay'>[link] [header] [rendered_name] [rendered_msg]</span>")
+// (EDIT) Pe4henika bluemoon -- end
 
 /mob/living/silicon/binarycheck()
 	return TRUE

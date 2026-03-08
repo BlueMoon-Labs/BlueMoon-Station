@@ -85,6 +85,7 @@
 		if(I.use_tool(src, user, max_integrity / 1.6, volume = 50)) // Можно прописать отдельную переменную для скорости разбора каждой отдельной баррикады, но зачем утяжелять лишним var/?
 			I.play_tool_sound(src, 50)
 			disassemble()
+			return
 	return ..()
 
 /obj/structure/barricade/wooden/crude

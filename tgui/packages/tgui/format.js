@@ -80,7 +80,7 @@ export const formatMoney = (value, precision = 0, addCommas = false) => {
   // Round the number and make it fixed precision
   let fixed = round(value, precision);
   if (precision > 0) {
-    fixed = toFixed(value, precision);
+    fixed = toFixed(fixed, precision);
   }
   fixed = String(fixed);
   // Place thousand separators
@@ -120,7 +120,7 @@ export const formatDb = value => {
 };
 
 const SI_BASE_TEN_UNIT = [
-  '',
+  ' ',
   '· 10³', // kilo
   '· 10⁶', // mega
   '· 10⁹', // giga
@@ -189,7 +189,7 @@ export const formatTime = (val, formatType) => {
       const hours_truncated = hours > 0 ? `${hours}h` : "";
       const minutes_truncated = minutes > 0 ? `${minutes}m` : "";
       const seconds_truncated = seconds > 0 ? `${seconds}s` : "";
-      return `${hours_truncated}${minutes_truncated}${seconds_truncated}`;
+      return `${hours_truncated}${minutes_truncated}${seconds_truncated}` || "0s";
     }
     default: {
       const seconds_padded = seconds.padStart(2, "0");

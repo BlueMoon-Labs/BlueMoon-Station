@@ -27,8 +27,9 @@
 
 		dat += "</ul>"
 
-	user << browse("<HEAD><TITLE>[src]</TITLE></HEAD><TT>[dat]</TT>", "window=pipedispenser")
-	onclose(user, "pipedispenser")
+	var/datum/browser/popup = new(user, "pipedispenser", "[src]")
+	popup.set_content("<TT>[dat]</TT>")
+	popup.open()
 	return
 
 /obj/machinery/pipedispenser/Topic(href, href_list)
@@ -124,7 +125,9 @@
 
 		dat += "</ul>"
 
-	user << browse("<HEAD><TITLE>[src]</TITLE></HEAD><TT>[dat]</TT>", "window=pipedispenser")
+	var/datum/browser/popup = new(user, "pipedispenser", "[src]")
+	popup.set_content("<TT>[dat]</TT>")
+	popup.open(FALSE)
 	return
 
 
@@ -175,7 +178,9 @@
 <A href='?src=[REF(src)];tube=[TRANSIT_TUBE_POD]'>Transit Tube Pod</A><BR>
 "}
 
-	user << browse("<HEAD><TITLE>[src]</TITLE></HEAD><TT>[dat]</TT>", "window=pipedispenser")
+	var/datum/browser/popup = new(user, "pipedispenser", "[src]")
+	popup.set_content("<TT>[dat]</TT>")
+	popup.open(FALSE)
 	return
 
 

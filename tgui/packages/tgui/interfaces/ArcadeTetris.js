@@ -1,3 +1,4 @@
+import { KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE, KEY_UP } from 'common/keycodes';
 import { Component, createRef } from 'inferno';
 
 import { useBackend } from '../backend';
@@ -79,24 +80,24 @@ class TetrisGame extends Component {
 
   _keyHandler(e) {
     if (!this.state.started || this.state.gameOver || this.state.paused) return;
-    switch (e.keyCode) {
-      case 37: // left
+    switch (e.key) {
+      case KEY_LEFT:
         if (this.move(0, -1)) this.sfx('move');
         e.preventDefault();
         break;
-      case 39: // right
+      case KEY_RIGHT:
         if (this.move(0, 1)) this.sfx('move');
         e.preventDefault();
         break;
-      case 40: // down (soft drop)
+      case KEY_DOWN:
         this.move(1, 0);
         e.preventDefault();
         break;
-      case 38: // up (rotate)
+      case KEY_UP:
         this.rotate();
         e.preventDefault();
         break;
-      case 32: // space (hard drop)
+      case KEY_SPACE:
         this.hardDrop();
         e.preventDefault();
         break;

@@ -5,6 +5,8 @@
 	var/hud_type = null
 	///Used for topic calls. Just because you have a HUD display doesn't mean you should be able to interact with stuff.
 	var/hud_trait = null
+	/// Tracks whether this item actually granted a HUD (i.e. was worn in the eyes slot). Prevents spurious remove_hud_from when held in hands.
+	var/hud_granted = FALSE
 
 /obj/item/clothing/glasses/hud/CheckParts(list/parts_list)
 	. = ..()
@@ -22,10 +24,12 @@
 	if(hud_type && slot == ITEM_SLOT_EYES)
 		var/datum/atom_hud/H = GLOB.huds[hud_type]
 		H.add_hud_to(user)
+		hud_granted = TRUE
 
 /obj/item/clothing/glasses/hud/dropped(mob/living/carbon/human/user)
 	..()
-	if(hud_type && istype(user) && user.glasses == src)
+	if(hud_type && istype(user) && hud_granted)
+		hud_granted = FALSE
 		var/datum/atom_hud/H = GLOB.huds[hud_type]
 		H.remove_hud_from(user)
 
@@ -56,6 +60,7 @@
 	icon_state = "healthhud"
 	hud_type = DATA_HUD_MEDICAL_ADVANCED
 	glass_colour_type = /datum/client_colour/glass_colour/lightblue
+	glasses_type = "med"
 
 /obj/item/clothing/glasses/hud/health/prescription/Initialize(mapload)
 	. = ..()
@@ -90,11 +95,6 @@
 	. = ..()
 	prescribe()
 
-/obj/item/clothing/glasses/hud/health/eyepatch
-	name = "eyepatch medHUD"
-	desc = "A heads-up display that connects directly to the optical nerve of the user, replacing the need for that useless eyeball."
-	icon_state = "medpatch"
-
 ///////////////////
 //Diagnostic Huds//
 ///////////////////
@@ -105,6 +105,7 @@
 	icon_state = "diagnostichud"
 	hud_type = DATA_HUD_DIAGNOSTIC_BASIC
 	glass_colour_type = /datum/client_colour/glass_colour/lightorange
+	glasses_type = "robo"
 
 /obj/item/clothing/glasses/hud/diagnostic/sunglasses
 	name = "diagnostic HUDSunglasses"
@@ -133,11 +134,6 @@
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
 	glass_colour_type = /datum/client_colour/glass_colour/green
 
-/obj/item/clothing/glasses/hud/diagnostic/eyepatch
-	name = "eyepatch diagnostic HUD"
-	desc = "A heads-up display that connects directly to the optical nerve of the user, replacing the need for that useless eyeball."
-	icon_state = "diagpatch"
-
 ////////////
 //Sec Huds//
 ////////////
@@ -148,6 +144,7 @@
 	icon_state = "securityhud"
 	hud_type = DATA_HUD_SECURITY_ADVANCED
 	glass_colour_type = /datum/client_colour/glass_colour/red
+	glasses_type = "sec"
 
 /obj/item/clothing/glasses/hud/security/prescription/Initialize(mapload)
 	. = ..()
@@ -229,8 +226,11 @@
 
 	if(flags_cover & GLASSESCOVERSEYES)
 		HUD.add_hud_to(H)
+		hud_granted = TRUE
 	else
-		HUD.remove_hud_from(H)
+		if(hud_granted)
+			hud_granted = FALSE
+			HUD.remove_hud_from(H)
 
 /obj/item/clothing/glasses/hud/securitygoggles/equipped(mob/living/carbon/human/user, slot)
 	. = ..()
@@ -244,13 +244,10 @@
 
 /obj/item/clothing/glasses/hud/securitygoggles/dropped(mob/living/carbon/human/user)
 	. = ..()
-	var/datum/atom_hud/HUD = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
-	HUD.remove_hud_from(user)
-
-/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch // why was this defined *before* the sunglasses it is a subtype of.
-	name = "eyepatch HUD"
-	desc = "A heads-up display that connects directly to the optical nerve of the user, replacing the need for that useless eyeball."
-	icon_state = "hudpatch"
+	if(hud_granted)
+		hud_granted = FALSE
+		var/datum/atom_hud/HUD = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
+		HUD.remove_hud_from(user)
 
 /obj/item/clothing/glasses/hud/security/sunglasses/prescription/Initialize(mapload)
 	. = ..()

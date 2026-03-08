@@ -381,6 +381,8 @@
 	if(active_program)
 		active_program.kill_program(forced)
 		active_program = null
+	if(QDELING(src))
+		return
 	var/mob/user = usr
 	if(user && istype(user))
 		ui_interact(user) // Re-open the UI on this computer. It should show the main screen now.

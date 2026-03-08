@@ -33,6 +33,10 @@
 			continue
 		var/datum/sprite_accessory/D = new path()
 
+		if(!D.name)
+			qdel(D)
+			continue
+
 		if(D.icon_state)
 			L[D.name] = D
 		else

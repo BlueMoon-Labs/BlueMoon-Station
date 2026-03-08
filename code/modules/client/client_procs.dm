@@ -35,6 +35,10 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	*/
 
 /client/Topic(href, href_list, hsrc)
+	// BYOND 516 can invoke browser/topic callbacks with a null usr.
+	// Normalize to this client's mob so tgui callbacks are not dropped.
+	if(isnull(usr))
+		usr = mob
 	if(!usr || usr != mob)	//stops us calling Topic for somebody else's client. Also helps prevent usr=null
 		return
 
@@ -44,6 +48,31 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		asset_cache_job = asset_cache_confirm_arrival(href_list["asset_cache_confirm_arrival"])
 		if (!asset_cache_job)
 			return
+
+	// Tgui Topic middleware — exempt from rate limiting.
+	// tgui messages (ready, ping, UI interactions) must not be dropped
+	// during connection burst when many asset/stat topics fire at once.
+	var/log_tgui_ingress = href_list["tgui"] && CONFIG_GET(flag/emergency_tgui_logging)
+	if(log_tgui_ingress)
+		var/topic_type = href_list["type"]
+		var/window_id = href_list["window_id"]
+		var/payload_len = length(href_list["payload"])
+		var/href_preview = href
+		if(length(href_preview) > 256)
+			href_preview = "[copytext(href_preview, 1, 257)]..."
+		log_tgui(src,
+			"ingress usr=[usr] usr_eq_mob=[usr == mob] type=[topic_type] window_id=[window_id] payload_len=[payload_len] href=[href_preview]",
+			context = "client/Topic")
+	if(tgui_Topic(href_list))
+		return
+
+	if(href_list["legacy_zoom_set"])
+		set_ui_zoom(href_list["legacy_zoom_key"], text2num(href_list["legacy_zoom_value"]))
+		return
+
+	if(href_list["statbrowser_zoom_save"])
+		set_ui_zoom("statbrowser", text2num(href_list["zoom_value"]))
+		return
 
 	// Rate limiting
 	var/mtl = CONFIG_GET(number/minute_topic_limit)
@@ -77,15 +106,12 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		if (topiclimiter[SECOND_COUNT] > stl)
 			to_chat(src, "<span class='danger'>Your previous action was ignored because you've done too many in a second</span>")
 			return
-
-
-	// Tgui Topic middleware
-	if(tgui_Topic(href_list))
-		return
 	if(href_list["reload_tguipanel"])
 		nuke_chat()
 	if(href_list["reload_statbrowser"])
+		statbrowser_ready = FALSE
 		src << browse(file('html/statbrowser.html'), "window=statbrowser")
+		addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	// Log all hrefs
 	log_href("[src] (usr:[usr]\[[COORD(usr)]\]) : [hsrc ? "[hsrc] " : ""][href]")
 
@@ -280,7 +306,11 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 
 	prefs.last_ip = address				//these are gonna be used for banning
 	prefs.last_id = computer_id			//these are gonna be used for banning
-	fps = prefs.clientfps //(prefs.clientfps < 0) ? RECOMMENDED_FPS : prefs.clientfps
+	fps = sanitize_clientfps(prefs.clientfps)
+
+	// BLUEMOON EDIT — Enable Ctrl+F find in legacy browser windows (BYOND 516+)
+	if(byond_version >= 516)
+		winset(src, null, "browser-options=+find")
 
 	//Admin Authorisation
 	var/connecting_admin = FALSE //because de-admined admins connecting should be treated like admins.
@@ -385,9 +415,11 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 				return
 
 	// Initialize tgui panel
+	statbrowser_ready = FALSE
 	src << browse(file('html/statbrowser.html'), "window=statbrowser")
 	addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	tgui_panel.initialize()
+	acquire_dpi()
 
 	if(alert_mob_dupe_login && !holder)
 		var/dupe_login_message = "Your ComputerID has already logged in with another key this round, please log out of this one NOW or risk being banned!"
@@ -533,12 +565,276 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	view_size = new(src, getScreenSize(prefs.widescreenpref))
 	view_size.resetFormat()
 	view_size.setZoomMode()
+	normalize_ui_layout()
 	fit_viewport()
 	Master.UpdateTickRate()
 
 //////////////
 //DISCONNECT//
 //////////////
+
+/client/proc/get_window_scaling()
+	if(!isnum(window_scaling) || window_scaling <= 0)
+		return 1
+	return window_scaling
+
+/client/proc/get_ui_zoom(window_key, default_zoom = 1)
+	if(!istext(window_key))
+		return clamp(round(isnum(default_zoom) ? default_zoom : 1, 0.01), 0.5, 2.0)
+
+	var/safe_window_key = copytext(window_key, 1, 65)
+	if(!length(safe_window_key))
+		return clamp(round(isnum(default_zoom) ? default_zoom : 1, 0.01), 0.5, 2.0)
+
+	var/safe_default_zoom = clamp(round(isnum(default_zoom) ? default_zoom : 1, 0.01), 0.5, 2.0)
+	if(!prefs || !islist(prefs.ui_zoom_preferences))
+		return safe_default_zoom
+
+	var/stored_zoom = prefs.ui_zoom_preferences[safe_window_key]
+	if(!isnum(stored_zoom))
+		return safe_default_zoom
+	return clamp(round(stored_zoom, 0.01), 0.5, 2.0)
+
+/client/proc/set_ui_zoom(window_key, zoom)
+	if(!prefs || !istext(window_key))
+		return FALSE
+
+	var/safe_window_key = copytext(window_key, 1, 65)
+	if(!length(safe_window_key))
+		return FALSE
+
+	if(!isnum(zoom))
+		return FALSE
+	var/safe_zoom = clamp(round(zoom, 0.01), 0.5, 2.0)
+
+	LAZYINITLIST(prefs.ui_zoom_preferences)
+	var/current_zoom = prefs.ui_zoom_preferences[safe_window_key]
+	if(isnum(current_zoom))
+		current_zoom = clamp(round(current_zoom, 0.01), 0.5, 2.0)
+		if(current_zoom == safe_zoom)
+			return TRUE
+	if(isnull(current_zoom) && prefs.ui_zoom_preferences.len >= 64)
+		return FALSE
+
+	prefs.ui_zoom_preferences[safe_window_key] = safe_zoom
+	prefs.save_preferences(silent = TRUE)
+	return TRUE
+
+/client/proc/legacy_zoom_head(window_key, base_zoom = 100)
+	if(!window_key)
+		return ""
+
+	var/key_json = json_encode("[window_key]")
+	var/topic_base_json = json_encode("?src=_legacybrowser_;legacy_zoom_set=1")
+	var/initial_zoom = get_ui_zoom(window_key)
+	return {"
+		<style>
+			#legacyZoomIndicator {
+				position: fixed;
+				top: 12px;
+				right: 12px;
+				z-index: 2147483647;
+				padding: 6px 10px;
+				border-radius: 6px;
+				background: rgba(0, 0, 0, 0.75);
+				color: #fff;
+				font: 12px/1.2 Verdana, sans-serif;
+				pointer-events: none;
+				opacity: 0;
+				transition: opacity 120ms linear;
+			}
+		</style>
+		<script>
+			(function() {
+				var windowKey = [key_json];
+				var topicBase = [topic_base_json];
+				var baseZoom = [base_zoom];
+				var minZoom = 0.5;
+				var maxZoom = 2.0;
+				var zoomStep = 0.1;
+				var userZoom = [initial_zoom];
+				var indicator = null;
+				var hideTimer = null;
+				var persistTimer = null;
+
+				function clampZoom(value) {
+					return Math.min(maxZoom, Math.max(minZoom, value));
+				}
+
+				function sendByondTopic(href) {
+					var protocolUrl = 'byond://' + href;
+
+					function tryBridgeCall(method, firstArg, secondArg) {
+						if (typeof method !== 'function') {
+							return false;
+						}
+
+						try {
+							method.call(bridge, firstArg);
+							return true;
+						} catch (error) {}
+
+						try {
+							method.call(bridge, secondArg);
+							return true;
+						} catch (error) {}
+
+						return false;
+					}
+
+					if (window.cef_to_byond) {
+						try {
+							window.cef_to_byond(protocolUrl);
+							return true;
+						} catch (error) {}
+					}
+
+					var bridge = window.BYOND;
+					if (bridge) {
+						if (tryBridgeCall(bridge, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.callByond, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.byond, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.call, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.topic, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.sendMessage, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.send, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.postMessage, protocolUrl, href)) {
+							return true;
+						}
+					}
+
+					try {
+						window.location.href = protocolUrl;
+						return true;
+					} catch (error) {}
+
+					return false;
+				}
+
+				function ensureIndicator() {
+					if (indicator || !document.body) {
+						return;
+					}
+					indicator = document.createElement('div');
+					indicator.id = 'legacyZoomIndicator';
+					document.body.appendChild(indicator);
+				}
+
+				function showIndicator() {
+					ensureIndicator();
+					if (!indicator) {
+						return;
+					}
+					indicator.textContent = 'Scale: ' + Math.round(userZoom * 100) + '%';
+					indicator.style.opacity = '1';
+					clearTimeout(hideTimer);
+					hideTimer = setTimeout(function() {
+						if (indicator) {
+							indicator.style.opacity = '0';
+						}
+					}, 1200);
+				}
+
+				function applyZoom() {
+					if (!document.body) {
+						return;
+					}
+					document.body.style.zoom = (baseZoom * userZoom) + '%';
+				}
+
+				function schedulePersistZoom() {
+					clearTimeout(persistTimer);
+					persistTimer = setTimeout(function() {
+						sendByondTopic(
+							topicBase
+							+ ';legacy_zoom_key=' + encodeURIComponent(windowKey)
+							+ ';legacy_zoom_value=' + encodeURIComponent(String(userZoom))
+						);
+					}, 200);
+				}
+
+				function adjustZoom(delta) {
+					userZoom = clampZoom(Math.round((userZoom + delta) * 100) / 100);
+					applyZoom();
+					schedulePersistZoom();
+					showIndicator();
+				}
+
+				function handleWheel(event) {
+					if (!event.ctrlKey) {
+						return;
+					}
+
+					var direction = Math.sign(event.deltaY);
+					if (!direction) {
+						return;
+					}
+
+					event.preventDefault();
+					adjustZoom(direction < 0 ? zoomStep : -zoomStep);
+				}
+
+				function init() {
+					applyZoom();
+					ensureIndicator();
+					window.addEventListener('wheel', handleWheel, { passive: false });
+				}
+
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', init, { once: true });
+				} else {
+					init();
+				}
+			})();
+		</script>
+	"}
+
+/client/proc/acquire_dpi(max_retries = 3, retry_delay = 2 SECONDS, retrying = FALSE)
+	if(!retrying)
+		window_scaling_retry_count = 0
+
+	var/new_scaling = text2num(winget(src, null, "dpi"))
+	if(isnum(new_scaling) && new_scaling > 0)
+		window_scaling = new_scaling
+		window_scaling_retry_count = 0
+		return TRUE
+
+	window_scaling = 1
+
+	if(window_scaling_retry_count >= max_retries)
+		return FALSE
+
+	window_scaling_retry_count++
+	addtimer(CALLBACK(src, PROC_REF(acquire_dpi), max_retries, retry_delay, TRUE), retry_delay, TIMER_UNIQUE | TIMER_OVERRIDE)
+	return FALSE
+
+/client/proc/normalize_ui_layout(force = TRUE)
+	if(!force)
+		return
+	// Reset splitter state to sane defaults; stale per-client values can break layout on DPI changes.
+	winset(src, "mainwindow.split", "splitter=53")
+	winset(src, "infowindow.info", "splitter=32")
+	winset(src, "legacy_output_selector", "left=output_browser")
+	// Ensure critical panes are not left minimized by stale skin state.
+	winset(src, "mainwindow", "is-minimized=false")
+	winset(src, "mapwindow", "is-minimized=false")
+	winset(src, "infowindow", "is-minimized=false")
+	winset(src, "outputwindow", "is-minimized=false")
+	winset(src, "statwindow", "is-minimized=false")
 
 /client/Del()
 	if(!gc_destroyed)
@@ -549,7 +845,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	GLOB.clients -= src
 	GLOB.directory -= ckey
 	log_access("Logout: [key_name(src)]")
-	GLOB.ahelp_tickets.ClientLogout(src)
+	if(GLOB.ahelp_tickets)
+		GLOB.ahelp_tickets.ClientLogout(src)
 	SSserver_maint.UpdateHubStatus()
 	if(credits)
 		QDEL_LIST(credits)
@@ -574,10 +871,11 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			)
 
 			send2adminchat("Server", "[cheesy_message] (No admins online)")
-	QDEL_LIST_ASSOC_VAL(char_render_holders)
+	clear_character_previews()
 	// seen_messages = null
 	Master.UpdateTickRate()
 	. = ..() //Even though we're going to be hard deleted there are still some things that want to know the destroy is happening
+	screen.Cut()
 	return QDEL_HINT_HARDDEL_NOW
 
 /client/proc/set_client_age_from_db(connectiontopic)
@@ -1061,8 +1359,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	view = new_size
 	var/list/actualview = getviewsize(view)
 	update_clickcatcher()
-	parallax_holder.Reset()
-	mob.hud_used.screentip_text.update_view()
+	parallax_holder?.Reset()
+	mob?.hud_used?.screentip_text?.update_view()
 	mob.reload_fullscreen()
 	if (isliving(mob))
 		var/mob/living/M = mob
@@ -1114,11 +1412,25 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		preview.screen_loc = "character_preview_map:0,[pos]"
 
 /client/proc/clear_character_previews()
-	for(var/index in char_render_holders)
-		var/atom/movable/screen/S = char_render_holders[index]
+	if(!LAZYLEN(char_render_holders))
+		char_render_holders = null
+		return
+
+	var/list/char_render_holders_copy = char_render_holders.Copy()
+	char_render_holders = null
+
+	for(var/index in char_render_holders_copy)
+		var/atom/movable/screen/S = char_render_holders_copy[index]
+		S.vis_contents.Cut()
+		S.overlays.Cut()
+		S.underlays.Cut()
+		S.filters = null
+		S.maptext = null
+		S.icon = null
+		S.screen_loc = null
+		S.appearance = null
 		screen -= S
 		qdel(S)
-	char_render_holders = null
 
 /client/proc/can_have_part(part_name)
 	return prefs.pref_species.mutant_bodyparts[part_name] || (part_name in GLOB.unlocked_mutant_parts)
@@ -1146,6 +1458,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 /client/proc/init_verbs()
 	if(IsAdminAdvancedProcCall())
 		return
+	src << output(get_ui_zoom("statbrowser"), "statbrowser:set_zoom_pref")
 	var/list/verblist = list()
 	var/list/verbstoprocess = verbs.Copy()
 	if(mob)
@@ -1170,6 +1483,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	if(statbrowser_ready)
 		return
 	to_chat(src, span_userdanger("Statpanel failed to load, click <a href='?src=[REF(src)];reload_statbrowser=1'>here</a> to reload the panel "))
+	// Fallback for clients where Panel-Ready bridge callback is delayed/missing.
+	statbrowser_ready = TRUE
+	init_verbs()
 
 //increment progress for an unlockable loadout item
 /client/proc/increment_progress(key, amount)

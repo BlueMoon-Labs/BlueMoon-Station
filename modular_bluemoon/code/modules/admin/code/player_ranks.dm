@@ -87,7 +87,7 @@
 
 
 /client/proc/migrate_player_ranks()
-	set category = "Debug"
+	set category = "Debug.3) Fixing"
 	set name = "Migrate Player Ranks"
 	set desc = "Individually migrate the various player ranks from their legacy system to the SQL-based one."
 

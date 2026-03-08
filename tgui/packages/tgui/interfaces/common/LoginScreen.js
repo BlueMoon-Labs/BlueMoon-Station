@@ -34,7 +34,7 @@ export const LoginScreen = (_properties, context) => {
     isAdmin,
   } = data;
   return (
-    <Section title="Welcome" height="100%" stretchContents>
+    <Section title="Welcome" fill>
       <Flex height="100%" align="center" justify="center">
         <Flex.Item textAlign="center" mt="-2rem">
           <Box fontSize="1.5rem" bold>

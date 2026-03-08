@@ -1,6 +1,6 @@
 import { resolveAsset } from '../assets';
 import { useBackend, useSharedState } from '../backend';
-import { Button, Input, NoticeBox, Section, Stack, Tabs } from '../components';
+import { Button, Input, NoticeBox, PixelArtImage, Section, Stack, Tabs } from '../components';
 import { NtosWindow } from '../layouts';
 
 export const NtosPortraitPrinter = (props, context) => {
@@ -157,13 +157,11 @@ export const NtosPortraitPrinter = (props, context) => {
                 justify="center"
                 direction="column">
                 <Stack.Item>
-                  <img
+                  <PixelArtImage
                     src={resolveAsset(current_portrait_asset_name)}
-                    height="128px"
-                    style={{
-                      'vertical-align': 'middle',
-                      '-ms-interpolation-mode': 'nearest-neighbor',
-                    }} />
+                    fit="contain"
+                    maxHeight={128}
+                    maxWidth={128} />
                 </Stack.Item>
                 <Stack.Item className="Section__titleText">
                   {current_portrait_title}

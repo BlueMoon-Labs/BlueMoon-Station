@@ -23,14 +23,6 @@ body {
 	scrollbar-width: thin;
 	scrollbar-color: rgba(255, 255, 255, 0.22) rgba(0, 0, 0, 0.25);
 
-	/* Legacy (old IE-style props; some BYOND configurations still respect these) */
-	scrollbar-base-color: #121212;
-	scrollbar-face-color: #2a2a2a;
-	scrollbar-track-color: #171717;
-	scrollbar-arrow-color: #a8a8a8;
-	scrollbar-highlight-color: #2f2f2f;
-	scrollbar-shadow-color: #2a2a2a;
-	scrollbar-3dlight-color: #2a2a2a;
 }
 
 .csetup-root.csetup-theme-modern ::selection,
@@ -390,7 +382,6 @@ body {
 	background-color: var(--csetup-bg);
 	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 	image-rendering: pixelated;
-	-ms-interpolation-mode: nearest-neighbor;
 }
 
 .csetup-root.csetup-theme-modern a.linkOff,

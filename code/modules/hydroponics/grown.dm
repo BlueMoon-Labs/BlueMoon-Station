@@ -141,7 +141,7 @@
 		. = new trash(get_turf(src), seed)
 
 /obj/item/reagent_containers/food/snacks/grown/grind_requirements()
-	if(dry_grind && !dry)
+	if(dry_grind && !HAS_TRAIT(src, TRAIT_DRIED))
 		to_chat(usr, "<span class='warning'>[src] needs to be dry before it can be ground up!</span>")
 		return
 	return TRUE

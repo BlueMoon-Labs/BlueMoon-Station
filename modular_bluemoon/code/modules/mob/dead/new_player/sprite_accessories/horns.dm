@@ -3,7 +3,7 @@
 	icon = 'modular_bluemoon/icons/mob/mutant_bodyparts.dmi'
 	icon_state = "hollyhorns"
 
-/datum/sprite_accessory/horns/cow
+/datum/sprite_accessory/horns/spiked
 	name = "Spiked horns"
 	icon = 'modular_bluemoon/icons/mob/mutant_bodyparts.dmi'
 	icon_state = "spikehorns"

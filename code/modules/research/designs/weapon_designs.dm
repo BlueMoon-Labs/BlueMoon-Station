@@ -374,6 +374,8 @@
 
 /obj/item/storage/lockbox/weapon/rapidsyringe
 	name = "Lockbox with Rapid Syringe Gun"
+	req_access = null
+	req_one_access = list(ACCESS_ARMORY, ACCESS_CMO)
 
 /obj/item/storage/lockbox/weapon/rapidsyringe/PopulateContents()
 	new /obj/item/gun/syringe/rapidsyringe(src)
@@ -499,16 +501,6 @@
 	build_path = /obj/item/gun/energy/gravity_gun
 	category = list("Weapons")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
-
-/datum/design/flora_gun
-	name = "Floral Somatoray"
-	desc = "A tool that discharges controlled radiation which induces mutation in plant cells. Harmless to other organic life."
-	id = "flora_gun"
-	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 2000, /datum/material/glass = 500, /datum/material/uranium = 2000)
-	build_path = /obj/item/gun/energy/floragun
-	category = list("Weapons")
-	departmental_flags = DEPARTMENTAL_FLAG_SERVICE | DEPARTMENTAL_FLAG_SCIENCE
 
 ///////////
 //Grenades/

@@ -135,16 +135,14 @@
 	build_path = /obj/item/ammo_box/magazine/m10mm_large
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER
 
-/datum/design/m10mm_large_soporific
+/datum/design/m10mm_large/soporific
 	name = "enlarged pistol magazine (10mm soporific)"
 	desc = "An extra ammo gun magazine. Loaded with rounds which inject the target with a variety of substances to induce sleep."
 	id = "10mm_large_soporific"
-	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 10000, /datum/material/glass=3000)
 	build_path = /obj/item/ammo_box/magazine/m10mm_large/soporific
-	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
 ///
 
@@ -155,7 +153,7 @@
 	desc = "A storage case for a heavy revolver."
 
 /obj/item/storage/secure/briefcase/rsh12_box/PopulateContents()
-	new /obj/item/gun/ballistic/shotgun/rsh12(src)
+	new /obj/item/gun/ballistic/shotgun/automatic/rsh12(src)
 	new /obj/item/ammo_box/shotgun/loaded/rubbershot(src)
 	new /obj/item/ammo_box/shotgun/loaded/rubbershot(src)
 	new /obj/item/ammo_box/shotgun/loaded/buckshot(src)
@@ -297,11 +295,13 @@
 		return
 	..()
 	if((wielded) && prob(50))
-		INVOKE_ASYNC(src, PROC_REF(slash), user)
+		INVOKE_ASYNC(src, PROC_REF(slash), user, target)
 
 /obj/item/inteq_sledgehammer/proc/slash(mob/living/user, mob/living/target)
-		user.do_attack_animation(target, ATTACK_EFFECT_KICK)
-		sleep(1)
+	if(!user || !target)
+		return
+	user.do_attack_animation(target, ATTACK_EFFECT_KICK)
+	sleep(1)
 
 /obj/item/inteq_sledgehammer/afterattack(atom/A, mob/user, proximity)
 	. = ..()

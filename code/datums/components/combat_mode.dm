@@ -89,8 +89,9 @@
 			playsound(source, 'sound/machines/chime.ogg', 10) 	//sandstorm stuff - combat mode indicator
 			flick_emote_popup_on_mob(source, "combat", 10)	//sandstorm stuff - combat mode indicator
 	log_combat(source, source, "включает Комбат Индикатор")
-	RegisterSignal(source, COMSIG_MOB_CLIENT_MOUSEMOVE, PROC_REF(onMouseMove))
-	RegisterSignal(source, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
+	if(!source?.client?.prefs.disable_combat_mouse_lock)
+		RegisterSignal(source, COMSIG_MOB_CLIENT_MOUSEMOVE, PROC_REF(onMouseMove))
+		RegisterSignal(source, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
 	if(hud_icon)
 		hud_icon.combat_on = TRUE
 		hud_icon.update_icon()

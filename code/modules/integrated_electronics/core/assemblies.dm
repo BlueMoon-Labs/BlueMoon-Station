@@ -106,7 +106,7 @@
 
 	//sets up diagnostic hud view
 	prepare_huds()
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.add_to_hud(src)
 	diag_hud_set_circuithealth()
 	diag_hud_set_circuitcell()
@@ -117,7 +117,7 @@
 
 /obj/item/electronic_assembly/Destroy()
 	STOP_PROCESSING(SScircuit, src)
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.remove_from_hud(src)
 	QDEL_NULL(access_card)
 	return ..()
@@ -319,7 +319,9 @@
 		if((isobserver(usr) && ckeys_allowed_to_scan[usr.ckey]) || IsAdminGhost(usr))
 			if(assembly_components.len)
 				var/saved = "On circuit printers with cloning enabled, you may use the code below to clone the circuit:<br><br><code>[SScircuit.save_electronic_assembly(src)]</code>"
-				usr << browse(saved, "window=circuit_scan;size=500x600;border=1;can_resize=1;can_close=1;can_minimize=1")
+				var/datum/browser/popup = new(usr, "circuit_scan", "Circuit Scan", 500, 600)
+				popup.set_content(saved)
+				popup.open()
 			else
 				to_chat(usr, "<span class='warning'>The circuit is empty!</span>")
 		return
@@ -502,8 +504,8 @@
 
 // Actually puts the circuit inside, doesn't perform any checks.
 /obj/item/electronic_assembly/proc/add_component(obj/item/integrated_circuit/component)
-	component.forceMove(get_object())
 	component.assembly = src
+	component.forceMove(get_object())
 	assembly_components |= component
 
 	//increment numbers for diagnostic hud

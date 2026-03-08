@@ -187,7 +187,7 @@
 		else
 			handle_incubation()
 
-	if((stage >= 2) && !revealed)
+	if((stage >= 2) && !revealed && carrier)
 		revealed = TRUE
 		carrier.apply_status_effect(/datum/status_effect/pregnancy)
 		carrier.apply_status_effect(/datum/status_effect/lactation)

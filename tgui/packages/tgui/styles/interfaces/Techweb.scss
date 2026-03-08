@@ -13,12 +13,22 @@
   margin-right: 0.001rem;
 }
 
+.Techweb__HeaderSection {
+  flex-shrink: 0;
+}
+
+.Techweb__RouterContent {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .Techweb__OverviewNodes {
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 6px;
   padding-top: 4px;
   font-size: 11px;
+  min-height: 0;
 }
 
 .Techweb__HeaderContent {

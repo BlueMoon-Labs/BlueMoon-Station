@@ -252,18 +252,22 @@
 		if(!busy && prob(1))
 			stop_automated_movement = 1
 			Goto(pick(urange(20, src, 1)), move_to_delay)
-			spawn(50)
-				stop_automated_movement = 0
-				walk(src,0)
+			addtimer(CALLBACK(src, PROC_REF(resume_spider_movement)), 50, TIMER_DELETE_ME)
 		return TRUE
 
+/mob/living/simple_animal/hostile/poison/giant_spider/proc/resume_spider_movement()
+	stop_automated_movement = 0
+	walk(src, 0)
+
 /mob/living/simple_animal/hostile/poison/giant_spider/nurse/proc/GiveUp(C)
-	spawn(100)
-		if(busy == MOVING_TO_TARGET)
-			if(cocoon_target == C && get_dist(src,cocoon_target) > 1)
-				cocoon_target = null
-			busy = FALSE
-			stop_automated_movement = 0
+	addtimer(CALLBACK(src, PROC_REF(giveup_delayed), C), 100, TIMER_DELETE_ME)
+
+/mob/living/simple_animal/hostile/poison/giant_spider/nurse/proc/giveup_delayed(C)
+	if(busy == MOVING_TO_TARGET)
+		if(cocoon_target == C && get_dist(src,cocoon_target) > 1)
+			cocoon_target = null
+		busy = FALSE
+		stop_automated_movement = 0
 
 /mob/living/simple_animal/hostile/poison/giant_spider/nurse/handle_automated_action()
 	if(..())

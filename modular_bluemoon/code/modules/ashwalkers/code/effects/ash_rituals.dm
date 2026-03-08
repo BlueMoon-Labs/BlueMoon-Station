@@ -75,14 +75,14 @@
 	required_components = list(
 		"north" =  /obj/item/organ/regenerative_core/legion,
 		"south" = /obj/item/cursed_dagger,
-		"east" = /obj/item/crusher_trophy/goliath_tentacle,
-		"west" = /obj/item/crusher_trophy/watcher_wing,
+		"east" = /obj/item/stack/sheet/animalhide/goliath_hide,
+		"west" = /obj/item/stack/sheet/sinew,
 	)
 	consumed_components = list(
 		/obj/item/organ/regenerative_core/legion,
 		/obj/item/cursed_dagger,
-		/obj/item/crusher_trophy/goliath_tentacle,
-		/obj/item/crusher_trophy/watcher_wing,
+		/obj/item/stack/sheet/animalhide/goliath_hide,
+		/obj/item/stack/sheet/sinew,
 	)
 	ritual_success_items = list(
 		/obj/item/tendril_seed,
@@ -245,3 +245,46 @@
 		human_target.adjustBruteLoss(singular_damage)
 
 	human_victim.heal_overall_damage(human_victim.getBruteLoss(), human_victim.getFireLoss())
+#define LANGUAGE_ASHSLAVE "enslavement"
+/datum/ash_ritual/ash_slaving
+	name = "Enslavement"
+	desc = "Говорят, данный ритуал был дарован самим Некрополем для того, чтобы порабощать незваных гостей. Он позволяет им дышать пеплом и говорить с вами на родном языке, но если сила воли цели сильна, то это приведет к непредвиденным последствиям, вплоть до уничтожения тела."
+	required_components = list(
+		"north" =  /obj/item/stack/sheet/bone,
+		"south" = /obj/item/reagent_containers/food/snacks/meat/slab/goliath,
+		"east" = /obj/item/stack/sheet/bone,
+		"west" = /obj/item/reagent_containers/food/snacks/meat/slab/goliath,
+	)
+	consumed_components = list(
+		/obj/item/stack/sheet/bone,
+		/obj/item/reagent_containers/food/snacks/meat/slab/goliath,
+		/obj/item/stack/sheet/bone,
+		/obj/item/reagent_containers/food/snacks/meat/slab/goliath
+	)
+
+/datum/ash_ritual/ash_slaving/ritual_success(obj/effect/ash_rune/success_rune)
+	. = ..()
+
+	var/mob/living/carbon/human/human_victim = locate() in get_turf(success_rune)
+	if(!human_victim)
+		return
+	var/choice = tgui_alert(human_victim,"Кажется, вас хотят поработить... Вы можете попытаться воспротивиться этому, но это может нести свои последствия...","Порабощение",list("Сопротивляться", "Поддаться"), 30 SECONDS)
+	if(choice == "Поддаться")
+		var/obj/item/organ/lungs/lungs_slot = human_victim.internal_organs_slot[ORGAN_SLOT_LUNGS]
+		if(lungs_slot)
+			lungs_slot.Remove(human_victim)
+		var/obj/item/organ/lungs/ashwalker/ash_lungs = new
+		human_victim.grant_language(/datum/language/draconic, source = LANGUAGE_ASHSLAVE)
+		ash_lungs.Insert(human_victim)
+		var/const/hypnotic_phrase="Вы раб или рабыня Пепельных Ящеров с Лаваленда. Вам всё нравится. Выполняйте ЛЮБЫЕ требования Эшей. Желание сбежать на станцию должно быть минимальным"
+		message_admins("[ADMIN_LOOKUPFLW(human_victim)] was slaved by ashwalkers with the phrase '[hypnotic_phrase]'.")
+		log_game("[key_name(human_victim)] was slaved by ashwalkers with the phrase '[hypnotic_phrase]'.")
+		to_chat(human_victim, "<span class='reallybig hypnophrase'>[hypnotic_phrase]</span>")
+	else
+		if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
+			var/point_tp = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
+			do_teleport(human_victim, point_tp, no_effects = TRUE, channel = TELEPORT_CHANNEL_FREE)
+			to_chat(human_victim, span_userdanger("Вы забыли о всём, что происходило на Лаваленде"))
+		else
+			human_victim.death()
+

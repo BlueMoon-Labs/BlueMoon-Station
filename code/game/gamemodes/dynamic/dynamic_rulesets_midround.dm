@@ -923,6 +923,44 @@
 
 //////////////////////////////////////////////
 //                                          //
+//              MORPH (GHOST)               //
+//                                          //
+//////////////////////////////////////////////
+
+/datum/dynamic_ruleset/midround/from_ghosts/morph
+	name = "Morph"
+	antag_datum = /datum/antagonist/morph
+	antag_flag = "Morph"
+	antag_flag_override = ROLE_ALIEN
+	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security", "Bridge Officer", "Captain")
+	required_enemies = list(0,0,0,0,0,5,4,3,3,0)
+	required_candidates = 1
+	weight = 6
+	cost = 10
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // not extended
+	requirements = list(101,101,101,50,30,25,20,10,10,10)
+	repeatable = TRUE
+
+/datum/dynamic_ruleset/midround/from_ghosts/morph/execute()
+	if(!GLOB.xeno_spawn || !GLOB.xeno_spawn.len)
+		return FALSE
+	. = ..()
+
+/datum/dynamic_ruleset/midround/from_ghosts/morph/generate_ruleset_body(mob/applicant)
+	var/datum/mind/player_mind = new /datum/mind(applicant.key)
+	player_mind.active = TRUE
+
+	var/mob/living/simple_animal/hostile/morph/S = new /mob/living/simple_animal/hostile/morph(pick(GLOB.xeno_spawn))
+	player_mind.transfer_to(S)
+	player_mind.assigned_role = "Morph"
+	to_chat(S, S.playstyle_string)
+	SEND_SOUND(S, sound('sound/magic/mutate.ogg'))
+	message_admins("[ADMIN_LOOKUPFLW(S)] has been made into a morph by the midround ruleset.")
+	log_game("DYNAMIC: [key_name(S)] was spawned as a morph by the midround ruleset.")
+	return S
+
+//////////////////////////////////////////////
+//                                          //
 //           ABDUCTORS    (GHOST)           //
 //                                          //
 //////////////////////////////////////////////
@@ -1053,10 +1091,10 @@
 	required_candidates = 1
 	weight = 3 //BLUEMOON CHANGES
 	cost = 10
-	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // not extended
 	requirements = list(101,101,101,50,30,25,20,10,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
-	var/dead_mobs_required = 20
+	var/dead_mobs_required = 10
 	var/need_extra_spawns_value = 15
 	var/list/spawn_locs = list()
 

@@ -3,7 +3,6 @@ import { Fragment } from 'inferno';
 
 import { useBackend, useLocalState } from "../backend";
 import { Box, Button, Flex, Icon, Input, LabeledList, Section, Table, Tabs } from '../components';
-import { FlexItem } from '../components/Flex';
 import { Window } from "../layouts";
 import { ComplexModal, modalOpen } from './common/ComplexModal';
 import { LoginInfo } from './common/LoginInfo';
@@ -194,7 +193,7 @@ const SecurityRecordsActions = (properties, context) => {
   const [searchText, setSearchText] = useLocalState(context, "searchText", "");
   return (
     <Flex>
-      <FlexItem>
+      <Flex.Item>
         <Button
           content="New Record"
           icon="plus"
@@ -208,14 +207,14 @@ const SecurityRecordsActions = (properties, context) => {
           ml="0.25rem"
           onClick={() => modalOpen(context, "print_cell_log")}
         />
-      </FlexItem>
-      <FlexItem grow="1" ml="0.5rem">
+      </Flex.Item>
+      <Flex.Item grow="1" ml="0.5rem">
         <Input
           placeholder="Search by Name, ID, Assignment, Fingerprint, Status"
           width="100%"
           onInput={(e, value) => setSearchText(value)}
         />
-      </FlexItem>
+      </Flex.Item>
     </Flex>
   );
 };
@@ -360,7 +359,7 @@ const SecurityRecordsViewGeneral = (_properties, context) => {
                 style={{
                   width: '96px',
                   'margin-bottom': '0.5rem',
-                  '-ms-interpolation-mode': 'nearest-neighbor',
+                  imageRendering: 'pixelated',
                 }}
               /><br />
               Photo #{i + 1}

@@ -164,3 +164,4 @@
 	var/datum/gas_mixture/G = new
 	G.parse_gas_string(text)
 	assume_air(G)
+	qdel(G)

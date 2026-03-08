@@ -126,7 +126,7 @@
 	var/mob/living/carbon/human/quirk_mob = quirk_holder
 
 	// BLUEMOON EDIT START - sanity check
-	if(!quirk_mob)
+	if(!quirk_mob || QDELING(quirk_mob))
 		return
 	// BLUEMOON EDIT END
 
@@ -143,7 +143,7 @@
 		act_revive.Remove(quirk_mob)
 
 	// Remove quirk language
-	quirk_mob.remove_language(/datum/language/vampiric, TRUE, TRUE, LANGUAGE_BLOODSUCKER)
+	quirk_mob.remove_language(/datum/language/vampiric, source = LANGUAGE_BLOODSUCKER)
 
 	// Unregister examine text
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)

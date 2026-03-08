@@ -109,10 +109,25 @@ There are several things that need to be remembered:
 			update_damage_overlays()
 			//antagonism
 			update_antag_overlays()
+			//abductor stealth: re-apply disguise after any full icon refresh so it doesn't break over time
+			if(istype(wear_suit, /obj/item/clothing/suit/armor/abductor/vest))
+				var/obj/item/clothing/suit/armor/abductor/vest/V = wear_suit
+				if(V.stealth_active && V.disguise)
+					V.ReapplyDisguise()
 
 /* --------------------------------------- */
 //vvvvvv UPDATE_INV PROCS vvvvvv
 
+/mob/living/carbon/human/apply_overlay(cache_index)
+	. = ..()
+	// ReapplyDisguise() calls update_inv_hands() -> apply_overlay(HANDS_LAYER); skip here to avoid infinite recursion
+	if(cache_index == HANDS_LAYER)
+		return
+	// Keep abductor stealth disguise when any single overlay updates (e.g. inventory change)
+	if(istype(wear_suit, /obj/item/clothing/suit/armor/abductor/vest))
+		var/obj/item/clothing/suit/armor/abductor/vest/V = wear_suit
+		if(V.stealth_active && V.disguise)
+			V.ReapplyDisguise()
 
 /mob/living/carbon/human/update_antag_overlays()
 	remove_overlay(ANTAG_LAYER)

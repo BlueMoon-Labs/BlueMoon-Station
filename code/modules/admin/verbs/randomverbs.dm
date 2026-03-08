@@ -991,7 +991,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Nuke", "[N.timing]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/create_outfits()
-	set category = "Debug"
+	set category = "Debug.8) Misc"
 	set name = "Create Custom Outfit"
 
 	if(!check_rights(R_DEBUG))
@@ -1050,7 +1050,6 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	id_select += "</select>"
 
 	var/dat = {"
-	<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>Create Outfit</title></head><body>
 	<form name="outfit" action="byond://?src=[REF(src)];[HrefToken()]" method="get">
 	<input type="hidden" name="src" value="[REF(src)]">
 	[HrefTokenFormField()]
@@ -1161,9 +1160,11 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	</table>
 	<br>
 	<input type="submit" value="Save">
-	</form></body></html>
+	</form>
 	"}
-	usr << browse(dat, "window=dressup;size=550x600")
+	var/datum/browser/popup = new(usr, "dressup", "Create Outfit", 550, 600)
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 /client/proc/toggle_combo_hud()
 	set category = "Admin.Game"
@@ -1178,7 +1179,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	for(var/hudtype in list(DATA_HUD_SECURITY_ADVANCED, DATA_HUD_MEDICAL_ADVANCED, DATA_HUD_DIAGNOSTIC_ADVANCED, DATA_HUD_ANTAGTARGET)) // add data huds
 		var/datum/atom_hud/H = GLOB.huds[hudtype]
 		(adding_hud) ? H.add_hud_to(usr) : H.remove_hud_from(usr)
-	for(var/datum/atom_hud/antag/H in GLOB.huds) // add antag huds
+	for(var/datum/atom_hud/antag/H in GLOB.all_huds) // add antag huds
 		(adding_hud) ? H.add_hud_to(usr) : H.remove_hud_from(usr)
 
 	if(prefs.toggles & COMBOHUD_LIGHTING)
@@ -1324,7 +1325,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 
 /client/proc/modify_goals()
 	set name = "Station Goals"
-	set category = "Admin.Events"
+	set category = "Debug.6) Tweak"
 
 	if(!check_rights(R_ADMIN))
 		return
@@ -1339,7 +1340,9 @@ Traitors and the like can also be revived with the previous role mostly intact.
 		<a href='?src=[REF(S)];[HrefToken()];remove=1'>Remove</a> | \
 		<a href='?src=[REF(S)];[HrefToken()];complete=1'>Toggle completion flag</a><br>"
 	dat += "<br><a href='?src=[REF(src)];[HrefToken()];add_station_goal=1'>Add New Goal</a>"
-	usr << browse(dat, "window=goals;size=400x400")
+	var/datum/browser/popup = new(usr, "goals", "Station Goals", 400, 400)
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 /client/proc/toggle_hub()
 	set category = "Server"

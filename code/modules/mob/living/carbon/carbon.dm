@@ -583,7 +583,7 @@
 	UpdateStaminaBuffer()
 	update_health_hud()
 
-/mob/living/carbon/update_sight()
+/mob/living/carbon/update_sight(forced = TRUE)
 	if(!client)
 		return
 	if(stat == DEAD)
@@ -676,7 +676,7 @@
 	if(istype(head, /obj/item/clothing/head))
 		var/obj/item/clothing/head/HT = head
 		. += HT.tint
-	if(wear_mask)
+	if(istype(wear_mask, /obj/item/clothing))
 		. += wear_mask.tint
 
 	var/obj/item/organ/eyes/E = getorganslot(ORGAN_SLOT_EYES)

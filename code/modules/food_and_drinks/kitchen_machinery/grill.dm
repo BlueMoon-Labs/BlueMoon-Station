@@ -1,8 +1,9 @@
 /obj/machinery/grill
 	name = "grill"
 	desc = "Just like the old days."
-	icon = 'icons/obj/kitchen.dmi'
+	icon = 'icons/obj/machines/kitchen.dmi'
 	icon_state = "grill_open"
+	base_icon_state = "grill"
 	density = TRUE
 	layer = BELOW_OBJ_LAYER
 	use_power = NO_POWER_USE
@@ -10,6 +11,10 @@
 	var/obj/item/reagent_containers/food/grilled_item
 	var/grill_time = 0
 	var/datum/looping_sound/grill/grill_loop
+
+/obj/machinery/grill/oldschool
+	icon_state = "grill_old_open"
+	base_icon_state = "grill_old"
 
 /obj/machinery/grill/Initialize(mapload)
 	. = ..()
@@ -21,12 +26,12 @@
 
 /obj/machinery/grill/update_icon_state()
 	if(grilled_item)
-		icon_state = "grill"
+		icon_state = "[base_icon_state]"
 		return ..()
 	if(grill_fuel > 0)
-		icon_state = "grill_on"
+		icon_state = "[base_icon_state]_on"
 		return ..()
-	icon_state = "grill_open"
+	icon_state = "[base_icon_state]_open"
 	return ..()
 
 /obj/machinery/grill/attackby(obj/item/I, mob/user)

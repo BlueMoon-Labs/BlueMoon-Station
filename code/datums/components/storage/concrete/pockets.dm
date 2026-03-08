@@ -91,6 +91,10 @@
 		/obj/item/flashlight/pen,
 		/obj/item/clothing/mask/cigarette))
 
+/datum/component/storage/concrete/pockets/pocketprotector/Destroy()
+	original_parent = null
+	return ..()
+
 /datum/component/storage/concrete/pockets/pocketprotector/real_location()
 	// if the component is reparented to a jumpsuit, the items still go in the protector
 	return original_parent

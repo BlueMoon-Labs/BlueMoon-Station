@@ -33,6 +33,9 @@ SUBSYSTEM_DEF(autotransfer)
 	SSticker.midround_record_check()
 	if(maxvotes == NO_MAXVOTES_CAP || maxvotes > curvotes)
 		SSvote.initiate_vote("transfer","server", votesystem=APPROVAL_VOTING, vote_time = 1800, UseVotePower = TRUE)
+		priority_announce("Внимание, экипаж [station_name()]. Стандартная смена длительностью в неделю \
+		уже закончена. Воспользуйтесь своим КПК, если вы желаете продлить её.", "Входящее Сообщение", \
+		'modular_bluemoon/kovac_shitcode/sound/ambience/enc/morse.ogg', has_important_message = TRUE)
 		targettime = targettime + voteinterval
 		curvotes++
 	else

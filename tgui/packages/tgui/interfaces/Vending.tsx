@@ -12,12 +12,12 @@ type VendingData = {
   product_records: ProductRecord[];
   coin_records: CoinRecord[];
   hidden_records: HiddenRecord[];
-  user: UserData;
-  stock: StockItem[];
+  user?: UserData;
+  stock: Record<string, StockItem>;
   extended_inventory: boolean;
   access: boolean;
-  vending_machine_input: CustomInput[];
-  categories: Record<string, Category>;
+  vending_machine_input?: CustomInput[];
+  categories?: Record<string, Category>;
 };
 
 type Category = {
@@ -63,6 +63,7 @@ type CustomInput = {
 
 export const Vending = (props, context) => {
   const { data } = useBackend<VendingData>(context);
+  const categories = data.categories || {};
 
   const {
     onstation,
@@ -72,10 +73,10 @@ export const Vending = (props, context) => {
     stock,
   } = data;
 
-  const [selectedCategory, setSelectedCategory] = useLocalState<string>(
+  const [selectedCategory, setSelectedCategory] = useLocalState<string | null>(
     context,
     'selectedCategory',
-    Object.keys(data.categories)[0]
+    Object.keys(categories)[0] || null
   );
 
   let inventory: (ProductRecord | CustomInput)[];
@@ -95,7 +96,7 @@ export const Vending = (props, context) => {
     .filter((item) => !!item);
 
   const filteredCategories = Object.fromEntries(
-    Object.entries(data.categories).filter(([categoryName]) => {
+    Object.entries(categories).filter(([categoryName]) => {
       return inventory.find((product) => {
         if ('category' in product) {
           return product.category === categoryName;
@@ -105,6 +106,9 @@ export const Vending = (props, context) => {
       });
     })
   );
+  const effectiveSelectedCategory = selectedCategory
+    || Object.keys(filteredCategories)[0]
+    || null;
 
   return (
     <Window width={450} height={600}>
@@ -119,15 +123,15 @@ export const Vending = (props, context) => {
             <ProductDisplay
               custom={custom}
               inventory={inventory}
-              selectedCategory={selectedCategory}
+              selectedCategory={effectiveSelectedCategory}
             />
           </Stack.Item>
 
-          {Object.keys(filteredCategories).length > 1 && (
+          {Object.keys(filteredCategories).length > 1 && effectiveSelectedCategory && (
             <Stack.Item>
               <CategorySelector
                 categories={filteredCategories}
-                selectedCategory={selectedCategory!}
+                selectedCategory={effectiveSelectedCategory}
                 onSelect={setSelectedCategory}
               />
             </Stack.Item>
@@ -186,7 +190,7 @@ const ProductDisplay = (
 
   let filteredInventory = inventory;
 
-  if (!(stockSearch.length >= 2)) {
+  if (!(stockSearch.length >= 2) && selectedCategory) {
     filteredInventory = filteredInventory.filter((product) => {
       if ('category' in product) {
         return product.category === selectedCategory;
@@ -199,6 +203,7 @@ const ProductDisplay = (
   if (stockSearch.length >= 2) {
     filteredInventory = filteredInventory.filter(stockSearchFn);
   }
+  const stockByName = stock || {};
 
   return (
     <Section
@@ -230,7 +235,7 @@ const ProductDisplay = (
               key={product.name}
               custom={custom}
               product={product}
-              productStock={stock[product.name]}
+              productStock={stockByName[product.name]}
             />
           ))}
       </Table>
@@ -248,7 +253,7 @@ const VendingRow = (props, context) => {
   const { access, department, jobDiscount, onstation, user } = data;
   const free = !onstation || product.price === 0 || (productStock?.free ?? false);
   const discount = !product.premium && department === user?.department;
-  const remaining = custom ? product.amount : productStock.amount;
+  const remaining = custom ? product.amount : (productStock?.amount ?? 0);
   const redPrice = Math.round(product.price * jobDiscount);
   const disabled =
     remaining === 0 ||
@@ -291,10 +296,10 @@ const ProductImage = (props) => {
 
   return product.img ? (
     <img
-      src={`data:image/jpeg;base64,${product.img}`}
+      src={`data:image/png;base64,${product.img}`}
       style={{
         'vertical-align': 'middle',
-        'horizontal-align': 'middle',
+        'image-rendering': 'pixelated',
       }}
     />
   ) : (
@@ -302,7 +307,6 @@ const ProductImage = (props) => {
       className={classes(['vending32x32', product.path])}
       style={{
         'vertical-align': 'middle',
-        'horizontal-align': 'middle',
       }}
     />
   );

@@ -341,7 +341,9 @@ GLOBAL_LIST_INIT(pp_limbs, list(
 
 				var/list/dat = list("Related accounts by [params["related_thing"]]:")
 				dat += related_accounts
-				usr << browse(dat.Join("<br>"), "window=related_[targetMob.client];size=420x300")
+				var/datum/browser/popup = new(usr, "related_[targetMob.client]", "Related Accounts", 420, 300)
+				popup.set_content(dat.Join("<br>"))
+				popup.open(FALSE)
 
 		if ("transform")
 			var/choice = params["newType"]

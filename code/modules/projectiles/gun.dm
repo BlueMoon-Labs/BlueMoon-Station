@@ -155,19 +155,42 @@
 
 /obj/item/gun/Destroy()
 	if(isobj(pin))
-		QDEL_NULL(pin)
+		if(QDELING(pin))
+			pin = null
+		else
+			QDEL_NULL(pin)
 	if(gun_light)
-		QDEL_NULL(gun_light)
+		if(QDELING(gun_light))
+			gun_light = null
+		else
+			QDEL_NULL(gun_light)
 	if(bayonet)
-		QDEL_NULL(bayonet)
+		if(QDELING(bayonet))
+			bayonet = null
+		else
+			QDEL_NULL(bayonet)
 	if(chambered)
-		QDEL_NULL(chambered)
+		if(QDELING(chambered))
+			chambered = null
+		else
+			QDEL_NULL(chambered)
 	if(azoom)
-		QDEL_NULL(azoom)
+		if(QDELING(azoom))
+			azoom = null
+		else
+			QDEL_NULL(azoom)
 	if(firemode_action)
-		QDEL_NULL(firemode_action)
+		if(QDELING(firemode_action))
+			firemode_action = null
+		else
+			QDEL_NULL(firemode_action)
 	if(isatom(suppressed))
-		QDEL_NULL(suppressed)
+		var/atom/suppressed_atom = suppressed
+		if(QDELING(suppressed_atom))
+			suppressed = null
+		else
+			QDEL_NULL(suppressed_atom)
+			suppressed = null
 	return ..()
 
 /obj/item/gun/examine(mob/user)
@@ -914,6 +937,12 @@
 /obj/item/gun/proc/zoom(mob/living/user, direct, forced_zoom)
 	if(!(user?.client))
 		return
+
+	if(user.get_active_held_item() != src && user.get_inactive_held_item() != src)
+		if(zoomed)
+			forced_zoom = FALSE
+		else
+			return
 
 	if(!isnull(forced_zoom))
 		if(zoomed == forced_zoom)

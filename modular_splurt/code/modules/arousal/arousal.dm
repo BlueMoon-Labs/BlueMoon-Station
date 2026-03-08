@@ -194,12 +194,20 @@
 	icon_state = "arousal0"
 	icon = 'icons/obj/genitals/hud.dmi'
 	screen_loc = ui_arousal
+	var/mob/living/carbon/human/owner
 
 /atom/movable/screen/arousal/Initialize(mapload, mob/living/carbon/human/owner)
-	. = ..()
+	. = ..(mapload, null)
 	if(!istype(owner))
 		return INITIALIZE_HINT_QDEL
+	src.owner = owner
 	RegisterSignal(owner, COMSIG_MOB_LUST_UPDATED, PROC_REF(update_lust))
+
+/atom/movable/screen/arousal/Destroy()
+	if(owner)
+		UnregisterSignal(owner, COMSIG_MOB_LUST_UPDATED)
+		owner = null
+	return ..()
 
 /atom/movable/screen/arousal/Click()
 	if(!ishuman(usr))

@@ -15627,7 +15627,7 @@
 	},
 /obj/item/melee/baseball_bat/ablative,
 /obj/item/clothing/suit/yakuza,
-/obj/item/clothing/glasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
 "fpT" = (
@@ -18989,6 +18989,8 @@
 	c_tag = "Bridge West";
 	dir = 8
 	},
+/obj/machinery/suit_storage_unit/open,
+/obj/item/mod/control/pre_equipped/corporate,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/turret_protected/aisat/foyer)
 "gAp" = (

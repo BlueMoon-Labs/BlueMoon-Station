@@ -1,5 +1,6 @@
 /datum/browser
-	var/mob/user
+	/// Window owner. Can be either a mob or a client.
+	var/user
 	var/title
 	var/window_id // window_id is used as the window name for browse and onclose
 	var/width = 0
@@ -17,7 +18,8 @@
 
 /datum/browser/New(nuser, nwindow_id, ntitle = 0, nwidth = 0, nheight = 0, atom/nref = null)
 	user = nuser
-	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(user_deleted))
+	if (user)
+		RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(user_deleted))
 	window_id = nwindow_id
 	if (ntitle)
 		title = format_text(ntitle)
@@ -31,6 +33,22 @@
 /datum/browser/proc/user_deleted(datum/source)
 	SIGNAL_HANDLER
 	user = null
+
+/datum/browser/proc/resolve_client()
+	if (istype(user, /client))
+		return user
+	if (ismob(user))
+		var/mob/user_mob = user
+		return user_mob.client
+	return null
+
+/datum/browser/proc/resolve_mob()
+	if (ismob(user))
+		return user
+	if (istype(user, /client))
+		var/client/user_client = user
+		return user_client.mob
+	return null
 
 /datum/browser/proc/add_head_content(nhead_content)
 	head_content = nhead_content
@@ -61,21 +79,37 @@
 	content += ncontent
 
 /datum/browser/proc/get_header()
+	var/client/browser_client = resolve_client()
 	var/file
-	head_content += "<link rel='stylesheet' type='text/css' href='[common_asset.get_url_mappings()["common.css"]]'>"
+	var/fallback_title = title ? "[title]" : "<untitled>"
+	var/built_head_content = head_content
+	var/list/common_mappings = common_asset?.get_url_mappings()
+	var/common_css
+	if (islist(common_mappings))
+		common_css = common_mappings["common.css"]
+	if (common_css)
+		built_head_content += "<link rel='stylesheet' type='text/css' href='[common_css]'>"
+	else
+		WARNING("Browser [fallback_title] ([window_id]) failed to resolve common.css mapping; continuing without shared stylesheet.")
 	for (file in stylesheets)
-		head_content += "<link rel='stylesheet' type='text/css' href='[SSassets.transport.get_asset_url(file)]'>"
+		built_head_content += "<link rel='stylesheet' type='text/css' href='[SSassets.transport.get_asset_url(file)]'>"
+
+	var/scaling = browser_client?.get_window_scaling()
+	var/base_zoom = 100
+	if(scaling && scaling != 1 && width && height)
+		base_zoom = 100 / scaling
+	var/zoom_key = title ? "browser:[title]" : "browser:[window_id]"
+	built_head_content += browser_client?.legacy_zoom_head(zoom_key, base_zoom) || ""
 
 
 	for (file in scripts)
-		head_content += "<script type='text/javascript' src='[SSassets.transport.get_asset_url(file)]'></script>"
+		built_head_content += "<script type='text/javascript' src='[SSassets.transport.get_asset_url(file)]'></script>"
 
-	return {"<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+	return {"<!DOCTYPE html>
 <html>
 	<head>
 		<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-		<meta http-equiv='X-UA-Compatible' content='IE=edge'>
-		[head_content]
+		[built_head_content]
 	</head>
 	<body scroll=auto>
 		<div class='uiWrapper'>
@@ -100,35 +134,62 @@
 /datum/browser/proc/open(use_onclose = TRUE)
 	if(isnull(window_id)) //null check because this can potentially nuke goonchat
 		WARNING("Browser [title] tried to open with a null ID")
-		to_chat(user, span_userdanger("The [title] browser you tried to open failed a sanity check! Please report this on github!"))
+		var/target = resolve_mob()
+		if (!target)
+			target = resolve_client()
+		if (target)
+			to_chat(target, span_userdanger("The [title] browser you tried to open failed a sanity check! Please report this on github!"))
+		return
+	var/client/browser_client = resolve_client()
+	if(!browser_client)
+		var/fallback_title = title ? "[title]" : "<untitled>"
+		WARNING("Browser [fallback_title] ([window_id]) failed to open without a valid client.")
 		return
 	var/window_size = ""
-	if (width && height)
+	if(width && height)
 		window_size = "size=[width]x[height];"
-	common_asset.send(user)
+	common_asset.send(browser_client)
 	if (stylesheets.len)
-		SSassets.transport.send_assets(user, stylesheets)
+		SSassets.transport.send_assets(browser_client, stylesheets)
 	if (scripts.len)
-		SSassets.transport.send_assets(user, scripts)
-	user << browse(get_content(), "window=[window_id];[window_size][window_options]")
+		SSassets.transport.send_assets(browser_client, scripts)
+	browser_client << browse(get_content(), "window=[window_id];[window_size][window_options]")
 	if (use_onclose)
 		setup_onclose()
 
 /datum/browser/proc/setup_onclose()
 	set waitfor = 0 //winexists sleeps, so we don't need to.
+	var/client/browser_client = resolve_client()
+	if(!browser_client)
+		return
 	for (var/i in 1 to 10)
-		if (user?.client && winexists(user, window_id))
+		browser_client = resolve_client()
+		if(!browser_client)
+			return
+		if (winexists(browser_client, window_id))
 			var/atom/send_ref
 			if(ref)
 				send_ref = ref.resolve()
 				if(!send_ref)
 					ref = null
-			onclose(user, window_id, send_ref)
+			var/mob/browser_mob = resolve_mob()
+			if(browser_mob)
+				onclose(browser_mob, window_id, send_ref)
+			else
+				var/param = "null"
+				if(send_ref)
+					param = "[REF(send_ref)]"
+				winset(browser_client, window_id, "on-close=\".windowclose [param]\"")
 			break
 
 /datum/browser/proc/close()
 	if(!isnull(window_id))//null check because this can potentially nuke goonchat
-		user << browse(null, "window=[window_id]")
+		var/client/browser_client = resolve_client()
+		if(browser_client)
+			browser_client << browse(null, "window=[window_id]")
+		else
+			var/fallback_title = title ? "[title]" : "<untitled>"
+			WARNING("Browser [fallback_title] ([window_id]) failed to close without a valid client.")
 	else
 		WARNING("Browser [title] tried to close with a null ID")
 
@@ -152,7 +213,7 @@
 	set_content(output)
 
 /datum/browser/modal/alert/Topic(href,href_list)
-	if (href_list["close"] || !user || !user.client)
+	if (href_list["close"] || !resolve_client())
 		opentime = 0
 		return
 	if (href_list["button"])
@@ -243,7 +304,7 @@
 		//waits for the window to show up client side before attempting to un-focus it
 		//winexists sleeps until it gets a reply from the client, so we don't need to bother sleeping
 		for (var/i in 1 to 10)
-			if (user && winexists(user, window_id))
+			if (resolve_client() && winexists(user, window_id))
 				if (focusedwindow)
 					winset(user, focusedwindow, "focus=true")
 				else
@@ -294,7 +355,7 @@
 	set_content(output)
 
 /datum/browser/modal/listpicker/Topic(href,href_list)
-	if (href_list["close"] || !user || !user.client)
+	if (href_list["close"] || !resolve_client())
 		opentime = 0
 		return
 	if (href_list["button"])
@@ -392,7 +453,7 @@
 	return dat
 
 /datum/browser/modal/preflikepicker/Topic(href,href_list)
-	if (href_list["close"] || !user || !user.client)
+	if (href_list["close"] || !resolve_client())
 		opentime = 0
 		return
 	if (href_list["task"] == "input")

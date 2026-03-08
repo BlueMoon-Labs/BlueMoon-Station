@@ -24,7 +24,7 @@
 		var/mob/viewer = our_hud.mymob
 		our_hud.hide_action(src)
 		viewer?.client?.screen -= src
-		linked_action.viewers -= our_hud
+		linked_action?.viewers -= our_hud
 		viewer.update_action_buttons()
 		our_hud = null
 	linked_action = null
@@ -59,10 +59,14 @@
 	if(!clicker.CheckActionCooldown())
 		return
 	clicker.DelayNextAction(1)
+	if(!linked_action)
+		return
 	linked_action.Trigger()
 	return TRUE
 
 /atom/movable/screen/movable/action_button/proc/begin_creating_bind(mob/user)
+	if(!linked_action)
+		return
 	if(!isnull(linked_action.full_key))
 		linked_action.full_key = null
 		linked_action.update_button_status(src)
@@ -89,7 +93,7 @@
 	if(old_object)
 		old_object.MouseExited(over_location, over_control, params)
 
-	if(QDELETED(over_location))
+	if(isatom(over_location) && QDELETED(over_location))
 		last_hovored_ref = null
 		return
 	last_hovored_ref = WEAKREF(over_object)

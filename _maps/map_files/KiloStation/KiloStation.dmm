@@ -43261,7 +43261,6 @@
 /turf/open/floor/plasteel/dark,
 /area/service/bar)
 "bud" = (
-/obj/structure/filingcabinet/chestdrawer,
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
 	},
@@ -43280,6 +43279,8 @@
 	dir = 4;
 	name = "command camera"
 	},
+/obj/machinery/suit_storage_unit/open,
+/obj/item/mod/control/pre_equipped/corporate,
 /turf/open/floor/plasteel,
 /area/command/bridge)
 "bue" = (
@@ -75981,7 +75982,7 @@
 	pixel_y = 26
 	},
 /obj/item/clothing/shoes/jackboots,
-/obj/item/clothing/glasses/eyepatch{
+/obj/item/clothing/glasses/cover/eyepatch{
 	pixel_y = 5
 	},
 /obj/effect/decal/cleanable/dirt,

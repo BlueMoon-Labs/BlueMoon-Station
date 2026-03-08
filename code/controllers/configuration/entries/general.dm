@@ -346,6 +346,12 @@
 /datum/config_entry/flag/atmos_equalize_enabled
 	default = FALSE
 
+/// Multiplier for atmos processing speed (share steps, equalization turf limit). 1 = default, 10 = 10x faster equalization/reactions.
+/datum/config_entry/number/atmos_speed_multiplier
+	default = 1
+	min_val = 1
+	max_val = 20
+
 /datum/config_entry/flag/dynamic_config_enabled
 
 /datum/config_entry/flag/station_name_needs_approval
@@ -369,3 +375,10 @@
 
 /// Gives the ability to send players a maptext popup.
 /datum/config_entry/flag/popup_admin_pm
+
+/**
+ * Tgui ui_act payloads larger than 2kb are split into chunks a maximum of 1kb in size.
+ * This flag represents the maximum chunk count the server is willing to receive.
+ */
+/datum/config_entry/number/tgui_max_chunk_count
+	default = 64

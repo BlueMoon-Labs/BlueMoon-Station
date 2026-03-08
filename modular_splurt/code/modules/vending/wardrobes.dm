@@ -148,7 +148,7 @@
 					/obj/item/clothing/under/rank/security/head_of_security/alt = 1,
 					/obj/item/clothing/under/rank/security/head_of_security/alt/skirt = 1,
 					/obj/item/clothing/head/HoS = 1,
-					/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch = 1,
+					/obj/item/clothing/glasses/cover/eyepatch = 1,
 					/obj/item/clothing/glasses/hud/security/sunglasses/gars/supergars = 1,
 					/obj/item/clothing/under/rank/security/head_of_security/grey = 1,
 					/obj/item/clothing/suit/hooded/wintercoat/hos = 1,

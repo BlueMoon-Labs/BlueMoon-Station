@@ -209,6 +209,12 @@
 	if(!href_list["tgui"])
 		return FALSE
 	var/type = href_list["type"]
+	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) \
+		&& (type == "ready" || type == "ping" || type == "pingReply" || type == "log")
+	if(log_handshake)
+		log_tgui(usr,
+			"type=[type], window_id=[href_list["window_id"]], has_payload=[!isnull(href_list["payload"])]",
+			context = "tgui_Topic/ingress")
 	// Unconditionally collect tgui logs
 	if(type == "log")
 		var/context = href_list["window_id"]
@@ -232,8 +238,17 @@
 	// Locate window
 	var/window_id = href_list["window_id"]
 	var/datum/tgui_window/window
+	var/status_before
 	if(window_id)
 		window = usr.client.tgui_windows[window_id]
+		if(window)
+			status_before = window.status
+	if(log_handshake)
+		log_tgui(usr,
+			"type=[type], window_id=[window_id], window_found=[!!window]",
+			context = "tgui_Topic/route",
+			window = window)
+	if(window_id)
 		if(!window)
 			log_tgui(usr,
 				"Error: Couldn't find the window datum, force closing.",
@@ -247,4 +262,9 @@
 	// Pass message to window
 	if(window)
 		window.on_message(type, payload, href_list)
+	if(log_handshake && window)
+		log_tgui(usr,
+			"type=[type], window_id=[window_id], status_before=[status_before], status_after=[window.status]",
+			context = "tgui_Topic/dispatched",
+			window = window)
 	return TRUE

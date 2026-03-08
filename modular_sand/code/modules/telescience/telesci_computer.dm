@@ -115,7 +115,7 @@
 	var/list/power_possible = list()
 	for(var/i = 1; i <= length(power_options); i++)
 		var/list/add = list()
-		if(crystals + telepad.efficiency < i)
+		if(!telepad || crystals + telepad.efficiency < i)
 			add += power_options[i]
 			add += TELESCI_POWER_UNAVAILABLE
 			power_possible += list(add)
@@ -138,6 +138,9 @@
 
 /obj/machinery/computer/telescience/ui_act(action, params)
 	if(..())
+		return
+	if(!telepad)
+		temp_msg = list("ERROR:", "No telepad linked.")
 		return
 	if(telepad.panel_open)
 		temp_msg = list("ERROR:", "Telepad undergoing physical maintenance operations.")
