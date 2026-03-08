@@ -11,6 +11,8 @@
 
 	w_class = WEIGHT_CLASS_NORMAL
 
+	custom_materials = list(/datum/material/iron = 20000, /datum/material/glass = 10000)
+
 	COOLDOWN_DECLARE(cooldown_say)
 	var/const/cooldown_say_time = 2 SECONDS
 
