@@ -47,15 +47,17 @@ GLOBAL_LIST_EMPTY(transformation_animation_objects)
 /atom/movable/proc/_reset_transformation_animation(filter_index, keep_transformation = FALSE)
 	if(QDELETED(src))
 		var/list/transformation_objects = GLOB.transformation_animation_objects[src]
-		transformation_objects.Cut()
+		if(transformation_objects)
+			transformation_objects.Cut()
 		GLOB.transformation_animation_objects -= src
 		return
 	var/list/transformation_objects = GLOB.transformation_animation_objects[src]
-	if(!keep_transformation)
-		for(var/A in transformation_objects)
-			vis_contents -= A
-			qdel(A)
-	transformation_objects.Cut()
+	if(transformation_objects)
+		if(!keep_transformation)
+			for(var/A in transformation_objects)
+				vis_contents -= A
+				qdel(A)
+		transformation_objects.Cut()
 	GLOB.transformation_animation_objects -= src
 	if(!isnull(filter_index) && filters && length(filters) >= filter_index)
 		filters -= filters[filter_index]
