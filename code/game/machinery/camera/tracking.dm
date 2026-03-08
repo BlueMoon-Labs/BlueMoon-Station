@@ -10,14 +10,15 @@
 	for (var/obj/machinery/camera/C in L)
 		var/list/tempnetwork = C.network&src.network
 		if (tempnetwork.len)
-			T[text("[][]", C.c_tag, (C.can_use() ? null : " (Deactivated)"))] = C
+			T[text("[][]", C.c_tag, (C.can_use() ? null : " (Деактивирована)"))] = C
 
 	return T
 
 /mob/living/silicon/ai/proc/show_camera_list()
 	var/list/cameras = get_camera_list()
-	var/camera = input(src, "Choose which camera you want to view", "Cameras") as null|anything in cameras
-	switchCamera(cameras[camera])
+	var/camera = input(src, "Выберите камеру для просмотра", "Список камер") as null|anything in cameras
+	if(camera)
+		switchCamera(cameras[camera])
 
 /datum/trackable
 	var/initialized = FALSE
@@ -58,8 +59,8 @@
 	return targets
 
 /mob/living/silicon/ai/verb/ai_camera_track(target_name in trackable_mobs())
-	set name = "track"
-	set hidden = 1 //Don't display it on the verb lists. This verb exists purely so you can type "track Oldman Robustin" and follow his ass
+	set name = "Отслеживать"
+	set hidden = 1
 
 	if(!target_name)
 		return
@@ -80,11 +81,11 @@
 	U.tracking = 1
 
 	if(!target || !target.can_track(usr))
-		to_chat(U, "<span class='warning'>Target is not near any active cameras.</span>")
+		to_chat(U, span_warning("Цель находится вне зоны действия активных камер."))
 		U.cameraFollow = null
 		return
 
-	to_chat(U, "<span class='notice'>Now tracking [target.get_visible_name()] on camera.</span>")
+	to_chat(U, span_notice("Начато отслеживание объекта [target.get_visible_name()] через камеры."))
 
 	var/cameraticks = 0
 	spawn(0)
@@ -95,17 +96,18 @@
 			if(!target.can_track(usr))
 				U.tracking = 1
 				if(!cameraticks)
-					to_chat(U, "<span class='warning'>Target is not near any active cameras. Attempting to reacquire...</span>")
+					to_chat(U, span_warning("Цель потеряна. Пытаюсь восстановить визуальный контакт..."))
+
 				cameraticks++
-				if(cameraticks > 9)
+
+				if(cameraticks > 60)
 					U.cameraFollow = null
-					to_chat(U, "<span class='warning'>Unable to reacquire, cancelling track...</span>")
+					to_chat(U, span_danger("Не удалось обнаружить цель. Отслеживание прекращено."))
 					tracking = 0
 					return
 				else
 					sleep(10)
 					continue
-
 			else
 				cameraticks = 0
 				U.tracking = 0
