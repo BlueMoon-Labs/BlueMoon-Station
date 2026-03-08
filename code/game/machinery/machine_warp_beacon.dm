@@ -98,13 +98,16 @@
 /obj/item/warp_machine_beacon/attack_self(mob/user)
 	. = ..()
 	if(!circuit)
-		say("Плата не загружена, развертывание не возможно")
+		say("Плата не загружена, развертывание невозможно")
 		return
 	var/turf/T = get_turf(user)
 	for(var/obj/object in T)
 		if(object.density && !(object.obj_flags & IGNORE_DENSITY) || object.obj_flags & BLOCKS_CONSTRUCTION)
 			say("Неподходящая локация")
 			return
+	if(!zone_check())
+		say("Отсутствует питание, развертывание невозможно")
+		return
 	user.balloon_alert(user, "Установка...")
 	if(!do_after(user, 1.3 SECONDS, user))
 		return
@@ -116,6 +119,12 @@
 	anchored = TRUE
 	say("Начало развертывания...")
 	addtimer(CALLBACK(src, PROC_REF(start_warping), user.dir), 2 SECONDS)
+
+/obj/item/warp_machine_beacon/proc/zone_check()
+	var/area/A = get_area(src)
+	if(!A)
+		return FALSE
+	return A.powered(EQUIP)
 
 /obj/item/warp_machine_beacon/proc/start_warping(warp_dir)
 	if(QDELETED(src))
