@@ -13,7 +13,7 @@
 	display_name = "Applied Bluespace Research"
 	description = "Using bluespace to make things faster and better."
 	prereq_ids = list("bluespace_basic", "engineering")
-	design_ids = list("bs_rped","biobag_holding","minerbag_holding", "bluespacebeaker", "bluespacesyringe", "phasic_scanning", "bluespacesmartdart", "bluespace_tray") // BLUEMOON REMOIVAL of "light_replacer_blue" to /datum/techweb_node/janitor/bspspray
+	design_ids = list("bs_rped","biobag_holding","minerbag_holding", "bluespacebeaker", "bluespacesyringe", "phasic_scanning", "bluespacesmartdart", "bluespace_tray", "m_warp_beacon") // BLUEMOON REMOIVAL of "light_replacer_blue" to /datum/techweb_node/janitor/bspspray
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 
 /datum/techweb_node/adv_bluespace

@@ -137,6 +137,23 @@
 	extra_range = -13 // 3 tiles around
 	vary = TRUE
 
+/datum/looping_sound/warping
+	mid_sounds = list(
+					'sound/effects/warping/warp1.ogg',
+					'sound/effects/warping/warp2.ogg',
+					'sound/effects/warping/warp3.ogg',
+					'sound/effects/warping/warp4.ogg',
+					'sound/effects/warping/warp5.ogg',
+					'sound/effects/warping/warp6.ogg',
+					'sound/effects/warping/warp7.ogg',
+				)
+	mid_length = 3 SECONDS
+	volume = 50
+	falloff_distance = 0
+	falloff_exponent = 4 // quiet
+	extra_range = -13 // 3 tiles around
+	vary = TRUE
+
 /datum/looping_sound/computer_typing
 	mid_sounds = list(
 					'sound/machines/computer/keyboard_clicks_1.ogg',
