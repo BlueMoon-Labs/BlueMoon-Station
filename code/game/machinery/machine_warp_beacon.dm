@@ -126,7 +126,7 @@
 	var/area/A = get_area(src)
 	if(!A)
 		return FALSE
-	return A.powered(EQUIP)
+	return A.powered(/obj/machinery/warping_machine::power_channel)
 
 /obj/item/warp_machine_beacon/proc/start_warping(warp_dir)
 	if(QDELETED(src))
