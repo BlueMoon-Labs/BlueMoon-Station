@@ -9,27 +9,41 @@ GLOBAL_LIST_EMPTY(portal_networks)
 /// Handles null/empty string/zero correctly to avoid DM's null->0 conversion
 /proc/get_portal_nickname(mob/living/carbon/human/H, fallback = "Аноним")
 	if(!ishuman(H))
-		return "[fallback]"
+		return fallback
 	var/nick = H.fleshlight_nickname
 	// Check for null, empty string, numeric zero, and string representations of invalid values
-	if(isnull(nick) || nick == "" || nick == 0 || "[nick]" == "0" || "[nick]" == "null")
-		return "[fallback]"
-	return "[nick]"
+	if(isnull(nick) || nick == "" || nick == 0 || nick == "0" || nick == "null")
+		return fallback
+	return nick
+
+// Telecomms cache for can_portal_telecomms() — 30-second TTL
+GLOBAL_VAR_INIT(portal_telecomms_cache_result, FALSE)
+GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 
 /// Check if telecomms server is available for portal whispers
 /// Supports both dedicated server and allinone (compact telecomms)
 /// In Extended mode - always returns TRUE (no antag interference expected)
+/// Caches the result for 30 seconds to avoid iterating GLOB.telecomms_list every call
 /proc/can_portal_telecomms()
+	if(world.time <= GLOB.portal_telecomms_cache_expire)
+		return GLOB.portal_telecomms_cache_result
 	if(GLOB.master_mode == "Extended")
+		GLOB.portal_telecomms_cache_result = TRUE
+		GLOB.portal_telecomms_cache_expire = world.time + 300
 		return TRUE
+	var/result = FALSE
 	for(var/obj/machinery/telecomms/server/S in GLOB.telecomms_list)
 		if(S.on)
-			return TRUE
-	// Check for all-in-one unit (compact telecomms used on some maps)
-	for(var/obj/machinery/telecomms/allinone/A in GLOB.telecomms_list)
-		if(A.on)
-			return TRUE
-	return FALSE
+			result = TRUE
+			break
+	if(!result)
+		for(var/obj/machinery/telecomms/allinone/A in GLOB.telecomms_list)
+			if(A.on)
+				result = TRUE
+				break
+	GLOB.portal_telecomms_cache_result = result
+	GLOB.portal_telecomms_cache_expire = world.time + 300
+	return result
 
 
 /// Get portal_settings for a mob (from their held/inserted portal device)
@@ -41,12 +55,15 @@ GLOBAL_LIST_EMPTY(portal_networks)
 			return PL.portal_settings
 	// Check inserted devices in genitals
 	for(var/obj/item/organ/genital/G in H.internal_organs)
-		for(var/obj/item/portallight/PL in G.contents)
-			if(PL.portal_settings)
-				return PL.portal_settings
-		for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/PP in G.contents)
-			if(PP.portal_settings)
-				return PP.portal_settings
+		for(var/atom/content in G.contents)
+			if(istype(content, /obj/item/portallight))
+				var/obj/item/portallight/PL = content
+				if(PL.portal_settings)
+					return PL.portal_settings
+			else if(istype(content, /obj/item/clothing/underwear/briefs/panties/portalpanties))
+				var/obj/item/clothing/underwear/briefs/panties/portalpanties/PP = content
+				if(PP.portal_settings)
+					return PP.portal_settings
 	// Check worn panties
 	if(istype(H.w_underwear, /obj/item/clothing/underwear/briefs/panties/portalpanties))
 		var/obj/item/clothing/underwear/briefs/panties/portalpanties/PP = H.w_underwear
@@ -283,18 +300,21 @@ GLOBAL_LIST_EMPTY(portal_networks)
 // Vibration processing
 
 /// Process vibration and return lust gain
-/datum/portal_settings/proc/process_vibration(delta_time, location_text = "")
-	if(!owner || !owner.client || !vibration_enabled)
+/// force_intensity and force_pattern override the stored settings without mutating them (used by portalpanties for remote vibration)
+/datum/portal_settings/proc/process_vibration(delta_time, location_text = "", force_intensity = null, force_pattern = null)
+	if(!owner || !owner.client)
+		return 0
+	if(force_intensity == null && !vibration_enabled)
 		return 0
 	var/lust_gain = 0
-	var/intensity = vibration_intensity
+	var/intensity = (force_intensity != null) ? force_intensity : vibration_intensity
 	// Apply D/s intensity limits
 	intensity = clamp(intensity, min_forced_intensity, max_allowed_intensity)
+	var/current_lust = owner.get_lust()
+	var/climax_thresh = owner.get_climax_threshold()
 
 	// Edging mode - reduce intensity when approaching climax
 	if(edging_enabled)
-		var/current_lust = owner.get_lust()
-		var/climax_thresh = owner.get_climax_threshold()
 		if(current_lust >= climax_thresh * PORTAL_EDGING_THRESHOLD)
 			intensity = max(1, intensity - PORTAL_EDGING_INTENSITY_REDUCTION)
 			// Notify partner once when edging activates
@@ -304,7 +324,8 @@ GLOBAL_LIST_EMPTY(portal_networks)
 		else
 			edging_notified = FALSE
 
-	switch(vibration_pattern)
+	var/pattern = (force_pattern != null) ? force_pattern : vibration_pattern
+	switch(pattern)
 		if(VIBE_PATTERN_CONSTANT)
 			lust_gain = intensity * 0.5 * delta_time
 		if(VIBE_PATTERN_PULSE)
@@ -319,7 +340,7 @@ GLOBAL_LIST_EMPTY(portal_networks)
 			var/escalation = min((world.time - last_activity) / 600, 2)
 			lust_gain = intensity * escalation * delta_time * 0.3
 		if(VIBE_PATTERN_HEARTBEAT)
-			var/lust_ratio = owner.get_lust() / max(owner.get_climax_threshold(), 1)
+			var/lust_ratio = current_lust / max(climax_thresh, 1)
 			lust_gain = intensity * (0.5 + lust_ratio) * delta_time * 0.3
 		if(VIBE_PATTERN_TEASE)
 			// Tease pattern: rare unpredictable pulses with long random delays
@@ -353,6 +374,9 @@ GLOBAL_LIST_EMPTY(portal_networks)
 
 	return lust_gain
 
+// Module-level cache for pleasure emote list — allocated once, never mutated
+var/list/PORTAL_PLEASURE_EMOTES_CACHE
+
 /// Apply jitter effects based on vibration intensity
 /datum/portal_settings/proc/apply_vibration_jitter(intensity)
 	if(!owner)
@@ -360,12 +384,13 @@ GLOBAL_LIST_EMPTY(portal_networks)
 	// At max intensity, chance to show pleasure emote
 	if(intensity >= 8 && prob(intensity - 5))
 		// Используем свои эмоции вместо стандартных, чтобы избежать неуместного "задыхается"
-		var/list/pleasure_emotes = list(
-			list("third" = "тихо стонет", "self" = "тихо стонете"),
-			list("third" = "сдавленно охает", "self" = "сдавленно охаете"),
-			list("third" = "прерывисто выдыхает", "self" = "прерывисто выдыхаете")
-		)
-		var/list/emote = pick(pleasure_emotes)
+		if(!PORTAL_PLEASURE_EMOTES_CACHE)
+			PORTAL_PLEASURE_EMOTES_CACHE = list(
+				list("third" = "тихо стонет", "self" = "тихо стонете"),
+				list("third" = "сдавленно охает", "self" = "сдавленно охаете"),
+				list("third" = "прерывисто выдыхает", "self" = "прерывисто выдыхаете")
+			)
+		var/list/emote = pick(PORTAL_PLEASURE_EMOTES_CACHE)
 		owner.visible_message(
 			"<span class='emote'><b>[owner]</b> [emote["third"]].</span>",
 			"<span class='emote'>Вы [emote["self"]].</span>",
@@ -380,6 +405,12 @@ GLOBAL_LIST_EMPTY(portal_networks)
 		to_chat(owner, span_lewd("Мощная вибрация заставляет ваши ноги подкоситься!"))
 		owner.Knockdown(0.5 SECONDS)
 
+// Module-level caches for static no-location feedback strings (location variants interpolate a dynamic string and cannot be cached)
+var/list/PORTAL_VIBE_MSG_LOW
+var/list/PORTAL_VIBE_MSG_MED
+var/list/PORTAL_VIBE_MSG_HIGH
+var/list/PORTAL_VIBE_MSG_MAX
+
 /// Show vibration feedback messages based on intensity
 /datum/portal_settings/proc/show_vibration_feedback(intensity, location_text = "")
 	if(!owner?.client)
@@ -388,13 +419,21 @@ GLOBAL_LIST_EMPTY(portal_networks)
 	// Если location_text пустой (просто надето), не добавляем лишний текст
 	if(!location_text)
 		if(intensity <= 3)
-			messages = list("слегка вибрирует", "мягко жужжит", "нежно пульсирует")
+			if(!PORTAL_VIBE_MSG_LOW)
+				PORTAL_VIBE_MSG_LOW = list("слегка вибрирует", "мягко жужжит", "нежно пульсирует")
+			messages = PORTAL_VIBE_MSG_LOW
 		else if(intensity <= 6)
-			messages = list("приятно вибрирует", "ритмично пульсирует", "настойчиво жужжит")
+			if(!PORTAL_VIBE_MSG_MED)
+				PORTAL_VIBE_MSG_MED = list("приятно вибрирует", "ритмично пульсирует", "настойчиво жужжит")
+			messages = PORTAL_VIBE_MSG_MED
 		else if(intensity <= 9)
-			messages = list("интенсивно вибрирует", "мощно пульсирует, заставляя вас вздрагивать", "сильно жужжит, отвлекая ваше внимание")
+			if(!PORTAL_VIBE_MSG_HIGH)
+				PORTAL_VIBE_MSG_HIGH = list("интенсивно вибрирует", "мощно пульсирует, заставляя вас вздрагивать", "сильно жужжит, отвлекая ваше внимание")
+			messages = PORTAL_VIBE_MSG_HIGH
 		else
-			messages = list("безумно вибрирует, заставляя ваши ноги подкашиваться!", "пульсирует на максимуме, заставляя вас стонать!", "вибрирует так сильно, что вы едва можете думать!")
+			if(!PORTAL_VIBE_MSG_MAX)
+				PORTAL_VIBE_MSG_MAX = list("безумно вибрирует, заставляя ваши ноги подкашиваться!", "пульсирует на максимуме, заставляя вас стонать!", "вибрирует так сильно, что вы едва можете думать!")
+			messages = PORTAL_VIBE_MSG_MAX
 	else
 		// С указанием локации (внутри вагины, в анусе и т.д.)
 		if(intensity <= 3)
@@ -473,17 +512,22 @@ GLOBAL_LIST_EMPTY(portal_networks)
 		return FALSE
 	return can_user_control(user, is_partner)
 
+// Module-level cache for static pattern data — allocated once, reused on every TGUI refresh
+var/list/PORTAL_PATTERNS_DATA_CACHE
+
 /// Get list of available vibration patterns with metadata for TGUI
 /datum/portal_settings/proc/get_available_patterns_data()
-	return list(
-		list("id" = VIBE_PATTERN_CONSTANT, "name" = "Постоянная", "desc" = "Равномерная вибрация на выбранной интенсивности", "icon" = "bolt"),
-		list("id" = VIBE_PATTERN_PULSE, "name" = "Пульсация", "desc" = "Прерывистые импульсы с паузами между ними", "icon" = "heartbeat"),
-		list("id" = VIBE_PATTERN_WAVE, "name" = "Волна", "desc" = "Плавное нарастание и затухание по синусоиде", "icon" = "water"),
-		list("id" = VIBE_PATTERN_RANDOM, "name" = "Случайная", "desc" = "Непредсказуемые изменения интенсивности", "icon" = "dice"),
-		list("id" = VIBE_PATTERN_ESCALATE, "name" = "Нарастающая", "desc" = "Постепенное усиление со временем", "icon" = "chart-line"),
-		list("id" = VIBE_PATTERN_HEARTBEAT, "name" = "Сердцебиение", "desc" = "Ритм ускоряется с ростом возбуждения", "icon" = "heart"),
-		list("id" = VIBE_PATTERN_TEASE, "name" = "Дразнящая", "desc" = "Редкие неожиданные импульсы - никогда не знаешь когда!", "icon" = "theater-masks")
-	)
+	if(!PORTAL_PATTERNS_DATA_CACHE)
+		PORTAL_PATTERNS_DATA_CACHE = list(
+			list("id" = VIBE_PATTERN_CONSTANT, "name" = "Постоянная", "desc" = "Равномерная вибрация на выбранной интенсивности", "icon" = "bolt"),
+			list("id" = VIBE_PATTERN_PULSE, "name" = "Пульсация", "desc" = "Прерывистые импульсы с паузами между ними", "icon" = "heartbeat"),
+			list("id" = VIBE_PATTERN_WAVE, "name" = "Волна", "desc" = "Плавное нарастание и затухание по синусоиде", "icon" = "water"),
+			list("id" = VIBE_PATTERN_RANDOM, "name" = "Случайная", "desc" = "Непредсказуемые изменения интенсивности", "icon" = "dice"),
+			list("id" = VIBE_PATTERN_ESCALATE, "name" = "Нарастающая", "desc" = "Постепенное усиление со временем", "icon" = "chart-line"),
+			list("id" = VIBE_PATTERN_HEARTBEAT, "name" = "Сердцебиение", "desc" = "Ритм ускоряется с ростом возбуждения", "icon" = "heart"),
+			list("id" = VIBE_PATTERN_TEASE, "name" = "Дразнящая", "desc" = "Редкие неожиданные импульсы - никогда не знаешь когда!", "icon" = "theater-masks")
+		)
+	return PORTAL_PATTERNS_DATA_CACHE
 
 /// Check if a message contains the safeword
 /datum/portal_settings/proc/check_safeword(raw_message)
@@ -526,20 +570,11 @@ GLOBAL_LIST_EMPTY(portal_networks)
 		// Parse template placeholders
 		var/parsed_message = parse_message_template(message, sender_nickname, receiver_nickname)
 
-		// Broadcast to nearby mobs around recipient's location (range 1 = 3x3)
-		var/turf/broadcast_turf = get_turf(receiver)
-		if(!broadcast_turf)
+		// Send privately only to recipient
+		if(receiver in already_heard)
 			continue
-		for(var/mob/living/L in range(broadcast_turf, 1))
-			if(L in already_heard)
-				continue
-			if(L == sender)
-				// Echo back to sender if nearby
-				to_chat(L, span_lewd("<i>Ваше сообщение доносится из портала:</i> \"[parsed_message]\""))
-				already_heard |= L
-				continue
-			to_chat(L, span_lewd("<i>Быстрое сообщение от [sender_nickname]:</i> \"[parsed_message]\""))
-			already_heard |= L
+		to_chat(receiver, span_lewd("<i>Быстрое сообщение от [sender_nickname]:</i> \"[parsed_message]\""))
+		already_heard |= receiver
 	return TRUE
 
 /// Parse message template placeholders
@@ -790,13 +825,6 @@ GLOBAL_LIST_EMPTY(portal_networks)
 	if(!portal_settings?.owner)
 		return PROCESS_KILL
 
-	// Throttle processing to reduce per-tick overhead (process 10 times per second)
-	process_accumulated_time += delta_time
-	if(process_accumulated_time < 0.1)
-		return
-	var/accumulated_delta = process_accumulated_time
-	process_accumulated_time = 0
-
 	portal_settings.update_mood()
 
 	// Determine effective vibration - use MAX of local and remote intensities
@@ -819,19 +847,7 @@ GLOBAL_LIST_EMPTY(portal_networks)
 
 	// Process vibration ONCE with the highest effective intensity
 	if(use_vibration && effective_intensity > 0)
-		var/saved_enabled = portal_settings.vibration_enabled
-		var/saved_intensity = portal_settings.vibration_intensity
-		var/saved_pattern = portal_settings.vibration_pattern
-
-		portal_settings.vibration_enabled = TRUE
-		portal_settings.vibration_intensity = effective_intensity
-		portal_settings.vibration_pattern = effective_pattern
-
-		portal_settings.process_vibration(accumulated_delta, get_insertion_location_text())
-
-		portal_settings.vibration_enabled = saved_enabled
-		portal_settings.vibration_intensity = saved_intensity
-		portal_settings.vibration_pattern = saved_pattern
+		portal_settings.process_vibration(delta_time, get_insertion_location_text(), effective_intensity, effective_pattern)
 
 /obj/item/clothing/underwear/briefs/panties/portalpanties/proc/start_vibration(mob/living/carbon/human/initiator = null)
 	portal_settings.vibration_enabled = TRUE
@@ -1054,8 +1070,8 @@ GLOBAL_LIST_EMPTY(portal_networks)
 	. = ..()
 	if(ishuman(user))
 		portal_settings.owner = user
-		START_PROCESSING(SSobj, src)
-		RegisterSignal(user, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear))
+		START_PROCESSING(SSfastprocess, src)
+		RegisterSignal(user, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear), override = TRUE)
 		// Grant target switch action when picked up
 		if(!held_target_action)
 			held_target_action = new /datum/action/portal_target_switch(src)
@@ -1067,7 +1083,7 @@ GLOBAL_LIST_EMPTY(portal_networks)
 	if(!equipment?.holder_genital)
 		UnregisterSignal(user, COMSIG_MOVABLE_HEAR)
 		portal_settings.owner = null
-		STOP_PROCESSING(SSobj, src)
+		STOP_PROCESSING(SSfastprocess, src)
 		// Revoke target switch action when dropped
 		if(held_target_action)
 			held_target_action.Remove(user)
@@ -1083,17 +1099,10 @@ GLOBAL_LIST_EMPTY(portal_networks)
 	if(!portal_settings?.owner)
 		return PROCESS_KILL
 
-	// Throttle processing to reduce per-tick overhead (process 10 times per second)
-	process_accumulated_time += delta_time
-	if(process_accumulated_time < 0.1)
-		return
-	var/accumulated_delta = process_accumulated_time
-	process_accumulated_time = 0
-
 	portal_settings.update_mood()
 	// Handle vibration using shared code
 	if(portal_settings.vibration_enabled)
-		portal_settings.process_vibration(accumulated_delta, get_insertion_location_text())
+		portal_settings.process_vibration(delta_time, get_insertion_location_text())
 
 /obj/item/portallight/proc/start_vibration(mob/living/carbon/human/initiator = null)
 	portal_settings.vibration_enabled = TRUE
@@ -1392,11 +1401,14 @@ GLOBAL_LIST_EMPTY(portal_networks)
 			if(mode == PORTAL_MODE_PUBLIC && old_mode != PORTAL_MODE_PUBLIC)
 				// Add to global public panties index
 				GLOB.public_portal_panties |= src
-				// Notify all fleshlights about new public device
+				// Notify held fleshlights about new public device; always update available_panties
 				for(var/obj/item/portallight/P in GLOB.fleshlight_portallight)
+					P.available_panties |= src
+					var/mob/holder = get_fleshlight_holder(P)
+					if(!holder)
+						continue
 					P.audible_message("[icon2html(P, hearers(P))] *beep* *beep* *beep* - Обнаружено новое публичное устройство!", hearing_distance = 2)
 					playsound(P, 'sound/machines/triple_beep.ogg', ASSEMBLY_BEEP_VOLUME, TRUE)
-					P.available_panties |= src
 			else if(old_mode == PORTAL_MODE_PUBLIC && mode != PORTAL_MODE_PUBLIC)
 				// Remove from global public panties index
 				GLOB.public_portal_panties -= src
@@ -1842,11 +1854,11 @@ GLOBAL_LIST_EMPTY(portal_networks)
 	data["connected"] = !!portalunderwear
 	// Show partner's portal nickname for connected panties
 	var/mob/living/carbon/human/partner = portalunderwear ? get_panties_wearer(portalunderwear) : null
-	data["connected_name"] = get_portal_nickname(partner, "Не подключено")
+	data["connected_name"] = get_portal_nickname(partner, "Аноним")
 	data["has_private_pair"] = !!private_pair
 	// Partner mood info (for fleshlight showing connected panties wearer mood)
 	data["partner_mood_color"] = portalunderwear?.portal_settings?.get_mood_color() || "#888888"
-	data["partner_mood_text"] = portalunderwear?.portal_settings?.get_mood_text() || "Не подключено"
+	data["partner_mood_text"] = portalunderwear?.portal_settings?.get_mood_text() || "Неизвестно"
 	// Info about other connected devices
 	if(portalunderwear)
 		data["target_connected_count"] = LAZYLEN(portalunderwear.portallight)

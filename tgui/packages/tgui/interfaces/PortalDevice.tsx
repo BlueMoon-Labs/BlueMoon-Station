@@ -125,15 +125,10 @@ type TabProps = {
   act: (action: string, params?: object) => void;
 };
 
-// Control mode labels
-const CONTROL_MODE_LABELS = {
-  self: 'Самоконтроль',
-  partner: 'Подчинение',
-};
-
-const CONTROL_MODE_ICONS = {
-  self: 'user',
-  partner: 'lock',
+// Control mode configuration
+const CONTROL_MODES: Record<string, { label: string; icon: string; desc: string }> = {
+  self: { label: 'Самоконтроль', icon: 'user', desc: 'Вы сами регулируете вибрацию' },
+  partner: { label: 'Подчинение', icon: 'lock', desc: 'Партнёр управляет вибрацией' },
 };
 
 // Connection mode configuration
@@ -561,13 +556,13 @@ const ControlTabContent = (props: TabProps) => {
 
       {isPanties && (
         <Stack.Item mt={1}>
-          <Section title="Режим управления">
+          <Section title="Управление вибрацией">
             <Stack>
-              {Object.entries(CONTROL_MODE_LABELS).map(([mode, label]) => (
+              {Object.entries(CONTROL_MODES).map(([mode, { label, icon }]) => (
                 <Stack.Item key={mode} grow>
                   <Button
                     fluid
-                    icon={CONTROL_MODE_ICONS[mode as keyof typeof CONTROL_MODE_ICONS]}
+                    icon={icon}
                     selected={control_mode === mode}
                     onClick={() => act('set_control_mode', { mode })}
                   >
@@ -576,6 +571,9 @@ const ControlTabContent = (props: TabProps) => {
                 </Stack.Item>
               ))}
             </Stack>
+            <Box mt={1} color="label">
+              {CONTROL_MODES[control_mode]?.desc}
+            </Box>
             {control_mode === 'partner' && (
               <Box mt={1}>
                 <Button
