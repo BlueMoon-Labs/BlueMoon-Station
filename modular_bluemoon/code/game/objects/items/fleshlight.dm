@@ -520,8 +520,19 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	available_panties = GLOB.public_portal_panties.Copy()
 
 /obj/item/portallight/Destroy()
-	..()
+	// Clean up connections before destruction
+	if(portalunderwear)
+		portalunderwear.unregister_remote_vibration(src)
+		portalunderwear.portallight -= src
+		portalunderwear = null
+	if(available_panties.len)
+		for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/temp in available_panties)
+			temp.portallight -= src
+	QDEL_NULL(portal_settings)
+	QDEL_NULL(held_target_action)
+	private_pair = null
 	GLOB.fleshlight_portallight -= src
+	return ..()
 
 /obj/item/clothing/underwear/briefs/panties/portalpanties/New()
 	..()
@@ -532,6 +543,8 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	QDEL_NULL(worn_target_action)
 	QDEL_NULL(inserted_control_action)
 	QDEL_NULL(inserted_target_action)
+	QDEL_NULL(portal_settings)
+	private_pair = null
 	// Disconnect all connected portallights before deletion
 	if(LAZYLEN(portallight))
 		for(var/obj/item/portallight/PL in portallight)
@@ -541,9 +554,9 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 			PL.update_appearance()
 		LAZYCLEARLIST(portallight)
 	LAZYCLEARLIST(remote_vibrations)
-	..()
 	GLOB.portalpanties -= src
 	GLOB.public_portal_panties -= src
+	return ..()
 
 // Переименование трусиков
 /obj/item/clothing/underwear/briefs/panties/portalpanties/verb/rename()

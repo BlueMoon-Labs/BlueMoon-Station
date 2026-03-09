@@ -29,7 +29,7 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 		return GLOB.portal_telecomms_cache_result
 	if(GLOB.master_mode == "Extended")
 		GLOB.portal_telecomms_cache_result = TRUE
-		GLOB.portal_telecomms_cache_expire = world.time + 300
+		GLOB.portal_telecomms_cache_expire = world.time + 30 SECONDS
 		return TRUE
 	var/result = FALSE
 	for(var/obj/machinery/telecomms/server/S in GLOB.telecomms_list)
@@ -42,7 +42,7 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 				result = TRUE
 				break
 	GLOB.portal_telecomms_cache_result = result
-	GLOB.portal_telecomms_cache_expire = world.time + 300
+	GLOB.portal_telecomms_cache_expire = world.time + 30 SECONDS
 	return result
 
 
@@ -374,9 +374,6 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 
 	return lust_gain
 
-// Module-level cache for pleasure emote list — allocated once, never mutated
-var/list/PORTAL_PLEASURE_EMOTES_CACHE
-
 /// Apply jitter effects based on vibration intensity
 /datum/portal_settings/proc/apply_vibration_jitter(intensity)
 	if(!owner)
@@ -384,13 +381,14 @@ var/list/PORTAL_PLEASURE_EMOTES_CACHE
 	// At max intensity, chance to show pleasure emote
 	if(intensity >= 8 && prob(intensity - 5))
 		// Используем свои эмоции вместо стандартных, чтобы избежать неуместного "задыхается"
-		if(!PORTAL_PLEASURE_EMOTES_CACHE)
-			PORTAL_PLEASURE_EMOTES_CACHE = list(
+		var/static/list/pleasure_emotes_cache
+		if(!pleasure_emotes_cache)
+			pleasure_emotes_cache = list(
 				list("third" = "тихо стонет", "self" = "тихо стонете"),
 				list("third" = "сдавленно охает", "self" = "сдавленно охаете"),
 				list("third" = "прерывисто выдыхает", "self" = "прерывисто выдыхаете")
 			)
-		var/list/emote = pick(PORTAL_PLEASURE_EMOTES_CACHE)
+		var/list/emote = pick(pleasure_emotes_cache)
 		owner.visible_message(
 			"<span class='emote'><b>[owner]</b> [emote["third"]].</span>",
 			"<span class='emote'>Вы [emote["self"]].</span>",
@@ -405,12 +403,6 @@ var/list/PORTAL_PLEASURE_EMOTES_CACHE
 		to_chat(owner, span_lewd("Мощная вибрация заставляет ваши ноги подкоситься!"))
 		owner.Knockdown(0.5 SECONDS)
 
-// Module-level caches for static no-location feedback strings (location variants interpolate a dynamic string and cannot be cached)
-var/list/PORTAL_VIBE_MSG_LOW
-var/list/PORTAL_VIBE_MSG_MED
-var/list/PORTAL_VIBE_MSG_HIGH
-var/list/PORTAL_VIBE_MSG_MAX
-
 /// Show vibration feedback messages based on intensity
 /datum/portal_settings/proc/show_vibration_feedback(intensity, location_text = "")
 	if(!owner?.client)
@@ -418,22 +410,26 @@ var/list/PORTAL_VIBE_MSG_MAX
 	var/list/messages
 	// Если location_text пустой (просто надето), не добавляем лишний текст
 	if(!location_text)
+		var/static/list/vibe_msg_low
+		var/static/list/vibe_msg_med
+		var/static/list/vibe_msg_high
+		var/static/list/vibe_msg_max
 		if(intensity <= 3)
-			if(!PORTAL_VIBE_MSG_LOW)
-				PORTAL_VIBE_MSG_LOW = list("слегка вибрирует", "мягко жужжит", "нежно пульсирует")
-			messages = PORTAL_VIBE_MSG_LOW
+			if(!vibe_msg_low)
+				vibe_msg_low = list("слегка вибрирует", "мягко жужжит", "нежно пульсирует")
+			messages = vibe_msg_low
 		else if(intensity <= 6)
-			if(!PORTAL_VIBE_MSG_MED)
-				PORTAL_VIBE_MSG_MED = list("приятно вибрирует", "ритмично пульсирует", "настойчиво жужжит")
-			messages = PORTAL_VIBE_MSG_MED
+			if(!vibe_msg_med)
+				vibe_msg_med = list("приятно вибрирует", "ритмично пульсирует", "настойчиво жужжит")
+			messages = vibe_msg_med
 		else if(intensity <= 9)
-			if(!PORTAL_VIBE_MSG_HIGH)
-				PORTAL_VIBE_MSG_HIGH = list("интенсивно вибрирует", "мощно пульсирует, заставляя вас вздрагивать", "сильно жужжит, отвлекая ваше внимание")
-			messages = PORTAL_VIBE_MSG_HIGH
+			if(!vibe_msg_high)
+				vibe_msg_high = list("интенсивно вибрирует", "мощно пульсирует, заставляя вас вздрагивать", "сильно жужжит, отвлекая ваше внимание")
+			messages = vibe_msg_high
 		else
-			if(!PORTAL_VIBE_MSG_MAX)
-				PORTAL_VIBE_MSG_MAX = list("безумно вибрирует, заставляя ваши ноги подкашиваться!", "пульсирует на максимуме, заставляя вас стонать!", "вибрирует так сильно, что вы едва можете думать!")
-			messages = PORTAL_VIBE_MSG_MAX
+			if(!vibe_msg_max)
+				vibe_msg_max = list("безумно вибрирует, заставляя ваши ноги подкашиваться!", "пульсирует на максимуме, заставляя вас стонать!", "вибрирует так сильно, что вы едва можете думать!")
+			messages = vibe_msg_max
 	else
 		// С указанием локации (внутри вагины, в анусе и т.д.)
 		if(intensity <= 3)
@@ -512,13 +508,11 @@ var/list/PORTAL_VIBE_MSG_MAX
 		return FALSE
 	return can_user_control(user, is_partner)
 
-// Module-level cache for static pattern data — allocated once, reused on every TGUI refresh
-var/list/PORTAL_PATTERNS_DATA_CACHE
-
 /// Get list of available vibration patterns with metadata for TGUI
 /datum/portal_settings/proc/get_available_patterns_data()
-	if(!PORTAL_PATTERNS_DATA_CACHE)
-		PORTAL_PATTERNS_DATA_CACHE = list(
+	var/static/list/patterns_data_cache
+	if(!patterns_data_cache)
+		patterns_data_cache = list(
 			list("id" = VIBE_PATTERN_CONSTANT, "name" = "Постоянная", "desc" = "Равномерная вибрация на выбранной интенсивности", "icon" = "bolt"),
 			list("id" = VIBE_PATTERN_PULSE, "name" = "Пульсация", "desc" = "Прерывистые импульсы с паузами между ними", "icon" = "heartbeat"),
 			list("id" = VIBE_PATTERN_WAVE, "name" = "Волна", "desc" = "Плавное нарастание и затухание по синусоиде", "icon" = "water"),
@@ -527,7 +521,7 @@ var/list/PORTAL_PATTERNS_DATA_CACHE
 			list("id" = VIBE_PATTERN_HEARTBEAT, "name" = "Сердцебиение", "desc" = "Ритм ускоряется с ростом возбуждения", "icon" = "heart"),
 			list("id" = VIBE_PATTERN_TEASE, "name" = "Дразнящая", "desc" = "Редкие неожиданные импульсы - никогда не знаешь когда!", "icon" = "theater-masks")
 		)
-	return PORTAL_PATTERNS_DATA_CACHE
+	return patterns_data_cache
 
 /// Check if a message contains the safeword
 /datum/portal_settings/proc/check_safeword(raw_message)
@@ -809,11 +803,6 @@ var/list/PORTAL_PATTERNS_DATA_CACHE
 	portal_settings = new()
 	portal_settings.parent_device = WEAKREF(src)
 
-/obj/item/clothing/underwear/briefs/panties/portalpanties/Destroy()
-	QDEL_NULL(portal_settings)
-	private_pair = null
-	return ..()
-
 /// Check if spoken message contains the safeword
 /obj/item/clothing/underwear/briefs/panties/portalpanties/proc/on_owner_hear(datum/source, list/hearing_args)
 	SIGNAL_HANDLER
@@ -1054,17 +1043,6 @@ var/list/PORTAL_PATTERNS_DATA_CACHE
 	. = ..()
 	portal_settings = new()
 	portal_settings.parent_device = WEAKREF(src)
-
-/obj/item/portallight/Destroy()
-	// Clean up connections before destruction
-	if(portalunderwear)
-		portalunderwear.unregister_remote_vibration(src)
-		portalunderwear.portallight -= src
-		portalunderwear = null
-	QDEL_NULL(portal_settings)
-	QDEL_NULL(held_target_action)
-	private_pair = null
-	return ..()
 
 /obj/item/portallight/pickup(mob/user)
 	. = ..()

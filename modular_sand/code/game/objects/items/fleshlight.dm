@@ -823,18 +823,6 @@
 	plushe.layer = 33
 	add_overlay(plushe)
 
-/obj/item/portallight/Destroy()
-	if(available_panties.len)
-		for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/temp in available_panties)
-			temp.portallight -= src
-	if(portalunderwear)
-		portalunderwear.portallight -= src
-		if(isliving(portalunderwear.loc))
-			portalunderwear.audible_message("[icon2html(portalunderwear, hearers(portalunderwear))] *beep* *beep* *beep*")
-			playsound(portalunderwear, 'sound/machines/triple_beep.ogg', ASSEMBLY_BEEP_VOLUME, TRUE)
-			to_chat(portalunderwear.loc, "<span class='notice'>Трусики издают сигнал - связь с <b>'[src]'</b> потеряна.</span>")
-	. = ..()
-
 /**
  * # Hyperstation 13 portal underwear
  * Wear it, cannot be worn if not pointing to the bits you have.
@@ -983,16 +971,6 @@
 		UnregisterSignal(user, COMSIG_MOVABLE_HEAR)
 		portal_settings?.owner = null
 		STOP_PROCESSING(SSobj, src)
-
-/obj/item/clothing/underwear/briefs/panties/portalpanties/Destroy()
-	if(portallight.len)
-		moveToNullspace() // loc cannot be human so let's destroy ourselves out of anything
-		for(var/obj/item/portallight/temp in portallight)
-			temp.portalunderwear = null
-			temp.available_panties -= src
-			temp.updatesleeve()
-			temp.icon_state = "unpaired"
-	. = ..()
 
 /obj/item/clothing/underwear/briefs/panties/portalpanties/proc/drop_out()
 	var/mob/living/carbon/human/deleted
