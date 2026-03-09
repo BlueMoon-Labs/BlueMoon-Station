@@ -28,6 +28,7 @@
 	item_flags = IMMUTABLE_SLOW
 	var/alternate_layer = NECK_LAYER
 	var/obj/item/mod/control/mod
+	var/obj/item/clothing/overslot
 	mutantrace_variation = STYLE_MUZZLE
 
 /obj/item/clothing/head/mod/Destroy()
@@ -36,6 +37,14 @@
 		mod.mod_parts -= src
 		QDEL_NULL(mod)
 	return ..()
+
+/// Restores the head item that was stored when the MOD helmet was deployed over it
+/obj/item/clothing/head/mod/proc/show_overslot()
+	if(!overslot)
+		return
+	if(!mod.wearer.equip_to_slot_if_possible(overslot, overslot.slot_flags, qdel_on_fail = FALSE, disable_warning = TRUE))
+		mod.wearer.dropItemToGround(overslot, force = TRUE)
+	overslot = null
 
 /obj/item/clothing/suit/mod
 	name = "MOD chestplate"
@@ -66,6 +75,7 @@
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/device/cooler)
 	resistance_flags = NONE
 	var/obj/item/mod/control/mod
+	var/obj/item/clothing/overslot
 	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/suit/mod/Destroy()
@@ -74,6 +84,14 @@
 		mod.mod_parts -= src
 		QDEL_NULL(mod)
 	return ..()
+
+/// Restores the suit/outer clothing that was stored when the MOD chestplate was deployed over it
+/obj/item/clothing/suit/mod/proc/show_overslot()
+	if(!overslot)
+		return
+	if(!mod.wearer.equip_to_slot_if_possible(overslot, overslot.slot_flags, qdel_on_fail = FALSE, disable_warning = TRUE))
+		mod.wearer.dropItemToGround(overslot, force = TRUE)
+	overslot = null
 
 /obj/item/clothing/gloves/mod
 	name = "MOD gauntlets"

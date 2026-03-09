@@ -118,6 +118,7 @@
 	name = "nurse's suit"
 	icon_state = "nursesuit"
 	item_state = "w_suit"
+	mob_overlay_icon = 'icons/mob/clothing/uniform.dmi'
 	permeability_coefficient = 0.5
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 10, RAD = 0, FIRE = 0, ACID = 0, WOUND = 5)
 	body_parts_covered = CHEST|GROIN|ARMS

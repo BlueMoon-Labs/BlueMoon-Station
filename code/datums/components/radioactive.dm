@@ -13,7 +13,6 @@
 	var/can_contaminate
 
 /datum/component/radioactive/Initialize(_strength=0, _source, _half_life=RAD_HALF_LIFE, _can_contaminate=TRUE)
-	strength = _strength
 	source = _source
 	hl3_release_date = _half_life
 	can_contaminate = _can_contaminate
@@ -26,16 +25,13 @@
 	else
 		CRASH("Something that wasn't an atom was given /datum/component/radioactive")
 
-	if(strength > RAD_MINIMUM_CONTAMINATION)
-		SSradiation.warn(src)
-
 	//Let's make er glow
 	//This relies on parent not being a turf or something. IF YOU CHANGE THAT, CHANGE THIS
 	var/atom/movable/master = parent
 	master.add_filter("rad_glow", 2, list("type" = "outline", "color" = "#39ff1430", "size" = 2))
 	addtimer(CALLBACK(src, PROC_REF(glow_loop), master), rand(1,19))//Things should look uneven
 
-	START_PROCESSING(SSradiation, src)
+	set_strength(_strength)
 
 /datum/component/radioactive/Destroy()
 	STOP_PROCESSING(SSradiation, src)
@@ -43,18 +39,40 @@
 	master.remove_filter("rad_glow")
 	return ..()
 
+/datum/component/radioactive/proc/set_strength(new_strength)
+	var/old_strength = strength
+	if(isnull(new_strength))
+		new_strength = 0
+	strength = max(new_strength, 0)
+
+	if(strength > RAD_MINIMUM_CONTAMINATION)
+		SSradiation.warn(src)
+
+	if(strength > RAD_BACKGROUND_RADIATION)
+		if(!(datum_flags & DF_ISPROCESSING))
+			START_PROCESSING(SSradiation, src)
+		return
+
+	if(hl3_release_date && (isnull(old_strength) || old_strength > RAD_BACKGROUND_RADIATION))
+		addtimer(CALLBACK(src, PROC_REF(check_dissipate)), 5 SECONDS)
+	if(datum_flags & DF_ISPROCESSING)
+		STOP_PROCESSING(SSradiation, src)
+
 /datum/component/radioactive/process()
+	if(strength <= RAD_BACKGROUND_RADIATION)
+		if(hl3_release_date)
+			addtimer(CALLBACK(src, PROC_REF(check_dissipate)), 5 SECONDS)
+		return PROCESS_KILL
+	if(hl3_release_date)
+		strength -= strength / hl3_release_date
+		if(strength <= RAD_BACKGROUND_RADIATION)
+			addtimer(CALLBACK(src, PROC_REF(check_dissipate)), 5 SECONDS)
+			return PROCESS_KILL
+
 	var/turf/T = get_turf(parent)
-	if(!prob(50) || is_radiation_blocked(parent) || !T) // Кроме 50%-ного шанса, проверяем или есть защита на радиацию
+	if(!prob(20) || is_radiation_blocked(parent) || !T) // Кроме 20%-ного шанса, проверяем или есть защита на радиацию
 		return
 	radiation_pulse(T, strength, RAD_DISTANCE_COEFFICIENT*2, FALSE, can_contaminate)
-
-	if(!hl3_release_date)
-		return
-	strength -= strength / hl3_release_date
-	if(strength <= RAD_BACKGROUND_RADIATION)
-		addtimer(CALLBACK(src, PROC_REF(check_dissipate)), 5 SECONDS)
-		return PROCESS_KILL
 
 /datum/component/radioactive/proc/check_dissipate()
 	if(strength <= RAD_BACKGROUND_RADIATION)
@@ -76,9 +94,9 @@
 		return
 	if(C)
 		var/datum/component/radioactive/other = C
-		strength = max(strength, other.strength)
+		set_strength(max(strength, other.strength))
 	else
-		strength = max(strength, _strength)
+		set_strength(max(strength, _strength))
 
 /datum/component/radioactive/proc/rad_examine(datum/source, mob/user, list/examine_list)
 	var/atom/master = parent
@@ -99,13 +117,13 @@
 
 /datum/component/radioactive/proc/rad_attack(datum/source, atom/movable/target, mob/living/user)
 	var/turf/T = get_turf(parent)
-	if(is_radiation_blocked(parent || !T)) // Проверяем или есть защита на радиацию
+	if(!T || is_radiation_blocked(parent)) // Проверяем или есть защита на радиацию
 		return
 	radiation_pulse(T, strength/20)
 	target.rad_act(strength/2)
 	if(!hl3_release_date)
 		return
-	strength -= strength / hl3_release_date
+	set_strength(strength - (strength / hl3_release_date))
 
 #undef RAD_AMOUNT_LOW
 #undef RAD_AMOUNT_MEDIUM

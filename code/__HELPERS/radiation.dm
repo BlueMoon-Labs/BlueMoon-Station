@@ -8,6 +8,7 @@
 		/obj/effect,
 		/obj/docking_port,
 		/obj/item/projectile,
+		/atom/movable/lighting_object,
 		))
 	var/list/processing_list = list(location)
 	. = list()
@@ -24,15 +25,15 @@
 		lim = processing_list.len
 
 /proc/radiation_pulse(mob/source, intensity, range_modifier, log=FALSE, can_contaminate=TRUE)
-	if(!SSradiation.can_fire)
+	if(!SSradiation.can_fire || !source)
 		return
 	var/turf/open/pool/PL = get_turf(source)
 	if(istype(PL))
 		if(PL.filled == TRUE)
 			intensity *= 0.15
-	var/area/A = get_area(source)
-	if(source == null)
+	if(intensity <= RAD_BACKGROUND_RADIATION)
 		return
+	var/area/A = get_area(source)
 	var/atom/nested_loc = source.loc
 	var/spawn_waves = TRUE
 	while(nested_loc != A)
@@ -40,7 +41,7 @@
 			spawn_waves = FALSE
 			break
 		nested_loc = nested_loc.loc
-	if(spawn_waves)
+	if(spawn_waves && intensity >= RAD_MINIMUM_CONTAMINATION && SSradiation.processing.len < RAD_MAX_PROCESSING)
 		for(var/dir in GLOB.cardinals)
 			new /datum/radiation_wave(source, dir, intensity, range_modifier, can_contaminate)
 

@@ -19,6 +19,10 @@ new /datum/disease_ability/symptom/medium/vomit,
 new /datum/disease_ability/symptom/medium/voice_change,
 new /datum/disease_ability/symptom/medium/visionloss,
 new /datum/disease_ability/symptom/medium/deafness,
+new /datum/disease_ability/symptom/medium/dizzy,
+new /datum/disease_ability/symptom/medium/alkali,
+new /datum/disease_ability/symptom/medium/asphyxiation,
+new /datum/disease_ability/symptom/medium/undead_adaptation,
 new /datum/disease_ability/symptom/powerful/narcolepsy,
 new /datum/disease_ability/symptom/medium/fever,
 new /datum/disease_ability/symptom/medium/shivering,
@@ -35,7 +39,9 @@ new /datum/disease_ability/symptom/medium/heal/sensory_restoration,
 new /datum/disease_ability/symptom/medium/heal/mind_restoration,
 new /datum/disease_ability/symptom/powerful/fire,
 new /datum/disease_ability/symptom/powerful/flesh_eating,
+new /datum/disease_ability/symptom/powerful/flesh_death,
 new /datum/disease_ability/symptom/powerful/genetic_mutation,
+new /datum/disease_ability/symptom/powerful/monkey_transform,
 new /datum/disease_ability/symptom/powerful/inorganic_adaptation,
 new /datum/disease_ability/symptom/powerful/heal/starlight,
 new /datum/disease_ability/symptom/powerful/heal/oxygen,
@@ -264,21 +270,24 @@ new /datum/disease_ability/symptom/powerful/youth
 	category = "Symptom (Weak)"
 
 /datum/disease_ability/symptom/medium
+	cost = 1
+	required_total_points = 0
 	category = "Symptom"
 
 /datum/disease_ability/symptom/medium/heal
-	cost = 5
-	required_total_points = 5
+	cost = 2
+	required_total_points = 1
 	malefit = -1
 	category = "Symptom (+)"
 
 /datum/disease_ability/symptom/powerful
-	cost = 4
-	required_total_points = 10
+	cost = 2
+	required_total_points = 2
 	category = "Symptom (Strong)"
 
 /datum/disease_ability/symptom/powerful/heal
-	cost = 8
+	cost = 3
+	required_total_points = 3
 	malefit = -1
 	category = "Symptom (Strong+)"
 
@@ -387,6 +396,29 @@ new /datum/disease_ability/symptom/powerful/youth
 	short_desc = "Cause victims to itch."
 	long_desc = "Cause victims to itch, increasing all stats except stealth."
 
+/datum/disease_ability/symptom/medium/dizzy
+	symptoms = list(/datum/symptom/dizzy)
+	malefit = 1
+	short_desc = "Cause victims to feel dizzy, shaking their screen."
+	long_desc = "Cause victims to feel dizzy intermittently, shaking their screen. At high transmission also causes druggy vision."
+
+/datum/disease_ability/symptom/medium/alkali
+	symptoms = list(/datum/symptom/alkali)
+	malefit = 1
+	short_desc = "Cause victims to burst into alkali fire."
+	long_desc = "The virus turns the host's body into an alkali compound, making them burst into flames."
+
+/datum/disease_ability/symptom/medium/asphyxiation
+	symptoms = list(/datum/symptom/asphyxiation)
+	malefit = 1
+	short_desc = "Cause victims to asphyxiate, potentially to death."
+	long_desc = "Cause victims to choke and asphyxiate. Deadly at later stages."
+
+/datum/disease_ability/symptom/medium/undead_adaptation
+	symptoms = list(/datum/symptom/undead_adaptation)
+	short_desc = "Allow the virus to thrive in dead hosts and infect undead."
+	long_desc = "The virus can process and act within dead hosts, and can infect undead mobs."
+
 /datum/disease_ability/symptom/medium/heal/weight_loss
 	symptoms = list(/datum/symptom/weight_loss)
 	malefit = 1
@@ -414,7 +446,21 @@ new /datum/disease_ability/symptom/powerful/youth
 /datum/disease_ability/symptom/powerful/genetic_mutation
 	malefit = 1
 	symptoms = list(/datum/symptom/genetic_mutation)
-	cost = 8
+	cost = 2
+	required_total_points = 2
+
+/datum/disease_ability/symptom/powerful/flesh_death
+	malefit = 1
+	symptoms = list(/datum/symptom/flesh_death)
+	short_desc = "Cause victims' flesh to rot, potentially killing them."
+	long_desc = "The virus causes severe necrosis; at stage 5 the host can die from flesh decay."
+
+/datum/disease_ability/symptom/powerful/monkey_transform
+	symptoms = list(/datum/symptom/monkey_transform)
+	cost = 2
+	required_total_points = 2
+	short_desc = "Transform human hosts into monkeys at stage 5."
+	long_desc = "At the final stage, human hosts are transformed into monkeys. Cheap and iconic."
 
 /datum/disease_ability/symptom/powerful/inorganic_adaptation
 	symptoms = list(/datum/symptom/inorganic_adaptation)

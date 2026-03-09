@@ -60,6 +60,7 @@
 	icon_state = "healthhud"
 	hud_type = DATA_HUD_MEDICAL_ADVANCED
 	glass_colour_type = /datum/client_colour/glass_colour/lightblue
+	glasses_type = "med"
 
 /obj/item/clothing/glasses/hud/health/prescription/Initialize(mapload)
 	. = ..()
@@ -94,11 +95,6 @@
 	. = ..()
 	prescribe()
 
-/obj/item/clothing/glasses/hud/health/eyepatch
-	name = "eyepatch medHUD"
-	desc = "A heads-up display that connects directly to the optical nerve of the user, replacing the need for that useless eyeball."
-	icon_state = "medpatch"
-
 ///////////////////
 //Diagnostic Huds//
 ///////////////////
@@ -109,6 +105,7 @@
 	icon_state = "diagnostichud"
 	hud_type = DATA_HUD_DIAGNOSTIC_BASIC
 	glass_colour_type = /datum/client_colour/glass_colour/lightorange
+	glasses_type = "robo"
 
 /obj/item/clothing/glasses/hud/diagnostic/sunglasses
 	name = "diagnostic HUDSunglasses"
@@ -137,11 +134,6 @@
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
 	glass_colour_type = /datum/client_colour/glass_colour/green
 
-/obj/item/clothing/glasses/hud/diagnostic/eyepatch
-	name = "eyepatch diagnostic HUD"
-	desc = "A heads-up display that connects directly to the optical nerve of the user, replacing the need for that useless eyeball."
-	icon_state = "diagpatch"
-
 ////////////
 //Sec Huds//
 ////////////
@@ -152,6 +144,7 @@
 	icon_state = "securityhud"
 	hud_type = DATA_HUD_SECURITY_ADVANCED
 	glass_colour_type = /datum/client_colour/glass_colour/red
+	glasses_type = "sec"
 
 /obj/item/clothing/glasses/hud/security/prescription/Initialize(mapload)
 	. = ..()
@@ -255,11 +248,6 @@
 		hud_granted = FALSE
 		var/datum/atom_hud/HUD = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
 		HUD.remove_hud_from(user)
-
-/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch // why was this defined *before* the sunglasses it is a subtype of.
-	name = "eyepatch HUD"
-	desc = "A heads-up display that connects directly to the optical nerve of the user, replacing the need for that useless eyeball."
-	icon_state = "hudpatch"
 
 /obj/item/clothing/glasses/hud/security/sunglasses/prescription/Initialize(mapload)
 	. = ..()

@@ -114,6 +114,10 @@
 			continue
 		if((thing.rad_flags & RAD_NO_CONTAMINATE) || SEND_SIGNAL(thing, COMSIG_ATOM_RAD_CONTAMINATING, strength) & COMPONENT_BLOCK_CONTAMINATION)
 			continue
+		// Skip objects already contaminated at equal or higher strength
+		var/datum/component/radioactive/existing = thing.GetComponent(/datum/component/radioactive)
+		if(existing?.strength >= strength)
+			continue
 		contam_atoms += thing
 	var/did_contam = 0
 	if(can_contam && contam_atoms.len)

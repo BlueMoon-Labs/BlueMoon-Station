@@ -10,6 +10,28 @@
 	selection_color = "#9574cd"
 	exp_requirements = 60
 	exp_type = EXP_TYPE_CREW
+	alt_titles = list(
+		"Junior Researcher", //Стажер выше, для удобства
+		"Cybersun Researcher", //Триглав выше, для удобства
+		"Syndicate Researcher", //Синди выше, для удобства
+		"Anomalist",
+		"Chemical Researcher",
+		"Circuitry Designer",
+		"Lab Technician",
+		"Nanite Programmer",
+		"Ordnance Technician",
+		"Plasma Researcher",
+		"Programmer",
+		"Pyrotechnician",
+		"Rack Researcher",
+		"Researcher",
+		"Resonance Researcher",
+		"Sex Researcher",
+		"Theoretical Physicist",
+		"Toxins Researcher",
+		"Xenoarcheologist",
+		"Xenobiologist"
+		)
 
 	outfit = /datum/outfit/job/scientist
 	plasma_outfit = /datum/outfit/plasmaman/science

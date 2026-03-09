@@ -67,3 +67,17 @@
 	new	/obj/item/clothing/accessory/permit/deviant/agony(src)
 	new	/obj/item/clothing/accessory/permit/deviant/agony(src)
 	new	/obj/item/clothing/accessory/permit/deviant/muck(src)
+
+/obj/item/storage/box/service_permits
+	name = "box of service permits"
+	desc = "Has permits for new service employees."
+	illustration = "id"
+
+/obj/item/storage/box/service_permits/PopulateContents()
+	new	/obj/item/clothing/accessory/permit/special/bartender(src)
+	new	/obj/item/clothing/accessory/permit/special/bartender(src)
+	new	/obj/item/clothing/accessory/permit/special/bartender(src)
+	new	/obj/item/clothing/accessory/permit/special/bartender(src)
+	new	/obj/item/clothing/accessory/permit/special/bouncer(src)
+	new	/obj/item/clothing/accessory/permit/special/bouncer(src)
+	new	/obj/item/clothing/accessory/permit/special/bouncer(src)

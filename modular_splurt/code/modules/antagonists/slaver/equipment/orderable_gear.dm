@@ -127,13 +127,6 @@ GLOBAL_LIST_INIT(slaver_gear, subtypesof(/datum/slaver_gear))
 	category = "Firearms"
 	cost = 12000
 
-/datum/slaver_gear/smg_rubber
-	name = "SMG Kit (rubber)"
-	description = "WT-550 Semi-Automatic SMG with rubber munitions. Spare magazine x 3."
-	build_path = /obj/item/storage/backpack/duffelbag/syndie/smg_rubber
-	category = "Firearms"
-	cost = 10000
-
 /datum/slaver_gear/ion
 	name = "Ion carbines"
 	description = "Ion carbine x 2."

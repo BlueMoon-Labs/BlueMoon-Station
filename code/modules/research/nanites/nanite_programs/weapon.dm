@@ -172,6 +172,8 @@
 /datum/nanite_program/comm/mind_control/on_trigger(comm_message)
 	if(host_mob.stat == DEAD)
 		return
+	if(HAS_TRAIT(host_mob, TRAIT_MINDSHIELD))
+		return
 	var/sent_directive = comm_message
 	if(!comm_message)
 		var/datum/nanite_extra_setting/ES = extra_settings[NES_DIRECTIVE]

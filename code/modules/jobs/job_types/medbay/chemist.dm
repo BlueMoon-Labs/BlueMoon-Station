@@ -10,6 +10,18 @@
 	selection_color = "#74b5e0"
 	exp_type = EXP_TYPE_CREW
 	exp_requirements = 60
+	alt_titles = list(
+		"Chemist Intern", //Стажер выше, для удобства
+		"Alchemist",
+		"Apothecarist",
+		"Chemi-Slut",
+		"Chemical Specialist",
+		"Chemical Technician",
+		"Hexocrocin Therapist",
+		"Organomegaly Healer",
+		"Pharmacist",
+		"Pharmacologist"
+		)
 
 	outfit = /datum/outfit/job/chemist
 	plasma_outfit = /datum/outfit/plasmaman/chemist

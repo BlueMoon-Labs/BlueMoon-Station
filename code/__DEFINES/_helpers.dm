@@ -36,3 +36,11 @@
 /// A null statement to guard against EmptyBlock lint without necessitating the use of pass()
 /// Used to avoid proc-call overhead. But use sparingly. Probably pointless in most places.
 #define EMPTY_BLOCK_GUARD ;
+
+/// Use this to set the base and ACTUAL pixel offsets of an object at the same time
+/// You should always use this for pixel setting in typepaths, unless you want the map display to look different from in game
+#define SET_BASE_PIXEL(x, y) \
+	pixel_x = x; \
+	base_pixel_x = x; \
+	pixel_y = y; \
+	base_pixel_y = y;

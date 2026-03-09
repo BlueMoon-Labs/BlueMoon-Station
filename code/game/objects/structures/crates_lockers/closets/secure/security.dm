@@ -29,8 +29,7 @@
 	new /obj/item/radio/headset/heads/hop(src)
 	new /obj/item/storage/box/ids(src)
 	new /obj/item/storage/box/ids(src)
-	new /obj/item/storage/box/deviants(src) // bluemoon edit
-	new /obj/item/storage/box/deviants(src)
+	new /obj/item/storage/secure/briefcase/hop_permits(src)
 	new /obj/item/megaphone/command(src)
 	new /obj/item/assembly/flash/handheld(src)
 	new /obj/item/restraints/handcuffs/cable/zipties(src)

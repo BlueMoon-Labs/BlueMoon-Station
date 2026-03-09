@@ -13,6 +13,29 @@
 	exp_requirements = 3000
 	exp_type = EXP_TYPE_CREW
 	considered_combat_role = TRUE
+	alt_titles = list(
+		"Gorlex Marauders Soldier", //Триглав выше, для удобства // Кадеты - Миротворцы
+		"Syndicate Combatant", //Синди выше, для удобства
+		"AC Specialist",
+		"Cerberus",
+		"Civil Protection",
+		"Defense Contractor",
+		"Explosives Specialist",
+		"Guard",
+		"Guardsman",
+		"Police Officer",
+		"Probation Officer",
+		"Riot Control Officer",
+		"SAARE Operator",
+		"Safeguard Agent",
+		"Security Agent",
+		"Security Guard",
+		"Security Technician",
+		"Service Pet Handler",
+		"Slutcurity Officer",
+		"Studcurity Officer",
+		"Tyranny Lover"
+		)
 
 	outfit = /datum/outfit/job/security
 	plasma_outfit = /datum/outfit/plasmaman/security

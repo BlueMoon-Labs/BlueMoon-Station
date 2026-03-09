@@ -346,6 +346,12 @@
 /datum/config_entry/flag/atmos_equalize_enabled
 	default = FALSE
 
+/// Multiplier for atmos processing speed (share steps, equalization turf limit). 1 = default, 10 = 10x faster equalization/reactions.
+/datum/config_entry/number/atmos_speed_multiplier
+	default = 1
+	min_val = 1
+	max_val = 20
+
 /datum/config_entry/flag/dynamic_config_enabled
 
 /datum/config_entry/flag/station_name_needs_approval

@@ -36,6 +36,7 @@
 	display_name = "Neural Programming"
 	description = "Study into networks of processing units that mimic our brains."
 	prereq_ids = list("biotech", "datatheory")
+	design_ids = list("Implanter", "implantcase", "impant_radio", "implant_chem", "implant_tracking", "locator", "c38_trac", "implant_gfluid", "implant_slave", "implant_hide_backpack")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/posibrain
@@ -77,5 +78,5 @@
 	prereq_ids = list("robotics", "posibrain")
 	design_ids = list("aifixer", "aicore", "safeguard_module", "onehuman_module", "protectstation_module", "quarantine_module", "oxygen_module", "freeform_module",
 	"reset_module", "purge_module", "remove_module", "freeformcore_module", "asimov_module", "nt_safeguard_module", "paladin_module", "tyrant_module", "corporate_module",
-	"default_module", "borg_ai_control", "mecha_tracking_ai_control", /*"aiupload",*/ "intellicard")/*BlueMoon edit*/
+	"default_module", "borg_ai_control", "mecha_tracking_ai_control", /*"aiupload",*/ "intellicard", "slut_module", "shebang_module", "milker_module", "vore_pred_module")/*BlueMoon edit*/
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)

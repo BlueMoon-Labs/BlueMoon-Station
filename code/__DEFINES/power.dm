@@ -8,3 +8,5 @@
 #define WATTS / 0.002
 ///conversion ratio from watts to joules
 #define JOULES * 0.002
+
+#define STANDARD_CELL_CHARGE (10000) // 10 KJ.

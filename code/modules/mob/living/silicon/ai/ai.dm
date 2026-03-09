@@ -116,6 +116,7 @@
 	var/is_anchored = TRUE
 
 	var/hologram_color = rgb(125, 180, 225) // BLUEMOON ADD (Pe4henika)
+	var/selected_bark_id = "bottalk1"
 
 /mob/living/silicon/ai/Initialize(mapload, datum/ai_laws/L, mob/target_ai)
 	. = ..()
@@ -180,7 +181,8 @@
 		add_verb(src, list(/mob/living/silicon/ai/proc/ai_network_change, \
 		/mob/living/silicon/ai/proc/ai_statuschange, /mob/living/silicon/ai/proc/ai_hologram_change, \
 		/mob/living/silicon/ai/proc/botcall, /mob/living/silicon/ai/proc/control_integrated_radio, \
-		/mob/living/silicon/ai/proc/set_automatic_say_channel, /mob/living/silicon/ai/proc/change_hologram_color)) // BLUEMOON EDIT
+		/mob/living/silicon/ai/proc/set_automatic_say_channel, /mob/living/silicon/ai/proc/change_hologram_color, \
+		/mob/living/silicon/ai/proc/change_voice_type )) // BLUEMOON EDIT
 
 	GLOB.ai_list += src
 	GLOB.shuttle_caller_list += src
@@ -649,6 +651,47 @@
 	hologram_color = new_color
 	holo_icon = getHologramIcon(icon('icons/mob/ai.dmi',"female"), FALSE, hologram_color)
 	to_chat(src, "Цвет голограммы изменён на [new_color].")
+
+// MARK: Voice Change
+/mob/living/silicon/ai/proc/change_voice_type()
+	set name = "Изменить голос"
+	set desc = "Выбрать новый тип звуковых сигналов (барков) для речи."
+	set category = "AI Commands"
+
+	if(incapacitated())
+		return
+
+	var/list/available_barks = list()
+
+	for(var/bark_type in typesof(/datum/bark))
+		var/datum/bark/B = bark_type
+		var/b_id = initial(B.id)
+		var/b_name = initial(B.name)
+		var/b_ignore = initial(B.ignore)
+
+		if(!b_id || b_ignore)
+			continue
+
+		available_barks[b_name] = b_id
+
+	if(available_barks.len)
+		available_barks = sort_list(available_barks)
+
+	// Исправленный синтаксис input, чтобы не конфликтовать с типами данных
+	var/selection = input(src, "Выберите новый речевой модуль:", "Голосовая матрица") as null|anything in available_barks
+
+	if(!selection || incapacitated())
+		return
+
+	selected_bark_id = available_barks[selection]
+	vocal_bark_id = selected_bark_id
+
+	// Принудительно обновляем датум голоса
+	if(!set_bark(vocal_bark_id))
+		to_chat(src, span_warning("Ошибка: не удалось загрузить голосовой модуль '[selection]'."))
+		return
+
+	to_chat(src, span_notice("Голосовой модуль изменен на: <b>[selection]</b>."))
 
 // BLUEMOON ADD - END
 

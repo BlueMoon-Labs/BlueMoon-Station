@@ -30,6 +30,9 @@
 	/// Station alert datum for showing alerts UI
 	var/datum/station_alert/alert_control
 
+	// Overlay for borg hat
+	var/mutable_appearance/hat_overlay
+
 //Hud stuff
 
 	var/atom/movable/screen/inv1 = null
@@ -106,7 +109,7 @@
 
 	var/hasExpanded = FALSE
 	var/obj/item/hat
-	var/hat_offset = -3
+	var/alist/hat_offset = NORMAL_HAT_OFFSET
 
 	can_buckle = TRUE
 	buckle_lying = FALSE
@@ -114,11 +117,7 @@
 	var/static/list/can_ride_typecache = typecacheof(/mob/living/carbon/human)
 
 	// cit specific vars //
-	var/sitting = 0
-	var/bellyup = 0
-	var/deep_rest = 0		//DarkSer request by Gardelin0
-	var/wag_rest = 0		//DarkSer request by Gardelin0
-	var/wag_sit = 0			//DarkSer request by Gardelin0
+	var/resting_state = "rest"
 	var/dogborg = FALSE
 
 	var/cansprint = 1

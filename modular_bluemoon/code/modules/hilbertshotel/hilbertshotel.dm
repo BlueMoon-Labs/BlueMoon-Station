@@ -26,6 +26,7 @@
 
 /obj/item/hilbertshotel/ghostdojo/ghostcafe
 	rooms_can_be_locked = TRUE
+	is_ghost_cafe = TRUE
 
 /obj/item/hilbertshotel/Initialize(mapload)
 	. = ..()

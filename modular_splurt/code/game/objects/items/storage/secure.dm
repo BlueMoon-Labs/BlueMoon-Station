@@ -85,3 +85,13 @@
 	new /obj/item/clothing/accessory/permit(src)
 	new /obj/item/clothing/accessory/permit(src)
 	new /obj/item/clothing/accessory/permit(src)
+
+/obj/item/storage/secure/briefcase/hop_permits
+	name = "\improper \'Misc\' permits case"
+	desc = "A storage case for some permits."
+
+/obj/item/storage/secure/briefcase/hop_permits/PopulateContents()
+	new /obj/item/storage/box/service_permits(src)
+	new /obj/item/storage/box/service_permits(src)
+	new /obj/item/storage/box/deviants(src)
+	new /obj/item/storage/box/deviants(src)

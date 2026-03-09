@@ -12,6 +12,23 @@
 	exp_requirements = 240
 	exp_type = EXP_TYPE_CREW
 
+	alt_titles = list(
+		"Syndicate Psychiatrist", //Синди выше, для удобства
+		"Counsellor",
+		"Hypnosis Expert",
+		"Hypnotherapist",
+		"Hypnotist",
+		"Psychiatrist",
+		"Psycho-Slut",
+		"Psychotherapist",
+		"Rental Daddy",
+		"Rental Mommy",
+		"Sex Therapist",
+		"Sexual Advisor",
+		"The Rapist",
+		"Therapist",
+		"Trust Service Specialist"
+		)
 
 	outfit = /datum/outfit/job/doctor/psychologist
 

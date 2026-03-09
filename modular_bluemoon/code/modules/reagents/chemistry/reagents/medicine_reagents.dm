@@ -40,3 +40,37 @@
 	. = 1
 	M.reagents.remove_reagent(/datum/reagent/consumable/semen, 10)
 	..()
+
+/datum/reagent/medicine/ferrocortex
+	name = "Ferrocortex"
+	description = "Специализированный электрохимический состав с высокой проводимостью. Заполняет повреждённые узлы, \
+	изменясь под пластику движений пользователя и затвердевая со временем. Может заменять функцию проводника в теле КПБ."
+	reagent_state = LIQUID
+	color = "#6a6881"
+	metabolization_rate = 1 * REAGENTS_METABOLISM
+	chemical_flags = REAGENT_ALL_PROCESS
+	value = REAGENT_VALUE_EXCEPTIONAL
+	overdose_threshold = 20
+
+/datum/reagent/medicine/ferrocortex/on_mob_life(mob/living/carbon/M)
+	if(!isrobotic(M))
+		M.adjustToxLoss(4 * REM, 0)
+		return ..()
+
+	var/tox_heal = 3  // Отхил коррозии
+	var/brute_burn_heal = 1 // Остальной урон
+	if(M.health < 0)
+		tox_heal = (M.getToxLoss() > 60) ? 20 : 10 // Тернарка. Выше 60 коррозии - хил выше
+		brute_burn_heal = 2
+	M.adjustToxLoss(-tox_heal * REM, 0, toxins_type = TOX_SYSCORRUPT)
+	M.adjustBruteLoss(-brute_burn_heal * REM, only_robotic = TRUE, only_organic = FALSE)
+	M.adjustFireLoss(-brute_burn_heal * REM, only_robotic = TRUE, only_organic = FALSE)
+	return ..()
+
+/datum/reagent/medicine/ferrocortex/overdose_process(mob/living/M)
+	if(isrobotic(M))
+		M.Jitter(5)
+		if(prob(5))
+			do_sparks(rand(1, 2), TRUE, M)
+	M.adjustToxLoss(6 * REM, toxins_type = TOX_OMNI)
+	return ..()

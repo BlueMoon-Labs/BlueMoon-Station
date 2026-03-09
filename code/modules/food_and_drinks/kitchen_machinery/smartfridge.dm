@@ -410,7 +410,7 @@
 /obj/machinery/smartfridge/organ
 	name = "smart organ storage"
 	desc = "Охлаждаемое хранилище для содержания органов."
-	max_n_of_items = 20	//vastly lower to prevent processing too long
+	max_n_of_items = 30	//vastly lower to prevent processing too long
 	base_build_path = /obj/machinery/smartfridge/organ
 	var/repair_rate = 0
 
@@ -439,7 +439,7 @@
 
 /obj/machinery/smartfridge/organ/RefreshParts()
 	for(var/obj/item/stock_parts/matter_bin/B in component_parts)
-		max_n_of_items = 20 * B.rating
+		max_n_of_items = initial(max_n_of_items) * B.rating
 		repair_rate = max(0, STANDARD_ORGAN_HEALING * (B.rating - 1) * 0.5)
 
 /obj/machinery/smartfridge/organ/process(delta_time)

@@ -29,3 +29,7 @@
 /datum/gear/shoes/legwrap
 	name = "Leg Wrap"
 	path = /obj/item/clothing/shoes/legwrap
+
+/datum/gear/shoes/sandal/marisa
+	name = "Witch wooden sandals"
+	path = /obj/item/clothing/shoes/sandal/marisa

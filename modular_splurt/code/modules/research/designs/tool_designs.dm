@@ -17,4 +17,4 @@
 	materials = list(/datum/material/iron = 20000, /datum/material/glass = 10000, /datum/material/plastic = 2000, /datum/material/gold = 2000)
 	build_path = /obj/item/construction/rld
 	category = list("Tool Designs")
-	departmental_flags =  DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_SCIENCE
+	departmental_flags =  DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SERVICE

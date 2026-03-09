@@ -12,6 +12,10 @@
 /mob/living/carbon/human/slip(knockdown_amount, obj/O, lube)
 	if(HAS_TRAIT(src, TRAIT_NOSLIPALL))
 		return FALSE
+	if(shoes && istype(shoes, /obj/item/clothing))
+		var/obj/item/clothing/CS = shoes
+		if (CS.clothing_flags & NOSLIP_ALL)
+			return FALSE
 	if (!(lube & GALOSHES_DONT_HELP))
 		if(HAS_TRAIT(src, TRAIT_NOSLIPWATER))
 			return FALSE

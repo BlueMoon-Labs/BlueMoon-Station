@@ -63,3 +63,11 @@ $include bluemoon/hilberts_hotel.txt
 ## Tgui payloads larger than the 2kb limit for BYOND topic requests are split into roughly 1kb chunks and sent in sequence.
 ## This config option limits the maximum chunk count for which the server will accept a payload, default is 64
 TGUI_MAX_CHUNK_COUNT 64
+
+## yt-dlp Play Internet Sound
+# Set this per-environment, examples:
+# INVOKE_YOUTUBEDL /usr/bin/yt-dlp
+# INVOKE_YOUTUBEDL C:\Python\Scripts\yt-dlp.exe
+# On Linux the server's PreCompile.sh installs yt-dlp automatically via pip3.
+# Default uses the bundled Windows binary for local development:
+INVOKE_YOUTUBEDL tools\bin\yt-dlp.exe

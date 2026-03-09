@@ -154,11 +154,16 @@
 	var/list/hearers = get_hearers_in_view(vision_distance, src) //caches the hearers and then removes ignored mobs.
 	if(!length(hearers))
 		return
+
+	var/raw_msg = message
+	if(visible_message_flags & EMOTE_MESSAGE)
+		message = "<span class='emote'><b>[src]</b>[separation][message]</span>" // SKYRAT EDIT - Better emotes
+
 	hearers -= ignored_mobs
 
 	if(target_message && target && istype(target) && (target.client || target.audiovisual_redirect))
 		hearers -= target
-		if(omni)
+		if(omni || !blind_message)
 			target.show_message(target_message)
 		else
 			//This entire if/else chain could be in two lines but isn't for readibilties sake.
@@ -169,13 +174,9 @@
 			else if(target.lighting_alpha > LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE && T.is_softly_lit() && !in_range(T,target))
 				msg = blind_message
 			if(msg)
-				target.show_message(msg, MSG_VISUAL,blind_message, MSG_AUDIBLE)
+				target.show_message(msg, MSG_VISUAL, in_range(T, target) ? msg : blind_message, MSG_AUDIBLE)
 	if(self_message)
 		hearers -= src
-
-	var/raw_msg = message
-	if(visible_message_flags & EMOTE_MESSAGE)
-		message = "<span class='emote'><b>[src]</b>[separation][message]</span>" // SKYRAT EDIT - Better emotes
 
 	for(var/mob/M in hearers)
 		if(!M.client && !M.audiovisual_redirect)
@@ -205,14 +206,12 @@
 /mob/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags)
 	. = ..()
 	if(self_message && target != src)
-		if(!omni)
-			show_message(self_message, MSG_VISUAL, blind_message, MSG_AUDIBLE)
-			if(runechat_popup && client?.prefs.chat_on_map && client.prefs.see_chat_emotes) //SKYRAT CHANGE
-				create_chat_message(src, null, rune_msg ? rune_msg : self_message, list("emote", "italics"), null) //Skyrat change
-		else
+		if(omni || !blind_message)
 			show_message(self_message)
-			if(runechat_popup && client?.prefs.chat_on_map && client.prefs.see_chat_emotes) //SKYRAT CHANGE
-				create_chat_message(src, null, rune_msg ? rune_msg : self_message, list("emote", "italics"), null) //Skyrat change
+		else
+			show_message(self_message, MSG_VISUAL, blind_message, MSG_AUDIBLE)
+		if(runechat_popup && client?.prefs.chat_on_map && client.prefs.see_chat_emotes) //SKYRAT CHANGE
+			create_chat_message(src, null, rune_msg ? rune_msg : self_message, list("emote", "italics"), null) //Skyrat change
 
 /**
   * Show a message to all mobs in earshot of this atom

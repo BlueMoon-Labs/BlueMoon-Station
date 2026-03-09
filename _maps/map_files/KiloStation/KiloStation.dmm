@@ -75982,7 +75982,7 @@
 	pixel_y = 26
 	},
 /obj/item/clothing/shoes/jackboots,
-/obj/item/clothing/glasses/eyepatch{
+/obj/item/clothing/glasses/cover/eyepatch{
 	pixel_y = 5
 	},
 /obj/effect/decal/cleanable/dirt,

@@ -55,7 +55,7 @@
 	name = "\improper X-01 MultiPhase Energy Gun"
 	desc = "This is an expensive, modern recreation of an antique laser gun. This gun has several unique firemodes, but lacks the ability to recharge over time in exchange for inbuilt advanced firearm EMP shielding. <span class='boldnotice'>Right click in combat mode to fire a taser shot with a cooldown.</span>"
 	icon_state = "hoslaser"
-	cell_type = /obj/item/stock_parts/cell{charge = 3000; maxcharge = 3000}
+	cell_type = /obj/item/stock_parts/cell{charge = 1500; maxcharge = 1500}
 	force = 10
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler, /obj/item/ammo_casing/energy/laser/hos, /obj/item/ammo_casing/energy/ion/hos, /obj/item/ammo_casing/energy/electrode/hos)
 	ammo_x_offset = 4

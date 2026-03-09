@@ -7,18 +7,21 @@
 	anchored = TRUE
 	opacity = FALSE//from TRUE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
-	var/walltimer // tracks this wall's specific timer
+	var/expire_time // world.time when this shield should dissipate
+	var/dissipate_timer_id
 
 #define FOG_DISSIPATE_TIME_MAX 60 MINUTES
 GLOBAL_LIST_EMPTY(trespass_warns) // to avoid spamming the bandit's chat
 
 /obj/structure/shield/Initialize()
 	. = ..()
-	walltimer = addtimer(CALLBACK(src, PROC_REF(dissipate_fog)), FOG_DISSIPATE_TIME_MAX, TIMER_STOPPABLE)
+	expire_time = world.time + FOG_DISSIPATE_TIME_MAX
+	dissipate_timer_id = addtimer(CALLBACK(src, PROC_REF(dissipate_fog)), FOG_DISSIPATE_TIME_MAX, TIMER_STOPPABLE)
 
 /obj/structure/shield/Destroy()
-	deltimer(walltimer)
-	walltimer = null
+	if(dissipate_timer_id)
+		deltimer(dissipate_timer_id)
+		dissipate_timer_id = null
 	return ..()
 
 /obj/structure/shield/proc/dissipate_fog()
@@ -29,7 +32,8 @@ GLOBAL_LIST_EMPTY(trespass_warns) // to avoid spamming the bandit's chat
 
 /obj/structure/shield/proc/describe_time()
 	var/timedesc = "...хм, ну даже не знаю"
-	switch(timeleft(walltimer))
+	var/remaining = expire_time - world.time
+	switch(remaining)
 		if(1 to 5 MINUTES)
 			timedesc = "пропадающим"
 		if(5 MINUTES to 15 MINUTES)

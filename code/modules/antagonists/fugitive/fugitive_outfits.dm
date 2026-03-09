@@ -152,7 +152,7 @@
 	back = /obj/item/storage/backpack
 	suit = /obj/item/clothing/suit/armor/riot
 	shoes = /obj/item/clothing/shoes/jackboots
-	glasses = /obj/item/clothing/glasses/eyepatch
+	glasses = /obj/item/clothing/glasses/cover/eyepatch
 	r_pocket = /obj/item/restraints/handcuffs/cable
 	implants = list(/obj/item/implant/mindshield)
 	ears = /obj/item/radio/headset

@@ -197,7 +197,7 @@
 		return PROCESS_KILL
 	// Добавляем минорное облучение, если батарея радиоактивна. Большей частью ради свечения.
 	if(cell.cell_is_radioactive)
-		AddComponent(/datum/component/radioactive, 0, src)
+		AddComponent(/datum/component/radioactive, 0, src, 0)
 	var/malfunctioning_charge_drain = 0
 	if(malfunctioning)
 		malfunctioning_charge_drain = rand(1,20)

@@ -112,12 +112,12 @@
 	to_chat(user, span_warning("You fire a blood bolt!"))
 	user.changeNext_move(CLICK_CD_RANGE)
 	user.newtonian_move(get_dir(target_atom, user))
-	var/obj/projectile/magic/arcane_barrage/bloodsucker/magic_9ball = new(user.loc)
+	var/obj/item/projectile/magic/arcane_barrage/bloodsucker/magic_9ball = new(user.loc)
 	magic_9ball.bloodsucker_power = src
 	magic_9ball.firer = user
 	magic_9ball.def_zone = ran_zone(user.zone_selected)
 	magic_9ball.preparePixelProjectile(target_atom, user)
-	INVOKE_ASYNC(magic_9ball, TYPE_PROC_REF(/obj/projectile, fire))
+	INVOKE_ASYNC(magic_9ball, TYPE_PROC_REF(/obj/item/projectile, fire))
 	playsound(user, 'sound/magic/wand_teleport.ogg', 60, TRUE)
 	power_activated_sucessfully()
 
@@ -126,13 +126,13 @@
  *
  *	This is the projectile this Power will fire.
  */
-/obj/projectile/magic/arcane_barrage/bloodsucker
+/obj/item/projectile/magic/arcane_barrage/bloodsucker
 	name = "blood bolt"
 	icon_state = "mini_leaper"
 	damage = 20
 	var/datum/action/cooldown/bloodsucker/targeted/tremere/thaumaturgy/bloodsucker_power
 
-/obj/projectile/magic/arcane_barrage/bloodsucker/on_hit(atom/target, blocked = 0, pierce_hit)
+/obj/item/projectile/magic/arcane_barrage/bloodsucker/on_hit(atom/target, blocked = 0, pierce_hit)
 	if(istype(target, /obj/structure/closet) && bloodsucker_power.level_current >= 3)
 		var/obj/structure/closet/hit_closet = target
 		if(hit_closet)

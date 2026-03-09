@@ -24,5 +24,5 @@
 	build_path = /obj/item/reagent_containers/spray/ultimate
 	reagents_list = list(/datum/reagent/liquid_dark_matter = 10)
 	category = list("Misc", "Medical Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_SERVICE
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SERVICE
 

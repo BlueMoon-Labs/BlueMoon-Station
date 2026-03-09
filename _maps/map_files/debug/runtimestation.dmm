@@ -1925,6 +1925,12 @@
 /obj/machinery/computer/nanite_cloud_controller,
 /turf/open/floor/plasteel/dark,
 /area/science/circuit)
+"hV" = (
+/obj/item/hilbertshotel/researchfacility{
+	name = "space ruin Hilbert's Hotel"
+	},
+/turf/open/floor/plasteel,
+/area/hallway/secondary/exit/departure_lounge)
 "ia" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -2795,6 +2801,7 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
+/obj/item/hilbertshotel/ghostdojo,
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "BG" = (
@@ -3546,6 +3553,9 @@
 /area/service/bar)
 "Un" = (
 /obj/machinery/camera/autoname,
+/obj/item/hilbertshotel/ghostdojo{
+	name = "station Infinite Dormitories"
+	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
 "Ur" = (
@@ -3643,6 +3653,9 @@
 "Wu" = (
 /obj/machinery/airalarm/unlocked{
 	pixel_y = 23
+	},
+/obj/item/hilbertshotel/ghostdojo/ghostcafe{
+	name = "ghost cafe Infinite Dormitories"
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
@@ -9716,7 +9729,7 @@ fo
 eu
 eu
 et
-fO
+hV
 fO
 fO
 fO

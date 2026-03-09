@@ -137,6 +137,10 @@ GLOBAL_LIST_INIT(admin_verbs_fun, list(
 	/client/proc/roll_dices,					//CIT CHANGE - Adds dice verb
 	/client/proc/override_sm_delam, //SPLURT change - Adds SM toggle
 	/client/proc/thunderome,		//BLUEMOON ADD thunderome for ghosts
+	/client/proc/bm_admin_change_lobby_image,	//BLUEMOON LOBBY
+	/client/proc/bm_admin_set_lobby_notice,		//BLUEMOON LOBBY
+	/client/proc/bm_admin_set_lobby_video,		//BLUEMOON LOBBY
+	/client/proc/bm_admin_reload_lobby_html,	//BLUEMOON LOBBY
 	))
 GLOBAL_PROTECT(admin_verbs_fun)
 GLOBAL_LIST_INIT(admin_verbs_spawn, list(/datum/admins/proc/spawn_atom, /datum/admins/proc/podspawn_atom, /datum/admins/proc/spawn_cargo, /datum/admins/proc/spawn_objasmob, /client/proc/respawn_character))

@@ -27,7 +27,7 @@
 /obj/item/reagent_containers/spray/ultimate
 	name = "ultimate spray bottle"
 	desc = "A bottle to spray above them all."
-	volume = 750
+	volume = 900
 	amount_per_transfer_from_this = 2
 	current_range = 5
 	spray_range = 5

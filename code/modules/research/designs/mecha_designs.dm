@@ -528,7 +528,7 @@
 	id = "medical_mech_beacon"
 	build_path = /obj/item/choice_beacon/vehicle/pact/mech/medical
 	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENT_BITFLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/combat_mech_beacon/cargo
@@ -537,7 +537,7 @@
 	id = "cargo_mech_beacon"
 	build_path = /obj/item/choice_beacon/vehicle/pact/mech/cargo
 	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
-	departmental_flags = DEPARTMENTAL_FLAG_CARGO | DEPARTMENT_BITFLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO
 	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/combat_mech_beacon/engineer
@@ -546,5 +546,5 @@
 	id = "engineer_mech_beacon"
 	build_path = /obj/item/choice_beacon/vehicle/pact/mech/engineer
 	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
-	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 	min_security_level = SEC_LEVEL_BLUE

@@ -135,16 +135,14 @@
 	build_path = /obj/item/ammo_box/magazine/m10mm_large
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER
 
-/datum/design/m10mm_large_soporific
+/datum/design/m10mm_large/soporific
 	name = "enlarged pistol magazine (10mm soporific)"
 	desc = "An extra ammo gun magazine. Loaded with rounds which inject the target with a variety of substances to induce sleep."
 	id = "10mm_large_soporific"
-	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 10000, /datum/material/glass=3000)
 	build_path = /obj/item/ammo_box/magazine/m10mm_large/soporific
-	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
 ///
 

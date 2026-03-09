@@ -784,10 +784,9 @@
 /datum/centcom_podlauncher/proc/clearBay() //Clear all objs and mobs from the selected bay
 	for (var/obj/O in bay.GetAllContents())
 		qdel(O)
-	for (var/mob/M in bay.GetAllContents())
+	for (var/mob/living/M in bay.GetAllContents())
 		qdel(M)
-	for (var/bayturf in bay)
-		var/turf/turf_to_clear = bayturf
+	for (var/turf/open/space/turf_to_clear in bay)
 		turf_to_clear.ChangeTurf(/turf/open/floor/plasteel)
 
 /datum/centcom_podlauncher/Destroy() //The Destroy() proc. This is called by ui_close proc, or whenever the user leaves the game

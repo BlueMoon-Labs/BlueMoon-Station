@@ -34,12 +34,10 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_items = 6
-	STR.can_hold |= typecacheof(list( // Extra items that can go in tailbags, more than wallets
+	STR.can_hold |= typecacheof(list( // Extra items that can go in tailbags, on top of common wallet list
 	/obj/item/restraints/handcuffs,
 	/obj/item/assembly/flash,
 	/obj/item/laser_pointer,
-	/obj/item/pda,
-	/obj/item/paicard,
 	/obj/item/storage/fancy/cigarettes,
 	/obj/item/clothing/accessory/necklace,
 	/obj/item/clothing/accessory/medal,

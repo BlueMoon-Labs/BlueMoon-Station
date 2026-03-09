@@ -213,3 +213,32 @@
 	name = "SolFed Dress"
 	path = /obj/item/clothing/under/sol_dress
 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_DRESSES
+
+
+/datum/gear/uniform/sergal_stylish_uniform
+	name = "Sergal stylish uniform"
+	path = /obj/item/clothing/under/bm/sergal_stylish_uniform
+
+/datum/gear/uniform/sergal_stylish_dress
+	name = "Sergal stylish dress"
+	path = /obj/item/clothing/under/bm/sergal_stylish_dress
+
+/datum/gear/uniform/sergal_brown_bib
+	name = "Sergal brown bib"
+	path = /obj/item/clothing/under/bm/sergal_brown_bib
+
+/datum/gear/uniform/sergal_blue_clothing
+	name = "Sergal blue clothing"
+	path = /obj/item/clothing/under/bm/sergal_blue_clothing
+
+/datum/gear/uniform/sergal_green_uniform
+	name = "Sergal green uniform"
+	path = /obj/item/clothing/under/bm/sergal_green_uniform
+
+/datum/gear/uniform/sergal_body_chain
+	name = "Sergal body chain"
+	path = /obj/item/clothing/under/bm/sergal_body_chain
+
+/datum/gear/uniform/sergal_gray_uniform
+	name = "Shigu clan kimono"
+	path = /obj/item/clothing/under/bm/sergal_gray_uniform

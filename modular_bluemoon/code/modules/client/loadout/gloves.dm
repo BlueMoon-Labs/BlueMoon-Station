@@ -7,3 +7,11 @@
 /datum/gear/gloves/transparent
 	name = "Transparent bracers"
 	path = /obj/item/clothing/gloves/transparent
+
+/datum/gear/gloves/sergal_red
+	name = "Sergal red gloves"
+	path = /obj/item/clothing/gloves/bm/sergal_red
+
+/datum/gear/gloves/sergal_knight_gloves
+	name = "Sergal knight's gloves"
+	path = /obj/item/clothing/gloves/bm/sergal_knight_gloves
