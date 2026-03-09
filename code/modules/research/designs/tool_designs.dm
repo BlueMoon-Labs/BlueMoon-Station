@@ -354,7 +354,7 @@
 	desc = "Устройство позволяющее телепортировать уже собранную машину, по сигнатуре платы, что в нее установили. Не подходит для машин, требущих сложных в производстве деталей."
 	id = "m_warp_beacon"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 20000, /datum/material/glass = 10000)
+	materials = list(/datum/material/iron = MINERAL_MATERIAL_AMOUNT*6, /datum/material/glass = MINERAL_MATERIAL_AMOUNT*5)
 	build_path = /obj/item/warp_machine_beacon
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
