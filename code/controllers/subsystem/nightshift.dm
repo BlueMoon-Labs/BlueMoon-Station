@@ -50,7 +50,7 @@ SUBSYSTEM_DEF(nightshift)
 				SEND_SOUND(M, sound(announcement_sound))
 
 /datum/controller/subsystem/nightshift/proc/check_nightshift()
-	var/emergency = GLOB.security_level >= SEC_LEVEL_RED
+	var/emergency = GLOB.security_level > SEC_LEVEL_GREEN
 	var/announcing = TRUE
 	var/time = SOLAR_TIME(FALSE, world.time)
 	var/night_time = (time < nightshift_end_time) || (time > nightshift_start_time)
