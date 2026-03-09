@@ -1,5 +1,5 @@
 /obj/item/warp_machine_beacon
-	name = "Machine warp beacon"
+	name = "Machine Warp Beacon"
 	desc = "Устройство позволяющее телепортировать уже собранную машину, по сигнатуре платы, что в нее установили. Не подходит для машин, требующих сложных в производстве деталей."
 	icon = 'icons/obj/warp_beacon.dmi'
 	icon_state = "warp_beacon"
