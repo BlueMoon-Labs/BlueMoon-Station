@@ -69,7 +69,9 @@
 /atom/movable/lighting_object/Destroy(force)
 	if (!force)
 		return QDEL_HINT_LETMELIVE
+	needs_update = FALSE
 	GLOB.lighting_update_objects -= src
+	GLOB.lighting_update_blends -= src
 	if (isturf(affected_turf))
 		affected_turf.lighting_object = null
 		affected_turf.luminosity = 1
