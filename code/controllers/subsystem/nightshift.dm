@@ -1,6 +1,6 @@
 SUBSYSTEM_DEF(nightshift)
 	name = "Night Shift"
-	wait = 600
+	wait = 1 MINUTES
 	flags = SS_NO_TICK_CHECK
 
 	var/nightshift_active = FALSE
@@ -113,17 +113,17 @@ SUBSYSTEM_DEF(nightshift)
 	// Anchor points: list(time_ds, "#RRGGBB", power)
 	// Smooth cycle: Night -> Dawn -> Day -> Dusk -> Night
 	var/static/list/anchors = list(\
-		list(0,      COLOR_STARLIGHT,        STARLIGHT_POWER_NIGHT), \
-		list(198000, COLOR_STARLIGHT,        STARLIGHT_POWER_NIGHT), \
-		list(252000, STARLIGHT_COLOR_DAWN,   STARLIGHT_POWER_DAWN),  \
-		list(324000, STARLIGHT_COLOR_DAY,    0.70),                  \
-		list(432000, STARLIGHT_COLOR_DAY,    STARLIGHT_POWER_DAY),   \
-		list(540000, STARLIGHT_COLOR_DAY,    0.70),                  \
-		list(648000, STARLIGHT_COLOR_DAWN,   STARLIGHT_POWER_DAWN),  \
-		list(702000, STARLIGHT_COLOR_DUSK,   0.55),                  \
-		list(756000, STARLIGHT_COLOR_EVENING, 0.52),                 \
-		list(792000, COLOR_STARLIGHT,        STARLIGHT_POWER_NIGHT), \
-		list(864000, COLOR_STARLIGHT,        STARLIGHT_POWER_NIGHT), \
+		list(0,                      COLOR_STARLIGHT,         STARLIGHT_POWER_NIGHT), \
+		list(5 HOURS + 30 MINUTES,   COLOR_STARLIGHT,         STARLIGHT_POWER_NIGHT), \
+		list(7 HOURS,                STARLIGHT_COLOR_DAWN,    STARLIGHT_POWER_DAWN),  \
+		list(9 HOURS,                STARLIGHT_COLOR_DAY,     0.70),                  \
+		list(12 HOURS,               STARLIGHT_COLOR_DAY,     STARLIGHT_POWER_DAY),   \
+		list(15 HOURS,               STARLIGHT_COLOR_DAY,     0.70),                  \
+		list(18 HOURS,               STARLIGHT_COLOR_DAWN,    STARLIGHT_POWER_DAWN),  \
+		list(19 HOURS + 30 MINUTES,  STARLIGHT_COLOR_DUSK,    0.55),                  \
+		list(21 HOURS,               STARLIGHT_COLOR_EVENING, 0.52),                  \
+		list(22 HOURS,               COLOR_STARLIGHT,         STARLIGHT_POWER_NIGHT), \
+		list(24 HOURS,               COLOR_STARLIGHT,         STARLIGHT_POWER_NIGHT), \
 	)
 
 	// Find bracketing anchors
