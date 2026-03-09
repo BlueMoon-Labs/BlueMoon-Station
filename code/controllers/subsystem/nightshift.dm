@@ -116,12 +116,12 @@ SUBSYSTEM_DEF(nightshift)
 		list(0,                      COLOR_STARLIGHT,         STARLIGHT_POWER_NIGHT), \
 		list(5 HOURS + 30 MINUTES,   COLOR_STARLIGHT,         STARLIGHT_POWER_NIGHT), \
 		list(7 HOURS,                STARLIGHT_COLOR_DAWN,    STARLIGHT_POWER_DAWN),  \
-		list(9 HOURS,                STARLIGHT_COLOR_DAY,     0.70),                  \
-		list(12 HOURS,               STARLIGHT_COLOR_DAY,     STARLIGHT_POWER_DAY),   \
-		list(15 HOURS,               STARLIGHT_COLOR_DAY,     0.70),                  \
-		list(18 HOURS,               STARLIGHT_COLOR_DAWN,    STARLIGHT_POWER_DAWN),  \
-		list(19 HOURS + 30 MINUTES,  STARLIGHT_COLOR_DUSK,    0.55),                  \
-		list(21 HOURS,               STARLIGHT_COLOR_EVENING, 0.52),                  \
+		list(9 HOURS,                STARLIGHT_COLOR_DAY,     STARLIGHT_POWER_DAY_LOW), \
+		list(12 HOURS,               STARLIGHT_COLOR_DAY,     STARLIGHT_POWER_DAY),     \
+		list(15 HOURS,               STARLIGHT_COLOR_DAY,     STARLIGHT_POWER_DAY_LOW), \
+		list(18 HOURS,               STARLIGHT_COLOR_DAWN,    STARLIGHT_POWER_DAWN),    \
+		list(19 HOURS + 30 MINUTES,  STARLIGHT_COLOR_DUSK,    STARLIGHT_POWER_DUSK),    \
+		list(21 HOURS,               STARLIGHT_COLOR_EVENING, STARLIGHT_POWER_EVENING), \
 		list(22 HOURS,               COLOR_STARLIGHT,         STARLIGHT_POWER_NIGHT), \
 		list(24 HOURS,               COLOR_STARLIGHT,         STARLIGHT_POWER_NIGHT), \
 	)
