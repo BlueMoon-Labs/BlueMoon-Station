@@ -121,7 +121,8 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /turf/Destroy(force)
 	. = QDEL_HINT_IWILLGC
-	if(!changing_turf)
+	var/is_changeturf = changing_turf
+	if(!is_changeturf)
 		stack_trace("Incorrect turf deletion")
 	changing_turf = FALSE
 	var/turf/T = SSmapping.get_turf_above(src)
@@ -137,13 +138,18 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		for(var/A in B.contents)
 			qdel(A)
 		return
-	visibilityChanged()
+	// Skip during ChangeTurf for non-opaque turfs — the new turf's Initialize() handles it.
+	// Opaque turfs (walls) must still notify cameranet: updateVisibility() early-returns
+	// for non-opaque atoms, so the new turf's Initialize won't trigger the camera update.
+	if(!is_changeturf || opacity)
+		visibilityChanged()
 	QDEL_LIST(blueprint_data)
 	flags_1 &= ~INITIALIZED_1
 	requires_activation = FALSE
 	..()
 
-	vis_contents.Cut()
+	if(!is_changeturf)
+		vis_contents.Cut()
 
 /turf/on_attack_hand(mob/user)
 	user.Move_Pulled(src)
