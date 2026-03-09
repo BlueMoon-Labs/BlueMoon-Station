@@ -1,5 +1,5 @@
 /mob/living/carbon/monkey/punpun //except for a few special persistence features, pun pun is just a normal monkey
-	name = "Pun Pun" //C A N O N
+	name = "Pun Pun"
 	unique_name = 0
 	var/ancestor_name
 	var/ancestor_chain = 1
@@ -16,10 +16,11 @@
 		if(ancestor_chain > 1)
 			name += " \Roman[ancestor_chain]"
 	else
-		if(prob(5))
-			name = pick(rare_pet_monkey_names)
+		// 90% Pun Pun, 10% имя из списка редких
+		if(prob(90))
+			name = "Pun Pun"
 		else
-			name = pick(pet_monkey_names)
+			name = pick(rare_pet_monkey_names)
 		gender = pick(MALE, FEMALE)
 	. = ..()
 

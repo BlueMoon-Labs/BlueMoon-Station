@@ -214,10 +214,24 @@
 	internal_type = /obj/item/tank/internals/emergency_oxygen/double
 	medipen_type = /obj/item/reagent_containers/hypospray/medipen/atropine
 
+/obj/item/storage/box/survival/centcom/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 9
+
 /obj/item/storage/box/survival/centcom/PopulateContents()
 	..() // we want the regular stuff too
 	new /obj/item/crowbar/power(src)
-	new /obj/item/melee/classic_baton/telescopic(src)
+	new /obj/item/melee/classic_baton/telescopic/centcom(src)
+	new /obj/item/radio/off(src)
+	new /obj/item/extinguisher/mini(src)
+	new /obj/item/flashlight/flare(src)
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+
+/obj/item/storage/box/survival/centcom_max/PopulateContents()
+	..() // we want the regular stuff too
+	new /obj/item/crowbar/power(src)
+	new /obj/item/melee/classic_baton/telescopic/centcom/plus(src)
 	new /obj/item/radio/off(src)
 	new /obj/item/extinguisher/mini(src)
 	new /obj/item/flashlight/flare(src)

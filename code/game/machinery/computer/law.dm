@@ -21,7 +21,12 @@
 			to_chat(user, "<span class='caution'>Upload failed!</span> Unable to establish a connection to [current.name]. You're too far away!")
 			current = null
 			return
+
 		M.install(current.laws, user)
+
+		current.post_lawchange(TRUE)
+
+		to_chat(user, span_notice("Laws successfully uploaded to [current.name]."))
 	else
 		return ..()
 

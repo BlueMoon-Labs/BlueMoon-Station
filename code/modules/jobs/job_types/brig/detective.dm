@@ -12,6 +12,24 @@
 	minimal_player_age = 7
 	exp_requirements = 3000
 	exp_type = EXP_TYPE_CREW
+	alt_titles = list(
+		"Syndicate Survey Specialist", //Синди выше, для удобства
+		"AC Recon Agent",
+		"Cinder Dick",
+		"Cooperate Auditor",
+		"Forensic Investigator",
+		"Forensics Scientist",
+		"Forensics Technician",
+		"Gumshoe",
+		"Private Eye",
+		"Private Investigator",
+		"Prosecutor",
+		"SAARE Inspector",
+		"Safeguard Investigator",
+		"Slutective",
+		"Stalker",
+		"Studective"
+		)
 
 	outfit = /datum/outfit/job/detective
 	departments = DEPARTMENT_BITFLAG_SECURITY

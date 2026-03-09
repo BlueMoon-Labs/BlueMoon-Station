@@ -20,5 +20,6 @@ $border-radius: base.$border-radius !default;
   color: $color;
   box-shadow: 0.1em 0.1em 1.25em -0.1em rgba(0, 0, 0, 0.5);
   border-radius: $border-radius;
-  max-width: base.em(250px);
+  width: max-content;
+  max-width: min(base.em(700px), calc(100vw - 1rem));
 }

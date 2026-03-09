@@ -12,7 +12,7 @@
 	name ="\improper HEDP rocket"
 	desc = "USE A WEEL GUN"
 	icon_state= "84mm-hedp"
-	damage = 80
+	damage = 124
 	var/anti_armour_damage = 200
 	armour_penetration = 100
 	dismemberment = 100

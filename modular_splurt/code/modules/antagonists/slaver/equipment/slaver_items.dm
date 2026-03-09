@@ -124,24 +124,6 @@
 	new /obj/item/gun/energy/e_gun(src)
 	new /obj/item/gun/energy/e_gun(src)
 
-/obj/item/storage/backpack/duffelbag/syndie/smg_rubber
-	name = "SMG kit (rubber)"
-
-/obj/item/storage/backpack/duffelbag/syndie/smg_rubber/PopulateContents()
-	new /obj/item/gun/ballistic/automatic/wt550/wtrubber(src)
-	new /obj/item/ammo_box/magazine/wt550m9/wtrubber(src)
-	new /obj/item/ammo_box/magazine/wt550m9/wtrubber(src)
-	new /obj/item/ammo_box/magazine/wt550m9/wtrubber(src)
-
-/obj/item/storage/backpack/duffelbag/syndie/smg
-	name = "SMG kit"
-
-/obj/item/storage/backpack/duffelbag/syndie/smg/PopulateContents()
-	new /obj/item/gun/ballistic/automatic/wt550(src)
-	new /obj/item/ammo_box/magazine/wt550m9(src)
-	new /obj/item/ammo_box/magazine/wt550m9(src)
-	new /obj/item/ammo_box/magazine/wt550m9(src)
-
 /obj/item/storage/backpack/duffelbag/syndie/ion
 	name = "Ion carbine kit"
 

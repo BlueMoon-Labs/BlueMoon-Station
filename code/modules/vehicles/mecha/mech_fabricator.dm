@@ -565,7 +565,7 @@
 	for(var/v in stored_research.researched_designs)
 		var/datum/design/D = SSresearch.techweb_design_by_id(v)
 		if(!(D.build_type & MECHFAB))
-		// Никакой залутки имплантов в обход техфаба (условно заглушка, пока интерфейс не сделают для этого)
+			continue // Никакой залутки имплантов в обход техфаба (условно заглушка, пока интерфейс не сделают для этого)
 		if(!design_sec_level_check(D))
 			continue
 		// This is for us.

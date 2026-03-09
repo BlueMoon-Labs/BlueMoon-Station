@@ -384,6 +384,7 @@
 	sharpness = SHARP_NONE
 	hitsound = 'modular_bluemoon/Ren/Sound/metal.ogg'
 	attack_verb = list("attacked", "slam", "jabbed", "torn", "gored")
+	unique_reskin = null
 
 /obj/item/spear/electrospear/ComponentInitialize()
 	. = ..()

@@ -8,6 +8,36 @@
 	spawn_positions = 2
 	supervisors = "the quartermaster"
 	selection_color = "#ca8f55"
+	alt_titles = list(
+		"Trainee Cargo Technician", //Стажер выше, для удобства
+		"Donk Co. Specialist", //Триглав выше, для удобства
+		"Syndicate Smuggler", //Синди выше, для удобства
+		"Cock Packager",
+		"Commodities Trader",
+		"Cryptocurrency Technician",
+		"Deck Worker",
+		"Deliveries Officer",
+		"Delivery Manager",
+		"Disposal Technician",
+		"Horny Mailer",
+		"Inventory Associate",
+		"Logistics Technician",
+		"Mail Carrier",
+		"Mailman",
+		"Mailroom Technician",
+		"Merchant",
+		"Package Handler",
+		"Pleasures Deliverer",
+		"Postman",
+		"Receiving Clerk",
+		"Scavenger",
+		"Scrap Recycler",
+		"Shipping Specialist",
+		"Smuggler",
+		"Supplier",
+		"Supply Specialist",
+		"Supply Technician"
+		)
 
 	outfit = /datum/outfit/job/cargo_tech
 	plasma_outfit = /datum/outfit/plasmaman/cargo

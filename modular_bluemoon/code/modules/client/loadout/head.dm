@@ -142,3 +142,27 @@
 /datum/gear/head/wizard/marisa/fake
 	name = "Witch hat"
 	path = /obj/item/clothing/head/wizard/marisa/fake
+
+/datum/gear/head/sergal_slalom_hat
+	name = "Sergal slalom hat"
+	path = /obj/item/clothing/head/bm/sergal_slalom_hat
+
+/datum/gear/head/sergal_stylish_helmet
+	name = "Sergal stylish helmet"
+	path = /obj/item/clothing/head/bm/sergal_stylish_helmet
+
+/datum/gear/head/sergal_red_helmet
+	name = "Sergal red helmet"
+	path = /obj/item/clothing/head/bm/sergal_red_helmet
+
+/datum/gear/head/sergal_leather_hat
+	name = "Sergal leather hat"
+	path = /obj/item/clothing/head/bm/sergal_leather_hat
+
+/datum/gear/head/sergal_brown_helmet
+	name = "Sergal brown helmet"
+	path = /obj/item/clothing/head/bm/sergal_brown_helmet
+
+/datum/gear/head/sergal_knight_helmet
+	name = "Sergal knight's helmet"
+	path = /obj/item/clothing/head/bm/sergal_knight_helmet

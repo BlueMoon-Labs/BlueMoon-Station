@@ -20,7 +20,7 @@
 	spawn_mass_effects(detonate_range, 80, TRUE)
 
 	playsound(get_turf(src), 'sound/effects/magic.ogg', 100, TRUE)
-	priority_announce("Обнаружен вспеск полиморф частиц.", "ВНИМАНИЕ: АНОМАЛИЯ")
+	priority_announce("Обнаружен всплеск полиморф-частиц.", "ВНИМАНИЕ: АНОМАЛИЯ")
 
 /obj/effect/anomaly/poly/anomalyNeutralize()
 	var/obj/item/slimecross/stabilized/fetish/green/I = new(get_turf(src))

@@ -16,7 +16,24 @@
 	exp_type = EXP_TYPE_CREW
 	exp_type_department = EXP_TYPE_SUPPLY
 	considered_combat_role = TRUE
-
+	alt_titles = list(
+		"Donk Co. Manager", //Триглав выше, для удобства
+		"Logistics Syndicate Supervisor", //Синди выше, для удобства
+		"Brigadier",
+		"Cargo Director",
+		"Cargonia Chief",
+		"Chief Supplier Officer",
+		"Deck Chief",
+		"Head of Cargo",
+		"Head of Supply",
+		"Logistics Coordinator",
+		"Logistics Supervisor",
+		"Manager of Shipping Sex",
+		"Resource Manager",
+		"Supply Chief",
+		"Supply Foreman",
+		"Supply Manager"
+		)
 
 	outfit = /datum/outfit/job/quartermaster
 

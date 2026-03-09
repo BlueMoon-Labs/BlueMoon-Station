@@ -531,6 +531,9 @@ PAI_CUSTOM_HOLOFORMS
 ## Enables monstermos/"equalization" step in atmos.
 # ATMOS_EQUALIZE_ENABLED
 
+## Multiplier for atmos processing speed (share steps, equalization). 1 = default, 10 = ~10x faster equalization and turf sharing. ТУТ МЕНЯТЬ ЗНАЧЕНИЯ
+ATMOS_SPEED_MULTIPLIER 1
+
 ## Do station renames from the station charter require admin approval to pass, as opposed to autoapproving if not denied.
 STATION_NAME_NEEDS_APPROVAL
 

@@ -28,12 +28,15 @@
 	)
 
 	alt_titles = list(
-		"Bodyguard",
-		"Hired Muscle",
-		"Service Guard",
 		"Barmaid Sentinel",
-		"Slapper",
-		"Cocksucker"
+		"Bodyguard",
+		"Cocksucker",
+		"Doorman",
+		"Doorwoman",
+		"Hired Muscle",
+		"Public Defender",
+		"Sevice Guard",
+		"Slapper"
 		)
 
 /////////////////////////////

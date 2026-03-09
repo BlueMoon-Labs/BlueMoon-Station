@@ -1630,7 +1630,7 @@
 /datum/gear/donator/bm/cybercoat
 	name = "Cybercoat"
 	slot = ITEM_SLOT_OCLOTHING
-	path = /obj/item/clothing/suit/hooded/bm/cybercoat
+	path = /obj/item/clothing/suit/hooded/bm/donator/cybercoat
 	ckeywhitelist = list("cnaperdodo")
 
 /datum/gear/donator/bm/diamond_ring

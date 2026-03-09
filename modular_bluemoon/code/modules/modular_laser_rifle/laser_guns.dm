@@ -26,7 +26,7 @@
 	ammo_type = list(/obj/item/ammo_casing/energy/cybersun_big_kill)
 	ammo_x_offset = 0
 	selfcharge = 1
-	charge_delay = 15
+	charge_delay = 1
 	shaded_charge = TRUE
 	slot_flags = ITEM_SLOT_BACK
 	obj_flags = UNIQUE_RENAME
@@ -35,6 +35,7 @@
 	weapon_weight = WEAPON_HEAVY
 	actions_types = list(/datum/action/item_action/toggle_personality)
 	recoil = 0.25 // This isn't enough to mean ANYTHING aside from it jolting your screen the tiniest amount
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT, SELECT_FULLY_AUTOMATIC)
 	zoomable = TRUE
 	zoom_amt = 8 //Long range, enough to see in front of you, but no tiles behind you.
 	zoom_out_amt = 5
@@ -81,6 +82,13 @@
 	/// Timer id for the delayed radial menu (so we can cancel it in Destroy)
 	var/mode_switch_timer_id
 
+/obj/item/gun/energy/modular_laser_rifle/ComponentInitialize()
+	. = ..()
+	// Автострельба добавляется при смене режима (apply_to_weapon), а не здесь
+	var/datum/component/automatic_fire/af = GetComponent(/datum/component/automatic_fire)
+	if(af)
+		qdel(af)
+
 /obj/item/gun/energy/modular_laser_rifle/Initialize(mapload)
 	. = ..()
 	chat_color = DEFAULT_RUNECHAT_GUN_COLOR
@@ -120,29 +128,29 @@
 	radial_menu_data = null
 	return ..()
 
-/obj/item/gun/energy/modular_laser_rifle/attackby(obj/item/used_item, mob/living/user, params)
-	if(used_item.tool_behaviour == TOOL_SCREWDRIVER)
-		panel_open = !panel_open
-		playsound(src, used_item.usesound, 50, TRUE)
-		to_chat(user, span_notice("You [panel_open ? "open" : "close"] the battery compartment of [src]."))
-		update_appearance()
-		return TRUE
-	if(panel_open && istype(used_item, /obj/item/stock_parts/cell))
-		var/obj/item/stock_parts/cell/new_cell = used_item
-		if(!user.transferItemToLoc(new_cell, src))
-			return
-		if(cell)
-			cell.forceMove(drop_location())
-			user.put_in_hands(cell)
-			to_chat(user, span_notice("You replace the power cell in [src] with [new_cell]."))
-		else
-			to_chat(user, span_notice("You insert [new_cell] into [src]."))
-		cell = new_cell
-		last_charge = cell.charge
-		recharge_newshot(TRUE)
-		update_appearance()
-		return TRUE
-	return ..()
+// /obj/item/gun/energy/modular_laser_rifle/attackby(obj/item/used_item, mob/living/user, params)
+// 	if(used_item.tool_behaviour == TOOL_SCREWDRIVER)
+// 		panel_open = !panel_open
+// 		playsound(src, used_item.usesound, 50, TRUE)
+// 		to_chat(user, span_notice("You [panel_open ? "open" : "close"] the battery compartment of [src]."))
+// 		update_appearance()
+// 		return TRUE
+// 	if(panel_open && istype(used_item, /obj/item/stock_parts/cell))
+// 		var/obj/item/stock_parts/cell/new_cell = used_item
+// 		if(!user.transferItemToLoc(new_cell, src))
+// 			return
+// 		if(cell)
+// 			cell.forceMove(drop_location())
+// 			user.put_in_hands(cell)
+// 			to_chat(user, span_notice("You replace the power cell in [src] with [new_cell]."))
+// 		else
+// 			to_chat(user, span_notice("You insert [new_cell] into [src]."))
+// 		cell = new_cell
+// 		last_charge = cell.charge
+// 		recharge_newshot(TRUE)
+// 		update_appearance()
+// 		return TRUE
+// 	return ..()
 
 /obj/item/gun/energy/modular_laser_rifle/attack_self(mob/living/user)
 	if(panel_open)
@@ -235,11 +243,6 @@
 		speak_up(currently_selected_mode.json_speech_string, TRUE)
 	currently_switching_types = FALSE
 
-/obj/item/gun/energy/modular_laser_rifle/can_shoot()
-	if(!length(ammo_type))
-		return FALSE
-	return ..()
-
 /obj/item/gun/energy/modular_laser_rifle/can_trigger_gun(mob/living/user, akimbo_usage)
 	. = ..()
 	if(currently_switching_types || disabled_for_other_reasons)
@@ -303,7 +306,7 @@
 /obj/item/stock_parts/cell/hyeseong_internal_cell
 	name = "\improper Hyeseong modular laser rifle internal cell"
 	desc = "These are usually supposed to be inside of the gun, you know."
-	maxcharge = STANDARD_CELL_CHARGE * 2
+	maxcharge = 10000
 
 /datum/action/item_action/toggle_personality
 	name = "Toggle Weapon Personality"
@@ -318,7 +321,7 @@
 	item_state = "hoshi_kill"
 	base_icon_state = "hoshi"
 	charge_sections = 3
-	cell_type = /obj/item/stock_parts/cell
+	cell_type = /obj/item/stock_parts/cell/hyeseong_internal_cell
 	ammo_type = list(/obj/item/ammo_casing/energy/cybersun_small_hellfire)
 	slot_flags = ITEM_SLOT_BACK | ITEM_SLOT_BELT
 	SET_BASE_PIXEL(0, 0)

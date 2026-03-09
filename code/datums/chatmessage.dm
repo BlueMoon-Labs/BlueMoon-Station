@@ -162,11 +162,21 @@
 	var/list/prefixes
 
 	// Append radio icon if from a virtual speaker
+	/// Cached chat prefix icons (radio, emote) — use icon() + Scale() for consistent maptext rendering
+	var/static/list/chat_prefix_icons
 	if (extra_classes.Find("virtual-speaker"))
-		var/image/r_icon = image('icons/ui_icons/chat/chat_icons.dmi', icon_state = "radio")
+		var/icon/r_icon = LAZYACCESS(chat_prefix_icons, "radio")
+		if (isnull(r_icon))
+			r_icon = icon('icons/ui_icons/chat/chat_icons.dmi', icon_state = "radio")
+			r_icon.Scale(CHAT_MESSAGE_ICON_SIZE, CHAT_MESSAGE_ICON_SIZE)
+			LAZYSET(chat_prefix_icons, "radio", r_icon)
 		LAZYADD(prefixes, "\icon[r_icon]")
 	else if (extra_classes.Find("emote"))
-		var/image/r_icon = image('icons/ui_icons/chat/chat_icons.dmi', icon_state = "emote")
+		var/icon/r_icon = LAZYACCESS(chat_prefix_icons, "emote")
+		if (isnull(r_icon))
+			r_icon = icon('icons/ui_icons/chat/chat_icons.dmi', icon_state = "emote")
+			r_icon.Scale(CHAT_MESSAGE_ICON_SIZE, CHAT_MESSAGE_ICON_SIZE)
+			LAZYSET(chat_prefix_icons, "emote", r_icon)
 		LAZYADD(prefixes, "\icon[r_icon]")
 
 	// Append language icon if the language uses one
@@ -272,6 +282,10 @@
 /mob/proc/create_chat_message(atom/movable/speaker, datum/language/message_language, raw_message, list/spans, message_mode)
 	// Ensure the list we are using, if present, is a copy so we don't modify the list provided to us
 	spans = spans ? spans.Copy() : list()
+
+	// Add whisper class for reduced text size in runchat
+	if(message_mode == MODE_WHISPER || message_mode == MODE_WHISPER_CRIT)
+		spans |= "whisper"
 
 	// Check for virtual speakers (aka hearing a message through a radio)
 	var/atom/movable/originalSpeaker = speaker

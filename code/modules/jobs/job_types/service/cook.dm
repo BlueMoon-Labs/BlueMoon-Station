@@ -9,6 +9,25 @@
 	supervisors = "the head of personnel"
 	selection_color = "#bbe291"
 	var/cooks = 0 //Counts cooks amount
+	alt_titles = list(
+		"Waffle Co. Specialist", //Триглав выше, для удобства
+		"All-American Diner Employee",
+		"Baker",
+		"Boss of This Gym",
+		"Butcher",
+		"Chef",
+		"Chef de Partie",
+		"Chef de Sexe",
+		"Confectionist",
+		"Culinarian",
+		"Culinary Artist",
+		"Fodder",
+		"Line Cook",
+		"Nutritionist",
+		"Poissonier",
+		"Prey Prepper",
+		"Taste Tester"
+		)
 
 	outfit = /datum/outfit/job/cook
 	plasma_outfit = /datum/outfit/plasmaman/chef

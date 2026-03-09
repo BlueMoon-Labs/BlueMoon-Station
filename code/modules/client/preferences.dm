@@ -6585,6 +6585,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	if((parent?.can_have_part("legs") || pref_species.mutant_bodyparts["legs"])  && (character.dna.features["legs"] == "Digitigrade" || character.dna.features["legs"] == "Avian"))
 		pref_species.species_traits |= DIGITIGRADE
+	else if(character.dna.species.mutant_bodyparts["limbs_id"] == "sergal")
+		pref_species.species_traits |= DIGITIGRADE
 	else
 		pref_species.species_traits -= DIGITIGRADE
 

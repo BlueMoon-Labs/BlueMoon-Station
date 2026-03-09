@@ -166,17 +166,19 @@
 //pepperspray
 /obj/item/reagent_containers/spray/pepper
 	name = "pepperspray"
-	desc = "Manufactured by UhangInc, used to blind and down an opponent quickly."
+	desc = "Manufactured by UhangInc. Condensed capsaicin formula: blinds, paralyses briefly and causes severe disorientation. Effective non-lethal tool."
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "pepperspray"
 	item_state = "pepperspray"
 	lefthand_file = 'icons/mob/inhands/equipment/security_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/security_righthand.dmi'
-	volume = 40
-	stream_range = 4
+	volume = 50
+	stream_range = 5
+	spray_range = 4
 	spray_delay = 2
-	amount_per_transfer_from_this = 5
-	list_reagents = list(/datum/reagent/consumable/condensedcapsaicin = 40)
+	amount_per_transfer_from_this = 8
+	stream_amount = 12
+	list_reagents = list(/datum/reagent/consumable/condensedcapsaicin = 50)
 
 /obj/item/reagent_containers/spray/pepper/empty // for techfab printing
 	list_reagents = null
