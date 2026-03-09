@@ -70,7 +70,7 @@
 
 /obj/item/storage/box/service_permits
 	name = "box of service permits"
-	desc = "Has permits, to new service employees."
+	desc = "Has permits for new service employees."
 	illustration = "id"
 
 /obj/item/storage/box/service_permits/PopulateContents()
