@@ -44,9 +44,9 @@ SUBSYSTEM_DEF(nightshift)
 
 /datum/controller/subsystem/nightshift/proc/announce(message, announcement_sound)
 	for(var/mob/M in GLOB.player_list)
-		if(!isnewplayer(M) && M.can_hear())
+		if(!isnewplayer(M))
 			to_chat(M, "[span_minorannounce("<font color=red>Автоматическая Система Освещения</font><BR>[message]")]<BR>")
-			if(announcement_sound && M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
+			if(announcement_sound && M.can_hear() && M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
 				SEND_SOUND(M, sound(announcement_sound))
 
 /datum/controller/subsystem/nightshift/proc/check_nightshift()
