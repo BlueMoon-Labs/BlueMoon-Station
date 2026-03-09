@@ -25,7 +25,7 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 /// In Extended mode - always returns TRUE (no antag interference expected)
 /// Caches the result for 30 seconds to avoid iterating GLOB.telecomms_list every call
 /proc/can_portal_telecomms()
-	if(world.time <= GLOB.portal_telecomms_cache_expire)
+	if(world.time < GLOB.portal_telecomms_cache_expire)
 		return GLOB.portal_telecomms_cache_result
 	if(GLOB.master_mode == "Extended")
 		GLOB.portal_telecomms_cache_result = TRUE
@@ -1829,14 +1829,15 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 	// Connection info
 	data["connection_mode"] = portal_settings?.connection_mode || PORTAL_MODE_DISABLED
 	data["telecomms_available"] = can_portal_telecomms()
-	data["connected"] = !!portalunderwear
+	var/obj/item/clothing/underwear/briefs/panties/portalpanties/target_panties = portalunderwear || private_pair
+	data["connected"] = !!target_panties
 	// Show partner's portal nickname for connected panties
-	var/mob/living/carbon/human/partner = portalunderwear ? get_panties_wearer(portalunderwear) : null
+	var/mob/living/carbon/human/partner = target_panties ? get_panties_wearer(target_panties) : null
 	data["connected_name"] = get_portal_nickname(partner, "Аноним")
 	data["has_private_pair"] = !!private_pair
 	// Partner mood info (for fleshlight showing connected panties wearer mood)
-	data["partner_mood_color"] = portalunderwear?.portal_settings?.get_mood_color() || "#888888"
-	data["partner_mood_text"] = portalunderwear?.portal_settings?.get_mood_text() || "Неизвестно"
+	data["partner_mood_color"] = target_panties?.portal_settings?.get_mood_color() || "#888888"
+	data["partner_mood_text"] = target_panties?.portal_settings?.get_mood_text() || "Неизвестно"
 	// Info about other connected devices
 	if(portalunderwear)
 		data["target_connected_count"] = LAZYLEN(portalunderwear.portallight)
