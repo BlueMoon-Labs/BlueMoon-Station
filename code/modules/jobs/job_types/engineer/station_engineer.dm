@@ -13,6 +13,26 @@
 
 	outfit = /datum/outfit/job/engineer
 	plasma_outfit = /datum/outfit/plasmaman/engineering
+	alt_titles = list(
+		"Apprentice Enginseer", //Стажер выше, для удобства
+		"Azik Interstellar Engineer", //Триглав выше, для удобства
+		"Syndicate Constructing Master", //Синди выше, для удобства
+		"Astromechanic",
+		"Damage Control Technician",
+		"Electrician",
+		"Emergency Damage Control Technician",
+		"Engi-Slut",
+		"Engine Technician",
+		"Engineering Specialist",
+		"Hazardous Material Operator",
+		"Maintenance Technician",
+		"Nuclear Plant Operator",
+		"Response Engineer",
+		"Station Architect",
+		"Structural Engineer",
+		"Structural Engineer",
+		"Techpriest Enginseer"
+		)
 
 	access = list(ACCESS_ENGINE, ACCESS_ENGINE_EQUIP, ACCESS_TECH_STORAGE, ACCESS_MAINT_TUNNELS,
 									ACCESS_EXTERNAL_AIRLOCKS, ACCESS_CONSTRUCTION, ACCESS_ATMOSPHERICS, ACCESS_TCOMSAT, ACCESS_MINERAL_STOREROOM)

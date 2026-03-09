@@ -46,3 +46,20 @@
 /datum/gear/neck/scarf/christmas
 	name = "Christmas Scarf"
 	path = /obj/item/clothing/neck/scarf/christmas
+
+/datum/gear/neck/sergal_raincoat
+	name = "Sergal raincoat"
+	path = /obj/item/clothing/neck/bm/sergal_raincoat
+
+/datum/gear/neck/sergal_women_cape
+	name = "Sergal women's cape"
+	path = /obj/item/clothing/neck/bm/sergal_women_cape
+
+/datum/gear/neck/sergal_purple_cape
+	name = "Sergal purple cape"
+	path = /obj/item/clothing/neck/bm/sergal_purple_cape
+
+/datum/gear/neck/sergal_metal_chain
+	name = "Sergal metal chain"
+	path = /obj/item/clothing/neck/bm/sergal_metal_chain
+

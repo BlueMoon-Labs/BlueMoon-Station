@@ -10,6 +10,18 @@
 	selection_color = "#74b5e0"
 	exp_type = EXP_TYPE_CREW
 	exp_requirements = 60
+	alt_titles = list(
+		"Virologist Intern", //Стажер выше, для удобства
+		"Syndicate Bioweapon Scientist", //Синди выше, для удобства
+		"Biochemist",
+		"Epidemiologist",
+		"Microbiologist",
+		"Monkey Destroyer",
+		"Pathologist",
+		"Plague Doctor",
+		"Viro-Slut",
+		"Viro-Stud"
+		)
 
 	outfit = /datum/outfit/job/virologist
 	plasma_outfit = /datum/outfit/plasmaman/viro

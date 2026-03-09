@@ -13,6 +13,32 @@
 	exp_requirements = 3000
 	exp_type = EXP_TYPE_SECURITY
 	considered_combat_role = TRUE
+	alt_titles = list(
+		"Gorlex Marauders Sergeant", //Триглав выше, для удобства
+		"Syndicate Warden", //Синди выше, для удобства
+		"AC Sergeant",
+		"Armory Manager",
+		"Armory Superintendent",
+		"Brig Chief",
+		"Brig Governor",
+		"Brig Overwatch",
+		"Brig Overwatch",
+		"Brig Sentry",
+		"Brig Sergeant",
+		"Brig Superintendent",
+		"Deputy Commissioner",
+		"Deputy Commissioner of Security",
+		"Dispatch Officer",
+		"Dungeon Master",
+		"Jailer",
+		"Master-at-Arms",
+		"Prison Administrator",
+		"Prison Chief",
+		"SAARE Supervisor",
+		"Safeguard Sergeant",
+		"Slutcurity Captain",
+		"Voreden"
+		)
 
 	outfit = /datum/outfit/job/warden
 	plasma_outfit = /datum/outfit/plasmaman/warden

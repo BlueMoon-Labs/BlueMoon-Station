@@ -13,16 +13,15 @@
 	exp_type = EXP_TYPE_CREW
 	considered_combat_role = FALSE
 	alt_titles = list(
-		"Slutcurity Trainee",
-		"Security Trainee",
-		"Security Assistant",
-		"Security Cadet",
-		"Rookie",
-		"Low-Quality Product",
+		"Security Cadet", //Стажер выше, для удобства // В СБ ТОЛЬКО КАДЕТЫ, чтобы не путали
 		"Freak",
-		"AC Recruit",
-		"Russian Officer"
+		"Low-Quality Product",
+		"Recruit",
+		"Rookie",
+		"Russian Officer",
+		"Slutcurity"
 		)
+
 	custom_spawn_text = "вы не офицер. Ваша задача — мирное урегулирование конфликтов и их деэскалация. Используйте табельное оружие только в крайних случаях."
 
 	outfit = /datum/outfit/job/peacekeeper

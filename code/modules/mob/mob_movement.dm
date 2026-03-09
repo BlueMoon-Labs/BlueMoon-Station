@@ -410,13 +410,12 @@
 
 /mob/Moved(atom/old_loc, Dir, Forced = FALSE)
 	. = ..()
-	if(!client)
+	if(!client?.parallax_holder)
 		return
-	if(client.parallax_holder)
-		var/anim_time = world.tick_lag
-		if(isliving(src) && glide_size > 0)
-			anim_time = world.icon_size / glide_size * world.tick_lag
-		client.parallax_holder.Update(anim_time = anim_time)
+	var/anim_time = world.tick_lag
+	if(isliving(src) && glide_size > 0)
+		anim_time = world.icon_size / glide_size * world.tick_lag
+	client.parallax_holder.Update(anim_time = anim_time)
 
 /mob/onTransitZ(old_z, new_z)
 	. = ..()

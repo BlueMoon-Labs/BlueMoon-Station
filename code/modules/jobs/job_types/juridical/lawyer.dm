@@ -11,6 +11,18 @@
 	considered_combat_role = TRUE
 	exp_requirements = 100
 	exp_type = EXP_TYPE_SECURITY
+	alt_titles = list(
+		"MI13 Agent", //Триглав выше, для удобства
+		"Syndicate Legal Expert", //Синди выше, для удобства
+		"Attorney",
+		"Barrister",
+		"Defese Attorney",
+		"Human Resources Agent",
+		"Jurist",
+		"Law-Slut",
+		"Legal Agent",
+		"Legal Clerk"
+		)
 
 	outfit = /datum/outfit/job/lawyer
 	plasma_outfit = /datum/outfit/plasmaman/bar //yes, this is correct, there's no 'lawyer' plasmeme outfit

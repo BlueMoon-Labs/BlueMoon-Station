@@ -8,6 +8,47 @@
 	spawn_positions = 1
 	supervisors = "the head of personnel"
 	selection_color = "#dddddd"
+	alt_titles = list(
+		"Tiger Cooperative Disciple", //Триглав выше, для удобства
+		"Syndicate Techpriest", //Синди выше, для удобства
+		"Bichop",
+		"Bishop",
+		"Cleric",
+		"Disciple",
+		"Esotericist",
+		"Ghost Hunter",
+		"Guru",
+		"High Priest",
+		"High Priestess",
+		"Imam",
+		"Junior Inquisitor",
+		"Keeper of Cum",
+		"Magister",
+		"Medium",
+		"Monk",
+		"Morale Officer",
+		"Nun",
+		"Occultism Fan",
+		"Oracle",
+		"Paranormalist",
+		"Pontiff",
+		"Pope",
+		"Preacher",
+		"Priest",
+		"Priestess",
+		"Prior",
+		"Psychic",
+		"Rabbi",
+		"Reverend",
+		"Ritualist",
+		"Shaman",
+		"Shrine Guardian",
+		"Shrine Maiden",
+		"Spiritual Mentor",
+		"Techpriest",
+		"Thaumaturge",
+		"Theologist"
+		)
 
 	outfit = /datum/outfit/job/chaplain
 	plasma_outfit = /datum/outfit/plasmaman/chaplain

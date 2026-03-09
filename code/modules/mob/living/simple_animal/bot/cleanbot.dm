@@ -79,7 +79,7 @@
 			if(title in stolen_valor)
 				working_title += pref[title] + " "
 				if(title in officers)
-					set_commissioned(TRUE)
+					commissioned = TRUE
 				break
 			else
 				ascended = FALSE // we didn't have the first entry in the list if we got here, so we're not achievement worthy yet
@@ -274,28 +274,26 @@
 	else if(prob(5))
 		audible_message("[src] делает радостный жужжаще-пищащий звук!")
 
-	var/list/cached_view_result = shuffle(view(DEFAULT_SCAN_RANGE, src))
-
 	if(ismob(target))
-		if(!(target in cached_view_result))
+		if(!(target in view(DEFAULT_SCAN_RANGE, src)))
 			target = null
 		if(!process_scan(target))
 			target = null
 
 	if(!target && emagged == 2) // When emagged, target humans who slipped on the water and melt their faces off
-		target = scan(/mob/living/carbon, null, DEFAULT_SCAN_RANGE, cached_view_result)
+		target = scan(/mob/living/carbon)
 
 	if(!target && pests) //Search for pests to exterminate first.
-		target = scan(/mob/living/simple_animal, null, DEFAULT_SCAN_RANGE, cached_view_result)
+		target = scan(/mob/living/simple_animal)
 
 	if(!target) //Search for decals then.
-		target = scan(/obj/effect/decal/cleanable, null, DEFAULT_SCAN_RANGE, cached_view_result)
+		target = scan(/obj/effect/decal/cleanable)
 
 	if(!target) //Checks for remains
-		target = scan(/obj/effect/decal/remains, null, DEFAULT_SCAN_RANGE, cached_view_result)
+		target = scan(/obj/effect/decal/remains)
 
 	if(!target && trash) //Then for trash.
-		target = scan(/obj/item/trash, null, DEFAULT_SCAN_RANGE, cached_view_result)
+		target = scan(/obj/item/trash)
 
 	// if(!target && trash) //Search for dead mices.
 	// 	target = scan(/obj/item/food/deadmouse)

@@ -29,7 +29,6 @@ SUBSYSTEM_DEF(idlenpcpool)
 
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun
-	var/list/clients_by_z = SSmobs.clients_by_zlevel
 
 	while(currentrun.len)
 		var/mob/living/simple_animal/SA = currentrun[currentrun.len]
@@ -39,27 +38,10 @@ SUBSYSTEM_DEF(idlenpcpool)
 			log_world("Found a null in simple_animals list!")
 			continue
 
-		if(SA.ckey)
-			continue
-
-		// Layer 1: Z-level check — no players on this z-level, deep sleep
-		var/turf/mob_turf = get_turf(SA)
-		if(!mob_turf)
-			continue
-		if(!length(clients_by_z[mob_turf.z]))
-			SA.toggle_ai(AI_Z_OFF)
-			continue
-
-		// Layer 2: Proximity check — no player within range, skip entirely
-		if(!SA.has_nearby_player())
-			continue
-
-		// Layer 3: Dead mob skip
-		if(SA.stat == DEAD)
-			continue
-
-		SA.handle_automated_movement()
-		SA.consider_wakeup()
-
+		if(!SA.ckey)
+			if(SA.stat != DEAD)
+				SA.handle_automated_movement()
+			if(SA.stat != DEAD)
+				SA.consider_wakeup()
 		if (MC_TICK_CHECK)
 			return

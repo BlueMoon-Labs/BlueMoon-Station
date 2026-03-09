@@ -16,6 +16,31 @@
 	exp_type = EXP_TYPE_CREW
 	exp_type_department = EXP_TYPE_SERVICE
 	considered_combat_role = TRUE
+	alt_titles = list(
+		"Personnel Manager of Syndicate", //Синди выше, для удобства
+		"Syndicate Administrator", //Синди выше, для удобства
+		"Assistant Site Director",
+		"Captain Attachment",
+		"Chief of Staff",
+		"Chief Resource Officer",
+		"Crew Resource Officer",
+		"Crew Supervisor",
+		"Employment Officer",
+		"Executive Officer",
+		"Head Hunter",
+		"Head of Cumdumps",
+		"Head of Slutty Personnel",
+		"Head of Stations Pets",
+		"Headgiver to Personnel",
+		"Headpat of Personnel",
+		"HR Manager",
+		"Human Resources Manager",
+		"Personnel Director",
+		"Personnel Manager",
+		"Records Administrator",
+		"Staff Administrator"
+		)
+
 	outfit = /datum/outfit/job/hop
 	departments = DEPARTMENT_BITFLAG_COMMAND | DEPARTMENT_BITFLAG_SERVICE
 	plasma_outfit = /datum/outfit/plasmaman/hop

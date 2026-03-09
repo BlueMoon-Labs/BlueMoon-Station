@@ -82,7 +82,7 @@
 	magboot_state = "advsyndiemag"
 	slowdown_active = SHOES_SLOWDOWN
 
-/obj/item/clothing/shoes/magboots/advance/debug/Initialize(mapload)
+/obj/item/clothing/shoes/magboots/syndie/advance/Initialize(mapload)
 	. = ..()
 	var/mob/living/L = loc
 	if(istype(L))

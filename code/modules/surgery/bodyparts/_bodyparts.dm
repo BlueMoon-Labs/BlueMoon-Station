@@ -876,7 +876,7 @@
 		// BLUEMOON ADD START - красивые ноги
 		var/use_racial_sprite = FALSE
 		if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
-			if(species_id in list(SPECIES_HUMAN, SPECIES_MAMMAL, SPECIES_SHADEKIN, SPECIES_XENOHYBRID, SPECIES_SLIME_LUMI, SPECIES_SLIME, SPECIES_SYNTH_LIZARD, SPECIES_STARGAZER, SPECIES_JELLY, "vox")) // заносим только те расы, у которых есть свои прорисованные ноги. Иначе используется бэкап ниже
+			if(species_id in list(SPECIES_HUMAN, SPECIES_MAMMAL, SPECIES_SHADEKIN, SPECIES_XENOHYBRID, SPECIES_SLIME_LUMI, SPECIES_SLIME, SPECIES_SYNTH_LIZARD, SPECIES_STARGAZER, SPECIES_JELLY, "vox", "sergal")) // заносим только те расы, у которых есть свои прорисованные ноги. Иначе используется бэкап ниже
 				use_racial_sprite = TRUE
 		// BLUEMOON ADD END
 		limb.icon = base_bp_icon || 'icons/mob/human_parts.dmi'

@@ -38,6 +38,7 @@
 	name = "tribal spear"
 	force = 25
 	icon_prefix = "tribal_spear"
+	unique_reskin = null
 
 /obj/item/spear/cerberus/ComponentInitialize()
 	. = ..()

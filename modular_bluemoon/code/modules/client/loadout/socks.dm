@@ -117,3 +117,15 @@
 /datum/gear/socks/poly_pantyhose_faux_crotchless
 	name = "bottomless faux polychromic pantyhose"
 	path = /obj/item/clothing/underwear/socks/poly_pantyhose_faux_crotchless
+
+/datum/gear/socks/sergal_socks
+	name = "Sergal Socks"
+	path = /obj/item/clothing/underwear/socks/bm/sergal_socks
+
+/datum/gear/socks/sergal_bandage
+	name = "Sergal bandage"
+	path = /obj/item/clothing/underwear/socks/bm/sergal_bandage
+
+/datum/gear/socks/sergal_bandage_alt
+	name = "Sergal bandage alt"
+	path = /obj/item/clothing/underwear/socks/bm/sergal_bandage_alt

@@ -204,6 +204,8 @@
 	new /obj/item/reagent_containers/medspray/sterilizine(src)
 	new /obj/item/pinpointer/crew(src)
 	new /obj/item/sensor_device(src)
+	new /obj/item/stack/medical/mesh/advanced(src)
+	new /obj/item/stack/medical/gauze/adv(src)
 
 /obj/item/storage/firstaid/tactical/ert_second
 	name = "Advanced tactical first-aid kit c2"
@@ -214,6 +216,7 @@
 	new /obj/item/reagent_containers/hypospray/medipen/penacid(src)
 	new /obj/item/reagent_containers/hypospray/medipen/penacid(src)
 	new /obj/item/reagent_containers/hypospray/combat/omnizine(src)
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
 	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
 	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
 	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)

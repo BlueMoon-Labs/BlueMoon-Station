@@ -17,12 +17,14 @@
 	pass_flags = PASSTABLE
 	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
 	minbodytemp = 0
-	maxHealth = 150
-	health = 150
+	maxHealth = 500
+	health = 500
 	healable = 0
 	obj_damage = 50
 	melee_damage_lower = 20
 	melee_damage_upper = 20
+	/// Количество съеденных вещей: за каждую +0.1 урона и +1 макс. здоровье
+	var/eaten_count = 0
 	see_in_dark = 8
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
 	vision_range = 1 // Only attack when target is close
@@ -87,6 +89,11 @@
 	if(A && A.loc != src)
 		visible_message("<span class='warning'>[src] swallows [A] whole!</span>")
 		A.forceMove(src)
+		eaten_count++
+		melee_damage_lower += 0.1
+		melee_damage_upper += 0.1
+		maxHealth += 1
+		adjustHealth(-1)
 		return TRUE
 	return FALSE
 
@@ -144,9 +151,11 @@
 	icon_state = initial(icon_state)
 	cut_overlays()
 
-	//Baseline stats
-	melee_damage_lower = initial(melee_damage_lower)
-	melee_damage_upper = initial(melee_damage_upper)
+	//Baseline stats + бонусы за съеденное
+	melee_damage_lower = 20 + eaten_count * 0.1
+	melee_damage_upper = 20 + eaten_count * 0.1
+	maxHealth = 500 + eaten_count
+	health = min(health, maxHealth)
 	speed = initial(speed)
 
 	morph_time = world.time + MORPH_COOLDOWN
@@ -218,7 +227,7 @@
 /datum/round_event_control/morph
 	name = "Spawn Morph"
 	typepath = /datum/round_event/ghost_role/morph
-	weight = 0 //Admin only
+	weight = 0 // Admin only; morph spawns via dynamic ruleset (not in extended)
 	max_occurrences = 1
 	category = EVENT_CATEGORY_ENTITIES
 	description = "Spawns a hungry shapeshifting blobby creature."

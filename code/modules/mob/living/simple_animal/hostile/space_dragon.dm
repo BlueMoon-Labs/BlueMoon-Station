@@ -6,6 +6,8 @@
 #define CHARGE_COMPLETED		2
 /// The darkness threshold for space dragon when choosing a color
 #define DARKNESS_THRESHOLD		50
+/// Cooldown between wing gust uses (Alt-click and Ground Slam button)
+#define GUST_COOLDOWN_TIME		(2 SECONDS)
 
 /**
  * # Space Dragon
@@ -21,10 +23,13 @@
  * Alternatively, if the shuttle arrives while Space Dragon is still active, their victory condition will automatically be met and all the rifts will immediately become fully charged.
  * If a charging rift is destroyed, Space Dragon will be incredibly slowed, and the endlag on his gust attack is greatly increased on each use.
  * Space Dragon has the following abilities to assist him with his objective:
+ * - Ground Slam: stun and slow enemies in a 2-tile radius (ability button is left-up in the abilities menu).
  * - Can shoot fire in straight line, dealing 30 burn damage and setting those suseptible on fire.
- * - Can use his wings to temporarily stun and knock back any nearby mobs.  This attack has no cooldown, but instead has endlag after the attack where Space Dragon cannot act.  This endlag's time decreases over time, but is added to every time he uses the move.
- * - Can swallow mob corpses to heal for half their max health.  Any corpses swallowed are stored within him, and will be regurgitated on death.
+ * - Can use his wings to temporarily stun and knock back any nearby mobs (Alt-click).  This attack has no cooldown, but instead has endlag after the attack where Space Dragon cannot act.  This endlag's time decreases over time, but is added to every time he uses the move.
+ * - Can swallow mob corpses to heal: 5% of max health from space carp, 10% from humans/others.  Any corpses swallowed are stored within him, and will be regurgitated on death.
  * - Can tear through any type of wall.  This takes 4 seconds for most walls, and 12 seconds for reinforced walls.
+ *
+ * Sprite and ability icons from WhiteMoon-Station (icons/mob/spacedragon.dmi, icons/mob/actions/actions_space_dragon.dmi). Overlay states use spacedragon_overlay_* naming to match that sprite.
  */
 /mob/living/simple_animal/hostile/space_dragon
 	name = "Space Dragon"
@@ -91,11 +96,14 @@
 	var/datum/action/innate/summon_rift/rift
 	/// The color of the space dragon.
 	var/chosen_color
+	/// world.time when the last wing gust was started (for cooldown).
+	var/last_gust_use = 0
 
 /mob/living/simple_animal/hostile/space_dragon/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_HEALS_FROM_CARP_RIFTS, INNATE_TRAIT)
+	AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam(src))
 	rift = new
 	rift.Grant(src)
 	AddSpell(new /obj/effect/proc_holder/spell/targeted/night_vision(src))
@@ -161,7 +169,8 @@
 			to_chat(src, "<span class='warning'>You begin to swallow [L] whole...</span>")
 			if(do_after(src, 30, target = L))
 				if(eat(L))
-					adjustHealth(-L.maxHealth * 0.5)
+					var/heal_percent = istype(L, /mob/living/simple_animal/hostile/carp) ? 0.05 : 0.10
+					adjustHealth(-L.maxHealth * heal_percent)
 			return
 	. = ..()
 	if(istype(target, /obj/vehicle/sealed/mecha))
@@ -172,6 +181,10 @@
 	. = ..()
 	if(using_special)
 		return
+	if(world.time < last_gust_use + GUST_COOLDOWN_TIME)
+		to_chat(src, "<span class='warning'>Удар ещё на перезарядке!</span>")
+		return
+	last_gust_use = world.time
 	using_special = TRUE
 	icon_state = "spacedragon_gust"
 	add_dragon_overlay()
@@ -245,17 +258,17 @@
 /mob/living/simple_animal/hostile/space_dragon/proc/add_dragon_overlay()
 	cut_overlays()
 	if(stat == DEAD)
-		var/mutable_appearance/overlay = mutable_appearance(icon, "overlay_dead")
+		var/mutable_appearance/overlay = mutable_appearance(icon, "spacedragon_overlay_dead")
 		overlay.appearance_flags = RESET_COLOR
 		add_overlay(overlay)
 		return
 	if(!using_special)
-		var/mutable_appearance/overlay = mutable_appearance(icon, "overlay_base")
+		var/mutable_appearance/overlay = mutable_appearance(icon, "spacedragon_overlay_base")
 		overlay.appearance_flags = RESET_COLOR
 		add_overlay(overlay)
 		return
 	if(using_special)
-		var/mutable_appearance/overlay = mutable_appearance(icon, "overlay_gust")
+		var/mutable_appearance/overlay = mutable_appearance(icon, "spacedragon_overlay_gust")
 		overlay.appearance_flags = RESET_COLOR
 		add_overlay(overlay)
 
@@ -434,19 +447,19 @@
   * Handles the wing gust attack from start to finish, based on the timer.
   * When intially triggered, starts at 0.  Until the timer reaches 10, increase Space Dragon's y position by 2 and call back to the function in 1.5 deciseconds.
   * When the timer is at 10, trigger the attack.  Change Space Dragon's sprite. reset his y position, and push all living creatures back in a 3 tile radius and stun them for 5 seconds.
-  * Stay in the ending state for how much our tiredness dictates and add to our tiredness.
   * Arguments:
   * * timer - The timer used for the windup.
+  * * speed_mult - Multiplier for speed (2 = twice as fast: half windup and half endlag).
   */
-/mob/living/simple_animal/hostile/space_dragon/proc/useGust(timer)
+/mob/living/simple_animal/hostile/space_dragon/proc/useGust(timer, speed_mult = 1)
 	if(timer != 10)
-		pixel_y = pixel_y + 2;
-		addtimer(CALLBACK(src, PROC_REF(useGust), timer + 1), 1.5)
+		pixel_y = pixel_y + 2
+		addtimer(CALLBACK(src, PROC_REF(useGust), timer + 1, speed_mult), 1.5 / speed_mult)
 		return
 	pixel_y = 0
 	icon_state = "spacedragon_gust_2"
 	cut_overlays()
-	var/mutable_appearance/overlay = mutable_appearance(icon, "overlay_gust_2")
+	var/mutable_appearance/overlay = mutable_appearance(icon, "spacedragon_overlay_gust_2")
 	overlay.appearance_flags = RESET_COLOR
 	add_overlay(overlay)
 	playsound(src, 'sound/effects/gravhit.ogg', 100, TRUE)
@@ -460,10 +473,10 @@
 			visible_message("<span class='boldwarning'>[L] is knocked back by the gust!</span>")
 			to_chat(L, "<span class='userdanger'>You're knocked back by the gust!</span>")
 			var/dir_to_target = get_dir(get_turf(src), get_turf(L))
-			var/throwtarget = get_edge_target_turf(target, dir_to_target)
+			var/throwtarget = get_edge_target_turf(L, dir_to_target)
 			L.safe_throw_at(throwtarget, 10, 1, src)
 			L.drop_all_held_items()
-	addtimer(CALLBACK(src, PROC_REF(reset_status)), 4 + ((tiredness * tiredness_mult) / 10))
+	addtimer(CALLBACK(src, PROC_REF(reset_status)), (4 + ((tiredness * tiredness_mult) / 10)) / speed_mult)
 	tiredness = tiredness + (gust_tiredness * tiredness_mult)
 
 /**
@@ -487,6 +500,50 @@
 	for(var/obj/structure/carp_rift/rift in rift_list)
 		rift.carp_stored = 999999
 		rift.time_charged = rift.max_charge
+
+/// Action button for space dragon abilities that should appear first (left-up) in the abilities menu
+/datum/action/spell_action/space_dragon
+	default_button_position = SCRN_OBJ_INSERT_FIRST
+
+/// Ground Slam: same as Alt-click wing gust, but 2x faster (windup and endlag).
+/obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam
+	name = "Ground Slam"
+	desc = "Same wing gust as Alt-click, but twice as fast."
+	base_action = /datum/action/spell_action/space_dragon
+	action_icon = 'icons/mob/actions/actions_spells.dmi'
+	action_icon_state = "slam"
+	action_background_icon_state = "bg_default"
+	charge_max = 35 SECONDS
+	clothes_req = FALSE
+	range = 1
+	sound = 'sound/effects/gravhit.ogg'
+
+/obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam/choose_targets(mob/user = usr)
+	var/list/targets = list(get_turf(user))
+	perform(targets, user = user)
+
+/obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam/can_target(atom/target, mob/user = usr, silent = FALSE)
+	return istype(get_turf(user), /turf)
+
+/obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam/can_cast(mob/user = usr, charge_check = TRUE, show_message = FALSE)
+	var/mob/living/simple_animal/hostile/space_dragon/S = user
+	if(istype(S) && S.using_special)
+		return FALSE
+	if(istype(S) && world.time < S.last_gust_use + GUST_COOLDOWN_TIME)
+		return FALSE
+	return ..()
+
+/obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam/cast(list/targets, mob/user = usr)
+	var/mob/living/simple_animal/hostile/space_dragon/S = user
+	if(!istype(S))
+		return
+	if(world.time < S.last_gust_use + GUST_COOLDOWN_TIME)
+		return
+	S.last_gust_use = world.time
+	S.using_special = TRUE
+	S.icon_state = "spacedragon_gust"
+	S.add_dragon_overlay()
+	S.useGust(0, 2)
 
 /datum/action/innate/summon_rift
 	name = "Summon Rift"
