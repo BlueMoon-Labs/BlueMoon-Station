@@ -4,8 +4,8 @@ SUBSYSTEM_DEF(nightshift)
 	flags = SS_NO_TICK_CHECK
 
 	var/nightshift_active = FALSE
-	var/nightshift_start_time = 702000		//7:30 PM, solar time
-	var/nightshift_end_time = 270000		//7:30 AM, solar time
+	var/nightshift_start_time = 19 HOURS + 30 MINUTES	//7:30 PM, solar time
+	var/nightshift_end_time = 7 HOURS + 30 MINUTES		//7:30 AM, solar time
 	var/nightshift_first_check = 30 SECONDS
 
 	var/high_security_mode = FALSE
@@ -43,7 +43,7 @@ SUBSYSTEM_DEF(nightshift)
 		update_solar_starlight()
 
 /datum/controller/subsystem/nightshift/proc/announce(message, announcement_sound)
-	for(var/mob/M in GLOB.player_list)
+	for(var/mob/M as anything in GLOB.player_list)
 		if(!isnewplayer(M))
 			to_chat(M, "[span_minorannounce("<font color=red>Автоматическая Система Освещения</font><BR>[message]")]<BR>")
 			if(announcement_sound && M.can_hear() && M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)

@@ -27,7 +27,7 @@ GLOBAL_LIST_EMPTY(escape_menus)
 
 		datum/screen_object_holder/base_holder
 		datum/screen_object_holder/page_holder
-		atom/movable/screen/plane_master/plane_master_controller
+		list/plane_master_controller
 
 		menu_page = PAGE_HOME
 
@@ -126,6 +126,8 @@ GLOBAL_LIST_EMPTY(escape_menus)
 	)
 	for(var/A in plane_master_controller)
 		var/atom/movable/screen/plane_master/P = A
+		if(isnull(P))
+			continue
 		P.add_filter("escape_menu_blur", 1, list("type" = "blur", "size" = 2))
 
 /datum/escape_menu/proc/remove_blur()
