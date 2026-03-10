@@ -5,9 +5,10 @@
 	icon_state = "warp_beacon"
 	item_state = "radio"
 
-	vocal_bark_id = "synth"
+	vocal_bark_id = "synthgrunt"
 	vocal_pitch = 0.6
 	vocal_volume = 40
+	vocal_speed = 4
 
 	w_class = WEIGHT_CLASS_NORMAL
 
