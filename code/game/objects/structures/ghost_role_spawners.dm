@@ -92,12 +92,11 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
         var/time_spawn = GLOB.ashwalker_spawns[user.ckey]
         if(time_spawn && world.time - time_spawn < ASH_RESPAWN_COOLDOWN)
             var/time_left = max(0, ASH_RESPAWN_COOLDOWN - (world.time - time_spawn))
-            var/mins_left  = round(time_left / 600)        // 600 тиков = 1 минута
-            var/secs_left  = round((time_left % 600) / 10) // остаток в секундах
-            to_chat(user, span_warning("Необходимо подождать ещё [mins_left] мин. и [secs_left] сек. до возможности возродиться."))
+            var/mins_left  = floor(time_left / 600)        // 600 тиков = 1 минута
+            var/secs_left  = floor((time_left % 600) / 10) // остаток в секундах
+            to_chat(user, span_warning("Необходимо подождать ещё [mins_left] минут[minute % 10 == 1 && minute % 100 != 11 ? "а" : (minute % 10 >= 2 && minute % 10 <= 4 && (minute % 100 < 10 || minute % 100 >= 20) ? "ы" : "")] и [secs_left] секунд[second % 10 == 1 && second % 100 != 11 ? "а" : (second % 10 >= 2 && second % 10 <= 4 && (second % 100 < 10 || second % 100 >= 20) ? "ы" : "")] до возможности возродиться."))
             return
         egg.attack_ghost(user)
-        GLOB.ashwalker_spawns[user.ckey] = world.time
     . = ..()
 
 /obj/structure/ash_walker_eggshell/Destroy()
@@ -173,6 +172,8 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 		if(team)
 			new_spawn.mind.add_antag_datum(/datum/antagonist/ashwalker, team)
 			team.players_spawned += (new_spawn.ckey)
+		if(new_spawn.ckey)
+			GLOB.ashwalker_spawns[new_spawn.ckey] = world.time
 		eggshell.egg = null
 		QDEL_NULL(eggshell)
 
