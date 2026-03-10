@@ -52655,11 +52655,11 @@
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
 "kel" = (
-/obj/machinery/autolathe,
 /obj/effect/turf_decal/bot/yellow,
 /obj/structure/sign/poster/official/random{
 	pixel_x = -32
 	},
+/obj/machinery/autolathe/hacked,
 /turf/open/floor/plasteel/textured/large,
 /area/security/office)
 "ken" = (

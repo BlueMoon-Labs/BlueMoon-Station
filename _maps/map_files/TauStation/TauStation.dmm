@@ -57885,7 +57885,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
-/obj/machinery/autolathe,
+/obj/machinery/autolathe/hacked,
 /turf/open/floor/plasteel,
 /area/security/office)
 "tVu" = (
