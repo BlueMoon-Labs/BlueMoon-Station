@@ -322,5 +322,5 @@
 	if(iscarbon(human_victim))
 		human_victim.regenerate_limbs()
 		human_victim.regenerate_organs()
-		if(was_dead)
+		if(was_dead && !isdead(human_victim))
 			to_chat(human_victim, "<span class='notice'>После полученных вами тяжелейших ран вы просыпаетесь на тёплом, по сравнению с вашим телом, пепле. В ту же секунду вы вспоминаете всё, что произошло с вами до этого. Неважно, упали вы в лаву или погибли в бою, вы вспоминаете всё во всех деталях: лица, место своей гибели и события, что привели к ней.</span>")
