@@ -44,7 +44,7 @@
 		if(circuit)
 			user.balloon_alert(user, "Нет места")
 			return
-		if(!check_circuit(I, FALSE))
+		if(!check_circuit(I))
 			return
 		if(!user.temporarilyRemoveItemFromInventory(I))
 			return
@@ -64,7 +64,7 @@
 		circuit = null
 		update_appearance()
 
-/obj/item/warp_machine_beacon/proc/check_circuit(obj/item/circuitboard/board, silent = TRUE)
+/obj/item/warp_machine_beacon/proc/check_circuit(obj/item/circuitboard/board, silent = FALSE)
 	. = FALSE
 	if(!board?.build_path)
 		if(!silent)
@@ -100,31 +100,44 @@
 
 /obj/item/warp_machine_beacon/attack_self(mob/user)
 	. = ..()
-	if(!circuit)
-		say("Плата не загружена, развертывание невозможно")
-		return
-	var/turf/T = get_turf(user)
-	if(isspaceturf(T))
-		say("Неподходящая локация")
-		return
-	for(var/obj/object in T)
-		if(object.density && !(object.obj_flags & IGNORE_DENSITY) || object.obj_flags & BLOCKS_CONSTRUCTION)
-			say("Недостаточно места для развертывания")
-			return
-	if(!zone_check())
-		say("Отсутствует питание, развертывание невозможно")
+	if(!deploy_check())
 		return
 	user.balloon_alert(user, "Установка...")
 	if(!do_after(user, 1.3 SECONDS, user))
+		return
+	if(!deploy_check())
 		return
 	item_flags |= NO_PIXEL_RANDOM_DROP
 	if(!user.temporarilyRemoveItemFromInventory(src))
 		item_flags &= ~NO_PIXEL_RANDOM_DROP
 		return
-	forceMove(T)
+	forceMove(get_turf(src))
 	anchored = TRUE
 	say("Начало развертывания...")
 	addtimer(CALLBACK(src, PROC_REF(start_warping), user.dir), 2 SECONDS)
+
+/obj/item/warp_machine_beacon/proc/deploy_check(silent = FALSE)
+	. = FALSE
+	if(!circuit)
+		if(!silent)
+			say("Плата не загружена, развертывание невозможно")
+		return
+	var/turf/T = get_turf(src)
+	if(isspaceturf(T))
+		if(!silent)
+			say("Неподходящая локация")
+		return
+	for(var/obj/object in T)
+		if(object.density && !(object.obj_flags & IGNORE_DENSITY) || object.obj_flags & BLOCKS_CONSTRUCTION)
+			if(!silent)
+				say("Недостаточно места для развертывания")
+			return
+	if(!zone_check())
+		if(!silent)
+			say("Отсутствует питание, развертывание невозможно")
+		return
+
+	return TRUE
 
 /obj/item/warp_machine_beacon/proc/zone_check()
 	var/area/A = get_area(src)
@@ -254,7 +267,7 @@
 	if(QDELETED(src))
 		return
 	var/atom/A = new warp_circuit.build_path(loc)
-	A.dir = dir
+	A?.dir = dir
 	QDEL_NULL(warp_circuit)
 	qdel(src)
 

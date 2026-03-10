@@ -351,7 +351,7 @@
 
 /datum/design/m_warp_beacon
 	name = "Machine warp beacon"
-	desc = "Устройство позволяющее телепортировать уже собранную машину, по сигнатуре платы, что в нее установили. Не подходит для машин, требущих сложных в производстве деталей."
+	desc = "Устройство позволяющее телепортировать уже собранную машину, по сигнатуре платы, что в нее установили. Не подходит для машин, требующих сложных в производстве деталей."
 	id = "m_warp_beacon"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = MINERAL_MATERIAL_AMOUNT*6, /datum/material/glass = MINERAL_MATERIAL_AMOUNT*5)
