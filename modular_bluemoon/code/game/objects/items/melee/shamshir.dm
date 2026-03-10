@@ -271,8 +271,8 @@
 
 /obj/item/melee/sabre/security/proc/cryo(mob/living/L, mob/user)
 	deductcharge(cell_hit_cost)
-	L.adjust_bodytemperature(-60)
-	L.apply_damage(20, STAMINA, BODY_ZONE_CHEST)
+	L.adjust_bodytemperature(-90)
+	L.apply_damage(30, STAMINA, BODY_ZONE_CHEST)
 	playsound(src, 'sound/weapons/egloves.ogg', 50, TRUE, -1)
 	if(user)
 //		L.lastattacker = user.real_name
@@ -309,7 +309,6 @@
 	var/obj/item/storage/belt/sheath/B = S.real_location()
 	if(istype(B))
 		playsound(B, 'sound/items/sheath.ogg', 25, TRUE)
-
 
 /obj/item/storage/belt/sheath
 	name = "Katana sheath"
