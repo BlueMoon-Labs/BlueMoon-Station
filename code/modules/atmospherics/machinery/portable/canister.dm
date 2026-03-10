@@ -288,8 +288,9 @@
 /obj/machinery/portable_atmospherics/canister/proc/canister_break()
 	disconnect()
 	var/turf/T = get_turf(src)
-	T.assume_air(air_contents)
-	air_update_turf()
+	if(T && isopenturf(T))
+		T.assume_air(air_contents)
+		air_update_turf()
 
 	obj_break()
 	density = FALSE
@@ -298,7 +299,7 @@
 	update_icon_state()
 
 	if(holding)
-		holding.forceMove(T)
+		holding.forceMove(T || drop_location())
 		holding = null
 
 /obj/machinery/portable_atmospherics/canister/replace_tank(mob/living/user, close_valve)

@@ -90,6 +90,10 @@
 	if(cable)
 		QDEL_NULL(cable)
 	hackdoor = null
+	medicalActive1 = null
+	medicalActive2 = null
+	securityActive1 = null
+	securityActive2 = null
 	if (loc != card)
 		card.forceMove(drop_location())
 	card.pai = null

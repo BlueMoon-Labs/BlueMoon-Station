@@ -54955,7 +54955,7 @@
 /area/service/hydroponics)
 "jMZ" = (
 /obj/effect/turf_decal/bot/yellow,
-/obj/machinery/autolathe,
+/obj/machinery/autolathe/hacked,
 /turf/open/floor/mineral/plastitanium,
 /area/security/office)
 "jNr" = (

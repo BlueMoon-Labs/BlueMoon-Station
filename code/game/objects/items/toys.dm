@@ -756,19 +756,36 @@
 	var/cooldown = 0
 
 /obj/item/toy/nuke/attack_self(mob/user)
-	if (cooldown < world.time)
-		cooldown = world.time + 1800 //3 minutes
-		user.visible_message("<span class='warning'>[user] presses a button on [src].</span>", "<span class='notice'>You activate [src], it plays a loud noise!</span>", "<span class='italics'>You hear the click of a button.</span>")
-		sleep(5)
+	if(obj_flags & EMAGGED && cooldown < world.time)
+		cooldown = world.time + 1800 // 3 minutes
+		user.visible_message(span_warning("[user] presses a button on [src]."), span_notice("You activate [src], it plays a loud noise!"), span_hear("You hear the click of a button."))
+		sleep(0.5 SECONDS)
 		icon_state = "nuketoy"
 		playsound(src, 'sound/machines/alarm.ogg', 100, 0)
-		sleep(135)
+		sleep(14 SECONDS)
+		user.visible_message(span_alert("[src] violently explodes!"))
+		explosion(src, light_impact_range = 1)
+		qdel(src)
+	else if(cooldown < world.time)
+		cooldown = world.time + 1800 // 3 minutes
+		user.visible_message(span_warning("[user] presses a button on [src]."), span_notice("You activate [src], it plays a loud noise!"), span_hear("You hear the click of a button."))
+		sleep(0.5 SECONDS)
+		icon_state = "nuketoy"
+		playsound(src, 'sound/machines/alarm.ogg', 100, 0)
+		sleep(13.5 SECONDS)
 		icon_state = "nuketoycool"
 		sleep(cooldown - world.time)
 		icon_state = "nuketoyidle"
 	else
 		var/timeleft = (cooldown - world.time)
-		to_chat(user, "<span class='alert'>Nothing happens, and '</span>[round(timeleft/10)]<span class='alert'>' appears on a small display.</span>")
+		to_chat(user, span_alert("Nothing happens, and '[round(timeleft/10)]' appears on a small display."))
+
+/obj/item/toy/nuke/emag_act(mob/user)
+	if(obj_flags & EMAGGED)
+		return FALSE
+	balloon_alert(user, "explosive simulation enabled")
+	obj_flags |= EMAGGED
+	return TRUE
 
 /*
  * Fake meteor
@@ -781,12 +798,21 @@
 	icon_state = "minimeteor"
 	w_class = WEIGHT_CLASS_SMALL
 
+/obj/item/toy/minimeteor/emag_act(mob/user)
+	if(obj_flags & EMAGGED)
+		return FALSE
+	to_chat(user, span_warning("You short circuit whatever electronics exist inside. The \"meteor\" suddenly feels a lot heavier...?"))
+	obj_flags |= EMAGGED
+	return TRUE
+
 /obj/item/toy/minimeteor/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	playsound(src, 'sound/effects/meteorimpact.ogg', 40, TRUE)
+	for(var/mob/M in urange(10, src))
+		if(!M.stat && !isAI(M))
+			shake_camera(M, 3, 1)
+	if(obj_flags & EMAGGED)
+		explosion(src, devastation_range = -1, heavy_impact_range = -1, light_impact_range = 1)
 	if(!..())
-		playsound(src, 'sound/effects/meteorimpact.ogg', 40, 1)
-		for(var/mob/M in urange(10, src))
-			if(!M.stat && !isAI(M))
-				shake_camera(M, 3, 1)
 		qdel(src)
 
 /*

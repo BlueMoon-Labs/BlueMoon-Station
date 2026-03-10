@@ -233,7 +233,7 @@
 	projectiletype = /obj/item/projectile/bullet/a308
 	projectilesound = 'modular_bluemoon/sound/weapons/carcannon1.ogg'
 	var/alt_projectilesound = 'modular_bluemoon/sound/weapons/rocketlaunch.ogg'
-	var/alternative_fire = /obj/item/projectile/bullet/a84mm_he
+	var/alternative_fire = /obj/item/projectile/bullet/a84mm/he
 	var/list_sound = list('modular_bluemoon/sound/creatures/drone_speech.ogg', 'modular_bluemoon/sound/creatures/drone_target_search.ogg','modular_bluemoon/sound/creatures/drone_up.ogg','modular_bluemoon/sound/creatures/drone_up2.ogg')
 	icon = 'modular_bluemoon/icons/mob/dron.dmi'
 	icon_dead = "crash"

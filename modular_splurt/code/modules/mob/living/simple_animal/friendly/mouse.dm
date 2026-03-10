@@ -36,7 +36,7 @@
 		if(W.welding)
 			user.visible_message("<span class='warning'>[user] burns the boommouse with [user.ru_ego()] [W.name]!</span>", "<span class='userdanger'>That was stupid of you.</span>")
 			var/message_admins = "[ADMIN_LOOKUPFLW(user)] triggered a boommouse explosion at [ADMIN_VERBOSEJMP(T)]."
-			GLOB.bombers += message_admins
+			add_bomber_message(message_admins)
 			message_admins(message_admins)
 			user.log_message("triggered a boommouse explosion.", LOG_ATTACK)
 			death()

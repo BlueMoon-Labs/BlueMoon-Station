@@ -270,7 +270,13 @@
 	. = ..()
 	START_PROCESSING(SSprocessing, src)
 
+/datum/team/cult/proc/on_blood_target_destroyed(datum/source)
+	SIGNAL_HANDLER
+	reset_blood_target(src)
+
 /datum/team/cult/Destroy()
+	if(blood_target)
+		UnregisterSignal(blood_target, COMSIG_PARENT_QDELETING)
 	STOP_PROCESSING(SSprocessing, src)
 	return ..()
 

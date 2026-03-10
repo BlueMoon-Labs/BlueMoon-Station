@@ -1308,6 +1308,15 @@ GLOBAL_LIST_INIT(pda_ringtone_list, list(
 	qdel(src)
 	return
 
+/obj/item/pda/handle_atom_del(atom/A)
+	if(A == id)
+		id = null
+	if(A == pai)
+		pai = null
+	if(A == inserted_item)
+		inserted_item = null
+	return ..()
+
 /obj/item/pda/Destroy()
 	GLOB.PDAs -= src
 	if(istype(id))

@@ -118,7 +118,8 @@
 
 	initial_contents = list(
 		/obj/item/clothing/shoes/sandal,
-		/obj/item/teleportation_scroll
+		/obj/item/teleportation_scroll,
+		/obj/item/clothing/accessory/permit/special/mage
 	)
 
 /datum/mail_pattern/antag/hogwarts/apply(mob/living/carbon/human/recipient)

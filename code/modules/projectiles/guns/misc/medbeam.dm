@@ -185,8 +185,8 @@
 //////////////////////////////Mech Version///////////////////////////////
 /obj/item/gun/medbeam/mech
 	mounted = TRUE
-	main_heal = -20
-	second_heal = -10
+	// main_heal = -20 //! Слишком мощно.
+	// second_heal = -10 //! Слишком мощно.
 
 /obj/item/gun/medbeam/mech/Initialize(mapload)
 	. = ..()

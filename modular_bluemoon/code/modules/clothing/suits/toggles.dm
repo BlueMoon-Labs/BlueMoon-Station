@@ -3,6 +3,7 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/head/hooded/bm
 	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'

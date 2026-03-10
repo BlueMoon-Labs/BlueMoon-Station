@@ -123,6 +123,8 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	. = QDEL_HINT_IWILLGC
 	var/is_changeturf = changing_turf
 	if(!is_changeturf)
+		if(lighting_object)
+			qdel(lighting_object, force = TRUE)
 		stack_trace("Incorrect turf deletion")
 	changing_turf = FALSE
 	var/turf/T = SSmapping.get_turf_above(src)

@@ -1,4 +1,4 @@
-// Red kill lasers for the big gun (20 shots from 10k cell)
+// Red kill lasers for the big gun (~20 shots from 10k cell)
 
 /obj/item/ammo_casing/energy/cybersun_big_kill
 	projectile_type = /obj/item/projectile/beam/cybersun_laser

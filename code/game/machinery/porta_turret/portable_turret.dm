@@ -251,6 +251,11 @@ DEFINE_BITFIELD(turret_flags, list(
 				return TRUE
 			else
 				to_chat(usr, "<span class='warning'>It has to be secured first!</span>")
+		if("ai_auth")
+			if(issilicon(usr) || IsAdminGhost(usr))
+				locked = !locked
+				update_icon()
+				return TRUE
 		if("authweapon")
 			turret_flags ^= TURRET_FLAG_AUTH_WEAPONS
 			return TRUE

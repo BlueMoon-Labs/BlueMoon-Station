@@ -18,6 +18,7 @@
 	item_state = "latexballon"
 	user.update_inv_hands()
 	to_chat(user, "<span class='notice'>You blow up [src] with [tank].</span>")
+	QDEL_NULL(air_contents)
 	air_contents = tank.remove_air_volume(3)
 
 /obj/item/latexballon/Destroy()

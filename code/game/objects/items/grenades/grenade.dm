@@ -93,7 +93,7 @@
 
 /obj/item/grenade/proc/log_grenade(mob/user, turf/T)
 	var/message = "[ADMIN_LOOKUPFLW(user)]) has primed \a [src] for detonation at [ADMIN_VERBOSEJMP(T)]"
-	GLOB.bombers += message
+	add_bomber_message(message)
 	message_admins(message)
 	log_game("[key_name(user)] has primed \a [src] for detonation at [AREACOORD(T)].")
 

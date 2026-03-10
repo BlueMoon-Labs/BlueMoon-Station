@@ -166,6 +166,17 @@
 	else
 		to_chat(admin, "<span class='danger'>No valid nuke found!</span>")
 
+/datum/antagonist/nukeop/leader/get_admin_commands()
+	. = ..()
+	.["Force war"] = CALLBACK(src, PROC_REF(admin_force_war))
+
+/datum/antagonist/nukeop/leader/proc/admin_force_war(mob/admin)
+	var/obj/item/nuclear_challenge/challenge = locate() in owner.current?.GetAllContents()
+	if(challenge)
+		challenge.force_war()
+	else
+		to_chat(admin, span_warning("Nuclear challenge not found in leader's inventory."))
+
 /datum/antagonist/nukeop/leader
 	name = "Nuclear Operative Leader"
 	nukeop_outfit = /datum/outfit/inteq/leader

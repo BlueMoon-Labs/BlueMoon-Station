@@ -1,3 +1,7 @@
+/obj/effect/decal/cleanable/Destroy()
+	blood_DNA = null
+	return ..()
+
 /obj/effect/decal/cleanable
 	gender = PLURAL
 	layer = ABOVE_NORMAL_TURF_LAYER

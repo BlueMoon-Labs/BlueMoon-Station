@@ -87,6 +87,7 @@
 	autofire_stat = AUTOFIRE_STAT_IDLE
 
 	if(!QDELETED(clicker))
+		clicker.click_intercept_time = 0 // Allow immediate clicks when switching away from full auto
 		UnregisterSignal(clicker, list(COMSIG_CLIENT_MOUSEDOWN, COMSIG_CLIENT_MOUSEUP, COMSIG_CLIENT_MOUSEDRAG))
 	mouse_status = AUTOFIRE_MOUSEUP //In regards to the component there's no click anymore to care about.
 	clicker = null
@@ -194,6 +195,7 @@
 	STOP_PROCESSING(SSprojectiles, src)
 	autofire_stat = AUTOFIRE_STAT_ALERT
 	if(clicker)
+		clicker.click_intercept_time = 0 // Allow immediate clicks (e.g. right-click to switch weapon mode) after releasing full auto
 		clicker.mouse_override_icon = null
 		clicker.mouse_pointer_icon = clicker.mouse_override_icon
 		UnregisterSignal(clicker, COMSIG_CLIENT_MOUSEDRAG)

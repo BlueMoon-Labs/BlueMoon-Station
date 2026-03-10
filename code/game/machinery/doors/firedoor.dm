@@ -112,10 +112,12 @@
 		for(var/I in affecting_areas)
 			var/area/A = I
 			LAZYREMOVE(A.firedoors, src)
-
+// обнуление affecting_areas в firedoor для надёжности. тк возможная утечка
 /obj/machinery/door/firedoor/Destroy()
 	remove_from_areas()
-	affecting_areas.Cut()
+	if(affecting_areas)
+		affecting_areas.Cut()
+		affecting_areas = null
 	return ..()
 
 /obj/machinery/door/firedoor/Bumped(atom/movable/AM)

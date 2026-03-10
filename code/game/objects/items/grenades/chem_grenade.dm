@@ -167,7 +167,7 @@
 			continue
 		reagent_string += "[exploded_beaker] [beaker_number++] : " + pretty_string_from_reagent_list(exploded_beaker.reagents.reagent_list) + ";"
 	var/message = "[src] primed by [user] at [ADMIN_VERBOSEJMP(T)] contained [reagent_string]."
-	GLOB.bombers += message
+	add_bomber_message(message)
 	message_admins(message)
 	user.log_message("primed [src] ([reagent_string])",LOG_GAME)
 

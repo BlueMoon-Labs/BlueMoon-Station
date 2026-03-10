@@ -11,6 +11,12 @@ GLOBAL_LIST_EMPTY(cryopod_computers)
 
 GLOBAL_LIST_EMPTY(ghost_records)
 
+/// Максимум записей в списке закриогенных перед подрезкой (ограничение утечки памяти)
+#define CRYO_FROZEN_CREW_MAX 500
+#define CRYO_FROZEN_CREW_TRIM_TO 300
+#define CRYO_GHOST_RECORDS_MAX 500
+#define CRYO_GHOST_RECORDS_TRIM_TO 300
+
 //Main cryopod console.
 /obj/machinery/computer/cryopod
 	name = "general oversight console"
@@ -424,6 +430,9 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	else
 		if(control_computer.z == (pod ? pod.z : mob_occupant.z)) // BLUEMOON - CRYO_ITEMS_AND_MESSAGES_FIX - ADD - в консоли не будет имени ушедшего в крио, если телепортированный не на её уровне
 			control_computer.frozen_crew += list(crew_member)
+			// Ограничение роста списка — утечка памяти при долгих раундах
+			if(length(control_computer.frozen_crew) > CRYO_FROZEN_CREW_MAX)
+				control_computer.frozen_crew.Cut(1, length(control_computer.frozen_crew) - CRYO_FROZEN_CREW_TRIM_TO)
 
 	// Make an announcement and log the person entering storage.
 	if(mob_occupant.loc.z in SSmapping.levels_by_trait(ZTRAIT_STATION)) // BLUEMOON - CRYO_ITEMS_AND_MESSAGES_FIX - ADD - не будет оповещения, если уходящий в крио вне станции
@@ -528,7 +537,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 		mob_occupant.ghostize(FALSE, penalize = TRUE, voluntary = TRUE, cryo = TRUE)
 
 	QDEL_LIST(destroying)
-	cryo_handle_objectives()
+	cryo_handle_objectives(mob_occupant)
 	QDEL_NULL(mob_occupant)
 	QDEL_LIST(destroy_later)
 
@@ -572,6 +581,9 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	var/obj/machinery/computer/cryopod/control_computer = find_control_computer()
 	var/alt_name = get_spawner_outfit_name()
 	GLOB.ghost_records.Add(list(list("name" = spawned_mob.real_name, "rank" = alt_name ? alt_name : name)))
+	// Ограничение роста глобального списка — утечка памяти при множестве спавнов из призраков
+	if(length(GLOB.ghost_records) > CRYO_GHOST_RECORDS_MAX)
+		GLOB.ghost_records.Cut(1, length(GLOB.ghost_records) - CRYO_GHOST_RECORDS_TRIM_TO)
 
 	if(control_computer)
 		control_computer.announce("CRYO_JOIN", spawned_mob.real_name, name)

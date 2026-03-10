@@ -134,6 +134,7 @@
 	name = "Space";
 	req_access_txt = "1"
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/pod/light,
 /area/shuttle/lambda)
 "V" = (

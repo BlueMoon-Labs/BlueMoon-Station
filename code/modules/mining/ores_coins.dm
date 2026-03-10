@@ -334,7 +334,7 @@ GLOBAL_LIST_INIT(sand_recipes, list(\
 				message_admins("A signal has triggered a [name] to detonate at [ADMIN_VERBOSEJMP(bombturf)]. Igniter attacher: [ADMIN_LOOKUPFLW(attacher)]")
 			var/bomb_message = "A signal has primed a [name] for detonation at [AREACOORD(bombturf)]. Igniter attacher: [key_name(attacher)]."
 			log_game(bomb_message)
-			GLOB.bombers += bomb_message
+			add_bomber_message(bomb_message)
 		else
 			user.visible_message("<span class='warning'>[user] strikes \the [src], causing a chain reaction!</span>", "<span class='danger'>You strike \the [src], causing a chain reaction.</span>")
 			log_game("[key_name(user)] has primed a [name] for detonation at [AREACOORD(bombturf)]")
