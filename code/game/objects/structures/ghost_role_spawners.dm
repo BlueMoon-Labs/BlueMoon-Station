@@ -94,7 +94,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
             var/time_left = max(0, ASH_RESPAWN_COOLDOWN - (world.time - time_spawn))
             var/mins_left  = floor(time_left / 600)        // 600 тиков = 1 минута
             var/secs_left  = floor((time_left % 600) / 10) // остаток в секундах
-            to_chat(user, span_warning("Необходимо подождать ещё [mins_left] минут[minute % 10 == 1 && minute % 100 != 11 ? "а" : (minute % 10 >= 2 && minute % 10 <= 4 && (minute % 100 < 10 || minute % 100 >= 20) ? "ы" : "")] и [secs_left] секунд[second % 10 == 1 && second % 100 != 11 ? "а" : (second % 10 >= 2 && second % 10 <= 4 && (second % 100 < 10 || second % 100 >= 20) ? "ы" : "")] до возможности возродиться."))
+            to_chat(user, span_warning("Необходимо подождать ещё [mins_left] минут[mins_left % 10 == 1 && mins_left % 100 != 11 ? "а" : (mins_left % 10 >= 2 && mins_left % 10 <= 4 && (mins_left % 100 < 10 || mins_left % 100 >= 20) ? "ы" : "")] и [secs_left] секунд[secs_left % 10 == 1 && secs_left % 100 != 11 ? "а" : (secs_left % 10 >= 2 && secs_left % 10 <= 4 && (secs_left % 100 < 10 || secs_left % 100 >= 20) ? "ы" : "")] до возможности возродиться."))
             return
         egg.attack_ghost(user)
     . = ..()
