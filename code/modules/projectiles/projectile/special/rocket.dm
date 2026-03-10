@@ -15,7 +15,6 @@
 	icon_state= "missile"
 	damage = 60
 	sharpness = NONE
-	embed_type = null
 	shrapnel_type = null
 	ricochets_max = 0
 	/// Whether we do extra damage when hitting a mech or silicon
@@ -51,7 +50,7 @@ among other potential differences. This granularity is helpful for things like t
 		if(random_crit_gib)
 			var/mob/living/gibbed_dude = target
 			new /obj/effect/temp_visual/crit(get_turf(gibbed_dude))
-			gibbed_dude.gib(DROP_ALL_REMAINS)
+			gibbed_dude.gib(FALSE, FALSE, FALSE)
 
 /// PM9 HEAP rocket - the anti-anything missile you always craved.
 /obj/item/projectile/bullet/a84mm/he
@@ -81,6 +80,6 @@ among other potential differences. This granularity is helpful for things like t
 /obj/item/broken_missile
 	name = "\improper broken missile"
 	desc = "A missile that did not detonate. The tail has snapped and it is in no way fit to be used again."
-	icon = 'icons/obj/item/projectiles.dmi'
+	icon = 'icons/obj/projectiles.dmi'
 	icon_state = "missile_broken"
 	w_class = WEIGHT_CLASS_TINY
