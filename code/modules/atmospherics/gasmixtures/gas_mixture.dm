@@ -102,12 +102,16 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 		set_volume(volume)
 
 
-/*
-we use a hook instead
-/datum/gas_mixture/Del()
-	__gasmixture_unregister()
-	. = ..()
-	*/
+/datum/gas_mixture/Destroy()
+	// Release Rust-side reference
+	if(GLOB.auxtools_atmos_initialized)
+		__gasmixture_unregister()
+	// Null out lists to reduce reference graph traversal during hard delete
+	reaction_results = null
+	analyzer_results = null
+	// auxmos/external refs prevent soft GC; skip to hard delete to avoid "unable to be GC'd" spam
+	..()
+	return QDEL_HINT_HARDDEL
 
 /proc/gas_types()
 	var/list/L = subtypesof(/datum/gas)

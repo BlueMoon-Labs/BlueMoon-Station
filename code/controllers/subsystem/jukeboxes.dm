@@ -175,7 +175,7 @@ SUBSYSTEM_DEF(jukeboxes)
 	track_datum.song_name = track_name
 	var/track_length = LAZYACCESS(track_data, TRACK_LENGTH)
 	if(!track_length)
-		stack_trace("Track [track] lacks length.")
+		log_world("Jukebox: Track [track] lacks length. Use format: name+length_seconds+bpm+id")
 		return FALSE
 	track_length = text2num(track_length)
 	if(!isnum(track_length))

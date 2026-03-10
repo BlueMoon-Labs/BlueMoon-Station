@@ -79,10 +79,12 @@
 		if(hot_air)
 			var/datum/gas_mixture/hot_circ_air1 = hot_circ.airs[1]
 			hot_circ_air1.merge(hot_air)
+			qdel(hot_air)
 
 		if(cold_air)
 			var/datum/gas_mixture/cold_circ_air1 = cold_circ.airs[1]
 			cold_circ_air1.merge(cold_air)
+			qdel(cold_air)
 
 		update_icon()
 

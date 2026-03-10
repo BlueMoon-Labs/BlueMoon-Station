@@ -478,6 +478,7 @@
 	var/walkcool = 0
 	var/wallcharges = 20
 	var/newlocobject = null
+	var/recharge_timer = null
 
 /obj/item/clothing/shoes/timidcostume
 	name = "timid woman boots"
@@ -499,10 +500,24 @@
 	. = ..()
 	if(slot == ITEM_SLOT_FEET)
 		RegisterSignal(user, COMSIG_MOB_CLIENT_MOVE, PROC_REF(intercept_user_move))
+		recharge_timer = addtimer(CALLBACK(src, PROC_REF(recharge_charges)), 10 SECONDS, TIMER_LOOP | TIMER_STOPPABLE)
 
 /obj/item/clothing/shoes/wallwalkers/dropped(mob/user)
 	. = ..()
-	UnregisterSignal(user, COMSIG_MOB_CLIENT_MOVE)
+	if(user)
+		UnregisterSignal(user, COMSIG_MOB_CLIENT_MOVE)
+	if(recharge_timer)
+		deltimer(recharge_timer)
+		recharge_timer = null
+
+/obj/item/clothing/shoes/wallwalkers/Destroy()
+	if(recharge_timer)
+		deltimer(recharge_timer)
+		recharge_timer = null
+	return ..()
+
+/obj/item/clothing/shoes/wallwalkers/proc/recharge_charges()
+	wallcharges = min(wallcharges + 1, 20)
 
 /obj/item/clothing/shoes/wallwalkers/attackby(obj/item/W, mob/user, params)
 	. = ..()

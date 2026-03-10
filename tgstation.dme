@@ -1737,6 +1737,7 @@
 #include "code\modules\admin\tag.dm"
 #include "code\modules\admin\tgsban.dm"
 #include "code\modules\admin\topic.dm"
+#include "code\modules\admin\traitor_panel_tgui.dm"
 #include "code\modules\admin\whitelist.dm"
 #include "code\modules\admin\callproc\callproc.dm"
 #include "code\modules\admin\DB_ban\functions.dm"

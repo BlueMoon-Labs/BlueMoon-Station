@@ -190,10 +190,10 @@
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
 	back = /obj/item/storage/backpack/ert_commander
-	belt = /obj/item/storage/belt/grenade/full
+	belt = /obj/item/storage/belt/military/ert_max
 	r_hand = /obj/item/gun/ballistic/automatic/shotgun/bulldog/unrestricted
 	//l_hand = /obj/item/melee/powerfist
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/clothing/mask/gas/sechailer/swat=1,\
 		/obj/item/choice_beacon/vehicle/misc_mech/ert=1,\
 		/obj/item/storage/box/syndie_kit/revolver=1,\
@@ -227,10 +227,10 @@
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/sec
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
 	back = /obj/item/storage/backpack/ert_commander/ert_security
-	belt = /obj/item/storage/belt/grenade/full
+	belt = /obj/item/storage/belt/military/ert_max
 	r_hand = /obj/item/gun/ballistic/automatic/ar
 	l_hand = /obj/item/melee/powerfist
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/clothing/mask/gas/sechailer=1,\
 		/obj/item/storage/ifak=1,\
 		/obj/item/ammo_box/magazine/m556=3)
@@ -252,9 +252,9 @@
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/sec
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
 	back = /obj/item/storage/backpack/ert_commander/ert_security
-	belt = /obj/item/storage/belt/security/full
+	belt = /obj/item/storage/belt/military/ert_max
 	r_hand = /obj/item/gun/ballistic/automatic/l6_saw/unrestricted
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/ifak=1,\
 		/obj/item/ammo_box/magazine/mm712x82=2)
 

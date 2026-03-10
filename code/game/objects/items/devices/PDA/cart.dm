@@ -52,6 +52,17 @@
 	var/mob/living/simple_animal/bot/active_bot
 	var/list/botlist = list()
 
+/obj/item/cartridge/Destroy()
+	active1 = null
+	active2 = null
+	active3 = null
+	host_pda = null
+	powmonitor = null
+	powermonitors = null
+	active_bot = null
+	botlist = null
+	return ..()
+
 /obj/item/cartridge/Initialize(mapload)
 	. = ..()
 	var/obj/item/pda/pda = loc

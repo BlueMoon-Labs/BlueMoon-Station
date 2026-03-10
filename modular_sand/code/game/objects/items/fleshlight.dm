@@ -958,7 +958,7 @@
 			if(ishuman(user))
 				portal_settings?.owner = user
 				START_PROCESSING(SSobj, src)
-				RegisterSignal(user, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear))
+				RegisterSignal(user, COMSIG_MOVABLE_HEAR, PROC_REF(on_owner_hear), override = TRUE)
 			if(!portallight.len)
 				audible_message("[icon2html(src, hearers(src))] *beep* *beep* *beep*")
 				playsound(src, 'sound/machines/triple_beep.ogg', ASSEMBLY_BEEP_VOLUME, TRUE)

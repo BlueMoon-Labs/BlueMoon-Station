@@ -160,20 +160,26 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/proc/scrub(var/turf/tile)
 	if(!istype(tile))
 		return FALSE
+	if(!airs?[1])
+		return FALSE
 	var/datum/gas_mixture/environment = tile.return_air()
 	var/datum/gas_mixture/air_contents = airs[1]
 
 	if(air_contents.return_pressure() >= 50*ONE_ATMOSPHERE || !islist(clean_filter_types))
 		return FALSE
 
+	var/env_vol = environment.return_volume()
+	if(env_vol <= 0)
+		return FALSE
+
 	if(scrubbing & SCRUBBING)
-		environment.scrub_into(air_contents, volume_rate/environment.return_volume(), clean_filter_types)
+		environment.scrub_into(air_contents, volume_rate/env_vol, clean_filter_types)
 
 		tile.air_update_turf()
 
 	else //Just siphoning all air
 
-		environment.transfer_ratio_to(air_contents, volume_rate/environment.return_volume())
+		environment.transfer_ratio_to(air_contents, volume_rate/env_vol)
 		tile.air_update_turf()
 
 	update_parents()

@@ -90,6 +90,8 @@
 		on = FALSE
 	if(!on || welded)
 		return
+	if(!parents?[1] || !airs?[1])
+		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
 	var/datum/gas_mixture/environment = loc.return_air()

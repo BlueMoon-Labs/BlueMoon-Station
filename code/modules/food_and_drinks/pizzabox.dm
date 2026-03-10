@@ -134,7 +134,7 @@
 				bomb_defused = FALSE
 
 				var/message = "[ADMIN_LOOKUPFLW(user)] has trapped a [src] with [bomb] set to [bomb_timer * 2] seconds."
-				GLOB.bombers += message
+				add_bomber_message(message)
 				message_admins(message)
 				log_game("[key_name(user)] has trapped a [src] with [bomb] set to [bomb_timer * 2] seconds.")
 				bomb.adminlog = "The [bomb.name] in [src.name] that [key_name(user)] activated has detonated!"

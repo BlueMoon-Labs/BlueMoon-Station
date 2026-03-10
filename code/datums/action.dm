@@ -95,9 +95,11 @@
 	SHOULD_CALL_PARENT(TRUE)
 
 	for(var/datum/hud/hud in viewers)
-		if(!hud.mymob)
-			continue
-		HideFrom(hud.mymob)
+		var/atom/movable/screen/movable/action_button/button = viewers[hud]
+		if(hud.mymob)
+			HideFrom(hud.mymob)
+		else if(button)
+			qdel(button) // Mob destroyed; remove orphaned button to prevent GC failure
 	LAZYREMOVE(remove_from?.actions, src) // We aren't always properly inserted into the viewers list, gotta make sure that action's cleared
 	viewers = list()
 

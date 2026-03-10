@@ -83,7 +83,10 @@
 		volume = location.air.reaction_results["fire"]*FIRE_GROWTH_RATE
 		temperature = location.air.return_temperature()
 	else
-		var/datum/gas_mixture/affected = location.air.remove_ratio(volume/location.air.return_volume())
+		var/air_vol = location.air.return_volume()
+		if(air_vol <= 0)
+			return
+		var/datum/gas_mixture/affected = location.air.remove_ratio(volume/air_vol)
 		if(affected) //in case volume is 0
 			if(temperature > affected.return_temperature())
 				affected.set_temperature(temperature) //don't set the temperature lower than what it was

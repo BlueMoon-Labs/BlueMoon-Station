@@ -24,8 +24,9 @@
 
 /obj/machinery/portable_atmospherics/pump/Destroy()
 	var/turf/T = get_turf(src)
-	T.assume_air(air_contents)
-	air_update_turf()
+	if(T && isopenturf(T))
+		T.assume_air(air_contents)
+		air_update_turf()
 	QDEL_NULL(pump)
 	return ..()
 
@@ -42,17 +43,36 @@
 /obj/machinery/portable_atmospherics/pump/process_atmos()
 	..()
 	if(!on)
+		// Only qdel component's internal mixtures; never qdel borrowed refs (air_contents, holding, turf)
+		var/list/borrowed = list(air_contents)
+		if(holding)
+			borrowed += holding.air_contents
+		var/turf/T = get_turf(src)
+		if(T?.return_air())
+			borrowed += T.return_air()
+		if(pump?.airs[1] && !(pump.airs[1] in borrowed))
+			QDEL_NULL(pump.airs[1])
+		if(pump?.airs[2] && !(pump.airs[2] in borrowed))
+			QDEL_NULL(pump.airs[2])
 		pump?.airs[1] = null
 		pump?.airs[2] = null
 		return
 
 	var/turf/T = get_turf(src)
-	if(direction == PUMP_OUT) // Hook up the internal pump.
-		pump.airs[1] = holding ? holding.air_contents : air_contents
-		pump.airs[2] = holding ? air_contents : T.return_air()
-	else
-		pump.airs[1] = holding ? air_contents : T.return_air()
-		pump.airs[2] = holding ? holding.air_contents : air_contents
+	var/datum/gas_mixture/new_air1 = direction == PUMP_OUT ? (holding ? holding.air_contents : air_contents) : (holding ? air_contents : T?.return_air())
+	var/datum/gas_mixture/new_air2 = direction == PUMP_OUT ? (holding ? air_contents : T?.return_air()) : (holding ? holding.air_contents : air_contents)
+	var/list/borrowed = list(air_contents)
+	if(holding)
+		borrowed += holding.air_contents
+	if(T?.return_air())
+		borrowed += T.return_air()
+	// QDEL component's internal mixtures before overwriting; never qdel borrowed refs
+	if(pump.airs[1] && !(pump.airs[1] in borrowed))
+		QDEL_NULL(pump.airs[1])
+	if(pump.airs[2] && !(pump.airs[2] in borrowed))
+		QDEL_NULL(pump.airs[2])
+	pump.airs[1] = new_air1
+	pump.airs[2] = new_air2
 
 	pump.process_atmos() // Pump gas.
 	if(!holding)

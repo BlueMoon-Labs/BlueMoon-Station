@@ -984,6 +984,12 @@
 	mode.add_devil_objectives(new_character.mind, 2)
 	new_character.mind.special_role = ROLE_DEVIL
 	new_character.mind.assigned_role = ROLE_DEVIL
+	// Equip as Assistant so the devil has clothes (makeBody creates a naked human)
+	if(ishuman(new_character))
+		var/datum/job/assistant = SSjob.GetJob("Assistant")
+		if(assistant)
+			new_character.job = assistant.title
+			assistant.equip(new_character, announce = FALSE)
 	message_admins("[ADMIN_LOOKUPFLW(new_character)] has been made into a Devil by the midround ruleset.")
 	log_game("DYNAMIC: [key_name(new_character)] was spawned as a Devil by the midround ruleset.")
 

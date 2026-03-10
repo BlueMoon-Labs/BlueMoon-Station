@@ -289,6 +289,12 @@
 	qdel(src)
 
 /obj/machinery/door/airlock/Destroy()
+	if(unelectrify_timerid)
+		deltimer(unelectrify_timerid)
+		unelectrify_timerid = null
+	if(closeOther && closeOther.closeOther == src)
+		closeOther.closeOther = null
+	closeOther = null
 	QDEL_NULL(wires)
 	QDEL_NULL(electronics)
 	if(charge)
