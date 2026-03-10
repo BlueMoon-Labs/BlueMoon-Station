@@ -290,7 +290,7 @@
 
 /datum/ash_ritual/revival
 	name = "Revival"
-	desc = "Говорят, данный ритуал был дарован самим Некрополем для того, чтобы порабощать незваных гостей. Он позволяет им дышать пеплом и говорить с вами на родном языке, но если сила воли цели сильна, то это приведет к непредвиденным последствиям, вплоть до уничтожения тела."
+	desc = "Данный ритуал взывает к силам Некрополя, которые отвечают на его зов и восстанавливают тело пострадавшего, находящегося в центре руны, ценой труднодоступных материалов."
 	required_components = list(
 		"north" =  /obj/item/tendril_seed,
 		"south" = /obj/item/organ/regenerative_core/legion,
@@ -310,12 +310,10 @@
 	var/mob/living/carbon/human/human_victim = locate() in get_turf(success_rune)
 	if(!human_victim)
 		return
-	if(human_victim.anti_magic_check())
-		human_victim.visible_message("<span class='warning'>This ritual has no effect on [human_victim]!</span>")
-		return
+	var/was_dead = isdead(human_victim)
 	human_victim.revive(full_heal = 1)
 	if(iscarbon(human_victim))
 		human_victim.regenerate_limbs()
 		human_victim.regenerate_organs()
-		if(isdead(human_victim))
+		if(was_dead)
 			to_chat(human_victim, "<span class='notice'>После полученных вами тяжелейших ран вы просыпаетесь на тёплом, по сравнению с вашим телом, пепле. В ту же секунду вы вспоминаете всё, что произошло с вами до этого. Неважно, упали вы в лаву или погибли в бою, вы вспоминаете всё во всех деталях: лица, место своей гибели и события, что привели к ней.</span>")
