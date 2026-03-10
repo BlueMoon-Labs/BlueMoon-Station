@@ -74,9 +74,9 @@
 		var/obj/item/circuitboard/machine/machine_board = board
 		var/good_board = TRUE
 		var/static/list/allowed_types = typesof(/obj/item/stack/cable_coil, /obj/item/reagent_containers/glass/beaker, /obj/item/stack/sheet/glass, /obj/item/stack/sheet/metal)
-		for(var/req in machine_board.req_components)
+		for(var/req in machine_board.req_components) // ispath
 			if(ispath(req, /obj/item/stock_parts))
-				var/obj/item/stock_parts/req_stock = req
+				var/obj/item/stock_parts/req_stock = req // ispath
 				if(req_stock:rating > 1)
 					good_board = FALSE
 			else if(req in allowed_types)
@@ -104,9 +104,12 @@
 		say("Плата не загружена, развертывание невозможно")
 		return
 	var/turf/T = get_turf(user)
+	if(isspaceturf(T))
+		say("Неподходящая локация")
+		return
 	for(var/obj/object in T)
 		if(object.density && !(object.obj_flags & IGNORE_DENSITY) || object.obj_flags & BLOCKS_CONSTRUCTION)
-			say("Неподходящая локация")
+			say("Недостаточно места для развертывания")
 			return
 	if(!zone_check())
 		say("Отсутствует питание, развертывание невозможно")
