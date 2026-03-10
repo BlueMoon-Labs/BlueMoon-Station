@@ -275,6 +275,7 @@
 			to_chat(human_victim, span_userdanger("Вы забыли о всём, что происходило на Лаваленде"))
 		else
 			human_victim.death()
+		return
 	var/choice = tgui_alert(human_victim,"Кажется, вас хотят поработить... Вы можете попытаться воспротивиться этому, но это может нести свои последствия...","Порабощение",list("Сопротивляться", "Поддаться"), 30 SECONDS)
 	if(choice == "Поддаться")
 		var/obj/item/organ/lungs/lungs_slot = human_victim.internal_organs_slot[ORGAN_SLOT_LUNGS]
