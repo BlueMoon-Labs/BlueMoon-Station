@@ -1918,7 +1918,7 @@
 	name = "Zetta plushie"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/toy/plush/bm/zetta
-	ckeywhitelist = list("hellsinggc")
+	ckeywhitelist = list("hellsinggc", "tblkba")
 
 ///////////////////////////////////////////////
 
