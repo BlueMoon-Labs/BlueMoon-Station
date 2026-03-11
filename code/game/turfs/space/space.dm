@@ -18,7 +18,7 @@
 	var/static/datum/gas_mixture/immutable/space/space_gas
 	plane = PLANE_SPACE
 	layer = SPACE_LAYER
-	light_power = 0.5
+	light_power = STARLIGHT_POWER_NIGHT
 	light_color = COLOR_STARLIGHT
 	light_height = LIGHTING_HEIGHT_SPACE
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED

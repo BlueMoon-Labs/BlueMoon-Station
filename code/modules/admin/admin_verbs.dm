@@ -43,6 +43,7 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/datum/admins/proc/toggleenter,		/*toggles whether people can join the current game*/
 	/datum/admins/proc/toggleguests,	/*toggles whether guests can join the current game*/
 	/datum/admins/proc/togglenightshift,	/*toggles night shift lighting on/off/auto*/
+	/datum/admins/proc/setsolartime,	/*sets solar time for nightshift verification*/
 	/datum/admins/proc/announce,		/*priority announce something to all clients.*/
 	/datum/admins/proc/set_admin_notice, /*announcement all clients see when joining the server.*/
 	/client/proc/admin_ghost,			/*allows us to ghost/reenter body at will*/

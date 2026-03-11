@@ -195,7 +195,7 @@
 	var/on_gs = FALSE
 	var/static_power_used = 0
 	var/brightness = 8			// luminosity when on, also used in power calculation
-	var/bulb_power = 0.75			// basically the alpha of the emitted light source
+	var/bulb_power = 0.79			// basically the alpha of the emitted light source
 	var/bulb_colour = "#cae2fa"	// befault colour of the light.
 	var/cone_angle = LIGHTING_WALL_TUBE_CONE_ANGLE // Directional cone: light shines away from the wall
 	var/status = LIGHT_OK		// LIGHT_OK, _EMPTY, _BURNED or _BROKEN
@@ -212,9 +212,14 @@
 
 	var/nightshift_enabled = FALSE	//Currently in night shift mode?
 	var/nightshift_allowed = TRUE	//Set to FALSE to never let this light get switched to night mode.
+	var/nightshift_level = 0
 	var/nightshift_brightness = 8
-	var/nightshift_light_power = 0.45
-	var/nightshift_light_color = LIGHT_COLOR_FAINT_BLUE
+	var/nightshift_light_power = 0.47
+	var/nightshift_light_color = "#A9BFFF" // More saturated than the daytime bulb tone so late-night interpolation reads visibly blue.
+	var/nightshift_update_queued = FALSE
+	var/last_overlay_alpha_bucket = -1
+	var/last_overlay_color
+	var/last_visual_mode
 
 	var/emergency_mode = FALSE	// if true, the light is in emergency mode
 	var/fire_mode = FALSE // if true, the light swaps over to emergency colour
@@ -338,6 +343,9 @@
 	if(start_with_cell && !no_emergency)
 		cell = new/obj/item/stock_parts/cell/emergency_light(src)
 	set_layer_by_dir() // BLUEMOON ADD START
+	mark_apc_light_cache_dirty()
+	var/area/current_area = get_base_area(src)
+	sync_nightshift_from_current_apc(current_area)
 	spawn(2)
 		switch(fitting)
 			if("tube")
@@ -357,14 +365,127 @@
 	var/area/A = get_area(src)
 	if(A)
 		on = FALSE
+	mark_apc_light_cache_dirty(A)
+	nightshift_update_queued = FALSE
 	QDEL_NULL(cell)
 	return ..()
+
+/obj/machinery/light/Moved(atom/OldLoc, Dir)
+	var/area/old_area = OldLoc ? get_area(OldLoc) : null
+	. = ..()
+	var/area/new_area = get_base_area(src)
+	if(old_area != new_area)
+		mark_apc_light_cache_dirty(old_area)
+		mark_apc_light_cache_dirty(new_area)
+	if(sync_nightshift_from_current_apc(new_area))
+		update(FALSE, TRUE)
 
 // BLUEMOON ADD START - если лампа смотрит вниз, то она находится "под" мобом, чтобы можно было корректно её загораживать своим спрайтом
 /obj/machinery/light/proc/set_layer_by_dir()
 	if(dir == NORTH)
 		layer = MOB_LOWER_LAYER
 // BLUEMOON ADD END
+
+/obj/machinery/light/proc/mark_apc_light_cache_dirty(area/target_area = get_base_area(src))
+	if(!target_area)
+		return
+	var/obj/machinery/power/apc/current_apc = get_area_apc(target_area)
+	if(current_apc)
+		current_apc.mark_light_cache_dirty()
+
+/obj/machinery/light/proc/get_area_apc(area/target_area = get_base_area(src))
+	if(!target_area)
+		return null
+	var/area/root_area = target_area.base_area ? target_area.base_area : target_area
+	var/obj/machinery/power/apc/current_apc = root_area.power_apc
+	if(current_apc && !QDELETED(current_apc))
+		var/area/apc_area = current_apc.area
+		var/list/linked_areas = root_area.sub_areas
+		if(apc_area == root_area || apc_area?.base_area == root_area || (linked_areas && apc_area in linked_areas))
+			return current_apc
+	return target_area.get_apc()
+
+/obj/machinery/light/proc/sync_nightshift_from_apc(obj/machinery/power/apc/current_apc)
+	var/new_nightshift_enabled = FALSE
+	var/new_nightshift_level = 0
+	if(nightshift_allowed && current_apc?.nightshift_lights)
+		new_nightshift_enabled = TRUE
+		new_nightshift_level = current_apc.nightshift_level
+	if(nightshift_enabled == new_nightshift_enabled && nightshift_level == new_nightshift_level)
+		return FALSE
+	nightshift_enabled = new_nightshift_enabled
+	nightshift_level = new_nightshift_level
+	return TRUE
+
+/obj/machinery/light/proc/sync_nightshift_from_current_apc(area/target_area = get_base_area(src))
+	return sync_nightshift_from_apc(get_area_apc(target_area))
+
+/obj/machinery/light/proc/queue_nightshift_update()
+	if(nightshift_update_queued)
+		return FALSE
+	nightshift_update_queued = TRUE
+	GLOB.nightshift_light_queue += src
+	return TRUE
+
+/obj/machinery/light/proc/get_visual_mode(area/current_area)
+	if(status != LIGHT_OK)
+		return "[status]"
+	if(emergency_mode || current_area?.fire)
+		return "emergency"
+	if(hijacked)
+		return "hijacked"
+	return "normal"
+
+/obj/machinery/light/proc/get_overlay_alpha_bucket()
+	if(!(on && status == LIGHT_OK))
+		return 0
+	return clamp(round(clamp(light_power * 250, 30, 200), 5), 0, 255)
+
+/obj/machinery/light/proc/get_overlay_color(area/current_area)
+	if(!(on && status == LIGHT_OK))
+		return null
+	if(emergency_mode || current_area?.fire)
+		return bulb_emergency_colour
+	if(hijacked)
+		return color ? color : LIGHT_COLOR_YELLOW
+	var/overlay_color = color || bulb_colour
+	if(nightshift_enabled)
+		overlay_color = blend_light_color(overlay_color, nightshift_light_color, nightshift_level)
+	return overlay_color
+
+/obj/machinery/light/proc/refresh_visuals(area/current_area)
+	var/new_visual_mode = get_visual_mode(current_area)
+	var/new_overlay_bucket = get_overlay_alpha_bucket()
+	var/new_overlay_color = get_overlay_color(current_area)
+	var/icon_changed = new_visual_mode != last_visual_mode
+	var/overlay_changed = new_overlay_bucket != last_overlay_alpha_bucket || new_overlay_color != last_overlay_color
+	last_visual_mode = new_visual_mode
+	last_overlay_alpha_bucket = new_overlay_bucket
+	last_overlay_color = new_overlay_color
+	if(icon_changed)
+		update_icon()
+	else if(overlay_changed)
+		update_overlays()
+
+/obj/machinery/light/proc/interpolate_light_value(start_value, end_value, t)
+	return round(start_value + (end_value - start_value) * t, 0.01)
+
+/obj/machinery/light/proc/blend_light_color(from_color, to_color, t)
+	if(isnull(to_color) || t <= 0)
+		return from_color
+	if(isnull(from_color) || t >= 1)
+		return to_color
+	var/r1 = GETREDPART(from_color)
+	var/g1 = GETGREENPART(from_color)
+	var/b1 = GETBLUEPART(from_color)
+	var/r2 = GETREDPART(to_color)
+	var/g2 = GETGREENPART(to_color)
+	var/b2 = GETBLUEPART(to_color)
+	return rgb(
+		round(r1 + (r2 - r1) * t),
+		round(g1 + (g2 - g1) * t),
+		round(b1 + (b2 - b1) * t),
+	)
 
 /obj/machinery/light/update_icon_state()
 	switch(status)		// set icon_states
@@ -386,16 +507,22 @@
 
 /obj/machinery/light/update_overlays()
 	. = ..()
-	SSvis_overlays.remove_vis_overlay(src, managed_vis_overlays)
 	if(on && status == LIGHT_OK)
-		var/overlay_alpha = clamp(light_power*250, 30, 200)
-		SSvis_overlays.add_vis_overlay(src, overlayicon, base_state, EMISSIVE_UNBLOCKABLE_LAYER, EMISSIVE_UNBLOCKABLE_PLANE, dir, overlay_alpha)
+		var/overlay_alpha = get_overlay_alpha_bucket()
 		var/mutable_appearance/M = mutable_appearance(overlayicon, base_state)
 		M.alpha = overlay_alpha
+		M.color = last_overlay_color || get_overlay_color(get_base_area(src))
+		M.dir = dir
 		. += M
+		var/mutable_appearance/emissive_overlay = mutable_appearance(overlayicon, base_state, EMISSIVE_UNBLOCKABLE_LAYER, EMISSIVE_UNBLOCKABLE_PLANE)
+		emissive_overlay.alpha = overlay_alpha
+		emissive_overlay.color = M.color
+		emissive_overlay.dir = dir
+		. += emissive_overlay
 
 // update the icon_state and luminosity of the light depending on its state
 /obj/machinery/light/proc/update(trigger = TRUE, silent = FALSE)
+	var/area/current_area = get_base_area(src)
 	switch(status)
 		if(LIGHT_BROKEN,LIGHT_BURNED,LIGHT_EMPTY)
 			on = FALSE
@@ -411,28 +538,29 @@
 		var/CO = bulb_colour
 		if(color)
 			CO = color
-		var/area/A = get_base_area(src)
-		if (A && A.fire)
+		if(current_area?.fire)
 			CO = bulb_emergency_colour
 		else if (hijacked)
 			BR = BR * 1.5
 			PO = PO * 1.5
 			CO = color ? color : LIGHT_COLOR_YELLOW
 		else if (nightshift_enabled)
-			BR = nightshift_brightness
-			PO = nightshift_light_power
-			if(!isnull(nightshift_light_color))
-				CO = nightshift_light_color
+			BR = interpolate_light_value(BR, nightshift_brightness, nightshift_level)
+			PO = interpolate_light_value(PO, nightshift_light_power, nightshift_level)
+			CO = blend_light_color(CO, nightshift_light_color, nightshift_level)
 		var/matching = light && BR == light.light_range && PO == light.light_power && CO == light.light_color
 		if(!matching)
-			switchcount++
-			if(rigged)
-				if(status == LIGHT_OK && trigger)
-					explode()
-			else if( prob( min(60, (switchcount^2)*0.01) ) )
-				if(trigger)
+			var/can_apply_light = TRUE
+			if(trigger)
+				switchcount++
+				if(rigged)
+					if(status == LIGHT_OK)
+						explode()
+						can_apply_light = FALSE
+				else if(prob(min(60, (switchcount^2)*0.01)))
 					burn_out()
-			else
+					can_apply_light = FALSE
+			if(can_apply_light)
 				use_power = ACTIVE_POWER_USE
 				set_light(BR, PO, CO, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
 				if(!silent)
@@ -448,7 +576,7 @@
 		set_light(0, l_cone_angle = 0)
 	if(fire_mode)
 		set_emergency_lights()
-	update_icon()
+	refresh_visuals(current_area)
 
 	active_power_usage = (brightness * 10)
 	if(on != on_gs)
@@ -551,6 +679,7 @@
 				switchcount = L.switchcount
 				rigged = L.rigged
 				brightness = L.brightness
+				sync_nightshift_from_current_apc()
 				on = has_power()
 				update()
 
@@ -822,7 +951,8 @@
 	stop_damage_flicker()
 	status = LIGHT_OK
 	brightness = initial(brightness)
-	on = TRUE
+	sync_nightshift_from_current_apc()
+	on = has_power()
 	update()
 
 /obj/machinery/light/zap_act(power, zap_flags)
@@ -847,6 +977,7 @@
 	// If power is being restored, cancel any ongoing power loss animation
 	if(should_be_on && power_loss_stage)
 		stop_power_loss_sequence()
+	sync_nightshift_from_current_apc()
 	seton(should_be_on)
 	if(should_be_on && cell && cell.charge < cell.maxcharge)
 		START_PROCESSING(SSmachines, src)
@@ -1185,7 +1316,7 @@
 // attempts to set emergency lights
 /obj/machinery/light/proc/set_emergency_lights()
 	var/area/current_area = get_area(src)
-	var/obj/machinery/power/apc/current_apc = current_area.get_apc()
+	var/obj/machinery/power/apc/current_apc = get_area_apc(current_area)
 	if(status != LIGHT_OK || !current_apc || flickering || no_emergency)
 		emergency_lights_off(current_area, current_apc)
 		return
@@ -1221,7 +1352,7 @@
 
 /obj/machinery/light/warm/dim
 	nightshift_allowed = FALSE
-	bulb_power = 0.6
+	bulb_power = 0.63
 
 /obj/machinery/light/cold
 	bulb_colour = LIGHT_COLOR_FAINT_BLUE
@@ -1232,7 +1363,7 @@
 
 /obj/machinery/light/cold/dim
 	nightshift_allowed = FALSE
-	bulb_power = 0.6
+	bulb_power = 0.63
 
 /obj/machinery/light/red
 	bulb_colour = "#FF3232"
@@ -1241,7 +1372,7 @@
 
 /obj/machinery/light/red/dim
 	brightness = 4
-	bulb_power = 0.7
+	bulb_power = 0.74
 	bulb_emergency_brightness_mul = 2
 
 /obj/machinery/light/blacklight
@@ -1251,7 +1382,7 @@
 /obj/machinery/light/dim
 	nightshift_allowed = FALSE
 	bulb_colour = "#FFDDCC"
-	bulb_power = 0.6
+	bulb_power = 0.63
 
 // the smaller bulb light fixture
 
@@ -1287,7 +1418,7 @@
 
 /obj/machinery/light/small/red/dim
 	brightness = 2
-	bulb_power = 0.8
+	bulb_power = 0.84
 	bulb_emergency_brightness_mul = 2
 
 /obj/machinery/light/small/blacklight
@@ -1302,13 +1433,13 @@
 	brightness = 4
 	nightshift_brightness = 4
 	bulb_colour = LIGHT_COLOR_TUNGSTEN
-	bulb_power = 0.4
+	bulb_power = 0.42
 
 /obj/machinery/light/small
 	brightness = 5
 	nightshift_brightness = 4.5
 	bulb_colour = LIGHT_COLOR_TUNGSTEN
-	bulb_power = 0.9
+	bulb_power = 0.95
 
 /obj/machinery/light/cold
 	nightshift_light_color = null

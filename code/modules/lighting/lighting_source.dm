@@ -639,8 +639,8 @@
 		for (thing in corners)
 			C = thing
 			if(isnull(effect_str[C]))
-				// New corner — cull if raw falloff is below perceptual threshold
-				if(C.active && LUM_FALLOFF(C) * _light_power < LIGHTING_FALLOFF_CULL_THRESHOLD)
+				// New corner — cull if raw falloff is below perceptual threshold (abs for negative-power darkness sources)
+				if(C.active && abs(LUM_FALLOFF(C) * _light_power) < LIGHTING_FALLOFF_CULL_THRESHOLD)
 					continue
 				LAZYADD(C.affecting, src)
 			else if(_vis_only)
@@ -653,8 +653,8 @@
 		for (thing in corners)
 			C = thing
 			if(isnull(effect_str[C]))
-				// New corner — cull if raw falloff is below perceptual threshold
-				if(C.active && LUM_FALLOFF(C) * _light_power < LIGHTING_FALLOFF_CULL_THRESHOLD)
+				// New corner — cull if raw falloff is below perceptual threshold (abs for negative-power darkness sources)
+				if(C.active && abs(LUM_FALLOFF(C) * _light_power) < LIGHTING_FALLOFF_CULL_THRESHOLD)
 					continue
 				LAZYADD(C.affecting, src)
 			else if(_vis_only)

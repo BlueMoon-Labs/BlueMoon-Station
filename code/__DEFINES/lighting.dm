@@ -162,15 +162,15 @@ GLOBAL_LIST_INIT(lighting_ambient_matrices, list())
 // Night uses COLOR_STARLIGHT (#8589fa)
 
 // Solar cycle starlight power levels
-#define STARLIGHT_POWER_DAY     0.75
-#define STARLIGHT_POWER_DAY_LOW 0.70
-#define STARLIGHT_POWER_DAWN    0.60
-#define STARLIGHT_POWER_DUSK    0.55
-#define STARLIGHT_POWER_EVENING 0.52
-#define STARLIGHT_POWER_NIGHT   0.50
+#define STARLIGHT_POWER_DAY     0.72
+#define STARLIGHT_POWER_DAY_LOW 0.68
+#define STARLIGHT_POWER_DAWN    0.58
+#define STARLIGHT_POWER_DUSK    0.53
+#define STARLIGHT_POWER_EVENING 0.50
+#define STARLIGHT_POWER_NIGHT   0.48
 
 GLOBAL_VAR_INIT(current_starlight_color, COLOR_STARLIGHT) // Current solar-cycle starlight color (updated by SSnight_shift)
-GLOBAL_VAR_INIT(current_starlight_power, 0.5) // Current solar-cycle starlight power (updated by SSnight_shift)
+GLOBAL_VAR_INIT(current_starlight_power, STARLIGHT_POWER_NIGHT) // Current solar-cycle starlight power (updated by SSnight_shift)
 
 #define LIGHT_RANGE_FIRE		3 //How many tiles standard fires glow.
 

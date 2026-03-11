@@ -11,6 +11,8 @@ GLOBAL_LIST_EMPTY(lighting_starlight_queue) // Space turfs queued for deferred u
 GLOBAL_LIST_EMPTY(lighting_deferred_shadow_turfs) // Turfs queued for deferred shadow + blend recalc — filled by shuttle docking, drained by SSlighting Phase -0.5.
 GLOBAL_LIST_EMPTY(lighting_deferred_atoms) // Atoms whose light_source creation was deferred because their z-level was skipped during init.
 GLOBAL_VAR_INIT(starlight_color_dirty, FALSE) // Set by SSnightshift when solar starlight color/power changes. Drained incrementally by SSlighting.
+GLOBAL_LIST_EMPTY(nightshift_apc_queue) // APCs queued for batched indoor nightshift propagation.
+GLOBAL_LIST_EMPTY(nightshift_light_queue) // Lamps queued for batched indoor nightshift refresh.
 
 /// Admin verb: change the global starlight color at runtime, or reset to solar cycle.
 /client/proc/cmd_admin_set_starlight()
@@ -94,10 +96,18 @@ SUBSYSTEM_DEF(lighting)
 	var/temp_cap_boost = 0
 	/// MC_AVERAGE tracked cost of starlight phase (ms)
 	var/cost_starlight = 0
+	/// MC_AVERAGE tracked cost of batched indoor nightshift lamp refresh (ms)
+	var/cost_nightshift = 0
 	/// Peak starlight queue length
 	var/peak_starlight = 0
+	/// Peak indoor nightshift lamp queue length
+	var/peak_nightshift = 0
 	/// Progress index for incremental solar starlight color propagation (0 = idle)
 	var/starlight_color_index = 0
+	/// APCs processed by the most recent nightshift queue phase.
+	var/nightshift_apcs_processed = 0
+	/// Lamps processed by the most recent nightshift queue phase.
+	var/nightshift_lights_processed = 0
 	/// When TRUE, lighting_object/New() defers starlight to a batch (set during create_all_lighting_objects)
 	var/init_in_progress = FALSE
 	/// Queue of z-levels to initialize in the background (populated after main init)
@@ -117,7 +127,7 @@ SUBSYSTEM_DEF(lighting)
 	var/pct_c = total_cost > 0 ? round(cost_corners / total_cost * 100) : 0
 	var/pct_o = total_cost > 0 ? round(cost_objects / total_cost * 100) : 0
 	var/avg_cost_per = avg_sources_processed >= 0.5 ? round(cost_sources / avg_sources_processed, 0.01) : 0
-	msg = "SL:[length(GLOB.lighting_starlight_queue)]|L:[length(GLOB.lighting_update_lights)]|C:[length(GLOB.lighting_update_corners)]|O:[length(GLOB.lighting_update_objects)]|Cap:[sources_cap]|SL:[round(cost_starlight,0.1)]ms|S:[round(cost_sources,0.1)]([pct_s]%)|C:[round(cost_corners,0.1)]([pct_c]%)|O:[round(cost_objects,0.1)]([pct_o]%)|Avg:[avg_cost_per]ms/src([round(avg_sources_processed)])|Pk:[peak_starlight]/[peak_sources]/[peak_corners]/[peak_objects]|Wst:[round(worst_fire_cost,0.1)]ms"
+	msg = "NS:[length(GLOB.nightshift_apc_queue)]/[length(GLOB.nightshift_light_queue)]/[SSnightshift.last_nightshift_apcs_touched]/[SSnightshift.last_nightshift_lights_queued]/[nightshift_apcs_processed]/[nightshift_lights_processed]|SL:[length(GLOB.lighting_starlight_queue)]|L:[length(GLOB.lighting_update_lights)]|C:[length(GLOB.lighting_update_corners)]|O:[length(GLOB.lighting_update_objects)]|Cap:[sources_cap]|NS:[round(cost_nightshift,0.1)]ms|SL:[round(cost_starlight,0.1)]ms|S:[round(cost_sources,0.1)]([pct_s]%)|C:[round(cost_corners,0.1)]([pct_c]%)|O:[round(cost_objects,0.1)]([pct_o]%)|Avg:[avg_cost_per]ms/src([round(avg_sources_processed)])|Pk:[peak_nightshift]/[peak_starlight]/[peak_sources]/[peak_corners]/[peak_objects]|Wst:[round(worst_fire_cost,0.1)]ms"
 	if(bg_current_zlevel)
 		msg += "|BG:Z[bg_current_zlevel]P[bg_phase]"
 	else if(bg_queued_zlevels?.len)
@@ -146,6 +156,10 @@ SUBSYSTEM_DEF(lighting)
 		return
 	MC_SPLIT_TICK_INIT(5)
 	var/fire_start_timer = TICK_USAGE_REAL
+	nightshift_apcs_processed = 0
+	nightshift_lights_processed = 0
+
+	process_nightshift_queues(init_tick_checks, !resumed && !init_tick_checks)
 
 	// Phase -2: Solar starlight color propagation (from SSnightshift)
 	// Processes GLOB.starlight incrementally instead of all-at-once in SSnightshift.fire().
@@ -227,10 +241,12 @@ SUBSYSTEM_DEF(lighting)
 
 	// Track peak queue lengths
 	if(!resumed)
+		var/nsq = GLOB.nightshift_apc_queue.len + GLOB.nightshift_light_queue.len
 		var/ssl = GLOB.lighting_starlight_queue.len
 		var/sl = GLOB.lighting_update_lights.len
 		var/sc = GLOB.lighting_update_corners.len
 		var/so = GLOB.lighting_update_objects.len
+		if(nsq > peak_nightshift) peak_nightshift = nsq
 		if(ssl > peak_starlight) peak_starlight = ssl
 		if(sl > peak_sources) peak_sources = sl
 		if(sc > peak_corners) peak_corners = sc
@@ -370,8 +386,90 @@ SUBSYSTEM_DEF(lighting)
 
 	// Dynamic wait: tick every frame when there's work, relax when idle
 	if(!init_tick_checks)
-		var/pending = GLOB.lighting_deferred_shadow_turfs.len + GLOB.lighting_starlight_queue.len + GLOB.lighting_update_blends.len + GLOB.lighting_update_lights.len + GLOB.lighting_update_corners.len + GLOB.lighting_update_objects.len + (bg_queued_zlevels?.len ? 1 : 0) + (bg_current_zlevel ? 1 : 0) + (starlight_color_index ? 1 : 0)
+		var/pending = GLOB.nightshift_apc_queue.len + GLOB.nightshift_light_queue.len + GLOB.lighting_deferred_shadow_turfs.len + GLOB.lighting_starlight_queue.len + GLOB.lighting_update_blends.len + GLOB.lighting_update_lights.len + GLOB.lighting_update_corners.len + GLOB.lighting_update_objects.len + (bg_queued_zlevels?.len ? 1 : 0) + (bg_current_zlevel ? 1 : 0) + (starlight_color_index ? 1 : 0)
 		wait = pending > LIGHTING_IDLE_WAIT_THRESHOLD ? 1 : 2
+
+/datum/controller/subsystem/lighting/proc/process_nightshift_queues(init_tick_checks = FALSE, track_peak = FALSE)
+	// Phase -3: Batched indoor nightshift APC propagation.
+	// Runs before lamp refresh so APC refreshes can enqueue lights and have them
+	// processed in the same fire.
+	// Phase -2.5 then drains the lamp queue before light sources.
+	if(!(GLOB.nightshift_apc_queue.len || GLOB.nightshift_light_queue.len))
+		return
+	if(track_peak)
+		var/ns_queue_len = GLOB.nightshift_apc_queue.len + GLOB.nightshift_light_queue.len
+		if(ns_queue_len > peak_nightshift)
+			peak_nightshift = ns_queue_len
+	var/ns_timer = TICK_USAGE_REAL
+	if(GLOB.nightshift_apc_queue.len)
+		while(GLOB.nightshift_apc_queue.len)
+			var/obj/machinery/power/apc/APC = GLOB.nightshift_apc_queue[1]
+			GLOB.nightshift_apc_queue.Cut(1, 2)
+			if(!QDELETED(APC))
+				SSnightshift.last_nightshift_lights_queued += APC.apply_queued_nightshift_refresh()
+				nightshift_apcs_processed++
+			if(init_tick_checks)
+				CHECK_TICK
+			else if(MC_TICK_CHECK)
+				break
+	if(GLOB.nightshift_light_queue.len)
+		while(GLOB.nightshift_light_queue.len)
+			var/obj/machinery/light/L = GLOB.nightshift_light_queue[1]
+			GLOB.nightshift_light_queue.Cut(1, 2)
+			if(!QDELETED(L))
+				L.nightshift_update_queued = FALSE
+				L.update(FALSE, TRUE)
+				nightshift_lights_processed++
+			if(init_tick_checks)
+				CHECK_TICK
+			else if(MC_TICK_CHECK)
+				break
+	if(!init_tick_checks)
+		cost_nightshift = MC_AVERAGE(cost_nightshift, TICK_USAGE_TO_MS(ns_timer))
+
+/datum/controller/subsystem/lighting/proc/admin_nightshift_refresh_pending()
+	return GLOB.nightshift_apc_queue.len || GLOB.nightshift_light_queue.len || GLOB.lighting_update_blends.len || GLOB.lighting_update_lights.len || GLOB.lighting_update_corners.len || GLOB.lighting_update_objects.len
+
+/datum/controller/subsystem/lighting/proc/process_admin_nightshift_refresh_now(max_passes = 20)
+	for(var/pass in 1 to max_passes)
+		if(!admin_nightshift_refresh_pending())
+			return
+
+		process_nightshift_queues(TRUE)
+
+		if(GLOB.lighting_update_blends.len)
+			var/list/pending_blends = GLOB.lighting_update_blends.Copy()
+			GLOB.lighting_update_blends.Cut()
+			for(var/atom/movable/lighting_object/blend_obj as anything in pending_blends)
+				if(!QDELETED(blend_obj))
+					blend_obj.calculate_area_blend()
+
+		if(GLOB.lighting_update_lights.len)
+			var/list/pending_sources = GLOB.lighting_update_lights.Copy()
+			GLOB.lighting_update_lights.Cut()
+			for(var/datum/light_source/light_source as anything in pending_sources)
+				if(QDELETED(light_source))
+					continue
+				light_source.update_corners()
+				light_source.needs_update = LIGHTING_NO_UPDATE
+
+		if(GLOB.lighting_update_corners.len)
+			var/list/pending_corners = GLOB.lighting_update_corners.Copy()
+			GLOB.lighting_update_corners.Cut()
+			for(var/datum/lighting_corner/corner as anything in pending_corners)
+				if(QDELETED(corner))
+					continue
+				corner.update_objects()
+				corner.needs_update = FALSE
+
+		if(GLOB.lighting_update_objects.len)
+			var/list/pending_objects = GLOB.lighting_update_objects.Copy()
+			GLOB.lighting_update_objects.Cut()
+			for(var/atom/movable/lighting_object/lighting_object as anything in pending_objects)
+				if(QDELETED(lighting_object))
+					continue
+				lighting_object.update(use_animate = FALSE)
+				lighting_object.needs_update = FALSE
 
 /datum/controller/subsystem/lighting/proc/process_bg_zlevel_init()
 	// Pick a z-level to work on

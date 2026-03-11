@@ -4,7 +4,7 @@
 	var/turf/test_turf = run_loc_floor_bottom_left
 	TEST_ASSERT_NULL(test_turf.lighting_object, "Test turf unexpectedly already had a lighting object")
 
-	var/atom/movable/lighting_object/test_object = new /atom/movable/lighting_object(test_turf)
+	var/atom/movable/lighting_object/test_object = allocate(/atom/movable/lighting_object, test_turf)
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_object, "Lighting object was not attached to the test turf")
 
 	test_turf.recalc_area_blend_region()
@@ -23,16 +23,20 @@
 	var/turf/test_turf = run_loc_floor_bottom_left
 	TEST_ASSERT_NULL(test_turf.lighting_object, "Test turf unexpectedly already had a lighting object")
 
-	var/atom/movable/lighting_object/test_object = new /atom/movable/lighting_object(test_turf)
+	var/x = test_turf.x
+	var/y = test_turf.y
+	var/z = test_turf.z
+	var/atom/movable/lighting_object/test_object = allocate(/atom/movable/lighting_object, test_turf)
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_object, "Lighting object was not attached to the original turf")
 
 	var/turf/replacement_turf = test_turf.ChangeTurf(/turf/open/floor/plasteel/white)
 
-	TEST_ASSERT(QDELETED(test_turf), "Original turf was not deleted during ChangeTurf")
+	TEST_ASSERT_EQUAL(locate(x, y, z), replacement_turf, "ChangeTurf should return the replacement turf at the original coordinates.")
 	TEST_ASSERT(istype(replacement_turf, /turf/open/floor/plasteel/white), "Replacement turf had the wrong type ([replacement_turf.type])")
 	TEST_ASSERT_EQUAL(replacement_turf.lighting_object, test_object, "Lighting object was not transferred to the replacement turf")
 	TEST_ASSERT_EQUAL(test_object.affected_turf, replacement_turf, "Lighting object still pointed at the old turf after ChangeTurf")
 	TEST_ASSERT(test_object in replacement_turf.vis_contents, "Replacement turf did not keep the transferred lighting object in vis_contents")
+	qdel(test_object, force = TRUE)
 
 /datum/unit_test/forced_turf_destroy_cleans_lighting_object/Run()
 	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
@@ -40,7 +44,7 @@
 	var/turf/test_turf = run_loc_floor_bottom_left
 	TEST_ASSERT_NULL(test_turf.lighting_object, "Test turf unexpectedly already had a lighting object")
 
-	var/atom/movable/lighting_object/test_object = new /atom/movable/lighting_object(test_turf)
+	var/atom/movable/lighting_object/test_object = allocate(/atom/movable/lighting_object, test_turf)
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_object, "Lighting object was not attached to the test turf")
 
 	test_turf.recalc_area_blend_region()
@@ -49,6 +53,7 @@
 	var/x = test_turf.x
 	var/y = test_turf.y
 	var/z = test_turf.z
+	test_turf.changing_turf = TRUE
 	qdel(test_turf, force = TRUE)
 
 	var/turf/replacement_turf = locate(x, y, z)
