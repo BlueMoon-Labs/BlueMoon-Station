@@ -133,6 +133,19 @@ SUBSYSTEM_DEF(nightshift)
 		CHECK_TICK
 	return apcs_touched
 
+/datum/controller/subsystem/nightshift/proc/queue_apc_refresh_generation_immediate(active, indoor_level, max_level, force_clear_manual_override)
+	var/apcs_touched = 0
+	for(var/A in GLOB.apcs_list)
+		var/obj/machinery/power/apc/APC = A
+		var/area/apc_area = APC.area
+		if(apc_area?.is_station_member())
+			var/their_level = apc_area.nightshift_public_area
+			if(!max_level || (their_level <= max_level))
+				if(APC.accepts_automatic_nightshift(force_clear_manual_override))
+					apcs_touched++
+					APC.queue_nightshift_refresh(active, indoor_level, force_clear_manual_override)
+	return apcs_touched
+
 /datum/controller/subsystem/nightshift/proc/process_apc_nightshift_refresh()
 	set waitfor = FALSE
 	while(TRUE)
@@ -149,7 +162,9 @@ SUBSYSTEM_DEF(nightshift)
 	nightshift_refresh_running = FALSE
 
 /datum/controller/subsystem/nightshift/proc/process_apc_nightshift_refresh_now()
-	last_nightshift_apcs_touched = queue_apc_refresh_generation(
+	// The synchronous path is used by no-sleep callers such as Initialize/death chains,
+	// so it must not yield through CHECK_TICK/stoplag.
+	last_nightshift_apcs_touched = queue_apc_refresh_generation_immediate(
 		queued_nightshift_active,
 		queued_nightshift_level,
 		queued_nightshift_max_level,

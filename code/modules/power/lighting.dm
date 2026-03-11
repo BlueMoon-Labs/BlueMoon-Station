@@ -401,7 +401,7 @@
 	if(current_apc && !QDELETED(current_apc))
 		var/area/apc_area = current_apc.area
 		var/list/linked_areas = root_area.sub_areas
-		if(apc_area == root_area || apc_area?.base_area == root_area || (linked_areas && apc_area in linked_areas))
+		if(apc_area == root_area || apc_area?.base_area == root_area || (linked_areas && (apc_area in linked_areas)))
 			return current_apc
 	return target_area.get_apc()
 

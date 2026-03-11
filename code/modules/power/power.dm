@@ -401,7 +401,7 @@
 	var/obj/machinery/power/apc/APC = target.power_apc
 	if(APC && !QDELETED(APC))
 		var/area/apc_area = APC.area
-		if(apc_area == target || (linked_areas && apc_area in linked_areas))
+		if(apc_area == target || (linked_areas && (apc_area in linked_areas)))
 			if(apc_area != target)
 				APC.area = target
 				APC.update_nightshift_auth_requirement()
@@ -411,7 +411,7 @@
 		if(QDELETED(APC))
 			continue
 		var/area/apc_area = APC.area
-		if(apc_area == target || (linked_areas && apc_area in linked_areas))
+		if(apc_area == target || (linked_areas && (apc_area in linked_areas)))
 			if(apc_area != target)
 				APC.area = target
 				APC.update_nightshift_auth_requirement()
