@@ -987,12 +987,12 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		visible_message(span_notice("[target] начинает забираться на [src]..."))
 
 		// BLUEMOON ADDITION START - тяжёлые персонажи дольше забираются на спину
-		var/climb_on_time = 1.5 SECONDS
+		var/climb_on_time = 6 SECONDS
 		switch(target.mob_weight)
 			if(MOB_WEIGHT_HEAVY_SUPER)
-				climb_on_time = 4 SECONDS
+				climb_on_time = 9 SECONDS
 			if(MOB_WEIGHT_HEAVY)
-				climb_on_time = 2.5 SECONDS
+				climb_on_time = 7.5 SECONDS
 		// BLUEMOON ADDITION END
 
 		if(do_after(target, climb_on_time, src, IGNORE_INCAPACITATED, extra_checks = CALLBACK(src, PROC_REF(can_piggyback), target)))
