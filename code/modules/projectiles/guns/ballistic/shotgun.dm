@@ -1,6 +1,6 @@
 /obj/item/gun/ballistic/shotgun
 	name = "Shotgun"
-	desc = "A traditional shotgun with wood furniture and a four-shell capacity underneath."
+	desc = "Традиционный дробовик с деревянным прикладом и подствольным магазином на четыре патрона."
 	icon_state = "shotgun"
 	item_state = "shotgun-wielded"
 	fire_sound = "sound/weapons/gunshotshotgunshot.ogg"
@@ -13,6 +13,7 @@
 	casing_ejector = FALSE
 	var/recentpump = 0 // to prevent spammage
 	var/pumpsound = "sound/weapons/shotgunpump.ogg"
+	var/auto_pump_timer = 0 // таймер автоматической досылки
 	weapon_weight = WEAPON_HEAVY
 	sawn_item_state = "sawnshotgun"
 
@@ -42,15 +43,15 @@
 	if(recentpump > world.time)
 		return
 	if(IS_STAMCRIT(user))//CIT CHANGE - makes pumping shotguns impossible in stamina softcrit
-		to_chat(user, "<span class='warning'>You're too exhausted for that.</span>")//CIT CHANGE - ditto
-		return//CIT CHANGE - ditto
-	pump(user, TRUE)
+		to_chat(user, "<span class='warning'>Тебе не хватает сил на это!</span>")
+		return
 	if(HAS_TRAIT(user, TRAIT_FAST_PUMP))
-		recentpump = world.time + 2
-	else
-		if(!user.UseStaminaBuffer(2, warn = TRUE))
-			return
-		recentpump = world.time + 4
+		to_chat(user, "<span class='notice'>[src]'s Ловкие руки! Стреляй!</span>")
+		return
+	pump(user, TRUE)
+	if(!user.UseStaminaBuffer(2, warn = TRUE))
+		return
+	recentpump = world.time + 4
 
 /obj/item/gun/ballistic/shotgun/blow_up(mob/user)
 	. = 0
@@ -60,7 +61,7 @@
 
 /obj/item/gun/ballistic/shotgun/proc/pump(mob/M, visible = TRUE)
 	if(visible)
-		M.visible_message("<span class='warning'>[M] racks [src].</span>", "<span class='warning'>You rack [src].</span>")
+		M.visible_message("<span class='warning'>[M] racks [src].</span>", "<span class='warning'>Вы досылаете патрон[src].</span>")
 	playsound(M, pumpsound, 60, 1)
 	pump_unload(M)
 	pump_reload(M)
@@ -82,10 +83,16 @@
 /obj/item/gun/ballistic/shotgun/examine(mob/user)
 	. = ..()
 	if (chambered)
-		. += "A [chambered.BB ? "live" : "spent"] one is in the chamber."
+		. += "[chambered.BB ? "Боевой" : "Отстрелянный"] снаряд в затворе."
 
 /obj/item/gun/ballistic/shotgun/lethal
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/lethal
+
+/obj/item/gun/ballistic/shotgun/afterattack(atom/target, mob/living/user, flag, params)
+	. = ..()	// Проверяем, был ли произведен выстрел и есть ли у пользователя FAST_PUMP
+	if(. && HAS_TRAIT(user, TRAIT_FAST_PUMP) && !chambered && magazine.ammo_count())
+		deltimer(auto_pump_timer)
+		auto_pump_timer = addtimer(CALLBACK(src, .proc/auto_pump, user), 3, TIMER_STOPPABLE)
 
 // RIOT SHOTGUN //
 
