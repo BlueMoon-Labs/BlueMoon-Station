@@ -242,7 +242,7 @@
 	// Damage flickering state
 	var/damage_flickering = FALSE
 	var/damage_flicker_timer_id = null
-	var/base_bulb_power = 0
+	var/damage_flicker_base_power = null
 
 	// Power loss animation state
 	var/power_loss_stage = 0 // 0=normal, 1=death flicker, 2=dark, 3=emergency
@@ -401,7 +401,7 @@
 	if(current_apc && !QDELETED(current_apc))
 		var/area/apc_area = current_apc.area
 		var/list/linked_areas = root_area.sub_areas
-		if(apc_area == root_area || apc_area?.base_area == root_area || (linked_areas && (apc_area in linked_areas)))
+		if(apc_area == root_area || apc_area?.base_area == root_area || linked_areas?.Find(apc_area))
 			return current_apc
 	return target_area.get_apc()
 
@@ -548,7 +548,8 @@
 			BR = interpolate_light_value(BR, nightshift_brightness, nightshift_level)
 			PO = interpolate_light_value(PO, nightshift_light_power, nightshift_level)
 			CO = blend_light_color(CO, nightshift_light_color, nightshift_level)
-		var/matching = light && BR == light.light_range && PO == light.light_power && CO == light.light_color
+		var/desired_cone_dir = turn(dir, 180)
+		var/matching = light && BR == light.light_range && PO == light.light_power && CO == light.light_color && cone_angle == light.light_cone_angle && desired_cone_dir == light.light_cone_dir
 		if(!matching)
 			var/can_apply_light = TRUE
 			if(trigger)
@@ -562,7 +563,7 @@
 					can_apply_light = FALSE
 			if(can_apply_light)
 				use_power = ACTIVE_POWER_USE
-				set_light(BR, PO, CO, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
+				set_light(BR, PO, CO, l_cone_angle = cone_angle, l_cone_dir = desired_cone_dir)
 				if(!silent)
 					playsound(src.loc, 'sound/ambience/light_on.ogg', 65, 1)
 	else if(has_emergency_power(LIGHT_EMERGENCY_POWER_USE) && !turned_off())
@@ -606,13 +607,7 @@
 	if(emergency_mode)
 		if(!use_emergency_power(LIGHT_EMERGENCY_DRAIN_RATE))
 			// Cell exhausted — turn off emergency mode
-			emergency_mode = FALSE
-			set_light(0, l_cone_angle = 0)
-			update_icon()
-			if(power_loss_timer_id)
-				deltimer(power_loss_timer_id)
-				power_loss_timer_id = null
-			power_loss_stage = 0
+			clear_emergency_state(FALSE)
 			return PROCESS_KILL
 		update() //Disables emergency mode and sets the color to normal
 
@@ -764,13 +759,7 @@
 	if(cell)
 		cell.use(cell.charge)
 	if(emergency_mode || power_loss_stage)
-		emergency_mode = FALSE
-		if(power_loss_timer_id)
-			deltimer(power_loss_timer_id)
-			power_loss_timer_id = null
-		power_loss_stage = 0
-		set_light(0, l_cone_angle = 0)
-		update_icon()
+		clear_emergency_state()
 
 /obj/machinery/light/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
 	switch(damage_type)
@@ -1014,15 +1003,15 @@
 		if(damage_flickering)
 			stop_damage_flicker()
 
-/// Begins the damage flicker cycle, saving base power and starting the timer loop
+/// Begins the damage flicker cycle, saving the currently emitted power and starting the timer loop
 /obj/machinery/light/proc/start_damage_flicker()
 	if(damage_flickering)
 		return
 	damage_flickering = TRUE
-	base_bulb_power = bulb_power
+	damage_flicker_base_power = light ? light.light_power : bulb_power
 	damage_flicker_tick()
 
-/// Stops damage flickering, restores original bulb power, kills any pending timers
+/// Stops damage flickering, restores the normal effective light state, and kills any pending timers
 /obj/machinery/light/proc/stop_damage_flicker()
 	if(!damage_flickering)
 		return
@@ -1030,11 +1019,10 @@
 	if(damage_flicker_timer_id)
 		deltimer(damage_flicker_timer_id)
 		damage_flicker_timer_id = null
-	if(base_bulb_power)
-		bulb_power = base_bulb_power
-		if(on && status == LIGHT_OK)
-			set_light(l_power = bulb_power)
-		base_bulb_power = 0
+	var/had_base_power = !isnull(damage_flicker_base_power)
+	damage_flicker_base_power = null
+	if(had_base_power && on && status == LIGHT_OK)
+		update(FALSE, TRUE)
 
 /// One tick of the damage flicker cycle — varies light power, may cause dropout
 /obj/machinery/light/proc/damage_flicker_tick()
@@ -1057,13 +1045,13 @@
 
 	if(prob(dropout_prob))
 		// Dropout — power drops sharply for a brief moment
-		var/dropout_power = base_bulb_power * LIGHT_FLICKER_DROPOUT_POWER
+		var/dropout_power = damage_flicker_base_power * LIGHT_FLICKER_DROPOUT_POWER
 		set_light(l_power = dropout_power)
 		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_recover)), LIGHT_FLICKER_DROPOUT_DURATION, TIMER_STOPPABLE)
 	else
 		// Normal flicker — vary power around base
-		var/power_mod = base_bulb_power * (1 + rand(-100, 100) / 100 * power_variance)
-		power_mod = clamp(power_mod, base_bulb_power * LIGHT_FLICKER_POWER_CLAMP_MIN, base_bulb_power * LIGHT_FLICKER_POWER_CLAMP_MAX)
+		var/power_mod = damage_flicker_base_power * (1 + rand(-100, 100) / 100 * power_variance)
+		power_mod = clamp(power_mod, damage_flicker_base_power * LIGHT_FLICKER_POWER_CLAMP_MIN, damage_flicker_base_power * LIGHT_FLICKER_POWER_CLAMP_MAX)
 		set_light(l_power = power_mod)
 		// Schedule next tick with ±20% interval randomness
 		var/next_interval = base_interval * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)
@@ -1082,7 +1070,7 @@
 		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), next_interval, TIMER_STOPPABLE)
 		return
 	// Restore to slightly varied power and continue the cycle
-	set_light(l_power = base_bulb_power)
+	set_light(l_power = damage_flicker_base_power)
 	var/ratio = obj_integrity / max_integrity
 	var/severe = ratio <= LIGHT_DAMAGE_FLICKER_SEVERE
 	var/base_interval = severe ? LIGHT_FLICKER_INTERVAL_SEVERE : LIGHT_FLICKER_INTERVAL_NORMAL
@@ -1108,6 +1096,17 @@
 		deltimer(power_loss_timer_id)
 		power_loss_timer_id = null
 	power_loss_stage = 0
+
+/obj/machinery/light/proc/clear_emergency_state(stop_processing_if_unpowered = TRUE)
+	emergency_mode = FALSE
+	if(power_loss_timer_id)
+		deltimer(power_loss_timer_id)
+		power_loss_timer_id = null
+	power_loss_stage = 0
+	set_light(0, l_cone_angle = 0)
+	update_icon()
+	if(stop_processing_if_unpowered && !has_power())
+		STOP_PROCESSING(SSmachines, src)
 
 /// Returns TRUE if any clients are on this light's z-level
 /obj/machinery/light/proc/has_z_viewers()
@@ -1170,11 +1169,7 @@
 		power_loss_timer_id = null
 		return
 	if(!cell || !has_emergency_power(LIGHT_EMERGENCY_POWER_USE))
-		emergency_mode = FALSE
-		set_light(0, l_cone_angle = 0)
-		update_icon()
-		power_loss_stage = 0
-		power_loss_timer_id = null
+		clear_emergency_state()
 		return
 	if(!has_z_viewers())
 		var/next_interval = LIGHT_EMERGENCY_FLICKER_INTERVAL * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)

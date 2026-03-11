@@ -58,6 +58,7 @@
 	TEST_ASSERT_EQUAL(SSnightshift.compute_indoor_nightshift_level(23 HOURS + 30 MINUTES), 1, "Nightshift profile should reach deep night at 23:30.")
 	TEST_ASSERT_EQUAL(SSnightshift.compute_indoor_nightshift_level(6 HOURS), 0.35, "Nightshift profile should ease off by 06:00.")
 	TEST_ASSERT_EQUAL(SSnightshift.compute_indoor_nightshift_level(7 HOURS + 30 MINUTES), 0, "Nightshift profile should end at 07:30.")
+	TEST_ASSERT(SSnightshift.is_solar_time_night(SSnightshift.nightshift_start_time), "Night start should be inclusive at the configured boundary.")
 
 /datum/unit_test/nightshift_light_colors/Run()
 	var/obj/machinery/light/default_light = allocate(/obj/machinery/light, run_loc_floor_bottom_left)
@@ -173,6 +174,53 @@
 	TEST_ASSERT(test_apc.light_cache_dirty, "Deleting a light in the APC area should dirty the APC light cache.")
 	qdel(test_apc, force = TRUE)
 	test_area.power_apc = original_area_apc
+
+/datum/unit_test/nightshift_apc_light_cache_linked_subarea
+	var/area/original_base_area
+	var/area/original_linked_area
+	var/area/synthetic_root
+	var/area/synthetic_linked
+	var/turf/base_turf
+	var/turf/linked_turf
+	var/obj/machinery/power/apc/test_apc
+
+/datum/unit_test/nightshift_apc_light_cache_linked_subarea/New()
+	..()
+	base_turf = run_loc_floor_bottom_left
+	linked_turf = run_loc_floor_top_right
+	original_base_area = get_area(base_turf)
+	original_linked_area = get_area(linked_turf)
+	synthetic_root = new /area
+	synthetic_linked = new /area
+	synthetic_root.contents.Add(base_turf)
+	synthetic_linked.contents.Add(linked_turf)
+	synthetic_root.sub_areas = list(synthetic_linked)
+	synthetic_linked.base_area = synthetic_root
+	test_apc = allocate(/obj/machinery/power/apc, base_turf)
+	test_apc.area = synthetic_root
+	synthetic_root.power_apc = test_apc
+	test_apc.light_cache_dirty = FALSE
+	test_apc.cached_area_lights = list()
+
+/datum/unit_test/nightshift_apc_light_cache_linked_subarea/Destroy()
+	if(original_base_area)
+		original_base_area.contents.Add(base_turf)
+	if(original_linked_area)
+		original_linked_area.contents.Add(linked_turf)
+	if(synthetic_linked)
+		synthetic_linked.base_area = null
+	if(synthetic_root)
+		synthetic_root.sub_areas = null
+	QDEL_NULL(synthetic_linked)
+	QDEL_NULL(synthetic_root)
+	return ..()
+
+/datum/unit_test/nightshift_apc_light_cache_linked_subarea/Run()
+	var/obj/machinery/light/linked_light = allocate(/obj/machinery/light, linked_turf)
+	TEST_ASSERT(test_apc.light_cache_dirty, "Creating a light in a linked sub-area should dirty the APC light cache.")
+	test_apc.ensure_light_cache()
+	TEST_ASSERT(!test_apc.light_cache_dirty, "Rebuilding the linked-area APC light cache should clear the dirty flag.")
+	TEST_ASSERT(linked_light in test_apc.get_cached_area_lights(), "Area light cache should include lights in linked sub-areas.")
 
 /datum/unit_test/nightshift_opt_out_sync/Run()
 	var/area/test_area = get_area(run_loc_floor_bottom_left)
@@ -551,6 +599,7 @@
 	var/original_queued_nightshift_max_level
 	var/original_queued_nightshift_force_clear
 	var/original_can_fire
+	var/original_enable_night_shifts
 	var/original_admin_solar_time_override
 	var/original_admin_solar_time_restore_offset
 	var/original_gametime_offset
@@ -578,6 +627,7 @@
 	original_queued_nightshift_max_level = SSnightshift.queued_nightshift_max_level
 	original_queued_nightshift_force_clear = SSnightshift.queued_nightshift_force_clear
 	original_can_fire = SSnightshift.can_fire
+	original_enable_night_shifts = CONFIG_GET(flag/enable_night_shifts)
 	original_admin_solar_time_override = SSnightshift.admin_solar_time_override
 	original_admin_solar_time_restore_offset = SSnightshift.admin_solar_time_restore_offset
 	original_gametime_offset = SSticker.gametime_offset
@@ -613,6 +663,7 @@
 	SSnightshift.admin_solar_time_override = FALSE
 	SSnightshift.admin_solar_time_restore_offset = null
 	SSnightshift.can_fire = TRUE
+	CONFIG_SET(flag/enable_night_shifts, TRUE)
 	GLOB.security_level = SEC_LEVEL_GREEN
 	SSticker.round_start_time = world.time
 	SSticker.gametime_offset = 21 HOURS
@@ -632,6 +683,7 @@
 	SSnightshift.queued_nightshift_max_level = original_queued_nightshift_max_level
 	SSnightshift.queued_nightshift_force_clear = original_queued_nightshift_force_clear
 	SSnightshift.can_fire = original_can_fire
+	CONFIG_SET(flag/enable_night_shifts, original_enable_night_shifts)
 	SSnightshift.admin_solar_time_override = original_admin_solar_time_override
 	SSnightshift.admin_solar_time_restore_offset = original_admin_solar_time_restore_offset
 	SSticker.gametime_offset = original_gametime_offset

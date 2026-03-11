@@ -195,6 +195,7 @@
 	var/_pixel_turf_x = lighting_source.pixel_turf.x;                                              \
 	var/_pixel_turf_y = lighting_source.pixel_turf.y;                                              \
 	var/list/_sheet = get_sheet();                                                                  \
+	if(!islist(_sheet)) { CRASH("get_sheet() returned non-list: [_sheet] (range=[lighting_source.light_range], power=[lighting_source.light_power])"); }; \
 	var/_range_offset = (length(_sheet) + 1) * 0.5;                                                \
 	var/_light_power = lighting_source.light_power;                                                \
 	var/_applied_lum_r = lighting_source.applied_lum_r;                                            \
@@ -472,6 +473,11 @@
 		update = TRUE
 
 	if (!isturf(source_turf))
+		if (applied)
+			remove_lum()
+		return
+
+	if (!pixel_turf)
 		if (applied)
 			remove_lum()
 		return

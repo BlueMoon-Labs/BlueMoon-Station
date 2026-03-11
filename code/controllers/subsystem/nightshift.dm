@@ -119,7 +119,7 @@ SUBSYSTEM_DEF(nightshift)
 		nightshift_refresh_running = TRUE
 		process_apc_nightshift_refresh()
 
-/datum/controller/subsystem/nightshift/proc/queue_apc_refresh_generation(active, indoor_level, max_level, force_clear_manual_override)
+/datum/controller/subsystem/nightshift/proc/queue_apc_refresh_generation(active, indoor_level, max_level, force_clear_manual_override, request_generation)
 	var/apcs_touched = 0
 	for(var/A in GLOB.apcs_list)
 		var/obj/machinery/power/apc/APC = A
@@ -131,6 +131,8 @@ SUBSYSTEM_DEF(nightshift)
 					apcs_touched++
 					APC.queue_nightshift_refresh(active, indoor_level, force_clear_manual_override)
 		CHECK_TICK
+		if(request_generation != nightshift_refresh_generation)
+			return apcs_touched
 	return apcs_touched
 
 /datum/controller/subsystem/nightshift/proc/queue_apc_refresh_generation_immediate(active, indoor_level, max_level, force_clear_manual_override)
@@ -154,7 +156,7 @@ SUBSYSTEM_DEF(nightshift)
 		var/indoor_level = queued_nightshift_level
 		var/max_level = queued_nightshift_max_level
 		var/force_clear_manual_override = queued_nightshift_force_clear
-		var/apcs_touched = queue_apc_refresh_generation(active, indoor_level, max_level, force_clear_manual_override)
+		var/apcs_touched = queue_apc_refresh_generation(active, indoor_level, max_level, force_clear_manual_override, request_generation)
 		if(request_generation == nightshift_refresh_generation)
 			last_nightshift_apcs_touched = apcs_touched
 			last_nightshift_lights_queued = 0
@@ -184,7 +186,7 @@ SUBSYSTEM_DEF(nightshift)
 	return solar_time
 
 /datum/controller/subsystem/nightshift/proc/is_solar_time_night(solar_time)
-	return (solar_time < nightshift_end_time) || (solar_time > nightshift_start_time)
+	return (solar_time < nightshift_end_time) || (solar_time >= nightshift_start_time)
 
 /datum/controller/subsystem/nightshift/proc/get_automatic_nightshift_level(solar_time = SOLAR_TIME(FALSE, world.time))
 	if(high_security_mode)

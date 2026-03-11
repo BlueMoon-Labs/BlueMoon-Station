@@ -1766,11 +1766,18 @@
 	if(!area)
 		light_cache_dirty = FALSE
 		return
-	for(var/obj/machinery/light/L in area)
+	var/area/root_area = area.base_area ? area.base_area : area
+	for(var/obj/machinery/light/L in root_area)
 		if(QDELETED(L))
 			continue
 		cached_area_lights += L
 		CHECK_TICK
+	for(var/area/linked_area as anything in root_area.sub_areas)
+		for(var/obj/machinery/light/L in linked_area)
+			if(QDELETED(L))
+				continue
+			cached_area_lights += L
+			CHECK_TICK
 	light_cache_dirty = FALSE
 
 /obj/machinery/power/apc/proc/update_nightshift_auth_requirement()

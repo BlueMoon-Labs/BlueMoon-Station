@@ -11,7 +11,7 @@
 #define LIGHTING_SHEET_HEIGHT_STEP 0.1 // height quantization step for falloff cache keys
 #define LIGHTING_SHEETS_MAX_ENTRIES 256 // soft cap for cached falloff lookup tables
 // Falloff mode: how light intensity decreases with distance
-#define LIGHTING_FALLOFF_LINEAR 0         // Classic: 1 - dist/range (default, SS13 standard)
+#define LIGHTING_FALLOFF_LINEAR 0         // Classic: 1 - dist/range (SS13 standard)
 #define LIGHTING_FALLOFF_INVERSE_SQUARE 1 // Realistic: 1 / (1 + k * dist²) — brighter center, softer edges
 #define LIGHTING_FALLOFF_MODE LIGHTING_FALLOFF_INVERSE_SQUARE // Compile-time default (runtime override via GLOB.lighting_falloff_mode)
 #define LIGHTING_INVERSE_SQUARE_K 2.5     // Steepness for inverse-square (higher = faster falloff)

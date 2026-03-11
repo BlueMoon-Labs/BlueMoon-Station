@@ -545,7 +545,7 @@ SUBSYSTEM_DEF(lighting)
 			else
 				remaining_starlight[S] = TRUE
 			if(MC_TICK_CHECK)
-				GLOB.lighting_deferred_starlight = remaining_starlight
+				GLOB.lighting_deferred_starlight = remaining_starlight + GLOB.lighting_deferred_starlight.Copy(GLOB.lighting_deferred_starlight.Find(S) + 1)
 				return
 		GLOB.lighting_deferred_starlight = remaining_starlight
 		bg_phase = 3
