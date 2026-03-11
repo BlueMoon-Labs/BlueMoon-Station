@@ -886,7 +886,7 @@
 			to_chat(user, "<span class='warning'>Доступ запрещён.</span>")
 
 /obj/machinery/power/apc/proc/toggle_nightshift_lights(mob/living/user)
-	var/mob/feedback_target = user || usr
+	var/mob/feedback_target = user ? user : usr
 	if(last_nightshift_switch > world.time - 100) //~10 seconds between each toggle to prevent spamming
 		if(feedback_target)
 			to_chat(feedback_target, "<span class='warning'>[src]'s night lighting circuit breaker is still cycling!</span>")
@@ -1757,7 +1757,7 @@
 
 /obj/machinery/power/apc/proc/get_cached_area_lights()
 	ensure_light_cache()
-	return cached_area_lights || list()
+	return cached_area_lights ? cached_area_lights : list()
 
 /obj/machinery/power/apc/proc/ensure_light_cache()
 	if(!light_cache_dirty && !isnull(cached_area_lights))
