@@ -317,6 +317,9 @@
 
 /obj/machinery/power/apc/Destroy()
 	GLOB.apcs_list -= src
+	GLOB.nightshift_apc_queue -= src
+	nightshift_refresh_queued = FALSE
+	cached_area_lights = null
 	unregister_area_apc()
 
 	if(malfai && operating)
