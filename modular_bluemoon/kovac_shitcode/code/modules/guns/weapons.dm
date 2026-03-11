@@ -61,16 +61,15 @@
 
 /obj/item/gun/ballistic/shotgun/automatic/rsh12
 	name = "RSH-12"
-	desc = "A moden Russian-made semi-automatic revolver, intended to used with 12 gauge."
+	desc = "A modern Russian-made semi-automatic revolver, intended to be used with 12 gauge."
 	icon_state = "rsh12"
 	item_state = "rsh12"
 	icon = 'modular_bluemoon/kovac_shitcode/icons/obj/weapons/weapons.dmi'
 	lefthand_file = 'modular_bluemoon/kovac_shitcode/icons/mob/weapons/weapons_l.dmi'
 	righthand_file = 'modular_bluemoon/kovac_shitcode/icons/mob/weapons/weapons_r.dmi'
 	fire_sound = 'modular_bluemoon/sound/weapons/rs12_boom.ogg'
-	pumpsound = 'modular_bluemoon/kovac_shitcode/sound/weapons/rs12_reload.ogg'
-	suicide_gib_head = TRUE
-	var/dry_fire_sound  - 'modular_bluemoon/sound/weapons/rs12_empty.ogg' // осечка или нет боевого патрона
+	pumpsound = 'modular_bluemoon/sound/weapons/rs12_reload.ogg'
+	var/dry_fire_sound = 'modular_bluemoon/sound/weapons/rs12_empty.ogg' // осечка или нет боевого патрона
 	var/last_round_sound = 'modular_bluemoon/sound/weapons/rs12_shot.ogg'  // звук последнего патрона
 	var/shell_drop_sound = 'modular_bluemoon/sound/weapons/rs12_emptyshell.ogg' // звук падения гильзы
 	fire_delay = 5
@@ -81,34 +80,42 @@
 	weapon_weight = WEAPON_MEDIUM
 
 /obj/item/gun/ballistic/shotgun/automatic/rsh12/can_shoot()
-	if(!chambered || !chambered.BB)  // Нет патрона или пустая гильза
-		return FALSE
-	return TRUE
+	return (chambered?.BB)
 
-/obj/item/gun/ballistic/shotgun/automatic/rsh12/shoot_empty(mob/living/user)
-	. = ..()
-	playsound(user, dry_fire_sound, 50, 1)  // звук пустого выстрела
+// ИСПРАВЛЕНО: создаем свой proc для пустого выстрела
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/proc/shoot_empty(mob/living/user)
+	playsound(user, dry_fire_sound, 50, 1)
 	to_chat(user, "<span class='warning'>*CLICK* Пусто!</span>")
+	user.visible_message("<span class='danger'>[src] издает сухой щелчок!</span>")
+
+// Переопределяем обработку пустого выстрела (если есть в родителях)
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/afterattack(atom/target, mob/living/user, flag, params)
+	if(!chambered?.BB)
+		shoot_empty(user)
+		return
+	return ..()
 
 /obj/item/gun/ballistic/shotgun/automatic/rsh12/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0)
 	. = ..()
-	if(. && magazine.ammo_count() == 0)
-		playsound(user, last_round_sound, 70, 1)  // Громче для последнего выстрела
-		to_chat(user, "<span class='warning'>That was the last shot!</span>") // Звук падения гильзы с небольшой задержкой
-	if(.)
-		addtimer(CALLBACK(src, .proc/play_shell_drop, user), 2)
+	if(!.)
+		return
+
+	if(!magazine.ammo_count())
+		playsound(user, last_round_sound, 70, 1)
+		to_chat(user, "<span class='warning'>Это был последний выстрел!</span>")
+
+	addtimer(CALLBACK(src, .proc/play_shell_drop, user), 2)
 
 /obj/item/gun/ballistic/shotgun/automatic/rsh12/proc/play_shell_drop(mob/user)
 	playsound(user, shell_drop_sound, 40, 1)
 
 /obj/item/gun/ballistic/shotgun/automatic/rsh12/attackby(obj/item/A, mob/user, params)
 	. = ..()
-	if(.)
+	if(. || !(istype(A, /obj/item/ammo_casing) || istype(A, /obj/item/ammo_box)))
 		return
-	if(istype(A, /obj/item/ammo_casing) || istype(A, /obj/item/ammo_box))
-		var/num_loaded = magazine.attackby(A, user, params, 1)
-		if(num_loaded)
-			playsound(user, pumpsound, 50, 1)
+
+	if(magazine.attackby(A, user, params, 1))
+		playsound(user, pumpsound, 50, 1)
 
 //HoS G22 pistol
 /obj/item/gun/ballistic/automatic/pistol/g22

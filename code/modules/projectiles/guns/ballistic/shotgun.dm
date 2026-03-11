@@ -87,6 +87,14 @@
 
 /obj/item/gun/ballistic/shotgun/lethal
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/lethal
+/obj/item/gun/ballistic/shotgun/proc/auto_pump(mob/living/user) // Проверяем, что прошло достаточно времени с последнего pump
+	if(recentpump > world.time)
+		return // Проверяем, что патронник пуст и есть патроны в магазине
+	if(!chambered && magazine.ammo_count())
+		pump(user, FALSE) // FALSE чтобы не спамить сообщениями
+		playsound(user, pumpsound, 40, 1) // Используем тот же звук перезарядки
+		recentpump = world.time + 2 // Маленькая задержка между авто-досылками
+		to_chat(user, "<span class='notice'>[src] рефлекторно досылает патрон.</span>")
 
 /obj/item/gun/ballistic/shotgun/afterattack(atom/target, mob/living/user, flag, params)
 	. = ..()	// Проверяем, был ли произведен выстрел и есть ли у пользователя FAST_PUMP
