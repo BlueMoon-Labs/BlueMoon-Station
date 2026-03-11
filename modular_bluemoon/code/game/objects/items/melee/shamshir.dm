@@ -119,6 +119,11 @@
 		user.death(FALSE)
 	REMOVE_TRAIT(src, TRAIT_NODROP, SABRE_SUICIDE_TRAIT)
 
+/obj/item/melee/shamshir/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
+	if(attack_type & ATTACK_TYPE_PROJECTILE) // Don't bring a sword to a gunfight
+		return NONE
+	return ..()
+
 
 // Сюда же пихну крио-катану
 
@@ -289,6 +294,10 @@
 /obj/item/melee/sabre/security/get_worn_belt_overlay(icon_file)
 	return mutable_appearance(icon_file, "-seckatana")
 
+/obj/item/melee/sabre/security/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
+	if(attack_type & ATTACK_TYPE_PROJECTILE) // Don't bring a sword to a gunfight
+		return NONE
+	return ..()
 
 /obj/item/melee/sabre/security/hos
 	name = "Master's cryo-blade "
