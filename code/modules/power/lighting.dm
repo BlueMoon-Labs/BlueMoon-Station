@@ -549,7 +549,7 @@
 			PO = interpolate_light_value(PO, nightshift_light_power, nightshift_level)
 			CO = blend_light_color(CO, nightshift_light_color, nightshift_level)
 		var/desired_cone_dir = turn(dir, 180)
-		var/matching = light && BR == light.light_range && PO == light.light_power && CO == light.light_color && cone_angle == light.light_cone_angle && desired_cone_dir == light.light_cone_dir
+		var/matching = light && BR == light_range && PO == light_power && CO == light_color && cone_angle == light_cone_angle && desired_cone_dir == light_cone_dir
 		if(!matching)
 			var/can_apply_light = TRUE
 			if(trigger)

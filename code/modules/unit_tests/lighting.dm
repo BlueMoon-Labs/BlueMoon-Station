@@ -68,14 +68,17 @@
 	test_light.on = TRUE
 	test_light.switchcount = 0
 	test_light.update(FALSE, TRUE)
+	process_nightshift_lighting_work()
 	TEST_ASSERT(test_light.light, "Directional fixture should create a live light source.")
 	TEST_ASSERT_EQUAL(test_light.light.light_cone_angle, test_light.cone_angle, "Initial cone angle should match the fixture configuration.")
 	TEST_ASSERT_EQUAL(test_light.light.light_cone_dir, turn(test_light.dir, 180), "Initial cone direction should match the fixture direction.")
 	test_light.dir = SOUTH
 	test_light.update(FALSE, TRUE)
+	process_nightshift_lighting_work()
 	TEST_ASSERT_EQUAL(test_light.light.light_cone_dir, turn(test_light.dir, 180), "Changing only direction should refresh the live cone direction.")
 	test_light.cone_angle = LIGHTING_WALL_BULB_CONE_ANGLE
 	test_light.update(FALSE, TRUE)
+	process_nightshift_lighting_work()
 	TEST_ASSERT_EQUAL(test_light.light.light_cone_angle, test_light.cone_angle, "Changing only cone angle should refresh the live cone angle.")
 
 /datum/unit_test/light_damage_flicker_restores_effective_power/Run()
@@ -86,6 +89,7 @@
 	test_light.nightshift_enabled = TRUE
 	test_light.nightshift_level = 1
 	test_light.update(FALSE, TRUE)
+	process_nightshift_lighting_work()
 	var/expected_power = test_light.light_power
 	TEST_ASSERT_NOTEQUAL(expected_power, test_light.bulb_power, "Nightshift should change the emitted power away from raw bulb_power.")
 	test_light.start_damage_flicker()
@@ -94,6 +98,7 @@
 	TEST_ASSERT_NULL(test_light.damage_flicker_base_power, "Stopping damage flicker should clear the stored emitted power.")
 	TEST_ASSERT_EQUAL(test_light.light_power, expected_power, "Stopping damage flicker should restore the effective fixture power.")
 	TEST_ASSERT(test_light.light, "Damage flicker stop should leave the live light source intact.")
+	process_nightshift_lighting_work()
 	TEST_ASSERT_EQUAL(test_light.light.light_power, expected_power, "Stopping damage flicker should restore the live emitted power.")
 	TEST_ASSERT_EQUAL(test_light.bulb_power, initial(test_light.bulb_power), "Damage flicker should not rewrite the raw bulb power.")
 

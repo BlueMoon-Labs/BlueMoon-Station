@@ -384,6 +384,7 @@
 	var/original_gametime_offset
 	var/original_round_start_time
 	var/original_area_apc
+	var/original_nightshift_public_area
 	var/area/test_area
 	var/obj/machinery/power/apc/test_apc
 	var/obj/machinery/light/test_light
@@ -396,6 +397,7 @@
 	original_station_areas = GLOB.the_station_areas.Copy()
 	original_apcs_list = GLOB.apcs_list.Copy()
 	original_security_level = GLOB.security_level
+	original_nightshift_public_area = test_area.nightshift_public_area
 	original_nightshift_start_time = SSnightshift.nightshift_start_time
 	original_nightshift_end_time = SSnightshift.nightshift_end_time
 	original_high_security_mode = SSnightshift.high_security_mode
@@ -412,6 +414,7 @@
 	original_area_apc = test_area.power_apc
 
 	GLOB.the_station_areas = list(test_area.type)
+	test_area.nightshift_public_area = NIGHTSHIFT_AREA_FORCED
 	GLOB.nightshift_apc_queue.Cut()
 	GLOB.nightshift_light_queue.Cut()
 
@@ -474,6 +477,7 @@
 	SSticker.gametime_offset = original_gametime_offset
 	SSticker.round_start_time = original_round_start_time
 	test_area.power_apc = original_area_apc
+	test_area.nightshift_public_area = original_nightshift_public_area
 	return ..()
 
 /datum/unit_test/nightshift_security/proc/reset_to_green_night()
@@ -605,6 +609,7 @@
 	var/original_gametime_offset
 	var/original_round_start_time
 	var/original_area_apc
+	var/original_nightshift_public_area
 	var/area/test_area
 	var/obj/machinery/power/apc/test_apc
 	var/obj/machinery/light/test_light
@@ -633,8 +638,10 @@
 	original_gametime_offset = SSticker.gametime_offset
 	original_round_start_time = SSticker.round_start_time
 	original_area_apc = test_area.power_apc
+	original_nightshift_public_area = test_area.nightshift_public_area
 
 	GLOB.the_station_areas = list(test_area.type)
+	test_area.nightshift_public_area = NIGHTSHIFT_AREA_FORCED
 	GLOB.nightshift_apc_queue.Cut()
 	GLOB.nightshift_light_queue.Cut()
 
@@ -689,6 +696,7 @@
 	SSticker.gametime_offset = original_gametime_offset
 	SSticker.round_start_time = original_round_start_time
 	test_area.power_apc = original_area_apc
+	test_area.nightshift_public_area = original_nightshift_public_area
 	return ..()
 
 /datum/unit_test/nightshift_admin_controls/proc/expected_color(level)
