@@ -56,38 +56,40 @@
 	if(!air)
 		air = new
 	var/list/possible_expansions = list(base)
-	while(possible_expansions.len>0)
-		for(var/obj/machinery/atmospherics/borderline in possible_expansions)
+	while(possible_expansions.len > 0)
+		// Don't use for-in here - modifying list during iteration causes illegal operation crashes
+		var/obj/machinery/atmospherics/borderline = possible_expansions[1]
+		possible_expansions -= borderline
 
-			var/list/result = borderline.pipeline_expansion(src)
+		var/list/result = borderline.pipeline_expansion(src)
 
-			if(result.len>0)
-				for(var/obj/machinery/atmospherics/P in result)
-					if(istype(P, /obj/machinery/atmospherics/pipe))
-						var/obj/machinery/atmospherics/pipe/item = P
-						if(!members.Find(item))
+		if(result.len > 0)
+			for(var/obj/machinery/atmospherics/P in result)
+				if(istype(P, /obj/machinery/atmospherics/pipe))
+					var/obj/machinery/atmospherics/pipe/item = P
+					if(!members.Find(item))
 
-							if(item.parent)
-								var/static/pipenetwarnings = 10
-								if(pipenetwarnings > 0)
-									log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: ([item.x], [item.y], [item.z]).")
-									pipenetwarnings -= 1
-									if(pipenetwarnings == 0)
-										log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
-							members += item
-							possible_expansions += item
+						if(item.parent)
+							var/static/pipenetwarnings = 10
+							if(pipenetwarnings > 0)
+								log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: ([item.x], [item.y], [item.z]).")
+								pipenetwarnings -= 1
+								if(pipenetwarnings == 0)
+									log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
+						members += item
+						possible_expansions += item
 
-							volume += item.volume
-							item.parent = src
+						volume += item.volume
+						item.parent = src
 
-							if(item.air_temporary)
-								air.merge(item.air_temporary)
-								QDEL_NULL(item.air_temporary)
-					else
-						P.setPipenet(src, borderline)
-						addMachineryMember(P)
-
-			possible_expansions -= borderline
+						if(item.air_temporary)
+							air.merge(item.air_temporary)
+							var/datum/gas_mixture/to_del = item.air_temporary
+							item.air_temporary = null
+							addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), to_del), 0) // Deferred to avoid illegal operation during pipeline build
+				else
+					P.setPipenet(src, borderline)
+					addMachineryMember(P)
 
 	air.set_volume(volume)
 
@@ -165,19 +167,25 @@
 
 /datum/pipeline/proc/temporarily_store_air()
 	//Update individual gas_mixtures by volume ratio
+	var/air_vol = air.return_volume()
+	if(air_vol <= 0)
+		return
 
 	for(var/obj/machinery/atmospherics/pipe/member as anything in members)
 		member.air_temporary = new
 		member.air_temporary.set_volume(member.volume)
 		member.air_temporary.copy_from(air)
 
-		member.air_temporary.multiply(member.volume/air.return_volume())
+		member.air_temporary.multiply(member.volume/air_vol)
 
 		member.air_temporary.set_temperature(air.return_temperature())
 
 /datum/pipeline/proc/temperature_interact(turf/target, share_volume, thermal_conductivity)
+	var/air_vol = air.return_volume()
+	if(air_vol <= 0)
+		return
 	var/total_heat_capacity = air.heat_capacity()
-	var/partial_heat_capacity = total_heat_capacity*(share_volume/air.return_volume())
+	var/partial_heat_capacity = total_heat_capacity*(share_volume/air_vol)
 	var/target_temperature
 	var/target_heat_capacity
 

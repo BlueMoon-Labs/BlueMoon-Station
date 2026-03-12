@@ -1,9 +1,7 @@
-#define CHALLENGE_TELECRYSTALS 300
-#define PLAYER_SCALING 1.5
-#define CHALLENGE_TIME_LIMIT 25000 // 25 minutes, so the ops have at least 5 minutes before the shuttle is callable.
-#define CHALLENGE_PLAYERS_TARGET 25 //target players population. anything below is a malus to the challenge tc bonus.
-#define TELECRYSTALS_MALUS_SCALING 1.5 //the higher the value, the bigger the malus.
-#define CHALLENGE_SHUTTLE_DELAY 25000 // 25 minutes, so the ops have at least 5 minutes before the shuttle is callable.
+#define CHALLENGE_TELECRYSTALS 280
+#define CHALLENGE_TIME_LIMIT (5 MINUTES)
+#define CHALLENGE_SHUTTLE_DELAY (25 MINUTES) // 25 minutes, so the ops have at least 5 minutes before the shuttle is callable.
+#define CHALLENGE_MIN_PLAYERS 5 // Minimum crew count to declare war (prevents empty station declarations)
 
 GLOBAL_LIST_EMPTY(jam_on_wardec)
 GLOBAL_VAR_INIT(war_declared, FALSE)
@@ -15,32 +13,32 @@ GLOBAL_VAR_INIT(war_declared, FALSE)
 	item_state = "radio"
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
-	desc = "Use to send a declaration of hostilities to the target, delaying your shuttle departure for 20 minutes while they prepare for your assault.  \
-			Such a brazen move will attract the attention of powerful benefactors within the Syndicate, who will supply your team with a massive amount of bonus credits.  \
-			Must be used within five minutes, or your benefactors will lose interest."
+	desc = "Use to send a declaration of hostilities to the target, delaying your shuttle departure for 20 minutes while they prepare for your assault. \
+		Such a brazen move will attract the attention of powerful benefactors within the Syndicate, who will supply your team with a massive amount of bonus telecrystals. \
+		Must be used within five minutes, or your benefactors will lose interest."
 	var/declaring_war = FALSE
 	var/uplink_type = /obj/item/inteq/uplink/radio/nuclear
-	var/war_sound = 'sound/machines/alarm.ogg'
+	var/announcement_sound = 'sound/machines/alarm.ogg'
 
 /obj/item/nuclear_challenge/attack_self(mob/living/user)
 	if(!check_allowed(user))
 		return
 
 	declaring_war = TRUE
-	var/are_you_sure = alert(user, "Consult your team carefully before you declare war on [station_name()]]. Are you sure you want to alert the enemy crew? You have [DisplayTimeText(world.time-SSticker.round_start_time - CHALLENGE_TIME_LIMIT)] to decide", "Declare war?", "Yes", "No")
+	var/are_you_sure = tgui_alert(user, "Consult your team carefully before you declare war on [station_name()]. Are you sure you want to alert the enemy crew? You have [DisplayTimeText(CHALLENGE_TIME_LIMIT - (world.time - SSticker.round_start_time))] to decide.", "Declare war?", list("Yes", "No"))
 	declaring_war = FALSE
 
 	if(!check_allowed(user))
 		return
 
-	if(are_you_sure == "No")
-		to_chat(user, "On second thought, the element of surprise isn't so bad after all.")
+	if(are_you_sure != "Yes")
+		to_chat(user, span_notice("On second thought, the element of surprise isn't so bad after all."))
 		return
 
 	var/war_declaration = "Местная вооружённая группа Головорезов InteQ заявила о своем намерении полностью уничтожить [station_name()] с помощью Ядерной Боеголовки и предлагает Экипажу попробовать их остановить."
 
 	declaring_war = TRUE
-	var/custom_threat = alert(user, "Do you want to customize your declaration?", "Customize?", "Yes", "No")
+	var/custom_threat = tgui_alert(user, "Do you want to customize your declaration?", "Customize?", list("Yes", "No"))
 	declaring_war = FALSE
 
 	if(!check_allowed(user))
@@ -48,45 +46,17 @@ GLOBAL_VAR_INIT(war_declared, FALSE)
 
 	if(custom_threat == "Yes")
 		declaring_war = TRUE
-		war_declaration = stripped_input(user, "Insert your custom declaration", "Declaration")
+		war_declaration = tgui_input_text(user, "Insert your custom declaration", "Declaration", max_length = MAX_MESSAGE_LEN, multiline = TRUE, encode = FALSE)
 		declaring_war = FALSE
 
 	if(!check_allowed(user) || !war_declaration)
 		return
 
-	if(SSticker.mode.name == "clown ops")
-		war_sound = 'sound/announcer/classic/_admin_war_pipisky.ogg'
+	war_was_declared(user, memo = war_declaration)
 
-	priority_announce(war_declaration, title = "Объявление Войны", sound = war_sound, has_important_message = TRUE)
-
-	addtimer(CALLBACK(SSsecurity_level, TYPE_PROC_REF(/datum/controller/subsystem/security_level, set_level), SEC_LEVEL_LAMBDA), 30 SECONDS)
-
-	to_chat(user, "You've attracted the attention of powerful forces within the InteQ. A bonus bundle of Credits has been granted to your team. Great things await you if you complete the mission.")
-
-	for(var/V in GLOB.syndicate_shuttle_boards)
-		var/obj/item/circuitboard/computer/syndicate_shuttle/board = V
-		board.challenge = TRUE
-
-	for(var/obj/machinery/computer/camera_advanced/shuttle_docker/D in GLOB.jam_on_wardec)
-		D.jammed = TRUE
-
-	GLOB.war_declared = TRUE
-	var/list/nukeops = get_antag_minds(/datum/antagonist/nukeop)
-	var/actual_players = GLOB.joined_player_list.len - nukeops.len
-	var/tc_malus = 0
-	if(actual_players < CHALLENGE_PLAYERS_TARGET)
-		tc_malus = FLOOR(((CHALLENGE_TELECRYSTALS / CHALLENGE_PLAYERS_TARGET) * (CHALLENGE_PLAYERS_TARGET - actual_players)) * TELECRYSTALS_MALUS_SCALING, 1)
-
-	new uplink_type(get_turf(user), user.key, CHALLENGE_TELECRYSTALS - tc_malus + CEILING(PLAYER_SCALING * actual_players, 1))
-
-	CONFIG_SET(number/shuttle_refuel_delay, max(CONFIG_GET(number/shuttle_refuel_delay), CHALLENGE_SHUTTLE_DELAY))
-	SSblackbox.record_feedback("amount", "nuclear_challenge_mode", 1)
-
-	qdel(src)
-
-///Admin only proc to bypass checks and force a war declaration. Button on antag panel.
+/// Admin only proc to bypass checks and force a war declaration. Callable from antag panel.
 /obj/item/nuclear_challenge/proc/force_war()
-	var/are_you_sure = tgui_alert(usr, "Are you sure you wish to force a war declaration?", "Declare war?", list("Yes", "No"))
+	var/are_you_sure = tgui_alert(usr, "Are you sure you wish to force a war declaration?[GLOB.player_list.len < CHALLENGE_MIN_PLAYERS ? " Note, the player count is under the required limit." : ""]", "Declare war?", list("Yes", "No"))
 
 	if(are_you_sure != "Yes")
 		return
@@ -96,60 +66,117 @@ GLOBAL_VAR_INIT(war_declared, FALSE)
 	var/custom_threat = tgui_alert(usr, "Do you want to customize the declaration?", "Customize?", list("Yes", "No"))
 
 	if(custom_threat == "Yes")
-		war_declaration = tgui_input_text(usr, "Insert your custom declaration", "Declaration", multiline = TRUE)
+		war_declaration = tgui_input_text(usr, "Insert your custom declaration", "Declaration", max_length = MAX_MESSAGE_LEN, multiline = TRUE, encode = FALSE)
 
 	if(!war_declaration)
-		to_chat(usr, span_warning("Invalid war declaration."))
+		tgui_alert(usr, "Invalid war declaration.", "Poor Choice of Words")
 		return
 
-	priority_announce(war_declaration, title = "Объявление Войны", sound = 'sound/machines/alarm.ogg', has_important_message = TRUE)
+	for(var/obj/item/circuitboard/computer/syndicate_shuttle/board as anything in GLOB.syndicate_shuttle_boards)
+		if(board.challenge_start_time)
+			tgui_alert(usr, "War has already been declared!", "War Was Declared")
+			return
 
-	addtimer(CALLBACK(SSsecurity_level, TYPE_PROC_REF(/datum/controller/subsystem/security_level, set_level), SEC_LEVEL_LAMBDA), 30 SECONDS)
+	war_was_declared(memo = war_declaration)
 
-	for(var/V in GLOB.syndicate_shuttle_boards)
-		var/obj/item/circuitboard/computer/syndicate_shuttle/board = V
-		board.challenge = TRUE
+/obj/item/nuclear_challenge/proc/war_was_declared(mob/living/user, memo)
+	priority_announce(
+		memo,
+		"Объявление Войны",
+		announcement_sound,
+		has_important_message = TRUE,
+		sender_override = "InteQ Outpost",
+	)
 
-	for(var/obj/machinery/computer/camera_advanced/shuttle_docker/D in GLOB.jam_on_wardec)
-		D.jammed = TRUE
+	if(user)
+		to_chat(user, "You've attracted the attention of powerful forces within the InteQ. \
+			A bonus bundle of telecrystals has been granted to your team. Great things await you if you complete the mission.")
 
-	GLOB.war_declared = TRUE
-	var/list/nukeops = get_antag_minds(/datum/antagonist/nukeop)
-	var/actual_players = GLOB.joined_player_list.len - nukeops.len
-	var/tc_malus = 0
-	if(actual_players < CHALLENGE_PLAYERS_TARGET)
-		tc_malus = FLOOR(((CHALLENGE_TELECRYSTALS / CHALLENGE_PLAYERS_TARGET) * (CHALLENGE_PLAYERS_TARGET - actual_players)) * TELECRYSTALS_MALUS_SCALING, 1)
-
-	new uplink_type(get_turf(usr), usr.key, CHALLENGE_TELECRYSTALS - tc_malus + CEILING(PLAYER_SCALING * actual_players, 1))
-
+	distribute_tc()
 	CONFIG_SET(number/shuttle_refuel_delay, max(CONFIG_GET(number/shuttle_refuel_delay), CHALLENGE_SHUTTLE_DELAY))
 	SSblackbox.record_feedback("amount", "nuclear_challenge_mode", 1)
 
+	for(var/obj/item/circuitboard/computer/syndicate_shuttle/board as anything in GLOB.syndicate_shuttle_boards)
+		board.challenge = TRUE // Legacy compatibility
+		board.challenge_start_time = world.time
+
+	for(var/obj/machinery/computer/camera_advanced/shuttle_docker/dock as anything in GLOB.jam_on_wardec)
+		dock.jammed = TRUE
+
+	// Science bonus - emergency research data from "Nanotrasen R&D"
+	if(SSresearch?.science_tech)
+		SSresearch.science_tech.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = 5000))
+		for(var/obj/machinery/announcement_system/AS in GLOB.announcement_systems)
+			if(AS?.radio && AS.is_operational())
+				AS.radio.talk_into(AS, "Additional research data received from Nanotrasen R&D Division following the emergency protocol.", RADIO_CHANNEL_SCIENCE)
+				break
+
+	addtimer(CALLBACK(SSsecurity_level, TYPE_PROC_REF(/datum/controller/subsystem/security_level, set_level), SEC_LEVEL_LAMBDA), 30 SECONDS)
+	GLOB.war_declared = TRUE
+
 	qdel(src)
+
+/obj/item/nuclear_challenge/proc/distribute_tc()
+	var/list/orphans = list()
+	var/list/datum/component/uplink/uplinks = list()
+
+	for(var/datum/mind/M in get_antag_minds(/datum/antagonist/nukeop))
+		if(iscyborg(M.current))
+			continue
+		var/datum/component/uplink/uplink = M.find_syndicate_uplink()
+		if(!uplink)
+			orphans += M.current
+			continue
+		uplinks += uplink
+
+	var/tc_to_distribute = CHALLENGE_TELECRYSTALS
+	var/tc_per_nukie = round(tc_to_distribute / (length(orphans) + length(uplinks)))
+
+	for(var/datum/component/uplink/uplink in uplinks)
+		uplink.telecrystals += tc_per_nukie
+		tc_to_distribute -= tc_per_nukie
+
+	for(var/mob/living/L in orphans)
+		var/obj/item/stack/telecrystal/TC = new(L.drop_location(), tc_per_nukie)
+		to_chat(L, span_warning("Your uplink could not be found so your share of the team's bonus telecrystals has been bluespaced to your [L.put_in_hands(TC) ? "hands" : "feet"]."))
+		tc_to_distribute -= tc_per_nukie
+
+	// Distribute remainder to first uplink owner
+	if(tc_to_distribute > 0 && length(uplinks))
+		uplinks[1].telecrystals += tc_to_distribute
 
 /obj/item/nuclear_challenge/proc/check_allowed(mob/living/user)
 	if(declaring_war)
-		to_chat(user, "You are already in the process of declaring war! Make your mind up.")
+		to_chat(user, span_boldwarning("You are already in the process of declaring war! Make your mind up."))
+		return FALSE
+
+	if(GLOB.player_list.len < CHALLENGE_MIN_PLAYERS)
+		to_chat(user, span_boldwarning("The enemy crew is too small to be worth declaring war on."))
 		return FALSE
 
 	if(!user.onSyndieBase())
-		to_chat(user, "You have to be at your base to use this.")
+		to_chat(user, span_boldwarning("You have to be at your base to use this."))
 		return FALSE
-	if(world.time-SSticker.round_start_time > CHALLENGE_TIME_LIMIT)
-		to_chat(user, "It's too late to declare hostilities. Your benefactors are already busy with other schemes. You'll have to make do with what you have on hand.")
+
+	if(world.time - SSticker.round_start_time > CHALLENGE_TIME_LIMIT)
+		to_chat(user, span_boldwarning("It's too late to declare hostilities. Your benefactors are already busy with other schemes. You'll have to make do with what you have on hand."))
 		return FALSE
-	for(var/V in GLOB.syndicate_shuttle_boards)
-		var/obj/item/circuitboard/computer/syndicate_shuttle/board = V
+
+	for(var/obj/item/circuitboard/computer/syndicate_shuttle/board as anything in GLOB.syndicate_shuttle_boards)
 		if(board.moved)
-			to_chat(user, "The shuttle has already been moved! You have forfeit the right to declare war.")
+			to_chat(user, span_boldwarning("The shuttle has already been moved! You have forfeit the right to declare war."))
 			return FALSE
+		if(board.challenge_start_time)
+			to_chat(user, span_boldwarning("War has already been declared!"))
+			return FALSE
+
 	return TRUE
 
 /obj/item/nuclear_challenge/clownops
 	uplink_type = /obj/item/uplink/clownop
+	announcement_sound = 'sound/machines/alarm.ogg' // Override in war_was_declared for clown ops mode if needed
 
 #undef CHALLENGE_TELECRYSTALS
 #undef CHALLENGE_TIME_LIMIT
-#undef CHALLENGE_PLAYERS_TARGET
-#undef TELECRYSTALS_MALUS_SCALING
 #undef CHALLENGE_SHUTTLE_DELAY
+#undef CHALLENGE_MIN_PLAYERS

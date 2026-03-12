@@ -98,6 +98,7 @@
 		STOP_PROCESSING(SSobj, src)
 	if(datum_flags & DF_HAS_OPEN_UI)
 		SStgui.close_uis(src)
+	armor = null
 	. = ..()
 
 /// @depricated DO NOT USE

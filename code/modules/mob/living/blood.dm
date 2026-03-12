@@ -214,8 +214,12 @@
 		blood_data["viruses"] += D.Copy()
 
 	blood_data["blood_DNA"] = dna?.unique_enzymes //	BLUEMOON EDIT: TODO:runtime
-	blood_data["bloodcolor"] = dna.species.exotic_blood_color
-	blood_data["bloodblend"] = dna.species.exotic_blood_blend_mode
+	if(dna?.species)
+		blood_data["bloodcolor"] = dna.species.exotic_blood_color
+		blood_data["bloodblend"] = dna.species.exotic_blood_blend_mode
+	else
+		blood_data["bloodcolor"] = BLOOD_COLOR_HUMAN
+		blood_data["bloodblend"] = BLEND_MULTIPLY
 	if(disease_resistances && disease_resistances.len)
 		blood_data["resistances"] = disease_resistances.Copy()
 	var/list/temp_chem = list()

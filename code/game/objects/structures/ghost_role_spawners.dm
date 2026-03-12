@@ -1,3 +1,7 @@
+GLOBAL_LIST_EMPTY(ashwalker_spawns)
+
+#define ASH_RESPAWN_COOLDOWN 20 MINUTES
+
 /datum/team/ghost_role
 	name = "Ghost Role"
 	show_roundend_report = FALSE
@@ -83,10 +87,17 @@
 			if(damage_amount)
 				playsound(loc, 'sound/items/welder.ogg', 100, TRUE)
 
-/obj/structure/ash_walker_eggshell/attack_ghost(mob/user) //Pass on ghost clicks to the mob spawner
-	if(egg)
-		egg.attack_ghost(user)
-	. = ..()
+/obj/structure/ash_walker_eggshell/attack_ghost(mob/user)
+    if(egg)
+        var/time_spawn = GLOB.ashwalker_spawns[user.ckey]
+        if(time_spawn && world.time - time_spawn < ASH_RESPAWN_COOLDOWN)
+            var/time_left = max(0, ASH_RESPAWN_COOLDOWN - (world.time - time_spawn))
+            var/mins_left  = floor(time_left / 600)        // 600 тиков = 1 минута
+            var/secs_left  = floor((time_left % 600) / 10) // остаток в секундах
+            to_chat(user, span_warning("Необходимо подождать ещё [mins_left] минут[mins_left % 10 == 1 && mins_left % 100 != 11 ? "а" : (mins_left % 10 >= 2 && mins_left % 10 <= 4 && (mins_left % 100 < 10 || mins_left % 100 >= 20) ? "ы" : "")] и [secs_left] секунд[secs_left % 10 == 1 && secs_left % 100 != 11 ? "а" : (secs_left % 10 >= 2 && secs_left % 10 <= 4 && (secs_left % 100 < 10 || secs_left % 100 >= 20) ? "ы" : "")] до возможности возродиться."))
+            return
+        egg.attack_ghost(user)
+    . = ..()
 
 /obj/structure/ash_walker_eggshell/Destroy()
 	if(!egg)
@@ -161,6 +172,8 @@
 		if(team)
 			new_spawn.mind.add_antag_datum(/datum/antagonist/ashwalker, team)
 			team.players_spawned += (new_spawn.ckey)
+		if(new_spawn.ckey)
+			GLOB.ashwalker_spawns[new_spawn.ckey] = world.time
 		eggshell.egg = null
 		QDEL_NULL(eggshell)
 

@@ -20,11 +20,15 @@
 	else if(lying || !CHECK_MOBILITY(src, MOBILITY_STAND) || asleep)
 		icon_state = "alien[caste]_sleep"
 	else if(mob_size == MOB_SIZE_LARGE)
-		icon_state = "alien[caste]"
+		icon_state = "alien[caste]_s"
 		if(drooling)
 			add_overlay("alienspit_[caste]")
+	else if(m_intent == MOVE_INTENT_RUN)
+		icon_state = "alien[caste]_running"
+		if(drooling)
+			add_overlay("alienspit")
 	else
-		icon_state = "alien[caste]"
+		icon_state = "alien[caste]_s"
 		if(drooling)
 			add_overlay("alienspit")
 
@@ -43,6 +47,49 @@
 			alt_icon = old_icon
 		pixel_x = get_standard_pixel_x_offset(lying)
 		pixel_y = get_standard_pixel_y_offset(lying)
+	update_inv_hands()
+	update_inv_handcuffed()
+
+// TauCeti alienqueen.dmi uses queen_s/queen_l/queen_sleep/queen_dead and alienp_s/alienp_l/alienp_sleep/alienp_dead
+/mob/living/carbon/alien/humanoid/royal/update_icons()
+	cut_overlays()
+	for(var/I in overlays_standing)
+		add_overlay(I)
+
+	var/asleep = IsSleeping()
+	var/tauceti_state
+	if(stat == DEAD)
+		if(caste == "q")
+			tauceti_state = (fireloss > 125) ? "queen_dead_fire" : "queen_dead"
+		else
+			tauceti_state = "alienp_dead"
+	else if((stat == UNCONSCIOUS && !asleep) || stat == SOFT_CRIT || IsParalyzed())
+		tauceti_state = (caste == "q") ? "queen_l" : "alienp_l"
+	else if(leap_on_click)
+		tauceti_state = (caste == "q") ? "queen_s" : "alienp_s"
+	else if(lying || !CHECK_MOBILITY(src, MOBILITY_STAND) || asleep)
+		tauceti_state = (caste == "q") ? "queen_sleep" : "alienp_sleep"
+	else
+		tauceti_state = (caste == "q") ? "queen_s" : "alienp_s"
+		if(drooling)
+			add_overlay((caste == "q") ? "alienspit_q" : "alienspit_p")
+
+	if(leaping)
+		if(alt_icon == initial(alt_icon))
+			var/old_icon = icon
+			icon = alt_icon
+			alt_icon = old_icon
+		icon_state = "alien[caste]_leap"
+		pixel_x = -32
+		pixel_y = -32
+	else
+		if(alt_icon != initial(alt_icon))
+			var/old_icon = icon
+			icon = alt_icon
+			alt_icon = old_icon
+		pixel_x = get_standard_pixel_x_offset(lying)
+		pixel_y = get_standard_pixel_y_offset(lying)
+		icon_state = tauceti_state
 	update_inv_hands()
 	update_inv_handcuffed()
 

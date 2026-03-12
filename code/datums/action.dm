@@ -95,9 +95,11 @@
 	SHOULD_CALL_PARENT(TRUE)
 
 	for(var/datum/hud/hud in viewers)
-		if(!hud.mymob)
-			continue
-		HideFrom(hud.mymob)
+		var/atom/movable/screen/movable/action_button/button = viewers[hud]
+		if(hud.mymob)
+			HideFrom(hud.mymob)
+		else if(button)
+			qdel(button) // Mob destroyed; remove orphaned button to prevent GC failure
 	LAZYREMOVE(remove_from?.actions, src) // We aren't always properly inserted into the viewers list, gotta make sure that action's cleared
 	viewers = list()
 
@@ -991,8 +993,8 @@
 	var/small_icon_state
 
 /datum/action/small_sprite/queen
-	small_icon = 'icons/mob/alien.dmi'
-	small_icon_state = "alienq"
+	small_icon = 'icons/mob/alienqueen.dmi'
+	small_icon_state = "queen_s"
 
 /datum/action/small_sprite/drake
 	small_icon = 'icons/mob/lavaland/lavaland_monsters.dmi'

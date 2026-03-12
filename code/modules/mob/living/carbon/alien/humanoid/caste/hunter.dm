@@ -3,7 +3,7 @@
 	caste = "h"
 	maxHealth = 180
 	health = 180
-	icon_state = "alienh"
+	icon_state = "alienh_s"
 	meleeKnockdownPower = 75
 	meleeSlashHumanPower = 30
 	meleeSlashSAPower = 45

@@ -79,36 +79,36 @@
 	icon_state = "paper_onfire"
 
 /obj/item/paper/contract/infernal/power
-	name = "paper- contract for infernal power"
+	name = "бумага- контракт на инфернальную силу"
 	contractType = CONTRACT_POWER
 
 /obj/item/paper/contract/infernal/wealth
-	name = "paper- contract for unlimited wealth"
+	name = "бумага- контракт на неограниченное богатство"
 	contractType = CONTRACT_WEALTH
 
 /obj/item/paper/contract/infernal/prestige
-	name = "paper- contract for prestige"
+	name = "бумага- контракт на престиж"
 	contractType = CONTRACT_PRESTIGE
 
 /obj/item/paper/contract/infernal/magic
-	name = "paper- contract for magical power"
+	name = "бумага- контракт на магические способности"
 	contractType = CONTRACT_MAGIC
 
 /obj/item/paper/contract/infernal/revive
-	name = "paper- contract of resurrection"
+	name = "бумага- контракт на воскрешение"
 	contractType = CONTRACT_REVIVE
 	var/cooldown = FALSE
 
 /obj/item/paper/contract/infernal/knowledge
-	name = "paper- contract for knowledge"
+	name = "бумага- контракт на знание"
 	contractType = CONTRACT_KNOWLEDGE
 
 /obj/item/paper/contract/infernal/friend
-	name = "paper- contract for a friend"
+	name = "бумага- контракт на друга"
 	contractType = CONTRACT_FRIEND
 
 /obj/item/paper/contract/infernal/unwilling
-	name = "paper- infernal contract"
+	name = "бумага- инфернальный контракт"
 	contractType = CONTRACT_UNWILLING
 
 /obj/item/paper/contract/infernal/New(atom/loc, mob/living/nTarget, datum/mind/nOwner)
@@ -131,64 +131,78 @@
 	else
 		..()
 
+/obj/item/paper/contract/infernal/proc/apply_contract_text()
+	if(default_raw_text)
+		clear_paper()
+		add_raw_text(default_raw_text)
+		update_appearance()
+
 /obj/item/paper/contract/infernal/update_text()
-	default_raw_text = "This shouldn't be seen.  Error DEVIL:6"
+	default_raw_text = "Этого не должно быть видно. Ошибка DEVIL:6"
 
 /obj/item/paper/contract/infernal/power/update_text(signature = "____________", blood = 0)
-	default_raw_text = "<center><B>Contract for infernal power</B></center><BR><BR><BR>I, [target] of sound mind, do hereby willingly offer my soul to the infernal hells by way of the infernal agent [devil_datum.truename], in exchange for power and physical strength.  I understand that upon my demise, my soul shall fall into the infernal hells, and my body may not be resurrected, cloned, or otherwise brought back to life.  I also understand that this will prevent my brain from being used in an MMI.<BR><BR><BR>Signed, "
+	default_raw_text = "<center><B>Контракт на инфернальную силу</B></center><BR><BR><BR>Я, [target?.name || "__________"], в здравом уме и твёрдой памяти, настоящим добровольно передаю свою душу в инфернальные миры через посредника по имени [devil_datum?.truename || "__________"], в обмен на силу и физическую мощь. Я понимаю, что после моей смерти моя душа попадёт в адские миры, а моё тело не может быть воскрешено, клонировано или иным образом возвращено к жизни. Я также понимаю, что мой мозг не сможет быть использован в MMI.<BR><BR><BR>Подпись: "
 	if(blood)
 		default_raw_text += "<font face=\"Nyala\" color=#600A0A size=6><i>[signature]</i></font>"
 	else
 		default_raw_text += "<i>[signature]</i>"
+	apply_contract_text()
 
 /obj/item/paper/contract/infernal/wealth/update_text(signature = "____________", blood = 0)
-	default_raw_text = "<center><B>Contract for unlimited wealth</B></center><BR><BR><BR>I, [target] of sound mind, do hereby willingly offer my soul to the infernal hells by way of the infernal agent [devil_datum.truename], in exchange for a pocket that never runs out of valuable resources.  I understand that upon my demise, my soul shall fall into the infernal hells, and my body may not be resurrected, cloned, or otherwise brought back to life.  I also understand that this will prevent my brain from being used in an MMI.<BR><BR><BR>Signed, "
+	default_raw_text = "<center><B>Контракт на неограниченное богатство</B></center><BR><BR><BR>Я, [target?.name || "__________"], в здравом уме и твёрдой памяти, настоящим добровольно передаю свою душу в инфернальные миры через посредника по имени [devil_datum?.truename || "__________"], в обмен на источник ценностей, который никогда не иссякнет. Я понимаю, что после моей смерти моя душа попадёт в адские миры, а моё тело не может быть воскрешено, клонировано или иным образом возвращено к жизни. Я также понимаю, что мой мозг не сможет быть использован в MMI.<BR><BR><BR>Подпись: "
 	if(blood)
 		default_raw_text += "<font face=\"Nyala\" color=#600A0A size=6><i>[signature]</i></font>"
 	else
 		default_raw_text += "<i>[signature]</i>"
+	apply_contract_text()
 
 /obj/item/paper/contract/infernal/prestige/update_text(signature = "____________", blood = 0)
-	default_raw_text = "<center><B>Contract for prestige</B></center><BR><BR><BR>I, [target] of sound mind, do hereby willingly offer my soul to the infernal hells by way of the infernal agent [devil_datum.truename], in exchange for prestige and esteem among my peers.  I understand that upon my demise, my soul shall fall into the infernal hells, and my body may not be resurrected, cloned, or otherwise brought back to life.  I also understand that this will prevent my brain from being used in an MMI.<BR><BR><BR>Signed, "
+	default_raw_text = "<center><B>Контракт на престиж</B></center><BR><BR><BR>Я, [target?.name || "__________"], в здравом уме и твёрдой памяти, настоящим добровольно передаю свою душу в инфернальные миры через посредника по имени [devil_datum?.truename || "__________"], в обмен на престиж и уважение среди окружающих. Я понимаю, что после моей смерти моя душа попадёт в адские миры, а моё тело не может быть воскрешено, клонировано или иным образом возвращено к жизни. Я также понимаю, что мой мозг не сможет быть использован в MMI.<BR><BR><BR>Подпись: "
 	if(blood)
 		default_raw_text += "<font face=\"Nyala\" color=#600A0A size=6><i>[signature]</i></font>"
 	else
 		default_raw_text += "<i>[signature]</i>"
+	apply_contract_text()
 
 /obj/item/paper/contract/infernal/magic/update_text(signature = "____________", blood = 0)
-	default_raw_text = "<center><B>Contract for magic</B></center><BR><BR><BR>I, [target] of sound mind, do hereby willingly offer my soul to the infernal hells by way of the infernal agent [devil_datum.truename], in exchange for arcane abilities beyond normal human ability.  I understand that upon my demise, my soul shall fall into the infernal hells, and my body may not be resurrected, cloned, or otherwise brought back to life.  I also understand that this will prevent my brain from being used in an MMI.<BR><BR><BR>Signed, "
+	default_raw_text = "<center><B>Контракт на магические способности</B></center><BR><BR><BR>Я, [target?.name || "__________"], в здравом уме и твёрдой памяти, настоящим добровольно передаю свою душу в инфернальные миры через посредника по имени [devil_datum?.truename || "__________"], в обмен на арканические способности, превосходящие возможности обычного человека. Я понимаю, что после моей смерти моя душа попадёт в адские миры, а моё тело не может быть воскрешено, клонировано или иным образом возвращено к жизни. Я также понимаю, что мой мозг не сможет быть использован в MMI.<BR><BR><BR>Подпись: "
 	if(blood)
 		default_raw_text += "<font face=\"Nyala\" color=#600A0A size=6><i>[signature]</i></font>"
 	else
 		default_raw_text += "<i>[signature]</i>"
+	apply_contract_text()
 
 /obj/item/paper/contract/infernal/revive/update_text(signature = "____________", blood = 0)
-	default_raw_text = "<center><B>Contract for resurrection</B></center><BR><BR><BR>I, [target] of sound mind, do hereby willingly offer my soul to the infernal hells by way of the infernal agent [devil_datum.truename], in exchange for resurrection and curing of all injuries.  I understand that upon my demise, my soul shall fall into the infernal hells, and my body may not be resurrected, cloned, or otherwise brought back to life.  I also understand that this will prevent my brain from being used in an MMI.<BR><BR><BR>Signed, "
+	default_raw_text = "<center><B>Контракт на воскрешение</B></center><BR><BR><BR>Я, [target?.name || "__________"], в здравом уме и твёрдой памяти, настоящим добровольно передаю свою душу в инфернальные миры через посредника по имени [devil_datum?.truename || "__________"], в обмен на воскрешение и исцеление от всех травм. Я понимаю, что после моей смерти моя душа попадёт в адские миры, а моё тело не может быть воскрешено, клонировано или иным образом возвращено к жизни. Я также понимаю, что мой мозг не сможет быть использован в MMI.<BR><BR><BR>Подпись: "
 	if(blood)
 		default_raw_text += "<font face=\"Nyala\" color=#600A0A size=6><i>[signature]</i></font>"
 	else
 		default_raw_text += "<i>[signature]</i>"
+	apply_contract_text()
 
 /obj/item/paper/contract/infernal/knowledge/update_text(signature = "____________", blood = 0)
-	default_raw_text = "<center><B>Contract for knowledge</B></center><BR><BR><BR>I, [target] of sound mind, do hereby willingly offer my soul to the infernal hells by way of the infernal agent [devil_datum.truename], in exchange for boundless knowledge.  I understand that upon my demise, my soul shall fall into the infernal hells, and my body may not be resurrected, cloned, or otherwise brought back to life.  I also understand that this will prevent my brain from being used in an MMI.<BR><BR><BR>Signed, "
+	default_raw_text = "<center><B>Контракт на знание</B></center><BR><BR><BR>Я, [target?.name || "__________"], в здравом уме и твёрдой памяти, настоящим добровольно передаю свою душу в инфернальные миры через посредника по имени [devil_datum?.truename || "__________"], в обмен на безграничные знания. Я понимаю, что после моей смерти моя душа попадёт в адские миры, а моё тело не может быть воскрешено, клонировано или иным образом возвращено к жизни. Я также понимаю, что мой мозг не сможет быть использован в MMI.<BR><BR><BR>Подпись: "
 	if(blood)
 		default_raw_text += "<font face=\"Nyala\" color=#600A0A size=6><i>[signature]</i></font>"
 	else
 		default_raw_text += "<i>[signature]</i>"
+	apply_contract_text()
 
 /obj/item/paper/contract/infernal/friend/update_text(signature = "____________", blood = 0)
-	default_raw_text = "<center><B>Contract for a friend</B></center><BR><BR><BR>I, [target] of sound mind, do hereby willingly offer my soul to the infernal hells by way of the infernal agent [devil_datum.truename], in exchange for a friend.  I understand that upon my demise, my soul shall fall into the infernal hells, and my body may not be resurrected, cloned, or otherwise brought back to life.  I also understand that this will prevent my brain from being used in an MMI.<BR><BR><BR>Signed, "
+	default_raw_text = "<center><B>Контракт на друга</B></center><BR><BR><BR>Я, [target?.name || "__________"], в здравом уме и твёрдой памяти, настоящим добровольно передаю свою душу в инфернальные миры через посредника по имени [devil_datum?.truename || "__________"], в обмен на друга. Я понимаю, что после моей смерти моя душа попадёт в адские миры, а моё тело не может быть воскрешено, клонировано или иным образом возвращено к жизни. Я также понимаю, что мой мозг не сможет быть использован в MMI.<BR><BR><BR>Подпись: "
 	if(blood)
 		default_raw_text += "<font face=\"Nyala\" color=#600A0A size=6><i>[signature]</i></font>"
 	else
 		default_raw_text += "<i>[signature]</i>"
+	apply_contract_text()
 
 /obj/item/paper/contract/infernal/unwilling/update_text(signature = "____________", blood = 0)
-	default_raw_text = "<center><B>Contract for slave</B></center><BR><BR><BR>I, [target], hereby offer my soul to the infernal hells by way of the infernal agent [devil_datum.truename].  I understand that upon my demise, my soul shall fall into the infernal hells, and my body may not be resurrected, cloned, or otherwise brought back to life.  I also understand that this will prevent my brain from being used in an MMI.<BR><BR><BR>Signed, "
+	default_raw_text = "<center><B>Контракт на рабство</B></center><BR><BR><BR>Я, [target?.name || "__________"], настоящим передаю свою душу в инфернальные миры через посредника по имени [devil_datum?.truename || "__________"]. Я понимаю, что после моей смерти моя душа попадёт в адские миры, а моё тело не может быть воскрешено, клонировано или иным образом возвращено к жизни. Я также понимаю, что мой мозг не сможет быть использован в MMI.<BR><BR><BR>Подпись: "
 	if(blood)
 		default_raw_text += "<font face=\"Nyala\" color=#600A0A size=6><i>[signature]</i></font>"
 	else
 		default_raw_text += "<i>[signature]</i>"
+	apply_contract_text()
 
 /obj/item/paper/contract/infernal/attackby(obj/item/P, mob/living/carbon/human/user, params)
 	add_fingerprint(user)

@@ -8,21 +8,31 @@
 	explosion(target, -1, 0, 2)
 	return BULLET_ACT_HIT
 
+/// PM9 standard HE rocket
 /obj/item/projectile/bullet/a84mm
-	name ="\improper HEDP rocket"
-	desc = "USE A WEEL GUN"
-	icon_state= "84mm-hedp"
-	damage = 124
-	var/anti_armour_damage = 200
-	armour_penetration = 100
-	dismemberment = 100
+	name = "\improper HE rocket"
+	desc = "Boom."
+	icon_state= "missile"
+	damage = 60
+	sharpness = NONE
+	shrapnel_type = null
 	ricochets_max = 0
+	/// Whether we do extra damage when hitting a mech or silicon
+	var/anti_armour_damage = 150
+	/// Whether the rocket is capable of instantly killing a living target
+	var/random_crits_enabled = TRUE // Worst thing Valve ever added
 
-/obj/item/projectile/bullet/a84mm/on_hit(atom/target, blocked = FALSE)
+/obj/item/projectile/bullet/a84mm/on_hit(atom/target, blocked = 0, pierce_hit)
+	var/random_crit_gib = FALSE
+	if(isliving(target) && prob(5) && random_crits_enabled)
+		var/mob/living/gibbed_dude = target
+		// if(gibbed_dude.stat < UNCONSCIOUS)
+		gibbed_dude.say("ЭТО ЁБАННАЯ РАКЕТ-", forced = "hit by rocket")
+		random_crit_gib = TRUE
 	..()
-	explosion(target, -1, 1, 3, 1, 0, flame_range = 4)
 
-	if(ismecha(target))
+	do_boom(target, random_crit_gib)
+	if(anti_armour_damage && ismecha(target))
 		var/obj/vehicle/sealed/mecha/M = target
 		M.take_damage(anti_armour_damage)
 	if(issilicon(target))
@@ -30,35 +40,42 @@
 		S.take_overall_damage(anti_armour_damage*0.75, anti_armour_damage*0.25)
 	return BULLET_ACT_HIT
 
-/obj/item/projectile/bullet/a84mm_he
-	name ="\improper HE missile"
-	desc = "Boom."
-	icon_state = "missile"
-	damage = 30
-	ricochets_max = 0 //it's a MISSILE
-
-/obj/item/projectile/bullet/a84mm_he/on_hit(atom/target, blocked=0)
-	..()
+/** This proc allows us to customize the conditions necesary for the rocket to detonate, allowing for different explosions for living targets, turf targets,
+among other potential differences. This granularity is helpful for things like the special rockets mechs use. */
+/obj/item/projectile/bullet/a84mm/proc/do_boom(atom/target, random_crit_gib = FALSE)
 	if(!isliving(target)) //if the target isn't alive, so is a wall or something
-		explosion(target, 0, 1, 2, 4)
+		explosion(target, heavy_impact_range = 1, light_impact_range = 2, flame_range = 3, flash_range = 4)
 	else
-		explosion(target, 0, 0, 2, 4)
-	return BULLET_ACT_HIT
+		explosion(target, light_impact_range = 2, flame_range = 3, flash_range = 4)
+		if(random_crit_gib)
+			var/mob/living/gibbed_dude = target
+			new /obj/effect/temp_visual/crit(get_turf(gibbed_dude))
+			gibbed_dude.gib(FALSE, FALSE, FALSE)
 
-/obj/item/projectile/bullet/a84mm_br
+/// PM9 HEAP rocket - the anti-anything missile you always craved.
+/obj/item/projectile/bullet/a84mm/he
+	name = "\improper HEAP rocket"
+	desc = "I am become death."
+	icon_state = "84mm-heap"
+	damage = 120
+	armour_penetration = 100
+	dismemberment = 100
+	anti_armour_damage = 50
+
+/obj/item/projectile/bullet/a84mm/he/do_boom(atom/target, blocked=0)
+	explosion(target, devastation_range = -1, heavy_impact_range = 1, light_impact_range = 3, flame_range = 4, flash_range = 1, adminlog = FALSE)
+
+/obj/item/projectile/bullet/a84mm/br
 	name ="\improper HE missile"
 	desc = "Boom."
 	icon_state = "missile"
-	damage = 30
-	ricochets_max = 0 //it's a MISSILE
-	var/sturdy = list(
-	/turf/closed,
-	/obj/vehicle/sealed/mecha,
-	/obj/machinery/door,
-	/obj/machinery/door/poddoor/shutters,
-	/obj/structure/window,
-	/obj/structure/grille
-	)
+	damage = 60
+	dismemberment = 50
+	anti_armour_damage = 100
+
+/obj/item/projectile/bullet/a84mm/br/on_hit(atom/target, blocked=0)
+	..()
+	new /obj/item/broken_missile(get_turf(src))
 
 /obj/item/broken_missile
 	name = "\improper broken missile"
@@ -66,13 +83,3 @@
 	icon = 'icons/obj/projectiles.dmi'
 	icon_state = "missile_broken"
 	w_class = WEIGHT_CLASS_TINY
-
-
-/obj/item/projectile/bullet/a84mm_br/on_hit(atom/target, blocked=0)
-	..()
-	for(var/i in sturdy)
-		if(istype(target, i))
-			explosion(target, 0, 1, 1, 2)
-			return BULLET_ACT_HIT
-	//if(istype(target, /turf/closed) || ismecha(target))
-	new /obj/item/broken_missile(get_turf(src), 1)

@@ -135,7 +135,7 @@ GLOBAL_LIST_EMPTY(bounties_list)
 		if(13)
 			var/subtype = pick(subtypesof(/datum/bounty/item/silly))
 			return new subtype
-		if(14)
+		if(14, 15)
 			var/subtype = pick(subtypesof(/datum/bounty/item/gardencook))
 			return new subtype
 		if(16)
@@ -160,6 +160,12 @@ GLOBAL_LIST_EMPTY(bounties_list)
 				if(4)
 					subtype = pick(subtypesof(/datum/bounty/item/slime))
 			return new subtype
+	if(guided == CIV_JOB_BASIC)
+		var/list/assistant_bounties = subtypesof(/datum/bounty/item/assistant)
+		if(length(assistant_bounties))
+			var/subtype = pick(assistant_bounties)
+			return new subtype
+	return null
 
 // Called lazily at startup to populate GLOB.bounties_list with random bounties.
 /proc/setup_bounties()

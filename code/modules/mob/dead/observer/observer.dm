@@ -468,6 +468,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	transfer_ckey(mind.current, FALSE)
 	SStgui.on_transfer(src, mind.current) // Transfer NanoUIs.
 	mind.current.client.init_verbs()
+	qdel(src) // Remove observer from dead_mob_list and all HUDs - prevents GC failures
 	return TRUE
 
 /mob/dead/observer/verb/stay_dead()

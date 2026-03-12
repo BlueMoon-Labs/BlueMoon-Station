@@ -14,6 +14,59 @@ GLOBAL_LIST_INIT(pp_limbs, list(
 	"Right arm" = BODY_ZONE_R_ARM
 ))
 
+/proc/init_pp_martial_arts()
+	var/list/arts = list()
+	for(var/matype in subtypesof(/datum/martial_art))
+		var/datum/martial_art/MA = matype
+		var/ma_name = initial(MA.name)
+		if(!ma_name || ma_name == "Martial Art")
+			continue
+		if(arts[ma_name])
+			continue
+		arts[ma_name] = matype
+	return arts
+
+GLOBAL_LIST_INIT(pp_martial_arts, init_pp_martial_arts())
+
+/proc/init_pp_quirks()
+	var/list/quirks = list()
+	for(var/qtype in subtypesof(/datum/quirk))
+		var/datum/quirk/Q = qtype
+		var/q_name = initial(Q.name)
+		if(!q_name)
+			continue
+		quirks[q_name] = qtype
+	return quirks
+
+GLOBAL_LIST_INIT(pp_quirks, init_pp_quirks())
+
+/proc/init_pp_organs()
+	var/list/organs = list()
+	for(var/otype in subtypesof(/obj/item/organ))
+		var/obj/item/organ/O = otype
+		var/o_name = initial(O.name)
+		var/o_slot = initial(O.slot)
+		if(!o_name || o_name == "organ" || !o_slot)
+			continue
+		if(!organs[o_slot])
+			organs[o_slot] = list()
+		organs[o_slot] += list(list("name" = o_name, "path" = "[otype]"))
+	return organs
+
+GLOBAL_LIST_INIT(pp_organs, init_pp_organs())
+
+/proc/init_pp_implants()
+	var/list/implants = list()
+	for(var/itype in subtypesof(/obj/item/implant))
+		var/obj/item/implant/I = itype
+		var/i_name = initial(I.name)
+		if(!i_name || i_name == "implant")
+			continue
+		implants[i_name] = itype
+	return implants
+
+GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
+
 /datum/admins/proc/show_player_panel2(mob/M)
 	if(!M)
 		to_chat(owner, "You seem to be selecting a mob that doesn't exist anymore.")
@@ -106,6 +159,45 @@ GLOBAL_LIST_INIT(pp_limbs, list(
 		antagBanReason = null
 		.["client_ckey"] = null
 
+	// Active martial art
+	var/mob/living/carbon/pp_carbon = targetMob
+	if(istype(pp_carbon) && pp_carbon.mind?.martial_art && pp_carbon.mind.martial_art.name != "Martial Art")
+		.["active_martial_art"] = pp_carbon.mind.martial_art.name
+	else
+		.["active_martial_art"] = null
+
+	// Active quirks
+	var/list/active_quirks = list()
+	if(isliving(targetMob))
+		var/mob/living/pp_living = targetMob
+		for(var/datum/quirk/Q in pp_living.roundstart_quirks)
+			active_quirks += Q.name
+	.["active_quirks"] = active_quirks
+
+	// Has loadout data
+	.["has_loadout"] = !!(targetMob.client?.prefs?.loadout_data)
+
+	// Current organs
+	var/list/current_organs = list()
+	if(iscarbon(targetMob))
+		var/mob/living/carbon/C = targetMob
+		for(var/slot_name in C.internal_organs_slot)
+			var/obj/item/organ/O = C.internal_organs_slot[slot_name]
+			if(O)
+				current_organs += list(list("slot" = slot_name, "name" = O.name, "type_path" = "[O.type]"))
+	.["current_organs"] = current_organs
+
+	// Current implants
+	var/list/current_implants = list()
+	if(isliving(targetMob))
+		var/mob/living/imp_mob = targetMob
+		for(var/obj/item/implant/I in imp_mob.implants)
+			current_implants += list(list("name" = I.name, "ref" = REF(I), "type_path" = "[I.type]"))
+	.["current_implants"] = current_implants
+
+	// Current weight
+	.["mob_weight"] = targetMob.mob_weight
+
 /datum/player_panel/ui_static_data()
 	. = list()
 
@@ -131,6 +223,48 @@ GLOBAL_LIST_INIT(pp_limbs, list(
 		if(CONFIG_GET(flag/use_exp_tracking))
 			.["playtimes_enabled"] = TRUE
 			.["playtime"] = targetMob.client.get_exp_living()
+
+	// Smites list
+	var/list/smite_names = list()
+	for(var/sname in GLOB.smites)
+		smite_names += sname
+	.["smites_list"] = smite_names
+
+	// Martial arts list
+	var/list/ma_data = list()
+	for(var/ma_name in GLOB.pp_martial_arts)
+		ma_data += list(list("name" = ma_name))
+	.["martial_arts_list"] = ma_data
+
+	// Quirks list
+	var/list/quirks_data = list()
+	for(var/q_name in GLOB.pp_quirks)
+		var/datum/quirk/Q = GLOB.pp_quirks[q_name]
+		var/q_value = initial(Q.value)
+		var/q_type_str = QUIRK_NEUTRAL
+		if(q_value > 0)
+			q_type_str = QUIRK_POSITIVE
+		else if(q_value < 0)
+			q_type_str = QUIRK_NEGATIVE
+		quirks_data += list(list("name" = q_name, "value_type" = q_type_str, "desc" = initial(Q.desc)))
+	.["quirks_list"] = quirks_data
+
+	// Organs by slot
+	.["organ_slots"] = GLOB.pp_organs
+
+	// Implants list
+	var/list/implants_data = list()
+	for(var/imp_name in GLOB.pp_implants)
+		implants_data += list(list("name" = imp_name))
+	.["implants_list"] = implants_data
+
+	// Weight options
+	.["weight_options"] = list(\
+		list("name" = NAME_WEIGHT_LIGHT, "value" = MOB_WEIGHT_LIGHT),\
+		list("name" = NAME_WEIGHT_NORMAL, "value" = MOB_WEIGHT_NORMAL),\
+		list("name" = NAME_WEIGHT_HEAVY, "value" = MOB_WEIGHT_HEAVY),\
+		list("name" = NAME_WEIGHT_HEAVY_SUPER, "value" = MOB_WEIGHT_HEAVY_SUPER)\
+	)
 
 /datum/player_panel/ui_act(action, params, datum/tgui/ui)
 	if(..())
@@ -177,6 +311,17 @@ GLOBAL_LIST_INIT(pp_limbs, list(
 
 		if ("heal")
 			admin.cmd_admin_rejuvenate(targetMob)
+
+		if ("light_heal")
+			if(!isliving(targetMob))
+				return
+			var/mob/living/L = targetMob
+			L.adjustBruteLoss(-20)
+			L.adjustFireLoss(-20)
+			L.adjustToxLoss(-20)
+			L.adjustOxyLoss(-20)
+			log_admin("[key_name(admin)] light-healed [key_name(targetMob)] (20 HP all types).")
+			message_admins("<span class='notice'>[key_name_admin(admin)] light-healed [key_name_admin(targetMob)] (20 HP all types).</span>")
 
 		if ("ghost")
 			if(targetMob.client)
@@ -394,6 +539,15 @@ GLOBAL_LIST_INIT(pp_limbs, list(
 				L.vv_edit_var("resize", params["new_scale"])
 				mobSize = params["new_scale"]
 
+		if ("set_weight")
+			var/new_weight = text2num(params["weight"])
+			if(!isnull(new_weight) && isliving(targetMob))
+				var/mob/living/L = targetMob
+				L.mob_weight = new_weight
+				L.update_weight(new_weight)
+				log_admin("[key_name(usr)] set [key_name(targetMob)]'s weight to [new_weight].")
+				message_admins("[ADMIN_LOOKUPFLW(usr)] set [ADMIN_LOOKUPFLW(targetMob)]'s weight to [new_weight].")
+
 		if ("explode")
 			var/power = text2num(params["power"])
 			var/empMode = text2num(params["emp_mode"])
@@ -474,6 +628,143 @@ GLOBAL_LIST_INIT(pp_limbs, list(
 
 		if ("traitor_panel")
 			admin.holder.show_traitor_panel(targetMob)
+
+		if ("smite_direct")
+			if(!isliving(targetMob))
+				return
+			var/smite_name = params["smite_name"]
+			if(!smite_name || !(smite_name in GLOB.smites))
+				return
+			var/smite_path = GLOB.smites[smite_name]
+			var/datum/smite/S = new smite_path
+			var/config_ok = S.configure(admin)
+			if(config_ok == FALSE)
+				return
+			S.effect(admin, targetMob)
+
+		if ("set_martial_art")
+			if(!ishuman(targetMob))
+				return
+			var/mob/living/carbon/human/H = targetMob
+			if(!H.mind)
+				return
+			var/ma_name = params["ma_name"]
+			if(!ma_name || !(ma_name in GLOB.pp_martial_arts))
+				return
+			var/ma_path = GLOB.pp_martial_arts[ma_name]
+			var/datum/martial_art/MA = new ma_path
+			if(!MA.teach(H))
+				to_chat(usr, "<span class='warning'>Failed to teach [ma_name] to [H]!</span>")
+				qdel(MA)
+				return
+			to_chat(H, "<span class='userdanger'>You have been granted the martial art: [ma_name]!</span>")
+			log_admin("[key_name(admin)] has taught [ma_name] to [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] has taught [ma_name] to [key_name_admin(targetMob)].</span>")
+
+		if ("remove_martial_art")
+			if(!ishuman(targetMob))
+				return
+			var/mob/living/carbon/human/H = targetMob
+			if(!H.mind?.martial_art)
+				return
+			var/ma_name = H.mind.martial_art.name
+			H.mind.martial_art.remove(H)
+			to_chat(H, "<span class='userdanger'>Your martial art [ma_name] has been removed!</span>")
+			log_admin("[key_name(admin)] removed martial art [ma_name] from [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] removed martial art [ma_name] from [key_name_admin(targetMob)].</span>")
+
+		if ("toggle_quirk_direct")
+			if(!ishuman(targetMob))
+				return
+			var/mob/living/carbon/human/H = targetMob
+			var/q_name = params["quirk_name"]
+			if(!q_name || !(q_name in GLOB.pp_quirks))
+				return
+			var/q_path = GLOB.pp_quirks[q_name]
+			if(H.has_quirk(q_path))
+				H.remove_quirk(q_path)
+				log_admin("[key_name(admin)] removed quirk [q_name] from [key_name(targetMob)].")
+			else
+				H.add_quirk(q_path, TRUE)
+				log_admin("[key_name(admin)] added quirk [q_name] to [key_name(targetMob)].")
+
+		if ("clear_quirks")
+			if(!ishuman(targetMob))
+				return
+			var/mob/living/carbon/human/H = targetMob
+			for(var/datum/quirk/Q in H.roundstart_quirks.Copy())
+				H.remove_quirk(Q.type)
+			log_admin("[key_name(admin)] cleared all quirks from [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] cleared all quirks from [key_name_admin(targetMob)].</span>")
+
+		if ("apply_loadout")
+			if(!ishuman(targetMob) || !targetMob.client?.prefs)
+				return
+			SSjob.equip_loadout(null, targetMob, bypass_prereqs = TRUE)
+			log_admin("[key_name(admin)] applied loadout to [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] applied loadout to [key_name_admin(targetMob)].</span>")
+
+		if ("set_organ")
+			if(!iscarbon(targetMob))
+				return
+			var/organ_path = text2path(params["organ_path"])
+			if(!organ_path || !ispath(organ_path, /obj/item/organ))
+				return
+			var/obj/item/organ/new_organ = new organ_path
+			new_organ.Insert(targetMob, special = TRUE, drop_if_replaced = TRUE)
+			log_admin("[key_name(admin)] gave organ [new_organ.name] to [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] gave organ [new_organ.name] to [key_name_admin(targetMob)].</span>")
+
+		if ("remove_organ")
+			if(!iscarbon(targetMob))
+				return
+			var/mob/living/carbon/C = targetMob
+			var/slot_name = params["organ_slot"]
+			if(!slot_name)
+				return
+			var/obj/item/organ/O = C.internal_organs_slot[slot_name]
+			if(!O)
+				return
+			var/organ_name = O.name
+			O.Remove(special = TRUE)
+			O.forceMove(get_turf(C))
+			log_admin("[key_name(admin)] removed organ [organ_name] from [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] removed organ [organ_name] from [key_name_admin(targetMob)].</span>")
+
+		if ("set_implant")
+			if(!isliving(targetMob))
+				return
+			var/imp_name = params["implant_name"]
+			if(!imp_name)
+				return
+			var/imp_path = GLOB.pp_implants[imp_name]
+			if(!imp_path)
+				return
+			var/obj/item/implant/new_imp = new imp_path
+			if(!new_imp.implant(targetMob, usr, TRUE, TRUE))
+				to_chat(usr, "<span class='warning'>Failed to implant [imp_name] into [targetMob]!</span>")
+				qdel(new_imp)
+				return
+			to_chat(targetMob, "<span class='userdanger'>You feel something being implanted into you: [imp_name]!</span>")
+			log_admin("[key_name(admin)] implanted [imp_name] into [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] implanted [imp_name] into [key_name_admin(targetMob)].</span>")
+
+		if ("remove_implant")
+			if(!isliving(targetMob))
+				return
+			var/mob/living/imp_mob = targetMob
+			var/imp_ref = params["implant_ref"]
+			if(!imp_ref)
+				return
+			var/obj/item/implant/target_imp = locate(imp_ref) in imp_mob.implants
+			if(!target_imp)
+				return
+			var/imp_name = target_imp.name
+			target_imp.removed(imp_mob, TRUE)
+			qdel(target_imp)
+			to_chat(targetMob, "<span class='userdanger'>An implant has been removed from you: [imp_name]!</span>")
+			log_admin("[key_name(admin)] removed implant [imp_name] from [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] removed implant [imp_name] from [key_name_admin(targetMob)].</span>")
 
 // process_banlist: Gets all jobs in a job category
 // Input:

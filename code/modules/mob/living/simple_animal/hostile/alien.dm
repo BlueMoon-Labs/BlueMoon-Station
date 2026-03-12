@@ -1,9 +1,9 @@
 /mob/living/simple_animal/hostile/alien
 	name = "alien hunter"
 	desc = "Hiss!"
-	icon = 'icons/mob/alien.dmi'
-	icon_state = "alienh"
-	icon_living = "alienh"
+	icon = 'icons/mob/xenomorph.dmi'
+	icon_state = "alienh_s"
+	icon_living = "alienh_s"
 	icon_dead = "alienh_dead"
 	icon_gib = "syndicate_gib"
 	gender = FEMALE
@@ -46,8 +46,8 @@
 
 /mob/living/simple_animal/hostile/alien/drone
 	name = "alien drone"
-	icon_state = "aliend"
-	icon_living = "aliend"
+	icon_state = "aliend_s"
+	icon_living = "aliend_s"
 	icon_dead = "aliend_dead"
 	melee_damage_lower = 15
 	melee_damage_upper = 15
@@ -65,8 +65,8 @@
 
 /mob/living/simple_animal/hostile/alien/sentinel
 	name = "alien sentinel"
-	icon_state = "aliens"
-	icon_living = "aliens"
+	icon_state = "aliens_s"
+	icon_living = "aliens_s"
 	icon_dead = "aliens_dead"
 	health = 150
 	maxHealth = 150
@@ -89,9 +89,10 @@
 
 /mob/living/simple_animal/hostile/alien/queen
 	name = "alien queen"
-	icon_state = "alienq"
-	icon_living = "alienq"
-	icon_dead = "alienq_dead"
+	icon = 'icons/mob/alienqueen.dmi'
+	icon_state = "queen_s"
+	icon_living = "queen_s"
+	icon_dead = "queen_dead"
 	pixel_x = -16
 	health = 250
 	maxHealth = 250
@@ -145,10 +146,10 @@
 /mob/living/simple_animal/hostile/alien/queen/large
 	name = "alien empress"
 	icon = 'icons/mob/alienqueen.dmi'
-	icon_state = "alienq"
-	icon_living = "alienq"
-	icon_dead = "alienq_dead"
-	health_doll_icon = "alienq"
+	icon_state = "queen_s"
+	icon_living = "queen_s"
+	icon_dead = "queen_dead"
+	health_doll_icon = "queen_s"
 	bubble_icon = "alienroyal"
 	move_to_delay = 4
 	maxHealth = 400
@@ -180,9 +181,10 @@
 	obj_damage = 0
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	gold_core_spawnable = HOSTILE_SPAWN
-	icon_state = "maid"
-	icon_living = "maid"
-	icon_dead = "maid_dead"
+	icon = 'icons/mob/xenomorph.dmi'
+	icon_state = "alienm_s"
+	icon_living = "alienm_s"
+	icon_dead = "alienm_dead"
 
 /mob/living/simple_animal/hostile/alien/maid/Initialize(mapload)
 	. = ..()

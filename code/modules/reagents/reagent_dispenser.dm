@@ -235,7 +235,7 @@
 /obj/structure/reagent_dispensers/fueltank/bullet_act(obj/item/projectile/hitting_projectile)
 	if(hitting_projectile.damage > 0 && ((hitting_projectile.damage_type == BURN) || (hitting_projectile.damage_type == BRUTE)))
 		var/boom_message = "[ADMIN_LOOKUPFLW(hitting_projectile.firer)] triggered a fueltank explosion via projectile."
-		GLOB.bombers += boom_message
+		add_bomber_message(boom_message)
 		message_admins(boom_message)
 		hitting_projectile.firer.log_message("triggered a fueltank explosion via projectile.", LOG_ATTACK)
 		explode() //Bluemoon change
@@ -262,7 +262,7 @@
 			user.visible_message("<span class='warning'>[user] catastrophically fails at refilling [user.ru_ego()] [W.name]!</span>", "<span class='userdanger'>That was stupid of you.</span>")
 
 			var/message_admins = "[ADMIN_LOOKUPFLW(user)] triggered a fueltank explosion via welding tool at [ADMIN_VERBOSEJMP(T)]."
-			GLOB.bombers += message_admins
+			add_bomber_message(message_admins)
 			message_admins(message_admins)
 
 			user.log_message("triggered a fueltank explosion via welding tool.", LOG_ATTACK)

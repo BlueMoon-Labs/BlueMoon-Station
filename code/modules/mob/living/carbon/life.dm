@@ -136,8 +136,10 @@
 		breath.set_volume(BREATH_VOLUME)
 	check_breath(breath)
 
+	// Always return breath to environment and qdel to prevent gas mixture leak - each breath creates a new mixture via remove_air_ratio
 	if(breath)
-		loc.assume_air(breath)
+		if(loc)
+			loc.assume_air(breath)
 		qdel(breath)
 		air_update_turf()
 

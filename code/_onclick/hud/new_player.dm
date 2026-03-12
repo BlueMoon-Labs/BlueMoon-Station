@@ -8,6 +8,13 @@
 	var/menu_hud_status = TRUE
 	var/list/shown_station_trait_buttons
 
+/datum/hud/new_player/Destroy()
+	if(shown_station_trait_buttons)
+		for(var/datum/station_trait/trait in shown_station_trait_buttons)
+			UnregisterSignal(trait, COMSIG_PARENT_QDELETING)
+		shown_station_trait_buttons = null
+	return ..()
+
 /datum/hud/new_player/New(mob/dead/new_player/owner)
 	. = ..()
 	if(!owner.age_verify())

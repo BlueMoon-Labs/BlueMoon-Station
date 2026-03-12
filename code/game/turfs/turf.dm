@@ -121,6 +121,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /turf/Destroy(force)
 	. = QDEL_HINT_IWILLGC
+	var/transferring = changing_turf
 	if(!changing_turf)
 		stack_trace("Incorrect turf deletion")
 	changing_turf = FALSE
@@ -130,6 +131,9 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	T = SSmapping.get_turf_below(src)
 	if(T)
 		T.multiz_turf_del(src, UP)
+	if(force || !transferring)
+		if(lighting_object)
+			qdel(lighting_object, force = TRUE)
 	if(force)
 		..()
 		//this will completely wipe turf state

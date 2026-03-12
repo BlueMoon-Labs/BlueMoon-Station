@@ -1,4 +1,4 @@
-#define SYNDICATE_CHALLENGE_TIMER 17500 // 20 minutes
+#define CHALLENGE_SHUTTLE_DELAY (25 MINUTES) // 25 minutes delay after war declaration
 
 /obj/machinery/computer/shuttle/syndicate
 	name = "InteQ shuttle terminal"
@@ -28,8 +28,9 @@
 					to_chat(usr, "<span class='warning'>Под уже использован!</span>")
 					return
 			var/obj/item/circuitboard/computer/syndicate_shuttle/board = circuit
-			if(board?.challenge && world.time < SYNDICATE_CHALLENGE_TIMER)
-				to_chat(usr, "<span class='warning'>Вы объявили станции Войну! Вы должны прождать [DisplayTimeText(SYNDICATE_CHALLENGE_TIMER - world.time)] перед началом атаки.</span>")
+			if(board?.challenge_start_time && (world.time - board.challenge_start_time) < CHALLENGE_SHUTTLE_DELAY)
+				var/time_left = CHALLENGE_SHUTTLE_DELAY - (world.time - board.challenge_start_time)
+				to_chat(usr, "<span class='warning'>Вы объявили станции Войну! Вы должны прождать [DisplayTimeText(time_left)] перед началом атаки.</span>")
 				return
 			board.moved = TRUE
 			// if(board?.challenge && board.moved == TRUE)
@@ -79,4 +80,12 @@
 	whitelist_turfs = list(/turf/open/space, /turf/open/floor/plating, /turf/open/lava, /turf/closed/mineral)
 	see_hidden = TRUE
 
-#undef SYNDICATE_CHALLENGE_TIMER
+/obj/machinery/computer/camera_advanced/shuttle_docker/syndicate/Initialize(mapload)
+	. = ..()
+	GLOB.jam_on_wardec += src
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/syndicate/Destroy()
+	GLOB.jam_on_wardec -= src
+	return ..()
+
+#undef CHALLENGE_SHUTTLE_DELAY

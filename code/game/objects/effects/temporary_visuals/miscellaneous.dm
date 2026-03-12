@@ -562,3 +562,12 @@
 /obj/effect/temp_visual/impact_effect/neurotoxin
 	icon_state = "impact_spit"
 	color = "#5BDD04"
+
+/obj/effect/temp_visual/crit
+	name = "critical hit"
+	icon_state = "crit"
+	duration = 15
+
+/obj/effect/temp_visual/crit/Initialize(mapload)
+	. = ..()
+	animate(src, pixel_y = pixel_y + 16, alpha = 0, time = duration)

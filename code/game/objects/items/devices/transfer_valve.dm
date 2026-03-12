@@ -79,7 +79,7 @@
 		A.holder = src
 		A.toggle_secure()	//this calls update_icon(), which calls update_icon() on the holder (i.e. the bomb).
 
-		GLOB.bombers += "[key_name(user)] attached a [item] to a transfer valve."
+		add_bomber_message("[key_name(user)] attached a [item] to a transfer valve.")
 		message_admins("[ADMIN_LOOKUPFLW(user)] attached a [item] to a transfer valve.")
 		log_game("[key_name(user)] attached a [item] to a transfer valve.")
 		attacher = user
@@ -255,7 +255,7 @@
 
 
 		var/admin_bomb_message = "Bomb valve opened in [ADMIN_VERBOSEJMP(bombturf)][admin_attachment_message][admin_bomber_message]"
-		GLOB.bombers += admin_bomb_message
+		add_bomber_message(admin_bomb_message)
 		message_admins(admin_bomb_message, 0, 1)
 		log_game("Bomb valve opened in [AREACOORD(bombturf)][attachment_message][bomber_message]")
 

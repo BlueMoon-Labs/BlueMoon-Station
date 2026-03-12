@@ -1,6 +1,9 @@
 /mob/dead/observer/Login()
 	..()
 
+	if(!client?.prefs)
+		return
+
 	ghost_accs = client.prefs.ghost_accs
 	ghost_others = client.prefs.ghost_others
 	var/preferred_form = null
