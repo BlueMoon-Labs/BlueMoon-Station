@@ -90,7 +90,7 @@
 
 /obj/item/gun/ballistic/shotgun/automatic/rsh12/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0)
 	. = ..()
-	if(. && magazine.ammo_count() == 0)
+	if(. && magazine?.ammo_count() == 0 && !chambered?.BB)
 		playsound(user, last_round_sound, 70, 1)  // Громче для последнего выстрела
 		to_chat(user, "<span class='warning'>That was the last shot!</span>") // Звук падения гильзы с небольшой задержкой
 	if(.)
