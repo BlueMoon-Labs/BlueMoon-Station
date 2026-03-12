@@ -262,6 +262,8 @@
 		return
 	var/datum/antagonist/A = has_antag_datum(datum_type)
 	if(A)
+		if(istype(A, /datum/antagonist/heretic) && current)
+			REMOVE_TRAIT(current, TRAIT_ANTIMAGIC_NO_SELFBLOCK, "heretic")
 		A.on_removal()
 		return TRUE
 
@@ -1726,6 +1728,8 @@ GLOBAL_LIST(objective_choices)
 	if(!C)
 		C = add_antag_datum(/datum/antagonist/heretic)
 		special_role = ROLE_HERETIC
+		if(current)
+			ADD_TRAIT(current, TRAIT_ANTIMAGIC_NO_SELFBLOCK, "heretic")
 	return C
 
 /datum/mind/proc/make_Changeling()

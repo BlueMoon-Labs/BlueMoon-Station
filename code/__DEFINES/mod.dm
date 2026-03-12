@@ -1,11 +1,11 @@
 /// Default value for the max_complexity var on MODsuits
-#define DEFAULT_MAX_COMPLEXITY 15
+#define DEFAULT_MAX_COMPLEXITY 18
 
 /// Default cell drain per process on MODsuits
 #define DEFAULT_CHARGE_DRAIN 5
 
 /// Default time for a part to seal
-#define MOD_ACTIVATION_STEP_TIME (1 SECONDS)
+#define MOD_ACTIVATION_STEP_TIME (0.9 SECONDS)
 
 /// Passive module, just acts when put in naturally.
 #define MODULE_PASSIVE 0
