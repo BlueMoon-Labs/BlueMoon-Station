@@ -84,7 +84,7 @@
 		return FALSE
 	return TRUE
 
-/obj/item/gun/ballistic/shotgun/automatic/rsh12/shoot_empty(mob/living/user)
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/shoot_with_empty_chamber(mob/living/user)
 	playsound(user, dry_fire_sound, 50, 1)  // звук пустого выстрела
 	to_chat(user, "<span class='warning'>*CLICK* Пусто!</span>")
 
