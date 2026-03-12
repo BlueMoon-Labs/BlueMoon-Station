@@ -60,7 +60,7 @@
 
 /obj/item/gun/ballistic/shotgun/proc/pump(mob/M, visible = TRUE)
 	if(visible)
-		M.visible_message("<span class='warning'>[M] racks [src].</span>", "<span class='warning'>Вы досылаете патрон[src].</span>")
+		M.visible_message("<span class='warning'>[M] racks [src].</span>", "<span class='warning'>Вы досылаете патрон [src].</span>")
 	playsound(M, pumpsound, 60, 1)
 	pump_unload(M)
 	pump_reload(M)

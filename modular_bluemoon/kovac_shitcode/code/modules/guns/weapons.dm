@@ -70,7 +70,7 @@
 	fire_sound = 'modular_bluemoon/sound/weapons/rs12_boom.ogg'
 	pumpsound = 'modular_bluemoon/kovac_shitcode/sound/weapons/rs12_reload.ogg'
 	suicide_gib_head = TRUE
-	var/dry_fire_sound  - 'modular_bluemoon/sound/weapons/rs12_empty.ogg' // осечка или нет боевого патрона
+	var/dry_fire_sound  = 'modular_bluemoon/sound/weapons/rs12_empty.ogg' // осечка или нет боевого патрона
 	var/last_round_sound = 'modular_bluemoon/sound/weapons/rs12_shot.ogg'  // звук последнего патрона
 	var/shell_drop_sound = 'modular_bluemoon/sound/weapons/rs12_emptyshell.ogg' // звук падения гильзы
 	fire_delay = 5
