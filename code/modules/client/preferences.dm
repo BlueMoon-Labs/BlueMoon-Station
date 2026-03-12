@@ -6390,6 +6390,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if(!length(user_gear[LOADOUT_COLOR]))
 					user_gear[LOADOUT_COLOR] = list("#FFFFFF")
 				var/current_color = user_gear[LOADOUT_COLOR][1]
+				if(!istext(current_color))
+					current_color = "#FFFFFF"
 				var/new_color = input(user, "Polychromic options", "Choose Color", current_color) as color|null
 				user_gear[LOADOUT_COLOR][1] = sanitize_hexcolor(new_color, 6, TRUE, current_color)
 
@@ -6413,6 +6415,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if(color_to_change)
 					var/color_index = text2num(copytext(color_to_change, 7))
 					var/current_color = user_gear[LOADOUT_COLOR][color_index]
+					if(!istext(current_color))
+						current_color = "#FFFFFF"
 					var/new_color = input(user, "Polychromic options", "Choose [color_to_change] Color", current_color) as color|null
 					if(new_color)
 						user_gear[LOADOUT_COLOR][color_index] = sanitize_hexcolor(new_color, 6, TRUE, current_color)

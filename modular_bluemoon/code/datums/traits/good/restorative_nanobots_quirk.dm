@@ -98,7 +98,7 @@
 
 /datum/quirk/restorative_nanobots/remove()
 	var/mob/living/carbon/human/H = quirk_holder
-	if (!istype(H) || !healing_in_progress)
+	if (!istype(H) || !H.physiology || !healing_in_progress)
 		return
 	H.physiology.hunger_mod /= 1.8
 	REMOVE_TRAIT(quirk_holder, TRAIT_NANOBOT_REPAIR_IN_PROGRESS, QUIRK_TRAIT)

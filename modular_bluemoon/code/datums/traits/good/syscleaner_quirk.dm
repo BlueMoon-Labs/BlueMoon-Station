@@ -22,7 +22,7 @@
 /datum/quirk/syscleaner/on_process()
 	. = ..()
 	var/mob/living/carbon/human/H = quirk_holder
-	if (!istype(H))
+	if (!istype(H) || !H.physiology)
 		return
 
 	var/consumed_damage = H.getToxLoss(TOX_SYSCORRUPT)
@@ -47,7 +47,7 @@
 
 /datum/quirk/syscleaner/remove()
 	var/mob/living/carbon/human/H = quirk_holder
-	if (!istype(H) || !syscleaning_in_progress)
+	if (!istype(H) || !syscleaning_in_progress || !H.physiology)
 		return
 	H.physiology.hunger_mod /= 1.6
 	REMOVE_TRAIT(quirk_holder, TRAIT_SYSCLEANER_IN_PROGRESS, QUIRK_TRAIT)

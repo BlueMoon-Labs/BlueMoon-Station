@@ -79,7 +79,7 @@
 //Second link in a breath chain, calls check_breath()
 /mob/living/carbon/proc/breathe()
 	var/obj/item/organ/lungs = getorganslot(ORGAN_SLOT_LUNGS)
-	if(reagents.has_reagent(/datum/reagent/toxin/lexorin))
+	if(reagents?.has_reagent(/datum/reagent/toxin/lexorin))
 		return
 	if(istype(loc, /obj/machinery/atmospherics/components/unary/cryo_cell))
 		return
@@ -160,7 +160,7 @@
 
 	//CRIT
 	if(!breath || (breath.total_moles() == 0) || !lungs)
-		if(reagents.has_reagent(/datum/reagent/medicine/epinephrine) && lungs)
+		if(reagents?.has_reagent(/datum/reagent/medicine/epinephrine) && lungs)
 			return
 		adjustOxyLoss(1)
 
@@ -399,7 +399,7 @@
 			if(O)
 				O.on_life(seconds, times_fired)
 	else if(!QDELETED(src))
-		if(reagents.has_reagent(/datum/reagent/toxin/formaldehyde, 1) || reagents.has_reagent(/datum/reagent/preservahyde, 1)) // No organ decay if the body contains formaldehyde. Or preservahyde.
+		if(reagents?.has_reagent(/datum/reagent/toxin/formaldehyde, 1) || reagents?.has_reagent(/datum/reagent/preservahyde, 1)) // No organ decay if the body contains formaldehyde. Or preservahyde.
 			return
 		for(var/V in internal_organs)
 			var/obj/item/organ/O = V
