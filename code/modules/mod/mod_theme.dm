@@ -415,7 +415,7 @@
 		However, the systems used in these suits are more than a few years out of date, \
 		leading to an overall lower capacity for modules."
 	default_skin = "security"
-	armor = list(MELEE = 30, BULLET = 20, LASER = 30, ENERGY = 30, BOMB = 30, BIO = 100, FIRE = 75, ACID = 75, WOUND = 15, RAD = 0) // BLUEMOON EDIT - was "MELEE = 15, BULLET = 15, LASER = 15, ENERGY = 15, BOMB = 25"
+	armor = list(MELEE = 30, BULLET = 20, LASER = 30, ENERGY = 30, BOMB = 30, BIO = 100, FIRE = 75, ACID = 75, WOUND = 15, RAD = 0)
 	siemens_coefficient = 0
 	complexity_max = DEFAULT_MAX_COMPLEXITY - 5
 	inbuilt_modules = list(/obj/item/mod/module/magnetic_harness)
@@ -499,7 +499,7 @@
 		and bluespace processing to allow for a wide array of onboard modules to be supported, and only the best actuators \
 		have been employed for speed. The resemblance to a Gorlex Marauder helmet is purely coincidental."
 	default_skin = "magnate"
-	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 30, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 0) // BLUEMOON EDIT - was "MELEE = 20, BULLET = 15, LASER = 15, ENERGY = 15"
+	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 30, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 0)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -855,7 +855,7 @@
 		counted as a war-crime and reason for immediate execution in over fifty Nanotrasen space stations. \
 		The resemblance to a Gorlex Marauder helmet is purely coincidental."
 	default_skin = "corporate"
-	armor = list(MELEE = 30, BULLET = 20, LASER = 30, ENERGY = 30, BOMB = 30, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 0)
+	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 30, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 0)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
