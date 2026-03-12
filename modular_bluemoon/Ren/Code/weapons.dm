@@ -60,13 +60,13 @@
 
 /obj/item/ammo_casing/energy/laser/melter
 	projectile_type = /obj/item/projectile/beam/melter
-	e_cost = 1400
+	e_cost = 1200
 	select_name = "Kill"
 	fire_sound = 'modular_bluemoon/Ren/Sound/Melter.ogg'
 
 /obj/item/ammo_casing/energy/laser/melter/destroy
 	projectile_type = /obj/item/projectile/beam/melter/destroy
-	e_cost = 5000
+	e_cost = 4000
 	select_name = "MELT"
 	fire_sound = 'modular_bluemoon/Ren/Sound/Melter.ogg'
 
