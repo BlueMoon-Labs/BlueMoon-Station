@@ -100,13 +100,11 @@
 	playsound(user, shell_drop_sound, 40, 1)
 
 /obj/item/gun/ballistic/shotgun/automatic/rsh12/attackby(obj/item/A, mob/user, params)
+	var/prev_count = magazine?.ammo_count()
 	. = ..()
-	if(.)
-		return
-	if(istype(A, /obj/item/ammo_casing) || istype(A, /obj/item/ammo_box))
-		var/num_loaded = magazine.attackby(A, user, params, 1)
-		if(num_loaded)
-			playsound(user, pumpsound, 50, 1)
+	// Проигрываем pumpsound если что-то было загружено
+	if(magazine && magazine.ammo_count() > prev_count)
+		playsound(user, pumpsound, 50, 1)
 
 //HoS G22 pistol
 /obj/item/gun/ballistic/automatic/pistol/g22
