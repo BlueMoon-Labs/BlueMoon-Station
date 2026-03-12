@@ -847,8 +847,9 @@ BLUEMOON REMOVAL END */
 		liver_failure(seconds, times_fired)
 
 /mob/living/carbon/proc/liver_failure(seconds, times_fired)
-	reagents.end_metabolization(src, keep_liverless = TRUE) //Stops trait-based effects on reagents, to prevent permanent buffs
-	reagents.metabolize(src, seconds, times_fired, can_overdose=FALSE, liverless = TRUE)
+	if(reagents)
+		reagents.end_metabolization(src, keep_liverless = TRUE) //Stops trait-based effects on reagents, to prevent permanent buffs
+		reagents.metabolize(src, seconds, times_fired, can_overdose=FALSE, liverless = TRUE)
 	if(HAS_TRAIT(src, TRAIT_STABLELIVER))
 		return
 	adjustToxLoss(4, TRUE,  TRUE)
