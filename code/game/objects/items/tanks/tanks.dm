@@ -285,9 +285,11 @@
 	var/temperature = air_contents.return_temperature()
 
 	if(pressure > TANK_FRAGMENT_PRESSURE)
-		if(!istype(src.loc, /obj/item/transfer_valve))
-			message_admins("Explosive tank rupture! Last key to touch the tank was [src.fingerprintslast].")
-			log_game("Explosive tank rupture! Last key to touch the tank was [src.fingerprintslast].")
+		var/obj/item/transfer_valve/valve
+		if(istype(src.loc, /obj/item/transfer_valve))
+			valve = src.loc
+		message_admins("Explosive tank rupture[valve ? " in transfer valve" : ""]! Last key to touch the tank was [src.fingerprintslast][valve ? "and last key touch the valve was [valve.fingerprintslast]" : ""]; loc: [loc]; pressure: [pressure].")
+		log_game("Explosive tank [valve ? " in transfer valve" : ""]! Last key to touch the tank was [src.fingerprintslast][valve ? "and last key touch the valve was [valve.fingerprintslast]" : ""]; loc: [loc]; pressure: [pressure].")
 		//Give the gas a chance to build up more pressure through reacting
 		for(var/i in 1 to TANK_POST_FRAGMENT_REACTIONS)
 			air_contents.react(src)
@@ -296,9 +298,8 @@
 		var/range = (pressure-TANK_FRAGMENT_PRESSURE)/TANK_FRAGMENT_SCALE
 		var/turf/epicenter = get_turf(loc)
 
-
-		explosion(epicenter, round(range*0.25), round(range*0.5), round(range), round(range*1.5))
-		if(istype(src.loc, /obj/item/transfer_valve))
+		if(valve)
+			explosion(epicenter, round(range*0.25), round(range*0.5), round(range), round(range*1.5))
 			qdel(src.loc)
 		else
 			qdel(src)
