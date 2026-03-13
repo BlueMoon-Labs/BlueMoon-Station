@@ -36,7 +36,7 @@
 	/// How much battery power the MOD uses by just being on
 	var/cell_drain = DEFAULT_CHARGE_DRAIN
 	/// Slowdown of the MOD when not active.
-	var/slowdown_inactive = 1.5
+	var/slowdown_inactive = 1.1
 	/// Slowdown of the MOD when active.
 	var/slowdown_active = 0
 	/// Theme used by the MOD TGUI.
