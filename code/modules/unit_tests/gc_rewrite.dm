@@ -44,6 +44,8 @@
 	var/saved_last_hd_pass_ms
 	var/saved_last_hd_yield_ratio
 	var/saved_last_hd_mc_clipped
+	var/saved_last_fire_hd_reached
+	var/saved_last_fire_hd_yield
 	var/saved_last_q3_depth_delta
 	var/saved_last_q3_depth_delta_per_second
 	var/saved_gas_mixture_qdel_rate_per_second
@@ -118,6 +120,8 @@
 	saved_last_hd_pass_ms = SSgarbage.last_hd_pass_ms
 	saved_last_hd_yield_ratio = SSgarbage.last_hd_yield_ratio
 	saved_last_hd_mc_clipped = SSgarbage.last_hd_mc_clipped
+	saved_last_fire_hd_reached = SSgarbage.last_fire_hd_reached
+	saved_last_fire_hd_yield = SSgarbage.last_fire_hd_yield
 	saved_last_q3_depth_delta = SSgarbage.last_q3_depth_delta
 	saved_last_q3_depth_delta_per_second = SSgarbage.last_q3_depth_delta_per_second
 	saved_gas_mixture_qdel_rate_per_second = SSgarbage.gas_mixture_qdel_rate_per_second
@@ -177,6 +181,8 @@
 	SSgarbage.last_hd_pass_ms = 0
 	SSgarbage.last_hd_yield_ratio = 0
 	SSgarbage.last_hd_mc_clipped = FALSE
+	SSgarbage.last_fire_hd_reached = FALSE
+	SSgarbage.last_fire_hd_yield = FALSE
 	SSgarbage.last_q3_depth_delta = 0
 	SSgarbage.last_q3_depth_delta_per_second = 0
 	SSgarbage.gas_mixture_qdel_rate_per_second = 0
@@ -266,6 +272,8 @@
 	SSgarbage.last_hd_pass_ms = saved_last_hd_pass_ms
 	SSgarbage.last_hd_yield_ratio = saved_last_hd_yield_ratio
 	SSgarbage.last_hd_mc_clipped = saved_last_hd_mc_clipped
+	SSgarbage.last_fire_hd_reached = saved_last_fire_hd_reached
+	SSgarbage.last_fire_hd_yield = saved_last_fire_hd_yield
 	SSgarbage.last_q3_depth_delta = saved_last_q3_depth_delta
 	SSgarbage.last_q3_depth_delta_per_second = saved_last_q3_depth_delta_per_second
 	SSgarbage.gas_mixture_qdel_rate_per_second = saved_gas_mixture_qdel_rate_per_second

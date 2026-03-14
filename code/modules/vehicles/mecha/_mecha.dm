@@ -955,15 +955,15 @@
 
 /obj/vehicle/sealed/mecha/assume_air(datum/gas_mixture/giver)
 	if(use_internal_tank)
-		if(!cabin_air)
+		if(!giver || !cabin_air)
 			return FALSE
-		cabin_air.merge(giver)
+		giver.transfer_ratio_to(cabin_air, 1)
 		return TRUE
 	return ..()
 
 /obj/vehicle/sealed/mecha/assume_air_moles(datum/gas_mixture/giver, moles)
 	if(use_internal_tank)
-		if(!cabin_air)
+		if(!giver || !cabin_air)
 			return FALSE
 		giver.transfer_to(cabin_air, moles)
 		return TRUE
@@ -971,7 +971,7 @@
 
 /obj/vehicle/sealed/mecha/assume_air_ratio(datum/gas_mixture/giver, ratio)
 	if(use_internal_tank)
-		if(!cabin_air)
+		if(!giver || !cabin_air)
 			return FALSE
 		giver.transfer_ratio_to(cabin_air, ratio)
 		return TRUE

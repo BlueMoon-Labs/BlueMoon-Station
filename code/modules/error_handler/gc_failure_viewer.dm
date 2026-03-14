@@ -105,8 +105,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			failure_sources -= type_key
 			continue
 		var/datum/qdel_item/qi = SSgarbage.GetItem(source.type_path)
-		var/tiebreak = qi ? qi.warnfail_count : source.total_failures
-		ordered_sources[type_key] = source.get_latest_failure_time() * 1000 + tiebreak
+		var/tiebreak = min(qi ? qi.warnfail_count : source.total_failures, 999)
+		ordered_sources[type_key] = source.get_latest_failure_time() + (tiebreak / 1000)
 	sortTim(ordered_sources, cmp = GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
 	return ordered_sources
 

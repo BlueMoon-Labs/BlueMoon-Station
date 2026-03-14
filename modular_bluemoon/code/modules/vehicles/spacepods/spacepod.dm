@@ -271,19 +271,19 @@
 	return cabin_air
 
 /obj/spacepod/assume_air(datum/gas_mixture/giver)
-	if(!cabin_air)
+	if(!giver || !cabin_air)
 		return FALSE
-	cabin_air.merge(giver)
+	giver.transfer_ratio_to(cabin_air, 1)
 	return TRUE
 
 /obj/spacepod/assume_air_moles(datum/gas_mixture/giver, moles)
-	if(!cabin_air)
+	if(!giver || !cabin_air)
 		return FALSE
 	giver.transfer_to(cabin_air, moles)
 	return TRUE
 
 /obj/spacepod/assume_air_ratio(datum/gas_mixture/giver, ratio)
-	if(!cabin_air)
+	if(!giver || !cabin_air)
 		return FALSE
 	giver.transfer_ratio_to(cabin_air, ratio)
 	return TRUE
