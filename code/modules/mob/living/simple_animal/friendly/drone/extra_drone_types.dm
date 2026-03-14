@@ -76,6 +76,10 @@
 	icon_state = "inteqdrone_item"
 	drone_type = /mob/living/simple_animal/drone/syndrone/badass/inteq
 
+/obj/item/drone_shell/syndrone/badass/inteqdrone/attack_self(mob/user)
+	notify_ghosts("[user] активирует оболочку дрона InteQ в [get_area_name(src)]!", source = src, action = NOTIFY_ATTACK, flashwindow = FALSE, ignore_key = POLL_IGNORE_DRONE, ignore_dnr_observers = TRUE)
+	to_chat(user, "<span class='notice'>Подаёшь сигнал гостам — оболочка готова к заселению.</span>")
+
 /obj/item/drone_shell/snowflake
 	name = "snowflake drone shell"
 	desc = "A shell of a snowflake drone, a maintenance drone with a built in holographic projector to display hats and masks."
@@ -225,9 +229,99 @@
 							<br>
 						"}
 
+/mob/living/proc/hasenslaved()
+	. = list()
+	for(var/mob/living/simple_animal/drone/syndrone/badass/inteq/L in GLOB.mob_living_list)
+		if(L.mind?.enslaved_to == src)
+			. += L
+
+/mob/living/proc/inteq_drone_comm()
+	var/list/enslaved = hasenslaved()
+	if(!LAZYLEN(enslaved))
+		to_chat(src, "<span class='warning'>У тебя нет связанных дронов.</span>")
+		return
+	var/input = stripped_input(src, "Сообщение для дрона:", "Связь с дроном", "")
+	if(!input)
+		return
+	var/my_message = "<span class='holoparasite bold'><i>[src.real_name]:</i> [input]</span>"
+	to_chat(src, my_message)
+	for(var/mob/living/L in enslaved)
+		to_chat(L, "<span class='holoparasite'><font color=\"#FF6B35\"><b><i>[src.real_name]:</i></b></font> [input]</span>")
+	log_talk(input, LOG_SAY, tag="inteq_drone")
+
+/datum/action/innate/inteq_drone_comm
+	name = "Связаться с дроном"
+	desc = "Телепатически связаться с дроном InteQ."
+	button_icon_state = "communicate"
+	icon_icon = 'icons/mob/guardian.dmi'
+	check_flags = AB_CHECK_CONSCIOUS
+
+/datum/action/innate/inteq_drone_comm/Activate()
+	if(isliving(owner))
+		var/mob/living/L = owner
+		L.inteq_drone_comm()
+
+/datum/action/innate/inteq_drone_communicate
+	name = "Связаться с Мастером"
+	desc = "Телепатически связаться с Мастером."
+	button_icon_state = "communicate"
+	icon_icon = 'icons/mob/guardian.dmi'
+	check_flags = AB_CHECK_CONSCIOUS
+
+/datum/action/innate/inteq_drone_communicate/Activate()
+	var/mob/living/master = owner.mind?.enslaved_to
+	if(!master || QDELETED(master))
+		to_chat(owner, "<span class='warning'>Мастер недоступен.</span>")
+		return
+	var/input = stripped_input(owner, "Сообщение для Мастера:", "Связь с Мастером", "")
+	if(!input)
+		return
+	var/my_message = "<span class='holoparasite'><font color=\"#FF6B35\"><b><i>[owner.real_name]:</i></b></font> [input]</span>"
+	to_chat(master, my_message)
+	to_chat(owner, my_message)
+	owner.log_talk(input, LOG_SAY, tag="inteq_drone")
+
+/// Активатор дрона InteQ — при использовании предлагает гостам заселиться в дрона с миндальной связью (enslave) с предателем
+/obj/item/inteq_drone_creator
+	name = "InteQ Drone Activator"
+	desc = "Устройство для призыва боевого дрона InteQ. При активации предложит гостам заселиться в дрона, связанного с вами."
+	icon = 'icons/obj/syringe.dmi'
+	icon_state = "combat_hypo"
+	w_class = WEIGHT_CLASS_SMALL
+	var/used = FALSE
+
+/obj/item/inteq_drone_creator/attack_self(mob/living/user)
+	if(used)
+		to_chat(user, "<span class='warning'>[src] уже использован.</span>")
+		return
+	if(!iscarbon(user))
+		to_chat(user, "<span class='warning'>Только гуманоиды могут использовать это.</span>")
+		return
+	used = TRUE
+	to_chat(user, "<span class='holoparasite'>Запускаешь активатор...</span>")
+	var/list/mob/candidates = pollGhostCandidates("Хотите ли вы играть за дрона InteQ [user.real_name]?", ROLE_PAI, null, FALSE, 100, POLL_IGNORE_DRONE)
+	if(LAZYLEN(candidates))
+		var/mob/C = pick(candidates)
+		spawn_inteq_drone(user, C.key)
+	else
+		to_chat(user, "<span class='holoparasite bold'>...ОШИБКА. ПОСЛЕДОВАТЕЛЬНОСТЬ ЗАПУСКА ПРЕРВАНА. ИИ НЕ ИНИЦИАЛИЗИРОВАН. ПОПРОБУЙТЕ ПОЗЖЕ.</span>")
+		used = FALSE
+
+/obj/item/inteq_drone_creator/proc/spawn_inteq_drone(mob/living/carbon/user, key)
+	var/mob/living/simple_animal/drone/syndrone/badass/inteq/D = new(get_turf(user))
+	D.flags_1 |= (flags_1 & ADMIN_SPAWNED_1)
+	D.key = key
+	D.mind.enslave_mind_to_creator(user)
+	var/datum/action/innate/inteq_drone_comm/comm_action = new(user)
+	comm_action.Grant(user)
+	log_game("[key_name(user)] призвал [key_name(D)] — дрона InteQ.")
+	to_chat(user, "<span class='holoparasite'><b>[D.real_name]</b> активирован! Используй кнопку «Связаться с дроном» для связи.</span>")
+	to_chat(D, "<span class='holoparasite'>Ты — <b>[D.real_name]</b>, связанный с [user.real_name]. [user.real_name] — твой Мастер. Используй кнопку «Связаться с Мастером» для связи.</span>")
+	qdel(src)
+
 /datum/uplink_item/bundles_tc/inteq_drone
 	name = "InteQ Drone Kit"
-	desc = "Боевой дрон ИнтеКью за четыре Кредита. Шестнадцать кредитов будут скрываться в его личном Аплинке. В комплекте идёт Дрон, Инструкция и Ключ для связи с Дроном."
+	desc = "Боевой дрон ИнтеКью. Шестнадцать кредитов в его личном Аплинке. При активации предложит гостам заселиться в дрона с миндальной связью с вами."
 	item = /obj/item/storage/box/inteq_kit/inteq_drone
 	cost = 20
 	purchasable_from = UPLINK_TRAITORS
@@ -236,14 +330,9 @@
 	name = "InteQ Drone Kit"
 
 /obj/item/storage/box/inteq_kit/inteq_drone/PopulateContents()
-	new /obj/item/drone_shell/syndrone/badass/inteqdrone(src)
+	new /obj/item/inteq_drone_creator(src)
 	new /obj/item/paper/guides/antag/guardian/inteq_drone(src)
 	new /obj/item/encryptionkey/inteq(src)
-	//new /obj/item/implanter/linkage_with_inteqdrone(src)
-
-/obj/item/implanter/linkage_with_inteqdrone
-	name = "Implanter (Linkage With InteQ Drone)"
-	imp_type = /obj/item/implant/radio/inteq_subspace
 
 /mob/living/simple_animal/drone/syndrone/badass/inteq
 	name = "InteQ Combat Drone"
@@ -268,6 +357,8 @@
 	hidden_uplink.telecrystals = 16
 	var/obj/item/implant/weapons_auth/W = new
 	W.implant(src)
+	var/datum/action/innate/inteq_drone_communicate/comm_action = new(src)
+	comm_action.Grant(src)
 
 /mob/living/simple_animal/drone/mentordrone
 	name = "Mentor Drone"

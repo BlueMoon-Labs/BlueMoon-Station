@@ -81,7 +81,7 @@
 	min_players = 15
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "A trader ship full of goodys."
-	gamemode_whitelist = list("extended")
+	gamemode_whitelist = list(ROUNDTYPE_EXTENDED)
 	var/ship_template
 
 /datum/round_event/ftu_trader

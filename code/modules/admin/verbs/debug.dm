@@ -710,9 +710,10 @@
 			if(length(L) < 2)
 				dead_count++
 				continue
+			var/GCd_at_time = L[1]
 			var/refID = L[2]
 			var/datum/D = locate(refID)
-			if(!D)
+			if(!D || D.gc_destroyed != GCd_at_time)
 				dead_count++
 				continue
 			alive_count++

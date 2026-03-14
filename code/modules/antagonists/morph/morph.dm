@@ -220,6 +220,9 @@
 			if(do_after(src, 20, target = I))
 				eat(I)
 			return
+	else if(istype(target, /obj/machinery/ore_silo))
+		to_chat(src, "<span class='warning'>You cannot damage the ore silo!</span>")
+		return
 	return ..()
 
 //Spawn Event

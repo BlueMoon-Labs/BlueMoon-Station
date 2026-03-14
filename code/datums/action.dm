@@ -993,8 +993,8 @@
 	var/small_icon_state
 
 /datum/action/small_sprite/queen
-	small_icon = 'icons/mob/alien.dmi'
-	small_icon_state = "alienq"
+	small_icon = 'icons/mob/alienqueen.dmi'
+	small_icon_state = "queen_s"
 
 /datum/action/small_sprite/drake
 	small_icon = 'icons/mob/lavaland/lavaland_monsters.dmi'

@@ -3,6 +3,7 @@ SUBSYSTEM_DEF(mobs)
 	priority = FIRE_PRIORITY_MOBS
 	flags = SS_KEEP_TIMING | SS_NO_INIT
 	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
+	wait = 10 // 1 second between Life() calls (default 20 = 2 sec). Lower = more responsive mobs, higher CPU cost.
 
 	var/list/currentrun = list()
 	var/static/list/clients_by_zlevel[][]

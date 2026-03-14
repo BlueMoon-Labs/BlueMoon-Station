@@ -47,5 +47,5 @@ Bonus
 					monkey_antag.monkey_only = FALSE
 					M.mind.add_antag_datum(monkey_antag)
 				M.monkeyize(TR_KEEPITEMS | TR_KEEPIMPLANTS | TR_KEEPORGANS | TR_KEEPDAMAGE | TR_KEEPVIRUS | TR_KEEPSE)
-			else if(ismonkey(M))
+			else if(ismonkey(M) && !SEND_SIGNAL(M, COMSIG_CHECK_VENTCRAWL))
 				M.AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)

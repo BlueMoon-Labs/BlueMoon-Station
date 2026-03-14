@@ -285,7 +285,7 @@
 	build_type = PROTOLATHE | AUTOLATHE
 	materials = list(/datum/material/plastic = 2500)
 	build_path = /obj/item/surgical_drapes
-	category = list("Initial", "Tool Designs")
+	category = list("Initial", "Medical", "Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/retractor_adv
@@ -348,3 +348,13 @@
 	build_path = /obj/item/storage/part_replacer/bluespace
 	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/m_warp_beacon
+	name = "Machine warp beacon"
+	desc = "Устройство позволяющее телепортировать уже собранную машину, по сигнатуре платы, что в нее установили. Не подходит для машин, требующих сложных в производстве деталей."
+	id = "m_warp_beacon"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = MINERAL_MATERIAL_AMOUNT*6, /datum/material/glass = MINERAL_MATERIAL_AMOUNT*5)
+	build_path = /obj/item/warp_machine_beacon
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_ALL

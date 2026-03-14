@@ -2922,10 +2922,25 @@
 		paper_to_show.ui_interact(usr)
 
 	else if(href_list["movepod"])
-		var/obj/docking_port/mobile/pod/pod = src
-		pod.request()
-		message_admins("[key_name_admin(usr)] moved the Escape Pod.")
-		log_admin("[key_name(usr)] moved the Escape Pod.")
+		if(!check_rights(R_ADMIN))
+			return
+		var/shuttle_id = href_list["shuttle_id"]
+		var/destination = href_list["destination"]
+		if(!shuttle_id || !destination)
+			to_chat(usr, "<span class='warning'>No shuttle or destination specified.</span>")
+			return
+		var/obj/docking_port/mobile/M = SSshuttle.getShuttle(shuttle_id)
+		if(!istype(M, /obj/docking_port/mobile/pod))
+			to_chat(usr, "<span class='warning'>Invalid or missing escape pod.</span>")
+			return
+		switch(SSshuttle.moveShuttle(shuttle_id, destination, 0))
+			if(0)
+				message_admins("[key_name_admin(usr)] moved the Escape Pod ([shuttle_id]) to [destination].")
+				log_admin("[key_name(usr)] moved the Escape Pod ([shuttle_id]) to [destination].")
+			if(1)
+				to_chat(usr, "<span class='warning'>Invalid destination for escape pod.</span>")
+			else
+				to_chat(usr, "<span class='warning'>Unable to move escape pod.</span>")
 
 /datum/admins/proc/HandleCMode()
 	if(!check_rights(R_ADMIN))

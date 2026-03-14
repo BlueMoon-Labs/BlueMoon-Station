@@ -1044,7 +1044,7 @@
 		"Handy" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "handy_security"), // SPLURT Addon (Fallout 13)
 		"Sentry Bot" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "sentrybot"), // SPLURT Addon (Fallout 13)
 		"Securitron" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "securitron"), // SPLURT Addon (Fallout 13)
-		"FMeka Syndie" = image(icon = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi', icon_state = "fmekasyndi"), // Lyoll Request (Skyrat Port) & Добавлен дополнительно в СБ-борги по запросу SmiLeY
+		"FMeka Syndie" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "fmekasyndi"), // Lyoll Request (Skyrat Port) & Добавлен дополнительно в СБ-борги по запросу SmiLeY
 		"Mechoid" = image(icon = 'modular_bluemoon/icons/mob/robots.dmi', icon_state = "mechoid-security"), // Danaiyka request
 		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahanpeace"),
 		"Catborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_security.dmi', icon_state = "sec"),
@@ -1248,7 +1248,8 @@
 			dogborg = TRUE
 		if("FMeka Syndie") //Lyoll Request (Skyrat Port) & Добавлен дополнительно в СБ-борги по запросу SmiLeY
 			cyborg_base_icon = "fmekasyndi"
-			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/tallrobot.dmi'
+			cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+			hat_offset = TALL_HAT_OFFSET
 			hasrest = TRUE
 		if("Mechoid") //Danaiyka request
 			cyborg_base_icon = "mechoid-security"

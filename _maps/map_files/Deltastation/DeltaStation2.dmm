@@ -87298,8 +87298,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
-/obj/machinery/suit_storage_unit/open,
-/obj/item/mod/control/pre_equipped/corporate,
+/obj/machinery/suit_storage_unit/corporate,
 /turf/open/floor/wood,
 /area/service/lawoffice)
 "lRy" = (

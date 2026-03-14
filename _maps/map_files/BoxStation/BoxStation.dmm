@@ -61144,8 +61144,7 @@
 "nDw" = (
 /obj/structure/window/reinforced,
 /obj/effect/turf_decal/siding/wood/thin,
-/obj/machinery/suit_storage_unit/open,
-/obj/item/mod/control/pre_equipped/corporate,
+/obj/machinery/suit_storage_unit/corporate,
 /turf/open/floor/carpet/red,
 /area/command/heads_quarters/ntr)
 "nDz" = (
@@ -130189,7 +130188,7 @@ bAA
 bBU
 byf
 bEm
-ano
+hMa
 bEm
 pcw
 ovU

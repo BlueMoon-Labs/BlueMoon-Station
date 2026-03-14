@@ -46,7 +46,7 @@
 	. = ..()
 	if(.)
 		return
-	if((action != "admin_log" || action != "show_admins" || action != "mentor_log") && !check_rights(R_ADMIN))
+	if((action != "admin_log" && action != "show_admins" && action != "mentor_log") && !check_rights(R_ADMIN))
 		return
 	var/datum/round_event/E
 	var/ok = FALSE
@@ -54,9 +54,9 @@
 		//Generic Buttons anyone can use.
 		if("admin_log")
 			var/dat = "<B>Admin Log<HR></B>"
-			for(var/l in GLOB.admin_log)
+			for(var/l in GLOB.admin_log_entries)
 				dat += "<li>[l]</li>"
-			if(!GLOB.admin_log.len)
+			if(!GLOB.admin_log_entries.len)
 				dat += "No-one has done anything this round!"
 			var/datum/browser/popup = new(holder, "admin_log", "Admin Log")
 			popup.set_content(dat)

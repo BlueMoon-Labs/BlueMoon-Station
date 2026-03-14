@@ -14,6 +14,12 @@
 	. = ..()
 	AddComponent(/datum/component/gps/item, gpstag, emp_proof, starton)
 
+/obj/item/gps/attack_self(mob/user)
+	. = ..()
+	if(HAS_TRAIT(src, TRAIT_CHUNKYFINGERS))
+		balloon_alert(src, "Кнопки слишком маленькие для твоих пальцев!")
+		return FALSE
+
 /obj/item/gps/science
 	icon_state = "gps-s"
 	gpstag = "SCI0"

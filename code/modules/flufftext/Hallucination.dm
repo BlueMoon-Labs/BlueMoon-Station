@@ -220,7 +220,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	return ..()
 
 /obj/effect/hallucination/simple/xeno
-	image_icon = 'icons/mob/alien.dmi'
+	image_icon = 'icons/mob/xenomorph.dmi'
 	image_state = "alienh_pounce"
 
 /obj/effect/hallucination/simple/xeno/Initialize(mapload, mob/living/carbon/T)
@@ -249,10 +249,10 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 		feedback_details += "Vent Coords: [pump.x],[pump.y],[pump.z]"
 		xeno = new(pump.loc,target)
 		sleep(10)
-		xeno.update_icon(ALL, "alienh_leap",'icons/mob/alienleap.dmi',-32,-32)
+		xeno.update_icon(ALL, "alienh_leap",'icons/mob/xenoleap.dmi',-32,-32)
 		xeno.throw_at(target,7,1, null, FALSE, TRUE)
 		sleep(10)
-		xeno.update_icon(ALL, "alienh_leap",'icons/mob/alienleap.dmi',-32,-32)
+		xeno.update_icon(ALL, "alienh_leap",'icons/mob/xenoleap.dmi',-32,-32)
 		xeno.throw_at(pump,7,1, null, FALSE, TRUE)
 		sleep(10)
 		var/xeno_name = xeno.name

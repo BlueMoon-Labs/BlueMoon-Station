@@ -457,10 +457,10 @@ new /datum/disease_ability/symptom/powerful/youth
 
 /datum/disease_ability/symptom/powerful/monkey_transform
 	symptoms = list(/datum/symptom/monkey_transform)
-	cost = 2
-	required_total_points = 2
+	cost = 25
+	required_total_points = 25
 	short_desc = "Transform human hosts into monkeys at stage 5."
-	long_desc = "At the final stage, human hosts are transformed into monkeys. Cheap and iconic."
+	long_desc = "At the final stage, human hosts are transformed into monkeys. Iconic but expensive."
 
 /datum/disease_ability/symptom/powerful/inorganic_adaptation
 	symptoms = list(/datum/symptom/inorganic_adaptation)

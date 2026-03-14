@@ -3,18 +3,24 @@
 
 //Force-set resting variable, without needing to resist/etc.
 /mob/living/proc/set_resting(new_resting, silent = FALSE, updating = TRUE)
-	if(SSevents.holidays && SSevents.holidays[APRIL_FOOLS])
-		if(prob(10))
+	if(new_resting && HAS_TRAIT(src, TRAIT_MOBILITY_NOREST)) //forcibly block resting from all sources - BE CAREFUL WITH THIS TRAIT
+		return
+
+	if(new_resting && HAS_TRAIT(src, TRAIT_FLOORED))
+		return
+
+	if(new_resting == resting)
+		return
+
+	. = resting
+	resting = new_resting
+	if(!silent)
+		to_chat(src, "<span class='notice'>Вы [resting? "устало падаете" : "поднимаетесь"].</span>")
+	if(resting) // Легли
+		if(SSevents.holidays && SSevents.holidays[APRIL_FOOLS] && prob(10))
 			emote("fart")
-	if(new_resting != resting)
-		if(resting && HAS_TRAIT(src, TRAIT_MOBILITY_NOREST)) //forcibly block resting from all sources - BE CAREFUL WITH THIS TRAIT
-			return
-		resting = new_resting
-		if(!silent)
-			to_chat(src, "<span class='notice'>Вы [resting? "устало падаете" : "поднимаетесь"].</span>")
-		if(resting == 1)
-			SEND_SIGNAL(src, COMSIG_LIVING_RESTING)
-		update_resting(updating)
+		SEND_SIGNAL(src, COMSIG_LIVING_RESTING)
+	update_resting(updating)
 
 /mob/living/proc/update_resting(update_mobility = TRUE)
 	if(update_mobility)

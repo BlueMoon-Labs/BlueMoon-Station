@@ -415,6 +415,12 @@
 	path = /obj/item/clothing/under/donator/bm/silky_body
 	ckeywhitelist = list("architect0r", "trora")
 
+/datum/gear/donator/bm/silky_body_alt
+	name = "V-shaped Body"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/silky_body_alt
+	ckeywhitelist = list("architect0r", "trora", "hihitect")
+
 /datum/gear/donator/bm/vance_plush
 	name = "Vance Plush"
 	slot = ITEM_SLOT_BACKPACK
@@ -614,10 +620,10 @@
 	path = /obj/item/modkit/pf940_kit_g22
 	ckeywhitelist = list("leony24")
 
-/datum/gear/donator/bm/p940_g22
-	name = "Shotgun into KS-23M Kit"
+/datum/gear/donator/bm/shotgun_ks22
+	name = "Shotgun into KS-22M Kit"
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/ks23_kit
+	path = /obj/item/modkit/ks22_kit
 	ckeywhitelist = list("lodagn")
 
 /datum/gear/donator/bm/g36_kit
@@ -702,7 +708,7 @@
 	name = "Black coat"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/tie/h_soul_coat
-	ckeywhitelist = list("hateredsoul", "ggishka", "arion1234", "swgitty", "sw00ty", "sierraiv", "ordinarylife", "milidead", "blatoff", "angelnedemon")
+	ckeywhitelist = list("hateredsoul", "ggishka", "arion1234", "swgitty", "sw00ty", "sierraiv", "ordinarylife", "milidead", "blatoff", "angelnedemon", "moun4l")
 
 /datum/gear/donator/bm/pedantcape
 	name = "Corvus Pendant"
@@ -1912,7 +1918,7 @@
 	name = "Zetta plushie"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/toy/plush/bm/zetta
-	ckeywhitelist = list("hellsinggc")
+	ckeywhitelist = list("hellsinggc", "tblkba")
 
 ///////////////////////////////////////////////
 
@@ -2159,3 +2165,15 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/nebular_kit
 	ckeywhitelist = list("lapkee")
+
+/datum/gear/donator/bm/toy_plasma_scythe
+	name = "Toy Plasma Scythe"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/plasmascythe/toy
+	ckeywhitelist = list("freakowo")
+
+/datum/gear/donator/bm/toy_sledgehammer
+	name = "Toy Sledgehammer"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/inteq_sledgehammer/toy
+	ckeywhitelist = list("freakowo")

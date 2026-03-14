@@ -37,8 +37,8 @@
 	display_name = "Reagent Plumbing Technology"
 	description = "Tubes, and machinery used for manipulating things in them."
 	prereq_ids = list("adv_engi")
-	//design_ids = list("acclimator", "disposer", "plumb_filter", "plumb_synth", "plumb_grinder", "reaction_chamber", "duct_print", "plumb_splitter", "pill_press", "plumb_pump", "plumb_in", "plumb_out", "plumb_tank", "medipen_refiller")
-	design_ids = list("medipen_refiller", "plumb_rcd", "autohydrotray", "rplunger")
+	//design_ids = list("acclimator", "disposer", "plumb_filter", "plumb_synth", "plumb_grinder", "reaction_chamber", "plumb_splitter", "pill_press", "plumb_pump", "plumb_in", "plumb_out", "plumb_tank", "medipen_refiller")
+	design_ids = list("medipen_refiller", "plumb_rcd", "autohydrotray", "duct_print", "rplunger")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3000)
 
 //////////////////////Cybernetics/////////////////////

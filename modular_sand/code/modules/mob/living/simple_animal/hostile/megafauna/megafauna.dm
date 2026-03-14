@@ -1,26 +1,29 @@
 /mob/living/simple_animal/hostile/megafauna
+	var/peaceful = FALSE
 	var/retaliated = FALSE
 	var/retaliatedcooldowntime = 1 SECONDS
 	var/retaliatedcooldown
 
 /mob/living/simple_animal/hostile/megafauna/Found(atom/A)
-	if(isliving(A))
-		var/mob/living/L = A
-		if(!L.stat)
-			return L
-		else
-			remove_enemy(L)
-	else if(ismecha(A))
-		var/obj/vehicle/sealed/mecha/M = A
-		if(LAZYLEN(M.occupants))
-			return A
+	if(!peaceful)
+		if(isliving(A))
+			var/mob/living/L = A
+			if(!L.stat)
+				return L
+			else
+				remove_enemy(L)
+		else if(ismecha(A))
+			var/obj/vehicle/sealed/mecha/M = A
+			if(LAZYLEN(M.occupants))
+				return A
 
 /mob/living/simple_animal/hostile/megafauna/ListTargets()
-	if(!length(enemies))
-		return list()
-	var/list/see = ..()
-	see &= enemies // Remove all entries that aren't in enemies
-	return see
+	if(!peaceful)
+		if(!length(enemies))
+			return list()
+		var/list/see = ..()
+		see &= enemies // Remove all entries that aren't in enemies
+		return see
 
 /mob/living/simple_animal/hostile/megafauna/proc/Retaliate()
 	var/list/around = oview(src, vision_range)
@@ -54,12 +57,13 @@
 	return FALSE
 
 /mob/living/simple_animal/hostile/megafauna/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
-	. = ..()
-	if(. > 0 && stat == CONSCIOUS)
-		Retaliate()
+	if(!peaceful)
+		. = ..()
+		if(. > 0 && stat == CONSCIOUS)
+			Retaliate()
 
 /mob/living/simple_animal/hostile/megafauna/Life()
 	..()
-	if(retaliated)
+	if(!peaceful && retaliated)
 		if(retaliatedcooldown < world.time)
 			retaliated = FALSE

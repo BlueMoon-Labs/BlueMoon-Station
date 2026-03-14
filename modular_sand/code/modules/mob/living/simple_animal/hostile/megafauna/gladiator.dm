@@ -38,6 +38,7 @@ They deal 35 brute (armor is considered).
 	maxHealth = 1500
 	movement_type = GROUND
 	weather_immunities = list(TRAIT_LAVA_IMMUNE,TRAIT_ASHSTORM_IMMUNE)
+	peaceful = TRUE
 	var/phase = 1
 	var/list/introduced = list() //Basically all the mobs which the gladiator has already introduced himself to.
 	var/speen = FALSE
@@ -52,6 +53,19 @@ They deal 35 brute (armor is considered).
 	loot = list(/obj/structure/closet/crate/necropolis/gladiator)
 	crusher_loot = list(/obj/structure/closet/crate/necropolis/gladiator/crusher)
 	sharpness = SHARP_EDGED
+
+/mob/living/simple_animal/hostile/megafauna/gladiator/MeleeAction(patience = TRUE)
+	var/old_melee_damage_lower = melee_damage_lower
+	var/old_melee_damage_upper = melee_damage_upper
+
+	if(target && ishuman(target) && is_species(target, /datum/species/lizard/ashwalker))
+		melee_damage_lower *= 2
+		melee_damage_upper *= 2
+
+	. = ..(patience)
+
+	melee_damage_lower = old_melee_damage_lower
+	melee_damage_upper = old_melee_damage_upper
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/ComponentInitialize()
 	. = ..()

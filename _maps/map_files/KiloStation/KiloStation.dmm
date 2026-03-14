@@ -43279,8 +43279,7 @@
 	dir = 4;
 	name = "command camera"
 	},
-/obj/machinery/suit_storage_unit/open,
-/obj/item/mod/control/pre_equipped/corporate,
+/obj/machinery/suit_storage_unit/corporate,
 /turf/open/floor/plasteel,
 /area/command/bridge)
 "bue" = (

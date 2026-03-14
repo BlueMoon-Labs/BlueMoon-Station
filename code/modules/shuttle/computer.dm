@@ -106,7 +106,7 @@
 				return
 			COOLDOWN_START(src, request_cooldown, 1 MINUTES)
 			to_chat(usr, "<span class='notice'>Your request has been received by CentCom.</span>")
-			to_chat(GLOB.admins, "<b>FERRY: <font color='#3d5bc3'>[ADMIN_LOOKUPFLW(usr)] (<A HREF='?_src_=holder;[HrefToken()];secrets=movepod'>Move Pod</a>)</b> is requesting to move the transport Escape Pod.</font>")
+			to_chat(GLOB.admins, "<b>FERRY: <font color='#3d5bc3'>[ADMIN_LOOKUPFLW(usr)] (<A HREF='?_src_=holder;[HrefToken()];movepod=1;shuttle_id=[shuttleId];destination=[destination]'>Move Pod</a>)</b> is requesting to move the transport Escape Pod.</font>")
 			return TRUE
 
 /obj/machinery/computer/shuttle/emag_act(mob/user)

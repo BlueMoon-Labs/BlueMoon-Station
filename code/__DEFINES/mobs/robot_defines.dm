@@ -16,7 +16,7 @@
 #define TALL_HAT_OFFSET alist( \
 	HAT_STAND_OFFSET = alist("north" = list(0, 15), "south" = list(0, 15), "east" = list(2, 15), "west" = list(-2, 15)), \
 	HAT_REST_OFFSET = alist("north" = list(0, 1), "south" = list(0, 1), "east" = list(2, 1), "west" = list(-2, 1)), \
-	HAT_SIT_OFFSET = alist("north" = list(3, 1), "south" = list(3, 1), "east" = list(3, 1), "west" = list(3, 1)), \
+	HAT_SIT_OFFSET = alist("north" = list(3, 1), "south" = list(-4, 1), "east" = list(-4, 1), "west" = list(3, 1)), \
 	HAT_BELLYUP_OFFSET = alist("north" = list(0, 1), "south" = list(0, 1), "east" = list(2, 1), "west" = list(-2, 1)))
 
 #define ZOOMBA_HAT_OFFSET alist( \

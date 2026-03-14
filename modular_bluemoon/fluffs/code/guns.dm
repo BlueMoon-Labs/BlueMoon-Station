@@ -582,15 +582,15 @@
 	can_suppress = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/pf940_shoot.ogg'
 
-/obj/item/modkit/ks23_kit
-	name = "KS-23 Shotgun Kit"
-	desc = "A modkit for making a Shotgun into a KS-23."
-	product = /obj/item/gun/ballistic/shotgun/riot/ks_23
+/obj/item/modkit/ks22_kit
+	name = "KS-22 Shotgun Kit"
+	desc = "A modkit for making a Shotgun into a KS-22."
+	product = /obj/item/gun/ballistic/shotgun/riot/ks_22
 	fromitem = list(/obj/item/gun/ballistic/shotgun, /obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/shotgun/riot/syndicate)
 
-/obj/item/gun/ballistic/shotgun/riot/ks_23
-	name = "\improper KS-23"
-	desc = "Карабин Специальный-23М - ружьё с нарезным стволом. Многофункциональное полицейское оружие, предназначенное для пресечения массовых беспорядков, избирательного силового, психического и химического воздействия на правонарушителей."
+/obj/item/gun/ballistic/shotgun/riot/ks_22
+	name = "\improper KS-22"
+	desc = "Карабин Специальный-22М - ружьё с нарезным стволом. Многофункциональное полицейское оружие, предназначенное для пресечения массовых беспорядков, избирательного силового, психического и химического воздействия на правонарушителей."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
@@ -599,7 +599,7 @@
 	can_suppress = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/shoot.ogg'
 
-/obj/item/gun/ballistic/shotgun/riot/ks_23/update_icon_state()
+/obj/item/gun/ballistic/shotgun/riot/ks_22/update_icon_state()
 	. = ..()
 	icon_state = "KS-23M[chambered ? "" : "-e"]"
 

@@ -3,7 +3,7 @@
 	caste = "s"
 	maxHealth = 180
 	health = 180
-	icon_state = "aliens"
+	icon_state = "aliens_s"
 	meleeSlashHumanPower = 25
 
 /mob/living/carbon/alien/humanoid/sentinel/Initialize(mapload)

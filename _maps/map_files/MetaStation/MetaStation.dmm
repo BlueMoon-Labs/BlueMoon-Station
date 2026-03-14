@@ -91306,8 +91306,7 @@
 	name = "Nanotrasen Representative APC";
 	pixel_y = 23
 	},
-/obj/machinery/suit_storage_unit/open,
-/obj/item/mod/control/pre_equipped/corporate,
+/obj/machinery/suit_storage_unit/corporate,
 /turf/open/floor/wood,
 /area/command/heads_quarters/ntr)
 "xzr" = (

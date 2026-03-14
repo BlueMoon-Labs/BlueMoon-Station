@@ -1815,6 +1815,8 @@
 		return TRUE
 
 /obj/machinery/chem_dispenser/proc/ConvertpHToCol(pH)
+	if(pH == null || !isnum(pH))
+		return "good"
 	switch(pH)
 		if(-INFINITY to 1)
 			return "red"
@@ -1838,6 +1840,8 @@
 			return "violet"
 		if(12.5 to INFINITY)
 			return "purple"
+		else
+			return "good"
 
 /obj/machinery/chem_dispenser/proc/get_reagent_category(reagent_type)
 	if(ispath(reagent_type, /datum/reagent/medicine))

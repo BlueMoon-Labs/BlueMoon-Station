@@ -70,6 +70,8 @@ GLOBAL_PROTECT(bombers)
 		GLOB.bombers.Cut(1, length(GLOB.bombers) - BOMBERS_LIST_TRIM_TO)
 GLOBAL_LIST_EMPTY(admin_log)
 GLOBAL_PROTECT(admin_log)
+GLOBAL_LIST_EMPTY(admin_log_entries)
+GLOBAL_PROTECT(admin_log_entries)
 GLOBAL_LIST_EMPTY(uplink_log)
 GLOBAL_PROTECT(uplink_log)
 GLOBAL_LIST_EMPTY(lastsignalers)	//keeps last 100 signals here in format: "[src] used [REF(src)] @ location [src.loc]: [freq]/[code]"

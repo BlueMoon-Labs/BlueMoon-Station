@@ -102,6 +102,14 @@
 	mutantrace_variation = STYLE_DIGITIGRADE
 	can_adjust = FALSE
 
+/obj/item/clothing/under/donator/bm/silky_body_alt
+	name = "V-shaped Body"
+	desc = "A perfectly tailored bodysuit that fits the body and does not constrain you in any movements."
+	icon_state = "silky_body_alt"
+	item_state = "bl_suit"
+	mutantrace_variation = STYLE_DIGITIGRADE
+	can_adjust = FALSE
+
 /obj/item/clothing/under/donator/bm/Frieren_skirt
 	name = "Frieren skirt"
 	desc = "Изысканный эльфийский наряд, что выполнен из нежной ткани и украшен золотыми нитями."

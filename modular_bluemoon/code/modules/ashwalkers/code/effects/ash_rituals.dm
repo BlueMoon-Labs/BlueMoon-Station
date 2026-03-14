@@ -268,6 +268,14 @@
 	var/mob/living/carbon/human/human_victim = locate() in get_turf(success_rune)
 	if(!human_victim)
 		return
+	if(HAS_TRAIT(human_victim, TRAIT_MINDSHIELD))
+		if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
+			var/point_tp = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
+			do_teleport(human_victim, point_tp, no_effects = TRUE, channel = TELEPORT_CHANNEL_FREE)
+			to_chat(human_victim, span_userdanger("Вы забыли о всём, что происходило на Лаваленде"))
+		else
+			human_victim.death()
+		return
 	var/choice = tgui_alert(human_victim,"Кажется, вас хотят поработить... Вы можете попытаться воспротивиться этому, но это может нести свои последствия...","Порабощение",list("Сопротивляться", "Поддаться"), 30 SECONDS)
 	if(choice == "Поддаться")
 		var/obj/item/organ/lungs/lungs_slot = human_victim.internal_organs_slot[ORGAN_SLOT_LUNGS]
@@ -288,3 +296,32 @@
 		else
 			human_victim.death()
 
+/datum/ash_ritual/revival
+	name = "Revival"
+	desc = "Данный ритуал взывает к силам Некрополя, которые отвечают на его зов и восстанавливают тело пострадавшего, находящегося в центре руны, ценой труднодоступных материалов."
+	required_components = list(
+		"north" =  /obj/item/tendril_seed,
+		"south" = /obj/item/organ/regenerative_core/legion,
+		"east" = /obj/item/stack/sheet/animalhide/goliath_hide,
+		"west" = /obj/item/stack/sheet/sinew,
+	)
+	consumed_components = list(
+		/obj/item/tendril_seed,
+		/obj/item/organ/regenerative_core/legion,
+		/obj/item/stack/sheet/animalhide/goliath_hide,
+		/obj/item/stack/sheet/sinew
+	)
+
+/datum/ash_ritual/revival/ritual_success(obj/effect/ash_rune/success_rune)
+	. = ..()
+
+	var/mob/living/carbon/human/human_victim = locate() in get_turf(success_rune)
+	if(!human_victim)
+		return
+	var/was_dead = isdead(human_victim)
+	human_victim.revive(full_heal = 1)
+	if(iscarbon(human_victim))
+		human_victim.regenerate_limbs()
+		human_victim.regenerate_organs()
+		if(was_dead && !isdead(human_victim))
+			to_chat(human_victim, "<span class='notice'>После полученных вами тяжелейших ран вы просыпаетесь на тёплом, по сравнению с вашим телом, пепле. В ту же секунду вы вспоминаете всё, что произошло с вами до этого. Неважно, упали вы в лаву или погибли в бою, вы вспоминаете всё во всех деталях: лица, место своей гибели и события, что привели к ней.</span>")

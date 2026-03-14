@@ -20,9 +20,11 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 /turf/proc/copyTurf(turf/T)
 	if(T.type != type)
 		var/obj/O
-		if(underlays.len)	//we have underlays, which implies some sort of transparency, so we want to a snapshot of the previous turf as an underlay
+		if(underlays.len)
 			O = new()
-			O.underlays += T
+			// Don't add closed turfs as underlay - prevents wall overlay ghosting when shuttle leaves
+			if(!istype(T, /turf/closed))
+				O.underlays += T
 		T.ChangeTurf(type)
 		if(underlays.len)
 			T.underlays.Cut()

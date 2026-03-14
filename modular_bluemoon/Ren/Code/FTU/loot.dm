@@ -147,7 +147,7 @@
 			/obj/item/gun/energy/broom,
 			/obj/item/gun/energy/pumpaction/defender,
 			/obj/item/gun/energy/goatgun = 0.1,
-			/obj/item/gun/ballistic/shotgun/riot/ks_23,
+			/obj/item/gun/ballistic/shotgun/riot/ks_22,
 			/obj/item/gun/ballistic/shotgun/eshotgun,
 			/obj/item/gun/ballistic/automatic/pistol/deagle,
 			/obj/item/gun/ballistic/automatic/pistol/suppressed,

@@ -40,6 +40,12 @@
 	item_state = "gasmask_captain"
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 
+/obj/item/clothing/mask/gas/atmos/captain/corporate
+	name = "\improper CentCom Gas Mask"
+	desc = "Oooh, gold and green. Fancy! This should help as you sit in your office."
+	icon_state = "gas_centcom"
+	item_state = "gasmask_centcom"
+
 /obj/item/clothing/mask/gas/glass
 	name = "Glass Gas Mask"
 	desc = "A face-covering mask that can be connected to an air supply. This one doesn't obscure your face however." //More accurate

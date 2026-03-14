@@ -54243,8 +54243,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "joJ" = (
-/obj/machinery/suit_storage_unit/open,
-/obj/item/mod/control/pre_equipped/corporate,
+/obj/machinery/suit_storage_unit/corporate,
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/ntr)
 "joX" = (

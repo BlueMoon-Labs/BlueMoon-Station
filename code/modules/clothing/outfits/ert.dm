@@ -110,12 +110,13 @@
 	glasses = /obj/item/clothing/glasses/hud/health/night/syndicate
 	belt = /obj/item/storage/belt/military/ert_max
 	suit_store = /obj/item/gun/energy/modular_laser_rifle
-	l_pocket = /obj/item/gun/energy/pulse/pistol/loyalpin
+	l_pocket = /obj/item/gun/ballistic/revolver/mateba
 	shoes = /obj/item/clothing/shoes/magboots/syndie/advance
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/box/ert_commander=1,\
 		/obj/item/storage/firstaid/regular=1,\
 		/obj/item/gun/energy/e_gun/nuclear/ert=1,\
+		/obj/item/ammo_box/a357=2,\
 		)
 
 	cybernetic_implants = list(
@@ -208,14 +209,15 @@
 	mask = /obj/item/clothing/mask/gas/sechailer/swat
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/sec
 	suit_store = /obj/item/gun/energy/modular_laser_rifle
-	l_pocket = /obj/item/gun/energy/pulse/pistol/loyalpin
+	l_pocket = /obj/item/gun/ballistic/revolver/mateba
 	belt = /obj/item/storage/belt/military/ert_max
 
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/box/handcuffs=1,\
 		/obj/item/storage/firstaid/regular=1,\
 		/obj/item/gun/energy/e_gun/dragnet=1,\
-		/obj/item/gun/energy/e_gun/nuclear/ert=1,
+		/obj/item/gun/energy/e_gun/nuclear/ert=1,\
+		/obj/item/ammo_box/a357=2,\
 		)
 
 	cybernetic_implants = list(
@@ -323,7 +325,7 @@
 	mask = /obj/item/clothing/mask/gas/sechailer/swat
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/med
 	suit_store = /obj/item/gun/energy/modular_laser_rifle
-	l_pocket = /obj/item/gun/energy/pulse/pistol/loyalpin
+	l_pocket = /obj/item/gun/ballistic/revolver/mateba
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,
 		/obj/item/gun/energy/e_gun/nuclear/ert=1,
 		/obj/item/storage/firstaid/tactical/ert_first = 1,
@@ -333,6 +335,7 @@
 		/obj/item/paper/beamgun_istruction=1,
 		/obj/item/roller=1,
 		/obj/item/bodybag/bluespace=1,
+		/obj/item/ammo_box/a357=2,\
 		)
 
 	cybernetic_implants = list(
@@ -438,13 +441,14 @@
 	mask = /obj/item/clothing/mask/gas/welding/up
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/engi
 	suit_store = /obj/item/gun/energy/modular_laser_rifle
-	l_pocket = /obj/item/gun/energy/pulse/pistol/loyalpin
+	l_pocket = /obj/item/gun/ballistic/revolver/mateba
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/gun/energy/e_gun/nuclear/ert=1,\
 		/obj/item/storage/firstaid/regular=1,\
 		/obj/item/construction/rcd/combat=1,
 		/obj/item/inducer/sci/combat=1,
 		/obj/item/stock_parts/cell/vortex=1,
+		/obj/item/ammo_box/a357=2,\
 		)
 
 	cybernetic_implants = list(
