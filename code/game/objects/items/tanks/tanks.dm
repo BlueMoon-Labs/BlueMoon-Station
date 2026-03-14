@@ -289,7 +289,7 @@
 		if(istype(src.loc, /obj/item/transfer_valve))
 			valve = src.loc
 		message_admins("Explosive tank rupture[valve ? " in transfer valve" : ""]! Last key to touch the tank was [src.fingerprintslast][valve ? "and last key touch the valve was [valve.fingerprintslast]" : ""]; loc: [loc]; pressure: [pressure].")
-		log_game("Explosive tank [valve ? " in transfer valve" : ""]! Last key to touch the tank was [src.fingerprintslast][valve ? "and last key touch the valve was [valve.fingerprintslast]" : ""]; loc: [loc]; pressure: [pressure].")
+		log_game("Explosive tank rupture[valve ? " in transfer valve" : ""]! Last key to touch the tank was [src.fingerprintslast][valve ? "and last key touch the valve was [valve.fingerprintslast]" : ""]; loc: [loc]; pressure: [pressure].")
 		//Give the gas a chance to build up more pressure through reacting
 		for(var/i in 1 to TANK_POST_FRAGMENT_REACTIONS)
 			air_contents.react(src)
