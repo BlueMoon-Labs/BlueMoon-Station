@@ -123,10 +123,10 @@
 	starting_organ = /obj/item/organ/heart/tier3/antag
 
 /obj/item/autosurgeon/syndicate/biomorphedliver
-	starting_organ = /obj/item/organ/liver/tier3/antag
+	starting_organ = /obj/item/organ/liver/bioaegis/t3/antag
 
 /obj/item/autosurgeon/syndicate/inteq/biomorphedliver
-	starting_organ = /obj/item/organ/liver/tier3/antag
+	starting_organ = /obj/item/organ/liver/bioaegis/t3/antag
 
 /obj/item/autosurgeon/syndicate/biomorphedlungs
 	starting_organ = /obj/item/organ/lungs/tier3/antag

@@ -112,7 +112,7 @@
 	build_type = BIOAEGIS
 	construction_time = 150
 	reagents_list = list(/datum/reagent/consumable/organicprecursor/bionanites = 200)
-	build_path = /obj/item/organ/liver/tier1
+	build_path = /obj/item/organ/liver/bioaegis/t1
 	category = list("Baseline Designs")
 	materials = list (/datum/material/plasma = 30000)
 
@@ -159,7 +159,7 @@
 	build_type = BIOAEGIS
 	construction_time = 150
 	reagents_list = list(/datum/reagent/consumable/organicprecursor/bionanites = 200)
-	build_path = /obj/item/organ/liver/tier2
+	build_path = /obj/item/organ/liver/bioaegis/t2
 	category = list("Advanced Designs")
 	materials = list (/datum/material/plasma = 30000)
 	min_security_level = SEC_LEVEL_BLUE
@@ -172,7 +172,7 @@
 	build_type = BIOAEGIS
 	construction_time = 150
 	reagents_list = list(/datum/reagent/consumable/organicprecursor/advbionanites = 150)
-	build_path = /obj/item/organ/liver/tier3
+	build_path = /obj/item/organ/liver/bioaegis/t3
 	category = list("Experimental Designs")
 	materials = list (/datum/material/plasma = 30000)
 	min_security_level = SEC_LEVEL_AMBER
