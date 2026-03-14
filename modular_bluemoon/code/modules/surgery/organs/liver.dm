@@ -9,9 +9,9 @@
 
 	var/insert_message = ""
 
-	var/healTox = 0
-	var/healFire = 0
-	var/healStamina = 0
+	var/heal_tox = 0
+	var/heal_fire = 0
+	var/heal_stamina = 0
 
 /obj/item/organ/liver/bioaegis/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
 	. = ..()
@@ -24,9 +24,13 @@
 	. = ..()
 	if(!. || !owner) //can't process reagents with a failing liver
 		return
-	owner.adjustToxLoss(-healTox, TRUE) //Doesn't kill slimes. Yes.
-	owner.adjustFireLoss(-healFire, FALSE)
-	owner.adjustStaminaLoss(-healStamina, FALSE)
+
+	if(heal_tox)
+		owner.adjustToxLoss(-heal_tox, TRUE) //Doesn't kill slimes. Yes.
+	if(heal_fire)
+		owner.adjustFireLoss(-heal_fire, FALSE)
+	if(heal_stamina)
+		owner.adjustStaminaLoss(-heal_stamina, FALSE)
 
 //TIER 1 LIVER//
 /obj/item/organ/liver/bioaegis/t1
@@ -52,8 +56,8 @@
 	filterToxinsAmount = 2
 
 	// Уровень импланта лечения
-	healTox = 0.4
-	healFire = 0.4
+	heal_tox = 0.4
+	heal_fire = 0.4
 
 	insert_message = span_notice("Вы ощущаете, словно ваша кровь стала чище.")
 
@@ -70,8 +74,8 @@
 	decay_factor = 0.5 * STANDARD_ORGAN_DECAY
 	filterToxinsAmount = 3
 
-	healTox = 1.5
-	healFire = 0.6
+	heal_tox = 1.5
+	heal_fire = 0.6
 
 	insert_message = span_notice("Вы можете заметить, словно ваша кожа стала светлее...") //This is a *very precise* superior version of liver - you wouldn't feel anything.
 
@@ -104,8 +108,8 @@
 	decay_factor = 0.1 * STANDARD_ORGAN_DECAY
 	filterToxinsAmount = 5
 
-	healTox = 5
-	healFire = 2
-	healStamina = 5
+	heal_tox = 5
+	heal_fire = 2
+	heal_stamina = 5
 
 	insert_message = span_notice("Вы чувствуете... Нечто чуждое внутри, но ваш организм словно очищается от всех токсинов..")

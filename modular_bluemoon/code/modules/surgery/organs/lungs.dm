@@ -9,9 +9,9 @@
 
 	var/insert_message = ""
 
-	var/healOxy = 0
-	var/healFire = 0
-	var/healStamina = 0
+	var/heal_oxy = 0
+	var/heal_fire = 0
+	var/heal_stamina = 0
 
 /obj/item/organ/lungs/bioaegis/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
 	. = ..()
@@ -25,9 +25,12 @@
 	if(!. || !owner)
 		return
 
-	owner.adjustOxyLoss(-healOxy, FALSE)
-	owner.adjustFireLoss(-healFire, FALSE)
-	owner.adjustStaminaLoss(-healStamina, FALSE)
+	if(heal_oxy)
+		owner.adjustOxyLoss(-heal_oxy, FALSE)
+	if(heal_fire)
+		owner.adjustFireLoss(-heal_fire, FALSE)
+	if(heal_stamina)
+		owner.adjustStaminaLoss(-heal_stamina, FALSE)
 
 //TIER 1 LUNGS//
 /obj/item/organ/lungs/bioaegis/t1
@@ -57,8 +60,8 @@
 	)
 
 	// Уровень импланта лечения
-	healOxy = 0.4
-	healFire = 0.4
+	heal_oxy = 0.4
+	heal_fire = 0.4
 
 	insert_message = span_notice("Вы чувствуете, как ваши легкие словно расправляются, пытаясь вдохнуть больше воздуха.")
 
@@ -88,9 +91,9 @@
 	cold_level_2_threshold = 140
 	cold_level_3_threshold = 100
 
-	healOxy = 1.5
-	healFire = 0.8
-	healStamina = 2.5
+	heal_oxy = 1.5
+	heal_fire = 0.8
+	heal_stamina = 2.5
 
 	insert_message = span_notice("Вы можете ощутить малейший запах в комнате...")
 
@@ -120,8 +123,8 @@
 	decay_factor = 0.1 * STANDARD_ORGAN_DECAY
 	smell_sensitivity = 2.5
 
-	healOxy = 5
-	healFire = 1.5
-	healStamina = 7.5
+	heal_oxy = 5
+	heal_fire = 1.5
+	heal_stamina = 7.5
 
 	insert_message = span_notice("Ваш мозг почти взрывается от запахов вокруг...")
