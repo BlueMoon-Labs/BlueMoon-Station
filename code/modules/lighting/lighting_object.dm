@@ -69,6 +69,8 @@
 /atom/movable/lighting_object/Destroy(force)
 	if (!force)
 		return QDEL_HINT_LETMELIVE
+	// Cancel any in-progress animation to release BYOND's internal reference that prevents GC
+	animate(src, flags = ANIMATION_END_NOW)
 	needs_update = FALSE
 	GLOB.lighting_update_objects -= src
 	GLOB.lighting_update_blends -= src

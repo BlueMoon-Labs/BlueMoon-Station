@@ -35,6 +35,9 @@
 		for(var/atom/movable/lighting_object/lighting_object as anything in pending_objects)
 			if(QDELETED(lighting_object))
 				continue
+			if(!lighting_object.affected_turf)
+				qdel(lighting_object, force = TRUE)
+				continue
 			lighting_object.update(use_animate = FALSE)
 			lighting_object.needs_update = FALSE
 

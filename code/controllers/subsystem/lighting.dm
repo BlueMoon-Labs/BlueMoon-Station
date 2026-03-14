@@ -78,6 +78,10 @@ SUBSYSTEM_DEF(lighting)
 	flags = SS_TICKER
 	/// Adaptive source processing cap (adjusted per fire based on server load)
 	var/sources_cap = LIGHTING_SOURCES_BASE_CAP
+	/// Adaptive corners processing cap (proportional to sources processed)
+	var/corners_cap = LIGHTING_CORNERS_MIN_CAP
+	/// Adaptive objects processing cap (proportional to corners processed)
+	var/objects_cap = LIGHTING_OBJECTS_MIN_CAP
 	/// MC_AVERAGE tracked cost of sources phase (ms)
 	var/cost_sources = 0
 	/// MC_AVERAGE tracked cost of corners phase (ms)
@@ -108,6 +112,13 @@ SUBSYSTEM_DEF(lighting)
 	var/nightshift_apcs_processed = 0
 	/// Lamps processed by the most recent nightshift queue phase.
 	var/nightshift_lights_processed = 0
+	/// Average cascade ratio: corners queued per source processed
+	var/avg_cascade_corners = 0
+	/// Average cascade ratio: objects queued per corner processed
+	var/avg_cascade_objects = 0
+	/// Queue growth rate tracking: objects added to queue between fires
+	var/objects_queue_growth = 0
+	var/last_objects_queue_len = 0
 	/// When TRUE, lighting_object/New() defers starlight to a batch (set during create_all_lighting_objects)
 	var/init_in_progress = FALSE
 	/// Queue of z-levels to initialize in the background (populated after main init)
@@ -127,7 +138,7 @@ SUBSYSTEM_DEF(lighting)
 	var/pct_c = total_cost > 0 ? round(cost_corners / total_cost * 100) : 0
 	var/pct_o = total_cost > 0 ? round(cost_objects / total_cost * 100) : 0
 	var/avg_cost_per = avg_sources_processed >= 0.5 ? round(cost_sources / avg_sources_processed, 0.01) : 0
-	msg = "NS:[length(GLOB.nightshift_apc_queue)]/[length(GLOB.nightshift_light_queue)]/[SSnightshift.last_nightshift_apcs_touched]/[SSnightshift.last_nightshift_lights_queued]/[nightshift_apcs_processed]/[nightshift_lights_processed]|SL:[length(GLOB.lighting_starlight_queue)]|L:[length(GLOB.lighting_update_lights)]|C:[length(GLOB.lighting_update_corners)]|O:[length(GLOB.lighting_update_objects)]|Cap:[sources_cap]|NS:[round(cost_nightshift,0.1)]ms|SL:[round(cost_starlight,0.1)]ms|S:[round(cost_sources,0.1)]([pct_s]%)|C:[round(cost_corners,0.1)]([pct_c]%)|O:[round(cost_objects,0.1)]([pct_o]%)|Avg:[avg_cost_per]ms/src([round(avg_sources_processed)])|Pk:[peak_nightshift]/[peak_starlight]/[peak_sources]/[peak_corners]/[peak_objects]|Wst:[round(worst_fire_cost,0.1)]ms"
+	msg = "NS:[length(GLOB.nightshift_apc_queue)]/[length(GLOB.nightshift_light_queue)]/[SSnightshift.last_nightshift_apcs_touched]/[SSnightshift.last_nightshift_lights_queued]/[nightshift_apcs_processed]/[nightshift_lights_processed]|SL:[length(GLOB.lighting_starlight_queue)]|L:[length(GLOB.lighting_update_lights)]|C:[length(GLOB.lighting_update_corners)]|O:[length(GLOB.lighting_update_objects)]|Cap:[sources_cap]/[corners_cap]/[objects_cap]|NS:[round(cost_nightshift,0.1)]ms|SL:[round(cost_starlight,0.1)]ms|S:[round(cost_sources,0.1)]([pct_s]%)|C:[round(cost_corners,0.1)]([pct_c]%)|O:[round(cost_objects,0.1)]([pct_o]%)|Avg:[avg_cost_per]ms/src([round(avg_sources_processed)])|Cas:[round(avg_cascade_corners,0.1)]/[round(avg_cascade_objects,0.1)]|Gro:[round(objects_queue_growth)]|Pk:[peak_nightshift]/[peak_starlight]/[peak_sources]/[peak_corners]/[peak_objects]|Wst:[round(worst_fire_cost,0.1)]ms"
 	if(bg_current_zlevel)
 		msg += "|BG:Z[bg_current_zlevel]P[bg_phase]"
 	else if(bg_queued_zlevels?.len)
@@ -154,12 +165,19 @@ SUBSYSTEM_DEF(lighting)
 	// Skip this fire cycle — the originating proc will clear the flag and queue work for us.
 	if(GLOB.lighting_defer_active)
 		return
-	MC_SPLIT_TICK_INIT(5)
+	MC_SPLIT_TICK_INIT(6)
 	var/fire_start_timer = TICK_USAGE_REAL
 	nightshift_apcs_processed = 0
 	nightshift_lights_processed = 0
+	// Track queue growth between fires
+	if(!resumed && !init_tick_checks)
+		objects_queue_growth = MC_AVERAGE(objects_queue_growth, GLOB.lighting_update_objects.len - last_objects_queue_len)
+		last_objects_queue_len = GLOB.lighting_update_objects.len
 
 	process_nightshift_queues(init_tick_checks, !resumed && !init_tick_checks)
+
+	if(!init_tick_checks)
+		MC_SPLIT_TICK
 
 	// Phase -2: Solar starlight color propagation (from SSnightshift)
 	// Processes GLOB.starlight incrementally instead of all-at-once in SSnightshift.fire().
@@ -292,6 +310,7 @@ SUBSYSTEM_DEF(lighting)
 		MC_SPLIT_TICK
 
 	// Phase 1: Light sources
+	var/corners_before = GLOB.lighting_update_corners.len
 	var/timer = TICK_USAGE_REAL
 	var/i = 0
 	var/phase_limit = init_tick_checks ? GLOB.lighting_update_lights.len : min(GLOB.lighting_update_lights.len, sources_cap)
@@ -317,13 +336,22 @@ SUBSYSTEM_DEF(lighting)
 	if(!init_tick_checks)
 		cost_sources = MC_AVERAGE(cost_sources, TICK_USAGE_TO_MS(timer))
 		avg_sources_processed = MC_AVERAGE(avg_sources_processed, sources_done)
+		// Track cascade: how many NEW corners were queued by the sources we just processed
+		if(sources_done > 0)
+			avg_cascade_corners = MC_AVERAGE(avg_cascade_corners, (GLOB.lighting_update_corners.len - corners_before) / max(1, sources_done))
 
 	if(!init_tick_checks)
 		MC_SPLIT_TICK
 
-	// Phase 2: Corners
+	// Phase 2: Corners (adaptive cap proportional to sources processed)
+	if(!init_tick_checks)
+		corners_cap = clamp(max(LIGHTING_CORNERS_MIN_CAP, sources_done * LIGHTING_CORNERS_CAP_MULT), LIGHTING_CORNERS_MIN_CAP, LIGHTING_CORNERS_HARD_CEILING)
+	var/objects_before = GLOB.lighting_update_objects.len
 	timer = TICK_USAGE_REAL
-	for (i in 1 to GLOB.lighting_update_corners.len)
+	var/corners_limit = init_tick_checks ? GLOB.lighting_update_corners.len : min(GLOB.lighting_update_corners.len, corners_cap)
+	for (i in 1 to corners_limit)
+		if(i > GLOB.lighting_update_corners.len)
+			break
 		var/datum/lighting_corner/C = GLOB.lighting_update_corners[i]
 
 		C.update_objects()
@@ -332,16 +360,20 @@ SUBSYSTEM_DEF(lighting)
 			CHECK_TICK
 		else if (MC_TICK_CHECK)
 			break
+	var/corners_done = i
 	if (i)
 		GLOB.lighting_update_corners.Cut(1, min(i + 1, length(GLOB.lighting_update_corners) + 1))
 		i = 0
 	if(!init_tick_checks)
 		cost_corners = MC_AVERAGE(cost_corners, TICK_USAGE_TO_MS(timer))
+		// Track cascade: how many NEW objects were queued by the corners we just processed
+		if(corners_done > 0)
+			avg_cascade_objects = MC_AVERAGE(avg_cascade_objects, (GLOB.lighting_update_objects.len - objects_before) / max(1, corners_done))
 
 	if(!init_tick_checks)
 		MC_SPLIT_TICK
 
-	// Phase 3: Lighting objects
+	// Phase 3: Lighting objects (adaptive cap proportional to corners processed)
 	// Pre-build z-level client bitmask — replaces 3 comparisons + length() per object with 1 list lookup
 	var/list/clients_by_z = !init_tick_checks ? SSmobs.clients_by_zlevel : null
 	var/list/z_has_clients
@@ -350,16 +382,36 @@ SUBSYSTEM_DEF(lighting)
 		z_has_clients = new /list(_cbz_len)
 		for(var/_zz in 1 to _cbz_len)
 			z_has_clients[_zz] = !!length(clients_by_z[_zz])
+	if(!init_tick_checks)
+		objects_cap = clamp(max(LIGHTING_OBJECTS_MIN_CAP, corners_done * LIGHTING_OBJECTS_CAP_MULT), LIGHTING_OBJECTS_MIN_CAP, LIGHTING_OBJECTS_HARD_CEILING)
+		// Proactive budget check: reduce cap if previous phases consumed most of the tick
+		var/remaining_pct = 1 - (TICK_USAGE / Master.current_ticklimit)
+		if(remaining_pct < 0.15)
+			objects_cap = min(objects_cap, 50)
+		else if(remaining_pct < 0.3)
+			objects_cap = min(objects_cap, objects_cap / 2)
 	timer = TICK_USAGE_REAL
-	for (i in 1 to GLOB.lighting_update_objects.len)
+	var/objects_limit = init_tick_checks ? GLOB.lighting_update_objects.len : min(GLOB.lighting_update_objects.len, objects_cap)
+	var/skip_invisible_threshold = objects_limit * 0.7
+	for (i in 1 to objects_limit)
+		if(i > GLOB.lighting_update_objects.len)
+			break
 		var/atom/movable/lighting_object/O = GLOB.lighting_update_objects[i]
 
 		if (QDELETED(O))
 			continue
 
+		if(!O.affected_turf)
+			qdel(O, force = TRUE)
+			continue
+
 		var/obj_z = O.affected_turf.z
-		var/use_anim = z_has_clients && obj_z <= length(z_has_clients) && z_has_clients[obj_z]
-		O.update(use_animate = use_anim)
+		var/is_visible = z_has_clients && obj_z <= length(z_has_clients) && z_has_clients[obj_z]
+		// When budget is tight (past 70% of cap), defer invisible z-level objects to next fire
+		if(!init_tick_checks && !is_visible && i > skip_invisible_threshold)
+			GLOB.lighting_update_objects += O // re-queue for next fire (Cut will remove from current position)
+			continue
+		O.update(use_animate = is_visible)
 		O.needs_update = FALSE
 		if(init_tick_checks)
 			CHECK_TICK
@@ -369,6 +421,7 @@ SUBSYSTEM_DEF(lighting)
 		GLOB.lighting_update_objects.Cut(1, min(i + 1, length(GLOB.lighting_update_objects) + 1))
 	if(!init_tick_checks)
 		cost_objects = MC_AVERAGE(cost_objects, TICK_USAGE_TO_MS(timer))
+		last_objects_queue_len = GLOB.lighting_update_objects.len
 
 	// Phase 4: Background z-level initialization
 	// Gradually creates lighting infrastructure for deferred z-levels
@@ -402,9 +455,9 @@ SUBSYSTEM_DEF(lighting)
 			peak_nightshift = ns_queue_len
 	var/ns_timer = TICK_USAGE_REAL
 	if(GLOB.nightshift_apc_queue.len)
-		while(GLOB.nightshift_apc_queue.len)
-			var/obj/machinery/power/apc/APC = GLOB.nightshift_apc_queue[1]
-			GLOB.nightshift_apc_queue.Cut(1, 2)
+		var/k = 0
+		for(k in 1 to GLOB.nightshift_apc_queue.len)
+			var/obj/machinery/power/apc/APC = GLOB.nightshift_apc_queue[k]
 			if(!QDELETED(APC))
 				SSnightshift.last_nightshift_lights_queued += APC.apply_queued_nightshift_refresh()
 				nightshift_apcs_processed++
@@ -412,10 +465,12 @@ SUBSYSTEM_DEF(lighting)
 				CHECK_TICK
 			else if(MC_TICK_CHECK)
 				break
+		if(k)
+			GLOB.nightshift_apc_queue.Cut(1, min(k + 1, length(GLOB.nightshift_apc_queue) + 1))
 	if(GLOB.nightshift_light_queue.len)
-		while(GLOB.nightshift_light_queue.len)
-			var/obj/machinery/light/L = GLOB.nightshift_light_queue[1]
-			GLOB.nightshift_light_queue.Cut(1, 2)
+		var/k = 0
+		for(k in 1 to GLOB.nightshift_light_queue.len)
+			var/obj/machinery/light/L = GLOB.nightshift_light_queue[k]
 			if(!QDELETED(L))
 				L.nightshift_update_queued = FALSE
 				L.update(FALSE, TRUE)
@@ -424,6 +479,8 @@ SUBSYSTEM_DEF(lighting)
 				CHECK_TICK
 			else if(MC_TICK_CHECK)
 				break
+		if(k)
+			GLOB.nightshift_light_queue.Cut(1, min(k + 1, length(GLOB.nightshift_light_queue) + 1))
 	if(!init_tick_checks)
 		cost_nightshift = MC_AVERAGE(cost_nightshift, TICK_USAGE_TO_MS(ns_timer))
 

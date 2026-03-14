@@ -51,6 +51,15 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_DILATION_HIGH 40          // Time dilation threshold for minimum cap
 #define LIGHTING_DILATION_MEDIUM 20        // Time dilation threshold for reduced cap
 
+// Cascade caps for corners (Phase 2) and objects (Phase 3)
+// These prevent cascading queue amplification: 1 source → N corners → 4N objects
+#define LIGHTING_CORNERS_MIN_CAP 100       // Minimum corners per fire
+#define LIGHTING_CORNERS_CAP_MULT 8        // Max corners = sources_processed * this
+#define LIGHTING_CORNERS_HARD_CEILING 800   // Absolute max corners per fire
+#define LIGHTING_OBJECTS_MIN_CAP 200       // Minimum objects per fire
+#define LIGHTING_OBJECTS_CAP_MULT 6        // Max objects = corners_processed * this
+#define LIGHTING_OBJECTS_HARD_CEILING 2000  // Absolute max objects per fire
+
 // Area lighting profile presets — pick from these instead of raw floats
 // Temperature: positive = warm (↑R ↓B), negative = cool (↓R ↑B)
 #define LIGHT_TEMP_WARM         0.06  // Cozy, inviting (bar, lounge)
