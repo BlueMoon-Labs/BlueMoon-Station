@@ -50,7 +50,7 @@
 	desc = "Довольно приличная копия сердца. Более крепкое, чем обычное сердце... Но на этом все."
 	maxHealth = 1.5 * STANDARD_ORGAN_THRESHOLD
 
-	insert_message = span_notice("Как ни странно...словно ничего не поменялось.")
+	insert_message = span_notice("Как ни странно... Словно ничего не поменялось.")
 
 //TIER 2 HEART//
 /obj/item/organ/heart/bioaegis/t2

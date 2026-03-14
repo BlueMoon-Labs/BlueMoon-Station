@@ -37,7 +37,7 @@
 	toxLethality = 0.4 * LIVER_DEFAULT_TOX_LETHALITY
 	filterToxinsAmount = 1.5
 
-	insert_message = span_notice("Что-то неприятно упёрлось внутри живота...")
+	insert_message = span_notice("Печень... Кажется стала чуть больше?")
 
 //TIER 2 LIVER//
 /obj/item/organ/liver/bioaegis/t2
