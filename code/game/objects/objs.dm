@@ -148,11 +148,27 @@
 	else
 		return null
 
+/obj/remove_air_into(datum/gas_mixture/into, amount)
+	if(loc)
+		return loc.remove_air_into(into, amount)
+	if(into)
+		into.clear()
+		into.set_temperature(0)
+	return FALSE
+
 /obj/remove_air_ratio(ratio)
 	if(loc)
 		return loc.remove_air_ratio(ratio)
 	else
 		return null
+
+/obj/remove_air_ratio_into(datum/gas_mixture/into, ratio)
+	if(loc)
+		return loc.remove_air_ratio_into(into, ratio)
+	if(into)
+		into.clear()
+		into.set_temperature(0)
+	return FALSE
 
 /obj/return_air()
 	if(loc)
@@ -160,17 +176,39 @@
 	else
 		return null
 
+/obj/proc/fill_internal_lifeform_breath(mob/lifeform_inside_me, datum/gas_mixture/into, breath_request)
+	if(!into || breath_request <= 0)
+		return FALSE
+
+	var/datum/gas_mixture/environment = return_air()
+	if(!environment)
+		into.clear()
+		into.set_temperature(0)
+		return FALSE
+
+	var/environment_volume = environment.return_volume()
+	if(environment_volume <= 0)
+		into.clear()
+		into.set_temperature(0)
+		return FALSE
+
+	return remove_air_ratio_into(into, breath_request / environment_volume)
+
 /obj/proc/handle_internal_lifeform(mob/lifeform_inside_me, breath_request)
 	//Return: (NONSTANDARD)
 	//		null if object handles breathing logic for lifeform
 	//		datum/air_group to tell lifeform to process using that breath return
 	//DEFAULT: Take air from turf to give to have mob process
 
-	if(breath_request>0)
-		var/datum/gas_mixture/environment = return_air()
-		return remove_air_ratio(BREATH_VOLUME / environment.return_volume())
-	else
+	if(breath_request <= 0)
 		return null
+
+	var/datum/gas_mixture/breath = new
+	if(fill_internal_lifeform_breath(lifeform_inside_me, breath, breath_request))
+		return breath
+
+	qdel(breath)
+	return FALSE
 
 /obj/proc/updateUsrDialog()
 	if((obj_flags & IN_USE) && !(obj_flags & USES_TGUI))

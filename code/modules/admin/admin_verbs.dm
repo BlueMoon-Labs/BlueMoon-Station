@@ -58,9 +58,6 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/jumptocoord,			/*we ghost and jump to a coordinate*/
 	/client/proc/Getmob,				/*teleports a mob to our location*/
 	/client/proc/Getkey,				/*teleports a mob with a certain ckey to our location*/
-	/client/proc/game_panel,			/*game panel, allows to change game-mode etc*/
-	/client/proc/mail_panel,			/*BLUEMOON ADD - панель управления почтой*/
-	/client/proc/show_admin_ticket_stats, /*BLUEMOON ADD - панель статистики тикетов*/
 	/client/proc/fax_panel, /*send a paper to fax*/
 //	/client/proc/sendmob,				/*sends a mob somewhere*/ -Removed due to it needing two sorting procs to work, which were executed every time an admin right-clicked. ~Errorage
 	/client/proc/jumptoarea,
@@ -200,6 +197,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/set_dynex_scale,
 	/client/proc/cmd_display_del_log,
 	/client/proc/cmd_display_gc_queue,
+	/client/proc/cmd_gc_health_panel,
 	/client/proc/create_outfits,
 	/client/proc/modify_goals,
 	/client/proc/debug_huds,
@@ -317,6 +315,7 @@ GLOBAL_LIST_INIT(admin_verbs_hideable, list(
 	/client/proc/toggle_nuke,
 	/client/proc/cmd_display_del_log,
 	/client/proc/cmd_display_gc_queue,
+	/client/proc/cmd_gc_health_panel,
 	/client/proc/toggle_combo_hud,
 	/client/proc/debug_huds,
 	/client/proc/cmd_admin_man_up, //CIT CHANGE - adds man up verb

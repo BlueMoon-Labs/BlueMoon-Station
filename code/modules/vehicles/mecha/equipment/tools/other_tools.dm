@@ -540,6 +540,12 @@
 	desc = "A set of thrusters that allow for exosuit movement in zero-gravity environments, by expelling gas from the internal life support tank."
 	effect_type = /obj/effect/particle_effect/smoke
 	var/move_cost = 20 //moles per step
+	/// Reusable buffer for discarded thrust gas to avoid temporary gas_mixture churn.
+	var/datum/gas_mixture/thrust_buffer
+
+/obj/item/mecha_parts/mecha_equipment/thrusters/gas/Destroy()
+	QDEL_NULL(thrust_buffer)
+	return ..()
 
 /obj/item/mecha_parts/mecha_equipment/thrusters/gas/try_attach_part(mob/user, obj/vehicle/sealed/mecha/M)
 	if(!M.internal_tank)
@@ -550,11 +556,15 @@
 /obj/item/mecha_parts/mecha_equipment/thrusters/gas/thrust(movement_dir)
 	if(!chassis || !chassis.internal_tank)
 		return FALSE
-	var/moles = chassis.internal_tank.air_contents.total_moles()
+	if(!thrust_buffer)
+		thrust_buffer = new
+	var/datum/gas_mixture/tank_air = chassis.internal_tank.air_contents
+	var/moles = tank_air.total_moles()
 	if(moles < move_cost)
-		qdel(chassis.internal_tank.air_contents.remove(moles))
 		return FALSE
-	qdel(chassis.internal_tank.air_contents.remove(move_cost))
+	tank_air.remove_into(thrust_buffer, move_cost)
+	thrust_buffer.clear()
+	thrust_buffer.set_temperature(0)
 	generate_effect(movement_dir)
 	return TRUE
 

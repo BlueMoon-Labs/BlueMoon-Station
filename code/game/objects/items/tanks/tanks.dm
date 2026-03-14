@@ -22,6 +22,8 @@
 	var/volume = 70
 	/// Icon state when in a tank holder. Null makes it incompatible with tank holder.
 	var/tank_holder_icon_state = "holder_generic"
+	/// Reused buffer for leaking gas to avoid temporary gas_mixture churn.
+	var/datum/gas_mixture/leak_buffer
 
 /obj/item/tank/ui_action_click(mob/user)
 	toggle_internals(user)
@@ -67,6 +69,7 @@
 
 	air_contents = new(volume) //liters
 	air_contents.set_temperature(T20C)
+	leak_buffer = new
 
 	populate_gas()
 
@@ -84,6 +87,7 @@
 			visible_message("<span class='warning'[src] leaks gas!")
 
 /obj/item/tank/Destroy()
+	QDEL_NULL(leak_buffer)
 	if(air_contents)
 		QDEL_NULL(air_contents)
 
@@ -232,8 +236,26 @@
 /obj/item/tank/remove_air(amount)
 	return air_contents.remove(amount)
 
+/obj/item/tank/remove_air_into(datum/gas_mixture/into, amount)
+	if(!air_contents)
+		if(into)
+			into.clear()
+			into.set_temperature(0)
+		return FALSE
+
+	return air_contents.remove_into(into, amount)
+
 /obj/item/tank/remove_air_ratio(ratio)
 	return air_contents.remove_ratio(ratio)
+
+/obj/item/tank/remove_air_ratio_into(datum/gas_mixture/into, ratio)
+	if(!air_contents)
+		if(into)
+			into.clear()
+			into.set_temperature(0)
+		return FALSE
+
+	return air_contents.remove_ratio_into(into, ratio)
 
 /obj/item/tank/return_air()
 	return air_contents
@@ -269,6 +291,24 @@
 	var/moles_needed = actual_distribute_pressure*volume_to_return/(R_IDEAL_GAS_EQUATION*air_contents.return_temperature())
 
 	return remove_air(moles_needed)
+
+/obj/item/tank/proc/remove_air_volume_into(datum/gas_mixture/into, volume_to_return)
+	if(!into)
+		return FALSE
+
+	into.clear()
+	into.set_temperature(0)
+	if(!air_contents)
+		return FALSE
+
+	var/tank_pressure = air_contents.return_pressure()
+	var/actual_distribute_pressure = clamp(tank_pressure, 0, distribute_pressure)
+	var/temperature = air_contents.return_temperature()
+	if(temperature <= 0)
+		return FALSE
+
+	var/moles_needed = actual_distribute_pressure*volume_to_return/(R_IDEAL_GAS_EQUATION*temperature)
+	return remove_air_into(into, moles_needed)
 
 /obj/item/tank/process()
 	//Allow for reactions
@@ -319,9 +359,10 @@
 			var/turf/T = get_turf(src)
 			if(!T)
 				return
-			var/datum/gas_mixture/leaked_gas = air_contents.remove_ratio(0.25)
-			T.assume_air(leaked_gas)
-			qdel(leaked_gas)
+			if(!leak_buffer)
+				leak_buffer = new
+			if(air_contents.remove_ratio_into(leak_buffer, 0.25))
+				T.assume_air(leak_buffer)
 		else
 			integrity--
 

@@ -21,6 +21,8 @@
 	show_verb_panel = FALSE
 	///Contains admin info. Null if client is not an admin.
 	var/datum/admins/holder = null
+	/// If TRUE, this admin receives GC leak notifications (warnfail/softcheck alerts). Toggle via GC Health Panel.
+	var/gc_leak_notify = FALSE
 	var/datum/click_intercept = null // Needs to implement InterceptClickOn(user,params,atom) proc
 	///Time when the click was intercepted
 	var/click_intercept_time = 0

@@ -13,6 +13,9 @@
 	var/lastcirc = "00"
 
 	var/max_efficiency = 0.45
+	/// Reusable transfer buffers to avoid per-tick gas_mixture churn.
+	var/datum/gas_mixture/cold_transfer_buffer
+	var/datum/gas_mixture/hot_transfer_buffer
 
 
 /obj/machinery/power/generator/Initialize(mapload)
@@ -22,6 +25,8 @@
 	SSair.start_processing_machine(src)
 	update_icon()
 	component_parts = list(new /obj/item/circuitboard/machine/generator)
+	cold_transfer_buffer = new
+	hot_transfer_buffer = new
 
 /obj/machinery/power/generator/ComponentInitialize()
 	. = ..()
@@ -30,6 +35,8 @@
 /obj/machinery/power/generator/Destroy()
 	kill_circs()
 	SSair.stop_processing_machine(src)
+	QDEL_NULL(cold_transfer_buffer)
+	QDEL_NULL(hot_transfer_buffer)
 	return ..()
 
 /obj/machinery/power/generator/update_overlays()
@@ -50,16 +57,21 @@
 	if(!cold_circ || !hot_circ)
 		return
 
+	if(!cold_transfer_buffer)
+		cold_transfer_buffer = new
+	if(!hot_transfer_buffer)
+		hot_transfer_buffer = new
+
 	if(powernet)
-		var/datum/gas_mixture/cold_air = cold_circ.return_transfer_air()
-		var/datum/gas_mixture/hot_air = hot_circ.return_transfer_air()
+		var/cold_air = cold_circ.fill_transfer_air(cold_transfer_buffer)
+		var/hot_air = hot_circ.fill_transfer_air(hot_transfer_buffer)
 
 		if(cold_air && hot_air)
 
-			var/cold_air_heat_capacity = cold_air.heat_capacity()
-			var/hot_air_heat_capacity = hot_air.heat_capacity()
+			var/cold_air_heat_capacity = cold_transfer_buffer.heat_capacity()
+			var/hot_air_heat_capacity = hot_transfer_buffer.heat_capacity()
 
-			var/delta_temperature = hot_air.return_temperature() - cold_air.return_temperature()
+			var/delta_temperature = hot_transfer_buffer.return_temperature() - cold_transfer_buffer.return_temperature()
 
 
 			if(delta_temperature > 0 && cold_air_heat_capacity > 0 && hot_air_heat_capacity > 0)
@@ -70,21 +82,23 @@
 				lastgen += energy_transfer * efficiency
 				var/heat = energy_transfer * (1-efficiency)
 
-				hot_air.set_temperature(hot_air.return_temperature() - energy_transfer/hot_air_heat_capacity)
-				cold_air.set_temperature(cold_air.return_temperature() + heat/cold_air_heat_capacity)
+				hot_transfer_buffer.set_temperature(hot_transfer_buffer.return_temperature() - energy_transfer/hot_air_heat_capacity)
+				cold_transfer_buffer.set_temperature(cold_transfer_buffer.return_temperature() + heat/cold_air_heat_capacity)
 
 				//add_avail(lastgen) This is done in process now
 		// update icon overlays only if displayed level has changed
 
 		if(hot_air)
 			var/datum/gas_mixture/hot_circ_air1 = hot_circ.airs[1]
-			hot_circ_air1.merge(hot_air)
-			qdel(hot_air)
+			hot_circ_air1.merge(hot_transfer_buffer)
+			hot_transfer_buffer.clear()
+			hot_transfer_buffer.set_temperature(0)
 
 		if(cold_air)
 			var/datum/gas_mixture/cold_circ_air1 = cold_circ.airs[1]
-			cold_circ_air1.merge(cold_air)
-			qdel(cold_air)
+			cold_circ_air1.merge(cold_transfer_buffer)
+			cold_transfer_buffer.clear()
+			cold_transfer_buffer.set_temperature(0)
 
 		update_icon()
 

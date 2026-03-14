@@ -196,6 +196,8 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 
 	/// If the SM is decorated with holiday lights
 	var/holiday_lights = FALSE
+	/// Reused scratch space for the removed gas sample each tick.
+	var/datum/gas_mixture/removed_buffer
 
 /obj/machinery/power/supermatter_crystal/Initialize(mapload)
 	. = ..()
@@ -216,6 +218,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	RegisterSignal(src, COMSIG_ATOM_BSA_BEAM, PROC_REF(call_explode))
 
 	soundloop = new(src, TRUE)
+	removed_buffer = new
 
 	if((NEW_YEAR in SSevents.holidays) || (CHRISTMAS in SSevents.holidays))
 		holiday_lights()
@@ -229,6 +232,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	if(is_main_engine && GLOB.main_supermatter_engine == src)
 		GLOB.main_supermatter_engine = null
 	QDEL_NULL(soundloop)
+	QDEL_NULL(removed_buffer)
 	return ..()
 
 /obj/machinery/power/supermatter_crystal/examine(mob/user)
@@ -454,13 +458,14 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	//Ok, get the air from the turf
 	var/datum/gas_mixture/env = T.return_air()
 
-	var/datum/gas_mixture/removed
+	if(!removed_buffer)
+		removed_buffer = new
+	var/datum/gas_mixture/removed = removed_buffer
+	removed.clear()
+	removed.set_temperature(0)
 	if(produces_gas)
 		//Remove gas from surrounding area
-		removed = env.remove_ratio(gasefficency)
-	else
-		// Pass all the gas related code an empty gas container
-		removed = new()
+		env.remove_ratio_into(removed, gasefficency)
 	damage_archived = damage
 
 	var/list/gas_info = GLOB.gas_data.supermatter
@@ -739,7 +744,6 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		if(damage > explosion_point)
 			countdown()
 
-	qdel(removed)
 	return TRUE
 
 /obj/machinery/power/supermatter_crystal/bullet_act(obj/item/projectile/Proj)

@@ -166,8 +166,14 @@
 /obj/structure/transit_tube_pod/remove_air(amount)
 	return air_contents.remove(amount)
 
+/obj/structure/transit_tube_pod/remove_air_into(datum/gas_mixture/into, amount)
+	return air_contents.remove_into(into, amount)
+
 /obj/structure/transit_tube_pod/remove_air_ratio(ratio)
 	return air_contents.remove_ratio(ratio)
+
+/obj/structure/transit_tube_pod/remove_air_ratio_into(datum/gas_mixture/into, ratio)
+	return air_contents.remove_ratio_into(into, ratio)
 
 /obj/structure/transit_tube_pod/transfer_air(datum/gas_mixture/taker, moles)
 	return air_contents.transfer_to(taker, moles)

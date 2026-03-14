@@ -32,6 +32,7 @@
 	var/charge_tick = 0
 	var/charge_type
 	var/selfcharge = FALSE
+	var/datum/gas_mixture/spent_gas_buffer
 	trigger_guard = TRIGGER_GUARD_NORMAL
 
 
@@ -56,7 +57,13 @@
 
 /obj/item/pneumatic_cannon/Destroy()
 	STOP_PROCESSING(SSobj, src)
+	QDEL_NULL(spent_gas_buffer)
 	return ..()
+
+/obj/item/pneumatic_cannon/proc/get_spent_gas_buffer()
+	if(!spent_gas_buffer)
+		spent_gas_buffer = new
+	return spent_gas_buffer
 
 /obj/item/pneumatic_cannon/CanItemAutoclick()
 	return automatic
@@ -157,14 +164,12 @@
 		if(user)
 			to_chat(user, "<span class='warning'>\The [src] can't fire without a source of gas.</span>")
 		return
-	var/datum/gas_mixture/spent_gas = tank?.air_contents?.remove(gasPerThrow * pressureSetting)
-	if(tank && !spent_gas)
+	if(tank && (!tank.air_contents || !tank.air_contents.remove_into(get_spent_gas_buffer(), gasPerThrow * pressureSetting)))
 		if(user)
 			to_chat(user, "<span class='warning'>\The [src] lets out a weak hiss and doesn't react!</span>")
 		else
 			visible_message(src, "<span class='warning'>\The [src] lets out a weak hiss and doesn't react!</span>")
 		return
-	qdel(spent_gas)
 	if(user && HAS_TRAIT(user, TRAIT_CLUMSY) && prob(75) && clumsyCheck && iscarbon(user))
 		var/mob/living/carbon/C = user
 		C.visible_message("<span class='warning'>[C] loses [C.ru_ego()] grip on [src], causing it to go off!</span>", "<span class='userdanger'>[src] slips out of your hands and goes off!</span>")

@@ -687,49 +687,66 @@
 	set name = "Display GC Queue"
 	set desc = "Display current GC queue contents by type."
 
-	var/list/queue_names = list("Soft Delete Queue (GC_QUEUE_CHECK)", "Hard Delete Queue (GC_QUEUE_HARDDELETE)")
+	var/list/queue_names = list(
+		"Softcheck Queue (GC_QUEUE_SOFTCHECK, [GC_SOFTCHECK_TIMEOUT / 10]s)",
+		"Warnfail Queue (GC_QUEUE_WARNFAIL, +[GC_WARNFAIL_TIMEOUT / 10]s)",
+		"Hard Delete Queue (GC_QUEUE_HARDDELETE, +[GC_HARDDEL_TIMEOUT / 10]s)"
+	)
 	var/list/output = list("<B>Current GC Queue Contents</B>")
-	output += " — <A href='byond://?src=[REF(holder)];[HrefToken()];gc_queue_refresh=1'>Refresh</A><BR>"
+	output += " — <A href='byond://?src=[REF(holder)];[HrefToken()];gc_queue_refresh=1'>Refresh</A>"
+	output += " | Confirmed leak avg: [round(SSgarbage.leak_rate_avg, 0.01)]/мин | Hard-del avg: [round(SSgarbage.harddel_ms_avg, 0.1)]мс<BR>"
 
 	// --- Queues by type ---
-	for(var/level in 1 to GC_QUEUE_COUNT)
-		var/list/queue = SSgarbage.queues[level]
-		var/queue_len = length(queue)
-		output += "<BR><h3>[queue_names[level]] — [queue_len] items</h3>"
+	for (var/level in 1 to GC_QUEUE_COUNT)
+		var/list/refs  = SSgarbage.queue_refs[level]
+		var/head       = SSgarbage.queue_heads[level]
+		var/pending_slots = SSgarbage.GetQueueDepth(level)
+		var/processed_slots = SSgarbage.GetProcessedQueueSlots(level)
+		output += "<BR><h3>[queue_names[level]] — [pending_slots] pending slots (peak: [SSgarbage.peak_queue_depths[level]])</h3>"
 
-		if(!queue_len)
-			output += "<i>Empty</i>"
+		if (pending_slots <= 0)
+			output += "<i>Пусто</i>"
 			continue
 
 		var/list/type_counts = list()
-		var/alive_count = 0
-		var/dead_count = 0
+		var/live_sample = 0
+		var/invalid_sample = 0
+		var/scanned_slots = 0
+		var/list/type_strings = SSgarbage.queue_types[level]
 
-		for(var/i in 1 to queue_len)
-			var/list/L = queue[i]
-			if(length(L) < 2)
-				dead_count++
-				continue
-			var/GCd_at_time = L[1]
-			var/refID = L[2]
-			var/datum/D = locate(refID)
-			if(!D || D.gc_destroyed != GCd_at_time)
-				dead_count++
-				continue
-			alive_count++
-			var/tpath = "[D.type]"
-			type_counts[tpath] = (type_counts[tpath] || 0) + 1
+		for (var/i in head to length(refs))
+			if (scanned_slots >= GC_QUEUE_PREVIEW_SCAN_LIMIT)
+				break
+			var/refID = refs[i]
+			if (isnull(refID))
+				continue // Tombstoned slot — skip without counting toward scan limit
+			scanned_slots++
+			var/datum/D = SSgarbage.GetQueuedDatum(level, i)
+			var/tpath
+			if (D)
+				live_sample++
+				tpath = "[D.type]"
+			else
+				invalid_sample++
+				// Use stored type string for already-GC'd objects
+				if (i <= length(type_strings))
+					tpath = type_strings[i]
+			if (tpath)
+				type_counts[tpath] = (type_counts[tpath] || 0) + 1
 
 		sortTim(type_counts, cmp = GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
 
-		output += "<b>Alive: [alive_count] | Already GC'd: [dead_count]</b><ol>"
+		output += "<b>Обработано: [processed_slots]</b>"
+		output += "<br><i>Сэмпл первых [scanned_slots] ожидающих слотов: живые [live_sample] | невалидные [invalid_sample]</i><ol>"
 		var/shown = 0
-		for(var/tpath in type_counts)
+		for (var/tpath in type_counts)
 			output += "<li><u>[tpath]</u> — [type_counts[tpath]]</li>"
 			shown++
-			if(shown >= 50)
-				output += "<li><i>...and [length(type_counts) - 50] more types</i></li>"
+			if (shown >= 50)
+				output += "<li><i>...и ещё [length(type_counts) - 50] типов</i></li>"
 				break
+		if (pending_slots > GC_QUEUE_PREVIEW_SCAN_LIMIT)
+			output += "<li><i>Показан только сэмпл первых [GC_QUEUE_PREVIEW_SCAN_LIMIT] ожидающих слотов.</i></li>"
 		output += "</ol>"
 
 	// --- Costly types (from qdel_item stats) ---
@@ -743,13 +760,15 @@
 	output += "<ol>"
 	var/shown_cost = 0
 	for(var/path in destroy_cost)
-		var/datum/qdel_item/I = SSgarbage.items[text2path(path)]
+		var/datum/qdel_item/I = SSgarbage.items[path]
 		var/extra = ""
-		if(I.failures)
-			extra += " | Failures: [I.failures]"
-		if(I.hard_deletes)
+		if (I.failures)
+			extra += " | Soft fails: [I.failures]"
+		if (I.warnfail_count)
+			extra += " | Warnfail: [I.warnfail_count]"
+		if (I.hard_deletes)
 			extra += " | Hard dels: [I.hard_deletes] ([I.hard_delete_time]ms, max [I.hard_delete_max]ms)"
-		if(I.slept_destroy)
+		if (I.slept_destroy)
 			extra += " | Sleeps: [I.slept_destroy]"
 		output += "<li><u>[path]</u> — Destroy: [I.destroy_time]ms / [I.qdels] calls ([round(I.destroy_time / max(I.qdels, 1), 0.01)]ms avg)[extra]</li>"
 		shown_cost++

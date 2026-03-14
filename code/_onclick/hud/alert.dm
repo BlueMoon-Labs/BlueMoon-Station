@@ -82,9 +82,9 @@
 	alerts -= category
 	if(client && hud_used)
 		hud_used.reorganize_alerts()
-		alert.screen_loc = null
-		client.screen -= alert
+	alert.detach_from_owner()
 	qdel(alert)
+	return TRUE
 
 /atom/movable/screen/alert
 	icon = 'icons/mob/screen_alert.dmi'
@@ -102,6 +102,21 @@
 
 	/// Boolean. If TRUE, the Click() proc will attempt to Click() on the master first if there is a master.
 	var/click_master = TRUE
+
+/atom/movable/screen/alert/proc/detach_from_owner(remove_from_alerts = FALSE)
+	var/mob/alert_owner = owner
+	if(alert_owner)
+		if(remove_from_alerts && alert_owner.alerts)
+			for(var/category in alert_owner.alerts.Copy())
+				if(alert_owner.alerts[category] == src)
+					alert_owner.alerts -= category
+		if(alert_owner.client)
+			alert_owner.client.screen -= src
+		for(var/mob/dead/observer/observe as anything in alert_owner.observers)
+			if(observe.client)
+				observe.client.screen -= src
+	screen_loc = null
+	owner = null
 
 /atom/movable/screen/alert/Initialize(mapload, datum/hud/hud_owner)
 	. = ..()
@@ -942,13 +957,16 @@ so as to remain in compliance with the most up-to-date laws."
 	return TRUE
 
 /atom/movable/screen/alert/Destroy()
+	detach_from_owner(TRUE)
+	cut_overlays()
 	animate(src)
 	transform = null
-	. = ..()
-	severity = 0
 	master = null
+	..()
+	severity = 0
 	owner = null
 	screen_loc = ""
+	return QDEL_HINT_HARDDEL_NOW
 
 /atom/movable/screen/alert/examine(mob/user)
 	return list(

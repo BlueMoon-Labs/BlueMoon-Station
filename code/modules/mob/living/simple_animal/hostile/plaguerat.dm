@@ -91,15 +91,12 @@ GLOBAL_LIST_EMPTY(plague_rats)
 		return
 	if(isopenturf(loc))
 		var/turf/open/T = src.loc
-		var/datum/gas_mixture/stank = new
-		var/miasma_moles = T.air.get_moles(GAS_MIASMA)
-		stank.set_moles(GAS_MIASMA,25)
-		stank.set_temperature(BODYTEMP_NORMAL)
-		if(T.air)
+		var/datum/gas_mixture/turf_air = T.return_air()
+		if(turf_air)
+			var/miasma_moles = turf_air.get_moles(GAS_MIASMA)
 			if(miasma_moles < 200)
-				T.assume_air(stank)
+				turf_air.adjust_moles_temp(GAS_MIASMA, 25, BODYTEMP_NORMAL)
 				T.air_update_turf()
-		qdel(stank)
 
 	if(prob(40))
 		scavenge.Trigger()

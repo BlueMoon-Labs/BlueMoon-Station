@@ -2627,6 +2627,81 @@
 			return
 		usr.client?.cmd_display_gc_queue()
 
+	else if(href_list["gc_health_refresh"])
+		if(!check_rights(R_DEBUG))
+			return
+		usr.client?.cmd_gc_health_panel()
+
+	else if(href_list["gc_health_help"])
+		if(!check_rights(R_DEBUG))
+			return
+		usr.client?.cmd_gc_health_help()
+
+	else if(href_list["gc_toggle_notify"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/client/toggler = usr.client
+		if(toggler)
+			toggler.gc_leak_notify = !toggler.gc_leak_notify
+			log_admin("[key_name(usr)] [toggler.gc_leak_notify ? "включил" : "выключил"] GC leak notify для себя")
+		usr.client?.cmd_gc_health_panel()
+
+
+	else if(href_list["gc_type_detail"])
+		if(!check_rights(R_DEBUG))
+			return
+		usr.client?.cmd_gc_type_detail(href_list["gc_type_detail"])
+
+	else if(href_list["gc_unsuspend"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/gc_unsuspend_return = href_list["gc_return"]
+		var/type_path = text2path(href_list["gc_unsuspend"])
+		if(type_path)
+			var/datum/qdel_item/I = SSgarbage.GetItem(type_path)
+			if(I)
+				I.qdel_flags &= ~QDEL_ITEM_SUSPENDED_FOR_LAG
+				I.qdel_flags &= ~QDEL_ITEM_ADMINS_WARNED
+				I.hard_deletes_over_threshold = 0
+				log_admin("[key_name(usr)] снял суспенд GC для [href_list["gc_unsuspend"]]")
+				message_admins("[key_name_admin(usr)] снял суспенд GC для [href_list["gc_unsuspend"]]")
+		if(gc_unsuspend_return == "detail")
+			usr.client?.cmd_gc_type_detail(href_list["gc_unsuspend"])
+		else
+			usr.client?.cmd_gc_health_panel()
+
+	else if(href_list["gc_fast_reftrack"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/gc_fast_reftrack_return = href_list["gc_return"]
+		var/type_path = text2path(href_list["gc_fast_reftrack"])
+		if(type_path)
+			var/datum/qdel_item/I = SSgarbage.GetOrCreateItem(type_path)
+			if(I)
+				I.qdel_flags ^= QDEL_ITEM_FAST_REFTRACK
+				log_admin("[key_name(usr)] переключил fast-ref для [href_list["gc_fast_reftrack"]]: [(I.qdel_flags & QDEL_ITEM_FAST_REFTRACK) ? "вкл" : "откл"]")
+				message_admins("[key_name_admin(usr)] переключил fast-ref для [href_list["gc_fast_reftrack"]]: [(I.qdel_flags & QDEL_ITEM_FAST_REFTRACK) ? "вкл" : "откл"]")
+		if(gc_fast_reftrack_return == "health")
+			usr.client?.cmd_gc_health_panel()
+		else
+			usr.client?.cmd_gc_type_detail(href_list["gc_fast_reftrack"])
+
+	else if(href_list["gc_skip_refscan"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/gc_skip_refscan_return = href_list["gc_return"]
+		var/type_path = text2path(href_list["gc_skip_refscan"])
+		if(type_path)
+			var/datum/qdel_item/I = SSgarbage.GetOrCreateItem(type_path)
+			if(I)
+				I.qdel_flags ^= QDEL_ITEM_SKIP_REFSCAN
+				log_admin("[key_name(usr)] переключил skip-refscan для [href_list["gc_skip_refscan"]]: [(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN) ? "вкл" : "откл"]")
+				message_admins("[key_name_admin(usr)] переключил skip-refscan для [href_list["gc_skip_refscan"]]: [(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN) ? "вкл" : "откл"]")
+		if(gc_skip_refscan_return == "health")
+			usr.client?.cmd_gc_health_panel()
+		else
+			usr.client?.cmd_gc_type_detail(href_list["gc_skip_refscan"])
+
 	else if(href_list["ac_refresh"])
 		if(!check_rights(R_ADMIN))
 			return

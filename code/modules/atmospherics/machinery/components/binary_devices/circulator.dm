@@ -38,10 +38,18 @@
 		disconnectFromGenerator()
 	return ..()
 
-/obj/machinery/atmospherics/components/binary/circulator/proc/return_transfer_air()
+/obj/machinery/atmospherics/components/binary/circulator/proc/fill_transfer_air(datum/gas_mixture/into)
+	if(!into)
+		last_pressure_delta = 0
+		return FALSE
 
 	var/datum/gas_mixture/air1 = airs[1]
 	var/datum/gas_mixture/air2 = airs[2]
+	if(!air1 || !air2)
+		last_pressure_delta = 0
+		into.clear()
+		into.set_temperature(0)
+		return FALSE
 
 	var/output_starting_pressure = air1.return_pressure()
 	var/input_starting_pressure = air2.return_pressure()
@@ -49,25 +57,37 @@
 	if(output_starting_pressure >= input_starting_pressure-10)
 		//Need at least 10 KPa difference to overcome friction in the mechanism
 		last_pressure_delta = 0
-		return null
+		into.clear()
+		into.set_temperature(0)
+		return FALSE
 
 	//Calculate necessary moles to transfer using PV = nRT
 	if(air2.return_temperature()>0)
 		var/pressure_delta = (input_starting_pressure - output_starting_pressure)/2
 
 		var/transfer_moles = pressure_delta*air1.return_volume()/(air2.return_temperature() * R_IDEAL_GAS_EQUATION)
+		if(transfer_moles <= 0)
+			last_pressure_delta = 0
+			into.clear()
+			into.set_temperature(0)
+			return FALSE
+
+		//Actually transfer the gas
+		if(!air2.remove_into(into, transfer_moles))
+			last_pressure_delta = 0
+			return FALSE
 
 		last_pressure_delta = pressure_delta
 
-		//Actually transfer the gas
-		var/datum/gas_mixture/removed = air2.remove(transfer_moles)
-
 		update_parents()
 
-		return removed
+		return TRUE
 
 	else
 		last_pressure_delta = 0
+		into.clear()
+		into.set_temperature(0)
+		return FALSE
 
 /obj/machinery/atmospherics/components/binary/circulator/process_atmos()
 	..()

@@ -77,10 +77,30 @@
 	var/datum/gas_mixture/removed = ours.remove(amount)
 	return removed
 
+/turf/open/remove_air_into(datum/gas_mixture/into, amount)
+	var/datum/gas_mixture/ours = return_air()
+	if(!ours)
+		if(into)
+			into.clear()
+			into.set_temperature(0)
+		return FALSE
+
+	return ours.remove_into(into, amount)
+
 /turf/open/remove_air_ratio(ratio)
 	var/datum/gas_mixture/ours = return_air()
 	var/datum/gas_mixture/removed = ours.remove_ratio(ratio)
 	return removed
+
+/turf/open/remove_air_ratio_into(datum/gas_mixture/into, ratio)
+	var/datum/gas_mixture/ours = return_air()
+	if(!ours)
+		if(into)
+			into.clear()
+			into.set_temperature(0)
+		return FALSE
+
+	return ours.remove_ratio_into(into, ratio)
 
 /turf/open/proc/copy_air_with_tile(turf/open/T)
 	if(istype(T))

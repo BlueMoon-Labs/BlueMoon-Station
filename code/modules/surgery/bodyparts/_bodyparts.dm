@@ -141,6 +141,8 @@
 		update_dropped_size()
 
 /obj/item/bodypart/Destroy()
+	QDEL_LAZYLIST(wounds)
+	QDEL_LAZYLIST(scars)
 	if(owner)
 		owner.bodyparts -= src
 		owner = null

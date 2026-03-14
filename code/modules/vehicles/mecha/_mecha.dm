@@ -953,9 +953,53 @@
 		return cabin_air.remove(amount)
 	return ..()
 
+/obj/vehicle/sealed/mecha/assume_air(datum/gas_mixture/giver)
+	if(use_internal_tank)
+		if(!cabin_air)
+			return FALSE
+		cabin_air.merge(giver)
+		return TRUE
+	return ..()
+
+/obj/vehicle/sealed/mecha/assume_air_moles(datum/gas_mixture/giver, moles)
+	if(use_internal_tank)
+		if(!cabin_air)
+			return FALSE
+		giver.transfer_to(cabin_air, moles)
+		return TRUE
+	return ..()
+
+/obj/vehicle/sealed/mecha/assume_air_ratio(datum/gas_mixture/giver, ratio)
+	if(use_internal_tank)
+		if(!cabin_air)
+			return FALSE
+		giver.transfer_ratio_to(cabin_air, ratio)
+		return TRUE
+	return ..()
+
+/obj/vehicle/sealed/mecha/remove_air_into(datum/gas_mixture/into, amount)
+	if(use_internal_tank)
+		if(!cabin_air)
+			if(into)
+				into.clear()
+				into.set_temperature(0)
+			return FALSE
+		return cabin_air.remove_into(into, amount)
+	return ..()
+
 /obj/vehicle/sealed/mecha/remove_air_ratio(ratio)
 	if(use_internal_tank)
 		return cabin_air.remove_ratio(ratio)
+	return ..()
+
+/obj/vehicle/sealed/mecha/remove_air_ratio_into(datum/gas_mixture/into, ratio)
+	if(use_internal_tank)
+		if(!cabin_air)
+			if(into)
+				into.clear()
+				into.set_temperature(0)
+			return FALSE
+		return cabin_air.remove_ratio_into(into, ratio)
 	return ..()
 
 

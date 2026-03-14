@@ -27,10 +27,17 @@
 	var/broken_message = "ERROR"
 	idle_power_usage = 150
 	active_power_usage = 2000
+	/// Reused gas payload buffer for mined output.
+	var/datum/gas_mixture/spawn_buffer
 
 /obj/machinery/atmospherics/miner/Initialize(mapload)
 	. = ..()
+	spawn_buffer = new
 	set_active(active)				//Force overlay update.
+
+/obj/machinery/atmospherics/miner/Destroy()
+	QDEL_NULL(spawn_buffer)
+	return ..()
 
 /obj/machinery/atmospherics/miner/examine(mob/user)
 	. = ..()
@@ -130,11 +137,12 @@
 	var/turf/open/O = get_turf(src)
 	if(!isopenturf(O))
 		return FALSE
-	var/datum/gas_mixture/merger = new
-	merger.set_moles(spawn_id, spawn_mol)
-	merger.set_temperature(spawn_temp)
-	O.assume_air(merger)
-	qdel(merger)
+	if(!spawn_buffer)
+		spawn_buffer = new
+	spawn_buffer.clear()
+	spawn_buffer.set_temperature(spawn_temp)
+	spawn_buffer.set_moles(spawn_id, spawn_mol)
+	O.assume_air(spawn_buffer)
 	O.air_update_turf(TRUE)
 
 /obj/machinery/atmospherics/miner/attack_ai(mob/living/silicon/user)

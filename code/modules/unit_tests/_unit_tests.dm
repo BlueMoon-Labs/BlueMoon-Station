@@ -88,6 +88,8 @@
 // #include "dynamic_ruleset_sanity.dm"
 // #include "emoting.dm"
 // #include "food_edibility_check.dm"
+#include "gas_mixture_reuse.dm"
+#include "gc_rewrite.dm"
 // #include "greyscale_config.dm"
 // #include "heretic_knowledge.dm"
 // #include "holidays.dm"
@@ -141,6 +143,7 @@
 
 /// BLUEMOON TESTS
 #include "bad_defines_defined.dm"
+#include "human_mob_gc.dm"
 
 #undef TEST_ASSERT
 #undef TEST_ASSERT_EQUAL
