@@ -6,9 +6,19 @@
 	desc = "Заготовка под печень. Ничем не отличается от обычной, кроме внешнего вида."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "weakliver"
+
+	var/insert_message = ""
+
 	var/healTox = 0
 	var/healFire = 0
 	var/healStamina = 0
+
+/obj/item/organ/liver/bioaegis/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
+	. = ..()
+	if(!. || !insert_message || !istype(organ_mob))
+		return
+
+	to_chat(organ_mob, insert_message)
 
 /obj/item/organ/liver/bioaegis/on_life()
 	. = ..()
@@ -21,20 +31,18 @@
 //TIER 1 LIVER//
 /obj/item/organ/liver/bioaegis/t1
 	name = "improved liver"
-	desc = "Довольно приличная копия базовой печени. Более прочная, чем базовая печень... Но на этом все."
+	desc = "Довольно приличная копия печени. Более стойкая, чем обычная печень... Но на этом все."
 	maxHealth = 1.5 * STANDARD_ORGAN_THRESHOLD
 	toxTolerance = 2 * LIVER_DEFAULT_TOX_TOLERANCE
 	toxLethality = 0.4 * LIVER_DEFAULT_TOX_LETHALITY
 	filterToxinsAmount = 1.5
 
-/obj/item/organ/liver/bioaegis/t1/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
-	. = ..()
-	to_chat(owner, "<span class = 'notice'>Что-то неприятно упёрлось внутри живота...</span>\n")
+	insert_message = span_notice("Что-то неприятно упёрлось внутри живота...")
 
 //TIER 2 LIVER//
 /obj/item/organ/liver/bioaegis/t2
 	name = "changed liver"
-	desc = "Улучшенная версия базовой версии печени. Прочнее, выводит больше токсинов и помогает заживлять ожоги!"
+	desc = "Улучшенная версия версии печени. Крепче, выводит больше токсинов и помогает заживлять ожоги!"
 	alcohol_tolerance = 0.001
 	maxHealth = 2.5 * STANDARD_ORGAN_THRESHOLD
 	toxTolerance = 5 * LIVER_DEFAULT_TOX_TOLERANCE
@@ -43,18 +51,17 @@
 	decay_factor = 0.8 * STANDARD_ORGAN_DECAY //Decays a bit longer
 	filterToxinsAmount = 2
 
-	healTox = 0.25
-	healFire = 0.25
+	// Уровень импланта лечения
+	healTox = 0.4
+	healFire = 0.4
 
-/obj/item/organ/liver/bioaegis/t2/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
-	. = ..()
-	to_chat(owner, "<span class = 'notice'>Вы ощущаете, словно ваша кровь стала чище.</span>\n")
+	insert_message = span_notice("Вы ощущаете, словно ваша кровь стала чище.")
 
 ///TIER 3 LIVER//
 /obj/item/organ/liver/bioaegis/t3
 	name = "exalted liver"
 	icon_state = "exaltedliver"
-	desc = "Кое-что, что могло бы пригодиться алкоголику. Эта версия печени прочнее, качественнее, способна фильтровать и выдерживать больше, даже чем кибернетический аналог!"
+	desc = "Кое-что, что могло бы пригодиться алкоголику. Эта версия печени крепче, качественнее, способна фильтровать и выдерживать больше, даже чем кибернетический аналог!"
 	alcohol_tolerance = 0.0005 //At this point just drink everything.
 	maxHealth = 3.5 * STANDARD_ORGAN_THRESHOLD
 	toxTolerance = 7 * LIVER_DEFAULT_TOX_TOLERANCE
@@ -64,21 +71,24 @@
 	filterToxinsAmount = 3
 
 	healTox = 1.5
-	healFire = 0.35
+	healFire = 0.6
+
+	insert_message = span_notice("Вы можете заметить, словно ваша кожа стала светлее...") //This is a *very precise* superior version of liver - you wouldn't feel anything.
 
 /obj/item/organ/liver/bioaegis/t3/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
 	. = ..()
-	to_chat(owner, "<span class = 'notice'>Вы можете заметить, словно ваша кожа стала светлее...</span>\n") //This is a *very precise* superior version of liver - you wouldn't feel anything.
+	if(!. || !istype(organ_mob))
+		return
 	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super liver", /datum/mood_event/superliver)
 
 /datum/mood_event/superliver
-	description = "<span class='nicegreen'>Алкоголизм мне не помеха!</span>\n"
+	description = span_nicegreen("Алкоголизм мне не помеха!\n")
 	mood_change = 1 //Less, but persistent mood buff. Hey, handsome, you deserve it.
 
 //ANTAG LIVER//
 /obj/item/organ/liver/bioaegis/t3/antag //antag organ that can be found in some shitty places or in antag uplink since why not?
 	name = "biomorphed liver"
-	desc = "Очень секретное оружие против алкоголизма или безопасность NT в отношении химикатов!"
+	desc = "Очень секретное оружие против алкоголизма или безопасность в отношении химикатов!"
 	icon_state = "exaltedliver"
 	maxHealth = 4.5 * STANDARD_ORGAN_THRESHOLD
 	toxTolerance = 9 * LIVER_DEFAULT_TOX_TOLERANCE
@@ -87,6 +97,8 @@
 	decay_factor = 0.1 * STANDARD_ORGAN_DECAY
 	filterToxinsAmount = 5
 
-	healTox = -5
-	healFire = -2
-	healStamina = -5
+	healTox = 5
+	healFire = 2
+	healStamina = 5
+
+	insert_message = span_notice("Вы чувствуете... Нечто чуждое внутри, но ваш организм словно очищается от всех токсинов..")
