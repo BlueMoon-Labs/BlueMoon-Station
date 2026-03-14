@@ -42,7 +42,6 @@
 		gain_knowledge(/datum/eldritch_knowledge/spell/basic)
 		gain_knowledge(/datum/eldritch_knowledge/living_heart)
 		gain_knowledge(/datum/eldritch_knowledge/codex_cicatrix)
-		ADD_TRAIT(owner.current, TRAIT_ANTIMAGIC_NO_SELFBLOCK, "heretic")
 	current.log_message("has been converted to the cult of the forgotten ones!", LOG_ATTACK, color="#960000")
 	GLOB.reality_smash_track.AddMind(owner)
 	START_PROCESSING(SSprocessing,src)
@@ -61,8 +60,6 @@
 		owner.current.log_message("has renounced the cult of the old ones!", LOG_ATTACK, color="#960000")
 	GLOB.reality_smash_track.RemoveMind(owner)
 	STOP_PROCESSING(SSprocessing,src)
-	if(owner?.current)
-		REMOVE_TRAIT(owner.current, TRAIT_ANTIMAGIC_NO_SELFBLOCK, "heretic")
 	on_death()
 
 	return ..()
@@ -196,13 +193,6 @@
 		parts += actually_sacced.Join(",")
 
 	return parts.Join("<br>")
-
-/datum/antagonist/heretic/on_body_transfer(mob/living/old_body, mob/living/new_body)
-	if(old_body)
-		REMOVE_TRAIT(old_body, TRAIT_ANTIMAGIC_NO_SELFBLOCK, "heretic")
-	if(new_body)
-		ADD_TRAIT(new_body, TRAIT_ANTIMAGIC_NO_SELFBLOCK, "heretic")
-	. = ..()
 ////////////////
 // Knowledge //
 ////////////////

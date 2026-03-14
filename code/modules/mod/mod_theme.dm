@@ -652,52 +652,6 @@
 			),
 		),
 	)
-
-/datum/mod_theme/enchanted
-	name = "enchanted"
-	desc = "The Wizard Federation's relatively low-tech MODsuit. Is very protective, though."
-	extended_desc = "The Wizard Federation's relatively low-tech MODsuit. This armor employs not \
-		plasteel or carbon fibre, but space dragon scales for its protection. Recruits are expected to \
-		gather these themselves, but the effort is well worth it, the suit being well-armored against threats \
-		both mundane and mystic. Rather than wholly relying on the suit's cell, which would surely perish \
-		under the load, several naturally-occurring bluespace gemstones have been utilized as \
-		supplementary means of power. The hood and platform boots are of unknown usage, but it's speculated that \
-		wizards trend towards the dramatic."
-	default_skin = "enchanted"
-	armor = list(MELEE = 40, BULLET = 40, LASER = 50, ENERGY = 50, BOMB = 35, BIO = 100, FIRE = 100, ACID = 100, WOUND = 30, RAD = 0)
-	resistance_flags = FIRE_PROOF|ACID_PROOF
-	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
-	siemens_coefficient = 0
-	complexity_max = DEFAULT_MAX_COMPLEXITY - 5
-	slowdown_inactive = 0.75
-	slowdown_active = 0.25
-	ui_theme = "wizard"
-	inbuilt_modules = list(/obj/item/mod/module/anti_magic/wizard)
-	skins = list(
-		"enchanted" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDESNOUT,
-				UNSEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-	)
-
 /datum/mod_theme/prototype
 	name = "prototype"
 	desc = "A prototype modular suit powered by locomotives. While it is comfortable and has a big capacity, it remains very bulky and power-inefficient."
