@@ -957,16 +957,13 @@ so as to remain in compliance with the most up-to-date laws."
 	return TRUE
 
 /atom/movable/screen/alert/Destroy()
-	detach_from_owner(TRUE)
-	cut_overlays()
 	animate(src)
 	transform = null
-	master = null
-	..()
+	. = ..()
 	severity = 0
+	master = null
 	owner = null
 	screen_loc = ""
-	return QDEL_HINT_HARDDEL_NOW
 
 /atom/movable/screen/alert/examine(mob/user)
 	return list(
