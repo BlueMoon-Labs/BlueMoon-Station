@@ -2,7 +2,7 @@
 //LUNGS
 
 /obj/item/organ/lungs/bioaegis
-	name = "some liver"
+	name = "some lungs"
 	desc = "Заготовка под легкие. Ничем не отличаются от обычных, кроме внешнего вида."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "weaklungs"
