@@ -79,7 +79,7 @@
 	. = ..()
 	if(!. || !istype(organ_mob))
 		return
-	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super liver", /datum/mood_event/superliver)
+	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super_liver", /datum/mood_event/superliver)
 
 /datum/mood_event/superliver
 	description = span_nicegreen("Алкоголизм мне не помеха!\n")

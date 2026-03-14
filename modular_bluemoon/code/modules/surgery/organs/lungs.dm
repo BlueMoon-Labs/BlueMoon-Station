@@ -99,7 +99,7 @@
 	. = ..()
 	if(!. || !istype(organ_mob))
 		return
-	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super lungs", /datum/mood_event/superlungs)
+	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super_lungs", /datum/mood_event/superlungs)
 
 /datum/mood_event/superlungs
 	description = "<span class='synth'>Я знаю запах кислорода..Зачем мне это знание...? Это круто, наверное...</span>\n"
