@@ -11,7 +11,9 @@
 	zone = BODY_ZONE_CHEST
 
 /obj/item/organ/darkveil/Insert(mob/living/carbon/M, drop_if_replaced = TRUE)
-	..()
+	. = ..()
+	if(!.)
+		return
 	if(M.has_quirk(/datum/quirk/less_nightmare))
 		M.remove_quirk(/datum/quirk/less_nightmare, STATUS_EFFECT_TRAIT)
 	if(M.has_quirk(/datum/quirk/lightless))
@@ -36,7 +38,9 @@
 	zone = BODY_ZONE_CHEST
 
 /obj/item/organ/optisia/Insert(mob/living/carbon/M, drop_if_replaced = TRUE)
-	..()
+	. = ..()
+	if(!.)
+		return
 	M.remove_quirk(/datum/quirk/mute, STATUS_EFFECT_TRAIT)
 	M.remove_quirk(/datum/quirk/unstable, STATUS_EFFECT_TRAIT)
 	M.remove_quirk(/datum/quirk/no_smell, STATUS_EFFECT_TRAIT)
@@ -110,6 +114,9 @@
 	decay_factor = 0
 
 /obj/item/organ/vocal_cords/babyloncords/Insert(mob/living/carbon/M, drop_if_replaced = TRUE)
+	. = ..()
+	if(!.)
+		return
 	to_chat(owner, "<span class='synth'>Ваши уста вещают тысячи голосов......</span>\n")
 	M.grant_all_languages(source = LANGUAGE_CURATOR)
 	M.remove_blocked_language(GLOB.all_languages, source=LANGUAGE_ALL)
