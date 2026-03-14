@@ -65,7 +65,6 @@
 ///TIER 3 LUNGS//
 /obj/item/organ/lungs/bioaegis/t3
 	name = "exalted lungs"
-	icon_state = "exaltedlungs"
 	desc = "Вы <i>п р о ч у в с т в у е т е</i> воздух - эта версия легких прочнее, качественнее, способна фильтровать и выдерживать даже больше, чем кибернетический аналог!"
 	icon_state = "exaltedlungs"
 	safe_breath_min = 3
