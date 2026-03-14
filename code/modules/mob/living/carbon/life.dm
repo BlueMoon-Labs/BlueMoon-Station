@@ -902,6 +902,6 @@ BLUEMOON REMOVAL END */
 		return
 
 	if(status)
-		heart.Restart()
-	else
 		heart.Stop()
+	else
+		heart.Restart()

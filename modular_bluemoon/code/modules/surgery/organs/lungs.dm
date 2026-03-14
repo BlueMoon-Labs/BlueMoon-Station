@@ -2,7 +2,7 @@
 //LUNGS
 
 /obj/item/organ/lungs/bioaegis
-	name = "some liver"
+	name = "some lungs"
 	desc = "Заготовка под легкие. Ничем не отличаются от обычных, кроме внешнего вида."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "weaklungs"
@@ -31,7 +31,7 @@
 
 //TIER 1 LUNGS//
 /obj/item/organ/lungs/bioaegis/t1
-	name = "improved liver"
+	name = "improved lungs"
 	desc = "Довольно приличная копия легких. Более крепкая, чем обычные легкие, позволяет сделать вдох поглубже."
 	icon_state = "weaklungs"
 	maxHealth = 3.5 * STANDARD_ORGAN_THRESHOLD //Standard modifier is x3, but this is bs amount of health for an organ?
