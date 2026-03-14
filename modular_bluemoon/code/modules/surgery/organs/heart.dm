@@ -91,6 +91,13 @@
 		return
 	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super_heart", /datum/mood_event/superheart)
 
+/obj/item/organ/heart/bioaegis/t3/Remove(special)
+	. = ..()
+	var/mob/living/carbon/organ_mob = .
+	if(!istype(organ_mob))
+		return
+	SEND_SIGNAL(organ_mob, COMSIG_CLEAR_MOOD_EVENT, "super_heart")
+
 /datum/mood_event/superheart
 	description = span_nicegreen("Выносливость нового сердца радует разум!\n")
 	mood_change = 1 //Perma boost since you deserved it, handsome.

@@ -101,6 +101,13 @@
 		return
 	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super_lungs", /datum/mood_event/superlungs)
 
+/obj/item/organ/lungs/bioaegis/t3/Remove(special)
+	. = ..()
+	var/mob/living/carbon/organ_mob = .
+	if(!istype(organ_mob))
+		return
+	SEND_SIGNAL(organ_mob, COMSIG_CLEAR_MOOD_EVENT, "super_lungs")
+
 /datum/mood_event/superlungs
 	description = "<span class='synth'>Я знаю запах кислорода..Зачем мне это знание...? Это круто, наверное...</span>\n"
 	mood_change = 1 //Less, but persistent mood buff. Hey, handsome, you deserve it.

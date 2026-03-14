@@ -81,6 +81,13 @@
 		return
 	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super_liver", /datum/mood_event/superliver)
 
+/obj/item/organ/liver/bioaegis/t3/Remove(special)
+	. = ..()
+	var/mob/living/carbon/organ_mob = .
+	if(!istype(organ_mob))
+		return
+	SEND_SIGNAL(organ_mob, COMSIG_CLEAR_MOOD_EVENT, "super_liver")
+
 /datum/mood_event/superliver
 	description = span_nicegreen("Алкоголизм мне не помеха!\n")
 	mood_change = 1 //Less, but persistent mood buff. Hey, handsome, you deserve it.
