@@ -129,10 +129,10 @@
 	starting_organ = /obj/item/organ/liver/bioaegis/t3/antag
 
 /obj/item/autosurgeon/syndicate/biomorphedlungs
-	starting_organ = /obj/item/organ/lungs/tier3/antag
+	starting_organ = /obj/item/organ/lungs/bioaegis/t3/antag
 
 /obj/item/autosurgeon/syndicate/inteq/biomorphedlungs
-	starting_organ = /obj/item/organ/lungs/tier3/antag
+	starting_organ = /obj/item/organ/lungs/bioaegis/t3/antag
 
 //BOX O' IMPLANTS
 

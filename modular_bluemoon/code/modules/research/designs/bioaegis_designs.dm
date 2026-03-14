@@ -86,7 +86,7 @@
 	name = "improved lungs"
 	id = "lungstier1"
 	desc = "A design for biological organ."
-	build_path = /obj/item/organ/lungs/tier1
+	build_path = /obj/item/organ/lungs/bioaegis/t1
 
 //TIER2
 /datum/design/bioaegis/organs/t2
@@ -108,7 +108,7 @@
 	name = "changed lungs"
 	id = "lungstier2"
 	desc = "A design for biological organ."
-	build_path = /obj/item/organ/lungs/tier2
+	build_path = /obj/item/organ/lungs/bioaegis/t2
 
 //TIER3
 /datum/design/bioaegis/organs/t3
@@ -132,7 +132,7 @@
 	name = "exalted lungs"
 	id = "lungstier3"
 	desc = "A design for biological organ."
-	build_path = /obj/item/organ/lungs/tier3
+	build_path = /obj/item/organ/lungs/bioaegis/t3
 
 //SPECIALIZED
 /datum/design/bioaegis/organs/misc

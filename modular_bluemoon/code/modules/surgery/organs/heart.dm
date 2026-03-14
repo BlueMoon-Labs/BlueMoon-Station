@@ -99,7 +99,6 @@
 /obj/item/organ/heart/bioaegis/t3/antag //antag organ that can be found in some shitty places or in antag uplink since why not?
 	name = "biomorphed heart"
 	desc = "Что-то прямиком из научно-фантастических фильмов о мерзостях! Очень странное, но обеспечивает такю регенерацию, что делает владельца сверхсуществом..."
-	icon_state = "exaltedheart"
 	maxHealth = 4.5 * STANDARD_ORGAN_THRESHOLD
 	healing_factor = 3.5 * STANDARD_ORGAN_HEALING
 	decay_factor = 0.1 * STANDARD_ORGAN_DECAY
