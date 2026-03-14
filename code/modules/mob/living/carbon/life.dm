@@ -901,4 +901,7 @@ BLUEMOON REMOVAL END */
 	if(!istype(heart))
 		return
 
-	heart.beating = !status
+	if(status)
+		heart.Restart()
+	else
+		heart.Stop()

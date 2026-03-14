@@ -74,7 +74,7 @@
 	name = "improved heart"
 	id = "hearttier1"
 	desc = "A design for biological organ." //Nobody *even* looks at it, and i will take a shortcut.
-	build_path = /obj/item/organ/heart/tier1
+	build_path = /obj/item/organ/heart/bioaegis/t1
 
 /datum/design/bioaegis/organs/t1/liver
 	name = "improved liver"
@@ -96,7 +96,7 @@
 	name = "changed heart"
 	id = "hearttier2"
 	desc = "A design for biological organ."
-	build_path = /obj/item/organ/heart/tier2
+	build_path = /obj/item/organ/heart/bioaegis/t2
 
 /datum/design/bioaegis/organs/t2/liver
 	name = "changed liver"
@@ -120,7 +120,7 @@
 	name = "exalted heart"
 	id = "hearttier3"
 	desc = "A design for biological organ."
-	build_path = /obj/item/organ/heart/tier3
+	build_path = /obj/item/organ/heart/bioaegis/t3
 
 /datum/design/bioaegis/organs/t3/liver
 	name = "exalted liver"

@@ -117,10 +117,10 @@
 	starting_organ = /obj/item/organ/cyberimp/chest/revitilzer
 
 /obj/item/autosurgeon/syndicate/biomorphedheart
-	starting_organ = /obj/item/organ/heart/tier3/antag
+	starting_organ = /obj/item/organ/heart/bioaegis/t3/antag
 
 /obj/item/autosurgeon/syndicate/inteq/biomorphedheart
-	starting_organ = /obj/item/organ/heart/tier3/antag
+	starting_organ = /obj/item/organ/heart/bioaegis/t3/antag
 
 /obj/item/autosurgeon/syndicate/biomorphedliver
 	starting_organ = /obj/item/organ/liver/bioaegis/t3/antag
