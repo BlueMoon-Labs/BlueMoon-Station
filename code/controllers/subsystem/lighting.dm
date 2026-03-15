@@ -457,6 +457,8 @@ SUBSYSTEM_DEF(lighting)
 	if(GLOB.nightshift_apc_queue.len)
 		var/k = 0
 		for(k in 1 to GLOB.nightshift_apc_queue.len)
+			if(k > GLOB.nightshift_apc_queue.len) // Queue may shrink if CHECK_TICK yields and fire() re-enters
+				break
 			var/obj/machinery/power/apc/APC = GLOB.nightshift_apc_queue[k]
 			if(!QDELETED(APC))
 				SSnightshift.last_nightshift_lights_queued += APC.apply_queued_nightshift_refresh()
@@ -470,6 +472,8 @@ SUBSYSTEM_DEF(lighting)
 	if(GLOB.nightshift_light_queue.len)
 		var/k = 0
 		for(k in 1 to GLOB.nightshift_light_queue.len)
+			if(k > GLOB.nightshift_light_queue.len) // Queue may shrink if CHECK_TICK yields and fire() re-enters
+				break
 			var/obj/machinery/light/L = GLOB.nightshift_light_queue[k]
 			if(!QDELETED(L))
 				L.nightshift_update_queued = FALSE
