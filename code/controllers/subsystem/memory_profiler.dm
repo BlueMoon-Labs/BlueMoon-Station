@@ -34,7 +34,7 @@ SUBSYSTEM_DEF(memory_profiler)
 	SaveBaseline(MEMORYSTATS_INIT_BASELINE_NAME)
 	if(CONFIG_GET(flag/auto_profile))
 		DumpFile()
-	return SS_INIT_SUCCESS
+	return ..()
 
 /datum/controller/subsystem/memory_profiler/fire()
 	TakeSnapshot()
