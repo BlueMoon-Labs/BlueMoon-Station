@@ -277,14 +277,15 @@
 
 /datum/unit_test/nightshift_relight_resync/New()
 	..()
+	original_can_fire = SSnightshift.can_fire
+	SSnightshift.can_fire = FALSE
 	sleep(world.tick_lag)
+	SSnightshift.nightshift_refresh_running = FALSE
 	test_area = get_area(run_loc_floor_bottom_left)
 	light_turf = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
 	original_station_areas = GLOB.the_station_areas.Copy()
 	original_apcs_list = GLOB.apcs_list.Copy()
 	original_area_apc = test_area.power_apc
-	original_can_fire = SSnightshift.can_fire
-	SSnightshift.can_fire = FALSE
 	GLOB.the_station_areas = list(test_area.type)
 	GLOB.nightshift_apc_queue.Cut()
 	GLOB.nightshift_light_queue.Cut()
@@ -317,6 +318,7 @@
 	test_apc.update()
 	test_light.on = test_light.has_power()
 	test_light.switchcount = 0
+	test_light.update(FALSE, TRUE)
 	test_apc.mark_light_cache_dirty()
 	test_apc.set_nightshift(FALSE, 0, FALSE)
 	drain_nightshift_lighting_work()
