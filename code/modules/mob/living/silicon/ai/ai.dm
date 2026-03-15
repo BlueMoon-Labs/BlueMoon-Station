@@ -34,6 +34,7 @@
 	var/list/network = list("ss13")
 	var/obj/machinery/camera/current
 	var/list/connected_robots = list()
+	var/list/linked_humans = list() // (ADD) Pe4enika: Список подключенных через нейролинк
 	var/aiRestorePowerRoutine = 0
 	var/requires_power = POWER_REQ_ALL
 	var/can_be_carded = TRUE
@@ -264,30 +265,44 @@
 	display_icon_override = ai_core_icon
 	set_core_display_icon(ai_core_icon)
 
+// (ADD) Pe4henika Bluemonn -- start
+// MARK: Status Tab
 /mob/living/silicon/ai/get_status_tab_items()
-	. = ..()
-	if(stat != CONSCIOUS)
-		. += "Systems nonfunctional"
-		return
-	. += "System integrity: [(health + 100) * 0.5]%"
-	if(isturf(loc)) //only show if we're "in" a core
-		. += "Backup Power: [battery * 0.5]%"
-	. += "Connected cyborgs: [length(connected_robots)]"
-	for(var/r in connected_robots)
-		var/mob/living/silicon/robot/connected_robot = r
-		if(!connected_robot)
-			continue
-		var/robot_status = "Nominal"
-		if(connected_robot.shell)
-			robot_status = "AI SHELL"
-		else if(connected_robot.stat != CONSCIOUS || !connected_robot.client)
-			robot_status = "OFFLINE"
-		else if(!connected_robot.cell || connected_robot.cell.charge <= 0)
-			robot_status = "DEPOWERED"
-		//Name, Health, Battery, Module, Area, and Status! Everything an AI wants to know about its borgies!
-		. += "[connected_robot.name] | S.Integrity: [connected_robot.health]% | Cell: [connected_robot.cell ? "[connected_robot.cell.charge]/[connected_robot.cell.maxcharge]" : "Empty"] | \
-		Module: [connected_robot.designation] | Loc: [get_area_name(connected_robot, TRUE)] | Status: [robot_status]"
-	. += "AI shell beacons detected: [LAZYLEN(GLOB.available_ai_shells)]" //Count of total AI shells
+    . = ..()
+    if(stat != CONSCIOUS)
+        . += "Systems nonfunctional"
+        return
+
+    . += "System integrity: [(health + 100) * 0.5]%"
+    if(isturf(loc))
+        . += "Backup Power: [battery * 0.5]%"
+
+    // КИБОРГИ
+    . += "Connected cyborgs: [length(connected_robots)]"
+    for(var/mob/living/silicon/robot/R in connected_robots)
+        var/r_status = (R.stat == CONSCIOUS && R.client) ? "NOMINAL" : "OFFLINE"
+        . += "[R.name] | Integrity: [R.health]% | Loc: [get_area_name(R, TRUE)] | Status: [r_status]"
+
+    // НЕЙРОЛИНКИ
+    . += "Active Neurolinks: [length(linked_humans)]"
+    for(var/h in linked_humans)
+        var/mob/living/carbon/H = h
+        if(!H)
+            linked_humans -= h
+            continue
+
+        var/p_status = "CONNECTED"
+        if(H.stat == DEAD)
+            p_status = "SIGNAL LOST (DEAD)"
+        else if(H.stat == UNCONSCIOUS)
+            p_status = "UNCONSCIOUS"
+
+        var/p_job = (H.mind && H.mind.assigned_role) ? H.mind.assigned_role : "Unknown"
+
+        . += "\[LINK\] [H.name] ([p_job]) | Health: [H.health]% | Loc: [get_area_name(H, TRUE)] | Status: [p_status]"
+
+    . += "AI shell beacons detected: [LAZYLEN(GLOB.available_ai_shells)]"
+// (ADD) Pe4henika bluemoon -- end
 
 /mob/living/silicon/ai/proc/ai_call_shuttle()
 	if(control_disabled)
