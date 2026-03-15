@@ -153,6 +153,57 @@
 			"label": "Build All (REFERENCE_TRACKING)"
 		},
 		{
+			"type": "process",
+			"command": "tools/build/build",
+			"windows": {
+				"command": ".\\tools\\build\\build.bat"
+			},
+			"options": {
+				"env": {
+					"DM_EXE": "${config:dreammaker.byondPath}"
+				}
+			},
+			"problemMatcher": [
+				"$dreammaker",
+				"$tsc",
+				"$eslint-stylish"
+			],
+			"group": {
+				"kind": "build"
+			},
+			"dependsOn": "dm: reparse",
+			"args": [
+				"-DMEMORY_PROFILER"
+			],
+			"label": "Build All (MEMORY_PROFILER)"
+		},
+		{
+			"type": "process",
+			"command": "tools/build/build",
+			"windows": {
+				"command": ".\\tools\\build\\build.bat"
+			},
+			"options": {
+				"env": {
+					"DM_EXE": "${config:dreammaker.byondPath}"
+				}
+			},
+			"problemMatcher": [
+				"$dreammaker",
+				"$tsc",
+				"$eslint-stylish"
+			],
+			"group": {
+				"kind": "test"
+			},
+			"dependsOn": "dm: reparse",
+			"args": [
+				"--target", "test",
+				"-DMEMORY_PROFILER"
+			],
+			"label": "Test (MEMORY_PROFILER)"
+		},
+		{
 			"type": "dreammaker",
 			"dme": "tgstation.dme",
 			"problemMatcher": [

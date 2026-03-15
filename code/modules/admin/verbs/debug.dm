@@ -970,6 +970,24 @@
 	sort = sort_list[sort]
 	profile_show(src, sort)
 
+#ifdef MEMORY_PROFILER
+/client/proc/show_memory_stats()
+	set category = "Debug.2) Info"
+	set name = "Show Memory Stats"
+	set desc = "Показывает статистику использования памяти сервера"
+	if(!check_rights(R_DEBUG))
+		return
+	SSmemory_profiler.TakeSnapshot()
+	var/list/current = SSmemory_profiler.latest_snapshot
+	var/list/previous
+	if(length(SSmemory_profiler.snapshot_history) >= 2)
+		previous = SSmemory_profiler.snapshot_history[2]
+	var/html = generate_memorystats_html(current, previous, holder)
+	var/datum/browser/popup = new(src, "memorystats", "Memory Profiler", 750, 600)
+	popup.set_content(html)
+	popup.open()
+#endif
+
 /client/proc/reload_configuration()
 	set category = "Debug.3) Fixing"
 	set name = "Reload Configuration"

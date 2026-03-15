@@ -74,6 +74,21 @@
 			"name": "Launch DreamSeeker (LOWMEMORYMODE + TRACY)",
 			"preLaunchTask": "Build All (LOWMEMORYMODE TRACY)",
 			"dmb": "${workspaceFolder}/${command:CurrentDMB}"
+		},
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamSeeker (MEMORY_PROFILER)",
+			"preLaunchTask": "Build All (MEMORY_PROFILER)",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}"
+		},
+		{
+			"type": "byond",
+			"request": "launch",
+			"name": "Launch DreamDaemon (MEMORY_PROFILER)",
+			"preLaunchTask": "Build All (MEMORY_PROFILER)",
+			"dmb": "${workspaceFolder}/${command:CurrentDMB}",
+			"dreamDaemon": true
 		}
 	]
 }

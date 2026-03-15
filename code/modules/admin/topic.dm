@@ -2627,6 +2627,36 @@
 			return
 		usr.client?.cmd_display_gc_queue()
 
+#ifdef MEMORY_PROFILER
+	else if(href_list["memorystats_refresh"])
+		if(!check_rights(R_DEBUG))
+			return
+		usr.client?.show_memory_stats()
+
+	else if(href_list["memorystats_save_bl"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/bl_name = input(usr, "Имя baseline:", "Сохранить Baseline", "BL-[length(SSmemory_profiler.baselines) + 1]") as null|text
+		if(!bl_name)
+			return
+		SSmemory_profiler.TakeSnapshot()
+		if(!SSmemory_profiler.SaveBaseline(bl_name))
+			to_chat(usr, span_warning("Не удалось сохранить baseline (лимит [MEMORYSTATS_MAX_BASELINES] или нет данных)."))
+		usr.client?.show_memory_stats()
+
+	else if(href_list["memorystats_select_bl"])
+		if(!check_rights(R_DEBUG))
+			return
+		SSmemory_profiler.active_baseline = href_list["memorystats_select_bl"]
+		usr.client?.show_memory_stats()
+
+	else if(href_list["memorystats_del_bl"])
+		if(!check_rights(R_DEBUG))
+			return
+		SSmemory_profiler.DeleteBaseline(href_list["memorystats_del_bl"])
+		usr.client?.show_memory_stats()
+#endif
+
 	else if(href_list["ac_refresh"])
 		if(!check_rights(R_ADMIN))
 			return
