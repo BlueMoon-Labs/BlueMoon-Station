@@ -2642,18 +2642,31 @@
 		SSmemory_profiler.TakeSnapshot()
 		if(!SSmemory_profiler.SaveBaseline(bl_name))
 			to_chat(usr, span_warning("Не удалось сохранить baseline (лимит [MEMORYSTATS_MAX_BASELINES] или нет данных)."))
+		else if(usr.client)
+			usr.client.memorystats_active_baseline = bl_name
 		usr.client?.show_memory_stats()
 
 	else if(href_list["memorystats_select_bl"])
 		if(!check_rights(R_DEBUG))
 			return
-		SSmemory_profiler.active_baseline = href_list["memorystats_select_bl"]
+		var/selected_bl = href_list["memorystats_select_bl"]
+		if(!(selected_bl in SSmemory_profiler.baselines))
+			to_chat(usr, span_warning("Baseline не найден."))
+			return
+		if(usr.client)
+			usr.client.memorystats_active_baseline = selected_bl
 		usr.client?.show_memory_stats()
 
 	else if(href_list["memorystats_del_bl"])
 		if(!check_rights(R_DEBUG))
 			return
-		SSmemory_profiler.DeleteBaseline(href_list["memorystats_del_bl"])
+		var/deleted_bl = href_list["memorystats_del_bl"]
+		if(!(deleted_bl in SSmemory_profiler.baselines))
+			to_chat(usr, span_warning("Baseline не найден."))
+			return
+		SSmemory_profiler.DeleteBaseline(deleted_bl)
+		if(usr.client?.memorystats_active_baseline == deleted_bl)
+			usr.client.memorystats_active_baseline = MEMORYSTATS_INIT_BASELINE_NAME
 		usr.client?.show_memory_stats()
 #endif
 

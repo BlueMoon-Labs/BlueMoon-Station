@@ -982,7 +982,9 @@
 	var/list/previous
 	if(length(SSmemory_profiler.snapshot_history) >= 2)
 		previous = SSmemory_profiler.snapshot_history[2]
-	var/html = generate_memorystats_html(current, previous, holder)
+	if(!memorystats_active_baseline || !(memorystats_active_baseline in SSmemory_profiler.baselines))
+		memorystats_active_baseline = MEMORYSTATS_INIT_BASELINE_NAME
+	var/html = generate_memorystats_html(current, previous, holder, memorystats_active_baseline)
 	var/datum/browser/popup = new(src, "memorystats", "Memory Profiler", 750, 600)
 	popup.set_content(html)
 	popup.open()

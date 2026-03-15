@@ -18,8 +18,6 @@ SUBSYSTEM_DEF(memory_profiler)
 	var/list/snapshot_timestamps
 	/// Named baselines: name -> list("snapshot" = parsed, "time" = world.time)
 	var/list/baselines
-	/// Which baseline name to compare against in UI (per-client would be nice but keeping it simple)
-	var/active_baseline = "Init"
 
 /datum/controller/subsystem/memory_profiler/stat_entry(msg)
 	msg += "F:[round(fetch_cost,1)]ms"
@@ -33,7 +31,7 @@ SUBSYSTEM_DEF(memory_profiler)
 	snapshot_timestamps = list()
 	baselines = list()
 	TakeSnapshot()
-	SaveBaseline("Init")
+	SaveBaseline(MEMORYSTATS_INIT_BASELINE_NAME)
 	if(CONFIG_GET(flag/auto_profile))
 		DumpFile()
 	return SS_INIT_SUCCESS
@@ -73,30 +71,32 @@ SUBSYSTEM_DEF(memory_profiler)
 /datum/controller/subsystem/memory_profiler/proc/SaveBaseline(name)
 	if(!latest_snapshot)
 		return FALSE
+	// Protect the init baseline from being overwritten by users
+	if(name == MEMORYSTATS_INIT_BASELINE_NAME && baselines[MEMORYSTATS_INIT_BASELINE_NAME])
+		return FALSE
 	if(length(baselines) >= MEMORYSTATS_MAX_BASELINES && !baselines[name])
 		return FALSE
 	baselines[name] = list("snapshot" = latest_snapshot, "time" = world.time)
-	active_baseline = name
 	return TRUE
 
 /datum/controller/subsystem/memory_profiler/proc/DeleteBaseline(name)
-	if(name == "Init")
+	if(name == MEMORYSTATS_INIT_BASELINE_NAME)
+		return FALSE
+	if(!(name in baselines))
 		return FALSE
 	baselines -= name
-	if(active_baseline == name)
-		active_baseline = baselines[1] // fall back to first
 	return TRUE
 
-/datum/controller/subsystem/memory_profiler/proc/GetActiveBaseline()
-	if(!length(baselines) || !active_baseline || !baselines[active_baseline])
+/datum/controller/subsystem/memory_profiler/proc/GetBaseline(name)
+	if(!length(baselines) || !name || !baselines[name])
 		return null
-	var/list/bl = baselines[active_baseline]
+	var/list/bl = baselines[name]
 	return bl["snapshot"]
 
-/datum/controller/subsystem/memory_profiler/proc/GetActiveBaselineTime()
-	if(!length(baselines) || !active_baseline || !baselines[active_baseline])
+/datum/controller/subsystem/memory_profiler/proc/GetBaselineTime(name)
+	if(!length(baselines) || !name || !baselines[name])
 		return 0
-	var/list/bl = baselines[active_baseline]
+	var/list/bl = baselines[name]
 	return bl["time"]
 
 /datum/controller/subsystem/memory_profiler/proc/DumpFile()
@@ -154,15 +154,16 @@ SUBSYSTEM_DEF(memory_profiler)
 
 /// Formats world.time ticks to "Xм Yс"
 /proc/format_time_short(time_val)
-	var/minutes = round(time_val / 600)
-	var/seconds = round((time_val % 600) / 10)
+	var/total_seconds = time_val / 10
+	var/minutes = round(total_seconds / 60)
+	var/seconds = round(total_seconds) % 60
 	if(minutes > 0)
 		return "[minutes]м [seconds]с"
 	return "[seconds]с"
 
 // ========== HTML Generation ==========
 
-/proc/generate_memorystats_html(list/current, list/previous, datum/admins/holder)
+/proc/generate_memorystats_html(list/current, list/previous, datum/admins/holder, active_baseline)
 	var/list/html = list()
 	html += {"<!DOCTYPE html><html><head><meta charset='utf-8'>
 <style>
@@ -210,9 +211,10 @@ tr:hover { background: #1a1a1a; }
 	for(var/bl_name in SSmemory_profiler.baselines)
 		var/list/bl_data = SSmemory_profiler.baselines[bl_name]
 		var/bl_time = bl_data["time"]
-		var/is_active = (bl_name == SSmemory_profiler.active_baseline)
-		html += "<a class='[is_active ? "act" : ""]' href='byond://?src=[REF(holder)];[HrefToken()];memorystats_select_bl=[url_encode(bl_name)]'>[bl_name] ([format_time_short(bl_time)])</a>"
-		if(bl_name != "Init")
+		var/is_active = (bl_name == active_baseline)
+		var/safe_name = html_encode(bl_name)
+		html += "<a class='[is_active ? "act" : ""]' href='byond://?src=[REF(holder)];[HrefToken()];memorystats_select_bl=[url_encode(bl_name)]'>[safe_name] ([format_time_short(bl_time)])</a>"
+		if(bl_name != MEMORYSTATS_INIT_BASELINE_NAME)
 			html += "<a class='del' href='byond://?src=[REF(holder)];[HrefToken()];memorystats_del_bl=[url_encode(bl_name)]'>x</a>"
 	html += "<span class='sep'>|</span>"
 	html += "<a class='sav' href='byond://?src=[REF(holder)];[HrefToken()];memorystats_save_bl=1'>+ СОХРАНИТЬ</a>"
@@ -223,7 +225,8 @@ tr:hover { background: #1a1a1a; }
 		html += "</body></html>"
 		return jointext(html, "")
 
-	var/list/baseline = SSmemory_profiler.GetActiveBaseline()
+	var/list/baseline = SSmemory_profiler.GetBaseline(active_baseline)
+	var/safe_bl_name = html_encode(active_baseline)
 
 	// Summary
 	html += "<div class='row'>"
@@ -246,7 +249,7 @@ tr:hover { background: #1a1a1a; }
 	var/obj_growth = total_objects - total_bl_objects
 	html += "<div class='box'><div class='lb'>Объектов</div><div class='vl'>[total_objects]</div></div>"
 	if(baseline)
-		html += "<div class='box'><div class='lb'>vs [SSmemory_profiler.active_baseline]</div><div class='vl [obj_growth > 1000 ? "bad" : ""]'>[obj_growth > 0 ? "+[obj_growth]" : "[obj_growth]"]</div></div>"
+		html += "<div class='box'><div class='lb'>vs [safe_bl_name]</div><div class='vl [obj_growth > 1000 ? "bad" : ""]'>[obj_growth > 0 ? "+[obj_growth]" : "[obj_growth]"]</div></div>"
 	html += "<div class='box'><div class='lb'>CPU</div><div class='vl [world.cpu > 100 ? "bad" : ""]'>[round(world.cpu, 0.1)]%</div></div>"
 	html += "<div class='box'><div class='lb'>Tick</div><div class='vl'>[round(world.tick_usage, 0.1)]%</div></div>"
 	html += "</div>"
@@ -263,16 +266,16 @@ tr:hover { background: #1a1a1a; }
 					continue
 				var/growth_pct = ((cur_c - bl_c) / bl_c) * 100
 				if(growth_pct > 50 && (cur_c - bl_c) > 100)
-					warnings += "<b>[category]/[ename]</b>: [bl_c] → [cur_c] (+[round(growth_pct, 1)]%)"
+					warnings += "<b>[html_encode(category)]/[html_encode(ename)]</b>: [bl_c] → [cur_c] (+[round(growth_pct, 1)]%)"
 	if(length(warnings))
-		html += "<div class='warn'>Подозрительный рост vs [SSmemory_profiler.active_baseline]:<br>[jointext(warnings, "<br>")]</div>"
+		html += "<div class='warn'>Подозрительный рост vs [safe_bl_name]:<br>[jointext(warnings, "<br>")]</div>"
 
 	// Tables
 	for(var/category in current)
-		html += "<div class='cat'>[uppertext(category)]</div>"
+		html += "<div class='cat'>[uppertext(html_encode(category))]</div>"
 		html += "<table><tr><th>Тип</th><th class='r'>Размер</th><th class='r'>Кол-во</th>"
 		if(baseline)
-			html += "<th class='r'>vs [SSmemory_profiler.active_baseline]</th>"
+			html += "<th class='r'>vs [safe_bl_name]</th>"
 		if(previous)
 			html += "<th class='r'>vs Пред.</th>"
 		html += "</tr>"
@@ -281,9 +284,9 @@ tr:hover { background: #1a1a1a; }
 			var/list/data = entries[entry_name]
 			var/cur_count = text2num(data["count"])
 			html += "<tr>"
-			html += "<td>[entry_name]</td>"
-			html += "<td class='r'>[data["size"]]</td>"
-			html += "<td class='r'>[data["count"]]</td>"
+			html += "<td>[html_encode(entry_name)]</td>"
+			html += "<td class='r'>[html_encode(data["size"])]</td>"
+			html += "<td class='r'>[html_encode(data["count"])]</td>"
 			if(baseline)
 				html += "<td class='r'>[format_delta(cur_count, get_snapshot_count(baseline, category, entry_name))]</td>"
 			if(previous)
