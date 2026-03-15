@@ -269,6 +269,7 @@
 	var/list/original_station_areas
 	var/list/original_apcs_list
 	var/obj/machinery/power/apc/original_area_apc
+	var/original_can_fire
 	var/area/test_area
 	var/turf/light_turf
 	var/obj/machinery/power/apc/test_apc
@@ -282,6 +283,8 @@
 	original_station_areas = GLOB.the_station_areas.Copy()
 	original_apcs_list = GLOB.apcs_list.Copy()
 	original_area_apc = test_area.power_apc
+	original_can_fire = SSnightshift.can_fire
+	SSnightshift.can_fire = FALSE
 	GLOB.the_station_areas = list(test_area.type)
 	GLOB.nightshift_apc_queue.Cut()
 	GLOB.nightshift_light_queue.Cut()
@@ -299,6 +302,7 @@
 
 /datum/unit_test/nightshift_relight_resync/Destroy()
 	drain_nightshift_lighting_work(20)
+	SSnightshift.can_fire = original_can_fire
 	GLOB.the_station_areas = original_station_areas
 	GLOB.apcs_list = original_apcs_list
 	test_area.power_apc = original_area_apc
