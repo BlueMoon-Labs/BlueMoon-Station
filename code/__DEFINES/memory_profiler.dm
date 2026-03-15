@@ -19,7 +19,11 @@
 /proc/memorystats_get()
 	if(__memorystats_unavailable)
 		return null
-	. = call_ext(MEMORYSTATS, "memory_stats")()
+	var/lib_path = MEMORYSTATS
+	if(!fexists(lib_path))
+		__memorystats_unavailable = TRUE
+		return null
+	. = call_ext(lib_path, "memory_stats")()
 	if(!.)
 		__memorystats_unavailable = TRUE
 
