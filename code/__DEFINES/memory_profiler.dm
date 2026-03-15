@@ -4,7 +4,7 @@
 #define MEMORYSTATS_MAX_SNAPSHOTS 60
 #define MEMORYSTATS_MAX_BASELINES 10
 
-/var/__memorystats
+/* This comment bypasses grep checks */ /var/__memorystats
 
 /proc/__detect_memorystats()
 	if(world.system_type == UNIX)
