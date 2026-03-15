@@ -30,6 +30,8 @@
 	TEST_ASSERT(QDELETED(holder), "Holder should be marked for deletion after qdel")
 	TEST_ASSERT(QDELETED(packet), "move_packet should be deleted when holder is destroyed")
 
+	qdel(pipe)
+
 /// Test that disposalholder can be safely destroyed without ever starting movement
 /datum/unit_test/disposal_holder_destroy_no_movement
 
