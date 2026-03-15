@@ -880,6 +880,8 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 	return corrupted_text
 
 /proc/format_text(text)
+	if(!text)
+		return ""
 	return replacetext(replacetext(text,"\proper ",""),"\improper ","")
 
 /// Removes all non-alphanumerics from the text, keep in mind this can lead to id conflicts

@@ -1,6 +1,6 @@
 /obj/item/gun/ballistic/shotgun
 	name = "Shotgun"
-	desc = "A traditional shotgun with wood furniture and a four-shell capacity underneath."
+	desc = "Традиционный дробовик с деревянным прикладом и подствольным магазином на четыре патрона."
 	icon_state = "shotgun"
 	item_state = "shotgun-wielded"
 	fire_sound = "sound/weapons/gunshotshotgunshot.ogg"
@@ -60,7 +60,7 @@
 
 /obj/item/gun/ballistic/shotgun/proc/pump(mob/M, visible = TRUE)
 	if(visible)
-		M.visible_message("<span class='warning'>[M] racks [src].</span>", "<span class='warning'>You rack [src].</span>")
+		M.visible_message("<span class='warning'>[M] racks [src].</span>", "<span class='warning'>Вы досылаете патрон [src].</span>")
 	playsound(M, pumpsound, 60, 1)
 	pump_unload(M)
 	pump_reload(M)
@@ -82,7 +82,7 @@
 /obj/item/gun/ballistic/shotgun/examine(mob/user)
 	. = ..()
 	if (chambered)
-		. += "A [chambered.BB ? "live" : "spent"] one is in the chamber."
+		. += "[chambered.BB ? "Боевой" : "Отстрелянный"] снаряд в затворе."
 
 /obj/item/gun/ballistic/shotgun/lethal
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/lethal

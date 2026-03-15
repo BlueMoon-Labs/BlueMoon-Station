@@ -67,14 +67,44 @@
 	icon = 'modular_bluemoon/kovac_shitcode/icons/obj/weapons/weapons.dmi'
 	lefthand_file = 'modular_bluemoon/kovac_shitcode/icons/mob/weapons/weapons_l.dmi'
 	righthand_file = 'modular_bluemoon/kovac_shitcode/icons/mob/weapons/weapons_r.dmi'
-	fire_sound = 'modular_bluemoon/kovac_shitcode/sound/weapons/rsh12.ogg'
-	pumpsound = 'modular_bluemoon/kovac_shitcode/sound/weapons/rsh12_drum.ogg'
+	fire_sound = 'modular_bluemoon/sound/weapons/rs12_boom.ogg'
+	pumpsound = 'modular_bluemoon/sound/weapons/rs12_reload.ogg'
+	var/dry_fire_sound  = 'modular_bluemoon/sound/weapons/rs12_empty.ogg' // осечка или нет боевого патрона
+	var/last_round_sound = 'modular_bluemoon/sound/weapons/rs12_shot.ogg'  // звук последнего патрона
+	var/shell_drop_sound = 'modular_bluemoon/sound/weapons/rs12_emptyshell.ogg' // звук падения гильзы
 	fire_delay = 5
 	recoil = 5
 	spread = 3
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/com/rsh12
 	w_class = WEIGHT_CLASS_NORMAL
 	weapon_weight = WEAPON_MEDIUM
+
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/can_shoot()
+	if(!chambered || !chambered.BB)  // Нет патрона или пустая гильза
+		return FALSE
+	return TRUE
+
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/shoot_with_empty_chamber(mob/living/user)
+	playsound(user, dry_fire_sound, 50, 1)  // звук пустого выстрела
+	to_chat(user, "<span class='warning'>*CLICK* Пусто!</span>")
+
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
+	. = ..()
+	if(. && magazine?.ammo_count() == 0 && !chambered?.BB)
+		playsound(user, last_round_sound, 70, 1)  // Громче для последнего выстрела
+		to_chat(user, "<span class='warning'>That was the last shot!</span>") // Звук падения гильзы с небольшой задержкой
+	if(.)
+		addtimer(CALLBACK(src, .proc/play_shell_drop, user), 2)
+
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/proc/play_shell_drop(mob/user)
+	playsound(user, shell_drop_sound, 40, 1)
+
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/attackby(obj/item/A, mob/user, params)
+	var/prev_count = magazine?.ammo_count()
+	. = ..()
+	// Проигрываем pumpsound если что-то было загружено
+	if(magazine && magazine.ammo_count() > prev_count)
+		playsound(user, pumpsound, 50, 1)
 
 //HoS G22 pistol
 /obj/item/gun/ballistic/automatic/pistol/g22

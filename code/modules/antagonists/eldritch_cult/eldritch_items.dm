@@ -28,7 +28,7 @@
 /obj/item/living_heart/AltClick(mob/user)
 	. = ..()
 	if(COOLDOWN_FINISHED(src, cooldown))
-		COOLDOWN_START(src, cooldown, 300 SECONDS)
+		COOLDOWN_START(src, cooldown, 180 SECONDS)
 		playsound(src, 'sound/misc/bloop.ogg', 50, FALSE)
 		GLOB.living_heart_cache.Remove(src)
 		if(sac_targetter)
@@ -62,7 +62,7 @@
 				user.balloon_alert(user,"<span class='warning'>[target.real_name] поблизости со мной. Он находится на [dir2text_ru(dir)] от меня!</span>")
 
 				to_chat(user,"<span class='warning'>[target.real_name] поблизости со мной. Он находится на [dir2text_ru(dir)] от меня!</span>")
-			if(32 to 127)
+			if(32 to 222)
 				user.balloon_alert(user,"<span class='warning'>[target.real_name] далеко от меня. Он находится на [dir2text_ru(dir)] от меня!</span>")
 
 				to_chat(user,"<span class='warning'>[target.real_name] далеко от меня. Он находится на [dir2text_ru(dir)] от меня!</span>")

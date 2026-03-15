@@ -18,12 +18,14 @@
 				return A
 
 /mob/living/simple_animal/hostile/megafauna/ListTargets()
-	if(!peaceful)
+	if(peaceful)
 		if(!length(enemies))
 			return list()
 		var/list/see = ..()
 		see &= enemies // Remove all entries that aren't in enemies
 		return see
+	else
+		return ..() // Attack first - proactively find targets
 
 /mob/living/simple_animal/hostile/megafauna/proc/Retaliate()
 	var/list/around = oview(src, vision_range)
@@ -57,9 +59,12 @@
 	return FALSE
 
 /mob/living/simple_animal/hostile/megafauna/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
-	if(!peaceful)
-		. = ..()
-		if(. > 0 && stat == CONSCIOUS)
+	. = ..()
+	if(. > 0 && stat == CONSCIOUS)
+		if(peaceful)
+			peaceful = FALSE
+			Retaliate()
+		else
 			Retaliate()
 
 /mob/living/simple_animal/hostile/megafauna/Life()

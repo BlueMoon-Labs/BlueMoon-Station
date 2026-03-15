@@ -1,6 +1,6 @@
 /mob/living/carbon/alien/humanoid
 	name = "alien"
-	icon = 'icons/mob/xenomorph.dmi'
+	icon = 'icons/mob/alien.dmi'
 	icon_state = "alien_s"
 	pass_flags = PASSTABLE
 	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab/xeno = 5, /obj/item/stack/sheet/animalhide/xeno = 1)
@@ -8,7 +8,7 @@
 	limb_destroyer = 1
 	hud_type = /datum/hud/alien
 	var/caste = ""
-	var/alt_icon = 'icons/mob/xenoleap.dmi' // TauCeti xenomorph leap sprites
+	var/alt_icon = 'icons/mob/alien.dmi'
 	var/leap_on_click = 0
 	var/pounce_cooldown = 0
 	var/pounce_cooldown_time = 30

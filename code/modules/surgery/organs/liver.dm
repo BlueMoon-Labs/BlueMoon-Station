@@ -24,6 +24,7 @@
 	var/toxTolerance = LIVER_DEFAULT_TOX_TOLERANCE//maximum amount of toxins the liver can just shrug off
 	var/toxLethality = LIVER_DEFAULT_TOX_LETHALITY//affects how much damage toxins do to the liver
 	var/filterToxins = TRUE //whether to filter toxins
+	var/filterToxinsAmount = 1
 	var/cachedmoveCalc = 1
 	var/operated = FALSE	//whether we can still have our damages fixed through surgery
 	food_reagents = list(/datum/reagent/consumable/nutriment = 5, /datum/reagent/iron = 5)
@@ -38,7 +39,7 @@
 		for(var/datum/reagent/toxin/T in owner.reagents.reagent_list)
 			var/thisamount = owner.reagents.get_reagent_amount(T.type)
 			if (thisamount && thisamount <= toxTolerance)
-				owner.reagents.remove_reagent(T.type, 1)
+				owner.reagents.remove_reagent(T.type, filterToxinsAmount)
 			else
 				damage += (thisamount*toxLethality)
 

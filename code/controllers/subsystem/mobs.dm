@@ -3,8 +3,7 @@ SUBSYSTEM_DEF(mobs)
 	priority = FIRE_PRIORITY_MOBS
 	flags = SS_KEEP_TIMING | SS_NO_INIT
 	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
-	wait = 10 // 1 second between Life() calls (default 20 = 2 sec). Lower = more responsive mobs, higher CPU cost.
-
+	wait = 20 
 	var/list/currentrun = list()
 	var/static/list/clients_by_zlevel[][]
 	var/static/list/dead_players_by_zlevel[][] = list(list()) // Needs to support zlevel 1 here, MaxZChanged only happens when z2 is created and new_players can login before that.

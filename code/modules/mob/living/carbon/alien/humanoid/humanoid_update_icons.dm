@@ -1,4 +1,15 @@
 
+// TGMC caste icon_state mapping: Hunter Walking, Drone Dead, etc.
+/mob/living/carbon/alien/humanoid/proc/get_tgmc_state(state_suffix)
+	var/static/list/caste_names = list("h" = "Hunter", "d" = "Drone", "s" = "Sentinel", "p" = "Praetorian", "q" = "Queen", "m" = "Hunter")
+	var/static/list/state_map = list(
+		"_husked" = " Dead", "_dead" = " Dead", "_unconscious" = " Knocked Down",
+		"_pounce" = " Walking", "_sleep" = " Sleeping", "_s" = " Walking", "_running" = " Running"
+	)
+	var/caste_name = caste_names[caste] || "Hunter"
+	var/state_name = state_map[state_suffix] || " Walking"
+	return "[caste_name][state_name]"
+
 /mob/living/carbon/alien/humanoid/update_icons()
 	cut_overlays()
 	for(var/I in overlays_standing)
@@ -6,29 +17,28 @@
 
 	var/asleep = IsSleeping()
 	if(stat == DEAD)
-		//If we mostly took damage from fire
 		if(fireloss > 125)
-			icon_state = "alien[caste]_husked"
+			icon_state = get_tgmc_state("_dead") // TGMC: use Dead for husked
 		else
-			icon_state = "alien[caste]_dead"
+			icon_state = get_tgmc_state("_dead")
 
 	else if((stat == UNCONSCIOUS && !asleep) || stat == SOFT_CRIT || IsParalyzed())
-		icon_state = "alien[caste]_unconscious"
+		icon_state = get_tgmc_state("_unconscious")
 	else if(leap_on_click)
-		icon_state = "alien[caste]_pounce"
+		icon_state = get_tgmc_state("_pounce")
 
 	else if(lying || !CHECK_MOBILITY(src, MOBILITY_STAND) || asleep)
-		icon_state = "alien[caste]_sleep"
+		icon_state = get_tgmc_state("_sleep")
 	else if(mob_size == MOB_SIZE_LARGE)
-		icon_state = "alien[caste]_s"
+		icon_state = get_tgmc_state("_s")
 		if(drooling)
 			add_overlay("alienspit_[caste]")
 	else if(m_intent == MOVE_INTENT_RUN)
-		icon_state = "alien[caste]_running"
+		icon_state = get_tgmc_state("_running")
 		if(drooling)
 			add_overlay("alienspit")
 	else
-		icon_state = "alien[caste]_s"
+		icon_state = get_tgmc_state("_s")
 		if(drooling)
 			add_overlay("alienspit")
 
@@ -37,7 +47,7 @@
 			var/old_icon = icon
 			icon = alt_icon
 			alt_icon = old_icon
-		icon_state = "alien[caste]_leap"
+		icon_state = "alien[caste]_leap" // leap overlay from alien.dmi
 		pixel_x = -32
 		pixel_y = -32
 	else
@@ -50,7 +60,7 @@
 	update_inv_hands()
 	update_inv_handcuffed()
 
-// TauCeti alienqueen.dmi uses queen_s/queen_l/queen_sleep/queen_dead and alienp_s/alienp_l/alienp_sleep/alienp_dead
+// TGMC queen.dmi: Queen Walking, Queen Dead, Queen Knocked Down, Queen Sleeping
 /mob/living/carbon/alien/humanoid/royal/update_icons()
 	cut_overlays()
 	for(var/I in overlays_standing)
@@ -58,19 +68,17 @@
 
 	var/asleep = IsSleeping()
 	var/tauceti_state
+	var/queen_prefix = (caste == "q" && rouny) ? "Queen rouny" : "Queen"
 	if(stat == DEAD)
-		if(caste == "q")
-			tauceti_state = (fireloss > 125) ? "queen_dead_fire" : "queen_dead"
-		else
-			tauceti_state = "alienp_dead"
+		tauceti_state = (caste == "q") ? "[queen_prefix] Dead" : "Praetorian Dead"
 	else if((stat == UNCONSCIOUS && !asleep) || stat == SOFT_CRIT || IsParalyzed())
-		tauceti_state = (caste == "q") ? "queen_l" : "alienp_l"
+		tauceti_state = (caste == "q") ? "[queen_prefix] Knocked Down" : "Praetorian Knocked Down"
 	else if(leap_on_click)
-		tauceti_state = (caste == "q") ? "queen_s" : "alienp_s"
+		tauceti_state = (caste == "q") ? "[queen_prefix] Walking" : "Praetorian Walking"
 	else if(lying || !CHECK_MOBILITY(src, MOBILITY_STAND) || asleep)
-		tauceti_state = (caste == "q") ? "queen_sleep" : "alienp_sleep"
+		tauceti_state = (caste == "q") ? "[queen_prefix] Sleeping" : "Praetorian Sleeping"
 	else
-		tauceti_state = (caste == "q") ? "queen_s" : "alienp_s"
+		tauceti_state = (caste == "q") ? "[queen_prefix] Walking" : "Praetorian Walking"
 		if(drooling)
 			add_overlay((caste == "q") ? "alienspit_q" : "alienspit_p")
 
@@ -79,7 +87,7 @@
 			var/old_icon = icon
 			icon = alt_icon
 			alt_icon = old_icon
-		icon_state = "alien[caste]_leap"
+		icon_state = "alien[caste]_leap" // leap overlay from alien.dmi
 		pixel_x = -32
 		pixel_y = -32
 	else

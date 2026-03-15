@@ -184,7 +184,7 @@
 	icon = 'icons/obj/warp_beacon.dmi'
 	icon_state = "forming"
 
-	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
 	light_color = LIGHT_COLOR_LIGHT_CYAN
 	max_integrity = 10
 

@@ -8,7 +8,8 @@
 
 
 /obj/structure/alien
-	icon = 'icons/mob/alien.dmi'
+	icon = 'icons/Xeno/Effects.dmi'
+	icon_state = "resin"
 	max_integrity = 100
 
 /obj/structure/alien/run_obj_armor(damage_amount, damage_type, damage_flag = 0, attack_dir)
@@ -109,7 +110,7 @@
 	desc = "A thick resin surface covers the floor."
 	anchored = TRUE
 	density = FALSE
-	layer = TURF_LAYER
+	layer = ABOVE_NORMAL_TURF_LAYER
 	plane = FLOOR_PLANE
 	icon_state = "weeds"
 	max_integrity = 15
@@ -167,7 +168,6 @@
 	name = "glowing resin"
 	desc = "Blue bioluminescence shines from beneath the surface."
 	icon_state = "weednode"
-	layer = ABOVE_NORMAL_TURF_LAYER
 	light_color = LIGHT_COLOR_BLUE
 	light_power = 0.5
 	var/lon_range = 4
@@ -212,7 +212,7 @@
 	name = "egg"
 	desc = "A large mottled egg."
 	var/base_icon = "egg"
-	icon_state = "egg_growing"
+	icon_state = "egg_hugger1"
 	density = FALSE
 	anchored = TRUE
 	max_integrity = 100
@@ -235,11 +235,11 @@
 /obj/structure/alien/egg/update_icon_state()
 	switch(status)
 		if(GROWING)
-			icon_state = "[base_icon]_growing"
+			icon_state = "egg_hugger1"
 		if(GROWN)
-			icon_state = "[base_icon]"
+			icon_state = "egg_hugger2"
 		if(BURST)
-			icon_state = "[base_icon]_hatched"
+			icon_state = "egg_hugger4"
 
 /obj/structure/alien/egg/attack_paw(mob/living/user)
 	return attack_hand(user)
@@ -280,7 +280,7 @@
 		proximity_monitor.SetRange(0)
 		status = BURST
 		update_icon()
-		flick("egg_opening", src)
+		flick("egg opening", src)
 		addtimer(CALLBACK(src, PROC_REF(finish_bursting), kill), 15)
 
 /obj/structure/alien/egg/proc/finish_bursting(kill = TRUE)
@@ -319,11 +319,11 @@
 
 /obj/structure/alien/egg/grown
 	status = GROWN
-	icon_state = "egg"
+	icon_state = "egg_hugger2"
 
 /obj/structure/alien/egg/burst
 	status = BURST
-	icon_state = "egg_hatched"
+	icon_state = "egg_hugger4"
 
 #undef BURST
 #undef GROWING

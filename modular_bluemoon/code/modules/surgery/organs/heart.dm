@@ -1,80 +1,126 @@
 //BIOAEGIS MODULES.
 //HEART
 
-//TIER 1 HEART//
-/obj/item/organ/heart/tier1
-	name = "improved heart"
-	desc = "A somewhat decent replica of baseline heart. Tougher than the baseline heart."
+/obj/item/organ/heart/bioaegis
+	name = "some heart"
+	desc = "Заготовка под сердце. Ничем не отличается от обычного, кроме внешнего вида."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "weakheart"
+
+	var/insert_message = ""
+
+	var/unstoppable = FALSE
+
+	var/heal_brute = 0
+	var/heal_fire = 0
+	var/heal_tox = 0
+	var/heal_oxy = 0
+	var/heal_stamina = 0
+
+/obj/item/organ/heart/bioaegis/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
+	. = ..()
+	if(!. || !insert_message || !istype(organ_mob))
+		return
+
+	to_chat(organ_mob, insert_message)
+
+/obj/item/organ/heart/bioaegis/on_life()
+	if(!beating && unstoppable && owner)
+		if(owner.stat == CONSCIOUS || owner.stat == SOFT_CRIT)
+			beating = TRUE
+	. = ..()
+	if(!. || !owner)
+		return
+
+	if(heal_brute)
+		owner.adjustBruteLoss(-heal_brute, FALSE)
+	if(heal_fire)
+		owner.adjustFireLoss(-heal_fire, FALSE)
+	if(heal_tox)
+		owner.adjustToxLoss(-heal_tox, TRUE)
+	if(heal_oxy)
+		owner.adjustOxyLoss(-heal_oxy, FALSE)
+	if(heal_stamina)
+		owner.adjustStaminaLoss(-heal_stamina, FALSE)
+
+/obj/item/organ/heart/bioaegis/Stop()
+	if(unstoppable)
+		return FALSE
+
+	return ..()
+
+//TIER 1 HEART//
+/obj/item/organ/heart/bioaegis/t1
+	name = "improved heart"
+	desc = "Довольно приличная копия сердца. Более крепкое, чем обычное сердце... Но на этом все."
 	maxHealth = 1.5 * STANDARD_ORGAN_THRESHOLD
 
-/obj/item/organ/heart/tier1/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
-	. = ..()
-	to_chat(owner, "<span class = 'notice'>Как ни странно...словно ничего не поменялось.</span>\n")
+	insert_message = span_notice("Как ни странно... Словно ничего не поменялось.")
 
 //TIER 2 HEART//
-/obj/item/organ/heart/tier2
+/obj/item/organ/heart/bioaegis/t2
 	name = "changed heart"
-	desc = "An improved version of baseline heart. Better than the baseline counterpart."
-	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
-	icon_state = "weakheart"
+	desc = "Улучшенная версия версии сердца. Крепче, быстрее прокачивает кислород по крови и помогает заживлять ожоги!"
 	maxHealth = 2.5 * STANDARD_ORGAN_THRESHOLD //Usual factor is 2x, so...
 	healing_factor = 2.5 * STANDARD_ORGAN_HEALING //Heals itself a bit faster
 	decay_factor = 0.8 * STANDARD_ORGAN_DECAY //Decays a bit longer
 
-/obj/item/organ/heart/tier2/on_life()
-	owner.adjustOxyLoss(-0.25, FALSE) //Only two healing factors, but heals really, really good. An exchange for being way too problematic to create.
-	owner.adjustBruteLoss(-0.25, FALSE)
+	// Уровень импланта лечения
+	heal_brute = 0.4
+	heal_oxy = 0.4 //It can pump blood rather well, so it can delay oxy damage to some degree.
 
-/obj/item/organ/heart/tier2/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
-	. = ..()
-	to_chat(owner, "<span class = 'notice'>Вы ощущаете, словно ваше сердце стало немного больше.</span>\n")
+	insert_message = span_notice("Вы ощущаете, словно ваше сердце стало немного больше.")
 
 //TIER 3 HEART//
-/obj/item/organ/heart/tier3
+/obj/item/organ/heart/bioaegis/t3
 	name = "exalted heart"
-	desc = "A recent so-called 'perfection' in terms of being heartful. Pumps a little amount of chemicals to mend physical damage, as well as better amount of blood."
-	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	desc = "Так называемое \"Cовершенство\" в делах сердечных. Крепкое, крупное, закачивает небольшое количество химикатов, чтобы залечить физические повреждения.\
+	Прокачивает большой объем крови, сильно ускоряя снабжение кислородом и гормонами."
 	icon_state = "exaltedheart"
 	maxHealth = 3.5 * STANDARD_ORGAN_THRESHOLD
 	healing_factor = 2.5 * STANDARD_ORGAN_HEALING //Heals itself way faster
 	decay_factor = 0.5 * STANDARD_ORGAN_DECAY //Decays way longer than the usual one
 
-/obj/item/organ/heart/tier3/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
+	heal_brute = 0.8
+	heal_fire = 0.4
+	heal_oxy = 0.6
+	heal_stamina = 1.5
+
+	unstoppable = TRUE
+
+	insert_message = span_notice("Ритм вашего нового сердца словно марш легионов.")
+
+/obj/item/organ/heart/bioaegis/t3/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
 	. = ..()
-	to_chat(owner, "<span class = 'notice'>Ритм вашего нового сердца словно марш легионов.</span>\n")
-	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super heart", /datum/mood_event/superheart)
+	if(!. || !istype(organ_mob))
+		return
+	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super_heart", /datum/mood_event/superheart)
+
+/obj/item/organ/heart/bioaegis/t3/Remove(special)
+	. = ..()
+	var/mob/living/carbon/organ_mob = .
+	if(!istype(organ_mob))
+		return
+	SEND_SIGNAL(organ_mob, COMSIG_CLEAR_MOOD_EVENT, "super_heart")
 
 /datum/mood_event/superheart
-	description = "<span class='nicegreen'>Выносливость нового сердца радует разум!</span>\n"
+	description = span_nicegreen("Выносливость нового сердца радует разум!\n")
 	mood_change = 1 //Perma boost since you deserved it, handsome.
 
-/obj/item/organ/heart/tier3/proc/undo_heart_attack()
-	var/mob/living/carbon/human/H = owner
-	if(!H || !istype(H))
-		return
-	H.set_heartattack(FALSE)
-	if(H.stat == CONSCIOUS || H.stat == SOFT_CRIT)
-		to_chat(H, "<span class='notice'>Вы ощущаете как словно ваши собственные вены начали биться в знакомый ритм!</span>\n")
-
-/obj/item/organ/heart/tier3/on_life()
-	owner.adjustOxyLoss(-0.25, FALSE) //It can pump blood rather well, so it can delay oxy damage to some degree.
-	owner.adjustBruteLoss(-0.8, FALSE)
-	owner.adjustStaminaLoss(-1.5, 0)
-
 //ANTAG HEART//
-/obj/item/organ/heart/tier3/antag //antag organ that can be found in some shitty places or in antag uplink since why not?
+/obj/item/organ/heart/bioaegis/t3/antag //antag organ that can be found in some shitty places or in antag uplink since why not?
 	name = "biomorphed heart"
-	desc = "Something that is straight-up from sci-fi movies about abominations! Very weird, quite big 'pumps'!"
-	icon_state = "exaltedheart"
+	desc = "Что-то прямиком из научно-фантастических фильмов о мерзостях! Очень странное, но обеспечивает такю регенерацию, что делает владельца сверхсуществом..."
 	maxHealth = 4.5 * STANDARD_ORGAN_THRESHOLD
 	healing_factor = 3.5 * STANDARD_ORGAN_HEALING
 	decay_factor = 0.1 * STANDARD_ORGAN_DECAY
 
-/obj/item/organ/heart/tier3/antag/on_life()
-	owner.adjustToxLoss(-2, TRUE) //Heals like hell.
-	owner.adjustOxyLoss(-2, FALSE)
-	owner.adjustBruteLoss(-2, FALSE)
-	owner.adjustFireLoss(-2, FALSE)
-	owner.adjustStaminaLoss(-3, 0)
+	heal_brute = 2
+	heal_fire = 2
+	heal_tox = 2
+	heal_oxy = 2
+	heal_stamina = 3
+
+	unstoppable = TRUE
+
+	insert_message = span_notice("Вы чувствуете... Нечто чуждое внутри, но дающее вам небывалое количество сил.")

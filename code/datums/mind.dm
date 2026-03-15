@@ -262,6 +262,8 @@
 		return
 	var/datum/antagonist/A = has_antag_datum(datum_type)
 	if(A)
+		if(istype(A, /datum/antagonist/heretic) && current)
+			REMOVE_TRAIT(current, TRAIT_ANTIMAGIC_NO_SELFBLOCK, "heretic")
 		A.on_removal()
 		return TRUE
 

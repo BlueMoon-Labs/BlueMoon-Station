@@ -153,8 +153,7 @@ GLOBAL_LIST_INIT(closed_turf_air_cache, list())
 
 	if(!air) // 2019-05-14: was not able to get this path to fire in testing. Consider removing/looking at callers -Naksu
 		if (atmos_overlay_types)
-			for(var/overlay in atmos_overlay_types)
-				vis_contents -= overlay
+			vis_contents -= atmos_overlay_types
 			src.atmos_overlay_types = null
 		return
 
@@ -166,9 +165,9 @@ GLOBAL_LIST_INIT(closed_turf_air_cache, list())
 		if(gas_overlay && air.get_moles(id) > GLOB.gas_data.visibility[id])
 			new_overlay_types += gas_overlay[min(FACTOR_GAS_VISIBLE_MAX, CEILING(air.get_moles(id) / MOLES_GAS_VISIBLE_STEP, 1))]
 
+	// Batch list operations - for-in with vis_contents -= overlay causes illegal operation when many callbacks run
 	if (atmos_overlay_types)
-		for(var/overlay in atmos_overlay_types-new_overlay_types) //doesn't remove overlays that would only be added
-			vis_contents -= overlay
+		vis_contents -= (atmos_overlay_types - new_overlay_types)
 
 	if (length(new_overlay_types))
 		if (atmos_overlay_types)
@@ -180,9 +179,11 @@ GLOBAL_LIST_INIT(closed_turf_air_cache, list())
 	src.atmos_overlay_types = new_overlay_types
 
 /turf/open/proc/set_visuals(list/new_overlay_types)
+	if(!new_overlay_types)
+		new_overlay_types = list()
+	// Batch list operations - for-in with vis_contents -= overlay causes illegal operation when many callbacks run
 	if (atmos_overlay_types)
-		for(var/overlay in atmos_overlay_types-new_overlay_types) //doesn't remove overlays that would only be added
-			vis_contents -= overlay
+		vis_contents -= (atmos_overlay_types - new_overlay_types)
 
 	if (length(new_overlay_types))
 		if (atmos_overlay_types)

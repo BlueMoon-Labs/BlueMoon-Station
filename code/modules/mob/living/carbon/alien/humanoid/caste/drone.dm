@@ -3,12 +3,13 @@
 	caste = "d"
 	maxHealth = 250
 	health = 250
-	icon_state = "aliend_s"
+	icon = 'icons/Xeno/castes/drone.dmi'
+	icon_state = "Drone Walking"
 	meleeKnockdownPower = 80
 
 /mob/living/carbon/alien/humanoid/drone/maid
 	name = "Xeno Maid"
-	icon_state = "alienm_s"
+	icon_state = "Drone Walking"
 	caste = "m"
 	has_fine_manipulation = 1
 	initial_language_holder = /datum/language_holder

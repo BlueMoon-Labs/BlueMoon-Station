@@ -21,7 +21,7 @@
 	minbodytemp = 0
 	maxbodytemp = INFINITY
 	vision_range = 4
-	aggro_vision_range = 15
+	aggro_vision_range = 40
 	move_force = MOVE_FORCE_OVERPOWERING
 	move_resist = MOVE_FORCE_OVERPOWERING
 	pull_force = MOVE_FORCE_OVERPOWERING

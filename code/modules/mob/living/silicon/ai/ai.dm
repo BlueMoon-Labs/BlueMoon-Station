@@ -755,7 +755,7 @@
 				"male" = 'icons/mob/ai.dmi',
 				"floating face" = 'icons/mob/ai.dmi',
 				"green face" = 'icons/mob/ai.dmi',
-				"xeno queen" = 'icons/mob/alienqueen.dmi',
+				"xeno queen" = 'icons/Xeno/castes/queen.dmi', // icon_state "Queen Walking"
 				"horror" = 'icons/mob/ai.dmi',
 				"creature" = 'icons/mob/ai.dmi',
 				"custom"
@@ -771,7 +771,7 @@
 						else
 							holo_icon = getHologramIcon(icon('icons/mob/ai.dmi', "female"), FALSE, hologram_color)
 					if("xeno queen")
-						holo_icon = getHologramIcon(icon(icon_list[input],"queen_s"), FALSE, hologram_color)
+						holo_icon = getHologramIcon(icon(icon_list[input],"Queen Walking"), FALSE, hologram_color)
 					else
 						holo_icon = getHologramIcon(icon(icon_list[input], input), FALSE, hologram_color)
 

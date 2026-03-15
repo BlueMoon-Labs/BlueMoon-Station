@@ -14,10 +14,6 @@
 	///Where we cannot create the rune?
 	var/static/list/blacklisted_turfs = typecacheof(list(/turf/closed,/turf/open/space,/turf/open/lava))
 
-/obj/item/forbidden_book/Initialize(mapload)
-	. = ..()
-	AddComponent(/datum/component/anti_magic, TRUE, TRUE)
-
 /obj/item/forbidden_book/Destroy()
 	last_user = null
 	. = ..()

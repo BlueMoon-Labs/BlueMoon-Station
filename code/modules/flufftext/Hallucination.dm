@@ -220,15 +220,15 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	return ..()
 
 /obj/effect/hallucination/simple/xeno
-	image_icon = 'icons/mob/xenomorph.dmi'
-	image_state = "alienh_pounce"
+	image_icon = 'icons/Xeno/castes/hunter.dmi'
+	image_state = "Hunter Walking"
 
 /obj/effect/hallucination/simple/xeno/Initialize(mapload, mob/living/carbon/T)
 	. = ..()
 	name = "alien hunter ([rand(1, 1000)])"
 
 /obj/effect/hallucination/simple/xeno/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	update_icon(ALL, "alienh_pounce")
+	update_icon(ALL, "Hunter Running")
 	if(hit_atom == target && target.stat != DEAD)
 		target.DefaultCombatKnockdown(100)
 		target.visible_message("<span class='danger'>[target] flails around wildly.</span>","<span class ='userdanger'>[name] pounces on you!</span>")
