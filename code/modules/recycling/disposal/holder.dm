@@ -22,6 +22,8 @@
 	active = FALSE
 	last_pipe = null
 	current_pipe = null
+	if(move_packet)
+		qdel(move_packet)
 	return ..()
 
 // initialize a holder from the contents of a disposal unit
