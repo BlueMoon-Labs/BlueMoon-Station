@@ -28,6 +28,9 @@
 				C.parents[i] = null
 	members.Cut()
 	other_atmosmch.Cut()
+	for(var/datum/gas_mixture/gm as anything in other_airs)
+		if(gm._owner_pipeline == src)
+			gm._owner_pipeline = null
 	other_airs.Cut()
 	QDEL_NULL(air)
 	return ..()
@@ -98,6 +101,7 @@
 							to_delete += item.air_temporary
 							item.air_temporary = null
 				else
+					steal_component_from_old_pipenet(P, borderline)
 					P.setPipenet(src, borderline)
 					addMachineryMember(P)
 
@@ -120,6 +124,13 @@
 		stack_trace("addMachineryMember: Nonexistent (empty list) or null machinery gasmix added to pipeline datum from [C] \
 		which is of type [C.type]. Nearby: ([C.x], [C.y], [C.z])")
 		listclearnulls(returned_airs)
+	for(var/datum/gas_mixture/gm as anything in returned_airs)
+		if(gm._owner_pipeline && gm._owner_pipeline != src && !QDELETED(gm._owner_pipeline))
+			stack_trace("addMachineryMember: air [REF(gm)] already owned by pipeline [gm._owner_pipeline]([REF(gm._owner_pipeline)]), stealing to [src]([REF(src)]). \
+				Component [C.type] at [C.x],[C.y],[C.z]")
+			gm._owner_pipeline.update = TRUE
+			gm._owner_pipeline.other_airs -= gm
+		gm._owner_pipeline = src
 	other_airs |= returned_airs
 
 /datum/pipeline/proc/addMember(obj/machinery/atmospherics/A, obj/machinery/atmospherics/N)
@@ -139,8 +150,36 @@
 			members += P
 			air.set_volume(air.return_volume() + P.volume)
 	else
+		steal_component_from_old_pipenet(A, N)
 		A.setPipenet(src, N)
 		addMachineryMember(A)
+
+/datum/pipeline/proc/steal_component_from_old_pipenet(obj/machinery/atmospherics/components/comp, obj/machinery/atmospherics/borderline)
+	var/idx = comp.nodes.Find(borderline)
+	if(!idx)
+		return
+	var/datum/pipeline/old_pipenet = comp.parents[idx]
+	if(!old_pipenet || old_pipenet == src)
+		return
+	// Remove only the specific port's air from old pipeline
+	var/datum/gas_mixture/old_air = comp.airs[idx]
+	if(old_air)
+		old_pipenet.other_airs -= old_air
+		if(old_air._owner_pipeline == old_pipenet)
+			old_air._owner_pipeline = null
+	// Only remove component from other_atmosmch if no other ports still reference old pipeline
+	var/still_connected = FALSE
+	for(var/j in 1 to comp.parents.len)
+		if(j != idx && comp.parents[j] == old_pipenet)
+			still_connected = TRUE
+			break
+	if(!still_connected)
+		old_pipenet.other_atmosmch -= comp
+	// Qdel orphaned pipeline (same pattern as pipe stealing)
+	if(!length(old_pipenet.members) && !length(old_pipenet.other_atmosmch))
+		qdel(old_pipenet)
+	else
+		old_pipenet.update = TRUE // Force pressure recalc after losing an air
 
 /datum/pipeline/proc/merge(datum/pipeline/E)
 	if(E == src)
@@ -156,9 +195,13 @@
 	if(null in E.other_airs)
 		stack_trace("merge(): Pipeline [E]([REF(E)]) contains null gas mixtures in other_airs. Cleaning before merge.")
 		listclearnulls(E.other_airs)
+	for(var/datum/gas_mixture/gm as anything in E.other_airs)
+		if(gm._owner_pipeline == E)
+			gm._owner_pipeline = src
 	other_airs |= E.other_airs
 	E.members.Cut()
 	E.other_atmosmch.Cut()
+	E.other_airs.Cut()
 	update = TRUE
 	qdel(E)
 

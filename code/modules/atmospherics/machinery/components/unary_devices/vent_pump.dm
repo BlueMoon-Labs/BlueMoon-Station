@@ -101,7 +101,7 @@
 	if (!environment)
 		return
 
-	var/environment_pressure = environment?.return_pressure()
+	var/environment_pressure = environment.return_pressure()
 	if(!environment_pressure)
 		return
 
@@ -114,18 +114,23 @@
 			pressure_delta = min(pressure_delta, (air_contents.return_pressure() - internal_pressure_bound))
 
 		if(pressure_delta > 0)
-			if(air_contents.return_temperature() > 0)
-				var/transfer_moles = pressure_delta*environment.return_volume()/(air_contents.return_temperature() * R_IDEAL_GAS_EQUATION)
+			var/air_temp = air_contents.return_temperature()
+			if(air_temp > 0)
+				var/transfer_moles = pressure_delta*environment.return_volume()/(air_temp * R_IDEAL_GAS_EQUATION)
 
 				loc.assume_air_moles(air_contents, transfer_moles)
 				air_update_turf()
 
 	else // external -> internal
-		if(environment.return_pressure() > 0)
-			var/our_multiplier = air_contents.return_volume() / (environment.return_temperature() * R_IDEAL_GAS_EQUATION)
+		if(environment_pressure > 0)
+			var/env_temp = environment.return_temperature()
+			if(env_temp <= 0)
+				return
+			var/env_vol = environment.return_volume()
+			var/our_multiplier = air_contents.return_volume() / (env_temp * R_IDEAL_GAS_EQUATION)
 			var/moles_delta = 10000 * our_multiplier
 			if(pressure_checks&EXT_BOUND)
-				moles_delta = min(moles_delta, (environment_pressure - external_pressure_bound) * environment.return_volume() / (environment.return_temperature() * R_IDEAL_GAS_EQUATION))
+				moles_delta = min(moles_delta, (environment_pressure - external_pressure_bound) * env_vol / (env_temp * R_IDEAL_GAS_EQUATION))
 			if(pressure_checks&INT_BOUND)
 				moles_delta = min(moles_delta, (internal_pressure_bound - air_contents.return_pressure()) * our_multiplier)
 

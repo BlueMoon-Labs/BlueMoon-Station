@@ -13,6 +13,8 @@ What are the archived variables for?
 	var/list/reaction_results
 	var/list/analyzer_results //used for analyzer feedback - not initialized until its used
 	var/_extools_pointer_gasmixture // Contains the index in the gas vector for this gas mixture in rust land. Don't. Touch. This. Var.
+	/// Pipeline that currently owns this air via other_airs. Used for O(1) cleanup instead of brute-force scanning.
+	var/datum/pipeline/_owner_pipeline
 
 GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 
@@ -103,6 +105,10 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 
 
 /datum/gas_mixture/Destroy()
+	// Safety net: clean up pipeline references before destruction
+	if(_owner_pipeline && !QDELETED(_owner_pipeline))
+		_owner_pipeline.other_airs -= src
+	_owner_pipeline = null
 	// Release Rust-side reference
 	if(GLOB.auxtools_atmos_initialized)
 		__gasmixture_unregister()
