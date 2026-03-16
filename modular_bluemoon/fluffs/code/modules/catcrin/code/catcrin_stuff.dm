@@ -9,7 +9,7 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Слот головы.
-с
+
 /obj/item/clothing/head/helmet/sec/mark45
 	name = "Mk. 45 Black Legionnaire helmet"
 	desc = "The standard-issue helmet of the Catcrin army. Developed in 2545, it can be worn independently of its accompanying suit by removing a protective cover on the lower section of the helmet, sporting specially designed earpieces to accommodate Catcrin anatomy. Besides maximizing comfort, these earpieces also automaticly swivel towards sound sources thanks to a set of inbuilt servo-motors, designed to pick up background noise while also dampening louder sounds for hearing protection. The personal code of the person who wears this helmet is written on the outside. This one looks worn out, most likely the helmet was removed from the corpse."
