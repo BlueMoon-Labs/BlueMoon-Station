@@ -40,8 +40,14 @@
 	update = air?.react(src)
 
 /proc/_deferred_qdel_gas_mixtures(list/L)
-	for(var/datum/gas_mixture/G in L)
+	if(!length(L))
+		return
+	var/datum/gas_mixture/G = L[1]
+	L.Cut(1, 2)
+	if(G && !QDELETED(G))
 		qdel(G)
+	if(length(L))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(_deferred_qdel_gas_mixtures), L), 0)
 
 /datum/pipeline/proc/build_pipeline(obj/machinery/atmospherics/base)
 	if(QDELETED(base))
