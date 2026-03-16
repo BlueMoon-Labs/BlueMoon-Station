@@ -7,7 +7,7 @@
 	desc = "A special gland which was made out of artificial bacteria via nanites. Dangerous. In this case, they are programmed to overload restorative bodily systems, but this puts a certain toll on body - causes severe oxygen loss, with toxic degeneration of body."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "overload"
-	slot = ORGAN_SLOT_THRUSTERS //Only one at a time, organicpsychos would be funny but no.
+	slot = ORGAN_SLOT_OSSMODULA //Only one at a time, organicpsychos would be funny but no.
 	w_class = WEIGHT_CLASS_NORMAL
 	zone = BODY_ZONE_CHEST
 
@@ -26,7 +26,7 @@
 	desc = "A special gland which was made out of artificial bacteria via nanites. Dangerous. Due to some irregular encoding, causes removal of 'purge' drugs from the body. Allows body to withstand against any use of stamina and run 24/7 non-stop, but due to 'mishaps' in bodily processes, person will be afflicted with secreted drugs and general sense of insanity."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "nemedia"
-	slot = ORGAN_SLOT_THRUSTERS
+	slot = ORGAN_SLOT_OSSMODULA
 	w_class = WEIGHT_CLASS_NORMAL
 	zone = BODY_ZONE_CHEST
 	var/list/possible_reagents = list(/datum/reagent/drug/labebium, /datum/reagent/drug/krokodil, /datum/reagent/drug/heroin, /datum/reagent/drug/happiness, /datum/reagent/drug/methamphetamine, /datum/reagent/drug/space_drugs,  /datum/reagent/drug/skooma, /datum/reagent/medicine/damagedcompound)

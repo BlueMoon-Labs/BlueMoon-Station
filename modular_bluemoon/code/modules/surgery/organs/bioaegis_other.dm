@@ -6,7 +6,7 @@
 	desc = "A special gland which was made out of artificial bacteria via nanites. In this case, they are programmed to harden skin and prevent harm from light, and can be removed afterwards."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "darkveil"
-	slot = ORGAN_SLOT_THRUSTERS
+	slot = ORGAN_SLOT_OSSMODULA
 	w_class = WEIGHT_CLASS_NORMAL
 	zone = BODY_ZONE_CHEST
 
@@ -33,7 +33,7 @@
 	desc = "A special gland which was made out of artificial bacteria via nanites. In this case, they are programmed to rewire some parts of neural system and can be removed afterwards."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "optisia"
-	slot = ORGAN_SLOT_THRUSTERS
+	slot = ORGAN_SLOT_OSSMODULA
 	w_class = WEIGHT_CLASS_NORMAL
 	zone = BODY_ZONE_CHEST
 
