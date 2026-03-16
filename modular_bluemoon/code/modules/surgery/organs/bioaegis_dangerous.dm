@@ -17,7 +17,7 @@
 		return
 	owner.adjustBruteLoss(-15, FALSE)
 	owner.adjustFireLoss(-15, FALSE)
-	owner.adjustStaminaLoss(1.5, 0) //It overloads body.
+	owner.adjustStaminaLoss(1.5, FALSE) //It overloads body.
 	owner.adjustToxLoss(4, FALSE)
 	owner.adjustOxyLoss(5, FALSE)
 
@@ -42,7 +42,7 @@
 	owner.reagents.add_reagent(chem_to_add, 1.5) //....But stupidly high on drugs all the time.
 	owner.adjustToxLoss(-1, TRUE, TRUE)
 	owner.adjustOrganLoss(ORGAN_SLOT_BRAIN, -1) //Labebium and Co hurts brain, so let us heal it just a little bit to offset the threat.
-	owner.adjustStaminaLoss(-100, 0) //You can run non-stop...
+	owner.adjustStaminaLoss(-100, FALSE) //You can run non-stop...
 
 /obj/item/organ/neuralderanger/Remove(special = FALSE)
 	. = ..()

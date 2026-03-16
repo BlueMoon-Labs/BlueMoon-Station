@@ -136,7 +136,7 @@
 
 //SPECIALIZED
 /datum/design/bioaegis/organs/misc
-	reagents_list = list(/datum/reagent/consumable/organicprecursor/advbionanites = 50)
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/bionanites = 50)
 	materials = list (/datum/material/plasma = 15000)
 	category = list("Species-specific Designs")
 
@@ -158,26 +158,24 @@
 	desc = "A design for biological organ."
 	build_path = /obj/item/organ/vocal_cords/babyloncords
 
-
-/datum/design/bioaegis/organs/misc/highcost
-	reagents_list = list(/datum/reagent/consumable/organicprecursor/advbionanites = 150)
-
-/datum/design/bioaegis/organs/misc/highcost/adaptiveeyes
+/datum/design/bioaegis/organs/misc/adaptiveeyes
 	name = "Adaptive eyes"
 	id = "adaptiveeyes"
 	desc = "A design for biological organ."
 	build_path = /obj/item/organ/eyes/night_vision/aegis
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/bionanites = 150)
 
-/datum/design/bioaegis/organs/misc/highcost/thermalaegiseyes
+/datum/design/bioaegis/organs/misc/thermalaegiseyes
 	name = "Thermographic eyes"
 	id = "thermalaegiseyes"
 	desc = "A design for biological organ."
 	build_path = /obj/item/organ/eyes/thermalaegis
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/advbionanites = 150)
 	min_security_level = SEC_LEVEL_RED
 
 // Dangerous for user
 /datum/design/bioaegis/organs/misc/dangerous
-	reagents_list = list(/datum/reagent/consumable/organicprecursor/advbionanites = 150)
+	reagents_list = list(/datum/reagent/consumable/organicprecursor/advbionanites = 50)
 	category = list("Dangerous Designs")
 	min_security_level = SEC_LEVEL_RED
 
