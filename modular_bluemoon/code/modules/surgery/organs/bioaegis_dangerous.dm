@@ -38,6 +38,9 @@
 	ADD_TRAIT(owner, TRAIT_FREESPRINT, GENETIC_MUTATION)
 
 /obj/item/organ/neuralderanger/on_life()
+	. = ..()
+	if(!. || !owner)
+		return
 	var/chem_to_add = pick(possible_reagents)
 	owner.reagents.add_reagent(chem_to_add, 1.5) //....But stupidly high on drugs all the time.
 	owner.adjustToxLoss(-1, TRUE, TRUE)
