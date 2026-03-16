@@ -46,7 +46,7 @@
 		return ..()
 
 /obj/item/swapper/attack_ghost(mob/dead/observer/user)
-	if(!linked_swapper ||QDELETED(linked_swapper))
+	if(QDELETED(linked_swapper))
 		return ..()
 	
 	user.forceMove(get_turf(linked_swapper))
