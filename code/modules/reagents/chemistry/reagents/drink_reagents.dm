@@ -236,8 +236,8 @@
 			myseed.adjust_potency(-chems.get_reagent_amount(type) * 0.5)
 
 /datum/reagent/consumable/milk/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart)
-	if(iscatperson(M) && method == INGEST)
-		quality = DRINK_GOOD
+	if(method == INGEST)
+		quality = (iscatperson(M)) ? DRINK_GOOD : initial(quality)
 	. = ..()
 
 /datum/reagent/consumable/milk/on_mob_add(mob/living/L, amount)
@@ -1115,8 +1115,8 @@
 	glass_desc = "A purrfect drink for a cat."
 
 /datum/reagent/consumable/catnip_tea/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart)
-	if(iscatperson(M) && method == INGEST)
-		quality = DRINK_FANTASTIC
+	if(method == INGEST)
+		quality = (iscatperson(M)) ? DRINK_FANTASTIC : initial(quality)
 	. = ..()
 
 /datum/reagent/consumable/catnip_tea/on_mob_life(mob/living/carbon/M)
