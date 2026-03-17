@@ -727,6 +727,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	desc = "A cane used by a true gentleman. Or a clown."
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "cane"
+	base_icon_state = "cane"
 	item_state = "stick"
 	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
@@ -735,6 +736,18 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	w_class = WEIGHT_CLASS_SMALL
 	custom_materials = list(/datum/material/iron=50)
 	attack_verb = list("bludgeoned", "whacked", "disciplined", "thrashed")
+	unique_reskin = list("Black and White" = list(RESKIN_ICON_STATE = "cane_black_and_white0"))
+
+/obj/item/cane/update_icon_state()
+	icon_state = base_icon_state
+
+/obj/item/cane/reskin_obj(mob/user)
+	if(current_skin == "Black and White")
+		icon_state = "cane_black_and_white0"
+		item_state = null
+		base_icon_state = "cane_black_and_white0"
+		slot_flags = ITEM_SLOT_BACK
+		AddComponent(/datum/component/two_handed, force_unwielded=5, force_wielded=5, icon_wielded="cane_black_and_white1")
 
 /obj/item/staff
 	name = "wizard staff"

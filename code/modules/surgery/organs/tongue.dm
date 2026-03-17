@@ -97,7 +97,9 @@
 		owner.RegisterSignal(owner, COMSIG_MOB_SAY, TYPE_PROC_REF(/mob/living/carbon, handle_tongueless_speech))
 	return ..()
 
-/obj/item/organ/tongue/could_speak_language(language)
+/obj/item/organ/tongue/could_speak_language(datum/language/language)
+	if(!languages_possible)
+		return initial(language.flags) & TONGUELESS_SPEECH
 	return is_type_in_typecache(language, languages_possible)
 
 /obj/item/organ/tongue/lizard

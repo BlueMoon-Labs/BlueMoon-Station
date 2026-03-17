@@ -30,6 +30,7 @@
 	active = FALSE
 	last_pipe = null
 	current_pipe = null
+	QDEL_NULL(move_packet)
 	..()
 	return QDEL_HINT_HARDDEL_NOW
 

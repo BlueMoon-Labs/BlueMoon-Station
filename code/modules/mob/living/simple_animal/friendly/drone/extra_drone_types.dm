@@ -312,8 +312,9 @@
 	D.flags_1 |= (flags_1 & ADMIN_SPAWNED_1)
 	D.key = key
 	D.mind.enslave_mind_to_creator(user)
-	var/datum/action/innate/inteq_drone_comm/comm_action = new(user)
-	comm_action.Grant(user)
+	if(!locate(/datum/action/innate/inteq_drone_comm) in user.actions)
+		var/datum/action/innate/inteq_drone_comm/comm_action = new(user)
+		comm_action.Grant(user)
 	log_game("[key_name(user)] призвал [key_name(D)] — дрона InteQ.")
 	to_chat(user, "<span class='holoparasite'><b>[D.real_name]</b> активирован! Используй кнопку «Связаться с дроном» для связи.</span>")
 	to_chat(D, "<span class='holoparasite'>Ты — <b>[D.real_name]</b>, связанный с [user.real_name]. [user.real_name] — твой Мастер. Используй кнопку «Связаться с Мастером» для связи.</span>")
@@ -359,6 +360,15 @@
 	W.implant(src)
 	var/datum/action/innate/inteq_drone_communicate/comm_action = new(src)
 	comm_action.Grant(src)
+
+/mob/living/simple_animal/drone/syndrone/badass/inteq/death(gibbed)
+	var/mob/living/master = mind?.enslaved_to
+	var/area_name = get_area_name(src, TRUE)
+	var/turf/T = get_turf(src)
+	var/coords = T ? "([T.x], [T.y], [T.z])" : "(?, ?, ?)"
+	. = ..()
+	if(!QDELETED(master))
+		to_chat(master, "<span class='holoparasite'><font color=\"#FF6B35\"><b>Дрон [real_name] уничтожен!</b></font> Место гибели: [area_name] [coords]</span>")
 
 /mob/living/simple_animal/drone/mentordrone
 	name = "Mentor Drone"

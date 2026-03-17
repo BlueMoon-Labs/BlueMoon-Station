@@ -548,7 +548,7 @@
 	if(result != REACTING)
 		qdel(G)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
-	if(!G.get_moles(GAS_NITRYL) < 0.8)
+	if(G.get_moles(GAS_NITRYL) < 0.8)
 		qdel(G)
 		return list("success" = FALSE, "message" = "Nitryl isn't being generated correctly!")
 	qdel(G)
@@ -599,9 +599,9 @@
 	if(result != REACTING)
 		qdel(G)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
-	if(!G.get_moles(GAS_BZ) < 4) // efficiency is 4.0643 and bz generation == efficiency
+	if(G.get_moles(GAS_BZ) < 4) // efficiency is 4.0643 and bz generation == efficiency
 		qdel(G)
-		return list("success" = FALSE, "message" = "Nitryl isn't being generated correctly!")
+		return list("success" = FALSE, "message" = "BZ isn't being generated correctly!")
 	qdel(G)
 	return ..()
 
@@ -649,9 +649,12 @@
 
 	var/result = G.react()
 	if(result != REACTING)
+		qdel(G)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
-	if(!G.get_moles(GAS_STIMULUM) < 900)
+	if(G.get_moles(GAS_STIMULUM) < 900)
+		qdel(G)
 		return list("success" = FALSE, "message" = "Stimulum isn't being generated correctly!")
+	qdel(G)
 	return ..()
 
 /datum/gas_reaction/nobliumformation //Hyper-Noblium formation is extrememly endothermic, but requires high temperatures to start. Due to its high mass, hyper-nobelium uses large amounts of nitrogen and tritium. BZ can be used as a catalyst to make it less endothermic.
