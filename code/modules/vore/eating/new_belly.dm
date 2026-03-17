@@ -1,6 +1,7 @@
 //DESC - START
 #define BELLY_MAIN_DESC "main_desc"
 #define BELLY_ABSORBED_DESC "absorb_desc"
+#define BELLY_EGG
 
 //DESC - END
 
@@ -38,19 +39,28 @@
 
 //VORE SOUNDS - END
 
-/datum/component/belly_controller
+/mob/atom/var/list/new_belly/belly_prototypes
 
 
 /obj/new_belly
 	name = "belly"
 
 	var/belly_flags = NONE
+	var/belly_mode = DM_HOLD
+
+	var/list/dm_mode/digest_modes
+	var/list/dm_modifer/dm_modifers
+
+
+	//Основной лист с описанием
 	var/list/static_descs = list(
-		BELLY_MAIN_DESC = "It's a belly! You're in it!"
+		BELLY_MAIN_DESC = "It's a belly! You're in it!",
+		BELLY_ABSORBED_DESC = ""
 	)
 
+	//Вспомогательный лист с описаниями, будет дополнятся к первому описывая режим работы
 	var/list/belly_mode_descs = list(
-
+		DM_HOLD = "Вы просто лежите"
 	)
 
 	var/list/vore_verbs = list(
@@ -85,5 +95,22 @@
 
 	var/list/transfer_locations = list() // : string[]
 
-	var/transfer_chance = 0;
-ф
+	var/transfer_chance = 0; //0 - Трансфера нет
+
+	var/list/auto_transfer_locations = list()  // : string[]
+
+	var/auto_transfer_time = 0; //0 - Трансфера нет
+	var/auto_transfer_chance  = 0; //0 - Трансфера нет
+
+
+#define DIGEST_PULSE_SIGNAL "digest_pulse"
+
+/obj/new_belly/proc/LateInit(var/atom/host)
+
+	RegisterSignal(host, DIGEST_PULSE_SIGNAL)
+
+
+/obj/new_belly/proc/process_belly(var/delta_time = 1)
+	for(var/atom/atom_to_process as anything in src.contents)
+		var/i = 0
+

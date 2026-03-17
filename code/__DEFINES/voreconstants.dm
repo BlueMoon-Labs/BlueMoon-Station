@@ -26,6 +26,7 @@
 #define MAX_VORE_FLAG	(1<<11)-1
 
 #define isbelly(A) istype(A, /obj/belly)
+#define isnewbelly(A) istype(A, /obj/new_belly)
 
 #define QDEL_NULL_LIST(x) if(x) { for(var/y in x) { qdel(y) } ; x = null }
 #define VORE_STRUGGLE_EMOTE_CHANCE 40
@@ -199,3 +200,13 @@ GLOBAL_LIST_INIT(prey_release_sounds, list(
 		"Burp 15" = 'modular_splurt/sound/voice/burps/belch15.ogg',
 		"None" = null
 		))
+
+
+#define DM_MODIFER_NEED_PROCESS (0 << 1)
+
+#define DIGNAL_DM_MODIFER_PROCESS "modifer_process"
+
+#define TRAIT_DM_DIGEST_STAGE_0 "item_digest_stage_0"
+#define TRAIT_DM_DIGEST_STAGE_1 "item_digest_stage_1"
+#define TRAIT_DM_DIGEST_STAGE_2 "item_digest_stage_2"
+#define TRAIT_DM_DIGEST_STAGE_3 "item_digest_stage_3"

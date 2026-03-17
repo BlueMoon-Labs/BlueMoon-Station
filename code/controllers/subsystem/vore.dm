@@ -39,3 +39,13 @@ SUBSYSTEM_DEF(bellies)
 
 		if (MC_TICK_CHECK)
 			return
+
+
+SUBSYSTEM_DEF(belly_process)
+	name = "Belly process"
+	priority = FIRE_PRIORITY_VORE
+	flags = SS_KEEP_TIMING|SS_NO_INIT
+	runlevels = RUNLEVEL_GAME|RUNLEVEL_POSTGAME
+
+	var/static/list/belly_list = list()
+
