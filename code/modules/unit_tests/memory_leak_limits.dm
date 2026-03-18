@@ -11,7 +11,8 @@
 		server.pda_msgs += msg
 	// Simulate what receive_information does after adding
 	if(length(server.pda_msgs) > 500)
-		server.pda_msgs.Cut(1, length(server.pda_msgs) - 400)
+		var/trim_count = length(server.pda_msgs) - 400
+		server.pda_msgs.Cut(1, trim_count + 1)
 
 	TEST_ASSERT(length(server.pda_msgs) <= 500, "pda_msgs exceeded limit of 500: got [length(server.pda_msgs)]")
 	TEST_ASSERT(length(server.pda_msgs) > 0, "pda_msgs should not be empty after trimming")
@@ -27,7 +28,8 @@
 		server.pda_msgs += msg
 	// Trigger the trim
 	if(length(server.pda_msgs) > 500)
-		server.pda_msgs.Cut(1, length(server.pda_msgs) - 400)
+		var/trim_count = length(server.pda_msgs) - 400
+		server.pda_msgs.Cut(1, trim_count + 1)
 	// The last message should be the one with i=550
 	var/datum/data_pda_msg/last_msg = server.pda_msgs[length(server.pda_msgs)]
 	TEST_ASSERT_EQUAL(last_msg.sender, "sender_550", "Last message should be the most recent one (sender_550)")
@@ -57,7 +59,8 @@
 	for(var/i in 1 to 550)
 		LAZYADD(server.rc_msgs, new /datum/data_rc_msg("dept_[i]", "sender_[i]", "msg_[i]"))
 		if(length(server.rc_msgs) > 500)
-			server.rc_msgs.Cut(1, length(server.rc_msgs) - 400)
+			var/trim_count = length(server.rc_msgs) - 400
+			server.rc_msgs.Cut(1, trim_count + 1)
 
 	TEST_ASSERT(length(server.rc_msgs) <= 500, "rc_msgs exceeded limit of 500: got [length(server.rc_msgs)]")
 	TEST_ASSERT(length(server.rc_msgs) > 0, "rc_msgs should not be empty after trimming")
@@ -134,6 +137,8 @@
 	// When message_delay is 0, the Destroy should not touch recentmessages
 	// (messages clear naturally via spawn(10) callback)
 	TEST_ASSERT_EQUAL(GLOB.message_delay, 0, "message_delay should remain 0")
+	// Clean up global state for other tests
+	GLOB.recentmessages = list()
 
 // ===== Communications Console: messages limit =====
 
