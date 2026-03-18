@@ -98,7 +98,11 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 
 /datum/gc_failure_viewer/gc_failure_cache/show_to(user, datum/gc_failure_viewer/back_to, linear)
 	var/html = build_header()
-	html += "<b>[total_failures]</b> GC failures<br><br>"
+	html += "<b>[total_failures]</b> GC failures"
+	var/trimmed = total_failures - length(failures)
+	if(trimmed > 0)
+		html += " (showing last [length(failures)], [trimmed] older entries trimmed)"
+	html += "<br><br>"
 	if (!linear)
 		html += "organized | [make_link("linear", null, 1)]<hr>"
 		for (var/type_key in failure_sources)
@@ -124,6 +128,11 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	entry.failure_source = source
 	failures += entry
 	source.failures += entry
+	// Prevent unbounded memory growth
+	if(length(failures) > 500)
+		failures.Cut(1, length(failures) - 300)
+	if(length(source.failures) > 200)
+		source.failures.Cut(1, length(source.failures) - 100)
 	// In TESTING mode, auto-launch world scan while D is still guaranteed alive
 	#ifdef TESTING
 	INVOKE_ASYNC(entry, TYPE_PROC_REF(/datum/gc_failure_viewer/gc_failure_entry, trigger_world_scan), null, D)

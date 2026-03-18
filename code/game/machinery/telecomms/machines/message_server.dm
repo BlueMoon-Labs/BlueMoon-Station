@@ -91,6 +91,8 @@
 
 	var/list/datum/data_pda_msg/pda_msgs = list()
 	var/list/datum/data_rc_msg/rc_msgs = list()
+	var/pda_msgs_trimmed = 0
+	var/rc_msgs_trimmed = 0
 	var/decryptkey
 
 /obj/machinery/telecomms/message_server/Initialize(mapload)
@@ -103,6 +105,8 @@
 	for(var/obj/machinery/computer/message_monitor/monitor in GLOB.telecomms_list)
 		if(monitor.linkedServer && monitor.linkedServer == src)
 			monitor.linkedServer = null
+	pda_msgs.Cut()
+	rc_msgs.Cut()
 	. = ..()
 
 /obj/machinery/telecomms/message_server/proc/GenerateKey()
@@ -126,6 +130,12 @@
 	var/datum/data_pda_msg/M = new(signal.format_target(), "[signal.data["name"]] ([signal.data["job"]])", signal.data["message"], signal.data["photo"])
 	pda_msgs += M
 	signal.logged = M
+
+	// Prevent unbounded memory growth
+	if(length(pda_msgs) > 500)
+		var/trim_count = length(pda_msgs) - 400
+		pda_msgs.Cut(1, trim_count + 1)
+		pda_msgs_trimmed += trim_count
 
 	// pass it along to either the hub or the broadcaster
 	if(!relay_information(signal, /obj/machinery/telecomms/hub))
