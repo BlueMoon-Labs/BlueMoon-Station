@@ -6,8 +6,8 @@
     id = "ai_link_implant"
     build_type = MECHFAB | PROTOLATHE
     build_path = /obj/item/organ/cyberimp/brain/ai_link
-    materials = list(/datum/material/iron = 2000, /datum/material/glass = 1000, /datum/material/silver = 500, /datum/material/gold = 200)
-    construction_time = 120
+    materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000, /datum/material/silver = 2000, /datum/material/gold = 1500, /datum/material/diamond = 1500)
+    construction_time = 200
     category = list("Implants", "Biotech")
     departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
 
@@ -89,6 +89,7 @@
 	. = ..()
 	if(!.) return
 	RegisterSignal(M, "stat_panel", PROC_REF(add_stat_panel))
+	RegisterSignal(M, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine))
 	diag_hud_set_aishell()
 
 	if(linked_ai)
