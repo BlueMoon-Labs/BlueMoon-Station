@@ -2,60 +2,70 @@
 
 // ===== Message Server: pda_msgs limit =====
 
-/// Verifies that pda_msgs list doesn't grow beyond its limit
+/// Verifies that pda_msgs list doesn't grow beyond its limit via receive_information()
 /datum/unit_test/message_server_pda_msgs_limit/Run()
 	var/obj/machinery/telecomms/message_server/server = allocate(/obj/machinery/telecomms/message_server)
-	// Fill beyond the limit of 500
+	server.toggled = TRUE
+	// Clear the default system message
+	server.pda_msgs.Cut()
+	// Send 550 PDA messages through the real receive_information path
 	for(var/i in 1 to 550)
-		var/datum/data_pda_msg/msg = new("recipient_[i]", "sender_[i]", "message_[i]")
-		server.pda_msgs += msg
-	// Simulate what receive_information does after adding
-	if(length(server.pda_msgs) > 500)
-		var/trim_count = length(server.pda_msgs) - 400
-		server.pda_msgs.Cut(1, trim_count + 1)
+		var/datum/signal/subspace/pda/signal = new(run_loc_floor_bottom_left, list(
+			"name" = "sender_[i]",
+			"job" = "job_[i]",
+			"message" = "message_[i]",
+			"targets" = list("recipient_[i]")
+		))
+		server.receive_information(signal, null)
 
 	TEST_ASSERT(length(server.pda_msgs) <= 500, "pda_msgs exceeded limit of 500: got [length(server.pda_msgs)]")
 	TEST_ASSERT(length(server.pda_msgs) > 0, "pda_msgs should not be empty after trimming")
 
-/// Verifies that pda_msgs keeps the LATEST messages after trimming
+/// Verifies that pda_msgs keeps the LATEST messages after trimming via receive_information()
 /datum/unit_test/message_server_pda_msgs_keeps_latest/Run()
 	var/obj/machinery/telecomms/message_server/server = allocate(/obj/machinery/telecomms/message_server)
+	server.toggled = TRUE
 	// Clear the default system message
 	server.pda_msgs.Cut()
-	// Add 550 messages
+	// Send 550 PDA messages through the real receive_information path
 	for(var/i in 1 to 550)
-		var/datum/data_pda_msg/msg = new("recipient_[i]", "sender_[i]", "message_[i]")
-		server.pda_msgs += msg
-	// Trigger the trim
-	if(length(server.pda_msgs) > 500)
-		var/trim_count = length(server.pda_msgs) - 400
-		server.pda_msgs.Cut(1, trim_count + 1)
+		var/datum/signal/subspace/pda/signal = new(run_loc_floor_bottom_left, list(
+			"name" = "sender_[i]",
+			"job" = "job_[i]",
+			"message" = "message_[i]",
+			"targets" = list("recipient_[i]")
+		))
+		server.receive_information(signal, null)
 	// The last message should be the one with i=550
 	var/datum/data_pda_msg/last_msg = server.pda_msgs[length(server.pda_msgs)]
-	TEST_ASSERT_EQUAL(last_msg.sender, "sender_550", "Last message should be the most recent one (sender_550)")
+	TEST_ASSERT_EQUAL(last_msg.sender, "sender_550 (job_550)", "Last message should be the most recent one (sender_550)")
 
 /// Verifies that message_server Destroy() cleans up lists
 /datum/unit_test/message_server_destroy_cleanup/Run()
 	var/obj/machinery/telecomms/message_server/server = allocate(/obj/machinery/telecomms/message_server)
+	server.toggled = TRUE
+	// Add messages through receive_information
 	for(var/i in 1 to 10)
-		server.pda_msgs += new /datum/data_pda_msg("r", "s", "m")
-		LAZYADD(server.rc_msgs, new /datum/data_rc_msg("r", "s", "m"))
-	var/pda_count_before = length(server.pda_msgs)
-	var/rc_count_before = length(server.rc_msgs)
-	TEST_ASSERT(pda_count_before > 0, "pda_msgs should have entries before Destroy")
-	TEST_ASSERT(rc_count_before > 0, "rc_msgs should have entries before Destroy")
-	// Simulate the cleanup portion of Destroy (without actually destroying)
-	server.pda_msgs.Cut()
-	server.rc_msgs.Cut()
-	TEST_ASSERT_EQUAL(length(server.pda_msgs), 0, "pda_msgs should be empty after cleanup")
-	TEST_ASSERT_EQUAL(length(server.rc_msgs), 0, "rc_msgs should be empty after cleanup")
+		var/datum/signal/subspace/pda/signal = new(run_loc_floor_bottom_left, list(
+			"name" = "sender_[i]",
+			"job" = "job_[i]",
+			"message" = "message_[i]",
+			"targets" = list("recipient_[i]")
+		))
+		server.receive_information(signal, null)
+	LAZYADD(server.rc_msgs, new /datum/data_rc_msg("r", "s", "m"))
+	TEST_ASSERT(length(server.pda_msgs) > 0, "pda_msgs should have entries before Destroy")
+	TEST_ASSERT(length(server.rc_msgs) > 0, "rc_msgs should have entries before Destroy")
+	// Call real Destroy() via qdel - if cleanup is broken, it will runtime
+	qdel(server)
 
 // ===== Request Console: rc_msgs limit =====
 
 /// Verifies that rc_msgs list doesn't grow beyond its limit
+/// Note: rc_msgs trimming is inline in requests_console Topic(), no standalone proc to call
 /datum/unit_test/request_console_rc_msgs_limit/Run()
 	var/obj/machinery/telecomms/message_server/server = allocate(/obj/machinery/telecomms/message_server)
-	// Simulate adding 550 request console messages
+	// Simulate adding 550 request console messages with the same trim logic as Topic()
 	for(var/i in 1 to 550)
 		LAZYADD(server.rc_msgs, new /datum/data_rc_msg("dept_[i]", "sender_[i]", "msg_[i]"))
 		if(length(server.rc_msgs) > 500)
@@ -67,30 +77,17 @@
 
 // ===== GC Failure Cache: failures limit =====
 
-/// Verifies that gc_failure_cache failures list doesn't grow beyond its limit
+/// Verifies that gc_failure_cache failures list doesn't grow beyond its limit via log_gc_failure()
 /datum/unit_test/gc_failure_cache_limit/Run()
 	// Create a temporary cache to test without polluting the global one
 	var/datum/gc_failure_viewer/gc_failure_cache/test_cache = new()
-	// Simulate logging 600 failures
+	// Log 600 failures through the real log_gc_failure path
+	// Pass null as D to avoid triggering expensive world scans in TESTING mode
 	for(var/i in 1 to 600)
-		test_cache.total_failures++
-		var/type_key = "/datum/test_type_[i % 5]" // 5 different type sources
-		var/datum/gc_failure_viewer/gc_failure_source/source = test_cache.failure_sources[type_key]
-		if(!source)
-			source = new("[type_key]")
-			test_cache.failure_sources[type_key] = source
-		var/datum/gc_failure_viewer/gc_failure_entry/entry = new()
-		entry.failure_source = source
-		test_cache.failures += entry
-		source.failures += entry
-		// Apply the limit logic
-		if(length(test_cache.failures) > 500)
-			test_cache.failures.Cut(1, length(test_cache.failures) - 300)
-		if(length(source.failures) > 200)
-			source.failures.Cut(1, length(source.failures) - 100)
+		test_cache.log_gc_failure(null, "/datum/test_type_[i % 2]", "ref_[i]", world.time)
 
 	TEST_ASSERT(length(test_cache.failures) <= 500, "gc_failure_cache failures exceeded 500: got [length(test_cache.failures)]")
-	// Verify per-source limits
+	// Verify per-source limits (2 sources with ~300 each should trigger the >200 trim)
 	for(var/key in test_cache.failure_sources)
 		var/datum/gc_failure_viewer/gc_failure_source/source = test_cache.failure_sources[key]
 		TEST_ASSERT(length(source.failures) <= 200, "gc_failure_source '[key]' exceeded 200: got [length(source.failures)]")
@@ -142,10 +139,10 @@
 
 // ===== Communications Console: messages limit =====
 
-/// Verifies that communications console messages list doesn't grow beyond limit
+/// Verifies that communications console messages list doesn't grow beyond limit via add_message()
 /datum/unit_test/comms_console_messages_limit/Run()
 	var/obj/machinery/computer/communications/console = allocate(/obj/machinery/computer/communications)
-	// Add 250 messages through add_message
+	// Add 250 messages through the real add_message proc
 	for(var/i in 1 to 250)
 		var/datum/comm_message/msg = new()
 		msg.title = "Message [i]"
@@ -155,7 +152,7 @@
 	TEST_ASSERT(length(console.messages) <= 200, "Communications messages exceeded limit of 200: got [length(console.messages)]")
 	TEST_ASSERT(length(console.messages) > 0, "Communications messages should not be empty after trimming")
 
-/// Verifies that the latest messages are kept after trimming
+/// Verifies that the latest messages are kept after trimming via add_message()
 /datum/unit_test/comms_console_messages_keeps_latest/Run()
 	var/obj/machinery/computer/communications/console = allocate(/obj/machinery/computer/communications)
 	for(var/i in 1 to 250)
@@ -167,7 +164,7 @@
 	var/datum/comm_message/last_msg = console.messages[length(console.messages)]
 	TEST_ASSERT_EQUAL(last_msg.title, "Message 250", "Last message should be the most recent (Message 250)")
 
-/// Verifies that communications console Destroy cleans up messages
+/// Verifies that communications console Destroy() cleans up messages
 /datum/unit_test/comms_console_destroy_cleanup/Run()
 	var/obj/machinery/computer/communications/console = allocate(/obj/machinery/computer/communications)
 	for(var/i in 1 to 5)
@@ -175,6 +172,5 @@
 		msg.title = "Test [i]"
 		console.add_message(msg)
 	TEST_ASSERT(length(console.messages) > 0, "Console should have messages before Destroy")
-	// Simulate the cleanup from Destroy
-	LAZYCLEARLIST(console.messages)
-	TEST_ASSERT(length(console.messages) == 0, "Messages should be cleared after LAZYCLEARLIST")
+	// Call real Destroy() via qdel - if cleanup is broken, it will runtime
+	qdel(console)
