@@ -141,6 +141,7 @@
 
 /// BLUEMOON TESTS
 #include "bad_defines_defined.dm"
+#include "disposal_holder.dm"
 
 #undef TEST_ASSERT
 #undef TEST_ASSERT_EQUAL

@@ -101,9 +101,10 @@
 /datum/config_entry/number/tetris_score_max_sci
 	default = 10000
 
-// Minimum time between giving rewards
+// Minimum time between giving rewards (in deciseconds; 0 would break prize dispensing)
 /datum/config_entry/number/tetris_time_cooldown
 	default = 600
+	min_val = 1
 
 /// R&D Machinery ///
 // Should production machinery be restricted for skeleton crews?

@@ -126,17 +126,18 @@ GLOBAL_LIST_INIT(closed_turf_air_cache, list())
 
 
 /turf/open/proc/update_visuals()
-
+	// Guard against auxmos callback race: turf destroyed during atmos processing
+	if(QDELETED(src))
+		return
 	var/list/atmos_overlay_types = src.atmos_overlay_types // Cache for free performance
-	var/list/new_overlay_types = list()
-	var/static/list/nonoverlaying_gases = typecache_of_gases_with_no_overlays()
-
-	if(!air) // 2019-05-14: was not able to get this path to fire in testing. Consider removing/looking at callers -Naksu
+	if(!air)
 		if (atmos_overlay_types)
 			vis_contents -= atmos_overlay_types
 			src.atmos_overlay_types = null
 		return
 
+	var/list/new_overlay_types = list()
+	var/static/list/nonoverlaying_gases = typecache_of_gases_with_no_overlays()
 
 	for(var/id in air.get_gases())
 		if (nonoverlaying_gases[id])
@@ -159,6 +160,9 @@ GLOBAL_LIST_INIT(closed_turf_air_cache, list())
 	src.atmos_overlay_types = new_overlay_types
 
 /turf/open/proc/set_visuals(list/new_overlay_types)
+	// Guard against auxmos callback race: turf destroyed during atmos processing
+	if(QDELETED(src))
+		return
 	if(!new_overlay_types)
 		new_overlay_types = list()
 	// Batch list operations - for-in with vis_contents -= overlay causes illegal operation when many callbacks run

@@ -127,8 +127,8 @@
 				visible_message(span_notice("[src] sputters for a moment before going quiet."))
 				return TRUE
 
-			// Set cooldown time
-			COOLDOWN_START(src, TETRIS_COOLDOWN_MAIN, TETRIS_TIME_COOLDOWN)
+			// Set cooldown time (ensure > 0 or cooldown would never finish)
+			COOLDOWN_START(src, TETRIS_COOLDOWN_MAIN, max(1, TETRIS_TIME_COOLDOWN))
 
 			// Vend prizes
 			prizevend(usr, reward_count)

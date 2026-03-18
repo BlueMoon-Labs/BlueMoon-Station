@@ -242,3 +242,7 @@
 /datum/gear/uniform/sergal_gray_uniform
 	name = "Shigu clan kimono"
 	path = /obj/item/clothing/under/bm/sergal_gray_uniform
+
+/datum/gear/uniform/aristocratic_uniform
+	name = "Aristocratic uniform"
+	path = /obj/item/clothing/under/bm/aristocratic_uniform

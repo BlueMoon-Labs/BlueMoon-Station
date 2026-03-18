@@ -63,3 +63,6 @@
 	name = "Sergal metal chain"
 	path = /obj/item/clothing/neck/bm/sergal_metal_chain
 
+/datum/gear/neck/aristocratic_uniform_cape
+	name = "Aristocratic uniform cape"
+	path = /obj/item/clothing/neck/bm/aristocratic_uniform_cape

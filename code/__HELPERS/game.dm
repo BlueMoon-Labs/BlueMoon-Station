@@ -15,7 +15,10 @@
 	var/area/A = get_base_area ? get_base_area(X) : get_area(X)
 	if(!A)
 		return null
-	return format_text ? format_text(A.name) : A.name
+	var/name = A.name
+	if(!name)
+		return ""
+	return format_text ? format_text(name) : name
 
 /proc/get_areas_in_range(dist=0, atom/center=usr)
 	if(!dist)

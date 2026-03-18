@@ -65,3 +65,8 @@
 	name = "Partial - Anklet"
 	icon_state = "anklet"
 	covered_limbs = list("Left Leg" =  MATRIX_RED, "Right Leg" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/other/sergal_alt
+	name = "Sergal body alt"
+	icon_state = "sergal_alt"
+	covered_limbs = list("Head" = MATRIX_ALL, "Chest" = MATRIX_RED_GREEN, "Left Leg" = MATRIX_RED_GREEN, "Right Leg" = MATRIX_RED_GREEN, "Left Arm" = MATRIX_RED_GREEN, "Right Arm" = MATRIX_RED_GREEN)
