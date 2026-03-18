@@ -399,8 +399,8 @@ export const Pandemic = (props, context) => {
         )}
         {!!data.has_blood && (
           <>
-            <PandemicDiseaseDisplay />
             <PandemicAntibodyDisplay />
+            <PandemicDiseaseDisplay />
           </>
         )}
       </Window.Content>

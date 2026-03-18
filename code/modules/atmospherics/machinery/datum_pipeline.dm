@@ -39,11 +39,16 @@
 	reconcile_air()
 	update = air?.react(src)
 
+/proc/_deferred_qdel_gas_mixtures(list/L)
+	for(var/datum/gas_mixture/G in L)
+		qdel(G)
+
 /datum/pipeline/proc/build_pipeline(obj/machinery/atmospherics/base)
 	if(QDELETED(base))
 		stack_trace("build_pipeline() called with QDELETED base [base?.type] at [base ? COORD(base) : "null"]")
 		return
 	var/volume = 0
+	var/list/datum/gas_mixture/to_delete = list()
 	if(istype(base, /obj/machinery/atmospherics/pipe))
 		var/obj/machinery/atmospherics/pipe/E = base
 		volume = E.volume
@@ -84,14 +89,15 @@
 
 						if(item.air_temporary)
 							air.merge(item.air_temporary)
-							var/datum/gas_mixture/to_del = item.air_temporary
+							to_delete += item.air_temporary
 							item.air_temporary = null
-							addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), to_del), 0) // Deferred to avoid illegal operation during pipeline build
 				else
 					P.setPipenet(src, borderline)
 					addMachineryMember(P)
 
 	air.set_volume(volume)
+	if(length(to_delete))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(_deferred_qdel_gas_mixtures), to_delete), 0)
 
 /**
  *  For a machine to properly "connect" to a pipeline and share gases,

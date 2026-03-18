@@ -105,6 +105,10 @@
 			. += "<span class='notice'>Если вы хотите больше информации, вам придётся подойти ближе.</span>"
 		return
 
+	if(QDELETED(air_contents))
+		. += "<span class='warning'>Манометр повреждён или неисправен.</span>"
+		return
+
 	. += "<span class='notice'>Манометр сообщает давление в [round(src.air_contents.return_pressure(),0.01)] кПа.</span>"
 
 	var/celsius_temperature = src.air_contents.return_temperature()-T0C
@@ -137,6 +141,8 @@
 		qdel(src)
 
 /obj/item/tank/analyzer_act(mob/living/user, obj/item/I)
+	if(QDELETED(air_contents))
+		return FALSE
 	atmosanalyzer_scan(air_contents, user, src)
 	return TRUE
 
@@ -153,7 +159,7 @@
 	var/mob/living/carbon/human/H = user
 	user.visible_message("<span class='suicide'>[user] is putting [src]'s valve to [user.ru_ego()] lips! It looks like [user.p_theyre()] trying to commit suicide!</span>")
 	playsound(loc, 'sound/effects/spray.ogg', 10, TRUE, -3)
-	if(!QDELETED(H) && air_contents && air_contents.return_pressure() >= 1000)
+	if(!QDELETED(H) && !QDELETED(air_contents) && air_contents.return_pressure() >= 1000)
 		for(var/obj/item/W in H)
 			H.dropItemToGround(W)
 			if(prob(50))
@@ -197,7 +203,7 @@
 
 /obj/item/tank/ui_data(mob/user)
 	. = list(
-		"tankPressure" = round(air_contents.return_pressure()),
+		"tankPressure" = !QDELETED(air_contents) ? round(air_contents.return_pressure()) : 0,
 		"releasePressure" = round(distribute_pressure)
 	)
 
@@ -230,37 +236,47 @@
 				distribute_pressure = clamp(round(pressure), TANK_MIN_RELEASE_PRESSURE, TANK_MAX_RELEASE_PRESSURE)
 
 /obj/item/tank/remove_air(amount)
+	if(QDELETED(air_contents))
+		return null
 	return air_contents.remove(amount)
 
 /obj/item/tank/remove_air_ratio(ratio)
+	if(QDELETED(air_contents))
+		return null
 	return air_contents.remove_ratio(ratio)
 
 /obj/item/tank/return_air()
-	return air_contents
+	return !QDELETED(air_contents) ? air_contents : null
 
 /obj/item/tank/return_analyzable_air()
-	return air_contents
+	return !QDELETED(air_contents) ? air_contents : null
 
 /obj/item/tank/assume_air(datum/gas_mixture/giver)
+	if(QDELETED(air_contents))
+		return FALSE
 	air_contents.merge(giver)
 
 	check_status()
 	return TRUE
 
 /obj/item/tank/assume_air_moles(datum/gas_mixture/giver, moles)
+	if(QDELETED(air_contents))
+		return FALSE
 	giver.transfer_to(air_contents, moles)
 
 	check_status()
 	return TRUE
 
 /obj/item/tank/assume_air_ratio(datum/gas_mixture/giver, ratio)
+	if(QDELETED(air_contents))
+		return FALSE
 	giver.transfer_ratio_to(air_contents, ratio)
 
 	check_status()
 	return TRUE
 
 /obj/item/tank/proc/remove_air_volume(volume_to_return)
-	if(!air_contents)
+	if(QDELETED(air_contents))
 		return null
 
 	var/tank_pressure = air_contents.return_pressure()
@@ -272,13 +288,21 @@
 
 /obj/item/tank/process()
 	//Allow for reactions
+	// Guard: QDELETED air_contents can return garbage from return_pressure(), causing false explosions
+	if(QDELETED(air_contents))
+		air_contents = null
+		return
+	if(!air_contents)
+		return
 	air_contents.react()
 	check_status()
 
 /obj/item/tank/proc/check_status()
 	//Handle exploding, leaking, and rupturing of the tank
 
-	if(!air_contents)
+	if(QDELETED(air_contents))
+		if(air_contents)
+			air_contents = null
 		return FALSE
 
 	var/pressure = air_contents.return_pressure()
@@ -286,8 +310,13 @@
 
 	if(pressure > TANK_FRAGMENT_PRESSURE)
 		if(!istype(src.loc, /obj/item/transfer_valve))
-			message_admins("Explosive tank rupture! Last key to touch the tank was [src.fingerprintslast].")
-			log_game("Explosive tank rupture! Last key to touch the tank was [src.fingerprintslast].")
+			var/turf/T = get_turf(src)
+			var/touch_msg = "N/A"
+			if(src.fingerprintslast)
+				var/mob/toucher = get_mob_by_key(src.fingerprintslast)
+				touch_msg = "[ADMIN_LOOKUPFLW(toucher)]"
+			message_admins("Explosive [src.name] rupture at [ADMIN_VERBOSEJMP(T)]! Last key to touch: [touch_msg]. Pressure: [round(pressure)] kPa.")
+			log_game("Explosive [src.name] rupture at [AREACOORD(T)]. Last key: [src.fingerprintslast || "N/A"]. Pressure: [round(pressure)] kPa.")
 		//Give the gas a chance to build up more pressure through reacting
 		for(var/i in 1 to TANK_POST_FRAGMENT_REACTIONS)
 			air_contents.react(src)

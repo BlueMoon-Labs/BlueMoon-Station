@@ -220,13 +220,14 @@
 
 /datum/action/item_action/chameleon/change/proc/update_item(obj/item/picked_item)
 	var/obj/item/chameleon_item = target
+	if(!istype(chameleon_item))
+		return
 
-	chameleon_item.name = initial(picked_item.name)
-	chameleon_item.desc = initial(picked_item.desc)
+	if(!istype(chameleon_item, /obj/item/card/id)) // Не сбрасываем имя для карты
+		chameleon_item.name = initial(picked_item.name)
+		chameleon_item.desc = initial(picked_item.desc)
 	chameleon_item.icon_state = initial(picked_item.icon_state)
-	if(isitem(chameleon_item))
-		var/obj/item/I = chameleon_item
-		I.item_state = initial(picked_item.item_state)
+	chameleon_item.item_state = initial(picked_item.item_state)
 	var/obj/item/clothing/CL = chameleon_item
 	var/obj/item/clothing/PCL = new picked_item
 	if(istype(CL) && istype(PCL))

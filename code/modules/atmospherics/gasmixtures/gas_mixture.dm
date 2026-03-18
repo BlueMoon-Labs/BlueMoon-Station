@@ -108,7 +108,8 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 		__gasmixture_unregister()
 	reaction_results = null
 	analyzer_results = null
-	return ..()
+	..()
+	return QDEL_HINT_HARDDEL
 
 /proc/gas_types()
 	var/list/L = subtypesof(/datum/gas)

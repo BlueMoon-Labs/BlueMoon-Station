@@ -360,7 +360,7 @@ SUBSYSTEM_DEF(timer)
 	/// The source of the timedevent, whatever called addtimer
 	var/source
 	/// Flags associated with the timer, see _DEFINES/subsystems.dm
-	var/list/flags
+	var/flags
 	/// Time at which the timer was invoked or destroyed
 	var/spent = 0
 	/// An informative name generated for the timer as its representation in strings, useful for debugging
@@ -512,11 +512,7 @@ SUBSYSTEM_DEF(timer)
  * If the timed event is tracking client time, it will be added to a special bucket.
  */
 /datum/timedevent/proc/bucketJoin()
-	// Generate debug-friendly name for timer
-	var/static/list/bitfield_flags = list("TIMER_UNIQUE", "TIMER_OVERRIDE", "TIMER_CLIENT_TIME", "TIMER_STOPPABLE", "TIMER_NO_HASH_WAIT", "TIMER_LOOP")
-	name = "Timer: [id] (\ref[src]), TTR: [timeToRun], wait:[wait] Flags: [jointext(bitfield2list(flags, bitfield_flags), ", ")], \
-		callBack: \ref[callBack], callBack.object: [callBack.object]\ref[callBack.object]([getcallingtype()]), \
-		callBack.delegate:[callBack.delegate]([callBack.arguments ? callBack.arguments.Join(", ") : ""]), source: [source]"
+	name = "Timer: [id] (\ref[src]), TTR: [timeToRun], wait:[wait]"
 
 	// Check if this timed event should be diverted to the client time bucket, or the secondary queue
 	in_timer_bucket_queue = FALSE

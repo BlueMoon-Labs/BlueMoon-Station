@@ -160,6 +160,9 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/proc/scrub(var/turf/tile)
 	if(!istype(tile))
 		return FALSE
+	// Closed turfs (walls) return cached shared mixtures - must not modify them
+	if(!isopenturf(tile))
+		return FALSE
 	if(!airs?[1])
 		return FALSE
 	var/datum/gas_mixture/environment = tile.return_air()

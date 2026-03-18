@@ -48,6 +48,8 @@
 		if(holding)
 			borrowed += holding.air_contents
 		var/turf/T = get_turf(src)
+		if(T && !isopenturf(T))
+			T = null
 		if(T?.return_air())
 			borrowed += T.return_air()
 		if(pump?.airs[1] && !(pump.airs[1] in borrowed))
@@ -59,6 +61,9 @@
 		return
 
 	var/turf/T = get_turf(src)
+	// Closed turfs return cached shared mixtures - must not use for pumping (would corrupt cache)
+	if(T && !isopenturf(T))
+		T = null
 	var/datum/gas_mixture/new_air1 = direction == PUMP_OUT ? (holding ? holding.air_contents : air_contents) : (holding ? air_contents : T?.return_air())
 	var/datum/gas_mixture/new_air2 = direction == PUMP_OUT ? (holding ? air_contents : T?.return_air()) : (holding ? holding.air_contents : air_contents)
 	var/list/borrowed = list(air_contents)

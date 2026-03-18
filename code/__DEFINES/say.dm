@@ -96,6 +96,8 @@
 #define EMOTE_OMNI 4
 
 //Don't set this very much higher then 1024 unless you like inviting people in to dos your server with message spam
+/// Max chars to process through say_emphasis regex - prevents ReDoS/crash from crafted input (illegal operation in chat)
+#define MAX_SAY_EMPHASIS_LEN	1024
 //ambition start
 #define MAX_AMBITION_LEN		1024
 //ambition end

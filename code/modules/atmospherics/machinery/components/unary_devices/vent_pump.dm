@@ -92,6 +92,9 @@
 		return
 	if(!parents?[1] || !airs?[1])
 		return
+	// Closed turfs return cached shared mixtures - vent must be on open turf
+	if(!isopenturf(loc))
+		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
 	var/datum/gas_mixture/environment = loc.return_air()

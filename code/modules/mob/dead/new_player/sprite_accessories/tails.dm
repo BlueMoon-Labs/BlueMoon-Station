@@ -1000,6 +1000,16 @@
 	icon_state = "sergal_alt"
 	matrixed_sections = MATRIX_RED
 
+/datum/sprite_accessory/tails/mam_tails/sergal/alt_two
+	name = "Sergal alt (2 colors)"
+	icon_state = "sergal_alt_2"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/sergal/alt_two
+	name = "Sergal alt (2 colors)"
+	icon_state = "sergal_alt_2"
+	matrixed_sections = MATRIX_RED_GREEN
+
 /datum/sprite_accessory/tails/mam_tails/shark
 	name = "Shark"
 	icon_state = "shark"

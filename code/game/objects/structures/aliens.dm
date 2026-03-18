@@ -110,7 +110,7 @@
 	desc = "A thick resin surface covers the floor."
 	anchored = TRUE
 	density = FALSE
-	layer = TURF_LAYER
+	layer = ABOVE_NORMAL_TURF_LAYER
 	plane = FLOOR_PLANE
 	icon_state = "weeds"
 	max_integrity = 15
@@ -168,7 +168,6 @@
 	name = "glowing resin"
 	desc = "Blue bioluminescence shines from beneath the surface."
 	icon_state = "weednode"
-	layer = ABOVE_NORMAL_TURF_LAYER
 	light_color = LIGHT_COLOR_BLUE
 	light_power = 0.5
 	var/lon_range = 4
@@ -240,7 +239,7 @@
 		if(GROWN)
 			icon_state = "egg_hugger2"
 		if(BURST)
-			icon_state = "egg exploding"
+			icon_state = "egg_hugger4"
 
 /obj/structure/alien/egg/attack_paw(mob/living/user)
 	return attack_hand(user)
@@ -324,7 +323,7 @@
 
 /obj/structure/alien/egg/burst
 	status = BURST
-	icon_state = "egg exploding"
+	icon_state = "egg_hugger4"
 
 #undef BURST
 #undef GROWING

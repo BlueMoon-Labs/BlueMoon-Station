@@ -217,7 +217,7 @@
 				obj_flags &= ~IN_USE
 
 
-/obj/attack_ghost(mob/user)
+/obj/attack_ghost(mob/dead/observer/user)
 	. = ..()
 	if(.)
 		return

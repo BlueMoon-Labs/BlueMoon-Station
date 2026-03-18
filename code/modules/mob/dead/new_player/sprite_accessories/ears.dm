@@ -417,6 +417,11 @@
 	icon_state = "sergal_alt"
 	matrixed_sections = MATRIX_RED
 
+/datum/sprite_accessory/ears/mam_ears/sergal_alt_two
+	name = "Sergal alt (Secondary)"
+	icon_state = "sergal_alt2"
+	matrixed_sections = MATRIX_RED_GREEN
+
 /datum/sprite_accessory/ears/mam_ears/skunk
 	name = "skunk"
 	icon_state = "skunk"
