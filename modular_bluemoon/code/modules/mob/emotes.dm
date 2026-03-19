@@ -855,7 +855,7 @@
 	sound = 'modular_bluemoon/sound/emotes/skweh1.ogg'
 	emote_cooldown = 1 SECONDS
 
-/datum/emote/sound/human/kweh/run_emote(mob/user, params)
+/datum/emote/sound/human/skweh/run_emote(mob/user, params)
 	sound = pick(
 	'modular_bluemoon/sound/emotes/skweh1.ogg',
 	'modular_bluemoon/sound/emotes/skweh2.ogg')
