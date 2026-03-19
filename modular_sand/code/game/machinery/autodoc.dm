@@ -163,7 +163,9 @@
 	open_machine()
 
 /obj/machinery/autodoc/attackby(obj/item/I, mob/user, params)
-	if(istype(I, organ_type) && !processing)
+	if(istype(I, organ_type))
+		if(processing)
+			return
 		if(!user.temporarilyRemoveItemFromInventory(I))
 			return
 		if(stored_organ)
