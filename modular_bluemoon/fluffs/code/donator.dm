@@ -2166,6 +2166,7 @@
 	path = /obj/item/modkit/nebular_kit
 	ckeywhitelist = list("lapkee")
 
+
 /datum/gear/donator/bm/toy_plasma_scythe
 	name = "Toy Plasma Scythe"
 	slot = ITEM_SLOT_BACKPACK
@@ -2177,3 +2178,11 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/inteq_sledgehammer/toy
 	ckeywhitelist = list("freakowo", "belf0r")
+
+/datum/gear/donator/bm/invisible_ac
+	name = "Invisible Armored Coat"
+	path = /obj/item/clothing/suit/toggle/captains_parade/hos_formal/ac/invisible
+	slot = ITEM_SLOT_OCLOTHING
+	restricted_desc = "Head of Security, Warden, Blueshield."
+	restricted_roles = list("Head of Security", "Warden", "Blueshield")
+	ckeywhitelist = list("lapkee")
