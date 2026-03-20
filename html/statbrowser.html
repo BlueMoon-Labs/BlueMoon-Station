@@ -790,6 +790,7 @@ function byond_bridge_call(path, params) {
 	var rawUrl = (path || "") + "?" + query;
 	var protocolUrl = "byond://" + rawUrl;
 
+	// Legacy Chromium client
 	if (window.cef_to_byond) {
 		try {
 			window.cef_to_byond(protocolUrl);
@@ -797,50 +798,19 @@ function byond_bridge_call(path, params) {
 		} catch (e) {}
 	}
 
-	var bridge = window.BYOND;
-	if (bridge) {
-		var callTargets = [];
-		if (typeof bridge === "function") {
-			callTargets.push(bridge);
-		}
-		var methodNames = [
-			"callByond",
-			"byond",
-			"call",
-			"topic",
-			"sendMessage",
-			"send",
-			"postMessage"
-		];
-		for (var m = 0; m < methodNames.length; m++) {
-			var method = bridge[methodNames[m]];
-			if (typeof method === "function") {
-				callTargets.push(method);
-			}
-		}
-		for (var c = 0; c < callTargets.length; c++) {
-			try {
-				callTargets[c].call(bridge, rawUrl);
-				return true;
-			} catch (e1) {}
-			try {
-				callTargets[c].call(bridge, protocolUrl);
-				return true;
-			} catch (e2) {}
-		}
-	}
-
+	// Primary transport: location.href (stable in WebView2, BYOND 516+)
 	try {
 		window.location.href = protocolUrl;
 		return true;
-	} catch (e3) {}
+	} catch (e) {}
 
+	// Fallback: XHR to DreamSeeker's HTTP server
 	try {
 		var xhr = new XMLHttpRequest();
 		xhr.open("GET", rawUrl);
 		xhr.send();
 		return true;
-	} catch (e4) {}
+	} catch (e) {}
 
 	return false;
 }
@@ -854,6 +824,7 @@ function byond_winset(params) {
 function byond_topic(href) {
 	var protocolUrl = "byond://" + href;
 
+	// Legacy Chromium client
 	if (window.cef_to_byond) {
 		try {
 			window.cef_to_byond(protocolUrl);
@@ -861,50 +832,19 @@ function byond_topic(href) {
 		} catch (e) {}
 	}
 
-	var bridge = window.BYOND;
-	if (bridge) {
-		var callTargets = [];
-		if (typeof bridge === "function") {
-			callTargets.push(bridge);
-		}
-		var methodNames = [
-			"callByond",
-			"byond",
-			"call",
-			"topic",
-			"sendMessage",
-			"send",
-			"postMessage"
-		];
-		for (var m = 0; m < methodNames.length; m++) {
-			var method = bridge[methodNames[m]];
-			if (typeof method === "function") {
-				callTargets.push(method);
-			}
-		}
-		for (var c = 0; c < callTargets.length; c++) {
-			try {
-				callTargets[c].call(bridge, href);
-				return true;
-			} catch (e1) {}
-			try {
-				callTargets[c].call(bridge, protocolUrl);
-				return true;
-			} catch (e2) {}
-		}
-	}
-
+	// Primary transport: location.href (stable in WebView2, BYOND 516+)
 	try {
 		window.location.href = protocolUrl;
 		return true;
-	} catch (e3) {}
+	} catch (e) {}
 
+	// Fallback: XHR to DreamSeeker's HTTP server
 	try {
 		var xhr = new XMLHttpRequest();
 		xhr.open("GET", href);
 		xhr.send();
 		return true;
-	} catch (e4) {}
+	} catch (e) {}
 
 	return false;
 }

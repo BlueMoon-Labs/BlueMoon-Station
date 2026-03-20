@@ -12,12 +12,9 @@ SUBSYSTEM_DEF(title_bm)
 	var/lobby_tick_timer
 	var/refresh_timer
 	var/current_video_payload
-	var/last_online_count = -1
-	var/last_ready_count = -1
 	var/cached_static_html = ""
 	var/cached_js_url = ""           // URL JS-библиотеки — вычисляется один раз в _build_static_html
 	var/cached_notice_js = ""        // JS-вызов для текущего объявления — кешируется в set_notice
-	var/ready_count = 0           	 // реактивный счётчик, обновляется через on_player_ready_change
 	var/current_sfw_image
 	var/current_nsfw_image
 
@@ -32,7 +29,7 @@ SUBSYSTEM_DEF(title_bm)
 	for(var/mob/dead/new_player/player as anything in GLOB.new_player_list)
 		if(!player.client)
 			continue
-		player.bm_update_lobby_html()
+		INVOKE_ASYNC(player, TYPE_PROC_REF(/mob/dead/new_player, bm_update_lobby_html))
 		refreshed++
 	return refreshed
 
@@ -81,7 +78,6 @@ SUBSYSTEM_DEF(title_bm)
 	cached_static_html = ""
 	cached_js_url = ""
 	cached_notice_js = ""
-	ready_count = 0
 	return ..();
 
 /datum/controller/subsystem/title_bm/Recover()
@@ -98,7 +94,6 @@ SUBSYSTEM_DEF(title_bm)
 	cached_static_html      = SStitle_bm.cached_static_html
 	cached_js_url           = SStitle_bm.cached_js_url
 	cached_notice_js        = SStitle_bm.cached_notice_js
-	ready_count        = SStitle_bm.ready_count
 	current_sfw_image   = SStitle_bm.current_sfw_image
 	current_nsfw_image  = SStitle_bm.current_nsfw_image
 
@@ -215,29 +210,62 @@ SUBSYSTEM_DEF(title_bm)
 	user.client << output(name, "bm_lobby_browser:bm_update_character")
 
 /datum/controller/subsystem/title_bm/proc/_get_player_counts()
-	// ready_count обновляется реактивно через on_player_ready_change — O(1) вместо O(N)
-	return list(length(GLOB.new_player_list), ready_count)
+	var/ready = 0
+	for(var/mob/dead/new_player/np as anything in GLOB.new_player_list)
+		if(np.ready)
+			ready++
+	return list(length(GLOB.clients), length(GLOB.new_player_list), ready)
 
-/// Вызывается при изменении ready-статуса игрока. delta = +1 (готов) или -1 (не готов).
+/// Вызывается при изменении ready-статуса игрока. Пересчитывает счётчик и рассылает payload.
 /datum/controller/subsystem/title_bm/proc/on_player_ready_change(delta)
-	ready_count = max(0, ready_count + delta)
 	update_player_counts_all()
+
+/datum/controller/subsystem/title_bm/proc/_build_counts_payload()
+	var/list/counts = _get_player_counts()
+	var/timer_s = (SSticker?.timeLeft > 0) ? round(SSticker.timeLeft / 10) : -1
+	var/is_pregame = (!SSticker || SSticker.current_state <= GAME_STATE_PREGAME) ? 1 : 0
+	return "[counts[1]],[counts[2]],[counts[3]],[timer_s],[is_pregame]"
 
 /datum/controller/subsystem/title_bm/proc/push_player_count_to(mob/dead/new_player/player)
 	if(!(istype(player) && player.bm_lobby_ready && player.client))
 		return
-	var/list/counts = _get_player_counts()
-	player.client << output("[counts[1]],[counts[2]]", "bm_lobby_browser:bm_update_counts")
+	player.client << output(_build_counts_payload(), "bm_lobby_browser:bm_update_counts")
 
 /datum/controller/subsystem/title_bm/proc/update_player_counts_all()
-	var/list/counts = _get_player_counts()
-	var/online = counts[1]
-	var/ready = counts[2]
-	if(online == last_online_count && ready == last_ready_count)
-		return
-	last_online_count = online
-	last_ready_count = ready
+	var/payload = _build_counts_payload()
 	for(var/mob/dead/new_player/player as anything in GLOB.new_player_list)
 		if(!player.bm_lobby_ready || !player.client)
 			continue
-		player.client << output("[online],[ready]", "bm_lobby_browser:bm_update_counts")
+		player.client << output(payload, "bm_lobby_browser:bm_update_counts")
+
+/datum/controller/subsystem/title_bm/proc/_on_enter_pregame()
+	SIGNAL_HANDLER
+	_rotate_current_images()  // выбираем случайную картинку один раз при старте прегейма
+	change_image(null)
+	deltimer(lobby_tick_timer)
+	lobby_tick_timer = addtimer(CALLBACK(src, PROC_REF(_lobby_tick)), 15 SECONDS, TIMER_LOOP | TIMER_STOPPABLE)
+
+/datum/controller/subsystem/title_bm/proc/_lobby_tick()
+	if(!length(GLOB.new_player_list))
+		return
+	update_player_counts_all()
+	if(!SSticker?.login_music)
+		return
+	for(var/mob/dead/new_player/player as anything in GLOB.new_player_list)
+		if(!player.bm_lobby_ready || !player.client || player.bm_lobby_music_path)
+			continue
+		player.client.bm_push_lobby_music()
+
+/datum/controller/subsystem/title_bm/proc/_on_enter_setting_up()
+	SIGNAL_HANDLER
+	deltimer(lobby_tick_timer) // pregame-таймер больше не нужен — Players spawn out
+	deltimer(refresh_timer)
+	refresh_timer = addtimer(CALLBACK(src, PROC_REF(_refresh_all_lobby_html)), 0.5 SECONDS, TIMER_STOPPABLE)
+
+/datum/controller/subsystem/title_bm/proc/_refresh_all_lobby_html()
+	for(var/mob/dead/new_player/player as anything in GLOB.new_player_list)
+		if(player.spawning || player.new_character)
+			continue
+		if(!player.client)
+			continue
+		INVOKE_ASYNC(player, TYPE_PROC_REF(/mob/dead/new_player, bm_update_lobby_html))

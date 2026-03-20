@@ -788,13 +788,16 @@
 	)
 
 /datum/gas_reaction/hagedorn/react(datum/gas_mixture/air, datum/holder)
-	var/initial_energy = air.thermal_energy()
 	if(air.get_moles(GAS_QCD))
 		return
-	for(var/g in air.get_gases())
-		air.set_moles(g, 0)
-	var/amount = initial_energy / (air.return_temperature() * GLOB.gas_data.specific_heats[GAS_QCD])
+	var/initial_energy = air.thermal_energy()
+	var/temp = air.return_temperature()
+	var/amount = initial_energy / (temp * GLOB.gas_data.specific_heats[GAS_QCD])
+	// Set GAS_QCD first to prevent Auxmos from re-invoking react() during the clear loop
 	air.set_moles(GAS_QCD, amount)
+	for(var/g in air.get_gases())
+		if(g != GAS_QCD)
+			air.set_moles(g, 0)
 	var/list/largest_values = SSresearch.science_tech.largest_values
 	if(!(GAS_QCD in largest_values))
 		largest_values[GAS_QCD] = 0

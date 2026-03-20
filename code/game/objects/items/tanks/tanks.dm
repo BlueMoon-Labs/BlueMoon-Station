@@ -66,6 +66,7 @@
 	. = ..()
 
 	air_contents = new(volume) //liters
+	air_contents.set_volume(volume)
 	air_contents.set_temperature(T20C)
 
 	populate_gas()

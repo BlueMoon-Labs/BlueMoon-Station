@@ -478,3 +478,7 @@
 	icon_state = "sov_offcoat"
 	item_state = "sov_offcoat"
 	//armor = list(MELEE = 25, BULLET = 20, LASER = 20, ENERGY = 10, BOMB = 20, BIO = 50, RAD = 50, FIRE = -10, ACID = 50,  WOUND = 10)
+
+/obj/item/clothing/suit/armor/vest/russian_coat/liquidator/Initialize(mapload)
+	. = ..()
+	allowed += list(/obj/item/broom/liquidator)

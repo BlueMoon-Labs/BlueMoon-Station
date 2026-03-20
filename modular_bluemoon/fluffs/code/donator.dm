@@ -2176,4 +2176,4 @@
 	name = "Toy Sledgehammer"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/inteq_sledgehammer/toy
-	ckeywhitelist = list("freakowo")
+	ckeywhitelist = list("freakowo", "belf0r")
