@@ -152,6 +152,10 @@
 
 	var/emp_timer
 
+/datum/action/item_action/chameleon/change/Destroy()	
+	QDEL_NULL(on_change)
+	return ..()
+
 /datum/action/item_action/chameleon/change/Grant(mob/M)
 	if(M && (owner != M))
 		if(!M.chameleon_item_actions)
