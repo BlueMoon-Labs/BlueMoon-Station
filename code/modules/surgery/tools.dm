@@ -402,8 +402,9 @@
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/surgical_drapes/attack(mob/living/M, mob/user)
-	if(!attempt_initiate_surgery(src, M, user))
-		..()
+	if(attempt_initiate_surgery(src, M, user))
+		return NO_AUTO_CLICKDELAY_HANDLING
+	return ..()
 
 /obj/item/surgical_drapes/AltClick(mob/user)
 	. = ..()
