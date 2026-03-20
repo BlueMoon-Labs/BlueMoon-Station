@@ -602,9 +602,9 @@
 
 /mob/living/silicon/ai/proc/choose_modules()
 	set category = "Malfunction"
-	set name = "Choose Module"
+	set name = "Модули"
 
-	malf_picker.use(src)
+	malf_picker.ui_interact(src)
 
 /mob/living/silicon/ai/proc/ai_statuschange()
 	set category = "AI Commands"
