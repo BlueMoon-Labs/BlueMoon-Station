@@ -369,7 +369,7 @@ GLOBAL_VAR_INIT(weapon_permits_issued, 0)
 
 /obj/item/clothing/accessory/permit/special/clown_car
 	name = "Clown car permit"
-	desc = "С любовью, от Хонкматери."
+	desc = "С любовью, от Хонкоматери."
 	permitted_weapons = "Clown car"
 	notes = "Сотруднику разрешено владеть и использовать сlown car.\n\
 	Уничтожение машины, сотрудниками оказавшимися запертыми внутри или лицами, оказывающими им помощь не будет считаться нарушением КЗ.\n\
