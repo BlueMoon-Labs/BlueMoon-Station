@@ -1118,7 +1118,7 @@
 
 /datum/gear/donator/bm/marisa_hat
 	name = "Witch Hat"
-	path = /obj/item/clothing/head/wizard/marisa
+	path = /obj/item/clothing/head/wizard/marisa/fake
 	slot = ITEM_SLOT_HEAD
 	ckeywhitelist = list("xaeshkavd")
 
