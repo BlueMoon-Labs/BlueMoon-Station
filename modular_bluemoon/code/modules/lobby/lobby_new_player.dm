@@ -149,7 +149,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
       <span class="bm-s-value" id="bm-s-nsfw">ВЫКЛ</span>
     </a>
     <a class="bm-settings-row" href='?src=[R];bm_lobby_action=toggle_admin_bg' style="cursor:pointer">
-      <span class="bm-s-label">ЛОББИ ОТ АДМИНОВ</span>
+      <span class="bm-s-label">МЕДИА ОТ АДМИНОВ</span>
       <span class="bm-s-value" id="bm-s-adminbg">ВКЛ</span>
     </a>
   </div>
@@ -163,9 +163,12 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	parts += {"<div id=\"bm-footer\">
   <div id=\"bm-char-name\">[char_name ? char_name : "\u2014 \u2014 \u2014"]</div>
   <div id=\"bm-count-row\">
-    <span class=\"bm-count-lbl\">ОНЛАЙН&nbsp;<span class=\"bm-count-val\" id=\"bm-count-online\">&#8212;</span></span>
+    <span class=\"bm-count-lbl\">В ЛОББИ&nbsp;<span class=\"bm-count-val\" id=\"bm-count-online\">&#8212;</span></span>
     <span id=\"bm-count-ready-wrap\" class=\"bm-count-lbl\">ГОТОВЫ&nbsp;<span class=\"bm-count-val\" id=\"bm-count-ready\">&#8212;</span></span>
   </div>
+</div>"}
+	parts += {"<div id=\"bm-countdown-row\" style=\"display:none\">
+  <span class=\"bm-countdown-label\">ДО СТАРТА</span>&nbsp;<span id=\"bm-countdown-val\">—</span>
 </div>"}
 	parts += {"<div id=\"bm-audio-bar\">
   <div id=\"bm-audio-row\">
@@ -242,21 +245,10 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	parts += is_antag_opted ? {"<span class='bm-checked'>☑</span> РОЛЬ АНТАГОНИСТА"} : {"<span class='bm-unchecked'>☒</span> РОЛЬ АНТАГОНИСТА"}
 	parts += "</a>"
 
-	if(length(GLOB.lobby_station_traits))
-		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=job_traits'>ОСОБЕННОСТИ РАБОТЫ</a>"}
-
-	if(!is_guest_key(src.key))
-		var/poll_html = _bm_build_polls_button()
-		if(poll_html)
-			parts += poll_html
+	if(!is_guest_key(src.key) && client?.prefs)
+		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=polls_menu'>ОПРОСЫ СЕРВЕРА</a>"}
 
 	return parts.Join("")
-
-/mob/dead/new_player/proc/_bm_build_polls_button()
-	if(!client?.prefs)
-		return null
-	var/R = REF(src)
-	return {"<a class='bm-btn' href='?src=[R];bm_lobby_action=polls_menu'>ОПРОСЫ СЕРВЕРА</a>"}
 
 // ===========================
 // ОБРАБОТКА HREF-ЗАПРОСОВ
@@ -369,18 +361,12 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			client.prefs.ShowChoices(src)
 			return
 
-		if("job_traits")
-			_bm_play_click_sound()
-			show_job_traits()
-			return
-
 		if("polls_menu")
+			if(is_guest_key(src.key))
+				return
 			_bm_play_click_sound()
 			if(SSvote?.mode)
-				var/datum/browser/popup = new(src, "vote", "Voting Panel", nwidth=600, nheight=700)
-				popup.set_window_options("can_close=0")
-				popup.set_content(SSvote.interface(client))
-				popup.open(0)
+				SSvote.ui_interact(src)
 			else
 				client << output("Активных голосований нет.", "bm_lobby_browser:bm_show_notice")
 			return
@@ -405,24 +391,3 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	assets = list(
 		"bm_lobby.js" = 'modular_bluemoon/assets/js/bm_lobby.js'
 	)
-
-/mob/dead/new_player/proc/show_job_traits()
-	if(!client)
-		return
-	if(!length(GLOB.lobby_station_traits))
-		to_chat(src, span_warning("Сейчас нет доступных особенностей работы!"))
-		return
-	var/list/available = list()
-	for(var/datum/station_trait/trait as anything in GLOB.lobby_station_traits)
-		if(!trait.can_display_lobby_button(client))
-			continue
-		available += trait
-	if(!LAZYLEN(available))
-		to_chat(src, span_warning("Сейчас нет доступных особенностей работы!"))
-		return
-	var/datum/station_trait/clicked_trait = tgui_input_list(src, "Выберите особенность работы для регистрации:", "Особенности работы", available)
-	if(!clicked_trait)
-		return
-	if(QDELETED(src) || !client)
-		return
-	clicked_trait.on_lobby_button_click(src)

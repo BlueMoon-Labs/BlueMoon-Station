@@ -1043,50 +1043,39 @@ BLUEMOON REMOVAL END*/
 //                                         //
 //////////////////////////////////////////////
 
-/datum/dynamic_ruleset/midround/malf
-	name = "Malfunctioning AI"
-	antag_datum = /datum/antagonist/traitor
-	antag_flag = ROLE_MALF
-	enemy_roles = list("Blueshield",  "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Scientist", "Chemist", "Research Director", "Chief Engineer") //BLUEMOON CHANGES
-	exclusive_roles = list("AI")
-	required_enemies = list(0,0,0,0,0,0,0,0,0,0)
-	required_candidates = 1
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
-	weight = 6 //BLUEMOON CHANGES
-	cost = 15 //BLUEMOON CHANGES - было 35, сейчас это обычный предатель
-	requirements = list(101,101,80,70,60,60,50,50,40,40)
-	required_type = /mob/living/silicon/ai
+/datum/dynamic_ruleset/roundstart/malf
+    name = "Malfunctioning AI"
+    antag_flag = ROLE_MALF
+    antag_datum = /datum/antagonist/traitor
+    minimum_required_age = 0
+    required_candidates = 1
+    exclusive_roles = list("AI")
+    weight = 3
+    cost = 20
+    requirements = list(101,101,101,101,101,101,60,40,30,10)
+    required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD)
+    flags = HIGH_IMPACT_RULESET
 
-/datum/dynamic_ruleset/midround/malf/trim_candidates()
-	. = ..()
-	candidates = living_players
-	for(var/mob/living/player in candidates)
-		if(!isAI(player))
-			candidates -= player
-			continue
+/datum/dynamic_ruleset/roundstart/malf/trim_candidates()
+    ..()
+    for(var/mob/living/player in candidates)
+        if(!isAI(player))
+            candidates -= player
 
-		if(is_centcom_level(player.z))
-			candidates -= player
-			continue
+/datum/dynamic_ruleset/roundstart/malf/pre_execute(population)
+    if(candidates.len <= 0)
+        message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+        return FALSE
 
-		if(player.mind && (player.mind.special_role || length(player.mind.antag_datums)))
-			candidates -= player
+    var/mob/living/silicon/ai/M = pick_n_take(candidates)
+    if(M && M.mind)
+        assigned += M.mind
+        M.mind.special_role = ROLE_MALF
+        return TRUE
+    return FALSE
 
-/datum/dynamic_ruleset/midround/malf/execute()
-	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
-	if(candidates.len <= 0)
-		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
-		return FALSE
-	// BLUEMOON ADD END
-	var/mob/living/silicon/ai/M = pick_n_take(candidates)
-	assigned += M.mind
-	var/datum/antagonist/traitor/AI = new
-	M.mind.special_role = antag_flag
-	M.mind.add_antag_datum(AI)
-	if(prob(MALF_ION_PROB))
-		priority_announce("Ion storm detected near the station. Please check all AI-controlled equipment for errors.", "ВНИМАНИЕ: АНОМАЛИЯ", "ionstorm")
-		if(prob(REPLACE_LAW_WITH_ION_PROB))
-			M.replace_random_law(generate_ion_law(), list(LAW_INHERENT, LAW_SUPPLIED, LAW_ION))
-		else
-			M.add_ion_law(generate_ion_law())
-	return TRUE
+/datum/dynamic_ruleset/roundstart/malf/execute()
+    for(var/datum/mind/M in assigned)
+        var/datum/antagonist/traitor/T = new antag_datum()
+        M.add_antag_datum(T)
+    return TRUE

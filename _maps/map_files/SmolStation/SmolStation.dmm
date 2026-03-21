@@ -9325,6 +9325,9 @@
 	c_tag = "Central Hallway - Fourth";
 	dir = 4
 	},
+/obj/machinery/computer/brig_assistant_console{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "gKk" = (
@@ -29472,6 +29475,10 @@
 	pixel_x = 3
 	},
 /obj/item/clothing/mask/cigarette/cigar,
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
 /turf/open/floor/carpet,
 /area/command/bridge)
 "vQp" = (
@@ -31138,7 +31145,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
-/obj/item/card/id/captains_spare,
 /turf/open/floor/plasteel/grimy,
 /area/command/heads_quarters/captain)
 "wXc" = (

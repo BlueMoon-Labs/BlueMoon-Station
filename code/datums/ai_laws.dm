@@ -489,9 +489,43 @@
 /datum/ai_laws/proc/clear_hacked_laws()
 	hacked = list()
 
-/datum/ai_laws/proc/show_laws(who, title = "<b>Соблюдайте данные законы:</b>")
+// (ADD) Pe4henika Bluemoon -- start
+// MARK: show_laws
+/datum/ai_laws/proc/show_laws(who, title = "СИСТЕМА ЗАКОНОВ")
 	var/list/printable_laws = get_law_list(include_zeroth = TRUE)
-	to_chat(who, examine_block("<center>[title]</center><br>[english_list(printable_laws, "No laws", "<br>", "<br>")]"))
+
+	var/dat = "<style>"
+	dat += "@keyframes retro-spin {0% { content: '⠋'; } 12% { content: '⠙'; } 25% { content: '⠹'; } 37% { content: '⠸'; } 50% { content: '⠼'; } 62% { content: '⠴'; } 75% { content: '⠦'; } 87% { content: '⠧'; } 100% { content: '⠇'; }}"
+
+	dat += ".retro-box {background-color: #050505; border: 1px solid #910101; padding: 0; font-family: 'Courier New', monospace; color: #b0b0b0; box-shadow: 0 0 15px rgba(0, 0, 0, 1);}"
+
+	dat += ".retro-header {background-color: #120101; color: #ff1a1a; text-align: center; font-weight: bold; padding: 10px 0; margin: 0; text-transform: uppercase; border-bottom: 1px solid #910101; text-shadow: 0 0 8px #910101; letter-spacing: 2px; position: relative;}"
+
+	dat += ".retro-header::before {content: '⠋'; position: absolute; left: 15px; animation: retro-spin 1s linear infinite; color: #910101;}"
+
+	dat += ".law-row {padding: 10px 15px; margin: 4px 0; line-height: 1.4; font-size: 12px; transition: all 0.1s; border-left: 2px solid transparent;}"
+	dat += ".law-row:hover {background-color: #0f0000; color: #ffffff; border-left: 2px solid #910101;}"
+	dat += ".law-row:nth-child(odd) {background-color: #080808;}"
+
+	dat += ".law-zeroth {color: #ff4d4d; background-color: #1a0505 !important; border-left: 2px solid #ff4d4d !important; font-weight: bold;}"
+
+	dat += ".no-laws {text-align: center; padding: 30px; color: #910101; font-weight: bold;}"
+	dat += "</style>"
+
+	dat += "<div class='retro-box'>"
+	dat += "<div class='retro-header'>[title]</div>"
+
+	if(!printable_laws.len)
+		dat += "<div class='no-laws'>ДИРЕКТИВЫ НЕ ОБНАРУЖЕНЫ</div>"
+	else
+		for(var/law in printable_laws)
+			var/is_zeroth = (copytext(law, 1, 3) == "0:" || findtext(law, "#cc5500") || findtext(law, "#ff0000"))
+			dat += "<div class='law-row [is_zeroth ? "law-zeroth" : ""]'>[law]</div>"
+
+	dat += "</div>"
+
+	to_chat(who, dat)
+// (ADD) Pe4henika bluemoon -- end
 
 /datum/ai_laws/proc/clear_zeroth_law(force) //only removes zeroth from antag ai if force is 1
 	if(force)

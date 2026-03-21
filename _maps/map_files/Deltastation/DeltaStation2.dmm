@@ -61561,6 +61561,17 @@
 	},
 /turf/open/floor/plasteel/cafeteria,
 /area/security/prison/upper)
+"eGW" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/command/bridge)
 "eHc" = (
 /obj/machinery/door/airlock/maintenance{
 	name = "Permabrig Maintenance"
@@ -65407,6 +65418,9 @@
 	},
 /obj/structure/sign/poster/contraband/vulp7{
 	pixel_x = 32
+	},
+/obj/machinery/computer/brig_assistant_console{
+	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
@@ -129661,7 +129675,6 @@
 /obj/machinery/status_display/evac{
 	pixel_x = -32
 	},
-/obj/item/card/id/captains_spare,
 /turf/open/floor/plasteel/grimy,
 /area/command/heads_quarters/captain/private)
 "xKk" = (
@@ -172098,7 +172111,7 @@ oLz
 lDb
 xHY
 oEz
-imr
+eGW
 hDk
 hDk
 isj

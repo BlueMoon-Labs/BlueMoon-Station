@@ -263,7 +263,7 @@
 		// logout, but nope! It appears to be perfectly valid to call winset by every means we can measure in Logout,
 		// and yet it causes a bad client runtime. To avoid that happening, we just have to know if we're in Logout or
 		// not.
-		if(!logout && client)
+		if(!logout && client && !isnewplayer(client.mob)) // BLUEMOON EDIT - для new_player в лобби не сбрасываем фокус, иначе bm_lobby_browser перестаёт работать
 			winset(client, null, "mapwindow.map.focus=true")
 		return
 	if(CONFIG_GET(flag/emergency_tgui_logging))
@@ -276,7 +276,7 @@
 	// to read the error message.
 	if(!fatally_errored)
 		client << browse(null, "window=[id]")
-		if(!logout && istype(client)) // BLUEMOON EDIT - sanity check
+		if(!logout && istype(client) && !isnewplayer(client.mob)) // BLUEMOON EDIT - sanity check + не сбрасываем фокус для new_player в лобби
 			winset(client, null, "mapwindow.map.focus=true")
 
 /**

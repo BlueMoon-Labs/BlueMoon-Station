@@ -5700,6 +5700,10 @@
 	},
 /obj/effect/turf_decal/caution/stand_clear,
 /obj/machinery/door/firedoor,
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = 32
+	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
 "akc" = (
@@ -11766,9 +11770,11 @@
 	},
 /area/maintenance/starboard)
 "auw" = (
-/obj/structure/sign/warning/securearea,
-/turf/closed/wall/r_wall,
-/area/command/bridge)
+/obj/machinery/computer/brig_assistant_console{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/hallway/primary/aft)
 "aux" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -12044,7 +12050,6 @@
 /obj/structure/window/reinforced{
 	dir = 1
 	},
-/obj/item/card/id/captains_spare,
 /turf/open/floor/carpet,
 /area/command/heads_quarters/captain)
 "ave" = (
@@ -110196,7 +110201,7 @@ agX
 agX
 agX
 bBr
-bYZ
+auw
 cab
 aaf
 aaf
@@ -118392,7 +118397,7 @@ aox
 cCi
 bjU
 blU
-auw
+atT
 akb
 bqw
 asx

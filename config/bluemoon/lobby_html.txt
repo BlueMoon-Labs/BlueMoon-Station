@@ -132,6 +132,35 @@ html, body {
 @keyframes bm-toast-in  { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
 @keyframes bm-toast-out { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-10px)} }
 
+/* ===== ДИАЛОГ ПОДТВЕРЖДЕНИЯ ВИДЕО ===== */
+#bm-video-confirm {
+  position: fixed; bottom: 3vmin; left: 50%; transform: translateX(-50%);
+  z-index: 60;
+  background: rgba(8,16,50,0.96);
+  border: 1px solid rgba(100,160,255,0.4);
+  border-radius: 5px;
+  padding: 1.2vmin 2.5vmin;
+  color: #cde;
+  font-size: clamp(9px,1.5vmin,15px);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  display: flex; align-items: center; gap: 2vmin;
+  box-shadow: 0 2px 20px rgba(0,16,70,0.6);
+  animation: bm-toast-in 0.28s ease forwards;
+}
+#bm-video-confirm.dismiss { animation: bm-toast-out 0.28s ease forwards; }
+#bm-video-confirm .bm-vc-text { opacity: 0.9; }
+#bm-video-confirm .bm-vc-btn {
+  background: none; border: 1px solid currentColor;
+  border-radius: 3px; cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: inherit; padding: 0.3vmin 1.2vmin;
+  transition: background 0.15s;
+}
+#bm-video-confirm .bm-vc-yes { color: #8f8; }
+#bm-video-confirm .bm-vc-yes:hover { background: rgba(80,200,100,0.18); }
+#bm-video-confirm .bm-vc-no  { color: #f88; }
+#bm-video-confirm .bm-vc-no:hover  { background: rgba(200,60,60,0.18); }
+
 /* ===== БОКОВАЯ ПАНЕЛЬ ===== */
 #bm-sidebar {
   position: fixed; top: 0; right: 0;
@@ -185,8 +214,8 @@ html, body {
   margin-top: 0.5vmin; letter-spacing: 2px;
 }
 #bm-player-count {
-  font-size: clamp(7px,1.0vmin,11px); color: #445577;
-  margin-top: 0.4vmin; letter-spacing: 1px;
+  font-size: clamp(7px,1.1vmin,12px); color: #6688aa;
+  margin-top: 0.5vmin; letter-spacing: 1px; font-weight: 600;
 }
 
 /* ===== МЕНЮ-СПИСОК ===== */
@@ -312,6 +341,19 @@ body.style-bluemoon .bm-btn.bm-btn-admin:hover {
 .bm-count-val { color: #aaccff; font-weight: 700; }
 #bm-count-ready-wrap { display: none; }
 #bm-count-ready-wrap .bm-count-val { color: #66ffaa; }
+
+/* Обратный отсчёт до старта */
+#bm-countdown-row {
+  display: none;
+  justify-content: center; align-items: center;
+  padding: 0.4vmin 1.5vmin 0.3vmin;
+  border-top: 1px solid rgba(100,160,255,0.08);
+  font-size: clamp(7px,1.1vmin,12px); color: #4488cc;
+  letter-spacing: 1px;
+  gap: 0;
+}
+.bm-countdown-label { color: #335577; }
+#bm-countdown-val { color: #22aaff; font-weight: 700; font-size: clamp(8px,1.2vmin,13px); }
 
 /* Аудио-плеер */
 #bm-audio-bar {

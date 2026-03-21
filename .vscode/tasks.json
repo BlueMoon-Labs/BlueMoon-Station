@@ -146,6 +146,32 @@
 			},
 			"dependsOn": "dm: reparse",
 			"args": [
+				"-DLOWMEMORYMODE",
+				"-DABSOLUTE_MINIMUM_MODE"
+			],
+			"label": "Build All (ABSOLUTE MINIMUM)"
+		},
+		{
+			"type": "process",
+			"command": "tools/build/build",
+			"windows": {
+				"command": ".\\tools\\build\\build.bat"
+			},
+			"options": {
+				"env": {
+					"DM_EXE": "${config:dreammaker.byondPath}"
+				}
+			},
+			"problemMatcher": [
+				"$dreammaker",
+				"$tsc",
+				"$eslint-stylish"
+			],
+			"group": {
+				"kind": "build"
+			},
+			"dependsOn": "dm: reparse",
+			"args": [
 				"-DTESTING",
 				"-DREFERENCE_TRACKING",
 				"-DGC_FAILURE_HARD_LOOKUP"
