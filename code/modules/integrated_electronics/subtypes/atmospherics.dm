@@ -15,8 +15,6 @@
 		"pressure" = IC_PINTYPE_NUMBER
 			)
 	var/datum/gas_mixture/air_contents
-	var/datum/gas_mixture/primary_scratch_buffer
-	var/datum/gas_mixture/secondary_scratch_buffer
 	var/volume = 2 //Pretty small, I know
 
 /obj/item/integrated_circuit/atmospherics/Initialize(mapload)
@@ -25,22 +23,10 @@
 
 /obj/item/integrated_circuit/atmospherics/Destroy()
 	QDEL_NULL(air_contents)
-	QDEL_NULL(primary_scratch_buffer)
-	QDEL_NULL(secondary_scratch_buffer)
 	return ..()
 
 /obj/item/integrated_circuit/atmospherics/return_air()
 	return air_contents
-
-/obj/item/integrated_circuit/atmospherics/proc/get_primary_scratch_buffer()
-	if(!primary_scratch_buffer)
-		primary_scratch_buffer = new
-	return primary_scratch_buffer
-
-/obj/item/integrated_circuit/atmospherics/proc/get_secondary_scratch_buffer()
-	if(!secondary_scratch_buffer)
-		secondary_scratch_buffer = new
-	return secondary_scratch_buffer
 
 //Check if the gas container is adjacent and of the right type
 /obj/item/integrated_circuit/atmospherics/proc/check_gassource(atom/gasholder)
@@ -382,14 +368,12 @@
 		return
 
 	//This is the var that holds the currently filtered part of the gas
-	var/datum/gas_mixture/removed = get_primary_scratch_buffer()
-	if(!source_air.remove_into(removed, transfer_moles))
+	var/datum/gas_mixture/removed = source_air.remove(transfer_moles)
+	if(!removed)
 		return
 
 	//This is the gas that will be moved from source to filtered
-	var/datum/gas_mixture/filtered_out = get_secondary_scratch_buffer()
-	filtered_out.clear()
-	filtered_out.set_temperature(0)
+	var/datum/gas_mixture/filtered_out = new
 
 	for(var/filtered_gas in removed.get_gases())
 		//Get the name of the gas and see if it is in the list
@@ -416,6 +400,8 @@
 		contaminants.assume_air(removed)
 	else
 		contaminated_air.merge(removed)
+	qdel(filtered_out)
+	qdel(removed)
 
 
 /obj/item/integrated_circuit/atmospherics/pump/filter/Initialize(mapload)
@@ -534,21 +520,15 @@
 /obj/item/integrated_circuit/atmospherics/tank/proc/release()
 	if(air_contents.total_moles() > 0)
 		playsound(loc, 'sound/effects/spray.ogg', 10, 1, -3)
-		var/datum/gas_mixture/expelled_gas = get_primary_scratch_buffer()
-		if(!air_contents.remove_into(expelled_gas, air_contents.total_moles()))
-			return
+		var/datum/gas_mixture/expelled_gas = air_contents.remove(air_contents.total_moles())
 		var/turf/current_turf = get_turf(src)
 		if(!current_turf)
-			expelled_gas.clear()
-			expelled_gas.set_temperature(0)
+			qdel(expelled_gas)
 			return
 
 		var/datum/gas_mixture/exterior_gas = current_turf.return_air()
-		if(!exterior_gas)
-			expelled_gas.clear()
-			expelled_gas.set_temperature(0)
-			return
 		exterior_gas.merge(expelled_gas)
+		qdel(expelled_gas)
 
 
 // - large integrated tank - // **works**

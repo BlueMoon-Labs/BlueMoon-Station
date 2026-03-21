@@ -31,19 +31,15 @@
 	var/gas_type = GAS_PLASMA
 	var/efficiency_multiplier = 1
 	var/gas_capacity = 0
-	/// Reused discard buffer for consumed fuel.
-	var/datum/gas_mixture/fuel_discard_buffer
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/New()
 	. = ..()
 	GLOB.custom_shuttle_machines += src
-	fuel_discard_buffer = new
 	SetInitDirections()
 	update_adjacent_engines()
 	updateGasStats()
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/Destroy()
-	QDEL_NULL(fuel_discard_buffer)
 	. = ..()
 	update_adjacent_engines()
 	GLOB.custom_shuttle_machines -= src
@@ -103,9 +99,7 @@
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/proc/consumeFuel(var/amount)
 	var/datum/gas_mixture/air_contents = airs[1]
-	if(!fuel_discard_buffer)
-		fuel_discard_buffer = new
-	air_contents.remove_into(fuel_discard_buffer, amount)
+	qdel(air_contents.remove(amount))
 	return
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/attackby(obj/item/I, mob/living/user, params)

@@ -95,9 +95,6 @@
 		environment = loc.return_air()
 
 	var/datum/gas_mixture/breath
-	var/datum/gas_mixture/breath_sample = get_breath_buffer()
-	breath_sample.clear()
-	breath_sample.set_temperature(0)
 
 	if(!getorganslot(ORGAN_SLOT_BREATHING_TUBE))
 		if(health <= HEALTH_THRESHOLD_FULLCRIT || (pulledby && pulledby.grab_state >= GRAB_KILL) || HAS_TRAIT(src, TRAIT_MAGIC_CHOKE) || (lungs && lungs.organ_flags & ORGAN_FAILING))
@@ -116,24 +113,20 @@
 			loc_as_obj.handle_internal_lifeform(src,0)
 	else
 		//Breathe from internal
-		var/internal_breath_result = fill_breath_from_internal(breath_sample, BREATH_VOLUME)
-		if(internal_breath_result)
-			breath = breath_sample
+		breath = get_breath_from_internal(BREATH_VOLUME)
 
-		if(isnull(internal_breath_result)) //in case of 0 pressure internals
+		if(isnull(breath)) //in case of 0 pressure internals
 
 			if(isobj(loc)) //Breathe from loc as object
 				var/obj/loc_as_obj = loc
-				if(loc_as_obj.fill_internal_lifeform_breath(src, breath_sample, BREATH_VOLUME))
-					breath = breath_sample
+				breath = loc_as_obj.handle_internal_lifeform(src, BREATH_VOLUME)
 
 			else if(isturf(loc)) //Breathe from loc as turf
 				var/breath_ratio = 0
 				if(environment)
 					breath_ratio = BREATH_VOLUME/environment.return_volume()
 
-				if(loc.remove_air_ratio_into(breath_sample, breath_ratio))
-					breath = breath_sample
+				breath = loc.remove_air_ratio(breath_ratio)
 		else //Breathe from loc as obj again
 			if(istype(loc, /obj/))
 				var/obj/loc_as_obj = loc
@@ -143,12 +136,11 @@
 		breath.set_volume(BREATH_VOLUME)
 	check_breath(breath)
 
-	// Always return the reused breath sample to the environment before clearing it for the next breath.
+	// Always return breath to environment and qdel to prevent gas mixture leak - each breath creates a new mixture via remove_air_ratio
 	if(breath)
 		if(loc)
 			loc.assume_air(breath)
-		breath.clear()
-		breath.set_temperature(0)
+		qdel(breath)
 		air_update_turf()
 
 /mob/living/carbon/proc/has_smoke_protection()
@@ -336,15 +328,10 @@
 /mob/living/carbon/proc/handle_breath_temperature(datum/gas_mixture/breath)
 	return
 
-/mob/living/carbon/proc/fill_breath_from_internal(datum/gas_mixture/into, volume_needed)
+/mob/living/carbon/proc/get_breath_from_internal(volume_needed)
 	var/obj/item/clothing/check
 	var/internals = FALSE
 
-	if(!into)
-		return null
-
-	into.clear()
-	into.set_temperature(0)
 	if(!HAS_TRAIT(src, TRAIT_NO_INTERNALS))
 		for(check in GET_INTERNAL_SLOTS(src))
 			if((check.clothing_flags & ALLOWINTERNALS))
@@ -355,11 +342,9 @@
 		else if (!internals && !getorganslot(ORGAN_SLOT_BREATHING_TUBE))
 			internal = null
 		else
-			if(internal.remove_air_volume_into(into, volume_needed))
-				return TRUE
-			return FALSE //to differentiate between no internals and active, but empty internals
-
-	return null
+			. = internal.remove_air_volume(volume_needed)
+			if(!.)
+				return FALSE //to differentiate between no internals and active, but empty internals
 
 // Make corpses rot, emitting miasma
 /mob/living/carbon/proc/rot()
@@ -386,10 +371,15 @@
 		return
 
 	var/turf/open/miasma_turf = deceasedturf
-	var/datum/gas_mixture/turf_air = miasma_turf.return_air()
-	if(!turf_air)
-		return
-	turf_air.adjust_moles_temp(GAS_MIASMA, 0.25, BODYTEMP_NORMAL)
+
+	var/datum/gas_mixture/stank = new
+
+	stank.set_moles(GAS_MIASMA,0.25)
+
+	stank.set_temperature(BODYTEMP_NORMAL)
+
+	miasma_turf.assume_air(stank)
+	qdel(stank)
 
 	miasma_turf.air_update_turf()
 

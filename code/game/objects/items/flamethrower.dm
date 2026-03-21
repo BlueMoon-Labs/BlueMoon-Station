@@ -21,7 +21,6 @@
 	var/obj/item/weldingtool/weldtool = null
 	var/obj/item/assembly/igniter/igniter = null
 	var/obj/item/tank/internals/plasma/ptank = null
-	var/datum/gas_mixture/flame_buffer
 	var/warned_admins = FALSE //for the message_admins() when lit
 	//variables for prebuilt flamethrowers
 	var/create_full = FALSE
@@ -40,13 +39,7 @@
 		qdel(igniter)
 	if(ptank)
 		qdel(ptank)
-	QDEL_NULL(flame_buffer)
 	return ..()
-
-/obj/item/flamethrower/proc/get_flame_buffer()
-	if(!flame_buffer)
-		flame_buffer = new
-	return flame_buffer
 
 /obj/item/flamethrower/process()
 	if(!lit || !igniter)
@@ -218,13 +211,10 @@
 /obj/item/flamethrower/proc/default_ignite(turf/target, release_amount = 0.05)
 	//TODO: DEFERRED Consider checking to make sure tank pressure is high enough before doing this...
 	//Transfer 5% of current tank air contents to turf
-	if(!ptank?.air_contents)
-		return
-	var/datum/gas_mixture/air_transfer = get_flame_buffer()
-	if(!ptank.air_contents.remove_ratio_into(air_transfer, release_amount))
-		return
+	var/datum/gas_mixture/air_transfer = ptank.air_contents.remove_ratio(release_amount)
 	air_transfer.set_moles(GAS_PLASMA, air_transfer.get_moles(GAS_PLASMA) * 5)
 	target.assume_air(air_transfer)
+	qdel(air_transfer)
 	//Burn it based on transfered gas
 	target.hotspot_expose((ptank.air_contents.return_temperature()*2) + 380,500)
 	//location.hotspot_expose(1000,500,1)

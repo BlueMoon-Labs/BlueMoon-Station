@@ -22,8 +22,6 @@
 	var/volume = 70
 	/// Icon state when in a tank holder. Null makes it incompatible with tank holder.
 	var/tank_holder_icon_state = "holder_generic"
-	/// Reused buffer for leaking gas to avoid temporary gas_mixture churn.
-	var/datum/gas_mixture/leak_buffer
 
 /obj/item/tank/ui_action_click(mob/user)
 	toggle_internals(user)
@@ -68,9 +66,7 @@
 	. = ..()
 
 	air_contents = new(volume) //liters
-	air_contents.set_volume(volume)
 	air_contents.set_temperature(T20C)
-	leak_buffer = new
 
 	populate_gas()
 
@@ -88,7 +84,6 @@
 			visible_message("<span class='warning'[src] leaks gas!")
 
 /obj/item/tank/Destroy()
-	QDEL_NULL(leak_buffer)
 	if(air_contents)
 		QDEL_NULL(air_contents)
 
@@ -108,10 +103,6 @@
 	if(!in_range(src, user) && !isobserver(user))
 		if(icon == src)
 			. += "<span class='notice'>Если вы хотите больше информации, вам придётся подойти ближе.</span>"
-		return
-
-	if(QDELETED(air_contents))
-		. += "<span class='warning'>Манометр повреждён или неисправен.</span>"
 		return
 
 	. += "<span class='notice'>Манометр сообщает давление в [round(src.air_contents.return_pressure(),0.01)] кПа.</span>"
@@ -146,8 +137,6 @@
 		qdel(src)
 
 /obj/item/tank/analyzer_act(mob/living/user, obj/item/I)
-	if(QDELETED(air_contents))
-		return FALSE
 	atmosanalyzer_scan(air_contents, user, src)
 	return TRUE
 
@@ -164,7 +153,7 @@
 	var/mob/living/carbon/human/H = user
 	user.visible_message("<span class='suicide'>[user] is putting [src]'s valve to [user.ru_ego()] lips! It looks like [user.p_theyre()] trying to commit suicide!</span>")
 	playsound(loc, 'sound/effects/spray.ogg', 10, TRUE, -3)
-	if(!QDELETED(H) && !QDELETED(air_contents) && air_contents.return_pressure() >= 1000)
+	if(!QDELETED(H) && air_contents && air_contents.return_pressure() >= 1000)
 		for(var/obj/item/W in H)
 			H.dropItemToGround(W)
 			if(prob(50))
@@ -208,7 +197,7 @@
 
 /obj/item/tank/ui_data(mob/user)
 	. = list(
-		"tankPressure" = !QDELETED(air_contents) ? round(air_contents.return_pressure()) : 0,
+		"tankPressure" = round(air_contents.return_pressure()),
 		"releasePressure" = round(distribute_pressure)
 	)
 
@@ -241,65 +230,37 @@
 				distribute_pressure = clamp(round(pressure), TANK_MIN_RELEASE_PRESSURE, TANK_MAX_RELEASE_PRESSURE)
 
 /obj/item/tank/remove_air(amount)
-	if(QDELETED(air_contents))
-		return null
 	return air_contents.remove(amount)
 
-/obj/item/tank/remove_air_into(datum/gas_mixture/into, amount)
-	if(!air_contents)
-		if(into)
-			into.clear()
-			into.set_temperature(0)
-		return FALSE
-
-	return air_contents.remove_into(into, amount)
-
 /obj/item/tank/remove_air_ratio(ratio)
-	if(QDELETED(air_contents))
-		return null
 	return air_contents.remove_ratio(ratio)
 
-/obj/item/tank/remove_air_ratio_into(datum/gas_mixture/into, ratio)
-	if(!air_contents)
-		if(into)
-			into.clear()
-			into.set_temperature(0)
-		return FALSE
-
-	return air_contents.remove_ratio_into(into, ratio)
-
 /obj/item/tank/return_air()
-	return !QDELETED(air_contents) ? air_contents : null
+	return air_contents
 
 /obj/item/tank/return_analyzable_air()
-	return !QDELETED(air_contents) ? air_contents : null
+	return air_contents
 
 /obj/item/tank/assume_air(datum/gas_mixture/giver)
-	if(QDELETED(air_contents))
-		return FALSE
 	air_contents.merge(giver)
 
 	check_status()
 	return TRUE
 
 /obj/item/tank/assume_air_moles(datum/gas_mixture/giver, moles)
-	if(QDELETED(air_contents))
-		return FALSE
 	giver.transfer_to(air_contents, moles)
 
 	check_status()
 	return TRUE
 
 /obj/item/tank/assume_air_ratio(datum/gas_mixture/giver, ratio)
-	if(QDELETED(air_contents))
-		return FALSE
 	giver.transfer_ratio_to(air_contents, ratio)
 
 	check_status()
 	return TRUE
 
 /obj/item/tank/proc/remove_air_volume(volume_to_return)
-	if(QDELETED(air_contents))
+	if(!air_contents)
 		return null
 
 	var/tank_pressure = air_contents.return_pressure()
@@ -309,41 +270,15 @@
 
 	return remove_air(moles_needed)
 
-/obj/item/tank/proc/remove_air_volume_into(datum/gas_mixture/into, volume_to_return)
-	if(!into)
-		return FALSE
-
-	into.clear()
-	into.set_temperature(0)
-	if(!air_contents)
-		return FALSE
-
-	var/tank_pressure = air_contents.return_pressure()
-	var/actual_distribute_pressure = clamp(tank_pressure, 0, distribute_pressure)
-	var/temperature = air_contents.return_temperature()
-	if(temperature <= 0)
-		return FALSE
-
-	var/moles_needed = actual_distribute_pressure*volume_to_return/(R_IDEAL_GAS_EQUATION*temperature)
-	return remove_air_into(into, moles_needed)
-
 /obj/item/tank/process()
 	//Allow for reactions
-	// Guard: QDELETED air_contents can return garbage from return_pressure(), causing false explosions
-	if(QDELETED(air_contents))
-		air_contents = null
-		return
-	if(!air_contents)
-		return
 	air_contents.react()
 	check_status()
 
 /obj/item/tank/proc/check_status()
 	//Handle exploding, leaking, and rupturing of the tank
 
-	if(QDELETED(air_contents))
-		if(air_contents)
-			air_contents = null
+	if(!air_contents)
 		return FALSE
 
 	var/pressure = air_contents.return_pressure()
@@ -351,13 +286,8 @@
 
 	if(pressure > TANK_FRAGMENT_PRESSURE)
 		if(!istype(src.loc, /obj/item/transfer_valve))
-			var/turf/T = get_turf(src)
-			var/touch_msg = "N/A"
-			if(src.fingerprintslast)
-				var/mob/toucher = get_mob_by_key(src.fingerprintslast)
-				touch_msg = "[ADMIN_LOOKUPFLW(toucher)]"
-			message_admins("Explosive [src.name] rupture at [ADMIN_VERBOSEJMP(T)]! Last key to touch: [touch_msg]. Pressure: [round(pressure)] kPa.")
-			log_game("Explosive [src.name] rupture at [AREACOORD(T)]. Last key: [src.fingerprintslast || "N/A"]. Pressure: [round(pressure)] kPa.")
+			message_admins("Explosive tank rupture! Last key to touch the tank was [src.fingerprintslast].")
+			log_game("Explosive tank rupture! Last key to touch the tank was [src.fingerprintslast].")
 		//Give the gas a chance to build up more pressure through reacting
 		for(var/i in 1 to TANK_POST_FRAGMENT_REACTIONS)
 			air_contents.react(src)
@@ -389,10 +319,9 @@
 			var/turf/T = get_turf(src)
 			if(!T)
 				return
-			if(!leak_buffer)
-				leak_buffer = new
-			if(air_contents.remove_ratio_into(leak_buffer, 0.25))
-				T.assume_air(leak_buffer)
+			var/datum/gas_mixture/leaked_gas = air_contents.remove_ratio(0.25)
+			T.assume_air(leaked_gas)
+			qdel(leaked_gas)
 		else
 			integrity--
 
