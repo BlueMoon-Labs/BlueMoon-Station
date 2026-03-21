@@ -13,7 +13,7 @@
 	filling_color = "#CD853F"
 	list_reagents = list(/datum/reagent/consumable/nutriment = 6, /datum/reagent/consumable/capsaicin = 1)
 	tastes = list("fish" = 4, "batter" = 1, "hot peppers" = 1)
-	foodtype = MEAT
+	foodtype = MEAT | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/carpmeat
 	name = "carp fillet"
@@ -24,7 +24,7 @@
 	filling_color = "#FA8072"
 	cooked_type = /obj/item/reagent_containers/food/snacks/meat/steak/fish
 	tastes = list("fish" = 1)
-	foodtype = MEAT
+	foodtype = MEAT | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/carpmeat/Initialize(mapload)
 	. = ..()
@@ -43,7 +43,7 @@
 	bitesize = 1
 	filling_color = "#CD853F"
 	tastes = list("fish" = 1, "breadcrumbs" = 1)
-	foodtype = MEAT
+	foodtype = MEAT | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/fishandchips
 	name = "fish and chips"
@@ -53,7 +53,7 @@
 	list_reagents = list(/datum/reagent/consumable/nutriment = 6)
 	filling_color = "#FA8072"
 	tastes = list("fish" = 1, "chips" = 1)
-	foodtype = MEAT | VEGETABLES | FRIED
+	foodtype = MEAT | VEGETABLES | FRIED | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/fishfry
 	name = "fish fry"
@@ -62,7 +62,7 @@
 	list_reagents = list (/datum/reagent/consumable/nutriment = 6, /datum/reagent/consumable/nutriment/vitamin = 3)
 	filling_color = "#ee7676"
 	tastes = list("fish" = 1, "pan seared vegtables" = 1)
-	foodtype = MEAT | VEGETABLES | FRIED
+	foodtype = MEAT | VEGETABLES | FRIED | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/sushi_basic
 	name = "funa hosomaki"
@@ -73,7 +73,7 @@
 	bitesize = 10
 	filling_color = "#F2EEEA" //rgb(242, 238, 234)
 	tastes = list("fish" = 1, "rice" = 2, "salt" = 1)
-	foodtype = MEAT | VEGETABLES
+	foodtype = MEAT | VEGETABLES | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/sushi_adv
 	name = "funa nigiri"
@@ -84,7 +84,7 @@
 	bitesize = 10
 	filling_color = "#F2EEEA" //rgb(242, 238, 234)
 	tastes = list("fish" = 2, "rice" = 2, "salt" = 1)
-	foodtype = MEAT | VEGETABLES
+	foodtype = MEAT | VEGETABLES | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/sushi_pro
 	name = "funa nigiri"
@@ -95,7 +95,7 @@
 	bitesize = 10
 	filling_color = "#F2EEEA" //rgb(242, 238, 234)
 	tastes = list("fish" = 3, "rice" = 2, "salt" = 1)
-	foodtype = MEAT | VEGETABLES
+	foodtype = MEAT | VEGETABLES | SEAFOOD
 
 
 ////////////////////////////////////////////MEATS AND ALIKE////////////////////////////////////////////
@@ -318,7 +318,7 @@
 	list_reagents = list(/datum/reagent/consumable/nutriment = 6, /datum/reagent/consumable/capsaicin = 5)
 	filling_color = "#FA8072"
 	tastes = list("fish" = 1, "hot peppers" = 1)
-	foodtype = MEAT | TOXIC
+	foodtype = MEAT | TOXIC | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/nugget
 	name = "chicken nugget"
