@@ -192,7 +192,15 @@
 		into.set_temperature(0)
 		return FALSE
 
-	return remove_air_ratio_into(into, breath_request / environment_volume)
+	// Use remove_air_ratio (returns new mixture) - turfs don't implement remove_air_ratio_into after atmos revert
+	var/datum/gas_mixture/removed = remove_air_ratio(breath_request / environment_volume)
+	if(!removed || removed.total_moles() <= 0)
+		if(removed)
+			qdel(removed)
+		return FALSE
+	into.copy_from(removed)
+	qdel(removed)
+	return TRUE
 
 /obj/proc/handle_internal_lifeform(mob/lifeform_inside_me, breath_request)
 	//Return: (NONSTANDARD)

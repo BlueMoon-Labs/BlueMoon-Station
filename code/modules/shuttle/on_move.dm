@@ -292,8 +292,9 @@ All ShuttleMove procs go here
 	. = ..()
 	// If the pod was launched, the storage will always open. The CentCom check
 	// ignores the movement of the shuttle from the staging area on CentCom to
-	// the station as it is loaded in.
-	if (oldT && !is_centcom_level(oldT.z))
+	// the station as it is loaded in. Only unlock when we've left the station
+	// (pod actually launched), not during initial placement.
+	if (oldT && !is_centcom_level(oldT.z) && !is_station_level(z))
 		var/datum/component/storage/concrete/emergency/STR = GetComponent(/datum/component/storage/concrete/emergency)
 		STR?.unlock_me()
 
