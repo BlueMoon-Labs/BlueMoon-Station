@@ -28,9 +28,6 @@
 				C.parents[i] = null
 	members.Cut()
 	other_atmosmch.Cut()
-	for(var/datum/gas_mixture/gm as anything in other_airs)
-		if(gm._owner_pipeline == src)
-			gm._owner_pipeline = null
 	other_airs.Cut()
 	QDEL_NULL(air)
 	return ..()
@@ -42,22 +39,11 @@
 	reconcile_air()
 	update = air?.react(src)
 
-/proc/_deferred_qdel_gas_mixtures(list/L)
-	if(!length(L))
-		return
-	var/datum/gas_mixture/G = L[1]
-	L.Cut(1, 2)
-	if(G && !QDELETED(G))
-		qdel(G)
-	if(length(L))
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(_deferred_qdel_gas_mixtures), L), 0)
-
 /datum/pipeline/proc/build_pipeline(obj/machinery/atmospherics/base)
 	if(QDELETED(base))
 		stack_trace("build_pipeline() called with QDELETED base [base?.type] at [base ? COORD(base) : "null"]")
 		return
 	var/volume = 0
-	var/list/datum/gas_mixture/to_delete = list()
 	if(istype(base, /obj/machinery/atmospherics/pipe))
 		var/obj/machinery/atmospherics/pipe/E = base
 		volume = E.volume
@@ -70,44 +56,40 @@
 	if(!air)
 		air = new
 	var/list/possible_expansions = list(base)
-	while(possible_expansions.len > 0)
-		// Don't use for-in here - modifying list during iteration causes illegal operation crashes
-		var/obj/machinery/atmospherics/borderline = possible_expansions[1]
-		possible_expansions -= borderline
+	while(possible_expansions.len>0)
+		for(var/obj/machinery/atmospherics/borderline in possible_expansions)
 
-		var/list/result = borderline.pipeline_expansion(src)
+			var/list/result = borderline.pipeline_expansion(src)
 
-		if(result.len > 0)
-			for(var/obj/machinery/atmospherics/P in result)
-				if(istype(P, /obj/machinery/atmospherics/pipe))
-					var/obj/machinery/atmospherics/pipe/item = P
-					if(!members.Find(item))
+			if(result.len>0)
+				for(var/obj/machinery/atmospherics/P in result)
+					if(istype(P, /obj/machinery/atmospherics/pipe))
+						var/obj/machinery/atmospherics/pipe/item = P
+						if(!members.Find(item))
 
-						if(item.parent)
-							var/static/pipenetwarnings = 10
-							if(pipenetwarnings > 0)
-								log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: ([item.x], [item.y], [item.z]).")
-								pipenetwarnings -= 1
-								if(pipenetwarnings == 0)
-									log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
-						members += item
-						possible_expansions += item
+							if(item.parent)
+								var/static/pipenetwarnings = 10
+								if(pipenetwarnings > 0)
+									log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: ([item.x], [item.y], [item.z]).")
+									pipenetwarnings -= 1
+									if(pipenetwarnings == 0)
+										log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
+							members += item
+							possible_expansions += item
 
-						volume += item.volume
-						item.parent = src
+							volume += item.volume
+							item.parent = src
 
-						if(item.air_temporary)
-							air.merge(item.air_temporary)
-							to_delete += item.air_temporary
-							item.air_temporary = null
-				else
-					steal_component_from_old_pipenet(P, borderline)
-					P.setPipenet(src, borderline)
-					addMachineryMember(P)
+							if(item.air_temporary)
+								air.merge(item.air_temporary)
+								QDEL_NULL(item.air_temporary)
+					else
+						P.setPipenet(src, borderline)
+						addMachineryMember(P)
+
+			possible_expansions -= borderline
 
 	air.set_volume(volume)
-	if(length(to_delete))
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(_deferred_qdel_gas_mixtures), to_delete), 0)
 
 /**
  *  For a machine to properly "connect" to a pipeline and share gases,
@@ -124,13 +106,6 @@
 		stack_trace("addMachineryMember: Nonexistent (empty list) or null machinery gasmix added to pipeline datum from [C] \
 		which is of type [C.type]. Nearby: ([C.x], [C.y], [C.z])")
 		listclearnulls(returned_airs)
-	for(var/datum/gas_mixture/gm as anything in returned_airs)
-		if(gm._owner_pipeline && gm._owner_pipeline != src && !QDELETED(gm._owner_pipeline))
-			stack_trace("addMachineryMember: air [REF(gm)] already owned by pipeline [gm._owner_pipeline]([REF(gm._owner_pipeline)]), stealing to [src]([REF(src)]). \
-				Component [C.type] at [C.x],[C.y],[C.z]")
-			gm._owner_pipeline.update = TRUE
-			gm._owner_pipeline.other_airs -= gm
-		gm._owner_pipeline = src
 	other_airs |= returned_airs
 
 /datum/pipeline/proc/addMember(obj/machinery/atmospherics/A, obj/machinery/atmospherics/N)
@@ -150,36 +125,8 @@
 			members += P
 			air.set_volume(air.return_volume() + P.volume)
 	else
-		steal_component_from_old_pipenet(A, N)
 		A.setPipenet(src, N)
 		addMachineryMember(A)
-
-/datum/pipeline/proc/steal_component_from_old_pipenet(obj/machinery/atmospherics/components/comp, obj/machinery/atmospherics/borderline)
-	var/idx = comp.nodes.Find(borderline)
-	if(!idx)
-		return
-	var/datum/pipeline/old_pipenet = comp.parents[idx]
-	if(!old_pipenet || old_pipenet == src)
-		return
-	// Remove only the specific port's air from old pipeline
-	var/datum/gas_mixture/old_air = comp.airs[idx]
-	if(old_air)
-		old_pipenet.other_airs -= old_air
-		if(old_air._owner_pipeline == old_pipenet)
-			old_air._owner_pipeline = null
-	// Only remove component from other_atmosmch if no other ports still reference old pipeline
-	var/still_connected = FALSE
-	for(var/j in 1 to comp.parents.len)
-		if(j != idx && comp.parents[j] == old_pipenet)
-			still_connected = TRUE
-			break
-	if(!still_connected)
-		old_pipenet.other_atmosmch -= comp
-	// Qdel orphaned pipeline (same pattern as pipe stealing)
-	if(!length(old_pipenet.members) && !length(old_pipenet.other_atmosmch))
-		qdel(old_pipenet)
-	else
-		old_pipenet.update = TRUE // Force pressure recalc after losing an air
 
 /datum/pipeline/proc/merge(datum/pipeline/E)
 	if(E == src)
@@ -195,13 +142,9 @@
 	if(null in E.other_airs)
 		stack_trace("merge(): Pipeline [E]([REF(E)]) contains null gas mixtures in other_airs. Cleaning before merge.")
 		listclearnulls(E.other_airs)
-	for(var/datum/gas_mixture/gm as anything in E.other_airs)
-		if(gm._owner_pipeline == E)
-			gm._owner_pipeline = src
 	other_airs |= E.other_airs
 	E.members.Cut()
 	E.other_atmosmch.Cut()
-	E.other_airs.Cut()
 	update = TRUE
 	qdel(E)
 
@@ -222,25 +165,19 @@
 
 /datum/pipeline/proc/temporarily_store_air()
 	//Update individual gas_mixtures by volume ratio
-	var/air_vol = air.return_volume()
-	if(air_vol <= 0)
-		return
 
 	for(var/obj/machinery/atmospherics/pipe/member as anything in members)
 		member.air_temporary = new
 		member.air_temporary.set_volume(member.volume)
 		member.air_temporary.copy_from(air)
 
-		member.air_temporary.multiply(member.volume/air_vol)
+		member.air_temporary.multiply(member.volume/air.return_volume())
 
 		member.air_temporary.set_temperature(air.return_temperature())
 
 /datum/pipeline/proc/temperature_interact(turf/target, share_volume, thermal_conductivity)
-	var/air_vol = air.return_volume()
-	if(air_vol <= 0)
-		return
 	var/total_heat_capacity = air.heat_capacity()
-	var/partial_heat_capacity = total_heat_capacity*(share_volume/air_vol)
+	var/partial_heat_capacity = total_heat_capacity*(share_volume/air.return_volume())
 	var/target_temperature
 	var/target_heat_capacity
 

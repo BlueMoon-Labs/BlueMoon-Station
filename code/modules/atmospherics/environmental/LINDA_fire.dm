@@ -51,13 +51,10 @@
 	var/temperature = FIRE_MINIMUM_TEMPERATURE_TO_EXIST
 	var/bypassing = FALSE
 	var/visual_update_tick = 0
-	/// Reused sample for localized hotspot reactions.
-	var/datum/gas_mixture/affected_buffer
 
 /obj/effect/hotspot/Initialize(mapload, starting_volume, starting_temperature)
 	. = ..()
 	SSair.hotspots += src
-	affected_buffer = new
 	if(!isnull(starting_volume))
 		volume = starting_volume
 	if(!isnull(starting_temperature))
@@ -86,19 +83,15 @@
 		volume = location.air.reaction_results["fire"]*FIRE_GROWTH_RATE
 		temperature = location.air.return_temperature()
 	else
-		var/air_vol = location.air.return_volume()
-		if(air_vol <= 0)
-			return
-		if(!affected_buffer)
-			affected_buffer = new
-		var/datum/gas_mixture/affected = affected_buffer
-		if(location.air.remove_ratio_into(affected, volume/air_vol)) //in case volume is 0
+		var/datum/gas_mixture/affected = location.air.remove_ratio(volume/location.air.return_volume())
+		if(affected) //in case volume is 0
 			if(temperature > affected.return_temperature())
 				affected.set_temperature(temperature) //don't set the temperature lower than what it was
 			affected.react(src)
 			temperature = affected.return_temperature()
 			volume = affected.reaction_results["fire"]*FIRE_GROWTH_RATE
 			location.assume_air(affected)
+			qdel(affected)
 
 	for(var/A in location)
 		var/atom/AT = A
@@ -217,7 +210,6 @@
 	if(istype(T) && T.active_hotspot == src)
 		T.active_hotspot = null
 	DestroyTurf()
-	QDEL_NULL(affected_buffer)
 	return ..()
 
 /obj/effect/hotspot/proc/DestroyTurf()

@@ -81,24 +81,8 @@
 /obj/machinery/atmospherics/pipe/remove_air(amount)
 	return parent?.air?.remove(amount)
 
-/obj/machinery/atmospherics/pipe/remove_air_into(datum/gas_mixture/into, amount)
-	if(parent?.air)
-		return parent.air.remove_into(into, amount)
-	if(into)
-		into.clear()
-		into.set_temperature(0)
-	return FALSE
-
 /obj/machinery/atmospherics/pipe/remove_air_ratio(ratio)
 	return parent?.air?.remove_ratio(ratio)
-
-/obj/machinery/atmospherics/pipe/remove_air_ratio_into(datum/gas_mixture/into, ratio)
-	if(parent?.air)
-		return parent.air.remove_ratio_into(into, ratio)
-	if(into)
-		into.clear()
-		into.set_temperature(0)
-	return FALSE
 
 /obj/machinery/atmospherics/pipe/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/pipe_meter))

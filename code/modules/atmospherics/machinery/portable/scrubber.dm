@@ -14,9 +14,8 @@
 
 /obj/machinery/portable_atmospherics/scrubber/Destroy()
 	var/turf/T = get_turf(src)
-	if(T && isopenturf(T))
-		T.assume_air(air_contents)
-		air_update_turf()
+	T.assume_air(air_contents)
+	air_update_turf()
 	return ..()
 
 /obj/machinery/portable_atmospherics/scrubber/update_icon_state()
@@ -43,10 +42,7 @@
 		scrub(T.return_air())
 
 /obj/machinery/portable_atmospherics/scrubber/proc/scrub(var/datum/gas_mixture/mixture)
-	var/vol = mixture.return_volume()
-	if(vol <= 0)
-		return
-	mixture.scrub_into(air_contents, volume_rate / vol, scrubbing)
+	mixture.scrub_into(air_contents, volume_rate / mixture.return_volume(), scrubbing)
 	if(!holding)
 		air_update_turf()
 

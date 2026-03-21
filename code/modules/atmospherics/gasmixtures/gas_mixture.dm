@@ -13,8 +13,6 @@ What are the archived variables for?
 	var/list/reaction_results
 	var/list/analyzer_results //used for analyzer feedback - not initialized until its used
 	var/_extools_pointer_gasmixture // Contains the index in the gas vector for this gas mixture in rust land. Don't. Touch. This. Var.
-	/// Pipeline that currently owns this air via other_airs. Used for O(1) cleanup instead of brute-force scanning.
-	var/datum/pipeline/_owner_pipeline
 
 GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 
@@ -104,19 +102,12 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 		set_volume(volume)
 
 
-/datum/gas_mixture/Destroy()
-	// Safety net: clean up pipeline references before destruction
-	if(_owner_pipeline && !QDELETED(_owner_pipeline))
-		_owner_pipeline.other_airs -= src
-	_owner_pipeline = null
-	// Release Rust-side reference
-	if(GLOB.auxtools_atmos_initialized)
-		__gasmixture_unregister()
-	reaction_results = null
-	analyzer_results = null
-	..()
-	// Try soft GC first; if softcheck fails, skip warnfail and go directly to hard-delete.
-	return QDEL_HINT_QUEUE_THEN_HARDDEL
+/*
+we use a hook instead
+/datum/gas_mixture/Del()
+	__gasmixture_unregister()
+	. = ..()
+	*/
 
 /proc/gas_types()
 	var/list/L = subtypesof(/datum/gas)
@@ -149,10 +140,6 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 	//Removes amount of gas from the gas_mixture
 	//Returns: gas_mixture with the gases removed
 
-/datum/gas_mixture/proc/remove_into(datum/gas_mixture/into, amount)
-	//Removes amount of gas from the gas_mixture into caller-owned storage.
-	//Returns: TRUE if gas was moved, FALSE otherwise.
-
 /datum/gas_mixture/proc/remove_by_flag(flag, amount)
 	//Removes amount of gas from the gas mixture by flag
 	//Returns: gas_mixture with gases that match the flag removed
@@ -160,10 +147,6 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 /datum/gas_mixture/proc/remove_ratio(ratio)
 	//Proportionally removes amount of gas from the gas_mixture
 	//Returns: gas_mixture with the gases removed
-
-/datum/gas_mixture/proc/remove_ratio_into(datum/gas_mixture/into, ratio)
-	//Proportionally removes gas from the gas_mixture into caller-owned storage.
-	//Returns: TRUE if gas was moved, FALSE otherwise.
 
 /datum/gas_mixture/proc/copy()
 	//Creates new, identical gas mixture
@@ -193,45 +176,11 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 
 	return removed
 
-/datum/gas_mixture/remove_into(datum/gas_mixture/into, amount)
-	if(!into || into == src)
-		return FALSE
-
-	into.clear()
-	into.set_temperature(0)
-	if(amount <= 0)
-		return FALSE
-
-	__remove(into, amount)
-	if(into.total_moles() <= 0)
-		into.clear()
-		into.set_temperature(0)
-		return FALSE
-
-	return TRUE
-
 /datum/gas_mixture/remove_ratio(ratio)
 	var/datum/gas_mixture/removed = new type
 	__remove_ratio(removed, ratio)
 
 	return removed
-
-/datum/gas_mixture/remove_ratio_into(datum/gas_mixture/into, ratio)
-	if(!into || into == src)
-		return FALSE
-
-	into.clear()
-	into.set_temperature(0)
-	if(ratio <= 0)
-		return FALSE
-
-	__remove_ratio(into, ratio)
-	if(into.total_moles() <= 0)
-		into.clear()
-		into.set_temperature(0)
-		return FALSE
-
-	return TRUE
 
 /datum/gas_mixture/copy()
 	var/datum/gas_mixture/copy = new type

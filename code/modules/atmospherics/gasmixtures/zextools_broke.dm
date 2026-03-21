@@ -131,36 +131,6 @@
 
 	return removed
 
-/datum/gas_mixture/remove_into(datum/gas_mixture/into, amount)
-	if(!into || into == src)
-		return FALSE
-
-	into.clear()
-	into.set_temperature(0)
-	if(amount <= 0)
-		return FALSE
-
-	var/sum
-	var/list/cached_gases = gases
-	TOTAL_MOLES(cached_gases, sum)
-	amount = min(amount, sum) //Can not take more air than tile has!
-	if(amount <= 0)
-		return FALSE
-
-	var/list/into_gases = into.gases //accessing datum vars is slower than proc vars
-	into.set_temperature(temperature)
-	for(var/id in cached_gases)
-		into_gases[id] = QUANTIZE((cached_gases[id] / sum) * amount)
-		cached_gases[id] -= into_gases[id]
-	GAS_GARBAGE_COLLECT(gases)
-
-	if(into.total_moles() <= 0)
-		into.clear()
-		into.set_temperature(0)
-		return FALSE
-
-	return TRUE
-
 /datum/gas_mixture/remove_ratio(ratio)
 	if(ratio <= 0)
 		return null
@@ -178,33 +148,6 @@
 	GAS_GARBAGE_COLLECT(gases)
 
 	return removed
-
-/datum/gas_mixture/remove_ratio_into(datum/gas_mixture/into, ratio)
-	if(!into || into == src)
-		return FALSE
-
-	into.clear()
-	into.set_temperature(0)
-	if(ratio <= 0)
-		return FALSE
-	ratio = min(ratio, 1)
-
-	var/list/cached_gases = gases
-
-	var/list/into_gases = into.gases //accessing datum vars is slower than proc vars
-	into.set_temperature(temperature)
-	for(var/id in cached_gases)
-		into_gases[id] = QUANTIZE(cached_gases[id] * ratio)
-		cached_gases[id] -= into_gases[id]
-
-	GAS_GARBAGE_COLLECT(gases)
-
-	if(into.total_moles() <= 0)
-		into.clear()
-		into.set_temperature(0)
-		return FALSE
-
-	return TRUE
 
 /datum/gas_mixture/copy()
 	var/list/cached_gases = gases

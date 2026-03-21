@@ -64,15 +64,10 @@
 // Pipenet stuff; housekeeping
 
 /obj/machinery/atmospherics/components/nullifyNode(i)
+	var/datum/gas_mixture/air_ref = airs ? airs[i] : null
 	if(parents[i])
 		nullifyPipenet(parents[i])
-	// Safety net: if the air is still tracked in a pipeline we don't know about, clean it up via _owner_pipeline
-	var/datum/gas_mixture/air_to_remove = airs ? airs[i] : null
-	if(air_to_remove?._owner_pipeline && !QDELETED(air_to_remove._owner_pipeline))
-		stack_trace("nullifyNode: air [REF(air_to_remove)] still owned by pipeline [air_to_remove._owner_pipeline]([REF(air_to_remove._owner_pipeline)]) after nullifyPipenet! \
-			Component [type] at [COORD(src)], port [i], parents[i]=[parents[i] ? "[parents[i]]([REF(parents[i])])" : "null"]")
-		air_to_remove._owner_pipeline.other_airs -= air_to_remove
-		air_to_remove._owner_pipeline = null
+	prune_stale_pipeline_memberships(air_ref)
 	QDEL_NULL(airs[i])
 	return ..()
 
@@ -103,16 +98,11 @@
 		// Still need to clear our local references even if pipeline is being destroyed
 		for (var/i in 1 to parents.len)
 			if (parents[i] == reference)
-				reference.other_airs -= airs[i]
-				if(airs[i]?._owner_pipeline == reference)
-					airs[i]._owner_pipeline = null
 				parents[i] = null
 		return
 	for (var/i in 1 to parents.len)
 		if (parents[i] == reference)
 			reference.other_airs -= airs[i] // Disconnects from the pipeline side
-			if(airs[i]?._owner_pipeline == reference)
-				airs[i]._owner_pipeline = null
 			parents[i] = null // Disconnects from the machinery side.
 	reference.other_atmosmch -= src
 	/**
@@ -127,6 +117,32 @@
 		if(QDESTROYING(reference))
 			CRASH("nullifyPipenet() called on qdeleting [reference]")
 		qdel(reference)
+
+/obj/machinery/atmospherics/components/proc/prune_stale_pipeline_memberships(datum/gas_mixture/air_ref)
+	var/list/seen_pipelines = list()
+	for(var/list/source as anything in list(SSair.networks, SSair.currentrun))
+		if(!islist(source))
+			continue
+		for(var/thing as anything in source)
+			if(!istype(thing, /datum/pipeline))
+				continue
+			var/datum/pipeline/P = thing
+			if(P in seen_pipelines)
+				continue
+			seen_pipelines += P
+			if(QDELETED(P) || QDESTROYING(P))
+				continue
+			var/changed = FALSE
+			if(src in P.other_atmosmch)
+				P.other_atmosmch -= src
+				changed = TRUE
+			if(air_ref && (air_ref in P.other_airs))
+				P.other_airs -= air_ref
+				changed = TRUE
+			if(changed)
+				P.update = TRUE
+				if(!length(P.other_atmosmch) && !length(P.members))
+					qdel(P)
 
 /obj/machinery/atmospherics/components/returnPipenetAirs(datum/pipeline/reference)
 	var/list/returned_air = list()

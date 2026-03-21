@@ -69,12 +69,10 @@
 		air_contents.set_temperature(new_temperature)
 		partner_air_contents.set_temperature(new_temperature)
 
-	var/new_air_temp = air_contents.return_temperature()
-	if(abs(old_temperature - new_air_temp) > 1)
+	if(abs(old_temperature-air_contents.return_temperature()) > 1)
 		update_parents()
-		old_temperature = new_air_temp
+		old_temperature = air_contents.return_temperature()
 
-	var/new_partner_temp = partner_air_contents.return_temperature()
-	if(abs(other_old_temperature - new_partner_temp) > 1)
+	if(abs(other_old_temperature-partner_air_contents.return_temperature()) > 1)
 		partner.update_parents()
-		other_old_temperature = new_partner_temp
+		other_old_temperature = partner_air_contents.return_temperature()
