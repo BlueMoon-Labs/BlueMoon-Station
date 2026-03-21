@@ -1110,6 +1110,18 @@
 	path = /obj/item/clothing/neck/tie/oftok
 	ckeywhitelist = list("xaeshkavd", "akinight", "heathkit1", "scramblescream", "definitelynotnesuby", "sosnovskii","hellsinggc")
 
+/datum/gear/donator/bm/hecu_black
+	name = "Black HECU Backpack"
+	path = /obj/item/storage/backpack/hecu/black
+	slot = ITEM_SLOT_BACKPACK
+	ckeywhitelist = list("xaeshkavd")
+
+/datum/gear/donator/bm/marisa_hat
+	name = "Witch Hat"
+	path = /obj/item/clothing/head/wizard/marisa
+	slot = ITEM_SLOT_HEAD
+	ckeywhitelist = list("xaeshkavd")
+
 /datum/gear/donator/bm/agentcape
 	name = "Marketing agent's cape"
 	slot = ITEM_SLOT_OCLOTHING
@@ -1735,12 +1747,6 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/portalabomination_kit
 	ckeywhitelist = list("architect0r")
-
-/datum/gear/donator/bm/hecu_black
-	name = "Black HECU Backpack"
-	path = /obj/item/storage/backpack/hecu/black
-	slot = ITEM_SLOT_BACKPACK
-	ckeywhitelist = list("xaeshkavd")
 
 /datum/gear/donator/bm/legion_mask_frank
 	name = "Frank mask"
