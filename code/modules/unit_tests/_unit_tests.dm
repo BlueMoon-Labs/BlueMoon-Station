@@ -140,6 +140,7 @@
 #endif
 
 /// BLUEMOON TESTS
+#include "auto_cryo.dm"
 #include "bad_defines_defined.dm"
 #include "disposal_holder.dm"
 
