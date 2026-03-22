@@ -422,17 +422,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 		crew_member["job"] = "N/A"
 
 	// Delete them from datacore.
-	var/announce_rank = null
-	for(var/datum/data/record/medical_record as anything in GLOB.data_core.medical)
-		if(medical_record.fields["name"] == mob_occupant.real_name)
-			qdel(medical_record)
-	for(var/datum/data/record/security_record as anything in GLOB.data_core.security)
-		if(security_record.fields["name"] == mob_occupant.real_name)
-			qdel(security_record)
-	for(var/datum/data/record/general_record as anything in GLOB.data_core.general)
-		if(general_record.fields["name"] == mob_occupant.real_name)
-			announce_rank = general_record.fields["rank"]
-			qdel(general_record)
+	var/announce_rank = GLOB.data_core.remove_records_by_name(mob_occupant.real_name)
 
 	var/obj/machinery/computer/cryopod/control_computer = control_computer_weakref?.resolve()
 	if(!control_computer)

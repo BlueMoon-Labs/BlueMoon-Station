@@ -371,7 +371,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 		This isn't an exact science but it does the trick more often than not.*/
 		var/id = md5("[G_found.real_name][G_found.mind.assigned_role]")
 
-		record_found = find_record("id", id, GLOB.data_core.locked)
+		record_found = GLOB.data_core.locked_by_id[id]
 
 	if(record_found)//If they have a record we can determine a few things.
 		new_character.real_name = record_found.fields["name"]

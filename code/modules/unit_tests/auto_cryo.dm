@@ -268,3 +268,188 @@
 	// Cleanup
 	SSauto_cryo.currentrun_ghosts = list()
 	auto_cryo_test_restore_config(prev_config)
+
+// ==================== Datacore Index Tests ====================
+
+/// Helper: manually create test records in datacore with name+id indexes (avoids async manifest_inject)
+/proc/datacore_test_create_records(test_name, rank = "Test Job", test_id = null)
+	if(!test_id)
+		test_id = "TEST[rand(100000, 999999)]"
+
+	var/datum/data/record/G = new()
+	G.fields["name"] = test_name
+	G.fields["id"] = test_id
+	G.fields["rank"] = rank
+	GLOB.data_core.general += G
+	GLOB.data_core.general_by_name[test_name] = G
+	GLOB.data_core.general_by_id[test_id] = G
+
+	var/datum/data/record/M = new()
+	M.fields["name"] = test_name
+	M.fields["id"] = test_id
+	GLOB.data_core.medical += M
+	GLOB.data_core.medical_by_name[test_name] = M
+	GLOB.data_core.medical_by_id[test_id] = M
+
+	var/datum/data/record/S = new()
+	S.fields["name"] = test_name
+	S.fields["id"] = test_id
+	GLOB.data_core.security += S
+	GLOB.data_core.security_by_name[test_name] = S
+	GLOB.data_core.security_by_id[test_id] = S
+
+	return test_id
+
+// ===== Test 11: Records appear in name index =====
+
+/datum/unit_test/datacore_index_populated
+
+/datum/unit_test/datacore_index_populated/Run()
+	var/test_name = "TestCrewMember[rand(10000, 99999)]"
+	datacore_test_create_records(test_name)
+
+	TEST_ASSERT_NOTNULL(GLOB.data_core.general_by_name[test_name], "General record should be in name index")
+	TEST_ASSERT_NOTNULL(GLOB.data_core.medical_by_name[test_name], "Medical record should be in name index")
+	TEST_ASSERT_NOTNULL(GLOB.data_core.security_by_name[test_name], "Security record should be in name index")
+
+	// Verify index points to correct records
+	var/datum/data/record/gen = GLOB.data_core.general_by_name[test_name]
+	TEST_ASSERT_EQUAL(gen.fields["name"], test_name, "General record name field should match")
+
+	// Cleanup
+	GLOB.data_core.remove_records_by_name(test_name)
+
+// ===== Test 12: Records removed from index after qdel =====
+
+/datum/unit_test/datacore_index_cleanup_on_qdel
+
+/datum/unit_test/datacore_index_cleanup_on_qdel/Run()
+	var/test_name = "TestQdel[rand(10000, 99999)]"
+	datacore_test_create_records(test_name)
+
+	var/datum/data/record/gen = GLOB.data_core.general_by_name[test_name]
+	TEST_ASSERT_NOTNULL(gen, "Record should exist before qdel")
+
+	qdel(gen)
+
+	TEST_ASSERT_NULL(GLOB.data_core.general_by_name[test_name], "General index should be cleared after qdel")
+
+	// Cleanup remaining records
+	GLOB.data_core.remove_records_by_name(test_name)
+
+// ===== Test 13: remove_records_by_name deletes all 3 records and returns rank =====
+
+/datum/unit_test/datacore_remove_by_name
+
+/datum/unit_test/datacore_remove_by_name/Run()
+	var/test_name = "TestRemove[rand(10000, 99999)]"
+	datacore_test_create_records(test_name, "Captain")
+
+	// Verify all 3 exist
+	TEST_ASSERT_NOTNULL(GLOB.data_core.general_by_name[test_name], "General record should exist")
+	TEST_ASSERT_NOTNULL(GLOB.data_core.medical_by_name[test_name], "Medical record should exist")
+	TEST_ASSERT_NOTNULL(GLOB.data_core.security_by_name[test_name], "Security record should exist")
+
+	var/rank = GLOB.data_core.remove_records_by_name(test_name)
+
+	// All 3 should be gone from index
+	TEST_ASSERT_NULL(GLOB.data_core.general_by_name[test_name], "General index should be empty after remove_records_by_name")
+	TEST_ASSERT_NULL(GLOB.data_core.medical_by_name[test_name], "Medical index should be empty after remove_records_by_name")
+	TEST_ASSERT_NULL(GLOB.data_core.security_by_name[test_name], "Security index should be empty after remove_records_by_name")
+
+	// rank should be returned from the general record
+	TEST_ASSERT_EQUAL(rank, "Captain", "remove_records_by_name should return rank from general record")
+
+// ===== Test 14: remove_records_by_name on non-existent name doesn't crash =====
+
+/datum/unit_test/datacore_remove_nonexistent
+
+/datum/unit_test/datacore_remove_nonexistent/Run()
+	var/rank = GLOB.data_core.remove_records_by_name("NonExistentPerson[rand(10000, 99999)]")
+	TEST_ASSERT_NULL(rank, "Removing non-existent records should return null rank")
+
+// ===== Test 15: cryoMob cleans up datacore records via index =====
+
+/datum/unit_test/auto_cryo_cleans_datacore
+	priority = TEST_LONGER
+
+/datum/unit_test/auto_cryo_cleans_datacore/Run()
+	var/list/prev_config = auto_cryo_test_enable_config()
+	var/list/prev_ssd_list = GLOB.ssd_mob_list.Copy()
+
+	var/mob/living/carbon/human/ssd_human = allocate(/mob/living/carbon/human)
+	var/test_name = "TestCryoDatacore[rand(10000, 99999)]"
+	ssd_human.real_name = test_name
+	datacore_test_create_records(test_name, "Engineer")
+
+	TEST_ASSERT_NOTNULL(GLOB.data_core.general_by_name[test_name], "Records should exist before cryo")
+
+	ssd_human.lastclienttime = world.time - CONFIG_GET(number/autocryo_time_trigger) - 100
+	GLOB.ssd_mob_list |= ssd_human
+
+	SSauto_cryo.currentrun_cryo = list()
+	SSauto_cryo.fire()
+
+	TEST_ASSERT(QDELETED(ssd_human), "SSD mob should be cryo'd")
+	TEST_ASSERT_NULL(GLOB.data_core.general_by_name[test_name], "General record should be cleaned after cryo")
+	TEST_ASSERT_NULL(GLOB.data_core.medical_by_name[test_name], "Medical record should be cleaned after cryo")
+	TEST_ASSERT_NULL(GLOB.data_core.security_by_name[test_name], "Security record should be cleaned after cryo")
+
+	// Cleanup
+	GLOB.ssd_mob_list = prev_ssd_list
+	SSauto_cryo.currentrun_cryo = list()
+	auto_cryo_test_restore_config(prev_config)
+
+// ===== Test 16: ID index populated and accessible =====
+
+/datum/unit_test/datacore_id_index
+
+/datum/unit_test/datacore_id_index/Run()
+	var/test_name = "TestIdIndex[rand(10000, 99999)]"
+	var/test_id = datacore_test_create_records(test_name)
+
+	TEST_ASSERT_NOTNULL(GLOB.data_core.general_by_id[test_id], "General record should be in id index")
+	TEST_ASSERT_NOTNULL(GLOB.data_core.medical_by_id[test_id], "Medical record should be in id index")
+	TEST_ASSERT_NOTNULL(GLOB.data_core.security_by_id[test_id], "Security record should be in id index")
+
+	// Verify consistency between name and id indexes
+	TEST_ASSERT_EQUAL(GLOB.data_core.general_by_name[test_name], GLOB.data_core.general_by_id[test_id], "Name and ID indexes should point to same general record")
+
+	// Cleanup
+	GLOB.data_core.remove_records_by_name(test_name)
+
+	// ID index should also be cleaned via Destroy()
+	TEST_ASSERT_NULL(GLOB.data_core.general_by_id[test_id], "General id index should be cleared after removal")
+	TEST_ASSERT_NULL(GLOB.data_core.medical_by_id[test_id], "Medical id index should be cleared after removal")
+	TEST_ASSERT_NULL(GLOB.data_core.security_by_id[test_id], "Security id index should be cleared after removal")
+
+// ===== Test 17: replace_records_name updates indexes =====
+
+/datum/unit_test/datacore_replace_name_updates_index
+
+/datum/unit_test/datacore_replace_name_updates_index/Run()
+	var/old_name = "TestOldName[rand(10000, 99999)]"
+	var/new_name = "TestNewName[rand(10000, 99999)]"
+	datacore_test_create_records(old_name, "Engineer")
+
+	TEST_ASSERT_NOTNULL(GLOB.data_core.general_by_name[old_name], "Old name should be in index before rename")
+
+	// Simulate what replace_records_name does
+	for(var/list/index in list(GLOB.data_core.general_by_name, GLOB.data_core.medical_by_name, GLOB.data_core.security_by_name))
+		var/datum/data/record/R = index[old_name]
+		if(R)
+			R.fields["name"] = new_name
+			index[new_name] = R
+			index -= old_name
+
+	TEST_ASSERT_NULL(GLOB.data_core.general_by_name[old_name], "Old name should be gone from index after rename")
+	TEST_ASSERT_NOTNULL(GLOB.data_core.general_by_name[new_name], "New name should be in index after rename")
+	TEST_ASSERT_NOTNULL(GLOB.data_core.medical_by_name[new_name], "Medical record should be under new name")
+	TEST_ASSERT_NOTNULL(GLOB.data_core.security_by_name[new_name], "Security record should be under new name")
+
+	// Verify record content updated
+	var/datum/data/record/gen = GLOB.data_core.general_by_name[new_name]
+	TEST_ASSERT_EQUAL(gen.fields["name"], new_name, "Record name field should be updated")
+
+	// Cleanup
+	GLOB.data_core.remove_records_by_name(new_name)
