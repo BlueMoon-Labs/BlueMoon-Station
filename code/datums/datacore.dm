@@ -18,6 +18,62 @@
 	var/list/general_by_id = list()
 	var/list/locked_by_id = list()
 
+/// Registers a record in the appropriate index lists. Call after adding to medical/security/general lists.
+/datum/datacore/proc/register_record(datum/data/record/R, record_type)
+	var/rname = R.fields["name"]
+	var/rid = R.fields["id"]
+	switch(record_type)
+		if("general")
+			if(rname)
+				general_by_name[rname] = R
+			if(rid)
+				general_by_id[rid] = R
+		if("medical")
+			if(rname)
+				medical_by_name[rname] = R
+			if(rid)
+				medical_by_id[rid] = R
+		if("security")
+			if(rname)
+				security_by_name[rname] = R
+			if(rid)
+				security_by_id[rid] = R
+
+/// Reindexes a record after name or id change. Call with old values before the change.
+/datum/datacore/proc/reindex_record(datum/data/record/R, old_name, old_id)
+	// Remove old keys
+	if(old_name)
+		if(general_by_name[old_name] == R)
+			general_by_name -= old_name
+		if(medical_by_name[old_name] == R)
+			medical_by_name -= old_name
+		if(security_by_name[old_name] == R)
+			security_by_name -= old_name
+	if(old_id)
+		if(general_by_id[old_id] == R)
+			general_by_id -= old_id
+		if(medical_by_id[old_id] == R)
+			medical_by_id -= old_id
+		if(security_by_id[old_id] == R)
+			security_by_id -= old_id
+	// Insert new keys
+	var/new_name = R.fields["name"]
+	var/new_id = R.fields["id"]
+	if(new_name)
+		if(R in general)
+			general_by_name[new_name] = R
+		if(R in medical)
+			medical_by_name[new_name] = R
+		if(R in security)
+			security_by_name[new_name] = R
+	if(new_id)
+		if(R in general)
+			general_by_id[new_id] = R
+		if(R in medical)
+			medical_by_id[new_id] = R
+		if(R in security)
+			security_by_id[new_id] = R
+
 /// Removes all records (medical, security, general) for a given name. Returns the rank from general record if found.
 /datum/datacore/proc/remove_records_by_name(target_name)
 	var/announce_rank = null

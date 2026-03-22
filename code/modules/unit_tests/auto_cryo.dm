@@ -86,7 +86,6 @@
 	SSauto_cryo.fire()
 
 	// If we got here without runtime, the test passes
-	TEST_ASSERT(TRUE, "fire() should handle deleted mobs without runtime errors")
 
 	// Cleanup
 	GLOB.ssd_mob_list = prev_ssd_list
@@ -150,7 +149,6 @@
 	SSauto_cryo.fire()
 
 	// If we got here, it works
-	TEST_ASSERT(TRUE, "fire() should handle empty lists without errors")
 
 	// Cleanup
 	GLOB.ssd_mob_list = prev_ssd_list
@@ -263,7 +261,6 @@
 	SSauto_cryo.fire()
 
 	// If we got here without runtime, the test passes
-	TEST_ASSERT(TRUE, "fire() should handle deleted ghosts without runtime errors")
 
 	// Cleanup
 	SSauto_cryo.currentrun_ghosts = list()

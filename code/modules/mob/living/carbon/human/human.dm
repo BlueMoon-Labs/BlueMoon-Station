@@ -670,6 +670,8 @@
 		..()
 
 /mob/living/carbon/human/replace_records_name(oldname,newname) // Only humans have records right now, move this up if changed.
+	if(oldname == newname)
+		return
 	// Update indexed records (general, medical, security)
 	for(var/list/index in list(GLOB.data_core.general_by_name, GLOB.data_core.medical_by_name, GLOB.data_core.security_by_name))
 		var/datum/data/record/R = index[oldname]
