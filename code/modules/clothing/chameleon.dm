@@ -148,7 +148,13 @@
 	var/chameleon_type = null
 	var/chameleon_name = "Item"
 
+	var/datum/callback/on_change
+
 	var/emp_timer
+
+/datum/action/item_action/chameleon/change/Destroy()	
+	QDEL_NULL(on_change)
+	return ..()
 
 /datum/action/item_action/chameleon/change/Grant(mob/M)
 	if(M && (owner != M))
@@ -237,6 +243,7 @@
 		CL.mob_overlay_icon = PCL.mob_overlay_icon
 		qdel(PCL)
 	chameleon_item.icon = initial(picked_item.icon)
+	on_change?.Invoke(picked_item)
 
 /datum/action/item_action/chameleon/change/pda/update_item(obj/item/pda/picked_item)
 	if(!istype(target, /obj/item/pda))
@@ -643,7 +650,14 @@ CHAMELEON_CLOTHING_DEFINE(/obj/item/stamp/chameleon)
 	chameleon_action.chameleon_type = /obj/item/stamp
 	chameleon_action.chameleon_name = "Stamp"
 	chameleon_action.chameleon_blacklist = typecacheof(/obj/item/stamp/machine, ignore_root_path = FALSE) // BLUEMOON EDIT - переработка анализаторов здоровья, новый штамп для автобумажек
+	chameleon_action.on_change = CALLBACK(src, PROC_REF(on_change))
 	chameleon_action.initialize_disguises()
+
+/obj/item/stamp/chameleon/proc/on_change(obj/item/stamp/picked_item)
+	if(!ispath(picked_item))
+		return
+	on_paper_icon_state = initial(picked_item.on_paper_icon_state)
+	dye_color = initial(picked_item.dye_color)
 
 /obj/item/stamp/chameleon/broken/Initialize(mapload)
 	. = ..()

@@ -532,6 +532,8 @@ SUBSYSTEM_DEF(job)
 			equip_loadout(N, H) // CIT CHANGE - allows players to spawn with loadout items
 		job.after_spawn(H, M.client, joined_late) // note: this happens before the mob has a key! M will always have a client, H might not.
 		post_equip_loadout(N, H)//CIT CHANGE - makes players spawn with in-backpack loadout items properly. A little hacky but it works
+		if(joined_late && ishuman(H)) // BLUEMOON ADD
+			give_spare_id_safe_paper(H)
 
 		handle_roundstart_items(H, M.ckey, H.mind.assigned_role, H.mind.special_role)
 

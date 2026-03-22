@@ -7541,6 +7541,10 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/light,
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
 /turf/open/floor/plasteel/dark/textured/edge,
 /area/command/bridge)
 "aPV" = (
@@ -9933,7 +9937,6 @@
 /area/command/bridge)
 "aZU" = (
 /obj/structure/dresser,
-/obj/item/card/id/captains_spare,
 /turf/open/floor/wood/wood_large,
 /area/command/heads_quarters/captain)
 "aZV" = (
@@ -37286,6 +37289,9 @@
 	},
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/box,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
 /turf/open/floor/plasteel/dark/textured/half,
 /area/ai_monitored/security/armory)
 "dVh" = (
@@ -76602,6 +76608,7 @@
 /obj/effect/turf_decal/trimline/red/filled/mid_joiner{
 	dir = 1
 	},
+/obj/machinery/computer/brig_assistant_console,
 /turf/open/floor/plasteel/textured/corner,
 /area/hallway/primary/fore)
 "ubD" = (

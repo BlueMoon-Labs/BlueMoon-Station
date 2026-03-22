@@ -12,9 +12,9 @@
 // -----------------------------
 /obj/item/storage/secure
 	name = "secstorage"
-	var/icon_locking = "secureb"
-	var/icon_sparking = "securespark"
-	var/icon_opened = "secure0"
+	var/icon_locking = null //"secureb"
+	var/icon_sparking = null //"securespark"
+	var/icon_opened = null //"secure0"
 	var/code = ""
 	var/l_code = null
 	var/l_set = 0
@@ -24,6 +24,10 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	desc = "This shouldn't exist. If it does, create an issue report."
 
+/obj/item/storage/secure/Initialize(mapload)
+	. = ..()
+	update_icon()
+
 /obj/item/storage/secure/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
@@ -32,7 +36,16 @@
 
 /obj/item/storage/secure/examine(mob/user)
 	. = ..()
-	. += "The service panel is currently <b>[open ? "unscrewed" : "screwed shut"]</b>."
+	. += "The service panel is currently <b>[open ? span_warning("unscrewed") : "screwed shut"]</b>."
+
+/obj/item/storage/secure/update_icon_state()
+	. = ..()
+	var/chosen_state
+	if(l_hacking)
+		chosen_state = icon_locking
+	else
+		chosen_state = SEND_SIGNAL(src, COMSIG_IS_STORAGE_LOCKED) ? initial(icon_state) : icon_opened
+	icon_state = chosen_state ? chosen_state : initial(icon_state)
 
 /obj/item/storage/secure/attackby(obj/item/W, mob/user, params)
 	if(SEND_SIGNAL(src, COMSIG_IS_STORAGE_LOCKED))
@@ -47,12 +60,14 @@
 			if(open == 1)
 				to_chat(user, "<span class='danger'>Now attempting to reset internal memory, please hold.</span>")
 				l_hacking = 1
+				update_icon()
 				if (W.use_tool(src, user, 400))
 					to_chat(user, "<span class='danger'>Internal memory reset - lock has been disengaged.</span>")
 					l_set = 0
 					l_hacking = 0
 				else
 					l_hacking = 0
+				update_icon()
 			else
 				to_chat(user, "<span class='notice'>You must <b>unscrew</b> the service panel before you can pulse the wiring.</span>")
 			return
@@ -91,15 +106,14 @@
 				l_set = 1
 			else if ((code == l_code) && (l_set == 1))
 				SEND_SIGNAL(src, COMSIG_TRY_STORAGE_SET_LOCKSTATE, FALSE)
-				cut_overlays()
-				add_overlay(icon_opened)
+				update_icon()
 				code = null
 			else
 				code = "ERROR"
 		else
 			if ((href_list["type"] == "R") && (!l_setshort))
 				SEND_SIGNAL(src, COMSIG_TRY_STORAGE_SET_LOCKSTATE, TRUE)
-				cut_overlays()
+				update_icon()
 				code = null
 				SEND_SIGNAL(src, COMSIG_TRY_STORAGE_HIDE_FROM, usr)
 			else

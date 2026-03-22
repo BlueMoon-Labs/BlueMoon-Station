@@ -468,6 +468,10 @@ Example config:
 // Есть ли целое слово
 /proc/has_whole_word(text, word, case_insensitive = TRUE)
 	if(!text || !word) return FALSE
+	if(length_char(word) > MAX_FILTER_WORD_LEN) return FALSE
+	// Limit input length to prevent ReDoS/crash (illegal operation) from crafted input
+	if(length_char(text) > MAX_SAY_EMPHASIS_LEN)
+		text = copytext_char(text, 1, MAX_SAY_EMPHASIS_LEN + 1)
 	var/static/WORDCLASS = "A-Za-z0-9_А-Яа-яЁё"
 	var/safe = regex_escape(word)
 	var/pattern = "(^|\[^" + WORDCLASS + "\])" + safe + "($|\[^" + WORDCLASS + "\])"
@@ -479,6 +483,9 @@ Example config:
 // Найти любое слово из списка
 /proc/find_any_whole_word(text, list/words, case_insensitive = TRUE)
 	if(!text || !islist(words) || !words.len) return null
+	// Limit input length to prevent ReDoS/crash (illegal operation) from crafted input
+	if(length_char(text) > MAX_SAY_EMPHASIS_LEN)
+		text = copytext_char(text, 1, MAX_SAY_EMPHASIS_LEN + 1)
 	for(var/w in words)
 		if(istext(w) && length(w) && has_whole_word(text, w, case_insensitive))
 			return w

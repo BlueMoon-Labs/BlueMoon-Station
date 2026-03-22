@@ -1016,7 +1016,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
-/obj/item/card/id/captains_spare,
 /turf/open/floor/plasteel/grimy,
 /area/command/heads_quarters/captain/private)
 "acb" = (
@@ -1569,6 +1568,10 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
 /turf/open/floor/carpet,
 /area/command/bridge)
 "adc" = (
@@ -1939,9 +1942,6 @@
 /area/ai_monitored/turret_protected/ai)
 "adR" = (
 /obj/effect/spawner/structure/window/reinforced,
-/obj/structure/sign/warning/electricshock{
-	pixel_x = 32
-	},
 /obj/structure/cable/white{
 	icon_state = "0-2"
 	},
@@ -42649,6 +42649,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/brig)
+"xYe" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/machinery/computer/brig_assistant_console{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/hallway/primary/port)
 "xZz" = (
 /obj/item/kirbyplants{
 	icon_state = "plant-22"
@@ -79118,7 +79128,7 @@ akc
 blg
 aoB
 apG
-uGq
+xYe
 uGq
 bxD
 atM

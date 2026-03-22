@@ -1,0 +1,8 @@
+{
+    "map_name": "Minimal Runtime Station",
+    "map_path": "map_files/debug",
+    "map_file": "runtimestation_minimal.dmm",
+	"shuttles": {
+	    "cargo": "cargo_delta"
+    }
+}

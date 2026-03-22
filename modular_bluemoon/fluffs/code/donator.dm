@@ -1073,18 +1073,6 @@
 	ckeywhitelist = list("fedor1545")
 	subcategory = LOADOUT_SUBCATEGORIES_DON04
 
-/datum/gear/donator/bm/razorsong
-	name = "Razorsong Kit"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/razorsong_kit
-	ckeywhitelist = list("xaeshkavd")
-
-/datum/gear/donator/bm/noxscoutcoat
-	name = "Military-Civilian Scout Coat"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/clothing/suit/donator/bm/noxscoutcoat
-	ckeywhitelist = list("xaeshkavd")
-
 /datum/gear/donator/bm/rsh_future
 	name = "Special .38 Mars Kit"
 	slot = ITEM_SLOT_BACKPACK
@@ -1109,6 +1097,24 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/neck/tie/oftok
 	ckeywhitelist = list("xaeshkavd", "akinight", "heathkit1", "scramblescream", "definitelynotnesuby", "sosnovskii","hellsinggc")
+
+/datum/gear/donator/bm/hecu_black
+	name = "Black HECU Backpack"
+	path = /obj/item/storage/backpack/hecu/black
+	slot = ITEM_SLOT_BACKPACK
+	ckeywhitelist = list("xaeshkavd")
+
+/datum/gear/donator/bm/razorsong
+	name = "Razorsong Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/razorsong_kit
+	ckeywhitelist = list("xaeshkavd")
+
+/datum/gear/donator/bm/noxscoutcoat
+	name = "Military-Civilian Scout Coat"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/clothing/suit/donator/bm/noxscoutcoat
+	ckeywhitelist = list("xaeshkavd")
 
 /datum/gear/donator/bm/agentcape
 	name = "Marketing agent's cape"
@@ -1736,12 +1742,6 @@
 	path = /obj/item/modkit/portalabomination_kit
 	ckeywhitelist = list("architect0r")
 
-/datum/gear/donator/bm/hecu_black
-	name = "Black HECU Backpack"
-	path = /obj/item/storage/backpack/hecu/black
-	slot = ITEM_SLOT_BACKPACK
-	ckeywhitelist = list("xaeshkavd")
-
 /datum/gear/donator/bm/legion_mask_frank
 	name = "Frank mask"
 	slot = ITEM_SLOT_MASK
@@ -2166,6 +2166,7 @@
 	path = /obj/item/modkit/nebular_kit
 	ckeywhitelist = list("lapkee")
 
+
 /datum/gear/donator/bm/toy_plasma_scythe
 	name = "Toy Plasma Scythe"
 	slot = ITEM_SLOT_BACKPACK
@@ -2176,4 +2177,12 @@
 	name = "Toy Sledgehammer"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/inteq_sledgehammer/toy
-	ckeywhitelist = list("freakowo")
+	ckeywhitelist = list("freakowo", "belf0r")
+
+/datum/gear/donator/bm/invisible_ac
+	name = "Invisible Armored Coat"
+	path = /obj/item/clothing/suit/toggle/captains_parade/hos_formal/ac/invisible
+	slot = ITEM_SLOT_OCLOTHING
+	restricted_desc = "Head of Security, Warden, Blueshield."
+	restricted_roles = list("Head of Security", "Warden", "Blueshield")
+	ckeywhitelist = list("lapkee")

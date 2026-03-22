@@ -758,7 +758,7 @@
 	filling_color = "#f2efdc"
 	w_class = WEIGHT_CLASS_SMALL
 	tastes = list("cream cheese" = 4, "crab" = 3, "crispiness" = 2)
-	foodtype = MEAT | DAIRY | GRAIN
+	foodtype = MEAT | DAIRY | GRAIN | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/chocolatestrawberry
 	name = "Chocolate dipped strawberries"

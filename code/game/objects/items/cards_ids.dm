@@ -336,7 +336,7 @@
 	. = FALSE
 	var/datum/bank_account/old_account = registered_account
 
-	var/new_bank_id = input(user, "Введите номер вашего банковского счета.", "Восстановление аккаунта", 111111) as num | null
+	var/new_bank_id = tgui_input_number(user, "Введите номер вашего банковского счета.", "Восстановление аккаунта", 111111, 999999, 111111, round_value = TRUE)
 
 	if (isnull(new_bank_id))
 		return
@@ -405,7 +405,7 @@
 		registered_account.bank_card_talk("<span class='warning'>ОШИБКА: НЕВОЗМОЖНО ВОЙТИ ВВИДУ ЗАПЛАНИРОВАННОГО ТЕХОБСЛУЖИВАНИЯ. РАБОТЫ ЗАПЛАНИРОВАНЫ К ЗАВЕРШЕНИЮ В ТЕЧЕНИЕ [(registered_account.withdrawDelay - world.time)/10] СЕКУНД.</span>", TRUE)
 		return
 
-	var/amount_to_remove =  input(user, "Как много кредитов вы хотите снять? Текущий баланс: [registered_account.account_balance]", "Снятие средств", 5) as num|null
+	var/amount_to_remove =  tgui_input_number(user, "Как много кредитов вы хотите снять? Текущий баланс: [registered_account.account_balance]", "Снятие средств", 1, min_value = 1, round_value = TRUE)
 
 	if(!amount_to_remove || amount_to_remove < 0)
 		return

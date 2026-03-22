@@ -60,7 +60,11 @@
 								// 2 for preloading absolutely everything;
 
 #ifdef LOWMEMORYMODE
+#ifdef ABSOLUTE_MINIMUM_MODE
+#define FORCE_MAP "_maps/runtimestation_minimal.json"
+#else
 #define FORCE_MAP "_maps/runtimestation.json"
+#endif
 #endif
 
 //Additional code for the above flags.

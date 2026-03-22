@@ -9906,11 +9906,12 @@
 /turf/open/floor/plasteel/grimy,
 /area/command/heads_quarters/captain)
 "aAs" = (
-/obj/structure/table/wood,
-/obj/item/kitchen/fork,
-/obj/item/card/id/captains_spare,
-/turf/open/floor/plasteel/grimy,
-/area/command/heads_quarters/captain)
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/machinery/computer/brig_assistant_console,
+/turf/open/floor/plasteel,
+/area/hallway/primary/fore)
 "aAt" = (
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel/dark,
@@ -60083,6 +60084,18 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/science/xenobiology)
+"qda" = (
+/obj/structure/disposalpipe/segment,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 32;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel/dark,
+/area/command/bridge)
 "qdi" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -90284,7 +90297,7 @@ atG
 cxX
 jfY
 cym
-axL
+aAs
 axG
 aAl
 aBh
@@ -92856,7 +92869,7 @@ auH
 auH
 axQ
 ayV
-aAs
+ayT
 aBj
 gkR
 aDB
@@ -98257,7 +98270,7 @@ aAE
 aBy
 aCO
 aDP
-aEK
+qda
 aEK
 aEK
 aHg

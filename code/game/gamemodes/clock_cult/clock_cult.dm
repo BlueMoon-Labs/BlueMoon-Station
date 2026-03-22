@@ -53,28 +53,30 @@ Credit where due:
 	return D && (!require_full_power || !D.neutered) && (!holy_water_check || !D.ignore_holy_water)
 
 /proc/is_eligible_servant(mob/M)
+	. = FALSE
 	if(!istype(M))
-		return FALSE
+		return
+	if(jobban_isbanned(M, ROLE_SERVANT_OF_RATVAR))
+		return
 	if(M.mind)
 		if(M.mind.assigned_role in list("Captain", "Chaplain"))
-			return FALSE
+			return
 		if(M.mind.enslaved_to && !is_servant_of_ratvar(M.mind.enslaved_to))
-			return FALSE
+			return
 		if(M.mind.unconvertable)
-			return FALSE
-		if (IS_HERETIC(M))
-			return FALSE
+			return
+		if(IS_HERETIC(M))
+			return
 	else
-		return FALSE
+		return
 	if(iscultist(M) || isconstruct(M) || ispAI(M))
-		return FALSE
+		return
 	if(isliving(M))
 		var/mob/living/L = M
 		if(HAS_TRAIT(L, TRAIT_MINDSHIELD))
-			return FALSE
+			return
 	if(ishuman(M) || isbrain(M) || isguardian(M) || issilicon(M) || isclockmob(M) || istype(M, /mob/living/simple_animal/drone/cogscarab) || istype(M, /mob/camera/eminence))
 		return TRUE
-	return FALSE
 
 /proc/add_servant_of_ratvar(mob/L, silent = FALSE, create_team = TRUE, override_type)
 	if(!L || !L.mind)

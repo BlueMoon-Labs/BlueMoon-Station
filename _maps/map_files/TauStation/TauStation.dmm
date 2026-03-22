@@ -13198,6 +13198,10 @@
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/structure/safe/spare_id{
+	pixel_x = -32;
+	pixel_y = 0
+	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
 "ezF" = (
@@ -14107,6 +14111,7 @@
 /obj/machinery/airalarm{
 	pixel_y = 23
 	},
+/obj/machinery/computer/brig_assistant_console,
 /turf/open/floor/plasteel,
 /area/hallway/primary/port)
 "eOF" = (
@@ -16784,7 +16789,6 @@
 /area/command/heads_quarters/captain/private)
 "fKy" = (
 /obj/structure/table/wood,
-/obj/item/card/id/captains_spare,
 /obj/item/razor{
 	pixel_x = -4;
 	pixel_y = 2

@@ -487,6 +487,7 @@
 /obj/item/clothing/head/donator/bm/fire_blossom
 	name = "Fire blossom"
 	desc = "Огненный цветок, растущий в дальних участках лаваленда при определённых условиях, не повторимых искусственно"
+	w_class = WEIGHT_CLASS_SMALL
 	icon_state = "fire_blossom"
 	light_color = "#ff6929"
 	light_power = 0.5
