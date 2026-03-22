@@ -533,7 +533,7 @@
 	var/result = G.react()
 	if(result != REACTING)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
-	if(!G.get_moles(GAS_NITRYL) < 0.8)
+	if(G.get_moles(GAS_NITRYL) < 0.8)
 		return list("success" = FALSE, "message" = "Nitryl isn't being generated correctly!")
 	return ..()
 
@@ -581,8 +581,8 @@
 	var/result = G.react()
 	if(result != REACTING)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
-	if(!G.get_moles(GAS_BZ) < 4) // efficiency is 4.0643 and bz generation == efficiency
-		return list("success" = FALSE, "message" = "Nitryl isn't being generated correctly!")
+	if(G.get_moles(GAS_BZ) < 4) // efficiency is 4.0643 and bz generation == efficiency
+		return list("success" = FALSE, "message" = "BZ isn't being generated correctly!")
 	return ..()
 
 /datum/gas_reaction/stimformation //Stimulum formation follows a strange pattern of how effective it will be at a given temperature, having some multiple peaks and some large dropoffs. Exo and endo thermic.
@@ -630,7 +630,7 @@
 	var/result = G.react()
 	if(result != REACTING)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
-	if(!G.get_moles(GAS_STIMULUM) < 900)
+	if(G.get_moles(GAS_STIMULUM) < 900)
 		return list("success" = FALSE, "message" = "Stimulum isn't being generated correctly!")
 	return ..()
 

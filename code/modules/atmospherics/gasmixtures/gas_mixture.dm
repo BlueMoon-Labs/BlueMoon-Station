@@ -102,12 +102,13 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 		set_volume(volume)
 
 
-/*
-we use a hook instead
-/datum/gas_mixture/Del()
-	__gasmixture_unregister()
-	. = ..()
-	*/
+/datum/gas_mixture/Destroy()
+	if(GLOB.auxtools_atmos_initialized)
+		__gasmixture_unregister()
+	reaction_results = null
+	analyzer_results = null
+	..()
+	return QDEL_HINT_QUEUE_THEN_HARDDEL
 
 /proc/gas_types()
 	var/list/L = subtypesof(/datum/gas)
