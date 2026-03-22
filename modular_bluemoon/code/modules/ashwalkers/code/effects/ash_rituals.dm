@@ -268,7 +268,7 @@
 	var/mob/living/carbon/human/human_victim = locate() in get_turf(success_rune)
 	if(!human_victim)
 		return
-	if(HAS_TRAIT(human_victim, TRAIT_MINDSHIELD))
+	if(HAS_TRAIT(human_victim, TRAIT_MINDSHIELD) || jobban_isbanned(human_victim, ROLE_LAVALAND))
 		if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
 			var/point_tp = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
 			do_teleport(human_victim, point_tp, no_effects = TRUE, channel = TELEPORT_CHANNEL_FREE)

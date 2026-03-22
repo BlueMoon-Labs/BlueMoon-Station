@@ -13503,6 +13503,9 @@
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/machinery/computer/brig_assistant_console{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/port/fore)
 "aKb" = (
@@ -81595,7 +81598,6 @@
 /area/cargo/qm)
 "oqI" = (
 /obj/structure/table/wood,
-/obj/item/card/id/captains_spare,
 /obj/item/hand_tele,
 /obj/item/disk/nuclear,
 /turf/open/floor/plasteel/dark,
@@ -104017,6 +104019,20 @@
 	},
 /turf/open/floor/wood,
 /area/service/library)
+"wyE" = (
+/obj/effect/turf_decal/tile/blue{
+	alpha = 150
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8;
+	alpha = 150
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel,
+/area/command/bridge)
 "wzk" = (
 /obj/machinery/atmospherics/pipe/simple/orange/hidden{
 	dir = 8
@@ -127040,7 +127056,7 @@ aMX
 aIE
 mzq
 cQX
-fOR
+wyE
 aQW
 wpA
 wpA

@@ -24,7 +24,12 @@ SUBSYSTEM_DEF(vote)
 	var/list/voting = list()
 	var/list/saved = list()
 	var/list/generated_actions = list()
-	var/next_pop = 0
+
+	var/setting_up_custom = FALSE
+	var/custom_question = ""
+	var/custom_vote_type = PLURALITY_VOTING
+	var/list/custom_options = list()
+	var/custom_display_flags = SHOW_RESULTS|SHOW_VOTES|SHOW_WINNER|SHOW_ABSTENTION
 
 	var/display_votes = SHOW_RESULTS|SHOW_VOTES|SHOW_WINNER|SHOW_ABSTENTION //CIT CHANGE - adds obfuscated/admin-only votes
 
@@ -48,25 +53,13 @@ SUBSYSTEM_DEF(vote)
 //BLUEMOON ADD START
 		if(mode == "roundtype" && SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY <= 0)
 			result()
-			for(var/client/C in voting)
-				C << browse(null, "window=vote;can_close=0")
 			reset()
 //BLUEMOON ADD END
 		else if(end_time < world.time) //BLUEMOON CHANGES
 			result()
 			SSpersistence.SaveSavedVotes()
-			for(var/client/C in voting)
-				C << browse(null, "window=vote;can_close=0")
 			if(end_time < world.time) // result() can change this
 				reset()
-		else if(next_pop < world.time)
-			var/datum/browser/client_popup
-			for(var/client/C in voting)
-				client_popup = new(C, "vote", "Voting Panel", nwidth=600,nheight=700)
-				client_popup.set_window_options("can_close=0")
-				client_popup.set_content(interface(C))
-				client_popup.open(0)
-			next_pop = world.time+VOTE_COOLDOWN
 
 /datum/controller/subsystem/vote/proc/reset()
 	initiator = null
@@ -80,7 +73,15 @@ SUBSYSTEM_DEF(vote)
 	scores.Cut()
 	choice_statclicks = list()
 	display_votes = initial(display_votes) //CIT CHANGE - obfuscated votes
+	_clear_custom_setup()
 	remove_action_buttons()
+
+/datum/controller/subsystem/vote/proc/_clear_custom_setup()
+	setting_up_custom = FALSE
+	custom_question = ""
+	custom_vote_type = PLURALITY_VOTING
+	custom_options = list()
+	custom_display_flags = SHOW_RESULTS|SHOW_VOTES|SHOW_WINNER|SHOW_ABSTENTION
 
 /datum/controller/subsystem/vote/proc/get_result()
 	//get the highest number of votes
@@ -543,9 +544,13 @@ SUBSYSTEM_DEF(vote)
 				to_chat(usr, "<span class='warning'>A vote was initiated recently, you must wait [DisplayTimeText(next_allowed_time-world.time)] before a new vote can be started!</span>")
 				return FALSE
 
+		var/saved_custom = (vote_type == "custom") && setting_up_custom
+		var/saved_custom_question = custom_question
+		var/saved_custom_vote_type = custom_vote_type
+		var/list/saved_custom_options = custom_options.Copy()
+		var/saved_custom_display_flags = custom_display_flags
 		SEND_SOUND(world, sound('sound/misc/notice2.ogg'))
 		reset()
-//		display_votes = display //CIT CHANGE - adds obfuscated votes
 		switch(vote_type)
 			if("restart")
 				choices.Add("Restart Round","Continue Playing")
@@ -584,32 +589,14 @@ SUBSYSTEM_DEF(vote)
 					else
 						choices.Add(ROUNDTYPE_DYNAMIC, ROUNDTYPE_EXTENDED)
 			if("custom")
-				question = stripped_input(usr,"What is the vote for?")
-				if(!question)
+				if(!saved_custom || !saved_custom_question || length(saved_custom_options) < 2)
 					return FALSE
-				var/system_string = input(usr,"Which voting type?",GLOB.vote_type_names[1]) in GLOB.vote_type_names
-				vote_system = GLOB.vote_type_names[system_string]
-				for(var/i=1,i<=10,i++)
-					var/option = capitalize(stripped_input(usr,"Please enter an option or hit cancel to finish"))
-					if(!option || mode || !usr.client)
-						break
-					choices.Add(option)
-				var/keep_going = TRUE
-				var/toggles = SHOW_RESULTS|SHOW_VOTES|SHOW_WINNER|SHOW_ABSTENTION
-				while(keep_going)
-					var/list/choices = list()
-					for(var/A in GLOB.display_vote_settings)
-						var/toggletext
-						var/bitflag = GLOB.display_vote_settings[A]
-						toggletext = "[A] [toggles & bitflag ? "- Shown" : "- Hidden"]"
-						choices[toggletext] = bitflag
-					var/chosen = input(usr, "Toggle vote display settings. Cancel to finalize.", toggles) as null|anything in choices
-					if(!chosen)
-						keep_going = FALSE
-					else
-						toggles ^= choices[chosen]
-				display_votes = toggles
-			else
+				question = saved_custom_question
+				vote_system = saved_custom_vote_type
+				display_votes = saved_custom_display_flags
+				for(var/opt in saved_custom_options)
+					choices.Add(opt)
+			else  // switch default: неизвестный тип голосования
 				return FALSE
 		mode = vote_type
 		initiator = initiator_key ? initiator_key : "the Server" // austation -- Crew autotransfer vote
@@ -638,27 +625,22 @@ SUBSYSTEM_DEF(vote)
 		for(var/c in GLOB.clients)
 			SEND_SOUND(c, sound('sound/misc/votestart.ogg'))
 			var/client/C = c
+			if(!C.player_details)
+				continue
 			var/datum/action/vote/V = new
 			if(question)
 				V.name = "Vote: [question]"
 			C.player_details.player_actions += V
 			V.Grant(C.mob)
 			generated_actions += V
-			if(forced)
-				var/datum/browser/popup = new(C, "vote", "Voting Panel",nwidth=600,nheight=700)
-				popup.set_window_options("can_close=0")
-				popup.set_content(SSvote.interface(C))
-				popup.open(0)
+			if(forced && !isnewplayer(C.mob)) // BLUEMOON EDIT - для new_player в лобби не открываем TGUI (ломает bm_lobby_browser), кнопка голосования есть в меню
+				SSvote.ui_interact(C.mob) // Мяяяу
 		return TRUE
 	return FALSE
 
 /datum/controller/subsystem/vote/proc/check_combo()
 	var/list/roundtypes = list()
 	var/much_to_check = ROUNDTYPE_MAX_COMBO
-	log_world("SSpersistence.saved_modes contents:")
-	for(var/i in 1 to SSpersistence.saved_modes.len)
-		log_world("- [i]: [SSpersistence.saved_modes[i]]")
-
 	for (var/mode in SSpersistence.saved_modes)
 		if(!istext(mode))
 			continue
@@ -672,219 +654,19 @@ SUBSYSTEM_DEF(vote)
 			return mode
 	return FALSE
 
-/datum/controller/subsystem/vote/proc/interface(client/C)
-	if(!C)
-		return
-	var/admin = 0
-	var/trialmin = 0
-	if(C.holder)
-		admin = 1
-		if(check_rights_for(C, R_ADMIN))
-			trialmin = 1
-	voting |= C
-
-	if(mode)
-		if(question)
-			. += "<h2>Голосование: '[question]'</h2>"
-		else
-			. += "<h2>Голосование: [capitalize(mode)]</h2>"
-		switch(vote_system)
-			if(PLURALITY_VOTING)
-				. += "<h3>Выберите одно.</h3>"
-			if(APPROVAL_VOTING)
-				. += "<h3>Vote any number of choices.</h3>"
-			if(SCHULZE_VOTING,INSTANT_RUNOFF_VOTING)
-				. += "<h3>Vote by order of preference. Revoting will demote to the bottom. 1 is your favorite, and higher numbers are worse.</h3>"
-			if(SCORE_VOTING,HIGHEST_MEDIAN_VOTING)
-				. += "<h3>Grade the candidates by how much you like them.</h3>"
-				. += "<h3>No-votes have no power--your opinion is only heard if you vote!</h3>"
-
-		if(mode == "roundtype")
-			// BLUEMOON ADD START
-			. += "<br>Если побеждает [ROUNDTYPE_DYNAMIC], то берётся одна из вариаций динамика."  // df
-
-			. += "<br><font size=1><small><b>[ROUNDTYPE_DYNAMIC_TEAMBASED]:</b></font></small>"
-			. += "<br><font size=1><small>90-100 угрозы, только командные и особые одиночные антагонисты, необходим уровень хаоса больше [CONFIG_GET(number/chaos_for_a_hard_dynamic)] от игроков;</font></small>"
-
-			. += "<br><font size=1><small><b>[ROUNDTYPE_DYNAMIC_HARD]:</b></font></small>"
-			. += "<br><font size=1><small>90-100 угрозы, необходим уровень хаоса больше [CONFIG_GET(number/chaos_for_a_hard_dynamic)] от игроков;</font></small>"
-
-			. += "<br><font size=1><small><b>[ROUNDTYPE_DYNAMIC_MEDIUM]:</b></font></small>"
-			. += "<br><font size=1><small>50-100 угрозы, необходим уровень хаоса меньше [CONFIG_GET(number/chaos_for_a_hard_dynamic)] от игроков;</font></small>"
-
-			. += "<br><font size=1><small><b>[ROUNDTYPE_DYNAMIC_LIGHT]:</b>:</font></small>"
-			. += "<br><font size=1><small>30-70 угрозы, без командных антагонистов, необходимо меньше двадцати игроков;</font></small>"
-
-			. += "<br><font size=1><small><b>[ROUNDTYPE_EXTENDED]</b> (угрозы не спавнятся сами, только администрация может создавать их).</font></small>"
-			. += "<h4>Если Режим выпадает [ROUNDTYPE_MAX_COMBO] раза подряд - форсится обратный.</h4>"
-			if (length(SSpersistence.saved_modes))
-				. += "<br>Последние режимы: <b>[jointext(SSpersistence.saved_modes, ", ")]</b>."
-			. += "<br>Осталось времени: [DisplayTimeText((SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY))]<hr><ul>"
-		else
-			. += "Осталось времени: [DisplayTimeText(end_time-world.time)]<hr><ul>"
-		//BLUEMOON ADD END
-		switch(vote_system)
-			if(PLURALITY_VOTING, APPROVAL_VOTING)
-				for(var/i=1,i<=choices.len,i++)
-					var/votes = choices[choices[i]]
-					var/ivotedforthis = FALSE
-					switch(vote_system)
-						if(PLURALITY_VOTING)
-							ivotedforthis = ((C.ckey in voted) && (voted[C.ckey] == i))
-						if(APPROVAL_VOTING)
-							ivotedforthis = ((C.ckey in voted) && (i in voted[C.ckey]))
-					if(!votes)
-						votes = 0
-					. += "<li>[ivotedforthis ? "<b>" : ""]<a href='?src=[REF(src)];vote=[i]'>[choices[i]]</a> ([display_votes & SHOW_VOTES ? votes : (admin ? "??? ([votes])" : "???")] votes)[ivotedforthis ? "</b>" : ""]</li>" // CIT CHANGE - adds obfuscated votes
-					if(choice_descs.len >= i)
-						. += "<li>[choice_descs[i]]</li>"
-				. += "</ul><hr>"
-			if(SCHULZE_VOTING,INSTANT_RUNOFF_VOTING)
-				var/list/myvote = voted[C.ckey]
-				for(var/i=1,i<=choices.len,i++)
-					var/vote = (islist(myvote) ? (myvote.Find(i)) : 0)
-					if(vote)
-						. += "<li><b><a href='?src=[REF(src)];vote=[i]'>[choices[i]]</a> ([vote])</b></li>"
-					else
-						. += "<li><a href='?src=[REF(src)];vote=[i]'>[choices[i]]</a></li>"
-					if(choice_descs.len >= i)
-						. += "<li>[choice_descs[i]]</li>"
-				. += "</ul><hr>"
-				if(!(C.ckey in saved))
-					. += "(<a href='?src=[REF(src)];vote=save'>Save vote</a>)"
-				else
-					. += "(Saved!)"
-				. += "(<a href='?src=[REF(src)];vote=load'>Load vote from save</a>)"
-				. += "(<a href='?src=[REF(src)];vote=reset'>Reset votes</a>)"
-			if(SCORE_VOTING,HIGHEST_MEDIAN_VOTING)
-				var/list/myvote = voted[C.ckey]
-				for(var/i=1,i<=choices.len,i++)
-					. += "<li><b>[choices[i]]</b>"
-					for(var/r in 1 to GLOB.vote_score_options.len)
-						. += " <a href='?src=[REF(src)];vote=[i];score=[r]'>"
-						if((choices[i] in myvote) && myvote[choices[i]] == r)
-							. +="<b>([GLOB.vote_score_options[r]])</b>"
-						else
-							. +="[GLOB.vote_score_options[r]]"
-						. += "</a>"
-					. += "</li>"
-					if(choice_descs.len >= i)
-						. += "<li>[choice_descs[i]]</li>"
-				. += "</ul><hr>"
-				if(!(C.ckey in saved))
-					. += "(<a href='?src=[REF(src)];vote=save'>Save vote</a>)"
-				else
-					. += "(Saved!)"
-				. += "(<a href='?src=[REF(src)];vote=load'>Load vote from save</a>)"
-				. += "(<a href='?src=[REF(src)];vote=reset'>Reset votes</a>)"
-		if(admin)
-			. += "(<a href='?src=[REF(src)];vote=cancel'>Cancel Vote</a>) "
-	else
-		. += "<h2>Start a vote:</h2><hr><ul><li>"
-		//restart
-		var/avr = CONFIG_GET(flag/allow_vote_restart)
-		if(trialmin || avr)
-			. += "<a href='?src=[REF(src)];vote=restart'>Restart</a>"
-		else
-			. += "<font color='grey'>Restart (Disallowed)</font>"
-		if(trialmin)
-			. += "\t(<a href='?src=[REF(src)];vote=toggle_restart'>[avr ? "Allowed" : "Disallowed"]</a>)"
-		. += "</li><li>"
-		//gamemode
-		var/avm = CONFIG_GET(flag/allow_vote_mode)
-		if(trialmin || avm)
-			. += "<a href='?src=[REF(src)];vote=gamemode'>GameMode</a>"
-		else
-			. += "<font color='grey'>GameMode (Disallowed)</font>"
-		if(trialmin)
-			. += "\t(<a href='?src=[REF(src)];vote=toggle_gamemode'>[avm ? "Allowed" : "Disallowed"]</a>)"
-
-		. += "</li>"
-		//custom
-		if(trialmin)
-			. += "<li><a href='?src=[REF(src)];vote=custom'>Custom</a></li>"
-		. += "</ul><hr>"
-	. += "<a href='?src=[REF(src)];vote=close' style='position:absolute;right:50px'>Close</a>"
-	return .
-
-
+// TGUI
 /datum/controller/subsystem/vote/Topic(href,href_list[],hsrc)
 	if(!usr || !usr.client)
-		return	//not necessary but meh...just in-case somebody does something stupid
-	switch(href_list["vote"])
-		if("close")
-			voting -= usr.client
-			usr << browse(null, "window=vote")
-			return
-		if("cancel")
-			if(usr.client.holder)
-				if(SSticker.mapvote_restarter_in_progress)
-					SSticker.mapvote_restarter_in_progress = FALSE
-					SSpersistence.RecordGracefulEnding()
-					SSticker.start_immediately = FALSE
-					SSticker.SetTimeLeft(2400)
-					to_chat(world, span_boldwarning("Автоматическая ротация карты была отменена администрацией"))
-				reset()
-		if("toggle_restart")
-			if(usr.client.holder)
-				CONFIG_SET(flag/allow_vote_restart, !CONFIG_GET(flag/allow_vote_restart))
-		if("toggle_gamemode")
-			if(usr.client.holder)
-				CONFIG_SET(flag/allow_vote_mode, !CONFIG_GET(flag/allow_vote_mode))
-		if("restart")
-			if(CONFIG_GET(flag/allow_vote_restart) || usr.client.holder)
-				initiate_vote("restart",usr.key)
-		if("gamemode")
-			if(CONFIG_GET(flag/allow_vote_mode) || usr.client.holder)
-				initiate_vote("gamemode",usr.key)
-		if("custom")
-			if(usr.client.holder)
-				initiate_vote("custom",usr.key)
-		if("reset")
-			if(usr.ckey in voted)
-				voted -= usr.ckey
-		if("save")
-			if(usr.ckey in voted)
-				if(!(usr.ckey in SSpersistence.saved_votes))
-					SSpersistence.saved_votes[usr.ckey] = list()
-				if(islist(voted[usr.ckey]))
-					SSpersistence.saved_votes[usr.ckey][mode] = voted[usr.ckey]
-					saved += usr.ckey
-				else
-					voted[usr.ckey] = list()
-					to_chat(usr,"Your vote was malformed! Start over!")
-		if("load")
-			if(!(usr.ckey in SSpersistence.saved_votes))
-				SSpersistence.LoadSavedVote(usr.ckey)
-				if(!(usr.ckey in SSpersistence.saved_votes))
-					SSpersistence.saved_votes[usr.ckey] = list()
-					if(usr.ckey in voted)
-						SSpersistence.saved_votes[usr.ckey][mode] = voted[usr.ckey]
-					else
-						SSpersistence.saved_votes[usr.ckey][mode] = list()
-			voted[usr.ckey] = SSpersistence.saved_votes[usr.ckey][mode]
-			if(islist(voted[usr.ckey]))
-				var/malformed = FALSE
-				if(vote_system == SCORE_VOTING || vote_system == HIGHEST_MEDIAN_VOTING)
-					for(var/thing in voted[usr.ckey])
-						if(!(thing in choices))
-							malformed = TRUE
-				if(!malformed)
-					saved += usr.ckey
-				else
-					to_chat(usr,"Your saved vote was malformed! Start over!")
-					SSpersistence.saved_votes[usr.ckey] -= mode
-					voted -= usr.ckey
-			else
-				to_chat(usr,"Your saved vote was malformed! Start over!")
-				voted -= usr.ckey
+		return
+	if(!href_list["vote"])
+		SSvote.ui_interact(usr)
+		return
+	// Голосование через statpanel
+	if(href_list["statpannel"])
+		if(vote_system == SCORE_VOTING || vote_system == HIGHEST_MEDIAN_VOTING)
+			submit_vote(round(text2num(href_list["vote"])), round(text2num(href_list["score"])))
 		else
-			if(vote_system == SCORE_VOTING || vote_system == HIGHEST_MEDIAN_VOTING)
-				submit_vote(round(text2num(href_list["vote"])),round(text2num(href_list["score"])))
-			else
-				submit_vote(round(text2num(href_list["vote"])))
-	if(!href_list["statpannel"])
-		usr.vote()
+			submit_vote(round(text2num(href_list["vote"])))
 
 /datum/controller/subsystem/vote/proc/remove_action_buttons()
 	for(var/v in generated_actions)
@@ -894,14 +676,249 @@ SUBSYSTEM_DEF(vote)
 			V.Remove(V.owner)
 	generated_actions = list()
 
+// ===========================
+// TGUI head (голова)
+// ===========================
+
+/datum/controller/subsystem/vote/ui_host(mob/user)
+	return src
+
+/datum/controller/subsystem/vote/ui_interact(mob/user, datum/tgui/ui)
+	voting |= user?.client
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "Vote")
+		ui.set_autoupdate(TRUE)
+		ui.open()
+
+/datum/controller/subsystem/vote/ui_state(mob/user)
+	return GLOB.always_state
+
+/datum/controller/subsystem/vote/ui_close(mob/user, datum/tgui/ui)
+	voting -= user?.client
+
+/datum/controller/subsystem/vote/ui_static_data(mob/user)
+	var/list/data = list()
+	// Типы голосований (статика)
+	var/list/vote_type_list = list()
+	for(var/type_name in GLOB.vote_type_names)
+		vote_type_list += list(list("label" = type_name, "value" = GLOB.vote_type_names[type_name]))
+	data["vote_type_options"] = vote_type_list
+	// Варианты оценки для score-голосований (статика)
+	var/list/score_opts = list()
+	for(var/r in 1 to GLOB.vote_score_options.len)
+		score_opts += list(list("value" = r, "label" = GLOB.vote_score_options[r]))
+	data["score_options"] = score_opts
+	// Настройки отображения (статика)
+	var/list/disp = list()
+	for(var/flag_name in GLOB.display_vote_settings)
+		disp += list(list("name" = flag_name, "flag" = GLOB.display_vote_settings[flag_name]))
+	data["all_display_settings"] = disp
+	return data
+
+/datum/controller/subsystem/vote/ui_data(mob/user)
+	var/list/data = list()
+	data["mode"] = mode
+	data["question"] = question
+	// Оставшееся время в секундах
+	if(mode == "roundtype")
+		data["time_remaining"] = max(0, round((SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY) / 10))
+	else
+		data["time_remaining"] = mode ? max(0, round((end_time - world.time) / 10)) : 0
+	data["vote_system"] = vote_system
+	// Список вариантов с полным состоянием для всех систем голосования
+	var/list/choices_list = list()
+	if(mode && choices.len)
+		var/show_votes_count = !!(display_votes & SHOW_VOTES)
+		for(var/i in 1 to choices.len)
+			var/choice_name = choices[i]
+			var/vote_count = max(0, choices[choice_name] || 0)
+			var/user_selected = FALSE  // plurality
+			var/user_approved = FALSE  // approval
+			var/user_rank = 0          // schulze/IRV
+			var/user_score = null      // score
+			if(user.ckey in voted)
+				var/uv = voted[user.ckey]
+				switch(vote_system)
+					if(PLURALITY_VOTING)
+						if(isnum(uv))
+							user_selected = (uv == i)
+					if(APPROVAL_VOTING)
+						if(islist(uv))
+							user_approved = !!(i in uv)
+					if(SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)
+						if(islist(uv))
+							var/list/uv_list = uv
+							var/rank_pos = uv_list.Find(i)
+							user_rank = rank_pos ? rank_pos : 0
+					if(SCORE_VOTING, HIGHEST_MEDIAN_VOTING)
+						if(islist(uv))
+							user_score = uv[choice_name]
+			choices_list += list(list(
+				"id" = i,
+				"name" = choice_name,
+				"votes" = show_votes_count ? vote_count : -1,
+				"user_selected" = user_selected,
+				"user_approved" = user_approved,
+				"user_rank" = user_rank,
+				"user_score" = user_score
+			))
+	data["choices"] = choices_list
+	// Права
+	var/is_admin = !!(user.client?.holder)
+	data["lower_admin"] = is_admin
+	data["upper_admin"] = is_admin && check_rights_for(user.client, R_ADMIN)
+	// Конфиг
+	data["allow_vote_restart"] = CONFIG_GET(flag/allow_vote_restart)
+	data["allow_vote_mode"] = CONFIG_GET(flag/allow_vote_mode)
+	// Данные для режима roundtype
+	if(mode == "roundtype")
+		data["last_modes"] = length(SSpersistence.saved_modes) ? jointext(SSpersistence.saved_modes, ", ") : null
+		data["combo_threshold"] = ROUNDTYPE_MAX_COMBO
+		// Пояснения о вариантах динамика
+		var/list/roundtype_descs = list()
+		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC, "desc" = "Одна из вариаций динамика выбирается автоматически."))
+		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_TEAMBASED, "desc" = "90–100 угрозы, только командные и особые одиночные антагонисты. Нужен хаос > [CONFIG_GET(number/chaos_for_a_hard_dynamic)]."))
+		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_HARD, "desc" = "90–100 угрозы. Нужен хаос > [CONFIG_GET(number/chaos_for_a_hard_dynamic)]."))
+		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_MEDIUM, "desc" = "50–100 угрозы. Нужен хаос < [CONFIG_GET(number/chaos_for_a_hard_dynamic)]."))
+		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_LIGHT, "desc" = "30–70 угрозы, без командных антагонистов, < 20 игроков."))
+		roundtype_descs += list(list("name" = ROUNDTYPE_EXTENDED, "desc" = "Угрозы не спавнятся сами — только администрация."))
+		data["roundtype_descs"] = roundtype_descs
+	// Состояние настройки кастомного голосования
+	if(setting_up_custom)
+		var/list/cs = list()
+		cs["active"] = TRUE
+		cs["question"] = custom_question
+		cs["vote_type"] = custom_vote_type
+		cs["options"] = custom_options.Copy()
+		cs["display_flags"] = custom_display_flags
+		data["custom_setup"] = cs
+	else
+		data["custom_setup"] = null
+	return data
+
+/datum/controller/subsystem/vote/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(.)
+		return
+	var/client/C = ui.user?.client
+	if(!C)
+		return
+	switch(action)
+		// === Кандидаты пи ===
+		if("vote")
+			if(vote_system == SCORE_VOTING || vote_system == HIGHEST_MEDIAN_VOTING)
+				submit_vote(text2num(params["index"]), text2num(params["score"] || 0))
+			else
+				submit_vote(text2num(params["index"]))
+			return TRUE
+		if("vote_reset")
+			var/ckey = ui.user.ckey
+			if(ckey in voted)
+				switch(vote_system)
+					if(PLURALITY_VOTING)
+						var/old_vote = voted[ckey]
+						var/power = use_vote_power ? (users_vote_power[ckey] || 1) : 1
+						choices[choices[old_vote]] -= power
+					if(APPROVAL_VOTING)
+						var/power = use_vote_power ? (users_vote_power[ckey] || 1) : 1
+						for(var/old_vote in voted[ckey])
+							choices[choices[old_vote]] -= power
+				voted -= ckey
+			return TRUE
+		// === УПРАВЛЕНИЕ ===
+		if("cancel")
+			if(!C.holder)
+				return
+			if(SSticker.mapvote_restarter_in_progress)
+				SSticker.mapvote_restarter_in_progress = FALSE
+				SSpersistence.RecordGracefulEnding()
+				SSticker.start_immediately = FALSE
+				SSticker.SetTimeLeft(2400)
+				to_chat(world, span_boldwarning("Автоматическая ротация карты была отменена администрацией"))
+			reset()
+			return TRUE
+		if("toggle_restart")
+			if(!C.holder)
+				return
+			CONFIG_SET(flag/allow_vote_restart, !CONFIG_GET(flag/allow_vote_restart))
+			return TRUE
+		if("toggle_gamemode")
+			if(!C.holder)
+				return
+			CONFIG_SET(flag/allow_vote_mode, !CONFIG_GET(flag/allow_vote_mode))
+			return TRUE
+		if("restart")
+			if(CONFIG_GET(flag/allow_vote_restart) || C.holder)
+				initiate_vote("restart", C.key)
+			return TRUE
+		if("gamemode")
+			if(CONFIG_GET(flag/allow_vote_mode) || C.holder)
+				initiate_vote("roundtype", C.key)
+			return TRUE
+		if("map")
+			if(C.holder)
+				initiate_vote("map", C.key, display = SHOW_RESULTS, forced = FALSE)
+			return TRUE
+		// === КАСТОМНОЕ - ФОРМА ===
+		if("custom")
+			if(!C.holder)
+				return
+			setting_up_custom = TRUE
+			custom_question = ""
+			custom_vote_type = PLURALITY_VOTING
+			custom_options = list()
+			custom_display_flags = SHOW_RESULTS|SHOW_VOTES|SHOW_WINNER|SHOW_ABSTENTION
+			return TRUE
+		if("custom_abort")
+			if(!C.holder)
+				return
+			_clear_custom_setup()
+			return TRUE
+		if("custom_set_question")
+			if(!C.holder || !setting_up_custom)
+				return
+			custom_question = sanitize(params["question"] || "")
+			return TRUE
+		if("custom_add_option")
+			if(!C.holder || !setting_up_custom || length(custom_options) >= 10)
+				return
+			var/opt = capitalize(sanitize(params["option"] || ""))
+			if(opt && !(opt in custom_options))
+				custom_options += opt
+			return TRUE
+		if("custom_remove_option")
+			if(!C.holder || !setting_up_custom)
+				return
+			var/idx = text2num(params["index"])
+			if(idx && ISINRANGE(idx, 1, length(custom_options)))
+				custom_options.Cut(idx, idx + 1)
+			return TRUE
+		if("custom_set_type")
+			if(!C.holder || !setting_up_custom)
+				return
+			var/t = params["type"]
+			if(t in list(PLURALITY_VOTING, APPROVAL_VOTING, SCHULZE_VOTING, INSTANT_RUNOFF_VOTING, SCORE_VOTING, HIGHEST_MEDIAN_VOTING))
+				custom_vote_type = t
+			return TRUE
+		if("custom_toggle_display")
+			if(!C.holder || !setting_up_custom)
+				return
+			var/flag = text2num(params["flag"])
+			if(flag)
+				custom_display_flags ^= flag
+			return TRUE
+		if("custom_confirm")
+			if(!C.holder || !setting_up_custom || !custom_question || length(custom_options) < 2)
+				return
+			initiate_vote("custom", C.key)
+			return TRUE
+
 /mob/verb/vote()
 	set category = "OOC"
 	set name = "Vote"
 
-	var/datum/browser/popup = new(src, "vote", "Voting Panel",nwidth=600,nheight=700)
-	popup.set_window_options("can_close=0")
-	popup.set_content(SSvote.interface(client))
-	popup.open(0)
+	SSvote.ui_interact(src)
 
 /datum/action/vote
 	name = "Vote!"
@@ -909,7 +926,7 @@ SUBSYSTEM_DEF(vote)
 
 /datum/action/vote/Trigger()
 	if(owner)
-		owner.vote()
+		SSvote.ui_interact(owner)
 		remove_from_client()
 		Remove(owner)
 

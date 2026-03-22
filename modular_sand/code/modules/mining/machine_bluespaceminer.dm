@@ -150,11 +150,13 @@ GLOBAL_VAR_INIT(bsminers_lock, FALSE)	//Miners locked by head ID swipes
 		else
 			display_list += "В секторе начнуться аномалии при нестабильности <b>[INSTABILITY_ON_ZLEVEL_TO_EVENT]%</b>"
 
-		. += span_notice(jointext(display_list, "\n-"))
+		. += span_notice(jointext(display_list, "\n- "))
 	else
 		. += span_notice("На машине есть небольшой дисплей, но вам нужно подойти ближе, чтобы разглядеть его.")
 	if(!bs_core)
 		. += span_warning("Bluespace ядро не установлено, без него машина не будет работать.")
+	if(on_hold())
+		. += span_warning("Все майнеры на станции отключены, пожалуйста свяжитесь с командованием.")
 	if(!anchored)
 		. += span_warning("Машина не будет работать, пока не будет надежно прикреплена к полу.")
 	if(!materials?.silo)
@@ -203,7 +205,7 @@ GLOBAL_VAR_INIT(bsminers_lock, FALSE)	//Miners locked by head ID swipes
 		return
 	if(!anchored || !bs_core || !materials?.silo || !materials?.mat_container || materials?.on_hold())
 		return FALSE
-	if(GLOB.bsminers_lock && z_check(TRUE))
+	if(on_hold())
 		return FALSE
 
 /obj/machinery/mineral/bluespace_miner/update_icon_state()
@@ -385,6 +387,9 @@ GLOBAL_VAR_INIT(bsminers_lock, FALSE)	//Miners locked by head ID swipes
 
 	UnregisterSignal(bs_core, COMSIG_PARENT_QDELETING)
 	bs_core = null
+
+/obj/machinery/mineral/bluespace_miner/proc/on_hold()
+	return GLOB.bsminers_lock && z_check(TRUE)
 
 /obj/machinery/mineral/bluespace_miner/multitool_act(mob/living/user, obj/item/M)
 	. = ..()

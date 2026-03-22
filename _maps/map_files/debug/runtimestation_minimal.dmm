@@ -1,0 +1,647 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/syndicate,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"ag" = (
+/obj/effect/turf_decal/big_sign/ss13/aa,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"ai" = (
+/obj/effect/turf_decal/big_sign/ss13/ag,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"ak" = (
+/obj/effect/turf_decal/big_sign/ss13/bd,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"av" = (
+/obj/machinery/airalarm/unlocked{
+	pixel_y = 23
+	},
+/obj/machinery/power/apc{
+	dir = 8;
+	pixel_x = -25
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"aC" = (
+/obj/effect/turf_decal/big_sign/ss13/bf,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"aD" = (
+/obj/effect/turf_decal/big_sign/ss13/bg,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"aF" = (
+/obj/effect/turf_decal/big_sign/ss13/ac,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"be" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/effect/turf_decal/big_sign/ss13/ab,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"bC" = (
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"bI" = (
+/obj/structure/table,
+/obj/machinery/light,
+/obj/item/storage/firstaid/regular,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"bV" = (
+/obj/structure/chair/comfy/shuttle,
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/arrival)
+"bW" = (
+/obj/structure/table,
+/obj/machinery/camera/autoname{
+	dir = 1
+	},
+/obj/item/gun/magic/wand/resurrection/debug,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"ci" = (
+/obj/effect/turf_decal/big_sign/ss13/ae,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"cv" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/effect/turf_decal/big_sign/ss13/af,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"cJ" = (
+/obj/effect/landmark/observer_start,
+/obj/effect/turf_decal/misc/plaque,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"cS" = (
+/obj/structure/chair/comfy/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/arrival)
+"cV" = (
+/obj/machinery/computer/account_database{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"dw" = (
+/obj/machinery/quantumpad/fullupgrade{
+	map_pad_id = "2";
+	map_pad_link_id = "1"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"dz" = (
+/obj/machinery/computer/med_data{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"dA" = (
+/obj/effect/landmark/xeno_spawn,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"dY" = (
+/obj/effect/landmark/start,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"eh" = (
+/obj/machinery/vr_sleeper,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"ex" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/machinery/quantumpad/fullupgrade{
+	map_pad_id = "1";
+	map_pad_link_id = "2"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"eJ" = (
+/obj/effect/turf_decal/big_sign/ss13/bc,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"eL" = (
+/obj/structure/table,
+/obj/item/book_of_babel,
+/obj/item/book/granter/action/origami,
+/obj/item/book/granter/action/drink_fling,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"eZ" = (
+/obj/structure/table,
+/obj/machinery/fax,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"fp" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/machinery/computer/prisoner/management{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"fB" = (
+/obj/structure/table,
+/obj/item/warpwhistle,
+/obj/item/voodoo,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"gf" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"gy" = (
+/obj/structure/table,
+/obj/item/melee/transforming/energy/axe,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"ir" = (
+/obj/structure/cable,
+/obj/machinery/power/rtg/abductor,
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"mJ" = (
+/obj/effect/turf_decal/big_sign/ss13/ba,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"zv" = (
+/turf/open/space/basic,
+/area/space)
+"BV" = (
+/obj/machinery/computer/secure_data{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"MS" = (
+/obj/effect/turf_decal/big_sign/ss13/ad,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"Nl" = (
+/obj/structure/table,
+/obj/machinery/light,
+/obj/item/pinpointer,
+/obj/item/pinpointer/crew,
+/obj/item/pinpointer/crew/contractor,
+/obj/item/pinpointer/plushie_saliith,
+/obj/item/disk/nuclear,
+/obj/structure/table,
+/obj/machinery/light,
+/obj/item/debug/human_spawner,
+/obj/structure/table,
+/obj/machinery/light,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"Ur" = (
+/obj/effect/landmark/blobstart,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"WT" = (
+/obj/effect/turf_decal/big_sign/ss13/bb,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"XR" = (
+/obj/effect/turf_decal/big_sign/ss13/be,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+
+(1,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(2,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+av
+ir
+bC
+bC
+bC
+cS
+cS
+cS
+cS
+cS
+bV
+cS
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(3,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(4,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(5,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+ag
+mJ
+bC
+bC
+bC
+dY
+bC
+bC
+bC
+bC
+bC
+aa
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(6,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+be
+WT
+bC
+bC
+bC
+dY
+bC
+bC
+bC
+bC
+bC
+bI
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(7,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+aF
+eJ
+bC
+bC
+bC
+dY
+bC
+bC
+bC
+bC
+bC
+gy
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(8,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+MS
+ak
+dA
+cJ
+bC
+dY
+bC
+Ur
+dA
+bC
+bC
+bW
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(9,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+ci
+XR
+bC
+bC
+bC
+dY
+bC
+bC
+bC
+bC
+bC
+fB
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(10,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+cv
+aC
+bC
+bC
+bC
+dY
+bC
+bC
+bC
+bC
+bC
+Nl
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(11,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+ai
+aD
+bC
+bC
+bC
+dY
+bC
+bC
+bC
+bC
+bC
+eL
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(12,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+eh
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(13,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+bC
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(14,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+bC
+ex
+dw
+eZ
+bC
+bC
+bC
+dz
+BV
+cV
+fp
+bC
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}
+(15,1,1) = {"
+zv
+zv
+zv
+zv
+zv
+zv
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+gf
+zv
+zv
+zv
+zv
+zv
+zv
+"}

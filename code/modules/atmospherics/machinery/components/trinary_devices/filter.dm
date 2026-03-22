@@ -87,10 +87,7 @@
 
 	//Calculate necessary moles to transfer using PV=nRT
 
-	var/air1_vol = air1.return_volume()
-	if(air1_vol <= 0)
-		return
-	var/transfer_ratio = transfer_rate/air1_vol
+	var/transfer_ratio = transfer_rate/air1.return_volume()
 
 	//Actually transfer the gas
 

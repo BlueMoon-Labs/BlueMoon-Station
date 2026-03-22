@@ -39,6 +39,8 @@
 	var/obj/item/stock_parts/cell/cell = null
 	var/datum/gas_mixture/cabin_air
 	var/obj/machinery/portable_atmospherics/canister/internal_tank
+	/// Reused cabin/tank transfer buffer to avoid temporary gas_mixture churn.
+	var/datum/gas_mixture/transfer_buffer
 	var/last_slowprocess = 0
 
 	var/mob/living/pilot
@@ -85,12 +87,14 @@
 	cabin_air = new
 	cabin_air.set_temperature(T20C)
 	cabin_air.set_volume(200)
+	transfer_buffer = new
 
 /obj/spacepod/Destroy()
 	GLOB.spacepods_list -= src
 	QDEL_NULL(pilot)
 	QDEL_LIST(passengers)
 	QDEL_LIST(equipment)
+	QDEL_NULL(transfer_buffer)
 	QDEL_NULL(cabin_air)
 	QDEL_NULL(cell)
 	return ..()
@@ -266,14 +270,55 @@
 /obj/spacepod/return_air()
 	return cabin_air
 
+/obj/spacepod/assume_air(datum/gas_mixture/giver)
+	if(!giver || !cabin_air)
+		return FALSE
+	giver.transfer_ratio_to(cabin_air, 1)
+	return TRUE
+
+/obj/spacepod/assume_air_moles(datum/gas_mixture/giver, moles)
+	if(!giver || !cabin_air)
+		return FALSE
+	giver.transfer_to(cabin_air, moles)
+	return TRUE
+
+/obj/spacepod/assume_air_ratio(datum/gas_mixture/giver, ratio)
+	if(!giver || !cabin_air)
+		return FALSE
+	giver.transfer_ratio_to(cabin_air, ratio)
+	return TRUE
+
 /obj/spacepod/remove_air(amount)
 	return cabin_air.remove(amount)
+
+/obj/spacepod/remove_air_into(datum/gas_mixture/into, amount)
+	if(!cabin_air)
+		if(into)
+			into.clear()
+			into.set_temperature(0)
+		return FALSE
+	return cabin_air.remove_into(into, amount)
+
+/obj/spacepod/remove_air_ratio(ratio)
+	if(!cabin_air)
+		return null
+	return cabin_air.remove_ratio(ratio)
+
+/obj/spacepod/remove_air_ratio_into(datum/gas_mixture/into, ratio)
+	if(!cabin_air)
+		if(into)
+			into.clear()
+			into.set_temperature(0)
+		return FALSE
+	return cabin_air.remove_ratio_into(into, ratio)
 
 /obj/spacepod/proc/slowprocess()
 	if(cabin_air && cabin_air.return_volume() > 0)
 		var/delta = cabin_air.return_temperature() - T20C
 		cabin_air.set_temperature(cabin_air.return_temperature() - max(-10, min(10, round(delta/4,0.1))))
 	if(internal_tank && cabin_air)
+		if(!transfer_buffer)
+			transfer_buffer = new
 		var/datum/gas_mixture/tank_air = internal_tank.return_air()
 
 		var/release_pressure = ONE_ATMOSPHERE
@@ -283,8 +328,8 @@
 		if(pressure_delta > 0) //cabin pressure lower than release pressure
 			if(tank_air.return_temperature() > 0)
 				transfer_moles = pressure_delta*cabin_air.return_volume()/(cabin_air.return_temperature() * R_IDEAL_GAS_EQUATION)
-				var/datum/gas_mixture/removed = tank_air.remove(transfer_moles)
-				cabin_air.merge(removed)
+				if(tank_air.remove_into(transfer_buffer, transfer_moles))
+					cabin_air.merge(transfer_buffer)
 		else if(pressure_delta < 0) //cabin pressure higher than release pressure
 			var/turf/T = get_turf(src)
 			var/datum/gas_mixture/t_air = T.return_air()
@@ -293,11 +338,8 @@
 				pressure_delta = min(cabin_pressure - t_air.return_pressure(), pressure_delta)
 			if(pressure_delta > 0) //if location pressure is lower than cabin pressure
 				transfer_moles = pressure_delta*cabin_air.return_volume()/(cabin_air.return_temperature() * R_IDEAL_GAS_EQUATION)
-				var/datum/gas_mixture/removed = cabin_air.remove(transfer_moles)
-				if(T)
-					T.assume_air(removed)
-				else //just delete the cabin gas, we're in space or some shit
-					qdel(removed)
+				if(cabin_air.remove_into(transfer_buffer, transfer_moles) && T)
+					T.assume_air(transfer_buffer)
 
 /mob/get_status_tab_items()
 	. = ..()
@@ -336,10 +378,11 @@
 		new /obj/item/stack/sheet/iron/five(loc)
 	construction_state = SPACEPOD_CORE_SECURED
 	if(cabin_air)
-		var/datum/gas_mixture/GM = cabin_air.remove_ratio(1)
+		if(!transfer_buffer)
+			transfer_buffer = new
 		var/turf/T = get_turf(src)
-		if(GM && T)
-			T.assume_air(GM)
+		if(cabin_air.remove_ratio_into(transfer_buffer, 1) && T)
+			T.assume_air(transfer_buffer)
 	cell = null
 	internal_tank = null
 	for(var/atom/movable/AM in contents)

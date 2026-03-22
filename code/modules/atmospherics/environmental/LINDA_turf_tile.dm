@@ -37,9 +37,6 @@
 	if(active_hotspot)
 		QDEL_NULL(active_hotspot)
 	update_air_ref(-1) // deregister from auxmos before nulling air, prevents null-access race with SSair
-	// Only qdel our own air; space turfs share space_gas and must not qdel it
-	if(air && !isspaceturf(src))
-		qdel(air)
 	air = null
 	return ..()
 
@@ -90,19 +87,10 @@
 	if(copy)
 		air.copy_from(copy)
 
-// Cached gas mixtures for closed turfs - prevents creating 100k+ mixtures from wall-mounted objects (cameras, lights, etc.)
-// Each unique initial_gas_mix string gets exactly one shared immutable mixture. Reduces gas mixture count significantly.
-GLOBAL_LIST_INIT(closed_turf_air_cache, list())
-
 /turf/return_air()
 	RETURN_TYPE(/datum/gas_mixture)
-	var/mix_key = initial_gas_mix || OPENTURF_DEFAULT_ATMOS
-	var/datum/gas_mixture/GM = GLOB.closed_turf_air_cache[mix_key]
-	if(!GM)
-		GM = new
-		GM.parse_gas_string(SSair.preprocess_gas_string(mix_key))
-		GM.mark_immutable()
-		GLOB.closed_turf_air_cache[mix_key] = GM
+	var/datum/gas_mixture/GM = new
+	GM.copy_from_turf(src)
 	return GM
 
 /turf/open/return_air()
@@ -126,18 +114,18 @@ GLOBAL_LIST_INIT(closed_turf_air_cache, list())
 
 
 /turf/open/proc/update_visuals()
-	// Guard against auxmos callback race: turf destroyed during atmos processing
-	if(QDELETED(src))
-		return
+
 	var/list/atmos_overlay_types = src.atmos_overlay_types // Cache for free performance
-	if(!air)
+	var/list/new_overlay_types = list()
+	var/static/list/nonoverlaying_gases = typecache_of_gases_with_no_overlays()
+
+	if(!air) // 2019-05-14: was not able to get this path to fire in testing. Consider removing/looking at callers -Naksu
 		if (atmos_overlay_types)
-			vis_contents -= atmos_overlay_types
+			for(var/overlay in atmos_overlay_types)
+				vis_contents -= overlay
 			src.atmos_overlay_types = null
 		return
 
-	var/list/new_overlay_types = list()
-	var/static/list/nonoverlaying_gases = typecache_of_gases_with_no_overlays()
 
 	for(var/id in air.get_gases())
 		if (nonoverlaying_gases[id])
@@ -146,9 +134,9 @@ GLOBAL_LIST_INIT(closed_turf_air_cache, list())
 		if(gas_overlay && air.get_moles(id) > GLOB.gas_data.visibility[id])
 			new_overlay_types += gas_overlay[min(FACTOR_GAS_VISIBLE_MAX, CEILING(air.get_moles(id) / MOLES_GAS_VISIBLE_STEP, 1))]
 
-	// Batch list operations - for-in with vis_contents -= overlay causes illegal operation when many callbacks run
 	if (atmos_overlay_types)
-		vis_contents -= (atmos_overlay_types - new_overlay_types)
+		for(var/overlay in atmos_overlay_types-new_overlay_types) //doesn't remove overlays that would only be added
+			vis_contents -= overlay
 
 	if (length(new_overlay_types))
 		if (atmos_overlay_types)
@@ -160,14 +148,9 @@ GLOBAL_LIST_INIT(closed_turf_air_cache, list())
 	src.atmos_overlay_types = new_overlay_types
 
 /turf/open/proc/set_visuals(list/new_overlay_types)
-	// Guard against auxmos callback race: turf destroyed during atmos processing
-	if(QDELETED(src))
-		return
-	if(!new_overlay_types)
-		new_overlay_types = list()
-	// Batch list operations - for-in with vis_contents -= overlay causes illegal operation when many callbacks run
 	if (atmos_overlay_types)
-		vis_contents -= (atmos_overlay_types - new_overlay_types)
+		for(var/overlay in atmos_overlay_types-new_overlay_types) //doesn't remove overlays that would only be added
+			vis_contents -= overlay
 
 	if (length(new_overlay_types))
 		if (atmos_overlay_types)

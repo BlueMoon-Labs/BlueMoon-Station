@@ -658,6 +658,19 @@
 		else
 			stack_trace("Something attempted to set simple animals AI to an invalid state: [togglestatus]")
 
+/// Returns TRUE if any player is within given distance on the same z-level.
+/mob/living/simple_animal/proc/has_nearby_player(distance = NEARBY_PLAYER_DISTANCE)
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return FALSE
+	var/our_z = our_turf.z
+	if(!islist(SSmobs.clients_by_zlevel) || our_z > SSmobs.clients_by_zlevel.len)
+		return FALSE
+	for(var/mob/player as anything in SSmobs.clients_by_zlevel[our_z])
+		if(get_dist(our_turf, player) <= distance)
+			return TRUE
+	return FALSE
+
 /mob/living/simple_animal/proc/consider_wakeup()
 	if (pulledby || shouldwakeup)
 		toggle_ai(AI_ON)
@@ -665,7 +678,7 @@
 /mob/living/simple_animal/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
 	if(!ckey && !stat)//Not unconscious
-		if(AIStatus == AI_IDLE)
+		if(AIStatus == AI_IDLE || AIStatus == AI_Z_OFF)
 			toggle_ai(AI_ON)
 
 

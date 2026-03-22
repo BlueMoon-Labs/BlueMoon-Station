@@ -8467,6 +8467,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
+/obj/machinery/computer/brig_assistant_console,
 /turf/open/floor/plasteel,
 /area/hallway/primary/fore)
 "aDA" = (
@@ -65933,6 +65934,20 @@
 	},
 /turf/open/floor/grass,
 /area/service/park)
+"lZx" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/command/bridge)
 "mah" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/firedoor,
@@ -70727,7 +70742,6 @@
 /area/security/prison)
 "ojs" = (
 /obj/structure/table/wood,
-/obj/item/card/id/captains_spare,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -121873,7 +121887,7 @@ iwY
 pJi
 sKT
 uGy
-fHz
+lZx
 tmg
 tmg
 tmg

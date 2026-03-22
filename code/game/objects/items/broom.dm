@@ -162,7 +162,7 @@
 	icon_state = "rake"
 	lefthand_file = 'icons/mob/inhands/weapons/staves_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/staves_righthand.dmi'
-	force = 9
+	force = 11
 	w_class = WEIGHT_CLASS_NORMAL
 	throwforce = 28
 	attack_verb = list("slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
@@ -176,4 +176,8 @@
 
 /obj/item/broom/liquidator/ComponentInitialize()
 	. = ..()
-	AddComponent(/datum/component/two_handed, force_unwielded=9, force_wielded=16, icon_wielded="rake")
+	AddComponent(/datum/component/two_handed, force_unwielded=11, force_wielded=22, icon_wielded="rake")
+
+/obj/item/broom/liquidator/update_icon_state()
+	icon_state = "rake"
+	return SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_ICON_STATE)

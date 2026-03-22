@@ -440,9 +440,17 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 		dna.species = new_race
 		dna.species.on_species_gain(src, old_species, pref_load)
 		if(ishuman(src))
+
+			var/datum/language_holder/lang_holder = new
+			lang_holder.copy_languages(get_language_holder())
+			lang_holder.remove_all_languages(source = LANGUAGE_SPECIES)
+
 			qdel(language_holder)
 			var/species_holder = initial(mrace.species_language_holder)
 			language_holder = new species_holder(src)
+
+			language_holder.copy_languages(lang_holder)
+			qdel(lang_holder)
 
 /mob/living/carbon/human/set_species(datum/species/mrace, icon_update = TRUE, pref_load = FALSE)
 	..()

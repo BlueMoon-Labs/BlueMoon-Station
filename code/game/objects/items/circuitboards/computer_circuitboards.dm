@@ -493,6 +493,11 @@
 	icon_state = "security"
 	build_path = /obj/machinery/computer/secure_data
 
+/obj/item/circuitboard/computer/brig_assistant_console
+	name = "Brig Assistant Tasks Console (Computer Board)"
+	icon_state = "security"
+	build_path = /obj/machinery/computer/brig_assistant_console
+
 // /obj/item/circuitboard/computer/warrant
 // 	name = "Security Warrant Viewer (Computer Board)"
 // 	icon_state = "security"

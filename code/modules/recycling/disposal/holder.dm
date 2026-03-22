@@ -9,6 +9,7 @@
 	dir = NONE
 	var/obj/structure/disposalpipe/last_pipe
 	var/obj/structure/disposalpipe/current_pipe
+	var/datum/move_loop/disposal_holder/movement_loop
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 	var/datum/gas_mixture/gas // gas used to flush, will appear at exit point
 	var/active = FALSE // true if the holder is moving, otherwise inactive
@@ -18,12 +19,20 @@
 	var/hasmob = FALSE // contains a mob
 
 /obj/structure/disposalholder/Destroy()
+	// Reset perspectives for contained mobs before cleanup — init() sets client.eye = holder
+	for(var/mob/M in contents)
+		if(M.client)
+			M.reset_perspective(null)
+	if(loc)
+		moveToNullspace()
+	cleanup_movement_loop()
 	QDEL_NULL(gas)
 	active = FALSE
 	last_pipe = null
 	current_pipe = null
 	QDEL_NULL(move_packet)
-	return ..()
+	..()
+	return QDEL_HINT_HARDDEL_NOW
 
 // initialize a holder from the contents of a disposal unit
 /obj/structure/disposalholder/proc/init(obj/machinery/disposal/D)
@@ -71,13 +80,33 @@
 
 /// Starts the movement process, persists while the holder is moving through pipes
 /obj/structure/disposalholder/proc/start_moving()
+	cleanup_movement_loop()
 	var/delay = world.tick_lag
-	var/datum/move_loop/our_loop = SSmove_manager.move_disposals(src, delay = delay, timeout = delay * count)
+	var/datum/move_loop/disposal_holder/our_loop = SSmove_manager.move_disposals(src, delay = delay, timeout = delay * count)
 	if(our_loop)
+		movement_loop = our_loop
 		RegisterSignal(our_loop, COMSIG_MOVELOOP_PREPROCESS_CHECK, PROC_REF(pre_move))
 		RegisterSignal(our_loop, COMSIG_MOVELOOP_POSTPROCESS, PROC_REF(try_expel))
 		RegisterSignal(our_loop, COMSIG_PARENT_QDELETING, PROC_REF(movement_stop))
 		current_pipe = loc
+	else
+		active = FALSE
+		current_pipe = null
+
+/obj/structure/disposalholder/proc/detach_movement_loop(datum/move_loop/disposal_holder/loop = movement_loop)
+	if(!loop)
+		return
+	UnregisterSignal(loop, list(COMSIG_MOVELOOP_PREPROCESS_CHECK, COMSIG_MOVELOOP_POSTPROCESS, COMSIG_PARENT_QDELETING))
+	if(loop == movement_loop)
+		movement_loop = null
+
+/obj/structure/disposalholder/proc/cleanup_movement_loop()
+	if(!movement_loop)
+		return
+	var/datum/move_loop/disposal_holder/loop = movement_loop
+	detach_movement_loop(loop)
+	if(!QDELETED(loop))
+		qdel(loop)
 
 /obj/structure/disposalholder/proc/pre_move(datum/move_loop/source)
 	SIGNAL_HANDLER
@@ -91,6 +120,7 @@
 
 /obj/structure/disposalholder/proc/movement_stop(datum/source)
 	SIGNAL_HANDLER
+	detach_movement_loop(source)
 	current_pipe = null
 	last_pipe = null
 	active = FALSE

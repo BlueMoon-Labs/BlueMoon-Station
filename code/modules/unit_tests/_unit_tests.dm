@@ -88,6 +88,7 @@
 // #include "dynamic_ruleset_sanity.dm"
 // #include "emoting.dm"
 // #include "food_edibility_check.dm"
+#include "gc_rewrite.dm"
 // #include "greyscale_config.dm"
 // #include "heretic_knowledge.dm"
 // #include "holidays.dm"
@@ -143,6 +144,7 @@
 #include "bad_defines_defined.dm"
 #include "disposal_holder.dm"
 #include "memory_leak_limits.dm"
+#include "human_mob_gc.dm"
 
 #undef TEST_ASSERT
 #undef TEST_ASSERT_EQUAL

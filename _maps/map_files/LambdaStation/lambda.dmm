@@ -21800,7 +21800,6 @@
 /obj/machinery/status_display/ai{
 	pixel_y = 32
 	},
-/obj/item/card/id/captains_spare,
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
 "aNk" = (
@@ -28066,6 +28065,7 @@
 /obj/effect/turf_decal/trimline/neutral/filled/line,
 /obj/effect/turf_decal/vg_decals/department/sec,
 /obj/effect/turf_decal/arrows/red,
+/obj/machinery/computer/brig_assistant_console,
 /turf/open/floor/plasteel,
 /area/hallway/primary/fore)
 "bbA" = (
@@ -59360,6 +59360,10 @@
 	},
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = 32
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/command)

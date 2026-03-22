@@ -408,6 +408,7 @@ SUBSYSTEM_DEF(shuttle)
 			hostileEnvironments -= d
 	emergencyNoEscape = hostileEnvironments.len
 
+#ifndef ABSOLUTE_MINIMUM_MODE // Nah we didn't need it anyway
 	if(emergencyNoEscape && (emergency.mode == SHUTTLE_IGNITING))
 		emergency.mode = SHUTTLE_STRANDED
 		emergency.timer = null
@@ -419,6 +420,7 @@ SUBSYSTEM_DEF(shuttle)
 		priority_announce("Враждебное присутствие искоренено. \
 			У вас есть три минуты, чтобы взойти на борт шаттла.",
 			null, "shuttledock", "Priority")
+#endif
 
 //try to move/request to dockHome if possible, otherwise dockAway. Mainly used for admin buttons
 /datum/controller/subsystem/shuttle/proc/toggleShuttle(shuttleId, dockHome, dockAway, timed)

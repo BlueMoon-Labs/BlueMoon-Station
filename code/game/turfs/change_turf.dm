@@ -347,9 +347,8 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 			continue
 		total.merge(S.air)
 
-	var/datum/gas_mixture/averaged = total.remove_ratio(1/turf_count)
-	air.copy_from(averaged)
-	qdel(averaged)
+	total.multiply(1 / turf_count)
+	air.copy_from(total)
 	qdel(total)
 
 /turf/proc/ReplaceWithLattice()

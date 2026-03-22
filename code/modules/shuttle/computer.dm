@@ -15,8 +15,6 @@
 	var/no_destination_swap = FALSE
 	/// ID of the currently selected destination of the attached shuttle
 	var/destination
-	/// Authorization request cooldown to prevent request spam to admin staff
-	COOLDOWN_DECLARE(request_cooldown)
 
 /obj/machinery/computer/shuttle/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -101,12 +99,23 @@
 				destination = target_destination
 				return TRUE
 		if("request")
-			if(!COOLDOWN_FINISHED(src, request_cooldown))
-				to_chat(usr, "<span class='warning'>CentCom is still processing last authorization request!</span>")
+			if(istype(src, /obj/machinery/computer/shuttle/pod))
+				if(GLOB.security_level < SEC_LEVEL_RED && !(obj_flags & EMAGGED))
+					to_chat(usr, "<span class='warning'>Escape pods will only launch during \"Code Red\" security alert.</span>")
+					return
+			var/list/options = params2list(possible_destinations)
+			var/list/valid_destinations = list()
+			for(var/dest in options)
+				if(SSshuttle.getDock(dest))
+					valid_destinations += dest
+			if(!destination || !(destination in valid_destinations))
+				destination = length(valid_destinations) ? pick(valid_destinations) : null
+			if(!destination)
+				to_chat(usr, "<span class='warning'>Нет доступного пункта назначения.</span>")
 				return
-			COOLDOWN_START(src, request_cooldown, 1 MINUTES)
-			to_chat(usr, "<span class='notice'>Your request has been received by CentCom.</span>")
-			to_chat(GLOB.admins, "<b>FERRY: <font color='#3d5bc3'>[ADMIN_LOOKUPFLW(usr)] (<A HREF='?_src_=holder;[HrefToken()];movepod=1;shuttle_id=[shuttleId];destination=[destination]'>Move Pod</a>)</b> is requesting to move the transport Escape Pod.</font>")
+			var/delay = rand(5, 20) SECONDS
+			to_chat(usr, "<span class='notice'>Запрос принят. Отправка через [delay / 10] секунд.</span>")
+			addtimer(CALLBACK(SSshuttle, TYPE_PROC_REF(/datum/controller/subsystem/shuttle, moveShuttle), shuttleId, destination, 1), delay)
 			return TRUE
 
 /obj/machinery/computer/shuttle/emag_act(mob/user)

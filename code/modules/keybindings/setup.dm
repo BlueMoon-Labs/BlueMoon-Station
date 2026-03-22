@@ -64,6 +64,13 @@
 
 // TODO: OVERHAUL ALL OF THIS AGAIN. While this works this is flatout horrid with the "use list but also don't use lists" crap. I hate my life.
 /client/proc/do_full_macro_assert(datum/preferences/prefs_override = prefs)
+	// Ensure macrosets exist before trying to erase them (prevents "Element hotkeys not found" on first connect)
+	if(prefs_override?.hotkeys)
+		winclone(src, "default", SKIN_MACROSET_HOTKEYS)
+	else
+		winclone(src, "default", SKIN_MACROSET_CLASSIC_INPUT)
+		winclone(src, "default", SKIN_MACROSET_CLASSIC_HOTKEYS)
+
 	// First, wipe
 	erase_all_macros(prefs_override)
 

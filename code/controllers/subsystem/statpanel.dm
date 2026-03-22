@@ -249,8 +249,8 @@ SUBSYSTEM_DEF(statpanels)
 	// Garbage Collector
 	var/gc_ratio = (SSgarbage.totaldels + SSgarbage.totalgcs) ? "[round((SSgarbage.totalgcs / (SSgarbage.totaldels + SSgarbage.totalgcs)) * 100, 0.1)]%" : "n/a"
 	var/list/gc_queue_counts = list()
-	for(var/list/L in SSgarbage.queues)
-		gc_queue_counts += length(L)
+	for (var/i in 1 to GC_QUEUE_COUNT)
+		gc_queue_counts += SSgarbage.GetQueueDepth(i)
 	key_ss["Garbage"] = list(
 		list("\u041E\u0447\u0435\u0440\u0435\u0434\u0438", gc_queue_counts.Join(", ")),
 		list("Del/\u0442\u0438\u043A", SSgarbage.delslasttick),

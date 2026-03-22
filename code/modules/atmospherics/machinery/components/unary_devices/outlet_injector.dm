@@ -64,35 +64,27 @@
 
 	if(!on || !is_operational())
 		return
-	if(!parents?[1] || !airs?[1])
-		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
-	var/vol = air_contents.return_volume()
-	if(vol <= 0 || air_contents.return_temperature() <= 0)
-		return
-	if(!isopenturf(loc))
-		return
 
-	loc.assume_air_ratio(air_contents, volume_rate / vol)
-	air_update_turf()
-	update_parents()
+	if(air_contents.return_temperature() > 0)
+		loc.assume_air_ratio(air_contents, volume_rate / air_contents.return_volume())
+		air_update_turf()
+
+		update_parents()
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/proc/inject()
 
 	if(on || injecting || !is_operational())
 		return
-	if(!airs?[1])
-		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
-	var/vol = air_contents.return_volume()
-	if(vol <= 0 || air_contents.return_temperature() <= 0 || !isopenturf(loc))
-		return
 
 	injecting = 1
-	loc.assume_air_ratio(air_contents, volume_rate / vol)
-	update_parents()
+
+	if(air_contents.return_temperature() > 0)
+		loc.assume_air_ratio(air_contents, volume_rate / air_contents.return_volume())
+		update_parents()
 
 	flick("inje_inject", src)
 
