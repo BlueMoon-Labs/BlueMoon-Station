@@ -41,10 +41,8 @@
 	. = ..()
 	if(activity)
 		reset_activity()
-	// BLUEMOON EDIT START - изменение памяти после смерти
 	if(mind)
 		mind.death_handle_memory()
-	// BLUEMOON EDIT END
 
 /mob/living/get_tooltip_data()
 	if(activity)
