@@ -41,7 +41,7 @@
 		"Station Mistress",
 		"Station Overseer",
 		"Stationmaster",
-		"Gubernatorr"
+		"Gubernator"
 		)
 
 	outfit = /datum/outfit/job/captain
