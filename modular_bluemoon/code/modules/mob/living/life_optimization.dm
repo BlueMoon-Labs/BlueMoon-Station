@@ -7,7 +7,10 @@
 	var/our_z = our_turf.z
 	if(!islist(SSmobs.clients_by_zlevel) || our_z > SSmobs.clients_by_zlevel.len)
 		return FALSE
-	for(var/mob/player as anything in SSmobs.clients_by_zlevel[our_z])
+	var/list/players_on_z = SSmobs.clients_by_zlevel[our_z]
+	if(!length(players_on_z))
+		return FALSE
+	for(var/mob/player as anything in players_on_z)
 		if(get_dist(our_turf, player) <= distance)
 			return TRUE
 	return FALSE

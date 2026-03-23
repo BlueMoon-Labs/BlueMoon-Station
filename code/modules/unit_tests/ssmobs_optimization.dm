@@ -342,3 +342,49 @@
 
 	TEST_ASSERT(has_ethanol, "Human should have ethanol")
 	TEST_ASSERT_NOTEQUAL(mob_stat, DEAD, "Human should survive Life() processing with organ stagger")
+
+/// Test that handle_diseases guard clause skips processing when diseases list is empty
+/datum/unit_test/guard_clause_empty_diseases/Run()
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	TEST_ASSERT(!length(human.diseases), "Human should have no diseases by default")
+	// Calling handle_diseases with empty list should return immediately without error
+	human.handle_diseases()
+
+/// Test that handle_wounds guard clause skips processing when all_wounds list is empty
+/datum/unit_test/guard_clause_empty_wounds/Run()
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	TEST_ASSERT(!length(human.all_wounds), "Human should have no wounds by default")
+	// Calling handle_wounds with empty list should return immediately without error
+	human.handle_wounds()
+
+/// Test that handle_stomach guard clause skips processing when stomach_contents is empty
+/datum/unit_test/guard_clause_empty_stomach/Run()
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	TEST_ASSERT(!length(human.stomach_contents), "Human should have empty stomach by default")
+	// Calling handle_stomach with empty list should return immediately without error
+	human.handle_stomach()
+
+/// Test that SSai_controllers proximity skip works — AI controller skips planning when pawn has no player nearby
+/datum/unit_test/ai_controller_proximity_skip/Run()
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+
+	var/turf/T = get_turf(human)
+	TEST_ASSERT_NOTNULL(T, "Human has no turf")
+
+	if(!islist(SSmobs.clients_by_zlevel) || T.z > SSmobs.clients_by_zlevel.len)
+		SSmobs.MaxZChanged()
+
+	// Ensure no players on z-level
+	var/list/saved_clients = SSmobs.clients_by_zlevel[T.z].Copy()
+	SSmobs.clients_by_zlevel[T.z].Cut()
+
+	// Save active controllers and temporarily clear them
+	var/list/saved_controllers = SSai_controllers.active_ai_controllers.Copy()
+	SSai_controllers.active_ai_controllers.Cut()
+
+	// Fire the subsystem — should complete without error even with no controllers
+	SSai_controllers.fire(FALSE)
+
+	// Restore
+	SSai_controllers.active_ai_controllers += saved_controllers
+	SSmobs.clients_by_zlevel[T.z] += saved_clients

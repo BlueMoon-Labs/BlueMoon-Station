@@ -409,6 +409,8 @@
 				O.on_death(seconds, times_fired) //Needed so organs decay while inside the body.
 
 /mob/living/carbon/handle_diseases()
+	if(!length(diseases))
+		return
 	for(var/thing in diseases)
 		var/datum/disease/D = thing
 		if(prob(D.infectivity))
@@ -418,6 +420,8 @@
 			D.stage_act()
 
 /mob/living/carbon/handle_wounds()
+	if(!length(all_wounds))
+		return
 	for(var/thing in all_wounds)
 		var/datum/wound/W = thing
 		if(W.processes) // meh
@@ -462,6 +466,8 @@
 
 /mob/living/carbon/handle_stomach()
 	set waitfor = 0
+	if(!length(stomach_contents))
+		return
 	for(var/mob/living/M in stomach_contents)
 		if(M.loc != src)
 			stomach_contents.Remove(M)
