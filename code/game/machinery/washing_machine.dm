@@ -509,6 +509,7 @@ GLOBAL_LIST_INIT(dye_registry, list(
 	add_overlay(upper_half)
 	RegisterSignal(M, COMSIG_ATOM_DIR_AFTER_CHANGE, PROC_REF(force_rotate_mob))
 	ADD_TRAIT(M, TRAIT_NO_PIXEL_SHIFT, REF(src))
+	M.unpixel_shift()
 
 /obj/machinery/washing_machine/post_unbuckle_mob(mob/living/M)
 	. = ..()
