@@ -13,10 +13,12 @@
 		SSmobs.MaxZChanged()
 	SSmobs.clients_by_zlevel[T.z] += player_mob
 
-	TEST_ASSERT(target.has_nearby_player(), "has_nearby_player() should return TRUE when player is on the same turf")
+	var/result = target.has_nearby_player()
 
-	// Cleanup
+	// Cleanup before assert
 	SSmobs.clients_by_zlevel[T.z] -= player_mob
+
+	TEST_ASSERT(result, "has_nearby_player() should return TRUE when player is on the same turf")
 
 /// Test that has_nearby_player() returns FALSE when no player is nearby
 /datum/unit_test/has_nearby_player_far/Run()
@@ -33,10 +35,12 @@
 	var/list/saved_clients = SSmobs.clients_by_zlevel[T.z].Copy()
 	SSmobs.clients_by_zlevel[T.z].Cut()
 
-	TEST_ASSERT(!target.has_nearby_player(), "has_nearby_player() should return FALSE when no players on z-level")
+	var/result = target.has_nearby_player()
 
-	// Restore
+	// Restore before assert
 	SSmobs.clients_by_zlevel[T.z] += saved_clients
+
+	TEST_ASSERT(!result, "has_nearby_player() should return FALSE when no players on z-level")
 
 /// Test that has_nearby_player() respects distance parameter
 /datum/unit_test/has_nearby_player_distance/Run()
@@ -56,15 +60,17 @@
 
 	var/dist = get_dist(target_turf, far_turf)
 
-	// With distance smaller than actual distance, should return FALSE
+	var/result_outside = TRUE // default pass if dist <= 1
 	if(dist > 1)
-		TEST_ASSERT(!target.has_nearby_player(dist - 1), "has_nearby_player() should return FALSE when player is outside range (dist=[dist])")
+		result_outside = target.has_nearby_player(dist - 1)
+	var/result_inside = target.has_nearby_player(dist)
 
-	// With distance >= actual distance, should return TRUE
-	TEST_ASSERT(target.has_nearby_player(dist), "has_nearby_player() should return TRUE when player is within range (dist=[dist])")
-
-	// Cleanup
+	// Cleanup before asserts
 	SSmobs.clients_by_zlevel[target_turf.z] -= player_mob
+
+	if(dist > 1)
+		TEST_ASSERT(!result_outside, "has_nearby_player() should return FALSE when player is outside range (dist=[dist])")
+	TEST_ASSERT(result_inside, "has_nearby_player() should return TRUE when player is within range (dist=[dist])")
 
 /// Test that simple_animal has_nearby_player() override uses NEARBY_PLAYER_DISTANCE default
 /datum/unit_test/has_nearby_player_simple_animal/Run()
@@ -80,17 +86,20 @@
 	var/list/saved_clients = SSmobs.clients_by_zlevel[T.z].Copy()
 	SSmobs.clients_by_zlevel[T.z].Cut()
 
-	TEST_ASSERT(!carp.has_nearby_player(), "Simple animal has_nearby_player() should return FALSE with no players")
+	var/result_no_player = carp.has_nearby_player()
 
 	// Add player on same turf
 	var/mob/living/carbon/human/player_mob = allocate(/mob/living/carbon/human, T)
 	SSmobs.clients_by_zlevel[T.z] += player_mob
 
-	TEST_ASSERT(carp.has_nearby_player(), "Simple animal has_nearby_player() should return TRUE with player on same turf")
+	var/result_with_player = carp.has_nearby_player()
 
-	// Cleanup
+	// Cleanup before asserts
 	SSmobs.clients_by_zlevel[T.z].Cut()
 	SSmobs.clients_by_zlevel[T.z] += saved_clients
+
+	TEST_ASSERT(!result_no_player, "Simple animal has_nearby_player() should return FALSE with no players")
+	TEST_ASSERT(result_with_player, "Simple animal has_nearby_player() should return TRUE with player on same turf")
 
 /// Test that Life() throttle skips clientless mobs on empty z-levels
 /datum/unit_test/life_throttle_empty_zlevel/Run()
@@ -113,11 +122,13 @@
 	// Call Life() — on empty z-level, should be skipped entirely
 	human.Life(2, 1)
 
-	// Health should not change since Life() was throttled
-	TEST_ASSERT_EQUAL(human.health, starting_health, "Clientless mob on empty z-level should not have health change from throttled Life()")
+	var/health_after = human.health
 
-	// Restore
+	// Restore before assert
 	SSmobs.clients_by_zlevel[T.z] += saved_clients
+
+	// Health should not change since Life() was throttled
+	TEST_ASSERT_EQUAL(health_after, starting_health, "Clientless mob on empty z-level should not have health change from throttled Life()")
 
 /// Test that Life() throttle applies stagger for alive clientless mobs far from players
 /datum/unit_test/life_throttle_alive_far/Run()
@@ -140,23 +151,27 @@
 
 	// Fire 1: times_fired=1, 1%4=1 != 0 → should be skipped
 	human.Life(2, 1)
-	TEST_ASSERT_EQUAL(human.health, starting_health, "Clientless mob far from players should be skipped on non-4th fire (fire 1)")
+	var/health_after_1 = human.health
 
 	// Fire 2: times_fired=2, 2%4=2 != 0 → should be skipped
 	human.Life(2, 2)
-	TEST_ASSERT_EQUAL(human.health, starting_health, "Clientless mob far from players should be skipped on non-4th fire (fire 2)")
+	var/health_after_2 = human.health
 
 	// Fire 3: times_fired=3, 3%4=3 != 0 → should be skipped
 	human.Life(2, 3)
-	TEST_ASSERT_EQUAL(human.health, starting_health, "Clientless mob far from players should be skipped on non-4th fire (fire 3)")
+	var/health_after_3 = human.health
 
 	// Fire 4: times_fired=4, 4%4=0 → should process (falls through to normal Life)
 	// We don't assert health change here since the mob may not take damage in normal conditions
 	// Instead we verify it doesn't crash
 	human.Life(2, 4)
 
-	// Cleanup
+	// Cleanup before asserts
 	SSmobs.clients_by_zlevel[T.z] -= player_mob
+
+	TEST_ASSERT_EQUAL(health_after_1, starting_health, "Clientless mob far from players should be skipped on non-4th fire (fire 1)")
+	TEST_ASSERT_EQUAL(health_after_2, starting_health, "Clientless mob far from players should be skipped on non-4th fire (fire 2)")
+	TEST_ASSERT_EQUAL(health_after_3, starting_health, "Clientless mob far from players should be skipped on non-4th fire (fire 3)")
 
 /// Test that Life() throttle applies heavier stagger for dead clientless mobs far from players
 /datum/unit_test/life_throttle_dead_far/Run()
@@ -181,20 +196,24 @@
 	var/starting_health = human.health
 
 	human.Life(2, 1)
-	TEST_ASSERT_EQUAL(human.health, starting_health, "Dead clientless mob far from players should be skipped on non-15th fire (fire 1)")
+	var/health_after_1 = human.health
 
 	human.Life(2, 7)
-	TEST_ASSERT_EQUAL(human.health, starting_health, "Dead clientless mob far from players should be skipped on non-15th fire (fire 7)")
+	var/health_after_7 = human.health
 
 	human.Life(2, 14)
-	TEST_ASSERT_EQUAL(human.health, starting_health, "Dead clientless mob far from players should be skipped on non-15th fire (fire 14)")
+	var/health_after_14 = human.health
 
 	// Fire 15: times_fired=15, 15%15=0 → should process BiologicalLife
 	// This should not crash
 	human.Life(2, 15)
 
-	// Cleanup
+	// Cleanup before asserts
 	SSmobs.clients_by_zlevel[T.z] -= player_mob
+
+	TEST_ASSERT_EQUAL(health_after_1, starting_health, "Dead clientless mob far from players should be skipped on non-15th fire (fire 1)")
+	TEST_ASSERT_EQUAL(health_after_7, starting_health, "Dead clientless mob far from players should be skipped on non-15th fire (fire 7)")
+	TEST_ASSERT_EQUAL(health_after_14, starting_health, "Dead clientless mob far from players should be skipped on non-15th fire (fire 14)")
 
 /// Test that Life() processes normally for mobs near players
 /datum/unit_test/life_no_throttle_near_player/Run()
@@ -218,11 +237,13 @@
 
 	human.Life(2, 1)
 
-	// Fire stacks should decrease since handle_fire runs during full Life() processing
-	TEST_ASSERT(human.fire_stacks < initial_stacks, "Mob near player should have full Life() processing (fire stacks should decrease)")
+	var/stacks_after = human.fire_stacks
 
-	// Cleanup
+	// Cleanup before assert
 	SSmobs.clients_by_zlevel[T.z] -= player_mob
+
+	// Fire stacks should decrease since handle_fire runs during full Life() processing
+	TEST_ASSERT(stacks_after < initial_stacks, "Mob near player should have full Life() processing (fire stacks should decrease)")
 
 /// Test that fire still processes on empty z-levels for burning mobs
 /datum/unit_test/life_throttle_fire_on_empty_z/Run()
@@ -241,17 +262,20 @@
 	// Set mob on fire
 	human.adjust_fire_stacks(5)
 	human.IgniteMob()
-	TEST_ASSERT(human.on_fire, "Human should be on fire")
+	var/is_on_fire = human.on_fire
 
 	var/initial_stacks = human.fire_stacks
 
 	// Even on empty z-level, fire should still be handled
 	human.Life(2, 1)
 
-	TEST_ASSERT(human.fire_stacks <= initial_stacks, "Fire should still be processed on empty z-level")
+	var/stacks_after = human.fire_stacks
 
-	// Restore
+	// Restore before asserts
 	SSmobs.clients_by_zlevel[T.z] += saved_clients
+
+	TEST_ASSERT(is_on_fire, "Human should be on fire")
+	TEST_ASSERT(stacks_after <= initial_stacks, "Fire should still be processed on empty z-level")
 
 /// Test that monkey AI is skipped when no player is nearby
 /datum/unit_test/monkey_ai_skip_no_player/Run()
@@ -276,11 +300,13 @@
 	// Need to call with times_fired=4 (divisible by 4) so Life() throttle doesn't block it
 	monkey.Life(2, 4)
 
-	// Monkey should still be on same turf (AI was skipped, no step())
-	TEST_ASSERT_EQUAL(get_turf(monkey), start_turf, "Monkey far from players should not move (AI skipped)")
+	var/turf/end_turf = get_turf(monkey)
 
-	// Cleanup
+	// Cleanup before assert
 	SSmobs.clients_by_zlevel[T.z] -= player_mob
+
+	// Monkey should still be on same turf (AI was skipped, no step())
+	TEST_ASSERT_EQUAL(end_turf, start_turf, "Monkey far from players should not move (AI skipped)")
 
 /// Test that carbon organ stagger works for clientless mobs
 /datum/unit_test/carbon_organ_stagger/Run()
@@ -297,7 +323,7 @@
 
 	// Add some reagent to the mob so we can track metabolism via organs (liver)
 	human.reagents.add_reagent(/datum/reagent/consumable/ethanol, 20)
-	TEST_ASSERT(human.reagents.has_reagent(/datum/reagent/consumable/ethanol), "Human should have ethanol")
+	var/has_ethanol = human.reagents.has_reagent(/datum/reagent/consumable/ethanol)
 
 	// times_fired=1: odd fire, organs should be SKIPPED for clientless
 	// But since we added human to clients_by_zlevel, has_nearby_player returns true
@@ -309,7 +335,10 @@
 	human.Life(2, 2)
 
 	// The key test is that both calls complete without error and the mob is still alive
-	TEST_ASSERT_NOTEQUAL(human.stat, DEAD, "Human should survive Life() processing with organ stagger")
+	var/mob_stat = human.stat
 
-	// Cleanup
+	// Cleanup before asserts
 	SSmobs.clients_by_zlevel[T.z] -= human
+
+	TEST_ASSERT(has_ethanol, "Human should have ethanol")
+	TEST_ASSERT_NOTEQUAL(mob_stat, DEAD, "Human should survive Life() processing with organ stagger")
