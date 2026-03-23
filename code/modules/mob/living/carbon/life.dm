@@ -1,6 +1,8 @@
 /mob/living/carbon/BiologicalLife(delta_time, times_fired)
 	//Reagent processing needs to come before breathing, to prevent edge cases.
-	handle_organs(delta_time, times_fired)
+	// BLUEMOON OPTIMIZATION: stagger organ processing for clientless mobs (every other fire)
+	if(client || (times_fired % 2 == 0))
+		handle_organs(client ? delta_time : delta_time * 2, times_fired)
 	. = ..()		// if . is false, we are dead.
 	if(stat == DEAD)
 		stop_sound_channel(CHANNEL_HEARTBEAT)

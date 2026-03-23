@@ -148,6 +148,7 @@
 #include "disposal_holder.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
+#include "ssmobs_optimization.dm"
 
 #undef TEST_ASSERT
 #undef TEST_ASSERT_EQUAL
