@@ -52,3 +52,20 @@
 		. += activity
 
 //SET_ACTIVITY END
+
+/mob/living/verb/player_narrate_subtler()
+	set category = "Say"
+	set name = "Narrate Subtler (Player)"
+	set desc = "Narrate an action or event! An alternative to emoting, for when your emote shouldn't start with your name! Only for adjacent players excluding ghosts."
+	if(GLOB.say_disabled)
+		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		return
+	display_typing_indicator(isMe = TRUE)
+	var/message = stripped_multiline_input_or_reflect(usr, "Narrate an action or event! An alternative to emoting, for when your emote shouldn't start with your name! Only for adjacent players excluding ghosts.", "Narrate Subtler (Player)", null, MAX_MESSAGE_LEN)
+	clear_typing_indicator()
+	emote("narrate_subtler", message=message)
+
+/datum/emote/sound/human/narrate/subtler
+	key = "narrate_subtler"
+	key_third_person = "narrate_subtler"
+	subtler = TRUE
