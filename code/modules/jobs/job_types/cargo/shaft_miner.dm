@@ -9,7 +9,23 @@
 	supervisors = "the quartermaster"
 	selection_color = "#ca8f55"
 	custom_spawn_text = "не забывайте, что вы шахтёр, а не охотник. Ваша главная цель - поставлять ресурсы станции."
-
+	alt_titles = list(
+		"Trainee Miner", //Стажер выше, для удобства
+		"Shaft Syndi-Miner", //Синди выше, для удобства
+		"Ashwalker Breeder",
+		"Ashwalker Sex Slave",
+		"Digger",
+		"Dredger",
+		"Drill Technician",
+		"Excavator",
+		"Exotic Ore Miner",
+		"Fauna Hunter",
+		"Hunter",
+		"Prospector",
+		"Slayer",
+		"Spelunker",
+		"Miner"
+		)
 
 	outfit = /datum/outfit/job/miner
 	plasma_outfit = /datum/outfit/plasmaman/mining

@@ -151,6 +151,8 @@
 /obj/item/storage/box/inteq_kit/revolver/PopulateContents()
 	new /obj/item/gun/ballistic/revolver/inteq(src)
 	new /obj/item/ammo_box/a357(src)
+	new /obj/item/ammo_box/a357/ap(src)
+	new /obj/item/ammo_box/a357/dumdum(src)
 // 12. Дверные мины. В аплинке интекью
 /obj/item/storage/box/inteq_kit/doorgoboom/PopulateContents()
 	for(var/i in 1 to 5)

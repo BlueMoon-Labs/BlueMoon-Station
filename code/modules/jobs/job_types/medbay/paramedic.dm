@@ -8,6 +8,25 @@
 	spawn_positions = 2
 	supervisors = "the chief medical officer"
 	selection_color = "#74b5e0"
+	alt_titles = list(
+		"Interdyne Field Medic", //Триглав выше, для удобства
+		"Syndicate Field Medic", //Синди выше, для удобства
+		"Crocin Deliverer",
+		"Emergency Condom Team",
+		"Emergency Cum Receiver",
+		"Emergency Horny Technical",
+		"Emergency Medical Doctor",
+		"Emergency Medical Technician",
+		"Emergency Physician",
+		"Field Physician",
+		"Field Surgeon",
+		"Para-Slut",
+		"Para-Stud",
+		"Searh and Rescue Technician",
+		"Trauma Team",
+		"Trauma Team",
+		"Trauma Team Responder"
+		)
 
 	outfit = /datum/outfit/job/paramedic
 

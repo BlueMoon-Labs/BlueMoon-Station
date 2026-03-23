@@ -339,7 +339,7 @@
 
 //teleporting tumor bread kills it
 /obj/item/reagent_containers/food/snacks/store/bread/tumor_bread/bread_teleport()
-	visible_message(src, "<span class='warning'>[src] explodes in a horrible mess of tumor and flour!</span>")
+	visible_message("<span class='warning'>[src] explodes in a horrible mess of tumor and flour!</span>")
 	qdel(src)
 
 /obj/item/reagent_containers/food/snacks/breadslice/tumor_bread

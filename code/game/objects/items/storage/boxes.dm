@@ -118,9 +118,7 @@
 	if(HAS_TRAIT(loc, TRAIT_ROBOTIC_ORGANISM))
 		mask_type = null
 		internal_type = null
-		medipen_type = null
-		new /obj/item/stack/cable_coil/random/five(src)
-		new /obj/item/weldingtool/mini(src)
+		medipen_type = /obj/item/reagent_containers/hypospray/medipen/ferrocortex
 	if(!isnull(mask_type))
 	// BLUEMOON ADD END
 		new mask_type(src)
@@ -212,14 +210,29 @@
 /obj/item/storage/box/survival/centcom
 	name = "Extended-Capacity Survival Box"
 	icon_state = "ghostcostuming"
-	mask_type = /obj/item/clothing/mask/gas/sechailer
+	mask_type = /obj/item/clothing/mask/gas/sechailer/swat
 	internal_type = /obj/item/tank/internals/emergency_oxygen/double
 	medipen_type = /obj/item/reagent_containers/hypospray/medipen/atropine
+
+/obj/item/storage/box/survival/centcom/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 9
+	STR.max_combined_w_class = 9
 
 /obj/item/storage/box/survival/centcom/PopulateContents()
 	..() // we want the regular stuff too
 	new /obj/item/crowbar/power(src)
-	new /obj/item/melee/classic_baton/telescopic(src)
+	new /obj/item/melee/classic_baton/telescopic/centcom(src)
+	new /obj/item/radio/off(src)
+	new /obj/item/extinguisher/mini(src)
+	new /obj/item/flashlight/flare(src)
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+
+/obj/item/storage/box/survival/centcom_max/PopulateContents()
+	..() // we want the regular stuff too
+	new /obj/item/crowbar/power(src)
+	new /obj/item/melee/classic_baton/telescopic/centcom/plus(src)
 	new /obj/item/radio/off(src)
 	new /obj/item/extinguisher/mini(src)
 	new /obj/item/flashlight/flare(src)

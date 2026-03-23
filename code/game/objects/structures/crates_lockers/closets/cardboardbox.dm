@@ -143,9 +143,12 @@
 				if(!L.incapacitated(ignore_restraints = 1))
 					L.face_atom(src)
 				L.do_alert_animation(L)
-		var/mob/living/carbon/C = buckled_mobs[1]
-		if(iscatperson(C))
-			C.emote(pick("nya","meow"))
+		if(LAZYLEN(buckled_mobs))
+			var/mob/living/carbon/C = buckled_mobs[1]
+			if(iscatperson(C))
+				C.emote(pick("nya","meow"))
+			else
+				playsound(loc, 'sound/machines/chime.ogg', 25, FALSE, -5)
 		else
 			playsound(loc, 'sound/machines/chime.ogg', 25, FALSE, -5)
 

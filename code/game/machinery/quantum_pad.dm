@@ -133,13 +133,12 @@
 	s.start()
 
 /obj/machinery/quantumpad/attack_ghost(mob/dead/observer/ghost)
-	. = ..()
-	if(.)
-		return
 	if(!linked_pad && map_pad_link_id)
 		initMappedLink()
 	if(linked_pad)
 		ghost.forceMove(get_turf(linked_pad))
+		return TRUE // Don't call parent - prevents attack_ai and ui_interact, so no teleport effect for ghosts
+	return ..()
 
 /obj/machinery/quantumpad/proc/doteleport(mob/user, obj/machinery/quantumpad/target_pad = linked_pad)
 	if(target_pad)

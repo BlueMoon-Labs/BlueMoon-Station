@@ -4,7 +4,8 @@
 	mid_sounds = list('sound/machines/shower/shower_mid1.ogg'=1,'sound/machines/shower/shower_mid2.ogg'=1,'sound/machines/shower/shower_mid3.ogg'=1)
 	mid_length = 10
 	end_sound = 'sound/machines/shower/shower_end.ogg'
-	volume = 20
+	falloff_exponent = SOUND_FALLOFF_EXPONENT / 2
+	volume = 10
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -131,6 +132,23 @@
 	end_sound = 'sound/machines/computer/computer_end.ogg'
 	volume = 50
 	end_volume = 100
+	falloff_distance = 0
+	falloff_exponent = 4 // quiet
+	extra_range = -13 // 3 tiles around
+	vary = TRUE
+
+/datum/looping_sound/warping
+	mid_sounds = list(
+					'sound/effects/warping/warp1.ogg',
+					'sound/effects/warping/warp2.ogg',
+					'sound/effects/warping/warp3.ogg',
+					'sound/effects/warping/warp4.ogg',
+					'sound/effects/warping/warp5.ogg',
+					'sound/effects/warping/warp6.ogg',
+					'sound/effects/warping/warp7.ogg',
+				)
+	mid_length = 3 SECONDS
+	volume = 50
 	falloff_distance = 0
 	falloff_exponent = 4 // quiet
 	extra_range = -13 // 3 tiles around

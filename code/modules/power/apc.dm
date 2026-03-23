@@ -164,8 +164,17 @@
 	var/force_update = FALSE
 	var/emergency_lights = FALSE
 	var/nightshift_lights = FALSE
+	var/nightshift_level = 0
+	var/nightshift_manual_override = FALSE
 	var/nightshift_requires_auth = FALSE
 	var/last_nightshift_switch = 0
+	/// Cached light list for bulk APC-driven operations. This duplicates light refs to avoid repeated area walks.
+	var/list/cached_area_lights
+	var/light_cache_dirty = TRUE
+	var/nightshift_refresh_queued = FALSE
+	var/queued_nightshift_lights = FALSE
+	var/queued_nightshift_level = 0
+	var/queued_nightshift_force_clear = FALSE
 	var/update_state = -1
 	var/update_overlay = -1
 	var/icon_update_needed = FALSE
@@ -250,7 +259,6 @@
 			name = "\improper [A.name] APC"
 
 		make_terminal()
-		update_nightshift_auth_requirement()
 
 	else
 		area = A
@@ -297,6 +305,8 @@
 		set_machine_stat(machine_stat | MAINT)
 		update_appearance()
 		addtimer(CALLBACK(src, PROC_REF(update)), 5)
+	register_area_apc()
+	update_nightshift_auth_requirement()
 	register_context()
 
 /obj/machinery/power/apc/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
@@ -307,6 +317,10 @@
 
 /obj/machinery/power/apc/Destroy()
 	GLOB.apcs_list -= src
+	GLOB.nightshift_apc_queue -= src
+	nightshift_refresh_queued = FALSE
+	cached_area_lights = null
+	unregister_area_apc()
 
 	if(malfai && operating)
 		malfai.malf_picker.processing_time = clamp(malfai.malf_picker.processing_time - 10,0,1000)
@@ -331,6 +345,19 @@
 		cell = null
 		update_appearance()
 		updateUsrDialog()
+
+/obj/machinery/power/apc/proc/register_area_apc()
+	if(!area)
+		return
+	var/area/root_area = area.base_area ? area.base_area : area
+	root_area.power_apc = src
+
+/obj/machinery/power/apc/proc/unregister_area_apc()
+	if(!area)
+		return
+	var/area/root_area = area.base_area ? area.base_area : area
+	if(root_area.power_apc == src)
+		root_area.power_apc = null
 
 /obj/machinery/power/apc/proc/make_terminal()
 	// create a terminal object at the same position as original turf loc
@@ -862,11 +889,17 @@
 			to_chat(user, "<span class='warning'>Доступ запрещён.</span>")
 
 /obj/machinery/power/apc/proc/toggle_nightshift_lights(mob/living/user)
+	var/mob/feedback_target = user ? user : usr
 	if(last_nightshift_switch > world.time - 100) //~10 seconds between each toggle to prevent spamming
-		to_chat(usr, "<span class='warning'>[src]'s night lighting circuit breaker is still cycling!</span>")
+		if(feedback_target)
+			to_chat(feedback_target, "<span class='warning'>[src]'s night lighting circuit breaker is still cycling!</span>")
 		return
 	last_nightshift_switch = world.time
-	set_nightshift(!nightshift_lights)
+	if(nightshift_manual_override)
+		var/list/automatic_state = get_automatic_nightshift_state()
+		set_nightshift(automatic_state[1], automatic_state[2], FALSE)
+		return
+	set_nightshift(!nightshift_lights, !nightshift_lights ? 1 : 0, TRUE)
 
 /obj/machinery/power/apc/run_obj_armor(damage_amount, damage_type, damage_flag = 0, attack_dir)
 	if(damage_flag == MELEE && damage_amount < 10 && (!(machine_stat & BROKEN) || malfai))
@@ -1172,7 +1205,7 @@
 			update()
 		if("emergency_lighting")
 			emergency_lights = !emergency_lights
-			for(var/obj/machinery/light/L in area)
+			for(var/obj/machinery/light/L in get_cached_area_lights())
 				if(!initial(L.no_emergency)) //If there was an override set on creation, keep that override
 					L.no_emergency = emergency_lights
 					INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, update), FALSE)
@@ -1622,7 +1655,7 @@
 		INVOKE_ASYNC(src, PROC_REF(break_lights))
 
 /obj/machinery/power/apc/proc/break_lights()
-	for(var/obj/machinery/light/L in area)
+	for(var/obj/machinery/light/L in get_cached_area_lights())
 		L.on = TRUE
 		INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, break_light_tube))
 		L.on = FALSE
@@ -1652,23 +1685,103 @@
 	update()
 	queue_icon_update()
 
-/obj/machinery/power/apc/proc/set_nightshift(on)
-	set waitfor = FALSE
-	if(nightshift_lights == on)
-		return
+/obj/machinery/power/apc/proc/set_nightshift(on, level = 1, manual_override = FALSE)
+	var/quantized_level = on ? clamp(round(level, 0.05), 0, 1) : 0
+	if(nightshift_lights == on && nightshift_level == quantized_level && nightshift_manual_override == manual_override)
+		return 0
 	nightshift_lights = on
-	for(var/obj/machinery/light/L in area)
-		if(L.nightshift_allowed)
-			L.nightshift_enabled = nightshift_lights
-			INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, update), FALSE)
+	nightshift_level = quantized_level
+	nightshift_manual_override = manual_override
+	var/lights_queued = 0
+	for(var/obj/machinery/light/L in get_cached_area_lights())
+		var/should_enable = on && L.nightshift_allowed
+		var/should_level = should_enable ? quantized_level : 0
+		if(L.nightshift_enabled == should_enable && L.nightshift_level == should_level)
+			continue
+		L.nightshift_enabled = should_enable
+		L.nightshift_level = should_level
+		if(L.queue_nightshift_update())
+			lights_queued++
 		CHECK_TICK
+	return lights_queued
 
 /obj/machinery/power/apc/proc/set_hijacked_lighting()
 	set waitfor = FALSE
-	for(var/obj/machinery/light/L in area)
+	for(var/obj/machinery/light/L in get_cached_area_lights())
 		L.hijacked = hijackerreturn()
 		INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, break_light_tube), FALSE)
 		CHECK_TICK
+
+/obj/machinery/power/apc/proc/accepts_automatic_nightshift(force_clear_manual_override = FALSE)
+	return !nightshift_manual_override || force_clear_manual_override
+
+/obj/machinery/power/apc/proc/get_automatic_nightshift_state()
+	if(!area || SSnightshift.high_security_mode || !SSnightshift.nightshift_active)
+		return list(FALSE, 0)
+	if(!area.is_station_member())
+		return list(FALSE, 0)
+	var/configured_level = CONFIG_GET(number/night_shift_public_areas_only)
+	if(configured_level && area.nightshift_public_area > configured_level)
+		return list(FALSE, 0)
+	var/automatic_level = SSnightshift.quantize_nightshift_level(SSnightshift.compute_indoor_nightshift_level(SOLAR_TIME(FALSE, world.time)))
+	return list(TRUE, automatic_level)
+
+/obj/machinery/power/apc/proc/queue_nightshift_refresh(on, level = 1, force_clear_manual_override = FALSE)
+	if(!accepts_automatic_nightshift(force_clear_manual_override))
+		return FALSE
+	queued_nightshift_lights = on
+	queued_nightshift_level = level
+	queued_nightshift_force_clear ||= force_clear_manual_override
+	if(nightshift_refresh_queued)
+		return FALSE
+	nightshift_refresh_queued = TRUE
+	GLOB.nightshift_apc_queue += src
+	return TRUE
+
+/obj/machinery/power/apc/proc/apply_queued_nightshift_refresh()
+	// Ignore stale APC queue entries once their queued state has already been consumed.
+	if(!nightshift_refresh_queued)
+		return 0
+	var/queued_on = queued_nightshift_lights
+	var/queued_level = queued_nightshift_level
+	var/force_clear_manual_override = queued_nightshift_force_clear
+	nightshift_refresh_queued = FALSE
+	queued_nightshift_lights = FALSE
+	queued_nightshift_level = 0
+	queued_nightshift_force_clear = FALSE
+	if(!accepts_automatic_nightshift(force_clear_manual_override))
+		return 0
+	if(force_clear_manual_override)
+		nightshift_manual_override = FALSE
+	return set_nightshift(queued_on, queued_level, FALSE)
+
+/obj/machinery/power/apc/proc/mark_light_cache_dirty()
+	light_cache_dirty = TRUE
+
+/obj/machinery/power/apc/proc/get_cached_area_lights()
+	ensure_light_cache()
+	return cached_area_lights ? cached_area_lights : list()
+
+/obj/machinery/power/apc/proc/ensure_light_cache()
+	if(!light_cache_dirty && !isnull(cached_area_lights))
+		return
+	cached_area_lights = list()
+	if(!area)
+		light_cache_dirty = FALSE
+		return
+	var/area/root_area = area.base_area ? area.base_area : area
+	for(var/obj/machinery/light/L in root_area)
+		if(QDELETED(L))
+			continue
+		cached_area_lights += L
+		CHECK_TICK
+	for(var/area/linked_area as anything in root_area.sub_areas)
+		for(var/obj/machinery/light/L in linked_area)
+			if(QDELETED(L))
+				continue
+			cached_area_lights += L
+			CHECK_TICK
+	light_cache_dirty = FALSE
 
 /obj/machinery/power/apc/proc/update_nightshift_auth_requirement()
 	nightshift_requires_auth = nightshift_toggle_requires_auth()

@@ -554,10 +554,7 @@ GLOBAL_LIST_INIT(strippable_corgi_items, create_strippable_list(list(
 
 		if(prob(1))
 			emote("me", EMOTE_VISIBLE, pick("подпрыгивает на месте.","гоняется за хвостиком!"))
-			spawn(0)
-				for(var/i in list(1,2,4,8,4,2,1,2,4,8,4,2,1,2,4,8,4,2))
-					setDir(i)
-					sleep(1)
+			INVOKE_ASYNC(src, PROC_REF(tail_chase_animation))
 
 /mob/living/simple_animal/pet/dog/corgi/Ian/narsie_act()
 	playsound(src, 'sound/magic/demon_dies.ogg', 75, TRUE)
@@ -716,10 +713,7 @@ GLOBAL_LIST_INIT(strippable_corgi_items, create_strippable_list(list(
 	if(!stat && CHECK_MULTIPLE_BITFIELDS(mobility_flags, MOBILITY_STAND|MOBILITY_MOVE) && !buckled)
 		if(prob(1))
 			emote("me", EMOTE_VISIBLE, pick("подпрыгивает на месте.","гоняется за хвостиком."))
-			spawn(0)
-				for(var/i in list(1,2,4,8,4,2,1,2,4,8,4,2,1,2,4,8,4,2))
-					setDir(i)
-					sleep(1)
+			INVOKE_ASYNC(src, PROC_REF(tail_chase_animation))
 
 /mob/living/simple_animal/pet/dog/pug/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))
@@ -727,7 +721,13 @@ GLOBAL_LIST_INIT(strippable_corgi_items, create_strippable_list(list(
 	if(!stat && CHECK_MULTIPLE_BITFIELDS(mobility_flags, MOBILITY_STAND|MOBILITY_MOVE) && !buckled)
 		if(prob(1))
 			emote("me", EMOTE_VISIBLE, pick("гоняется за хвостиком."))
-			spawn(0)
-				for(var/i in list(1,2,4,8,4,2,1,2,4,8,4,2,1,2,4,8,4,2))
-					setDir(i)
-					sleep(1)
+			INVOKE_ASYNC(src, PROC_REF(tail_chase_animation))
+
+/mob/living/simple_animal/pet/dog/proc/tail_chase_animation()
+	if(QDELETED(src))
+		return
+	for(var/i in list(1,2,4,8,4,2,1,2,4,8,4,2,1,2,4,8,4,2))
+		if(QDELETED(src))
+			return
+		setDir(i)
+		sleep(1)

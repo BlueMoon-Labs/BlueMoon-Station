@@ -64,8 +64,10 @@
 // Pipenet stuff; housekeeping
 
 /obj/machinery/atmospherics/components/nullifyNode(i)
+	var/datum/gas_mixture/air_ref = airs ? airs[i] : null
 	if(parents[i])
 		nullifyPipenet(parents[i])
+	prune_stale_pipeline_memberships(air_ref)
 	QDEL_NULL(airs[i])
 	return ..()
 
@@ -115,6 +117,32 @@
 		if(QDESTROYING(reference))
 			CRASH("nullifyPipenet() called on qdeleting [reference]")
 		qdel(reference)
+
+/obj/machinery/atmospherics/components/proc/prune_stale_pipeline_memberships(datum/gas_mixture/air_ref)
+	var/list/seen_pipelines = list()
+	for(var/list/source as anything in list(SSair.networks, SSair.currentrun))
+		if(!islist(source))
+			continue
+		for(var/thing as anything in source)
+			if(!istype(thing, /datum/pipeline))
+				continue
+			var/datum/pipeline/P = thing
+			if(P in seen_pipelines)
+				continue
+			seen_pipelines += P
+			if(QDELETED(P) || QDESTROYING(P))
+				continue
+			var/changed = FALSE
+			if(src in P.other_atmosmch)
+				P.other_atmosmch -= src
+				changed = TRUE
+			if(air_ref && (air_ref in P.other_airs))
+				P.other_airs -= air_ref
+				changed = TRUE
+			if(changed)
+				P.update = TRUE
+				if(!length(P.other_atmosmch) && !length(P.members))
+					qdel(P)
 
 /obj/machinery/atmospherics/components/returnPipenetAirs(datum/pipeline/reference)
 	var/list/returned_air = list()
@@ -180,7 +208,7 @@
 	for(var/i in 1 to device_type)
 		var/datum/pipeline/parent = parents[i]
 		if(!parent)
-			WARNING("Component is missing a pipenet! Rebuilding...")
+			investigate_log("[type] at [COORD(src)] is missing a pipenet, rebuilding", INVESTIGATE_ATMOS)
 			SSair.add_to_rebuild_queue(src)
 		else
 			parent.update = TRUE

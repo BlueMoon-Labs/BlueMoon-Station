@@ -3,18 +3,24 @@
 
 //Force-set resting variable, without needing to resist/etc.
 /mob/living/proc/set_resting(new_resting, silent = FALSE, updating = TRUE)
-	if(SSevents.holidays && SSevents.holidays[APRIL_FOOLS])
-		if(prob(10))
+	if(new_resting && HAS_TRAIT(src, TRAIT_MOBILITY_NOREST)) //forcibly block resting from all sources - BE CAREFUL WITH THIS TRAIT
+		return
+
+	if(new_resting && HAS_TRAIT(src, TRAIT_FLOORED))
+		return
+
+	if(new_resting == resting)
+		return
+
+	. = resting
+	resting = new_resting
+	if(!silent)
+		to_chat(src, "<span class='notice'>Вы [resting? "устало падаете" : "поднимаетесь"].</span>")
+	if(resting) // Легли
+		if(SSevents.holidays && SSevents.holidays[APRIL_FOOLS] && prob(10))
 			emote("fart")
-	if(new_resting != resting)
-		if(resting && HAS_TRAIT(src, TRAIT_MOBILITY_NOREST)) //forcibly block resting from all sources - BE CAREFUL WITH THIS TRAIT
-			return
-		resting = new_resting
-		if(!silent)
-			to_chat(src, "<span class='notice'>Вы [resting? "устало падаете" : "поднимаетесь"].</span>")
-		if(resting == 1)
-			SEND_SIGNAL(src, COMSIG_LIVING_RESTING)
-		update_resting(updating)
+		SEND_SIGNAL(src, COMSIG_LIVING_RESTING)
+	update_resting(updating)
 
 /mob/living/proc/update_resting(update_mobility = TRUE)
 	if(update_mobility)
@@ -169,7 +175,7 @@
 
 	//Handle citadel autoresist
 	if(CHECK_MOBILITY(src, MOBILITY_MOVE) && !(combat_flags & COMBAT_FLAG_INTENTIONALLY_RESTING) && canstand_involuntary && iscarbon(src) && client?.prefs?.autostand)//CIT CHANGE - adds autostanding as a preference
-		addtimer(CALLBACK(src, PROC_REF(resist_a_rest), TRUE), 0) //CIT CHANGE - ditto
+		addtimer(CALLBACK(src, PROC_REF(resist_a_rest), TRUE), 0, TIMER_DELETE_ME) //CIT CHANGE - ditto
 
 	// Movespeed mods based on arms/legs quantity
 	if(!get_leg_ignore())

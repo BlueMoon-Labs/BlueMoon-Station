@@ -153,6 +153,8 @@
   */
 	var/list/area/sub_areas //list of typepaths of the areas you wish to link here, will be replaced with a list of references on mapload.
 	var/area/base_area //The area we wish to use in place of src for certain actions such as APC area linking.
+	/// O(1) APC lookup for this area's power controller. Only authoritative on the base area.
+	var/obj/machinery/power/apc/power_apc
 
 	var/nightshift_public_area = NIGHTSHIFT_AREA_NONE		//considered a public area for nightshift
 
@@ -270,6 +272,9 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 					continue
 				LAZYADD(sub_areas, A)
 				A.base_area = src
+				if(A.power_apc && !power_apc)
+					power_apc = A.power_apc
+				A.power_apc = null
 	else if(LAZYLEN(sub_areas))
 		WARNING("sub-areas are currently not supported for non-unique areas such as [src].")
 		sub_areas = null
@@ -283,6 +288,15 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	if(!base_area) //we don't want to run it twice.
 		power_change()		// all machines set to current power level, also updates icon
 	update_beauty()
+
+/area/proc/is_station_member()
+	var/area/root_area = base_area ? base_area : src
+	if(root_area.type in GLOB.the_station_areas)
+		return TRUE
+	for(var/area/linked_area as anything in root_area.sub_areas)
+		if(linked_area.type in GLOB.the_station_areas)
+			return TRUE
+	return FALSE
 
 /area/proc/RunGeneration()
 	if(map_generator)
@@ -327,6 +341,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 /area/Destroy()
 	if(GLOB.areas_by_type[type] == src)
 		GLOB.areas_by_type[type] = null
+	power_apc = null
 	if(base_area)
 		LAZYREMOVE(base_area, src)
 		base_area = null

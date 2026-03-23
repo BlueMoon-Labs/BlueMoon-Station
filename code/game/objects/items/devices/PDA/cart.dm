@@ -52,6 +52,17 @@
 	var/mob/living/simple_animal/bot/active_bot
 	var/list/botlist = list()
 
+/obj/item/cartridge/Destroy()
+	active1 = null
+	active2 = null
+	active3 = null
+	host_pda = null
+	powmonitor = null
+	powermonitors = null
+	active_bot = null
+	botlist = null
+	return ..()
+
 /obj/item/cartridge/Initialize(mapload)
 	. = ..()
 	var/obj/item/pda/pda = loc
@@ -672,7 +683,7 @@
 	if(href_list["mule"]) //MULEbots are special snowflakes, and need different args due to how they work.
 		var/mob/living/simple_animal/bot/mulebot/mule = active_bot
 		if (istype(mule))
-			active_bot.bot_control(href_list["mule"], usr, TRUE)
+			active_bot.bot_control(href_list["mule"], usr, list(), TRUE)
 
 	if(!host_pda)
 		return

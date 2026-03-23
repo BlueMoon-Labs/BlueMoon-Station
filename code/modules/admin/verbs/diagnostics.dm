@@ -14,7 +14,7 @@
 	to_chat(usr, lines.Join("\n"))
 
 /client/proc/air_status(turf/target)
-	set category = "Debug"
+	set category = "Debug.9) Debug Verbs"
 	set name = "Display Air Status"
 
 	if(!isturf(target))
@@ -46,7 +46,9 @@
 				else
 					output += "&nbsp;&nbsp;&nbsp;&nbsp;[device]<br>"
 
-	usr << browse(output,"window=radioreport")
+	var/datum/browser/popup = new(usr, "radioreport", "Radio Report")
+	popup.set_content(output)
+	popup.open(FALSE)
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Show Radio Report") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/reload_admins()

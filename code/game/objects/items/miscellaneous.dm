@@ -75,7 +75,7 @@
 	var/static/list/ingredientboxes
 	if(!ingredientboxes)
 		ingredientboxes = list()
-		var/list/templist = typesof(/obj/item/storage/box/ingredients)
+		var/list/templist = subtypesof(/obj/item/storage/box/ingredients)
 		for(var/V in templist)
 			var/obj/item/storage/box/ingredients/A = V
 			ingredientboxes[initial(A.theme_name)] = A
@@ -183,7 +183,6 @@
 /obj/item/choice_beacon/pet/create_choice_atom(atom/choice, mob/owner)
 	var/obj/item/pet_carrier/carrier = new()
 	var/mob/living/simple_animal/new_choice = new choice(carrier)
-	carrier.add_occupant(new_choice)
 	new_choice.mob_size = MOB_SIZE_TINY //yeah we're not letting you use this roundstart pet to hurt people / knock them down
 	new_choice.pass_flags = PASSTABLE | PASSMOB //your pet is not a bullet/person shield
 	new_choice.density = FALSE
@@ -193,6 +192,7 @@
 	if(pet_name)
 		new_choice.name = pet_name
 		new_choice.unique_name = TRUE
+	carrier.add_occupant(new_choice)
 	return carrier
 
 /obj/item/choice_beacon/pet/spawn_option(atom/choice,mob/living/M)

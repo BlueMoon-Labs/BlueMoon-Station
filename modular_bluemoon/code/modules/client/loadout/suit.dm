@@ -136,3 +136,32 @@
 	path = /obj/item/clothing/suit/jacket/paratrench/black
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_COATS
 	cost = 2
+
+/datum/gear/suit/wizrobe/marisa/fake
+	name = "Witch robe"
+	path = /obj/item/clothing/suit/wizrobe/marisa/fake
+
+
+/datum/gear/suit/sergal_leather_cape
+	name = "Sergal leather cape"
+	path = /obj/item/clothing/suit/bm/sergal_leather_cape
+
+/datum/gear/suit/sergal_red_cape
+	name = "Sergal red cape"
+	path = /obj/item/clothing/suit/bm/sergal_red_cape
+
+/datum/gear/suit/sergal_red_armor
+	name = "Sergal red armor"
+	path = /obj/item/clothing/suit/bm/sergal_red_armor
+
+/datum/gear/suit/sergal_stylish_armor
+	name = "Sergal stylish armor"
+	path = /obj/item/clothing/suit/bm/sergal_stylish_armor
+
+/datum/gear/suit/sergal_knight_armor
+	name = "Sergal knight's armor"
+	path = /obj/item/clothing/suit/bm/sergal_knight_armor
+
+/datum/gear/suit/sergal_green_jacket
+	name = "Sergal green jacket"
+	path = /obj/item/clothing/suit/hooded/bm/sergal_green_jacket

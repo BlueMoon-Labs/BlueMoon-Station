@@ -43,8 +43,8 @@
 		if(HAS_TRAIT(user, TRAIT_INSANE_AIM))
 			BB.ricochets_max = max(BB.ricochets_max, 10) //bouncy!
 			BB.ricochet_chance = max(BB.ricochet_chance, 100) //it wont decay so we can leave it at 100 for always bouncing
-			BB.ricochet_auto_aim_range = max(BB.ricochet_auto_aim_range, 3)
-			BB.ricochet_auto_aim_angle = max(BB.ricochet_auto_aim_angle, 360) //it can turn full circle and shoot you in the face because our aim? is insane.
+			BB.ricochet_auto_aim_range = max(BB.ricochet_auto_aim_range, 5)
+			BB.ricochet_auto_aim_angle = max(BB.ricochet_auto_aim_angle, 330) //it can turn full circle and shoot you in the face because our aim? is insane.
 			BB.ricochet_decay_chance = 0
 			BB.ricochet_decay_damage = max(BB.ricochet_decay_damage, 0.1)
 			BB.ricochet_incidence_leeway = 0

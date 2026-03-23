@@ -7,7 +7,6 @@
 	name = "meat"
 	desc = "A slab of meat."
 	icon_state = "meat"
-	dried_type = /obj/item/reagent_containers/food/snacks/sosjerky/healthy
 	bitesize = 3
 	list_reagents = list(/datum/reagent/consumable/nutriment = 3, /datum/reagent/consumable/cooking_oil = 2) //Meat has fats that a food processor can process into cooking oil
 	cooked_type = /obj/item/reagent_containers/food/snacks/meat/steak/plain
@@ -16,6 +15,9 @@
 	filling_color = "#FF0000"
 	tastes = list("meat" = 1)
 	foodtype = MEAT | RAW
+
+/obj/item/reagent_containers/food/snacks/meat/slab/make_dryable()
+	AddElement(/datum/element/dryable, /obj/item/reagent_containers/food/snacks/sosjerky/healthy)
 
 /obj/item/reagent_containers/food/snacks/meat/rawcutlet/plain/OnCreatedFromProcessing(mob/living/user, obj/item/work_tool, list/chosen_option, obj/item/reagent_containers/food/snacks/meat/original_atom)
 	..()

@@ -1,30 +1,42 @@
 /obj/machinery/gibber
 	name = "gibber"
 	desc = "The name isn't descriptive enough?"
-	icon = 'icons/obj/kitchen.dmi'
+	icon = 'icons/obj/machines/kitchen.dmi'
 	icon_state = "grinder"
 	density = TRUE
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 2
 	active_power_usage = 500
 	circuit = /obj/item/circuitboard/machine/gibber
-
-	var/operating = FALSE //Is it on?
-	var/dirty = FALSE // Does it need cleaning?
-	var/gibtime = 40 // Time from starting until meat appears
-	var/meat_produced = 0
+	/// Is it on?
+	var/operating = FALSE
+	/// Does it need cleaning?
+	var/dirty = FALSE
+	/// Time from starting until meat appears
+	var/gibtime = 4 SECONDS
+	/// How much meat we meet when we meat the meat
+	var/meat_produced = 2
+	/// food_quality of meat produced
+	var/meat_quality = 35
+	/// If the gibber should give the 'Subject may not have abiotic items on' message
 	var/ignore_clothing = FALSE
-	var/meat_quality = 35 //food_quality of meat produced
+	/// The DNA info of the last gibbed mob
+	var/list/blood_dna_info = list()
 
 
 /obj/machinery/gibber/Initialize(mapload)
 	. = ..()
-	add_overlay("grjam")
+	RegisterSignal(src, COMSIG_COMPONENT_CLEAN_ACT, PROC_REF(on_cleaned))
+
+/obj/machinery/gibber/Destroy()
+	UnregisterSignal(src, COMSIG_COMPONENT_CLEAN_ACT)
+	return ..()
 
 /obj/machinery/gibber/RefreshParts()
-	gibtime = 40
-	meat_produced = 0
-	meat_quality = 35 // unupgraded this means quality is 50, and max upgraded it is 95
+	gibtime = initial(gibtime)
+	meat_produced = initial(meat_produced)
+	meat_quality = initial(meat_quality) // unupgraded this means quality is 50, and max upgraded it is 95
+	ignore_clothing = initial(ignore_clothing)
 	for(var/obj/item/stock_parts/matter_bin/B in component_parts)
 		meat_produced += B.rating
 		meat_quality += B.rating * 15
@@ -43,16 +55,26 @@
 
 /obj/machinery/gibber/update_overlays()
 	. = ..()
-	if (dirty)
-		. += "grbloody"
-	if(machine_stat & (NOPOWER|BROKEN))
+	if(dirty)
+		var/mutable_appearance/blood_overlay = mutable_appearance(icon, "grinder_bloody", appearance_flags = RESET_COLOR|KEEP_APART)
+		if(blood_dna_info && blood_dna_info["color"])
+			blood_overlay.color = blood_dna_info["color"]
+		else
+			blood_overlay.color = BLOOD_COLOR_HUMAN
+		. += blood_overlay
+	if(machine_stat & (NOPOWER|BROKEN) || panel_open)
 		return
-	if (!occupant)
-		. += "grjam"
-	else if (operating)
-		. += "gruse"
-	else
-		. += "gridle"
+	if(operating)
+		. += "grinder_active"
+		. += emissive_appearance(icon, "grinder_active", src, alpha = src.alpha)
+		. += "grinder_jaws_active"
+		return
+	if(!occupant)
+		. += "grinder_empty"
+		. += emissive_appearance(icon, "grinder_empty", src, alpha = src.alpha)
+		return
+	. += "grinder_loaded"
+	. += emissive_appearance(icon, "grinder_loaded", src, alpha = src.alpha)
 
 /obj/machinery/gibber/attack_paw(mob/user)
 	return attack_hand(user)
@@ -147,8 +169,7 @@
 	operating = TRUE
 	update_icon()
 
-	var/offset = prob(50) ? -2 : 2
-	animate(src, pixel_x = pixel_x + offset, time = 0.2, loop = 200) //start shaking
+	Shake(2, 2, gibtime)
 	var/mob/living/mob_occupant = occupant
 	var/sourcename = mob_occupant.real_name
 	var/sourcejob
@@ -169,6 +190,7 @@
 		if(gibee.dna && gibee.dna.species)
 			typeofmeat = gibee.dna.species.meat
 			typeofskin = gibee.dna.species.skinned_type
+		blood_dna_info = gibee.get_blood_dna_list()
 
 	else if(iscarbon(occupant))
 		var/mob/living/carbon/C = occupant
@@ -178,6 +200,7 @@
 			typeofskin = /obj/item/stack/sheet/animalhide/monkey
 		else if(isalien(C))
 			typeofskin = /obj/item/stack/sheet/animalhide/xeno
+		blood_dna_info = C.get_blood_dna_list()
 
 	for (var/i=1 to meat_produced)
 		var/obj/item/reagent_containers/food/snacks/meat/slab/newmeat = new typeofmeat
@@ -194,6 +217,7 @@
 		skin = new typeofskin
 
 	log_combat(user, occupant, "gibbed")
+	mob_occupant.pain_emote(realagony = TRUE)
 	mob_occupant.death(1)
 	mob_occupant.ghostize()
 	qdel(src.occupant)
@@ -201,7 +225,8 @@
 
 /obj/machinery/gibber/proc/make_meat(obj/item/stack/sheet/animalhide/skin, list/obj/item/reagent_containers/food/snacks/meat/slab/allmeat, meat_produced, gibtype, list/datum/disease/diseases)
 	playsound(src.loc, 'sound/effects/splat.ogg', 50, 1)
-	operating = FALSE
+	if(!dirty && prob(50))
+		dirty = TRUE
 	var/turf/T = get_turf(src)
 	var/list/turf/nearby_turfs = RANGE_TURFS(3,T) - T
 	if(skin)
@@ -216,7 +241,6 @@
 			if (!gibturf.density && (src in view(gibturf)))
 				new gibtype(gibturf,i,diseases)
 
-	pixel_x = initial(pixel_x) //return to its spot after shaking
 	operating = FALSE
 	update_icon()
 
@@ -232,3 +256,12 @@
 		if(M.loc == input)
 			M.forceMove(src)
 			M.gib()
+
+/obj/machinery/gibber/proc/on_cleaned(obj/source_component, obj/source)
+	SIGNAL_HANDLER
+
+	. = NONE
+
+	dirty = FALSE
+	update_appearance(UPDATE_OVERLAYS)
+	. |= COMPONENT_CLEANED //|COMPONENT_CLEANED_GAIN_XP

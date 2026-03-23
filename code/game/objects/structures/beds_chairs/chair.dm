@@ -15,6 +15,10 @@
 	var/buildstackamount = 1
 	var/item_chair = /obj/item/chair // if null it can't be picked up
 	var/bolts = TRUE
+	var/lone_standing = TRUE // FALSE for sofa and pews. Used in handle_layer()
+	var/behind = null // icon_state with buckled mob
+	var/mutable_appearance/behind_overlay
+	var/change_layer = TRUE // Change layer on NORTH rotation
 
 /obj/structure/chair/examine(mob/user)
 	. = ..()
@@ -27,6 +31,19 @@
 	. = ..()
 	if(!anchored)	//why would you put these on the shuttle?
 		addtimer(CALLBACK(src, PROC_REF(RemoveFromLatejoin)), 0)
+	if(behind)
+		behind_overlay = mutable_appearance(icon, behind)
+		behind_overlay.layer = ABOVE_MOB_LAYER
+
+/obj/structure/chair/proc/update_behind_overlay()
+	if(has_buckled_mobs())
+		add_overlay(behind_overlay)
+	else
+		cut_overlay(behind_overlay)
+
+/obj/structure/chair/Destroy()
+	QDEL_NULL(behind_overlay)
+	return ..()
 
 /obj/structure/chair/ComponentInitialize()
 	. = ..()
@@ -133,11 +150,29 @@
 			var/mob/living/buckled_mob = m
 			buckled_mob.setDir(direction)
 
-/obj/structure/chair/proc/handle_layer()
-	if(has_buckled_mobs() && dir == NORTH)
+/obj/structure/chair/proc/handle_layer(activate_adjacent = TRUE)
+	if(!change_layer)
+		return
+	if(dir != NORTH)
+		layer = OBJ_LAYER
+
+	else if((has_buckled_mobs()))
+		layer = ABOVE_MOB_LAYER
+	else if(check_adjacent())
 		layer = ABOVE_MOB_LAYER
 	else
 		layer = OBJ_LAYER
+
+	if(activate_adjacent && !lone_standing)
+		for(var/obj/structure/chair/chair in orange("3x1", src))
+			if(chair.lone_standing || chair.dir != NORTH)
+				continue
+			chair.handle_layer(FALSE)
+
+/obj/structure/chair/proc/check_adjacent()
+	for(var/obj/structure/chair/chair in orange("3x1", src))
+		if(!lone_standing && chair.dir == NORTH && chair.has_buckled_mobs())
+			return TRUE
 
 /obj/structure/chair/post_buckle_mob(mob/living/M)
 	. = ..()
@@ -148,11 +183,13 @@
 		playsound(src, 'modular_bluemoon/sound/effects/chair_break.ogg', 70, TRUE)
 		unbuckle_mob(M, TRUE)
 		deconstruct(FALSE)
+	update_behind_overlay()
 	// BLUEMOON ADDITION END
 
 /obj/structure/chair/post_unbuckle_mob(mob/living/M)
 	. = ..()
 	handle_layer()
+	update_behind_overlay()
 
 /obj/structure/chair/setDir(newdir)
 	..()
@@ -279,9 +316,13 @@
 
 /obj/structure/chair/office/light
 	icon_state = "officechair_white"
+	behind = "officechair_white_sit"
+	change_layer = FALSE
 
 /obj/structure/chair/office/dark
 	icon_state = "officechair_dark"
+	behind = "officechair_dark_sit"
+	change_layer = FALSE
 
 //Stool
 
@@ -289,6 +330,8 @@
 	name = "stool"
 	desc = "Примостите задницу."
 	icon_state = "stool"
+	behind = "stool_sit"
+	change_layer = FALSE
 	buildstackamount = 1
 	item_chair = /obj/item/chair/stool
 
@@ -325,6 +368,8 @@
 	name = "bar stool"
 	desc = "На нём видны некие неприятные пятна..."
 	icon_state = "bar"
+	behind = "bar_sit"
+	change_layer = FALSE
 	item_chair = /obj/item/chair/stool/bar
 
 /obj/structure/chair/stool/bar/directional/north //Pixel offsets get overwritten on New()
@@ -478,6 +523,7 @@
 	item_chair = /obj/item/chair/stool/alien
 	buildstacktype = /obj/item/stack/sheet/mineral/abductor
 	buildstackamount = 1
+	behind = null
 
 /obj/structure/chair/stool/bar/alien
 	name = "alien bar stool"
@@ -487,6 +533,7 @@
 	item_chair = /obj/item/chair/stool/bar/alien
 	buildstacktype = /obj/item/stack/sheet/mineral/abductor
 	buildstackamount = 1
+	behind = null
 
 /obj/item/chair/stool/alien
 	name = "stool"
@@ -514,6 +561,7 @@
 	item_chair = /obj/item/chair/stool/bar/brass
 	buildstacktype = /obj/item/stack/tile/brass
 	buildstackamount = 1
+	behind = null
 
 /obj/structure/chair/stool/bar/bronze
 	name = "bronze bar stool"
@@ -522,6 +570,7 @@
 	item_chair = /obj/item/chair/stool/bar/bronze
 	buildstacktype = /obj/item/stack/sheet/bronze
 	buildstackamount = 1
+	behind = null
 
 /obj/structure/chair/stool/brass
 	name = "brass stool"
@@ -530,6 +579,7 @@
 	item_chair = /obj/item/chair/stool/brass
 	buildstacktype = /obj/item/stack/tile/brass
 	buildstackamount = 1
+	behind = null
 
 /obj/structure/chair/stool/bronze
 	name = "bronze stool"
@@ -538,6 +588,7 @@
 	item_chair = /obj/item/chair/stool/bronze
 	buildstacktype = /obj/item/stack/sheet/bronze
 	buildstackamount = 1
+	behind = null
 
 /obj/item/chair/stool/brass
 	name = "brass stool"

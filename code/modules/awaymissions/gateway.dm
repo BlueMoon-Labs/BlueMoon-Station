@@ -364,9 +364,9 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	. = ..()
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		G.portal_visuals.display_to(user)
 		ui = new(user, src, "Gateway", name)
 		ui.open()
+		G.portal_visuals.display_to(user, ui.window)
 
 /obj/machinery/computer/gateway_control/ui_data(mob/user)
 	. = ..()
@@ -401,7 +401,8 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 
 /obj/machinery/computer/gateway_control/ui_close(mob/user)
 	. = ..()
-	user.client.clear_map(user)
+	if(G?.portal_visuals)
+		G.portal_visuals.hide_from(user)
 
 /obj/machinery/computer/gateway_control/proc/try_to_linkup()
 	G = locate(/obj/machinery/gateway) in view(7,get_turf(src))
@@ -431,22 +432,17 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	cam_background.plane = HIGHEST_EVER_PLANE
 	cam_background.blend_mode = BLEND_OVERLAY
 
-/atom/movable/screen/map_view/gateway_port/proc/generate_view(map_key)
-	// Map keys have to start and end with an A-Z character,
-	// and definitely NOT with a square bracket or even a number.
-	// I wasted 6 hours on this. :agony:
-	// -- Stylemistake
-	assigned_map = map_key
-	set_position(1, 1)
+/atom/movable/screen/map_view/gateway_port/generate_view(map_key)
+	. = ..(map_key)
 	cam_background.assigned_map = assigned_map
-	cam_background.fill_rect(1, 1, 3, 3)
 
 /atom/movable/screen/map_view/gateway_port/Destroy()
 	QDEL_NULL(cam_background)
 	return ..()
 
-/atom/movable/screen/map_view/gateway_port/proc/display_to(mob/show_to)
-	show_to.client.register_map_obj(cam_background)
+/atom/movable/screen/map_view/gateway_port/display_to_client(client/show_to)
+	. = ..()
+	show_to?.register_map_obj(cam_background)
 
 /atom/movable/screen/map_view/gateway_port/proc/setup_visuals(datum/gateway_destination/D)
 	our_destination = D
@@ -463,7 +459,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	// You could setup gateways to draw onto "lower then everything" z layers, but generating a whole stack of plane masters
 	// Just for this one effect is kinda silly. Maybe next time
 	// Rather then that, let's just render a little preview port to the console, because for reasons that's trivial
-	vis_contents = null
+	vis_contents.Cut()
 
 	var/turf/center_turf = our_destination?.get_target_turf()
 	if(!center_turf)
@@ -471,11 +467,21 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		cam_background.icon_state = "scanline2"
 		cam_background.color = null
 		cam_background.alpha = 255
+		cam_background.fill_rect(1, 1, 7, 7)
 		return
 
-	cam_background.add_filter("portal_blur", 1, list("type" = "blur", "size" = 0.5))
+	var/preview_radius = 5
+	var/list/preview_turfs = block(
+		locate(max(1, center_turf.x - preview_radius), max(1, center_turf.y - preview_radius), center_turf.z),
+		locate(min(world.maxx, center_turf.x + preview_radius), min(world.maxy, center_turf.y + preview_radius), center_turf.z)
+	)
+	var/list/bbox = get_bbox_of_atoms(preview_turfs)
+	var/size_x = bbox[3] - bbox[1] + 1
+	var/size_y = bbox[4] - bbox[2] + 1
 
-	vis_contents += TURF_NEIGHBORS(center_turf)
+	vis_contents = preview_turfs
+	cam_background.add_filter("portal_blur", 1, list("type" = "blur", "size" = 0.5))
 	cam_background.icon_state = "scanline4"
 	cam_background.color = "#adadff"
 	cam_background.alpha = 128
+	cam_background.fill_rect(1, 1, size_x, size_y)

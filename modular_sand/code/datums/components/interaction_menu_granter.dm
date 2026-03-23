@@ -605,12 +605,15 @@
 			var/datum/interaction/interaction = SSinteractions.interactions[params["interaction"]]
 			if(!interaction)
 				return FALSE
-			var/datum/preferences/prefs = parent_mob.client.prefs
+			var/client/C = parent_mob?.client
+			if(!C?.prefs)
+				return FALSE
+			var/datum/preferences/prefs = C.prefs
 			if(interaction.type in prefs.favorite_interactions)
 				LAZYREMOVE(prefs.favorite_interactions, interaction.type)
 			else
 				LAZYADD(prefs.favorite_interactions, interaction.type)
-			prefs.save_preferences()
+			prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 			return TRUE
 		if("genital")
 			var/mob/living/carbon/self = parent_mob

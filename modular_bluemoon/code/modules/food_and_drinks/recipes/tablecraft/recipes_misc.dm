@@ -7,5 +7,5 @@
 		/datum/reagent/consumable/sodiumchloride = 5,
 		/obj/item/reagent_containers/food/condiment = 1,
 	)
-	result = /obj/item/reagent_containers/food/red_bay
+	result = /obj/item/reagent_containers/food/condiment/red_bay
 	category = CAT_MISCFOOD

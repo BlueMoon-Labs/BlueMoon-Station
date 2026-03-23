@@ -104,6 +104,7 @@
 	shuffle_inplace(cards)
 	playsound(src, 'sound/items/cardshuffle.ogg', 50, TRUE)
 	user.balloon_alert_to_viewers("shuffles the deck")
+	user.visible_message("[user] shuffles the [src].")
 
 /obj/item/toy/cards/deck/pre_attack(atom/A, mob/living/user, params, attackchain_flags, damage_multiplier)
 	. = ..()

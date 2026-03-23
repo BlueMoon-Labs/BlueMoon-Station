@@ -17,17 +17,19 @@
 	req_admin_notify = 1
 	custom_spawn_text = "представитель NanoTrasen - должностное лицо, назначенное напрямую Центральным Командованием. Представитель контролирует соблюдение рабочих стандартов и космического закона во всех отделах на станции, консультирует и взаимодействует с главами отделов, а также следит за работой юристов (агентов внутренних дел), отдавая им напрямую приказы и исполняя их прошения. Авторизация увольнений глав, обеспечение связи с ЦК и организация судов аналогично входят в перечень его работ. Представитель ни в коем случае не должен выполнять работу СБ."
 	alt_titles = list(
-		"Syndicate Representative",
+		"Syndicate Advisor", //Синди выше, для удобства
+		"Syndicate Representative", //Синди выше, для удобства
+		"Syndicate Whore", //Синди выше, для удобства
+		"Commissar",
 		"Judge",
 		"Magistrate",
-		"Prosecutor",
+		"NanoTrasen Advisor",
 		"NanoTrasen Consultant",
-		"Syndicate Advisor",
+		"NanoTrasen Diplomat",
+		"NanoTrasen Whore",
 		"Netorare",
-		"Commissar",
 		"Political Officer",
-		"NanoTrasen Slut",
-		"Syndicate Slut",
+		"Revizor"
 		)
 
 	outfit = /datum/outfit/job/ntr

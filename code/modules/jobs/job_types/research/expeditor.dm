@@ -20,11 +20,21 @@
 	minimal_access = list(ACCESS_RESEARCH, ACCESS_MINERAL_STOREROOM, ACCESS_TECH_STORAGE, ACCESS_GATEWAY, ACCESS_EVA)
 	paycheck = PAYCHECK_HARD
 	paycheck_department = ACCOUNT_SCI
-	alt_titles = list("Space Expeditor", "Gateway Explorer", "Space Explorer", "Sexplorer", "Sexpeditor", "Exploration Field Medic", "Exploration Engineer", "Exploration Mercenary", "Exploration Operative")
 	display_order = JOB_DISPLAY_ORDER_EXPEDITOR
 	departments = DEPARTMENT_BITFLAG_SCIENCE
 	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/prosopagnosia, /datum/quirk/insanity)
 	threat = 2
+	alt_titles = list(
+		"Space Explorer",
+		"Space Expeditor",
+		"Sexplorer",
+		"Sexpeditor",
+		"Gateway Expeditor",
+		"Exploration Operative",
+		"Exploration Mercenary",
+		"Exploration Field Medic",
+		"Exploration Engineer"
+		)
 
 /datum/outfit/job/expeditor
 	name = "Expeditor"

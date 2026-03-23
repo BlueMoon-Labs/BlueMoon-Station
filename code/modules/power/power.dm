@@ -396,7 +396,24 @@
 	return null
 
 /area/proc/get_apc()
-	var/target = base_area ? base_area : src
-	for(var/obj/machinery/power/apc/APC in GLOB.apcs_list)
-		if(APC.area == target)
+	var/area/target = base_area ? base_area : src
+	var/list/linked_areas = target.sub_areas
+	var/obj/machinery/power/apc/APC = target.power_apc
+	if(APC && !QDELETED(APC))
+		var/area/apc_area = APC.area
+		if(apc_area == target || linked_areas?.Find(apc_area))
+			if(apc_area != target)
+				APC.area = target
+				APC.update_nightshift_auth_requirement()
+			return APC
+	target.power_apc = null
+	for(APC in GLOB.apcs_list)
+		if(QDELETED(APC))
+			continue
+		var/area/apc_area = APC.area
+		if(apc_area == target || linked_areas?.Find(apc_area))
+			if(apc_area != target)
+				APC.area = target
+				APC.update_nightshift_auth_requirement()
+			target.power_apc = APC
 			return APC

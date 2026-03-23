@@ -166,18 +166,6 @@ GLOBAL_LIST_EMPTY(bloody_footprints_cache)
 #define BLOOD_STATE_NOT_BLOODY		"no blood whatsoever"
 #define BLOOD_AMOUNT_PER_DECAL		20
 
-//Blood Decal Colors
-#define BLOOD_COLOR_HUMAN			"#dc0000"
-#define BLOOD_COLOR_XENO			"#9cff75"
-#define BLOOD_COLOR_OIL				"#301d02"
-#define BLOOD_COLOR_SYNTHETIC		"#3f48aa"
-#define BLOOD_COLOR_SLIME			"#00ff90"
-#define BLOOD_COLOR_LIZARD			"#db004D"
-#define BLOOD_COLOR_UNIVERSAL		"#db3300"
-#define BLOOD_COLOR_BUG				"#ffc933"
-#define BLOOD_COLOR_PLANT			"#3d610e"
-
-
 //suit sensors: sensor_mode defines
 
 #define SENSOR_OFF 0
@@ -553,6 +541,7 @@ GLOBAL_LIST_INIT(payed_ert, list(
 
 //Filters
 #define AMBIENT_OCCLUSION(_size, _color) list("type"="drop_shadow","x"=0,"y"=-2,"size"=_size,"color"=_color)
+#define AMBIENT_OCCLUSION_SCALED(_base_size, _color, _blur_level) list("type"="drop_shadow","x"=0,"y"=-2,"size"=(_base_size) + (_blur_level) * 0.5,"color"=_color)
 #define EYE_BLUR(size) list("type"="blur", "size"=size)
 #define GRAVITY_MOTION_BLUR list("type"="motion_blur","x"=0,"y"=0)
 

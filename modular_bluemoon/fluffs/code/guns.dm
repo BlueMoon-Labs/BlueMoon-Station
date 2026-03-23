@@ -582,15 +582,15 @@
 	can_suppress = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/pf940_shoot.ogg'
 
-/obj/item/modkit/ks23_kit
-	name = "KS-23 Shotgun Kit"
-	desc = "A modkit for making a Shotgun into a KS-23."
-	product = /obj/item/gun/ballistic/shotgun/riot/ks_23
+/obj/item/modkit/ks22_kit
+	name = "KS-22 Shotgun Kit"
+	desc = "A modkit for making a Shotgun into a KS-22."
+	product = /obj/item/gun/ballistic/shotgun/riot/ks_22
 	fromitem = list(/obj/item/gun/ballistic/shotgun, /obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/shotgun/riot/syndicate)
 
-/obj/item/gun/ballistic/shotgun/riot/ks_23
-	name = "\improper KS-23"
-	desc = "Карабин Специальный-23М - ружьё с нарезным стволом. Многофункциональное полицейское оружие, предназначенное для пресечения массовых беспорядков, избирательного силового, психического и химического воздействия на правонарушителей."
+/obj/item/gun/ballistic/shotgun/riot/ks_22
+	name = "\improper KS-22"
+	desc = "Карабин Специальный-22М - ружьё с нарезным стволом. Многофункциональное полицейское оружие, предназначенное для пресечения массовых беспорядков, избирательного силового, психического и химического воздействия на правонарушителей."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
@@ -599,7 +599,7 @@
 	can_suppress = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/shoot.ogg'
 
-/obj/item/gun/ballistic/shotgun/riot/ks_23/update_icon_state()
+/obj/item/gun/ballistic/shotgun/riot/ks_22/update_icon_state()
 	. = ..()
 	icon_state = "KS-23M[chambered ? "" : "-e"]"
 
@@ -654,10 +654,10 @@
 /obj/item/modkit/rs14_kit
 	name = "RS14 Kit"
 	desc = "A modkit for making an Rsha12 into a RS14."
-	product = /obj/item/gun/ballistic/shotgun/rsh12/rs14
-	fromitem = list(/obj/item/gun/ballistic/shotgun/rsh12)
+	product = /obj/item/gun/ballistic/shotgun/automatic/rsh12/rs14
+	fromitem = list(/obj/item/gun/ballistic/shotgun/automatic/rsh12)
 
-/obj/item/gun/ballistic/shotgun/rsh12/rs14
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/rs14
 	name = "RS14"
 	desc = "Shotgun revolver. It was formerly a hunting weapon, but has since been adopted by the Rohai armies because of its ease of use, effectiveness and cheapness. This model uses 12 gauge."
 	item_state = "rs14"
@@ -981,3 +981,17 @@
 	fromitem = list(/obj/item/gun/ballistic/automatic/wt550)
 
 ///////////////////////////////////////////////
+
+/obj/item/modkit/nebular_kit
+	name = "Nebular Gun Kit"
+	desc = "A modkit for making a Enforcer Gun into a Nebular-9."
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/nebular
+	name = "\improper Nebular-9"
+	desc = "Трофей. 45 калибр. Унифицированное оружие самозащиты, выдаваемое каждому без исключения жителю-Касари флота-государства Небулы по окончании ими первой стадии жизни. Крайне редок, в сравнении с иным огнестрельным оружием галактики - штучный товар, использующий замысловатую систему заряжания и некоторые технически трудно реализуемые решения, крайне мешающие реверс-инженерингу и стороннему производству. Благодаря нему каждый житель Небулы может дать отпор неприятелю извне, коих у них полно. Не только эффективно, но и со стилем."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "Nebular-9"
+	can_suppress = TRUE
+	unique_reskin = null

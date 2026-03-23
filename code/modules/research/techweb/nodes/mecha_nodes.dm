@@ -70,8 +70,8 @@
 
 /datum/techweb_node/mech_beacons
 	id = "mech_beacons"
-	display_name = "EXOSUIT: Medical-Spec Gygax"
-	description = "Medical-Spec Gygax designs"
+	display_name = "EXOSUIT: Mech Beacons"
+	description = "Mech Beacons designs"
 	prereq_ids = list("mech_gygax", "mecha_odysseus", "mech_durand", "adv_mecha")
 	design_ids = list("combat_mech_beacon", "medical_mech_beacon", "engineer_mech_beacon", "cargo_mech_beacon")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3000)

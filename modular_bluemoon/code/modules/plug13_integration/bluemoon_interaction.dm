@@ -29,14 +29,14 @@
 /datum/interaction/post_interaction(mob/living/user, mob/living/target)
 	. = ..()
 	if (p13user_emote && p13user_strength && p13user_duration)
-		user.client?.plug13.send_emote(
+		user.client?.plug13?.send_emote(
 			p13user_emote,
 			clamp(p13user_strength + get_lust_modifier(user), 10, 100),
 			p13user_duration
 		)
 
 	if (p13target_emote && p13target_strength && p13target_duration)
-		target.client?.plug13.send_emote(
+		target.client?.plug13?.send_emote(
 			p13target_emote,
 			min(p13target_strength + get_lust_modifier(target), 10, 100),
 			p13target_duration

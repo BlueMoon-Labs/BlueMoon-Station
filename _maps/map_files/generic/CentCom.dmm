@@ -9849,7 +9849,7 @@
 /obj/item/clothing/suit/space/officer,
 /obj/item/clothing/gloves/fingerless,
 /obj/item/clothing/gloves/color/black,
-/obj/item/clothing/glasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
 	},
@@ -13504,7 +13504,6 @@
 	req_access_txt = "15";
 	ricochet_chance_mod = 0;
 	ricochet_damage_mod = 0;
-	power_used_per_shot = 0;
 	pass_flags_self = null
 	},
 /turf/open/floor/plasteel/dark,

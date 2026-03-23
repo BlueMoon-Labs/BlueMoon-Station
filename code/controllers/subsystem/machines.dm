@@ -102,6 +102,12 @@ SUBSYSTEM_DEF(machines)
 /datum/controller/subsystem/machines/proc/get_all_machines()
 	return all_machines.Copy()
 
+/datum/controller/subsystem/machines/proc/get_machine_count()
+	return length(all_machines)
+
+/datum/controller/subsystem/machines/proc/get_machine_type_count()
+	return length(machines_by_type)
+
 /datum/controller/subsystem/machines/stat_entry(msg)
 	msg = "M:[length(all_machines)]|MT:[length(machines_by_type)]|PM:[length(processing)]|PN:[length(powernets)]"
 	return ..()

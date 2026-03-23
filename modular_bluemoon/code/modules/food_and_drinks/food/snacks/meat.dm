@@ -29,7 +29,7 @@
 	foodtype = MEAT | GRAIN
 	w_class = WEIGHT_CLASS_SMALL
 
-/obj/item/reagent_containers/food/red_bay // Это тоже под заказ с ЦК
+/obj/item/reagent_containers/food/condiment/red_bay // Это тоже под заказ с ЦК
 	name = "\improper Red Bay seasoning"
 	icon = 'modular_bluemoon/icons/obj/food/containers.dmi'
 	desc = "Mars' favourite seasoning."

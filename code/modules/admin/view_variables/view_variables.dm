@@ -2,7 +2,7 @@
 #define ICON_STATE_NULL 2 /// this dmi has null-named icon_state, allowing it to show a sprite on vv editor.
 
 /client/proc/debug_variables(datum/thing in world)
-	set category = "Debug"
+	set category = "Debug.4) VV"
 	set name = "View Variables"
 	//set src in world
 	var/static/cookieoffset = rand(1, 9999) //to force cookies to reset after the round.
@@ -127,11 +127,13 @@
 				variable_html += thing.vv_get_var(varname)
 
 	var/html = {"
+<!DOCTYPE html>
 <html>
 	<head>
 		<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
 		<title>[title]</title>
 		<link rel="stylesheet" type="text/css" href="[SSassets.transport.get_asset_url("view_variables.css")]">
+		[usr?.client?.legacy_zoom_head("view_variables") || ""]
 	</head>
 	<body onload='selectTextField()' onkeydown='return handle_keydown()' onkeyup='handle_keyup()'>
 		<script type="text/javascript">

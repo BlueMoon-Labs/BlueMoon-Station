@@ -467,8 +467,9 @@
 	replace_floors = list(/turf/open/floor/mineral/abductor = 1)
 	replace_objs = list(
 		/obj/structure/chair = list(/obj/structure/chair/greyscale = 9, /obj/structure/bed/abductor = 1),
-		/obj/machinery/door/airlock = list(/obj/machinery/door/airlock/abductor = 2),
-		/obj/structure/table = list(/obj/structure/table/greyscale = 9, /obj/structure/table/abductor = 1),
+		/obj/structure/bed = list(/obj/structure/bed/abductor = 1),
+		/obj/machinery/door/airlock = list(/obj/machinery/door/airlock/abductor = 1),
+		/obj/structure/table = list(/obj/structure/table/abductor = 1),
 		/obj/structure/toilet = list(/obj/structure/toilet/greyscale = 1),
 	)
 

@@ -36,7 +36,7 @@
 	desc = "A technology disk holding a terabyte of highly confidential abductor technology. \
 			Simply insert into research console of choice and import the files from the disk. Because of its foreign nature, it may require multiple uploads to work properly."
 	item = /obj/item/disk/tech_disk/abductor
-	cost = 12
+	cost = 10
 	restricted_roles = list("Research Director", "Scientist", "Roboticist")
 
 /datum/uplink_item/device_tools/brainwash_disk
@@ -201,7 +201,7 @@
 	name = "Modified Syringe Gun"
 	desc = "A syringe gun that fires DNA injectors instead of normal syringes."
 	item = /obj/item/gun/syringe/dna
-	cost = 14
+	cost = 12
 	restricted_roles = list("Geneticist", "Chief Medical Officer")
 
 /datum/uplink_item/role_restricted/chemical_gun
@@ -225,7 +225,7 @@
 	name = "Reverse Revolver"
 	desc = "A revolver that always fires at its user. \"Accidentally\" drop your weapon, then watch as the greedy corporate pigs blow their own brains all over the wall. \
 	The revolver itself is actually real. Only clumsy people, and clowns, can fire it normally. Comes in a box of hugs. Honk."
-	cost = 14
+	cost = 5
 	item = /obj/item/storage/box/hug/reverse_revolver
 	restricted_roles = list("Clown")
 
@@ -239,7 +239,7 @@
 /datum/uplink_item/role_restricted/emitter_cannon
 	name = "Emitter Cannon"
 	desc = "A small emitter fitted into a gun case, do to size constraints and safety it can only shoot about ten times when fully charged."
-	cost = 13 //Low ammo, and deals same as 10mm but emp-able // BLIEMOOD EDIT this rofl about same as 10 mm was fixed, robust weapon
+	cost = 10 //Low ammo, and deals same as 10mm but emp-able // BLIEMOOD EDIT this rofl about same as 10 mm was fixed, robust weapon
 	item = /obj/item/gun/energy/emitter
 	restricted_roles = list("Chief Engineer", "Station Engineer", "Atmospheric Technician")
 
@@ -284,14 +284,14 @@
 	name = "KS-23 shotgun"
 	desc = "War crimes are fun!"
 	item = /obj/item/gun/ballistic/shotgun/KS23/Inquisitor
-	cost = 7
+	cost = 5
 	restricted_roles = list("Chaplain")
 
 /datum/uplink_item/role_restricted/slug23
 	name = "KS-23 slug box"
 	desc = "8 lead slugs."
 	item = /obj/item/ammo_box/slug23
-	cost = 2
+	cost = 1
 	restricted_roles = list("Chaplain")
 
 /datum/uplink_item/role_restricted/slug_rubber23

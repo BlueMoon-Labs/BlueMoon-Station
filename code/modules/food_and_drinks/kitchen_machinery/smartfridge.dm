@@ -257,7 +257,10 @@
 	active_power_usage = 200
 	visible_contents = FALSE
 	base_build_path = /obj/machinery/smartfridge/drying_rack //should really be seeing this without admin fuckery.
+	/// Is the rack currently drying stuff
 	var/drying = FALSE
+	/// The reference to the last user's mind. Needed for the chef made trait to be properly applied correctly to dried food.
+	var/datum/weakref/current_user
 
 /obj/machinery/smartfridge/drying_rack/Initialize(mapload)
 	. = ..()
@@ -298,16 +301,15 @@
 	if(.)
 		update_icon() // This is to handle a case where the last item is taken out manually instead of through drying pop-out
 		return
+	var/mob/user = usr
 	switch(action)
 		if("Dry")
-			toggle_drying(FALSE)
+			toggle_drying(FALSE, user)
 			return TRUE
 	return FALSE
 
 /obj/machinery/smartfridge/drying_rack/powered()
-	if(!anchored)
-		return FALSE
-	return ..()
+	return !anchored ? FALSE : ..()
 
 /obj/machinery/smartfridge/drying_rack/power_change()
 	. = ..()
@@ -326,46 +328,30 @@
 		. += "drying_rack_filled"
 
 /obj/machinery/smartfridge/drying_rack/process()
-	..()
-	if(drying)
-		if(rack_dry())//no need to update unless something got dried
-			SStgui.update_uis(src)
-			update_icon()
+	if(!drying)
+		return
+
+	for(var/obj/item/item_iterator in src)
+		if(!accept_check(item_iterator))
+			continue
+		SEND_SIGNAL(item_iterator, COMSIG_ITEM_DRIED, current_user)
+
+	SStgui.update_uis(src)
+	update_appearance()
+	use_power(active_power_usage)
 
 /obj/machinery/smartfridge/drying_rack/accept_check(obj/item/O)
-	if(istype(O, /obj/item/reagent_containers/food/snacks/))
-		var/obj/item/reagent_containers/food/snacks/S = O
-		if(S.dried_type)
-			return TRUE
-	if(istype(O, /obj/item/stack/sheet/wetleather/)) //no wethide
-		return TRUE
-	return FALSE
+	return HAS_TRAIT(O, TRAIT_DRYABLE)
 
-/obj/machinery/smartfridge/drying_rack/proc/toggle_drying(forceoff)
+/obj/machinery/smartfridge/drying_rack/proc/toggle_drying(forceoff, mob/user)
 	if(drying || forceoff)
 		drying = FALSE
-		use_power = IDLE_POWER_USE
+		current_user = null
 	else
 		drying = TRUE
-		use_power = ACTIVE_POWER_USE
+		if(user?.mind)
+			current_user = WEAKREF(user.mind)
 	update_icon()
-
-/obj/machinery/smartfridge/drying_rack/proc/rack_dry()
-	for(var/obj/item/reagent_containers/food/snacks/S in src)
-		if(S.dried_type == S.type)//if the dried type is the same as the object's type, don't bother creating a whole new item...
-			S.add_atom_colour("#ad7257", FIXED_COLOUR_PRIORITY)
-			S.dry = TRUE
-			S.forceMove(drop_location())
-		else
-			var/dried = S.dried_type
-			new dried(drop_location())
-			qdel(S)
-		return TRUE
-	for(var/obj/item/stack/sheet/wetleather/WL in src)
-		new /obj/item/stack/sheet/leather(drop_location(), WL.amount)
-		qdel(WL)
-		return TRUE
-	return FALSE
 
 /obj/machinery/smartfridge/drying_rack/emp_act(severity)
 	. = ..()
@@ -424,7 +410,7 @@
 /obj/machinery/smartfridge/organ
 	name = "smart organ storage"
 	desc = "Охлаждаемое хранилище для содержания органов."
-	max_n_of_items = 20	//vastly lower to prevent processing too long
+	max_n_of_items = 30	//vastly lower to prevent processing too long
 	base_build_path = /obj/machinery/smartfridge/organ
 	var/repair_rate = 0
 
@@ -453,7 +439,7 @@
 
 /obj/machinery/smartfridge/organ/RefreshParts()
 	for(var/obj/item/stock_parts/matter_bin/B in component_parts)
-		max_n_of_items = 20 * B.rating
+		max_n_of_items = initial(max_n_of_items) * B.rating
 		repair_rate = max(0, STANDARD_ORGAN_HEALING * (B.rating - 1) * 0.5)
 
 /obj/machinery/smartfridge/organ/process(delta_time)

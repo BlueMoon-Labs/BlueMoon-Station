@@ -29,7 +29,7 @@
 	remove_from_dead_mob_list()
 	remove_from_alive_mob_list()
 	QDEL_LIST(mob_spell_list)
-	QDEL_LIST(actions)
+	QDEL_LAZYLIST(actions)
 	GLOB.all_clockwork_mobs -= src
 	// remove_from_mob_suicide_list()
 	focus = null
@@ -38,14 +38,21 @@
 	if(length(progressbars))
 		stack_trace("[src] destroyed with elements in its progressbars list.")
 		progressbars = null
-	for (var/alert in alerts)
+	for (var/alert in alerts.Copy())
 		clear_alert(alert, TRUE)
 	if(observers?.len)
 		for(var/mob/dead/observe as anything in observers)
 			observe.reset_perspective(null)
 	dispose_rendering()
 	qdel(hud_used)
+	if(hud_list)
+		for(var/hud_key in hud_list)
+			var/image/hud_image = hud_list[hud_key]
+			if(istype(hud_image))
+				hud_image.loc = null
+		hud_list = null
 	QDEL_LIST(client_colours)
+	clear_typing_indicator()
 	ghostize()
 	if(mind?.current == src) //Let's just be safe yeah? This will occasionally be cleared, but not always. Can't do it with ghostize without changing behavior
 		mind.set_current(null)
@@ -150,11 +157,16 @@
 	var/list/hearers = get_hearers_in_view(vision_distance, src) //caches the hearers and then removes ignored mobs.
 	if(!length(hearers))
 		return
+
+	var/raw_msg = message
+	if(visible_message_flags & EMOTE_MESSAGE)
+		message = "<span class='emote'><b>[src]</b>[separation][message]</span>" // SKYRAT EDIT - Better emotes
+
 	hearers -= ignored_mobs
 
 	if(target_message && target && istype(target) && (target.client || target.audiovisual_redirect))
 		hearers -= target
-		if(omni)
+		if(omni || !blind_message)
 			target.show_message(target_message)
 		else
 			//This entire if/else chain could be in two lines but isn't for readibilties sake.
@@ -165,13 +177,9 @@
 			else if(target.lighting_alpha > LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE && T.is_softly_lit() && !in_range(T,target))
 				msg = blind_message
 			if(msg)
-				target.show_message(msg, MSG_VISUAL,blind_message, MSG_AUDIBLE)
+				target.show_message(msg, MSG_VISUAL, in_range(T, target) ? msg : blind_message, MSG_AUDIBLE)
 	if(self_message)
 		hearers -= src
-
-	var/raw_msg = message
-	if(visible_message_flags & EMOTE_MESSAGE)
-		message = "<span class='emote'><b>[src]</b>[separation][message]</span>" // SKYRAT EDIT - Better emotes
 
 	for(var/mob/M in hearers)
 		if(!M.client && !M.audiovisual_redirect)
@@ -195,20 +203,18 @@
 		if(visible_message_flags & EMOTE_MESSAGE && !M.is_blind())
 			M.create_chat_message(src, raw_message = raw_msg)
 
-		M.show_message(msg, MSG_VISUAL, blind_message, MSG_AUDIBLE) //SKYRAT CHANGE
+		M.show_message(msg, MSG_VISUAL, in_range(T,M) ? msg : blind_message, MSG_AUDIBLE) //SKYRAT CHANGE
 
 ///Adds the functionality to self_message.
 /mob/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags)
 	. = ..()
 	if(self_message && target != src)
-		if(!omni)
-			show_message(self_message, MSG_VISUAL, blind_message, MSG_AUDIBLE)
-			if(runechat_popup && client?.prefs.chat_on_map && client.prefs.see_chat_emotes) //SKYRAT CHANGE
-				create_chat_message(src, null, rune_msg ? rune_msg : self_message, list("emote", "italics"), null) //Skyrat change
-		else
+		if(omni || !blind_message)
 			show_message(self_message)
-			if(runechat_popup && client?.prefs.chat_on_map && client.prefs.see_chat_emotes) //SKYRAT CHANGE
-				create_chat_message(src, null, rune_msg ? rune_msg : self_message, list("emote", "italics"), null) //Skyrat change
+		else
+			show_message(self_message, MSG_VISUAL, blind_message, MSG_AUDIBLE)
+		if(runechat_popup && client?.prefs.chat_on_map && client.prefs.see_chat_emotes) //SKYRAT CHANGE
+			create_chat_message(src, null, rune_msg ? rune_msg : self_message, list("emote", "italics"), null) //Skyrat change
 
 /**
   * Show a message to all mobs in earshot of this atom
@@ -365,6 +371,8 @@
 		LAZYINITLIST(client.recent_examines)
 		if(isnull(client.recent_examines[A]) || client.recent_examines[A] < world.time)
 			result = A.examine(src)
+			if(!client)
+				return
 			client.recent_examines[A] = world.time + EXAMINE_MORE_TIME // set the value to when the examine cooldown ends
 			RegisterSignal(A, COMSIG_PARENT_QDELETING, PROC_REF(clear_from_recent_examines), override=TRUE) // to flush the value if deleted early
 			addtimer(CALLBACK(src, PROC_REF(clear_from_recent_examines), A), EXAMINE_MORE_TIME)
@@ -752,37 +760,21 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	client?.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
 	return TRUE
 
-/mob/verb/eastshift()
-	set hidden = TRUE
-	if(!canface())
-		return FALSE
-	if(pixel_x <= PIXEL_SHIFT_MAXIMUM + base_pixel_x)
-		pixel_x++
-		is_shifted = TRUE
-
-/mob/verb/westshift()
-	set hidden = TRUE
-	if(!canface())
-		return FALSE
-	if(pixel_x >= -PIXEL_SHIFT_MAXIMUM + base_pixel_x)
-		pixel_x--
-		is_shifted = TRUE
-
 /mob/verb/northshift()
 	set hidden = TRUE
-	if(!canface())
-		return FALSE
-	if(pixel_y <= PIXEL_SHIFT_MAXIMUM + base_pixel_y)
-		pixel_y++
-		is_shifted = TRUE
+	pixel_shift(NORTH)
 
 /mob/verb/southshift()
 	set hidden = TRUE
-	if(!canface())
-		return FALSE
-	if(pixel_y >= -PIXEL_SHIFT_MAXIMUM + base_pixel_y)
-		pixel_y--
-		is_shifted = TRUE
+	pixel_shift(SOUTH)
+
+/mob/verb/eastshift()
+	set hidden = TRUE
+	pixel_shift(EAST)
+
+/mob/verb/westshift()
+	set hidden = TRUE
+	pixel_shift(WEST)
 
 /mob/proc/IsAdvancedToolUser()//This might need a rename but it should replace the can this mob use things check
 	return FALSE
@@ -980,7 +972,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /mob/proc/update_health_hud()
 	return
 
-/mob/proc/update_sight()
+/mob/proc/update_sight(forced = TRUE)
 	SEND_SIGNAL(src, COMSIG_MOB_UPDATE_SIGHT)
 
 	sync_lighting_plane_alpha()
@@ -988,7 +980,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /mob/proc/sync_lighting_plane_alpha()
 	if(hud_used)
 		var/atom/movable/screen/plane_master/lighting/L = hud_used.plane_masters["[LIGHTING_PLANE]"]
-		if (L)
+		if(L)
 			L.alpha = lighting_alpha
 
 /mob/proc/update_mouse_pointer()
@@ -1000,7 +992,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 		client.mouse_pointer_icon = pull_cursor_icon
 	else if(throw_cursor_icon && throw_mode != 0)
 		client.mouse_pointer_icon = throw_cursor_icon
-	else if(combat_cursor_icon && SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
+	else if(combat_cursor_icon && usr && SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
 		if(!client.prefs || !client.prefs.disable_combat_cursor) // Don't show the combat cursor for people who have it disabled in prefs.
 			client.mouse_pointer_icon = combat_cursor_icon
 	else if(examine_cursor_icon && client.keys_held["Shift"]) //mouse shit is hardcoded, make this non hard-coded once we make mouse modifiers bindable

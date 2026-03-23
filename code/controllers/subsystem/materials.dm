@@ -161,7 +161,10 @@ SUBSYSTEM_DEF(materials)
  **/
 /datum/controller/subsystem/materials/proc/_GetIdFromArguments(list/arguments)
 	var/datum/material/mattype = arguments[1]
-	var/list/fullid = list("[initial(mattype.id) || mattype]")
+	var/mat_id = initial(mattype.id)
+	if(!mat_id)
+		mat_id = "[mattype]"
+	var/list/fullid = list(mat_id)
 	var/list/named_arguments = list()
 	for(var/i in 2 to length(arguments))
 		var/key = arguments[i]

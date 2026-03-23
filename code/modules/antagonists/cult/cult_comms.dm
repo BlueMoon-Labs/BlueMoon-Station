@@ -276,6 +276,7 @@
 			to_chat(ranged_ability_user, "<span class='cult'>The cult has already designated a target!</span>")
 			return FALSE
 		C.cult_team.blood_target = target
+		C.cult_team.RegisterSignal(target, COMSIG_PARENT_QDELETING, TYPE_PROC_REF(/datum/team/cult, on_blood_target_destroyed))
 		var/area/A = get_area(target)
 		attached_action.cooldown = world.time + attached_action.base_cooldown
 		addtimer(CALLBACK(attached_action.owner, TYPE_PROC_REF(/mob, update_action_buttons_icon)), attached_action.base_cooldown)
@@ -301,6 +302,8 @@
 				to_chat(B.current,"<span class='cultlarge'><b>The blood mark has expired!</b></span>")
 			B.current.client.images -= team.blood_target_image
 	QDEL_NULL(team.blood_target_image)
+	if(team.blood_target)
+		team.UnregisterSignal(team.blood_target, COMSIG_PARENT_QDELETING)
 	team.blood_target = null
 
 
@@ -358,6 +361,7 @@
 	if(!target)
 		return
 	C.cult_team.blood_target = target
+	C.cult_team.RegisterSignal(target, COMSIG_PARENT_QDELETING, TYPE_PROC_REF(/datum/team/cult, on_blood_target_destroyed))
 	var/area/A = get_area(target)
 	cooldown = world.time + base_cooldown
 	addtimer(CALLBACK(owner, TYPE_PROC_REF(/mob, update_action_buttons_icon)), base_cooldown)

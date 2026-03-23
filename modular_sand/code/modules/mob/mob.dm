@@ -6,6 +6,8 @@
 // Only Clients should have a panel for them, okay?
 /mob/Login()
 	. = ..()
+	if(!client)
+		return
 	AddComponent(/datum/component/interaction_menu_granter)
 
 /mob/Logout()

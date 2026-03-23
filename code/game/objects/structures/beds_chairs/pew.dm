@@ -8,6 +8,7 @@
 	buildstacktype = /obj/item/stack/sheet/mineral/wood
 	buildstackamount = 3
 	item_chair = null
+	lone_standing = FALSE
 
 /obj/structure/chair/pew/left
 	name = "wooden pew end"

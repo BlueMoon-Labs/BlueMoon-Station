@@ -6,7 +6,7 @@
 
 /obj/item/toy/cards/deck/examine()
 	. = ..()
-	if(!isnull(card_types) && length(card_types)>1)
+	if(!isnull(card_types) && !isemptylist(card_types))
 		. += span_notice("Alt-click to remove unwanted cards.")
 
 /obj/item/toy/cards/deck/populate_deck()
@@ -17,7 +17,7 @@
 /obj/item/toy/cards/deck/AltClick(mob/living/user, obj/item/I)
 	if(!user.canUseTopic(src, TRUE, TRUE, TRUE))
 		return
-	if(isnull(card_types) || length(card_types)<=1)
+	if(isnull(card_types) || isemptylist(card_types))
 		return
 	var/cards_to_find = tgui_input_list(user, "Select cards to remove", "Cards to remove", card_types, null)
 	if(isnull(cards_to_find))

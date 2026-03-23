@@ -25,6 +25,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/plane_master_controller)
 /atom/movable/plane_master_controller/Destroy()
 	if(owner_hud)
 		owner_hud.plane_master_controllers -= src
+		owner_hud = null
 	controlled_planes.Cut()
 	return ..()
 

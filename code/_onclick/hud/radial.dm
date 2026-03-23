@@ -44,6 +44,8 @@ GLOBAL_LIST_EMPTY(radial_menus)
 		closeToolTip(usr)
 
 /atom/movable/screen/radial/slice/Click(location, control, params)
+	if(!parent)
+		return
 	if(usr.client == parent.current_user)
 		if(next_page)
 			parent.next_page()
@@ -63,6 +65,8 @@ GLOBAL_LIST_EMPTY(radial_menus)
 	icon_state = "radial_center"
 
 /atom/movable/screen/radial/center/Click(location, control, params)
+	if(!parent)
+		return
 	if(usr.client == parent.current_user)
 		parent.finished = TRUE
 
@@ -303,6 +307,8 @@ GLOBAL_LIST_EMPTY(radial_menus)
 		stoplag(1)
 
 /datum/radial_menu/Destroy()
+	if(menu_holder)
+		menu_holder.vis_contents.Cut()
 	QDEL_LIST(elements)
 	Reset()
 	hide()
@@ -311,6 +317,7 @@ GLOBAL_LIST_EMPTY(radial_menus)
 	QDEL_NULL(close_button)
 	current_user = null
 	anchor = null
+	menu_holder = null
 	QDEL_NULL(custom_check_callback)
 	. = ..()
 

@@ -6348,7 +6348,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "KN" = (
 /obj/machinery/turretid{
-	control_area = "/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship";
+	control_area = "/area/ruin/space/has_grav/bluemoon/solfed_ship";
 	icon_state = "control_kill";
 	lethal = 1;
 	name = "Ship turret control panel";

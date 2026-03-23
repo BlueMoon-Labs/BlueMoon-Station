@@ -1,6 +1,6 @@
 
 import { createPopper, Placement, VirtualElement } from '@popperjs/core';
-import { Component, findDOMfromVNode, InfernoNode, render } from 'inferno';
+import { Component, findDOMFromVNode, InfernoNode, render } from 'inferno';
 
 type TooltipProps = {
   readonly children?: InfernoNode;
@@ -37,9 +37,11 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
   static singletonPopper: ReturnType<typeof createPopper> | undefined;
   static currentHoveredElement: Element | undefined;
   static virtualElement: VirtualElement = {
-    getBoundingClientRect: () => (
-      Tooltip.currentHoveredElement?.getBoundingClientRect()
-        ?? NULL_RECT) as DOMRect,
+    getBoundingClientRect: () => {
+      const rect = Tooltip.currentHoveredElement?.getBoundingClientRect();
+      if (!rect) return NULL_RECT as DOMRect;
+      return rect;
+    },
   };
 
   getDOMNode() {
@@ -51,7 +53,7 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
     // This code is copied from `findDOMNode` in inferno-extras.
     // Because this component is written in TypeScript, we will know
     // immediately if this internal variable is removed.
-    return findDOMfromVNode(this.$LI, true);
+    return findDOMFromVNode(this.$LI, true);
   }
 
   componentDidMount() {
@@ -66,7 +68,10 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
       if (renderedTooltip === undefined) {
         renderedTooltip = document.createElement("div");
         renderedTooltip.className = "Tooltip";
-        document.body.appendChild(renderedTooltip);
+        // DPI fix: append to <html> instead of <body> to escape body zoom.
+        // Popper.js then works in viewport coords for both positioning and
+        // overflow detection, fixing tooltip shift near screen edges.
+        document.documentElement.appendChild(renderedTooltip);
         Tooltip.renderedTooltip = renderedTooltip;
       }
 
@@ -97,8 +102,11 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
       return;
     }
 
+    // DPI fix: apply body zoom to content so it matches the rest of the UI,
+    // since the container is outside body zoom (appended to <html>).
+    const zoom = document.body.style.zoom || '100%';
     render(
-      <span>{this.props.content}</span>,
+      <span style={{ zoom }}>{this.props.content}</span>,
       renderedTooltip,
       () => {
         let singletonPopper = Tooltip.singletonPopper;

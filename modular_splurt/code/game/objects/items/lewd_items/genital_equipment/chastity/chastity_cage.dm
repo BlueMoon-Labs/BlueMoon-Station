@@ -159,6 +159,8 @@
 		return FALSE
 
 	var/mob/living/carbon/human/H = G.owner
+	if(!H)
+		return
 
 	DISABLE_BITFIELD(G.genital_flags, GENITAL_CHASTENED)
 	UnregisterSignal(H, COMSIG_MOB_UPDATE_GENITALS)

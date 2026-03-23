@@ -440,7 +440,7 @@
 /obj/item/dogborg/sleeper/proc/CheckAccepted(obj/item/I)
 	return is_type_in_typecache(I, important_items)
 
-/obj/item/dogborg/sleeper/proc/inject_chem(chem, mob/living/silicon/robot/hound)
+/obj/item/dogborg/sleeper/proc/inject_chem(datum/reagent/chem, mob/living/silicon/robot/hound)
 	if(!hound || !patient || !patient.reagents)
 		return
 	if(hound.cell.charge <= inject_cost + 50) //This is so borgs don't kill themselves with it. Remember, 750 charge used every injection.
@@ -452,7 +452,7 @@
 	patient.reagents.add_reagent(chem, inject_amount)
 	hound.cell.use(inject_cost) //-750 charge per injection
 	//var/units = round(patient.reagents.get_reagent_amount(chem))
-	to_chat(hound, "<span class='notice'>Injecting [inject_amount] unit\s of [chem] into occupant.</span>") //If they were immersed, the reagents wouldn't leave with them.
+	to_chat(hound, "<span class='notice'>Injecting [inject_amount] unit\s of [initial(chem.name)] into occupant.</span>") //If they were immersed, the reagents wouldn't leave with them.
 
 /obj/item/dogborg/sleeper/proc/chem_allowed(chem)
 	if(!patient || !patient.reagents)

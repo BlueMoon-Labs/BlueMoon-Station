@@ -149,8 +149,18 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/Initialize(mapload)
 	. = ..()
 
+	ADD_TRAIT(src, TRAIT_THERMAL_VISION, INNATE_TRAIT)
 	if(ventcrawler)
 		AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
+
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/update_sight(forced = TRUE)
+	. = ..()
+	if(!client)
+		return
+	if(HAS_TRAIT(src, TRAIT_THERMAL_VISION))
+		sight |= SEE_MOBS
+		lighting_alpha = min(lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
+	sync_lighting_plane_alpha()
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/get_status_tab_items()
 	. = ..()
@@ -169,7 +179,7 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/AttackingTarget()
 	if(isterrorspider(target))
 		if(target in enemies)
-			enemies -= target
+			remove_enemy(target)
 		var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/T = target
 		if(T.spider_tier > spider_tier)
 			visible_message("<span class='notice'>[src] cowers before [target].</span>")
@@ -289,8 +299,8 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 	else
 		GLOB.ts_count_alive_station++
 	// after 3 seconds, assuming nobody took control of it yet, offer it to ghosts.
-	addtimer(CALLBACK(src, PROC_REF(CheckFaction)), 20)
-	addtimer(CALLBACK(src, PROC_REF(announcetoghosts)), 30)
+	addtimer(CALLBACK(src, PROC_REF(CheckFaction)), 20, TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(announcetoghosts)), 30, TIMER_DELETE_ME)
 	var/datum/atom_hud/U = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
 	U.add_hud_to(src)
 	spider_creation_time = world.time

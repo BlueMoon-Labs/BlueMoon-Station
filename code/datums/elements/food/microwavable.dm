@@ -53,7 +53,7 @@
 			ADD_TRAIT(result, TRAIT_FOOD_CHEF_MADE, REF(microwaver.mind))
 
 	//make space and tranfer reagents if it has any, also let any bad result handle removing or converting the transferred reagents on its own terms
-	if(result.reagents && source.reagents)
+	if(result.reagents && source.reagents && !bad_recipe)
 		result.reagents.clear_reagents()
 		source.reagents.trans_to(result, source.reagents.total_volume)
 		if(added_reagents) // Add any new reagents that should be added
@@ -77,7 +77,7 @@
 	return recipe_result
 
 /**
- * Signal proc for [COMSIG_ATOM_EXAMINE].
+ * Signal proc for [COMSIG_PARENT_EXAMINE].
  * Lets examiners know we can be microwaved if we're not the default mess type
  */
 /datum/element/microwavable/proc/on_examine(atom/source, mob/user, list/examine_list)

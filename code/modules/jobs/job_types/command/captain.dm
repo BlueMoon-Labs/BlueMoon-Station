@@ -15,7 +15,33 @@
 	exp_type = EXP_TYPE_COMMAND
 	exp_type_department = EXP_TYPE_COMMAND
 	considered_combat_role = TRUE
-
+	alt_titles = list(
+		"Syndicate Admiral", //Синди выше, для удобства
+		"Cap-Slut",
+		"Catpain",
+		"Chief Command",
+		"Chief Executive Officer",
+		"Cockpitain",
+		"Colony Overseer",
+		"Commanding Officer",
+		"Condom",
+		"Consul",
+		"Cuntpitain",
+		"Facility Director",
+		"Grey Cardinals",
+		"Head of Command",
+		"Sectorial Commander",
+		"Senator",
+		"Site Director",
+		"Site Manager",
+		"Station Commander",
+		"Station Director",
+		"Station Leader",
+		"Station Master",
+		"Station Mistress",
+		"Station Overseer",
+		"Stationmaster"
+		)
 
 	outfit = /datum/outfit/job/captain
 	plasma_outfit = /datum/outfit/plasmaman/captain

@@ -233,7 +233,7 @@
 	projectiletype = /obj/item/projectile/bullet/a308
 	projectilesound = 'modular_bluemoon/sound/weapons/carcannon1.ogg'
 	var/alt_projectilesound = 'modular_bluemoon/sound/weapons/rocketlaunch.ogg'
-	var/alternative_fire = /obj/item/projectile/bullet/a84mm_he
+	var/alternative_fire = /obj/item/projectile/bullet/a84mm/he
 	var/list_sound = list('modular_bluemoon/sound/creatures/drone_speech.ogg', 'modular_bluemoon/sound/creatures/drone_target_search.ogg','modular_bluemoon/sound/creatures/drone_up.ogg','modular_bluemoon/sound/creatures/drone_up2.ogg')
 	icon = 'modular_bluemoon/icons/mob/dron.dmi'
 	icon_dead = "crash"
@@ -242,49 +242,60 @@
 	turns_per_move = 1
 	rapid = 2
 	speed = 14
+	emp_damage_modifier = 2
 
-/mob/living/simple_animal/hostile/malf_drone/experimental/proc/changeFireMode()
-	var/mob/living/simple_animal/hostile/malf_drone/experimental/D = src
-	if(D.projectiletype != D.alternative_fire & D.stat == CONSCIOUS)
-		D.projectiletype = D.alternative_fire
-		D.projectilesound = D.alt_projectilesound
-		D.rapid = 1
-		playsound(src, 'modular_bluemoon/sound/creatures/drone_target_search.ogg', 50)
-	else
-		D.projectiletype = /obj/item/projectile/bullet/a308
-		D.rapid = 3
-		D.projectilesound = 'modular_bluemoon/sound/weapons/carcannon1.ogg'
+/mob/living/simple_animal/hostile/malf_drone/experimental/Initialize(mapload)
+	. = ..()
+	update_icon(UPDATE_OVERLAYS)
 
-/mob/living/simple_animal/hostile/malf_drone/experimental/update_icons()
-	if(src.stat == UNCONSCIOUS)
-		src.overlays = null
-	return
+/mob/living/simple_animal/hostile/malf_drone/experimental/update_overlays()
+	. = ..()
+	if(stat != CONSCIOUS || AIStatus == AI_OFF)
+		return
+	. += mutable_appearance(icon, "scan")
+
+/mob/living/simple_animal/hostile/malf_drone/experimental/BiologicalLife(delta_time, times_fired)
+	. = ..()
+	if(DT_PROB(10, delta_time))
+		changeFireMode()
+	else if(stat == CONSCIOUS)
+		playsound(src, pick(list_sound), 50)
 
 /mob/living/simple_animal/hostile/malf_drone/experimental/OpenFire(atom/A)
 	. = ..()
-	if(src.projectiletype == src.alternative_fire)
+	if(projectiletype == alternative_fire)
 		new /obj/effect/temp_visual/drone_radar(A.loc)
-
-/mob/living/simple_animal/hostile/malf_drone/experimental/BiologicalLife()
-	. = ..()
-	var/mob/living/simple_animal/hostile/malf_drone/experimental/E = src
-	if(prob(20))
-		E.changeFireMode()
-	else
-		if(E.stat == CONSCIOUS)
-			src.add_overlay(/obj/effect/temp_visual/drone_scan)
-			var/sound = pick(E.list_sound)
-			playsound(src, sound, 50)
 
 /mob/living/simple_animal/hostile/malf_drone/experimental/emp_act(severity)
 	. = ..()
-	adjustHealth(200 / severity)
-	src.AIStatus = AI_OFF
-	playsound(src, 'sound/machines/terminal_alert.ogg', 50, 0)
-	addtimer(CALLBACK(src, PROC_REF(switch_AIStatus_on)), 2 SECONDS)
+	if(. & EMP_PROTECT_SELF)
+		return
 
-/mob/living/simple_animal/hostile/malf_drone/experimental/proc/switch_AIStatus_on()
-	AIStatus = AI_ON
+	toggle_ai(AI_OFF)
+	vision_range = 0
+	aggro_vision_range = 0
+	LoseTarget()
+	update_icon(UPDATE_OVERLAYS)
+	playsound(src, 'sound/machines/terminal_alert.ogg', 50, 0)
+	addtimer(CALLBACK(src, PROC_REF(turn_AI)), (clamp(round(max(severity/25, 1)), 2, 10) SECONDS), TIMER_UNIQUE | TIMER_OVERRIDE)
+
+/mob/living/simple_animal/hostile/malf_drone/experimental/proc/changeFireMode()
+	if(projectiletype != alternative_fire & stat == CONSCIOUS)
+		projectiletype = alternative_fire
+		projectilesound = alt_projectilesound
+		rapid = 1
+		playsound(src, 'modular_bluemoon/sound/creatures/drone_target_search.ogg', 50)
+	else
+		projectiletype = /obj/item/projectile/bullet/a308
+		rapid = 3
+		projectilesound = 'modular_bluemoon/sound/weapons/carcannon1.ogg'
+	update_icon(UPDATE_OVERLAYS)
+
+/mob/living/simple_animal/hostile/malf_drone/experimental/proc/turn_AI()
+	toggle_ai(initial(AIStatus))
+	vision_range = initial(vision_range)
+	aggro_vision_range = initial(aggro_vision_range)
+	update_icon(UPDATE_OVERLAYS)
 
 /obj/effect/temp_visual/drone_scan
 	icon = 'modular_bluemoon/icons/mob/dron.dmi'

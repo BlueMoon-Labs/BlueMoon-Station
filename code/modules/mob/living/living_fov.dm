@@ -1,4 +1,4 @@
-/// Is `observed_atom` in a mob's field of view? This takes blindness, nearsightness and FOV into consideration
+/// Is `observed_atom` in a mob's field of view? This takes blindness and FOV into consideration
 /mob/living/proc/in_fov(atom/observed_atom, ignore_self = FALSE)
 	if(ignore_self && observed_atom == src)
 		return TRUE
@@ -41,11 +41,6 @@
 			. = TRUE
 	else
 		. = TRUE
-
-	// Handling nearsightnedness
-	if(. && is_nearsighted())
-		if((rel_x >= NEARSIGHTNESS_FOV_BLINDNESS || rel_x <= -NEARSIGHTNESS_FOV_BLINDNESS) || (rel_y >= NEARSIGHTNESS_FOV_BLINDNESS || rel_y <= -NEARSIGHTNESS_FOV_BLINDNESS))
-			return FALSE
 
 
 /mob/living/proc/update_fov()

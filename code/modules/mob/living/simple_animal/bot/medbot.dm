@@ -129,6 +129,11 @@
 	skin = new_skin
 	update_icon()
 
+/mob/living/simple_animal/bot/medbot/Destroy()
+	patient = null
+	oldpatient = null
+	return ..()
+
 /mob/living/simple_animal/bot/medbot/update_mobility()
 	. = ..()
 	update_icon()

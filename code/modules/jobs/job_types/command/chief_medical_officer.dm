@@ -16,6 +16,20 @@
 	exp_type = EXP_TYPE_CREW
 	exp_type_department = EXP_TYPE_MEDICAL
 	considered_combat_role = TRUE
+	alt_titles = list(
+		"Interdyne Lead Specialist", //Триглав выше, для удобства
+		"Syndicate Chief Physician", //Синди выше, для удобства
+		"Chief Heal Stud",
+		"Chief Heal Stut",
+		"Chief Physician",
+		"Head of Medical",
+		"Head Physician",
+		"Healing Fleshlight Master",
+		"Healing Fleshlight Mistress",
+		"Healthcare Manager",
+		"Medical Administrator",
+		"Medical Director"
+		)
 
 	outfit = /datum/outfit/job/cmo
 	departments = DEPARTMENT_BITFLAG_MEDICAL | DEPARTMENT_BITFLAG_COMMAND
@@ -63,6 +77,7 @@
 	belt = /obj/item/pda/heads/cmo
 	l_pocket = /obj/item/pinpointer/crew
 	ears = /obj/item/radio/headset/heads/cmo
+	glasses = /obj/item/clothing/glasses/hud/health/sunglasses
 	uniform = /obj/item/clothing/under/rank/medical/chief_medical_officer
 	shoes = /obj/item/clothing/shoes/sneakers/brown
 	suit = /obj/item/clothing/suit/toggle/labcoat/cmo

@@ -33,7 +33,7 @@
 
 	if(!isliving(the_target))
 		return .
-	
+
 	var/mob/living/M = the_target
 
 	if(M.client && M.client?.prefs.mobsexpref == "No") //So the new pref checks - Gardelin0
@@ -211,7 +211,7 @@
 	refractory_period = world.time + rand(100, 150) // Sex cooldown
 	set_lust(0) // Nuts at 400
 
-	addtimer(CALLBACK(src, PROC_REF(slap), M), 15)
+	addtimer(CALLBACK(src, PROC_REF(slap), M), 15, TIMER_DELETE_ME)
 
 
 /mob/living/simple_animal/hostile/werewolf/funwolf/proc/slap(mob/living/M)
@@ -439,7 +439,7 @@
 	refractory_period = world.time + rand(100, 150) // Sex cooldown
 	set_lust(0) // Nuts at 400
 
-	addtimer(CALLBACK(src, PROC_REF(slap), M), 15)
+	addtimer(CALLBACK(src, PROC_REF(slap), M), 15, TIMER_DELETE_ME)
 
 
 /mob/living/simple_animal/hostile/ice_wolf/funwolf/proc/slap(mob/living/M)
@@ -668,7 +668,7 @@
 	refractory_period = world.time + rand(100, 150) // Sex cooldown
 	set_lust(0) // Nuts at 400
 
-	addtimer(CALLBACK(src, PROC_REF(slap), M), 15)
+	addtimer(CALLBACK(src, PROC_REF(slap), M), 15, TIMER_DELETE_ME)
 
 
 /mob/living/simple_animal/hostile/hellhound/funwolf/proc/slap(mob/living/M)
@@ -897,7 +897,7 @@
 	refractory_period = world.time + rand(100, 150) // Sex cooldown
 	set_lust(0) // Nuts at 400
 
-	addtimer(CALLBACK(src, PROC_REF(slap), M), 15)
+	addtimer(CALLBACK(src, PROC_REF(slap), M), 15, TIMER_DELETE_ME)
 
 
 /mob/living/simple_animal/hostile/the_mosley/funwolf/proc/slap(mob/living/M)

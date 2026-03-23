@@ -45525,7 +45525,7 @@
 /obj/item/clothing/mask/muzzle,
 /obj/item/clothing/glasses/sunglasses/blindfold,
 /obj/item/clothing/ears/earmuffs,
-/obj/item/clothing/glasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
@@ -61561,6 +61561,17 @@
 	},
 /turf/open/floor/plasteel/cafeteria,
 /area/security/prison/upper)
+"eGW" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/command/bridge)
 "eHc" = (
 /obj/machinery/door/airlock/maintenance{
 	name = "Permabrig Maintenance"
@@ -65407,6 +65418,9 @@
 	},
 /obj/structure/sign/poster/contraband/vulp7{
 	pixel_x = 32
+	},
+/obj/machinery/computer/brig_assistant_console{
+	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
@@ -87298,8 +87312,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
-/obj/structure/bed/dogbed,
-/mob/living/simple_animal/pet/fox/fennec,
+/obj/machinery/suit_storage_unit/corporate,
 /turf/open/floor/wood,
 /area/service/lawoffice)
 "lRy" = (
@@ -101480,14 +101493,6 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/structure/closet/secure_closet/contraband/armory,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/maintenance{
-	lootcount = 8;
-	name = "8maintenance loot spawner"
-	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "pKM" = (
@@ -114130,8 +114135,6 @@
 /area/security/prison/upper)
 "trh" = (
 /obj/structure/closet/secure_closet/CMO,
-/obj/item/clothing/under/rank/medical/doctor/nurse,
-/obj/item/clothing/head/nursehat,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 5
 	},
@@ -123256,6 +123259,17 @@
 /obj/machinery/disposal/bin,
 /turf/open/floor/wood,
 /area/command/heads_quarters/hos)
+"vRL" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/rnd/production/techfab/department/security,
+/obj/machinery/door/window/brigdoor,
+/obj/machinery/door/window/brigdoor{
+	dir = 1;
+	name = "Reception Desk";
+	req_access_txt = "3"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ai_monitored/security/armory)
 "vRV" = (
 /obj/structure/rack,
 /obj/effect/spawner/lootdrop/maintenance{
@@ -125443,6 +125457,8 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 6
 	},
+/obj/structure/bed/dogbed,
+/mob/living/simple_animal/pet/fox/fennec,
 /turf/open/floor/carpet,
 /area/service/lawoffice)
 "wyB" = (
@@ -128694,7 +128710,15 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/machinery/rnd/production/techfab/department/security,
+/obj/structure/closet/secure_closet/contraband/armory,
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 8;
+	name = "8maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/armory_contraband,
+/obj/effect/spawner/lootdrop/armory_contraband,
+/obj/effect/spawner/lootdrop/armory_contraband,
+/obj/effect/spawner/lootdrop/armory_contraband,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "xwf" = (
@@ -129651,7 +129675,6 @@
 /obj/machinery/status_display/evac{
 	pixel_x = -32
 	},
-/obj/item/card/id/captains_spare,
 /turf/open/floor/plasteel/grimy,
 /area/command/heads_quarters/captain/private)
 "xKk" = (
@@ -172088,7 +172111,7 @@ oLz
 lDb
 xHY
 oEz
-imr
+eGW
 hDk
 hDk
 isj
@@ -186743,7 +186766,7 @@ sXI
 igv
 rWs
 uja
-xqe
+vRL
 iBP
 feL
 lEu

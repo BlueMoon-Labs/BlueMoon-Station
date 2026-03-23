@@ -218,15 +218,18 @@
 			registered_account = new /datum/bank_account/remote/non_transferable(pick(GLOB.redacted_strings))
 
 /obj/item/card/id/Destroy()
-	if(bank_support == ID_LOCKED_BANK_ACCOUNT)
-		QDEL_NULL(registered_account)
-	else
-		registered_account = null
+	if(registered_account)
+		if(bank_support == ID_LOCKED_BANK_ACCOUNT)
+			QDEL_NULL(registered_account)
+		else
+			registered_account.bank_cards -= src
+			registered_account = null
 	if(my_store)
 		my_store.my_card = null
 		my_store = null
-	cached_flat_icon = null //SPLURT edit
-	QDEL_NULL(access)
+	cached_flat_icon = null
+	access = null
+	sticker = null
 	return ..()
 
 /obj/item/card/id/vv_edit_var(var_name, var_value)
@@ -333,7 +336,7 @@
 	. = FALSE
 	var/datum/bank_account/old_account = registered_account
 
-	var/new_bank_id = input(user, "Введите номер вашего банковского счета.", "Восстановление аккаунта", 111111) as num | null
+	var/new_bank_id = tgui_input_number(user, "Введите номер вашего банковского счета.", "Восстановление аккаунта", 111111, 999999, 111111, round_value = TRUE)
 
 	if (isnull(new_bank_id))
 		return
@@ -402,7 +405,7 @@
 		registered_account.bank_card_talk("<span class='warning'>ОШИБКА: НЕВОЗМОЖНО ВОЙТИ ВВИДУ ЗАПЛАНИРОВАННОГО ТЕХОБСЛУЖИВАНИЯ. РАБОТЫ ЗАПЛАНИРОВАНЫ К ЗАВЕРШЕНИЮ В ТЕЧЕНИЕ [(registered_account.withdrawDelay - world.time)/10] СЕКУНД.</span>", TRUE)
 		return
 
-	var/amount_to_remove =  input(user, "Как много кредитов вы хотите снять? Текущий баланс: [registered_account.account_balance]", "Снятие средств", 5) as num|null
+	var/amount_to_remove =  tgui_input_number(user, "Как много кредитов вы хотите снять? Текущий баланс: [registered_account.account_balance]", "Снятие средств", 1, min_value = 1, round_value = TRUE)
 
 	if(!amount_to_remove || amount_to_remove < 0)
 		return
@@ -945,7 +948,8 @@
 
 /obj/item/card/id/departmental_budget/Destroy()
 	SSeconomy.dep_cards -= src
-	registered_account.bank_cards -= src
+	if(registered_account)
+		registered_account.bank_cards -= src
 	return ..()
 
 /obj/item/card/id/departmental_budget/update_label()

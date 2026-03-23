@@ -297,7 +297,8 @@
 	name = "InteQ Shuttle (Computer Board)"
 	icon_state = "generic"
 	build_path = /obj/machinery/computer/shuttle/syndicate
-	var/challenge = FALSE
+	var/challenge = FALSE // Legacy compatibility
+	var/challenge_start_time = 0 // world.time when war was declared
 	var/moved = FALSE
 
 /obj/item/circuitboard/computer/syndicate_shuttle/Initialize(mapload)
@@ -491,6 +492,11 @@
 	name = "Security Records Console (Computer Board)"
 	icon_state = "security"
 	build_path = /obj/machinery/computer/secure_data
+
+/obj/item/circuitboard/computer/brig_assistant_console
+	name = "Brig Assistant Tasks Console (Computer Board)"
+	icon_state = "security"
+	build_path = /obj/machinery/computer/brig_assistant_console
 
 // /obj/item/circuitboard/computer/warrant
 // 	name = "Security Warrant Viewer (Computer Board)"

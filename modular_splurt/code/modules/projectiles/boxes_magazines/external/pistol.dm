@@ -158,6 +158,7 @@
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
+/*
 /datum/design/e45/e45trac
 	name = "Enforcer magazine (.45 Tracking)"
 	desc = "A magazine of .45 Tracking for the Mk. 58 Enforcer"
@@ -167,6 +168,7 @@
 	build_path = /obj/item/ammo_box/magazine/e45/trac
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+*/
 
 /datum/design/e45/hotshot
 	name = "Enforcer magazine (.45 Hotshot)"

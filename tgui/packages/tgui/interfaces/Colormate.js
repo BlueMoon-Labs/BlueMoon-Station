@@ -1,5 +1,5 @@
 import { useBackend, useLocalState } from '../backend';
-import { Button, Dropdown, Flex, Icon, NoticeBox, NumberInput, Section, Slider, Stack, Table, Tabs } from '../components';
+import { Button, Dropdown, Flex, Icon, NoticeBox, NumberInput, PixelArtImage, Section, Slider, Stack, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
 export const Colormate = (props, context) => {
@@ -66,25 +66,13 @@ export const Colormate = (props, context) => {
                 <Table.Cell width="50%">
                   <Section>
                     <center>Item:</center>
-                    <img
-                      src={"data:image/jpeg;base64, " + item.sprite}
-                      width="100%"
-                      height="100%"
-                      style={{
-                        '-ms-interpolation-mode': 'nearest-neighbor',
-                      }} />
+                    <PixelArtImage src={"data:image/png;base64, " + item.sprite} />
                   </Section>
                 </Table.Cell>
                 <Table.Cell>
                   <Section>
                     <center>Preview:</center>
-                    <img
-                      src={"data:image/jpeg;base64, " + item.preview}
-                      width="100%"
-                      height="100%"
-                      style={{
-                        '-ms-interpolation-mode': 'nearest-neighbor',
-                      }} />
+                    <PixelArtImage src={"data:image/png;base64, " + item.preview} />
                   </Section>
                 </Table.Cell>
               </Table>
@@ -191,7 +179,7 @@ export const Colormate = (props, context) => {
           </Section>
         ) : (
           <Stack fill vertical align="center" justify="center" height="100%">
-            <Stack.Item>
+            <Stack.Item grow={0}>
               <Button
                 px={25}
                 py={4}

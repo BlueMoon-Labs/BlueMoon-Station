@@ -39,8 +39,9 @@
 		dat += "<I>Your apprentice is training to cast spells without their robes. They know Knock and Mindswap.</I><BR>"
 		dat += "<A href='byond://?src=[REF(src)];school=[APPRENTICE_MARTIAL]'>Martial Artist</a><BR>"
 		dat += "<I>Your apprentice is training in ancient martial arts. They know an Inner Mantra and the Nuclear Fist technique.</I><BR>"
-	user << browse(dat, "window=radio")
-	onclose(user, "radio")
+	var/datum/browser/popup = new(user, "radio", "Contract")
+	popup.set_content(dat)
+	popup.open()
 	return
 
 /obj/item/antag_spawner/contract/Topic(href, href_list)

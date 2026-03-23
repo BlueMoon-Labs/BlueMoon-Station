@@ -1239,8 +1239,15 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/machinery/rnd/production/techfab/department/security,
 /obj/effect/turf_decal/bot/yellow,
+/obj/structure/closet/secure_closet/contraband/armory,
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 8;
+	name = "8maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/armory_contraband,
+/obj/effect/spawner/lootdrop/armory_contraband,
+/obj/effect/spawner/lootdrop/armory_contraband,
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
 "aek" = (
@@ -1293,14 +1300,6 @@
 	},
 /obj/structure/cable{
 	icon_state = "4-8"
-	},
-/obj/structure/closet/secure_closet/contraband/armory,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/maintenance{
-	lootcount = 8;
-	name = "8maintenance loot spawner"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
@@ -14932,6 +14931,10 @@
 	c_tag = "Bridge East";
 	dir = 8
 	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = 33
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/bridge)
 "aVs" = (
@@ -20835,7 +20838,6 @@
 	dir = 1
 	},
 /obj/structure/dresser,
-/obj/item/card/id/captains_spare,
 /turf/open/floor/carpet,
 /area/command/heads_quarters/captain)
 "bmA" = (
@@ -45761,10 +45763,9 @@
 "dbE" = (
 /obj/structure/table/wood,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/item/paper{
-	icon_state = "paper_onfire";
+/obj/item/paper/always_on_fire{
 	name = "Burning Note";
-	text = "I sign here with my last breath to sell my soul to curse you all..."
+	default_raw_text = "I sign here with my last breath to sell my soul to curse you all..."
 	},
 /obj/item/pen/fountain{
 	pixel_x = 5;
@@ -45780,8 +45781,12 @@
 /area/maintenance/starboard/fore)
 "dcB" = (
 /obj/effect/turf_decal/delivery,
-/obj/machinery/door/poddoor/shutters{
-	id = "armory3"
+/obj/machinery/rnd/production/techfab/department/security,
+/obj/machinery/door/window/brigdoor,
+/obj/machinery/door/window/brigdoor{
+	dir = 1;
+	name = "Reception Desk";
+	req_access_txt = "3"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
@@ -54240,6 +54245,10 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
+"joJ" = (
+/obj/machinery/suit_storage_unit/corporate,
+/turf/open/floor/mineral/plastitanium,
+/area/command/heads_quarters/ntr)
 "joX" = (
 /obj/structure/closet,
 /obj/effect/spawner/lootdrop/syndicate_present,
@@ -54948,7 +54957,7 @@
 /area/service/hydroponics)
 "jMZ" = (
 /obj/effect/turf_decal/bot/yellow,
-/obj/machinery/autolathe,
+/obj/machinery/autolathe/hacked,
 /turf/open/floor/mineral/plastitanium,
 /area/security/office)
 "jNr" = (
@@ -55904,6 +55913,20 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
 /area/commons/storage/tools)
+"kwd" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red,
+/obj/machinery/computer/brig_assistant_console,
+/turf/open/floor/mineral/plastitanium,
+/area/hallway/primary/fore)
 "kwz" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
@@ -102215,7 +102238,7 @@ gkH
 sgT
 kaM
 cGM
-iTX
+joJ
 vrj
 rxP
 ayW
@@ -102986,7 +103009,7 @@ lXL
 sgT
 xpf
 lnB
-arW
+iTX
 fFv
 qjg
 xCk
@@ -103742,7 +103765,7 @@ vyK
 amI
 amS
 alv
-aqE
+kwd
 anS
 aoy
 apj

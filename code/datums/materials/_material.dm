@@ -16,7 +16,7 @@ Simple datum which is instanced once per type and is used for every object of sa
 	///Base color of the material, is used for greyscale. Item isn't changed in color if this is null.
 	var/color
 	///Base alpha of the material, is used for greyscale icons.
-	var/alpha
+	var/alpha = 255
 	//Bitflags that influence how SSmaterials handles this material.
 	var/init_flags = MATERIAL_INIT_MAPLOAD
 	///Materials "Traits". its a map of key = category | Value = Bool. Used to define what it can be used for

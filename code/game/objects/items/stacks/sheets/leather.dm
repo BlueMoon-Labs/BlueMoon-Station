@@ -145,6 +145,7 @@ GLOBAL_LIST_INIT(xeno_recipes, list ( \
 /obj/item/stack/sheet/wetleather/Initialize(mapload, new_amount, merge)
 	. = ..()
 	AddElement(/datum/element/microwavable, /obj/item/stack/sheet/leather)
+	AddElement(/datum/element/dryable, /obj/item/stack/sheet/leather)
 
 /*
  * Leather SHeet

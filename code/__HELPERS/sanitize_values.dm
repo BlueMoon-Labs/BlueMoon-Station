@@ -6,6 +6,19 @@
 			return number
 	return default
 
+/// Snaps client FPS to the nearest safe multiple of 60.
+/// BYOND internally uses 60Hz base (compiled world.fps=60), so only multiples of 60 avoid input lag.
+/// Returns 0 (sync with server) or a multiple of 60 from 60 to 480.
+/proc/sanitize_clientfps(fps_value)
+	if(!isnum(fps_value) || fps_value < 0)
+		return 120
+	if(fps_value == 0)
+		return 0
+	var/snapped = round(fps_value / 60) * 60
+	if(snapped <= 0)
+		snapped = 60
+	return clamp(snapped, 60, 480)
+
 /proc/sanitize_num_clamp(number, min=0, max=1, default=0, quantize=0)
 	if(!isnum(number))
 		return default

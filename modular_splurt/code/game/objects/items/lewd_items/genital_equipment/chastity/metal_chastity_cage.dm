@@ -27,5 +27,7 @@
 	if(!.)
 		return
 	var/mob/living/carbon/human/H = G.owner
+	if(!H)
+		return
 	H.cut_overlay(skin_overlay)
 

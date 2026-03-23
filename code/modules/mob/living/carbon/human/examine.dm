@@ -33,7 +33,7 @@
 	if(skipface || get_visible_name() == "Unknown")
 		. += "Вы не можете разобрать, к какому виду относится находящееся перед вами существо."
 	else
-		. += "[ru_ego(TRUE)] раса - <EM>[spec_trait_examine_font()][dna.custom_species ? dna.custom_species : dna.species.name]</EM></font>!"
+		. += "[ru_ego(TRUE)] раса - <EM>[spec_trait_examine_font()][dna?.custom_species ? dna.custom_species : dna?.species?.name]</EM></font>!"
 	if(user?.stat == CONSCIOUS && ishuman(user))
 		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , span_small("Смотрю на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , null, COMBAT_MESSAGE_RANGE)
 	var/list/obscured = check_obscured_slots()
@@ -393,7 +393,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 
 	if(!HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM))
 		var/apparent_blood_volume = blood_volume
-		if(dna.species.use_skintones && skin_tone == "albino")
+		if(dna?.species?.use_skintones && skin_tone == "albino")
 			apparent_blood_volume -= 150 // enough to knock you down one tier
 		switch(apparent_blood_volume)
 			if(BLOOD_VOLUME_OKAY to BLOOD_VOLUME_SAFE)

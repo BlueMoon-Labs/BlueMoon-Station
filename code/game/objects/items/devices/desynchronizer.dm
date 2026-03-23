@@ -9,7 +9,7 @@
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
 	custom_materials = list(/datum/material/iron = 250, /datum/material/glass = 500)
-	var/max_duration = 3000
+	var/max_duration = 600 // 60 seconds max
 	var/duration = 300
 	var/last_use = 0
 	var/next_use = 0
@@ -35,7 +35,7 @@
 /obj/item/desynchronizer/AltClick(mob/living/user)
 	if(!user.canUseTopic(src, BE_CLOSE, NO_DEXTERY, FALSE, !iscyborg(user)))
 		return
-	var/new_duration = input(user, "Установите время работы (5-300) секунд:", "Desynchronizer", duration / 10) as null|num
+	var/new_duration = input(user, "Установите время работы (5-60) секунд:", "Desynchronizer", duration / 10) as null|num
 	if(new_duration)
 		new_duration = new_duration SECONDS
 		new_duration = clamp(new_duration, 50, max_duration)

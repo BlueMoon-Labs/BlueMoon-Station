@@ -982,6 +982,10 @@
 	dir = 1;
 	light_color = "#706891"
 	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = 32
+	},
 /turf/open/floor/wood,
 /area/command/meeting_room/council)
 "acB" = (
@@ -1427,7 +1431,6 @@
 /area/command/heads_quarters/captain)
 "adX" = (
 /obj/structure/table/wood,
-/obj/item/card/id/captains_spare,
 /obj/structure/window/reinforced{
 	dir = 8
 	},
@@ -61969,6 +61972,16 @@
 /obj/item/reagent_containers/food/drinks/shaker,
 /turf/open/floor/wood,
 /area/maintenance/bar)
+"sfh" = (
+/obj/effect/turf_decal/weather/snow/corner{
+	color = "#FFFFFF";
+	dir = 4
+	},
+/obj/machinery/computer/brig_assistant_console{
+	dir = 8
+	},
+/turf/open/floor/festive/sidewalk,
+/area/edina/street/primary/perimeter)
 "sgh" = (
 /obj/machinery/light/small{
 	dir = 1
@@ -107647,14 +107660,14 @@ azp
 aBP
 cnB
 aAf
-bff
+sfh
 aQG
 aFK
 aFK
 aFK
 aFK
 aVo
-bff
+sfh
 bjP
 aSy
 bgV

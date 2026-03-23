@@ -12,6 +12,15 @@ import { NtosWindow, Window } from '../layouts';
 
 const remappingIdCache = {};
 const remapId = id => remappingIdCache[id];
+const hasRemappableStaticData = data => {
+  return !!(
+    data
+    && data.static_data
+    && Array.isArray(data.static_data.id_cache)
+    && data.static_data.node_cache
+    && data.static_data.design_cache
+  );
+};
 
 const selectRemappedStaticData = data => {
   // Handle reshaping of node cache to fill in unsent fields, and
@@ -48,8 +57,9 @@ let remappedStaticData;
 
 const useRemappedBackend = context => {
   const { data, ...rest } = useBackend(context);
+  const staticReady = hasRemappableStaticData(data);
   // Only remap the static data once, cache for future use
-  if (!remappedStaticData) {
+  if (staticReady && !remappedStaticData) {
     const id_cache = data.static_data.id_cache;
     for (let i = 0; i < id_cache.length; i++) {
       remappingIdCache[i + 1] = id_cache[i];
@@ -57,10 +67,13 @@ const useRemappedBackend = context => {
     remappedStaticData = selectRemappedStaticData(data);
   }
   return {
-    data: {
-      ...data,
-      ...remappedStaticData,
-    },
+    data: staticReady
+      ? {
+        ...data,
+        ...remappedStaticData,
+      }
+      : data,
+    staticReady,
     ...rest,
   };
 };
@@ -73,11 +86,16 @@ const abbreviations = {
   "Discovery Research": "Disc. Res.",
 };
 const abbreviateName = name => abbreviations[name] ?? name;
+const TechwebLoading = () => (
+  <Section fill>
+    <Box>Loading research data...</Box>
+  </Section>
+);
 
 // Actual Components
 
 export const Techweb = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+  const { act, data, staticReady } = useRemappedBackend(context);
   const {
     locked,
   } = data;
@@ -96,14 +114,14 @@ export const Techweb = (props, context) => {
             </Button>
           </Modal>
         )}
-        <TechwebContent />
+        {staticReady ? <TechwebContent /> : <TechwebLoading />}
       </Window.Content>
     </Window>
   );
 };
 
 export const AppTechweb = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+  const { act, data, staticReady } = useRemappedBackend(context);
   const {
     locked,
   } = data;
@@ -122,7 +140,7 @@ export const AppTechweb = (props, context) => {
             </Button>
           </Modal>
         )}
-        <TechwebContent />
+        {staticReady ? <TechwebContent /> : <TechwebLoading />}
       </NtosWindow.Content>
     </NtosWindow>
   );
@@ -131,8 +149,8 @@ export const AppTechweb = (props, context) => {
 export const TechwebContent = (props, context) => {
   const { act, data } = useRemappedBackend(context);
   const {
-    points,
-    points_last_tick,
+    points = {},
+    points_last_tick = {},
     web_org,
     sec_protocols,
     t_disk,
@@ -221,7 +239,7 @@ export const TechwebContent = (props, context) => {
           </Flex.Item>
         </Flex>
       </Flex.Item>
-      <Flex.Item className="Techweb__RouterContent" height="100%">
+      <Flex.Item className="Techweb__RouterContent" grow={1}>
         <TechwebRouter />
       </Flex.Item>
     </Flex>
@@ -248,7 +266,7 @@ const TechwebRouter = (props, context) => {
 
 const TechwebOverview = (props, context) => {
   const { act, data } = useRemappedBackend(context);
-  const { nodes, node_cache, design_cache } = data;
+  const { nodes = [], node_cache = {}, design_cache = {} } = data;
   const [
     tabIndex,
     setTabIndex,
@@ -257,9 +275,10 @@ const TechwebOverview = (props, context) => {
     searchText,
     setSearchText,
   ] = useLocalState(context, 'searchText');
+  const searchValue = searchText?.trim().toLowerCase() || '';
 
   // Only search when 3 or more characters have been input
-  const searching = searchText && searchText.trim().length > 1;
+  const searching = searchValue.length > 1;
 
   let displayedNodes = nodes;
   let researchednodes = nodes;
@@ -267,17 +286,20 @@ const TechwebOverview = (props, context) => {
   if (searching) {
     displayedNodes = displayedNodes.filter(x => {
       const n = node_cache[x.id];
-      return n.name.toLowerCase().includes(searchText)
-        || n.description.toLowerCase().includes(searchText)
-        || n.design_ids.some(e =>
-          design_cache[e].name.toLowerCase().includes(searchText));
+      if (!n) {
+        return false;
+      }
+      return (n.name || '').toLowerCase().includes(searchValue)
+        || (n.description || '').toLowerCase().includes(searchValue)
+        || (n.design_ids || []).some(e =>
+          (design_cache[e]?.name || '').toLowerCase().includes(searchValue));
     });
   } else {
-    displayedNodes = sortBy(x => node_cache[x.id].name)(
+    displayedNodes = sortBy(x => node_cache[x.id]?.name || '')(
       nodes.filter(x => x.tier === 0));
-    researchednodes = sortBy(x => node_cache[x.id].name)(
+    researchednodes = sortBy(x => node_cache[x.id]?.name || '')(
       nodes.filter(x => x.tier === 1));
-    futurenodes = sortBy(x => node_cache[x.id].name)(
+    futurenodes = sortBy(x => node_cache[x.id]?.name || '')(
       nodes.filter(x => x.tier === 2));
   }
 
@@ -311,8 +333,8 @@ const TechwebOverview = (props, context) => {
           </Flex.Item>
         </Flex>
       </Flex.Item>
-      <Flex.Item className={"Techweb__OverviewNodes"} height="100%">
-        <Flex height="100%">
+      <Flex.Item className={"Techweb__OverviewNodes"} grow={1}>
+        <Flex>
           {!searching && (
             <>
               <Flex.Item mr={1}>
@@ -686,7 +708,7 @@ const TechNodeDetail = (props, context) => {
           </Flex.Item>
         </Flex>
       </Flex.Item>
-      <Flex.Item className={"Techweb__OverviewNodes"} height="100%">
+      <Flex.Item className={"Techweb__OverviewNodes"} grow={1}>
         <Flex>
           <Flex.Item mr={1}>
             {prereqNodes.map(n => (

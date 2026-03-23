@@ -13198,6 +13198,10 @@
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/structure/safe/spare_id{
+	pixel_x = -32;
+	pixel_y = 0
+	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
 "ezF" = (
@@ -14107,6 +14111,7 @@
 /obj/machinery/airalarm{
 	pixel_y = 23
 	},
+/obj/machinery/computer/brig_assistant_console,
 /turf/open/floor/plasteel,
 /area/hallway/primary/port)
 "eOF" = (
@@ -15627,7 +15632,7 @@
 	},
 /obj/item/melee/baseball_bat/ablative,
 /obj/item/clothing/suit/yakuza,
-/obj/item/clothing/glasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
 "fpT" = (
@@ -16784,7 +16789,6 @@
 /area/command/heads_quarters/captain/private)
 "fKy" = (
 /obj/structure/table/wood,
-/obj/item/card/id/captains_spare,
 /obj/item/razor{
 	pixel_x = -4;
 	pixel_y = 2
@@ -18989,6 +18993,7 @@
 	c_tag = "Bridge West";
 	dir = 8
 	},
+/obj/machinery/suit_storage_unit/corporate,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/turret_protected/aisat/foyer)
 "gAp" = (
@@ -57883,7 +57888,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
-/obj/machinery/autolathe,
+/obj/machinery/autolathe/hacked,
 /turf/open/floor/plasteel,
 /area/security/office)
 "tVu" = (

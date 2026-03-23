@@ -1,3 +1,7 @@
+GLOBAL_LIST_EMPTY(ashwalker_spawns)
+
+#define ASH_RESPAWN_COOLDOWN 20 MINUTES
+
 /datum/team/ghost_role
 	name = "Ghost Role"
 	show_roundend_report = FALSE
@@ -83,10 +87,17 @@
 			if(damage_amount)
 				playsound(loc, 'sound/items/welder.ogg', 100, TRUE)
 
-/obj/structure/ash_walker_eggshell/attack_ghost(mob/user) //Pass on ghost clicks to the mob spawner
-	if(egg)
-		egg.attack_ghost(user)
-	. = ..()
+/obj/structure/ash_walker_eggshell/attack_ghost(mob/user)
+    if(egg)
+        var/time_spawn = GLOB.ashwalker_spawns[user.ckey]
+        if(time_spawn && world.time - time_spawn < ASH_RESPAWN_COOLDOWN)
+            var/time_left = max(0, ASH_RESPAWN_COOLDOWN - (world.time - time_spawn))
+            var/mins_left  = floor(time_left / 600)        // 600 тиков = 1 минута
+            var/secs_left  = floor((time_left % 600) / 10) // остаток в секундах
+            to_chat(user, span_warning("Необходимо подождать ещё [mins_left] минут[mins_left % 10 == 1 && mins_left % 100 != 11 ? "а" : (mins_left % 10 >= 2 && mins_left % 10 <= 4 && (mins_left % 100 < 10 || mins_left % 100 >= 20) ? "ы" : "")] и [secs_left] секунд[secs_left % 10 == 1 && secs_left % 100 != 11 ? "а" : (secs_left % 10 >= 2 && secs_left % 10 <= 4 && (secs_left % 100 < 10 || secs_left % 100 >= 20) ? "ы" : "")] до возможности возродиться."))
+            return
+        egg.attack_ghost(user)
+    . = ..()
 
 /obj/structure/ash_walker_eggshell/Destroy()
 	if(!egg)
@@ -161,6 +172,8 @@
 		if(team)
 			new_spawn.mind.add_antag_datum(/datum/antagonist/ashwalker, team)
 			team.players_spawned += (new_spawn.ckey)
+		if(new_spawn.ckey)
+			GLOB.ashwalker_spawns[new_spawn.ckey] = world.time
 		eggshell.egg = null
 		QDEL_NULL(eggshell)
 
@@ -1331,7 +1344,7 @@
 	short_desc = "Вы Специалист Синдиката, работающий на Общем Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием \
 	'Благословлённый' под Начальством Адмирала одной из Сторон и изучающий аномальное поле Системы Синих Лун."
 	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за \
-	операциями NT и Кордоном. Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
+	операциями NT и Кордоном. Ваш приказ - поддерживать целостность своего объекта, следить за положением в системе, в условиях 'Безопасной Системы' оказывать информационную поддержку и по возможности не высовываться за пределы своего сектора."
 	important_info = "Вы не антагонист."
 	roundstart = FALSE
 	death = FALSE
@@ -1365,7 +1378,7 @@
 	short_desc = "Вы Специалист Синдиката, работающий на Оперативной Базе Синдиката из формирования 'Глубокий Космос Два' под названием \
 	'Благословлённый' под Начальством Адмирала одной из Сторон и изучающий аномальное поле Системы Синих Лун."
 	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за операциями NT и Кордоном. \
-	Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
+	Ваш приказ - поддерживать целостность своего объекта, следить за положением в системе, в условиях 'Безопасной Системы' оказывать информационную поддержку и по возможности не высовываться за пределы своего сектора."
 	important_info = "Вы не антагонист."
 	outfit = /datum/outfit/ds2/syndicate
 	starting_money = 1000 // BLUEMOON ADD
@@ -1378,7 +1391,7 @@
 	short_desc = "Вы Адмирал одной из ячеек Синдиката, работающий на Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием 'Благословлённый'. \
 	Приведите Объект под вашей ответственностью к успеху, который планировался, либо умрите - стараясь."
 	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за операциями NT и Кордоном. \
-	Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
+	Ваш приказ - поддерживать целостность своего объекта, следить за положением в системе, в условиях 'Безопасной Системы' оказывать информационную поддержку и по возможности не высовываться за пределы своего сектора."
 	important_info = "Вы не антагонист."
 	outfit = /datum/outfit/ds2/syndicate_command
 	starting_money = 5000 // BLUEMOON ADD
@@ -1426,10 +1439,12 @@
 	outfit = /datum/outfit/ds2/syndicate_command/corporateliaison
 
 /obj/effect/mob_spawn/human/ds2/syndicate_command/comms
+	name = "a Syndicate Comms Agent"
 	mob_name = "a Syndicate Comms Agent"
 	short_desc = "Вы Агент или Офицер Прослушки одной из ячеек Синдиката, работающий на Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием 'Благославлённый'. \
-	Помогите вашемукомандованию привести Объект к успеху, который планировался, либо умрите - стараясь."
-
+	Ваш приказ - поддерживать целостность своего объекта, следить за положением в системе, в условиях 'Безопасной Системы' оказывать информационную поддержку и по возможности не высовываться за пределы своего сектора."
+	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за операциями NT и Кордоном. \
+	Приведите Объект под вашей ответственностью к успеху, который планировался, либо умрите - стараясь."
 	outfit = /datum/outfit/ds2/syndicate_command/comms
 
 /obj/effect/mob_spawn/human/ds2/syndicate_command/admiral
@@ -1471,6 +1486,8 @@
 	id = /obj/item/card/id/syndicate/advanced/ds
 	id_trim = /datum/id_trim/syndicom/ds2
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/deathrattle/deepspacecrew)
+
+	accessory = list(/obj/item/clothing/accessory/permit/special/deep_space_syndicate)
 
 /datum/outfit/ds2/syndicate/service
 	name = "DS-2 General Staff"
@@ -1554,6 +1571,8 @@
 	id = /obj/item/card/id/syndicate/advanced/ds/gold/command
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/deathrattle/deepspacecrew)
 	id_trim = /datum/id_trim/syndicom/ds2
+
+	accessory = list(/obj/item/clothing/accessory/permit/special/deep_space_syndicate)
 
 /datum/outfit/ds2/syndicate_command/masteratarms
 	name = "DS-2 Master At Arms"

@@ -189,10 +189,6 @@ SUBSYSTEM_DEF(ticker)
 			else
 				send2chat(new /datum/tgs_message_content("Новый раунд начинается на [SSmapping.config.map_name], голосование за режим полным ходом!"), CONFIG_GET(string/chat_announce_new_game))
 			current_state = GAME_STATE_PREGAME
-			//SPLURT EDIT - Bring back old panel
-			//Everyone who wants to be an observer is now spawned
-			create_observers()
-			//SPLURT EDIT
 			SEND_SIGNAL(src, COMSIG_TICKER_ENTER_PREGAME)
 
 			fire()
@@ -216,12 +212,12 @@ SUBSYSTEM_DEF(ticker)
 			//lobby stats for statpanels
 			if(isnull(timeLeft))
 				timeLeft = max(0,start_at - world.time)
-			totalPlayers = 0
-			totalPlayersReady = 0
-			for(var/mob/dead/new_player/player in GLOB.player_list)
-				++totalPlayers
-				if(player.ready == PLAYER_READY_TO_PLAY)
-					++totalPlayersReady
+			totalPlayers = length(GLOB.new_player_list)
+			var/readied = 0
+			for(var/mob/dead/new_player/np as anything in GLOB.new_player_list)
+				if(np.ready)
+					readied++
+			totalPlayersReady = readied
 
 			if(start_immediately)
 				timeLeft = 0
@@ -450,8 +446,6 @@ SUBSYSTEM_DEF(ticker)
 				LAZYOR(player.client.prefs.characters_joined_as, player.new_character.real_name)
 			else
 				stack_trace("WARNING: Either a player did not have a new_character, did not have a client, or did not have preferences. This is VERY bad.")
-		else if(!(player.client?.prefs.toggles & TG_PLAYER_PANEL))
-			player.new_player_panel()
 		CHECK_TICK
 
 /datum/controller/subsystem/ticker/proc/collect_minds()

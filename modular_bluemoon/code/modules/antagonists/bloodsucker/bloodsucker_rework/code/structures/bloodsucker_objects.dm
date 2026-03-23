@@ -102,7 +102,7 @@
 	desc = "A simple wooden stake carved to a sharp point."
 	icon = 'modular_bluemoon/code/modules/antagonists/bloodsucker/bloodsucker_rework/icons/stakes.dmi'
 	icon_state = "wood"
-	inhand_icon_state = "wood"
+	item_state = "wood"
 	lefthand_file = 'modular_bluemoon/code/modules/antagonists/bloodsucker/bloodsucker_rework/icons/bs_leftinhand.dmi'
 	righthand_file = 'modular_bluemoon/code/modules/antagonists/bloodsucker/bloodsucker_rework/icons/bs_rightinhand.dmi'
 	slot_flags = ITEM_SLOT_POCKETS
@@ -184,7 +184,7 @@
 	name = "silver stake"
 	desc = "Polished and sharp at the end. For when some mofo is always trying to iceskate uphill."
 	icon_state = "silver"
-	inhand_icon_state = "silver"
+	item_state = "silver"
 	siemens_coefficient = 1 //flags = CONDUCT // var/siemens_coefficient = 1 // for electrical admittance/conductance (electrocution checks and shit)
 	force = 9
 	armour_penetration = 25

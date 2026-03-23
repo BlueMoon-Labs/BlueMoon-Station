@@ -130,15 +130,16 @@
 
 /obj/item/gun/ballistic/revolver/detective/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 	if(chambered && !(chambered.caliber in safe_calibers))
-		if(prob(70 - (magazine.ammo_count() * 10)))	//minimum probability of 10, maximum of 60
+		var/real_ammo_count = magazine ? magazine.ammo_count(0) : 0
+		if(prob(65 - (real_ammo_count * 10)))	//минимум 5, максимум 55
 			playsound(user, fire_sound, 50, 1)
 			to_chat(user, "<span class='userdanger'>[src] blows up in your face!</span>")
-			user.take_bodypart_damage(0,20)
+			user.take_bodypart_damage(10,10)
 			user.dropItemToGround(src)
 			return FALSE
 	..()
 
-/obj/item/gun/ballistic/revolver/detective/screwdriver_act(mob/living/user, obj/item/I)
+/obj/item/gun/ballistic/revolver/detective/wrench_act(mob/living/user, obj/item/I)
 	if(..())
 		return TRUE
 	if("38" in magazine.caliber)
@@ -174,6 +175,7 @@
 	name = "\improper Unica 6 auto-revolver"
 	desc = "A retro high-powered autorevolver typically used by officers of the New Russia military. Uses .357 ammo."
 	icon_state = "mateba" //Поменял стандартную иконку Револьвера Русских.
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
 
 /obj/item/gun/ballistic/revolver/golden
 	name = "\improper Golden revolver"

@@ -6329,7 +6329,7 @@
 /turf/open/floor/engine,
 /area/awaymission/wildwest/vault)
 "xR" = (
-/obj/machinery/grill,
+/obj/machinery/grill/oldschool,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "xS" = (

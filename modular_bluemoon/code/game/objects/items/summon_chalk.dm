@@ -183,6 +183,9 @@
 	. = ..()
 	if(returner)
 		teleport_summoned(returner, return_pos, TRUE)
+		returner = null
+	return_pos = null
+	listed_items = null
 
 //Проклятые техники телепортации
 //При телепортации мы помещаем всё "нежелательное" (контейнеры) в руну призыва, а после, когда появляется руна возврата - всё перенесётся в неё (в процессе return_rune/Initialize)

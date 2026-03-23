@@ -2,7 +2,7 @@
 	name = "InteQ uplink"
 	icon = 'modular_bluemoon/krashly/icons/obj/inteq-uplink.dmi'
 	icon_state = "inteq-uplink"
-	desc = "A basic handheld radio that communicates with local telecommunication networks. (You can turn Uplink to dust if you Alt + Click it.)"
+	desc = "Обычная портативная рация, подключённая к местным телекоммуникационным сетям. (Можно уничтожить аплинк нажав Alt + Click.)"
 	dog_fashion = /datum/dog_fashion/back
 
 	flags_1 = CONDUCT_1
@@ -31,7 +31,7 @@
 	name = "InteQ Radio Uplink"
 	icon = 'modular_bluemoon/krashly/icons/obj/inteq-uplink.dmi'
 	icon_state = "inteq-uplink"
-	desc = "A basic handheld radio that communicates with local telecommunication networks. (You can turn Uplink to dust if you Alt + Click it.)"
+	desc = "Обычная портативная рация, подключённая к местным телекоммуникационным сетям. (Можно уничтожить аплинк нажав Alt + Click.)"
 	dog_fashion = /datum/dog_fashion/back
 
 /obj/item/inteq/uplink/radio/nuclear
@@ -43,7 +43,7 @@
 	icon = 'modular_bluemoon/krashly/icons/obj/inteq-uplink.dmi'
 	icon_state = "syndicate-uplink"
 	item_state = "walkietalkie"
-	desc = "A basic handheld radio that communicates with local telecommunication networks. (You can turn Uplink to dust if you Alt + Click it.)"
+	desc = "Обычная портативная рация, подключённая к местным телекоммуникационным сетям. (Можно уничтожить аплинк нажав Alt + Click.)"
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
 	dog_fashion = /datum/dog_fashion/back
@@ -73,7 +73,7 @@
 	icon = 'modular_bluemoon/krashly/icons/obj/inteq-uplink.dmi'
 	icon_state = "syndicate-uplink"
 	item_state = "walkietalkie"
-	desc = "A basic handheld radio that communicates with local telecommunication networks. (You can turn Uplink to dust if you Alt + Click it.)"
+	desc = "Обычная портативная рация, подключённая к местным телекоммуникационным сетям. (Можно уничтожить аплинк нажав Alt + Click.)"
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
 	dog_fashion = /datum/dog_fashion/back

@@ -13,6 +13,6 @@
 		holder.add_tagged_datum(target_datum)
 
 /client/proc/tag_datum_mapview(datum/target_datum as mob|obj|turf|area in view(view))
-	set category = "Debug"
+	set category = "Debug.4) VV"
 	set name = "Tag Datum"
 	tag_datum(target_datum)

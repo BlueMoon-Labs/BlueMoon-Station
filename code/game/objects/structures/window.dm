@@ -715,6 +715,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 	dir = FULLTILE_WINDOW_DIR
 	max_integrity = 50
 	fulltile = TRUE
+	shadow_weight = 0.1
 	flags_1 = PREVENT_CLICK_UNDER_1
 	obj_flags = CAN_BE_HIT //BLUEMOON ADD
 	smooth = SMOOTH_TRUE

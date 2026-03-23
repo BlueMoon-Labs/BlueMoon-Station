@@ -1,3 +1,3 @@
 /mob/living/silicon/ai/create_eye()
 	. = ..()
-	eyeobj.relay_speech = TRUE
+	eyeobj.relay_speech = FALSE

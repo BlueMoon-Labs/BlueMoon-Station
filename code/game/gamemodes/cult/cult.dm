@@ -16,23 +16,27 @@
 	return FALSE
 
 /proc/is_convertable_to_cult(mob/living/M,datum/team/cult/specific_cult)
+	. = FALSE
 	if(!istype(M))
-		return FALSE
+		return
+	if(jobban_isbanned(M, ROLE_CULTIST)) // При конверте, таких принесет в жертву
+		return
 	if(M.mind)
 		if(M.mind.assigned_role in list("Captain", "Chaplain"))
-			return FALSE
+			return
 		if(specific_cult && specific_cult.is_sacrifice_target(M.mind))
-			return FALSE
+			return
 		if(M.mind.enslaved_to && !iscultist(M.mind.enslaved_to))
-			return FALSE
+			return
 		if(M.mind.unconvertable)
-			return FALSE
+			return
 		if(IS_HERETIC(M))
-			return FALSE
+			return
 	else
-		return FALSE
+		return
 	if(HAS_TRAIT(M, TRAIT_MINDSHIELD) || issilicon(M) || isbot(M) || isdrone(M) || is_servant_of_ratvar(M) || !M.client)
-		return FALSE //can't convert machines, shielded, braindead, or ratvar's dogs
+		return //can't convert machines, shielded, braindead, or ratvar's dogs
+
 	return TRUE
 
 /datum/game_mode/cult
@@ -42,7 +46,7 @@
 	false_report_weight = 10
 	chaos = 8
 	restricted_jobs = list("Prisoner", "AI", "Cyborg")
-	protected_jobs = list("Security Officer", "Shaft Miner", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Chief Engineer", "Chief Medical Officer", "Research Director", "Quartermaster", "Blueshield", "Brig Physician", "Peacekeeper", "NanoTrasen Representative", "Internal Affairs Agent", "Chaplain")
+	protected_jobs = list("Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Chief Engineer", "Chief Medical Officer", "Research Director", "Quartermaster", "Blueshield", "Brig Physician", "Peacekeeper", "NanoTrasen Representative", "Internal Affairs Agent", "Chaplain")
 	required_players = 0
 	required_enemies = 3
 	recommended_enemies = 5

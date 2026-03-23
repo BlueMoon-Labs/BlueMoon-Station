@@ -54,14 +54,24 @@ GLOBAL_PROTECT(world_econ_log)
 
 GLOBAL_VAR(perf_log)
 GLOBAL_PROTECT(perf_log)
+GLOBAL_VAR(ping_perf_log)
+GLOBAL_PROTECT(ping_perf_log)
 
 // GLOBAL_VAR(demo_log)
 // GLOBAL_PROTECT(demo_log)
 
 GLOBAL_LIST_EMPTY(bombers)
 GLOBAL_PROTECT(bombers)
+#define BOMBERS_LIST_MAX 500
+#define BOMBERS_LIST_TRIM_TO 300
+/proc/add_bomber_message(entry)
+	GLOB.bombers += entry
+	if(length(GLOB.bombers) > BOMBERS_LIST_MAX)
+		GLOB.bombers.Cut(1, length(GLOB.bombers) - BOMBERS_LIST_TRIM_TO)
 GLOBAL_LIST_EMPTY(admin_log)
 GLOBAL_PROTECT(admin_log)
+GLOBAL_LIST_EMPTY(admin_log_entries)
+GLOBAL_PROTECT(admin_log_entries)
 GLOBAL_LIST_EMPTY(uplink_log)
 GLOBAL_PROTECT(uplink_log)
 GLOBAL_LIST_EMPTY(lastsignalers)	//keeps last 100 signals here in format: "[src] used [REF(src)] @ location [src.loc]: [freq]/[code]"

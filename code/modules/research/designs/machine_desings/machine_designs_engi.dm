@@ -25,14 +25,6 @@
 	category = list ("Engineering Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
-/datum/design/board/announcement_system
-	name = "Machine Design (Automated Announcement System Board)"
-	desc = "The circuit board for an automated announcement system."
-	id = "automated_announcement"
-	build_path = /obj/item/circuitboard/machine/announcement_system
-	category = list("Subspace Telecomms")
-	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
-
 /datum/design/board/turbine_computer
 	name = "Computer Design (Power Turbine Console Board)"
 	desc = "The circuit board for a power turbine console."
@@ -89,13 +81,7 @@
 	category = list ("Engineering Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
 
-/datum/design/board/ntnet_relay
-	name = "Machine Design (NTNet Relay Board)"
-	desc = "The circuit board for a wireless network relay."
-	id = "ntnet_relay"
-	build_path = /obj/item/circuitboard/machine/ntnet_relay
-	category = list("Subspace Telecomms")
-	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
+
 
 /datum/design/board/thermomachine
 	name = "Machine Design (Freezer/Heater Board)"

@@ -25,12 +25,34 @@ function Download-Node {
 	Verify-Node
 }
 
+function Get-SHA256 {
+	param([string] $Path)
+
+	if (Get-Command Get-FileHash -ErrorAction SilentlyContinue) {
+		return (Get-FileHash $Path -Algorithm SHA256).Hash
+	}
+
+	$Stream = [System.IO.File]::OpenRead($Path)
+	try {
+		$Sha256 = [System.Security.Cryptography.SHA256]::Create()
+		try {
+			$HashBytes = $Sha256.ComputeHash($Stream)
+			return ([System.BitConverter]::ToString($HashBytes) -replace "-", "")
+		}
+		finally {
+			$Sha256.Dispose()
+		}
+	}
+	finally {
+		$Stream.Dispose()
+	}
+}
+
 function Verify-Node {
 	$Tries = $Tries + 1
 
 	Write-Output "Verifying Node checksum..."
-	$FileHash = Get-FileHash $NodeTarget -Algorithm SHA256
-	$ActualSha = $FileHash.Hash
+	$ActualSha = Get-SHA256 $NodeTarget
 	$LoginResponse = Invoke-WebRequest "https://nodejs.org/download/release/v$NodeVersion/SHASUMS256.txt" -UseBasicParsing
 	$ShaArray = $LoginResponse.Content.split("`n")
 	foreach ($ShaArrayEntry in $ShaArray) {
@@ -68,7 +90,7 @@ if ($Env:TG_BOOTSTRAP_CACHE) {
 	$Cache = $Env:TG_BOOTSTRAP_CACHE
 }
 # Get OS version
-$OSMajor = (Get-WmiObject -Class Win32_OperatingSystem).Version.Split(".")[0]
+$OSMajor = [Environment]::OSVersion.Version.Major
 # Set Node version based on OS version
 if ($OSMajor -lt 10) {
 	# Anything under Windows 10

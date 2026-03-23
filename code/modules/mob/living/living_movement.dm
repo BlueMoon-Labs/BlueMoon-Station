@@ -161,6 +161,13 @@
 		if (client || audiovisual_redirect)
 			if (new_z)
 				SSmobs.clients_by_zlevel[new_z] += src
+				// Initialize deferred lighting when first client enters a z-level
+				// Skip during bulk operations (shuttle docking) — docking creates lighting for shuttle turfs,
+				// and remaining turfs will be initialized when the deferred batch completes
+				if(SSlighting?.initialized && SSmapping?.initialized && !GLOB.lighting_defer_active)
+					var/datum/space_level/level = SSmapping.z_list.len >= new_z ? SSmapping.z_list[new_z] : null
+					if(level && !level.lighting_initialized)
+						INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(create_lighting_for_zlevel), new_z)
 				for (var/I in length(SSidlenpcpool.idle_mobs_by_zlevel[new_z]) to 1 step -1) //Backwards loop because we're removing (guarantees optimal rather than worst-case performance), it's fine to use .len here but doesn't compile on 511
 					var/mob/living/simple_animal/SA = SSidlenpcpool.idle_mobs_by_zlevel[new_z][I]
 					if (SA)

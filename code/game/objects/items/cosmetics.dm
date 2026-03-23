@@ -6,6 +6,7 @@
 	icon_state = "lipstick"
 	w_class = WEIGHT_CLASS_TINY
 	var/colour = "red"
+	var/real_colour
 	var/open = FALSE
 	/// A trait that's applied while someone has this lipstick applied, and is removed when the lipstick is removed
 	var/lipstick_trait
@@ -22,6 +23,7 @@
 /obj/item/lipstick/black
 	name = "black lipstick"
 	colour = "black"
+	real_colour ="#a5a5a5"
 
 /obj/item/lipstick/black/death
 	name = "\improper Kiss of Death"
@@ -69,7 +71,7 @@
 	if(target == user)
 		user.visible_message(span_notice("[user] does [user.p_their()] lips with \the [src]."), \
 			span_notice("You take a moment to apply \the [src]. Perfect!"))
-		target.update_lips("lipstick", colour, lipstick_trait)
+		target.update_lips("lipstick", real_colour ? real_colour : colour, lipstick_trait)
 		return
 
 	user.visible_message(span_warning("[user] begins to do [target]'s lips with \the [src]."), \

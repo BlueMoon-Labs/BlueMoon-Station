@@ -18,8 +18,9 @@
 	var/processing_amount = 5
 
 	var/list/production = list(
-		/datum/reagent/medicine/system_cleaner = 50,
 		/datum/reagent/medicine/synthblood_deluxe = 200,
+		/datum/reagent/medicine/ferrocortex = 120,
+		/datum/reagent/medicine/system_cleaner = 50,
 		/datum/reagent/blood/oil = 50)
 
 	var/selected_production = null
@@ -36,6 +37,11 @@
 	if(beaker && istype(beaker))
 		beaker.forceMove(A)
 	return ..()
+
+/obj/machinery/robo_liquid_generator/examine(mob/user)
+	. = ..()
+	if(in_range(user, src) || isobserver(user))
+		. += span_notice("Виден разъём для приёма блюспейс-кристаллов и поликристаллов.")
 
 /obj/machinery/robo_liquid_generator/RefreshParts()
 	// 2 ёмкости материи - умножаем вместимость на среднее значение их рейтинга
@@ -207,7 +213,7 @@
 	var/data = "<html><body>"
 	data += "<center><h2>RoboLiquid Generator</h2></center><br>"
 	// Информация о состоянии генератора
-	data += "<b>Всего блюспейс-порошка</b>: [bluespace_amount]<br>"
+	data += "<b>Всего блюспейс-порошка</b>: [bluespace_amount] u<br>"
 	var/datum/reagent/selec_prod = selected_production
 	data += "<b>Выбранный реагент</b>: [initial(selec_prod.name)]<br>"
 	data += "<b>Производство</b> - [in_progress ? "ВЕДЁТСЯ" : "НЕ ВЕДЁТСЯ"]<br>"
@@ -222,9 +228,9 @@
 	data += " <a href='?src=[REF(src)];detach_beaker=1'>Вынуть</a><br>"
 	data += "<hr>"
 	// Информация о том, как улучшен генератор
-	data += "<b>Максимум порошка</b>: [max_single_material_amount]<br>"
-	data += "<b>Скорость производства</b>: [processing_speed]<br>"
-	data += "<b>Реагентов за цикл</b>: [processing_amount]<br>"
+	data += "<b>Макс. объём порошка</b>: [max_single_material_amount] m/u<br>"
+	data += "<b>Скорость производства</b>: [processing_speed * 100]%<br>"
+	data += "<b>Реагентов за цикл</b>: [processing_amount] u<br>"
 	data += "</body></html>"
 	var/datum/browser/popup = new(user, "roboliquid_generator", "RoboLiquid Generator", 500, 400)
 	popup.set_content(data)

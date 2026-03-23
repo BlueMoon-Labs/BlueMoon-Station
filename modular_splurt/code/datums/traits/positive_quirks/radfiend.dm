@@ -24,7 +24,8 @@
 
 	// Remove glow control action
 	var/datum/action/rad_fiend/update_glow/quirk_action = locate() in quirk_mob.actions
-	quirk_action.Remove(quirk_mob)
+	if(quirk_action)
+		quirk_action.Remove(quirk_mob)
 
 	// Remove glow effect
 	quirk_mob.remove_filter("rad_fiend_glow")
@@ -65,6 +66,8 @@
 
 	// Define user mob
 	var/mob/living/carbon/human/action_mob = owner
+	if(!action_mob)
+		return
 
 	// Remove glow
 	action_mob.remove_filter("rad_fiend_glow")

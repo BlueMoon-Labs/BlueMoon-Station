@@ -1,5 +1,5 @@
 /client/proc/Debug2()
-	set category = "Debug"
+	set category = "Debug.7) Testing"
 	set name = "Debug-Game"
 	if(!check_rights(R_DEBUG))
 		return
@@ -15,8 +15,22 @@
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Toggle Debug Two") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
+/client/proc/allow_browser_inspect()
+	set category = "Debug.2) Info"
+	set name = "Allow Browser Inspect"
+	if(!check_rights(R_DEBUG))
+		return
+
+	if(byond_version < 516)
+		to_chat(src, span_warning("Эта функция доступна только на BYOND 516 и выше!"))
+		return
+
+	to_chat(src, span_notice("Теперь вы можете использовать инспектор браузера через правый клик."))
+	winset(src, null, "browser-options=+devtools")
+	SSblackbox.record_feedback("tally", "admin_verb", 1, "Allow Browser Inspect") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
 /client/proc/Cell()
-	set category = "Debug"
+	set category = "Debug.9) Debug Verbs"
 	set name = "Air Status in Location"
 	if(!mob)
 		return
@@ -137,7 +151,7 @@
 
 //TODO: merge the vievars version into this or something maybe mayhaps
 /client/proc/cmd_debug_del_all(object as text)
-	set category = "Debug"
+	set category = "Debug.8) Misc"
 	set name = "Del-All"
 
 	var/list/matches = get_fancy_list_of_atom_types()
@@ -161,7 +175,7 @@
 
 
 /client/proc/cmd_debug_make_powernets()
-	set category = "Debug"
+	set category = "Debug.3) Fixing"
 	set name = "Make Powernets"
 	SSmachines.makepowernets()
 	log_admin("[key_name(src)] has remade the powernet. makepowernets() called.")
@@ -540,7 +554,7 @@
 	return dresscode
 
 /client/proc/cmd_admin_rejuvenate(mob/living/M in GLOB.mob_list)
-	set category = "Debug"
+	set category = "Debug.8) Misc"
 	set name = "Rejuvenate"
 
 	if(!check_rights(R_ADMIN))
@@ -561,7 +575,7 @@
 
 /client/proc/startSinglo()
 
-	set category = "Debug"
+	set category = "Debug.9) Debug Verbs"
 	set name = "Start Singularity"
 	set desc = "Sets up the singularity and all machines to get power flowing through the station"
 
@@ -617,7 +631,7 @@
 			SMES.input_attempt = 1
 
 /client/proc/cmd_debug_mob_lists()
-	set category = "Debug"
+	set category = "Debug.2) Info"
 	set name = "Debug Mob Lists"
 	set desc = "For when you just gotta know"
 
@@ -638,7 +652,7 @@
 			to_chat(usr, jointext(GLOB.joined_player_list,","))
 
 /client/proc/cmd_display_del_log()
-	set category = "Debug"
+	set category = "Debug.1) Logs"
 	set name = "Display del() Log"
 	set desc = "Display del's log of everything that's passed through it."
 
@@ -664,24 +678,127 @@
 
 	dellog += "</ol>"
 
-	usr << browse(dellog.Join(), "window=dellog")
+	var/datum/browser/popup = new(usr, "dellog", "Deletion Log")
+	popup.set_content(dellog.Join())
+	popup.open()
+
+/client/proc/cmd_display_gc_queue()
+	set category = "Debug.1) Logs"
+	set name = "Display GC Queue"
+	set desc = "Display current GC queue contents by type."
+
+	var/list/queue_names = list(
+		"Softcheck Queue (GC_QUEUE_SOFTCHECK, [GC_SOFTCHECK_TIMEOUT / 10]s)",
+		"Warnfail Queue (GC_QUEUE_WARNFAIL, +[GC_WARNFAIL_TIMEOUT / 10]s)",
+		"Hard Delete Queue (GC_QUEUE_HARDDELETE, +[GC_HARDDEL_TIMEOUT / 10]s)"
+	)
+	var/list/output = list("<B>Current GC Queue Contents</B>")
+	output += " — <A href='byond://?src=[REF(holder)];[HrefToken()];gc_queue_refresh=1'>Refresh</A>"
+	output += " | Confirmed leak avg: [round(SSgarbage.leak_rate_avg, 0.01)]/мин | Hard-del avg: [round(SSgarbage.harddel_ms_avg, 0.1)]мс<BR>"
+
+	// --- Queues by type ---
+	for (var/level in 1 to GC_QUEUE_COUNT)
+		var/list/refs  = SSgarbage.queue_refs[level]
+		var/head       = SSgarbage.queue_heads[level]
+		var/pending_slots = SSgarbage.GetQueueDepth(level)
+		var/processed_slots = SSgarbage.GetProcessedQueueSlots(level)
+		output += "<BR><h3>[queue_names[level]] — [pending_slots] pending slots (peak: [SSgarbage.peak_queue_depths[level]])</h3>"
+
+		if (pending_slots <= 0)
+			output += "<i>Пусто</i>"
+			continue
+
+		var/list/type_counts = list()
+		var/live_sample = 0
+		var/invalid_sample = 0
+		var/scanned_slots = 0
+		var/list/type_strings = SSgarbage.queue_types[level]
+
+		for (var/i in head to length(refs))
+			if (scanned_slots >= GC_QUEUE_PREVIEW_SCAN_LIMIT)
+				break
+			var/refID = refs[i]
+			if (isnull(refID))
+				continue // Tombstoned slot — skip without counting toward scan limit
+			scanned_slots++
+			var/datum/D = SSgarbage.GetQueuedDatum(level, i)
+			var/tpath
+			if (D)
+				live_sample++
+				tpath = "[D.type]"
+			else
+				invalid_sample++
+				// Use stored type string for already-GC'd objects
+				if (i <= length(type_strings))
+					tpath = type_strings[i]
+			if (tpath)
+				type_counts[tpath] = (type_counts[tpath] || 0) + 1
+
+		sortTim(type_counts, cmp = GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
+
+		output += "<b>Обработано: [processed_slots]</b>"
+		output += "<br><i>Сэмпл первых [scanned_slots] ожидающих слотов: живые [live_sample] | невалидные [invalid_sample]</i><ol>"
+		var/shown = 0
+		for (var/tpath in type_counts)
+			output += "<li><u>[tpath]</u> — [type_counts[tpath]]</li>"
+			shown++
+			if (shown >= 50)
+				output += "<li><i>...и ещё [length(type_counts) - 50] типов</i></li>"
+				break
+		if (pending_slots > GC_QUEUE_PREVIEW_SCAN_LIMIT)
+			output += "<li><i>Показан только сэмпл первых [GC_QUEUE_PREVIEW_SCAN_LIMIT] ожидающих слотов.</i></li>"
+		output += "</ol>"
+
+	// --- Costly types (from qdel_item stats) ---
+	output += "<BR><h3>Top types by Destroy() cost</h3>"
+	var/list/destroy_cost = list()
+	for(var/path in SSgarbage.items)
+		var/datum/qdel_item/I = SSgarbage.items[path]
+		if(I.destroy_time > 0)
+			destroy_cost["[path]"] = I.destroy_time
+	sortTim(destroy_cost, cmp = GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
+	output += "<ol>"
+	var/shown_cost = 0
+	for(var/path in destroy_cost)
+		var/datum/qdel_item/I = SSgarbage.items[path]
+		var/extra = ""
+		if (I.failures)
+			extra += " | Soft fails: [I.failures]"
+		if (I.warnfail_count)
+			extra += " | Warnfail: [I.warnfail_count]"
+		if (I.hard_deletes)
+			extra += " | Hard dels: [I.hard_deletes] ([I.hard_delete_time]ms, max [I.hard_delete_max]ms)"
+		if (I.slept_destroy)
+			extra += " | Sleeps: [I.slept_destroy]"
+		output += "<li><u>[path]</u> — Destroy: [I.destroy_time]ms / [I.qdels] calls ([round(I.destroy_time / max(I.qdels, 1), 0.01)]ms avg)[extra]</li>"
+		shown_cost++
+		if(shown_cost >= 30)
+			output += "<li><i>...and [length(destroy_cost) - 30] more types</i></li>"
+			break
+	output += "</ol>"
+
+	var/datum/browser/popup = new(usr, "gcqueue", "GC Queue Contents", 700, 600)
+	popup.set_content(output.Join())
+	popup.open()
 
 /client/proc/cmd_display_overlay_log()
-	set category = "Debug"
+	set category = "Debug.1) Logs"
 	set name = "Display overlay Log"
 	set desc = "Display SSoverlays log of everything that's passed through it."
 
 	render_stats(SSoverlays.stats, src)
 
 /client/proc/cmd_display_init_log()
-	set category = "Debug"
+	set category = "Debug.1) Logs"
 	set name = "Display Initialize() Log"
 	set desc = "Displays a list of things that didn't handle Initialize() properly"
 
-	usr << browse(replacetext(SSatoms.InitLog(), "\n", "<br>"), "window=initlog")
+	var/datum/browser/popup = new(usr, "initlog", "Initialize Log")
+	popup.set_content(replacetext(SSatoms.InitLog(), "\n", "<br>"))
+	popup.open(FALSE)
 
 /client/proc/debug_huds(i as num)
-	set category = "Debug"
+	set category = "Debug.4) VV"
 	set name = "Debug HUDs"
 	set desc = "Debug the data or antag HUDs"
 
@@ -690,7 +807,7 @@
 	debug_variables(GLOB.huds[i])
 
 /client/proc/jump_to_ruin()
-	set category = "Debug"
+	set category = "Debug.8) Misc"
 	set name = "Jump to Ruin"
 	set desc = "Displays a list of all placed ruins to teleport to."
 	if(!holder)
@@ -722,7 +839,7 @@
 		to_chat(usr, "<span class='italics'>[template.description]</span>")
 
 /client/proc/place_ruin()
-	set category = "Debug"
+	set category = "Debug.9) Debug Verbs"
 	set name = "Spawn Ruin"
 	set desc = "Attempt to randomly place a specific ruin."
 	if (!holder)
@@ -773,7 +890,7 @@
 		to_chat(src, "<span class='warning'>Failed to place [template.name].</span>")
 
 /client/proc/clear_dynamic_transit()
-	set category = "Debug"
+	set category = "Debug.3) Fixing"
 	set name = "Clear Dynamic Turf Reservations"
 	set desc = "Deallocates all reserved space, restoring it to round start conditions."
 	if(!holder)
@@ -787,7 +904,7 @@
 	SSmapping.wipe_reservations()				//this goes after it's logged, incase something horrible happens.
 
 /client/proc/toggle_medal_disable()
-	set category = "Debug"
+	set category = "Debug.6) Tweak"
 	set name = "Toggle Medal Disable"
 	set desc = "Toggles the safety lock on trying to contact the medal hub."
 
@@ -802,7 +919,7 @@
 
 
 /client/proc/view_runtimes()
-	set category = "Debug"
+	set category = "Debug.1) Logs"
 	set name = "View Runtimes"
 	set desc = "Open the runtime Viewer"
 
@@ -811,8 +928,18 @@
 
 	GLOB.error_cache.show_to(src)
 
+/client/proc/view_gc_failures()
+	set category = "Debug.1) Logs"
+	set name = "View GC Failures"
+	set desc = "Open the GC Failure Viewer"
+
+	if(!holder)
+		return
+
+	GLOB.gc_failure_cache.show_to(src)
+
 /client/proc/pump_random_event()
-	set category = "Debug"
+	set category = "Debug.5) Spawn"
 	set name = "Pump Random Event"
 	set desc = "Schedules the event subsystem to fire a new random event immediately. Some events may fire without notification."
 	if(!holder)
@@ -863,7 +990,7 @@
 	profile_show(src, sort)
 
 /client/proc/reload_configuration()
-	set category = "Debug"
+	set category = "Debug.3) Fixing"
 	set name = "Reload Configuration"
 	set desc = "Force config reload to world default"
 	if(!check_rights(R_DEBUG))

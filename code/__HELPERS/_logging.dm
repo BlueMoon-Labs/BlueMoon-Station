@@ -60,10 +60,12 @@
 /proc/log_admin(text, list/data)
 	WRITE_LOG(GLOB.world_game_log, "ADMIN: [text]")
 	WRITE_LOG(GLOB.admin_log, "ADMIN: [text]")
+	GLOB.admin_log_entries += "ADMIN: [text]"
 
 /proc/log_admin_private(text, list/data)
 	WRITE_LOG(GLOB.world_game_log, "ADMINPRIVATE: [text]")
 	WRITE_LOG(GLOB.admin_log, "ADMIN: [text]")
+	GLOB.admin_log_entries += "ADMIN: [text]"
 
 /proc/log_adminsay(text, list/data)
 	WRITE_LOG(GLOB.world_game_log, "ADMINPRIVATE: ASAY: [text]")
@@ -179,6 +181,7 @@
 /proc/log_vote(text)
 	if (CONFIG_GET(flag/log_vote))
 		WRITE_LOG(GLOB.admin_log, "VOTE: [text]")
+		GLOB.admin_log_entries += "VOTE: [text]"
 
 /proc/log_shuttle(text)
 	if (CONFIG_GET(flag/log_shuttle))
@@ -240,6 +243,10 @@
 /proc/log_perf(list/perf_info)
 	. = "[perf_info.Join(",")]\n"
 	WRITE_LOG_NO_FORMAT(GLOB.perf_log, .)
+
+/proc/log_ping_perf(list/perf_info)
+	. = "[perf_info.Join(",")]\n"
+	WRITE_LOG_NO_FORMAT(GLOB.ping_perf_log, .)
 
 /proc/log_reagent(text)
 	WRITE_LOG(GLOB.reagent_log, text)

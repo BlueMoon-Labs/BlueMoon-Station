@@ -3,9 +3,6 @@
 	element_flags = ELEMENT_DETACH
 	var/list/user_by_item = list()
 
-/datum/element/earhealing/New()
-	START_PROCESSING(SSobj, src)
-
 /datum/element/earhealing/Attach(datum/target)
 	. = ..()
 	if(!isitem(target))
@@ -17,17 +14,29 @@
 	. = ..()
 	UnregisterSignal(target, list(COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_DROPPED))
 	user_by_item -= target
+	if(!length(user_by_item))
+		STOP_PROCESSING(SSobj, src)
 
 /datum/element/earhealing/proc/equippedChanged(datum/source, mob/living/carbon/user, slot)
 	if(((slot == ITEM_SLOT_EARS_LEFT) || slot == ITEM_SLOT_EARS_RIGHT) && istype(user))
+		if(!length(user_by_item))
+			START_PROCESSING(SSobj, src)
 		user_by_item[source] = user
 	else
 		user_by_item -= source
+		if(!length(user_by_item))
+			STOP_PROCESSING(SSobj, src)
 
 /datum/element/earhealing/proc/do_process()
 	set waitfor = FALSE
-	for(var/i in user_by_item)
-		var/mob/living/carbon/user = user_by_item[i]
+	for(var/obj/item/item as anything in user_by_item)
+		var/mob/living/carbon/user = user_by_item[item]
+		if(QDELETED(item) || !istype(user) || QDELETED(user))
+			user_by_item -= item
+			continue
+		if(user.get_item_by_slot(ITEM_SLOT_EARS_LEFT) != item && user.get_item_by_slot(ITEM_SLOT_EARS_RIGHT) != item)
+			user_by_item -= item
+			continue
 		if(HAS_TRAIT(user, TRAIT_DEAF))
 			continue
 		var/obj/item/organ/ears/ears = user.getorganslot(ORGAN_SLOT_EARS)
@@ -36,6 +45,8 @@
 		ears.deaf = max(ears.deaf - 0.25, (ears.damage < ears.maxHealth ? 0 : 1)) // Do not clear deafness if our ears are too damaged
 		ears.damage = max(ears.damage - 0.025, 0)
 		CHECK_TICK
+	if(!length(user_by_item))
+		STOP_PROCESSING(SSobj, src)
 
 /datum/element/earhealing/process()
 	do_process()

@@ -1,50 +1,74 @@
 //BIOAEGIS MODULES.
 //LUNGS
 
-//TIER 1 LUNGS//
-/obj/item/organ/lungs/tier1
-	name = "improved liver"
-	desc = "A somewhat decent replica of baseline lungs. Tougher than the baseline liver."
+/obj/item/organ/lungs/bioaegis
+	name = "some lungs"
+	desc = "Заготовка под легкие. Ничем не отличаются от обычных, кроме внешнего вида."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "weaklungs"
+
+	var/insert_message = ""
+
+	var/heal_oxy = 0
+	var/heal_fire = 0
+	var/heal_stamina = 0
+
+/obj/item/organ/lungs/bioaegis/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
+	. = ..()
+	if(!. || !insert_message || !istype(organ_mob))
+		return
+
+	to_chat(organ_mob, insert_message)
+
+/obj/item/organ/lungs/bioaegis/on_life(seconds, times_fired)
+	. = ..()
+	if(!. || !owner)
+		return
+
+	if(heal_oxy)
+		owner.adjustOxyLoss(-heal_oxy, FALSE)
+	if(heal_fire)
+		owner.adjustFireLoss(-heal_fire, FALSE)
+	if(heal_stamina)
+		owner.adjustStaminaLoss(-heal_stamina, FALSE)
+
+//TIER 1 LUNGS//
+/obj/item/organ/lungs/bioaegis/t1
+	name = "improved lungs"
+	desc = "Довольно приличная копия легких. Более крепкая, чем обычные легкие, позволяет сделать вдох поглубже."
 	icon_state = "weaklungs"
 	maxHealth = 3.5 * STANDARD_ORGAN_THRESHOLD //Standard modifier is x3, but this is bs amount of health for an organ?
 	safe_breath_min = 13
 	safe_breath_max = 100
 	smell_sensitivity = 1.5
 
-/obj/item/organ/lungs/tier1/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
-	. = ..()
-	to_chat(owner, "<span class = 'notice'>Что-то неприятно упёрлось внутри живота...</span>\n")
+	insert_message = span_notice("Вы чувствуете, как можете вдохнуть больше воздуха.")
 
 //TIER 2 LUNGS//
-/obj/item/organ/lungs/tier2
+/obj/item/organ/lungs/bioaegis/t2
 	name = "changed lungs"
-	icon_state = "weaklungs"
-	desc = "An improved version of baseline lungs. Better than the baseline counterpart."
-	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
-	icon_state = "weaklungs"
+	desc = "Улучшенная версия версии легких. Крепче, позволяет дышать еще глубже и фильтровать часть токсичных газов!"
 	maxHealth = 4.5 * STANDARD_ORGAN_THRESHOLD
+	decay_factor = 0.8 * STANDARD_ORGAN_DECAY
 	smell_sensitivity = 1.7
+	safe_breath_min = 10
+	safe_breath_max = 150
 	gas_max = list(
 		GAS_PLASMA = 30,
 		GAS_CO2 = 30,
 		GAS_METHYL_BROMIDE = 10
 	)
 
-/obj/item/organ/lungs/tier2/on_life()
-	owner.adjustToxLoss(-0.25, TRUE) //Doesn't kill slimes. Yes.
-	owner.adjustFireLoss(-0.25, FALSE)
+	// Уровень импланта лечения
+	heal_oxy = 0.4
+	heal_fire = 0.4
 
-/obj/item/organ/lungs/tier2/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
-	. = ..()
-	to_chat(owner, "<span class = 'notice'>Вы ощущаете, словно ваша кровь стала чище.</span>\n")
+	insert_message = span_notice("Вы чувствуете, как ваши легкие словно расправляются, пытаясь вдохнуть больше воздуха.")
 
 ///TIER 3 LUNGS//
-/obj/item/organ/lungs/tier3
+/obj/item/organ/lungs/bioaegis/t3
 	name = "exalted lungs"
-	icon_state = "exaltedlungs"
-	desc = "You will s e n s e the air - this version of lungs is stronger, better, capable to filter and withstand even more than a cybernetic counterpart!"
-	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	desc = "Вы <i>п р о ч у в с т в у е т е</i> воздух - эта версия легких прочнее, качественнее, способна фильтровать и выдерживать даже больше, чем кибернетический аналог!"
 	icon_state = "exaltedlungs"
 	safe_breath_min = 3
 	safe_breath_max = 250
@@ -67,29 +91,40 @@
 	cold_level_2_threshold = 140
 	cold_level_3_threshold = 100
 
-/obj/item/organ/lungs/tier3/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
+	heal_oxy = 1.5
+	heal_fire = 0.8
+	heal_stamina = 2.5
+
+	insert_message = span_notice("Вы можете ощутить малейший запах в комнате...")
+
+/obj/item/organ/lungs/bioaegis/t3/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
 	. = ..()
-	to_chat(owner, "<span class = 'notice'>Вы можете ощутить малейший запах в комнате...</span>\n") //This is a *very precise* superior version of liver - you wouldn't feel anything.
-	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super lungs", /datum/mood_event/superlungs)
+	if(!. || !istype(organ_mob))
+		return
+	SEND_SIGNAL(organ_mob, COMSIG_ADD_MOOD_EVENT, "super_lungs", /datum/mood_event/superlungs)
+
+/obj/item/organ/lungs/bioaegis/t3/Remove(special)
+	. = ..()
+	var/mob/living/carbon/organ_mob = .
+	if(!istype(organ_mob))
+		return
+	SEND_SIGNAL(organ_mob, COMSIG_CLEAR_MOOD_EVENT, "super_lungs")
 
 /datum/mood_event/superlungs
 	description = "<span class='synth'>Я знаю запах кислорода..Зачем мне это знание...? Это круто, наверное...</span>\n"
 	mood_change = 1 //Less, but persistent mood buff. Hey, handsome, you deserve it.
 
-/obj/item/organ/lungs/tier3/on_life()
-	owner.adjustOxyLoss(-1.5, FALSE)
-	owner.adjustFireLoss(-0,8, FALSE)
-	owner.adjustStaminaLoss(-2.5, 0)
-
 //ANTAG LUNGS//
-/obj/item/organ/lungs/tier3/antag //antag organ that can be found in some shitty places or in antag uplink since why not?
+/obj/item/organ/lungs/bioaegis/t3/antag //antag organ that can be found in some shitty places or in antag uplink since why not?
 	name = "biomorphed lungs"
-	icon_state = "exaltedlungs"
-	maxHealth = 4.5 * STANDARD_ORGAN_THRESHOLD
-	healing_factor = 3.5 * STANDARD_ORGAN_HEALING
+	desc = "Разработка безумного гения... Или просто заядлого курильщика. Эти легкие поглощают столько кислорода, что вы будете чувствовать себя бодрым несколько суток подряд!"
+	maxHealth = 6 * STANDARD_ORGAN_THRESHOLD
+	healing_factor = 4 * STANDARD_ORGAN_HEALING
 	decay_factor = 0.1 * STANDARD_ORGAN_DECAY
+	smell_sensitivity = 2.5
 
-/obj/item/organ/lungs/tier3/antag/on_life()
-	owner.adjustOxyLoss(-5, FALSE)
-	owner.adjustFireLoss(-1.5, FALSE)
-	owner.adjustStaminaLoss(-7.5, 0)
+	heal_oxy = 5
+	heal_fire = 1.5
+	heal_stamina = 7.5
+
+	insert_message = span_notice("Ваш мозг почти взрывается от запахов вокруг...")

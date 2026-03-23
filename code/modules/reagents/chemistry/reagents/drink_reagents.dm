@@ -235,6 +235,17 @@
 		if(myseed)
 			myseed.adjust_potency(-chems.get_reagent_amount(type) * 0.5)
 
+/datum/reagent/consumable/milk/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart)
+	if(method == INGEST)
+		quality = (iscatperson(M)) ? DRINK_GOOD : initial(quality)
+	. = ..()
+
+/datum/reagent/consumable/milk/on_mob_add(mob/living/L, amount)
+	. = ..()
+	if(iscatperson(L)) //cats go purr
+		to_chat(L, "<span class = 'notice'>[pick("Mmmm~ milk~","Ahh~ fresh milk~","Milk is so tasty!")]</span>")
+		L.emote("purr")
+
 /datum/reagent/consumable/milk/on_mob_life(mob/living/carbon/M)
 	if(HAS_TRAIT(M, TRAIT_CALCIUM_HEALER))
 		M.heal_bodypart_damage(1.5, 1.5, 0)
@@ -249,7 +260,7 @@
 	if(holder.has_reagent(/datum/reagent/consumable/capsaicin))
 		holder.remove_reagent(/datum/reagent/consumable/capsaicin, 2)
 	if(iscatperson(M)) //cats go purr
-		if(prob(5))
+		if(prob(3))
 			to_chat(M, "<span class = 'notice'>[pick("Mmmm~ milk~","Ahh~ fresh milk~","Milk is so tasty!")]</span>")
 			M.emote("purr")
 	..()
@@ -1102,6 +1113,11 @@
 	glass_icon_state = "teaglass"
 	glass_name = "glass of catnip tea"
 	glass_desc = "A purrfect drink for a cat."
+
+/datum/reagent/consumable/catnip_tea/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart)
+	if(method == INGEST)
+		quality = (iscatperson(M)) ? DRINK_FANTASTIC : initial(quality)
+	. = ..()
 
 /datum/reagent/consumable/catnip_tea/on_mob_life(mob/living/carbon/M)
 	M.adjustStaminaLoss(min(50 - M.getStaminaLoss(), 3))

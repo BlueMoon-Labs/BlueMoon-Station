@@ -18,17 +18,34 @@
 	var/wait
 	var/datum/symptom/selected_symptom
 	var/obj/item/reagent_containers/beaker
+	var/tier = 1
+	var/replicator_cooldown_time = 50
+	var/vaccine_cooldown_time = 200
+	var/custom_virus_cooldown = 0
+	var/custom_virus_cooldown_duration = 1800 // 3 minutes
+	var/obj/item/pandemic_upgrade/installed_upgrade
 
 /obj/machinery/computer/pandemic/Initialize(mapload)
 	. = ..()
+	update_tier()
 	update_icon()
 
+/obj/machinery/computer/pandemic/proc/update_tier()
+	tier = installed_upgrade ? installed_upgrade.rating : 1
+	replicator_cooldown_time = initial(replicator_cooldown_time) / tier
+	vaccine_cooldown_time = initial(vaccine_cooldown_time) / tier
+
 /obj/machinery/computer/pandemic/Destroy()
+	if(installed_upgrade)
+		installed_upgrade.forceMove(drop_location())
+		installed_upgrade = null
 	QDEL_NULL(beaker)
 	return ..()
 
 /obj/machinery/computer/pandemic/examine(mob/user)
 	. = ..()
+	if(installed_upgrade)
+		. += "Installed replication module: Tier [tier]."
 	if(beaker)
 		var/is_close
 		if(Adjacent(user)) //don't reveal exactly what's inside unless they're close enough to see the UI anyway.
@@ -117,11 +134,9 @@
 	var/list/resistances = B.data["resistances"]
 	for(var/id in resistances)
 		var/list/this = list()
+		this["id"] = id
 		var/datum/disease/D = SSdisease.archive_diseases[id]
-		if(D)
-			this["id"] = id
-			this["name"] = D.name
-
+		this["name"] = D ? D.name : "Unknown"
 		. += list(this)
 
 /obj/machinery/computer/pandemic/proc/reset_replicator_cooldown()
@@ -158,6 +173,8 @@
 /obj/machinery/computer/pandemic/ui_data(mob/user)
 	var/list/data = list()
 	data["is_ready"] = !wait
+	data["tier"] = tier
+	data["custom_cooldown"] = max(0, custom_virus_cooldown - world.time)
 	if(beaker)
 		data["has_beaker"] = TRUE
 		data["beaker_empty"] = (!beaker.reagents.total_volume || !beaker.reagents.reagent_list)
@@ -177,10 +194,78 @@
 
 	return data
 
+/obj/machinery/computer/pandemic/ui_static_data(mob/user)
+	var/list/data = list()
+	data["all_symptoms"] = list()
+	var/index = 1
+	for(var/symp_type in SSdisease.list_symptoms)
+		var/datum/symptom/S = new symp_type
+		if(S.name && !S.neutered)
+			data["all_symptoms"] += list(list(
+				"id" = "[index]",
+				"name" = S.name,
+				"desc" = S.desc,
+				"level" = S.level,
+				"resistance" = S.resistance,
+				"stage_speed" = S.stage_speed,
+				"transmission" = S.transmittable,
+				"stealth" = S.stealth
+			))
+		qdel(S)
+		index++
+	return data
+
 /obj/machinery/computer/pandemic/ui_act(action, params)
 	if(..())
 		return
 	switch(action)
+		if("create_custom_virus")
+			if(tier < 4)
+				to_chat(usr, "<span class='warning'>Upgrade the machine to Tier 4 to use this feature.</span>")
+				return
+			if(custom_virus_cooldown > world.time)
+				to_chat(usr, "<span class='warning'>Replication sequencer is cooling down.</span>")
+				return
+			
+			var/list/symptom_ids = params["symptom_ids"]
+			if(!islist(symptom_ids) || !symptom_ids.len)
+				return
+			
+			if(symptom_ids.len > VIRUS_SYMPTOM_LIMIT)
+				to_chat(usr, "<span class='warning'>Too many symptoms selected. Max is [VIRUS_SYMPTOM_LIMIT].</span>")
+				return
+
+			var/datum/disease/advance/D = new()
+			D.symptoms = list()
+			
+			for(var/symp_id in symptom_ids)
+				var/index = text2num(symp_id)
+				if(index < 1 || index > SSdisease.list_symptoms.len)
+					continue
+				var/symp_type = SSdisease.list_symptoms[index]
+				var/datum/symptom/S = new symp_type
+				if(!D.HasSymptom(S))
+					D.symptoms += S
+				else
+					qdel(S)
+			if(D.symptoms.len)
+				D.AssignName("Custom Strain [rand(100, 999)]")
+				D.Refresh()
+				
+				var/obj/item/reagent_containers/glass/bottle/B = new(drop_location())
+				B.name = "[D.name] culture bottle"
+				B.desc = "A small bottle. Contains [D.agent] culture in synthblood medium."
+				var/list/data = list("donor"=null,"viruses"=list(D),"blood_DNA"="SYNTHESIZED", "bloodcolor" = BLOOD_COLOR_SYNTHETIC, "blood_type"="SY","resistances"=null,"trace_chem"=null,"mind"=null,"ckey"=null,"gender"=null,"real_name"=null,"cloneable"=null,"factions"=null)
+				B.reagents.add_reagent(/datum/reagent/blood/synthetics, 10, data)
+				
+				custom_virus_cooldown = world.time + custom_virus_cooldown_duration
+				var/turf/source_turf = get_turf(src)
+				log_virus("A custom virus [D.admin_details()] was synthesized at [loc_name(source_turf)] by [key_name(usr)]")
+				to_chat(usr, "<span class='notice'>Virus synthesized successfully.</span>")
+				. = TRUE
+			else
+				qdel(D)
+				to_chat(usr, "<span class='warning'>Failed to synthesize virus. No valid symptoms.</span>")
 		if("eject_beaker")
 			eject_beaker()
 			. = TRUE
@@ -222,23 +307,45 @@
 			update_icon()
 			var/turf/source_turf = get_turf(src)
 			log_virus("A culture bottle was printed for the virus [A.admin_details()] at [loc_name(source_turf)] by [key_name(usr)]")
-			addtimer(CALLBACK(src, PROC_REF(reset_replicator_cooldown)), 50)
+			addtimer(CALLBACK(src, PROC_REF(reset_replicator_cooldown)), replicator_cooldown_time)
 			. = TRUE
 		if("create_vaccine_bottle")
 			if (wait)
 				return
 			var/id = params["index"]
+			if(!id)
+				return
 			var/datum/disease/D = SSdisease.archive_diseases[id]
 			var/obj/item/reagent_containers/glass/bottle/B = new(drop_location())
-			B.name = "[D.name] vaccine bottle"
+			var/display_name = D ? D.name : "Unknown"
+			B.name = "[display_name] vaccine bottle"
 			B.reagents.add_reagent(/datum/reagent/vaccine, 15, list(id))
 			wait = TRUE
 			update_icon()
-			addtimer(CALLBACK(src, PROC_REF(reset_replicator_cooldown)), 200)
+			addtimer(CALLBACK(src, PROC_REF(reset_replicator_cooldown)), vaccine_cooldown_time)
 			. = TRUE
 
 
 /obj/machinery/computer/pandemic/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/pandemic_upgrade))
+		if(installed_upgrade)
+			to_chat(user, "<span class='warning'>[src] already has a replication module. Use a crowbar to remove it first.</span>")
+			return
+		if(!user.transferItemToLoc(I, src))
+			return
+		installed_upgrade = I
+		update_tier()
+		to_chat(user, "<span class='notice'>You install [I] into [src]. Replication tier is now [tier].</span>")
+		return
+	if(I.tool_behaviour == TOOL_CROWBAR && installed_upgrade)
+		installed_upgrade.forceMove(drop_location())
+		if(user && Adjacent(user) && user.can_hold_items())
+			user.put_in_hands(installed_upgrade)
+		to_chat(user, "<span class='notice'>You remove [installed_upgrade] from [src].</span>")
+		installed_upgrade = null
+		update_tier()
+		I.play_tool_sound(src)
+		return
 	if(istype(I, /obj/item/reagent_containers) && !(I.item_flags & ABSTRACT) && I.is_open_container())
 		. = TRUE //no afterattack
 		if(machine_stat & (NOPOWER|BROKEN))
@@ -259,5 +366,29 @@
 		return ..()
 
 /obj/machinery/computer/pandemic/on_deconstruction()
+	if(installed_upgrade)
+		installed_upgrade.forceMove(drop_location())
+		installed_upgrade = null
 	eject_beaker()
 	. = ..()
+
+// Upgrade module — insert into built Pandemic to increase tier (faster cooldowns, Tier 4+ unlocks custom virus synthesis).
+/obj/item/pandemic_upgrade
+	name = "Pandemic replication module (Tier 2)"
+	desc = "A module that speeds up culture and vaccine production when installed in a PanD.E.M.I.C. 2200. Use on the machine to install; crowbar to remove."
+	icon = 'icons/obj/module.dmi'
+	icon_state = "card_mod"
+	w_class = WEIGHT_CLASS_SMALL
+	var/rating = 2
+
+/obj/item/pandemic_upgrade/tier3
+	name = "Pandemic replication module (Tier 3)"
+	rating = 3
+
+/obj/item/pandemic_upgrade/tier4
+	name = "Pandemic replication module (Tier 4)"
+	rating = 4
+
+/obj/item/pandemic_upgrade/tier5
+	name = "Pandemic replication module (Tier 5)"
+	rating = 5

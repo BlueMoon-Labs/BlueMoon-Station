@@ -402,8 +402,9 @@
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/surgical_drapes/attack(mob/living/M, mob/user)
-	if(!attempt_initiate_surgery(src, M, user))
-		..()
+	if(attempt_initiate_surgery(src, M, user))
+		return NO_AUTO_CLICKDELAY_HANDLING
+	return ..()
 
 /obj/item/surgical_drapes/AltClick(mob/user)
 	. = ..()
@@ -412,10 +413,8 @@
 	var/mob/living/M = user
 	if(M.client?.prefs)
 		M.client.prefs.surgical_disable_radial = !M.client.prefs.surgical_disable_radial
-		if(M.client.prefs.surgical_disable_radial)
-			to_chat(M, "You will now use list menu.")
-		else
-			to_chat(M, "You will now use radial menu.")
+		M.balloon_alert("Now use [M.client.prefs.surgical_disable_radial ? "list" : "radial"] menu")
+		to_chat(M, span_notice("You will now use [M.client.prefs.surgical_disable_radial ? "list" : "radial"] menu."))
 		return TRUE
 
 /obj/item/surgical_drapes/advanced

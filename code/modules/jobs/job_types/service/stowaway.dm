@@ -21,14 +21,14 @@ GLOBAL_LIST_EMPTY(roundstart_stowaway)
 	plasma_outfit = /datum/outfit/plasmaman/stowaway
 	display_order = JOB_DISPLAY_ORDER_STOWAWAY
 	alt_titles = list(
-		"Hobo",
-		"Migrant",
-		"Tunnel Warrior",
 		"Escapist",
-		"Savage",
-		"Outcast",
+		"Fraudster",
+		"Hobo",
+		"Jigolo",
+		"Migrant",
 		"Proshmandovka",
-		"Jigolo"
+		"Refugee",
+		"Tunnel Warrior"
 		)
 
 /datum/job/stowaway/get_roundstart_spawn_point()

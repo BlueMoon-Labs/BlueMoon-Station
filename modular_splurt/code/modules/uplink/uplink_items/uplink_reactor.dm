@@ -1,8 +1,8 @@
 /datum/uplink_item/device_tools/tc_rod
 	name = "Telecrystal Fuel Rod"
-	desc = "This special fuel rod has eight material slots that can be inserted with telecrystals, \
-			once the rod has been fully depleted, you will be able to harvest the extra telecrystals. \
-			Please note: This Rod fissiles much faster than it's regular counterpart, it doesn't take \
-			much to overload the reactor with these..."
+	desc = "Специальный топливный стержень с восемью слотами для материалов, куда можно вставить телекристаллы. \
+			Когда стержень будет полностью выработан, можно будет собрать лишние телекристаллы. \
+			Учтите: этот стержень расщепляется гораздо быстрее обычного, перегрузить реактор \
+			с такими проще простого..."
 	item = /obj/item/fuel_rod/material/telecrystal
 	cost = 7

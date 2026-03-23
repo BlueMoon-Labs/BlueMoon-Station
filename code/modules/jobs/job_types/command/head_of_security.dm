@@ -16,6 +16,28 @@
 	exp_type = EXP_TYPE_CREW
 	considered_combat_role = TRUE
 	exp_type_department = EXP_TYPE_SECURITY
+	alt_titles = list(
+		"Gorlex Marauders Commander", //Триглав выше, для удобства
+		"Syndicate Field Commander", //Синди выше, для удобства
+		"AC Special Lieutenant",
+		"Big Boss",
+		"Big Iron",
+		"Cerberus Leader",
+		"Chief Constable",
+		"Chief of Security",
+		"Chief Security Officer",
+		"Commander of the Guard",
+		"Division Leader",
+		"Head of Slutcurity",
+		"Head of Studcurity",
+		"Praetor",
+		"SAARE Commissioner",
+		"Safeguard Manager",
+		"Security Commander",
+		"Security Director",
+		"Sheriff",
+		"Tarkhan"
+		)
 
 	outfit = /datum/outfit/job/hos
 	departments = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_COMMAND

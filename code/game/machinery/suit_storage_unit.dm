@@ -70,6 +70,10 @@
 	storage_type = /obj/item/tank/jetpack/oxygen/captain
 	//mod_type = /obj/item/mod/control/pre_equipped/magnate
 
+/obj/machinery/suit_storage_unit/corporate
+	mask_type = /obj/item/clothing/mask/gas/atmos/captain/corporate
+	mod_type = /obj/item/mod/control/pre_equipped/corporate
+
 /obj/machinery/suit_storage_unit/industrial
 	suit_type = /obj/item/clothing/suit/space/hardsuit/engine
 	mask_type = /obj/item/clothing/mask/gas/glass/alt

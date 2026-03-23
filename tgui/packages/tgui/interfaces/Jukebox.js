@@ -121,8 +121,9 @@ export const Jukebox = (props, context) => {
                 </LabeledList.Item>
               </LabeledList>
             </Stack.Item>
+            <Stack.Item grow />
             <Stack.Item>
-              <Box position="relative">
+              <Box textAlign="center">
                 <Knob
                   size={2.4}
                   color={volume > 750 ? 'red' : 'green'}
@@ -134,33 +135,26 @@ export const Jukebox = (props, context) => {
                   disabled={!has_access}
                   onDrag={(e, value) => act('set_volume', { volume: value })}
                 />
-                <Button
-                  position="absolute"
-                  top="67px"
-                  right="66px"
-                  color="transparent"
-                  icon="fast-backward"
-                  disabled={!has_access}
-                  onClick={() => act('set_volume', { volume: 'min' })}
-                />
-                <Button
-                  position="absolute"
-                  top="67px"
-                  right="-14px"
-                  color="transparent"
-                  icon="fast-forward"
-                  disabled={!has_access}
-                  onClick={() => act('set_volume', { volume: 'max' })}
-                />
-                <Button
-                  position="absolute"
-                  top="67px"
-                  right="84px"
-                  color="transparent"
-                  icon="undo"
-                  disabled={!has_access}
-                  onClick={() => act('set_volume', { volume: 'reset' })}
-                />
+                <Box>
+                  <Button
+                    color="transparent"
+                    icon="undo"
+                    disabled={!has_access}
+                    onClick={() => act('set_volume', { volume: 'reset' })}
+                  />
+                  <Button
+                    color="transparent"
+                    icon="fast-backward"
+                    disabled={!has_access}
+                    onClick={() => act('set_volume', { volume: 'min' })}
+                  />
+                  <Button
+                    color="transparent"
+                    icon="fast-forward"
+                    disabled={!has_access}
+                    onClick={() => act('set_volume', { volume: 'max' })}
+                  />
+                </Box>
               </Box>
             </Stack.Item>
           </Stack>
@@ -192,6 +186,7 @@ export const Jukebox = (props, context) => {
                   }}
                 />
               </Stack.Item>
+              <Stack.Item grow />
               <Stack.Item ml={1}>
                 <Button
                   color="transparent"

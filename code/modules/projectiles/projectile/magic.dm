@@ -307,9 +307,12 @@
 	damage = 20
 	damage_type = BURN
 	flag = MAGIC
-	dismemberment = 10
+	dismemberment = 50
 	armour_penetration = 30
 	nodamage = 0
+
+/obj/item/projectile/magic/spellblade/weak
+	dismemberment = 25
 
 /obj/item/projectile/magic/spellblade/on_hit(target)
 	if(ismob(target))

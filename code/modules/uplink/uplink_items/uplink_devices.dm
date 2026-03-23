@@ -9,40 +9,40 @@
 
 /datum/uplink_item/device_tools/emag
 	name = "Cryptographic Sequencer"
-	desc = "The cryptographic sequencer, electromagnetic card, or emag, is a small card that unlocks hidden functions \
-			in electronic devices, subverts intended functions, and easily breaks security mechanisms."
+	desc = "Криптографический секвенсор, электромагнитная карта, он же имаг — небольшая карточка, \
+			которая разблокирует скрытые функции электронных устройств, подрывает их функции и легко ломает защитные механизмы."
 	item = /obj/item/card/emag
 	cost = 6
 
 /datum/uplink_item/device_tools/emagrecharge
 	name = "Electromagnet Charging Device"
-	desc = "A small device intended for recharging Cryptographic Sequencers. Using it will add five extra charges to the Cryptographic Sequencer."
+	desc = "Небольшое устройство для подзарядки криптографических секвенсоров. При использовании добавляет пять дополнительных зарядов."
 	item = /obj/item/emagrecharge
 	cost = 2
 
 /datum/uplink_item/device_tools/bluespacerecharge
 	name = "Bluespace Crystal Recharging Device"
-	desc = "A small device intended for recharging Wall Walking boots. Using it will add six charges to them. Use ten bluespace crystals on this recharger to add three more charges to it. "
+	desc = "Небольшое устройство для подзарядки ботинок блюспейс-ходьбы. Добавляет шесть зарядов. Используйте десять блюспейс-кристаллов на заряднике, чтобы добавить ещё три заряда."
 	item = /obj/item/bluespacerecharge
 	cost = 2
 
 /datum/uplink_item/device_tools/phantomthief
 	name = "Adrenaline Mask"
-	desc = "A cheap plastic mask fitted with an adrenaline autoinjector, which can be used by simply tensing your muscles"
+	desc = "Дешёвая пластиковая маска со встроенным адреналиновым автоинъектором, который активируется простым напряжением мышц."
 	item = /obj/item/clothing/glasses/phantomthief/syndicate
 	cost = 2
 
 /datum/uplink_item/device_tools/cutouts
 	name = "Adaptive Cardboard Cutouts"
-	desc = "These cardboard cutouts are coated with a thin material that prevents discoloration and makes the images on them appear more lifelike. \
-			This pack contains three as well as a crayon for changing their appearances."
+	desc = "Картонные фигуры, покрытые тонким материалом, предотвращающим выцветание и делающим изображения реалистичными. \
+			В наборе три штуки и карандаш для смены внешнего вида."
 	item = /obj/item/storage/box/syndie_kit/cutouts
 	cost = 1
 	surplus = 20
 
 /datum/uplink_item/device_tools/assault_pod
 	name = "Assault Pod Targeting Device"
-	desc = "Use this to select the landing zone of your assault pod."
+	desc = "Используйте, чтобы выбрать зону посадки вашего штурмового пода."
 	item = /obj/item/assault_pod
 	cost = 30
 	surplus = 0
@@ -51,9 +51,9 @@
 
 /datum/uplink_item/device_tools/binary
 	name = "Binary Translator Key"
-	desc = "A key that, when inserted into a radio headset, allows you to listen to and talk with silicon-based lifeforms, \
-			such as AI units and cyborgs, over their private binary channel. Caution should \
-			be taken while doing this, as unless they are allied with you, they are programmed to report such intrusions."
+	desc = "Ключ шифрования, который при установке в гарнитуру позволяет слушать и говорить \
+			с кремниевыми формами жизни, такими как ИИ и киборги, по их приватному бинарному каналу. \
+			Осторожно: если они не на вашей стороне, то запрограммированы сообщать о таких вторжениях."
 	item = /obj/item/encryptionkey/binary
 	cost = 2
 	surplus = 75
@@ -61,49 +61,49 @@
 
 /datum/uplink_item/device_tools/magboots
 	name = "Blood-Red Magboots"
-	desc = "A pair of magnetic boots with a reddish paintjob that assist with freer movement in space or on-station \
-			during gravitational generator failures. These reverse-engineered knockoffs of Nanotrasen's \
-			'Advanced Magboots' slow you down in simulated-gravity environments much like the standard issue variety."
+	desc = "Магнитные ботинки с красноватой покраской для свободного передвижения в космосе или на станции \
+			при отключении гравитации. Эти реверс-инжениринговые копии магботинок Nanotrasen \
+			замедляют вас в условиях искусственной гравитации, как и стандартные."
 	item = /obj/item/clothing/shoes/magboots/syndie
 	cost = 2
 	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
 
 /datum/uplink_item/device_tools/magboots/advance
 	name = "Advanced Blood-Red Magboots"
-	desc = "A pair of magnetic boots with a Syndicate paintjob that assist with freer movement in space or on-station during gravitational generator failures. \
-	These reverse-engineered knockoffs of Nanotrasen's 'Advanced Magboots' not slow you down in simulated-gravity environments and provide protection against slipping on the space lube."
+	desc = "Магнитные ботинки с покраской Syndicate для передвижения в космосе и на станции при отключении гравитации. \
+	Эти реверс-инжениринговые копии магботинок Nanotrasen НЕ замедляют вас и защищают от скольжения на космосмазке."
 	item = /obj/item/clothing/shoes/magboots/syndie/advance
 	cost = 6
 	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
 
 /datum/uplink_item/device_tools/compressionkit
 	name = "Bluespace Compression Kit"
-	desc = "A modified version of a BSRPED that can be used to reduce the size of most items while retaining their original functions! \
-			Does not work on storage items. \
-			Recharge using bluespace crystals. \
-			Comes with 5 charges."
+	desc = "Модифицированная версия BSRPED, может уменьшать размер большинства предметов, сохраняя их функции! \
+			Не работает на контейнерах для хранения. \
+			Перезарядка через блюспейс-кристаллы. \
+			5 зарядов в комплекте."
 	item = /obj/item/compressionkit
 	cost = 5
 
 /datum/uplink_item/device_tools/briefcase_launchpad
 	name = "Briefcase Launchpad"
-	desc = "A briefcase containing a launchpad, a device able to teleport items and people to and from targets up to twenty tiles away from the briefcase. \
-			Also includes a remote control, disguised as an ordinary folder. Touch the briefcase with the remote to link it."
+	desc = "Дипломат с телепортационной платформой, способной телепортировать предметы и людей на расстояние до 20 тайлов. \
+			В комплекте пульт управления, замаскированный под обычную папку. Прикосните пульт к дипломату для привязки."
 	surplus = 0
 	item = /obj/item/storage/briefcase/launchpad
 	cost = 6
 
 /datum/uplink_item/device_tools/camera_bug
 	name = "Camera Bug"
-	desc = "Enables you to view all cameras on the main network, set up motion alerts and track a target. \
-			Bugging cameras allows you to disable them remotely."
+	desc = "Позволяет просматривать все камеры основной сети, настраивать оповещения о движении и отслеживать цель. \
+			Взлом камер позволяет отключать их удалённо."
 	item = /obj/item/camera_bug
 	cost = 1
 	surplus = 90
 
 /datum/uplink_item/device_tools/military_belt
 	name = "Chest Rig"
-	desc = "A robust seven-slot set of webbing that is capable of holding all manner of tactical equipment."
+	desc = "Крепкая разгрузка на семь слотов, способная вместить всевозможное тактическое снаряжение."
 	item = /obj/item/storage/belt/military
 	cost = 1
 	purchasable_from = UPLINK_SYNDICATE
@@ -114,32 +114,32 @@
 
 /datum/uplink_item/device_tools/ammo_pouch
 	name = "Ammo Pouch"
-	desc = "A small yet large enough pouch that can fit in your pocket, and has room for three magazines."
+	desc = "Небольшой, но достаточно вместительный подсумок, влезающий в карман. Вмещает три магазина."
 	item = /obj/item/storage/bag/ammo
 	cost = 1
 
 /datum/uplink_item/device_tools/fakenucleardisk
 	name = "Decoy Nuclear Authentication Disk"
-	desc = "It's just a normal disk. Visually it's identical to the real deal, but it won't hold up under closer scrutiny by the Captain. \
-			Don't try to give this to us to complete your objective, we know better!"
+	desc = "Обычный диск. Визуально идентичен настоящему, но при близком рассмотрении Капитаном не выдержит проверку. \
+			Даже не пытайтесь сдать его нам для выполнения задания — мы не настолько тупые!"
 	item = /obj/item/disk/nuclear/fake
 	cost = 1
 	surplus = 1
 
 /datum/uplink_item/device_tools/frame
 	name = "F.R.A.M.E. PDA Cartridge"
-	desc = "When inserted into a personal digital assistant, this cartridge gives you five PDA viruses which \
-			when used cause the targeted PDA to become a new uplink with zero TCs, and immediately become unlocked. \
-			You will receive the unlock code upon activating the virus, and the new uplink may be charged with \
-			telecrystals normally."
+	desc = "При установке в КПК этот картридж даёт пять PDA-вирусов, которые \
+			превращают целевой КПК в новый аплинк с нулём TC, мгновенно разблокированный. \
+			Код разблокировки придёт при активации вируса, а новый аплинк можно пополнять \
+			телекристаллами как обычно."
 	item = /obj/item/cartridge/virus/frame
 	cost = 2
 	restricted = TRUE
 
 /datum/uplink_item/device_tools/toolbox
 	name = "Full Illegal Toolbox"
-	desc = "The Illegal toolbox is a suspicious black and red. It comes loaded with a full tool set including a \
-			multitool and combat gloves that are resistant to shocks and heat."
+	desc = "Подозрительный чёрно-красный ящик с инструментами. Включает полный набор вместе с \
+			мультитулом и боевыми перчатками, устойчивыми к ударам током и жаром."
 	item = /obj/item/storage/toolbox/syndicate
 	purchasable_from = UPLINK_SYNDICATE
 	cost = 1
@@ -160,23 +160,23 @@
 
 /datum/uplink_item/device_tools/syndie_glue
 	name = "Glue"
-	desc = "A cheap bottle of one use syndicate brand super glue. \
-			Use on any item to make it undroppable. \
-			Be careful not to glue an item you're already holding!"
+	desc = "Дешёвый тюбик одноразового суперклея марки Syndicate. \
+			Примените к любому предмету, чтобы сделать его невыбрасываемым. \
+			Осторожно — не приклейте то, что уже держите в руках!"
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 	item = /obj/item/syndie_glue
 	cost = 2
 
 /datum/uplink_item/device_tools/hacked_module
 	name = "Hacked AI Law Upload Module"
-	desc = "When used with an upload console, this module allows you to upload priority laws to an artificial intelligence. \
-			Be careful with wording, as artificial intelligences may look for loopholes to exploit."
+	desc = "При использовании с консолью загрузки этот модуль позволяет заливать приоритетные законы в ИИ. \
+			Будьте осторожны с формулировками — ИИ обожают искать лазейки."
 	item = /obj/item/ai_module/syndicate
 	cost = 9
 
 /datum/uplink_item/device_tools/damaged_module
 	name = "Damaged AI Law Upload Module"
-	desc = "This AI law upload module has been laying around our warehouse for god knows how long. We do not know why you would ever use this."
+	desc = "Этот модуль загрузки законов ИИ валялся на нашем складе хрен знает сколько. Мы понятия не имеем, зачем вам это."
 	item = /obj/item/ai_module/core/full/damaged
 	cost = 5
 
@@ -188,42 +188,42 @@
 
 /datum/uplink_item/device_tools/medgun
 	name = "Medbeam Gun"
-	desc = "A wonder of Syndicate engineering, the Medbeam gun, or Medi-Gun enables a medic to keep his fellow \
-			operatives in the fight, even while under fire. Don't cross the streams!"
+	desc = "Чудо инженерии Syndicate. Медпушка позволяет медику держать союзников \
+			в строю даже под огнём. Не скрещивайте лучи!"
 	item = /obj/item/gun/medbeam
 	cost = 15
 	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
 
 /datum/uplink_item/device_tools/nutcracker
 	name = "Nutcracker"
-	desc = "An oversized version of what you'd initially expect here. Big enough to crush skulls."
+	desc = "Увеличенная версия того, что вы себе представили. Достаточно большой, чтобы давить черепа."
 	item = /obj/item/nutcracker
 	cost = 1
 
 /datum/uplink_item/device_tools/singularity_beacon
 	name = "Power Beacon"
-	desc = "When screwed to wiring attached to an electric grid and activated, this large device pulls any \
-			active gravitational singularities or tesla balls towards it (provided they are not safely \
-			contained), as well as increasing the odds of incoming meteor waves. \
-			Because of its size, it cannot be carried. Ordering this sends you a small beacon \
-			that will teleport the larger beacon to your location upon activation."
+	desc = "При прикручивании к проводке под напряжением и активации это устройство притягивает \
+			активные гравитационные сингулярности или шары Теслы (если они не в контейнменте), \
+			а также повышает шансы метеоритных волн. \
+			Из-за размера его нельзя носить. При заказе вы получите маленький маяк, \
+			который телепортирует большой маяк к вам при активации."
 	item = /obj/item/sbeacondrop
 	cost = 14
 
 /datum/uplink_item/device_tools/powersink
 	name = "Power Sink"
-	desc = "When screwed to wiring attached to a power grid and activated, this large device lights up and places excessive \
-			load on the grid, causing a station-wide blackout. The sink is large and cannot be stored in most \
-			traditional bags and boxes. Caution: Will explode if the powernet contains sufficient amounts of energy."
+	desc = "При прикручивании к проводке под напряжением и активации это устройство создаёт чрезмерную \
+			нагрузку на сеть, вызывая блэкаут по всей станции. Устройство громоздкое и не влезет \
+			в большинство сумок. Осторожно: взорвётся, если в сети слишком много энергии."
 	item = /obj/item/powersink
 	cost = 6
 
 /datum/uplink_item/device_tools/rad_laser
 	name = "Radioactive Microlaser"
-	desc = "A radioactive microlaser disguised as a standard Nanotrasen health analyzer. When used, it emits a \
-			powerful burst of radiation, which, after a short delay, can incapacitate all but the most protected \
-			of humanoids. It has two settings: intensity, which controls the power of the radiation, \
-			and wavelength, which controls the delay before the effect kicks in."
+	desc = "Радиоактивный микролазер, замаскированный под стандартный анализатор здоровья Nanotrasen. \
+			При использовании выпускает мощный всплеск радиации, который после небольшой задержки \
+			вырубает почти любого. Два режима: интенсивность (сила облучения) \
+			и длина волны (задержка эффекта)."
 	item = /obj/item/healthanalyzer/rad_laser
 	cost = 3
 
@@ -236,25 +236,25 @@
 
 /datum/uplink_item/device_tools/riflery_primer
 	name = "Riflery Primer"
-	desc = "An old book with blood and vodka stains on it. Freshly pulled from a dusty crate in some old warehouse, \
-			this primer of questionable worth and value is rumored to increase your rifle-bolt-working and/or shotgun \
-			racking fivefold. Then again, the techniques here only work on bolt-actions and pump-actions..."
+	desc = "Старая книжка в пятнах крови и водки. Только что извлечена из пыльного ящика на старом складе. \
+			По слухам, пятикратно ускоряет работу затвором и помпой. \
+			Правда, техники работают только с болтовками и помповыми..."
 	item = /obj/item/book/granter/trait/rifleman
 	cost = 3 // fuck it available for everyone
 
 /datum/uplink_item/device_tools/stimpack
 	name = "Stimpack"
-	desc = "Stimpacks, the tool of many great heroes. Makes you nearly immune to non-lethal weaponry for about \
-			5 minutes after injection."
+	desc = "Стимпаки, инструмент многих героев. После инъекции делает вас почти невосприимчивым \
+			к нелетальному оружию на примерно 5 минут."
 	item = /obj/item/reagent_containers/hypospray/medipen/stimulants
 	cost = 5
 	surplus = 90
 
 /datum/uplink_item/device_tools/medkit
 	name = "Сombat Medic Kit"
-	desc = "This first aid kit is a suspicious brown and red. Included is a combat stimulant injector \
-			for rapid healing, a medical night vision HUD for quick identification of injured personnel, \
-			and other supplies helpful for a field medic."
+	desc = "Подозрительно коричнево-красная аптечка. Включает боевой стимулятор \
+			для быстрого исцеления, медицинский ночной HUD для опознания раненых \
+			и другие полезные припасы для полевого медика."
 	item = /obj/item/storage/firstaid/tactical/nukeop
 	cost = 4
 	surplus = 75
@@ -262,8 +262,8 @@
 
 /datum/uplink_item/device_tools/surgerybag
 	name = "Illegal Surgery Duffel Bag"
-	desc = "The Illegal surgery duffel bag is a toolkit containing all surgery tools, surgical drapes, \
-			a Syndicate stolen brand MMI, a straitjacket, and a muzzle."
+	desc = "Нелегальная хирургическая сумка, содержащая все хирургические инструменты, операционные простыни, \
+			краденый Syndicate ИММ, смирительную рубашку и намордник."
 	item = /obj/item/storage/backpack/duffelbag/syndie/surgery
 	cost = 1  ///bluemoon change
 	purchasable_from = UPLINK_SYNDICATE
@@ -274,7 +274,7 @@
 
 /datum/uplink_item/device_tools/surgerybag_adv
 	name = "Advanced Illegal Surgery Duffel Bag"
-	desc = "A Syndicate stolen surgery duffel bag, with a set of upgraded surgery tools to boot."
+	desc = "Краденая хирургическая сумка Syndicate с набором улучшенных хирургических инструментов в придачу."
 	item = /obj/item/storage/backpack/duffelbag/syndie/surgery_adv
 	cost = 3  ///bluemoon change
 	purchasable_from = UPLINK_SYNDICATE
@@ -295,10 +295,10 @@
 
 /datum/uplink_item/device_tools/syndietome
 	name = "Syndicate Tome"
-	desc = "Using rare artifacts acquired at great cost, the Syndicate has reverse engineered \
-			the seemingly magical books of a certain cult. Though lacking the esoteric abilities \
-			of the originals, these inferior copies are still quite useful, being able to provide \
-			both weal and woe on the battlefield, even if they do occasionally bite off a finger."
+	desc = "Используя редкие артефакты, добытые с огромным риском, Syndicate провел обратный инжиниринг \
+			магических книг одного культа. Хотя копиям не хватает эзотерических способностей оригиналов, \
+			они всё ещё полезны на поле боя — могут как исцелять, так и калечить. \
+			Правда, иногда могут откусить палец-другой."
 	item = /obj/item/storage/book/bible/syndicate
 	purchasable_from = UPLINK_SYNDICATE
 	cost = 9
@@ -314,26 +314,26 @@
 
 /datum/uplink_item/device_tools/thermal
 	name = "Thermal Imaging Glasses"
-	desc = "These goggles can be turned to resemble common eyewear found throughout the station. \
-			They allow you to see organisms through walls by capturing the upper portion of the infrared light spectrum, \
-			emitted as heat and light by objects. Hotter objects, such as warm bodies, cybernetic organisms \
-			and artificial intelligence cores emit more of this light than cooler objects like walls and airlocks."
+	desc = "Эти очки можно замаскировать под обычные очки со станции. \
+			Позволяют видеть организмы сквозь стены, улавливая инфракрасное излучение. \
+			Тёплые объекты — тела, киборги, ядра ИИ — светятся ярче холодных стен и шлюзов."
 	item = /obj/item/clothing/glasses/thermal/syndi
 	cost = 4
 
 /datum/uplink_item/device_tools/potion
 	name = "Sentience Potion"
 	item = /obj/item/slimepotion/slime/sentience/nuclear
-	desc = "A potion recovered at great risk by undercover Syndicate operatives and then subsequently modified with Syndicate technology. \
-			Using it will make any animal sentient, and bound to serve you, as well as implanting an internal radio for communication and an internal ID card for opening doors."
+	desc = "Зелье, добытое с огромным риском агентами Syndicate под прикрытием и модифицированное технологиями Syndicate. \
+			Сделает любое животное разумным и подчинённым вам, а также встроит внутреннее радио и ID-карту."
 	cost = 2
 	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
 	restricted = TRUE
 
 /datum/uplink_item/device_tools/suspiciousphone
 	name = "Protocol CRAB-17 Phone"
-	desc = "The Protocol CRAB-17 Phone, a phone borrowed from an unknown third party, it can be used to crash the space market, funneling the losses of the crew to your bank account.\
-	The crew can move their funds to a new banking site though, unless they HODL, in which case they deserve it."
+	desc = "Телефон Протокола CRAB-17, одолженный у неизвестной третьей стороны. Может обрушить космический рынок, \
+	перенаправляя убытки экипажа на ваш счёт. Экипаж может перевести средства на новый банковский сайт, \
+	но если они HODL — сами виноваты."
 	item = /obj/item/suspiciousphone
 	cost = 7
 	restricted = TRUE
@@ -343,9 +343,9 @@
 
 /datum/uplink_item/device_tools/syndicate_teleporter
 	name = "Experimental Syndicate Teleporter"
-	desc = "The Syndicate teleporter is a handheld device that teleports the user 4-8 meters forward. \
-			Beware, teleporting into a wall will make the teleporter do a parallel emergency teleport, \
-			but if that emergency teleport fails, it will kill you. \
-			Has 4 charges, recharges, warranty voided if exposed to EMP."
+	desc = "Портативный телепортер Syndicate, перемещает пользователя на 4-8 метров вперёд. \
+			Телепорт в стену вызовет аварийный параллельный телепорт, \
+			но если и он не сработает — вы умрёте. \
+			4 заряда, автоподзарядка, гарантия аннулируется при воздействии ЭМИ."
 	item = /obj/item/storage/box/syndie_kit/teleporter
 	cost = 4

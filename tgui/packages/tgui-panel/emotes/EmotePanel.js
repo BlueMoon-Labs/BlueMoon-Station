@@ -47,7 +47,7 @@ export const EmotePanel = (props, context) => {
     <Section>
       <Flex align="center" style={{ 'flex-wrap': 'wrap' }}>
         {emoteList
-          .sort((a, b) => { return a.name.localeCompare(b.name); })
+          .sort((a, b) => { return a.name.localeCompare(b.name, 'en'); })
           .map(emote => {
             let color = "blue";
             let tooltip = "";

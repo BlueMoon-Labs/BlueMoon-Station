@@ -64,7 +64,7 @@
 	var/essence = 150 //The resource, and health, of qareens.
 	var/essence_regen_cap = 150 //The regeneration cap of essence (go figure); regenerates every Life() tick up to this amount.
 	var/essence_regenerating = TRUE //If the qareen regenerates essence or not
-	var/essence_regen_amount = 5 //How much essence regenerates
+	var/essence_regen_amount = 1 //How much essence regenerates
 	var/essence_accumulated = 0 //How much essence the qareen has stolen
 	var/essence_excess = 0 //How much stolen essence available for unlocks
 	var/revealed = FALSE //If the qareen can take damage from normal sources.
@@ -190,13 +190,18 @@
 //damage, gibbing, and dying
 /mob/living/simple_animal/qareen/attackby(obj/item/W, mob/living/user, params)
 	. = ..()
-	if(istype(W, /obj/item/nullrod))
+	if(istype(W, /obj/item/nullrod) || istype(W, /obj/item/storage/book/bible))
 		visible_message("<span class='warning'>[src] violently flinches!</span>", \
 						"<span class='revendanger'>As \the [W] passes through you, you feel your essence draining away!</span>")
-		adjustBruteLoss(25) //hella effective
+		adjustBruteLoss(essence_regen_cap/2 - W.force)
 		inhibited = TRUE
 		update_action_buttons_icon()
 		addtimer(CALLBACK(src, PROC_REF(reset_inhibit)), 30)
+
+/datum/reagent/water/holywater/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart)
+	. = ..()
+	if(isqareen(M))
+		M.adjustBruteLoss(reac_volume*10)
 
 /datum/reagent/toxin/on_mob_life(mob/living/simple_animal/qareen/Q) //So the holy water will damage it! - Gardelin0
 	if(istype(Q))
@@ -209,8 +214,6 @@
 	update_action_buttons_icon()
 
 /mob/living/simple_animal/qareen/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
-	if(!forced && !revealed)
-		return FALSE
 	. = amount
 	essence = max(0, essence-amount)
 	if(updating_health)
@@ -225,8 +228,8 @@
 	death()
 
 /mob/living/simple_animal/qareen/death()
-	if(!revealed || stasis) //qareens cannot die if they aren't revealed //or are already dead
-		return 0
+	if(stasis)
+		return FALSE
 	stasis = TRUE
 	to_chat(src, "<span class='revendanger'>NO! No... it's too late, you can feel your essence [pick("spewing out", "bursting out")]...</span>")
 	mob_transforming = TRUE

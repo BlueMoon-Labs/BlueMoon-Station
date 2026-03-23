@@ -251,6 +251,11 @@ DEFINE_BITFIELD(turret_flags, list(
 				return TRUE
 			else
 				to_chat(usr, "<span class='warning'>It has to be secured first!</span>")
+		if("ai_auth")
+			if(issilicon(usr) || IsAdminGhost(usr))
+				locked = !locked
+				update_icon()
+				return TRUE
 		if("authweapon")
 			turret_flags ^= TURRET_FLAG_AUTH_WEAPONS
 			return TRUE
@@ -968,10 +973,11 @@ DEFINE_BITFIELD(turret_flags, list(
 		return
 
 	if(control_area)
-		control_area = get_area_instance_from_text(control_area)
+		var/legacy_control_area = control_area
+		control_area = get_area_instance_from_text(legacy_control_area)
 		if(control_area == null)
 			control_area = get_area(src)
-			stack_trace("Bad control_area path for [src], [src.control_area]")
+			WARNING("Bad control_area path for [src]: [legacy_control_area]. Falling back to [control_area].")
 	else if(!control_area)
 		control_area = get_area(src)
 

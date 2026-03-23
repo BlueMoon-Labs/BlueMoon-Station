@@ -30,32 +30,34 @@
 	. += span_notice("Alt-click to flip cards.")
 
 /obj/item/toy/cards/cardhand/attack_self(mob/user)
-	interact(user)
 	if(usr.stat || !ishuman(usr))
 		return
 	var/mob/living/carbon/human/cardUser = usr
 	if(!(cardUser.mobility_flags & MOBILITY_USE))
 		return
+	interact(user)
 	var/list/handradial = list()
 	for(var/t in cards)
 		handradial[t] = image(icon = src.icon, icon_state = "sc_[t]_[deckstyle]")
 	var/choice = show_radial_menu(usr,src, handradial, custom_check = CALLBACK(src, PROC_REF(check_menu), user), radius = 36, require_near = TRUE)
 	if(!choice)
 		return FALSE
-	var/obj/item/toy/cards/singlecard/S = draw(user, choice)
-	S.pickup(cardUser)
-	cardUser.put_in_hands(S)
-	cardUser.visible_message("[cardUser] draws a card from [cardUser.ru_ego()] hand.", "You take the [S.cardname] from your hand.")
-	interact(cardUser)
+	draw(user, choice)
 
 /obj/item/toy/cards/cardhand/draw(mob/living/user, card, card_type)
 	. = ..()
-	if(. && length(cards) == 1)
-		var/obj/item/toy/cards/singlecard/S = draw(user)
+	if(!.)
+		return
+	var/obj/item/toy/cards/singlecard/S = .
+	S.pickup(user)
+	user.put_in_hands(S)
+	if(cards_flipped && user.is_holding(S))
+		S.Flip()
+	user.visible_message("[user] draws a card from their's hand.", "You take the [S.cardname] from your hand.")
+	if(length(cards) == 1)
+		user.temporarilyRemoveItemFromInventory(src, TRUE)
+		draw(user)
 		qdel(src)
-		S.pickup(user)
-		user.put_in_hands(S)
-		to_chat(user, "You also take [S] and hold it.")
 
 /obj/item/toy/cards/cardhand/attackby(obj/item/I, mob/living/user, params)
 	if(!is_type_in_list(I, list(/obj/item/toy/cards/deck, /obj/item/toy/cards/singlecard, /obj/item/toy/cards/cardhand)))

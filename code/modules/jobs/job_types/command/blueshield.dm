@@ -14,8 +14,25 @@
 	exp_type = EXP_TYPE_SECURITY
 	considered_combat_role = TRUE //Brigger then shit yes it is
 	exp_type_department = EXP_TYPE_SECURITY
-	alt_titles = list("NT Management Defender", "Syndicate Prime-Defender", "Command Security", "Command Guard", "Command Bodyguard", "Sweet Boy", "Sweet Girl", "Combat Maid", "Syndicate Combat Maid", "Penis Case", "Blueguard", "Blueshit", "Captain Mattress", "Blueslut", "Red Shield")
 	custom_spawn_text = "офицер Синего Щита является представителем сторон отдела по защите Главенствующего Персонала в соответствии приоритету - от <b>секретаря мостика</b> до <b>капитана</b>. Офицер Синего Щита подчиняется <b>ВрИО капитана</b>, <b>капитану</b> и Центральному Командованию."
+	alt_titles = list(
+		"Syndicate Combat Maid", //Синди выше, для удобства
+		"Syndicate Prime-Defender", //Синди выше, для удобства
+		"Blueguard",
+		"Blueshit",
+		"Blueslut",
+		"Captain Mattress",
+		"Combat Maid",
+		"Command Bodyguard",
+		"Command Guard",
+		"Command Security",
+		"Henchman",
+		"Management Defender",
+		"Penis Case",
+		"Red Shield",
+		"Sweet Boy",
+		"Sweet Girl"
+		)
 
 	outfit = /datum/outfit/job/blueshield
 	plasma_outfit = /datum/outfit/plasmaman/blueshield

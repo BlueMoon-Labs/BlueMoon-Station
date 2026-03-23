@@ -13,9 +13,9 @@
 			ui.close()
 		return
 
-	// if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
-	// 	to_chat(user, span_warning("Your fingers are too big to use this right now!"))
-	// 	return
+	if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
+		to_chat(user, span_warning("Кнопки слишком маленькие для твоих пальцев!"))
+		return
 
 	// Robots don't really need to see the screen, their wireless connection works as long as computer is on.
 	if(!screen_on && !issilicon(user))

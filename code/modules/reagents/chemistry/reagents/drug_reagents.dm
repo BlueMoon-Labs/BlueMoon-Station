@@ -257,6 +257,7 @@
 	addiction_threshold = 10
 	taste_description = "salt" // because they're bathsalts?
 	var/datum/brain_trauma/special/psychotic_brawling/bath_salts/rage
+	var/saved_lighting_alpha // восстанавливаем после окончания действия (гиперчувствительность глаз)
 	pH = 8.2
 	value = REAGENT_VALUE_RARE
 
@@ -264,6 +265,16 @@
 	..()
 	ADD_TRAIT(L, TRAIT_STUNIMMUNE, type)
 	ADD_TRAIT(L, TRAIT_SLEEPIMMUNE, type)
+	// Гиперчувствительность глаз: повышенная яркость экрана (слабее слой темноты)
+	saved_lighting_alpha = L.lighting_alpha
+	L.lighting_alpha = 90
+	L.sync_lighting_plane_alpha()
+	// Засветка экрана, сильная тряска и случайный трек из джукбокса при употреблении (радуга в on_mob_life)
+	if(L.client)
+		shake_camera(L, 18, 5)
+		if(SSjukeboxes.songs.len)
+			var/datum/track/picked = pick(SSjukeboxes.songs)
+			SEND_SOUND(L, sound(picked.song_path, repeat = 1, wait = 0, channel = 990, volume = 50))
 	if(iscarbon(L))
 		var/mob/living/carbon/C = L
 		rage = new()
@@ -272,6 +283,10 @@
 /datum/reagent/drug/bath_salts/on_mob_end_metabolize(mob/living/L)
 	REMOVE_TRAIT(L, TRAIT_STUNIMMUNE, type)
 	REMOVE_TRAIT(L, TRAIT_SLEEPIMMUNE, type)
+	L.lighting_alpha = saved_lighting_alpha
+	L.sync_lighting_plane_alpha()
+	if(L.client)
+		SEND_SOUND(L, sound(null, repeat = 0, wait = 0, channel = 990))
 	if(rage)
 		QDEL_NULL(rage)
 	..()
@@ -286,6 +301,15 @@
 	if(CHECK_MOBILITY(M, MOBILITY_MOVE) && !ismovable(M.loc))
 		step(M, pick(GLOB.cardinals))
 		step(M, pick(GLOB.cardinals))
+	// Гиперчувствительность глаз: держим повышенную яркость (слой темноты слабее)
+	M.lighting_alpha = min(M.lighting_alpha, 90)
+	M.sync_lighting_plane_alpha()
+	// Переливание экрана цветами радуги, яркие вспышки и постоянная тряска
+	if(M.client)
+		var/static/list/rainbow_colors = list("#FF0000", "#FF8800", "#FFFF00", "#00FF00", "#0088FF", "#4400FF", "#FF00FF")
+		var/rainbow_color = rainbow_colors[(current_cycle % length(rainbow_colors)) + 1]
+		M.flash_lighting_fx(7, 9, rainbow_color)
+		shake_camera(M, 12, 1)
 	..()
 	. = 1
 
@@ -648,7 +672,7 @@
 		if(ishuman(M))
 			var/mob/living/carbon/human/H = M
 			var/list/genits = H.adjust_arousal(-100, "camphor", aphro = TRUE, silent = TRUE)
-			if(genits.len)
+			if(genits && genits.len)
 				to_chat(M, "<span class='notice'>You no longer feel aroused.")
 	..()
 
@@ -666,7 +690,7 @@
 		if(ishuman(M))
 			var/mob/living/carbon/human/H = M
 			var/list/genits = H.adjust_arousal(-100, "hexacamphor", aphro = TRUE, silent = TRUE)
-			if(genits.len)
+			if(genits && genits.len)
 				to_chat(M, "<span class='notice'>You no longer feel aroused.")
 
 	..()

@@ -246,18 +246,21 @@
 		if(CUM_TARGET_VAGINA)
 			message = "вгоняют свои тентакли в дырочки \the [M] и заполняют их спермой!"
 			target_gen = M.getorganslot(ORGAN_SLOT_WOMB)
-			target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
-			M.impregnate(src, M.getorganslot(ORGAN_SLOT_WOMB), src.type)
+			if(target_gen)
+				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
+				M.impregnate(src, target_gen, src.type)
 
 		if(CUM_TARGET_PENIS)
 			message = "обхватывают член \the [M] и обливают спермой!"
 			target_gen = M.getorganslot(ORGAN_SLOT_PENIS)
-			target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
+			if(target_gen)
+				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
 
 		if(CUM_TARGET_ANUS)
 			message = "вгоняют свои тентакли в задницу \the [M] и заполняют её спермой!"
 			target_gen = M.getorganslot(ORGAN_SLOT_ANUS)
-			target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
+			if(target_gen)
+				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
 
 	if(istype(M, /mob/living/carbon))
 		M.reagents.add_reagent(/datum/reagent/drug/aphrodisiacplus, 5) //Cum contains hexocrocin

@@ -532,6 +532,8 @@ SUBSYSTEM_DEF(job)
 			equip_loadout(N, H) // CIT CHANGE - allows players to spawn with loadout items
 		job.after_spawn(H, M.client, joined_late) // note: this happens before the mob has a key! M will always have a client, H might not.
 		post_equip_loadout(N, H)//CIT CHANGE - makes players spawn with in-backpack loadout items properly. A little hacky but it works
+		if(joined_late && ishuman(H)) // BLUEMOON ADD
+			give_spare_id_safe_paper(H)
 
 		handle_roundstart_items(H, M.ckey, H.mind.assigned_role, H.mind.special_role)
 
@@ -544,20 +546,21 @@ SUBSYSTEM_DEF(job)
 	if(tcg_cards)
 		var/obj/item/tcgcard_binder/binder = new(get_turf(H))
 		H.equip_to_slot_if_possible(binder, ITEM_SLOT_BACKPACK, disable_warning = TRUE, bypass_equip_delay_self = TRUE)
-		for(var/card_type in N.client.prefs.tcg_cards)
+		for(var/card_type in tcg_cards)
 			if(card_type)
-				if(islist(H.client.prefs.tcg_cards[card_type]))
-					for(var/duplicate in N.client.prefs.tcg_cards[card_type])
+				if(islist(tcg_cards[card_type]))
+					for(var/duplicate in tcg_cards[card_type])
 						var/obj/item/tcg_card/card = new(get_turf(H), card_type, duplicate)
 						card.forceMove(binder)
 						binder.cards.Add(card)
 				else
-					var/obj/item/tcg_card/card = new(get_turf(H), card_type, N.client.prefs.tcg_cards[card_type])
+					var/obj/item/tcg_card/card = new(get_turf(H), card_type, tcg_cards[card_type])
 					card.forceMove(binder)
 					binder.cards.Add(card)
 		binder.check_for_exodia()
-		if(length(N.client.prefs.tcg_decks))
-			binder.decks = N.client.prefs.tcg_decks
+		var/list/tcg_decks = H.client?.prefs?.tcg_decks || N?.client?.prefs?.tcg_decks
+		if(length(tcg_decks))
+			binder.decks = tcg_decks
 
 	if(ambition_text)
 		to_chat(M, span_notice(ambition_text))
@@ -811,6 +814,8 @@ SUBSYSTEM_DEF(job)
 			I.name = i[LOADOUT_CUSTOM_NAME]
 		if(i[LOADOUT_CUSTOM_DESCRIPTION])
 			I.desc = i[LOADOUT_CUSTOM_DESCRIPTION]
+		if(isclothing(I) && islist(i["loadout_examtooltip"]))
+			I:custom_examine_tooltip = list(i["loadout_examtooltip"][1], i["loadout_examtooltip"][2])
 		if(i["loadout_custom_tagname"]) //for collars with tagnames
 			var/obj/item/clothing/neck/petcollar/collar = I
 			if(istype(collar))
@@ -941,6 +946,8 @@ SUBSYSTEM_DEF(job)
 			I.name = i[LOADOUT_CUSTOM_NAME]
 		if(i[LOADOUT_CUSTOM_DESCRIPTION])
 			I.desc = i[LOADOUT_CUSTOM_DESCRIPTION]
+		if(isclothing(I) && islist(i["loadout_examtooltip"]))
+			I:custom_examine_tooltip = list(i["loadout_examtooltip"][1], i["loadout_examtooltip"][2])
 		if(i["loadout_custom_tagname"]) //for collars with tagnames
 			var/obj/item/clothing/neck/petcollar/collar = I
 			if(istype(collar))

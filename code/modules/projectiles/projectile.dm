@@ -517,7 +517,7 @@
 //Returns true if the target atom is on our current turf and above the right layer
 //If direct target is true it's the originally clicked target.
 /obj/item/projectile/proc/can_hit_target(atom/target, direct_target = FALSE, ignore_loc = FALSE,cross_failed = FALSE)
-	if(QDELETED(target) || impacted[target]) // BLUEMOON EDIT: Invalid Space Turfs
+	if(QDELETED(target) || LAZYACCESS(impacted, target)) // BLUEMOON EDIT: Invalid Space Turfs - use LAZYACCESS to handle lazylist (impacted can be null)
 		return FALSE
 	if(!ignore_loc && (loc != target.loc))
 		return FALSE
@@ -604,7 +604,7 @@
  * Used to not even attempt to Bump() or fail to Cross() anything we already hit.
  */
 /obj/item/projectile/CanPassThrough(atom/blocker, turf/target, blocker_opinion)
-	return impacted[blocker]? TRUE : ..()
+	return LAZYACCESS(impacted, blocker) ? TRUE : ..()
 
 /**
  * Projectile moved:
@@ -874,7 +874,8 @@
 			var/safety = CEILING(pixel_increment_amount / world.icon_size, 1) * 5 + 1
 			while(T != loc)
 				if(!--safety)
-					CRASH("[type] took too long (allowed: [CEILING(pixel_increment_amount/world.icon_size,1)*2] moves) to get to its location.")
+					qdel(src)
+					return
 				step_towards(src, T)
 				if(QDELETED(src) || pixel_move_interrupted)		// this doesn't take into account with pixel_move_interrupted the portion of the move cut off by any forcemoves, but we're opting to ignore that for now
 				// the reason is the entire point of moving to pixel speed rather than tile speed is smoothness, which will be crucial when pixel movement is done in the future

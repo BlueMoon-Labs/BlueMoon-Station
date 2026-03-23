@@ -418,6 +418,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		eavesrendered = compose_message(src, message_language, eavesdropping, null, spans, message_mode, FALSE, source)
 
 	var/rendered = compose_message(src, message_language, message, null, spans, message_mode, FALSE, source)
+	play_fov_effect(src, 6, "talk", ignore_self = TRUE, override_list = listening)
 	for(var/_AM in listening)
 		var/atom/movable/AM = _AM
 		// ПАТЧ ТЕШАРИ - проверяем дистанцию для чёткого слуха
@@ -559,12 +560,15 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 /mob/living/proc/get_key(message)
 	var/key = message[1]
-	if(key in GLOB.department_radio_prefixes)
+	if((key in GLOB.department_radio_prefixes) && length(message) > length(key))
 		return lowertext(message[1 + length(key)])
 
 /mob/living/proc/get_message_language(message)
 	if(message[1] == ",")
-		var/key = message[1 + length(message[1])]
+		var/comma_len = length(message[1])
+		if(length(message) <= comma_len)
+			return null
+		var/key = message[1 + comma_len]
 		for(var/ld in GLOB.all_languages)
 			var/datum/language/LD = ld
 			if(initial(LD.key) == key)

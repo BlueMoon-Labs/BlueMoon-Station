@@ -238,7 +238,7 @@ const RoomCheckIn = ({
             showBar={false}
             width="100%"
             minValue={1}
-            maxValue={1000000000}
+            maxValue={16777216}
             step={1}
             value={current_room}
             format={(value) => String(Math.floor(value))}

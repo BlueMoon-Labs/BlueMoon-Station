@@ -38,7 +38,17 @@
 		advanced_virus = TRUE
 
 	if(!virus_type && !advanced_virus)
-		virus_type = pick(/datum/disease/dnaspread, /datum/disease/tuberculosis, /datum/disease/brainrot, /datum/disease/magnitis, /datum/disease/fluspanish)
+		virus_type = pick(
+			/datum/disease/dnaspread,
+			/datum/disease/tuberculosis,
+			/datum/disease/brainrot,
+			/datum/disease/magnitis,
+			/datum/disease/fluspanish,
+			/datum/disease/weightlessness,
+			/datum/disease/parasite,
+			/datum/disease/anaphylaxis,
+			/datum/disease/adrenal_crisis,
+			/datum/disease/nebula_nausea)
 
 	for(var/mob/living/carbon/human/H in shuffle(GLOB.alive_mob_list))
 		var/turf/T = get_turf(H)

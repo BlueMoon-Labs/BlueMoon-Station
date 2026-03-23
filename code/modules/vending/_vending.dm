@@ -50,6 +50,7 @@
 	icon_state = "generic"
 	layer = BELOW_OBJ_LAYER
 	density = TRUE
+	shadow_weight = 0.45
 	verb_say = "beeps"
 	verb_ask = "beeps"
 	verb_exclaim = "beeps"

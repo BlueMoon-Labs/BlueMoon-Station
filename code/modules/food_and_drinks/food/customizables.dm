@@ -50,8 +50,7 @@
 		else
 			if(!user.transferItemToLoc(I, src))
 				return
-			if(S.trash)
-				S.generate_trash(get_turf(user))
+			SEND_SIGNAL(S, COMSIG_ITEM_USED_AS_INGREDIENT, src)
 			ingredients += S
 			mix_filling_color(S)
 			S.reagents.trans_to(src,min(S.reagents.total_volume, 15)) //limit of 15, we don't want our custom food to be completely filled by just one ingredient with large reagent volume.

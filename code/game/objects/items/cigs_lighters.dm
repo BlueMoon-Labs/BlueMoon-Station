@@ -484,9 +484,8 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 
 /obj/item/clothing/mask/cigarette/pipe/attackby(obj/item/O, mob/user, params)
 	if(istype(O, /obj/item/reagent_containers/food/snacks/grown))
-		var/obj/item/reagent_containers/food/snacks/grown/G = O
 		if(!packeditem)
-			if(G.dry == 1)
+			if(HAS_TRAIT(O, TRAIT_DRIED))
 				to_chat(user, "<span class='notice'>You stuff [O] into [src].</span>")
 				smoketime = 400
 				packeditem = 1
@@ -886,8 +885,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	if(!proximity)
 		return
 	if(istype(target, /obj/item/reagent_containers/food/snacks/grown))
-		var/obj/item/reagent_containers/food/snacks/grown/O = target
-		if(O.dry)
+		if(HAS_TRAIT(target, TRAIT_DRIED))
 			var/obj/item/clothing/mask/cigarette/rollie/R = new /obj/item/clothing/mask/cigarette/rollie(user.loc)
 			R.chem_volume = target.reagents.total_volume
 			target.reagents.trans_to(R, R.chem_volume, log = "cigar fill: rolling paper afterattack")
@@ -1099,20 +1097,19 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	. = ..()
 	//If we're using a dried plant..
 	if(istype(O,/obj/item/reagent_containers/food/snacks))
-		var/obj/item/reagent_containers/food/snacks/DP = O
-		if (DP.dry)
+		if(HAS_TRAIT(O, TRAIT_DRIED))
 			//Nothing if our bong is full
 			if (reagents.holder_full())
 				user.show_message("<span class='notice'>The bowl is full!</span>", MSG_VISUAL)
 				return
 
 			//Transfer reagents and remove the plant
-			user.show_message("<span class='notice'>You stuff the [DP] into the [src]'s bowl.</span>", MSG_VISUAL)
-			DP.reagents.trans_to(src, 100, log = "cigar fill: bong")
-			qdel(DP)
+			user.show_message("<span class='notice'>You stuff the [O] into the [src]'s bowl.</span>", MSG_VISUAL)
+			O.reagents.trans_to(src, 100, log = "cigar fill: bong")
+			qdel(O)
 			return
 		else
-			user.show_message("<span class='warning'>[DP] must be dried first!</span>", MSG_VISUAL)
+			user.show_message("<span class='warning'>[O] must be dried first!</span>", MSG_VISUAL)
 			return
 
 	if (O.get_temperature() <= 500)

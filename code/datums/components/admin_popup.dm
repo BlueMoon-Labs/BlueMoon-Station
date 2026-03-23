@@ -29,7 +29,9 @@
 /datum/component/admin_popup/Destroy(force)
 	var/client/parent_client = parent
 
-	parent_client?.screen -= admin_popup
+	if(admin_popup)
+		admin_popup.screen_loc = null
+		parent_client?.screen -= admin_popup
 	QDEL_NULL(admin_popup)
 
 	if (!QDELETED(ticket))

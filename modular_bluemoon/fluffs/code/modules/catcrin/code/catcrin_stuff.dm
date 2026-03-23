@@ -5,7 +5,8 @@
 "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", \
 "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", \
 "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", \
-"ailhate", "kingdeaths", "mentaleater"
+"ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "angelnedemon", "fryktik", "ivanokio", \
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Слот головы.
 
@@ -242,6 +243,30 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	can_adjust = FALSE
 
+/obj/item/clothing/under/catcrin_underarmor
+	name = "Catcrin underarmor unifrom"
+	desc= "A uniform originally created for the Catcrin combat synthetics, but later adopted by the masses due to its strange popularity. Give you no tactical advantage whatsoever."
+	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/mob/icons/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/mob/clothing/under.dmi'
+	icon_state = "catcrin_underarmor"
+	can_adjust = FALSE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
+	unique_reskin = list(
+		"Black" = list(
+			RESKIN_ICON_STATE = "catcrin_underarmor",
+			RESKIN_WORN_ICON_STATE = "catcrin_underarmor"
+		),
+		"White" = list(
+			RESKIN_ICON_STATE = "catcrin_underarmor_white",
+			RESKIN_WORN_ICON_STATE = "catcrin_underarmor_white"
+		),
+		"Beige" = list(
+			RESKIN_ICON_STATE = "catcrin_underarmor_beige",
+			RESKIN_WORN_ICON_STATE = "catcrin_underarmor_beige"
+		)
+	)
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////РИГ(И?)
 
 /obj/item/clothing/head/helmet/space/hardsuit/security/mark46_sec
@@ -265,7 +290,7 @@
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/mob/inhands/mark45_righthand.dmi'
 	icon_state = "hardsuit-sec_mark46"
 	item_state = "hardsuit-sec_mark46"
-	tail_suit_worn_overlay = 'modular_bluemoon/icons/mob/clothing/tails_digi.dmi'
+	tail_suit_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/tails_digi.dmi'
 	tail_state = "sec_mark46_catcrin"
 	hardsuit_type = "sec_mark46"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/security/mark46_sec

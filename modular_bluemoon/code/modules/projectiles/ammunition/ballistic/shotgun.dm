@@ -40,7 +40,7 @@
 	icon_state = "slug23box"
 	ammo_type = /obj/item/ammo_casing/slug23
 	caliber = "23"
-	max_ammo = 8
+	max_ammo = 12
 	multiple_sprites = 0
 
 /obj/item/ammo_box/slug_rubber23
@@ -49,7 +49,7 @@
 	icon_state = "ruberslug23box"
 	ammo_type = /obj/item/ammo_casing/slug_rubber23
 	caliber = "23"
-	max_ammo = 8
+	max_ammo = 12
 	multiple_sprites = 0
 
 /obj/item/ammo_box/buckshot23
@@ -58,7 +58,7 @@
 	icon_state = "buckshot23box"
 	ammo_type = /obj/item/ammo_casing/buckshot23
 	caliber = "23"
-	max_ammo = 8
+	max_ammo = 12
 	multiple_sprites = 0
 
 /obj/item/ammo_box/rubbershot23
@@ -67,5 +67,5 @@
 	icon_state = "rubershot23box"
 	ammo_type = /obj/item/ammo_casing/rubbershot23
 	caliber = "23"
-	max_ammo = 8
+	max_ammo = 12
 	multiple_sprites = 0

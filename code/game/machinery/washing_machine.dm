@@ -330,7 +330,7 @@ GLOBAL_LIST_INIT(dye_registry, list(
 			return TRUE
 
 		if(ishuman(user) && TryStuck(user))
-			to_chat(user, "<span class='warning'>You were trying to put the item in [src], but ended up being stuck in it somehow...</span>")
+			user.visible_message(span_danger("[user] is stuck inside \the [src]!"), span_danger("You were trying to put the item in [src], but ended up being stuck in it somehow..."))
 			if(iscatperson(user))
 				stoplag(1 SECONDS)
 				user.emote(pick("meow", "mew"))
@@ -384,10 +384,10 @@ GLOBAL_LIST_INIT(dye_registry, list(
 			if(user == buckled_mobs[1])
 				return
 			else
-				to_chat(user, "<span class='notice'>You are trying to help. It might take a while...</span>")
+				user.visible_message("[user] is trying to help [buckled_mobs[1]]. It might take a while...")
 				user_unbuckle_mob(buckled_mobs[1], user)
 		else if(ishuman(user) && TryStuck(user, 10, 5))
-			to_chat(user, "<span class='warning'>You were trying to get items from [src], but ended up being stuck in it somehow...</span>")
+			user.visible_message(span_danger("[user] is stuck inside \the [src]!"), span_danger("You were trying to get items from [src], but ended up being stuck in it somehow..."))
 			if(iscatperson(user))
 				stoplag(1 SECONDS)
 				user.emote(pick("meow", "mew"))
@@ -491,7 +491,7 @@ GLOBAL_LIST_INIT(dye_registry, list(
 
 /obj/machinery/washing_machine/proc/handle_unbuckling(mob/living/carbon/human/H, mob/living/user)
 	if(H == user)
-		to_chat(user, "<span class='notice'>It might take a while...</span>")
+		H.visible_message(span_danger("[H] is trying to get out of \the [src]..."), span_notice("It might take a while..."))
 		return do_after(user, 1 MINUTES, src)
 	else
 		return do_after(user, 10 SECONDS, src)

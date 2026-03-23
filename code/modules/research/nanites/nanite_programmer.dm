@@ -96,6 +96,8 @@
 /obj/machinery/nanite_programmer/ui_act(action, params)
 	if(..())
 		return
+	if(action != "eject" && !program)
+		return
 	switch(action)
 		if("eject")
 			eject(usr)

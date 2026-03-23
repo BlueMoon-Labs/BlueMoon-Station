@@ -25,7 +25,9 @@ export const PortableTurret = (props, context) => {
       height={lasertag_turret ? 110 : 292}>
       <Window.Content>
         <NoticeBox>
-          Swipe an ID card to {locked ? 'unlock' : 'lock'} this interface.
+          {locked
+            ? 'Interface is locked. Swipe ID or use AI bypass.'
+            : 'Interface is active. Lock before leaving.'}
         </NoticeBox>
         <>
           <Section>
@@ -49,6 +51,13 @@ export const PortableTurret = (props, context) => {
                   selected={on}
                   disabled={locked}
                   onClick={() => act('power')} />
+                {!!silicon_user && (
+                  <Button
+                    icon="robot"
+                    content={locked ? "AI Auth" : "AI Lock"}
+                    color="yellow"
+                    onClick={() => act('ai_auth')} />
+                )}
               </LabeledList.Item>
             </LabeledList>
           </Section>

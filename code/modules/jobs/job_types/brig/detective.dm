@@ -12,6 +12,24 @@
 	minimal_player_age = 7
 	exp_requirements = 3000
 	exp_type = EXP_TYPE_CREW
+	alt_titles = list(
+		"Syndicate Survey Specialist", //Синди выше, для удобства
+		"AC Recon Agent",
+		"Cinder Dick",
+		"Cooperate Auditor",
+		"Forensic Investigator",
+		"Forensics Scientist",
+		"Forensics Technician",
+		"Gumshoe",
+		"Private Eye",
+		"Private Investigator",
+		"Prosecutor",
+		"SAARE Inspector",
+		"Safeguard Investigator",
+		"Slutective",
+		"Stalker",
+		"Studective"
+		)
 
 	outfit = /datum/outfit/job/detective
 	departments = DEPARTMENT_BITFLAG_SECURITY
@@ -26,7 +44,7 @@
 	mind_traits = list(TRAIT_LAW_ENFORCEMENT_METABOLISM)
 
 	display_order = JOB_DISPLAY_ORDER_DETECTIVE
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/nonviolent, /datum/quirk/monophobia)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/nonviolent, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/onelife)
 	threat = 1
 
 	family_heirlooms = list(
@@ -50,18 +68,22 @@
 
 	belt = /obj/item/pda/detective
 	ears = /obj/item/radio/headset/headset_sec/alt
+	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/aviators
 	uniform = /obj/item/clothing/under/rank/security/detective
 	neck = /obj/item/clothing/neck/tie/black
-	shoes = /obj/item/clothing/shoes/sneakers/brown
+	shoes = /obj/item/clothing/shoes/laceup
 	suit = /obj/item/clothing/suit/det_suit
-	gloves = /obj/item/clothing/gloves/color/black
+	gloves = /obj/item/clothing/gloves/color/black/forensic
 	head = /obj/item/clothing/head/fedora/det_hat
 	l_pocket = /obj/item/toy/crayon/white
 	r_pocket = /obj/item/lighter
-	backpack_contents = list(/obj/item/storage/box/evidence=1,\
-		/obj/item/detective_scanner=1,\
-		/obj/item/melee/classic_baton=1,
-		/obj/item/stamp/security = 1)
+	backpack_contents = list(
+		/obj/item/storage/box/evidence,
+		/obj/item/detective_scanner,
+		/obj/item/storage/ifak,
+		/obj/item/storage/box/sec_kit,
+		/obj/item/melee/classic_baton,
+		/obj/item/stamp/security)
 	mask = /obj/item/clothing/mask/cigarette
 
 	backpack = /obj/item/storage/backpack/detective //BLUEMOON add
@@ -88,10 +110,13 @@
 	head = /obj/item/clothing/head/fedora/det_hat
 	l_pocket = /obj/item/toy/crayon/white
 	r_pocket = /obj/item/lighter
-	backpack_contents = list(/obj/item/storage/box/evidence=1,\
-		/obj/item/detective_scanner=1,\
-		/obj/item/syndicate_uplink_high=1,\
-		/obj/item/melee/classic_baton=1)
+	backpack_contents = list(
+		/obj/item/storage/box/evidence,
+		/obj/item/detective_scanner,
+		/obj/item/storage/ifak,
+		/obj/item/storage/box/sec_kit,
+		/obj/item/melee/classic_baton,
+		/obj/item/stamp/security)
 	mask = /obj/item/clothing/mask/cigarette/cigar/havana
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo

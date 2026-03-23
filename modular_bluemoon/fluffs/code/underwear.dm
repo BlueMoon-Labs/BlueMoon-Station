@@ -58,3 +58,12 @@
 		user.update_genitals()
 
 ////////////////////////////////////////////////////
+
+/obj/item/clothing/underwear/briefs/nano_suit
+	name = "Desert Nanosuit"
+	desc = "Comfortable underwear that hugs the entire body and protects from small particles. This is especially useful in deserts, where sand gets everywhere. Only for Catcrins!"
+	icon_state = "desert_nanosuit"
+	item_state = "desert_nanosuit"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'

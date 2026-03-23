@@ -29,7 +29,7 @@
 	if(!can_change_id)
 		return
 		// защита от грифа (невозможность тыкать замаппленные бласты, цк в т.ч.)
-	var/change_id = tgui_input_number(user, "Set the door controllers ID", "Door Controller ID", id, 100)
+	var/change_id = tgui_input_text(user, "Set the door controllers ID", "Door Controller ID", id, 100)
 	if(!change_id || QDELETED(usr) || QDELETED(src) || !usr.canUseTopic(src, be_close = TRUE, no_dextery = FALSE, no_tk = TRUE))
 		return
 	id = change_id

@@ -17,11 +17,11 @@
 	reference = REF(thing)
 
 /datum/weakref/Destroy(force)
-	var/datum/target = resolve()
-	qdel(target)
 	if(!force)
-		return QDEL_HINT_LETMELIVE	//Let BYOND autoGC thiswhen nothing is using it anymore.
-	target?.weak_reference = null
+		return QDEL_HINT_LETMELIVE	//Let BYOND autoGC this when nothing is using it anymore.
+	var/datum/target = locate(reference)
+	if(target?.weak_reference == src)
+		target.weak_reference = null
 	return ..()
 
 /datum/weakref/proc/resolve()

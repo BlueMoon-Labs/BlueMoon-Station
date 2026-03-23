@@ -27,6 +27,23 @@
 			"<span class='danger'>You burst out of [src]!</span>")
 	..()
 
+/// Removes and gibs the head only (e.g. point-blank KS-23/sniper headshot). Used by nutcracker and projectile on_hit.
+/mob/living/carbon/proc/gib_head()
+	var/obj/item/bodypart/head = get_bodypart(BODY_ZONE_HEAD)
+	if(!head)
+		return
+	var/turf/T = get_turf(src)
+	var/list/organs = getorganszone(BODY_ZONE_HEAD) + getorganszone("eyes") + getorganszone("mouth")
+	for(var/internal_organ in organs)
+		var/obj/item/organ/I = internal_organ
+		I.Remove()
+		I.forceMove(T)
+	head.drop_limb()
+	qdel(head)
+	new gib_type(T, 1, get_static_viruses())
+	add_splatter_floor(T)
+	playsound(src, 'sound/effects/splat.ogg', 50, 1)
+
 /mob/living/carbon/spill_organs(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion)
 	var/atom/Tsec = drop_location()
 	if(!no_bodyparts)

@@ -37,11 +37,13 @@
 		animate(screen, alpha = 0, time = animated)
 		addtimer(CALLBACK(src, PROC_REF(_remove_fullscreen_direct), screen), animated, TIMER_CLIENT_TIME)
 	else
+		screen.screen_loc = null
 		if(client)
 			client.screen -= screen
 		qdel(screen)
 
 /mob/proc/_remove_fullscreen_direct(atom/movable/screen/fullscreen/screen)
+	screen.screen_loc = null
 	if(client)
 		client.screen -= screen
 	qdel(screen)

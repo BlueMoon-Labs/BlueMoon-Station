@@ -10,6 +10,25 @@
 	selection_color = "#9574cd"
 	exp_requirements = 60
 	exp_type = EXP_TYPE_CREW
+	alt_titles = list(
+		"Junior Roboticist", //Стажер выше, для удобства
+		"Cybersun Specialist", //Триглав выше, для удобства
+		"Syndicate Roboticist", //Синди выше, для удобства
+		"Biomechanical Engineer",
+		"Borgs Raper",
+		"Borgs Slut",
+		"Cyberneticist",
+		"Droid Mechanic",
+		"Machinist",
+		"Mechanic",
+		"Mechatronic Engineer",
+		"MOD Mechanic",
+		"Ripperdoc",
+		"Robo-Slut",
+		"Robotics Operator",
+		"Synth Technician",
+		"Techpriest Biologis"
+		)
 
 	outfit = /datum/outfit/job/roboticist
 	departments = DEPARTMENT_BITFLAG_SCIENCE

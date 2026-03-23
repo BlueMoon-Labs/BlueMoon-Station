@@ -12511,7 +12511,7 @@
 	},
 /obj/item/clothing/mask/gas/sechailer/syndicate,
 /obj/item/gun/energy/disabler,
-/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /obj/item/clothing/glasses/hud/security/sunglasses/aviators,
 /obj/item/clothing/neck/cloak/syndiecap,
 /obj/structure/window/reinforced/survival_pod{
@@ -13182,7 +13182,7 @@
 	},
 /obj/item/clothing/mask/gas/sechailer/syndicate,
 /obj/item/gun/energy/disabler,
-/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /obj/item/clothing/glasses/hud/security/sunglasses/aviators,
 /obj/item/clothing/neck/cloak/syndiecap{
 	pixel_x = 0;

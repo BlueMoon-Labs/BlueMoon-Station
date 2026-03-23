@@ -73,7 +73,7 @@ export const MainContent = (props, context) => {
           </Stack>
         </Stack.Item>
         <Stack.Item grow basis={0} mb={tabIndex === 0 ? -1 : -2.3}>
-          <Section overflow="auto" fill>
+          <Section scrollable fill>
             {(() => {
               switch (tabIndex) {
                 default:

@@ -28,7 +28,7 @@
 /obj/machinery/launchpad/Initialize()
 	. = ..()
 	prepare_huds()
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.add_to_hud(src)
 
 	var/image/holder = hud_list[DIAG_LAUNCHPAD_HUD]
@@ -41,7 +41,7 @@
 	update_indicator()
 
 /obj/machinery/launchpad/Destroy()
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.remove_from_hud(src)
 	return ..()
 
@@ -201,7 +201,10 @@
 	if (first)
 		log_msg += "nothing"
 	log_msg += " [sending ? "to" : "from"] [target_x], [target_y], [z] ([A ? A.name : "null area"])"
-	investigate_log(log_msg.Join(), INVESTIGATE_TELESCI)
+	var/log_text = "[src][log_msg.Join()]"
+	investigate_log(log_text, INVESTIGATE_TELESCI)
+	log_game(log_text)
+	message_admins("Launchpad: [log_text]")
 	updateDialog()
 
 //Starts in the briefcase. Don't spawn this directly, or it will runtime when closing.

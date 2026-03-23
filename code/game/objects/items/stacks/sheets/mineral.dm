@@ -434,6 +434,7 @@ GLOBAL_LIST_INIT(snow_recipes, list ( \
 	sheettype = "abductor"
 	merge_type = /obj/item/stack/sheet/mineral/abductor
 	walltype = /turf/closed/wall/mineral/abductor
+	tableVariant = /obj/structure/table/abductor
 
 /obj/item/stack/sheet/mineral/abductor/fifty
 	amount = 50

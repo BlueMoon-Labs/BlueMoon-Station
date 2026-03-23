@@ -192,6 +192,7 @@ GLOBAL_VAR(tom_existed)
 	grind_results = list(/datum/reagent/blood = 20, /datum/reagent/liquidgibs = 5)
 
 /obj/item/reagent_containers/food/snacks/deadmouse/on_grind()
+	..()
 	reagents.clear_reagents()
 
 /mob/living/simple_animal/mouse/proc/miasma(datum/gas_mixture/environment, check_temp = FALSE)

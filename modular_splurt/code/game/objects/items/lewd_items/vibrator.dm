@@ -71,20 +71,7 @@
 	item_state = "vibesmall"
 
 /obj/item/electropack/vibrator/AltClick(mob/living/user)
-	var/dat = {"
-<TT>
-<B>Frequency/Code</B> for vibrator:<BR>
-Frequency:
-[format_frequency(src.frequency)]
-<A href='byond://?src=[REF(src)];set=freq'>Set</A><BR>
-
-Code:
-[src.code]
-<A href='byond://?src=[REF(src)];set=code'>Set</A><BR>
-</TT>"}
-	user << browse(dat, "window=radio")
-	onclose(user, "radio")
-	return
+	ui_interact(user)
 
 /obj/item/electropack/vibrator/attack_self(mob/user)
 	if(!istype(user))

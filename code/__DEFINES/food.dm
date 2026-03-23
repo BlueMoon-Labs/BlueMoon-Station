@@ -33,6 +33,10 @@
 
 #define IS_EDIBLE(O) (O.GetComponent(/datum/component/edible) || istype(O, /obj/item/reagent_containers/food/snacks))
 
+///Food trash flags
+#define FOOD_TRASH_POPABLE (1<<0)
+#define FOOD_TRASH_OPENABLE (1<<1)
+
 ///Amount of reagents you start with on crafted food excluding the used parts
 #define CRAFTED_FOOD_BASE_REAGENT_MODIFIER 0.7
 ///Modifier of reagents you get when crafting food from the parts used

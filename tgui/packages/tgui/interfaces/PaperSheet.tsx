@@ -154,7 +154,13 @@ class PaperSheetStamper extends Component<PaperSheetStamperProps> {
   };
 
   handleMouseClick = (e: MouseEvent): void => {
-    if (e.pageY <= 30) {
+    const scrollable = this.scrollableRef.current;
+    if (!scrollable) {
+      return;
+    }
+    const rect = scrollable.getBoundingClientRect();
+    // Ignore clicks outside the container
+    if (e.clientY - rect.top <= 0) {
       return;
     }
     const { act } = useBackend<PaperContext>(this.context);
@@ -188,8 +194,22 @@ class PaperSheetStamper extends Component<PaperSheetStamperProps> {
     const stampHeight = stamp.clientHeight;
     const stampWidth = stamp.clientWidth;
 
-    const currentHeight = rotating ? this.state.y : e.pageY - stampHeight;
-    const currentWidth = rotating ? this.state.x : e.pageX - stampWidth / 2;
+    // CSS zoom on body (for DPI compensation) makes getBoundingClientRect()
+    // return viewport pixels, but CSS left/top use layout pixels.
+    // Divide by zoom to convert viewport → layout coordinates.
+    const zoom = parseFloat(document.body.style.zoom) / 100 || 1;
+
+    // Convert to container-relative coordinates (in layout pixels)
+    const rect = scrollable.getBoundingClientRect();
+    const relativeX = (e.clientX - rect.left) / zoom;
+    const relativeY = (e.clientY - rect.top) / zoom;
+
+    const currentHeight = rotating
+      ? this.state.y
+      : relativeY - stampHeight;
+    const currentWidth = rotating
+      ? this.state.x
+      : relativeX - stampWidth / 2;
 
     const widthMin = 0;
     const heightMin = 0;
@@ -198,8 +218,8 @@ class PaperSheetStamper extends Component<PaperSheetStamperProps> {
     const heightMax = scrollable.clientHeight - stampHeight;
 
     const radians = Math.atan2(
-      currentWidth + stampWidth / 2 - e.pageX,
-      currentHeight + stampHeight - e.pageY
+      currentWidth + stampWidth / 2 - relativeX,
+      currentHeight + stampHeight - relativeY
     );
 
     const rotate = rotating
@@ -246,7 +266,7 @@ class PaperSheetStamper extends Component<PaperSheetStamperProps> {
 }
 
 // Creates a full stamp div to render the given stamp to the preview.
-export const Stamp = (props, context): InfernoElement<HTMLDivElement> => {
+export const Stamp = (props, context) => {
   const { activeStamp, sprite, x, y, rotation, opacity, yOffset = 0 } = props;
   const stamp_transform = {
     'left': x + 'px',
@@ -369,16 +389,18 @@ export class PrimaryView extends Component {
                       content="Save"
                       color="good"
                       onClick={() => {
+                        const payload: Record<string, any> = {};
                         if (textAreaText.length) {
-                          act('add_text', { text: textAreaText });
-                          setTextAreaText('');
+                          payload.text = textAreaText;
                         }
                         if (Object.keys(inputFieldData).length) {
-                          act('fill_input_field', {
-                            field_data: inputFieldData,
-                          });
-                          setInputFieldData({});
+                          payload.field_data = inputFieldData;
                         }
+                        if (Object.keys(payload).length) {
+                          act('save', payload);
+                        }
+                        setTextAreaText('');
+                        setInputFieldData({});
                       }}
                     />
                   </>
@@ -502,7 +524,7 @@ export class PreviewView extends Component<PreviewViewProps> {
       walkTokens: walkTokens,
       // Once assets are fixed might need to change this for them
       baseUrl: 'thisshouldbreakhttp',
-    });
+    } as any);
   };
 
   // Extracts the paper field "counter" from a full ID.
@@ -542,12 +564,13 @@ export class PreviewView extends Component<PreviewViewProps> {
     const { data } = useBackend<PaperContext>(this.context);
     const { default_pen_font, default_pen_color, held_item_details } = data;
 
+    const newFieldData = { ...inputFieldData };
     if (input.value.length) {
-      inputFieldData[this.getHeaderID(input.id)] = input.value;
+      newFieldData[this.getHeaderID(input.id)] = input.value;
     } else {
-      delete inputFieldData[this.getHeaderID(input.id)];
+      delete newFieldData[this.getHeaderID(input.id)];
     }
-    setInputFieldData(inputFieldData);
+    setInputFieldData(newFieldData);
     input.style.fontFamily = held_item_details?.font || default_pen_font;
     input.style.color = held_item_details?.color || default_pen_color;
     input.defaultValue = input.value;
@@ -728,7 +751,7 @@ export class PreviewView extends Component<PreviewViewProps> {
       },
     };
 
-    return marked.parse(rawText);
+    return marked.parse(rawText) as string;
   };
 
   // Fully formats, sanitises and parses the provided raw text and wraps it
@@ -917,7 +940,7 @@ export class PreviewView extends Component<PreviewViewProps> {
     let input = document.createElement('input');
     input.setAttribute('type', 'text');
 
-    input.style.fontSize = field.is_signature ? '30px' : `${fontSize}px`;
+    input.style.fontSize = field.is_signature ? '18px' : `${fontSize}px`;
     input.style.fontFamily = fieldData.font || font;
     input.style.fontStyle = field.is_signature ? 'italic' : 'normal';
     input.style.fontWeight = 'bold';
@@ -1009,17 +1032,6 @@ export const PaperSheet = (props, context) => {
   const { paper_color, paper_name, held_item_details } = data;
 
   const writeMode = canEdit(held_item_details);
-
-  if (!writeMode) {
-    const [inputFieldData, setInputFieldData] = useLocalState(
-      context,
-      'inputFieldData',
-      {}
-    );
-    if (Object.keys(inputFieldData).length) {
-      setInputFieldData({});
-    }
-  }
 
   return (
     <Window

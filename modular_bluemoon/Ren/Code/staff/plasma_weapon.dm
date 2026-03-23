@@ -302,3 +302,24 @@
 	// Light your candles while spinning around the room
 	if(spinnable)
 		INVOKE_ASYNC(src, PROC_REF(jedi_spin), user)
+
+/obj/item/plasmascythe/toy
+	name = "Toy Plasma Scythe"
+	desc = "A cheap, plastic replica of a plasma scythe. Realistic lights and sounds! Ages 8 and up."
+	force = 0
+	throwforce = 0
+	heat = 0
+	armour_penetration = 0
+	block_parry_data = null
+	attack_verb = list("attacked", "struck", "hit")
+	total_mass_on = TOTAL_MASS_TOY_SWORD
+	sharpness = SHARP_NONE
+	wound_bonus = 0
+	bare_wound_bonus = 0
+
+/obj/item/plasmascythe/toy/ComponentInitialize()
+	AddComponent(/datum/component/two_handed, force_unwielded=0, force_wielded=0, \
+					wieldsound='modular_bluemoon/Ren/Sound/2.1.ogg', unwieldsound='modular_bluemoon/Ren/Sound/2.1.ogg')
+
+/obj/item/plasmascythe/toy/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
+	return BLOCK_NONE

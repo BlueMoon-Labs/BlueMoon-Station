@@ -49,11 +49,10 @@ export const TextInputModal = (_, context) => {
       {timeout && <Loader value={timeout} />}
       <Window.Content
         onKeyDown={(event) => {
-          const keyCode = window.event ? event.which : event.keyCode;
-          if (keyCode === KEY_ENTER && (!multiline || !event.shiftKey)) {
+          if (event.key === KEY_ENTER && (!multiline || !event.shiftKey)) {
             act('submit', { entry: input });
           }
-          if (keyCode === KEY_ESCAPE) {
+          if (event.key === KEY_ESCAPE) {
             act('cancel');
           }
         }}>
@@ -68,7 +67,9 @@ export const TextInputModal = (_, context) => {
             <Stack.Item>
               <InputButtons
                 input={input}
-                message={`${input.length}/${max_length}`}
+                message={max_length > 0 && max_length <= 2147483647
+                  ? `${input.length}/${max_length}`
+                  : `${input.length}`}
               />
             </Stack.Item>
           </Stack>
@@ -89,7 +90,7 @@ const InputArea = (props, context) => {
       autoFocus
       autoSelect
       height={multiline || input.length >= 30 ? '100%' : '1.8rem'}
-      maxLength={max_length}
+      maxLength={max_length > 0 && max_length <= 2147483647 ? max_length : undefined}
       onEscape={() => act('cancel')}
       onEnter={(event) => {
         act('submit', { entry: input });

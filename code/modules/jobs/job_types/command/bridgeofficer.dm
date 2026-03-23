@@ -15,6 +15,19 @@
 	exp_type = EXP_TYPE_COMMAND
 	exp_type_department = EXP_TYPE_COMMAND
 	considered_combat_role = TRUE
+	alt_titles = list(
+		"Bridge Advisor",
+		"Bridge Bitch",
+		"Bridge Canine",
+		"Bridge Pet",
+		"Captain Pet",
+		"Command Pet",
+		"Dick Attachment",
+		"Ensign",
+		"Pussy Attachment",
+		"Secretary"
+		)
+
 	outfit = /datum/outfit/job/bridgeofficer
 	plasma_outfit = /datum/outfit/plasmaman/bridgeofficer
 	//SPLURT CHANGES (Changes the custom spawn text for the Bridge Officer)
@@ -41,7 +54,6 @@
 
 	paycheck = PAYCHECK_COMMAND
 	paycheck_department = ACCOUNT_SEC
-	alt_titles = list("NT Junior Manager", "Syndicate Junior Officer", "Command Secretary", "Command Officer", "Bridge Secretary", "Ensign", "Bridge Bitch", "Bridge Canine", "Captain Pet", "Command Pet", "Dick Attachment", "Pussy Attachment", "Bridge Advisor", "Bridge Intern", "Bridge Pet")
 	display_order = JOB_DISPLAY_ORDER_BO
 	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity, /datum/quirk/illiterate)
 	threat = 1

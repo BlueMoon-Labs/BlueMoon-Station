@@ -21,10 +21,10 @@ SUBSYSTEM_DEF(mail)
 	/// Assoc list 'mail category' = 'mail category weight'
 	var/static/list/mail_categories_with_weights = list(
 		MAIL_CATEGORY_MISC = 5,
-		MAIL_CATEGORY_ANTAG = 2,
+		MAIL_CATEGORY_ANTAG = 3,
 		MAIL_CATEGORY_MONEY = 5,
 		MAIL_CATEGORY_FAMILY = 5,
-		MAIL_CATEGORY_JOB = 8,
+		MAIL_CATEGORY_JOB = 5,
 		MAIL_CATEGORY_SHOP = 6,
 		MAIL_CATEGORY_SPAM = 5,
 		MAIL_CATEGORY_LEWD = 4

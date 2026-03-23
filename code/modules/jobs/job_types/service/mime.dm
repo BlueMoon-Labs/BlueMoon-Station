@@ -8,6 +8,14 @@
 	spawn_positions = 2
 	supervisors = "the head of personnel"
 	selection_color = "#dddddd"
+	alt_titles = list(
+		"Cumtomime",
+		"Mimic",
+		"Mummer",
+		"Mute Entertainer",
+		"Pantomime",
+		"Sexy Mime"
+		)
 
 	outfit = /datum/outfit/job/mime
 	plasma_outfit = /datum/outfit/plasmaman/mime

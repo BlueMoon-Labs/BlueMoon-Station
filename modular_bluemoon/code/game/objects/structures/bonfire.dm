@@ -169,7 +169,7 @@
 		return
 	if(QDELETED(user) || QDELETED(src) || QDELETED(travel_to) || !Adjacent(user) || user.incapacitated() || user.stat >= UNCONSCIOUS)
 		return
-	COOLDOWN_START(src, travel_cd, 30 SECONDS)
+	COOLDOWN_START(src, travel_cd, 20 SECONDS)
 	INVOKE_ASYNC(src, PROC_REF(bonfire_travel), user, travel_to, tiles_around)
 
 /obj/structure/bonfire/prelit/ash/proc/bonfire_travel(mob/living/carbon/human/user, obj/structure/bonfire/prelit/ash/travel_to, list/tiles_around)
@@ -194,7 +194,7 @@
 	if(QDELETED(travel_to) || user.mob_transforming)
 		to_chat(user, span_warning("Что-то случилось... перемещение не удалось."))
 	else if(do_teleport(user, pick(tiles_around), channel = TELEPORT_CHANNEL_MAGIC))
-		COOLDOWN_START(travel_to, travel_cd, 35 SECONDS)
+		COOLDOWN_START(travel_to, travel_cd, 20 SECONDS)
 		playsound(user, 'modular_bluemoon/sound/effects/bonfire_lit.ogg', 100, FALSE)
 		fog_animation = image('icons/effects/chemsmoke.dmi', travel_to, "", layer = GASFIRE_LAYER, pixel_x = -32, pixel_y = -32)
 		fog_animation.color = COLOR_LIGHT_ORANGE

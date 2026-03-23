@@ -19,10 +19,9 @@ GLOBAL_LIST_EMPTY(cached_previews)
 
 /datum/description_profile
 	var/datum/weakref/host
-	var/atom/movable/screen/map_view/examine_panel_screen/examine_panel_screen
-	var/mutable_appearance/current_mob_appearance
-	var/mutable_appearance/current_background
-	var/static/list/preview_backgrounds = list("000", "midgrey", "FFF", "white", "steel", "techmaint", "dark", "plating", "reinforced")
+	var/list/viewer_screens
+	var/current_bg_state = "plating"
+	var/static/list/preview_backgrounds = list("plating", "engine", "showroomfloor", "freezerfloor", "floor_padded", "grimy")
 
 /datum/description_profile/New(var/host_mob)
 	. = ..()
@@ -30,8 +29,22 @@ GLOBAL_LIST_EMPTY(cached_previews)
 
 
 /datum/description_profile/Destroy(force, ...)
-	. = ..()
+	SStgui.close_uis(src)
+	var/mob/M = host?.resolve()
+	if(M)
+		UnregisterSignal(M, COMSIG_ATOM_UPDATED_ICON)
 	host = null
+	for(var/mob/viewer as anything in viewer_screens)
+		var/atom/movable/screen/map_view/viewer_screen = viewer_screens[viewer]
+		if(viewer_screen)
+			viewer_screen.hide_from(viewer)
+			qdel(viewer_screen)
+	viewer_screens = null
+	return ..()
+
+/datum/description_profile/proc/on_host_icon_updated(datum/source, updates, result)
+	SIGNAL_HANDLER
+	update_preview()
 
 /datum/description_profile/ui_status(mob/user, datum/ui_state/state)
 	. = ..()
@@ -48,15 +61,32 @@ GLOBAL_LIST_EMPTY(cached_previews)
 /datum/description_profile/ui_state()
 	return GLOB.always_state
 
+/datum/description_profile/ui_close(mob/user)
+	var/atom/movable/screen/map_view/viewer_screen = LAZYACCESS(viewer_screens, user)
+	LAZYREMOVE(viewer_screens, user)
+	if(viewer_screen)
+		viewer_screen.hide_from(user)
+		qdel(viewer_screen)
+
 /atom/movable/screen/map_view/examine_panel_screen
 	name = "description profile screen"
+	icon = 'icons/turf/floors.dmi'
+	icon_state = "plating"
+
+/atom/movable/screen/map_view/examine_panel_screen/proc/update_character(mob/target)
+	var/mutable_appearance/current_mob_appearance = new(target)
+	current_mob_appearance.setDir(SOUTH)
+	current_mob_appearance.transform = matrix()
+	current_mob_appearance.pixel_x = 0
+	current_mob_appearance.pixel_y = 0
+	cut_overlays()
+	add_overlay(current_mob_appearance)
 
 /datum/description_profile/ui_static_data(mob/user, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	var/data[0]
 	var/mob/living/M = host.resolve()
 
-	data["character_ref"] = examine_panel_screen.assigned_map
 	data["directory_visible"] = M?.client?.prefs?.show_in_directory
 
 	// BLUEMOON EDIT START - перепривязка к ДНК и майнду флаворов
@@ -90,6 +120,9 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	var/data[0]
 	var/mob/living/M = host.resolve()
 	var/unknown = FALSE
+
+	var/atom/movable/screen/map_view/examine_panel_screen/viewer_screen = LAZYACCESS(viewer_screens, user)
+	data["character_ref"] = viewer_screen?.assigned_map
 	// BLUEMOON EDIT START - правка видимости текстов персонажа и привязка их к ДНК
 	if (iscarbon(M))
 		var/mob/living/carbon/C = M
@@ -124,62 +157,62 @@ GLOBAL_LIST_EMPTY(cached_previews)
 
 	return data
 
-/datum/description_profile/proc/update_preview()
-
-	if(!examine_panel_screen || !current_background)
+/datum/description_profile/proc/update_preview(mob/user)
+	var/mob/living/M = host.resolve()
+	if(!M)
 		return
 
-	var/mob/living/M = host.resolve()
-	current_mob_appearance = new(M)
-	current_mob_appearance.setDir(SOUTH)
-	current_mob_appearance.transform = matrix() // We reset their rotation, in case they're lying down.
+	var/list/screens_to_update = list()
+	if(user)
+		var/atom/movable/screen/map_view/examine_panel_screen/vs = LAZYACCESS(viewer_screens, user)
+		if(vs)
+			screens_to_update += vs
+	else
+		for(var/mob/viewer in viewer_screens)
+			screens_to_update += viewer_screens[viewer]
 
-	// In case they're pixel-shifted, we bring 'em back!
-	current_mob_appearance.pixel_x = 0
-	current_mob_appearance.pixel_y = 0
-
-	current_mob_appearance.add_overlay(current_background)
-
-	examine_panel_screen.cut_overlays()
-	examine_panel_screen.add_overlay(current_mob_appearance)
+	for(var/atom/movable/screen/map_view/examine_panel_screen/vs as anything in screens_to_update)
+		vs.icon_state = current_bg_state
+		vs.update_character(M)
 
 /datum/description_profile/ui_interact(mob/user, datum/tgui/ui, datum/tgui/parent_ui)
 	var/mob/living/M = host.resolve()
 
-	if(!examine_panel_screen)
-		examine_panel_screen = new
-		examine_panel_screen.name = "character icon"
-		examine_panel_screen.assigned_map = "examine_panel_[REF(M)]_map"
-		examine_panel_screen.del_on_map_removal = FALSE
-		examine_panel_screen.screen_loc = "[examine_panel_screen.assigned_map]:1,1"
+	var/atom/movable/screen/map_view/examine_panel_screen/viewer_screen = LAZYACCESS(viewer_screens, user)
+	if(isnull(viewer_screen))
+		viewer_screen = new
+		viewer_screen.generate_view("examine_panel_[REF(M)]_[REF(user)]_map")
+		LAZYSET(viewer_screens, user, viewer_screen)
 
-	if (!current_background)
-		current_background = mutable_appearance('modular_citadel/icons/ui/backgrounds.dmi', "reinforced", layer = SPACE_LAYER)
-
-	update_preview()
+	viewer_screen.icon_state = current_bg_state
+	viewer_screen.update_character(M)
 
 	ui = SStgui.try_update_ui(user, src, ui)
 	if (!ui)
-		user.client.register_map_obj(examine_panel_screen)
-		examine_panel_screen.setDir(SOUTH)
 		ui = new(user, src, "CharacterProfile", "Профиль персонажа [M]")
 		ui.open()
+		viewer_screen.display_to(user, ui.window)
 
 /datum/description_profile/ui_act(action, list/params)
 	. = ..()
 	if (.)
 		return
 
+	var/atom/movable/screen/map_view/examine_panel_screen/viewer_screen = LAZYACCESS(viewer_screens, usr)
+
 	switch (action)
 		if("character_directory")
 			var/static/datum/character_directory/character_directory = new
 			character_directory.ui_interact(usr)
 		if("char_right")
-			examine_panel_screen.setDir(turn(examine_panel_screen.dir, -90))
+			if(viewer_screen)
+				viewer_screen.setDir(turn(viewer_screen.dir, -90))
 		if("char_left")
-			examine_panel_screen.setDir(turn(examine_panel_screen.dir, 90))
+			if(viewer_screen)
+				viewer_screen.setDir(turn(viewer_screen.dir, 90))
 		if("change_background")
-			current_background.icon_state = next_list_item(current_background.icon_state, preview_backgrounds)
+			current_bg_state = next_list_item(current_bg_state, preview_backgrounds)
+			update_preview()
 			return TRUE
 
 

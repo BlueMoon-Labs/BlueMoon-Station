@@ -5,7 +5,7 @@
 
 /datum/mutation/human/bm/on_acquiring(mob/living/carbon/human/owner)
 	if(..())
-		return
+		return TRUE
 	if(mob_trait)
 		if(HAS_TRAIT(owner, mob_trait))
 			instability = 0
@@ -1140,8 +1140,8 @@
 	text_lose_indication = "<span class='danger'>Жор идёт на спад.</span>"
 
 /datum/mutation/human/bm/hungry/on_acquiring(mob/living/carbon/human/owner)
-	. = ..()
-
+	if(..())
+		return TRUE
 	var/datum/physiology/P = owner.physiology
 	P.hunger_mod *= 2
 
@@ -1163,8 +1163,8 @@
 	text_lose_indication = "<span class='danger'>Ваша повышенная тяга к воде начинает угасать.</span>"
 
 /datum/mutation/human/bm/thirsty/on_acquiring(mob/living/carbon/human/owner)
-	. = ..()
-
+	if(..())
+		return TRUE
 	var/datum/physiology/P = owner.physiology
 	P.thirst_mod *= 2
 

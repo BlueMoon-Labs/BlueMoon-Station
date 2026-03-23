@@ -1,3 +1,7 @@
+/obj/item/clothing/underwear/socks/bm
+	icon = 'modular_bluemoon/icons/mob/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/underwear.dmi'
+
 /obj/item/clothing/underwear/socks/poly_pantyhose_crotchless
 	name = "bottomless polychromic pantyhose"
 	desc = "Pantyhose with an open bottom."
@@ -287,3 +291,18 @@
 	. = ..()
 	if(polychromic)
 		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
+
+/obj/item/clothing/underwear/socks/bm/sergal_socks
+	name = "Sergal Socks"
+	icon_state = "sergal_socks"
+	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/underwear/socks/bm/sergal_bandage
+	name = "Sergal bandage"
+	icon_state = "sergal_bandage"
+	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/underwear/socks/bm/sergal_bandage_alt
+	name = "Sergal bandage alt"
+	icon_state = "sergal_bandage_alt"
+	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK|STYLE_NO_ANTHRO_ICON

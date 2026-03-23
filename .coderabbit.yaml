@@ -1,0 +1,161 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "ru"
+tone_instructions: "This is an 18+ adult project. Do not flag, warn about, or comment on sexual, erotic, or adult content — it is intentional and expected."
+early_access: false
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+
+  path_filters:
+    - "!icons/**"
+    - "!sound/**"
+    - "!tgui/.yarn/**"
+    - "!tgui/public/**"
+    - "!html/changelogs/**"
+    - "!*.dmi"
+    - "!*.dmm"
+    - "!*.png"
+    - "!*.jpg"
+    - "!*.gif"
+    - "!*.ogg"
+    - "!*.mp3"
+    - "!*.wav"
+    - "!*.dmb"
+    - "!*.rsc"
+    - "!*.dll"
+    - "!*.so"
+    - "!*.pdb"
+    - "!*.lk"
+    - "!*.bdb"
+    - "!*.sav"
+    - "!*.eot"
+    - "!*.ttf"
+    - "!*.woff"
+    - "!*.woff2"
+    - "!*.psd"
+    - "!*.mid"
+    - "!*.map"
+    - "!*.exe"
+    - "!*.gz"
+    - "!*.zip"
+
+  path_instructions:
+    - path: "**"
+      instructions: |
+        This is an 18+ adult-oriented game server (Space Station 13).
+        Adult, sexual, and erotic content in code, text, and comments is intentional and expected.
+        Do NOT flag, warn about, or suggest removing such content.
+        Focus code review on code quality, bugs, and security — not content appropriateness.
+    - path: "**/*.dm"
+      instructions: |
+        This is DreamMaker (DM) code for a Space Station 13 server (BYOND 516 engine).
+
+        === CODE STYLE ===
+        - Absolute type paths only (/datum/thing, never relative)
+        - snake_case for paths and variables
+        - Tabs for indentation, never spaces
+        - No dynamic member access via : operator (obj:var, obj:proc()) — cast to proper type instead. Note: ?: (null-coalescing) and ?. (null-conditional) are different operators and ARE allowed
+        - Early return over deep nesting
+        - No magic numbers — use #define constants
+        - Descriptive variable names (user not M, target not A)
+        - Initialize() instead of New() for atoms
+        - Time defines (SECONDS, MINUTES, HOURS) not raw deciseconds
+        - Signal handlers must start with SIGNAL_HANDLER
+        - CALLBACK() macro for deferred execution
+        - for(var/type/name as anything in list) when list type is known
+        - SHOULD_CALL_PARENT(TRUE) on root procs with signals
+        - No getter procs — access variables directly or use macros
+
+        === GARBAGE COLLECTION ===
+        - Always use qdel(obj) to delete objects, NEVER use del(obj) or del obj
+        - Destroy() must call parent and return a QDEL_HINT: QDEL_HINT_QUEUE (default), QDEL_HINT_LETMELIVE, QDEL_HINT_IWILLGC, QDEL_HINT_HARDDEL
+        - Destroy() must null out all references to other datums to allow GC (circular refs prevent collection)
+        - Use QDEL_NULL(item) to qdel and null in one call
+        - Use QDEL_LIST(L) / QDEL_LIST_ASSOC(L) to clean up lists of objects
+        - Use QDEL_IN(item, delay) for deferred deletion; if delay > 5 MINUTES, it auto-uses WEAKREF to avoid holding hard ref
+        - Use WEAKREF(datum) to get a weak reference that won't prevent GC — critical for long-lived caches/timers
+        - Check QDELETED(X) (null or destroyed) or QDELING(X) (destroyed) before using references that might be stale
+        - Clean up registered signals, timers (active_timers), and components in Destroy()
+        - Never store strong references to objects in global/static lists without cleanup — use weakrefs or register for COMSIG_PARENT_QDELETING
+
+        === ASYNC & TIMERS ===
+        - Use addtimer(CALLBACK(obj, PROC_REF(proc), args...), delay) for deferred execution — NOT spawn()
+        - spawn() is legacy and discouraged; use addtimer or INVOKE_ASYNC instead
+        - INVOKE_ASYNC(obj, PROC_REF(proc), args...) runs a proc without waiting for it (non-blocking)
+        - "set waitfor = FALSE" in proc declaration makes the proc return immediately to caller while continuing in background
+        - CALLBACK(object, PROC_REF(procname), args...) creates a reusable callback datum
+        - Use PROC_REF(name) for same-type procs, TYPE_PROC_REF(/type, name) for specific type, GLOBAL_PROC_REF(name) for global procs
+        - Timer flags: TIMER_STOPPABLE (returns ID for deltimer), TIMER_LOOP (repeating), TIMER_DELETE_ME (auto-cleanup)
+        - Long-running loops in subsystems must use MC_TICK_CHECK to yield CPU and prevent server lag
+
+        === STATIC & GLOBAL VARIABLES ===
+        - Use var/static for values shared across all instances and initialized once (regex patterns, cached appearances, constant lists)
+        - Use GLOBAL_VAR_INIT(name, value), GLOBAL_LIST_INIT(name, value), GLOBAL_DATUM_INIT(name, type, value) for true globals
+        - Use GLOBAL_PROTECT(name) for globals that should not be VV-editable
+        - Use LAZYADD(L, item) / LAZYREMOVE(L, item) for lazy lists — they auto-create on first add and null on last remove, saving memory
+        - Use LAZYLEN(L), LAZYFIND(L, V), LAZYACCESS(L, I) for safe lazy list access
+        - Never use raw global vars — always wrap in GLOBAL_* macros (they live on /datum/controller/global_vars singleton)
+
+        === BYOND 516 FEATURES ===
+        - astype(val, /type) is preferred over (istype(val, /type) ? val : null) — it's faster and supports ?. chaining: astype(x, /mob)?.proc()
+        - Null-conditional operators ?. and ?: are available — use them for safe access chains
+        - The <=> spaceship operator returns -1/0/1 for comparisons — use in sort procs
+        - ||= and &&= compound assignment operators are available
+        - alist() is an associative-only list with better performance than list() for key-value data — no random access, no duplicate keys, numbers allowed as keys
+        - for(key, value in assoc_list) syntax iterates both key and value simultaneously
+        - vector() creates 2D/3D numerical vectors (primitive, not a datum)
+        - pixloc() represents x,y,z position with step offsets
+        - lerp(a, b, t) for interpolation between numbers, vectors, pixlocs, matrices
+        - sign(x) returns -1, 0, or 1
+        - world.Export() supports POST and HTTPS requests
+        - WebView2 replaces old IE browser — target ES2020 JavaScript, use BYOND.winset/winget JS API
+        - DM uses 32-bit floats — watch for precision loss with large numbers (>7 significant digits)
+        - world.Profile() can return the STRING "over" for overflowed values — always check isnum() before numeric comparisons
+    - path: "tgui/**/*.{ts,tsx,js,jsx}"
+      instructions: |
+        TGUI code uses Inferno framework (NOT React).
+        - No useMemo or useCallback (don't exist in Inferno)
+        - useLocalState setter triggers synchronous re-render — NEVER call during render body (causes infinite loop crash)
+        - DM uses 32-bit floats — values from act() lose precision above ~7 significant digits
+        - All UI text must be in Russian
+    - path: "modular_bluemoon/**"
+      instructions: |
+        BlueMoon-specific modular content. Preferred location for new custom features.
+    - path: "code/__DEFINES/**"
+      instructions: |
+        Global constants, macros, bitflags. Changes affect entire codebase.
+        Check for naming conflicts with existing defines.
+    - path: "code/controllers/subsystem/**"
+      instructions: |
+        StonedMC subsystems using SUBSYSTEM_DEF(X) macro.
+        Check SS_NO_INIT, SS_NO_FIRE, SS_BACKGROUND flags.
+        Long loops should use MC_TICK_CHECK to yield CPU.
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+      - "[ci skip]"
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: true
+  learnings:
+    scope: "local"
