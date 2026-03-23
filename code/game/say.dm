@@ -134,26 +134,54 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	return "[say_mod(input, message_mode)][spanned ? ", \"[spanned]\"" : ""]"
 	// Citadel edit [spanned ? ", \"[spanned]\"" : ""]"
 
-/// Transforms the speech emphasis mods from [/atom/movable/proc/say_emphasis] into the appropriate HTML tags. Includes escaping.
-#define ENCODE_HTML_EMPHASIS(input, char, html, varname) \
-	var/static/regex/##varname = regex("(?<!\\\\)[char](.+?)(?<!\\\\)[char]", "g");\
-	input = varname.Replace_char(input, "<[html]>$1</[html]>&#8203;") //zero-widht space to force maptext to respect closing tags.
+/// Replaces one delimiter pair (e.g. |...|) with HTML. No regex — avoids Replace_char crash (illegal operation).
+/atom/movable/proc/_emphasis_replace(input, chr, html_tag)
+	var/zwsp = "&#8203;"
+	var/pos = 1
+	while(pos <= length(input))
+		var/open_pos = findtext(input, chr, pos)
+		if(!open_pos)
+			break
+		if(open_pos > 1 && copytext(input, open_pos - 1, open_pos) == "\\")
+			pos = open_pos + 1
+			continue
+		var/close_pos = findtext(input, chr, open_pos + 1)
+		if(!close_pos)
+			break
+		if(close_pos > open_pos + 1 && copytext(input, close_pos - 1, close_pos) == "\\")
+			pos = close_pos + 1
+			continue
+		var/inner = copytext(input, open_pos + 1, close_pos)
+		input = copytext(input, 1, open_pos) + "<[html_tag]>" + inner + "</[html_tag]>" + zwsp + copytext(input, close_pos + 1)
+		pos = open_pos + 1
+	return input
 
-/// Scans the input sentence for speech emphasis modifiers, notably |italics|, +bold+, and _underline_ -mothblocks
+/// Removes backslash before |, +, _. No regex.
+/atom/movable/proc/_emphasis_unescape(input)
+	var/pos = 1
+	while(pos < length(input))
+		pos = findtext(input, "\\", pos)
+		if(!pos)
+			break
+		if(pos + 1 <= length(input))
+			var/next = copytext(input, pos + 1, pos + 2)
+			if(next == "|" || next == "+" || next == "_")
+				input = copytext(input, 1, pos) + copytext(input, pos + 1)
+				pos++
+				continue
+		pos++
+	return input
+
+/// Scans the input sentence for speech emphasis modifiers: |italics|, +bold+, _underline_.
+/// Uses manual parsing instead of regex to avoid Replace_char illegal operation crash.
 /atom/movable/proc/say_emphasis(input)
 	if(length_char(input) > MAX_SAY_EMPHASIS_LEN)
 		input = copytext_char(input, 1, MAX_SAY_EMPHASIS_LEN + 1)
-	// Skip regex for long messages - Replace_char can crash (illegal operation) on complex input
-	if(length_char(input) > 1024)
-		return input
-	ENCODE_HTML_EMPHASIS(input, "\\|", "i", italics)
-	ENCODE_HTML_EMPHASIS(input, "\\+", "b", bold)
-	ENCODE_HTML_EMPHASIS(input, "_", "u", underline)
-	var/static/regex/remove_escape_backlashes = regex("\\\\(_|\\+|\\|)", "g") // Removes backslashes used to escape text modification.
-	input = remove_escape_backlashes.Replace_char(input, "$1")
+	input = _emphasis_replace(input, "|", "i")
+	input = _emphasis_replace(input, "+", "b")
+	input = _emphasis_replace(input, "_", "u")
+	input = _emphasis_unescape(input)
 	return input
-
-#undef ENCODE_HTML_EMPHASIS
 
 /// Quirky citadel proc for our custom sayverbs to strip the verb out. Snowflakey as hell, say rewrite 3.0 when?
 /atom/movable/proc/quoteless_say_quote(input, list/spans = list(speech_span), message_mode)

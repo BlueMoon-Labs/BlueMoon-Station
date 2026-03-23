@@ -97,6 +97,13 @@
 	appearance_flags = PLANE_MASTER
 	blend_mode = BLEND_OVERLAY
 
+/atom/movable/screen/plane_master/floor/backdrop(mob/mymob)
+	if(mymob?.client?.prefs?.ambientocclusion)
+		var/blur_lvl = mymob?.client?.prefs?.lighting_blur || 0
+		add_filter("ambient_occlusion", 0, AMBIENT_OCCLUSION_SCALED(2, "#04080F32", blur_lvl))
+	else
+		remove_filter("ambient_occlusion")
+
 /atom/movable/screen/plane_master/floor/Initialize(mapload)
 	. = ..()
 	add_filter("displacer", 1, displacement_map_filter(render_source = GRAVITY_PULSE_RENDER_TARGET, size = 10))
@@ -124,8 +131,9 @@
 	appearance_flags = PLANE_MASTER
 
 /atom/movable/screen/plane_master/wall/backdrop(mob/mymob)
-	if(mymob?.client?.prefs.ambientocclusion)
-		add_filter("ambient_occlusion", 0, AMBIENT_OCCLUSION(4, "#04080FAA"))
+	if(mymob?.client?.prefs?.ambientocclusion)
+		var/blur_lvl = mymob?.client?.prefs?.lighting_blur || 0
+		add_filter("ambient_occlusion", 0, AMBIENT_OCCLUSION_SCALED(4, "#04080FAA", blur_lvl))
 	else
 		remove_filter("ambient_occlusion")
 
@@ -158,8 +166,9 @@
 	add_filter("vision_cone", 100, list(type="alpha", render_source=FIELD_OF_VISION_RENDER_TARGET, flags=MASK_INVERSE))
 
 /atom/movable/screen/plane_master/above_wall/backdrop(mob/mymob)
-	if(mymob?.client?.prefs.ambientocclusion)
-		add_filter("ambient_occlusion", 0, AMBIENT_OCCLUSION(3, "#04080F64"))
+	if(mymob?.client?.prefs?.ambientocclusion)
+		var/blur_lvl = mymob?.client?.prefs?.lighting_blur || 0
+		add_filter("ambient_occlusion", 0, AMBIENT_OCCLUSION_SCALED(3, "#04080F64", blur_lvl))
 	else
 		remove_filter("ambient_occlusion")
 
@@ -195,8 +204,9 @@
 	add_filter("vision_cone", 100, list(type="alpha", render_source=FIELD_OF_VISION_RENDER_TARGET, flags=MASK_INVERSE))
 
 /atom/movable/screen/plane_master/game_world/backdrop(mob/mymob)
-	if(mymob?.client?.prefs.ambientocclusion)
-		add_filter("ambient_occlusion", 0, AMBIENT_OCCLUSION(4, "#04080FAA"))
+	if(mymob?.client?.prefs?.ambientocclusion)
+		var/blur_lvl = mymob?.client?.prefs?.lighting_blur || 0
+		add_filter("ambient_occlusion", 0, AMBIENT_OCCLUSION_SCALED(4, "#04080FAA", blur_lvl))
 	else
 		remove_filter("ambient_occlusion")
 
@@ -236,8 +246,21 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /atom/movable/screen/plane_master/lighting/backdrop(mob/mymob)
+	if(!mymob)
+		return
 	mymob.overlay_fullscreen("lighting_backdrop_lit", /atom/movable/screen/fullscreen/special/lighting_backdrop/lit)
 	mymob.overlay_fullscreen("lighting_backdrop_unlit", /atom/movable/screen/fullscreen/special/lighting_backdrop/unlit)
+	var/blur_level = mymob?.client?.prefs?.lighting_blur || 0
+	var/effective_blur = LIGHTING_BLUR_BASE + blur_level * LIGHTING_BLUR_MULTIPLIER
+	if(effective_blur > 0)
+		add_filter("lighting_blur", 0, list("type" = "blur", "size" = effective_blur))
+		// Force alpha=1 after blur to prevent edge bleeding — blur samples transparent pixels
+		// outside the render target boundary, creating semi-transparent edges that weaken
+		// BLEND_MULTIPLY darkening and produce false light strips at screen edges
+		add_filter("lighting_blur_edge_fix", 1, color_matrix_filter(list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,0, 0,0,0,1)))
+	else
+		remove_filter("lighting_blur")
+		remove_filter("lighting_blur_edge_fix")
 
 /*!
  * This system works by exploiting BYONDs color matrix filter to use layers to handle emissive blockers.
@@ -252,12 +275,12 @@
 
 /atom/movable/screen/plane_master/lighting/Initialize(mapload, datum/hud/hud_owner)
 	. = ..()
-	add_filter("emissives", 1, alpha_mask_filter(render_source = EMISSIVE_RENDER_TARGET, flags = MASK_INVERSE))
-	add_filter("object_lighting", 2, alpha_mask_filter(render_source = O_LIGHTING_VISUAL_RENDER_TARGET, flags = MASK_INVERSE))
-	add_filter("displacer", 3, displacement_map_filter(render_source = GRAVITY_PULSE_RENDER_TARGET, size = 10))
+	add_filter("emissives", 2, alpha_mask_filter(render_source = EMISSIVE_RENDER_TARGET, flags = MASK_INVERSE))
+	add_filter("object_lighting", 3, alpha_mask_filter(render_source = O_LIGHTING_VISUAL_RENDER_TARGET, flags = MASK_INVERSE))
+	add_filter("displacer", 4, displacement_map_filter(render_source = GRAVITY_PULSE_RENDER_TARGET, size = 10))
 
-	add_filter("singularity_0", 1, displacement_map_filter(render_source = SINGULARITY_0_RENDER_TARGET, size = -20))
-	add_filter("singularity_1", 2, displacement_map_filter(render_source = SINGULARITY_1_RENDER_TARGET, size = 75))
+	add_filter("singularity_0", 2, displacement_map_filter(render_source = SINGULARITY_0_RENDER_TARGET, size = -20))
+	add_filter("singularity_1", 3, displacement_map_filter(render_source = SINGULARITY_1_RENDER_TARGET, size = 75))
 	add_filter("singularity_2", 3, displacement_map_filter(render_source = SINGULARITY_2_RENDER_TARGET, size = 400))
 	add_filter("singularity_3", 4, displacement_map_filter(render_source = SINGULARITY_3_RENDER_TARGET, size = 700))
 
@@ -285,6 +308,15 @@
 /atom/movable/screen/plane_master/emissive/Initialize(mapload, datum/hud/hud_owner)
 	. = ..()
 	add_filter("em_block_masking", 1, color_matrix_filter(GLOB.em_mask_matrix))
+	// emissive_bloom added conditionally in backdrop() based on blur quality setting
+
+/atom/movable/screen/plane_master/emissive/backdrop(mob/mymob)
+	var/blur_level = mymob?.client?.prefs?.lighting_blur || 0
+	if(blur_level >= 2)
+		// Bloom on emissive at medium+ quality — screens and indicators glow subtly
+		add_filter("emissive_bloom", 2, bloom_filter(threshold = COLOR_BLACK, size = blur_level, offset = 1))
+	else
+		remove_filter("emissive_bloom")
 
 ///Contains space parallax
 /atom/movable/screen/plane_master/parallax
@@ -331,6 +363,7 @@
 	plane = CHAT_PLANE
 	appearance_flags = PLANE_MASTER
 	blend_mode = BLEND_OVERLAY
+
 
 /atom/movable/screen/plane_master/gravpulse
 	name = "gravpulse plane"

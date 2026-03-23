@@ -1640,7 +1640,7 @@ var SS_NAME = 0, SS_STATE = 1, SS_COST = 2, SS_TICK = 3, SS_OVERRUN = 4,
 	SS_TICKS = 5, SS_FIRED = 6, SS_CAN_FIRE = 7, SS_IS_BG = 8, SS_REF = 9, SS_EXTRA = 10;
 var STATE_LETTERS = ["  ", "Q", "R", "P", "S", "P"];
 // Key subsystems that get a dedicated detail section
-var MC_KEY_SUBSYSTEMS = ["Atmospherics", "Garbage", "Machines", "Mobs", "Timer", "Objects"];
+var MC_KEY_SUBSYSTEMS = ["Atmospherics", "Garbage", "Machines", "Lighting", "Clients", "Mobs", "Timer", "Objects"];
 
 function mc_health_cost(ms) {
 	if (ms >= 10) return "mc-health-red";
@@ -1923,10 +1923,13 @@ function mc_update_key_section() {
 	mc_key_section.textContent = "";
 	if (!mc_sections.key) return;
 	var key_data = mc_server_data.key_ss || {};
+	var rendered = {};
+	// Pass 1: render subsystem-backed key cards (with cost/tick stats in header)
 	for (var i = 0; i < mc_ss_data.length; i++) {
 		var row = mc_ss_data[i];
 		var name = row[SS_NAME];
 		if (MC_KEY_SUBSYSTEMS.indexOf(name) === -1) continue;
+		rendered[name] = true;
 		var card = document.createElement("div");
 		card.className = "mc-key-card";
 		// Header line: name + cost/tick stats
@@ -1960,27 +1963,43 @@ function mc_update_key_section() {
 		}
 		header.appendChild(statsEl);
 		card.appendChild(header);
-		// Structured detail table from key_ss backend data
-		var details = key_data[name];
-		if (details && details.length) {
-			var dtable = document.createElement("table");
-			dtable.className = "mc-key-table";
-			for (var d = 0; d < details.length; d++) {
-				var dtr = document.createElement("tr");
-				var dtd1 = document.createElement("td");
-				dtd1.className = "mc-key-dlabel";
-				dtd1.textContent = details[d][0];
-				var dtd2 = document.createElement("td");
-				dtd2.className = "mc-key-dval";
-				dtd2.textContent = details[d][1];
-				dtr.appendChild(dtd1);
-				dtr.appendChild(dtd2);
-				dtable.appendChild(dtr);
-			}
-			card.appendChild(dtable);
-		}
+		mc_append_key_details(card, key_data[name]);
 		mc_key_section.appendChild(card);
 	}
+	// Pass 2: render data-only key cards (no subsystem, e.g. "Clients")
+	for (var k = 0; k < MC_KEY_SUBSYSTEMS.length; k++) {
+		var kname = MC_KEY_SUBSYSTEMS[k];
+		if (rendered[kname] || !key_data[kname]) continue;
+		var card2 = document.createElement("div");
+		card2.className = "mc-key-card";
+		var header2 = document.createElement("div");
+		header2.className = "mc-key-header";
+		var nameEl2 = document.createElement("span");
+		nameEl2.className = "mc-key-name";
+		nameEl2.textContent = kname;
+		header2.appendChild(nameEl2);
+		card2.appendChild(header2);
+		mc_append_key_details(card2, key_data[kname]);
+		mc_key_section.appendChild(card2);
+	}
+}
+function mc_append_key_details(card, details) {
+	if (!details || !details.length) return;
+	var dtable = document.createElement("table");
+	dtable.className = "mc-key-table";
+	for (var d = 0; d < details.length; d++) {
+		var dtr = document.createElement("tr");
+		var dtd1 = document.createElement("td");
+		dtd1.className = "mc-key-dlabel";
+		dtd1.textContent = details[d][0];
+		var dtd2 = document.createElement("td");
+		dtd2.className = "mc-key-dval";
+		dtd2.textContent = details[d][1];
+		dtr.appendChild(dtd1);
+		dtr.appendChild(dtd2);
+		dtable.appendChild(dtr);
+	}
+	card.appendChild(dtable);
 }
 
 function draw_mc() {

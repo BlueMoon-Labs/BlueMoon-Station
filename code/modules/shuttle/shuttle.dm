@@ -197,6 +197,8 @@
 	name = "dock"
 
 	var/last_dock_time
+	/// If TRUE, shuttle can always dock here (bypass dimension/occupied checks). Used for transit, escape pod Lavaland landings.
+	var/override_can_dock_checks = FALSE
 
 	var/datum/map_template/shuttle/roundstart_template
 	var/json_key
@@ -470,6 +472,9 @@
 		return SHUTTLE_NOT_A_DOCKING_PORT
 
 	if(istype(S, /obj/docking_port/stationary/transit))
+		return SHUTTLE_CAN_DOCK
+
+	if(S.override_can_dock_checks)
 		return SHUTTLE_CAN_DOCK
 
 	if(dwidth > S.dwidth)

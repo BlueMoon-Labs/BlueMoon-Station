@@ -804,8 +804,14 @@
 
 /datum/move_loop/disposal_holder/move()
 	var/obj/structure/disposalholder/holder = moving
-	if(!holder.current_pipe)
+	if(!holder?.current_pipe)
 		return FALSE
 	var/atom/old_loc = moving.loc
-	holder.current_pipe = holder.current_pipe.transfer(holder)
+	// Cache current_pipe before transfer() — transfer can trigger Moved() -> qdel(holder),
+	// and QDEL_HINT_HARDDEL_NOW causes synchronous del() which nullifies holder mid-call.
+	var/obj/structure/disposalpipe/current = holder.current_pipe
+	var/obj/structure/disposalpipe/next_pipe = current.transfer(holder)
+	if(QDELETED(holder))
+		return FALSE
+	holder.current_pipe = next_pipe
 	return old_loc != moving?.loc

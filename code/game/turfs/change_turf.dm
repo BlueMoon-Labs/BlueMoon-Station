@@ -82,12 +82,13 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 
 	var/old_opacity = opacity
 	var/old_dynamic_lighting = dynamic_lighting
-	var/old_affecting_lights = affecting_lights
 	var/old_lighting_object = lighting_object
 	var/old_lc_topright = lc_topright
 	var/old_lc_topleft = lc_topleft
 	var/old_lc_bottomright = lc_bottomright
 	var/old_lc_bottomleft = lc_bottomleft
+	var/old_has_opaque = has_opaque_atom
+	var/old_shadow_weight = shadow_weight_sum
 
 	var/old_exl = explosion_level
 	var/old_exi = explosion_id
@@ -104,6 +105,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 
 	changing_turf = TRUE
 	qdel(src)	//Just get the side effects and call Destroy
+
 	var/turf/W = new path(src)
 
 	for(var/i in transferring_comps)
@@ -123,26 +125,39 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	W.blueprint_data = old_bp
 
 	if(SSlighting.initialized)
-		recalc_atom_opacity()
+		// Restore all lighting state FIRST — reconsider_lights/recalc_atom_opacity need these
 		lighting_object = old_lighting_object
-		affecting_lights = old_affecting_lights
+		if(lighting_object)
+			vis_contents += lighting_object
 		lc_topright = old_lc_topright
 		lc_topleft = old_lc_topleft
 		lc_bottomright = old_lc_bottomright
 		lc_bottomleft = old_lc_bottomleft
-		if (old_opacity != opacity || dynamic_lighting != old_dynamic_lighting)
+
+		// Restore cached opacity state — contents are unchanged, only turf type changed
+		has_opaque_atom = old_has_opaque
+		shadow_weight_sum = old_shadow_weight
+		// Only full rescan if the turf's own opacity changed (rare: wall↔floor)
+		if(opacity != old_opacity)
+			recalc_atom_opacity()
+			reconsider_lights()
+		else if(dynamic_lighting != old_dynamic_lighting)
 			reconsider_lights()
 
-		if (dynamic_lighting != old_dynamic_lighting)
-			if (IS_DYNAMIC_LIGHTING(src))
+		if(dynamic_lighting != old_dynamic_lighting)
+			if(IS_DYNAMIC_LIGHTING(src))
 				lighting_build_overlay()
 			else
 				lighting_clear_overlay()
 		else if(lighting_object && !lighting_object.needs_update)
-			lighting_object.update()
+			lighting_object.needs_update = TRUE
+			GLOB.lighting_update_objects += lighting_object
 
-		for(var/turf/open/space/space_tile in RANGE_TURFS(1, src))
-			space_tile.update_starlight()
+		if(GLOB.lighting_defer_active)
+			GLOB.lighting_deferred_starlight += src
+		else
+			for(var/turf/open/space/space_tile in RANGE_TURFS(1, src))
+				GLOB.lighting_starlight_queue += space_tile
 
 	return W
 
@@ -347,9 +362,8 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 			continue
 		total.merge(S.air)
 
-	var/datum/gas_mixture/averaged = total.remove_ratio(1/turf_count)
-	air.copy_from(averaged)
-	qdel(averaged)
+	total.multiply(1 / turf_count)
+	air.copy_from(total)
 	qdel(total)
 
 /turf/proc/ReplaceWithLattice()

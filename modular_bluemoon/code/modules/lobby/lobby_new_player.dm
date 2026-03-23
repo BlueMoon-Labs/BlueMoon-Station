@@ -9,12 +9,19 @@
 /mob/dead/new_player/Login()
 	. = ..()
 	bm_show_lobby()
+	SStitle_bm?.update_player_counts_all()
 
 /mob/dead/new_player/Destroy()
+	// Must run BEFORE parent Destroy: we override base new_player/Destroy, so we must remove ourselves.
+	// on_player_ready_change must run before ..() - otherwise we invoke SStitle_bm during/after
+	// destruction when we're invalid, causing "illegal operation" crash in GC (REF/Queue chain).
+	GLOB.new_player_list -= src
 	var/was_ready = ready
-	. = ..()
 	if(was_ready && SStitle_bm)
 		SStitle_bm.on_player_ready_change(-1)
+	else
+		SStitle_bm?.update_player_counts_all()
+	return ..()
 
 /mob/dead/new_player/proc/bm_show_lobby()
 	if(!client)

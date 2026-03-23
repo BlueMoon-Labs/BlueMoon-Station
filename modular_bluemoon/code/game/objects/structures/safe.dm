@@ -26,6 +26,19 @@
 	else
 		icon_state = "spare_safe_locked"
 
+/// C4/X4 (EXPLODE_HEAVY/DEVASTATE, target == src) — взлом с одного заряда (эквив. BROKEN_THRESHOLD в safe.dm)
+/obj/structure/safe/spare_id/ex_act(severity, target, origin)
+	if(!open && explosion_count < 3 && target == src && (severity == EXPLODE_HEAVY || severity == EXPLODE_DEVASTATE))
+		explosion_count = 3
+		desc = initial(desc) + "\nThe lock seems to be broken."
+		locked = FALSE
+		open = TRUE
+		current_tumbler_index = number_of_tumblers + 1
+		update_icon()
+		visible_message(span_warning("[src] взломан взрывом — замок выбит!"))
+		return
+	return ..()
+
 /obj/structure/safe
 	/// Список кодов, при которых открывается сейф
 	var/list/open_security_levels = list()

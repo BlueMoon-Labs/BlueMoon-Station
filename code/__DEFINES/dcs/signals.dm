@@ -363,6 +363,10 @@
 #define COMSIG_ATOM_SET_LIGHT_FLAGS "atom_set_light_flags"
 ///Called right after the atom changes the value of light_flags to a different one, from base of [/atom/proc/set_light_flags]: (old_flags)
 #define COMSIG_ATOM_UPDATE_LIGHT_FLAGS "atom_update_light_flags"
+///Called right before the atom changes the value of light_height to a different one, from base [atom/proc/set_light_height]: (new_height)
+#define COMSIG_ATOM_SET_LIGHT_HEIGHT "atom_set_light_height"
+///Called right after the atom changes the value of light_height to a different one, from base of [/atom/proc/set_light_height]: (old_height)
+#define COMSIG_ATOM_UPDATE_LIGHT_HEIGHT "atom_update_light_height"
 
 // /client signals
 #define COMSIG_MOB_CLIENT_LOGOUT "mob_client_logout"				//sent when a mob/logout() starts: (client)

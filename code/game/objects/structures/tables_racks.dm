@@ -18,6 +18,7 @@
 	icon = 'icons/obj/smooth_structures/table.dmi'
 	icon_state = "table"
 	density = TRUE
+	shadow_weight = 0.25
 	anchored = TRUE
 	pass_flags_self = PASSTABLE | LETPASSTHROW
 	layer = TABLE_LAYER
@@ -988,6 +989,7 @@
 	icon_state = "rack"
 	layer = TABLE_LAYER
 	density = TRUE
+	shadow_weight = 0.15
 	anchored = TRUE
 	pass_flags_self = LETPASSTHROW //You can throw objects over this, despite it's density.
 	max_integrity = 20

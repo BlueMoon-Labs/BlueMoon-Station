@@ -541,6 +541,7 @@ GLOBAL_LIST_INIT(payed_ert, list(
 
 //Filters
 #define AMBIENT_OCCLUSION(_size, _color) list("type"="drop_shadow","x"=0,"y"=-2,"size"=_size,"color"=_color)
+#define AMBIENT_OCCLUSION_SCALED(_base_size, _color, _blur_level) list("type"="drop_shadow","x"=0,"y"=-2,"size"=(_base_size) + (_blur_level) * 0.5,"color"=_color)
 #define EYE_BLUR(size) list("type"="blur", "size"=size)
 #define GRAVITY_MOTION_BLUR list("type"="motion_blur","x"=0,"y"=0)
 

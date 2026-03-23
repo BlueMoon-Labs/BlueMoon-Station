@@ -1493,7 +1493,7 @@
 	name = "Millie plush"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/toy/plush/bm/millie
-	ckeywhitelist = list("pingvas", "ty4kahahebe", "scorpionch")
+	ckeywhitelist = list("pingvas", "ty4kahahebe", "scorpionch", "blatoff")
 
 /datum/gear/donator/bm/praxil_seven
 	name = "Praxil-7 Mark II Kit"
@@ -2083,7 +2083,7 @@
 	name = "LIZARED Open Panties"
 	slot = ITEM_SLOT_UNDERWEAR
 	path = /obj/item/clothing/underwear/briefs/panties/lizared/exposed
-	ckeywhitelist = list("pingvas", "ty4kahahebe")
+	ckeywhitelist = list("pingvas", "ty4kahahebe", "blatoff")
 
 /datum/gear/donator/bm/custom_vape
 	name = "Custom E-Cigarette"

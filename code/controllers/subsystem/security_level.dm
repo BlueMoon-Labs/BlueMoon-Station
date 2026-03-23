@@ -263,6 +263,7 @@ SUBSYSTEM_DEF(security_level)
 	sound_to_playing_players('modular_bluemoon/kovac_shitcode/sound/lambda_code.ogg')
 	GLOB.security_level = SEC_LEVEL_LAMBDA
 	SEND_SIGNAL(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED) // Без этого никакие сигнал_хендлеры, связанные со сменой кода, не ловят лямбду. Включая мой сейф.
+	SSnightshift.check_nightshift()
 	for(var/obj/machinery/firealarm/FA in GLOB.machines)
 		if(is_station_level(FA.z))
 			FA.update_icon()
@@ -284,6 +285,7 @@ SUBSYSTEM_DEF(security_level)
 	sound_to_playing_players('sound/misc/alerts/gamma_alert.ogg')
 	GLOB.security_level = SEC_LEVEL_GAMMA
 	SEND_SIGNAL(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED) // Без этого никакие сигнал_хендлеры, связанные со сменой кода, не ловят гамму. Включая мой сейф.
+	SSnightshift.check_nightshift()
 	for(var/obj/machinery/firealarm/FA in GLOB.machines)
 		if(is_station_level(FA.z))
 			FA.update_icon()
@@ -310,6 +312,7 @@ SUBSYSTEM_DEF(security_level)
 		if(10)
 			sound_to_playing_players('sound/misc/alerts/epsilon_elevator.ogg')
 	GLOB.security_level = SEC_LEVEL_EPSILON
+	SSnightshift.check_nightshift()
 	for(var/obj/machinery/firealarm/FA in GLOB.machines)
 		if(is_station_level(FA.z))
 			FA.update_icon()
@@ -321,6 +324,7 @@ SUBSYSTEM_DEF(security_level)
 	minor_announce(CONFIG_GET(string/alert_delta), "Тревога! Код - ДЕЛЬТА!")
 	sound_to_playing_players('sound/misc/alerts/delta.ogg')
 	GLOB.security_level = SEC_LEVEL_DELTA
+	SSnightshift.check_nightshift()
 	for(var/obj/machinery/firealarm/FA in GLOB.machines)
 		if(is_station_level(FA.z))
 			FA.update_icon()

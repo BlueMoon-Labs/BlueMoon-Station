@@ -1,6 +1,8 @@
 /mob/living/carbon
 	blood_volume = BLOOD_VOLUME_NORMAL
 	deathsound = list ('sound/voice/deathgasp1.ogg', 'sound/voice/deathgasp2.ogg')
+	/// Reused breath sample to avoid per-breath gas_mixture churn.
+	var/datum/gas_mixture/breath_buffer
 
 /mob/living/carbon/Initialize(mapload)
 	. = ..()
@@ -10,6 +12,7 @@
 	blood_volume = (BLOOD_VOLUME_NORMAL * blood_ratio)
 	add_movespeed_modifier(/datum/movespeed_modifier/carbon_crawling)
 	register_context()
+	breath_buffer = new
 
 /mob/living/carbon/Destroy()
 	//This must be done first, so the mob ghosts correctly before DNA etc is nulled
@@ -17,11 +20,19 @@
 
 	QDEL_LIST(internal_organs)
 	QDEL_LIST(stomach_contents)
+	QDEL_LAZYLIST(all_wounds)
+	QDEL_LAZYLIST(all_scars)
 	QDEL_LIST(bodyparts)
 	hand_bodyparts = null		//Just references out bodyparts, don't need to delete twice.
-	remove_from_all_data_huds()
+	QDEL_NULL(breath_buffer)
 	QDEL_NULL(dna)
+	last_mind = null
 	GLOB.carbon_list -= src
+
+/mob/living/carbon/proc/get_breath_buffer()
+	if(!breath_buffer)
+		breath_buffer = new
+	return breath_buffer
 
 /mob/living/carbon/relaymove(mob/user, direction)
 	if(user in src.stomach_contents)

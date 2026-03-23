@@ -50,9 +50,6 @@
 		opened = TRUE
 		update_icon_nopipes()
 	if(opened)
-		// Closed turfs return cached shared mixtures - must not modify them
-		if(!isopenturf(loc))
-			return
 		var/datum/gas_mixture/environment = loc.return_air()
 		var/pressure_delta = abs(our_pressure - environment.return_pressure())
 		if(pressure_delta > 0.1)

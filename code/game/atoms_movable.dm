@@ -139,6 +139,8 @@
 		orbiting.end_orbit(src)
 		orbiting = null
 
+	QDEL_NULL(move_packet)
+
 	. = ..()
 
 	//We add ourselves to this list, best to clear it out

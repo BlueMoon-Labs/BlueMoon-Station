@@ -188,12 +188,9 @@
 	G.set_temperature(500)
 	var/result = G.react()
 	if(result != REACTING)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
 	if(!G.reaction_results["fire"])
-		qdel(G)
 		return list("success" = FALSE, "message" = "Trit fires aren't setting fire results correctly!")
-	qdel(G)
 	return ..()
 
 //plasma combustion: combustion of oxygen and plasma (treated as hydrocarbons). creates hotspots. exothermic
@@ -277,13 +274,10 @@
 	G.set_temperature(500)
 	var/result = G.react()
 	if(result != REACTING)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
 	if(!G.reaction_results["fire"])
-		qdel(G)
 		return list("success" = FALSE, "message" = "Plasma fires aren't setting fire results correctly!")
 	if(!G.get_moles(GAS_CO2))
-		qdel(G)
 		return list("success" = FALSE, "message" = "Plasma fires aren't making CO2!")
 	G.clear()
 	G.set_moles(GAS_PLASMA,10)
@@ -291,9 +285,7 @@
 	G.set_temperature(500)
 	result = G.react()
 	if(!G.get_moles(GAS_TRITIUM))
-		qdel(G)
 		return list("success" = FALSE, "message" = "Plasma fires aren't making trit!")
-	qdel(G)
 	return ..()
 
 /datum/gas_reaction/genericfire
@@ -485,25 +477,19 @@
 	G.set_volume(1000)
 	var/result = G.react()
 	if(result != REACTING)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
 	if(abs(G.analyzer_results["fusion"] - 3) > 0.0000001)
 		var/instability = G.analyzer_results["fusion"]
-		qdel(G)
 		return list("success" = FALSE, "message" = "Fusion is not calculating analyzer results correctly, should be 3.000000045, is instead [instability]")
 	if(abs(G.get_moles(GAS_PLASMA) - 850.616) > 0.5)
 		var/plas = G.get_moles(GAS_PLASMA)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Fusion is not calculating plasma correctly, should be 850.616, is instead [plas]")
 	if(abs(G.get_moles(GAS_CO2) - 1699.384) > 0.5)
 		var/co2 = G.get_moles(GAS_CO2)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Fusion is not calculating co2 correctly, should be 1699.384, is instead [co2]")
 	if(abs(G.return_temperature() - 27600) > 200) // calculating this manually sucks dude
 		var/temp = G.return_temperature()
-		qdel(G)
 		return list("success" = FALSE, "message" = "Fusion is not calculating temperature correctly, should be around 27600, is instead [temp]")
-	qdel(G)
 	return ..()
 
 /datum/gas_reaction/nitrylformation //The formation of nitryl. Endothermic. Requires N2O as a catalyst.
@@ -546,12 +532,9 @@
 	G.set_temperature(150000)
 	var/result = G.react()
 	if(result != REACTING)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
 	if(G.get_moles(GAS_NITRYL) < 0.8)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Nitryl isn't being generated correctly!")
-	qdel(G)
 	return ..()
 
 /datum/gas_reaction/bzformation //Formation of BZ by combining plasma and tritium at low pressures. Exothermic.
@@ -597,12 +580,9 @@
 	G.set_temperature(10)
 	var/result = G.react()
 	if(result != REACTING)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
 	if(G.get_moles(GAS_BZ) < 4) // efficiency is 4.0643 and bz generation == efficiency
-		qdel(G)
 		return list("success" = FALSE, "message" = "BZ isn't being generated correctly!")
-	qdel(G)
 	return ..()
 
 /datum/gas_reaction/stimformation //Stimulum formation follows a strange pattern of how effective it will be at a given temperature, having some multiple peaks and some large dropoffs. Exo and endo thermic.
@@ -649,12 +629,9 @@
 
 	var/result = G.react()
 	if(result != REACTING)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
 	if(G.get_moles(GAS_STIMULUM) < 900)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Stimulum isn't being generated correctly!")
-	qdel(G)
 	return ..()
 
 /datum/gas_reaction/nobliumformation //Hyper-Noblium formation is extrememly endothermic, but requires high temperatures to start. Due to its high mass, hyper-nobelium uses large amounts of nitrogen and tritium. BZ can be used as a catalyst to make it less endothermic.
@@ -693,12 +670,9 @@
 	G.set_temperature(5000000) // yeah, really
 	var/result = G.react()
 	if(result != REACTING)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
 	if(abs(G.thermal_energy() - 23000000000) > 1000000) // god i hate floating points
-		qdel(G)
 		return list("success" = FALSE, "message" = "Hyper-nob formation isn't removing the right amount of heat! Should be 23,000,000,000, is instead [G.thermal_energy()]")
-	qdel(G)
 	return ..()
 
 
@@ -734,7 +708,6 @@
 	G.set_temperature(450)
 	var/result = G.react()
 	if(result != REACTING)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
 	G.clear()
 	G.set_moles(GAS_MIASMA,1)
@@ -742,9 +715,7 @@
 	G.set_moles(GAS_H2O,0.5)
 	result = G.react()
 	if(result != NO_REACTION)
-		qdel(G)
 		return list("success" = FALSE, "message" = "Miasma sterilization not stopping due to water vapor correctly!")
-	qdel(G)
 	return ..()
 
 /datum/gas_reaction/nitric_oxide
@@ -788,16 +759,13 @@
 	)
 
 /datum/gas_reaction/hagedorn/react(datum/gas_mixture/air, datum/holder)
+	var/initial_energy = air.thermal_energy()
 	if(air.get_moles(GAS_QCD))
 		return
-	var/initial_energy = air.thermal_energy()
-	var/temp = air.return_temperature()
-	var/amount = initial_energy / (temp * GLOB.gas_data.specific_heats[GAS_QCD])
-	// Set GAS_QCD first to prevent Auxmos from re-invoking react() during the clear loop
-	air.set_moles(GAS_QCD, amount)
 	for(var/g in air.get_gases())
-		if(g != GAS_QCD)
-			air.set_moles(g, 0)
+		air.set_moles(g, 0)
+	var/amount = initial_energy / (air.return_temperature() * GLOB.gas_data.specific_heats[GAS_QCD])
+	air.set_moles(GAS_QCD, amount)
 	var/list/largest_values = SSresearch.science_tech.largest_values
 	if(!(GAS_QCD in largest_values))
 		largest_values[GAS_QCD] = 0

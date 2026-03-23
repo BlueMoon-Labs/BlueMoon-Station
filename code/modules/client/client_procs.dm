@@ -1398,6 +1398,12 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			plane_master.backdrop(mob)
 			screen |= plane_master
 			plane_master.screen_loc = "character_preview_map:0,CENTER"
+		// Disable lighting on the preview — no lighting objects exist there,
+		// and the blur edge-fix filter would force the empty plane opaque black
+		var/atom/movable/screen/plane_master/lighting_pm = char_render_holders["plane_master-[LIGHTING_PLANE]"]
+		if(lighting_pm)
+			lighting_pm.alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+			lighting_pm.filters = null
 
 	var/pos = 0
 	for(var/dir in GLOB.cardinals)

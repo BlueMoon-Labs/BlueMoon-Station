@@ -1,6 +1,6 @@
 SUBSYSTEM_DEF(statpanels)
 	name = "Stat Panels"
-	wait = 4
+	wait = 6
 	init_order = INIT_ORDER_STATPANELS
 	priority = FIRE_PRIORITY_STATPANEL
 	runlevels = RUNLEVELS_DEFAULT | RUNLEVEL_LOBBY
@@ -9,6 +9,8 @@ SUBSYSTEM_DEF(statpanels)
 	var/mc_data_encoded
 	var/mc_ss_data_encoded
 	var/list/cached_images = list()
+	var/mc_data_refresh_counter = 0
+	var/static/null_bullet_encoded
 
 /datum/controller/subsystem/statpanels/fire(resumed = FALSE)
 	if (!resumed)
@@ -50,8 +52,13 @@ SUBSYSTEM_DEF(statpanels)
 
 		encoded_global_data = url_encode(json_encode(global_data))
 		src.currentrun = GLOB.clients.Copy()
-		mc_data_encoded = null
-		mc_ss_data_encoded = null
+		mc_data_refresh_counter++
+		if(mc_data_refresh_counter >= 3)
+			mc_data_encoded = null
+			mc_ss_data_encoded = null
+			mc_data_refresh_counter = 0
+		if(!null_bullet_encoded)
+			null_bullet_encoded = url_encode(json_encode(list(list(null))))
 	var/list/currentrun = src.currentrun
 	while(length(currentrun))
 		var/client/target = currentrun[length(currentrun)]
@@ -59,7 +66,7 @@ SUBSYSTEM_DEF(statpanels)
 		if(!target?.statbrowser_ready)
 			continue
 		if(target.stat_tab == "Status")
-			var/ping_str = url_encode(json_encode(list(round(target.lastping, 1), round(target.avgping, 1))))
+			var/ping_str = "%5B[round(target.lastping, 1)]%2C[round(target.avgping, 1)]%5D"
 			var/other_str = url_encode(json_encode(target.mob.get_status_tab_items()))
 			target << output("[encoded_global_data];[ping_str];[other_str]", "statbrowser:update")
 			if(SSvote.mode)
@@ -97,11 +104,13 @@ SUBSYSTEM_DEF(statpanels)
 				var/vote_str = url_encode(json_encode(vote_arry))
 				target << output("[vote_str]", "statbrowser:update_voting")
 			else
-				var/null_bullet = url_encode(json_encode(list(list(null))))
-				target << output("[null_bullet]", "statbrowser:update_voting")
+				target << output("[null_bullet_encoded]", "statbrowser:update_voting")
 		if(!target.holder)
-			target << output("", "statbrowser:remove_admin_tabs")
+			if(!target.admin_tabs_cleared)
+				target << output("", "statbrowser:remove_admin_tabs")
+				target.admin_tabs_cleared = TRUE
 		else
+			target.admin_tabs_cleared = FALSE
 			if(!("MC" in target.panel_tabs) || !("Tickets" in target.panel_tabs))
 				target << output("[url_encode(target.holder.href_token)]", "statbrowser:add_admin_tabs")
 			if(target.stat_tab == "MC")
@@ -249,8 +258,8 @@ SUBSYSTEM_DEF(statpanels)
 	// Garbage Collector
 	var/gc_ratio = (SSgarbage.totaldels + SSgarbage.totalgcs) ? "[round((SSgarbage.totalgcs / (SSgarbage.totaldels + SSgarbage.totalgcs)) * 100, 0.1)]%" : "n/a"
 	var/list/gc_queue_counts = list()
-	for(var/list/L in SSgarbage.queues)
-		gc_queue_counts += length(L)
+	for (var/i in 1 to GC_QUEUE_COUNT)
+		gc_queue_counts += SSgarbage.GetQueueDepth(i)
 	key_ss["Garbage"] = list(
 		list("\u041E\u0447\u0435\u0440\u0435\u0434\u0438", gc_queue_counts.Join(", ")),
 		list("Del/\u0442\u0438\u043A", SSgarbage.delslasttick),
@@ -282,6 +291,71 @@ SUBSYSTEM_DEF(statpanels)
 	key_ss["Objects"] = list(
 		list("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430", length(SSobj.processing))
 	)
+	// Lighting
+	var/light_total = SSlighting.cost_sources + SSlighting.cost_corners + SSlighting.cost_objects
+	var/light_pct_s = light_total > 0 ? round(SSlighting.cost_sources / light_total * 100) : 0
+	var/light_pct_c = light_total > 0 ? round(SSlighting.cost_corners / light_total * 100) : 0
+	var/light_pct_o = light_total > 0 ? round(SSlighting.cost_objects / light_total * 100) : 0
+	var/light_avg = SSlighting.avg_sources_processed >= 0.5 ? round(SSlighting.cost_sources / SSlighting.avg_sources_processed, 0.01) : 0
+	key_ss["Lighting"] = list(
+		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C \u0438\u0441\u0442\u043E\u0447.", length(GLOB.lighting_update_lights)),
+		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C \u0443\u0433\u043B\u043E\u0432", length(GLOB.lighting_update_corners)),
+		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C \u043E\u0431\u044A\u0435\u043A\u0442.", length(GLOB.lighting_update_objects)),
+		list("\u041A\u044D\u043F \u0438\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u043E\u0432", SSlighting.sources_cap),
+		list("\u0424\u0430\u0437\u0430: \u0418\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u0438", "[round(SSlighting.cost_sources, 0.1)]ms ([light_pct_s]%)"),
+		list("\u0424\u0430\u0437\u0430: \u0423\u0433\u043B\u044B", "[round(SSlighting.cost_corners, 0.1)]ms ([light_pct_c]%)"),
+		list("\u0424\u0430\u0437\u0430: \u041E\u0431\u044A\u0435\u043A\u0442\u044B", "[round(SSlighting.cost_objects, 0.1)]ms ([light_pct_o]%)"),
+		list("\u0421\u0440\u0435\u0434\u043D\u0435\u0435/\u0438\u0441\u0442\u043E\u0447\u043D\u0438\u043A", "[light_avg]ms ([round(SSlighting.avg_sources_processed)] \u0448\u0442)"),
+		list("\u041F\u0438\u043A: \u0418\u0441\u0442./\u0423\u0433\u043B./\u041E\u0431\u044A.", "[SSlighting.peak_sources]/[SSlighting.peak_corners]/[SSlighting.peak_objects]"),
+		list("\u0425\u0443\u0434\u0448\u0438\u0439 fire", "[round(SSlighting.worst_fire_cost, 0.1)]ms"),
+		list("\u041A\u044D\u0448 \u0442\u0430\u0431\u043B\u0438\u0446", length(GLOB.lighting_sheets)),
+		list("\u0417\u0432\u0451\u0437\u0434\u043D\u044B\u0435 \u0442\u0430\u0439\u043B\u044B", length(GLOB.starlight))
+	)
+	// Clients performance aggregate
+	var/total_clients = length(GLOB.clients)
+	if(total_clients)
+		var/sum_ping = 0
+		var/min_ping = INFINITY
+		var/max_ping = 0
+		var/sum_server_delay = 0
+		var/list/fps_counts = list() // "fps_value" = count
+		var/list/version_counts = list() // "version" = count
+		for(var/client/C as anything in GLOB.clients)
+			var/p = C.avgping_rtt || C.avgping
+			if(!p)
+				total_clients--
+				continue
+			sum_ping += p
+			if(p < min_ping) min_ping = p
+			if(p > max_ping) max_ping = p
+			sum_server_delay += (C.avgping_server || 0)
+			var/fps_key = "[C.fps || world.fps]"
+			fps_counts[fps_key] = (fps_counts[fps_key] || 0) + 1
+			var/ver_key = "[C.byond_version].[C.byond_build]"
+			version_counts[ver_key] = (version_counts[ver_key] || 0) + 1
+		// Build FPS distribution string
+		var/list/fps_parts = list()
+		for(var/fps_val in fps_counts)
+			fps_parts += "[fps_val]: [fps_counts[fps_val]]"
+		// Build top versions string (top 3)
+		var/list/ver_parts = list()
+		var/ver_shown = 0
+		for(var/ver in version_counts)
+			if(ver_shown >= 3)
+				break
+			ver_parts += "[ver] ([version_counts[ver]])"
+			ver_shown++
+		var/avg_ping = total_clients ? round(sum_ping / total_clients, 1) : 0
+		var/avg_delay = total_clients ? round(sum_server_delay / total_clients, 1) : 0
+		var/ping_minmax = total_clients ? "[round(min_ping, 1)]/[round(max_ping, 1)]ms" : "n/a"
+		key_ss["Clients"] = list(
+			list("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E", length(GLOB.clients)),
+			list("Ping \u0441\u0440\u0435\u0434\u043D\u0438\u0439", "[avg_ping]ms"),
+			list("Ping \u043C\u0438\u043D/\u043C\u0430\u043A\u0441", ping_minmax),
+			list("\u0417\u0430\u0434\u0435\u0440\u0436\u043A\u0430 \u0441\u0435\u0440\u0432\u0435\u0440\u0430", "[avg_delay]ms"),
+			list("FPS \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438", jointext(fps_parts, ", ")),
+			list("BYOND \u0432\u0435\u0440\u0441\u0438\u0438", jointext(ver_parts, ", "))
+		)
 	server_info["key_ss"] = key_ss
 
 	mc_data_encoded = url_encode(json_encode(server_info))
