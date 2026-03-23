@@ -59,11 +59,11 @@
 					if(MV.contents && MV.contents.len)
 						stack += MV.contents
 	else
+		var/T = get_turf(user)
 		for(var/mob/M in GLOB.dead_mob_list)
 			if(!M.client || isnewplayer(M))
 				continue
-			var/T = get_turf(src)
-			if(M.stat == DEAD && M.client && (M.client.prefs.chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)) && (user.client))
+			if(M.stat == DEAD && (M.client.prefs.chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
 				M.show_message("[FOLLOW_LINK(M, user)] " + message)
 
 	message = "<span class='name'>([user])</span> <span class='pnarrate'>[user.say_emphasis(message)]</span>"
