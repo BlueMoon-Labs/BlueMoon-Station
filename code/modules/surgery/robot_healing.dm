@@ -14,6 +14,8 @@
 	possible_locs = list(BODY_ZONE_CHEST)
 	requires_bodypart_type = 0 //You can do this on anyone, but it won't really be useful on people without augments.
 	ignore_clothes = TRUE
+	icon_state = "robot_healing"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_BASE_COMBO
 	var/healing_step_type
 	var/antispam = FALSE
 
@@ -47,7 +49,7 @@
 				/datum/surgery_step/mechanic_close)
 
 /datum/surgery_step/robot_heal
-	name = "Отремонтировать (Сварочный Аппарат или Кабель)"
+	name = "Отремонтировать"
 	implements = list(TOOL_WELDER = 100, /obj/item/stack/cable_coil = 100)
 	repeatable = TRUE
 	time = 15
@@ -125,6 +127,7 @@
 	return TRUE
 
 /datum/surgery_step/robot_heal/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='warning'>You screwed up!</span>",
 		"<span class='warning'>[user] screws up!</span>",
 		"<span class='notice'>[user] fixes some of [target]'s damage.</span>", TRUE)
@@ -139,12 +142,11 @@
 		urdamageamt_burn += round((target.getFireLoss()/ (missinghpbonus*2)),0.1)
 
 	target.take_bodypart_damage(urdamageamt_brute, urdamageamt_burn)
-	return FALSE
 
 /***************************STEPS***************************/
 
 /datum/surgery_step/robot_heal/basic
-	name = "repair damage"
+	name = "Починить повреждения"
 	brutehealing = 10
 	burnhealing = 10
 	missinghpbonus = 15

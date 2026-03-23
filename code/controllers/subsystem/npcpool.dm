@@ -44,6 +44,22 @@ SUBSYSTEM_DEF(npcpool)
 
 /datum/controller/subsystem/npcpool/proc/invoke_process(mob/living/simple_animal/SA)
 	if(!SA.ckey && !SA.mob_transforming)
+		if(!SA.has_nearby_player())
+			if(istype(SA, /mob/living/simple_animal/hostile))
+				var/mob/living/simple_animal/hostile/hostile_mob = SA
+				hostile_mob.LoseTarget()
+				SA.toggle_ai(AI_IDLE)
+				invoking = FALSE
+				return
+			else if(istype(SA, /mob/living/simple_animal/bot))
+				var/mob/living/simple_animal/bot/bot_mob = SA
+				if(bot_mob.mode == BOT_IDLE)
+					invoking = FALSE
+					return
+			else
+				SA.toggle_ai(AI_IDLE)
+				invoking = FALSE
+				return
 		if(SA.stat != DEAD)
 			SA.handle_automated_movement()
 			if(QDELETED(SA))

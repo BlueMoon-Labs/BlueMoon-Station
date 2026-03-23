@@ -35,6 +35,14 @@ Key procs
 * [get_selected_language](atom/movable.html#proc/get_selected_language)
 */
 
+#define SILICON_LANGUAGE_BLACKLIST list( \
+	/datum/language/codespeak, \
+	/datum/language/corpspeak, \
+	/datum/language/old_codes, \
+	/datum/language/ratvar, \
+	/datum/language/narsie \
+	)
+
 /datum/language_holder
 	/// Lazyassoclist of all understood languages
 	var/list/understood_languages = list(/datum/language/common = list(LANGUAGE_ATOM))
@@ -276,17 +284,6 @@ GLOBAL_LIST_INIT(prototype_language_holders, init_language_holder_prototypes())
 	spoken_languages = list(/datum/language/common = list(LANGUAGE_ATOM),
 							/datum/language/narsie = list(LANGUAGE_ATOM))
 
-/datum/language_holder/drone
-	understood_languages = list(/datum/language/common = list(LANGUAGE_ATOM),
-								/datum/language/drone = list(LANGUAGE_ATOM),
-								/datum/language/machine = list(LANGUAGE_ATOM))
-	spoken_languages = list(/datum/language/drone = list(LANGUAGE_ATOM),
-							/datum/language/machine = list(LANGUAGE_ATOM))
-	//blocked_languages = list(/datum/language/common = list(LANGUAGE_ATOM)) //SPLURT EDIT: No blocking languages for nonhuman mobs
-
-/datum/language_holder/drone/syndicate
-	blocked_languages = null
-
 /datum/language_holder/human_basic
 	understood_languages = list(/datum/language/common = list(LANGUAGE_ATOM))
 	spoken_languages = list(/datum/language/common = list(LANGUAGE_ATOM))
@@ -347,42 +344,32 @@ GLOBAL_LIST_INIT(prototype_language_holders, init_language_holder_prototypes())
 							/datum/language/sylvan = list(LANGUAGE_ATOM))
 
 
-/datum/language_holder/synthetic
-	understood_languages = list(/datum/language/common = list(LANGUAGE_ATOM),
-								/datum/language/machine = list(LANGUAGE_ATOM),
-								/datum/language/draconic = list(LANGUAGE_ATOM),
-								/datum/language/slime = list(LANGUAGE_ATOM),
-								/datum/language/dwarf = list(LANGUAGE_ATOM),
-								/datum/language/neokanji = list(LANGUAGE_ATOM),
-								// SKYRAT EDIT - additional languages
-								/datum/language/modular_sand/solcommon = list(LANGUAGE_ATOM),
-								/datum/language/modular_sand/technorussian = list(LANGUAGE_ATOM),
-								/datum/language/modular_sand/dunmeri = list(LANGUAGE_ATOM),
-								/datum/language/modular_sand/sergal = list(LANGUAGE_ATOM),
-								/datum/language/modular_bluemoon/german = list(LANGUAGE_ATOM),
-								/datum/language/modular_bluemoon/felinid = list(LANGUAGE_ATOM),
-								/datum/language/vulpkanin = list(LANGUAGE_ATOM),
-								/datum/language/tajaran = list(LANGUAGE_ATOM),
-								/datum/language/drone = list(LANGUAGE_ATOM),
-								/datum/language/signlanguage = list(LANGUAGE_ATOM))
+/datum/language_holder/drone
+	understood_languages = list(/datum/language/drone = list(LANGUAGE_ATOM))
+	spoken_languages = list(/datum/language/drone = list(LANGUAGE_ATOM))
+	omnitongue = TRUE
 
-	spoken_languages = list(/datum/language/common = list(LANGUAGE_ATOM),
-							/datum/language/machine = list(LANGUAGE_ATOM),
-							/datum/language/draconic = list(LANGUAGE_ATOM),
-							/datum/language/slime = list(LANGUAGE_ATOM),
-							/datum/language/dwarf = list(LANGUAGE_ATOM),
-							/datum/language/neokanji = list(LANGUAGE_ATOM),
-							// SKYRAT EDIT - additional languages
-							/datum/language/modular_sand/solcommon = list(LANGUAGE_ATOM),
-							/datum/language/modular_sand/technorussian = list(LANGUAGE_ATOM),
-							/datum/language/modular_sand/dunmeri = list(LANGUAGE_ATOM),
-							/datum/language/modular_sand/sergal = list(LANGUAGE_ATOM),
-							/datum/language/modular_bluemoon/german = list(LANGUAGE_ATOM),
-							/datum/language/modular_bluemoon/felinid = list(LANGUAGE_ATOM),
-							/datum/language/vulpkanin = list(LANGUAGE_ATOM),
-							/datum/language/tajaran = list(LANGUAGE_ATOM),
-							/datum/language/drone = list(LANGUAGE_ATOM),
-							/datum/language/signlanguage = list(LANGUAGE_ATOM))
+/datum/language_holder/drone/New()
+	var/static/list/blacklist = SILICON_LANGUAGE_BLACKLIST
+	for(var/language in GLOB.all_languages)
+		if(language in blacklist)
+			continue
+		grant_language(language, UNDERSTOOD_LANGUAGE, LANGUAGE_ATOM)
+
+	return ..()
+
+/datum/language_holder/synthetic
+	omnitongue = TRUE
+
+/datum/language_holder/synthetic/New()
+	var/static/list/blacklist = SILICON_LANGUAGE_BLACKLIST
+	for(var/language in GLOB.all_languages)
+		if(language in blacklist)
+			continue
+		grant_language(language, ALL, LANGUAGE_ATOM)
+
+	return ..()
+
 
 /datum/language_holder/venus
 	understood_languages = list(/datum/language/common = list(LANGUAGE_ATOM),
@@ -424,3 +411,5 @@ GLOBAL_LIST_INIT(prototype_language_holders, init_language_holder_prototypes())
 /datum/language_holder/universal/New()
 	..()
 	grant_all_languages()
+
+#undef SILICON_LANGUAGE_BLACKLIST

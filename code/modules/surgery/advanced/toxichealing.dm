@@ -1,8 +1,7 @@
 /datum/surgery/advanced/toxichealing
 	name = "Body Rejuvenation"
-	desc = "A surgical procedure that helps deal with oxygen  deprivation, and treats parts damaged due to toxic compounds. Works on corpses and alive alike without chemicals."
+	desc = "Хирургическая процедура, которая помогает справиться с кислородным голоданием и лечит части тела, поврежденные из-за токсичных соединений. Работает как с трупами, так и с живыми."
 	steps = list(/datum/surgery_step/incise,
-				/datum/surgery_step/incise,
 				/datum/surgery_step/retract_skin,
 				/datum/surgery_step/incise,
 				/datum/surgery_step/clamp_bleeders,
@@ -14,6 +13,8 @@
 	target_mobtypes = list(/mob/living/carbon/human, /mob/living/carbon/monkey)
 	possible_locs = list(BODY_ZONE_CHEST)
 	requires_bodypart_type = 0
+	icon_state = "toxin"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EXTRA
 
 /datum/surgery_step/toxichealing
 	name = "Изъять Токсичную Субстанцию и Плоть"
@@ -39,6 +40,5 @@
 	return TRUE
 
 /datum/surgery_step/toxichealing/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	user.visible_message("[user] screws up!", "<span class='warning'>You screwed up!</span>")
+	. = ..()
 	target.take_bodypart_damage(25,0)
-	return FALSE

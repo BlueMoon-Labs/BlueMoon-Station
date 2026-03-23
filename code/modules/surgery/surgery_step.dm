@@ -12,6 +12,8 @@
 	var/preop_sound //Sound played when the step is started
 	var/success_sound //Sound played if the step succeeded
 	var/failure_sound //Sound played if the step fails
+	var/stop_implements = FALSE // Stop chain of use implements (like stops the mesh from being applied during the operation etc.)
+	var/static/list/_max_chance_implements = list() // cache for proc get_max_chance_implements()
 
 /datum/surgery_step/proc/try_op(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, try_to_fail = FALSE)
 	var/success = FALSE
@@ -40,7 +42,7 @@
 			if(get_location_accessible(target, target_zone) || surgery.ignore_clothes)
 				return initiate(user, target, target_zone, tool, surgery, try_to_fail)
 			else
-				to_chat(user, "<span class='warning'>You need to expose [target]'s [parse_zone(target_zone)] to perform surgery on it!</span>")
+				target.balloon_alert(user, "Одежда мешает!")
 				return TRUE	//returns TRUE so we don't stab the guy in the dick or wherever.
 	if(repeatable)
 		var/datum/surgery_step/next_step = surgery.get_surgery_next_step()
@@ -82,15 +84,20 @@
 		else
 			display_results(user, self_message = "<span class='warning'>You begin performing a surgery on yourself without any painkillers, you take your time due to the pain.</span>")
 			delay = delay * 15
+	if(HAS_TRAIT(target, TRAIT_BLUEMOON_COMPLEX_MAINTENANCE)) // Если оперируется синтет с квирком сложного обслуживания - необученному персоналу будет дольше
+		if(!HAS_TRAIT(user.mind, TRAIT_QUALIFIED_ROBOTIC_MAINTER) && !user.mind.antag_datums) // гост роли и обученный персонал могут оперировать таких синтов
+			if(HAS_TRAIT(user.mind, TRAIT_GUIDED_ROBOTIC_MAINTER))
+				delay = delay * 4
 	if(do_after(user, delay, target = target))
-		var/prob_chance = 100
+		var/prob_chance = get_chance(target, user, surgery = surgery, silent = FALSE)
+		/*
 		if(implement_type)	//this means it isn't a require hand or any item step.
 			prob_chance = implements[implement_type]
 		prob_chance *= surgery.get_propability_multiplier()
 		// BLUEMOON ADD START - самооперирование - чертовски сложное дело
 		if(HAS_TRAIT(target, TRAIT_BLUEMOON_COMPLEX_MAINTENANCE)) // только роботехники, РД и борги могут ремонтировать таких роботов
 			if(HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
-				if(!HAS_TRAIT(user.mind, QUALIFIED_ROBOTIC_MAINTER) && !user.mind.antag_datums) // гост роли и обученный персонал могут оперировать таких синтов
+				if(!HAS_TRAIT(user.mind, TRAIT_QUALIFIED_ROBOTIC_MAINTER) && !user.mind.antag_datums && istype(user, /mob/living/carbon/integral)) // гост роли и обученный персонал могут оперировать таких синтов. А еще интегралка тоже может)
 					to_chat(user, span_warning("Этот протез выглядит слишком сложно... Здесь необходим специалист!"))
 					prob_chance = 0
 		if(target == user)
@@ -102,6 +109,7 @@
 				prob_chance = 0
 			else
 				prob_chance = min(prob_chance, 20)
+		*/
 		if(prob_chance <= 0 && !try_to_fail)
 			to_chat(user, span_warning("Условия операции слишком ужасны, ничего не выйдет!"))
 		// BLUEMOON ADD END
@@ -161,9 +169,7 @@
 	playsound(get_turf(target), success_sound, 75, TRUE, falloff_exponent = 12, falloff_distance = 1)
 
 /datum/surgery_step/proc/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	display_results(user, target, "<span class='warning'>You screw up! Repeat the step!</span>", // BLUEMOON EDIT - добавлено про повтор
-		"<span class='warning'>[user] screws up!</span>",
-		"[user] finishes.", TRUE) //By default the patient will notice if the wrong thing has been cut
+	target.balloon_alert(user, span_balloon_warning("[pick("Ошибка!", "Провал!", "Неудача!")]"))
 	return FALSE
 
 /datum/surgery_step/proc/play_failure_sound(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
@@ -207,3 +213,73 @@
 		target_detailed = TRUE
 	user.visible_message(detailed_message, self_message, vision_distance = 1, ignored_mobs = target_detailed ? null : target)
 	user.visible_message(vague_message, "", ignored_mobs = detailed_mobs)
+
+/datum/surgery_step/proc/get_max_chance_implements()
+	if(_max_chance_implements[type])
+		return _max_chance_implements[type]
+
+	var/list/result = list()
+	if(!accept_hand)
+		var/maxval = get_max_chance()
+		for(var/k in implements)
+			if(implements[k] == maxval)
+				result += capitalize(ispath(k) ? initial(k:name) : k)
+	else
+		result += "Hand"
+
+	_max_chance_implements[type] = result
+	return result
+
+/datum/surgery_step/proc/get_max_chance()
+	var/maxval = 0
+	if(!accept_hand)
+		for(var/k in implements)
+			if(implements[k] > maxval)
+				maxval = implements[k]
+	else
+		maxval = 100
+	return maxval
+
+/datum/surgery_step/proc/get_implement_type(obj/item/tool)
+	for(var/key in implements)
+		var/match = FALSE
+		if(ispath(key) && istype(tool, key))
+			match = TRUE
+		else if(tool.tool_behaviour == key)
+			match = TRUE
+		if(match)
+			return key
+
+/datum/surgery_step/proc/get_chance(mob/living/target, mob/living/user, obj/item/tool, datum/surgery/surgery, silent = TRUE)
+	var/prob_chance = get_max_chance()
+	if(tool) // if we want check chance for any item (like for operating computer)
+		var/tool_imlp_type = get_implement_type(tool)
+		if(tool_imlp_type && (tool_imlp_type in implements) && tool_imlp_type != /obj/item) // if the item is not suitable for the operation, then there will be a warning in try_op, and we will show the maximum value for implements
+			prob_chance = implements[tool_imlp_type]
+	else if(implement_type)	// this means it isn't a require hand or any item step.
+		prob_chance = implements[implement_type]
+	prob_chance *= surgery.get_propability_multiplier(silent)
+
+	// BLUEMOON ADD START - самооперирование - чертовски сложное дело
+	if(HAS_TRAIT(target, TRAIT_BLUEMOON_COMPLEX_MAINTENANCE)) // только роботехники, РД и борги могут ремонтировать таких роботов
+		if(HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
+			if(!HAS_TRAIT(user.mind, TRAIT_QUALIFIED_ROBOTIC_MAINTER) && !user.mind.antag_datums) // гост роли и обученный персонал могут оперировать таких синтов
+				if(!silent)
+					to_chat(user, span_warning("Этот протез выглядит слишком сложно... Здесь необходим специалист!"))
+				if(HAS_TRAIT(user.mind, TRAIT_GUIDED_ROBOTIC_MAINTER)) // при наличии роботик процессора
+					prob_chance = min(prob_chance, 90)
+				else
+					prob_chance = 0
+	if(target == user)
+		if(HAS_TRAIT(target, CAN_BE_OPERATED_WITHOUT_PAIN)) // Роботам и некоторым другим расам даётся проще. Они не чувствуют боли
+			if(!silent)
+				display_results(target, self_message = "<span class='notice'>Вы пытаетесь [HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM) ? "отремонтироваться" : "оперироваться"] самостоятельно. Это не так сложно, как было бы [HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM) ? "органикам" : "другим видам"], но неудобно.</span>")
+			prob_chance = min(prob_chance, 80)
+		else if(HAS_TRAIT(target, TRAIT_BLUEMOON_FEAR_OF_SURGEONS))
+			if(!silent)
+				to_chat(target, span_danger("Я НЕ СПРАВЛЮСЬ! Я НЕ СМОГУ! Я НЕ СПРАВЛЮСЬ!"))
+			prob_chance = 0
+		else
+			prob_chance = min(prob_chance, 20)
+
+	return prob_chance

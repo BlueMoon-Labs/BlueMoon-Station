@@ -1,8 +1,11 @@
 /datum/surgery/cavity_implant
-	name = "Cavity implant"
+	name = "Имплантировать Предмет в Тело"
 	steps = list(/datum/surgery_step/incise, /datum/surgery_step/clamp_bleeders, /datum/surgery_step/retract_skin, /datum/surgery_step/incise, /datum/surgery_step/handle_cavity, /datum/surgery_step/close)
 	target_mobtypes = list(/mob/living/carbon/human, /mob/living/carbon/monkey)
 	possible_locs = list(BODY_ZONE_CHEST)
+	is_healing = FALSE // BLUEMOON ADD
+	icon_state = "drill"
+	radial_priority = SURGERY_RADIAL_PRIORITY_OTHER_SECOND
 
 //handle cavity
 /datum/surgery_step/handle_cavity

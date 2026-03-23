@@ -1,7 +1,7 @@
 /obj/item/summon_chalk
 	name = "summon chalk"
 	desc = "A weird chalk covered in ectoplasm."
-	icon = 'modular_bluemoon/Gardelin0/icons/items/qareen_chalk.dmi'
+	icon = 'modular_bluemoon/icons/obj/lewd_items/qareen_chalk.dmi'
 	icon_state = "chalk_pink"
 	throw_speed = 3
 	throw_range = 5
@@ -22,7 +22,7 @@
 /obj/effect/summon_rune
 	name = "Lewd summon rune"
 	desc = "It is believed this rune is capable of summoning horny creatures!"
-	icon = 'modular_bluemoon/Gardelin0/icons/items/qareen_chalk.dmi'
+	icon = 'modular_bluemoon/icons/obj/lewd_items/qareen_chalk.dmi'
 	icon_state = "rune_pink"
 	light_color = LIGHT_COLOR_PINK
 	var/cooldown = 0
@@ -77,7 +77,13 @@
 
 	var/massage_time = world.time + 1 SECONDS //Поглощаем энтропию и теорио вероятности тыкнуть энтер в момент появления
 	var/summoned_approve = TRUE
-	if(tgui_alert(target, "You have been summoned! Do you want to answer?", "Do you want to answer?", list("Yes", "No")) != "Yes")
+	var/summoner_info = "[M.gender]"
+	if(M.dna)
+		var/summoner_species = "[M.dna.species]"
+		if(M.dna.custom_species)
+			summoner_species = "[M.dna.custom_species]"
+		summoner_info += " [summoner_species]"
+	if(tgui_alert(target, "You have been summoned by [summoner_info]! Do you want to answer?", "Do you want to answer?", list("Yes", "No")) != "Yes")
 		summoned_approve = FALSE
 	else if(massage_time > world.time)
 		if(tgui_alert(target, "Too quick! You are really want to answer?", "Do you really want to answer the summon?", list("Yes", "No")) != "Yes")
@@ -116,14 +122,14 @@
 	if(!target || !pos_to_teleport)
 		return FALSE
 	if(switch_summoned)
-		if(HAS_TRAIT(target, TRAIT_LEWD_SUMMONED))
+		if(HAS_TRAIT_FROM(target, TRAIT_LEWD_SUMMONED, TRAIT_LEWD_SUMMONED))
 			REMOVE_TRAIT(target, TRAIT_LEWD_SUMMONED, TRAIT_LEWD_SUMMONED)
 		else
 			ADD_TRAIT(target, TRAIT_LEWD_SUMMONED, TRAIT_LEWD_SUMMONED)
 			if(target.mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe))
 				target.ghost_cafe_traits(FALSE) // Выдаём и забираем трэйты в разных места для ситуаций ухода госта обратно домой
 
-	playsound(loc, "modular_bluemoon/Gardelin0/sound/effect/spook.ogg", 50, 1)
+	playsound(loc, 'modular_bluemoon/sound/effects/spook.ogg', 50, 1)
 	new /obj/effect/temp_visual/yellowsparkles(target.loc)
 	if(transfer_target_items)
 		transfer_items(target)
@@ -177,6 +183,9 @@
 	. = ..()
 	if(returner)
 		teleport_summoned(returner, return_pos, TRUE)
+		returner = null
+	return_pos = null
+	listed_items = null
 
 //Проклятые техники телепортации
 //При телепортации мы помещаем всё "нежелательное" (контейнеры) в руну призыва, а после, когда появляется руна возврата - всё перенесётся в неё (в процессе return_rune/Initialize)

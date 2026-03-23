@@ -69,23 +69,43 @@
 	else
 		icon_state = "biogen-work"
 
+// BLUEMOON ADD START
+/obj/machinery/biogenerator/wrench_act(mob/living/user, obj/item/I)
+	. = ..()
+	default_unfasten_wrench(user, I)
+	return TRUE
+
+/obj/machinery/biogenerator/can_be_unfasten_wrench(mob/user, silent)
+	. = ..()
+	if(. == FAILED_UNFASTEN)
+		return .
+	if(!panel_open)
+		if(!silent)
+			to_chat(user, span_warning("Необходимо открутить панель!"))
+		return FAILED_UNFASTEN
+
+/obj/machinery/biogenerator/screwdriver_act(mob/living/user, obj/item/I)
+	. = ..()
+	if(default_deconstruction_screwdriver(user, "biogen-empty-o", "biogen-empty", I))
+		if(beaker)
+			var/obj/item/reagent_containers/glass/B = beaker
+			B.forceMove(drop_location())
+			beaker = null
+		update_icon()
+		return TRUE
+
+/obj/machinery/biogenerator/crowbar_act(mob/living/user, obj/item/I)
+	. = ..()
+	if(default_deconstruction_crowbar(I))
+		return TRUE
+// BLUEMOON ADD END
+
 /obj/machinery/biogenerator/attackby(obj/item/O, mob/user, params)
 	if(user.a_intent == INTENT_HARM)
 		return ..()
 
 	if(processing)
 		to_chat(user, "<span class='warning'>The biogenerator is currently processing.</span>")
-		return
-
-	if(default_deconstruction_screwdriver(user, "biogen-empty-o", "biogen-empty", O))
-		if(beaker)
-			var/obj/item/reagent_containers/glass/B = beaker
-			B.forceMove(drop_location())
-			beaker = null
-		update_icon()
-		return
-
-	if(default_deconstruction_crowbar(O))
 		return
 
 	if(istype(O, /obj/item/reagent_containers/glass))

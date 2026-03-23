@@ -17,7 +17,7 @@
 
 /obj/item/ammo_casing/c22lr/rubber
 	name = ".22 Long rifle bullet casing (rubber)"
-	projectile_type = /obj/item/projectile/bullet/c22lr
+	projectile_type = /obj/item/projectile/bullet/c22lr/rubber
 
 /obj/item/ammo_casing/a357/rubber
 	name = ".357 Rubber bullet casing"
@@ -35,7 +35,7 @@
 /datum/design/a357rubber
 	name = "Revolver Bullet (.357 Rubber)"
 	id = "a357r"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 4000)
 	build_path = /obj/item/ammo_casing/a357/rubber
 	category = list("hacked", "Security")

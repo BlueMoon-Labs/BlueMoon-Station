@@ -119,7 +119,7 @@ GLOBAL_LIST_INIT(metal_recipes, list ( \
 	new/datum/stack_recipe("reflector frame", /obj/structure/reflector, 5, time = 25, one_per_turf = TRUE, on_floor = TRUE), \
 	null, \
 	new/datum/stack_recipe("grenade casing", /obj/item/grenade/chem_grenade), \
-	new/datum/stack_recipe("mortar", /obj/item/reagent_containers/glass/mortar, 3), \
+	new/datum/stack_recipe("urn", /obj/item/reagent_containers/glass/mortar/urn, 3), \
 	new/datum/stack_recipe("metal baseball bat", /obj/item/melee/baseball_bat/ablative, 25, time = 100), \
 	new/datum/stack_recipe("ashtray", /obj/item/ashtray, 1), \
 	new/datum/stack_recipe("light fixture frame", /obj/item/wallframe/light_fixture, 2), \
@@ -151,7 +151,7 @@ GLOBAL_LIST_INIT(metal_recipes, list ( \
 	new/datum/stack_recipe("floodlight frame", /obj/structure/floodlight_frame, 5, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("iron ingot", /obj/item/ingot/iron, 6, time = 100), \
 	null, \
-	new/datum/stack_recipe("tiny fan", /obj/structure/fans/tiny, 2, time = 4, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("tiny fan", /obj/structure/fans/tiny, 10, time = 4, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("Metal Barricade", /obj/structure/deployable_barricade/metal, 2, time = 1 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("desk bell", /obj/structure/desk_bell, 2, time = 50, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("light switch frame", /obj/item/wallframe/light_switch, 1), \
@@ -292,6 +292,7 @@ GLOBAL_LIST_INIT(wood_recipes, list ( \
 	new/datum/stack_recipe("unrolling pin", /obj/item/kitchen/unrollingpin, 2, time = 30), \
 	new/datum/stack_recipe("wooden bucket", /obj/item/reagent_containers/glass/bucket/wood, 2, time = 30), \
 	new/datum/stack_recipe("painting frame", /obj/item/wallframe/painting, 1, time = 10),\
+	new/datum/stack_recipe("large painting frame", /obj/item/wallframe/painting/large, 1, time = 10),\
 	new/datum/stack_recipe("wooden buckler", /obj/item/shield/riot/buckler, 25, time = 120), \
 	new/datum/stack_recipe("baseball bat", /obj/item/melee/baseball_bat, 25, time = 100),\
 	new/datum/stack_recipe("Stick For Angry Plants", /obj/item/scythe/stick, 25, time = 100),\
@@ -318,7 +319,8 @@ GLOBAL_LIST_INIT(wood_recipes, list ( \
 	null, \
 	new/datum/stack_recipe("picture frame", /obj/item/wallframe/picture, 1, time = 10),\
 	new/datum/stack_recipe("painting frame", /obj/item/wallframe/painting, 1, time = 10),\
-	new/datum/stack_recipe("urn", /obj/item/reagent_containers/glass/mortar/urn, 3), \
+	new/datum/stack_recipe("large painting frame", /obj/item/wallframe/painting/large, 1, time = 10),\
+	new/datum/stack_recipe("mortar", /obj/item/reagent_containers/glass/mortar, 3), \
 	new/datum/stack_recipe("honey frame", /obj/item/honey_frame, 5, time = 10),\
 	new/datum/stack_recipe("notice board frame", /obj/item/wallframe/noticeboard, 5, time = 10),\
 	new/datum/stack_recipe("wooden block", /obj/item/stamp_block, 10, time = 10),\
@@ -426,6 +428,7 @@ GLOBAL_LIST_INIT(cloth_recipes, list ( \
 	new/datum/stack_recipe("loincloth", /obj/item/clothing/under/costume/loincloth/cloth/sensor, 2), \
 	new/datum/stack_recipe("sensorless loincloth", /obj/item/clothing/under/costume/loincloth/cloth, 2), \
 	new/datum/stack_recipe("tunic", /obj/item/clothing/under/tunic, 3), \
+	new/datum/stack_recipe("fancy pillow", /obj/item/fancy_pillow, 3), \
 	//SPLURT CHANGE: ADD MATTRESSES
 	new/datum/stack_recipe_list("matresses", list( \
 		new/datum/stack_recipe("mattress (random)", /obj/structure/bed/matress, 2, one_per_turf = TRUE, on_floor = TRUE), \
@@ -462,7 +465,8 @@ GLOBAL_LIST_INIT(cloth_recipes, list ( \
 	null, \
 	new/datum/stack_recipe("19x19 canvas", /obj/item/canvas/nineteenXnineteen, 3), \
 	new/datum/stack_recipe("23x19 canvas", /obj/item/canvas/twentythreeXnineteen, 4), \
-	new/datum/stack_recipe("23x23 canvas", /obj/item/canvas/twentythreeXtwentythree, 5) \
+	new/datum/stack_recipe("23x23 canvas", /obj/item/canvas/twentythreeXtwentythree, 5), \
+	new/datum/stack_recipe("32x32 canvas", /obj/item/canvas/ultra_big, 6) \
 	))
 
 /obj/item/stack/sheet/cloth
@@ -488,6 +492,9 @@ GLOBAL_LIST_INIT(cloth_recipes, list ( \
 
 /obj/item/stack/sheet/cloth/thirty
 	amount = 30
+
+/obj/item/stack/sheet/cloth/fifty
+	amount = 50
 
 /*
  * Durathread

@@ -114,9 +114,11 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	var/safe_alert = "Crystalline hyperstructure returning to safe operating parameters."
 	///The point at which we should start sending messeges about the damage to the engi channels.
 	var/warning_point = 50
+	///The point at which we start sending messages to the common channel
+	var/warning_point_plus = 180 // 80%
 	///The alert we send when we've reached warning_point
 	var/warning_alert = "Danger! Crystal hyperstructure integrity faltering!"
-	///The point at which we start sending messages to the common channel
+	///The point at which we start sending PANIC messages to the common channel
 	var/emergency_point = 700
 	///The alert we send when we've reached emergency_point
 	var/emergency_alert = "CRYSTAL DELAMINATION IMMINENT."
@@ -126,7 +128,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	var/damage_penalty_point = 550
 
 	///A scaling value that affects the severity of explosions.
-	var/explosion_power = 50
+	var/explosion_power = 35
 	///Time in 1/10th of seconds since the last sent warning
 	var/lastwarning = 0
 	///Refered to as eer on the moniter. This value effects gas output, heat, damage, and radiation.
@@ -706,6 +708,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		if((REALTIMEOFDAY - lastwarning) / 10 >= WARNING_DELAY)
 			alarm()
 
+			var/channel = damage > warning_point_plus ? common_channel : engineering_channel
 			//Oh shit it's bad, time to freak out
 			if(damage > emergency_point)
 				// it's bad, LETS YELL
@@ -717,25 +720,26 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 					message_admins("[src] has reached the emergency point [ADMIN_JMP(src)].")
 					has_reached_emergency = TRUE
 			else if(damage >= damage_archived) // The damage is still going up
-				radio.talk_into(src, "[warning_alert] Integrity: [get_integrity()]%", engineering_channel)
+				radio.talk_into(src, "[warning_alert] Integrity: [get_integrity()]%", channel)
 				SEND_SIGNAL(src, COMSIG_SUPERMATTER_DELAM_ALARM)
 				lastwarning = REALTIMEOFDAY - (WARNING_DELAY * 5)
 
 			else                                                 // Phew, we're safe
-				radio.talk_into(src, "[safe_alert] Integrity: [get_integrity()]%", engineering_channel)
+				radio.talk_into(src, "[safe_alert] Integrity: [get_integrity()]%", channel)
 				lastwarning = REALTIMEOFDAY
 
 			if(power > POWER_PENALTY_THRESHOLD)
-				radio.talk_into(src, "Warning: Hyperstructure has reached dangerous power level.", engineering_channel)
+				radio.talk_into(src, "Warning: Hyperstructure has reached dangerous power level.", channel)
 				if(powerloss_inhibitor < 0.5)
-					radio.talk_into(src, "DANGER: CHARGE INERTIA CHAIN REACTION IN PROGRESS.", engineering_channel)
+					radio.talk_into(src, "DANGER: CHARGE INERTIA CHAIN REACTION IN PROGRESS.", channel)
 
 			if(combined_gas > MOLE_PENALTY_THRESHOLD)
-				radio.talk_into(src, "Warning: Critical coolant mass reached.", engineering_channel)
+				radio.talk_into(src, "Warning: Critical coolant mass reached.", channel)
 		//Boom (Mind blown)
 		if(damage > explosion_point)
 			countdown()
 
+	qdel(removed)
 	return TRUE
 
 /obj/machinery/power/supermatter_crystal/bullet_act(obj/item/projectile/Proj)
@@ -875,7 +879,6 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			else
 				add_overlay(mutable_appearance(icon, "santa_hat", 3))
 			return COMPONENT_CANCEL_ATTACK_CHAIN
-		return NONE
 	if(istype(W, /obj/item/scalpel/supermatter))
 		var/obj/item/scalpel/supermatter/scalpel = W
 		to_chat(user, "<span class='notice'>You carefully begin to scrape \the [src] with \the [W]...</span>")
@@ -994,7 +997,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	icon_state = "sm_shard"
 	anchored = FALSE
 	gasefficency = 0.125
-	explosion_power = 25
+	explosion_power = 12
 	layer = ABOVE_MOB_LAYER
 	moveable = TRUE
 

@@ -1,6 +1,6 @@
 /datum/surgery/advanced/bioware/nerve_splicing
 	name = "Nerve Splicing"
-	desc = "A surgical procedure which splices the patient's nerves, making them more resistant to stuns."
+	desc = "Хирургическая процедура, которая сращивает нервы пациента, делая их более устойчивыми к оглушению."
 	steps = list(/datum/surgery_step/incise,
 				/datum/surgery_step/retract_skin,
 				/datum/surgery_step/clamp_bleeders,
@@ -10,8 +10,11 @@
 				/datum/surgery_step/close)
 	possible_locs = list(BODY_ZONE_CHEST)
 	bioware_target = BIOWARE_NERVES
+	icon = 'icons/obj/items_and_weapons.dmi'
+	icon_state = "stunbaton_active"
+
 /datum/surgery_step/splice_nerves
-	name = "splice nerves"
+	name = "Срастить нервы"
 	accept_hand = TRUE
 	time = 155
 

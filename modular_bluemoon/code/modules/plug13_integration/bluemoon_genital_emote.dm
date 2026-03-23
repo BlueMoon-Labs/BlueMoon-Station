@@ -1,6 +1,6 @@
 /mob/living/proc/plug13_genital_emote(obj/item/organ/genital/genital, lust, duration = PLUG13_DURATION_NORMAL)
 
-	if (!client?.plug13.is_connected)
+	if (!client?.plug13?.is_connected)
 		return
 
 	var/emote_target = null

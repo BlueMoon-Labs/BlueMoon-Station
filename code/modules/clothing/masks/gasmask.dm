@@ -40,6 +40,12 @@
 	item_state = "gasmask_captain"
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 
+/obj/item/clothing/mask/gas/atmos/captain/corporate
+	name = "\improper CentCom Gas Mask"
+	desc = "Oooh, gold and green. Fancy! This should help as you sit in your office."
+	icon_state = "gas_centcom"
+	item_state = "gasmask_centcom"
+
 /obj/item/clothing/mask/gas/glass
 	name = "Glass Gas Mask"
 	desc = "A face-covering mask that can be connected to an air supply. This one doesn't obscure your face however." //More accurate
@@ -348,4 +354,10 @@
 	name = "CFIS Gasmask"
 	desc = "Tactical gasmask for Catcrin Foreign Intelligence Service operatives. The compact mask has dark glass and small filters in the front part of the mask with breath venting."
 	icon_state = "syndicate_blackcool"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/mask/gas/syndicate/ranger_gasmask
+	name = "Ranger Gasmask"
+	desc = "A specialized gas mask for special police units. It is a fairly good individual means of protection for the respiratory system, eyes, and face from toxic substances, radioactive dust, and combustion products."
+	icon_state = "ranger_gasmask"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON

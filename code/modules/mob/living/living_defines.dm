@@ -77,6 +77,10 @@
 
 	var/list/surgeries = list()	//a list of surgery datums. generally empty, they're added when the player wants them.
 
+	var/_sterilize_timer_id // BLUEMOON ADD timer for desterilize()
+	var/sterilize_power = 0 // BLUEMOON ADD get buff to chance surg. operations in percent
+	var/_sterilize_expire = 0 // BLUEMOON ADD for cumulative timer effect
+
 	var/now_pushing = null //used by living/Bump() and living/PushAM() to prevent potential infinite loop.
 
 	var/cameraFollow = null
@@ -85,6 +89,8 @@
 
 	var/on_fire = 0 //The "Are we on fire?" var
 	var/fire_stacks = 0 //Tracks how many stacks of fire we have on, max is usually 20
+
+	var/cached_gravity_value = -1 //Cached gravity for handle_gravity() optimization — only calls update_gravity() when changed
 
 	var/bloodcrawl = 0 //0 No blood crawling, BLOODCRAWL for bloodcrawling, BLOODCRAWL_EAT for crawling+mob devour
 	var/holder = null //The holder for blood crawling

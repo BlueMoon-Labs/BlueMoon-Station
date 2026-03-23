@@ -154,7 +154,7 @@ GLOBAL_LIST_EMPTY(bodycontainers) //Let them act as spawnpoints for revenants an
 	dir = EAST
 	starting_tray = /obj/structure/tray/m_tray
 	var/beeper = TRUE
-	var/beep_cooldown = 50
+	var/beep_cooldown = 7 SECONDS
 	var/next_beep = 0
 
 /obj/structure/bodycontainer/morgue/examine(mob/user)
@@ -172,26 +172,49 @@ GLOBAL_LIST_EMPTY(bodycontainers) //Let them act as spawnpoints for revenants an
 /obj/structure/bodycontainer/morgue/update_icon_state()
 	if (!connected || connected.loc != src) // Open or tray is gone.
 		icon_state = "morgue0"
-	else
-		if(contents.len == 1)  // Empty
-			icon_state = "morgue1"
-		else
-			icon_state = "morgue2" // Dead, brainded mob.
-			var/list/compiled = recursive_mob_check(src, 0, 0) // Search for mobs in all contents.
-			if(!length(compiled)) // No mobs?
-				icon_state = "morgue3"
-				return
+		STOP_PROCESSING(SSobj, src)
+		return
+	
+	if(contents.len == 1)  // Empty
+		icon_state = "morgue1"
+		STOP_PROCESSING(SSobj, src)
+		return
 
-			for(var/mob/living/M in compiled)
-				var/mob/living/mob_occupant = get_mob_or_brainmob(M)
-				if(mob_occupant.client && !mob_occupant.suiciding && !(HAS_TRAIT(mob_occupant, TRAIT_NOCLONE)) && !mob_occupant.hellbound)
-					icon_state = "morgue4" // Cloneable
-					if(mob_occupant.stat == DEAD && beeper)
-						if(world.time > next_beep)
-							playsound(src, 'sound/machines/beeping_alarm.ogg', 50, 0) //Clone them you blind fucks
-							next_beep = world.time + beep_cooldown
-					break
+	var/list/compiled = recursive_mob_check(src, 0, 0) // Search for mobs in all contents.
+	if(!length(compiled)) // No mobs?
+		icon_state = "morgue3"
+		STOP_PROCESSING(SSobj, src)
+		return
 
+	icon_state = "morgue2" // Dead, brainded mob.
+	var/mob_revivible = FALSE
+
+	for(var/mob/living/M in compiled)
+		var/mob/living/mob_occupant = get_mob_or_brainmob(M)
+
+		//hellbound
+		if(mob_occupant.hellbound)
+			continue
+
+		if(mob_occupant.client && !mob_occupant.suiciding && !(HAS_TRAIT(mob_occupant, TRAIT_NOCLONE)))
+			icon_state = "morgue4" // Cloneable
+			mob_revivible = TRUE
+		else if(mob_occupant.get_ghost())
+			icon_state = "morgue5" // Can be revived
+			mob_revivible = TRUE
+
+		if(mob_revivible)
+			if(mob_occupant.stat == DEAD && beeper && world.time > next_beep)
+				playsound(src, 'sound/machines/beeping_alarm.ogg', 50, 0) //Clone them you blind fucks
+				next_beep = world.time + beep_cooldown
+			START_PROCESSING(SSobj, src)
+			break
+
+	if(!mob_revivible)
+		STOP_PROCESSING(SSobj, src)
+
+/obj/structure/bodycontainer/morgue/process(delta_time)
+	update_icon_state()
 
 /obj/item/paper/guides/jobs/medical/morgue
 	name = "morgue memo"
@@ -263,8 +286,8 @@ GLOBAL_LIST_EMPTY(crematoriums)
 			if (M.stat != DEAD)
 				if(!HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
 					M.emote("scream")
-			// BLUEMOON ADDITION AHEAD changeling scream when cremated
-			if (M.mind.has_antag_datum(/datum/antagonist/changeling))
+		// BLUEMOON ADDITION AHEAD changeling scream when cremated
+			if (M.mind?.has_antag_datum(/datum/antagonist/changeling))
 				switch(rand(0,2))
 					if(0)
 						playsound(loc, 'modular_bluemoon/sound/creatures/changeling/changeling_cremation1.ogg', 100, 0.1, ignore_walls = TRUE)
@@ -349,6 +372,11 @@ GLOBAL_LIST_EMPTY(crematoriums)
 		add_fingerprint(user)
 	else
 		to_chat(user, "<span class='warning'>That's not connected to anything!</span>")
+
+/obj/structure/tray/attack_robot(mob/user)
+	if(!user.Adjacent(src))
+		return
+	return attack_hand(user)
 
 /obj/structure/tray/attackby(obj/P, mob/user, params)
 	if(!istype(P, /obj/item/riding_offhand))

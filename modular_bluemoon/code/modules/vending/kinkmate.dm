@@ -75,6 +75,7 @@
 				/obj/item/clothing/gloves/latexsleeves = 3,
 				/obj/item/bdsm_whip = 3,
 				/obj/item/bdsm_whip/ridingcrop = 3,
+				/obj/item/storage/belt/belly_riding = 10,
 			),
 		),
 
@@ -128,7 +129,7 @@
 				/obj/item/clothing/neck/stole = 2,
 				/obj/item/clothing/neck/stole/black = 2,
 				/obj/item/clothing/mask/gas/sechailer/slut = 4,
-				/obj/item/card/id/lust = 5,
+				/obj/item/card_sticker/lust = 5,
 				/obj/item/clothing/glasses/hud/slaver = 8,
 				/obj/item/clothing/wrists/helper_bracelet = 10,
 				/obj/item/clothing/wrists/helper_bracelet/love_need_bracelet = 10,
@@ -166,6 +167,7 @@
 			"name" = "Miscellaneous",
 			"icon" = "question",
 			"products" = list(
+				/obj/item/fancy_pillow = 32,
 				/obj/item/storage/daki = 4,
 				/obj/item/clothing/underwear/briefs/panties/maebari = 3,
 				/obj/item/clothing/underwear/briefs/panties/maebari/maebari_heart = 3,
@@ -226,6 +228,7 @@
 		/obj/item/storage/pill_bottle/peen_pop = 3,
 		/obj/item/chastity_hypno/magazine = 6,
 		/obj/item/chastity_hypno/watch = 2,
+		/obj/item/ammo_casing/p50/lewd = 3,
     )
 	premium = list(
 		/obj/item/clothing/under/pants/chaps = 5,

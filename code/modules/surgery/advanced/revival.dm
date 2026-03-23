@@ -1,6 +1,6 @@
 /datum/surgery/advanced/revival
 	name = "Revival"
-	desc = "An experimental surgical procedure which involves reconstruction and reactivation of the patient's brain even long after death. The body must still be able to sustain life."
+	desc = "Экспериментальная хирургическая процедура, которая включает в себя реконструкцию и реактивацию мозга пациента даже спустя долгое время после смерти. Организм должен оставаться в состоянии поддерживать жизнедеятельность. Обеспечивает минимальное функционирование всем органам пораженным некрозом."
 	steps = list(/datum/surgery_step/incise,
 				/datum/surgery_step/retract_skin,
 				/datum/surgery_step/saw,
@@ -12,6 +12,9 @@
 	target_mobtypes = list(/mob/living/carbon/human, /mob/living/carbon/monkey)
 	possible_locs = list(BODY_ZONE_HEAD)
 	requires_bodypart_type = 0
+	icon = 'icons/obj/defibrillators.dmi'
+	icon_state = "defibpaddles0"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EMERGENCY
 
 /datum/surgery/advanced/revival/can_start(mob/user, mob/living/carbon/target, obj/item/tool)
 	if(!..())
@@ -88,8 +91,8 @@
 		return FALSE
 
 /datum/surgery_step/revive/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='notice'>You shock [target]'s brain with [tool], but [target.ru_who()] doesn't react.</span>",
 		"[user] send a powerful shock to [target]'s brain with [tool], but [target.ru_who()] doesn't react.",
 		"[user] send a powerful shock to [target]'s brain with [tool], but [target.ru_who()] doesn't react.")
 	target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 15, 199)
-	return FALSE

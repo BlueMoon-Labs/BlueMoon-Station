@@ -113,7 +113,7 @@
 		dummy_key = dummy_key,
 		outfit_override = selected_outfit,
 		no_anim = TRUE)
-	data["icon64"] = icon2base64(dummysprite)
+	data["icon64"] = icon2base64_scaled(dummysprite, 2)
 	data["name"] = target_mob
 
 	var/datum/preferences/prefs = user?.client?.prefs

@@ -37,7 +37,6 @@
 		if(current_equipped_slot in user.check_obscured_slots())
 			to_chat(user, "<span class='warning'>You are unable to unequip that while wearing other garments over it!</span>")
 			return FALSE
-		//var/mob/living/carbon/human/H = istype(G) ? G.owner : G["wearer"]
 		if(W == belt.key)
 			to_chat(user, "<span class='warning'>You wield \the [W.name] and unlock the belt!</span>")
 			REMOVE_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
@@ -100,9 +99,6 @@
 	if(!(slot == ITEM_SLOT_UNDERWEAR))
 		return
 
-	if(bepis == ORGAN_SLOT_ANUS)
-		bepis = list("genital" = bepis, "wearer" = user)
-
 	if(belt)
 		belt.item_inserted(belt, bepis, null)
 		belt.equipment.holder_genital = bepis
@@ -122,13 +118,8 @@
 	. = TRUE
 
 	var/mob/living/carbon/human/H
-	if(!istype(G))
-		H = G["wearer"]
-		ADD_TRAIT(H, TRAIT_CHASTENED_ANUS, CLOTHING_TRAIT)
-		H.anus_toggle_visibility(GEN_VISIBLE_NEVER)
-	else
-		H = G.owner
-		ENABLE_BITFIELD(G.genital_flags, GENITAL_CHASTENED)
+	H = G.owner
+	ENABLE_BITFIELD(G.genital_flags, GENITAL_CHASTENED)
 
 	H.update_genitals()
 	RegisterSignal(src, COMSIG_MOB_ITEM_DROPPING, PROC_REF(mob_can_unequip))
@@ -156,13 +147,8 @@
 	. = TRUE
 
 	var/mob/living/carbon/human/H
-	if(!istype(G))
-		H = G["wearer"]
-		REMOVE_TRAIT(H, TRAIT_CHASTENED_ANUS, CLOTHING_TRAIT)
-		H.anus_toggle_visibility(GEN_VISIBLE_NO_UNDIES)
-	else
-		H = G.owner
-		DISABLE_BITFIELD(G.genital_flags, GENITAL_CHASTENED)
+	H = G.owner
+	DISABLE_BITFIELD(G.genital_flags, GENITAL_CHASTENED)
 
 	H.update_genitals()
 	UnregisterSignal(src, COMSIG_MOB_ITEM_DROPPING)

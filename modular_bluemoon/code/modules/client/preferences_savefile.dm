@@ -12,7 +12,7 @@
 	pda_style = sanitize_inlist(pda_style, GLOB.pda_styles, initial(pda_style))
 	pda_color = sanitize_hexcolor(pda_color, 6, 1, initial(pda_color))
 	pda_skin = sanitize_inlist(pda_skin, GLOB.pda_reskins, PDA_SKIN_ALT)
-	// pda_ringtone = ??? // none for now
+	pda_ringtone = sanitize_inlist(pda_ringtone, GLOB.pda_ringtone_list, "beep")
 
 	silicon_lawset = sanitize_inlist(silicon_lawset, CONFIG_GET(keyed_list/choosable_laws), null)
 	body_weight = sanitize_inlist(body_weight, GLOB.mob_sizes, NAME_WEIGHT_NORMAL)
@@ -59,11 +59,18 @@
 /datum/preferences
 	var/list/favorite_tracks = list()
 
+	//Ключем будет имя плейлиста, а значением, лист с треками. Пример:
+	//playlists = list("Первый" = list("song1", song2), "Второй" = list("song2", "song3"))
+	var/list/playlists = list()
+	var/list/favorite_paintings_md5 = list()
+
 /datum/preferences/save_preferences()
 	. = ..()
 	if(!istype(., /savefile))
 		return FALSE
 	WRITE_FILE(.["favorite_tracks"], favorite_tracks)
+	WRITE_FILE(.["playlists"], playlists)
+	WRITE_FILE(.["favorite_paintings_md5"], favorite_paintings_md5)
 
 /datum/preferences/load_preferences()
 	. = ..()
@@ -71,3 +78,16 @@
 		return FALSE
 	.["favorite_tracks"] >> favorite_tracks
 	favorite_tracks = SANITIZE_LIST(favorite_tracks)
+
+	.["favorite_paintings_md5"] >> favorite_paintings_md5
+	favorite_paintings_md5 = SANITIZE_LIST(favorite_paintings_md5)
+
+	.["playlists"] >> playlists
+	playlists = SANITIZE_LIST(playlists)
+
+/datum/preferences/update_preferences(current_version, savefile/S)
+	// Citadel added a new bitfield to toggles, we need to push our prefs forward starting from the last bit
+	if(current_version < 61)
+		if(CHECK_BITFIELD(toggles, VERB_CONSENT))
+			ENABLE_BITFIELD(toggles, RANGED_VERBS_CONSENT)
+	. = ..()

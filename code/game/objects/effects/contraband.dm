@@ -37,6 +37,9 @@
 	poster_type = /obj/structure/sign/poster/contraband/random
 	icon_state = "rolled_contraband"
 
+/obj/item/poster/random_contraband/inteq
+	poster_type = /obj/structure/sign/poster/contraband/random/inteq
+
 /obj/item/poster/random_official
 	name = "random official poster"
 	poster_type = /obj/structure/sign/poster/official/random
@@ -60,6 +63,8 @@
 	var/poster_item_desc = "This hypothetical poster item should not exist, let's be honest here."
 	var/poster_item_icon_state = "rolled_poster"
 	var/poster_item_type = /obj/item/poster
+	/// Unique ID for wanted posters (area limit checks). Used by wanted subtype.
+	var/poster_id = null
 
 /obj/structure/sign/poster/Initialize(mapload)
 	. = ..()
@@ -175,6 +180,17 @@
 
 		if(iswallturf(src) && user && user.loc == temp_loc)	//Let's check if everything is still there
 			to_chat(user, "<span class='notice'>You place the poster!</span>")
+			// BLUEMOON ADD - награда за развешивание плаката с разыскиваемым
+			if(istype(D, /obj/structure/sign/poster/wanted))
+				var/obj/structure/sign/poster/wanted/W = D
+				if(W.poster_id && isliving(user))
+					var/mob/living/living_user = user
+					var/datum/bank_account/account = living_user.get_bank_account()
+					if(account)
+						var/reward = rand(75, 100)
+						account.adjust_money(reward, "Brig: Wanted poster task")
+						playsound(user, 'modular_bluemoon/sound/machines/slot-machine/money.ogg', 50, TRUE)
+						to_chat(user, span_green("За выполнение задания начислено [reward] кредитов."))
 			return
 
 	to_chat(user, "<span class='notice'>The poster falls down!</span>")
@@ -204,6 +220,13 @@
 	icon_state = "random_contraband"
 	never_random = TRUE
 	random_basetype = /obj/structure/sign/poster/contraband
+
+/obj/structure/sign/poster/contraband/inteq
+	icon = 'modular_bluemoon/icons/obj/contraband.dmi'
+
+/obj/structure/sign/poster/contraband/random/inteq
+	icon = 'modular_bluemoon/icons/obj/contraband.dmi'
+	random_basetype = /obj/structure/sign/poster/contraband/inteq
 
 /obj/structure/sign/poster/contraband/free_tonto
 	name = "Free Tonto"
@@ -783,6 +806,7 @@
 	name = "No ERP"
 	desc = "This poster reminds the crew that Eroticism, Rape and Pornography are banned on Nanotrasen stations."
 	icon_state = "poster_noerp"
+	never_random = TRUE // BLUEMOON ADD
 
 /obj/structure/sign/poster/official/wtf_is_co2
 	name = "Carbon Dioxide"

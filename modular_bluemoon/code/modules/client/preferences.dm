@@ -23,6 +23,8 @@
 			set_headshot_link(user, "headshot_naked_link1")
 		if ("headshot_naked2")
 			set_headshot_link(user, "headshot_naked_link2")
+		if ("open_tattoo_manager")
+			user.client?.open_tattoo_manager()
 
 	return ..()
 

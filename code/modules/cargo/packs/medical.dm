@@ -98,9 +98,11 @@
 
 /datum/supply_pack/medical/iv_drip
 	name = "IV Drip Crate"
-	desc = "Содержит одну подставку для капельницы."
+	desc = "Содержит три подставки для капельницы."
 	cost = 800
-	contains = list(/obj/machinery/iv_drip)
+	contains = list(/obj/machinery/iv_drip,
+					/obj/machinery/iv_drip,
+					/obj/machinery/iv_drip)
 	crate_name = "iv drip crate"
 
 /datum/supply_pack/medical/medicalhardsuit
@@ -164,7 +166,7 @@
 /datum/supply_pack/medical/adv_surgery_tools
 	name = "Med-Co Advanced Surgery Tools"
 	desc = "В этот ящик входит полный набор хирургических инструментов MedCo advanced, а также банка синтетической плоти. Требуется Хирургический доступ для открытия"
-	cost = 5500
+	cost = 11999
 	access = ACCESS_SURGERY
 	contains = list(/obj/item/storage/belt/medical/surgery_belt_adv,
 					/obj/item/reagent_containers/medspray/synthflesh,
@@ -172,14 +174,41 @@
 	crate_name = "medco surgery tools"
 	crate_type = /obj/structure/closet/crate/secure/medical
 
+/datum/supply_pack/medical/upgraded_surgery_tools
+	name = "Trauma Team Surgery Tools"
+	desc = "В этот ящик входит полный набор хирургических инструментов, тех же, что использует Trauma Team, а также банка синтетической плоти. Требуется Хирургический доступ для открытия"
+	cost = 3500
+	access = ACCESS_SURGERY
+	contains = list(/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
+					/obj/item/reagent_containers/medspray/synthflesh)
+	crate_name = "trauma team surgery tools"
+	crate_type = /obj/structure/closet/crate/secure/medical
+
 /datum/supply_pack/medical/surgery
 	name = "Surgical Supplies Crate"
-	desc = "Вы хотите сделать операцию, но у вас нет ни одной из этих модных докторских степеней? Просто начните с этого ящика, содержащего медицинскую сумку, стерилизующий спрей и складную кровать на роликах."
-	cost = 1300
+	desc = "Вы хотите сделать операцию, но у вас нет ни одной из этих модных докторских степеней? Просто начните с этого ящика, содержащего медицинскую сумку, стерилизующий спрей, складную кровать на роликах и набор анестетика."
+	cost = 1500
 	contains = list(/obj/item/storage/backpack/duffelbag/med/surgery,
 					/obj/item/reagent_containers/medspray/sterilizine,
-					/obj/item/roller)
+					/obj/item/roller,
+					/obj/item/tank/internals/anesthetic,
+					/obj/item/clothing/mask/breath/medical)
 	crate_name = "surgical supplies crate"
+
+// BLUEMOON ADD START
+/datum/supply_pack/medical/anesthetic
+	name = "Anesthetic Tank Crate"
+	desc = "Много пациентов, нехватка сонного газа? Не беда, этот ящик содержит сразу три набора для анестезии."
+	cost = 1200
+	access = ACCESS_SURGERY
+	contains = list(/obj/item/tank/internals/anesthetic,
+					/obj/item/tank/internals/anesthetic,
+					/obj/item/tank/internals/anesthetic,
+					/obj/item/clothing/mask/breath/medical,
+					/obj/item/clothing/mask/breath/medical,
+					/obj/item/clothing/mask/breath/medical)
+	crate_name = "anesthetic tank crate"
+// BLUEMOON ADD END
 
 //////////////////////////////////////////////////////////////////////////////
 ///////////////////////////// Medical Kits ///////////////////////////////////

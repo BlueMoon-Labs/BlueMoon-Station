@@ -3,8 +3,10 @@ import { Button, Stack } from '../../../components';
 
 type ContentPrefsInfo = {
   verb_consent: boolean,
+  ranged_verb_pref : boolean,
   lewd_verb_sounds: boolean,
   arousable: boolean,
+  sexknotting: boolean,
   genital_examine: boolean,
   vore_examine: boolean,
   medihound_sleeper: boolean,
@@ -27,14 +29,17 @@ type ContentPrefsInfo = {
   stimulation_pref: boolean,
   edging_pref: boolean,
   cum_onto_pref: boolean,
+  sex_jitter: boolean,
 }
 
 export const ContentPreferencesTab = (props, context) => {
   const { act, data } = useBackend<ContentPrefsInfo>(context);
   const {
     verb_consent,
+    ranged_verb_pref,
     lewd_verb_sounds,
     arousable,
+    sexknotting,
     genital_examine,
     vore_examine,
     medihound_sleeper,
@@ -57,6 +62,7 @@ export const ContentPreferencesTab = (props, context) => {
     stimulation_pref,
     edging_pref,
     cum_onto_pref,
+    sex_jitter,
   } = data;
   return (
     <Stack vertical fill>
@@ -69,6 +75,18 @@ export const ContentPreferencesTab = (props, context) => {
           selected={verb_consent}
           onClick={() => act('pref', {
             pref: 'verb_consent',
+          })}
+        />
+      </Stack.Item>
+      <Stack.Item>
+        <Button
+          fluid
+          mb={-0.7}
+          content="Allow ranged lewd verbs"
+          icon={ranged_verb_pref ? "toggle-on" : "toggle-off"}
+          selected={ranged_verb_pref}
+          onClick={() => act('pref', {
+            pref: 'ranged_verb_pref',
           })}
         />
       </Stack.Item>
@@ -93,6 +111,18 @@ export const ContentPreferencesTab = (props, context) => {
           selected={arousable}
           onClick={() => act('pref', {
             pref: 'arousable',
+          })}
+        />
+      </Stack.Item>
+      <Stack.Item>
+        <Button
+          fluid
+          mb={-0.7}
+          content="Allow Knotting"
+          icon={sexknotting ? "toggle-on" : "toggle-off"}
+          selected={sexknotting}
+          onClick={() => act('pref', {
+            pref: 'sexknotting',
           })}
         />
       </Stack.Item>
@@ -357,6 +387,18 @@ export const ContentPreferencesTab = (props, context) => {
           selected={cum_onto_pref}
           onClick={() => act('pref', {
             pref: 'cum_onto_pref',
+          })}
+        />
+      </Stack.Item>
+      <Stack.Item>
+        <Button
+          fluid
+          mb={-0.7}
+          content="Jitter in sex"
+          icon={sex_jitter ? "toggle-on" : "toggle-off"}
+          selected={sex_jitter}
+          onClick={() => act('pref', {
+            pref: 'sex_jitter',
           })}
         />
       </Stack.Item>

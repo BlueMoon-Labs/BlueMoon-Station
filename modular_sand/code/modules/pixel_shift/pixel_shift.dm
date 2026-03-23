@@ -2,8 +2,8 @@
 	/// If we are in the shifting setting.
 	var/shifting = FALSE
 
-	/// Takes the four cardinal direction defines. Any atoms moving into this atom's tile will be allowed to from the added directions.
-	var/passthroughable = NONE
+	/// Any atoms moving into this atom's tile will be allowed pass through (exception: thrown atoms and projectiles)
+	var/passthroughable = FALSE
 
 /datum/keybinding/mob/pixel_shift
 	hotkey_keys = list("B")
@@ -34,13 +34,18 @@
 
 /mob/living/unpixel_shift()
 	. = ..()
-	passthroughable = NONE
+	passthroughable = FALSE
 	if(is_shifted)
 		is_shifted = FALSE
 		pixel_x = get_standard_pixel_x_offset() + base_pixel_x
 		client?.pixel_x = 0
 		pixel_y = get_standard_pixel_y_offset() + base_pixel_y
 		client?.pixel_y = 0
+	// BLUEMOON ADD
+	if(is_tilted)
+		transform = transform.Turn(-is_tilted)
+		is_tilted = 0
+	// BLUEMOON ADD END
 
 /mob/proc/pixel_shift(direction)
 	return
@@ -54,43 +59,53 @@
 	return ..()
 
 /mob/living/pixel_shift(direction)
-	passthroughable = NONE
-	// switch(direction) // diagonal pixel-shifting, rejoice
+	passthroughable = FALSE
+
+	// BLUEMOON ADD
+	if(tilting)
+		if(CHECK_BITFIELD(direction, EAST))
+			if(is_tilted < 45)
+				transform = transform.Turn(1)
+				is_tilted++
+				is_shifted = TRUE
+		else if(CHECK_BITFIELD(direction, WEST))
+			if(is_tilted > -45)
+				transform = transform.Turn(-1)
+				is_tilted--
+				is_shifted = TRUE
+		return
+	// BLUEMOON ADD END
+
+	// Y-axis
 	if(CHECK_BITFIELD(direction, NORTH))
-		if(pixel_y <= PIXEL_SHIFT_MAXIMUM + base_pixel_y)
+		if(pixel_y < PIXEL_SHIFT_MAXIMUM + base_pixel_y)
 			pixel_y++
-			if(client && client.prefs.view_pixelshift && client.pixel_y <= PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
+			if(client && client.prefs.view_pixelshift && client.pixel_y < PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
 				client.pixel_y++
 			is_shifted = TRUE
-	if(CHECK_BITFIELD(direction, EAST))
-		if(pixel_x <= PIXEL_SHIFT_MAXIMUM + base_pixel_x)
-			pixel_x++
-			if(client && client.prefs.view_pixelshift && client.pixel_x <= PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
-				client.pixel_x++
-			is_shifted = TRUE
-	if(CHECK_BITFIELD(direction, SOUTH))
-		if(pixel_y >= -PIXEL_SHIFT_MAXIMUM + base_pixel_y)
+	else if(CHECK_BITFIELD(direction, SOUTH))
+		if(pixel_y > -PIXEL_SHIFT_MAXIMUM + base_pixel_y)
 			pixel_y--
-			if(client && client.prefs.view_pixelshift && client.pixel_y >= -PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
+			if(client && client.prefs.view_pixelshift && client.pixel_y > -PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
 				client.pixel_y--
 			is_shifted = TRUE
-	if(CHECK_BITFIELD(direction, WEST))
-		if(pixel_x >= -PIXEL_SHIFT_MAXIMUM + base_pixel_x)
+
+	// X-axis
+	if(CHECK_BITFIELD(direction, EAST))
+		if(pixel_x < PIXEL_SHIFT_MAXIMUM + base_pixel_x)
+			pixel_x++
+			if(client && client.prefs.view_pixelshift && client.pixel_x < PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
+				client.pixel_x++
+			is_shifted = TRUE
+	else if(CHECK_BITFIELD(direction, WEST))
+		if(pixel_x > -PIXEL_SHIFT_MAXIMUM + base_pixel_x)
 			pixel_x--
-			if(client && client.prefs.view_pixelshift && client.pixel_x >= -PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
+			if(client && client.prefs.view_pixelshift && client.pixel_x > -PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
 				client.pixel_x--
 			is_shifted = TRUE
 
-	// Yes, I know this sets it to true for everything if more than one is matched.
-	// Movement doesn't check diagonals, and instead just checks EAST or WEST, depending on where you are for those.
-	if(pixel_y > PIXEL_SHIFT_PASSABLE_THRESHOLD)
-		passthroughable |= EAST | SOUTH | WEST
-	if(pixel_x > PIXEL_SHIFT_PASSABLE_THRESHOLD)
-		passthroughable |= NORTH | SOUTH | WEST
-	if(pixel_y < -PIXEL_SHIFT_PASSABLE_THRESHOLD)
-		passthroughable |= NORTH | EAST | WEST
-	if(pixel_x < -PIXEL_SHIFT_PASSABLE_THRESHOLD)
-		passthroughable |= NORTH | EAST | SOUTH
+	if(abs(pixel_y - base_pixel_y) >= PIXEL_SHIFT_PASSABLE_THRESHOLD || abs(pixel_x - base_pixel_x) >= PIXEL_SHIFT_PASSABLE_THRESHOLD)
+		passthroughable = TRUE
 
 /mob/living/Login()
 	. = ..()
@@ -100,6 +115,6 @@
 
 /mob/living/CanAllowThrough(atom/movable/mover, turf/target)
 	// Make sure to not allow projectiles of any kind past where they normally wouldn't.
-	if(!istype(mover, /obj/item/projectile) && !mover.throwing && passthroughable & mover.dir)
+	if(!istype(mover, /obj/item/projectile) && !mover.throwing && passthroughable)
 		return TRUE
 	return ..()

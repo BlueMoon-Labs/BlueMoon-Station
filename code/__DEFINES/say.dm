@@ -96,6 +96,10 @@
 #define EMOTE_OMNI 4
 
 //Don't set this very much higher then 1024 unless you like inviting people in to dos your server with message spam
+/// Max chars to process through say_emphasis regex - prevents ReDoS/crash from crafted input (illegal operation in chat)
+#define MAX_SAY_EMPHASIS_LEN	4096
+/// Max length for filter words - prevents regex engine issues from malformed filter entries
+#define MAX_FILTER_WORD_LEN	256
 //ambition start
 #define MAX_AMBITION_LEN		1024
 //ambition end
@@ -129,7 +133,7 @@
 #define BARK_SOUND_FALLOFF_EXPONENT(distance) (distance/7) //At lower ranges, we want the exponent to be below 1 so that whispers don't sound too awkward. At higher ranges, we want the exponent fairly high to make yelling less obnoxious
 
 // Is something in the IC chat filter? This is config dependent.
-#define CHAT_FILTER_CHECK(T) (config.ic_filter_regex && findtext(T, config.ic_filter_regex))
+#define CHAT_FILTER_CHECK(T) (config.ic_filter_regex && find_any_whole_word(T, config.ic_filter_regex))
 
 // Audio/Visual Flags. Used to determine what sense are required to notice a message.
 #define MSG_VISUAL (1<<0)

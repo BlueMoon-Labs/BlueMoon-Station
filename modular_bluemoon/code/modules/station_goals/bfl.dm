@@ -186,7 +186,8 @@
 		var/turf/rand_location = locate(rand(50, 150), rand(50, 150), lavaland_z_lvl)
 		laser = new (rand_location)
 		log_admin("BFL emitter has been activated without proper BFL receiver connection or it has been emagged at [AREACOORD(src)]")
-		notify_ghosts("BFL выжигает лаваленд!", source = laser, action = NOTIFY_ORBIT, header = "BFL")
+		var/mutable_appearance/alert_overlay = mutable_appearance('modular_bluemoon/icons/obj/machines/BFL_Mission/Laser_small_icon.dmi', "Laser_Red")
+		notify_ghosts("BFL выжигает лаваленд!", source = laser, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "BFL")
 		for(var/M in GLOB.alive_mob_list)
 			var/turf/mob_turf = get_turf(M)
 			if(mob_turf?.z == lavaland_z_lvl && !is_blind(M))
@@ -532,7 +533,8 @@
 	if(!.)
 		return
 	if(step_count > 5)
-		Destroy()
+		qdel(src)
+		return
 	step_count++
 	pixel_x = -32
 	pixel_y = -32 //Explictly stating, that pixel_x and pixel_y will ALWAYS be -32/-32 when moved, because moving objects reset their offset.

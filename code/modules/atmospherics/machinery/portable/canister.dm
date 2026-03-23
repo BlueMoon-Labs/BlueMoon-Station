@@ -348,7 +348,7 @@
 			if(client.next_canister_grief_warning < world.time)
 				var/turf/T = get_turf(src)
 				client.next_canister_grief_warning = world.time + 15 MINUTES // Wait 15 minutes before alerting admins again
-				message_admins("<span class='adminhelp'>ANTI-GRIEF:</span> New player [ADMIN_LOOKUPFLW(user)] has touched \a [src] at [ADMIN_VERBOSEJMP(T)].")
+				message_antigrif("New player [ADMIN_LOOKUPFLW(user)] has touched \a [src] at [ADMIN_VERBOSEJMP(T)].")
 				client.touched_canister = TRUE
 
 /obj/machinery/portable_atmospherics/canister/ui_static_data(mob/user)
@@ -483,8 +483,8 @@
 		if("eject")
 			if(holding)
 				if(valve_open)
-					message_admins("[ADMIN_LOOKUPFLW(usr)] removed [holding] from [src] with valve still open at [ADMIN_VERBOSEJMP(src)] releasing contents into the <span class='boldannounce'>air</span>.")
-					investigate_log("[key_name(usr)] removed the [holding], leaving the valve open and transferring into the <span class='boldannounce'>air</span>.", INVESTIGATE_ATMOS)
+					message_admins("[ADMIN_LOOKUPFLW(usr)] removed [holding] from [src] with valve still open at [ADMIN_VERBOSEJMP(src)] releasing contents into the [span_antigrif("AIR")].")
+					investigate_log("[key_name(usr)] removed the [holding], leaving the valve open and transferring into the [span_antigrif("AIR")].", INVESTIGATE_ATMOS)
 				replace_tank(usr, FALSE)
 				. = TRUE
 	update_icon()

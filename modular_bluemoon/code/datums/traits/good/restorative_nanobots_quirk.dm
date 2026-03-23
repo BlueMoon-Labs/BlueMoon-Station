@@ -79,11 +79,14 @@
 	if (!consumed_damage)
 		if(healing_in_progress)
 			REMOVE_TRAIT(H, TRAIT_NANOBOT_REPAIR_IN_PROGRESS, QUIRK_TRAIT)
-			H.physiology.hunger_mod /= 1.8
+			if(H.physiology)
+				H.physiology.hunger_mod /= 1.8
 			healing_in_progress = FALSE
 		return
 
 	if(!healing_in_progress)
+		if(!H.physiology)
+			return
 		ADD_TRAIT(H, TRAIT_NANOBOT_REPAIR_IN_PROGRESS, QUIRK_TRAIT)
 		H.physiology.hunger_mod *= 1.8
 		healing_in_progress = TRUE
@@ -100,5 +103,6 @@
 	var/mob/living/carbon/human/H = quirk_holder
 	if (!istype(H) || !healing_in_progress)
 		return
-	H.physiology.hunger_mod /= 1.8
-	REMOVE_TRAIT(quirk_holder, TRAIT_NANOBOT_REPAIR_IN_PROGRESS, QUIRK_TRAIT)
+	REMOVE_TRAIT(H, TRAIT_NANOBOT_REPAIR_IN_PROGRESS, QUIRK_TRAIT)
+	if(H.physiology)
+		H.physiology.hunger_mod /= 1.8

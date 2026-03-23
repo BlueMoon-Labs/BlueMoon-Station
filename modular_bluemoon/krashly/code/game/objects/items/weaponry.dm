@@ -38,6 +38,7 @@
 	name = "tribal spear"
 	force = 25
 	icon_prefix = "tribal_spear"
+	unique_reskin = null
 
 /obj/item/spear/cerberus/ComponentInitialize()
 	. = ..()
@@ -146,6 +147,8 @@
 	righthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/tall/righthand.dmi'
 	mob_overlay_icon = 'modular_bluemoon/krashly/icons/mob/item_back/tall.dmi'
 	w_class = WEIGHT_CLASS_HUGE
+	damtype = STAMINA
+	force = 35 //пять ударов до стамин крита(как дубинка, но без тряски экрана)
 	slot_flags = ITEM_SLOT_BACK|ITEM_SLOT_BELT
 	block_chance = 30
 	sharpness = SHARP_EDGED
@@ -159,7 +162,7 @@
 /obj/item/nullrod/hadar_red/add_blood_overlay() // Меч слишком большой для старой иконки крови на предметах, моя новая иконка фиксит красную половину меча.
 	if(!blood_DNA.len)
 		return
-	if(initial(icon) && initial(icon_state))
+	if(initial(icon) && initial(icon_state) && isnull(blood_splatter_icon))
 		blood_splatter_icon = icon(initial(icon), initial(icon_state), , 1)
 		blood_splatter_icon.Blend("#fff", ICON_ADD)
 		blood_splatter_icon.Blend(icon('modular_bluemoon/krashly/icons/obj/weapons/tall.dmi', "item_blood"), ICON_MULTIPLY)

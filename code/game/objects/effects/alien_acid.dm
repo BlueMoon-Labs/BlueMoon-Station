@@ -68,6 +68,8 @@
 
 //xenomorph corrosive acid
 /obj/effect/acid/alien
+	icon = 'icons/Xeno/Effects.dmi'
+	icon_state = "acid"
 	var/target_strength = 30
 
 

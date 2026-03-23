@@ -17,8 +17,8 @@
 
 /datum/uplink_item/support/reinforcement
 	name = "Reinforcements"
-	desc = "Call in an additional team member. They won't come with any gear, so you'll have to save some credits \
-			to arm them as well."
+	desc = "Вызовите дополнительного члена команды. Придёт без снаряжения, так что придётся \
+			приберечь кредиты на его вооружение."
 	item = /obj/item/antag_spawner/nuke_ops
 	cost = 25
 	refundable = TRUE
@@ -27,8 +27,8 @@
 
 /datum/uplink_item/support/reinforcement/assault_borg
 	name = "InteQ Assault Cyborg"
-	desc = "A cyborg designed and programmed for systematic extermination of innocent personnel. \
-			Comes equipped with a self-resupplying LMG, a grenade launcher, energy sword, emag, pinpointer, flash and crowbar."
+	desc = "Киборг, спроектированный и запрограммированный для систематического уничтожения невинного персонала. \
+			Оснащён самовосполняющимся пулемётом, гранатомётом, энергетическим мечом, емагом, пинпоинтером, вспышкой и ломом."
 	item = /obj/item/antag_spawner/nuke_ops/borg_tele/assault
 	refundable = TRUE
 	cost = 65
@@ -41,9 +41,9 @@
 
 /datum/uplink_item/support/reinforcement/medical_borg
 	name = "InteQ Medical Cyborg"
-	desc = "A combat medical cyborg. Has limited offensive potential, but makes more than up for it with its support capabilities. \
-			It comes equipped with a nanite hypospray, a medical beamgun, combat defibrillator, full surgical kit including an energy saw, an emag, pinpointer and flash. \
-			Thanks to its organ storage bag, it can perform surgery as well as any humanoid."
+	desc = "Боевой медицинский киборг. Ограниченный наступательный потенциал с лихвой компенсируется возможностями поддержки. \
+			Оснащён нанитным гипоспреем, медицинским лучевым пистолетом, боевым дефибриллятором, полным хирургическим набором с энергопилой, \
+			емагом, пинпоинтером и вспышкой. Благодаря сумке для хранения органов может проводить операции не хуже любого гуманоида."
 	item = /obj/item/antag_spawner/nuke_ops/borg_tele/medical
 	refundable = TRUE
 	cost = 35
@@ -56,9 +56,9 @@
 
 /datum/uplink_item/support/reinforcement/saboteur_borg
 	name = "InteQ Saboteur Cyborg"
-	desc = "A streamlined engineering cyborg, equipped with covert modules. Also incapable of leaving the welder in the shuttle. \
-			Aside from regular Engineering equipment, it comes with a special destination tagger that lets it traverse disposals networks. \
-			Its chameleon projector lets it disguise itself as a Nanotrasen cyborg, on top it has thermal vision and a pinpointer."
+	desc = "Обтекаемый инженерный киборг с модулями для скрытных операций. Также не способен забыть сварочник в шаттле. \
+			Помимо стандартного инженерного оборудования оснащён специальным тегером назначения для перемещения по мусоропроводам. \
+			Хамелеон-проектор позволяет маскироваться под киборга Nanotrasen, а ещё у него есть термальное зрение и пинпоинтер."
 	item = /obj/item/antag_spawner/nuke_ops/borg_tele/saboteur
 	refundable = TRUE
 	cost = 35
@@ -71,23 +71,25 @@
 
 /datum/uplink_item/support/hermes
 	name = "MIB-01 Hermes Exosuit"
-	desc = "A lightweight exosuit, painted in a dark scheme. Its speed and equipment selection make it excellent \
-			for hit-and-run style attacks. Features an incendiary carbine, flash bang launcher, teleporter, ion thrusters and a Tesla energy array. \
-			Looks like a SolFed Mecha, repainted in brown. Sol supply InteQ clandestinely and almost for next to nothing."
+	desc = "Лёгкий экзоскелет в тёмной окраске. Скорость и подбор вооружения делают его идеальным \
+			для тактики 'ударил-убежал'. Оснащён зажигательным карабином, светошумовой пусковой установкой, \
+			телепортером, ионными двигателями и энергомассивом Тесла. \
+			Выглядит как мех SolFed, перекрашенный в коричневый. Sol поставляет их InteQ тайно и почти задаром."
 	item = /obj/vehicle/sealed/mecha/combat/gygax/dark/loaded/hermes
 	cost = 80
 
 /datum/uplink_item/support/honker
 	name = "Dark H.O.N.K."
-	desc = "A clown combat mech equipped with bombanana peel and tearstache grenade launchers, as well as the ubiquitous HoNkER BlAsT 5000."
+	desc = "Клоунский боевой мех с пусковыми установками для банановых шкурок и слезогранат, а также незаменимым HoNkER BlAsT 5000."
 	item = /obj/vehicle/sealed/mecha/combat/honker/dark/loaded
 	cost = 80
 	purchasable_from = UPLINK_CLOWN_OPS
 
 /datum/uplink_item/support/ares
 	name = "MIB-02 Ares Exosuit"
-	desc = "A massive and incredibly deadly military-grade exosuit. Features long-range targeting, thrust vectoring \
-			and deployable smoke. Comes equipped with an LMG, Scattershot rifle, missile rack, an antiprojectile armor booster and a Tesla energy array. \
-			Looks like a SolFed Mecha, repainted in brown. Sol supply InteQ clandestinely and almost for next to nothing."
+	desc = "Массивный и невероятно смертоносный экзоскелет военного класса. Дальнобойное наведение, управление вектором тяги \
+			и развёртываемая дымовая завеса. Оснащён пулемётом, дробовой винтовкой, ракетной установкой, \
+			противоснарядным усилителем брони и энергомассивом Тесла. \
+			Выглядит как мех SolFed, перекрашенный в коричневый. Sol поставляет их InteQ тайно и почти задаром."
 	item = /obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares
 	cost = 140

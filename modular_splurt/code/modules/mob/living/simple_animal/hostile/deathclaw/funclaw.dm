@@ -37,12 +37,12 @@
 
 	if(!isliving(the_target))
 		return .
-	
+
 	var/mob/living/M = the_target
 
 	if(CanRape(M) || (M in enemies))
 		return TRUE
-		
+
 	return FALSE
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/proc/CanRape(mob/living/M)
@@ -62,7 +62,7 @@
 
 	return .
 
-// Если фанклава обидели, он будет защищаться 
+// Если фанклава обидели, он будет защищаться
 // Удары
 /mob/living/simple_animal/hostile/deathclaw/funclaw/attack_hand(mob/living/user)
 	var/prev = health
@@ -78,7 +78,7 @@
 	var/prev = health
 	. = ..()
 	mark_enemy_if_hurt(M, prev)
-	
+
 /mob/living/simple_animal/hostile/deathclaw/funclaw/attack_alien(mob/living/carbon/alien/humanoid/M)
 	var/prev = health
 	. = ..()
@@ -140,7 +140,9 @@
 		return
 	if(A in range(vision_range, src))
 		if(A in enemies)
-			enemies -= A
+			enemies -= A // just reordering, signal stays registered
+		else
+			RegisterSignal(A, COMSIG_PARENT_QDELETING, PROC_REF(on_enemy_qdeleting))
 		enemies.Insert(1, A) // Условно первый в агролисте личных врагов
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/moan()
@@ -177,6 +179,11 @@
 	var/list/cands = list()
 	var/min_d = vision_range * 5 // Большая мин дист, что бы перебить при проверке
 
+	// 1) последний ЛИЧНЫЙ враг, что нанес урон
+	for(var/atom/A in enemies)
+		if(A in Targets)
+			return A
+	/*
 	// 1) ближайший ЛИЧНЫЙ враг
 	for(var/atom/A in Targets)
 		if(!(A in enemies))
@@ -187,6 +194,7 @@
 			cands = list(A)
 		else if(d == min_d)
 			cands += A
+	*/
 
 	if(cands.len)
 		return pick(cands)
@@ -230,7 +238,7 @@
 			if(onLewdCooldown || M.health > M.maxHealth * 0.4)
 				..() // Attack target
 				return
-		
+
 	if((target in enemies) && M.health > M.maxHealth * 0.4)
 		..() // Attack target
 		return
@@ -259,11 +267,11 @@
 
 
 	do_lewd_action(M)
-	addtimer(CALLBACK(src, PROC_REF(do_lewd_action), M), rand(8, 12))
+	addtimer(CALLBACK(src, PROC_REF(do_lewd_action), M), rand(8, 12), TIMER_DELETE_ME)
 
 	// Regular sex has an extra action per tick to seem less slow and robotic
 	if(deathclaw_mode != "abomination" || M.client?.prefs.unholypref != "Yes")
-		addtimer(CALLBACK(src, PROC_REF(do_lewd_action), M), rand(12, 16))
+		addtimer(CALLBACK(src, PROC_REF(do_lewd_action), M), rand(12, 16), TIMER_DELETE_ME)
 
 /mob/living/simple_animal/hostile/deathclaw/LoseTarget()
 	. = ..()

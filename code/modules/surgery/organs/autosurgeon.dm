@@ -116,6 +116,24 @@
 /obj/item/autosurgeon/syndicate/inteq/revitilzer
 	starting_organ = /obj/item/organ/cyberimp/chest/revitilzer
 
+/obj/item/autosurgeon/syndicate/biomorphedheart
+	starting_organ = /obj/item/organ/heart/bioaegis/t3/antag
+
+/obj/item/autosurgeon/syndicate/inteq/biomorphedheart
+	starting_organ = /obj/item/organ/heart/bioaegis/t3/antag
+
+/obj/item/autosurgeon/syndicate/biomorphedliver
+	starting_organ = /obj/item/organ/liver/bioaegis/t3/antag
+
+/obj/item/autosurgeon/syndicate/inteq/biomorphedliver
+	starting_organ = /obj/item/organ/liver/bioaegis/t3/antag
+
+/obj/item/autosurgeon/syndicate/biomorphedlungs
+	starting_organ = /obj/item/organ/lungs/bioaegis/t3/antag
+
+/obj/item/autosurgeon/syndicate/inteq/biomorphedlungs
+	starting_organ = /obj/item/organ/lungs/bioaegis/t3/antag
+
 //BOX O' IMPLANTS
 
 /obj/item/storage/box/cyber_implants

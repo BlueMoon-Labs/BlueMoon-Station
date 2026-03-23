@@ -13,6 +13,11 @@ INITIALIZE_IMMEDIATE(/mob/living/carbon/human/dummy)
 
 /mob/living/carbon/human/dummy/Destroy()
 	in_use = FALSE
+	for(var/key in GLOB.human_dummy_list)
+		if(GLOB.human_dummy_list[key] == src)
+			GLOB.human_dummy_list -= key
+			break
+	GLOB.dummy_mob_list -= src
 	return ..()
 
 /mob/living/carbon/human/dummy/Life()

@@ -105,7 +105,7 @@
 	var/datum/language_holder/LH = H.get_language_holder()
 	LH.selected_language = /datum/language/neokanji
 
-	var/datum/martial_art/cqc/B = new
+	var/datum/martial_art/the_sleeping_carp/B = new
 	B.teach(H)
 
 ///////////////////////////////////////////////////////

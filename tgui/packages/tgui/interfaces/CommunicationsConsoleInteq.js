@@ -412,19 +412,19 @@ const PageMain = (props, context) => {
             onClick={() => act("recallShuttle")}
           />
         ) || (
-          <Button
-            icon="space-shuttle"
-            content="Вызвать Шаттл Эвакуации"
-            disabled={shuttleCanEvacOrFailReason !== 1}
-            tooltip={
-              shuttleCanEvacOrFailReason !== 1
-                ? shuttleCanEvacOrFailReason
-                : undefined
-            }
-            tooltipPosition="bottom-end"
-            onClick={() => setCallingShuttle(true)}
-          />
-        )}
+            <Button
+              icon="space-shuttle"
+              content="Вызвать Шаттл Эвакуации"
+              disabled={shuttleCanEvacOrFailReason !== 1}
+              tooltip={
+                shuttleCanEvacOrFailReason !== 1
+                  ? shuttleCanEvacOrFailReason
+                  : undefined
+              }
+              tooltipPosition="bottom-end"
+              onClick={() => setCallingShuttle(true)}
+            />
+          )}
         {!!shuttleCalledPreviously && (
           shuttleLastCalled && (
             <Box>
@@ -572,7 +572,7 @@ const PageMain = (props, context) => {
             </LabeledList.Item>
             <LabeledList.Item
               label="Информация">
-              {"Кредиты отправляются после возвращения рабов на станцию."}
+              {"Кредиты окончательно списываются после возвращения похищенных на станцию."}
             </LabeledList.Item>
           </LabeledList>
 
@@ -593,8 +593,10 @@ const PageMain = (props, context) => {
                   {slave.name}
                 </Flex.Item>
 
-                <Flex.Item>
-                  {slave.toggleransomfeedback}
+                <Flex.Item color="average">
+                  {!slave.can_bought && !slave.bought
+                    ? `${'Suspended: ' + slave.bought_timer}`
+                    : slave.toggleransomfeedback}
                 </Flex.Item>
 
                 <Flex.Item
@@ -604,8 +606,10 @@ const PageMain = (props, context) => {
                 >
                   <Button
                     icon={slave.bought ? "times" : ""}
-                    disabled={!slave.cantoggleransom}
-                    content={slave.bought ? "Cancel" : formatMoney(slave.price, null, true) + "cr"}
+                    disabled={!slave.cantoggleransom || !slave.can_bought}
+                    content={slave.bought
+                      ? "Cancel"
+                      : formatMoney(slave.price, null, true) + "cr"}
                     color={slave.bought ? "bad" : "default"}
                     onClick={() => act('toggleBought', {
                       id: slave.id,

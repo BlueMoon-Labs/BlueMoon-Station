@@ -546,6 +546,18 @@
 		icon_dead = "spacealta_dead_santa"
 		held_icon = "spacealta_santa"
 
+/mob/living/simple_animal/pet/cat/alta/dar
+	name = "Dar Jr"
+	desc = "A little kitten with a cool little bag and a cap! He is trying really hard to bring you your order and happiness!"
+	icon_state = "dar"
+	icon_living = "dar"
+	icon_dead = "dar_dead"
+	held_icon = "dar"
+	unique_pet = TRUE
+	gender = MALE
+	speak = list("*meow", "*meow2", "*meow3", "*meow4", "*meow5", "*meow6", "*mrrp", "*mrrp3", "*purr")
+	icon = 'modular_bluemoon/kovac_shitcode/icons/animals.dmi'
+
 /mob/living/simple_animal/pet/dog/corgi/Lisa/ada
 	name = "Ada"
 	real_name = "Ada"
@@ -609,6 +621,47 @@
 	vocal_bark_id = "meow"
 	speak_chance = 10
 	loot = list(/obj/item/clothing/head/wizard/fake = 1)
+
+/mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth
+	name = "Wertyan"
+	real_name = "Wertyan"
+	desc = "Серая инженерная мотылиха. Обожает эффективный контур, взрываться и молировать."
+	icon = 'modular_bluemoon/icons/mob/pets.dmi'
+	icon_state = "wertan"
+	icon_living = "wertan"
+	icon_dead = "wertan_dead"
+	held_icon = "wertan_held"
+	speak = list("Furrr.","Uhh.", "Hurrr.", "*chitter", "*chitter2", "*spin", "*flap")
+	emote_see = list("мотает головой.", "крутится.", "дрожит.")
+	emote_hear = list("дышит в противогаз.", "жужжит!", "хлопает крыльями.", "думает о контуре.")
+	speak_emote = list("buzzes", "squeals")
+	deathmessage = "explodes with huge buzz!"
+	unique_pet = TRUE
+	gender = FEMALE
+	vocal_bark_id = "moff"
+	speak_chance = 8
+	maxHealth = 30
+	health = 30
+	emote_see = list("flutters", "mothes")
+	gold_core_spawnable = null
+	footstep_type = FOOTSTEP_MOB_CLAW
+	loot = list(/obj/item/clothing/head/hardhat = 1)
+
+/mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth/death(gibbed)
+	explosion(src.loc, -1, -1, 2, 3)
+	..()
+
+/mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth/ComponentInitialize()
+	. = ..()
+	RemoveElement(/datum/element/wuv, "yaps happily!", EMOTE_AUDIBLE, /datum/mood_event/pet_animal, "growls!", EMOTE_AUDIBLE)
+	RemoveElement(/datum/element/strippable, GLOB.strippable_corgi_items)
+	RemoveElement(/datum/element/mob_holder, held_icon)
+	AddElement(/datum/element/wuv, "mothin'!", EMOTE_AUDIBLE, /datum/mood_event/pet_animal, "buzzes!", EMOTE_AUDIBLE)
+	AddElement(/datum/element/mob_holder, held_icon, inv_slots = ITEM_SLOT_HEAD)
+
+/mob/living/simple_animal/pet/dog/corgi/mothroach/wertyanmoth/throw_at(atom/target, range, speed, mob/thrower, spin, diagonals_first, datum/callback/callback, force, quickstart)
+	. = ..(target, range, speed, thrower, FALSE, diagonals_first, callback)
+	emote("msqueak")
 
 ///////////////////
 

@@ -185,6 +185,16 @@
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
+/datum/design/flora_gun
+	name = "Floral Somatoray"
+	desc = "A tool that discharges controlled radiation which induces mutation in plant cells. Harmless to other organic life."
+	id = "flora_gun"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 2000, /datum/material/glass = 500, /datum/material/uranium = 2000)
+	build_path = /obj/item/gun/energy/floragun
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_SERVICE | DEPARTMENTAL_FLAG_SCIENCE
+
 /datum/design/emptybottle
 	name = "Glass Bottle"
 	desc = "A small, empty bottle for storing liquids."
@@ -521,16 +531,6 @@
 	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
-/datum/design/holobarrier_med
-	name = "PENLITE holobarrier projector"
-	desc = "PENLITE holobarriers, a device that halts individuals with malicious diseases."
-	build_type = PROTOLATHE
-	build_path = /obj/item/holosign_creator/medical
-	materials = list(/datum/material/iron = 500, /datum/material/glass = 500, /datum/material/silver = 100) //a hint of silver since it can troll 2 antags (bad viros and sentient disease)
-	id = "holobarrier_med"
-	category = list("Medical Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
-
 ///////////////////////////////
 ////////////Tools//////////////
 ///////////////////////////////
@@ -776,22 +776,10 @@
 	desc = "An emergency oxygen tank for engineers."
 	id = "emergency_oxygen_engi"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 1000)
+	materials = list(/datum/material/iron = 1000, /datum/material/titanium = 300)
 	build_path = /obj/item/tank/internals/emergency_oxygen/engi/empty
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
-
-//BLUEMOON ADD START - добовляю расширенные балоны в автолат
-
-/datum/design/extended_emergency
-	name = "Extended emergency oxygen tank"
-	id = "extendedemergency"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
-	materials = list(/datum/material/iron = 1500)
-	build_path = /obj/item/tank/internals/emergency_oxygen/engi/empty
-	category = list("hacked", "Misc")
-
-//BLUEMOON ADD END
 
 /////////////////////////////////////////
 /////////////////Tape////////////////////
@@ -800,10 +788,10 @@
 /datum/design/sticky_tape
 	name = "Sticky Tape"
 	id = "sticky_tape"
-	build_type = PROTOLATHE
-	materials = list(/datum/material/plastic = 500)
+	build_type = AUTOLATHE | PROTOLATHE
+	materials = list(/datum/material/plastic = 1000)
 	build_path = /obj/item/stack/sticky_tape
-	category = list("Equipment")
+	category = list("initial", "Equipment", "Misc")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/super_sticky_tape
@@ -812,7 +800,7 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/plastic = 3000)
 	build_path = /obj/item/stack/sticky_tape/super
-	category = list("Equipment")
+	category = list("initial", "Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/pointy_tape
@@ -821,20 +809,8 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 1500, /datum/material/plastic = 1000)
 	build_path = /obj/item/stack/sticky_tape/pointy
-	category = list("Equipment")
+	category = list("initial", "Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
-
-//BLUEMOON ADD START - добовляю расширенные балоны в автолат
-
-/datum/design/extended_emergency
-	name = "Extended emergency oxygen tank"
-	id = "extendedemergency"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
-	materials = list(/datum/material/iron = 1500)
-	build_path = /obj/item/tank/internals/emergency_oxygen/engi/empty
-	category = list("hacked", "Misc")
-
-//BLUEMOON ADD END
 
 /////////////////////////////////////////
 /////////////////Shuttle Upgrades////////
@@ -870,7 +846,9 @@
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING
 
-// Ключи Связи для наушников.
+///////////////////////////////////
+/////Headset Encryption////////////
+///////////////////////////////////
 
 /datum/design/encryptionkey_sec
 	name = "Security Radio Encryption Key"

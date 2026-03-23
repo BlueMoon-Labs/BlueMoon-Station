@@ -30,9 +30,14 @@
 			continue
 		if(istype(bp, /obj/item/clothing))
 			var/obj/item/clothing/C = bp
-			if(C.body_parts_covered & def_zone.body_part && C.armor)
-				protection += C.armor.getRating(d_type)
-	protection += physiology.armor.getRating(d_type)
+			if(C.body_parts_covered & def_zone.body_part && istype(C.armor, /datum/armor))
+				var/rating = C.armor.getRating(d_type)
+				if(isnum(rating))
+					protection += rating
+	if(physiology?.armor)
+		var/phys_rating = physiology.armor.getRating(d_type)
+		if(isnum(phys_rating))
+			protection += phys_rating
 	return protection
 
 ///Get all the clothing on a specific body part

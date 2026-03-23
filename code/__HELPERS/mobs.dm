@@ -611,3 +611,47 @@ GLOBAL_LIST_EMPTY(species_datums)
 	// BLUEMOON EDIT END
 	update_all_mob_security_hud()
 	return TRUE
+
+// ==============================
+// Описания каким органом ты трахаешь (BlueMoon Add)
+// ==============================
+
+/proc/get_penis_shape_desc(mob/living/carbon/human/H)
+	var/obj/item/organ/genital/penis/P = H?.getorganslot(ORGAN_SLOT_PENIS)
+	if(!P)
+		if(H.has_strapon())
+			return "дилдо"
+		else
+			return "член"
+
+	var/datum/sprite_accessory/S = GLOB.cock_shapes_list[P.shape]
+	var/lowershape = lowertext(S?.icon_state || P.shape)
+
+	switch(lowershape)
+		if("penis", "human") return "член"
+		if("knotted") return "узловатый член"
+		if("flared") return "конический член"
+		if("barbknot") return "узловатый шипованный член"
+		if("tapered") return "утончённый член"
+		if("tentacle") return "тентяклевидный член"
+		if("taperedteshari") return "тешарьский член"
+		if("taperedbarbed") return "утонченный шипованный член"
+		if("thick", "nondescript") return "обрезанный член"
+		// Если кто-то это будет трогать, придумайте что-то с окончаниями (автор не соизволил)
+		if("hemi") return "двойные члены"
+		if("hemiknot") return "двойные узловатые члены"
+		if("bhemiknot") return "двойные с узлами колючие члены"
+
+		else return "необычной формы член"
+
+/// Прок проверяет наличие трейта, присваемого СИЛЬНЫМИ источниками невидимости. Это небольшой костыль, лучше делать контроллер с сравнением источников, как на TGMC.
+/proc/check_strong_alpha_sources(mob/holder)
+	// Мы должны проверять именно внешние источники, по типу костюма ниндзя
+	if(HAS_TRAIT(holder, TRAIT_STRONG_INVISIBILITY))
+		return TRUE
+	return FALSE
+
+/proc/check_weak_alpha_sources(mob/holder)
+	if(HAS_TRAIT(holder, TRAIT_WEAK_INVISIBILITY))
+		return TRUE
+	return FALSE

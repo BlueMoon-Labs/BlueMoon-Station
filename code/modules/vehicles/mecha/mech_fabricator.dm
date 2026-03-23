@@ -7,7 +7,7 @@
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 20
 	active_power_usage = 5000
-	req_one_access = list(ACCESS_ROBOTICS, ACCESS_AWAY_GENERAL, ACCESS_SYNDICATE)
+	//req_one_access = list(ACCESS_ROBOTICS, ACCESS_AWAY_GENERAL, ACCESS_SYNDICATE) // Лишнее, у хермитов нед доступа + платы все равно только в импринтере делаются
 	circuit = /obj/item/circuitboard/machine/mechfab
 	// processing_flags = START_PROCESSING_MANUALLY
 
@@ -63,13 +63,20 @@
 								"Cybernetics",
 								"Implants",
 								"Control Interfaces",
-								"Misc"
+								"Misc",
+								"IPC Organs",
+								"Prosthetics",
+								"Savannah-Ivanov"
 								)
+	COOLDOWN_DECLARE(cooldown_say) // Отвечает за КД SAY машины
+	var/const/cooldown_say_time = 1.5 SECONDS
+
+	var/on_station = TRUE
 
 /obj/machinery/mecha_part_fabricator/Initialize(mapload)
 	stored_research = new
 	rmat = AddComponent(/datum/component/remote_materials, "mechfab", mapload && link_on_init, _after_insert=CALLBACK(src, PROC_REF(AfterMaterialInsert)))
-
+	on_station = is_station_level(z) || is_mining_level(z)
 	RefreshParts() //Recalculating local material sizes if the fab isn't linked
 	return ..()
 
@@ -349,6 +356,11 @@
 	if(!D)
 		return FALSE
 
+	if(!design_sec_level_check(D))
+		if(verbose)
+			say("Irrelevant security alert level to build design.")
+		return FALSE
+
 	var/datum/component/material_container/materials = rmat.mat_container
 	if (!materials)
 		if(verbose)
@@ -374,6 +386,13 @@
 	rmat.silo_log(src, "built", -1, "[D.name]", build_materials)
 
 	return TRUE
+
+/obj/machinery/mecha_part_fabricator/proc/design_sec_level_check(datum/design/D)
+	. = TRUE
+	if(!D)
+		return
+	if(on_station && (GLOB.security_level < D.min_security_level || GLOB.security_level > D.max_security_level))
+		return FALSE
 
 /obj/machinery/mecha_part_fabricator/process()
 	// If there's a stored part to dispense due to an obstruction, try to dispense it.
@@ -489,9 +508,13 @@
   * Requires an R&D Console visible within 7 tiles. Copies techweb research. Updates tgui's state data.
   */
 /obj/machinery/mecha_part_fabricator/proc/sync()
+	if(!COOLDOWN_FINISHED(src, cooldown_say))
+		return
+	COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+
 	for(var/obj/machinery/computer/rdconsole/RDC in orange(7,src))
 		RDC.stored_research.copy_research_to(stored_research)
-		update_static_data(usr)
+		update_static_data_for_all_viewers()
 		say("Successfully synchronized with R&D server.")
 		return
 
@@ -541,23 +564,26 @@
 
 	for(var/v in stored_research.researched_designs)
 		var/datum/design/D = SSresearch.techweb_design_by_id(v)
-		if(D.build_type & MECHFAB)
-			// This is for us.
-			var/list/part = output_part_info(D, TRUE)
+		if(!(D.build_type & MECHFAB))
+			continue // Никакой залутки имплантов в обход техфаба (условно заглушка, пока интерфейс не сделают для этого)
+		if(!design_sec_level_check(D))
+			continue
+		// This is for us.
+		var/list/part = output_part_info(D, TRUE)
 
-			if(part["category_override"])
-				for(var/cat in part["category_override"])
-					buildable_parts[cat] += list(part)
-					if(!(cat in part_sets))
-						final_sets += cat
+		if(part["category_override"])
+			for(var/cat in part["category_override"])
+				buildable_parts[cat] += list(part)
+				if(!(cat in part_sets))
+					final_sets += cat
+			continue
+
+		for(var/cat in part_sets)
+			// Find all matching categories.
+			if(!(cat in D.category))
 				continue
 
-			for(var/cat in part_sets)
-				// Find all matching categories.
-				if(!(cat in D.category))
-					continue
-
-				buildable_parts[cat] += list(part)
+			buildable_parts[cat] += list(part)
 
 	data["partSets"] = final_sets
 	data["buildableParts"] = buildable_parts
@@ -591,14 +617,20 @@
 	return data
 
 /obj/machinery/mecha_part_fabricator/ui_act(action, var/list/params)
-	if(..())
-		return TRUE
+	. = ..()
+	if(.)
+		return
+	var/mob/living/user = usr
+	if(!istype(user))
+		return
+	if(!user.can_use_mechfab_topic(src, action))
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			say("В доступе отказано.")
+			playsound(loc, 'sound/machines/uplinkerror.ogg', 70, 0)
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+		return
 
 	. = TRUE
-
-	add_fingerprint(usr)
-	usr.set_machine(src)
-
 	switch(action)
 		if("sync_rnd")
 			// Sync with R&D Servers
@@ -686,10 +718,14 @@
 /obj/machinery/mecha_part_fabricator/proc/eject_sheets(eject_sheet, eject_amt)
 	var/datum/component/material_container/mat_container = rmat.mat_container
 	if (!mat_container)
-		say("No access to material storage, please contact the quartermaster.")
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("No access to material storage, please contact the quartermaster.")
 		return FALSE
 	if (rmat.on_hold())
-		say("Mineral access is on hold, please contact the quartermaster.")
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("Mineral access is on hold, please contact the quartermaster.")
 		return FALSE
 	var/count = mat_container.retrieve_sheets(text2num(eject_amt), eject_sheet, drop_location())
 	var/list/matlist = list()
@@ -730,6 +766,8 @@
 
 /obj/machinery/mecha_part_fabricator/maint
 	link_on_init = FALSE
+	req_access = null
 
 /obj/machinery/mecha_part_fabricator/offstation
 	link_on_init = FALSE
+	req_access = null

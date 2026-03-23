@@ -21,6 +21,10 @@
 	air_contents = new(volume)
 	return ..()
 
+/obj/item/integrated_circuit/atmospherics/Destroy()
+	QDEL_NULL(air_contents)
+	return ..()
+
 /obj/item/integrated_circuit/atmospherics/return_air()
 	return air_contents
 
@@ -396,6 +400,8 @@
 		contaminants.assume_air(removed)
 	else
 		contaminated_air.merge(removed)
+	qdel(filtered_out)
+	qdel(removed)
 
 
 /obj/item/integrated_circuit/atmospherics/pump/filter/Initialize(mapload)
@@ -516,12 +522,13 @@
 		playsound(loc, 'sound/effects/spray.ogg', 10, 1, -3)
 		var/datum/gas_mixture/expelled_gas = air_contents.remove(air_contents.total_moles())
 		var/turf/current_turf = get_turf(src)
-		var/datum/gas_mixture/exterior_gas
 		if(!current_turf)
+			qdel(expelled_gas)
 			return
 
-		exterior_gas = current_turf.return_air()
+		var/datum/gas_mixture/exterior_gas = current_turf.return_air()
 		exterior_gas.merge(expelled_gas)
+		qdel(expelled_gas)
 
 
 // - large integrated tank - // **works**
@@ -623,7 +630,7 @@
 /obj/item/integrated_circuit/atmospherics/cooler/on_data_written()
 	temperature = max(243.15,min(293.15,get_pin_data(IC_INPUT, 1)))
 	if(get_pin_data(IC_INPUT, 2))
-		power_draw_idle = 30
+		power_draw_idle = 60
 	else
 		power_draw_idle = 0
 
@@ -653,7 +660,7 @@
 /obj/item/integrated_circuit/atmospherics/cooler/heater/on_data_written()
 	temperature = max(293.15,min(323.15,get_pin_data(IC_INPUT, 1)))
 	if(get_pin_data(IC_INPUT, 2))
-		power_draw_idle = 30
+		power_draw_idle = 60
 	else
 		power_draw_idle = 0
 

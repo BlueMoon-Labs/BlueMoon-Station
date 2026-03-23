@@ -17,6 +17,9 @@
   * attack_direction - Direction of the attack. It is highly recommended to put this in, as the automatic guesswork that's done otherwise is quite inaccurate at times.
   */
 /mob/living/proc/do_run_block(real_attack = TRUE, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, list/return_list = list(), attack_direction)
+	// Callers may pass null when they only care about BLOCK_SUCCESS; we need a valid list for internal use
+	if(!return_list)
+		return_list = list()
 	if(real_attack)
 		. = run_parry(object, damage, attack_text, attack_type, armour_penetration, attacker, def_zone, return_list)			//Parry - Highest priority!
 		if((. & BLOCK_SUCCESS) && !(. & BLOCK_CONTINUE_CHAIN))
@@ -101,6 +104,8 @@
   * Considers a block return_list and calculates damage to use from that.
   */
 /proc/block_calculate_resultant_damage(damage, list/block_return)
+	if(!block_return)
+		return damage
 	if(!isnull(block_return[BLOCK_RETURN_SET_DAMAGE_TO]))	// higher priority
 		return block_return[BLOCK_RETURN_SET_DAMAGE_TO]
 	else if(!isnull(block_return[BLOCK_RETURN_MITIGATION_PERCENT]))

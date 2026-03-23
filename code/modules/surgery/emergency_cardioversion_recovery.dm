@@ -1,10 +1,21 @@
 /datum/surgery/cardioversion
 	name = "Emergency Cardioversion Induction"
+	desc = "Хирургическая шоковая процедура, используемая для экстренного запуска сердца. Способна запустить, даже сердце пораженное некрозом. Разряд электричества так-же стимулирует мозг, заставляя его заработать, даже при некрозе."
 	steps = list(/datum/surgery_step/incise, /datum/surgery_step/retract_skin, /datum/surgery_step/saw, /datum/surgery_step/clamp_bleeders,
 				 /datum/surgery_step/incise_heart, /datum/surgery_step/ventricular_electrotherapy, /datum/surgery_step/close)
 	possible_locs = list(BODY_ZONE_CHEST)
 	requires_bodypart_type = BODYPART_ORGANIC
 	special_surgery_traits = list(OPERATION_NEED_FULL_ANESTHETIC) // BLUEMOON ADD - операция требует, чтобы пациент находился без сознания
+	icon = 'icons/obj/defibrillators.dmi'
+	icon_state = "syndiepaddles1"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EMERGENCY
+
+/datum/surgery/cardioversion/can_start(mob/user, mob/living/patient, obj/item/tool)
+	. = ..()
+	if(!.)
+		return .
+	if(patient.stat != DEAD)
+		. = FALSE
 
 /datum/surgery_step/ventricular_electrotherapy
 	name = "Желудочковая Электротерапия"
@@ -66,6 +77,7 @@
 	return TRUE
 
 /datum/surgery_step/ventricular_electrotherapy/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	playsound(src, 'sound/machines/defib_zap.ogg', 75, 1, -1)
 	playsound(src, "bodyfall", 50, 1)
 	var/mob/living/carbon/human/H = target

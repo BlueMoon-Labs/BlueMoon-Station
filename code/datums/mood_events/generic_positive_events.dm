@@ -229,6 +229,11 @@
 	mood_change = 2
 	timeout = 2 MINUTES
 
+/datum/mood_event/inspiration
+	description = "<span class='nicegreen'>Меня переполняет вдохновение! Хочется творить.</span>\n"
+	mood_change = 3
+	timeout = 10 MINUTES
+
 /datum/mood_event/artgood
 	description = "<span class='nicegreen'>Какой воодушевляющий рисунок. Я его на какое-то время запомню.</span>\n"
 	mood_change = 3
@@ -267,3 +272,19 @@
 	description = span_nicegreen("Кто-то поцеловал меня. Должно быть, я настоящая находка!\n")
 	mood_change = 4.5
 	timeout = 2 MINUTES
+
+//BM Add
+/datum/mood_event/knotting_satisfied
+	description = span_love("Всё внутри переполнено теплом и наслаждением... Узел держит вас вместе.\n")
+	mood_change = 3
+	timeout = 4 MINUTES
+
+/datum/mood_event/knotting_linked
+	description = span_love("Сладкое ощущение связи и близости... Ваши тела едины.\n")
+	mood_change = 2
+	timeout = 4 MINUTES
+
+/datum/mood_event/maso_medicine
+	description = span_love("Лекарства делают своё дело. Боль от неё крайне приятная.\n")
+	mood_change = 2
+	timeout = 1 MINUTES

@@ -32,6 +32,7 @@
 		/obj/item/clothing/suit/armor/vest/blueshirt = 5,
 		/obj/item/armorkit/security = 5,
 		/obj/item/armorkit/security/helmet = 5,
+		/obj/item/storage/box/forensic_cards = 1,
 	)
 	contraband = list(
 		/obj/item/clothing/glasses/sunglasses = 2,
@@ -60,6 +61,7 @@
 		/obj/item/storage/backpack/hipbag/green = 1,
 		/obj/item/storage/bag/ammo = 3,
 		/obj/item/stamp/security = 3,
+		/obj/item/storage/belt/security/webbing/ds = 6,
 	)
 	refill_canister = /obj/item/vending_refill/security
 	default_price = PRICE_ALMOST_EXPENSIVE

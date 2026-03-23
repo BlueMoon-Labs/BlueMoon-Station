@@ -24,7 +24,7 @@
 /datum/supply_pack/security/helmets/special
 	name = "Special Helmet Crate"
 	desc = "Contains three Special Helmet Crate with NVG-device. Requires Security access to open."
-	cost = 24200
+	cost = 4000
 	contains = list(/obj/item/clothing/head/helmet/nvg,
 					/obj/item/clothing/head/helmet/nvg,
 					/obj/item/clothing/head/helmet/nvg,
@@ -34,7 +34,7 @@
 /datum/supply_pack/security/armor/liquidator
 	name = "Liquidator's Kit"
 	desc = "A freaking Liquidator Kit that makes VERY strange noises..."
-	cost = 4510
+	cost = 2500
 	contains = list(/obj/item/clothing/suit/armor/vest/russian_winter_coat,
 					/obj/item/clothing/suit/armor/vest/russian_coat/liquidator,
 					/obj/item/clothing/head/helmet/rus_cap,
@@ -56,3 +56,11 @@
 					/obj/item/storage/barricade,
 					/obj/item/storage/barricade)
 	crate_name = "C.U.C.K.S Deployable Barricades"
+
+
+/datum/supply_pack/security/blueprints
+	name = "Advanced weapon blueprints"
+	desc = "Some fancy schematics for R&D minds, that will improve sec efficiency to shot each other."
+	cost = 25000
+	contains = list(/obj/item/disk/weapon_blueprint)
+	crate_name = "Advanced weapon blueprints crate"

@@ -26,12 +26,12 @@
 /area/awaymission/vr/murderdome)
 "e" = (
 /obj/structure/rack,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/gun/ballistic/automatic/fal,
+/obj/item/gun/ballistic/automatic/fal,
+/obj/item/gun/ballistic/automatic/fal,
+/obj/item/gun/ballistic/automatic/fal,
+/obj/item/gun/ballistic/automatic/fal,
+/obj/item/gun/ballistic/automatic/fal,
 /obj/machinery/light{
 	dir = 1
 	},
@@ -223,12 +223,12 @@
 /area/awaymission/vr/murderdome)
 "D" = (
 /obj/structure/rack,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/gun/ballistic/automatic/fal,
+/obj/item/gun/ballistic/automatic/fal,
+/obj/item/gun/ballistic/automatic/fal,
+/obj/item/gun/ballistic/automatic/fal,
+/obj/item/gun/ballistic/automatic/fal,
+/obj/item/gun/ballistic/automatic/fal,
 /obj/machinery/light,
 /turf/open/indestructible,
 /area/awaymission/vr/murderdome)

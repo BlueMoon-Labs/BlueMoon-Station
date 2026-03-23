@@ -20,7 +20,7 @@
 	if(chems.has_reagent(src.type, 1))
 		mytray.adjustPests(rand(2,3))
 
-/datum/reagent/blood/reaction_mob(mob/living/L, method = TOUCH, reac_volume)
+/datum/reagent/blood/reaction_mob(mob/living/L, method = TOUCH, reac_volume, affected_bodypart)
 	if(data && data["viruses"])
 		for(var/thing in data["viruses"])
 			var/datum/disease/D = thing
@@ -124,6 +124,10 @@
 	if(data && mix_data)
 		if(data["blood_DNA"] != mix_data["blood_DNA"])
 			data["cloneable"] = FALSE //On mix, consider the genetic sampling unviable for pod cloning if the DNA sample doesn't match.
+		// Merge disease resistances (antibodies) from both blood samples so pandemic can create vaccines
+		if(islist(mix_data["resistances"]) && length(mix_data["resistances"]))
+			LAZYINITLIST(data["resistances"])
+			data["resistances"] |= mix_data["resistances"]
 		if(data["viruses"] || mix_data["viruses"])
 
 			var/list/mix1 = data["viruses"]
@@ -234,7 +238,7 @@
 	color = "#C81040" // rgb: 200, 16, 64
 	taste_description = "slime"
 
-/datum/reagent/vaccine/reaction_mob(mob/living/L, method=TOUCH, reac_volume)
+/datum/reagent/vaccine/reaction_mob(mob/living/L, method=TOUCH, reac_volume, affected_bodypart)
 	if(islist(data) && (method == INGEST || method == INJECT))
 		for(var/thing in L.diseases)
 			var/datum/disease/D = thing
@@ -361,7 +365,7 @@
  *	Water reaction to a mob
  */
 
-/datum/reagent/water/reaction_mob(mob/living/M, method=TOUCH, reac_volume)//Splashing people with water can help put them out!
+/datum/reagent/water/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)//Splashing people with water can help put them out!
 	if(!istype(M))
 		return
 	if(method == TOUCH)
@@ -514,7 +518,7 @@
 	pH = 6.5
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/fuel/unholywater/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/fuel/unholywater/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == TOUCH || method == VAPOR)
 		M.reagents.add_reagent(type, reac_volume/4)
 		return
@@ -650,7 +654,7 @@
 	taste_description = "sour oranges"
 	pH = 5
 
-/datum/reagent/spraytan/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1)
+/datum/reagent/spraytan/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1, affected_bodypart)
 	if(ishuman(M))
 		if(method == PATCH || method == VAPOR)
 			var/mob/living/carbon/human/H = M
@@ -960,7 +964,7 @@
 	taste_description = "slime"
 	value = REAGENT_VALUE_VERY_RARE
 
-/datum/reagent/aslimetoxin/reaction_mob(mob/living/L, method=TOUCH, reac_volume)
+/datum/reagent/aslimetoxin/reaction_mob(mob/living/L, method=TOUCH, reac_volume, affected_bodypart)
 	if(method != TOUCH)
 		L.ForceContractDisease(new /datum/disease/transformation/slime(), FALSE, TRUE)
 
@@ -973,7 +977,7 @@
 	taste_description = "decay"
 	value = REAGENT_VALUE_GLORIOUS
 
-/datum/reagent/gluttonytoxin/reaction_mob(mob/living/L, method=TOUCH, reac_volume)
+/datum/reagent/gluttonytoxin/reaction_mob(mob/living/L, method=TOUCH, reac_volume, affected_bodypart)
 	L.ForceContractDisease(new /datum/disease/transformation/morph(), FALSE, TRUE)
 
 /datum/reagent/serotrotium
@@ -1197,13 +1201,10 @@
 	taste_description = "bitterness"
 	pH = 10.5
 
-/datum/reagent/space_cleaner/sterilizine/reaction_mob(mob/living/carbon/C, method=TOUCH, reac_volume)
+/datum/reagent/space_cleaner/sterilizine/reaction_mob(mob/living/carbon/C, method=TOUCH, reac_volume, affected_bodypart)
 	if(method in list(TOUCH, VAPOR, PATCH))
-		for(var/s in C.surgeries)
-			var/datum/surgery/S = s
-			S.success_multiplier = max(0.2, S.success_multiplier)
-			// +20% success propability on each step, useful while operating in less-than-perfect conditions
-	..()
+		C.sterilize(20, 1 MINUTES * reac_volume/5)
+	return ..()
 
 /datum/reagent/space_cleaner/sterilizine/reaction_obj(obj/O, reac_volume)
 	if(istype(O, /obj/item/stack/medical/gauze))
@@ -1230,7 +1231,7 @@
 		C.adjust_integration_blood(0.25)
 	..()
 
-/datum/reagent/iron/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/iron/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(M.has_bane(BANE_IRON)) //If the target is weak to cold iron, then poison them.
 		if(holder && holder.chem_temp < 100) // COLD iron.
 			M.reagents.add_reagent(/datum/reagent/toxin, reac_volume)
@@ -1261,7 +1262,7 @@
 	color = "#D0D0D0" // rgb: 208, 208, 208
 	taste_description = "expensive yet reasonable metal"
 
-/datum/reagent/silver/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/silver/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(M.has_bane(BANE_SILVER))
 		M.reagents.add_reagent(/datum/reagent/toxin, reac_volume)
 	..()
@@ -1305,7 +1306,7 @@
 	pH = 12
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/bluespace/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/bluespace/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == TOUCH || method == VAPOR)
 		do_teleport(M, get_turf(M), (reac_volume / 5), asoundin = 'sound/effects/phasein.ogg', channel = TELEPORT_CHANNEL_BLUESPACE) //4 tiles per crystal
 	..()
@@ -1365,7 +1366,7 @@
 	G.fire_temperature = T0C+300
 	return G
 
-/datum/reagent/fuel/reaction_mob(mob/living/M, method=TOUCH, reac_volume)//Splashing people with welding fuel to make them easy to ignite!
+/datum/reagent/fuel/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)//Splashing people with welding fuel to make them easy to ignite!
 	if(method == TOUCH || method == VAPOR)
 		M.adjust_fire_stacks(reac_volume / 10)
 		return
@@ -1409,7 +1410,7 @@
 		for(var/mob/living/simple_animal/slime/M in T)
 			M.adjustToxLoss(rand(5,10))
 
-/datum/reagent/space_cleaner/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/space_cleaner/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == TOUCH || method == VAPOR)
 		M.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 		if(iscarbon(M))
@@ -1464,7 +1465,7 @@
 	M.adjustToxLoss(3.33)
 	..()
 
-/datum/reagent/space_cleaner/ez_clean/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/space_cleaner/ez_clean/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	..()
 	if((method == TOUCH || method == VAPOR) && !issilicon(M))
 		M.adjustBruteLoss(1)
@@ -1510,7 +1511,7 @@
 	taste_description = "sludge"
 	value = REAGENT_VALUE_GLORIOUS
 
-/datum/reagent/nanomachines/reaction_mob(mob/living/L, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0)
+/datum/reagent/nanomachines/reaction_mob(mob/living/L, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0, affected_bodypart)
 	if(method==PATCH || method==INGEST || method==INJECT || (method == VAPOR && prob(min(reac_volume,100)*(1 - touch_protection))))
 		L.ForceContractDisease(new /datum/disease/transformation/robot(), FALSE, TRUE)
 
@@ -1522,7 +1523,7 @@
 	taste_description = "sludge"
 	value = REAGENT_VALUE_GLORIOUS
 
-/datum/reagent/xenomicrobes/reaction_mob(mob/living/L, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0)
+/datum/reagent/xenomicrobes/reaction_mob(mob/living/L, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0, affected_bodypart)
 	if(method==PATCH || method==INGEST || method==INJECT || (method == VAPOR && prob(min(reac_volume,100)*(1 - touch_protection))))
 		L.ForceContractDisease(new /datum/disease/transformation/xeno(), FALSE, TRUE)
 
@@ -1535,7 +1536,7 @@
 	pH = 11
 	value = REAGENT_VALUE_GLORIOUS
 
-/datum/reagent/fungalspores/reaction_mob(mob/living/L, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0)
+/datum/reagent/fungalspores/reaction_mob(mob/living/L, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0, affected_bodypart)
 	if(method==PATCH || method==INGEST || method==INJECT || (method == VAPOR && prob(min(reac_volume,100)*(1 - touch_protection))))
 		L.ForceContractDisease(new /datum/disease/tuberculosis(), FALSE, TRUE)
 
@@ -1582,7 +1583,7 @@
 			myseed.adjust_yield(1)
 			myseed.adjust_instability(1)
 
-/datum/reagent/ammonia/reaction_mob(mob/living/M, method=TOUCH, reac_volume, touch_protection)
+/datum/reagent/ammonia/reaction_mob(mob/living/M, method=TOUCH, reac_volume, touch_protection, affected_bodypart)
 	if(method == VAPOR)
 		M.adjustOrganLoss(ORGAN_SLOT_LUNGS, ((100-touch_protection)/100)*reac_volume*REM * 0.25)
 		if(prob(reac_volume))
@@ -1638,7 +1639,7 @@
 	taste_description = "sweetness"
 	pH = 5.8
 
-/datum/reagent/nitrous_oxide/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/nitrous_oxide/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == VAPOR)
 		M.drowsyness += max(round(reac_volume, 1), 2)
 
@@ -1958,7 +1959,7 @@
 		M.add_atom_colour(pick(random_color_list), WASHABLE_COLOUR_PRIORITY)
 	..()
 
-/datum/reagent/colorful_reagent/reaction_mob(mob/living/M, reac_volume)
+/datum/reagent/colorful_reagent/reaction_mob(mob/living/M, reac_volume, affected_bodypart)
 	if(!no_mob_color)
 		M.add_atom_colour(pick(random_color_list), WASHABLE_COLOUR_PRIORITY)
 	..()
@@ -1982,7 +1983,7 @@
 	taste_description = "sourness"
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/hair_dye/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/hair_dye/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == TOUCH || method == VAPOR)
 		if(M && ishuman(M))
 			var/mob/living/carbon/human/H = M
@@ -1998,7 +1999,7 @@
 	taste_description = "sourness"
 	value = REAGENT_VALUE_UNCOMMON
 
-/datum/reagent/barbers_aid/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/barbers_aid/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == TOUCH || method == VAPOR)
 		if(M && ishuman(M))
 			var/mob/living/carbon/human/H = M
@@ -2016,7 +2017,7 @@
 	taste_description = "sourness"
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/concentrated_barbers_aid/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/concentrated_barbers_aid/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == TOUCH || method == VAPOR)
 		if(M && ishuman(M))
 			var/mob/living/carbon/human/H = M
@@ -2031,7 +2032,7 @@
 	color = "#ecb2cf"
 	taste_description = "bitterness"
 
-/datum/reagent/baldium/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/baldium/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == TOUCH || method == VAPOR)
 		if(M && ishuman(M))
 			var/mob/living/carbon/human/H = M
@@ -2242,7 +2243,7 @@
 	pH = 0.5
 	value = REAGENT_VALUE_GLORIOUS
 
-/datum/reagent/romerol/reaction_mob(mob/living/carbon/human/H, method=TOUCH, reac_volume)
+/datum/reagent/romerol/reaction_mob(mob/living/carbon/human/H, method=TOUCH, reac_volume, affected_bodypart)
 	// Silently add the zombie infection organ to be activated upon death
 	if(!H.getorganslot(ORGAN_SLOT_ZOMBIE) && !HAS_TRAIT(H, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - добавлена проверка для роботов
 		var/obj/item/organ/zombie_infection/nodamage/ZI = new()
@@ -2441,7 +2442,7 @@
 	can_synth = FALSE
 	value = REAGENT_VALUE_GLORIOUS
 
-/datum/reagent/tranquility/reaction_mob(mob/living/L, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0)
+/datum/reagent/tranquility/reaction_mob(mob/living/L, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0, affected_bodypart)
 	if(method==PATCH || method==INGEST || method==INJECT || (method == VAPOR && prob(min(reac_volume,100)*(1 - touch_protection))))
 		L.ForceContractDisease(new /datum/disease/transformation/gondola(), FALSE, TRUE)
 
@@ -2646,18 +2647,18 @@
 
 	if(istype(src, /datum/reagent/consumable/semen/femcum)) //let it be here
 		var/obj/effect/decal/cleanable/semen/femcum/F = (locate(/obj/effect/decal/cleanable/semen/femcum) in location) || new(location)
-		if(F.reagents.add_reagent(type, volume, data))
+		if(F.reagents?.add_reagent(type, volume, data))
 			F.update_icon()
 			return
 
 	var/obj/effect/decal/cleanable/semen/S = locate(/obj/effect/decal/cleanable/semen) in location
 	if(S && !istype(S, /obj/effect/decal/cleanable/semen/femcum))
-		if(S.reagents.add_reagent(type, volume, data))
+		if(S.reagents?.add_reagent(type, volume, data))
 			S.update_icon()
 			return
 
 	var/obj/effect/decal/cleanable/semendrip/drip = (locate(/obj/effect/decal/cleanable/semendrip) in location) || new(location)
-	if(drip.reagents.add_reagent(type, volume, data))
+	if(drip.reagents?.add_reagent(type, volume, data))
 		drip.update_icon()
 		if(drip.reagents.total_volume >= 10)
 			S = new(location)
@@ -2674,7 +2675,7 @@
 	layer = ABOVE_NORMAL_TURF_LAYER
 	icon = 'icons/obj/genitals/effects.dmi'
 	icon_state = "semen1"
-	random_icon_states = list("semen1", "semen2", "semen3", "semen4")
+	random_icon_states = list("semen1", "semen2", "semen3", "semen4", "semen5", "semen6", "semen7", "semen8", "semen9", "semen10", "semen11", "semen12", "semen13", "semen14")
 	var/datum/reagent/my_liquid_type = /datum/reagent/consumable/semen
 
 /obj/effect/decal/cleanable/semen/Initialize(mapload)
@@ -2714,7 +2715,7 @@
 /obj/effect/decal/cleanable/semen/femcum
 	name = "female ejaculate"
 	icon_state = "fem1"
-	random_icon_states = list("fem1", "fem2", "fem3", "fem4")
+	random_icon_states = list("fem1", "fem2", "fem3", "fem4", "fem5", "fem6", "fem7", "fem8", "fem9", "fem10")
 	blood_state = null
 	bloodiness = null
 	my_liquid_type = /datum/reagent/consumable/semen/femcum

@@ -23,3 +23,12 @@
 		return
 	..()
 
+/obj/item/reagent_containers/hypospray/medipen/ferrocortex
+	name = "ferrocortex injector"
+	desc = "Механоинъектор. На этикетке виден логотип компании Cybersun. Внутри есть доза феррокортекса для стабилизации работников-КПБ в критическом состоянии. Не более одной инъекции за короткое время."
+	icon_state = "ferrocorpen"
+	item_state = "ferrocorpen"
+	volume = 12
+	amount_per_transfer_from_this = 12
+	list_reagents = list(/datum/reagent/medicine/ferrocortex = 12)
+

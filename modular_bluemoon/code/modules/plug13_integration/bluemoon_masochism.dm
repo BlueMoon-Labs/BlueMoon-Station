@@ -42,7 +42,7 @@
 
 
 /mob/living/carbon/proc/plug13_damage_vibration(damage, damagetype)
-	if (!client || !client.plug13.is_connected)
+	if (!client?.plug13?.is_connected)
 		return
 
 	var/new_damage = damage

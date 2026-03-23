@@ -84,11 +84,49 @@
 	// Moving to the new location will trample the ripples there at the exact
 	// same time any mobs there are trampled, to avoid any discrepancy where
 	// the ripples go away before it is safe.
+	GLOB.lighting_defer_active = TRUE
+	GLOB.lighting_deferred_starlight.Cut()
+
 	takeoff(old_turfs, new_turfs, moved_atoms, rotation, movement_direction, old_dock, underlying_old_area)
 
 	CHECK_TICK
 
 	cleanup_runway(new_dock, old_turfs, new_turfs, areas_to_move, moved_atoms, rotation, movement_direction, underlying_old_area)
+
+	GLOB.lighting_defer_active = FALSE
+
+	// Initialize lighting on the destination z-level if it was deferred (e.g., transit/reserved)
+	if(SSlighting.initialized && SSmapping?.initialized && new_dock)
+		var/dest_z = new_dock.z
+		if(dest_z >= 1 && dest_z <= SSmapping.z_list.len)
+			var/datum/space_level/level = SSmapping.z_list[dest_z]
+			if(!level.lighting_initialized)
+				create_lighting_for_zlevel(dest_z)
+
+	// Expand deferred starlight into space turfs, queue for SSlighting Phase -1
+	// (expansion is cheap list-building; actual update_starlight() runs in SSlighting's budget)
+	var/list/starlight_batch = list()
+	for(var/turf/deferred_turf as anything in GLOB.lighting_deferred_starlight)
+		for(var/turf/open/space/space_tile in RANGE_TURFS(1, deferred_turf))
+			starlight_batch |= space_tile
+	GLOB.lighting_deferred_starlight.Cut()
+	if(starlight_batch.len)
+		GLOB.lighting_starlight_queue |= starlight_batch
+
+	// Queue shadow + blend recalc for SSlighting Phase -0.5
+	// (deferred from Entered/Exited/ChangeTurf/change_area during shuttle move)
+	if(SSlighting.initialized)
+		for(var/i in 1 to new_turfs.len)
+			var/turf/T = new_turfs[i]
+			if(T)
+				GLOB.lighting_deferred_shadow_turfs |= T
+		for(var/i in 1 to old_turfs.len)
+			var/turf/T = old_turfs[i]
+			if(T)
+				GLOB.lighting_deferred_shadow_turfs |= T
+
+	// Boost SSlighting processing cap to drain the post-shuttle queue faster
+	SSlighting.temp_cap_boost = 50
 
 	CHECK_TICK
 

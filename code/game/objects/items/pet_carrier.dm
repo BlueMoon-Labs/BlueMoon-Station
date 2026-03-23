@@ -234,6 +234,32 @@
 		//Initial proc as /obj/remove_air_ratio(ratio). Because bluespace pet carrier already has some sort of isolated gas system, I don't want to break it.
 		. = ..()
 
+/obj/item/pet_carrier/remove_air_into(datum/gas_mixture/into, amount)
+	if(type == /obj/item/pet_carrier)
+		if(loc)
+			if(istype(loc, /mob/))
+				var/turf/holding_mob_turf = get_turf(loc)
+				return holding_mob_turf?.remove_air_into(into, amount)
+			return loc.remove_air_into(into, amount)
+		if(into)
+			into.clear()
+			into.set_temperature(0)
+		return FALSE
+	. = ..()
+
+/obj/item/pet_carrier/remove_air_ratio_into(datum/gas_mixture/into, ratio)
+	if(type == /obj/item/pet_carrier)
+		if(loc)
+			if(istype(loc, /mob/))
+				var/turf/holding_mob_turf = get_turf(loc)
+				return holding_mob_turf?.remove_air_ratio_into(into, ratio)
+			return loc.remove_air_ratio_into(into, ratio)
+		if(into)
+			into.clear()
+			into.set_temperature(0)
+		return FALSE
+	. = ..()
+
 //bluespace jar, a reskin of the pet carrier that can fit people and smashes when thrown
 /obj/item/pet_carrier/bluespace
 	name = "bluespace jar"
@@ -320,7 +346,7 @@
 
 	if(isanimal(occupant))
 		var/mob/living/simple_animal/animal = occupant
-		occupant_gas_supply[GAS_O2] = 0.0064 //make sure it has some gas in so it isn't depressurized
+		occupant_gas_supply.set_moles(GAS_O2, ONE_ATMOSPHERE) //make sure it has some gas in so it isn't depressurized
 		occupant_gas_supply.set_temperature(animal.minbodytemp) //simple animals only care about temperature/pressure when their turf isnt a location
 
 	if(ishuman(occupant)) //humans require resistance to cold/heat and living in no air while inside, and lose this when outside

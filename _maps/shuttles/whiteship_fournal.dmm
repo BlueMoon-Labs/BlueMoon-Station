@@ -50,6 +50,7 @@
 	pixel_x = 5;
 	pixel_y = -24
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
@@ -69,6 +70,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 8
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#BD83AC"
@@ -92,9 +94,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
@@ -102,6 +101,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/visible{
 	dir = 8
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#BD83AC"
@@ -109,16 +109,17 @@
 /area/shuttle/abandoned)
 "fQ" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/effect/decal/cleanable/dirt{
+	desc = "A thin layer of dust coating the floor.";
+	name = "dust"
+	},
+/obj/effect/decal/cleanable/dirt{
+	desc = "A thin layer of dust coating the floor.";
+	name = "dust"
+	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/structure/cable{
 	icon_state = "1-2"
-	},
-/obj/effect/decal/cleanable/dirt{
-	desc = "A thin layer of dust coating the floor.";
-	name = "dust"
-	},
-/obj/effect/decal/cleanable/dirt{
-	desc = "A thin layer of dust coating the floor.";
-	name = "dust"
 	},
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
@@ -189,15 +190,13 @@
 	},
 /area/shuttle/abandoned/bridge)
 "iX" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /obj/machinery/airalarm/all_access{
 	pixel_y = 24
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
@@ -223,6 +222,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
@@ -245,32 +245,38 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
 	dir = 8
 	},
+/obj/effect/decal/cleanable/dirt{
+	desc = "A thin layer of dust coating the floor.";
+	name = "dust"
+	},
+/obj/effect/decal/cleanable/dirt{
+	desc = "A thin layer of dust coating the floor.";
+	name = "dust"
+	},
+/obj/effect/decal/cleanable/dirt{
+	desc = "A thin layer of dust coating the floor.";
+	name = "dust"
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
 /obj/structure/cable{
 	icon_state = "1-2"
-	},
-/obj/effect/decal/cleanable/dirt{
-	desc = "A thin layer of dust coating the floor.";
-	name = "dust"
-	},
-/obj/effect/decal/cleanable/dirt{
-	desc = "A thin layer of dust coating the floor.";
-	name = "dust"
-	},
-/obj/effect/decal/cleanable/dirt{
-	desc = "A thin layer of dust coating the floor.";
-	name = "dust"
 	},
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
 /area/shuttle/abandoned/engine)
 "kV" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
+	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
 	},
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
@@ -367,13 +373,11 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
@@ -405,6 +409,9 @@
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
 	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
@@ -429,9 +436,6 @@
 /area/shuttle/abandoned)
 "qg" = (
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
@@ -440,6 +444,7 @@
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
@@ -486,6 +491,12 @@
 	icon_state = "plaswhite_whole_alt"
 	},
 /area/shuttle/abandoned/bridge)
+"rp" = (
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/abandoned/engine)
 "rt" = (
 /obj/machinery/computer/crew{
 	dir = 8
@@ -539,12 +550,12 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 1
 	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
 	},
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
@@ -561,15 +572,18 @@
 	},
 /area/shuttle/abandoned)
 "uz" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
 	},
 /obj/machinery/light{
 	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
 	},
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
@@ -625,6 +639,9 @@
 	dir = 1;
 	pixel_y = -24
 	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
@@ -639,6 +656,13 @@
 	color = "#cc0000"
 	},
 /area/shuttle/abandoned)
+"zc" = (
+/obj/structure/cable{
+	icon_state = "2-8";
+	cable_color = "yellow"
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/abandoned/engine)
 "zj" = (
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
@@ -648,6 +672,7 @@
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
@@ -681,13 +706,11 @@
 	},
 /area/shuttle/abandoned)
 "AP" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/machinery/door/airlock/public/glass{
 	color = "#cc0000";
 	name = "KnotTailus Engine"
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
@@ -761,9 +784,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
@@ -772,6 +792,7 @@
 	pixel_x = 2;
 	pixel_y = 4
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/dark{
 	icon_state = "darkfull_whole_alt"
 	},
@@ -815,11 +836,18 @@
 	pixel_y = 23;
 	req_access = null
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#BD83AC"
 	},
 /area/shuttle/abandoned/bridge)
+"Ez" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/abandoned/engine)
 "EN" = (
 /turf/template_noop,
 /area/template_noop)
@@ -852,6 +880,7 @@
 	color = "#cc0000";
 	name = "KnotTailus Engine"
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#BD83AC"
@@ -898,9 +927,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
@@ -944,26 +971,34 @@
 	req_access = null;
 	pixel_y = 32
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
 	},
 /area/shuttle/abandoned/bridge)
+"Nj" = (
+/mob/living/simple_animal/hostile/deathclaw/funclaw/abomination,
+/turf/open/floor/plasteel/white{
+	icon_state = "plaswhite_whole_alt";
+	color = "#cc0000"
+	},
+/area/shuttle/abandoned)
 "Pw" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/structure/sign/warning/vacuum/external{
 	pixel_x = -32
 	},
+/obj/effect/decal/cleanable/dirt{
+	desc = "A thin layer of dust coating the floor.";
+	name = "dust"
+	},
+/obj/effect/decal/cleanable/dirt{
+	desc = "A thin layer of dust coating the floor.";
+	name = "dust"
+	},
 /obj/structure/cable{
 	icon_state = "1-2"
-	},
-/obj/effect/decal/cleanable/dirt{
-	desc = "A thin layer of dust coating the floor.";
-	name = "dust"
-	},
-/obj/effect/decal/cleanable/dirt{
-	desc = "A thin layer of dust coating the floor.";
-	name = "dust"
 	},
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
@@ -1073,9 +1108,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
@@ -1090,9 +1122,9 @@
 	pixel_y = 23;
 	req_access = null
 	},
-/obj/structure/cable{
-	icon_state = "0-8"
-	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
@@ -1100,9 +1132,6 @@
 /area/shuttle/abandoned)
 "VV" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
@@ -1115,6 +1144,7 @@
 	dir = 8
 	},
 /obj/item/crowbar,
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
@@ -1144,9 +1174,25 @@
 	color = "#BD83AC"
 	},
 /area/shuttle/abandoned)
+"WK" = (
+/obj/effect/decal/cleanable/dirt{
+	desc = "A thin layer of dust coating the floor.";
+	name = "dust"
+	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/turf/open/floor/plasteel/white{
+	icon_state = "plaswhite_whole_alt";
+	color = "#cc0000"
+	},
+/area/shuttle/abandoned/bridge)
 "Xa" = (
 /obj/structure/chair/comfy/purple{
 	dir = 4
+	},
+/obj/item/gps{
+	gpstag = "KNOT";
+	pixel_x = -9;
+	pixel_y = 4
 	},
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
@@ -1176,17 +1222,11 @@
 	pixel_y = -23;
 	req_access = null
 	},
-/obj/structure/cable{
-	icon_state = "2-4"
-	},
-/obj/structure/cable{
-	icon_state = "0-2";
-	pixel_y = 1
-	},
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
@@ -1195,9 +1235,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
@@ -1206,6 +1243,7 @@
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
@@ -1245,6 +1283,7 @@
 	desc = "A thin layer of dust coating the floor.";
 	name = "dust"
 	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt";
 	color = "#cc0000"
@@ -1271,12 +1310,12 @@ Wh
 Wh
 lX
 Wh
-Wh
-Wh
+Ez
+IQ
 yI
-Wh
-Wh
-Wh
+IQ
+IQ
+rp
 lX
 Wh
 Wh
@@ -1304,8 +1343,8 @@ Wh
 Wh
 Wh
 Yn
-IQ
-IQ
+Wh
+zc
 IQ
 qB
 Wh
@@ -1366,7 +1405,7 @@ PT
 ZI
 yJ
 mX
-mX
+Nj
 hv
 PN
 EN
@@ -1513,7 +1552,7 @@ EN
 of
 of
 VZ
-iy
+WK
 iy
 of
 of

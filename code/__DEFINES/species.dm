@@ -62,6 +62,7 @@
 //Species Wing Type Defines ----------------------
 #define SPECIES_WINGS_ANGEL 		list("Angel")
 #define SPECIES_WINGS_DRAGON		list("Dragon") //could also be considered demon wings or bat wings?
+#define SPECIES_WINGS_WYVERN		list("Wyvern")
 #define SPECIES_WINGS_ROBOT			list("Robotic")
 #define SPECIES_WINGS_INSECT		list("Fly") //"hey when can we have something besides giant fly wings?" "when you sprite it!"
 #define SPECIES_WINGS_SKELETAL		list("Skeleton")

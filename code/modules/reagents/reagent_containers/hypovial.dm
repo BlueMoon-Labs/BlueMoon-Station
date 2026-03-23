@@ -2,10 +2,11 @@
 
 /obj/item/reagent_containers/glass/bottle/vial // these have literally no fucking right to just be better beakers that you can shit out of a chemmaster
 	name = "broken hypovial"
-	desc = "A hypovial compatible with most hyposprays."
+	desc = "Гипоампула, совместимая с большинством гипоспреев."
 	icon_state = "hypovial"
 	spillable = FALSE
 	volume = 10
+	amount_per_transfer_from_this = 5
 	possible_transfer_amounts = list(1,2,5,10)
 	container_flags = APTFT_VERB
 	obj_flags = UNIQUE_RENAME
@@ -21,6 +22,7 @@
 	)
 	always_reskinnable = TRUE
 	cached_icon = "hypovial"
+	reagent_flags = INJECTABLE | DRAWABLE
 
 /obj/item/reagent_containers/glass/bottle/vial/Initialize(mapload)
 	. = ..()
@@ -28,6 +30,11 @@
 
 /obj/item/reagent_containers/glass/bottle/vial/on_reagent_change()
 	update_icon()
+
+/obj/item/reagent_containers/glass/bottle/vial/examine(mob/user)
+	. = ..()
+	. += span_info("Закупорено: нельзя залить жидкости.\n\
+	Игла шприца может взять содержимое. Ампулу невозможно резко опустошить.")
 
 /obj/item/reagent_containers/glass/bottle/vial/tiny
 	name = "small hypovial"
@@ -47,9 +54,10 @@
 
 /obj/item/reagent_containers/glass/bottle/vial/large
 	name = "large hypovial"
-	desc = "A large hypovial, for deluxe hypospray models."
+	desc = "Большая гипоампула, для моделей гипоспреев \"Делюкс\"."
 	icon_state = "hypoviallarge"
 	volume = 120
+	amount_per_transfer_from_this = 10
 	possible_transfer_amounts = list(1,2,5,10,20)
 	unique_reskin = list(
 		"large hypovial" = list("icon_state" = "hypoviallarge"),
@@ -155,12 +163,15 @@
 	icon_state = "hypoviallarge-k"
 	list_reagents = list(/datum/reagent/medicine/synthflesh = 120)
 
-// BLUEMOON ADD START
 /obj/item/reagent_containers/glass/bottle/vial/large/synthflesh/neo
 	name = "large blue hypovial (neosynth)"
 	icon_state = "hypoviallarge-d"
 	list_reagents = list(/datum/reagent/medicine/synthflesh/neo = 120)
-// BLUEMOON ADD END
+
+/obj/item/reagent_containers/glass/bottle/vial/large/synthflesh/mine_salve
+	name = "large blue hypovial (miners salve)"
+	icon_state = "hypoviallarge-d"
+	list_reagents = list(/datum/reagent/medicine/mine_salve = 120)
 
 /obj/item/reagent_containers/glass/bottle/vial/large/combat
 	name = "combat hypovial"

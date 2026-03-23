@@ -35,6 +35,10 @@
 /datum/config_entry/flag/log_mecha
 	default = TRUE
 
+/// log uplink data
+/datum/config_entry/flag/log_uplink
+	default = TRUE
+
 /// log virology data
 /datum/config_entry/flag/log_virus
 	default = TRUE
@@ -107,6 +111,10 @@
 
 /// forces log_href for tgui
 /datum/config_entry/flag/emergency_tgui_logging
+	default = FALSE
+
+/// mirrors tgui output to both browser channels (diagnostics only)
+/datum/config_entry/flag/emergency_tgui_mirror_output
 	default = FALSE
 
 /// The "cooldown" time for each occurrence of a unique error

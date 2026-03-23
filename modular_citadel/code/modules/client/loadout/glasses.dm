@@ -8,7 +8,15 @@
 
 /datum/gear/glasses/fakeblindfold
 	name = "Fake Blindfold"
-	path = /obj/item/clothing/glasses/fakeblindfold
+	path = /obj/item/clothing/glasses/cover/fakeblindfold
+
+/datum/gear/glasses/obsoleteblindfold
+	name = "Obsolete Fake Blindfold"
+	path = /obj/item/clothing/glasses/cover/obsolete
+
+/datum/gear/glasses/silk_blindfold
+	name = "Silk Blindfold"
+	path = /obj/item/clothing/glasses/cover/lace
 
 /datum/gear/glasses/cold
 	name = "Cold goggles"
@@ -20,7 +28,13 @@
 
 /datum/gear/glasses/eyepatch
 	name = "Eyepatch"
-	path = /obj/item/clothing/glasses/eyepatch
+	path = /obj/item/clothing/glasses/cover/eyepatch
+
+/datum/gear/glasses/veil
+	name = "Veil"
+	path = /obj/item/clothing/glasses/veil
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_initial_colors = list("#FFFFFF")
 
 /datum/gear/glasses/heat
 	name = "Heat goggles"

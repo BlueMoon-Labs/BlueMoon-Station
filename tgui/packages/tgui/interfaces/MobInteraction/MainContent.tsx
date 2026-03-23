@@ -1,6 +1,5 @@
 import { useBackend, useLocalState } from '../../backend';
-import { Button, Icon, Input, Section, Tabs, Stack, Slider } from '../../components';
-
+import { Button, Icon, Input, Section, Slider, Stack, Tabs } from '../../components';
 import {
   CharacterPrefsTab,
   ContentPreferencesTab,
@@ -74,7 +73,7 @@ export const MainContent = (props, context) => {
           </Stack>
         </Stack.Item>
         <Stack.Item grow basis={0} mb={tabIndex === 0 ? -1 : -2.3}>
-          <Section overflow="auto" fill>
+          <Section scrollable fill>
             {(() => {
               switch (tabIndex) {
                 default:

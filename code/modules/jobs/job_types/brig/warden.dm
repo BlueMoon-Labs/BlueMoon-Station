@@ -13,6 +13,32 @@
 	exp_requirements = 3000
 	exp_type = EXP_TYPE_SECURITY
 	considered_combat_role = TRUE
+	alt_titles = list(
+		"Gorlex Marauders Sergeant", //Триглав выше, для удобства
+		"Syndicate Warden", //Синди выше, для удобства
+		"AC Sergeant",
+		"Armory Manager",
+		"Armory Superintendent",
+		"Brig Chief",
+		"Brig Governor",
+		"Brig Overwatch",
+		"Brig Overwatch",
+		"Brig Sentry",
+		"Brig Sergeant",
+		"Brig Superintendent",
+		"Deputy Commissioner",
+		"Deputy Commissioner of Security",
+		"Dispatch Officer",
+		"Dungeon Master",
+		"Jailer",
+		"Master-at-Arms",
+		"Prison Administrator",
+		"Prison Chief",
+		"SAARE Supervisor",
+		"Safeguard Sergeant",
+		"Slutcurity Captain",
+		"Voreden"
+		)
 
 	outfit = /datum/outfit/job/warden
 	plasma_outfit = /datum/outfit/plasmaman/warden
@@ -28,7 +54,7 @@
 	mind_traits = list(TRAIT_LAW_ENFORCEMENT_METABOLISM)
 
 	display_order = JOB_DISPLAY_ORDER_WARDEN
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/nonviolent, /datum/quirk/blindness, /datum/quirk/monophobia)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/nonviolent, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/illiterate, /datum/quirk/onelife)
 	threat = 2
 
 	family_heirlooms = list(
@@ -62,15 +88,15 @@
 	head = /obj/item/clothing/head/warden
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
 	l_pocket = /obj/item/storage/bag/security
-	r_pocket = /obj/item/clothing/accessory/badge
+	r_pocket = /obj/item/reagent_containers/peacehypo
 	suit_store = /obj/item/gun/energy/pumpaction/defender
-	backpack_contents = list(/obj/item/reagent_containers/peacehypo, /obj/item/storage/box/sec_kit)
+	backpack_contents = list(/obj/item/storage/box/sec_kit)
 
 	backpack = /obj/item/storage/backpack/security
 	satchel = /obj/item/storage/backpack/satchel/sec
 	duffelbag = /obj/item/storage/backpack/duffelbag/sec
 	box = /obj/item/storage/box/survival/security
-	accessory = /obj/item/clothing/accessory/permit/special/security
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/badge)
 
 	implants = list(/obj/item/implant/mindshield)
 
@@ -93,7 +119,7 @@
 	l_pocket = /obj/item/restraints/handcuffs
 	suit_store = /obj/item/gun/energy/pumpaction/defender
 	backpack_contents = list(/obj/item/syndicate_uplink_high=1)
-	accessory = /obj/item/clothing/accessory/permit/special/security
+	accessory = list(/obj/item/clothing/accessory/permit/special/security)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo

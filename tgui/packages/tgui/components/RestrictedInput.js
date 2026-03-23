@@ -65,7 +65,7 @@ export class RestrictedInput extends Component {
     };
     this.handleKeyDown = (e) => {
       const { maxValue, minValue, onChange, onEnter } = this.props;
-      if (e.keyCode === KEY_ENTER) {
+      if (e.key === KEY_ENTER) {
         const safeNum = getClampedNumber(e.target.value, minValue, maxValue);
         this.setEditing(false);
         if (onChange) {
@@ -77,7 +77,7 @@ export class RestrictedInput extends Component {
         e.target.blur();
         return;
       }
-      if (e.keyCode === KEY_ESCAPE) {
+      if (e.key === KEY_ESCAPE) {
         if (this.props.onEscape) {
           this.props.onEscape(e);
           return;
@@ -98,14 +98,41 @@ export class RestrictedInput extends Component {
       input.value = getClampedNumber(nextValue, minValue, maxValue);
     }
     if (this.props.autoFocus || this.props.autoSelect) {
-      setTimeout(() => {
-        input.focus();
-
-        if (this.props.autoSelect) {
-          input.select();
-        }
-      }, 1);
+      this.setState({ editing: true }, () => {
+        requestAnimationFrame(() => {
+          const input = this.inputRef.current;
+          if (!input) return;
+          input.focus();
+          if (this.props.autoSelect) {
+            input.select();
+            // Re-select when external forces (BYOND window manager) reset selection
+            const reselect = () => {
+              if (document.activeElement === input
+                  && input.selectionStart === input.selectionEnd
+                  && input.value.length > 0) {
+                input.select();
+              }
+            };
+            const cleanup = () => {
+              document.removeEventListener('selectionchange', reselect);
+              input.removeEventListener('mousedown', cleanup);
+              input.removeEventListener('keydown', cleanup);
+            };
+            document.addEventListener('selectionchange', reselect);
+            input.addEventListener('mousedown', cleanup, { once: true });
+            input.addEventListener('keydown', cleanup, { once: true });
+            setTimeout(cleanup, 1000);
+          }
+        });
+      });
     }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.state.editing && nextState.editing) {
+      return false;
+    }
+    return true;
   }
 
   componentDidUpdate(prevProps, _) {
@@ -127,7 +154,7 @@ export class RestrictedInput extends Component {
 
   render() {
     const { props } = this;
-    const { onChange, onEnter, onInput, value, ...boxProps } = props;
+    const { autoFocus, autoSelect, onChange, onEnter, onInput, value, ...boxProps } = props;
     const { className, fluid, monospace, ...rest } = boxProps;
     return (
       <Box
@@ -147,7 +174,8 @@ export class RestrictedInput extends Component {
           onBlur={this.handleBlur}
           onKeyDown={this.handleKeyDown}
           ref={this.inputRef}
-          type="number"
+          type="text"
+          inputMode="numeric"
         />
       </Box>
     );

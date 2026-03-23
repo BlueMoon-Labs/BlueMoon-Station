@@ -456,9 +456,8 @@
 			for(var/mob/V in hearers(src))
 				V.show_message("<b>[src]</b>'s monitor flashes, \"Printer unavailable. Please allow a short time before attempting to print.\"")
 		else
-			bibledelay = 1
-			spawn(60)
-				bibledelay = 0
+			bibledelay = TRUE
+			addtimer(VARSET_CALLBACK(src, bibledelay, FALSE), 2 SECONDS)
 			make_external_book(newbook)
 
 	src.add_fingerprint(usr)

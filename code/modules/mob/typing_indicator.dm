@@ -15,15 +15,19 @@ GLOBAL_LIST_EMPTY(typing_indicator_overlays)
 /mob/proc/get_typing_indicator_icon_state()
 	return typing_indicator_state
 
-/// Generates the mutable appearance for typing indicator. Should prevent stuck overlays.
+/// Generates and caches the mutable appearance for typing indicator.
 /mob/proc/generate_typing_indicator()
 	var/state = get_typing_indicator_icon_state()
-	if(ispath(state))
-		var/atom/thing = new state(null)
-		var/mutable_appearance/generated = new(thing)
-		return generated
-	else
+	if(!ispath(state))
 		CRASH("Unsupported typing indicator state: [state]")
+	var/mutable_appearance/cached = GLOB.typing_indicator_overlays[state]
+	if(cached)
+		return cached
+	var/atom/thing = new state(null)
+	var/mutable_appearance/generated = new(thing)
+	qdel(thing)
+	GLOB.typing_indicator_overlays[state] = generated
+	return generated
 
 /**
   * Displays typing indicator.
@@ -31,18 +35,22 @@ GLOBAL_LIST_EMPTY(typing_indicator_overlays)
   * @param state_override - Sets the state that we will fetch. Defaults to src.get_typing_indicator_icon_state()
   * @param force - shows even if src.typing_indcator_enabled is FALSE.
   */
-/mob/proc/display_typing_indicator(timeout_override = TYPING_INDICATOR_TIMEOUT, state_override = generate_typing_indicator(), force = FALSE, isMe = null, isSay = null)
+/mob/proc/display_typing_indicator(timeout_override = TYPING_INDICATOR_TIMEOUT, state_override, force = FALSE, isMe = null, isSay = null)
 	if(((!typing_indicator_enabled || (stat != CONSCIOUS)) && !force) || typing_indicator_current)
 		return
+	if(!state_override && isSay)
+		state_override = generate_typing_indicator()
 	if(isMe)
 		var/state_of_bubble = "emotetyping"
 		var/mutable_appearance/bubble_overlay = mutable_appearance('icons/mob/talk.dmi', state_of_bubble, plane = RUNECHAT_PLANE)
 		typing_indicator_current = bubble_overlay
 		bubble_overlay.appearance_flags = RESET_COLOR | RESET_TRANSFORM | TILE_BOUND | PIXEL_SCALE
 		add_overlay(bubble_overlay)
+		play_fov_effect(src, 6, "talk", ignore_self = FALSE, dir = SOUTH)
 	if(isSay)
 		typing_indicator_current = state_override
 		add_overlay(state_override)
+		play_fov_effect(src, 6, "talk", ignore_self = FALSE, dir = SOUTH)
 	typing_indicator_timerid = addtimer(CALLBACK(src, PROC_REF(clear_typing_indicator)), timeout_override, TIMER_STOPPABLE)
 
 /**

@@ -23,6 +23,8 @@
 /// * `message_override` - if set to some string, will replace the emote message with the provided string. If `message` is used,
 /// this string can contain `%t`, which will be replaced with `message`.
 /mob/proc/emote(act, m_type = null, message = null, intentional = FALSE, message_override = null)
+	if(!act)
+		return
 	act = lowertext(act)
 	var/param = message
 	var/custom_param = findchar(act, " ")
@@ -66,12 +68,17 @@
 	if(.)
 		user.spin(20, 1)
 
-		if(iscyborg(user) && user.has_buckled_mobs())
+		if(iscyborg(user))
 			var/mob/living/silicon/robot/R = user
-			var/datum/component/riding/riding_datum = R.GetComponent(/datum/component/riding)
-			if(riding_datum)
-				for(var/mob/M in R.buckled_mobs)
-					riding_datum.force_dismount(M)
-			else
-				R.unbuckle_all_mobs()
+			if(R.hat)
+				R.hat.forceMove(get_turf(user))
+				R.hat = null
+
+			if(user.has_buckled_mobs())
+				var/datum/component/riding/riding_datum = R.GetComponent(/datum/component/riding)
+				if(riding_datum)
+					for(var/mob/M in R.buckled_mobs)
+						riding_datum.force_dismount(M)
+				else
+					R.unbuckle_all_mobs()
 

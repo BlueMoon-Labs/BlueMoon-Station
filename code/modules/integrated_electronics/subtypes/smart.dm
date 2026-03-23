@@ -101,7 +101,14 @@
 		return
 	idc.access = assembly.access_card.access
 	var/turf/a_loc = get_turf(assembly)
-	var/list/P = get_path_to(assembly, locate(get_pin_data(IC_INPUT, 1),get_pin_data(IC_INPUT, 2),a_loc.z), 200, id=idc, exclude=get_turf(get_pin_data_as_type(IC_INPUT,3, /atom)), simulated_only = 0)
+	if(!a_loc)
+		activate_pin(3)
+		return
+	var/turf/destination = locate(get_pin_data(IC_INPUT, 1), get_pin_data(IC_INPUT, 2), a_loc.z)
+	if(!destination)
+		activate_pin(3)
+		return
+	var/list/P = get_path_to(assembly, destination, 200, id=idc, exclude=get_turf(get_pin_data_as_type(IC_INPUT,3, /atom)), simulated_only = 0)
 
 	if(!P)
 		activate_pin(3)
@@ -245,7 +252,7 @@
 
 	brainholder.do_work(6)
 
-/mob/living/brain/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE)
+/mob/living/brain/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE, silent = FALSE)
 	return	check_bot_self
 
 /obj/item/integrated_circuit/smart/advanced_pathfinder/proc/hippie_xor_decrypt()
@@ -381,5 +388,5 @@
 
 	paiholder.do_work(6)
 
-/mob/living/silicon/pai/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE)
+/mob/living/silicon/pai/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE, silent = FALSE)
 	return	check_bot_self

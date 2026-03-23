@@ -90,6 +90,10 @@ GLOBAL_LIST_EMPTY(potential_mods_per_skill)
 	}
 
 /datum/mind/proc/add_skill_modifier(id)
+	if(islist(id))
+		for(var/modifier_id in id)
+			add_skill_modifier(modifier_id)
+		return
 	if(LAZYACCESS(skill_holder.all_current_skill_modifiers, id))
 		return
 	var/datum/skill_modifier/M = GLOB.skill_modifiers[id]
@@ -104,7 +108,10 @@ GLOBAL_LIST_EMPTY(potential_mods_per_skill)
 		LAZYINITLIST(skill_holder.skill_affinity_mods)
 	if(M.modifier_flags & MODIFIER_SKILL_LEVEL)
 		LAZYINITLIST(skill_holder.skill_level_mods)
-	for(var/path in GLOB.potential_skills_per_mod[M.target_skills_key])
+	var/list/target_skill_paths = GLOB.potential_skills_per_mod[M.target_skills_key]
+	if(!target_skill_paths)
+		target_skill_paths = list()
+	for(var/path in target_skill_paths)
 		if(M.modifier_flags & MODIFIER_SKILL_VALUE)
 			ADD_MOD_STEP(skill_holder.skill_value_mods, path, skill_holder.original_values, get_skill_value(path, FALSE))
 		if(M.modifier_flags & MODIFIER_SKILL_AFFINITY)
@@ -128,6 +135,10 @@ GLOBAL_LIST_EMPTY(potential_mods_per_skill)
 	}
 
 /datum/mind/proc/remove_skill_modifier(id, mind_transfer = FALSE)
+	if(islist(id))
+		for(var/modifier_id in id)
+			remove_skill_modifier(modifier_id, mind_transfer)
+		return
 	if(!LAZYACCESS(skill_holder.all_current_skill_modifiers, id))
 		return
 	var/datum/skill_modifier/M = GLOB.skill_modifiers[id]
@@ -136,7 +147,10 @@ GLOBAL_LIST_EMPTY(potential_mods_per_skill)
 
 	if(!skill_holder.skill_value_mods && !skill_holder.skill_affinity_mods && !skill_holder.skill_level_mods)
 		return
-	for(var/path in GLOB.potential_skills_per_mod[M.target_skills_key])
+	var/list/target_skill_paths = GLOB.potential_skills_per_mod[M.target_skills_key]
+	if(!target_skill_paths)
+		target_skill_paths = list()
+	for(var/path in target_skill_paths)
 		if(M.modifier_flags & MODIFIER_SKILL_VALUE && skill_holder.skill_value_mods)
 			REMOVE_MOD_STEP(skill_holder.skill_value_mods, path, skill_holder.original_values)
 		if(M.modifier_flags & MODIFIER_SKILL_AFFINITY && skill_holder.skill_affinity_mods)

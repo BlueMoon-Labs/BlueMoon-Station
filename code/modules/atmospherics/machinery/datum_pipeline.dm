@@ -15,12 +15,21 @@
 
 /datum/pipeline/Destroy()
 	SSair.networks -= src
+	SSair.currentrun -= src
 	if(air?.return_volume())  //	BLUEMOON EDIT: TODO:runtime
 		temporarily_store_air()
-	for(var/obj/machinery/atmospherics/pipe/P in members)
+	for(var/obj/machinery/atmospherics/pipe/P as anything in members)
 		P.parent = null
-	for(var/obj/machinery/atmospherics/components/C in other_atmosmch)
-		C.nullifyPipenet(src)
+	for(var/obj/machinery/atmospherics/components/C as anything in other_atmosmch)
+		if(!C.parents)
+			continue
+		for(var/i in 1 to length(C.parents))
+			if(C.parents[i] == src)
+				C.parents[i] = null
+	members.Cut()
+	other_atmosmch.Cut()
+	other_airs.Cut()
+	QDEL_NULL(air)
 	return ..()
 
 /datum/pipeline/process()
@@ -31,8 +40,9 @@
 	update = air?.react(src)
 
 /datum/pipeline/proc/build_pipeline(obj/machinery/atmospherics/base)
-	if(QDELETED(base))	//	BLUEMOON EDIT: TODO:runtime
-		return	//	BLUEMOON EDIT: TODO:runtime
+	if(QDELETED(base))
+		stack_trace("build_pipeline() called with QDELETED base [base?.type] at [base ? COORD(base) : "null"]")
+		return
 	var/volume = 0
 	if(istype(base, /obj/machinery/atmospherics/pipe))
 		var/obj/machinery/atmospherics/pipe/E = base
@@ -72,7 +82,7 @@
 
 							if(item.air_temporary)
 								air.merge(item.air_temporary)
-								item.air_temporary = null
+								QDEL_NULL(item.air_temporary)
 					else
 						P.setPipenet(src, borderline)
 						addMachineryMember(P)
@@ -95,6 +105,7 @@
 	if (!length(returned_airs) || (null in returned_airs))
 		stack_trace("addMachineryMember: Nonexistent (empty list) or null machinery gasmix added to pipeline datum from [C] \
 		which is of type [C.type]. Nearby: ([C.x], [C.y], [C.z])")
+		listclearnulls(returned_airs)
 	other_airs |= returned_airs
 
 /datum/pipeline/proc/addMember(obj/machinery/atmospherics/A, obj/machinery/atmospherics/N)
@@ -108,7 +119,8 @@
 			if(I.parent == src)
 				continue
 			var/datum/pipeline/E = I.parent
-			merge(E)
+			if(E)
+				merge(E)
 		if(!members.Find(P))
 			members += P
 			air.set_volume(air.return_volume() + P.volume)
@@ -121,12 +133,15 @@
 		return
 	air.set_volume(air.return_volume() + E.air.return_volume())
 	members.Add(E.members)
-	for(var/obj/machinery/atmospherics/pipe/S in E.members)
+	for(var/obj/machinery/atmospherics/pipe/S as anything in E.members)
 		S.parent = src
 	air.merge(E.air)
-	for(var/obj/machinery/atmospherics/components/C in E.other_atmosmch)
+	for(var/obj/machinery/atmospherics/components/C as anything in E.other_atmosmch)
 		C.replacePipenet(E, src)
 	other_atmosmch |= E.other_atmosmch
+	if(null in E.other_airs)
+		stack_trace("merge(): Pipeline [E]([REF(E)]) contains null gas mixtures in other_airs. Cleaning before merge.")
+		listclearnulls(E.other_airs)
 	other_airs |= E.other_airs
 	E.members.Cut()
 	E.other_atmosmch.Cut()
@@ -137,6 +152,8 @@
 	return
 
 /obj/machinery/atmospherics/pipe/addMember(obj/machinery/atmospherics/A)
+	if(!parent)
+		return
 	parent.addMember(A, src)
 
 /obj/machinery/atmospherics/components/addMember(obj/machinery/atmospherics/A)
@@ -149,7 +166,7 @@
 /datum/pipeline/proc/temporarily_store_air()
 	//Update individual gas_mixtures by volume ratio
 
-	for(var/obj/machinery/atmospherics/pipe/member in members)
+	for(var/obj/machinery/atmospherics/pipe/member as anything in members)
 		member.air_temporary = new
 		member.air_temporary.set_volume(member.volume)
 		member.air_temporary.copy_from(air)
@@ -215,7 +232,9 @@
 	update = TRUE
 
 /datum/pipeline/proc/return_air()
-	. = other_airs + air
+	. = other_airs.Copy()
+	if(air)
+		. += air
 	if(null in .)
 		listclearnulls(.)
 		stack_trace("[src]([REF(src)]) has one or more null gas mixtures, which may cause bugs. Null mixtures will not be considered in reconcile_air().")
@@ -233,8 +252,11 @@
 		var/datum/pipeline/P = PL[i]
 		if(!P)
 			continue
-		GL += P.return_air()
-		for(var/atmosmch in P.other_atmosmch)
+		if(length(P.other_airs))
+			GL += P.other_airs
+		if(P.air)
+			GL += P.air
+		for(var/obj/machinery/atmospherics/components/atmosmch as anything in P.other_atmosmch)
 			if (istype(atmosmch, /obj/machinery/atmospherics/components/binary/valve))
 				var/obj/machinery/atmospherics/components/binary/valve/V = atmosmch
 				if(V.on)
@@ -253,4 +275,6 @@
 
 /datum/pipeline/proc/reconcile_air()
 	var/list/datum/gas_mixture/GL = get_all_connected_airs()
+	if(null in GL)
+		listclearnulls(GL)
 	equalize_all_gases_in_list(GL)

@@ -24,7 +24,7 @@
 
 /obj/machinery/computer/camera_advanced/abductor/Initialize(mapload)
 	. = ..()
-	
+
 	if(tele_in_action)
 		actions += new tele_in_action(src)
 	if(tele_out_action)
@@ -49,8 +49,9 @@
 /datum/action/innate/teleport_in/Activate()
 	if(QDELETED(owner) || !iscarbon(owner))
 		return
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
 	var/mob/camera/aiEye/remote/remote_eye = owner.remote_control
-	var/obj/machinery/abductor/pad/P = target
+	var/obj/machinery/abductor/pad/P = obs_console.console.pad
 
 	if(GLOB.cameranet.checkTurfVis(remote_eye.loc))
 		P.PadToLoc(remote_eye.loc)
@@ -63,7 +64,8 @@
 /datum/action/innate/teleport_out/Activate()
 	if(QDELETED(owner) || !iscarbon(owner))
 		return
-	var/obj/machinery/abductor/console/console = target
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
+	var/obj/machinery/abductor/console/console = obs_console.console
 
 	console.TeleporterRetrieve()
 
@@ -75,8 +77,9 @@
 /datum/action/innate/teleport_self/Activate()
 	if(QDELETED(owner) || !iscarbon(owner))
 		return
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
 	var/mob/camera/aiEye/remote/remote_eye = owner.remote_control
-	var/obj/machinery/abductor/pad/P = target
+	var/obj/machinery/abductor/pad/P = obs_console.console.pad
 
 	if(GLOB.cameranet.checkTurfVis(remote_eye.loc))
 		P.MobToLoc(remote_eye.loc, owner)
@@ -89,7 +92,8 @@
 /datum/action/innate/vest_mode_swap/Activate()
 	if(QDELETED(owner) || !iscarbon(owner))
 		return
-	var/obj/machinery/abductor/console/console = target
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
+	var/obj/machinery/abductor/console/console = obs_console.console
 	console.FlipVest()
 
 
@@ -101,7 +105,8 @@
 /datum/action/innate/vest_disguise_swap/Activate()
 	if(QDELETED(owner) || !iscarbon(owner))
 		return
-	var/obj/machinery/abductor/console/console = target
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
+	var/obj/machinery/abductor/console/console = obs_console.console
 	console.SelectDisguise(remote=1)
 
 /datum/action/innate/set_droppoint
@@ -114,6 +119,6 @@
 		return
 
 	var/mob/camera/aiEye/remote/remote_eye = owner.remote_control
-
-	var/obj/machinery/abductor/console/console = target
+	var/obj/machinery/computer/camera_advanced/abductor/obs_console = target
+	var/obj/machinery/abductor/console/console = obs_console.console
 	console.SetDroppoint(remote_eye.loc,owner)

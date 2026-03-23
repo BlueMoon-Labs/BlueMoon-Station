@@ -70,7 +70,7 @@ IMPORTANT FACTORS TO CONSIDER WHILE BALANCING
 			startThirst = get_thirst(M)
 			if(pollStarted == FALSE)
 				pollStarted = TRUE
-				ghosts = pollGhostCandidates("Do you want to play as [M]'s SDGF clone? (Don't ERP without permission from the original, and respect their character.)", ignore_category = POLL_IGNORE_CLONE)
+				ghosts = pollGhostCandidates("Do you want to play as [M]'s SDGF clone? (Don't ERP without permission from the original, and respect their character.)", ignore_category = POLL_IGNORE_CLONE, priority_check = FALSE)
 				log_reagent("FERMICHEM: [M] ckey: [M.key] has taken SDGF, and ghosts have been polled.")
 			to_chat(M,"<span class='notice'>If a ghost takes your clone, they will be identical to you. You may wish to add note (IC tab) to help them play your character better, and keep them up on the situation.</span>")
 		if(20 to INFINITY)
@@ -245,7 +245,7 @@ IMPORTANT FACTORS TO CONSIDER WHILE BALANCING
 		if (M.nutrition < 1500)
 			M.adjust_nutrition(500)
 
-/datum/reagent/fermi/SDGF/reaction_mob(mob/living/carbon/human/M, method=TOUCH, reac_volume)
+/datum/reagent/fermi/SDGF/reaction_mob(mob/living/carbon/human/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(volume<5)
 		M.visible_message("<span class='warning'>The growth factor froths upon [M]'s body, failing to do anything of note.</span>")
 		return

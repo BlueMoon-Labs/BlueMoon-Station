@@ -56,7 +56,7 @@
 	for(oldtool in R.module)
 		R.module.modules.Swap(newtool_index, oldtool_index)
 		R.module.basic_modules.Swap(newtool_index, oldtool_index)
-	R.module.remove_module(exptool, TRUE)
+		R.module.remove_module(exptool, TRUE)
 
 /* Shit doesnt work, work on it later
 /obj/item/borg/upgrade/plasma
@@ -147,7 +147,7 @@
 	for(RPD in R.module)
 		R.module.modules.Swap(BRPD_index, RPD_index)
 		R.module.basic_modules.Swap(BRPD_index, RPD_index)
-	R.module.remove_module(BRPD, TRUE)
+		R.module.remove_module(BRPD, TRUE)
 
 /obj/item/borg/upgrade/expand/action(mob/living/silicon/robot/R, user = usr)
 	. = ..()

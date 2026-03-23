@@ -62,3 +62,7 @@
 	description = "A Japanese sauce that's heavy on umami."
 	data = list("umami" = 1)
 	color = "#3F0D02"
+	glass_icon = 'modular_bluemoon/icons/obj/food/food_ingredients.dmi'
+	glass_icon_state = "sambal"
+	glass_name = "Teriyaki Sauce"
+	glass_desc = "A Japanese sauce that's heavy on umami."

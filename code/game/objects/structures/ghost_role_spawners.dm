@@ -1,3 +1,7 @@
+GLOBAL_LIST_EMPTY(ashwalker_spawns)
+
+#define ASH_RESPAWN_COOLDOWN 20 MINUTES
+
 /datum/team/ghost_role
 	name = "Ghost Role"
 	show_roundend_report = FALSE
@@ -83,10 +87,17 @@
 			if(damage_amount)
 				playsound(loc, 'sound/items/welder.ogg', 100, TRUE)
 
-/obj/structure/ash_walker_eggshell/attack_ghost(mob/user) //Pass on ghost clicks to the mob spawner
-	if(egg)
-		egg.attack_ghost(user)
-	. = ..()
+/obj/structure/ash_walker_eggshell/attack_ghost(mob/user)
+    if(egg)
+        var/time_spawn = GLOB.ashwalker_spawns[user.ckey]
+        if(time_spawn && world.time - time_spawn < ASH_RESPAWN_COOLDOWN)
+            var/time_left = max(0, ASH_RESPAWN_COOLDOWN - (world.time - time_spawn))
+            var/mins_left  = floor(time_left / 600)        // 600 тиков = 1 минута
+            var/secs_left  = floor((time_left % 600) / 10) // остаток в секундах
+            to_chat(user, span_warning("Необходимо подождать ещё [mins_left] минут[mins_left % 10 == 1 && mins_left % 100 != 11 ? "а" : (mins_left % 10 >= 2 && mins_left % 10 <= 4 && (mins_left % 100 < 10 || mins_left % 100 >= 20) ? "ы" : "")] и [secs_left] секунд[secs_left % 10 == 1 && secs_left % 100 != 11 ? "а" : (secs_left % 10 >= 2 && secs_left % 10 <= 4 && (secs_left % 100 < 10 || secs_left % 100 >= 20) ? "ы" : "")] до возможности возродиться."))
+            return
+        egg.attack_ghost(user)
+    . = ..()
 
 /obj/structure/ash_walker_eggshell/Destroy()
 	if(!egg)
@@ -161,6 +172,8 @@
 		if(team)
 			new_spawn.mind.add_antag_datum(/datum/antagonist/ashwalker, team)
 			team.players_spawned += (new_spawn.ckey)
+		if(new_spawn.ckey)
+			GLOB.ashwalker_spawns[new_spawn.ckey] = world.time
 		eggshell.egg = null
 		QDEL_NULL(eggshell)
 
@@ -320,7 +333,7 @@
 	short_desc = "Вы застряли в этом Безбожном Месте."
 	flavour_text = "Каждый день вы еле-еле сводите концы с концами, \
 	враждебными существами и Пепельными Дрейками, слетающими с безоблачного неба. Все, что вы можете пожелать, это почувствовать мягкую траву между пальцами ног и \
-	свежий воздух Земли. Эти мысли развеиваются очередным воспоминанием о том, как вы сюда попали..."
+	свежий воздух Земли. Эти мысли развеиваются очередным воспоминанием о том, как вы сюда попали... Также в вашем распоряжении есть пергамент что поможет вам создавать и метала и стекла различные детали и платы что могут вам помочь."
 	assignedrole = "Hermit"
 	can_load_appearance = TRUE
 	loadout_enabled = TRUE
@@ -333,31 +346,40 @@
 	switch(arrpee)
 		if(1)
 			flavour_text += "вы были помощником [pick("Оружейника", "Корабельщика", "Финансового Менеджера")] на небольшой торговой станции в нескольких секторах отсюда. Рейдеры напали на ваше судно и в спасательном отсеке оставалась \
-			всего только одна капсула. Вы отбросили или отвлекли, или вас пропустили и в итоге благодаря спасательной капсуле вы... спаслись? Так или иначе, вы не забудете ту кучу испуганных лиц в момент вашего отлёта."
+			всего только одна капсула. Вы отбросили или отвлекли, или вас пропустили и в итоге благодаря спасательной капсуле вы... спаслись? Так или иначе, вы не забудете ту кучу испуганных лиц в момент вашего отлёта. Вы смогли с собой взять ваш чертеж с наработками, где вы создали собственную технику создания важной машинерии и деталей, вы еще в этом деле аматор, но со временем явно сможете делать лучше."
 			outfit.uniform = /obj/item/clothing/under/misc/assistantformal
 			outfit.shoes = /obj/item/clothing/shoes/sneakers/black
 			outfit.back = /obj/item/storage/backpack
+			backpack_contents = list(
+				/obj/item/research_paper = 1,)
 		if(2)
 			flavour_text += "вы изгнанник из кооператива 'Тигр'. Их технологический фанатизм заставил вас усомниться в силе и убеждениях Экзолитиков и они сочли вас \
 			еретиком, и подвергли вас многочасовым ужасным пыткам. Вы были в нескольких часах от казни, когда ваш высокопоставленный друг в Кооперативе сумел достать для вас капсулу, \
-			зашифровал координаты места назначения и запустил ее. Вы очнулись от стазиса, когда приземлились... и с тех пор выживаете - с трудом, но выживаете."
+			зашифровал координаты места назначения и запустил ее. Вы очнулись от стазиса, когда приземлились... и с тех пор выживаете - с трудом, но выживаете. Вы смогли с собой взять ваш чертеж с наработками, где вы создали собственную технику создания важной машинерии и деталей, вы еще в этом деле аматор, но со временем явно сможете делать лучше."
 			outfit.uniform = /obj/item/clothing/under/rank/prisoner
 			outfit.shoes = /obj/item/clothing/shoes/sneakers/orange
 			outfit.back = /obj/item/storage/backpack
+			backpack_contents = list(
+				/obj/item/research_paper = 1,)
 		if(3)
 			flavour_text += "Вы были врачом на одной из космических станций Nanotrasen, но вы оставили позади тиранию этой проклятой корпорации и все то, за что она стояла. Из метафорического ада \
-			в буквальный - вы обнаружили, что вам все же не хватает чистого воздуха и теплых полов из сего того, что вы оставили... но вы все равно предпочтете быть здесь, а не там."
+			в буквальный - вы обнаружили, что вам все же не хватает чистого воздуха и теплых полов из сего того, что вы оставили... но вы все равно предпочтете быть здесь, а не там. Вы смогли с собой взять ваш чертеж с наработками, где вы создали собственную технику создания важной машинерии и деталей, вы еще в этом деле аматор, но со временем явно сможете делать лучше."
 			outfit.uniform = /obj/item/clothing/under/rank/medical/doctor
 			outfit.suit = /obj/item/clothing/suit/toggle/labcoat
 			outfit.back = /obj/item/storage/backpack/medic
 			outfit.shoes = /obj/item/clothing/shoes/sneakers/black
+			backpack_contents = list(
+				/obj/item/research_paper = 1,)
 		if(4)
 			flavour_text += "Ваши друзья всегда подшучивали над вами за то, что вы 'Не Играете с Полной Колодой', как они так доброжелательно выражались. Похоже, они были правы, когда вы, находясь на экскурсии \
 			по одному из самых современных исследовательских комплексов Nanotrasen, оказались в одной из спасательных капсул в одиночестве и увидели красную кнопку. Она была большой и блестящей, и это привлекло ваше внимание. Вы нажали на неё \
-			и после ужасающего, и быстрого путешествия в течение нескольких дней вы оказались здесь. С тех пор у вас было время поумнеть и вы думаете, что ваши старые друзья сейчас бы не смеялись."
+			и после ужасающего, и быстрого путешествия в течение нескольких дней вы оказались здесь. С тех пор у вас было время поумнеть и вы думаете, что ваши старые друзья сейчас бы не смеялись. За время вы научились выживать, и создали собственную технику что может вам помочь в создании различной машинерии и деталей к ним."
 			outfit.uniform = /obj/item/clothing/under/color/grey/glorf
 			outfit.shoes = /obj/item/clothing/shoes/sneakers/black
 			outfit.back = /obj/item/storage/backpack
+			backpack_contents = list(
+				/obj/item/research_paper = 1,)
+
 
 /obj/effect/mob_spawn/human/hermit/Destroy()
 	new/obj/structure/fluff/empty_cryostasis_sleeper(get_turf(src))
@@ -366,6 +388,7 @@
 /obj/effect/mob_spawn/human/hermit/special(mob/living/carbon/human/new_spawn)
 	. = ..()
 	ADD_TRAIT(new_spawn,TRAIT_EXEMPT_HEALTH_EVENTS,GHOSTROLE_TRAIT)
+	ADD_TRAIT(new_spawn,TRAIT_KNOWS_RESEARCH,GHOSTROLE_TRAIT)
 
 //Broken rejuvenation pod: Spawns in animal hospitals in lavaland. Ghosts become disoriented interns and are advised to search for help.
 /obj/effect/mob_spawn/human/doctor/alive/lavaland
@@ -875,7 +898,7 @@
 
 /datum/action/toggle_dead_chat_mob
 	icon_icon = 'icons/mob/mob.dmi'
-	button_icon_state = "ghost"
+	button_icon_state = "ghost1"
 	name = "Toggle deadchat"
 	desc = "Turn off or on your ability to hear ghosts."
 
@@ -1319,9 +1342,9 @@
 	name = "DS-2 personnel"
 	mob_name = "DS-2 personnel"
 	short_desc = "Вы Специалист Синдиката, работающий на Общем Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием \
-	'Благославлённый' под Начальством Адмирала одной из Сторон и изучающий аномальное поле Системы Синих Лун."
+	'Благословлённый' под Начальством Адмирала одной из Сторон и изучающий аномальное поле Системы Синих Лун."
 	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за \
-	операциями NT и Кордоном. Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
+	операциями NT и Кордоном. Ваш приказ - поддерживать целостность своего объекта, следить за положением в системе, в условиях 'Безопасной Системы' оказывать информационную поддержку и по возможности не высовываться за пределы своего сектора."
 	important_info = "Вы не антагонист."
 	roundstart = FALSE
 	death = FALSE
@@ -1337,7 +1360,7 @@
 /obj/effect/mob_spawn/human/ds2/prisoner
 	name = "Syndicate Prisoner"
 	mob_name = "a Syndicate prisoner"
-	short_desc = "По какой-то причине вы оказались в тюремной части Корабля 'Благославлённый' с неизвестным сроком."
+	short_desc = "По какой-то причине вы оказались в тюремной части Корабля 'Благословлённый' с неизвестным сроком."
 	flavour_text = "Не осознавая, где вы находитесь, вы знаете только то, что вы в плену. Вы были высокопоставленным лицом \
 	Nanotrasen или же серьёзно нарушили кодекс Синдиката, или являетесь кем бы то не было другим и это единственная информация, \
 	которая таится в вашей голове. Что касается того, почему вы здесь? Ваша голова раскалывается и вы просто не помните..."
@@ -1353,9 +1376,9 @@
 	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "sleeper_s"
 	short_desc = "Вы Специалист Синдиката, работающий на Оперативной Базе Синдиката из формирования 'Глубокий Космос Два' под названием \
-	'Благославлённый' под Начальством Адмирала одной из Сторон и изучающий аномальное поле Системы Синих Лун."
+	'Благословлённый' под Начальством Адмирала одной из Сторон и изучающий аномальное поле Системы Синих Лун."
 	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за операциями NT и Кордоном. \
-	Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
+	Ваш приказ - поддерживать целостность своего объекта, следить за положением в системе, в условиях 'Безопасной Системы' оказывать информационную поддержку и по возможности не высовываться за пределы своего сектора."
 	important_info = "Вы не антагонист."
 	outfit = /datum/outfit/ds2/syndicate
 	starting_money = 1000 // BLUEMOON ADD
@@ -1365,10 +1388,10 @@
 	mob_name = "a Syndicate leader"
 	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "sleeper_s"
-	short_desc = "Вы Адмирал одной из ячеек Синдиката, работающий на Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием 'Благославлённый'. \
+	short_desc = "Вы Адмирал одной из ячеек Синдиката, работающий на Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием 'Благословлённый'. \
 	Приведите Объект под вашей ответственностью к успеху, который планировался, либо умрите - стараясь."
 	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за операциями NT и Кордоном. \
-	Ваш приказ - поддерживать целостность корабля и по возможности не высовываться."
+	Ваш приказ - поддерживать целостность своего объекта, следить за положением в системе, в условиях 'Безопасной Системы' оказывать информационную поддержку и по возможности не высовываться за пределы своего сектора."
 	important_info = "Вы не антагонист."
 	outfit = /datum/outfit/ds2/syndicate_command
 	starting_money = 5000 // BLUEMOON ADD
@@ -1390,10 +1413,6 @@
 /obj/effect/mob_spawn/human/ds2/syndicate/service
 	mob_name = "a Waffle Co worker"
 	outfit = /datum/outfit/ds2/syndicate/service
-
-/obj/effect/mob_spawn/human/ds2/syndicate/miner
-	mob_name = "a Donk Co mining worker"
-	outfit = /datum/outfit/ds2/syndicate/miner
 
 /obj/effect/mob_spawn/human/ds2/syndicate/enginetech
 	mob_name = "a GEC ship engineer"
@@ -1420,7 +1439,12 @@
 	outfit = /datum/outfit/ds2/syndicate_command/corporateliaison
 
 /obj/effect/mob_spawn/human/ds2/syndicate_command/comms
-	mob_name = "Syndicate Comms Agent"
+	name = "a Syndicate Comms Agent"
+	mob_name = "a Syndicate Comms Agent"
+	short_desc = "Вы Агент или Офицер Прослушки одной из ячеек Синдиката, работающий на Корабле Синдиката из ячейки 'Глубокий Космос Два' под названием 'Благославлённый'. \
+	Ваш приказ - поддерживать целостность своего объекта, следить за положением в системе, в условиях 'Безопасной Системы' оказывать информационную поддержку и по возможности не высовываться за пределы своего сектора."
+	flavour_text = "Синдикат счел нужным направить передовую оперативную базу в Сектор Тринадцать для наблюдения за операциями NT и Кордоном. \
+	Приведите Объект под вашей ответственностью к успеху, который планировался, либо умрите - стараясь."
 	outfit = /datum/outfit/ds2/syndicate_command/comms
 
 /obj/effect/mob_spawn/human/ds2/syndicate_command/admiral
@@ -1454,7 +1478,7 @@
 	uniform = /obj/item/clothing/under/syndicate
 	shoes = /obj/item/clothing/shoes/combat
 	ears = /obj/item/radio/headset/ds2
-	back = /obj/item/storage/backpack/duffelbag/syndie
+	back = /obj/item/storage/backpack/duffelbag/syndie/backpack
 	backpack_contents = list(
 		/obj/item/storage/box/survival = 1,
 		/obj/item/crowbar/red = 1,
@@ -1463,45 +1487,22 @@
 	id_trim = /datum/id_trim/syndicom/ds2
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/deathrattle/deepspacecrew)
 
-/datum/outfit/ds2/syndicate/miner
-	name = "DS-2 Mining Officer"
-	uniform = /obj/item/clothing/under/syndicate/overalls
-	belt = /obj/item/storage/bag/ore
-	back = /obj/item/storage/backpack/duffelbag/syndie
-	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
-		/obj/item/crowbar/red = 1,
-		/obj/item/kitchen/knife/combat/survival = 1,
-		/obj/item/t_scanner/adv_mining_scanner/lesser = 1,
-		/obj/item/gun/energy/kinetic_accelerator = 1,
-		)
-	l_pocket = /obj/item/card/mining_point_card
-	r_pocket = /obj/item/mining_voucher
-	head = /obj/item/clothing/head/soft/black
-	id = /obj/item/card/id/syndicate/advanced/ds/mining
-	id_trim = /datum/id_trim/syndicom/ds2/miner
-
-/obj/item/card/id/syndicate/advanced/ds/mining
-	assignment = "DS-2 Mining Officer"
-	icon_state = "id_dsblack"
+	accessory = list(/obj/item/clothing/accessory/permit/special/deep_space_syndicate)
 
 /datum/outfit/ds2/syndicate/service
 	name = "DS-2 General Staff"
 	uniform = /obj/item/clothing/under/syndicate
-	back = /obj/item/storage/backpack/duffelbag/syndie
+	back = /obj/item/storage/backpack/duffelbag/syndie/backpack/cargo
 	suit = /obj/item/clothing/suit/apron/chef
 	head = /obj/item/clothing/head/soft/mime
 	id = /obj/item/card/id/syndicate/advanced/ds/general
 	id_trim = /datum/id_trim/syndicom/ds2/syndicatestaff
 
-/obj/item/card/id/syndicate/advanced/ds/general
-	assignment = "DS-2 General Staff"
-
 /datum/outfit/ds2/syndicate/enginetech
 	name = "DS-2 Engine Technician"
 	uniform = /obj/item/clothing/under/syndicate/overalls
 	head = /obj/item/clothing/head/soft/sec/syndicate
-	back = /obj/item/storage/backpack/duffelbag/syndie
+	back = /obj/item/storage/backpack/duffelbag/syndie/backpack/eng
 	backpack_contents = list(
 		/obj/item/storage/box/survival = 1,
 		)
@@ -1513,21 +1514,15 @@
 	id = /obj/item/card/id/syndicate/advanced/ds/enginetech
 	id_trim = /datum/id_trim/syndicom/ds2/enginetechnician
 
-/obj/item/card/id/syndicate/advanced/ds/enginetech
-	assignment = "DS-2 Engine Technician"
-
 /datum/outfit/ds2/syndicate/researcher
 	name = "DS-2 Researcher"
 	uniform = /obj/item/clothing/under/rank/rnd/scientist/utility/syndicate
 	suit = /obj/item/clothing/suit/toggle/labcoat/science
 	glasses = /obj/item/clothing/glasses/science
 	gloves = /obj/item/clothing/gloves/color/black
-	back = /obj/item/storage/backpack/duffelbag/syndie
+	back = /obj/item/storage/backpack/duffelbag/syndie/backpack/sci
 	id = /obj/item/card/id/syndicate/advanced/ds/researcher
 	id_trim = /datum/id_trim/syndicom/ds2/researcher
-
-/obj/item/card/id/syndicate/advanced/ds/researcher
-	assignment = "DS-2 Researcher"
 
 /datum/outfit/ds2/syndicate/stationmed
 	name = "DS-2 Medical Officer"
@@ -1535,7 +1530,7 @@
 	suit = /obj/item/clothing/suit/toggle/labcoat/syndicate
 	belt = /obj/item/storage/belt/medolier/full
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
-	back = /obj/item/storage/backpack/duffelbag/syndie
+	back = /obj/item/storage/backpack/duffelbag/syndie/backpack/med
 	id = /obj/item/card/id/syndicate/advanced/ds/stationmed
 	id_trim = /datum/id_trim/syndicom/ds2/medicalofficer
 	backpack_contents = list(
@@ -1544,27 +1539,19 @@
 		/obj/item/storage/firstaid/tactical = 1,
 		)
 
-/obj/item/card/id/syndicate/advanced/ds/stationmed
-	assignment = "DS-2 Medical Officer"
-
 /datum/outfit/ds2/syndicate/brigoff
 	name = "DS-2 Brig Officer"
 	uniform = /obj/item/clothing/under/syndicate/combat
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	suit = /obj/item/clothing/suit/armor/bulletproof/old
-	back = /obj/item/storage/backpack/duffelbag/syndie
+	back = /obj/item/storage/backpack/duffelbag/syndie/backpack
 	head = /obj/item/clothing/head/helmet/swat/ds
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
 	r_pocket = /obj/item/flashlight/seclite
 	mask = /obj/item/clothing/mask/gas/syndicate
 	ears = /obj/item/radio/headset/ds2
-	id = /obj/item/card/id/syndicate/advanced/ds/command/brigoff
+	id = /obj/item/card/id/syndicate/advanced/ds/black/brigoff
 	id_trim = /datum/id_trim/syndicom/ds2/brigofficer
-
-/obj/item/card/id/syndicate/advanced/ds/command/brigoff
-	assignment = "DS-2 Brig Officer"
-	icon_state = "id_dsblack"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate/post_equip(mob/living/carbon/human/syndicate)
 	syndicate.faction |= ROLE_SYNDICATE
@@ -1576,7 +1563,7 @@
 	uniform = /obj/item/clothing/under/syndicate
 	shoes = /obj/item/clothing/shoes/combat
 	ears = /obj/item/radio/headset/ds2/command
-	back = /obj/item/storage/backpack/duffelbag/syndie
+	back = /obj/item/storage/backpack/duffelbag/syndie/backpack/com
 	backpack_contents = list(
 		/obj/item/storage/box/survival = 1,
 		/obj/item/crowbar/red = 1,
@@ -1585,10 +1572,7 @@
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/deathrattle/deepspacecrew)
 	id_trim = /datum/id_trim/syndicom/ds2
 
-/obj/item/card/id/syndicate/advanced/ds/gold/command
-	assignment = "DS-2 Command Operative"
-	icon_state = "id_dsgold"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
+	accessory = list(/obj/item/clothing/accessory/permit/special/deep_space_syndicate)
 
 /datum/outfit/ds2/syndicate_command/masteratarms
 	name = "DS-2 Master At Arms"
@@ -1596,7 +1580,7 @@
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	suit = /obj/item/clothing/suit/armor/vest/warden/syndicate
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	back = /obj/item/storage/backpack/duffelbag/syndie
+	back = /obj/item/storage/backpack/duffelbag/syndie/backpack/com
 	head = /obj/item/clothing/head/HoS/beret/syndicate
 	r_pocket = /obj/item/flashlight/seclite
 	implants = list(
@@ -1607,22 +1591,14 @@
 	id = /obj/item/card/id/syndicate/advanced/ds/gold/command/masteratarms
 	id_trim = /datum/id_trim/syndicom/ds2/masteratarms
 
-/obj/item/card/id/syndicate/advanced/ds/gold/command/masteratarms
-	assignment = "DS-2 Master At Arms"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
-
 /datum/outfit/ds2/syndicate_command/corporateliaison
 	name = "DS-2 Corporate Liasion"
 	uniform = /obj/item/clothing/under/syndicate/sniper
 	head = /obj/item/clothing/head/fedora
 	shoes = /obj/item/clothing/shoes/laceup
-	back = /obj/item/storage/backpack/duffelbag/syndie
+	back = /obj/item/storage/backpack/duffelbag/syndie/backpack/com
 	id_trim = /datum/id_trim/syndicom/ds2/corporateliasion
 	id = /obj/item/card/id/syndicate/advanced/ds/gold/command/corporateliaison
-
-/obj/item/card/id/syndicate/advanced/ds/gold/command/corporateliaison
-	assignment = "DS-2 Corporate Liasion"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate_command/comms
 	name = "Space Syndicate Comms Agent"
@@ -1631,32 +1607,23 @@
 	mask = /obj/item/clothing/mask/chameleon
 	shoes = /obj/item/clothing/shoes/combat
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
-	back = /obj/item/storage/backpack/duffelbag/syndie
+	back = /obj/item/storage/backpack/duffelbag/syndie/backpack
 	l_pocket = /obj/item/melee/transforming/energy/sword/saber
 	r_pocket = /obj/item/gun/ballistic/automatic/pistol
 	implants = list(/obj/item/implant/weapons_auth)
-	id = /obj/item/card/id/syndicate/advanced/ds/comms
+	id = /obj/item/card/id/syndicate/advanced/ds/black/comms
 	id_trim = /datum/id_trim/syndicom/ds2/comms
-
-/obj/item/card/id/syndicate/advanced/ds/comms
-	assignment = "Space Syndicate Comms Agent"
-	icon_state = "card_black"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate_command/admiral
 	name = "DS-2 Admiral"
 	uniform = /obj/item/clothing/under/rank/captain/utility/syndicate
 	neck = /obj/item/clothing/neck/cloak/syndieadm
 	suit = /obj/item/clothing/suit/toggle/captains_parade/syndicate
-	back = /obj/item/storage/backpack/duffelbag/syndie
+	back = /obj/item/storage/backpack/duffelbag/syndie/backpack/com
 	belt = /obj/item/gun/ballistic/automatic/pistol/APS
 	head = /obj/item/clothing/head/HoS/syndicate
 	id = /obj/item/card/id/syndicate/advanced/ds/gold/admiral
 	id_trim = /datum/id_trim/syndicom/ds2/stationadmiral
-
-/obj/item/card/id/syndicate/advanced/ds/gold/admiral
-	assignment = "DS-2 Admiral"
-	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /datum/outfit/ds2/syndicate_command/post_equip(mob/living/carbon/human/syndicate)
 	syndicate.faction |= ROLE_SYNDICATE
@@ -1733,7 +1700,7 @@
 	sechud_icon_state = SECHUD_DS2_ADMIRAL
 	access = list(ACCESS_SYNDICATE, ACCESS_ROBOTICS, ACCESS_SYNDICATE_LEADER)
 
-//Затычка до Id_Trim.
+// DS-2 карты
 
 /obj/item/card/id/syndicate/advanced/prisoner
 	name = "Prisoner ID"
@@ -1751,19 +1718,53 @@
 	assignment = "DS-2 Hostage"
 	access = list()
 
-/obj/item/card/id/syndicate/advanced/ds
+/obj/item/card/id/syndicate/advanced/ds // Стоковая карта
 	name = "'Blessed' ID Card"
 	icon_state = "id_ds"
+	assignment = "Syndicate"
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE)
 
-/obj/item/card/id/syndicate/advanced/ds/gold
+/obj/item/card/id/syndicate/advanced/ds/general
+	assignment = "DS-2 General Staff"
+
+/obj/item/card/id/syndicate/advanced/ds/enginetech
+	assignment = "DS-2 Engine Technician"
+
+/obj/item/card/id/syndicate/advanced/ds/researcher
+	assignment = "DS-2 Researcher"
+
+/obj/item/card/id/syndicate/advanced/ds/stationmed
+	assignment = "DS-2 Medical Officer"
+
+/obj/item/card/id/syndicate/advanced/ds/black // Чёрные карты для боевых офицерских ролей
+	name = "'Blessed' Black ID Card"
+	icon_state = "id_dsblack"
+	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
+
+/obj/item/card/id/syndicate/advanced/ds/black/brigoff
+	assignment = "DS-2 Brig Officer"
+
+/obj/item/card/id/syndicate/advanced/ds/black/comms
+	assignment = "DS-2 Comms Agent"
+
+/obj/item/card/id/syndicate/advanced/ds/gold // Золотые карты для командных ролей
 	name = "'Blessed' Gold ID Card"
 	icon_state = "id_dsgold"
+	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
+
+/obj/item/card/id/syndicate/advanced/ds/gold/admiral
+	assignment = "DS-2 Admiral"
+
+/obj/item/card/id/syndicate/advanced/ds/gold/command/corporateliaison
+	assignment = "DS-2 Corporate Liasion"
+
+/obj/item/card/id/syndicate/advanced/ds/gold/command/masteratarms
+	assignment = "DS-2 Master At Arms"
 
 // DS-1 карты
 /obj/item/card/id/syndicate/advanced/ds/lavaland
 	name = "'Dune' ID Card"
-	assignment = "DS-1 Agent"
+	assignment = "Syndicate"
 
 /obj/item/card/id/syndicate/advanced/ds/lavaland/researcher
 	assignment = "DS-1 Scientist"
@@ -1781,6 +1782,7 @@
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_SYNDICATE, ACCESS_SYNDICATE_LEADER)
 
 /obj/item/card/id/syndicate/advanced/ds/lavaland/mime
+	name = "'Dune' Mime ID Card"
 	icon_state = "id_dsmime"
 	assignment = "DS-1 Mime"
 

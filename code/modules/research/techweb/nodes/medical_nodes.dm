@@ -16,6 +16,14 @@
 	design_ids = list("splitbeaker", "cryotube", "cryo_Grenade", "stasis")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2000)
 
+/datum/techweb_node/adv_cryotech
+	id = "adv_cryotech"
+	display_name = "Advanced Cryostasis Technology"
+	description = "Stasis, but now mobile!"
+	prereq_ids = list("cryotech", "adv_biotech")
+	design_ids = list("stasis_roller_bed")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1500)
+
 /datum/techweb_node/adv_defibrillator_tec
 	id = "adv_defibrillator_tec"
 	display_name = "Defibrillator Upgrades"
@@ -27,19 +35,11 @@
 /datum/techweb_node/plumbing
 	id = "plumbing"
 	display_name = "Reagent Plumbing Technology"
-	description = "Plastic tubes, and machinery used for manipulating things in them."
-	prereq_ids = list("base")
-	design_ids = list("acclimator", "disposer", "plumb_filter", "plumb_synth", "plumb_grinder", "reaction_chamber", "duct_print", "plumb_splitter", "pill_press", "plumb_pump", "plumb_in", "plumb_out", "plumb_tank", "medipen_refiller")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
-
-
-/datum/techweb_node/advplumbing
-	id = "advplumbing"
-	display_name = "Advanced Plumbing Technology"
-	description = "Plumbing RCD."
-	prereq_ids = list("plumbing", "adv_engi")
-	design_ids = list("plumb_rcd", "autohydrotray", "rplunger")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
+	description = "Tubes, and machinery used for manipulating things in them."
+	prereq_ids = list("adv_engi")
+	//design_ids = list("acclimator", "disposer", "plumb_filter", "plumb_synth", "plumb_grinder", "reaction_chamber", "plumb_splitter", "pill_press", "plumb_pump", "plumb_in", "plumb_out", "plumb_tank", "medipen_refiller")
+	design_ids = list("medipen_refiller", "plumb_rcd", "autohydrotray", "duct_print", "rplunger")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3000)
 
 //////////////////////Cybernetics/////////////////////
 
@@ -58,14 +58,6 @@
 	prereq_ids = list("adv_biotech", "surplus_limbs")
 	design_ids = list("adv_l_arm", "adv_r_arm", "adv_r_leg", "adv_l_leg")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1250)
-
-/datum/techweb_node/subdermal_implants
-	id = "subdermal_implants"
-	display_name = "Subdermal Implants"
-	description = "Electronic implants buried beneath the skin."
-	prereq_ids = list("biotech", "datatheory")
-	design_ids = list("Implanter", "implantcase", "implant_chem", "implant_tracking", "locator", "c38_trac")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/basic_cyber_organs
 	id = "basic_cyber_organs"
@@ -95,7 +87,7 @@
 	display_name = "Cybernetic Implants"
 	description = "Electronic implants that improve humans."
 	prereq_ids = list("adv_biotech", "adv_datatheory")
-	design_ids = list("ci-nutriment", "ci-breather", "ci-gloweyes", "ci-welding", "ci-medhud", "ci-sechud", "ci-service", "ci-power-cord")
+	design_ids = list("ci-nutriment", "ci-breather", "ci-gloweyes", "ci-welding", "ci-medhud", "ci-sechud", "ci-service", "ci-power-cord","ci_claws")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/adv_cyber_implants
@@ -135,8 +127,8 @@
 	id = "advance_surgerytools"
 	display_name = "Advanced Surgery Tools"
 	description = "Refined and improved redesigns for the run-of-the-mill medical utensils."
-	prereq_ids = list("basic_tools", "adv_biotech", "adv_surgery") // BLUEMOON ADD basic_tools for order consistency
-	design_ids = list("drapes", "retractor_adv", "surgicaldrill_adv", "scalpel_adv", "bonesetter", "surgical_tape")
+	prereq_ids = list("upgraded_surgerytools", "adv_surgery") // BLUEMOON ADD basic_tools for order consistency
+	design_ids = list("retractor_adv", "surgicaldrill_adv", "scalpel_adv")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/exp_surgery

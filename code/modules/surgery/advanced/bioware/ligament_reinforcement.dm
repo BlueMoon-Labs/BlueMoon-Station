@@ -1,7 +1,7 @@
 /datum/surgery/advanced/bioware/ligament_reinforcement
 	name = "Ligament Reinforcement"
-	desc = "A surgical procedure which adds a protective tissue and bone cage around the connections between the torso and limbs, preventing dismemberment. \
-	However, the nerve connections as a result are more easily interrupted, making it easier to disable limbs with damage."
+	desc = "Хирургическая процедура, при которой вокруг соединений между туловищем и конечностями создается защитный каркас из тканей и костей, предотвращающий расчленение. \
+	Однако в результате нервные связи легче разрываются, что облегчает выведение конечностей из строя при повреждении."
 	steps = list(/datum/surgery_step/incise,
 				/datum/surgery_step/retract_skin,
 				/datum/surgery_step/clamp_bleeders,
@@ -11,9 +11,10 @@
 				/datum/surgery_step/close)
 	possible_locs = list(BODY_ZONE_CHEST)
 	bioware_target = BIOWARE_LIGAMENTS
+	icon_state = "surgery_arms"
 
 /datum/surgery_step/reinforce_ligaments
-	name = "reinforce ligaments"
+	name = "Укрепить связки"
 	accept_hand = TRUE
 	time = 125
 

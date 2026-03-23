@@ -106,19 +106,20 @@ not be able to see the interface update based on thier actions.
 
 ### Frontend
 
-Finally, let's make a React Component for your interface. This is also
+Finally, let's make an Inferno component for your interface. This is also
 a source of confusion for new developers. If you got some basic javascript
 and HTML knowledge, that should ease the learning process, although we
 recommend getting yourself introduced to
-[React and JSX](https://reactjs.org/docs/introducing-jsx.html).
+[JSX syntax](https://react.dev/learn/writing-markup-with-jsx)
+(Inferno uses the same JSX syntax as React).
 
-A React component is not a regular HTML template. A component is a
+An Inferno component is not a regular HTML template. A component is a
 javascript function, which accepts a `props` object (that contains
 properties passed to a component) and a `context` object (which is
 necessary to access UI data) as arguments, and outputs an HTML-like
 structure.
 
-So let's create our first React Component. Create a file with a name
+So let's create our first component. Create a file with a name
 `SampleInterface.js` (or any other name you want), and copy this code
 snippet (make sure component name matches the file name):
 
@@ -215,7 +216,7 @@ if it evaluates to `true`.
 
 If `showProgress` is `true`, the whole expression evaluates
 to a `<ProgressBar />` element. If `showProgress` is `false`, the whole
-expression evaluates to `false`, and `false` is not rendered by React.
+expression evaluates to `false`, and `false` is not rendered by Inferno.
 
 ```jsx
 <Box>
@@ -228,7 +229,7 @@ expression evaluates to `false`, and `false` is not rendered by React.
 You can also use the `||` operator (the logical OR), which works the same way,
 except it will return the second operand on `false` instead of `true`.
 
-**Loop over the array to map every item to a corresponding React element.**
+**Loop over the array to map every item to a corresponding element.**
 
 `Array.map()` is a method, that calls a function on every item in the array,
 and builds a new array based on what was returned by that function.
@@ -245,14 +246,14 @@ and builds a new array based on what was returned by that function.
 </LabeledList>
 ```
 
-If you need more examples of what you can do with React, see the
-[interface conversion guide](docs/converting-old-tgui-interfaces.md).
+If you need more examples of what you can do with JSX, see the
+[Component Reference](component-reference.md).
 
 #### Splitting UIs into smaller, modular components
 
 You interface will eventually get really, really big. The easiest thing
 you can do in this situation, is divide and conquer. Grab a chunk of your
-JSX code, and wrap it into a second, smaller React component:
+JSX code, and wrap it into a second, smaller component:
 
 ```jsx
 import { useBackend } from '../backend';

@@ -4,11 +4,14 @@
 ///// Repair Hairline Fracture (Severe)
 /datum/surgery/repair_bone_hairline
 	name = "Repair bone fracture (hairline)"
+	desc = "Хирургическая процедура, позволяющая восстановить целостность кости при наличии тонкой трещины или надлома."
 	steps = list(/datum/surgery_step/incise, /datum/surgery_step/repair_bone_hairline, /datum/surgery_step/close)
 	target_mobtypes = list(/mob/living/carbon/human)
 	possible_locs = list(BODY_ZONE_R_ARM,BODY_ZONE_L_ARM,BODY_ZONE_R_LEG,BODY_ZONE_L_LEG,BODY_ZONE_CHEST,BODY_ZONE_HEAD)
 	requires_real_bodypart = TRUE
 	targetable_wound = /datum/wound/blunt/severe
+	icon_state = "bonesetter"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_WOUND
 
 /datum/surgery/repair_bone_hairline/can_start(mob/living/user, mob/living/carbon/target)
 	if(..())
@@ -27,6 +30,8 @@
 	possible_locs = list(BODY_ZONE_R_ARM,BODY_ZONE_L_ARM,BODY_ZONE_R_LEG,BODY_ZONE_L_LEG,BODY_ZONE_CHEST,BODY_ZONE_HEAD)
 	requires_real_bodypart = TRUE
 	targetable_wound = /datum/wound/blunt/critical
+	icon_state = "bone-gel"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_WOUND
 
 /datum/surgery/repair_bone_compound/biomech
 	requires_bodypart_type = BODYPART_HYBRID
@@ -43,9 +48,10 @@
 
 ///// Repair Hairline Fracture (Severe)
 /datum/surgery_step/repair_bone_hairline
-	name = "Восстановить Сломанную Кость (Костоправ/Костный Гель/Хирургическая Лента)"
+	name = "Восстановить Сломанную Кость"
 	implements = list(/obj/item/bonesetter = 100, /obj/item/stack/medical/bone_gel = 100, /obj/item/stack/sticky_tape/surgical = 100, /obj/item/stack/sticky_tape/super = 50, /obj/item/stack/sticky_tape = 30)
 	time = 40
+	stop_implements = TRUE
 
 /datum/surgery_step/repair_bone_hairline/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	if(surgery.operated_wound)
@@ -70,12 +76,10 @@
 	return ..()
 
 /datum/surgery_step/repair_bone_hairline/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, var/fail_prob = 0)
-	..()
+	. = ..()
 	if(istype(tool, /obj/item/stack))
 		var/obj/item/stack/used_stack = tool
 		used_stack.use(1)
-
-
 
 ///// Reset Compound Fracture (Crticial)
 /datum/surgery_step/reset_compound_fracture
@@ -105,17 +109,17 @@
 	return ..()
 
 /datum/surgery_step/reset_compound_fracture/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, var/fail_prob = 0)
-	..()
+	. = ..()
 	if(istype(tool, /obj/item/stack))
 		var/obj/item/stack/used_stack = tool
 		used_stack.use(1)
 
-
 ///// Repair Compound Fracture (Crticial)
 /datum/surgery_step/repair_bone_compound
-	name = "Восстановить Сломанную Кость (Костный Гель/Хирургическая Лента)"
+	name = "Восстановить Сломанную Кость"
 	implements = list(/obj/item/stack/medical/bone_gel = 100, /obj/item/stack/sticky_tape/surgical = 100, /obj/item/stack/sticky_tape/super = 50, /obj/item/stack/sticky_tape = 30)
 	time = 40
+	stop_implements = TRUE
 
 /datum/surgery_step/repair_bone_compound/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	if(surgery.operated_wound)
@@ -140,7 +144,7 @@
 	return ..()
 
 /datum/surgery_step/repair_bone_compound/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, var/fail_prob = 0)
-	..()
+	. = ..()
 	if(istype(tool, /obj/item/stack))
 		var/obj/item/stack/used_stack = tool
 		used_stack.use(1)

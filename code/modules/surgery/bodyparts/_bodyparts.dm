@@ -8,6 +8,7 @@
 	w_class = WEIGHT_CLASS_SMALL
 	icon_state = ""
 	layer = BELOW_MOB_LAYER //so it isn't hidden behind objects when on the floor
+	appearance_flags = KEEP_TOGETHER | LONG_GLIDE | PIXEL_SCALE | TILE_BOUND
 	var/mob/living/carbon/owner = null
 	var/datum/weakref/original_owner = null
 	var/status = BODYPART_ORGANIC
@@ -65,6 +66,7 @@
 
 	var/px_x = 0
 	var/px_y = 0
+	var/dropped_size = 1 // BLUEMOON ADD | severed limb size multiplier
 
 	var/species_flags_list = list()
 	var/dmg_overlay_type //the type of damage overlay (if any) to use when this bodypart is bruised/burned.
@@ -133,7 +135,14 @@
 /obj/item/bodypart/blob_act()
 	take_damage(max_damage)
 
+/obj/item/bodypart/dropped(mob/user, silent)
+	. = ..()
+	if(loc && !(istype(loc, /atom/movable)))
+		update_dropped_size()
+
 /obj/item/bodypart/Destroy()
+	QDEL_LAZYLIST(wounds)
+	QDEL_LAZYLIST(scars)
 	if(owner)
 		owner.bodyparts -= src
 		owner = null
@@ -789,6 +798,19 @@
 
 	if(dropping_limb)
 		no_update = TRUE //when attached, the limb won't be affected by the appearance changes of its mob owner.
+		update_dropped_size(C)
+
+/obj/item/bodypart/proc/update_dropped_size(mob/source)
+	if(!source)
+		source = owner
+
+	if(source)
+		dropped_size = initial(dropped_size)
+		dropped_size *= max(0.8, get_size(source))
+
+	var/matrix/m = matrix(transform)
+	m.Scale(dropped_size)
+	transform = m
 
 //to update the bodypart's icon when not attached to a mob
 /obj/item/bodypart/proc/update_icon_dropped()
@@ -834,7 +856,6 @@
 	var/image/limb = image(layer = -BODYPARTS_LAYER, dir = image_dir)
 	var/image/second_limb
 	var/list/aux = list()
-	var/list/auxmarking = list()
 
 	. += limb
 
@@ -853,12 +874,11 @@
 	if((body_zone != BODY_ZONE_HEAD && body_zone != BODY_ZONE_CHEST))
 		should_draw_gender = FALSE
 
-	var/list/markings_list = list()
 	if(is_organic_limb())
 		// BLUEMOON ADD START - красивые ноги
 		var/use_racial_sprite = FALSE
 		if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
-			if(species_id in list(SPECIES_HUMAN, SPECIES_MAMMAL, SPECIES_SHADEKIN, SPECIES_XENOHYBRID, SPECIES_SLIME_LUMI, SPECIES_SLIME, SPECIES_SYNTH_LIZARD, SPECIES_STARGAZER, SPECIES_JELLY, "vox")) // заносим только те расы, у которых есть свои прорисованные ноги. Иначе используется бэкап ниже
+			if(species_id in list(SPECIES_HUMAN, SPECIES_MAMMAL, SPECIES_SHADEKIN, SPECIES_XENOHYBRID, SPECIES_SLIME_LUMI, SPECIES_SLIME, SPECIES_SYNTH_LIZARD, SPECIES_STARGAZER, SPECIES_JELLY, "vox", "sergal")) // заносим только те расы, у которых есть свои прорисованные ноги. Иначе используется бэкап ниже
 				use_racial_sprite = TRUE
 		// BLUEMOON ADD END
 		limb.icon = base_bp_icon || 'icons/mob/human_parts.dmi'
@@ -877,44 +897,50 @@
 			second_limb.icon = limb.icon
 			. += second_limb
 
-		// Body markings
+		// Body markings - added as sub-overlays of limb to reduce top-level overlay count
 		if(length(body_markings_list))
-			if(species_id == "husk")
-				. += image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[body_zone]", -MARKING_LAYER, image_dir)
-			else if(species_id == "husk" && use_digitigrade)
-				. += image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+			if(species_id == "husk" && use_digitigrade)
+				var/image/husk_mark = image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+				husk_mark.appearance_flags = RESET_COLOR
+				limb.overlays += husk_mark
+			else if(species_id == "husk")
+				var/image/husk_mark = image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[body_zone]", -MARKING_LAYER, image_dir)
+				husk_mark.appearance_flags = RESET_COLOR
+				limb.overlays += husk_mark
 			else
 				for(var/list/marking_list in body_markings_list)
-					// marking stores icon and value for the specific bodypart
+					var/image/mark
 					if(!use_digitigrade)
 						if(body_zone == BODY_ZONE_CHEST)
-							markings_list.Add(image(marking_list[1], "[marking_list[2]]_[body_zone]_[icon_gender]", -MARKING_LAYER, image_dir))
+							mark = image(marking_list[1], "[marking_list[2]]_[body_zone]_[icon_gender]", -MARKING_LAYER, image_dir)
 						else
-							markings_list.Add(image(marking_list[1], "[marking_list[2]]_[body_zone]", -MARKING_LAYER, image_dir))
+							mark = image(marking_list[1], "[marking_list[2]]_[body_zone]", -MARKING_LAYER, image_dir)
 					else
-						markings_list.Add(image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir))
-
+						mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+					mark.appearance_flags = RESET_COLOR
 					if(color_src && length(marking_list) == 3)
-						var/image/I = markings_list[length(markings_list)]
-						I.color = marking_list[3]
-		. += markings_list
+						mark.color = marking_list[3]
+					limb.overlays += mark
 
 		// Citadel End
 
 		if(aux_icons)
 			for(var/I in aux_icons)
 				var/aux_layer = aux_icons[I]
-				aux += image(limb.icon, "[species_id]_[I]", -aux_layer, image_dir)
+				var/image/aux_img = image(limb.icon, "[species_id]_[I]", -aux_layer, image_dir)
 				if(species_id == "husk")
-					auxmarking += image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[I]", -aux_layer, image_dir)
+					var/image/husk_aux_mark = image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[I]", -aux_layer, image_dir)
+					husk_aux_mark.appearance_flags = RESET_COLOR
+					aux_img.overlays += husk_aux_mark
 				else
 					for(var/marking_list in body_markings_list)
 						var/image/aux_marking_image = image(marking_list[1], "[marking_list[2]]_[I]", -aux_layer, image_dir)
+						aux_marking_image.appearance_flags = RESET_COLOR
 						if(length(marking_list) == 3)
 							aux_marking_image.color = marking_list[3]
-						auxmarking += aux_marking_image
+						aux_img.overlays += aux_marking_image
+				aux += aux_img
 			. += aux
-			. += auxmarking
 
 	else
 		limb.icon = icon
@@ -926,33 +952,42 @@
 		if(aux_icons)
 			for(var/I in aux_icons)
 				var/aux_layer = aux_icons[I]
-				aux += image(limb.icon, "[I]", -aux_layer, image_dir)
+				var/image/aux_img = image(limb.icon, "[I]", -aux_layer, image_dir)
 				if(species_id == "husk")
-					auxmarking += image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[I]", -aux_layer, image_dir)
+					var/image/husk_aux_mark = image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[I]", -aux_layer, image_dir)
+					husk_aux_mark.appearance_flags = RESET_COLOR
+					aux_img.overlays += husk_aux_mark
 				else
 					for(var/marking_list in body_markings_list)
 						var/image/aux_marking_image = image(marking_list[1], "[marking_list[2]]_[I]", -aux_layer, image_dir)
+						aux_marking_image.appearance_flags = RESET_COLOR
 						if(length(marking_list) == 3)
 							aux_marking_image.color = marking_list[3]
-						auxmarking += aux_marking_image
-			. += auxmarking
+						aux_img.overlays += aux_marking_image
+				aux += aux_img
 			. += aux
 
 		if(length(body_markings))
-			if(species_id == "husk")
-				. += image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[body_zone]", -MARKING_LAYER, image_dir)
-			else if(species_id == "husk" && use_digitigrade)
-				. += image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_digitigrade_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+			if(species_id == "husk" && use_digitigrade)
+				var/image/husk_mark = image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_digitigrade_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+				husk_mark.appearance_flags = RESET_COLOR
+				limb.overlays += husk_mark
+			else if(species_id == "husk")
+				var/image/husk_mark = image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[body_zone]", -MARKING_LAYER, image_dir)
+				husk_mark.appearance_flags = RESET_COLOR
+				limb.overlays += husk_mark
 			else
 				for(var/list/marking_list in body_markings_list)
-					// marking stores icon and value for the specific bodypart
+					var/image/mark
 					if(!use_digitigrade)
 						if(body_zone == BODY_ZONE_CHEST)
-							. += image(marking_list[1], "[marking_list[2]]_[body_zone]_[icon_gender]", -MARKING_LAYER, image_dir)
+							mark = image(marking_list[1], "[marking_list[2]]_[body_zone]_[icon_gender]", -MARKING_LAYER, image_dir)
 						else
-							. += image(marking_list[1], "[marking_list[2]]_[body_zone]", -MARKING_LAYER, image_dir)
+							mark = image(marking_list[1], "[marking_list[2]]_[body_zone]", -MARKING_LAYER, image_dir)
 					else
-						. += image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+						mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+					mark.appearance_flags = RESET_COLOR
+					limb.overlays += mark
 		return
 
 	if(color_src) //TODO - add color matrix support for base species limbs (or dont because color matrixes suck)
@@ -974,16 +1009,6 @@
 					if(grayscale)
 						I.icon_state += "_g"
 					I.color = draw_color
-				for(var/a in auxmarking)
-					var/image/I = a
-					if(species_id == "husk")
-						I.color = "#141414"
-
-			if(!isnull(body_markings))
-				if(species_id == "husk")
-					for(var/image/marking in markings_list)
-						marking.color = "#141414"
-
 	if(second_limb)
 		var/original_state = limb.icon_state
 		limb.icon_state = "[original_state]_front"

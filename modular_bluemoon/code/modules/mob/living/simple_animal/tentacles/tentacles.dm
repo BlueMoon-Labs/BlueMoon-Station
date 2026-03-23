@@ -4,7 +4,7 @@
 /obj/structure/tentacles/node
 	name = "tentacles node"
 	desc = "Looks like their roots."
-	icon = 'modular_bluemoon/Gardelin0/icons/mob/tentacles.dmi'
+	icon = 'modular_bluemoon/icons/mob/tentacles.dmi'
 	icon_state = "node"
 	max_integrity = 200
 	CanAtmosPass = ATMOS_PASS_DENSITY
@@ -12,7 +12,7 @@
 /mob/living/simple_animal/hostile/tentacles
 	name = "Tentacles"
 	desc = "I have seen enough space hentai to know..."
-	icon = 'modular_bluemoon/Gardelin0/icons/mob/tentacles.dmi'
+	icon = 'modular_bluemoon/icons/mob/tentacles.dmi'
 	icon_state = "tentacles"
 	icon_living = "tentacles"
 	icon_dead = "tentacles_dead"
@@ -246,24 +246,27 @@
 		if(CUM_TARGET_VAGINA)
 			message = "вгоняют свои тентакли в дырочки \the [M] и заполняют их спермой!"
 			target_gen = M.getorganslot(ORGAN_SLOT_WOMB)
-			target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
-			M.impregnate(src, M.getorganslot(ORGAN_SLOT_WOMB), src.type)
+			if(target_gen)
+				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
+				M.impregnate(src, target_gen, src.type)
 
 		if(CUM_TARGET_PENIS)
 			message = "обхватывают член \the [M] и обливают спермой!"
 			target_gen = M.getorganslot(ORGAN_SLOT_PENIS)
-			target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
+			if(target_gen)
+				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
 
 		if(CUM_TARGET_ANUS)
 			message = "вгоняют свои тентакли в задницу \the [M] и заполняют её спермой!"
 			target_gen = M.getorganslot(ORGAN_SLOT_ANUS)
-			target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
+			if(target_gen)
+				target_gen.reagents.add_reagent(/datum/reagent/consumable/semen, 100)
 
 	if(istype(M, /mob/living/carbon))
 		M.reagents.add_reagent(/datum/reagent/drug/aphrodisiacplus, 5) //Cum contains hexocrocin
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playsound(loc, "modular_bluemoon/Gardelin0/sound/effect/lewd/splast.ogg", 30, 1, -1)
+	playsound(loc, 'sound/effects/splat.ogg', 30, 1, -1)
 	visible_message("<font color=purple><b>\The [src]</b> [message]</font>")
 	shake_camera(M, 6, 1)
 	set_is_fucking(null ,null)
@@ -290,7 +293,7 @@
 /obj/item/storage/box/tentaclescubes
 	name = "Instante tentacles box"
 	desc = "Drymate brand tentacles cubes. Just add water!"
-	icon = 'modular_bluemoon/Gardelin0/icons/mob/tentacles.dmi'
+	icon = 'modular_bluemoon/icons/mob/tentacles.dmi'
 	icon_state = "tentaclecubebox"
 	illustration = null
 	custom_price = 1500 //So people will stop spamming it

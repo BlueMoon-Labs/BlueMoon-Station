@@ -150,18 +150,20 @@
 
 			// Syndicate radios can hear all well-known radio channels
 			if (num2text(frequency) in GLOB.reverseradiochannels)
+				var/list/radio_z = list(0) // reusable single-element list to avoid allocating new lists per radio
 				for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_SYNDICATE]"])
-					if(R.can_receive(FREQ_SYNDICATE, list(R.z)))
+					radio_z[1] = R.z
+					if(R.can_receive(FREQ_SYNDICATE, radio_z))
 						radios |= R
 
-			if (num2text(frequency) in GLOB.reverseradiochannels)
 				for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_INTEQ]"])
-					if(R.can_receive(FREQ_INTEQ, list(R.z)))
+					radio_z[1] = R.z
+					if(R.can_receive(FREQ_INTEQ, radio_z))
 						radios |= R
 
-			if (num2text(frequency) in GLOB.reverseradiochannels)
 				for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_PIRATE]"])
-					if(R.can_receive(FREQ_PIRATE, list(R.z)))
+					radio_z[1] = R.z
+					if(R.can_receive(FREQ_PIRATE, radio_z))
 						radios |= R
 
 		if (TRANSMISSION_RADIO)

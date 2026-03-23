@@ -73,11 +73,13 @@
 
 /datum/quirk/bluemoon_shower_need/process()
 	. = ..()
+	if(!human_owner)
+		return
 	if(!human_owner.insanelycomfy)
 		cleanse_level = clamp(cleanse_level + 0.23, 0, 1001) // около 70 минут (без учёта лагов) нужно, чтобы требование к мытью поднялось до максимума (оверлея)
 
 	var/turf/open/T = get_turf(quirk_holder)
-	if(T.air)
+	if(istype(T) && T.air)
 		var/datum/gas_mixture/G = T.air
 		if(HAS_TRAIT(quirk_holder, TRAIT_SWIMMING) || G.get_moles(GAS_H2O) > 0) // персонаж находится в бассейне или сауне, происходит мытьё
 			cleaning(10) // при вызове сигнала COMSIG_COMPONENT_CLEAN_ACT этой функции в аргументы присваивается персонаж, что делает невозможным применение TRUE
@@ -129,9 +131,9 @@
 
 	if(cleanse_level >= DIRTY) // если персонаж достаточно грязный, об этом пишется в экзейм
 		if(cannot_smell)
-			examine_list += span_notice("[quirk_holder.p_they_ru(TRUE)] давно не мы[quirk_holder.ru_sya()].") // т.к. облачко в таком исходе всё ещё существует, на глаз можно определить, что персонаж давно не мылся
+			examine_list += span_notice("[quirk_holder.ru_who(TRUE)] давно не мы[quirk_holder.ru_sya()].") // т.к. облачко в таком исходе всё ещё существует, на глаз можно определить, что персонаж давно не мылся
 		else
-			examine_list += span_redtext("[quirk_holder.p_they_ru(TRUE)] плохо пахнет.")
+			examine_list += span_redtext("[quirk_holder.ru_who(TRUE)] плохо пахнет.")
 
 
 /datum/quirk/bluemoon_shower_need/proc/chance_visual_effect()

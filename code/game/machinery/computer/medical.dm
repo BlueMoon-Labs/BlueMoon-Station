@@ -32,23 +32,23 @@
 	. = ..()
 	field_edit_questions = list(
 		// General
-		"gender" = "Please select new gender:",
-		"age" = "Please input new age:",
-		"fingerprint" = "Please input new fingerprint hash:",
-		"p_stat" = "Please select new physical status:",
-		"m_stat" = "Please select new mental status:",
+		"gender" = "Выберите новый пол:",
+		"age" = "Введите новый возраст:",
+		"fingerprint" = "Введите новый хэш отпечатков:",
+		"p_stat" = "Выберите новый физический статус:",
+		"m_stat" = "Выберите новый психический статус:",
 		// Medical
-		"blood_type" = "Please select new blood type:",
-		"b_dna" = "Please input new DNA:",
-		"mi_dis" = "Please input new minor disabilities:",
-		"mi_dis_d" = "Please summarize minor disabilities:",
-		"ma_dis" = "Please input new major disabilities:",
-		"ma_dis_d" = "Please summarize major disabilities:",
-		"alg" = "Please input new allergies:",
-		"alg_d" = "Please summarize allergies:",
-		"cdi" = "Please input new current diseases:",
-		"cdi_d" = "Please summarize current diseases:",
-		"notes" = "Please input new important notes:",
+		"blood_type" = "Выберите новую группу крови:",
+		"b_dna" = "Введите новую ДНК:",
+		"mi_dis" = "Введите незначительные ограничения:",
+		"mi_dis_d" = "Опишите незначительные ограничения:",
+		"ma_dis" = "Введите серьёзные ограничения:",
+		"ma_dis_d" = "Опишите серьёзные ограничения:",
+		"alg" = "Введите аллергии:",
+		"alg_d" = "Опишите аллергии:",
+		"cdi" = "Введите текущие заболевания:",
+		"cdi_d" = "Опишите текущие заболевания:",
+		"notes" = "Введите важные заметки:",
 	)
 	field_edit_choices = list(
 		// General
@@ -69,6 +69,12 @@
 		add_fingerprint(user)
 		return
 	return ..()
+
+/obj/machinery/computer/med_data/AltClick(mob/user)
+	. = ..()
+	if(!can_interact(user))
+		return
+	ui_login_eject()
 
 /obj/machinery/computer/med_data/attack_hand(mob/user)
 	if(..())
@@ -107,18 +113,28 @@
 				if(istype(active1, /datum/data/record) && GLOB.data_core.general.Find(active1))
 					var/list/fields = list()
 					general["fields"] = fields
-					fields[++fields.len] = FIELD("Name", active1.fields["name"], null)
+					fields[++fields.len] = FIELD("Имя", active1.fields["name"], null)
 					fields[++fields.len] = FIELD("ID", active1.fields["id"], null)
-					fields[++fields.len] = FIELD("Gender", active1.fields["gender"], "gender")
-					fields[++fields.len] = FIELD("Age", active1.fields["age"], "age")
-					fields[++fields.len] = FIELD("Fingerprint", active1.fields["fingerprint"], "fingerprint")
-					fields[++fields.len] = FIELD("Physical Status", active1.fields["p_stat"], "p_stat")
-					fields[++fields.len] = FIELD("Mental Status", active1.fields["m_stat"], "m_stat")
+					fields[++fields.len] = FIELD("Пол", active1.fields["gender"], "gender")
+					fields[++fields.len] = FIELD("Возраст", active1.fields["age"], "age")
+					fields[++fields.len] = FIELD("Отпечаток", active1.fields["fingerprint"], "fingerprint")
+					fields[++fields.len] = FIELD("Физ. статус", active1.fields["p_stat"], "p_stat")
+					fields[++fields.len] = FIELD("Псих. статус", active1.fields["m_stat"], "m_stat")
 					var/list/photos = list()
 					general["photos"] = photos
-					photos[++photos.len] = active1.fields["photo_front"]
-					photos[++photos.len] = active1.fields["photo_side"]
-					general["has_photos"] = (active1.fields["photo_front"] || active1.fields["photo_side"] ? 1 : 0)
+					if(istype(active1.fields["photo_front"], /obj/item/photo))
+						var/obj/item/photo/P = active1.fields["photo_front"]
+						if(P.picture?.picture_image)
+							photos[++photos.len] = icon2base64(P.picture.picture_image)
+					else if(isicon(active1.fields["photo_front"]))
+						photos[++photos.len] = icon2base64(active1.fields["photo_front"])
+					if(istype(active1.fields["photo_side"], /obj/item/photo))
+						var/obj/item/photo/P = active1.fields["photo_side"]
+						if(P.picture?.picture_image)
+							photos[++photos.len] = icon2base64(P.picture.picture_image)
+					else if(isicon(active1.fields["photo_side"]))
+						photos[++photos.len] = icon2base64(active1.fields["photo_side"])
+					general["has_photos"] = length(photos) > 0
 					general["empty"] = 0
 				else
 					general["empty"] = 1
@@ -128,17 +144,17 @@
 				if(istype(active2, /datum/data/record) && GLOB.data_core.medical.Find(active2))
 					var/list/fields = list()
 					medical["fields"] = fields
-					fields[++fields.len] = MED_FIELD("Blood Type", active2.fields["blood_type"], "blood_type", FALSE)
-					fields[++fields.len] = MED_FIELD("DNA", active2.fields["b_dna"], "b_dna", TRUE)
-					fields[++fields.len] = MED_FIELD("Minor Disabilities", active2.fields["mi_dis"], "mi_dis", FALSE)
-					fields[++fields.len] = MED_FIELD("Details", active2.fields["mi_dis_d"], "mi_dis_d", TRUE)
-					fields[++fields.len] = MED_FIELD("Major Disabilities", active2.fields["ma_dis"], "ma_dis", FALSE)
-					fields[++fields.len] = MED_FIELD("Details", active2.fields["ma_dis_d"], "ma_dis_d", TRUE)
-					fields[++fields.len] = MED_FIELD("Allergies", active2.fields["alg"], "alg", FALSE)
-					fields[++fields.len] = MED_FIELD("Details", active2.fields["alg_d"], "alg_d", TRUE)
-					fields[++fields.len] = MED_FIELD("Current Diseases", active2.fields["cdi"], "cdi", FALSE)
-					fields[++fields.len] = MED_FIELD("Details", active2.fields["cdi_d"], "cdi_d", TRUE)
-					fields[++fields.len] = MED_FIELD("Important Notes", active2.fields["notes"], "notes", TRUE)
+					fields[++fields.len] = MED_FIELD("Группа крови", active2.fields["blood_type"], "blood_type", FALSE)
+					fields[++fields.len] = MED_FIELD("ДНК", active2.fields["b_dna"], "b_dna", TRUE)
+					fields[++fields.len] = MED_FIELD("Незнач. ограничения", active2.fields["mi_dis"], "mi_dis", FALSE)
+					fields[++fields.len] = MED_FIELD("Подробности", active2.fields["mi_dis_d"], "mi_dis_d", TRUE)
+					fields[++fields.len] = MED_FIELD("Серьёзн. ограничения", active2.fields["ma_dis"], "ma_dis", FALSE)
+					fields[++fields.len] = MED_FIELD("Подробности", active2.fields["ma_dis_d"], "ma_dis_d", TRUE)
+					fields[++fields.len] = MED_FIELD("Аллергии", active2.fields["alg"], "alg", FALSE)
+					fields[++fields.len] = MED_FIELD("Подробности", active2.fields["alg_d"], "alg_d", TRUE)
+					fields[++fields.len] = MED_FIELD("Текущие заболевания", active2.fields["cdi"], "cdi", FALSE)
+					fields[++fields.len] = MED_FIELD("Подробности", active2.fields["cdi_d"], "cdi_d", TRUE)
+					fields[++fields.len] = MED_FIELD("Важные заметки", active2.fields["notes"], "notes", TRUE)
 					if(!active2.fields["comments"] || !islist(active2.fields["comments"]))
 						active2.fields["comments"] = list()
 					medical["comments"] = active2.fields["comments"]
@@ -231,15 +247,15 @@
 			if("del_all")
 				for(var/datum/data/record/R in GLOB.data_core.medical)
 					qdel(R)
-				set_temp("All medical records deleted.")
+				set_temp("Все медицинские записи удалены.")
 			if("del_r")
 				if(active2)
-					set_temp("Medical record deleted.")
+					set_temp("Медицинская запись удалена.")
 					qdel(active2)
 			if("d_rec")
 				var/datum/data/record/general_record = locate(params["d_rec"] || "")
 				if(!GLOB.data_core.general.Find(general_record))
-					set_temp("Record not found.", "danger")
+					set_temp("Запись не найдена.", "danger")
 					return
 
 				var/datum/data/record/medical_record
@@ -271,7 +287,7 @@
 					GLOB.data_core.medical += R
 					active2 = R
 					screen = MED_DATA_RECORD
-					set_temp("Medical record created.", "success")
+					set_temp("Медицинская запись создана.", "success")
 			if("del_c")
 				var/index = text2num(params["del_c"] || "")
 				if(!index || !istype(active2, /datum/data/record))
@@ -293,7 +309,7 @@
 						active2 = R
 						break
 				if(!active2)
-					set_temp("Medical record not found. You must enter the person's exact name, ID or DNA.", "danger")
+					set_temp("Медицинская запись не найдена. Введите точное имя, ID или ДНК.", "danger")
 					return
 				for(var/datum/data/record/E in GLOB.data_core.general)
 					if(E.fields["name"] == active2.fields["name"] && E.fields["id"] == active2.fields["id"])
@@ -334,7 +350,7 @@
 					else
 						ui_modal_input(src, id, question, arguments = arguments, value = arguments["value"])
 				if("add_c")
-					ui_modal_input(src, id, "Please enter your message:")
+					ui_modal_input(src, id, "Введите ваше сообщение:")
 				else
 					return FALSE
 		if(UI_MODAL_ANSWER)
@@ -351,7 +367,7 @@
 					if(field == "age")
 						var/new_age = text2num(answer)
 						if(new_age < AGE_MIN || new_age > AGE_MAX)
-							set_temp("Invalid age. It must be between [AGE_MIN] and [AGE_MAX].", "danger")
+							set_temp("Недопустимый возраст. Должен быть от [AGE_MIN] до [AGE_MAX].", "danger")
 							return
 						answer = new_age
 

@@ -63,3 +63,22 @@
 	icon_state = "hair_module_mask"
 	item_state = "hair_module_mask"
 	body_parts_covered = NONE
+
+/obj/item/clothing/mask/breath/gestapo
+	name = "Truth Enforcer mask"
+	desc = "Filter their thoughts"
+	icon_state = "gestapo_mask"
+	item_state = "gestapo_mask"
+	icon = 'modular_bluemoon/icons/obj/clothing/masks.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/masks.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+
+/obj/item/clothing/mask/gas/syndicate/cool_version/winter_mask
+	name = "Ami's Winter Mask"
+	desc = "If you look closely, the owner's name, Ami'Ira Vel'Ssaran, is written on the inside of the mask. On the outside, it's a regular white military-style mask."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	icon_state = "winter_mask"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = GLASSES_LAYER

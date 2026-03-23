@@ -18,6 +18,9 @@
 			/datum/surgery_step/mechanic_close)
 	possible_locs = list(BODY_ZONE_CHEST)
 	target_mobtypes = list(/mob/living/carbon/human)
+	icon = 'modular_bluemoon/phenyamomota/icon/obj/tools.dmi'
+	icon_state = "multitool_yellow"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_ADDITIONAL
 
 /datum/surgery/robot_purge_reagents/can_start(mob/user, mob/living/carbon/target, obj/item/tool)
 	. = ..()
@@ -62,16 +65,16 @@
 	if(!IS_ROBOTIC_ORGAN(liver))
 		user.visible_message("<span class='warning'>[user] обнаруживает несовместимость обработчика реагентов [target] с известными методиками очистки...", "<span class='warning'>Вы понимаете, что система обработки реагентов [target] не подходит для очистки.</span>")
 		return FALSE
+	. = ..()
 	display_results(user, target, "<span class='warning'>Ваша отвёртка срывается и [target] вздрагивает всем корпусом, когда в [target.ru_na()] обработчике реагентов появляется новая пробоина...</span>",
 	"[user] неудачно отсверливает клапан у обработчика реагентов [target], повреждая [target.ru_na()] систему.",
 	"[user] completes the surgery on [target].")
 	target.adjustOrganLoss(ORGAN_SLOT_LIVER, 20)
 	playsound(target, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
-	return FALSE
 
 
 /datum/surgery_step/eject_reagents
-	name = "Открыть люк сброса реагентов (Мультитул)"
+	name = "Открыть люк сброса реагентов"
 	implements = list(TOOL_MULTITOOL = 95, TOOL_HEMOSTAT = 25, TOOL_CROWBAR = 25)
 	time = 40
 	preop_sound = 'sound/machines/doorclick.ogg'
@@ -106,6 +109,7 @@
 	if(!IS_ROBOTIC_ORGAN(liver))
 		user.visible_message("<span class='warning'>[user] обнаруживает несовместимость обработчика реагентов [target] с известными методиками очистки...", "<span class='warning'>Вы понимаете, что система обработки реагентов [target] не подходит для очистки.</span>")
 		return FALSE
+	. = ..()
 	display_results(user, target, "<span class='warning'>Вы слишком сильно нажимаете ломом и крышка процессора реагентов [target] отламывается, а часть жидкости, вылившаяся на [target.ru_na()] микросхемы вызывает короткое замыкание!</span>",
 	"<span class='warning'>[user] случайно ломает люк резервуара с реагентами в груди [target], вызывая короткое замыкание от вылившихся реагентов.",
 	"[user] completes the surgery on [target].")
@@ -115,4 +119,3 @@
 	do_sparks(10, 5, target)
 	target.adjustFireLoss(20)
 	target.jitteriness += 10
-	return FALSE

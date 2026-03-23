@@ -27,6 +27,7 @@ GLOBAL_LIST_INIT(bitflags, list(
 #define DF_USE_TAG		(1<<0)
 #define DF_VAR_EDITED	(1<<1)
 #define DF_ISPROCESSING (1<<2)
+#define DF_HAS_OPEN_UI	(1<<3)
 
 //FLAGS BITMASK
 ///This flag is what recursive_hear_check() uses to determine wether to add an item to the hearer list or not.

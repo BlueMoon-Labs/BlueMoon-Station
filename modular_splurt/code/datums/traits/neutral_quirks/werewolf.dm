@@ -40,7 +40,8 @@
 	var/datum/action/cooldown/werewolf/transform/quirk_action = locate() in quirk_holder.actions
 
 	// Revoke quirk action
-	quirk_action.Remove(quirk_holder)
+	if(quirk_action)
+		quirk_action.Remove(quirk_holder)
 
 //
 // Quirk actions: Werewolf

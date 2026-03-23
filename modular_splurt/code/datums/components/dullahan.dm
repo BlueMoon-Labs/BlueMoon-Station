@@ -16,6 +16,7 @@
 	var/color
 
 	var/obj/effect/dummy/luminescent_glow/glowth //shamelessly copied from glowy which copied luminescents
+	var/datum/action/neckfire/neck_act = null	/// Granted action for toggling glow, stored to allow cleanup on Destroy
 
 	var/light = 1
 	var/is_glowing = FALSE
@@ -44,21 +45,25 @@
 	neck_fire.color = fire_color
 	//neck_fire.plane = 19 // glowy i hope
 
-	var/datum/action/neckfire/A = new /datum/action/neckfire(src)
-	A.Grant(M)
+	neck_act = new /datum/action/neckfire(src)
+	neck_act.Grant(M)
 
 	M.add_overlay(neck_fire)
 
 /datum/component/neckfire/proc/unlit(mob/living/carbon/M)
 	if(M)
 		M.cut_overlay(neck_fire)
-	qdel(glowth)
+	QDEL_NULL(neck_act)
+	QDEL_NULL(glowth)
 	is_glowing = FALSE
 
 /datum/component/neckfire/Destroy(force=FALSE, silent=FALSE)
+	// Save parent reference before ..() nulls it
+	var/mob/living/carbon/M = parent
 	. = ..()
-	unlit(parent)
-	UnregisterSignal(parent, COMSIG_MOB_DEATH)
+	if(M)
+		UnregisterSignal(M, COMSIG_MOB_DEATH)
+	unlit(M)
 
 
 /datum/action/neckfire

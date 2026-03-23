@@ -63,6 +63,7 @@
 	var/list/antag_datums
 	var/antag_hud_icon_state = null //this mind's ANTAG_HUD should have this icon_state
 	var/datum/atom_hud/antag/antag_hud = null //this mind's antag HUD
+	var/datum/traitor_panel_tgui/tgui_panel // cached TGUI traitor panel
 	var/damnation_type = 0
 	var/datum/mind/soulOwner //who owns the soul.  Under normal circumstances, this will point to src
 	var/hasSoul = TRUE // If false, renders the character unable to sell their soul.
@@ -100,8 +101,20 @@
 	var/ambition_limit = 6
 	/// Time when new ambition can be rolled
 	var/ambition_cooldown_end = 0
-
+	// Research exp for specific item
+	var/research_exp = null
+	var/can_use_research_paper = FALSE
 	// BLUEMOON ADD END
+
+	// Character Directory vars
+	var/show_in_directory
+	var/directory_tag
+	var/directory_erptag
+	var/directory_gendertag
+	var/directory_ad
+	var/ooc_notes
+	var/flavor_text
+	var/silicon_flavor_text
 
 /datum/mind/New(key)
 	skill_holder = new(src)
@@ -111,6 +124,7 @@
 
 /datum/mind/Destroy()
 	SSticker.minds -= src
+	QDEL_NULL(tgui_panel)
 	QDEL_LIST(antag_datums)
 	QDEL_NULL(skill_holder)
 	set_current(null)
@@ -248,6 +262,8 @@
 		return
 	var/datum/antagonist/A = has_antag_datum(datum_type)
 	if(A)
+		if(istype(A, /datum/antagonist/heretic) && current)
+			REMOVE_TRAIT(current, TRAIT_ANTIMAGIC_NO_SELFBLOCK, "heretic")
 		A.on_removal()
 		return TRUE
 
@@ -336,7 +352,7 @@
 		return
 	if(!istype(current.loc, /obj/item/mmi))
 		return
-	var/obj/item/mmi/B = current.loc.loc
+	var/obj/item/mmi/B = current.loc
 	if(!istype(B.laws, /datum/ai_laws/ratvar))
 		remove_servant_of_ratvar(current, TRUE)
 
@@ -349,6 +365,12 @@
 	remove_cultist()
 	remove_rev()
 	SSticker.mode.update_cult_icons_removed(src)
+
+/datum/mind/proc/remove_slaver()
+	var/datum/antagonist/slaver/slaver = has_antag_datum(/datum/antagonist/slaver,TRUE)
+	if(slaver)
+		remove_antag_datum(slaver.type)
+		special_role = null
 
 /**
  * ## give_uplink
@@ -699,9 +721,11 @@ GLOBAL_LIST(objective_choices)
 			if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_AMBITION))
 				to_chat(usr, "<span class='warning'>You must wait [AMBITION_COOLDOWN_TIME * 0.1] seconds between changes.</span>")
 				return
+			if(!antag_datums)
+				to_chat(usr, "<span class='warning'>You are not an antagonist.</span>")
+				return
 		if(!isliving(current))
-			return
-		if(!antag_datums)
+			to_chat(usr, "<span class='warning'>The mind holder is not a living creature.</span>")
 			return
 		var/max_ambitions = CONFIG_GET(number/max_ambitions)
 		if(LAZYLEN(ambitions) >= max_ambitions)
@@ -717,11 +741,11 @@ GLOBAL_LIST(objective_choices)
 			if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_AMBITION))
 				to_chat(usr, "<span class='warning'>You must wait [AMBITION_COOLDOWN_TIME * 0.1] seconds between changes.</span>")
 				return
+			if(!antag_datums)
+				to_chat(usr, "<span class='warning'>The mind holder is no longer an antagonist.</span>")
+				return
 		if(!isliving(current))
 			to_chat(usr, "<span class='warning'>The mind holder is no longer a living creature.</span>")
-			return
-		if(!antag_datums)
-			to_chat(usr, "<span class='warning'>The mind holder is no longer an antagonist.</span>")
 			return
 		if(LAZYLEN(ambitions) >= max_ambitions)
 			to_chat(usr, "<span class='warning'>There's a limit of [max_ambitions] ambitions. Edit or remove some to accomodate for your new additions.</span>")
@@ -1850,6 +1874,18 @@ GLOBAL_LIST(objective_choices)
 /mob/living/carbon/mind_initialize()
 	..()
 	last_mind = mind
+
+/mob/living/mind_initialize()
+	. = ..()
+	if(client?.prefs)
+		mind.show_in_directory = client?.prefs.show_in_directory
+		mind.directory_tag = client?.prefs.directory_tag
+		mind.directory_erptag = client?.prefs.directory_erptag
+		mind.directory_gendertag = client?.prefs.directory_gendertag
+		mind.directory_ad = client?.prefs.directory_ad
+		mind.ooc_notes = client?.prefs.features["ooc_notes"]
+		mind.flavor_text = client?.prefs.features["flavor_text"]
+		mind.silicon_flavor_text = client?.prefs.features["silicon_flavor_text"]
 
 //HUMAN
 /mob/living/carbon/human/mind_initialize()

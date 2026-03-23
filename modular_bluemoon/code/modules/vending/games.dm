@@ -15,6 +15,10 @@
 				/obj/item/toy/cards/deck/tarot = 3,
 				/obj/item/toy/cards/deck/unum = 3,
 				/obj/item/toy/cards/deck/tarot = 3,
+				/obj/item/toy/cards/deck/love_cards/truths = 4,
+				/obj/item/toy/cards/deck/love_cards/kinks = 4,
+				/obj/item/toy/cards/deck/love_cards/actions = 4,
+				/obj/item/toy/cards/deck/love_cards/blanks = 4,
 			),
 		),
 		list(
@@ -28,7 +32,11 @@
 				/obj/item/canvas/twentyfour_twentyfour = 5,
 				/obj/item/canvas/twentythreeXnineteen = 5,
 				/obj/item/canvas/twentythreeXtwentythree = 5,
+				/obj/item/canvas/ultra_big = 5,
+				/obj/item/canvas/thirtysix_twentyfour = 5,
+				/obj/item/canvas/fortyfive_twentyseven = 5,
 				/obj/item/wallframe/painting = 5,
+				/obj/item/wallframe/painting/large = 5,
 			),
 		),
 		list(
@@ -86,11 +94,6 @@
 	)
 	premium = list(
 		/obj/item/disk/holodisk = 5,
-		/obj/item/rcl = 2,
-		/obj/item/airlock_painter = 1,
-		/obj/item/pipe_painter = 1,
-		/obj/item/airlock_painter/decal = 1,
-		/obj/item/airlock_painter/decal/tile = 1,
 		/obj/item/melee/skateboard/pro = 3,
 		/obj/item/melee/skateboard/hoverboard = 1,
 		/obj/item/choice_beacon/box/plushie = 5,

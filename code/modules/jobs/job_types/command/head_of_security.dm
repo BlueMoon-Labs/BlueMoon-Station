@@ -16,6 +16,28 @@
 	exp_type = EXP_TYPE_CREW
 	considered_combat_role = TRUE
 	exp_type_department = EXP_TYPE_SECURITY
+	alt_titles = list(
+		"Gorlex Marauders Commander", //Триглав выше, для удобства
+		"Syndicate Field Commander", //Синди выше, для удобства
+		"AC Special Lieutenant",
+		"Big Boss",
+		"Big Iron",
+		"Cerberus Leader",
+		"Chief Constable",
+		"Chief of Security",
+		"Chief Security Officer",
+		"Commander of the Guard",
+		"Division Leader",
+		"Head of Slutcurity",
+		"Head of Studcurity",
+		"Praetor",
+		"SAARE Commissioner",
+		"Safeguard Manager",
+		"Security Commander",
+		"Security Director",
+		"Sheriff",
+		"Tarkhan"
+		)
 
 	outfit = /datum/outfit/job/hos
 	departments = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_COMMAND
@@ -37,7 +59,7 @@
 
 
 	display_order = JOB_DISPLAY_ORDER_HEAD_OF_SECURITY
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/nonviolent, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/insanity)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/nonviolent, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/insanity, /datum/quirk/illiterate, /datum/quirk/onelife)
 	threat = 3
 
 	family_heirlooms = list(
@@ -59,10 +81,10 @@
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
 	//suit_store = /obj/item/gun/energy/e_gun
 	l_pocket = /obj/item/storage/bag/security
-	r_pocket = /obj/item/clothing/accessory/badge
-	backpack_contents = list(/obj/item/storage/box/sec_kit, /obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/choice_beacon/hos_new_weapon = 1)
+	r_pocket = /obj/item/modular_computer/tablet/preset/advanced
+	backpack_contents = list(/obj/item/storage/box/sec_kit, /obj/item/choice_beacon/hos_new_weapon = 1)
 	box = /obj/item/storage/box/survival/command
-	accessory = /obj/item/clothing/accessory/permit/special/head_of_sec
+	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_sec, /obj/item/clothing/accessory/badge)
 
 	satchel = /obj/item/storage/backpack/satchel/sec
 	duffelbag = /obj/item/storage/backpack/duffelbag/sec
@@ -93,7 +115,7 @@
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
-	accessory = /obj/item/clothing/accessory/permit/special/head_of_sec
+	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_sec)
 	pda_slot = ITEM_SLOT_BELT
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/syndicate_uplink_high=1)
 

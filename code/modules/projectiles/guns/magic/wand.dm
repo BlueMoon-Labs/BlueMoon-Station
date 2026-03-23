@@ -19,7 +19,7 @@
 
 /obj/item/gun/magic/wand/examine(mob/user)
 	. = ..()
-	. += "Has [charges] charge\s remaining."
+	. += "Осталось зарядов: [charges]."
 
 /obj/item/gun/magic/wand/update_icon_state()
 	icon_state = "[initial(icon_state)][charges ? "" : "-drained"]"

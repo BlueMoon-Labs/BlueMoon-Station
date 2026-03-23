@@ -22,6 +22,14 @@
 	path = /obj/item/clothing/suit/armor/navyblue
 	restricted_roles = list("Security Officer")
 
+/datum/gear/head/empire_head
+	name = "Katzen Steel Helmet"
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	path = /obj/item/clothing/head/helmet/sec/empire_head
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_initial_colors = list("#2A2A2A","#e4b829")
+	restricted_roles = list("Security Officer", "Head of Security", "Warden")
+
 /datum/gear/head/navyblueofficerberet
 	name = "Security officer's Navyblue beret"
 	path = /obj/item/clothing/head/beret/sec/navyofficer

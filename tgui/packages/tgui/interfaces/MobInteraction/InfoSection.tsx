@@ -40,7 +40,7 @@ export const InfoSection = (props, context) => {
     <Section title={`Interacting with ${isTargetSelf ? "yourself" : target}...`} fill>
       <Stack vertical fill>
         <Stack.Item grow basis={0}>
-          <Section fill overflow="auto">
+          <Section scrollable fill>
             <Stack>
               <Stack.Item>
                 <BlockQuote>
@@ -86,7 +86,7 @@ export const InfoSection = (props, context) => {
                 fluid
                 mb={-0.7}
                 content="Your genitals menu"
-                color = "pink"
+                color="pink"
                 onClick={() => act('genitals_menu', {
                   who: 'user',
                 })}
@@ -98,7 +98,7 @@ export const InfoSection = (props, context) => {
                   fluid
                   mb={-0.7}
                   content="Partner's genitals menu"
-                  color = "pink"
+                  color="pink"
                   onClick={() => act('genitals_menu', {
                     who: 'target',
                   })}

@@ -7493,6 +7493,10 @@
 /obj/item/flashlight,
 /obj/item/flashlight,
 /obj/item/flashlight,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "auh" = (
@@ -9902,11 +9906,12 @@
 /turf/open/floor/plasteel/grimy,
 /area/command/heads_quarters/captain)
 "aAs" = (
-/obj/structure/table/wood,
-/obj/item/kitchen/fork,
-/obj/item/card/id/captains_spare,
-/turf/open/floor/plasteel/grimy,
-/area/command/heads_quarters/captain)
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/machinery/computer/brig_assistant_console,
+/turf/open/floor/plasteel,
+/area/hallway/primary/fore)
 "aAt" = (
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel/dark,
@@ -26123,7 +26128,6 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/aft)
 "bnO" = (
-/obj/machinery/rnd/production/circuit_imprinter,
 /obj/machinery/light{
 	dir = 8
 	},
@@ -26141,6 +26145,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
 /turf/open/floor/plasteel/dark,
 /area/science/robotics/lab)
 "bnP" = (
@@ -57612,36 +57617,82 @@
 /turf/open/floor/grass/grass0,
 /area/service/hydroponics/garden/monastery)
 "ncY" = (
-/obj/item/gun/ballistic/automatic/acr5m30,
-/obj/item/gun/ballistic/automatic/acr5m30{
-	pixel_y = -5
-	},
-/obj/item/gun/ballistic/automatic/acr5m30{
-	pixel_y = -10
-	},
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/hp,
-/obj/item/ammo_box/magazine/acr5m30/hp,
-/obj/item/ammo_box/magazine/acr5m30/hp,
 /obj/structure/safe/floor/syndi/armory{
+	pixel_x = -32;
 	pixel_y = 2;
-	dir = 2;
-	pixel_x = -32
+	dir = 4
 	},
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/storage/firstaid,
+/obj/item/storage/firstaid/brute,
+/obj/item/storage/firstaid/toxin,
+/obj/item/storage/firstaid/fire,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
 /obj/machinery/rnd/production/techfab/department/security,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
@@ -60033,6 +60084,18 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/science/xenobiology)
+"qda" = (
+/obj/structure/disposalpipe/segment,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 32;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel/dark,
+/area/command/bridge)
 "qdi" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -90234,7 +90297,7 @@ atG
 cxX
 jfY
 cym
-axL
+aAs
 axG
 aAl
 aBh
@@ -92806,7 +92869,7 @@ auH
 auH
 axQ
 ayV
-aAs
+ayT
 aBj
 gkR
 aDB
@@ -98207,7 +98270,7 @@ aAE
 aBy
 aCO
 aDP
-aEK
+qda
 aEK
 aEK
 aHg

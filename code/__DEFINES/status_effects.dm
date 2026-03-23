@@ -127,6 +127,8 @@
 
 #define STATUS_EFFECT_GAUNTLET_CONC /datum/status_effect/cgau_conc // it's a slowdown that really should only be applying to large simplemobs
 
+#define STATUS_EFFECT_BOLASNARED /datum/status_effect/bola_snared //the affected has been snared by bolas, causing risk to trip when moving
+
 /// shoves inflict this to indicate the next shove while this is in effect should disarm guns
 #define STATUS_EFFECT_OFF_BALANCE /datum/status_effect/off_balance
 

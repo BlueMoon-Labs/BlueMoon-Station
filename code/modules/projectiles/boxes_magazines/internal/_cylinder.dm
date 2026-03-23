@@ -4,6 +4,24 @@
 	caliber = list("357","38")
 	max_ammo = 7
 
+
+/obj/item/ammo_box/magazine/internal/cylinder/proc/ammo_box_reload(obj/item/ammo_box/A, mob/user, params, silent = FALSE, replace_spent = 0)
+	var/num_loaded = 0
+	if(!can_load(user))
+		return
+	if(A.stored_ammo.len > 0)
+		var/obj/item/ammo_casing/AC = A.stored_ammo[1]
+		var/did_load = give_round(AC, replace_spent)
+		if(did_load)
+			A.stored_ammo -= AC
+			num_loaded++
+
+	if(num_loaded)
+		A.update_icon()
+		update_icon()
+
+	return num_loaded
+
 /obj/item/ammo_box/magazine/internal/cylinder/ammo_count(countempties = 1)
 	var/boolets = 0
 	for(var/obj/item/ammo_casing/bullet in stored_ammo)

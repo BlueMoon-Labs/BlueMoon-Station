@@ -26,7 +26,6 @@
 	// in memoriam "Your balls finally feel full, again." ??-2020
 
 /obj/item/organ/genital/testicles/upon_link()
-	size = linked_organ.size
 	update_size()
 	update_appearance()
 
@@ -35,9 +34,9 @@
 		if(BALLS_SIZE_MIN)
 			size_name = "среднего"
 		if(BALLS_SIZE_DEF)
-			size_name = "большого"
-		if(BALLS_SIZE_2)
 			size_name = "сжимательного"
+		if(BALLS_SIZE_2)
+			size_name = "большого"
 		if(BALLS_SIZE_3)
 			size_name = "массивного"
 		if(BALLS_SIZE_MAX)
@@ -47,10 +46,33 @@
 
 /obj/item/organ/genital/testicles/update_appearance()
 	. = ..()
-	desc = "Вы наблюдаете два семенника [size_name] размера."
+
 	var/datum/sprite_accessory/S = GLOB.balls_shapes_list[shape]
 	var/icon_shape = S ? S.icon_state : "single"
+	var/lovershape = lowertext(S ? S.icon_state : "single")
+
 	icon_state = "testicles_[icon_shape]_[size]"
+
+	switch(lovershape)
+		if("single")
+			lovershape = "два семенника [size_name] размера."
+		if("sheath")
+			lovershape = "два семенника [size_name] размера и генитальные ножны повыше."
+		else
+			lovershape = "пустоту где вы могли ожидать Яйца"
+
+	if(owner)
+		if(owner.dna.species.use_skintones && owner.dna.features["genitals_use_skintone"])
+			if(ishuman(owner))
+				var/mob/living/carbon/human/H = owner
+				color = SKINTONE2HEX(H.skin_tone)
+				if(!H.dna.skin_tone_override)
+					icon_state += "_s"
+		else
+			color = "#[owner.dna.features["balls_color"]]"
+
+	desc = "Вы наблюдаете [lovershape]"
+
 	if(owner)
 		if(owner.dna.species.use_skintones && owner.dna.features["genitals_use_skintone"])
 			if(ishuman(owner)) // Check before recasting type, although someone fucked up if you're not human AND have use_skintones somehow...
@@ -68,6 +90,7 @@
 	else
 		color = "#[D.features["balls_color"]]"
 	shape = D.features["balls_shape"]
+	size = D.features["balls_size"]
 	fluid_rate = D.features["balls_cum_rate"]
 	fluid_mult = D.features["balls_cum_mult"]
 	fluid_efficiency = D.features["balls_efficiency"]

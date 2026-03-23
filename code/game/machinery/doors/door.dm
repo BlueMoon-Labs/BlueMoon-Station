@@ -161,13 +161,13 @@
 		return
 	..()
 
-/obj/machinery/door/proc/try_to_activate_door(mob/user)
+/obj/machinery/door/proc/try_to_activate_door(mob/user, access_bypass = FALSE)
 	add_fingerprint(user)
 	if(operating || (obj_flags & EMAGGED) || !can_open_with_hands)
 		return
 	if(!requiresID())
 		user = null //so allowed(user) always succeeds
-	if(allowed(user))
+	if(access_bypass || allowed(user))
 		if(density)
 			open()
 		else
@@ -220,7 +220,10 @@
 	return max_moles - min_moles > 20
 
 /obj/machinery/door/attackby(obj/item/I, mob/user, params)
-	if(user.a_intent != INTENT_HARM && (I.tool_behaviour == TOOL_CROWBAR || istype(I, /obj/item/fireaxe)))
+	if(istype(I, /obj/item/access_key))
+		var/obj/item/access_key/key = I
+		return key.attempt_open_door(user, src)
+	else if(user.a_intent != INTENT_HARM && (I.tool_behaviour == TOOL_CROWBAR || istype(I, /obj/item/fireaxe)))
 		try_to_crowbar(I, user)
 		return TRUE
 	else if(I.tool_behaviour == TOOL_WELDER)

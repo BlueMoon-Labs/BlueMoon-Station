@@ -36,13 +36,13 @@
 /obj/item/organ/cyberimp/arm/surgery/advanced
 	name = "advanced integrated surgical implant"
 	desc = "A very advanced version of the regular surgical implant, has alien stuff!"
-	contents = newlist(/obj/item/retractor/alien,
+	contents = newlist(/obj/item/surgical_drapes/advanced,
+						/obj/item/retractor/alien,
 						/obj/item/hemostat/alien,
 						/obj/item/cautery/alien,
 						/obj/item/surgicaldrill/alien,
 						/obj/item/scalpel/alien,
-						/obj/item/circular_saw/alien,
-						/obj/item/surgical_drapes/advanced)
+						/obj/item/circular_saw/alien)
 
 /obj/item/organ/cyberimp/arm/surgery/emag_act()
 	. = ..()

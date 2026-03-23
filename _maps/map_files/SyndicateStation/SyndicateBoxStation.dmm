@@ -1239,7 +1239,15 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/machinery/rnd/production/techfab/department/security,
+/obj/effect/turf_decal/bot/yellow,
+/obj/structure/closet/secure_closet/contraband/armory,
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 8;
+	name = "8maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/armory_contraband,
+/obj/effect/spawner/lootdrop/armory_contraband,
+/obj/effect/spawner/lootdrop/armory_contraband,
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
 "aek" = (
@@ -1292,14 +1300,6 @@
 	},
 /obj/structure/cable{
 	icon_state = "4-8"
-	},
-/obj/structure/closet/secure_closet/contraband/armory,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/maintenance{
-	lootcount = 8;
-	name = "8maintenance loot spawner"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
@@ -1532,6 +1532,7 @@
 	dir = 4;
 	light_color = "#c1caff"
 	},
+/obj/effect/turf_decal/tile/red,
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
 "aeU" = (
@@ -11433,9 +11434,6 @@
 	pixel_x = 9;
 	pixel_y = 24
 	},
-/obj/structure/sign/painting/library{
-	pixel_x = -32
-	},
 /turf/open/floor/carpet/royalblack,
 /area/service/library)
 "aIs" = (
@@ -11446,10 +11444,8 @@
 	dir = 1;
 	light_color = "#c1caff"
 	},
-/obj/structure/sign/painting/library{
-	pixel_y = 32
-	},
 /obj/structure/chair/comfy/black,
+/obj/structure/sign/painting/large/library/directional/north,
 /turf/open/floor/carpet/royalblack,
 /area/service/library)
 "aIt" = (
@@ -11461,9 +11457,6 @@
 /turf/open/floor/carpet/royalblack,
 /area/service/library)
 "aIw" = (
-/obj/structure/sign/painting/library{
-	pixel_y = 32
-	},
 /obj/structure/chair/comfy/black,
 /turf/open/floor/carpet/royalblack,
 /area/service/library)
@@ -14938,6 +14931,10 @@
 	c_tag = "Bridge East";
 	dir = 8
 	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = 33
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/bridge)
 "aVs" = (
@@ -16699,6 +16696,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 4
 	},
+/obj/structure/sign/painting/large/library/directional/west,
 /turf/open/floor/carpet/royalblack,
 /area/service/library)
 "bax" = (
@@ -18985,7 +18983,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/machinery/rnd/production/circuit_imprinter,
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
 /turf/open/floor/mineral/plastitanium,
 /area/science/robotics/lab)
 "bhy" = (
@@ -20840,7 +20838,6 @@
 	dir = 1
 	},
 /obj/structure/dresser,
-/obj/item/card/id/captains_spare,
 /turf/open/floor/carpet,
 /area/command/heads_quarters/captain)
 "bmA" = (
@@ -45766,10 +45763,9 @@
 "dbE" = (
 /obj/structure/table/wood,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/item/paper{
-	icon_state = "paper_onfire";
+/obj/item/paper/always_on_fire{
 	name = "Burning Note";
-	text = "I sign here with my last breath to sell my soul to curse you all..."
+	default_raw_text = "I sign here with my last breath to sell my soul to curse you all..."
 	},
 /obj/item/pen/fountain{
 	pixel_x = 5;
@@ -45785,8 +45781,12 @@
 /area/maintenance/starboard/fore)
 "dcB" = (
 /obj/effect/turf_decal/delivery,
-/obj/machinery/door/poddoor/shutters{
-	id = "armory3"
+/obj/machinery/rnd/production/techfab/department/security,
+/obj/machinery/door/window/brigdoor,
+/obj/machinery/door/window/brigdoor{
+	dir = 1;
+	name = "Reception Desk";
+	req_access_txt = "3"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
@@ -50895,6 +50895,9 @@
 /area/service/park)
 "gRZ" = (
 /obj/structure/chair/comfy/brown,
+/obj/structure/sign/painting/library_private{
+	pixel_x = -32
+	},
 /turf/open/floor/carpet,
 /area/service/library)
 "gSh" = (
@@ -51805,35 +51808,89 @@
 "hzl" = (
 /obj/structure/safe/floor/syndi/armory{
 	pixel_x = 32;
-	pixel_y = 2
+	pixel_y = 2;
+	dir = 8
 	},
-/obj/item/gun/ballistic/automatic/acr5m30,
-/obj/item/gun/ballistic/automatic/acr5m30{
-	pixel_y = -5
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
 	},
-/obj/item/gun/ballistic/automatic/acr5m30{
-	pixel_y = -10
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
 	},
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/ap,
-/obj/item/ammo_box/magazine/acr5m30/hp,
-/obj/item/ammo_box/magazine/acr5m30/hp,
-/obj/item/ammo_box/magazine/acr5m30/hp,
-/obj/effect/turf_decal/delivery,
-/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/laser/carbine{
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/storage/firstaid,
+/obj/item/storage/firstaid/brute,
+/obj/item/storage/firstaid/toxin,
+/obj/item/storage/firstaid/fire,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
 "hzC" = (
@@ -54188,6 +54245,10 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
+"joJ" = (
+/obj/machinery/suit_storage_unit/corporate,
+/turf/open/floor/mineral/plastitanium,
+/area/command/heads_quarters/ntr)
 "joX" = (
 /obj/structure/closet,
 /obj/effect/spawner/lootdrop/syndicate_present,
@@ -54896,7 +54957,7 @@
 /area/service/hydroponics)
 "jMZ" = (
 /obj/effect/turf_decal/bot/yellow,
-/obj/machinery/autolathe,
+/obj/machinery/autolathe/hacked,
 /turf/open/floor/mineral/plastitanium,
 /area/security/office)
 "jNr" = (
@@ -55852,6 +55913,20 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
 /area/commons/storage/tools)
+"kwd" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/red,
+/obj/machinery/computer/brig_assistant_console,
+/turf/open/floor/mineral/plastitanium,
+/area/hallway/primary/fore)
 "kwz" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
@@ -57601,6 +57676,9 @@
 "lJS" = (
 /obj/item/radio/intercom{
 	pixel_x = -30
+	},
+/obj/effect/turf_decal/tile/red{
+	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
@@ -61847,9 +61925,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
 "oFf" = (
-/obj/structure/table/wood,
 /obj/structure/window/reinforced{
 	dir = 8
+	},
+/obj/machinery/modular_computer/console/preset/curator{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/library)
@@ -67022,6 +67102,7 @@
 "sDc" = (
 /obj/structure/bed,
 /obj/item/bedsheet/black,
+/obj/structure/sign/painting/large/library_private/directional/east,
 /turf/open/floor/carpet,
 /area/service/library)
 "sDE" = (
@@ -102157,7 +102238,7 @@ gkH
 sgT
 kaM
 cGM
-iTX
+joJ
 vrj
 rxP
 ayW
@@ -102928,7 +103009,7 @@ lXL
 sgT
 xpf
 lnB
-arW
+iTX
 fFv
 qjg
 xCk
@@ -103684,7 +103765,7 @@ vyK
 amI
 amS
 alv
-aqE
+kwd
 anS
 aoy
 apj

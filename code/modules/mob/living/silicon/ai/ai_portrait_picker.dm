@@ -8,6 +8,8 @@
 #define TAB_LIBRARY 1
 #define TAB_SECURE 2
 #define TAB_PRIVATE 3
+#define TAB_LARGE 4
+#define TAB_LARGE_PRIVATE 5
 
 /datum/portrait_picker
 	var/client/holder //client of whoever is using this datum
@@ -52,7 +54,7 @@
 		return
 	switch(action)
 		if("select")
-			var/list/tab2key = list(TAB_LIBRARY = "library", TAB_SECURE = "library_secure", TAB_PRIVATE = "library_private")
+			var/list/tab2key = alist(TAB_LIBRARY = "library", TAB_SECURE = "library_secure", TAB_PRIVATE = "library_private")
 			var/folder = tab2key[params["tab"]]
 			var/list/current_list = SSpersistence.paintings[folder]
 			var/list/chosen_portrait = current_list[params["selected"]]

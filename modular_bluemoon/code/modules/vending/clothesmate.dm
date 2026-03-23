@@ -62,7 +62,6 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 				/obj/item/clothing/head/sybil_slickers = 7,
 				/obj/item/clothing/head/that = 4,
 				/obj/item/clothing/head/tmc = 5,
-				/obj/item/clothing/head/ushanka/soviet = 7,
 				/obj/item/clothing/head/wig = 5,
 				/obj/item/clothing/head/yuri = 5,
 				/obj/item/clothing/head/fez = 5,
@@ -184,6 +183,7 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 			"name" = "Under",
 			"icon" = "person-dress",
 			"products" = list(
+				/obj/item/clothing/under/costume/kimono/poly = 3,
 				/obj/item/clothing/under/bluedress = 3,
 				/obj/item/clothing/under/blutigen_undergarment = 3,
 				/obj/item/clothing/under/costume/allies = 7,
@@ -442,11 +442,32 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 				/obj/item/umbrella = 5,
 			),
 		),
+
+		list(
+			"name" = "Backpacks",
+			"icon" = "suitcase",
+			"products" = list(
+				/obj/item/storage/backpack = 3,
+				/obj/item/storage/backpack/satchel = 3,
+				/obj/item/storage/backpack/duffelbag = 3,
+				/obj/item/storage/backpack/pocketbook = 3,
+				/obj/item/storage/backpack/pocketbook/brown = 3,
+				/obj/item/storage/backpack/pocketbook/reddish = 3,
+				/obj/item/storage/backpack/satchel/leather = 3,
+				/obj/item/storage/backpack/santabag = 3,
+				/obj/item/storage/backpack/hipbag = 3,
+				/obj/item/storage/backpack/hipbag/tan = 3,
+				/obj/item/storage/backpack/hipbag/green = 3,
+				/obj/item/storage/backpack/guitarbag = 3,
+			),
+		),
 	)
 
 	contraband = list(
 				/obj/item/clothing/accessory/turtleneck/tactifool/syndicate = 3,
 				/obj/item/clothing/head/ushanka = 3,
+				/obj/item/clothing/head/ushanka/soviet = 3,
+				/obj/item/clothing/head/ushanka/black = 3,
 				/obj/item/clothing/mask/balaclava = 3,
 				/obj/item/clothing/mask/gas/goner/basic = 10,
 				/obj/item/clothing/suit/jacket/letterman_syndie = 5,

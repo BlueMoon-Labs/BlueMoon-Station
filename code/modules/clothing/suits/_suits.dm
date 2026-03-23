@@ -28,7 +28,7 @@
 			return
 		var/datum/dna/D = M.dna
 		if(D.features["hardsuit_with_tail"])
-			var/tail_under_suit = tail_suit_worn_overlay || 'modular_bluemoon/SmiLeY/icons/mob/clothing/tails_digi.dmi'
+			var/tail_under_suit = tail_suit_worn_overlay || 'modular_bluemoon/icons/mob/clothing/tails_digi.dmi'
 			. += mutable_appearance(tail_under_suit, tail_state)
 		var/obj/item/clothing/under/U = M.w_uniform
 		//SANDSTORM EDIT

@@ -11,6 +11,33 @@
 
 //////////////////////////////////////////////////
 
+/obj/item/modkit/kukri_kit
+	name = "Kukri Kit"
+	desc = "A modkit for making an combat knife into a Kukri."
+	product = /obj/item/kitchen/knife/combat/kukri
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/kukri
+	name = "Кукри-мачете"
+	desc = "Традиционное кукри, с разительным отличием, что делает его похожим на мачете, благодаря своему изогнутому клинку и функционалу как режущего инструмента и оружия. Из-за той же формы лещвия с изгибом центр тяжести смещён к острию, что делает его более эффективным для рубки. На рукояти изображён логотип, напоминающий чёрную розу и круговая надпись Black Rose atelier"
+	item_state = "kukri"
+	icon_state = "kukri"
+	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
+	unique_reskin = list(
+		"Black" = list(
+			RESKIN_ICON_STATE = "kukri",
+			RESKIN_ITEM_STATE = "kukri"
+		),
+		"White" = list(
+			RESKIN_ICON_STATE = "kukri_w",
+			RESKIN_ITEM_STATE = "kukri_w"
+		)
+	)
+
+//////////////////////////////////////////////////
+
 /obj/item/modkit/impactbaton_kit
 	name = "Impact Baton Kit"
 	desc = "A modkit for making a police baton into a jitte baton."
@@ -66,14 +93,81 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	hitsound = 'modular_bluemoon/fluffs/sound/weapon/Abomination.ogg'
 
-// /obj/item/modkit/esword_kit
-// 	name = "Energy sword Kit"
-// 	desc = "A modkit for making a plasma sword into an energy sword."
-// 	product = /obj/item/melee/transforming/energy/sword/saber
-// 	fromitem = list(/obj/item/melee/transforming/plasmasword)
+/obj/item/modkit/dark_sabre_kit
+	name = "Dark Omen Sword Kit"
+	desc = "A modkit for making a energy/plasma sword into an Dark Omen Sword."
+	product = /obj/item/melee/transforming/energy/sword/saber/dark_sabre
+	fromitem = list(/obj/item/melee/transforming/plasmasword, /obj/item/melee/transforming/energy/sword/saber, /obj/item/melee/transforming/energy/sword/saber/red)
 
-// /obj/item/modkit/desword_kit
-// 	name = "Double-bladed energy sword Kit"
-// 	desc = "A modkit for making a plasma scythe into an double-bladed energy sword."
-// 	product = /obj/item/dualsaber
-// 	fromitem = list(/obj/item/plasmascythe)
+/obj/item/melee/transforming/energy/sword/saber/dark_sabre
+	name = "Dark Omen Sword"
+	desc = "Необычная рукоять из тяжёлого неизвестного материала. На ней выгравирована мелким шрифтом странная фраза: \n<span class='danger'>«ТАМ, ГДЕ БЫЛ СТРАХ, ОСТАНУСЬ ТОЛЬКО Я»</span>\nПри включении, появляется леденящий душу чёрный клинок. От него исходит низкий, резонирующий гул. Последнее, что слышали многие жертвы этого орудия."
+	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
+	icon_state = "dark_sabre0"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/48x32_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/48x32_right.dmi'
+	inhand_x_dimension = 48
+	transform_on_sound = 'modular_bluemoon/fluffs/sound/weapon/dark_sabre_on.ogg'
+	transform_off_sound = 'modular_bluemoon/fluffs/sound/weapon/dark_sabre_off.ogg'
+	hitsound_on = 'modular_bluemoon/fluffs/sound/weapon/dark_sabre_hit.ogg'
+	light_color = "#3333AA"
+	possible_colors = null
+	unique_reskin = null
+	var/image/transform_overlay
+
+/obj/item/melee/transforming/energy/sword/saber/dark_sabre/transform_weapon(mob/living/user, supress_message_text)
+	. = ..()
+	flick("dark_sabre[active ? "1" : "0"]_anim", src)
+	icon_state = "blank"
+	var/mob/living/carbon/human/H = loc
+	if(!istype(H))
+		icon_state = "dark_sabre[active ? "1" : "0"]"
+		return
+	transform_overlay = image(H.held_index_to_dir(H.active_hand_index) == "r" ? righthand_file : lefthand_file, H, "dark_sabre[active ? "1" : "0"]_anim")
+	transform_overlay = center_image(transform_overlay, inhand_x_dimension, inhand_y_dimension)
+	flick_overlay(transform_overlay, GLOB.clients, 5)
+	addtimer(CALLBACK(src, PROC_REF(change_state)), 5)
+
+/obj/item/melee/transforming/energy/sword/saber/dark_sabre/proc/change_state()
+	icon_state = "dark_sabre[active ? "1" : "0"]"
+	var/mob/living/carbon/human/H = loc
+	if(istype(H))
+		H.update_inv_hands()
+	qdel(transform_overlay)
+
+/obj/item/modkit/twilight_spike
+	name = "Twilight Spike"
+	desc = "A modkit for making stunbaton into Twilight Spike."
+	product = /obj/item/melee/baton/twilight_spike
+	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
+
+/obj/item/modkit/twilight_spike/on_item_replace(obj/item/melee/baton/baton, obj/item/melee/baton/twilight_spike)
+	if(!baton.cell || twilight_spike.cell)
+		return
+	twilight_spike.cell = baton.cell
+	baton.cell.forceMove(twilight_spike)
+	baton.cell = null
+	update_icon_state()
+
+/obj/item/melee/baton/twilight_spike
+	name = "Twilight Spike"
+	desc = "Тонкий, стремительный клинок, напоминающий заострённый шип. Его лезвие будто накапливает энергию, а при ударе высвобождает краткий парализующий импульс. \
+	Лёгкий и отлично сбалансированный, он создан для тех, кто предпочитает скорость и точность грубой силе."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "twilight"
+	item_state = "twilight"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	turn_on_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_on.ogg'
+	hit_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_hit.ogg'
+
+/obj/item/melee/baton/twilight_spike/update_icon_state()
+	if(turned_on)
+		icon_state = "[initial(icon_state)]_active"
+		item_state = "[initial(item_state)]_active"
+	else if(!cell)
+		icon_state = "[initial(icon_state)]_nocell"
+		item_state = "[initial(item_state)]"
+	else
+		icon_state = "[initial(icon_state)]"
+		item_state = "[initial(item_state)]"

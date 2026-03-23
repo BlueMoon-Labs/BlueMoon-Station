@@ -21,3 +21,9 @@
 
 /datum/asset/simple/portraits/library_private
 	tab = "library_private"
+
+/datum/asset/simple/portraits/library_large
+	tab = "library_large"
+
+/datum/asset/simple/portraits/library_large_private
+	tab = "library_large_private"

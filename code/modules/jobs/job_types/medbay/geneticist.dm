@@ -10,6 +10,17 @@
 	selection_color = "#74b5e0"
 	exp_type = EXP_TYPE_CREW
 	exp_requirements = 60
+	alt_titles = list(
+		"Genetist Intern", //Стажер выше, для удобства
+		"Syndicate Genetist",
+		"Bioengineer",
+		"Gene Tailor",
+		"Gene Therapist",
+		"Gene-Slut",
+		"Gene-Stud",
+		"Genemancer",
+		"Genetics Researcher"
+		)
 
 	outfit = /datum/outfit/job/geneticist
 	departments = DEPARTMENT_BITFLAG_MEDICAL

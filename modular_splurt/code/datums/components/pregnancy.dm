@@ -187,7 +187,7 @@
 		else
 			handle_incubation()
 
-	if((stage >= 2) && !revealed)
+	if((stage >= 2) && !revealed && carrier)
 		revealed = TRUE
 		carrier.apply_status_effect(/datum/status_effect/pregnancy)
 		carrier.apply_status_effect(/datum/status_effect/lactation)
@@ -238,7 +238,7 @@
 	COOLDOWN_START(src, hatch_request_cooldown, 30 SECONDS)
 
 	var/poll_message = "Do you want to play as [mother_name]'s offspring?[egg_name ? " Your name will be [egg_name]" : ""]"
-	var/list/mob/candidates = pollGhostCandidates(poll_message, ROLE_RESPAWN, null, FALSE, 30 SECONDS, POLL_IGNORE_EGG)
+	var/list/mob/candidates = pollGhostCandidates(poll_message, ROLE_RESPAWN, null, FALSE, 30 SECONDS, POLL_IGNORE_EGG, priority_check = FALSE)
 
 	if(!LAZYLEN(candidates))
 		to_chat(user, span_info("\The [parent] doesn't seems to hatch, try again later?"))
@@ -394,11 +394,18 @@
 		human_pragency_start(carrier)
 	ADD_TRAIT(carrier, TRAIT_PREGNANT, PREGNANCY_TRAIT)
 
+	// === BLUEMOON ADD ===
+	if(HAS_TRAIT(carrier, TRAIT_ESTROUS_ACTIVE))
+		SEND_SIGNAL(carrier, COMSIG_PREGNANCY_STARTED)
+
 /datum/component/pregnancy/proc/generic_pragency_end()
 	REMOVE_TRAIT(carrier, TRAIT_PREGNANT, PREGNANCY_TRAIT)
 	carrier.remove_status_effect(/datum/status_effect/pregnancy)
 	if(ishuman(carrier))
 		human_pragency_end(carrier)
+
+	// BLUEMOON ADD
+	SEND_SIGNAL(carrier, COMSIG_PREGNANCY_ENDED)
 
 /datum/component/pregnancy/proc/human_pragency_start(mob/living/carbon/human/gregnant)
 	if(pregnancy_breast_growth)

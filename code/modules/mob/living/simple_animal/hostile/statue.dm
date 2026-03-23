@@ -206,21 +206,33 @@
 	include_user = 1
 
 /obj/effect/proc_holder/spell/targeted/night_vision/cast(list/targets, mob/user = usr)
-	for(var/mob/living/target in targets)
-		switch(target.lighting_alpha)
-			if (LIGHTING_PLANE_ALPHA_VISIBLE)
-				target.lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
-				name = "Toggle Nightvision \[More]"
-			if (LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
-				target.lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
-				name = "Toggle Nightvision \[Full]"
-			if (LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE)
-				target.lighting_alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
-				name = "Toggle Nightvision \[OFF]"
-			else
-				target.lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
-				name = "Toggle Nightvision \[ON]"
-		target.update_sight()
+    for(var/mob/living/target in targets)
+        toggle_nightvision(target)
+
+/obj/effect/proc_holder/spell/targeted/night_vision/proc/toggle_nightvision(mob/living/target)
+	var/original_darksight = initial(target.see_in_dark) // То, как далеко турфов видит моб в полной темноте
+	var/turfs_value = target.lighting_alpha // То, насколько яркие турфы
+	var/darksight
+	switch(turfs_value)
+		if(LIGHTING_PLANE_ALPHA_VISIBLE)
+			turfs_value = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+			darksight = min(original_darksight, NIGHT_VISION_DARKSIGHT_RANGE)
+			name = "Toggle Nightvision \[More]"
+		if(LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
+			turfs_value = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+			darksight = max(original_darksight, NIGHT_VISION_DARKSIGHT_RANGE)
+			name = "Toggle Nightvision \[Full]"
+		if(LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE)
+			turfs_value = LIGHTING_PLANE_ALPHA_INVISIBLE
+			darksight = original_darksight
+			name = "Toggle Nightvision \[OFF]"
+		else
+			turfs_value = LIGHTING_PLANE_ALPHA_VISIBLE
+			darksight = max(original_darksight, NIGHT_VISION_DARKSIGHT_RANGE)
+			name = "Toggle Nightvision \[ON]"
+	target.lighting_alpha = turfs_value
+	target.see_in_dark = darksight
+	target.update_sight(forced = FALSE)
 
 /mob/living/simple_animal/hostile/statue/sentience_act()
 	faction -= "neutral"

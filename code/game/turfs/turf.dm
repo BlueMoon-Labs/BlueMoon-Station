@@ -121,7 +121,8 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /turf/Destroy(force)
 	. = QDEL_HINT_IWILLGC
-	if(!changing_turf)
+	var/is_changeturf = changing_turf
+	if(!is_changeturf)
 		stack_trace("Incorrect turf deletion")
 	changing_turf = FALSE
 	var/turf/T = SSmapping.get_turf_above(src)
@@ -130,6 +131,9 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	T = SSmapping.get_turf_below(src)
 	if(T)
 		T.multiz_turf_del(src, UP)
+	if(force || !is_changeturf)
+		if(lighting_object)
+			qdel(lighting_object, force = TRUE)
 	if(force)
 		..()
 		//this will completely wipe turf state
@@ -137,13 +141,18 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		for(var/A in B.contents)
 			qdel(A)
 		return
-	visibilityChanged()
+	// Skip during ChangeTurf for non-opaque turfs — the new turf's Initialize() handles it.
+	// Opaque turfs (walls) must still notify cameranet: updateVisibility() early-returns
+	// for non-opaque atoms, so the new turf's Initialize won't trigger the camera update.
+	if(!is_changeturf || opacity)
+		visibilityChanged()
 	QDEL_LIST(blueprint_data)
 	flags_1 &= ~INITIALIZED_1
 	requires_activation = FALSE
 	..()
 
-	vis_contents.Cut()
+	if(!is_changeturf)
+		vis_contents.Cut()
 
 /turf/on_attack_hand(mob/user)
 	user.Move_Pulled(src)
@@ -350,9 +359,14 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		AM.ex_act(explosion_level)
 
 	// If an opaque movable atom moves around we need to potentially update visibility.
-	if (AM.opacity)
-		has_opaque_atom = TRUE // Make sure to do this before reconsider_lights(), incase we're on instant updates. Guaranteed to be on in this case.
-		reconsider_lights()
+	// During bulk operations (shuttle moves), skip — batch recalc handles it after.
+	if(!GLOB.lighting_defer_active)
+		if(AM.opacity)
+			has_opaque_atom = TRUE // Make sure to do this before reconsider_lights(), incase we're on instant updates. Guaranteed to be on in this case.
+			reconsider_lights()
+		// Non-opaque atoms with shadow_weight still cast partial contact shadows (incremental — no contents scan)
+		else if(AM.shadow_weight > 0)
+			adjust_shadow_weight(AM.shadow_weight)
 
 
 /turf/open/Entered(atom/movable/AM)
@@ -541,14 +555,12 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		affecting_level = 2
 	else
 		affecting_level = 1
-	var/atom/A
-	for(var/i in contents)
+	for(var/atom/A as anything in contents)
 		if(. <= 0)
 			return FALSE
-		A = i
-		if(!QDELETED(A) && A.level >= affecting_level)
-			.  = A.wave_explode(., explosion, dir)
-	maptext = MAPTEXT("[.]")
+		if(QDELETED(A) || A.level < affecting_level)
+			continue
+		. = A.wave_explode(., explosion, dir)
 
 /turf/narsie_act(force, ignore_mobs, probability = 20)
 	. = (prob(probability) || force)

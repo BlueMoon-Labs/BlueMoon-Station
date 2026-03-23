@@ -337,6 +337,7 @@
 	if(I)
 		if(client)
 			client.screen -= I
+		I.screen_loc = null
 		I.layer = initial(I.layer)
 		I.plane = initial(I.plane)
 		I.appearance_flags &= ~NO_CLIENT_COLOR
@@ -450,7 +451,7 @@
 		if(SEND_SIGNAL(I, COMSIG_TRY_STORAGE_INSERT, src, M))
 			return TRUE
 
-	to_chat(M, "<span class='warning'>You are unable to equip that!</span>")
+	to_chat(M, "<span class='warning'>Вы не можете это экипировать!</span>")
 	return FALSE
 
 

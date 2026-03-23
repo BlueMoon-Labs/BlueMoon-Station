@@ -41,6 +41,7 @@
 	create_reagents(100, INJECTABLE | DRAWABLE)
 
 /obj/item/slime_extract/on_grind()
+	..()
 	if(Uses)
 		grind_results[/datum/reagent/toxin/slimejelly] = 20
 
@@ -836,19 +837,19 @@
 
 /obj/item/slimepotion/speed
 	name = "slime speed potion"
-	desc = "A potent chemical mix that will remove the slowdown from any item."
+	desc = "Мощная химическая смесь, которая уберет замедление с любого предмета."
 	icon = 'icons/obj/chemical.dmi'
 	icon_state = "potred"
 
 /obj/item/slimepotion/speed/afterattack(obj/C, mob/user)
 	. = ..()
 	if(!istype(C))
-		to_chat(user, "<span class='warning'>The potion can only be used on items or vehicles!</span>")
+		to_chat(user, "<span class='warning'>Зелье применимо только на предметы и транспорт!</span>")
 		return
 	if(isitem(C))
 		var/obj/item/I = C
 		if(I.slowdown <= 0 || I.obj_flags & IMMUTABLE_SLOW)
-			to_chat(user, "<span class='warning'>The [C] can't be made any faster!</span>")
+			to_chat(user, "<span class='warning'>С замедлением [C] нельзя что-либо сделать!</span>")
 			return ..()
 		I.slowdown = 0
 
@@ -857,11 +858,11 @@
 		var/datum/component/riding/R = V.GetComponent(/datum/component/riding)
 		if(R)
 			if(R.vehicle_move_delay <= 1 )
-				to_chat(user, "<span class='warning'>The [C] can't be made any faster!</span>")
+				to_chat(user, "<span class='warning'>С замедлением [C] нельзя что-либо сделать!</span>")
 				return ..()
 			R.vehicle_move_delay = 1
 
-	to_chat(user, "<span class='notice'>You slather the red gunk over the [C], making it faster.</span>")
+	to_chat(user, "<span class='notice'>Вы размазали зелье по поверхности [C], делая предмет легче и быстрее.</span>")
 	C.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 	C.add_atom_colour("#FF0000", FIXED_COLOUR_PRIORITY)
 	qdel(src)

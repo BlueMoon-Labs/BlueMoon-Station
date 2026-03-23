@@ -31,25 +31,46 @@
 //handles impregnation, also prefs
 /mob/living/proc/impregnate(mob/living/partner, obj/item/organ/W, baby_type = /mob/living/carbon/human)
 	var/obj/item/organ/container = W
-
 	if(!container)
 		container = getorganslot(ORGAN_SLOT_WOMB)
 	if(!container)
 		return
 
-	var/can_impregnate = 100
-	if(partner?.client?.prefs)
-		can_impregnate = partner.client.prefs.virility
-	var/can_get_pregnant = (client?.prefs?.fertility && !is_type_in_typecache(src.type, GLOB.pregnancy_blocked_mob_typecache))
-	if(!(can_impregnate && can_get_pregnant))
+	var/virility = partner?.client?.prefs?.virility || 0
+	var/fertility = client?.prefs?.fertility || 0
+
+	if(!fertility || is_type_in_typecache(src.type, GLOB.pregnancy_blocked_mob_typecache))
 		return
 
-	var/avg = (can_impregnate + client.prefs.fertility) / 2
+	// Базовый шанс с балансом в пользу женщин.. Почему ? Потому что девочки у нас вынашивают. и если у них фертильность 100 то пусть потом не удивляюьтся что залетели от парня.
+	var/chance = min(virility * 0.8, fertility * 1.2) * (1 + (rand(-15, 15) / 100))
 
-	if(prob(avg))
-		var/obj/item/oviposition_egg/eggo = new()
-		eggo.forceMove(container)
-		eggo.AddComponent(/datum/component/pregnancy, src, partner, baby_type)
+	// Бонус от эстрального цикла
+	var/estrus_total_bonus = 0
+
+	// Проверяем квирк у ПОЛУЧАТЕЛЯ
+	if(HAS_TRAIT(src, TRAIT_ESTROUS_ACTIVE))
+		var/datum/quirk/estrous_active/Q = get_quirk(/datum/quirk/estrous_active)
+		if(Q && !QDELETED(Q))
+			// Базовый бонус 5% + накопленный бонус от времени
+			var/estrus_bonus = round((0.05 + Q.time_bonus) * 100)
+			estrus_total_bonus += estrus_bonus
+
+	// Добавляем итоговый бонус
+	if(estrus_total_bonus > 0)
+		chance += estrus_total_bonus
+
+	chance = clamp(chance, 0, 100)
+
+	if(prob(chance))
+		var/num_eggs = rand(1, 2)
+		if(fertility > 80 && prob(30))
+			num_eggs += 1
+
+		for(var/i = 1, i <= num_eggs, i++)
+			var/obj/item/oviposition_egg/eggo = new()
+			eggo.forceMove(container)
+			eggo.AddComponent(/datum/component/pregnancy, src, partner, baby_type)
 
 /mob/living/carbon/human/do_climax(datum/reagents/R, atom/target, obj/item/organ/genital/sender, spill, cover = FALSE, obj/item/organ/genital/receiver, anonymous = FALSE)
 	if(!sender)
@@ -173,12 +194,20 @@
 	icon_state = "arousal0"
 	icon = 'icons/obj/genitals/hud.dmi'
 	screen_loc = ui_arousal
+	var/mob/living/carbon/human/owner
 
 /atom/movable/screen/arousal/Initialize(mapload, mob/living/carbon/human/owner)
-	. = ..()
+	. = ..(mapload, null)
 	if(!istype(owner))
 		return INITIALIZE_HINT_QDEL
+	src.owner = owner
 	RegisterSignal(owner, COMSIG_MOB_LUST_UPDATED, PROC_REF(update_lust))
+
+/atom/movable/screen/arousal/Destroy()
+	if(owner)
+		UnregisterSignal(owner, COMSIG_MOB_LUST_UPDATED)
+		owner = null
+	return ..()
 
 /atom/movable/screen/arousal/Click()
 	if(!ishuman(usr))

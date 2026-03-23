@@ -47,6 +47,8 @@
 	var/datum/deathrattle_group/group = null
 
 /obj/item/implant/deathrattle/Destroy()
+	if(imp_in)
+		UnregisterSignal(imp_in, COMSIG_LIVING_PREDEATH)
 	group = null
 	return ..()
 
@@ -67,6 +69,10 @@
 
 		if(!group)
 			to_chat(target, "<i>Вы слышите странный механический голос в голове...</i> \"<span class='robot'>Внимание: Не выявлены другие подключенные импланты.</span>\"")
+
+/obj/item/implant/deathrattle/removed(mob/living/source, silent = FALSE, special = 0)
+	UnregisterSignal(source, COMSIG_LIVING_PREDEATH)
+	return ..()
 
 /obj/item/implantcase/deathrattle
 	name = "implant case - 'Deathrattle'"
@@ -91,19 +97,31 @@ GLOBAL_DATUM_INIT(centcom_deathrattle_group, /datum/deathrattle_group, new)
 
 /obj/item/implant/death_alert/implant(mob/living/target, mob/user, silent = FALSE, force = FALSE)
 	. = ..()
+	if(!.)
+		return
 
 	if(radio)
 		radio.forceMove(target)
-		return
-	radio = new(target)
-	// almost like an internal headset, but without the
-	// "must be in ears to hear" restriction.
-	radio.name = "death alert system"
-	radio.subspace_transmission = TRUE
-	radio.canhear_range = 0
+	else
+		radio = new(target)
+		// almost like an internal headset, but without the
+		// "must be in ears to hear" restriction.
+		radio.name = "death alert system"
+		radio.subspace_transmission = TRUE
+		radio.canhear_range = 0
 
 
 	RegisterSignal(target, COMSIG_LIVING_PREDEATH, PROC_REF(on_predeath))
+
+/obj/item/implant/death_alert/removed(mob/living/source, silent = FALSE, special = 0)
+	UnregisterSignal(source, COMSIG_LIVING_PREDEATH)
+	return ..()
+
+/obj/item/implant/death_alert/Destroy()
+	if(imp_in)
+		UnregisterSignal(imp_in, COMSIG_LIVING_PREDEATH)
+	QDEL_NULL(radio)
+	return ..()
 
 /obj/item/implant/death_alert/proc/on_predeath(datum/source, gibbed)
 	SIGNAL_HANDLER

@@ -12,9 +12,3 @@
 	path = /obj/item/storage/backpack/satchel/carrot
 	ckeywhitelist = list()
 
-/datum/gear/donator/hands/raiqbawks
-	name = "Miami Boombox"
-	cost = 2
-	path = /obj/item/boombox/raiq
-	ckeywhitelist = list()
-

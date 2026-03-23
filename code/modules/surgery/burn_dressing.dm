@@ -4,11 +4,14 @@
 ///// Debride burnt flesh
 /datum/surgery/debride
 	name = "Debride infected flesh"
+	desc = "Хирургическая процедура, при которой удаляются инфицированные или обоженные ткани."
 	steps = list(/datum/surgery_step/debride, /datum/surgery_step/dress)
 	target_mobtypes = list(/mob/living/carbon/human)
 	possible_locs = list(BODY_ZONE_R_ARM,BODY_ZONE_L_ARM,BODY_ZONE_R_LEG,BODY_ZONE_L_LEG,BODY_ZONE_CHEST,BODY_ZONE_HEAD)
 	requires_real_bodypart = TRUE
 	targetable_wound = /datum/wound/burn
+	icon_state = "fugu_gland"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_WOUND
 
 /datum/surgery/debride/can_start(mob/living/user, mob/living/carbon/target)
 	if(..())
@@ -24,7 +27,7 @@
 
 ///// Debride
 /datum/surgery_step/debride
-	name = "Вырезать Заражённую Плоть"
+	name = "Удалить Заражённую Плоть"
 	implements = list(TOOL_SCALPEL = 100, TOOL_HEMOSTAT = 85, TOOL_SAW = 60, TOOL_WIRECUTTER = 40)
 	time = 30
 	repeatable = TRUE
@@ -54,8 +57,8 @@
 			"<span class='notice'>[user] successfully excises some of the infected flesh from  [target]'s [parse_zone(target_zone)]!</span>")
 		log_combat(user, target, "excised infected flesh in", addition="INTENT: [uppertext(user.a_intent)]")
 		surgery.operated_bodypart.receive_damage(brute=3, wound_bonus=CANT_WOUND)
-		burn_wound.infestation -= 0.5
-		burn_wound.sanitization += 0.5
+		burn_wound.infestation -= 1.5
+		burn_wound.sanitization += 1.5
 		if(burn_wound.infestation <= 0)
 			repeatable = FALSE
 	else
@@ -63,7 +66,7 @@
 	return ..()
 
 /datum/surgery_step/debride/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, var/fail_prob = 0)
-	..()
+	. = ..()
 	display_results(user, target, "<span class='notice'>You carve away some of the healthy flesh from [target]'s [parse_zone(target_zone)].</span>",
 		"<span class='notice'>[user] carves away some of the healthy flesh from [target]'s [parse_zone(target_zone)] with [tool]!</span>",
 		"<span class='notice'>[user] carves away some of the healthy flesh from  [target]'s [parse_zone(target_zone)]!</span>")
@@ -108,7 +111,7 @@
 	return ..()
 
 /datum/surgery_step/dress/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, var/fail_prob = 0)
-	..()
+	. = ..()
 	if(istype(tool, /obj/item/stack))
 		var/obj/item/stack/used_stack = tool
 		used_stack.use(1)

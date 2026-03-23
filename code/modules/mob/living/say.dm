@@ -69,6 +69,82 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	"щ" = RADIO_CHANNEL_AI_PRIVATE,
 	"ч" = MODE_VOCALCORDS
 ))
+/proc/auto_capitalize(text)
+	if(!text || text == "")
+		return text
+
+	text = trim_left(text)
+
+	// если строка начинается с префикса языка (например ",r") — не трогаем его
+	if(copytext_char(text, 1, 1) == "," && length_char(text) >= 2)
+		var/prefix = copytext_char(text, 1, 2)
+		var/body = copytext_char(text, 3)
+		return prefix + auto_capitalize(body)
+
+	var/result = ""
+	var/next_cap = TRUE
+	var/i = 1
+	var/len = length_char(text)
+
+	while(i <= len)
+		var/ch = copytext_char(text, i, i+1)
+		var/nextch = (i < len) ? copytext_char(text, i+1, i+2) : ""
+		var/nextnext = (i+1 < len) ? copytext_char(text, i+2, i+3) : ""
+		var/prevch = (i > 1) ? copytext_char(text, i-1, i) : ""
+
+		// Если ожидается заглавная и это буква — делаем кап
+		if(next_cap && lowertext(ch) != uppertext(ch))
+			// проверяем контекст — не капаем, если предыдущий символ не разделитель
+			if(i > 1 && !(prevch == " " || prevch == "\t" || prevch == "\n" || prevch == "." || prevch == "!" || prevch == "?" || prevch == "\"" || prevch == "«" || prevch == "“" || prevch == "," || prevch == ";"))
+				result += ch
+				next_cap = FALSE
+				i += 1
+				continue
+
+			result += uppertext(ch)
+			next_cap = FALSE
+		else
+			result += ch
+
+		// Проверяем на конец предложения, но игнорируем ...
+		if(ch == "." || ch == "!" || ch == "?")
+			// Если три точки подряд — не конец предложения
+			if(!(ch == "." && nextch == "." && nextnext == "."))
+				next_cap = TRUE
+
+				// Если после .!? нет пробела — добавляем
+				if(i < len)
+					if(nextch != " " && nextch != "." && nextch != "!" && nextch != "?" && nextch != "\t" && nextch != "\n")
+						// если после идёт цифра (3.14), то не вставляем пробел
+						if(!isnum(text2num(nextch)))
+							result += " "
+
+		// Не включаем капитализацию после - или % или других "связующих" знаков
+		if(ch == "-" || ch == "%" || ch == "*" || ch == ":" || ch == ";" || ch == "'" || ch == ")" || ch == "]" || ch == "°")
+			next_cap = FALSE
+
+		// Если встретили кавычку — ожидаем заглавную после неё
+		if(ch == "\"" || ch == "«" || ch == "“")
+			next_cap = TRUE
+			// Убираем лишний пробел сразу после кавычки
+			if(i < len)
+				var/nextch2 = copytext_char(text, i+1, i+2)
+				if(nextch2 == " ")
+					i += 1 // пропускаем его
+
+		// Теперь сбрасываем next_cap ТОЛЬКО если текущий символ не является
+		// разделителем/пунктуацией/кавычкой/пробелом — тогда следующая буква не должна капитализироваться.
+		if(ch != " " && ch != "\t" && ch != "\n" && ch != "." && ch != "!" && ch != "?" && ch != "\"" && ch != "«" && ch != "“")
+			next_cap = FALSE
+
+		i += 1
+
+	return result
+
+
+
+
+
 
 /mob/living/proc/Ellipsis(original_msg, chance = 50, keep_words)
 	if(chance <= 0)
@@ -103,9 +179,11 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	var/ic_blocked = FALSE
 
-	if(client && !forced && CHAT_FILTER_CHECK(message))
-		//The filter doesn't act on the sanitized message, but the raw message.
-		ic_blocked = TRUE
+	if(!isclownjob(src))
+		if(!(src?.onCentCom()))
+			if(client && !forced && CHAT_FILTER_CHECK(message))
+				ic_blocked = TRUE
+
 
 	if(sanitize)
 		message = trim(copytext_char(sanitize(message), 1, MAX_MESSAGE_LEN))
@@ -113,10 +191,12 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		return
 
 	if(ic_blocked)
-		//The filter warning message shows the sanitized message though.
-		to_chat(src, "<span class='warning'>Здравствуйте. Вам следует исключить сказанное слово из своего словесного запаса во время игры на нашем сервере. Вы предупреждены.\n<span replaceRegex='show_filtered_ic_chat'>\"[message]\"</span></span>")
-		SSblackbox.record_feedback("tally", "ic_blocked_words", 1, lowertext(config.ic_filter_regex.match))
-		src.adjustOrganLoss(ORGAN_SLOT_BRAIN, 25, 75)
+		var/matched_word = find_any_whole_word(message, config.ic_filter_regex)
+		SSblackbox.record_feedback("tally", "ic_blocked_words", 1, lowertext(matched_word))
+		to_chat(src, "<span class='warning'>Вы сказали:\n<span replaceRegex='show_filtered_ic_chat'>\"[lowertext(matched_word)]\".</span> Это плохое слово. Вы будете за это наказаны повреждением мозга.</span>")
+		log_admin("[ADMIN_LOOKUPFLW(usr)] сказал плохое слово: [lowertext(matched_word)].")
+		message_admins("[ADMIN_LOOKUPFLW(usr)] сказал плохое слово: [lowertext(matched_word)].")
+		src.adjustOrganLoss(ORGAN_SLOT_BRAIN, 25, 175)
 
 	var/datum/saymode/saymode = SSradio.saymodes[talk_key]
 	var/message_mode = get_message_mode(message)
@@ -129,6 +209,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	else if(message_mode || saymode)
 		message = copytext_char(message, 3)
 	message = trim_left(message)
+	if(copytext_char(message, 1, 2) == " ")
+		message = copytext_char(message, 2)
 	if(!message)
 		return
 	if(message_mode == MODE_ADMIN)
@@ -249,7 +331,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	if(pressure < ONE_ATMOSPHERE*0.4) //Thin air, let's italicise the message
 		spans |= SPAN_ITALICS
-
+	if(src?.client?.prefs.auto_capitalize_enabled)
+		message=auto_capitalize(message)
 	send_speech(message, message_range, src, bubble_type, spans, language, message_mode)
 
 	if(succumbed)
@@ -270,9 +353,14 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	SEND_SIGNAL(src, COMSIG_MOVABLE_HEAR, args) //parent calls can't overwrite the current proc args.
 	if(!client && !audiovisual_redirect)
 		return
+	// BLUEMOON EDIT - sign language is visual, deaf people should understand it
+	var/is_sign_language = initial(message_language.visual_language)
 	var/deaf_message
 	var/deaf_type
-	if(speaker != src)
+	if(is_sign_language)
+		deaf_message = null
+		deaf_type = null
+	else if(speaker != src)
 		if(!radio_freq) //These checks have to be seperate, else people talking on the radio will make "You can't hear yourself!" appear when hearing people over the radio while deaf.
 			deaf_message = "<span class='name'>[speaker]</span> [speaker.verb_say] something but you cannot hear [speaker.ru_na()]."
 			deaf_type = 1
@@ -281,13 +369,14 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		deaf_type = 2 // Since you should be able to hear yourself without looking
 
 	// Create map text prior to modifying message for goonchat
-	if (client?.prefs.chat_on_map && stat != UNCONSCIOUS && (client.prefs.see_chat_non_mob || ismob(speaker)) && can_hear())
+	// BLUEMOON EDIT - sign language uses vision instead of hearing for map text
+	if (client?.prefs.chat_on_map && stat != UNCONSCIOUS && (client.prefs.see_chat_non_mob || ismob(speaker)) && (is_sign_language ? !eye_blind : can_hear()))
 		create_chat_message(speaker, message_language, raw_message, spans, message_mode)
 
 	// Recompose message for AI hrefs, language incomprehension.
 	message = compose_message(speaker, message_language, raw_message, radio_freq, spans, message_mode, FALSE, source)
 
-	show_message(message, MSG_AUDIBLE, deaf_message, deaf_type)
+	show_message(message, is_sign_language ? MSG_VISUAL : MSG_AUDIBLE, deaf_message, deaf_type)
 	return message
 
 /mob/living/send_speech(message, message_range = 6, obj/source = src, bubble_type = bubble_icon, list/spans, datum/language/message_language=null, message_mode)
@@ -296,8 +385,18 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	if(eavesdropping_modes[message_mode])
 		eavesdrop_range = EAVESDROP_EXTRA_RANGE
 	var/list/listening = get_hearers_in_view(message_range+eavesdrop_range, source)
-	var/list/the_dead = list()
 
+	// ТЕШАРИ - улучшенный слух (слышат шёпот на +2 клетки дальше)
+	if(eavesdropping_modes[message_mode])
+		for(var/mob/living/carbon/human/H in range(message_range + eavesdrop_range + 2, source))
+			if(H in listening)
+				continue
+			if(!H.client)
+				continue
+			if(H.dna?.species?.id == SPECIES_TESHARI)
+				listening += H
+
+	var/list/the_dead = list()
 	for(var/_M in GLOB.player_list)
 		var/mob/M = _M
 		if(M.stat != DEAD) //not dead, not important
@@ -319,13 +418,40 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		eavesrendered = compose_message(src, message_language, eavesdropping, null, spans, message_mode, FALSE, source)
 
 	var/rendered = compose_message(src, message_language, message, null, spans, message_mode, FALSE, source)
+	play_fov_effect(src, 6, "talk", ignore_self = TRUE, override_list = listening)
+	for(var/_AM in listening)
+		var/atom/movable/AM = _AM
+		// ПАТЧ ТЕШАРИ - проверяем дистанцию для чёткого слуха
+		var/is_teshari_listener = FALSE
+		if(ishuman(AM))
+			var/mob/living/carbon/human/H = AM
+			if(H.dna?.species?.id == SPECIES_TESHARI)
+				is_teshari_listener = TRUE
+
+		var/actual_dist = get_dist(source, AM)
+		var/should_hear_clearly = (actual_dist <= message_range)
+
+		// Тешари слышат шёпот ЧЁТКО на дистанции до 3 клеток (1 + 2 бонус)
+		if(is_teshari_listener && eavesdropping_modes[message_mode])
+			if(actual_dist <= (message_range + 2)) // 1 + 2 = 3 клетки чёткого слуха
+				should_hear_clearly = TRUE
+
+		if(eavesdrop_range && !should_hear_clearly && !(the_dead[AM]))
+			AM.Hear(eavesrendered, src, message_language, eavesdropping, null, spans, message_mode, source)
+		else
+			AM.Hear(rendered, src, message_language, message, null, spans, message_mode, source)
+	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_LIVING_SAY_SPECIAL, src, message)
+// ====================================================================
+// СТАРЫЙ КОД ДЛЯ СПРАВКИ
+// ====================================================================
+/*
 	for(var/_AM in listening)
 		var/atom/movable/AM = _AM
 		if(eavesdrop_range && get_dist(source, AM) > message_range && !(the_dead[AM]))
 			AM.Hear(eavesrendered, src, message_language, eavesdropping, null, spans, message_mode, source)
 		else
 			AM.Hear(rendered, src, message_language, message, null, spans, message_mode, source)
-	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_LIVING_SAY_SPECIAL, src, message)
+*/
 
 	var/is_yell = (say_test(message) == "2")
 	if(client && !eavesdrop_range && is_yell)	// Yell hook
@@ -403,10 +529,12 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 /mob/living/proc/can_speak_vocal(message) //Check AFTER handling of xeno and ling channels
 	var/obj/item/bodypart/leftarm = get_bodypart(BODY_ZONE_L_ARM)
 	var/obj/item/bodypart/rightarm = get_bodypart(BODY_ZONE_R_ARM)
-	if(HAS_TRAIT(src, TRAIT_MUTE) && get_selected_language() != /datum/language/signlanguage)
+	var/datum/language/selected_lang = get_selected_language()
+	var/is_visual = selected_lang && initial(selected_lang.visual_language)
+	if(HAS_TRAIT(src, TRAIT_MUTE) && !is_visual)
 		return FALSE
 
-	if (get_selected_language() == /datum/language/signlanguage)
+	if(is_visual)
 		var/left_disabled = FALSE
 		var/right_disabled = FALSE
 		if (istype(leftarm)) // Need to check if the arms exist first before checking if they are disabled or else it will runtime
@@ -432,12 +560,15 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 /mob/living/proc/get_key(message)
 	var/key = message[1]
-	if(key in GLOB.department_radio_prefixes)
+	if((key in GLOB.department_radio_prefixes) && length(message) > length(key))
 		return lowertext(message[1 + length(key)])
 
 /mob/living/proc/get_message_language(message)
 	if(message[1] == ",")
-		var/key = message[1 + length(message[1])]
+		var/comma_len = length(message[1])
+		if(length(message) <= comma_len)
+			return null
+		var/key = message[1 + comma_len]
 		for(var/ld in GLOB.all_languages)
 			var/datum/language/LD = ld
 			if(initial(LD.key) == key)

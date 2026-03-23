@@ -38,8 +38,13 @@
 
 
 mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
+	var/static/list/buttons = list(
+		/datum/action/toggle_dead_chat_mob,
+		/datum/action/disguise,
+		/datum/action/cooldown/ghost_role_eligible,
+	)
 	if(switch_on)
-		AddElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE)
+		AddElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _low_priority = TRUE)
 		AddElement(/datum/element/dusts_on_catatonia)
 		var/list/Not_dust_area = list(/area/centcom/holding/exterior,  /area/hilbertshotel)
 		if(additional_area)
@@ -50,13 +55,12 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		ADD_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
 		ADD_TRAIT(src, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT) //The mob can't be made into a random antag, they are still eligible for ghost roles popups.
 
-		var/datum/action/toggle_dead_chat_mob/D = new(src)
-		D.Grant(src)
-		var/datum/action/disguise/disguise_action = new(src)
-		disguise_action.Grant(src)
+		for(var/path in buttons)
+			var/datum/action/D = new path(src)
+			D.Grant(src)
 
 	else
-		RemoveElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE)
+		RemoveElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _low_priority = TRUE)
 		RemoveElement(/datum/element/dusts_on_catatonia)
 		var/datum/antagonist/ghost_role/ghost_cafe/GC = mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe)
 		if(GC)
@@ -68,14 +72,16 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		REMOVE_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
 		REMOVE_TRAIT(src, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)
 
-		var/datum/action/toggle_dead_chat_mob/D = locate(/datum/action/toggle_dead_chat_mob) in actions
-		if(D)
+		for(var/path in buttons)
+			var/datum/action/D = locate(path) in actions
+			if(!D)
+				continue
+
+			if(istype(D, /datum/action/disguise))
+				var/datum/action/disguise/Ddisg = D
+				if(Ddisg.currently_disguised)
+					remove_alt_appearance("ghost_cafe_disguise")
 			D.Remove(src)
-		var/datum/action/disguise/disguise_action = locate(/datum/action/disguise) in actions
-		if(disguise_action)
-			if(disguise_action.currently_disguised)
-				remove_alt_appearance("ghost_cafe_disguise")
-			disguise_action.Remove(src)
 
 /obj/effect/mob_spawn/qareen/attack_ghost(mob/user, latejoinercalling)
 	if(GLOB.master_mode == "Extended")
@@ -147,7 +153,7 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	l_pocket = /obj/item/extinguisher/mini
 	r_pocket = /obj/item/tank/internals/emergency_oxygen/double
 
-	accessory = /obj/item/clothing/accessory/permit/special/deviant/lust/changeling
+	accessory = list(/obj/item/clothing/accessory/permit/special/deviant/lust/changeling)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
@@ -193,7 +199,9 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 
 /obj/effect/mob_spawn/human/slavers
 	name = "Slaver"
-	short_desc = "Вы представитель Синдиката, являющийся работорговцем. В Extended вы получили своеобразное разрешение на свою деятельность. В Dynamic Light вы решили не дожидаться, когда важные шишки одобрят вам вашу деятельность и вы обязательно столкнётесь с последствиями этого решения."
+	short_desc = "Вы работорговец, похищающий и насилующий экипаж. \
+	В Extended вы профессиональный актер и получили своеобразное разрешение на свою деятельность. \
+	В Dynamic Light вы являетесь настоящим работорговцем, желающим срубить кредитов и удовлетворить все свои грязные фантазии."
 	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "sleeper_s"
 	mob_name = "Slaver"
@@ -205,77 +213,84 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	can_load_appearance = TRUE
 	loadout_enabled = TRUE
 	use_outfit_name = TRUE
-	outfit = /datum/outfit
+	outfit = /datum/outfit/slaver
+	antagonist_type = /datum/antagonist/slaver
 	category = "special"
-	var/announce_text = "Приветствую, Командование Космической Станции. \n На связи Центральное Командование и к вашему сектору были закреплены наши очень хорошие партнёры, которые занимаются перевоспитанием сотрудников в нашей системе максимально годным образом.\n Они оказывают любые и даже экстремальные услуги, так что не бойтесь, каждый из них имеет разрешение на свою деятельность! Если же будут какие бы то не было проблемы - обращайтесь. Мы поможем вам с ними разобраться! \n Опять же. К вам прибудет группа существ, способная исполнить любое ваше желание и они будут снабжены для этого всем необходимым. Донесите информацию о том, что данные сотрудники авторизованы со стороны ЦК: Командованию и Службе Безопасности.\ Это в первую очередь актёры и на метафизическом уровне вы должны демонстрировать свою с ними, якобы, настоящую, но на самом деле фиктивную, фальшивую борьбу. Как только Работорговцы начнут проявлять активность, максимум ваших возможностей - поставить Синий Код и просить сотрудников остерегаться каких-то там страшных существ в технических тоннелях.\n Вам были высланы кредиты для оплаты рабов, которую нужно будет производить как минимум после двадцати минут заключения сотрудников на их аванпосту. "
 	var/first_time = TRUE
 	var/isLeader = FALSE
-	important_info = "В режим игры Extended вы являетесь ЕРП-антагонистом, в Dynamic Light - минорным антагонистом. Вы можете похищать экипаж, но лишь с преференсами Noncon YES. Если у игрока стоит ASK, вы ОБЯЗАНЫ спросить в LOOC разрешения."
+
+	important_info = "В режим игры Extended вы являетесь ЕРП-антагонистом, в Dynamic Light - минорным антагонистом.\n\
+	<B><span class='adminhelp'>Important:</span> Вы можете похищать экипаж, но лишь с преференсами Noncon YES. \
+	Если у игрока стоит ASK, вы ОБЯЗАНЫ спросить в LOOC разрешения.\n\
+	<span class='adminnotice'>Ни при каких обстоятельствах не играйте в Extended ради прибыли - вы ЕРП-антагонист и вы должны веселить народ, а не запирать их в четырёх стенах до выкупа.</span></B>"
+
+	addition_warning = "Вам поручено проникнуть на станцию и похищать членов экипажа. Как только вы вернетесь в убежище, их можно будет поработить и оценить с помощью консоли.\n\
+	Станция может выбрать, платить ли выкуп, и если они это сделают, вы можете отвести похищенного к консоли \
+	и экспортировать его обратно. Вашей команде будет перечислен выкуп для покупки нового снаряжения.\n\
+	<span class='big warning'>Убедитесь, что вы вернули все предметы похищенного, прежде чем экспортировать их.</span>\n\
+	<span class='adminnotice'>У вас есть специальный HUD, который показывает согласие каждого сотрудника в правом нижнем углу. \
+	Галочка означает, что вы можете похитить его. Крестик означает «не делать этого». Вопросительный знак означает «сначала спросите».</span>"
+
+	var/announce_text = "Приветствую, Командование Космической Станции.\n\
+	На связи Центральное Командование и к вашему сектору были закреплены наши очень хорошие партнёры, которые занимаются развлечением тех сотрудников, кому не хватает адреналина.\n\
+	Они оказывают любые и даже экстремальные услуги, каждый из них имеет разрешение на свою деятельность! Если актёров слишком заносит или будут иные проблемы - обращайтесь. \
+	Мы поможем вам с ними разобраться!\n\
+	Донесите информацию о том, что данные сотрудники авторизованы со стороны ЦК: Командованию и Службе Безопасности. \
+	Это в первую очередь актёры для вас, а для экипажа - стрессовое, но развлечение. \
+	Поэтому вы должны демонстрировать свою с ними, якобы, настоящую, но на самом деле фиктивную, фальшивую борьбу. \
+	Как только Работорговцы начнут проявлять активность, максимум ваших возможностей - поставить Синий Код и просить сотрудников остерегаться незнакомцев. \
+	Допустимо применять КЗ в отношении актеров, но с оглядкой на полученный им разрешающий документ (пермит).\n\
+	Вам были высланы кредиты для оплаты, которую нужно будет производить как минимум после двадцати минут заключения сотрудников на их аванпосту."
 
 /obj/effect/mob_spawn/human/slavers/attack_ghost(mob/user, latejoinercalling)
 	if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
-		return . = ..()
-	else
-		return to_chat(user, "<span class='warning'>Игра за слейверов допускается лишь в режим Extended или Dynamic Light!</span>")
+		if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
+			if(isLeader)
+				outfit = /datum/outfit/slaver/leader/extended
+			else
+				outfit = /datum/outfit/slaver/extended
 
-/obj/effect/mob_spawn/human/slavers/Initialize(mapload)
-	. = ..()
+		return ..()
+	else
+		to_chat(user, span_warning("Игра за слейверов допускается лишь в режим Extended или Dynamic Light!"))
+		return
 
 /obj/effect/mob_spawn/human/slavers/special(mob/living/new_spawn)
-	. = ..()
-	var/datum/antagonist/slaver/slaver =  new /datum/antagonist/slaver
+	var/datum/antagonist/slaver/slaver = new antagonist_type
 	var/obj/effect/mob_spawn/human/slavers/all_avaible_spawnpods = list(locate(/obj/effect/mob_spawn/human/slavers))
 	var/obj/effect/mob_spawn/human/slavers/one_is_spawnpods = pick(all_avaible_spawnpods)
 	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
-		slaver.slaver_outfit = /datum/outfit/slaver/extended
+		slaver.slaver_outfit = outfit
 		slaver.send_to_spawnpoint = FALSE
 		if(one_is_spawnpods.first_time)
-			var/title = "Central Command"
-			print_command_report(src.announce_text, title)
+			print_command_report(src.announce_text, "Central Command")
 			var/datum/bank_account/cargo_bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
 			cargo_bank.adjust_money(50000)
 			for(var/obj/effect/mob_spawn/human/slavers/S in all_avaible_spawnpods)
 				S.first_time = FALSE
-	var/mob/living/carbon/human/H = new_spawn
-	H.mind.add_antag_datum(slaver)
+	slaver.equip_outfit = FALSE
+	antagonist_type = slaver
+	return ..()
 
 /obj/effect/mob_spawn/human/slavers/master
 	name = "Slaver Master"
 	desc = "Вы - руководитель отряда наемников, занимающихся похищением экипажа со станций ПАКТа."
-	outfit = /datum/outfit
+	outfit = /datum/outfit/slaver/leader
+	antagonist_type = /datum/antagonist/slaver/leader
 	isLeader = TRUE
-
-/obj/effect/mob_spawn/human/slavers/master/special(mob/living/new_spawn)
-	var/datum/antagonist/slaver/leader/slaver =  new /datum/antagonist/slaver/leader
-	var/obj/effect/mob_spawn/human/slavers/all_avaible_spawnpods = list(locate(/obj/effect/mob_spawn/human/slavers))
-	var/obj/effect/mob_spawn/human/slavers/one_is_spawnpods = pick(all_avaible_spawnpods)
-	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
-		slaver.slaver_outfit = /datum/outfit/slaver/leader/extended
-		slaver.send_to_spawnpoint = FALSE
-		if(one_is_spawnpods.first_time)
-			var/title = "Central Command"
-			print_command_report(src.announce_text, title)
-			var/datum/bank_account/cargo_bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
-			cargo_bank.adjust_money(50000)
-			for(var/obj/effect/mob_spawn/human/slavers/S in all_avaible_spawnpods)
-				S.first_time = FALSE
-	var/mob/living/carbon/human/H = new_spawn
-	H.mind.add_antag_datum(slaver)
 
 /obj/item/clothing/glasses/hud/slaver/upgraded
 	flash_protect = 1
 
 /datum/outfit/slaver/extended
 	name = "Actor Slaver"
-	glasses = /obj/item/clothing/glasses/hud/slaver/upgraded
-	accessory = /obj/item/clothing/accessory/permit/special/deviant/lust/slavers
+	accessory = list(/obj/item/clothing/accessory/permit/special/deviant/lust/slavers)
 	backpack_contents = list(/obj/item/storage/box/survival,\
 							/obj/item/kitchen/knife/combat/survival)
 
 /datum/outfit/slaver/leader/extended
 	name = "Actor Slaver Leader"
-	glasses = /obj/item/clothing/glasses/hud/slaver/upgraded
-	accessory = /obj/item/clothing/accessory/permit/special/deviant/lust/slavers
+	accessory = list(/obj/item/clothing/accessory/permit/special/deviant/lust/slavers)
 	backpack_contents = list(/obj/item/storage/box/survival,\
 							/obj/item/kitchen/knife/combat/survival)
 
@@ -285,13 +300,15 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 /obj/effect/mob_spawn/human/ds2/syndicate/enginetech/special(mob/living/carbon/human/new_spawn)
 	. = ..()
 	ADD_TRAIT(new_spawn.mind, TRAIT_KNOW_ENGI_WIRES, GHOSTROLE_TRAIT)
-	new_spawn.mind.add_skill_modifier(list(/datum/skill_modifier/job/level/wiring/expert, /datum/skill_modifier/job/affinity/wiring))
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/level/wiring/expert, null)
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/affinity/wiring, null)
 
 /obj/effect/mob_spawn/human/ds2/syndicate/researcher/special(mob/living/carbon/human/new_spawn)
 	. = ..()
 	ADD_TRAIT(new_spawn.mind, TRAIT_KNOW_CYBORG_WIRES, GHOSTROLE_TRAIT)
 	ADD_TRAIT(new_spawn.mind, TRAIT_MECHA_EXPERT, GHOSTROLE_TRAIT)
-	new_spawn.mind.add_skill_modifier(list(/datum/skill_modifier/job/level/wiring/trained, /datum/skill_modifier/job/affinity/wiring))
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/level/wiring/trained, null)
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/affinity/wiring, null)
 
 /obj/effect/mob_spawn/human/ds2/syndicate/stationmed/special(mob/living/carbon/human/new_spawn)
 	. = ..()
@@ -303,7 +320,8 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	. = ..()
 	ADD_TRAIT(new_spawn.mind, TRAIT_KNOW_ENGI_WIRES, GHOSTROLE_TRAIT)
 	ADD_TRAIT(new_spawn.mind, TRAIT_KNOW_CYBORG_WIRES, GHOSTROLE_TRAIT)
-	new_spawn.mind.add_skill_modifier(list(/datum/skill_modifier/job/level/wiring/expert, /datum/skill_modifier/job/affinity/wiring))
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/level/wiring/expert, null)
+	ADD_SINGLETON_SKILL_MODIFIER(new_spawn.mind, /datum/skill_modifier/job/affinity/wiring, null)
 
 ////////////////////////////////////
 

@@ -22,11 +22,22 @@
 	..()
 	chamber_round(1)
 
-/obj/item/gun/ballistic/revolver/attackby(obj/item/A, mob/user, params)
+/obj/item/gun/ballistic/revolver/attackby(obj/item/A, mob/user, params) //есть задел для наличия и спилоадеров и коробок с патронами.
 	. = ..()
 	if(.)
 		return
-	var/num_loaded = magazine.attackby(A, user, params, 1)
+	var/num_loaded = 0
+	if(istype(A, /obj/item/ammo_box)) //проверка что контейнер с боеприпасами и приведение к типу
+		var/obj/item/ammo_box/AM = A
+		if(!AM.speedloader) // Не спидлоадер
+			if(!istype(magazine, /obj/item/ammo_box/magazine/internal/cylinder)) // ВДРУГ используется не цилиндр, двустволку заряжать патронами
+				return to_chat(user, span_userdanger("У вас не получается зарядить револьвер при помощи [A]!"))
+			var/obj/item/ammo_box/magazine/internal/cylinder/C = magazine
+			num_loaded = C.ammo_box_reload(AM, user, params, 1)
+		else // Заряжание спидлоадером и патроном
+			num_loaded = magazine.attackby(A, user, params, 1) // У магазина есть параметр multiload, если false, то будет заряжать по одному.(иммитация каморы.)
+	else
+		num_loaded = magazine.attackby(A, user, params, 1) // Да, я не смог победить весвление чтоб объеденить с else выше.
 	if(num_loaded)
 		to_chat(user, "<span class='notice'>You load [num_loaded] shell\s into \the [src].</span>")
 		playsound(user, 'sound/weapons/bulletinsert.ogg', 60, 1)
@@ -119,15 +130,16 @@
 
 /obj/item/gun/ballistic/revolver/detective/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 	if(chambered && !(chambered.caliber in safe_calibers))
-		if(prob(70 - (magazine.ammo_count() * 10)))	//minimum probability of 10, maximum of 60
+		var/real_ammo_count = magazine ? magazine.ammo_count(0) : 0
+		if(prob(65 - (real_ammo_count * 10)))	//минимум 5, максимум 55
 			playsound(user, fire_sound, 50, 1)
 			to_chat(user, "<span class='userdanger'>[src] blows up in your face!</span>")
-			user.take_bodypart_damage(0,20)
+			user.take_bodypart_damage(10,10)
 			user.dropItemToGround(src)
 			return FALSE
 	..()
 
-/obj/item/gun/ballistic/revolver/detective/screwdriver_act(mob/living/user, obj/item/I)
+/obj/item/gun/ballistic/revolver/detective/wrench_act(mob/living/user, obj/item/I)
 	if(..())
 		return TRUE
 	if("38" in magazine.caliber)
@@ -163,6 +175,7 @@
 	name = "\improper Unica 6 auto-revolver"
 	desc = "A retro high-powered autorevolver typically used by officers of the New Russia military. Uses .357 ammo."
 	icon_state = "mateba" //Поменял стандартную иконку Револьвера Русских.
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
 
 /obj/item/gun/ballistic/revolver/golden
 	name = "\improper Golden revolver"
@@ -403,24 +416,27 @@
 // ---------- Code originally from VoreStation ----------
 /obj/item/gun/ballistic/revolver/mws
 	name = "MWS-01 'Big Iron'"
-	desc = "Modular Weapon System-01, does fit on your hip."
+	desc = "Modular Weapon System-01, помещается на вашем бедре."
 	icon = 'icons/obj/guns/projectile.dmi'
 	icon_state = "mws"
 	fire_sound = 'sound/weapons/MWSfire.ogg' //i spent 1 hour making a cool sound but byond just compresses it to shit so have this instead >:(
 	mag_type = /obj/item/ammo_box/magazine/mws_mag
 	spawnwithmagazine = FALSE
 	recoil = 0
+	can_flashlight = 1
+	flight_x_offset = 21
+	flight_y_offset = 10
 
 	var/charge_sections = 6
 
 /obj/item/gun/ballistic/revolver/mws/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Alt-click to remove the magazine.</span>"
+	. += span_notice("Alt-click для извлечения магазина.")
 
 /obj/item/gun/ballistic/revolver/mws/shoot_with_empty_chamber(mob/living/user as mob|obj)
 	process_chamber(user)
 	if(!chambered || !chambered.BB)
-		to_chat(user, "<span class='danger'>*click*</span>")
+		to_chat(user, span_danger("*click*"))
 		playsound(src, "gun_dry_fire", 30, 1)
 
 
@@ -440,9 +456,9 @@
 /obj/item/gun/ballistic/revolver/mws/proc/switch_to(obj/item/ammo_casing/mws_batt/new_batt, mob/living/user)
 	if(ishuman(user))
 		if(chambered && new_batt.type == chambered.type)
-			to_chat(user,"<span class='warning'>[src] is now using the next [new_batt.type_name] power cell.</span>")
+			to_chat(user, span_warning("[src] начинает тратить следующую батарею, [new_batt.type_name]."))
 		else
-			to_chat(user,"<span class='warning'>[src] is now firing [new_batt.type_name].</span>")
+			to_chat(user, span_warning("[src] теперь использует [new_batt.type_name]."))
 
 	chambered = new_batt
 	update_icon()
@@ -476,7 +492,7 @@
 		else
 			playsound(src, "gun_remove_empty_magazine", 70, 1)
 		magazine = null
-		to_chat(user, "<span class='notice'>You pull the magazine out of [src].</span>")
+		to_chat(user, span_notice("Вы извлекли магазин из [src]."))
 		if(chambered)
 			chambered = null
 		update_icon()

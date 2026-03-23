@@ -14,8 +14,8 @@
  * If the sprite is like this: "penis_human_4_s_1_FRONT", the extra "_s" means it's used by the default skintones (the list of default skin tones that "Albino, Caucasian, etc.").
  * Those "_s" sprites use a more pink-ish tone instead of white, to match the different default skin tones automatically,
  * while the icon states without the "_s" are used by the custom skin tone.
- * In the future, it would be best to solve this, as it creates useless duplicated icon states, and therefore heavier file sizes. 
- * It would be best to just have 1 set of icon states that apply themselves normally to both custom skin tone users and match default skin tone users, 
+ * In the future, it would be best to solve this, as it creates useless duplicated icon states, and therefore heavier file sizes.
+ * It would be best to just have 1 set of icon states that apply themselves normally to both custom skin tone users and match default skin tone users,
  * effectively removing the need of using the extra "_s". - Goku
  */
 
@@ -30,7 +30,7 @@
 
 /datum/sprite_accessory/penis/teshari
 	icon_state = "taperedteshari"
-	name = "Teshari"
+	name = "Teshari(For Teshari Only)"
 	ru_name = "тешарьский"
 	icon = 'modular_splurt/icons/obj/genitals/teshari_penis.dmi'
 
@@ -39,9 +39,23 @@
 	name = "Human"
 	ru_name = "человеческий"
 
+/datum/sprite_accessory/penis/human_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "human"
+	name = "Human (New Tg)"
+	ru_name = "человеческий"
+
 /datum/sprite_accessory/penis/knotted
 	icon_state = "knotted"
 	name = "Knotted"
+	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
+	taur_dimension_x = 64
+	ru_name = "узловатый"
+
+/datum/sprite_accessory/penis/knotted_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "knotted"
+	name = "Knotted (New Tg)"
 	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
 	taur_dimension_x = 64
 	ru_name = "узловатый"
@@ -53,9 +67,24 @@
 	taur_dimension_x = 64
 	ru_name = "конический"
 
+/datum/sprite_accessory/penis/flared_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "flared"
+	name = "Flared (New Tg)"
+	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
+	taur_dimension_x = 64
+	ru_name = "конический"
+
 /datum/sprite_accessory/penis/barbknot
+
 	icon_state = "barbknot"
 	name = "Barbed, Knotted"
+	ru_name = "узловатый и немного колючий"
+
+/datum/sprite_accessory/penis/barbknot_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "barbknot"
+	name = "Barbed, Knotted (New Tg)"
 	ru_name = "узловатый и немного колючий"
 
 /datum/sprite_accessory/penis/tapered
@@ -65,9 +94,29 @@
 	taur_dimension_x = 64
 	ru_name = "утончённый к концу"
 
+/datum/sprite_accessory/penis/tapered_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "tapered"
+	name = "Tapered (New Tg)"
+	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
+	taur_dimension_x = 64
+	ru_name = "утончённый к концу"
+
+/datum/sprite_accessory/penis/taperedbarbed
+	icon_state = "barbtapered"
+	name = "Tapered Barbed"
+	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
+	ru_name = "утончённый к концу и покрыт шипами"
+
 /datum/sprite_accessory/penis/tentacle
 	icon_state = "tentacle"
 	name = "Tentacled"
+	ru_name = "тентяклевидный"
+
+/datum/sprite_accessory/penis/tentacle_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "tentacle"
+	name = "Tentacled (New Tg)"
 	ru_name = "тентяклевидный"
 
 /datum/sprite_accessory/penis/hemi
@@ -75,19 +124,37 @@
 	name = "Hemi"
 	ru_name = "двойной"
 
+/datum/sprite_accessory/penis/hemi_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "hemi"
+	name = "Hemi (New Tg)"
+	ru_name = "двойной"
+
 /datum/sprite_accessory/penis/hemiknot
 	icon_state = "hemiknot"
 	name = "Knotted Hemi"
 	ru_name = "двойной узловатый"
 
-/datum/sprite_accessory/penis/barbedhemiknot
+/datum/sprite_accessory/penis/hemiknot_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
 	icon_state = "hemiknot"
+	name = "Knotted Hemi (New Tg)"
+	ru_name = "двойной узловатый"
+
+/datum/sprite_accessory/penis/barbedhemiknot
+	icon_state = "bhemiknot"
 	name = "Barbed, Knotted Hemi"
 	ru_name = "двойной, узловатый и немного колючий"
 
 /datum/sprite_accessory/penis/thick
 	icon_state = "thick"
 	name = "Thick"
+	ru_name = "обрезанный"
+
+/datum/sprite_accessory/penis/nondescript
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "nondescript"
+	name = "Thick (New Tg)"
 	ru_name = "обрезанный"
 
 //Testicles
@@ -101,6 +168,11 @@
 	icon_state = "single"
 	name = "Single" //Single as "single pair", for clarity.
 
+/datum/sprite_accessory/testicles/single_new
+	icon = 'modular_bluemoon/icons/obj/genitals/testicles_onmob.dmi'
+	icon_state = "single"
+	name = "Single (New Tg)"
+
 /datum/sprite_accessory/testicles/hidden
 	icon_state = "hidden"
 	name = "Hidden" //not sure why these were missing, but I'm pretty certain people might want these.
@@ -108,6 +180,11 @@
 /datum/sprite_accessory/testicles/sheath
 	icon_state = "sheath"
 	name = "Sheath"
+
+/datum/sprite_accessory/testicles/sheath_new
+	icon = 'modular_bluemoon/icons/obj/genitals/testicles_onmob.dmi'
+	icon_state = "sheath"
+	name = "Sheath (New Tg)"
 
 //Vaginas
 /datum/sprite_accessory/vagina
@@ -128,20 +205,17 @@
 	icon_state = "dentata"
 	name = "Dentata"
 
-/datum/sprite_accessory/vagina/hairy
+/datum/sprite_accessory/vagina/hairy //BlueMoon Edit
 	icon_state = "hairy"
 	name = "Hairy"
-	alt_aroused = FALSE
 
-/datum/sprite_accessory/vagina/spade
+/datum/sprite_accessory/vagina/spade //BlueMoon Edit
 	icon_state = "spade"
 	name = "Spade"
-	alt_aroused = FALSE
 
-/datum/sprite_accessory/vagina/furred
+/datum/sprite_accessory/vagina/furred //BlueMoon Edit
 	icon_state = "furred"
 	name = "Furred"
-	alt_aroused = FALSE
 
 /datum/sprite_accessory/vagina/gaping
 	icon_state = "gaping"
@@ -150,12 +224,35 @@
 /datum/sprite_accessory/vagina/cloaca
 	name = "cloaca"
 	icon_state = "cloaca"
+//BlueMoon Edit
+/datum/sprite_accessory/vagina/feline
+	icon_state = "furred"
+	name = "Feline"
 
-/datum/sprite_accessory/vagina/cloaca
-	name = "Cloaca"
-	icon = 'modular_sand/icons/obj/genitals/vagina_onmob.dmi'
-	icon_state = "cloaca"
+/datum/sprite_accessory/vagina/equine
+	icon_state = "gaping"
+	name = "Equine"
 
+/datum/sprite_accessory/vagina/cervine
+	icon_state = "gaping"
+	name = "Cervine"
+
+/datum/sprite_accessory/vagina/sergal
+	icon_state = "sergal"
+	name = "Sergal"
+
+/datum/sprite_accessory/vagina/hemi
+	icon_state = "human"
+	name = "Hemi"
+
+/datum/sprite_accessory/vagina/puffy
+	icon_state = "hairy"
+	name = "Puffy"
+
+/datum/sprite_accessory/vagina/teshari
+	name = "Cloaca (For Teshari Only)"
+	icon_state = "cloaca_teshari"
+//BlueMoon Edit End
 
 //BREASTS BE HERE
 /datum/sprite_accessory/breasts

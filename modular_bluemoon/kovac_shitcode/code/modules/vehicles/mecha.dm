@@ -6,6 +6,7 @@
 	armor = list(MELEE = 60, BULLET = 65, LASER = 50, ENERGY = 40, BOMB = 50, BIO = 0, RAD = 100, FIRE = 100, ACID = 100)
 	max_temperature = 60000
 	wreckage = /obj/structure/mecha_wreckage/shire
+	max_equip = 6
 	nominalphrase = "sound/mecha/nominal_russian.ogg"
 
 obj/vehicle/sealed/mecha/combat/durand/tu802/generate_actions()
@@ -15,16 +16,21 @@ obj/vehicle/sealed/mecha/combat/durand/tu802/generate_actions()
 
 /obj/vehicle/sealed/mecha/combat/durand/tu802/Initialize(mapload)
 	. = ..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/thrusters/ion(src)
-	ME.attach(src)
+
 
 /obj/vehicle/sealed/mecha/combat/durand/tu802/Initialize(mapload)
 	. = ..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/carbine(src)
+	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/lmg(src)
+	ME.attach(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/thrusters/ion(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack(src)
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/antiproj_armor_booster(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/anticcw_armor_booster
+	ME.attach(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/antiproj_armor_booster
+	ME.attach(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/tesla_energy_relay
 	ME.attach(src)
 	max_ammo()
 
@@ -62,7 +68,7 @@ obj/vehicle/sealed/mecha/combat/durand/tu802/generate_actions()
 
 /obj/vehicle/sealed/mecha/combat/durand/zeus
 	desc = "The Standart Issue Solar Federation Exosuit, powered with Mark.1 tesla cannon. Designated to provide support to Solar Marines."
-	name = "\improper Zeus"
+	name = "\improper ZEUS"
 	icon = 'modular_bluemoon/kovac_shitcode/icons/mecha/solfed_mecha.dmi'
 	icon_state = "zeus"
 	armor = list(MELEE = 40, BULLET = 50, LASER = 70, ENERGY = 75, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)

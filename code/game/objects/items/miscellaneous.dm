@@ -6,6 +6,7 @@
 	item_state = "radio"
 	var/list/stored_options
 	var/force_refresh = FALSE //if set to true, the beacon will recalculate its display options whenever opened
+	var/radial_menu = FALSE // Показывать ли радиальное меню, вместо TGUI выбора
 
 /obj/item/choice_beacon/attack_self(mob/user)
 	if(canUseBeacon(user))
@@ -21,18 +22,23 @@
 		playsound(src, 'sound/machines/buzz-sigh.ogg', 40, 1)
 		return FALSE
 
-/obj/item/choice_beacon/proc/generate_options(mob/living/M, radial_menu = FALSE)
+/obj/item/choice_beacon/proc/generate_options(mob/living/M, _radial_menu)
+	if(isnull(_radial_menu))
+		_radial_menu = radial_menu
 	if(!stored_options || force_refresh)
 		stored_options = generate_display_names()
 	if(!stored_options.len)
 		return
 	// BLEMOON EDIT START
 	var/choice
-	if(radial_menu)
+	if(stored_options.len == 1)
+		choice = stored_options[1]
+	else if(_radial_menu)
 		var/list/stored_options_radial = list()
 		for(var/listed in stored_options)
 			stored_options_radial[listed] = new /mutable_appearance(stored_options[listed])
-		choice = stored_options_radial.len == 1 ? stored_options_radial[1] : show_radial_menu(M, src, stored_options_radial, radius = 40, require_near = TRUE)
+		var/radial_radius = 27 + clamp(stored_options_radial.len - 5, 0, 3) * 4 // 6 = 30, 7 = 33, 8+ = 36
+		choice = stored_options_radial.len == 1 ? stored_options_radial[1] : show_radial_menu(M, src, stored_options_radial, radius = radial_radius, require_near = TRUE)
 	else
 		choice = tgui_input_list(M, "Select an item", "Which item would you like to order?", stored_options)
 	// BLEMOON EDIT END
@@ -51,14 +57,14 @@
 	var/obj/structure/closet/supplypod/bluespacepod/pod = new(pick(get_area_turfs(pod_storage_area))) //Lets just have it in the pod storage zone for a really short time because we don't want it in nullspace
 	//pod.explosionSize = list(0,0,0,0)	// BLUEMOON CHANGE бспод теперь и так не взрывается
 	new_item.forceMove(pod)
-	var/msg = "<span class='danger'>After making your selection, you notice a strange target on the ground. It might be best to step back!</span>"
+	var/msg = "<span class='danger'>Вы замечаете странную мишень на полу после выбора. Лучше отойти!</span>"
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
 		if(istype(H.ears, /obj/item/radio/headset))
 			msg = "You hear something crackle in your ears for a moment before a voice speaks.  \"Please stand by for a message from Central Command.  Message as follows: <span class='bold'>Item request received. Your package is inbound, please stand back from the landing site.</span> Message ends.\""
 	to_chat(M, msg)
 
-	new /obj/effect/pod_landingzone(get_turf(src), pod)
+	return new /obj/effect/pod_landingzone(get_turf(src), pod)
 
 /obj/item/choice_beacon/ingredients
 	name = "ingredient box delivery beacon"
@@ -69,7 +75,7 @@
 	var/static/list/ingredientboxes
 	if(!ingredientboxes)
 		ingredientboxes = list()
-		var/list/templist = typesof(/obj/item/storage/box/ingredients)
+		var/list/templist = subtypesof(/obj/item/storage/box/ingredients)
 		for(var/V in templist)
 			var/obj/item/storage/box/ingredients/A = V
 			ingredientboxes[initial(A.theme_name)] = A
@@ -171,76 +177,26 @@
 		"Possum" = /mob/living/simple_animal/opossum)
 	var/pet_name
 
-/obj/item/choice_beacon/pet/moro
-	pets = list("Crab" = /mob/living/simple_animal/crab,
-		"Cat" = /mob/living/simple_animal/pet/cat,
-		"Space cat" = /mob/living/simple_animal/pet/cat/space,
-		"Kitten" = /mob/living/simple_animal/pet/cat/kitten,
-		"Dog" = /mob/living/simple_animal/pet/dog,
-		"Corgi" = /mob/living/simple_animal/pet/dog/corgi,
-		"Pug" = /mob/living/simple_animal/pet/dog/pug,
-		"Exotic Corgi" = /mob/living/simple_animal/pet/dog/corgi/exoticcorgi,
-		"Fox" = /mob/living/simple_animal/pet/fox,
-		"Red Panda" = /mob/living/simple_animal/pet/redpanda,
-		"Possum" = /mob/living/simple_animal/opossum,
-		"Moro" = /mob/living/simple_animal/pet/cat/moro)
-
-/obj/item/choice_beacon/pet/alta
-	pets = list("Crab" = /mob/living/simple_animal/crab,
-		"Cat" = /mob/living/simple_animal/pet/cat,
-		"Space cat" = /mob/living/simple_animal/pet/cat/space,
-		"Kitten" = /mob/living/simple_animal/pet/cat/kitten,
-		"Dog" = /mob/living/simple_animal/pet/dog,
-		"Corgi" = /mob/living/simple_animal/pet/dog/corgi,
-		"Pug" = /mob/living/simple_animal/pet/dog/pug,
-		"Exotic Corgi" = /mob/living/simple_animal/pet/dog/corgi/exoticcorgi,
-		"Fox" = /mob/living/simple_animal/pet/fox,
-		"Red Panda" = /mob/living/simple_animal/pet/redpanda,
-		"Possum" = /mob/living/simple_animal/opossum,
-		"Alta" = /mob/living/simple_animal/pet/cat/alta,
-		"Space Alta" = /mob/living/simple_animal/pet/cat/space/alta,
-		"Zlat" = /mob/living/simple_animal/pet/dog/corgi/Lisa/zlatchek)
-
-/obj/item/choice_beacon/pet/emma
-	pets = list("Crab" = /mob/living/simple_animal/crab,
-		"Cat" = /mob/living/simple_animal/pet/cat,
-		"Space cat" = /mob/living/simple_animal/pet/cat/space,
-		"Kitten" = /mob/living/simple_animal/pet/cat/kitten,
-		"Dog" = /mob/living/simple_animal/pet/dog,
-		"Corgi" = /mob/living/simple_animal/pet/dog/corgi,
-		"Pug" = /mob/living/simple_animal/pet/dog/pug,
-		"Exotic Corgi" = /mob/living/simple_animal/pet/dog/corgi/exoticcorgi,
-		"Fox" = /mob/living/simple_animal/pet/fox,
-		"Red Panda" = /mob/living/simple_animal/pet/redpanda,
-		"Possum" = /mob/living/simple_animal/opossum,
-		"Emma" = /mob/living/simple_animal/pet/fox/emma)
-
-/obj/item/choice_beacon/pet/jruttie
-	pets = list("Jruttie" = /mob/living/simple_animal/pet/cat/jruttie)
-
-/obj/item/choice_beacon/pet/juda
-	pets = list("Judas" = /mob/living/simple_animal/pet/dog/juda)
-
 /obj/item/choice_beacon/pet/generate_display_names()
 	return pets
 
 /obj/item/choice_beacon/pet/create_choice_atom(atom/choice, mob/owner)
 	var/obj/item/pet_carrier/carrier = new()
 	var/mob/living/simple_animal/new_choice = new choice(carrier)
-	carrier.add_occupant(new_choice)
 	new_choice.mob_size = MOB_SIZE_TINY //yeah we're not letting you use this roundstart pet to hurt people / knock them down
 	new_choice.pass_flags = PASSTABLE | PASSMOB //your pet is not a bullet/person shield
 	new_choice.density = FALSE
 	new_choice.blood_volume = 0 //your pet cannot be used to drain blood from for a bloodsucker
-	new_choice.desc = "A pet [initial(choice.name)], owned by [owner]!"
+	new_choice.desc = "Ручн[new_choice.ru_aya_oy(FALSE)] [initial(choice.name)], принадлежащ[new_choice.ru_aya_iy(FALSE)] [owner]!"
 	new_choice.can_have_ai = FALSE //no it cant be sentient damnit
 	if(pet_name)
 		new_choice.name = pet_name
 		new_choice.unique_name = TRUE
+	carrier.add_occupant(new_choice)
 	return carrier
 
 /obj/item/choice_beacon/pet/spawn_option(atom/choice,mob/living/M)
-	pet_name = input(M, "What would you like to name the pet? (leave blank for default name)", "Pet Name")
+	pet_name = input(M, "Как бы вы хотели назвать питомца? (оставьте пустым для имени по-умолчанию)", "Кличка Питомца")
 	..()
 
 //choice boxes (they just open in your hand instead of making a pod)
@@ -263,7 +219,7 @@
 
 /obj/item/choice_beacon/box/plushie/spawn_option(choice,mob/living/M)
 	if(ispath(choice, /obj/item/toy/plush))
-		..() //regular plush, spawn it naturally
+		return ..() //regular plush, spawn it naturally
 	else
 		//snowflake plush
 		var/obj/item/toy/plush/snowflake_plushie = new(get_turf(M))
@@ -346,3 +302,14 @@
 	w_class = WEIGHT_CLASS_BULKY
 	attack_verb = list("skubbed")
 
+/obj/item/choice_beacon/box/desk
+	name = "choice box office toys"
+	desc = "Contains desk toys, simple!"
+	var/static/list/toy_desk = list("Office toy" = /obj/item/toy/desk/officetoy,
+		"Dipping bird toy" = /obj/item/toy/desk/dippingbird,
+		"Newton's cradle" = /obj/item/toy/desk/newtoncradle,
+		"Fan" = /obj/item/toy/desk/fan
+	)
+
+/obj/item/choice_beacon/box/desk/generate_display_names()
+	return toy_desk

@@ -27,17 +27,29 @@
 
 	alt_titles = list(
 		"Actor",
+		"Barber",
+		"Bard",
+		"Beautician",
+		"Belly Massager",
+		"Cosmetologist",
 		"Cosplayer",
 		"Dancer",
-		"Escort",
 		"Entertainment Organizer",
+		"Escort",
+		"Fashion Officer",
 		"Fitness Coach",
-		"Guide",
+		"Fitness Instructor",
+		"Fortuneteller",
+		"Instructor",
+		"Manual Laborer",
+		"Massage therapist",
 		"Masseur",
-		"Fortuneteller", // add nta_of
-		"Palmist", // add nta_of
 		"Musician",
-		"Scene Performer",
+		"Palmist",
+		"Perfomer",
+		"Performer",
+		"Personal Physician",
+		"Stripper",
 		"Stylist",
 		"Waiter"
 		)

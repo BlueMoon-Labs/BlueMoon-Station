@@ -56,9 +56,7 @@
 		if(91 to INFINITY)
 			new_size = 5
 
-	if(linked_organ)
-		linked_organ.size = clamp(size, BALLS_SIZE_MIN, BALLS_SIZE_MAX) //SPLURT Edit. No more randomly massive balls
-		linked_organ.update()
+	// Раньше тут была проверка на размер яиц после увелечения члена, теперь вот так вот.
 	size = new_size
 
 	if(owner)
@@ -72,35 +70,40 @@
 
 /obj/item/organ/genital/penis/update_appearance()
 	. = ..()
+
 	var/datum/sprite_accessory/S = GLOB.cock_shapes_list[shape]
+
+	// визуал
 	var/icon_shape = S ? S.icon_state : "human"
 	icon_state = "penis_[icon_shape]_[size]"
-	var/lowershape = lowertext(shape)
+
+	// описание формы — ВАЖНО: БЕРЁМ icon_state
+	var/lowershape = lowertext(S?.icon_state || "human")
 
 	switch(lowershape)
-		if("penis")
-			lowershape = "человеческий"
-		if("human")
+		if("penis", "human")
 			lowershape = "человеческий"
 		if("knotted")
 			lowershape = "узловатый"
 		if("flared")
 			lowershape = "конический"
-		if("barbed, knotted")
+		if("barbknot")
 			lowershape = "узловатый и немного колючий"
 		if("tapered")
 			lowershape = "утончённый"
-		if("tentacled")
+		if("tentacle")
 			lowershape = "тентяклевидный"
 		if("hemi")
 			lowershape = "двойной"
-		if("teshari")
+		if("taperedteshari")
 			lowershape = "тешарьский"
-		if("knotted hemi")
+		if("hemiknot")
 			lowershape = "двойной узловатый"
-		if("barbed, knotted hemi")
+		if("bhemiknot")
 			lowershape = "двойной, узловатый и немного колючий"
-		if("thick")
+		if("barbtapered")
+			lowershape = "утончённый к концу и покрыт шипами"
+		if("thick", "nondescript")
 			lowershape = "обрезанный"
 		else
 			lowershape = "членовидный"

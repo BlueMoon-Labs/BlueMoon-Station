@@ -1,21 +1,31 @@
 /datum/design/roller_normal
-	name = "roller bed"
+	name = "Roller bed"
 	desc = "A collapsed roller bed that can be carried around."
 	id = "normal_roller_bed"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 4000)
 	build_path = /obj/item/roller
-	category = list("Medical Designs")
+	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/roller_heavy
-	name = "heavy roller bed"
+	name = "Heavy roller bed"
 	desc = "A collapsed roller bed that can be carried around. Can be used to move heavy spacemens and spacevulfs."
 	id = "heavy_roller_bed"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 8000)
 	build_path = /obj/item/roller/heavy
-	category = list("Medical Designs")
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/roller_stasis
+	name = "Stasis roller bed"
+	desc = "A collapsed roller bed with a stasis function that can be carried around."
+	id = "stasis_roller_bed"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 4000, /datum/material/glass = 400, /datum/material/silver = 2000)
+	build_path = /obj/item/roller/stasis
+	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SECURITY
 
 /datum/techweb_node/base/New()

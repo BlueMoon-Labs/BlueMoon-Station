@@ -66,7 +66,7 @@
 		return
 	var/area/A = get_area(src)
 	if(A && A.powered(EQUIP) && assembly.give_power(power_amount))
-		A.use_power(power_amount, EQUIP)
+		A.use_power((power_amount + (power_amount/1.5)), EQUIP)
 		// give_power() handles CELLRATE on its own.
 
 

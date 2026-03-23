@@ -4,7 +4,7 @@ import { multiline } from 'common/string';
 
 import { resolveAsset } from '../assets';
 import { useBackend, useLocalState } from '../backend';
-import { Box, Button, Divider, Flex, Icon, Input, Section, Collapsible } from '../components';
+import { Box, Button, Collapsible, Divider, Flex, Icon, Input, Section } from '../components';
 import { Window } from '../layouts';
 
 const PATTERN_NUMBER = / \(([0-9]+)\)$/;
@@ -105,7 +105,7 @@ export const Orbit = (props, context) => {
     ghosts,
     misc,
     npcs,
-    ghost_roles
+    ghost_roles,
   } = data;
 
   const [searchText, setSearchText] = useLocalState(context, "searchText", "");
@@ -137,15 +137,22 @@ export const Orbit = (props, context) => {
   });
 
   const orbitMostRelevant = searchText => {
-    for (const source of [
-      sortedAntagonists.map(([_, antags]) => antags),
-      alive, ghosts, dead, dead_players, npcs, misc,
-      sortedGhostRoles.map(([_, ghostRoles]) => ghostRoles),
-    ]) {
+    const sources = [
+      sortedAntagonists.flatMap(([_, antags]) => antags),
+      alive,
+      ghosts,
+      dead,
+      dead_players,
+      npcs,
+      misc,
+      sortedGhostRoles.flatMap(([_, ghostRoles]) => ghostRoles),
+    ];
+    for (const source of sources) {
+      if (!Array.isArray(source)) continue;
       const member = source
         .filter(searchFor(searchText))
         .sort(compareNumberedText)[0];
-      if (member !== undefined) {
+      if (member && member.ref) {
         act("orbit", { ref: member.ref });
         break;
       }

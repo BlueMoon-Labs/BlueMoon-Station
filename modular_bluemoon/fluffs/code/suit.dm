@@ -2,13 +2,13 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 
-/obj/item/clothing/suit/hooded/bm
+/obj/item/clothing/suit/hooded/bm/donator
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
 
-/obj/item/clothing/head/hooded/bm
+/obj/item/clothing/head/hooded/bm/donator
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 
@@ -97,7 +97,7 @@
 	icon_state = "flektarn_montur"
 	item_state = "flektarn_montur"
 
-/obj/item/clothing/suit/donator/bm/SH_jacket
+/obj/item/clothing/suit/donator/bm/sh_jacket
 	name = "Shiro's Samurai Jacket"
 	desc = "Iconic jacket of the Shiro Silverhand he wore in his Samurai days."
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
@@ -422,7 +422,7 @@
     body_parts_covered = CHEST
     mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
-/obj/item/clothing/suit/hooded/bm/cybercoat // Спрайты принадлежат cnaperdodo
+/obj/item/clothing/suit/hooded/bm/donator/cybercoat // Спрайты принадлежат cnaperdodo
 	name = "Cybercoat"
 	desc = "Странный халат с кибернетикой. Около него чуствуется странный металический привкус."
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
@@ -431,12 +431,268 @@
 	item_state = "cybercoat"
 	body_parts_covered = CHEST|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	hoodtype = /obj/item/clothing/head/hooded/bm/cybercoat
+	hoodtype = /obj/item/clothing/head/hooded/bm/donator/cybercoat
 
-/obj/item/clothing/head/hooded/bm/cybercoat // Спрайты принадлежат cnaperdodo
+/obj/item/clothing/head/hooded/bm/donator/cybercoat // Спрайты принадлежат cnaperdodo
 	name = "Cybercoat hood"
 	icon_state = "hood_cybercoat"
 	item_state = "hood_cybercoat"
 	body_parts_covered = HEAD
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 	rad_flags = RAD_NO_CONTAMINATE
+
+/obj/item/clothing/suit/donator/bm/long_fancy_kimono
+	name = "Long Fancy Kimono"
+	desc = "A traditional piece of clothing from Japan. Special edition."
+	taur_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/suit_taur.dmi'
+	icon_state = "long_fancy_kimono"
+	item_state = "long_fancy_kimono"
+	body_parts_covered = CHEST|GROIN|ARMS
+	flags_inv = HIDEJUMPSUIT|HIDETAUR
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON|STYLE_PAW_TAURIC
+	always_reskinnable = TRUE
+	unique_reskin = list(
+		"Standard" = list(
+			RESKIN_ICON_STATE = "long_fancy_kimono"
+		),
+		"With butterfly" = list(
+			RESKIN_ICON_STATE = "long_fancy_kimono_B"
+		),
+		"No belt" = list(
+			RESKIN_ICON_STATE = "long_fancy_kimono_N"
+		)
+	)
+
+/obj/item/clothing/suit/donator/bm/ranger_coat
+	name = "Ranger Coat"
+	desc = "This military-grade armor is a modification of combat armor and was originally designed for special police units. The armor consists of a bulletproof vest, familiar from previous versions of the armor, with multi-layered composite armor plates that are designed to allow for freedom of movement. A special collar made of the same composite material covers the wearer's neck. On the collar of the armor that protects the neck, you can see a number that is the officer's personal identification number."
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "ranger_coat"
+	item_state = "ranger_coat"
+
+/obj/item/clothing/suit/donator/bm/mu88
+	name = "M.U. 88 New hope coat"
+	desc = "Длинный плащ полевого медицинского сотрудника службы безопасности. Внутренняя часть имеет прослойку подвижного кевлара, от чего не стесняет движения носителя, немного весит и обладает базовой защитой от пулевых, режущих и колющих видов повреждений. Дополнительно имеется множество карманов и различного рода ремешков для хранения и переноски разнообразного медицинских расходников и обороудования. В одном из внутренних карманов расположился логотип производителя, в виде чёрной розы, а также надпись - Black Rose atelier."
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	icon_state = "mu88"
+	item_state = "mu88"
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/donator/bm/dm_pzgrnd_suit
+	name = "motorized infantry jacket"
+	desc = "A spacious jacket designed for vehicle escort units. It features numerous pockets, as well as a sturdy leather belt! The label inside shows the inscription \"DM Arms\"."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "pz_grenadierjacket"
+	item_state = "pz_grenadierjacket"
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/donator/bm/apronchef_red
+	name = "Gubby Family Apron"
+	desc = "Ярко красный фартук с чёрно белыми узорами, немного потрёпан временем"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST|GROIN
+	icon_state = "apronchef_red"
+	item_state = "apronchef_red"
+	allowed = list(/obj/item/kitchen)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/toggle/shark
+	name = "Shark Pajamas"
+	desc = "Soft shark-shaped pajamas, isn't it cute?"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+	flags_inv = HIDEJUMPSUIT
+	icon_state = "shark"
+	item_state = "bluewizrobe"
+	togglename = "buttons"
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/toggle/lsweater
+	name = "Sweater"
+	desc = "A sweater belonging to some fox"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	body_parts_covered = GROIN|ARMS
+	icon_state = "lsweater"
+	item_state = "lsweater"
+	togglename = "buttons"
+	alternate_worn_layer = SUIT_STORE_LAYER
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/donator/bm/cultist_poly
+	name = "Aged Robe"
+	desc = "Роба пахнующая пылью и до невозможного современна"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST|GROIN|ARMS
+	icon_state = "cultist_poly"
+	item_state = "cultist_poly"
+	var/list/poly_colors = list("#2A2A2A","#A52F29")
+
+/obj/item/clothing/suit/donator/bm/cultist_poly/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/empire_suit
+	name = "Katzen Suit"
+	desc = "Современный дизайн, попытайтесь пойти в штыковую!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST|GROIN|ARMS
+	icon_state = "empire_suit"
+	item_state = "empire_suit"
+	var/list/poly_colors = list("#2A2A2A", "#A52F29", "#eeaf28")
+
+/obj/item/clothing/suit/empire_suit/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29", "#eeaf28"), 3)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/poly_poncho
+	name = "Poly Poncho"
+	desc = "Poly, fucking, poncho"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST|GROIN
+	icon_state = "poly_poncho"
+	item_state = "poly_poncho"
+	var/list/poly_colors = list("#ffffff")
+
+/obj/item/clothing/suit/poly_poncho/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, poly_colors, 1)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/poly_armored_poncho
+	name = "Poly Nanotech Poncho"
+	desc = "Poly, fucking, poncho"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST|GROIN
+	icon_state = "poly_armored_poncho"
+	item_state = "poly_armored_poncho"
+	var/list/poly_colors = list("#2A2A2A", "#A52F29")
+
+/obj/item/clothing/suit/poly_armored_poncho/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat
+	name = "Poly Coat"
+	desc = "A coat with polychromic leather"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	blood_overlay_type = "coat"
+	icon_state = "officerian_coat"
+	item_state = "officerian_coat"
+	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	var/list/poly_colors = list("#2A2A2A", "#A52F29")
+
+/obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat_oversized
+	name = "Poly Oversized Coat"
+	desc = "A bit oversized coat with polychromic leather"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	blood_overlay_type = "coat"
+	icon_state = "officerian_coat_oversized"
+	item_state = "officerian_coat_oversized"
+	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	var/list/poly_colors = list("#2A2A2A", "#A52F29")
+
+/obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat_oversized/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/suit/donator/bm/chetky_g3jacket
+	name = "track jacket"
+	desc = "krutaya kurtka."
+	icon_state = "chetky_g3jacket"
+	item_state = "chetky_g3jacket"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+///////////////////////////////////////////////////
+
+/obj/item/clothing/suit/donator/bm/sf_coat
+	name = "S.F. Coat"
+	desc = "This coat is amazing, isn't it?"
+	icon_state = "sf_coat"
+	item_state = "sf_coat"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+///////////////////////////////////////////////////
+
+/obj/item/clothing/suit/toggle/cropped_jacket_main
+	name = "Cropped jacket"
+	desc = "A cropped jacket"
+	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "cropped_jacket_main"
+	item_state = "cropped_jacket_main"
+	togglename = "buttons"
+
+/obj/item/clothing/suit/shoulder_sweater
+	name = "Off shoulder sweater"
+	desc = "A cropped jacket"
+	icon_state = "shoulder_sweater_main"
+	item_state = "shoulder_sweater_main"
+	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON

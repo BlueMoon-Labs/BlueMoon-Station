@@ -119,7 +119,7 @@
 	new /obj/item/crowbar/power(src)
 	new /obj/item/weldingtool/experimental(src)//This can be changed if this is too much
 	new /obj/item/multitool/tricorder(src)
-	new /obj/item/stack/cable_coil(src,30,pick("red","yellow","orange"))
+	new /obj/item/stack/cable_coil(src, 30, TRUE, pick("red","yellow","orange"))
 	new /obj/item/extinguisher/mini(src)
 	new /obj/item/analyzer/ranged(src)
 	//much roomier now that we've managed to remove two tools
@@ -131,7 +131,7 @@
 	new /obj/item/crowbar(src)
 	new /obj/item/wirecutters(src)
 	new /obj/item/multitool(src)
-	new /obj/item/stack/cable_coil(src,30,pick("red","yellow","orange"))
+	new /obj/item/stack/cable_coil(src, 30, TRUE, pick("red","yellow","orange"))
 
 /obj/item/storage/belt/utility/full/engi/PopulateContents()
 	new /obj/item/screwdriver(src)
@@ -140,7 +140,7 @@
 	new /obj/item/crowbar(src)
 	new /obj/item/wirecutters(src)
 	new /obj/item/multitool(src)
-	new /obj/item/stack/cable_coil(src,30,pick("red","yellow","orange"))
+	new /obj/item/stack/cable_coil(src, 30, TRUE, pick("red","yellow","orange"))
 
 
 /obj/item/storage/belt/utility/atmostech/PopulateContents()
@@ -159,7 +159,7 @@
 	new /obj/item/crowbar/brass(src)
 	new /obj/item/weldingtool/experimental/brass(src)
 	new /obj/item/multitool/advanced/brass(src)
-	new /obj/item/stack/cable_coil(src, 30, "yellow")
+	new /obj/item/stack/cable_coil(src, 30, TRUE, "yellow")
 
 /obj/item/storage/belt/medical
 	name = "medical belt"
@@ -205,6 +205,7 @@
 		/obj/item/retractor,
 		/obj/item/cautery,
 		/obj/item/hemostat,
+		/obj/item/blood_filter,
 		/obj/item/geiger_counter,
 		/obj/item/clothing/neck/stethoscope,
 		/obj/item/stamp,
@@ -234,6 +235,8 @@
 	new /obj/item/scalpel/advanced(src)
 	new /obj/item/retractor/advanced(src)
 	new /obj/item/surgicaldrill/advanced(src)
+	new /obj/item/bonesetter(src)
+	new /obj/item/reagent_containers/medspray/sterilizine(src)
 	if(advanced_drapes)
 		new /obj/item/surgical_drapes/advanced(src)
 	else
@@ -421,6 +424,15 @@
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_w_class = WEIGHT_CLASS_SMALL
 
+/obj/item/storage/belt/military/green
+	name = "military belt"
+	desc = "A tactical belt with a woodland pattern, designed for infantry operations in dense vegetation."
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/belt.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/belt_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/belt_righthand.dmi'
+	icon_state = "militarybelt"
+	item_state = "militarybelt"
+
 /obj/item/storage/belt/military/snack
 	name = "tactical snack rig"
 
@@ -484,7 +496,7 @@
 	new /obj/item/crowbar/abductor(src)
 	new /obj/item/wirecutters/abductor(src)
 	new /obj/item/multitool/abductor(src)
-	new /obj/item/stack/cable_coil(src,30,"white")
+	new /obj/item/stack/cable_coil(src, 30, TRUE, "white")
 
 /obj/item/storage/belt/military/army
 	name = "army belt"
@@ -647,9 +659,11 @@
 		/obj/item/holosign_creator,
 		/obj/item/forcefield_projector,
 		/obj/item/key/janitor,
+		/obj/item/access_key,
 		/obj/item/clothing/gloves,
 		/obj/item/melee/flyswatter,
 		/obj/item/broom,
+		/obj/item/mop,
 		/obj/item/paint/paint_remover,
 		/obj/item/assembly/mousetrap,
 		/obj/item/screwdriver,
@@ -669,7 +683,7 @@
 	new /obj/item/grenade/chem_grenade/cleaner(src)
 	new /obj/item/grenade/chem_grenade/cleaner(src)
 	new /obj/item/grenade/chem_grenade/cleaner(src)
-	new /obj/item/soap(src)
+	new /obj/item/soap/syndie(src)
 
 /obj/item/storage/belt/bandolier
 	name = "bandolier"
@@ -820,7 +834,7 @@
 /obj/item/storage/belt/fannypack/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_items = 3
+	STR.max_items = 4
 	STR.max_w_class = WEIGHT_CLASS_SMALL
 
 /obj/item/storage/belt/fannypack/black
@@ -1037,3 +1051,29 @@
 		/obj/item/shovel/spade,
 		/obj/item/gun/energy/floragun
 	))
+
+/obj/item/storage/belt/belly_riding
+	name = "belly riding harness"
+	desc = "Комплект прочных ремней и талей, предназначенных для фиксации существ на животе."
+	icon = 'icons/obj/clothing/uniforms.dmi'
+	taur_mob_worn_overlay = 'icons/mob/clothing/belt_taur.dmi'
+	icon_state = "gear_harness"
+	item_state = "bellyriding_harness"
+	mutantrace_variation = STYLE_PAW_TAURIC|STYLE_HOOF_TAURIC
+	w_class = WEIGHT_CLASS_SMALL
+	component_type = null
+	item_flags = NO_UNIFORM_REQUIRED
+
+/obj/item/storage/belt/belly_riding/examine(mob/user)
+	. = ..()
+	. += span_notice("Закрепив ремни на поясе, вы сможете усадить в них другого персонажа, \
+					взяв его в агрессивный захват и перетащив на себя.")
+	. += span_notice("Нажмите ALT, чтобы сделать ремни невидимыми.")
+	if(HAS_TRAIT_FROM(src, TRAIT_NODROP, RIDING_TRAIT))
+		. += span_warning("Вы не сможете снять ремни, пока кого-то переносите!")
+
+/obj/item/storage/belt/belly_riding/AltClick(mob/user)
+	. = ..()
+	item_state = item_state ? null : initial(item_state)
+	balloon_alert(user, item_state ? "Видимые" : "Невидимые")
+	update_slot_icon()

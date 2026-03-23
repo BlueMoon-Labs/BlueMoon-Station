@@ -13,3 +13,7 @@
 /obj/item/ammo_casing/energy/plasma/weak
 	projectile_type = /obj/item/projectile/plasma/weak
 	e_cost = 100
+
+/obj/item/ammo_casing/energy/plasma/mech
+	projectile_type = /obj/item/projectile/plasma/adv/mech
+	e_cost = 240

@@ -138,7 +138,7 @@
 		cut_wires += wire
 		on_cut(wire, mend = FALSE)
 
-/datum/wires/proc/cut_color(color, mob/living/user)
+/datum/wires/proc/cut_color(color, mob/living/user, obj/item/tool)
 	LAZYINITLIST(current_users)
 	if(current_users[user])
 		return FALSE
@@ -147,10 +147,19 @@
 		if(level_diff > 0)
 			LAZYSET(current_users, user, TRUE)
 			to_chat(user, "<span class='notice'>You begin cutting [holder]'s [color] wire...</span>")
-			if(!do_after(user, 0.75 SECONDS * level_diff, target = holder) || !interactable(user))
-				LAZYREMOVE(current_users, user)
-				return FALSE
+			// BLUEMOON EDIT START
+			var/success = interactable(user)
+			if(success)
+				var/delay = 0.75 SECONDS * level_diff
+				if(tool)
+					success = tool.use_tool(holder, user, delay, volume=0, skill_gain_mult = 0.1)
+				else
+					success = do_after(user, delay, target = holder)
+
 			LAZYREMOVE(current_users, user)
+			if(!success)
+				return FALSE
+			// BLUEMOON EDIT END
 	to_chat(user, "<span class='notice'>You cut [holder]'s [color] wire.</span>")
 	cut(get_wire(color))
 	return TRUE
@@ -167,7 +176,7 @@
 		return
 	on_pulse(wire, user)
 
-/datum/wires/proc/pulse_color(color, mob/living/user)
+/datum/wires/proc/pulse_color(color, mob/living/user, obj/item/tool)
 	set waitfor = FALSE
 	LAZYINITLIST(current_users)
 	if(current_users[user])
@@ -177,10 +186,19 @@
 		if(level_diff > 0)
 			LAZYSET(current_users, user, TRUE)
 			to_chat(user, "<span class='notice'>You begin pulsing [holder]'s [color] wire...</span>")
-			if(!do_after(user, 1.5 SECONDS * level_diff, target = holder) || !interactable(user))
-				LAZYREMOVE(current_users, user)
-				return FALSE
+			// BLUEMOON EDIT START
+			var/success = interactable(user)
+			if(success)
+				var/delay = 1.5 SECONDS * level_diff
+				if(tool)
+					success = tool.use_tool(holder, user, delay, volume=0, skill_gain_mult = BARE_USE_TOOL_MULT)
+				else
+					success = do_after(user, delay, target = holder)
+
 			LAZYREMOVE(current_users, user)
+			if(!success)
+				return FALSE
+			// BLUEMOON EDIT END
 	to_chat(user, "<span class='notice'>You pulse [holder]'s [color] wire.</span>")
 	pulse(get_wire(color), user)
 	return TRUE
@@ -268,7 +286,7 @@
 		reveal_wires = TRUE
 
 	// BLUEMOON ADD engineers, roboticist with required TRAIT can see a purpose of wire for needed machinery
-	if (visibility_trait && HAS_TRAIT(user.mind, visibility_trait))
+	if (visibility_trait && (HAS_TRAIT(user.mind, visibility_trait) || HAS_TRAIT(user, visibility_trait)))
 		reveal_wires = TRUE
 
 	// Same for anyone with an abductor multitool.
@@ -302,7 +320,7 @@
 		if("cut")
 			I = L.is_holding_tool_quality(TOOL_WIRECUTTER)
 			if(I || IsAdminGhost(usr))
-				if(cut_color(target_wire, L) && I && holder)
+				if(cut_color(target_wire, L, I) && I && holder) // BLUEMOON EDIT
 					I.play_tool_sound(holder, 20)
 				. = TRUE
 			else
@@ -310,7 +328,7 @@
 		if("pulse")
 			I = L.is_holding_tool_quality(TOOL_MULTITOOL)
 			if(I || IsAdminGhost(usr))
-				if(pulse_color(target_wire, L) && I && holder)
+				if((pulse_color(target_wire, L, I) && I && holder)) // BLUEMOON EDIT
 					I.play_tool_sound(holder, 20)
 				. = TRUE
 			else

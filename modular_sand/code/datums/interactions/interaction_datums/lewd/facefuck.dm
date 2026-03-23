@@ -104,6 +104,7 @@
 				if("penis")
 					genital = partner.getorganslot(ORGAN_SLOT_PENIS)
 		user.set_is_fucking(partner, CUM_TARGET_MOUTH, genital)
+		try_apply_knot(user, partner, CUM_TARGET_MOUTH) // Проверка на узлирование.
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
 						'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
@@ -181,6 +182,7 @@
 		if(check)
 			genital = check
 		user.set_is_fucking(partner, CUM_TARGET_THROAT, genital)
+		try_apply_knot(user, partner, CUM_TARGET_THROAT) // Проверка на узлирование.
 
 	partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
@@ -197,3 +199,89 @@
 	else
 		partner.handle_post_sex(LOW_LUST, null, user, CUM_TARGET_THROAT)
 	// BLUEMOON ADD END
+
+/datum/interaction/lewd/double_oral
+	description = "Члены. Двойное оральное проникновение"
+	required_from_user = INTERACTION_REQUIRE_DOUBLE_PENIS
+	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
+	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
+	write_log_user = "double oral fucked"
+	write_log_target = "was double oral fucked by"
+	interaction_sound = 'modular_sand/sound/interactions/oral1.ogg'
+
+/datum/interaction/lewd/double_oral/display_interaction(mob/living/user, mob/living/partner)
+	var/message
+	var/shape_desc = get_penis_shape_desc(user)
+
+	if(user.is_fucking(partner, CUM_TARGET_MOUTH))
+		message = pick(
+			"заполняет рот <b>[partner]</b> обоими [shape_desc], заставляя её задыхаться от напора.",
+			"вводит оба члена глубоко в глотку <b>[partner]</b>, не давая ей возможности отдышаться.",
+			"грубо трахает рот <b>[partner]</b> двумя членами, теряя контроль над движениями.",
+			"плотно насаживает <b>[partner]</b> на оба члена, наполняя её рот до предела.",
+			"двигается мощно и уверенно, заставляя <b>[partner]</b> захлёбываться стонами и слезами наслаждения.")
+	else
+		message = pick(
+			"направляет оба [shape_desc] к губам <b>[partner]</b>, заставляя её послушно открыть рот.",
+			"медленно вставляет оба члена в рот <b>[partner]</b>, чувствуя, как её губы растягиваются.",
+			"плотно берёт <b>[partner]</b> за голову и начинает мягко насаживать на оба [shape_desc].")
+		user.set_is_fucking(partner, CUM_TARGET_MOUTH, user.getorganslot(ORGAN_SLOT_PENIS))
+
+	playlewdinteractionsound(get_turf(user), pick(
+		'modular_sand/sound/interactions/oral1.ogg',
+		'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
+
+	user.visible_message(
+		span_lewd("<b>\The [user]</b> [message]"),
+		ignored_mobs = user.get_unconsenting()
+	)
+
+	// Эффекты возбуждения и оргазма
+	if(user.can_penetrating_genital_cum())
+		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_MOUTH, partner, ORGAN_SLOT_PENIS)
+
+	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, "mouth")
+
+	try_apply_knot(user, partner, CUM_TARGET_MOUTH)
+
+	if(prob(25))
+		user.visible_message(span_love("<b>[partner]</b> захлёбывается стонами, когда оба члена глубоко в её рту!"))
+
+/datum/interaction/lewd/knot_oral
+	description = "Член. Глубокий минет с узлом."
+	required_from_user = INTERACTION_REQUIRE_KNOT
+	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
+	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
+	write_log_user = "knot oral fucked"
+	write_log_target = "was knot oral fucked by"
+	interaction_sound = 'modular_sand/sound/interactions/champ2.ogg'
+
+/datum/interaction/lewd/knot_oral/display_interaction(mob/living/user, mob/living/partner)
+	var/message
+	var/shape_desc = get_penis_shape_desc(user)
+
+	if(user.is_fucking(partner, CUM_TARGET_MOUTH))
+		message = pick(
+			"вжимается глубже, двигаясь ритмично в рот <b>[partner]</b>.",
+			"направляет [shape_desc] глубже, ощущая, как губы <b>[partner]</b> плотно охватывают основание.",
+			"двигается настойчиво, наполняя рот <b>[partner]</b> каждым толчком.",
+			"удерживает <b>[partner]</b> за голову, двигаясь всё глубже, пока узел не упирается в губы.")
+	else
+		message = pick(
+			"вводит свой [shape_desc] в рот <b>[partner]</b> и начинает двигаться медленно.",
+			"прижимается к губам <b>[partner]</b>, мягко продвигая [shape_desc] внутрь.",
+			"чувствует тепло рта <b>[partner]</b> и медленно начинает двигаться.")
+		user.set_is_fucking(partner, CUM_TARGET_MOUTH, user.getorganslot(ORGAN_SLOT_PENIS))
+
+	playlewdinteractionsound(get_turf(user), pick(
+		'modular_sand/sound/interactions/champ1.ogg',
+		'modular_sand/sound/interactions/champ2.ogg'), 70, 1, -1)
+
+	user.visible_message(span_lewd("<b>\\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+
+	if(user.can_penetrating_genital_cum())
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_MOUTH, partner, ORGAN_SLOT_PENIS)
+		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, "mouth")
+
+	// гарантированное узлирование, но с проверкой префов
+		try_apply_knot(user, partner, CUM_TARGET_MOUTH, FALSE, TRUE)

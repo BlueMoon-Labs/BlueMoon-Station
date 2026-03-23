@@ -1055,10 +1055,12 @@ structure_check() searches for nearby cultist structures required for the invoca
 				var/datum/round_event_control/anomaly/anomaly_grav/AG
 				var/datum/round_event_control/anomaly/anomaly_pyro/AP
 				var/datum/round_event_control/anomaly/anomaly_vortex/AV
+				var/datum/round_event_control/anomaly/anomaly_poly/Apoly
 				AF.runEvent()
 				AG.runEvent()
 				AP.runEvent()
 				AV.runEvent()
+				Apoly.runEvent()
 			if(71 to 80)
 				var/datum/round_event_control/spacevine/SV = new()
 				var/datum/round_event_control/grey_tide/GT = new()

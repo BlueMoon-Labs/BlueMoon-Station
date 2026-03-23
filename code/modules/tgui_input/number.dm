@@ -80,6 +80,9 @@
 		if(default)
 			src.default = 0
 	/// Sanity check
+	if(!isnum(default))
+		default = 0
+		src.default = 0
 	if(default < min_value)
 		src.default = min_value
 	if(default > max_value)

@@ -1,6 +1,8 @@
 /mob/living/carbon
 	blood_volume = BLOOD_VOLUME_NORMAL
 	deathsound = list ('sound/voice/deathgasp1.ogg', 'sound/voice/deathgasp2.ogg')
+	/// Reused breath sample to avoid per-breath gas_mixture churn.
+	var/datum/gas_mixture/breath_buffer
 
 /mob/living/carbon/Initialize(mapload)
 	. = ..()
@@ -10,6 +12,7 @@
 	blood_volume = (BLOOD_VOLUME_NORMAL * blood_ratio)
 	add_movespeed_modifier(/datum/movespeed_modifier/carbon_crawling)
 	register_context()
+	breath_buffer = new
 
 /mob/living/carbon/Destroy()
 	//This must be done first, so the mob ghosts correctly before DNA etc is nulled
@@ -17,11 +20,19 @@
 
 	QDEL_LIST(internal_organs)
 	QDEL_LIST(stomach_contents)
+	QDEL_LAZYLIST(all_wounds)
+	QDEL_LAZYLIST(all_scars)
 	QDEL_LIST(bodyparts)
 	hand_bodyparts = null		//Just references out bodyparts, don't need to delete twice.
-	remove_from_all_data_huds()
+	QDEL_NULL(breath_buffer)
 	QDEL_NULL(dna)
+	last_mind = null
 	GLOB.carbon_list -= src
+
+/mob/living/carbon/proc/get_breath_buffer()
+	if(!breath_buffer)
+		breath_buffer = new
+	return breath_buffer
 
 /mob/living/carbon/relaymove(mob/user, direction)
 	if(user in src.stomach_contents)
@@ -235,6 +246,7 @@
 	playsound(loc, 'sound/weapons/punchmiss.ogg', 50, 1, -1)
 	newtonian_move(get_dir(target, src))
 	thrown_thing.safe_throw_at(target, thrown_thing.throw_range + extra_throw_range, max(1,thrown_thing.throw_speed + power_throw), src, null, null, null, move_force, random_turn)
+	DelayNextAction(CLICK_CD_THROW)
 
 /mob/living/carbon/restrained(ignore_grab)
 	. = (handcuffed || (!ignore_grab && pulledby && pulledby.grab_state >= GRAB_AGGRESSIVE))
@@ -286,6 +298,13 @@
 		else
 			if(src && buckled)
 				to_chat(src, "<span class='warning'>Тебе не удалось выбраться!</span>")
+	else if(ishuman(buckled))
+		var/mob/living/carbon/human/H = buckled
+		var/datum/component/riding/human/riding_comp = H.GetComponent(/datum/component/riding/human)
+		if(riding_comp)
+			riding_comp.force_dismount(src, TRUE)
+		else
+			buckled.user_unbuckle_mob(src,src)
 	else
 		buckled.user_unbuckle_mob(src,src)
 
@@ -556,6 +575,7 @@
 		add_movespeed_modifier(/datum/movespeed_modifier/carbon_softcrit)
 	else
 		remove_movespeed_modifier(/datum/movespeed_modifier/carbon_softcrit)
+	SEND_SIGNAL(src, COMSIG_CARBON_UPDATEHEALTH)
 
 /mob/living/carbon/update_stamina()
 	var/total_health = getStaminaLoss()
@@ -575,7 +595,7 @@
 	UpdateStaminaBuffer()
 	update_health_hud()
 
-/mob/living/carbon/update_sight()
+/mob/living/carbon/update_sight(forced = TRUE)
 	if(!client)
 		return
 	if(stat == DEAD)
@@ -668,7 +688,7 @@
 	if(istype(head, /obj/item/clothing/head))
 		var/obj/item/clothing/head/HT = head
 		. += HT.tint
-	if(wear_mask)
+	if(istype(wear_mask, /obj/item/clothing))
 		. += wear_mask.tint
 
 	var/obj/item/organ/eyes/E = getorganslot(ORGAN_SLOT_EYES)
@@ -931,7 +951,10 @@
 		to_chat(user, "<span class='notice'>You retrieve some of [src]\'s internal organs!</span>")
 
 /mob/living/carbon/ExtinguishMob()
-	for(var/X in get_equipped_items())
+	var/list/items_to_check = get_equipped_items() + held_items
+	for(var/X in items_to_check)
+		if(!X)
+			continue
 		var/obj/item/I = X
 		var/datum/component/acid/acid = I.GetComponent(/datum/component/acid)
 		if(acid)
@@ -1231,3 +1254,12 @@
 
 /mob/living/carbon/proc/functional_blood()
 	return blood_volume + integrating_blood
+
+/mob/living/carbon/has_pain(obj/item/bodypart/limb)
+	. = ..()
+	if(. == PAIN_NO)
+		return .
+	if(limb && limb.is_robotic_limb())
+		return PAIN_NO
+	if(. > PAIN_MEDIUM && drunkenness > 20)
+		return PAIN_MEDIUM

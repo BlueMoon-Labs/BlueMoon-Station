@@ -34,8 +34,10 @@
 	if(applied_mask)
 		remove_mask()
 	if(blocker_mask) // In a case of early deletion due to volatile client
+		blocker_mask.screen_loc = null
 		QDEL_NULL(blocker_mask)
 	if(visual_shadow) // In a case of early deletion due to volatile client
+		visual_shadow.screen_loc = null
 		QDEL_NULL(visual_shadow)
 	return ..()
 

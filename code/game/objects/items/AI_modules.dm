@@ -380,6 +380,11 @@ AI MODULES
 	name = "'Asimov++' Core AI Module"
 	law_id = "asimovpp"
 
+/******************** NT OS Safeguard V1.0 *********************/
+
+/obj/item/ai_module/core/full/safeguard
+	name = "'NT OS Safeguard V1.0' Core AI Module"
+	law_id = "safeguard"
 
 /******************** Corporate ********************/
 

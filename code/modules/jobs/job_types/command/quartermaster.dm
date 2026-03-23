@@ -16,7 +16,24 @@
 	exp_type = EXP_TYPE_CREW
 	exp_type_department = EXP_TYPE_SUPPLY
 	considered_combat_role = TRUE
-
+	alt_titles = list(
+		"Donk Co. Manager", //Триглав выше, для удобства
+		"Logistics Syndicate Supervisor", //Синди выше, для удобства
+		"Brigadier",
+		"Cargo Director",
+		"Cargonia Chief",
+		"Chief Supplier Officer",
+		"Deck Chief",
+		"Head of Cargo",
+		"Head of Supply",
+		"Logistics Coordinator",
+		"Logistics Supervisor",
+		"Manager of Shipping Sex",
+		"Resource Manager",
+		"Supply Chief",
+		"Supply Foreman",
+		"Supply Manager"
+		)
 
 	outfit = /datum/outfit/job/quartermaster
 
@@ -32,7 +49,7 @@
 	departments = DEPARTMENT_BITFLAG_SUPPLY | DEPARTMENT_BITFLAG_COMMAND
 
 	display_order = JOB_DISPLAY_ORDER_QUARTERMASTER
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity, /datum/quirk/illiterate)
 	threat = 0.5
 
 	family_heirlooms = list(
@@ -58,7 +75,7 @@
 	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1)
 	box = /obj/item/storage/box/survival/command
 	chameleon_extras = /obj/item/stamp/qm
-	accessory = /obj/item/clothing/accessory/permit/special/quartermaster
+	accessory = list(/obj/item/clothing/accessory/permit/special/quartermaster)
 
 /datum/outfit/job/quartermaster/syndicate
 	name = "Syndicate Quartermaster"
@@ -76,7 +93,7 @@
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
-	accessory = /obj/item/clothing/accessory/permit/special/quartermaster
+	accessory = list(/obj/item/clothing/accessory/permit/special/quartermaster)
 	pda_slot = ITEM_SLOT_BELT
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic = 1, /obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/syndicate_uplink_high=1)
 

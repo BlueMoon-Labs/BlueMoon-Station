@@ -20,6 +20,47 @@ Assistant
 	display_order = JOB_DISPLAY_ORDER_ASSISTANT
 	always_can_respawn_as = TRUE
 	threat = 0.2
+	alt_titles = list(
+		"Syndicate Specialist", //Синди выше, для удобства
+		"Acolyte",
+		"All-purpose Dildo",
+		"All-purpose Fleshlight",
+		"Ambassador",
+		"Bitch",
+		"Blacksmith",
+		"Businessman",
+		"Businesswoman",
+		"Butler",
+		"Civilian",
+		"Clerk",
+		"Colonist",
+		"Contractor",
+		"Crewmate",
+		"Cumdump",
+		"Diplomat",
+		"Freelancer",
+		"Freeloader",
+		"Greytider",
+		"Hobbyist",
+		"Off-Duty",
+		"Off-Duty Civilian",
+		"Off-Duty Crew",
+		"Off-Duty Staff",
+		"Pet",
+		"Service Bottom",
+		"Service Pred",
+		"Service Prey",
+		"Service Top",
+		"Slave",
+		"Slut",
+		"Snack",
+		"Station Pet",
+		"Stress Relief",
+		"Tourist",
+		"Trader",
+		"Visitor",
+		"Volunteer"
+		)
 
 	family_heirlooms = list(
 		/obj/item/storage/toolbox/mechanical/old/heirloom,

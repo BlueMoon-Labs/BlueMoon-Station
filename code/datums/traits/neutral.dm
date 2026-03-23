@@ -378,3 +378,24 @@ proc/asiatish(message)
 // Quirk examine text.
 /datum/quirk/russian/proc/quirk_examine_russian(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
 	examine_list += "[quirk_holder.ru_who(TRUE)] излучает русский дух..."
+
+/datum/quirk/waddle
+	name = "Неуклюжесть"
+	desc = "Твоя походка всегда была чуть неуклюжей."
+	mob_trait = TRAIT_WADDLING
+	flavor_quirk = TRUE
+	value = 0
+	gain_text = span_notice("Тебе кажется, что ты передвигаешься как-то по-дурацки.")
+	lose_text = span_notice("Теперь ты передвигаешься нормально.")
+	mail_goodies = list(/obj/item/reagent_containers/food/snacks/grown/banana, /obj/item/clothing/shoes/clown_shoes)
+	medical_record_text = "Похоже, субъект ужасный танцор."
+
+/datum/quirk/waddle/add(client/client_source)
+	. = ..()
+	quirk_holder.LoadComponent(/datum/component/waddling)
+
+/datum/quirk/waddle/remove()
+	. = ..()
+	if(!HAS_TRAIT(quirk_holder, TRAIT_WADDLING))
+		var/datum/component/waddling = GetComponent(/datum/component/waddling)
+		waddling?.RemoveComponent()

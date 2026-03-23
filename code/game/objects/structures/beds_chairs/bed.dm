@@ -13,6 +13,7 @@
 	icon_state = "bed"
 	icon = 'icons/obj/objects.dmi'
 	anchored = TRUE
+	shadow_weight = 0.1
 	can_buckle = TRUE
 	buckle_lying = TRUE
 	resistance_flags = FLAMMABLE
@@ -25,7 +26,7 @@
 /obj/structure/bed/examine(mob/user)
 	. = ..()
 	if(bolts)
-		. += "<span class='notice'>It's held together by a couple of <b>bolts</b>.</span>"
+		. += "<span class='notice'>Держится на парочке <b>болтов</b>.</span>"
 
 /obj/structure/bed/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
@@ -54,21 +55,32 @@
 		return ..()
 
 /obj/structure/bed/post_buckle_mob(mob/living/target)
+	. = ..()
 	target.pixel_y = target.get_standard_pixel_y_offset(TRUE)
 
 /obj/structure/bed/double/post_unbuckle_mob(mob/living/target)
+	. = ..()
 	target.pixel_y = target.get_standard_pixel_y_offset(FALSE)
 
 /*
  * Roller beds
  */
 /obj/structure/bed/roller
-	name = "roller bed"
+	name = "Roller bed"
+	desc = "Складываемая каталка, пригодная к ручной переноске."
 	icon = 'icons/obj/rollerbed.dmi'
 	icon_state = "down"
 	anchored = FALSE
 	resistance_flags = NONE
+	var/up = FALSE
 	var/foldabletype = /obj/item/roller
+
+/obj/structure/bed/roller/update_icon_state()
+	. = ..()
+	if(up)
+		icon_state = "up"
+	else
+		icon_state = "down"
 
 /obj/structure/bed/roller/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/roller/robo))
@@ -93,15 +105,24 @@
 
 /obj/structure/bed/roller/MouseDrop(over_object, src_location, over_location)
 	. = ..()
-	if(over_object == usr && Adjacent(usr))
-		if(!ishuman(usr) || !usr.canUseTopic(src, BE_CLOSE))
+	if(over_object != usr)
+		return .
+	fold_roller(usr)
+
+/obj/structure/bed/roller/proc/fold_roller(mob/user)
+	if(Adjacent(user))
+		if(!ishuman(user) || !user.canUseTopic(src, BE_CLOSE))
 			return FALSE
 		if(has_buckled_mobs())
 			return FALSE
-		usr.visible_message("[usr] collapses \the [src.name].", "<span class='notice'>You collapse \the [src.name].</span>")
-		var/obj/structure/bed/roller/B = new foldabletype(get_turf(src))
-		usr.put_in_hands(B)
-		qdel(src)
+		user.visible_message("[user] collapses \the [src.name].", "<span class='notice'>You collapse \the [src.name].</span>")
+		var/obj/item/roller/I = new foldabletype(get_turf(src))
+		. = I
+		user.put_in_hands(I)
+		after_fold_roller(user, I)
+
+/obj/structure/bed/roller/proc/after_fold_roller(mob/user, /obj/item/roller/I)
+	qdel(src)
 
 // BLUEMOON ADD AHEAD - сверхтяжёлых персонажей нельзя помещать на обычные носилки (предотвращает абуз через толкание + повышает значимость боргов, халков и других сверхтяжёлых персонажей)
 /obj/structure/bed/roller/pre_buckle_mob(mob/living/M)
@@ -114,8 +135,9 @@
 
 /obj/structure/bed/roller/post_buckle_mob(mob/living/M)
 	density = TRUE
-	icon_state = "up"
+	up = TRUE
 	M.pixel_y = initial(M.pixel_y)
+	update_appearance()
 
 /obj/structure/bed/roller/Moved()
 	. = ..()
@@ -124,16 +146,18 @@
 
 /obj/structure/bed/roller/post_unbuckle_mob(mob/living/M)
 	density = FALSE
-	icon_state = "down"
+	up = FALSE
 	M.pixel_x = M.get_standard_pixel_x_offset(M.lying)
 	M.pixel_y = M.get_standard_pixel_y_offset(M.lying)
+	update_appearance()
 
 /obj/item/roller
-	name = "roller bed"
+	name = "Roller bed"
 	desc = "A collapsed roller bed that can be carried around."
 	icon = 'icons/obj/rollerbed.dmi'
 	icon_state = "folded"
 	w_class = WEIGHT_CLASS_NORMAL // No more excuses, stop getting blood everywhere
+	var/rollertype = /obj/structure/bed/roller
 
 /obj/item/roller/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/roller/robo))
@@ -159,12 +183,15 @@
 		deploy_roller(user, target)
 
 /obj/item/roller/proc/deploy_roller(mob/user, atom/location)
-	var/obj/structure/bed/roller/R = new /obj/structure/bed/roller(location)
+	. = new rollertype(location)
+	after_deploy_roller(user, .)
+
+/obj/item/roller/proc/after_deploy_roller(mob/user, obj/structure/bed/roller/R)
 	R.add_fingerprint(user)
 	qdel(src)
 
 /obj/item/roller/robo //ROLLER ROBO DA!
-	name = "roller bed dock"
+	name = "Roller bed dock"
 	var/loaded = null
 
 /obj/item/roller/robo/New()
@@ -180,6 +207,7 @@
 	if(loaded)
 		var/obj/structure/bed/roller/R = loaded
 		R.forceMove(location)
+		. = R
 		user.visible_message("[user] deploys [loaded].", "<span class='notice'>You deploy [loaded].</span>")
 		loaded = null
 	else

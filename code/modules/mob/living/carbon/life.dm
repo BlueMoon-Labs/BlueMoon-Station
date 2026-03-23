@@ -79,7 +79,7 @@
 //Second link in a breath chain, calls check_breath()
 /mob/living/carbon/proc/breathe()
 	var/obj/item/organ/lungs = getorganslot(ORGAN_SLOT_LUNGS)
-	if(reagents.has_reagent(/datum/reagent/toxin/lexorin))
+	if(reagents?.has_reagent(/datum/reagent/toxin/lexorin))
 		return
 	if(istype(loc, /obj/machinery/atmospherics/components/unary/cryo_cell))
 		return
@@ -136,8 +136,11 @@
 		breath.set_volume(BREATH_VOLUME)
 	check_breath(breath)
 
+	// Always return breath to environment and qdel to prevent gas mixture leak - each breath creates a new mixture via remove_air_ratio
 	if(breath)
-		loc.assume_air(breath)
+		if(loc)
+			loc.assume_air(breath)
+		qdel(breath)
 		air_update_turf()
 
 /mob/living/carbon/proc/has_smoke_protection()
@@ -157,7 +160,7 @@
 
 	//CRIT
 	if(!breath || (breath.total_moles() == 0) || !lungs)
-		if(reagents.has_reagent(/datum/reagent/medicine/epinephrine) && lungs)
+		if(reagents?.has_reagent(/datum/reagent/medicine/epinephrine) && lungs)
 			return
 		adjustOxyLoss(1)
 
@@ -376,6 +379,7 @@
 	stank.set_temperature(BODYTEMP_NORMAL)
 
 	miasma_turf.assume_air(stank)
+	qdel(stank)
 
 	miasma_turf.air_update_turf()
 
@@ -395,7 +399,7 @@
 			if(O)
 				O.on_life(seconds, times_fired)
 	else if(!QDELETED(src))
-		if(reagents.has_reagent(/datum/reagent/toxin/formaldehyde, 1) || reagents.has_reagent(/datum/reagent/preservahyde, 1)) // No organ decay if the body contains formaldehyde. Or preservahyde.
+		if(reagents?.has_reagent(/datum/reagent/toxin/formaldehyde, 1) || reagents?.has_reagent(/datum/reagent/preservahyde, 1)) // No organ decay if the body contains formaldehyde. Or preservahyde.
 			return
 		for(var/V in internal_organs)
 			var/obj/item/organ/O = V
@@ -515,7 +519,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 //this updates all special effects: stun, sleeping, knockdown, druggy, stuttering, etc..
 /mob/living/carbon/handle_status_effects()
 	..()
-	if(getStaminaLoss() && !HAS_TRAIT(src, TRAIT_NO_STAMINA_REGENERATION))
+	if(staminaloss > 0 && !HAS_TRAIT(src, TRAIT_NO_STAMINA_REGENERATION))
 		adjustStaminaLoss((!CHECK_MOBILITY(src, MOBILITY_STAND) ? ((combat_flags & COMBAT_FLAG_HARD_STAMCRIT) ? STAM_RECOVERY_STAM_CRIT : STAM_RECOVERY_RESTING) : STAM_RECOVERY_NORMAL))
 
 	if(!(combat_flags & COMBAT_FLAG_HARD_STAMCRIT) && incomingstammult != 1)
@@ -843,8 +847,9 @@ BLUEMOON REMOVAL END */
 		liver_failure(seconds, times_fired)
 
 /mob/living/carbon/proc/liver_failure(seconds, times_fired)
-	reagents.end_metabolization(src, keep_liverless = TRUE) //Stops trait-based effects on reagents, to prevent permanent buffs
-	reagents.metabolize(src, seconds, times_fired, can_overdose=FALSE, liverless = TRUE)
+	if(reagents)
+		reagents.end_metabolization(src, keep_liverless = TRUE) //Stops trait-based effects on reagents, to prevent permanent buffs
+		reagents.metabolize(src, seconds, times_fired, can_overdose=FALSE, liverless = TRUE)
 	if(HAS_TRAIT(src, TRAIT_STABLELIVER))
 		return
 	adjustToxLoss(4, TRUE,  TRUE)
@@ -896,4 +901,7 @@ BLUEMOON REMOVAL END */
 	if(!istype(heart))
 		return
 
-	heart.beating = !status
+	if(status)
+		heart.Stop()
+	else
+		heart.Restart()

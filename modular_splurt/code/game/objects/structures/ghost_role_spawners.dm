@@ -83,6 +83,7 @@
 	can_load_appearance = TRUE
 	antagonist_type = /datum/antagonist/ghost_role/hermit
 	category = "offstation"
+	outfit = /datum/outfit/wandering_hermit
 
 /obj/effect/mob_spawn/human/wandering_hermit/Destroy()
 	var/obj/structure/fluff/empty_sleeper/S = new(drop_location())
@@ -92,7 +93,14 @@
 /obj/effect/mob_spawn/human/wandering_hermit/special(mob/living/carbon/human/new_spawn)
 	. = ..()
 	ADD_TRAIT(new_spawn,TRAIT_EXEMPT_HEALTH_EVENTS,GHOSTROLE_TRAIT)
+	ADD_TRAIT(new_spawn,TRAIT_KNOWS_RESEARCH,GHOSTROLE_TRAIT)
 	new_spawn.grant_language(/datum/language/draconic)
+
+/datum/outfit/wandering_hermit
+	name = "Wandering Hermit"
+	back = /obj/item/storage/backpack/satchel/bone
+	backpack_contents = list(
+		/obj/item/research_paper = 1,)
 
 //Splurt-Specific Space Hotel Staff
 /obj/effect/mob_spawn/human/hotel_staff/splurt
@@ -211,8 +219,8 @@
 	name = "InteQ Dyson Sphere Crew Member"
 	short_desc = "Вы - Оперативник  InteQ на обшивке Дайсон Сферы, и на вашей части базы произошло ЧП."
 	flavour_text = "Вы являетесь частью персонала,что обслуживает аванпост на обшивке Дайсон Сферы. За вашу смену произошло много ЧП и сейчас на базе орудуют монстры, что явились снаружи. \
-					Пакт каким то образом смогли получить коды от Гейта и начали развертывать свои силы."
-	important_info = "Востановите ваш аванпост и приготовтесь отражать нападение. Не нападайте на лагерь Пакта, пока они сами не нападут."
+					ПАКТ каким то образом смогли получить коды от Гейта и начали развертывать свои силы."
+	important_info = "Востановите ваш аванпост и приготовтесь отражать нападение. Не нападайте на лагерь ПАКТа, пока они сами не нападут."
 
 /datum/outfit/inteqspace/inteq_crew/post_equip(mob/living/carbon/human/H)
 	H.faction |= ROLE_INTEQ
@@ -271,7 +279,7 @@
 	name = "InteQ Dyson Sphere Captain"
 	short_desc = "Вы -Глава Авангарда InteQ в отпуске, и проходите его в выделенной для вас Зоне."
 	flavour_text = "Прошло уже три дня, как вы развлекались с одной из «игрушек», что вы прихватили из карцеров на базе. Но сейчас там обьявлен полный карантин и вам туда не пройти. Вы можете продолжить свой неожиданный отпуск или подняться выше, на орбитальную часть, где находиться аванпост с остатками сил."
-	important_info = "Не пытайтесь проникнуть в подземную часть базы, где обьявлена биологическая тревога. Не напдайте на лагерь Пакта, пока они сами не нападут."
+	important_info = "Не пытайтесь проникнуть в подземную часть базы, где обьявлена биологическая тревога. Не напдайте на лагерь ПАКТа, пока они сами не нападут."
 
 /obj/effect/mob_spawn/human/inteqspace/captain/Destroy()
 	new/obj/structure/fluff/empty_sleeper/syndicate/captain(get_turf(src))

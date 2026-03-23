@@ -47,8 +47,18 @@
 			. += "<span class='notice'>- \The [charging]'s cell is at <b>[C.percent()]%</b>.</span>"
 
 /obj/machinery/recharger/proc/setCharging(new_charging)
+	// Уведомляем старый айтем если это talking gun
+	if(charging && istype(charging, /obj/item/gun/energy/e_gun/hos/dreadmk3/talking))
+		var/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/old_gun = charging
+		old_gun.exit_recharger()
+
 	charging = new_charging
 	if (new_charging)
+		// Уведомляем новый айтем если это talking gun
+		if(istype(new_charging, /obj/item/gun/energy/e_gun/hos/dreadmk3/talking))
+			var/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/new_gun = new_charging
+			new_gun.enter_recharger()
+
 		START_PROCESSING(SSmachines, src)
 		finished_recharging = FALSE
 		use_power = ACTIVE_POWER_USE

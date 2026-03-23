@@ -105,6 +105,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	// BLUEMOON EDIT END
 	// Add to global list
 	GLOB.family_heirlooms += heirloom
+	RegisterSignal(heirloom, COMSIG_PARENT_QDELETING, PROC_REF(on_heirloom_deleted))
 
 /datum/quirk/family_heirloom/post_add()
 	// BLUEMOON EDIT START - выбор вещей из лодаута как family heirloom
@@ -135,10 +136,14 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 		SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom")
 		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "family_heirloom_missing", /datum/mood_event/family_heirloom_missing)
 
-/datum/quirk/item_quirk/family_heirloom/remove()
-	// Clear mood events when removing this quirk
+/datum/quirk/family_heirloom/proc/on_heirloom_deleted()
+	SIGNAL_HANDLER
+	GLOB.family_heirlooms -= heirloom
+
+/datum/quirk/family_heirloom/remove()
 	SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom")
 	SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom_missing")
+	GLOB.family_heirlooms -= heirloom
 
 /datum/quirk/family_heirloom/clone_data()
 	return heirloom
@@ -322,6 +327,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 				if(I.fingerprintslast == quirk_holder.ckey)
 					quirk_holder.put_in_hands(I)
 
+/* Квирк нефунцкиональный и не задействован в механе
 /datum/quirk/poor_aim
 	name = "Ужасный стрелок"
 	desc = "Ваши навыки обращения с оружием не позволяют точно прицелиться даже для того, чтобы спасти свою жизнь. Стрельба с двух рук даже не обсуждается."
@@ -329,6 +335,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	mob_trait = TRAIT_POOR_AIM
 	flavor_quirk = TRUE
 	medical_record_text = "Обе руки пациента подвержены тремору."
+*/
 
 /datum/quirk/prosopagnosia
 	name = "Прозопагнозия"
@@ -426,6 +433,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 
 /datum/quirk/blindness/add()
 	quirk_holder.become_blind(ROUNDSTART_TRAIT)
+	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine_holder))
 
 /datum/quirk/blindness/on_spawn()
 	var/mob/living/carbon/human/H = quirk_holder
@@ -435,7 +443,13 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	H.regenerate_icons()
 
 /datum/quirk/blindness/remove()
-	quirk_holder?.cure_blind(ROUNDSTART_TRAIT)
+	if(!quirk_holder)
+		return
+	quirk_holder.cure_blind(ROUNDSTART_TRAIT)
+	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
+
+/datum/quirk/blindness/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
+	examine_list += "<span class='warning'>[quirk_holder.ru_ego(TRUE)] глаза мутные и остекленелые...</span>"
 
 /datum/quirk/coldblooded
 	name = "Холоднокровие"
@@ -536,6 +550,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 /datum/quirk/less_nightmare/add()
 	var/mob/living/carbon/human/C = quirk_holder
 	C.AddElement(/datum/element/photosynthesis, 1, 1, 0, 0, 0, 0, SHADOW_SPECIES_LIGHT_THRESHOLD, SHADOW_SPECIES_LIGHT_THRESHOLD)
+	give_item(/obj/item/flashlight/flashdark, quirk_holder)
+	give_item(/obj/item/clothing/accessory/permit/special/lessnightmareish, quirk_holder)
 
 /datum/quirk/less_nightmare/remove()
 	var/mob/living/carbon/human/C = quirk_holder

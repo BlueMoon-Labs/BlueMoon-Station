@@ -51,7 +51,7 @@
 			// HeadStomp
 			if(H.InFullCritical()) 
 				H.visible_message(span_userdanger("Голова <b>[H]</b> лопается, разбрызгивая мозги по полу!"),span_userdanger("ААААА ГОЛОВ-"))
-				playsound(get_turf(H), 'modular_bluemoon/SmiLeY/sounds/squishy.ogg', 140, TRUE, -1)
+				playsound(get_turf(H), 'modular_bluemoon/sound/effects/squishy.ogg', 140, TRUE, -1)
 				head.drop_limb()
 				head.drop_organs()
 				qdel(head)

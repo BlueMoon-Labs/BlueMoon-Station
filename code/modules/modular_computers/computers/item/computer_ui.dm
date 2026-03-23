@@ -13,9 +13,9 @@
 			ui.close()
 		return
 
-	// if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
-	// 	to_chat(user, span_warning("Your fingers are too big to use this right now!"))
-	// 	return
+	if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
+		to_chat(user, span_warning("Кнопки слишком маленькие для твоих пальцев!"))
+		return
 
 	// Robots don't really need to see the screen, their wireless connection works as long as computer is on.
 	if(!screen_on && !issilicon(user))
@@ -57,7 +57,7 @@
 		var/obj/item/card/id/stored_card = cardholder.GetID()
 		if(stored_card)
 			var/stored_name = stored_card.registered_name
-			var/stored_title = stored_card.assignment
+			var/stored_title = stored_card.get_assignment_name()
 			if(!stored_name)
 				stored_name = "Unknown"
 			if(!stored_title)
@@ -214,8 +214,6 @@
 					if(!cardholder)
 						return
 					cardholder.try_eject(user)
-
-
 		else
 			return
 

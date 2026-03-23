@@ -41,6 +41,7 @@
 /datum/component/follow/Destroy(force, silent)
 	UnregisterSignal(parent, COMSIG_HOSTILE_MOB_LOST_TARGET)
 	UnregisterSignal(parent, COMSIG_CLICK_ALT)
+	UnregisterSignal(parent, COMSIG_PARENT_EXAMINE)
 	parent_mob = null
 	return ..()
 

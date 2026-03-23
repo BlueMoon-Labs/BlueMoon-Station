@@ -26,6 +26,7 @@
 	name = "Enforcer magazine"
 	desc = "A Mk. 58 magazine."
 	start_empty = 1
+	custom_materials = list(/datum/material/iron = 600)
 
 /obj/item/ammo_box/magazine/e45/lethal
 	name = "Enforcer magazine (.45 Lethal)"
@@ -157,6 +158,7 @@
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
+/*
 /datum/design/e45/e45trac
 	name = "Enforcer magazine (.45 Tracking)"
 	desc = "A magazine of .45 Tracking for the Mk. 58 Enforcer"
@@ -166,6 +168,7 @@
 	build_path = /obj/item/ammo_box/magazine/e45/trac
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+*/
 
 /datum/design/e45/hotshot
 	name = "Enforcer magazine (.45 Hotshot)"

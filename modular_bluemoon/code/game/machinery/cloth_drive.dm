@@ -18,8 +18,8 @@
 		. += "<span class='notice'>Click it to get collected items.</span>"
 
 /obj/structure/cloth_drive/Initialize(mapload)
+	. = ..()
 	RegisterSignal(src, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(collect_items))
-	..()
 
 /datum/move_loop/has_target/move_towards/Destroy()
 	UnregisterSignal(src, COMSIG_MOVABLE_Z_CHANGED)

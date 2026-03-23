@@ -379,6 +379,11 @@ GLOBAL_LIST_EMPTY(allConsoles)
 		for(var/obj/machinery/telecomms/message_server/MS in GLOB.telecomms_list)
 			if(MS.on) //on does the calculations. why would this server still work even though the apc is off??
 				LAZYADD(MS.rc_msgs, log)
+				// Prevent unbounded memory growth
+				if(length(MS.rc_msgs) > 500)
+					var/trim_count = length(MS.rc_msgs) - 400
+					MS.rc_msgs.Cut(1, trim_count + 1)
+					MS.rc_msgs_trimmed += trim_count
 				workingServer = TRUE
 
 		if(!workingServer)
@@ -553,7 +558,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 		if(!ID)
 			return
 		if(screen == 9)
-			msgVerified = "Авторизовано с помощью карты: [ID.registered_name] ([ID.assignment])"
+			msgVerified = "Авторизовано с помощью карты: [ID.registered_name] ([ID.get_assignment_name()])"
 			playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
 			updateUsrDialog()
 		if(screen == 10)

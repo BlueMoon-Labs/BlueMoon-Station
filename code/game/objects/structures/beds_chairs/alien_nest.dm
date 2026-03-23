@@ -12,7 +12,7 @@
 	buildstacktype = null
 	flags_1 = NODECONSTRUCT_1
 	bolts = FALSE
-	var/static/mutable_appearance/nest_overlay = mutable_appearance('icons/mob/alien.dmi', "nestoverlay", LYING_MOB_LAYER)
+	var/static/mutable_appearance/nest_overlay = mutable_appearance('icons/Xeno/Effects.dmi', "nest_overlay", LYING_MOB_LAYER)
 	var/weak = FALSE // BLUEMOON ADD - xenohybrids_improvements - если включено, из гнезда очень легко вырваться
 
 /obj/structure/bed/nest/user_unbuckle_mob(mob/living/buckled_mob, mob/living/user)

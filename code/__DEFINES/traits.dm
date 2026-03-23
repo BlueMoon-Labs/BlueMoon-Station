@@ -292,6 +292,8 @@
 
 #define TRAIT_AKIMBO	"akimbo"
 
+#define TRAIT_COMPATIBLE_WITH_NANOMACHINES "compatible_with_nanomachines"
+
 
 // mobility flag traits
 // IN THE FUTURE, IT WOULD BE NICE TO DO SOMETHING SIMILAR TO https://github.com/tgstation/tgstation/pull/48923/files (ofcourse not nearly the same because I have my.. thoughts on it)
@@ -366,6 +368,7 @@
 #define BOOK_TRAIT "granter (book)" // knowledge is power
 #define TURF_TRAIT "turf"
 #define STATION_TRAIT "station-trait"
+#define CYBORG_MODULE_TRAIT "cyborg_module"
 
 // unique trait sources, still defines
 #define STATUE_TRAIT "statue"
@@ -657,11 +660,6 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_KNOW_VIR_SURGERY_T1 "know_vir_surgery_t1"
 #define TRAIT_SKILLCHIP_ADAPTER "skillchip_adapter"
 
-//BLUEMOON ADD SKILLS START
-#define TRAIT_REAGENT_EXPERT "reagent_expert"
-#define TRAIT_MECHA_EXPERT "mecha_expert"
-//BLUEMOON ADD SKILLS END
-
 ///Movement type traits for movables. See elements/movetype_handler.dm
 #define TRAIT_MOVE_GROUND "move_ground"
 #define TRAIT_MOVE_FLYING "move_flying"
@@ -734,10 +732,6 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_INTROVERT "introvert"
 #define TRAIT_INSANITY "insanity"
 
-///Trait for dryable items
-#define TRAIT_DRYABLE "trait_dryable"
-///Trait for dried items
-#define TRAIT_DRIED "trait_dried"
 /// Trait for customizable reagent holder
 #define TRAIT_CUSTOMIZABLE_REAGENT_HOLDER "customizable_reagent_holder"
 

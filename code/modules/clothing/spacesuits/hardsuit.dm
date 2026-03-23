@@ -118,28 +118,28 @@
 /obj/item/clothing/suit/space/hardsuit/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/tank/jetpack/suit))
 		if(jetpack)
-			to_chat(user, "<span class='warning'>[src] already has a jetpack installed.</span>")
+			to_chat(user, "<span class='warning'>[src] уже имеет реактивный ранец.</span>")
 			return
 		if(src == user.get_item_by_slot(ITEM_SLOT_OCLOTHING)) //Make sure the player is not wearing the suit before applying the upgrade.
-			to_chat(user, "<span class='warning'>You cannot install the upgrade to [src] while wearing it.</span>")
+			to_chat(user, "<span class='warning'>Вы не можете улучшить [src], пока носите его.</span>")
 			return
 
 		if(user.transferItemToLoc(I, src))
 			jetpack = I
-			to_chat(user, "<span class='notice'>You successfully install the jetpack into [src].</span>")
+			to_chat(user, "<span class='notice'>Вы успешно установили реактивный ранец на [src].</span>")
 			return
 	else if(I.tool_behaviour == TOOL_SCREWDRIVER)
 		if(!jetpack)
-			to_chat(user, "<span class='warning'>[src] has no jetpack installed.</span>")
+			to_chat(user, "<span class='warning'>[src] не имеет реактивного ранца.</span>")
 			return
 		if(src == user.get_item_by_slot(ITEM_SLOT_OCLOTHING))
-			to_chat(user, "<span class='warning'>You cannot remove the jetpack from [src] while wearing it.</span>")
+			to_chat(user, "<span class='warning'>Вы не можете снять реактивный ранец с [src], пока носите его.</span>")
 			return
 
 		jetpack.turn_off(user)
 		jetpack.forceMove(drop_location())
 		jetpack = null
-		to_chat(user, "<span class='notice'>You successfully remove the jetpack from [src].</span>")
+		to_chat(user, "<span class='notice'>Вы успешно сняли реактивный ранец с [src].</span>")
 		return
 	return ..()
 
@@ -273,7 +273,7 @@
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF
 	armor = list(MELEE = 30, BULLET = 5, LASER = 10, ENERGY = 5, BOMB = 50, BIO = 100, RAD = 50, FIRE = 50, ACID = 75, WOUND = 25)
-	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage/bag/ore, /obj/item/pickaxe)
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage/bag/ore, /obj/item/pickaxe, /obj/item/resonator, /obj/item/gun/energy/kinetic_accelerator)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/mining
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
@@ -562,7 +562,7 @@
 	desc = "A special suit that protects against hazardous, low pressure environments. Built with lightweight materials for easier movement."
 	item_state = "medical_hardsuit"
 	tail_state = "syndicate-winter"
-	slowdown = 0.5
+	slowdown = 0.35
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage/firstaid, /obj/item/healthanalyzer, /obj/item/stack/medical)
 	armor = list(MELEE = 30, BULLET = 5, LASER = 10, ENERGY = 5, BOMB = 10, BIO = 100, RAD = 60, FIRE = 60, ACID = 75, WOUND = 15)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/medical
@@ -622,6 +622,7 @@
 	item_state = "hardsuit0-blueshield"
 	hardsuit_type = "blueshield"
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
+	unique_reskin = null
 
 /obj/item/clothing/suit/space/hardsuit/blue_shield
 	name = "Blue Shield hardsuit"
@@ -636,6 +637,11 @@
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/blue_shield
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
+	unique_reskin = null
+
+/obj/item/clothing/suit/space/hardsuit/blue_shield/Initialize()
+	. = ..()
+	allowed = GLOB.security_hardsuit_allowed
 
 	//Security hardsuit
 /obj/item/clothing/head/helmet/space/hardsuit/security

@@ -49,8 +49,11 @@
 	set_new_hud(hud_owner)
 
 /atom/movable/screen/Destroy()
+	if(istype(hud) && hud.mymob?.client)
+		hud.mymob.client.screen -= src
+	set_new_hud(null)
 	master = null
-	hud = null
+	vis_contents.Cut()
 	return ..()
 
 /atom/movable/screen/Click(location, control, params)
@@ -74,13 +77,14 @@
 
 ///setter used to set our new hud
 /atom/movable/screen/proc/set_new_hud(datum/hud/hud_owner)
-	if(hud)
+	if(istype(hud, /datum))
 		UnregisterSignal(hud, COMSIG_PARENT_QDELETING)
 	if(isnull(hud_owner))
 		hud = null
 		return
 	hud = hud_owner
-	RegisterSignal(hud, COMSIG_PARENT_QDELETING, PROC_REF(on_hud_delete))
+	if(istype(hud, /datum))
+		RegisterSignal(hud, COMSIG_PARENT_QDELETING, PROC_REF(on_hud_delete))
 
 /// Returns the mob this is being displayed to, if any
 /atom/movable/screen/proc/get_mob()
@@ -676,7 +680,7 @@
 INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 
 /atom/movable/screen/splash/Initialize(mapload, datum/hud/hud_owner, client/C, visible, use_previous_title)
-	. = ..()
+	. = ..(mapload)
 	if(!istype(C))
 		return
 

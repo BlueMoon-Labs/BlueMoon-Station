@@ -179,3 +179,7 @@
 
 /datum/movespeed_modifier/gauntlet_concussion
 	multiplicative_slowdown = 5
+
+// Для квирка /datum/quirk/chameleon
+/datum/movespeed_modifier/quirk_chameleon_slowdown
+	multiplicative_slowdown = 1.1

@@ -1,7 +1,7 @@
 import { Fragment } from 'inferno';
 
 import { useBackend, useSharedState } from '../backend';
-import { AnimatedNumber, Button, LabeledList, NoticeBox, ProgressBar, Section, Tabs } from '../components';
+import { AnimatedNumber, Button, Divider, LabeledList, NoticeBox, ProgressBar, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
 const damageTypes = [
@@ -21,7 +21,7 @@ const damageTypes = [
     color: 'green',
   },
   {
-    label: 'Дыхание',
+    label: 'Гипоксия',
     type: 'oxyLoss',
     color: 'blue',
   },
@@ -105,8 +105,8 @@ const PatientStateView = (props, context) => {
             ))}
           </LabeledList>
         ) || (
-          'Пациент не обнаружен'
-        )}
+            'Пациент не обнаружен'
+          )}
       </Section>
       {procedures.length === 0 && (
         <Section>
@@ -120,25 +120,40 @@ const PatientStateView = (props, context) => {
           <LabeledList>
             <LabeledList.Item label="След. процедура">
               {procedure.next_step}
-              {procedure.chems_needed && (
-                <Fragment>
-                  <b>Необходимы химикаты:</b>
-                  <br />
-                  {procedure.chems_needed}
-                </Fragment>
-              )}
+            </LabeledList.Item>
+            {procedure.next_step_tools.length > 0 && (
+              <LabeledList.Item label={`Инструмент${procedure.next_step_tools.length > 1 ? 'ы' : ''}`}>
+                {procedure.next_step_tools.join(', ')}
+              </LabeledList.Item>
+            )}
+            {procedure.chems_needed && (
+              <LabeledList.Item label="Необходимые химикаты">
+                {procedure.chems_needed}
+              </LabeledList.Item>
+            )}
+            <LabeledList.Item label="Шанс успеха">
+              {procedure.next_step_chance}
             </LabeledList.Item>
             {procedure.alternative_step && (
-              <LabeledList.Item label="Альт. процедура">
-                {procedure.alternative_step}
-                {procedure.alt_chems_needed && (
-                  <Fragment>
-                    <b>Необходимы химикаты:</b>
-                    <br />
-                    {procedure.alt_chems_needed}
-                  </Fragment>
+              <Fragment>
+                <Divider />
+                <LabeledList.Item label="Альт. процедура">
+                  {procedure.alternative_step}
+                </LabeledList.Item>
+                {procedure.alternative_step_tools.length > 0 && (
+                  <LabeledList.Item label={`Инструмент${procedure.next_step_tools.length > 1 ? 'ы' : ''}`}>
+                    {procedure.alternative_step_tools.join(', ')}
+                  </LabeledList.Item>
                 )}
-              </LabeledList.Item>
+                {procedure.alt_chems_needed && (
+                  <LabeledList.Item label="Необходимые химикаты">
+                    {procedure.alt_chems_needed}
+                  </LabeledList.Item>
+                )}
+                <LabeledList.Item label="Шанс успеха">
+                  {procedure.alternative_step_chance}
+                </LabeledList.Item>
+              </Fragment>
             )}
           </LabeledList>
         </Section>
@@ -150,22 +165,37 @@ const PatientStateView = (props, context) => {
 const SurgeryProceduresView = (props, context) => {
   const { act, data } = useBackend(context);
   const {
+    surgeries_base = [],
     surgeries = [],
   } = data;
+
   return (
-    <Section title="Продвинутые хирургические операции">
-      <Button
-        icon="download"
-        content="Синхронизировать БД исследований"
-        onClick={() => act('sync')} />
-      {surgeries.map(surgery => (
-        <Section
-          title={surgery.name}
-          key={surgery.name}
-          level={2}>
-          {surgery.desc}
-        </Section>
-      ))}
-    </Section>
+    <Fragment>
+      <Section title="Продвинутые хирургические операции">
+        <Button
+          icon="download"
+          content="Синхронизировать БД исследований"
+          onClick={() => act('sync')} />
+        {surgeries.map(surgery => (
+          <Section
+            title={surgery.name}
+            key={surgery.name}
+            level={2}>
+            {surgery.desc}
+          </Section>
+        ))}
+      </Section>
+
+      <Section title="Базовые хирургические операции">
+        {surgeries_base.map(surgery => (
+          <Section
+            title={surgery.name}
+            key={surgery.name}
+            level={2}>
+            {surgery.desc}
+          </Section>
+        ))}
+      </Section>
+    </Fragment>
   );
 };

@@ -1,6 +1,6 @@
 /datum/surgery/advanced/lobotomy
 	name = "Lobotomy"
-	desc = "An invasive surgical procedure which guarantees removal of almost all brain traumas, at the cost of severe, albeit repairable, brain damage."
+	desc = "Инвазивная хирургическая процедура, которая гарантирует устранение практически всех травм головного мозга. Может нанести поддающуюся восстановлению травму головного мозга."
 	steps = list(
 	/datum/surgery_step/incise,
 	/datum/surgery_step/retract_skin,
@@ -12,6 +12,8 @@
 	target_mobtypes = list(/mob/living/carbon/human, /mob/living/carbon/monkey)
 	possible_locs = list(BODY_ZONE_HEAD)
 	requires_bodypart_type = 0
+	icon_state = "brain-x"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_STATIC
 
 //	special_surgery_traits = list(OPERATION_MUST_BE_PERFORMED_AWAKE) // BLUEMOON ADD - операции на мозги проводятся, когда пациент находится в сознаии
 
@@ -76,6 +78,7 @@
 				target.gain_trauma_type(BRAIN_TRAUMA_SEVERE, TRAUMA_RESILIENCE_LOBOTOMY)
 			if(3)
 				target.gain_trauma_type(BRAIN_TRAUMA_SPECIAL, TRAUMA_RESILIENCE_LOBOTOMY)
+		..()
 	else
 		user.visible_message("<span class='warning'>[user] suddenly notices that the brain [user.ru_who()] [user.p_were()] working on is not there anymore.", "<span class='warning'>You suddenly notice that the brain you were working on is not there anymore.</span>")
 	return FALSE

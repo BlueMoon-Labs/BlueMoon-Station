@@ -10,11 +10,11 @@ const subscribers = [];
 
 const ensureConnection = () => {
   if (process.env.NODE_ENV !== 'production') {
-    if (!window.WebSocket) {
+    const DEV_SERVER_IP = process.env.DEV_SERVER_IP;
+    if (!DEV_SERVER_IP || !window.WebSocket) {
       return;
     }
     if (!socket || socket.readyState === WebSocket.CLOSED) {
-      const DEV_SERVER_IP = process.env.DEV_SERVER_IP || '127.0.0.1';
       socket = new WebSocket(`ws://${DEV_SERVER_IP}:3000`);
       socket.onopen = () => {
         // Empty the message queue
@@ -93,11 +93,15 @@ const serializeObject = obj => {
 
 const sendMessage = msg => {
   if (process.env.NODE_ENV !== 'production') {
+    const DEV_SERVER_IP = process.env.DEV_SERVER_IP;
+    if (!DEV_SERVER_IP) {
+      return;
+    }
     const json = serializeObject(msg);
     // Send message using WebSocket
     if (window.WebSocket) {
       ensureConnection();
-      if (socket.readyState === WebSocket.OPEN) {
+      if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(json);
       }
       else {
@@ -110,7 +114,6 @@ const sendMessage = msg => {
     }
     // Send message using plain HTTP request.
     else {
-      const DEV_SERVER_IP = process.env.DEV_SERVER_IP || '127.0.0.1';
       const req = new XMLHttpRequest();
       req.open('POST', `http://${DEV_SERVER_IP}:3001`, true);
       req.timeout = 250;
@@ -135,43 +138,8 @@ const sendLogEntry = (level, ns, ...args) => {
   }
 };
 
-const setupHotReloading = () => {
-  if (process.env.NODE_ENV !== 'production'
-      && process.env.WEBPACK_HMR_ENABLED
-      && window.WebSocket) {
-    if (module.hot) {
-      ensureConnection();
-      sendLogEntry(0, null, 'setting up hot reloading');
-      subscribe(msg => {
-        const { type } = msg;
-        sendLogEntry(0, null, 'received', type);
-        if (type === 'hotUpdate') {
-          const status = module.hot.status();
-          if (status !== 'idle') {
-            sendLogEntry(0, null, 'hot reload status:', status);
-            return;
-          }
-          module.hot
-            .check({
-              ignoreUnaccepted: true,
-              ignoreDeclined: true,
-              ignoreErrored: true,
-            })
-            .then(modules => {
-              sendLogEntry(0, null, 'outdated modules', modules);
-            })
-            .catch(err => {
-              sendLogEntry(0, null, 'reload error', err);
-            });
-        }
-      });
-    }
-  }
-};
-
 module.exports = {
   subscribe,
   sendMessage,
   sendLogEntry,
-  setupHotReloading,
 };

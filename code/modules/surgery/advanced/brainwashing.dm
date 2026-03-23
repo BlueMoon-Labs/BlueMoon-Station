@@ -1,13 +1,13 @@
 /obj/item/disk/surgery/brainwashing
 	name = "Brainwashing Surgery Disk"
-	desc = "The disk provides instructions on how to impress an order on a brain, making it the primary objective of the patient."
+	desc = "Диск содержит инструкции о том, как внушить приказ мозгу, делая его основной целью пациента."
 	surgeries = list(
 	/datum/surgery/advanced/brainwashing,
 	/datum/surgery/advanced/robot_brainwashing)
 
 /datum/surgery/advanced/brainwashing
 	name = "Brainwashing"
-	desc = "A surgical procedure which directly implants a directive into the patient's brain, making it their absolute priority. It can be cleared using a mindshield implant."
+	desc = "Хирургическая процедура, которая непосредственно внедряет директиву в мозг пациента, делая ее абсолютным приоритетом. Ее можно устранить с помощью имплантата mindshield."
 	steps = list(
 	/datum/surgery_step/incise,
 	/datum/surgery_step/retract_skin,
@@ -18,6 +18,10 @@
 
 	target_mobtypes = list(/mob/living/carbon/human)
 	possible_locs = list(BODY_ZONE_HEAD)
+	is_healing = FALSE // BLUEMOON ADD
+	icon = 'icons/mob/screen_alert.dmi'
+	icon_state = "hypnosis"
+	radial_priority = SURGERY_RADIAL_PRIORITY_OTHER_FIRST
 
 //	special_surgery_traits = list(OPERATION_MUST_BE_PERFORMED_AWAKE) // BLUEMOON ADD - операции на мозги проводятся, когда пациент находится в сознаии
 
@@ -70,6 +74,7 @@
 			"<span class='warning'>[user] screws up, causing brain damage!</span>",
 			"[user] completes the surgery on [target]'s brain.")
 		target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 40)
+		..()
 	else
 		user.visible_message("<span class='warning'>[user] suddenly notices that the brain [user.ru_who()] [user.p_were()] working on is not there anymore.", "<span class='warning'>You suddenly notice that the brain you were working on is not there anymore.</span>")
 	return FALSE

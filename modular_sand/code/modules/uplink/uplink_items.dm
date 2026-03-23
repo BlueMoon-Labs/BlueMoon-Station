@@ -8,7 +8,7 @@
 
 /datum/uplink_item/device_tools/arm
 	name = "Additional Arm"
-	desc = "An additional arm harvested from slaves captured by the Syndicate. Comes with an implanter."
+	desc = "Дополнительная рука, собранная с рабов, захваченных Syndicate. В комплекте с имплантером."
 	item = /obj/item/extra_arm
 	cost = 8
 

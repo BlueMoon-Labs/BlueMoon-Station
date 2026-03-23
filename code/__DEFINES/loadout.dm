@@ -86,6 +86,7 @@
 #define LOADOUT_CUSTOM_NAME			"loadout_custom_name"
 #define LOADOUT_CUSTOM_DESCRIPTION	"loadout_custom_description"
 #define LOADOUT_IS_HEIRLOOM			"loadout_is_heirloom" // BLUEMOON ADD - выбор вещей из лодаута как family heirloom
+#define LOADOUT_IS_DISALLOWED_HEIRLOOM 	list(/obj/item/clothing/underwear)
 
 //loadout item flags
 #define LOADOUT_CAN_NAME					(1<<0) //renaming items
@@ -104,6 +105,7 @@
 #define MARKINGS_CHAR_TAB		3
 #define SPEECH_CHAR_TAB			4
 #define LOADOUT_CHAR_TAB		5
+#define QUIRKS_CHAR_TAB			6
 
 //subtabs for preferences tab
 #define GAME_PREFS_TAB			0

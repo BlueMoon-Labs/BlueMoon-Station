@@ -34,7 +34,7 @@
 
 /obj/item/broom
 	name = "Broom"
-	desc = "This is my BROOMSTICK! Её можно использовать вручную или взяться за неё двумя руками, чтобы подметать предметы на ходу. Имеет телескопическую ручку для компактного хранения."
+	desc = "This is my BROOMSTICK! Имеет телескопическую ручку для компактного хранения."
 	icon = 'icons/obj/janitor.dmi'
 	icon_state = "broom0"
 	lefthand_file = 'icons/mob/inhands/equipment/custodial_lefthand.dmi'
@@ -61,8 +61,13 @@
 	. = ..()
 	icon_state = "broom0"
 
+/obj/item/broom/examine(mob/user)
+	. = ..()
+	. += "[span_yellowteamradio("GRAB INTENT")][span_notice(" - подмести к себе.")]"
+	. += span_notice("Можно взяться двумя руками, чтобы подметать предметы на ходу.")
+
 /**
- * Handles registering the sweep proc when the broom is wielded
+ * Handles registering the do_sweep proc when the broom is wielded
  *
  * Arguments:
  * * source - The source of the on_wield proc call
@@ -70,12 +75,12 @@
  */
 /obj/item/broom/proc/on_wield(obj/item/source, mob/user)
 	SIGNAL_HANDLER
-
+	user.add_movespeed_modifier(/datum/movespeed_modifier/mop_broom_slowdown)
 	to_chat(user, span_notice("Хватаю [src.name] обеими руками и готовлюсь толкать МУСОР."))
-	RegisterSignal(user, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(sweep))
+	RegisterSignal(user, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(do_sweep))
 
 /**
- * Handles unregistering the sweep proc when the broom is unwielded
+ * Handles unregistering the do_sweep proc when the broom is unwielded
  *
  * Arguments:
  * * source - The source of the on_unwield proc call
@@ -83,13 +88,17 @@
  */
 /obj/item/broom/proc/on_unwield(obj/item/source, mob/user)
 	SIGNAL_HANDLER
-
+	user.remove_movespeed_modifier(/datum/movespeed_modifier/mop_broom_slowdown)
 	UnregisterSignal(user, COMSIG_MOVABLE_PRE_MOVE)
 
 /obj/item/broom/afterattack(atom/A, mob/user, proximity)
 	. = ..()
 	if(!proximity)
 		return
+	sweep(user, A)
+
+/obj/item/broom/proc/do_sweep(mob/user, atom/A)
+	sweep(user, user.loc)
 	sweep(user, A)
 
 /**
@@ -105,7 +114,11 @@
 	var/turf/current_item_loc = isturf(A) ? A : A.loc
 	if (!isturf(current_item_loc))
 		return
-	var/turf/new_item_loc = get_step(current_item_loc, user.dir)
+	var/turf/new_item_loc = user.a_intent == INTENT_GRAB ? get_turf(user) : get_step(current_item_loc, user.dir)
+	/*
+	for(var/i = 0 to add_dist)
+		new_item_loc = get_step(new_item_loc, user.dir)
+	*/
 	var/obj/machinery/disposal/bin/target_bin = locate(/obj/machinery/disposal/bin) in new_item_loc.contents
 	var/i = 1
 	for (var/obj/item/garbage in current_item_loc.contents)
@@ -149,7 +162,7 @@
 	icon_state = "rake"
 	lefthand_file = 'icons/mob/inhands/weapons/staves_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/staves_righthand.dmi'
-	force = 9
+	force = 11
 	w_class = WEIGHT_CLASS_NORMAL
 	throwforce = 28
 	attack_verb = list("slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
@@ -163,4 +176,8 @@
 
 /obj/item/broom/liquidator/ComponentInitialize()
 	. = ..()
-	AddComponent(/datum/component/two_handed, force_unwielded=9, force_wielded=16, icon_wielded="rake")
+	AddComponent(/datum/component/two_handed, force_unwielded=11, force_wielded=22, icon_wielded="rake")
+
+/obj/item/broom/liquidator/update_icon_state()
+	icon_state = "rake"
+	return SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_ICON_STATE)

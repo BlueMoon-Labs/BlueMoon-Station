@@ -32,7 +32,7 @@
 	var/obj/effect/overlay/status_display_text/message1_overlay
 	var/obj/effect/overlay/status_display_text/message2_overlay
 	var/mutable_appearance/ai_vtuber_overlay
-	var/current_picture = ""
+	var/current_picture = "greenalert"
 	var/current_mode = SD_BLANK
 	var/message1 = ""
 	var/message2 = ""
@@ -216,7 +216,7 @@
 /obj/machinery/status_display/examine(mob/user)
 	. = ..()
 	if (current_mode == SD_MESSAGE && (message1_overlay?.message || message2_overlay?.message))
-		. += "The display says:"
+		. += "Дисплей сообщает:"
 		if (message1_overlay.message)
 			. += "\t<tt>[html_encode(message1_overlay.message)]</tt>"
 		if (message2_overlay.message)
@@ -248,9 +248,9 @@
 				modestr = "<br>\t<tt>[modestr]: [shuttle.getTimerStr()]</tt>"
 			else
 				modestr = "<br>\t<tt>[modestr]</tt>"
-		return "The display says:<br>\t<tt>[shuttle.name]</tt>[modestr]"
+		return "Дисплей сообщает:<br>\t<tt>[shuttle.name]</tt>[modestr]"
 	else
-		return "The display says:<br>\t<tt>Shuttle missing!</tt>"
+		return "Дисплей сообщает:<br>\t<tt>шаттл отсутствует!</tt>"
 
 /obj/machinery/status_display/Destroy()
 	remove_messages()
@@ -427,9 +427,9 @@
 	else
 		shuttleMsg = "[shuttle.getModeStr()]: [shuttle.getTimerStr()]"
 	if (shuttleMsg)
-		. += "The display says:<br>\t<tt>[shuttleMsg]</tt>"
+		. += "Дисплей сообщает:<br>\t<tt>[shuttleMsg]</tt>"
 	else
-		. += "The display is blank."
+		. += "Дисплей пуст."
 
 
 /// General-purpose shuttle status display.
@@ -470,7 +470,7 @@
 /// Pictograph display which the AI can use to emote.
 /obj/machinery/status_display/ai
 	name = "\improper AI display"
-	desc = "A small screen which the AI can use to present itself."
+	desc = "Экран для самовыражения станционного ИИ."
 	current_mode = SD_PICTURE
 
 	var/emotion = AI_EMOTION_BLANK

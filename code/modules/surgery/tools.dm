@@ -40,8 +40,13 @@
 	. += "<span class = 'notice> It resembles a [tool_behaviour == TOOL_RETRACTOR ? "retractor" : "hemostat"]. </span>"
 
 /obj/item/retractor/augment
-	name = "retractor"
+	name = "titanium retractor"
 	desc = "Micro-mechanical manipulator for retracting stuff."
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "retractor_t2"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
+	item_state = "retractor_t2"
 	custom_materials = list(/datum/material/iron=6000, /datum/material/glass=3000)
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_TINY
@@ -76,8 +81,13 @@
 	return ..()
 
 /obj/item/hemostat/augment
-	name = "hemostat"
+	name = "silvered hemostat"
 	desc = "Tiny servos power a pair of pincers to stop bleeding."
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "hemostat_t2"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
+	item_state = "hemostat_t2"
 	custom_materials = list(/datum/material/iron=5000, /datum/material/glass=2500)
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_TINY
@@ -115,8 +125,13 @@
 	return ..()
 
 /obj/item/cautery/augment
-	name = "cautery"
+	name = "high heat cautery"
 	desc = "A heated element that cauterizes wounds."
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "cautery_t2"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
+	item_state = "cautery_t2"
 	custom_materials = list(/datum/material/iron=2500, /datum/material/glass=750)
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_TINY
@@ -262,8 +277,13 @@
 	. += "<span class = 'notice> It's set to [tool_behaviour == TOOL_SCALPEL ? "scalpel" : "saw"] mode. </span>"
 
 /obj/item/scalpel/augment
-	name = "scalpel"
+	name = "vibration scalpel"
 	desc = "Ultra-sharp blade attached directly to your bone for extra-accuracy."
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "scalpel_t2"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
+	item_state = "scalpel_t2"
 	flags_1 = CONDUCT_1
 	force = 10
 	w_class = WEIGHT_CLASS_TINY
@@ -311,10 +331,12 @@
 	toolspeed = 1
 	wound_bonus = 8
 	bare_wound_bonus = 10
+	var/butchery_tool = TRUE
 
 /obj/item/circular_saw/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/butchering, 40 * toolspeed, 100, 5, 'sound/weapons/circsawhit.ogg') //saws are very accurate and fast at butchering
+	if(butchery_tool)
+		AddComponent(/datum/component/butchering, 40 * toolspeed, 100, 5, 'sound/weapons/circsawhit.ogg') //saws are very accurate and fast at butchering
 
 /obj/item/circular_saw/attack(mob/living/L, mob/user)
 	if(user.a_intent == INTENT_HELP)
@@ -323,9 +345,14 @@
 	return ..()
 
 /obj/item/circular_saw/augment
-	name = "circular saw"
+	name = "oscillating saw"
 	desc = "A small but very fast spinning saw. Edges dulled to prevent accidental cutting inside of the surgeon."
-	hitsound = 'sound/weapons/circsawhit.ogg'
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "saw_t2"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
+	item_state = "saw_t2"
+	hitsound = null
 	mob_throw_hit_sound =  'sound/weapons/pierce.ogg'
 	flags_1 = CONDUCT_1
 	force = 10
@@ -336,7 +363,7 @@
 	custom_materials = list(/datum/material/iron=10000, /datum/material/glass=6000)
 	toolspeed = 0.5
 	attack_verb = list("attacked", "slashed", "sawed", "cut")
-	sharpness = SHARP_EDGED
+	sharpness = SHARP_NONE
 
 /obj/item/circular_saw/ashwalker
 	name = "diamond bonesaw"
@@ -363,6 +390,11 @@
 	. = ..()
 	register_item_context()
 
+/obj/item/surgical_drapes/examine(mob/user)
+	. = ..()
+	if(user?.client?.prefs)
+		. += span_notice("Alt click to [user.client.prefs.surgical_disable_radial ? "enable" : "disable"] surgical radial menu.")
+
 /obj/item/surgical_drapes/add_item_context(obj/item/source, list/context, atom/target, mob/living/user)
 	. = ..()
 	if(iscarbon(target))
@@ -370,8 +402,20 @@
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/surgical_drapes/attack(mob/living/M, mob/user)
-	if(!attempt_initiate_surgery(src, M, user))
-		..()
+	if(attempt_initiate_surgery(src, M, user))
+		return NO_AUTO_CLICKDELAY_HANDLING
+	return ..()
+
+/obj/item/surgical_drapes/AltClick(mob/user)
+	. = ..()
+	if(!isliving(user))
+		return
+	var/mob/living/M = user
+	if(M.client?.prefs)
+		M.client.prefs.surgical_disable_radial = !M.client.prefs.surgical_disable_radial
+		M.balloon_alert("Now use [M.client.prefs.surgical_disable_radial ? "list" : "radial"] menu")
+		to_chat(M, span_notice("You will now use [M.client.prefs.surgical_disable_radial ? "list" : "radial"] menu."))
+		return TRUE
 
 /obj/item/surgical_drapes/advanced
 	name = "smart surgical drapes"
@@ -486,7 +530,7 @@
 	icon_state = "bonesetter"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
-	custom_materials = list(/datum/material/iron=5000, /datum/material/glass=2500)
+	custom_materials = list(/datum/material/iron=1000)
 	flags_1 = CONDUCT_1
 	item_flags = SURGICAL_TOOL
 	w_class = WEIGHT_CLASS_SMALL
@@ -510,11 +554,11 @@
 /obj/item/robotic_processor
 	name = "\improper Robotic Processor"
 	desc = "A device for scanning and initiating new synthetic parts to help fix problems even for unqualified personnel."
-	icon = 'icons/obj/device.dmi'
+	icon = 'modular_bluemoon/icons/obj/device.dmi'
 	icon_state = "roboscan"
 	item_flags = NOBLUDGEON | SURGICAL_TOOL
 	slot_flags = ITEM_SLOT_BELT
-	var/const/tmp_qualification = QUALIFIED_ROBOTIC_MAINTER
+	var/const/tmp_qualification = TRAIT_GUIDED_ROBOTIC_MAINTER
 	var/list/already_notified = list()         // для pickup
 	var/list/dropped_notified = list()         // для dropped
 
@@ -522,14 +566,74 @@
 	. = ..()
 	if(user?.mind && !HAS_TRAIT(user.mind, tmp_qualification))
 		ADD_TRAIT(user.mind, tmp_qualification, src)
-		if(!(user.mind in already_notified))
-			to_chat(user, "<span class='notice' style='font-size:125%'>С помощью [src] вы теперь можете обслуживать синтетиков со сложным техобслуживанием.</span>")
+		if(!(user.mind in dropped_notified) && !HAS_TRAIT(user.mind, TRAIT_QUALIFIED_ROBOTIC_MAINTER))
+			to_chat(user, span_warning("С помощью [src] вы можете пытаться обслуживать синтетиков со сложным техобслуживанием."))
 			already_notified += user.mind
 
 /obj/item/robotic_processor/dropped(mob/user)
 	. = ..()
 	if(user?.mind && HAS_TRAIT(user.mind, tmp_qualification))
 		REMOVE_TRAIT(user.mind, tmp_qualification, src)
-		if(!(user.mind in dropped_notified))
-			to_chat(user, "<span class='warning' style='font-size:125%'>Без [src] вы больше не можете обслуживать синтетиков со сложным техобслуживанием.</span>")
+		if(!(user.mind in dropped_notified) && !HAS_TRAIT(user.mind, TRAIT_QUALIFIED_ROBOTIC_MAINTER))
+			to_chat(user, span_warning("Без [src] вы больше не можете обслуживать синтетиков со сложным техобслуживанием."))
 			dropped_notified += user.mind
+
+/obj/item/blood_filter
+	name = "blood filter"
+	desc = "For filtering the blood."
+	icon = 'icons/obj/surgery.dmi'
+	icon_state = "bloodfilter"
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
+	custom_materials = list(/datum/material/iron = 3000, /datum/material/glass = 3000)
+	item_flags = SURGICAL_TOOL
+	w_class = WEIGHT_CLASS_SMALL
+	attack_verb_continuous = list("pumps", "siphons")
+	attack_verb_simple = list("pump", "siphon")
+	tool_behaviour = TOOL_BLOODFILTER
+	toolspeed = 1
+	/// Assoc list of chem ids to names, used for deciding which chems to filter when used for surgery
+	var/list/whitelist = list()
+
+/obj/item/blood_filter/augment
+	flags_1 = CONDUCT_1
+	w_class = WEIGHT_CLASS_TINY
+	toolspeed = 0.5
+
+/obj/item/blood_filter/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "BloodFilter", name)
+		ui.open()
+
+/obj/item/blood_filter/ui_data(mob/user)
+	. = list()
+
+	.["whitelist"] = list()
+	for(var/key in whitelist)
+		.["whitelist"] += whitelist[key]
+
+/obj/item/blood_filter/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(.)
+		return
+
+	. = TRUE
+	switch(action)
+		if("add")
+			var/selected_reagent = tgui_input_list(usr, "Select reagent to filter", "Whitelist reagent", GLOB.name2reagent)
+			if(!selected_reagent)
+				return FALSE
+
+			var/datum/reagent/chem_id = GLOB.name2reagent[selected_reagent]
+			if(!chem_id)
+				return FALSE
+
+			if(!(chem_id in whitelist))
+				whitelist[chem_id] = selected_reagent
+
+		if("remove")
+			var/chem_name = params["reagent"]
+			for(var/path in whitelist)
+				if(whitelist[path] == chem_name)
+					whitelist -= path

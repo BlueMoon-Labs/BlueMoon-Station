@@ -4,6 +4,7 @@
 	icon = 'icons/obj/objects.dmi'
 	icon_state = "water"
 	density = TRUE
+	shadow_weight = 0.35
 	anchored = FALSE
 	pressure_resistance = 2*ONE_ATMOSPHERE
 	max_integrity = 300
@@ -27,6 +28,19 @@
 	if(reagent_id)
 		reagents.add_reagent(reagent_id, tank_volume)
 	. = ..()
+
+// BLUEMOON ADD START
+/obj/structure/reagent_dispensers/examine(mob/user)
+	. = ..()
+	if(anchored)
+		. += span_notice("It is <b>bolted</b> to the floor.")
+
+/obj/structure/reagent_dispensers/wrench_act(mob/living/user, obj/item/I)
+	. = ..()
+	if(density)
+		default_unfasten_wrench(user, I)
+		return TRUE
+// BLUEMOON ADD END
 
 //BLUEMOON CHANGE - FUELTANK
 /obj/structure/reagent_dispensers/proc/boom()
@@ -82,7 +96,24 @@
 	name = "high-capacity water tank"
 	desc = "A highly pressurized water tank made to hold gargantuan amounts of water."
 	icon_state = "water_high" //I was gonna clean my room...
-	tank_volume = 100000
+	tank_volume = 3000
+
+/obj/structure/reagent_dispensers/watertank/holy
+	name = "BIG HOLY FLASK"
+	desc = "A VERY large and VERY holy flask, pure holy waterness!"
+	icon_state = "holyflask"
+	reagent_id = /datum/reagent/water/holywater
+	layer = ABOVE_ALL_MOB_LAYER // Big sprite
+
+/obj/structure/reagent_dispensers/watertank/holy/Initialize(mapload)
+	. = ..()
+	var/const/scale = 2
+	var/matrix/m = matrix()
+	m.Scale(scale)
+	// смещаем спрайт вверх
+	var/shift = (scale - 1) * 16
+	m.Translate(0, shift)
+	transform = m
 
 /obj/structure/reagent_dispensers/foamtank
 	name = "firefighting foam tank"
@@ -205,7 +236,7 @@
 /obj/structure/reagent_dispensers/fueltank/bullet_act(obj/item/projectile/hitting_projectile)
 	if(hitting_projectile.damage > 0 && ((hitting_projectile.damage_type == BURN) || (hitting_projectile.damage_type == BRUTE)))
 		var/boom_message = "[ADMIN_LOOKUPFLW(hitting_projectile.firer)] triggered a fueltank explosion via projectile."
-		GLOB.bombers += boom_message
+		add_bomber_message(boom_message)
 		message_admins(boom_message)
 		hitting_projectile.firer.log_message("triggered a fueltank explosion via projectile.", LOG_ATTACK)
 		explode() //Bluemoon change
@@ -232,7 +263,7 @@
 			user.visible_message("<span class='warning'>[user] catastrophically fails at refilling [user.ru_ego()] [W.name]!</span>", "<span class='userdanger'>That was stupid of you.</span>")
 
 			var/message_admins = "[ADMIN_LOOKUPFLW(user)] triggered a fueltank explosion via welding tool at [ADMIN_VERBOSEJMP(T)]."
-			GLOB.bombers += message_admins
+			add_bomber_message(message_admins)
 			message_admins(message_admins)
 
 			user.log_message("triggered a fueltank explosion via welding tool.", LOG_ATTACK)
@@ -449,7 +480,8 @@
 	name = "Space Cleaner Refiller"
 	desc = "Refills space cleaner bottles."
 	icon_state = "cleaner"
-	anchored = 1
-	density = 0
+	anchored = TRUE
+	density = FALSE
+	plane = ABOVE_WALL_PLANE
 	tank_volume = 5000
 	reagent_id = /datum/reagent/space_cleaner

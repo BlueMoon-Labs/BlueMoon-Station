@@ -2,7 +2,7 @@
 
 /datum/surgery/advanced/experimental_dissection
 	name = "Dissection"
-	desc = "A surgical procedure which analyzes the biology of a corpse, and automatically adds new findings to the research database."
+	desc = "Хирургическая процедура, которая анализирует биологию трупа и автоматически добавляет новые данные в базу данных исследований."
 	steps = list(/datum/surgery_step/incise,
 				/datum/surgery_step/retract_skin,
 				/datum/surgery_step/clamp_bleeders,
@@ -13,6 +13,10 @@
 	target_mobtypes = list(/mob/living) //Feel free to dissect devils but they're magic.
 	replaced_by = /datum/surgery/advanced/experimental_dissection/adv
 	requires_tech = FALSE
+	is_healing = FALSE // BLUEMOON ADD
+	icon = 'icons/obj/device.dmi'
+	icon_state = "forensicnew"
+	radial_priority = SURGERY_RADIAL_PRIORITY_OTHER_FOURTH
 	var/value_multiplier = 1
 
 /datum/surgery/advanced/experimental_dissection/can_start(mob/user, mob/living/target, obj/item/tool)
@@ -24,7 +28,7 @@
 
 /datum/surgery_step/dissection
 	name = "Препарировать"
-	implements = list(/obj/item/scalpel/alien = 100, /obj/item/scalpel/advanced = 99, /obj/item/scalpel = 90, /obj/item/kitchen/knife = 45, /obj/item/shard = 25)// special tools not only cut down time but also improve probability, doesn't use TOOL_SCALPEL because different scalpels have different probs
+	implements = list(TOOL_SCALPEL = 100, /obj/item/kitchen/knife = 45, /obj/item/shard = 25)
 	time = 100
 	silicons_obey_prob = TRUE
 	repeatable = TRUE
@@ -84,13 +88,13 @@
 	return TRUE
 
 /datum/surgery_step/dissection/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='notice'>You dissect [target], but do not find anything particularly interesting.</span>",
 	"[user] dissects [target], however it seems [user.ru_who()] didn't find anything useful.",
 	"[user] dissects [target], but looks a little dissapointed.")
 	SSresearch.science_tech.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = (round(check_value(target, surgery) * 0.01))))
 	var/obj/item/bodypart/L = target.get_bodypart(BODY_ZONE_CHEST)
 	target.apply_damage(80, BRUTE, L, wound_bonus=CANT_WOUND)
-	return TRUE
 
 /datum/surgery/advanced/experimental_dissection/adv
 	name = "Thorough Dissection"

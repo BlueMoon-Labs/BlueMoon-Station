@@ -167,6 +167,7 @@
 	desc = "A change of wardrobe is necessary if you ever want to catch a real superhero."
 	icon_state = "villain"
 	can_adjust = FALSE
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/costume/sailor
 	name = "sailor suit"
@@ -210,7 +211,7 @@
 	body_parts_covered = CHEST|GROIN|ARMS
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
-	mutantrace_variation = USE_TAUR_CLIP_MASK
+	mutantrace_variation = NONE
 
 /obj/item/clothing/under/costume/drfreeze
 	name = "doctor freeze's jumpsuit"
@@ -338,6 +339,7 @@
 	item_state = "kimono"
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/costume/kimono/black
 	name = "Black Kimono"
@@ -358,6 +360,21 @@
 	name = "Sakura Kimono'"
 	icon_state = "sakura_kimono"
 	item_state = "sakura_kimono"
+
+/obj/item/clothing/under/costume/kimono/poly
+	name = "Poly kimono"
+	icon_state = "poly_kimono"
+	item_state = "poly_kimono"
+	icon = 'modular_bluemoon/icons/obj/clothing/uniforms.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniforms.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	var/list/poly_colors = list("#FFFFFF","#C5302D")
+
+/obj/item/clothing/under/costume/kimono/poly/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#FFFFFF", "#C5302D"), 2)
 
 /obj/item/clothing/under/costume/irs
 	name = "internal revenue service outfit"

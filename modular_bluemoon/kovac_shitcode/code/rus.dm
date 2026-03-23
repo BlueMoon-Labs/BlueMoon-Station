@@ -251,7 +251,7 @@
 	ears = /obj/item/radio/headset/nri/bowman/command
 	gloves = /obj/item/clothing/gloves/krav_maga/combatglovesplus
 	neck = /obj/item/clothing/neck/cloak/nri_cloak
-	r_hand = /obj/item/gun/ballistic/shotgun/rsh12
+	r_hand = /obj/item/gun/ballistic/shotgun/automatic/rsh12
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/poster/nri=5, /obj/item/ammo_box/shotgun/loaded/buckshot=4)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////area

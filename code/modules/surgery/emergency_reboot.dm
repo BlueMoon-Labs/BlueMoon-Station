@@ -6,6 +6,9 @@
 	possible_locs = list(BODY_ZONE_HEAD)
 	requires_bodypart_type = BODYPART_ROBOTIC	//If you are a Synth with a organic head (somehow), this won't work.
 	steps = list(/datum/surgery_step/mechanic_open, /datum/surgery_step/open_hatch, /datum/surgery_step/mechanic_unwrench, /datum/surgery_step/force_reboot, /datum/surgery_step/mechanic_wrench, /datum/surgery_step/mechanic_close)
+	icon = 'modular_bluemoon/phenyamomota/icon/obj/tools.dmi'
+	icon_state = "multitool_wiring"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EMERGENCY
 
 /datum/surgery/emergency_reboot/can_start(mob/user, mob/living/carbon/target, obj/item/tool)
 	if(!..())
@@ -50,8 +53,8 @@
 		return FALSE
 
 /datum/surgery_step/force_reboot/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='notice'>You attempt to reboot [target]'s posibrain, but [target.ru_who()] doesn't react.</span>",
 		"[user] attempts to reboot [target]'s posibrain, but [target.ru_who()] doesn't react.",
 		"[user] attempts to reboot [target]'s posibrain, but [target.ru_who()] doesn't react")
 	target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 15, 199)
-	return FALSE

@@ -8,6 +8,24 @@
 	spawn_positions = 2
 	supervisors = "the head of personnel"
 	selection_color = "#bbe291"
+	alt_titles = list(
+		"Janitor Assistant", //Стажер выше, для удобства
+		"Cleaner",
+		"Concierge",
+		"Cum Cleaner",
+		"Custodial Technician",
+		"Custodian",
+		"Disposal Unit",
+		"Groundskepper",
+		"Janitorial Specialist",
+		"Liquidator",
+		"Maid",
+		"Maintenance Technician",
+		"Sanitation Technician",
+		"Slutty Maid",
+		"Sweeper",
+		"Trash Can"
+		)
 
 	outfit = /datum/outfit/job/janitor
 	plasma_outfit = /datum/outfit/plasmaman/janitor
@@ -41,7 +59,7 @@
 	belt = /obj/item/pda/janitor
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/janitor
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/access_key)
 
 /datum/outfit/job/janitor/syndicate
 	name = "Syndicate Janitor"

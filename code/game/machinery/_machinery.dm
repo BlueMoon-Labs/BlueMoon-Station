@@ -86,7 +86,7 @@ Class Procs:
 /obj/machinery
 	name = "machinery"
 	icon = 'icons/obj/stationobjs.dmi'
-	desc = "Some kind of machine."
+	desc = "Какого-то рода машинерия."
 	verb_say = "beeps"
 	verb_yell = "blares"
 	pressure_resistance = 15
@@ -152,7 +152,8 @@ Class Procs:
 	var/is_operational = TRUE
 	///Boolean on whether this machines interact with atmos
 	var/atmos_processing = FALSE
-
+	///Machinery error message cooldown
+	COOLDOWN_DECLARE(error_message_cooldown)
 
 /obj/machinery/Initialize(mapload)
 	if(!armor)
@@ -201,7 +202,7 @@ Class Procs:
 /obj/machinery/proc/locate_machinery()
 	return
 
-/obj/machinery/process()//If you dont use process or power why are you here
+/obj/machinery/process(delta_time)//If you dont use process or power why are you here
 	return PROCESS_KILL
 
 /obj/machinery/proc/process_atmos()//If you dont use process why are you here
@@ -369,11 +370,13 @@ Class Procs:
 
 /obj/machinery/proc/can_transact(obj/item/card/id/thecard, allowdepartment, silent)
 	if(!istype(thecard))
-		if(!silent)
+		if(!silent && COOLDOWN_FINISHED(src, error_message_cooldown))
+			COOLDOWN_START(src, error_message_cooldown, 6 SECONDS)
 			say("Карта не найдена.")
 		return FALSE
 	else if (!thecard.registered_account)
-		if(!silent)
+		if(!silent && COOLDOWN_FINISHED(src, error_message_cooldown))
+			COOLDOWN_START(src, error_message_cooldown, 6 SECONDS)
 			say("Аккаунт не найден.")
 		return FALSE
 //	else if(!allowdepartment && !thecard.registered_account.account_job)
@@ -434,7 +437,7 @@ Class Procs:
 		user.set_machine(src)
 	. = ..()
 
-/obj/machinery/ui_act(action, params)
+/obj/machinery/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	if(params["ic_advactivator"])
 		return
 	add_fingerprint(usr)
@@ -566,18 +569,19 @@ Class Procs:
 		return TRUE
 
 /obj/machinery/proc/default_deconstruction_screwdriver(mob/user, icon_state_open, icon_state_closed, obj/item/I)
-	if(!(flags_1 & NODECONSTRUCT_1) && I.tool_behaviour == TOOL_SCREWDRIVER)
-		I.play_tool_sound(src, 50)
-		if(!panel_open)
-			panel_open = TRUE
-			icon_state = icon_state_open
-			to_chat(user, "<span class='notice'>Вы скручиваете панель обслуживания [src] с винтов.</span>")
-		else
-			panel_open = FALSE
-			icon_state = icon_state_closed
-			to_chat(user, "<span class='notice'>Вы вкручиваете панель обслуживания [src] обратно.</span>")
-		return TRUE
-	return FALSE
+	if((flags_1 & NODECONSTRUCT_1) || I.tool_behaviour != TOOL_SCREWDRIVER)
+		return FALSE
+
+	I.play_tool_sound(src, 50)
+	panel_open = !panel_open
+	if(panel_open)
+		icon_state = icon_state_open
+		to_chat(user, "<span class='notice'>Вы скручиваете винты панели обслуживания [src].</span>")
+	else
+		icon_state = icon_state_closed
+		to_chat(user, "<span class='notice'>Вы вкручиваете панель обслуживания [src] обратно.</span>")
+	update_icon()
+	return TRUE
 
 /obj/machinery/proc/default_change_direction_wrench(mob/user, obj/item/I)
 	if(panel_open && I.tool_behaviour == TOOL_WRENCH)
@@ -589,7 +593,8 @@ Class Procs:
 
 /obj/proc/can_be_unfasten_wrench(mob/user, silent) //if we can unwrench this object; returns SUCCESSFUL_UNFASTEN and FAILED_UNFASTEN, which are both TRUE, or CANT_UNFASTEN, which isn't.
 	if(!(isfloorturf(loc) || istype(loc, /turf/open/indestructible)) && !anchored)
-		to_chat(user, "<span class='warning'>[src] должен находится на полу, чтобы закрутить!</span>")
+		if(!silent)
+			to_chat(user, "<span class='warning'>[src] должен находится на полу, чтобы закрутить!</span>")
 		return FAILED_UNFASTEN
 	return SUCCESSFUL_UNFASTEN
 
@@ -635,8 +640,7 @@ Class Procs:
 	if(!machine_board)
 		return FALSE
 	var/P
-	if(W.works_from_distance)
-		to_chat(user, display_parts(user))
+	var/list/message_list = list()
 	for(var/obj/item/A in component_parts)
 		for(var/D in machine_board.req_components)
 			if(istype(A, D))
@@ -659,9 +663,14 @@ Class Procs:
 							B.moveToNullspace()
 					SEND_SIGNAL(W, COMSIG_TRY_STORAGE_INSERT, A, null, null, TRUE)
 					component_parts -= A
-					to_chat(user, "<span class='notice'>[capitalize(A.name)] replaced with [B.name].</span>")
+					message_list += span_notice("[icon2html(A, user)] [capitalize(A.name)] replaced with [icon2html(B, user)] [B.name].")
 					shouldplaysound = 1 //Only play the sound when parts are actually replaced!
 					break
+	if(message_list.len)
+		var/message = jointext(message_list, "\n")
+		to_chat(user,message)
+	if(W.works_from_distance)
+		to_chat(user, display_parts(user))
 	RefreshParts()
 	if(shouldplaysound)
 		W.play_rped_sound()
@@ -684,11 +693,11 @@ Class Procs:
 		var/healthpercent = (obj_integrity/max_integrity) * 100
 		switch(healthpercent)
 			if(50 to 99)
-				. += "Выглядит слегка поврежденным."
+				. += span_warning("Выглядит слегка поврежденным.")
 			if(25 to 50)
-				. += "Выглядит крайне поврежденным."
+				. += span_warning("Выглядит крайне поврежденным.")
 			if(0 to 25)
-				. += "<span class='warning'>Вот-вот развалится!</span>"
+				. += span_warning("Вот-вот развалится!")
 	if(user.research_scanner && component_parts)
 		. += display_parts(user, TRUE)
 

@@ -3,7 +3,7 @@
 
 /obj/machinery/computer/operating
 	name = "operating computer"
-	desc = "Monitors patient vitals and displays surgery steps. Can be loaded with surgery disks to perform experimental procedures."
+	desc = "Отслеживает состояние пациента и отображает прогресс операции пошагово. Имеет слот для дискет с операциями, для проведения экспериментальных процедур."
 	icon_screen = "crew"
 	icon_keyboard = "med_key"
 	circuit = /obj/item/circuitboard/computer/operating
@@ -17,6 +17,17 @@
 	. = ..()
 	linked_techweb = SSresearch.science_tech
 	find_table()
+
+/obj/machinery/computer/operating/Destroy()
+	if(table)
+		if(table.computer && table.computer != src)
+			stack_trace("Operating computer at [COORD(src)] has mismatched table.computer reference (table.computer=[REF(table.computer)], src=[REF(src)])")
+		table.computer = null
+		table = null
+	patient = null
+	linked_techweb = null
+	advanced_surgeries = null
+	return ..()
 
 /obj/machinery/computer/operating/attackby(obj/item/O, mob/user, params)
 	if(istype(O, /obj/item/disk/surgery))
@@ -55,6 +66,17 @@
 /obj/machinery/computer/operating/ui_data(mob/user)
 	var/list/data = list()
 	data["table"] = table
+	var/static/list/surgeries_base = list()
+	if(!surgeries_base.len)
+		for(var/path in BASE_MED_SURGERY_OPERATIONS)
+			var/datum/surgery/S = path
+			surgeries_base += list( \
+				list(
+					"name" = initial(S.name),
+					"desc" = initial(S.desc)
+				))
+
+	data["surgeries_base"] = surgeries_base
 	if(table)
 		var/list/surgeries = list()
 		for(var/X in advanced_surgeries)
@@ -64,97 +86,65 @@
 			surgery["desc"] = initial(S.desc)
 			surgeries += list(surgery)
 		data["surgeries"] = surgeries
-		if(table.check_patient())
-			data["patient"] = list()
-			patient = table.patient
-			switch(patient.stat)
-				if(CONSCIOUS)
-					data["patient"]["stat"] = "Conscious"
-					data["patient"]["statstate"] = "good"
-				if(SOFT_CRIT)
-					data["patient"]["stat"] = "Conscious"
-					data["patient"]["statstate"] = "average"
-				if(UNCONSCIOUS)
-					data["patient"]["stat"] = "Unconscious"
-					data["patient"]["statstate"] = "average"
-				if(DEAD)
-					data["patient"]["stat"] = "Dead"
-					data["patient"]["statstate"] = "bad"
-			data["patient"]["health"] = patient.health
-			data["patient"]["blood_type"] = patient.dna.blood_type
-			data["patient"]["maxHealth"] = patient.maxHealth
-			data["patient"]["minHealth"] = HEALTH_THRESHOLD_DEAD
-			data["patient"]["bruteLoss"] = patient.getBruteLoss()
-			data["patient"]["fireLoss"] = patient.getFireLoss()
-			data["patient"]["toxLoss"] = patient.getToxLoss()
-			data["patient"]["oxyLoss"] = patient.getOxyLoss()
-			data["patient"]["is_robotic_organism"] = HAS_TRAIT(patient, TRAIT_ROBOTIC_ORGANISM)
-			if(patient.surgeries.len)
-				data["procedures"] = list()
-				for(var/datum/surgery/procedure in patient.surgeries)
-					var/datum/surgery_step/surgery_step = procedure.get_surgery_step()
-					var/chems_needed = surgery_step.get_chem_list()
-					var/alternative_step
-					var/alt_chems_needed = ""
-					if(surgery_step.repeatable)
-						var/datum/surgery_step/next_step = procedure.get_surgery_next_step()
-						if(next_step)
-							alternative_step = capitalize(next_step.name)
-							alt_chems_needed = next_step.get_chem_list()
-						else
-							alternative_step = "Finish operation"
-					data["procedures"] += list(list(
-						"name" = capitalize(procedure.name),
-						"next_step" = capitalize(surgery_step.name),
-						"chems_needed" = chems_needed,
-						"alternative_step" = alternative_step,
-						"alt_chems_needed" = alt_chems_needed
-					))
-		else
+		if(!table.check_patient())
 			data["patient"] = null
 			return data
-	switch(patient.stat)
-		if(CONSCIOUS)
-			data["patient"]["stat"] = "Conscious"
-			data["patient"]["statstate"] = "good"
-		if(SOFT_CRIT)
-			data["patient"]["stat"] = "Conscious"
-			data["patient"]["statstate"] = "average"
-		if(UNCONSCIOUS)
-			data["patient"]["stat"] = "Unconscious"
-			data["patient"]["statstate"] = "average"
-		if(DEAD)
-			data["patient"]["stat"] = "Dead"
-			data["patient"]["statstate"] = "bad"
-	data["patient"]["health"] = patient.health
-	data["patient"]["blood_type"] = patient.dna.blood_type
-	data["patient"]["maxHealth"] = patient.maxHealth
-	data["patient"]["minHealth"] = HEALTH_THRESHOLD_DEAD
-	data["patient"]["bruteLoss"] = patient.getBruteLoss()
-	data["patient"]["fireLoss"] = patient.getFireLoss()
-	data["patient"]["toxLoss"] = patient.getToxLoss()
-	data["patient"]["oxyLoss"] = patient.getOxyLoss()
-	data["procedures"] = list()
-	if(patient.surgeries.len)
-		for(var/datum/surgery/procedure in patient.surgeries)
-			var/datum/surgery_step/surgery_step = procedure.get_surgery_step()
-			var/chems_needed = surgery_step.get_chem_list()
-			var/alternative_step
-			var/alt_chems_needed = ""
-			if(surgery_step.repeatable)
-				var/datum/surgery_step/next_step = procedure.get_surgery_next_step()
-				if(next_step)
-					alternative_step = capitalize(next_step.name)
-					alt_chems_needed = next_step.get_chem_list()
-				else
-					alternative_step = "Finish operation"
-			data["procedures"] += list(list(
-				"name" = capitalize("[parse_zone(procedure.location)] - [procedure.name]"),
-				"next_step" = capitalize(surgery_step.name),
-				"chems_needed" = chems_needed,
-				"alternative_step" = alternative_step,
-				"alt_chems_needed" = alt_chems_needed
-			))
+
+		data["patient"] = list()
+		patient = table.patient
+		switch(patient.stat)
+			if(CONSCIOUS)
+				data["patient"]["stat"] = "В сознании"
+				data["patient"]["statstate"] = "good"
+			if(SOFT_CRIT)
+				data["patient"]["stat"] = "В сознании"
+				data["patient"]["statstate"] = "average"
+			if(UNCONSCIOUS)
+				data["patient"]["stat"] = "Без сознания"
+				data["patient"]["statstate"] = "average"
+			if(DEAD)
+				data["patient"]["stat"] = "М[table.patient.gender == FEMALE ? "ертва" : "ёртв"]"
+				data["patient"]["statstate"] = "bad"
+		data["patient"]["health"] = patient.health
+		data["patient"]["blood_type"] = patient.dna.blood_type
+		data["patient"]["maxHealth"] = patient.maxHealth
+		data["patient"]["minHealth"] = HEALTH_THRESHOLD_DEAD
+		data["patient"]["bruteLoss"] = patient.getBruteLoss()
+		data["patient"]["fireLoss"] = patient.getFireLoss()
+		data["patient"]["toxLoss"] = patient.getToxLoss()
+		data["patient"]["oxyLoss"] = patient.getOxyLoss()
+		data["patient"]["is_robotic_organism"] = HAS_TRAIT(patient, TRAIT_ROBOTIC_ORGANISM)
+		data["procedures"] = list()
+		if(patient.surgeries.len)
+			for(var/datum/surgery/procedure in patient.surgeries)
+				var/datum/surgery_step/surgery_step = procedure.get_surgery_step()
+				var/chems_needed = surgery_step.get_chem_list()
+				var/alternative_step
+				var/alt_chems_needed = ""
+				var/list/next_step_tools = surgery_step.get_max_chance_implements()
+				var/next_step_chance = "[clamp(surgery_step.get_chance(patient, user, user.get_active_held_item(), procedure, TRUE),0,100)] %"
+				var/list/alternative_step_tools = list()
+				var/alternative_step_chance = 0
+				if(surgery_step.repeatable)
+					var/datum/surgery_step/next_step = procedure.get_surgery_next_step()
+					if(next_step)
+						alternative_step = capitalize(next_step.name)
+						alt_chems_needed = next_step.get_chem_list()
+						alternative_step_tools = next_step.get_max_chance_implements()
+						alternative_step_chance = "[clamp(next_step.get_chance(patient, user, user.get_active_held_item(), procedure, TRUE),0,100)] %"
+					else
+						alternative_step = "Finish operation"
+				data["procedures"] += list(list(
+					"name" = capitalize("[parse_zone(procedure.location)] - [procedure.name]"),
+					"next_step" = capitalize(surgery_step.name),
+					"next_step_tools" = next_step_tools,
+					"next_step_chance" = next_step_chance,
+					"chems_needed" = chems_needed,
+					"alternative_step" = alternative_step,
+					"alternative_step_tools" = alternative_step_tools,
+					"alternative_step_chance" = alternative_step_chance,
+					"alt_chems_needed" = alt_chems_needed
+				))
 	return data
 
 

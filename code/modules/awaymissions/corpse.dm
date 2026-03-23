@@ -132,13 +132,6 @@
 
 	if(ckey)
 		M.ckey = ckey
-		if(ishuman(M) && load_character)
-			var/mob/living/carbon/human/H = M
-			if (H.client)
-				if (loadout_enabled == TRUE)
-					SSjob.equip_loadout(null, H)
-					SSjob.post_equip_loadout(null, H)
-			H.load_client_appearance(H.client)
 		//splurt change
 		if(jobban_isbanned(M, "pacifist")) //do you love repeat code? i sure do
 			to_chat(M, "<span class='cult'>You are pacification banned. Pacifist has been force applied.</span>")
@@ -152,7 +145,8 @@
 				output_message += "<p>[flavour_text]</p>"
 			if(important_info != "")
 				output_message += "<span class='warning'>[important_info]</span>"
-			output_message += "\n<span class='boldwarning'>В режим игры Extended станцию посещать допустимо, в Dynamic — запрещено!</span>"
+			if(addition_warning)
+				output_message += "\n\n[addition_warning]"
 			to_chat(M, examine_block(output_message))
 		// BLUEMOON EDIT END
 		var/datum/mind/MM = M.mind
@@ -172,13 +166,21 @@
 		// BLUEMOON EDIT END
 		if(assignedrole)
 			M.mind.assigned_role = assignedrole
-		special(M, name)
+		if(ishuman(M) && load_character)
+			var/mob/living/carbon/human/H = M
+			if (H.client)
+				H.load_client_appearance(H.client, quirks = FALSE)
+				if (loadout_enabled == TRUE)
+					SSjob.equip_loadout(null, H)
+					SSjob.post_equip_loadout(null, H)
+				H.load_client_quirks(H.client) // Грузим квирки после лодаута, если он есть, из-за квирка семейная реликвия
 		MM.name = M.real_name
 		if(make_bank_account)
 			handlebank(M, starting_money)
 		special_post_appearance(M, name) // BLUEMOON ADD
 		if(M.client && ishuman(M) && load_character)
 			SSlanguage.AssignLanguage(M, M.client)
+		special(M, name)
 	if(uses > 0)
 		uses--
 	if(!permanent && !uses)
@@ -590,7 +592,7 @@
 	uniform = /obj/item/clothing/under/rank/centcom/commander
 	suit = /obj/item/clothing/suit/armor/bulletproof
 	ears = /obj/item/radio/headset/heads/captain
-	glasses = /obj/item/clothing/glasses/eyepatch
+	glasses = /obj/item/clothing/glasses/cover/eyepatch
 	mask = /obj/item/clothing/mask/cigarette/cigar/cohiba
 	head = /obj/item/clothing/head/centhat
 	gloves = /obj/item/clothing/gloves/tackler/combat

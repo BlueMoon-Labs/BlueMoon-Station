@@ -12,6 +12,7 @@
 	pugilist = TRUE
 	var/old_grab_state = null
 	display_combos = TRUE
+	resist_grab_chance = 90
 
 /datum/martial_art/cqc/reset_streak(mob/living/carbon/human/new_target)
 	. = ..()
@@ -77,7 +78,7 @@
 		if(D.lying && !D.IsUnconscious())
 			D.adjustStaminaLoss(45)
 		log_combat(A, D, "kicked (CQC)")
-	
+
 	return TRUE
 
 

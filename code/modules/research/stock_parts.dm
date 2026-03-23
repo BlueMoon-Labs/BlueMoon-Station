@@ -3,7 +3,7 @@
 If you create T5+ please take a pass at gene_modder.dm [L40]. Max_values MUST fit with the clamp to not confuse the user or cause possible exploits.*/
 /obj/item/storage/part_replacer
 	name = "rapid part exchange device"
-	desc = "Special mechanical module made to store, sort, and apply standard machine parts."
+	desc = "Механический инструмент для хранения, сортировки и применения стандартизированных деталей."
 	icon_state = "RPED"
 	item_state = "RPED"
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
@@ -41,9 +41,16 @@ If you create T5+ please take a pass at gene_modder.dm [L40]. Max_values MUST fi
 	else
 		playsound(src, pshoom_or_beepboopblorpzingshadashwoosh, 40, 1)
 
+/obj/item/storage/part_replacer/mini
+	name = "mini rapid part exchange device"
+	desc = "Гражданская версия механического инструмента для хранения, сортировки и применения стандартизированных деталей."
+	icon_state = "mini_RPED"
+	w_class = WEIGHT_CLASS_NORMAL
+	component_type = /datum/component/storage/concrete/rped/mini
+
 /obj/item/storage/part_replacer/bluespace
 	name = "bluespace rapid part exchange device"
-	desc = "A version of the RPED that allows for replacement of parts and scanning from a distance, along with higher capacity for parts."
+	desc = "Версия RPED, позволяющая улучшать и сканировать машинерию дистанционно, и с высокой ёмкостью хранилища деталей."
 	icon_state = "BS_RPED"
 	item_state = "BS_RPED"
 	w_class = WEIGHT_CLASS_NORMAL

@@ -1,6 +1,6 @@
 /obj/vehicle/ridden/wheelchair //ported from Hippiestation (by Jujumatic) Then ported by Fermis from tg!
 	name = "wheelchair"
-	desc = "A chair with big wheels. It looks like you can move in this on your own."
+	desc = "Кресло с большими колёсами. Кажется, вы сможете двигать его своими силами."
 	icon = 'icons/obj/vehicles.dmi'
 	icon_state = "wheelchair"
 	layer = OBJ_LAYER
@@ -39,7 +39,7 @@
 /obj/vehicle/ridden/wheelchair/driver_move(mob/living/user, direction)
 	if(istype(user))
 		if(canmove && (user.get_num_arms() < arms_required))
-			to_chat(user, "<span class='warning'>You don't have enough arms to operate the wheels!</span>")
+			to_chat(user, "<span class='warning'>У вас недостаточно рук для проворота колёс!</span>")
 			canmove = FALSE
 			addtimer(VARSET_CALLBACK(src, canmove, TRUE), 20)
 			return FALSE
@@ -74,9 +74,9 @@
 	handle_rotation(newdir)
 
 /obj/vehicle/ridden/wheelchair/wrench_act(mob/living/user, obj/item/I)	//Attackby should stop it attacking the wheelchair after moving away during decon
-	to_chat(user, "<span class='notice'>You begin to detach the wheels...</span>")
+	to_chat(user, "<span class='notice'>Вы начинаете откручивать колёса...</span>")
 	if(I.use_tool(src, user, 40, volume=50))
-		to_chat(user, "<span class='notice'>You detach the wheels and deconstruct the chair.</span>")
+		to_chat(user, "<span class='notice'>Вы отсоединили колёса и разобрали кресло.</span>")
 		new /obj/item/stack/rods(drop_location(), 6)
 		new /obj/item/stack/sheet/metal(drop_location(), 4)
 		qdel(src)

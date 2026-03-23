@@ -110,24 +110,30 @@
 	slowdown = SHOES_SLOWDOWN+1
 	pocket_storage_component_path = /datum/component/storage/concrete/pockets/shoes/clown
 	lace_time = 20 SECONDS // how the hell do these laces even work??
-	var/datum/component/waddle
 	var/enabled_waddle = TRUE
 
 /obj/item/clothing/shoes/clown_shoes/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/squeak, list('sound/effects/clownstep1.ogg'=1,'sound/effects/clownstep2.ogg'=1), 50)
 
+/obj/item/clothing/shoes/clown_shoes/examine(mob/user)
+	. = ..()
+	. += span_notice("<b>Ctrl-click</b> to [enabled_waddle ? "disable" : "enable"] waddle dampeners.")
+
 /obj/item/clothing/shoes/clown_shoes/equipped(mob/user, slot)
 	. = ..()
 	if(slot == ITEM_SLOT_FEET)
 		if(enabled_waddle)
-			waddle = user.AddComponent(/datum/component/waddling)
+			ADD_TRAIT(user, TRAIT_WADDLING, CLOTHING_TRAIT)
+			user.LoadComponent(/datum/component/waddling)
 		if(user.mind && HAS_TRAIT(user.mind, TRAIT_CLOWN_MENTALITY))
 			SEND_SIGNAL(user, COMSIG_CLEAR_MOOD_EVENT, "noshoes")
 
 /obj/item/clothing/shoes/clown_shoes/dropped(mob/user)
 	. = ..()
-	QDEL_NULL(waddle)
+	if(!HAS_TRAIT(user, TRAIT_WADDLING))
+		var/datum/component/waddling = GetComponent(/datum/component/waddling)
+		waddling?.RemoveComponent()
 	if(user.mind && HAS_TRAIT(user.mind, TRAIT_CLOWN_MENTALITY))
 		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "noshoes", /datum/mood_event/noshoes)
 
@@ -384,7 +390,8 @@
 
 /obj/item/clothing/shoes/wheelys/dropped(mob/user)
 	if(wheelToggle)
-		W.unbuckle_mob(user)
+		if(W.is_occupant(user))
+			W.unbuckle_mob(user)
 		wheelToggle = FALSE
 	..()
 
@@ -471,6 +478,7 @@
 	var/walkcool = 0
 	var/wallcharges = 20
 	var/newlocobject = null
+	var/recharge_timer = null
 
 /obj/item/clothing/shoes/timidcostume
 	name = "timid woman boots"
@@ -492,10 +500,24 @@
 	. = ..()
 	if(slot == ITEM_SLOT_FEET)
 		RegisterSignal(user, COMSIG_MOB_CLIENT_MOVE, PROC_REF(intercept_user_move))
+		recharge_timer = addtimer(CALLBACK(src, PROC_REF(recharge_charges)), 10 SECONDS, TIMER_LOOP | TIMER_STOPPABLE)
 
 /obj/item/clothing/shoes/wallwalkers/dropped(mob/user)
 	. = ..()
-	UnregisterSignal(user, COMSIG_MOB_CLIENT_MOVE)
+	if(user)
+		UnregisterSignal(user, COMSIG_MOB_CLIENT_MOVE)
+	if(recharge_timer)
+		deltimer(recharge_timer)
+		recharge_timer = null
+
+/obj/item/clothing/shoes/wallwalkers/Destroy()
+	if(recharge_timer)
+		deltimer(recharge_timer)
+		recharge_timer = null
+	return ..()
+
+/obj/item/clothing/shoes/wallwalkers/proc/recharge_charges()
+	wallcharges = min(wallcharges + 1, 20)
 
 /obj/item/clothing/shoes/wallwalkers/attackby(obj/item/W, mob/user, params)
 	. = ..()

@@ -57,7 +57,8 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 250, /datum/material/glass = 125)
 	build_path = /obj/item/dest_tagger
-	category = list("initial", "Electronics")
+	category = list("initial", "Tools", "Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO
 
 /datum/design/handlabeler
 	name = "Hand Labeler"
@@ -65,7 +66,7 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 150, /datum/material/glass = 125)
 	build_path = /obj/item/hand_labeler
-	category = list("initial", "Electronics")
+	category = list("initial", "Tools", "Equipment")
 
 /datum/design/miniature_power_cell
 	name = "Light Fixture Battery"
@@ -97,5 +98,4 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 700, /datum/material/glass = 200)
 	build_path = /obj/item/sales_tagger
-	category = list("initial", "Electronics")
-	departmental_flags = DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_SERVICE
+	category = list("initial", "Tools", "Equipment")

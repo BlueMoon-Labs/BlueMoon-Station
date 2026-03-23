@@ -222,3 +222,13 @@
 	)
 	result = /obj/item/reagent_containers/food/snacks/goliathcalamari
 	subcategory = CAT_MEAT
+
+// MARTIAN //
+/datum/crafting_recipe/food/katsu_fillet
+	name = "Katsu fillet"
+	reqs = list(
+		/obj/item/reagent_containers/food/snacks/meat/rawcutlet = 1,
+		/obj/item/reagent_containers/food/snacks/breadslice/reispan = 1,
+	)
+	result = /obj/item/reagent_containers/food/snacks/katsu_fillet
+	subcategory = CAT_EAST

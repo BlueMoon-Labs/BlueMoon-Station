@@ -5,7 +5,7 @@
 
 /datum/mutation/human/bm/on_acquiring(mob/living/carbon/human/owner)
 	if(..())
-		return
+		return TRUE
 	if(mob_trait)
 		if(HAS_TRAIT(owner, mob_trait))
 			instability = 0
@@ -414,7 +414,7 @@
 
 	owner.gain_trauma(T, TRAUMA_RESILIENCE_ABSOLUTE)
 
-
+/*
 /datum/mutation/human/bm/poor_aim
 	name = "Ужасный стрелок"
 	desc = "Ваши навыки обращения с оружием не позволяют точно прицелиться даже для того, чтобы спасти свою жизнь. Стрельба с двух рук даже не обсуждается."
@@ -422,6 +422,7 @@
 	difficulty = 8
 	instability = -10
 	mob_trait = TRAIT_POOR_AIM
+*/
 
 /datum/mutation/human/bm/prosopagnosia
 	name = "Прозопагнозия"
@@ -1007,19 +1008,27 @@
 
 
 /datum/mutation/human/bm/restorative_metabolism
-	name = "Восстановительный Метаболизм"
-	desc = "Ваше органическое тело обладает дифференцированной способностью к восстановлению, что позволяет вам медленно восстанавливаться после травм. Однако обратите внимание, что критические травмы, ранения или генетические повреждения все равно потребуют медицинской помощи."
+	name = "Регенеративный Метаболизм"
+	desc = "Ваше органическое тело способно медленнно востанавливаться после ранений, лучше, чем у некоторых самовосстанавливающихся существ. Обратите внимание: критические травмы, ранения или генетические повреждения все равно потребуют медицинской помощи."
 	quality = POSITIVE
 	difficulty = 32
 	instability = 40
 	mob_trait = TRAIT_RESTORATIVE_METABOLISM
 	locked = TRUE
-	text_gain_indication = "<span class='notice'>Вы чувствуете прилив жизненной силы, проходящей через ваше тело...</span>"
-	text_lose_indication = "<span class='danger'>Вы чувствуете, как ваши улучшенные способности к восстановлению исчезают...</span>"
+	text_gain_indication = "<span class='notice'>Вы чувствуете прилив регенерации, проходящей через ваше тело...</span>"
+	text_lose_indication = "<span class='danger'>Вы чувствуете, что ваше тело уже не самоподдерживает себя и раны не затягиваются...</span>"
 
 /datum/mutation/human/bm/restorative_metabolism/on_life()
 	//Works only for organics #biopank_power
-	 //person who'll be healed
+	//person who'll be healed
+
+	var/total_brute = owner.getBruteLoss_nonProsthetic()
+	var/total_burn = owner.getFireLoss_nonProsthetic()
+	var/total_toxloss = owner.getToxLoss()
+	var/total_damage = total_brute + total_burn + total_toxloss
+
+	if (total_damage == 0) // Раз метаболизм не лечит окси урон, не нужно прогонять прок при его наличии
+		return
 	var/consumed_damage = owner.getFireLoss() * 2 + owner.getBruteLoss() // the damage, the person have. Burn is bad for regeneration, so its multiplied
 	var/heal_multiplier = owner.getMaxHealth() / 100 // the heal is scaled by persons health, big guys heals faster
 	var/bruteheal = -0.6
@@ -1131,8 +1140,8 @@
 	text_lose_indication = "<span class='danger'>Жор идёт на спад.</span>"
 
 /datum/mutation/human/bm/hungry/on_acquiring(mob/living/carbon/human/owner)
-	. = ..()
-
+	if(..())
+		return TRUE
 	var/datum/physiology/P = owner.physiology
 	P.hunger_mod *= 2
 
@@ -1154,8 +1163,8 @@
 	text_lose_indication = "<span class='danger'>Ваша повышенная тяга к воде начинает угасать.</span>"
 
 /datum/mutation/human/bm/thirsty/on_acquiring(mob/living/carbon/human/owner)
-	. = ..()
-
+	if(..())
+		return TRUE
 	var/datum/physiology/P = owner.physiology
 	P.thirst_mod *= 2
 
@@ -1753,3 +1762,22 @@
 		remove_signals()
 		owner.dust(TRUE, TRUE)
 //
+
+/datum/mutation/human/bm/waddle
+	name = "Неуклюжесть"
+	desc = "Незначительное отклонение, заставляющее вас подпрыгивать при движении."
+	mob_trait = TRAIT_WADDLING
+	quality = MINOR_NEGATIVE
+	instability = 0
+	text_gain_indication = span_notice("Тебе кажется, что ты передвигаешься как-то по-дурацки.")
+	text_lose_indication = span_notice("Теперь ты передвигаешься нормально.")
+
+/datum/mutation/human/bm/waddle/on_acquiring(mob/living/carbon/human/owner)
+	. = ..()
+	owner.LoadComponent(/datum/component/waddling)
+
+/datum/mutation/human/bm/waddle/on_losing(mob/living/carbon/human/owner)
+	. = ..()
+	if(!HAS_TRAIT(owner, TRAIT_WADDLING))
+		var/datum/component/waddling = GetComponent(/datum/component/waddling)
+		waddling?.RemoveComponent()

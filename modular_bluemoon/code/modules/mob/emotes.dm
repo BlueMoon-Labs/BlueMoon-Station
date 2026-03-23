@@ -215,19 +215,19 @@
 		if(ishuman(user))
 			user.adjustOxyLoss(10)
 			if(user.gender != FEMALE && !(user.gender == PLURAL && isfeminine(user)))
-				sound = pick('modular_bluemoon/smiley/sounds/emotes/agony_male_1.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_2.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_3.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_4.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_5.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_6.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_7.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_8.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_male_9.ogg')
+				sound = pick('modular_bluemoon/sound/emotes/agony_male_1.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_2.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_3.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_4.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_5.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_6.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_7.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_8.ogg',\
+						'modular_bluemoon/sound/emotes/agony_male_9.ogg')
 			else
-				sound = pick('modular_bluemoon/smiley/sounds/emotes/agony_female_1.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_female_2.ogg',\
-						'modular_bluemoon/smiley/sounds/emotes/agony_female_3.ogg')
+				sound = pick('modular_bluemoon/sound/emotes/agony_female_1.ogg',\
+						'modular_bluemoon/sound/emotes/agony_female_2.ogg',\
+						'modular_bluemoon/sound/emotes/agony_female_3.ogg')
 			if(is_species(user, /datum/species/android) || is_species(user, /datum/species/synth) || is_species(user, /datum/species/ipc))
 				sound = 'modular_citadel/sound/voice/scream_silicon.ogg'
 			if(is_species(user, /datum/species/skeleton))
@@ -391,6 +391,23 @@
 	sound = 'modular_bluemoon/sound/emotes/meow6.ogg'
 	emote_cooldown = 0.5 SECONDS
 
+/datum/emote/sound/human/meow7
+	key = "meow7"
+	key_third_person = "meow7"
+	message = "мяукает как сервал."
+	message_mime = "безмолвно мяукает."
+	sound = 'modular_bluemoon/sound/emotes/meow7_1.ogg'
+	emote_cooldown = 0.75 SECONDS
+
+/datum/emote/sound/human/meow7/run_emote(mob/user, params)
+	sound = pick(
+	'modular_bluemoon/sound/emotes/meow7_1.ogg',
+	'modular_bluemoon/sound/emotes/meow7_2.ogg',
+	'modular_bluemoon/sound/emotes/meow7_3.ogg',
+	'modular_bluemoon/sound/emotes/meow7_4.ogg',
+	'modular_bluemoon/sound/emotes/meow7_5.ogg')
+	. = ..()
+
 /datum/emote/sound/human/catscream1
 	key = "catscream1"
 	key_third_person = "catscreams1"
@@ -465,7 +482,7 @@
 	message = "разминает суставы."
 	message_mime = "делает вид, что разминает суставы."
 	sound = 'modular_bluemoon/sound/emotes/bonecrack.ogg'
-	emote_cooldown = 11.6 SECONDS
+	emote_cooldown = 3 SECONDS
 
 /datum/emote/sound/human/ohyes
 	key = "ohyes"
@@ -562,6 +579,25 @@
 	message = "шипит!"
 	sound = 'modular_bluemoon/sound/emotes/felinid_hiss.ogg'
 	emote_cooldown = 1 SECONDS
+
+/datum/emote/sound/human/dexter
+	key = "dexter"
+	key_third_person = "dextered"
+	message = "неистово подозревает в чем-то"
+	message_mime = "пронзает взглядом, неистово подозревая в чем-то"
+	emote_type = EMOTE_AUDIBLE
+	sound = 'modular_bluemoon/sound/emotes/dexter-song.ogg'
+	emote_cooldown = 5 SECONDS
+
+/datum/emote/sound/human/animewow
+	key = "animewow"
+	key_third_person = "animewows"
+	message = "восхищается!"
+	message_mime = "изображает восхищение!"
+	sound = 'modular_bluemoon/sound/emotes/animewow.ogg'
+	emote_volume = 100
+	emote_cooldown = 5 SECONDS
+	emote_pitch_variance = FALSE
 
 /*
  * XENO EMOTES START
@@ -704,3 +740,131 @@
 /*
  * XENO EMOTES END
  */
+
+
+/datum/emote/sound/human/fox_bark_1
+	key = "foxbark1"
+	key_third_person = "foxbark1"
+	message = "тяфкает"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_bark_1.ogg'
+	emote_cooldown = 0.75 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_scream
+	key = "foxscream"
+	key_third_person = "foxscream"
+	message = "издает лисий вопль"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_scream.ogg'
+	emote_cooldown = 2 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_trill
+	key = "foxtrill"
+	key_third_person = "foxtrill"
+	message = "издает довольную лисью трель"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_trill.ogg'
+	emote_cooldown = 3 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_trill_2
+	key = "foxtrill2"
+	key_third_person = "foxtrill2"
+	message = "издает лисью трель"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_trill_2.ogg'
+	emote_cooldown = 2 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_cacle
+	key = "foxcacle"
+	key_third_person = "foxcacle"
+	message = "гогочет по-лисьи"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_cacle.ogg'
+	emote_cooldown = 5 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_laugh
+	key = "foxlaugh"
+	key_third_person = "foxlaugh"
+	message = "заливается смехом по-лисьи"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_laugh.ogg'
+	emote_cooldown = 3 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_chatter
+	key = "foxchatter"
+	key_third_person = "foxchatter"
+	message = "воркует как лиса"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_chatter.ogg'
+	emote_cooldown = 5 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_aaugh
+	key = "foxaaugh"
+	key_third_person = "foxaaugh"
+	message = "издаёт лисьи звуки!"
+	message_mime = null
+	sound = 'sound/fox/Voice/fox_aaugh.ogg'
+	emote_cooldown = 1 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/fox_growl
+	key = "foxgrowl"
+	key_third_person = "foxgrowl"
+	message = "агрессивно рычит"
+	message_mime = "злобно скалится!"
+	sound = 'sound/fox/Voice/fox_growl.ogg'
+	emote_cooldown = 3 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/memee
+	key = "memee"
+	key_third_person = "memee"
+	message = "издаёт жалостливые звуки"
+	message_mime = null
+	sound = 'sound/fox/Voice/memee.ogg'
+	emote_cooldown = 1 SECONDS
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/kweh
+	key = "kweh"
+	key_third_person = "kweh"
+	message = "издает КВЕХ."
+	message_mime = "безмолвно КВЕХает."
+	sound = 'modular_bluemoon/sound/emotes/kweh1.ogg'
+	emote_cooldown = 1 SECONDS
+
+/datum/emote/sound/human/kweh/run_emote(mob/user, params)
+	sound = pick(
+	'modular_bluemoon/sound/emotes/kweh1.ogg',
+	'modular_bluemoon/sound/emotes/kweh2.ogg',
+	'modular_bluemoon/sound/emotes/kweh3.ogg')
+	. = ..()
+
+/datum/emote/sound/human/skweh
+	key = "skweh"
+	key_third_person = "skweh"
+	message = "издает СКВЕХ."
+	message_mime = "безмолвно и очень грустно СКВЕХает."
+	sound = 'modular_bluemoon/sound/emotes/skweh1.ogg'
+	emote_cooldown = 1 SECONDS
+
+/datum/emote/sound/human/skweh/run_emote(mob/user, params)
+	sound = pick(
+	'modular_bluemoon/sound/emotes/skweh1.ogg',
+	'modular_bluemoon/sound/emotes/skweh2.ogg')
+	. = ..()
+
+/datum/emote/sound/human/mar
+	key = "mar"
+	key_third_person = "mar"
+	message = "издает МАР."
+	message_mime = "безмолвно открывает рот."
+	sound = 'modular_bluemoon/sound/emotes/mar.ogg'
+	emote_cooldown = 1 SECONDS

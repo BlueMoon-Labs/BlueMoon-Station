@@ -82,7 +82,7 @@
 	teleport_distance = 12
 	aSignal = null
 
-/obj/effect/anomaly/bluespace/big/Initialize(mapload, new_lifespan, drops_core)
+/obj/effect/anomaly/bluespace/big/Initialize(mapload, new_lifespan)
 	. = ..()
 
 	transform *= 3

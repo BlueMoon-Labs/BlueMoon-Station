@@ -13503,6 +13503,9 @@
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/machinery/computer/brig_assistant_console{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/port/fore)
 "aKb" = (
@@ -23543,7 +23546,7 @@
 	pixel_x = 5
 	},
 /obj/item/pen/fourcolor,
-/obj/item/clothing/glasses/meson/eyepatch{
+/obj/item/clothing/glasses/meson{
 	pixel_x = -13;
 	pixel_y = -5
 	},
@@ -36161,6 +36164,7 @@
 	dir = 1;
 	name = "air vent"
 	},
+/obj/structure/sign/painting/large/library_private/directional/south,
 /turf/open/floor/carpet{
 	icon_state = "carpetsymbol"
 	},
@@ -39660,7 +39664,7 @@
 /area/maintenance/starboard/aft)
 "cmP" = (
 /obj/structure/window/reinforced/spawner/north,
-/obj/structure/table/wood,
+/obj/machinery/modular_computer/console/preset/curator,
 /turf/open/floor/carpet{
 	icon_state = "carpetsymbol"
 	},
@@ -43815,7 +43819,7 @@
 /obj/structure/cable{
 	icon_state = "0-2"
 	},
-/obj/item/clothing/glasses/hud/health/eyepatch{
+/obj/item/clothing/glasses/hud/health{
 	pixel_y = 6
 	},
 /turf/open/floor/carpet/cyan,
@@ -52237,7 +52241,6 @@
 /turf/open/floor/carpet/green,
 /area/command/bridge/mid)
 "dKo" = (
-/obj/machinery/rnd/production/circuit_imprinter,
 /obj/machinery/atmospherics/pipe/simple/supplymain/hidden{
 	dir = 4;
 	name = "high pressure supply"
@@ -52245,6 +52248,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 10
 	},
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
 /turf/open/floor/plasteel,
 /area/science/robotics/lab)
 "dKs" = (
@@ -55307,6 +55311,9 @@
 	dir = 4;
 	pixel_x = -28
 	},
+/obj/structure/sign/painting/library_private{
+	pixel_y = -32
+	},
 /turf/open/floor/carpet/black,
 /area/service/library)
 "eNE" = (
@@ -55780,6 +55787,10 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
+"eWx" = (
+/obj/structure/sign/painting/large/library/directional/west,
+/turf/open/floor/wood,
+/area/service/library)
 "eWC" = (
 /obj/structure/table/wood,
 /obj/item/flashlight/lamp{
@@ -66506,6 +66517,10 @@
 	dir = 1
 	},
 /obj/machinery/disposal/bin,
+/obj/machinery/firealarm{
+	dir = 1;
+	pixel_y = -26
+	},
 /turf/open/floor/carpet{
 	icon_state = "carpetsymbol"
 	},
@@ -81583,7 +81598,6 @@
 /area/cargo/qm)
 "oqI" = (
 /obj/structure/table/wood,
-/obj/item/card/id/captains_spare,
 /obj/item/hand_tele,
 /obj/item/disk/nuclear,
 /turf/open/floor/plasteel/dark,
@@ -84390,6 +84404,10 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
 /area/security/prison/work)
+"pnS" = (
+/obj/structure/sign/painting/large/library/directional/east,
+/turf/open/floor/wood,
+/area/service/library)
 "pof" = (
 /obj/effect/decal/cleanable/dirt{
 	desc = "A thin layer of dust coating the floor.";
@@ -86201,10 +86219,6 @@
 /turf/open/space/basic,
 /area/space/nearstation)
 "pSx" = (
-/obj/machinery/firealarm{
-	dir = 1;
-	pixel_y = -26
-	},
 /turf/open/floor/carpet{
 	icon_state = "carpetsymbol"
 	},
@@ -95400,7 +95414,7 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
-/obj/item/clothing/glasses/hud/diagnostic/eyepatch{
+/obj/item/clothing/glasses/hud/diagnostic{
 	pixel_y = 7
 	},
 /turf/open/floor/wood,
@@ -104005,6 +104019,20 @@
 	},
 /turf/open/floor/wood,
 /area/service/library)
+"wyE" = (
+/obj/effect/turf_decal/tile/blue{
+	alpha = 150
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8;
+	alpha = 150
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel,
+/area/command/bridge)
 "wzk" = (
 /obj/machinery/atmospherics/pipe/simple/orange/hidden{
 	dir = 8
@@ -127028,7 +127056,7 @@ aMX
 aIE
 mzq
 cQX
-fOR
+wyE
 aQW
 wpA
 wpA
@@ -135279,8 +135307,8 @@ bJm
 bZH
 hRm
 qlz
-qlz
-qlz
+bZF
+eWx
 bZF
 bax
 cea
@@ -135793,8 +135821,8 @@ bJm
 bZH
 lUt
 uVp
-uVp
-uVp
+bZF
+pnS
 bZF
 tRH
 baX

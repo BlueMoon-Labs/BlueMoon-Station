@@ -2,6 +2,7 @@
 	name = "raw coiled sword"
 	icon = 'modular_bluemoon/icons/obj/smith/coiled_sword.dmi'
 	icon_state = "coiled_raw"
+	resistance_flags = LAVA_PROOF | FIRE_PROOF
 	finishingitem = /obj/item/stack/ore/glass/basalt
 	finalitem = /obj/item/melee/smith/coiled_sword
 	var/heated_in_lava = FALSE
@@ -11,12 +12,12 @@
 	if(!heated_in_lava)
 		. += "Этот клинок выглядит практически завершенным, однако лишь кипящая лава позволит раскрыть его истинный потенциал."
 	else
-		. += "Этот клинок готов к финальному штриху - покрыванию пеплом."
+		. += "Этот клинок готов к финальному штриху - покрыванию вулканическим пеплом."
 
 /obj/item/smithing/coiled_sword/attackby(obj/item/I, mob/user)
 	if(istype(I, finishingitem))
 		if(!heated_in_lava)
-			to_chat(user, "Прежде чем покрывать витой меч пеплом, его требуется окунуть в кипящую лаву. Только она поможет ракрыть его потенциал.")
+			to_chat(user, "Прежде чем покрывать витой меч вулканическим пеплом, его требуется окунуть в кипящую лаву. Только она поможет ракрыть его потенциал.")
 			return
 		else
 			var/obj/item/stack/ore/glass/basalt/B = I
@@ -51,6 +52,7 @@
 	icon = 'modular_bluemoon/icons/obj/smith/coiled_sword.dmi'
 	icon_state = "coiled"
 	overlay_state = "coiled_flame"
+	resistance_flags = LAVA_PROOF | FIRE_PROOF
 	item_flags = NEEDS_PERMIT
 	sharpness = SHARP_EDGED
 	light_power = 0.5

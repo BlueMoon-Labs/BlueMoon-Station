@@ -23,11 +23,13 @@
 #define CHANNEL_REACTOR_ALERT 1013 // Is that radiation I hear? (ported from hyper)
 #define CHANNEL_JUKEBOX 1012
 #define CHANNEL_JUKEBOX_START 993
+// Tetris arcade music для работы лимита канала.
+#define CHANNEL_TETRIS_MUSIC 992
 
 //THIS SHOULD ALWAYS BE THE LOWEST ONE!
 //KEEP IT UPDATED
 
-#define CHANNEL_HIGHEST_AVAILABLE 992 //CIT CHANGE - COMPENSATES FOR VORESOUND CHANNELS
+#define CHANNEL_HIGHEST_AVAILABLE 991 //CIT CHANGE - COMPENSATES FOR VORESOUND CHANNELS
 
 // BLUEMOON EDIT END
 
@@ -78,7 +80,7 @@
 
 #define ENGINEERING list('sound/ambience/ambisin1.ogg','sound/ambience/ambisin2.ogg','sound/ambience/ambisin3.ogg','sound/ambience/ambisin4.ogg',\
 										'sound/ambience/ambiatmos.ogg', 'sound/ambience/ambiatmos2.ogg', 'sound/ambience/ambitech.ogg',\
-										'sound/ambience/ambitech2.ogg', 'sound/ambience/ambitech3.ogg', 'sound/ambience/ambiviro.ogg', 'sound/ambience/ambistalker.ogg')
+										'sound/ambience/ambitech2.ogg', 'sound/ambience/ambitech3.ogg', 'sound/ambience/ambiviro.ogg')
 
 #define MINING list('sound/ambience/ambimine.ogg', 'sound/ambience/ambicave.ogg', 'sound/ambience/ambiruin.ogg',\
 											'sound/ambience/ambiruin2.ogg',  'sound/ambience/ambiruin3.ogg',  'sound/ambience/ambiruin4.ogg',\
@@ -273,10 +275,235 @@ GLOBAL_LIST_INIT(deathgasp_sounds, list(
 	"Проклятие" =			'sound/magic/curse.ogg',
 	"Конструкт Ратвара" =	'sound/magic/clockwork/anima_fragment_death.ogg',
 	"Ксеноморф" =			'sound/voice/hiss6.ogg',
-	"Свинья" =				'modular_bluemoon/SmiLeY/code/mob/pig/death.ogg',
-	"Офицер ГО" =			'modular_bluemoon/SmiLeY/sounds/combine_death.ogg',
+	"Свинья" =				'modular_bluemoon/sound/creatures/pig/death.ogg',
+	"Офицер ГО" =			'modular_bluemoon/sound/ert/combine_death.ogg',
 	"Свинья" =				'modular_bluemoon/sound/voice/death_gasps/pig.ogg',
 	"Свинья 2" =				'modular_bluemoon/sound/voice/death_gasps/pig2.ogg',
 	"Фрэнк" =				'modular_bluemoon/sound/voice/death_gasps/frank.ogg',
-	"Сьюзи" =				'modular_bluemoon/sound/voice/death_gasps/susie.ogg'
+	"Сьюзи" =				'modular_bluemoon/sound/voice/death_gasps/susie.ogg',
+	"Наёмник" =				'modular_bluemoon/sound/voice/death_gasps/mercenary.ogg',
+	"Бандит 1" =			'modular_bluemoon/sound/voice/death_gasps/bandit1.ogg',
+	"Бандит 2" =			'modular_bluemoon/sound/voice/death_gasps/bandit2.ogg',
+	"Смерть в богатстве" =	'modular_bluemoon/sound/voice/death_gasps/richstalker.ogg',
+	"Зомбированный сталкер" =	'modular_bluemoon/sound/voice/death_gasps/stalkerzombie.ogg'
 	))
+
+GLOBAL_LIST_INIT(otherworld_sounds, list(
+		'sound/items/bubblewrap.ogg',
+		'sound/items/change_jaws.ogg',
+		'sound/items/crowbar.ogg',
+		'sound/items/drink.ogg',
+		'sound/items/deconstruct.ogg',
+		'sound/items/carhorn.ogg',
+		'sound/items/change_drill.ogg',
+		'sound/items/dodgeball.ogg',
+		'sound/items/eatfood.ogg',
+		'sound/items/megaphone.ogg',
+		'sound/items/screwdriver.ogg',
+		'sound/items/weeoo1.ogg',
+		'sound/items/wirecutter.ogg',
+		'sound/items/welder.ogg',
+		'sound/items/zip.ogg',
+		'sound/items/rped.ogg',
+		'sound/items/ratchet.ogg',
+		'sound/items/polaroid1.ogg',
+		'sound/items/pshoom.ogg',
+		'sound/items/airhorn.ogg',
+		'sound/items/geiger/high1.ogg',
+		'sound/items/geiger/high2.ogg',
+		'sound/voice/beepsky/creep.ogg',
+		'sound/voice/beepsky/iamthelaw.ogg',
+		'sound/voice/ed209_20sec.ogg',
+		'sound/voice/hiss3.ogg',
+		'sound/voice/hiss6.ogg',
+		'sound/voice/medbot/patchedup.ogg',
+		'sound/voice/medbot/feelbetter.ogg',
+		'sound/voice/human/manlaugh1.ogg',
+		'sound/voice/human/womanlaugh.ogg',
+		'sound/weapons/sear.ogg',
+		'sound/ambience/antag/clockcultalr.ogg',
+		'sound/ambience/antag/ling_aler.ogg',
+		'sound/ambience/antag/tatoralert.ogg',
+		'sound/ambience/antag/monkey.ogg',
+		'sound/mecha/nominal.ogg',
+		'sound/mecha/weapdestr.ogg',
+		'sound/mecha/critdestr.ogg',
+		'sound/mecha/imag_enh.ogg',
+		'sound/effects/adminhelp.ogg',
+		'sound/misc/alerts/alert.ogg',
+		'sound/effects/attackblob.ogg',
+		'sound/effects/bamf.ogg',
+		'sound/effects/blobattack.ogg',
+		'sound/effects/break_stone.ogg',
+		'sound/effects/bubbles.ogg',
+		'sound/effects/bubbles2.ogg',
+		'sound/effects/clang.ogg',
+		'sound/effects/clockcult_gateway_disrupted.ogg',
+		'sound/effects/clownstep2.ogg',
+		'sound/effects/curse1.ogg',
+		'sound/effects/dimensional_rend.ogg',
+		'sound/effects/doorcreaky.ogg',
+		'sound/effects/empulse.ogg',
+		'sound/effects/explosion_distant.ogg',
+		'sound/effects/explosionfar.ogg',
+		'sound/effects/explosion1.ogg',
+		'sound/effects/grillehit.ogg',
+		'sound/effects/genetics.ogg',
+		'sound/effects/heart_beat.ogg',
+		'sound/effects/hyperspace_begin.ogg',
+		'sound/effects/hyperspace_end.ogg',
+		'sound/effects/his_grace_awaken.ogg',
+		'sound/effects/pai_boot.ogg',
+		'sound/effects/phasein.ogg',
+		'sound/effects/picaxe1.ogg',
+		'sound/effects/ratvar_reveal.ogg',
+		'sound/effects/sparks1.ogg',
+		'sound/effects/smoke.ogg',
+		'sound/effects/splat.ogg',
+		'sound/effects/snap.ogg',
+		'sound/effects/tendril_destroyed.ogg',
+		'sound/effects/supermatter.ogg',
+		'sound/misc/desceration-01.ogg',
+		'sound/misc/desceration-02.ogg',
+		'sound/misc/desceration-03.ogg',
+		'sound/misc/bloblarm.ogg',
+		'sound/misc/airraid.ogg',
+		'sound/misc/bang.ogg',
+		'sound/misc/highlander.ogg',
+		'sound/misc/interference.ogg',
+		'sound/misc/notice1.ogg',
+		'sound/misc/notice2.ogg',
+		'sound/misc/sadtrombone.ogg',
+		'sound/misc/slip.ogg',
+		'sound/misc/splort.ogg',
+		'sound/weapons/armbomb.ogg',
+		'sound/weapons/beam_sniper.ogg',
+		'sound/weapons/chainsawhit.ogg',
+		'sound/weapons/emitter.ogg',
+		'sound/weapons/emitter2.ogg',
+		'sound/weapons/blade1.ogg',
+		'sound/weapons/bladeslice.ogg',
+		'sound/weapons/blastcannon.ogg',
+		'sound/weapons/blaster.ogg',
+		'sound/weapons/bulletflyby3.ogg',
+		'sound/weapons/circsawhit.ogg',
+		'sound/weapons/cqchit2.ogg',
+		'sound/weapons/drill.ogg',
+		'sound/weapons/genhit1.ogg',
+		'sound/weapons/gunshot_silenced.ogg',
+		'sound/weapons/gunshot2.ogg',
+		'sound/weapons/handcuffs.ogg',
+		'sound/weapons/homerun.ogg',
+		'sound/weapons/kenetic_accel.ogg',
+		'sound/machines/clockcult/steam_whoosh.ogg',
+		'sound/machines/fryer/deep_fryer_emerge.ogg',
+		'sound/machines/airlock.ogg',
+		'sound/machines/airlock_alien_prying.ogg',
+		'sound/machines/airlockclose.ogg',
+		'sound/machines/airlockforced.ogg',
+		'sound/machines/airlockopen.ogg',
+		'sound/machines/alarm.ogg',
+		'sound/machines/blender.ogg',
+		'sound/machines/boltsdown.ogg',
+		'sound/machines/boltsup.ogg',
+		'sound/machines/buzz-sigh.ogg',
+		'sound/machines/buzz-two.ogg',
+		'sound/machines/chime.ogg',
+		'sound/machines/cryo_warning.ogg',
+		'sound/machines/defib_charge.ogg',
+		'sound/machines/defib_failed.ogg',
+		'sound/machines/defib_ready.ogg',
+		'sound/machines/defib_zap.ogg',
+		'sound/machines/deniedbeep.ogg',
+		'sound/machines/ding.ogg',
+		'sound/machines/disposalflush.ogg',
+		'sound/machines/door_close.ogg',
+		'sound/machines/door_open.ogg',
+		'sound/machines/engine_alert1.ogg',
+		'sound/machines/engine_alert2.ogg',
+		'sound/machines/hiss.ogg',
+		'sound/machines/honkbot_evil_laugh.ogg',
+		'sound/machines/juicer.ogg',
+		'sound/machines/ping.ogg',
+		'sound/machines/signal.ogg',
+		'sound/machines/synth_no.ogg',
+		'sound/machines/synth_yes.ogg',
+		'sound/machines/terminal_alert.ogg',
+		'sound/machines/triple_beep.ogg',
+		'sound/machines/twobeep.ogg',
+		'sound/machines/ventcrawl.ogg',
+		'sound/machines/warning-buzzer.ogg',
+		'sound/announcer/classic/outbreak5.ogg',
+		'sound/announcer/classic/outbreak7.ogg',
+		'sound/announcer/intern/poweroff_boomer.ogg',
+		'sound/announcer/classic/poweroff.ogg',
+		'sound/announcer/classic/poweroff.ogg',
+		'sound/announcer/classic/poweroff.ogg',
+		'sound/announcer/classic/poweroff.ogg',
+		'sound/announcer/classic/poweroff.ogg',
+		'sound/announcer/classic/poweroff2.ogg',
+		'sound/announcer/classic/radiation.ogg',
+		'sound/announcer/classic/shuttlerecalled.ogg',
+		'sound/announcer/classic/shuttledock.ogg',
+		'sound/announcer/classic/shuttlecalled.ogg',
+		'sound/announcer/classic/aimalf.ogg',
+	))
+
+/**
+# assoc list of datum by key
+* k = SFX_KEY (see below)
+* v = singleton sound_effect datum ref
+* initialized in SSsounds init
+*/
+GLOBAL_LIST_EMPTY(sfx_datum_by_key)
+
+/* List of all of our sound keys.
+	used with /datum/sound_effect as the key
+	see code\game\sound_keys.dm
+*/
+
+#define SFX_SHATTER "shatter"
+#define SFX_EXPLOSION "explosion"
+#define SFX_EXPLOSION_CREAKING "explosion_creaking"
+#define SFX_HULL_CREAKING "hull_creaking"
+#define SFX_SPARKS "sparks"
+#define SFX_RUSTLE "rustle"
+#define SFX_BODYFALL "bodyfall"
+#define SFX_PUNCH "punch"
+#define SFX_CLOWN_STEP "clownstep"
+#define SFX_SUIT_STEP "suitstep"
+#define SFX_SWING_HIT "swing_hit"
+#define SFX_HISS "hiss"
+#define SFX_PAGE_TURN "pageturn"
+#define SFX_GUNSHOT "gunshot"
+#define SFX_RICOCHET "ricochet"
+#define SFX_TERMINAL_TYPE "terminal_type"
+#define SFX_DESECRATION "desceration"
+#define SFX_IM_HERE "im_here"
+#define SFX_CAN_OPEN "can_open"
+#define SFX_BULLET_MISS "bullet_miss"
+#define SFX_GUN_DRY_FIRE "gun_dry_fire"
+#define SFX_GUN_INSERT_EMPTY_MAGAZINE "gun_insert_empty_magazine"
+#define SFX_GUN_INSERT_FULL_MAGAZINE "gun_insert_full_magazine"
+#define SFX_GUN_REMOVE_EMPTY_MAGAZINE "gun_remove_empty_magazine"
+#define SFX_GUN_SLIDE_LOCK "gun_slide_lock"
+#define SFX_LAW "law"
+#define SFX_HONKBOT_E "honkbot_e"
+#define SFX_GOOSE "goose"
+#define SFX_WATER_WADE "water_wade"
+#define SFX_VORE_STRUGGLE "struggle_sound"
+#define SFX_VORE_PREY_STRUGGLE "prey_struggle"
+#define SFX_VORE_DIGEST_PRED "digest_pred"
+#define SFX_VORE_DEATH_PRED "death_pred"
+#define SFX_VORE_DIGEST_PREY "digest_prey"
+#define SFX_VORE_DEATH_PREY "death_prey"
+#define SFX_VORE_HUNGER "hunger_sounds"
+#define SFX_CLANG "clang"
+#define SFX_CLANGSMALL "clangsmall"
+#define SFX_SLOSH "slosh"
+#define SFX_SMCALM "smcalm"
+#define SFX_SMDELAM "smdelam"
+#define SFX_DRAWER_OPEN "drawer_open"
+#define SFX_DRAWER_CLOSE "drawer_close"
+#define SFX_ROLLING_PIN_ROLLING "rolling_pin_rolling"
+#define SFX_KNIFE_SLICE "knife_slice"

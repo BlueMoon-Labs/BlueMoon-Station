@@ -26,7 +26,7 @@
 		quirk_mob.skin_tone = "albino"
 
 	// Add quirk language
-	quirk_mob.grant_language(/datum/language/vampiric, TRUE, TRUE, LANGUAGE_BLOODSUCKER)
+	quirk_mob.grant_language(/datum/language/vampiric)
 
 	// Register examine text
 	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(quirk_examine_bloodfledge))
@@ -126,7 +126,7 @@
 	var/mob/living/carbon/human/quirk_mob = quirk_holder
 
 	// BLUEMOON EDIT START - sanity check
-	if(!quirk_mob)
+	if(!quirk_mob || QDELING(quirk_mob))
 		return
 	// BLUEMOON EDIT END
 
@@ -143,47 +143,13 @@
 		act_revive.Remove(quirk_mob)
 
 	// Remove quirk language
-	quirk_mob.remove_language(/datum/language/vampiric, TRUE, TRUE, LANGUAGE_BLOODSUCKER)
+	quirk_mob.remove_language(/datum/language/vampiric, source = LANGUAGE_BLOODSUCKER)
 
 	// Unregister examine text
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
 
 /datum/quirk/bloodfledge/on_spawn()
-	// Define quirk mob
-	var/mob/living/carbon/human/quirk_mob = quirk_holder
-
-	// Create vampire ID card
-	var/obj/item/card/id/vampire/id_vampire = new /obj/item/card/id/vampire(get_turf(quirk_holder))
-
-	// Update card information
-	id_vampire.registered_name = quirk_mob.real_name
-	id_vampire.update_label(addtext(id_vampire.registered_name, "'s Bloodfledge"))
-
-	// Determine banking ID information
-	for(var/bank_account in SSeconomy.bank_accounts)
-		// Define current iteration's account
-		var/datum/bank_account/account = bank_account
-
-		// Check for match
-		if(account.account_id == quirk_mob.account_id)
-			// Add to cards list
-			account.bank_cards += src
-
-			// Assign account
-			id_vampire.registered_account = account
-
-			// Stop searching
-			break
-
-	// Try to add ID to backpack
-	var/id_in_bag = quirk_mob.equip_to_slot_if_possible(id_vampire, ITEM_SLOT_BACKPACK) || FALSE
-
-	// Text for where the item was sent
-	var/id_location = (id_in_bag ? "in your backpack" : "at your feet" )
-
-	// Alert user in chat
-	// This should not post_add, because the ID is added by on_spawn
-	to_chat(quirk_holder, span_boldnotice("There is a bloodfledge's ID card [id_location], linked to your station account. It functions as a spare ID, but lacks job access."))
+	give_item(/obj/item/card_sticker/vampire/loadout, quirk_holder)
 
 /datum/quirk/bloodfledge/proc/quirk_examine_bloodfledge(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
 	SIGNAL_HANDLER
@@ -294,6 +260,11 @@
 	blood_bank = new(BLOODFLEDGE_BANK_CAPACITY)
 
 /datum/action/cooldown/bloodfledge/bite/Activate()
+	//BLUEMOON CHANGES START
+	if(owner.progressbars)
+		to_chat(owner, span_danger("Вы не можете кусать кого-либо, если уже делаете это, либо что бы там ни было еще!")) //защита от спама
+		return
+	//BLUEMOON CHANGES END
 	// Define action owner
 	var/mob/living/carbon/action_owner = owner
 

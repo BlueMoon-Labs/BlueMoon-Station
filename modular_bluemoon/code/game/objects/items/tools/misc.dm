@@ -27,6 +27,12 @@
 	icon = 'modular_bluemoon/icons/obj/items_cyborg.dmi'
 	icon_state = "expwelder_cyborg"
 
+/obj/item/extinguisher/advanced/cyborg
+	name = "integrated advanced fire extinguisher"
+
+/obj/item/analyzer/ranged/cyborg
+	name = "integrated long range gas analyzer"
+
 /// Инструменты для хирургии
 /obj/item/scalpel/advanced/cyborg
 	name = "cyborg laser scalpel"

@@ -223,6 +223,13 @@
 	filling_color = "#FFFFFF"
 	foodtype = GRAIN | DAIRY
 
+/obj/item/reagent_containers/food/snacks/cakeslice/custom/OnCreatedFromProcessing(mob/living/user, obj/item/work_tool, list/chosen_option, obj/item/reagent_containers/food/snacks/original_atom)
+	..()
+	if(!istype(original_atom))
+		return
+	filling_color = original_atom.filling_color
+	update_snack_overlays(src)
+
 /obj/item/reagent_containers/food/snacks/store/cake/slimecake
 	name = "Slime cake"
 	desc = "A cake made of slimes. Probably not electrified."

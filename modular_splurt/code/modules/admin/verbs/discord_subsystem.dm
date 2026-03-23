@@ -1,5 +1,5 @@
 /client/proc/discordnulls()
-	set category = "Debug"
+	set category = "Debug.3) Fixing"
 	set name = "Delete Discord Nulls"
 	set desc = "Delete rows in the database where discord_id is NULL."
 	if(!SSdiscord)

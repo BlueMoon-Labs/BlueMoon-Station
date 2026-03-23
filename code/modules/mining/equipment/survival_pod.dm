@@ -299,7 +299,7 @@
 	layer = ABOVE_NORMAL_TURF_LAYER
 	density = FALSE
 	icon_state = "fan_tiny"
-	buildstackamount = 2
+	buildstackamount = 10
 
 /obj/structure/fans/Initialize(mapload)
 	. = ..()
@@ -321,7 +321,7 @@
 
 /obj/structure/sign/mining/survival
 	name = "shelter sign"
-	desc = "A high visibility sign designating a safe shelter."
+	desc = "A high-visibility sign designating a safe shelter."
 	icon = 'icons/turf/walls/survival_pod_walls.dmi'
 	icon_state = "survival"
 

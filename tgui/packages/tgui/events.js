@@ -7,7 +7,7 @@
  */
 
 import { EventEmitter } from 'common/events';
-import { KEY_ALT, KEY_CTRL, KEY_F1, KEY_F12, KEY_SHIFT } from 'common/keycodes';
+import { KEY_ALT, KEY_CTRL, KEY_SHIFT } from 'common/keycodes';
 
 export const globalEvents = new EventEmitter();
 let ignoreWindowFocus = false;
@@ -152,7 +152,8 @@ export class KeyEvent {
   constructor(e, type, repeat) {
     this.event = e;
     this.type = type;
-    this.code = window.event ? e.which : e.keyCode;
+    this.key = e.key;
+    this.code = e.code;
     this.ctrl = e.ctrlKey;
     this.shift = e.shiftKey;
     this.alt = e.altKey;
@@ -164,9 +165,9 @@ export class KeyEvent {
   }
 
   isModifierKey() {
-    return this.code === KEY_CTRL
-      || this.code === KEY_SHIFT
-      || this.code === KEY_ALT;
+    return this.key === KEY_CTRL
+      || this.key === KEY_SHIFT
+      || this.key === KEY_ALT;
   }
 
   isDown() {
@@ -191,38 +192,51 @@ export class KeyEvent {
     if (this.shift) {
       this._str += 'Shift+';
     }
-    if (this.code >= 48 && this.code <= 90) {
-      this._str += String.fromCharCode(this.code);
+    // Use physical key code for letters/digits to be layout-independent.
+    // e.g. 'KeyW' → 'W', 'Digit1' → '1' — works on any keyboard layout.
+    if (/^Key[A-Z]$/.test(this.code)) {
+      this._str += this.code.charAt(3);
     }
-    else if (this.code >= KEY_F1 && this.code <= KEY_F12) {
-      this._str += 'F' + (this.code - 111);
+    else if (/^Digit\d$/.test(this.code)) {
+      this._str += this.code.charAt(5);
+    }
+    else if (this.key.length === 1) {
+      this._str += this.key.toUpperCase();
     }
     else {
-      this._str += '[' + this.code + ']';
+      this._str += this.key;
     }
     return this._str;
   }
 }
 
-// IE8: Keydown event is only available on document.
+// Handle global keyboard shortcuts at the document level.
 document.addEventListener('keydown', e => {
   if (canStealFocus(e.target)) {
     return;
   }
-  const code = e.keyCode;
-  const key = new KeyEvent(e, 'keydown', keyHeldByCode[code]);
+  const physical = e.code;
+  const key = new KeyEvent(e, 'keydown', keyHeldByCode[physical]);
   globalEvents.emit('keydown', key);
   globalEvents.emit('key', key);
-  keyHeldByCode[code] = true;
+  keyHeldByCode[physical] = true;
 });
 
 document.addEventListener('keyup', e => {
+  const physical = e.code;
   if (canStealFocus(e.target)) {
+    // Key was pressed before focus moved to input — forward the keyup
+    // so BYOND receives KeyUp and the key doesn't stay stuck.
+    if (keyHeldByCode[physical]) {
+      const key = new KeyEvent(e, 'keyup');
+      globalEvents.emit('keyup', key);
+      globalEvents.emit('key', key);
+      keyHeldByCode[physical] = false;
+    }
     return;
   }
-  const code = e.keyCode;
   const key = new KeyEvent(e, 'keyup');
   globalEvents.emit('keyup', key);
   globalEvents.emit('key', key);
-  keyHeldByCode[code] = false;
+  keyHeldByCode[physical] = false;
 });

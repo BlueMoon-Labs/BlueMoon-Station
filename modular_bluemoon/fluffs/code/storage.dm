@@ -38,6 +38,15 @@
 	opened = !opened
 	update_icon()
 
+/obj/item/storage/box/donator/bm/twilight_spike
+	name = "twilight spike modkits"
+	desc = "Содержит четыре набора для модификации дубинки."
+
+/obj/item/storage/box/donator/bm/twilight_spike/PopulateContents()
+	. = ..()
+	for(var/i in 1 to 4)
+		new /obj/item/modkit/twilight_spike(src)
+
 /obj/item/storage/backpack/martian
 	name = "Martian Backpack"
 	desc = "Некий Марсианский Артефакт, использующийся в качестве рюкзака. Ткань ощущается довольно прочной. Это точно можно использовать в качестве оружия!"
@@ -125,6 +134,14 @@
 	icon_state = "dilivery_bag"
 	item_state = "dilivery_bag"
 
+/obj/item/storage/backpack/satchel/pawpack
+	name = "Paw Backpack"
+	desc = "A trendy looking backpack shaped like a paw."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/storage.dmi'
+	icon_state = "pawpack"
+	item_state = "pawpack"
+
 /obj/item/storage/backpack/satchel/rawk_sat
 	name = "Rawk Satchel"
 	desc = "Tactical military satchel for a special forces group."
@@ -134,3 +151,49 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_righthand.dmi'
 	icon_state = "rawk_sat"
 	item_state = "rawk_sat"
+
+/obj/item/storage/backpack/coffin
+	name = "Black Rose atelier worker coffin"
+	desc = "Шестигранный чёрный гроб, форма, размер отличаются от серийных образцов похожих предметов для захоронения. Непонятно кто и зачем это придумал, однако гроб имеет функционал обычной сумки для ношения на спине, что почёркивает плотный, чёрный ремень. На изголовье имеется крупный логотип изготовителя в виде розы, хоть и без названия. К сожалению, в гроб поместить человека или иное подобное существо можно лишь по частям, ведь внутренняя часть гроба обладает большим количеством карманов и иными подобными отсеками для хранения предметов, а в центральной части имеются углубления для  хранения оружия и прочих подобных предметов."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/storage.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_righthand.dmi'
+	icon_state = "coffin_b"
+	item_state = "coffin_b"
+
+/obj/item/storage/backpack/coffin/b2
+	icon_state = "coffin_b2"
+	item_state = "coffin_b2"
+	name = "Black Rose atelier worker coffin"
+	desc = "Шестигранный чёрный гроб, форма, размер отличаются от серийных образцов похожих предметов для захоронения. Непонятно кто и зачем это придумал, однако гроб имеет функционал обычной сумки для ношения на спине, что почёркивает плотный, чёрный ремень. На изголовье имеется крупный логотип изготовителя в виде розы, хоть и без названия. К сожалению, в гроб поместить человека или иное подобное существо можно лишь по частям, ведь внутренняя часть гроба обладает большим количеством карманов и иными подобными отсеками для хранения предметов, а в центральной части имеются углубления для  хранения оружия и прочих подобных предметов."
+
+/obj/item/storage/backpack/coffin/w
+	icon_state = "coffin_w"
+	item_state = "coffin_w"
+	name = "Black Rose atelier worker coffin"
+	desc = "Шестигранный чёрный гроб, форма, размер отличаются от серийных образцов похожих предметов для захоронения. Непонятно кто и зачем это придумал, однако гроб имеет функционал обычной сумки для ношения на спине, что почёркивает плотный, чёрный ремень. На изголовье имеется крупный логотип изготовителя в виде розы, хоть и без названия. К сожалению, в гроб поместить человека или иное подобное существо можно лишь по частям, ведь внутренняя часть гроба обладает большим количеством карманов и иными подобными отсеками для хранения предметов, а в центральной части имеются углубления для  хранения оружия и прочих подобных предметов."
+
+/obj/item/storage/backpack/coffin/w2
+	icon_state = "coffin_w2"
+	item_state = "coffin_w2"
+	name = "Black Rose atelier worker coffin"
+	desc = "Шестигранный чёрный гроб, форма, размер отличаются от серийных образцов похожих предметов для захоронения. Непонятно кто и зачем это придумал, однако гроб имеет функционал обычной сумки для ношения на спине, что почёркивает плотный, чёрный ремень. На изголовье имеется крупный логотип изготовителя в виде розы, хоть и без названия. К сожалению, в гроб поместить человека или иное подобное существо можно лишь по частям, ведь внутренняя часть гроба обладает большим количеством карманов и иными подобными отсеками для хранения предметов, а в центральной части имеются углубления для  хранения оружия и прочих подобных предметов."
+
+///////////////////////////////////////////////
+
+/obj/item/storage/backpack/case/dm_staff
+	name = "military uniform compartment case"
+	desc = "A clothing case with ready-to-go uniform for needs in forest color patterns. You can see label \"DM Arms\". Contains infantry jumpsuit, jacket and helmet."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "dm_case"
+	item_state = "dm_case"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_righthand.dmi'
+
+/obj/item/storage/backpack/case/dm_staff/PopulateContents()
+	new /obj/item/clothing/suit/donator/bm/dm_pzgrnd_suit(src)
+	new /obj/item/clothing/under/donator/bm/dm_pzgrnd_uniform(src)
+	new /obj/item/clothing/head/donator/bm/dm_pzgrnd_helmet(src)
+
+///////////////////////////////////////////////

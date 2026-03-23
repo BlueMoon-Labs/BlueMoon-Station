@@ -68,17 +68,17 @@
 
 
 	//Check for possible doms with the dominant_aura quirk, and for the closest one if there is
-	. = FALSE
+	var/mob/living/carbon/human/closest_phero
 	var/list/mob/living/carbon/human/pheros = range(PHEROMONS_DETECT_RANGE, quirk_holder)
 	var/closest_distance
 	for(var/mob/living/carbon/human/phero in pheros)
 		if(phero != quirk_holder && phero.has_quirk(/datum/quirk/ur_pheromones))
 			if(!closest_distance || get_dist(quirk_holder, phero) <= closest_distance)
-				. = phero
+				closest_phero = phero
 				closest_distance = get_dist(quirk_holder, phero)
 
 	//Return if no dom is found
-	if(!.)
+	if(!closest_phero)
 		last_feromon = null
 		return
 
@@ -94,7 +94,7 @@
 		notice_delay = world.time + 15 SECONDS
 		return
 
-	last_feromon = .
+	last_feromon = closest_phero
 
 	if(notice_delay > world.time)
 		return

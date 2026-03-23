@@ -16,6 +16,7 @@
 	var/container_flags = APTFT_ALTCLICK|APTFT_VERB //the container item flags
 	var/container_HP = 2
 	var/cached_icon
+	var/consume_sound = null
 
 /obj/item/reagent_containers/Initialize(mapload, vol)
 	. = ..()
@@ -33,9 +34,9 @@
 /obj/item/reagent_containers/examine(mob/user)
 	. = ..()
 	if(length(possible_transfer_amounts) > 1)
-		. += "Currently transferring [amount_per_transfer_from_this] units per use."
+		. += "В данный момент используется [amount_per_transfer_from_this] u за раз."
 		if(container_flags & APTFT_ALTCLICK && user.Adjacent(src))
-			. += "<span class='notice'>Alt-click it to set its transfer amount.</span>"
+			. += "<span class='notice'>Alt-click для настройки объёмов использования.</span>"
 
 /obj/item/reagent_containers/AltClick(mob/user)
 	. = ..()
@@ -47,27 +48,29 @@
 	set name = "Set Transfer Amount"
 	set category = "Object"
 	set waitfor = FALSE
-	var/N = input("Amount per transfer from this:","[src]") as null|anything in possible_transfer_amounts
+	var/N = input("Объём переливания:","[src]") as null|anything in possible_transfer_amounts
 	if(N)
 		amount_per_transfer_from_this = N
-		to_chat(usr, "<span class='notice'>[src]'s transfer amount is now [amount_per_transfer_from_this] units.</span>")
+		to_chat(usr, "<span class='notice'>[src] теперь переливает [amount_per_transfer_from_this]u за раз.</span>")
 
 /obj/item/reagent_containers/proc/add_initial_reagents()
 	if(list_reagents)
 		reagents.add_reagent_list(list_reagents)
 
 /obj/item/reagent_containers/attack_self(mob/user)
-	if(possible_transfer_amounts.len)
-		var/i=0
-		for(var/A in possible_transfer_amounts)
-			i++
-			if(A == amount_per_transfer_from_this)
-				if(i<possible_transfer_amounts.len)
-					amount_per_transfer_from_this = possible_transfer_amounts[i+1]
-				else
-					amount_per_transfer_from_this = possible_transfer_amounts[1]
-				balloon_alert(user, "Transferring [amount_per_transfer_from_this]u")
-				return
+	if(!possible_transfer_amounts.len)
+		return ..()
+
+	var/i=0
+	for(var/A in possible_transfer_amounts)
+		i++
+		if(A == amount_per_transfer_from_this)
+			if(i<possible_transfer_amounts.len)
+				amount_per_transfer_from_this = possible_transfer_amounts[i+1]
+			else
+				amount_per_transfer_from_this = possible_transfer_amounts[1]
+			balloon_alert(user, "Transferring [amount_per_transfer_from_this]u")
+			return
 
 /obj/item/reagent_containers/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	if(user.a_intent == INTENT_HARM)
@@ -135,7 +138,12 @@
 			var/turf/AT = get_turf(thrown_by)
 			throwerstring = " THROWN BY [key_name(thrown_by)] at [AT] (AREACOORD(AT)]"
 		log_reagent("SPLASH: [src] mob SplashReagents() onto [key_name(target)] at [TT] ([AREACOORD(TT)])[throwerstring] - [R]")
-		reagents.reaction(target, TOUCH)
+		if(ishuman(target))
+			var/mob/living/carbon/human/H = target
+			var/obj/item/bodypart/affecting = H.get_bodypart(check_zone(thrown_by?.zone_selected))
+			reagents.reaction(M, TOUCH, affected_bodypart = affecting)
+		else
+			reagents.reaction(M, TOUCH)
 		reagents.clear_reagents()
 		playsound(src.loc, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
 

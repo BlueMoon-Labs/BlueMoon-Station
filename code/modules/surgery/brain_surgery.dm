@@ -1,5 +1,6 @@
 /datum/surgery/brain_surgery
 	name = "Brain surgery"
+	desc = "Хирургическая процедура, направленная на устранение повреждений или незначительных травм мозга пациента."
 	steps = list(
 	/datum/surgery_step/incise,
 	/datum/surgery_step/retract_skin,
@@ -11,6 +12,9 @@
 	target_mobtypes = list(/mob/living/carbon/human, /mob/living/carbon/monkey)
 	possible_locs = list(BODY_ZONE_HEAD)
 	requires_bodypart_type = 0
+
+	icon_state = "brain"
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_STATIC
 
 //	special_surgery_traits = list(OPERATION_MUST_BE_PERFORMED_AWAKE) // BLUEMOON ADD - операции на мозги проводятся, когда пациент находится в сознаии
 
@@ -49,6 +53,7 @@
 		display_results(user, target, "<span class='warning'>You screw up, causing more damage!</span>",
 			"<span class='warning'>[user] screws up, causing brain damage!</span>",
 			"[user] completes the surgery on [target]'s brain.")
+		..()
 		target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 60)
 		target.gain_trauma_type(BRAIN_TRAUMA_SEVERE, TRAUMA_RESILIENCE_LOBOTOMY)
 	else

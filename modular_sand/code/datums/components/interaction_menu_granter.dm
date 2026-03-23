@@ -129,6 +129,7 @@
 	.["max_distance"] = 0
 	.["user_is_blacklisted"] = SSinteractions.is_blacklisted(self)
 	var/required_from_user = NONE
+	var/user_has_penis = self.has_penis()
 	if(self.has_mouth())
 		required_from_user |= INTERACTION_REQUIRE_MOUTH
 	if(self.has_hands())
@@ -140,13 +141,21 @@
 	// BLUEMOON ADD
 	if(self.has_tail())
 		required_from_user |= INTERACTION_REQUIRE_TAIL
+	if(self.check_mutation(TK) || HAS_TRAIT(self, TRAIT_TK_POTENTIAL))
+		required_from_user |= INTERACTION_REQUIRE_TK
+	if(user_has_penis)
+		var/shape_desc = get_penis_shape_desc(self)
+		if(self?.client?.prefs.sexknotting && target?.client?.prefs.sexknotting && findtext(shape_desc, "узл"))
+			required_from_user |= INTERACTION_REQUIRE_KNOT
+		if(findtext(shape_desc, "двойн"))
+			required_from_user |= INTERACTION_REQUIRE_DOUBLE_PENIS
 	// BLUEMOON ADD
 	.["required_from_user"] = required_from_user
 
 	var/required_from_user_exposed = NONE
 	var/required_from_user_unexposed = NONE
 
-	var/user_has_penis = self.has_penis() || self.has_strapon()
+	user_has_penis = user_has_penis || self.has_strapon()
 	switch(user_has_penis)
 		if(HAS_EXPOSED_GENITAL)
 			required_from_user_exposed |= INTERACTION_REQUIRE_PENIS
@@ -262,6 +271,7 @@
 	.["theirPrefs"] = null
 	.["theirLust"] = null
 	.["theyAllowLewd"] = null
+	.["theyAllowRanged"] = null
 	.["theyAllowExtreme"] = null
 	//SPLURT EDIT
 	.["theyAllowUnholy"] = null
@@ -275,6 +285,7 @@
 		.["max_distance"] = get_dist(self, target)
 		.["target_is_blacklisted"] = SSinteractions.is_blacklisted(target)
 		var/required_from_target = NONE
+		var/target_has_penis = target.has_penis()
 		if(target.has_mouth())
 			required_from_target |= INTERACTION_REQUIRE_MOUTH
 		if(target.has_hands())
@@ -286,13 +297,19 @@
 		// BLUEMOON ADD
 		if(target.has_tail())
 			required_from_target |= INTERACTION_REQUIRE_TAIL
+		if(target_has_penis)
+			var/shape_desc = get_penis_shape_desc(target)
+			if(self?.client?.prefs.sexknotting && target?.client?.prefs.sexknotting && findtext(shape_desc, "узл"))
+				required_from_target |= INTERACTION_REQUIRE_KNOT
+			if(findtext(shape_desc, "двойн"))
+				required_from_target |= INTERACTION_REQUIRE_DOUBLE_PENIS
 		// BLUEMOON ADD
 		.["required_from_target"] = required_from_target
 
 		var/required_from_target_exposed = NONE
 		var/required_from_target_unexposed = NONE
 
-		var/target_has_penis = target.has_penis() || target.has_strapon()
+		target_has_penis = target_has_penis || target.has_strapon()
 		switch(target_has_penis)
 			if(HAS_EXPOSED_GENITAL)
 				required_from_target_exposed |= INTERACTION_REQUIRE_PENIS
@@ -387,6 +404,7 @@
 			.["theyAllowLewd"] = !!(target.client.prefs.toggles & VERB_CONSENT)
 			.["theyAllowExtreme"] = !!pref_to_num(target.client.prefs.extremepref)
 			.["theyAllowUnholy"] = !!pref_to_num(target.client.prefs.unholypref) //SPLURT EDIT
+			.["theyAllowRanged"] = !!(target.client.prefs.toggles & RANGED_VERBS_CONSENT)
 		if(HAS_TRAIT(user, TRAIT_ESTROUS_DETECT))
 			.["theirLust"] = target.get_lust()
 			.["theirMaxLust"] = target.get_climax_threshold() // BLUEMOON EDIT
@@ -472,8 +490,10 @@
 
 	//Getting preferences
 		.["verb_consent"] = 			!!CHECK_BITFIELD(prefs.toggles, VERB_CONSENT)
+		.["ranged_verb_pref"] = 		!!CHECK_BITFIELD(prefs.toggles, RANGED_VERBS_CONSENT)
 		.["lewd_verb_sounds"] = 		!!CHECK_BITFIELD(prefs.toggles, LEWD_VERB_SOUNDS)
 		.["arousable"] = 				prefs.arousable
+		.["sexknotting"] = 				prefs.sexknotting // BLUEMONN ADD
 		.["genital_examine"] = 			!!CHECK_BITFIELD(prefs.cit_toggles, GENITAL_EXAMINE)
 		.["vore_examine"] = 			!!CHECK_BITFIELD(prefs.cit_toggles, VORE_EXAMINE)
 		.["medihound_sleeper"] =		!!CHECK_BITFIELD(prefs.cit_toggles, MEDIHOUND_SLEEPER)
@@ -505,8 +525,8 @@
 	var/list/sent_interactions = list()
 	for(var/interaction_key in SSinteractions.interactions)
 		var/datum/interaction/I = SSinteractions.interactions[interaction_key]
-		// THIS IS A BASETYPE, DO NOT SEND
-		if(!I.description)
+		// THIS IS A BASETYPE, DO NOT SEND || we hide it from users
+		if(!I.description || (I.interaction_flags & INTERACTION_FLAG_HIDE_IN_PANEL))
 			continue
 		var/list/interaction = list()
 		interaction["key"] = I.type
@@ -585,12 +605,15 @@
 			var/datum/interaction/interaction = SSinteractions.interactions[params["interaction"]]
 			if(!interaction)
 				return FALSE
-			var/datum/preferences/prefs = parent_mob.client.prefs
+			var/client/C = parent_mob?.client
+			if(!C?.prefs)
+				return FALSE
+			var/datum/preferences/prefs = C.prefs
 			if(interaction.type in prefs.favorite_interactions)
 				LAZYREMOVE(prefs.favorite_interactions, interaction.type)
 			else
 				LAZYADD(prefs.favorite_interactions, interaction.type)
-			prefs.save_preferences()
+			prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 			return TRUE
 		if("genital")
 			var/mob/living/carbon/self = parent_mob
@@ -703,10 +726,14 @@
 
 				if("verb_consent")
 					TOGGLE_BITFIELD(prefs.toggles, VERB_CONSENT)
+				if("ranged_verb_pref")
+					TOGGLE_BITFIELD(prefs.toggles, RANGED_VERBS_CONSENT)
 				if("lewd_verb_sounds")
 					TOGGLE_BITFIELD(prefs.toggles, LEWD_VERB_SOUNDS)
 				if("arousable")
 					prefs.arousable = !prefs.arousable
+				if("sexknotting")
+					prefs.sexknotting = !prefs.sexknotting
 				if("genital_examine")
 					TOGGLE_BITFIELD(prefs.cit_toggles, GENITAL_EXAMINE)
 				if("vore_examine")

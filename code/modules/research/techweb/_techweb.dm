@@ -60,6 +60,18 @@
 	var/datum/techweb_node/alientech/Node = new()
 	research_node(Node, TRUE)
 
+//BLUEMOON ADD START - добовляю новую скрытую за иследованиями особого предмета из карго ноду
+
+/datum/techweb/upgraded
+	id = "UPGRADED"
+	organization = "NT ballistics"
+
+/datum/techweb/upgraded/New()
+	var/datum/techweb_node/advanced_weaponry/Node = new()
+	research_node(Node, TRUE)
+
+//BLUEMOON ADD END
+
 /datum/techweb/science	//Global science techweb for RND consoles.
 	id = "SCIENCE"
 	organization = "Nanotrasen"

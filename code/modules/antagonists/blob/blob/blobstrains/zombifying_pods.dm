@@ -31,7 +31,7 @@
 	name = "Zombifying Pods"
 	color = "#E88D5D"
 
-/datum/reagent/blob/zombifying_pods/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message, touch_protection, mob/camera/blob/O)
+/datum/reagent/blob/zombifying_pods/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message, touch_protection, mob/camera/blob/O, affected_bodypart)
 	reac_volume = ..()
 	M.apply_damage(0.6*reac_volume, TOX)
 	if(O && ishuman(M) && M.stat == UNCONSCIOUS)

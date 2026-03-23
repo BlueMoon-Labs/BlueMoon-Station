@@ -57,10 +57,10 @@
 	if(abs(ONE_ATMOSPHERE - T.return_air().return_pressure()) > (potency/10 + 10)) // clouds can begin showing at around 50-60 potency in standard atmos
 		return
 
-	var/datum/gas_mixture/stank = new
-	stank.adjust_moles(GAS_MIASMA,(yield + 48)*0.14) // 0.14 = 7*0.02, this process is only being called about 2/7 as much as corpses so this is 12-32 times a corpses
-	stank.set_temperature(T20C) // without this the room would eventually freeze and miasma mining would be easier
-	T.assume_air(stank)
+	var/datum/gas_mixture/turf_air = T.return_air()
+	if(!turf_air)
+		return
+	turf_air.adjust_moles_temp(GAS_MIASMA, (yield + 48) * 0.14, T20C) // 0.14 = 7*0.02, this process is only being called about 2/7 as much as corpses so this is 12-32 times a corpses
 	T.air_update_turf()
 
 //Galaxy Thistle
@@ -533,11 +533,7 @@
 	icon_state = "aloe"
 	filling_color = "#90EE90"
 	bitesize_mod = 5
+	cooked_type = /obj/item/stack/medical/aloe/fresh
 	foodtype = VEGETABLES
 	juice_results = list(/datum/reagent/consumable/aloejuice = 0)
 	distill_reagent = /datum/reagent/consumable/ethanol/tequila
-
-/obj/item/reagent_containers/food/snacks/grown/aloe/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	new /obj/item/stack/medical/aloe(drop_location(), 2)
-	qdel(src)
-	return ..() | COMPONENT_MICROWAVE_SUCCESS

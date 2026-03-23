@@ -22,6 +22,10 @@
 	name = "feminie longsleeve croptop"
 	path = /obj/item/clothing/underwear/shirt/longsleeve_croptop_female
 
+/datum/gear/shirt/adjustable_shirt
+	name = "adjustable shirt"
+	path = /obj/item/clothing/underwear/shirt/adjustable_wtoggle/adjustable_shirt
+
 /datum/gear/shirt/formalshirt
 	name = "formal shirt"
 	path = /obj/item/clothing/underwear/shirt/formalshirt

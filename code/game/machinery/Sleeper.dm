@@ -6,7 +6,7 @@
 
 /obj/machinery/sleeper
 	name = "sleeper"
-	desc = "An enclosed machine used to stabilize and heal patients."
+	desc = "Закрываемое устройство для стабилизации и лечения пациентов."
 	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "sleeper"
 	density = FALSE
@@ -18,14 +18,16 @@
 	var/list/available_chems
 	var/controls_inside = FALSE
 	var/list/possible_chems = list(
-		list(/datum/reagent/medicine/epinephrine, /datum/reagent/medicine/morphine, /datum/reagent/medicine/salbutamol, /datum/reagent/medicine/bicaridine, /datum/reagent/medicine/kelotane),
+		list(/datum/reagent/medicine/epinephrine, /datum/reagent/medicine/morphine, /datum/reagent/medicine/salbutamol, /datum/reagent/medicine/charcoal, /datum/reagent/medicine/salglu_solution),
 		list(/datum/reagent/medicine/oculine,/datum/reagent/medicine/inacusiate),
-		list(/datum/reagent/medicine/antitoxin, /datum/reagent/medicine/mutadone, /datum/reagent/medicine/mannitol, /datum/reagent/medicine/pen_acid),
-		list(/datum/reagent/medicine/omnizine)
+		list(/datum/reagent/medicine/mutadone, /datum/reagent/medicine/mannitol),
+		list(/datum/reagent/medicine/omnizine),
+		list(/datum/reagent/medicine/atropine),
+		list(/datum/reagent/medicine/perfluorodecalin, /datum/reagent/medicine/neurine, /datum/reagent/medicine/sal_acid, /datum/reagent/medicine/oxandrolone)
 	)
 	var/list/chem_buttons	//Used when emagged to scramble which chem is used, eg: antitoxin -> morphine
 	var/scrambled_chems = FALSE //Are chem buttons scrambled? used as a warning
-	var/enter_message = "<span class='notice'><b>You feel cool air surround you. You go numb as your senses turn inward.</b></span>"
+	var/enter_message = "<span class='notice'><b>Прохладный воздух окутывает вас. Вы немеете и ваши чувства отходят глубоко внутрь.</b></span>"
 	payment_department = ACCOUNT_MED
 	fair_market_price = 5
 
@@ -50,7 +52,7 @@
 	efficiency = initial(efficiency)* E
 	min_health = initial(min_health) - (10*(E-1)) // CIT CHANGE - changes min health equation to be min_health - (matterbin rating * 10)
 	available_chems = list()
-	I = clamp(I, 1, 5) //patch for T6, fix it later
+	I = clamp(I, 1, possible_chems.len)
 	for(var/i in 1 to I)
 		available_chems |= possible_chems[i]
 	reset_chem_buttons()
@@ -62,8 +64,8 @@
 		icon_state = initial(icon_state)
 
 /obj/machinery/sleeper/container_resist(mob/living/user)
-	visible_message("<span class='notice'>[occupant] emerges from [src]!</span>",
-		"<span class='notice'>You climb out of [src]!</span>")
+	visible_message("<span class='notice'>[occupant] выходит из [src]!</span>",
+		"<span class='notice'>Вы выбираетесь из [src]!</span>")
 	open_machine()
 
 /obj/machinery/sleeper/Exited(atom/movable/user)
@@ -116,10 +118,10 @@
 	if(..())
 		return
 	if(occupant)
-		to_chat(user, "<span class='warning'>[src] is currently occupied!</span>")
+		to_chat(user, "<span class='warning'>[src] сейчас занят изнутри!</span>")
 		return
 	if(state_open)
-		to_chat(user, "<span class='warning'>[src] must be closed to [panel_open ? "close" : "open"] its maintenance hatch!</span>")
+		to_chat(user, "<span class='warning'>[src] должен быть закрыт для [panel_open ? "закрытия" : "открытия"] люка техобслуживания!</span>")
 		return
 	if(default_deconstruction_screwdriver(user, "[initial(icon_state)]-o", initial(icon_state), I))
 		return
@@ -141,7 +143,7 @@
 	. = !(state_open || panel_open || (flags_1 & NODECONSTRUCT_1)) && I.tool_behaviour == TOOL_CROWBAR
 	if(.)
 		I.play_tool_sound(src, 50)
-		visible_message("<span class='notice'>[usr] pries open [src].</span>", "<span class='notice'>You pry open [src].</span>")
+		visible_message("<span class='notice'>[usr] вскрывает [src].</span>", "<span class='notice'>Вы вскрываете [src].</span>")
 		open_machine()
 
 /obj/machinery/sleeper/ui_state(mob/user)
@@ -165,9 +167,10 @@
 
 /obj/machinery/sleeper/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Alt-click [src] to [state_open ? "close" : "open"] it.</span>"
+	. += "<span class='notice'>Alt-click для того, чтобы [state_open ? "закрыть" : "открыть"].</span>"
 	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Efficiency: <b>[efficiency*100]%</b>.</span>"
+		. += "<span class='notice'>Статус-дисплей сообщает: \n\
+		- Эффективность дозировок: <b>[efficiency*100]%</b>.</span>"
 
 /obj/machinery/sleeper/process()
 	..()
@@ -184,7 +187,10 @@
 	data["chems"] = list()
 	for(var/chem in available_chems)
 		var/datum/reagent/R = GLOB.chemical_reagents_list[chem]
-		data["chems"] += list(list("name" = R.name, "id" = R.type, "allowed" = chem_allowed(chem)))
+		var/chem_name = R.name
+		if(istype(R, /datum/reagent/medicine/salglu_solution))
+			chem_name = "Saline-Glucose"
+		data["chems"] += list(list("name" = chem_name, "id" = R.type, "allowed" = chem_allowed(chem)))
 
 	data["occupant"] = list()
 	var/mob/living/mob_occupant = occupant
@@ -192,16 +198,16 @@
 		data["occupant"]["name"] = mob_occupant.name
 		switch(mob_occupant.stat)
 			if(CONSCIOUS)
-				data["occupant"]["stat"] = "Conscious"
+				data["occupant"]["stat"] = "В сознании"
 				data["occupant"]["statstate"] = "good"
 			if(SOFT_CRIT)
-				data["occupant"]["stat"] = "Conscious"
+				data["occupant"]["stat"] = "В сознании"
 				data["occupant"]["statstate"] = "average"
 			if(UNCONSCIOUS)
-				data["occupant"]["stat"] = "Unconscious" // 15.09.2023. Отметка. Перевести
+				data["occupant"]["stat"] = "Без сознания" // 15.09.2023. Отметка. Перевести
 				data["occupant"]["statstate"] = "average"
 			if(DEAD)
-				data["occupant"]["stat"] = "Dead"
+				data["occupant"]["stat"] = "М[mob_occupant.gender == FEMALE ? "ертва" : "ёртв"]"
 				data["occupant"]["statstate"] = "bad"
 		data["occupant"]["health"] = mob_occupant.health
 		data["occupant"]["maxHealth"] = mob_occupant.maxHealth
@@ -240,14 +246,14 @@
 			if(inject_chem(chem, usr))
 				. = TRUE
 				if(scrambled_chems && prob(5))
-					to_chat(usr, "<span class='warning'>Chemical system re-route detected, results may not be as expected!</span>")
+					to_chat(usr, "<span class='warning'>Обнаружено изменение маршрутов химической системы, результаты могут не соответствовать ожидаемым!</span>")
 
 /obj/machinery/sleeper/emag_act(mob/user)
 	. = ..()
 	obj_flags |= EMAGGED
 	scramble_chem_buttons()
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
-	to_chat(user, "<span class='warning'>You scramble the sleeper's user interface!</span>")
+	to_chat(user, "<span class='warning'>Вы взломали протоколы интерфейса слипера!</span>")
 	return TRUE
 
 /obj/machinery/sleeper/proc/inject_chem(chem, mob/user)
@@ -310,7 +316,8 @@
 
 /obj/machinery/sleeper/party
 	name = "party pod"
-	desc = "'Sleeper' units were once known for their healing properties, until a lengthy investigation revealed they were also dosing patients with deadly lead acetate. This appears to be one of those old 'sleeper' units repurposed as a 'Party Pod'. It’s probably not a good idea to use it."
+	desc = "Модель 'слипер'-устройства, однажды лечившее, пока длительное обследование не обнаружило факт инъекций летальных доз ацетатов. \
+	Похоже, что это один из тех старых 'слиперов', переделанных в 'парти-под'. Использовать его может быть не лучшей идеей."
 	icon_state = "partypod"
 	idle_power_usage = 3000
 	circuit = /obj/item/circuitboard/machine/sleeper/party
@@ -326,7 +333,7 @@
 	var/spray_chems = list(
 		/datum/reagent/spraytan, /datum/reagent/hair_dye, /datum/reagent/baldium, /datum/reagent/barbers_aid
 	)//Chemicals that need to have a touch or vapor reaction to be applied, not the standard chamber reaction.
-	enter_message = "<span class='notice'><b>You're surrounded by some funky music inside the chamber. You zone out as you feel waves of krunk vibe within you.</b></span>"
+	enter_message = "<span class='notice'><b>Вас обволакивает музыка-фанк. Вы отрубаетесь, ощущая как волны крэнк-вайба растекаются внутри вас.</b></span>"
 
 /obj/machinery/sleeper/party/inject_chem(chem, mob/user)
 	if(leddit)
@@ -350,9 +357,9 @@
 
 /obj/machinery/sleeper/clockwork
 	name = "soothing sleeper"
-	desc = "A large cryogenics unit built from brass. Its surface is pleasantly cool the touch."
+	desc = "Большое устройство-криокамера из латуни. Поверхность приятно холодная на ощупь."
 	icon_state = "sleeper_clockwork"
-	enter_message = "<span class='bold inathneq_small'>You hear the gentle hum and click of machinery, and are lulled into a sense of peace.</span>"
+	enter_message = "<span class='bold inathneq_small'>Вы слышите тихое гудение и щёлканье машины и погружаетесь в чувство покоя.</span>"
 	possible_chems = list(
 		list(/datum/reagent/medicine/epinephrine, /datum/reagent/medicine/salbutamol, /datum/reagent/medicine/bicaridine, /datum/reagent/medicine/kelotane, /datum/reagent/medicine/oculine, /datum/reagent/medicine/inacusiate, /datum/reagent/medicine/mannitol)
 	) //everything is available at start

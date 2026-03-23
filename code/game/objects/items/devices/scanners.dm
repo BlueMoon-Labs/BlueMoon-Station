@@ -78,7 +78,7 @@ GENETICS SCANNER
 	item_state = "healthanalyzer"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
-	desc = "A hand-held body scanner able to distinguish vital signs of the subject."
+	desc = "Ручной сканер тела с функцией анализа показателей здоровья пациента."
 	flags_1 = CONDUCT_1
 	item_flags = NOBLUDGEON
 	slot_flags = ITEM_SLOT_BELT
@@ -423,6 +423,8 @@ GENETICS SCANNER
 			msg += "<span class='alert'><b>У субъекта отсутствуют глаза.</b></span>\n"
 		if(!M.getorganslot(ORGAN_SLOT_EARS))
 			msg += "<span class='alert'><b>У субъекта отсутсвуют уши.</b></span>\n"
+		if(!M.getorganslot(ORGAN_SLOT_TONGUE))
+			msg += "<span class='alert'><b>У субъекта отсутсвует язык.</b></span>\n"
 		if(!M.getorganslot(ORGAN_SLOT_BRAIN))
 			msg += "<span class='alert'><b>У субъекта отсутствуют функции мозга!</b></span>\n"
 		if(has_liver && !M.getorganslot(ORGAN_SLOT_LIVER))
@@ -436,7 +438,10 @@ GENETICS SCANNER
 
 
 		if(M.radiation)
-			msg += "<span class='alert'>Субъект заражен радиацией.</span>\n"
+			if(M.radiation > RAD_MOB_SAFE)
+				msg += "<span class='alert'>Субъект заражен опасной дозой радиацией!</span>\n"
+			else
+				msg += "<span class='red'>Субъект подвергся безопасному уровню радиационного воздействия.</span>\n"
 			msg += "<span class='info'>Показатели радиационного заражения: [M.radiation] rad</span>\n"
 
 
@@ -501,6 +506,14 @@ GENETICS SCANNER
 						msg += "<span class='danger'> Вмешательство рекомендовано.</span>\n"
 					else
 						msg += "\n"
+	// Operations
+	if(M.sterilize_power)
+		msg += span_nicegreen("Ткани пациента продезинфицированы, что повышет шанс успеха операции на [M.sterilize_power] %. ") + span_info("Эффект продлится еще [DisplayTimeText(M._sterilize_expire - world.time)]\n")
+
+	for(var/datum/surgery/procedure in M.surgeries)
+		var/datum/surgery_step/surgery_step = procedure.get_surgery_step()
+		msg += span_danger("Начата операция на [procedure.operated_bodypart?.ru_name_v], шанс на успех в текущих условиях: [clamp(surgery_step.get_chance(M, user, user.get_inactive_held_item(), procedure, TRUE),0,100)] %\n")
+
 	// Wounds
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
@@ -733,7 +746,7 @@ GENETICS SCANNER
 	woundscan(user, patient, src)
 
 /obj/item/analyzer
-	desc = "A hand-held environmental scanner which reports current gas levels. Alt-Click to use the built in barometer function."
+	desc = "Ручной анализатор среды, докладывающий о состоянии газов вокруг себя."
 	name = "analyzer"
 	icon = 'icons/obj/device.dmi'
 	icon_state = "analyzer"
@@ -756,10 +769,10 @@ GENETICS SCANNER
 
 /obj/item/analyzer/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Alt-click [src] to activate the barometer function.</span>"
+	. += "<span class='notice'>Alt-click для активации функций барометра.</span>"
 
 /obj/item/analyzer/suicide_act(mob/living/carbon/user)
-	user.visible_message("<span class='suicide'>[user] begins to analyze себя with [src]! The display shows that [user.ru_who()] dead!</span>")
+	user.visible_message("<span class='suicide'>[user] начинает анализировать себя с помощью [src]! Экран показывает, что [user.ru_who()] мертв[user.ru_a()]!</span>")
 	return BRUTELOSS
 
 /obj/item/analyzer/attack_self(mob/user)
@@ -823,7 +836,7 @@ GENETICS SCANNER
 /obj/item/analyzer/proc/ping()
 	if(isliving(loc))
 		var/mob/living/L = loc
-		to_chat(L, "<span class='notice'>[src]'s barometer function is ready!</span>")
+		to_chat(L, "<span class='notice'>Функция барометра [src] готова!</span>")
 	playsound(src, 'sound/machines/click.ogg', 100)
 	cooldown = FALSE
 
@@ -846,8 +859,8 @@ GENETICS SCANNER
 	var/icon = target
 	var/render_list = list()
 	if(!silent && isliving(user))
-		user.visible_message("<span class='notice'>[user] uses the analyzer on [icon2html(icon, viewers(user))] [target].</span>", "<span class='notice'>You use the analyzer on [icon2html(icon, user)] [target].</span>")
-	render_list += "<span class='boldnotice'>Results of analysis of [icon2html(icon, user)] [target].</span>"
+		user.visible_message("<span class='notice'>[user] использует анализатор на [icon2html(icon, viewers(user))] [target].</span>", "<span class='notice'>Вы используете анализатор на [icon2html(icon, user)] [target].</span>")
+	render_list += "<span class='boldnotice'>Результаты анализа [icon2html(icon, user)] [target].</span>"
 
 	var/list/airs = islist(mixture) ? mixture : list(mixture)
 	for(var/g in airs)
@@ -863,10 +876,10 @@ GENETICS SCANNER
 
 		if(total_moles > 0)
 			//WS Start -- Atmos Analyzer Reformat (Issue #419)
-			render_list += "<span class='notice'>Moles: [round(total_moles, 0.01)] mol</span>\
-							\n<span class='notice'>Volume: [volume] L</span>\
-							\n<span class='notice'>Pressure: [round(pressure,0.01)] kPa</span>\
-							\n<span class='notice'>Temperature: [round(temperature - T0C,0.01)] &deg;C ([round(temperature, 0.01)] K)</span>"
+			render_list += "<span class='notice'>Молей: [round(total_moles, 0.01)] mol</span>\
+							\n<span class='notice'>Объём: [volume] L</span>\
+							\n<span class='notice'>Давление: [round(pressure,0.01)] кПа</span>\
+							\n<span class='notice'>Температура: [round(temperature - T0C,0.01)] &deg;C ([round(temperature, 0.01)] K)</span>"
 			//WS End
 
 			for(var/id in air_contents.get_gases())
@@ -877,8 +890,8 @@ GENETICS SCANNER
 			render_list += airs.len > 1 ? "<span class='notice'>This node is empty!</span>" : "<span class='notice'>[target] is empty!</span>"
 
 		if(cached_scan_results && cached_scan_results["fusion"]) //notify the user if a fusion reaction was detected
-			render_list += "<span class='boldnotice'>Large amounts of free neutrons detected in the air indicate that a fusion reaction took place.</span>\
-						\n<span class='notice'>Instability of the last fusion reaction: [round(cached_scan_results["fusion"], 0.01)].</span>"
+			render_list += "<span class='boldnotice'>Большое количество свободных нейтронов зафиксировано в воздухе, свидетельствуя, что реакция синтеза была поблизости.</span>\
+						\n<span class='notice'>Нестабильность недавней реакции синтеза: [round(cached_scan_results["fusion"], 0.01)].</span>"
 
 	// we let the join apply newlines so we do need handholding
 	to_chat(user, examine_block(jointext(render_list, "\n")), type = MESSAGE_TYPE_INFO)
@@ -892,11 +905,11 @@ GENETICS SCANNER
 	var/total_moles = environment.total_moles()
 	var/cached_scan_results = environment.analyzer_results
 
-	var/results = "<span class='info'><B>Results:</B></span>"
+	var/results = "<span class='info'><B>Результаты:</B></span>"
 	if(abs(pressure - ONE_ATMOSPHERE) < 10)
-		results += "\n<span class='info'>Pressure: [round(pressure, 0.01)] kPa</span>"
+		results += "\n<span class='info'>Давление: [round(pressure, 0.01)] кПа</span>"
 	else
-		results += "\n<span class='alert'>Pressure: [round(pressure, 0.01)] kPa</span>"
+		results += "\n<span class='alert'>Давление: [round(pressure, 0.01)] кПа</span>"
 	if(total_moles)
 
 		var/o2_concentration = environment.get_moles(GAS_O2)/total_moles
@@ -929,7 +942,7 @@ GENETICS SCANNER
 				continue
 			var/gas_concentration = environment.get_moles(id)/total_moles
 			results += "\n<span class='alert'>[GLOB.gas_data.names[id]]: [round(gas_concentration*100, 0.01)] % ([round(environment.get_moles(id), 0.01)] mol)</span>"
-		results += "\n<span class='info'>Temperature: [round(environment.return_temperature()-T0C, 0.01)] &deg;C ([round(environment.return_temperature(), 0.01)] K)</span>"
+		results += "\n<span class='info'>Температура: [round(environment.return_temperature()-T0C, 0.01)] &deg;C ([round(environment.return_temperature(), 0.01)] K)</span>"
 
 		if(cached_scan_results && cached_scan_results["fusion"]) //notify the user if a fusion reaction was detected
 			var/instability = round(cached_scan_results["fusion"], 0.01)
@@ -947,7 +960,7 @@ GENETICS SCANNER
 
 /obj/item/analyzer/ranged/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
-	if(target.tool_act(user, src, tool_behaviour))
+	if(target.tool_act(user, src, click_parameters))
 		return
 	// Tool act didn't scan it, so let's get it's turf.
 	var/turf/location = get_turf(target)

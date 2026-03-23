@@ -1,7 +1,7 @@
 #define STASIS_TOGGLE_COOLDOWN 50
 /obj/machinery/stasis
 	name = "Lifeform Stasis Unit"
-	desc = "A not so comfortable looking bed with some nozzles at the top and bottom. It will keep someone in stasis."
+	desc = "Не так уж и удобно выглядящая кушетка с форсунками сверху и снизу. Способна держать цель в стазисе."
 	icon = 'icons/obj/machines/stasis.dmi'
 	icon_state = "stasis"
 	base_icon_state = "stasis"
@@ -22,7 +22,7 @@
 
 /obj/machinery/stasis/examine(mob/user)
 	. = ..()
-	. += span_notice("Alt-click to [stasis_enabled ? "turn off" : "turn on"] the machine.")
+	. += span_notice("Alt-click для [stasis_enabled ? "выключения" : "включения"] машины.")
 
 /obj/machinery/stasis/proc/play_power_sound()
 	var/_running = stasis_running()
@@ -42,9 +42,9 @@
 		stasis_enabled = !stasis_enabled
 		COOLDOWN_START(src, stasis_can_toggle, STASIS_TOGGLE_COOLDOWN)
 		playsound(src, 'sound/machines/click.ogg', 60, TRUE)
-		user.visible_message(span_notice("\The [src] [stasis_enabled ? "powers on" : "shuts down"]."), \
-					span_notice("You [stasis_enabled ? "power on" : "shut down"] \the [src]."), \
-					span_hear("You hear a nearby machine [stasis_enabled ? "power on" : "shut down"]."))
+		user.visible_message(span_notice("\The [src] [stasis_enabled ? "включается" : "выключается"]."), \
+					span_notice("Вы [stasis_enabled ? "включили" : "выключили"] \the [src]."), \
+					span_hear("Вы слышите как машина неподалёку [stasis_enabled ? "включается" : "выключается"]."))
 		play_power_sound()
 		update_appearance()
 
@@ -75,6 +75,7 @@
 	var/_running = stasis_running()
 	if(!mattress_on)
 		mattress_on = SSvis_overlays.add_vis_overlay(src, icon, mattress_state, BELOW_OBJ_LAYER, plane, dir, alpha = 0, unique = TRUE)
+		mattress_on.vis_flags = VIS_INHERIT_PLANE | VIS_INHERIT_LAYER | VIS_INHERIT_DIR | VIS_INHERIT_ID
 	else
 		vis_contents += mattress_on
 		if(managed_vis_overlays)
@@ -103,14 +104,14 @@
 	var/freq = rand(24750, 26550)
 	playsound(src, 'sound/effects/spray.ogg', 5, TRUE, 2, frequency = freq)
 	target.apply_status_effect(/datum/status_effect/grouped/stasis, STASIS_MACHINE_EFFECT)
-	ADD_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_MORPHINE) //SKYRAT EDIT, Painkiller.
+	ADD_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_STASIS) //SKYRAT EDIT, Painkiller.
 	target.throw_alert("painkiller", /atom/movable/screen/alert/painkiller) // BLUEMOON ADD
 	target.ExtinguishMob()
 	use_power = ACTIVE_POWER_USE
 
 /obj/machinery/stasis/proc/thaw_them(mob/living/target)
 	target.remove_status_effect(/datum/status_effect/grouped/stasis, STASIS_MACHINE_EFFECT)
-	REMOVE_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_MORPHINE) //SKYRAT EDIT, Painkiller.
+	REMOVE_TRAIT(target, TRAIT_PAINKILLER, PAINKILLER_STASIS) //SKYRAT EDIT, Painkiller.
 	target.clear_alert("painkiller", /atom/movable/screen/alert/painkiller) // BLUEMOON ADD
 	if(target == occupant)
 		use_power = IDLE_POWER_USE

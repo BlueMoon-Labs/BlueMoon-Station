@@ -17,6 +17,7 @@
 
 /obj/structure/transit_tube_pod/Destroy()
 	empty_pod()
+	QDEL_NULL(air_contents)
 	return ..()
 
 /obj/structure/transit_tube_pod/update_icon_state()

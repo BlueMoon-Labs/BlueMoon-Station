@@ -32,6 +32,9 @@
 /obj/item/grenade/plastic/Destroy()
 	qdel(nadeassembly)
 	nadeassembly = null
+	if(target && !QDELETED(target))
+		UnregisterSignal(target, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(add_plastic_overlay))
+		target.update_icon(UPDATE_OVERLAYS)
 	target = null
 	return ..()
 
@@ -61,8 +64,8 @@
 	if(target)
 		if(!QDELETED(target))
 			location = get_turf(target)
-			target.cut_overlay(plastic_overlay)
 			UnregisterSignal(target, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(add_plastic_overlay))
+			target.update_icon(UPDATE_OVERLAYS)
 			if(!ismob(target) || full_damage_on_mobs)
 				target.ex_act(EXPLODE_HEAVY, target)
 	else
@@ -192,7 +195,6 @@
 /obj/item/grenade/plastic/c4/Destroy()
 	qdel(wires)
 	wires = null
-	target = null
 	return ..()
 
 /obj/item/grenade/plastic/c4/suicide_act(mob/user)

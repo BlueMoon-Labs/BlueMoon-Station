@@ -251,7 +251,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 
 /datum/objective/mutiny/check_completion()
 	var/turf/T = get_turf(target.current)
-	return FALSE || !T || !is_station_level(T.z) || ..()
+	return !T || !is_station_level(T.z)
 
 /datum/objective/mutiny/check_midround_completion()
 	return FALSE
@@ -259,7 +259,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 /datum/objective/mutiny/update_explanation_text()
 	..()
 	if(target && target.current)
-		explanation_text = "Наша цель - [target.name], [!target_role_type ? target.assigned_role : target.special_role]. Уничтожь эту цель! Кто бы это не был, эта станция будет ему могилой."
+		explanation_text = "Наша цель - [target.name], [!target_role_type ? target.assigned_role : target.special_role]. Убейте или изгоните цель в ГЕЙТ."
 	else
 		explanation_text = "Свободная Задача"
 
@@ -282,7 +282,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 
 /datum/objective/maroon/update_explanation_text()
 	if(target && target.current)
-		explanation_text = "Наша цель - [target.name], [!target_role_type ? target.assigned_role : target.special_role]. Не дай этой цели покинуть станцию!"
+		explanation_text = "Наша цель - [target.name], [!target_role_type ? target.assigned_role : target.special_role]. Не позвольте цели уйти со станции живым. Вы в праве уничтожить [target.name]!"
 	else
 		explanation_text = "Свободная Задача"
 
@@ -564,7 +564,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 
 /datum/objective/nuclear/revert
 	name = "revert_nuclear"
-	explanation_text = "Защити Космическую Станцию и Ядерный Диск любой ценой."
+	explanation_text = "Авторизуйся, защищай Космическую Станцию и обеспечивай охрану Ядерного Диска любой ценой."
 	martyr_compatible = 1
 
 /datum/objective/nuclear/revert/check_completion()

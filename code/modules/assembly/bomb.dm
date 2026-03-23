@@ -53,7 +53,7 @@
 		return
 	if(I.use_tool(src, user, 0, volume=40))
 		status = TRUE
-		GLOB.bombers += "[key_name(user)] welded a single tank bomb. Temp: [bombtank.air_contents.return_temperature()-T0C]"
+		add_bomber_message("[key_name(user)] welded a single tank bomb. Temp: [bombtank.air_contents.return_temperature()-T0C]")
 		message_admins("[ADMIN_LOOKUPFLW(user)] welded a single tank bomb. Temp: [bombtank.air_contents.return_temperature()-T0C]")
 		to_chat(user, "<span class='notice'>A pressure hole has been bored to [bombtank] valve. \The [bombtank] can now be ignited.</span>")
 		add_fingerprint(user)
@@ -193,6 +193,7 @@
 		ground_zero.assume_air(bomb_mixture)
 		ground_zero.hotspot_expose(1000, 125)
 
+	qdel(bomb_mixture)
 	ground_zero.air_update_turf()
 
 /obj/item/tank/proc/release()	//This happens when the bomb is not welded. Tank contents are just spat out.

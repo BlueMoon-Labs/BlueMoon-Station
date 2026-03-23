@@ -26,19 +26,17 @@ const testGeneric = testFn => () => {
   }
 };
 
-// Localstorage can sometimes throw an error, even if DOM storage is not
-// disabled in IE11 settings.
+// LocalStorage can sometimes throw even when storage appears available.
 // See: https://superuser.com/questions/1080011
 const testLocalStorage = testGeneric(() => (
   window.localStorage && window.localStorage.getItem
 ));
 
 const testIndexedDb = testGeneric(() => (
-  (window.indexedDB || window.msIndexedDB)
-  && (window.IDBTransaction || window.msIDBTransaction)
+  window.indexedDB && window.IDBTransaction
 ));
 
-class MemoryBackend {
+export class MemoryBackend {
   constructor() {
     this.impl = IMPL_MEMORY;
     this.store = {};
@@ -53,7 +51,7 @@ class MemoryBackend {
   }
 
   remove(key) {
-    this.store[key] = undefined;
+    delete this.store[key];
   }
 
   clear() {
@@ -61,7 +59,7 @@ class MemoryBackend {
   }
 }
 
-class LocalStorageBackend {
+export class LocalStorageBackend {
   constructor() {
     this.impl = IMPL_LOCAL_STORAGE;
   }
@@ -74,7 +72,11 @@ class LocalStorageBackend {
   }
 
   set(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+    if (value === undefined) {
+      localStorage.removeItem(key);
+    } else {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
   }
 
   remove(key) {
@@ -91,7 +93,7 @@ class IndexedDbBackend {
     this.impl = IMPL_INDEXED_DB;
     /** @type {Promise<IDBDatabase>} */
     this.dbPromise = new Promise((resolve, reject) => {
-      const indexedDB = window.indexedDB || window.msIndexedDB;
+      const indexedDB = window.indexedDB;
       const req = indexedDB.open(INDEXED_DB_NAME, INDEXED_DB_VERSION);
       req.onupgradeneeded = () => {
         try {
@@ -124,10 +126,6 @@ class IndexedDbBackend {
   }
 
   async set(key, value) {
-    // The reason we don't _save_ null is because IE 10 does
-    // not support saving the `null` type in IndexedDB. How
-    // ironic, given the bug below!
-    // See: https://github.com/mozilla/localForage/issues/161
     if (value === null) {
       value = undefined;
     }

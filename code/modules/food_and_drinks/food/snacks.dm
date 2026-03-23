@@ -51,14 +51,14 @@ All foods are distributed among various categories. Use common sense.
 	righthand_file = 'icons/mob/inhands/misc/food_righthand.dmi'
 	obj_flags = UNIQUE_RENAME
 	grind_results = list() //To let them be ground up to transfer their reagents
+	consume_sound = 'sound/items/eatfood.ogg'
 	var/bitesize = 2
 	var/bitecount = 0
+	///Type of atom thats spawned after eating this item
 	var/trash = null
 	var/slice_path    // for sliceable food. path of the item resulting from the slicing
 	var/slices_num
 	var/eatverb
-	var/dried_type = null
-	var/dry = 0
 	var/cooked_type = null  //for microwave cooking. path of the resulting item after microwaving
 	var/filling_color = "#FFFFFF" //color to use when added to custom food.
 	var/custom_food_type = null  //for food customizing. path of the custom food to create
@@ -70,6 +70,48 @@ All foods are distributed among various categories. Use common sense.
 	var/dunk_amount = 10 // how much reagent is transferred per dunk
 
 	//Placeholder for effect that trigger on eating that aren't tied to reagents.
+
+/obj/item/reagent_containers/food/snacks/ComponentInitialize()
+	. = ..()
+	if(dunkable)
+		AddElement(/datum/element/dunkable, dunk_amount)
+
+/obj/item/reagent_containers/food/snacks/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ITEM_MICROWAVE_COOKED, PROC_REF(on_microwave_cooked))
+	make_microwaveable()
+	make_processable()
+	make_dryable()
+	make_leave_trash()
+
+/obj/item/reagent_containers/food/snacks/Destroy()
+	UnregisterSignal(src, COMSIG_ITEM_MICROWAVE_COOKED)
+	if(contents)
+		for(var/atom/movable/something in contents)
+			something.forceMove(drop_location())
+	return ..()
+
+/// This proc handles the microwave component. Overwrite if you want special microwave results.
+/// By default, all food is microwavable. However, they will be microwaved into a bad recipe (burnt mess).
+/obj/item/reagent_containers/food/snacks/proc/make_microwaveable()
+	if(!cooked_type)
+		AddElement(/datum/element/microwavable, /obj/item/reagent_containers/food/snacks/badrecipe, bad_recipe = TRUE)
+	else
+		AddElement(/datum/element/microwavable, cooked_type)
+
+///This proc handles processable elements, overwrite this if you want to add behavior such as slicing, forking, spooning, whatever, to turn the item into something else
+/obj/item/reagent_containers/food/snacks/proc/make_processable()
+	if(slice_path)
+		AddElement(/datum/element/processable, TOOL_KNIFE, slice_path, slices_num,  3 SECONDS, table_required = TRUE, screentip_verb = "Cut", sound_to_play = SFX_KNIFE_SLICE)
+	return
+
+/obj/item/reagent_containers/food/snacks/proc/make_dryable()
+	return
+
+///This proc handles trash components, overwrite this if you want the object to spawn trash
+/obj/item/reagent_containers/food/snacks/proc/make_leave_trash()
+	if(trash)
+		AddElement(/datum/element/food_trash, trash)
 
 /obj/item/reagent_containers/food/snacks/add_initial_reagents()
 	if(tastes && tastes.len)
@@ -94,15 +136,8 @@ All foods are distributed among various categories. Use common sense.
 	if(!eater)
 		return
 	if(!reagents.total_volume)
-		var/mob/living/location = loc
-		var/obj/item/trash_item = generate_trash(location)
+		SEND_SIGNAL(src, COMSIG_FOOD_CONSUMED, eater)
 		qdel(src)
-		if(istype(location))
-			location.put_in_hands(trash_item)
-
-/obj/item/reagent_containers/food/snacks/attack_self(mob/user)
-	return
-
 
 /obj/item/reagent_containers/food/snacks/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	if(user.a_intent == INTENT_HARM)
@@ -114,7 +149,7 @@ All foods are distributed among various categories. Use common sense.
 		eatverb = pick("bite","chew","nibble","gnaw","gobble","chomp")
 	if(!reagents.total_volume)						//Shouldn't be needed but it checks to see if it has anything left in it.
 		to_chat(user, "<span class='notice'>None of [src] left, oh no!</span>")
-		qdel(src)
+		On_Consume(M)
 		return FALSE
 	if(iscarbon(M))
 		if(!canconsume(M, user))
@@ -162,7 +197,7 @@ All foods are distributed among various categories. Use common sense.
 		if(reagents)								//Handle ingestion of the reagent.
 			if(M.satiety > -200)
 				M.satiety -= junkiness
-			playsound(M.loc,'sound/items/eatfood.ogg', rand(10,50), 1)
+			playsound(M.loc, consume_sound, rand(10,50), 1)
 			if(reagents.total_volume)
 				SEND_SIGNAL(src, COMSIG_FOOD_EATEN, M, user)
 				var/fraction = min(bitesize / reagents.total_volume, 1)
@@ -216,12 +251,8 @@ All foods are distributed among various categories. Use common sense.
 			var/obj/item/reagent_containers/food/snacks/customizable/C = new custom_food_type(get_turf(src))
 			C.initialize_custom_food(src, S, user)
 			return FALSE
-	var/sharp = W.get_sharpness()
-	if(sharp)
-		if(slice(sharp, W, user))
-			return TRUE
-	else
-		..()
+
+	return ..()
 
 //Called when you finish tablecrafting a snack.
 /obj/item/reagent_containers/food/snacks/CheckParts(list/parts_list, datum/crafting_recipe/food/R)
@@ -246,50 +277,27 @@ All foods are distributed among various categories. Use common sense.
 			else
 				reagents.add_reagent(r_id, amount)
 
-/obj/item/reagent_containers/food/snacks/proc/slice(accuracy, obj/item/W, mob/user)
-	if((slices_num <= 0 || !slices_num) || !slice_path) //is the food sliceable?
-		return FALSE
+///Called when food is created through processing (Usually this means it was sliced). We use this to pass the OG items reagents.
+/obj/item/reagent_containers/food/snacks/OnCreatedFromProcessing(mob/living/user, obj/item/work_tool, list/chosen_option, atom/original_atom)
+	..()
 
-	if ( \
-			!isturf(src.loc) || \
-			!(locate(/obj/structure/table) in src.loc) && \
-			!(locate(/obj/structure/table/optable) in src.loc) && \
-			!(locate(/obj/item/storage/bag/tray) in src.loc) \
-		)
-		to_chat(user, "<span class='warning'>You cannot slice [src] here! You need a table or at least a tray.</span>")
-		return FALSE
+	if(!original_atom.reagents)
+		return
 
-	user.visible_message("[user] slices [src].", "<span class='notice'>You slice [src].</span>")
-	var/reagents_per_slice = reagents.total_volume/slices_num
-	for(var/i=1 to slices_num)
-		var/obj/item/reagent_containers/food/snacks/slice = new slice_path (loc)
-		initialize_slice(slice, reagents_per_slice)
-	qdel(src)
-	return TRUE
+	//Make sure we have a reagent container large enough to fit the original atom's reagents.
+	var/volume = ROUND_UP(original_atom.reagents.maximum_volume / chosen_option[TOOL_PROCESSING_AMOUNT])
 
-/obj/item/reagent_containers/food/snacks/proc/initialize_slice(obj/item/reagent_containers/food/snacks/slice, reagents_per_slice)
-	slice.create_reagents(slice.volume, reagent_flags, reagent_value)
-	reagents.trans_to(slice,reagents_per_slice)
-	if(name != initial(name))
-		slice.name = "slice of [name]"
-	if(desc != initial(desc))
-		slice.desc = "[desc]"
-	if(foodtype != initial(foodtype))
-		slice.foodtype = foodtype //if something happens that overrode our food type, make sure the slice carries that over
-	slice.adjust_food_quality(food_quality)
+	create_reagents(volume, reagents?.reagents_holder_flags)
+	original_atom.reagents.trans_to(src, original_atom.reagents.total_volume / chosen_option[TOOL_PROCESSING_AMOUNT])
 
-/obj/item/reagent_containers/food/snacks/proc/generate_trash(atom/location)
-	if(trash)
-		if(ispath(trash, /obj/item))
-			. = new trash(location)
-			trash = null
-			return
-		else if(isitem(trash))
-			var/obj/item/trash_item = trash
-			trash_item.forceMove(location)
-			. = trash
-			trash = null
-			return
+	if(original_atom.name != initial(original_atom.name))
+		name = "slice of [original_atom.name]"
+		//It inherits the name of the original, which may already have a prefix
+		//So we need to make sure we don't double up on prefixes
+		//This is called before set_custom_materials() anyway
+		material_flags &= ~MATERIAL_ADD_PREFIX
+	if(original_atom.desc != initial(original_atom.desc))
+		desc = "[original_atom.desc]"
 
 /obj/item/reagent_containers/food/snacks/proc/update_snack_overlays(obj/item/reagent_containers/food/snacks/S)
 	cut_overlays()
@@ -301,47 +309,20 @@ All foods are distributed among various categories. Use common sense.
 
 	add_overlay(filling)
 
-// initialize_cooked_food() is called when microwaving the food
-/obj/item/reagent_containers/food/snacks/proc/initialize_cooked_food(obj/item/reagent_containers/food/snacks/S, cooking_efficiency = 1)
-	S.create_reagents(S.volume, reagent_flags, reagent_value)
-	if(reagents)
-		reagents.trans_to(S, reagents.total_volume)
-	if(cooking_efficiency && length(S.bonus_reagents))
-		for(var/r_id in S.bonus_reagents)
-			var/amount = round(S.bonus_reagents[r_id] * cooking_efficiency)
-			if(r_id == /datum/reagent/consumable/nutriment || r_id == /datum/reagent/consumable/nutriment/vitamin)
-				S.reagents.add_reagent(r_id, amount, tastes)
-			else
-				S.reagents.add_reagent(r_id, amount)
+// on_microwave_cooked() is called when microwaving the food
+/obj/item/reagent_containers/food/snacks/proc/on_microwave_cooked(datum/source, atom/source_item, cooking_efficiency = 1)
+	SIGNAL_HANDLER
 
-/obj/item/reagent_containers/food/snacks/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	. = ..()
-	var/turf/T = get_turf(src)
-	var/obj/item/result
-	if(cooked_type)
-		result = new cooked_type(T)
-		if(istype(microwave_source))
-			initialize_cooked_food(result, microwave_source.efficiency)
-			//if the result is food, set its food quality to the original food item's quality
-			if(isfood(result))
-				var/obj/item/reagent_containers/food/food_output = result
-				food_output.adjust_food_quality(food_quality + microwave_source.quality_increase)
+	//adjust_food_quality(food_quality + microwave_source.quality_increase)
+	if(!length(bonus_reagents))
+		return
+
+	for(var/r_id in bonus_reagents)
+		var/amount = round(bonus_reagents[r_id] * cooking_efficiency)
+		if(r_id == /datum/reagent/consumable/nutriment || r_id == /datum/reagent/consumable/nutriment/vitamin)
+			reagents.add_reagent(r_id, amount, tastes)
 		else
-			initialize_cooked_food(result, 1)
-		SSblackbox.record_feedback("tally", "food_made", 1, result.type)
-	else
-		result = new /obj/item/reagent_containers/food/snacks/badrecipe(T)
-		if(istype(microwave_source) && microwave_source.dirty < 100)
-			microwave_source.dirty++
-	qdel(src)
-
-	return result
-
-/obj/item/reagent_containers/food/snacks/Destroy()
-	if(contents)
-		for(var/atom/movable/something in contents)
-			something.forceMove(drop_location())
-	return ..()
+			reagents.add_reagent(r_id, amount)
 
 /obj/item/reagent_containers/food/snacks/attack_animal(mob/M)
 	if(isanimal(M))
@@ -355,50 +336,17 @@ All foods are distributed among various categories. Use common sense.
 				var/sattisfaction_text = pick("burps from enjoyment", "yaps for more", "woofs twice", "looks at the area where \the [src] was")
 				if(sattisfaction_text)
 					M.emote("me", EMOTE_VISIBLE, "[sattisfaction_text]")
+				SEND_SIGNAL(src, COMSIG_FOOD_CONSUMED, M)
 				qdel(src)
-
-//////////////////////////////////////////Dunking///////////////////////////////////////////
-
-/obj/item/reagent_containers/food/snacks/afterattack(obj/item/reagent_containers/M, mob/user, proximity)
-	. = ..()
-	if(!dunkable || !proximity)
-		return
-	if(istype(M, /obj/item/reagent_containers/glass) || istype(M, /obj/item/reagent_containers/food/drinks))	//you can dunk dunkable snacks into beakers or drinks
-		if(!M.is_drainable())
-			to_chat(user, "<span class='warning'>[M] is unable to be dunked in!</span>")
-			return
-		if(M.reagents.trans_to(src, dunk_amount, log = TRUE))	//if reagents were transfered, show the message
-			to_chat(user, "<span class='notice'>You dunk the [M].</span>")
-			return
-		if(!M.reagents.total_volume)
-			to_chat(user, "<span class='warning'>[M] is empty!</span>")
-		else
-			to_chat(user, "<span class='warning'>[src] is full!</span>")
 
 // //////////////////////////////////////////////Store////////////////////////////////////////
 /// All the food items that can store an item inside itself, like bread or cake.
 /obj/item/reagent_containers/food/snacks/store
 	w_class = WEIGHT_CLASS_NORMAL
-	var/stored_item = 0
 
-/obj/item/reagent_containers/food/snacks/store/attackby(obj/item/W, mob/user, params)
-	..()
-	if(W.w_class <= WEIGHT_CLASS_SMALL & !istype(W, /obj/item/reagent_containers/food/snacks)) //can't slip snacks inside, they're used for custom foods.
-		if(W.get_sharpness())
-			return FALSE
-		if(stored_item)
-			return FALSE
-		if(!iscarbon(user))
-			return FALSE
-		if(contents.len >= 20)
-			to_chat(user, "<span class='warning'>[src] is full.</span>")
-			return FALSE
-		to_chat(user, "<span class='notice'>You slip [W] inside [src].</span>")
-		user.transferItemToLoc(W, src)
-		add_fingerprint(user)
-		contents += W
-		stored_item = 1
-		return TRUE // no afterattack here
+/obj/item/reagent_containers/food/snacks/store/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/food_storage)
 
 /obj/item/reagent_containers/food/snacks/MouseDrop(atom/over)
 	var/turf/T = get_turf(src)
@@ -407,13 +355,3 @@ All foods are distributed among various categories. Use common sense.
 		TB.MouseDrop(over)
 	else
 		return ..()
-
-// //////////////////////////////////////////////Frying////////////////////////////////////////
-/atom/proc/fry(cook_time = 30) //you can truly fry anything
-	//don't fry reagent containers that aren't food items, indestructable items, or items that are already fried
-	if(isitem(src))
-		var/obj/item/fried_item = src
-		if(fried_item.resistance_flags & INDESTRUCTIBLE)
-			return
-	if(!GetComponent(/datum/component/fried) && (!reagents || isfood(src) || ismob(src)))
-		AddComponent(/datum/component/fried, frying_power = cook_time)

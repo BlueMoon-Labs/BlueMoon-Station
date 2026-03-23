@@ -3,6 +3,7 @@
 #define REVIVING_DONE		0
 #define REVIVING_READY		1
 
+// Okay so basically it was like any other day. I woke up and got dressed in my favorite hoodie with the gray hoodie strings, and my favorite jeans which were a little faded, and I ate breakfast which was lemon flavored cereal in lemon juice. I was supposed to attend classes today, but I remembered the Area 51 raid was going to happen in a few hours and missing 1 day of class can't be the end of the world, can it? https://www.reddit.com/r/copypasta/comments/cdhlvt/i_fucked_an_alien/
 
 /datum/species/mammal/xenochimera
 	name = "Xenochimera"
@@ -10,9 +11,16 @@
 	mutant_bodyparts = list("mcolor" = "FFFFFF", "mcolor2" = "FFFFFF", "mcolor3" = "FFFFFF", "mam_snouts" = "None", "mam_tail" = "None", "mam_ears" = "None", "deco_wings" = "None",
 						"taur" = "None", "horns" = "None", "legs" = "Plantigrade", "meat_type" = "Mammalian", "mam_body_markings" = list()) // BLUEMOON EDIT - добавлено "mam_body_markingss = list()", чтобы могли использовать маркинги
 	species_traits = list(MUTCOLORS,EYECOLOR,HAIR,FACEHAIR,LIPS,WINGCOLOR,HAS_FLESH,HAS_BONE)
-	mutanteyes = /obj/item/organ/eyes/night_vision
-	brutemod = 0.8		//About as tanky to brute as a Unathi. They'll probably snap and go feral when hurt though.
-	burnmod =  1.15	//As vulnerable to burn as a Tajara.
+	mutanteyes = /obj/item/organ/eyes/night_vision/chimera
+	brutemod = 1.05
+	burnmod =  1.05	 // jokes aside, they kinda remind me of necromorphs, so I decided to balance them a bit. kinda dumb but somewhat tanky.
+
+
+/obj/item/organ/eyes/night_vision/chimera
+	name = "chimeric eyes"
+	desc = "These eyes seem to have incredible sensitivity to bright light, offset by basic night vision. It seems that they are actively used by their owner. Almost a perfection for combatants, but won't save them from being harmed without proper protection."
+	see_in_dark = 8
+	flash_protect = -2 //new eyes to balance the ones they had - shadow eyes.
 
 /datum/species/mammal/xenochimera/on_species_gain(mob/living/carbon/human/C, datum/species/old_species, pref_load)
 	. = ..() // BLUEMOON ADD - явная ошибка, этой штуки не было
@@ -20,7 +28,6 @@
 		C.verbs += /mob/living/carbon/human/proc/reconstitute_form
 		C.verbs += /mob/living/carbon/human/proc/sonar_ping
 		C.verbs += /mob/living/carbon/human/proc/tie_hair
-		C.add_movespeed_modifier(/datum/movespeed_modifier/xenochimera)
 
 /datum/species/mammal/xenochimera/spec_life(mob/living/carbon/human/H)
 	//If they're KO'd/dead, or reviving, they're probably not thinking a lot about much of anything.
@@ -58,9 +65,6 @@
 		var/temp_diff = body_temperature - H.bodytemperature
 		if(temp_diff >= 50)
 			H.eye_blurry = max(5,H.eye_blurry)
-
-/datum/movespeed_modifier/xenochimera
-	multiplicative_slowdown = -0.1
 
 /mob/living/carbon/human/proc/reconstitute_form() //Scree's race ability.in exchange for: No cloning.
 	set name = "Reconstitute Form"
@@ -205,7 +209,7 @@
 		else
 			chimera_hatch()
 
-			visible_message("<span class='warning'><p><font size=4>[src] rises to \his feet.</font></p></span>") //Bloody hell...
+			visible_message("<span class='warning'><p><font size=4>[src] rises to \his feet.</font></p></span>") //Bloody hell... How beautiful! 
 			clear_alert("hatch")
 
 /mob/living/carbon/human/proc/chimera_hatch()

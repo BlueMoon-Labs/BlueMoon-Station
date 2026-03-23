@@ -114,10 +114,10 @@
 	icon_living = "Goliath"
 	icon_aggro = "Goliath_alert"
 	icon_dead = "Goliath_dead"
-	maxHealth = 400
-	health = 400
+	maxHealth = 800
+	health = 800
 	speed = 4
-	ranged_cooldown_time = 80
+	ranged_cooldown_time = 40
 	pre_attack_icon = "Goliath_preattack"
 	throw_message = "does nothing to the rocky hide of the"
 	loot = list(/obj/item/stack/sheet/animalhide/goliath_hide) //A throwback to the asteroid days
@@ -129,6 +129,10 @@
 	var/turf/last_location
 	var/tentacle_recheck_cooldown = 100
 
+// Отключаю тентаклиевую фауну вокруг древних, из за огромного срача в память удалеными тентаклями и таймерами.
+// Если кто перепишет работу тентаклей (/obj/effect/temp_visual/goliath_tentacle/ и далее по цепочки проки)
+// без их постоянного создания и удаления, жизнь можно включить обратно.
+/*
 /mob/living/simple_animal/hostile/asteroid/goliath/beast/ancient/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))
 		return
@@ -145,6 +149,7 @@
 					new /obj/effect/temp_visual/goliath_tentacle(t, src)
 			else
 				cached_tentacle_turfs -= t
+*/
 
 /mob/living/simple_animal/hostile/asteroid/goliath/beast/tendril
 	fromtendril = TRUE
@@ -155,7 +160,11 @@
 	icon = 'icons/mob/lavaland/lavaland_monsters.dmi'
 	icon_state = "Goliath_tentacle_spawn"
 	layer = BELOW_MOB_LAYER
-	var/mob/living/spawner
+	/// Weak reference so tentacles don't keep their owner alive through timer callbacks.
+	var/datum/weakref/spawner_ref
+
+/obj/effect/temp_visual/goliath_tentacle/proc/get_spawner()
+	return spawner_ref?.resolve()
 
 /obj/effect/temp_visual/goliath_tentacle/Initialize(mapload, mob/living/new_spawner)
 	. = ..()
@@ -163,7 +172,7 @@
 		if(T != src)
 			return INITIALIZE_HINT_QDEL
 	if(!QDELETED(new_spawner))
-		spawner = new_spawner
+		spawner_ref = WEAKREF(new_spawner)
 	if(ismineralturf(loc))
 		var/turf/closed/mineral/M = loc
 		M.gets_drilled()
@@ -172,6 +181,7 @@
 
 /obj/effect/temp_visual/goliath_tentacle/original/Initialize(mapload, new_spawner)
 	. = ..()
+	var/mob/living/spawner = get_spawner()
 	var/list/directions = GLOB.cardinals.Copy()
 	for(var/i in 1 to 3)
 		var/spawndir = pick_n_take(directions)
@@ -186,8 +196,9 @@
 
 /obj/effect/temp_visual/goliath_tentacle/proc/trip()
 	var/latched = FALSE
+	var/mob/living/spawner = get_spawner()
 	for(var/mob/living/L in loc)
-		if((!QDELETED(spawner) && spawner.faction_check_mob(L)) || L.stat == DEAD)
+		if((spawner && spawner.faction_check_mob(L)) || L.stat == DEAD)
 			continue
 		visible_message("<span class='danger'>[src] grabs hold of [L]!</span>")
 		var/mob/living/carbon/C = L

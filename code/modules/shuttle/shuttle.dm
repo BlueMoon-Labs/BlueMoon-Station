@@ -152,15 +152,19 @@
 	var/list/L = return_coords()
 	var/turf/T0 = locate(L[1],L[2],z)
 	var/turf/T1 = locate(L[3],L[4],z)
+	if(!T0 || !T1)
+		return
 	for(var/turf/T in block(T0,T1))
 		T.color = _color
 		LAZYINITLIST(T.atom_colours)
 		T.maptext = null
 	if(_color)
 		var/turf/T = locate(L[1], L[2], z)
-		T.color = "#0f0"
+		if(T)
+			T.color = "#0f0"
 		T = locate(L[3], L[4], z)
-		T.color = "#00f"
+		if(T)
+			T.color = "#00f"
 #endif
 
 //return first-found touching dockingport
@@ -193,6 +197,8 @@
 	name = "dock"
 
 	var/last_dock_time
+	/// If TRUE, shuttle can always dock here (bypass dimension/occupied checks). Used for transit, escape pod Lavaland landings.
+	var/override_can_dock_checks = FALSE
 
 	var/datum/map_template/shuttle/roundstart_template
 	var/json_key
@@ -466,6 +472,9 @@
 		return SHUTTLE_NOT_A_DOCKING_PORT
 
 	if(istype(S, /obj/docking_port/stationary/transit))
+		return SHUTTLE_CAN_DOCK
+
+	if(S.override_can_dock_checks)
 		return SHUTTLE_CAN_DOCK
 
 	if(dwidth > S.dwidth)

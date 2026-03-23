@@ -17,22 +17,20 @@
 	mag_type = /obj/item/ammo_box/magazine/e45
 	can_suppress = TRUE
 	can_flashlight = 1
-	flight_x_offset = 18
-	flight_y_offset = 14
+	flight_x_offset = 17
+	flight_y_offset = 17
 	obj_flags = UNIQUE_RENAME
 	unique_reskin = list(
 		"Default" = list("icon_state" = "enforcer_black"),
-		"M2611 Enforcer" = list("icon_state" = "cde"),
-		"M1911 Enforcer" = list("icon_state" = "m1911"),
 		"VP78 Enforcer" = list("icon_state" = "vp78"),
 		"USP Enforcer" = list("icon_state" = "usp-m")
 	)
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/update_icon_state() //BLUEMOOD EDIT: Визуально добавлены статусы оружия при наличии глушителя и расширенного магазина
 	if(current_skin)
-		icon_state = "[unique_reskin[current_skin]["icon_state"]][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"
+		icon_state = "[unique_reskin[current_skin]["icon_state"]][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"
 	else
-		icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"
+		icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/nomag
 	pin = /obj/item/firing_pin/alert_level/blue
@@ -42,7 +40,7 @@
 	name = "\improper Blueshield Mk. 58 Enforcer (.45)"
 	desc = "A polymer frame pistol made by Nanotreason. Won't show up on Space port X-rays and cost more then you make in a month. Respect mah Authorita!"
 	icon = 'modular_splurt/icons/obj/guns/projectile.dmi'
-	icon_state = "enforcer_red"
+	icon_state = "enforcer_blue"
 	w_class = WEIGHT_CLASS_NORMAL
 	mag_type = /obj/item/ammo_box/magazine/e45
 	can_suppress = TRUE
@@ -52,11 +50,19 @@
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT, SELECT_FULLY_AUTOMATIC)
 	automatic_burst_overlay = TRUE
 	can_flashlight = 1
-	flight_x_offset = 18
-	flight_y_offset = 14
+	flight_x_offset = 16
+	flight_y_offset = 17
+	unique_reskin = list(
+		"Blue Shield" = list("icon_state" = "enforcer_blue"),
+		"Red Shield" = list("icon_state" = "enforcer_red")
+	)
+	pin = /obj/item/firing_pin/alert_level/blue
 
 /obj/item/gun/ballistic/automatic/pistol/enforcerred/update_icon_state() //BLUEMOOD EDIT: Визуально добавлены статусы оружия при наличии глушителя и расширенного магазина
-	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"
+	if(current_skin)
+		icon_state = "[unique_reskin[current_skin]["icon_state"]][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"
+	else
+		icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"
 
 
 /obj/item/gun/ballistic/automatic/pistol/enforcergold
@@ -68,11 +74,11 @@
 	mag_type = /obj/item/ammo_box/magazine/e45
 	can_suppress = TRUE
 	can_flashlight = 1
-	flight_x_offset = 18
-	flight_y_offset = 14
+	flight_x_offset = 17
+	flight_y_offset = 17
 
 /obj/item/gun/ballistic/automatic/pistol/enforcergold/update_icon_state() //BLUEMOOD EDIT: Визуально добавлены статусы оружия при наличии глушителя и расширенного магазина
-	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"
+	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"
 
 /obj/item/gun/ballistic/automatic/pistol/m9mmpistol
 	name = "\improper Cheap 9mm Handgun"

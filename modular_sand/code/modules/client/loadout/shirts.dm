@@ -90,6 +90,10 @@
 	name = "Halterneck Bra"
 	path = /obj/item/clothing/underwear/shirt/bra/halterneck
 
+/datum/gear/shirt/bra/lizared
+	name = "LIZARED Top"
+	path = /obj/item/clothing/underwear/shirt/bra/lizared
+
 /datum/gear/shirt/bra/kinky
 	name = "Kinky Bra"
 	path = /obj/item/clothing/underwear/shirt/bra/kinky

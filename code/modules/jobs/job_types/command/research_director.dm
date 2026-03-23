@@ -16,6 +16,22 @@
 	exp_requirements = 180
 	exp_type = EXP_TYPE_CREW
 	considered_combat_role = TRUE
+	alt_titles = list(
+		"Cybersun Lead Specialist", //Триглав выше, для удобства
+		"Syndicate Research Manager", //Синди выше, для удобства
+		"Biorobotics Director",
+		"CEO of Sex",
+		"Chief Researcher",
+		"Chief Science Officer",
+		"Head of Research",
+		"Lead Researcher",
+		"Research Manager",
+		"Research Overseer",
+		"Research Supervisor",
+		"Science Administrator",
+		"Sex Research Director",
+		"Silicon Administrator"
+		)
 
 	outfit = /datum/outfit/job/rd
 	departments = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_COMMAND
@@ -33,12 +49,12 @@
 						ACCESS_TECH_STORAGE, ACCESS_MINISAT, ACCESS_MAINT_TUNNELS, ACCESS_NETWORK)
 	paycheck = PAYCHECK_COMMAND
 	paycheck_department = ACCOUNT_SCI
-	bounty_types = CIV_JOB_SCI
+	bounty_types = CIV_JOB_RD
 
 	display_order = JOB_DISPLAY_ORDER_RESEARCH_DIRECTOR
 	starting_modifiers = list(/datum/skill_modifier/job/level/wiring/basic) //BLUEMOON CHANGE job/level to basic
 	mind_traits = list(TRAIT_KNOW_CYBORG_WIRES, TRAIT_MECHA_EXPERT) //BLUEMOON ADD use #define TRAIT system
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity, /datum/quirk/illiterate)
 	threat = 5
 
 	family_heirlooms = list(
@@ -64,7 +80,7 @@
 	l_hand = /obj/item/clipboard
 	l_pocket = /obj/item/laser_pointer
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced=1)
-	accessory = /obj/item/clothing/accessory/permit/special/research_director
+	accessory = list(/obj/item/clothing/accessory/permit/special/research_director)
 
 	backpack = /obj/item/storage/backpack/science
 	box = /obj/item/storage/box/survival/command
@@ -92,7 +108,7 @@
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/syndicate_uplink_high=1)
-	accessory = /obj/item/clothing/accessory/permit/special/research_director
+	accessory = list(/obj/item/clothing/accessory/permit/special/research_director)
 
 	neck = /obj/item/clothing/neck/cloak/syndiecap
 

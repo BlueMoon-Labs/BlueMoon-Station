@@ -1,0 +1,233 @@
+// Yeah I'm using datums for this, because the code on a regular gun would suck huge
+// Holds a lot of information that will be applied ot the gun, as well as info that the gun will read later
+// This basetype is applies to the base 2 burst laser kill mode for the large laser gun
+/datum/laser_weapon_mode
+	/// Keeps track of the autofire component for removing when mode is switched
+	var/datum/component/automatic_fire/autofire_component
+	/// If TRUE, burst and full auto are available; if FALSE, only single shot and firemode icon is hidden
+	var/standard_firing_mode = TRUE
+	/// What name does this weapon mode have? Will appear in the weapon's radial menu
+	var/name = "Kill"
+	/// What casing does this variant of weapon use?
+	var/obj/item/ammo_casing/casing = /obj/item/ammo_casing/energy/cybersun_big_kill
+	/// What icon_state does this weapon mode use?
+	var/weapon_icon_state = "kill"
+	/// Optional: icon for radial menu (overrides projectile icon)
+	var/radial_menu_icon
+	/// Optional: icon_state for radial menu (overrides projectile icon_state)
+	var/radial_menu_icon_state
+	/// How many charge sections does this variant of weapon have?
+	var/charge_sections = 5
+	/// What is the shot cooldown this variant applies to the weapon?
+	var/shot_delay = 0.3 SECONDS
+	/// What json string do we check for when making chat messages with this mode?
+	var/json_speech_string = "kill"
+	/// What do we change the gun's runetext color to when applied
+	var/gun_runetext_color = "#cd4456"
+
+/// Applies some of the universal stats from the variables above
+/datum/laser_weapon_mode/proc/apply_stats(obj/item/gun/energy/applied_gun)
+	applied_gun.ammo_type = list(casing)
+	applied_gun.update_ammo_types()
+	applied_gun.charge_sections = charge_sections
+	applied_gun.fire_delay = shot_delay
+	var/new_icon_state = "[applied_gun.base_icon_state]_[weapon_icon_state]"
+	applied_gun.icon_state = new_icon_state
+	applied_gun.item_state = new_icon_state
+	applied_gun.update_appearance()
+	applied_gun.chat_color = gun_runetext_color
+	applied_gun.chat_color_darkened = gun_runetext_color
+
+/// Stuff applied to the passed gun when the weapon mode is given to the gun
+/datum/laser_weapon_mode/proc/apply_to_weapon(obj/item/gun/energy/applied_gun)
+	if(standard_firing_mode)
+		applied_gun.burst_size = 3
+		autofire_component = applied_gun.AddComponent(/datum/component/automatic_fire, shot_delay)
+	else
+		applied_gun.fire_select = SELECT_SEMI_AUTOMATIC
+		applied_gun.fire_select_index = 1
+		applied_gun.fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
+		applied_gun.burst_size = 1
+		QDEL_NULL(autofire_component)
+		if(applied_gun.firemode_action && ismob(applied_gun.loc))
+			applied_gun.firemode_action.HideFrom(applied_gun.loc)
+
+/// Stuff applied to the passed gun when the weapon mode is removed from the gun
+/datum/laser_weapon_mode/proc/remove_from_weapon(obj/item/gun/energy/applied_gun)
+	QDEL_NULL(autofire_component)
+	applied_gun.burst_size = 1
+	if(!standard_firing_mode)
+		applied_gun.fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT, SELECT_FULLY_AUTOMATIC)
+		sort_list(applied_gun.fire_select_modes, GLOBAL_PROC_REF(cmp_numeric_asc))
+		if(applied_gun.firemode_action && ismob(applied_gun.loc))
+			applied_gun.firemode_action.ShowTo(applied_gun.loc)
+
+// Marksman mode for the large laser, adds a scope, slower firing rate, and really quick projectiles
+/datum/laser_weapon_mode/marksman
+	standard_firing_mode = FALSE
+	name = "Marksman"
+	casing = /obj/item/ammo_casing/energy/cybersun_big_sniper
+	weapon_icon_state = "sniper"
+	shot_delay = 2 SECONDS
+	json_speech_string = "sniper"
+	gun_runetext_color = "#f8d860"
+
+// Windup autofire disabler mode for the large laser
+/datum/laser_weapon_mode/disabler_machinegun
+	standard_firing_mode = FALSE
+	name = "Disable"
+	casing = /obj/item/ammo_casing/energy/cybersun_big_disabler
+	weapon_icon_state = "disabler"
+	charge_sections = 2
+	shot_delay = 0.25 SECONDS
+	json_speech_string = "disable"
+	gun_runetext_color = "#47a1b3"
+
+/datum/laser_weapon_mode/disabler_machinegun/apply_to_weapon(obj/item/gun/energy/applied_gun)
+	..()
+
+/datum/laser_weapon_mode/disabler_machinegun/remove_from_weapon(obj/item/gun/energy/applied_gun)
+	..()
+
+// Grenade launching mode for the large laser
+/datum/laser_weapon_mode/launcher
+	standard_firing_mode = FALSE
+	name = "Launcher"
+	casing = /obj/item/ammo_casing/energy/cybersun_big_launcher
+	weapon_icon_state = "launcher"
+	charge_sections = 3
+	shot_delay = 2 SECONDS
+	json_speech_string = "launcher"
+	gun_runetext_color = "#77bd5d"
+
+/datum/laser_weapon_mode/launcher/apply_to_weapon(obj/item/gun/energy/applied_gun)
+	..()
+	applied_gun.recoil = 2
+
+/datum/laser_weapon_mode/launcher/remove_from_weapon(obj/item/gun/energy/applied_gun)
+	..()
+	applied_gun.recoil = initial(applied_gun.recoil)
+
+// Shotgun mode for the large laser
+/datum/laser_weapon_mode/shotgun
+	standard_firing_mode = FALSE
+	name = "Shotgun"
+	casing = /obj/item/ammo_casing/energy/cybersun_big_shotgun
+	weapon_icon_state = "shot"
+	charge_sections = 3
+	shot_delay = 0.75 SECONDS
+	json_speech_string = "shotgun"
+	gun_runetext_color = "#7a0bb7"
+
+/datum/laser_weapon_mode/shotgun/apply_to_weapon(obj/item/gun/energy/applied_gun)
+	..()
+	applied_gun.recoil = 1
+
+/datum/laser_weapon_mode/shotgun/remove_from_weapon(obj/item/gun/energy/applied_gun)
+	..()
+	applied_gun.recoil = initial(applied_gun.recoil)
+
+// Hellfire mode for the small laser
+/datum/laser_weapon_mode/hellfire
+	name = "Incinerate"
+	casing = /obj/item/ammo_casing/energy/cybersun_small_hellfire
+	weapon_icon_state = "kill"
+	charge_sections = 3
+	shot_delay = 0.4 SECONDS
+	json_speech_string = "incinerate"
+	gun_runetext_color = "#cd4456"
+
+/datum/laser_weapon_mode/hellfire/apply_to_weapon(obj/item/gun/energy/applied_gun)
+	return ..()
+
+/datum/laser_weapon_mode/hellfire/remove_from_weapon(obj/item/gun/energy/applied_gun)
+	return ..()
+
+// Melee mode for the small laser, yeah this one will be weird
+/datum/laser_weapon_mode/sword
+	standard_firing_mode = FALSE
+	name = "Blade"
+	// This mode doesn't actually shoot but we gotta have a casing regardless so it doesn't runtime times a million
+	// And also so the visuals work :3
+	casing = /obj/item/ammo_casing/energy/cybersun_small_blade
+	weapon_icon_state = "blade"
+	charge_sections = 2
+	json_speech_string = "blade"
+	gun_runetext_color = "#f8d860"
+
+/datum/laser_weapon_mode/sword/apply_to_weapon(obj/item/gun/energy/modular_laser_rifle/applied_gun)
+	..()
+	playsound(applied_gun, 'sound/items/unsheath.ogg', 25, TRUE)
+	applied_gun.force = 20
+	applied_gun.sharpness = SHARP_EDGED
+	applied_gun.wound_bonus = 5
+	applied_gun.disabled_for_other_reasons = TRUE
+	applied_gun.attack_verb_continuous = list("slashes", "cuts")
+	applied_gun.attack_verb_simple = list("slash", "cut")
+	applied_gun.hitsound = 'sound/weapons/bladeslice.ogg'
+
+/datum/laser_weapon_mode/sword/remove_from_weapon(obj/item/gun/energy/modular_laser_rifle/applied_gun)
+	..()
+	playsound(applied_gun, 'sound/items/sheath.ogg', 25, TRUE)
+	applied_gun.force = initial(applied_gun.force)
+	applied_gun.sharpness = initial(applied_gun.sharpness)
+	applied_gun.wound_bonus = initial(applied_gun.wound_bonus)
+	applied_gun.disabled_for_other_reasons = FALSE
+	applied_gun.attack_verb_continuous = initial(applied_gun.attack_verb_continuous)
+	applied_gun.attack_verb_simple = initial(applied_gun.attack_verb_simple)
+	applied_gun.hitsound = initial(applied_gun.hitsound)
+
+// Flare mode for the small laser
+/datum/laser_weapon_mode/flare
+	standard_firing_mode = FALSE
+	name = "Flare"
+	casing = /obj/item/ammo_casing/energy/cybersun_small_launcher
+	weapon_icon_state = "flare"
+	charge_sections = 3
+	shot_delay = 2 SECONDS
+	json_speech_string = "flare"
+	gun_runetext_color = "#77bd5d"
+
+/datum/laser_weapon_mode/flare/apply_to_weapon(obj/item/gun/energy/applied_gun)
+	..()
+	applied_gun.recoil = 2
+
+/datum/laser_weapon_mode/flare/remove_from_weapon(obj/item/gun/energy/applied_gun)
+	..()
+	applied_gun.recoil = initial(applied_gun.recoil)
+
+// Shotgun mode for the small laser
+/datum/laser_weapon_mode/shotgun_small
+	standard_firing_mode = FALSE
+	name = "Shotgun"
+	casing = /obj/item/ammo_casing/energy/cybersun_small_shotgun
+	weapon_icon_state = "shot"
+	charge_sections = 3
+	shot_delay = 0.6 SECONDS
+	json_speech_string = "shotgun"
+	gun_runetext_color = "#7a0bb7"
+
+/datum/laser_weapon_mode/shotgun_small/apply_to_weapon(obj/item/gun/energy/applied_gun)
+	..()
+	applied_gun.recoil = 1
+
+/datum/laser_weapon_mode/shotgun_small/remove_from_weapon(obj/item/gun/energy/applied_gun)
+	..()
+	applied_gun.recoil = initial(applied_gun.recoil)
+
+// Trickshot bounce disabler mode for the small laser
+/datum/laser_weapon_mode/trickshot_disabler
+	standard_firing_mode = FALSE
+	name = "Disable"
+	casing = /obj/item/ammo_casing/energy/cybersun_small_disabler
+	weapon_icon_state = "disable"
+	charge_sections = 3
+	shot_delay = 0.4 SECONDS
+	json_speech_string = "disable"
+	gun_runetext_color = "#47a1b3"
+
+/datum/laser_weapon_mode/trickshot_disabler/apply_to_weapon(obj/item/gun/energy/applied_gun)
+	return ..()
+
+/datum/laser_weapon_mode/trickshot_disabler/remove_from_weapon(obj/item/gun/energy/applied_gun)
+	return ..()

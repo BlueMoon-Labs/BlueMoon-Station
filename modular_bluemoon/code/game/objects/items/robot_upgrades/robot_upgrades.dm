@@ -119,8 +119,6 @@
 	if(!.)
 		return
 
-	// Плохо работает. Спавнит новый инструмент в конце списка, не замещает старый.
-	// Из-за того, что тут дочерний-родительский объект. Нужен рефакторинг под rcd/cyborg/* вариант.
 	var/IRCD_index = 0
 	for(var/i = 1, i <= R.module.modules.len, i++) // Этот алгоритм зеркален тому, что для добавления
 		IRCD = R.module.modules[i]
@@ -135,7 +133,7 @@
 	for(RCD in R.module)
 		R.module.modules.Swap(IRCD_index, RCD_index)
 		R.module.basic_modules.Swap(IRCD_index, RCD_index)
-	R.module.remove_module(IRCD, TRUE)
+		R.module.remove_module(IRCD, TRUE)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -169,5 +167,98 @@
 	var/obj/item/broom/cyborg/BR = locate() in R.module.modules
 	if (BR)
 		R.module.remove_module(BR, TRUE)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+/obj/item/borg/upgrade/extinguisher_adv
+	name = "cyborg advanced fire extinguisher"
+	desc = "Atmospheric Technician-grade extinguisher for the most dangerous flames."
+	icon_state = "cyborg_upgrade3"
+	require_module = TRUE
+	module_type = list(/obj/item/robot_module/engineering)
+	module_flags = BORG_MODULE_ENGINEERING
+
+/obj/item/borg/upgrade/extinguisher_adv/action(mob/living/silicon/robot/R, user = usr)
+	. = ..()
+	if (!.)
+		return
+
+	var/obj/item/extinguisher/advanced/cyborg/EA = locate() in R.module.modules
+	if (EA)
+		to_chat(user, "<span class='warning'>This unit is already equipped with an advanced fire extinguisher module.</span>")
+		return FALSE
+
+	EA = new(R.module)
+	R.module.basic_modules += EA
+	R.module.add_module(EA, FALSE, TRUE)
+
+/obj/item/borg/upgrade/extinguisher_adv/deactivate(mob/living/silicon/robot/R, user = usr)
+	. = ..()
+	if (!.)
+		return
+
+	var/obj/item/extinguisher/advanced/cyborg/EA = locate() in R.module.modules
+	if (EA)
+		R.module.remove_module(EA, TRUE)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+/obj/item/borg/upgrade/gasanalyzer_advanced
+	name = "cyborg long ranged gas analyzer"
+	desc = "Atmospheric Technician-grade gas analyzer for scanning gas properties from the distance."
+	require_module = TRUE
+	module_type = list(/obj/item/robot_module/engineering)
+	module_flags = BORG_MODULE_ENGINEERING
+	/// Старый анализатор
+	var/obj/item/analyzer/analyzer
+	/// Новый
+	var/obj/item/analyzer/ranged/cyborg/analyzer_adv
+
+/obj/item/borg/upgrade/gasanalyzer_advanced/action(mob/living/silicon/robot/R, user = usr)
+	. = ..()
+	if(!.)
+		return
+
+	for(analyzer_adv in R.module.modules)
+		if(analyzer_adv)
+			to_chat(user, "<span class='warning'>This unit is already equipped with an advanced analyzer module.</span>")
+			return FALSE
+
+	var/analyzer_index = 0
+	for(var/i = 1, i <= R.module.modules.len, i++) // Начинаем искать индекс старого анализатора
+		analyzer = R.module.modules[i]
+		if(istype(analyzer, /obj/item/analyzer))
+			analyzer_index = i
+			break // Находим - прекращаем, не обрабатываем for'ом весь список.
+
+	analyzer_adv = new(R.module)
+	R.module.basic_modules += analyzer_adv
+	R.module.add_module(analyzer_adv, FALSE, TRUE)
+	var/analyzer_adv_index = R.module.modules.Find(analyzer_adv)
+	for(analyzer_adv in R.module) // Можно оформить и для старого анализатора, здесь сделано для нового, без разницы.
+		R.module.modules.Swap(analyzer_index, analyzer_adv_index) // Swap в обоих листах важно настолько же
+		R.module.basic_modules.Swap(analyzer_index, analyzer_adv_index) // как и `basic_modules +=` и `add.module` выше
+	R.module.remove_module(analyzer, TRUE) // Замена произошла - избавляемся от старого
+
+/obj/item/borg/upgrade/gasanalyzer_advanced/deactivate(mob/living/silicon/robot/R, user)
+	. = ..()
+	if(!.)
+		return
+
+	var/analyzer_adv_index = 0
+	for(var/i = 1, i <= R.module.modules.len, i++) // Этот алгоритм зеркален тому, что для добавления
+		analyzer_adv = R.module.modules[i]
+		if(istype(analyzer_adv, /obj/item/analyzer/ranged/cyborg))
+			analyzer_adv_index = i
+			break
+
+	analyzer = new(R.module)
+	R.module.basic_modules += analyzer
+	R.module.add_module(analyzer, FALSE, TRUE)
+	var/analyzer_index = R.module.modules.Find(analyzer)
+	for(analyzer in R.module)
+		R.module.modules.Swap(analyzer_adv_index, analyzer_index)
+		R.module.basic_modules.Swap(analyzer_adv_index, analyzer_index)
+		R.module.remove_module(analyzer_adv, TRUE)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

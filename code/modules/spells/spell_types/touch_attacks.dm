@@ -16,7 +16,10 @@
 	return ..()
 
 /obj/effect/proc_holder/spell/targeted/touch/proc/remove_hand(recharge = FALSE)
-	QDEL_NULL(attached_hand)
+	if(QDELETED(attached_hand))
+		attached_hand = null
+	else
+		QDEL_NULL(attached_hand)
 	if(recharge)
 		charge_counter = charge_max
 
@@ -28,10 +31,14 @@
 	recharging = TRUE
 	action.UpdateButtons()
 
-/obj/effect/proc_holder/spell/targeted/touch/cast(list/targets,mob/user = usr)
-	if(!QDELETED(attached_hand))
+/obj/effect/proc_holder/spell/targeted/touch/proc/cancel_cast(mob/user = usr)
+	if(attached_hand)
 		remove_hand(TRUE)
-		to_chat(user, "<span class='notice'>[dropmessage]</span>")
+		to_chat(user, span_notice(dropmessage))
+		return TRUE
+
+/obj/effect/proc_holder/spell/targeted/touch/cast(list/targets,mob/user = usr)
+	if(cancel_cast())
 		return
 
 	for(var/mob/living/carbon/C in targets)
@@ -67,6 +74,18 @@
 	cooldown_min = 200 //100 deciseconds reduction per rank
 
 	action_icon_state = "gib"
+
+/obj/effect/proc_holder/spell/targeted/touch/alive_bones
+	name = "Alive bones"
+	desc = "This spell charges your hand with necromancy energy, which rips the skeleton out of the victim's body and revives it. \
+			The victim is left without limbs and bones."
+	hand_path = /obj/item/melee/touch_attack/alive_bones
+
+	school = "necromancy"
+	charge_max = 600
+	cooldown_min = 200 //100 deciseconds reduction per rank
+
+	action_icon_state = "zap"
 
 /obj/effect/proc_holder/spell/targeted/touch/flesh_to_stone
 	name = "Flesh to Stone"

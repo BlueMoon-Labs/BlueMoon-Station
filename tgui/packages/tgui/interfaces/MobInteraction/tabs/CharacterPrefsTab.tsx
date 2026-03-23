@@ -8,6 +8,7 @@ type CharacterPrefsInfo = {
   extreme_pref: number,
   unholy_pref: number,
   extreme_harm: boolean,
+  mobsex_pref: boolean,
 }
 
 export const CharacterPrefsTab = (props, context) => {
@@ -19,6 +20,7 @@ export const CharacterPrefsTab = (props, context) => {
     unholy_pref,
     extreme_pref,
     extreme_harm,
+    mobsex_pref,
   } = data;
   return (
     <Flex direction="column">
@@ -156,6 +158,22 @@ export const CharacterPrefsTab = (props, context) => {
               })} />
           </LabeledList.Item>
         ) : (null)}
+        <LabeledList.Item label="Mob Noncon Sex">
+          <Button
+            icon={"check"}
+            color={mobsex_pref ? "green" : "default"}
+            onClick={() => act('char_pref', {
+              char_pref: 'mobsex_pref',
+              value: 1,
+            })} />
+          <Button
+            icon={"times"}
+            color={mobsex_pref ? "default" : "red"}
+            onClick={() => act('char_pref', {
+              char_pref: 'mobsex_pref',
+              value: 0,
+            })} />
+        </LabeledList.Item>
       </LabeledList>
     </Flex>
   );

@@ -2,7 +2,7 @@
 
 /obj/machinery/smoke_machine
 	name = "smoke machine"
-	desc = "A machine with a centrifuge installed into it. It produces smoke with any reagents you put into the machine."
+	desc = "Центрифужная машина. Создаёт дым из любых реактивов, что вы зальёте внутрь."
 	icon = 'icons/obj/chemical.dmi'
 	icon_state = "smoke0"
 	density = TRUE
@@ -92,7 +92,7 @@
 		var/obj/item/reagent_containers/RC = I
 		var/units = RC.reagents.trans_to(src, RC.amount_per_transfer_from_this) //, transfered_by = user)
 		if(units)
-			to_chat(user, "<span class='notice'>You transfer [units] units of the solution to [src].</span>")
+			to_chat(user, "<span class='notice'>Вы залили [units] u раствора внутрь [src].</span>")
 			return
 	if(default_unfasten_wrench(user, I, 40))
 		on = FALSE

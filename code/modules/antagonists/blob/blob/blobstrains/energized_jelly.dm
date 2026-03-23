@@ -26,7 +26,7 @@
 	taste_description = "gelatin"
 	color = "#EFD65A"
 
-/datum/reagent/blob/energized_jelly/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message, touch_protection, mob/camera/blob/O)
+/datum/reagent/blob/energized_jelly/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message, touch_protection, mob/camera/blob/O, affected_bodypart)
 	reac_volume = ..()
 	M.losebreath += round(0.2*reac_volume)
 	M.adjustStaminaLoss(0.4*reac_volume)

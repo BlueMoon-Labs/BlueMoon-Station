@@ -25,7 +25,8 @@
 	//heart attack stuff
 	handle_heart(delta_time, times_fired)
 
-	dna.species.spec_life(src) // for mutantraces
+	if(dna?.species)
+		dna.species.spec_life(src) // for mutantraces
 	return (stat != DEAD) && !QDELETED(src)
 
 /mob/living/carbon/human/PhysicalLife(seconds, times_fired)
@@ -33,8 +34,9 @@
 		return
 	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM) && hud_used)
 		hud_used.coolant_display.update_counter(src)
-	//Update our name based on whether our face is obscured/disfigured
-	name = get_visible_name()
+	//Update our name based on whether our face is obscured/disfigured (throttled to every 4th fire for performance)
+	if(times_fired % 4 == 0)
+		name = get_visible_name()
 
 /mob/living/carbon/human/calculate_affecting_pressure(pressure)
 	var/headless = !get_bodypart(BODY_ZONE_HEAD) //should the mob be perennially headless (see dullahans), we only take the suit into account, so they can into space.
@@ -80,7 +82,7 @@
 		..()
 
 /mob/living/carbon/human/breathe()
-	if(!dna.species.breathe(src))
+	if(!dna || !dna.species.breathe(src))
 		..()
 
 /mob/living/carbon/human/check_breath(datum/gas_mixture/breath)
@@ -129,7 +131,8 @@
 			lun.check_breath(breath,src)
 
 /mob/living/carbon/human/handle_environment(datum/gas_mixture/environment)
-	dna.species.handle_environment(environment, src)
+	if(dna?.species)
+		dna.species.handle_environment(environment, src)
 
 ///FIRE CODE
 /mob/living/carbon/human/handle_fire()
@@ -315,10 +318,10 @@
 
 
 /mob/living/carbon/human/has_smoke_protection()
-	if(wear_mask)
+	if(wear_mask && isclothing(wear_mask))
 		if(wear_mask.clothing_flags & BLOCK_GAS_SMOKE_EFFECT)
 			return TRUE
-	if(glasses)
+	if(glasses && isclothing(glasses))
 		if(glasses.clothing_flags & BLOCK_GAS_SMOKE_EFFECT)
 			return TRUE
 	if(head && istype(head, /obj/item/clothing))

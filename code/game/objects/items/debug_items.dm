@@ -63,7 +63,8 @@
 		"Cautery" = image(icon = 'icons/obj/surgery.dmi', icon_state = "cautery"),
 		"Drill" = image(icon = 'icons/obj/surgery.dmi', icon_state = "drill"),
 		"Scalpel" = image(icon = 'icons/obj/surgery.dmi', icon_state = "scalpel"),
-		"Saw" = image(icon = 'icons/obj/surgery.dmi', icon_state = "saw")
+		"Saw" = image(icon = 'icons/obj/surgery.dmi', icon_state = "saw"),
+		"Blood filter" = image(icon = 'icons/obj/surgery.dmi', icon_state = "bloodfilter")
 		)
 	var/tool_result = show_radial_menu(user, src, tool_list, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
 	if(!check_menu(user))
@@ -97,5 +98,7 @@
 			tool_behaviour = TOOL_DRILL
 		if("Scalpel")
 			tool_behaviour = TOOL_SCALPEL
+		if("Blood filter")
+			tool_behaviour = TOOL_BLOODFILTER
 		if("Saw")
 			tool_behaviour = TOOL_SAW

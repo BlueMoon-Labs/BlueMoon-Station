@@ -4,6 +4,7 @@
  * @license MIT
  */
 
+import { KEY_ENTER, KEY_ESCAPE } from 'common/keycodes';
 import { clamp } from 'common/math';
 import { classes, pureComponentHooks } from 'common/react';
 import { Component, createRef } from 'inferno';
@@ -76,7 +77,10 @@ export class NumberInput extends Component {
       const { minValue, maxValue, step, stepPixelSize } = this.props;
       this.setState(prevState => {
         const state = { ...prevState };
-        const offset = state.origin - e.screenY;
+        // DPI fix: screenY is in physical pixels; divide by DPR to normalize
+        // drag sensitivity so stepPixelSize behaves consistently at any DPI.
+        const dpr = window.devicePixelRatio ?? 1;
+        const offset = (state.origin - e.screenY) / dpr;
         if (prevState.dragging) {
           const stepOffset = Number.isFinite(minValue)
             ? minValue % step
@@ -90,8 +94,8 @@ export class NumberInput extends Component {
           // Clamp the final value
           state.value = clamp(
             state.internalValue
-              - state.internalValue % step
-              + stepOffset,
+            - state.internalValue % step
+            + stepOffset,
             minValue,
             maxValue);
           state.origin = e.screenY;
@@ -127,16 +131,43 @@ export class NumberInput extends Component {
       }
       else if (this.inputRef) {
         const input = this.inputRef.current;
-        input.value = internalValue;
-        // IE8: Dies when trying to focus a hidden element
-        // (Error: Object does not support this action)
-        try {
-          input.focus();
-          input.select();
+        if (input) {
+          requestAnimationFrame(() => {
+            input.value = internalValue;
+            try {
+              input.focus();
+              input.select();
+            }
+            catch { }
+          });
         }
-        catch {}
       }
     };
+  }
+
+  componentDidMount() {
+    const input = this.inputRef?.current;
+    if (!input) return;
+
+    if (this.props.autoFocus) {
+      // Включаем режим редактирования, иначе input скрыт
+      this.setState((prev) => ({
+        editing: true,
+        // чтобы в инпуте было что выделять
+        internalValue: prev.internalValue ?? this.props.value,
+      }), () => {
+        // Проставляем значение в DOM-инпут и выделяем всё
+        requestAnimationFrame(() => {
+          const i = this.inputRef?.current;
+          if (!i) return;
+          i.value = String(this.state.internalValue ?? this.props.value ?? '');
+          try {
+            i.focus();
+            i.select(); // как при обычном клике — выделить всё
+          } catch { }
+        });
+      });
+    }
   }
 
   render() {
@@ -161,16 +192,14 @@ export class NumberInput extends Component {
       format,
       onChange,
       onDrag,
+      showBar,
     } = this.props;
     let displayValue = value;
     if (dragging || suppressingFlicker) {
       displayValue = intermediateValue;
     }
-    // IE8: Use an "unselectable" prop because "user-select" doesn't work.
     const renderContentElement = value => (
-      <div
-        className="NumberInput__content"
-        unselectable={Byond.IS_LTE_IE8}>
+      <div className="NumberInput__content">
         {value + (unit ? ' ' + unit : '')}
       </div>
     );
@@ -181,8 +210,8 @@ export class NumberInput extends Component {
         {renderContentElement}
       </AnimatedNumber>
     ) || (
-      renderContentElement(format ? format(displayValue) : displayValue)
-    ));
+        renderContentElement(format ? format(displayValue) : displayValue)
+      ));
     return (
       <Box
         className={classes([
@@ -195,15 +224,17 @@ export class NumberInput extends Component {
         lineHeight={lineHeight}
         fontSize={fontSize}
         onMouseDown={this.handleDragStart}>
-        <div className="NumberInput__barContainer">
-          <div
-            className="NumberInput__bar"
-            style={{
-              height: clamp(
-                (displayValue - minValue) / (maxValue - minValue) * 100,
-                0, 100) + '%',
-            }} />
-        </div>
+        {showBar && (
+          <div className="NumberInput__barContainer">
+            <div
+              className="NumberInput__bar"
+              style={{
+                height: clamp(
+                  (displayValue - minValue) / (maxValue - minValue) * 100,
+                  0, 100) + '%',
+              }} />
+          </div>
+        )}
         {contentElement}
         <input
           ref={this.inputRef}
@@ -232,30 +263,8 @@ export class NumberInput extends Component {
               editing: false,
               value,
             });
-            this.suppressFlicker();
-            if (onChange) {
-              onChange(e, value);
-            }
-            if (onDrag) {
-              onDrag(e, value);
-            }
-          }}
-          onKeyDown={e => {
-            if (e.keyCode === 13) {
-              const value = clamp(
-                parseFloat(e.target.value),
-                minValue,
-                maxValue);
-              if (Number.isNaN(value)) {
-                this.setState({
-                  editing: false,
-                });
-                return;
-              }
-              this.setState({
-                editing: false,
-                value,
-              });
+
+            if (value !== this.props.value) {
               this.suppressFlicker();
               if (onChange) {
                 onChange(e, value);
@@ -263,9 +272,32 @@ export class NumberInput extends Component {
               if (onDrag) {
                 onDrag(e, value);
               }
+            }
+          }}
+          onKeyDown={e => {
+            if (e.key === KEY_ENTER) {
+              const value = clamp(
+                parseFloat(e.target.value),
+                minValue,
+                maxValue);
+
+              this.setState({
+                editing: false,
+                value,
+              });
+
+              if (value !== this.props.value) {
+                this.suppressFlicker();
+                if (onChange) {
+                  onChange(e, value);
+                }
+                if (onDrag) {
+                  onDrag(e, value);
+                }
+              }
               return;
             }
-            if (e.keyCode === 27) {
+            if (e.key === KEY_ESCAPE) {
               this.setState({
                 editing: false,
               });
@@ -284,4 +316,6 @@ NumberInput.defaultProps = {
   step: 1,
   stepPixelSize: 1,
   suppressFlicker: 50,
+  showBar: true,
+  autoFocus: false,
 };

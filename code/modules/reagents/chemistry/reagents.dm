@@ -72,7 +72,7 @@ GLOBAL_LIST_INIT(name2reagent, build_name2reagent())
 	. = ..()
 	holder = null
 
-/datum/reagent/proc/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0)
+/datum/reagent/proc/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0, affected_bodypart = 0)
 	if(!istype(M))
 		return FALSE
 	if(method == VAPOR) //smoke, foam, spray

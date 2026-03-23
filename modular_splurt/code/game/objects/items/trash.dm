@@ -3,4 +3,4 @@
 /obj/item/trash/sfseeds
 	name = "\improper Old Glory sunflower seeds"
 	icon_state = "sfseeds"
-	icon = 'modular_splurt/icons/obj/janitor.dmi'
+	icon = 'modular_bluemoon/icons/obj/janitor.dmi'

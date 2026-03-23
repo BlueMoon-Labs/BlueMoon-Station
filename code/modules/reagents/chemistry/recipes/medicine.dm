@@ -334,38 +334,6 @@
 	results = list(/datum/reagent/medicine/psicodine = 5)
 	required_reagents = list( /datum/reagent/medicine/mannitol = 2, /datum/reagent/water = 2, /datum/reagent/impedrezene = 1)
 
-/datum/chemical_reaction/medsuture
-	required_reagents = list(/datum/reagent/cellulose = 5, /datum/reagent/toxin/formaldehyde = 5, /datum/reagent/medicine/polypyr = 5) //This might be a bit much, reagent cost should be reviewed after implementation.
-
-/datum/chemical_reaction/medsuture/on_reaction(datum/reagents/holder, created_volume)
-	var/location = get_turf(holder.my_atom)
-	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/stack/medical/suture/medicated(location)
-
-/datum/chemical_reaction/medmesh
-	required_reagents = list(/datum/reagent/cellulose = 5, /datum/reagent/consumable/aloejuice = 5, /datum/reagent/space_cleaner/sterilizine = 5)
-
-/datum/chemical_reaction/medmesh/on_reaction(datum/reagents/holder, created_volume)
-	var/location = get_turf(holder.my_atom)
-	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/stack/medical/mesh/advanced(location)
-
-/datum/chemical_reaction/suture
-	required_reagents = list(/datum/reagent/cellulose = 2, /datum/reagent/medicine/styptic_powder = 2)
-
-/datum/chemical_reaction/suture/on_reaction(datum/reagents/holder, created_volume)
-	var/location = get_turf(holder.my_atom)
-	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/stack/medical/suture/(location)
-
-/datum/chemical_reaction/mesh
-	required_reagents = list(/datum/reagent/cellulose = 2, /datum/reagent/medicine/silver_sulfadiazine = 2)
-
-/datum/chemical_reaction/mesh/on_reaction(datum/reagents/holder, created_volume)
-	var/location = get_turf(holder.my_atom)
-	for(var/i = 1, i <= created_volume, i++)
-		new /obj/item/stack/medical/mesh/(location)
-
 /datum/chemical_reaction/system_cleaner
 	name = "System Cleaner"
 	id = /datum/reagent/medicine/system_cleaner
@@ -377,3 +345,27 @@
 	id = /datum/reagent/medicine/limb_regrowth
 	results = list(/datum/reagent/medicine/limb_regrowth = 2)
 	required_reagents = list(/datum/reagent/blood = 1, /datum/reagent/slime_toxin = 1)
+
+/datum/chemical_reaction/item
+	var/item_type // item to spawn
+
+/datum/chemical_reaction/item/on_reaction(datum/reagents/holder, created_volume, specialreact)
+	var/location = get_turf(holder.my_atom)
+	for(var/i = 1, i <= created_volume, i++)
+		new item_type(location)
+
+/datum/chemical_reaction/item/suture
+	required_reagents = list(/datum/reagent/cellulose = 1, /datum/reagent/medicine/styptic_powder = 2)
+	item_type = /obj/item/stack/medical/suture/one
+
+/datum/chemical_reaction/item/suture/med
+	required_reagents = list(/datum/reagent/cellulose = 1, /datum/reagent/toxin/formaldehyde = 2, /datum/reagent/medicine/sal_acid = 2)
+	item_type = /obj/item/stack/medical/suture/medicated/one
+
+/datum/chemical_reaction/item/mesh
+	required_reagents = list(/datum/reagent/cellulose = 1, /datum/reagent/medicine/silver_sulfadiazine = 2)
+	item_type = /obj/item/stack/medical/mesh/one
+
+/datum/chemical_reaction/item/mesh/advanced
+	required_reagents = list(/datum/reagent/cellulose = 1, /datum/reagent/space_cleaner/sterilizine = 2, /datum/reagent/medicine/oxandrolone = 2)
+	item_type = /obj/item/stack/medical/mesh/advanced/one

@@ -39,6 +39,8 @@
 		/obj/item/valentine,
 		/obj/item/stamp,
 		/obj/item/key,
+		/obj/item/pda,
+		/obj/item/paicard,
 		/obj/item/cartridge,
 		/obj/item/camera_film,
 		/obj/item/stack/ore/bluespace_crystal,
@@ -49,7 +51,14 @@
 		/obj/item/suit_voucher,
 		/obj/item/reagent_containers/pill,
 		/obj/item/gun/ballistic/derringer,
-		/obj/item/genital_equipment/condom))
+		/obj/item/genital_equipment/condom,
+		/obj/item/card_sticker,
+		/obj/item/clothing/accessory/permit,
+		/obj/item/clothing/accessory/ring,
+		/obj/item/clothing/accessory/hateredsoul_dogtag,
+		/obj/item/clothing/accessory/SATTdogtag,
+		/obj/item/clothing/accessory/indiv_number,
+		))
 
 /obj/item/storage/wallet/get_examine_string(mob/user, thats)
 	. = ..()
@@ -61,15 +70,55 @@
 	. = ..()
 	refreshID()
 
+// BLUEMOON ADD START
+/obj/item/storage/wallet/examine(mob/user)
+	. = ..()
+	. += span_notice("Ctrl-click to fast take ID.")
+
+/obj/item/storage/wallet/CtrlClick(mob/user)
+	. = ..()
+	for(var/obj/item/I in contents)
+		if(!I.GetID())
+			continue
+		if(istype(I, /obj/item/pda))
+			var/obj/item/pda/PDA = I
+			var/obj/item/card/id/taken_id = PDA.RemoveID()
+			if(taken_id)
+				user.put_in_hands(taken_id)
+				refreshID()
+				return TRUE
+		else
+			user.put_in_hands(I)
+			refreshID()
+			return TRUE
+// BLUEMOON ADD END
+
 /obj/item/storage/wallet/proc/refreshID()
 	LAZYCLEARLIST(combined_access)
-	if(!(front_id in src))
+	// front_id is valid if it's in contents or inside a PDA in contents
+	var/keep_front_id = (front_id in src)
+	if(!keep_front_id && front_id)
+		for(var/obj/item/pda/PDA in contents)
+			if(PDA.GetID() == front_id)
+				keep_front_id = TRUE
+				break
+	if(!keep_front_id)
 		front_id = null
 	for(var/obj/item/card/id/I in contents)
 		if(!front_id)
 			front_id = I
 		LAZYINITLIST(combined_access)
 		combined_access |= I.access
+	// BLUEMOON ADD START
+	for(var/obj/item/pda/PDA in contents)
+		var/obj/item/card/id/I = PDA.GetID()
+		if(!istype(I))
+			continue
+		if(!front_id)
+			front_id = I
+		LAZYINITLIST(combined_access)
+		combined_access |= I.access
+	// BLUEMOON ADD END
 	if(ishuman(loc))
 		var/mob/living/carbon/human/H = loc
 		if(H.wear_id == src)
@@ -94,7 +143,19 @@
 	if(!front_id)
 		return
 	. = front_id
-	front_id.forceMove(get_turf(src))
+	if(front_id in src)
+		front_id.forceMove(get_turf(src))
+	else
+		for(var/obj/item/pda/PDA in contents)
+			if(PDA.GetID() == front_id)
+				. = PDA.RemoveID()
+				refreshID()
+				return
+		// fallback: not in contents and not from PDA (stale ref) — don't forceMove, reset state
+		front_id = null
+		refreshID()
+		. = null
+		return
 
 /obj/item/storage/wallet/InsertID(obj/item/inserting_item)
 	var/obj/item/card/inserting_id = inserting_item.RemoveID()

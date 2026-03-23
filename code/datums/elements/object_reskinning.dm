@@ -35,9 +35,9 @@
 	return ..()
 
 /datum/element/object_reskinning/proc/on_examine(obj/obj, mob/user, list/examine_list)
-	examine_list += span_notice("[capitalize(replacetext(obj.reskin_binding, "_", "-"))] to reskin it ([length(obj.unique_reskin)] possible styles).")
+	examine_list += span_notice("[capitalize(replacetext(obj.reskin_binding, "_", "-"))] для рескина (Доступных опций: [length(obj.unique_reskin)]).")
 	if(obj.always_reskinnable)
-		examine_list += span_notice("It has no limit to reskinning.")
+		examine_list += span_notice("Предмет не имеет ограничений на смену скина.")
 
 /*
  * Reskins an object according to user's choice.
@@ -76,12 +76,17 @@
 	to_reskin.current_skin = pick
 	for(var/reskin_var in to_reskin.unique_reskin[pick])
 		to_reskin.vars[reskin_var] = to_reskin.unique_reskin[pick][reskin_var]
-	to_chat(user, "[to_reskin] is now skinned as '[pick].'")
+	to_chat(user, "[to_reskin] теперь имеет скин '[pick].'")
 	to_reskin.reskin_obj(user)
 
 	// Only once or always?
 	if(!to_reskin.always_reskinnable)
 		Detach(to_reskin)
+	// BLUEMOON ADD START
+	if(isitem(to_reskin))
+		var/obj/item/item_to_reskin = to_reskin
+		item_to_reskin.update_slot_icon()
+	// BLUEMOON ADD END
 	return TRUE
 
 /**

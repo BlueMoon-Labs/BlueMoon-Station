@@ -75,7 +75,8 @@
 				/obj/item/seeds/tobacco = 3,  		//	 Tobacco
 				/obj/item/seeds/tower = 3,			//	 Tower
 				/obj/item/seeds/wheat/rice = 3,		//	 Rice
-				/obj/item/seeds/wheat = 3,  			//	 Wheat
+				/obj/item/seeds/wheat = 3,  		//	 Wheat
+				/obj/item/seeds/herbs = 3,  		//	 Herbs
 			),
 		),
 

@@ -877,7 +877,7 @@
 	pH = REAGENT_NORMAL_PH
 	return FALSE
 
-/datum/reagents/proc/reaction(atom/A, method = TOUCH, volume_modifier = 1, show_message = 1, from_gas = 0)
+/datum/reagents/proc/reaction(atom/A, method = TOUCH, volume_modifier = 1, show_message = 1, from_gas = 0, affected_bodypart)
 	var/react_type
 	if(isliving(A))
 		react_type = "LIVING"
@@ -896,10 +896,11 @@
 		switch(react_type)
 			if("LIVING")
 				var/touch_protection = 0
+				var/bodypart = affected_bodypart
 				if(method == VAPOR)
 					var/mob/living/L = A
 					touch_protection = L.get_permeability_protection()
-				R.reaction_mob(A, method, R.volume * volume_modifier, show_message, touch_protection)
+				R.reaction_mob(A, method, R.volume * volume_modifier, show_message, touch_protection, affected_bodypart = bodypart)
 			if("TURF")
 				R.reaction_turf(A, R.volume * volume_modifier, show_message, from_gas)
 			if("OBJ")
@@ -1057,7 +1058,7 @@
 		var/datum/reagent/R = A
 		if (R.type == reagent)
 			//In practice this is really confusing and players feel like it randomly melts their beakers, but I'm not sure how else to handle it. We'll see how it goes and I can remove this if it confuses people.
-			if(!ignore_pH)
+			if(!ignore_pH && total_volume > 0)
 				//if (((pH > R.pH) && (pH <= 7)) || ((pH < R.pH) && (pH >= 7)))
 				pH = (((pH - R.pH) / total_volume) * amount) + pH
 			if(istype(my_atom, /obj/item/reagent_containers/))

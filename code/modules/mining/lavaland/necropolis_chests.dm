@@ -354,45 +354,58 @@
 		if(do_after(owner, 40, target = owner))
 			MM.mori()
 
-//Wisp Lantern
+// Wisp Lantern
 /obj/item/wisp_lantern
 	name = "spooky lantern"
 	desc = "This lantern gives off no light, but is home to a friendly wisp."
 	icon = 'icons/obj/lighting.dmi'
-	icon_state = "lantern-blue"
-	item_state = "lantern"
+	icon_state = "lantern-blue-on"
+	item_state = "lantern-blue-on"
 	lefthand_file = 'icons/mob/inhands/equipment/mining_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/mining_righthand.dmi'
 	var/obj/effect/wisp/wisp
 
 /obj/item/wisp_lantern/attack_self(mob/user)
+	. = ..()
+
 	if(!wisp)
-		to_chat(user, "<span class='warning'>The wisp has gone missing!</span>")
-		icon_state = "lantern"
+		to_chat(user, span_warning("The wisp has gone missing!"))
+		icon_state = "lantern-blue"
+		item_state = "lantern-blue"
 		return
 
 	if(wisp.loc == src)
-		to_chat(user, "<span class='notice'>You release the wisp. It begins to bob around your head.</span>")
-		icon_state = "lantern"
+		to_chat(user, span_notice("You release the wisp. It begins to bob around your head."))
+		icon_state = "lantern-blue"
+		item_state = "lantern-blue"
 		wisp.orbit(user, 20)
 		SSblackbox.record_feedback("tally", "wisp_lantern", 1, "Freed")
+		return
 
-	else
-		to_chat(user, "<span class='notice'>You return the wisp to the lantern.</span>")
-		icon_state = "lantern-blue"
-		wisp.forceMove(src)
-		SSblackbox.record_feedback("tally", "wisp_lantern", 1, "Returned")
+	to_chat(user, span_notice("You return the wisp to the lantern."))
+	icon_state = "lantern-blue-on"
+	item_state = "lantern-blue-on"
+	wisp.forceMove(src)
+	SSblackbox.record_feedback("tally", "wisp_lantern", 1, "Returned")
 
 /obj/item/wisp_lantern/Initialize(mapload)
 	. = ..()
 	wisp = new(src)
 
+/obj/item/wisp_lantern/dropped(mob/user)
+	. = ..()
+	if(wisp)
+		wisp.forceMove(src)
+		wisp.visible_message(span_notice("[wisp] has a sad feeling for a moment, then it passes."))
+		icon_state = "lantern-blue-on"
+		item_state = "lantern-blue-on"
+
 /obj/item/wisp_lantern/Destroy()
 	if(wisp)
 		if(wisp.loc == src)
-			QDEL_NULL(wisp)
+			qdel(wisp)
 		else
-			wisp.visible_message("<span class='notice'>[wisp] has a sad feeling for a moment, then it passes.</span>")
+			wisp.visible_message(span_notice("[wisp] has a sad feeling for a moment, then it passes."))
 	return ..()
 
 /obj/effect/wisp
@@ -400,29 +413,28 @@
 	desc = "Happy to light your way."
 	icon = 'icons/obj/lighting.dmi'
 	icon_state = "orb"
-	light_range = 7
+	light_range = 6
+	light_power = 1.2
+	light_color = "#79f1ff"
 	layer = ABOVE_ALL_MOB_LAYER
-	var/sight_flags = SEE_MOBS
-	var/lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
 
 /obj/effect/wisp/orbit(atom/thing, radius, clockwise, rotation_speed, rotation_segments, pre_rotation, lockinorbit)
 	. = ..()
-	if(ismob(thing))
-		RegisterSignal(thing, COMSIG_MOB_UPDATE_SIGHT, PROC_REF(update_user_sight))
-		var/mob/being = thing
-		being.update_sight()
-		to_chat(thing, "<span class='notice'>The wisp enhances your vision.</span>")
+	if(!ismob(thing))
+		return
+	var/mob/being = thing
+	to_chat(being, span_notice("The wisp enhances your vision."))
+	ADD_TRAIT(being, TRAIT_THERMAL_VISION, REF(src))
+	being.update_sight()
 
 /obj/effect/wisp/stop_orbit(datum/component/orbiter/orbits)
-	. = ..()
-	if(ismob(orbits.parent))
-		UnregisterSignal(orbits.parent, COMSIG_MOB_UPDATE_SIGHT)
-		to_chat(orbits.parent, "<span class='notice'>Your vision returns to normal.</span>")
-
-/obj/effect/wisp/proc/update_user_sight(mob/user)
-	user.sight |= sight_flags
-	if(!isnull(lighting_alpha))
-		user.lighting_alpha = min(user.lighting_alpha, lighting_alpha)
+	if(!ismob(orbit_target))
+		return ..()
+	var/mob/being = orbit_target
+	to_chat(being, span_notice("Your vision returns to normal."))
+	REMOVE_TRAIT(being, TRAIT_THERMAL_VISION, REF(src))
+	being.update_sight()
+	return ..()
 
 //Red/Blue Cubes
 /obj/item/warp_cube
@@ -704,7 +716,7 @@
 	reagent_state = LIQUID
 	color = "#FFEBEB"
 
-/datum/reagent/flightpotion/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1)
+/datum/reagent/flightpotion/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1, affected_bodypart)
 	if(iscarbon(M) && M.stat != DEAD)
 		var/mob/living/carbon/C = M
 		if(reac_volume < 5)

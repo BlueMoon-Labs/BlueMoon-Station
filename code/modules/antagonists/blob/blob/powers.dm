@@ -183,7 +183,6 @@
 		blobber.overmind = src
 		blobber.update_icons()
 		blobber.adjustHealth(blobber.maxHealth * 0.5)
-		blobber.faction += list(ROLE_BLOB)
 		blob_mobs += blobber
 		var/mob/C = pick(candidates)
 		C.transfer_ckey(blobber)

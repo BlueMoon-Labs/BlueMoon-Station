@@ -1,5 +1,7 @@
 
 GLOBAL_LIST_INIT(autodrobe_costumes_items, list(
+	/obj/item/clothing/under/costume/scarecrow = 3,
+	/obj/item/clothing/head/scarecrow_hat = 3,
 	/obj/item/clothing/under/costume/gladiator = 3,
 	/obj/item/clothing/head/helmet/gladiator = 3,
 	/obj/item/clothing/suit/toggle/labcoat/mad = 3,
@@ -20,6 +22,7 @@ GLOBAL_LIST_INIT(autodrobe_costumes_items, list(
 	/obj/item/clothing/suit/pirate = 1,
 	/obj/item/clothing/head/pirate = 1,
 	/obj/item/clothing/under/costume/soviet = 3,
+	/obj/item/clothing/head/ushanka/black = 3,
 	/obj/item/clothing/head/ushanka/soviet = 5,
 	/obj/item/clothing/head/ushanka = 5,
 	/obj/item/storage/backpack/henchmen = 5,
@@ -199,7 +202,7 @@ GLOBAL_LIST_INIT(autodrobe_other_items, list(
 	/obj/item/clothing/shoes/jackboots/toeless = 3,
 	/obj/item/clothing/shoes/jackboots/tall = 3,
 	/obj/item/clothing/shoes/jackboots/tall_default = 1,
-	/obj/item/clothing/suit/sol_dress = 4,
+	/obj/item/clothing/under/sol_dress = 4,
 	/obj/item/clothing/under/rank/security/officer/formal/sol/armorless = 4,
 	/obj/item/clothing/suit/armor/nri_coat/armorless = 2,
 	/obj/item/clothing/head/HoS/beret/sol/plain/armorless = 2,

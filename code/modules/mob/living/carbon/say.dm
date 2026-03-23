@@ -10,13 +10,14 @@
 /mob/living/carbon/can_speak_vocal(message)
 	if(silent)
 		return FALSE
-	if(get_selected_language() == /datum/language/signlanguage && handcuffed)
+	var/datum/language/selected_lang = get_selected_language()
+	if(selected_lang && initial(selected_lang.visual_language) && handcuffed)
 		return FALSE
 	return ..()
 
 /mob/living/carbon/could_speak_language(datum/language/language)
 	var/obj/item/organ/tongue/T = getorganslot(ORGAN_SLOT_TONGUE)
-	if(T)
+	if(!QDELETED(T))
 		return T.could_speak_language(language)
 	else
 		return initial(language.flags) & TONGUELESS_SPEECH

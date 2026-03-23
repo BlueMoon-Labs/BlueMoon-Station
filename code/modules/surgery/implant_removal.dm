@@ -1,8 +1,12 @@
 /datum/surgery/implant_removal
-	name = "implant removal"
+	name = "Implant removal"
 	steps = list(/datum/surgery_step/incise, /datum/surgery_step/clamp_bleeders, /datum/surgery_step/retract_skin, /datum/surgery_step/extract_implant, /datum/surgery_step/close)
 	target_mobtypes = list(/mob/living/carbon/human, /mob/living/carbon/monkey)
 	possible_locs = list(BODY_ZONE_CHEST)
+	is_healing = FALSE // BLUEMOON ADD
+	icon = 'icons/obj/syringe.dmi'
+	icon_state = "implantcase-0"
+	radial_priority = SURGERY_RADIAL_PRIORITY_OTHER_FIRST
 
 //extract implant
 /datum/surgery_step/extract_implant
@@ -21,13 +25,13 @@
 	if(I && user && target && user.Adjacent(target) && user.get_active_held_item() == tool)
 		I = implants[I]
 		if(!I)
-			display_results(user, target, "<span class='notice'>You begin to extract [I] from [target]'s [target_zone]...</span>",
-				"[user] begins to extract [I] from [target]'s [target_zone].",
-				"[user] begins to extract something from [target]'s [target_zone].")
-		else
-			display_results(user, target, "<span class='notice'>You look for an implant in [target]'s [target_zone]...</span>",
-				"[user] looks for an implant in [target]'s [target_zone].",
-				"[user] looks for something in [target]'s [target_zone].")
+			return -1
+		display_results(user, target, "<span class='notice'>You begin to extract [I] from [target]'s [target_zone]...</span>",
+			"[user] begins to extract [I] from [target]'s [target_zone].",
+			"[user] begins to extract something from [target]'s [target_zone].")
+	else
+		I = null
+		return -1
 
 /datum/surgery_step/extract_implant/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	if(I)

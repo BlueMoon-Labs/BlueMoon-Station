@@ -13,19 +13,18 @@ const createBabelConfig = options => {
       }],
       [require.resolve('@babel/preset-env'), {
         modules: 'commonjs',
-        useBuiltIns: 'entry',
-        corejs: '3',
         spec: false,
         loose: true,
-        targets: [],
+        targets: {
+          edge: '109',
+        },
       }],
       ...presets,
     ],
     plugins: [
-      [require.resolve('@babel/plugin-proposal-class-properties'), {
+      [require.resolve('@babel/plugin-transform-class-properties'), {
         loose: true,
       }],
-      require.resolve('@babel/plugin-transform-jscript'),
       require.resolve('babel-plugin-inferno'),
       require.resolve('babel-plugin-transform-remove-console'),
       require.resolve('common/string.babel-plugin.cjs'),

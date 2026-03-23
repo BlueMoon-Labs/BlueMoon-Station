@@ -179,18 +179,19 @@
 	text_gain_indication = "<span class='notice'>Your skin begins to glow softly.</span>"
 	instability = 5
 	var/obj/effect/dummy/luminescent_glow/glowth //shamelessly copied from luminescents
-	var/glow = 1.5
+	var/glow_range = 2.5
+	var/glow_power = 2.5
 	power_coeff = 1
 
 /datum/mutation/human/glow/on_acquiring(mob/living/carbon/human/owner)
 	if(..())
 		return
 	glowth = new(owner)
-	glowth.set_light(glow, glow, dna.features["mcolor"])
+	glowth.set_light(glow_range, glow_power, dna.features["mcolor"])
 
 /datum/mutation/human/glow/modify(mob/living/carbon/human/owner)
 	if(glowth)
-		glowth.set_light(glow + GET_MUTATION_POWER(src) , glow + GET_MUTATION_POWER(src), dna.features["mcolor"])
+		glowth.set_light(glow_range * GET_MUTATION_POWER(src) , glow_power * GET_MUTATION_POWER(src), dna.features["mcolor"])
 
 /datum/mutation/human/glow/on_losing(mob/living/carbon/human/owner)
 	if(..())
@@ -253,8 +254,20 @@
 	name = "Anti-Glow"
 	desc = "Your skin seems to attract and absorb nearby light creating 'darkness' around you."
 	text_gain_indication = "<span class='notice'>Your light around you seems to disappear.</span>"
-	glow = -3.5 //Slightly stronger, since negating light tends to be harder than making it.
+	glow_range = 1
+	glow_power = -2 //Slightly stronger, since negating light tends to be harder than making it.
 	locked = TRUE
+
+/datum/mutation/human/glow/on_acquiring(mob/living/carbon/human/owner)
+	if(..())
+		return
+	glowth = new(owner)
+	glowth.set_light(glow_range, glow_power)
+
+/datum/mutation/human/glow/anti/modify(mob/living/carbon/human/owner)
+	if(glowth)
+		glowth.set_light(glow_range * GET_MUTATION_POWER(src) , glow_power * GET_MUTATION_POWER(src))
+
 
 /datum/mutation/human/stimmed
 	name = "Stimmed"

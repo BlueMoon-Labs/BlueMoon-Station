@@ -2,6 +2,7 @@
 //this is very slightly better than it was because you can use it more places. still can't do \his[src] though.
 	var/t_on 	= ru_who(TRUE)
 	var/t_ego 	= ru_ego()
+	var/t_nego	= ru_nego()
 	var/t_a 	= ru_a()
 
 	var/obscure_name
@@ -32,7 +33,7 @@
 	if(skipface || get_visible_name() == "Unknown")
 		. += "Вы не можете разобрать, к какому виду относится находящееся перед вами существо."
 	else
-		. += "[ru_ego(TRUE)] раса - <EM>[spec_trait_examine_font()][dna.custom_species ? dna.custom_species : dna.species.name]</EM></font>!"
+		. += "[ru_ego(TRUE)] раса - <EM>[spec_trait_examine_font()][dna?.custom_species ? dna.custom_species : dna?.species?.name]</EM></font>!"
 	if(user?.stat == CONSCIOUS && ishuman(user))
 		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , span_small("Смотрю на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , null, COMBAT_MESSAGE_RANGE)
 	var/list/obscured = check_obscured_slots()
@@ -81,7 +82,7 @@
 			. += "[t_on] одет[t_a] в [w_uniform.get_examine_string(user)][accessory_msg]."
 	//head
 	if(head && !(head.obj_flags & EXAMINE_SKIP))
-		. += "[t_on] одет[t_a] в [head.get_examine_string(user)]."
+		. += "[t_on] носит на голове [head.get_examine_string(user)]."
 
 	//suit/armor
 	if(wear_suit && !(wear_suit.item_flags & EXAMINE_SKIP))
@@ -93,7 +94,7 @@
 
 	//back
 	if(back && !(back.item_flags & EXAMINE_SKIP))
-		. += "[t_on] держит на своей спине [back.get_examine_string(user)]."
+		. += "На спине у [t_nego] [back.get_examine_string(user)]."
 
 	//Hands
 	for(var/obj/item/I in held_items)
@@ -115,7 +116,7 @@
 				if(length(accessory_preparation))
 					accessory_msg = " c [english_list(accessory_preparation)] на кончиках пальцев"
 
-		. += "[t_on] одет[t_a] в [gloves.get_examine_string(user)][accessory_msg]."
+		. += "[t_on] носит на руках [gloves.get_examine_string(user)][accessory_msg]."
 	else if(length(blood_DNA))
 		var/hand_number = get_num_arms(FALSE)
 		if(hand_number)
@@ -130,18 +131,18 @@
 
 	//mask
 	if(wear_mask && !(ITEM_SLOT_MASK in obscured))
-		. += "[t_on] носит [wear_mask.get_examine_string(user)]."
+		. += "[t_on] носит на лице [wear_mask.get_examine_string(user)]."
 
 	if(wear_neck && !(ITEM_SLOT_NECK in obscured))
-		. += "[t_on] носит на своей шее [wear_neck.get_examine_string(user)]."
+		. += "[t_on] носит на шее [wear_neck.get_examine_string(user)]."
 
 	//belt
 	if(belt && !(belt.item_flags & EXAMINE_SKIP))
-		. += "[t_on] носит на своём поясе [belt.get_examine_string(user)]."
+		. += "[t_on] носит на поясе [belt.get_examine_string(user)]."
 
 	//shoes
 	if(shoes && !(ITEM_SLOT_FEET in obscured))
-		. += "[t_on] одет[t_a] в [shoes.get_examine_string(user)]."
+		. += "[t_on] обут[t_a] в [shoes.get_examine_string(user)]."
 
 	//eyes
 	if(!(ITEM_SLOT_EYES in obscured))
@@ -196,6 +197,18 @@
 			. += "<span class='warning'>[t_on] нервно дёргается.</span>\n"
 		if(100 to 200)
 			. += "<span class='warning'>[t_on] дрожит.</span>\n"
+
+	//belly riding
+	if(ishuman(buckled))
+		var/mob/living/carbon/human/H = buckled
+		var/datum/component/riding/human/riding_comp = H.GetComponent(/datum/component/riding/human)
+		if(RIDING_IS_BELLY(riding_comp?.buckle_type))
+			. += span_lewd("[t_on] удерживается ремнями, на животе [H].")
+
+	var/datum/component/riding/human/riding_comp = GetComponent(/datum/component/riding/human)
+	if(RIDING_IS_BELLY(riding_comp?.buckle_type) && has_buckled_mobs())
+		. += span_lewd("На [t_ego] животе, ремнями удерживаeтся [english_list(buckled_mobs)].")
+
 	var/appears_dead = FALSE
 	var/just_sleeping = FALSE
 	if(stat == DEAD || (HAS_TRAIT(src, TRAIT_FAKEDEATH)))
@@ -380,7 +393,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 
 	if(!HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM))
 		var/apparent_blood_volume = blood_volume
-		if(dna.species.use_skintones && skin_tone == "albino")
+		if(dna?.species?.use_skintones && skin_tone == "albino")
 			apparent_blood_volume -= 150 // enough to knock you down one tier
 		switch(apparent_blood_volume)
 			if(BLOOD_VOLUME_OKAY to BLOOD_VOLUME_SAFE)
@@ -487,6 +500,10 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		// BLUEMOON ADD START - отображение надписей на теле, если они видимы и есть
 		if(show_written_on_bodypart_text != "")
 			msg += show_written_on_bodypart_text
+		// BLUEMOON ADD - отображение татуировок
+		var/tattoo_examine_text = get_tattoo_examine_text()
+		if(tattoo_examine_text)
+			msg += tattoo_examine_text
 		if(user.client?.prefs.cit_toggles & GENITAL_EXAMINE)
 		// BLUEMOON ADD END
 			for(var/obj/item/organ/genital/G in internal_organs)
@@ -563,7 +580,10 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			if(perpname)
 				var/datum/data/record/R = find_record("name", perpname, GLOB.data_core.general)
 				if(R)
-					. += "<span class='deptradio'>Профессия:</span> [R.fields["rank"]]\n<a href='?src=[REF(src)];hud=1;photo_front=1'>\[Front photo\]</a><a href='?src=[REF(src)];hud=1;photo_side=1'>\[Side photo\]</a>"
+					var/rank_tooltip = ""
+					if(R.fields["real_rank"] && R.fields["rank"] != R.fields["real_rank"])
+						rank_tooltip = " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[html_encode(R.fields["real_rank"])]</span></span>"
+					. += "<span class='deptradio'>Профессия:</span> [R.fields["rank"]][rank_tooltip]\n<a href='?src=[REF(src)];hud=1;photo_front=1'>\[Front photo\]</a><a href='?src=[REF(src)];hud=1;photo_side=1'>\[Side photo\]</a>"
 				if(istype(H.glasses, /obj/item/clothing/glasses/hud/health) || istype(CIH, /obj/item/organ/cyberimp/eyes/hud/medical))
 					var/cyberimp_detect
 					for(var/obj/item/organ/cyberimp/CI in internal_organs)

@@ -1,8 +1,12 @@
 /datum/surgery/organ_extraction
-	name = "experimental organ replacement"
+	name = "Experimental organ replacement"
 	steps = list(/datum/surgery_step/incise, /datum/surgery_step/clamp_bleeders, /datum/surgery_step/retract_skin, /datum/surgery_step/incise, /datum/surgery_step/extract_organ, /datum/surgery_step/gland_insert)
 	possible_locs = list(BODY_ZONE_CHEST)
 	ignore_clothes = TRUE
+	is_healing = FALSE // BLUEMOON ADD
+	icon = 'icons/obj/abductor.dmi'
+	icon_state = "gland"
+	radial_priority = SURGERY_RADIAL_PRIORITY_OTHER_FIRST
 
 /datum/surgery/organ_extraction/can_start(mob/user, mob/living/carbon/target)
 	if(!ishuman(user))
@@ -21,7 +25,7 @@
 
 
 /datum/surgery_step/extract_organ
-	name = "remove heart"
+	name = "Удалить сердце"
 	accept_hand = TRUE
 	time = 32
 	var/obj/item/organ/IC = null

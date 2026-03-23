@@ -60,13 +60,13 @@
 
 /obj/item/ammo_casing/energy/laser/melter
 	projectile_type = /obj/item/projectile/beam/melter
-	e_cost = 1400
+	e_cost = 1200
 	select_name = "Kill"
 	fire_sound = 'modular_bluemoon/Ren/Sound/Melter.ogg'
 
 /obj/item/ammo_casing/energy/laser/melter/destroy
 	projectile_type = /obj/item/projectile/beam/melter/destroy
-	e_cost = 5000
+	e_cost = 4000
 	select_name = "MELT"
 	fire_sound = 'modular_bluemoon/Ren/Sound/Melter.ogg'
 
@@ -350,7 +350,7 @@
 	desc = "Ammo for KS23."
 	id = "ammo_ks23"
 	build_type = AUTOLATHE
-	materials = list(/datum/material/iron = 28000)
+	materials = list(/datum/material/iron = 42000)
 	build_path = /obj/item/ammo_box/slug23
 	category = list("Imported")
 
@@ -384,6 +384,7 @@
 	sharpness = SHARP_NONE
 	hitsound = 'modular_bluemoon/Ren/Sound/metal.ogg'
 	attack_verb = list("attacked", "slam", "jabbed", "torn", "gored")
+	unique_reskin = null
 
 /obj/item/spear/electrospear/ComponentInitialize()
 	. = ..()

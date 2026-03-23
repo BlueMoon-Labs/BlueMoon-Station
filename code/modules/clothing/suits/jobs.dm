@@ -243,7 +243,7 @@
 	mob_overlay_icon = 'modular_bluemoon/phenyamomota/icon/mob/clothing/suits.dmi'
 
 /obj/item/clothing/suit/toggle/labcoat/emt
-	name = "emt vest"
+	name = "EMT vest"
 	desc = "A dark blue vest with reflective strips for emergency medical technicians."
 	icon_state = "labcoat_emt"
 	item_state = "labcoat_emt"
@@ -252,7 +252,7 @@
 	mob_overlay_icon = 'modular_bluemoon/phenyamomota/icon/mob/clothing/suits.dmi'
 
 /obj/item/clothing/suit/toggle/labcoat/emt/red
-	name = "red emt vest"
+	name = "red EMT vest"
 	desc = "A red vest with reflective strips for emergency medical technicians."
 	icon_state = "labcoat_emtred"
 	item_state = "labcoat_emtred"
@@ -260,7 +260,7 @@
 	mob_overlay_icon = 'modular_bluemoon/phenyamomota/icon/mob/clothing/suits.dmi'
 
 /obj/item/clothing/suit/toggle/labcoat/emt/highvis
-	name = "high visibility emt vest"
-	desc = "a high visibility vest for emergency medical technicians."
+	name = "high-visibility EMT vest"
+	desc = "a high-visibility vest for emergency medical technicians."
 	icon_state = "labcoat_highvis"
 	item_state = "labcoat_highvis"

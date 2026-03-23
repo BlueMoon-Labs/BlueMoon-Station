@@ -20,18 +20,22 @@
 			io_list.Add(new io_type(src, io_entry, default_data, pin_type,i))
 
 
-/obj/item/integrated_circuit/proc/set_pin_data(pin_type, pin_number, datum/new_data)
+/obj/item/integrated_circuit/proc/set_pin_data(pin_type, pin_number, new_data)
 	if(islist(new_data))
 		for(var/i in 1 to length(new_data))
-			if (istype(new_data) && !isweakref(new_data))
+			if(isdatum(new_data) && !isweakref(new_data))
 				new_data[i] = WEAKREF(new_data[i])
-	if (istype(new_data) && !isweakref(new_data))
+	if(isdatum(new_data) && !isweakref(new_data))
 		new_data = WEAKREF(new_data)
 	var/datum/integrated_io/pin = get_pin_ref(pin_type, pin_number)
+	if(!pin)
+		return
 	return pin.write_data_to_pin(new_data)
 
 /obj/item/integrated_circuit/proc/get_pin_data(pin_type, pin_number)
 	var/datum/integrated_io/pin = get_pin_ref(pin_type, pin_number)
+	if(!pin)
+		return
 	var/data = pin.get_data()
 	if(istext(data))
 		data = sanitize_text(data)
@@ -39,33 +43,40 @@
 
 /obj/item/integrated_circuit/proc/get_pin_data_as_type(pin_type, pin_number, as_type)
 	var/datum/integrated_io/pin = get_pin_ref(pin_type, pin_number)
+	if(!pin)
+		return
 	return pin.data_as_type(as_type)
 
 /obj/item/integrated_circuit/proc/activate_pin(pin_number)
-	var/datum/integrated_io/activate/A = activators[pin_number]
+	var/datum/integrated_io/activate/A = get_pin_ref(IC_ACTIVATOR, pin_number)
+	if(!A)
+		return
 	A.push_data()
 
 /obj/item/integrated_circuit/proc/get_pin_ref(pin_type, pin_number)
 	switch(pin_type)
 		if(IC_INPUT)
-			if(pin_number > inputs.len)
+			if(pin_number < 1 || pin_number > inputs.len)
 				return
 			return inputs[pin_number]
 		if(IC_OUTPUT)
-			if(pin_number > outputs.len)
+			if(pin_number < 1 || pin_number > outputs.len)
 				return
 			return outputs[pin_number]
 		if(IC_ACTIVATOR)
-			if(pin_number > activators.len)
+			if(pin_number < 1 || pin_number > activators.len)
 				return
 			return activators[pin_number]
 	return
 
 /datum/integrated_io/proc/get_data()
 	if(islist(data))
+		var/list/data_list = data
 		for(var/i in 1 to length(data))
-			if(isweakref(data[i]))
-				data[i] = data[i].resolve()
+			var/datum/weakref/i_ref = data_list[i]
+			if(istype(i_ref))
+				data_list[i] = i_ref.resolve()
+		data = data_list
 	if(isweakref(data))
 		return data.resolve()
 	return data

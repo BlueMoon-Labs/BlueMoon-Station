@@ -97,6 +97,7 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/krashly/icons/mob/clothing/under.dmi'
 	icon_state = "inteq_skirt"
 	item_state = "inteq_skirt"
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/inteq/eng
 	name = "brown engineering turtleneck"
@@ -116,6 +117,7 @@
 	icon_state = "inteqeng_skirt"
 	item_state = "inteqeng_skirt"
 	fitted = FEMALE_UNIFORM_TOP
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/inteq/maid
 	name = "brown combat maidsuit"
@@ -160,3 +162,4 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/krashly/icons/mob/clothing/under.dmi'
 	icon_state = "inteqmed_skirt"
 	item_state = "inteqmed_skirt"
+	mutantrace_variation = STYLE_DIGITIGRADE

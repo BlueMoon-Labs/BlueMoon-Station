@@ -27,6 +27,12 @@
 	RegisterSignal(carrier, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(handle_life))
 	RegisterSignal(carrier, COMSIG_MOB_CLIMAX, PROC_REF(on_climax))
 
+/datum/component/ovipositor/Destroy(force, ...)
+	if(carrier)
+		unregister_carrier()
+		carrier = null
+	return ..()
+
 /datum/component/ovipositor/proc/unregister_carrier()
 	UnregisterSignal(carrier, COMSIG_LIVING_BIOLOGICAL_LIFE)
 	UnregisterSignal(carrier, COMSIG_MOB_CLIMAX)

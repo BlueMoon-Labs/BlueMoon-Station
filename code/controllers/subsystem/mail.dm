@@ -21,10 +21,10 @@ SUBSYSTEM_DEF(mail)
 	/// Assoc list 'mail category' = 'mail category weight'
 	var/static/list/mail_categories_with_weights = list(
 		MAIL_CATEGORY_MISC = 5,
-		MAIL_CATEGORY_ANTAG = 2,
+		MAIL_CATEGORY_ANTAG = 3,
 		MAIL_CATEGORY_MONEY = 5,
 		MAIL_CATEGORY_FAMILY = 5,
-		MAIL_CATEGORY_JOB = 8,
+		MAIL_CATEGORY_JOB = 5,
 		MAIL_CATEGORY_SHOP = 6,
 		MAIL_CATEGORY_SPAM = 5,
 		MAIL_CATEGORY_LEWD = 4
@@ -69,17 +69,7 @@ SUBSYSTEM_DEF(mail)
 		for(var/P in types_of_category)
 			var/datum/mail_pattern/pattern_path = P
 			// Избавляемся от базовых паттернов
-			if(pattern_path.type in list(
-				/datum/mail_pattern,
-				/datum/mail_pattern/antag,
-				/datum/mail_pattern/family,
-				/datum/mail_pattern/job,
-				/datum/mail_pattern/lewd,
-				/datum/mail_pattern/misc,
-				/datum/mail_pattern/money,
-				/datum/mail_pattern/shop,
-				/datum/mail_pattern/spam
-			))
+			if(!pattern_path.name)
 				continue
 			var/datum/mail_pattern/new_pattern = new pattern_path()
 			all_patterns[new_pattern.name] = new_pattern
@@ -114,6 +104,14 @@ SUBSYSTEM_DEF(mail)
 		restriction_string += " - Доступен только для [jointext(pattern.whitelisted_jobs, ", ")].\n"
 	if(pattern.blacklisted_jobs.len)
 		restriction_string += " - Недоступен для [jointext(pattern.blacklisted_jobs, ", ")].\n"
+	if(pattern.whitelisted_gender.len)
+		restriction_string += " - Доступен только для пола: [jointext(pattern.whitelisted_gender, ", ")].\n"
+	if(pattern.blacklisted_gender.len)
+		restriction_string += " - Недоступен для пола: [jointext(pattern.blacklisted_gender, ", ")].\n"
+	if(pattern.whitelisted_genitals.len)
+		restriction_string += " - Доступен только для обладателей гениталий: [jointext(pattern.whitelisted_genitals, " и ")].\n"
+	if(pattern.blacklisted_genitals.len)
+		restriction_string += " - Недоступен для обладателей гениталий: [jointext(pattern.blacklisted_genitals, ", ")].\n"
 	if(pattern.whitelisted_species.len)
 		var/list/species_names = list()
 		for(var/S in pattern.whitelisted_species)

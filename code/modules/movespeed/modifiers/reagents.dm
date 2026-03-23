@@ -15,7 +15,7 @@
 	absolute_max_tiles_per_second = 7
 
 /datum/movespeed_modifier/reagent/pepperspray
-	multiplicative_slowdown = 0.5
+	multiplicative_slowdown = 1.0
 
 /datum/movespeed_modifier/reagent/monkey_energy
 	multiplicative_slowdown = -0.35

@@ -8,23 +8,6 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	attack_verb = list("smashed", "beaten", "crushed")
 
-/obj/item/nutcracker/proc/gib_head(mob/living/carbon/M)
-	var/obj/item/bodypart/head = M.get_bodypart("head")
-	if(!head)
-		return
-
-	var/turf/T = get_turf(M)
-	var/list/organs = M.getorganszone("head") + M.getorganszone("eyes") + M.getorganszone("mouth")
-	for(var/internal_organ in organs)
-		var/obj/item/organ/I = internal_organ
-		I.Remove()
-		I.forceMove(T)
-	head.drop_limb()
-	qdel(head)
-	new M.gib_type(T,1,M.get_static_viruses())
-	M.add_splatter_floor(T)
-	playsound(M, 'sound/effects/splat.ogg', 50, 1)
-
 //It's a bit of a clusterfuck, but if someone wants, it can be easily repurposed to work on other limbs too.
 /obj/item/nutcracker/attack(mob/living/carbon/M, mob/living/carbon/user)
 	. = ..()
@@ -53,7 +36,7 @@
 		if(get_location_accessible(M, target_zone)) //Yes, two checks, before and after the timer. What if someone puts a helmet on the guy while you're crushing his head?
 			if(target_limb)//If he still has the head. In case you queue up a lot of these up at once or the guy loses the head while you're removing it.
 				M.visible_message("<span class='warning'>[M]\s head cracks like a watermelon, spilling everything inside, as it becomes an unrecognizable mess!</span>")
-				gib_head(M)
+				M.gib_head()
 		else
 			to_chat(user, "<span class='notice'>Expose [M]\s head before trying to crush it!</span>")
 
@@ -63,7 +46,7 @@
 	if(target_limb) //I mean like... for example lings can be still alive without heads.
 		user.visible_message("<span class='suicide'>[user] is crushing [user.ru_ego()] own head with \the [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")
 		if(do_after(user, 30))
-			gib_head(user)
+			user.gib_head()
 	else
 		return
 	return (BRUTELOSS)

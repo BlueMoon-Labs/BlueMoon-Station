@@ -8361,7 +8361,7 @@
 /obj/item/trash/pistachios,
 /obj/item/reagent_containers/glass/beaker/waterbottle/empty,
 /mob/living/simple_animal/hostile/nanotrasen/survivor,
-/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/gun/ballistic/automatic/fal,
 /turf/open/floor/plating,
 /area/awaymission/complex/security)
 "hjy" = (
@@ -12184,7 +12184,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/trash/chips,
 /obj/item/trash/sosjerky,
-/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/fal,
 /turf/open/floor/plating,
 /area/awaymission/complex/security)
 "kun" = (
@@ -21537,6 +21537,7 @@
 /area/awaymission/complex/research)
 "sDC" = (
 /obj/structure/table,
+/obj/item/circuitboard/machine/circuit_imprinter/hacked,
 /turf/open/floor/plating,
 /area/awaymission/complex/outpost)
 "sDN" = (

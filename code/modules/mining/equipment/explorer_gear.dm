@@ -25,7 +25,7 @@
 	hoodtype = /obj/item/clothing/head/hooded/explorer/standard/improved
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
-	armor = list(MELEE = 50, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 50, BIO = 100, RAD = 50, FIRE = 100, ACID = 50, WOUND = 15)
+	armor = list(MELEE = 40, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 50, BIO = 100, RAD = 50, FIRE = 100, ACID = 50, WOUND = 15)
 
 /obj/item/clothing/suit/hooded/explorer/standard/improved/upgrade_icon(datum/source, amount, maxamount)
 	if(amount)
@@ -72,7 +72,7 @@
 	heat_protection = HEAD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	actions_types = list(/datum/action/item_action/toggle_helmet_light)
-	armor = list(MELEE = 50, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 50, BIO = 100, RAD = 50, FIRE = 100, ACID = 50, WOUND = 10)
+	armor = list(MELEE = 40, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 50, BIO = 100, RAD = 50, FIRE = 100, ACID = 50, WOUND = 10)
 
 /obj/item/clothing/head/hooded/explorer/standard/improved/upgrade_icon(datum/source, amount, maxamount)
 	if(amount)
@@ -84,8 +84,8 @@
 	item_state = "[suit_type]"
 	if(ishuman(loc))
 		var/mob/living/carbon/human/wearer = loc
-		if(wearer.wear_suit == src)
-			wearer.update_inv_wear_suit()
+		if(wearer.head == src)
+			wearer.update_inv_head()
 
 /obj/item/clothing/head/hooded/explorer/standard/improved/equipped(mob/living/carbon/human/user, slot)
 	..()
@@ -151,9 +151,11 @@
 /obj/item/clothing/mask/gas/explorer/attack_self(mob/user)
 	adjustmask(user)
 
-/obj/item/clothing/mask/gas/explorer/adjustmask(user)
+/obj/item/clothing/mask/gas/explorer/adjustmask(mob/user)
 	..()
 	w_class = mask_adjusted ? WEIGHT_CLASS_NORMAL : WEIGHT_CLASS_SMALL
+	flags_inv = mask_adjusted ? (HIDEEYES|HIDEFACE|HIDEFACIALHAIR) : (HIDEEYES|HIDEFACE|HIDEFACIALHAIR|HIDESNOUT)
+	user?.update_inv_head()
 
 /obj/item/clothing/mask/gas/explorer/folded/Initialize(mapload)
 	. = ..()
@@ -262,7 +264,7 @@
 	icon_state = "heva"
 	item_state = "heva"
 	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 60, FIRE = 40, ACID = 50, WOUND = 15)
+	armor = list(MELEE = 5, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 60, FIRE = 40, ACID = 50, WOUND = 15)
 
 /****************Exo-Suit and Mask****************/
 
@@ -277,7 +279,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	hoodtype = /obj/item/clothing/head/hooded/explorer/exo
-	armor = list(MELEE = 55, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 50, BIO = 25, RAD = 25, FIRE = 10, ACID = 10, WOUND = 20)
+	armor = list(MELEE = 45, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 50, BIO = 25, RAD = 25, FIRE = 10, ACID = 10, WOUND = 20)
 	resistance_flags = FIRE_PROOF | GOLIATH_RESISTANCE
 
 /obj/item/clothing/head/hooded/explorer/exo
@@ -288,7 +290,7 @@
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/head_muzzled.dmi'
 	icon_state = "exo"
 	item_state = "exo"
-	armor = list(MELEE = 55, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 50, BIO = 25, RAD = 25, FIRE = 10, ACID = 10, WOUND = 20)
+	armor = list(MELEE = 45, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 50, BIO = 25, RAD = 25, FIRE = 10, ACID = 10, WOUND = 20)
 	resistance_flags = FIRE_PROOF | GOLIATH_RESISTANCE
 
 /obj/item/clothing/mask/gas/exo
@@ -297,3 +299,4 @@
 	icon_state = "exo"
 	item_state = "exo"
 	resistance_flags = FIRE_PROOF
+	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 5, BIO = 50, RAD = 0, FIRE = 20, ACID = 40, WOUND = 5)

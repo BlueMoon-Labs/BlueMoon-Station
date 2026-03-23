@@ -77,6 +77,15 @@
 	. = ..()
 	AddComponent(/datum/component/two_handed, force_unwielded=5, force_wielded=23, icon_wielded="bone_axe1")
 
+/obj/item/fireaxe/boneaxe/ShisHar  //An artifact of the Ashwalker tribe, one of a kind.
+	icon_state = "bonemetal_axe0"
+	name = "ShisHar"
+	desc = "Forged from Lavalands depths, this axe slays only intelligent beings."
+
+/obj/item/fireaxe/boneaxe/ShisHar/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=12, force_wielded=35, icon_wielded="bonemetal_axe1")
+
 /obj/item/fireaxe/energized
 	desc = "Someone with a love for fire axes decided to turn this one into a high-powered energy weapon. Seems excessive."
 	armour_penetration = 50

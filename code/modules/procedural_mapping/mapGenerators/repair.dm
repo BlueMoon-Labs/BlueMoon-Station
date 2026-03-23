@@ -53,6 +53,18 @@
 	SSatoms.InitializeAtoms(atoms)
 	SSmachines.setup_template_powernets(cables)
 	SSair.setup_template_machinery(atmos_machines)
+
+	// Rebuild lighting for reloaded region — mass delete + reload leaves
+	// has_opaque_atom, shadow_weight_sum, and area blend profiles stale
+	for(var/turf/T in atoms)
+		T.recalc_atom_opacity()
+		T.reconsider_lights()
+		if(T.lighting_object)
+			GLOB.lighting_update_blends |= T.lighting_object
+			if(!T.lighting_object.needs_update)
+				T.lighting_object.needs_update = TRUE
+				GLOB.lighting_update_objects += T.lighting_object
+
 	GLOB.reloading_map = FALSE
 
 /datum/mapGenerator/repair

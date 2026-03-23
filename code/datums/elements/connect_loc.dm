@@ -9,7 +9,7 @@
 
 /datum/element/connect_loc/Attach(atom/movable/listener, list/connections)
 	. = ..()
-	if (!istype(listener))
+	if(!istype(listener))
 		return ELEMENT_INCOMPATIBLE
 
 	src.connections = connections
@@ -23,11 +23,11 @@
 	UnregisterSignal(listener, COMSIG_MOVABLE_MOVED)
 
 /datum/element/connect_loc/proc/update_signals(atom/movable/listener)
-	var/atom/listener_loc = listener.loc
-	if(isnull(listener_loc))
+	var/atom/listener_loc = listener?.loc
+	if(QDELETED(listener) || QDELETED(listener_loc))
 		return
 
-	for (var/signal in connections)
+	for(var/signal in connections)
 		//override=TRUE because more than one connect_loc element instance tracked object can be on the same loc
 		listener.RegisterSignal(listener_loc, signal, connections[signal], override=TRUE)
 

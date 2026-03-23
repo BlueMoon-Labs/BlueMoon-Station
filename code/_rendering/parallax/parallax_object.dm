@@ -47,20 +47,32 @@
 			offset_y += 480
 	screen_loc = "[map_id && "[map_id]:"]CENTER-7:[round(offset_x,1)],CENTER-7:[round(offset_y,1)]"
 
-/atom/movable/screen/parallax_layer/proc/RelativePosition(x, y, rel_x, rel_y)
+/atom/movable/screen/parallax_layer/proc/RelativePosition(x, y, rel_x, rel_y, anim_time = 0)
 	if(absolute)
 		return ResetPosition(x, y)
+	var/old_visual_x = round(offset_x, 1)
+	var/old_visual_y = round(offset_y, 1)
 	offset_x -= rel_x * speed
 	offset_y -= rel_y * speed
+	var/wrapped = FALSE
 	if(offset_x > 240)
 		offset_x -= 480
+		wrapped = TRUE
 	if(offset_x < -240)
 		offset_x += 480
+		wrapped = TRUE
 	if(offset_y > 240)
 		offset_y -= 480
+		wrapped = TRUE
 	if(offset_y < -240)
 		offset_y += 480
+		wrapped = TRUE
 	screen_loc = "[map_id && "[map_id]:"]CENTER-7:[round(offset_x,1)],CENTER-7:[round(offset_y,1)]"
+	if(anim_time > 0 && !wrapped)
+		var/dx = old_visual_x - round(offset_x, 1)
+		var/dy = old_visual_y - round(offset_y, 1)
+		transform = matrix(1, 0, dx, 0, 1, dy)
+		animate(src, transform = matrix(), time = anim_time, flags = ANIMATION_END_NOW)
 
 /atom/movable/screen/parallax_layer/proc/SetView(client_view = world.view, force_update = FALSE)
 	if(view_current == client_view && !force_update)
@@ -113,6 +125,7 @@
 	layer.parallax_intensity = parallax_intensity
 	layer.view_current = view_current
 	layer.appearance = appearance
+	return layer
 
 /atom/movable/screen/parallax_layer/proc/default_x()
 	return center_x

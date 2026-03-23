@@ -76,12 +76,12 @@
 #define WIRE_LAYER 2.4
 #define WIRE_TERMINAL_LAYER 2.45
 #define GAS_SCRUBBER_LAYER 2.46
+///catwalk overlay of /turf/open/floor/plating/plating_catwalk
+#define CATWALK_LAYER 2.465
 #define GAS_PIPE_VISIBLE_LAYER 2.47
 #define GAS_FILTER_LAYER 2.48
 #define GAS_PUMP_LAYER 2.49
 #define LOW_OBJ_LAYER 2.5
-///catwalk overlay of /turf/open/floor/plating/plating_catwalk
-#define CATWALK_LAYER 2.51
 #define LOW_SIGIL_LAYER 2.52
 #define SIGIL_LAYER 2.54
 #define HIGH_SIGIL_LAYER 2.56
@@ -176,8 +176,12 @@
 /// It's over lighting and every other crap because this is nearly as important as hud content and only visible to the user.
 #define BALLOON_CHAT_PLANE 20
 
-///Visuals that represent sounds happening, and can be seen while blind.
-#define SOUND_EFFECT_VISUAL_PLANE 25
+// === Unified FOV / sound-visual plane ===
+// Visuals that must be visible above fullscreen/blind overlays (FOV indicators, sound pings, etc).
+// Placed above ABOVE_HUD_PLANE and below RENDER_PLANE_GAME.
+#define FOV_VISUAL_PLANE 38
+#define FOV_VISUAL_LAYER 38
+#define FOV_VISUAL_RENDER_TARGET "FOV_VISUAL_PLANE"
 
 //HUD layer defines
 
@@ -244,8 +248,6 @@
 
 #define SINGULARITY_LAYER 1
 #define ABOVE_SINGULARITY_LAYER 2
-
-#define FOV_EFFECTS_LAYER 2 //Blindness effects are not layer 4, they lie to you
 
 //Plane master critical flags
 //Describes how different plane masters behave when they are being culled for performance reasons

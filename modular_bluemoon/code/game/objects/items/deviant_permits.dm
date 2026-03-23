@@ -67,8 +67,8 @@
 	desc = "Вещественное одобрение от ЦК."
 	permitted_weapons = "Любое неконтрабандное вооружение и контрабанда не выше первой категории"
 	notes = "Владелец лицензии является актером, нанятым Центральным командованием, которые имеют право на \
-	похищение членов экипажа с использованием имещюегося у них снаряжения. При нарушении любой статьи кода X05, X01, X07 \
-	со стороны обладателя разрешения - Службе Безопасности всегда нужно расценивать как нарушение как 105, 101 и 107 соответственно."
+	похищение членов экипажа с использованием имещюегося у них снаряжения. При нарушении любой статьи кода X01, X04, X05, X07 \
+	со стороны обладателя разрешения - Службе Безопасности всегда нужно расценивать как нарушение как 101, 104, 105 и 107, соответственно."
 
 /obj/item/clothing/accessory/permit/special/deviant/agony
 	icon_state = "agony_plus"
@@ -91,12 +91,3 @@
 	desc = "Вещественное одобрение ЦК на владение и использование технологией 'flashdark'."
 	permitted_weapons = "Flashdark"
 	notes = "Носитель имеет право на ношение и использование технологии 'flashdark', а так же отключение света в месте своей работы, пока это не мешает остальным сотрудникам отдела."
-
-/obj/item/storage/box/deviant_kit/nightmareish
-	name = "Nightmare kit"
-	desc = "Kit with special flashdark and permit for people afflicted by nightmare's blood. Or weirdos that love to masturbate in darkness."
-	illustration = "id"
-
-/obj/item/storage/box/deviant_kit/nightmareish/PopulateContents()
-	new /obj/item/flashlight/flashdark/quirk(src)
-	new /obj/item/clothing/accessory/permit/special/lessnightmareish(src)

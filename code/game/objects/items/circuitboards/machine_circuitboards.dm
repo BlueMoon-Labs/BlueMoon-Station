@@ -998,6 +998,10 @@
 	icon_state = "science"
 	build_path = /obj/machinery/rnd/production/circuit_imprinter/department/science
 
+/obj/item/circuitboard/machine/circuit_imprinter/department/science/robotic
+	name = "Departmental Circuit Imprinter - Robotics (Machine Board)"
+	build_path = /obj/machinery/rnd/production/circuit_imprinter/department/science/robotic
+
 /obj/item/circuitboard/machine/cyborgrecharger
 	name = "Cyborg Recharger (Machine Board)"
 	icon_state = "science"
@@ -1573,3 +1577,7 @@
 		/obj/item/stock_parts/scanning_module = 1,
 		/obj/item/stock_parts/micro_laser = 1,
 		/obj/item/stock_parts/manipulator = 1,)
+
+/obj/item/circuitboard/machine/circuit_imprinter/hacked // BLUEMOON ADD
+	name = "Hacked Imprinter (Machine Board)"
+	build_path = /obj/machinery/rnd/production/circuit_imprinter/hacked

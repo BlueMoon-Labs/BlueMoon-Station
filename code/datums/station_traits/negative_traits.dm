@@ -282,3 +282,23 @@
 	event_control_path = /datum/round_event_control/radiation_storm
 	weight_multiplier = 1.5
 	max_occurrences_modifier = 2
+
+// (ADD) Pe4henika bluemoon -- start
+/datum/station_trait/constant_ion_storms
+    name = "Зона повышенных ионных штормов"
+    trait_type = STATION_TRAIT_NEGATIVE
+    weight = 5
+    show_in_report = TRUE
+    report_message = "Станция вошла в область аномальной ионной активности. Ожидаются регулярные сбои в работе электроники."
+
+/datum/station_trait/constant_ion_storms/on_round_start()
+    . = ..()
+    addtimer(CALLBACK(src, PROC_REF(ion_storm_cycle)), 5 MINUTES)
+
+/datum/station_trait/constant_ion_storms/proc/ion_storm_cycle()
+    if(prob(60))
+        var/datum/round_event_control/E = locate(/datum/round_event_control/ion_storm) in SSevents.control
+        if(E)
+            E.runEvent()
+    addtimer(CALLBACK(src, PROC_REF(ion_storm_cycle)), 5 MINUTES)
+// (ADD) Pe4henika bluemoon - end

@@ -9,6 +9,18 @@
 	supervisors = "the head of personnel"
 	selection_color = "#bbe291"
 	exp_type_department = EXP_TYPE_SERVICE // This is so the jobs menu can work properly
+	alt_titles = list(
+		"Bartender Assistant", //Стажер выше, для удобства
+		"Bar Owner",
+		"Barista",
+		"Barkeeper",
+		"Barmaid",
+		"Crocin Terrorist",
+		"Mixologist",
+		"Sommelier",
+		"Tavernkeeper",
+		"The Semen Degustator"
+		)
 
 	outfit = /datum/outfit/job/bartender
 	plasma_outfit = /datum/outfit/plasmaman/bar
@@ -46,6 +58,7 @@
 	suit = /obj/item/clothing/suit/armor/vest/alt
 	backpack_contents = list(/obj/item/storage/box/beanbag=1,/obj/item/book/granter/action/drink_fling=1)
 	shoes = /obj/item/clothing/shoes/laceup
+	accessory = list(/obj/item/clothing/accessory/permit/special/bartender)
 
 /datum/outfit/job/bartender/syndicate
 	name = "Syndicate Bartender"
@@ -65,6 +78,7 @@
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
 	backpack_contents = list(/obj/item/storage/box/beanbag=1,/obj/item/book/granter/action/drink_fling=1, /obj/item/syndicate_uplink=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/bartender)
 
 /datum/job/bartender/after_spawn(mob/living/H, client/C, latejoin = TRUE)
 	. = ..()

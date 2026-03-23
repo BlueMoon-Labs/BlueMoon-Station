@@ -108,7 +108,7 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 			var/content
 			if(flavor_name == "OOC Notes")
 
-				content += "[L]'s OOC Notes: <br> <b>ERP:</b> [L.client.prefs.erppref] <b>| Non-Con:</b> [L.client.prefs.nonconpref] <b>| Vore:</b> [L.client.prefs.vorepref] <b>| Mob-Sex:</b> [L.client.prefs.mobsexpref] <b>| Horny Antags:</b> [L.client.prefs.hornyantagspref]"
+				content += "[L]'s OOC Notes: <br> <b>ERP:</b> [L.client.prefs.erppref] <b>| Non-Con:</b> [L.client.prefs.nonconpref] <b>| Vore:</b> [L.client.prefs.vorepref] <b>| Mob Non-Con Sex:</b> [L.client.prefs.mobsexpref] <b>| Horny Antags:</b> [L.client.prefs.hornyantagspref]"
 
 				if(L.client.prefs.unholypref == "Yes")
 					content += " <b>| Unholy:</b> [L.client.prefs.unholypref]\n"
@@ -131,10 +131,12 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 				content += "[L]<br>"
 				content += "<img class='icon icon-misc' src='[text]' height=500px width=500px><br>"
 				content += "</center>"
-				usr << browse("<HTML><HEAD><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><TITLE>[isliving(target) ? L.get_visible_name() : target.name]</TITLE></HEAD><BODY><TT>[replacetext(content, "\n", "<BR>")]</TT></BODY></HTML>", "window=[isliving(target) ? L.get_visible_name() : target.name];size=600x500")
+				var/zoom_head = usr.client?.legacy_zoom_head("flavor_text") || ""
+				usr << browse("<HTML><HEAD><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><TITLE>[isliving(target) ? L.get_visible_name() : target.name]</TITLE>[zoom_head]</HEAD><BODY><TT>[replacetext(content, "\n", "<BR>")]</TT></BODY></HTML>", "window=[isliving(target) ? L.get_visible_name() : target.name];size=600x500")
 				onclose(usr, "[target.name]")
 				return TRUE
-			usr << browse("<HTML><HEAD><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><TITLE>[isliving(target) ? L.get_visible_name() : target.name]</TITLE></HEAD><BODY><TT>[replacetext(content, "\n", "<BR>")]</TT></BODY></HTML>", "window=[isliving(target) ? L.get_visible_name() : target.name];size=500x200")
+			var/zoom_head = usr.client?.legacy_zoom_head("flavor_text") || ""
+			usr << browse("<HTML><HEAD><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><TITLE>[isliving(target) ? L.get_visible_name() : target.name]</TITLE>[zoom_head]</HEAD><BODY><TT>[replacetext(content, "\n", "<BR>")]</TT></BODY></HTML>", "window=[isliving(target) ? L.get_visible_name() : target.name];size=500x200")
 			onclose(usr, "[target.name]")
 		return TRUE
 

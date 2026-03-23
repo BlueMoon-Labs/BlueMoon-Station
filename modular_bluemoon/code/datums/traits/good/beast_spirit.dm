@@ -113,13 +113,13 @@
 	B.update_icon()
 
 /datum/movespeed_modifier/beastspirit
-	multiplicative_slowdown = -2.5
+	multiplicative_slowdown = -0.5
 	priority = 500
 	complex_calculation = TRUE
 	absolute_max_tiles_per_second = 7
 
 /datum/movespeed_modifier/beastspirit_main
-	multiplicative_slowdown = -1
+	multiplicative_slowdown = 0.5
 	priority = 500
 	complex_calculation = TRUE
 	absolute_max_tiles_per_second = 7
@@ -182,6 +182,7 @@
 	action_icon = 'modular_bluemoon/icons/mob/actions/traits_actions.dmi'
 	action_icon_state = "beast"
 	shapeshift_type = /mob/living/simple_animal/hostile/beastspirit
+	die_with_shapeshifted_form = FALSE
 	var/beast_gender = "male"
 	var/beast_type = ""
 	var/beast_sound = 'modular_bluemoon/sound/creatures/wolf.ogg'
@@ -280,4 +281,6 @@
 	if(!CHECK_MOBILITY(HUMAN, MOBILITY_USE))
 		HUMAN.visible_message(span_warning("You cannot transform while restrained!"))
 		return
+
+	HUMAN.UseStaminaBuffer(50, TRUE)
 	return ..()

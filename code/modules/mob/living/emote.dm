@@ -10,6 +10,14 @@
 	if(. && isrobotic(user))
 		do_fake_sparks(5,FALSE,user)
 
+/datum/emote/sound/human/blushh
+	name = "Краснеть"
+	key = "blushh"
+	key_third_person = "blushes"
+	message = "краснеет."
+	sound = 'sound/voice/blush.ogg'
+	stat_allowed = SOFT_CRIT // BLUEMOON EDIT - некоторые эмоуты можно использовать в софткрите
+
 /datum/emote/sound/human/bow
 	name = "Поклониться"
 	key = "bow"
@@ -90,7 +98,9 @@
 	. = ..()
 	var/mob/living/carbon/C = user
 	if(. && iscarbon(user))
-		if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
+		if(isvox(C))
+			playsound(C, 'modular_bluemoon/kovac_shitcode/sound/species/voxcough.ogg', 50, 1)
+		else if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
 			playsound(C, pick('sound/voice/female_cough1.ogg', 'sound/voice/female_cough2.ogg', 'sound/voice/female_cough3.ogg', 'sound/voice/female_cough4.ogg', 'sound/voice/female_cough5.ogg', 'sound/voice/female_cough6.ogg'), 50, 1)
 		else
 			playsound(C, pick('sound/voice/male_cough1.ogg', 'sound/voice/male_cough2.ogg', 'sound/voice/male_cough3.ogg', 'sound/voice/male_cough4.ogg'), 50, 1)
@@ -532,7 +542,9 @@
 	if(!isliving(user) || !.)
 		return
 	var/mob/living/carbon/C = user
-	if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
+	if(isvox(C))
+		playsound(C, 'modular_bluemoon/kovac_shitcode/sound/species/voxsneeze.ogg', 50, 1)
+	else if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
 		playsound(C, pick('sound/voice/sneezef1.ogg', 'sound/voice/sneezef2.ogg'), 50, 1)
 	else
 		playsound(C, pick('sound/voice/sneezem1.ogg', 'sound/voice/sneezem2.ogg'), 50, 1)

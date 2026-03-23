@@ -50,8 +50,7 @@
 		else
 			if(!user.transferItemToLoc(I, src))
 				return
-			if(S.trash)
-				S.generate_trash(get_turf(user))
+			SEND_SIGNAL(S, COMSIG_ITEM_USED_AS_INGREDIENT, src)
 			ingredients += S
 			mix_filling_color(S)
 			S.reagents.trans_to(src,min(S.reagents.total_volume, 15)) //limit of 15, we don't want our custom food to be completely filled by just one ingredient with large reagent volume.
@@ -138,13 +137,6 @@
 			filling.pixel_x = filling.pixel_y = rand(-8,3)
 
 	add_overlay(filling)
-
-
-/obj/item/reagent_containers/food/snacks/customizable/initialize_slice(obj/item/reagent_containers/food/snacks/slice, reagents_per_slice)
-	..()
-	slice.filling_color = filling_color
-	slice.update_snack_overlays(src)
-
 
 /obj/item/reagent_containers/food/snacks/customizable/Destroy()
 	for(. in ingredients)
@@ -296,7 +288,7 @@
 	desc = "A simple bowl, used for soups and salads."
 	icon = 'icons/obj/food/soupsalad.dmi'
 	icon_state = "bowl"
-	reagent_flags = OPENCONTAINER
+	reagent_flags = OPENCONTAINER|DUNKABLE
 	custom_materials = list(/datum/material/glass = 500)
 	w_class = WEIGHT_CLASS_NORMAL
 

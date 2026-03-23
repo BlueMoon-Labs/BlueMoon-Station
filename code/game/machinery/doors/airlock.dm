@@ -139,7 +139,7 @@
 	if(damage_deflection == AIRLOCK_DAMAGE_DEFLECTION_N && security_level > AIRLOCK_SECURITY_METAL)
 		damage_deflection = AIRLOCK_DAMAGE_DEFLECTION_R
 	prepare_huds()
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.add_to_hud(src)
 	diag_hud_set_electrified()
 
@@ -289,6 +289,12 @@
 	qdel(src)
 
 /obj/machinery/door/airlock/Destroy()
+	if(unelectrify_timerid)
+		deltimer(unelectrify_timerid)
+		unelectrify_timerid = null
+	if(closeOther && closeOther.closeOther == src)
+		closeOther.closeOther = null
+	closeOther = null
 	QDEL_NULL(wires)
 	QDEL_NULL(electronics)
 	if(charge)
@@ -302,7 +308,7 @@
 		for(var/obj/machinery/doorButtons/D in GLOB.machines)
 			D.removeMe(src)
 	QDEL_NULL(note)
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.remove_from_hud(src)
 	return ..()
 
@@ -860,6 +866,24 @@
 				return
 	add_fingerprint(user)
 
+	// Разболтировочный ключ — в начале, чтобы не перехватывали другие обработчики
+	if(istype(C, /obj/item/wrench/bolter))
+		if(!locked)
+			return ..()
+		if(!panel_open)
+			to_chat(user, "<span class='warning'>You need to open the maintenance panel first!</span>")
+			return
+		if(security_level != AIRLOCK_SECURITY_NONE)
+			to_chat(user, "<span class='warning'>The airlock's reinforcement prevents access to the bolt mechanism!</span>")
+			return
+		to_chat(user, "<span class='notice'>You start raising the door bolts with [C]...</span>")
+		if(C.use_tool(src, user, 50, volume = 50))
+			if(!panel_open || !locked)
+				return
+			unbolt()
+			user.visible_message("<span class='notice'>[user] raises \the [src]'s bolts with [C].</span>", "<span class='notice'>You raise the door bolts.</span>")
+		return
+
 	if(panel_open)
 		switch(security_level)
 			if(AIRLOCK_SECURITY_NONE)
@@ -1197,6 +1221,7 @@
 			else
 				addtimer(CALLBACK(cyclelinkedairlock, PROC_REF(close)), 2 DECISECONDS)
 	operating = TRUE
+	play_fov_effect(src, 5, "forcefield")
 	update_icon(ALL, AIRLOCK_OPENING, 1)
 	sleep(1)
 	set_opacity(0)
@@ -1253,6 +1278,7 @@
 		killthis.ex_act(EXPLODE_HEAVY)//Smashin windows
 
 	operating = TRUE
+	play_fov_effect(src, 5, "forcefield")
 	update_icon(ALL, AIRLOCK_CLOSING, 1)
 	layer = CLOSED_DOOR_LAYER
 	if(air_tight)
@@ -1632,7 +1658,7 @@
 		set_electrified(ELECTRIFIED_PERMANENT)
 
 /obj/machinery/door/airlock/proc/toggle_bolt(mob/user)
-	if(!user_allowed(user))
+	if(user && !user_allowed(user))
 		return
 	if(wires.is_cut(WIRE_BOLTS))
 		to_chat(user, "<span class='warning'>The door bolt drop wire is cut - you can't toggle the door bolts.</span>")
@@ -1646,13 +1672,13 @@
 		bolt()
 
 /obj/machinery/door/airlock/proc/toggle_emergency(mob/user)
-	if(!user_allowed(user))
+	if(user && !user_allowed(user))
 		return
 	emergency = !emergency
 	update_icon()
 
 /obj/machinery/door/airlock/proc/user_toggle_open(mob/user)
-	if(!user_allowed(user))
+	if(user && !user_allowed(user))
 		return
 	if(welded)
 		to_chat(user, text("The airlock has been welded shut!"))

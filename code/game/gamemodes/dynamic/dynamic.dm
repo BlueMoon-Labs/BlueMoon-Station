@@ -88,16 +88,16 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	var/latejoin_delay_min = (10 MINUTES) //BLUEMOON CHANGES
 
 	/// The maximum time the recurring latejoin ruleset timer is allowed to be.
-	var/latejoin_delay_max = (15 MINUTES)
+	var/latejoin_delay_max = (20 MINUTES)
 
 	/// When world.time is over this number the mode tries to inject a midround ruleset.
 	var/midround_injection_cooldown = 0
 
 	/// The minimum time the recurring midround ruleset timer is allowed to be.
-	var/midround_delay_min = (20 MINUTES) //BLUEMOON CHANGES
+	var/midround_delay_min = (10 MINUTES) //BLUEMOON CHANGES
 
 	/// The maximum time the recurring midround ruleset timer is allowed to be.
-	var/midround_delay_max = (30 MINUTES) //BLUEMOON CHANGES
+	var/midround_delay_max = (20 MINUTES) //BLUEMOON CHANGES
 
 	/// If above this threat, increase the chance of injection
 	var/higher_injection_chance_minimum_threat = 70
@@ -198,7 +198,9 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	dat += "<br>Injection Timers: (<b>[get_injection_chance(dry_run = TRUE)]%</b> latejoin chance, <b>[get_midround_injection_chance(dry_run = TRUE)]%</b> midround chance)<BR>"
 	dat += "Latejoin: [(latejoin_injection_cooldown-world.time)>60*10 ? "[round((latejoin_injection_cooldown-world.time)/60/10,0.1)] minutes" : "[(latejoin_injection_cooldown-world.time)/10] seconds"] <a href='?src=\ref[src];[HrefToken()];injectlate=1'>\[Now!\]</a><BR>"
 	dat += "Midround: [(midround_injection_cooldown-world.time)>60*10 ? "[round((midround_injection_cooldown-world.time)/60/10,0.1)] minutes" : "[(midround_injection_cooldown-world.time)/10] seconds"] <a href='?src=\ref[src];[HrefToken()];injectmid=1'>\[Now!\]</a><BR>"
-	usr << browse(dat.Join(), "window=gamemode_panel;size=500x500")
+	var/datum/browser/popup = new(usr, "gamemode_panel", "Dynamic Mode", 500, 500)
+	popup.set_content(dat.Join())
+	popup.open()
 
 /datum/game_mode/dynamic/Topic(href, href_list)
 	if (..()) // Sanity, maybe ?
@@ -312,8 +314,8 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 			G.on_report()
 			. += G.get_report()
 
-	print_command_report(., "Отдел ССО Пакта Синих Лун", announce=FALSE)
-	priority_announce("Благодаря неустанным усилиям наших специальных оперативных подразделений мы обнаружили несколько возможных угроз для [station_name()]. Будьте осторожней!", "Отдел ССО Пакта Синих Лун", "intercept")
+	print_command_report(., "Отдел ССО ПАКТа Синих Лун", announce=FALSE)
+	priority_announce("Благодаря неустанным усилиям наших специальных оперативных подразделений мы обнаружили несколько возможных угроз для [station_name()]. Будьте осторожней!", "Отдел ССО ПАКТа Синих Лун", "intercept")
 
 /datum/game_mode/dynamic/proc/show_threatlog(mob/admin)
 	if(!SSticker.HasRoundStarted())
@@ -331,7 +333,9 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 
 	out += "<B>Remaining threat/threat_level:</B> [mid_round_budget]/[threat_level]"
 
-	usr << browse(out.Join(), "window=threatlog;size=700x500")
+	var/datum/browser/popup = new(usr, "threatlog", "Threat Log", 700, 500)
+	popup.set_content(out.Join())
+	popup.open()
 
 /// Generates the threat level using lorentz distribution and assigns peaceful_percentage.
 /datum/game_mode/dynamic/proc/generate_threat()
@@ -343,7 +347,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 			GLOB.dynamic_type_threat_max = 100
 			GLOB.dynamic_no_stacking = FALSE //Welcome To Space Iraq
 		if(ROUNDTYPE_DYNAMIC_HARD)
-			GLOB.dynamic_type_threat_min = 90
+			GLOB.dynamic_type_threat_min = 95
 			GLOB.dynamic_type_threat_max = 100
 		if(ROUNDTYPE_DYNAMIC_MEDIUM)
 			GLOB.dynamic_type_threat_min = 50

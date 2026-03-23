@@ -235,9 +235,20 @@
 		if(myseed)
 			myseed.adjust_potency(-chems.get_reagent_amount(type) * 0.5)
 
+/datum/reagent/consumable/milk/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart)
+	if(method == INGEST)
+		quality = (iscatperson(M)) ? DRINK_GOOD : initial(quality)
+	. = ..()
+
+/datum/reagent/consumable/milk/on_mob_add(mob/living/L, amount)
+	. = ..()
+	if(iscatperson(L)) //cats go purr
+		to_chat(L, "<span class = 'notice'>[pick("Mmmm~ milk~","Ahh~ fresh milk~","Milk is so tasty!")]</span>")
+		L.emote("purr")
+
 /datum/reagent/consumable/milk/on_mob_life(mob/living/carbon/M)
 	if(HAS_TRAIT(M, TRAIT_CALCIUM_HEALER))
-		M.heal_bodypart_damage(1.5,0, 0)
+		M.heal_bodypart_damage(1.5, 1.5, 0)
 		for(var/i in M.all_wounds)
 			var/datum/wound/iter_wound = i
 			iter_wound.on_xadone(2)
@@ -249,7 +260,7 @@
 	if(holder.has_reagent(/datum/reagent/consumable/capsaicin))
 		holder.remove_reagent(/datum/reagent/consumable/capsaicin, 2)
 	if(iscatperson(M)) //cats go purr
-		if(prob(5))
+		if(prob(3))
 			to_chat(M, "<span class = 'notice'>[pick("Mmmm~ milk~","Ahh~ fresh milk~","Milk is so tasty!")]</span>")
 			M.emote("purr")
 	..()
@@ -657,12 +668,9 @@
 		M.reagents.add_reagent(/datum/reagent/consumable/honey,1)
 	..()
 
-/datum/reagent/consumable/buzz_fuzz/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
-	if(iscarbon(M) && (method in list(TOUCH, VAPOR, PATCH)))
-		var/mob/living/carbon/C = M
-		for(var/s in C.surgeries)
-			var/datum/surgery/S = s
-			S.success_multiplier = max(0.1, S.success_multiplier) // +10% success probability on each step, compared to bacchus' blessing's ~46%
+/datum/reagent/consumable/buzz_fuzz/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
+	if(method in list(TOUCH, VAPOR, PATCH))
+		M.sterilize(10, 1 MINUTES * reac_volume/5) // +10% success probability on each step, compared to bacchus' blessing's ~46%
 	..()
 
 /datum/reagent/consumable/buzz_fuzz/addiction_act_stage1(mob/living/M)
@@ -1105,6 +1113,11 @@
 	glass_icon_state = "teaglass"
 	glass_name = "glass of catnip tea"
 	glass_desc = "A purrfect drink for a cat."
+
+/datum/reagent/consumable/catnip_tea/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart)
+	if(method == INGEST)
+		quality = (iscatperson(M)) ? DRINK_FANTASTIC : initial(quality)
+	. = ..()
 
 /datum/reagent/consumable/catnip_tea/on_mob_life(mob/living/carbon/M)
 	M.adjustStaminaLoss(min(50 - M.getStaminaLoss(), 3))

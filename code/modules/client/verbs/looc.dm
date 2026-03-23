@@ -71,10 +71,15 @@ GLOBAL_VAR_INIT(normal_looc_colour, "#6699CC")
 
 	for(var/client/C in GLOB.admins)
 		if(C.prefs.chat_toggles & CHAT_OOC)
-			var/prefix = "(R)LOOC"
-			if (C.mob in heard)
-				prefix = "LOOC"
+
+			var/local = (C.mob in heard)
+			var/prefix = "[local ? "" : "(R)"]LOOC"
+			var/admin_looc = ""
 			if(GLOB.LOOC_COLOR)
-				to_chat(C, "<font color='[GLOB.LOOC_COLOR]'><b>[ADMIN_FLW(usr)] <span class='prefix'>[prefix]:</span> <EM>[src.key]/[src.mob.name]:</EM> <span class='message'>[msg]</span></b></font>")
+				admin_looc = "<font color='[GLOB.LOOC_COLOR]'><b>[ADMIN_FLW(usr)] <span class='prefix'>[prefix]:</span> <EM>[src.key]/[src.mob.name]:</EM> <span class='message'>[msg]</span></b></font>"
+				if(!local)
+					admin_looc = span_adminlooc(admin_looc)
 			else
-				to_chat(C, "<span class='looc'>[ADMIN_FLW(usr)] <span class='prefix'>[prefix]:</span> <EM>[src.key]/[src.mob.name]:</EM> <span class='message'>[msg]</span></span>")
+				admin_looc = "[ADMIN_FLW(usr)] <span class='prefix'>[prefix]:</span> <EM>[src.key]/[src.mob.name]:</EM> <span class='message'>[msg]</span>"
+				admin_looc = local ? span_looc(admin_looc) : span_adminlooc(admin_looc)
+			to_chat(C, admin_looc)

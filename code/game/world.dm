@@ -139,7 +139,7 @@ GLOBAL_LIST(topic_status_cache)
 	GLOB.world_crafting_log = "[GLOB.log_directory]/crafting.log"
 	GLOB.click_log = "[GLOB.log_directory]/click.log"
 	GLOB.admin_log = "[GLOB.log_directory]/admin_log.log"
-
+	GLOB.uplink_log = "[GLOB.log_directory]/uplink.log"
 
 #ifdef UNIT_TESTS
 	GLOB.test_log = "[GLOB.log_directory]/tests.log"
@@ -181,6 +181,7 @@ GLOBAL_LIST(topic_status_cache)
 /world/Topic(T, addr, master, key)
 	TGS_TOPIC	//redirect to server tools if necessary
 
+	var/static/list/req_ip_ids = list()
 	var/list/response = list()
 
 	if(length(T) > CONFIG_GET(number/topic_max_size))
@@ -210,6 +211,17 @@ GLOBAL_LIST(topic_status_cache)
 		var/list/censored_params = params.Copy()
 		censored_params["auth"] = "***[copytext(params["auth"], -4)]"
 		log_topic("\"[json_encode(censored_params)]\", from:[addr], master:[master], auth:[censored_params["auth"]], key:[key], source:[source]")
+
+	var/req_id = params["req_id"]
+	response["req_id"] = req_id
+	if(!req_ip_ids[addr])
+		req_ip_ids[addr] = list()
+	if(req_ip_ids[addr][req_id])
+		response["statuscode"] = 202
+		response["response"] = "Bad Request - Already handled"
+		return json_encode(response)
+
+	req_ip_ids[addr] += req_id
 
 	if(!source)
 		response["statuscode"] = 400
@@ -350,7 +362,7 @@ GLOBAL_LIST(topic_status_cache)
 	var/defaultstation = CONFIG_GET(string/stationname)
 	if(servername || stationname != defaultstation)
 		. += (servername ? "<b>[servername]" : "<b>")
-		. += (stationname != defaultstation ? "[servername ? " &#8212 " : ""][stationname]</b>\] " : "</b>\] ")
+		. += (stationname != defaultstation ? "[servername ? " &#8212; " : ""][SSmapping?.config?.map_name || "Station"]</b>\] " : "</b>\] ")
 
 	var/communityname = CONFIG_GET(string/communityshortname)
 	var/communitylink = CONFIG_GET(string/communitylink)

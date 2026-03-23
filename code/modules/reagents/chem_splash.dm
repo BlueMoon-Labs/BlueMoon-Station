@@ -74,5 +74,3 @@
 
 	qdel(splash_holder)
 	return TRUE
-
-

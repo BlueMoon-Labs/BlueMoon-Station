@@ -9,6 +9,7 @@
 	/datum/surgery_step/detach_limb)
 	requires_bodypart_type = BODYPART_HYBRID
 	special_surgery_traits = list() // Не требуется анестезия
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_ADDITIONAL
 
 /datum/surgery_step/detach_limb
 	name = "Отцепить конечность рукой"

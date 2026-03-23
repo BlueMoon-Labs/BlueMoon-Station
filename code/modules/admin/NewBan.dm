@@ -64,7 +64,30 @@ GLOBAL_PROTECT(Banlist)
 	if(!CONFIG_GET(flag/ban_legacy_system))
 		return
 
-	GLOB.Banlist = new("data/banlist.bdb")
+	var/banlist_path = "data/banlist.bdb"
+	var/banlist_lock_path = "[banlist_path].lk"
+	if(fexists(banlist_lock_path))
+		fdel(banlist_lock_path)
+
+	try
+		GLOB.Banlist = new /savefile(banlist_path)
+	catch(var/exception/e)
+		stack_trace("LoadBans(): failed to open legacy banlist [banlist_path]: [e]. Recreating savefile.")
+		log_admin("Legacy banlist savefile is invalid; attempting to recreate [banlist_path].")
+		if(fexists(banlist_lock_path))
+			fdel(banlist_lock_path)
+		if(fexists(banlist_path))
+			var/banlist_backup_path = "[banlist_path].corrupt"
+			if(fexists(banlist_backup_path))
+				fdel(banlist_backup_path)
+			fcopy(banlist_path, banlist_backup_path)
+			fdel(banlist_path)
+		try
+			GLOB.Banlist = new /savefile(banlist_path)
+		catch(var/exception/recreate_error)
+			stack_trace("LoadBans(): failed to recreate legacy banlist [banlist_path]: [recreate_error]")
+			log_admin("Failed to recreate legacy banlist savefile.")
+			return FALSE
 	log_admin("Loading Banlist")
 
 	if (!length(GLOB.Banlist.dir))
@@ -218,7 +241,9 @@ GLOBAL_PROTECT(Banlist)
 
 	dat += "</table>"
 	dat = "<HR><B>Bans:</B> <FONT COLOR=blue>(U) = Unban , (E) = Edit Ban</FONT> - <FONT COLOR=green>([count] Bans)</FONT><HR><table border=1 rules=all frame=void cellspacing=0 cellpadding=3 >[dat]"
-	usr << browse(dat, "window=unbanp;size=875x400")
+	var/datum/browser/popup = new(usr, "unbanp", "Unban Panel", 875, 400)
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 //////////////////////////////////// DEBUG ////////////////////////////////////
 

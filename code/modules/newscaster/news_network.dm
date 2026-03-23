@@ -8,7 +8,7 @@ GLOBAL_DATUM_INIT(news_network, /datum/news_network, new)
 	var/redactedText = "\[REDACTED\]"
 
 /datum/news_network/New()
-	CreateFeedChannel("Станционные Объявления", "Пакт Туманности Синие Луны", 1)
+	CreateFeedChannel("Станционные Объявления", "ПАКТ Туманности Синие Луны", 1)
 	wanted_issue = new /datum/news/wanted_message
 
 /datum/news_network/proc/CreateFeedChannel(channel_name, author, locked, adminChannel = 0)

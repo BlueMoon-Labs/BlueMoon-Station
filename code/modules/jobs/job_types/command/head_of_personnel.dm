@@ -16,6 +16,31 @@
 	exp_type = EXP_TYPE_CREW
 	exp_type_department = EXP_TYPE_SERVICE
 	considered_combat_role = TRUE
+	alt_titles = list(
+		"Personnel Manager of Syndicate", //Синди выше, для удобства
+		"Syndicate Administrator", //Синди выше, для удобства
+		"Assistant Site Director",
+		"Captain Attachment",
+		"Chief of Staff",
+		"Chief Resource Officer",
+		"Crew Resource Officer",
+		"Crew Supervisor",
+		"Employment Officer",
+		"Executive Officer",
+		"Head Hunter",
+		"Head of Cumdumps",
+		"Head of Slutty Personnel",
+		"Head of Stations Pets",
+		"Headgiver to Personnel",
+		"Headpat of Personnel",
+		"HR Manager",
+		"Human Resources Manager",
+		"Personnel Director",
+		"Personnel Manager",
+		"Records Administrator",
+		"Staff Administrator"
+		)
+
 	outfit = /datum/outfit/job/hop
 	departments = DEPARTMENT_BITFLAG_COMMAND | DEPARTMENT_BITFLAG_SERVICE
 	plasma_outfit = /datum/outfit/plasmaman/hop
@@ -38,7 +63,7 @@
 
 	display_order = JOB_DISPLAY_ORDER_HEAD_OF_PERSONNEL
 
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/prosopagnosia, /datum/quirk/insanity)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/prosopagnosia, /datum/quirk/insanity, /datum/quirk/illiterate)
 	threat = 2
 
 	family_heirlooms = list(
@@ -62,7 +87,7 @@
 	head = /obj/item/clothing/head/hopcap
 	backpack_contents = list(/obj/item/storage/box/ids=1, /obj/item/modular_computer/tablet/preset/advanced = 1)
 	box = /obj/item/storage/box/survival/command
-	accessory = /obj/item/clothing/accessory/permit/special/head_of_personnel
+	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_personnel)
 
 	chameleon_extras = list(/obj/item/gun/energy/e_gun, /obj/item/stamp/hop)
 
@@ -85,7 +110,7 @@
 	pda_slot = ITEM_SLOT_BELT
 	backpack_contents = list(/obj/item/storage/box/ids=1, /obj/item/syndicate_uplink_high=1,\
 		/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced = 1)
-	accessory = /obj/item/clothing/accessory/permit/special/head_of_personnel
+	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_personnel)
 
 //only pet worth reviving
 /datum/job/hop/get_mail_goodies(mob/recipient)

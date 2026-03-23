@@ -1,10 +1,10 @@
 import { createPopper, OptionsGeneric } from "@popperjs/core";
-import { Component, findDOMfromVNode, InfernoNode, render } from "inferno";
+import { Component, findDOMFromVNode, InfernoNode, render } from "inferno";
 
 type PopperProps = {
   readonly popperContent: InfernoNode;
   readonly options?: Partial<OptionsGeneric<unknown>>;
-  readonly additionalStyles?: CSSProperties,
+  readonly additionalStyles?: Record<string, string>,
 };
 
 export class Popper extends Component<PopperProps> {
@@ -33,19 +33,20 @@ export class Popper extends Component<PopperProps> {
     }
 
     this.renderPopperContent(() => {
-      document.body.appendChild(this.renderedContent);
+      // DPI fix: append to <html> instead of <body> to escape body zoom.
+      // Popper.js then works in viewport coords for both positioning and
+      // overflow detection, fixing tooltip shift near screen edges.
+      document.documentElement.appendChild(this.renderedContent);
+
+      // HACK: We don't want to create a wrapper, as it could break the layout
+      // of consumers, so we do the inferno equivalent of `findDOMNode(this)`.
+      // This code is copied from `findDOMNode` in inferno-extras.
+      // Because this component is written in TypeScript, we will know
+      // immediately if this internal variable is removed.
+      const domNode = findDOMFromVNode(this.$LI, true);
 
       this.popperInstance = createPopper(
-        // HACK: We don't want to create a wrapper, as it could break the layout
-        // of consumers, so we do the inferno equivalent of `findDOMNode(this)`.
-        // This is usually bad as refs are usually better, but refs did
-        // not work in this case, as they weren't propagating correctly.
-        // A previous attempt was made as a render prop that passed an ID,
-        // but this made consuming use too unwieldly.
-        // This code is copied from `findDOMNode` in inferno-extras.
-        // Because this component is written in TypeScript, we will know
-        // immediately if this internal variable is removed.
-        findDOMfromVNode(this.$LI, true),
+        domNode,
         this.renderedContent,
         options,
       );
@@ -63,7 +64,14 @@ export class Popper extends Component<PopperProps> {
   }
 
   renderPopperContent(callback: () => void) {
-    render(this.props.popperContent, this.renderedContent, callback);
+    // DPI fix: apply body zoom to content so it matches the rest of the UI,
+    // since the container is outside body zoom (appended to <html>).
+    const zoom = document.body.style.zoom || '100%';
+    render(
+      <div style={{ zoom }}>{this.props.popperContent}</div>,
+      this.renderedContent,
+      callback,
+    );
   }
 
   render() {

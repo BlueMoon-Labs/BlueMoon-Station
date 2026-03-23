@@ -54,13 +54,13 @@
     dummy_key = dummy_1_key,
     outfit_override = selected_outfit_1,
     no_anim = TRUE)
-  data["team_1"]["icon64"] = icon2base64(dummysprite_1)
+  data["team_1"]["icon64"] = icon2base64_scaled(dummysprite_1, 2)
 
   var/icon/dummysprite_2 = get_flat_human_icon(null,
     dummy_key = dummy_2_key,
     outfit_override = selected_outfit_2,
     no_anim = TRUE)
-  data["team_2"]["icon64"] = icon2base64(dummysprite_2)
+  data["team_2"]["icon64"] = icon2base64_scaled(dummysprite_2, 2)
 
   data["team_1"]["players"] = team_1_size
   data["team_2"]["players"] = team_2_size
@@ -104,7 +104,7 @@
           return TRUE
     if ("start-thunderome")
       SStgui.close_uis(src)
-      var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for Thunderome?", "Thunderome", null)
+      var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for Thunderome?", "Thunderome", null, priority_check = FALSE)
       if(candidates.len > 0)
         var/team_1_coeff = team_1_size / (team_2_size + team_1_size)
         var/team_1_players_num = round_down(team_1_coeff * candidates.len)

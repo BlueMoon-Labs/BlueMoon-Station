@@ -195,7 +195,7 @@
 		CRASH("SDQL2 fatal error");};
 
 /client/proc/SDQL2_query(query_text as message)
-	set category = "Debug"
+	set category = "Debug.6) Tweak"
 	if(!check_rights(R_DEBUG))  //Shouldn't happen... but just to be safe.
 		message_admins("<span class='danger'>ERROR: Non-admin [key_name(usr)] attempted to execute a SDQL query!</span>")
 		log_admin("Non-admin [key_name(usr)] attempted to execute a SDQL query!")
@@ -503,7 +503,9 @@ GLOBAL_DATUM_INIT(sdql2_vv_statobj, /obj/effect/statclick/SDQL2_VV_all, new(null
 			if(length(select_text))
 				var/text = islist(select_text)? select_text.Join() : select_text
 				var/static/result_offset = 0
-				showmob << browse(text, "window=SDQL-result-[result_offset++];size=800x1200")
+				var/datum/browser/popup = new(showmob, "SDQL-result-[result_offset++]", "SDQL Result", 800, 1200)
+				popup.set_content(text)
+				popup.open(FALSE)
 	show_next_to_key = null
 	if(qdel_on_finish)
 		qdel(src)

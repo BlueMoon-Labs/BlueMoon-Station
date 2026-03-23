@@ -341,8 +341,7 @@
 			playsound(src, pick('sound/voice/ed209_20sec.ogg', 'sound/voice/edplaceholder.ogg'), 50, FALSE)
 			visible_message("<b>[src]</b> показывает на [C.name]!")
 			mode = BOT_HUNT
-			spawn(0)
-				handle_automated_action()	// ensure bot quickly responds to a perp
+			INVOKE_ASYNC(src, PROC_REF(handle_automated_action))	// ensure bot quickly responds to a perp
 			break
 		else
 			continue
@@ -484,12 +483,14 @@
 			icon_state = "[lasercolor]ed2090"
 			disabled = 1
 			target = null
-			spawn(100)
-				disabled = 0
-				icon_state = "[lasercolor]ed2091"
+			addtimer(CALLBACK(src, PROC_REF(recover_lasertag)), 100, TIMER_DELETE_ME)
 			return BULLET_ACT_HIT
 		return ..()
 	return ..()
+
+/mob/living/simple_animal/bot/ed209/proc/recover_lasertag()
+	disabled = 0
+	icon_state = "[lasercolor]ed2091"
 
 /mob/living/simple_animal/bot/ed209/bluetag
 	lasercolor = "b"
@@ -519,8 +520,7 @@
 /mob/living/simple_animal/bot/ed209/proc/stun_attack(mob/living/carbon/C)
 	playsound(src, 'sound/weapons/egloves.ogg', 50, TRUE, -1)
 	icon_state = "[lasercolor]ed209-c"
-	spawn(2)
-		icon_state = "[lasercolor]ed209[on]"
+	addtimer(CALLBACK(src, PROC_REF(recover_stun_icon)), 2, TIMER_DELETE_ME)
 	var/threat = 5
 	C.DefaultCombatKnockdown(100)
 	C.stuttering = 5
@@ -534,6 +534,9 @@
 		speak("[arrest_type ? "Detaining" : "Arresting"] level [threat] scumbag <b>[C]</b> in [location].", radio_channel)
 	C.visible_message("<span class='danger'>[src] has stunned [C]!</span>",\
 							"<span class='userdanger'>[src] has stunned you!</span>")
+
+/mob/living/simple_animal/bot/ed209/proc/recover_stun_icon()
+	icon_state = "[lasercolor]ed209[on]"
 
 /mob/living/simple_animal/bot/ed209/proc/cuff(mob/living/carbon/C)
 	mode = BOT_ARREST

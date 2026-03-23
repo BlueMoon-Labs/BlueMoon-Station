@@ -132,7 +132,7 @@
 	heat = 3800
 	usesound = list('sound/items/welder.ogg', 'sound/items/welder2.ogg')
 	tool_behaviour = TOOL_WELDER
-	toolspeed = 0.7 //plasmacutters can be used as welders, and are faster than standard welders
+	toolspeed = 0.85 //plasmacutters can be used as welders, and are faster than standard welders // Да, конечно, очень удобно варить пистолетом на уровне клок-тулов?
 
 /obj/item/gun/energy/plasmacutter/ComponentInitialize()
 	. = ..()
@@ -171,6 +171,7 @@
 	target.add_overlay(GLOB.welding_sparks)
 	. = ..()
 	target.cut_overlay(GLOB.welding_sparks)
+	cell.use(50)
 
 /obj/item/gun/energy/plasmacutter/adv
 	name = "advanced plasma cutter"

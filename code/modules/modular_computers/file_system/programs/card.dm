@@ -137,7 +137,7 @@
 						<u>Prepared By:</u> [user_id_card?.registered_name ? user_id_card.registered_name : "Unknown"]<br>
 						<u>For:</u> [target_id_card.registered_name ? target_id_card.registered_name : "Unregistered"]<br>
 						<hr>
-						<u>Assignment:</u> [target_id_card.assignment]<br>
+						<u>Assignment:</u> [target_id_card.get_assignment_name()]<br>
 						<u>Access:</u><br>
 						"}
 
@@ -154,15 +154,29 @@
 				computer.visible_message("<span class='notice'>\The [computer] prints out a paper.</span>")
 			return TRUE
 		if("PRG_eject")
-			if(!computer || !card_slot2)
+			if(!computer)
 				return
-			if(target_id_card)
-				GLOB.data_core.manifest_modify(target_id_card.registered_name, target_id_card.assignment)
-				return card_slot2.try_eject(user)
-			else
-				var/obj/item/I = user.get_active_held_item()
-				if(istype(I, /obj/item/card/id))
-					return card_slot2.try_insert(I)
+			var/param = params["name"]
+			switch(param)
+				if("SecondID")
+					if(!card_slot2)
+						return
+					if(target_id_card)
+						target_id_card.update_manifest()
+						return card_slot2.try_eject(user)
+					else
+						var/obj/item/card/id/id = user.get_active_held_item()
+						if(istype(id))
+							return card_slot2.try_insert(id)
+				if("MainID")
+					if(!card_slot)
+						return
+					if(user_id_card)
+						return card_slot.try_eject(user)
+					else
+						var/obj/item/card/id/id = user.get_active_held_item()
+						if(istype(id))
+							return card_slot.try_insert(id)
 			return FALSE
 		if("PRG_terminate")
 			if(!computer || !authenticated)
@@ -200,9 +214,12 @@
 
 			if(target == "Custom")
 				var/custom_name = params["custom_name"]
-				if(custom_name)
-					target_id_card.assignment = custom_name
-					target_id_card.update_label()
+				custom_name = regex("^\\s+", "g").Replace(custom_name, "")
+				custom_name = regex("\\s+$", "g").Replace(custom_name, "")
+				if(!custom_name)
+					return
+				target_id_card.custom_job = custom_name
+				target_id_card.update_label()
 			else
 				if(minor && !(target in head_subordinates))
 					return
@@ -227,7 +244,8 @@
 				target_id_card.access -= get_all_centcom_access() + get_all_accesses()
 				target_id_card.access |= new_access
 				target_id_card.assignment = target
-				target_id_card.update_label()
+				target_id_card.custom_job = ""
+			target_id_card.update_label()
 			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			return TRUE
 		if("PRG_access")
@@ -336,10 +354,12 @@
 
 	data["station_name"] = station_name()
 
+	var/obj/item/computer_hardware/card_slot/card_slot
 	var/obj/item/computer_hardware/card_slot/card_slot2
 	var/obj/item/computer_hardware/printer/printer
 
 	if(computer)
+		card_slot = computer.all_components[MC_CARD]
 		card_slot2 = computer.all_components[MC_CARD2]
 		printer = computer.all_components[MC_PRINT]
 		data["have_id_slot"] = !!(card_slot2)
@@ -349,16 +369,18 @@
 		data["have_printer"] = FALSE
 
 	data["authenticated"] = authenticated
+	data["has_main_id"] = !!card_slot?.stored_card
+
 	if(!card_slot2)
 		return data //We're just gonna error out on the js side at this point anyway
 
 	var/obj/item/card/id/id_card = card_slot2.stored_card
 	data["has_id"] = !!id_card
 	data["id_name"] = id_card ? id_card.name : "-----"
-	if(id_card)
-		data["id_rank"] = id_card.assignment ? id_card.assignment : "Unassigned"
-		data["id_owner"] = id_card.registered_name ? id_card.registered_name : "-----"
-		data["access_on_card"] = id_card.access
+	data["id_rank"] = (id_card && id_card.get_assignment_name()) || "Unassigned"
+	data["id_owner"] = id_card?.registered_name ? id_card.registered_name : "-----"
+	data["id_custom_job"] = id_card?.custom_job ? id_card.custom_job : ""
+	data["access_on_card"] = id_card?.access
 
 	return data
 

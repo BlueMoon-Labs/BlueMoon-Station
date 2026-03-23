@@ -29,6 +29,8 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 						  list("Азиат", "Украиновый"),
 						  list("Толстые пальцы","Ужасный стрелок"),
 						  list("Отпрыск Ночного Кошмара", "Светочувствительность"),
+						  list("Отпрыск Ночного Кошмара", "Никтофобия"),
+						  list("Отпрыск Ночного Кошмара", "Восстановительный Метаболизм"),
 						  list("Святой Дух","Проклятая Кровь"),
 						  list("Святой Дух","Отпрыск Кровопийцы"),
 						  list("Жаждущий","Отпрыск Кровопийцы"),
@@ -38,6 +40,7 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 						  list("Сверхтяжёлый","Пожиратель", "Лёгкий"),
 						  list("Звериный Дух", "Дуллахан"),
 						  list("Хорошо слышимый", "Немота"),
+						  list("Аносмия", "Недышащий"),
 						  list(BLUEMOON_TRAIT_NAME_SHRIEK, "Немота"),
 						  list("Сотрудник НаноТрейзен", "Сотрудник Синдиката"),
 						  list(BLUEMOON_TRAIT_NAME_POWERSAVING, "Жаждущий"),
@@ -61,9 +64,21 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 		quirk_names_by_path[T] = initial(T.name)
 
 /datum/controller/subsystem/processing/quirks/proc/AssignQuirks(mob/living/user, client/cli, spawn_effects, roundstart = FALSE, datum/job/job, silent = FALSE, mob/to_chat_target)
+	if(!cli?.prefs)
+		return
 	var/badquirk = FALSE
 	var/list/my_quirks = cli.prefs.all_quirks.Copy()
 	var/list/cut
+	if(istext(job))
+		job = SSjob.GetJob(job)
+
+	// Обнуляем квирки, если по какой-либо причине у нас будут выбраны конфликтующие пары из блэклиста выше.
+	// Обнуление, а не вырезание пар, важно ввиду возможного удаления дорогих отрицательных квирков из-за дешёвых позитивных.
+	if(SSquirks.check_blacklist_conflicts(my_quirks))
+		my_quirks.Cut()
+		cli.prefs.all_quirks.Cut()
+		cli.prefs.save_character()
+		log_admin("All quirks for [key_name(user)] were reset due to quirk selection blacklist.")
 	if(job?.blacklisted_quirks)
 		cut = filter_quirks(my_quirks, job.blacklisted_quirks)
 		if(LAZYLEN(cut))
@@ -79,7 +94,9 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 	if(badquirk)
 		cli.prefs.save_character()
 	if (!silent && LAZYLEN(cut))
-		to_chat(to_chat_target || user, "<span class='boldwarning'>Some quirks have been cut from your character because of these quirks conflicting with your job assignment: [english_list(cut)].</span>")
+		to_chat(to_chat_target || user, "<span class='boldwarning'>Некоторые выбранные вами квирки были убраны, так как конфликтуют с выбранной должностью: [english_list(cut)].</span>")
+	// if (!silent && LAZYLEN(quirk_blacklist))
+	// 	to_chat(to_chat_target || user, "<span class='boldwarning'>Некоторые выбранные вами квирки несовместимы! Все квирки сброшены.</span>")
 
 	var/mob/living/carbon/human/H = user
 	if(istype(H) && H.dna?.species)
@@ -150,3 +167,23 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 	*/
 
 	return cut
+
+/mob/proc/get_quirk(typepath)
+	for(var/datum/quirk/Q in SSquirks.quirk_objects)
+		if(Q.quirk_holder == src && istype(Q, typepath))
+			return Q
+	return null
+
+// Прок ищет квирки на предмет блеклист-пар из списка quirk_blacklist
+// Есть конфликт - TRUE
+/datum/controller/subsystem/processing/quirks/proc/check_blacklist_conflicts(list/quirks)
+	if(!SSquirks?.quirk_blacklist || !quirks || !quirks.len)
+		return FALSE // Нет квирков = нет проверки. Нет блеклиста = нет проверки.
+	for (var/list/pair in SSquirks.quirk_blacklist)
+		var/conflict = 0
+		for (var/name in pair)
+			if (name in quirks)
+				conflict++
+		if (conflict > 1)
+			return TRUE
+	return FALSE

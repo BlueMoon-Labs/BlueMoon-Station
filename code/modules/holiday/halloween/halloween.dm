@@ -295,11 +295,6 @@
 	light_range = 5
 	light_color = "#EE9933"
 	layer = 0
-	sight_flags = SEE_MOBS
-	lighting_alpha = 0
-
-/obj/effect/wisp/pumpkin/update_user_sight(mob/user) //Disables SUPERLIGHTS
-	return
 
 //Damnit LazyBones
 /mob/living/simple_animal/lazy_bones

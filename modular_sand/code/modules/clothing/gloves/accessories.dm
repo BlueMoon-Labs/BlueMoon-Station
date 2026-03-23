@@ -4,6 +4,7 @@
 	gender = NEUTER
 	w_class = WEIGHT_CLASS_TINY
 	slot_flags = ITEM_SLOT_ACCESSORY | ITEM_SLOT_GLOVES
+	accessory_slot = ITEM_SLOT_GLOVES
 	slot_equipment_priority = ITEM_SLOT_ACCESSORY | ITEM_SLOT_GLOVES | ITEM_SLOT_BACKPACK
 	icon = 'icons/obj/ring.dmi'
 	mob_overlay_icon = 'icons/mob/clothing/hands.dmi'

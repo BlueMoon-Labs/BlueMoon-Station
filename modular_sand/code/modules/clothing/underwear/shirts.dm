@@ -119,6 +119,10 @@
 	name = "halterneck bra"
 	icon_state = "bra_halterneck"
 
+/obj/item/clothing/underwear/shirt/bra/lizared
+	name = "LIZARED Top"
+	icon_state = "bra_LIZARED"
+
 /obj/item/clothing/underwear/shirt/bra/kinky
 	name = "kinky bra"
 	desc = "Kinky."

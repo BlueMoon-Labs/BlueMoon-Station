@@ -40,6 +40,10 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 /obj/item/match/fire_act(exposed_temperature, exposed_volume)
 	matchignite()
 
+/obj/item/match/extinguish()
+	. = ..()
+	matchburnout()
+
 /obj/item/match/proc/matchignite()
 	if(!lit && !burnt)
 		lit = TRUE
@@ -221,6 +225,10 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 				return
 		reagents.remove_any(REAGENTS_METABOLISM)
 
+/obj/item/clothing/mask/cigarette/proc/wasted(location)
+	if(lit)
+		new type_butt(location)
+		qdel(src)
 
 /obj/item/clothing/mask/cigarette/process()
 	var/turf/location = get_turf(src)
@@ -230,10 +238,9 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	smoketime--
 	vapetime++
 	if(smoketime < 1)
-		new type_butt(location)
+		wasted(location)
 		if(ismob(loc))
 			to_chat(M, "<span class='notice'>Your [name] goes out.</span>")
-		qdel(src)
 		return
 	if((vapetime > rand(4, 8)))
 		new /obj/effect/particle_effect/smoke/cigsmoke(location)
@@ -245,9 +252,8 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 /obj/item/clothing/mask/cigarette/attack_self(mob/user)
 	if(lit)
 		user.visible_message("<span class='notice'>[user] calmly drops and treads on \the [src], putting it out instantly.</span>")
-		new type_butt(user.loc)
 		new /obj/effect/decal/cleanable/ash(user.loc)
-		qdel(src)
+		wasted()
 	. = ..()
 
 /obj/item/clothing/mask/cigarette/attack(mob/living/carbon/M, mob/living/carbon/user)
@@ -269,6 +275,19 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 
 /obj/item/clothing/mask/cigarette/fire_act(exposed_temperature, exposed_volume)
 	light()
+
+/obj/item/clothing/mask/cigarette/extinguish()
+	. = ..()
+	if(ishuman(loc)) // Проверка на то, находится ли сигарета в хумане, который может носить сигу как маску
+		var/mob/living/carbon/human/H = loc
+		if(src in H.held_items)
+			wasted(get_turf(H))
+			return
+		if((!H.head || !(H.head.flags_inv & HIDEMASK)))
+			wasted(get_turf(H))
+			return
+	else
+		wasted()
 
 /obj/item/clothing/mask/cigarette/get_temperature()
 	return lit * heat
@@ -437,6 +456,16 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	STOP_PROCESSING(SSobj, src)
 	. = ..()
 
+/obj/item/clothing/mask/cigarette/pipe/wasted(location)
+	if(!lit)
+		return
+	lit = 0
+	icon_state = icon_off
+	item_state = icon_off
+	packeditem = 0
+	name = "empty [initial(name)]"
+	STOP_PROCESSING(SSobj, src)
+
 /obj/item/clothing/mask/cigarette/pipe/process()
 	var/turf/location = get_turf(src)
 	smoketime--
@@ -445,13 +474,8 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 		if(ismob(loc))
 			var/mob/living/M = loc
 			to_chat(M, "<span class='notice'>Your [name] goes out.</span>")
-			lit = 0
-			icon_state = icon_off
-			item_state = icon_off
 			M.update_inv_wear_mask()
-			packeditem = 0
-			name = "empty [initial(name)]"
-		STOP_PROCESSING(SSobj, src)
+		wasted()
 		return
 	open_flame()
 	if(reagents && reagents.total_volume)	//	check if it has any reagents at all
@@ -460,9 +484,8 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 
 /obj/item/clothing/mask/cigarette/pipe/attackby(obj/item/O, mob/user, params)
 	if(istype(O, /obj/item/reagent_containers/food/snacks/grown))
-		var/obj/item/reagent_containers/food/snacks/grown/G = O
 		if(!packeditem)
-			if(G.dry == 1)
+			if(HAS_TRAIT(O, TRAIT_DRIED))
 				to_chat(user, "<span class='notice'>You stuff [O] into [src].</span>")
 				smoketime = 400
 				packeditem = 1
@@ -839,6 +862,14 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	overlay_state = "contractorzippo"
 	item_state = "contractorzippo"
 
+//Bluemoon Edit
+/obj/item/lighter/plighter
+	name = "\improper Player's lighter"
+	desc = "A worn-out lighter with an unknown mechanism. A dent is visible on the back..."
+	icon_state = "lighter_overlay_zippo_player"
+	overlay_state = "playerzippo"
+	item_state = "playerzippo"
+
 ///////////
 //ROLLING//
 ///////////
@@ -854,8 +885,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	if(!proximity)
 		return
 	if(istype(target, /obj/item/reagent_containers/food/snacks/grown))
-		var/obj/item/reagent_containers/food/snacks/grown/O = target
-		if(O.dry)
+		if(HAS_TRAIT(target, TRAIT_DRIED))
 			var/obj/item/clothing/mask/cigarette/rollie/R = new /obj/item/clothing/mask/cigarette/rollie(user.loc)
 			R.chem_volume = target.reagents.total_volume
 			target.reagents.trans_to(R, R.chem_volume, log = "cigar fill: rolling paper afterattack")
@@ -1067,20 +1097,19 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	. = ..()
 	//If we're using a dried plant..
 	if(istype(O,/obj/item/reagent_containers/food/snacks))
-		var/obj/item/reagent_containers/food/snacks/DP = O
-		if (DP.dry)
+		if(HAS_TRAIT(O, TRAIT_DRIED))
 			//Nothing if our bong is full
 			if (reagents.holder_full())
 				user.show_message("<span class='notice'>The bowl is full!</span>", MSG_VISUAL)
 				return
 
 			//Transfer reagents and remove the plant
-			user.show_message("<span class='notice'>You stuff the [DP] into the [src]'s bowl.</span>", MSG_VISUAL)
-			DP.reagents.trans_to(src, 100, log = "cigar fill: bong")
-			qdel(DP)
+			user.show_message("<span class='notice'>You stuff the [O] into the [src]'s bowl.</span>", MSG_VISUAL)
+			O.reagents.trans_to(src, 100, log = "cigar fill: bong")
+			qdel(O)
 			return
 		else
-			user.show_message("<span class='warning'>[DP] must be dried first!</span>", MSG_VISUAL)
+			user.show_message("<span class='warning'>[O] must be dried first!</span>", MSG_VISUAL)
 			return
 
 	if (O.get_temperature() <= 500)

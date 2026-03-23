@@ -1,6 +1,6 @@
 /datum/surgery/advanced/robot_brainwashing
 	name = "Reprogramming"
-	desc = "A surgical procedure which hardcodes a directive into the patient's logic subroutines, making it their absolute priority. It can be purged using a mindshield implant."
+	desc = "Хирургическая процедура, при которой директивы жестко встраиваются в логические программы пациента, что делает их абсолютным приоритетом. Их можно удалить с помощью имплантата mindshield."
 	possible_locs = list(BODY_ZONE_HEAD)
 	requires_bodypart_type = BODYPART_ROBOTIC
 	steps = list(/datum/surgery_step/mechanic_open,
@@ -10,6 +10,11 @@
 	/datum/surgery_step/reprogram,
 	/datum/surgery_step/mechanic_wrench,
 	/datum/surgery_step/mechanic_close)
+
+	is_healing = FALSE // BLUEMOON ADD
+	icon = 'icons/mob/screen_alert.dmi'
+	icon_state = "hypnosis"
+	radial_priority = SURGERY_RADIAL_PRIORITY_OTHER_FIRST
 
 /datum/surgery/advanced/reprogramming/can_start(mob/user, mob/living/carbon/target, obj/item/tool)
 	if(!..())
@@ -55,6 +60,7 @@
 			"<span class='warning'>[user] screws up, causing damage to the circuits!/span>",
 			"[user] completes the surgery on [target]'s posibrain.")
 		target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 40)
+		..()
 	else
 		user.visible_message("<span class='warning'>[user] suddenly notices that the posibrain [user.ru_who()] [user.p_were()] working on is not there anymore.", "<span class='warning'>You suddenly notice that the posibrain you were working on is not there anymore.</span>")
 	return FALSE

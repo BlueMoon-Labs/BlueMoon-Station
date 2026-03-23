@@ -1,6 +1,6 @@
 /obj/item/demolition_hammer	// https://en.wikipedia.org/wiki/Demolition_Hammer
-	name = "Demolition Hammer"
-	desc = "Chief Engineer's sledgehammer, also called \"the Molot\" in the USSP. The finest choice for tasks of demolishing something... Or someone."
+	name = "demolition hammer"
+	desc = "Кувалда Старшего Инженера, также известная как \"Молот\" в СССП. Лучший выбор чтобы снести что-то... Или что-то кому-то."
 	icon = 'modular_bluemoon/icons/obj/items_and_weapons.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/items/items_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/items/items_righthand.dmi'
@@ -39,6 +39,16 @@
 	icon_state = "dmolotred_0"
 
 
+/obj/item/demolition_hammer/attack(mob/living/M, mob/living/user, attackchain_flags, damage_multiplier)
+	. = ..()
+	if(!wielded)
+		wound_bonus = 4
+		bare_wound_bonus = 6
+	else
+		wound_bonus = 8
+		bare_wound_bonus = 14
+
+
 // Fireaxe window breaking feature, reworked
 /obj/item/demolition_hammer/afterattack(atom/A, mob/living/user, proximity)
 	. = ..()
@@ -48,13 +58,13 @@
 
 	if(istype(A, /obj/structure/window/reinforced))	// Works better with unarmored windows.
 		var/obj/structure/window/reinforced/reinforced = A
-		reinforced.take_damage(5, BRUTE, MELEE, FALSE)
-		user.visible_message(span_warning("The sledge's head bounced off the glass!"))
+		reinforced.take_damage(10, BRUTE, MELEE, FALSE)
+		user.visible_message(span_warning("Головка кувалды отскочила от стекла!"))
 
 	else if(istype(A, /obj/structure/window/plasma))
 		var/obj/structure/window/plasma/plasma = A
 		plasma.take_damage(5, BRUTE, MELEE, FALSE)
-		user.visible_message(span_warning("The sledge's head bounced off the plasma glass!"))
+		user.visible_message(span_warning("Головка кувалды отскочила от плазма-стекла!"))
 
 	else if(istype(A, /obj/structure/window)) // Unarmored breaks in ~2 hits.
 		var/obj/structure/window/window = A
@@ -69,62 +79,3 @@
 // Triggered on unwield of two handed item.
 /obj/item/demolition_hammer/proc/on_unwield(obj/item/source, mob/user)
 	wielded = FALSE
-
-
-// Sonic jackhammer dismantling feauture, reworked
-/turf/closed/wall/try_destroy(obj/item/I, mob/user, turf/T)
-	if(!istype(I, /obj/item/demolition_hammer))
-		return ..()
-
-	var/obj/item/demolition_hammer/hammer = I // Checks if the hammer is dual-wielded
-	if (!hammer.wielded)
-		return FALSE
-
-	var/initial_wall_type = src.type
-	to_chat(user, span_notice("You begin to crush though [src]..."))
-	playsound(src, 'sound/alien/Effects/bang1.ogg', 50, 1)
-
-	if(src.type != initial_wall_type)
-		return FALSE
-
-	if(user.loc != T)
-		return FALSE
-
-	spawn(2.5 SECONDS) // Plays sound mid-destroying
-		if(user.loc == T)
-			playsound(src, 'sound/alien/Effects/bang7.ogg', 100, 1)
-
-	if(do_after(user, 5 SECONDS, target = src))
-		I.play_tool_sound(src)
-		visible_message(span_warning("[user] crushes through [src] with [I]!"), "<i>You hear the grinding of metal.</i>")
-		dismantle_wall()
-		return TRUE
-
-
-/turf/closed/wall/r_wall/try_destroy(obj/item/I, mob/user, turf/T)
-	if(!istype(I, /obj/item/demolition_hammer))
-		return ..()
-
-	var/obj/item/demolition_hammer/hammer = I // Checks if the hammer is dual-wielded
-	if (!hammer.wielded)
-		return FALSE
-
-	var/initial_wall_type = src.type
-	to_chat(user, span_notice("You begin to crush though [src]..."))
-	playsound(src, 'sound/alien/Effects/bang1.ogg', 50, 1)
-
-	if(src.type != initial_wall_type)
-		return FALSE
-
-	if(user.loc != T)
-		return FALSE
-
-	spawn(6 SECONDS) // Plays sound mid-destroying
-		if(user.loc == T)
-			playsound(src, 'sound/alien/Effects/bang7.ogg', 100, 1)
-
-	if(do_after(user, 12 SECONDS, target = 	src))
-		I.play_tool_sound(src)
-		visible_message(span_warning("[user] crushes through [src] with [I]!"), "<i>You hear the grinding of metal.</i>")
-		dismantle_wall()
-		return TRUE

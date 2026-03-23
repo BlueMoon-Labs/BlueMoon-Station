@@ -524,13 +524,9 @@
 	var/obj/machinery/computer/shuttle/C = getControlConsole()
 	if(!istype(C, /obj/machinery/computer/shuttle/pod))
 		return ..()
-	if(GLOB.security_level >= SEC_LEVEL_RED || (C && (C.obj_flags & EMAGGED)))
-		if(launch_status == UNLAUNCHED)
-			launch_status = EARLY_LAUNCHED
-			return ..()
-	else
-		to_chat(usr, "<span class='warning'>Escape pods will only launch during \"Code Red\" security alert.</span>")
-		return TRUE
+	if(launch_status == UNLAUNCHED)
+		launch_status = EARLY_LAUNCHED
+	return ..()
 
 /obj/docking_port/mobile/pod/cancel()
 	return
@@ -565,7 +561,7 @@
 /obj/machinery/computer/shuttle/pod/connect_to_shuttle(obj/docking_port/mobile/port, obj/docking_port/stationary/dock, idnum, override=FALSE)
 	. = ..()
 	if(possible_destinations == initial(possible_destinations) || override)
-		possible_destinations = "pod_lavaland[idnum]"
+		possible_destinations = "pod_lavaland[idnum];pod"
 
 /**
  * Signal handler for checking if we should lock or unlock escape pods accordingly to a newly set security level
@@ -585,6 +581,8 @@
 /obj/docking_port/stationary/random
 	name = "escape pod"
 	shuttle_id = "pod"
+	hidden = TRUE
+	override_can_dock_checks = TRUE
 	dwidth = 1
 	width = 3
 	height = 4

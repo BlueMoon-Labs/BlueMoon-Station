@@ -95,7 +95,7 @@
 
 	///Hot simple_animal baby making vars.
 	var/list/childtype = null
-	var/next_scan_time = 0
+	COOLDOWN_DECLARE(childmaker)
 	///Sorry, no spider+corgi buttbabies.
 	var/animal_species
 
@@ -177,7 +177,7 @@
 
 /mob/living/simple_animal/Destroy()
 	GLOB.simple_animals[AIStatus] -= src
-	if (SSnpcpool.state == SS_PAUSED && LAZYLEN(SSnpcpool.currentrun))
+	if (LAZYLEN(SSnpcpool.currentrun))
 		SSnpcpool.currentrun -= src
 
 	if(nest)
@@ -185,8 +185,18 @@
 		nest = null
 
 	var/turf/T = get_turf(src)
-	if (T && AIStatus == AI_Z_OFF)
-		SSidlenpcpool.idle_mobs_by_zlevel[T.z] -= src
+	if (AIStatus == AI_Z_OFF && islist(SSidlenpcpool.idle_mobs_by_zlevel))
+		if (T)
+			var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[T.z]
+			if(islist(idle_z_list))
+				idle_z_list -= src
+		else
+			// If we were moved to nullspace before Destroy(), we can no longer resolve our z-level.
+			// Remove from every idle z-list to avoid a dangling subsystem reference blocking GC.
+			for (var/i in 1 to SSidlenpcpool.idle_mobs_by_zlevel.len)
+				var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[i]
+				if(islist(idle_z_list))
+					idle_z_list -= src
 
 	return ..()
 
@@ -441,16 +451,17 @@
 		setMovetype(initial(movement_type))
 
 /mob/living/simple_animal/proc/make_babies() // <3 <3 <3
-	if(gender != FEMALE || stat || next_scan_time > world.time || !childtype || !animal_species || !SSticker.IsRoundInProgress())
+	if(!COOLDOWN_FINISHED(src, childmaker))
 		return
-	next_scan_time = world.time + 400
-	var/alone = 1
+	if(gender != FEMALE || stat || !childtype || !animal_species || !SSticker.IsRoundInProgress())
+		return
+	COOLDOWN_START(src, childmaker, 40 SECONDS)
 	var/mob/living/simple_animal/partner
 	var/children = 0
 	for(var/mob/M in view(7, src))
 		if(M.stat != CONSCIOUS) //Check if it's conscious FIRST.
 			continue
-		else if(istype(M, childtype)) //Check for children SECOND.
+		else if(M.type in childtype) //Check for children SECOND.
 			children++
 		else if(istype(M, animal_species))
 			if(M.ckey)
@@ -461,21 +472,24 @@
 		else if(isliving(M) && !faction_check_mob(M)) //shyness check. we're not shy in front of things that share a faction with us.
 			return //we never mate when not alone, so just abort early
 
-	if(alone && partner && children < 3)
+	if(partner && children < 3)
 		var/childspawn = pickweight(childtype)
 		var/turf/target = get_turf(loc)
 		if(target)
 			return new childspawn(target)
 
-/mob/living/simple_animal/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE)
+/mob/living/simple_animal/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE, silent = FALSE)
 	if(incapacitated())
-		to_chat(src, "<span class='warning'>You can't do that right now!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
 		return FALSE
 	if(be_close && !in_range(M, src))
-		to_chat(src, "<span class='warning'>You are too far away!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>You are too far away!</span>")
 		return FALSE
 	if(!(no_dextery || dextrous))
-		to_chat(src, "<span class='warning'>You don't have the dexterity to do this!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>You don't have the dexterity to do this!</span>")
 		return FALSE
 	return TRUE
 
@@ -522,7 +536,7 @@
 	toggle_ai(AI_OFF) // To prevent any weirdness.
 	can_have_ai = FALSE
 
-/mob/living/simple_animal/update_sight()
+/mob/living/simple_animal/update_sight(forced = TRUE)
 	if(!client)
 		return
 	if(stat == DEAD)
@@ -531,9 +545,10 @@
 		see_invisible = SEE_INVISIBLE_OBSERVER
 		return
 
-	see_invisible = initial(see_invisible)
-	see_in_dark = initial(see_in_dark)
-	sight = initial(sight)
+	if(forced)
+		see_invisible = initial(see_invisible)
+		see_in_dark = initial(see_in_dark)
+		sight = initial(sight)
 
 	if(client.eye != src)
 		var/atom/A = client.eye
@@ -643,6 +658,19 @@
 		else
 			stack_trace("Something attempted to set simple animals AI to an invalid state: [togglestatus]")
 
+/// Returns TRUE if any player is within given distance on the same z-level.
+/mob/living/simple_animal/proc/has_nearby_player(distance = NEARBY_PLAYER_DISTANCE)
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return FALSE
+	var/our_z = our_turf.z
+	if(!islist(SSmobs.clients_by_zlevel) || our_z > SSmobs.clients_by_zlevel.len)
+		return FALSE
+	for(var/mob/player as anything in SSmobs.clients_by_zlevel[our_z])
+		if(get_dist(our_turf, player) <= distance)
+			return TRUE
+	return FALSE
+
 /mob/living/simple_animal/proc/consider_wakeup()
 	if (pulledby || shouldwakeup)
 		toggle_ai(AI_ON)
@@ -650,7 +678,7 @@
 /mob/living/simple_animal/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
 	if(!ckey && !stat)//Not unconscious
-		if(AIStatus == AI_IDLE)
+		if(AIStatus == AI_IDLE || AIStatus == AI_Z_OFF)
 			toggle_ai(AI_ON)
 
 
@@ -703,14 +731,14 @@
 /mob/living/simple_animal/examine(mob/user)
 	var/list/dat = ..()
 	if(stat == DEAD)
-		dat += "<span class='deadsay'>[p_they(TRUE)] appears to be dead.</span>"
-	else if(getBruteLoss())
+		dat += "<span class='deadsay'>[p_they_ru(TRUE)] не подаёт признаков жизни.</span>"
+	else if(getBruteLoss() && !isbot(src))
 		if(health < (maxHealth * 0.15))
-			dat += span_warning("[p_they(TRUE)] looks critically injured.")
+			dat += span_warning("[p_they_ru(TRUE)] серьёзно изувечен[ru_a()].")
 		else if(health < (maxHealth * 0.5))
-			dat += span_warning("[p_they(TRUE)] looks severely injured.")
+			dat += span_warning("[p_they_ru(TRUE)] изувечен[ru_a()].")
 		else if(health < (maxHealth * 0.85))
-			dat += span_warning("[p_they(TRUE)] looks injured.")
+			dat += span_warning("[p_they_ru(TRUE)] ранен[ru_a()].")
 		else
-			dat += span_warning("[p_they(TRUE)] looks slightly injured.")
+			dat += span_warning("[p_they_ru(TRUE)] в царапинах.")
 	return dat

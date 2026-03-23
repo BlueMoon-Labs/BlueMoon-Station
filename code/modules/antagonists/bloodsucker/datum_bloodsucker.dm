@@ -266,7 +266,7 @@
 	// Update Health
 	owner.current.setMaxHealth(100)
 	// Language
-	owner.current.remove_language(/datum/language/vampiric, TRUE, TRUE, LANGUAGE_BLOODSUCKER)
+	owner.current.remove_language(/datum/language/vampiric, source = LANGUAGE_BLOODSUCKER)
 	// Soul
 	if (owner.soulOwner == owner) // Return soul, if *I* own it.
 		owner.hasSoul = TRUE

@@ -23,6 +23,7 @@
 			return
 		stealth = !stealth
 		animate(ninja, alpha = 20,time = 12)
+		ADD_TRAIT(ninja, TRAIT_STRONG_INVISIBILITY, NINJA_SUIT_TRAIT)
 		ninja.visible_message("<span class='warning'>[ninja.name] vanishes into thin air!</span>", \
 						"<span class='notice'>You are now mostly invisible to normal detection.</span>")
 
@@ -41,6 +42,7 @@
 	if(stealth)
 		stealth = !stealth
 		animate(ninja, alpha = 255, time = 12)
+		REMOVE_TRAIT(ninja, TRAIT_STRONG_INVISIBILITY, NINJA_SUIT_TRAIT)
 		ninja.visible_message("<span class='warning'>[ninja.name] appears from thin air!</span>", \
 						"<span class='notice'>You are now visible.</span>")
 		return TRUE
@@ -67,6 +69,7 @@
 			return
 		stealth = !stealth
 		animate(ninja, alpha = 5, time = 6)
+		ADD_TRAIT(ninja, TRAIT_STRONG_INVISIBILITY, NINJA_SUIT_TRAIT)
 		ninja.visible_message("<span class='warning'>[ninja.name] vanishes into thin air!</span>", \
 						"<span class='notice'>You are now mostly invisible to normal detection.</span>")
 

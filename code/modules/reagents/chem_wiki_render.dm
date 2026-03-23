@@ -11,7 +11,7 @@
 
 /client/proc/generate_wikichem_list()
 	set name = "Generate Wikichems"
-	set category = "Debug"
+	set category = "Debug.8) Misc"
 	set desc = "Generate a huge loglist of all the chems. Do not click unless you want lag."
 
 

@@ -149,10 +149,20 @@
 /obj/item/clothing/head/ushanka/soviet
 	name = "soviet ushanka"
 	desc = "For the union!"
+	flags_inv = HIDEEARS
 	icon_state = "sovietushankadown"
 	item_state = "sovietushankadown"
 	upsprite = "sovietushankaup"
 	downsprite = "sovietushankadown"
+
+/obj/item/clothing/head/ushanka/black
+	name = "Soviet Black Ushanka"
+	desc = "For the union!"
+	flags_inv = HIDEEARS
+	icon_state = "blackushankadown"
+	item_state = "blackushankadown"
+	upsprite = "blackushankaup"
+	downsprite = "blackushankadown"
 
 /*
  * Pumpkin head

@@ -1536,7 +1536,7 @@
 /area/awaymission/spacebattle/cruiser)
 "fr" = (
 /obj/effect/mob_spawn/human/nanotrasensoldier,
-/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/gun/ballistic/automatic/fal,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "fs" = (
@@ -3067,7 +3067,7 @@
 /area/awaymission/spacebattle/cruiser)
 "kl" = (
 /obj/effect/mob_spawn/human/nanotrasensoldier,
-/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/gun/ballistic/automatic/fal,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
@@ -6170,8 +6170,8 @@
 /obj/item/clothing/neck/cloak/nanotrasen_representative,
 /obj/item/storage/belt/military,
 /obj/item/storage/barricade,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/ammo_box/magazine/fal,
+/obj/item/gun/ballistic/automatic/fal,
 /turf/open/floor/engine,
 /area/awaymission/spacebattle/cruiser)
 "Gd" = (

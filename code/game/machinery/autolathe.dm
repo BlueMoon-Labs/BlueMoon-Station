@@ -1,6 +1,6 @@
 /obj/machinery/autolathe
 	name = "autolathe"
-	desc = "It produces items using metal and glass."
+	desc = "Производит вещи, используя запасы железа, стекла и других материалов."
 	icon_state = "autolathe"
 	density = TRUE
 	use_power = IDLE_POWER_USE
@@ -85,7 +85,7 @@
 		var/datum/material/M = mat_id
 		var/mineral_count = materials.materials[mat_id]
 		var/list/material_data = list(
-			name = M.name,
+			name = material_to_ru_nominative(M.name),
 			mineral_amount = mineral_count,
 			matcolour = M.color,
 		)
@@ -210,7 +210,7 @@
 						if(materials.materials[i] > 0)
 							list_to_show += i
 
-					used_material = tgui_input_list(usr, "Choose [used_material]", "Custom Material", sort_list(list_to_show, GLOBAL_PROC_REF(cmp_typepaths_asc)))
+					used_material = tgui_input_list(usr, "Выберите [used_material]", "Custom Material", sort_list(list_to_show, GLOBAL_PROC_REF(cmp_typepaths_asc)))
 					if(isnull(used_material))
 						return //Didn't pick any material, so you can't build shit either.
 					custom_materials[used_material] += amount_needed
@@ -227,9 +227,9 @@
 				addtimer(CALLBACK(src, PROC_REF(make_item), power, materials_used, custom_materials, multiplier, coeff, is_stack, usr), time)
 				. = TRUE
 			else
-				to_chat(usr, span_alert("Not enough materials for this operation."))
+				to_chat(usr, span_alert("Недостаточно материалов для операции."))
 		else
-			to_chat(usr, span_alert("The autolathe is busy. Please wait for completion of previous operation."))
+			to_chat(usr, span_alert("Автолат в процессе работы. Пожалуйста, дождитесь завершения предыдущей операции."))
 
 /obj/machinery/autolathe/on_deconstruction()
 	var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
@@ -262,7 +262,7 @@
 				else
 					LAZYADD(not_imported, blueprint.name)
 			if(not_imported)
-				to_chat(user, span_warning("The following design[length(not_imported) > 1 ? "s" : ""] couldn't be imported: [english_list(not_imported)]"))
+				to_chat(user, span_warning("Следующие чертежи не удалось импортировать: [english_list(not_imported)]"))
 		busy = FALSE
 		return TRUE
 
@@ -368,7 +368,9 @@
 	. += ..()
 	var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 	if(in_range(user, src) || isobserver(user))
-		. += span_notice("The status display reads: Storing up to <b>[materials.max_amount]</b> material units.<br>Material consumption at <b>[creation_efficiency*100]%</b>.")
+		. += span_notice("Статус-дисплей сообщает: \n\
+		- Хранится до <b>[materials.max_amount]</b> m/u.\n\
+		- Затраты материалов: <b>[creation_efficiency*100]%</b>.")
 
 /obj/machinery/autolathe/proc/can_build(datum/design/D, amount = 1)
 	if(length(D.make_reagents))
@@ -394,7 +396,7 @@
 			dat += "[D.materials[i] * coeff] [i]"
 		else
 			var/datum/material/M = i
-			dat += "[D.materials[i] * coeff] [M.name] "
+			dat += "[D.materials[i] * coeff] [material_to_ru_genitive(M.name)] "
 	return dat
 
 /obj/machinery/autolathe/proc/reset(wire)
@@ -443,7 +445,7 @@
 
 /obj/machinery/autolathe/secure
 	name = "secured autolathe"
-	desc = "It produces items using metal and glass. This model was reprogrammed without some of the more hazardous designs."
+	desc = "Производит вещи, используя запасы железа, стекла и других материалов. Этот образец перепрограммирован без чертежей более \"опасных \" вещей."
 	circuit = /obj/item/circuitboard/machine/autolathe/secure
 
 /obj/machinery/autolathe/secure/Initialize(mapload)
@@ -455,7 +457,7 @@
 
 /obj/machinery/autolathe/toy
 	name = "autoylathe"
-	desc = "It produces toys using plastic, metal and glass."
+	desc = "Производит игрушки, используя пластик, железо и стекло."
 	circuit = /obj/item/circuitboard/machine/autolathe/toy
 	categories = list(
 					"Toys",

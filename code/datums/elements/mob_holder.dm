@@ -33,7 +33,7 @@
 
 /datum/element/mob_holder/proc/on_examine(mob/living/source, mob/user, list/examine_list)
 	if(ishuman(user) && !istype(source.loc, /obj/item/clothing/head/mob_holder))
-		examine_list += "<span class='notice'>Looks like [source.ru_who(FALSE)] can be picked up with <b>Alt+Click</b>!</span>"
+		examine_list += "<span class='notice'>Похоже, [source.ru_who(FALSE)] может быть поднят[source.ru_a(FALSE)] через <b>Alt+Click</b>!</span>"
 
 /datum/element/mob_holder/proc/on_requesting_context_from_item(
 	obj/source,
@@ -235,9 +235,27 @@
 	var/atom/location = get_loc_for_air()
 	return location.remove_air(amount)
 
+/obj/item/clothing/head/mob_holder/remove_air_into(datum/gas_mixture/into, amount)
+	var/atom/location = get_loc_for_air()
+	if(location)
+		return location.remove_air_into(into, amount)
+	if(into)
+		into.clear()
+		into.set_temperature(0)
+	return FALSE
+
 /obj/item/clothing/head/mob_holder/remove_air_ratio(ratio)
 	var/atom/location = get_loc_for_air()
 	return location.remove_air_ratio(ratio)
+
+/obj/item/clothing/head/mob_holder/remove_air_ratio_into(datum/gas_mixture/into, ratio)
+	var/atom/location = get_loc_for_air()
+	if(location)
+		return location.remove_air_ratio_into(into, ratio)
+	if(into)
+		into.clear()
+		into.set_temperature(0)
+	return FALSE
 
 /obj/item/clothing/head/mob_holder/transfer_air(datum/gas_mixture/taker, amount)
 	var/atom/location = get_loc_for_air()

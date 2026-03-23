@@ -1010,7 +1010,9 @@
 			dat += "<td width='20%'><a href='?src=[REF(src)];[HrefToken()];jobban3=[ROLE_RESPAWN];jobban4=[REF(M)]'>Respawns</a></td>"
 
 		dat += "</tr></table>"
-		usr << browse(dat, "window=jobban2;size=800x450")
+		var/datum/browser/popup = new(usr, "jobban2", "Job Bans", 800, 450)
+		popup.set_content(dat)
+		popup.open(FALSE)
 		return
 
 	//JOBBAN'S INNARDS
@@ -1969,12 +1971,18 @@
 			else
 				gender_description = "<font color='red'><b>[M.gender]</b></font>"
 
-		to_chat(src.owner, "<b>Info about [M.name]:</b> ")
-		to_chat(src.owner, "Mob type = [M.type]; Gender = [gender_description] Damage = [health_description]")
-		to_chat(src.owner, "Name = <b>[M.name]</b>; Real_name = [M.real_name]; Mind_name = [M.mind?"[M.mind.name]":""]; Key = <b>[M.key]</b>;")
-		to_chat(src.owner, "Location = [location_description];")
-		to_chat(src.owner, "[special_role_description]")
-		to_chat(src.owner, ADMIN_FULLMONTY_NONAME(M))
+		var/admininfo = ""
+		admininfo += "<center><b>Info про [M.name]:</b></center>"
+		admininfo += "<br><b>Mob type</b> = [M.type];<br><b>Gender</b> = [gender_description];<br><b>Damage</b> = [health_description]"
+		admininfo += "<br><b>Имена:</b>"
+		admininfo += "<br><span style='margin-left:12px;'>Name = <b>[M.name]</b>;</span>"
+		admininfo += "<br><span style='margin-left:12px;'>Real_name = [M.real_name];</span>"
+		admininfo += "<br><span style='margin-left:12px;'>Mind_name = [M.mind?"[M.mind.name]":""];</span>"
+		admininfo += "<br><span style='margin-left:12px;'>Key = <b>[M.key]</b>;</span>"
+		admininfo += "<br><b>Location</b> = [location_description];"
+		admininfo += "<br>[special_role_description]"
+		admininfo += "<br><center>[ADMIN_FULLMONTY_NONAME(M)]</center>"
+		to_chat(src.owner, examine_block(admininfo))
 
 	else if(href_list["addjobslot"])
 		if(!check_rights(R_ADMIN))
@@ -2614,6 +2622,86 @@
 		src.admincaster_screen = 12
 		src.access_news_network()
 
+	else if(href_list["gc_queue_refresh"])
+		if(!check_rights(R_DEBUG))
+			return
+		usr.client?.cmd_display_gc_queue()
+
+	else if(href_list["gc_health_refresh"])
+		if(!check_rights(R_DEBUG))
+			return
+		usr.client?.cmd_gc_health_panel()
+
+	else if(href_list["gc_health_help"])
+		if(!check_rights(R_DEBUG))
+			return
+		usr.client?.cmd_gc_health_help()
+
+	else if(href_list["gc_toggle_notify"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/client/toggler = usr.client
+		if(toggler)
+			toggler.gc_leak_notify = !toggler.gc_leak_notify
+			log_admin("[key_name(usr)] [toggler.gc_leak_notify ? "включил" : "выключил"] GC leak notify для себя")
+		usr.client?.cmd_gc_health_panel()
+
+
+	else if(href_list["gc_type_detail"])
+		if(!check_rights(R_DEBUG))
+			return
+		usr.client?.cmd_gc_type_detail(href_list["gc_type_detail"])
+
+	else if(href_list["gc_unsuspend"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/gc_unsuspend_return = href_list["gc_return"]
+		var/type_path = text2path(href_list["gc_unsuspend"])
+		if(type_path)
+			var/datum/qdel_item/I = SSgarbage.GetItem(type_path)
+			if(I)
+				I.qdel_flags &= ~QDEL_ITEM_SUSPENDED_FOR_LAG
+				I.qdel_flags &= ~QDEL_ITEM_ADMINS_WARNED
+				I.hard_deletes_over_threshold = 0
+				log_admin("[key_name(usr)] снял суспенд GC для [href_list["gc_unsuspend"]]")
+				message_admins("[key_name_admin(usr)] снял суспенд GC для [href_list["gc_unsuspend"]]")
+		if(gc_unsuspend_return == "detail")
+			usr.client?.cmd_gc_type_detail(href_list["gc_unsuspend"])
+		else
+			usr.client?.cmd_gc_health_panel()
+
+	else if(href_list["gc_fast_reftrack"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/gc_fast_reftrack_return = href_list["gc_return"]
+		var/type_path = text2path(href_list["gc_fast_reftrack"])
+		if(type_path)
+			var/datum/qdel_item/I = SSgarbage.GetOrCreateItem(type_path)
+			if(I)
+				I.qdel_flags ^= QDEL_ITEM_FAST_REFTRACK
+				log_admin("[key_name(usr)] переключил fast-ref для [href_list["gc_fast_reftrack"]]: [(I.qdel_flags & QDEL_ITEM_FAST_REFTRACK) ? "вкл" : "откл"]")
+				message_admins("[key_name_admin(usr)] переключил fast-ref для [href_list["gc_fast_reftrack"]]: [(I.qdel_flags & QDEL_ITEM_FAST_REFTRACK) ? "вкл" : "откл"]")
+		if(gc_fast_reftrack_return == "health")
+			usr.client?.cmd_gc_health_panel()
+		else
+			usr.client?.cmd_gc_type_detail(href_list["gc_fast_reftrack"])
+
+	else if(href_list["gc_skip_refscan"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/gc_skip_refscan_return = href_list["gc_return"]
+		var/type_path = text2path(href_list["gc_skip_refscan"])
+		if(type_path)
+			var/datum/qdel_item/I = SSgarbage.GetOrCreateItem(type_path)
+			if(I)
+				I.qdel_flags ^= QDEL_ITEM_SKIP_REFSCAN
+				log_admin("[key_name(usr)] переключил skip-refscan для [href_list["gc_skip_refscan"]]: [(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN) ? "вкл" : "откл"]")
+				message_admins("[key_name_admin(usr)] переключил skip-refscan для [href_list["gc_skip_refscan"]]: [(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN) ? "вкл" : "откл"]")
+		if(gc_skip_refscan_return == "health")
+			usr.client?.cmd_gc_health_panel()
+		else
+			usr.client?.cmd_gc_type_detail(href_list["gc_skip_refscan"])
+
 	else if(href_list["ac_refresh"])
 		if(!check_rights(R_ADMIN))
 			return
@@ -2732,6 +2820,42 @@
 		else
 			error_viewer.show_to(owner, null, href_list["viewruntime_linear"])
 
+	else if(href_list["viewgcfailure_worldscan"])
+		var/datum/gc_failure_viewer/gc_failure_entry/entry = locate(href_list["viewgcfailure_worldscan"])
+		if(!istype(entry))
+			to_chat(usr, span_warning("GC failure entry больше не существует."))
+			return
+		INVOKE_ASYNC(entry, TYPE_PROC_REF(/datum/gc_failure_viewer/gc_failure_entry, trigger_world_scan), owner, null)
+
+	else if(href_list["viewgcfailure_refscan"])
+		var/datum/gc_failure_viewer/gc_failure_entry/entry = locate(href_list["viewgcfailure_refscan"])
+		if(!istype(entry))
+			to_chat(usr, span_warning("GC failure entry больше не существует."))
+			return
+		if(!entry.datum_ref)
+			to_chat(usr, span_warning("Нет ссылки на объект для сканирования."))
+			return
+		var/response = tgui_alert(usr, "Сканирование ссылок пройдёт по всем GLOB-переменным, подсистемам и соседним объектам. Это может вызвать лаг на несколько секунд. Продолжить?", "Сканирование ссылок", list("Да", "Нет"))
+		if(response != "Да")
+			return
+		var/datum/D = locate(entry.datum_ref)
+		if(!D || D.type != text2path(entry.type_path))
+			to_chat(usr, span_warning("Объект больше не существует, сканирование невозможно."))
+			return
+		entry.build_reference_info(D)
+		entry.show_to(owner)
+
+	else if(href_list["viewgcfailure"])
+		var/datum/gc_failure_viewer/viewer = locate(href_list["viewgcfailure"])
+		if(!istype(viewer))
+			to_chat(usr, "<span class='warning'>That GC failure viewer no longer exists.</span>")
+			return
+
+		if(href_list["viewgcfailure_backto"])
+			viewer.show_to(owner, locate(href_list["viewgcfailure_backto"]), href_list["viewgcfailure_linear"])
+		else
+			viewer.show_to(owner, null, href_list["viewgcfailure_linear"])
+
 	else if(href_list["showrelatedacc"])
 		if(!check_rights(R_ADMIN))
 			return
@@ -2747,7 +2871,9 @@
 		var/list/dat = list("Related accounts by [uppertext(href_list["showrelatedacc"])]:")
 		dat += thing_to_check
 
-		usr << browse(dat.Join("<br>"), "window=related_[C];size=420x300")
+		var/datum/browser/popup = new(usr, "related_[C]", "Related Accounts", 420, 300)
+		popup.set_content(dat.Join("<br>"))
+		popup.open(FALSE)
 
 	else if(href_list["centcomlookup"])
 		if(!check_rights(R_ADMIN))
@@ -2780,7 +2906,7 @@
 			if(response.body == "[]")
 				dat += "<center><b>0 bans detected for [ckey]</b></center>"
 			else
-				bans = json_decode(response["body"])
+				bans = json_decode(response.body)
 
 				//Ignore bans from non-whitelisted sources, if a whitelist exists
 				var/list/valid_sources
@@ -2871,10 +2997,25 @@
 		paper_to_show.ui_interact(usr)
 
 	else if(href_list["movepod"])
-		var/obj/docking_port/mobile/pod/pod = src
-		pod.request()
-		message_admins("[key_name_admin(usr)] moved the Escape Pod.")
-		log_admin("[key_name(usr)] moved the Escape Pod.")
+		if(!check_rights(R_ADMIN))
+			return
+		var/shuttle_id = href_list["shuttle_id"]
+		var/destination = href_list["destination"]
+		if(!shuttle_id || !destination)
+			to_chat(usr, "<span class='warning'>No shuttle or destination specified.</span>")
+			return
+		var/obj/docking_port/mobile/M = SSshuttle.getShuttle(shuttle_id)
+		if(!istype(M, /obj/docking_port/mobile/pod))
+			to_chat(usr, "<span class='warning'>Invalid or missing escape pod.</span>")
+			return
+		switch(SSshuttle.moveShuttle(shuttle_id, destination, 0))
+			if(0)
+				message_admins("[key_name_admin(usr)] moved the Escape Pod ([shuttle_id]) to [destination].")
+				log_admin("[key_name(usr)] moved the Escape Pod ([shuttle_id]) to [destination].")
+			if(1)
+				to_chat(usr, "<span class='warning'>Invalid destination for escape pod.</span>")
+			else
+				to_chat(usr, "<span class='warning'>Unable to move escape pod.</span>")
 
 /datum/admins/proc/HandleCMode()
 	if(!check_rights(R_ADMIN))
@@ -2888,7 +3029,9 @@
 	dat += {"<A href='?src=[REF(src)];[HrefToken()];c_mode2=secret'>Secret</A><br>"}
 	dat += {"<A href='?src=[REF(src)];[HrefToken()];c_mode2=random'>Random</A><br>"}
 	dat += {"Now: [GLOB.master_mode]"}
-	usr << browse(dat, "window=c_mode")
+	var/datum/browser/popup = new(usr, "c_mode", "Change Game Mode")
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 /datum/admins/proc/HandleFSecret()
 	if(!check_rights(R_ADMIN))
@@ -2903,7 +3046,9 @@
 		dat += {"<A href='?src=[REF(src)];[HrefToken()];f_secret2=[mode]'>[config.mode_names[mode]]</A><br>"}
 	dat += {"<A href='?src=[REF(src)];[HrefToken()];f_secret2=secret'>Random (default)</A><br>"}
 	dat += {"Now: [GLOB.secret_force_mode]"}
-	usr << browse(dat, "window=f_secret")
+	var/datum/browser/popup = new(usr, "f_secret", "Force Secret Mode")
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 /datum/admins/proc/makeMentor(ckey)
 	if(!usr.client)

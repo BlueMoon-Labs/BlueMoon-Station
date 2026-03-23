@@ -152,12 +152,12 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	new /obj/item/wirecutters(src)
 	new /obj/item/t_scanner(src)
 	new /obj/item/crowbar(src)
-	new /obj/item/stack/cable_coil(src,30,pickedcolor)
-	new /obj/item/stack/cable_coil(src,30,pickedcolor)
+	new /obj/item/stack/cable_coil(src, 30, TRUE, pickedcolor)
+	new /obj/item/stack/cable_coil(src, 30, TRUE, pickedcolor)
 	if(prob(5))
 		new /obj/item/clothing/gloves/color/yellow(src)
 	else
-		new /obj/item/stack/cable_coil(src,30,pickedcolor)
+		new /obj/item/stack/cable_coil(src, 30, TRUE, pickedcolor)
 
 /obj/item/storage/toolbox/syndicate
 	name = "black and red toolbox"
@@ -172,16 +172,17 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.silent = TRUE
 
-/* BLUEMOON COMMENTING OUT using own tools in modular_bluemoon\code\game\objects\items\storage\toolbox.dm
 /obj/item/storage/toolbox/syndicate/PopulateContents()
 	new /obj/item/screwdriver/nuke(src)
 	new /obj/item/wrench/combat(src)
 	new /obj/item/weldingtool/largetank(src)
 	new /obj/item/crowbar/red(src)
-	new /obj/item/wirecutters(src, "red")
+	new /obj/item/wirecutters/red(src)
 	new /obj/item/multitool(src)
-	new /obj/item/clothing/gloves/tackler/combat/insulated(src)
-*/
+	if(prob(10))
+		new /obj/item/clothing/gloves/tackler/combat/insulated(src)
+	else
+		new /obj/item/clothing/gloves/combat(src)
 
 /obj/item/storage/toolbox/drone
 	name = "mechanical toolbox"
@@ -194,7 +195,7 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	new /obj/item/wrench(src)
 	new /obj/item/weldingtool(src)
 	new /obj/item/crowbar(src)
-	new /obj/item/stack/cable_coil(src,30,pickedcolor)
+	new /obj/item/stack/cable_coil(src, 30, TRUE, pickedcolor)
 	new /obj/item/wirecutters(src)
 	new /obj/item/multitool(src)
 

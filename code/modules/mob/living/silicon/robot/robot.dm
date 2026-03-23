@@ -106,14 +106,18 @@
 	modularInterface.plane = ABOVE_HUD_PLANE
 
 /mob/living/silicon/robot/Destroy()
+	QDEL_NULL(profile)
 	if(connected_ai)
 		set_connected_ai(null)
 	if(shell)
 		GLOB.available_ai_shells -= src
 	QDEL_NULL(modularInterface)
 	QDEL_NULL(wires)
+	module_active = null
+	for(var/i in 1 to held_items.len)
+		held_items[i] = null
 	QDEL_NULL(module)
-	QDEL_NULL(eye_lights)
+	eye_lights = null
 	QDEL_NULL(inv1)
 	QDEL_NULL(inv2)
 	QDEL_NULL(inv3)
@@ -130,11 +134,7 @@
 
 /mob/living/silicon/robot/Topic(href, href_list)
 	. = ..()
-	// BLUEMOON ADD START - профиль для боргов
 	if(href_list["cyborg_profile"])
-		ui_interact(usr)
-	// BLUEMOON ADD END
-	if(href_list["character_profile"])
 		if(!profile)
 			profile = new(src)
 		profile.ui_interact(usr)
@@ -143,32 +143,6 @@
 		alert_control.ui_interact(src)
 
 	return
-
-// BLUEMOON ADD START - профиль для боргов
-// Да, это проклято и должно быть перенесено в отдельный датум, но...
-/mob/living/silicon/robot/ui_interact(mob/user, datum/tgui/ui)
-	ui = SStgui.try_update_ui(user, src, ui)
-	if(!ui)
-		ui = new(user, src, "CyborgProfile", "Профиль юнита [src]")
-		ui.open()
-
-/mob/living/silicon/robot/ui_static_data(mob/user, datum/tgui/ui, datum/ui_state/state)
-	. = ..()
-	var/data[0]
-	if(!src || !istype(src))
-		return
-	data["silicon_flavor_text"] = mind?.silicon_flavor_text || ""
-	data["oocnotes"] = mind?.ooc_notes || ""
-	data["vore_tag"] = client?.prefs?.vorepref || "No"
-	data["erp_tag"] = client?.prefs?.erppref || "No"
-	data["mob_tag"] = client?.prefs?.mobsexpref || "No"
-	data["nc_tag"] = client?.prefs?.nonconpref || "No"
-	data["unholy_tag"] = client?.prefs?.unholypref || "No"
-	data["extreme_tag"] = client?.prefs?.extremepref || "No"
-	data["very_extreme_tag"] = client?.prefs?.extremeharm || "No"
-
-	return data
-// BLUEMOON ADD END
 
 /mob/living/silicon/robot/proc/pick_module()
 	if(module.type != /obj/item/robot_module)
@@ -197,7 +171,6 @@
 		return
 
 	module.transform_to(modulelist[input_module])
-
 
 /mob/living/silicon/robot/proc/updatename(client/C)
 	if(shell)
@@ -634,9 +607,6 @@
 		new /obj/item/bodypart/l_arm/robot(drop_to)
 		new /obj/item/bodypart/r_arm/robot(drop_to)
 		new /obj/item/bodypart/head/robot(drop_to)
-		for(var/i in 1 to 2)
-			var/obj/item/assembly/flash/handheld/borgeye = new(drop_to)
-			borgeye.burn_out()
 
 	cell?.forceMove(drop_to) // Cell can be null, if removed beforehand
 	radio?.keyslot?.forceMove(drop_to)
@@ -725,7 +695,7 @@
 	. = ..()
 	radio = new /obj/item/radio/borg/syndicate(src)
 	laws = new /datum/ai_laws/syndicate_override()
-	addtimer(CALLBACK(src, PROC_REF(show_playstyle)), 5)
+	addtimer(CALLBACK(src, PROC_REF(show_playstyle)), 5, TIMER_DELETE_ME)
 
 /mob/living/silicon/robot/modules/syndicate/create_modularInterface()
 	if(!modularInterface)
@@ -783,7 +753,7 @@
 	. = ..()
 	radio = new /obj/item/radio/borg/inteq(src)
 	laws = new /datum/ai_laws/inteq_override()
-	addtimer(CALLBACK(src, PROC_REF(show_playstyle)), 5)
+	addtimer(CALLBACK(src, PROC_REF(show_playstyle)), 5, TIMER_DELETE_ME)
 
 /mob/living/silicon/robot/modules/inteq/create_modularInterface()
 	if(!modularInterface)
@@ -862,12 +832,14 @@
 		if(DISCONNECT) //Tampering with the wires
 			to_chat(connected_ai, "<br><br><span class='notice'>NOTICE - Remote telemetry lost with [name].</span><br>")
 
-/mob/living/silicon/robot/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE)
+/mob/living/silicon/robot/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE, silent = FALSE)
 	if(stat || locked_down || low_power_mode)
-		to_chat(src, "<span class='warning'>You can't do that right now!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
 		return FALSE
 	if(be_close && !in_range(M, src))
-		to_chat(src, "<span class='warning'>You are too far away!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>You are too far away!</span>")
 		return FALSE
 	return TRUE
 
@@ -900,7 +872,7 @@
 
 	previous_health = health
 
-/mob/living/silicon/robot/update_sight()
+/mob/living/silicon/robot/update_sight(forced = TRUE)
 	if(!client)
 		return
 	if(stat == DEAD)
@@ -1329,40 +1301,26 @@
 	set name = "Switch Rest Style"
 	set category = "Robot Commands"
 	set desc = "Select your resting pose."
-	sitting = 0
-	bellyup = 0
-	deep_rest = 0		//DarkSer request by Gardelin0
-	wag_rest = 0		//DarkSer request by Gardelin0
-	wag_sit = 0			//DarkSer request by Gardelin0
 
-	if(module.drakerest == TRUE)	//DarkSer request by Gardelin0
-		var/choice_drake = tgui_alert(usr, "Select resting pose", "Pose", list("Resting", "Sitting", "Belly up", "Napping", "Resting Wag", "Sitting Wag"))
-		switch(choice_drake)
-			if("Resting")
-				update_icons()
-				return FALSE
-			if("Sitting")
-				sitting = 1
-			if("Belly up")
-				bellyup = 1
-			if("Napping")
-				deep_rest = 1
-			if("Resting Wag")
-				wag_rest = 1
-			if("Sitting Wag")
-				wag_sit = 1
-		update_icons()
-	if(module.drakerest == FALSE)
-		var/choice = tgui_alert(usr, "Select resting pose", "Pose", list("Resting", "Sitting", "Belly up"))
-		switch(choice)
-			if("Resting")
-				update_icons()
-				return FALSE
-			if("Sitting")
-				sitting = 1
-			if("Belly up")
-				bellyup = 1
-		update_icons()
+	var/list/poses = list("Resting", "Sitting", "Belly up")
+	if(module.drakerest)
+		poses.Add("Napping", "Resting Wag", "Sitting Wag")
+
+	var/choice = tgui_input_list(usr, "Select resting pose", "Pose", poses)
+	switch(choice)
+		if("Resting")
+			resting_state = "rest"
+		if("Sitting")
+			resting_state = "sit"
+		if("Belly up")
+			resting_state = "bellyup"
+		if("Napping")
+			resting_state = "rest_deep"
+		if("Resting Wag")
+			resting_state = "rest_alt"
+		if("Sitting Wag")
+			resting_state = "sit_alt"
+	update_icons()
 
 /mob/living/silicon/robot/verb/viewmanifest()
 	set category = "Robot Commands"

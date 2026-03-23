@@ -176,7 +176,7 @@
 // #define INIT_ORDER_DISCORD			-60
 // #define INIT_ORDER_EXPLOSIONS		-69
 #define INIT_ORDER_STATPANELS		-98
-#define INIT_ORDER_DEMO				-99  // o avoid a bunch of changes related to initialization being written, do this last
+#define INIT_ORDER_HILBERTSHOTEL	-99
 #define INIT_ORDER_CHAT				-100 //Should be last to ensure chat remains smooth during init.
 
 
@@ -190,7 +190,7 @@
 #define FIRE_PRIORITY_SERVER_MAINT	10
 #define FIRE_PRIORITY_RESEARCH		10
 #define FIRE_PRIORITY_VIS			10
-#define FIRE_PRIORITY_GARBAGE		15
+#define FIRE_PRIORITY_GARBAGE		25
 #define FIRE_PRIORITY_WET_FLOORS	20
 #define FIRE_PRIORITY_AIR			20
 #define FIRE_PRIORITY_AMBIENCE		10

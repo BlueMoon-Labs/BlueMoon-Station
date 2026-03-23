@@ -46,26 +46,32 @@
 	if(C.dna.species.mutant_bodyparts["taur"])
 		T = GLOB.taur_list[C.dna.features["taur"]]
 
-	if(T?.taur_mode && src == C.w_uniform)
-		variation_flag |= src.mutantrace_variation & T.taur_mode || src.mutantrace_variation & T.alt_taur_mode
-		switch(variation_flag)
-			if(STYLE_HOOF_TAURIC)
-				mob_overlay_icon = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-hoof.dmi'
-				//anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-hoof.dmi'
-			if(STYLE_SNEK_TAURIC)
-				mob_overlay_icon = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-snake.dmi'
-				//anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-snake.dmi'
-			if(STYLE_PAW_TAURIC)
-				mob_overlay_icon = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-paw.dmi'
-				//anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-paw.dmi'
+	if(src == C.w_uniform)
+		if(T?.taur_mode)
+			variation_flag |= src.mutantrace_variation & T.taur_mode || src.mutantrace_variation & T.alt_taur_mode
+			switch(variation_flag)
+				if(STYLE_HOOF_TAURIC)
+					mob_overlay_icon = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-hoof.dmi'
+					//anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-hoof.dmi'
+				if(STYLE_SNEK_TAURIC)
+					mob_overlay_icon = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-snake.dmi'
+					//anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-snake.dmi'
+				if(STYLE_PAW_TAURIC)
+					mob_overlay_icon = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-paw.dmi'
+					//anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/lewd_clothing/uniform/lewd_uniform-paw.dmi'
 
-		worn_x_dimension = 64 //To fix the offset
-		worn_y_dimension = 32
+			worn_x_dimension = 64 //To fix the offset
+			worn_y_dimension = 32
+		else
+			mob_overlay_icon = initial(mob_overlay_icon)
+			worn_x_dimension = initial(worn_x_dimension)
+			worn_y_dimension = initial(worn_y_dimension)
 		C.update_inv_w_uniform()
 
 	if(C.dna.species.mutant_bodyparts["taur"] && src == C.w_uniform)
 		C.remove_overlay(BODY_BEHIND_LAYER)
 		C.remove_overlay(BODY_FRONT_LAYER)
+		C.remove_overlay(BODY_ADJ_UPPER_LAYER)
 	. = ..()
 
 /obj/item/clothing/under/misc/latex_catsuit/dropped(mob/living/U)
@@ -75,6 +81,7 @@
 	if(C.dna.species.mutant_bodyparts["taur"] && src == C.w_uniform)
 		C.apply_overlay(BODY_BEHIND_LAYER)
 		C.apply_overlay(BODY_FRONT_LAYER)
+		C.apply_overlay(BODY_ADJ_UPPER_LAYER)
 	C.regenerate_icons() //Just in case
 
 /obj/item/clothing/under/misc/latex_catsuit/MouseDrop(atom/over_object)

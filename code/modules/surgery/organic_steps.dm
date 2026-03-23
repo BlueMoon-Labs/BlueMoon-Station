@@ -75,7 +75,7 @@
 
 //close incision
 /datum/surgery_step/close
-	name = "Заштопать Разрез"
+	name = "Прижечь Разрез"
 	implements = list(TOOL_CAUTERY = 100, /obj/item/gun/energy/laser = 90, TOOL_WELDER = 70,
 		/obj/item = 30) // 30% success with any hot item.
 	time = 24
@@ -101,6 +101,14 @@
 		if(BP)
 			BP.generic_bleedstacks -= 3
 	return ..()
+
+/datum/surgery_step/close/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
+	if (ishuman(target))
+		var/mob/living/carbon/human/H = target
+		var/obj/item/bodypart/BP = H.get_bodypart(target_zone)
+		if(BP)
+			BP.take_damage(5, BURN)
 
 //saw bone
 /datum/surgery_step/saw

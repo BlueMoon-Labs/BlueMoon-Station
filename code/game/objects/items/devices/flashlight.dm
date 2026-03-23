@@ -15,12 +15,18 @@
 	var/on = FALSE
 	var/brightness_on = 4 //range of light when on
 	var/flashlight_power = 0.8 //strength of the light when on
+	var/cone_angle = LIGHTING_FLASHLIGHT_CONE_ANGLE // Full cone width in degrees. 0 = omnidirectional.
 	var/soundon = 'sound/weapons/magin.ogg' //BM Changes
 	var/soundoff = 'sound/weapons/magout.ogg' //BM Changes
+	var/electronic = TRUE // EMP sensetive 		// BLUEMOON ADD
 	light_color = "#ffeecb"
 
 /obj/item/flashlight/Initialize(mapload)
 	. = ..()
+	// BLUEMOON ADD START
+	if(!electronic)
+		AddElement(/datum/element/empprotection, EMP_PROTECT_SELF)
+	// BLUEMOON ADD END
 	if(icon_state == "[initial(icon_state)]-on")
 		on = TRUE
 	update_brightness()
@@ -28,13 +34,25 @@
 /obj/item/flashlight/proc/update_brightness(mob/user = null)
 	if(on)
 		icon_state = "[initial(icon_state)]-on"
+		var/use_cone = 0
+		if(ismob(loc) && cone_angle > 0)
+			use_cone = cone_angle
 		if(flashlight_power)
-			set_light(l_range = brightness_on, l_power = flashlight_power)
+			set_light(l_range = brightness_on, l_power = flashlight_power, l_cone_angle = use_cone)
 		else
-			set_light(brightness_on)
+			set_light(brightness_on, l_cone_angle = use_cone)
 	else
 		icon_state = initial(icon_state)
-		set_light(0)
+		set_light(0, l_cone_angle = 0)
+
+// BLUEMOON ADD START
+/obj/item/flashlight/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	if(on)
+		attack_self()
+// BLUEMOON ADD END
 
 /obj/item/flashlight/attack_self(mob/user)
 	on = !on
@@ -173,12 +191,13 @@
 	desc = "A pen-sized light, used by medical staff. It can also be used to create a hologram to alert people of incoming medical assistance."
 	icon_state = "penlight"
 	item_state = ""
-	flags_1 = CONDUCT_1
 	brightness_on = 2
 	light_color = "#FFDDCC"
 	flashlight_power = 0.5
+	cone_angle = LIGHTING_PENLIGHT_CONE_ANGLE
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_EARS
 	var/holo_cooldown = 0
+	flags_1 = NONE // BLUEMOON ADD
 
 /obj/item/flashlight/pen/afterattack(atom/target, mob/user, proximity_flag)
 	. = ..()
@@ -229,6 +248,7 @@
 	brightness_on = 5 // A little better than the standard flashlight.
 	light_color = "#CDDDFF"
 	flashlight_power = 0.9
+	cone_angle = LIGHTING_SECLITE_CONE_ANGLE
 	hitsound = 'sound/weapons/genhit1.ogg'
 	custom_price = PRICE_ALMOST_CHEAP
 
@@ -244,9 +264,9 @@
 	brightness_on = 5
 	light_color = "#FFDDBB"
 	w_class = WEIGHT_CLASS_BULKY
-	flags_1 = CONDUCT_1
 	custom_materials = null
 	on = TRUE
+	cone_angle = 0
 
 // green-shaded desk lamp
 /obj/item/flashlight/lamp/green
@@ -281,12 +301,15 @@
 	icon_state = "flare"
 	item_state = "flare"
 	actions_types = list()
+	cone_angle = 0
 	var/fuel = 0
 	var/on_damage = 9
 	var/produce_heat = 1500
 	heat = 1000
 	light_color = LIGHT_COLOR_FLARE
 	grind_results = list(/datum/reagent/sulfur = 15)
+	electronic = FALSE // BLUEMOON ADD
+	flags_1 = NONE
 
 /obj/item/flashlight/flare/New()
 	fuel = rand(800, 1000) // Sorry for changing this so much but I keep under-estimating how long X number of ticks last in seconds.
@@ -371,7 +394,9 @@
 	brightness_on = 6	// luminosity when on
 	light_color = "#FFAA44"
 	flashlight_power = 0.8
+	cone_angle = 0
 	custom_price = PRICE_CHEAP
+	electronic = FALSE // BLUEMOON ADD
 
 /obj/item/flashlight/lantern/heirloom_moth
 	name = "old lantern"
@@ -392,11 +417,14 @@
 	icon_state = "slime"
 	item_state = "slime"
 	w_class = WEIGHT_CLASS_SMALL
+	cone_angle = 0
 	slot_flags = ITEM_SLOT_BELT
 	custom_materials = null
 	brightness_on = 6 //luminosity when on
 	light_color = "#FFEEAA"
 	flashlight_power = 0.6
+	electronic = FALSE // BLUEMOON ADD
+	flags_1 = NONE // BLUEMOON ADD
 
 /obj/item/flashlight/emp
 	var/emp_max_charges = 4
@@ -461,8 +489,11 @@
 	color = LIGHT_COLOR_GREEN
 	icon_state = "glowstick"
 	item_state = "glowstick"
+	cone_angle = 0
 	grind_results = list(/datum/reagent/phenol = 15, /datum/reagent/hydrogen = 10, /datum/reagent/oxygen = 5) //Meth-in-a-stick
 	rad_flags = RAD_NO_CONTAMINATE
+	electronic = FALSE // BLUEMOON ADD
+	flags_1 = NONE // BLUEMOON ADD
 	var/fuel = 0
 
 /obj/item/flashlight/glowstick/Initialize(mapload)
@@ -557,7 +588,10 @@
 	layer = 0
 	on = TRUE
 	anchored = TRUE
+	cone_angle = 0
 	var/range = null
+	electronic = FALSE // BLUEMOON ADD
+	flags_1 = NONE // BLUEMOON ADD
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 
 /obj/item/flashlight/flashdark
@@ -565,23 +599,13 @@
 	desc = "A strange device manufactured with mysterious elements that somehow emits darkness. Or maybe it just sucks in light? Nobody knows for sure."
 	icon_state = "flashdark"
 	item_state = "flashdark"
-	brightness_on = 2.5
-	flashlight_power = -3
+	brightness_on = 1
+	flashlight_power = -2
 
 /obj/item/flashlight/eyelight
 	name = "eyelight"
 	desc = "This shouldn't exist outside of someone's head, how are you seeing this?"
 	brightness_on = 10
-	flags_1 = CONDUCT_1
 	item_flags = DROPDEL
 	actions_types = list()
-
-//BLUEMOON ADD: flashdark for donators.
-/obj/item/flashlight/flashdark/quirk
-	name = "command-issued flashdark"
-	desc = "A strange device manufactured with mysterious elements that somehow emits darkness. This one is issued by central-command or some other high-ranking forces."
-	icon_state = "flashdark"
-	item_state = "flashdark"
-	brightness_on = 2.5
-	flashlight_power = -3
-	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
+	cone_angle = 0

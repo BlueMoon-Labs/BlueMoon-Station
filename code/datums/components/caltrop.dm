@@ -24,7 +24,6 @@
 
 	if(ishuman(AM))
 		var/mob/living/carbon/human/H = AM
-		H.pulledby?.stop_pulling()
 		if(HAS_TRAIT(H, TRAIT_PIERCEIMMUNE))
 			return
 
@@ -49,6 +48,9 @@
 		if(HAS_TRAIT(H, TRAIT_HARD_SOLES))
 			return
 
+		if(H.movement_type & CRAWLING)
+			H.pulledby?.stop_pulling()
+
 		var/damage = rand(min_damage, max_damage)
 		if(HAS_TRAIT(H, TRAIT_LIGHT_STEP))
 			damage *= 0.75
@@ -58,6 +60,7 @@
 				damage *= 0.75
 		//
 		H.apply_damage(damage, BRUTE, picked_def_zone, wound_bonus = 5)
+		H.pulledby?.stop_pulling()
 
 		if(cooldown < world.time - 10) //cooldown to avoid message spam.
 			if(!H.incapacitated(ignore_restraints = TRUE))

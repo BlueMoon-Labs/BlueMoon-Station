@@ -20,6 +20,7 @@
 	else
 		message = "резко всовывает [genital_name] <b>[partner]</b> в своё влагалище и удовлетворённо выдыхает."
 		partner.set_is_fucking(user, CUM_TARGET_VAGINA, partner.getorganslot(ORGAN_SLOT_PENIS))
+		try_apply_knot(partner, user, CUM_TARGET_VAGINA) // Проверка на узлирование (mount)
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
 						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
@@ -53,6 +54,7 @@
 	else
 		message = "резко всовывает [genital_name] <b>[partner]</b> в своё анальное кольцо и удовлетворённо выдыхает."
 		partner.set_is_fucking(user, CUM_TARGET_ANUS, partner.getorganslot(ORGAN_SLOT_PENIS))
+		try_apply_knot(partner, user, CUM_TARGET_ANUS) // Проверка на узлирование (mountass)
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
 						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)

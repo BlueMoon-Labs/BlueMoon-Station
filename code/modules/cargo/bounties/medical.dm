@@ -60,10 +60,17 @@
 
 /datum/bounty/reagent/blood
 	name = "Generic Blood"
-	description = "Nanotrasen's annual blood drive is back up to full speed, following the garlic incident. Good blood in good volumes accepted for Credit returns."
-	reward = 4500
+	description = "Nanotrasen's annual blood drive is back up to full speed, following the garlic incident. Good natural blood in good volumes accepted for Credit returns."
+	reward = 11000
 	required_volume = 600
 	wanted_reagent = /datum/reagent/blood
+
+/datum/bounty/reagent/blood_synthetic
+	name = "Synthetic Blood"
+	description = "Nanotrasen's paramedical services are in extreme need of synthetic blood, required for emergency field usage. Send us good volumes and be repaid for."
+	reward = 5000
+	required_volume = 600
+	wanted_reagent = /datum/reagent/blood/synthetics
 
 /* If anyone wants to try and fix/work, go for it
 /datum/bounty/item/medical/medibot // Mob so this dosn't work yet*
@@ -113,11 +120,11 @@
 	wanted_types = list(/obj/item/healthanalyzer/advanced)
 
 /datum/bounty/item/medical/wallmounts
-	name = "Defibrillator wall mounts"
+	name = "Defibrillator Wall Mounts"
 	description = "New Space OSHA regulation state that are new cloning medical wing needs a few 'Easy to access defibrillartors'. Can you send a few before we get a lawsuit?"
 	reward = 3600
 	required_count = 3
-	wanted_types = list(/obj/machinery/defibrillator_mount)
+	wanted_types = list(/obj/item/wallframe/defib_mount)
 
 /datum/bounty/item/medical/defibrillator
 	name = "New defibillators"

@@ -8,7 +8,7 @@
 	slot = ORGAN_SLOT_HEART
 
 	healing_factor = STANDARD_ORGAN_HEALING
-	decay_factor = 2 * STANDARD_ORGAN_DECAY
+	decay_factor = STANDARD_ORGAN_DECAY
 
 	low_threshold_passed = span_info("Колющая боль появляется и исчезает в груди...")
 	high_threshold_passed = span_warning("Что-то в груди болит, и боль не утихает. Ох, я дышу намного быстрее, чем раньше.")

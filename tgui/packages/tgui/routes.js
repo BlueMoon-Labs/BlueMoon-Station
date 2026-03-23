@@ -6,10 +6,15 @@
 
 import { selectBackend } from './backend';
 import { Icon, Stack } from './components';
+import { KitchenSink } from './debug';
 import { selectDebug } from './debug/selectors';
+import { IS_DEVELOPMENT } from './env';
 import { Window } from './layouts';
 
-const requireInterface = require.context('./interfaces');
+const interfaceModules = import.meta.glob('./interfaces/**/*.{js,tsx}', {
+  eager: true,
+});
+const loggedMissingExports = new Set();
 
 const routingError = (type, name) => () => {
   return (
@@ -51,6 +56,26 @@ const RefreshingWindow = () => {
   );
 };
 
+const resolveInterfaceComponent = (esModule, name) => {
+  if (!esModule) {
+    return null;
+  }
+  if (typeof esModule === 'function') {
+    return esModule;
+  }
+  if (esModule[name]) {
+    return esModule[name];
+  }
+  const defaultExport = esModule.default;
+  if (defaultExport?.[name]) {
+    return defaultExport[name];
+  }
+  if (typeof defaultExport === 'function') {
+    return defaultExport;
+  }
+  return null;
+};
+
 export const getRoutedComponent = store => {
   const state = store.getState();
   const { suspended, config } = selectBackend(state);
@@ -60,38 +85,34 @@ export const getRoutedComponent = store => {
   if (config.refreshing) {
     return RefreshingWindow;
   }
-  if (process.env.NODE_ENV !== 'production') {
+  if (IS_DEVELOPMENT) {
     const debug = selectDebug(state);
     // Show a kitchen sink
     if (debug.kitchenSink) {
-      return require('./debug').KitchenSink;
+      return KitchenSink;
     }
   }
   const name = config?.interface;
-  const interfacePathBuilders = [
-    name => `./${name}.tsx`,
-    name => `./${name}.js`,
-    name => `./${name}/index.tsx`,
-    name => `./${name}/index.js`,
+  const interfacePathCandidates = [
+    `./interfaces/${name}.tsx`,
+    `./interfaces/${name}.js`,
+    `./interfaces/${name}/index.tsx`,
+    `./interfaces/${name}/index.js`,
   ];
-  let esModule;
-  while (!esModule && interfacePathBuilders.length > 0) {
-    const interfacePathBuilder = interfacePathBuilders.shift();
-    const interfacePath = interfacePathBuilder(name);
-    try {
-      esModule = requireInterface(interfacePath);
-    }
-    catch (err) {
-      if (err.code !== 'MODULE_NOT_FOUND') {
-        throw err;
-      }
-    }
-  }
+  const esModule = interfacePathCandidates
+    .map(path => interfaceModules[path])
+    .find(Boolean);
   if (!esModule) {
     return routingError('notFound', name);
   }
-  const Component = esModule[name];
+  const Component = resolveInterfaceComponent(esModule, name);
   if (!Component) {
+    if (IS_DEVELOPMENT && !loggedMissingExports.has(name)) {
+      loggedMissingExports.add(name);
+      console.error(`Interface ${name} is missing an export.`, {
+        exports: Object.keys(esModule),
+      });
+    }
     return routingError('missingExport', name);
   }
   return Component;

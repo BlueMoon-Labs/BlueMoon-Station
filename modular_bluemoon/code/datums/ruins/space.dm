@@ -89,7 +89,7 @@
 
 //EVENTS SINCE I LOVE STATION SO MUCH!//
 /obj/item/paper/fax_CC_message/escapee/mannequinrise
-	default_raw_text = "<font color=\"darkred\"><center><h1>Сообщение от <br>Отдел Эзотерики Триглава</h1></center></font> <hr><br>Одно из наших 'удержанных' существ сбежало.<br> <br>Наши сенсоры заметили его отклик где-то в вашем секторе.<br> <br>Соблюдайте осторожность и остерегайтесь Технических Тоннелей.<br> <br>p.s. Что за странный лязг?<br> <br><hr> <p><font color=\"grey\" size=1><div align=\"justify\">- Содержимое данного документа следует считать конфиденциальным. Если не указано иное, распространение содержащейся в данном документе информации среди третьих лиц и сторонних организаций строго запрещено.</div></font></p> <hr> <font color=\"darkred\"><center>Все права защищены.</center></font> <font color=\"darkred\"><center>(с) Syndicate, 2020 — 2564 г.</center></font><font color=\"darkred\"><center>(с) Пакт, 2555 — 2564 г.</center></font>"
+	default_raw_text = "<font color=\"darkred\"><center><h1>Сообщение от <br>Отдел Эзотерики Триглава</h1></center></font> <hr><br>Одно из наших 'удержанных' существ сбежало.<br> <br>Наши сенсоры заметили его отклик где-то в вашем секторе.<br> <br>Соблюдайте осторожность и остерегайтесь Технических Тоннелей.<br> <br>p.s. Что за странный лязг?<br> <br><hr> <p><font color=\"grey\" size=1><div align=\"justify\">- Содержимое данного документа следует считать конфиденциальным. Если не указано иное, распространение содержащейся в данном документе информации среди третьих лиц и сторонних организаций строго запрещено.</div></font></p> <hr> <font color=\"darkred\"><center>Все права защищены.</center></font> <font color=\"darkred\"><center>(с) Syndicate, 2020 — 2564 г.</center></font><font color=\"darkred\"><center>(с) ПАКТ, 2555 — 2564 г.</center></font>"
 
 /datum/round_event_control/mannequinrise
 	name = "Unknown Mannequin event"
@@ -132,7 +132,7 @@
 
 	var/turf/T = get_turf(pick(spawn_locs))
 	var/mob/living/simple_animal/hostile/mannequin/bloodlust/S = new(T)
-	playsound(S, 'modular_bluemoon/Gardelin0/sound/effect/spook.ogg', 75, 1, 1000)
+	playsound(S, 'modular_bluemoon/sound/effects/spook.ogg', 75, 1, 1000)
 	message_admins("An abominable mannequin has been spawned at [COORD(T)][ADMIN_JMP(T)]")
 	log_game("An abominable mannequin has been spawned at [COORD(T)]")
 	return SUCCESSFUL_SPAWN

@@ -21,6 +21,7 @@
 	desc = "A great place for storing knowledge."
 	anchored = FALSE
 	density = TRUE
+	shadow_weight = 0.5
 	opacity = FALSE
 	resistance_flags = FLAMMABLE
 	max_integrity = 200
@@ -231,10 +232,21 @@
 	if(!user.can_read(src))
 		return
 	if(dat)
-		user << browse("<meta charset='UTF-8'><TT><I>Penned by [author].</I></TT> <BR>" + "[dat]", "window=book[window_size != null ? ";size=[window_size]" : ""]")
+		var/book_w = 0
+		var/book_h = 0
+		if(window_size)
+			var/list/size_parts = splittext(window_size, "x")
+			if(length(size_parts) >= 2)
+				book_w = text2num(size_parts[1])
+				book_h = text2num(size_parts[2])
+		var/datum/browser/popup = new(user, "book", title || "Book", book_w, book_h)
+		var/book_style = "<body style ='background-color: #dddddd'>"
+		book_style += "<TT style='color: black'><I>Penned by [author].</I></TT><BR>"
+		book_style += "<uiContent style='color: black'>[dat]</uiContent></body>"
+		popup.set_content("[book_style]")
+		popup.open()
 		user.visible_message("<span class='notice'>[user] opens a book titled \"[title]\" and begins reading intently.</span>")
 		// SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "book_nerd", /datum/mood_event/book_nerd)
-		onclose(user, "book")
 	else
 		to_chat(user, "<span class='notice'>This book is completely blank!</span>")
 
@@ -256,36 +268,38 @@
 			return
 		switch(choice)
 			if("Title")
-				var/newtitle = reject_bad_text(stripped_input(user, "Write a new title:"))
+				var/newtitle = tgui_input_text(usr, "Write a new title:", "Book Labelling", max_length = MAX_NAME_LEN, encode = TRUE)
 				if(!user.canUseTopic(src, BE_CLOSE, literate))
-					return
-				if (length(newtitle) > 30)
-					to_chat(user, "<span class='warning'>That title won't fit on the cover!</span>")
 					return
 				if(!newtitle)
 					to_chat(user, "<span class='warning'>That title is invalid.</span>")
 					return
-				else
-					name = newtitle
-					title = newtitle
+
+				name = newtitle
+				title = newtitle
+				return
+
 			if("Contents")
-				var/content = stripped_input(user, "Write your book's contents (HTML NOT allowed):","","",8192)
+				var/content = tgui_input_text(usr, "Write your book's contents:", "Book contents", max_length = MAX_PAPER_LENGTH, multiline = TRUE, encode = TRUE, prevent_enter = TRUE)
 				if(!user.canUseTopic(src, BE_CLOSE, literate))
 					return
 				if(!content)
 					to_chat(user, "<span class='warning'>The content is invalid.</span>")
 					return
-				else
-					dat += content
+
+				dat += replacetext(content, "\n", "<BR>") + "<br>"
+				return
+
 			if("Author")
-				var/newauthor = stripped_input(user, "Write the author's name:")
+				var/newauthor = tgui_input_text(usr, "Write the author's name:", "Book Author", max_length = MAX_NAME_LEN, encode = TRUE)
 				if(!user.canUseTopic(src, BE_CLOSE, literate))
 					return
 				if(!newauthor)
 					to_chat(user, "<span class='warning'>The name is invalid.</span>")
 					return
-				else
-					author = newauthor
+
+				author = newauthor
+				return
 			else
 				return
 

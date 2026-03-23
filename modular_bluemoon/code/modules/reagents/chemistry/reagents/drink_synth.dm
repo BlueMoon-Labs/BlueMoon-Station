@@ -196,7 +196,7 @@
 		return
 	if(!knew_encoded)
 		to_chat(M, "<span class='warning'>С исчезновением реагента из вашей системы вы теряете возможность общаться на закодированном. Увы...</span>")
-		M.remove_language(/datum/language/machine, TRUE, TRUE, LANGUAGE_ALL)
+		M.remove_language(/datum/language/machine, source = LANGUAGE_ALL)
 
 /datum/reagent/consumable/synthdrink/synthanol/codelibre
 	name = "Code Libre"
@@ -416,7 +416,7 @@
 	if(M.client.prefs.erppref == "No" || !M.client.prefs.arousable || (M.client.prefs.cit_toggles & NO_APHRO))
 		return
 	if((prob(min(current_cycle/2,5))))
-		M.emote(pick("moan","blush"))
+		M.emote(pick("moan","blushh"))
 	if(prob(min(current_cycle/4,10)))
 		var/aroused_message = pick("Вы ощущаете лёгкий перегрев...", "Ваши актюаторы работают в ускоренном режиме...", "Ваши гормональные протоколы дают сбой...", "Ваш корпус подрагивает от желания...")
 		to_chat(M, "<span class='userlove'>[aroused_message]</span>")

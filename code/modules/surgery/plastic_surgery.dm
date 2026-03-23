@@ -3,6 +3,9 @@
 	steps = list(/datum/surgery_step/incise, /datum/surgery_step/retract_skin, /datum/surgery_step/reshape_face, /datum/surgery_step/close)
 	possible_locs = list(BODY_ZONE_HEAD)
 	requires_bodypart_type = BODYPART_ORGANIC
+	is_healing = FALSE // BLUEMOON ADD
+	icon_state = "surgery_head"
+	radial_priority = SURGERY_RADIAL_PRIORITY_OTHER_SECOND
 
 //reshape_face
 /datum/surgery_step/reshape_face
@@ -45,8 +48,8 @@
 	return TRUE
 
 /datum/surgery_step/reshape_face/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='warning'>You screw up, leaving [target]'s appearance disfigured!</span>",
 		"[user] screws up, disfiguring [target]'s appearance!",
 		"[user] finishes the operation on [target]'s face.")
 	ADD_TRAIT(target, TRAIT_DISFIGURED, TRAIT_GENERIC)
-	return FALSE

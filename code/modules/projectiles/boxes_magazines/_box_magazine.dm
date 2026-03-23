@@ -22,6 +22,7 @@
 	var/start_empty = 0
 	var/list/bullet_cost
 	var/list/base_cost// override this one as well if you override bullet_cost
+	var/speedloader = FALSE
 
 /obj/item/ammo_box/Initialize(mapload)
 	. = ..()

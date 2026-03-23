@@ -122,14 +122,13 @@
 	color = "#D9BB79"
 	foodtype = MEAT | VEGETABLES | GRAIN
 
-/obj/item/reagent_containers/food/snacks/soup/teriyaki
-	name = "Teriyaki Sauce"
-	desc = "A Japanese sauce that's heavy on umami."
-	icon = 'modular_bluemoon/icons/obj/food/food_ingredients.dmi'
-	icon_state = "sambal"
+/obj/item/reagent_containers/food/snacks/soup/dashi
+	name = "Dashi soup"
+	desc = "Made with kombu and katsuobushi, this mother stock forms the basis for a large number of Japanese dishes."
+	icon = 'icons/obj/food/soupsalad.dmi'
+	icon_state = "wishsoup"
 	tastes = list("umami" = 1)
-	list_reagents = list(
-		/datum/reagent/consumable/nutriment/soup/teriyaki = 20,
-		)
-	color = "#3F0D02"
-	foodtype = SAUCE
+	list_reagents = list(/datum/reagent/consumable/nutriment/soup/dashi = 30)
+	trash = /obj/item/reagent_containers/glass/bowl
+	color = "#D49D26"
+	foodtype = MEAT | VEGETABLES

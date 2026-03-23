@@ -68,6 +68,20 @@
 			continue
 		host_mob.reagents.remove_reagent(R.type,1)
 
+/datum/nanite_program/purging_synth
+	name = "Purge Corruption"
+	desc = "Nanites clean the circuits in the host's positronic brain from corrosion."
+	use_rate = 1
+	rogue_types = list(/datum/nanite_program/suffocating, /datum/nanite_program/necrotic)
+
+/datum/nanite_program/purging_synth/check_conditions()
+	. = ..()
+	if(!. || !host_mob.getToxLoss(TOX_SYSCORRUPT))
+		return FALSE
+
+/datum/nanite_program/purging_synth/active_effect()
+	host_mob.adjustToxLoss(-1, toxins_type = TOX_SYSCORRUPT)
+
 /datum/nanite_program/brain_heal
 	name = "Neural Regeneration"
 	desc = "The nanites fix neural connections in the host's brain, reversing brain damage and minor traumas. Will not consume nanites while it would not have an effect."
@@ -258,3 +272,34 @@
 	else
 		playsound(C, 'sound/machines/defib_failed.ogg', 50, FALSE)
 
+/datum/nanite_program/hard_reboot
+	name = "Hard Reboot Protocol"
+	desc = "Nanomachines store protocols for rebooting the host's positronic brain."
+	can_trigger = TRUE
+	trigger_cost = 25
+	trigger_cooldown = 120
+	rogue_types = list(/datum/nanite_program/shocking)
+
+/datum/nanite_program/hard_reboot/check_conditions()
+	. = ..()
+	if(!. || !(host_mob.mob_biotypes & MOB_ROBOTIC))
+		return FALSE
+
+/datum/nanite_program/hard_reboot/on_trigger(comm_message)
+	host_mob.notify_ghost_cloning("Nanites is trying to reboot you! Re-enter your corpse if you want to be revived!")
+	addtimer(CALLBACK(src, PROC_REF(reboot)), 50)
+
+/datum/nanite_program/hard_reboot/proc/reboot()
+	var/mob/living/carbon/target = host_mob
+	target.adjustOxyLoss(-50, 0)
+	target.updatehealth()
+	if(target.revive())
+		target.visible_message("...[target]'s posibrain flickers to life once again!")
+		target.emote("ping")
+		// BLUEMOON EDIT START - изменение памяти после смерти
+		target.mind?.revival_handle_memory("force reboot")
+		// BLUEMOON EDIT END
+		return TRUE
+	else
+		target.visible_message("...[target]'s posibrain flickers a few times, before the lights fade yet again...")
+		return FALSE

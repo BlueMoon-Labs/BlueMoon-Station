@@ -1028,7 +1028,7 @@
 "dO" = (
 /obj/structure/table,
 /obj/machinery/light,
-/obj/item/storage/firstaid,
+/obj/item/storage/firstaid/regular,
 /turf/open/floor/plasteel,
 /area/commons/storage/primary)
 "dP" = (
@@ -1925,6 +1925,12 @@
 /obj/machinery/computer/nanite_cloud_controller,
 /turf/open/floor/plasteel/dark,
 /area/science/circuit)
+"hV" = (
+/obj/item/hilbertshotel/researchfacility{
+	name = "space ruin Hilbert's Hotel"
+	},
+/turf/open/floor/plasteel,
+/area/hallway/secondary/exit/departure_lounge)
 "ia" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -2501,6 +2507,10 @@
 "vm" = (
 /turf/closed/wall/r_wall,
 /area/maintenance/aft)
+"vr" = (
+/obj/machinery/piratepad/civilian,
+/turf/open/floor/plasteel,
+/area/cargo/storage)
 "vs" = (
 /obj/machinery/door/airlock,
 /obj/structure/cable{
@@ -2791,6 +2801,7 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
+/obj/item/hilbertshotel/ghostdojo,
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "BG" = (
@@ -3542,6 +3553,9 @@
 /area/service/bar)
 "Un" = (
 /obj/machinery/camera/autoname,
+/obj/item/hilbertshotel/ghostdojo{
+	name = "station Infinite Dormitories"
+	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
 "Ur" = (
@@ -3639,6 +3653,9 @@
 "Wu" = (
 /obj/machinery/airalarm/unlocked{
 	pixel_y = 23
+	},
+/obj/item/hilbertshotel/ghostdojo/ghostcafe{
+	name = "ghost cafe Infinite Dormitories"
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
@@ -3749,6 +3766,12 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/miningoffice)
+"ZE" = (
+/obj/machinery/computer/piratepad_control/civilian{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/cargo/storage)
 "ZI" = (
 /obj/machinery/door/airlock/public/glass,
 /obj/structure/cable{
@@ -9601,8 +9624,8 @@ by
 cm
 es
 by
-eu
-eu
+Gc
+Go
 eG
 eP
 fY
@@ -9610,9 +9633,9 @@ eZ
 eu
 fq
 fr
+ZE
+vr
 nb
-Go
-Gc
 et
 Wu
 fO
@@ -9706,7 +9729,7 @@ fo
 eu
 eu
 et
-fO
+hV
 fO
 fO
 fO

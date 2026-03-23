@@ -84,7 +84,7 @@
 	diag_hud_set_status()
 	..()
 
-/mob/living/silicon/ai/update_sight()
+/mob/living/silicon/ai/update_sight(forced = TRUE)
 	see_invisible = initial(see_invisible)
 	see_in_dark = initial(see_in_dark)
 	sight = initial(sight)
@@ -178,7 +178,7 @@
 	blind_eyes(1)
 	update_sight()
 	to_chat(src, "You've lost power!")
-	addtimer(CALLBACK(src, PROC_REF(start_RestorePowerRoutine)), 20)
+	addtimer(CALLBACK(src, PROC_REF(start_RestorePowerRoutine)), 20, TIMER_DELETE_ME)
 
 #undef POWER_RESTORATION_OFF
 #undef POWER_RESTORATION_START

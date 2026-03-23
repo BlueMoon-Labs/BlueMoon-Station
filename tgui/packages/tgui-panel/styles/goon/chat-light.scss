@@ -29,7 +29,6 @@ img {
   margin: 0;
   padding: 0;
   line-height: 1;
-  -ms-interpolation-mode: nearest-neighbor;
   image-rendering: pixelated;
 }
 
@@ -300,17 +299,17 @@ em {
   font-weight: bold;
 }
 
-.ooc {
+.ooc, .adminooc {
   color: #002eb8;
   font-weight: bold;
 }
 
-.looc {
+.looc, .adminlooc {
   color: #6699CC;
   font-weight: bold;
 }
 
-.antagooc {
+.antagooc, .adminantagooc {
   color: #b8002e;
   font-weight: bold;
 }
@@ -320,10 +319,10 @@ em {
   font-weight: bold;
 }
 
-.adminooc {
-  color: #700038;
-  font-weight: bold;
-}
+//.adminooc {
+//  color: #700038;
+//  font-weight: bold;
+//}
 
 .adminsay {
   color: #ff4500;
@@ -336,7 +335,7 @@ em {
   font-weight: bold;
 }
 
-.admin {
+.admin, .filter_adminlog, .message_to_admin {
   color: #4473ff;
   font-weight: bold;
 }
@@ -477,7 +476,7 @@ h1.alert, h2.alert {
   font-weight: bold;
 }
 
-.danger {
+.danger, .admindanger {
   color: #ff0000;
 }
 
@@ -508,6 +507,49 @@ blockquote.warning {
 .boldwarning {
   color: #ff0000;
   font-style: italic;
+  font-weight: bold;
+}
+
+.chat-tooltip {
+  cursor: help;
+  display: inline-block;
+  position: relative;
+  min-width: 0.9em;
+  text-align: center;
+  transition: background-color 120ms ease-out, text-shadow 120ms ease-out;
+}
+
+.chat-tooltip:hover {
+  background-color: rgba(255, 0, 0, 0.12);
+  text-shadow: 0 0 2px currentColor;
+}
+
+.chat-tooltip__content {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 4px);
+  transform: translateX(-50%);
+  z-index: 5;
+  max-width: 260px;
+  padding: 2px 6px;
+  border: 1px solid #8a1111;
+  border-radius: 3px;
+  background-color: rgba(15, 15, 18, 0.95);
+  color: #f3f3f3;
+  text-shadow: none;
+  line-height: 1.2;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+
+.chat-tooltip:hover .chat-tooltip__content {
+  opacity: 1;
+}
+
+.chat-tooltip--warning {
+  color: #ff0000;
   font-weight: bold;
 }
 
@@ -586,7 +628,7 @@ blockquote.notice {
   color: #0000ff;
 }
 
-.adminhelp {
+.adminhelp, .antigrif {
   color: #ff0000;
   font-weight: bold;
 }
@@ -1294,7 +1336,7 @@ li {
 }
 
 .votewrap {
-	width: fit-content;
+	width: 100%;
 	line-height: 20px;
 	text-align: left;
 	height: 20px;

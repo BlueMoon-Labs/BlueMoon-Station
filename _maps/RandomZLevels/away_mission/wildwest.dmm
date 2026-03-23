@@ -3065,7 +3065,7 @@
 /area/awaymission/wildwest/mines)
 "kq" = (
 /obj/effect/decal/cleanable/blood/old,
-/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/gun/ballistic/automatic/fal,
 /turf/open/floor/circuit/red,
 /area/awaymission/wildwest/vault)
 "kr" = (
@@ -6329,7 +6329,7 @@
 /turf/open/floor/engine,
 /area/awaymission/wildwest/vault)
 "xR" = (
-/obj/machinery/grill,
+/obj/machinery/grill/oldschool,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "xS" = (
@@ -6977,7 +6977,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/wildwest/vault)
 "AL" = (
-/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/gun/ballistic/automatic/fal,
 /turf/open/floor/engine,
 /area/awaymission/wildwest/vault)
 "AO" = (
@@ -12043,7 +12043,7 @@
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "UP" = (
-/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/fal,
 /turf/open/floor/plating/rust,
 /area/awaymission/wildwest/vault)
 "UR" = (

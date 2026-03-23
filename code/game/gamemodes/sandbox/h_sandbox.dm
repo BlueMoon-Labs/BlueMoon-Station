@@ -98,7 +98,9 @@ GLOBAL_VAR_INIT(hsboxspawn, TRUE)
 		hsbinfo += "- <a href='?[REF(src)];hsb=hsbreag'>Spawn Reagent Container...</a><br>"
 		hsbinfo += "- <a href='?[REF(src)];hsb=hsbobj'>Spawn Other Item...</a><br><br>"
 
-	usr << browse(hsbinfo, "window=hsbpanel")
+	var/datum/browser/popup = new(usr, "hsbpanel", "Sandbox")
+	popup.set_content(hsbinfo)
+	popup.open()
 
 /datum/hSB/Topic(href, href_list)
 	if(!usr || !src || !(src.owner == usr.ckey))
@@ -241,7 +243,9 @@ GLOBAL_VAR_INIT(hsboxspawn, TRUE)
 					for(var/O in reverseRange(all_items))
 						clothinfo += "<a href='?src=[REF(src)];hsb=hsb_safespawn&path=[O]'>[O]</a><br>"
 
-				usr << browse(clothinfo,"window=sandbox")
+				var/datum/browser/popup = new(usr, "sandbox", "Sandbox")
+				popup.set_content(clothinfo)
+				popup.open()
 
 			// Reagent containers
 			if("hsbreag")
@@ -255,7 +259,9 @@ GLOBAL_VAR_INIT(hsboxspawn, TRUE)
 					for(var/O in reverseRange(all_items))
 						reaginfo += "<a href='?src=[REF(src)];hsb=hsb_safespawn&path=[O]'>[O]</a><br>"
 
-				usr << browse(reaginfo,"window=sandbox")
+				var/datum/browser/popup = new(usr, "sandbox", "Sandbox")
+				popup.set_content(reaginfo)
+				popup.open()
 
 			// Other items
 			if("hsbobj")
@@ -270,7 +276,9 @@ GLOBAL_VAR_INIT(hsboxspawn, TRUE)
 					for(var/O in reverseRange(all_items))
 						objinfo += "<a href='?src=[REF(src)];hsb=hsb_safespawn&path=[O]'>[O]</a><br>"
 
-				usr << browse(objinfo,"window=sandbox")
+				var/datum/browser/popup = new(usr, "sandbox", "Sandbox")
+				popup.set_content(objinfo)
+				popup.open()
 
 			//
 			// Safespawn checks to see if spawning is disabled.

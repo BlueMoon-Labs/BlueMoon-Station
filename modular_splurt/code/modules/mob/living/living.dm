@@ -1,6 +1,10 @@
 /mob/living
 	var/datum/action/sizecode_smallsprite/small_sprite
 
+/mob/living/Destroy()
+	QDEL_NULL(small_sprite)
+	return ..()
+
 /// Gender Change
 // Intended only for silicons/robots (incl. pAI) and simple_animal code so far. This proc was made to somewhat ease up duplicated verb code.
 // There's probably better way to do this but I am terrible at it --Nopeman

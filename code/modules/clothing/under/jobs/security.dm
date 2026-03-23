@@ -270,6 +270,7 @@
 	icon_state = "hos_parade_fem"
 	item_state = "r_suit"
 	fitted = FEMALE_UNIFORM_TOP
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /*
  *Spacepol

@@ -15,6 +15,19 @@
 	exp_type = EXP_TYPE_COMMAND
 	exp_type_department = EXP_TYPE_COMMAND
 	considered_combat_role = TRUE
+	alt_titles = list(
+		"Bridge Advisor",
+		"Bridge Bitch",
+		"Bridge Canine",
+		"Bridge Pet",
+		"Captain Pet",
+		"Command Pet",
+		"Dick Attachment",
+		"Ensign",
+		"Pussy Attachment",
+		"Secretary"
+		)
+
 	outfit = /datum/outfit/job/bridgeofficer
 	plasma_outfit = /datum/outfit/plasmaman/bridgeofficer
 	//SPLURT CHANGES (Changes the custom spawn text for the Bridge Officer)
@@ -37,11 +50,12 @@
 						ACCESS_BRIDGE_OFFICER, ACCESS_MAILSORTING)
 	paycheck = PAYCHECK_COMMAND
 
+	mind_traits = list(TRAIT_FENCER)
+
 	paycheck = PAYCHECK_COMMAND
 	paycheck_department = ACCOUNT_SEC
-	alt_titles = list("NT Junior Manager", "Syndicate Junior Officer", "Command Secretary", "Command Officer", "Bridge Secretary", "Ensign", "Bridge Bitch", "Bridge Canine", "Captain Pet", "Command Pet", "Dick Attachment", "Pussy Attachment", "Bridge Advisor", "Bridge Intern", "Bridge Pet")
 	display_order = JOB_DISPLAY_ORDER_BO
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/insanity, /datum/quirk/illiterate)
 	threat = 1
 
 /datum/outfit/job/bridgeofficer
@@ -60,7 +74,7 @@
 
 	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/stamp/command=1, /obj/item/gun/energy/civilian=1)
 	box = /obj/item/storage/box/survival/command
-	accessory = /obj/item/clothing/accessory/permit/special/bridge_officer
+	accessory = list(/obj/item/clothing/accessory/permit/special/bridge_officer)
 
 /datum/outfit/job/bridgeofficer/syndicate
 	name = "Syndicate Bridge Officer"
@@ -80,7 +94,7 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = /obj/item/clothing/accessory/permit/special/bridge_officer
+	accessory = list(/obj/item/clothing/accessory/permit/special/bridge_officer)
 	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/gun/energy/e_gun=1, /obj/item/stamp/command=1, /obj/item/syndicate_uplink=1)
 
 /datum/outfit/plasmaman/bridgeofficer

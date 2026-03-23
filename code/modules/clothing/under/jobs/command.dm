@@ -80,6 +80,7 @@
 	icon_state = "bridgesecf"
 	item_state = "bridgesecf"
 	body_parts_covered = CHEST|GROIN|ARMS
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/rank/bridgeofficer/formal
 	name = "bridge officer formal outfit"

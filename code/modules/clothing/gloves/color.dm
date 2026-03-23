@@ -140,6 +140,14 @@
 	var/can_be_cut = TRUE
 	strip_mod = 1.2
 
+/obj/item/clothing/gloves/color/black/forensic
+	desc = "Перчатки детектива. Они не оставляют следов, где их и так уже хватает."
+	name = "forensic black gloves"
+	icon_state = "black"
+	item_state = "blackgloves"
+	can_be_cut = FALSE
+	transfer_prints = FALSE
+
 /obj/item/clothing/gloves/color/black/attackby(obj/item/I, mob/user, params)
 	if(I.tool_behaviour == TOOL_WIRECUTTER)
 		if(can_be_cut && icon_state == initial(icon_state))//only if not dyed
@@ -226,7 +234,7 @@
 
 /obj/item/clothing/gloves/color/latex
 	name = "Latex Gloves"
-	desc = "Cheap sterile gloves made from latex. Transfers basic paramedical knowledge to the wearer via the use of nanochips."
+	desc = "Дешёвые стерильные перчатки из латекса. Наночипы, при ношении, дают навыки базовой парамедической подготовки о переносе пациентов."
 	icon_state = "latex"
 	item_state = "lgloves"
 	siemens_coefficient = 0.3
@@ -246,7 +254,7 @@
 
 /obj/item/clothing/gloves/color/latex/nitrile
 	name = "nitrile gloves"
-	desc = "Pricy sterile gloves that are stronger than latex. Transfers advanced paramedical knowledge to the wearer via the use of nanochips."
+	desc = "Стерильные перчатки, более дорогого образца и прочнее латексных. Наночипы, при ношении, дают навыки продвинутой парамедической подготовки о переносе пациентов."
 	icon_state = "nitrile"
 	item_state = "nitrilegloves"
 	transfer_prints = FALSE

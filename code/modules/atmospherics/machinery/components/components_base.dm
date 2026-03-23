@@ -64,8 +64,10 @@
 // Pipenet stuff; housekeeping
 
 /obj/machinery/atmospherics/components/nullifyNode(i)
+	var/datum/gas_mixture/air_ref = airs ? airs[i] : null
 	if(parents[i])
 		nullifyPipenet(parents[i])
+	prune_stale_pipeline_memberships(air_ref)
 	QDEL_NULL(airs[i])
 	return ..()
 
@@ -74,6 +76,9 @@
 	update_parents()
 
 /obj/machinery/atmospherics/components/build_network()
+	if(!parents)
+		stack_trace("[type] build_network() at [COORD(src)]: parents list is null - object may be destroyed or improperly initialized")
+		return
 	for(var/i in 1 to device_type)
 		if(!parents[i])
 			parents[i] = new /datum/pipeline()
@@ -88,6 +93,13 @@
 /obj/machinery/atmospherics/components/proc/nullifyPipenet(datum/pipeline/reference)
 	if(!reference)
 		CRASH("nullifyPipenet(null) called by [type] on [COORD(src)]")
+	if(QDESTROYING(reference))
+		stack_trace("nullifyPipenet() called on already-destroying pipeline [reference]([REF(reference)]) by [type] at [COORD(src)]")
+		// Still need to clear our local references even if pipeline is being destroyed
+		for (var/i in 1 to parents.len)
+			if (parents[i] == reference)
+				parents[i] = null
+		return
 	for (var/i in 1 to parents.len)
 		if (parents[i] == reference)
 			reference.other_airs -= airs[i] // Disconnects from the pipeline side
@@ -106,11 +118,42 @@
 			CRASH("nullifyPipenet() called on qdeleting [reference]")
 		qdel(reference)
 
+/obj/machinery/atmospherics/components/proc/prune_stale_pipeline_memberships(datum/gas_mixture/air_ref)
+	var/list/seen_pipelines = list()
+	for(var/list/source as anything in list(SSair.networks, SSair.currentrun))
+		if(!islist(source))
+			continue
+		for(var/thing as anything in source)
+			if(!istype(thing, /datum/pipeline))
+				continue
+			var/datum/pipeline/P = thing
+			if(P in seen_pipelines)
+				continue
+			seen_pipelines += P
+			if(QDELETED(P) || QDESTROYING(P))
+				continue
+			var/changed = FALSE
+			if(src in P.other_atmosmch)
+				P.other_atmosmch -= src
+				changed = TRUE
+			if(air_ref && (air_ref in P.other_airs))
+				P.other_airs -= air_ref
+				changed = TRUE
+			if(changed)
+				P.update = TRUE
+				if(!length(P.other_atmosmch) && !length(P.members))
+					qdel(P)
+
 /obj/machinery/atmospherics/components/returnPipenetAirs(datum/pipeline/reference)
 	var/list/returned_air = list()
+	if(!parents || !airs)
+		stack_trace("[type] returnPipenetAirs() at [COORD(src)]: parents=[parents ? "exists" : "null"] airs=[airs ? "exists" : "null"] - called during invalid state")
+		return returned_air
 	for (var/i in 1 to parents.len)
 		if (parents[i] == reference)
-			returned_air += airs[i]
+			var/datum/gas_mixture/air = airs[i]
+			if(air)
+				returned_air += air
 	return returned_air
 
 /obj/machinery/atmospherics/components/pipeline_expansion(datum/pipeline/reference)
@@ -165,7 +208,7 @@
 	for(var/i in 1 to device_type)
 		var/datum/pipeline/parent = parents[i]
 		if(!parent)
-			WARNING("Component is missing a pipenet! Rebuilding...")
+			investigate_log("[type] at [COORD(src)] is missing a pipenet, rebuilding", INVESTIGATE_ATMOS)
 			SSair.add_to_rebuild_queue(src)
 		else
 			parent.update = TRUE
@@ -198,3 +241,10 @@
 /obj/machinery/atmospherics/components/analyzer_act(mob/living/user, obj/item/I)
 	atmosanalyzer_scan(airs, user, src)
 	return TRUE
+
+// IMPORTANT: Call parent FIRST because parent's nullifyNode() accesses parents[] and airs[]
+// Do NOT change this order to match child classes - they clean up different vars
+/obj/machinery/atmospherics/components/Destroy()
+	. = ..()
+	parents = null
+	QDEL_LIST(airs)

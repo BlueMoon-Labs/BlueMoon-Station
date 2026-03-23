@@ -16,6 +16,7 @@
 	var/datum/action/kick/kick = new/datum/action/kick()
 	var/datum/action/strike/strike = new/datum/action/strike()
 	var/datum/action/drop/drop = new/datum/action/drop()
+	resist_grab_chance = 50
 
 /datum/martial_art/wrestling/proc/check_streak(var/mob/living/carbon/human/A, var/mob/living/carbon/human/D)
 	if(!can_use(A, D))

@@ -1,4 +1,5 @@
 import { BooleanLike } from 'common/react';
+
 import { useBackend } from '../backend';
 import { AnimatedNumber, Box, Button, LabeledList, Section } from '../components';
 import { Window } from '../layouts';
@@ -18,13 +19,23 @@ type Data = {
 };
 
 export const CargoExpress = (props, context) => {
-  const { data } = useBackend<Data>(context);
+  const { act, data } = useBackend<Data>(context);
   const { locked } = data;
 
   return (
     <Window width={600} height={700}>
       <Window.Content scrollable>
         <InterfaceLockNoticeBox accessText="a Cargo Technician-level ID card" />
+        {/* Кнопка управления блокировкой */}
+        <Button
+          fluid
+          color={locked ? 'green' : 'red'}
+          icon={locked ? 'unlock' : 'lock'}
+          content={locked ? 'Unlock Console' : 'Lock Console'}
+          onClick={() => act('toggleLock')}
+          mb={1}
+        />
+        {/* Контент показывается только если консоль разблокирована */}
         {!locked && <CargoExpressContent />}
       </Window.Content>
     </Window>

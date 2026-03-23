@@ -56,6 +56,7 @@ Difficulty: Medium
 	attack_action_types = list(/datum/action/innate/megafauna_attack/dash,
 							/datum/action/innate/megafauna_attack/kinetic_accelerator,
 							/datum/action/innate/megafauna_attack/transform_weapon)
+	sharpness = SHARP_EDGED
 
 /mob/living/simple_animal/hostile/megafauna/blood_drunk_miner/Initialize(mapload)
 	. = ..()

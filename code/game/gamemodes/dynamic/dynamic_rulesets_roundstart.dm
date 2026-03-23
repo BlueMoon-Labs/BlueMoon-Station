@@ -524,9 +524,9 @@
 		var/datum/antagonist/clockcult/new_cultist = new antag_datum()
 		new_cultist.clock_team = main_clockcult
 		new_cultist.give_equipment = TRUE
-		SSticker.mode.equip_servant(new_cultist)
-		SSticker.mode.greet_servant(new_cultist)
 		M.add_antag_datum(new_cultist)
+		SSticker.mode.equip_servant(M.current)
+		SSticker.mode.greet_servant(M.current)
 	return TRUE
 
 /datum/dynamic_ruleset/roundstart/clockcult/round_result()
@@ -1030,3 +1030,52 @@ BLUEMOON REMOVAL END*/
 // 		new_character.mind.add_antag_datum(new_role, new_team)
 
 // #undef ABDUCTOR_MAX_TEAMS
+
+/// Вероятность того, что переход ИИ в состояние мальформации будет сопровождаться объявлением об ионной буре и некоторыми ионными законами.
+
+#define MALF_ION_PROB 33
+/// Вероятность замены существующего закона ионным законом вместо добавления нового ионного закона.
+
+#define REPLACE_LAW_WITH_ION_PROB 10
+//////////////////////////////////////////////
+//                                          //
+//         Malfunctioning AI                //
+//                                         //
+//////////////////////////////////////////////
+
+/datum/dynamic_ruleset/roundstart/malf
+    name = "Malfunctioning AI"
+    antag_flag = ROLE_MALF
+    antag_datum = /datum/antagonist/traitor
+    minimum_required_age = 0
+    required_candidates = 1
+    exclusive_roles = list("AI")
+    weight = 3
+    cost = 20
+    requirements = list(101,101,101,101,101,101,60,40,30,10)
+    required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD)
+    flags = HIGH_IMPACT_RULESET
+
+/datum/dynamic_ruleset/roundstart/malf/trim_candidates()
+    ..()
+    for(var/mob/living/player in candidates)
+        if(!isAI(player))
+            candidates -= player
+
+/datum/dynamic_ruleset/roundstart/malf/pre_execute(population)
+    if(candidates.len <= 0)
+        message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+        return FALSE
+
+    var/mob/living/silicon/ai/M = pick_n_take(candidates)
+    if(M && M.mind)
+        assigned += M.mind
+        M.mind.special_role = ROLE_MALF
+        return TRUE
+    return FALSE
+
+/datum/dynamic_ruleset/roundstart/malf/execute()
+    for(var/datum/mind/M in assigned)
+        var/datum/antagonist/traitor/T = new antag_datum()
+        M.add_antag_datum(T)
+    return TRUE

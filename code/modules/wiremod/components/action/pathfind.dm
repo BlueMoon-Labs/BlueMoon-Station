@@ -65,7 +65,17 @@
 
 	// Get both the current turf and the destination's turf
 	var/turf/current_turf = get_turf(src)
-	var/turf/destination = locate(target_X, target_Y, current_turf?.z)
+	if(!current_turf)
+		next_turf = null
+		failed.set_output(COMPONENT_SIGNAL)
+		reason_failed.set_output("Current location is invalid!")
+		return
+	var/turf/destination = locate(target_X, target_Y, current_turf.z)
+	if(!destination)
+		next_turf = null
+		failed.set_output(COMPONENT_SIGNAL)
+		reason_failed.set_output("Target location is invalid!")
+		return
 
 	// We're already here! No need to do anything.
 	if(current_turf == destination)

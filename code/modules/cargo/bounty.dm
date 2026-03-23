@@ -81,13 +81,21 @@ GLOBAL_LIST_EMPTY(bounties_list)
 	if(guided && (guided != CIV_JOB_RANDOM))
 		bounty_num = guided
 	else
-		bounty_num = rand(1,16)
+		bounty_num = rand(1,18)
 	switch(bounty_num)
 		if(1)
 			var/subtype = pick(subtypesof(/datum/bounty/item/assistant))
 			return new subtype
 		if(2)
-			var/subtype = pick(subtypesof(/datum/bounty/item/mech))
+			var/list/choices = list( // Процентный шанс пика определённой категории баунти. Применено ввиду неравности шансов выпадения.
+				/datum/bounty/item/mech = 25,
+				/datum/bounty/item/roboticist = 35,
+				/datum/bounty/item/cyborglimbs = 35,
+				/datum/bounty/item/bot = 35
+				)
+			var/subtype_category = pickweight(choices)
+			var/list/subtypes = subtypesof(subtype_category)
+			var/subtype = pick(subtypes)
 			return new subtype
 		if(3)
 			var/subtype = pick(subtypesof(/datum/bounty/item/chef))
@@ -96,19 +104,21 @@ GLOBAL_LIST_EMPTY(bounties_list)
 			var/subtype = pick(subtypesof(/datum/bounty/item/security))
 			return new subtype
 		if(5)
-			if(rand(2) == 1)
+			if(prob(50))
 				return new /datum/bounty/reagent/simple_drink
-			return new /datum/bounty/reagent/complex_drink
+			else
+				return new /datum/bounty/reagent/complex_drink
 		if(6)
 			return new /datum/bounty/reagent/chemical
 		if(7)
 			var/subtype = pick(subtypesof(/datum/bounty/virus))
 			return new subtype
 		if(8)
-			if(rand(2) == 1)
-				var/subtype = pick(subtypesof(/datum/bounty/item/science))
-				return new subtype
-			var/subtype = pick(subtypesof(/datum/bounty/item/slime))
+			var/subtype
+			if(prob(50))
+				subtype = pick(subtypesof(/datum/bounty/item/science))
+			else
+				subtype = pick(subtypesof(/datum/bounty/item/slime))
 			return new subtype
 		if(9)
 			var/subtype = pick(subtypesof(/datum/bounty/item/engineering))
@@ -125,12 +135,37 @@ GLOBAL_LIST_EMPTY(bounties_list)
 		if(13)
 			var/subtype = pick(subtypesof(/datum/bounty/item/silly))
 			return new subtype
-		if(14)
+		if(14, 15)
 			var/subtype = pick(subtypesof(/datum/bounty/item/gardencook))
 			return new subtype
 		if(16)
 			var/subtype = pick(subtypesof(/datum/bounty/lewd))
 			return new subtype
+		if(17)
+			var/subtype
+			if(prob(50))
+				return new /datum/bounty/reagent/chemical
+			else
+				subtype = pick(subtypesof(/datum/bounty/item/medical))
+			return new subtype
+		if(18)
+			var/subtype
+			switch(rand(1,4))
+				if(1)
+					subtype = pick(subtypesof(/datum/bounty/item/mech))
+				if(2)
+					subtype = pick(subtypesof(/datum/bounty/item/roboticist))
+				if(3)
+					subtype = pick(subtypesof(/datum/bounty/item/science))
+				if(4)
+					subtype = pick(subtypesof(/datum/bounty/item/slime))
+			return new subtype
+	if(guided == CIV_JOB_BASIC)
+		var/list/assistant_bounties = subtypesof(/datum/bounty/item/assistant)
+		if(length(assistant_bounties))
+			var/subtype = pick(assistant_bounties)
+			return new subtype
+	return null
 
 // Called lazily at startup to populate GLOB.bounties_list with random bounties.
 /proc/setup_bounties()
@@ -139,16 +174,17 @@ GLOBAL_LIST_EMPTY(bounties_list)
 
 	/********************************Subtype Gens********************************/
 	var/list/easy_add_list_subtypes = list(/datum/bounty/item/assistant = 2,
-											/datum/bounty/item/mech = 1,
-											/datum/bounty/item/chef = 2,
-											/datum/bounty/item/security = 1,
-											/datum/bounty/virus = 1,
-											/datum/bounty/item/engineering = 1,
 											/datum/bounty/item/mining = 2,
-											/datum/bounty/item/medical = 2,
-											/datum/bounty/item/botany = 2,
-											/datum/bounty/item/silly = 1,
+											/datum/bounty/item/mech = 1,
+											/datum/bounty/item/roboticist = 2,
+											/datum/bounty/item/chef = 2,
 											/datum/bounty/item/gardencook = 1,
+											/datum/bounty/item/botany = 2,
+											/datum/bounty/item/security = 1,
+											/datum/bounty/item/engineering = 1,
+											/datum/bounty/item/medical = 2,
+											/datum/bounty/virus = 1,
+											/datum/bounty/item/silly = 1,
 											/datum/bounty/lewd = 1)
 
 	for(var/the_type in easy_add_list_subtypes)

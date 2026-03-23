@@ -18,6 +18,11 @@
 			. += span_info("С виду [t_He] весит весьма немного.\n")
 	// BLUEMOON ADDITION END
 
+	// BLUEMOON ADD START
+	if(HAS_TRAIT_FROM(src, TRAIT_MUTE, ORGAN_TRAIT))
+		. += span_warning("Его рот варварски зашит! Выглядит жутко...")
+	// BLUEMOON ADD END
+
 	// Empathy abilities escape clause
 	// Please change this when adding new quirk detection
 	if(!(HAS_TRAIT(usr, TRAIT_EMPATH) || HAS_TRAIT(usr, TRAIT_FRIENDLY) || src == usr))

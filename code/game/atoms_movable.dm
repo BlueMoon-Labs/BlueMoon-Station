@@ -106,6 +106,9 @@
 	QDEL_NULL(proximity_monitor)
 	QDEL_NULL(language_holder)
 	QDEL_NULL(em_block)
+	// Break hidden render pipeline references (render_target/render_source can keep movables harddeling).
+	render_target = null
+	render_source = null
 
 	unbuckle_all_mobs(force = TRUE)
 
@@ -121,12 +124,22 @@
 
 	invisibility = INVISIBILITY_ABSTRACT
 
+	if(inertia_dir)
+		inertia_dir = 0
+		inertia_last_loc = null
+		SSspacedrift.processing -= src
+
 	if(pulledby)
 		pulledby.stop_pulling()
+
+	if(pulling)
+		stop_pulling()
 
 	if(orbiting)
 		orbiting.end_orbit(src)
 		orbiting = null
+
+	QDEL_NULL(move_packet)
 
 	. = ..()
 
@@ -410,7 +423,7 @@
 	. = FALSE
 
 	if(QDELETED(src))
-		CRASH("Qdeleted thing being thrown around.")
+		return
 
 	if (!target || speed <= 0)
 		return
@@ -549,7 +562,7 @@
 	return
 
 
-/atom/movable/proc/do_attack_animation(atom/A, visual_effect_icon, obj/item/used_item, no_effect)
+/atom/movable/proc/do_attack_animation(atom/A, visual_effect_icon, obj/item/used_item, no_effect, fov_effects = TRUE)
 	if(!no_effect && (visual_effect_icon || used_item))
 		do_item_attack_animation(A, visual_effect_icon, used_item)
 
@@ -572,6 +585,8 @@
 	else if(direction & WEST)
 		pixel_x_diff = -8
 		turn_dir = -1
+	if(fov_effects)
+		play_fov_effect(A, 5, "attack")
 
 	var/matrix/initial_transform = matrix(transform)
 	var/matrix/rotated_transform = transform.Turn(15 * turn_dir)

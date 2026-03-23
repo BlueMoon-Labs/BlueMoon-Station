@@ -7,16 +7,16 @@
 
 /obj/item/ammo_casing/energy/lasergun
 	projectile_type = /obj/item/projectile/beam/laser
-	e_cost = 83
+	e_cost = 66
 	select_name = "kill"
 
 /obj/item/ammo_casing/energy/lasergun/old
 	projectile_type = /obj/item/projectile/beam/laser
-	e_cost = 200
+	e_cost = 160
 	select_name = "kill"
 
 /obj/item/ammo_casing/energy/laser/hos
-	e_cost = 100
+	e_cost = 90
 
 /obj/item/ammo_casing/energy/laser/practice
 	projectile_type = /obj/item/projectile/beam/practice
@@ -31,7 +31,7 @@
 
 /obj/item/ammo_casing/energy/laser/scatter/pulse
 	projectile_type = /obj/item/projectile/beam/pulse
-	e_cost = 200
+	e_cost = 180
 	select_name = "ANNIHILATE"
 	fire_sound = 'sound/weapons/1pulse.ogg'
 
@@ -48,18 +48,18 @@
 
 /obj/item/ammo_casing/energy/laser/hellfire
 	projectile_type = /obj/item/projectile/beam/laser/hellfire
-	e_cost = 130
+	e_cost = 100
 	select_name = "maim"
 
 /obj/item/ammo_casing/energy/laser/pulse
 	projectile_type = /obj/item/projectile/beam/pulse
-	e_cost = 200
+	e_cost = 180
 	select_name = "DESTROY"
 	fire_sound = 'sound/weapons/pulse.ogg'
 
 /obj/item/ammo_casing/energy/laser/pulse/danger  //bluemoon add
 	projectile_type = /obj/item/projectile/beam/pulse/danger
-	e_cost = 200
+	e_cost = 180
 	select_name = "ANNIHILATE"
 	fire_sound = 'sound/weapons/pulse.ogg'
 
@@ -92,7 +92,7 @@
 
 /obj/item/ammo_casing/energy/xray
 	projectile_type = /obj/item/projectile/beam/xray
-	e_cost = 100
+	e_cost = 90
 	fire_sound = 'sound/weapons/laser3.ogg'
 
 /obj/item/ammo_casing/energy/mindflayer

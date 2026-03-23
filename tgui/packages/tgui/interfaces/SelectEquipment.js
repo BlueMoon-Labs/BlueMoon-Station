@@ -3,7 +3,7 @@ import { flow } from 'common/fp';
 import { createSearch } from 'common/string';
 
 import { useBackend, useLocalState } from '../backend';
-import { Box, Button, Dropdown, Icon, Input, Section, Stack, Tabs } from '../components';
+import { Box, Button, Dropdown, Icon, Input, PixelArtImage, Section, Stack, Tabs } from '../components';
 import { ButtonCheckbox } from '../components/Button';
 import { Window } from '../layouts';
 
@@ -102,14 +102,8 @@ export const SelectEquipment = (props, context) => {
                   fill
                   title={name}
                   textAlign="center">
-                  <Box
-                    as="img"
-                    m={0}
-                    src={`data:image/jpeg;base64,${icon64}`}
-                    height="100%"
-                    style={{
-                      '-ms-interpolation-mode': 'nearest-neighbor',
-                    }} />
+                  <PixelArtImage
+                    src={`data:image/png;base64,${icon64}`} />
                 </Section>
               </Stack.Item>
             </Stack>

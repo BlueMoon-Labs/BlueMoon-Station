@@ -174,6 +174,20 @@
 	color_src = MATRIXED
 	matrixed_sections = MATRIX_RED
 
+/datum/sprite_accessory/tails/human/alttwocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
+/datum/sprite_accessory/tails_animated/human/alttwocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
 /datum/sprite_accessory/tails/human/carp // BLUEMOON CHANGE ' /shark' to ' /carp' and 'name = ' to carp
 	name = "Carp"
 	icon_state = "carp"
@@ -708,6 +722,16 @@
 	icon_state = "twocat"
 	matrixed_sections = MATRIX_RED
 
+/datum/sprite_accessory/tails/mam_tails/twocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	matrixed_sections = MATRIX_RED_BLUE
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/twocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	matrixed_sections = MATRIX_RED_BLUE
+
 /datum/sprite_accessory/tails/mam_tails/carp // BLUEMOON CHANGE ' /shark' to ' /carp' and 'name = ' to carp
 	name = "Carp"
 	icon_state = "carp"
@@ -964,6 +988,26 @@
 /datum/sprite_accessory/tails_animated/mam_tails_animated/sergal
 	name = "Sergal"
 	icon_state = "sergal"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/sergal/alt
+	name = "Sergal alt"
+	icon_state = "sergal_alt"
+	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/sergal/alt
+	name = "Sergal alt"
+	icon_state = "sergal_alt"
+	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/tails/mam_tails/sergal/alt_two
+	name = "Sergal alt (2 colors)"
+	icon_state = "sergal_alt_2"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/sergal/alt_two
+	name = "Sergal alt (2 colors)"
+	icon_state = "sergal_alt_2"
 	matrixed_sections = MATRIX_RED_GREEN
 
 /datum/sprite_accessory/tails/mam_tails/shark

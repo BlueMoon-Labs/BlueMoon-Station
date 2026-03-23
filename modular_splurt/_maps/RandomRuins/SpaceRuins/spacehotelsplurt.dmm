@@ -4207,7 +4207,7 @@
 /area/space/nearstation)
 "sW" = (
 /obj/machinery/jukebox{
-	queuecost = 0
+	req_one_access = null
 	},
 /turf/open/floor/carpet/black,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
@@ -5570,7 +5570,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel)
 "zr" = (
-/obj/machinery/mineral/bluespace_miner,
+/obj/machinery/mineral/bluespace_miner/with_core/infinity,
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/bluemoon/hotel)
 "zu" = (
@@ -8492,7 +8492,7 @@
 /area/ruin/space/has_grav/bluemoon/hotel)
 "NY" = (
 /obj/machinery/jukebox/disco/indestructible{
-	queuecost = 0
+	req_one_access = null
 	},
 /turf/open/floor/light/colour_cycle/dancefloor_b,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)

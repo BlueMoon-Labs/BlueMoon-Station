@@ -377,6 +377,9 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 			if("apprentice")
 				if(M.mind in SSticker.mode.apprentices)
 					return 2
+			if("alive_bones")
+				if(M.mind.has_antag_datum(/datum/antagonist/alive_bones, TRUE))
+					return 2
 			if("monkey")
 				if(isliving(M))
 					var/mob/living/L = M
@@ -486,7 +489,7 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 		var/datum/antagonist/A = M.mind.has_antag_datum(/datum/antagonist/)
 		if(A)
 			poll_message = "[poll_message] Status:[A.name]."
-	var/list/mob/candidates = pollCandidatesForMob(poll_message, ROLE_PAI, null, FALSE, 100, M, ignore_category)
+	var/list/mob/candidates = pollCandidatesForMob(poll_message, ROLE_PAI, null, FALSE, 100, M, ignore_category, priority_check = FALSE)
 
 	if(LAZYLEN(candidates))
 		var/mob/C = pick(candidates)
@@ -609,7 +612,7 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 
 //Can the mob see reagents inside of containers?
 /mob/proc/can_see_reagents()
-	return stat == DEAD || silicon_privileges || HAS_TRAIT(src, TRAIT_REAGENT_SCANNER) //Dead guys and silicons can always see reagents
+	return isobserver(src) || stat == DEAD || silicon_privileges || HAS_TRAIT(src, TRAIT_REAGENT_SCANNER) //Ghosts, dead guys and silicons can always see reagents
 
 /mob/proc/is_blind()
 	SHOULD_BE_PURE(TRUE)
@@ -624,17 +627,32 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 		return
 	return TRUE
 
-/mob/living/carbon/human/proc/load_client_appearance(client/client)
+/mob/living/carbon/human/proc/load_client_appearance(client/client, quirks = TRUE)
 	if(!client)
 		client = src.client
+	if(!client)
+		return
 	var/old_name = real_name
 	SEND_SOUND(src, 'sound/misc/server-ready.ogg')
+	// BLUEMOON ADD START - загрузка татуировок для ghost roles
+	client.prefs.apply_tattoos_to_human(src)
+	// BLUEMOON ADD END
 	client.prefs.copy_to(src)
-	SSquirks.AssignQuirks(src, client, TRUE, FALSE, job, FALSE)//This Assigns the selected character's quirks
+	if(quirks)
+		load_client_quirks(client)
 	var/obj/item/card/id/id_card = get_idcard() //Time to change their ID card as well if they have one.
 	if(id_card)
 		id_card.registered_name = real_name
-		id_card.update_label(real_name, id_card.assignment)
+		id_card.update_label()
+
+	// Переоформление пермитов, если у нас была загрузка из префов
+	if(istype(w_uniform, /obj/item/clothing/under))
+		var/obj/item/clothing/under/U = w_uniform
+		for(var/obj/item/clothing/accessory/permit/special/permit in U.attached_accessories)
+			if(permit.first_inited && permit.owner_name == real_name)
+				continue
+			permit.bind_to_user(src, TRUE)
+
 	fully_replace_character_name(old_name, real_name)
 	ADD_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT) //Makes sure they are exempt from health events.
 	ADD_TRAIT(src, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)
@@ -643,6 +661,12 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 	log_game("[key_name(src)] has loaded their default appearance for a ghost role.")
 	message_admins("[ADMIN_LOOKUPFLW(src)] has loaded their default appearance for a ghost role.")
 	return
+
+//This Assigns the selected character's quirks
+/mob/living/carbon/human/proc/load_client_quirks(client/client)
+	if(!client)
+		client = src.client
+	SSquirks.AssignQuirks(src, client, TRUE, FALSE, job, FALSE)
 
 ///Returns a mob's real name between brackets. Useful when you want to display a mob's name alongside their real name
 /mob/proc/get_realname_string()

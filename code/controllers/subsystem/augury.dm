@@ -22,8 +22,7 @@ SUBSYSTEM_DEF(augury)
 	var/biggest_doom = null
 	var/biggest_threat = null
 
-	for(var/db in doombringers)
-		var/datum/d = db
+	for(var/datum/d as anything in doombringers)
 		if(!d || QDELETED(d))
 			doombringers -= d
 			continue
@@ -33,11 +32,11 @@ SUBSYSTEM_DEF(augury)
 			biggest_threat = threat
 
 	if(doombringers.len)
-		for(var/i in GLOB.player_list)
-			if(isobserver(i) && (!(observers_given_action[i])))
+		for(var/mob/M as anything in GLOB.player_list)
+			if(isobserver(M) && (!(observers_given_action[M])))
 				var/datum/action/innate/augury/A = new
-				A.Grant(i)
-				observers_given_action[i] = TRUE
+				A.Grant(M)
+				observers_given_action[M] = TRUE
 	else
 		for(var/i in observers_given_action)
 			if(observers_given_action[i] && isobserver(i))
@@ -46,11 +45,10 @@ SUBSYSTEM_DEF(augury)
 					qdel(A)
 			observers_given_action -= i
 
-	for(var/w in watchers)
-		if(!w)
-			watchers -= w
+	for(var/mob/dead/observer/O as anything in watchers)
+		if(!O)
+			watchers -= O
 			continue
-		var/mob/dead/observer/O = w
 		if(biggest_doom && (!O.orbiting || O.orbiting.parent != biggest_doom))
 			O.ManualFollow(biggest_doom)
 

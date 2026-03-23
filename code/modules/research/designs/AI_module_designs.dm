@@ -109,6 +109,15 @@
 	category = list("AI Modules")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
+/datum/design/board/default
+	name = "Core Module Design (NT OS Safeguard V1.0)"
+	desc = "Allows for the construction of an NT OS Safeguard V1.0 AI Core Module."
+	id = "nt_safeguard_module"
+	materials = list(/datum/material/glass = 1000, /datum/material/diamond = 2000)
+	build_path = /obj/item/ai_module/core/full/safeguard
+	category = list("AI Modules")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
 /datum/design/board/paladin_module
 	name = "Core Module Design (P.A.L.A.D.I.N.)"
 	desc = "Allows for the construction of a P.A.L.A.D.I.N. AI Core Module."

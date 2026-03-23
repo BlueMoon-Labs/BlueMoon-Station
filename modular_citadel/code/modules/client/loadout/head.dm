@@ -11,6 +11,18 @@
 	name = "Beanie"
 	path = /obj/item/clothing/head/beanie
 
+/datum/gear/head/empire_head
+	name = "Katzen Helmet"
+	path = /obj/item/clothing/head/empire_head
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_initial_colors = list("#2A2A2A","#e4b829")
+
+/datum/gear/head/officerian_cap
+	name = "Officerian_cap"
+	path = /obj/item/clothing/head/officerian_cap
+	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_initial_colors = list("#2A2A2A","#303030","#575757","#d4d4d4")
+
 /datum/gear/head/beret
 	name = "Black beret"
 	path = /obj/item/clothing/head/beret/black
@@ -160,17 +172,13 @@
 	subcategory = LOADOUT_SUBCATEGORY_HEAD_JOBS
 	restricted_roles = list("Assistant", "Stowaway")
 
-/*Commenting out Until next Christmas or made automatic
-/datum/gear/santahatr
+/datum/gear/head/santahatr
 	name = "Red Santa Hat"
-	category = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/christmashat
 
-/datum/gear/santahatg
+/datum/gear/head/santahatg
 	name = "Green Santa Hat"
-	category = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/christmashatg
-*/
 
 //Cowboy Stuff
 /datum/gear/head/cowboyhat
@@ -222,3 +230,23 @@
 /datum/gear/head/
 	name = "Tactical Maid Headband"
 	path = /obj/item/clothing/head/maid/syndicate
+
+/datum/gear/head/geraniumcrown
+	name = "Geranium Crown"
+	path = /obj/item/clothing/head/geranium_crown
+
+/datum/gear/head/lilycrown
+	name = "Lily Crown"
+	path = /obj/item/clothing/head/lily_crown
+
+/datum/gear/head/poppycrown
+	name = "Poppy Crown"
+	path = /obj/item/clothing/head/poppy_crown
+
+/datum/gear/head/sunflowercrown
+	name = "Sunflower Crown"
+	path = /obj/item/clothing/head/sunflower_crown
+
+/datum/gear/head/flowercrown
+	name = "Flower Crown"
+	path = /obj/item/clothing/head/flower_crown

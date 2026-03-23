@@ -13,16 +13,15 @@
 	exp_type = EXP_TYPE_CREW
 	considered_combat_role = FALSE
 	alt_titles = list(
-		"Slutcurity Trainee",
-		"Security Trainee",
-		"Security Assistant",
-		"Security Cadet",
-		"Rookie",
-		"Low-Quality Product",
+		"Security Cadet", //Стажер выше, для удобства // В СБ ТОЛЬКО КАДЕТЫ, чтобы не путали
 		"Freak",
-		"AC Recruit",
-		"Russian Officer"
+		"Low-Quality Product",
+		"Recruit",
+		"Rookie",
+		"Russian Officer",
+		"Slutcurity"
 		)
+
 	custom_spawn_text = "вы не офицер. Ваша задача — мирное урегулирование конфликтов и их деэскалация. Используйте табельное оружие только в крайних случаях."
 
 	outfit = /datum/outfit/job/peacekeeper
@@ -32,11 +31,12 @@
 	minimal_access = list(ACCESS_SECURITY, ACCESS_BRIG, ACCESS_SEC_DOORS, ACCESS_COURT, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_WEAPONS, ACCESS_PEACEKEEPER) // See /datum/job/officer/get_access()
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_SEC
+	bounty_types = CIV_JOB_SEC
 
 	mind_traits = list(TRAIT_LAW_ENFORCEMENT_METABOLISM)
 
 	display_order = JOB_DISPALY_ORDER_SECPEACE
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/nonviolent, /datum/quirk/blindness, /datum/quirk/monophobia)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/nonviolent, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/onelife)
 	threat = 2
 
 /datum/outfit/job/peacekeeper
@@ -54,7 +54,7 @@
 	l_pocket = /obj/item/storage/bag/security
 	r_pocket = /obj/item/clothing/accessory/badge/deputy
 	//suit_store = /obj/item/gun/energy/e_gun/advtaser
-	backpack_contents = list(/obj/item/storage/ifak, /obj/item/choice_beacon/pkbaton, /obj/item/storage/box/sec_kit, /obj/item/clothing/accessory/permit/special/security = 1)
+	backpack_contents = list(/obj/item/storage/ifak, /obj/item/choice_beacon/pkbaton, /obj/item/storage/box/sec_kit)
 
 	backpack = /obj/item/storage/backpack/security/pk
 	satchel = /obj/item/storage/backpack/satchel/sec/pk
@@ -62,6 +62,7 @@
 	box = /obj/item/storage/box/survival/security
 
 	implants = list(/obj/item/implant/mindshield)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/badge/deputy)
 
 /datum/outfit/job/peacekeeper/syndicate
 	name = "Syndicate Peacekeeper"
@@ -79,12 +80,13 @@
 	l_pocket = /obj/item/storage/bag/security
 	r_pocket = /obj/item/assembly/flash/handheld
 	//suit_store = /obj/item/gun/energy/e_gun/advtaser
-	backpack_contents = list(/obj/item/reagent_containers/spray/pepper, /obj/item/clothing/accessory/badge/deputy, /obj/item/holosign_creator/security, /obj/item/storage/ifak, /obj/item/choice_beacon/pkbaton, /obj/item/syndicate_uplink_high, /obj/item/clothing/accessory/permit/special/security = 1)
+	backpack_contents = list(/obj/item/reagent_containers/spray/pepper, /obj/item/holosign_creator/security, /obj/item/storage/ifak, /obj/item/choice_beacon/pkbaton, /obj/item/syndicate_uplink_high)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/badge/deputy)
 	pda_slot = ITEM_SLOT_BELT
 
 /datum/outfit/plasmaman/peacekeeper
@@ -97,11 +99,12 @@
 	uniform = /obj/item/clothing/under/plasmaman/security
 	r_pocket = /obj/item/storage/bag/security
 	l_pocket = /obj/item/assembly/flash/handheld
-	backpack_contents = list(/obj/item/reagent_containers/spray/pepper, /obj/item/clothing/accessory/badge/deputy, /obj/item/holosign_creator/security, /obj/item/choice_beacon/pkbaton)
+	backpack_contents = list(/obj/item/reagent_containers/spray/pepper, /obj/item/holosign_creator/security, /obj/item/choice_beacon/pkbaton)
 
 	box = /obj/item/storage/box/survival/security
 
 	implants = list(/obj/item/implant/mindshield)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/badge/deputy)
 
 /obj/effect/landmark/start/peacekeeper
 	name = "Peacekeeper"

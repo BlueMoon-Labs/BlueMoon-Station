@@ -168,6 +168,8 @@
 #define ORGAN_SLOT_HEART "heart"
 #define ORGAN_SLOT_ZOMBIE "zombie_infection"
 #define ORGAN_SLOT_THRUSTERS "thrusters"
+#define ORGAN_SLOT_OSSMODULA "ossmodula"
+#define ORGAN_SLOT_ANALYZER "analyzer"
 #define ORGAN_SLOT_HUD "eye_hud"
 #define ORGAN_SLOT_LIVER "liver"
 #define ORGAN_SLOT_TONGUE "tongue"
@@ -191,7 +193,7 @@
 
 ////organ defines
 #define STANDARD_ORGAN_THRESHOLD 	100
-#define STANDARD_ORGAN_HEALING 		(1/(15 MINUTES / (2 SECONDS))) / 3  //Base organ healing can be amped by a factor of up to x5 via satiety. This assumes it to be somewhat in the upper center of positive satiety as base.
+#define STANDARD_ORGAN_HEALING 		(1/(15 MINUTES / (2 SECONDS))) / 2  //Base organ healing can be amped by a factor of up to x5 via satiety. This assumes it to be somewhat in the upper center of positive satiety as base.
 #define STANDARD_ORGAN_DECAY		(1/(15 MINUTES / (2 SECONDS)))		//designed to fail organs when left to decay for ~15 minutes. 2 SECOND is SSmobs tickrate.
 
 

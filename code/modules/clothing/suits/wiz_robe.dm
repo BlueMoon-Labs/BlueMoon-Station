@@ -71,8 +71,8 @@
 /obj/item/clothing/suit/wizrobe
 	name = "wizard robe"
 	desc = "A magnificent, gem-lined robe that seems to radiate power."
-	icon_state = "wizard"
-	item_state = "wizrobe"
+	icon_state = "bluewizard"
+	item_state = "bluewizrobe"
 	gas_transfer_coefficient = 0.01
 	permeability_coefficient = 0.01
 	body_parts_covered = CHEST|ARMS|LEGS
@@ -314,6 +314,7 @@
 	armor = list(MELEE = 30, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 20, BIO = 100, RAD = 20, FIRE = 100, ACID = 100)
 	slowdown = 0
 	resistance_flags = FIRE_PROOF | ACID_PROOF
+	allowed = list(/obj/item/teleportation_scroll, /obj/item/tank/internals)
 	var/magic_flags = SPELL_WIZARD_ROBE|SPELL_CULT_ARMOR
 
 

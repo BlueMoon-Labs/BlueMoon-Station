@@ -81,6 +81,7 @@
 	min_players = 15
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "A trader ship full of goodys."
+	gamemode_whitelist = list(ROUNDTYPE_EXTENDED)
 	var/ship_template
 
 /datum/round_event/ftu_trader
@@ -102,9 +103,6 @@
 /proc/spawn_ftu_trader(ship_template)
 	ship_template = /datum/map_template/shuttle/ftu_tradeship
 
-	var/list/candidates = pollGhostCandidates("Do you wish to be considered for Free trader?", ROLE_GHOSTROLE)
-	shuffle_inplace(candidates)
-
 	var/datum/map_template/shuttle/ship = new ship_template
 	var/x = rand(TRANSITIONEDGE,world.maxx - TRANSITIONEDGE - ship.width)
 	var/y = rand(TRANSITIONEDGE,world.maxy - TRANSITIONEDGE - ship.height)
@@ -117,23 +115,8 @@
 		CRASH("Loading Skipjack ship failed!")
 
 	for(var/turf/A in ship.get_affected_turfs(T))
-		for(var/obj/effect/mob_spawn/human/ftu_crew/qm/spawner in A)
-			if(candidates.len > 0)
-				var/mob/our_candidate = candidates[1]
-				spawner.create(our_candidate.ckey)
-				candidates -= our_candidate
-				notify_ghosts("Skipjack has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
-			else
-				notify_ghosts("Skipjack ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
-	for(var/turf/A in ship.get_affected_turfs(T))
 		for(var/obj/effect/mob_spawn/human/ftu_crew/spawner in A)
-			if(candidates.len > 0)
-				var/mob/our_candidate = candidates[1]
-				spawner.create(our_candidate.ckey)
-				candidates -= our_candidate
-				notify_ghosts("Skipjack has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
-			else
-				notify_ghosts("Skipjack ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
+			notify_ghosts("Trade ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
 
 /area/shuttle/ftu_trade
 	name = "Iron Turtle"

@@ -26,4 +26,6 @@
 	return returnorg
 
 /mob/living/carbon/getorganslot(slot)
+	if(!internal_organs_slot)
+		return null
 	return internal_organs_slot[slot]

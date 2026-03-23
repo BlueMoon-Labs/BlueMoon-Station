@@ -4,6 +4,7 @@
 
 /datum/surgery/graft_synthtissue
 	name = "Graft synthtissue"
+	desc = "Хирургическая процедура, по трансплантации синтетической ткани (Synthtissue). Восстанавливает внутренние органы пациента. При чистоте ткани более 80%, способна исцелить даже органы полностью пораженные некрозом."
 	target_mobtypes = list(/mob/living/carbon/human, /mob/living/carbon/monkey)
 	possible_locs = list(BODY_ZONE_CHEST, BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_EYES)
 	steps = list(
@@ -16,6 +17,9 @@
 	/datum/surgery_step/close
 	)
 	special_surgery_traits = list(OPERATION_NEED_FULL_ANESTHETIC) // BLUEMOON ADD - операция требует, чтобы пациент находился без сознания
+	icon = 'icons/mob/human_parts_greyscale.dmi'
+	icon_state = "human_chest_m"
+	//radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_ADDITIONAL // in end of list
 
 //repair organs
 /datum/surgery_step/graft_synthtissue
@@ -34,6 +38,14 @@
 			to_chat(user, "<span class='notice'>There are no targetable organs in [target]'s [parse_zone(target_zone)]!</span>")
 			return -1
 		else
+			if(!target.reagents.has_reagent(/datum/reagent/synthtissue))
+				to_chat(user, "<span class='notice'>There's no synthtissue to perform the operation!</span>")
+				return -1
+			var/datum/reagent/synthtissue/Sf = locate(/datum/reagent/synthtissue) in target.reagents.reagent_list
+			if(Sf.volume < 10)
+				to_chat(user, "<span class='notice'>There's not enough synthtissue to perform the operation! There needs to be at least 10u.</span>")
+				return -1
+
 			for(var/obj/item/organ/O in organs)
 				O.on_find(user)
 				organs -= O
@@ -41,13 +53,6 @@
 			chosen_organ = input("Target which organ?", "Surgery", null, null) as null|anything in organs
 			chosen_organ = organs[chosen_organ]
 			if(!chosen_organ)
-				return -1
-			if(!target.reagents.has_reagent(/datum/reagent/synthtissue))
-				to_chat(user, "<span class='notice'>There's no synthtissue available for use on [chosen_organ]</span>")
-				return -1
-			var/datum/reagent/synthtissue/Sf = locate(/datum/reagent/synthtissue) in target.reagents.reagent_list
-			if(Sf.volume < 10)
-				to_chat(user, "<span class='notice'>There's not enough synthtissue to perform the operation! There needs to be at least 10u.</span>")
 				return -1
 
 			if((chosen_organ.organ_flags & ORGAN_FAILING) && !(Sf.data["grown_volume"] >= 80))
@@ -67,6 +72,6 @@
 	return TRUE
 
 /datum/surgery_step/graft_synthtissue/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	user.visible_message("<span class='warning'>[user] accidentally damages part of [chosen_organ]!</span>", "<span class='warning'>You damage [chosen_organ]! Apply more synthtissue if it's run out.</span>")
 	chosen_organ.applyOrganDamage(10)
-	return FALSE

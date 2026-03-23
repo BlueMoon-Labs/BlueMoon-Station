@@ -37,6 +37,6 @@
 	if(C)
 		if(prob(15))
 			M.dropItemToGround(C)
-			playsound(src,  "modular_bluemoon/Gardelin0/sound/effect/snap.ogg", 30, 1, -1)
+			playsound(src,  'modular_bluemoon/sound/effects/snap.ogg', 30, 1, -1)
 			visible_message(span_danger("[C] snaps!"))
 			return TRUE

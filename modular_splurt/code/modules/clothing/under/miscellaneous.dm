@@ -216,6 +216,7 @@
 	item_state = "blueshieldskirt"
 	body_parts_covered = CHEST|GROIN|ARMS
 	fitted = FEMALE_UNIFORM_TOP
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/under/rank/blueshield/skirt
 	name = "blueshield skirt"
@@ -274,8 +275,9 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 	icon_state = "pentatop"
 	item_state = "pentatop"
-	body_parts_covered = CHEST
+	body_parts_covered = CHEST|GROIN
 	can_adjust = FALSE
+	fitted = FEMALE_UNIFORM_TOP
 
 // GWTB-inspired stuff wooo
 /obj/item/clothing/under/goner
