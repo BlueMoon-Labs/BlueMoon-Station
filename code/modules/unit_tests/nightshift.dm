@@ -302,6 +302,7 @@
 	test_area.power_light = TRUE
 	test_area.lightswitch = TRUE
 	test_light = allocate(/obj/machinery/light, light_turf)
+	sleep(4) // Wait for Initialize's spawn(2) { prob(2) break_light_tube; spawn(1) { update(0) }} to finish
 	test_light.status = LIGHT_OK
 	test_light.on = test_light.has_power()
 	test_light.switchcount = 0
