@@ -90,6 +90,7 @@
 	var/chnotify = 0
 
 	var/obj/screen/fullscreen/boot_overlay // (ADD) Pe4henika bluemoon - BOOT LOADING
+	var/boot_initialized = FALSE
 
 	var/multicam_on = FALSE
 	var/atom/movable/screen/movable/pic_in_pic/ai/master_multicam
@@ -986,6 +987,9 @@
 // (ADD) Pe4henika Bluemoon -- start
 // MARK: BOOT LOADING
 /mob/living/silicon/ai/ui_interact(mob/user, datum/tgui/ui)
+	if(boot_initialized)
+		return
+
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "AiBootTerminal")
@@ -1002,6 +1006,10 @@
 		return
 	switch(action)
 		if("init_complete")
+			if(boot_initialized)
+				return TRUE
+			boot_initialized = TRUE
+
 			src.clear_fullscreen("boot_blind")
 			SStgui.close_uis(src)
 			to_chat(src, "<span class='robot'><b>СИСТЕМА ИНИЦИАЛИЗИРОВАНА. ДОБРО ПОЖАЛОВАТЬ В СЕТЬ, [name].</b></span>")
