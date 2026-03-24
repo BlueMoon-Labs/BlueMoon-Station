@@ -89,6 +89,7 @@
 	var/datum/action/innate/custom_holoform/custom_holoform = new
 	var/chnotify = 0
 
+	var/obj/screen/fullscreen/boot_overlay // (ADD) Pe4henika bluemoon - BOOT LOADING
 
 	var/multicam_on = FALSE
 	var/atom/movable/screen/movable/pic_in_pic/ai/master_multicam
@@ -193,6 +194,7 @@
 	alert_control = new(src, list(ALARM_ATMOS, ALARM_FIRE, ALARM_POWER, ALARM_CAMERA, ALARM_BURGLAR, ALARM_MOTION), list(z), camera_view = TRUE)
 	RegisterSignal(alert_control.listener, COMSIG_ALARM_TRIGGERED, PROC_REF(alarm_triggered))
 	RegisterSignal(alert_control.listener, COMSIG_ALARM_CLEARED, PROC_REF(alarm_cleared))
+	src.overlay_fullscreen("boot_blind", /atom/movable/screen/fullscreen/scaled/blind)
 
 /mob/living/silicon/ai/Destroy()
 	GLOB.ai_list -= src
@@ -980,6 +982,34 @@
 	if(.) //successfully ressuscitated from death
 		set_eyeobj_visible(TRUE)
 		set_core_display_icon(display_icon_override)
+
+// (ADD) Pe4henika Bluemoon -- start
+// MARK: BOOT LOADING
+/mob/living/silicon/ai/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "AiBootTerminal")
+		ui.open()
+
+/mob/living/silicon/ai/ui_data(mob/user)
+	var/list/data = list()
+	data["name"] = name
+	data["malfhacking"] = (malfhacking || (mind && mind.special_role == "malfunction"))
+	return data
+
+/mob/living/silicon/ai/ui_act(action, params)
+	if(..())
+		return
+	switch(action)
+		if("init_complete")
+			src.clear_fullscreen("boot_blind")
+			SStgui.close_uis(src)
+			to_chat(src, "<span class='robot'><b>СИСТЕМА ИНИЦИАЛИЗИРОВАНА. ДОБРО ПОЖАЛОВАТЬ В СЕТЬ, [name].</b></span>")
+			playsound(src, 'sound/machines/ping.ogg', 50, 1)
+			animate(src, alpha = 255, time = 10)
+
+			return TRUE
+// (ADD) Pe4henika Bluemoon -- end
 
 /mob/living/silicon/ai/proc/malfhacked(obj/machinery/power/apc/apc)
 	malfhack = null
