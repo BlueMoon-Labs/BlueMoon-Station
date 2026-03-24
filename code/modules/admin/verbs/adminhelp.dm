@@ -599,12 +599,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	deltimer(adminhelptimerid)
 	adminhelptimerid = 0
 
-// Used for methods where input via arg doesn't work
-/client/proc/get_adminhelp()
-	var/msg = input(src, "Пожалуйста, опишите вашу проблему внятным образом и администратор поможет вам как можно скорее.", "Содержимое Adminhelp") as text
-	adminhelp(msg)
-
-/client/verb/adminhelp(msg as text)
+/client/verb/adminhelp()
 	set category = "Admin"
 	set name = "Adminhelp"
 
@@ -616,19 +611,25 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	if(prefs.muted & MUTE_ADMINHELP)
 		to_chat(src, "<span class='danger'>Ошибка: Admin-PM: Вы не можете отправлять админхелпы (Мут).</span>")
 		return
-	if(handle_spam_prevention(msg,MUTE_ADMINHELP))
-		return
 
-	msg = sanitize(trim(msg))
+	var/message = ""
+	if(prefs.tgui_input_verbs)
+		message = tgui_input_text(src, "Пожалуйста, опишите вашу проблему внятным образом и администратор поможет вам как можно скорее.", "Содержимое Adminhelp", "", MAX_MESSAGE_LEN, TRUE, TRUE)
+	else
+		message = stripped_multiline_input_or_reflect(mob, "Пожалуйста, опишите вашу проблему внятным образом и администратор поможет вам как можно скорее.", "Содержимое Adminhelp")
 
-	if(!msg)
+	if(!holder)
+		if(handle_spam_prevention(message,MUTE_ADMINHELP))
+			return
+
+	if(!message)
 		return
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Adminhelp") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	if(current_ticket)
 		if(alert(usr, "У вас уже есть открытый тикет. Относится ли новый к той же проблеме?",,"Да","Нет") != "Нет")
 			if(current_ticket)
-				current_ticket.MessageNoRecipient(msg)
+				current_ticket.MessageNoRecipient(message)
 				current_ticket.TimeoutVerb()
 				return
 			else
@@ -637,7 +638,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 			current_ticket.AddInteraction("Открыт новый тикет админом [key_name_admin(usr)].")
 			current_ticket.Close()
 
-	new /datum/admin_help(msg, src, FALSE)
+	new /datum/admin_help(message, src, FALSE)
 
 //
 // LOGGING

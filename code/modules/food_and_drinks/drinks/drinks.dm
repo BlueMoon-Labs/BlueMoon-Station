@@ -288,8 +288,8 @@
 /obj/item/reagent_containers/food/drinks/coffee
 	name = "robust coffee"
 	desc = "Careful, the beverage you're about to enjoy is extremely hot."
+	icon = 'icons/obj/drinks.dmi'
 	icon_state = "coffee"
-	icon = 'code/modules/food_and_drinks/coffee.dmi'
 	list_reagents = list(/datum/reagent/consumable/coffee = 30)
 	spillable = TRUE
 	resistance_flags = FREEZE_PROOF
@@ -322,7 +322,7 @@
 /obj/item/reagent_containers/food/drinks/mug/ // parent type is literally just so empty mug sprites are a thing
 	name = "mug"
 	desc = "A drink served in a classy mug."
-	icon_state = "tea"
+	icon_state = "tea_cup"
 	item_state = "coffee"
 	spillable = TRUE
 
@@ -332,36 +332,34 @@
 		var/mutable_appearance/MA = mutable_appearance(icon,"mugoverlay")
 		MA.color = mix_color_from_reagents(reagents.reagent_list)
 		add_overlay(MA)
-	else
-		icon_state = "tea_empty"
 
 /obj/item/reagent_containers/food/drinks/mug/tea
 	name = "Duke Purple tea"
-	icon_state = "tea"
+	icon_state = "tea_cup_purple"
 	desc = "An insult to Duke Purple is an insult to the Space Queen! Any proper gentleman will fight you, if you sully this tea."
-	list_reagents = list(/datum/reagent/consumable/tea = 30)
+	list_reagents = list(/datum/reagent/consumable/tea/red/purple = 30)
 
 /obj/item/reagent_containers/food/drinks/mug/tea/red
 	name = "Dutchess Red tea"
-	icon_state = "tea"
+	icon_state = "tea_cup_red"
 	desc = "Duchess Red's personal blend of red tea leaves and hot water. Great addition to any meal."
 	list_reagents = list(/datum/reagent/consumable/tea/red = 30)
 
 /obj/item/reagent_containers/food/drinks/mug/tea/green
 	name = "Prince Green tea"
-	icon_state = "tea"
+	icon_state = "tea_cup_green"
 	desc = "Prince Green's brew of tea. The blend may be different from time to time, but Prince Green swears by it!"
 	list_reagents = list(/datum/reagent/consumable/tea/green = 30)
 
 /obj/item/reagent_containers/food/drinks/mug/tea/forest
 	name = "Royal Forest tea"
-	icon_state = "tea"
+	icon_state = "tea_cup_forest"
 	desc = "Tea fit for anyone with a sweet tooth like Royal Forest."
 	list_reagents = list(/datum/reagent/consumable/tea/forest = 30)
 
 /obj/item/reagent_containers/food/drinks/mug/tea/mush
 	name = "Rebel Mush tea"
-	icon_state = "tea"
+	icon_state = "tea_cup_mush"
 	desc = "Rebel Mush, a hallucinogenic tea to help people find their inner self."
 	list_reagents = list(/datum/reagent/consumable/tea/mush = 30)
 
@@ -687,7 +685,7 @@
 /obj/item/reagent_containers/food/drinks/coffee_cup
 	name = "Coffee Cup"
 	desc = "A heat-formed plastic coffee cup. Can theoretically be used for other hot drinks, if you're feeling adventurous."
-	icon = 'code/modules/food_and_drinks/coffee.dmi'
+	icon = 'icons/obj/drinks.dmi'
 	icon_state = "coffee_cup_e"
 	base_icon_state = "coffee_cup"
 	possible_transfer_amounts = list(10)

@@ -56,8 +56,9 @@
 	back = /obj/item/storage/backpack/ert_commander
 	belt = /obj/item/storage/belt/military/ert_min
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,
+		/obj/item/storage/box/ammo/wt=1,
 		/obj/item/storage/box/ert_commander=1,
-		/obj/item/storage/firstaid/regular=1,\
+		/obj/item/storage/firstaid/regular=1,
 		)
 	cybernetic_implants = list(/obj/item/organ/cyberimp/eyes/hud/security,/obj/item/organ/cyberimp/chest/nutrimentextreme, /obj/item/organ/cyberimp/chest/chem_implant)
 
@@ -162,6 +163,7 @@
 	l_hand = null
 	back = /obj/item/storage/backpack/ert_commander/ert_security
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
+		/obj/item/storage/box/ammo/wt=1,
 		/obj/item/storage/firstaid/regular=1,
 		/obj/item/storage/box/handcuffs=1,\
 		/obj/item/gun/energy/e_gun/dragnet=1,
@@ -264,6 +266,7 @@
 	belt = /obj/item/defibrillator/compact/loaded_ert
 	l_hand = null
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
+		/obj/item/storage/box/ammo/wt=1,
 		/obj/item/storage/firstaid/tactical/ert_first = 1,
 		/obj/item/storage/firstaid/tactical/ert_second = 1,
 		/obj/item/gun/medbeam=1,
@@ -383,6 +386,7 @@
 	belt = /obj/item/storage/belt/utility/chief/full
 	l_hand = null
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
+		/obj/item/storage/box/ammo/wt=1,
 		/obj/item/storage/firstaid/regular=1,\
 		/obj/item/rcd_ammo/large=2,
 		/obj/item/construction/rcd/combat=1,

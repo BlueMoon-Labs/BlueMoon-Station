@@ -47,7 +47,7 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 		if(!(status in list(SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_EXECUTE)))
 			continue
 
-		var/datum/data/record/G = find_record("name", S.fields["name"], GLOB.data_core.general)
+		var/datum/data/record/G = GLOB.data_core.general_by_name[S.fields["name"]]
 		if(!G)
 			continue
 
@@ -139,12 +139,12 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 			if(!criminal_id)
 				return
 
-			var/datum/data/record/S = find_security_record("id", criminal_id)
+			var/datum/data/record/S = GLOB.data_core.security_by_id[criminal_id]
 			if(!S || !(S.fields["criminal"] in list(SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_EXECUTE)))
 				to_chat(user, span_warning("Запись не найдена или преступник больше не в розыске."))
 				return
 
-			var/datum/data/record/G = find_record("name", S.fields["name"], GLOB.data_core.general)
+			var/datum/data/record/G = GLOB.data_core.general_by_name[S.fields["name"]]
 			if(!G)
 				to_chat(user, span_warning("Общая запись не найдена."))
 				return
@@ -217,7 +217,7 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 			if(!criminal_id)
 				return
 
-			var/datum/data/record/S = find_security_record("id", criminal_id)
+			var/datum/data/record/S = GLOB.data_core.security_by_id[criminal_id]
 			if(!S)
 				to_chat(user, span_warning("Запись не найдена."))
 				return
