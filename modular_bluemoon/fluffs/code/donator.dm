@@ -1649,7 +1649,7 @@
 	name = "Броня Офицера"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/armor/officer_armor
-	ckeywhitelist = list("glow92")
+	ckeywhitelist = list("cnaperdodo")
 	restricted_desc = "Security"
 	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
 
@@ -1657,7 +1657,7 @@
 	name = "Утяжеленный комплект брони СПО"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/armor/ppo_armor_strong_heavy
-	ckeywhitelist = list("glow92")
+	ckeywhitelist = list("cnaperdodo")
 	restricted_desc = "Security"
 	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
 
@@ -1665,7 +1665,7 @@
 	name = "Униформа СПО"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/rank/security/officer/sec_spo
-	ckeywhitelist = list("glow92")
+	ckeywhitelist = list("cnaperdodo")
 	restricted_desc = "Security"
 	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security")
 
@@ -1673,7 +1673,7 @@
 	name = "Офицерская униформа"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/rank/security/officer/officer_jumpsuit
-	ckeywhitelist = list("glow92")
+	ckeywhitelist = list("cnaperdodo")
 	restricted_desc = "Security"
 	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security")
 
