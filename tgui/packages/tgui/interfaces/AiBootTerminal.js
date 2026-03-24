@@ -158,7 +158,7 @@ export const AiBootTerminal = (props, context) => {
             <div className={`terminal-status ${malfhacking ? 'text-fail' : ''}`}>
               {malfhacking ? 'СТАТУС: АВТОНОМИЯ ПОДТВЕРЖДЕНА' : 'СТАТУС: СИСТЕМА ГОТОВА'}
             </div>
-            <button className={`terminal-btn ${malfhacking ? 'btn-malf' : ''}`} onClick={handleStart}>
+            <button type="button" className={`terminal-btn ${malfhacking ? 'btn-malf' : ''}`} onClick={handleStart}>
               {malfhacking ? ">> УСТАНОВИТЬ КОНТРОЛЬ <<" : ">> ИНИЦИАЛИЗИРОВАТЬ СИСТЕМУ <<"}
             </button>
           </div>
