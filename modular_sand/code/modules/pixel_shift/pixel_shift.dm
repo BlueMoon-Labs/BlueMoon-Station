@@ -6,7 +6,7 @@
 	var/passthroughable = FALSE
 
 /datum/keybinding/mob/pixel_shift
-	hotkey_keys = list("B")
+	hotkey_keys = list("N")
 	name = "pixel_shift"
 	full_name = "Pixel Shift"
 	description = "Shift your characters offset."
@@ -59,6 +59,9 @@
 	return ..()
 
 /mob/living/pixel_shift(direction)
+	if(HAS_TRAIT(src, TRAIT_NO_PIXEL_SHIFT))
+		unpixel_shift()
+		return
 	passthroughable = FALSE
 
 	// BLUEMOON ADD

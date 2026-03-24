@@ -34,6 +34,7 @@
 
 	/// The messages this console has been sent
 	var/list/datum/comm_message/messages
+	var/messages_trimmed = 0
 
 	/// How many times the alert level has been changed
 	/// Used to clear the modal to change alert level
@@ -631,6 +632,7 @@
 						data["shuttleLastCalled"] = format_text(SSshuttle.emergencyLastCallLoc.name)
 			if (STATE_MESSAGES)
 				data["messages"] = list()
+				data["messagesTrimmed"] = messages_trimmed
 				data["printerCooldown"] = report_print_cooldown
 
 				if (messages)
@@ -923,6 +925,7 @@
 
 /obj/machinery/computer/communications/Destroy()
 	GLOB.shuttle_caller_list -= src
+	LAZYCLEARLIST(messages)
 	SSshuttle.autoEvac()
 	return ..()
 
@@ -933,6 +936,11 @@
 
 /obj/machinery/computer/communications/proc/add_message(datum/comm_message/new_message)
 	LAZYADD(messages, new_message)
+	// Prevent unbounded memory growth
+	if(length(messages) > 200)
+		var/trim_count = length(messages) - 150
+		messages.Cut(1, trim_count + 1)
+		messages_trimmed += trim_count
 
 /obj/machinery/computer/communications/proc/print_report(message, title)
 	if(!COOLDOWN_FINISHED(src, report_print_cooldown))

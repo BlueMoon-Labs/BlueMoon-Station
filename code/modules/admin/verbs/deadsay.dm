@@ -1,4 +1,4 @@
-/client/proc/dsay(msg as text)
+/client/proc/dsay(msg)
 	set category = "Admin.Game"
 	set name = "Dsay"
 	set hidden = 1
@@ -11,17 +11,23 @@
 		to_chat(src, "<span class='danger'>You cannot send DSAY messages (muted).</span>", confidential = TRUE)
 		return
 
-	if (handle_spam_prevention(msg,MUTE_DEADCHAT))
+	var/message = msg
+	if(!message)
+		if(prefs.tgui_input_verbs)
+			message = tgui_input_text(src, "", "Dsay", "", MAX_MESSAGE_LEN, encode = TRUE)
+		else
+			message = stripped_input(mob, "", "Dsay")
+
+	if (handle_spam_prevention(message,MUTE_DEADCHAT))
 		return
 
-	msg = copytext_char(sanitize(msg), 1, MAX_MESSAGE_LEN)
-	mob.log_talk(msg, LOG_DSAY)
+	mob.log_talk(message, LOG_DSAY)
 
-	if (!msg)
+	if (!message)
 		return
 	var/static/nicknames = world.file2list("[global.config.directory]/admin_nicknames.txt")
 
-	var/rendered = "<span class='game deadsay'><span class='prefix'>DEAD:</span> <span class='name'>[uppertext(holder.rank)]([src.holder.fakekey ? pick(nicknames) : src.key])</span> says, <span class='message'>\"[emoji_parse(msg)]\"</span></span>"
+	var/rendered = "<span class='game deadsay'><span class='prefix'>DEAD:</span> <span class='name'>[uppertext(holder.rank)]([src.holder.fakekey ? pick(nicknames) : src.key])</span> says, <span class='message'>\"[emoji_parse(message)]\"</span></span>"
 
 	for (var/mob/M in GLOB.player_list)
 		if(isnewplayer(M))
@@ -30,11 +36,3 @@
 			to_chat(M, rendered, confidential = TRUE)
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Dsay") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-
-/client/proc/get_dead_say()
-	var/msg = input(src, null, "dsay \"text\"") as text|null
-
-	if (isnull(msg))
-		return
-
-	dsay(msg)

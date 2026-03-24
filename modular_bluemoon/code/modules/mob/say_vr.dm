@@ -1,26 +1,21 @@
 /mob/living/verb/subtler_indicatored()
 	set name = "Subtler Anti-Ghost (Indicator)"
 	set category = "Say"
-	// Check if say is disabled
 	if(GLOB.say_disabled)
-		// Warn user and return
 		to_chat(usr, span_danger("Speech is currently admin-disabled."))
 		return
-
-	// Display typing indicator
 	display_typing_indicator(isMe = TRUE)
 
-	// Prompt user for text input
-	var/input_message = input(usr, "Введите сообщение, которое увидят персонажи в упор к вам. Призраки его не увидят.", "Введите скрытое сообщение") as message|null
-
-	// Remove typing indicator
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(src, "Введите сообщение, которое увидят персонажи в упор к вам. Призраки его не увидят.", "Введите скрытое сообщение", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+	else
+		message = stripped_multiline_input_or_reflect(src, "Введите сообщение, которое увидят персонажи в упор к вам. Призраки его не увидят.", "Введите скрытое сообщение")
+		
 	clear_typing_indicator()
-
-	if(!input_message)
+	if(!length(message))
 		return
-	
-	// Run subtle emote with input
-	usr.emote("subtler", message = input_message)
+	usr.emote("subtler", message = message)
 
 // Добавляем в IC панель для хуманов
 /mob/living/carbon/human/Initialize(mapload)

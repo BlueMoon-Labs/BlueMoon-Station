@@ -44,6 +44,8 @@
 
 /obj/item/clothing/accessory/bodycamera/proc/on_owner_moved(mob/living/source)
 	SIGNAL_HANDLER
+	if(!builtInCamera || !source?.loc)
+		return
 	var/old_x = builtInCamera.x
 	var/old_y = builtInCamera.y
 	var/old_z = builtInCamera.z

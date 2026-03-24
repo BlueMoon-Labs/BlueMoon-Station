@@ -1,7 +1,7 @@
 GLOBAL_VAR_INIT(AOOC_COLOR, null)//If this is null, use the CSS for OOC. Otherwise, use a custom colour.
 GLOBAL_VAR_INIT(normal_aooc_colour, "#ce254f")
 
-/client/verb/aooc(msg as text)
+/client/verb/aooc()
 	set name = "AOOC"
 	set desc = "An OOC channel exclusive to antagonists."
 	set category = "OOC"
@@ -20,6 +20,15 @@ GLOBAL_VAR_INIT(normal_aooc_colour, "#ce254f")
 		to_chat(src, "<span class='danger'>You have been banned from OOC.</span>")
 		return
 
+	var/message = ""
+	if(prefs.tgui_input_verbs)
+		message = tgui_input_text(src, "", "AOOC", "", MAX_MESSAGE_LEN, encode = TRUE)
+	else
+		message = stripped_input(mob, "", "AOOC")
+
+	if(QDELETED(src) || !length(message))
+		return
+
 	if(!holder)
 		if(!GLOB.aooc_allowed)
 			to_chat(src, "<span class='danger'>AOOC is currently muted.</span>")
@@ -29,11 +38,11 @@ GLOBAL_VAR_INIT(normal_aooc_colour, "#ce254f")
 			return
 		if(!is_special_character(mob))
 			to_chat(usr, "<span class='danger'>You aren't an antagonist!</span>")
-		if(handle_spam_prevention(msg,MUTE_OOC))
+		if(handle_spam_prevention(message,MUTE_OOC))
 			return
-		if(findtext(msg, "byond://"))
+		if(findtext(message, "byond://"))
 			to_chat(src, "<B>Advertising other servers is not allowed.</B>")
-			log_admin("[key_name(src)] has attempted to advertise in LOOC: [msg]")
+			log_admin("[key_name(src)] has attempted to advertise in LOOC: [message]")
 			return
 		if(mob.stat)
 			to_chat(usr, "<span class='danger'>You cannot use AOOC while unconscious or dead.</span>")
@@ -44,25 +53,17 @@ GLOBAL_VAR_INIT(normal_aooc_colour, "#ce254f")
 		if(HAS_TRAIT(mob, TRAIT_AOOC_MUTE))
 			to_chat(src, "<span class='danger'>You cannot use AOOC right now.</span>")
 			return
-
-	if(QDELETED(src))
-		return
-
-	msg = copytext_char(sanitize(msg), 1, MAX_MESSAGE_LEN)
-	var/raw_msg = msg
-
-	if(!msg)
-		return
-
-	msg = emoji_parse(msg)
+		
+	var/raw_msg = message
+	message = emoji_parse(message)
 
 	if(!holder)
-		if(handle_spam_prevention(msg,MUTE_OOC))
+		if(handle_spam_prevention(message,MUTE_OOC))
 			return
-		if(findtext(msg, "byond://"))
+		if(findtext(message, "byond://"))
 			to_chat(src, "<B>Advertising other servers is not allowed.</B>")
-			log_admin("[key_name(src)] has attempted to advertise in AOOC: [msg]")
-			message_admins("[key_name_admin(src)] has attempted to advertise in AOOC: [msg]")
+			log_admin("[key_name(src)] has attempted to advertise in AOOC: [message]")
+			message_admins("[key_name_admin(src)] has attempted to advertise in AOOC: [message]")
 			return
 
 	mob.log_talk(raw_msg,LOG_OOC, tag="(AOOC)")
@@ -90,19 +91,19 @@ GLOBAL_VAR_INIT(normal_aooc_colour, "#ce254f")
 		if(holder)
 			if(!holder.fakekey || C.holder)
 				if(check_rights_for(src, R_ADMIN))
-					to_chat(C, "<span class='adminantagooc'>[CONFIG_GET(flag/allow_admin_ooccolor) && prefs.ooccolor && (prefs.custom_colors & CUSTOM_OOC) ? "<font color=[prefs.ooccolor]>" :"" ]<span class='prefix'>Antag OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[msg]</span></span></font>")
+					to_chat(C, "<span class='adminantagooc'>[CONFIG_GET(flag/allow_admin_ooccolor) && prefs.ooccolor && (prefs.custom_colors & CUSTOM_OOC) ? "<font color=[prefs.ooccolor]>" :"" ]<span class='prefix'>Antag OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[message]</span></span></font>")
 				else
-					to_chat(C, "<span class='adminobserverooc'><span class='prefix'>Antag OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[msg]</span></span>")
+					to_chat(C, "<span class='adminobserverooc'><span class='prefix'>Antag OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[message]</span></span>")
 			else
 				if(GLOB.AOOC_COLOR)
-					to_chat(C, "<font color='[GLOB.AOOC_COLOR]'><b><span class='prefix'>Antag OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[msg]</span></b></font>")
+					to_chat(C, "<font color='[GLOB.AOOC_COLOR]'><b><span class='prefix'>Antag OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[message]</span></b></font>")
 				else
-					to_chat(C, "<span class='antagooc'><span class='prefix'>Antag OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[msg]</span></span>")
+					to_chat(C, "<span class='antagooc'><span class='prefix'>Antag OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[message]</span></span>")
 		else if(!(key in C.prefs.ignoring))
 			if(GLOB.AOOC_COLOR)
-				to_chat(C, "<font color='[GLOB.AOOC_COLOR]'><b><span class='prefix'>Antag OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[msg]</span></b></font>")
+				to_chat(C, "<font color='[GLOB.AOOC_COLOR]'><b><span class='prefix'>Antag OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[message]</span></b></font>")
 			else
-				to_chat(C, "<span class='antagooc'><span class='prefix'>Antag OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[msg]</span></span>")
+				to_chat(C, "<span class='antagooc'><span class='prefix'>Antag OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[message]</span></span>")
 
 /client/proc/set_aooc(newColor as color)
 	set name = "Set Antag OOC Color"

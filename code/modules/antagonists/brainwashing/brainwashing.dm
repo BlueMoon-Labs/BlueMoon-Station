@@ -56,7 +56,7 @@
 		return
 	var/list/objectives = list()
 	do
-		var/objective = stripped_input(admin, "Add an objective, or leave empty to finish.", "Brainwashing", null, MAX_MESSAGE_LEN)
+		var/objective = stripped_input(admin, "Add an objective, or leave empty to finish.", "Brainwashing")
 		if(objective)
 			objectives += objective
 	while(tgui_alert(admin,"Add another objective?","More Brainwashing",list("Да","Нет")) == "Да")

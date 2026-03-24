@@ -84,13 +84,13 @@
 		if(length(GLOB.cell_logs) > 500)
 			GLOB.cell_logs.Cut(1, length(GLOB.cell_logs) - 300)
 
-	var/datum/data/record/G = find_record("name", criminal, GLOB.data_core.general)
+	var/datum/data/record/G = GLOB.data_core.general_by_name[criminal]
 	var/prisoner_drank = "unknown"
 	if(G)
 		if(G.fields["rank"])
 			prisoner_drank = G.fields["rank"]
 
-	var/datum/data/record/R = find_security_record("name", criminal)
+	var/datum/data/record/R = GLOB.data_core.security_by_name[criminal]
 
 	var/timetext = seconds_to_time(timetoset / 10)
 	var/announcetext = "Detainee [criminal] ([prisoner_drank]) has been incarcerated for [timetext] for the crime of: '[crimes]'. \
@@ -343,7 +343,7 @@
 			else
 				prisoner_name = input("Prisoner Name:", name, prisoner_name) as text|null
 			if(prisoner_name)
-				var/datum/data/record/R = find_security_record("name", prisoner_name)
+				var/datum/data/record/R = GLOB.data_core.security_by_name[prisoner_name]
 				if(istype(R))
 					prisoner_hasrecord = TRUE
 				else
@@ -385,7 +385,7 @@
 				var/addtext = isobserver(usr) ? "for: [add_reason]." : "by [usr.name] for: [add_reason]"
 				Radio.talk_into(src, "Prisoner [criminal] had their timer increased by [prisoner_time_add / 600] minutes [addtext]", RADIO_CHANNEL_SECURITY, list(z))
 				notify_prisoner("Your brig timer has been increased by [prisoner_time_add / 600] minutes for: '[add_reason]'.")
-				var/datum/data/record/R = find_security_record("name", criminal)
+				var/datum/data/record/R = GLOB.data_core.security_by_name[criminal]
 				if(istype(R))
 					R.fields["actions_logs"] += "<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] Timer increased by [prisoner_time_add / 600] minutes [addtext]"
 			else
@@ -401,7 +401,7 @@
 				var/resettext = isobserver(usr) ? "for: [reset_reason]." : "by [usr.name] for: [reset_reason]."
 				Radio.talk_into(src, "Prisoner [criminal] had their timer reset [resettext]", RADIO_CHANNEL_SECURITY, list(z))
 				notify_prisoner("Your brig timer has been reset for: '[reset_reason]'.")
-				var/datum/data/record/R = find_security_record("name", criminal)
+				var/datum/data/record/R = GLOB.data_core.security_by_name[criminal]
 				if(istype(R))
 					R.fields["actions_logs"] += "<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] Timer reset [resettext]"
 			else
