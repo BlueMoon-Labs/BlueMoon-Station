@@ -1650,7 +1650,7 @@
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/armor/officer_armor
 	ckeywhitelist = list("cnaperdodo")
-	restricted_desc = "Security"
+	restricted_desc = "Security and Expeditor"
 	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
 
 /datum/gear/donator/bm/ppo_armor_strong_heavy
@@ -1658,7 +1658,7 @@
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/armor/ppo_armor_strong_heavy
 	ckeywhitelist = list("cnaperdodo")
-	restricted_desc = "Security"
+	restricted_desc = "Security and Expeditor"
 	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
 
 /datum/gear/donator/bm/sec_spo

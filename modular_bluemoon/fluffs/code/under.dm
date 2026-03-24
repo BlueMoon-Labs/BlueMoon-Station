@@ -733,7 +733,7 @@
 	can_adjust = FALSE
 
 /obj/item/clothing/under/tshirt_gray_blu
-	name = "Jeans and T‑shirt"
+	name = "Jeans and gray T‑shirt"
 	desc= "A comfortable set consisting of a synthetic T‑shirt and cotton jeans! Issued only to the best employees!"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
