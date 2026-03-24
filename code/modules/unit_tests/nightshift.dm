@@ -270,6 +270,8 @@
 	var/list/original_apcs_list
 	var/obj/machinery/power/apc/original_area_apc
 	var/original_can_fire
+	var/original_power_light
+	var/original_lightswitch
 	var/area/test_area
 	var/turf/light_turf
 	var/obj/machinery/power/apc/test_apc
@@ -281,11 +283,14 @@
 	SSnightshift.can_fire = FALSE
 	sleep(world.tick_lag)
 	SSnightshift.nightshift_refresh_running = FALSE
+	SSnightshift.nightshift_refresh_generation++ // Invalidate any running async refresh
 	test_area = get_area(run_loc_floor_bottom_left)
 	light_turf = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
 	original_station_areas = GLOB.the_station_areas.Copy()
 	original_apcs_list = GLOB.apcs_list.Copy()
 	original_area_apc = test_area.power_apc
+	original_power_light = test_area.power_light
+	original_lightswitch = test_area.lightswitch
 	GLOB.the_station_areas = list(test_area.type)
 	GLOB.nightshift_apc_queue.Cut()
 	GLOB.nightshift_light_queue.Cut()
@@ -294,6 +299,8 @@
 	test_area.power_apc = test_apc
 	GLOB.apcs_list = list(test_apc)
 	test_apc.update()
+	test_area.power_light = TRUE
+	test_area.lightswitch = TRUE
 	test_light = allocate(/obj/machinery/light, light_turf)
 	test_light.status = LIGHT_OK
 	test_light.on = test_light.has_power()
@@ -307,6 +314,8 @@
 	GLOB.the_station_areas = original_station_areas
 	GLOB.apcs_list = original_apcs_list
 	test_area.power_apc = original_area_apc
+	test_area.power_light = original_power_light
+	test_area.lightswitch = original_lightswitch
 	if(original_area_apc && !QDELETED(original_area_apc))
 		original_area_apc.area = test_area
 		original_area_apc.register_area_apc()
