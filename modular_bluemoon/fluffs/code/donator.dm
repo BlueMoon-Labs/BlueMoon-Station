@@ -1646,7 +1646,7 @@
 	ckeywhitelist = list("cnaperdodo")
 
 /datum/gear/donator/bm/officer_armor
-	name = "Броня Офицера"
+	name = "Officer’s Armor"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/armor/officer_armor
 	ckeywhitelist = list("cnaperdodo")
@@ -1654,7 +1654,7 @@
 	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
 
 /datum/gear/donator/bm/ppo_armor_strong_heavy
-	name = "Утяжеленный комплект брони СПО"
+	name = "Heavy SPO Armor Set"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/armor/ppo_armor_strong_heavy
 	ckeywhitelist = list("cnaperdodo")
@@ -1662,7 +1662,7 @@
 	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
 
 /datum/gear/donator/bm/sec_spo
-	name = "Униформа СПО"
+	name = "SPO uniform"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/rank/security/officer/sec_spo
 	ckeywhitelist = list("cnaperdodo")
@@ -1670,7 +1670,7 @@
 	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security")
 
 /datum/gear/donator/bm/officer_jumpsuit
-	name = "Офицерская униформа"
+	name = "Officer’s uniform"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/rank/security/officer/officer_jumpsuit
 	ckeywhitelist = list("cnaperdodo")

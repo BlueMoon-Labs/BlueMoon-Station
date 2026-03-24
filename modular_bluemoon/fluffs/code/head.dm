@@ -500,8 +500,8 @@
 ///////////////////////////////////////////////
 
 /obj/item/clothing/head/helmet/sec/sallet
-	name = "Шлем с забралом"
-	desc = "Стандартный шлем с защитным забралом.Когда девушки хотят сохранить лицо!"
+	name = "Helmet with visor"
+	desc = "Standard helmet with a protective visor. When girls want to save face!"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "sec_helmet_zabralo"
@@ -509,8 +509,8 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/head/helmet/sec/officer_hat
-	name = "Офицерский берет"
-	desc = "Хотите выделиться над другими! Заберите этот берет с трупа офицера!"
+	name = "Officer’s beret"
+	desc = "Want to stand out from the crowd? Grab this beret off an officer’s corpse!"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "officer_hat"

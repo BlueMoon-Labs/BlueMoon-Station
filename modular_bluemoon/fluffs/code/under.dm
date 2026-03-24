@@ -697,8 +697,8 @@
 	AddElement(/datum/element/polychromic, list("#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb"), 9)
 
 /obj/item/clothing/under/rank/security/officer/sec_spo
-	name = "Униформа СПО"
-	desc= "Стандартная униформа СПО. Обладает термопрокладками и продуваемостью."
+	name = "SPO uniform"
+	desc= "Standard SPO uniform. It features thermal padding and good ventilation."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
@@ -709,8 +709,8 @@
 	can_adjust = FALSE
 
 /obj/item/clothing/under/rank/security/officer/officer_jumpsuit
-	name = "Офицерская униформа"
-	desc= "Стандартная униформа офицерского состава.Показывайте свое главенство!"
+	name = "Officer’s uniform"
+	desc= "Standard officer corps uniform. Show off your authority!"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
@@ -721,8 +721,8 @@
 	can_adjust = FALSE
 
 /obj/item/clothing/under/tshirt_w_br
-	name = "Джинсы с футболкой"
-	desc= "Удобный комплект из синтетической футблоки и хлопковых джинс! Выдается только лучшим работникам!"
+	name = "Jeans and T‑shirt"
+	desc= "A comfortable set consisting of a synthetic T‑shirt and cotton jeans! Issued only to the best employees!"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
@@ -733,8 +733,8 @@
 	can_adjust = FALSE
 
 /obj/item/clothing/under/tshirt_gray_blu
-	name = "Джинсы с футболкой"
-	desc= "Удобный комплект из серой синтетической футблоки и хлопковых джинс! Выдается только лучшим работникам!"
+	name = "Jeans and T‑shirt"
+	desc= "A comfortable set consisting of a synthetic T‑shirt and cotton jeans! Issued only to the best employees!"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'

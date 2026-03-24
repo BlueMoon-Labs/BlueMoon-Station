@@ -446,7 +446,7 @@
 
 /obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat
     name = "Expensive trenchcoat"
-    desc = "Пальто созданое для иследование вражденых планет.Иследуйте миры со стилем!"
+    desc = "A coat designed for exploring hostile planets. Explore new worlds in style!"
     icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
     lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
     righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
@@ -458,7 +458,7 @@
 
 /obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat_alt
     name = "Expensive trenchcoat"
-    desc = "Пальто созданое для иследование вражденых планет.Иследуйте миры со стилем!"
+    desc = "A coat designed for exploring hostile planets. Explore new worlds in style!"
     icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
     lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
     righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
@@ -469,8 +469,8 @@
     mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/officer_armor
-    name = "Броня Офицера"
-    desc = "Элитный офицерский комплект брони,созданный для защитых важных персон."
+    name = "Officer’s Armor"
+    desc = "An elite officer’s armor set designed to protect high‑priority personnel."
     icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
     mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
     lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
@@ -481,8 +481,8 @@
     mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/ppo_armor_strong_heavy
-    name = "Утяжеленный комплект брони СПО"
-    desc = "Утяжеленный комплект СПО,созданый для защиты план от Ксено Угроз."
+    name = "Heavy SPO Armor Set"
+    desc = "A reinforced SPO armor set created to defend colonies from Xeno threats."
     icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
     lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
     righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
