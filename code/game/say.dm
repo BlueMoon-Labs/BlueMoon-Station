@@ -286,7 +286,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
 	if(ishuman(M))
 		// Humans use their job as seen on the crew manifest. This is so the AI
 		// can know their job even if they don't carry an ID.
-		var/datum/data/record/findjob = find_record("name", name, GLOB.data_core.general)
+		var/datum/data/record/findjob = GLOB.data_core.general_by_name[name]
 		if(findjob)
 			job = findjob.fields["rank"]
 		else

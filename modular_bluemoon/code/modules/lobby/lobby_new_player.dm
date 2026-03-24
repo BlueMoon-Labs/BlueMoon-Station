@@ -56,6 +56,11 @@
 	bm_lobby_ready = FALSE
 	src << browse(_bm_build_html(), "window=bm_lobby_browser")
 
+/mob/dead/new_player/proc/bm_push_menu_update(ingame = FALSE)
+	if(!client || !bm_lobby_ready)
+		return
+	client << output("[ingame ? 1 : 0]", "bm_lobby_browser:bm_rebuild_menu")
+
 /// Возвращает текущий rsc фона для этого игрока. Вызывается только после STARTUP (SStitle_bm гарантированно initialized).
 /mob/dead/new_player/proc/_bm_get_current_image()
 	var/show_nsfw = client?.prefs?.bm_lobby_show_nsfw || FALSE
@@ -84,11 +89,6 @@
 	var/filename = "bm_bg_[bm_bg_slot].gif"
 	src << browse(img_to_send, "file=[filename];display=0")
 	client << output(filename, "bm_lobby_browser:bm_set_background")
-
-/mob/dead/new_player/proc/bm_push_player_count()
-	if(!client || !bm_lobby_ready)
-		return
-	SStitle_bm?.push_player_count_to(src)
 
 /mob/dead/new_player/proc/_bm_build_loading_stub()
 	// Фон — bm_stub_bg.gif, отправленный через browse() до этого вызова.
@@ -196,6 +196,8 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	var/show_admin_bg = !client?.prefs || client.prefs.bm_lobby_show_admin_bg
 	var/notice_js = SStitle_bm?.cached_notice_js || ""
 	var/admin_js = "bm_set_admin([check_rights_for(client, R_SERVER) ? 1 : 0]);"
+	var/registered_js = "bm_set_registered([(!is_guest_key(src.key) && client?.prefs) ? 1 : 0]);"
+	var/antag_js = "_bm_antag_state=[!(client?.prefs?.toggles & NO_ANTAG) ? 1 : 0];"
 
 	var/js_url = SStitle_bm?.cached_js_url
 	if(!js_url)
@@ -214,6 +216,8 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
     bm_update_nsfw_indicator([show_nsfw ? 1 : 0]);
     bm_update_admin_bg_indicator([show_admin_bg ? 1 : 0]);
     [admin_js]
+    [registered_js]
+    [antag_js]
     [notice_js]
     if(!window.__bm_page_ready_sent){window.__bm_page_ready_sent=true;location.href='?src='+_src+';bm_lobby_action=page_ready';}
   }
@@ -253,6 +257,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	parts += "</a>"
 
 	if(!is_guest_key(src.key) && client?.prefs)
+		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=changelog'>ПОСЛЕДНИЕ ОБНОВЛЕНИЯ</a>"}
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=polls_menu'>ОПРОСЫ СЕРВЕРА</a>"}
 
 	return parts.Join("")
@@ -310,8 +315,12 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			var/datum/preferences/prefs = client.prefs
 			if(prefs)
 				prefs.toggles ^= NO_ANTAG
-				prefs.save_preferences()
 				var/antag_on = !(prefs.toggles & NO_ANTAG)
+				if(antag_on)
+					prefs.toggles |= MIDROUND_ANTAG
+				else
+					prefs.toggles &= ~MIDROUND_ANTAG
+				prefs.save_preferences()
 				client << output(antag_on, "bm_lobby_browser:bm_toggle_antag")
 			return
 
@@ -376,6 +385,13 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 				SSvote.ui_interact(src)
 			else
 				client << output("Активных голосований нет.", "bm_lobby_browser:bm_show_notice")
+			return
+
+		if("changelog")
+			_bm_play_click_sound()
+			if(!GLOB.changelog_tgui)
+				GLOB.changelog_tgui = new /datum/changelog()
+			GLOB.changelog_tgui.ui_interact(src)
 			return
 
 		if("start_game")

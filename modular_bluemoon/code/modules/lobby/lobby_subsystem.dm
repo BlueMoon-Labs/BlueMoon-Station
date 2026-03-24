@@ -247,8 +247,10 @@ SUBSYSTEM_DEF(title_bm)
 /datum/controller/subsystem/title_bm/proc/_on_enter_setting_up()
 	SIGNAL_HANDLER
 	for(var/mob/dead/new_player/player as anything in GLOB.new_player_list)
-		if(player.spawning || player.new_character)
+		if(player.spawning || player.new_character || !player.client)
 			continue
-		if(!player.client)
-			continue
-		INVOKE_ASYNC(player, TYPE_PROC_REF(/mob/dead/new_player, bm_update_lobby_html))
+		if(player.bm_lobby_ready)
+			INVOKE_ASYNC(player, TYPE_PROC_REF(/mob/dead/new_player, bm_push_menu_update), TRUE)
+		else
+			INVOKE_ASYNC(player, TYPE_PROC_REF(/mob/dead/new_player, bm_update_lobby_html))
+	INVOKE_ASYNC(src, PROC_REF(update_player_counts_all))

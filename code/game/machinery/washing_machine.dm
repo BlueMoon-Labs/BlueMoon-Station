@@ -508,10 +508,13 @@ GLOBAL_LIST_INIT(dye_registry, list(
 	M.Immobilize(INFINITY, ignore_canstun = TRUE)
 	add_overlay(upper_half)
 	RegisterSignal(M, COMSIG_ATOM_DIR_AFTER_CHANGE, PROC_REF(force_rotate_mob))
+	ADD_TRAIT(M, TRAIT_NO_PIXEL_SHIFT, REF(src))
+	M.unpixel_shift()
 
 /obj/machinery/washing_machine/post_unbuckle_mob(mob/living/M)
 	. = ..()
 	UnregisterSignal(M, COMSIG_ATOM_DIR_AFTER_CHANGE)
+	REMOVE_TRAIT(M, TRAIT_NO_PIXEL_SHIFT, REF(src))
 	M.SetImmobilized(mob_is_immobilized, ignore_canstun = TRUE)
 	mob_is_immobilized = FALSE
 	cut_overlay(upper_half)

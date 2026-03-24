@@ -217,8 +217,8 @@
 /obj/item/storage/box/survival/centcom/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_items = 9
-	STR.max_combined_w_class = 9
+	STR.max_items = 10
+	STR.storage_flags = STORAGE_FLAGS_LEGACY_DEFAULT
 
 /obj/item/storage/box/survival/centcom/PopulateContents()
 	..() // we want the regular stuff too
