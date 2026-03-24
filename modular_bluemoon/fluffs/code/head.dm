@@ -496,3 +496,24 @@
 /obj/item/clothing/head/donator/bm/fire_blossom/Initialize(mapload)
 	. = ..()
 	set_light()
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/helmet/sec/sallet
+	name = "Шлем с забралом"
+	desc = "Стандартный шлем с защитным забралом.Когда девушки хотят сохранить лицо!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "sec_helmet_zabralo"
+	item_state = "sec_helmet_zabralo"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/head/helmet/sec/officer_hat
+	name = "Офицерский берет"
+	desc = "Хотите выделиться над другими! Заберите этот берет с трупа офицера!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "officer_hat"
+	item_state = "officer_hat"
+	flags_inv = HIDEEARS //перезапись, чтобы берет не скрывал волосы
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON

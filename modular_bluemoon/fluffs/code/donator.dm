@@ -1645,6 +1645,38 @@
 	path = /obj/item/clothing/suit/hooded/bm/donator/cybercoat
 	ckeywhitelist = list("cnaperdodo")
 
+/datum/gear/donator/bm/officer_armor
+	name = "Броня Офицера"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/armor/officer_armor
+	ckeywhitelist = list("glow92")
+	restricted_desc = "Security"
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
+
+/datum/gear/donator/bm/ppo_armor_strong_heavy
+	name = "Утяжеленный комплект брони СПО"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/armor/ppo_armor_strong_heavy
+	ckeywhitelist = list("glow92")
+	restricted_desc = "Security"
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
+
+/datum/gear/donator/bm/sec_spo
+	name = "Униформа СПО"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/rank/security/officer/sec_spo
+	ckeywhitelist = list("glow92")
+	restricted_desc = "Security"
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security")
+
+/datum/gear/donator/bm/officer_jumpsuit
+	name = "Офицерская униформа"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/rank/security/officer/officer_jumpsuit
+	ckeywhitelist = list("glow92")
+	restricted_desc = "Security"
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security")
+
 /datum/gear/donator/bm/diamond_ring
 	name = "A diamond ring"
 	path = /obj/item/clothing/accessory/ring/diamond

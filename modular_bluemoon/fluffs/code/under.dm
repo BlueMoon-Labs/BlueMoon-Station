@@ -695,3 +695,51 @@
 /obj/item/clothing/under/poly_cargo/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb"), 9)
+
+/obj/item/clothing/under/rank/security/officer/sec_spo
+	name = "Униформа СПО"
+	desc= "Стандартная униформа СПО. Обладает термопрокладками и продуваемостью."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "sec__uniform"
+	item_state = "sec__uniform"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
+
+/obj/item/clothing/under/rank/security/officer/officer_jumpsuit
+	name = "Офицерская униформа"
+	desc= "Стандартная униформа офицерского состава.Показывайте свое главенство!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "officer_jumpsuit"
+	item_state = "officer_jumpsuit"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
+
+/obj/item/clothing/under/tshirt_w_br
+	name = "Джинсы с футболкой"
+	desc= "Удобный комплект из синтетической футблоки и хлопковых джинс! Выдается только лучшим работникам!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "tshirt_w_br"
+	item_state = "tshirt_w_br"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
+
+/obj/item/clothing/under/tshirt_gray_blu
+	name = "Джинсы с футболкой"
+	desc= "Удобный комплект из серой синтетической футблоки и хлопковых джинс! Выдается только лучшим работникам!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "tshirt_gray_blu"
+	item_state = "tshirt_gray_blu"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE

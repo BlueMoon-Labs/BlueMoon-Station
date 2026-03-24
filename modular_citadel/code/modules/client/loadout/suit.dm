@@ -381,6 +381,20 @@
 	restricted_desc = "Engineering and Cargo"
 	restricted_roles = list("Chief Engineer","Atmospheric Technician","Station Engineer","Cargo Technician", "Shaft Miner", "Quartermaster")
 
+/datum/gear/suit/wy_expensive_fur_trenchcoat
+	name = "Expensive trenchcoat"
+	path = /obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	restricted_desc = "Security and Expeditor"
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
+
+/datum/gear/suit/wy_expensive_fur_trenchcoat_alt
+	name = "Expensive trenchcoat Alt"
+	path = /obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat_alt
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	restricted_desc = "Security and Expeditor"
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
+
 /datum/gear/suit/christmascoatr
 	name = "Red Christmas Coat"
 	path = /obj/item/clothing/suit/hooded/wintercoat/christmascoatr

@@ -422,6 +422,9 @@
     body_parts_covered = CHEST
     mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
+//-------cnaperdodo_items_START-------
+
+//-------Suits-------
 /obj/item/clothing/suit/hooded/bm/donator/cybercoat // Спрайты принадлежат cnaperdodo
 	name = "Cybercoat"
 	desc = "Странный халат с кибернетикой. Около него чуствуется странный металический привкус."
@@ -440,6 +443,56 @@
 	body_parts_covered = HEAD
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 	rad_flags = RAD_NO_CONTAMINATE
+
+/obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat
+    name = "Expensive trenchcoat"
+    desc = "Пальто созданое для иследование вражденых планет.Иследуйте миры со стилем!"
+    icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+    lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+    righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+    icon_state = "wy_expensive_fur_trenchcoat"
+    item_state = "wy_expensive_fur_trenchcoat"
+    body_parts_covered = CHEST
+    mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat_alt
+    name = "Expensive trenchcoat"
+    desc = "Пальто созданое для иследование вражденых планет.Иследуйте миры со стилем!"
+    icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+    lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+    righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+    icon_state = "wy_expensive_fur_trenchcoat_alt"
+    item_state = "wy_expensive_fur_trenchcoat_alt"
+    body_parts_covered = CHEST
+    mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/armor/officer_armor
+    name = "Броня Офицера"
+    desc = "Элитный офицерский комплект брони,созданный для защитых важных персон."
+    icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+    lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+    righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+    icon_state = "officer_armor"
+    item_state = "officer_armor"
+    body_parts_covered = CHEST
+    mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/armor/ppo_armor_strong_heavy
+    name = "Утяжеленный комплект брони СПО"
+    desc = "Утяжеленный комплект СПО,созданый для защиты план от Ксено Угроз."
+    icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+    lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+    righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+    icon_state = "ppo_armor_strong_heavy"
+    item_state = "ppo_armor_strong_heavy"
+    body_parts_covered = CHEST
+    mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+//-------cnaperdodo_items_END-------
 
 /obj/item/clothing/suit/donator/bm/long_fancy_kimono
 	name = "Long Fancy Kimono"
