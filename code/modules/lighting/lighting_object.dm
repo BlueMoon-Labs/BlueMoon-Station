@@ -84,6 +84,8 @@
 /// Computes blended area lighting profile by averaging this turf's area with 4 cardinal neighbors.
 /// Produces soft transitions at zone boundaries instead of hard color jumps.
 /atom/movable/lighting_object/proc/calculate_area_blend()
+	if(!affected_turf)
+		return
 	prev_was_dark = FALSE
 	var/area/center_area = affected_turf.loc
 	var/turf/n_turf = get_step(affected_turf, NORTH)
