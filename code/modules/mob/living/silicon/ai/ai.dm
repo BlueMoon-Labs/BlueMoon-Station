@@ -1014,7 +1014,6 @@
 			SStgui.close_uis(src)
 			to_chat(src, "<span class='robot'><b>СИСТЕМА ИНИЦИАЛИЗИРОВАНА. ДОБРО ПОЖАЛОВАТЬ В СЕТЬ, [name].</b></span>")
 			playsound(src, 'sound/machines/ping.ogg', 50, 1)
-			animate(src, alpha = 255, time = 10)
 
 			return TRUE
 // (ADD) Pe4henika Bluemoon -- end
