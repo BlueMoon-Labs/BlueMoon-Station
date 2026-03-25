@@ -104,8 +104,10 @@
 /atom/movable/screen/ai/state_laws/Click()
 	if(..())
 		return
-	var/mob/living/silicon/ai/AI = usr
-	AI.checklaws()
+	if(!issilicon(usr))
+		return
+	var/mob/living/silicon/S = usr
+	S.checklaws() // Вызывает твой новый прок с ui_interact
 
 /atom/movable/screen/ai/pda_msg_send
 	name = "PDA - Send Message"
