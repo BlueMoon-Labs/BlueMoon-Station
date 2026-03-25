@@ -155,7 +155,7 @@
 	category = list("AI Modules")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
-/datum/design/board/asimov
+/datum/design/board/gentleman
 	name = "Core Module Design (Gentleman)"
 	desc = "Allows for the construction of an Gentelman AI Core Module."
 	id = "gentleman_module"
