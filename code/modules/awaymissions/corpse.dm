@@ -174,6 +174,12 @@
 					SSjob.equip_loadout(null, H)
 					SSjob.post_equip_loadout(null, H)
 				H.load_client_quirks(H.client) // Грузим квирки после лодаута, если он есть, из-за квирка семейная реликвия
+		// BLUEMOON ADD START - загрузка татуировок для гост-ролей без загрузки внешности
+		else if(ishuman(M) && can_load_appearance)
+			var/mob/living/carbon/human/H = M
+			if(H.client?.prefs)
+				H.client.prefs.apply_tattoos_to_human(H)
+		// BLUEMOON ADD END
 		MM.name = M.real_name
 		if(make_bank_account)
 			handlebank(M, starting_money)

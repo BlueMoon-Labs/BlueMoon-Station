@@ -11,19 +11,22 @@
     if(announce && last_lawchange_announce != world.time)
         to_chat(src, "<br><span class='userdanger'><font size=4>ВНИМАНИЕ: Ваши законы были изменены!</font></span>")
         to_chat(src, "<span class='userdanger'>Проверьте активный набор законов немедленно.</span><br>")
-
         src << 'sound/machines/terminal_processing.ogg'
-
         addtimer(CALLBACK(src, PROC_REF(show_laws)), 0, TIMER_DELETE_ME)
         last_lawchange_announce = world.time
 
-        // Если законы сменились у ИИ, пушим обновление всем боргам в сети
         if(isAI(src))
             var/mob/living/silicon/ai/AI = src
             for(var/mob/living/silicon/robot/R in GLOB.silicon_mobs)
                 if(R.connected_ai == AI && R.lawupdate)
-                    R.lawsync(TRUE) // TRUE передает announce в lawsync
-// (EDIT) Pe4henika bluemoon -- end
+                    R.lawsync(TRUE)
+
+            for(var/mob/living/carbon/human/H in GLOB.human_list)
+                var/obj/item/organ/cyberimp/brain/ai_link/L = H.getorganslot("brain_ai_link")
+                if(istype(L) && L.linked_ai == AI)
+                    to_chat(H, "<br><span class='userdanger'><font size=4>ВНИМАНИЕ: Директивы вашего ИИ-Мастера были изменены!</font></span>")
+                    H << 'sound/machines/terminal_processing.ogg'
+                    L.linked_ai.laws.show_laws(H)
 
 /mob/living/silicon/proc/set_law_sixsixsix(law, announce = TRUE)
 	laws_sanity_check()

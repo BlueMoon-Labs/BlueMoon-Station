@@ -2332,6 +2332,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(!length(GLOB.loadout_items))
 						dat += "<center>ERROR: No loadout categories - something is horribly wrong!"
 					else
+						sanitize_loadout_navigation(src)
 						if(!GLOB.loadout_categories[gear_category])
 							gear_category = GLOB.loadout_categories[1]
 						var/firstcat = TRUE
@@ -2368,11 +2369,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									dat += " |"
 								if(gear_subcategory == subcategory)
 									if(is_modern_theme)
-										dat += " <a href='?_src_=prefs;preference=gear;select_subcategory=[url_encode(subcategory)]' class='linkOn'>[subcategory]</a> "
+										dat += " <a href='?_src_=prefs;preference=gear;select_category=[url_encode(gear_category)];select_subcategory=[url_encode(subcategory)]' class='linkOn'>[subcategory]</a> "
 									else
 										dat += " <span class='linkOn'>[subcategory]</span> "
 								else
-									dat += " <a href='?_src_=prefs;preference=gear;select_subcategory=[url_encode(subcategory)]'>[subcategory]</a> "
+									dat += " <a href='?_src_=prefs;preference=gear;select_category=[url_encode(gear_category)];select_subcategory=[url_encode(subcategory)]'>[subcategory]</a> "
 							dat += "</b></center></td></tr>"
 
 							var/even = FALSE
@@ -6354,6 +6355,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				gear_subcategory = LOADOUT_SUBCATEGORY_NONE
 		if(href_list["select_subcategory"])
 			gear_subcategory = url_decode(href_list["select_subcategory"])
+		sanitize_loadout_navigation(src)
+		if(href_list["select_category"] || href_list["select_subcategory"])
+			save_preferences(silent = TRUE)
 		if(href_list["toggle_gear_path"])
 			var/name = url_decode(href_list["toggle_gear_path"])
 			// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory doesn't exist

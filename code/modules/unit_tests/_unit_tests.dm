@@ -150,6 +150,7 @@
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "ssmobs_optimization.dm"
+#include "tattoo_system.dm"
 
 #undef TEST_ASSERT
 #undef TEST_ASSERT_EQUAL
