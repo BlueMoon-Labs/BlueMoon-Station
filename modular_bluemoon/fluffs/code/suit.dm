@@ -468,7 +468,7 @@
     body_parts_covered = CHEST
     mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
-/obj/item/clothing/suit/armor/officer_armor
+/obj/item/clothing/suit/armor/vest/capcarapace/officer_armor
     name = "Officer’s Armor"
     desc = "An elite officer’s armor set designed to protect high‑priority personnel."
     icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
@@ -480,7 +480,7 @@
     body_parts_covered = CHEST
     mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
-/obj/item/clothing/suit/armor/ppo_armor_strong_heavy
+/obj/item/clothing/suit/armor/vest/capcarapace/ppo_armor_strong_heavy
     name = "Heavy SPO Armor Set"
     desc = "A reinforced SPO armor set created to defend colonies from Xeno threats."
     icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
