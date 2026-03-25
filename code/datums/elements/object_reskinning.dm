@@ -79,7 +79,8 @@
 		return FALSE
 
 	// Finish the work
-	to_reskin.current_skin = pick
+	if(LAZYLEN(to_reskin.unique_reskin[pick]))
+		to_reskin.current_skin = pick
 	for(var/reskin_var in to_reskin.unique_reskin[pick])
 		to_reskin.vars[reskin_var] = to_reskin.unique_reskin[pick][reskin_var]
 	to_chat(user, "[to_reskin] теперь имеет скин '[pick].'")
