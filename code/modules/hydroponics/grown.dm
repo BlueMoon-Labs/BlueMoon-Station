@@ -18,7 +18,7 @@
 	var/distill_reagent //If NULL and this object can be distilled, it uses a generic fruit_wine reagent and adjusts its variables.
 	var/wine_flavor //If NULL, this is automatically set to the fruit's flavor. Determines the flavor of the wine if distill_reagent is NULL.
 	var/wine_power = 10 //Determines the boozepwr of the wine if distill_reagent is NULL.
-	var/vision_flags = 0
+	var/vision_flags = NONE
 
 /obj/item/reagent_containers/food/snacks/grown/make_dryable()
 	AddElement(/datum/element/dryable, type)

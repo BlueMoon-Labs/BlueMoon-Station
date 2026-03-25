@@ -9,7 +9,7 @@
 	equip_delay_other = 25
 	resistance_flags = NONE
 	custom_materials = list(/datum/material/glass = 250)
-	var/vision_flags = 0
+	var/vision_flags = NONE
 	var/darkness_view = 2//Base human is 2
 	var/invis_view = SEE_INVISIBLE_LIVING	//admin only for now
 	var/invis_override = 0 //Override to allow glasses to set higher than normal see_invis
@@ -356,7 +356,6 @@
 	custom_materials = list(/datum/material/iron = 250)
 	flash_protect = 2
 	tint = 2
-	can_toggle = TRUE
 	visor_vars_to_toggle = VISOR_FLASHPROTECT | VISOR_TINT
 	flags_cover = GLASSESCOVERSEYES
 	visor_flags_inv = HIDEEYES

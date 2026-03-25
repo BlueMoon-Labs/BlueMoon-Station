@@ -28065,7 +28065,6 @@
 /obj/effect/turf_decal/trimline/neutral/filled/line,
 /obj/effect/turf_decal/vg_decals/department/sec,
 /obj/effect/turf_decal/arrows/red,
-/obj/machinery/computer/brig_assistant_console,
 /turf/open/floor/plasteel,
 /area/hallway/primary/fore)
 "bbA" = (
@@ -35997,6 +35996,7 @@
 	pixel_y = 32
 	},
 /obj/machinery/camera/autoname,
+/obj/machinery/computer/brig_assistant_console,
 /turf/open/floor/plasteel,
 /area/hallway/primary/fore)
 "btU" = (

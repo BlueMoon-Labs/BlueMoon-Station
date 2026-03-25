@@ -149,6 +149,22 @@
 	restricted_desc = "Security"
 	restricted_roles = list("Warden", "Detective", "Security Officer", "Head of Security")
 
+/datum/gear/head/sallet
+	name = "Helmet with visor"
+	description = "Standard helmet with a protective visor. When girls want to save face!"
+	path = /obj/item/clothing/head/helmet/sec/sallet
+	subcategory = LOADOUT_SUBCATEGORY_HEAD_JOBS
+	restricted_desc = "Security"
+	restricted_roles = list("Warden", "Detective", "Security Officer", "Head of Security")
+
+/datum/gear/head/officer_hat
+	name = "Officer’s beret"
+	description = "Want to stand out from the crowd? Grab this beret off an officer’s corpse!"
+	path = /obj/item/clothing/head/helmet/sec/officer_hat
+	subcategory = LOADOUT_SUBCATEGORY_HEAD_JOBS
+	restricted_desc = "Security"
+	restricted_roles = list("Warden", "Detective", "Security Officer", "Head of Security")
+
 /datum/gear/head/orvkepimedsci
 	name = "Federation Kepi, medsci"
 	description = "A visored cap. Intended to be used with ORV uniform."

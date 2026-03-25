@@ -98,6 +98,18 @@ GLOBAL_LIST_EMPTY(uplinks)
 		if (uplink_items[category] != null && updated_items[category] != null)
 			updated_items[category] = uplink_items[category]
 
+/// Matches purchase rules for /datum/uplink_item/var/hijack_only (nuke op, hijack, or martyr objective).
+/datum/component/uplink/proc/can_access_hijack_uplink_items(mob/user)
+	if(!user?.mind)
+		return FALSE
+	if(user.mind.has_antag_datum(/datum/antagonist/nukeop))
+		return TRUE
+	if(user.mind.has_objective(/datum/objective/hijack))
+		return TRUE
+	if(user.mind.has_objective(/datum/objective/martyr))
+		return TRUE
+	return FALSE
+
 /datum/component/uplink/proc/LoadTC(mob/user, obj/item/stack/telecrystal/TC, silent = FALSE)
 	if(!silent)
 		to_chat(user, span_notice("You slot [TC] into [parent] and charge its internal uplink."))
@@ -187,6 +199,8 @@ GLOBAL_LIST_EMPTY(uplinks)
 			var/datum/uplink_item/I = uplink_items[category][item]
 			if(I.limited_stock == 0)
 				continue
+			if(I.hijack_only && !can_access_hijack_uplink_items(user))
+				continue
 			if(length(I.restricted_roles))
 				if(!debug && !(user.mind.assigned_role in I.restricted_roles))
 					continue
@@ -242,10 +256,9 @@ GLOBAL_LIST_EMPTY(uplinks)
 		return
 	if (!user || user.incapacitated())
 		return
-	if(U.hijack_only)
-		if(!(user.mind?.has_antag_datum(/datum/antagonist/nukeop)) && !(user.mind?.has_objective(/datum/objective/hijack)) && !(user.mind?.has_objective(/datum/objective/martyr)))
-			to_chat(user, "<span class='warning'>InteQ выдает этот чрезвычайно опасный предмет только агентам, получившим особо сложное задание.</span>")
-			return
+	if(U.hijack_only && !can_access_hijack_uplink_items(user))
+		to_chat(user, "<span class='warning'>InteQ выдает этот чрезвычайно опасный предмет только агентам, получившим особо сложное задание.</span>")
+		return
 
 	if(telecrystals < U.cost || U.limited_stock == 0)
 		return

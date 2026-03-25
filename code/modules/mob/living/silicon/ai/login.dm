@@ -4,3 +4,5 @@
 	if(multicam_on)
 		end_multicam()
 	view_core()
+	spawn(5)
+		ui_interact(src)

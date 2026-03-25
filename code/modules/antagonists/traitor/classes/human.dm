@@ -32,6 +32,8 @@
 	if(istype(SSticker.mode,/datum/game_mode/dynamic))
 		mode = SSticker.mode
 		assassin_prob = max(0,mode.threat_level-20)
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)
+		assassin_prob = 0
 	if(prob(assassin_prob))
 		var/list/active_ais = active_ais()
 		if(active_ais.len && prob(100/GLOB.joined_player_list.len))
@@ -44,13 +46,23 @@
 			kill_objective.owner = T.owner
 			kill_objective.find_target()
 			T.add_objective(kill_objective)
+		else if(prob(20))
+			var/datum/objective/assassinate/internal/kill_objective = new
+			kill_objective.owner = T.owner
+			kill_objective.find_target()
+			T.add_objective(kill_objective)
 		else
 			var/datum/objective/assassinate/once/kill_objective = new
 			kill_objective.owner = T.owner
 			kill_objective.find_target()
 			T.add_objective(kill_objective)
 	else
-		if(prob(15) && !(locate(/datum/objective/download) in T.objectives) && !(T.owner.assigned_role in list("Research Director", "Scientist", "Roboticist")))
+		if(prob(14))
+			var/datum/objective/protect/protect_objective = new
+			protect_objective.owner = T.owner
+			protect_objective.find_target()
+			T.add_objective(protect_objective)
+		else if(prob(15) && !(locate(/datum/objective/download) in T.objectives) && !(T.owner.assigned_role in list("Research Director", "Scientist", "Roboticist")))
 			var/datum/objective/download/download_objective = new
 			download_objective.owner = T.owner
 			download_objective.gen_amount_goal()
@@ -60,6 +72,13 @@
 			rescue.owner = T.owner
 			rescue.find_target()
 			T.add_objective(rescue)
+		else if(prob(18) && has_manifest_prisoner())
+			var/datum/objective/breakout/breakout_obj = new
+			breakout_obj.owner = T.owner
+			if(!breakout_obj.find_target())
+				qdel(breakout_obj)
+				return FALSE
+			T.add_objective(breakout_obj)
 		else if(prob(40)) // cum. not counting download: 40%.
 			var/datum/objective/steal/steal_objective = new
 			steal_objective.owner = T.owner

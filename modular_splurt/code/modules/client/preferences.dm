@@ -1102,6 +1102,7 @@
 			if(!length(GLOB.loadout_items))
 				dat += "<center>ERROR: No loadout categories - something is horribly wrong!"
 			else
+				sanitize_loadout_navigation(src)
 				if(!GLOB.loadout_categories[gear_category])
 					gear_category = GLOB.loadout_categories[1]
 				var/firstcat = TRUE
@@ -1134,9 +1135,9 @@
 						else
 							dat += " |"
 						if(gear_subcategory == subcategory)
-							dat += " <a href='?_src_=prefs;preference=gear;select_subcategory=[url_encode(subcategory)]' class='linkOn'>[subcategory]</a> "
+							dat += " <a href='?_src_=prefs;preference=gear;select_category=[url_encode(gear_category)];select_subcategory=[url_encode(subcategory)]' class='linkOn'>[subcategory]</a> "
 						else
-							dat += " <a href='?_src_=prefs;preference=gear;select_subcategory=[url_encode(subcategory)]'>[subcategory]</a> "
+							dat += " <a href='?_src_=prefs;preference=gear;select_category=[url_encode(gear_category)];select_subcategory=[url_encode(subcategory)]'>[subcategory]</a> "
 					dat += "</b></center></td></tr>"
 
 					dat += "<tr width=10% style='vertical-align:top;'><td width=15%><b>Name</b></td>"

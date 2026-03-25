@@ -92,8 +92,8 @@
 
 GLOBAL_VAR_INIT(spare_id_safe_setup_done, FALSE)
 
-/// Роли глав, которым может выдаваться код от золотого сейфа
-GLOBAL_LIST_INIT(spare_id_safe_head_roles, list("Captain", "Head of Personnel", "Head of Security", "Chief Engineer", "Research Director", "Chief Medical Officer"))
+/// Роли глав и НТР, которым может выдаваться код от золотого сейфа
+GLOBAL_LIST_INIT(spare_id_safe_head_roles, list("Captain", "Head of Personnel", "Head of Security", "Chief Engineer", "Research Director", "Chief Medical Officer", "NanoTrasen Representative"))
 
 /// Одна бумажка с кодом золотого сейфа (раундстарт и latejoin)
 /proc/give_spare_id_safe_paper(mob/living/carbon/human/H)
