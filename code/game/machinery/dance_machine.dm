@@ -21,7 +21,7 @@
 	return TRUE
 
 /obj/machinery/jukebox/proc/on_music_toggle(active)
-	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] || initial(icon_state) : initial(icon_state)
 	if(active)
 		icon_state += "-active"
 
@@ -66,11 +66,11 @@
 	return ..()
 
 /obj/item/jukebox/proc/on_music_toggle(active)
-	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] || initial(icon_state) : initial(icon_state)
 	if(active)
 		icon_state += "-active"
 	if(item_state)
-		item_state = current_skin ? unique_reskin[current_skin]["item_state"] : initial(item_state)
+		item_state = current_skin ? unique_reskin[current_skin]["item_state"] || initial(item_state) : initial(item_state)
 		if(active)
 			item_state += "-active"
 		// Обновляем иконку в руке || прямо как в update_icon_updates_onmob
@@ -105,11 +105,11 @@
 	AddComponent(/datum/component/jukebox, FALSE, 100, _on_music_toggle = CALLBACK(src, PROC_REF(on_music_toggle)))
 
 /obj/item/sign/moniq/proc/on_music_toggle(active)
-	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] || initial(icon_state) : initial(icon_state)
 	if(active)
 		icon_state += "-active"
 	if(item_state)
-		item_state = current_skin ? unique_reskin[current_skin]["item_state"] : initial(item_state)
+		item_state = current_skin ? unique_reskin[current_skin]["item_state"] || initial(item_state) : initial(item_state)
 		if(active)
 			item_state += "-active"
 		// Обновляем иконку в руке || прямо как в update_icon_updates_onmob
@@ -135,7 +135,7 @@
 	AddComponent(/datum/component/jukebox, FALSE, 70, _on_music_toggle = CALLBACK(src, PROC_REF(on_music_toggle)))
 
 /obj/structure/sign/moniq/proc/on_music_toggle(active)
-	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] || initial(icon_state) : initial(icon_state)
 	if(active)
 		icon_state += "-active"
 
