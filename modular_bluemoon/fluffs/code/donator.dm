@@ -1667,7 +1667,7 @@
 	path = /obj/item/clothing/under/rank/security/officer/sec_spo
 	ckeywhitelist = list("cnaperdodo")
 	restricted_desc = "Capitan, Head of Security and Nanotrasen Representative"
-	restricted_roles = list("Capitan", "Head of Security", "Nanotrasen Representative")
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security")
 
 /datum/gear/donator/bm/officer_jumpsuit
 	name = "Officer’s uniform"
