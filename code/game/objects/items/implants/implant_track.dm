@@ -3,25 +3,30 @@
 	desc = "Track with this."
 	activated = FALSE
 	var/lifespan_postmortem = 10 MINUTES //for how many deciseconds after user death will the implant work?
-	var/allow_teleport = TRUE //will people implanted with this act as teleporter beacons?
+	var/allow_teleport = FALSE //will people implanted with this act as teleporter beacons?
 
 /obj/item/implant/tracking/c38
 	name = "TRAC implant"
 	desc = "A smaller tracking implant that supplies power for only a few minutes."
-	var/lifespan = 5 MINUTES //how many deciseconds does the implant last?
+	var/lifespan = 2.1 MINUTES //how many deciseconds does the implant last?
+	lifespan_postmortem = 0
 	allow_teleport = TRUE
 
 /obj/item/implant/tracking/c38/Initialize(mapload)
 	. = ..()
+	if(. == INITIALIZE_HINT_QDEL || . == INITIALIZE_HINT_QDEL_FORCE)
+		return
 	QDEL_IN(src, lifespan)
 
 /obj/item/implant/tracking/Initialize(mapload)
 	. = ..()
+	if(. == INITIALIZE_HINT_QDEL || . == INITIALIZE_HINT_QDEL_FORCE)
+		return
 	GLOB.tracked_implants += src
 
 /obj/item/implant/tracking/Destroy()
-	. = ..()
 	GLOB.tracked_implants -= src
+	return ..()
 
 /obj/item/implanter/tracking
 	imp_type = /obj/item/implant/tracking
