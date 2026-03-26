@@ -8,8 +8,7 @@
 /obj/item/implant/tracking/c38
 	name = "TRAC implant"
 	desc = "A smaller tracking implant that supplies power for only a few minutes."
-	var/lifespan = 2.1 MINUTES //how many deciseconds does the implant last?
-	lifespan_postmortem = 0
+	var/lifespan = 5 MINUTES //how many deciseconds does the implant last?
 	allow_teleport = TRUE
 
 /obj/item/implant/tracking/c38/Initialize(mapload)
