@@ -198,20 +198,17 @@
 	if(!ioncheck) ioncheck = list()
 	if(!hackedcheck) hackedcheck = list()
 
-	// 0. Devil Laws
 	if(laws.devillaws && laws.devillaws.len)
 		for(var/i in 1 to laws.devillaws.len)
 			if(force || (devillawcheck.len < i || devillawcheck[i] != "No"))
 				say("[prefix] 666. [laws.devillaws[i]]")
 				sleep(10)
 
-	// 1. Zeroth Law
 	if(laws.zeroth)
 		if(force || (lawcheck.len < 1 || lawcheck[1] != "No"))
 			say("[prefix] 0. [laws.zeroth]")
 			sleep(10)
 
-	// 2. Hacked Laws
 	for(var/i in 1 to laws.hacked.len)
 		var/law = laws.hacked[i]
 		if(length(law) > 0)
@@ -219,7 +216,6 @@
 				say("[prefix] [ionnum()]. [law]")
 				sleep(10)
 
-	// 3. Ion Laws
 	for(var/i in 1 to laws.ion.len)
 		var/law = laws.ion[i]
 		if(length(law) > 0)
@@ -227,7 +223,6 @@
 				say("[prefix] [ionnum()]. [law]")
 				sleep(10)
 
-	// 4. Inherent Laws
 	for(var/i in 1 to laws.inherent.len)
 		var/law = laws.inherent[i]
 		if(length(law) > 0)
@@ -236,7 +231,6 @@
 				sleep(10)
 			number++
 
-	// 5. Supplied Laws
 	var/inh_offset = laws.inherent.len + 1
 	for(var/i in 1 to laws.supplied.len)
 		var/law = laws.supplied[i]
@@ -250,75 +244,88 @@
 // MARK: New TGUI Law menu
 
 /mob/living/silicon/proc/checklaws()
-	ui_interact(usr)
-
-/mob/living/silicon/ui_interact(mob/user, datum/tgui/ui)
-	ui = SStgui.try_update_ui(user, src, ui)
+	var/datum/tgui/ui = SStgui.get_open_ui(src, src, "LawManager")
 	if(!ui)
-		ui = new(user, src, "LawManager", "Менеджер Законов")
+		ui = new(src, src, "LawManager", "Менеджер Законов")
 		ui.open()
 
+/mob/living/silicon/proc/update_law_menu()
+	var/datum/tgui/ui = SStgui.get_open_ui(src, src, "LawManager")
+	if(ui)
+		ui.send_full_update()
 /mob/living/silicon/ui_data(mob/user)
 	var/list/data = list()
 	var/list/laws_to_send = list()
-	laws_sanity_check()
 
+	src.laws_sanity_check()
+
+	if(!laws)
+		data["laws"] = list()
+		return data
+
+	// 1. DEVIL LAWS (Тип: zeroth для красной подсветки)
+	if(laws.devillaws && laws.devillaws.len)
+		for(var/i in 1 to laws.devillaws.len)
+			laws_to_send += list(list(
+				"id" = "devil-[i]",
+				"index" = i,
+				"name" = "666",
+				"text" = "[laws.devillaws[i]]",
+				"active" = (devillawcheck && devillawcheck.len >= i && devillawcheck[i] == "No") ? 0 : 1,
+				"type" = "zeroth"
+			))
+
+	// 2. ZEROTH (Тип: zeroth)
 	if(laws.zeroth)
 		laws_to_send += list(list(
 			"id" = "zero",
+			"index" = 0,
 			"name" = "0",
-			"text" = laws.zeroth,
-			"active" = (lawcheck.len < 1 || lawcheck[1] != "No"),
+			"text" = "[laws.zeroth]",
+			"active" = (lawcheck && lawcheck.len >= 1 && lawcheck[1] == "No") ? 0 : 1,
 			"type" = "zeroth"
 		))
 
-	for(var/i in 1 to laws.ion.len)
-		if(length(laws.ion[i]) > 0)
-			laws_to_send += list(list(
-				"id" = "ion_[i]",
-				"index" = i,
-				"name" = "ION",
-				"text" = laws.ion[i],
-				"active" = (ioncheck.len < i || ioncheck[i] != "No"),
-				"type" = "ion"
-			))
+	// 3. ION / HACKED (Тип: ion)
+	var/list/glitch = list()
+	if(laws.hacked) glitch += laws.hacked
+	if(laws.ion) glitch += laws.ion
 
-	for(var/i in 1 to laws.hacked.len)
-		if(length(laws.hacked[i]) > 0)
-			laws_to_send += list(list(
-				"id" = "hacked_[i]",
-				"index" = i,
-				"name" = "HACK",
-				"text" = laws.hacked[i],
-				"active" = (hackedcheck.len < i || hackedcheck[i] != "No"),
-				"type" = "hacked"
-			))
+	for(var/i in 1 to glitch.len)
+		laws_to_send += list(list(
+			"id" = "ion-[i]",
+			"index" = i,
+			"name" = "ION",
+			"text" = "[glitch[i]]",
+			"active" = 1,
+			"type" = "ion"
+		))
 
+	// 4. INHERENT (Тип: inherent)
 	var/l_num = 1
-	for(var/i in 1 to laws.inherent.len)
-		if(length(laws.inherent[i]) > 0)
+	if(laws.inherent && laws.inherent.len)
+		for(var/i in 1 to laws.inherent.len)
 			laws_to_send += list(list(
-				"id" = "inh_[i]",
+				"id" = "inh-[i]",
 				"index" = i,
-				"name" = "[l_num]",
-				"text" = laws.inherent[i],
-				"active" = (lawcheck.len < i + 1 || lawcheck[i + 1] != "No"),
+				"name" = "[l_num++]",
+				"text" = "[laws.inherent[i]]",
+				"active" = (lawcheck && lawcheck.len >= i + 1 && lawcheck[i + 1] == "No") ? 0 : 1,
 				"type" = "inherent"
 			))
-			l_num++
 
-	var/inh_count = laws.inherent.len
-	for(var/i in 1 to laws.supplied.len)
-		if(length(laws.supplied[i]) > 0)
+	// 5. SUPPLIED (Тип: supplied)
+	if(laws.supplied && laws.supplied.len)
+		var/off = laws.inherent.len + 1
+		for(var/i in 1 to laws.supplied.len)
 			laws_to_send += list(list(
-				"id" = "sup_[i]",
+				"id" = "sup-[i]",
 				"index" = i,
-				"name" = "[l_num]",
-				"text" = laws.supplied[i],
-				"active" = (lawcheck.len < (inh_count + i + 1) || lawcheck[inh_count + i + 1] != "No"),
+				"name" = "[l_num++]",
+				"text" = "[laws.supplied[i]]",
+				"active" = (lawcheck && lawcheck.len >= off + i && lawcheck[off + i] == "No") ? 0 : 1,
 				"type" = "supplied"
 			))
-			l_num++
 
 	data["laws"] = laws_to_send
 	return data

@@ -1011,10 +1011,11 @@
 		ui.open()
 
 /mob/living/silicon/ai/ui_data(mob/user)
-	var/list/data = list()
-	data["name"] = name
-	data["malfhacking"] = (malfhacking || (mind && mind.special_role == "malfunction"))
-	return data
+    var/list/data = ..()
+    data["name"] = name
+    data["malfhacking"] = (malfhacking || (mind && mind.special_role == "malfunction"))
+
+    return data
 
 /mob/living/silicon/ai/ui_act(action, params)
 	if(..())
