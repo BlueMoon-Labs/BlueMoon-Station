@@ -867,6 +867,6 @@
 	restraint_check = FALSE
 
 /datum/emote/sound/human/blubbr/run_emote(mob/user, params)
-	sound = pick('sound/voice/blubbr1.ogg', 'sound/voice/blubbr2.ogg', 'sound/voice/bubble3.ogg')
+	sound = pick('sound/voice/blubbr1.ogg', 'sound/voice/blubbr2.ogg', 'sound/voice/blubbr3.ogg')
 	. = ..()
 
