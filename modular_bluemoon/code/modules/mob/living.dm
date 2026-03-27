@@ -77,6 +77,8 @@
 	else
 		message = stripped_multiline_input_or_reflect(src, "Опишите действие или событие. Альтернатива эмоции, когда ваша эмоция не должна начинаться с вашего имени. Видно только игрокам поблизости, исключая призраков.", "Narrate Subtler (Player)")
 	clear_typing_indicator()
+	if(!length(message))
+		return
 	emote("narrate_subtler", message=message)
 
 /datum/emote/sound/human/narrate/subtler
