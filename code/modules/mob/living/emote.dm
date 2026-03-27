@@ -840,3 +840,33 @@
 	key = "exhale"
 	key_third_person = "exhales"
 	message = "выдыхает."
+
+
+/datum/emote/sound/human/bubble
+	name = "Буббл"
+	key = "bubble"
+	key_third_person = "bubbles"
+	message = "буббл"
+	emote_type = EMOTE_AUDIBLE
+	muzzle_ignore = FALSE
+	restraint_check = FALSE
+
+/datum/emote/sound/human/bubble/run_emote(mob/user, params)
+	sound = pick('sound/voice/bubble1.ogg', 'sound/voice/bubble2.ogg', 'sound/voice/bubble3.ogg')
+	. = ..()
+
+
+/datum/emote/sound/human/blubbr
+
+	name = "Блурбл"
+	key = "blubbr"
+	key_third_person = "blubbrs"
+	message = "блурбл"
+	emote_type = EMOTE_AUDIBLE
+	muzzle_ignore = FALSE
+	restraint_check = FALSE
+
+/datum/emote/sound/human/blubbr/run_emote(mob/user, params)
+	sound = pick('sound/voice/blubbr1.ogg', 'sound/voice/blubbr2.ogg', 'sound/voice/bubble3.ogg')
+	. = ..()
+

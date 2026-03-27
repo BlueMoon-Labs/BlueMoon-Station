@@ -230,6 +230,10 @@
 	restraint_check = FALSE
 	sound = 'sound/voice/slime_squish.ogg'
 
+/datum/emote/sound/human/squish/run_emote(mob/user, params)
+	sound = pick('sound/voice/slime_squish.ogg', 'sound/voice/squish.ogg')
+	. = ..()
+
 /datum/emote/sound/human/pain
 	key = "pain"
 	key_third_person = "cries out in pain!"
