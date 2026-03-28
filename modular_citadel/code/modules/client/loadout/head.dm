@@ -163,7 +163,7 @@
 	path = /obj/item/clothing/head/helmet/sec/officer_hat
 	subcategory = LOADOUT_SUBCATEGORY_HEAD_JOBS
 	restricted_desc = "Capitan, Head of Security and Nanotrasen Representative"
-	restricted_roles = list("Capitan", "Head of Security", "Nanotrasen Representative")
+	restricted_roles = list("Captain", "Head of Security", "Nanotrasen Representative")
 
 /datum/gear/head/orvkepimedsci
 	name = "Federation Kepi, medsci"
