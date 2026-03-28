@@ -276,7 +276,7 @@
 
 /datum/gear/uniform/officer_jumpsuit
 	name = "Officer’s uniform"
-	subcategory =  = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
 	path = /obj/item/clothing/under/rank/security/officer/officer_jumpsuit
 	restricted_desc = "Captain, Head of Security and Nanotrasen Representative"
 	restricted_roles = list("Captain", "Head of Security", "Nanotrasen Representative")
