@@ -25,10 +25,10 @@
 
 //VORE BELLY FLAGS - START
 
-#define VORE_BELLY_FLAG_IMMUTABLE (1 << 1)	//Удалять нельзя, помиловать
-#define VORE_BELLY_FLAG_ESCAPABLE (1 << 2)	//Сбегать нельзя, помиловать
-#define VORE_BELLY_FLAG_NO_MODE_DESCS (1 << 3)	//Не менять описание под режим
-#define VORE_BELLY_FLAG_NO_ABSORB_DESC (1 << 4)	//Не юзать сообщение абсорба
+#define VORE_BELLY_FLAG_IMMUTABLE (1 << 0)	//Удалять нельзя, помиловать
+#define VORE_BELLY_FLAG_ESCAPABLE (1 << 1)	//Сбегать нельзя, помиловать
+#define VORE_BELLY_FLAG_NO_MODE_DESCS (1 << 2)	//Не менять описание под режим
+#define VORE_BELLY_FLAG_NO_ABSORB_DESC (1 << 3)	//Не юзать сообщение абсорба
 
 //VORE BELLY FLAGS - END
 
@@ -48,7 +48,10 @@
 	var/belly_flags = NONE
 	var/belly_mode = DM_HOLD
 
-	var/list/dm_mode/digest_modes
+	var/mob/_owner
+	var/list/modifers
+
+	var/list/dm_mode/digest_modes = list()
 	var/list/dm_modifer/dm_modifers
 
 
@@ -83,7 +86,7 @@
 		CLONE = 0,
 		STAMINA = 0
 	)
-
+	//Шанс врубить определенный режим при резисте
 	var/list/mode_chances = list(
 		DM_ABSORB = 0,
 		DM_DIGEST = 0,
@@ -103,11 +106,13 @@
 	var/auto_transfer_chance  = 0; //0 - Трансфера нет
 
 
-#define DIGEST_PULSE_SIGNAL "digest_pulse"
 
-/obj/new_belly/proc/LateInit(var/atom/host)
+	var/list/atom/movable/_atoms_to_process
 
-	RegisterSignal(host, DIGEST_PULSE_SIGNAL)
+
+/obj/new_belly/proc/link_to(mob/mob_to_link)
+	mob_to_link.vore_prefs
+
 
 
 /obj/new_belly/proc/process_belly(var/delta_time = 1)
