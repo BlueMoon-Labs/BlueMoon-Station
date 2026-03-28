@@ -1111,7 +1111,13 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 /// The same asset will always lead to the same asset name
 /// (Generated names do not include file extention.)
 /proc/generate_asset_name(file)
-	return "asset.[md5(fcopy_rsc(file))]"
+	var/static/list/asset_name_cache = list()
+	var/ref_key = "\ref[file]"
+	. = asset_name_cache[ref_key]
+	if(.)
+		return
+	. = "asset.[md5(fcopy_rsc(file))]"
+	asset_name_cache[ref_key] = .
 
 /**
   * Converts an icon to base64. Operates by putting the icon in the iconCache savefile,
@@ -1166,7 +1172,6 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 	if (!thing)
 		return
 
-	var/key
 	var/icon/I = thing
 
 	if (!target)
@@ -1215,17 +1220,35 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 		if (isnull(icon_state))
 			icon_state = ""
 
+	// Result-level cache: skip icon() constructor + asset registration on repeat calls
+	var/cache_key = "[I]:[icon_state]:[dir]:[frame]:[moving]"
+	var/static/list/icon2html_cache = list()
+	var/list/cached = icon2html_cache[cache_key]
+	if(cached)
+		// cached = list(asset_key, html_string, url_string)
+		for(var/thing2 in targets)
+			SSassets.transport.send_assets(thing2, cached[1])
+		if(sourceonly)
+			return cached[3]
+		return cached[2]
+
 	I = icon(I, icon_state, dir, frame, moving)
 
-	key = "[generate_asset_name(I)].png"
+	var/key = "[generate_asset_name(I)].png"
 	if(!SSassets.cache[key])
 		SSassets.transport.register_asset(key, I)
 	for (var/thing2 in targets)
 		SSassets.transport.send_assets(thing2, key)
-	if(sourceonly)
-		return SSassets.transport.get_asset_url(key)
 
-	return "<img class='icon icon-[icon_state]' src='[SSassets.transport.get_asset_url(key)]'>"
+	var/url = SSassets.transport.get_asset_url(key)
+	var/html = "<img class='icon icon-[icon_state]' src='[url]'>"
+	icon2html_cache[cache_key] = list(key, html, url)
+	if(length(icon2html_cache) > 2048)
+		icon2html_cache.Cut(1, 513) // Evict oldest 25%
+
+	if(sourceonly)
+		return url
+	return html
 
 /proc/icon2base64html(thing)
 	if (!thing)
@@ -1233,21 +1256,17 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 	var/static/list/bicon_cache = list()
 	if (isicon(thing))
 		var/icon/I = thing
-		var/icon_base64 = icon2base64(I)
-
-		if (I.Height() > world.icon_size || I.Width() > world.icon_size)
-			var/icon_md5 = md5(icon_base64)
-			icon_base64 = bicon_cache[icon_md5]
-			if (!icon_base64) // Doesn't exist yet, make it.
-				bicon_cache[icon_md5] = icon_base64 = icon2base64(I)
-
-
+		var/ref_key = "\ref[I]"
+		var/icon_base64 = bicon_cache[ref_key]
+		if(!icon_base64)
+			icon_base64 = icon2base64(I)
+			if(icon_base64)
+				bicon_cache[ref_key] = icon_base64
 		return "<img class='icon icon-misc' src='data:image/png;base64,[icon_base64]'>"
 
 	// Either an atom or somebody fucked up and is gonna get a runtime, which I'm fine with.
 	var/atom/A = thing
 	var/key = "[istype(A.icon, /icon) ? "[REF(A.icon)]" : A.icon]:[A.icon_state]"
-
 
 	if (!bicon_cache[key]) // Doesn't exist, make it.
 		var/icon/I = icon(A.icon, A.icon_state, SOUTH, 1)
@@ -1255,8 +1274,7 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 			var/icon/temp = I
 			I = icon()
 			I.Insert(temp, dir = SOUTH)
-
-		bicon_cache[key] = icon2base64(I, key)
+		bicon_cache[key] = icon2base64(I)
 
 	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[bicon_cache[key]]'>"
 
@@ -1268,7 +1286,15 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 	if (isicon(thing))
 		return icon2html(thing, target)
 
-	var/icon/I = getFlatIcon(thing)
+	var/static/list/flat_icon_cache = list()
+	var/atom/A = thing
+	var/appearance_key = "\ref[A.appearance]"
+	var/icon/I = flat_icon_cache[appearance_key]
+	if(!I)
+		I = getFlatIcon(thing)
+		flat_icon_cache[appearance_key] = I
+		if(length(flat_icon_cache) > 512)
+			flat_icon_cache.Cut(1, 129) // Evict oldest 25%
 	return icon2html(I, target, sourceonly = sourceonly)
 
 /* Gives the result RGB of a RGB string after a matrix transformation. No alpha.
