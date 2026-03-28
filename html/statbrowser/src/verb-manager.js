@@ -9,16 +9,18 @@ function sortVerbs() {
 	});
 }
 
-function findVerbIndex(name, verblist) {
+function findVerbIndex(category, name, verblist) {
+	var resolvedCategory = resolveTabDisplayName(category);
 	for (var i = 0; i < verblist.length; i++) {
-		if (verblist[i][1] === name) return i;
+		if (resolveTabDisplayName(verblist[i][0]) === resolvedCategory && verblist[i][1] === name) return i;
 	}
 	return -1;
 }
 
 function remove_verb(v) {
+	var resolvedCategory = resolveTabDisplayName(v[0]);
 	for (var i = State.verbs.length - 1; i >= 0; i--) {
-		if (State.verbs[i][1] === v[1]) State.verbs.splice(i, 1);
+		if (resolveTabDisplayName(State.verbs[i][0]) === resolvedCategory && State.verbs[i][1] === v[1]) State.verbs.splice(i, 1);
 	}
 }
 

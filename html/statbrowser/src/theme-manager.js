@@ -301,6 +301,7 @@ function _resolvePreset(themeState) {
 function applyTheme(themeState) {
 	var root = document.documentElement;
 	var preset = _resolvePreset(themeState);
+	root.style.removeProperty("--font-sans");
 	if (preset) {
 		for (var key in preset.vars) {
 			root.style.setProperty(key, preset.vars[key]);

@@ -75,9 +75,16 @@ function remove_mc() {
 }
 
 function update_spells(t, s) {
+	var oldTabs = State.spellTabs || [];
 	State.spellTabs = JSON.parse(t);
 	var doUpdate = State.spellTabs.includes(State.currentTab);
 	init_spells();
+	// Remove tabs that were in the old list but not in the new one
+	for (var i = 0; i < oldTabs.length; i++) {
+		if (!State.spellTabs.includes(oldTabs[i])) {
+			removeStatusTab(oldTabs[i]);
+		}
+	}
 	if (s) {
 		State.spells = JSON.parse(s);
 		if (!_settingsActive && doUpdate) draw_spells(State.currentTab);
@@ -131,7 +138,10 @@ function update_interviews(I) {
 }
 
 function draw_interviews() {
+	var old = document.getElementById("interviews-panel");
+	if (old && old.parentNode) old.parentNode.removeChild(old);
 	var body = el("div");
+	body.id = "interviews-panel";
 	var header = el("h3", null, "Interviews");
 	body.appendChild(header);
 	var manLink = el("a", null, "Open Interview Manager Panel");
@@ -146,7 +156,6 @@ function draw_interviews() {
 		statsTable.appendChild(tr);
 	}
 	body.appendChild(statsTable);
-	statcontent.appendChild(body);
 
 	if (State.interviewManager.interviews) {
 		for (var i = 0; i < State.interviewManager.interviews.length; i++) {
@@ -155,9 +164,10 @@ function draw_interviews() {
 			var a = el("a", null, part["status"]);
 			a.href = "?_src_=holder;admin_token=" + State.hrefToken + ";interview=" + part["ref"] + ";statpanel_item_click=left";
 			card.appendChild(a);
-			statcontent.appendChild(card);
+			body.appendChild(card);
 		}
 	}
+	statcontent.appendChild(body);
 }
 
 function update_sdql2(S) {
@@ -251,7 +261,7 @@ function add_verb_list(v) {
 		var part = toAdd[i];
 		if (!part[0]) continue;
 		var category = resolveTabDisplayName(part[0]);
-		if (findVerbIndex(part[1], State.verbs) !== -1) continue;
+		if (findVerbIndex(part[0], part[1], State.verbs) !== -1) continue;
 		if (State.verbTabs.includes(category)) {
 			State.verbs.push(part);
 			if (!_settingsActive && State.currentTab === category) draw_verbs(category);
@@ -292,6 +302,7 @@ function create_debug() {
 		addPermanentTab("Debug Stat Panel");
 	} else {
 		removePermanentTab("Debug Stat Panel");
+		if (State.currentTab === "Debug Stat Panel") tab_change("Status");
 	}
 }
 

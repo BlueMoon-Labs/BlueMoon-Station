@@ -175,6 +175,13 @@
 	/// whether remove_admin_tabs has been sent (avoids redundant output() every cycle)
 	var/admin_tabs_cleared = FALSE
 
+	/// cached turf REF for statpanel — skip re-rendering if same turf
+	var/cached_turf_ref
+	/// cached encoded turf data for statpanel
+	var/cached_turf_encoded
+	/// counter for forcing turf refresh even on same turf
+	var/turf_refresh_counter = 0
+
 	/// list of all tabs
 	var/list/panel_tabs = list()
 

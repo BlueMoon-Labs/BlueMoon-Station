@@ -22,6 +22,12 @@ SUBSYSTEM_DEF(statpanels)
 	var/encoded_tidi
 	var/is_full_cycle = FALSE
 	var/prev_player_count = 0
+	var/client_stagger_groups = 3
+	var/client_stagger_index = 0
+	var/cached_tickets_encoded
+	var/turf_fire_skip = FALSE
+	var/list/cached_client_stats
+	var/client_stats_refresh_counter = 0
 
 /datum/controller/subsystem/statpanels/fire(resumed = FALSE)
 	if (!resumed)
@@ -33,6 +39,9 @@ SUBSYSTEM_DEF(statpanels)
 			full_cycle_counter = 0
 		if(is_slow_cycle)
 			slow_data_counter = 0
+			cached_images.Cut()
+
+		turf_fire_skip = !turf_fire_skip
 
 		var/list/tidi_data = list(
 			round(SStime_track.time_dilation_current, 0.1),
@@ -41,24 +50,27 @@ SUBSYSTEM_DEF(statpanels)
 			round(SStime_track.time_dilation_avg_slow, 0.1))
 		encoded_tidi = url_encode(json_encode(tidi_data))
 
-		if(is_full_cycle)
-			var/round_time = world.time - SSticker.round_start_time
-			var/real_round_time = world.timeofday - SSticker.real_round_start_time
-			var/list/fast_data = list()
-			fast_data["time"] = list(
-				list("\u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(round_time, "hh:mm:ss", 0)),
-				list("\u041D\u0430\u0441\u0442. \u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(real_round_time, "hh:mm:ss", 0)),
-				list("\u0414\u0430\u0442\u0430", "[time2text(world.realtime, "MMM DD")] [GLOB.year_integer]"),
-				list("\u0412\u0440\u0435\u043C\u044F \u0421\u0442\u0430\u043D\u0446\u0438\u0438", STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)),
-				list("\u0412\u0440\u0435\u043C\u044F \u0432 \u0421\u043E\u043B\u043D\u0435\u0447\u043D\u043E\u0439", SOLAR_TIME_TIMESTAMP("hh:mm:ss", world.time)),
-				list("\u0412\u0440\u0435\u043C\u044F \u0421\u0435\u0440\u0432\u0435\u0440\u0430", time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")))
-			fast_data["tidi"] = tidi_data
-			if(SSshuttle.emergency)
-				var/ETA = SSshuttle.emergency.getModeStr()
-				if(ETA)
-					fast_data["shuttle"] = list(ETA, SSshuttle.emergency.getTimerStr())
-			encoded_global_fast = url_encode(json_encode(fast_data))
+		// Compute fast global data every fire — cheap, and stagger groups need fresh data each fire
+		var/round_time = world.time - SSticker.round_start_time
+		var/real_round_time = world.timeofday - SSticker.real_round_start_time
+		var/list/fast_data = list()
+		fast_data["time"] = list(
+			list("\u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(round_time, "hh:mm:ss", 0)),
+			list("\u041D\u0430\u0441\u0442. \u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(real_round_time, "hh:mm:ss", 0)),
+			list("\u0414\u0430\u0442\u0430", "[time2text(world.realtime, "MMM DD")] [GLOB.year_integer]"),
+			list("\u0412\u0440\u0435\u043C\u044F \u0421\u0442\u0430\u043D\u0446\u0438\u0438", STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)),
+			list("\u0412\u0440\u0435\u043C\u044F \u0432 \u0421\u043E\u043B\u043D\u0435\u0447\u043D\u043E\u0439", SOLAR_TIME_TIMESTAMP("hh:mm:ss", world.time)),
+			list("\u0412\u0440\u0435\u043C\u044F \u0421\u0435\u0440\u0432\u0435\u0440\u0430", time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")))
+		fast_data["tidi"] = tidi_data
+		if(SSshuttle.emergency)
+			var/ETA = SSshuttle.emergency.getModeStr()
+			if(ETA)
+				fast_data["shuttle"] = list(ETA, SSshuttle.emergency.getTimerStr())
+		encoded_global_fast = url_encode(json_encode(fast_data))
 
+		// is_full_cycle gates slow-updating global data and vote cache only;
+		// per-client throttling is handled by stagger groups (each client visited every 3rd fire)
+		if(is_full_cycle)
 			if(is_slow_cycle)
 				var/datum/map_config/cached = SSmapping.next_map_config
 				var/list/server_section = list(
@@ -103,7 +115,25 @@ SUBSYSTEM_DEF(statpanels)
 
 		if(!null_bullet_encoded)
 			null_bullet_encoded = url_encode(json_encode(list(list(null))))
-		src.currentrun = GLOB.clients.Copy()
+
+		// Adaptive wait based on server load
+		var/client_count = length(GLOB.clients)
+		if(client_count > 60 || SStime_track.time_dilation_current > 20)
+			wait = 5
+		else if(client_count > 40 || SStime_track.time_dilation_current > 10)
+			wait = 4
+		else
+			wait = 3
+
+		// Build staggered client list — each fire processes 1/N of all clients
+		// Each client gets a full update every (stagger_groups * wait) deciseconds
+		var/list/all_clients = GLOB.clients
+		var/list/run_list = list()
+		for(var/i in (client_stagger_index + 1) to length(all_clients) step client_stagger_groups)
+			run_list += all_clients[i]
+		client_stagger_index = (client_stagger_index + 1) % client_stagger_groups
+		cached_tickets_encoded = null
+		src.currentrun = run_list
 
 	var/list/currentrun = src.currentrun
 	while(length(currentrun))
@@ -117,7 +147,17 @@ SUBSYSTEM_DEF(statpanels)
 			var/ping_str = "%5B[round(target.lastping, 1)]%2C[round(target.avgping, 1)]%2C[round(target.avgping_jitter, 1)]%5D"
 			target << output("[ping_str];[encoded_tidi]", "statbrowser:update_ping")
 
-		if(is_full_cycle && target.stat_tab == "Status")
+		// Skip heavy work for AFK clients (5 min inactivity)
+		// Admin clients are also skipped; they self-recover on the first active fire
+		if(target.inactivity >= 3000)
+			if(!target.holder && !target.admin_tabs_cleared)
+				target << output("", "statbrowser:remove_admin_tabs")
+				target.admin_tabs_cleared = TRUE
+			if(MC_TICK_CHECK)
+				return
+			continue
+
+		if(target.stat_tab == "Status")
 			var/other_str = url_encode(json_encode(target.mob?.get_status_tab_items()))
 			var/slow_str = encoded_global_slow ? encoded_global_slow : ""
 			target << output("[encoded_global_fast];[slow_str];[other_str]", "statbrowser:update")
@@ -157,18 +197,19 @@ SUBSYSTEM_DEF(statpanels)
 			target.admin_tabs_cleared = FALSE
 			if(!("MC" in target.panel_tabs) || !("Tickets" in target.panel_tabs))
 				target << output("[url_encode(target.holder.href_token)]", "statbrowser:add_admin_tabs")
-			if(is_full_cycle && target.stat_tab == "MC")
+			if(target.stat_tab == "MC")
 				var/turf/eye_turf = get_turf(target.eye)
 				var/coord_entry = url_encode(COORD(eye_turf))
 				if(!mc_data_encoded)
 					generate_mc_data()
 				target << output("[mc_data_encoded];[mc_ss_data_encoded];[coord_entry]", "statbrowser:update_mc")
-			if(is_full_cycle && target.stat_tab == "Tickets")
-				var/list/ahelp_tickets = GLOB.ahelp_tickets.stat_entry()
-				target << output("[url_encode(json_encode(ahelp_tickets))];", "statbrowser:update_tickets")
+			if(target.stat_tab == "Tickets")
+				if(!cached_tickets_encoded)
+					cached_tickets_encoded = url_encode(json_encode(GLOB.ahelp_tickets.stat_entry()))
+				target << output("[cached_tickets_encoded];", "statbrowser:update_tickets")
 			if(!length(GLOB.sdql2_queries) && ("SDQL2" in target.panel_tabs))
 				target << output("", "statbrowser:remove_sdql2")
-			else if(is_full_cycle && length(GLOB.sdql2_queries) && (target.stat_tab == "SDQL2" || !("SDQL2" in target.panel_tabs)))
+			else if(length(GLOB.sdql2_queries) && (target.stat_tab == "SDQL2" || !("SDQL2" in target.panel_tabs)))
 				var/list/sdql2A = list()
 				sdql2A[++sdql2A.len] = list("", "Access Global SDQL2 List", REF(GLOB.sdql2_vv_statobj))
 				var/list/sdql2B = list()
@@ -178,7 +219,7 @@ SUBSYSTEM_DEF(statpanels)
 				sdql2A += sdql2B
 				target << output(url_encode(json_encode(sdql2A)), "statbrowser:update_sdql2")
 
-		if(is_full_cycle && target.mob)
+		if(target.mob)
 			var/mob/M = target.mob
 			if((target.stat_tab in target.spell_tabs) || !length(target.spell_tabs) && (length(M.mob_spell_list) || length(M.mind?.spell_list)))
 				var/list/proc_holders = M.get_proc_holders()
@@ -190,44 +231,57 @@ SUBSYSTEM_DEF(statpanels)
 				if(length(proc_holders))
 					proc_holders_encoded = url_encode(json_encode(proc_holders))
 				target << output("[url_encode(json_encode(target.spell_tabs))];[proc_holders_encoded]", "statbrowser:update_spells")
-			if(M?.listed_turf)
+			if(MC_TICK_CHECK)
+				return
+			if(!turf_fire_skip && M?.listed_turf)
 				var/mob/target_mob = M
 				if(!target_mob.TurfAdjacent(target_mob.listed_turf))
 					target << output("", "statbrowser:remove_listedturf")
 					target_mob.listed_turf = null
+					target.cached_turf_ref = null
+					target.cached_turf_encoded = null
 				else if(target.stat_tab == M?.listed_turf.name || !(M?.listed_turf.name in target.panel_tabs))
-					var/list/overrides = list()
-					var/list/turfitems = list()
-					for(var/img in target.images)
-						var/image/target_image = img
-						if(!target_image.loc || target_image.loc.loc != target_mob.listed_turf || !target_image.override)
-							continue
-						overrides += target_image.loc
-					turfitems[++turfitems.len] = list("[target_mob.listed_turf]", REF(target_mob.listed_turf), icon2html(target_mob.listed_turf, target, sourceonly=TRUE))
-					for(var/tc in target_mob.listed_turf)
-						var/atom/movable/turf_content = tc
-						if(turf_content.mouse_opacity == MOUSE_OPACITY_TRANSPARENT)
-							continue
-						if(turf_content.invisibility > target_mob.see_invisible)
-							continue
-						if(turf_content in overrides)
-							continue
-						if(turf_content.IsObscured())
-							continue
-						if(length(turfitems) < 30) // only create images for the first 30 items on the turf, for performance reasons
-							if(!(REF(turf_content) in cached_images))
-								cached_images += REF(turf_content)
-								turf_content.RegisterSignal(turf_content, COMSIG_PARENT_QDELETING, TYPE_PROC_REF(/atom, remove_from_cache)) // we reset cache if anything in it gets deleted
-								if(ismob(turf_content) || length(turf_content.overlays) > 2)
-									turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content), costly_icon2html(turf_content, target, sourceonly=TRUE))
+					var/turf_ref = REF(target_mob.listed_turf)
+					target.turf_refresh_counter++
+					// Use cached data if same turf and not time for forced refresh
+					if(turf_ref == target.cached_turf_ref && target.cached_turf_encoded && target.turf_refresh_counter < 3)
+						target << output("[target.cached_turf_encoded];", "statbrowser:update_listedturf")
+					else
+						target.turf_refresh_counter = 0
+						var/list/overrides = list()
+						var/list/turfitems = list()
+						for(var/img in target.images)
+							var/image/target_image = img
+							if(!target_image.loc || target_image.loc.loc != target_mob.listed_turf || !target_image.override)
+								continue
+							overrides += target_image.loc
+						turfitems[++turfitems.len] = list("[target_mob.listed_turf]", REF(target_mob.listed_turf), icon2html(target_mob.listed_turf, target, sourceonly=TRUE))
+						for(var/tc in target_mob.listed_turf)
+							var/atom/movable/turf_content = tc
+							if(turf_content.mouse_opacity == MOUSE_OPACITY_TRANSPARENT)
+								continue
+							if(turf_content.invisibility > target_mob.see_invisible)
+								continue
+							if(turf_content in overrides)
+								continue
+							if(turf_content.IsObscured())
+								continue
+							if(length(turfitems) < 30)
+								if(!cached_images[REF(turf_content)])
+									cached_images[REF(turf_content)] = TRUE
+									turf_content.RegisterSignal(turf_content, COMSIG_PARENT_QDELETING, TYPE_PROC_REF(/atom, remove_from_cache))
+									if(ismob(turf_content) || length(turf_content.overlays) > 4)
+										turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content), costly_icon2html(turf_content, target, sourceonly=TRUE))
+									else
+										turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content), icon2html(turf_content, target, sourceonly=TRUE))
 								else
-									turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content), icon2html(turf_content, target, sourceonly=TRUE))
+									turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content))
 							else
 								turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content))
-						else
-							turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content))
-					turfitems = url_encode(json_encode(turfitems))
-					target << output("[turfitems];", "statbrowser:update_listedturf")
+						var/encoded = url_encode(json_encode(turfitems))
+						target.cached_turf_ref = turf_ref
+						target.cached_turf_encoded = encoded
+						target << output("[encoded];", "statbrowser:update_listedturf")
 		if(MC_TICK_CHECK)
 			return
 
@@ -369,51 +423,57 @@ SUBSYSTEM_DEF(statpanels)
 		list("\u041A\u044D\u0448 \u0442\u0430\u0431\u043B\u0438\u0446", length(GLOB.lighting_sheets)),
 		list("\u0417\u0432\u0451\u0437\u0434\u043D\u044B\u0435 \u0442\u0430\u0439\u043B\u044B", length(GLOB.starlight))
 	)
-	// Clients performance aggregate
-	var/total_clients = length(GLOB.clients)
-	if(total_clients)
-		var/sum_ping = 0
-		var/min_ping = INFINITY
-		var/max_ping = 0
-		var/sum_server_delay = 0
-		var/list/fps_counts = list() // "fps_value" = count
-		var/list/version_counts = list() // "version" = count
-		for(var/client/C as anything in GLOB.clients)
-			var/p = C.avgping_rtt || C.avgping
-			if(!p)
-				total_clients--
-				continue
-			sum_ping += p
-			if(p < min_ping) min_ping = p
-			if(p > max_ping) max_ping = p
-			sum_server_delay += (C.avgping_server || 0)
-			var/fps_key = "[C.fps || world.fps]"
-			fps_counts[fps_key] = (fps_counts[fps_key] || 0) + 1
-			var/ver_key = "[C.byond_version].[C.byond_build]"
-			version_counts[ver_key] = (version_counts[ver_key] || 0) + 1
-		// Build FPS distribution string
-		var/list/fps_parts = list()
-		for(var/fps_val in fps_counts)
-			fps_parts += "[fps_val]: [fps_counts[fps_val]]"
-		// Build top versions string (top 3)
-		var/list/ver_parts = list()
-		var/ver_shown = 0
-		for(var/ver in version_counts)
-			if(ver_shown >= 3)
-				break
-			ver_parts += "[ver] ([version_counts[ver]])"
-			ver_shown++
-		var/avg_ping = total_clients ? round(sum_ping / total_clients, 1) : 0
-		var/avg_delay = total_clients ? round(sum_server_delay / total_clients, 1) : 0
-		var/ping_minmax = total_clients ? "[round(min_ping, 1)]/[round(max_ping, 1)]ms" : "n/a"
-		key_ss["Clients"] = list(
-			list("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E", length(GLOB.clients)),
-			list("Ping \u0441\u0440\u0435\u0434\u043D\u0438\u0439", "[avg_ping]ms"),
-			list("Ping \u043C\u0438\u043D/\u043C\u0430\u043A\u0441", ping_minmax),
-			list("\u0417\u0430\u0434\u0435\u0440\u0436\u043A\u0430 \u0441\u0435\u0440\u0432\u0435\u0440\u0430", "[avg_delay]ms"),
-			list("FPS \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438", jointext(fps_parts, ", ")),
-			list("BYOND \u0432\u0435\u0440\u0441\u0438\u0438", jointext(ver_parts, ", "))
-		)
+	// Clients performance aggregate — cached separately, refreshed every 3rd MC data call
+	client_stats_refresh_counter++
+	if(client_stats_refresh_counter >= 3 || !cached_client_stats)
+		client_stats_refresh_counter = 0
+		var/total_clients = length(GLOB.clients)
+		if(total_clients)
+			var/sum_ping = 0
+			var/min_ping = INFINITY
+			var/max_ping = 0
+			var/sum_server_delay = 0
+			var/list/fps_counts = list()
+			var/list/version_counts = list()
+			var/valid_clients = total_clients
+			for(var/client/C as anything in GLOB.clients)
+				var/p = C.avgping_rtt || C.avgping
+				if(!p)
+					valid_clients--
+					continue
+				sum_ping += p
+				if(p < min_ping) min_ping = p
+				if(p > max_ping) max_ping = p
+				sum_server_delay += (C.avgping_server || 0)
+				var/fps_key = "[C.fps || world.fps]"
+				fps_counts[fps_key] = (fps_counts[fps_key] || 0) + 1
+				var/ver_key = "[C.byond_version].[C.byond_build]"
+				version_counts[ver_key] = (version_counts[ver_key] || 0) + 1
+			var/list/fps_parts = list()
+			for(var/fps_val in fps_counts)
+				fps_parts += "[fps_val]: [fps_counts[fps_val]]"
+			var/list/ver_parts = list()
+			var/ver_shown = 0
+			for(var/ver in version_counts)
+				if(ver_shown >= 3)
+					break
+				ver_parts += "[ver] ([version_counts[ver]])"
+				ver_shown++
+			var/avg_ping = valid_clients ? round(sum_ping / valid_clients, 1) : 0
+			var/avg_delay = valid_clients ? round(sum_server_delay / valid_clients, 1) : 0
+			var/ping_minmax = valid_clients ? "[round(min_ping, 1)]/[round(max_ping, 1)]ms" : "n/a"
+			cached_client_stats = list(
+				list("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E", length(GLOB.clients)),
+				list("Ping \u0441\u0440\u0435\u0434\u043D\u0438\u0439", "[avg_ping]ms"),
+				list("Ping \u043C\u0438\u043D/\u043C\u0430\u043A\u0441", ping_minmax),
+				list("\u0417\u0430\u0434\u0435\u0440\u0436\u043A\u0430 \u0441\u0435\u0440\u0432\u0435\u0440\u0430", "[avg_delay]ms"),
+				list("FPS \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438", jointext(fps_parts, ", ")),
+				list("BYOND \u0432\u0435\u0440\u0441\u0438\u0438", jointext(ver_parts, ", "))
+			)
+		else
+			cached_client_stats = null
+	if(cached_client_stats)
+		key_ss["Clients"] = cached_client_stats
 	server_info["key_ss"] = key_ss
 
 	mc_data_encoded = url_encode(json_encode(server_info))

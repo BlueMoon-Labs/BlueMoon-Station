@@ -1,7 +1,9 @@
 var _settingsActive = false;
+var _fontApplyTimer = null;
 
 function draw_settings() {
 	_settingsActive = true;
+	clearTimeout(_fontApplyTimer);
 	statcontent.textContent = "";
 	var themeState = loadTheme();
 	var panel = el("div", "settings-panel");
@@ -140,7 +142,6 @@ function draw_settings() {
 			if (themeState.preset !== wasPre) draw_settings();
 		}
 	};
-	var _fontApplyTimer = null;
 	customFontInput.oninput = function() {
 		clearTimeout(_fontApplyTimer);
 		_fontApplyTimer = setTimeout(function() {

@@ -67,6 +67,7 @@ function draw_verbs(cat) {
 				container.appendChild(additions[subKey]);
 			}
 		}
+
 	}
 
 	renderVerbsFiltered("");

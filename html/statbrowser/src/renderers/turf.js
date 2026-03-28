@@ -44,6 +44,7 @@ function draw_listedturf() {
 			var nameEl = container.querySelector(".turf-item-name");
 			if (nameEl && nameEl.textContent !== part[0]) {
 				nameEl.textContent = part[0];
+				container.title = part[0];
 			}
 			if (container !== nextSibling) {
 				turfTable.insertBefore(container, nextSibling);
@@ -52,6 +53,7 @@ function draw_listedturf() {
 			}
 		} else {
 			var container = el("div", "turf-item");
+			container.title = part[0];
 			var img = el("img");
 			if (!State.storedImages[ref] && part[2]) {
 				img.src = part[2];

@@ -136,7 +136,7 @@
 }
 .verb-pill {
 	display: inline-block;
-	padding: 5px 10px;
+	padding: var(--verb-padding-v, 5px) var(--verb-padding-h, 10px);
 	background: var(--bg-tertiary);
 	border: 1px solid var(--border);
 	border-radius: 4px;
@@ -395,13 +395,81 @@
 	cursor: pointer;
 }
 .turf-item:hover { background: var(--bg-hover); }
-.turf-item img { width: 32px; height: 32px; flex-shrink: 0; }
-.turf-item-name { font-size: 12px; }
+.turf-item img { width: var(--turf-icon-size, 32px); height: var(--turf-icon-size, 32px); flex-shrink: 0; }
+.turf-item-name { font-size: var(--turf-font-size, 12px); }
 
 /* ===== Health utility classes ===== */
 .val-good { color: var(--health-good); }
 .val-warn { color: var(--health-warn); }
 .val-bad { color: var(--health-bad); font-weight: bold; }
+
+/* ===== Verb Grid Layout Mode ===== */
+body.verb-layout-grid .verb-grid {
+	display: block;
+	padding: 4px 4px;
+}
+body.verb-layout-grid .verb-pill {
+	display: inline-block;
+	width: calc(50% - 6px);
+	box-sizing: border-box;
+	text-align: center;
+	margin: 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+@media (min-width: 500px) {
+	body.verb-layout-grid .verb-pill { width: calc(33.333% - 6px); }
+}
+@media (min-width: 700px) {
+	body.verb-layout-grid .verb-pill { width: calc(25% - 6px); }
+}
+@media (min-width: 900px) {
+	body.verb-layout-grid .verb-pill { width: calc(20% - 6px); }
+}
+
+/* ===== Hide Verb Search ===== */
+body.hide-verb-search .verb-search { display: none; }
+
+/* ===== Compact Mode ===== */
+body.compact-mode .verb-pill { font-size: 11px; }
+body.compact-mode .metric-item { padding: 2px 6px; }
+body.compact-mode .metric-label { font-size: 9px; }
+body.compact-mode .metric-value { font-size: 12px; }
+body.compact-mode .section-header { padding: 4px 8px; font-size: 10px; }
+body.compact-mode .data-table td { padding: 1px 4px; }
+body.compact-mode .spell-card { padding: 2px 6px; gap: 6px; }
+body.compact-mode .ticket-card { padding: 2px 6px; gap: 6px; }
+body.compact-mode .ping-bar { padding: 3px 8px; font-size: 11px; }
+
+/* ===== Turf Grid Layout ===== */
+body.turf-layout-grid .turf-item {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: calc(var(--turf-icon-size, 32px) + 16px);
+	height: calc(var(--turf-icon-size, 32px) + 16px);
+	padding: 4px;
+	border-bottom: none;
+	border: 1px solid var(--border);
+	gap: 0;
+}
+body.turf-layout-grid .turf-item-name { display: none; }
+
+/* ===== Turf Compact Layout ===== */
+body.turf-layout-compact .turf-item {
+	padding: 1px 6px;
+	gap: 4px;
+}
+body.turf-layout-compact .turf-item img {
+	width: 20px;
+	height: 20px;
+}
+body.turf-layout-compact .turf-item-name { font-size: 11px; }
+
+/* ===== Turf Hide Icons ===== */
+body.turf-hide-icons .turf-item img { display: none; }
+body.turf-hide-icons .turf-item { gap: 0; }
 
 /* ===== Zoom indicator ===== */
 #zoom-indicator {
