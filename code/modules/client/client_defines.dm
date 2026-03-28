@@ -98,23 +98,18 @@
 
 	var/lastping = 0
 	var/avgping = 0
-	/// Last ping measured from realtime clock (RTT in ms).
 	var/lastping_rtt = 0
-	/// Smoothed RTT in ms.
-	var/avgping_rtt = 0
-	/// Last raw RTT sample in ms before jitter filtering.
+	var/avgping_rtt
 	var/lastping_rtt_raw = 0
-	/// Smoothed raw RTT in ms before jitter filtering.
-	var/avgping_rtt_raw = 0
-	/// Last ping measured from server tickstamp clock (includes tick-phase jitter) in ms.
+	var/avgping_rtt_raw
 	var/lastping_tick = 0
-	/// Smoothed tickstamp ping in ms.
-	var/avgping_tick = 0
-	/// Last server-delay component in ms (tick ping - RTT).
+	var/avgping_tick
 	var/lastping_server = 0
-	/// Smoothed server-delay component in ms.
-	var/avgping_server = 0
-	/// Sliding window of recent raw RTT samples used to produce a stable user-facing ping.
+	var/avgping_server
+	var/lastping_rtt_max = 0
+	var/lastping_jitter = 0
+	var/avgping_jitter
+	var/ping_updated = FALSE
 	var/list/ping_rtt_window = list()
 	var/connection_time //world.time they connected
 	var/connection_realtime //world.realtime they connected
@@ -187,6 +182,9 @@
 	var/list/spell_tabs = list()
 	/// list of tabs containing verbs
 	var/list/verb_tabs = list()
+
+	var/stat_vote_sent_null = FALSE
+	var/stat_last_vote_hash = null
 	///A lazy list of atoms we've examined in the last EXAMINE_MORE_TIME (default 1.5) seconds, so that we will call [atom/proc/examine_more()] instead of [atom/proc/examine()] on them when examining
 	var/list/recent_examines
 	///When was the last time we warned them about not cryoing without an ahelp, set to -5 minutes so that rounstart cryo still warns

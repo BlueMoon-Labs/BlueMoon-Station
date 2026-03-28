@@ -1,89 +1,130 @@
 SUBSYSTEM_DEF(statpanels)
 	name = "Stat Panels"
-	wait = 6
+	wait = 3
 	init_order = INIT_ORDER_STATPANELS
 	priority = FIRE_PRIORITY_STATPANEL
 	runlevels = RUNLEVELS_DEFAULT | RUNLEVEL_LOBBY
 	var/list/currentrun = list()
-	var/encoded_global_data
+	var/encoded_global_fast
+	var/encoded_global_slow
 	var/mc_data_encoded
 	var/mc_ss_data_encoded
 	var/list/cached_images = list()
 	var/mc_data_refresh_counter = 0
 	var/static/null_bullet_encoded
+	var/full_cycle_counter = 0
+	var/slow_data_counter = 0
+	var/list/cached_vote_base
+	var/cached_vote_encoded
+	var/list/perf_history_cpu = list()
+	var/list/perf_history_tidi = list()
+	var/list/perf_history_ping = list()
+	var/encoded_tidi
+	var/is_full_cycle = FALSE
+	var/prev_player_count = 0
 
 /datum/controller/subsystem/statpanels/fire(resumed = FALSE)
 	if (!resumed)
-		var/datum/map_config/cached = SSmapping.next_map_config
-		var/round_time = world.time - SSticker.round_start_time
-		var/real_round_time = world.timeofday - SSticker.real_round_start_time
-		// Structured status data
-		var/list/global_data = list()
-		// Server section
-		var/list/server_section = list(
-			list("\u041A\u0430\u0440\u0442\u0430", SSmapping.config?.map_name || "Loading..."))
-		if(cached)
-			server_section += list(list("\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0430\u044F \u043A\u0430\u0440\u0442\u0430", cached.map_name))
-		server_section += list(
-			list("ID \u0440\u0430\u0443\u043D\u0434\u0430", GLOB.round_id ? GLOB.round_id : "NULL"),
-			list("\u0418\u0433\u0440\u043E\u0432\u043E\u0439 \u0420\u0435\u0436\u0438\u043C", GLOB.master_mode),
-			list("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u0418\u0433\u0440\u043E\u043A\u043E\u0432", GLOB.clients.len),
-			list("\u041F\u0440\u0435\u0434\u044B\u0434\u0443\u0449\u0438\u0435 \u0420\u0435\u0436\u0438\u043C\u044B", jointext(SSpersistence.saved_modes, ", ")))
-		global_data["server"] = server_section
-		// Time section
-		global_data["time"] = list(
-			list("\u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(round_time, "hh:mm:ss", 0)),
-			list("\u041D\u0430\u0441\u0442. \u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(real_round_time, "hh:mm:ss", 0)),
-			list("\u0414\u0430\u0442\u0430", "[time2text(world.realtime, "MMM DD")] [GLOB.year_integer]"),
-			list("\u0412\u0440\u0435\u043C\u044F \u0421\u0442\u0430\u043D\u0446\u0438\u0438", STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)),
-			list("\u0412\u0440\u0435\u043C\u044F \u0432 \u0421\u043E\u043B\u043D\u0435\u0447\u043D\u043E\u0439", SOLAR_TIME_TIMESTAMP("hh:mm:ss", world.time)),
-			list("\u0412\u0440\u0435\u043C\u044F \u0421\u0435\u0440\u0432\u0435\u0440\u0430", time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")))
-		// Time dilation as numbers for color coding on client
-		global_data["tidi"] = list(
+		full_cycle_counter++
+		slow_data_counter++
+		is_full_cycle = (full_cycle_counter >= 3)
+		var/is_slow_cycle = (slow_data_counter >= 9)
+		if(is_full_cycle)
+			full_cycle_counter = 0
+		if(is_slow_cycle)
+			slow_data_counter = 0
+
+		var/list/tidi_data = list(
 			round(SStime_track.time_dilation_current, 0.1),
 			round(SStime_track.time_dilation_avg_fast, 0.1),
 			round(SStime_track.time_dilation_avg, 0.1),
 			round(SStime_track.time_dilation_avg_slow, 0.1))
-		// Shuttle section (only when active)
-		if(SSshuttle.emergency)
-			var/ETA = SSshuttle.emergency.getModeStr()
-			if(ETA)
-				global_data["shuttle"] = list(ETA, SSshuttle.emergency.getTimerStr())
+		encoded_tidi = url_encode(json_encode(tidi_data))
 
-		encoded_global_data = url_encode(json_encode(global_data))
-		src.currentrun = GLOB.clients.Copy()
+		if(is_full_cycle)
+			var/round_time = world.time - SSticker.round_start_time
+			var/real_round_time = world.timeofday - SSticker.real_round_start_time
+			var/list/fast_data = list()
+			fast_data["time"] = list(
+				list("\u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(round_time, "hh:mm:ss", 0)),
+				list("\u041D\u0430\u0441\u0442. \u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(real_round_time, "hh:mm:ss", 0)),
+				list("\u0414\u0430\u0442\u0430", "[time2text(world.realtime, "MMM DD")] [GLOB.year_integer]"),
+				list("\u0412\u0440\u0435\u043C\u044F \u0421\u0442\u0430\u043D\u0446\u0438\u0438", STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)),
+				list("\u0412\u0440\u0435\u043C\u044F \u0432 \u0421\u043E\u043B\u043D\u0435\u0447\u043D\u043E\u0439", SOLAR_TIME_TIMESTAMP("hh:mm:ss", world.time)),
+				list("\u0412\u0440\u0435\u043C\u044F \u0421\u0435\u0440\u0432\u0435\u0440\u0430", time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")))
+			fast_data["tidi"] = tidi_data
+			if(SSshuttle.emergency)
+				var/ETA = SSshuttle.emergency.getModeStr()
+				if(ETA)
+					fast_data["shuttle"] = list(ETA, SSshuttle.emergency.getTimerStr())
+			encoded_global_fast = url_encode(json_encode(fast_data))
+
+			if(is_slow_cycle)
+				var/datum/map_config/cached = SSmapping.next_map_config
+				var/list/server_section = list(
+					list("\u041A\u0430\u0440\u0442\u0430", SSmapping.config?.map_name || "Loading..."))
+				if(cached)
+					server_section += list(list("\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0430\u044F \u043A\u0430\u0440\u0442\u0430", cached.map_name))
+				var/current_players = GLOB.clients.len
+				var/player_delta = current_players - prev_player_count
+				var/player_trend = "[current_players]"
+				if(prev_player_count && player_delta != 0)
+					player_trend = "[current_players] ([player_delta > 0 ? "+" : ""][player_delta])"
+				prev_player_count = current_players
+				server_section += list(
+					list("ID \u0440\u0430\u0443\u043D\u0434\u0430", GLOB.round_id ? GLOB.round_id : "NULL"),
+					list("\u0418\u0433\u0440\u043E\u0432\u043E\u0439 \u0420\u0435\u0436\u0438\u043C", GLOB.master_mode),
+					list("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u0418\u0433\u0440\u043E\u043A\u043E\u0432", player_trend),
+					list("\u041F\u0440\u0435\u0434\u044B\u0434\u0443\u0449\u0438\u0435 \u0420\u0435\u0436\u0438\u043C\u044B", jointext(SSpersistence.saved_modes, ", ")))
+				encoded_global_slow = url_encode(json_encode(server_section))
+
+			cached_vote_base = null
+			cached_vote_encoded = null
+			if(SSvote.mode)
+				var/list/vote_base = list(
+					list("Vote active!", "There is currently a vote running. Question: [SSvote.question]"))
+				if(!(SSvote.vote_system in list(PLURALITY_VOTING, APPROVAL_VOTING, SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)))
+					vote_base[++vote_base.len] += list("STATPANEL VOTING DISABLED!", "The current vote system is not supported by statpanel rendering. Please vote manually by opening the vote popup using the action button or chat link.", "disabled")
+				else
+ //BLUEMOON ADDITION START
+					if(SSvote.mode == "roundtype")
+						vote_base[++vote_base.len] += list("Time Left:", " [DisplayTimeText(SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY)] seconds")
+					else
+ //BLUEMOON ADDITION END
+						vote_base[++vote_base.len] += list("Time Left:", " [DisplayTimeText(SSticker.timeLeft)] seconds")
+					vote_base[++vote_base.len] += list("Choices:", "")
+				cached_vote_base = vote_base
+
 		mc_data_refresh_counter++
-		if(mc_data_refresh_counter >= 3)
+		if(mc_data_refresh_counter >= 6)
 			mc_data_encoded = null
 			mc_ss_data_encoded = null
 			mc_data_refresh_counter = 0
+
 		if(!null_bullet_encoded)
 			null_bullet_encoded = url_encode(json_encode(list(list(null))))
+		src.currentrun = GLOB.clients.Copy()
+
 	var/list/currentrun = src.currentrun
 	while(length(currentrun))
 		var/client/target = currentrun[length(currentrun)]
 		currentrun.len--
 		if(!target?.statbrowser_ready)
 			continue
-		if(target.stat_tab == "Status")
-			var/ping_str = "%5B[round(target.lastping, 1)]%2C[round(target.avgping, 1)]%5D"
-			var/other_str = url_encode(json_encode(target.mob.get_status_tab_items()))
-			target << output("[encoded_global_data];[ping_str];[other_str]", "statbrowser:update")
-			if(SSvote.mode)
-				var/list/vote_arry = list(
-					list("Vote active!", "There is currently a vote running. Question: [SSvote.question]")
-					) //see the MC on how this works.
-				if(!(SSvote.vote_system in list(PLURALITY_VOTING, APPROVAL_VOTING, SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)))
-					vote_arry[++vote_arry.len] += list("STATPANEL VOTING DISABLED!", "The current vote system is not supported by statpanel rendering. Please vote manually by opening the vote popup using the action button or chat link.", "disabled")
-					//does not return.
-				else
- //BLUEMOON ADDITION START
-					if(SSvote.mode == "roundtype")
-						vote_arry[++vote_arry.len] += list("Time Left:", " [DisplayTimeText(SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY)] seconds")
-					else
- //BLUEMOON ADDITION END
-						vote_arry[++vote_arry.len] += list("Time Left:", " [DisplayTimeText(SSticker.timeLeft)] seconds")
-					vote_arry[++vote_arry.len] += list("Choices:", "")
+
+		if(target.ping_updated && target.inactivity < 3000)
+			target.ping_updated = FALSE
+			var/ping_str = "%5B[round(target.lastping, 1)]%2C[round(target.avgping, 1)]%2C[round(target.avgping_jitter, 1)]%5D"
+			target << output("[ping_str];[encoded_tidi]", "statbrowser:update_ping")
+
+		if(is_full_cycle && target.stat_tab == "Status")
+			var/other_str = url_encode(json_encode(target.mob?.get_status_tab_items()))
+			var/slow_str = encoded_global_slow ? encoded_global_slow : ""
+			target << output("[encoded_global_fast];[slow_str];[other_str]", "statbrowser:update")
+
+			if(SSvote.mode && cached_vote_base)
+				var/list/vote_arry = cached_vote_base.Copy()
+				if(SSvote.vote_system in list(PLURALITY_VOTING, APPROVAL_VOTING, SCHULZE_VOTING, INSTANT_RUNOFF_VOTING))
 					for(var/choice in SSvote.choice_statclicks)
 						var/choice_id = SSvote.choice_statclicks[choice]
 						if(target.ckey)
@@ -103,8 +144,11 @@ SUBSYSTEM_DEF(statpanels)
 									vote_arry[++vote_arry.len] += list("\[[vote_position]\]", choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
 				var/vote_str = url_encode(json_encode(vote_arry))
 				target << output("[vote_str]", "statbrowser:update_voting")
-			else
+				target.stat_vote_sent_null = FALSE
+			else if(!target.stat_vote_sent_null)
 				target << output("[null_bullet_encoded]", "statbrowser:update_voting")
+				target.stat_vote_sent_null = TRUE
+
 		if(!target.holder)
 			if(!target.admin_tabs_cleared)
 				target << output("", "statbrowser:remove_admin_tabs")
@@ -113,18 +157,18 @@ SUBSYSTEM_DEF(statpanels)
 			target.admin_tabs_cleared = FALSE
 			if(!("MC" in target.panel_tabs) || !("Tickets" in target.panel_tabs))
 				target << output("[url_encode(target.holder.href_token)]", "statbrowser:add_admin_tabs")
-			if(target.stat_tab == "MC")
+			if(is_full_cycle && target.stat_tab == "MC")
 				var/turf/eye_turf = get_turf(target.eye)
 				var/coord_entry = url_encode(COORD(eye_turf))
 				if(!mc_data_encoded)
 					generate_mc_data()
 				target << output("[mc_data_encoded];[mc_ss_data_encoded];[coord_entry]", "statbrowser:update_mc")
-			if(target.stat_tab == "Tickets")
+			if(is_full_cycle && target.stat_tab == "Tickets")
 				var/list/ahelp_tickets = GLOB.ahelp_tickets.stat_entry()
 				target << output("[url_encode(json_encode(ahelp_tickets))];", "statbrowser:update_tickets")
 			if(!length(GLOB.sdql2_queries) && ("SDQL2" in target.panel_tabs))
 				target << output("", "statbrowser:remove_sdql2")
-			else if(length(GLOB.sdql2_queries) && (target.stat_tab == "SDQL2" || !("SDQL2" in target.panel_tabs)))
+			else if(is_full_cycle && length(GLOB.sdql2_queries) && (target.stat_tab == "SDQL2" || !("SDQL2" in target.panel_tabs)))
 				var/list/sdql2A = list()
 				sdql2A[++sdql2A.len] = list("", "Access Global SDQL2 List", REF(GLOB.sdql2_vv_statobj))
 				var/list/sdql2B = list()
@@ -133,7 +177,8 @@ SUBSYSTEM_DEF(statpanels)
 					sdql2B = Q.generate_stat()
 				sdql2A += sdql2B
 				target << output(url_encode(json_encode(sdql2A)), "statbrowser:update_sdql2")
-		if(target.mob)
+
+		if(is_full_cycle && target.mob)
 			var/mob/M = target.mob
 			if((target.stat_tab in target.spell_tabs) || !length(target.spell_tabs) && (length(M.mob_spell_list) || length(M.mind?.spell_list)))
 				var/list/proc_holders = M.get_proc_holders()
@@ -188,7 +233,6 @@ SUBSYSTEM_DEF(statpanels)
 
 
 /datum/controller/subsystem/statpanels/proc/generate_mc_data()
-	// Server/MC metrics as structured data
 	var/list/server_info = list()
 	server_info["cpu"] = world.cpu
 	server_info["instances"] = world.contents.len
@@ -239,7 +283,21 @@ SUBSYSTEM_DEF(statpanels)
 	server_info["camera_count"] = GLOB.cameranet.cameras.len
 	server_info["camera_chunks"] = GLOB.cameranet.chunks.len
 
-	// Key subsystem structured data
+	perf_history_cpu += world.cpu
+	if(length(perf_history_cpu) > 30)
+		perf_history_cpu.Cut(1, length(perf_history_cpu) - 29)
+	perf_history_tidi += round(SStime_track.time_dilation_current, 0.1)
+	if(length(perf_history_tidi) > 30)
+		perf_history_tidi.Cut(1, length(perf_history_tidi) - 29)
+	perf_history_ping += round(SStime_track.ping_rtt_last_avg, 1)
+	if(length(perf_history_ping) > 30)
+		perf_history_ping.Cut(1, length(perf_history_ping) - 29)
+	server_info["history"] = list(
+		"cpu" = perf_history_cpu.Copy(),
+		"tidi" = perf_history_tidi.Copy(),
+		"ping" = perf_history_ping.Copy()
+	)
+
 	var/list/key_ss = list()
 	// Atmospherics
 	key_ss["Atmospherics"] = list(
@@ -419,3 +477,5 @@ SUBSYSTEM_DEF(statpanels)
 
 	statbrowser_ready = TRUE
 	init_verbs()
+	// Re-apply theme and favorites after byondStorage is guaranteed available
+	src << output("1", "statbrowser:reapply_storage")

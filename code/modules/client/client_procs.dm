@@ -308,9 +308,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	prefs.last_id = computer_id			//these are gonna be used for banning
 	fps = sanitize_clientfps(prefs.clientfps)
 
-	// BLUEMOON EDIT — Enable Ctrl+F find in legacy browser windows (BYOND 516+)
+	// BLUEMOON EDIT — Enable Ctrl+F find and persistent byondStorage in browser windows (BYOND 516+)
 	if(byond_version >= 516)
-		winset(src, null, "browser-options=+find")
+		winset(src, null, "browser-options=+find;browser-options=+byondstorage")
 
 	//Admin Authorisation
 	var/connecting_admin = FALSE //because de-admined admins connecting should be treated like admins.

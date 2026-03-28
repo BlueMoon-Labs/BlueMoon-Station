@@ -1,0 +1,301 @@
+function update_ping(ping_str, tidi_str) {
+	State.pingData = JSON.parse(ping_str);
+	State.tidiData = JSON.parse(tidi_str);
+
+	pingBarGlobal.style.display = "";
+	var ping = State.pingData[0];
+	var avg = State.pingData[1];
+	var jitter = State.pingData[2];
+	g_ping.dot.style.backgroundColor = pingColor(ping);
+	setText(g_ping.text, "Пинг: " + ping + "ms");
+	g_ping.text.className = pingClass(ping);
+	setText(g_ping.avg, " (сред: " + avg + "ms)");
+	if (jitter != null && jitter > 0) {
+		setText(g_ping.max, " \u00b1" + jitter + "ms");
+		g_ping.max.className = jitterClass(jitter);
+	} else {
+		setText(g_ping.max, "");
+	}
+
+	if (State.tidiData) {
+		var cur = State.tidiData[0];
+		g_ping.tidiText.className = tidiClass(cur);
+		setText(g_ping.tidiText, "Откл: " + cur + "%");
+		setText(g_ping.tidiAvg, " (ср: " + State.tidiData[2] + "%)");
+		g_ping.spacer.style.display = "";
+		g_ping.tidiText.style.display = "";
+		g_ping.tidiAvg.style.display = "";
+	}
+}
+
+function update(global_fast_str, global_slow_str, other_str) {
+	var parsedFast = JSON.parse(global_fast_str);
+	State.globalFast = parsedFast;
+
+	if (global_slow_str && global_slow_str !== "") {
+		State.globalSlow = JSON.parse(global_slow_str);
+	}
+
+	if (parsedFast.tidi) {
+		State.tidiData = parsedFast.tidi;
+	}
+
+	var parsedMob = JSON.parse(other_str);
+	State.mobItems = [];
+	for (var i = 0; i < parsedMob.length; i++) {
+		if (parsedMob[i] != null) State.mobItems.push(parsedMob[i]);
+	}
+
+	if (!_settingsActive) {
+		if (State.currentTab === "Status") {
+			draw_status();
+		} else if (State.currentTab === "Debug Stat Panel") {
+			draw_debug();
+		}
+	}
+}
+
+function update_voting(vote_data) {
+	State.voteParts = JSON.parse(vote_data);
+	if (!_settingsActive && State.currentTab === "Status") draw_status();
+}
+
+function update_mc(server_data_encoded, ss_data_encoded, coords_entry) {
+	State.mcServerData = JSON.parse(server_data_encoded);
+	State.mcSSData = JSON.parse(ss_data_encoded);
+	State.mcServerData.coords = coords_entry;
+	if (!State.verbTabs.includes("MC")) State.verbTabs.push("MC");
+	createStatusTab("MC");
+	if (!_settingsActive && State.currentTab === "MC") draw_mc();
+}
+
+function remove_mc() {
+	removePermanentTab("MC");
+	if (State.currentTab === "MC") tab_change("Status");
+}
+
+function update_spells(t, s) {
+	State.spellTabs = JSON.parse(t);
+	var doUpdate = State.spellTabs.includes(State.currentTab);
+	init_spells();
+	if (s) {
+		State.spells = JSON.parse(s);
+		if (!_settingsActive && doUpdate) draw_spells(State.currentTab);
+	} else {
+		remove_spells();
+	}
+}
+
+function remove_spells() {
+	for (var s = 0; s < State.spellTabs.length; s++) {
+		removeStatusTab(State.spellTabs[s]);
+	}
+}
+
+function init_spells() {
+	for (var i = 0; i < State.spellTabs.length; i++) {
+		var cat = State.spellTabs[i];
+		if (cat.length > 0) {
+			if (!State.verbTabs.includes(cat)) State.verbTabs.push(cat);
+			createStatusTab(cat);
+		}
+	}
+}
+
+function check_spells() {
+	for (var v = 0; v < State.spellTabs.length; v++) {
+		spell_cat_check(State.spellTabs[v]);
+	}
+}
+
+function spell_cat_check(cat) {
+	var count = 0;
+	for (var s = 0; s < State.spells.length; s++) {
+		if (State.spells[s][0] === cat) count++;
+	}
+	if (count < 1) removeStatusTab(cat);
+}
+
+function update_tickets(T) {
+	State.tickets = JSON.parse(T);
+	if (!State.verbTabs.includes("Tickets")) {
+		State.verbTabs.push("Tickets");
+		addPermanentTab("Tickets");
+	}
+	if (!_settingsActive && State.currentTab === "Tickets") draw_tickets();
+}
+
+function update_interviews(I) {
+	State.interviewManager = JSON.parse(I);
+	if (!_settingsActive && State.currentTab === "Tickets") draw_interviews();
+}
+
+function draw_interviews() {
+	var body = el("div");
+	var header = el("h3", null, "Interviews");
+	body.appendChild(header);
+	var manLink = el("a", null, "Open Interview Manager Panel");
+	manLink.href = "?_src_=holder;admin_token=" + State.hrefToken + ";interview_man=1;statpanel_item_click=left";
+	body.appendChild(manLink);
+
+	var statsTable = el("table", "data-table");
+	for (var key in State.interviewManager.status) {
+		var tr = el("tr");
+		tr.appendChild(el("td", "data-label", key));
+		tr.appendChild(el("td", "data-value", State.interviewManager.status[key]));
+		statsTable.appendChild(tr);
+	}
+	body.appendChild(statsTable);
+	statcontent.appendChild(body);
+
+	if (State.interviewManager.interviews) {
+		for (var i = 0; i < State.interviewManager.interviews.length; i++) {
+			var part = State.interviewManager.interviews[i];
+			var card = el("div", "ticket-card");
+			var a = el("a", null, part["status"]);
+			a.href = "?_src_=holder;admin_token=" + State.hrefToken + ";interview=" + part["ref"] + ";statpanel_item_click=left";
+			card.appendChild(a);
+			statcontent.appendChild(card);
+		}
+	}
+}
+
+function update_sdql2(S) {
+	State.sdql2 = JSON.parse(S);
+	if (State.sdql2.length > 0 && !State.verbTabs.includes("SDQL2")) {
+		State.verbTabs.push("SDQL2");
+		addPermanentTab("SDQL2");
+	}
+	if (!_settingsActive && State.currentTab === "SDQL2") draw_sdql2();
+}
+
+function remove_sdql2() {
+	State.sdql2 = [];
+	removePermanentTab("SDQL2");
+	if (State.currentTab === "SDQL2") tab_change("Status");
+	checkStatusTab();
+}
+
+function remove_tickets() {
+	State.tickets = [];
+	removePermanentTab("Tickets");
+	if (State.currentTab === "Tickets") tab_change("Status");
+	checkStatusTab();
+}
+
+function remove_interviews() {
+	State.tickets = [];
+	checkStatusTab();
+}
+
+function remove_admin_tabs() {
+	State.hrefToken = null;
+	remove_mc();
+	remove_tickets();
+	remove_sdql2();
+}
+
+function add_admin_tabs(ht) {
+	State.hrefToken = ht;
+	addPermanentTab("MC");
+	addPermanentTab("Tickets");
+}
+
+function create_listedturf(TN) {
+	remove_listedturf();
+	State.turfContents = [];
+	State.turfName = JSON.parse(TN);
+	addPermanentTab(State.turfName);
+	tab_change(State.turfName);
+}
+
+function update_listedturf(TC) {
+	if (TC === State.turfContentsRaw) return;
+	State.turfContentsRaw = TC;
+	State.turfContents = JSON.parse(TC);
+	if (!_settingsActive && State.currentTab === State.turfName) draw_listedturf();
+}
+
+function remove_listedturf() {
+	removePermanentTab(State.turfName);
+	State.turfContentsRaw = "";
+	turfTable = null;
+	turfItemNodes = {};
+	checkStatusTab();
+	if (State.currentTab === State.turfName) tab_change("Status");
+}
+
+function init_verbs(c, v) {
+	connected_to_server();
+	wipe_verbs();
+	checkStatusTab();
+	State.verbTabs = JSON.parse(c);
+	State.verbTabs.sort();
+	var doUpdate = false;
+	for (var i = 0; i < State.verbTabs.length; i++) {
+		createStatusTab(State.verbTabs[i]);
+	}
+	if (State.verbTabs.includes(State.currentTab)) doUpdate = true;
+	if (v) {
+		add_verb_list(v);
+		sortVerbs();
+		if (!_settingsActive && doUpdate) draw_verbs(State.currentTab);
+	}
+	SendTabsToByond();
+}
+
+function add_verb_list(v) {
+	var toAdd = JSON.parse(v);
+	toAdd.sort();
+	for (var i = 0; i < toAdd.length; i++) {
+		var part = toAdd[i];
+		if (!part[0]) continue;
+		var category = resolveTabDisplayName(part[0]);
+		if (findVerbIndex(part[1], State.verbs) !== -1) continue;
+		if (State.verbTabs.includes(category)) {
+			State.verbs.push(part);
+			if (!_settingsActive && State.currentTab === category) draw_verbs(category);
+		} else if (category) {
+			State.verbTabs.push(category);
+			State.verbs.push(part);
+			createStatusTab(category);
+		}
+	}
+}
+
+function remove_verb_list(v) {
+	var toRemove = JSON.parse(v);
+	for (var i = 0; i < toRemove.length; i++) {
+		remove_verb(toRemove[i]);
+	}
+	check_verbs();
+	sortVerbs();
+	if (!_settingsActive && State.verbTabs.includes(State.currentTab)) draw_verbs(State.currentTab);
+}
+
+function update_split_admin_tabs(status) {
+	status = (status === true);
+	if (State.splitAdminTabs !== status) {
+		if (State.splitAdminTabs === true) {
+			removeStatusTab("Events");
+			removeStatusTab("Fun");
+			removeStatusTab("Game");
+		}
+		update_verbs();
+	}
+	State.splitAdminTabs = status;
+}
+
+
+function create_debug() {
+	if (!document.getElementById("tab-Debug Stat Panel")) {
+		addPermanentTab("Debug Stat Panel");
+	} else {
+		removePermanentTab("Debug Stat Panel");
+	}
+}
+
+function reapply_storage() {
+	applyTheme(loadTheme());
+	loadFavorites();
+}
