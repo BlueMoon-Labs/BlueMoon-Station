@@ -97,6 +97,8 @@ GLOBAL_LIST_EMPTY(blob_nodes)
 	return TRUE
 
 /mob/camera/blob/process()
+	if(QDELETED(src))
+		return
 	if(!blob_core)
 		if(!placed)
 			if(manualplace_min_time && world.time >= manualplace_min_time)
@@ -107,7 +109,7 @@ GLOBAL_LIST_EMPTY(blob_nodes)
 				place_blob_core(1)
 		else
 			qdel(src)
-	else if(!victory_in_progress && (blobs_legit.len >= blobwincount))
+	else if(!victory_in_progress && blobs_legit && (blobs_legit.len >= blobwincount))
 		victory_in_progress = TRUE
 		priority_announce("Biohazard has reached critical mass. Station loss is imminent.", "BНИМАНИЕ БИОУГРОЗА")
 		set_security_level("delta")
@@ -118,7 +120,7 @@ GLOBAL_LIST_EMPTY(blob_nodes)
 		to_chat(src, "<b><span class='big'><font color=\"#EE4000\">You have gained another free strain re-roll.</font></span></b>")
 		free_strain_rerolls = 1
 
-	if(!victory_in_progress && max_count < blobs_legit.len)
+	if(!victory_in_progress && blobs_legit && max_count < blobs_legit.len)
 		max_count = blobs_legit.len
 
 /mob/camera/blob/proc/victory()

@@ -9,8 +9,6 @@ SUBSYSTEM_DEF(title_bm)
 	var/lobby_html = ""
 	var/current_notice
 	var/loading_image = BM_LOBBY_LOADING_GIF
-	var/lobby_tick_timer
-	var/refresh_timer
 	var/current_video_payload
 	var/cached_static_html = ""
 	var/cached_js_url = ""           // URL JS-библиотеки — вычисляется один раз в _build_static_html
@@ -67,10 +65,6 @@ SUBSYSTEM_DEF(title_bm)
 
 /datum/controller/subsystem/title_bm/Destroy()
 	UnregisterSignal(SSticker, list(COMSIG_TICKER_ENTER_PREGAME, COMSIG_TICKER_ENTER_SETTING_UP))
-	deltimer(lobby_tick_timer)
-	lobby_tick_timer = null
-	deltimer(refresh_timer)
-	refresh_timer = null
 	sfw_images = null
 	nsfw_images = null
 	current_sfw_image = null
@@ -244,30 +238,19 @@ SUBSYSTEM_DEF(title_bm)
 	SIGNAL_HANDLER
 	_rotate_current_images()  // выбираем случайную картинку один раз при старте прегейма
 	change_image(null)
-	deltimer(lobby_tick_timer)
-	lobby_tick_timer = addtimer(CALLBACK(src, PROC_REF(_lobby_tick)), 15 SECONDS, TIMER_LOOP | TIMER_STOPPABLE)
-
-/datum/controller/subsystem/title_bm/proc/_lobby_tick()
-	if(!length(GLOB.new_player_list))
-		return
-	update_player_counts_all()
-	if(!SSticker?.login_music)
-		return
-	for(var/mob/dead/new_player/player as anything in GLOB.new_player_list)
-		if(QDELETED(player) || !player.bm_lobby_ready || !player.client || player.bm_lobby_music_path)
-			continue
-		player.client.bm_push_lobby_music()
+	if(SSticker?.login_music)
+		for(var/mob/dead/new_player/player as anything in GLOB.new_player_list)
+			if(!player.bm_lobby_ready || !player.client || player.bm_lobby_music_path)
+				continue
+			INVOKE_ASYNC(player.client, TYPE_PROC_REF(/client, bm_push_lobby_music))
 
 /datum/controller/subsystem/title_bm/proc/_on_enter_setting_up()
 	SIGNAL_HANDLER
-	deltimer(lobby_tick_timer) // pregame-таймер больше не нужен — Players spawn out
-	deltimer(refresh_timer)
-	refresh_timer = addtimer(CALLBACK(src, PROC_REF(_refresh_all_lobby_html)), 0.5 SECONDS, TIMER_STOPPABLE)
-
-/datum/controller/subsystem/title_bm/proc/_refresh_all_lobby_html()
 	for(var/mob/dead/new_player/player as anything in GLOB.new_player_list)
-		if(player.spawning || player.new_character)
+		if(player.spawning || player.new_character || !player.client)
 			continue
-		if(!player.client)
-			continue
-		INVOKE_ASYNC(player, TYPE_PROC_REF(/mob/dead/new_player, bm_update_lobby_html))
+		if(player.bm_lobby_ready)
+			INVOKE_ASYNC(player, TYPE_PROC_REF(/mob/dead/new_player, bm_push_menu_update), TRUE)
+		else
+			INVOKE_ASYNC(player, TYPE_PROC_REF(/mob/dead/new_player, bm_update_lobby_html))
+	INVOKE_ASYNC(src, PROC_REF(update_player_counts_all))

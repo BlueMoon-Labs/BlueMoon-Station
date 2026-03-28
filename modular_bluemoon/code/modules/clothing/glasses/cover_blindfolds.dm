@@ -1,6 +1,7 @@
 #define DATA_ICON "icon"
 #define DATA_ICON_STATE "icon_state"
 #define DATA_ICON_WORN_OVERLAY "mob_overlay_icon"
+#define DATA_COLOR "color"
 
 /obj/item/clothing/glasses/cover
 	icon = 'modular_bluemoon/icons/obj/clothing/glasses.dmi'
@@ -8,9 +9,10 @@
 	custom_materials = list(/datum/material/cloth = 250)
 	is_edible = TRUE
 	var/alist/previous_icon_data = alist(
-		DATA_ICON = "",
-		DATA_ICON_STATE = "",
-		DATA_ICON_WORN_OVERLAY = ""
+		DATA_ICON = null,
+		DATA_ICON_STATE = null,
+		DATA_ICON_WORN_OVERLAY = null,
+		DATA_COLOR = null
 	)
 	var/obj/item/clothing/glasses/wrapped_on
 	var/can_switch_eye = TRUE
@@ -42,22 +44,50 @@
 		return
 
 	wrapped_on = target
-	previous_icon_data[DATA_ICON] = target.icon
-	previous_icon_data[DATA_ICON_STATE] = target.icon_state
-	previous_icon_data[DATA_ICON_WORN_OVERLAY] = target.mob_overlay_icon
+	save_target_data(wrapped_on)
 	update_icon(UPDATE_ICON_STATE)
 	target.icon = icon
 	target.icon_state = icon_state
 	target.mob_overlay_icon = mob_overlay_icon
+	target.color = color
 	RegisterSignal(target, COMSIG_ATOM_TOOL_ACT(TOOL_SCREWDRIVER), PROC_REF(remove))
 	RegisterSignal(target, COMSIG_CLICK_CTRL_SHIFT, PROC_REF(wrapped_on_CtrlShiftClick))
 	RegisterSignal(target, COMSIG_PARENT_EXAMINE, PROC_REF(wrapped_on_examine))
 	RegisterSignal(target, COMSIG_ATOM_UPDATE_ICON_STATE, PROC_REF(on_update_icon))
 	forceMove(target)
+	if(user)
+		user.update_inv_glasses()
 
 /obj/item/clothing/glasses/cover/proc/on_update_icon(datum/source)
 	SIGNAL_HANDLER
+	save_target_data(wrapped_on)
 	update_icon(UPDATE_ICON_STATE)
+	if(iscarbon(wrapped_on.loc))
+		var/mob/living/carbon/wearer = wrapped_on.loc
+		if(wearer.glasses == wrapped_on)
+			wearer.update_inv_glasses()
+
+/obj/item/clothing/glasses/cover/proc/save_target_data(obj/item/clothing/glasses/target)
+	if(target.icon && target.icon != previous_icon_data[DATA_ICON] && target.icon != icon)
+		previous_icon_data[DATA_ICON] = target.icon
+	if(target.icon_state && target.icon_state != previous_icon_data[DATA_ICON_STATE] && target.icon_state != icon_state)
+		previous_icon_data[DATA_ICON_STATE] = target.icon_state
+	if(target.mob_overlay_icon && target.mob_overlay_icon != previous_icon_data[DATA_ICON_WORN_OVERLAY] && target.mob_overlay_icon != mob_overlay_icon)
+		previous_icon_data[DATA_ICON_WORN_OVERLAY] = target.mob_overlay_icon
+	if(target.color && target.color != previous_icon_data[DATA_COLOR] && target.color != color)
+		previous_icon_data[DATA_COLOR] = target.color
+
+/obj/item/clothing/glasses/cover/proc/load_and_del_target_data(obj/item/clothing/glasses/target)
+	target.icon = previous_icon_data[DATA_ICON] || null
+	target.icon_state = previous_icon_data[DATA_ICON_STATE] || null
+	target.mob_overlay_icon = previous_icon_data[DATA_ICON_WORN_OVERLAY] || null
+	target.color = previous_icon_data[DATA_COLOR] || null
+	previous_icon_data = alist(
+		DATA_ICON = null,
+		DATA_ICON_STATE = null,
+		DATA_ICON_WORN_OVERLAY = null,
+		DATA_COLOR = null
+	)
 
 /obj/item/clothing/glasses/cover/proc/wrapped_on_examine(atom/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
@@ -74,15 +104,7 @@
 	if(QDELETED(wrapped_on))
 		return
 
-	wrapped_on.icon = previous_icon_data[DATA_ICON]
-	wrapped_on.icon_state = previous_icon_data[DATA_ICON_STATE]
-	if(previous_icon_data[DATA_ICON_WORN_OVERLAY])
-		wrapped_on.mob_overlay_icon = previous_icon_data[DATA_ICON_WORN_OVERLAY]
-	else
-		wrapped_on.mob_overlay_icon = null
-	previous_icon_data[DATA_ICON] = ""
-	previous_icon_data[DATA_ICON_STATE] = ""
-	previous_icon_data[DATA_ICON_WORN_OVERLAY] = ""
+	load_and_del_target_data(wrapped_on)
 	forceMove(get_turf(wrapped_on))
 	wrapped_on = null
 	if(user)
@@ -140,3 +162,4 @@
 #undef DATA_ICON
 #undef DATA_ICON_STATE
 #undef DATA_ICON_WORN_OVERLAY
+#undef DATA_COLOR

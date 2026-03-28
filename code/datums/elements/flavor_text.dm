@@ -255,7 +255,13 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 
 	if(!istype(our_mob))
 		return
-	var/new_text = tgui_input_text(our_mob, "Введите новую позу своего персонажа (максимум 1024 символа).", "Новая поза", our_mob.tempflavor, 1024, TRUE, TRUE)
+		
+	var/new_text = ""
+	if(our_mob.client?.prefs.tgui_input_verbs)
+		new_text = tgui_input_text(our_mob, "Введите новую позу своего персонажа.", "Новая поза", our_mob.tempflavor, 1024, TRUE, TRUE)
+	else
+		new_text = stripped_multiline_input_or_reflect(our_mob, "Введите новую позу своего персонажа.", "Новая поза")
+
 	our_mob.tempflavor = new_text
 
 	/*

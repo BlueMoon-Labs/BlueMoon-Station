@@ -172,16 +172,17 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.silent = TRUE
 
-/* BLUEMOON COMMENTING OUT using own tools in modular_bluemoon\code\game\objects\items\storage\toolbox.dm
 /obj/item/storage/toolbox/syndicate/PopulateContents()
 	new /obj/item/screwdriver/nuke(src)
 	new /obj/item/wrench/combat(src)
 	new /obj/item/weldingtool/largetank(src)
 	new /obj/item/crowbar/red(src)
-	new /obj/item/wirecutters(src, "red")
+	new /obj/item/wirecutters/red(src)
 	new /obj/item/multitool(src)
-	new /obj/item/clothing/gloves/tackler/combat/insulated(src)
-*/
+	if(prob(10))
+		new /obj/item/clothing/gloves/tackler/combat/insulated(src)
+	else
+		new /obj/item/clothing/gloves/combat(src)
 
 /obj/item/storage/toolbox/drone
 	name = "mechanical toolbox"

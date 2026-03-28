@@ -8,16 +8,28 @@
 	if(activity)
 		reset_activity()
 		return
-	if(stat == CONSCIOUS)
-		display_typing_indicator(isMe = TRUE)
-		activity = stripped_input(src, "Здесь можно описать продолжительную (долго длящуюся) деятельность, которая будет отображаться столько, сколько тебе нужно.", "Опиши свою деятельность", "", MAX_MESSAGE_LEN)
-		clear_typing_indicator()
-		if(activity)
-			activity = capitalize(activity)
-			set_activity_indicator(TRUE)
-			return me_verb(activity)
-	else
+	if(GLOB.say_disabled)	//This is here to try to identify lag problems
+		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		return
+	if(stat != CONSCIOUS)
 		to_chat(src, span_warning("Недоступно в твоем нынешнем состоянии"))
+		return
+
+	display_typing_indicator(isMe = TRUE)
+
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(src, "Здесь можно описать продолжительную (долго длящуюся) деятельность, которая будет отображаться столько, сколько тебе нужно.", "Опиши свою деятельность", "", MAX_MESSAGE_LEN, encode = TRUE)
+	else
+		message = stripped_multiline_input_or_reflect(src, "Здесь можно описать продолжительную (долго длящуюся) деятельность, которая будет отображаться столько, сколько тебе нужно.", "Опиши свою деятельность")
+	
+	clear_typing_indicator()
+	if(!length(message))
+		return
+	activity = message
+	usr.emote("me",1,activity,TRUE)
+	activity = capitalize(activity)
+	set_activity_indicator(TRUE)
 
 /mob/living/proc/set_activity_indicator(state)
 	var/mutable_appearance/activity_indicator = mutable_appearance('modular_bluemoon/icons/mob/activity_indicator.dmi', "tea", FLY_LAYER, appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | KEEP_APART)

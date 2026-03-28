@@ -34,6 +34,7 @@
 	var/list/network = list("ss13")
 	var/obj/machinery/camera/current
 	var/list/connected_robots = list()
+	var/list/linked_humans = list() // (ADD) Pe4enika: Список подключенных через нейролинк
 	var/aiRestorePowerRoutine = 0
 	var/requires_power = POWER_REQ_ALL
 	var/can_be_carded = TRUE
@@ -89,6 +90,8 @@
 	var/datum/action/innate/custom_holoform/custom_holoform = new
 	var/chnotify = 0
 
+	var/obj/screen/fullscreen/boot_overlay // (ADD) Pe4henika bluemoon - BOOT LOADING
+	var/boot_initialized = FALSE
 
 	var/multicam_on = FALSE
 	var/atom/movable/screen/movable/pic_in_pic/ai/master_multicam
@@ -193,6 +196,7 @@
 	alert_control = new(src, list(ALARM_ATMOS, ALARM_FIRE, ALARM_POWER, ALARM_CAMERA, ALARM_BURGLAR, ALARM_MOTION), list(z), camera_view = TRUE)
 	RegisterSignal(alert_control.listener, COMSIG_ALARM_TRIGGERED, PROC_REF(alarm_triggered))
 	RegisterSignal(alert_control.listener, COMSIG_ALARM_CLEARED, PROC_REF(alarm_cleared))
+	src.overlay_fullscreen("boot_blind", /atom/movable/screen/fullscreen/scaled/blind)
 
 /mob/living/silicon/ai/Destroy()
 	GLOB.ai_list -= src
@@ -264,30 +268,44 @@
 	display_icon_override = ai_core_icon
 	set_core_display_icon(ai_core_icon)
 
+// (ADD) Pe4henika Bluemonn -- start
+// MARK: Status Tab
 /mob/living/silicon/ai/get_status_tab_items()
-	. = ..()
-	if(stat != CONSCIOUS)
-		. += "Systems nonfunctional"
-		return
-	. += "System integrity: [(health + 100) * 0.5]%"
-	if(isturf(loc)) //only show if we're "in" a core
-		. += "Backup Power: [battery * 0.5]%"
-	. += "Connected cyborgs: [length(connected_robots)]"
-	for(var/r in connected_robots)
-		var/mob/living/silicon/robot/connected_robot = r
-		if(!connected_robot)
-			continue
-		var/robot_status = "Nominal"
-		if(connected_robot.shell)
-			robot_status = "AI SHELL"
-		else if(connected_robot.stat != CONSCIOUS || !connected_robot.client)
-			robot_status = "OFFLINE"
-		else if(!connected_robot.cell || connected_robot.cell.charge <= 0)
-			robot_status = "DEPOWERED"
-		//Name, Health, Battery, Module, Area, and Status! Everything an AI wants to know about its borgies!
-		. += "[connected_robot.name] | S.Integrity: [connected_robot.health]% | Cell: [connected_robot.cell ? "[connected_robot.cell.charge]/[connected_robot.cell.maxcharge]" : "Empty"] | \
-		Module: [connected_robot.designation] | Loc: [get_area_name(connected_robot, TRUE)] | Status: [robot_status]"
-	. += "AI shell beacons detected: [LAZYLEN(GLOB.available_ai_shells)]" //Count of total AI shells
+    . = ..()
+    if(stat != CONSCIOUS)
+        . += "Systems nonfunctional"
+        return
+
+    . += "System integrity: [(health + 100) * 0.5]%"
+    if(isturf(loc))
+        . += "Backup Power: [battery * 0.5]%"
+
+    // КИБОРГИ
+    . += "Connected cyborgs: [length(connected_robots)]"
+    for(var/mob/living/silicon/robot/R in connected_robots)
+        var/r_status = (R.stat == CONSCIOUS && R.client) ? "NOMINAL" : "OFFLINE"
+        . += "[R.name] | Integrity: [R.health]% | Loc: [get_area_name(R, TRUE)] | Status: [r_status]"
+
+    // НЕЙРОЛИНКИ
+    . += "Active Neurolinks: [length(linked_humans)]"
+    for(var/h in linked_humans)
+        var/mob/living/carbon/H = h
+        if(!H)
+            linked_humans -= h
+            continue
+
+        var/p_status = "CONNECTED"
+        if(H.stat == DEAD)
+            p_status = "SIGNAL LOST (DEAD)"
+        else if(H.stat == UNCONSCIOUS)
+            p_status = "UNCONSCIOUS"
+
+        var/p_job = (H.mind && H.mind.assigned_role) ? H.mind.assigned_role : "Unknown"
+
+        . += "\[LINK\] [H.name] ([p_job]) | Health: [H.health]% | Loc: [get_area_name(H, TRUE)] | Status: [p_status]"
+
+    . += "AI shell beacons detected: [LAZYLEN(GLOB.available_ai_shells)]"
+// (ADD) Pe4henika bluemoon -- end
 
 /mob/living/silicon/ai/proc/ai_call_shuttle()
 	if(control_disabled)
@@ -602,9 +620,9 @@
 
 /mob/living/silicon/ai/proc/choose_modules()
 	set category = "Malfunction"
-	set name = "Choose Module"
+	set name = "Модули"
 
-	malf_picker.use(src)
+	malf_picker.ui_interact(src)
 
 /mob/living/silicon/ai/proc/ai_statuschange()
 	set category = "AI Commands"
@@ -980,6 +998,40 @@
 	if(.) //successfully ressuscitated from death
 		set_eyeobj_visible(TRUE)
 		set_core_display_icon(display_icon_override)
+
+// (ADD) Pe4henika Bluemoon -- start
+// MARK: BOOT LOADING
+/mob/living/silicon/ai/ui_interact(mob/user, datum/tgui/ui)
+	if(boot_initialized)
+		return
+
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "AiBootTerminal")
+		ui.open()
+
+/mob/living/silicon/ai/ui_data(mob/user)
+	var/list/data = list()
+	data["name"] = name
+	data["malfhacking"] = (malfhacking || (mind && mind.special_role == "malfunction"))
+	return data
+
+/mob/living/silicon/ai/ui_act(action, params)
+	if(..())
+		return
+	switch(action)
+		if("init_complete")
+			if(boot_initialized)
+				return TRUE
+			boot_initialized = TRUE
+
+			src.clear_fullscreen("boot_blind")
+			SStgui.close_uis(src)
+			to_chat(src, "<span class='robot'><b>СИСТЕМА ИНИЦИАЛИЗИРОВАНА. ДОБРО ПОЖАЛОВАТЬ В СЕТЬ, [name].</b></span>")
+			playsound(src, 'sound/machines/ping.ogg', 50, 1)
+
+			return TRUE
+// (ADD) Pe4henika Bluemoon -- end
 
 /mob/living/silicon/ai/proc/malfhacked(obj/machinery/power/apc/apc)
 	malfhack = null

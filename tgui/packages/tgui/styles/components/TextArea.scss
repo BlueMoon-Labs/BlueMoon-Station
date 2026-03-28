@@ -37,8 +37,8 @@ $border-radius: Input.$border-radius !default;
 
 .TextArea__textarea.TextArea__textarea--scrollable {
   overflow: auto;
+  overflow-block: auto;
   overflow-x: hidden;
-  overflow-y: scroll;
 }
 
 .TextArea__textarea {
@@ -64,7 +64,7 @@ $border-radius: Input.$border-radius !default;
   // Make sure the div and the textarea wrap words in the same way
   word-wrap: break-word;
   overflow: hidden;
-
+  resize: none;
 }
 
 .TextArea__textarea_custom {
@@ -72,8 +72,8 @@ $border-radius: Input.$border-radius !default;
   white-space: pre-wrap;
 }
 
-.TextArea__nowrap {
+.TextArea--singleline {
   white-space: nowrap;
   overflow-wrap: normal;
-  overflow-x: scroll;
+  overflow-x: auto;
 }

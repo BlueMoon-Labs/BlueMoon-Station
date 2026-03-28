@@ -184,7 +184,7 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 		test.log_for_test(text, "error", file, line)
 
 		// Normal log message
-		log_entry += "\tREASON #[reasonID]: [text] at [file]:[line]"
+		log_entry += "\tREASON #[reasonID]: [text] at [file]:[line],title=[map_name]"
 
 	var/message = log_entry.Join("\n")
 	log_test(message)

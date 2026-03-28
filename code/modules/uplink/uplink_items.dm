@@ -14,6 +14,8 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 			continue
 		if (I.restricted && !allow_restricted)
 			continue
+		if(length(I.required_round_types) && !(GLOB.round_type in I.required_round_types))
+			continue
 
 		if(!filtered_uplink_items[I.category])
 			filtered_uplink_items[I.category] = list()
@@ -99,6 +101,8 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 	var/list/restricted_species //Limits items to a specific species. Hopefully.
 	var/illegal_tech = TRUE // Can this item be deconstructed to unlock certain techweb research nodes?
 	var/hijack_only = FALSE //can this item be purchased only during hijackings?
+	/// If nonempty, only offered when `GLOB.round_type` is one of these (Bluemoon; e.g. `ROUNDTYPE_DYNAMIC_HARD`).
+	var/list/required_round_types
 
 /datum/uplink_item/proc/get_discount()
 	return pick(4;0.75,2;0.5,1;0.25)

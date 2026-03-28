@@ -68,7 +68,7 @@
 	print_report()
 	report_text = null
 
-	target_record = find_security_record("name", prisoner_name)
+	target_record = GLOB.data_core.security_by_name[prisoner_name]
 	set_security_status(SEC_RECORD_STATUS_INCARCERATED)
 
 	name = "[default_name] ([prisoner_name])"

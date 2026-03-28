@@ -80,3 +80,13 @@
 	"reset_module", "purge_module", "remove_module", "freeformcore_module", "asimov_module", "nt_safeguard_module", "paladin_module", "tyrant_module", "corporate_module",
 	"default_module", "borg_ai_control", "mecha_tracking_ai_control", /*"aiupload",*/ "intellicard", "slut_module", "shebang_module", "milker_module", "vore_pred_module")/*BlueMoon edit*/
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
+
+// (ADD) Pe4henika bluemoon -- start
+/datum/techweb_node/link_ai
+	id = "link_ai"
+	display_name = "Advanced AI connectivity"
+	description = "Technologies related to neural interfaces"
+	prereq_ids = list("ai", "combat_cyber_implants")
+	design_ids = list("ai_link_implant")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
+// (ADD) Pe4henika bluemoon -- end

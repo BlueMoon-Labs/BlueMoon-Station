@@ -12,13 +12,15 @@ Sneezing
 Bonus
 	Forces a spread type of AIRBORNE
 	with extra range!
+	At the final disease stage, a sneeze knocks the host backward slightly.
+	Sneezing briefly disrupts the host's actions.
 
 //////////////////////////////////////
 */
 
 /datum/symptom/sneeze
 	name = "Sneezing"
-	desc = "The virus causes irritation of the nasal cavity, making the host sneeze occasionally."
+	desc = "The virus causes irritation of the nasal cavity, making the host sneeze occasionally, briefly disrupting movement and actions. At the final stage of the disease, sneezing can knock the host backward."
 	stealth = -2
 	resistance = 3
 	stage_speed = 0
@@ -50,5 +52,9 @@ Bonus
 				M.emote("snuffle") //BLUEMOON EDIT
 		else
 			M.emote("sneeze")
+			M.Stun(20)
+			if(A.stage >= A.max_stages && !M.buckled && M.move_resist < INFINITY)
+				var/atom/throw_target = get_edge_target_turf(M, REVERSE_DIR(M.dir))
+				M.safe_throw_at(throw_target, 1, 1, force = MOVE_FORCE_STRONG, gentle = TRUE)
 			if(M.CanSpreadAirborneDisease()) //don't spread germs if they covered their mouth
 				A.spread(4 + power)

@@ -593,18 +593,18 @@
 
 	switch(href_list["choice"])
 		if("Medical Records")
-			active1 = find_record("id", href_list["target"], GLOB.data_core.general)
+			active1 = GLOB.data_core.general_by_id[href_list["target"]]
 			if(active1)
-				active2 = find_record("id", href_list["target"], GLOB.data_core.medical)
+				active2 = GLOB.data_core.medical_by_id[href_list["target"]]
 			host_pda.mode = 441
 			if(!active2)
 				active1 = null
 			playsound(src, 'sound/machines/terminal_select.ogg', 50, 1)
 
 		if("Security Records")
-			active1 = find_record("id", href_list["target"], GLOB.data_core.general)
+			active1 = GLOB.data_core.general_by_id[href_list["target"]]
 			if(active1)
-				active3 = find_record("id", href_list["target"], GLOB.data_core.security)
+				active3 = GLOB.data_core.security_by_id[href_list["target"]]
 			host_pda.mode = 451
 			if(!active3)
 				active1 = null

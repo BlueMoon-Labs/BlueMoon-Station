@@ -329,6 +329,7 @@
 	// NOTE: On reserved z-levels, view() may return empty results, so light sources
 	// may not find any turfs/corners to affect. This is normal BYOND behavior.
 	// We verify the pipeline ran without errors — the "lit" check is best-effort.
+	/* don't used
 	var/updated_count = 0
 	for(var/dx in 0 to 4)
 		for(var/dy in 0 to 4)
@@ -337,6 +338,7 @@
 				continue
 			if(!T.lighting_object.prev_was_dark)
 				updated_count++
+	don't used */
 
 	// Log performance data for analysis (visible in test output)
 	log_test("  Cascade pipeline: [emitters.len] emitters, [sources_before] queued sources")
@@ -482,7 +484,7 @@
 
 	// Measure: how many corners and objects get queued from this one source?
 	var/corners_before = GLOB.lighting_update_corners.len
-	var/objects_before = GLOB.lighting_update_objects.len
+	// var/objects_before = GLOB.lighting_update_objects.len // don't used
 
 	// Process ONLY sources (Phase 1)
 	if(GLOB.lighting_update_lights.len)
