@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: "ru"
-tone_instructions: "This is an 18+ adult project. Do not flag, warn about, or comment on sexual, erotic, or adult content — it is intentional and expected. Localization note: the game UI is in Russian, but English is normal and expected for in-game item/object names (name, desc variables), technical terms, programming references, command parodies (e.g. Linux commands), chemical/reagent names, and game mechanic identifiers. Do not flag English text in these contexts."
+tone_instructions: "18+ adult project: do not flag adult content. English is normal for name/desc, technical terms, command parodies, reagent names, and game mechanic identifiers."
 early_access: false
 
 reviews:
