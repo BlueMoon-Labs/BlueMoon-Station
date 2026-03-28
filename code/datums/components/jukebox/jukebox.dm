@@ -188,6 +188,11 @@
 		ui = new(user, src, "Jukebox", box.name)
 		ui.open()
 
+/datum/component/jukebox/ui_static_data(mob/user)
+	var/list/data = list()
+	data["songs"] = SSjukeboxes.song_names
+	return data
+
 /datum/component/jukebox/ui_data(mob/user)
 	var/obj/box = parent
 	var/list/data = list()
@@ -211,10 +216,6 @@
 	data["cost_for_play"] = queuecost
 	data["has_access"] = box.allowed(user)
 	data["repeat"] = repeat
-	var/list/all_song_names = list()
-	for (var/datum/track/T in SSjukeboxes.songs)
-		all_song_names += T.song_name
-	data["songs"] = all_song_names
 	data["favorite_tracks"] = user?.client?.prefs?.favorite_tracks
 	data["playlists"] = user?.client?.prefs?.playlists
 
@@ -257,13 +258,10 @@
 		if("add_to_queue")
 			return add_to_queue(params["track"], usr, params["up"])
 		if("select_track")
-			var/list/available = list()
-			for(var/datum/track/S in SSjukeboxes.songs)
-				available[S.song_name] = S
 			var/selected = params["track"]
-			if(QDELETED(src) || QDELETED(box) || !selected || !istype(available[selected], /datum/track))
+			if(QDELETED(src) || QDELETED(box) || !selected || !istype(SSjukeboxes.songs_by_name[selected], /datum/track))
 				return
-			selectedtrack = available[selected]
+			selectedtrack = SSjukeboxes.songs_by_name[selected]
 			return TRUE
 		if("set_volume")
 			if(!box.allowed(usr))
@@ -334,9 +332,7 @@
 	if(QDELETED(src) || QDELETED(box) || !tracks || !COOLDOWN_FINISHED(src, queuecooldown))
 		return
 
-	var/list/available = list()
-	for(var/datum/track/S in SSjukeboxes.songs)
-		available[S.song_name] = S
+	var/list/available = SSjukeboxes.songs_by_name
 	if(!islist(tracks))
 		tracks = list(tracks)
 
