@@ -104,6 +104,13 @@
 	border-color: var(--accent);
 	background: var(--bg-hover);
 }
+.settings-preset-btn.custom-indicator {
+	border-color: var(--accent);
+	background: var(--bg-hover);
+	cursor: default;
+	font-style: italic;
+	opacity: 0.85;
+}
 .settings-actions {
 	display: flex;
 	gap: 8px;
@@ -121,3 +128,65 @@
 	font-family: var(--font-sans);
 }
 .settings-action-btn:hover { background: var(--bg-hover); }
+
+/* ===== Font Controls ===== */
+.settings-font-controls {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+}
+.settings-select {
+	padding: 4px 8px;
+	font-size: 12px;
+	font-family: var(--font-sans);
+	background: var(--bg-secondary);
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	color: var(--text-primary);
+	outline: none;
+	cursor: pointer;
+	max-width: 180px;
+}
+.settings-select:focus { border-color: var(--accent); }
+.settings-select option { background: var(--bg-secondary); color: var(--text-primary); }
+.settings-font-custom {
+	width: 130px;
+}
+
+/* ===== Toggle Button Group ===== */
+.settings-btn-group {
+	display: flex;
+	gap: 0;
+}
+.settings-toggle-btn {
+	padding: 4px 12px;
+	border: 1px solid var(--border);
+	background: var(--bg-tertiary);
+	color: var(--text-primary);
+	cursor: pointer;
+	font-size: 12px;
+	font-family: var(--font-sans);
+	transition: background 80ms, border-color 80ms;
+}
+.settings-toggle-btn:first-child {
+	border-radius: 4px 0 0 4px;
+}
+.settings-toggle-btn:last-child {
+	border-radius: 0 4px 4px 0;
+}
+.settings-toggle-btn:not(:first-child) {
+	border-left: none;
+}
+.settings-toggle-btn:hover { background: var(--bg-hover); }
+.settings-toggle-btn.active {
+	border-color: var(--accent);
+	background: var(--bg-hover);
+}
+
+/* ===== Checkbox ===== */
+.settings-checkbox {
+	width: 16px;
+	height: 16px;
+	accent-color: var(--accent);
+	cursor: pointer;
+}

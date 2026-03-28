@@ -57,8 +57,8 @@ applyZoom();
 
 function set_theme(which) {
 	if (which === "light") {
-		document.body.className = "light";
+		document.body.classList.add("light");
 	} else {
-		document.body.className = "";
+		document.body.classList.remove("light");
 	}
 }

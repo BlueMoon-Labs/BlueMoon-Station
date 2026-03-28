@@ -1,6 +1,7 @@
 var GEAR_ICON_SVG = '<svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M7.07 0l-.59 2.25a5.55 5.55 0 00-1.3.54L3.11 1.68 1.68 3.11l1.11 2.07c-.23.41-.4.85-.54 1.3L0 7.07v2.02l2.25.59c.14.45.31.89.54 1.3L1.68 13.05l1.43 1.43 2.07-1.11c.41.23.85.4 1.3.54L7.07 16.16h2.02l.59-2.25c.45-.14.89-.31 1.3-.54l2.07 1.11 1.43-1.43-1.11-2.07c.23-.41.4-.85.54-1.3l2.25-.59V7.07l-2.25-.59a5.55 5.55 0 00-.54-1.3l1.11-2.07-1.43-1.43-2.07 1.11c-.41-.23-.85-.4-1.3-.54L9.09 0H7.07zm1.01 4.5a3.58 3.58 0 110 7.16 3.58 3.58 0 010-7.16z"/></svg>';
 
 var THEME_STORAGE_KEY = "statbrowser_theme";
+var THEME_LOCAL_CACHE_KEY = "statbrowser_theme_cache";
 
 var THEME_PRESETS = {
 	"chat": {
@@ -129,6 +130,82 @@ var THEME_PRESETS = {
 			"--health-bad": "#d32f2f",
 			"--border": "#d4d4d4"
 		}
+	},
+	"retro": {
+		name: "Классика",
+		vars: {
+			"--bg-primary": "#1b1b1b",
+			"--bg-secondary": "#161616",
+			"--bg-tertiary": "#252525",
+			"--bg-hover": "#2e2e2e",
+			"--text-primary": "#c8c8c8",
+			"--text-secondary": "#8a8a8a",
+			"--text-muted": "#555555",
+			"--accent": "#5f87af",
+			"--accent-hover": "#7ea3c7",
+			"--health-good": "#5faf5f",
+			"--health-warn": "#d7af5f",
+			"--health-bad": "#d75f5f",
+			"--border": "rgba(255, 255, 255, 0.06)"
+		},
+		settings: {
+			verbLayout: "grid",
+			turfLayout: "list"
+		}
+	},
+	"monokai": {
+		name: "Monokai",
+		vars: {
+			"--bg-primary": "#272822",
+			"--bg-secondary": "#1e1f1c",
+			"--bg-tertiary": "#3e3d32",
+			"--bg-hover": "#49483e",
+			"--text-primary": "#f8f8f2",
+			"--text-secondary": "#a6a28c",
+			"--text-muted": "#75715e",
+			"--accent": "#f92672",
+			"--accent-hover": "#ff4f8e",
+			"--health-good": "#a6e22e",
+			"--health-warn": "#e6db74",
+			"--health-bad": "#f92672",
+			"--border": "rgba(255, 255, 255, 0.08)"
+		}
+	},
+	"dracula": {
+		name: "Dracula",
+		vars: {
+			"--bg-primary": "#282a36",
+			"--bg-secondary": "#21222c",
+			"--bg-tertiary": "#343746",
+			"--bg-hover": "#3e4154",
+			"--text-primary": "#f8f8f2",
+			"--text-secondary": "#6272a4",
+			"--text-muted": "#44475a",
+			"--accent": "#ff79c6",
+			"--accent-hover": "#ff92d0",
+			"--health-good": "#50fa7b",
+			"--health-warn": "#f1fa8c",
+			"--health-bad": "#ff5555",
+			"--border": "rgba(98, 114, 164, 0.3)"
+		}
+	},
+	"nord": {
+		name: "Nord",
+		vars: {
+			"--bg-primary": "#2e3440",
+			"--bg-secondary": "#272c36",
+			"--bg-tertiary": "#3b4252",
+			"--bg-hover": "#434c5e",
+			"--text-primary": "#eceff4",
+			"--text-secondary": "#a3b1c7",
+			"--text-muted": "#4c566a",
+			"--accent": "#88c0d0",
+			"--accent-hover": "#8fbcbb",
+			"--health-good": "#a3be8c",
+			"--health-warn": "#ebcb8b",
+			"--health-bad": "#bf616a",
+			"--border": "rgba(76, 86, 106, 0.5)"
+		}
 	}
 };
 
@@ -137,31 +214,93 @@ var _customStyleEl = null;
 function getDefaultThemeState() {
 	return {
 		preset: "chat",
+		basePreset: "chat",
 		overrides: {},
 		fontFamily: "",
 		fontSize: 12,
 		borderRadius: 4,
-		customCSS: ""
+		customCSS: "",
+		verbLayout: "pills",
+		hideVerbSearch: false,
+		verbPadding: 5,
+		compactMode: false,
+		turfIconSize: 32,
+		turfLayout: "list",
+		turfHideIcons: false,
+		turfFontSize: 12
 	};
 }
 
+var _SETTINGS_KEYS = ["verbLayout", "hideVerbSearch", "verbPadding", "compactMode",
+	"turfLayout", "turfIconSize", "turfHideIcons", "turfFontSize",
+	"fontFamily", "fontSize", "borderRadius", "customCSS"];
+
+function getPresetDefaults(presetKey) {
+	var defaults = getDefaultThemeState();
+	var preset = THEME_PRESETS[presetKey];
+	if (preset && preset.settings) {
+		for (var k in preset.settings) {
+			defaults[k] = preset.settings[k];
+		}
+	}
+	return defaults;
+}
+
+function checkPresetModified(themeState) {
+	if (themeState.preset === "custom") return true;
+	if (themeState.overrides && Object.keys(themeState.overrides).length > 0) return true;
+	var presetDefaults = getPresetDefaults(themeState.preset);
+	for (var i = 0; i < _SETTINGS_KEYS.length; i++) {
+		var k = _SETTINGS_KEYS[i];
+		if (themeState[k] !== presetDefaults[k]) return true;
+	}
+	return false;
+}
+
+function markCustomIfModified(themeState) {
+	if (themeState.preset !== "custom" && checkPresetModified(themeState)) {
+		themeState.basePreset = themeState.preset;
+		themeState.preset = "custom";
+	}
+}
+
 function loadTheme() {
+	var defaults = getDefaultThemeState();
+	var stored = null;
 	try {
-		var stored = serverStorage.getItem(THEME_STORAGE_KEY);
-		if (stored) return JSON.parse(stored);
+		stored = serverStorage.getItem(THEME_STORAGE_KEY);
 	} catch (e) {}
-	return getDefaultThemeState();
+	if (!stored) {
+		try {
+			stored = localStorage.getItem(THEME_LOCAL_CACHE_KEY);
+		} catch (e) {}
+	}
+	if (stored) {
+		try {
+			var parsed = JSON.parse(stored);
+			for (var k in defaults) {
+				if (!(k in parsed)) parsed[k] = defaults[k];
+			}
+			return parsed;
+		} catch (e) {}
+	}
+	return defaults;
 }
 
 function saveTheme(themeState) {
-	try {
-		serverStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(themeState));
-	} catch (e) {}
+	var json = JSON.stringify(themeState);
+	try { serverStorage.setItem(THEME_STORAGE_KEY, json); } catch (e) {}
+	try { localStorage.setItem(THEME_LOCAL_CACHE_KEY, json); } catch (e) {}
+}
+
+function _resolvePreset(themeState) {
+	var key = themeState.preset === "custom" ? (themeState.basePreset || "chat") : themeState.preset;
+	return THEME_PRESETS[key] || THEME_PRESETS["chat"];
 }
 
 function applyTheme(themeState) {
 	var root = document.documentElement;
-	var preset = THEME_PRESETS[themeState.preset];
+	var preset = _resolvePreset(themeState);
 	if (preset) {
 		for (var key in preset.vars) {
 			root.style.setProperty(key, preset.vars[key]);
@@ -175,18 +314,30 @@ function applyTheme(themeState) {
 	}
 	root.style.setProperty("--font-size", themeState.fontSize + "px");
 	root.style.setProperty("--border-radius", themeState.borderRadius + "px");
+	var vp = themeState.verbPadding != null ? themeState.verbPadding : 5;
+	root.style.setProperty("--verb-padding-v", vp + "px");
+	root.style.setProperty("--verb-padding-h", (vp * 2) + "px");
+	var tis = themeState.turfIconSize != null ? themeState.turfIconSize : 32;
+	root.style.setProperty("--turf-icon-size", tis + "px");
+	var tfs = themeState.turfFontSize != null ? themeState.turfFontSize : 12;
+	root.style.setProperty("--turf-font-size", tfs + "px");
+	document.body.classList.toggle("verb-layout-grid", themeState.verbLayout === "grid");
+	document.body.classList.toggle("hide-verb-search", !!themeState.hideVerbSearch);
+	document.body.classList.toggle("compact-mode", !!themeState.compactMode);
+	document.body.classList.toggle("turf-layout-grid", themeState.turfLayout === "grid");
+	document.body.classList.toggle("turf-layout-compact", themeState.turfLayout === "compact");
+	document.body.classList.toggle("turf-hide-icons", !!themeState.turfHideIcons);
 	if (!_customStyleEl) {
 		_customStyleEl = document.createElement("style");
 		_customStyleEl.id = "custom-theme-css";
 		document.head.appendChild(_customStyleEl);
 	}
 	_customStyleEl.textContent = themeState.customCSS || "";
-	document.body.classList.remove("light");
 }
 
 function getCurrentVarValues(themeState) {
 	var result = {};
-	var preset = THEME_PRESETS[themeState.preset];
+	var preset = _resolvePreset(themeState);
 	if (preset) {
 		for (var key in preset.vars) {
 			result[key] = preset.vars[key];

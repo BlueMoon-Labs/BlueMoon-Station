@@ -60,17 +60,21 @@ function update_verbs() {
 }
 
 function loadFavorites() {
-	try {
-		var stored = serverStorage.getItem("statbrowser_favorites");
-		if (stored) State.favorites = JSON.parse(stored);
-	} catch (e) {}
+	var stored = null;
+	try { stored = serverStorage.getItem("statbrowser_favorites"); } catch (e) {}
+	if (!stored) {
+		try { stored = localStorage.getItem("statbrowser_favorites_cache"); } catch (e) {}
+	}
+	if (stored) {
+		try { State.favorites = JSON.parse(stored); } catch (e) {}
+	}
 	updateFavoritesTab();
 }
 
 function saveFavorites() {
-	try {
-		serverStorage.setItem("statbrowser_favorites", JSON.stringify(State.favorites));
-	} catch (e) {}
+	var json = JSON.stringify(State.favorites);
+	try { serverStorage.setItem("statbrowser_favorites", json); } catch (e) {}
+	try { localStorage.setItem("statbrowser_favorites_cache", json); } catch (e) {}
 }
 
 function toggleFavorite(category, verbName) {

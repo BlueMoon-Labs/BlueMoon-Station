@@ -296,6 +296,8 @@ function create_debug() {
 }
 
 function reapply_storage() {
-	applyTheme(loadTheme());
+	var theme = loadTheme();
+	saveTheme(theme);
+	applyTheme(theme);
 	loadFavorites();
 }
