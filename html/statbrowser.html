@@ -1739,6 +1739,7 @@ function mc_ensureSkeleton() {
 	mc_els.pingTable.style.display = State.mcSections.ping ? "" : "none";
 	pingHeader._toggle = function() {
 		mc_els.pingTable.style.display = State.mcSections.ping ? "" : "none";
+		if (!State.mcSections.ping) mc_els.pingTable._lastHash = null;
 	};
 	mc_skeleton.appendChild(pingHeader);
 	mc_skeleton.appendChild(mc_els.pingTable);
@@ -1747,6 +1748,7 @@ function mc_ensureSkeleton() {
 	mc_els.keySection = el("div", "mc-key-section");
 	keyHeader._toggle = function() {
 		mc_els.keySection.style.display = State.mcSections.key ? "" : "none";
+		if (!State.mcSections.key) mc_els.keySection._lastHash = null;
 	};
 	mc_skeleton.appendChild(keyHeader);
 	mc_skeleton.appendChild(mc_els.keySection);
@@ -1865,7 +1867,7 @@ function mc_updatePingSection() {
 	if (!mc_els.pingTable) return;
 	if (!State.mcSections.ping) { mc_els.pingTable.textContent = ""; return; }
 	var d = State.mcServerData;
-	var pingHash = d.ping_samples + "," + d.ping_rtt_avg + "," + d.ping_rtt_max + "," + d.ping_tick_avg + "," + d.ping_server_avg + "," + d.raw_mult + "," + d.jitter_last;
+	var pingHash = d.ping_samples + "," + d.ping_rtt_avg + "," + d.ping_rtt_max + "," + d.ping_rtt_avg_avg + "," + d.ping_tick_avg + "," + d.ping_tick_max + "," + d.ping_server_avg + "," + d.ping_server_max + "," + d.raw_mult + "," + d.jitter_last + "," + d.jitter_avg + "," + d.jitter_max_wnd + "," + d.glide_mult;
 	if (mc_els.pingTable._lastHash === pingHash) return;
 	mc_els.pingTable._lastHash = pingHash;
 	mc_els.pingTable.textContent = "";
@@ -2013,7 +2015,14 @@ function mc_updateKeySection() {
 	if (!mc_els.keySection) return;
 	if (!State.mcSections.key) { mc_els.keySection.textContent = ""; return; }
 	var key_data = State.mcServerData.key_ss || {};
-	var keyHash = JSON.stringify(key_data);
+	var keyHashParts = [JSON.stringify(key_data)];
+	for (var ki = 0; ki < State.mcSSData.length; ki++) {
+		var kr = State.mcSSData[ki];
+		if (MC_KEY_SUBSYSTEMS.indexOf(kr[SS_NAME]) !== -1) {
+			keyHashParts.push(kr[SS_NAME] + ":" + kr[SS_COST] + ":" + kr[SS_TICK] + ":" + kr[SS_STATE] + ":" + kr[SS_CAN_FIRE]);
+		}
+	}
+	var keyHash = keyHashParts.join("|");
 	if (mc_els.keySection._lastHash === keyHash) return;
 	mc_els.keySection._lastHash = keyHash;
 	mc_els.keySection.textContent = "";
@@ -2754,7 +2763,7 @@ function remove_tickets() {
 }
 
 function remove_interviews() {
-	State.tickets = [];
+	State.interviewManager = { status: "", interviews: [] };
 	checkStatusTab();
 }
 

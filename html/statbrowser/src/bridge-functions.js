@@ -184,7 +184,7 @@ function remove_tickets() {
 }
 
 function remove_interviews() {
-	State.tickets = [];
+	State.interviewManager = { status: "", interviews: [] };
 	checkStatusTab();
 }
 
