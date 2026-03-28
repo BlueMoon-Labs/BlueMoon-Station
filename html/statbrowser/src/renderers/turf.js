@@ -7,7 +7,7 @@ function iconError() {
 		var current_attempts = that.getAttribute("data-retry") || 0;
 		current_attempts = parseInt(current_attempts);
 		if (current_attempts > State.imageRetryLimit) return;
-		var src = that.src;
+		var src = that.src.split("#")[0];
 		that.src = "";
 		that.src = src + "#" + current_attempts;
 		that.setAttribute("data-retry", current_attempts + 1);

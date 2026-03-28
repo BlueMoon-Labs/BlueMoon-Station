@@ -32,7 +32,7 @@ function check_verbs() {
 
 function verbs_cat_check(cat) {
 	var tabCat = resolveTabDisplayName(cat);
-	if (!State.verbTabs.includes(tabCat)) {
+	if (!State.verbTabs.includes(cat)) {
 		removeStatusTab(tabCat);
 		return;
 	}
