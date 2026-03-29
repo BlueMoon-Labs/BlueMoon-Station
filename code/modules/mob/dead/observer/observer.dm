@@ -1034,34 +1034,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		spawners_menu = new(src)
 
 	spawners_menu.ui_interact(src)
-/*
-/mob/dead/observer/verb/game_info()
-	set name = "Antag info"
-	set desc = "Shows various info relating to the game mode, antagonists etc."
-	set category = "Ghost"
-	//if(!client.holder && GLOB.master_mode != ROUNDTYPE_EXTENDED)
-		//to_chat(src, span_warning("You cannot see this info in Dynamic mode!"))
-		//return
-	//if(!started_as_observer && can_reenter_corpse)
-		//to_chat(src, span_warning("You cannot see this info unless you are an observer or you've chosen Do Not Resuscitate!"))
-		//return
-	if(!SSticker?.mode)
-		to_chat(src, span_warning("The game hasn't started yet!"))
-		return
-	var/list/stuff = list("[SSticker.mode.name]")
-	stuff += "Antagonists:\n"
-	for(var/datum/antagonist/A in GLOB.antagonists)
-		if(istype(A, /datum/antagonist/ghost_role/ghost_cafe))
-			continue
-		if(!client.holder && !A.show_to_ghosts && GLOB.master_mode != ROUNDTYPE_EXTENDED)
-			continue
-		if(A.owner)
-			stuff += "[A.owner] the [A.name]"
-	var/ghost_info = SSticker.mode.ghost_info()
-	if(ghost_info)
-		stuff += ghost_info
-	to_chat(src, examine_block(span_redtext(stuff.Join("\n"))))
-*/
+
 /mob/proc/can_admin_interact()
 	return FALSE
 
