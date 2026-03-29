@@ -248,15 +248,7 @@
 		ai.relay_speech(message, speaker, message_language, raw_message, radio_freq, spans, message_mode)
 
 /mob/camera/aiEye/proc/SeeEmote(mob/living/speaker, emote_message)
-    if(!relay_emote || !speaker || !ai || speaker == ai)
-        return
-    var/obj/machinery/camera/cam = ai.current
-    if(!istype(cam))
-        return
-    if(!cam.can_use())
-        return
-    if(speaker in cam.can_see())
-        ai.relay_emote(speaker, emote_message)
+    if(relay_emote && speaker && ai && speaker != ai && near_camera(speaker))
 
 /obj/effect/overlay/ai_detect_hud
 	name = ""
