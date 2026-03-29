@@ -2186,3 +2186,9 @@
 	restricted_desc = "Head of Security, Warden, Blueshield."
 	restricted_roles = list("Head of Security", "Warden", "Blueshield")
 	ckeywhitelist = list("lapkee")
+
+/datum/gear/donator/bm/kladmenuwu_sweater
+	name = "Worm Sweater"
+	path = /obj/item/clothing/suit/donator/bm/kladmenuwu_sweater
+	slot = ITEM_SLOT_OCLOTHING
+	ckeywhitelist = list("kladmenuwu")

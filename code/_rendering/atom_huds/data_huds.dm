@@ -327,7 +327,7 @@
 	holder.pixel_y = I.Height() - world.icon_size
 	var/perpname = get_face_name(get_id_name(""))
 	if(perpname && GLOB.data_core)
-		var/datum/data/record/R = find_record("name", perpname, GLOB.data_core.security)
+		var/datum/data/record/R = GLOB.data_core.security_by_name[perpname]
 		if(R)
 			switch(R.fields["criminal"])
 				if(SEC_RECORD_STATUS_EXECUTE)
@@ -638,9 +638,9 @@
 	var/datum/data/record/R
 	switch(comment_kind)
 		if("security")
-			R = find_record("name", perpname, GLOB.data_core.security)
+			R = GLOB.data_core.security_by_name[perpname]
 		if("medical")
-			R = find_record("name", perpname, GLOB.data_core.medical)
+			R = GLOB.data_core.medical_by_name[perpname]
 	if(!R)
 		return
 

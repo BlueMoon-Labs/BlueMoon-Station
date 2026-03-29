@@ -659,17 +659,9 @@
 			stack_trace("Something attempted to set simple animals AI to an invalid state: [togglestatus]")
 
 /// Returns TRUE if any player is within given distance on the same z-level.
-/mob/living/simple_animal/proc/has_nearby_player(distance = NEARBY_PLAYER_DISTANCE)
-	var/turf/our_turf = get_turf(src)
-	if(!our_turf)
-		return FALSE
-	var/our_z = our_turf.z
-	if(!islist(SSmobs.clients_by_zlevel) || our_z > SSmobs.clients_by_zlevel.len)
-		return FALSE
-	for(var/mob/player as anything in SSmobs.clients_by_zlevel[our_z])
-		if(get_dist(our_turf, player) <= distance)
-			return TRUE
-	return FALSE
+/// Override: simple_animals use tighter NEARBY_PLAYER_DISTANCE (15) by default
+/mob/living/simple_animal/has_nearby_player(distance = NEARBY_PLAYER_DISTANCE)
+	return ..(distance)
 
 /mob/living/simple_animal/proc/consider_wakeup()
 	if (pulledby || shouldwakeup)

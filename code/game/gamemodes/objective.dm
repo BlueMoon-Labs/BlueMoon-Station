@@ -231,6 +231,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	return won //If they cryoed, only keep it if we already won
 
 /datum/objective/assassinate/internal
+	name = "assasinate internal" // distinct from parent for /proc/populate_objective_choices() keys
 	var/stolen = 0 		//Have we already eliminated this target?
 
 /datum/objective/assassinate/internal/update_explanation_text()
@@ -450,11 +451,73 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 			return FALSE
 	return TRUE
 
+/// Job titles that count as /datum/job/prisoner (main + alt titles) for manifest checks.
+/proc/get_prisoner_role_titles()
+	. = list()
+	var/datum/job/prisoner_job = SSjob.GetJobType(/datum/job/prisoner)
+	if(!prisoner_job)
+		return
+	. += prisoner_job.title
+	if(LAZYLEN(prisoner_job.alt_titles))
+		. |= prisoner_job.alt_titles
+
+/// TRUE if there is a living human crew member on manifest with a prisoner job.
+/proc/has_manifest_prisoner()
+	var/list/prisoner_titles = get_prisoner_role_titles()
+	if(!length(prisoner_titles))
+		return FALSE
+	for(var/V in GLOB.data_core.locked)
+		var/datum/data/record/R = V
+		var/datum/mind/M = R.fields["mindref"]
+		if(!M || !(M.assigned_role in prisoner_titles))
+			continue
+		if(!ishuman(M.current) || M.current.stat == DEAD)
+			continue
+		return TRUE
+	return FALSE
+
 /datum/objective/breakout
 	name = "breakout"
 	martyr_compatible = 1
 	var/target_role_type = 0
 	var/human_check = TRUE
+
+/datum/objective/breakout/find_target(dupe_search_range, blacklist)
+	var/list/prisoner_titles = get_prisoner_role_titles()
+	if(!length(prisoner_titles))
+		target = null
+		update_explanation_text()
+		return FALSE
+	var/list/datum/mind/owners = get_owners()
+	if(!dupe_search_range)
+		dupe_search_range = get_owners()
+	var/list/possible_targets = list()
+	var/try_target_late_joiners = FALSE
+	for(var/I in owners)
+		var/datum/mind/O = I
+		if(O.late_joiner)
+			try_target_late_joiners = TRUE
+	for(var/datum/mind/possible_target in get_crewmember_minds())
+		if(!(possible_target.assigned_role in prisoner_titles))
+			continue
+		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target))
+			if(!(possible_target in blacklist))
+				if(!(!include_superheavy_character && possible_target.current.mob_weight > MOB_WEIGHT_HEAVY))
+					possible_targets += possible_target
+	if(try_target_late_joiners)
+		var/list/all_possible_targets = possible_targets.Copy()
+		for(var/I in all_possible_targets)
+			var/datum/mind/PT = I
+			if(!PT.late_joiner)
+				possible_targets -= PT
+		if(!possible_targets.len)
+			possible_targets = all_possible_targets
+	if(possible_targets.len > 0)
+		target = pick(possible_targets)
+	else
+		target = null
+	update_explanation_text()
+	return target
 
 /datum/objective/breakout/check_completion()
 	return !target || considered_escaped(target)
@@ -471,9 +534,12 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 /datum/objective/breakout/update_explanation_text()
 	..()
 	if(target && target.current)
-		explanation_text = "Будьте уверены, что [target.name], the [!target_role_type ? target.assigned_role : target.special_role] сбежит на Шаттле или спасательной капсуле живым(-ой) и без каких бы то не было физических ограничений (наручники и так далее)."
+		explanation_text = "Убедитесь, что [target.name], [!target_role_type ? target.assigned_role : target.special_role], сбежит на шаттле или в спасательной капсуле живым(-ой) и без физических ограничений (наручники и т.п.)."
 	else
 		explanation_text = "Свободная Задача"
+
+/datum/objective/breakout/admin_edit(mob/admin)
+	admin_simple_target_pick(admin)
 
 /datum/objective/escape/escape_with_identity
 	name = "escape with identity"

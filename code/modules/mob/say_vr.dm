@@ -37,7 +37,12 @@
 		to_chat(user, "You cannot send IC messages (muted).")
 		return FALSE
 	else if(!params)
-		var/subtle_emote = stripped_multiline_input_or_reflect(user, "Choose an emote to display.", "Subtle", null, MAX_MESSAGE_LEN)
+		var/subtle_emote = ""
+		if(user.client?.prefs.tgui_input_verbs)
+			subtle_emote = tgui_input_text(user, "Введите сообщение, которое увидят персонажи в упор к вам и призраки.", "Subtle", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+		else
+			subtle_emote = stripped_multiline_input_or_reflect(user, "Введите сообщение, которое увидят персонажи в упор к вам и призраки.", "Subtle")
+
 		if(subtle_emote && !check_invalid(user, subtle_emote))
 			message = subtle_emote
 		else
@@ -85,7 +90,12 @@
 		to_chat(user, "You cannot send IC messages (muted).")
 		return FALSE
 	else if(!params)
-		var/subtle_emote = stripped_multiline_input_or_reflect(user, "Введите сообщение, которое увидят персонажи в упор к вам. Призраки его не увидят.", "Введите скрытое сообщение", null, MAX_MESSAGE_LEN)
+		var/subtle_emote = "" 
+		if(user.client?.prefs.tgui_input_verbs)
+			subtle_emote = tgui_input_text(user, "Введите сообщение, которое увидят персонажи в упор к вам. Призраки его не увидят.", "Введите скрытое сообщение", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+		else
+			subtle_emote = stripped_multiline_input_or_reflect(user, "Введите сообщение, которое увидят персонажи в упор к вам. Призраки его не увидят.", "Введите скрытое сообщение")
+
 		if(subtle_emote && !check_invalid(user, subtle_emote))
 			message = subtle_emote
 		else
@@ -123,7 +133,7 @@
 
 					if(see_invis < invis)
 						LAZYADD(ignored_mobs_list, M) // Исключаем мобов, которые должны быть невидимы для нас
-			
+
 			if(istype(B, /atom/movable))
 				var/atom/movable/MV = B
 				if(MV.contents && MV.contents.len)
@@ -156,7 +166,12 @@
 		to_chat(user, "You cannot send IC messages (muted).")
 		return FALSE
 	else if(!params)
-		var/subtle_emote = stripped_multiline_input_or_reflect(user, "Choose an emote to display.", "Subtler" , null, MAX_MESSAGE_LEN)
+		var/subtle_emote = ""
+		if(user.client?.prefs.tgui_input_verbs)
+			subtle_emote = tgui_input_text(user, "Choose an emote to display.", "Subtler Around Table", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+		else
+			subtle_emote = stripped_multiline_input_or_reflect(user, "Choose an emote to display.", "Subtler Around Table")
+
 		if(subtle_emote && !check_invalid(user, subtle_emote))
 			message = subtle_emote
 		else
@@ -261,17 +276,22 @@
 		if(parameters["indicator"]) // Показываем индикатор
 			user.display_typing_indicator(isMe = TRUE)
 		// Вводим сообщение
-		var/subtle_emote = stripped_multiline_input_or_reflect(user, "Введите сообщение, которое увидит, ТОЛЬКО [target_name].", "Введите скрытое сообщение", null, MAX_MESSAGE_LEN)
+		var/subtle_emote = ""
+		if(user.client?.prefs.tgui_input_verbs)
+			subtle_emote = tgui_input_text(user, "Введите сообщение, которое увидит, ТОЛЬКО [target_name].", "Введите скрытое сообщение", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+		else
+			subtle_emote = stripped_multiline_input_or_reflect(user, "Введите сообщение, которое увидит, ТОЛЬКО [target_name].", "Введите скрытое сообщение")
+
 		if(parameters["indicator"]) // Удаляем индикатор
 			user.clear_typing_indicator()
-		
+
 		if(subtle_emote && !check_invalid(user, subtle_emote))
 			message = subtle_emote
 		else
 			return FALSE
 
 	message = "<span class='emote'><b>[user]</b> <i>[user.say_emphasis(message)]</i></span>"
-	
+
 	// Отправка сообщений
 	if(target in view(work_distance, user))
 		to_chat(target, "[span_nicegreen("Ты замечаешь, как")] [message]")

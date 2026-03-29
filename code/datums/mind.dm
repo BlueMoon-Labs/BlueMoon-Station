@@ -649,6 +649,7 @@ GLOBAL_LIST(objective_player_choices)
 		/datum/objective/custom,
 		/datum/objective/assassinate/once,
 		/datum/objective/protect,
+		/datum/objective/breakout,
 		/datum/objective/escape,
 		/datum/objective/survive,
 		/datum/objective/martyr,
@@ -668,6 +669,7 @@ GLOBAL_LIST(objective_choices)
 	var/list/allowed_types = list(
 		/datum/objective/custom,
 		/datum/objective/assassinate,
+		/datum/objective/assassinate/internal,
 		/datum/objective/assassinate/once,
 		/datum/objective/maroon,
 		/datum/objective/debrain,
@@ -683,6 +685,7 @@ GLOBAL_LIST(objective_choices)
 		/datum/objective/nuclear/revert,
 		/datum/objective/absorb,
 		/datum/objective/rescue_prisoner,
+		/datum/objective/breakout,
 		/datum/objective/custom
 		)
 

@@ -1149,6 +1149,13 @@ SUBSYSTEM_DEF(garbage)
 	else if (D.gc_destroyed == GC_CURRENTLY_BEING_QDELETED)
 		CRASH("[D.type] destroy proc was called multiple times, likely due to a qdel loop in the Destroy logic")
 
+// To remove objects from weak references
+/proc/qdel_weakref_resolve(datum/thing, force=FALSE)
+	if(isweakref(thing))
+		var/datum/weakref/ref = thing
+		thing = ref.resolve()
+	if(thing)
+		qdel(thing, force)
 
 // ============================================================
 // GC Profiler — compile-time instrumentation (GC_PROFILER only)

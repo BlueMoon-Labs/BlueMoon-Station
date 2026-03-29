@@ -232,7 +232,7 @@
 
 /datum/design/c45lethal
 	name = "Ammo Box (.45 Lethal)"
-	id = "c45lehtal"
+	id = "c45lethal"
 	build_type = AUTOLATHE | NO_PUBLIC_LATHE
 	materials = list(/datum/material/iron = 30000)
 	build_path = /obj/item/ammo_box/c45/lethal

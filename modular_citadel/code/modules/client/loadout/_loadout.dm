@@ -7,6 +7,31 @@
 GLOBAL_LIST_EMPTY(loadout_items)
 GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
+/// Fixes gear_category/gear_subcategory after navigation (same display name e.g. "Jobs" under Uniform/Suit/Head; empty item tables).
+/proc/sanitize_loadout_navigation(datum/preferences/prefs)
+	if(!prefs || !length(GLOB.loadout_items))
+		return
+	if(!GLOB.loadout_categories[prefs.gear_category])
+		prefs.gear_category = GLOB.loadout_categories[1]
+	var/list/subcats = GLOB.loadout_categories[prefs.gear_category]
+	if(!length(subcats))
+		prefs.gear_subcategory = LOADOUT_SUBCATEGORY_NONE
+		return
+	if(!(prefs.gear_subcategory in subcats))
+		prefs.gear_subcategory = subcats[1]
+	var/list/cat_items = GLOB.loadout_items[prefs.gear_category]
+	if(!cat_items)
+		prefs.gear_subcategory = subcats[1]
+		return
+	var/list/sub_items = cat_items[prefs.gear_subcategory]
+	if(sub_items && length(sub_items))
+		return
+	for(var/sc in subcats)
+		var/list/try_items = cat_items[sc]
+		if(try_items && length(try_items))
+			prefs.gear_subcategory = sc
+			return
+
 /proc/load_loadout_config(loadout_config)
 	if(!loadout_config)
 		loadout_config = "config/loadout_config.txt"

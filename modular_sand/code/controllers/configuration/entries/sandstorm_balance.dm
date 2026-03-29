@@ -73,9 +73,9 @@
 /datum/config_entry/number/bluespaceminer_core_work_chanse_no_damage
 	default = 5
 
-// The minimum time after which instability effects can occur after the last trigger
+// Minimum time between instability sector events (per miner; cooldown resets on trigger).
 /datum/config_entry/number/bluespaceminer_instability_cooldown
-	default = 1 MINUTES
+	default = 5 MINUTES
 
 /// TETRIS ARCADE MACHINE ///
 // If the machine should skip producing science points

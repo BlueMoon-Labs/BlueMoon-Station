@@ -18368,6 +18368,12 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/mine/laborcamp/security)
+"ozZ" = (
+/obj/docking_port/stationary/random{
+	dir = 8
+	},
+/turf/open/lava/smooth/lava_land_surface,
+/area/lavaland/surface/outdoors)
 "oAU" = (
 /obj/structure/table/reinforced/brass,
 /obj/item/clockwork/component/geis_capacitor/fallen_armor,
@@ -99637,7 +99643,7 @@ vAU
 vAU
 vAU
 vAU
-vAU
+ozZ
 vAU
 vAU
 vAU

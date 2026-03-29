@@ -49,6 +49,9 @@
 	if(!linkedServer || !auth) // no need building this if the usr isn't authenticated
 		return data_out
 
+	data_out["pda_msgs_trimmed"] = linkedServer.pda_msgs_trimmed
+	data_out["rc_msgs_trimmed"] = linkedServer.rc_msgs_trimmed
+
 	data_out["recon_logs"] = list()
 	var/i1 = 0
 	for(var/datum/data_rc_msg/rc in linkedServer.rc_msgs)

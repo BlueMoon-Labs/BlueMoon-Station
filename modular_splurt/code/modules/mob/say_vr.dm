@@ -4,6 +4,7 @@
 	message = null
 	mob_type_blacklist_typecache = list(/mob/living/brain)
 	emote_type = EMOTE_OMNI
+	var/subtler = FALSE
 
 /datum/emote/sound/human/narrate/proc/check_invalid(mob/user, input)
 	if(stop_bad_mime.Find(input, 1, 1))
@@ -28,25 +29,62 @@
 		return FALSE
 
 	user.log_message(message, LOG_EMOTE)
-	message = "<span class='name'>([user])</span> <span class='pnarrate'>[message]</span>"
+	var/list/ignored_mobs_list = list()
+	var/vision_dist = DEFAULT_MESSAGE_RANGE
+	if(subtler)
+		message = "<i>[message]</i>"
+		// копипаст с "subtler"
+		vision_dist = 1
+		ignored_mobs_list = LAZYCOPY(GLOB.dead_mob_list)
+		for(var/atom/A in range(vision_dist, get_turf(user)))
+			// ищем всех мобов, включая тех что внутри contents
+			var/list/stack = list(A)
+			while(stack.len)
+				var/atom/B = stack[stack.len]
+				stack.len-- // pop
+				if(ismob(B))
+					var/mob/M = B
+					if(M != user)
+						// ищем максимальную невидимость по цепочке loc вверх
+						var/invis = M.invisibility
+						var/atom/movable/x = M
+						while(istype(x.loc, /atom/movable))
+							x = x.loc
+							if(x.invisibility > invis)
+								invis = x.invisibility
+						if(user.see_invisible < invis)
+							LAZYADD(ignored_mobs_list, M) // Исключаем мобов, которые должны быть невидимы для нас
+				if(istype(B, /atom/movable))
+					var/atom/movable/MV = B
+					if(MV.contents && MV.contents.len)
+						stack += MV.contents
+	else
+		var/T = get_turf(user)
+		for(var/mob/M in GLOB.dead_mob_list)
+			if(!M.client || isnewplayer(M))
+				continue
+			if(M.stat == DEAD && (M.client.prefs.chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
+				M.show_message("[FOLLOW_LINK(M, user)] " + message)
 
-	for(var/mob/M in GLOB.dead_mob_list)
-		if(!M.client || isnewplayer(M))
-			continue
-		var/T = get_turf(src)
-		if(M.stat == DEAD && M.client && (M.client.prefs.chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)) && (user.client))
-			M.show_message("[FOLLOW_LINK(M, user)] " + message)
+	message = "<span class='name'>([user])</span> <span class='pnarrate'>[user.say_emphasis(message)]</span>"
+	user.visible_message(message = message, self_message = message, vision_distance = vision_dist, ignored_mobs = ignored_mobs_list, omni = TRUE)
 
-	user.visible_message(message = message, self_message = message, omni = TRUE)
-
-/mob/living/verb/player_narrate(message as message)
+/mob/living/verb/player_narrate()
 	set category = "Say"
 	set name = "Narrate (Player)"
 	set desc = "Narrate an action or event! An alternative to emoting, for when your emote shouldn't start with your name!"
 	if(GLOB.say_disabled)
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
-	message = trim(html_encode(message), MAX_MESSAGE_LEN)
+	display_typing_indicator(isMe = TRUE)
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(src, "Опишите действие или событие. Альтернатива эмоции, когда ваша эмоция не должна начинаться с вашего имени.", "Narrate (Player)", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+	else
+		message = stripped_multiline_input_or_reflect(src, "Опишите действие или событие. Альтернатива эмоции, когда ваша эмоция не должна начинаться с вашего имени.", "Narrate (Player)")
+	clear_typing_indicator()
+	if(!length(message))
+		return
 	emote("narrate", message=message)
 
 /datum/emote/sound/human/subtle/subtle_indicator
@@ -57,21 +95,19 @@
 	// Set data
 	set name = "Subtle (Indicator)"
 	set category = "Say"
-
-	// Check if say is disabled
 	if(GLOB.say_disabled)
 		// Warn user and return
 		to_chat(usr, span_danger("Speech is currently admin-disabled."))
 		return
-
-	// Display typing indicator
 	display_typing_indicator(isMe = TRUE)
 
-	// Prompt user for text input
-	var/input_message = input(usr, "What would you like to subtly emote, with a typing indicator?", "Input subtle emote") as message|null
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(src, "Введите сообщение, которое увидят персонажи в упор к вам и призраки.", "Subtle (Indicator)", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+	else
+		message = stripped_multiline_input_or_reflect(src, "Введите сообщение, которое увидят персонажи в упор к вам и призраки.", "Subtle (Indicator)")
 
-	// Remove typing indicator
 	clear_typing_indicator()
-
-	// Run subtle emote with input
-	usr.emote("subtle", message = input_message)
+	if(!length(message))
+		return
+	usr.emote("subtle", message = message)

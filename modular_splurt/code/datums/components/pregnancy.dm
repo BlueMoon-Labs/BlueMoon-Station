@@ -116,7 +116,7 @@
 	RegisterSignal(carrier, COMSIG_MOB_DEATH, PROC_REF(fetus_mortus))
 	RegisterSignal(carrier, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(handle_life))
 	RegisterSignal(carrier, COMSIG_HEALTH_SCAN, PROC_REF(on_scan))
-	RegisterSignal(carrier, COMSIG_MOB_DEATH, PROC_REF(handle_damage))
+	RegisterSignal(carrier, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(handle_damage))
 	if(oviposition)
 		RegisterSignal(carrier, COMSIG_MOB_CLIMAX, PROC_REF(on_climax))
 

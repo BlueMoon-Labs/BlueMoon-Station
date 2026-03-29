@@ -24,7 +24,7 @@
 
 // BLUEMOON ADD
 /datum/keybinding/mob/pixel_tilt
-	hotkey_keys = list("N")
+	hotkey_keys = list("J")
 	name = "pixel_tilt"
 	full_name = "Pixel Tilt"
 	description = "Hold to rotate with movement keys."

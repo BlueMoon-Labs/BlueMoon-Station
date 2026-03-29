@@ -32,6 +32,10 @@
 	max_ammo = 8
 	multiple_sprites = 2
 
+/obj/item/ammo_box/magazine/toy/pistol/update_icon_state()
+	. = ..()
+	icon_state = "[initial(icon_state)]-[stored_ammo.len ? "16" : "0"]"
+
 /obj/item/ammo_box/magazine/toy/pistol/riot
 	ammo_type = /obj/item/ammo_casing/caseless/foam_dart/riot
 

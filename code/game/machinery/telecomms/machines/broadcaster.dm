@@ -61,6 +61,7 @@ GLOBAL_VAR_INIT(message_delay, 0) // To make sure restarting the recentmessages 
 	// In case message_delay is left on 1, otherwise it won't reset the list and people can't say the same thing twice anymore.
 	if(GLOB.message_delay)
 		GLOB.message_delay = 0
+		GLOB.recentmessages = list()
 	return ..()
 
 

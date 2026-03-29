@@ -1,0 +1,8 @@
+author: Pe4henika
+delete-after: true
+changes:
+  - rscadd: Новый модуль JukeBox. Доступен при наличии определённых технологий и разборки
+      Jukebox
+  - rscadd: Новый свод законов - Gentleman. Доступен после изучения технологий ИИ
+      и печати.
+  - rscadd: Новое красивое меню StateLaws, а также переписана логика StateLaws

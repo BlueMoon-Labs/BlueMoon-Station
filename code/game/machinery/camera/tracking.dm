@@ -100,7 +100,7 @@
 
 				cameraticks++
 
-				if(cameraticks > 60)
+				if(cameraticks > 20)
 					U.cameraFollow = null
 					to_chat(U, span_danger("Не удалось обнаружить цель. Отслеживание прекращено."))
 					tracking = 0

@@ -120,6 +120,8 @@
 		select_fire(user)
 
 /obj/item/gun/energy/can_shoot()
+	if(QDELETED(src) || !ammo_type || !length(ammo_type) || current_firemode_index < 1 || current_firemode_index > length(ammo_type))
+		return FALSE
 	var/obj/item/ammo_casing/energy/shot = ammo_type[current_firemode_index]
 	return !QDELETED(cell) ? (cell.charge >= shot.e_cost) : FALSE
 
@@ -250,6 +252,8 @@
 	if(initial(item_state))
 		return
 	..()
+	if(QDELETED(src) || !ammo_type || !length(ammo_type) || current_firemode_index < 1 || current_firemode_index > length(ammo_type))
+		return
 	var/ratio = get_charge_ratio()
 	var/new_item_state = ""
 	new_item_state = initial(icon_state)
@@ -261,7 +265,7 @@
 
 /obj/item/gun/energy/update_overlays()
 	. = ..()
-	if(QDELETED(src))
+	if(QDELETED(src) || !ammo_type || !length(ammo_type) || current_firemode_index < 1 || current_firemode_index > length(ammo_type))
 		return
 	if(!automatic_charge_overlays)
 		return

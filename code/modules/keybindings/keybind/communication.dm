@@ -6,7 +6,7 @@
 	classic_keys = list("Unbound")
 	name = "Say"
 	full_name = "IC Say"
-	clientside = "say"
+	clientside = "Say"
 
 /datum/keybinding/client/communication/ooc
 	hotkey_keys = list("O")
@@ -19,7 +19,7 @@
 	classic_keys = list("Unbound")
 	name = "Me"
 	full_name = "Me (emote)"
-	clientside = "me"
+	clientside = "Me"
 
 //indicators
 /datum/keybinding/client/communication/say_with_indicator

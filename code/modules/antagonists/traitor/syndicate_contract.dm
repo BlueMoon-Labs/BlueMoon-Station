@@ -20,7 +20,7 @@
 
 	var/datum/data/record/record
 	if (contract.target)
-		record = find_record("name", contract.target.name, GLOB.data_core.general)
+		record = GLOB.data_core.general_by_name[contract.target.name]
 
 	if (record)
 		target_rank = record.fields["rank"]

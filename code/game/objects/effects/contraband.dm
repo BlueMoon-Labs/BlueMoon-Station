@@ -194,7 +194,8 @@
 			return
 
 	to_chat(user, "<span class='notice'>The poster falls down!</span>")
-	D.roll_and_drop(temp_loc)
+	// Турф игрока сейчас — если толкнули со стартовой клетки, постер не остаётся «в воздухе»
+	D.roll_and_drop(get_turf(user))
 
 // Various possible posters follow
 

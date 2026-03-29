@@ -928,3 +928,26 @@
 	action.UpdateButtons()
 
 	return TRUE
+
+/obj/item/borg/upgrade/jukebox
+	name = "cyborg jukebox module"
+	desc = "Плата расширения, позволяющая киборгу транслировать музыку из внутренней библиотеки."
+	icon_state = "cyborg_upgrade3"
+	require_module = TRUE
+
+/obj/item/borg/upgrade/jukebox/action(mob/living/silicon/robot/R)
+	. = ..()
+	if(.)
+		var/obj/item/device/robot_jukebox/JB = new(R.module)
+		R.module.basic_modules += JB
+		R.module.add_module(JB, FALSE, TRUE)
+		START_PROCESSING(SSobj, JB)
+
+/obj/item/borg/upgrade/jukebox/deactivate(mob/living/silicon/robot/R)
+	. = ..()
+	if(.)
+		var/obj/item/device/robot_jukebox/JB = locate() in R.module
+		if(JB)
+			STOP_PROCESSING(SSobj, JB)
+			R.module.remove_module(JB, TRUE)
+			qdel(JB)

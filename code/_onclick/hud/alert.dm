@@ -69,6 +69,8 @@
 	return thealert
 
 /mob/proc/alert_timeout(atom/movable/screen/alert/alert, category)
+	if(!alert || QDELETED(alert))
+		return
 	if(alert.timeout && alerts[category] == alert && world.time >= alert.timeout)
 		clear_alert(category)
 

@@ -61,9 +61,15 @@
 	// Get our choices
 	var/list/items = list()
 	for(var/reskin_option in to_reskin.unique_reskin)
-		var/image/item_image = image(
-			icon = to_reskin.unique_reskin[reskin_option]["icon"] ? to_reskin.unique_reskin[reskin_option]["icon"] : to_reskin.icon,
-			icon_state = to_reskin.unique_reskin[reskin_option]["icon_state"] ? to_reskin.unique_reskin[reskin_option]["icon_state"] : to_reskin.icon_state)
+		var/reskin_icon = to_reskin.unique_reskin[reskin_option]["icon"]
+		var/reskin_icon_state = to_reskin.unique_reskin[reskin_option]["icon_state"]
+		var/item_image
+		if(reskin_icon || reskin_icon_state)
+			item_image = image(
+				icon = reskin_icon ? reskin_icon : to_reskin.icon,
+				icon_state = reskin_icon_state ? reskin_icon_state : to_reskin.icon_state)
+		else
+			item_image = new /mutable_appearance(to_reskin)
 		items += list("[reskin_option]" = item_image)
 	items = sort_list(items)
 
@@ -73,7 +79,7 @@
 		return FALSE
 
 	// Finish the work
-	to_reskin.current_skin = pick
+	to_reskin.current_skin = LAZYLEN(to_reskin.unique_reskin[pick]) && pick || null
 	for(var/reskin_var in to_reskin.unique_reskin[pick])
 		to_reskin.vars[reskin_var] = to_reskin.unique_reskin[pick][reskin_var]
 	to_chat(user, "[to_reskin] теперь имеет скин '[pick].'")

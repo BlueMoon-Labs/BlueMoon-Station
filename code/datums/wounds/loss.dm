@@ -31,7 +31,7 @@
 
 	victim = dismembered_part.owner
 
-	var/msg = "<span class='bolddanger'>[dismembered_part.ru_name_capital] персонажа [victim] [occur_text]!</span>"
+	var/msg = span_bolddanger("[dismembered_part.ru_name_capital] персонажа [victim] [occur_text]!")
 
 	victim.visible_message(msg, "<span class='userdanger'>Ваша [dismembered_part.ru_name] [occur_text]!</span>")
 

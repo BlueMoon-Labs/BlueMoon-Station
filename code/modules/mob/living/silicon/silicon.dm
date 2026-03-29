@@ -29,9 +29,9 @@
 	var/list/alarm_types_show = list(ALARM_ATMOS = 0, ALARM_FIRE = 0, ALARM_POWER = 0, ALARM_CAMERA = 0, ALARM_MOTION = 0)
 	var/list/alarm_types_clear = list(ALARM_ATMOS = 0, ALARM_FIRE = 0, ALARM_POWER = 0, ALARM_CAMERA = 0, ALARM_MOTION = 0)
 
-	var/lawcheck[1]
-	var/ioncheck[1]
-	var/hackedcheck[1]
+	var/list/lawcheck = list()
+	var/list/ioncheck = list()
+	var/list/hackedcheck = list()
 	var/devillawcheck[5]
 
 	var/sensors_on = 0
@@ -186,121 +186,178 @@
 
 	return
 
-
+// (ADD) Pe4henika bluemoon -- start
+// MARK: New statelaws
 /mob/living/silicon/proc/statelaws(force = 0)
-
-	//"radiomod" is inserted before a hardcoded message to change if and how it is handled by an internal radio.
-	say("[radiomod] Текущие законы:")
-	//laws_sanity_check()
-	//laws.show_laws(world)
+	var/is_radio = (radiomod != "none")
+	var/prefix = is_radio ? "[radiomod] " : ""
+	say("[prefix]Текущие законы:")
 	var/number = 1
 	sleep(10)
+	if(!lawcheck) lawcheck = list()
+	if(!ioncheck) ioncheck = list()
+	if(!hackedcheck) hackedcheck = list()
 
-	if (laws.devillaws && laws.devillaws.len)
-		for(var/index = 1, index <= laws.devillaws.len, index++)
-			if (force || devillawcheck[index] == "Yes")
-				say("[radiomod] 666. [laws.devillaws[index]]")
+	if(laws.devillaws && laws.devillaws.len)
+		for(var/i in 1 to laws.devillaws.len)
+			if(force || (devillawcheck.len < i || devillawcheck[i] != "No"))
+				say("[prefix] 666. [laws.devillaws[i]]")
 				sleep(10)
 
-
-	if (laws.zeroth)
-		if (force || lawcheck[1] == "Yes")
-			say("[radiomod] 0. [laws.zeroth]")
+	if(laws.zeroth)
+		if(force || (lawcheck.len < 1 || lawcheck[1] != "No"))
+			say("[prefix] 0. [laws.zeroth]")
 			sleep(10)
 
-	for (var/index = 1, index <= laws.hacked.len, index++)
-		var/law = laws.hacked[index]
-		var/num = ionnum()
-		if (length(law) > 0)
-			if (force || hackedcheck[index] == "Yes")
-				say("[radiomod] [num]. [law]")
+	for(var/i in 1 to laws.hacked.len)
+		var/law = laws.hacked[i]
+		if(length(law) > 0)
+			if(force || (hackedcheck.len < i || hackedcheck[i] != "No"))
+				say("[prefix] [ionnum()]. [law]")
 				sleep(10)
 
-	for (var/index = 1, index <= laws.ion.len, index++)
-		var/law = laws.ion[index]
-		var/num = ionnum()
-		if (length(law) > 0)
-			if (force || ioncheck[index] == "Yes")
-				say("[radiomod] [num]. [law]")
+	for(var/i in 1 to laws.ion.len)
+		var/law = laws.ion[i]
+		if(length(law) > 0)
+			if(force || (ioncheck.len < i || ioncheck[i] != "No"))
+				say("[prefix] [ionnum()]. [law]")
 				sleep(10)
 
-	for (var/index = 1, index <= laws.inherent.len, index++)
-		var/law = laws.inherent[index]
-
-		if (length(law) > 0)
-			if (force || lawcheck[index+1] == "Yes")
-				say("[radiomod] [number]. [law]")
-				number++
+	for(var/i in 1 to laws.inherent.len)
+		var/law = laws.inherent[i]
+		if(length(law) > 0)
+			if(force || (lawcheck.len < i + 1 || lawcheck[i + 1] != "No"))
+				say("[prefix] [number]. [law]")
 				sleep(10)
-
-	for (var/index = 1, index <= laws.supplied.len, index++)
-		var/law = laws.supplied[index]
-
-		if (length(law) > 0)
-			if(lawcheck.len >= number+1)
-				if (force || lawcheck[number+1] == "Yes")
-					say("[radiomod] [number]. [law]")
-					number++
-					sleep(10)
-
-
-/mob/living/silicon/proc/checklaws() //Gives you a link-driven interface for deciding what laws the statelaws() proc will share with the crew. --NeoFite
-
-	var/list = {"<meta charset="UTF-8"><b>Какие законы вы хотите продемонстрировать, когда будете излагать их для экипажа?</b><br><br>"}
-
-	if (laws.devillaws && laws.devillaws.len)
-		for(var/index = 1, index <= laws.devillaws.len, index++)
-			if (!devillawcheck[index])
-				devillawcheck[index] = "No"
-			list += {"<A href='byond://?src=[REF(src)];lawdevil=[index]'>[devillawcheck[index]] 666:</A> <font color='#cc5500'>[laws.devillaws[index]]</font><BR>"}
-
-	if (laws.zeroth)
-		if (!lawcheck[1])
-			lawcheck[1] = "No" //Given Law 0's usual nature, it defaults to NOT getting reported. --NeoFite
-		list += {"<A href='byond://?src=[REF(src)];lawc=0'>[lawcheck[1]] 0:</A> <font color='#ff0000'><b>[laws.zeroth]</b></font><BR>"}
-
-	for (var/index = 1, index <= laws.hacked.len, index++)
-		var/law = laws.hacked[index]
-		if (length(law) > 0)
-			if (!hackedcheck[index])
-				hackedcheck[index] = "No"
-			list += {"<A href='byond://?src=[REF(src)];lawh=[index]'>[hackedcheck[index]] [ionnum()]:</A> <font color='#660000'>[law]</font><BR>"}
-			hackedcheck.len += 1
-
-	for (var/index = 1, index <= laws.ion.len, index++)
-		var/law = laws.ion[index]
-
-		if (length(law) > 0)
-			if (!ioncheck[index])
-				ioncheck[index] = "Yes"
-			list += {"<A href='byond://?src=[REF(src)];lawi=[index]'>[ioncheck[index]] [ionnum()]:</A> <font color='#547DFE'>[law]</font><BR>"}
-			ioncheck.len += 1
-
-	var/number = 1
-	for (var/index = 1, index <= laws.inherent.len, index++)
-		var/law = laws.inherent[index]
-
-		if (length(law) > 0)
-			lawcheck.len += 1
-
-			if (!lawcheck[number+1])
-				lawcheck[number+1] = "Yes"
-			list += {"<A href='byond://?src=[REF(src)];lawc=[number]'>[lawcheck[number+1]] [number]:</A> [law]<BR>"}
 			number++
 
-	for (var/index = 1, index <= laws.supplied.len, index++)
-		var/law = laws.supplied[index]
-		if (length(law) > 0)
-			lawcheck.len += 1
-			if (!lawcheck[number+1])
-				lawcheck[number+1] = "Yes"
-			list += {"<A href='byond://?src=[REF(src)];lawc=[number]'>[lawcheck[number+1]] [number]:</A> <font color='#990099'>[law]</font><BR>"}
+	var/inh_offset = laws.inherent.len + 1
+	for(var/i in 1 to laws.supplied.len)
+		var/law = laws.supplied[i]
+		if(length(law) > 0)
+			var/check_idx = inh_offset + i
+			if(force || (lawcheck.len < check_idx || lawcheck[check_idx] != "No"))
+				say("[prefix] [number]. [law]")
+				sleep(10)
 			number++
-	list += {"<br><br><A href='byond://?src=[REF(src)];laws=1'>State Laws</A>"}
 
-	var/datum/browser/popup = new(usr, "laws", "Laws")
-	popup.set_content(list)
-	popup.open()
+// MARK: New TGUI Law menu
+
+/mob/living/silicon/proc/checklaws()
+	var/datum/tgui/ui = SStgui.get_open_ui(src, src, "LawManager")
+	if(!ui)
+		ui = new(src, src, "LawManager", "Менеджер Законов")
+		ui.open()
+
+/mob/living/silicon/proc/update_law_menu()
+	var/datum/tgui/ui = SStgui.get_open_ui(src, src, "LawManager")
+	if(ui)
+		ui.send_full_update()
+/mob/living/silicon/ui_data(mob/user)
+	var/list/data = list()
+	var/list/laws_to_send = list()
+
+	src.laws_sanity_check()
+
+	if(!laws)
+		data["laws"] = list()
+		return data
+
+	// 1. DEVIL LAWS (Тип: zeroth для красной подсветки)
+	if(laws.devillaws && laws.devillaws.len)
+		for(var/i in 1 to laws.devillaws.len)
+			laws_to_send += list(list(
+				"id" = "devil-[i]",
+				"index" = i,
+				"name" = "666",
+				"text" = "[laws.devillaws[i]]",
+				"active" = (devillawcheck && devillawcheck.len >= i && devillawcheck[i] == "No") ? 0 : 1,
+				"type" = "zeroth"
+			))
+
+	// 2. ZEROTH (Тип: zeroth)
+	if(laws.zeroth)
+		laws_to_send += list(list(
+			"id" = "zero",
+			"index" = 0,
+			"name" = "0",
+			"text" = "[laws.zeroth]",
+			"active" = (lawcheck && lawcheck.len >= 1 && lawcheck[1] == "No") ? 0 : 1,
+			"type" = "zeroth"
+		))
+
+	// 3. ION / HACKED (Тип: ion)
+	var/list/glitch = list()
+	if(laws.hacked) glitch += laws.hacked
+	if(laws.ion) glitch += laws.ion
+
+	for(var/i in 1 to glitch.len)
+		laws_to_send += list(list(
+			"id" = "ion-[i]",
+			"index" = i,
+			"name" = "ION",
+			"text" = "[glitch[i]]",
+			"active" = 1,
+			"type" = "ion"
+		))
+
+	// 4. INHERENT (Тип: inherent)
+	var/l_num = 1
+	if(laws.inherent && laws.inherent.len)
+		for(var/i in 1 to laws.inherent.len)
+			laws_to_send += list(list(
+				"id" = "inh-[i]",
+				"index" = i,
+				"name" = "[l_num++]",
+				"text" = "[laws.inherent[i]]",
+				"active" = (lawcheck && lawcheck.len >= i + 1 && lawcheck[i + 1] == "No") ? 0 : 1,
+				"type" = "inherent"
+			))
+
+	// 5. SUPPLIED (Тип: supplied)
+	if(laws.supplied && laws.supplied.len)
+		var/off = laws.inherent.len + 1
+		for(var/i in 1 to laws.supplied.len)
+			laws_to_send += list(list(
+				"id" = "sup-[i]",
+				"index" = i,
+				"name" = "[l_num++]",
+				"text" = "[laws.supplied[i]]",
+				"active" = (lawcheck && lawcheck.len >= off + i && lawcheck[off + i] == "No") ? 0 : 1,
+				"type" = "supplied"
+			))
+
+	data["laws"] = laws_to_send
+	return data
+/mob/living/silicon/ui_act(action, params)
+	if(..())
+		return
+	switch(action)
+		if("state_laws")
+			src.statelaws()
+			return TRUE
+		if("toggle_law")
+			var/type = params["type"]
+			var/idx = text2num(params["index"])
+			switch(type)
+				if("zeroth")
+					if(lawcheck.len < 1) lawcheck.len = 1
+					lawcheck[1] = (lawcheck[1] == "No" ? "Yes" : "No")
+				if("ion")
+					if(ioncheck.len < idx) ioncheck.len = idx
+					ioncheck[idx] = (ioncheck[idx] == "No" ? "Yes" : "No")
+				if("hacked")
+					if(hackedcheck.len < idx) hackedcheck.len = idx
+					hackedcheck[idx] = (hackedcheck[idx] == "No" ? "Yes" : "No")
+				if("inherent")
+					if(lawcheck.len < idx + 1) lawcheck.len = idx + 1
+					lawcheck[idx+1] = (lawcheck[idx+1] == "No" ? "Yes" : "No")
+				if("supplied")
+					var/true_idx = laws.inherent.len + idx + 1
+					if(lawcheck.len < true_idx) lawcheck.len = true_idx
+					lawcheck[true_idx] = (lawcheck[true_idx] == "No" ? "Yes" : "No")
+			return TRUE
+// (ADD) Pe4henika bluemoon -- end
 
 /mob/living/silicon/proc/set_autosay() //For allowing the AI and borgs to set the radio behavior of auto announcements (state laws, arrivals).
 	if(!radio)
