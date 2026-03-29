@@ -13,6 +13,7 @@
 	var/list/visibleCameraChunks = list()
 	var/mob/living/silicon/ai/ai = null
 	var/relay_speech = FALSE
+	var/relay_emote = FALSE
 	var/use_static = USE_STATIC_OPAQUE
 	var/static_visibility_range = 16
 	var/ai_detector_visible = TRUE
@@ -245,6 +246,10 @@
 	. = ..()
 	if(relay_speech && speaker && ai && !radio_freq && speaker != ai && near_camera(speaker))
 		ai.relay_speech(message, speaker, message_language, raw_message, radio_freq, spans, message_mode)
+
+/mob/camera/aiEye/proc/SeeEmote(mob/living/speaker, emote_message)
+    if(relay_emote && speaker && ai && speaker != ai && near_camera(speaker))
+        ai.relay_emote(speaker, emote_message)
 
 /obj/effect/overlay/ai_detect_hud
 	name = ""

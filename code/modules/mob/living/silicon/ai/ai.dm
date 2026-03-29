@@ -973,6 +973,23 @@
 		create_chat_message(speaker, message_language, raw_message, spans, message_mode)
 	show_message(rendered, MSG_AUDIBLE)
 
+// MARK: Relay_emote
+// (C) Pe4henika | Возможность видеть эмоуты через камеры для ИИ
+/mob/living/silicon/ai/proc/relay_emote(mob/living/speaker, emote_message)
+    if(!client)
+        return
+    var/namepart = "[speaker.GetVoice()][speaker.get_alt_name()]"
+    var/hrefpart = "<a href='?src=[REF(src)];track=[html_encode(namepart)]'>"
+    var/jobpart = "Unknown"
+
+    if(iscarbon(speaker))
+        var/mob/living/carbon/S = speaker
+        if(S.job)
+            jobpart = "[S.job]"
+
+    var/rendered = "<i><span class='game say'>Relayed Emote: <span class='name'>[hrefpart][namepart] ([jobpart])</a> </span><span class='message'>[emote_message]</span></span></i>"
+    show_message(rendered, MSG_VISUAL)
+// --
 /mob/living/silicon/ai/fully_replace_character_name(oldname,newname)
 	..()
 	if(oldname != real_name)
