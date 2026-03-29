@@ -404,7 +404,8 @@
 		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahanmed"),
 		"Catborg" = image(icon ='modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_medical.dmi', icon_state = "meowdical"),
 		"Kittyborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_medicat.dmi', icon_state = "medicat"),
-		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurmed")
+		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurmed"),
+		"Dragon" = image(icon = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_med.dmi', icon_state = "dragon-med") // WhiteMoon Port (Dragonborg)
 		)
 		var/list/L = list("Medihound" = "medihound", "Medihound Dark" = "medihounddark", "Vale" = "valemed")
 		for(var/a in L)
@@ -663,6 +664,13 @@
 			hat_offset = DULLAHAN_TAUR_HAT_OFFSET
 			has_snowflake_deadsprite = TRUE
 			hasrest = TRUE
+		if("Dragon") // WhiteMoon Port (Dragonborg)
+			cyborg_base_icon = "dragon-med"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_med.dmi'
+			has_snowflake_deadsprite = TRUE
+			hasrest = TRUE
+			dogborg = TRUE
+			hat_offset = 3
 		else
 			return FALSE
 	return ..()
@@ -755,7 +763,8 @@
 		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahaneng"),
 		"Catborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_engineering.dmi', icon_state = "engi"),
 		"Kittyborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_engi.dmi', icon_state = "engi"),
-		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaureng")
+		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaureng"),
+		"Dragon" = image(icon = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_engi.dmi', icon_state = "dragon-engi") // WhiteMoon Port (Dragonborg)
 		)
 		var/list/L = list("Pup Dozer" = "pupdozer", "Vale" = "valeeng")
 		for(var/a in L)
@@ -974,6 +983,13 @@
 			hat_offset = DULLAHAN_TAUR_HAT_OFFSET
 			has_snowflake_deadsprite = TRUE
 			hasrest = TRUE
+		if("Dragon") // WhiteMoon Port (Dragonborg)
+			cyborg_base_icon = "dragon-engi"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_engi.dmi'
+			has_snowflake_deadsprite = TRUE
+			hasrest = TRUE
+			dogborg = TRUE
+			hat_offset = 3
 		else
 			return FALSE
 	return ..()
@@ -1048,7 +1064,8 @@
 		"Mechoid" = image(icon = 'modular_bluemoon/icons/mob/robots.dmi', icon_state = "mechoid-security"), // Danaiyka request
 		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahanpeace"),
 		"Catborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_security.dmi', icon_state = "sec"),
-		"Kittyborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_sec.dmi', icon_state = "sec")
+		"Kittyborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_sec.dmi', icon_state = "sec"),
+		"Dragon" = image(icon = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_sec.dmi', icon_state = "dragon-sec") // WhiteMoon Port (Dragonborg)
 		)
 		var/list/L = list("K9" = "k9", "Vale" = "valesec", "K9 Dark" = "k9dark")
 		for(var/a in L)
@@ -1272,6 +1289,13 @@
 			cyborg_icon_override = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/kittyborg_sec.dmi'
 			moduleselect_alternate_icon = 'modular_citadel/icons/ui/screen_cyborg.dmi'
 			dogborg = TRUE
+		if("Dragon") // WhiteMoon Port (Dragonborg)
+			cyborg_base_icon = "dragon-sec"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_sec.dmi'
+			has_snowflake_deadsprite = TRUE
+			hasrest = TRUE
+			dogborg = TRUE
+			hat_offset = 3
 		else
 			return FALSE
 	return ..()
@@ -1342,7 +1366,8 @@
 		"Handy" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "handy_peace"), // SPLURT Addon (Fallout 13)
 		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahanpeace"),
 		"Catborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_science.dmi', icon_state = "sci"),
-		"Kittyborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_sci.dmi', icon_state = "sci")
+		"Kittyborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_sci.dmi', icon_state = "sci"),
+		"Dragon" = image(icon = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_peacekeeper.dmi', icon_state = "dragon-pk")
 	))
 	var/peace_borg_icon = show_radial_menu(R, R , peace_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
 	switch(peace_borg_icon)
@@ -1469,6 +1494,13 @@
 			cyborg_base_icon = "sci"
 			cyborg_icon_override = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_sci.dmi'
 			dogborg = TRUE
+		if("Dragon")
+			cyborg_base_icon = "dragon-pk"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_peacekeeper.dmi'
+			has_snowflake_deadsprite = TRUE
+			hasrest = TRUE
+			dogborg = TRUE
+			hat_offset = 3
 		else
 			return FALSE
 	return ..()
@@ -1645,7 +1677,10 @@
 		"(Janitor) Mechoid" = image(icon = 'modular_bluemoon/icons/mob/robots.dmi', icon_state = "mechoid-janitor"), // Danaiyka request
 		"(Janitor) Catborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_service.dmi', icon_state = "service"),
 		"(Janitor) Kittyborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_jani.dmi', icon_state = "jani"),
-		"(Janitor) Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurjani")
+		"(Janitor) Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurjani"),
+		"(Service) Dragon" = image(icon = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_service.dmi', icon_state = "dragon-serv"),
+		"(Janitor) Dragon" = image(icon = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_jani.dmi', icon_state = "dragon-jani"),
+		"(Jester) Dragon" = image(icon = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_jester.dmi', icon_state = "dragon-clown")
 		)
 		var/list/L = list("(Service) DarkK9" = "k50", "(Service) Vale" = "valeserv", "(Service) ValeDark" = "valeservdark",
 						"(Janitor) Scrubpuppy" = "scrubpup")
@@ -2011,6 +2046,23 @@
 			hat_offset = DULLAHAN_TAUR_HAT_OFFSET
 			has_snowflake_deadsprite = TRUE
 			hasrest = TRUE
+		if("(Service) Dragon")
+			cyborg_base_icon = "dragon-serv"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_service.dmi'
+			has_snowflake_deadsprite = TRUE
+			hasrest = TRUE
+		if("(Janitor) Dragon")
+			cyborg_base_icon = "dragon-jani"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_jani.dmi'
+			has_snowflake_deadsprite = TRUE
+			hasrest = TRUE
+		if("(Jester) Dragon")
+			cyborg_base_icon = "dragon-clown"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_jester.dmi'
+			has_snowflake_deadsprite = TRUE
+			hasrest = TRUE
+			dogborg = TRUE
+			hat_offset = 3
 		else
 			return FALSE
 	return ..()
@@ -2089,7 +2141,8 @@
 		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahanmine"),
 		"Catborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_mining.dmi', icon_state = "mining"),
 		"Kittyborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_mine.dmi', icon_state = "mining"),
-		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurmine")
+		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurmine"),
+		"Dragon" = image(icon = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_miner.dmi', icon_state = "dragon-mining")
 		)
 		var/list/L = list("Blade" = "blade", "Vale" = "valemine")
 		for(var/a in L)
@@ -2284,6 +2337,13 @@
 			hat_offset = DULLAHAN_TAUR_HAT_OFFSET
 			has_snowflake_deadsprite = TRUE
 			hasrest = TRUE
+		if("Dragon") // BLUEMOON ADD (WhiteMoon Port — Dragonborg)
+			cyborg_base_icon = "dragon-mining"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_miner.dmi'
+			has_snowflake_deadsprite = TRUE
+			hasrest = TRUE
+			dogborg = TRUE
+			hat_offset = 3
 		else
 			return FALSE
 	return ..()
