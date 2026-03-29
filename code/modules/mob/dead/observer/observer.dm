@@ -1042,9 +1042,9 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	if(!client.holder && GLOB.master_mode != ROUNDTYPE_EXTENDED)
 		to_chat(src, span_warning("You cannot see this info in Dynamic mode!"))
 		return
-	if(!started_as_observer && can_reenter_corpse)
-		to_chat(src, span_warning("You cannot see this info unless you are an observer or you've chosen Do Not Resuscitate!"))
-		return
+	//if(!started_as_observer && can_reenter_corpse)
+		//to_chat(src, span_warning("You cannot see this info unless you are an observer or you've chosen Do Not Resuscitate!"))
+		//return
 	if(!SSticker?.mode)
 		to_chat(src, span_warning("The game hasn't started yet!"))
 		return
