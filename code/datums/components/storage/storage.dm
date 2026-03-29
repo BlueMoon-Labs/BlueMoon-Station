@@ -121,14 +121,17 @@
 	update_actions()
 
 /datum/component/storage/Destroy()
+	QDEL_NULL(modeswitch_action)
 	close_all()
 	wipe_ui_objects()
 	LAZYCLEARLIST(is_using)
 	return ..()
 
 /datum/component/storage/proc/wipe_ui_objects()
-	for(var/i in ui_by_mob)
-		var/list/objects = ui_by_mob[i]
+	for(var/mob/M as anything in ui_by_mob)
+		var/list/objects = ui_by_mob[M]
+		if(M.client)
+			M.client.screen -= objects
 		QDEL_LIST(objects)
 	ui_by_mob.Cut()
 	QDEL_LIST(pooled_item_holders)
