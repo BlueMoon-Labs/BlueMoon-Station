@@ -35,7 +35,6 @@ var State = {
 	favorites: {},
 	// Images
 	storedImages: {},
-	cachedImages: [],
 	imageRetryDelay: 500,
-	imageRetryLimit: 50
+	imageRetryLimit: 10
 };

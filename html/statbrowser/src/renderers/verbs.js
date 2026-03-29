@@ -11,12 +11,12 @@ function draw_verbs(cat) {
 
 	var container = el("div");
 	statcontent.appendChild(container);
+	sortVerbs();
 
 	function renderVerbsFiltered(query) {
 		container.textContent = "";
 		var grid = el("div", "verb-grid");
 		var additions = {};
-		sortVerbs();
 
 		var resolvedCat = cat;
 		if (State.splitAdminTabs && cat.lastIndexOf(".") !== -1) {

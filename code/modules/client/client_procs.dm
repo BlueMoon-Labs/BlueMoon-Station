@@ -310,7 +310,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 
 	// BLUEMOON EDIT — Enable Ctrl+F find and persistent byondStorage in browser windows (BYOND 516+)
 	if(byond_version >= 516)
-		winset(src, null, "browser-options=+find;browser-options=+byondstorage")
+		winset(src, null, "browser-options=+find,+byondstorage")
 
 	//Admin Authorisation
 	var/connecting_admin = FALSE //because de-admined admins connecting should be treated like admins.
@@ -847,7 +847,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	log_access("Logout: [key_name(src)]")
 	if(GLOB.ahelp_tickets)
 		GLOB.ahelp_tickets.ClientLogout(src)
-	SSserver_maint.UpdateHubStatus()
+
 	if(credits)
 		QDEL_LIST(credits)
 	if(holder)
@@ -1018,7 +1018,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	query_log_connection.Execute()
 	qdel(query_log_connection)
 
-	SSserver_maint.UpdateHubStatus()
+
 
 	if(new_player)
 		player_age = -1

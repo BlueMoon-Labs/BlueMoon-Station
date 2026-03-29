@@ -67,4 +67,8 @@ function draw_tickets() {
 		card.appendChild(td2);
 		statcontent.appendChild(card);
 	}
+
+	if (State.interviewManager && State.interviewManager.interviews && State.interviewManager.interviews.length > 0) {
+		draw_interviews();
+	}
 }

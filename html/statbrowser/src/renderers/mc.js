@@ -330,9 +330,13 @@ function mc_updateKeySection() {
 		if (row[SS_CAN_FIRE]) {
 			var costCls = mcHealthCost(row[SS_COST]);
 			var tickCls = mcHealthTick(row[SS_TICK]);
-			statsEl.innerHTML = '<span class="' + costCls + '">' + row[SS_COST] + 'ms</span>'
-				+ ' | <span class="' + tickCls + '">' + row[SS_TICK] + '%</span>'
-				+ ' | ' + STATE_LETTERS[row[SS_STATE]];
+			statsEl.textContent = "";
+			var costSpan = el("span", costCls, row[SS_COST] + "ms");
+			var tickSpan = el("span", tickCls, row[SS_TICK] + "%");
+			statsEl.appendChild(costSpan);
+			statsEl.appendChild(document.createTextNode(" | "));
+			statsEl.appendChild(tickSpan);
+			statsEl.appendChild(document.createTextNode(" | " + (STATE_LETTERS[row[SS_STATE]] || "?")));
 		} else {
 			statsEl.textContent = "OFFLINE";
 			statsEl.style.opacity = "0.5";

@@ -1,6 +1,14 @@
+function safeParse(str, fallback) {
+	try { return JSON.parse(str); }
+	catch (e) { return fallback !== undefined ? fallback : null; }
+}
+
 function update_ping(ping_str, tidi_str) {
-	State.pingData = JSON.parse(ping_str);
-	State.tidiData = JSON.parse(tidi_str);
+	var pingData = safeParse(ping_str);
+	var tidiData = safeParse(tidi_str);
+	if (!Array.isArray(pingData)) return;
+	State.pingData = pingData;
+	State.tidiData = tidiData;
 
 	pingBarGlobal.style.display = "";
 	var ping = State.pingData[0];
@@ -29,21 +37,24 @@ function update_ping(ping_str, tidi_str) {
 }
 
 function update(global_fast_str, global_slow_str, other_str) {
-	var parsedFast = JSON.parse(global_fast_str);
+	var parsedFast = safeParse(global_fast_str);
+	if (!parsedFast) return;
 	State.globalFast = parsedFast;
 
 	if (global_slow_str && global_slow_str !== "") {
-		State.globalSlow = JSON.parse(global_slow_str);
+		State.globalSlow = safeParse(global_slow_str) || State.globalSlow;
 	}
 
 	if (parsedFast.tidi) {
 		State.tidiData = parsedFast.tidi;
 	}
 
-	var parsedMob = JSON.parse(other_str);
+	var parsedMob = safeParse(other_str);
 	State.mobItems = [];
-	for (var i = 0; i < parsedMob.length; i++) {
-		if (parsedMob[i] != null) State.mobItems.push(parsedMob[i]);
+	if (parsedMob) {
+		for (var i = 0; i < parsedMob.length; i++) {
+			if (parsedMob[i] != null) State.mobItems.push(parsedMob[i]);
+		}
 	}
 
 	if (!_settingsActive) {
@@ -56,16 +67,20 @@ function update(global_fast_str, global_slow_str, other_str) {
 }
 
 function update_voting(vote_data) {
-	State.voteParts = JSON.parse(vote_data);
+	var parsed = safeParse(vote_data);
+	if (!parsed) return;
+	State.voteParts = parsed;
 	if (!_settingsActive && State.currentTab === "Status") draw_status();
 }
 
 function update_mc(server_data_encoded, ss_data_encoded, coords_entry) {
-	State.mcServerData = JSON.parse(server_data_encoded);
-	State.mcSSData = JSON.parse(ss_data_encoded);
+	var serverData = safeParse(server_data_encoded);
+	var ssData = safeParse(ss_data_encoded);
+	if (!serverData || !ssData) return;
+	State.mcServerData = serverData;
+	State.mcSSData = ssData;
 	State.mcServerData.coords = coords_entry;
-	if (!State.verbTabs.includes("MC")) State.verbTabs.push("MC");
-	createStatusTab("MC");
+	addPermanentTab("MC");
 	if (!_settingsActive && State.currentTab === "MC") draw_mc();
 }
 
@@ -76,17 +91,19 @@ function remove_mc() {
 
 function update_spells(t, s) {
 	var oldTabs = State.spellTabs || [];
-	State.spellTabs = JSON.parse(t);
+	var parsed = safeParse(t, []);
+	if (!Array.isArray(parsed)) return;
+	State.spellTabs = parsed;
 	var doUpdate = State.spellTabs.includes(State.currentTab);
 	init_spells();
 	// Remove tabs that were in the old list but not in the new one
 	for (var i = 0; i < oldTabs.length; i++) {
 		if (!State.spellTabs.includes(oldTabs[i])) {
-			removeStatusTab(oldTabs[i]);
+			removePermanentTab(oldTabs[i]);
 		}
 	}
 	if (s) {
-		State.spells = JSON.parse(s);
+		State.spells = safeParse(s, []);
 		if (!_settingsActive && doUpdate) draw_spells(State.currentTab);
 	} else {
 		remove_spells();
@@ -95,7 +112,7 @@ function update_spells(t, s) {
 
 function remove_spells() {
 	for (var s = 0; s < State.spellTabs.length; s++) {
-		removeStatusTab(State.spellTabs[s]);
+		removePermanentTab(State.spellTabs[s]);
 	}
 }
 
@@ -103,8 +120,7 @@ function init_spells() {
 	for (var i = 0; i < State.spellTabs.length; i++) {
 		var cat = State.spellTabs[i];
 		if (cat.length > 0) {
-			if (!State.verbTabs.includes(cat)) State.verbTabs.push(cat);
-			createStatusTab(cat);
+			addPermanentTab(cat);
 		}
 	}
 }
@@ -120,20 +136,21 @@ function spell_cat_check(cat) {
 	for (var s = 0; s < State.spells.length; s++) {
 		if (State.spells[s][0] === cat) count++;
 	}
-	if (count < 1) removeStatusTab(cat);
+	if (count < 1) removePermanentTab(cat);
 }
 
 function update_tickets(T) {
-	State.tickets = JSON.parse(T);
-	if (!State.verbTabs.includes("Tickets")) {
-		State.verbTabs.push("Tickets");
-		addPermanentTab("Tickets");
-	}
+	var parsed = safeParse(T, []);
+	if (!Array.isArray(parsed)) return;
+	State.tickets = parsed;
+	addPermanentTab("Tickets");
 	if (!_settingsActive && State.currentTab === "Tickets") draw_tickets();
 }
 
 function update_interviews(I) {
-	State.interviewManager = JSON.parse(I);
+	var parsed = safeParse(I);
+	if (!parsed) return;
+	State.interviewManager = parsed;
 	if (!_settingsActive && State.currentTab === "Tickets") draw_interviews();
 }
 
@@ -171,9 +188,10 @@ function draw_interviews() {
 }
 
 function update_sdql2(S) {
-	State.sdql2 = JSON.parse(S);
-	if (State.sdql2.length > 0 && !State.verbTabs.includes("SDQL2")) {
-		State.verbTabs.push("SDQL2");
+	var parsed = safeParse(S, []);
+	if (!Array.isArray(parsed)) return;
+	State.sdql2 = parsed;
+	if (State.sdql2.length > 0) {
 		addPermanentTab("SDQL2");
 	}
 	if (!_settingsActive && State.currentTab === "SDQL2") draw_sdql2();
@@ -214,7 +232,7 @@ function add_admin_tabs(ht) {
 function create_listedturf(TN) {
 	remove_listedturf();
 	State.turfContents = [];
-	State.turfName = JSON.parse(TN);
+	State.turfName = safeParse(TN, "");
 	addPermanentTab(State.turfName);
 	tab_change(State.turfName);
 }
@@ -222,8 +240,27 @@ function create_listedturf(TN) {
 function update_listedturf(TC) {
 	if (TC === State.turfContentsRaw) return;
 	State.turfContentsRaw = TC;
-	State.turfContents = JSON.parse(TC);
+	State.turfContents = safeParse(TC, []);
 	if (!_settingsActive && State.currentTab === State.turfName) draw_listedturf();
+}
+
+function update_turf_icons(data) {
+	var parsed = safeParse(data, []);
+	if (!Array.isArray(parsed)) return;
+	for (var i = 0; i < parsed.length; i++) {
+		var ref = parsed[i][0];
+		var iconUrl = parsed[i][1];
+		if (!iconUrl) continue;
+		State.storedImages[ref] = iconUrl;
+		if (turfItemNodes[ref]) {
+			var img = turfItemNodes[ref].querySelector("img");
+			if (img) {
+				img.src = iconUrl;
+				img.className = "";
+				img.setAttribute("data-retry", "0");
+			}
+		}
+	}
 }
 
 function remove_listedturf() {
@@ -238,8 +275,9 @@ function remove_listedturf() {
 function init_verbs(c, v) {
 	connected_to_server();
 	wipe_verbs();
+	st_fixSent = false;
 	checkStatusTab();
-	State.verbTabs = JSON.parse(c);
+	State.verbTabs = safeParse(c, []);
 	State.verbTabs.sort();
 	var doUpdate = false;
 	for (var i = 0; i < State.verbTabs.length; i++) {
@@ -255,7 +293,8 @@ function init_verbs(c, v) {
 }
 
 function add_verb_list(v) {
-	var toAdd = JSON.parse(v);
+	var toAdd = safeParse(v, []);
+	if (!Array.isArray(toAdd)) return;
 	toAdd.sort();
 	for (var i = 0; i < toAdd.length; i++) {
 		var part = toAdd[i];
@@ -274,7 +313,8 @@ function add_verb_list(v) {
 }
 
 function remove_verb_list(v) {
-	var toRemove = JSON.parse(v);
+	var toRemove = safeParse(v, []);
+	if (!Array.isArray(toRemove)) return;
 	for (var i = 0; i < toRemove.length; i++) {
 		remove_verb(toRemove[i]);
 	}

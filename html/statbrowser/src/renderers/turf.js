@@ -55,11 +55,13 @@ function draw_listedturf() {
 			var container = el("div", "turf-item");
 			container.title = part[0];
 			var img = el("img");
-			if (!State.storedImages[ref] && part[2]) {
+			if (State.storedImages[ref]) {
+				img.src = State.storedImages[ref];
+			} else if (part[2]) {
 				img.src = part[2];
 				State.storedImages[ref] = part[2];
-			} else if (State.storedImages[ref]) {
-				img.src = State.storedImages[ref];
+			} else {
+				img.className = "icon-pending";
 			}
 			img.onerror = iconError;
 			container.appendChild(img);

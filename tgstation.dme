@@ -4669,6 +4669,7 @@
 #include "modular_bluemoon\code\modules\mapping\turf_decals.dm"
 #include "modular_bluemoon\code\modules\mapping\items\papers.dm"
 #include "modular_bluemoon\code\modules\mentor\code\mentor.dm"
+#include "modular_bluemoon\code\modules\mentor\code\mentor_verbs.dm"
 #include "modular_bluemoon\code\modules\mining\shelters.dm"
 #include "modular_bluemoon\code\modules\mining\equipment\machine_vending.dm"
 #include "modular_bluemoon\code\modules\mining\equipment\survival_pod.dm"

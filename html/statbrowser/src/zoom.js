@@ -55,10 +55,3 @@ window.addEventListener("wheel", function(event) {
 
 applyZoom();
 
-function set_theme(which) {
-	if (which === "light") {
-		document.body.classList.add("light");
-	} else {
-		document.body.classList.remove("light");
-	}
-}

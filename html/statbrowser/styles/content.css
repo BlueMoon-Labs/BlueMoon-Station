@@ -155,6 +155,33 @@
 .verb-pill.favorited:hover {
 	background: rgba(232, 168, 32, 0.25);
 }
+/* ===== Verb Links Style ===== */
+body.verb-style-links .verb-pill {
+	background: transparent;
+	border: none;
+	border-radius: 0;
+	padding: 2px 4px;
+	text-decoration: underline;
+	color: var(--text-primary);
+}
+body.verb-style-links .verb-pill:hover {
+	background: transparent;
+	text-decoration: underline;
+	color: var(--accent);
+}
+body.verb-style-links .verb-pill.favorited {
+	background: transparent;
+	border: none;
+	color: var(--fav-accent);
+}
+body.verb-style-links .verb-pill.favorited:hover {
+	background: transparent;
+	color: var(--fav-accent);
+}
+body.verb-style-links .verb-grid {
+	gap: 2px;
+}
+
 .verb-sub-header {
 	width: 100%;
 	font-size: 11px;
@@ -396,6 +423,7 @@
 }
 .turf-item:hover { background: var(--bg-hover); }
 .turf-item img { width: var(--turf-icon-size, 32px); height: var(--turf-icon-size, 32px); flex-shrink: 0; }
+.turf-item img.icon-pending { visibility: hidden; }
 .turf-item-name { font-size: var(--turf-font-size, 12px); }
 
 /* ===== Health utility classes ===== */

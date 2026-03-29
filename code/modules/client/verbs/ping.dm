@@ -34,10 +34,16 @@
 	else
 		// Backward compatibility with one-argument invocations.
 		rtt_ping_raw = tick_ping
-	var/rtt_ping = stabilize_rtt_ping(rtt_ping_raw)
-	var/server_ping = max(tick_ping - rtt_ping_raw, 0)
 
-	var/jitter = abs(rtt_ping_raw - lastping_rtt_raw)
+	// When rtt_raw is 0 the round-trip completed within a single REALTIMEOFDAY
+	// tick, meaning the timer resolution is too coarse to measure it.
+	// Fall back to the tick-based measurement which has finer granularity.
+	var/best_ping = rtt_ping_raw ? rtt_ping_raw : tick_ping
+
+	var/rtt_ping = stabilize_rtt_ping(best_ping)
+	var/server_ping = max(tick_ping - best_ping, 0)
+
+	var/jitter = abs(best_ping - lastping_rtt_raw)
 	lastping_jitter = jitter
 	if(isnull(avgping_jitter))
 		avgping_jitter = jitter
@@ -46,7 +52,7 @@
 
 	lastping_tick = tick_ping
 	lastping_rtt = rtt_ping
-	lastping_rtt_raw = rtt_ping_raw
+	lastping_rtt_raw = best_ping
 	lastping_server = server_ping
 	lastping = rtt_ping
 	ping_updated = TRUE
@@ -57,14 +63,14 @@
 		avgping_tick = MC_AVERAGE_SLOW(avgping_tick, tick_ping)
 
 	if(isnull(avgping_rtt))
-		avgping_rtt = rtt_ping_raw
+		avgping_rtt = best_ping
 	else
-		avgping_rtt = MC_AVG_FAST_UP_SLOW_DOWN(avgping_rtt, rtt_ping_raw)
+		avgping_rtt = MC_AVG_FAST_UP_SLOW_DOWN(avgping_rtt, best_ping)
 
 	if(isnull(avgping_rtt_raw))
-		avgping_rtt_raw = rtt_ping_raw
+		avgping_rtt_raw = best_ping
 	else
-		avgping_rtt_raw = MC_AVERAGE_SLOW(avgping_rtt_raw, rtt_ping_raw)
+		avgping_rtt_raw = MC_AVERAGE_SLOW(avgping_rtt_raw, best_ping)
 
 	if(isnull(avgping_server))
 		avgping_server = server_ping

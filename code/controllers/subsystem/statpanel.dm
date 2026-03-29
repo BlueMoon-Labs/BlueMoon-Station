@@ -9,7 +9,8 @@ SUBSYSTEM_DEF(statpanels)
 	var/encoded_global_slow
 	var/mc_data_encoded
 	var/mc_ss_data_encoded
-	var/list/cached_images = list()
+	var/list/icon_queue = list()
+	var/icon_budget_per_tick = 5
 	var/mc_data_refresh_counter = 0
 	var/static/null_bullet_encoded
 	var/full_cycle_counter = 0
@@ -28,6 +29,8 @@ SUBSYSTEM_DEF(statpanels)
 	var/turf_fire_skip = FALSE
 	var/list/cached_client_stats
 	var/client_stats_refresh_counter = 0
+	var/list/ping_run = list()
+	var/list/icon_run = list()
 
 /datum/controller/subsystem/statpanels/fire(resumed = FALSE)
 	if (!resumed)
@@ -39,7 +42,10 @@ SUBSYSTEM_DEF(statpanels)
 			full_cycle_counter = 0
 		if(is_slow_cycle)
 			slow_data_counter = 0
-			cached_images.Cut()
+			for(var/client/C as anything in GLOB.clients)
+				if(C?.statpanel_sent_icons)
+					C.statpanel_sent_icons.Cut()
+			icon_queue.Cut()
 
 		turf_fire_skip = !turf_fire_skip
 
@@ -116,14 +122,17 @@ SUBSYSTEM_DEF(statpanels)
 		if(!null_bullet_encoded)
 			null_bullet_encoded = url_encode(json_encode(list(list(null))))
 
-		// Adaptive wait based on server load
+		// Adaptive wait and icon budget based on server load
 		var/client_count = length(GLOB.clients)
 		if(client_count > 60 || SStime_track.time_dilation_current > 20)
 			wait = 5
+			icon_budget_per_tick = 2
 		else if(client_count > 40 || SStime_track.time_dilation_current > 10)
 			wait = 4
+			icon_budget_per_tick = 5
 		else
 			wait = 3
+			icon_budget_per_tick = 8
 
 		// Build staggered client list — each fire processes 1/N of all clients
 		// Each client gets a full update every (stagger_groups * wait) deciseconds
@@ -135,17 +144,31 @@ SUBSYSTEM_DEF(statpanels)
 		cached_tickets_encoded = null
 		src.currentrun = run_list
 
+		// Ping forwarding — ALL clients every fire, independent of stagger.
+		src.ping_run = GLOB.clients.Copy()
+
+		// Snapshot icon queue clients for resumable processing
+		src.icon_run = list()
+		for(var/client/C as anything in icon_queue)
+			src.icon_run += C
+
+	// Process ping queue (resumable)
+	while(length(ping_run))
+		var/client/ping_target = ping_run[length(ping_run)]
+		ping_run.len--
+		if(!ping_target?.statbrowser_ready || !ping_target.ping_updated || ping_target.inactivity >= 3000)
+			continue
+		ping_target.ping_updated = FALSE
+		ping_target << output("%5B[round(ping_target.lastping, 1)]%2C[round(ping_target.avgping, 1)]%2C[round(ping_target.avgping_jitter, 1)]%5D;[encoded_tidi]", "statbrowser:update_ping")
+		if(MC_TICK_CHECK)
+			return
+
 	var/list/currentrun = src.currentrun
 	while(length(currentrun))
 		var/client/target = currentrun[length(currentrun)]
 		currentrun.len--
 		if(!target?.statbrowser_ready)
 			continue
-
-		if(target.ping_updated && target.inactivity < 3000)
-			target.ping_updated = FALSE
-			var/ping_str = "%5B[round(target.lastping, 1)]%2C[round(target.avgping, 1)]%2C[round(target.avgping_jitter, 1)]%5D"
-			target << output("[ping_str];[encoded_tidi]", "statbrowser:update_ping")
 
 		// Skip heavy work for AFK clients (5 min inactivity)
 		// Admin clients are also skipped; they self-recover on the first active fire
@@ -240,6 +263,8 @@ SUBSYSTEM_DEF(statpanels)
 					target_mob.listed_turf = null
 					target.cached_turf_ref = null
 					target.cached_turf_encoded = null
+					target.statpanel_sent_icons.Cut()
+					icon_queue -= target
 				else if(target.stat_tab == M?.listed_turf.name || !(M?.listed_turf.name in target.panel_tabs))
 					var/turf_ref = REF(target_mob.listed_turf)
 					target.turf_refresh_counter++
@@ -247,16 +272,26 @@ SUBSYSTEM_DEF(statpanels)
 					if(turf_ref == target.cached_turf_ref && target.cached_turf_encoded && target.turf_refresh_counter < 3)
 						target << output("[target.cached_turf_encoded];", "statbrowser:update_listedturf")
 					else
+						// If turf changed, clear per-client icon cache
+						if(turf_ref != target.cached_turf_ref)
+							target.statpanel_sent_icons.Cut()
+							icon_queue -= target
 						target.turf_refresh_counter = 0
 						var/list/overrides = list()
 						var/list/turfitems = list()
+						var/list/needs_icons = list()
 						for(var/img in target.images)
 							var/image/target_image = img
 							if(!target_image.loc || target_image.loc.loc != target_mob.listed_turf || !target_image.override)
 								continue
 							overrides += target_image.loc
-						turfitems[++turfitems.len] = list("[target_mob.listed_turf]", REF(target_mob.listed_turf), icon2html(target_mob.listed_turf, target, sourceonly=TRUE))
-						for(var/tc in target_mob.listed_turf)
+						// Phase 1: Send list immediately - no icon generation
+						var/turf/listed = target_mob.listed_turf
+						var/listed_ref = REF(listed)
+						turfitems[++turfitems.len] = list("[listed]", listed_ref)
+						if(!target.statpanel_sent_icons[listed_ref])
+							needs_icons += listed
+						for(var/tc in listed)
 							var/atom/movable/turf_content = tc
 							if(turf_content.mouse_opacity == MOUSE_OPACITY_TRANSPARENT)
 								continue
@@ -266,22 +301,60 @@ SUBSYSTEM_DEF(statpanels)
 								continue
 							if(turf_content.IsObscured())
 								continue
-							if(length(turfitems) < 30)
-								if(!cached_images[REF(turf_content)])
-									cached_images[REF(turf_content)] = TRUE
-									turf_content.RegisterSignal(turf_content, COMSIG_PARENT_QDELETING, TYPE_PROC_REF(/atom, remove_from_cache), override = TRUE) // we reset cache if anything in it gets deleted
-									if(ismob(turf_content) || length(turf_content.overlays) > 4)
-										turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content), costly_icon2html(turf_content, target, sourceonly=TRUE))
-									else
-										turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content), icon2html(turf_content, target, sourceonly=TRUE))
-								else
-									turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content))
-							else
-								turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content))
+							var/ref = REF(turf_content)
+							turfitems[++turfitems.len] = list("[turf_content.name]", ref)
+							if(!target.statpanel_sent_icons[ref])
+								needs_icons += turf_content
 						var/encoded = url_encode(json_encode(turfitems))
 						target.cached_turf_ref = turf_ref
 						target.cached_turf_encoded = encoded
 						target << output("[encoded];", "statbrowser:update_listedturf")
+						// Phase 2: Queue icon generation for progressive delivery
+						if(length(needs_icons))
+							var/list/existing = icon_queue[target]
+							if(existing)
+								existing += needs_icons
+							else
+								icon_queue[target] = needs_icons
+		if(MC_TICK_CHECK)
+			return
+
+	// --- Progressive icon generation (resumable via icon_run) ---
+	var/queued_clients = length(icon_run)
+	var/per_client_budget = queued_clients ? max(round(icon_budget_per_tick / queued_clients), 1) : icon_budget_per_tick
+	while(length(icon_run))
+		var/client/C = icon_run[length(icon_run)]
+		icon_run.len--
+		if(!C?.statbrowser_ready || !C.mob?.listed_turf)
+			icon_queue -= C
+			continue
+		var/list/pending = icon_queue[C]
+		if(!length(pending))
+			icon_queue -= C
+			continue
+		var/list/batch = list()
+		var/icons_done = 0
+		while(length(pending) && icons_done < per_client_budget)
+			var/atom/A = pending[length(pending)]
+			pending.len--
+			if(QDELETED(A))
+				continue
+			var/ref = REF(A)
+			if(C.statpanel_sent_icons[ref])
+				continue
+			var/icon_url
+			if(ismob(A) || length(A.overlays) > 4)
+				icon_url = costly_icon2html(A, C, sourceonly=TRUE)
+			else
+				icon_url = icon2html(A, C, sourceonly=TRUE)
+			if(icon_url)
+				C.statpanel_sent_icons[ref] = icon_url
+				batch[++batch.len] = list(ref, icon_url)
+			icons_done++
+		if(length(batch))
+			C << output("[url_encode(json_encode(batch))];", "statbrowser:update_turf_icons")
+		if(!length(pending))
+			icon_queue -= C
 		if(MC_TICK_CHECK)
 			return
 
@@ -503,9 +576,6 @@ SUBSYSTEM_DEF(statpanels)
 		)
 	mc_ss_data_encoded = url_encode(json_encode(ss_data))
 
-/atom/proc/remove_from_cache()
-	SSstatpanels.cached_images -= REF(src)
-
 /// verbs that send information from the browser UI
 /client/verb/set_tab(tab as text|null)
 	set name = "Set Tab"
@@ -539,3 +609,11 @@ SUBSYSTEM_DEF(statpanels)
 	init_verbs()
 	// Re-apply theme and favorites after byondStorage is guaranteed available
 	src << output("1", "statbrowser:reapply_storage")
+	// Send current ping immediately so the ping bar appears without waiting for stagger cycle
+	var/ping_str = "%5B[round(lastping, 1)]%2C[round(avgping, 1)]%2C[round(avgping_jitter, 1)]%5D"
+	var/list/tidi = list(
+		round(SStime_track.time_dilation_current, 0.1),
+		round(SStime_track.time_dilation_avg_fast, 0.1),
+		round(SStime_track.time_dilation_avg, 0.1),
+		round(SStime_track.time_dilation_avg_slow, 0.1))
+	src << output("[ping_str];[url_encode(json_encode(tidi))]", "statbrowser:update_ping")

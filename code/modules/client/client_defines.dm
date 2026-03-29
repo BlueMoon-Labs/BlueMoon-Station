@@ -181,6 +181,8 @@
 	var/cached_turf_encoded
 	/// counter for forcing turf refresh even on same turf
 	var/turf_refresh_counter = 0
+	/// tracks which icon REFs have been sent to this client's statbrowser (REF -> icon_url)
+	var/list/statpanel_sent_icons = list()
 
 	/// list of all tabs
 	var/list/panel_tabs = list()
@@ -191,7 +193,6 @@
 	var/list/verb_tabs = list()
 
 	var/stat_vote_sent_null = FALSE
-	var/stat_last_vote_hash = null
 	///A lazy list of atoms we've examined in the last EXAMINE_MORE_TIME (default 1.5) seconds, so that we will call [atom/proc/examine_more()] instead of [atom/proc/examine()] on them when examining
 	var/list/recent_examines
 	///When was the last time we warned them about not cryoing without an ahelp, set to -5 minutes so that rounstart cryo still warns

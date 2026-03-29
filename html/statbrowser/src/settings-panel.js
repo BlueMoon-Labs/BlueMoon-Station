@@ -210,6 +210,32 @@ function draw_settings() {
 	verbLayoutRow.appendChild(verbLayoutGroup);
 	layoutSection.appendChild(verbLayoutRow);
 
+	var verbStyleRow = el("div", "settings-row");
+	verbStyleRow.appendChild(el("span", "settings-label", "Стиль команд"));
+	var verbStyleGroup = el("div", "settings-btn-group");
+	var stylePillsBtn = el("button", "settings-toggle-btn" + (themeState.verbStyle !== "links" ? " active" : ""));
+	stylePillsBtn.textContent = "Кнопки";
+	stylePillsBtn.onclick = function() {
+		themeState.verbStyle = "pills";
+		markCustomIfModified(themeState);
+		saveTheme(themeState);
+		applyTheme(themeState);
+		draw_settings();
+	};
+	verbStyleGroup.appendChild(stylePillsBtn);
+	var styleLinksBtn = el("button", "settings-toggle-btn" + (themeState.verbStyle === "links" ? " active" : ""));
+	styleLinksBtn.textContent = "Ссылки";
+	styleLinksBtn.onclick = function() {
+		themeState.verbStyle = "links";
+		markCustomIfModified(themeState);
+		saveTheme(themeState);
+		applyTheme(themeState);
+		draw_settings();
+	};
+	verbStyleGroup.appendChild(styleLinksBtn);
+	verbStyleRow.appendChild(verbStyleGroup);
+	layoutSection.appendChild(verbStyleRow);
+
 	var hideSearchRow = el("div", "settings-row");
 	hideSearchRow.appendChild(el("span", "settings-label", "Скрыть поиск команд"));
 	var hideSearchCheck = document.createElement("input");
@@ -249,6 +275,29 @@ function draw_settings() {
 	verbPadRow.appendChild(verbPadSlider);
 	verbPadRow.appendChild(verbPadValue);
 	layoutSection.appendChild(verbPadRow);
+
+	var tabPadRow = el("div", "settings-row");
+	tabPadRow.appendChild(el("span", "settings-label", "Отступы вкладок"));
+	var tabPadSlider = document.createElement("input");
+	tabPadSlider.type = "range";
+	tabPadSlider.className = "settings-slider";
+	tabPadSlider.min = "0";
+	tabPadSlider.max = "12";
+	tabPadSlider.step = "1";
+	tabPadSlider.value = themeState.tabPadding != null ? themeState.tabPadding : 6;
+	var tabPadValue = el("span", "settings-slider-value", tabPadSlider.value + "px");
+	tabPadSlider.oninput = function() {
+		themeState.tabPadding = parseInt(tabPadSlider.value);
+		tabPadValue.textContent = tabPadSlider.value + "px";
+		var wasPre = themeState.preset;
+		markCustomIfModified(themeState);
+		saveTheme(themeState);
+		applyTheme(themeState);
+		if (themeState.preset !== wasPre) draw_settings();
+	};
+	tabPadRow.appendChild(tabPadSlider);
+	tabPadRow.appendChild(tabPadValue);
+	layoutSection.appendChild(tabPadRow);
 
 	var compactRow = el("div", "settings-row");
 	compactRow.appendChild(el("span", "settings-label", "Компактный режим"));

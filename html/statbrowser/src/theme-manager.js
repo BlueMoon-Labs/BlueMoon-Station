@@ -221,8 +221,10 @@ function getDefaultThemeState() {
 		borderRadius: 4,
 		customCSS: "",
 		verbLayout: "pills",
+		verbStyle: "pills",
 		hideVerbSearch: false,
 		verbPadding: 5,
+		tabPadding: 6,
 		compactMode: false,
 		turfIconSize: 32,
 		turfLayout: "list",
@@ -231,7 +233,7 @@ function getDefaultThemeState() {
 	};
 }
 
-var _SETTINGS_KEYS = ["verbLayout", "hideVerbSearch", "verbPadding", "compactMode",
+var _SETTINGS_KEYS = ["verbLayout", "verbStyle", "hideVerbSearch", "verbPadding", "tabPadding", "compactMode",
 	"turfLayout", "turfIconSize", "turfHideIcons", "turfFontSize",
 	"fontFamily", "fontSize", "borderRadius", "customCSS"];
 
@@ -318,11 +320,15 @@ function applyTheme(themeState) {
 	var vp = themeState.verbPadding != null ? themeState.verbPadding : 5;
 	root.style.setProperty("--verb-padding-v", vp + "px");
 	root.style.setProperty("--verb-padding-h", (vp * 2) + "px");
+	var tp = themeState.tabPadding != null ? themeState.tabPadding : 6;
+	root.style.setProperty("--tab-padding-v", tp + "px");
+	root.style.setProperty("--tab-padding-h", (tp * 2) + "px");
 	var tis = themeState.turfIconSize != null ? themeState.turfIconSize : 32;
 	root.style.setProperty("--turf-icon-size", tis + "px");
 	var tfs = themeState.turfFontSize != null ? themeState.turfFontSize : 12;
 	root.style.setProperty("--turf-font-size", tfs + "px");
 	document.body.classList.toggle("verb-layout-grid", themeState.verbLayout === "grid");
+	document.body.classList.toggle("verb-style-links", themeState.verbStyle === "links");
 	document.body.classList.toggle("hide-verb-search", !!themeState.hideVerbSearch);
 	document.body.classList.toggle("compact-mode", !!themeState.compactMode);
 	document.body.classList.toggle("turf-layout-grid", themeState.turfLayout === "grid");

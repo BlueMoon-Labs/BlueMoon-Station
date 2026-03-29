@@ -1,6 +1,7 @@
 var st_sections = { round: true, time: true, character: true };
 var st_skeleton = null;
 var st_els = {};
+var st_fixSent = false;
 
 function st_ensureSkeleton() {
 	if (st_skeleton && st_skeleton.parentNode) return;
@@ -168,7 +169,8 @@ function draw_status() {
 		st_els.voteSection.style.display = "none";
 	}
 
-	if (State.verbTabs.length === 0 || !State.verbs) {
+	if (!st_fixSent && (State.verbTabs.length === 0 || State.verbs.length === 0)) {
+		st_fixSent = true;
 		send_byond_command("Fix-Stat-Panel");
 	}
 }
