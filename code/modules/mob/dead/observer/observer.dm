@@ -480,7 +480,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		to_chat(usr, span_warning("Вы уже не можете быть реанимированы!"))
 		return FALSE
 
-	var/response = tgui_alert(src, "Вы уверены, что хотите предотвратить (почти) все способы реанимации? Это невозможно отменить.","Вы уверены, что хотите остаться мертвым?", list("Да","Нет"))
+	var/response = tgui_alert(src, "Вы уверены, что хотите предотвратить (почти) все способы реанимации? Действие невозможно отменить.","Вы уверены, что хотите остаться мертвым?", list("Да","Нет"))
 
 	if(response != "Да" || QDELETED(src) || QDELETED(client))
 		return
