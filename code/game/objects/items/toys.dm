@@ -463,7 +463,9 @@
 	throwforce = 0
 	throw_speed = 3
 	throw_range = 5
-
+	block_parry_data = /datum/block_parry_data/chair //Раньше он наследовал dualsaber, теперь стул, что честно т.к занимает две руки.
+	block_chance = 50
+	can_reflect = FALSE
 	attack_verb = list("attacked", "struck", "hit")
 	total_mass_on = TOTAL_MASS_TOY_SWORD
 	slowdown_wielded = 0
@@ -476,7 +478,7 @@
 	return BLOCK_NONE
 
 /obj/item/dualsaber/hypereutactic/toy/rainbow
-	name = "\improper Hyper-Euclidean Reciprocating Trigonometric Zweihander"
+	name = "\improper Hyper-Euclidean Reciprocating Trigonometrc Zweihander"
 	desc = "A custom-built toy with fancy rainbow lights built-in."
 	hacked = TRUE
 

@@ -67,6 +67,6 @@ SUBSYSTEM_DEF(npcpool)
 				return
 		if(SA.stat != DEAD)
 			SA.handle_automated_action()
-		if(SA.stat != DEAD)
+		if(SA.stat != DEAD && (times_fired % 3 == 0))
 			SA.handle_automated_speech()
 	invoking = FALSE

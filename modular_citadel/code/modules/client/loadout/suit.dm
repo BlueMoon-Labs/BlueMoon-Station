@@ -395,6 +395,20 @@
 	restricted_desc = "Security and Expeditor"
 	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
 
+/datum/gear/suit/officer_armor
+	name = "Officer’s Armor"
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	path = /obj/item/clothing/suit/armor/vest/capcarapace/officer_armor
+	restricted_desc = "Capitan, Head of Security and Nanotrasen Representative"
+	restricted_roles = list("Captain", "Head of Security", "Nanotrasen Representative")
+
+/datum/gear/suit/ppo_armor_strong_heavy
+	name = "Heavy SPO Armor Set"
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	path = /obj/item/clothing/suit/armor/vest/capcarapace/ppo_armor_strong_heavy
+	restricted_desc = "Capitan, Head of Security and Nanotrasen Representative"
+	restricted_roles = list("Captain", "Head of Security", "Nanotrasen Representative")
+
 /datum/gear/suit/christmascoatr
 	name = "Red Christmas Coat"
 	path = /obj/item/clothing/suit/hooded/wintercoat/christmascoatr

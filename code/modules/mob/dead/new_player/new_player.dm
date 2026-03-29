@@ -368,7 +368,7 @@
 		ready = PLAYER_NOT_READY
 		return FALSE
 
-	var/mintime = max(CONFIG_GET(number/respawn_delay), (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time, 0)
+	var/mintime = max(CONFIG_GET(number/respawn_delay) * 600, (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time, 0)
 
 	var/this_is_like_playing_right = alert(src,"Are you sure you wish to observe? You will not be able to respawn for [round(mintime / 600, 0.1)] minutes!!","Player Setup","Да","Нет")
 

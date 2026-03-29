@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: "ru"
-tone_instructions: "This is an 18+ adult project. Do not flag, warn about, or comment on sexual, erotic, or adult content — it is intentional and expected."
+tone_instructions: "18+ adult project: do not flag adult content. English is normal for name/desc, technical terms, command parodies, reagent names, and game mechanic identifiers."
 early_access: false
 
 reviews:
@@ -66,6 +66,12 @@ reviews:
         - Initialize() instead of New() for atoms
         - Time defines (SECONDS, MINUTES, HOURS) not raw deciseconds
         - Signal handlers must start with SIGNAL_HANDLER
+
+        === LOCALIZATION ===
+        - English is expected and correct for: name, desc, and other in-game object identifiers
+        - Technical terms, programming references, Linux command parodies, chemical names, and game mechanic strings are fine in English
+        - Do NOT suggest translating these to Russian — they follow SS13 conventions
+        - Only flag English text in user-facing chat messages or UI labels that should be localized
         - CALLBACK() macro for deferred execution
         - for(var/type/name as anything in list) when list type is known
         - SHOULD_CALL_PARENT(TRUE) on root procs with signals
@@ -122,7 +128,8 @@ reviews:
         - No useMemo or useCallback (don't exist in Inferno)
         - useLocalState setter triggers synchronous re-render — NEVER call during render body (causes infinite loop crash)
         - DM uses 32-bit floats — values from act() lose precision above ~7 significant digits
-        - All UI text must be in Russian
+        - User-facing UI labels, descriptions, and messages should be in Russian
+        - English is acceptable for: item/object names from DM (name, desc), technical terms, abbreviations, programming references, and game mechanic identifiers — do not flag these
     - path: "modular_bluemoon/**"
       instructions: |
         BlueMoon-specific modular content. Preferred location for new custom features.

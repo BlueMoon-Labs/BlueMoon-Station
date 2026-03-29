@@ -749,3 +749,14 @@
 	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/donator/bm/kladmenuwu_sweater
+	name = "Worm Sweater"
+	desc = "This is a very soft and warm sweater with bows sewn on the sleeves."
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	body_parts_covered = CHEST|ARMS
+	icon_state = "kladmenuwu_sweater"
+
+/obj/item/clothing/suit/donator/bm/kladmenuwu_sweater/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#FFDDD5","#FFDDD5"), 2)

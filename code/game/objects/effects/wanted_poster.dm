@@ -4,6 +4,14 @@
 	var/poster_id = null
 
 /obj/item/poster/wanted/Initialize(mapload, icon/person_icon, wanted_name, description)
+	// roll_and_drop() и прочие случаи передают уже готовую структуру (второй аргумент), а не иконку из досье
+	if(istype(person_icon, /obj/structure/sign/poster/wanted))
+		var/obj/structure/sign/poster/wanted/W = person_icon
+		. = ..(mapload, W)
+		poster_id = W.poster_id
+		name = "Разыскивается ([W.wanted_name])"
+		desc = "Постер с разыскиваемым лицом: [W.wanted_name]."
+		return
 	. = ..(mapload, new /obj/structure/sign/poster/wanted(src, person_icon, wanted_name, description))
 	name = "Разыскивается ([wanted_name])"
 	desc = "Постер с разыскиваемым лицом: [wanted_name]."
