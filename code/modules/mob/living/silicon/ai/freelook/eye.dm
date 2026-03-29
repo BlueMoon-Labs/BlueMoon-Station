@@ -249,6 +249,7 @@
 
 /mob/camera/aiEye/proc/SeeEmote(mob/living/speaker, emote_message)
     if(relay_emote && speaker && ai && speaker != ai && near_camera(speaker))
+        ai.relay_emote(speaker, emote_message)
 
 /obj/effect/overlay/ai_detect_hud
 	name = ""
