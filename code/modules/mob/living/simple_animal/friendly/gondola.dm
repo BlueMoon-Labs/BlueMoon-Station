@@ -31,8 +31,37 @@
 	maxHealth = 200
 	health = 200
 	del_on_death = TRUE
+	var/playable_gondola = TRUE
 
 	//Gondolas don't make footstep sounds
+
+/mob/living/simple_animal/pet/gondola/Login()
+	. = ..()
+	to_chat(src, span_notice("Вы гондола — молчаливый ходок. Принимайте мир таким, какой он есть."))
+
+/mob/living/simple_animal/pet/gondola/attack_ghost(mob/user)
+	. = ..()
+	if(.)
+		return
+	gondola_possess(user)
+
+/// Lets a ghost take this mob if it is still free (same idea as venus human trap).
+/mob/living/simple_animal/pet/gondola/proc/gondola_possess(mob/user)
+	if(key || !playable_gondola || stat)
+		return
+	if(isobserver(user))
+		var/mob/dead/observer/O = user
+		if(!O.can_reenter_round())
+			to_chat(user, span_warning("Вы не можете войти в эту роль."))
+			return
+	var/gondola_ask = tgui_alert(user, "Стать гондолой?", "Гондола", list("Да", "Нет"))
+	if(gondola_ask != "Да" || QDELETED(src))
+		return
+	if(key)
+		to_chat(user, span_warning("Кто-то уже занял гондолу!"))
+		return
+	user.transfer_ckey(src, FALSE)
+	log_game("[key_name(src)] took control of [name].")
 
 /mob/living/simple_animal/pet/gondola/Initialize(mapload)
 	. = ..()

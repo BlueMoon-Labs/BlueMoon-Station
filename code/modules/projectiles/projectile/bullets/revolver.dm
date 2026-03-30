@@ -77,12 +77,14 @@
 
 /obj/item/projectile/bullet/c38/trac
 	name = ".38 TRAC bullet"
-	damage = 10
+	damage = 5
 	ricochets_max = 0
 
 /obj/item/projectile/bullet/c38/trac/on_hit(atom/target, blocked = FALSE)
 	. = ..()
 	var/mob/living/carbon/M = target
+	if(!istype(M))
+		return
 	var/obj/item/implant/tracking/c38/imp
 	for(var/obj/item/implant/tracking/c38/TI in M.implants) //checks if the target already contains a tracking implant
 		imp = TI

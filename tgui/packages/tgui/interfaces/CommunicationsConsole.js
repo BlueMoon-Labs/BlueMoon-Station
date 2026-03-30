@@ -2,7 +2,7 @@ import { sortBy } from "common/collections";
 import { capitalize } from "common/string";
 
 import { useBackend, useLocalState } from "../backend";
-import { Blink, Box, Button, Dimmer, Flex, Icon, Input, LabeledList, Modal, Section, TextArea } from "../components";
+import { Blink, Box, Button, Dimmer, Flex, Icon, Input, LabeledList, Modal, NoticeBox, Section, TextArea } from "../components";
 import { formatMoney } from '../format';
 import { Window } from "../layouts";
 import { sanitizeText } from "../sanitize";
@@ -764,7 +764,7 @@ const PageMain = (props, context) => {
 const PageMessages = (props, context) => {
   const { act, data } = useBackend(context);
   const messages = data.messages || [];
-  const { printerCooldown } = data;
+  const { printerCooldown, messagesTrimmed = 0 } = data;
 
   const children = [];
 
@@ -775,6 +775,11 @@ const PageMessages = (props, context) => {
         content="Назад"
         onClick={() => act("setState", { state: STATE_MAIN })}
       />
+      {!!messagesTrimmed && (
+        <NoticeBox info mt={1}>
+          {messagesTrimmed} старых сообщений было удалено для экономии памяти.
+        </NoticeBox>
+      )}
     </Section>
   ));
 

@@ -43,7 +43,7 @@
 	if(has_breasts == TRUE || has_breasts == HAS_EXPOSED_GENITAL)
 		var/obj/item/organ/genital/breasts/B = target.getorganslot(ORGAN_SLOT_BREASTS)
 		var/modifier = B?.get_lactation_amount_modifier() || 1
-		if(B?.fluid_id)
+		if(B?.fluid_id && B?.climaxable(target, TRUE))
 			var/milktype = B?.fluid_id
 			var/datum/reagent/milk = find_reagent_object_from_type(milktype)
 			var/milktext = milk.name //So you know what are you drinking. - Gardelin0

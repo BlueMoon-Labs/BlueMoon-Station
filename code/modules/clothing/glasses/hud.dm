@@ -341,6 +341,7 @@
 			icon_state = "purple"
 			change_glass_color(user, /datum/client_colour/glass_colour/purple)
 	user.update_inv_glasses()
+	return SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_ICON_STATE)
 
 /obj/item/clothing/glasses/hud/toggle/thermal/emp_act(severity)
 	. = ..()

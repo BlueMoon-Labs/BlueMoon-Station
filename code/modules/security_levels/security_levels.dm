@@ -41,5 +41,5 @@ GLOBAL_LIST_INIT(all_security_levels, list("green", "blue", "orange", "violet", 
 
 //config.alert_desc_blue_downto
 
-/proc/set_security_level(level)
-	SSsecurity_level.set_level(level)
+/proc/set_security_level(level, secret_variant_override = null)
+	SSsecurity_level.set_level(level, secret_variant_override)

@@ -23,7 +23,6 @@
 	obj_damage = 50
 	melee_damage_lower = 20
 	melee_damage_upper = 20
-	/// Количество съеденных вещей: за каждую +0.1 урона и +1 макс. здоровье
 	var/eaten_count = 0
 	see_in_dark = 8
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
@@ -89,11 +88,14 @@
 	if(A && A.loc != src)
 		visible_message("<span class='warning'>[src] swallows [A] whole!</span>")
 		A.forceMove(src)
-		eaten_count++
-		melee_damage_lower += 0.1
-		melee_damage_upper += 0.1
-		maxHealth += 1
-		adjustHealth(-1)
+		var/eat_bonus = 1
+		if(istype(A, /mob/living/carbon))
+			eat_bonus = 10
+		eaten_count += eat_bonus
+		melee_damage_lower += 0.1 * eat_bonus
+		melee_damage_upper += 0.1 * eat_bonus
+		maxHealth += eat_bonus
+		adjustHealth(-eat_bonus)
 		return TRUE
 	return FALSE
 
@@ -151,10 +153,9 @@
 	icon_state = initial(icon_state)
 	cut_overlays()
 
-	//Baseline stats + бонусы за съеденное
-	melee_damage_lower = 20 + eaten_count * 0.1
-	melee_damage_upper = 20 + eaten_count * 0.1
-	maxHealth = 500 + eaten_count
+	melee_damage_lower = initial(melee_damage_lower) + eaten_count * 0.1
+	melee_damage_upper = initial(melee_damage_upper) + eaten_count * 0.1
+	maxHealth = initial(maxHealth) + eaten_count
 	health = min(health, maxHealth)
 	speed = initial(speed)
 

@@ -81,6 +81,43 @@ function _bm_dismiss(toast) {
 
 // === ВЫЗЫВАЮТСЯ С СЕРВЕРА ===
 
+var _bm_is_registered = false;
+function bm_set_registered(val) {
+  _bm_is_registered = !!Number(val);
+}
+
+function bm_rebuild_menu(state) {
+  var el = document.getElementById('bm-menu');
+  var src = window._BM_SRC || '';
+  if (!el || !src) return;
+  var ingame = Number(state) > 0;
+  var h = [];
+  if (!ingame) {
+    h.push('<a id="bm-btn-ready" class="bm-btn" href="?src=' + src + ';bm_lobby_action=toggle_ready">'
+      + (_bm_ready_state ? '<span class="bm-checked">&#9745;</span>' : '<span class="bm-unchecked">&#9746;</span>')
+      + ' \u0413\u041e\u0422\u041e\u0412\u041d\u041e\u0421\u0422\u042c</a>');
+    if (_bm_is_admin) {
+      h.push('<a class="bm-btn bm-btn-admin" href="?src=' + src + ';bm_lobby_action=start_game">&#9889; \u0421\u0422\u0410\u0420\u0422 \u0418\u0413\u0420\u042b</a>');
+    }
+  } else {
+    h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=late_join">\u0412\u041e\u0419\u0422\u0418 \u0412 \u0418\u0413\u0420\u0423</a>');
+    h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=view_manifest">\u0421\u041f\u0418\u0421\u041e\u041a \u042d\u041a\u0418\u041f\u0410\u0416\u0410</a>');
+    h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=character_directory">\u0411\u0418\u0411\u041b\u0418\u041e\u0422\u0415\u041a\u0410 \u041f\u0415\u0420\u0421\u041e\u041d\u0410\u0416\u0415\u0419</a>');
+  }
+  h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=observe">\u0411\u042b\u0422\u042c \u041d\u0410\u0411\u041b\u042e\u0414\u0410\u0422\u0415\u041b\u0415\u041c</a>');
+  h.push('<div class="bm-divider"></div>');
+  h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=character_setup">\u041d\u0410\u0421\u0422\u0420\u041e\u0419\u041a\u0410 \u041f\u0415\u0420\u0421\u041e\u041d\u0410\u0416\u0410</a>');
+  h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=game_options">\u041f\u0410\u0420\u0410\u041c\u0415\u0422\u0420\u042b \u0418\u0413\u0420\u042b</a>');
+  h.push('<a id="bm-btn-antag" class="bm-btn" href="?src=' + src + ';bm_lobby_action=toggle_antag">'
+    + (_bm_antag_state ? '<span class="bm-checked">&#9745;</span>' : '<span class="bm-unchecked">&#9746;</span>')
+    + ' \u0420\u041e\u041b\u042c \u0410\u041d\u0422\u0410\u0413\u041e\u041d\u0418\u0421\u0422\u0410</a>');
+  if (_bm_is_registered) {
+    h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=changelog">\u041f\u041e\u0421\u041b\u0415\u0414\u041d\u0418\u0415 \u041e\u0411\u041d\u041e\u0412\u041b\u0415\u041d\u0418\u042f</a>');
+    h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=polls_menu">\u041e\u041f\u0420\u041e\u0421\u042b \u0421\u0415\u0420\u0412\u0415\u0420\u0410</a>');
+  }
+  el.innerHTML = h.join('');
+}
+
 function bm_update_character(name) {
   var el = document.getElementById('bm-char-name');
   if (el) el.textContent = name ? name.toUpperCase() : '\u2014 \u2014 \u2014';

@@ -23,66 +23,113 @@
 //Speech verbs.
 // the _keybind verbs uses "as text" versus "as text|null" to force a popup when pressed by a keybind.
 /mob/verb/say_typing_indicator()
-	set name = "say_indicator"
+	set name = "Say (Indicator)"
 	set hidden = TRUE
 	set category = "Say"
-	client?.last_activity = world.time
-	display_typing_indicator(isSay = TRUE)
-	var/message = input(usr, "", "say") as text|null
-	// If they don't type anything just drop the message.
-	clear_typing_indicator()		// clear it immediately!
-	if(QDELETED(src))
+	if(GLOB.say_disabled)	//This is here to try to identify lag problems
+		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
+	display_typing_indicator(isSay = TRUE)
+
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(src, "", "Say (Indicator)", null, MAX_MESSAGE_LEN, encode = TRUE)
+	else
+		message = input(src, "", "Say (Indicator)") as text|null
+
+	clear_typing_indicator()		// clear it immediately!
 	if(!length(message))
 		return
-	return say_verb(message)
+	client?.last_activity = world.time
 
-/mob/verb/say_verb(message as text)
-	set name = "say"
+	say(message)
+
+/mob/verb/say_verb()
+	set name = "Say"
 	set category = "Say"
+	if(GLOB.say_disabled)	//This is here to try to identify lag problems
+		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		return
+
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(usr, "", "Say", null, MAX_MESSAGE_LEN, encode = TRUE)
+	else
+		message = stripped_input(usr, "", "Say")
+
+	clear_typing_indicator()		// clear it immediately!
+	if(!length(message))
+		return
+	client?.last_activity = world.time
+
+	say(message)
+
+/mob/verb/speak_verb(message as text) // Специально для "saybutton"
+	set name = "Speak"
 	if(!length(message))
 		return
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
 	clear_typing_indicator()		// clear it immediately!
-
 	client?.last_activity = world.time
 
 	say(message)
 
 /mob/verb/me_typing_indicator()
-	set name = "me_indicator"
+	set name = "Me (Indicator)"
 	set hidden = TRUE
 	set category = "Say"
-	client?.last_activity = world.time
-	display_typing_indicator(isMe = TRUE)
-	var/message = input(usr, "", "me") as message|null
-	// If they don't type anything just drop the message.
-	clear_typing_indicator()		// clear it immediately!
-	if(QDELETED(src))
+	if(GLOB.say_disabled)	//This is here to try to identify lag problems
+		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
+	display_typing_indicator(isMe = TRUE)
+
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(usr, "", "Me (Indicator)", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+	else
+		message = stripped_multiline_input_or_reflect(usr, "", "Me (Indicator)")
+
+	clear_typing_indicator()		// clear it immediately!
+
 	if(!length(message))
 		return
-	return me_verb(message)
 
-/mob/verb/me_verb(message as message)
-	set name = "me"
+	client?.last_activity = world.time
+
+	usr.emote("me",1,message,TRUE)
+
+/mob/verb/me_verb()
+	set name = "Me"
 	set category = "Say"
+	if(GLOB.say_disabled)	//This is here to try to identify lag problems
+		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		return
+
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(usr, "", "Me", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+	else
+		message = stripped_multiline_input_or_reflect(usr, "", "Me")
+
+	clear_typing_indicator()		// clear it immediately!
+
+	if(!length(message))
+		return
+
+	client?.last_activity = world.time
+
+	usr.emote("me",1,message,TRUE)
+
+/mob/verb/emote_verb(message as text) // Специально для "mebutton"
+	set name = "Emote"
 	if(!length(message))
 		return
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
-
-	if(length(message) > MAX_MESSAGE_LEN)
-		to_chat(usr, message)
-		to_chat(usr, "<span class='danger'>^^^----- The preceeding message has been DISCARDED for being over the maximum length of [MAX_MESSAGE_LEN]. It has NOT been sent! -----^^^</span>")
-		return
-
-	message = trim(html_encode(message), MAX_MESSAGE_LEN)
 	clear_typing_indicator()		// clear it immediately!
-
 	client?.last_activity = world.time
 
 	usr.emote("me",1,message,TRUE)
@@ -97,12 +144,12 @@
 /mob/say_mod(input, message_mode)
 	if(message_mode == MODE_WHISPER_CRIT)
 		return ..()
-	
+
 	// Обработка восклицательного знака для custom say
 	if((input[1] == "!") && (length_char(input) > 1))
 		message_mode = MODE_CUSTOM_SAY
 		return copytext_char(input, 2)
-	
+
 	// ИСПРАВЛЕНИЕ: findtext_char() вместо findtext() для кириллицы
 	// findtext() возвращает позицию в БАЙТАХ (неправильно для UTF-8)
 	// findtext_char() возвращает позицию в СИМВОЛАХ (правильно!)
@@ -111,7 +158,7 @@
 		message_mode = MODE_CUSTOM_SAY
 		// Возвращаем только эмоут (текст до звёздочки)
 		return lowertext(copytext_char(input, 1, customsayverb))
-	
+
 	return ..()
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -126,23 +173,20 @@
 		var/customsayverb = findtext_char(input, "*")
 		return lowertext(copytext_char(input, 1, customsayverb))
 
-/*
-//This proc is no longer used for a long time.
-/mob/proc/whisper_keybind()
-	client?.last_activity = world.time
-	var/message = input(src, "", "whisper") as text|null
-	if(!length(message))
-		return
-	return whisper_verb(message)
-*/
-
-/mob/verb/whisper_verb(message as text)
+/mob/verb/whisper_verb()
 	set name = "Whisper"
 	set category = "Say"
-	if(!length(message))
-		return
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		return
+
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(usr, "", "Whisper", null, MAX_MESSAGE_LEN, encode = TRUE)
+	else
+		message = stripped_input(usr, "", "Whisper")
+
+	if(!length(message))
 		return
 	whisper(message)
 
@@ -230,12 +274,12 @@
 //  findtext() vs findtext_char():
 //  - findtext("привет*", "*") вернёт ~14 (позиция в БАЙТАХ)
 //  - findtext_char("привет*", "*") вернёт 7 (позиция в СИМВОЛАХ)
-//  
+//
 //  Для английского текста разницы нет (1 символ = 1 байт)
 //  Для русского текста критично использовать findtext_char()!
 //
 // ═══════════════════════════════════════════════════════════════════════
-//  
+//
 //  КОНЕЦ КОДА. ИДИ РПшить, ЗВЕРЁК!
 //
 // ═══════════════════════════════════════════════════════════════════════

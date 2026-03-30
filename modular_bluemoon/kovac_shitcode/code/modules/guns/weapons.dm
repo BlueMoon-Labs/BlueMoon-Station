@@ -359,7 +359,7 @@
 	slot_flags = ITEM_SLOT_BELT
 
 /obj/item/inteq_sledgehammer/toy/ComponentInitialize()
-	AddComponent(/datum/component/two_handed, force_unwielded=1, force_wielded=1, icon_wielded="sledgehammer1")
+	AddComponent(/datum/component/two_handed, force_unwielded=0, force_wielded=0, icon_wielded="sledgehammer1")
 
 /obj/item/inteq_sledgehammer/toy/attack(mob/M, mob/user)
 	if(iscarbon(M))

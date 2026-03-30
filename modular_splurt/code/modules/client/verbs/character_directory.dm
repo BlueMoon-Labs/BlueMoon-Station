@@ -114,7 +114,7 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 		if(ishuman(C.mob))
 			var/mob/living/carbon/human/H = C.mob
 			if(GLOB.data_core && GLOB.data_core.general)
-				if(!find_record("name", H.real_name, GLOB.data_core.general))
+				if(!GLOB.data_core.general_by_name[H.real_name])
 					continue
 			name = H.real_name
 			species = "[H.custom_species ? H.custom_species : H.dna.species]"

@@ -57,13 +57,6 @@
 /obj/item/storage/firstaid/regular,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/ancientstation/atmo)
-"bV" = (
-/obj/structure/chair/comfy/shuttle,
-/obj/machinery/light{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/shuttle/arrival)
 "bW" = (
 /obj/structure/table,
 /obj/machinery/camera/autoname{
@@ -124,9 +117,6 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/ancientstation/atmo)
 "ex" = (
-/obj/machinery/light{
-	dir = 4
-	},
 /obj/machinery/quantumpad/fullupgrade{
 	map_pad_id = "1";
 	map_pad_link_id = "2"
@@ -147,12 +137,12 @@
 "eZ" = (
 /obj/structure/table,
 /obj/machinery/fax,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/ancientstation/atmo)
-"fp" = (
 /obj/machinery/light{
 	dir = 4
 	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"fp" = (
 /obj/machinery/computer/prisoner/management{
 	dir = 8
 	},
@@ -175,13 +165,16 @@
 "ir" = (
 /obj/structure/cable,
 /obj/machinery/power/rtg/abductor,
-/obj/machinery/light{
-	dir = 8
-	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/ancientstation/atmo)
 "mJ" = (
 /obj/effect/turf_decal/big_sign/ss13/ba,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/ancientstation/atmo)
+"yj" = (
+/obj/machinery/light{
+	dir = 8
+	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/ancientstation/atmo)
 "zv" = (
@@ -190,6 +183,9 @@
 "BV" = (
 /obj/machinery/computer/secure_data{
 	dir = 8
+	},
+/obj/machinery/light{
+	dir = 4
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/ancientstation/atmo)
@@ -264,15 +260,15 @@ gf
 av
 ir
 bC
+yj
 bC
 bC
-cS
-cS
-cS
-cS
-cS
-bV
-cS
+bC
+bC
+yj
+bC
+bC
+bC
 gf
 zv
 zv
@@ -433,7 +429,7 @@ MS
 ak
 dA
 cJ
-bC
+cS
 dY
 bC
 Ur

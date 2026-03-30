@@ -8,7 +8,7 @@
 	var/blockTracking = 0 //For AI tracking
 	dynamic_hair_suffix = ""
 	var/datum/beepsky_fashion/beepsky_fashion //the associated datum for applying this to a secbot
-	var/vision_flags = 0
+	var/vision_flags = NONE
 	var/darkness_view = 2//Base human is 2
 	var/invis_view = SEE_INVISIBLE_LIVING	//admin only for now
 	var/lighting_alpha

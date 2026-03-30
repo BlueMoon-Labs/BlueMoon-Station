@@ -98,7 +98,23 @@
 			blood_volume = min((blood_volume - (3 * amount)), blood_cap)	//5x was too much, this is punishing enough.
 		else
 			blood_volume = min((blood_volume - amount), blood_cap)
-	return ..()
+	var/tox_incoming = amount
+	. = ..()
+	if(!isnum(.) || stat == DEAD || tox_incoming <= 0)
+		return .
+	var/new_tox = getToxLoss(TOX_OMNI)
+	if(world.time < next_tox_vomit)
+		return .
+	if(new_tox >= 30)
+		vomit(30, blood = TRUE, stun = TRUE, distance = 3, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = TRUE)
+		next_tox_vomit = world.time + (12 SECONDS)
+	else if(new_tox >= 20)
+		vomit(20, blood = FALSE, stun = TRUE, distance = 2, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = TRUE)
+		next_tox_vomit = world.time + (12 SECONDS)
+	else if(new_tox >= 10)
+		vomit(10, blood = FALSE, stun = TRUE, distance = 1, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = TRUE)
+		next_tox_vomit = world.time + (12 SECONDS)
+	return .
 
 /mob/living/carbon/getStaminaLoss()
 	. = 0

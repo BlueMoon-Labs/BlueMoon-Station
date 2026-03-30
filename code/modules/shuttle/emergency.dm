@@ -597,6 +597,14 @@
 		return
 
 	var/list/turfs = get_area_turfs(target_area)
+	// Multi-z Lavaland: both jungle and wasteland use MINING; only the surface has LAVA_RUINS. Without this, pods pick the lower z.
+	var/list/lava_surface_z = SSmapping.levels_by_all_trait(list(ZTRAIT_MINING, ZTRAIT_LAVA_RUINS))
+	if(LAZYLEN(lava_surface_z))
+		var/list/filtered = list()
+		for(var/turf/T as anything in turfs)
+			if(T.z in lava_surface_z)
+				filtered += T
+		turfs = filtered
 	var/original_len = turfs.len
 	while(turfs.len)
 		var/turf/picked_turf = pick(turfs)

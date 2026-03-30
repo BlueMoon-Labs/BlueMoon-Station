@@ -55,6 +55,7 @@
 	caliber = "9mm"
 	max_ammo = 16
 	multiple_sprites = 2
+
 /obj/item/ammo_box/magazine/pistolm9mm/ap
 	name = "pistol magazine (9mm AP)"
 	icon_state = "9x19pA"
