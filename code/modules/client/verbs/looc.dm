@@ -70,11 +70,14 @@ GLOBAL_VAR_INIT(normal_looc_colour, "#6699CC")
 		if(!M.client)
 			continue
 		var/client/C = M.client
-		if (C in GLOB.admins)
-			continue //they are handled after that
+		if (isobserver(M) && !C.holder)
+			continue //ghosts dont hear looc, apparantly
 
-		if (isobserver(M))
-			continue //Also handled later.
+		if(M.client.prefs.chat_on_map)
+			M.create_chat_message(mob, raw_message = "(LOOC: [message])", spans = list("emote", "whisper")) // emote для игнорирования фильтра по языкам, whisper для мелкотекста рунчата
+
+		if(C.holder || (C in GLOB.admins))
+			continue //admins are handled afterwards
 
 		if(C.prefs.chat_toggles & CHAT_OOC)
 			if(GLOB.LOOC_COLOR)
