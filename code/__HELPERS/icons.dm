@@ -1114,8 +1114,10 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 	var/static/list/asset_name_cache = list()
 	// /icon datums have unstable refs — BYOND reuses refs after GC,
 	// so a new icon can get the same ref as a deleted one, returning stale md5.
-	// Only cache file references which have stable identity.
-	if(!isicon(file))
+	// Only skip cache for /icon datums. File references (including .dmi) have
+	// stable identity and are safe to cache. Note: isicon() is too broad here —
+	// it returns TRUE for both /icon datums AND file references to .dmi files.
+	if(!istype(file, /icon))
 		var/ref_key = "\ref[file]"
 		. = asset_name_cache[ref_key]
 		if(.)
@@ -1230,7 +1232,9 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 	// Only cacheable when I is a file reference (e.g. 'icons/obj/food.dmi') — these
 	// stringify to a unique file path. /icon datums all stringify to "/icon", causing
 	// massive key collisions where different icons return the same cached result.
-	var/can_cache = !isicon(I)
+	// Note: isicon() returns TRUE for both /icon datums AND .dmi file references,
+	// so we use isfile() which is TRUE only for file references.
+	var/can_cache = isfile(I)
 	var/cache_key
 	var/static/list/icon2html_cache = list()
 
