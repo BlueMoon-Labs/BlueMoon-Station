@@ -1112,12 +1112,18 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 /// (Generated names do not include file extention.)
 /proc/generate_asset_name(file)
 	var/static/list/asset_name_cache = list()
-	var/ref_key = "\ref[file]"
-	. = asset_name_cache[ref_key]
-	if(.)
+	// /icon datums have unstable refs — BYOND reuses refs after GC,
+	// so a new icon can get the same ref as a deleted one, returning stale md5.
+	// Only cache file references which have stable identity.
+	if(!isicon(file))
+		var/ref_key = "\ref[file]"
+		. = asset_name_cache[ref_key]
+		if(.)
+			return
+		. = "asset.[md5(fcopy_rsc(file))]"
+		asset_name_cache[ref_key] = .
 		return
 	. = "asset.[md5(fcopy_rsc(file))]"
-	asset_name_cache[ref_key] = .
 
 /**
   * Converts an icon to base64. Operates by putting the icon in the iconCache savefile,
@@ -1220,17 +1226,23 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 		if (isnull(icon_state))
 			icon_state = ""
 
-	// Result-level cache: skip icon() constructor + asset registration on repeat calls
-	var/cache_key = "[I]:[icon_state]:[dir]:[frame]:[moving]"
+	// Result-level cache: skip icon() constructor + asset registration on repeat calls.
+	// Only cacheable when I is a file reference (e.g. 'icons/obj/food.dmi') — these
+	// stringify to a unique file path. /icon datums all stringify to "/icon", causing
+	// massive key collisions where different icons return the same cached result.
+	var/can_cache = !isicon(I)
+	var/cache_key
 	var/static/list/icon2html_cache = list()
-	var/list/cached = icon2html_cache[cache_key]
-	if(cached)
-		// cached = list(asset_key, html_string, url_string)
-		for(var/thing2 in targets)
-			SSassets.transport.send_assets(thing2, cached[1])
-		if(sourceonly)
-			return cached[3]
-		return cached[2]
+
+	if(can_cache)
+		cache_key = "[I]:[icon_state]:[dir]:[frame]:[moving]"
+		var/list/cached = icon2html_cache[cache_key]
+		if(cached)
+			for(var/thing2 in targets)
+				SSassets.transport.send_assets(thing2, cached[1])
+			if(sourceonly)
+				return cached[3]
+			return cached[2]
 
 	I = icon(I, icon_state, dir, frame, moving)
 
@@ -1242,9 +1254,11 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 
 	var/url = SSassets.transport.get_asset_url(key)
 	var/html = "<img class='icon icon-[icon_state]' src='[url]'>"
-	icon2html_cache[cache_key] = list(key, html, url)
-	if(length(icon2html_cache) > 2048)
-		icon2html_cache.Cut(1, 513) // Evict oldest 25%
+
+	if(can_cache)
+		icon2html_cache[cache_key] = list(key, html, url)
+		if(length(icon2html_cache) > 2048)
+			icon2html_cache.Cut(1, 513) // Evict oldest 25%
 
 	if(sourceonly)
 		return url
@@ -1255,13 +1269,10 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 		return
 	var/static/list/bicon_cache = list()
 	if (isicon(thing))
-		var/icon/I = thing
-		var/ref_key = "\ref[I]"
-		var/icon_base64 = bicon_cache[ref_key]
+		// /icon datums have unstable refs due to GC reuse — skip cache, always encode
+		var/icon_base64 = icon2base64(thing)
 		if(!icon_base64)
-			icon_base64 = icon2base64(I)
-			if(icon_base64)
-				bicon_cache[ref_key] = icon_base64
+			return
 		return "<img class='icon icon-misc' src='data:image/png;base64,[icon_base64]'>"
 
 	// Either an atom or somebody fucked up and is gonna get a runtime, which I'm fine with.
@@ -1286,16 +1297,45 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 	if (isicon(thing))
 		return icon2html(thing, target)
 
-	var/static/list/flat_icon_cache = list()
+	if (!target)
+		return
+
 	var/atom/A = thing
 	var/appearance_key = "\ref[A.appearance]"
-	var/icon/I = flat_icon_cache[appearance_key]
-	if(!I)
-		I = getFlatIcon(thing)
-		flat_icon_cache[appearance_key] = I
-		if(length(flat_icon_cache) > 512)
-			flat_icon_cache.Cut(1, 129) // Evict oldest 25%
-	return icon2html(I, target, sourceonly = sourceonly)
+
+	// Full result cache: skip getFlatIcon + icon() + md5 pipeline on repeat calls.
+	// Caches list(asset_key, html, url) keyed on appearance ref.
+	var/static/list/costly_result_cache = list()
+	var/list/cached = costly_result_cache[appearance_key]
+
+	if(!cached)
+		var/icon/I = getFlatIcon(thing)
+		I = icon(I, "", SOUTH, 1, FALSE)
+		var/asset_key = "[generate_asset_name(I)].png"
+		if(!SSassets.cache[asset_key])
+			SSassets.transport.register_asset(asset_key, I)
+		var/url = SSassets.transport.get_asset_url(asset_key)
+		var/html = "<img class='icon icon-' src='[url]'>"
+		cached = list(asset_key, html, url)
+		costly_result_cache[appearance_key] = cached
+		if(length(costly_result_cache) > 512)
+			costly_result_cache.Cut(1, 129) // Evict oldest 25%
+
+	if (target == world)
+		target = GLOB.clients
+	var/list/targets
+	if (!islist(target))
+		targets = list(target)
+	else
+		targets = target
+		if (!targets.len)
+			return
+	for (var/thing2 in targets)
+		SSassets.transport.send_assets(thing2, cached[1])
+
+	if(sourceonly)
+		return cached[3]
+	return cached[2]
 
 /* Gives the result RGB of a RGB string after a matrix transformation. No alpha.
  * Input: rr, rg, rb, gr, gg, gb, br, bg, bb, cr, cg, cb
