@@ -109,9 +109,10 @@
 
 	var/list/atom/movable/_atoms_to_process
 
+/mob/var/vore_prefs
 
 /obj/new_belly/proc/link_to(mob/mob_to_link)
-	mob_to_link.vore_prefs
+	LAZYACCESS()
 
 
 

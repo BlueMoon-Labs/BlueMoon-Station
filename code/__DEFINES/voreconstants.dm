@@ -1,4 +1,4 @@
-// Overhauled vore system
+//DM MODES
 #define DM_DRAGON "Dragon"
 #define DM_DEFAULT								"Default"				// Not a real bellymode, used for handling on 'selective' bellymode prefs.
 #define DM_HOLD									"Hold"
@@ -14,7 +14,7 @@
 #define DM_EGG 									"Encase In Egg"
 #define DM_SELECT								"Selective"
 
-
+//DM MODIFERS
 #define DM_FLAG_NUMBING			(1<<0)
 #define DM_FLAG_STRIPPING		(1<<1)
 #define DM_FLAG_LEAVEREMAINS	(1<<2)
@@ -28,6 +28,32 @@
 #define DM_FLAG_TURBOMODE		(1<<10)
 #define DM_FLAG_ABSORBEDVORE	(1<<11)
 #define DM_FLAG_WETTENS			(1<<12)
+
+
+//Auto-transfer mob flags
+#define AT_FLAG_CREATURES		0x1
+#define AT_FLAG_ABSORBED		0x2
+#define AT_FLAG_CARBON			0x4
+#define AT_FLAG_SILICON			0x8
+#define AT_FLAG_MOBS			0x10
+#define AT_FLAG_ANIMALS			0x20
+#define AT_FLAG_MICE			0x40
+#define AT_FLAG_DEAD			0x80
+#define AT_FLAG_CANDIGEST		0x100
+#define AT_FLAG_CANABSORB		0x200
+#define AT_FLAG_HEALTHY			0x400
+
+//Auto-transfer item flags
+#define AT_FLAG_ITEMS			0x1
+#define AT_FLAG_TRASH			0x2
+#define AT_FLAG_EGGS			0x4
+#define AT_FLAG_REMAINS			0x8
+#define AT_FLAG_INDIGESTIBLE	0x10
+#define AT_FLAG_RECYCLABLE		0x20
+#define AT_FLAG_ORES			0x40
+#define AT_FLAG_CLOTHES			0x80
+#define AT_FLAG_FOOD			0x100
+
 
 #define DIGESTABLE 		(1<<0)
 #define DEVOURABLE		(1<<1)
