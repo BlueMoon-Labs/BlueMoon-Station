@@ -2197,3 +2197,9 @@
 	path = /obj/item/clothing/suit/donator/bm/kladmenuwu_sweater
 	slot = ITEM_SLOT_OCLOTHING
 	ckeywhitelist = list("kladmenuwu")
+
+/datum/gear/donator/bm/nebular_t_kit
+	name = "Nebular-T Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/nebular_t_kit
+	ckeywhitelist = list("lapkee")
