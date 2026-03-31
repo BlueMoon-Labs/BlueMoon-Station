@@ -1058,7 +1058,7 @@
 /obj/item/modkit/nebular_t_kit
 	name = "Nebular-T Kit"
 	desc = "A modkit for making a hybrid taser into a Nebular-T."
-	product = /obj/item/melee/baton/stunsword/stunkatana
+	product = /obj/item/gun/energy/e_gun/advtaser/nebular_t
 	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t
