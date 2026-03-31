@@ -1046,7 +1046,7 @@
 			set_light(2, 0.8, "#B6EEE9")
 		else
 			icon_state = "Half-charged-on"
-			set_light(2, 0.8, "#D9CD8E")
+			set_light(2, 0.8, "#D9CD8E") // для проверки теста нужен коммит - делаем коммит комментария)
 		item_state = "stunkatana_active"
 	else
 		if(charge_percent > 0.5)
