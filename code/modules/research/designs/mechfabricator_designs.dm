@@ -693,6 +693,15 @@
 	construction_time = 120
 	category = list("Cyborg Upgrade Modules")
 
+/datum/design/borg_upgrade_jukebox
+	name = "Cyborg Upgrade (JukeBox Modules)"
+	id = "borg_upgrade_jukebox"
+	build_type = MECHFAB
+	build_path = /obj/item/borg/upgrade/jukebox
+	materials = list(/datum/material/iron=80000 , /datum/material/glass=6000 , /datum/material/gold= 5000)
+	construction_time = 120
+	category = list("Cyborg Upgrade Modules")
+
 /datum/design/borg_upgrade_thrusters
 	name = "Cyborg Upgrade (Ion Thrusters)"
 	id = "borg_upgrade_thrusters"

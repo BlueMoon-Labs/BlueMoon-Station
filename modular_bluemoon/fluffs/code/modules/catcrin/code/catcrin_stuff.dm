@@ -255,15 +255,15 @@
 	unique_reskin = list(
 		"Black" = list(
 			RESKIN_ICON_STATE = "catcrin_underarmor",
-			RESKIN_WORN_ICON_STATE = "catcrin_underarmor"
+			RESKIN_ITEM_STATE = "catcrin_underarmor"
 		),
 		"White" = list(
 			RESKIN_ICON_STATE = "catcrin_underarmor_white",
-			RESKIN_WORN_ICON_STATE = "catcrin_underarmor_white"
+			RESKIN_ITEM_STATE = "catcrin_underarmor_white"
 		),
 		"Beige" = list(
 			RESKIN_ICON_STATE = "catcrin_underarmor_beige",
-			RESKIN_WORN_ICON_STATE = "catcrin_underarmor_beige"
+			RESKIN_ITEM_STATE = "catcrin_underarmor_beige"
 		)
 	)
 

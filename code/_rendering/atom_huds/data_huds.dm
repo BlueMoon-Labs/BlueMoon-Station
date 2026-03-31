@@ -278,7 +278,11 @@
 //HOOKS
 
 /mob/living/carbon/human/proc/sec_hud_set_ID()
+	if(!hud_list || !(ID_HUD in hud_list))
+		return
 	var/image/holder = hud_list[ID_HUD]
+	if(!holder)
+		return
 	if(!icon)
 		return
 	var/icon/I = icon(icon, icon_state, dir)

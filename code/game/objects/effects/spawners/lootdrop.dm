@@ -548,7 +548,8 @@
 				/obj/item/ai_module/core/full/reporter,
 				/obj/item/ai_module/core/full/robocop,
 				/obj/item/ai_module/core/full/liveandletlive,
-				/obj/item/ai_module/core/full/hulkamania
+				/obj/item/ai_module/core/full/hulkamania,
+				/obj/item/ai_module/core/full/gentleman
 				)
 
 /obj/effect/spawner/lootdrop/ai_module_harmful // These will get the shuttle called

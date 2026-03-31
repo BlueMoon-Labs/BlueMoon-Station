@@ -146,7 +146,6 @@
 	name = "Kitchen Cutlery Deluxe Set"
 	desc = "Нужно нарезать кубиками помидоры? Что ж, у нас есть то, что вам нужно! В комплекте хороший набор ножей, вилок, тарелок, стаканов и точильнй камень."
 	cost = 10000
-	contraband = TRUE
 	contains = list(/obj/item/sharpener, //Deluxe for a reason
 					/obj/item/kitchen/fork,
 					/obj/item/kitchen/fork,

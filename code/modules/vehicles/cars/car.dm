@@ -67,7 +67,7 @@
 	. = ..()
 	if(!(car_traits & CAN_KIDNAP))
 		return
-	if(occupants[user])
+	if(is_occupant(user))
 		return
 	to_chat(user, "<span class='notice'>You start opening [src]'s trunk.</span>")
 	if(do_after(user, 30))

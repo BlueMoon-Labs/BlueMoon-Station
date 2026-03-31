@@ -162,8 +162,8 @@
 	description = "Want to stand out from the crowd? Grab this beret off an officer’s corpse!"
 	path = /obj/item/clothing/head/helmet/sec/officer_hat
 	subcategory = LOADOUT_SUBCATEGORY_HEAD_JOBS
-	restricted_desc = "Security"
-	restricted_roles = list("Warden", "Detective", "Security Officer", "Head of Security")
+	restricted_desc = "Capitan, Head of Security and Nanotrasen Representative"
+	restricted_roles = list("Captain", "Head of Security", "Nanotrasen Representative")
 
 /datum/gear/head/orvkepimedsci
 	name = "Federation Kepi, medsci"

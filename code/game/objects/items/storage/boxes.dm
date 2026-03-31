@@ -228,6 +228,7 @@
 	new /obj/item/extinguisher/mini(src)
 	new /obj/item/flashlight/flare(src)
 	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+	new /obj/item/pinpointer/nuke(src)
 
 /obj/item/storage/box/survival/centcom_max/PopulateContents()
 	..() // we want the regular stuff too
