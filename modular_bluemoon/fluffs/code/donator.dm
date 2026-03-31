@@ -2218,3 +2218,9 @@
 	restricted_desc = "Head of Security, Warden, Blueshield."
 	restricted_roles = list("Head of Security", "Warden", "Blueshield")
 	ckeywhitelist = list("lapkee")
+
+/datum/gear/donator/bm/katana_kit
+	name = "Stun-Katana Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/katana_kit
+	ckeywhitelist = list("lapkee")
