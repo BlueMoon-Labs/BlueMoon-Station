@@ -1034,6 +1034,11 @@
 		icon_state = "No-cell"
 		item_state = "stunkatana"
 		return
+	if(cell.charge <= 0)
+		icon_state = "No-charge"
+		item_state = "stunkatana"
+		set_light(2, 0.8, "#ff0000")
+		return
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(turned_on)
 		if(charge_percent > 0.5)
@@ -1050,10 +1055,6 @@
 			icon_state = "Half-charged-off"
 		item_state = "stunkatana"
 		set_light(0)
-	if(cell.charge <= 0)
-		icon_state = "No-charge"
-		item_state = "stunkatana"
-		set_light(2, 0.8, "#ff0000")
 
 /obj/item/modkit/nebular_t_kit
 	name = "Nebular-T Kit"
