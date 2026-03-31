@@ -998,6 +998,7 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "Nebular-9"
+	gunlight_state = "nebular-light"
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular/get_worn_belt_overlay(icon_file)
 	return null
@@ -1053,3 +1054,34 @@
 		icon_state = "No-charge"
 		item_state = "stunkatana"
 		set_light(2, 0.8, "#ff0000")
+
+/obj/item/modkit/nebular_t_kit
+	name = "Nebular-T Kit"
+	desc = "A modkit for making a hybrid taser into a Nebular-T."
+	product = /obj/item/melee/baton/stunsword/stunkatana
+	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
+
+/obj/item/gun/energy/e_gun/advtaser/nebular_t
+	name = "\improper Nebular-T"
+	desc = "Нелетальная версия и далёкий сородич обычного Небулара-9, использующаяся в специальных и диверсионных операциях, благодаря своей исключительной мощности способен повалить человека на пол за одно попадание даже через толстую броню с расстояния до ста метров благодаря использованию заряженных пучков энергии. В случае поставляемого на пакт снаряжения - он значительно ослаблен, взамен имеет значительно больше зарядов, что позволяет его относительно эффективно использовать в работе СБ ПАКТа."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	icon_state = "Clear-Taser"
+	item_state = "Nebular-9"
+	gunlight_state = "taser-light"
+
+/obj/item/gun/energy/e_gun/advtaser/nebular_t/get_worn_belt_overlay(icon_file)
+	return null
+
+/obj/item/gun/energy/e_gun/advtaser/nebular_t/update_icon_state()
+	// cell всегда существует (встроенная), !cell не нужен
+	if(cell.charge <= 0)
+		icon_state = "No-charge-taser"
+		return
+
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(charge_percent > 0.5)
+		icon_state = "Charged"
+	else
+		icon_state = "Half-charged"
