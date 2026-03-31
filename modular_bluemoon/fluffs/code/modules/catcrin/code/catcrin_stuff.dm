@@ -470,16 +470,6 @@
 	shot_type_overlay = FALSE
 	can_flashlight = 1
 
-/obj/item/gun/energy/e_gun/advtaser/hwal2572/altafterattack(atom/target, mob/user, proximity_flag, params)
-	. = TRUE
-	if(last_altfire + altfire_delay > world.time)
-		return
-	var/current_index = current_firemode_index
-	set_firemode_to_type(/obj/item/ammo_casing/energy/electrode)
-	process_afterattack(target, user, proximity_flag, params)
-	set_firemode_index(current_index)
-	last_altfire = world.time
-
 /obj/item/ammo_casing/energy/disabler/hwal2572
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/H-Wal-2572/DisablerOni.ogg'
 
