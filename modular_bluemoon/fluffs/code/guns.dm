@@ -999,7 +999,10 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "Nebular-9"
 
-/*/obj/item/modkit/katana_kit
+/obj/item/gun/ballistic/automatic/pistol/enforcer/nebular/get_worn_belt_overlay(icon_file)
+	return null
+
+/obj/item/modkit/katana_kit
 	name = "Stun-Katana Kit"
 	desc = "A modkit for making a stunsword into a Stun-Katana."
 	product = /obj/item/melee/baton/stunsword/stunkatana
@@ -1007,11 +1010,46 @@
 
 /obj/item/melee/baton/stunsword/stunkatana
 	name = "\improper Stun-Katana"
-	desc = "Оружие специальных подразделений ЧВК "Конкорд", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
+	desc = "Оружие специальных подразделений ЧВК \"Конкорд\", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
-	icon_state = "Nebular-9"
-	can_suppress = TRUE
-	unique_reskin = null
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	item_state = "Nebular-9"*/
+	icon_state = "stunkatana"
+	item_state = "stunkatana"
+
+/obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status = FALSE, silent = FALSE)
+	if(turned_on != new_status)
+		turned_on = new_status
+		if(!silent)
+			playsound(loc, 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg', 75, 1, -1)
+		if(turned_on)
+			START_PROCESSING(SSobj, src)
+		else
+			STOP_PROCESSING(SSobj, src)
+	update_icon_state()
+
+/obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
+	if(!cell)
+		icon_state = "No-cell"
+		item_state = "stunkatana"
+		return
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(turned_on)
+		if(charge_percent > 0.5)
+			icon_state = "Charged-on"
+			set_light(2, 0.8, "#B6EEE9")
+		else
+			icon_state = "Half-charged-on"
+			set_light(2, 0.8, "#D9CD8E")
+		item_state = "stunkatana_active"
+	else
+		if(charge_percent > 0.5)
+			icon_state = "Charged-off"
+		else
+			icon_state = "Half-charged-off"
+		item_state = "stunkatana"
+		set_light(0)
+	if(cell.charge <= 0)
+		icon_state = "No-charge"
+		item_state = "stunkatana"
+		set_light(2, 0.8, "#ff0000")
