@@ -193,11 +193,6 @@ body.verb-style-links .verb-grid {
 	border-bottom: 1px solid var(--border);
 	margin-bottom: 2px;
 }
-.fav-source-tag {
-	font-size: 10px;
-	color: var(--text-muted);
-	margin-left: 6px;
-}
 .fav-empty-msg {
 	padding: 20px;
 	text-align: center;

@@ -7,7 +7,6 @@ function draw_favorites() {
 		return;
 	}
 
-	var grid = el("div", "verb-grid");
 	var byCategory = {};
 
 	for (var key in State.favorites) {
@@ -37,8 +36,6 @@ function draw_favorites() {
 					toggleFavorite(c, v);
 				};
 			})(fav.cat, fav.verb);
-			var tag = el("span", "fav-source-tag", displayCat);
-			pill.appendChild(tag);
 			catGrid.appendChild(pill);
 		}
 		statcontent.appendChild(catGrid);
