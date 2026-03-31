@@ -995,3 +995,23 @@
 	icon_state = "Nebular-9"
 	can_suppress = TRUE
 	unique_reskin = null
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "Nebular-9"
+
+/obj/item/modkit/katana_kit
+	name = "Stun-Katana Kit"
+	desc = "A modkit for making a stunsword into a Stun-Katana."
+	product = /obj/item/melee/baton/stunsword/stunkatana
+	fromitem = list(/obj/item/melee/baton/stunsword)
+
+/*/obj/item/melee/baton/stunsword/stunkatana
+	name = "\improper Stun-Katana"
+	desc = "Оружие специальных подразделений ЧВК "Конкорд", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "Nebular-9"
+	can_suppress = TRUE
+	unique_reskin = null
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "Nebular-9"*/
