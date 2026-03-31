@@ -96,3 +96,9 @@
 	desc = "The neutralized core of a polymorph anomaly. It feels much heavier than it looks. It'd probably be valuable for research."
 	icon_state = "vortex_core"
 	anomaly_type = /obj/effect/anomaly/poly
+
+/obj/item/assembly/signaler/anomaly/fog
+	name = "\improper fog anomaly core"
+	desc = "The neutralized core of a fog anomaly. It constantly leaks a thick veil of short-lived smoke."
+	icon_state = "vortex_core"
+	anomaly_type = /obj/effect/anomaly/fog

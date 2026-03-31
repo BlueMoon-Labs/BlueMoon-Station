@@ -13,6 +13,7 @@
 		/obj/effect/anomaly/bluespace 	            = /obj/item/clothing/suit/armor/reactive/teleport,
 		/obj/effect/anomaly/dimensional 			= /obj/item/clothing/suit/armor/reactive/barricade,
 		/obj/effect/anomaly/ectoplasm 				= /obj/item/clothing/suit/armor/reactive/ectoplasm,
+		/obj/effect/anomaly/fog						= /obj/item/clothing/suit/armor/reactive/smoke,
 		)
 
 	if(istype(I, /obj/item/assembly/signaler/anomaly))
@@ -353,5 +354,12 @@
 
 	reactivearmor_cooldown = world.time + reactivearmor_cooldown_duration
 	return TRUE
+
 /obj/item/clothing/suit/armor/reactive/ectoplasm/emp_act(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0)
 	owner.reagents?.add_reagent(/datum/reagent/impure/helgrasp, 20)
+
+/obj/item/clothing/suit/armor/reactive/smoke
+	name = "reactive smoke armor"
+	desc = "An experimental suit of armor that animates nearby objects with a ghostly possession."
+	reactivearmor_cooldown_duration = 10 SECONDS
+

@@ -1,0 +1,120 @@
+/**
+ * TODO
+ * PORTAL SPRITE
+ * CORE
+ * REACTIVE ARMOR
+ */
+
+/obj/effect/particle_effect/smoke/fog
+	name = "fog"
+	icon = 'modular_bluemoon/code/game/objects/effects/anomalies/96x96.dmi'
+	icon_state = "smoke"
+	alpha = 170
+	lifetime = INFINITY
+	amount = INFINITY
+	var/obj/effect/anomaly/fog/anomaly_parent
+	COOLDOWN_DECLARE(spread_smoke_cd)
+
+/obj/effect/particle_effect/smoke/fog/Initialize(mapload, obj/effect/anomaly/fog/fog_anomaly)
+	anomaly_parent = fog_anomaly
+	. = ..()
+	if(!anomaly_parent)
+		var/turf/t_loc = get_turf(src)
+		if(!t_loc)
+			return
+		for(var/turf/T in t_loc.GetAtmosAdjacentTurfs())
+			var/obj/effect/particle_effect/smoke/fog/foundsmoke = locate() in T
+			if(foundsmoke && foundsmoke.anomaly_parent)
+				anomaly_parent = foundsmoke.anomaly_parent
+				break
+	if(QDELETED(anomaly_parent))
+		return INITIALIZE_HINT_QDEL
+	else
+		QDEL_NULL(reagents) // незачем занимать память для неиспользуемых механик
+		anomaly_parent.fog_particles_to_expand += src
+		anomaly_parent.all_fog += src
+		RegisterSignal(anomaly_parent, COMSIG_PARENT_QDELETING, PROC_REF(clear_fog))
+
+/obj/effect/particle_effect/smoke/fog/Destroy()
+	UnregisterSignal(anomaly_parent, COMSIG_PARENT_QDELETING)
+	. = ..()
+
+/obj/effect/particle_effect/smoke/fog/proc/clear_fog()
+	SIGNAL_HANDLER
+	QDEL_IN(src, rand(1 SECONDS, 30 SECONDS))
+
+/obj/effect/particle_effect/smoke/fog/Crossed(atom/movable/AM, oldloc)
+	. = ..()
+	if(isliving(AM))
+		alpha = 50
+		opaque = FALSE
+		set_opacity(FALSE)
+
+/obj/effect/particle_effect/smoke/fog/Uncrossed(atom/movable/AM)
+	. = ..()
+	if(isliving(AM) && !(locate(/mob/living) in loc))
+		alpha = initial(alpha)
+		opaque = TRUE
+		set_opacity(TRUE)
+
+// как у родителя, но без лишних счетчиков. Тик раз в 2 секунды.
+/obj/effect/particle_effect/smoke/fog/process()
+	if((locate(/mob/living) in loc))
+		for(var/mob/living/L in range(0,src))
+			smoke_mob(L)
+	else if(!opaque)
+		alpha = initial(alpha)
+		opaque = TRUE
+		set_opacity(TRUE)
+
+// как у родителя, но без лишних проверок и таймеров.
+/obj/effect/particle_effect/smoke/fog/smoke_mob(mob/living/L)
+	if(prob(5) && isliving(L))
+		L.playsound_local(get_turf(src), pick(CREEPY_SOUNDS), 50, FALSE)
+
+/obj/effect/particle_effect/smoke/fog/spread_smoke()
+	if(!COOLDOWN_FINISHED(src, spread_smoke_cd))
+		return
+	COOLDOWN_START(src, spread_smoke_cd, 2 SECONDS)
+	stoplag(1 SECONDS) // туман расползается медленно (+доп защита от перегрузок сервака)
+	. = ..()
+
+/obj/effect/anomaly/fog
+	name = "fog anomaly"
+	icon_state = "dimensional"
+	light_range = MINIMUM_USEFUL_LIGHT_RANGE
+	light_color = COLOR_GRAY
+	lifespan = INFINITY
+	aSignal = /obj/item/assembly/signaler/anomaly/fog
+	immortal = TRUE
+	immobile = TRUE
+	layer = FLY_LAYER + 0.1
+	/**
+	 * Каждый эффект дымки обрабатывается в SSobj, но было бы слишком ресурсоемко проверять каждый из них на возможность расползания.
+	 * Лучше хранить ограниченный список актуальных пограничных дымков, ведь они неуничтожимы в обычных условиях, и дыры не могут образоваться в неожиданных местах.
+	 */
+	var/list/fog_particles_to_expand = list()
+	var/list/all_fog = list()
+
+/obj/effect/anomaly/fog/Initialize(mapload, new_lifespan)
+	. = ..()
+	new /obj/effect/particle_effect/smoke/fog(loc, src)
+
+/obj/effect/anomaly/fog/anomalyEffect(seconds_per_tick)
+	. = ..()
+	var/list/to_be_removed = list()
+	for(var/obj/effect/particle_effect/smoke/fog/F as anything in fog_particles_to_expand)
+		if(QDELETED(src))
+			break
+		if(!QDELETED(F))
+			var/adj_counter = 0
+			for(var/direction in GLOB.cardinals)
+				if(locate(/obj/effect/particle_effect/smoke/fog, get_step(F, direction)))
+					adj_counter++
+			if(adj_counter < 4 || length(fog_particles_to_expand) < 4)
+				if(TICK_CHECK)
+					continue // когда серверу плохо, мы ничего не делаем, просто разгружаем список
+				INVOKE_ASYNC(F, TYPE_PROC_REF(/obj/effect/particle_effect/smoke/fog, spread_smoke))
+				continue
+		to_be_removed += F
+	fog_particles_to_expand -= to_be_removed
