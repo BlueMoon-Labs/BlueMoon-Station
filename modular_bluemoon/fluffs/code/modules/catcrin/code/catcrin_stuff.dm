@@ -453,10 +453,10 @@
 /obj/item/modkit/hwal2572
 	name = " H-Wal-2572 Kit"
 	desc = "A modkit for making a hybrid taser into a H-Wal-2572."
-	product = /obj/item/gun/energy/laser/hwal2572
+	product = /obj/item/gun/energy/e_gun/advtaser/hwal2572
 	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
 
-/obj/item/gun/energy/laser/hwal2572
+/obj/item/gun/energy/e_gun/advtaser/hwal2572
 	name = "\improper H-Wal-2572"
 	desc = "A hybrid taser made by Catcrin's waffenschmied that combines electric and energy shots. There is a small circle on the handle showing the charging level."
 	icon_state = "hwal"
@@ -467,12 +467,10 @@
 	ammo_x_offset = 0
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler/hwal2572, /obj/item/ammo_casing/energy/electrode/security/hwal2572 = FALSE)
 	pickup_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/H-Wal-2572/DisablerGrab.ogg'
-	var/last_altfire = 0
-	var/altfire_delay = CLICK_CD_RANGE
 	shot_type_overlay = FALSE
 	can_flashlight = 1
 
-/obj/item/gun/energy/laser/hwal2572/altafterattack(atom/target, mob/user, proximity_flag, params)
+/obj/item/gun/energy/e_gun/advtaser/hwal2572/altafterattack(atom/target, mob/user, proximity_flag, params)
 	. = TRUE
 	if(last_altfire + altfire_delay > world.time)
 		return
