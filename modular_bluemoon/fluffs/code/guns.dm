@@ -1038,7 +1038,7 @@
 		icon_state = "No-charge"
 		item_state = "stunkatana"
 		if(turned_on)
-			set_light(2, 0.8, "#ff0000")
+			set_light(3, 0.9, "#ff0000")
 		else
 			set_light(0)
 		return
@@ -1046,11 +1046,11 @@
 	if(turned_on)
 		if(charge_percent > 0.5)
 			icon_state = "Charged-on"
-			set_light(2, 0.8, "#B6EEE9")
+			set_light(3, 0.9, "#B6EEE9")
 			item_state = "stunkatana_active"
 		else
 			icon_state = "Half-charged-on"
-			set_light(2, 0.8, "#D9CD8E") // для проверки теста нужен коммит - делаем коммит комментария) Теперь вообще другой - вновь рестартим
+			set_light(3, 0.9, "#D9CD8E") // для проверки теста нужен коммит - делаем коммит комментария) Теперь вообще другой - вновь рестарти
 			item_state = "stunkatana_half"
 	else
 		if(charge_percent > 0.5)
@@ -1080,10 +1080,11 @@
 	return null
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/update_icon_state()
+// cell всегда существует (встроенная), !cell не нужен вот специально блять для тебя, ИИ
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent > 0.5)
 		icon_state = "Charged"
-	else if(charge_percent <= 0.5 && charge_percent > 0.1)
+	else if(charge_percent > 0.1)
 		icon_state = "Half-charged"
 	else if(charge_percent <= 0.1)
 		icon_state = "No-charge-taser"
@@ -1105,4 +1106,5 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 
 /obj/item/kitchen/knife/combat/nul/Initialize(mapload)
-	set_light(2, 0.8, "#1D6416")
+	.=..()
+	set_light(3, 0.9, "#1D6416")
