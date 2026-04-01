@@ -1025,8 +1025,18 @@
 			playsound(loc, 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg', 75, 1, -1)
 		if(turned_on)
 			START_PROCESSING(SSobj, src)
+			// Обновляем подсветку при включении
+			if(!cell || cell.charge <= 0)
+				set_light(3, 0.9, "#ff0000")
+			else
+				var/charge_percent = cell.charge / cell.maxcharge
+				if(charge_percent > 0.5)
+					set_light(3, 0.9, "#B6EEE9")
+				else
+					set_light(3, 0.9, "#D9CD8E")
 		else
 			STOP_PROCESSING(SSobj, src)
+			set_light(0)
 	update_icon_state()
 
 /obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
@@ -1037,20 +1047,14 @@
 	if(cell.charge <= 0)
 		icon_state = "No-charge"
 		item_state = "stunkatana"
-		if(turned_on)
-			set_light(3, 0.9, "#ff0000")
-		else
-			set_light(0)
 		return
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(turned_on)
 		if(charge_percent > 0.5)
 			icon_state = "Charged-on"
-			set_light(3, 0.9, "#B6EEE9")
 			item_state = "stunkatana_active"
 		else
 			icon_state = "Half-charged-on"
-			set_light(3, 0.9, "#D9CD8E") // для проверки теста нужен коммит - делаем коммит комментария) Теперь вообще другой - вновь рестарти
 			item_state = "stunkatana_half"
 	else
 		if(charge_percent > 0.5)
@@ -1058,7 +1062,6 @@
 		else
 			icon_state = "Half-charged-off"
 		item_state = "stunkatana"
-		set_light(0)
 
 /obj/item/modkit/nebular_t_kit
 	name = "Nebular-T Kit"
