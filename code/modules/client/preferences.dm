@@ -2589,7 +2589,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>[tgui_monitors_label]:</b> <a href='?_src_=prefs;preference=tgui_lock'>[(tgui_lock) ? tgui_monitor_primary : tgui_monitor_all]</a><br>"
 					dat += "<b>[tgui_style_label]:</b> <a href='?_src_=prefs;preference=tgui_fancy'>[(tgui_fancy) ? tgui_style_fancy : tgui_style_no_frills]</a><br>"
 					dat += "<b>[runechat_bubbles_label]:</b> <a href='?_src_=prefs;preference=chat_on_map'>[chat_on_map ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>[runechat_looc_bubbles_label]:</b> <a href='?_src_=prefs;preference=chat_on_map_looc'>[chat_on_map_looc ? enabled_label : disabled_label]</a><br>"
+					if(chat_on_map)
+						dat += "<b>[runechat_looc_bubbles_label]:</b> <a href='?_src_=prefs;preference=chat_on_map_looc'>[chat_on_map_looc ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[runechat_char_limit_label]:</b> <a href='?_src_=prefs;preference=max_chat_length;task=input'>[max_chat_length]</a><br>"
 					dat += "<b>[runechat_non_mobs_label]:</b> <a href='?_src_=prefs;preference=see_chat_non_mob'>[see_chat_non_mob ? enabled_label : disabled_label]</a><br>"
 					//SANDSTORM CHANGES BEGIN
