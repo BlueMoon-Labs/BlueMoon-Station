@@ -105,7 +105,12 @@
 	var/auto_transfer_time = 0; //0 - Трансфера нет
 	var/auto_transfer_chance  = 0; //0 - Трансфера нет
 
-
+	//Для визуальной хуеты
+	var/color1 = "#692525"
+	var/color2 = "#ffffff"
+	var/color3 = "#ffffff"
+	var/color4 = "#ffffff"
+	var/background_vore_type
 
 	var/list/atom/movable/_atoms_to_process
 
