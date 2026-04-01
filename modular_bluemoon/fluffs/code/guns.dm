@@ -1048,8 +1048,11 @@
 	update_icon_state()
 	if(!SSlighting?.initialized)
 		return
-	if(!cell || cell.charge <= 0)
+	if(!turned_on || !cell)
 		set_light(0)
+		return
+	if(cell.charge <= 0)
+		set_light(3, 0.9, "#ff0000")
 		return
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent > 0.5)
