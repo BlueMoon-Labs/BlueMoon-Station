@@ -1043,13 +1043,17 @@
 	update_icon_state()
 
 /obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
-	. = ..() // сначала выполняем родительский удар (стан, анимация и т.д.)
-	// После удара — обновляем иконку и свет по текущему заряду
+	. = ..()
 	update_icon_state()
+	// После удара — обновляем иконку и свет по текущему заряду
 	if(!SSlighting?.initialized)
 		return
 	if(!cell || cell.charge <= 0)
+	if(!turned_on || !cell)
 		set_light(0)
+		return
+	if(cell.charge <= 0)
+		set_light(3, 0.9, "#ff0000")
 		return
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent > 0.5)
