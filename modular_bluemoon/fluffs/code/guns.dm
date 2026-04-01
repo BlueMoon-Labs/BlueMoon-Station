@@ -1025,20 +1025,37 @@
 			playsound(loc, 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg', 75, 1, -1)
 		if(turned_on)
 			START_PROCESSING(SSobj, src)
-			// Обновляем подсветку при включении
-			if(!cell || cell.charge <= 0)
-				set_light(3, 0.9, "#ff0000")
-			else
-				var/charge_percent = cell.charge / cell.maxcharge
-				if(charge_percent > 0.5)
-					set_light(3, 0.9, "#B6EEE9")
+			if(SSlighting?.initialized) // ← защита от teardown
+				if(!cell)
+					set_light(0)
+				else if(cell.charge <= 0)
+					set_light(3, 0.9, "#ff0000")
 				else
-					set_light(3, 0.9, "#D9CD8E")
+					var/charge_percent = cell.charge / cell.maxcharge
+					if(charge_percent > 0.5)
+						set_light(3, 0.9, "#B6EEE9")
+					else
+						set_light(3, 0.9, "#D9CD8E")
 		else
 			STOP_PROCESSING(SSobj, src)
-			set_light(0)
+			if(SSlighting?.initialized) // ← защита от teardown
+				set_light(0)
 	update_icon_state()
 
+/obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
+	. = ..() // сначала выполняем родительский удар (стан, анимация и т.д.)
+	// После удара — обновляем иконку и свет по текущему заряду
+	update_icon_state()
+	if(!SSlighting?.initialized)
+		return
+	if(!cell || cell.charge <= 0)
+		set_light(0)
+		return
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(charge_percent > 0.5)
+		set_light(3, 0.9, "#B6EEE9")
+	else
+		set_light(3, 0.9, "#D9CD8E")
 /obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
 	if(!cell)
 		icon_state = "No-cell"
