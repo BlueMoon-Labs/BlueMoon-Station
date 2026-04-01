@@ -1037,17 +1037,21 @@
 	if(cell.charge <= 0)
 		icon_state = "No-charge"
 		item_state = "stunkatana"
-		set_light(2, 0.8, "#ff0000")
+		if(turned_on)
+			set_light(2, 0.8, "#ff0000")
+		else
+			set_light(0)
 		return
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(turned_on)
 		if(charge_percent > 0.5)
 			icon_state = "Charged-on"
 			set_light(2, 0.8, "#B6EEE9")
+			item_state = "stunkatana_active"
 		else
 			icon_state = "Half-charged-on"
 			set_light(2, 0.8, "#D9CD8E") // для проверки теста нужен коммит - делаем коммит комментария) Теперь вообще другой - вновь рестартим
-		item_state = "stunkatana_active"
+			item_state = "stunkatana_half"
 	else
 		if(charge_percent > 0.5)
 			icon_state = "Charged-off"
@@ -1070,19 +1074,35 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "Clear-Taser"
 	item_state = "Nebular-9"
-	gunlight_state = "taser-light"
+	can_flashlight = FALSE
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/get_worn_belt_overlay(icon_file)
 	return null
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/update_icon_state()
-	// cell всегда существует (встроенная), !cell не нужен
-	if(cell.charge <= 0)
-		icon_state = "No-charge-taser"
-		return
-
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent > 0.5)
 		icon_state = "Charged"
-	else
+	else if(charge_percent <= 0.5 && charge_percent > 0.1)
 		icon_state = "Half-charged"
+	else if(charge_percent <= 0.1)
+		icon_state = "No-charge-taser"
+		return
+
+/obj/item/modkit/nul_kit
+	name = "Nul Kit"
+	desc = "A modkit for making an combat knife into a Sword of Nul."
+	product = /obj/item/kitchen/knife/combat/nul
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/nul
+	name = "\improper Sword of Nul"
+	desc = "Короткое прямое бронзовое лезвие, однако оружие слегка позеленело от времени. Он по прежнему острый, очень острый, острее даже тончайшей стали. Фактически, меч острее, чем теоретически возможно для бронзового оружия. На нем отсутствуют какие-либо украшения, за исключение грубо выполненного черепа, вырезанного посередине рукояти. Когда-то рукоять была обернута кожей или тканью, которая со временем сгнила, оставив только голый металл. Поговаривают, его выковал сам Драконскир, могущественный демон, где-то в третьем тысячелетии до нашей эры для защиты города Ур от вторгшихся сил военачальника Урлона из Урука."
+	item_state = "sword-nul"
+	icon_state = "sword-nul"
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+
+/obj/item/kitchen/knife/combat/nul/Initialize(mapload)
+	set_light(2, 0.8, "#1D6416")

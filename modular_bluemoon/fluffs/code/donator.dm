@@ -2203,3 +2203,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/nebular_t_kit
 	ckeywhitelist = list("lapkee")
+
+/datum/gear/donator/bm/nul_kit
+	name = "Sword of Nul Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/nul_kit
+	ckeywhitelist = list("lev1932")
