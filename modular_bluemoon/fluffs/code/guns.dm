@@ -1026,7 +1026,9 @@
 		if(turned_on)
 			START_PROCESSING(SSobj, src)
 			// Обновляем подсветку при включении
-			if(!cell || cell.charge <= 0)
+			if(!cell)
+				set_light(0)
+			else if(cell.charge <= 0)
 				set_light(3, 0.9, "#ff0000")
 			else
 				var/charge_percent = cell.charge / cell.maxcharge
