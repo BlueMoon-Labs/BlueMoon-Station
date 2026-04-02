@@ -249,13 +249,9 @@
 	excludefromjob = list("Captain")
 
 /datum/objective_item/steal/captain_panties/ExtraCheck()
-	var/mob/living/carbon/human/capt
-	for(var/mob/living/carbon/human/H in GLOB.human_list) // только хуманы могут носить трусы. также нам безразлично, чей разум находится в теле капитана.
-		if(H.job == "Captain")
-			capt = H
-			break
-	if(istype(capt) && capt.get_item_by_slot(ITEM_SLOT_UNDERWEAR))
-		return TRUE
+	for(var/obj/item/clothing/underwear/briefs/B in world)
++		if(B.worn_by_captain)
++			return TRUE
 	return FALSE
 
 /datum/objective_item/steal/captain_panties/check_special_completion(obj/item/clothing/underwear/briefs/B)
