@@ -1132,3 +1132,42 @@
 /obj/item/kitchen/knife/combat/nul/Initialize(mapload)
 	.=..()
 	set_light(3, 0.9, "#1D6416")
+
+/obj/item/modkit/supernova_kit
+	name = "Supernova Kit"
+	desc = "A modkit for making a combat shotgun into a Supernova."
+	product = /obj/item/gun/ballistic/shotgun/automatic/combat/supernova
+	fromitem = list(/obj/item/gun/ballistic/shotgun/automatic/combat)
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/supernova
+	name = "\improper Supernova"
+	desc = "Помповый дробовик специального назначения, используемый на общих основаниях силами правопорядка некоторых технически-развитых миров и самими обитателями Небулы. Благодаря номенклатуре боеприпасов, способен исполнять почти любую задачу - от подавления беспорядков до использования в некоторых около-военных операциях и охранения объектов. Распространён слабо, ввиду того что его исполнение не выдерживает никакой критики в плане сохранения боевых характеристик вне близких к стерильным условий, так как используется в основном в космическом пространстве. Данная версия - ещё и кастрат, с уменьшенным магазином и урезанной скорострельностью, для предотвращения \"перегибов\" на местах"
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "supernova-0-notcharged"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "supernova-notcharged"
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_icon_state()
+	var/ammo = magazine ? magazine.ammo_count() : 0
+	var/chamber = (chambered && chambered.BB) ? "charged" : "notcharged"
+	var/folded = stock ? "" : "-folded"
+	icon_state = "supernova-[ammo]-[chamber][folded]"
+	item_state = "supernova-[chamber]"
+
+/obj/item/modkit/supernova_kit
+	name = "Pulsar Kit"
+	desc = "A modkit for making a combat knife into a Pulsar."
+	product = /obj/item/kitchen/knife/combat/pulsar
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/pulsar
+	name = "Pulsar"
+	desc = "Общее название для ритуальных клинков расы Касари, использующихся в некоторых \"особых\" случаях, в первую очередь в поединках и казнях. По понятным причинам выполнен всего в паре-сотне образцов, уникальных для каждого из кораблей-колоний. Удивительно, что его вовсе занесло на станцию"
+	item_state = "pulsar"
+	icon_state = "pulsar"
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
