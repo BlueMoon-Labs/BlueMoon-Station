@@ -250,8 +250,8 @@
 
 /datum/objective_item/steal/captain_panties/ExtraCheck()
 	for(var/obj/item/clothing/underwear/briefs/B in world)
-+		if(B.worn_by_captain)
-+			return TRUE
+		if(B.worn_by_captain)
+			return TRUE
 	return FALSE
 
 /datum/objective_item/steal/captain_panties/check_special_completion(obj/item/clothing/underwear/briefs/B)
