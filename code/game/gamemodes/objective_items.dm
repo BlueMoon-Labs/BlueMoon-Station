@@ -14,6 +14,10 @@
 /datum/objective_item/proc/TargetExists()
 	return TRUE
 
+/// Вызывается непосредственно во время выдачи цели
+/datum/objective_item/proc/ExtraCheck()
+	return TRUE
+
 /datum/objective_item/steal/New()
 	..()
 	if(TargetExists())
@@ -244,7 +248,7 @@
 	difficulty = 10
 	excludefromjob = list("Captain")
 
-/datum/objective_item/steal/captain_panties/TargetExists()
+/datum/objective_item/steal/captain_panties/ExtraCheck()
 	var/mob/living/carbon/human/capt
 	for(var/datum/mind/head as anything in SSjob.get_all_heads())
 		if(head.assigned_role == "Captain")
@@ -254,8 +258,8 @@
 		return TRUE
 	return FALSE
 
-/datum/objective_item/steal/captain_panties/check_special_completion(obj/item/clothing/underwear/briefs/panties)
-	return panties.worn_by_captain
+/datum/objective_item/steal/captain_panties/check_special_completion(obj/item/clothing/underwear/briefs/B)
+	return B.worn_by_captain
 
 //Unique Objectives
 /datum/objective_item/unique/docs_red
