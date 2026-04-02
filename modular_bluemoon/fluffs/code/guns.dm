@@ -1017,7 +1017,12 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "stunkatana"
 	item_state = "stunkatana"
-
+/obj/item/melee/baton/stunsword/stunkatana/switch_light()
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(charge_percent > 0.5)
+		set_light(3, 0.9, "#B6EEE9")
+	else
+		set_light(3, 0.9, "#D9CD8E")
 /obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status = FALSE, silent = FALSE)
 	if(turned_on != new_status)
 		turned_on = new_status
@@ -1030,11 +1035,7 @@
 			else if(cell.charge <= 0)
 				set_light(3, 0.9, "#ff0000")
 			else
-				var/charge_percent = cell.charge / cell.maxcharge
-				if(charge_percent > 0.5)
-					set_light(3, 0.9, "#B6EEE9")
-				else
-					set_light(3, 0.9, "#D9CD8E")
+				switch_light()
 		else
 			STOP_PROCESSING(SSobj, src)
 			set_light(0)
@@ -1050,11 +1051,7 @@
 	if(cell.charge <= 0)
 		set_light(3, 0.9, "#ff0000")
 		return
-	var/charge_percent = cell.charge / cell.maxcharge
-	if(charge_percent > 0.5)
-		set_light(3, 0.9, "#B6EEE9")
-	else
-		set_light(3, 0.9, "#D9CD8E")
+	switch_light()
 /obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
 	if(!cell)
 		icon_state = "No-cell"
