@@ -1017,7 +1017,7 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "stunkatana"
 	item_state = "stunkatana"
-/obj/item/melee/baton/stunsword/stunkatana/switch_light()
+/obj/item/melee/baton/stunsword/stunkatana/proc/switch_light()
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent > 0.5)
 		set_light(3, 0.9, "#B6EEE9")
