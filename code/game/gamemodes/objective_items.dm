@@ -250,9 +250,9 @@
 
 /datum/objective_item/steal/captain_panties/ExtraCheck()
 	var/mob/living/carbon/human/capt
-	for(var/datum/mind/head as anything in SSjob.get_all_heads())
-		if(head.assigned_role == "Captain")
-			capt = head.current
+	for(var/mob/living/carbon/human/H in GLOB.human_list) // только хуманы могут носить трусы. также нам безразлично, чей разум находится в теле капитана.
+		if(H.job == "Captain")
+			capt = H
 			break
 	if(istype(capt) && capt.get_item_by_slot(ITEM_SLOT_UNDERWEAR))
 		return TRUE

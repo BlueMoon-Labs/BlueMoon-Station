@@ -14,7 +14,7 @@
 
 /obj/item/clothing/underwear/briefs/equipped(mob/user, slot)
 	. = ..()
-	if((user.mind?.assigned_role == "Captain") && (slot == slot_flags))
+	if((user.job == "Captain") && (slot == slot_flags))
 		worn_by_captain = TRUE
 
 // please make sure they're sorted alphabetically and categorized, above is the only exception
