@@ -238,6 +238,25 @@
 		return TRUE
 	return FALSE
 
+/datum/objective_item/steal/captain_panties
+	name = "ношенные трусы Капитана"
+	targetitem = /obj/item/clothing/underwear/briefs
+	difficulty = 10
+	excludefromjob = list("Captain")
+
+/datum/objective_item/steal/captain_panties/TargetExists()
+	var/mob/living/carbon/human/capt
+	for(var/datum/mind/head as anything in SSjob.get_all_heads())
+		if(head.assigned_role == "Captain")
+			capt = head.current
+			break
+	if(istype(capt) && capt.get_item_by_slot(ITEM_SLOT_UNDERWEAR))
+		return TRUE
+	return FALSE
+
+/datum/objective_item/steal/captain_panties/check_special_completion(obj/item/clothing/underwear/briefs/panties)
+	return panties.worn_by_captain
+
 //Unique Objectives
 /datum/objective_item/unique/docs_red
 	name = "\"Красные\" секретные документы."
