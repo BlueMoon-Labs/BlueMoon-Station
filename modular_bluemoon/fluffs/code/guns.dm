@@ -1025,30 +1025,25 @@
 			playsound(loc, 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg', 75, 1, -1)
 		if(turned_on)
 			START_PROCESSING(SSobj, src)
-			if(SSlighting?.initialized) // ← защита от teardown
-				if(!cell)
-					set_light(0)
-				else if(cell.charge <= 0)
-					set_light(3, 0.9, "#ff0000")
+			if(!cell)
+				set_light(0)
+			else if(cell.charge <= 0)
+				set_light(3, 0.9, "#ff0000")
+			else
+				var/charge_percent = cell.charge / cell.maxcharge
+				if(charge_percent > 0.5)
+					set_light(3, 0.9, "#B6EEE9")
 				else
-					var/charge_percent = cell.charge / cell.maxcharge
-					if(charge_percent > 0.5)
-						set_light(3, 0.9, "#B6EEE9")
-					else
-						set_light(3, 0.9, "#D9CD8E")
+					set_light(3, 0.9, "#D9CD8E")
 		else
 			STOP_PROCESSING(SSobj, src)
-			if(SSlighting?.initialized) // ← защита от teardown
-				set_light(0)
+			set_light(0)
 	update_icon_state()
 
 /obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
 	. = ..()
 	update_icon_state()
 	// После удара — обновляем иконку и свет по текущему заряду
-	if(!SSlighting?.initialized)
-		return
-	if(!cell || cell.charge <= 0)
 	if(!turned_on || !cell)
 		set_light(0)
 		return
@@ -1148,7 +1143,6 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "supernova-notcharged"
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_icon_state()
 	var/ammo = magazine ? magazine.ammo_count() : 0
@@ -1157,7 +1151,7 @@
 	icon_state = "supernova-[ammo]-[chamber][folded]"
 	item_state = "supernova-[chamber]"
 
-/obj/item/modkit/supernova_kit
+/obj/item/modkit/pulsar_kit
 	name = "Pulsar Kit"
 	desc = "A modkit for making a combat knife into a Pulsar."
 	product = /obj/item/kitchen/knife/combat/pulsar
