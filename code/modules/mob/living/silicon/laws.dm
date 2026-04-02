@@ -8,6 +8,9 @@
 // (EDIT) Pe4henika bluemoon -- start
 /mob/living/silicon/proc/post_lawchange(announce = TRUE)
     throw_alert("newlaw", /atom/movable/screen/alert/newlaw)
+
+    update_law_menu()
+
     if(announce && last_lawchange_announce != world.time)
         to_chat(src, "<br><span class='userdanger'><font size=4>ВНИМАНИЕ: Ваши законы были изменены!</font></span>")
         to_chat(src, "<span class='userdanger'>Проверьте активный набор законов немедленно.</span><br>")
@@ -20,6 +23,7 @@
             for(var/mob/living/silicon/robot/R in GLOB.silicon_mobs)
                 if(R.connected_ai == AI && R.lawupdate)
                     R.lawsync(TRUE)
+                    R.update_law_menu()
 
             for(var/mob/living/carbon/human/H in GLOB.human_list)
                 var/obj/item/organ/cyberimp/brain/ai_link/L = H.getorganslot("brain_ai_link")

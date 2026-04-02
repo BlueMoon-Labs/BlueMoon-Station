@@ -46,7 +46,7 @@
 
 	if(ghosts_orbiting)
 		var/total_dead = length(GLOB.dead_mob_list) + length(GLOB.current_observers_list)
-		effect_power = ghosts_orbiting / total_dead * 100
+		effect_power = total_dead ? clamp((ghosts_orbiting / total_dead) * 100 * 2, 0, 100) : 0
 	else
 		effect_power = 0
 
@@ -109,7 +109,7 @@
  * Manages updating the sprite for the anomaly based on how many orbiters it has.
  *
  *
- * A check that is run to determine which sprite the anoamly should currently be displaying.
+ * A check that is run to determine which sprite the anomaly should currently be displaying.
  * With 50% or more participation, the "heavy" sprite is used. Otherwise, it is reverted to the normal anomaly sprite.
  */
 
@@ -147,7 +147,7 @@
 	START_PROCESSING(SSobj, src)
 	INVOKE_ASYNC(src, PROC_REF(make_ghost_swarm), candidate_list)
 	playsound(src, pick(spooky_noises), 100, TRUE)
-	QDEL_IN(WEAKREF(src), 2 MINUTES)
+	QDEL_IN(src, 2 MINUTES)
 
 /obj/structure/ghost_portal/process(seconds_per_tick)
 	. = ..()

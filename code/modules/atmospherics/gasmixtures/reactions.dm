@@ -746,11 +746,15 @@
 		air.adjust_moles(GAS_O2, -reaction_amount)
 		air.adjust_moles(GAS_NITRYL, reaction_amount*2)
 		enthalpy += (reaction_amount * -(enthalpies[GAS_NITRIC] - enthalpies[GAS_NITRYL]))
-	air.adjust_moles(GAS_NITRIC, -max_amount)
-	air.adjust_moles(GAS_O2, max_amount * 0.5)
-	air.adjust_moles(GAS_N2, max_amount * 0.5)
-	enthalpy += max_amount * -enthalpies[GAS_NITRIC]
-	air.set_temperature(enthalpy/(air.heat_capacity() + R_IDEAL_GAS_EQUATION * air.total_moles()))
+	var/decomp_amount = min(max_amount, air.get_moles(GAS_NITRIC))
+	if(decomp_amount > 0)
+		air.adjust_moles(GAS_NITRIC, -decomp_amount)
+		air.adjust_moles(GAS_O2, decomp_amount * 0.5)
+		air.adjust_moles(GAS_N2, decomp_amount * 0.5)
+		enthalpy += decomp_amount * -enthalpies[GAS_NITRIC]
+	var/denom = air.heat_capacity() + R_IDEAL_GAS_EQUATION * air.total_moles()
+	if(denom > MINIMUM_HEAT_CAPACITY)
+		air.set_temperature(enthalpy / denom)
 	return REACTING
 
 /datum/gas_reaction/hagedorn

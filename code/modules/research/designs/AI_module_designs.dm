@@ -154,3 +154,12 @@
 	build_path = /obj/item/ai_module/core/full/custom
 	category = list("AI Modules")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/gentleman
+	name = "Core Module Design (Gentleman)"
+	desc = "Allows for the construction of an Gentelman AI Core Module."
+	id = "gentleman_module"
+	materials = list(/datum/material/glass = 1000, /datum/material/diamond = 2000)
+	build_path = /obj/item/ai_module/core/full/gentleman
+	category = list("AI Modules")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE

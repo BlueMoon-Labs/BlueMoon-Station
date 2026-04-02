@@ -123,3 +123,15 @@
 	name = "Enforcer drum (.45 Stun)"
 	desc = "A Mk. 58 drum. Loaded with Stun rounds."
 	ammo_type = /obj/item/ammo_casing/c45/stun
+
+///////////////////// DATUM DESIGN /////////////////////
+
+/datum/design/c9mm_box
+	name = "Ammo Box (9mm)"
+	desc = "A box of ammo containing 30 rounds of nine mil' caliber."
+	id = "c9mm_box"
+	build_type =  PROTOLATHE
+	materials = list(/datum/material/iron = 30000)
+	build_path = /obj/item/ammo_box/c9mm
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE

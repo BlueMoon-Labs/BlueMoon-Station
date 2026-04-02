@@ -304,13 +304,13 @@
 
 /obj/item/radio/proc/backup_transmission(datum/signal/subspace/vocal/signal)
 	var/turf/T = get_turf(src)
-	if (signal.data["done"] && (T.z in signal.levels))
+	if (signal.data["done"] && T && (T.z in signal.levels))
 		return
 
 	// Okay, the signal was never processed, send a mundane broadcast.
 	signal.data["compression"] = 0
 	signal.transmission_method = TRANSMISSION_RADIO
-	signal.levels = list(T.z)
+	signal.levels = T ? list(T.z) : list(0)
 	signal.broadcast()
 
 /obj/item/radio/Hear(message, atom/movable/speaker, message_language, raw_message, radio_freq, list/spans, message_mode, atom/movable/source)

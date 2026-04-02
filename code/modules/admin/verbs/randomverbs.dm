@@ -939,12 +939,28 @@ Traitors and the like can also be revived with the previous role mostly intact.
 		return
 
 	var/level = input("Select security level to change to","Set Security Level") as null|anything in list("green","blue","orange","violet","amber","red","lambda","gamma","epsilon","delta")
-	if(level)
-		set_security_level(level)
+	if(!level)
+		return
+	var/secret_variant_override = null
+	if(level in list("violet", "amber", "red"))
+		var/choice = tgui_alert(usr, "Иконка и музыка на коммуникационных консолях:", "Set Security Level", list("Обычные", "Секретные", "Случайно (90% обычные)"))
+		if(!choice)
+			return
+		switch(choice)
+			if("Обычные")
+				secret_variant_override = FALSE
+			if("Секретные")
+				secret_variant_override = TRUE
+			if("Случайно (90% обычные)")
+				secret_variant_override = null
+	set_security_level(level, secret_variant_override)
 
-		log_admin("[key_name(usr)] changed the security level to [level]")
-		message_admins("[key_name_admin(usr)] changed the security level to [level]")
-		SSblackbox.record_feedback("tally", "admin_verb", 1, "Set Security Level [capitalize(level)]") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+	var/extra_log = ""
+	if(level in list("violet", "amber", "red"))
+		extra_log = isnull(secret_variant_override) ? " (вариант: случайный)" : (secret_variant_override ? " (вариант: секретный)" : " (вариант: обычный)")
+	log_admin("[key_name(usr)] changed the security level to [level][extra_log]")
+	message_admins("[key_name_admin(usr)] changed the security level to [level][extra_log]")
+	SSblackbox.record_feedback("tally", "admin_verb", 1, "Set Security Level [capitalize(level)]") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/admin_hostile_environment()
 	set category = "Admin.Events"

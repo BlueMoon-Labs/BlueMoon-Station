@@ -1,6 +1,8 @@
 /mob/living/carbon/BiologicalLife(delta_time, times_fired)
 	//Reagent processing needs to come before breathing, to prevent edge cases.
-	handle_organs(delta_time, times_fired)
+	// BLUEMOON OPTIMIZATION: stagger organ processing for clientless mobs (every other fire)
+	if(client || (times_fired % 2 == 0))
+		handle_organs(client ? delta_time : delta_time * 2, times_fired)
 	. = ..()		// if . is false, we are dead.
 	if(stat == DEAD)
 		stop_sound_channel(CHANNEL_HEARTBEAT)
@@ -407,6 +409,8 @@
 				O.on_death(seconds, times_fired) //Needed so organs decay while inside the body.
 
 /mob/living/carbon/handle_diseases()
+	if(!length(diseases))
+		return
 	for(var/thing in diseases)
 		var/datum/disease/D = thing
 		if(prob(D.infectivity))
@@ -416,6 +420,8 @@
 			D.stage_act()
 
 /mob/living/carbon/handle_wounds()
+	if(!length(all_wounds))
+		return
 	for(var/thing in all_wounds)
 		var/datum/wound/W = thing
 		if(W.processes) // meh
@@ -460,6 +466,8 @@
 
 /mob/living/carbon/handle_stomach()
 	set waitfor = 0
+	if(!length(stomach_contents))
+		return
 	for(var/mob/living/M in stomach_contents)
 		if(M.loc != src)
 			stomach_contents.Remove(M)

@@ -171,6 +171,14 @@
 	var/reusable = 1
 	var/used = 0
 
+/obj/item/dice/d20/fate/Initialize(mapload)
+	. = ..()
+	GLOB.poi_list |= src
+
+/obj/item/dice/d20/fate/Destroy()
+	GLOB.poi_list -= src
+	. = ..()
+
 /obj/item/dice/d20/fate/one_use
 	reusable = 0
 

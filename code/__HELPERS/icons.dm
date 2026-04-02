@@ -1111,7 +1111,21 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 /// The same asset will always lead to the same asset name
 /// (Generated names do not include file extention.)
 /proc/generate_asset_name(file)
-	return "asset.[md5(fcopy_rsc(file))]"
+	var/static/list/asset_name_cache = list()
+	// /icon datums have unstable refs — BYOND reuses refs after GC,
+	// so a new icon can get the same ref as a deleted one, returning stale md5.
+	// Only skip cache for /icon datums. File references (including .dmi) have
+	// stable identity and are safe to cache. Note: isicon() is too broad here —
+	// it returns TRUE for both /icon datums AND file references to .dmi files.
+	if(!istype(file, /icon))
+		var/ref_key = "\ref[file]"
+		. = asset_name_cache[ref_key]
+		if(.)
+			return
+		. = "asset.[md5(fcopy_rsc(file))]"
+		asset_name_cache[ref_key] = .
+		return
+	. = "asset.[md5(fcopy_rsc(file))]"
 
 /**
   * Converts an icon to base64. Operates by putting the icon in the iconCache savefile,
@@ -1166,7 +1180,6 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 	if (!thing)
 		return
 
-	var/key
 	var/icon/I = thing
 
 	if (!target)
@@ -1215,39 +1228,60 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 		if (isnull(icon_state))
 			icon_state = ""
 
+	// Result-level cache: skip icon() constructor + asset registration on repeat calls.
+	// Only cacheable when I is a file reference (e.g. 'icons/obj/food.dmi') — these
+	// stringify to a unique file path. /icon datums all stringify to "/icon", causing
+	// massive key collisions where different icons return the same cached result.
+	// Note: isicon() returns TRUE for both /icon datums AND .dmi file references,
+	// so we use isfile() which is TRUE only for file references.
+	var/can_cache = isfile(I)
+	var/cache_key
+	var/static/list/icon2html_cache = list()
+
+	if(can_cache)
+		cache_key = "[I]:[icon_state]:[dir]:[frame]:[moving]"
+		var/list/cached = icon2html_cache[cache_key]
+		if(cached)
+			for(var/thing2 in targets)
+				SSassets.transport.send_assets(thing2, cached[1])
+			if(sourceonly)
+				return cached[3]
+			return cached[2]
+
 	I = icon(I, icon_state, dir, frame, moving)
 
-	key = "[generate_asset_name(I)].png"
+	var/key = "[generate_asset_name(I)].png"
 	if(!SSassets.cache[key])
 		SSassets.transport.register_asset(key, I)
 	for (var/thing2 in targets)
 		SSassets.transport.send_assets(thing2, key)
-	if(sourceonly)
-		return SSassets.transport.get_asset_url(key)
 
-	return "<img class='icon icon-[icon_state]' src='[SSassets.transport.get_asset_url(key)]'>"
+	var/url = SSassets.transport.get_asset_url(key)
+	var/html = "<img class='icon icon-[icon_state]' src='[url]'>"
+
+	if(can_cache)
+		icon2html_cache[cache_key] = list(key, html, url)
+		if(length(icon2html_cache) > 2048)
+			icon2html_cache.Cut(1, 513) // Evict oldest 25%
+
+	if(sourceonly)
+		return url
+	return html
 
 /proc/icon2base64html(thing)
 	if (!thing)
 		return
 	var/static/list/bicon_cache = list()
 	if (isicon(thing))
-		var/icon/I = thing
-		var/icon_base64 = icon2base64(I)
-
-		if (I.Height() > world.icon_size || I.Width() > world.icon_size)
-			var/icon_md5 = md5(icon_base64)
-			icon_base64 = bicon_cache[icon_md5]
-			if (!icon_base64) // Doesn't exist yet, make it.
-				bicon_cache[icon_md5] = icon_base64 = icon2base64(I)
-
-
+		// /icon datums have unstable refs due to GC reuse — skip cache, always encode
+		var/icon_base64 = icon2base64(thing)
+		if(!icon_base64)
+			return
 		return "<img class='icon icon-misc' src='data:image/png;base64,[icon_base64]'>"
 
 	// Either an atom or somebody fucked up and is gonna get a runtime, which I'm fine with.
 	var/atom/A = thing
 	var/key = "[istype(A.icon, /icon) ? "[REF(A.icon)]" : A.icon]:[A.icon_state]"
-
 
 	if (!bicon_cache[key]) // Doesn't exist, make it.
 		var/icon/I = icon(A.icon, A.icon_state, SOUTH, 1)
@@ -1255,8 +1289,7 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 			var/icon/temp = I
 			I = icon()
 			I.Insert(temp, dir = SOUTH)
-
-		bicon_cache[key] = icon2base64(I, key)
+		bicon_cache[key] = icon2base64(I)
 
 	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[bicon_cache[key]]'>"
 
@@ -1268,8 +1301,45 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 	if (isicon(thing))
 		return icon2html(thing, target)
 
-	var/icon/I = getFlatIcon(thing)
-	return icon2html(I, target, sourceonly = sourceonly)
+	if (!target)
+		return
+
+	var/atom/A = thing
+	var/appearance_key = "\ref[A.appearance]"
+
+	// Full result cache: skip getFlatIcon + icon() + md5 pipeline on repeat calls.
+	// Caches list(asset_key, html, url) keyed on appearance ref.
+	var/static/list/costly_result_cache = list()
+	var/list/cached = costly_result_cache[appearance_key]
+
+	if(!cached)
+		var/icon/I = getFlatIcon(thing)
+		I = icon(I, "", SOUTH, 1, FALSE)
+		var/asset_key = "[generate_asset_name(I)].png"
+		if(!SSassets.cache[asset_key])
+			SSassets.transport.register_asset(asset_key, I)
+		var/url = SSassets.transport.get_asset_url(asset_key)
+		var/html = "<img class='icon icon-' src='[url]'>"
+		cached = list(asset_key, html, url)
+		costly_result_cache[appearance_key] = cached
+		if(length(costly_result_cache) > 512)
+			costly_result_cache.Cut(1, 129) // Evict oldest 25%
+
+	if (target == world)
+		target = GLOB.clients
+	var/list/targets
+	if (!islist(target))
+		targets = list(target)
+	else
+		targets = target
+		if (!targets.len)
+			return
+	for (var/thing2 in targets)
+		SSassets.transport.send_assets(thing2, cached[1])
+
+	if(sourceonly)
+		return cached[3]
+	return cached[2]
 
 /* Gives the result RGB of a RGB string after a matrix transformation. No alpha.
  * Input: rr, rg, rb, gr, gg, gb, br, bg, bb, cr, cg, cb

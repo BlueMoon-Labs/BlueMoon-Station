@@ -267,6 +267,20 @@
 	name = "Jeans and gray T‑shirt"
 	path = /obj/item/clothing/under/tshirt_gray_blu
 
+/datum/gear/uniform/sec_spo
+	name = "SPO uniform"
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	path = /obj/item/clothing/under/rank/security/officer/sec_spo
+	restricted_desc = "Captain, Nanotrasen Representative and Security"
+	restricted_roles = list("Captain", "Nanotrasen Representative", "Warden", "Detective", "Security Officer", "Head of Security")
+
+/datum/gear/uniform/officer_jumpsuit
+	name = "Officer’s uniform"
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	path = /obj/item/clothing/under/rank/security/officer/officer_jumpsuit
+	restricted_desc = "Captain, Head of Security and Nanotrasen Representative"
+	restricted_roles = list("Captain", "Head of Security", "Nanotrasen Representative")
+
 /datum/gear/uniform/polyjump
 	name = "Polychromic Jumpsuit"
 	path = /obj/item/clothing/under/misc/polyjumpsuit
