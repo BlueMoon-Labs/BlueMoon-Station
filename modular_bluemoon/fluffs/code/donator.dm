@@ -2209,3 +2209,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/nul_kit
 	ckeywhitelist = list("lev1932")
+
+/datum/gear/donator/bm/casull_kit
+	name = "Casull Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/casull_kit
+	ckeywhitelist = list("lev1932")

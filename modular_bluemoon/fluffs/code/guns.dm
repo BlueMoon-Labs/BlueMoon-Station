@@ -1162,3 +1162,22 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+
+/obj/item/modkit/casull_kit
+	name = "Casull Gun Kit"
+	desc = "A modkit for making a Enforcer Gun into a Casull."
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/casull
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/casull
+	name = "\improper Casull"
+	desc = "Касулл - полуавтоматический пистолет из серебра с деревянной рукоятью, затвор сделан из золота, также на нём выгравирована надпись \"454 Casull\". С противоположной стороны выгравирована надпись \"Hellsing ARMS .454 Casull Auto\". Длина - 39 см, масса незаряженного пистолета - 6кг, заряжается пулями .454 Casull, давших пистолету его имя."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "casul"
+	unique_reskin = null
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "casul"
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_icon_state()
+	icon_state = "[icon_state][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"
