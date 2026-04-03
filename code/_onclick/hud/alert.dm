@@ -64,7 +64,9 @@
 	animate(thealert, transform = matrix(), time = 2.5, easing = BACK_EASING)
 
 	if(thealert.timeout)
-		addtimer(CALLBACK(src, PROC_REF(alert_timeout), thealert, category), thealert.timeout)
+		if(thealert.timeout_id)
+			deltimer(thealert.timeout_id)
+		thealert.timeout_id = addtimer(CALLBACK(src, PROC_REF(alert_timeout), thealert, category), thealert.timeout, TIMER_STOPPABLE)
 		thealert.timeout = world.time + thealert.timeout - world.tick_lag
 	return thealert
 
@@ -98,6 +100,7 @@
 	/// do we glow to represent we do stuff when clicked
 	var/clickable_glow = FALSE
 	var/timeout = 0 //If set to a number, this alert will clear itself after that many deciseconds
+	var/timeout_id // Timer ID for cancellation on early destroy — prevents strong ref from blocking GC
 	var/severity = 0
 	var/alerttooltipstyle = ""
 	var/override_alerts = FALSE //If it is overriding other alerts of the same type
@@ -979,10 +982,10 @@ so as to remain in compliance with the most up-to-date laws."
 	return TRUE
 
 /atom/movable/screen/alert/Destroy()
-	var/mob/alert_owner = owner
+	if(timeout_id)
+		deltimer(timeout_id)
+		timeout_id = null
 	detach_from_owner(TRUE)
-	if(alert_owner && !QDELETED(alert_owner))
-		alert_owner.hud_used?.reorganize_alerts()
 	animate(src)
 	transform = null
 	..()

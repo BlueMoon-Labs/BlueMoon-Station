@@ -2209,3 +2209,15 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/sheya
 	ckeywhitelist = list("sheya")
+
+/datum/gear/donator/bm/nul_kit
+	name = "Sword of Nul Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/nul_kit
+	ckeywhitelist = list("lev1932")
+
+/datum/gear/donator/bm/casull_kit
+	name = "Casull Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/casull_kit
+	ckeywhitelist = list("lev1932")

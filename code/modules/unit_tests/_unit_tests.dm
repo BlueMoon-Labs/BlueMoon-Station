@@ -150,6 +150,7 @@
 #include "disposal_holder.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
+#include "screen_gc.dm"
 #include "ssmobs_optimization.dm"
 #include "tattoo_system.dm"
 

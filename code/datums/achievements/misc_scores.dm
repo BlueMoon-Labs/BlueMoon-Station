@@ -15,3 +15,9 @@
 	name = "Intento Score"
 	desc = "A blast from the future?"
 	database_id = INTENTO_SCORE
+
+/// Хайскоры тетриса
+/datum/award/score/highscore/tetris
+	name = "Tetris High Score"
+	desc = "The pinnacle of stacking skills."
+	database_id = TETRIS_SCORE

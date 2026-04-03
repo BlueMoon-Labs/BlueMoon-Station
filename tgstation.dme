@@ -4456,6 +4456,7 @@
 #include "modular_bluemoon\code\game\turfs\simulated\floor\plasteel_floor.dm"
 #include "modular_bluemoon\code\game\turfs\simulated\floor\shuttle.dm"
 #include "modular_bluemoon\code\modules\admin\admin_ticket_stats_panel.dm"
+#include "modular_bluemoon\code\modules\admin\tetris_records.dm"
 #include "modular_bluemoon\code\modules\admin\code\player_ranks.dm"
 #include "modular_bluemoon\code\modules\admin\verbs\one_click_antag.dm"
 #include "modular_bluemoon\code\modules\aesthetics\airlock\airlock.dm"

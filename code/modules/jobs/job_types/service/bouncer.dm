@@ -113,7 +113,7 @@
 	desc = "A storage case for a Mk. 58 Enforcer. Peace through power!"
 
 /obj/item/storage/secure/briefcase/bouncer/e45_box/PopulateContents()
-	var/obj/item/gun/ballistic/automatic/pistol/enforcer/pistol = new /obj/item/gun/ballistic/automatic/pistol/enforcer/nomag(src)
+	new /obj/item/gun/ballistic/automatic/pistol/enforcer/nomag(src)
 	new /obj/item/ammo_box/magazine/e45/taser(src)
 	new /obj/item/ammo_box/magazine/e45/taser(src)
 	new /obj/item/ammo_box/magazine/e45/taser(src)
