@@ -2203,3 +2203,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/nebular_t_kit
 	ckeywhitelist = list("lapkee")
+
+/datum/gear/donator/bm/sheya_dress
+	name = "Gothic dress"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/sheya
+	ckeywhitelist = list("sheya")
