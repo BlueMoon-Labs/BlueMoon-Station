@@ -80,6 +80,11 @@
 	max_heat_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
 	cold_protection = HEAD
 	min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
+	unique_reskin = list(
+		"Monolith" = list("icon_state" = "mopphoodaltm"),
+		"Duty" = list("icon_state" = "mopphoodaltd"),
+		"Volya" = list("icon_state" = "mopphoodaltv")
+	)
 
 /obj/item/clothing/head/helmet/cbrn/mopp/advance
 	name = "advance MOPP hood"

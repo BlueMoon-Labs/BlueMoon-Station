@@ -45,6 +45,7 @@
 	unequip_delay_self = 15
 
 /obj/item/clothing/mask/gas/sechailer/mopp
+	var/reskinned_icon_state = null // храним текущий рескин
 	name = "MOPP gas mask"
 	desc = "Mission Oriented Protective Posture. A heavy duty gas mask design to be worn in hazardous combat environments. Actually works like a gas mask as well as can be connected to internal air supply."
 	item_state = "gas_mopp"
@@ -62,7 +63,11 @@
 	visor_flags = BLOCK_GAS_SMOKE_EFFECT | ALLOWINTERNALS
 	visor_flags_inv = HIDEFACIALHAIR|HIDEFACE
 	visor_flags_cover = MASKCOVERSMOUTH | MASKCOVERSEYES
-
+/* Оставленно для лучших времен
+	unique_reskin = list(
+		"SEVA" = list("icon_state" = "gas_moppalt")
+	)
+*/
 /obj/item/clothing/mask/gas/sechailer/mopp/advance
 	name = "advance MOPP gas mask"
 	desc = "Mission Oriented Protective Posture. A heavy duty gas mask design to be worn in hazardous combat environments. Actually works like a gas mask as well as can be connected to internal air supply. Used by CentCom Staff and ERT teams."
