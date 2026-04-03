@@ -1180,4 +1180,5 @@
 	item_state = "casul"
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/casull/update_icon_state()
-	icon_state = "[icon_state][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"
+	var/base_icon_state = "casul"
+	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"
