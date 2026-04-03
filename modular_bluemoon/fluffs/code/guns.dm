@@ -1179,5 +1179,5 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "casul"
 
-/obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_icon_state()
+/obj/item/gun/ballistic/automatic/pistol/enforcer/casull/update_icon_state()
 	icon_state = "[icon_state][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"
