@@ -29,6 +29,8 @@
 	var/datum/radio_frequency/radio_connection
 	var/radio_filter_out
 	var/radio_filter_in
+	var/idle_ticks = 0 // Consecutive ticks with no work done — used for throttling
+	var/throttle_offset = 0 // Spread idle checks across ticks to prevent sync spikes
 
 	pipe_state = "uvent"
 
@@ -90,22 +92,29 @@
 		on = FALSE
 	if(!on || welded)
 		return
+	// Throttle idle pumps with staggered offset to prevent sync spikes
+	if(idle_ticks > 4)
+		var/interval = idle_ticks > 20 ? 8 : 4
+		if((SSair.times_fired + throttle_offset) % interval)
+			return
 
 	var/datum/gas_mixture/air_contents = airs[1]
 	var/datum/gas_mixture/environment = loc.return_air()
-	if (!environment)
+	if(!environment)
 		return
 
 	var/environment_pressure = environment?.return_pressure()
 	if(!environment_pressure)
 		return
 
+	var/did_transfer = FALSE
+
 	if(pump_direction & RELEASING) // internal -> external
 		var/pressure_delta = 10000
 
-		if(pressure_checks&EXT_BOUND)
+		if(pressure_checks & EXT_BOUND)
 			pressure_delta = min(pressure_delta, (external_pressure_bound - environment_pressure))
-		if(pressure_checks&INT_BOUND)
+		if(pressure_checks & INT_BOUND)
 			pressure_delta = min(pressure_delta, (air_contents.return_pressure() - internal_pressure_bound))
 
 		if(pressure_delta > 0)
@@ -114,20 +123,28 @@
 
 				loc.assume_air_moles(air_contents, transfer_moles)
 				air_update_turf()
+				update_parents()
+				did_transfer = TRUE
 
 	else // external -> internal
 		if(environment.return_pressure() > 0)
 			var/our_multiplier = air_contents.return_volume() / (environment.return_temperature() * R_IDEAL_GAS_EQUATION)
 			var/moles_delta = 10000 * our_multiplier
-			if(pressure_checks&EXT_BOUND)
+			if(pressure_checks & EXT_BOUND)
 				moles_delta = min(moles_delta, (environment_pressure - external_pressure_bound) * environment.return_volume() / (environment.return_temperature() * R_IDEAL_GAS_EQUATION))
-			if(pressure_checks&INT_BOUND)
+			if(pressure_checks & INT_BOUND)
 				moles_delta = min(moles_delta, (internal_pressure_bound - air_contents.return_pressure()) * our_multiplier)
 
 			if(moles_delta > 0)
 				loc.transfer_air(air_contents, moles_delta)
 				air_update_turf()
-	update_parents()
+				update_parents()
+				did_transfer = TRUE
+
+	if(did_transfer)
+		idle_ticks = 0
+	else
+		idle_ticks++
 
 //Radio remote control
 
@@ -170,14 +187,15 @@
 	if(frequency)
 		set_frequency(frequency)
 	broadcast_status()
+	throttle_offset = (x + y + z) % 8
 	..()
 
 /obj/machinery/atmospherics/components/unary/vent_pump/receive_signal(datum/signal/signal)
 	if(!is_operational())
 		return
-	// log_admin("DEBUG \[[world.timeofday]\]: /obj/machinery/atmospherics/components/unary/vent_pump/receive_signal([signal.debug_print()])")
 	if(!signal.data["tag"] || (signal.data["tag"] != id_tag) || (signal.data["sigtype"]!="command"))
 		return
+	idle_ticks = 0 // Wake up immediately on air alarm command
 
 	var/mob/signal_sender = signal.data["user"]
 
@@ -275,6 +293,7 @@
 
 /obj/machinery/atmospherics/components/unary/vent_pump/power_change()
 	..()
+	idle_ticks = 0
 	update_icon_nopipes()
 
 /obj/machinery/atmospherics/components/unary/vent_pump/can_crawl_through()

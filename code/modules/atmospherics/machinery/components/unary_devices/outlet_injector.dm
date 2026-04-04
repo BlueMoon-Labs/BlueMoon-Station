@@ -67,10 +67,9 @@
 
 	var/datum/gas_mixture/air_contents = airs[1]
 
-	if(air_contents.return_temperature() > 0)
+	if(air_contents.return_temperature() > 0 && air_contents.total_moles() > 0.01)
 		loc.assume_air_ratio(air_contents, volume_rate / air_contents.return_volume())
 		air_update_turf()
-
 		update_parents()
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/proc/inject()

@@ -38,6 +38,12 @@
 #define WINDOW_HEAT_TRANSFER_COEFFICIENT	0.1		//a hack for now
 #define HEAT_CAPACITY_VACUUM				7000	//a hack to help make vacuums "cold", sacrificing realism for gameplay
 
+//ATMOS SAFETY LIMITS
+#define MAX_ATMOS_TEMPERATURE				1e15	//Hard cap well above Hagedorn (2e12) but well below float overflow (~3.4e38)
+#define MAX_ATMOS_ENERGY					1e30	//Hard cap on energy released per reaction tick
+#define HAGEDORN_TEMPERATURE				2e12	//Hagedorn temperature — QGP phase transition
+#define MAX_HOTSPOTS						200		//Maximum simultaneous hotspots to prevent plasma flood lag
+
 //FIRE
 #define FIRE_MINIMUM_TEMPERATURE_TO_SPREAD	(150+T0C)
 #define FIRE_MINIMUM_TEMPERATURE_TO_EXIST	(100+T0C)

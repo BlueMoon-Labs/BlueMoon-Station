@@ -29,10 +29,11 @@
 	var/pressure_delta = abs(external_pressure - internal_pressure)
 
 	if(pressure_delta > 0.5)
-		equalize_all_gases_in_list(list(internal,external))
+		equalize_all_gases_in_list(list(internal, external))
 		active = TRUE
 
-	active = internal.temperature_share(external, OPEN_HEAT_TRANSFER_COEFFICIENT) || active
+	if(abs(internal.return_temperature() - external.return_temperature()) > 1)
+		active = internal.temperature_share(external, OPEN_HEAT_TRANSFER_COEFFICIENT) || active
 
 	if(active)
 		air_update_turf()

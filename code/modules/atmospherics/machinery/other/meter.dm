@@ -71,21 +71,25 @@
 		return FALSE
 
 	var/env_pressure = environment.return_pressure()
+	var/new_icon_state
 	if(env_pressure <= 0.15*ONE_ATMOSPHERE)
-		icon_state = "meter0"
+		new_icon_state = "meter0"
 	else if(env_pressure <= 1.8*ONE_ATMOSPHERE)
 		var/val = round(env_pressure/(ONE_ATMOSPHERE*0.3) + 0.5)
-		icon_state = "meter1_[val]"
+		new_icon_state = "meter1_[val]"
 	else if(env_pressure <= 30*ONE_ATMOSPHERE)
 		var/val = round(env_pressure/(ONE_ATMOSPHERE*5)-0.35) + 1
-		icon_state = "meter2_[val]"
+		new_icon_state = "meter2_[val]"
 	else if(env_pressure <= 59*ONE_ATMOSPHERE)
 		var/val = round(env_pressure/(ONE_ATMOSPHERE*5) - 6) + 1
-		icon_state = "meter3_[val]"
+		new_icon_state = "meter3_[val]"
 	else
-		icon_state = "meter4"
+		new_icon_state = "meter4"
+	if(icon_state != new_icon_state)
+		icon_state = new_icon_state
 
-	if(frequency)
+	// Radio broadcast every 4th tick, staggered to prevent sync spikes
+	if(frequency && !((SSair.times_fired + src.x + src.y) % 4))
 		var/datum/radio_frequency/radio_connection = SSradio.return_frequency(frequency)
 
 		if(!radio_connection)

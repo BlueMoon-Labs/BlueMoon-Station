@@ -48,6 +48,8 @@ SUBSYSTEM_DEF(air)
 	var/list/currentrun = list()
 	var/currentpart = SSAIR_REBUILD_PIPENETS
 
+	var/topology_version = 0 //Incremented on pipe network topology changes to invalidate pipeline BFS caches
+
 	var/map_loading = TRUE
 
 	var/log_explosive_decompression = TRUE // If things get spammy, admemes can turn this off.

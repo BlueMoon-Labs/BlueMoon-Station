@@ -26,6 +26,8 @@
 	var/datum/radio_frequency/radio_connection
 	var/radio_filter_out
 	var/radio_filter_in
+	var/idle_ticks = 0 // Consecutive ticks with no work done — used for throttling
+	var/throttle_offset = 0 // Spread idle checks across ticks to prevent sync spikes
 
 	pipe_state = "scrubber"
 
@@ -142,6 +144,7 @@
 		set_frequency(frequency)
 	broadcast_status()
 	check_turfs()
+	throttle_offset = (x + y + z) % 8
 	..()
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/process_atmos()
@@ -151,10 +154,22 @@
 	if(!nodes[1] || !on)
 		on = FALSE
 		return FALSE
-	scrub(loc)
+	// Throttle idle scrubbers with staggered offset to prevent sync spikes
+	if(idle_ticks > 4)
+		// Deeply idle (>20 ticks = 10s): check every 8th tick
+		// Recently idle (>4 ticks = 2s): check every 4th tick
+		var/interval = idle_ticks > 20 ? 8 : 4
+		if((SSair.times_fired + throttle_offset) % interval)
+			return TRUE
+	var/did_work = scrub(loc)
 	if(widenet)
 		for(var/turf/tile in adjacent_turfs)
-			scrub(tile)
+			if(scrub(tile))
+				did_work = TRUE
+	if(did_work)
+		idle_ticks = 0
+	else
+		idle_ticks++
 	return TRUE
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/proc/scrub(var/turf/tile)
@@ -166,19 +181,19 @@
 	if(air_contents.return_pressure() >= 50*ONE_ATMOSPHERE || !islist(clean_filter_types))
 		return FALSE
 
+	var/old_moles = air_contents.total_moles()
+
 	if(scrubbing & SCRUBBING)
 		environment.scrub_into(air_contents, volume_rate/environment.return_volume(), clean_filter_types)
-
-		tile.air_update_turf()
-
 	else //Just siphoning all air
-
 		environment.transfer_ratio_to(air_contents, volume_rate/environment.return_volume())
+
+	if(abs(air_contents.total_moles() - old_moles) > 0.01)
 		tile.air_update_turf()
+		update_parents()
+		return TRUE
 
-	update_parents()
-
-	return TRUE
+	return FALSE
 
 //There is no easy way for an object to be notified of changes to atmos can pass flags
 //	So we check every machinery process (2 seconds)
@@ -198,6 +213,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/receive_signal(datum/signal/signal)
 	if(!is_operational() || !signal.data["tag"] || (signal.data["tag"] != id_tag) || (signal.data["sigtype"]!="command"))
 		return FALSE
+	idle_ticks = 0 // Wake up immediately on air alarm command
 
 	var/mob/signal_sender = signal.data["user"]
 
@@ -243,6 +259,7 @@
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/power_change()
 	..()
+	idle_ticks = 0
 	update_icon_nopipes()
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/welder_act(mob/living/user, obj/item/I)

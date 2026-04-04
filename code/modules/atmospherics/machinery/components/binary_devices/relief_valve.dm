@@ -38,6 +38,7 @@
 
 /obj/machinery/atmospherics/components/binary/relief_valve/proc/open()
 	opened = TRUE
+	SSair.topology_version++
 	update_icon_nopipes()
 	update_parents()
 	var/datum/pipeline/parent1 = parents[1]
@@ -45,6 +46,7 @@
 
 /obj/machinery/atmospherics/components/binary/relief_valve/proc/close()
 	opened = FALSE
+	SSair.topology_version++
 	update_icon_nopipes()
 
 /obj/machinery/atmospherics/components/binary/relief_valve/process_atmos()

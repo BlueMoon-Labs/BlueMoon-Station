@@ -55,6 +55,7 @@
 	//Perform the connection
 	connected_port = new_port
 	connected_port.connected_device = src
+	SSair.topology_version++
 	var/datum/pipeline/connected_port_parent = connected_port.parents[1]
 	connected_port_parent.reconcile_air()
 
@@ -74,6 +75,7 @@
 	anchored = FALSE
 	connected_port.connected_device = null
 	connected_port = null
+	SSair.topology_version++
 	pixel_x = 0
 	pixel_y = 0
 	return TRUE

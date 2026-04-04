@@ -51,6 +51,8 @@
 		return
 
 	if((exposed_temperature > PLASMA_MINIMUM_BURN_TEMPERATURE) && has_fuel)
+		if(length(SSair.hotspots) >= MAX_HOTSPOTS)
+			return
 		active_hotspot = new /obj/effect/hotspot(src, exposed_volume*25, exposed_temperature)
 
 //This is the icon for fire on turfs, also helps for nurturing small fires until they are full tile
@@ -113,9 +115,12 @@
 			qdel(affected)
 
 	for(var/A in location)
-		var/atom/AT = A
-		if(!QDELETED(AT) && AT != src) // It's possible that the item is deleted in temperature_expose
-			AT.fire_act(temperature, volume)
+		if(A == src)
+			continue
+		if(isliving(A) || isobj(A)) // Skip effects and other non-interactive atoms
+			var/atom/AT = A
+			if(!QDELETED(AT))
+				AT.fire_act(temperature, volume)
 	return
 
 /obj/effect/hotspot/proc/gauss_lerp(x, x1, x2)
@@ -212,7 +217,9 @@
 		else
 			icon_state = "1"
 
-	if((visual_update_tick++ % 7) == 0)
+	var/hotspot_count = length(SSair.hotspots)
+	var/update_interval = hotspot_count > 80 ? 21 : (hotspot_count > 40 ? 14 : 7)
+	if((visual_update_tick++ % update_interval) == 0)
 		update_color()
 
 	if(temperature > location.max_fire_temperature_sustained)

@@ -46,24 +46,28 @@
 		icon_state = "gsensor[on]"
 
 /obj/machinery/air_sensor/process_atmos()
-	if(on)
-		var/datum/gas_mixture/air_sample = return_air()
+	if(!on)
+		return
+	// Sensors monitor tanks — broadcasting every tick is wasteful, every 4th is plenty
+	if((SSair.times_fired + src.x + src.y) % 4)
+		return
+	var/datum/gas_mixture/air_sample = return_air()
 
-		var/datum/signal/signal = new(list(
-			"sigtype" = "status",
-			"id_tag" = id_tag,
-			"timestamp" = world.time,
-			"pressure" = air_sample.return_pressure(),
-			"temperature" = air_sample.return_temperature(),
-			"gases" = list()
-		))
-		var/total_moles = air_sample.total_moles()
-		if(total_moles)
-			for(var/gas_id in air_sample.get_gases())
-				var/gas_name = GLOB.gas_data.names[gas_id]
-				signal.data["gases"][gas_name] = air_sample.get_moles(gas_id) / total_moles * 100
+	var/datum/signal/signal = new(list(
+		"sigtype" = "status",
+		"id_tag" = id_tag,
+		"timestamp" = world.time,
+		"pressure" = air_sample.return_pressure(),
+		"temperature" = air_sample.return_temperature(),
+		"gases" = list()
+	))
+	var/total_moles = air_sample.total_moles()
+	if(total_moles)
+		for(var/gas_id in air_sample.get_gases())
+			var/gas_name = GLOB.gas_data.names[gas_id]
+			signal.data["gases"][gas_name] = air_sample.get_moles(gas_id) / total_moles * 100
 
-		radio_connection.post_signal(src, signal, filter = RADIO_ATMOSIA)
+	radio_connection.post_signal(src, signal, filter = RADIO_ATMOSIA)
 
 
 /obj/machinery/air_sensor/proc/set_frequency(new_frequency)

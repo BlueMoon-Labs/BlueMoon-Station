@@ -157,6 +157,7 @@
 
 	if(burned_fuel)
 		energy_released += (FIRE_HYDROGEN_ENERGY_RELEASED * burned_fuel)
+		energy_released = min(energy_released, MAX_ATMOS_ENERGY)
 		if(location && prob(10) && burned_fuel > TRITIUM_MINIMUM_RADIATION_ENERGY) //woah there let's not crash the server
 			radiation_pulse(location, energy_released/TRITIUM_BURN_RADIOACTIVITY_FACTOR)
 
@@ -167,7 +168,7 @@
 	if(energy_released > 0)
 		var/new_heat_capacity = air.heat_capacity()
 		if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
-			air.set_temperature((temperature*old_heat_capacity + energy_released)/new_heat_capacity)
+			air.set_temperature(min((temperature*old_heat_capacity + energy_released)/new_heat_capacity, MAX_ATMOS_TEMPERATURE))
 
 	//let the floor know a fire is happening
 	if(istype(location))
@@ -249,10 +250,11 @@
 
 			cached_results["fire"] += (plasma_burn_rate)*(1+oxygen_burn_rate)
 
+	energy_released = min(energy_released, MAX_ATMOS_ENERGY)
 	if(energy_released > 0)
 		var/new_heat_capacity = air.heat_capacity()
 		if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
-			air.set_temperature((temperature*old_heat_capacity + energy_released)/new_heat_capacity)
+			air.set_temperature(min((temperature*old_heat_capacity + energy_released)/new_heat_capacity, MAX_ATMOS_TEMPERATURE))
 
 	//let the floor know a fire is happening
 	if(istype(location))
@@ -366,7 +368,9 @@
 	var/final_energy = air.thermal_energy() + energy_released
 	for(var/result in burn_results)
 		air.adjust_moles(result, burn_results[result])
-	air.set_temperature(final_energy / air.heat_capacity())
+	var/new_heat_capacity = air.heat_capacity()
+	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
+		air.set_temperature(final_energy / new_heat_capacity)
 	var/list/cached_results = air.reaction_results
 	cached_results["fire"] = min(total_fuel, oxidation_power) * 2
 	return cached_results["fire"] ? REACTING : NO_REACTION
@@ -419,8 +423,16 @@
 	var/reaction_energy = 0 //Reaction energy can be negative or positive, for both exothermic and endothermic reactions.
 	var/initial_plasma = air.get_moles(GAS_PLASMA)
 	var/initial_carbon = air.get_moles(GAS_CO2)
-	var/scale_factor = (air.return_volume())/(PI) //We scale it down by volume/Pi because for fusion conditions, moles roughly = 2*volume, but we want it to be based off something constant between reactions.
-	var/toroidal_size = (2*PI)+TORADIANS(arctan((air.return_volume()-TOROID_VOLUME_BREAKEVEN)/TOROID_VOLUME_BREAKEVEN)) //The size of the phase space hypertorus
+	var/volume = air.return_volume()
+	var/scale_factor = volume / PI //We scale it down by volume/Pi because for fusion conditions, moles roughly = 2*volume, but we want it to be based off something constant between reactions.
+	var/static/list/toroidal_cache = list() //Cache arctan by volume since it rarely changes for a given pipeline
+	if(length(toroidal_cache) > 64)
+		toroidal_cache.Cut()
+	var/vol_key = "[volume]"
+	var/toroidal_size = toroidal_cache[vol_key]
+	if(!toroidal_size)
+		toroidal_size = (2*PI)+TORADIANS(arctan((volume-TOROID_VOLUME_BREAKEVEN)/TOROID_VOLUME_BREAKEVEN))
+		toroidal_cache[vol_key] = toroidal_size
 	var/gas_power = 0
 	var/list/gas_fusion_powers = GLOB.gas_data.fusion_powers
 	for (var/gas_id in air.get_gases())
@@ -469,7 +481,7 @@
 
 		var/new_heat_capacity = air.heat_capacity()
 		if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
-			air.set_temperature(clamp(((air.return_temperature()*old_heat_capacity + reaction_energy)/new_heat_capacity),TCMB,INFINITY))
+			air.set_temperature(clamp(((air.return_temperature()*old_heat_capacity + reaction_energy)/new_heat_capacity),TCMB,MAX_ATMOS_TEMPERATURE))
 		return REACTING
 
 /datum/gas_reaction/fusion/test()
@@ -764,16 +776,20 @@
 
 /datum/gas_reaction/hagedorn/init_reqs()
 	min_requirements = list(
-		"TEMP" = 2e12 // 2 trillion kelvins
+		"TEMP" = HAGEDORN_TEMPERATURE
 	)
 
 /datum/gas_reaction/hagedorn/react(datum/gas_mixture/air, datum/holder)
 	var/initial_energy = air.thermal_energy()
 	if(air.get_moles(GAS_QCD))
-		return
+		return NO_REACTION
 	for(var/g in air.get_gases())
 		air.set_moles(g, 0)
-	var/amount = initial_energy / (air.return_temperature() * GLOB.gas_data.specific_heats[GAS_QCD])
+	var/qcd_heat = GLOB.gas_data.specific_heats[GAS_QCD]
+	var/temp = air.return_temperature()
+	if(!qcd_heat || temp < TCMB)
+		return NO_REACTION
+	var/amount = clamp(initial_energy / (temp * qcd_heat), 0, MAX_ATMOS_ENERGY)
 	air.set_moles(GAS_QCD, amount)
 	var/list/largest_values = SSresearch.science_tech.largest_values
 	if(!(GAS_QCD in largest_values))
@@ -793,23 +809,31 @@
 
 /datum/gas_reaction/dehagedorn/init_reqs()
 	min_requirements = list(
-		"MAX_TEMP" = 1.99e12,
+		"MAX_TEMP" = (HAGEDORN_TEMPERATURE - 1e10),
 		GAS_QCD = MINIMUM_MOLE_COUNT
 	)
 
 /datum/gas_reaction/dehagedorn/react(datum/gas_mixture/air, datum/holder)
 	var/initial_energy = air.thermal_energy()
-	var/energy_remaining = initial_energy
 	air.set_moles(GAS_QCD, 0)
-	air.set_temperature(min(air.return_temperature(), 1.8e12))
+	air.set_temperature(min(air.return_temperature(), HAGEDORN_TEMPERATURE * 0.9))
 	var/new_temp = air.return_temperature()
+	if(new_temp < TCMB)
+		return NO_REACTION
 	var/list/gases = GLOB.gas_data.specific_heats.Copy()
 	gases -= GAS_QCD
 	gases -= GAS_TRITIUM // no refusing sorry
 	gases -= GAS_HYPERNOB // makes it waaay too easy to stabilize it
-	while(energy_remaining > 0)
+	var/energy_remaining = initial_energy
+	var/iterations = 0
+	while(energy_remaining > 0 && iterations++ < 200)
 		var/G = pick(gases)
-		air.adjust_moles(G, max(0.1, energy_remaining / (gases[G] * new_temp * 20)))
+		var/divisor = gases[G] * new_temp * 20
+		if(!divisor || divisor < MINIMUM_HEAT_CAPACITY)
+			continue
+		air.adjust_moles(G, max(0.1, energy_remaining / divisor))
 		energy_remaining = initial_energy - air.thermal_energy()
-	air.set_temperature(initial_energy / air.heat_capacity())
+	var/final_hc = air.heat_capacity()
+	if(final_hc > MINIMUM_HEAT_CAPACITY)
+		air.set_temperature(clamp(initial_energy / final_hc, TCMB, HAGEDORN_TEMPERATURE))
 	return REACTING

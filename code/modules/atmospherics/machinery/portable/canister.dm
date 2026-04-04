@@ -312,7 +312,6 @@
 			investigate_log("[key_name(user)] started a transfer into [holding].<br>", INVESTIGATE_ATMOS)
 
 /obj/machinery/portable_atmospherics/canister/process_atmos()
-	..()
 	if(machine_stat & BROKEN)
 		return PROCESS_KILL
 	if(timing && valve_timer < world.time)
@@ -324,15 +323,13 @@
 
 		if(release_gas_to(air_contents, target_air, release_pressure) && !holding)
 			air_update_turf()
-
-	// var/our_pressure = air_contents.return_pressure()
-	// var/our_temperature = air_contents.return_temperature()
-
-	///function used to check the limit of the canisters and also set the amount of damage that the canister can receive, if the heat and pressure are way higher than the limit the more damage will be done
-	// currently unused
-	// if(our_temperature > heat_limit || our_pressure > pressure_limit)
-	// 	take_damage(clamp((our_temperature/heat_limit) * (our_pressure/pressure_limit) * delta_time * 2, 5, 50), BURN, 0)
-	update_icon()
+		..() // Parent handles reactions and icon when actively venting
+		update_icon()
+	else
+		// Valve closed: only run reactions occasionally, staggered to prevent sync spikes
+		if(!((SSair.times_fired + src.x + src.y) % 8))
+			..()
+			update_icon()
 
 /obj/machinery/portable_atmospherics/canister/ui_state(mob/user)
 	return GLOB.physical_state

@@ -7,6 +7,9 @@
 
 	var/update = TRUE
 
+	var/list/cached_connected_airs
+	var/cached_topology_version = -1
+
 /datum/pipeline/New()
 	other_airs = list()
 	members = list()
@@ -40,6 +43,9 @@
 	update = air?.react(src)
 
 /datum/pipeline/proc/build_pipeline(obj/machinery/atmospherics/base)
+	cached_connected_airs = null
+	cached_topology_version = -1
+	SSair.topology_version++
 	if(QDELETED(base))
 		stack_trace("build_pipeline() called with QDELETED base [base?.type] at [base ? COORD(base) : "null"]")
 		return
@@ -274,7 +280,11 @@
 	return GL
 
 /datum/pipeline/proc/reconcile_air()
-	var/list/datum/gas_mixture/GL = get_all_connected_airs()
-	if(null in GL)
-		listclearnulls(GL)
-	equalize_all_gases_in_list(GL)
+	if(SSair.topology_version != cached_topology_version || !cached_connected_airs)
+		var/list/datum/gas_mixture/GL = get_all_connected_airs()
+		if(null in GL)
+			listclearnulls(GL)
+		cached_connected_airs = GL
+		cached_topology_version = SSair.topology_version
+	// Rust FFI equalize does not mutate the list itself, only the gas mixtures within
+	equalize_all_gases_in_list(cached_connected_airs)
