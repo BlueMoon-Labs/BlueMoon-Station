@@ -5,6 +5,11 @@
 		"right pocket" = ITEM_SLOT_RPOCKET
 	)
 
+	if(!istype(H))
+		H = quirk_holder
+		if(!istype(H))
+			return FALSE
+
 	var/T = new item_path(H)
 	var/item_name = initial(item_path.name)
 	var/where
