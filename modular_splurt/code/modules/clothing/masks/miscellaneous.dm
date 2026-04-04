@@ -1,15 +1,15 @@
 //Main code edits
 /obj/item/clothing/mask/muzzle/attack_hand(mob/user, act_intent, attackchain_flags)
-    if(iscarbon(user))
-        var/mob/living/carbon/C = user
-        if(src == C.wear_mask)
-            if(seamless)
-                to_chat(user, span_warning("Тебе нужна помощь, чтобы снять ЭТО!"))
-                return
-            else
-                if(!do_after(C, 60, target = src))
-                    return
-    ..()
+	if(iscarbon(user))
+		var/mob/living/carbon/C = user
+		if(src == C.wear_mask)
+			if(seamless)
+				to_chat(user, span_warning("Тебе нужна помощь, чтобы снять ЭТО!"))
+				return
+			else
+				if(!do_after(C, 60, target = src))
+					return
+	..()
 
 //Own stuff
 
@@ -63,10 +63,11 @@
 	visor_flags_inv = HIDEFACIALHAIR|HIDEFACE
 	visor_flags_cover = MASKCOVERSMOUTH | MASKCOVERSEYES
 	unique_reskin = list(
-    "SEVA" = list(
-        "icon_state" = "moppalt",
-        "mob_overlay_icon" = 'modular_splurt/icons/mob/clothing/mask.dmi'
-    )
+		"SEVA" = list(
+			"icon_state" = "moppalt",
+			"mob_overlay_icon" = 'modular_splurt/icons/mob/clothing/mask.dmi',
+			"flags_inv" = HIDEFACIALHAIR|HIDEFACE
+		)
 	)
 
 /obj/item/clothing/mask/gas/sechailer/mopp/adjustmask(mob/living/user, just_flavor = FALSE)
