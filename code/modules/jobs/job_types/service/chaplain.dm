@@ -47,7 +47,7 @@
 		"Techpriest",
 		"Thaumaturge",
 		"Theologist",
-		"Voodo Sorcerer",
+		"Voodoo Sorcerer",
 		)
 
 	outfit = /datum/outfit/job/chaplain

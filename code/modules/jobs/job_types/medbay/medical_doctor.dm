@@ -18,7 +18,7 @@
 		"Medical Examiner",
 		"Medical Secretary",
 		"Medical Resident",
-		"Medical Techinician",
+		"Medical Technician",
 		"Medtech",
 		"Nurse",
 		"Oral Doctor",

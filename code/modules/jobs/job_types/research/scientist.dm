@@ -30,7 +30,6 @@
 		"Toxins Researcher",
 		"Xenoarcheologist",
 		"Xenobiologist",
-		"Xenobotanist",
 		)
 
 	outfit = /datum/outfit/job/scientist
