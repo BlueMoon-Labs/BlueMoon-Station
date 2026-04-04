@@ -145,6 +145,19 @@
 	else
 		icon_state = initial(icon_state)
 
+/obj/structure/closet/body_bag/containment/prisoner/Entered(atom/movable/AM, atom/oldLoc)
+	. = ..()
+	if(isliving(AM))
+		ADD_TRAIT(AM, TRAIT_RESISTHIGHPRESSURE, REF(src))
+		ADD_TRAIT(AM, TRAIT_RESISTLOWPRESSURE, REF(src))
+		ADD_TRAIT(AM, TRAIT_RESISTHEAT, REF(src))
+		ADD_TRAIT(AM, TRAIT_RESISTCOLD, REF(src))
+
+/obj/structure/closet/body_bag/containment/prisoner/Exited(atom/movable/AM, atom/newLoc)
+	. = ..()
+	if(isliving(AM))
+		REMOVE_TRAITS_IN(AM, REF(src))
+
 /obj/structure/closet/body_bag/containment/prisoner/open(mob/living/user, force = FALSE)
 	if(sinched && !force)
 		to_chat(user, span_danger("The buckles on [src] are sinched down, preventing it from opening."))
@@ -152,7 +165,7 @@
 	if(opened)
 		return FALSE
 	sinched = FALSE
-	playsound(loc, open_sound, sinch_sound, TRUE, -3)
+	playsound(loc, open_sound, 15, TRUE)
 	opened = TRUE
 	dump_contents()
 	update_appearance()

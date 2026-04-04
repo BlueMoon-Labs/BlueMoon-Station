@@ -172,6 +172,9 @@
 	return attack_hand(user)
 
 /obj/structure/displaycase/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
+	. = ..()
+	if(.)
+		return
 	if (showpiece && (broken || open))
 		to_chat(user, span_notice("You deactivate the hover field built into the case."))
 		log_combat(user, src, "deactivates the hover field of")
@@ -182,6 +185,10 @@
 	else
 	    //prevents remote "kicks" with TK
 		if (!Adjacent(user))
+			return
+		if (user.a_intent != INTENT_HARM)
+			if(!user.is_blind())
+				user.examinate(src)
 			return
 		user.visible_message(span_danger("[user] kicks the display case."), null, null, COMBAT_MESSAGE_RANGE)
 		log_combat(user, src, "kicks")
@@ -366,33 +373,15 @@
 	density = FALSE
 	max_integrity = 100
 	req_access = null
-	start_showpiece_type = /obj/item/reagent_containers/food
 	alert = FALSE //No, we're not calling the fire department because someone stole your cookie.
 	// glass_fix = FALSE //Fixable with tools instead.
+	pass_flags = PASSTABLE ///Can be placed and moved onto a table.
 	///The price of the item being sold. Altered by grab intent ID use.
 	var/sale_price = 20
 	///The Account which will receive payment for purchases. Set by the first ID to swipe the tray.
 	var/datum/bank_account/payments_acc = null
 	///We're using the same trick as paper does in order to cache the image, and only load the UI when messed with.
 	var/list/viewing_ui = list()
-
-/obj/structure/displaycase/forsale/update_icon()	//remind me to fix my shitcode later
-	. = ..()
-	var/icon/I
-	if(open)
-		I = icon('icons/obj/stationobjs.dmi',"laserboxb0")
-	else
-		I = icon('icons/obj/stationobjs.dmi',"laserbox0")
-	if(!showpiece && !open)
-		I = icon('icons/obj/stationobjs.dmi',"laserbox_open")
-	if(broken)
-		I = icon('icons/obj/stationobjs.dmi',"laserbox_broken")
-	if(showpiece)
-		var/icon/S = getFlatIcon(showpiece)
-		if(S)
-			S.Scale(17,17)
-			I.Blend(S,ICON_UNDERLAY,8,12)
-	src.icon = I
 
 /obj/structure/displaycase/forsale/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -403,8 +392,8 @@
 		ui.open()
 
 /obj/structure/displaycase/forsale/update_icon_state()
-	. = ..()
 	icon_state = "[initial(icon_state)][broken ? "_broken" : (open ? "_open" : (!showpiece ? "_empty" : null))]"
+	. = ..()
 
 /obj/structure/displaycase/forsale/update_overlays()
 	. = ..()
@@ -413,15 +402,10 @@
 
 /obj/structure/displaycase/forsale/ui_data(mob/user)
 	var/list/data = list()
-	var/register = FALSE
-	if(payments_acc)
-		register = TRUE
-		data["owner_name"] = payments_acc.account_holder
-	if(showpiece)
-		data["product_name"] = capitalize(showpiece.name)
-		var/base64 = icon2base64(icon(showpiece.icon, showpiece.icon_state, SOUTH, 1))
-		data["product_icon"] = base64
-	data["registered"] = register
+	data["owner_name"] = payments_acc ? payments_acc.account_holder : null
+	data["product_name"] = showpiece ? capitalize(format_text(showpiece.name)) : null
+	data["product_icon"] = showpiece ? icon2base64(getFlatIcon(showpiece, no_anim=TRUE)) : null
+	data["registered"] = payments_acc ? TRUE : FALSE
 	data["product_cost"] = sale_price
 	data["tray_open"] = open
 	return data
@@ -504,6 +488,7 @@
 			SStgui.update_uis(src)
 			return TRUE
 	. = TRUE
+
 /obj/structure/displaycase/forsale/attackby(obj/item/I, mob/living/user, params)
 	if(isidcard(I))
 		//Card Registration
@@ -526,7 +511,7 @@
 	if(obj_integrity <= (integrity_failure *  max_integrity))
 		to_chat(user, span_notice("You start recalibrating [src]'s hover field..."))
 		if(do_after(user, 20, target = src))
-			broken = 0
+			broken = FALSE
 			obj_integrity = max_integrity
 			update_icon()
 		return TRUE

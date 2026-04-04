@@ -392,8 +392,7 @@
 	var/obj/machinery/bsa/full/cannon = connected_cannon?.resolve()
 	if(!cannon)
 		return
-	var/num = text2num(new_target)
-	cannon.target_power = min(cannon.max_charge, max(BSA_FIRE_POWER_THRESHOLD, num))
+	cannon.target_power = new_target
 
 /obj/machinery/computer/bsa_control/proc/charge()
 	var/obj/machinery/bsa/full/cannon = connected_cannon?.resolve()

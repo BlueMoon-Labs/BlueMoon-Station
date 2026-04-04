@@ -33,6 +33,10 @@
 /obj/item/toy/cards/deck/examine()
 	. = ..()
 	. += span_notice("Ctrl-click [src] to shuffle cards.")
+	if(HAS_TRAIT(src, TRAIT_WIELDED))
+		. += span_notice("There are <b>[count_cards()]</b> cards in the deck.")
+	else
+		. += span_notice("Take the deck in both hands to count cards.")
 
 /obj/item/toy/cards/deck/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
