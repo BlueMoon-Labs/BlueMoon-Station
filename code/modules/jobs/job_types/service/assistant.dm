@@ -59,7 +59,8 @@ Assistant
 		"Tourist",
 		"Trader",
 		"Visitor",
-		"Volunteer"
+		"Volunteer",
+		"USSP Tourist",
 		)
 
 	family_heirlooms = list(

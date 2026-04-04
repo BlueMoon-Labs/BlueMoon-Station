@@ -25,6 +25,7 @@
 		"Construction Coordinator",
 		"Construction Manager",
 		"Engineering Director",
+		"Senior Engineer",
 		"Head Engineer",
 		"Head of Engineering",
 		"Magos",

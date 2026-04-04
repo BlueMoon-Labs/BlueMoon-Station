@@ -14,6 +14,10 @@
 	considered_combat_role = FALSE
 	alt_titles = list(
 		"Security Cadet", //Стажер выше, для удобства // В СБ ТОЛЬКО КАДЕТЫ, чтобы не путали
+		"Slutcurity Trainee",
+		"Security Trainee",
+		"Security Assistant",
+		"AC Recruit",
 		"Freak",
 		"Low-Quality Product",
 		"Recruit",

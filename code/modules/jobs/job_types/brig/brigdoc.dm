@@ -29,6 +29,8 @@
 		"Security Physician",
 		"Slutcurity Nurse",
 		"Special Operations Medic",
+		"Brig EMT",
+		"Security EMT",
 		"Well-Trained Boy",
 		"Well-Trained Girl"
 		)

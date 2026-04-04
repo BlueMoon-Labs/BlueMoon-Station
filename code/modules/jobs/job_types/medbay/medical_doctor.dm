@@ -18,6 +18,7 @@
 		"Medi-Stud",
 		"Medical Examiner",
 		"Medical Secretary",
+		"Medical Resident",
 		"Medtech",
 		"Nurse",
 		"Oral Doctor",
@@ -25,9 +26,10 @@
 		"Physician",
 		"Psychiatrist",
 		"Surgeon",
+		"Field Surgeon",
 		"Therapist",
 		"Trophologist",
-		"Xenosurgeon"
+		"Xenosurgeon",
 		)
 
 	outfit = /datum/outfit/job/doctor
