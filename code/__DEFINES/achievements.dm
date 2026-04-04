@@ -114,6 +114,9 @@
 // DB ID for intento score
 #define INTENTO_SCORE "Intento Score"
 
+// DB ID для тетриса
+#define TETRIS_SCORE "Tetris Score"
+
 // Tourist related achievements and scores
 
 //centcom grades (achievement)

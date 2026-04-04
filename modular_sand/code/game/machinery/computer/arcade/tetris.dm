@@ -17,6 +17,9 @@
 	COOLDOWN_DECLARE(TETRIS_COOLDOWN_MAIN)
 	/// Кто сейчас играет (для остановки музыки при закрытии UI)
 	var/mob/current_player = null
+	/// Все еще защита от дурочков с href, разделяем состояние игры.
+	var/game_active = FALSE
+	var/mob/active_game_player = null
 
 /obj/machinery/computer/arcade/tetris/ui_interact(mob/user, datum/tgui/ui)
 	if(!isliving(user))
@@ -26,10 +29,13 @@
 		ui = new(user, src, "ArcadeTetris", name)
 		ui.open()
 
-/// Останавливаем музыку при закрытии окна
+/// Останавливаем музыку при закрытии окна и сбрасываем состояние игры
 /obj/machinery/computer/arcade/tetris/ui_close(mob/user)
 	. = ..()
 	stop_tetris_music(user)
+	if(user == active_game_player)
+		game_active = FALSE
+		active_game_player = null
 
 /// Запускаем случайный саундтрек в цикле
 /obj/machinery/computer/arcade/tetris/proc/start_tetris_music(mob/user)
@@ -80,11 +86,36 @@
 /obj/machinery/computer/arcade/tetris/ui_data(mob/user)
 	var/list/data = list()
 	data["cooldownReady"] = COOLDOWN_FINISHED(src, TETRIS_COOLDOWN_MAIN)
+	if(user?.client)
+		data["personal_best"] = user.client.get_award_status(/datum/award/score/highscore/tetris) || 0
+	else
+		data["personal_best"] = 0
+	var/datum/award/score/highscore/tetris/S = SSachievements.scores[/datum/award/score/highscore/tetris]
+	var/list/leaderboard = list()
+	if(S && S.high_scores.len)
+		var/list/entries = list()
+		for(var/ckey in S.high_scores)
+			entries += list(list("ckey" = ckey, "score" = S.high_scores[ckey]))
+		for(var/i = 1; i <= entries.len; i++)
+			for(var/j = i + 1; j <= entries.len; j++)
+				var/list/a = entries[i]
+				var/list/b = entries[j]
+				if(b["score"] > a["score"])
+					entries[i] = b
+					entries[j] = a
+		var/rank = 0
+		for(var/list/entry in entries)
+			rank++
+			leaderboard += list(list("rank" = rank, "ckey" = entry["ckey"], "score" = entry["score"]))
+	data["leaderboard"] = leaderboard
+	data["is_admin"] = check_rights_for(user?.client, R_ADMIN)
 	return data
 
 /obj/machinery/computer/arcade/tetris/ui_act(action, params)
 	. = ..()
 	if(.)
+		return
+	if(params["ic_advactivator"])
 		return
 
 	switch(action)
@@ -92,15 +123,26 @@
 			play_tetris_sfx(params["type"])
 			return TRUE
 		if("music_start")
+			if(game_active && usr != active_game_player)
+				return FALSE
+			game_active = TRUE
+			active_game_player = usr
 			start_tetris_music(usr)
 			return TRUE
 		if("music_stop")
 			stop_tetris_music(usr)
 			return TRUE
 		if("submitScore")
+			if(!game_active || usr != active_game_player)
+				return FALSE
+			game_active = FALSE
+			active_game_player = null
 			// Sanitize score as an integer
 			// Restricts maximum score to (default) 100,000
 			var/temp_score = sanitize_num_clamp(text2num(params["score"]), max=TETRIS_SCORE_MAX)
+
+			if(usr?.client && SSachievements.achievements_enabled)
+				usr.client.give_award(/datum/award/score/highscore/tetris, usr, temp_score)
 
 			// Check for high score
 			if(temp_score > TETRIS_SCORE_HIGH)
@@ -150,6 +192,13 @@
 
 				// Announce points earned
 				say("Research personnel detected. Applying gathered data to algorithms...")
+		if("deleteRecord")
+			if(!check_rights_for(usr?.client, R_ADMIN))
+				return FALSE
+			var/datum/award/score/highscore/tetris/del_score = SSachievements.scores[/datum/award/score/highscore/tetris]
+			if(!del_score)
+				return FALSE
+			return del_score.admin_delete_record(usr, ckey(params["ckey"]))
 
 	add_fingerprint(usr)
 	. = TRUE

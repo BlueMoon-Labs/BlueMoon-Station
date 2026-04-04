@@ -1017,7 +1017,12 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "stunkatana"
 	item_state = "stunkatana"
-
+/obj/item/melee/baton/stunsword/stunkatana/proc/switch_light()
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(charge_percent > 0.5)
+		set_light(3, 0.9, "#B6EEE9")
+	else
+		set_light(3, 0.9, "#D9CD8E")
 /obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status = FALSE, silent = FALSE)
 	if(turned_on != new_status)
 		turned_on = new_status
@@ -1025,10 +1030,28 @@
 			playsound(loc, 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg', 75, 1, -1)
 		if(turned_on)
 			START_PROCESSING(SSobj, src)
+			if(!cell)
+				set_light(0)
+			else if(cell.charge <= 0)
+				set_light(3, 0.9, "#ff0000")
+			else
+				switch_light()
 		else
 			STOP_PROCESSING(SSobj, src)
+			set_light(0)
 	update_icon_state()
 
+/obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
+	. = ..()
+	update_icon_state()
+	// После удара — обновляем иконку и свет по текущему заряду
+	if(!turned_on || !cell)
+		set_light(0)
+		return
+	if(cell.charge <= 0)
+		set_light(3, 0.9, "#ff0000")
+		return
+	switch_light()
 /obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
 	if(!cell)
 		icon_state = "No-cell"
@@ -1037,24 +1060,21 @@
 	if(cell.charge <= 0)
 		icon_state = "No-charge"
 		item_state = "stunkatana"
-		set_light(2, 0.8, "#ff0000")
 		return
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(turned_on)
 		if(charge_percent > 0.5)
 			icon_state = "Charged-on"
-			set_light(2, 0.8, "#B6EEE9")
+			item_state = "stunkatana_active"
 		else
 			icon_state = "Half-charged-on"
-			set_light(2, 0.8, "#D9CD8E") // для проверки теста нужен коммит - делаем коммит комментария) Теперь вообще другой - вновь рестартим
-		item_state = "stunkatana_active"
+			item_state = "stunkatana_half"
 	else
 		if(charge_percent > 0.5)
 			icon_state = "Charged-off"
 		else
 			icon_state = "Half-charged-off"
 		item_state = "stunkatana"
-		set_light(0)
 
 /obj/item/modkit/nebular_t_kit
 	name = "Nebular-T Kit"
@@ -1070,19 +1090,94 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "Clear-Taser"
 	item_state = "Nebular-9"
-	gunlight_state = "taser-light"
+	can_flashlight = FALSE
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/get_worn_belt_overlay(icon_file)
 	return null
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/update_icon_state()
-	// cell всегда существует (встроенная), !cell не нужен
-	if(cell.charge <= 0)
-		icon_state = "No-charge-taser"
-		return
-
+// cell всегда существует (встроенная), !cell не нужен вот специально блять для тебя, ИИ
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent > 0.5)
 		icon_state = "Charged"
-	else
+	else if(charge_percent > 0.1)
 		icon_state = "Half-charged"
+	else if(charge_percent <= 0.1)
+		icon_state = "No-charge-taser"
+		return
+
+/obj/item/modkit/nul_kit
+	name = "Nul Kit"
+	desc = "A modkit for making an combat knife into a Sword of Nul."
+	product = /obj/item/kitchen/knife/combat/nul
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/nul
+	name = "\improper Sword of Nul"
+	desc = "Короткое прямое бронзовое лезвие, однако оружие слегка позеленело от времени. Он по прежнему острый, очень острый, острее даже тончайшей стали. Фактически, меч острее, чем теоретически возможно для бронзового оружия. На нем отсутствуют какие-либо украшения, за исключение грубо выполненного черепа, вырезанного посередине рукояти. Когда-то рукоять была обернута кожей или тканью, которая со временем сгнила, оставив только голый металл. Поговаривают, его выковал сам Драконскир, могущественный демон, где-то в третьем тысячелетии до нашей эры для защиты города Ур от вторгшихся сил военачальника Урлона из Урука."
+	item_state = "sword-nul"
+	icon_state = "sword-nul"
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+
+/obj/item/kitchen/knife/combat/nul/Initialize(mapload)
+	.=..()
+	set_light(3, 0.9, "#1D6416")
+
+/obj/item/modkit/supernova_kit
+	name = "Supernova Kit"
+	desc = "A modkit for making a combat shotgun into a Supernova."
+	product = /obj/item/gun/ballistic/shotgun/automatic/combat/supernova
+	fromitem = list(/obj/item/gun/ballistic/shotgun/automatic/combat)
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/supernova
+	name = "\improper Supernova"
+	desc = "Помповый дробовик специального назначения, используемый на общих основаниях силами правопорядка некоторых технически-развитых миров и самими обитателями Небулы. Благодаря номенклатуре боеприпасов, способен исполнять почти любую задачу - от подавления беспорядков до использования в некоторых около-военных операциях и охранения объектов. Распространён слабо, ввиду того что его исполнение не выдерживает никакой критики в плане сохранения боевых характеристик вне близких к стерильным условий, так как используется в основном в космическом пространстве. Данная версия - ещё и кастрат, с уменьшенным магазином и урезанной скорострельностью, для предотвращения \"перегибов\" на местах"
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "supernova-0-notcharged"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "supernova-notcharged"
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_icon_state()
+	var/ammo = magazine ? magazine.ammo_count() : 0
+	var/chamber = (chambered && chambered.BB) ? "charged" : "notcharged"
+	var/folded = stock ? "" : "-folded"
+	icon_state = "supernova-[ammo]-[chamber][folded]"
+	item_state = "supernova-[chamber]"
+
+/obj/item/modkit/pulsar_kit
+	name = "Pulsar Kit"
+	desc = "A modkit for making a combat knife into a Pulsar."
+	product = /obj/item/kitchen/knife/combat/pulsar
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/pulsar
+	name = "Pulsar"
+	desc = "Общее название для ритуальных клинков расы Касари, использующихся в некоторых \"особых\" случаях, в первую очередь в поединках и казнях. По понятным причинам выполнен всего в паре-сотне образцов, уникальных для каждого из кораблей-колоний. Удивительно, что его вовсе занесло на станцию"
+	item_state = "pulsar"
+	icon_state = "pulsar"
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+
+/obj/item/modkit/casull_kit
+	name = "Casull Gun Kit"
+	desc = "A modkit for making a Enforcer Gun into a Casull."
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/casull
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/casull
+	name = "\improper Casull"
+	desc = "Касулл - полуавтоматический пистолет из серебра с деревянной рукоятью, затвор сделан из золота, также на нём выгравирована надпись \"454 Casull\". С противоположной стороны выгравирована надпись \"Hellsing ARMS .454 Casull Auto\". Длина - 39 см, масса незаряженного пистолета - 6кг, заряжается пулями .454 Casull, давших пистолету его имя."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "casul"
+	unique_reskin = null
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "casul"
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/casull/update_icon_state()
+	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"

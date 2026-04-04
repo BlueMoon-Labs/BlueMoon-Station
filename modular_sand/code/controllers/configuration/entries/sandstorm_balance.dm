@@ -91,7 +91,7 @@
 
 // Minimum score required to message admins
 /datum/config_entry/number/tetris_score_high
-	default = 10000
+	default = 50000
 
 // Maximum research points that can be generated
 /datum/config_entry/number/tetris_score_max

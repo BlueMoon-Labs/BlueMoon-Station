@@ -69,7 +69,7 @@
 /obj/structure/safe/floor/syndi/armory
 	name = "armory safe"
 	number_of_tumblers = 8
-	maxspace = 48
+	maxspace = 70
 	open_security_levels = list(SEC_LEVEL_RED, SEC_LEVEL_LAMBDA, SEC_LEVEL_GAMMA)
 	tgui_theme = "syndicate"
 

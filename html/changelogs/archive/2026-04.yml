@@ -1,0 +1,22 @@
+2026-04-03:
+  DuLL-FoX:
+  - bugfix: В теории исправлены утечки памяти screen-объектов (алерты, UI хранилища),
+      вызывавшие лаги из-за дорогих hard-delete
+  - code_imp: Alert таймеры теперь TIMER_STOPPABLE с отменой в Destroy
+  - code_imp: Storage wipe_ui_objects убирает из client.screen перед qdel
+  - code_imp: Пулинг storage screens освобождает hud-ссылку
+  - code_imp: QDEL_NULL(modeswitch_action) в storage/Destroy
+  Lev1932:
+  - rscadd: Личный ножик
+  - bugfix: фиксы и доработка Nebular-T и Stun-Katana
+  Pingvas:
+  - rscadd: Лидерборд для тетриса.
+  Silver-Paws:
+  - bugfix: Сейф арсенала снова вмещает весь свой инвентарь, с запасом.
+  - code_imp: Подчищен код выдачи энфорсера баунсеру
+  - refactor: 'Улучшение логики добавления кода сейфа арсенала в память ГСБ: поиск
+      сейфа "in world" заменён на эффективный по памяти "in area" арсенала.'
+2026-04-04:
+  Herobrine998:
+  - bugfix: При наведении мышки на руну (Крови/Ратвар/Еретик), она всегда будет выделена,
+      не нужно наводить ровно на "линии" руны

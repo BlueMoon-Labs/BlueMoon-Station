@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════
 
 /// Порог подозрительного счёта
-#define NTOS_TETRIS_SCORE_HIGH 10000
+#define NTOS_TETRIS_SCORE_HIGH 50000
 /// Максимально допустимый счёт
 #define NTOS_TETRIS_SCORE_MAX 100000
 /// Максимум research points
@@ -29,18 +29,60 @@
 	var/high_score = 0
 	/// Кулдаун начисления RnD
 	COOLDOWN_DECLARE(reward_cooldown)
+	/// Защита от дурочков с href
+	var/game_active = FALSE
+	var/mob/active_game_player = null
+
+/datum/computer_file/program/tetris/ui_close(mob/user)
+	. = ..()
+	if(user == active_game_player)
+		game_active = FALSE
+		active_game_player = null
 
 /datum/computer_file/program/tetris/ui_data(mob/user)
 	var/list/data = get_header_data()
 	data["high_score"] = high_score
+	if(user?.client)
+		data["personal_best"] = user.client.get_award_status(/datum/award/score/highscore/tetris) || 0
+	else
+		data["personal_best"] = 0
+	// Передаём глобальную таблицу лидеров (топ-50)
+	var/datum/award/score/highscore/tetris/S = SSachievements.scores[/datum/award/score/highscore/tetris]
+	var/list/leaderboard = list()
+	if(S && S.high_scores.len)
+		var/list/entries = list()
+		for(var/ckey in S.high_scores)
+			entries += list(list("ckey" = ckey, "score" = S.high_scores[ckey]))
+		// Сортируем по убыванию счёта (в памяти порядок мог нарушиться)
+		for(var/i = 1; i <= entries.len; i++)
+			for(var/j = i + 1; j <= entries.len; j++)
+				var/list/a = entries[i]
+				var/list/b = entries[j]
+				if(b["score"] > a["score"])
+					entries[i] = b
+					entries[j] = a
+		var/rank = 0
+		for(var/list/entry in entries)
+			rank++
+			leaderboard += list(list("rank" = rank, "ckey" = entry["ckey"], "score" = entry["score"]))
+	data["leaderboard"] = leaderboard
+	data["is_admin"] = check_rights_for(user?.client, R_ADMIN)
 	return data
 
 /datum/computer_file/program/tetris/ui_act(action, list/params)
 	. = ..()
 	if(.)
 		return
+	if(params["ic_advactivator"])
+		return
 
 	switch(action)
+		if("gameStart")
+			if(game_active && usr != active_game_player)
+				return FALSE
+			game_active = TRUE
+			active_game_player = usr
+			return TRUE
 		if("sfx")
 			if(!computer)
 				return
@@ -64,9 +106,16 @@
 					playsound(computer.loc, 'modular_bluemoon/sound/machines/tetris/game_over.ogg', 55, TRUE, extrarange = -2)
 			return TRUE
 		if("submitScore")
+			if(!game_active || usr != active_game_player)
+				return FALSE
+			game_active = FALSE
+			active_game_player = null
 			var/temp_score = clamp(text2num(params["score"]) || 0, 0, NTOS_TETRIS_SCORE_MAX)
 			if(temp_score > high_score)
 				high_score = temp_score
+
+			if(usr?.client && SSachievements.achievements_enabled)
+				usr.client.give_award(/datum/award/score/highscore/tetris, usr, temp_score)
 
 			// Проверка подозрительного счёта
 			if(temp_score > NTOS_TETRIS_SCORE_HIGH)
@@ -87,6 +136,13 @@
 					computer.say("Обнаружен исследовательский персонал. +[science_points] очков исследований.")
 
 			return TRUE
+		if("deleteRecord")
+			if(!check_rights_for(usr?.client, R_ADMIN))
+				return FALSE
+			var/datum/award/score/highscore/tetris/del_score = SSachievements.scores[/datum/award/score/highscore/tetris]
+			if(!del_score)
+				return FALSE
+			return del_score.admin_delete_record(usr, ckey(params["ckey"]))
 
 #undef NTOS_TETRIS_SCORE_HIGH
 #undef NTOS_TETRIS_SCORE_MAX
