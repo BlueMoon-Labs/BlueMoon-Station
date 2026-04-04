@@ -683,14 +683,13 @@
 	icon = 'icons/obj/clothing/hats.dmi'
 	mob_overlay_icon = 'icons/mob/clothing/head.dmi'
 	mutantrace_variation = STYLE_MUZZLE
-	flags_inv = HIDEEARS | HIDESNOUT | HIDEHAIR
 	actions_types = list(/datum/action/item_action/toggle)
 	can_toggle = TRUE
 	mutantrace_variation = STYLE_MUZZLE
-	flags_inv = HIDEEARS | HIDEHAIR
-	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
-	visor_flags_inv = HIDEMASK|HIDEEYES|HIDEFACE
-	visor_flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	flags_inv = HIDEEARS | HIDEHAIR | HIDEEYES | HIDEHAIR
+	flags_cover = NONE
+	visor_flags_inv = HIDEMASK | HIDEEYES
+	visor_flags_cover = NONE
 
 /obj/item/clothing/head/assu_helmet/bp_helmet/attack_self(mob/user)
 	if(can_toggle && !user.incapacitated())
