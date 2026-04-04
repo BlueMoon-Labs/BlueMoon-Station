@@ -39,6 +39,12 @@ AI MODULES
 		for(var/law in laws)
 			to_chat(user, "\"[law]\"")
 
+/obj/item/ai_module/proc/triggers_upload_console_cooldown()
+	return TRUE
+
+/obj/item/ai_module/proc/resets_upload_console_cooldown()
+	return FALSE
+
 //The proc other things should be calling
 /obj/item/ai_module/proc/install(datum/ai_laws/law_datum, mob/user)
 	if(!bypass_law_amt_check && (!laws.len || laws[1] == "")) //So we don't loop trough an empty list and end up with runtimes.
@@ -296,6 +302,9 @@ AI MODULES
 	desc = "Удаляет все неосновные законы у ИИ."
 	bypass_law_amt_check = 1
 
+/obj/item/ai_module/reset/resets_upload_console_cooldown()
+	return TRUE
+
 /obj/item/ai_module/reset/transmitInstructions(datum/ai_laws/law_datum, mob/sender, overflow)
 	..()
 	if(law_datum.owner)
@@ -416,6 +425,9 @@ AI MODULES
 
 /obj/item/ai_module/core/full/custom
 	name = "Default Core AI Module"
+
+/obj/item/ai_module/core/full/custom/resets_upload_console_cooldown()
+	return TRUE
 
 /obj/item/ai_module/core/full/custom/Initialize(mapload)
 	. = ..()

@@ -1,4 +1,6 @@
 // (FILE) Moddify Pe4henika Bluemoon . . 15.03.26
+#define LAW_UPLOAD_CONSOLE_COOLDOWN (20 SECONDS)
+
 /obj/machinery/computer/upload
 	var/mob/living/silicon/current = null //The target of future law uploads
 	icon_screen = "command"
@@ -21,6 +23,17 @@
 		return TRUE
 	return FALSE
 
+/obj/machinery/computer/upload/proc/check_upload_cooldown(mob/user)
+	if(!current)
+		return FALSE
+	if(current.next_upload_console_law_change <= world.time)
+		return FALSE
+
+	var/time_left = CEILING((current.next_upload_console_law_change - world.time) / 10, 1)
+	to_chat(user, span_warning("Upload console cooldown active. You can modify [current.name]'s laws again in [time_left] seconds."))
+	to_chat(current, span_warning("Upload console cooldown prevented another law upload attempt."))
+	return TRUE
+
 /obj/machinery/computer/upload/attackby(obj/item/O, mob/user, params)
 	// Блокируем попытку вставить плату закона
 	if(check_implant_block(user))
@@ -42,8 +55,14 @@
 			to_chat(user, "<span class='caution'>Upload failed!</span> Unable to establish a connection to [current.name]. You're too far away!")
 			current = null
 			return
+		if(check_upload_cooldown(user))
+			return
 
 		M.install(current.laws, user)
+		if(M.resets_upload_console_cooldown())
+			current.next_upload_console_law_change = world.time
+		else if(M.triggers_upload_console_cooldown())
+			current.next_upload_console_law_change = world.time + LAW_UPLOAD_CONSOLE_COOLDOWN
 		current.post_lawchange(TRUE)
 		to_chat(user, span_notice("Laws successfully uploaded to [current.name]."))
 	else
@@ -101,3 +120,5 @@
 	if(B.scrambledcodes || B.emagged)
 		return FALSE
 	return ..()
+
+#undef LAW_UPLOAD_CONSOLE_COOLDOWN
