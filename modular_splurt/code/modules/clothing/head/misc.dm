@@ -74,6 +74,7 @@
 	icon_state = "mopphood"
 	item_state = "mopphood"
 	can_flashlight = 1
+	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/head_muzzled.dmi'
 	armor = list("melee" = 35, "bullet" = 35, "laser" = 35,"energy" = 40, "bomb" = 25, "bio" = 100, "rad" = 75, "fire" = 40, "acid" = 100)
 	is_edible = 0
 	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL
@@ -85,6 +86,16 @@
 		"Duty" = list("icon_state" = "mopphoodaltd"),
 		"Volya" = list("icon_state" = "mopphoodaltv")
 	)
+
+/obj/item/clothing/head/helmet/cbrn/mopp/update_icon_state()
+	var/base = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	if(attached_light)
+		if(attached_light.on)
+			icon_state = base + "-flight-on"
+		else
+			icon_state = base + "-flight"
+	else
+		icon_state = base
 
 /obj/item/clothing/head/helmet/cbrn/mopp/advance
 	name = "advance MOPP hood"

@@ -51,7 +51,7 @@
 	icon_state = "gas_mopp"
 	icon = 'modular_splurt/icons/obj/clothing/masks.dmi'
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/mask.dmi'
-//	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/mask_muzzle.dmi' // BLUEMOON COMMENTING OUT using own states modular_bluemoon\icons\mob\clothing\mask_muzzled.dmi
+	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/mask_muzzle.dmi' // BLUEMOON COMMENTING OUT using own states modular_bluemoon\icons\mob\clothing\mask_muzzled.dmi
 	gas_transfer_coefficient = 0.01
 	permeability_coefficient = 0.01
 	armor = list("melee" = 10, "bullet" = 5, "laser" = 10,"energy" = 10, "bomb" = 10, "bio" = 100, "rad" = 75, "fire" = 40, "acid" = 100)
@@ -62,6 +62,25 @@
 	visor_flags = BLOCK_GAS_SMOKE_EFFECT | ALLOWINTERNALS
 	visor_flags_inv = HIDEFACIALHAIR|HIDEFACE
 	visor_flags_cover = MASKCOVERSMOUTH | MASKCOVERSEYES
+	unique_reskin = list(
+    "SEVA" = list(
+        "icon_state" = "moppalt",
+        "mob_overlay_icon" = 'modular_splurt/icons/mob/clothing/mask.dmi'
+    )
+	)
+
+/obj/item/clothing/mask/gas/sechailer/mopp/adjustmask(mob/living/user, just_flavor = FALSE)
+	. = ..()
+	if(!just_flavor)
+		var/base = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+		if(mask_adjusted)
+			icon_state = base + "_up"
+		else
+			icon_state = base
+		// Обновляем моб оверлей
+		if(ismob(loc))
+			var/mob/M = loc
+			M.update_inv_wear_mask()
 
 /obj/item/clothing/mask/gas/sechailer/mopp/advance
 	name = "advance MOPP gas mask"
