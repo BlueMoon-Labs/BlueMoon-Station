@@ -1,3 +1,85 @@
+/proc/priority_announcement_style(title = "", type, sender_override)
+	var/list/data = list(
+		"theme" = "centcom",
+		"badge" = "CENTCOM",
+		"header" = "[command_name()] Объявляет",
+		"subtitle" = title,
+	)
+
+	switch(type)
+		if("Priority")
+			data["theme"] = "priority"
+			data["badge"] = "PRIORITY"
+			data["header"] = "Приоритетное Объявление"
+		if("Captain", "CommunicationsConsole")
+			data["theme"] = "communications"
+			data["badge"] = "COMMS"
+			data["header"] = "Консоль Связи"
+		if("RequestsConsole")
+			data["theme"] = "requests"
+			data["badge"] = "REQUESTS"
+			data["header"] = "Консоль Запросов"
+		if("Syndicate")
+			data["theme"] = "syndicate"
+			data["badge"] = "SYNDICATE"
+			data["header"] = "Синдикат Объявляет"
+		if("AI", "Silicon")
+			data["theme"] = "silicon"
+			data["badge"] = "SILICON"
+			data["header"] = "Силиконовое Объявление"
+		else
+			if(sender_override)
+				var/sender_lower = lowertext("[sender_override]")
+				var/command_lower = lowertext(command_name())
+				data["theme"] = "custom"
+				data["badge"] = "NOTICE"
+				data["header"] = sender_override
+
+				if(findtext(sender_lower, "центральное командование") || findtext(sender_lower, "central command") || findtext(sender_lower, "centcom") || findtext(sender_lower, command_lower))
+					data["theme"] = "centcom"
+					data["badge"] = "CENTCOM"
+
+	return data
+
+/proc/build_priority_announcement(text, title = "", type, sender_override, has_important_message)
+	var/list/style = priority_announcement_style(title, type, sender_override)
+	var/theme = style["theme"]
+	var/header_text = style["header"]
+	var/subtitle_text = style["subtitle"]
+	var/badge_text = style["badge"]
+	var/list/classes = list(
+		"priority_announcement",
+		"priority_announcement--[theme]",
+	)
+
+	if(has_important_message)
+		classes += "priority_announcement--important"
+
+	var/class_string = jointext(classes, " ")
+	var/header = html_encode(header_text)
+	var/subtitle = html_encode(subtitle_text)
+	var/badge = html_encode(badge_text)
+	var/body
+
+	if(SSstation.announcer.custom_alert_message && !has_important_message)
+		body = "<span class='priority_announcement__body priority_announcement__body--custom'>[SSstation.announcer.custom_alert_message]</span>"
+	else
+		body = "<span class='priority_announcement__body'>[html_encode(text)]</span>"
+
+	var/announcement = "<span class='[class_string]'>"
+	announcement += "<span class='priority_announcement__badge'>[badge]</span>"
+	announcement += "<span class='priority_announcement__header'>"
+	announcement += "<span class='priority_announcement__source'>[header]</span>"
+
+	if(length(subtitle_text))
+		announcement += "<span class='priority_announcement__title'>[subtitle]</span>"
+
+	announcement += "</span>"
+	announcement += body
+	announcement += "</span>"
+
+	return announcement
+
 /proc/priority_announce(text, title = "", sound, type , sender_override, has_important_message)
 	if(!text)
 		return
@@ -8,44 +90,21 @@
 	else if(SSstation.announcer.event_sounds[sound])
 		sound = pick(SSstation.announcer.event_sounds[sound])
 
-	if(type == "Priority")
-		announcement += "<h1 class='alert'>Приоритетное Объявление</h1>"
-		if (title && length(title) > 0)
-			announcement += "<br><h2 class='alert'>[html_encode(title)]</h2>"
-	else if(type == "Captain")
-		if(usr)
-			announcement += "<h1 class='alert'>Капитан Объявляет (— [usr.name])</h1>"
-		else
-			announcement += "<h1 class='alert'>Капитан Объявляет</h1>"
-		GLOB.news_network.SubmitArticle(html_encode(text), "Капитан Объявляет (— [usr.name])", "Станционные Объявления", null)
+	if(type == "Captain" || type == "CommunicationsConsole")
+		var/announcement_title = title
+		if(!length(announcement_title))
+			announcement_title = "Станционное Объявление"
+		GLOB.news_network.SubmitArticle(html_encode(text), announcement_title, "Станционные Объявления", null)
 	else if(type == "Syndicate")
-		announcement += "<h1 class='alert'>Синдикат Объявляет</h1>"
 		GLOB.news_network.SubmitArticle(html_encode(text), "Синдикат Объявляет", "Станционные Объявления", null)
-	else if(type == "AI")
-		announcement += "<h1 class='alert'>Искусственный Интеллект</h1>"
-		if (title && length(title) > 0)
-			announcement += "<br><h2 class='alert'>[html_encode(title)]</h2>"
-
-	else
-		if(!sender_override)
-			announcement += "<h1 class='alert'>[command_name()] Объявляет</h1>"
-		else
-			announcement += "<h1 class='alert'>[sender_override]</h1>"
-		if (title && length(title) > 0)
-			announcement += "<br><h2 class='alert'>[html_encode(title)]</h2>"
-
+	else if(type != "Priority" && type != "RequestsConsole" && type != "AI" && type != "Silicon")
 		if(!sender_override)
 			if(title == "")
 				GLOB.news_network.SubmitArticle(text, "Центральное Командование Объявляет", "Станционные Объявления", null)
 			else
 				GLOB.news_network.SubmitArticle(title + "<br><br>" + text, "Центральное Командование Объявляет", "Станционные Объявления", null)
 
-	///If the announcer overrides alert messages, use that message.
-	if(SSstation.announcer.custom_alert_message && !has_important_message)
-		announcement += SSstation.announcer.custom_alert_message
-	else
-		announcement += "<br>[span_alert("[html_encode(text)]")]<br>"
-	announcement += "<br>"
+	announcement = build_priority_announcement(text, title, type, sender_override, has_important_message)
 
 	var/s = sound(sound)
 	for(var/mob/M in GLOB.player_list)

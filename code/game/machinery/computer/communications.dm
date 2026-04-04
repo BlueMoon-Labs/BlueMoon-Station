@@ -622,7 +622,8 @@
 				else if(syndicate)
 					data["canMakeAnnouncement"] = TRUE
 
-				if (SSshuttle.emergency.mode != SHUTTLE_IDLE && SSshuttle.emergency.mode != SHUTTLE_RECALL)
+				var/obj/docking_port/mobile/emergency/emergency_shuttle = SSshuttle.emergency
+				if (emergency_shuttle && emergency_shuttle.mode != SHUTTLE_IDLE && emergency_shuttle.mode != SHUTTLE_RECALL)
 					data["shuttleCalled"] = TRUE
 					data["shuttleRecallable"] = SSshuttle.canRecall() || syndicate
 
@@ -731,7 +732,8 @@
 	if (!authenticated_as_non_silicon_captain(user))
 		return FALSE
 
-	if (SSshuttle.emergency.mode != SHUTTLE_RECALL && SSshuttle.emergency.mode != SHUTTLE_IDLE)
+	var/obj/docking_port/mobile/emergency/emergency_shuttle = SSshuttle.emergency
+	if (emergency_shuttle && emergency_shuttle.mode != SHUTTLE_RECALL && emergency_shuttle.mode != SHUTTLE_IDLE)
 		return "The shuttle is already in transit."
 	if (SSshuttle.shuttle_purchased == SHUTTLEPURCHASE_PURCHASED)
 		return "A replacement shuttle has already been purchased."
