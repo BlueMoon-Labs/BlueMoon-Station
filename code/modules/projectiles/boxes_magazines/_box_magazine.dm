@@ -10,7 +10,7 @@
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	custom_materials = list(/datum/material/iron = 30000)
 	throwforce = 2
-	w_class = WEIGHT_CLASS_TINY
+	w_class = WEIGHT_CLASS_NORMAL
 	throw_speed = 3
 	throw_range = 7
 	var/list/stored_ammo = list()
@@ -131,6 +131,9 @@
 			icon_state = "[initial(icon_state)]-[stored_ammo.len ? "[max_ammo]" : "0"]"
 
 //Behavior for magazines
+/obj/item/ammo_box/magazine
+	w_class = WEIGHT_CLASS_SMALL
+
 /obj/item/ammo_box/magazine/proc/ammo_count()
 	return stored_ammo.len
 

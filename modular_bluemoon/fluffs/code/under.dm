@@ -743,3 +743,14 @@
 	item_state = "tshirt_gray_blu"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/sheya
+	name = "Gothic dress"
+	desc = "Готическое платье, почти не закрывающее спину"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "sheya_dress"
+	item_state = "sheya_dress"
+	can_adjust = FALSE

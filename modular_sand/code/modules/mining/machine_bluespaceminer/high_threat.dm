@@ -51,7 +51,9 @@
 	machine.visible_message(span_bolddanger("Реальность рвётся — из-под [machine] вылетает [loot]!"))
 
 /proc/bsm_spawn_meteor_at_miner(obj/machinery/mineral/bluespace_miner/machine)
-	var/turf/target = machine ? get_turf(machine) : null
+	if(QDELETED(machine))
+		return
+	var/turf/target = get_turf(machine)
 	if(!target)
 		return
 	var/z = target.z
@@ -77,8 +79,7 @@
 		"meteors",
 		has_important_message = TRUE,
 	)
-	var/meteor_type = pickweight(GLOB.meteors_threatening)
-	new meteor_type(pickedstart, target)
+	new /obj/effect/meteor/tunguska/bsm_cataclysm(pickedstart, machine)
 
 /proc/bsm_catastrophic_miner_explosion(obj/machinery/mineral/bluespace_miner/machine)
 	if(QDELETED(machine))

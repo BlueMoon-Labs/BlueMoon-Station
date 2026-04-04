@@ -70,17 +70,23 @@ GLOBAL_VAR_INIT(normal_looc_colour, "#6699CC")
 		if(!M.client)
 			continue
 		var/client/C = M.client
-		if (C in GLOB.admins)
-			continue //they are handled after that
 
-		if (isobserver(M))
-			continue //Also handled later.
+		if(!(C.prefs.chat_toggles & CHAT_OOC))
+			continue
 
-		if(C.prefs.chat_toggles & CHAT_OOC)
-			if(GLOB.LOOC_COLOR)
-				to_chat(C, "<font color='[GLOB.LOOC_COLOR]'><b><span class='prefix'>LOOC:</span> <EM>[src.mob.name]:</EM> <span class='message'>[message]</span></b></font>")
-			else
-				to_chat(C, "<span class='looc'><span class='prefix'>LOOC:</span> <EM>[src.mob.name]:</EM> <span class='message'>[message]</span></span>")
+		if (isobserver(M) && !C.holder)
+			continue //ghosts dont hear looc, apparantly
+
+		if(M.client.prefs.chat_on_map)
+			M.create_chat_message(mob, raw_message = "(LOOC: [message])", spans = list("emote", "whisper")) // emote для игнорирования фильтра по языкам, whisper для мелкотекста рунчата
+
+		if(C in GLOB.admins)
+			continue //admins are handled afterwards
+
+		if(GLOB.LOOC_COLOR)
+			to_chat(C, "<font color='[GLOB.LOOC_COLOR]'><b><span class='prefix'>LOOC:</span> <EM>[src.mob.name]:</EM> <span class='message'>[message]</span></b></font>")
+		else
+			to_chat(C, "<span class='looc'><span class='prefix'>LOOC:</span> <EM>[src.mob.name]:</EM> <span class='message'>[message]</span></span>")
 
 	for(var/client/C in GLOB.admins)
 		if(C.prefs.chat_toggles & CHAT_OOC)

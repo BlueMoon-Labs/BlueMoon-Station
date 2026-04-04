@@ -213,6 +213,10 @@
 
 //proc to upgrade a simple pull into a more aggressive grab.
 /mob/living/proc/grippedby(mob/living/carbon/user, instant = FALSE)
+	// Без активного pull этой цели (напр. сверхтяж: can_be_pulled вернул FALSE) нельзя повышать grab_state —
+	// иначе у атакующего остаётся модификатор скорости «в грабе» без реальной цели (так ломает tackle с перчатками).
+	if(user.pulling != src)
+		return FALSE
 	if(user.grab_state < GRAB_KILL)
 		user.DelayNextAction(CLICK_CD_GRABBING, flush = TRUE)
 		playsound(src, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)

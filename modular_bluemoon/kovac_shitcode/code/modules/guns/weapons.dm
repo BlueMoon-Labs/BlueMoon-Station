@@ -136,6 +136,7 @@
 /obj/item/ammo_box/magazine/m10mm_large
 	name = "enlarged pistol magazine (10mm)"
 	desc = "An extra ammo gun magazine."
+	icon = 'icons/obj/ammo.dmi'
 	icon_state = "c20r45-16"
 	ammo_type = /obj/item/ammo_casing/c10mm
 	caliber = "10mm"

@@ -477,17 +477,17 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	if(!client)
 		return
 	if(!can_reenter_corpse)
-		to_chat(usr, "<span class='warning'>You're already stuck out of your body!</span>")
+		to_chat(usr, span_warning("Вы уже не можете быть реанимированы!"))
 		return FALSE
 
-	var/response = alert(src, "Are you sure you want to prevent (almost) all means of resuscitation? This cannot be undone. THIS WILL ALSO STOP YOU FROM RESPAWNING!!!","Are you sure you want to stay dead and never respawn?","Да","Нет")
+	var/response = tgui_alert(src, "Вы уверены, что хотите предотвратить (почти) все способы реанимации? Действие невозможно отменить.","Вы уверены, что хотите остаться мертвым?", list("Да","Нет"))
 
-	if(response != "Да")
+	if(response != "Да" || QDELETED(src) || QDELETED(client))
 		return
 
 	can_reenter_corpse = FALSE
 	client.prefs?.dnr_triggered = TRUE
-	to_chat(src, "You can no longer be brought back into your body or respawn.")
+	to_chat(src, span_userdanger("Вы больше не сможете быть реанимированы!"))
 	return TRUE
 
 /mob/dead/observer/proc/notify_cloning(var/message, var/sound, var/atom/source, flashwindow = TRUE)
@@ -1034,26 +1034,6 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		spawners_menu = new(src)
 
 	spawners_menu.ui_interact(src)
-
-/mob/dead/observer/verb/game_info()
-	set name = "Game info"
-	set desc = "Shows various info relating to the game mode, antagonists etc."
-	set category = "Ghost"
-	if(!started_as_observer && can_reenter_corpse)
-		to_chat(src, "You cannot see this info unless you are an observer or you've chosen Do Not Resuscitate!")
-		return
-	if(!SSticker?.mode)
-		to_chat(src, "The game hasn't started yet!")
-		return
-	var/list/stuff = list("[SSticker.mode.name]")
-	stuff += "Antagonists:\n"
-	for(var/datum/antagonist/A in GLOB.antagonists)
-		if(A.owner)
-			stuff += "[A.owner] the [A.name]"
-	var/ghost_info = SSticker.mode.ghost_info()
-	if(ghost_info)
-		stuff += ghost_info
-	to_chat(src,stuff.Join("\n"))
 
 /mob/proc/can_admin_interact()
 	return FALSE

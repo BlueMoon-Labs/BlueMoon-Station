@@ -60,7 +60,6 @@
 				SD.r_code = code
 	if (code)
 		antag_memory += "<B>Код станционного самоуничтожения</B>: [code]<br>"
-		commando.mind?.store_memory("Код станционного самоуничтожения: [code]")
 		to_chat(commando, span_notice("Код станционного самоуничтожения: <b>[code]</b>"))
 
 /datum/antagonist/ert/deathsquad/remove_innate_effects(mob/living/mob_override)
