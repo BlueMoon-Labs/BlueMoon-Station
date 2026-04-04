@@ -2221,3 +2221,15 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/casull_kit
 	ckeywhitelist = list("lev1932")
+
+/datum/gear/donator/bm/pulsar_kit
+	name = "Pulsar Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/pulsar_kit
+	ckeywhitelist = list("lapkee")
+
+/datum/gear/donator/bm/supernova_kit
+	name = "Supernova Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/supernova_kit
+	ckeywhitelist = list("lapkee")
