@@ -697,7 +697,6 @@
 		if(world.time > cooldown + toggle_cooldown)
 			cooldown = world.time
 			up = !up
-			flags_1 ^= visor_flags
 			flags_inv ^= visor_flags_inv
 			flags_cover ^= visor_flags_cover
 			icon_state = "[replacetext("[icon_state]", "_up", "")][up ? "_up" : ""]"
