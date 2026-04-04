@@ -258,14 +258,46 @@ img { image-rendering: pixelated; }
 
 /* ===== Shuttle Bar ===== */
 .shuttle-bar {
+	display: none;
+	align-items: center;
+	gap: 8px;
 	padding: 6px 8px;
 	font-weight: bold;
 	font-size: 13px;
 	border-bottom: 1px solid var(--border);
-	display: none;
+	position: relative;
+	overflow: hidden;
 }
-.shuttle-warn { background: rgba(204, 167, 0, 0.15); color: var(--health-warn); }
+.shuttle-icon { flex-shrink: 0; font-size: 14px; }
+.shuttle-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shuttle-timer { font-family: var(--font-mono); flex-shrink: 0; }
+
+.shuttle-warn   { background: rgba(204, 167, 0, 0.15); color: var(--health-warn); }
 .shuttle-danger { background: rgba(244, 71, 71, 0.15); color: var(--health-bad); }
+.shuttle-safe   { background: rgba(78, 201, 78, 0.15); color: var(--health-good); }
+
+.shuttle-progress {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: rgba(255, 255, 255, 0.08);
+}
+.shuttle-progress-fill {
+	height: 100%;
+	width: 0%;
+	transition: width 0.3s linear;
+}
+.shuttle-warn .shuttle-progress-fill   { background: var(--health-warn); }
+.shuttle-danger .shuttle-progress-fill { background: var(--health-bad); }
+.shuttle-safe .shuttle-progress-fill   { background: var(--health-good); }
+
+@keyframes shuttle-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.5; }
+}
+.shuttle-pulse { animation: shuttle-pulse 1.5s ease-in-out infinite; }
 
 /* ===== Data Table ===== */
 .data-table {
@@ -382,11 +414,6 @@ body.verb-style-links .verb-grid {
 	padding: 8px 0 2px 4px;
 	border-bottom: 1px solid var(--border);
 	margin-bottom: 2px;
-}
-.fav-source-tag {
-	font-size: 10px;
-	color: var(--text-muted);
-	margin-left: 6px;
 }
 .fav-empty-msg {
 	padding: 20px;
@@ -658,6 +685,7 @@ body.compact-mode .data-table td { padding: 1px 4px; }
 body.compact-mode .spell-card { padding: 2px 6px; gap: 6px; }
 body.compact-mode .ticket-card { padding: 2px 6px; gap: 6px; }
 body.compact-mode .ping-bar { padding: 3px 8px; font-size: 11px; }
+body.compact-mode .shuttle-bar { padding: 4px 8px; font-size: 12px; }
 
 /* ===== Turf Grid Layout ===== */
 body.turf-layout-grid .turf-item {
@@ -1874,12 +1902,40 @@ var st_skeleton = null;
 var st_els = {};
 var st_fixSent = false;
 
+var SHUTTLE_MODES = {
+	"call":       { label: "Вызван",             cls: "shuttle-warn",   icon: "\u25B2" },
+	"recall":     { label: "Отозван",            cls: "shuttle-safe",   icon: "\u25BC" },
+	"docked":     { label: "На станции",         cls: "shuttle-danger", icon: "\u2193" },
+	"escape":     { label: "Эвакуация",          cls: "shuttle-danger", icon: "\u2191" },
+	"igniting":   { label: "Запуск двигателей",  cls: "shuttle-danger", icon: "\u2022" },
+	"stranded":   { label: "Ошибка",             cls: "shuttle-danger shuttle-pulse", icon: "\u26A0" },
+	"recharging": { label: "Перезарядка",        cls: "shuttle-warn",   icon: "\u21BB" },
+	"landing":    { label: "Посадка",            cls: "shuttle-warn",   icon: "\u2193" }
+};
+
+function parseTimerSeconds(timerStr) {
+	if (!timerStr || timerStr === "--:--") return -1;
+	var parts = timerStr.split(":");
+	if (parts.length !== 2) return -1;
+	return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+}
+
 function st_ensureSkeleton() {
 	if (st_skeleton && st_skeleton.parentNode) return;
 	statcontent.textContent = "";
 	st_skeleton = el("div");
 
 	st_els.shuttle = el("div", "shuttle-bar");
+	st_els.shuttleIcon = el("span", "shuttle-icon");
+	st_els.shuttle.appendChild(st_els.shuttleIcon);
+	st_els.shuttleText = el("span", "shuttle-text");
+	st_els.shuttle.appendChild(st_els.shuttleText);
+	st_els.shuttleTimer = el("span", "shuttle-timer");
+	st_els.shuttle.appendChild(st_els.shuttleTimer);
+	st_els.shuttleProgress = el("div", "shuttle-progress");
+	st_els.shuttleProgressFill = el("div", "shuttle-progress-fill");
+	st_els.shuttleProgress.appendChild(st_els.shuttleProgressFill);
+	st_els.shuttle.appendChild(st_els.shuttleProgress);
 	st_skeleton.appendChild(st_els.shuttle);
 
 	var roundHeader = makeSectionHeader("round", "Раунд", st_sections);
@@ -1944,9 +2000,25 @@ function draw_status() {
 	st_ensureSkeleton();
 
 	if (d.shuttle) {
-		st_els.shuttle.style.display = "";
-		setText(st_els.shuttle, ">> " + d.shuttle[0] + " " + d.shuttle[1]);
-		st_els.shuttle.className = "shuttle-bar shuttle-warn";
+		st_els.shuttle.style.display = "flex";
+		var modeKey = d.shuttle[2] || "";
+		var timerStr = d.shuttle[1] || "00:00";
+		var totalSec = d.shuttle[3] || 0;
+		var cfg = SHUTTLE_MODES[modeKey] || { label: d.shuttle[0], cls: "shuttle-warn", icon: "\u25B2" };
+
+		setText(st_els.shuttleIcon, cfg.icon);
+		setText(st_els.shuttleText, cfg.label);
+		setText(st_els.shuttleTimer, timerStr);
+		st_els.shuttle.className = "shuttle-bar " + cfg.cls;
+
+		var remainSec = parseTimerSeconds(timerStr);
+		if (totalSec > 0 && remainSec >= 0) {
+			var pct = Math.max(0, Math.min(100, ((totalSec - remainSec) / totalSec) * 100));
+			st_els.shuttleProgressFill.style.width = pct + "%";
+			st_els.shuttleProgress.style.display = "";
+		} else {
+			st_els.shuttleProgress.style.display = "none";
+		}
 	} else {
 		st_els.shuttle.style.display = "none";
 	}
@@ -2527,6 +2599,12 @@ function makeVerbOnclick(command) {
 	};
 }
 
+function favoriteCategoryLabel(cat) {
+	var dot = cat.indexOf(".");
+	if (dot === -1) return cat;
+	return cat.substring(0, dot) + " \u2014 " + cat.substring(dot + 1);
+}
+
 function draw_favorites() {
 	statcontent.textContent = "";
 
@@ -2536,20 +2614,19 @@ function draw_favorites() {
 		return;
 	}
 
-	var grid = el("div", "verb-grid");
 	var byCategory = {};
 
 	for (var key in State.favorites) {
 		if (!State.favorites.hasOwnProperty(key)) continue;
 		var fav = State.favorites[key];
-		if (!byCategory[fav.cat]) byCategory[fav.cat] = [];
-		byCategory[fav.cat].push(fav);
+		var displayCat = favoriteCategoryLabel(fav.cat);
+		if (!byCategory[displayCat]) byCategory[displayCat] = [];
+		byCategory[displayCat].push(fav);
 	}
 
 	for (var cat in byCategory) {
 		if (!byCategory.hasOwnProperty(cat)) continue;
-		var displayCat = resolveTabDisplayName(cat);
-		var header = el("div", "verb-sub-header", displayCat);
+		var header = el("div", "verb-sub-header", cat);
 		statcontent.appendChild(header);
 
 		var catGrid = el("div", "verb-grid");
@@ -2566,8 +2643,6 @@ function draw_favorites() {
 					toggleFavorite(c, v);
 				};
 			})(fav.cat, fav.verb);
-			var tag = el("span", "fav-source-tag", displayCat);
-			pill.appendChild(tag);
 			catGrid.appendChild(pill);
 		}
 		statcontent.appendChild(catGrid);
@@ -2934,7 +3009,7 @@ function update_ping(ping_str, tidi_str) {
 	g_ping.text.className = pingClass(ping);
 	setText(g_ping.avg, " (сред: " + avg + "ms)");
 	if (jitter != null && jitter > 0) {
-		setText(g_ping.max, " \u00b1" + jitter + "ms");
+		setText(g_ping.max, " ±" + jitter + "ms");
 		g_ping.max.className = jitterClass(jitter);
 	} else {
 		setText(g_ping.max, "");
@@ -3245,6 +3320,7 @@ function update_split_admin_tabs(status) {
 			removeStatusTab("Events");
 			removeStatusTab("Fun");
 			removeStatusTab("Game");
+			removeStatusTab("Player Interaction");
 		}
 		update_verbs();
 	}
@@ -3379,7 +3455,7 @@ function draw_settings() {
 	}
 	if (themeState.preset === "custom") {
 		var customLabel = el("button", "settings-preset-btn custom-indicator");
-		customLabel.textContent = "\u2728 \u041A\u0430\u0441\u0442\u043E\u043C\u043D\u0430\u044F";
+		customLabel.textContent = "\u2728 Кастомная";
 		customLabel.onclick = function() {};
 		presetGrid.appendChild(customLabel);
 	}

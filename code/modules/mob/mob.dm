@@ -80,7 +80,7 @@
 				hud_list[hud] = I
 
 /mob/proc/Cell()
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 	set hidden = 1
 
 	if(!loc)

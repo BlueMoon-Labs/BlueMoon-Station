@@ -39,7 +39,7 @@ function draw_settings() {
 	}
 	if (themeState.preset === "custom") {
 		var customLabel = el("button", "settings-preset-btn custom-indicator");
-		customLabel.textContent = "\u2728 \u041A\u0430\u0441\u0442\u043E\u043C\u043D\u0430\u044F";
+		customLabel.textContent = "\u2728 Кастомная";
 		customLabel.onclick = function() {};
 		presetGrid.appendChild(customLabel);
 	}

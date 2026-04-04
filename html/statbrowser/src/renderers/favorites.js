@@ -1,3 +1,9 @@
+function favoriteCategoryLabel(cat) {
+	var dot = cat.indexOf(".");
+	if (dot === -1) return cat;
+	return cat.substring(0, dot) + " \u2014 " + cat.substring(dot + 1);
+}
+
 function draw_favorites() {
 	statcontent.textContent = "";
 
@@ -12,14 +18,14 @@ function draw_favorites() {
 	for (var key in State.favorites) {
 		if (!State.favorites.hasOwnProperty(key)) continue;
 		var fav = State.favorites[key];
-		if (!byCategory[fav.cat]) byCategory[fav.cat] = [];
-		byCategory[fav.cat].push(fav);
+		var displayCat = favoriteCategoryLabel(fav.cat);
+		if (!byCategory[displayCat]) byCategory[displayCat] = [];
+		byCategory[displayCat].push(fav);
 	}
 
 	for (var cat in byCategory) {
 		if (!byCategory.hasOwnProperty(cat)) continue;
-		var displayCat = resolveTabDisplayName(cat);
-		var header = el("div", "verb-sub-header", displayCat);
+		var header = el("div", "verb-sub-header", cat);
 		statcontent.appendChild(header);
 
 		var catGrid = el("div", "verb-grid");

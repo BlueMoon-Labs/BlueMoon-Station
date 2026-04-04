@@ -473,7 +473,7 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 
 /client/proc/unban_panel()
 	set name = "Unbanning Panel"
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 	if(!check_rights(R_BAN))
 		return
 	if(holder)

@@ -68,14 +68,46 @@
 
 /* ===== Shuttle Bar ===== */
 .shuttle-bar {
+	display: none;
+	align-items: center;
+	gap: 8px;
 	padding: 6px 8px;
 	font-weight: bold;
 	font-size: 13px;
 	border-bottom: 1px solid var(--border);
-	display: none;
+	position: relative;
+	overflow: hidden;
 }
-.shuttle-warn { background: rgba(204, 167, 0, 0.15); color: var(--health-warn); }
+.shuttle-icon { flex-shrink: 0; font-size: 14px; }
+.shuttle-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shuttle-timer { font-family: var(--font-mono); flex-shrink: 0; }
+
+.shuttle-warn   { background: rgba(204, 167, 0, 0.15); color: var(--health-warn); }
 .shuttle-danger { background: rgba(244, 71, 71, 0.15); color: var(--health-bad); }
+.shuttle-safe   { background: rgba(78, 201, 78, 0.15); color: var(--health-good); }
+
+.shuttle-progress {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: rgba(255, 255, 255, 0.08);
+}
+.shuttle-progress-fill {
+	height: 100%;
+	width: 0%;
+	transition: width 0.3s linear;
+}
+.shuttle-warn .shuttle-progress-fill   { background: var(--health-warn); }
+.shuttle-danger .shuttle-progress-fill { background: var(--health-bad); }
+.shuttle-safe .shuttle-progress-fill   { background: var(--health-good); }
+
+@keyframes shuttle-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.5; }
+}
+.shuttle-pulse { animation: shuttle-pulse 1.5s ease-in-out infinite; }
 
 /* ===== Data Table ===== */
 .data-table {
@@ -463,6 +495,7 @@ body.compact-mode .data-table td { padding: 1px 4px; }
 body.compact-mode .spell-card { padding: 2px 6px; gap: 6px; }
 body.compact-mode .ticket-card { padding: 2px 6px; gap: 6px; }
 body.compact-mode .ping-bar { padding: 3px 8px; font-size: 11px; }
+body.compact-mode .shuttle-bar { padding: 4px 8px; font-size: 12px; }
 
 /* ===== Turf Grid Layout ===== */
 body.turf-layout-grid .turf-item {

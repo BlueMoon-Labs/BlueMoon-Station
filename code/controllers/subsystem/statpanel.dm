@@ -26,7 +26,6 @@ SUBSYSTEM_DEF(statpanels)
 	var/client_stagger_groups = 3
 	var/client_stagger_index = 0
 	var/cached_tickets_encoded
-	var/turf_fire_skip = FALSE
 	var/list/cached_client_stats
 	var/client_stats_refresh_counter = 0
 	var/list/ping_run = list()
@@ -47,8 +46,6 @@ SUBSYSTEM_DEF(statpanels)
 					C.statpanel_sent_icons.Cut()
 			icon_queue.Cut()
 
-		turf_fire_skip = !turf_fire_skip
-
 		var/list/tidi_data = list(
 			round(SStime_track.time_dilation_current, 0.1),
 			round(SStime_track.time_dilation_avg_fast, 0.1),
@@ -61,17 +58,20 @@ SUBSYSTEM_DEF(statpanels)
 		var/real_round_time = world.timeofday - SSticker.real_round_start_time
 		var/list/fast_data = list()
 		fast_data["time"] = list(
-			list("\u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(round_time, "hh:mm:ss", 0)),
-			list("\u041D\u0430\u0441\u0442. \u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(real_round_time, "hh:mm:ss", 0)),
-			list("\u0414\u0430\u0442\u0430", "[time2text(world.realtime, "MMM DD")] [GLOB.year_integer]"),
-			list("\u0412\u0440\u0435\u043C\u044F \u0421\u0442\u0430\u043D\u0446\u0438\u0438", STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)),
-			list("\u0412\u0440\u0435\u043C\u044F \u0432 \u0421\u043E\u043B\u043D\u0435\u0447\u043D\u043E\u0439", SOLAR_TIME_TIMESTAMP("hh:mm:ss", world.time)),
-			list("\u0412\u0440\u0435\u043C\u044F \u0421\u0435\u0440\u0432\u0435\u0440\u0430", time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")))
+			list("Время Раунда", time2text(round_time, "hh:mm:ss", 0)),
+			list("Наст. Время Раунда", time2text(real_round_time, "hh:mm:ss", 0)),
+			list("Дата", "[time2text(world.realtime, "MMM DD")] [GLOB.year_integer]"),
+			list("Время Станции", STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)),
+			list("Время в Солнечной", SOLAR_TIME_TIMESTAMP("hh:mm:ss", world.time)),
+			list("Время Сервера", time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")))
 		fast_data["tidi"] = tidi_data
 		if(SSshuttle.emergency)
 			var/ETA = SSshuttle.emergency.getModeStr()
 			if(ETA)
-				fast_data["shuttle"] = list(ETA, SSshuttle.emergency.getTimerStr())
+				var/timer_total = 0
+				if(SSshuttle.emergency.last_timer_length)
+					timer_total = round(SSshuttle.emergency.last_timer_length / 10, 1)
+				fast_data["shuttle"] = list(ETA, SSshuttle.emergency.getTimerStr(), SSshuttle.emergency.mode, timer_total)
 		encoded_global_fast = url_encode(json_encode(fast_data))
 
 		// is_full_cycle gates slow-updating global data and vote cache only;
@@ -80,9 +80,9 @@ SUBSYSTEM_DEF(statpanels)
 			if(is_slow_cycle)
 				var/datum/map_config/cached = SSmapping.next_map_config
 				var/list/server_section = list(
-					list("\u041A\u0430\u0440\u0442\u0430", SSmapping.config?.map_name || "Loading..."))
+					list("Карта", SSmapping.config?.map_name || "Loading..."))
 				if(cached)
-					server_section += list(list("\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0430\u044F \u043A\u0430\u0440\u0442\u0430", cached.map_name))
+					server_section += list(list("Следующая карта", cached.map_name))
 				var/current_players = GLOB.clients.len
 				var/player_delta = current_players - prev_player_count
 				var/player_trend = "[current_players]"
@@ -90,10 +90,10 @@ SUBSYSTEM_DEF(statpanels)
 					player_trend = "[current_players] ([player_delta > 0 ? "+" : ""][player_delta])"
 				prev_player_count = current_players
 				server_section += list(
-					list("ID \u0440\u0430\u0443\u043D\u0434\u0430", GLOB.round_id ? GLOB.round_id : "NULL"),
-					list("\u0418\u0433\u0440\u043E\u0432\u043E\u0439 \u0420\u0435\u0436\u0438\u043C", GLOB.master_mode),
-					list("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u0418\u0433\u0440\u043E\u043A\u043E\u0432", player_trend),
-					list("\u041F\u0440\u0435\u0434\u044B\u0434\u0443\u0449\u0438\u0435 \u0420\u0435\u0436\u0438\u043C\u044B", jointext(SSpersistence.saved_modes, ", ")))
+					list("ID раунда", GLOB.round_id ? GLOB.round_id : "NULL"),
+					list("Игровой Режим", GLOB.master_mode),
+					list("Подключено Игроков", player_trend),
+					list("Предыдущие Режимы", jointext(SSpersistence.saved_modes, ", ")))
 				encoded_global_slow = url_encode(json_encode(server_section))
 
 			cached_vote_base = null
@@ -256,7 +256,7 @@ SUBSYSTEM_DEF(statpanels)
 				target << output("[url_encode(json_encode(target.spell_tabs))];[proc_holders_encoded]", "statbrowser:update_spells")
 			if(MC_TICK_CHECK)
 				return
-			if(!turf_fire_skip && M?.listed_turf)
+			if(M?.listed_turf)
 				var/mob/target_mob = M
 				if(!target_mob.TurfAdjacent(target_mob.listed_turf))
 					target << output("", "statbrowser:remove_listedturf")
@@ -267,55 +267,49 @@ SUBSYSTEM_DEF(statpanels)
 					icon_queue -= target
 				else if(target.stat_tab == M?.listed_turf.name || !(M?.listed_turf.name in target.panel_tabs))
 					var/turf_ref = REF(target_mob.listed_turf)
-					target.turf_refresh_counter++
-					// Use cached data if same turf and not time for forced refresh
-					if(turf_ref == target.cached_turf_ref && target.cached_turf_encoded && target.turf_refresh_counter < 3)
-						target << output("[target.cached_turf_encoded];", "statbrowser:update_listedturf")
-					else
-						// If turf changed, clear per-client icon cache
-						if(turf_ref != target.cached_turf_ref)
-							target.statpanel_sent_icons.Cut()
-							icon_queue -= target
-						target.turf_refresh_counter = 0
-						var/list/overrides = list()
-						var/list/turfitems = list()
-						var/list/needs_icons = list()
-						for(var/img in target.images)
-							var/image/target_image = img
-							if(!target_image.loc || target_image.loc.loc != target_mob.listed_turf || !target_image.override)
-								continue
-							overrides += target_image.loc
-						// Phase 1: Send list immediately - no icon generation
-						var/turf/listed = target_mob.listed_turf
-						var/listed_ref = REF(listed)
-						turfitems[++turfitems.len] = list("[listed]", listed_ref)
-						if(!target.statpanel_sent_icons[listed_ref])
-							needs_icons += listed
-						for(var/tc in listed)
-							var/atom/movable/turf_content = tc
-							if(turf_content.mouse_opacity == MOUSE_OPACITY_TRANSPARENT)
-								continue
-							if(turf_content.invisibility > target_mob.see_invisible)
-								continue
-							if(turf_content in overrides)
-								continue
-							if(turf_content.IsObscured())
-								continue
-							var/ref = REF(turf_content)
-							turfitems[++turfitems.len] = list("[turf_content.name]", ref)
-							if(!target.statpanel_sent_icons[ref])
-								needs_icons += turf_content
-						var/encoded = url_encode(json_encode(turfitems))
-						target.cached_turf_ref = turf_ref
-						target.cached_turf_encoded = encoded
-						target << output("[encoded];", "statbrowser:update_listedturf")
-						// Phase 2: Queue icon generation for progressive delivery
-						if(length(needs_icons))
-							var/list/existing = icon_queue[target]
-							if(existing)
-								existing += needs_icons
-							else
-								icon_queue[target] = needs_icons
+					// If turf changed, clear per-client icon cache
+					if(turf_ref != target.cached_turf_ref)
+						target.statpanel_sent_icons.Cut()
+						icon_queue -= target
+					var/list/overrides = list()
+					var/list/turfitems = list()
+					var/list/needs_icons = list()
+					for(var/img in target.images)
+						var/image/target_image = img
+						if(!target_image.loc || target_image.loc.loc != target_mob.listed_turf || !target_image.override)
+							continue
+						overrides += target_image.loc
+					// Phase 1: Send list immediately - no icon generation
+					var/turf/listed = target_mob.listed_turf
+					var/listed_ref = REF(listed)
+					turfitems[++turfitems.len] = list("[listed]", listed_ref)
+					if(!target.statpanel_sent_icons[listed_ref])
+						needs_icons += listed
+					for(var/tc in listed)
+						var/atom/movable/turf_content = tc
+						if(turf_content.mouse_opacity == MOUSE_OPACITY_TRANSPARENT)
+							continue
+						if(turf_content.invisibility > target_mob.see_invisible)
+							continue
+						if(turf_content in overrides)
+							continue
+						if(turf_content.IsObscured())
+							continue
+						var/ref = REF(turf_content)
+						turfitems[++turfitems.len] = list("[turf_content.name]", ref)
+						if(!target.statpanel_sent_icons[ref])
+							needs_icons += turf_content
+					var/encoded = url_encode(json_encode(turfitems))
+					target.cached_turf_ref = turf_ref
+					target.cached_turf_encoded = encoded
+					target << output("[encoded];", "statbrowser:update_listedturf")
+					// Phase 2: Queue icon generation for progressive delivery
+					if(length(needs_icons))
+						var/list/existing = icon_queue[target]
+						if(existing)
+							existing += needs_icons
+						else
+							icon_queue[target] = needs_icons
 		if(MC_TICK_CHECK)
 			return
 
@@ -428,17 +422,17 @@ SUBSYSTEM_DEF(statpanels)
 	var/list/key_ss = list()
 	// Atmospherics
 	key_ss["Atmospherics"] = list(
-		list("\u0412\u044B\u0441\u043E\u043A\u043E\u0435 \u0434\u0430\u0432\u043B\u0435\u043D\u0438\u0435", round(SSair.cost_highpressure, 0.1)),
-		list("\u0413\u043E\u0440\u0435\u043D\u0438\u0435", round(SSair.cost_hotspots, 0.1)),
-		list("\u0421\u0432\u0435\u0440\u0445\u043F\u0440\u043E\u0432\u043E\u0434\u0438\u043C\u043E\u0441\u0442\u044C", round(SSair.cost_superconductivity, 0.1)),
-		list("\u0422\u0440\u0443\u0431\u043E\u043F\u0440\u043E\u0432\u043E\u0434\u044B", round(SSair.cost_pipenets, 0.1)),
-		list("\u0410\u0442\u043C\u043E\u0441. \u043C\u0430\u0448\u0438\u043D\u044B", round(SSair.cost_atmos_machinery, 0.1)),
-		list("\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u0442\u0430\u0439\u043B\u044B", round(SSair.cost_turfs, 0.1)),
-		list("\u041E\u0447\u0430\u0433\u0438", SSair.hotspots.len),
-		list("\u0421\u0435\u0442\u0438", SSair.networks.len),
-		list("\u0412\u044B\u0441 \u0434\u0430\u0432\u043B. \u0442\u0430\u0439\u043B\u044B", SSair.high_pressure_turfs),
-		list("\u041D\u0438\u0437\u043A \u0434\u0430\u0432\u043B. \u0442\u0430\u0439\u043B\u044B", SSair.low_pressure_turfs),
-		list("\u0413\u0430\u0437\u043E\u0432\u044B\u0435 \u0441\u043C\u0435\u0441\u0438", SSair.gas_mixes_count)
+		list("Высокое давление", round(SSair.cost_highpressure, 0.1)),
+		list("Горение", round(SSair.cost_hotspots, 0.1)),
+		list("Сверхпроводимость", round(SSair.cost_superconductivity, 0.1)),
+		list("Трубопроводы", round(SSair.cost_pipenets, 0.1)),
+		list("Атмос. машины", round(SSair.cost_atmos_machinery, 0.1)),
+		list("Активные тайлы", round(SSair.cost_turfs, 0.1)),
+		list("Очаги", SSair.hotspots.len),
+		list("Сети", SSair.networks.len),
+		list("Выс давл. тайлы", SSair.high_pressure_turfs),
+		list("Низк давл. тайлы", SSair.low_pressure_turfs),
+		list("Газовые смеси", SSair.gas_mixes_count)
 	)
 	// Garbage Collector
 	var/gc_ratio = (SSgarbage.totaldels + SSgarbage.totalgcs) ? "[round((SSgarbage.totalgcs / (SSgarbage.totaldels + SSgarbage.totalgcs)) * 100, 0.1)]%" : "n/a"
@@ -446,35 +440,35 @@ SUBSYSTEM_DEF(statpanels)
 	for (var/i in 1 to GC_QUEUE_COUNT)
 		gc_queue_counts += SSgarbage.GetQueueDepth(i)
 	key_ss["Garbage"] = list(
-		list("\u041E\u0447\u0435\u0440\u0435\u0434\u0438", gc_queue_counts.Join(", ")),
-		list("Del/\u0442\u0438\u043A", SSgarbage.delslasttick),
-		list("GC/\u0442\u0438\u043A", SSgarbage.gcedlasttick),
-		list("\u0412\u0441\u0435\u0433\u043E Del", SSgarbage.totaldels),
-		list("\u0412\u0441\u0435\u0433\u043E GC", SSgarbage.totalgcs),
+		list("Очереди", gc_queue_counts.Join(", ")),
+		list("Del/тик", SSgarbage.delslasttick),
+		list("GC/тик", SSgarbage.gcedlasttick),
+		list("Всего Del", SSgarbage.totaldels),
+		list("Всего GC", SSgarbage.totalgcs),
 		list("GC %", gc_ratio)
 	)
 	// Machines
 	key_ss["Machines"] = list(
-		list("\u0412\u0441\u0435\u0433\u043E \u043C\u0430\u0448\u0438\u043D", SSmachines.get_machine_count()),
-		list("\u0422\u0438\u043F\u043E\u0432", SSmachines.get_machine_type_count()),
-		list("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430", length(SSmachines.processing)),
-		list("\u042D\u043D\u0435\u0440\u0433\u043E\u0441\u0435\u0442\u0438", length(SSmachines.powernets))
+		list("Всего машин", SSmachines.get_machine_count()),
+		list("Типов", SSmachines.get_machine_type_count()),
+		list("Обработка", length(SSmachines.processing)),
+		list("Энергосети", length(SSmachines.powernets))
 	)
 	// Mobs
 	key_ss["Mobs"] = list(
-		list("\u0416\u0438\u0432\u044B\u0445 \u043C\u043E\u0431\u043E\u0432", length(GLOB.mob_living_list))
+		list("Живых мобов", length(GLOB.mob_living_list))
 	)
 	// Timer
 	key_ss["Timer"] = list(
-		list("\u0411\u0430\u043A\u0435\u0442\u044B", SStimer.bucket_count),
-		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C", length(SStimer.second_queue)),
-		list("\u0425\u044D\u0448\u0438", length(SStimer.hashes)),
-		list("\u041A\u043B\u0438\u0435\u043D\u0442 \u0442\u0430\u0439\u043C\u0435\u0440\u044B", length(SStimer.clienttime_timers)),
-		list("\u0412\u0441\u0435\u0433\u043E ID", length(SStimer.timer_id_dict))
+		list("Бакеты", SStimer.bucket_count),
+		list("Очередь", length(SStimer.second_queue)),
+		list("Хэши", length(SStimer.hashes)),
+		list("Клиент таймеры", length(SStimer.clienttime_timers)),
+		list("Всего ID", length(SStimer.timer_id_dict))
 	)
 	// Objects (processing subsystem)
 	key_ss["Objects"] = list(
-		list("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430", length(SSobj.processing))
+		list("Обработка", length(SSobj.processing))
 	)
 	// Lighting
 	var/light_total = SSlighting.cost_sources + SSlighting.cost_corners + SSlighting.cost_objects
@@ -483,18 +477,18 @@ SUBSYSTEM_DEF(statpanels)
 	var/light_pct_o = light_total > 0 ? round(SSlighting.cost_objects / light_total * 100) : 0
 	var/light_avg = SSlighting.avg_sources_processed >= 0.5 ? round(SSlighting.cost_sources / SSlighting.avg_sources_processed, 0.01) : 0
 	key_ss["Lighting"] = list(
-		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C \u0438\u0441\u0442\u043E\u0447.", length(GLOB.lighting_update_lights)),
-		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C \u0443\u0433\u043B\u043E\u0432", length(GLOB.lighting_update_corners)),
-		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C \u043E\u0431\u044A\u0435\u043A\u0442.", length(GLOB.lighting_update_objects)),
-		list("\u041A\u044D\u043F \u0438\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u043E\u0432", SSlighting.sources_cap),
-		list("\u0424\u0430\u0437\u0430: \u0418\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u0438", "[round(SSlighting.cost_sources, 0.1)]ms ([light_pct_s]%)"),
-		list("\u0424\u0430\u0437\u0430: \u0423\u0433\u043B\u044B", "[round(SSlighting.cost_corners, 0.1)]ms ([light_pct_c]%)"),
-		list("\u0424\u0430\u0437\u0430: \u041E\u0431\u044A\u0435\u043A\u0442\u044B", "[round(SSlighting.cost_objects, 0.1)]ms ([light_pct_o]%)"),
-		list("\u0421\u0440\u0435\u0434\u043D\u0435\u0435/\u0438\u0441\u0442\u043E\u0447\u043D\u0438\u043A", "[light_avg]ms ([round(SSlighting.avg_sources_processed)] \u0448\u0442)"),
-		list("\u041F\u0438\u043A: \u0418\u0441\u0442./\u0423\u0433\u043B./\u041E\u0431\u044A.", "[SSlighting.peak_sources]/[SSlighting.peak_corners]/[SSlighting.peak_objects]"),
-		list("\u0425\u0443\u0434\u0448\u0438\u0439 fire", "[round(SSlighting.worst_fire_cost, 0.1)]ms"),
-		list("\u041A\u044D\u0448 \u0442\u0430\u0431\u043B\u0438\u0446", length(GLOB.lighting_sheets)),
-		list("\u0417\u0432\u0451\u0437\u0434\u043D\u044B\u0435 \u0442\u0430\u0439\u043B\u044B", length(GLOB.starlight))
+		list("Очередь источ.", length(GLOB.lighting_update_lights)),
+		list("Очередь углов", length(GLOB.lighting_update_corners)),
+		list("Очередь объект.", length(GLOB.lighting_update_objects)),
+		list("Кэп источников", SSlighting.sources_cap),
+		list("Фаза: Источники", "[round(SSlighting.cost_sources, 0.1)]ms ([light_pct_s]%)"),
+		list("Фаза: Углы", "[round(SSlighting.cost_corners, 0.1)]ms ([light_pct_c]%)"),
+		list("Фаза: Объекты", "[round(SSlighting.cost_objects, 0.1)]ms ([light_pct_o]%)"),
+		list("Среднее/источник", "[light_avg]ms ([round(SSlighting.avg_sources_processed)] шт)"),
+		list("Пик: Ист./Угл./Объ.", "[SSlighting.peak_sources]/[SSlighting.peak_corners]/[SSlighting.peak_objects]"),
+		list("Худший fire", "[round(SSlighting.worst_fire_cost, 0.1)]ms"),
+		list("Кэш таблиц", length(GLOB.lighting_sheets)),
+		list("Звёздные тайлы", length(GLOB.starlight))
 	)
 	// Clients performance aggregate — cached separately, refreshed every 3rd MC data call
 	client_stats_refresh_counter++
@@ -536,12 +530,12 @@ SUBSYSTEM_DEF(statpanels)
 			var/avg_delay = valid_clients ? round(sum_server_delay / valid_clients, 1) : 0
 			var/ping_minmax = valid_clients ? "[round(min_ping, 1)]/[round(max_ping, 1)]ms" : "n/a"
 			cached_client_stats = list(
-				list("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E", length(GLOB.clients)),
-				list("Ping \u0441\u0440\u0435\u0434\u043D\u0438\u0439", "[avg_ping]ms"),
-				list("Ping \u043C\u0438\u043D/\u043C\u0430\u043A\u0441", ping_minmax),
-				list("\u0417\u0430\u0434\u0435\u0440\u0436\u043A\u0430 \u0441\u0435\u0440\u0432\u0435\u0440\u0430", "[avg_delay]ms"),
-				list("FPS \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438", jointext(fps_parts, ", ")),
-				list("BYOND \u0432\u0435\u0440\u0441\u0438\u0438", jointext(ver_parts, ", "))
+				list("Подключено", length(GLOB.clients)),
+				list("Ping средний", "[avg_ping]ms"),
+				list("Ping мин/макс", ping_minmax),
+				list("Задержка сервера", "[avg_delay]ms"),
+				list("FPS настройки", jointext(fps_parts, ", ")),
+				list("BYOND версии", jointext(ver_parts, ", "))
 			)
 		else
 			cached_client_stats = null

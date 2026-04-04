@@ -3,12 +3,40 @@ var st_skeleton = null;
 var st_els = {};
 var st_fixSent = false;
 
+var SHUTTLE_MODES = {
+	"call":       { label: "Вызван",             cls: "shuttle-warn",   icon: "\u25B2" },
+	"recall":     { label: "Отозван",            cls: "shuttle-safe",   icon: "\u25BC" },
+	"docked":     { label: "На станции",         cls: "shuttle-danger", icon: "\u2193" },
+	"escape":     { label: "Эвакуация",          cls: "shuttle-danger", icon: "\u2191" },
+	"igniting":   { label: "Запуск двигателей",  cls: "shuttle-danger", icon: "\u2022" },
+	"stranded":   { label: "Ошибка",             cls: "shuttle-danger shuttle-pulse", icon: "\u26A0" },
+	"recharging": { label: "Перезарядка",        cls: "shuttle-warn",   icon: "\u21BB" },
+	"landing":    { label: "Посадка",            cls: "shuttle-warn",   icon: "\u2193" }
+};
+
+function parseTimerSeconds(timerStr) {
+	if (!timerStr || timerStr === "--:--") return -1;
+	var parts = timerStr.split(":");
+	if (parts.length !== 2) return -1;
+	return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+}
+
 function st_ensureSkeleton() {
 	if (st_skeleton && st_skeleton.parentNode) return;
 	statcontent.textContent = "";
 	st_skeleton = el("div");
 
 	st_els.shuttle = el("div", "shuttle-bar");
+	st_els.shuttleIcon = el("span", "shuttle-icon");
+	st_els.shuttle.appendChild(st_els.shuttleIcon);
+	st_els.shuttleText = el("span", "shuttle-text");
+	st_els.shuttle.appendChild(st_els.shuttleText);
+	st_els.shuttleTimer = el("span", "shuttle-timer");
+	st_els.shuttle.appendChild(st_els.shuttleTimer);
+	st_els.shuttleProgress = el("div", "shuttle-progress");
+	st_els.shuttleProgressFill = el("div", "shuttle-progress-fill");
+	st_els.shuttleProgress.appendChild(st_els.shuttleProgressFill);
+	st_els.shuttle.appendChild(st_els.shuttleProgress);
 	st_skeleton.appendChild(st_els.shuttle);
 
 	var roundHeader = makeSectionHeader("round", "Раунд", st_sections);
@@ -73,9 +101,25 @@ function draw_status() {
 	st_ensureSkeleton();
 
 	if (d.shuttle) {
-		st_els.shuttle.style.display = "";
-		setText(st_els.shuttle, ">> " + d.shuttle[0] + " " + d.shuttle[1]);
-		st_els.shuttle.className = "shuttle-bar shuttle-warn";
+		st_els.shuttle.style.display = "flex";
+		var modeKey = d.shuttle[2] || "";
+		var timerStr = d.shuttle[1] || "00:00";
+		var totalSec = d.shuttle[3] || 0;
+		var cfg = SHUTTLE_MODES[modeKey] || { label: d.shuttle[0], cls: "shuttle-warn", icon: "\u25B2" };
+
+		setText(st_els.shuttleIcon, cfg.icon);
+		setText(st_els.shuttleText, cfg.label);
+		setText(st_els.shuttleTimer, timerStr);
+		st_els.shuttle.className = "shuttle-bar " + cfg.cls;
+
+		var remainSec = parseTimerSeconds(timerStr);
+		if (totalSec > 0 && remainSec >= 0) {
+			var pct = Math.max(0, Math.min(100, ((totalSec - remainSec) / totalSec) * 100));
+			st_els.shuttleProgressFill.style.width = pct + "%";
+			st_els.shuttleProgress.style.display = "";
+		} else {
+			st_els.shuttleProgress.style.display = "none";
+		}
 	} else {
 		st_els.shuttle.style.display = "none";
 	}

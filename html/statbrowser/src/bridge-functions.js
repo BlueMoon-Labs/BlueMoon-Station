@@ -19,7 +19,7 @@ function update_ping(ping_str, tidi_str) {
 	g_ping.text.className = pingClass(ping);
 	setText(g_ping.avg, " (сред: " + avg + "ms)");
 	if (jitter != null && jitter > 0) {
-		setText(g_ping.max, " \u00b1" + jitter + "ms");
+		setText(g_ping.max, " ±" + jitter + "ms");
 		g_ping.max.className = jitterClass(jitter);
 	} else {
 		setText(g_ping.max, "");
@@ -330,6 +330,7 @@ function update_split_admin_tabs(status) {
 			removeStatusTab("Events");
 			removeStatusTab("Fun");
 			removeStatusTab("Game");
+			removeStatusTab("Player Interaction");
 		}
 		update_verbs();
 	}

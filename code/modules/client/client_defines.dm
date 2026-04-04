@@ -179,8 +179,6 @@
 	var/cached_turf_ref
 	/// cached encoded turf data for statpanel
 	var/cached_turf_encoded
-	/// counter for forcing turf refresh even on same turf
-	var/turf_refresh_counter = 0
 	/// tracks which icon REFs have been sent to this client's statbrowser (REF -> icon_url)
 	var/list/statpanel_sent_icons = list()
 
