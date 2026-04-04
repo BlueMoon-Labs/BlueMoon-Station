@@ -18,7 +18,6 @@
 	considered_combat_role = TRUE
 	alt_titles = list(
 		"Personnel Manager of Syndicate", //Синди выше, для удобства
-		"Syndicate Administrator", //Синди выше, для удобства
 		"Assistant Site Director",
 		"Captain Attachment",
 		"Chief of Staff",

@@ -16,7 +16,6 @@
 	alt_titles = list(
 		"Apprentice Engineer", //Стажер выше, для удобства
 		"Azik Interstellar Engineer", //Триглав выше, для удобства
-		"Syndicate Constructing Master", //Синди выше, для удобства
 		"Astromechanic",
 		"Damage Control Technician",
 		"Electrician",
@@ -26,6 +25,7 @@
 		"Engineering Specialist",
 		"Hazardous Material Operator",
 		"Maintenance Technician",
+		"Constructing Master",
 		"Nuclear Plant Operator",
 		"Response Engineer",
 		"Station Architect",

@@ -18,7 +18,6 @@
 	considered_combat_role = TRUE
 	alt_titles = list(
 		"Interdyne Lead Specialist", //Триглав выше, для удобства
-		"Syndicate Chief Physician", //Синди выше, для удобства
 		"Chief Heal Stud",
 		"Chief Heal Slut",
 		"Chief Physician",

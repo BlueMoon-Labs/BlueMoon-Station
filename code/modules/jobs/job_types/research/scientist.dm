@@ -13,7 +13,6 @@
 	alt_titles = list(
 		"Junior Researcher", //Стажер выше, для удобства
 		"Cybersun Researcher", //Триглав выше, для удобства
-		"Syndicate Researcher", //Синди выше, для удобства
 		"Anomalist",
 		"Chemical Researcher",
 		"Circuitry Designer",

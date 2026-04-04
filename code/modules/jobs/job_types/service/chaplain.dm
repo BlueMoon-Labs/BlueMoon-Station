@@ -10,7 +10,6 @@
 	selection_color = "#dddddd"
 	alt_titles = list(
 		"Tiger Cooperative Disciple", //Триглав выше, для удобства
-		"Syndicate Techpriest", //Синди выше, для удобства
 		"Bichop",
 		"Bishop",
 		"Cleric",

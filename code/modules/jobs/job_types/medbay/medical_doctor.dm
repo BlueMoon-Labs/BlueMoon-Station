@@ -11,7 +11,6 @@
 	alt_titles = list(
 		"Medical Intern", //Стажер выше, для удобства
 		"Interdyne Specialist", //Триглав выше, для удобства
-		"Syndicate Medical Techinician", //Синди выше, для удобства
 		"Coroner",
 		"Healing Fleshlight",
 		"Medi-Slut",
@@ -19,6 +18,7 @@
 		"Medical Examiner",
 		"Medical Secretary",
 		"Medical Resident",
+		"Medical Techinician",
 		"Medtech",
 		"Nurse",
 		"Oral Doctor",

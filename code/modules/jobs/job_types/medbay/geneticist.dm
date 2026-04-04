@@ -12,7 +12,6 @@
 	exp_requirements = 60
 	alt_titles = list(
 		"Genetist Intern", //Стажер выше, для удобства
-		"Syndicate Genetist",
 		"Bioengineer",
 		"Gene Tailor",
 		"Gene Therapist",

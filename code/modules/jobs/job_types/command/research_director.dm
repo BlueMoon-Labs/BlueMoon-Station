@@ -18,7 +18,6 @@
 	considered_combat_role = TRUE
 	alt_titles = list(
 		"Cybersun Lead Specialist", //Триглав выше, для удобства
-		"Syndicate Research Manager", //Синди выше, для удобства
 		"Biorobotics Director",
 		"CEO of Sex",
 		"Chief Researcher",

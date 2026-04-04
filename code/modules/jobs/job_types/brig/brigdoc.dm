@@ -15,7 +15,6 @@
 	considered_combat_role = TRUE
 	exp_type_department = EXP_TYPE_MEDICAL
 	alt_titles = list(
-		"Syndicate Corpsman", //Синди выше, для удобства
 		"AC Combat Medic",
 		"Brig Doctor",
 		"Combat Medic",
