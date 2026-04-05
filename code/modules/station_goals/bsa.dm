@@ -392,7 +392,10 @@
 	var/obj/machinery/bsa/full/cannon = connected_cannon?.resolve()
 	if(!cannon)
 		return
-	cannon.target_power = new_target
+	new_target = text2num(new_target)
+	if(isnull(new_target))
+		return
+	cannon.target_power = clamp(new_target, 0, cannon.max_charge)
 
 /obj/machinery/computer/bsa_control/proc/charge()
 	var/obj/machinery/bsa/full/cannon = connected_cannon?.resolve()

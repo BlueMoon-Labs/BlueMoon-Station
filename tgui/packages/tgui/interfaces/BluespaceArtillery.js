@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Box, Button, LabeledList, NoticeBox, NumberInput, ProgressBar, Section, Slider } from '../components';
+import { Box, Button, LabeledList, NoticeBox, ProgressBar, Section, Slider } from '../components';
 import { Window } from '../layouts';
 
 const formatPower = (x) => {
@@ -66,6 +66,7 @@ export const BluespaceArtillery = (props, context) => {
                   content="Charge Capacitors"
                   icon="bolt"
                   color="orange"
+                  disabled={status !== 'SYSTEM READY' && status !== 'SYSTEM POWER LOW'}
                   onClick={() => act('charge')}
                 />
               }

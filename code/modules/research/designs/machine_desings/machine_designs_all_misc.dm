@@ -136,7 +136,7 @@
 
 /datum/design/board/vendatray
 	name = "Machine Design (Vend-A-Tray)"
-	desc = "A display case with an ID-card swiper. Use your ID to purchase the contents.."
+	desc = "A display case with an ID-card swiper. Use your ID to purchase the contents."
 	id = "vendatray"
 	build_path = /obj/item/circuitboard/machine/vendatray
 	category = list ("Misc. Machinery")
