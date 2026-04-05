@@ -16,6 +16,7 @@
 
 	// Destroy alert before timeout fires
 	dummy.clear_alert("test_timeout")
+	alert = null
 
 	// Timer should be cancelled
 	TEST_ASSERT_NULL(SStimer.timer_id_dict[timerid], "Alert Destroy() did not cancel timeout timer")
@@ -39,6 +40,7 @@
 
 	// Destroy just the doomed alert
 	dummy.clear_alert("doomed")
+	doomed = null
 
 	// Remaining alert should still be in alerts dict
 	TEST_ASSERT_EQUAL(length(dummy.alerts), 1, "Only one alert should remain")

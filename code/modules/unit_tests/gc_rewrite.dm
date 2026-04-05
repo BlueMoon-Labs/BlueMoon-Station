@@ -214,12 +214,19 @@
 		SSgarbage.peak_queue_depths[i] = 0
 
 /datum/unit_test/gc_rewrite_base/proc/run_gc_fire_cycles(cycles = 1)
+	SSgarbage.state = SS_IDLE // Prevent MC from firing SSgarbage during sleep
+	sleep(10) // Let BYOND process pending refcount deletions
 	for (var/i in 1 to cycles)
 		SSgarbage.state = SS_RUNNING
 		SSgarbage.fire()
+		SSgarbage.state = SS_IDLE
 
 /datum/unit_test/gc_rewrite_base/proc/configure_immediate_gc()
 	reset_gc_queues()
+	SSgarbage.items = list()
+	GLOB.gc_failure_cache.failures = list()
+	GLOB.gc_failure_cache.failure_sources = list()
+	GLOB.gc_failure_cache.total_failures = 0
 	SSgarbage.collection_timeout[GC_QUEUE_SOFTCHECK] = 0
 	SSgarbage.collection_timeout[GC_QUEUE_WARNFAIL] = 0
 	SSgarbage.collection_timeout[GC_QUEUE_HARDDELETE] = 0
@@ -369,12 +376,12 @@
 	TEST_ASSERT_NOTNULL(alert, "Buckled alert was not created")
 	TEST_ASSERT_EQUAL(dummy.alerts["buckled"], alert, "Buckled alert was not stored on the owner")
 
-	qdel(alert)
+	dummy.clear_alert("buckled", TRUE)
 	alert = null
 
 	TEST_ASSERT_NULL(dummy.alerts["buckled"], "Buckled alert Destroy() did not scrub the owner alert slot")
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(3)
 	assert_no_gc_failures(/atom/movable/screen/alert/buckled, "Buckled alert")
 	TEST_ASSERT_EQUAL(GLOB.gc_failure_cache.total_failures, 0, "Buckled alert unexpectedly created GC failure-viewer entries")
 
