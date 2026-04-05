@@ -51,6 +51,8 @@
 /atom/movable/screen/Destroy()
 	if(istype(hud) && hud.mymob?.client)
 		hud.mymob.client.screen -= src
+	for(var/client/C as anything in GLOB.clients)
+		C.moused_over_objects -= src
 	set_new_hud(null)
 	master = null
 	vis_contents.Cut()

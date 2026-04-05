@@ -988,13 +988,8 @@ so as to remain in compliance with the most up-to-date laws."
 	detach_from_owner(TRUE)
 	animate(src)
 	transform = null
-	..()
 	severity = 0
-	master_ref = null
-	master = null
-	owner = null
-	screen_loc = ""
-	return QDEL_HINT_HARDDEL_NOW
+	return ..()
 
 /atom/movable/screen/alert/examine(mob/user)
 	return list(
