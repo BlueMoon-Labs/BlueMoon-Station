@@ -309,10 +309,10 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 			. += "Удачи =)"
 
 	if(station_goals.len)
-		. += "<hr><b>Специальные указы для [station_name()]:</b>"
+		. += "<hr><b>Специальные указы для [station_name()]:</b><br>"
 		for(var/datum/station_goal/G in station_goals)
 			G.on_report()
-			. += G.get_report()
+			. += "[G.get_report()]<hr>"
 
 	print_command_report(., "Отдел ССО ПАКТа Синих Лун", announce=FALSE)
 	priority_announce("Благодаря неустанным усилиям наших специальных оперативных подразделений мы обнаружили несколько возможных угроз для [station_name()]. Будьте осторожней!", "Отдел ССО ПАКТа Синих Лун", "intercept")
