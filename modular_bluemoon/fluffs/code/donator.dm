@@ -2245,3 +2245,21 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/supernova_kit
 	ckeywhitelist = list("lapkee")
+
+/datum/gear/donator/bm/winter_cape
+	name = "Winter Cape"
+	slot = ITEM_SLOT_NECK
+	path = /obj/item/clothing/neck/cloak/wintercape
+	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/bwal_special_kit
+	name = "B-Wal-Special Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/bwal_special_kit
+	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/captain_rifle_kit
+	name = "Antique Laser Rifle Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/captain_rifle_kit
+	ckeywhitelist = list("lindaastereih")

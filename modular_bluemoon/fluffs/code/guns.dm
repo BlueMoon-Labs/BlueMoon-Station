@@ -1181,3 +1181,40 @@
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/casull/update_icon_state()
 	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"
+
+///////////////////////////////////////////////
+
+/obj/item/modkit/bwal_special_kit
+	name = "B-Wal-Special"
+	desc = "A modkit for making an B-Wal-2572 into a B-Wal-Special."
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal_special
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold, /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal2572)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/bwal_special
+	name = "\improper B-Wal-Special"
+	desc = "A unique example of an improved pistol used by the regular Catcrin Army. The personal number AV-000492 is engraved in gold on the barrel. Judging by its appearance, it belongs to someone of high rank."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "bwal_spec"
+	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/bwalshot.ogg'
+	unique_reskin = null
+
+/obj/item/modkit/captain_rifle_kit
+	name = "Antique Laser Rifle"
+	desc = "A modkit for making an antique laser gun into a antique laser rifle."
+	product = /obj/item/gun/energy/laser/captain/rifle
+	fromitem = list(/obj/item/gun/energy/laser/captain)
+
+/obj/item/gun/energy/laser/captain/rifle
+	name = "Antique Laser Rifle"
+	desc = "A unique, custom-made Captain's Laser. It's made of titanium and gold alloy with a nickel finish. The rifle is engraved with the serial number AV-000492 in gold. The grip is made of hard carbon fiber, treated with a layer of Kevlar. The top layer of the grip is covered in Trixan ebony, which makes it feel even more premium. It feels incredibly expensive."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "captain_rifle"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "captain_rifle"
+	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/LaserOni.ogg'
+	unique_reskin = null
+
+/obj/item/gun/energy/laser/captain/rifle/get_examine_name(mob/user)
+	. = ..()
+	. += "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>["This is captain's antique laser gun. Highrisk item!"]</span></span>"
