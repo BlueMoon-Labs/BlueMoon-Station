@@ -1,9 +1,10 @@
-/datum/quirk/proc/give_item(obj/item/item_path, mob/living/carbon/human/H)
-	var/list/slots = list(
-		"backpack" = ITEM_SLOT_BACKPACK,
-		"left pocket" = ITEM_SLOT_LPOCKET,
-		"right pocket" = ITEM_SLOT_RPOCKET
-	)
+/datum/quirk/proc/give_item(obj/item/item_path, mob/living/carbon/human/H, list/slots)
+	if(!LAZYLEN(slots))
+		slots = list(
+			"backpack" = ITEM_SLOT_BACKPACK,
+			"left pocket" = ITEM_SLOT_LPOCKET,
+			"right pocket" = ITEM_SLOT_RPOCKET
+		)
 
 	if(!istype(H))
 		H = quirk_holder
