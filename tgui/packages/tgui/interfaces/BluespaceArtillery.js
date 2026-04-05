@@ -53,7 +53,13 @@ export const BluespaceArtillery = (props, context) => {
             </Section>
             <Section title="System Status">
               <Box
-                color={status !== 'SYSTEM READY' ? 'bad' : 'green'}
+                color={
+                status === 'SYSTEM READY'
+                  ? 'green'
+                  : status === 'SYSTEM CHARGING CAPACITORS'
+                    ? 'average'
+                    : 'bad'
+                }
                 fontSize="25px"
               >
                 {status || '—'}
@@ -81,7 +87,7 @@ export const BluespaceArtillery = (props, context) => {
                 <LabeledList.Item label="Target charge (MW)">
                   <Slider
                     value={target_capacitor_charge}
-                    fillValue={target_capacitor_charge}
+                    fillValue={capacitor_charge}
                     minValue={0}
                     maxValue={max_capacitor_charge}
                     step={1e6}

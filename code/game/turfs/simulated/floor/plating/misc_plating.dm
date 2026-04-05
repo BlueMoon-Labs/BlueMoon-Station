@@ -141,6 +141,7 @@
 	if(prob(15))
 		icon_state = "sand[rand(1,4)]"
 		icon_plating = icon_state
+		update_appearance()
 
 /turf/open/floor/plating/beach/coastline_t
 	name = "coastline"
