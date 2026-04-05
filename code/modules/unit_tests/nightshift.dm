@@ -442,8 +442,7 @@
 	GLOB.apcs_list = list(test_apc)
 	test_apc.update()
 
-	var/turf/light_turf = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
-	test_light = allocate(/obj/machinery/light, light_turf)
+	test_light = allocate(/obj/machinery/light, run_loc_floor_bottom_left)
 	test_light.status = LIGHT_OK
 	test_light.on = TRUE
 	test_light.nightshift_enabled = FALSE
@@ -670,8 +669,7 @@
 	test_area.power_apc = test_apc
 	test_apc.update()
 
-	var/turf/light_turf = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
-	test_light = allocate(/obj/machinery/light, light_turf)
+	test_light = allocate(/obj/machinery/light, run_loc_floor_bottom_left)
 	test_light.status = LIGHT_OK
 	test_light.on = TRUE
 	test_light.switchcount = 0
