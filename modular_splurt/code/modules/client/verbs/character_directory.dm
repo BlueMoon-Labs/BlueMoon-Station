@@ -129,6 +129,8 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			species = "Artificial Intelligence"
 			ooc_notes = A.mind.ooc_notes
 			flavor_text = null // No flavor text for AIs :c
+			if(A.mind?.headshot_links)
+				headshot_links = A.mind.headshot_links.Copy()
 
 		if(iscyborg(C.mob))
 			var/mob/living/silicon/robot/R = C.mob
@@ -138,6 +140,8 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			species = "Cyborg"
 			ooc_notes = R.mind.ooc_notes
 			flavor_text = R.mind.silicon_flavor_text
+			if(R.mind?.headshot_links)
+				headshot_links = R.mind.headshot_links.Copy()
 
 		// It's okay if we fail to find OOC notes and flavor text
 		// But if we can't find the name, they must be using a non-compatible mob type currently.
