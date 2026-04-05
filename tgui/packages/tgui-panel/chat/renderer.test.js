@@ -282,6 +282,26 @@ describe('ChatRenderer', () => {
       expect(renderer.messages[0].type).toBe('radio');
     });
 
+    test('detects radio from .priority_announcement CSS class', () => {
+      const renderer = createReadyRenderer();
+
+      renderer.processBatch([{
+        html: '<span class="priority_announcement">Central command notice</span>',
+      }]);
+
+      expect(renderer.messages[0].type).toBe('radio');
+    });
+
+    test('detects radio from .system_notice CSS class', () => {
+      const renderer = createReadyRenderer();
+
+      renderer.processBatch([{
+        html: '<span class="system_notice">Security level changed</span>',
+      }]);
+
+      expect(renderer.messages[0].type).toBe('radio');
+    });
+
     test('detects system from .boldannounce CSS class', () => {
       const renderer = createReadyRenderer();
 
