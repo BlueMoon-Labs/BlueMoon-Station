@@ -686,9 +686,9 @@
 	actions_types = list(/datum/action/item_action/toggle)
 	can_toggle = TRUE
 	mutantrace_variation = STYLE_MUZZLE
-	flags_inv = HIDEEARS | HIDEHAIR | HIDEEYES | HIDEHAIR
+	flags_inv = HIDEEARS | HIDEHAIR | HIDEHAIR
 	flags_cover = NONE
-	visor_flags_inv = HIDEMASK | HIDEEYES
+	visor_flags_inv = NONE
 	visor_flags_cover = NONE
 
 /obj/item/clothing/head/assu_helmet/bp_helmet/attack_self(mob/user)
