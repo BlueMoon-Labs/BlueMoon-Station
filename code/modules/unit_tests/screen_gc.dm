@@ -21,7 +21,7 @@
 	// Timer should be cancelled
 	TEST_ASSERT_NULL(SStimer.timer_id_dict[timerid], "Alert Destroy() did not cancel timeout timer")
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/atom/movable/screen/alert/notify_cloning, "Timed alert early destroy")
 
 /// Test: Alert Destroy properly scrubs all references without redundant reorganize_alerts
@@ -47,7 +47,7 @@
 	TEST_ASSERT_NOTNULL(dummy.alerts["stay"], "Staying alert was incorrectly removed")
 
 	// Doomed alert should be fully gone
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/atom/movable/screen/alert/weightless, "Alert destroyed while sibling remains")
 
 /// Test: Storage component destruction chain runs without screen GC failures
@@ -70,7 +70,7 @@
 	bag = null
 	S = null
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/atom/movable/screen/storage/boxes, "Storage boxes during bag destruction")
 	assert_no_gc_failures(/atom/movable/screen/storage/close, "Storage close during bag destruction")
 	assert_no_gc_failures(/atom/movable/screen/storage/continuous, "Storage continuous during bag destruction")
@@ -97,7 +97,7 @@
 	bag = null
 	S = null
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/atom/movable/screen/storage/boxes, "Storage boxes during mob destruction")
 	assert_no_gc_failures(/atom/movable/screen/storage/close, "Storage close during mob destruction")
 	assert_no_gc_failures(/atom/movable/screen/storage/item_holder, "Storage item_holder during mob destruction")
@@ -122,7 +122,7 @@
 	qdel(dummy)
 	dummy = null
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/atom/movable/screen/alert/buckled, "Buckled alert during multi-alert mob destroy")
 	assert_no_gc_failures(/atom/movable/screen/alert/weightless, "Weightless alert during multi-alert mob destroy")
 	assert_no_gc_failures(/atom/movable/screen/alert/fire, "Fire alert during multi-alert mob destroy")
@@ -151,7 +151,7 @@
 	bag = null
 	S = null
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	// If modeswitch_action existed and wasn't cleaned, the backpack will fail GC
 	if(had_action)
 		assert_no_gc_failures(/obj/item/storage/backpack, "Backpack with modeswitch_action")
@@ -177,5 +177,5 @@
 
 	dummy = null
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/mob/unit_test/gc_alert_dummy, "Bare gc_alert_dummy mob")
