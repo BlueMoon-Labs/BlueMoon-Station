@@ -764,6 +764,43 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		var/bindname = modless_key_bindings[key]
 		if(!GLOB.keybindings_by_name[bindname])
 			modless_key_bindings -= key
+	ensure_default_keybindings_present()
+
+/datum/preferences/proc/ensure_default_keybindings_present()
+	var/list/default_keybindings = hotkeys ? GLOB.hotkey_keybinding_list_by_key : GLOB.classic_keybinding_list_by_key
+	if(!islist(default_keybindings))
+		return
+
+	var/list/present_keybindings = list()
+	for(var/key in key_bindings)
+		if(!islist(key_bindings[key]))
+			continue
+		for(var/bindname in key_bindings[key])
+			present_keybindings[bindname] = TRUE
+
+	for(var/key in modless_key_bindings)
+		var/bindname = modless_key_bindings[key]
+		present_keybindings[bindname] = TRUE
+
+	var/list/missing_keybindings = list()
+	for(var/key in default_keybindings)
+		var/list/default_binds = default_keybindings[key]
+		if(!islist(default_binds))
+			continue
+		for(var/bindname in default_binds)
+			if(present_keybindings[bindname])
+				continue
+			if(!islist(missing_keybindings[bindname]))
+				missing_keybindings[bindname] = list()
+			missing_keybindings[bindname] += key
+
+	for(var/bindname in missing_keybindings)
+		var/list/default_keys = missing_keybindings[bindname]
+		for(var/key in default_keys)
+			if(!islist(key_bindings[key]))
+				key_bindings[key] = list()
+			LAZYADD(key_bindings[key], bindname)
+		present_keybindings[bindname] = TRUE
 
 
 /datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
