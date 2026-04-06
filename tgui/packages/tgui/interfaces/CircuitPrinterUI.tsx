@@ -1,9 +1,10 @@
 import { BooleanLike } from 'common/react';
-import { useBackend, useSharedState } from "../backend";
-import { Button, Tabs, NoticeBox, Section, Input, Box, Stack, Flex, Icon, ProgressBar } from "../components";
-import { Window } from "../layouts";
-import { Fragment } from 'inferno';
 import { createSearch } from 'common/string';
+import { Fragment } from 'inferno';
+
+import { useBackend, useSharedState } from "../backend";
+import { Box, Button, Flex, Icon, Input, NoticeBox, ProgressBar, Section, Stack, Table, Tabs } from "../components";
+import { Window } from "../layouts";
 
 const Upgrades = {
   advanced: 1 << 0,
@@ -44,7 +45,8 @@ const HardSearch = (categories: CategoryInfo[], search_text: string = ''): Circu
 
 // Компонент статуса принтера (металл + апгрейды)
 const PrinterStatus = (props, context) => {
-  const { data } = useBackend<IntegratedPrinterData>(context);
+  const { data, act } = useBackend<IntegratedPrinterData>(context);
+  const [load_status, setLoadStatus] = useSharedState<BooleanLike>(context, 'loadStatus', 0);
   const { metal_amount, max_metal, upgrades, debug_status, cloning_status, clone_config_status } = data;
 
   return (
@@ -55,7 +57,7 @@ const PrinterStatus = (props, context) => {
             <Stack.Item minWidth="70px">Металл:</Stack.Item>
             <Stack.Item grow>
               <ProgressBar
-                value={metal_amount / max_metal}
+                value={data.debug_status ? max_metal : metal_amount / max_metal}
                 ranges={{
                   good: [0.6, Infinity],
                   average: [0.3, 0.6],
@@ -69,7 +71,7 @@ const PrinterStatus = (props, context) => {
         </Stack.Item>
         <Stack.Item>
           <Stack align="center">
-            <Stack.Item minWidth="70px">Улучшения:</Stack.Item>
+            <Stack.Item minWidth="70px">Статусы:</Stack.Item>
             <Stack.Item>
               <Flex spacing={1}>
                 <Flex.Item>
@@ -94,18 +96,29 @@ const PrinterStatus = (props, context) => {
                   <Button
                     icon="clone"
                     selected={clone_config_status}
-                    tooltip="Настройка клонов"
+                    tooltip={clone_config_status ? "Клонирование включено" : "Клонирование запрещено конфигурацией сервера"}
                     tooltipPosition="top"
-                    color="transparent"
+                    color={clone_config_status ? "transparent" : "red"}
                   />
                 </Flex.Item>
                 {debug_status && (
                   <Flex.Item>
-                    <Button icon="bug" selected tooltip="Режим отладки" color="transparent" />
+                    <Button icon="bug" selected tooltip="Этот принтер принадлежит федерации магов." color="transparent" />
                   </Flex.Item>
                 )}
               </Flex>
             </Stack.Item>
+                <Stack.Item right>
+              <Button content={"Загрузить схему"} onClick={() => { setLoadStatus(1); act("print", { print: "load" }); }} />
+                </Stack.Item>
+            <Stack.Item right>
+              <Button disabled={!load_status} content={"Печать устройтсва."} onClick={() => { act("print", { print: "print" }); }} />
+            </Stack.Item >
+                {load_status ? (
+                <Stack.Item right>
+                  <Button icon="times" color={"red"} tooltip="Сбрасывает загруженную схему!" onClick={() => { setLoadStatus(0); act("print", { print: "cancel" }); }} />
+                </Stack.Item>
+                ) : null}
           </Stack>
         </Stack.Item>
       </Stack>
@@ -113,7 +126,7 @@ const PrinterStatus = (props, context) => {
   );
 };
 
-// Компонент сетки схем
+// Компонент сетки схем (переписан на Table)
 const CircuitsGrid = (props: { circuits?: CircuitData[] }, context) => {
   const { act, data } = useBackend<IntegratedPrinterData>(context);
   const { metal_amount } = data;
@@ -123,73 +136,117 @@ const CircuitsGrid = (props: { circuits?: CircuitData[] }, context) => {
     return <NoticeBox info>Нет схем для отображения</NoticeBox>;
   }
 
+  // Разбиваем схемы на строки по 3 элемента
+  const rows: CircuitData[][] = [];
+  for (let i = 0; i < circuits.length; i += 3) {
+    rows.push(circuits.slice(i, i + 3));
+  }
+
   return (
-    <Flex wrap="wrap" spacing={1}>
-      {circuits.map((circuit, index) => {
-        const canAfford = data.debug_status || (metal_amount >= circuit.cost) ;
-        return (
-          <Flex.Item key={index} basis="calc(33.33% - 8px)" grow={1}>
-            <Box
-              backgroundColor="rgba(0, 0, 0, 0.3)"
-              p={1}
-              style={{
-                borderRadius: '4px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                transition: 'all 0.1s',
-              }}
-            >
-              <Stack vertical height="100%">
-                <Stack.Item>
-                  <Stack align="center">
-                    <Stack.Item>
-                      <Button
-                        icon="question-circle"
-                        tooltip={circuit.desc}
-                        tooltipPosition="top"
-                        color="transparent"
-                        style={{ padding: 0 }}
-                      />
-                    </Stack.Item>
-                    <Stack.Item>
-                      {circuit.icon ? (
-                        <img
-                          src={`data:image/png;base64, ${circuit.icon}`}
-                          style={{ width: '32px', height: '32px'}}
-                        />
-                      ) : (
-                        <Icon name="microchip" size={2} />
-                      )}
-                    </Stack.Item>
-                    <Stack.Item grow>
-                      <Box bold>{circuit.name}</Box>
-                    </Stack.Item>
-                  </Stack>
-                </Stack.Item>
-                <Stack.Item>
-                  <Flex justify="space-between" align="center">
-                    <Flex.Item>
-                      <Box fontSize="12px" color="label">
-                        Цена: <b>{circuit.cost}</b> металла
-                      </Box>
-                    </Flex.Item>
-                    <Flex.Item>
-                      <Button
-                        content="Печать"
-                        icon="print"
-                        disabled={!canAfford}
-                        onClick={() => act("build", { build: circuit.path })}
-                        tooltip={!canAfford ? "Недостаточно металла" : ""}
-                        tooltipPosition="top"
-                      />
-                    </Flex.Item>
-                  </Flex>
-                </Stack.Item>
-              </Stack>
-            </Box>
-          </Flex.Item>
-        );
-      })}
-    </Flex>
+    <Table scrollable>
+        {rows.map((row, rowIndex) => (
+          <Table.Row key={rowIndex}>
+            {row.map((circuit, colIndex) => {
+              const canAfford =
+                (circuit.request_adv ? data.upgrades & Upgrades.advanced : true) &&
+                (data.debug_status || metal_amount >= circuit.cost);
+              let tooltip_msg = "";
+              if (circuit.request_adv && !(data.upgrades & Upgrades.advanced)) {
+                tooltip_msg = "Нет улучшения!";
+              } else if (!(data.debug_status || metal_amount >= circuit.cost)) {
+                tooltip_msg = "Недостаточно металла!";
+              }
+
+              return (
+                <Table.Cell
+                  key={colIndex}
+                  style={{
+                    width: "33.33%",
+                    padding: "1px",
+                    verticalAlign: "top",
+                  }}
+                >
+                  <Box
+                    backgroundColor={
+                      canAfford ? "rgba(0, 0, 0, 0.3)" : "rgba(79, 74, 74, 0.5)"
+                    }
+                    p={1}
+                    style={{
+                      borderRadius: "4px",
+                      border: canAfford
+                        ? "1px solid rgba(255, 255, 255, 0.1)"
+                        : "1px solid rgba(252, 56, 56, 0.64)",
+                      transition: "all 0.1s",
+                    }}
+                  >
+                    <Stack vertical height="100%">
+                      <Stack.Item>
+                        <Stack align="center">
+                          <Stack.Item>
+                            <Button
+                              icon="question-circle"
+                              tooltip={circuit.desc}
+                              tooltipPosition="top"
+                              color="transparent"
+                              style={{ padding: 0 }}
+                            />
+                          </Stack.Item>
+                          <Stack.Item>
+                            {circuit.icon ? (
+                              <img
+                                src={`data:image/png;base64, ${circuit.icon}`}
+                                style={{ width: "32px", height: "32px" }}
+                              />
+                            ) : (
+                              <Icon name="microchip" size={2} />
+                            )}
+                          </Stack.Item>
+                          <Stack.Item grow>
+                            <Box bold>{circuit.name}</Box>
+                          </Stack.Item>
+                        </Stack>
+                      </Stack.Item>
+                      <Stack.Item>
+                        <Flex justify="space-between" align="center">
+                          <Flex.Item>
+                            <Box fontSize="12px" color="label">
+                              Цена: <b>{circuit.cost}</b> металла
+                            </Box>
+                          </Flex.Item>
+                          <Flex.Item>
+                            <Button
+                              content="Печать"
+                              icon="print"
+                              disabled={!canAfford}
+                              onClick={() => act("build", { build: circuit.path })}
+                              tooltip={tooltip_msg}
+                              tooltipPosition="top"
+                            />
+                          </Flex.Item>
+                        </Flex>
+                      </Stack.Item>
+                    </Stack>
+                  </Box>
+                </Table.Cell>
+              );
+            })}
+            {/* Заполняем пустые ячейки в последней строке, чтобы сохранить сетку */}
+            {row.length < 3 &&
+              Array.from({ length: 3 - row.length }).map((_, emptyIndex) => (
+                <Table.Cell
+                  key={`empty-${emptyIndex}`}
+                  style={{
+                    width: "33.33%",
+                    padding: "1px",
+                    verticalAlign: "top",
+                  }}
+                >
+                  <div style={{ visibility: "hidden" }} />
+                </Table.Cell>
+              ))}
+          </Table.Row>
+        ))}
+    </Table>
   );
 };
 
@@ -208,7 +265,6 @@ export const ComponentsViewer = (props, context) => {
     circuitsToShow = data.categories[tabID].cirrcusts || [];
   }
 
-  // Сброс поиска при смене категории
   const handleCategoryChange = (index: number) => {
     setTabID(index);
     setSearchText("");
@@ -217,29 +273,10 @@ export const ComponentsViewer = (props, context) => {
   return (
     <>
       <PrinterStatus />
-      <Section
-        title="Компоненты"
-        fill
-        buttons={
-          <Stack>
-            <Stack.Item>
-              <Input
-                placeholder="Поиск по названию или описанию"
-                value={searchText}
-                onChange={(e, value) => setSearchText(value)}
-                width="250px"
-              />
-            </Stack.Item>
-            {searchText && (
-              <Stack.Item>
-                <Button icon="times" onClick={() => setSearchText("")} tooltip="Сбросить поиск" />
-              </Stack.Item>
-            )}
-          </Stack>
-        }
-      >
-        <Stack fill>
-          <Stack.Item minWidth="150px">
+
+      <Flex fill grow>
+        <Flex.Item minWidth="150px">
+          <Section title={"Категории"}>
             <Tabs vertical scrollable>
               {data.categories.map((catInfo, index) => (
                 <Tabs.Tab
@@ -252,30 +289,63 @@ export const ComponentsViewer = (props, context) => {
                 </Tabs.Tab>
               ))}
             </Tabs>
-          </Stack.Item>
-          <Stack.Item grow>
-            <Box height="100%" style={{ overflowY: 'auto', maxHeight: '450px' }}>
-              {searchText && searchResults?.length === 0 && (
-                <NoticeBox warning>По запросу "{searchText}" ничего не найдено</NoticeBox>
-              )}
-              <CircuitsGrid circuits={circuitsToShow} />
-            </Box>
-          </Stack.Item>
-        </Stack>
-      </Section>
+          </Section>
+        </Flex.Item>
+
+        <Flex.Item grow scrollable>
+          <Section
+            scrollable
+            title="Компоненты"
+            fill
+            buttons={
+              <Stack>
+                <Stack.Item>
+                  <Input
+                    placeholder="Поиск по названию"
+                    value={searchText}
+                    onChange={(e, value) => setSearchText(value)}
+                    width="250px"
+                  />
+                </Stack.Item>
+                {searchText && (
+                  <Stack.Item>
+                    <Button icon="times" onClick={() => setSearchText("")} tooltip="Сбросить поиск" />
+                  </Stack.Item>
+                )}
+              </Stack>
+            }
+          >
+            {searchText && searchResults?.length === 0 && (
+              <NoticeBox warning>По запросу {"'"}{searchText}{"'"} ничего не найдено</NoticeBox>
+            )}
+            <CircuitsGrid circuits={circuitsToShow} />
+          </Section>
+        </Flex.Item>
+      </Flex>
     </>
   );
 };
-
 // Главное окно
 export const CircuitPrinterUI = (props, context) => {
   const { data } = useBackend<IntegratedPrinterData>(context);
   return (
-    <Window width={900} height={700}>
+    <Window width={900} height={700} title={"Интегральный принтер"}>
       <Window.Content>
-        {data.debug_status && <NoticeBox info>Принтер в дебаг режиме!</NoticeBox>}
-        <ComponentsViewer />
+        {data.debug_status && <NoticeBox info>Принтер в дебаг режиме! Количество металла не ограничено!</NoticeBox>}
+        {data.cloning_status ? <ComponentsViewer /> : <CloneNotice />}
       </Window.Content>
     </Window>
+  );
+};
+
+
+export const CloneNotice = (props, context) => {
+  const { data, act } = useBackend<IntegratedPrinterData>(context);
+  return (
+    <NoticeBox center warning>
+        <h3>В процессе печати</h3>
+        <Icon name="sync" mr={1} />
+        <Button color={"red"} content={"Прервать"} tooltip={"Прерывает печать и возвращает ресурсы"} onClick={() => { act("print", { print: "cancel" }); }} />
+    </NoticeBox>
   );
 };

@@ -33,6 +33,14 @@
 	fast_clone = TRUE
 	w_class = WEIGHT_CLASS_TINY
 
+/obj/item/integrated_circuit_printer/debug_clone //translation: "integrated_circuit_printer/local_server"
+	name = "debug circuit printer"
+	debug = TRUE
+	upgraded = TRUE
+	can_clone = TRUE
+	w_class = WEIGHT_CLASS_TINY
+
+
 /obj/item/integrated_circuit_printer/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/material_container, list(/datum/material/iron), MINERAL_MATERIAL_AMOUNT * 25, TRUE, list(/obj/item/stack, /obj/item/integrated_circuit, /obj/item/electronic_assembly))
@@ -120,7 +128,7 @@
 	ui_interact(user)
 
 /obj/item/integrated_circuit_printer/ui_interact(mob/user, datum/tgui/ui)
-	
+
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "CircuitPrinterUI")
@@ -134,8 +142,8 @@
 
 	if(cashed_icons?[to_cashe])
 		return cashed_icons[to_cashe]
-	
-	var/temp = icon2base64(icon(to_cashe:icon, to_cashe:icon_state, frame = 1))
+
+	var/temp = icon2base64(icon(to_cashe:icon, to_cashe:icon_state, moving = FALSE, dir=SOUTH))
 	cashed_icons[to_cashe] = temp
 	return temp
 
@@ -178,10 +186,10 @@
 				circuit_data["cost"] = 400
 
 			circuits += list(circuit_data)
-		
+
 		category_data["cirrcusts"] = circuits
 		categories += list(category_data)
-	
+
 	data["categories"] = categories
 	data["clone_config_status"] = CONFIG_GET(flag/ic_printing)
 	return data
@@ -203,9 +211,6 @@
 
 /obj/item/integrated_circuit_printer/ui_act(action, params)
 	if(..())
-		return
-	
-	if(!check_interactivity(usr))
 		return
 
 	if(usr)
@@ -270,7 +275,7 @@
 						TRUE,
 						FALSE,
 					)
-					if(!check_interactivity(usr) || cloning)
+					if(!cloning)
 						return
 					if(!input)
 						program = null
