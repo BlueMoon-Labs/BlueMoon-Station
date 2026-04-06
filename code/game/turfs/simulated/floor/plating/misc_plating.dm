@@ -149,6 +149,7 @@
 	name = "coastline"
 	desc = "Tide's high tonight. Charge your batons."
 	icon_state = "beach"
+	base_icon_state = "beach"
 	slowdown = 1
 	baseturfs = /turf/open/floor/plating/beach/coastline_t
 

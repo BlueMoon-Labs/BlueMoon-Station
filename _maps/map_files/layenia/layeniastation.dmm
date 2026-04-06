@@ -183,7 +183,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -319,7 +318,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/library/artgallery)
@@ -662,7 +660,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/research)
@@ -1707,7 +1704,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -1817,7 +1813,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -2338,7 +2333,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/main)
@@ -2415,7 +2409,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/lawoffice)
@@ -2697,7 +2690,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -2763,7 +2755,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/office)
@@ -3048,7 +3039,6 @@
 /obj/structure/table,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -3374,7 +3364,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/sorting)
@@ -3556,7 +3545,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/xenobiology)
@@ -3661,7 +3649,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -3757,7 +3744,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/barbershop)
@@ -4223,7 +4209,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/secondary/service)
@@ -4248,7 +4233,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -5569,7 +5553,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/main)
@@ -6069,7 +6052,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -6640,7 +6622,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -6660,7 +6641,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/warehouse)
@@ -8087,7 +8067,6 @@
 	name = "air supply pipe"
 	},
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/teg)
@@ -8127,7 +8106,6 @@
 /obj/structure/closet/crate/medical,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/warehouse)
@@ -8390,7 +8368,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/kitchen)
@@ -11050,7 +11027,6 @@
 /obj/structure/closet/crate/freezer,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/warehouse)
@@ -11719,7 +11695,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -11936,7 +11911,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/maintenance/port)
@@ -12128,7 +12102,6 @@
 /obj/machinery/rnd/production/circuit_imprinter/department/science,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/research)
@@ -12450,7 +12423,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -12612,7 +12584,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/secondary/service)
@@ -12751,7 +12722,6 @@
 	dir = 4
 	},
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/maintenance/disposal/incinerator)
@@ -12772,7 +12742,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -13352,7 +13321,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -13562,7 +13530,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -14622,7 +14589,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/mixing)
@@ -14684,7 +14650,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -15225,7 +15190,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -15633,7 +15597,6 @@
 "csu" = (
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/barbershop)
@@ -16078,7 +16041,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/robotics/mechbay)
@@ -16184,7 +16146,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -16375,7 +16336,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/kitchen)
@@ -16455,7 +16415,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/command/heads_quarters/cmo)
@@ -16946,7 +16905,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -17655,7 +17613,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/secondary/exit)
@@ -17954,7 +17911,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/storage)
@@ -18266,7 +18222,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/toilet)
@@ -18477,7 +18432,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -18914,7 +18868,6 @@
 "cRX" = (
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/storage)
@@ -18931,7 +18884,6 @@
 /obj/item/gun/syringe,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -18955,7 +18907,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -19447,7 +19398,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -19516,7 +19466,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -19648,7 +19597,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/janitor)
@@ -20324,7 +20272,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -20387,7 +20334,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -20671,7 +20617,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -22054,7 +21999,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/science/xenobiology)
@@ -22201,7 +22145,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/checkpoint/science)
@@ -22354,7 +22297,6 @@
 /obj/machinery/magnetic_module,
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/science/circuit)
@@ -23378,7 +23320,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/dorms)
@@ -23524,7 +23465,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -23745,7 +23685,6 @@
 	},
 /obj/effect/landmark/start/assistant,
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/commons/fitness)
@@ -24051,7 +23990,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -25191,7 +25129,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/sorting)
@@ -25923,7 +25860,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/secondary/exit)
@@ -26392,7 +26328,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -26759,7 +26694,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 4;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/service/hydroponics/garden)
@@ -27180,7 +27114,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/robotics/lab)
@@ -27441,7 +27374,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/toilet)
@@ -28046,7 +27978,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -28172,7 +28103,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -28517,7 +28447,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -29542,7 +29471,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/warden)
@@ -29657,7 +29585,6 @@
 	},
 /obj/machinery/power/apc/auto_name/north,
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/medical/medbay/central)
@@ -30541,7 +30468,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/teg)
@@ -30559,7 +30485,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/robotics/mechbay)
@@ -30911,7 +30836,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -31016,7 +30940,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/kitchen)
@@ -31056,7 +30979,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -31752,7 +31674,6 @@
 /obj/effect/turf_decal/box,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -32110,7 +32031,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/toilet/restrooms)
@@ -32212,7 +32132,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/processing)
@@ -33898,7 +33817,6 @@
 /obj/structure/closet/emcloset,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/storage)
@@ -33935,7 +33853,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/warehouse)
@@ -33943,7 +33860,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/warehouse)
@@ -34101,7 +34017,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -34177,7 +34092,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/fitness)
@@ -36157,7 +36071,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -36297,7 +36210,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -36803,7 +36715,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/teg)
@@ -37423,7 +37334,6 @@
 	},
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/teg)
@@ -37554,7 +37464,6 @@
 /obj/item/toy/beach_ball/holoball,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -37946,7 +37855,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -38141,7 +38049,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -38378,7 +38285,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/kitchen)
@@ -38502,7 +38408,6 @@
 	},
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/secondary/entry)
@@ -38682,7 +38587,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -39214,7 +39118,6 @@
 	},
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/teg)
@@ -39913,7 +39816,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/mixing)
@@ -40236,7 +40138,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -40508,7 +40409,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -40966,7 +40866,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/storage)
@@ -43699,7 +43598,6 @@
 	dir = 9
 	},
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/port/fore)
@@ -44604,7 +44502,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -44703,7 +44600,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -45718,7 +45614,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/psychology)
@@ -46001,7 +45896,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/kitchen/coldroom)
@@ -46121,7 +46015,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/xenobiology)
@@ -46710,7 +46603,6 @@
 /obj/structure/table,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/secondary/exit)
@@ -47133,7 +47025,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port)
@@ -47291,7 +47182,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -48006,7 +47896,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -48146,7 +48035,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/robotics/lab)
@@ -48192,7 +48080,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/xenobiology)
@@ -49061,7 +48948,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -49296,7 +49182,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/brig)
@@ -49678,7 +49563,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/secondary/entry)
@@ -49836,7 +49720,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -50249,7 +50132,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -50356,7 +50238,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -50733,7 +50614,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/storage)
@@ -50800,7 +50680,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/maintenance/port)
@@ -51183,7 +51062,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -54196,7 +54074,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -54228,7 +54105,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/service/hydroponics/garden)
@@ -54366,7 +54242,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -54703,7 +54578,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 4;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/medical/virology)
@@ -54840,7 +54714,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -55350,7 +55223,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/storage/tools)
@@ -55904,7 +55776,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -57360,7 +57231,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/storage)
@@ -58737,7 +58607,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -59171,7 +59040,6 @@
 /obj/machinery/portable_atmospherics/canister/oxygen,
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/storage)
@@ -59613,7 +59481,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/sorting)
@@ -59998,7 +59865,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -60226,7 +60092,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -60322,7 +60187,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/office)
@@ -61014,7 +60878,6 @@
 "iVR" = (
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/service/theater)
@@ -61085,7 +60948,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/storage)
@@ -61615,7 +61477,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -63095,7 +62956,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/genetics)
@@ -63237,7 +63097,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -64421,7 +64280,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -64717,7 +64575,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -65143,7 +65000,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/storage)
@@ -65832,7 +65688,6 @@
 "jFv" = (
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/commons/fitness)
@@ -66702,7 +66557,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/hydroponics/garden)
@@ -66942,7 +66796,6 @@
 "jNv" = (
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/hydroponics/garden)
@@ -67248,7 +67101,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/main)
@@ -67427,7 +67279,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 4;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/tcommsat/server)
@@ -67668,7 +67519,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/lobby)
@@ -68519,7 +68369,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -68572,7 +68421,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -69122,7 +68970,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -70198,7 +70045,6 @@
 /obj/effect/landmark/navigate_destination/sec,
 /turf/open/floor/plasteel{
 	dir = 4;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/security/office)
@@ -70877,7 +70723,6 @@
 "kqg" = (
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -72515,7 +72360,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/atmos)
@@ -72879,7 +72723,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -73433,7 +73276,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/secondary/entry)
@@ -74810,7 +74652,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -75539,7 +75380,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/fitness)
@@ -75735,7 +75575,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/teg)
@@ -76212,7 +76051,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/brig)
@@ -76273,7 +76111,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -76547,7 +76384,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -76726,7 +76562,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/main)
@@ -76985,7 +76820,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -77318,7 +77152,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/storage/auxiliary)
@@ -78936,7 +78769,6 @@
 "lyq" = (
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/medical/virology)
@@ -79242,7 +79074,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 4;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -79964,7 +79795,6 @@
 /area/medical/medbay/central)
 "lEG" = (
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/atmos)
@@ -80807,7 +80637,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/maintenance/port)
@@ -81771,7 +81600,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -82563,7 +82391,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/hydroponics/garden)
@@ -82911,7 +82738,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/teg)
@@ -83141,7 +82967,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/kitchen)
@@ -83770,7 +83595,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/sorting)
@@ -83798,7 +83622,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/starboard)
@@ -85304,7 +85127,6 @@
 /obj/machinery/vending/dinnerware,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/kitchen)
@@ -86053,7 +85875,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/security/checkpoint)
@@ -86194,7 +86015,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -86404,7 +86224,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port)
@@ -87168,7 +86987,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/hydroponics)
@@ -87288,7 +87106,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -87683,7 +87500,6 @@
 /obj/effect/turf_decal/box,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/break_room)
@@ -88056,7 +87872,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -90010,7 +89825,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -90103,7 +89917,6 @@
 /obj/machinery/power/apc/auto_name/north,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -90945,7 +90758,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/central)
@@ -91024,7 +90836,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/command/heads_quarters/rd)
@@ -92071,7 +91882,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/fitness)
@@ -92614,7 +92424,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/sorting)
@@ -92668,7 +92477,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/sorting)
@@ -93090,7 +92898,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/brig)
@@ -93103,7 +92910,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/research)
@@ -93620,7 +93426,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/break_room)
@@ -94361,7 +94166,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/genetics)
@@ -94616,7 +94420,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -94733,7 +94536,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/kitchen)
@@ -95209,7 +95011,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/storage)
@@ -95291,7 +95092,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -95434,7 +95234,6 @@
 "nOB" = (
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -95661,7 +95460,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -96247,7 +96045,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -96680,7 +96477,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/warden)
@@ -96763,7 +96559,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -97186,7 +96981,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/central)
@@ -98895,7 +98689,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/main)
@@ -98932,7 +98725,6 @@
 /obj/structure/table,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/secondary/exit)
@@ -99141,7 +98933,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/office)
@@ -99586,7 +99377,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -100039,7 +99829,6 @@
 "oAs" = (
 /turf/open/floor/plasteel{
 	dir = 4;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/main)
@@ -100824,7 +100613,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/hydroponics)
@@ -101015,7 +100803,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/warehouse)
@@ -101985,7 +101772,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 4;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/secondary/exit)
@@ -102036,7 +101822,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/checkpoint)
@@ -102203,7 +101988,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -102381,7 +102165,6 @@
 /obj/structure/closet/emcloset,
 /turf/open/floor/plasteel{
 	dir = 4;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/tcommsat/server)
@@ -102622,7 +102405,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 4;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/maintenance/starboard)
@@ -102709,7 +102491,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -104202,7 +103983,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/psychology)
@@ -105012,7 +104792,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -105040,7 +104819,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -105168,7 +104946,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/dorms)
@@ -105412,7 +105189,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -105554,7 +105330,6 @@
 /obj/machinery/power/apc/auto_name/north,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/storage)
@@ -105767,7 +105542,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -106421,7 +106195,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/brig)
@@ -106974,7 +106747,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/sorting)
@@ -108231,7 +108003,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/tcommsat/server)
@@ -108352,7 +108123,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/research)
@@ -108754,7 +108524,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -108777,7 +108546,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -108925,7 +108693,6 @@
 /obj/effect/landmark/xeno_spawn,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -109013,7 +108780,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/secondary/entry)
@@ -110453,7 +110219,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -111320,7 +111085,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -112042,7 +111806,6 @@
 /obj/machinery/space_heater,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -112364,7 +112127,6 @@
 /obj/structure/table,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -112666,7 +112428,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/secondary/entry)
@@ -113076,7 +112837,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/checkpoint)
@@ -113124,7 +112884,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/secondary/entry)
@@ -113390,7 +113149,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -113570,7 +113328,6 @@
 /obj/machinery/light/floor,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -113746,7 +113503,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -115667,7 +115423,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -115895,7 +115650,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/central)
@@ -116616,7 +116370,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/dorms)
@@ -117583,7 +117336,6 @@
 	name = "mech bay"
 	},
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/science/robotics/mechbay)
@@ -117638,7 +117390,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/warden)
@@ -117941,7 +117692,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/sorting)
@@ -118739,7 +118489,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -118839,7 +118588,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/fitness)
@@ -118968,7 +118716,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -119456,7 +119203,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -119660,7 +119406,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/construction/mining/aux_base)
@@ -119980,7 +119725,6 @@
 /obj/item/gun/syringe,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -120445,7 +120189,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -121150,7 +120893,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/office)
@@ -121371,7 +121113,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -121569,7 +121310,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/ai_monitored/command/storage/eva)
@@ -121793,7 +121533,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -121961,7 +121700,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -121995,7 +121733,6 @@
 /obj/item/paicard,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -122125,7 +121862,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -122385,7 +122121,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/office)
@@ -122574,7 +122309,6 @@
 "rRW" = (
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -123402,7 +123136,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -123921,7 +123654,6 @@
 	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/commons/storage/tools)
@@ -123940,7 +123672,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -124400,7 +124131,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/robotics/lab)
@@ -124458,7 +124188,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -124607,7 +124336,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/processing)
@@ -124799,7 +124527,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -125232,7 +124959,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/storage)
@@ -125248,7 +124974,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/main)
@@ -125853,7 +125578,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -126567,7 +126291,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -126995,7 +126718,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/fitness)
@@ -127068,7 +126790,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -127362,7 +127083,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -127496,7 +127216,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/break_room)
@@ -127731,7 +127450,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/janitor)
@@ -127753,7 +127471,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -128542,7 +128259,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -129421,7 +129137,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -130357,7 +130072,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -130960,7 +130674,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 4;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/commons/fitness)
@@ -131304,7 +131017,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -131590,7 +131302,6 @@
 /obj/machinery/holopad,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/storage)
@@ -132135,7 +131846,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -132204,7 +131914,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/ai_monitored/command/storage/eva)
@@ -132285,7 +131994,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -132890,7 +132598,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/office)
@@ -133443,7 +133150,6 @@
 /obj/structure/closet/crate/internals,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/warehouse)
@@ -133842,7 +133548,6 @@
 /obj/effect/turf_decal/box,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/processing)
@@ -135537,7 +135242,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -135872,7 +135576,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -136500,7 +136203,6 @@
 /obj/effect/turf_decal/bot/white,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -136569,7 +136271,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -138993,7 +138694,6 @@
 	name = "drain"
 	},
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/teg)
@@ -139659,7 +139359,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -140041,7 +139740,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -140322,7 +140020,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/storage)
@@ -140741,7 +140438,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -141390,7 +141086,6 @@
 	pixel_y = -1
 	},
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/teg)
@@ -142083,7 +141778,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -142131,7 +141825,6 @@
 /obj/machinery/rnd/production/protolathe/department/science,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/research)
@@ -142193,7 +141886,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -142370,7 +142062,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/hydroponics)
@@ -143098,7 +142789,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/checkpoint)
@@ -144506,7 +144196,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/kitchen)
@@ -145110,7 +144799,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/janitor)
@@ -145263,7 +144951,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -145508,7 +145195,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/main)
@@ -146331,7 +146017,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/research)
@@ -146402,7 +146087,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -147827,7 +147511,6 @@
 /obj/machinery/power/apc/auto_name/south,
 /turf/open/floor/plasteel{
 	dir = 1;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/ai_monitored/security/armory)
@@ -148760,7 +148443,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/fitness)
@@ -149027,7 +148709,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/fitness)
@@ -149262,7 +148943,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -149355,7 +149035,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/ai_monitored/command/storage/eva)
@@ -149378,7 +149057,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/processing)
@@ -149525,7 +149203,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -150645,7 +150322,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/kitchen)
@@ -150934,7 +150610,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/warden)
@@ -151264,7 +150939,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/fitness)
@@ -152310,7 +151984,6 @@
 /obj/effect/turf_decal/box,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/mixing)
@@ -152848,7 +152521,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -153549,7 +153221,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -153565,7 +153236,6 @@
 /obj/effect/turf_decal/box,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/fitness)
@@ -153589,7 +153259,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/security/brig)
@@ -153801,7 +153470,6 @@
 /obj/structure/table,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/secondary/exit)
@@ -154056,7 +153724,6 @@
 	icon_state = "2-8"
 	},
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/cargo/office)
@@ -155342,7 +155009,6 @@
 /obj/effect/turf_decal/box,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/dorms)
@@ -155419,7 +155085,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/break_room)
@@ -155493,7 +155158,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/engineering/break_room)
@@ -155613,7 +155277,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/psychology)
@@ -155937,7 +155600,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port)
@@ -155969,7 +155631,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/office)
@@ -156012,7 +155673,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/brig)
@@ -157301,7 +156961,6 @@
 /obj/machinery/hydroponics/constructable,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/hydroponics/garden)
@@ -157358,7 +157017,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -157542,7 +157200,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science)
@@ -157645,7 +157302,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/starboard)
@@ -157919,7 +157575,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/office)
@@ -158681,7 +158336,6 @@
 	name = "scrubbers pipe"
 	},
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/cargo/sorting)
@@ -158932,7 +158586,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/engineering/main)
@@ -159641,7 +159294,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/janitor)
@@ -159681,7 +159333,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/theater)
@@ -160189,7 +159840,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/medical/medbay/central)
@@ -160310,7 +159960,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -160351,7 +160000,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/fitness)
@@ -161702,7 +161350,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/hydroponics/garden)
@@ -161737,7 +161384,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/service/kitchen)
@@ -162081,7 +161727,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/port/fore)
@@ -162423,7 +162068,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/commons/dorms)
@@ -163072,7 +162716,6 @@
 	location = "Security"
 	},
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/fore)
@@ -163817,7 +163460,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/mixing)
@@ -164032,7 +163674,6 @@
 /area/commons/fitness/pool)
 "xPQ" = (
 /turf/open/floor/plasteel{
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/service/theater)
@@ -164103,7 +163744,6 @@
 /obj/structure/closet/crate,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/cargo/warehouse)
@@ -164986,7 +164626,6 @@
 /obj/effect/turf_decal/delivery/white,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/hallway/primary/fore)
@@ -165198,7 +164837,6 @@
 /obj/structure/table,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/security/prison)
@@ -165611,7 +165249,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole"
 	},
 /area/hallway/primary/port/fore)

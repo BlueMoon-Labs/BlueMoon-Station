@@ -251,7 +251,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/lavaland/surface/outdoors)
@@ -13289,7 +13288,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -24269,7 +24267,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -24448,7 +24445,6 @@
 /obj/structure/table,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -30574,7 +30570,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/lavaland/surface/outdoors)
@@ -32865,7 +32860,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/lavaland/surface/outdoors)
@@ -40350,7 +40344,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -44677,7 +44670,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -55806,7 +55798,6 @@
 /obj/machinery/power/apc/auto_name/north,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -63452,7 +63443,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
