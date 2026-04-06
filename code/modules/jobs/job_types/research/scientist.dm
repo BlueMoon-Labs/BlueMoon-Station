@@ -14,6 +14,7 @@
 		"Junior Researcher", //Стажер выше, для удобства
 		"Cybersun Researcher", //Триглав выше, для удобства
 		"Anomalist",
+		"Bluespace Miners Technician",
 		"Chemical Researcher",
 		"Circuitry Designer",
 		"Lab Technician",
