@@ -1349,6 +1349,7 @@
 	baseturfs = /turf/open/floor/plating/asteroid/snow/complex/dug
 	floor_variance = FALSE
 	icon_state = "snow_dug"
+	base_icon_state = "snow_dug"
 	slowdown = 1
 
 /obj/effect/baseturf_helper/complex
