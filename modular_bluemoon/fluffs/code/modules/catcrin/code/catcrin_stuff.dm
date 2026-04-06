@@ -455,7 +455,7 @@
 	name = " H-Wal-2572 Kit"
 	desc = "A modkit for making a hybrid taser into a H-Wal-2572."
 	product = /obj/item/gun/energy/laser/hwal2572
-	fromitem = list(/obj/item/gun/energy/laser/hwal2572)
+	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
 
 /obj/item/gun/energy/laser/hwal2572
 	name = "\improper H-Wal-2572"
