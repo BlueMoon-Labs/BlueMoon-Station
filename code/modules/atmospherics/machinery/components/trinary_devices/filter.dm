@@ -8,6 +8,7 @@
 	can_unwrench = TRUE
 	var/transfer_rate = MAX_TRANSFER_RATE
 	var/filter_type = null
+	var/list/filtering_gases = null
 	var/frequency = 0
 	var/datum/radio_frequency/radio_connection
 
@@ -44,6 +45,15 @@
 	SSradio.remove_object(src,frequency)
 	return ..()
 
+/obj/machinery/atmospherics/components/trinary/filter/proc/get_filtering_gases()
+	if(!filter_type)
+		return null
+	if(filter_type in GLOB.gas_data.groups)
+		return GLOB.gas_data.groups[filter_type]
+	if(!filtering_gases || filtering_gases.len != 1 || filtering_gases[1] != filter_type)
+		filtering_gases = list(filter_type)
+	return filtering_gases
+
 /obj/machinery/atmospherics/components/trinary/filter/update_icon()
 	cut_overlays()
 	for(var/direction in GLOB.cardinals)
@@ -79,6 +89,8 @@
 	var/datum/gas_mixture/air1 = airs[1]
 	var/datum/gas_mixture/air2 = airs[2]
 	var/datum/gas_mixture/air3 = airs[3]
+	if(!air1 || !air2 || !air3)
+		return
 
 	var/input_starting_pressure = air1.return_pressure()
 
@@ -86,22 +98,30 @@
 		return
 
 	//Calculate necessary moles to transfer using PV=nRT
+	var/input_volume = air1.return_volume()
+	if(input_volume <= 0 || transfer_rate <= 0)
+		return
 
-	var/transfer_ratio = transfer_rate/air1.return_volume()
+	var/transfer_ratio = transfer_rate/input_volume
 
 	//Actually transfer the gas
 
-	if(transfer_ratio > 0)
+	if(transfer_ratio <= 0)
+		return
 
-		if(filter_type && air2.return_pressure() <= 9000)
-			if(filter_type in GLOB.gas_data.groups)
-				air1.scrub_into(air2, transfer_ratio, GLOB.gas_data.groups[filter_type])
-			else
-				air1.scrub_into(air2, transfer_ratio, list(filter_type))
-		if(air3.return_pressure() <= 9000)
-			air1.transfer_ratio_to(air3, transfer_ratio)
+	var/did_transfer = FALSE
 
-	update_parents()
+	if(filter_type && air2.return_pressure() <= 9000)
+		var/list/gases_to_filter = get_filtering_gases()
+		if(gases_to_filter)
+			air1.scrub_into(air2, transfer_ratio, gases_to_filter)
+			did_transfer = TRUE
+	if(air3.return_pressure() <= 9000)
+		air1.transfer_ratio_to(air3, transfer_ratio)
+		did_transfer = TRUE
+
+	if(did_transfer)
+		update_parents()
 
 /obj/machinery/atmospherics/components/trinary/filter/atmosinit()
 	set_frequency(frequency)
@@ -135,6 +155,7 @@
 		if("power")
 			if(islist(filter_type)) // BLUEMOON FIX итак, заметка мапперам криворучкам, пихать листы в места где их не должно быть приводить к взрыву сервера
 				filter_type = null // BLIEMOON FIX END
+				filtering_gases = null
 			on = !on
 			investigate_log("was turned [on ? "on" : "off"] by [key_name(usr)]", INVESTIGATE_ATMOS)
 			. = TRUE
@@ -155,6 +176,7 @@
 				investigate_log("was set to [transfer_rate] L/s by [key_name(usr)]", INVESTIGATE_ATMOS)
 		if("filter")
 			filter_type = null
+			filtering_gases = null
 			var/filter_name = "nothing"
 			var/gas = params["mode"]
 			if(gas in GLOB.gas_data.names)

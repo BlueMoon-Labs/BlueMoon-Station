@@ -180,10 +180,14 @@
 		return
 	for(var/obj/machinery/airalarm/alarm in src)
 		alarm.handle_decomp_alarm()
+	if(istype(T2) && T2 != src)
+		for(var/obj/machinery/airalarm/alarm in T2)
+			alarm.handle_decomp_alarm()
 	for(var/obj/machinery/door/firedoor/FD in src)
 		FD.emergency_pressure_stop()
-	for(var/obj/machinery/door/firedoor/FD in T2)
-		FD.emergency_pressure_stop()
+	if(istype(T2) && T2 != src)
+		for(var/obj/machinery/door/firedoor/FD in T2)
+			FD.emergency_pressure_stop()
 
 /turf/proc/handle_decompression_floor_rip()
 

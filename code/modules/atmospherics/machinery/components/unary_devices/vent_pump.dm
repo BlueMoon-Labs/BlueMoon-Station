@@ -99,6 +99,7 @@
 	var/environment_pressure = environment?.return_pressure()
 	if(!environment_pressure)
 		return
+	var/did_transfer = FALSE
 
 	if(pump_direction & RELEASING) // internal -> external
 		var/pressure_delta = 10000
@@ -109,25 +110,35 @@
 			pressure_delta = min(pressure_delta, (air_contents.return_pressure() - internal_pressure_bound))
 
 		if(pressure_delta > 0)
-			if(air_contents.return_temperature() > 0)
-				var/transfer_moles = pressure_delta*environment.return_volume()/(air_contents.return_temperature() * R_IDEAL_GAS_EQUATION)
+			var/air_temperature = air_contents.return_temperature()
+			var/environment_volume = environment.return_volume()
+			if(air_temperature > 0 && environment_volume > 0)
+				var/transfer_moles = pressure_delta * environment_volume / (air_temperature * R_IDEAL_GAS_EQUATION)
 
-				loc.assume_air_moles(air_contents, transfer_moles)
-				air_update_turf()
+				if(transfer_moles > 0)
+					loc.assume_air_moles(air_contents, transfer_moles)
+					air_update_turf()
+					did_transfer = TRUE
 
 	else // external -> internal
-		if(environment.return_pressure() > 0)
-			var/our_multiplier = air_contents.return_volume() / (environment.return_temperature() * R_IDEAL_GAS_EQUATION)
+		var/environment_temperature = environment.return_temperature()
+		var/air_volume = air_contents.return_volume()
+		if(environment.return_pressure() > 0 && environment_temperature > 0 && air_volume > 0)
+			var/our_multiplier = air_volume / (environment_temperature * R_IDEAL_GAS_EQUATION)
 			var/moles_delta = 10000 * our_multiplier
 			if(pressure_checks&EXT_BOUND)
-				moles_delta = min(moles_delta, (environment_pressure - external_pressure_bound) * environment.return_volume() / (environment.return_temperature() * R_IDEAL_GAS_EQUATION))
+				var/environment_volume = environment.return_volume()
+				if(environment_volume > 0)
+					moles_delta = min(moles_delta, (environment_pressure - external_pressure_bound) * environment_volume / (environment_temperature * R_IDEAL_GAS_EQUATION))
 			if(pressure_checks&INT_BOUND)
 				moles_delta = min(moles_delta, (internal_pressure_bound - air_contents.return_pressure()) * our_multiplier)
 
 			if(moles_delta > 0)
 				loc.transfer_air(air_contents, moles_delta)
 				air_update_turf()
-	update_parents()
+				did_transfer = TRUE
+	if(did_transfer)
+		update_parents()
 
 //Radio remote control
 

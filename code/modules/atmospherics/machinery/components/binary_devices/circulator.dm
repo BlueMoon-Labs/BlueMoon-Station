@@ -42,6 +42,9 @@
 
 	var/datum/gas_mixture/air1 = airs[1]
 	var/datum/gas_mixture/air2 = airs[2]
+	if(!air1 || !air2)
+		last_pressure_delta = 0
+		return null
 
 	var/output_starting_pressure = air1.return_pressure()
 	var/input_starting_pressure = air2.return_pressure()
@@ -52,17 +55,23 @@
 		return null
 
 	//Calculate necessary moles to transfer using PV = nRT
-	if(air2.return_temperature()>0)
+	var/input_temperature = air2.return_temperature()
+	var/output_volume = air1.return_volume()
+	if(input_temperature > 0 && output_volume > 0)
 		var/pressure_delta = (input_starting_pressure - output_starting_pressure)/2
 
-		var/transfer_moles = pressure_delta*air1.return_volume()/(air2.return_temperature() * R_IDEAL_GAS_EQUATION)
+		var/transfer_moles = pressure_delta*output_volume/(input_temperature * R_IDEAL_GAS_EQUATION)
+		if(transfer_moles <= 0)
+			last_pressure_delta = 0
+			return null
 
 		last_pressure_delta = pressure_delta
 
 		//Actually transfer the gas
 		var/datum/gas_mixture/removed = air2.remove(transfer_moles)
 
-		update_parents()
+		if(removed)
+			update_parents()
 
 		return removed
 

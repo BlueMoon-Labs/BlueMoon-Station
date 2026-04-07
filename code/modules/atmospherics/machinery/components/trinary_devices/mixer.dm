@@ -62,6 +62,8 @@
 		return
 
 	var/datum/gas_mixture/air3 = airs[3]
+	if(!air3)
+		return
 
 	var/output_starting_pressure = air3.return_pressure()
 
@@ -70,26 +72,33 @@
 		return
 
 	//Calculate necessary moles to transfer using PV=nRT
-	var/general_transfer = (target_pressure - output_starting_pressure) * air3.return_volume() / R_IDEAL_GAS_EQUATION
+	var/output_volume = air3.return_volume()
+	if(output_volume <= 0)
+		return
+	var/general_transfer = (target_pressure - output_starting_pressure) * output_volume / R_IDEAL_GAS_EQUATION
+	if(general_transfer <= 0)
+		return
 
-	var/transfer_moles1 = air1.return_temperature() ? node1_concentration * general_transfer / air1.return_temperature() : 0
-	var/transfer_moles2 = air2.return_temperature() ? node2_concentration * general_transfer / air2.return_temperature() : 0
+	var/air1_temperature = air1.return_temperature()
+	var/air2_temperature = air2.return_temperature()
+	var/transfer_moles1 = air1_temperature ? node1_concentration * general_transfer / air1_temperature : 0
+	var/transfer_moles2 = air2_temperature ? node2_concentration * general_transfer / air2_temperature : 0
 
 	var/air1_moles = air1.total_moles()
 	var/air2_moles = air2.total_moles()
 
 	if(!node2_concentration)
-		if(air1.return_temperature() <= 0)
+		if(air1_temperature <= 0)
 			return
 		transfer_moles1 = min(transfer_moles1, air1_moles)
 		transfer_moles2 = 0
 	else if(!node1_concentration)
-		if(air2.return_temperature() <= 0)
+		if(air2_temperature <= 0)
 			return
 		transfer_moles2 = min(transfer_moles2, air2_moles)
 		transfer_moles1 = 0
 	else
-		if(air1.return_temperature() <= 0 || air2.return_temperature() <= 0)
+		if(air1_temperature <= 0 || air2_temperature <= 0)
 			return
 		if((transfer_moles2 <= 0) || (transfer_moles1 <= 0))
 			return
@@ -101,13 +110,18 @@
 
 	//Actually transfer the gas
 
+	var/did_transfer = FALSE
+
 	if(transfer_moles1)
 		air1.transfer_to(air3, transfer_moles1)
+		did_transfer = TRUE
 
 	if(transfer_moles2)
 		air2.transfer_to(air3, transfer_moles2)
+		did_transfer = TRUE
 
-	update_parents()
+	if(did_transfer)
+		update_parents()
 
 /obj/machinery/atmospherics/components/trinary/mixer/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)

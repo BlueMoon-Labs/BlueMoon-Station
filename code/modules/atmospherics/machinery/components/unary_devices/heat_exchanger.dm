@@ -57,22 +57,27 @@
 
 	var/datum/gas_mixture/air_contents = airs[1]
 	var/datum/gas_mixture/partner_air_contents = partner.airs[1]
+	if(!air_contents || !partner_air_contents)
+		return
 
 	var/air_heat_capacity = air_contents.heat_capacity()
 	var/other_air_heat_capacity = partner_air_contents.heat_capacity()
 	var/combined_heat_capacity = other_air_heat_capacity + air_heat_capacity
+	var/air_temperature = air_contents.return_temperature()
+	var/partner_temperature = partner_air_contents.return_temperature()
+	var/new_temperature = air_temperature
 
 	if(combined_heat_capacity > 0)
-		var/combined_energy = partner_air_contents.return_temperature()*other_air_heat_capacity + air_heat_capacity*air_contents.return_temperature()
+		var/combined_energy = partner_temperature*other_air_heat_capacity + air_heat_capacity*air_temperature
 
-		var/new_temperature = combined_energy/combined_heat_capacity
+		new_temperature = combined_energy/combined_heat_capacity
 		air_contents.set_temperature(new_temperature)
 		partner_air_contents.set_temperature(new_temperature)
 
-	if(abs(old_temperature-air_contents.return_temperature()) > 1)
+	if(abs(old_temperature-new_temperature) > 1)
 		update_parents()
-		old_temperature = air_contents.return_temperature()
+		old_temperature = new_temperature
 
-	if(abs(other_old_temperature-partner_air_contents.return_temperature()) > 1)
+	if(abs(other_old_temperature-new_temperature) > 1)
 		partner.update_parents()
-		other_old_temperature = partner_air_contents.return_temperature()
+		other_old_temperature = new_temperature

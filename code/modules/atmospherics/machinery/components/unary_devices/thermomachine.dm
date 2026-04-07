@@ -70,16 +70,24 @@
 	if(!on || !nodes[1])
 		return
 	var/datum/gas_mixture/air_contents = airs[1]
+	if(!air_contents)
+		active_power_usage = idle_power_usage
+		return
 
 	var/air_heat_capacity = air_contents.heat_capacity()
+	if(air_heat_capacity <= 0 && heat_capacity <= 0)
+		active_power_usage = idle_power_usage
+		return TRUE
 	var/combined_heat_capacity = heat_capacity + air_heat_capacity
 	var/old_temperature = air_contents.return_temperature()
+	var/new_temperature = old_temperature
 
 	if(combined_heat_capacity > 0)
-		var/combined_energy = heat_capacity * target_temperature + air_heat_capacity * air_contents.return_temperature()
-		air_contents.set_temperature(combined_energy/combined_heat_capacity)
+		var/combined_energy = heat_capacity * target_temperature + air_heat_capacity * old_temperature
+		new_temperature = combined_energy/combined_heat_capacity
+		air_contents.set_temperature(new_temperature)
 
-	var/temperature_delta= abs(old_temperature - air_contents.return_temperature())
+	var/temperature_delta= abs(old_temperature - new_temperature)
 	if(temperature_delta > 1)
 		active_power_usage = (heat_capacity * temperature_delta) / 10 + idle_power_usage
 		update_parents()

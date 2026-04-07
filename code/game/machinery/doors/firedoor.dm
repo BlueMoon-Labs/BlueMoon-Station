@@ -305,7 +305,11 @@
 
 /obj/machinery/door/firedoor/proc/emergency_pressure_stop(consider_timer = TRUE)
 	set waitfor = 0
-	if(density || operating || welded)
+	if(welded || density)
+		return
+	if(operating)
+		if(world.time >= emergency_close_timer || !consider_timer)
+			nextstate = FIREDOOR_CLOSED
 		return
 	if(world.time >= emergency_close_timer || !consider_timer)
 		close()
