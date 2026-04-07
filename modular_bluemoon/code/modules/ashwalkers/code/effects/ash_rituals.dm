@@ -353,4 +353,4 @@
 			stomach_slot.Remove(human_victim)
 			stomach_slot_old.Insert(human_victim)
 	if(ashwalker_or_no && !human_victim.mind?.has_antag_datum(/datum/antagonist/ashwalker))
-		human_victim.mind?.add_antag_datum(/datum/antagonist/ashwalker /datum/team/ashwalkers) //были жалобы, что их сожрал тендрил, так что делаем эту проверку
+		human_victim.mind?.do_add_antag_datum(/datum/antagonist/ashwalker) //были жалобы, что их сожрал тендрил, так что делаем эту проверку
