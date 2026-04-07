@@ -16,6 +16,9 @@
 	var/cloning = FALSE			// If the printer is currently creating a circuit
 	var/recycling = FALSE		// If an assembly is being emptied into this printer
 	var/list/program			// Currently loaded save, in form of list
+	//Проклятая хуйня для прогресс бара
+	var/print_start_time = NONE
+	var/print_end_time = NONE
 
 /obj/item/integrated_circuit_printer/proc/check_interactivity(mob/user)
 	return user.canUseTopic(src, BE_CLOSE)
@@ -56,6 +59,8 @@
 	assembly.creator = key_name(user)
 	assembly.investigate_log("was printed by [assembly.creator].", INVESTIGATE_CIRCUIT)
 	cloning = FALSE
+	print_start_time = NONE
+	print_end_time = NONE
 
 /obj/item/integrated_circuit_printer/attackby(obj/item/O, mob/user)
 	if(istype(O, /obj/item/disk/integrated_circuit/upgrade/advanced))
@@ -120,7 +125,7 @@
 	for(var/sss in subtypesof(/obj/item/integrated_circuit))
 		var/obj/item/integrated_circuit/cir = sss
 		WRITE_LOG_NO_FORMAT(ppp, "Название платы: [cir:name] \n Короткое описание: [cir:desc] \n Полное описание: [cir:extended_desc] \n\n\n")
-	
+
 	for(var/obj/item/electronic_assembly/assss in subtypesof(/obj/item/electronic_assembly))
 		var/obj/item/electronic_assembly/ass = assss
 		WRITE_LOG_NO_FORMAT(ppp, "Название платы: [ass:name] \n Короткое описание: [ass:desc] \n Полное описание: Нет описания! \n\n\n")
@@ -168,13 +173,14 @@
 		var/list/current_list = SScircuit.circuit_fabricator_recipe_list[category]
 		for(var/path in current_list)
 			var/list/circuit_data = list()
+			var/atom/temp_atom = path
 			circuit_data["path"] = path
 			circuit_data["icon"] = cashe_icon(path)
-			circuit_data["extended_desc"] = ""
+			circuit_data["desc"] = temp_atom:desc
+			circuit_data["extended_desc"] = temp_atom:desc
 
 			if(ispath(path, /obj/item/integrated_circuit))
 				var/obj/item/integrated_circuit/IC = path
-				circuit_data["desc"] = IC:desc
 				circuit_data["name"] = IC:name
 				circuit_data["extended_desc"] = IC:extended_desc
 				circuit_data["request_adv"] = (initial(IC.spawn_flags) & IC_SPAWN_RESEARCH) && (!(initial(IC.spawn_flags) & IC_SPAWN_DEFAULT))
@@ -183,7 +189,6 @@
 				circuit_data["cost"] = IC.custom_materials[SSmaterials.GetMaterialRef(/datum/material/iron)]
 			else if(ispath(path, /obj/item/electronic_assembly))
 				var/obj/item/electronic_assembly/ass = path
-				circuit_data["desc"] = ass:desc
 				circuit_data["name"] = ass:name
 				circuit_data["request_adv"] = FALSE
 
@@ -191,7 +196,6 @@
 				circuit_data["cost"] = ass.custom_materials[SSmaterials.GetMaterialRef(/datum/material/iron)]
 			else
 				var/obj/item/temp = path
-				circuit_data["desc"] = temp:desc
 				circuit_data["name"] = temp:name
 				circuit_data["request_adv"] = FALSE
 				circuit_data["cost"] = 400
@@ -217,6 +221,14 @@
 	data["max_metal"] = materials ? materials.max_amount : 0
 	data["cloning_status"] = cloning
 	data["has_programm"] = program ? TRUE : FALSE
+	data["print_start_time"] = print_start_time
+	data["print_end_time"] = print_end_time
+	data["world_time"] = world.time
+	data["used_space"] = program ? program?["used_space"] : 0
+	data["complexity"] = program ? program?["complexity"] : 0
+	data["metal_cost"] = program ? program?["metal_cost"] : 0
+	data["max_complexity"] = program ? program?["max_complexity"] : 0
+	data["max_space"] = program ? program?["max_space"] : 0
 
 	return data
 
@@ -305,6 +317,7 @@
 					// Validation error codes are returned as text.
 					if(istext(validation))
 						to_chat(usr, "<span class='warning'>Error: [validation]</span>")
+						program = null
 						return
 					else if(islist(validation))
 						program = validation
@@ -350,9 +363,14 @@
 						off normal parts during this time.</span>")
 						playsound(src, 'sound/items/poster_being_created.ogg', 50, TRUE)
 						addtimer(CALLBACK(src, PROC_REF(print_program), usr), cloning_time)
-						ui_update()
+						print_end_time = world.time + cloning_time
+						print_start_time = world.time
 
 				if("cancel")
+					if(!cloning)
+						program = null
+						return
+
 					if(!cloning || !program)
 						return
 
@@ -360,9 +378,10 @@
 					cloning = FALSE
 					var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 					materials.use_amount_mat(-program["metal_cost"], /datum/material/iron) //use negative amount to regain the cost
-					program = null
-					ui_update()
 
+					print_end_time = NONE
+					print_start_time = NONE
+					program = null
 
 // FUKKEN UPGRADE DISKS
 /obj/item/disk/integrated_circuit/upgrade
