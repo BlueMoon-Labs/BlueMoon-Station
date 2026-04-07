@@ -21,7 +21,7 @@
 	var/print_end_time = NONE
 
 /obj/item/integrated_circuit_printer/proc/check_interactivity(mob/user)
-	return user.canUseTopic(src, BE_CLOSE)
+	return user?.canUseTopic(src, BE_CLOSE)
 
 /obj/item/integrated_circuit_printer/upgraded
 	upgraded = TRUE
@@ -55,7 +55,7 @@
 	visible_message("<span class='notice'>[src] has finished printing its assembly!</span>")
 	playsound(src, 'sound/items/poster_being_created.ogg', 50, TRUE)
 	var/obj/item/electronic_assembly/assembly = SScircuit.load_electronic_assembly(get_turf(src), program)
-	log_admin("INTEGRAL BITCH [user.ckey] завершил печать программы на [src]. Созданная сборка: [assembly], Программа: [program]")
+	log_admin("INTEGRAL BITCH [user?.ckey] завершил печать программы на [src]. Созданная сборка: [assembly], Программа: [program]")
 	assembly.creator = key_name(user)
 	assembly.investigate_log("was printed by [assembly.creator].", INVESTIGATE_CIRCUIT)
 	cloning = FALSE
@@ -233,11 +233,11 @@
 
 
 /obj/item/integrated_circuit_printer/ui_act(action, params)
-	if(..())
+	if(!params["ic_advactivator"] && ..())
 		return
 
-	if(usr)
-		add_fingerprint(usr)
+	add_fingerprint(usr)
+
 	switch(action)
 		if("build")
 			var/build_type = text2path(params["build"])
@@ -261,7 +261,8 @@
 				return TRUE
 
 			var/obj/item/built = new build_type(drop_location())
-			usr.put_in_hands(built)
+
+			usr?.put_in_hands(built)
 
 			if(istype(built, /obj/item/electronic_assembly))
 				var/obj/item/electronic_assembly/E = built
@@ -310,7 +311,7 @@
 					var/log_body = copytext_char(input, 1, 401)
 					if(length_char(input) > 400)
 						log_body += "... (truncated, [length_char(input)] chars total)"
-					log_admin("INTEGRAL BITCH [usr.ckey] loaded program into [src]: [log_body]")
+					log_admin("INTEGRAL BITCH [usr?.ckey] loaded program into [src]: [log_body]")
 					var/validation = SScircuit.validate_electronic_assembly(input)
 
 					// Validation error codes are returned as text.
@@ -335,7 +336,7 @@
 				if("print")
 					if(!program || cloning)
 						return
-					log_admin("INTEGRAL BITCH [usr.ckey] начал печать программы на [src]. Программа: [program]")
+					log_admin("INTEGRAL BITCH [usr?.ckey] начал печать программы на [src]. Программа: [program]")
 
 					if(program["requires_upgrades"] && !upgraded && !debug)
 						to_chat(usr, "<span class='warning'>This program uses unknown component designs. Printer upgrade is required to proceed.</span>")
