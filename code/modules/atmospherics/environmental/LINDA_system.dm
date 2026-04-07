@@ -23,12 +23,28 @@
 		. = FALSE
 	if(blocks_air || T.blocks_air)
 		. = FALSE
+	if(!.)
+		return FALSE
 	if (T == src)
 		return .
-	for(var/obj/O in contents+T.contents)
-		var/turf/other = (O.loc == src ? T : src)
-		if(!(vertical? (CANVERTICALATMOSPASS(O, other)) : (CANATMOSPASS(O, other))))
-			. = FALSE
+	for(var/obj/O in contents)
+		if(!(vertical ? CANVERTICALATMOSPASS(O, T) : CANATMOSPASS(O, T)))
+			return FALSE
+	for(var/obj/O in T.contents)
+		if(!(vertical ? CANVERTICALATMOSPASS(O, src) : CANATMOSPASS(O, src)))
+			return FALSE
+
+/proc/atmos_adjacent_lists_equal(list/old_adjacent_turfs, list/new_adjacent_turfs)
+	if(old_adjacent_turfs == new_adjacent_turfs)
+		return TRUE
+	if(!length(old_adjacent_turfs) || !length(new_adjacent_turfs))
+		return !length(old_adjacent_turfs) && !length(new_adjacent_turfs)
+	if(old_adjacent_turfs.len != new_adjacent_turfs.len)
+		return FALSE
+	for(var/turf/T as anything in old_adjacent_turfs)
+		if(old_adjacent_turfs[T] != new_adjacent_turfs[T])
+			return FALSE
+	return TRUE
 
 /turf/proc/block_all_conductivity()
 	conductivity_blocked_directions |= NORTH | SOUTH | EAST | WEST | UP | DOWN
@@ -39,6 +55,7 @@
 /turf/proc/ImmediateCalculateAdjacentTurfs()
 	var/canpass = CANATMOSPASS(src, src)
 	var/canvpass = CANVERTICALATMOSPASS(src, src)
+	var/list/old_atmos_adjacent_turfs = atmos_adjacent_turfs
 
 	conductivity_blocked_directions = 0
 
@@ -70,24 +87,35 @@
 			conductivity_blocked_directions |= direction
 			current_turf.conductivity_blocked_directions |= opp
 		else
-			for(var/obj/O in contents + current_turf.contents)
+			for(var/obj/O in contents)
 				if(O.BlockThermalConductivity()) 	//the direction and open/closed are already checked on CanAtmosPass() so there are no arguments
 					conductivity_blocked_directions |= direction
 					current_turf.conductivity_blocked_directions |= opp
 					break
+			if(!(conductivity_blocked_directions & direction))
+				for(var/obj/O in current_turf.contents)
+					if(O.BlockThermalConductivity())
+						conductivity_blocked_directions |= direction
+						current_turf.conductivity_blocked_directions |= opp
+						break
 		//End Conductivity Update
 
+		var/old_reverse_adjacency = current_turf.atmos_adjacent_turfs ? current_turf.atmos_adjacent_turfs[src] : null
+		var/new_reverse_adjacency = null
 		if(!(blocks_air || current_turf.blocks_air) && ((direction & (UP|DOWN))? (canvpass && CANVERTICALATMOSPASS(current_turf, src)) : (canpass && CANATMOSPASS(current_turf, src))))
 			atmos_adjacent_turfs[current_turf] = other_contains_firelock | src_contains_firelock
 			LAZYSET(current_turf.atmos_adjacent_turfs, src, src_contains_firelock)
+			new_reverse_adjacency = src_contains_firelock
 		else
 			atmos_adjacent_turfs -= current_turf
 			LAZYREMOVE(current_turf.atmos_adjacent_turfs, src)
 
-		current_turf.__update_auxtools_turf_adjacency_info()
+		if(old_reverse_adjacency != new_reverse_adjacency)
+			current_turf.__update_auxtools_turf_adjacency_info()
 	UNSETEMPTY(atmos_adjacent_turfs)
 	src.atmos_adjacent_turfs = atmos_adjacent_turfs
-	__update_auxtools_turf_adjacency_info()
+	if(!atmos_adjacent_lists_equal(old_atmos_adjacent_turfs, atmos_adjacent_turfs))
+		__update_auxtools_turf_adjacency_info()
 
 /turf/proc/clear_adjacencies()
 	block_all_conductivity()
