@@ -120,6 +120,7 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 			new_armor.vars[modifier] = vars[modifier] + modifiers[modifier]
 		else
 			stack_trace("Attempt to call generate_new_with_modifiers with illegal modifier '[modifier]'! Ignoring it")
+	new_armor.tag = null // Don't put custom armor into locate() cache
 	return new_armor
 
 /// Generate a brand new armor datum with the values given, if a value is not present it carries over
@@ -140,6 +141,7 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 			new_armor.vars[armor_rating] = values[armor_rating]
 		else
 			new_armor.vars[armor_rating] = vars[armor_rating]
+	new_armor.tag = null // Don't put custom armor into locate() cache
 	return new_armor
 
 /// Gets the rating of armor for the specified rating

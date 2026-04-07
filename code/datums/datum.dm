@@ -89,6 +89,11 @@
  *
  * Return an appropriate [QDEL_HINT][QDEL_HINT_QUEUE] to modify handling of your deletion;
  * in most cases this is [QDEL_HINT_QUEUE].
+ * Useful non-default hints:
+ * * [QDEL_HINT_SOFTFAIL_ALERT] for objects that should raise an alert if they miss the normal softcheck window.
+ *   The legacy alias [QDEL_HINT_QUICKDEL] still exists for compatibility, but it does not use a special fast timeout.
+ * * [QDEL_HINT_SLOWDESTROY] for objects whose cleanup is expected to miss softcheck while they fan out into more qdels.
+ * * [QDEL_HINT_HARDDEL] or [QDEL_HINT_HARDDEL_NOW] when soft GC is known to be impossible or undesirable.
  *
  * The base case is responsible for doing the following
  * * Erasing timers pointing to this datum

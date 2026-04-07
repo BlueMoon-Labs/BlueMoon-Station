@@ -178,6 +178,9 @@
 
 	var/brute_damage = patient.getBruteLoss()
 	var/burn_damage = patient.getFireLoss()
+	var/datum/language_holder/lang_holder = new
+	lang_holder.copy_languages(patient.get_language_holder())
+	lang_holder.remove_all_languages(source = LANGUAGE_SPECIES)
 
 	patient.client?.prefs?.copy_to(patient)
 	patient.dna.update_dna_identity()
@@ -218,6 +221,9 @@
 	if(iscuratorjob(patient))
 		patient.grant_all_languages(source = LANGUAGE_CURATOR)
 		patient.remove_blocked_language(GLOB.all_languages, source=LANGUAGE_ALL)
+	else
+		patient.copy_languages(lang_holder)
+	qdel(lang_holder)
 
 	open_machine()
 	playsound(src, 'sound/machines/microwave/microwave-end.ogg', 100, FALSE)

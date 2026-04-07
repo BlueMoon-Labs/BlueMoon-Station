@@ -53,28 +53,30 @@ Credit where due:
 	return D && (!require_full_power || !D.neutered) && (!holy_water_check || !D.ignore_holy_water)
 
 /proc/is_eligible_servant(mob/M)
+	. = FALSE
 	if(!istype(M))
-		return FALSE
+		return
+	if(jobban_isbanned(M, ROLE_SERVANT_OF_RATVAR))
+		return
 	if(M.mind)
 		if(M.mind.assigned_role in list("Captain", "Chaplain"))
-			return FALSE
+			return
 		if(M.mind.enslaved_to && !is_servant_of_ratvar(M.mind.enslaved_to))
-			return FALSE
+			return
 		if(M.mind.unconvertable)
-			return FALSE
-		if (IS_HERETIC(M))
-			return FALSE
+			return
+		if(IS_HERETIC(M))
+			return
 	else
-		return FALSE
+		return
 	if(iscultist(M) || isconstruct(M) || ispAI(M))
-		return FALSE
+		return
 	if(isliving(M))
 		var/mob/living/L = M
 		if(HAS_TRAIT(L, TRAIT_MINDSHIELD))
-			return FALSE
+			return
 	if(ishuman(M) || isbrain(M) || isguardian(M) || issilicon(M) || isclockmob(M) || istype(M, /mob/living/simple_animal/drone/cogscarab) || istype(M, /mob/camera/eminence))
 		return TRUE
-	return FALSE
 
 /proc/add_servant_of_ratvar(mob/L, silent = FALSE, create_team = TRUE, override_type)
 	if(!L || !L.mind)
@@ -141,7 +143,7 @@ Credit where due:
 	required_enemies = 3
 	recommended_enemies = 5
 	enemy_minimum_age = 0 // BLUEMOON EDIT - было 7, сделал 0, т.к. на сервере ВЛ и загриферить ролью тяжело
-	protected_jobs = list("Prisoner", "Shaft Miner", "AI", "Cyborg", "Security Officer", "Warden", "Detective", "Head of Security", "Head of Personnel", "Chief Engineer", "Chief Medical Officer", "Research Director", "Quartermaster", "Blueshield", "Brig Physician", "Peacekeeper", "NanoTrasen Representative", "Internal Affairs Agent", "Chaplain") //Silicons can eventually be converted
+	protected_jobs = list("Prisoner", "AI", "Cyborg", "Security Officer", "Warden", "Detective", "Head of Security", "Head of Personnel", "Chief Engineer", "Chief Medical Officer", "Research Director", "Quartermaster", "Blueshield", "Brig Physician", "Peacekeeper", "NanoTrasen Representative", "Internal Affairs Agent", "Chaplain") //Silicons can eventually be converted
 	restricted_jobs = list("Chaplain","Bridge Officer", "Captain")
 	announce_span = "brass"
 	announce_text = "Servants of Ratvar are trying to summon the Justiciar!\n\

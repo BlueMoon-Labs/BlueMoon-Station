@@ -90,9 +90,9 @@
  * return bool - TRUE if a new pooled window is opened, FALSE in all other situations including if a new pooled window didn't open because one already exists.
  */
 /datum/tgui/proc/open()
-	if(!user.client)
+	if(!user?.client)
 		return FALSE
-	if(!src_object)
+	if(!src_object || QDELETED(src_object))
 		return FALSE
 	if(window)
 		return FALSE
@@ -117,6 +117,8 @@
 	flush_queue |= window.send_asset(get_asset_datum(
 		/datum/asset/simple/namespaced/tgfont))
 	for(var/datum/asset/asset in src_object.ui_assets(user))
+		if(!asset)
+			continue
 		flush_queue |= window.send_asset(asset)
 	if (flush_queue)
 		user.client.browse_queue_flush()

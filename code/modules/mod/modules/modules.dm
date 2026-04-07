@@ -17,21 +17,7 @@
 /obj/item/mod/module/anti_magic/on_suit_deactivation()
 	REMOVE_TRAIT(mod.wearer, TRAIT_ANTIMAGIC, MOD_TRAIT)
 	REMOVE_TRAIT(mod.wearer, TRAIT_HOLY, MOD_TRAIT)
-
-/obj/item/mod/module/anti_magic/wizard
-	name = "MOD magic neutralizer module"
-	desc = "The caster wielding this spell gains an invisible barrier around them, channeling arcane power through \
-		specialized runes engraved onto the surface of the suit to generate anti-magic field. \
-		The field will neutralize all magic that comes into contact with the user. \
-		It will not protect the caster from social ridicule."
-	icon_state = "magic_neutralizer"
-
-/obj/item/mod/module/anti_magic/wizard/on_suit_activation()
-	ADD_TRAIT(mod.wearer, TRAIT_ANTIMAGIC_NO_SELFBLOCK, MOD_TRAIT)
-
-/obj/item/mod/module/anti_magic/wizard/on_suit_deactivation()
-	REMOVE_TRAIT(mod.wearer, TRAIT_ANTIMAGIC_NO_SELFBLOCK, MOD_TRAIT)
-
+	
 /obj/item/mod/module/kinesis //TODO POST-MERGE MAKE NOT SUCK ASS, MAKE BALLER AS FUCK
 	name = "MOD kinesis module"
 	desc = "A modular plug-in to the forearm, this module was presumed lost for many years, \

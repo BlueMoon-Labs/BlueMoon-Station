@@ -148,7 +148,7 @@ All ShuttleMove procs go here
 
 	contents -= oldT
 	underlying_old_area.contents += oldT
-	oldT.change_area(src, underlying_old_area)
+	oldT.change_area(src, underlying_old_area, skip_blend = TRUE)
 	//The old turf has now been given back to the area that turf originaly belonged to
 
 	var/area/old_dest_area = newT.loc
@@ -157,7 +157,7 @@ All ShuttleMove procs go here
 	parallax_move_speed = old_dest_area.parallax_move_speed
 	old_dest_area.contents -= newT
 	contents += newT
-	newT.change_area(old_dest_area, src)
+	newT.change_area(old_dest_area, src, skip_blend = TRUE)
 	return TRUE
 
 // Called on areas after everything has been moved
@@ -292,8 +292,9 @@ All ShuttleMove procs go here
 	. = ..()
 	// If the pod was launched, the storage will always open. The CentCom check
 	// ignores the movement of the shuttle from the staging area on CentCom to
-	// the station as it is loaded in.
-	if (oldT && !is_centcom_level(oldT.z))
+	// the station as it is loaded in. Only unlock when we've left the station
+	// (pod actually launched), not during initial placement.
+	if (oldT && !is_centcom_level(oldT.z) && !is_station_level(z))
 		var/datum/component/storage/concrete/emergency/STR = GetComponent(/datum/component/storage/concrete/emergency)
 		STR?.unlock_me()
 

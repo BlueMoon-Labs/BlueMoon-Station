@@ -101,10 +101,17 @@
 	var/commissioned = FALSE // Will other (noncommissioned) bots salute this bot?
 	var/can_salute = TRUE
 	var/salute_delay = 60 SECONDS
-
-	//emotes/speech stuff
 	var/patrol_emote = "Включение режима патруля."
 	var/patrol_fail_emote = "Невозможно начать патруль."
+
+/mob/living/simple_animal/bot/proc/set_commissioned(new_value)
+	if(commissioned == new_value)
+		return
+	commissioned = new_value
+	if(commissioned)
+		GLOB.commissioned_bots += src
+	else
+		GLOB.commissioned_bots -= src
 
 /mob/living/simple_animal/bot/proc/get_mode()
 	if(client) //Player bots do not have modes, thus the override. Also an easy way for PDA users/AI to know when a bot is a player.
@@ -192,6 +199,7 @@
 		QDEL_NULL(path_hud)
 		path_hud = null
 	GLOB.bots_list -= src
+	GLOB.commissioned_bots -= src
 	if(paicard)
 		ejectpai()
 	QDEL_NULL(Radio)
@@ -271,10 +279,12 @@
 	if(!on || client)
 		return
 
-	if(!commissioned && can_salute)
-		for(var/mob/living/simple_animal/bot/B in get_hearers_in_view(5, get_turf(src)))
-			if(B.commissioned)
-				visible_message("<b>[src]</b> performs an elaborate salute for [B]!")
+	if(!commissioned && can_salute && GLOB.commissioned_bots.len)
+		for(var/mob/living/simple_animal/bot/commissioned_bot as anything in GLOB.commissioned_bots)
+			if(commissioned_bot.z != z)
+				continue
+			if(get_dist(src, commissioned_bot) <= 5)
+				visible_message("<b>[src]</b> performs an elaborate salute for [commissioned_bot]!")
 				can_salute = FALSE
 				addtimer(VARSET_CALLBACK(src, can_salute, TRUE), salute_delay)
 				break
@@ -440,7 +450,7 @@ Example usage: patient = scan(/mob/living/carbon/human, oldpatient, 1)
 The proc would return a human next to the bot to be set to the patient var.
 Pass the desired type path itself, declaring a temporary var beforehand is not required.
 */
-/mob/living/simple_animal/bot/proc/scan(scan_type, old_target, scan_range = DEFAULT_SCAN_RANGE)
+/mob/living/simple_animal/bot/proc/scan(scan_type, old_target, scan_range = DEFAULT_SCAN_RANGE, list/cached_view)
 	var/turf/T = get_turf(src)
 	if(!T)
 		return
@@ -461,7 +471,9 @@ Pass the desired type path itself, declaring a temporary var beforehand is not r
 				var/final_result = checkscan(deepscan,scan_type,old_target)
 				if(final_result)
 					return final_result
-	for (var/scan in shuffle(view(scan_range, src))-adjacent) //Search for something in range!
+	if(!cached_view)
+		cached_view = shuffle(view(scan_range, src))
+	for(var/scan in cached_view - adjacent) //Search for something in range!
 		var/final_result = checkscan(scan,scan_type,old_target)
 		if(final_result)
 			return final_result

@@ -1,6 +1,8 @@
 /mob/living/carbon
 	blood_volume = BLOOD_VOLUME_NORMAL
 	deathsound = list ('sound/voice/deathgasp1.ogg', 'sound/voice/deathgasp2.ogg')
+	/// Reused breath sample to avoid per-breath gas_mixture churn.
+	var/datum/gas_mixture/breath_buffer
 
 /mob/living/carbon/Initialize(mapload)
 	. = ..()
@@ -10,6 +12,7 @@
 	blood_volume = (BLOOD_VOLUME_NORMAL * blood_ratio)
 	add_movespeed_modifier(/datum/movespeed_modifier/carbon_crawling)
 	register_context()
+	breath_buffer = new
 
 /mob/living/carbon/Destroy()
 	//This must be done first, so the mob ghosts correctly before DNA etc is nulled
@@ -17,11 +20,19 @@
 
 	QDEL_LIST(internal_organs)
 	QDEL_LIST(stomach_contents)
+	QDEL_LAZYLIST(all_wounds)
+	QDEL_LAZYLIST(all_scars)
 	QDEL_LIST(bodyparts)
 	hand_bodyparts = null		//Just references out bodyparts, don't need to delete twice.
-	remove_from_all_data_huds()
+	QDEL_NULL(breath_buffer)
 	QDEL_NULL(dna)
+	last_mind = null
 	GLOB.carbon_list -= src
+
+/mob/living/carbon/proc/get_breath_buffer()
+	if(!breath_buffer)
+		breath_buffer = new
+	return breath_buffer
 
 /mob/living/carbon/relaymove(mob/user, direction)
 	if(user in src.stomach_contents)
@@ -235,6 +246,7 @@
 	playsound(loc, 'sound/weapons/punchmiss.ogg', 50, 1, -1)
 	newtonian_move(get_dir(target, src))
 	thrown_thing.safe_throw_at(target, thrown_thing.throw_range + extra_throw_range, max(1,thrown_thing.throw_speed + power_throw), src, null, null, null, move_force, random_turn)
+	DelayNextAction(CLICK_CD_THROW)
 
 /mob/living/carbon/restrained(ignore_grab)
 	. = (handcuffed || (!ignore_grab && pulledby && pulledby.grab_state >= GRAB_AGGRESSIVE))
@@ -495,7 +507,7 @@
 				SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "vomit", /datum/mood_event/vomit)
 
 	if(stun)
-		Stun(80)
+		Stun(20)
 
 	playsound(get_turf(src), 'sound/effects/splat.ogg', 50, TRUE)
 	var/turf/T = get_turf(src)

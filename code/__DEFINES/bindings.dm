@@ -10,7 +10,7 @@
 		return __auxmos = "auxmos"
 
 #define AUXMOS (__auxmos || __detect_auxmos())
-    
+
 /datum/gas_mixture/proc/__auxtools_parse_gas_string(string)
 	return call_ext(AUXMOS, "byond:parse_gas_string_ffi")(src, string)
 

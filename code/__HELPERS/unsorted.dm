@@ -872,7 +872,7 @@ B --><-- A
 		return
 
 	if(!x_dimension || !y_dimension)
-		return
+		return I
 
 	if((x_dimension == world.icon_size) && (y_dimension == world.icon_size))
 		return I
@@ -1173,13 +1173,13 @@ GLOBAL_REAL_VAR(list/stack_trace_storage)
 	. = str
 
 /// Perform a shake on an atom, resets its position afterwards
-/atom/proc/Shake(pixelshiftx = 15, pixelshifty = 15, duration = 250)
+/atom/proc/Shake(pixelshiftx = 2, pixelshifty = 2, duration = 2.5 SECONDS, shake_interval = 0.02 SECONDS)
 	var/initialpixelx = pixel_x
 	var/initialpixely = pixel_y
-	var/shiftx = rand(-pixelshiftx,pixelshiftx)
-	var/shifty = rand(-pixelshifty,pixelshifty)
-	animate(src, pixel_x = shiftx, pixel_y = shifty, time = 0.2, loop = duration, flags = ANIMATION_RELATIVE)
-	animate(pixel_x = initialpixelx, pixel_y = initialpixely, time = 0.2)
+	animate(src, pixel_x = initialpixelx + rand(-pixelshiftx,pixelshiftx), pixel_y = initialpixely + rand(-pixelshifty,pixelshifty), time = shake_interval, flags = ANIMATION_PARALLEL)
+	for(var/i in 3 to ((duration / shake_interval))) // Start at 3 because we already applied one, and need another to reset
+		animate(pixel_x = initialpixelx + rand(-pixelshiftx,pixelshiftx), pixel_y = initialpixely + rand(-pixelshifty,pixelshifty), time = shake_interval)
+	animate(pixel_x = initialpixelx, pixel_y = initialpixely, time = shake_interval)
 
 /atom/proc/do_jiggle(targetangle = 25, timer = 20)
 	var/matrix/OM = matrix(transform)
@@ -1483,12 +1483,7 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 	return pick(typesof(/obj/item/reagent_containers/food/snacks) - blocked)
 
 /proc/get_random_drink()
-	var/list/blocked = list(/obj/item/reagent_containers/food/drinks/soda_cans,
-		/obj/item/reagent_containers/food/drinks/bottle,
-		/obj/item/reagent_containers/food/drinks/flask/russian,
-		/obj/item/reagent_containers/food/drinks/flask/steel
-		)
-	return pick(subtypesof(/obj/item/reagent_containers/food/drinks) - blocked)
+	return /obj/item/reagent_containers/food/drinks/drinkingglass/filled/random_ethanol
 
 /proc/get_random_drug()
     var/list/drugs = subtypesof(/obj/item/reagent_containers/syringe/contraband)

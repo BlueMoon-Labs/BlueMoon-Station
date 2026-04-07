@@ -16,6 +16,23 @@
 	exp_type = EXP_TYPE_CREW
 	exp_type_department = EXP_TYPE_ENGINEERING
 	considered_combat_role = TRUE
+	alt_titles = list(
+		"Azik Interstellar Lead Specialist", //Триглав выше, для удобства
+		"Syndicate Construction Chief", //Синди выше, для удобства
+		"Big Iron",
+		"Bordel Architect",
+		"Chief Engineer Officer",
+		"Construction Coordinator",
+		"Construction Manager",
+		"Engineering Director",
+		"Head Engineer",
+		"Head of Engineering",
+		"Magos",
+		"Magos Biologis",
+		"Mother Destroyer",
+		"Power Plant Director",
+		"Project Manager"
+		)
 
 	outfit = /datum/outfit/job/ce
 	departments = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_COMMAND

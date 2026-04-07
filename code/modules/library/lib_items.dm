@@ -21,6 +21,7 @@
 	desc = "A great place for storing knowledge."
 	anchored = FALSE
 	density = TRUE
+	shadow_weight = 0.5
 	opacity = FALSE
 	resistance_flags = FLAMMABLE
 	max_integrity = 200

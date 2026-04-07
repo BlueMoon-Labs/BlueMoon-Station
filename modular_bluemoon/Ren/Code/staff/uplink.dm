@@ -87,6 +87,7 @@
 	item = /obj/item/reagent_containers/syringe/sand
 	cost = 15
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
+	required_round_types = list(ROUNDTYPE_DYNAMIC_HARD)
 
 /datum/uplink_item/dangerous/garand
 	name = "Old, but gold rifle"

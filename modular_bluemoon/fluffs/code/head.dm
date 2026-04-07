@@ -487,6 +487,7 @@
 /obj/item/clothing/head/donator/bm/fire_blossom
 	name = "Fire blossom"
 	desc = "Огненный цветок, растущий в дальних участках лаваленда при определённых условиях, не повторимых искусственно"
+	w_class = WEIGHT_CLASS_SMALL
 	icon_state = "fire_blossom"
 	light_color = "#ff6929"
 	light_power = 0.5
@@ -495,3 +496,24 @@
 /obj/item/clothing/head/donator/bm/fire_blossom/Initialize(mapload)
 	. = ..()
 	set_light()
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/helmet/sec/sallet
+	name = "Helmet with visor"
+	desc = "Standard helmet with a protective visor. When girls want to save face!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "sec_helmet_zabralo"
+	item_state = "sec_helmet_zabralo"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/head/helmet/sec/officer_hat
+	name = "Officer’s beret"
+	desc = "Want to stand out from the crowd? Grab this beret off an officer’s corpse!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "officer_hat"
+	item_state = "officer_hat"
+	flags_inv = HIDEEARS //перезапись, чтобы берет не скрывал волосы
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON

@@ -1,7 +1,7 @@
 /obj/effect/spawner/xeno_egg_delivery
 	name = "xeno egg delivery"
-	icon = 'icons/mob/alien.dmi'
-	icon_state = "egg_growing"
+	icon = 'icons/Xeno/Effects.dmi'
+	icon_state = "egg_hugger1"
 	var/announcement_time = 10000
 
 /obj/effect/spawner/xeno_egg_delivery/Initialize(mapload)

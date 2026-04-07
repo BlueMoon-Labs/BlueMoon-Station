@@ -270,7 +270,7 @@
 
 /obj/machinery/bfl_receiver
 	name = "BFL Receiver"
-	desc = "Кнопка активации выглядит подозрительно. Возможно, следует открыть шахту вручную с помощью лома."
+	desc = "Кнопка активации тускло мерцает."
 	icon = 'modular_bluemoon/icons/obj/machines/BFL_mission/Hole.dmi'
 	icon_state = "Receiver_Off"
 	anchored = TRUE

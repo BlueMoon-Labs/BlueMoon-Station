@@ -5,7 +5,9 @@
 "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", \
 "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", \
 "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", \
-"ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "angelnedemon", "fryktik", \
+"ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "angelnedemon", "fryktik", "ivanokio", \
+"blatoff", \
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Слот головы.
 
@@ -254,15 +256,15 @@
 	unique_reskin = list(
 		"Black" = list(
 			RESKIN_ICON_STATE = "catcrin_underarmor",
-			RESKIN_WORN_ICON_STATE = "catcrin_underarmor"
+			RESKIN_ITEM_STATE = "catcrin_underarmor"
 		),
 		"White" = list(
 			RESKIN_ICON_STATE = "catcrin_underarmor_white",
-			RESKIN_WORN_ICON_STATE = "catcrin_underarmor_white"
+			RESKIN_ITEM_STATE = "catcrin_underarmor_white"
 		),
 		"Beige" = list(
 			RESKIN_ICON_STATE = "catcrin_underarmor_beige",
-			RESKIN_WORN_ICON_STATE = "catcrin_underarmor_beige"
+			RESKIN_ITEM_STATE = "catcrin_underarmor_beige"
 		)
 	)
 
@@ -466,6 +468,8 @@
 	ammo_x_offset = 0
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler/hwal2572, /obj/item/ammo_casing/energy/electrode/security/hwal2572 = FALSE)
 	pickup_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/H-Wal-2572/DisablerGrab.ogg'
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
+	burst_size = 1
 	var/last_altfire = 0
 	var/altfire_delay = CLICK_CD_RANGE
 	shot_type_overlay = FALSE
@@ -476,7 +480,7 @@
 	if(last_altfire + altfire_delay > world.time)
 		return
 	var/current_index = current_firemode_index
-	set_firemode_to_type(/obj/item/ammo_casing/energy/electrode)
+	set_firemode_to_type(/obj/item/ammo_casing/energy/electrode/security/hwal2572)
 	process_afterattack(target, user, proximity_flag, params)
 	set_firemode_index(current_index)
 	last_altfire = world.time

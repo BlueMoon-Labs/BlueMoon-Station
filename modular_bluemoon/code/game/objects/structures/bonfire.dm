@@ -89,6 +89,7 @@
 					suffocation_heal = healing_power, \
 					stamina_heal = healing_power, \
 					blood_heal = healing_power, \
+					rad_heal = healing_power, \
 					organ_healing = list(ORGAN_SLOT_BRAIN = healing_power), \
 					simple_heal = healing_power, \
 					healing_color = COLOR_ORANGE, \

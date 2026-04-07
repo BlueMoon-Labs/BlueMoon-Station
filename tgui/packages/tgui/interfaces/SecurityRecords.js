@@ -1,169 +1,243 @@
-import { createSearch, decodeHtmlEntities } from 'common/string';
+import { createSearch } from 'common/string';
 import { Fragment } from 'inferno';
 
-import { useBackend, useLocalState } from "../backend";
-import { Box, Button, Flex, Icon, Input, LabeledList, Section, Table, Tabs } from '../components';
-import { Window } from "../layouts";
-import { ComplexModal, modalOpen } from './common/ComplexModal';
+import { useBackend, useLocalState } from '../backend';
+import {
+  Box,
+  Button,
+  Flex,
+  Icon,
+  Input,
+  LabeledList,
+  NoticeBox,
+  Section,
+  Table,
+  Tabs,
+} from '../components';
+import { Window } from '../layouts';
 import { LoginInfo } from './common/LoginInfo';
 import { LoginScreen } from './common/LoginScreen';
-import { TemporaryNotice } from './common/TemporaryNotice';
+
+const CRIMINAL_STATUSES = [
+  { value: 'Ничего', label: 'Ничего', icon: 'file', color: 'label' },
+  { value: '*Арестовать*', label: 'Арестовать', icon: 'handcuffs', color: 'red' },
+  { value: '*Уничтожить*', label: 'Уничтожить', icon: 'skull', color: 'purple' },
+  { value: 'Отбывает Срок', label: 'Отбывает Срок', icon: 'lock', color: 'orange' },
+  { value: 'Выпустили', label: 'Выпустили', icon: 'door-open', color: 'blue' },
+  { value: 'УДО', label: 'УДО', icon: 'user-check', color: 'teal' },
+  { value: 'Уволить', label: 'Уволить', icon: 'user-minus', color: 'green' },
+  { value: 'Искать', label: 'Искать', icon: 'magnifying-glass', color: 'yellow' },
+  { value: 'Наблюдать', label: 'Наблюдать', icon: 'eye', color: 'blue' },
+  { value: 'Сняты Обвинения', label: 'Сняты Обвинения', icon: 'check', color: 'green' },
+];
 
 const statusStyles = {
-  "*Execute*": "execute",
-  "*Arrest*": "arrest",
-  "Incarcerated": "incarcerated",
-  "Parolled": "parolled",
-  "Released": "released",
-  "Demote": "demote",
-  "Search": "search",
-  "Monitor": "monitor",
-};
-
-const doEdit = (context, field) => {
-  modalOpen(context, 'edit', {
-    field: field.edit,
-    value: field.value,
-  });
+  '*Арестовать*': 'arrest',
+  '*Уничтожить*': 'execute',
+  'Отбывает Срок': 'incarcerated',
+  'УДО': 'parolled',
+  'Выпустили': 'released',
+  'Уволить': 'demote',
+  'Искать': 'search',
+  'Наблюдать': 'monitor',
+  'Сняты Обвинения': 'discharged',
 };
 
 export const SecurityRecords = (properties, context) => {
-  const { act, data } = useBackend(context);
-  const {
-    loginState,
-    currentPage,
-  } = data;
+  const { data } = useBackend(context);
+  const { loginState, currentPage } = data;
 
-  let body;
   if (!loginState.logged_in) {
     return (
-      <Window theme="security" resizable>
+      <Window
+        title="Записи безопасности"
+        theme="security"
+        width={800}
+        height={600}
+        resizable>
         <Window.Content>
           <LoginScreen />
         </Window.Content>
       </Window>
     );
-  } else {
-    if (currentPage === 1) {
-      body = <SecurityRecordsPageList />;
-    } else if (currentPage === 2) {
-      body = <SecurityRecordsPageMaintenance />;
-    } else if (currentPage === 3) {
-      body = <SecurityRecordsPageView />;
-    }
+  }
+
+  let body;
+  if (currentPage === 1) {
+    body = <PageRecordList />;
+  } else if (currentPage === 2) {
+    body = <PageMaintenance />;
+  } else if (currentPage === 3) {
+    body = <PageRecordView />;
+  } else if (currentPage === 4) {
+    body = <PageAllLogs />;
   }
 
   return (
-    <Window theme="security" resizable>
-      <ComplexModal />
+    <Window
+      title="Записи безопасности"
+      theme="security"
+      width={800}
+      height={600}
+      resizable>
       <Window.Content scrollable className="Layout__content--flexColumn">
         <LoginInfo />
-        <TemporaryNotice />
-        <SecurityRecordsNavigation />
-        {/* <Section height="100%" flexGrow="1">
+        <TempNotice />
+        <NavigationTabs />
+        <Section flexGrow="1">
           {body}
-        </Section> */}
+        </Section>
       </Window.Content>
     </Window>
   );
 };
 
-const SecurityRecordsNavigation = (properties, context) => {
+const TempNotice = (_properties, context) => {
   const { act, data } = useBackend(context);
-  const {
-    currentPage,
-    general,
-  } = data;
+  const { temp } = data;
+  if (!temp) {
+    return null;
+  }
+  const colorMap = {
+    danger: 'bad',
+    success: 'good',
+    info: 'info',
+  };
+  return (
+    <NoticeBox
+      mb="0.5rem"
+      color={colorMap[temp.style] || 'info'}
+      onDismiss={() => act('cleartemp')}>
+      {temp.text}
+    </NoticeBox>
+  );
+};
+
+const NavigationTabs = (_properties, context) => {
+  const { act, data } = useBackend(context);
+  const { currentPage, general } = data;
   return (
     <Tabs>
       <Tabs.Tab
         selected={currentPage === 1}
         onClick={() => act('page', { page: 1 })}>
-        <Icon name="list" />
-        List Records
+        <Icon name="list" /> Список записей
       </Tabs.Tab>
       <Tabs.Tab
         selected={currentPage === 2}
         onClick={() => act('page', { page: 2 })}>
-        <Icon name="wrench" />
-        Record Maintenance
+        <Icon name="wrench" /> Обслуживание
       </Tabs.Tab>
-      {(currentPage === 3 && general && !general.empty) && (
-        <Tabs.Tab
-          selected={currentPage === 3}>
-          <Icon name="file" />
-          Record: {general.fields[0].value}
+      <Tabs.Tab
+        selected={currentPage === 4}
+        onClick={() => act('page', { page: 4 })}>
+        <Icon name="clipboard-list" /> Логи
+      </Tabs.Tab>
+      {currentPage === 3 && general && !general.empty && (
+        <Tabs.Tab selected>
+          <Icon name="file" /> {general.name}
         </Tabs.Tab>
       )}
     </Tabs>
   );
 };
 
-const SecurityRecordsPageList = (properties, context) => {
+// ============= LIST PAGE =============
+
+const PageRecordList = (_properties, context) => {
   const { act, data } = useBackend(context);
-  const {
-    records,
-  } = data;
-  const [searchText, setSearchText] = useLocalState(context, "searchText", "");
-  const [sortId, _setSortId] = useLocalState(context, "sortId", "name");
-  const [sortOrder, _setSortOrder] = useLocalState(context, "sortOrder", true);
+  const { records, isPrinting } = data;
+  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
+  const [sortId, _setSortId] = useLocalState(context, 'sortId', 'name');
+  const [sortOrder, _setSortOrder] = useLocalState(context, 'sortOrder', true);
+
+  const filteredRecords = (records || [])
+    .filter(
+      createSearch(searchText, (record) => {
+        return (
+          record.name
+          + '|' + record.id
+          + '|' + record.rank
+          + '|' + record.fingerprint
+          + '|' + record.status
+        );
+      })
+    )
+    .sort((a, b) => {
+      const i = sortOrder ? 1 : -1;
+      return String(a[sortId] || '').localeCompare(String(b[sortId] || '')) * i;
+    });
+
   return (
-    <Flex direction="column" height="100%">
-      <SecurityRecordsActions />
-      <Section flexGrow="1" mt="0.5rem">
-        <Table className="SecurityRecords__list">
-          <Table.Row bold>
-            <SortButton id="name">Name</SortButton>
-            <SortButton id="id">ID</SortButton>
-            <SortButton id="rank">Assignment</SortButton>
-            <SortButton id="fingerprint">Fingerprint</SortButton>
-            <SortButton id="status">Criminal Status</SortButton>
+    <Fragment>
+      <Flex mb="0.5rem">
+        <Flex.Item>
+          <Button
+            content="Новая запись"
+            icon="plus"
+            onClick={() => act('new_general')}
+          />
+        </Flex.Item>
+        <Flex.Item grow="1" ml="0.5rem">
+          <Input
+            placeholder="Поиск по имени, ID, должности, отпечатку, статусу..."
+            width="100%"
+            onInput={(e, value) => setSearchText(value)}
+          />
+        </Flex.Item>
+      </Flex>
+      <Table className="SecurityRecords__list">
+        <Table.Row bold>
+          <Table.Cell collapsing />
+          <SortButton id="name">Имя</SortButton>
+          <SortButton id="id">ID</SortButton>
+          <SortButton id="rank">Должность</SortButton>
+          <SortButton id="fingerprint">Отпечаток</SortButton>
+          <SortButton id="status">Статус</SortButton>
+        </Table.Row>
+        {filteredRecords.map((record) => (
+          <Table.Row
+            key={record.ref}
+            className={
+              'SecurityRecords__listRow--' + (statusStyles[record.status] || '')
+            }
+            style={{ cursor: 'pointer' }}
+            onClick={() => act('view', { ref: record.ref })}>
+            <Table.Cell collapsing>
+              {record.thumb ? (
+                <img
+                  src={'data:image/png;base64,' + record.thumb}
+                  className="SecurityRecords__photo"
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    verticalAlign: 'middle',
+                  }}
+                />
+              ) : (
+                <Icon name="user" />
+              )}
+            </Table.Cell>
+            <Table.Cell>{record.name}</Table.Cell>
+            <Table.Cell>{record.id}</Table.Cell>
+            <Table.Cell>{record.rank}</Table.Cell>
+            <Table.Cell>{record.fingerprint}</Table.Cell>
+            <Table.Cell>{record.status}</Table.Cell>
           </Table.Row>
-          {records
-            .filter(createSearch(searchText, record => {
-              return record.name + "|"
-                      + record.id + "|"
-                      + record.rank + "|"
-                      + record.fingerprint + "|"
-                      + record.status;
-            }))
-            .sort((a, b) => {
-              const i = sortOrder ? 1 : -1;
-              return a[sortId].localeCompare(b[sortId]) * i;
-            })
-            .map(record => (
-              <Table.Row
-                key={record.id}
-                className={"SecurityRecords__listRow--"
-                            + statusStyles[record.status]}
-                onClick={() => act('view', {
-                  uid_gen: record.uid_gen,
-                  uid_sec: record.uid_sec,
-                })}>
-                <Table.Cell><Icon name="user" /> {record.name}</Table.Cell>
-                <Table.Cell>{record.id}</Table.Cell>
-                <Table.Cell>{record.rank}</Table.Cell>
-                <Table.Cell>{record.fingerprint}</Table.Cell>
-                <Table.Cell>{record.status}</Table.Cell>
-              </Table.Row>
-            ))}
-        </Table>
-      </Section>
-    </Flex>
+        ))}
+      </Table>
+    </Fragment>
   );
 };
 
 const SortButton = (properties, context) => {
-  const [sortId, setSortId] = useLocalState(context, "sortId", "name");
-  const [sortOrder, setSortOrder] = useLocalState(context, "sortOrder", true);
-  const {
-    id,
-    children,
-  } = properties;
+  const [sortId, setSortId] = useLocalState(context, 'sortId', 'name');
+  const [sortOrder, setSortOrder] = useLocalState(context, 'sortOrder', true);
+  const { id, children } = properties;
   return (
     <Table.Cell>
       <Button
-        color={sortId !== id && "transparent"}
+        color={sortId !== id ? 'transparent' : undefined}
         width="100%"
         onClick={() => {
           if (sortId === id) {
@@ -176,8 +250,8 @@ const SortButton = (properties, context) => {
         {children}
         {sortId === id && (
           <Icon
-            name={sortOrder ? "sort-up" : "sort-down"}
-            ml="0.25rem;"
+            name={sortOrder ? 'sort-up' : 'sort-down'}
+            ml="0.25rem"
           />
         )}
       </Button>
@@ -185,259 +259,614 @@ const SortButton = (properties, context) => {
   );
 };
 
-const SecurityRecordsActions = (properties, context) => {
+// ============= MAINTENANCE PAGE =============
+
+const PageMaintenance = (_properties, context) => {
   const { act, data } = useBackend(context);
-  const {
-    isPrinting,
-  } = data;
-  const [searchText, setSearchText] = useLocalState(context, "searchText", "");
+  const { canDeleteAll } = data;
   return (
-    <Flex>
-      <Flex.Item>
-        <Button
-          content="New Record"
-          icon="plus"
-          onClick={() => act('new_general')}
+    <Box>
+      {canDeleteAll ? (
+        <Button.Confirm
+          icon="trash"
+          color="bad"
+          content="Удалить все записи безопасности"
+          onClick={() => act('delete_security_all')}
         />
-        <Button
-          disabled={isPrinting}
-          icon={isPrinting ? 'spinner' : 'print'}
-          iconSpin={!!isPrinting}
-          content="Print Cell Log"
-          ml="0.25rem"
-          onClick={() => modalOpen(context, "print_cell_log")}
-        />
-      </Flex.Item>
-      <Flex.Item grow="1" ml="0.5rem">
-        <Input
-          placeholder="Search by Name, ID, Assignment, Fingerprint, Status"
-          width="100%"
-          onInput={(e, value) => setSearchText(value)}
-        />
-      </Flex.Item>
-    </Flex>
+      ) : (
+        <Box color="label" italic>
+          Недостаточно полномочий для операций обслуживания.
+        </Box>
+      )}
+    </Box>
   );
 };
 
-const SecurityRecordsPageMaintenance = (properties, context) => {
-  const { act } = useBackend(context);
+// ============= ALL LOGS PAGE =============
+
+const PageAllLogs = (_properties, context) => {
+  const { data } = useBackend(context);
+  const { allLogs } = data;
+  const [searchLogs, setSearchLogs] = useLocalState(context, 'searchLogs', '');
+
+  const logs = allLogs || [];
+  const filteredLogs = logs.filter(
+    createSearch(searchLogs, (entry) => {
+      return entry.name + '|' + entry.id + '|' + entry.text;
+    })
+  );
+
   return (
-    <Box>
+    <Fragment>
+      <Flex mb="0.5rem">
+        <Flex.Item grow="1">
+          <Input
+            placeholder="Поиск по имени, ID, тексту лога..."
+            width="100%"
+            onInput={(e, value) => setSearchLogs(value)}
+          />
+        </Flex.Item>
+      </Flex>
+      <Section title={'Все логи (' + filteredLogs.length + ')'}>
+        {filteredLogs.length === 0 ? (
+          <Box color="label" italic>
+            Нет логов.
+          </Box>
+        ) : (
+          <Box
+            maxHeight="450px"
+            overflowY="auto"
+            p="0.25rem"
+            backgroundColor="rgba(0,0,0,0.2)"
+            style={{ borderRadius: '3px' }}>
+            {filteredLogs.map((entry, i) => (
+              <Box key={i} py="0.15rem" fontSize="0.85rem">
+                <Box as="span" bold color="average">
+                  [{entry.name} ({entry.id})]
+                </Box>
+                {' '}
+                <Box
+                  as="span"
+                  color="label"
+                  dangerouslySetInnerHTML={{ __html: entry.text }}
+                />
+              </Box>
+            ))}
+          </Box>
+        )}
+      </Section>
+    </Fragment>
+  );
+};
+
+// ============= RECORD VIEW PAGE =============
+
+const PageRecordView = (_properties, context) => {
+  const { act, data } = useBackend(context);
+  const { general, security, isPrinting, canDeleteLogs } = data;
+
+  return (
+    <Fragment>
       <Button
-        disabled
-        icon="download"
-        content="Backup to Disk"
-        tooltip="This feature is not available."
-        tooltipPosition="right"
-      /><br />
-      <Button
-        disabled
-        icon="upload"
-        content="Upload from Disk"
-        tooltip="This feature is not available."
-        tooltipPosition="right"
-        my="0.5rem"
-      /><br />
-      <Button.Confirm
-        icon="trash"
-        content="Delete All Security Records"
-        onClick={() => act('delete_security_all')}
+        icon="arrow-left"
+        content="Назад к списку"
         mb="0.5rem"
-      /><br />
-      <Button.Confirm
-        icon="trash"
-        content="Delete All Cell Logs"
-        onClick={() => act('delete_cell_logs')}
+        onClick={() => act('back')}
+      />
+      <ViewGeneral />
+      <ViewSecurity />
+    </Fragment>
+  );
+};
+
+// ----- General Section -----
+
+const ViewGeneral = (_properties, context) => {
+  const { act, data } = useBackend(context);
+  const { general, isPrinting, canEditRank } = data;
+
+  if (!general || general.empty) {
+    return (
+      <Section title="Общие данные" color="bad">
+        <Box color="bad">Общие записи утеряны!</Box>
+      </Section>
+    );
+  }
+
+  return (
+    <Section
+      title="Общие данные"
+      buttons={
+        <Fragment>
+          <Button
+            disabled={isPrinting}
+            icon={isPrinting ? 'spinner' : 'print'}
+            iconSpin={!!isPrinting}
+            content="Печать"
+            onClick={() => act('print_record')}
+          />
+          <Button
+            disabled={isPrinting}
+            icon={isPrinting ? 'spinner' : 'scroll'}
+            iconSpin={!!isPrinting}
+            content="Плакат"
+            onClick={() => act('print_poster')}
+          />
+          <Button
+            disabled={isPrinting}
+            icon={isPrinting ? 'spinner' : 'file-contract'}
+            iconSpin={!!isPrinting}
+            content="Ордер"
+            onClick={() => act('generate_warrant')}
+          />
+          <Button.Confirm
+            icon="trash"
+            color="bad"
+            content="Удалить всё"
+            onClick={() => act('delete_general')}
+          />
+        </Fragment>
+      }>
+      <Flex>
+        <Flex.Item grow="1">
+          <LabeledList>
+            <LabeledList.Item label="Имя">
+              {general.name}
+              <Button
+                icon="pen"
+                ml="0.5rem"
+                onClick={() => act('edit_field', { field: 'name', value: general.name })}
+              />
+            </LabeledList.Item>
+            <LabeledList.Item label="ID">
+              {general.id}
+              <Button
+                icon="pen"
+                ml="0.5rem"
+                onClick={() => act('edit_field', { field: 'id', value: general.id })}
+              />
+            </LabeledList.Item>
+            <LabeledList.Item label="Пол">
+              {general.gender}
+              <Button
+                icon="venus-mars"
+                ml="0.5rem"
+                onClick={() => act('edit_field', { field: 'gender', value: general.gender })}
+              />
+            </LabeledList.Item>
+            <LabeledList.Item label="Возраст">
+              {general.age}
+              <Button
+                icon="pen"
+                ml="0.5rem"
+                onClick={() => act('edit_field', { field: 'age', value: general.age })}
+              />
+            </LabeledList.Item>
+            <LabeledList.Item label="Вид">
+              {general.species}
+              <Button
+                icon="pen"
+                ml="0.5rem"
+                onClick={() => act('edit_field', { field: 'species', value: general.species })}
+              />
+            </LabeledList.Item>
+            <LabeledList.Item label="Должность">
+              {general.rank}
+              {!!canEditRank && (
+                <Button
+                  icon="pen"
+                  ml="0.5rem"
+                  onClick={() => act('edit_field', { field: 'rank', value: general.rank })}
+                />
+              )}
+            </LabeledList.Item>
+            <LabeledList.Item label="Отпечаток">
+              {general.fingerprint}
+              <Button
+                icon="pen"
+                ml="0.5rem"
+                onClick={() => act('edit_field', { field: 'fingerprint', value: general.fingerprint })}
+              />
+            </LabeledList.Item>
+            <LabeledList.Item label="Физ. статус">
+              <Box color={general.p_stat === 'Active' ? 'good' : 'bad'}>
+                {general.p_stat}
+              </Box>
+            </LabeledList.Item>
+            <LabeledList.Item label="Псих. статус">
+              <Box color={general.m_stat === 'Stable' ? 'good' : 'bad'}>
+                {general.m_stat}
+              </Box>
+            </LabeledList.Item>
+          </LabeledList>
+        </Flex.Item>
+        <Flex.Item ml="1rem" textAlign="center">
+          <PhotoBox
+            photoData={general.photos && general.photos.front}
+            label="Фас"
+            side="front"
+          />
+          <PhotoBox
+            photoData={general.photos && general.photos.side}
+            label="Профиль"
+            side="side"
+          />
+        </Flex.Item>
+      </Flex>
+    </Section>
+  );
+};
+
+const PhotoBox = (properties, context) => {
+  const { act } = useBackend(context);
+  const { photoData, label, side } = properties;
+  return (
+    <Box display="inline-block" textAlign="center" mr="0.5rem" mb="0.5rem">
+      {photoData ? (
+        <img
+          src={'data:image/png;base64,' + photoData}
+          className="SecurityRecords__photo"
+          style={{
+            width: '96px',
+            height: '96px',
+            border: '2px solid rgba(255,255,255,0.2)',
+            cursor: 'pointer',
+          }}
+          onClick={() => act('show_photo', { side: side })}
+        />
+      ) : (
+        <Box
+          width="96px"
+          height="96px"
+          backgroundColor="rgba(255,255,255,0.05)"
+          style={{ border: '2px dashed rgba(255,255,255,0.2)' }}>
+          <Icon name="image" size={3} color="label" mt="30px" />
+        </Box>
+      )}
+      <Box color="label" fontSize="0.8rem" mt="0.25rem">
+        {label}
+      </Box>
+      <Button
+        icon="camera"
+        tooltip="Обновить фото"
+        onClick={() => act('upd_photo', { side: side })}
+      />
+      <Button
+        icon="print"
+        tooltip="Печать фото"
+        onClick={() => act('print_photo', { side: side })}
       />
     </Box>
   );
 };
 
-const SecurityRecordsPageView = (properties, context) => {
-  const { act, data } = useBackend(context);
-  const {
-    isPrinting,
-    general,
-    security,
-  } = data;
-  if (!general || !general.fields) {
-    return (
-      <Box color="bad">
-        General records lost!
-      </Box>
-    );
-  }
-  return (
-    <Fragment>
-      <Section
-        title="General Data"
-        level={2}
-        mt="-6px"
-        buttons={
-          <Fragment>
-            <Button
-              disabled={isPrinting}
-              icon={isPrinting ? 'spinner' : 'print'}
-              iconSpin={!!isPrinting}
-              content="Print Record"
-              onClick={() => act('print_record')}
-            />
-            <Button.Confirm
-              icon="trash"
-              tooltip={"WARNING: This will also delete the Security "
-              + "and Medical records associated to this crew member!"}
-              tooltipPosition="bottom-left"
-              content="Delete Record"
-              onClick={() => act('delete_general')}
-            />
-          </Fragment>
-        }>
-        <SecurityRecordsViewGeneral />
-      </Section>
-      <Section
-        title="Security Data"
-        level={2}
-        mt="-12px"
-        buttons={
-          <Button.Confirm
-            icon="trash"
-            disabled={security.empty}
-            content="Delete Record"
-            onClick={() => act('delete_security')}
-          />
-        }>
-        <SecurityRecordsViewSecurity />
-      </Section>
-    </Fragment>
-  );
-};
+// ----- Security Section -----
 
-const SecurityRecordsViewGeneral = (_properties, context) => {
-  const { data } = useBackend(context);
-  const {
-    general,
-  } = data;
-  if (!general || !general.fields) {
-    return (
-      <Box color="bad">
-        General records lost!
-      </Box>
-    );
-  }
-  return (
-    <Fragment>
-      <Box float="left">
-        <LabeledList>
-          {general.fields.map((field, i) => (
-            <LabeledList.Item
-              key={i}
-              label={field.field}
-              prewrap>
-              {decodeHtmlEntities('' + field.value)}
-              {!!field.edit && (
-                <Button
-                  icon="pen"
-                  ml="0.5rem"
-                  mb={field.line_break ? '1rem' : 'initial'}
-                  onClick={() => doEdit(context, field)}
-                />
-              )}
-            </LabeledList.Item>
-          ))}
-        </LabeledList>
-      </Box>
-      <Box position="absolute" right="0" textAlign="right">
-        {!!general.has_photos && (
-          general.photos.map((p, i) => (
-            <Box
-              key={i}
-              display="inline-block"
-              textAlign="center"
-              color="label">
-              <img
-                src={p}
-                style={{
-                  width: '96px',
-                  'margin-bottom': '0.5rem',
-                  imageRendering: 'pixelated',
-                }}
-              /><br />
-              Photo #{i + 1}
-            </Box>
-          ))
-        )}
-      </Box>
-    </Fragment>
-  );
-};
-
-const SecurityRecordsViewSecurity = (_properties, context) => {
+const ViewSecurity = (_properties, context) => {
   const { act, data } = useBackend(context);
-  const {
-    security,
-  } = data;
-  if (!security || !security.fields) {
+  const { security, isPrinting, canDeleteLogs, hasCentcomAuth } = data;
+
+  if (!security || security.empty) {
     return (
-      <Box color="bad">
-        Security records lost!<br />
+      <Section title="Данные безопасности">
+        <Box color="average">Записи безопасности отсутствуют.</Box>
         <Button
-          icon="pen"
-          content="Create New Record"
+          icon="plus"
+          content="Создать запись безопасности"
           mt="0.5rem"
           onClick={() => act('new_security')}
         />
-      </Box>
+      </Section>
     );
   }
+
   return (
     <Fragment>
-      <LabeledList>
-        {security.fields.map((field, i) => (
-          <LabeledList.Item
-            key={i}
-            label={field.field}
-            prewrap>
-            {decodeHtmlEntities(field.value)}
-            {!!field.edit && (
+      <Section
+        title="Данные безопасности"
+        buttons={
+          <Button.Confirm
+            icon="trash"
+            color="bad"
+            content="Удалить запись безоп."
+            onClick={() => act('delete_security')}
+          />
+        }>
+        <CriminalStatusSelector />
+        <Box mt="0.75rem">
+          <CrimeTable
+            title="Некрупные правонарушения"
+            crimes={security.mi_crim || []}
+            addAction="mi_crim_add"
+            deleteAction="mi_crim_delete"
+            hasCentcomAuth={hasCentcomAuth}
+          />
+        </Box>
+        <Box mt="0.75rem">
+          <CrimeTable
+            title="Крупные правонарушения"
+            crimes={security.ma_crim || []}
+            addAction="ma_crim_add"
+            deleteAction="ma_crim_delete"
+            hasCentcomAuth={hasCentcomAuth}
+          />
+        </Box>
+        <Box mt="0.75rem">
+          <LabeledList>
+            <LabeledList.Item label="Заметки">
+              {security.notes}
               <Button
                 icon="pen"
                 ml="0.5rem"
-                mb={field.line_break ? '1rem' : 'initial'}
-                onClick={() => doEdit(context, field)}
+                onClick={() => act('edit_field', { field: 'notes', value: security.notes })}
               />
-            )}
-          </LabeledList.Item>
-        ))}
-      </LabeledList>
-      <Section
-        title="Comments/Log"
-        level={2}
-        buttons={
-          <Button
-            icon="comment"
-            content="Add Entry"
-            onClick={() => modalOpen(context, 'comment_add')}
-          />
-        }>
-        {security.comments.length === 0 ? (
-          <Box color="label">
-            No comments found.
+            </LabeledList.Item>
+          </LabeledList>
+        </Box>
+      </Section>
+      <ActionLogs />
+      <CommentsSection />
+    </Fragment>
+  );
+};
+
+const CriminalStatusSelector = (_properties, context) => {
+  const { act, data } = useBackend(context);
+  const { security } = data;
+  const [showStatusPicker, setShowStatusPicker] = useLocalState(
+    context,
+    'showStatusPicker',
+    false
+  );
+  const [statusReason, setStatusReason] = useLocalState(
+    context,
+    'statusReason',
+    ''
+  );
+
+  const currentStatus = security.criminal || 'Ничего';
+  const currentStyle = statusStyles[currentStatus];
+
+  return (
+    <Box>
+      <Flex align="center">
+        <Flex.Item>
+          <Box bold inline>
+            Криминальный статус:{' '}
           </Box>
-        ) : security.comments.map((comment, i) => (
-          <Box key={i} prewrap>
-            <Box color="label" display="inline">
-              {comment.header || "Auto-generated"}
-            </Box><br />
-            {comment.text || comment}
-            <Button
-              icon="comment-slash"
-              color="bad"
-              ml="0.5rem"
-              onClick={() => act('comment_delete', { id: i + 1 })}
+        </Flex.Item>
+        <Flex.Item>
+          <Button
+            content={currentStatus}
+            color={currentStyle ? undefined : 'label'}
+            className={
+              currentStyle
+                ? 'SecurityRecords__listRow--' + currentStyle
+                : undefined
+            }
+            icon="gavel"
+            onClick={() => setShowStatusPicker(!showStatusPicker)}
+          />
+        </Flex.Item>
+      </Flex>
+      {showStatusPicker && (
+        <Box
+          mt="0.5rem"
+          p="0.5rem"
+          backgroundColor="rgba(0,0,0,0.3)"
+          style={{ borderRadius: '4px' }}>
+          <Box mb="0.5rem" color="label">
+            Выберите статус:
+          </Box>
+          <Flex wrap="wrap">
+            {CRIMINAL_STATUSES.map((s) => (
+              <Flex.Item key={s.value} m="0.15rem">
+                <Button
+                  selected={currentStatus === s.value}
+                  icon={s.icon}
+                  color={s.color}
+                  content={s.label}
+                  onClick={() => {
+                    act('set_criminal', {
+                      status: s.value,
+                      reason: statusReason,
+                    });
+                    setShowStatusPicker(false);
+                    setStatusReason('');
+                  }}
+                />
+              </Flex.Item>
+            ))}
+          </Flex>
+          <Box mt="0.5rem">
+            <Input
+              placeholder="Причина (обязательно для Уничтожить/Уволить)"
+              width="100%"
+              value={statusReason}
+              onInput={(e, value) => setStatusReason(value)}
             />
           </Box>
-        ))}
-      </Section>
-    </Fragment>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+const CrimeTable = (properties, context) => {
+  const { act } = useBackend(context);
+  const { title, crimes, addAction, deleteAction, hasCentcomAuth } = properties;
+
+  return (
+    <Section
+      title={title + ' (' + crimes.length + ')'}
+      level={2}
+      buttons={
+        <Button
+          icon="plus"
+          content="Добавить"
+          onClick={() => act(addAction)}
+        />
+      }>
+      {crimes.length === 0 ? (
+        <Box color="label" italic>
+          Нет записей.
+        </Box>
+      ) : (
+        <Table>
+          <Table.Row bold header>
+            <Table.Cell>Название</Table.Cell>
+            <Table.Cell>Подробности</Table.Cell>
+            <Table.Cell>Автор</Table.Cell>
+            <Table.Cell>Время</Table.Cell>
+            <Table.Cell textAlign="center">Наказание</Table.Cell>
+            <Table.Cell textAlign="center">Действия</Table.Cell>
+          </Table.Row>
+          {crimes.map((crime) => (
+            <Table.Row key={crime.dataId}>
+              <Table.Cell>
+                {crime.name}
+                {!!crime.centcom && (
+                  <Box
+                    as="span"
+                    ml="0.5rem"
+                    color="green"
+                    bold
+                    fontSize="0.8rem">
+                    [ЦК]
+                  </Box>
+                )}
+              </Table.Cell>
+              <Table.Cell>{crime.details}</Table.Cell>
+              <Table.Cell color="label">{crime.author}</Table.Cell>
+              <Table.Cell color="label">{crime.time}</Table.Cell>
+              <Table.Cell textAlign="center">
+                <Button
+                  icon={crime.incurred ? 'check' : 'times'}
+                  color={crime.incurred ? 'good' : 'bad'}
+                  tooltip={crime.incurred ? 'Понесено' : 'Не понесено'}
+                  onClick={() =>
+                    act('crim_incur_switch', { cdataid: crime.dataId })
+                  }
+                />
+              </Table.Cell>
+              <Table.Cell textAlign="center">
+                <Button.Confirm
+                  icon="trash"
+                  color="bad"
+                  onClick={() =>
+                    act(deleteAction, { cdataid: crime.dataId })
+                  }
+                />
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table>
+      )}
+    </Section>
+  );
+};
+
+const ActionLogs = (_properties, context) => {
+  const { act, data } = useBackend(context);
+  const { security, isPrinting, canDeleteLogs } = data;
+  const logs = security.logs || [];
+
+  return (
+    <Section
+      title={'Логи действий (' + logs.length + ')'}
+      buttons={
+        <Fragment>
+          <Button
+            disabled={isPrinting}
+            icon={isPrinting ? 'spinner' : 'print'}
+            iconSpin={!!isPrinting}
+            content="Печать логов"
+            onClick={() => act('print_logs')}
+          />
+          {!!canDeleteLogs && (
+            <Button.Confirm
+              icon="trash"
+              color="bad"
+              content="Очистить"
+              onClick={() => act('delete_logs')}
+            />
+          )}
+        </Fragment>
+      }>
+      {logs.length === 0 ? (
+        <Box color="label" italic>
+          Нет логов.
+        </Box>
+      ) : (
+        <Box
+          maxHeight="200px"
+          overflowY="auto"
+          p="0.25rem"
+          backgroundColor="rgba(0,0,0,0.2)"
+          style={{ borderRadius: '3px' }}>
+          {logs.map((log, i) => (
+            <Box
+              key={i}
+              py="0.15rem"
+              color="label"
+              fontSize="0.85rem"
+              dangerouslySetInnerHTML={{ __html: log }}
+            />
+          ))}
+        </Box>
+      )}
+    </Section>
+  );
+};
+
+const CommentsSection = (_properties, context) => {
+  const { act, data } = useBackend(context);
+  const { security } = data;
+  const comments = security.comments || [];
+
+  return (
+    <Section
+      title={'Комментарии (' + comments.length + ')'}
+      buttons={
+        <Button
+          icon="comment"
+          content="Добавить"
+          onClick={() => act('add_comment')}
+        />
+      }>
+      {comments.length === 0 ? (
+        <Box color="label" italic>
+          Нет комментариев.
+        </Box>
+      ) : (
+        comments.map((comment) => (
+          <Box
+            key={comment.id}
+            py="0.25rem"
+            style={{
+              borderBottom: '1px solid rgba(255,255,255,0.1)',
+            }}>
+            {comment.deleted ? (
+              <Box color="bad" italic>
+                [Удалено]
+              </Box>
+            ) : (
+              <Fragment>
+                <Box
+                  fontSize="0.85rem"
+                  dangerouslySetInnerHTML={{ __html: comment.text }}
+                />
+                <Button
+                  icon="trash"
+                  color="bad"
+                  mt="0.25rem"
+                  onClick={() => act('delete_comment', { id: comment.id })}
+                />
+              </Fragment>
+            )}
+          </Box>
+        ))
+      )}
+    </Section>
   );
 };

@@ -12,6 +12,20 @@
 	cost = 4
 	purchasable_from = ~(UPLINK_SYNDICATE)
 
+/datum/uplink_item/inteq/pistol_designdisk
+	name = "Makarov Design Disk"
+	desc = "Чертежи магазинов 10мм: обычные, бронебойные, экспансивные и зажигательные."
+	item = /obj/item/disk/design_disk/adv/ammo/makarov
+	cost = 2
+	purchasable_from = ~(UPLINK_SYNDICATE)
+
+/datum/uplink_item/inteq/aps_pistol_designdisk
+	name = "Stechkin Design Disk"
+	desc = "Чертежи магазинов 9мм: обычные, бронебойные и зажигательные. Для АПС и прочих старых добрых русских решений."
+	item = /obj/item/disk/design_disk/adv/ammo/stechkin
+	cost = 2
+	purchasable_from = ~(UPLINK_SYNDICATE)
+
 /datum/uplink_item/ammo/slug23
 	name = "KS-23 slug box"
 	desc = "8 свинцовых пуль."

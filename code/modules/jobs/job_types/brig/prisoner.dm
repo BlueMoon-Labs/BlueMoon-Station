@@ -9,12 +9,14 @@
 	supervisors = "the security team"
 	random_spawns_possible = FALSE
 	alt_titles = list(
-		"Minimum Security Prisoner",
-		"Maximum Security Prisoner",
-		"SuperMax Security Prisoner",
+		"Prison Slut", // Сортировка по уровню опасности.
+		"Security Slave",
 		"Protective Custody Prisoner",
-		"Prison Slut",
-		"Security Slave"
+		"Minimum Security Prisoner",
+		"Low Security Prisoner",
+		"High Security Prisoner",
+		"Max Security Prisoner",
+		"Supermax Security Prisoner"
 		)
 
 	outfit = /datum/outfit/job/prisoner

@@ -63,6 +63,7 @@
 	var/list/antag_datums
 	var/antag_hud_icon_state = null //this mind's ANTAG_HUD should have this icon_state
 	var/datum/atom_hud/antag/antag_hud = null //this mind's antag HUD
+	var/datum/traitor_panel_tgui/tgui_panel // cached TGUI traitor panel
 	var/damnation_type = 0
 	var/datum/mind/soulOwner //who owns the soul.  Under normal circumstances, this will point to src
 	var/hasSoul = TRUE // If false, renders the character unable to sell their soul.
@@ -123,6 +124,7 @@
 
 /datum/mind/Destroy()
 	SSticker.minds -= src
+	QDEL_NULL(tgui_panel)
 	QDEL_LIST(antag_datums)
 	QDEL_NULL(skill_holder)
 	set_current(null)
@@ -260,6 +262,8 @@
 		return
 	var/datum/antagonist/A = has_antag_datum(datum_type)
 	if(A)
+		if(istype(A, /datum/antagonist/heretic) && current)
+			REMOVE_TRAIT(current, TRAIT_ANTIMAGIC_NO_SELFBLOCK, "heretic")
 		A.on_removal()
 		return TRUE
 
@@ -645,6 +649,7 @@ GLOBAL_LIST(objective_player_choices)
 		/datum/objective/custom,
 		/datum/objective/assassinate/once,
 		/datum/objective/protect,
+		/datum/objective/breakout,
 		/datum/objective/escape,
 		/datum/objective/survive,
 		/datum/objective/martyr,
@@ -664,6 +669,7 @@ GLOBAL_LIST(objective_choices)
 	var/list/allowed_types = list(
 		/datum/objective/custom,
 		/datum/objective/assassinate,
+		/datum/objective/assassinate/internal,
 		/datum/objective/assassinate/once,
 		/datum/objective/maroon,
 		/datum/objective/debrain,
@@ -679,6 +685,7 @@ GLOBAL_LIST(objective_choices)
 		/datum/objective/nuclear/revert,
 		/datum/objective/absorb,
 		/datum/objective/rescue_prisoner,
+		/datum/objective/breakout,
 		/datum/objective/custom
 		)
 
@@ -717,9 +724,11 @@ GLOBAL_LIST(objective_choices)
 			if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_AMBITION))
 				to_chat(usr, "<span class='warning'>You must wait [AMBITION_COOLDOWN_TIME * 0.1] seconds between changes.</span>")
 				return
+			if(!antag_datums)
+				to_chat(usr, "<span class='warning'>You are not an antagonist.</span>")
+				return
 		if(!isliving(current))
-			return
-		if(!antag_datums)
+			to_chat(usr, "<span class='warning'>The mind holder is not a living creature.</span>")
 			return
 		var/max_ambitions = CONFIG_GET(number/max_ambitions)
 		if(LAZYLEN(ambitions) >= max_ambitions)
@@ -735,11 +744,11 @@ GLOBAL_LIST(objective_choices)
 			if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_AMBITION))
 				to_chat(usr, "<span class='warning'>You must wait [AMBITION_COOLDOWN_TIME * 0.1] seconds between changes.</span>")
 				return
+			if(!antag_datums)
+				to_chat(usr, "<span class='warning'>The mind holder is no longer an antagonist.</span>")
+				return
 		if(!isliving(current))
 			to_chat(usr, "<span class='warning'>The mind holder is no longer a living creature.</span>")
-			return
-		if(!antag_datums)
-			to_chat(usr, "<span class='warning'>The mind holder is no longer an antagonist.</span>")
 			return
 		if(LAZYLEN(ambitions) >= max_ambitions)
 			to_chat(usr, "<span class='warning'>There's a limit of [max_ambitions] ambitions. Edit or remove some to accomodate for your new additions.</span>")

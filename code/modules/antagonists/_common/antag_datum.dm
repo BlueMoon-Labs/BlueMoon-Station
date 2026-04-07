@@ -203,7 +203,7 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	if(!silent)
 		greet()
 		if(ui_name)
-			to_chat(owner.current, span_big("You are \a [src]."))
+			to_chat(owner.current, span_big("You are [src]."))
 			to_chat(owner.current, span_boldnotice("For more info, read the panel. you can always come back to it using the button in the top left."))
 			info_button.Trigger()
 	apply_innate_effects()

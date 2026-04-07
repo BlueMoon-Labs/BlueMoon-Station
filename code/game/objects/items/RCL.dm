@@ -1,7 +1,7 @@
 /obj/item/rcl
 	name = "rapid cable layer"
 	desc = "A device used to rapidly deploy cables. It has screws on the side which can be removed to slide off the cables. Do not use without insulation!"
-	icon = 'icons/obj/tools.dmi'
+	icon = 'modular_bluemoon/icons/obj/rcl.dmi'
 	icon_state = "rcl-0"
 	item_state = "rcl-0"
 	var/obj/structure/cable/last
@@ -18,8 +18,8 @@
 	var/list/colors = list("red", "yellow", "green", "blue", "pink", "orange", "cyan", "white")
 	var/current_color_index = 1
 	var/ghetto = FALSE
-	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/items/rcl_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/items/rcl_righthand.dmi'
 	var/datum/radial_menu/persistent/wiring_gui_menu
 	var/mob/listeningTo
 
@@ -125,7 +125,8 @@
 	. = ..()
 	if(!isinhands || !(loaded?.amount))
 		return
-	var/mutable_appearance/cable_overlay = mutable_appearance(icon_file, "rcl-[10 * CEILING(loaded.amount/(max_amount/3), 1)]")
+	// Use "rcl" sprite when loaded - rcl-10/20/30 don't exist in in-hand DMIs (tgstation uses same approach)
+	var/mutable_appearance/cable_overlay = mutable_appearance(icon_file, "rcl")
 	cable_overlay.color = GLOB.cable_colors[colors[current_color_index]]
 	. += cable_overlay
 
@@ -315,11 +316,25 @@
 	loaded = new()
 	loaded.max_amount = max_amount
 	loaded.amount = max_amount
-	return ..()
+	. = ..()
+	update_appearance()
 
 /obj/item/rcl/ghetto
 	actions_types = list()
 	max_amount = 30
 	name = "makeshift rapid cable layer"
-	icon_state = "rclg"
 	ghetto = TRUE
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 15)
+
+/obj/item/rcl/ghetto/update_icon_state()
+	if(!loaded)
+		icon_state = "rclg-0"
+		item_state = "rcl-0"
+		return
+	switch(loaded.amount)
+		if(1 to INFINITY)
+			icon_state = "rclg-1"
+			item_state = "rcl"
+		else
+			icon_state = "rclg-0"
+			item_state = "rcl-0"

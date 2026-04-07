@@ -23,6 +23,10 @@ SUBSYSTEM_DEF(parallax)
 				if (MC_TICK_CHECK)
 					return
 				continue
+			if(istype(processing_client.mob, /mob/dead/new_player))
+				if (MC_TICK_CHECK)
+					return
+				continue
 			processing_client.parallax_holder?.Update()
 			if (MC_TICK_CHECK)
 				return
@@ -31,6 +35,10 @@ SUBSYSTEM_DEF(parallax)
 			var/client/processing_client = currentrun[currentrun.len]
 			currentrun.len--
 			if (QDELETED(processing_client) || !processing_client.eye)
+				if (MC_TICK_CHECK)
+					return
+				continue
+			if(istype(processing_client.mob, /mob/dead/new_player))
 				if (MC_TICK_CHECK)
 					return
 				continue

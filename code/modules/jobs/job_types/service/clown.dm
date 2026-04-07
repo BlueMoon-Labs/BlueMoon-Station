@@ -8,6 +8,13 @@
 	spawn_positions = 2
 	supervisors = "the head of personnel"
 	selection_color = "#dddddd"
+	alt_titles = list(
+		"Comedian",
+		"Cumedian",
+		"Jester",
+		"Joker",
+		"Sexy Clown"
+		)
 
 	outfit = /datum/outfit/job/clown
 	departments = DEPARTMENT_BITFLAG_SERVICE

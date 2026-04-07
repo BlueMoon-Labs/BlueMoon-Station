@@ -3,7 +3,8 @@
 	caste = "p"
 	maxHealth = 280
 	health = 280
-	icon_state = "alienp"
+	icon = 'icons/Xeno/castes/praetorian.dmi'
+	icon_state = "Praetorian Walking"
 
 /mob/living/carbon/alien/humanoid/royal/praetorian/Initialize(mapload)
 	real_name = name

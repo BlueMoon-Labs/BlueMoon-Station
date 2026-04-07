@@ -11,7 +11,7 @@
 	weight = 8
 	max_occurrences = 3
 	min_players = 20
-	dynamic_should_hijack = TRUE
+	dynamic_should_hijack = FALSE // иначе Dynamic отменяет ивент и подставляет другой — метеор почти никогда не запускался
 	category = EVENT_CATEGORY_ENTITIES
 	description = "A meteor containing a changeling is summoned and thrown at the exterior of the station."
 
@@ -21,7 +21,7 @@
 	fakeable = FALSE
 
 /datum/round_event/ghost_role/changeling/spawn_role()
-	var/list/mob/dead/observer/candidate = get_candidates(ROLE_CHANGELING, ROLE_CHANGELING_MIDROUND)
+	var/list/mob/dead/observer/candidate = get_candidates(ROLE_CHANGELING, null, ROLE_CHANGELING_MIDROUND)
 
 	if(!candidate.len)
 		return NOT_ENOUGH_PLAYERS

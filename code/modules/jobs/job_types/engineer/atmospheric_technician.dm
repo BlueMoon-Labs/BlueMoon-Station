@@ -10,6 +10,20 @@
 	selection_color = "#ff9b3d"
 	exp_requirements = 60
 	exp_type = EXP_TYPE_CREW
+	alt_titles = list(
+		"Apprentice Atmospheric Technician", //Стажер выше, для удобства
+		"Syndicate Atmospherics Master", //Синди выше, для удобства
+		"Anal Plumber",
+		"Atmos Plumber",
+		"Atmos-Slut",
+		"Atmospheric Engineer",
+		"Atmospherics Specialist",
+		"Buttplug",
+		"Disposals Technician",
+		"Emergency Fire Technician",
+		"Firefighter",
+		"Life Support Specialist"
+		)
 
 	outfit = /datum/outfit/job/atmos
 	plasma_outfit = /datum/outfit/plasmaman/atmospherics

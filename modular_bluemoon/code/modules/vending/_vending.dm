@@ -248,6 +248,9 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 	QDEL_NULL(coin)
 	QDEL_NULL(bill)
 	QDEL_NULL(Radio)
+	QDEL_LIST(product_records)
+	QDEL_LIST(hidden_records)
+	QDEL_LIST(coin_records)
 	GLOB.vending_machines_to_restock -= src
 	return ..()
 
@@ -262,9 +265,9 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 
 	build_products_from_categories()
 
-	product_records = list()
-	hidden_records = list()
-	coin_records = list()
+	QDEL_LIST(product_records)
+	QDEL_LIST(hidden_records)
+	QDEL_LIST(coin_records)
 
 	build_inventories(start_empty = TRUE)
 

@@ -16,6 +16,22 @@
 	exp_requirements = 180
 	exp_type = EXP_TYPE_CREW
 	considered_combat_role = TRUE
+	alt_titles = list(
+		"Cybersun Lead Specialist", //Триглав выше, для удобства
+		"Syndicate Research Manager", //Синди выше, для удобства
+		"Biorobotics Director",
+		"CEO of Sex",
+		"Chief Researcher",
+		"Chief Science Officer",
+		"Head of Research",
+		"Lead Researcher",
+		"Research Manager",
+		"Research Overseer",
+		"Research Supervisor",
+		"Science Administrator",
+		"Sex Research Director",
+		"Silicon Administrator"
+		)
 
 	outfit = /datum/outfit/job/rd
 	departments = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_COMMAND

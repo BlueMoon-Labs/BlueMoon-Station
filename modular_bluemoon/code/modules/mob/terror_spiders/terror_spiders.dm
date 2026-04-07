@@ -149,8 +149,18 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/Initialize(mapload)
 	. = ..()
 
+	ADD_TRAIT(src, TRAIT_THERMAL_VISION, INNATE_TRAIT)
 	if(ventcrawler)
 		AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
+
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/update_sight(forced = TRUE)
+	. = ..()
+	if(!client)
+		return
+	if(HAS_TRAIT(src, TRAIT_THERMAL_VISION))
+		sight |= SEE_MOBS
+		lighting_alpha = min(lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
+	sync_lighting_plane_alpha()
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/get_status_tab_items()
 	. = ..()

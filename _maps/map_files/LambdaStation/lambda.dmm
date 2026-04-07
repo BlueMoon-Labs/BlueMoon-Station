@@ -21800,7 +21800,6 @@
 /obj/machinery/status_display/ai{
 	pixel_y = 32
 	},
-/obj/item/card/id/captains_spare,
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
 "aNk" = (
@@ -35997,6 +35996,7 @@
 	pixel_y = 32
 	},
 /obj/machinery/camera/autoname,
+/obj/machinery/computer/brig_assistant_console,
 /turf/open/floor/plasteel,
 /area/hallway/primary/fore)
 "btU" = (
@@ -40221,8 +40221,7 @@
 /obj/machinery/light{
 	dir = 4
 	},
-/obj/machinery/suit_storage_unit/open,
-/obj/item/mod/control/pre_equipped/corporate,
+/obj/machinery/suit_storage_unit/corporate,
 /turf/open/floor/plasteel/grimy,
 /area/command/bridge)
 "bHQ" = (
@@ -59361,6 +59360,10 @@
 	},
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = 32
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/command)

@@ -6,18 +6,20 @@
 	desc = "A special gland which was made out of artificial bacteria via nanites. In this case, they are programmed to harden skin and prevent harm from light, and can be removed afterwards."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "darkveil"
-	slot = ORGAN_SLOT_THRUSTERS
+	slot = ORGAN_SLOT_OSSMODULA
 	w_class = WEIGHT_CLASS_NORMAL
 	zone = BODY_ZONE_CHEST
 
 /obj/item/organ/darkveil/Insert(mob/living/carbon/M, drop_if_replaced = TRUE)
-	..()
+	. = ..()
+	if(!.)
+		return
 	if(M.has_quirk(/datum/quirk/less_nightmare))
 		M.remove_quirk(/datum/quirk/less_nightmare, STATUS_EFFECT_TRAIT)
 	if(M.has_quirk(/datum/quirk/lightless))
 		M.remove_quirk(/datum/quirk/lightless, STATUS_EFFECT_TRAIT)
 		to_chat(owner, "<span class = 'notice'>Вы ощущаете как ваш покров становится крепче. Кажется, свет вам более не страшен..</span>\n")
-		SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "out of shadows", /datum/mood_event/shadowless)
+		SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "out_of_shadows", /datum/mood_event/shadowless)
 	else
 		to_chat(owner, "<span class = 'notice'>А...в чём был смысл?...</span>\n")
 
@@ -31,12 +33,14 @@
 	desc = "A special gland which was made out of artificial bacteria via nanites. In this case, they are programmed to rewire some parts of neural system and can be removed afterwards."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "optisia"
-	slot = ORGAN_SLOT_THRUSTERS
+	slot = ORGAN_SLOT_OSSMODULA
 	w_class = WEIGHT_CLASS_NORMAL
 	zone = BODY_ZONE_CHEST
 
 /obj/item/organ/optisia/Insert(mob/living/carbon/M, drop_if_replaced = TRUE)
-	..()
+	. = ..()
+	if(!.)
+		return
 	M.remove_quirk(/datum/quirk/mute, STATUS_EFFECT_TRAIT)
 	M.remove_quirk(/datum/quirk/unstable, STATUS_EFFECT_TRAIT)
 	M.remove_quirk(/datum/quirk/no_smell, STATUS_EFFECT_TRAIT)
@@ -48,7 +52,14 @@
 	M.remove_quirk(/datum/quirk/brainproblems, STATUS_EFFECT_TRAIT)
 	M.remove_quirk(/datum/quirk/insanity, STATUS_EFFECT_TRAIT) //Cockroaches in the head were silenced
 	to_chat(owner, "<span class='synth'>Странное ощущение спокойствия......</span>\n")
-	SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "serenity of mind", /datum/mood_event/serenityofmind)
+	SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "serenity_of_mind", /datum/mood_event/serenityofmind)
+
+/obj/item/organ/optisia/Remove(special)
+	. = ..()
+	var/mob/living/carbon/organ_mob = .
+	if(!istype(organ_mob))
+		return
+	SEND_SIGNAL(organ_mob, COMSIG_CLEAR_MOOD_EVENT, "serenity_of_mind")
 
 /datum/mood_event/serenityofmind
 	description = "<span class='synth'>Секунда стала вечностью, и мой разум нашёл своё место в этом мире.</span>\n"
@@ -108,8 +119,32 @@
 	desc = "They carry the voice of everyone who has ever lived."
 	icon_state = "babylon_cords"
 	decay_factor = 0
+	var/datum/language_holder/last_language
 
 /obj/item/organ/vocal_cords/babyloncords/Insert(mob/living/carbon/M, drop_if_replaced = TRUE)
+	. = ..()
+	if(!.)
+		return
+	QDEL_NULL(last_language)
+	last_language = new
+	last_language.copy_languages(M.get_language_holder())
+
 	to_chat(owner, "<span class='synth'>Ваши уста вещают тысячи голосов......</span>\n")
 	M.grant_all_languages(source = LANGUAGE_CURATOR)
 	M.remove_blocked_language(GLOB.all_languages, source=LANGUAGE_ALL)
+
+/obj/item/organ/vocal_cords/babyloncords/Remove(special)
+	. = ..()
+	if(!last_language)
+		return
+
+	var/mob/living/carbon/organ_mob = .
+	if(!istype(organ_mob))
+		return
+	organ_mob.remove_all_languages()
+	organ_mob.copy_languages(last_language)
+	QDEL_NULL(last_language)
+
+/obj/item/organ/vocal_cords/babyloncords/Destroy()
+	QDEL_NULL(last_language)
+	return ..()

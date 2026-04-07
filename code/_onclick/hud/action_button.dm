@@ -25,7 +25,7 @@
 		our_hud.hide_action(src)
 		viewer?.client?.screen -= src
 		linked_action?.viewers -= our_hud
-		viewer.update_action_buttons()
+		viewer?.update_action_buttons()
 		our_hud = null
 	linked_action = null
 	return ..()

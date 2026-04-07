@@ -52,7 +52,7 @@ SUBSYSTEM_DEF(air)
 
 	var/log_explosive_decompression = TRUE // If things get spammy, admemes can turn this off.
 
-	// Max number of turfs equalization will grab.
+	// Max number of turfs equalization will grab. (Scaled by atmos_speed_multiplier.)
 	var/equalize_turf_limit = 10
 	// Max number of turfs to look for a space turf, and max number of turfs that will be decompressed.
 	var/equalize_hard_turf_limit = 2000
@@ -60,7 +60,7 @@ SUBSYSTEM_DEF(air)
 	var/equalize_enabled = FALSE
 	// Whether turf-to-turf heat exchanging should be enabled.
 	var/heat_enabled = FALSE
-	// Max number of times process_turfs will share in a tick.
+	// Max number of times process_turfs will share in a tick. (Scaled by atmos_speed_multiplier.)
 	var/share_max_steps = 3
 	// Target for share_max_steps; can go below this, if it determines the thread is taking too long.
 	var/share_max_steps_target = 3
@@ -68,6 +68,16 @@ SUBSYSTEM_DEF(air)
 	var/excited_group_pressure_goal = 1
 	// Target for excited_group_pressure_goal; can go below this, if it determines the thread is taking too long.
 	var/excited_group_pressure_goal_target = 1
+
+/datum/controller/subsystem/air/proc/apply_atmos_speed_multiplier()
+	var/mult = CONFIG_GET(number/atmos_speed_multiplier)
+	if(mult <= 1)
+		return
+	equalize_turf_limit = round(10 * mult)
+	share_max_steps_target = round(3 * mult)
+	share_max_steps = share_max_steps_target
+	excited_group_pressure_goal_target = max(0.1, 1 / mult)
+	excited_group_pressure_goal = excited_group_pressure_goal_target
 
 /datum/controller/subsystem/air/stat_entry(msg)
 	msg += "C:{HP:[round(cost_highpressure,1)]|HS:[round(cost_hotspots,1)]|HE:[round(heat_process_time(),1)]|SC:[round(cost_superconductivity,1)]|PN:[round(cost_pipenets,1)]|AM:[round(cost_atmos_machinery,1)]} TC:{AT:[round(cost_turfs,1)]|EG:[round(cost_groups,1)]|EQ:[round(cost_equalize,1)]|PO:[round(cost_post_process,1)]}TH:[round(thread_wait_ticks,1)]|HS:[hotspots.len]|PN:[networks.len]|HP:[high_pressure_delta.len]|HT:[high_pressure_turfs]|LT:[low_pressure_turfs]|ET:[num_equalize_processed]|GT:[num_group_turfs_processed]|GA:[gas_mixes_count]|MG:[gas_mixes_allocated]"
@@ -81,6 +91,7 @@ SUBSYSTEM_DEF(air)
 	gas_reactions = init_gas_reactions()
 	auxtools_update_reactions()
 	equalize_enabled = CONFIG_GET(flag/atmos_equalize_enabled)
+	apply_atmos_speed_multiplier()
 	return ..()
 
 /datum/controller/subsystem/air/proc/extools_update_ssair()

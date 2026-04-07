@@ -5,6 +5,7 @@
 /obj/machinery/disposal
 	icon = 'icons/obj/atmospherics/pipes/disposal.dmi'
 	density = TRUE
+	shadow_weight = 0.4
 	armor = list(MELEE = 25, BULLET = 10, LASER = 10, ENERGY = 100, BOMB = 0, BIO = 100, RAD = 100, FIRE = 90, ACID = 30)
 	max_integrity = 200
 	resistance_flags = FIRE_PROOF
@@ -79,12 +80,17 @@
 		deconstruct()
 
 /obj/machinery/disposal/LateInitialize()
-	//this will get a copy of the air turf and take a SEND PRESSURE amount of air from it
+	// Transfer air directly from turf when possible to avoid creating temporary gas_mixture (GC)
 	var/atom/L = loc
-	var/datum/gas_mixture/env = new
-	env.copy_from(L.return_air())
-	env.transfer_to(air_contents, SEND_PRESSURE + 1)
-	qdel(env)
+	if(istype(L, /turf/open))
+		var/turf/open/T = L
+		T.transfer_air(air_contents, SEND_PRESSURE + 1)
+	else
+		// Fallback for closed turfs / non-turfs: copy uses temp mixture
+		var/datum/gas_mixture/env = new
+		env.copy_from(L.return_air())
+		env.transfer_to(air_contents, SEND_PRESSURE + 1)
+		qdel(env)
 	trunk_check()
 
 /obj/machinery/disposal/attackby(obj/item/I, mob/user, params)
@@ -215,6 +221,7 @@
 	var/obj/structure/disposalholder/H = new(src)
 	newHolderDestination(H)
 	H.init(src)
+	QDEL_NULL(air_contents)
 	air_contents = new()
 	H.start(src)
 	flushing = FALSE

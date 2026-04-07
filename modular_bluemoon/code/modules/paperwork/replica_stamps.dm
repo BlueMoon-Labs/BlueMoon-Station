@@ -72,8 +72,8 @@
 	dye_color = DYE_QM
 
 /obj/item/stamp/replica/cmo
-	name = "chef medical officer's rubber stamp replica"
-	item = "chef medical officer's"
+	name = "chief medical officer's rubber stamp replica"
+	item = "chief medical officer's"
 	quality_stamps = list("fake-gud-stamp-cmo", "fake-mid-stamp-cmo", "fake-bad-stamp-cmo")
 	icon_state = "stamp-qm"
 	dye_color = DYE_QM

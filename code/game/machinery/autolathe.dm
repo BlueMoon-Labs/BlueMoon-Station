@@ -1,6 +1,9 @@
+#define AUTOLATHE_EFFICIENCY_BASE 100 * 0.01	// базовая эффективность машины (В процентах, для игры 100% = 1)
+#define AUTOLATHE_EFFICIENCY_STEP 9 * 0.01		// эффективность машины за тир деталей (В процентах)
+
 /obj/machinery/autolathe
 	name = "autolathe"
-	desc = "Производит вещи, используя запасы железа, стекла и других материалов."
+	desc = "Собирает разнообразные предметы, используя запасы железа, стекла и других материалов."
 	icon_state = "autolathe"
 	density = TRUE
 	use_power = IDLE_POWER_USE
@@ -22,7 +25,7 @@
 	var/busy = FALSE
 
 	///the multiplier for how much materials the created object takes from this machines stored materials
-	var/creation_efficiency = 1.6
+	var/creation_efficiency = AUTOLATHE_EFFICIENCY_BASE
 
 	var/datum/design/being_built
 	var/datum/techweb/stored_research
@@ -357,12 +360,11 @@
 	var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 	materials.max_amount = mat_capacity
 
-	var/efficiency=1.19
+	var/efficiency = AUTOLATHE_EFFICIENCY_BASE
 	for(var/obj/item/stock_parts/manipulator/new_manipulator in component_parts)
-		efficiency -= new_manipulator.rating*0.19
-	efficiency = round(efficiency*100)
-	efficiency /= 100
-	creation_efficiency = min(1,efficiency) // creation_efficiency goes 1 -> 0,8 -> 0,6 -> 0,4 per level of manipulator efficiency
+		efficiency -= (new_manipulator.rating - 1) * AUTOLATHE_EFFICIENCY_STEP
+	efficiency = round(efficiency, 0.01)
+	creation_efficiency = max(0.15, efficiency) // creation_efficiency goes 1 -> 0.91 -> 0.82 -> 0.73 per level of manipulator efficiency
 
 /obj/machinery/autolathe/examine(mob/user)
 	. += ..()
@@ -486,3 +488,6 @@
 /obj/machinery/autolathe/ComponentInitialize()
 	var/list/extra_mats = list(/datum/material/plastic)
 	AddComponent(/datum/component/material_container, SSmaterials.materialtypes_by_category[MAT_CATEGORY_RIGID] + extra_mats, 0, TRUE, null, null, CALLBACK(src, PROC_REF(AfterMaterialInsert)))
+
+#undef AUTOLATHE_EFFICIENCY_BASE
+#undef AUTOLATHE_EFFICIENCY_STEP

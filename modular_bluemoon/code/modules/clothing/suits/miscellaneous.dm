@@ -1,3 +1,9 @@
+/obj/item/clothing/suit/bm
+	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+
 /obj/item/clothing/suit/toggle/uniform_parade
 	name = "Officer's parade uniform"
 	desc = "Glorious and shining uniform for honorable officers."
@@ -111,4 +117,29 @@
 	item_state = "commissar"
 	blood_overlay_type = "coat"
 	body_parts_covered = CHEST|ARMS
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/bm/sergal_leather_cape
+	name = "Sergal leather cape"
+	icon_state = "leather_cape"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/bm/sergal_red_cape
+	name = "Sergal red cape"
+	icon_state = "red_cape"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/bm/sergal_red_armor
+	name = "Sergal red armor"
+	icon_state = "red_armor"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/bm/sergal_stylish_armor
+	name = "Sergal stylish armor"
+	icon_state = "stylish_armor"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/bm/sergal_knight_armor
+	name = "Sergal knight's armor"
+	icon_state = "knight_armor"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON

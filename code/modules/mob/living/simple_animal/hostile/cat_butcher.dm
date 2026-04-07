@@ -45,8 +45,10 @@
 		health += healamount
 
 /mob/living/simple_animal/hostile/cat_butcherer/CanAttack(atom/the_target)
-	if(iscarbon(target))
-		var/mob/living/carbon/human/C = target
+	if(iscatperson(the_target))
+		return FALSE
+	if(iscarbon(the_target))
+		var/mob/living/carbon/human/C = the_target
 		if(C.getorgan(/obj/item/organ/ears/cat) && C.getorgan(/obj/item/organ/tail/cat) && C.has_trauma_type(/datum/brain_trauma/severe/pacifism))//he wont attack his creations
 			if(C.stat && !istype(C.dna.species, /datum/species/ipc))//unless they need healing
 				return ..()

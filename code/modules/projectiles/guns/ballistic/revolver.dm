@@ -175,6 +175,7 @@
 	name = "\improper Unica 6 auto-revolver"
 	desc = "A retro high-powered autorevolver typically used by officers of the New Russia military. Uses .357 ammo."
 	icon_state = "mateba" //Поменял стандартную иконку Револьвера Русских.
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
 
 /obj/item/gun/ballistic/revolver/golden
 	name = "\improper Golden revolver"

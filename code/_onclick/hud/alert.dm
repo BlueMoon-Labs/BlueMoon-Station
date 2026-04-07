@@ -11,7 +11,7 @@
  Clicks are forwarded to master
  Override makes it so the alert is not replaced until cleared by a clear_alert with clear_override, and it's used for hallucinations.
  */
-/mob/proc/throw_alert(category, type, severity, obj/new_master, override = FALSE)
+/mob/proc/throw_alert(category, type, severity, atom/new_master, override = FALSE)
 
 	if(!category || QDELETED(src))
 		return
@@ -21,12 +21,13 @@
 		thealert = alerts[category]
 		if(thealert.override_alerts)
 			return thealert
-		if(new_master && new_master != thealert.master)
-			WARNING("[src] threw alert [category] with new_master [new_master] while already having that alert with master [thealert.master]")
-
-			clear_alert(category)
-			return .()
-		else if(thealert.type != type)
+		if(new_master)
+			var/atom/existing_master = thealert.master_ref?.resolve()
+			if(existing_master != new_master) // null (stale/qdel'd) тоже считается сменой master
+				WARNING("[src] threw alert [category] with new_master [new_master] while already having that alert with master [existing_master]")
+				clear_alert(category)
+				return .()
+		if(thealert.type != type)
 			clear_alert(category)
 			return .()
 		else if(!severity || severity == thealert.severity)
@@ -51,7 +52,7 @@
 		new_master.layer = old_layer
 		new_master.plane = old_plane
 		thealert.icon_state = "template" // We'll set the icon to the client's ui pref in reorganize_alerts()
-		thealert.master = new_master
+		thealert.master_ref = WEAKREF(new_master) // weakref — не держим прямой ref, чтобы не блокировать GC
 	else
 		thealert.icon_state = "[initial(thealert.icon_state)][severity]"
 		thealert.severity = severity
@@ -63,11 +64,15 @@
 	animate(thealert, transform = matrix(), time = 2.5, easing = BACK_EASING)
 
 	if(thealert.timeout)
-		addtimer(CALLBACK(src, PROC_REF(alert_timeout), thealert, category), thealert.timeout)
+		if(thealert.timeout_id)
+			deltimer(thealert.timeout_id)
+		thealert.timeout_id = addtimer(CALLBACK(src, PROC_REF(alert_timeout), thealert, category), thealert.timeout, TIMER_STOPPABLE)
 		thealert.timeout = world.time + thealert.timeout - world.tick_lag
 	return thealert
 
 /mob/proc/alert_timeout(atom/movable/screen/alert/alert, category)
+	if(!alert || QDELETED(alert))
+		return
 	if(alert.timeout && alerts[category] == alert && world.time >= alert.timeout)
 		clear_alert(category)
 
@@ -82,9 +87,9 @@
 	alerts -= category
 	if(client && hud_used)
 		hud_used.reorganize_alerts()
-		alert.screen_loc = null
-		client.screen -= alert
+	alert.detach_from_owner()
 	qdel(alert)
+	return TRUE
 
 /atom/movable/screen/alert
 	icon = 'icons/mob/screen_alert.dmi'
@@ -95,6 +100,7 @@
 	/// do we glow to represent we do stuff when clicked
 	var/clickable_glow = FALSE
 	var/timeout = 0 //If set to a number, this alert will clear itself after that many deciseconds
+	var/timeout_id // Timer ID for cancellation on early destroy — prevents strong ref from blocking GC
 	var/severity = 0
 	var/alerttooltipstyle = ""
 	var/override_alerts = FALSE //If it is overriding other alerts of the same type
@@ -102,6 +108,23 @@
 
 	/// Boolean. If TRUE, the Click() proc will attempt to Click() on the master first if there is a master.
 	var/click_master = TRUE
+	var/datum/weakref/master_ref = null
+
+/atom/movable/screen/alert/proc/detach_from_owner(remove_from_alerts = FALSE)
+	var/mob/alert_owner = owner
+	if(alert_owner)
+		if(remove_from_alerts && alert_owner.alerts)
+			for(var/category in alert_owner.alerts.Copy())
+				if(alert_owner.alerts[category] == src)
+					alert_owner.alerts -= category
+		if(alert_owner.client)
+			alert_owner.client.screen -= src
+		for(var/mob/dead/observer/observe as anything in alert_owner.observers)
+			if(observe.client)
+				observe.client.screen -= src
+	master_ref = null
+	screen_loc = null
+	owner = null
 
 /atom/movable/screen/alert/Initialize(mapload, datum/hud/hud_owner)
 	. = ..()
@@ -365,6 +388,8 @@ or shoot a gun to move around via Newton's 3rd Law of Motion."
 	register_context()
 
 /atom/movable/screen/alert/give/Destroy()
+	if(owner)
+		UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
 	offerer = null
 	receiving = null
 	return ..()
@@ -436,6 +461,11 @@ or shoot a gun to move around via Newton's 3rd Law of Motion."
 	name = "[offerer] is offering a high-five!"
 	desc = "[offerer] is offering a high-five! Click this alert to slap it."
 	RegisterSignal(offerer, COMSIG_PARENT_EXAMINE_MORE, PROC_REF(check_fake_out))
+
+/atom/movable/screen/alert/give/highfive/Destroy()
+	if(offerer)
+		UnregisterSignal(offerer, COMSIG_PARENT_EXAMINE_MORE)
+	return ..()
 
 /atom/movable/screen/alert/give/highfive/handle_transfer()
 	var/mob/living/carbon/taker = owner
@@ -745,6 +775,10 @@ so as to remain in compliance with the most up-to-date laws."
 	clickable_glow = TRUE
 	var/atom/target = null
 
+/atom/movable/screen/alert/hackingapc/Destroy()
+	target = null
+	return ..()
+
 /atom/movable/screen/alert/hackingapc/Click()
 	. = ..()
 	if(!.)
@@ -789,6 +823,10 @@ so as to remain in compliance with the most up-to-date laws."
 	clickable_glow = TRUE
 	var/atom/target = null
 	var/action = NOTIFY_JUMP
+
+/atom/movable/screen/alert/notify_action/Destroy()
+	target = null
+	return ..()
 
 /atom/movable/screen/alert/notify_action/Click()
 	. = ..()
@@ -936,19 +974,27 @@ so as to remain in compliance with the most up-to-date laws."
 	if(LAZYACCESS(modifiers, SHIFT_CLICK)) // screen objects don't do the normal Click() stuff so we'll cheat
 		to_chat(usr, examine_block("[jointext(examine(usr), "\n")]"))
 		return FALSE
-	if(master && click_master)
-		return usr.client.Click(master, location, control, params)
+	if(master_ref && click_master)
+		var/atom/resolved = master_ref.resolve()
+		if(resolved && !QDELETED(resolved))
+			return usr.client.Click(resolved, location, control, params)
 
 	return TRUE
 
 /atom/movable/screen/alert/Destroy()
+	if(timeout_id)
+		deltimer(timeout_id)
+		timeout_id = null
+	detach_from_owner(TRUE)
 	animate(src)
 	transform = null
-	. = ..()
+	..()
 	severity = 0
+	master_ref = null
 	master = null
 	owner = null
 	screen_loc = ""
+	return QDEL_HINT_HARDDEL_NOW
 
 /atom/movable/screen/alert/examine(mob/user)
 	return list(

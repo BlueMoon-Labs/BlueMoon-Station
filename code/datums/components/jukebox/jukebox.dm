@@ -13,13 +13,14 @@
 	var/area/privatized_area = null // BLUEMOON ADD зона которая будет забрана для конкретного джукбокса
 	var/static/list/emagged_ckey_allowed = list("SmiLeYcom") // BLUEMOON ADD Список сикеев, которым разерешено пользоваться взломанной, ручной колонкой
 	var/need_anchored = FALSE // Обзательно ли прикручивать для работы
+	var/datum/callback/on_music_toggle
 	COOLDOWN_DECLARE(error_message_cooldown)
 	var/const/error_message_cooldown_time = 5 SECONDS
 	COOLDOWN_DECLARE(queuecooldown)
 	var/const/queuecooldown_time = 1 SECONDS
 	var/const/queuecooldown_time_max = 12 SECONDS
 
-/datum/component/jukebox/Initialize(_need_anchored, _queuecost, _volume)
+/datum/component/jukebox/Initialize(_need_anchored, _queuecost, _volume, _on_music_toggle)
 	. = ..()
 	var/static/first_initial
 	if(!first_initial)
@@ -35,6 +36,7 @@
 		queuecost = _queuecost
 	if(isnum(_volume) && _volume >= 0)
 		volume = _volume
+	on_music_toggle = _on_music_toggle
 	var/obj/box = parent
 	if(box.obj_flags & EMAGGED)
 		emag_act(silent = TRUE)
@@ -42,32 +44,14 @@
 	RegisterSignal(parent, COMSIG_ITEM_ATTACK_SELF, PROC_REF(interact)) // Для предметов
 	RegisterSignal(parent, COMSIG_ATOM_ATTACK_GHOST, PROC_REF(interact)) // Для гостов
 	RegisterSignal(parent, COMSIG_ATOM_ATTACK_HAND, PROC_REF(on_attack_hand)) // Для машинерии
-	RegisterSignal(parent, COMSIG_ATOM_UPDATE_ICON_STATE, PROC_REF(on_update_icon_state))
 	RegisterSignal(parent, COMSIG_ATOM_EMAG_ACT, PROC_REF(on_emag_act))
 
-/datum/component/jukebox/proc/on_update_icon_state(atom/source)
-	SIGNAL_HANDLER
-
-	var/obj/box = source
-	box.icon_state = box.current_skin ? box.unique_reskin[box.current_skin]["icon_state"] : initial(box.icon_state)
-	if(active)
-		box.icon_state += "-active"
-
-	if(!isitem(box))
-		return
-	var/obj/item/ibox = box
-	if(ibox.item_state)
-		ibox.item_state = ibox.current_skin ? ibox.unique_reskin[ibox.current_skin]["item_state"] : initial(ibox.item_state)
-		if(active)
-			ibox.item_state += "-active"
-		// Обновляем иконку в руке || прямо как в update_icon_updates_onmob
-		if(!ismob(ibox.loc))
-			return
-		var/mob/M = ibox.loc
-		if(M.is_holding(ibox))
-			M.update_inv_hands()
-		else
-			M.regenerate_icons()
+/datum/component/jukebox/UnregisterFromParent()
+	UnregisterSignal(parent, list(COMSIG_MOUSEDROP_ONTO, COMSIG_ITEM_ATTACK_SELF, COMSIG_ATOM_ATTACK_GHOST, COMSIG_ATOM_ATTACK_HAND, COMSIG_ATOM_EMAG_ACT))
+	QDEL_NULL(on_music_toggle)
+	if(privatized_area)
+		privatized_area.jukebox_privatized_by = null
+	return ..()
 
 /datum/component/jukebox/proc/on_emag_act(atom/source)
 	SIGNAL_HANDLER
@@ -204,6 +188,11 @@
 		ui = new(user, src, "Jukebox", box.name)
 		ui.open()
 
+/datum/component/jukebox/ui_static_data(mob/user)
+	var/list/data = list()
+	data["songs"] = SSjukeboxes.song_names
+	return data
+
 /datum/component/jukebox/ui_data(mob/user)
 	var/obj/box = parent
 	var/list/data = list()
@@ -227,10 +216,6 @@
 	data["cost_for_play"] = queuecost
 	data["has_access"] = box.allowed(user)
 	data["repeat"] = repeat
-	var/list/all_song_names = list()
-	for (var/datum/track/T in SSjukeboxes.songs)
-		all_song_names += T.song_name
-	data["songs"] = all_song_names
 	data["favorite_tracks"] = user?.client?.prefs?.favorite_tracks
 	data["playlists"] = user?.client?.prefs?.playlists
 
@@ -273,13 +258,10 @@
 		if("add_to_queue")
 			return add_to_queue(params["track"], usr, params["up"])
 		if("select_track")
-			var/list/available = list()
-			for(var/datum/track/S in SSjukeboxes.songs)
-				available[S.song_name] = S
 			var/selected = params["track"]
-			if(QDELETED(src) || QDELETED(box) || !selected || !istype(available[selected], /datum/track))
+			if(QDELETED(src) || QDELETED(box) || !selected || !istype(SSjukeboxes.songs_by_name[selected], /datum/track))
 				return
-			selectedtrack = available[selected]
+			selectedtrack = SSjukeboxes.songs_by_name[selected]
 			return TRUE
 		if("set_volume")
 			if(!box.allowed(usr))
@@ -350,9 +332,7 @@
 	if(QDELETED(src) || QDELETED(box) || !tracks || !COOLDOWN_FINISHED(src, queuecooldown))
 		return
 
-	var/list/available = list()
-	for(var/datum/track/S in SSjukeboxes.songs)
-		available[S.song_name] = S
+	var/list/available = SSjukeboxes.songs_by_name
 	if(!islist(tracks))
 		tracks = list(tracks)
 
@@ -437,7 +417,6 @@
 	var/jukeboxslottotake = SSjukeboxes.addjukebox(box, playing, volume/35)
 	if(jukeboxslottotake)
 		active = TRUE
-		box.update_icon()
 		START_PROCESSING(SSobj, src)
 		stop = world.time + playing.song_length
 		//BLUEMOON ADD повтор плейлиста (трек добавляется в конец плейлиста)
@@ -455,6 +434,7 @@
 		queuedplaylist.Cut(1, 2)
 		box.say("Сейчас играет: [playing.song_name]")
 		playsound(box, 'sound/machines/terminal_insert_disc.ogg', 50, TRUE)
+		on_music_toggle?.Invoke(TRUE)
 		return TRUE
 	else
 		return FALSE
@@ -497,9 +477,9 @@
 		activate_music()
 	else
 		playsound(box,'sound/machines/terminal_off.ogg',50,1)
-		box.update_icon()
 		playing = null
 		stop = 0
+		on_music_toggle?.Invoke(FALSE)
 
 /datum/component/jukebox/Destroy()
 	dance_over()

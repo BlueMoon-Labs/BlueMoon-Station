@@ -60,7 +60,6 @@
 		owner.current.log_message("has renounced the cult of the old ones!", LOG_ATTACK, color="#960000")
 	GLOB.reality_smash_track.RemoveMind(owner)
 	STOP_PROCESSING(SSprocessing,src)
-
 	on_death()
 
 	return ..()

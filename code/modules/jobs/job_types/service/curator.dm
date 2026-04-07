@@ -8,6 +8,32 @@
 	spawn_positions = 3
 	supervisors = "the head of personnel"
 	selection_color = "#dddddd"
+	alt_titles = list(
+		"Assistant Curator", //Стажер выше, для удобства
+		"Adventurer",
+		"Archaeologist",
+		"Archivist",
+		"Artist",
+		"Conservator",
+		"Correspondent",
+		"Game Master",
+		"Guide",
+		"Hentai Artist",
+		"Historian",
+		"Journalist",
+		"Keeper",
+		"Librarian",
+		"Museologist",
+		"Newsman",
+		"Painter",
+		"Professor",
+		"Questioner",
+		"Reporter",
+		"Scholar",
+		"Teacher",
+		"Translator",
+		"Veteran Adventurer"
+		)
 
 	outfit = /datum/outfit/job/curator
 	plasma_outfit = /datum/outfit/plasmaman/curator

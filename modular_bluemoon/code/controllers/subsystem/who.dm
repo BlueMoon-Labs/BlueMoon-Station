@@ -24,8 +24,10 @@ SUBSYSTEM_DEF(who)
 	initialized = TRUE
 
 /datum/controller/subsystem/who/fire()
-	who.update_data()
-	staff_who.update_data()
+	if(length(SStgui.get_all_open_uis(who)))
+		who.update_data()
+	if(length(SStgui.get_all_open_uis(staff_who)))
+		staff_who.update_data()
 
 
 // WHO DATA

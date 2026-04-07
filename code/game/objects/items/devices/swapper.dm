@@ -45,6 +45,13 @@
 	else
 		return ..()
 
+/obj/item/swapper/attack_ghost(mob/dead/observer/user)
+	if(QDELETED(linked_swapper))
+		return ..()
+	
+	user.forceMove(get_turf(linked_swapper))
+	return TRUE
+
 /obj/item/swapper/attack_self(mob/living/user)
 	if(emped)
 		var/datum/effect_system/spark_spread/sparks = new /datum/effect_system/spark_spread

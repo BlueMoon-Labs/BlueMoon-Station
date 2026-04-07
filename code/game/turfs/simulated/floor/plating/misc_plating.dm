@@ -128,6 +128,7 @@
 	name = "sand"
 	desc = "Surf's up."
 	icon_state = "sand"
+	icon_plating = "sand"
 	icon = 'modular_bluemoon/icons/turf/floors/sand.dmi'
 	baseturfs = /turf/open/floor/plating/beach/sand
 	footstep = FOOTSTEP_SAND
@@ -139,6 +140,8 @@
 	. = ..()
 	if(prob(15))
 		icon_state = "sand[rand(1,4)]"
+		icon_plating = icon_state
+		update_appearance()
 
 /turf/open/floor/plating/beach/coastline_t
 	name = "coastline"

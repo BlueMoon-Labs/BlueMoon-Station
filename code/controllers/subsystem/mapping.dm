@@ -601,9 +601,9 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 /datum/controller/subsystem/mapping/proc/reserve_turfs(list/turfs)
 	for(var/i in turfs)
 		var/turf/T = i
-		T.empty(RESERVED_TURF_TYPE, RESERVED_TURF_TYPE, null, TRUE)
+		T.empty(RESERVED_TURF_TYPE, RESERVED_TURF_TYPE, null, CHANGETURF_SKIP)
 		LAZYINITLIST(unused_turfs["[T.z]"])
-		unused_turfs["[T.z]"] |= T
+		unused_turfs["[T.z]"] += T // released turfs were removed during Reserve() — no duplicates
 		T.flags_1 |= UNUSED_RESERVATION_TURF_1
 		GLOB.areas_by_type[world.area].contents += T
 		CHECK_TICK

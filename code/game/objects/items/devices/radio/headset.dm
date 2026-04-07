@@ -491,9 +491,9 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 	. = ..()
 	if(!istype(user) || !Adjacent(user) || user.incapacitated())
 		return
-	if (command)
+	if(command)
 		use_command = !use_command
-		to_chat(user, "<span class='notice'>You toggle high-volume mode [use_command ? "on" : "off"].</span>")
+		user.balloon_alert(user, "Громкоговоритель [use_command ? "включен" : "выключен"]")
 		return TRUE
 
 /obj/item/radio/headset/proc/bowmanize()

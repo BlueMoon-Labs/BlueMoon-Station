@@ -308,6 +308,7 @@
 	add_overlays = null
 
 	LAZYCLEARLIST(overlays)
+	clear_filters()
 
 	for(var/i in targeted_by)
 		var/mob/M = i
@@ -413,7 +414,7 @@
 	if(!is_centcom_level(T.z))//if not, don't bother
 		return FALSE
 
-	if(istype(T.loc, /area/shuttle/syndicate) || istype(T.loc, /area/syndicate_mothership) || istype(T.loc, /area/shuttle/assault_pod))
+	if(istype(T.loc, /area/shuttle/syndicate) || istype(T.loc, /area/shuttle/inteq) || istype(T.loc, /area/syndicate_mothership) || istype(T.loc, /area/shuttle/assault_pod))
 		return TRUE
 
 	return FALSE
@@ -473,8 +474,20 @@
 /atom/proc/remove_air(amount)
 	return null
 
+/atom/proc/remove_air_into(datum/gas_mixture/into, amount)
+	if(into)
+		into.clear()
+		into.set_temperature(0)
+	return FALSE
+
 /atom/proc/remove_air_ratio(ratio)
 	return null
+
+/atom/proc/remove_air_ratio_into(datum/gas_mixture/into, ratio)
+	if(into)
+		into.clear()
+		into.set_temperature(0)
+	return FALSE
 
 /atom/proc/transfer_air(datum/gas_mixture/taker, amount)
 	return null
@@ -584,8 +597,8 @@
 	if(desc)
 		. += desc
 
+	. += "<hr>"
 	if(custom_materials)
-		. += "<hr>"
 		var/list/materials_list = list()
 		for(var/i in custom_materials)
 			var/datum/material/M = i
@@ -840,6 +853,8 @@
 
 //to add blood dna info to the object's blood_DNA list
 /atom/proc/transfer_blood_dna(list/blood_dna, list/datum/disease/diseases)
+	if(!blood_dna || !islist(blood_dna))
+		return
 	LAZYINITLIST(blood_DNA)
 
 	var/old_length = blood_DNA.len

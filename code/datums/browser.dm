@@ -30,6 +30,13 @@
 	if (nref)
 		ref = WEAKREF(nref)
 
+/datum/browser/Destroy()
+	if(user)
+		UnregisterSignal(user, COMSIG_PARENT_QDELETING)
+		user = null
+	ref = null
+	return ..()
+
 /datum/browser/proc/user_deleted(datum/source)
 	SIGNAL_HANDLER
 	user = null

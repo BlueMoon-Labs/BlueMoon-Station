@@ -2,6 +2,25 @@
 #define IGNITE_TURF_LOW_POWER 8
 #define IGNITE_TURF_HIGH_POWER 22
 
+/// Lavaland/mining Z: auxmos get_fuel_amount() still counts N2 — block air-only fuel so N2+O2 cannot sustain hotspots (matches genericfire N2 skip in reactions.dm).
+/proc/turf_has_fire_fuel(datum/gas_mixture/air, temp, z_level)
+	if(!air)
+		return FALSE
+	if(air.get_moles(GAS_PLASMA) > 0.5 || air.get_moles(GAS_TRITIUM) > 0.5)
+		return TRUE
+	if(air.get_fuel_amount(temp) < 0.5)
+		return FALSE
+	if(!is_mining_level(z_level))
+		return TRUE
+	for(var/gas_id in GLOB.gas_data.fire_temperatures)
+		if(gas_id == GAS_N2)
+			continue
+		if(!GLOB.gas_data.fire_temperatures[gas_id])
+			continue
+		if(air.get_moles(gas_id) > 0.5)
+			return TRUE
+	return FALSE
+
 /atom/proc/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	return null
 
@@ -21,7 +40,7 @@
 
 	if (air.get_oxidation_power(exposed_temperature) < 0.5 || air.get_moles(GAS_HYPERNOB) > 5)
 		return
-	var/has_fuel = air.get_moles(GAS_PLASMA) > 0.5 || air.get_moles(GAS_TRITIUM) > 0.5 || air.get_fuel_amount(exposed_temperature) > 0.5
+	var/has_fuel = turf_has_fire_fuel(air, exposed_temperature, z)
 	if(active_hotspot)
 		if(soh)
 			if(has_fuel)
@@ -169,7 +188,7 @@
 	if((temperature < FIRE_MINIMUM_TEMPERATURE_TO_EXIST) || (volume <= 1))
 		qdel(src)
 		return
-	if(!location.air || location.air.get_moles(GAS_HYPERNOB) > 5 || location.air.get_oxidation_power() < 0.5 || (INSUFFICIENT(GAS_PLASMA) && INSUFFICIENT(GAS_TRITIUM) && location.air.get_fuel_amount() < 0.5))
+	if(!location.air || location.air.get_moles(GAS_HYPERNOB) > 5 || location.air.get_oxidation_power() < 0.5 || !turf_has_fire_fuel(location.air, temperature, location.z))
 		qdel(src)
 		return
 

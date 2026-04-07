@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	65
+#define SAVEFILE_VERSION_MAX	67
 
 /*
 SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Carn
@@ -90,6 +90,25 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Возможность выключения кастомного цвета для педалей
 	if(current_version < 65)
 		custom_colors = TOGGLES_DEFAULT_CUSTOM_COLORS
+
+	//Возвращение тильтинга по пикселям
+	if(current_version < 66)
+		var/static/list/dat_to_check = list("pixel_tilt_east", "pixel_tilt_west")
+		for(var/dat_key in dat_to_check)
+			var/datum/keybinding/mob/key_dat = GLOB.keybindings_by_name[dat_key]
+			if(!key_dat)
+				continue
+			for(var/button in key_dat.hotkey_keys)
+				var/list/hotkey_list = key_bindings[button]
+				if(!hotkey_list)
+					var/list/temp = list()
+					key_bindings[button] = temp
+					hotkey_list = temp
+				hotkey_list |= dat_key
+
+	// Преф на старый вариант say, OOC, me и прочих окон ввода, которые часто используются
+	if(current_version < 67)
+		tgui_input_verbs = tgui_input_mode
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -488,6 +507,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["tgui_fancy"] 			>> tgui_fancy
 	S["tgui_lock"] 				>> tgui_lock
 	S["tgui_input_mode"]		>> tgui_input_mode
+	S["tgui_input_verbs"]		>> tgui_input_verbs
 	S["tgui_large_buttons"]		>> tgui_large_buttons
 	S["tgui_swapped_buttons"]	>> tgui_swapped_buttons
 	S["tgui_panel_theme"]		>> tgui_panel_theme
@@ -527,6 +547,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["clientfps"] >> clientfps
 	S["parallax"] >> parallax
 	S["ambientocclusion"] >> ambientocclusion
+	S["lighting_blur"] >> lighting_blur
 	S["auto_fit_viewport"] >> auto_fit_viewport
 	S["widescreenpref"] >> widescreenpref
 	S["fullscreen"] >> fullscreen
@@ -558,7 +579,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Splurt
 	S["be_victim"]				>> be_victim
 	S["disable_combat_cursor"]	>> disable_combat_cursor
-	S["use_new_playerpanel"]	>> use_new_playerpanel
+	S["disable_combat_mouse_lock"]	>> disable_combat_mouse_lock
 	S["gfluid_blacklist"]		>> gfluid_blacklist
 	S["new_character_creator"]	>> new_character_creator
 	S["charcreation_theme"]		>> charcreation_theme
@@ -608,6 +629,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	tgui_fancy = sanitize_integer(tgui_fancy, 0, 1, initial(tgui_fancy))
 	tgui_lock = sanitize_integer(tgui_lock, 0, 1, initial(tgui_lock))
 	tgui_input_mode	= sanitize_integer(tgui_input_mode, 0, 1, initial(tgui_input_mode))
+	tgui_input_verbs	= sanitize_integer(tgui_input_verbs, 0, 1, initial(tgui_input_verbs))
 	tgui_large_buttons	= sanitize_integer(tgui_large_buttons, 0, 1, initial(tgui_large_buttons))
 	tgui_swapped_buttons	= sanitize_integer(tgui_swapped_buttons, 0, 1, initial(tgui_swapped_buttons))
 	tgui_panel_theme = sanitize_inlist(tgui_panel_theme, list("default", "light", "dark"), initial(tgui_panel_theme))
@@ -643,6 +665,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	preferred_chaos_level = sanitize_integer(preferred_chaos_level, 0, 3, 2)
 	parallax = sanitize_integer(parallax, PARALLAX_DISABLE, PARALLAX_INSANE, null)
 	ambientocclusion = sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
+	lighting_blur = sanitize_integer(lighting_blur, LIGHTING_BLUR_MIN, LIGHTING_BLUR_MAX, LIGHTING_BLUR_DEFAULT)
 	auto_fit_viewport = sanitize_integer(auto_fit_viewport, 0, 1, initial(auto_fit_viewport))
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
@@ -741,6 +764,43 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		var/bindname = modless_key_bindings[key]
 		if(!GLOB.keybindings_by_name[bindname])
 			modless_key_bindings -= key
+	ensure_default_keybindings_present()
+
+/datum/preferences/proc/ensure_default_keybindings_present()
+	var/list/default_keybindings = hotkeys ? GLOB.hotkey_keybinding_list_by_key : GLOB.classic_keybinding_list_by_key
+	if(!islist(default_keybindings))
+		return
+
+	var/list/present_keybindings = list()
+	for(var/key in key_bindings)
+		if(!islist(key_bindings[key]))
+			continue
+		for(var/bindname in key_bindings[key])
+			present_keybindings[bindname] = TRUE
+
+	for(var/key in modless_key_bindings)
+		var/bindname = modless_key_bindings[key]
+		present_keybindings[bindname] = TRUE
+
+	var/list/missing_keybindings = list()
+	for(var/key in default_keybindings)
+		var/list/default_binds = default_keybindings[key]
+		if(!islist(default_binds))
+			continue
+		for(var/bindname in default_binds)
+			if(present_keybindings[bindname])
+				continue
+			if(!islist(missing_keybindings[bindname]))
+				missing_keybindings[bindname] = list()
+			missing_keybindings[bindname] += key
+
+	for(var/bindname in missing_keybindings)
+		var/list/default_keys = missing_keybindings[bindname]
+		for(var/key in default_keys)
+			if(!islist(key_bindings[key]))
+				key_bindings[key] = list()
+			LAZYADD(key_bindings[key], bindname)
+		present_keybindings[bindname] = TRUE
 
 
 /datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
@@ -777,6 +837,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["tgui_fancy"], tgui_fancy)
 	WRITE_FILE(S["tgui_lock"], tgui_lock)
 	WRITE_FILE(S["tgui_input_mode"], tgui_input_mode)
+	WRITE_FILE(S["tgui_input_verbs"], tgui_input_verbs)
 	WRITE_FILE(S["tgui_large_buttons"], tgui_large_buttons)
 	WRITE_FILE(S["tgui_swapped_buttons"], tgui_swapped_buttons)
 	WRITE_FILE(S["tgui_panel_theme"], tgui_panel_theme)
@@ -811,6 +872,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["clientfps"], clientfps)
 	WRITE_FILE(S["parallax"], parallax)
 	WRITE_FILE(S["ambientocclusion"], ambientocclusion)
+	WRITE_FILE(S["lighting_blur"], lighting_blur)
 	WRITE_FILE(S["auto_fit_viewport"], auto_fit_viewport)
 	WRITE_FILE(S["hud_toggle_flash"], hud_toggle_flash)
 	WRITE_FILE(S["hud_toggle_color"], hud_toggle_color)
@@ -840,7 +902,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Splurt
 	WRITE_FILE(S["be_victim"], be_victim)
 	WRITE_FILE(S["disable_combat_cursor"], disable_combat_cursor)
-	WRITE_FILE(S["use_new_playerpanel"], use_new_playerpanel)
+	WRITE_FILE(S["disable_combat_mouse_lock"], disable_combat_mouse_lock)
 	WRITE_FILE(S["gfluid_blacklist"], gfluid_blacklist)
 	WRITE_FILE(S["new_character_creator"], new_character_creator)
 	WRITE_FILE(S["charcreation_theme"], charcreation_theme)

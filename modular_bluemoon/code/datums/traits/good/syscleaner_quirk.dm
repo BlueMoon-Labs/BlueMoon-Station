@@ -29,11 +29,14 @@
 	if (!consumed_damage)
 		if(syscleaning_in_progress)
 			REMOVE_TRAIT(H, TRAIT_SYSCLEANER_IN_PROGRESS, QUIRK_TRAIT)
-			H.physiology.hunger_mod /= 1.6
+			if(H.physiology)
+				H.physiology.hunger_mod /= 1.6
 			syscleaning_in_progress = FALSE
 		return
 
 	if(!syscleaning_in_progress)
+		if(!H.physiology)
+			return
 		ADD_TRAIT(H, TRAIT_SYSCLEANER_IN_PROGRESS, QUIRK_TRAIT)
 		H.physiology.hunger_mod *= 1.6
 		syscleaning_in_progress = TRUE
@@ -49,5 +52,6 @@
 	var/mob/living/carbon/human/H = quirk_holder
 	if (!istype(H) || !syscleaning_in_progress)
 		return
-	H.physiology.hunger_mod /= 1.6
+	if(H.physiology)
+		H.physiology.hunger_mod /= 1.6
 	REMOVE_TRAIT(quirk_holder, TRAIT_SYSCLEANER_IN_PROGRESS, QUIRK_TRAIT)

@@ -124,6 +124,11 @@
 	linked_wound = incoming_wound
 	linked_limb = linked_wound.limb
 
+/datum/status_effect/wound/Destroy()
+	linked_wound = null
+	linked_limb = null
+	return ..()
+
 /datum/status_effect/wound/on_remove()
 	linked_wound = null
 	linked_limb = null

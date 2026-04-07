@@ -335,7 +335,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 			var/mob/living/L = usr
 			message = L.treat_message(message)
 		//minor_announce(message, "[ru_department] объявляет:")
-		priority_announce(message, "[ru_department] Объявляет (— [usr.name])", 'sound/announcer/tonelow.ogg', "Priority", has_important_message = TRUE)
+		priority_announce(message, "[ru_department] Объявляет (— [usr.name])", 'sound/announcer/tonelow.ogg', "RequestsConsole", has_important_message = TRUE)
 		GLOB.news_network.SubmitArticle(message, department, "Станционные Объявления", null)
 		usr.log_talk(message, LOG_SAY, tag = "station announcement from [src]")
 		message_admins("[ADMIN_LOOKUPFLW(usr)] has made a station announcement from [src] at [AREACOORD(usr)].")
@@ -379,6 +379,11 @@ GLOBAL_LIST_EMPTY(allConsoles)
 		for(var/obj/machinery/telecomms/message_server/MS in GLOB.telecomms_list)
 			if(MS.on) //on does the calculations. why would this server still work even though the apc is off??
 				LAZYADD(MS.rc_msgs, log)
+				// Prevent unbounded memory growth
+				if(length(MS.rc_msgs) > 500)
+					var/trim_count = length(MS.rc_msgs) - 400
+					MS.rc_msgs.Cut(1, trim_count + 1)
+					MS.rc_msgs_trimmed += trim_count
 				workingServer = TRUE
 
 		if(!workingServer)

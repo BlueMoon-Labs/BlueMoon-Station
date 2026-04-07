@@ -84,7 +84,7 @@
 	name = "Pirate Corpse"
 	uniform = /obj/item/clothing/under/costume/pirate
 	shoes = /obj/item/clothing/shoes/jackboots
-	glasses = /obj/item/clothing/glasses/eyepatch
+	glasses = /obj/item/clothing/glasses/cover/eyepatch
 	head = /obj/item/clothing/head/bandana
 
 

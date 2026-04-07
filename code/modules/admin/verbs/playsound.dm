@@ -276,6 +276,15 @@
 			to_chat(src, "<span class='boldwarning'>Non-http(s) URIs are not allowed.</span>", confidential = TRUE)
 			return
 
+		// YouTube/SoundCloud/etc. требуют yt-dlp для извлечения прямого стрима — направляем туда
+		var/static/regex/youtube_regex = regex("youtu\\.?be")
+		if(youtube_regex.Find(web_sound_input) || findtext(web_sound_input, "soundcloud.com"))
+			if(!CONFIG_GET(string/invoke_youtubedl))
+				to_chat(src, "<span class='boldwarning'>YouTube/SoundCloud требуют yt-dlp, но INVOKE_YOUTUBEDL не настроен в config.txt.</span>", confidential = TRUE)
+				return
+			web_sound(src.mob, web_sound_input)
+			return
+
 		var/list/explode = splittext(web_sound_input, "/") //if url=="https://fixthisshit.com/pogchamp.ogg"then title="pogchamp.ogg"
 		var/title = "[explode[explode.len]]"
 

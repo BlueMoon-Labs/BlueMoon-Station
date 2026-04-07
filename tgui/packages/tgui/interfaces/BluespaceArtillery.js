@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Box, Button, LabeledList, NoticeBox, NumberInput, ProgressBar, Section } from '../components';
+import { Box, Button, LabeledList, NoticeBox, ProgressBar, Section, Slider } from '../components';
 import { Window } from '../layouts';
 
 const formatPower = (x) => {
@@ -25,11 +25,10 @@ export const BluespaceArtillery = (props, context) => {
     power_suck_cap,
   } = data;
   const canFire = connected && unlocked && target && status === 'SYSTEM READY';
-  const chargePct = max_capacitor_charge > 0 ? Math.min(100, (capacitor_charge / max_capacitor_charge) * 100) : 0;
   return (
     <Window
-      width={420}
-      height={320}>
+      width={600}
+      height={600}>
       <Window.Content>
         {!!notice && (
           <NoticeBox>
@@ -52,38 +51,56 @@ export const BluespaceArtillery = (props, context) => {
                 {target || 'No Target Set'}
               </Box>
             </Section>
-            <Section title="Capacitor (power scales with charge)">
+            <Section title="System Status">
+              <Box
+                color={
+                status === 'SYSTEM READY'
+                  ? 'green'
+                  : status === 'SYSTEM CHARGING CAPACITORS'
+                    ? 'average'
+                    : 'bad'
+                }
+                fontSize="25px"
+              >
+                {status || '—'}
+              </Box>
+            </Section>
+            <Section
+              title="Capacitor (power scales with charge)"
+              buttons={
+                <Button
+                  content="Charge Capacitors"
+                  icon="bolt"
+                  color="orange"
+                  disabled={status !== 'SYSTEM READY' && status !== 'SYSTEM POWER LOW'}
+                  onClick={() => act('charge')}
+                />
+              }
+            >
               <LabeledList>
-                <LabeledList.Item label="Status">
-                  {status || '—'}
-                </LabeledList.Item>
-                <LabeledList.Item label="Charge">
-                  <ProgressBar value={chargePct} color="blue" />
-                  <Box inline ml={1}>
-                    {formatPower(capacitor_charge)} / {formatPower(target_capacitor_charge)} (max {formatPower(max_capacitor_charge)})
-                  </Box>
+                <LabeledList.Item label="Capacitor Charge">
+                  {formatPower(capacitor_charge)}
                 </LabeledList.Item>
                 <LabeledList.Item label="Powernet">
                   {formatPower(powernet_power)} (suck cap: {formatPower(power_suck_cap)})
                 </LabeledList.Item>
                 <LabeledList.Item label="Target charge (MW)">
-                  <NumberInput
-                    value={target_capacitor_charge / 1e6}
-                    minValue={1}
-                    maxValue={max_capacitor_charge / 1e6}
-                    step={0.5}
-                    stepPixelSize={30}
-                    width="80px"
-                    onChange={(e, val) => act('capacitor_target_change', { capacitor_target: Math.round((val || 1) * 1e6) })}
+                  <Slider
+                    value={target_capacitor_charge}
+                    fillValue={capacitor_charge}
+                    minValue={0}
+                    maxValue={max_capacitor_charge}
+                    step={1e6}
+                    stepPixelSize={2}
+                    format={(value) => formatPower(value)}
+                    onChange={(e, value) =>
+                      act('capacitor_target_change', {
+                        capacitor_target: value,
+                      })
+                    }
                   />
                 </LabeledList.Item>
               </LabeledList>
-              <Button
-                mt={1}
-                content="Charge from grid"
-                icon="bolt"
-                disabled={!unlocked || (status !== 'SYSTEM READY' && status !== 'SYSTEM POWER LOW')}
-                onClick={() => act('charge')} />
             </Section>
             <Section>
               {unlocked ? (

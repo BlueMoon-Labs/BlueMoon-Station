@@ -28,7 +28,7 @@
 	description = "Harness the power of bluespace to make materials out of nothing, slowly. Requires a bluespace core to function."
 	prereq_ids = list("practical_bluespace", "adv_mining", "anomaly_research")
 	design_ids = list("bluespace_miner")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 20000) //Increased price due to being top-tier tech in the reality.
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 
 /datum/techweb_node/shuttle_route_upgrade_hyper/New()
 	design_ids += "disk_shuttle_smoothsail"

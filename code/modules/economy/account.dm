@@ -92,6 +92,9 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 /datum/bank_account/Destroy()
 	if(add_to_accounts)
 		SSeconomy.bank_accounts -= src
+	for(var/datum/transaction/T in transaction_history)
+		qdel(T)
+	transaction_history.Cut()
 	return ..()
 
 /**
@@ -313,6 +316,9 @@ GLOBAL_VAR_INIT(next_account_number, 0)
  */
 /datum/bank_account/proc/add_log_to_history(adjusted_money, reason)
 	if(transaction_history.len >= 20)
+		var/old_entry = transaction_history[1]
+		if(istype(old_entry, /datum/transaction))
+			qdel(old_entry)
 		transaction_history.Cut(1,2)
 
 	transaction_history += list(list(

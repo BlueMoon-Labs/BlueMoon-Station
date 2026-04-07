@@ -12,6 +12,15 @@ const PAGES = [
     icon: "tools",
   },
   {
+    title: 'Smites',
+    component: () => SmiteActions,
+    color: "orange",
+    icon: "hammer",
+    canAccess: data => {
+      return !!data.mob_type.includes("/mob/living");
+    },
+  },
+  {
     title: 'Mob',
     component: () => PhysicalActions,
     color: "yellow",
@@ -48,10 +57,10 @@ const PAGES = [
     icon: "laugh",
   },
   {
-    title: 'Other',
+    title: 'Antag & Other',
     component: () => OtherActions,
-    color: "blue",
-    icon: "crosshairs",
+    color: "purple",
+    icon: "user-secret",
   },
 ];
 
@@ -66,8 +75,8 @@ export const PlayerPanel2 = (props, context) => {
   return (
     <Window
       title={`${mob_name} Player Panel`}
-      width={600}
-      height={500}
+      width={700}
+      height={600}
     >
       <Window.Content scrollable>
         <Section md={1}>
@@ -172,15 +181,55 @@ export const PlayerPanel2 = (props, context) => {
 
 const PhysicalActions = (props, context) => {
   const { act, data } = useBackend(context);
-  const { glob_limbs, godmode, mob_type, initial_scale } = data;
+  const { glob_limbs, godmode, mob_type, initial_scale, active_martial_art,
+    martial_arts_list, active_quirks, quirks_list, has_loadout,
+    current_organs, organ_slots, current_implants, implants_list,
+    mob_weight, weight_options } = data;
   const [mobScale, setMobScale] = useLocalState(context, 'mobScale', initial_scale);
   const limbs = Object.keys(glob_limbs);
   const limb_flags = limbs.map((_, i) => (1<<i));
   const [delimbOption, setDelimbOption] = useLocalState(context, "delimb_flags", 0);
+  const [maSearch, setMaSearch] = useLocalState(context, 'maSearch', '');
+  const [quirkSearch, setQuirkSearch] = useLocalState(context, 'quirkSearch', '');
+  const [organSearch, setOrganSearch] = useLocalState(context, 'organSearch', '');
+  const [implantSearch, setImplantSearch] = useLocalState(context, 'implantSearch', '');
+
+  const filteredArts = (martial_arts_list || []).filter(art =>
+    art.name.toLowerCase().includes(maSearch.toLowerCase())
+  );
+
+  // Group quirks by type
+  const positiveQuirks = (quirks_list || []).filter(q =>
+    q.value_type === 'Positive'
+    && q.name.toLowerCase().includes(quirkSearch.toLowerCase())
+  );
+  const negativeQuirks = (quirks_list || []).filter(q =>
+    q.value_type === 'Negative'
+    && q.name.toLowerCase().includes(quirkSearch.toLowerCase())
+  );
+  const neutralQuirks = (quirks_list || []).filter(q =>
+    q.value_type !== 'Positive' && q.value_type !== 'Negative'
+    && q.name.toLowerCase().includes(quirkSearch.toLowerCase())
+  );
+
+  // Build organ slot map for current organs
+  const currentOrganMap = {};
+  (current_organs || []).forEach(o => { currentOrganMap[o.slot] = o; });
+
+  // All slot names from organ_slots
+  const slotNames = organ_slots ? Object.keys(organ_slots) : [];
+
+  // Filter organ slots by search
+  const filteredSlots = slotNames.filter(slot =>
+    slot.toLowerCase().includes(organSearch.toLowerCase())
+    || (organ_slots[slot] || []).some(o =>
+      o.name.toLowerCase().includes(organSearch.toLowerCase())
+    )
+  );
 
   return (
     <Section fill>
-      <Section title="Traits" buttons={
+      <Section title="Quick Actions" buttons={
         <Button
           icon={godmode ? 'check-square-o' : 'square-o'}
           color={godmode ? 'green' : 'transparent'}
@@ -198,27 +247,109 @@ const PhysicalActions = (props, context) => {
           />
           <Button
             width="100%"
-            icon="bolt"
-            content="Quirks"
-            disabled={!mob_type.includes("/mob/living/carbon/human")}
-            onClick={() => act("quirk")}
-          />
-          <Button
-            width="100%"
             icon="magic"
             content="Spells"
             onClick={() => act("spell")}
           />
-          <Button
+          <Button.Confirm
             width="100%"
-            height="100%"
-            icon="fist-raised"
-            content="Martial Arts"
-            disabled={!mob_type.includes("/mob/living/carbon/human")}
-            onClick={() => act("martial_art")}
+            icon="suitcase"
+            content="Loadout"
+            color="teal"
+            disabled={!mob_type.includes("/mob/living/carbon/human") || !has_loadout}
+            tooltip={!has_loadout ? "Player has no loadout data" : "Apply player's loadout"}
+            onClick={() => act("apply_loadout")}
           />
         </Flex>
       </Section>
+
+      <Section
+        title={"Martial Art (" + (active_martial_art || "None") + ")"}
+        buttons={active_martial_art ? (
+          <Button
+            icon="times"
+            color="red"
+            content="Remove"
+            onClick={() => act("remove_martial_art")}
+          />
+        ) : null}
+      >
+        <Input
+          placeholder="Search martial arts..."
+          width="100%"
+          mb={1}
+          onInput={(e, value) => setMaSearch(value)}
+        />
+        <Box style={{ maxHeight: '150px', overflowY: 'auto' }}>
+          <Flex wrap="wrap" justify="space-between">
+            {filteredArts.map((art) => (
+              <Flex.Item key={art.name} width="49%" mb=".25rem">
+                <Button.Checkbox
+                  width="100%"
+                  checked={art.name === active_martial_art}
+                  content={art.name}
+                  disabled={!mob_type.includes("/mob/living/carbon/human")}
+                  onClick={() => {
+                    if (art.name === active_martial_art) {
+                      act("remove_martial_art");
+                    } else {
+                      act("set_martial_art", { ma_name: art.name });
+                    }
+                  }}
+                />
+              </Flex.Item>
+            ))}
+          </Flex>
+        </Box>
+      </Section>
+
+      <Section
+        title={"Quirks (" + (active_quirks ? active_quirks.length : 0) + " active)"}
+        buttons={(
+          <Button.Confirm
+            icon="trash"
+            color="red"
+            content="Clear All"
+            disabled={!active_quirks || !active_quirks.length}
+            onClick={() => act("clear_quirks")}
+          />
+        )}
+      >
+        <Input
+          placeholder="Search quirks..."
+          width="100%"
+          mb={1}
+          onInput={(e, value) => setQuirkSearch(value)}
+        />
+        <QuirkCategory
+          title="Positive"
+          color="green"
+          icon="plus-circle"
+          quirks={positiveQuirks}
+          active_quirks={active_quirks}
+          mob_type={mob_type}
+          act={act}
+        />
+        <QuirkCategory
+          title="Negative"
+          color="red"
+          icon="minus-circle"
+          quirks={negativeQuirks}
+          active_quirks={active_quirks}
+          mob_type={mob_type}
+          act={act}
+        />
+        <QuirkCategory
+          title="Neutral"
+          color="grey"
+          icon="circle"
+          quirks={neutralQuirks}
+          active_quirks={active_quirks}
+          mob_type={mob_type}
+          act={act}
+        />
+      </Section>
+
       <Section title="Limbs" buttons={(
         <Flex>
           {limbs.map((val, index) => (
@@ -266,6 +397,43 @@ const PhysicalActions = (props, context) => {
           />
         </Flex>
       </Section>
+
+      <Section title={"Organs (" + (current_organs ? current_organs.length : 0) + " installed)"}>
+        <Collapsible title="Organ Slots" color="green">
+          <Input
+            placeholder="Search organ slots..."
+            width="100%"
+            mb={1}
+            onInput={(e, value) => setOrganSearch(value)}
+          />
+          <Box style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            {filteredSlots.map((slot) => {
+              const cur = currentOrganMap[slot];
+              const available = organ_slots[slot] || [];
+              return (
+                <OrganSlotRow
+                  key={slot}
+                  slot={slot}
+                  current={cur}
+                  available={available}
+                  mob_type={mob_type}
+                  act={act}
+                />
+              );
+            })}
+          </Box>
+        </Collapsible>
+      </Section>
+
+      <ImplantSection
+        current_implants={current_implants}
+        implants_list={implants_list}
+        implantSearch={implantSearch}
+        setImplantSearch={setImplantSearch}
+        mob_type={mob_type}
+        act={act}
+      />
+
       <Section title="Scale" buttons={
         <Button
           icon="sync"
@@ -293,6 +461,20 @@ const PhysicalActions = (props, context) => {
           />
         </Flex>
       </Section>
+      <Section title="Weight">
+        <Flex wrap="wrap" justify="space-between">
+          {(weight_options || []).map((opt) => (
+            <Flex.Item key={opt.value} width="49%" mb=".25rem">
+              <Button
+                width="100%"
+                selected={mob_weight === opt.value}
+                content={opt.name}
+                onClick={() => act("set_weight", { weight: opt.value })}
+              />
+            </Flex.Item>
+          ))}
+        </Flex>
+      </Section>
       <Section title="Speak">
         <Flex mt={1}>
           <Flex.Item width="100px" color="label">Force Say:</Flex.Item>
@@ -313,6 +495,210 @@ const PhysicalActions = (props, context) => {
           </Flex.Item>
         </Flex>
       </Section>
+    </Section>
+  );
+};
+
+const QuirkCategory = (props) => {
+  const { title, color, icon, quirks, active_quirks, mob_type, act } = props;
+  if (!quirks || quirks.length === 0) {
+    return null;
+  }
+  const activeCount = quirks.filter(q =>
+    active_quirks && active_quirks.includes(q.name)
+  ).length;
+  return (
+    <Collapsible
+      title={title + " (" + activeCount + "/" + quirks.length + ")"}
+      color={color}
+    >
+      <Flex wrap="wrap" justify="space-between">
+        {quirks.map((quirk) => (
+          <Flex.Item key={quirk.name} width="49%" mb=".25rem">
+            <Button.Checkbox
+              width="100%"
+              checked={active_quirks && active_quirks.includes(quirk.name)}
+              content={quirk.name}
+              tooltip={quirk.desc}
+              color={color}
+              disabled={!mob_type.includes("/mob/living/carbon/human")}
+              onClick={() => act("toggle_quirk_direct", { quirk_name: quirk.name })}
+            />
+          </Flex.Item>
+        ))}
+      </Flex>
+    </Collapsible>
+  );
+};
+
+const OrganSlotRow = (props, context) => {
+  const { slot, current, available, mob_type, act } = props;
+  const [expanded, setExpanded] = useLocalState(context, 'organ_' + slot, false);
+  const [organFilter, setOrganFilter] = useLocalState(context, 'organ_filter_' + slot, '');
+
+  const filtered = available.filter(o =>
+    o.name.toLowerCase().includes(organFilter.toLowerCase())
+  );
+
+  return (
+    <Box
+      mb={0.5}
+      style={{
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '3px',
+        padding: '4px 6px',
+        background: current
+          ? 'rgba(80,200,120,0.08)'
+          : 'rgba(255,255,255,0.02)',
+      }}
+    >
+      <Flex align="center">
+        <Flex.Item shrink={0} width="20px">
+          <Button
+            icon={expanded ? "chevron-down" : "chevron-right"}
+            color="transparent"
+            compact
+            onClick={() => setExpanded(!expanded)}
+          />
+        </Flex.Item>
+        <Flex.Item width="130px">
+          <Box bold color="label">{slot}</Box>
+        </Flex.Item>
+        <Flex.Item grow={1}>
+          {current ? (
+            <Box inline color="green" bold>
+              {current.name}
+            </Box>
+          ) : (
+            <Box inline color="grey" italic>
+              — Empty —
+            </Box>
+          )}
+        </Flex.Item>
+        <Flex.Item shrink={0}>
+          {current && (
+            <Button
+              icon="trash"
+              color="red"
+              tooltip={"Remove " + current.name}
+              disabled={!mob_type.includes("/mob/living/carbon")}
+              onClick={() => act("remove_organ", { organ_slot: slot })}
+            />
+          )}
+        </Flex.Item>
+      </Flex>
+      {expanded && (
+        <Box ml={2} mt={0.5} mb={0.5}>
+          <Input
+            placeholder={"Search " + slot + "..."}
+            width="100%"
+            mb={0.5}
+            onInput={(e, value) => setOrganFilter(value)}
+          />
+          <Box style={{ maxHeight: '150px', overflowY: 'auto' }}>
+            <Flex wrap="wrap" justify="space-between">
+              {filtered.map((organ) => (
+                <Flex.Item key={organ.path} width="49%" mb=".25rem">
+                  <Button
+                    width="100%"
+                    icon={current && current.type_path === organ.path ? "check" : "plus"}
+                    color={current && current.type_path === organ.path ? "green" : null}
+                    content={organ.name}
+                    disabled={!mob_type.includes("/mob/living/carbon")}
+                    onClick={() => act("set_organ", { organ_path: organ.path })}
+                  />
+                </Flex.Item>
+              ))}
+            </Flex>
+          </Box>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+const ImplantSection = (props, context) => {
+  const { current_implants, implants_list, implantSearch, setImplantSearch,
+    mob_type, act } = props;
+  const [showAdd, setShowAdd] = useLocalState(context, 'implant_showAdd', false);
+
+  const filteredImplants = (implants_list || []).filter(imp =>
+    imp.name.toLowerCase().includes(implantSearch.toLowerCase())
+  );
+
+  return (
+    <Section
+      title={"Implants (" + (current_implants ? current_implants.length : 0) + " installed)"}
+      buttons={
+        <Button
+          icon={showAdd ? "minus" : "plus"}
+          color={showAdd ? "red" : "green"}
+          content={showAdd ? "Hide List" : "Add Implant"}
+          onClick={() => setShowAdd(!showAdd)}
+        />
+      }
+    >
+      {current_implants && current_implants.length > 0 ? (
+        <Box mb={showAdd ? 1 : 0}>
+          {current_implants.map((imp) => (
+            <Box
+              key={imp.ref}
+              mb={0.5}
+              style={{
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '3px',
+                padding: '4px 6px',
+                background: 'rgba(80,200,120,0.08)',
+              }}
+            >
+              <Flex align="center">
+                <Flex.Item grow={1}>
+                  <Box inline color="green" bold>
+                    {imp.name}
+                  </Box>
+                </Flex.Item>
+                <Flex.Item shrink={0}>
+                  <Button
+                    icon="trash"
+                    color="red"
+                    tooltip={"Remove " + imp.name}
+                    onClick={() => act("remove_implant", { implant_ref: imp.ref })}
+                  />
+                </Flex.Item>
+              </Flex>
+            </Box>
+          ))}
+        </Box>
+      ) : (
+        <Box color="grey" italic mb={showAdd ? 1 : 0}>
+          No implants installed.
+        </Box>
+      )}
+      {showAdd && (
+        <Box>
+          <Input
+            placeholder="Search implants..."
+            width="100%"
+            mb={1}
+            onInput={(e, value) => setImplantSearch(value)}
+          />
+          <Box style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            <Flex wrap="wrap" justify="space-between">
+              {filteredImplants.map((imp) => (
+                <Flex.Item key={imp.name} width="49%" mb=".25rem">
+                  <Button
+                    width="100%"
+                    icon="syringe"
+                    content={imp.name}
+                    disabled={!mob_type.includes("/mob/living")}
+                    onClick={() => act("set_implant", { implant_name: imp.name })}
+                  />
+                </Flex.Item>
+              ))}
+            </Flex>
+          </Box>
+        </Box>
+      )}
     </Section>
   );
 };
@@ -456,12 +842,11 @@ const GeneralActions = (props, context) => {
           <Button
             width="100%"
             height="100%"
-            icon="bolt"
-            color="orange"
-            content="Smite"
-            confirmColor="average"
-            disabled={!mob_type.includes("/mob/living/carbon/human")}
-            onClick={() => act("smite")}
+            icon="band-aid"
+            color="teal"
+            content="Light Heal"
+            disabled={!mob_type.includes("/mob/living")}
+            onClick={() => act("light_heal")}
           />
         </Flex>
       </Section>
@@ -989,16 +1374,52 @@ const FunActions = (props, context) => {
   );
 };
 
+const SmiteActions = (props, context) => {
+  const { act, data } = useBackend(context);
+  const { smites_list } = data;
+  const [smiteSearch, setSmiteSearch] = useLocalState(context, 'smiteSearch', '');
+
+  const filteredSmites = (smites_list || []).filter(name =>
+    name.toLowerCase().includes(smiteSearch.toLowerCase())
+  );
+
+  return (
+    <Section title="Smites" fill>
+      <Input
+        placeholder="Search smites..."
+        width="100%"
+        mb={1}
+        onInput={(e, value) => setSmiteSearch(value)}
+      />
+      <Flex wrap="wrap" justify="space-between">
+        {filteredSmites.map((name) => (
+          <Flex.Item key={name} width="49%" mb=".25rem">
+            <Button
+              width="100%"
+              icon="bolt"
+              color="orange"
+              content={name}
+              onClick={() => act("smite_direct", { smite_name: name })}
+            />
+          </Flex.Item>
+        ))}
+      </Flex>
+    </Section>
+  );
+};
+
 const OtherActions = (props, context) => {
   const { act, data } = useBackend(context);
   const { mob_type, client_ckey } = data;
 
   return (
     <Section fill>
-      <Section title="Miscellaneous Features">
+      <Section title="Antagonist">
         <Button
           width="100%"
           content="Traitor Panel"
+          icon="user-secret"
+          color="purple"
           p=".5rem"
           mb=".5rem"
           textAlign="center"
@@ -1007,37 +1428,47 @@ const OtherActions = (props, context) => {
         />
         <Button
           width="100%"
+          content="Objectives / Ambitions"
+          icon="bullseye"
+          p=".5rem"
+          textAlign="center"
+          disabled={!client_ckey}
+          onClick={(e) => act("ambitions")}
+        />
+      </Section>
+      <Section title="Miscellaneous">
+        <Button
+          width="100%"
           content="Languages"
+          icon="language"
           p=".5rem"
           mb=".5rem"
           textAlign="center"
           disabled={!mob_type.includes("/mob/living")}
           onClick={(e) => act("languages")}
         />
-        <Button
-          width="100%"
-          content="Objectives / Ambitions"
-          p=".5rem"
-          textAlign="center"
-          disabled={!client_ckey}
-          onClick={(e) => act("ambitions")}
-        />
-        <Button
-          width="100%"
-          content="Make Mentor"
-          p=".5rem"
-          textAlign="center"
-          disabled={!client_ckey}
-          onClick={(e) => act('makementor')}
-        />
-        <Button
-          width="100%"
-          content="Remove Mentor"
-          p=".5rem"
-          textAlign="center"
-          disabled={!client_ckey}
-          onClick={(e) => act('removementor')}
-        />
+        <Flex>
+          <Button
+            width="100%"
+            content="Make Mentor"
+            icon="graduation-cap"
+            color="green"
+            p=".5rem"
+            textAlign="center"
+            disabled={!client_ckey}
+            onClick={(e) => act('makementor')}
+          />
+          <Button
+            width="100%"
+            content="Remove Mentor"
+            icon="user-minus"
+            color="red"
+            p=".5rem"
+            textAlign="center"
+            disabled={!client_ckey}
+            onClick={(e) => act('removementor')}
+          />
+        </Flex>
       </Section>
     </Section>
   );

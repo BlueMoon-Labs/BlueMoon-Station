@@ -50,7 +50,7 @@
 	var/attack_all_objects = FALSE //if true, equivalent to having a wanted_objects list containing ALL objects.
 
 	var/lose_patience_timer_id //id for a timer to call LoseTarget(), used to stop mobs fixating on a target they can't reach
-	var/lose_patience_timeout = 300 //30 seconds by default, so there's no major changes to AI behaviour, beyond actually bailing if stuck forever
+	var/lose_patience_timeout = 1200 //120 seconds by default, so there's no major changes to AI behaviour, beyond actually bailing if stuck forever
 
 	///When a target is found, will the mob attempt to charge at it's target?
 	var/charger = FALSE
@@ -230,6 +230,8 @@
 /mob/living/simple_animal/hostile/CanAttack(atom/the_target)//Can we actually attack a possible target?
 	if(isturf(the_target) || !the_target) // bail out on invalids
 		return FALSE
+	if(!src.loc || QDELETED(src)) // we're being destroyed or already removed from world
+		return FALSE
 
 	if(ismob(the_target)) //Target is in godmode, ignore it.
 		var/mob/M = the_target
@@ -243,13 +245,13 @@
 	if(search_objects < 2)
 		if(isliving(the_target))
 			var/mob/living/L = the_target
-			var/faction_check = !foes[L] && faction_check_mob(L)
+			var/faction_check = (!foes || !foes[L]) && faction_check_mob(L)
 			if(robust_searching)
 				if(faction_check && !attack_same)
 					return FALSE
 				if(L.stat > stat_attack || (L.stat == UNCONSCIOUS && stat_attack == UNCONSCIOUS && HAS_TRAIT(L, TRAIT_DEATHCOMA)))
 					return FALSE
-				if(friends[L] > 0 && foes[L] < 1)
+				if(friends && foes && friends[L] > 0 && foes[L] < 1)
 					return FALSE
 			else
 				if((faction_check && !attack_same) || L.stat)
@@ -585,6 +587,8 @@
 //These two procs handle losing our target if we've failed to attack them for
 //more than lose_patience_timeout deciseconds, which probably means we're stuck
 /mob/living/simple_animal/hostile/proc/GainPatience()
+	if(QDELETED(src))
+		return
 	if(lose_patience_timeout)
 		LosePatience()
 		lose_patience_timer_id = addtimer(CALLBACK(src, PROC_REF(LoseTarget)), lose_patience_timeout, TIMER_STOPPABLE)
@@ -596,6 +600,8 @@
 
 //These two procs handle losing and regaining search_objects when attacked by a mob
 /mob/living/simple_animal/hostile/proc/LoseSearchObjects()
+	if(QDELETED(src))
+		return
 	search_objects = 0
 	deltimer(search_objects_timer_id)
 	search_objects_timer_id = addtimer(CALLBACK(src, PROC_REF(RegainSearchObjects)), search_objects_regain_time, TIMER_STOPPABLE)
@@ -616,6 +622,9 @@
 
 	if (!length(SSmobs.clients_by_zlevel[T.z])) // It's fine to use .len here but doesn't compile on 511
 		toggle_ai(AI_Z_OFF)
+		return
+
+	if(!has_nearby_player())
 		return
 
 	var/cheap_search = isturf(T) && !is_station_level(T.z)

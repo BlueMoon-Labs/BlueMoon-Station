@@ -1,3 +1,11 @@
+/datum/design/cable_coil/protolathe
+	name = "Cable Coil"
+	id = "cable_coil_30"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 300, /datum/material/glass = 150)
+	build_path = /obj/item/stack/cable_coil/random
+	maxstack = 5
+
 ////////////////////////////////////////
 /////////////Stock Parts////////////////
 ////////////////////////////////////////

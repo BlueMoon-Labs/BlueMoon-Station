@@ -72,15 +72,18 @@
 	if(disguise == null)
 		return
 	stealth_active = 1
-	if(ishuman(loc))
-		var/mob/living/carbon/human/M = loc
-		new /obj/effect/temp_visual/dir_setting/ninja/cloak(get_turf(M), M.dir)
-		M.name_override = disguise.name
-		M.icon = disguise.icon
-		M.icon_state = disguise.icon_state
-		M.cut_overlays()
-		M.add_overlay(disguise.overlays)
-		M.update_inv_hands()
+	ReapplyDisguise()
+
+/obj/item/clothing/suit/armor/abductor/vest/proc/ReapplyDisguise()
+	if(!disguise || !stealth_active || !ishuman(loc))
+		return
+	var/mob/living/carbon/human/M = loc
+	M.name_override = disguise.name
+	M.icon = disguise.icon
+	M.icon_state = disguise.icon_state
+	M.cut_overlays()
+	M.add_overlay(disguise.overlays)
+	M.update_inv_hands()
 
 /obj/item/clothing/suit/armor/abductor/vest/proc/DeactivateStealth()
 	if(!stealth_active)
@@ -116,6 +119,8 @@
 		M.adjustStaminaLoss(-75)
 		M.SetUnconscious(0)
 		M.SetAllImmobility(0)
+		M.reagents.add_reagent(/datum/reagent/medicine/stimulants, 5)
+		M.reagents.add_reagent(/datum/reagent/medicine/lesser_syndicate_nanites, 5)
 		combat_cooldown = 0
 		START_PROCESSING(SSobj, src)
 
@@ -788,7 +793,7 @@
 	frame = /obj/structure/table_frame/abductor
 
 /obj/structure/table/optable/abductor
-	name = "Инопланетный операционный стол"
+	name = "Alien Operating Table"
 	desc = "Используется для инопланетных медицинских процедур. Поверхность покрыта мелкими иглами, вводящими обезболивающее и стабилизатор кровообращения. Как и на обычном столе, сбоку можно закрепить маску и баллон с анестезией."
 	frame = /obj/structure/table_frame/abductor
 	buildstack = /obj/item/stack/sheet/mineral/silver

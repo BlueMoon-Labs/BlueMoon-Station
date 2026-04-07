@@ -1,5 +1,3 @@
-///Cooldown for the Reset Lobby Menu HUD verb
-#define RESET_HUD_INTERVAL 15 SECONDS
 /mob/dead/new_player
 	var/ready = 0
 	///Referenced when you want to delete the new_player later on in the code.
@@ -22,14 +20,8 @@
 
 	///Is there a result we want to read from the age gate
 	var/age_gate_result
-	///Cooldown for the Reset Lobby Menu HUD verb
-	COOLDOWN_DECLARE(reset_hud_cooldown)
 
 /mob/dead/new_player/Initialize(mapload)
-	if(client && SSticker.state == GAME_STATE_STARTUP)
-		var/atom/movable/screen/splash/S = new(null, null, client, TRUE)
-		S.Fade(TRUE)
-
 	if(length(GLOB.newplayer_start))
 		forceMove(pick(GLOB.newplayer_start))
 	else
@@ -40,7 +32,6 @@
 	. = ..()
 
 	GLOB.new_player_list += src
-	add_verb(src, /mob/dead/new_player/proc/reset_menu_hud)
 
 /mob/dead/new_player/Destroy()
 	GLOB.new_player_list -= src
@@ -372,7 +363,7 @@
 		ready = PLAYER_NOT_READY
 		return FALSE
 
-	var/mintime = max(CONFIG_GET(number/respawn_delay), (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time, 0)
+	var/mintime = max(CONFIG_GET(number/respawn_delay) * 600, (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time, 0)
 
 	var/this_is_like_playing_right = alert(src,"Are you sure you wish to observe? You will not be able to respawn for [round(mintime / 600, 0.1)] minutes!!","Player Setup","Да","Нет")
 
@@ -719,11 +710,11 @@
 		client.prefs.scars_list["[cur_scar_index]"] = valid_scars
 		client.prefs.save_character()
 
-	// BLUEMOON ADD START - загрузка татуировок
+	client.prefs.copy_to(H, initial_spawn = TRUE)
+
+	// BLUEMOON ADD START - загрузка татуировок (после copy_to, чтобы regenerate_limbs() не уничтожил данные)
 	client.prefs.apply_tattoos_to_human(H)
 	// BLUEMOON ADD END
-
-	client.prefs.copy_to(H, initial_spawn = TRUE)
 	H.dna.update_dna_identity()
 	if(mind)
 		if(transfer_after)
@@ -805,20 +796,3 @@
 		return FALSE //This is the only case someone should actually be completely blocked from antag rolling as well
 	return TRUE
 
-///Resets the Lobby Menu HUD, recreating and reassigning it to the new player
-/mob/dead/new_player/proc/reset_menu_hud()
-	set name = "Reset Lobby Menu HUD"
-	set category = "OOC"
-	var/mob/dead/new_player/new_player = usr
-	if(!COOLDOWN_FINISHED(new_player, reset_hud_cooldown))
-		to_chat(new_player, span_warning("You must wait <b>[DisplayTimeText(COOLDOWN_TIMELEFT(new_player, reset_hud_cooldown))]</b> before resetting the Lobby Menu HUD again!"))
-		return
-	if(!new_player?.client)
-		return
-	COOLDOWN_START(new_player, reset_hud_cooldown, RESET_HUD_INTERVAL)
-	qdel(new_player.hud_used)
-	create_mob_hud()
-	to_chat(new_player, span_info("Lobby Menu HUD reset. You may reset the HUD again in <b>[DisplayTimeText(RESET_HUD_INTERVAL)]</b>."))
-	hud_used.show_hud(hud_used.hud_version)
-
-#undef RESET_HUD_INTERVAL

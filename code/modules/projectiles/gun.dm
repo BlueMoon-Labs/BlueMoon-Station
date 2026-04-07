@@ -272,7 +272,7 @@
 	balloon_alert(user, "Щёлк!")
 
 /obj/item/gun/proc/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
-	if(recoil)
+	if(recoil && !zoomed)
 		directional_recoil(user, recoil*dir_recoil_amp, Get_Angle(user, pbtarget))
 
 	if(stam_cost) //CIT CHANGE - makes gun recoil cause staminaloss
@@ -937,6 +937,12 @@
 /obj/item/gun/proc/zoom(mob/living/user, direct, forced_zoom)
 	if(!(user?.client))
 		return
+
+	if(user.get_active_held_item() != src && user.get_inactive_held_item() != src)
+		if(zoomed)
+			forced_zoom = FALSE
+		else
+			return
 
 	if(!isnull(forced_zoom))
 		if(zoomed == forced_zoom)

@@ -18,6 +18,11 @@
 	var/filteredsentlength
 	var/datum/data/record/target_record
 
+/obj/structure/closet/secure_closet/genpop/Destroy()
+	registered_id = null
+	target_record = null
+	return ..()
+
 /obj/structure/closet/secure_closet/genpop/attackby(obj/item/W, mob/user, params)
 	if(!broken && locked && W == registered_id) //Prisoner opening
 		handle_prisoner_id(user)
@@ -63,7 +68,7 @@
 	print_report()
 	report_text = null
 
-	target_record = find_security_record("name", prisoner_name)
+	target_record = GLOB.data_core.security_by_name[prisoner_name]
 	set_security_status(SEC_RECORD_STATUS_INCARCERATED)
 
 	name = "[default_name] ([prisoner_name])"
@@ -136,6 +141,8 @@
 
 		playsound(C.loc, "sound/goonstation/machines/printer_dotmatrix.ogg", 50, 1)
 		GLOB.cell_logs += P
+		if(length(GLOB.cell_logs) > 500)
+			GLOB.cell_logs.Cut(1, length(GLOB.cell_logs) - 300)
 	return
 
 /obj/structure/closet/secure_closet/genpop/proc/generate_report()

@@ -1,9 +1,17 @@
 GLOBAL_VAR_INIT(OOC_COLOR, null)//If this is null, use the CSS for OOC. Otherwise, use a custom colour.
 GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
-/client/verb/ooc(msg as text)
+/client/verb/ooc()
 	set name = "OOC" //Gave this shit a shorter name so you only have to time out "ooc" rather than "ooc message" to use it --NeoFite
 	set category = "OOC"
+
+	var/vibe_check = SSdiscord?.check_login(usr)
+	if(isnull(vibe_check))
+		to_chat(usr, span_notice("The server is still starting up. Please wait... "))
+		return
+	else if(vibe_check == FALSE) //Dirty but I guess we gotta tell when the subsystem hasn't started
+		to_chat(usr, span_warning("You must link your discord account to your ckey in order to join the game. Join our <a style=\"color: #ff00ff;\" href=\"[CONFIG_GET(string/discordurl)]\">discord</a> and use the <span style=\"color: #ff00ff;\">[CONFIG_GET(string/discordbotcommandprefix)][CONFIG_GET(string/verification_command)]</span> command [CONFIG_GET(string/verification_channel) ? "as indicated in #[CONFIG_GET(string/verification_channel)] " : ""]. It won't take you more than two minutes :)<br>Ahelp or ask staff in the discord if this is an error."))
+		return
 
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
@@ -28,27 +36,32 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	if(QDELETED(src))
 		return
 
-	msg = copytext_char(sanitize(msg), 1, MAX_MESSAGE_LEN)
-	var/raw_msg = msg
+	var/message = ""
+	if(prefs.tgui_input_verbs)
+		message = tgui_input_text(src, "", "OOC", "", MAX_MESSAGE_LEN, encode = TRUE)
+	else
+		message = stripped_input(mob, "", "OOC")
 
-	if(!msg)
+	if(QDELETED(src) || !length(message))
 		return
 
-	GLOB.bot_ooc_sending_que += list(list("author" = holder && holder.fakekey ? holder.fakekey : key, "message" = msg))
+	var/raw_msg = message
 
-	msg = emoji_parse(msg)
+	GLOB.bot_ooc_sending_que += list(list("author" = holder && holder.fakekey ? holder.fakekey : key, "message" = message))
 
-	if((msg[1] in list(".",";",":","#")) || findtext_char(msg, "say", 1, 5))
+	message = emoji_parse(message)
+
+	if((message[1] in list(".",";",":","#")) || findtext_char(message, "say", 1, 5))
 		if(alert("Your message \"[raw_msg]\" looks like it was meant for in game communication, say it in OOC?", "Meant for OOC?", "No", "Yes") != "Yes")
 			return
 
 	if(!holder)
-		if(handle_spam_prevention(msg,MUTE_OOC))
+		if(handle_spam_prevention(message,MUTE_OOC))
 			return
-		if(findtext(msg, "byond://"))
+		if(findtext(message, "byond://"))
 			to_chat(src, "<B>Advertising other servers is not allowed.</B>")
-			log_admin("[key_name(src)] has attempted to advertise in OOC: [msg]")
-			message_admins("[key_name_admin(src)] has attempted to advertise in OOC: [msg]")
+			log_admin("[key_name(src)] has attempted to advertise in OOC: [message]")
+			message_admins("[key_name_admin(src)] has attempted to advertise in OOC: [message]")
 			return
 
 	if(!(prefs.chat_toggles & CHAT_OOC))
@@ -68,19 +81,19 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 			if(holder)
 				if(!holder.fakekey || C.holder)
 					if(check_rights_for(src, R_ADMIN))
-						to_chat(C, "<span class='adminooc'>[CONFIG_GET(flag/allow_admin_ooccolor) && prefs.ooccolor && (prefs.custom_colors & CUSTOM_OOC) ? "<font color=[prefs.ooccolor]>" :"" ]<span class='prefix'>OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[msg]</span></span></font>")
+						to_chat(C, "<span class='adminooc'>[CONFIG_GET(flag/allow_admin_ooccolor) && prefs.ooccolor && (prefs.custom_colors & CUSTOM_OOC) ? "<font color=[prefs.ooccolor]>" :"" ]<span class='prefix'>OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[message]</span></span></font>")
 					else
-						to_chat(C, "<span class='adminobserverooc'><span class='prefix'>OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[msg]</span></span>")
+						to_chat(C, "<span class='adminobserverooc'><span class='prefix'>OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[message]</span></span>")
 				else
 					if(GLOB.OOC_COLOR)
-						to_chat(C, "<font color='[GLOB.OOC_COLOR]'><b><span class='prefix'>OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[msg]</span></b></font>")
+						to_chat(C, "<font color='[GLOB.OOC_COLOR]'><b><span class='prefix'>OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[message]</span></b></font>")
 					else
-						to_chat(C, "<span class='ooc'><span class='prefix'>OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[msg]</span></span>")
+						to_chat(C, "<span class='ooc'><span class='prefix'>OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[message]</span></span>")
 			else if(!(key in C.prefs.ignoring))
 				if(GLOB.OOC_COLOR)
-					to_chat(C, "<font color='[GLOB.OOC_COLOR]'><b><span class='prefix'>OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[msg]</span></b></font>")
+					to_chat(C, "<font color='[GLOB.OOC_COLOR]'><b><span class='prefix'>OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[message]</span></b></font>")
 				else
-					to_chat(C, "<span class='ooc'><span class='prefix'>OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[msg]</span></span>")
+					to_chat(C, "<span class='ooc'><span class='prefix'>OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[message]</span></span>")
 
 /proc/toggle_ooc(toggle = null)
 	if(toggle != null) //if we're specifically en/disabling ooc

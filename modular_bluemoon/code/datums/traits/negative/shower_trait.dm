@@ -73,6 +73,8 @@
 
 /datum/quirk/bluemoon_shower_need/process()
 	. = ..()
+	if(!human_owner)
+		return
 	if(!human_owner.insanelycomfy)
 		cleanse_level = clamp(cleanse_level + 0.23, 0, 1001) // около 70 минут (без учёта лагов) нужно, чтобы требование к мытью поднялось до максимума (оверлея)
 

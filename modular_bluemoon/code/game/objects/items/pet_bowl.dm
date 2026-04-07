@@ -24,6 +24,7 @@
 	. = ..()
 	if(iscarbon(user) && isnull(held_item))
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HELP, "Eat")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_DISARM, "Pick up")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/reagent_containers/food/snacks/customizable/pet_bowl/examine(mob/user)
@@ -114,8 +115,10 @@
 		return FALSE
 	if(reagents?.has_reagent(/datum/reagent/consumable/nutriment))
 		consume_sound = initial(consume_sound)
+		eatverb = pick("bite","chew","nibble","gnaw","gobble","chomp")
 	else
 		consume_sound = 'sound/items/drink.ogg'
+		eatverb = pick("slurp","suck","lick")
 	. = ..()
 	if(isemptylist(ingredients))
 		bitecount = 0

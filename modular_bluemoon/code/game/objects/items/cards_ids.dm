@@ -54,6 +54,7 @@
 				card_sticker.unwrap(id_card, my_owner, silent = TRUE, force = TRUE)
 
 			assignment = id_card.assignment
+			special_assignment = id_card.special_assignment
 			custom_job = id_card.custom_job
 
 			access |= id_card.access

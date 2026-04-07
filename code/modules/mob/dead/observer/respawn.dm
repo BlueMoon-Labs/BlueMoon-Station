@@ -128,9 +128,9 @@
 		to_chat(src, "<span class='warning'>Respawns are disabled in configuration.</span>")
 		return
 
-	if(client.prefs.dnr_triggered)
-		to_chat(src, "<span class='danger'>You cannot respawn as you have enabled DNR.</span>")
-		return
+	//if(client.prefs.dnr_triggered) // Ну не хочет чел вставать, зачем ему респавн то резать -_-
+		//to_chat(src, "<span class='danger'>You cannot respawn as you have enabled DNR.</span>")
+		//return
 
 	// BLUEMOON ADD я не знаю почему бан респавна не банил респавн
 	if(jobban_isbanned(src, ROLE_RESPAWN))

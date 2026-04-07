@@ -11,6 +11,9 @@
 		else
 			return ckey(id)
 
+/// Макс. глубина для `ConvertpHToCol` + `get_reagent_category` (общий счётчик).
+#define CHEM_DISP_PH_CAT_GUARD_MAX 48
+
 /obj/machinery/chem_dispenser
 	name = "Chem Dispenser"
 	desc = "Создаёт и выдаёт препараты."
@@ -114,6 +117,9 @@
 	var/dispenser_type = DISPENSER_TYPE_CHEM
 	/// Cooldown for recipe-dispense actions.
 	COOLDOWN_DECLARE(dispense_cooldown)
+	/// Общий счётчик входа для `ConvertpHToCol` / `get_reagent_category` (отдельный `static` в каждом проке не блокирует взаимные вызовы → переполнение стека / illegal op в `send_message` на 516).
+	var/static/chem_disp_ph_cat_guard = 0
+	var/static/list/chem_disp_category_cache = list()
 
 	/// Shared cache: reagent hash -> computed dispenser recipe data.
 	var/static/list/shared_dispenser_recipe_caches
@@ -848,7 +854,8 @@
 		data["beakerMaxVolume"] = beaker.volume
 		data["beakerTransferAmounts"] = beaker.possible_transfer_amounts
 		// pH precision scales with capacitor rating.
-		var/rounded_ph = round(beaker.reagents.pH, 10**-(capacitor_rating+1))
+		var/ph_precision = max(10**-(capacitor_rating+1), 0.0001)
+		var/rounded_ph = round(beaker.reagents.pH, ph_precision)
 		data["beakerCurrentpH"] = rounded_ph
 		data["beakerCurrentpHCol"] = ConvertpHToCol(rounded_ph)
 
@@ -1567,7 +1574,7 @@
 			var/recipe_name = params["recipe"]
 			if(recipe_name && saved_recipes[recipe_name])
 				saved_recipes -= recipe_name
-	
+
 				log_reagent("DISPENSER: [key_name(usr)] deleted recipe [recipe_name]")
 			. = TRUE
 		if("record_recipe")
@@ -1594,7 +1601,7 @@
 						playsound(src, 'sound/machines/buzz-two.ogg', 50, TRUE)
 						return
 				saved_recipes[name] = recording_recipe
-	
+
 				logstring = logstring.Join(", ")
 				recording_recipe = null
 				log_reagent("DISPENSER: [key_name(usr)] recorded recipe [name] with chemicals [logstring]")
@@ -1815,44 +1822,63 @@
 		return TRUE
 
 /obj/machinery/chem_dispenser/proc/ConvertpHToCol(pH)
+	if(chem_disp_ph_cat_guard >= CHEM_DISP_PH_CAT_GUARD_MAX)
+		return "average"
+	chem_disp_ph_cat_guard++
+	. = "average"
+	if(!isnum(pH) || (pH != pH)) // null or NaN
+		chem_disp_ph_cat_guard--
+		return
 	switch(pH)
 		if(-INFINITY to 1)
-			return "red"
+			. = "red"
 		if(1 to 2)
-			return "orange"
+			. = "orange"
 		if(2 to 3)
-			return "average"
+			. = "average"
 		if(3 to 4)
-			return "yellow"
+			. = "yellow"
 		if(4 to 5)
-			return "olive"
+			. = "olive"
 		if(5 to 6)
-			return "good"
+			. = "good"
 		if(6 to 8)
-			return "green"
+			. = "green"
 		if(8 to 9.5)
-			return "teal"
+			. = "teal"
 		if(9.5 to 11)
-			return "blue"
+			. = "blue"
 		if(11 to 12.5)
-			return "violet"
+			. = "violet"
 		if(12.5 to INFINITY)
-			return "purple"
+			. = "purple"
+		else
+			. = "average"
+	chem_disp_ph_cat_guard--
 
 /obj/machinery/chem_dispenser/proc/get_reagent_category(reagent_type)
-	if(ispath(reagent_type, /datum/reagent/medicine))
-		return "medicine"
-	if(ispath(reagent_type, /datum/reagent/toxin))
-		return "toxins"
-	if(ispath(reagent_type, /datum/reagent/drug))
-		return "drugs"
-	if(ispath(reagent_type, /datum/reagent/consumable/organicprecursor))
+	if(reagent_type && chem_disp_category_cache[reagent_type])
+		return chem_disp_category_cache[reagent_type]
+	if(chem_disp_ph_cat_guard >= CHEM_DISP_PH_CAT_GUARD_MAX)
 		return "other"
-	if(ispath(reagent_type, /datum/reagent/consumable/ethanol))
-		return "alcoholic_drinks"
-	if(ispath(reagent_type, /datum/reagent/consumable))
-		return "soft_drinks"
-	if(reagent_type in list(
+	chem_disp_ph_cat_guard++
+	var/result = "other"
+	if(!reagent_type)
+		chem_disp_ph_cat_guard--
+		return result
+	if(ispath(reagent_type, /datum/reagent/medicine))
+		result = "medicine"
+	else if(ispath(reagent_type, /datum/reagent/toxin))
+		result = "toxins"
+	else if(ispath(reagent_type, /datum/reagent/drug))
+		result = "drugs"
+	else if(ispath(reagent_type, /datum/reagent/consumable/organicprecursor))
+		result = "other"
+	else if(ispath(reagent_type, /datum/reagent/consumable/ethanol))
+		result = "alcoholic_drinks"
+	else if(ispath(reagent_type, /datum/reagent/consumable))
+		result = "soft_drinks"
+	else if(reagent_type in list(
 		/datum/reagent/water,
 		/datum/reagent/fuel,
 		/datum/reagent/stable_plasma,
@@ -1864,10 +1890,13 @@
 		/datum/reagent/diethylamine,
 		/datum/reagent/saltpetre
 	))
-		return "compounds"
-	if(ispath(reagent_type, /datum/reagent))
-		return "elements"
-	return "other"
+		result = "compounds"
+	else if(ispath(reagent_type, /datum/reagent))
+		result = "elements"
+	if(reagent_type)
+		chem_disp_category_cache[reagent_type] = result
+	chem_disp_ph_cat_guard--
+	return result
 
 
 /obj/machinery/chem_dispenser/drinks/Initialize(mapload)

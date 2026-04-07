@@ -220,7 +220,9 @@
 			target.DefaultCombatKnockdown(20)
 			if(ishuman(target) && iscarbon(user))
 				target.grabbedby(user)
-				target.grippedby(user, instant = TRUE)
+				// start_pulling может не сработать (сверхтяж и т.д.) — grippedby без pull ломал grab_state и скорость.
+				if(user.pulling == target)
+					target.grippedby(user, instant = TRUE)
 
 	SEND_SIGNAL(user, COMSIG_CARBON_TACKLED, roll)
 	return COMPONENT_MOVABLE_IMPACT_FLIP_HITPUSH

@@ -1,5 +1,44 @@
 // Armory redcode safe
 
+/// Золотой сейф для запасной карты капитана. Случайный код (3 числа по диапазону 0–99) выдается главам на бумажке.
+/// Спрайт из tgstation: icons/obj/storage/storage.dmi
+/obj/structure/safe/spare_id
+	name = "golden safe"
+	desc = "A prestigious safe with a golden sheen, designated for storing the Captain's spare ID. The combination is known to station heads."
+	icon = 'modular_bluemoon/icons/obj/storage/storage.dmi'
+	icon_state = "spare_safe"
+	density = FALSE
+	number_of_tumblers = 3
+	armor = list(MELEE = 50, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 50, BIO = 50, RAD = 50, FIRE = 50, ACID = 50)
+	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF | UNACIDABLE | FREEZE_PROOF
+
+/obj/structure/safe/spare_id/Initialize(mapload)
+	. = ..()
+	if(mapload && !locate(/obj/item/card/id/captains_spare) in src)
+		var/obj/item/card/id/captains_spare/card = new(src)
+		space += card.w_class
+	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(setup_spare_id_safe_and_bridge_airlocks)))
+
+/obj/structure/safe/spare_id/update_icon_state()
+	// tgstation storage.dmi: spare_safe (open), spare_safe_locked (closed)
+	if(open)
+		icon_state = "spare_safe"
+	else
+		icon_state = "spare_safe_locked"
+
+/// C4/X4 (EXPLODE_HEAVY/DEVASTATE, target == src) — взлом с одного заряда (эквив. BROKEN_THRESHOLD в safe.dm)
+/obj/structure/safe/spare_id/ex_act(severity, target, origin)
+	if(!open && explosion_count < 3 && target == src && (severity == EXPLODE_HEAVY || severity == EXPLODE_DEVASTATE))
+		explosion_count = 3
+		desc = initial(desc) + "\nThe lock seems to be broken."
+		locked = FALSE
+		open = TRUE
+		current_tumbler_index = number_of_tumblers + 1
+		update_icon()
+		visible_message(span_warning("[src] взломан взрывом — замок выбит!"))
+		return
+	return ..()
+
 /obj/structure/safe
 	/// Список кодов, при которых открывается сейф
 	var/list/open_security_levels = list()
@@ -30,7 +69,7 @@
 /obj/structure/safe/floor/syndi/armory
 	name = "armory safe"
 	number_of_tumblers = 8
-	maxspace = 48
+	maxspace = 70
 	open_security_levels = list(SEC_LEVEL_RED, SEC_LEVEL_LAMBDA, SEC_LEVEL_GAMMA)
 	tgui_theme = "syndicate"
 
@@ -50,4 +89,48 @@
 /obj/structure/safe/floor/syndi/armory/Destroy()
 	. = ..()
 	UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
+
+GLOBAL_VAR_INIT(spare_id_safe_setup_done, FALSE)
+
+/// Роли глав и НТР, которым может выдаваться код от золотого сейфа
+GLOBAL_LIST_INIT(spare_id_safe_head_roles, list("Captain", "Head of Personnel", "Head of Security", "Chief Engineer", "Research Director", "Chief Medical Officer", "NanoTrasen Representative"))
+
+/// Одна бумажка с кодом золотого сейфа (раундстарт и latejoin)
+/proc/give_spare_id_safe_paper(mob/living/carbon/human/H)
+	if(!istype(H) || !H.mind)
+		return
+	if(!(H.mind.assigned_role in GLOB.spare_id_safe_head_roles))
+		return
+	var/obj/structure/safe/spare_id/safe = locate() in world
+	var/code_string = safe ? jointext(safe.tumblers, "-") : "???"
+	var/obj/item/paper/paper = new()
+	paper.name = "paper- 'Spare ID safe combination'"
+	paper.desc = "Конфиденциальная запись с кодом от золотого сейфа запасной карты капитана."
+	paper.add_raw_text("<b>Комбинация золотого сейфа запасной карты капитана</b><br><br>Код: <b>[code_string]</b><br><br>Сейф расположен на мостике. Используйте код в экстренных случаях для доступа к запасной ID-карте капитана.<br><br>— Nanotrasen Command")
+	if(H.equip_to_slot_if_possible(paper, ITEM_SLOT_BACKPACK, disable_warning = TRUE, bypass_equip_delay_self = TRUE))
+		return
+	paper.forceMove(get_turf(H))
+
+/// Выдача бумажки с кодом всем главам и аварийный режим шлюзов мостика при отсутствии командования
+/proc/setup_spare_id_safe_and_bridge_airlocks()
+	if(GLOB.spare_id_safe_setup_done)
+		return
+	GLOB.spare_id_safe_setup_done = TRUE
+
+	var/list/mob/living/carbon/human/heads = list()
+	for(var/mob/living/carbon/human/H in GLOB.human_list)
+		if(H.stat == DEAD || !H.mind || !(H.mind.assigned_role in GLOB.spare_id_safe_head_roles))
+			continue
+		heads += H
+
+	if(length(heads))
+		for(var/mob/living/carbon/human/head in heads)
+			give_spare_id_safe_paper(head)
+	else
+		// Нет глав — шлюзы в области мостика переводим в аварийный режим
+		for(var/obj/machinery/door/airlock/A in GLOB.airlocks)
+			var/area/airlock_area = get_area(A)
+			if(!istype(airlock_area, /area/command/bridge))
+				continue
+			A.set_emergency_exit(TRUE)
 

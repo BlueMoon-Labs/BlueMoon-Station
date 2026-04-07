@@ -13,24 +13,39 @@ SUBSYSTEM_DEF(security_level)
  *
  * Arguments:
  * * new_level - The new security level that will become our current level
+ * * secret_variant_override - For violet/amber/red only: null = random 90% normal / 10% secret (default), FALSE = normal icon/sound, TRUE = secret icon/sound
  */
-/datum/controller/subsystem/security_level/proc/set_level(new_level)
+/datum/controller/subsystem/security_level/proc/pick_secret_alert_variant(secret_variant_override)
+	if(isnull(secret_variant_override))
+		return !prob(90)
+	return secret_variant_override
+
+/datum/controller/subsystem/security_level/proc/get_called_emergency_shuttle()
+	var/obj/docking_port/mobile/emergency/emergency_shuttle = SSshuttle.emergency
+	if(!emergency_shuttle)
+		return null
+	if(emergency_shuttle.mode != SHUTTLE_CALL && emergency_shuttle.mode != SHUTTLE_RECALL)
+		return null
+	return emergency_shuttle
+
+/datum/controller/subsystem/security_level/proc/set_level(new_level, secret_variant_override)
 	if(!isnum(new_level))
 		new_level = SECLEVEL2NUM(new_level)
 
 	//Will not be announced if you try to set to the same level as it already is
 	if(new_level >= SEC_LEVEL_GREEN && new_level <= SEC_LEVEL_DELTA && new_level != GLOB.security_level)
+		var/obj/docking_port/mobile/emergency/emergency_shuttle = get_called_emergency_shuttle()
 		switch(new_level)
 			if(SEC_LEVEL_GREEN)
-				minor_announce(CONFIG_GET(string/alert_green), "Внимание! Уровень тревоги был снижен до ЗЕЛЁНОГО:")
+				announce_security_level_change(SEC_LEVEL_GREEN, CONFIG_GET(string/alert_green), FALSE)
 				unset_stationwide_emergency_lighting()
-				if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
+				if(emergency_shuttle)
 					if(GLOB.security_level >= SEC_LEVEL_RED)
-						SSshuttle.emergency.modTimer(4)
+						emergency_shuttle.modTimer(4)
 					else if(GLOB.security_level == SEC_LEVEL_AMBER)
-						SSshuttle.emergency.modTimer(2.5)
+						emergency_shuttle.modTimer(2.5)
 					else
-						SSshuttle.emergency.modTimer(1.66)
+						emergency_shuttle.modTimer(1.66)
 				GLOB.security_level = SEC_LEVEL_GREEN
 				var/obj/machinery/computer/communications/C = locate() in GLOB.machines
 				if(C)
@@ -41,16 +56,16 @@ SUBSYSTEM_DEF(security_level)
 
 			if(SEC_LEVEL_BLUE)
 				if(GLOB.security_level < SEC_LEVEL_BLUE)
-					minor_announce(CONFIG_GET(string/alert_blue_upto), "Внимание! Уровень тревоги был поднят до СИНЕГО:",1)
-					if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
-						SSshuttle.emergency.modTimer(0.6)
+					announce_security_level_change(SEC_LEVEL_BLUE, CONFIG_GET(string/alert_blue_upto), TRUE)
+					if(emergency_shuttle)
+						emergency_shuttle.modTimer(0.6)
 				else
-					minor_announce(CONFIG_GET(string/alert_blue_downto), "Внимание! Уровень тревоги был снижен до СИНЕГО:")
-					if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
+					announce_security_level_change(SEC_LEVEL_BLUE, CONFIG_GET(string/alert_blue_downto), FALSE)
+					if(emergency_shuttle)
 						if(GLOB.security_level >= SEC_LEVEL_RED)
-							SSshuttle.emergency.modTimer(2.4)
+							emergency_shuttle.modTimer(2.4)
 						else
-							SSshuttle.emergency.modTimer(1.5)
+							emergency_shuttle.modTimer(1.5)
 				GLOB.security_level = SEC_LEVEL_BLUE
 				var/obj/machinery/computer/communications/C = locate() in GLOB.machines
 				if(C)
@@ -63,16 +78,16 @@ SUBSYSTEM_DEF(security_level)
 
 			if(SEC_LEVEL_ORANGE)
 				if(GLOB.security_level < SEC_LEVEL_ORANGE)
-					minor_announce(CONFIG_GET(string/alert_orange_upto), "Внимание! Уровень тревоги был поднят до ОРАНЖЕВОГО:",1)
-					if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
-						SSshuttle.emergency.modTimer(0.6)
+					announce_security_level_change(SEC_LEVEL_ORANGE, CONFIG_GET(string/alert_orange_upto), TRUE)
+					if(emergency_shuttle)
+						emergency_shuttle.modTimer(0.6)
 				else
-					minor_announce(CONFIG_GET(string/alert_orange_downto), "Внимание! Уровень тревоги был снижен до ОРАНЖЕВОГО:")
-					if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
+					announce_security_level_change(SEC_LEVEL_ORANGE, CONFIG_GET(string/alert_orange_downto), FALSE)
+					if(emergency_shuttle)
 						if(GLOB.security_level >= SEC_LEVEL_RED)
-							SSshuttle.emergency.modTimer(2.4)
+							emergency_shuttle.modTimer(2.4)
 						else
-							SSshuttle.emergency.modTimer(1.5)
+							emergency_shuttle.modTimer(1.5)
 				GLOB.security_level = SEC_LEVEL_ORANGE
 				var/obj/machinery/computer/communications/C = locate() in GLOB.machines
 				if(C)
@@ -85,46 +100,51 @@ SUBSYSTEM_DEF(security_level)
 
 			if(SEC_LEVEL_VIOLET)
 				if(GLOB.security_level < SEC_LEVEL_VIOLET)
-					minor_announce(CONFIG_GET(string/alert_violet_upto), "Внимание! Уровень тревоги был поднят до ФИОЛЕТОВОГО:",1)
-					if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
-						SSshuttle.emergency.modTimer(0.6)
+					announce_security_level_change(SEC_LEVEL_VIOLET, CONFIG_GET(string/alert_violet_upto), TRUE)
+					if(emergency_shuttle)
+						emergency_shuttle.modTimer(0.6)
 				else
-					minor_announce(CONFIG_GET(string/alert_violet_downto), "Внимание! Уровень тревоги был снижен до ФИОЛЕТОВОГО:")
-					if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
+					announce_security_level_change(SEC_LEVEL_VIOLET, CONFIG_GET(string/alert_violet_downto), FALSE)
+					if(emergency_shuttle)
 						if(GLOB.security_level >= SEC_LEVEL_RED)
-							SSshuttle.emergency.modTimer(2.4)
+							emergency_shuttle.modTimer(2.4)
 						else
-							SSshuttle.emergency.modTimer(1.5)
+							emergency_shuttle.modTimer(1.5)
 				GLOB.security_level = SEC_LEVEL_VIOLET
 				var/obj/machinery/computer/communications/C = locate() in GLOB.machines
-				if(C)
-					C.post_status("alert", "violetalert")
+				var/use_secret = pick_secret_alert_variant(secret_variant_override)
+				if(use_secret)
+					C?.post_status("alert", "violetalert_secret")
+					sound_to_playing_players('sound/misc/alerts/violet_secret.ogg')
+				else
+					C?.post_status("alert", "violetalert")
+					sound_to_playing_players('sound/misc/alerts/violet.ogg', volume = 50)
 				unset_stationwide_emergency_lighting()
-				sound_to_playing_players('sound/misc/alerts/violet.ogg', volume = 50)
 				for(var/obj/machinery/firealarm/FA in GLOB.machines)
 					if(is_station_level(FA.z))
 						FA.update_icon()
 
 			if(SEC_LEVEL_AMBER)
 				if(GLOB.security_level < SEC_LEVEL_AMBER)
-					minor_announce(CONFIG_GET(string/alert_amber_upto), "Внимание! Уровень тревоги был поднят до ЯНТАРНОГО:",1)
-					if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
+					announce_security_level_change(SEC_LEVEL_AMBER, CONFIG_GET(string/alert_amber_upto), TRUE)
+					if(emergency_shuttle)
 						if(GLOB.security_level == SEC_LEVEL_GREEN)
-							SSshuttle.emergency.modTimer(0.4)
+							emergency_shuttle.modTimer(0.4)
 						else
-							SSshuttle.emergency.modTimer(0.66)
+							emergency_shuttle.modTimer(0.66)
 				else
-					minor_announce(CONFIG_GET(string/alert_amber_downto), "Внимание! Уровень тревоги был снижен до ЯНТАРНОГО:")
-					if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
-						SSshuttle.emergency.modTimer(1.6)
+					announce_security_level_change(SEC_LEVEL_AMBER, CONFIG_GET(string/alert_amber_downto), FALSE)
+					if(emergency_shuttle)
+						emergency_shuttle.modTimer(1.6)
 				GLOB.security_level = SEC_LEVEL_AMBER
 				var/obj/machinery/computer/communications/C = locate() in GLOB.machines
-				if(prob(90))
-					C?.post_status("alert", "amberalert")
-					sound_to_playing_players('sound/misc/alerts/amber.ogg', volume = 50)
-				else
+				var/use_secret = pick_secret_alert_variant(secret_variant_override)
+				if(use_secret)
 					C?.post_status("alert", "amberalert_secret")
 					sound_to_playing_players('sound/misc/alerts/amber_secret.ogg')
+				else
+					C?.post_status("alert", "amberalert")
+					sound_to_playing_players('sound/misc/alerts/amber.ogg', volume = 50)
 				unset_stationwide_emergency_lighting()
 				for(var/obj/machinery/firealarm/FA in GLOB.machines)
 					if(is_station_level(FA.z))
@@ -132,22 +152,27 @@ SUBSYSTEM_DEF(security_level)
 
 			if(SEC_LEVEL_RED)
 				if(GLOB.security_level < SEC_LEVEL_RED)
-					minor_announce(CONFIG_GET(string/alert_red_upto), "Внимание! Код - КРАСНЫЙ!",1)
-					if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
+					announce_security_level_change(SEC_LEVEL_RED, CONFIG_GET(string/alert_red_upto), TRUE)
+					if(emergency_shuttle)
 						if(GLOB.security_level == SEC_LEVEL_GREEN)
-							SSshuttle.emergency.modTimer(0.25)
+							emergency_shuttle.modTimer(0.25)
 						else if(GLOB.security_level == SEC_LEVEL_BLUE)
-							SSshuttle.emergency.modTimer(0.416)
+							emergency_shuttle.modTimer(0.416)
 						else
-							SSshuttle.emergency.modTimer(0.625)
+							emergency_shuttle.modTimer(0.625)
 				else
-					minor_announce(CONFIG_GET(string/alert_red_downto), "Внимание! Код - КРАСНЫЙ!")
+					announce_security_level_change(SEC_LEVEL_RED, CONFIG_GET(string/alert_red_downto), FALSE)
 				unset_stationwide_emergency_lighting()
 				sound_to_playing_players('sound/misc/alerts/red.ogg', volume = 50)
 				GLOB.security_level = SEC_LEVEL_RED
 				var/obj/machinery/computer/communications/C = locate() in GLOB.machines
-				if(C)
-					C.post_status("alert", "redalert")
+				var/use_secret = pick_secret_alert_variant(secret_variant_override)
+				if(use_secret)
+					C?.post_status("alert", "redalert_secret")
+					sound_to_playing_players('sound/misc/alerts/red_secret.ogg')
+				else
+					C?.post_status("alert", "redalert")
+					sound_to_playing_players('sound/misc/alerts/amber.ogg', volume = 50)
 				for(var/obj/machinery/firealarm/FA in GLOB.machines)
 					if(is_station_level(FA.z))
 						FA.update_icon()
@@ -259,49 +284,53 @@ SUBSYSTEM_DEF(security_level)
 		addtimer(CALLBACK(A, TYPE_PROC_REF(/obj/machinery/power/apc, update), FALSE), rand(5, 10) SECONDS)
 
 /proc/lambda_process()
-	minor_announce(CONFIG_GET(string/alert_lambda), "Внимание! Код - ЛЯМБДА!")
+	announce_security_level_change(SEC_LEVEL_LAMBDA, CONFIG_GET(string/alert_lambda), TRUE)
 	sound_to_playing_players('modular_bluemoon/kovac_shitcode/sound/lambda_code.ogg')
 	GLOB.security_level = SEC_LEVEL_LAMBDA
 	SEND_SIGNAL(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED) // Без этого никакие сигнал_хендлеры, связанные со сменой кода, не ловят лямбду. Включая мой сейф.
+	SSnightshift.check_nightshift()
 	for(var/obj/machinery/firealarm/FA in GLOB.machines)
 		if(is_station_level(FA.z))
 			FA.update_icon()
 	for(var/obj/machinery/computer/shuttle/pod/pod in GLOB.machines)
 		pod.admin_controlled = FALSE
-	if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
+	var/obj/docking_port/mobile/emergency/emergency_shuttle = SSsecurity_level.get_called_emergency_shuttle()
+	if(emergency_shuttle)
 		if(GLOB.security_level < SEC_LEVEL_BLUE)
-			SSshuttle.emergency.modTimer(0.25)
+			emergency_shuttle.modTimer(0.25)
 		else if(GLOB.security_level == SEC_LEVEL_BLUE)
-			SSshuttle.emergency.modTimer(0.416)
+			emergency_shuttle.modTimer(0.416)
 		else
-			SSshuttle.emergency.modTimer(0.625)
+			emergency_shuttle.modTimer(0.625)
 	var/obj/machinery/computer/communications/C = locate() in GLOB.machines
 	if(C)
 		C.post_status("alert", "lambdaalert")
 
 /proc/gamma_process()
-	minor_announce(CONFIG_GET(string/alert_gamma), "Внимание! Код - ГАММА!")
+	announce_security_level_change(SEC_LEVEL_GAMMA, CONFIG_GET(string/alert_gamma), TRUE)
 	sound_to_playing_players('sound/misc/alerts/gamma_alert.ogg')
 	GLOB.security_level = SEC_LEVEL_GAMMA
 	SEND_SIGNAL(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED) // Без этого никакие сигнал_хендлеры, связанные со сменой кода, не ловят гамму. Включая мой сейф.
+	SSnightshift.check_nightshift()
 	for(var/obj/machinery/firealarm/FA in GLOB.machines)
 		if(is_station_level(FA.z))
 			FA.update_icon()
 	for(var/obj/machinery/computer/shuttle/pod/pod in GLOB.machines)
 		pod.admin_controlled = FALSE
-	if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
+	var/obj/docking_port/mobile/emergency/emergency_shuttle = SSsecurity_level.get_called_emergency_shuttle()
+	if(emergency_shuttle)
 		if(GLOB.security_level < SEC_LEVEL_BLUE)
-			SSshuttle.emergency.modTimer(0.25)
+			emergency_shuttle.modTimer(0.25)
 		else if(GLOB.security_level == SEC_LEVEL_BLUE)
-			SSshuttle.emergency.modTimer(0.416)
+			emergency_shuttle.modTimer(0.416)
 		else
-			SSshuttle.emergency.modTimer(0.625)
+			emergency_shuttle.modTimer(0.625)
 	var/obj/machinery/computer/communications/C = locate() in GLOB.machines
 	if(C)
 		C.post_status("alert", "gammaalert")
 
 /proc/epsilon_process()
-	minor_announce(CONFIG_GET(string/alert_epsilon), "Внимание! Код - ЭПСИЛОН!")
+	announce_security_level_change(SEC_LEVEL_EPSILON, CONFIG_GET(string/alert_epsilon), TRUE)
 	switch(rand(1,10))
 		if(1 to 5)
 			sound_to_playing_players('sound/misc/alerts/epsilon_portal.ogg')
@@ -310,6 +339,7 @@ SUBSYSTEM_DEF(security_level)
 		if(10)
 			sound_to_playing_players('sound/misc/alerts/epsilon_elevator.ogg')
 	GLOB.security_level = SEC_LEVEL_EPSILON
+	SSnightshift.check_nightshift()
 	for(var/obj/machinery/firealarm/FA in GLOB.machines)
 		if(is_station_level(FA.z))
 			FA.update_icon()
@@ -318,21 +348,23 @@ SUBSYSTEM_DEF(security_level)
 		C.post_status("alert", "epsilonalert")
 
 /proc/delta_process()
-	minor_announce(CONFIG_GET(string/alert_delta), "Тревога! Код - ДЕЛЬТА!")
+	announce_security_level_change(SEC_LEVEL_DELTA, CONFIG_GET(string/alert_delta), TRUE)
 	sound_to_playing_players('sound/misc/alerts/delta.ogg')
 	GLOB.security_level = SEC_LEVEL_DELTA
+	SSnightshift.check_nightshift()
 	for(var/obj/machinery/firealarm/FA in GLOB.machines)
 		if(is_station_level(FA.z))
 			FA.update_icon()
 	var/obj/machinery/computer/communications/C = locate() in GLOB.machines
 	if(C)
 		C.post_status("alert", "deltaalert")
-	if(SSshuttle.emergency.mode == SHUTTLE_CALL || SSshuttle.emergency.mode == SHUTTLE_RECALL)
+	var/obj/docking_port/mobile/emergency/emergency_shuttle = SSsecurity_level.get_called_emergency_shuttle()
+	if(emergency_shuttle)
 		if(GLOB.security_level < SEC_LEVEL_BLUE)
-			SSshuttle.emergency.modTimer(0.25)
+			emergency_shuttle.modTimer(0.25)
 		else if(GLOB.security_level == SEC_LEVEL_BLUE)
-			SSshuttle.emergency.modTimer(0.416)
+			emergency_shuttle.modTimer(0.416)
 		else
-			SSshuttle.emergency.modTimer(0.625)
+			emergency_shuttle.modTimer(0.625)
 	for(var/obj/machinery/computer/shuttle/pod/pod in GLOB.machines)
 		pod.admin_controlled = FALSE

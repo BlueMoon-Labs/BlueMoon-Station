@@ -102,6 +102,14 @@
 	mutantrace_variation = STYLE_DIGITIGRADE
 	can_adjust = FALSE
 
+/obj/item/clothing/under/donator/bm/silky_body_alt
+	name = "V-shaped Body"
+	desc = "A perfectly tailored bodysuit that fits the body and does not constrain you in any movements."
+	icon_state = "silky_body_alt"
+	item_state = "bl_suit"
+	mutantrace_variation = STYLE_DIGITIGRADE
+	can_adjust = FALSE
+
 /obj/item/clothing/under/donator/bm/Frieren_skirt
 	name = "Frieren skirt"
 	desc = "Изысканный эльфийский наряд, что выполнен из нежной ткани и украшен золотыми нитями."
@@ -687,3 +695,62 @@
 /obj/item/clothing/under/poly_cargo/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb"), 9)
+
+/obj/item/clothing/under/rank/security/officer/sec_spo
+	name = "SPO uniform"
+	desc= "Standard SPO uniform. It features thermal padding and good ventilation."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "sec__uniform"
+	item_state = "sec__uniform"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
+
+/obj/item/clothing/under/rank/security/officer/officer_jumpsuit
+	name = "Officer’s uniform"
+	desc= "Standard officer corps uniform. Show off your authority!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "officer_jumpsuit"
+	item_state = "officer_jumpsuit"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
+
+/obj/item/clothing/under/tshirt_w_br
+	name = "Jeans and T‑shirt"
+	desc= "A comfortable set consisting of a synthetic T‑shirt and cotton jeans! Issued only to the best employees!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "tshirt_w_br"
+	item_state = "tshirt_w_br"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
+
+/obj/item/clothing/under/tshirt_gray_blu
+	name = "Jeans and gray T‑shirt"
+	desc= "A comfortable set consisting of a synthetic T‑shirt and cotton jeans! Issued only to the best employees!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "tshirt_gray_blu"
+	item_state = "tshirt_gray_blu"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/sheya
+	name = "Gothic dress"
+	desc = "Готическое платье, почти не закрывающее спину"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "sheya_dress"
+	item_state = "sheya_dress"
+	can_adjust = FALSE

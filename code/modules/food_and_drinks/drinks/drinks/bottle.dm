@@ -687,7 +687,7 @@
 	if(I.get_temperature() && !active)
 		active = 1
 		var/message = "[ADMIN_LOOKUP(user)] has primed a [name] for detonation at [ADMIN_VERBOSEJMP(user)]."
-		GLOB.bombers += message
+		add_bomber_message(message)
 		message_admins(message)
 		log_game("[key_name(user)] has primed a [name] for detonation at [AREACOORD(user)].")
 

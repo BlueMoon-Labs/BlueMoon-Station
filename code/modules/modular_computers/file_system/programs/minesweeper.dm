@@ -211,6 +211,9 @@
 		data["elapsed"] = 0
 
 	// Сериализуем поле — отправляем только видимое
+	if(!length(cell_state))
+		data["grid"] = list()
+		return data
 	var/list/rows = list()
 	for(var/y in 1 to grid_h)
 		var/list/row = list()

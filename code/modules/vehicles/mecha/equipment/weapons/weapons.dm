@@ -338,9 +338,9 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack
 	name = "\improper SRM-8 missile rack"
-	desc = "A weapon for combat exosuits. Launches light explosive missiles."
+	desc = "A weapon for combat exosuits. Launches anti-armor explosive missiles."
 	icon_state = "mecha_missilerack"
-	projectile = /obj/item/projectile/bullet/a84mm_he
+	projectile = /obj/item/projectile/bullet/a84mm
 	fire_sound = 'sound/weapons/rocketlaunch.ogg'
 	projectiles = 8
 	projectiles_cache = 0
@@ -358,7 +358,7 @@
 	name = "\improper BRM-6 missile rack"
 	desc = "A weapon for combat exosuits. Launches high-explosive breaching missiles with a safety fuze designed to explode only when striking a sturdy target."
 	icon_state = "mecha_missilerack_six"
-	projectile = /obj/item/projectile/bullet/a84mm_br
+	projectile = /obj/item/projectile/bullet/a84mm/br
 	fire_sound = 'sound/weapons/rocketlaunch.ogg'
 	projectiles = 6
 	projectiles_cache = 0

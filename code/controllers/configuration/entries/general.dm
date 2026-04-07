@@ -264,6 +264,8 @@
 /datum/config_entry/flag/nightshift_toggle_public_requires_auth
 	default = TRUE
 
+/datum/config_entry/flag/dynamic_starlight_cycle
+
 /datum/config_entry/flag/randomize_shift_time
 
 /datum/config_entry/flag/shift_time_realtime
@@ -343,8 +345,63 @@
 	default = 0
 	min_val = 0
 
+/datum/config_entry/number/gc_harddel_budget_min_ms
+	default = GC_HARDDEL_BUDGET_MIN_MS
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_budget_max_ms
+	default = GC_HARDDEL_BUDGET_MAX_MS
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_hold_max_per_fire
+	default = GC_HARDDEL_HOLD_MAX_PER_FIRE
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_max_per_fire
+	default = GC_HARDDEL_MAX_PER_FIRE
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_recover_threshold
+	default = GC_HARDDEL_RECOVER_THRESHOLD
+	min_val = 0
+
+/datum/config_entry/number/gc_harddel_target_q3_delta_per_second
+	default = GC_HARDDEL_TARGET_Q3_DELTA_PER_SECOND
+	integer = FALSE
+	max_val = 0
+
+/datum/config_entry/number/gc_harddel_mode_hysteresis_samples
+	default = GC_HARDDEL_MODE_HYSTERESIS_SAMPLES
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_overflow_threshold
+	default = GC_HARDDEL_OVERFLOW_THRESHOLD
+	min_val = 0
+
+/datum/config_entry/number/gc_harddel_overflow_budget_max_ms
+	default = GC_HARDDEL_OVERFLOW_BUDGET_MAX_MS
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_overflow_max_per_fire
+	default = GC_HARDDEL_OVERFLOW_MAX_PER_FIRE
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_lobby_budget_ms
+	default = GC_HARDDEL_LOBBY_BUDGET_MS
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_lobby_max_per_fire
+	default = GC_HARDDEL_LOBBY_MAX_PER_FIRE
+	min_val = 1
+
 /datum/config_entry/flag/atmos_equalize_enabled
 	default = FALSE
+
+/// Multiplier for atmos processing speed (share steps, equalization turf limit). 1 = default, 10 = 10x faster equalization/reactions.
+/datum/config_entry/number/atmos_speed_multiplier
+	default = 1
+	min_val = 1
+	max_val = 20
 
 /datum/config_entry/flag/dynamic_config_enabled
 

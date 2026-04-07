@@ -1,3 +1,7 @@
+/obj/item/clothing/neck/bm
+	icon = 'modular_bluemoon/icons/obj/clothing/neck.dmi'
+	mob_overlay_icon =  'modular_bluemoon/icons/mob/clothing/neck.dmi'
+
 /obj/item/clothing/neck/stole/AltClick()
 	. = ..()
 	body_parts_covered = body_parts_covered ? NONE : CHEST|GROIN
@@ -14,7 +18,7 @@
 	name = "Holly's scarf"
 	desc = "A stylish scarf."
 	icon = 'modular_bluemoon/icons/obj/clothing/neck.dmi'
-	mob_overlay_icon =  'modular_bluemoon/icons/obj/clothing/neck.dmi'
+	mob_overlay_icon =  'modular_bluemoon/icons/mob/clothing/neck.dmi'
 	icon_state = "m_hollyN"
 
 /obj/item/clothing/neck/petcollar

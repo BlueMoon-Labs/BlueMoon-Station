@@ -7,6 +7,7 @@
 	max_ammo = 7
 	multiple_sprites = 1
 	speedloader = TRUE
+	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/ammo_box/a357/match
 	name = "speed loader (.357 Match)"
@@ -32,6 +33,7 @@
 	multiple_sprites = 1
 	custom_materials = list(/datum/material/iron = 20000)
 	speedloader = TRUE
+	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/ammo_box/c38/lethal
 	name = "speed loader (.38)"
@@ -78,42 +80,45 @@
 
 /obj/item/ammo_box/c9mm
 	name = "ammo box (9mm)"
-//	icon_state = "9mmbox" // BLUEMOON COMMENTING OUT: using custom states modular_bluemoon\code\modules\projectiles\boxes_magazines\ammo_boxes.dm
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "9mmbox-l"
 	ammo_type = /obj/item/ammo_casing/c9mm
 	max_ammo = 30
 
 /obj/item/ammo_box/c10mm
 	name = "ammo box (10mm)"
-//	icon_state = "10mmbox" // BLUEMOON COMMENTING OUT: using custom states modular_bluemoon\code\modules\projectiles\boxes_magazines\ammo_boxes.dm
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "10mmbox"
 	ammo_type = /obj/item/ammo_casing/c10mm
 	max_ammo = 20
 
 /obj/item/ammo_box/c10mm/fire
 	name = "ammo box (10mm Incendiary)"
-//	icon_state = "10mmbox" // BLUEMOON COMMENTING OUT: using custom states modular_bluemoon\code\modules\projectiles\boxes_magazines\ammo_boxes.dm
 	ammo_type = /obj/item/ammo_casing/c10mm/fire
 	max_ammo = 20
 
 /obj/item/ammo_box/c10mm/hp
 	name = "ammo box (10mm Hollow Point)"
-//	icon_state = "10mmbox" // BLUEMOON COMMENTING OUT: using custom states modular_bluemoon\code\modules\projectiles\boxes_magazines\ammo_boxes.dm
+	icon_state = "10mmbox-hp"
 	ammo_type = /obj/item/ammo_casing/c10mm/hp
 	max_ammo = 20
 
 /obj/item/ammo_box/c10mm/ap
 	name = "ammo box (10mm Armour Piercing)"
-//	icon_state = "10mmbox" // BLUEMOON COMMENTING OUT: using custom states modular_bluemoon\code\modules\projectiles\boxes_magazines\ammo_boxes.dm
+	icon_state = "10mmbox-ap"
 	ammo_type = /obj/item/ammo_casing/c10mm/ap
 	max_ammo = 20
 
 /obj/item/ammo_box/c10mm/soporific
 	name = "ammo box (10mm Soporific)"
+	icon_state = "10mmbox-softp"
 	ammo_type = /obj/item/ammo_casing/c10mm/soporific
 	max_ammo = 20
 
 /obj/item/ammo_box/c45
-	name = "ammo box (.45)"
-//	icon_state = "45box" // BLUEMOON COMMENTING OUT: using custom states modular_bluemoon\code\modules\projectiles\boxes_magazines\ammo_boxes.dm
+	name = "ammo box (.45 Rubber)"
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "45box-rub"
 	ammo_type = /obj/item/ammo_casing/c45
 	max_ammo = 20
 
@@ -131,6 +136,7 @@
 	ammo_type = /obj/item/ammo_casing/a762
 	max_ammo = 5
 	multiple_sprites = 1
+	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/ammo_box/n762
 	name = "ammo box (7.62x38mmR)"
@@ -172,6 +178,7 @@
 	max_ammo = 4
 	var/pixeloffsetx = 4
 	start_empty = TRUE
+	w_class = WEIGHT_CLASS_SMALL
 
 /obj/item/ammo_box/shotgun/update_overlays()
 	. = ..()

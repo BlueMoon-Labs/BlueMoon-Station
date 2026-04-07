@@ -1,6 +1,7 @@
 /mob/living/carbon/alien/humanoid/royal
 	//Common stuffs for Praetorian and Queen
-	icon = 'icons/mob/alienqueen.dmi'
+	icon = 'icons/Xeno/castes/queen.dmi'
+	var/rouny = FALSE // 1% пасхалка для королевы: спрайт Queen rouny
 	status_flags = 0
 	unique_name = 0
 	pixel_x = -16
@@ -13,11 +14,12 @@
 	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab/xeno = 20, /obj/item/stack/sheet/animalhide/xeno = 3)
 	can_ventcrawl = FALSE
 
-	meleeKnockdownPower = 135
-	meleeSlashHumanPower = 45
-	meleeSlashSAPower = 65
+	// Skyrat balance - xenomorph queen from Skyrat-SS13/Skyrat13
+	meleeKnockdownPower = 125
+	meleeSlashHumanPower = 30
+	meleeSlashSAPower = 60
 
-	var/alt_inhands_file = 'icons/mob/alienqueen.dmi'
+	var/alt_inhands_file = 'icons/Xeno/castes/queen.dmi'
 
 	typing_indicator_state = /obj/effect/overlay/typing_indicator/additional/alien_royal
 
@@ -27,13 +29,16 @@
 /mob/living/carbon/alien/humanoid/royal/queen
 	name = "alien queen"
 	caste = "q"
-	maxHealth = 550
-	health = 550
-	icon_state = "alienq"
+	maxHealth = 400
+	health = 400
+	icon_state = "Queen Walking"
 	var/datum/action/small_sprite/smallsprite = new/datum/action/small_sprite/queen()
 	var/obj/effect/proc_holder/alien/royal/queen/promote/promote
 
 /mob/living/carbon/alien/humanoid/royal/queen/Initialize(mapload)
+	if(prob(1))
+		rouny = TRUE
+		icon_state = "Queen rouny Walking"
 	//there should only be one queen
 	for(var/mob/living/carbon/alien/humanoid/royal/queen/Q in GLOB.carbon_list)
 		if(Q == src)
@@ -55,7 +60,7 @@
 /mob/living/carbon/alien/humanoid/royal/queen/Destroy()
 	RemoveAbility(promote)
 	QDEL_NULL(promote)
-	QDEL_NULL(small_sprite)
+	QDEL_NULL(smallsprite)
 	return ..()
 
 /mob/living/carbon/alien/humanoid/royal/queen/create_internal_organs()

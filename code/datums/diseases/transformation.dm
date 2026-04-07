@@ -125,7 +125,7 @@
 		affected_mob.mind.add_antag_datum(monkey_antag)
 	if(ishuman(affected_mob))
 		affected_mob.monkeyize(TR_KEEPITEMS | TR_KEEPIMPLANTS | TR_KEEPORGANS | TR_KEEPDAMAGE | TR_KEEPVIRUS | TR_KEEPSE)
-	else if(ismonkey(affected_mob))
+	else if(ismonkey(affected_mob) && !SEND_SIGNAL(affected_mob, COMSIG_CHECK_VENTCRAWL))
 		affected_mob.AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
 
 

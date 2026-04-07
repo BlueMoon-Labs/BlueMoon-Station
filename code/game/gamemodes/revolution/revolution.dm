@@ -14,7 +14,7 @@
 	false_report_weight = 10
 	chaos = 8
 	restricted_jobs = list("Prisoner", "AI", "Cyborg")
-	protected_jobs = list("Shaft Miner", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Chief Engineer", "Chief Medical Officer", "Research Director", "Quartermaster", "Blueshield", "Brig Physician", "Peacekeeper", "NanoTrasen Representative", "Internal Affairs Agent") // BLUEMOON EDIT
+	protected_jobs = list("Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Chief Engineer", "Chief Medical Officer", "Research Director", "Quartermaster", "Blueshield", "Brig Physician", "Peacekeeper", "NanoTrasen Representative", "Internal Affairs Agent") // BLUEMOON EDIT
 	required_players = 20
 	required_enemies = 1
 	recommended_enemies = 3

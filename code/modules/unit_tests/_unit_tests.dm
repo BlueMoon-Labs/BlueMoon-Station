@@ -88,12 +88,15 @@
 // #include "dynamic_ruleset_sanity.dm"
 // #include "emoting.dm"
 // #include "food_edibility_check.dm"
+#include "gc_rewrite.dm"
 // #include "greyscale_config.dm"
 // #include "heretic_knowledge.dm"
 // #include "holidays.dm"
 // #include "hydroponics_harvest.dm"
 // #include "keybinding_init.dm"
 // #include "language_transfer.dm"
+#include "lighting.dm"
+#include "lighting_performance.dm"
 #include "machine_disassembly.dm"
 #include "mapload_space_verification.dm"	// BLUEMOON EDIT: Invalid Space Turfs
 #include "mapping.dm"						// BLUEMOON EDIT: Invalid Space Turfs
@@ -101,6 +104,7 @@
 #include "merge_type.dm"
 // #include "metabolizing.dm"
 #include "modular_map_loader.dm" //SPLURT EDIT
+#include "nightshift.dm"
 // #include "ntnetwork_tests.dm"
 // #include "outfit_sanity.dm"
 // #include "pills.dm"
@@ -140,7 +144,15 @@
 #endif
 
 /// BLUEMOON TESTS
+#include "auto_cryo.dm"
 #include "bad_defines_defined.dm"
+#include "bugfix_coverage.dm"
+#include "disposal_holder.dm"
+#include "memory_leak_limits.dm"
+#include "human_mob_gc.dm"
+#include "screen_gc.dm"
+#include "ssmobs_optimization.dm"
+#include "tattoo_system.dm"
 
 #undef TEST_ASSERT
 #undef TEST_ASSERT_EQUAL

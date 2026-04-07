@@ -15,7 +15,34 @@
 	exp_type = EXP_TYPE_COMMAND
 	exp_type_department = EXP_TYPE_COMMAND
 	considered_combat_role = TRUE
-
+	alt_titles = list(
+		"Syndicate Admiral", //Синди выше, для удобства
+		"Cap-Slut",
+		"Catpain",
+		"Chief Command",
+		"Chief Executive Officer",
+		"Cockpitain",
+		"Colony Overseer",
+		"Commanding Officer",
+		"Condom",
+		"Consul",
+		"Cuntpitain",
+		"Facility Director",
+		"Grey Cardinals",
+		"Head of Command",
+		"Sectorial Commander",
+		"Senator",
+		"Site Director",
+		"Site Manager",
+		"Station Commander",
+		"Station Director",
+		"Station Leader",
+		"Station Master",
+		"Station Mistress",
+		"Station Overseer",
+		"Stationmaster",
+		"Gubernator"
+		)
 
 	outfit = /datum/outfit/job/captain
 	plasma_outfit = /datum/outfit/plasmaman/captain
@@ -53,7 +80,7 @@
 	var/displayed_rank = H.client?.prefs?.alt_titles_preferences[title]
 	if(!displayed_rank)	//Default to Captain
 		displayed_rank = "Капитан"
-	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(minor_announce), "[displayed_rank] [H.nameless ? "" : "[H.real_name] "] прибывает на [station_name()]!"))
+	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(announce_captain_arrival), displayed_rank, H.nameless ? null : H.real_name))
 
 /datum/outfit/job/captain
 	name = "Captain"

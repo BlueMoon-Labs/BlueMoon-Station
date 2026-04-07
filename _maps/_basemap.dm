@@ -1,6 +1,12 @@
 //#define LOWMEMORYMODE //uncomment this to load centcom and runtime station and thats it.
 
+//#define ABSOLUTE_MINIMUM_MODE //uncomment this to skip as many resource intensive ops as possible to load in for testing the fastest while preserving most gameplay features.
+
+#ifdef ABSOLUTE_MINIMUM_MODE
+#include "map_files\generic\CentCom_minimal.dmm"
+#else
 #include "map_files\generic\CentCom.dmm"
+#endif
 
 #ifndef LOWMEMORYMODE
 	#ifdef ALL_MAPS

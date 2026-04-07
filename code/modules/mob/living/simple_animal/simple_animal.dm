@@ -658,6 +658,11 @@
 		else
 			stack_trace("Something attempted to set simple animals AI to an invalid state: [togglestatus]")
 
+/// Returns TRUE if any player is within given distance on the same z-level.
+/// Override: simple_animals use tighter NEARBY_PLAYER_DISTANCE (15) by default
+/mob/living/simple_animal/has_nearby_player(distance = NEARBY_PLAYER_DISTANCE)
+	return ..(distance)
+
 /mob/living/simple_animal/proc/consider_wakeup()
 	if (pulledby || shouldwakeup)
 		toggle_ai(AI_ON)
@@ -665,7 +670,7 @@
 /mob/living/simple_animal/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
 	if(!ckey && !stat)//Not unconscious
-		if(AIStatus == AI_IDLE)
+		if(AIStatus == AI_IDLE || AIStatus == AI_Z_OFF)
 			toggle_ai(AI_ON)
 
 

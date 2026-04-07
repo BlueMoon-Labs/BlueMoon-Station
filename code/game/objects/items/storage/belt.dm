@@ -683,7 +683,7 @@
 	new /obj/item/grenade/chem_grenade/cleaner(src)
 	new /obj/item/grenade/chem_grenade/cleaner(src)
 	new /obj/item/grenade/chem_grenade/cleaner(src)
-	new /obj/item/soap(src)
+	new /obj/item/soap/syndie(src)
 
 /obj/item/storage/belt/bandolier
 	name = "bandolier"

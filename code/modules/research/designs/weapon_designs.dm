@@ -682,7 +682,7 @@
 	build_path = /obj/item/ammo_casing/mws_batt/lethal
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/mws01_battery_xray
 	name = "MWS-01 Microbattery: X-Ray"

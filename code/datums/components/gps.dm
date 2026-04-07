@@ -11,9 +11,11 @@ GLOBAL_LIST_EMPTY(GPS_list)
 		return COMPONENT_INCOMPATIBLE
 	gpstag = _gpstag
 	GLOB.GPS_list += src
+	GLOB.poi_list |= parent
 
 /datum/component/gps/Destroy()
 	GLOB.GPS_list -= src
+	GLOB.poi_list -= parent
 	return ..()
 
 ///GPS component subtype. Only gps/item's can be used to open the UI.

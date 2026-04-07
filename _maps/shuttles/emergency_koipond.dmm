@@ -74,7 +74,7 @@
 /turf/open/floor/catwalk_floor,
 /area/shuttle/escape)
 "eo" = (
-/obj/machinery/grill,
+/obj/machinery/grill/oldschool,
 /turf/open/floor/grass/grass0,
 /area/shuttle/escape)
 "eC" = (

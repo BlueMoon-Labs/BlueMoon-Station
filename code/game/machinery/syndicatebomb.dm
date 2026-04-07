@@ -527,7 +527,7 @@
 			var/turf/T = get_turf(src)
 			detonated--
 			var/log_str = "[ADMIN_LOOKUPFLW(user)] has remotely detonated [detonated ? "syndicate bombs" : "a syndicate bomb"] using a [name] at [ADMIN_VERBOSEJMP(T)]</a>."
-			GLOB.bombers += log_str
+			add_bomber_message(log_str)
 			message_admins(log_str)
 			log_game("[key_name(user)] has remotely detonated [detonated ? "syndicate bombs" : "a syndicate bomb"] using a [name] at [AREACOORD(T)]")
 		detonated =	0

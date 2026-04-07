@@ -167,6 +167,5 @@
 	name = "SolFed Mech Beacon"
 	desc = "Feel the power of the tesla. Glory to the Humanity!"
 	vehicle_list = list(
-		"TU-802 Solntsepyok" = /obj/vehicle/sealed/mecha/combat/durand/tu802,
-		"Savannah-Ivanov" = /obj/vehicle/sealed/mecha/combat/savannah_ivanov/loaded
+		"ZEUS" = /obj/vehicle/sealed/mecha/combat/durand/zeus
 	)

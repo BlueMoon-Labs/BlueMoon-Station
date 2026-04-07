@@ -8,6 +8,27 @@
 	spawn_positions = 3
 	supervisors = "the chief medical officer"
 	selection_color = "#74b5e0"
+	alt_titles = list(
+		"Medical Intern", //Стажер выше, для удобства
+		"Interdyne Specialist", //Триглав выше, для удобства
+		"Syndicate Medical Techinician", //Синди выше, для удобства
+		"Coroner",
+		"Healing Fleshlight",
+		"Medi-Slut",
+		"Medi-Stud",
+		"Medical Examiner",
+		"Medical Secretary",
+		"Medtech",
+		"Nurse",
+		"Oral Doctor",
+		"Pathologist",
+		"Physician",
+		"Psychiatrist",
+		"Surgeon",
+		"Therapist",
+		"Trophologist",
+		"Xenosurgeon"
+		)
 
 	outfit = /datum/outfit/job/doctor
 	departments = DEPARTMENT_BITFLAG_MEDICAL

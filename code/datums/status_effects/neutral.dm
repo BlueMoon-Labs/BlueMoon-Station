@@ -157,10 +157,14 @@
 /datum/status_effect/offering/proc/check_owner_in_range(mob/living/carbon/source)
 	SIGNAL_HANDLER
 
+	var/list/to_remove
 	for(var/i in possible_takers)
 		var/mob/living/carbon/checking_taker = i
 		if(!istype(checking_taker) || !owner.CanReach(checking_taker) || IS_DEAD_OR_INCAP(checking_taker))
-			remove_candidate(checking_taker)
+			LAZYADD(to_remove, checking_taker)
+
+	for(var/mob/living/carbon/removed in to_remove)
+		remove_candidate(removed)
 
 /// We lost the item, give it up
 /datum/status_effect/offering/proc/dropped_item(obj/item/source)

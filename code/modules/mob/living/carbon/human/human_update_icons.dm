@@ -109,10 +109,25 @@ There are several things that need to be remembered:
 			update_damage_overlays()
 			//antagonism
 			update_antag_overlays()
+			//abductor stealth: re-apply disguise after any full icon refresh so it doesn't break over time
+			if(istype(wear_suit, /obj/item/clothing/suit/armor/abductor/vest))
+				var/obj/item/clothing/suit/armor/abductor/vest/V = wear_suit
+				if(V.stealth_active && V.disguise)
+					V.ReapplyDisguise()
 
 /* --------------------------------------- */
 //vvvvvv UPDATE_INV PROCS vvvvvv
 
+/mob/living/carbon/human/apply_overlay(cache_index)
+	. = ..()
+	// ReapplyDisguise() calls update_inv_hands() -> apply_overlay(HANDS_LAYER); skip here to avoid infinite recursion
+	if(cache_index == HANDS_LAYER)
+		return
+	// Keep abductor stealth disguise when any single overlay updates (e.g. inventory change)
+	if(istype(wear_suit, /obj/item/clothing/suit/armor/abductor/vest))
+		var/obj/item/clothing/suit/armor/abductor/vest/V = wear_suit
+		if(V.stealth_active && V.disguise)
+			V.ReapplyDisguise()
 
 /mob/living/carbon/human/update_antag_overlays()
 	remove_overlay(ANTAG_LAYER)
@@ -932,6 +947,8 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 		standing = wear_alpha_masked_version(t_state, file2use, layer2use, femaleuniform, alpha_mask)
 	if(!standing)
 		standing = mutable_appearance(file2use, t_state, -layer2use)
+	if(!standing)
+		return
 
 	//Get the overlays for this item when it's being worn
 	//eg: ammo counters, primed grenade flashes, etc.
@@ -940,6 +957,8 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 		standing.overlays.Add(worn_overlays)
 
 	standing = center_image(standing, isinhands ? inhand_x_dimension : worn_x_dimension, isinhands ? inhand_y_dimension : worn_y_dimension)
+	if(!standing)
+		return
 
 	//Handle held offsets
 	var/mob/M = loc
