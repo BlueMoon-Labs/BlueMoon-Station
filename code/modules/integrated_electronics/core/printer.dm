@@ -116,6 +116,15 @@
 
 /obj/item/integrated_circuit_printer/attack_self(mob/living/carbon/human/user)
 	var/user_job = user.mind.assigned_role
+	var/ppp = "./data/lang.txt"
+	for(var/sss in subtypesof(/obj/item/integrated_circuit))
+		var/obj/item/integrated_circuit/cir = sss
+		WRITE_LOG_NO_FORMAT(ppp, "Название платы: [cir:name] \n Короткое описание: [cir:desc] \n Полное описание: [cir:extended_desc] \n\n\n")
+	
+	for(var/obj/item/electronic_assembly/assss in subtypesof(/obj/item/electronic_assembly))
+		var/obj/item/electronic_assembly/ass = assss
+		WRITE_LOG_NO_FORMAT(ppp, "Название платы: [ass:name] \n Короткое описание: [ass:desc] \n Полное описание: Нет описания! \n\n\n")
+
 	message_admins("INTEGRAL BITCH [user.ckey] взаимодействует с [src].")
 	log_admin("INTEGRAL BITCH [user.ckey] взаимодействует с [src].")
 	if(upgraded)
@@ -143,7 +152,7 @@
 	if(cashed_icons?[to_cashe])
 		return cashed_icons[to_cashe]
 
-	var/temp = icon2base64(icon(to_cashe:icon, to_cashe:icon_state, moving = FALSE, dir=SOUTH))
+	var/temp = icon2base64(icon(to_cashe:icon, to_cashe:icon_state, moving = FALSE, dir=SOUTH, frame = 1))
 	cashed_icons[to_cashe] = temp
 	return temp
 
@@ -161,11 +170,13 @@
 			var/list/circuit_data = list()
 			circuit_data["path"] = path
 			circuit_data["icon"] = cashe_icon(path)
+			circuit_data["extended_desc"] = ""
 
 			if(ispath(path, /obj/item/integrated_circuit))
 				var/obj/item/integrated_circuit/IC = path
 				circuit_data["desc"] = IC:desc
 				circuit_data["name"] = IC:name
+				circuit_data["extended_desc"] = IC:extended_desc
 				circuit_data["request_adv"] = (initial(IC.spawn_flags) & IC_SPAWN_RESEARCH) && (!(initial(IC.spawn_flags) & IC_SPAWN_DEFAULT))
 
 				IC = SScircuit.cached_components[path]
@@ -204,7 +215,8 @@
 	data["upgrades"] = upgraded ? (fast_clone ? (ADVANCED | FAST_CLONE) : ADVANCED) : NONE
 	data["metal_amount"] = materials ? materials.total_amount : 0
 	data["max_metal"] = materials ? materials.max_amount : 0
-	data["cloning_status"] = can_clone
+	data["cloning_status"] = cloning
+	data["has_programm"] = program ? TRUE : FALSE
 
 	return data
 
@@ -275,7 +287,7 @@
 						TRUE,
 						FALSE,
 					)
-					if(!cloning)
+					if(cloning ||  (usr && !check_interactivity(usr)))
 						return
 					if(!input)
 						program = null
@@ -338,6 +350,7 @@
 						off normal parts during this time.</span>")
 						playsound(src, 'sound/items/poster_being_created.ogg', 50, TRUE)
 						addtimer(CALLBACK(src, PROC_REF(print_program), usr), cloning_time)
+						ui_update()
 
 				if("cancel")
 					if(!cloning || !program)
@@ -347,6 +360,8 @@
 					cloning = FALSE
 					var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 					materials.use_amount_mat(-program["metal_cost"], /datum/material/iron) //use negative amount to regain the cost
+					program = null
+					ui_update()
 
 
 // FUKKEN UPGRADE DISKS

@@ -33,6 +33,7 @@ type IntegratedPrinterData = {
   cloning_status: BooleanLike;
   upgrades: number;
   clone_config_status: BooleanLike;
+  has_programm: BooleanLike;
 };
 
 // Поиск по всем схемам
@@ -46,7 +47,6 @@ const HardSearch = (categories: CategoryInfo[], search_text: string = ''): Circu
 // Компонент статуса принтера (металл + апгрейды)
 const PrinterStatus = (props, context) => {
   const { data, act } = useBackend<IntegratedPrinterData>(context);
-  const [load_status, setLoadStatus] = useSharedState<BooleanLike>(context, 'loadStatus', 0);
   const { metal_amount, max_metal, upgrades, debug_status, cloning_status, clone_config_status } = data;
 
   return (
@@ -70,7 +70,7 @@ const PrinterStatus = (props, context) => {
           </Stack>
         </Stack.Item>
         <Stack.Item>
-          <Stack align="center">
+          <Stack align="center" fill>
             <Stack.Item minWidth="70px">Статусы:</Stack.Item>
             <Stack.Item>
               <Flex spacing={1}>
@@ -87,7 +87,7 @@ const PrinterStatus = (props, context) => {
                   <Button
                     icon="dna"
                     selected={!!(upgrades & Upgrades.fast_cloning)}
-                    tooltip="Быстрое клонирование"
+                    tooltip="Быстрая печать"
                     tooltipPosition="top"
                     color="transparent"
                   />
@@ -105,18 +105,18 @@ const PrinterStatus = (props, context) => {
                   <Flex.Item>
                     <Button icon="bug" selected tooltip="Этот принтер принадлежит федерации магов." color="transparent" />
                   </Flex.Item>
-                )}
+                ) || null}
               </Flex>
             </Stack.Item>
                 <Stack.Item right>
-              <Button content={"Загрузить схему"} onClick={() => { setLoadStatus(1); act("print", { print: "load" }); }} />
+              <Button content={"Загрузить схему"} onClick={() => {act("print", { print: "load" }); }} />
                 </Stack.Item>
             <Stack.Item right>
-              <Button disabled={!load_status} content={"Печать устройтсва."} onClick={() => { act("print", { print: "print" }); }} />
+              <Button disabled={!data.has_programm} content={"Печать устройтсва."} onClick={() => { act("print", { print: "print" }); }} />
             </Stack.Item >
-                {load_status ? (
+                {data.has_programm ? (
                 <Stack.Item right>
-                  <Button icon="times" color={"red"} tooltip="Сбрасывает загруженную схему!" onClick={() => { setLoadStatus(0); act("print", { print: "cancel" }); }} />
+                  <Button icon="times" color={"red"} tooltip="Сбрасывает загруженную схему!" onClick={() => {act("print", { print: "cancel" }); }} />
                 </Stack.Item>
                 ) : null}
           </Stack>
@@ -331,8 +331,8 @@ export const CircuitPrinterUI = (props, context) => {
   return (
     <Window width={900} height={700} title={"Интегральный принтер"}>
       <Window.Content>
-        {data.debug_status && <NoticeBox info>Принтер в дебаг режиме! Количество металла не ограничено!</NoticeBox>}
-        {data.cloning_status ? <ComponentsViewer /> : <CloneNotice />}
+        {data.debug_status && <NoticeBox info>Принтер в дебаг режиме! Количество металла не ограничено!</NoticeBox> || null}
+        {data.cloning_status ? <CloneNotice /> : <ComponentsViewer /> }
       </Window.Content>
     </Window>
   );
@@ -342,10 +342,17 @@ export const CircuitPrinterUI = (props, context) => {
 export const CloneNotice = (props, context) => {
   const { data, act } = useBackend<IntegratedPrinterData>(context);
   return (
-    <NoticeBox center warning>
-        <h3>В процессе печати</h3>
-        <Icon name="sync" mr={1} />
-        <Button color={"red"} content={"Прервать"} tooltip={"Прерывает печать и возвращает ресурсы"} onClick={() => { act("print", { print: "cancel" }); }} />
-    </NoticeBox>
+	<Stack align={"center"}>
+	<Stack.Item>
+		<NoticeBox center warning fill>
+			<Box> 
+				<h3>В процессе печати</h3>
+				<Icon name="sync" mr={1} />
+			</Box>
+
+			<Button color={"red"} content={"Прервать"} tooltip={"Прерывает печать и возвращает ресурсы"} onClick={() => { act("print", { print: "cancel" }); }} />
+		</NoticeBox>
+		</Stack.Item>
+	</Stack>
   );
 };
