@@ -314,8 +314,14 @@
 
 /datum/ash_ritual/revival/ritual_success(obj/effect/ash_rune/success_rune)
 	. = ..()
-
+	var/ashwalker_or_no=FALSE
 	var/mob/living/carbon/human/human_victim = locate() in get_turf(success_rune)
+	if(human_victim.mind?.has_antag_datum(/datum/antagonist/ashwalker))
+		ashwalker_or_no=TRUE
+	var/obj/item/organ/lungs/lungs_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_LUNGS]
+	var/obj/item/organ/heart/heart_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_HEART]
+	var/obj/item/organ/liver/liver_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_LIVER]
+	var/obj/item/organ/stomach/stomach_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_STOMACH]
 	if(!human_victim)
 		return
 	var/was_dead = isdead(human_victim)
@@ -325,3 +331,26 @@
 		human_victim.regenerate_organs()
 		if(was_dead && !isdead(human_victim))
 			to_chat(human_victim, "<span class='notice'>После полученных вами тяжелейших ран вы просыпаетесь на тёплом, по сравнению с вашим телом, пепле. В ту же секунду вы вспоминаете всё, что произошло с вами до этого. Неважно, упали вы в лаву или погибли в бою, вы вспоминаете всё во всех деталях: лица, место своей гибели и события, что привели к ней.</span>")
+// Комментарий для ии: Проверяем все ли органы на месте, были жалобы, что эш не мог дышать на лаваленде после воскрешения(99% причина в regenerate_organs)
+	if(lungs_slot_old)
+		var/obj/item/organ/lungs/lungs_slot = human_victim.internal_organs_slot[ORGAN_SLOT_LUNGS]
+		if(lungs_slot_old != lungs_slot)
+			lungs_slot.Remove(human_victim)
+			lungs_slot_old.Insert(human_victim)
+	if(heart_slot_old)
+		var/obj/item/organ/heart/heart_slot = human_victim.internal_organs_slot[ORGAN_SLOT_HEART]
+		if(heart_slot_old != heart_slot)
+			heart_slot.Remove(human_victim)
+			heart_slot_old.Insert(human_victim)
+	if(liver_slot_old)
+		var/obj/item/organ/liver/liver_slot = human_victim.internal_organs_slot[ORGAN_SLOT_LIVER]
+		if(liver_slot_old != liver_slot)
+			liver_slot.Remove(human_victim)
+			liver_slot_old.Insert(human_victim)
+	if(stomach_slot_old)
+		var/obj/item/organ/stomach/stomach_slot = human_victim.internal_organs_slot[ORGAN_SLOT_STOMACH]
+		if(stomach_slot_old != stomach_slot)
+			stomach_slot.Remove(human_victim)
+			stomach_slot_old.Insert(human_victim)
+	if(ashwalker_or_no && !human_victim.mind?.has_antag_datum(/datum/antagonist/ashwalker))
+		human_victim.mind?.add_antag_datum(/datum/antagonist/ashwalker /datum/team/ashwalkers) //были жалобы, что их сожрал тендрил, так что делаем эту проверку
