@@ -754,3 +754,10 @@
 	icon_state = "oldman"
 	squeak_override = list('modular_bluemoon/sound/plush/oldman_dont_do_it.ogg' = 1, 'modular_bluemoon/sound/plush/oldman_hate.ogg' = 1, 'modular_bluemoon/sound/plush/oldman_too_old.ogg' = 1)
 	can_you_fuck_plush = FALSE
+
+/obj/item/toy/plush/bm/znakekake
+	name = "Dumbass plushie"
+	desc = "Вы можете заметить бирку, на которой написано #2dc12f."
+	icon_state = "2dc12f"
+	squeak_override = list('modular_bluemoon/sound/plush/rizz.ogg' = 1, 'modular_bluemoon/sound/plush/splort.ogg' = 1)
+	can_you_fuck_plush = TRUE //Я ещё пожалею об этом..
