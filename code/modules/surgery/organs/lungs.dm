@@ -591,7 +591,7 @@
 /obj/item/organ/lungs/ashwalker/populate_gas_info()
 	// humans usually breathe 21 but require 16/17, so 80% - 1, which is more lenient but it's fine
 	#define SAFE_THRESHOLD_RATIO 0.8
-	var/datum/gas_mixture/breath = SSair.planetary[LAVALAND_DEFAULT_ATMOS] // y'all know
+	var/datum/gas_mixture/breath = SSair.get_static_mix_template(LAVALAND_DEFAULT_ATMOS)
 	if(breath == null)
 		return
 	if(breath.get_moles(GAS_METHANE) > 0.1)

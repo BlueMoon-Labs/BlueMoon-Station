@@ -42,7 +42,10 @@
 		scrub(T.return_air())
 
 /obj/machinery/portable_atmospherics/scrubber/proc/scrub(var/datum/gas_mixture/mixture)
-	mixture.scrub_into(air_contents, volume_rate / mixture.return_volume(), scrubbing)
+	var/mixture_volume = mixture?.return_volume()
+	if(!mixture || !mixture_volume)
+		return
+	mixture.scrub_into(air_contents, volume_rate / mixture_volume, scrubbing)
 	if(!holding)
 		air_update_turf()
 
@@ -109,6 +112,7 @@
 
 	var/movable = FALSE
 	use_overlays = FALSE
+	var/list/turf/adjacent_turfs = list()
 
 /obj/machinery/portable_atmospherics/scrubber/huge/movable
 	movable = TRUE
@@ -127,7 +131,11 @@
 	..()
 	if(!holding)
 		var/turf/T = get_turf(src)
-		for(var/turf/AT in T.GetAtmosAdjacentTurfs(alldir = TRUE))
+		if(!istype(T))
+			adjacent_turfs.Cut()
+			return
+		T.FillAtmosAdjacentTurfs(adjacent_turfs, alldir = TRUE)
+		for(var/turf/AT in adjacent_turfs)
 			scrub(AT.return_air())
 
 /obj/machinery/portable_atmospherics/scrubber/huge/attackby(obj/item/W, mob/user)

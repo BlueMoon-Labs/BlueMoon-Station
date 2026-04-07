@@ -21,7 +21,6 @@
 	var/volume_rate = 200
 	var/widenet = 0 //is this scrubber acting on the 3x3 area around it.
 	var/list/turf/adjacent_turfs = list()
-	var/adjacent_turfs_valid = FALSE
 
 	var/frequency = FREQ_ATMOS_CONTROL
 	var/datum/radio_frequency/radio_connection
@@ -56,13 +55,8 @@
 	SSradio.remove_object(src,frequency)
 	radio_connection = null
 	adjacent_turfs.Cut()
-	adjacent_turfs_valid = FALSE
 	UnregisterSignal(SSdcs, COMSIG_GLOB_NEW_GAS)
 	return ..()
-
-/obj/machinery/atmospherics/components/unary/vent_scrubber/Moved(atom/OldLoc, Dir, Forced = FALSE)
-	. = ..()
-	invalidate_adjacent_turfs()
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/auto_use_power()
 	if(!on || welded || !is_operational() || !powered(power_channel))
@@ -147,7 +141,6 @@
 	if(frequency)
 		set_frequency(frequency)
 	broadcast_status()
-	invalidate_adjacent_turfs()
 	check_turfs()
 	..()
 
@@ -160,8 +153,6 @@
 		return FALSE
 	var/did_scrub = scrub(loc)
 	if(widenet)
-		if(!adjacent_turfs_valid)
-			check_turfs()
 		for(var/turf/tile in adjacent_turfs)
 			did_scrub = scrub(tile) || did_scrub
 	if(did_scrub)
@@ -173,18 +164,19 @@
 		return FALSE
 	var/datum/gas_mixture/environment = tile.return_air()
 	var/datum/gas_mixture/air_contents = airs[1]
+	var/environment_volume = environment?.return_volume()
 
-	if(air_contents.return_pressure() >= 50*ONE_ATMOSPHERE || !islist(clean_filter_types))
+	if(!environment || !environment_volume || air_contents.return_pressure() >= 50*ONE_ATMOSPHERE || !islist(clean_filter_types))
 		return FALSE
 
 	if(scrubbing & SCRUBBING)
-		environment.scrub_into(air_contents, volume_rate/environment.return_volume(), clean_filter_types)
+		environment.scrub_into(air_contents, volume_rate/environment_volume, clean_filter_types)
 
 		tile.air_update_turf()
 
 	else //Just siphoning all air
 
-		environment.transfer_ratio_to(air_contents, volume_rate/environment.return_volume())
+		environment.transfer_ratio_to(air_contents, volume_rate/environment_volume)
 		tile.air_update_turf()
 
 	return TRUE
@@ -192,21 +184,18 @@
 //There is no easy way for an object to be notified of changes to atmos can pass flags
 //	So we check every machinery process (2 seconds)
 /obj/machinery/atmospherics/components/unary/vent_scrubber/process()
-	if(widenet && on)
+	if(widenet)
 		check_turfs()
-
-/obj/machinery/atmospherics/components/unary/vent_scrubber/proc/invalidate_adjacent_turfs()
-	adjacent_turfs_valid = FALSE
 
 //we populate a list of turfs with nonatmos-blocked cardinal turfs AND
 //	diagonal turfs that can share atmos with *both* of the cardinal turfs
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/proc/check_turfs()
-	adjacent_turfs.Cut()
 	var/turf/T = get_turf(src)
 	if(istype(T))
-		adjacent_turfs = T.GetAtmosAdjacentTurfs(alldir = 1)
-	adjacent_turfs_valid = TRUE
+		T.FillAtmosAdjacentTurfs(adjacent_turfs, alldir = TRUE)
+	else
+		adjacent_turfs.Cut()
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/receive_signal(datum/signal/signal)
 	if(!is_operational() || !signal.data["tag"] || (signal.data["tag"] != id_tag) || (signal.data["sigtype"]!="command"))
@@ -220,13 +209,9 @@
 		on = !on
 
 	if("widenet" in signal.data)
-		var/new_widenet = text2num(signal.data["widenet"])
-		if(widenet != new_widenet)
-			widenet = new_widenet
-			invalidate_adjacent_turfs()
+		widenet = text2num(signal.data["widenet"])
 	if("toggle_widenet" in signal.data)
 		widenet = !widenet
-		invalidate_adjacent_turfs()
 
 	var/old_scrubbing = scrubbing
 	if("scrubbing" in signal.data)
@@ -254,9 +239,7 @@
 		broadcast_status()
 		return //do not update_icon
 
-	if(on)
-		invalidate_adjacent_turfs()
-	if(on && widenet && !adjacent_turfs_valid)
+	if(widenet)
 		check_turfs()
 	broadcast_status()
 	update_icon()

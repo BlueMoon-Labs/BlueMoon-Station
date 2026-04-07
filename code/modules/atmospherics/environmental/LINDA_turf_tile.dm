@@ -116,7 +116,7 @@
 /turf/open/proc/update_visuals()
 
 	var/list/atmos_overlay_types = src.atmos_overlay_types // Cache for free performance
-	var/list/new_overlay_types = list()
+	var/list/new_overlay_types
 	var/static/list/nonoverlaying_gases = typecache_of_gases_with_no_overlays()
 
 	if(!air) // 2019-05-14: was not able to get this path to fire in testing. Consider removing/looking at callers -Naksu
@@ -132,6 +132,8 @@
 			continue
 		var/gas_overlay = GLOB.gas_data.overlays[id]
 		if(gas_overlay && air.get_moles(id) > GLOB.gas_data.visibility[id])
+			if(!new_overlay_types)
+				new_overlay_types = list()
 			new_overlay_types += gas_overlay[min(FACTOR_GAS_VISIBLE_MAX, CEILING(air.get_moles(id) / MOLES_GAS_VISIBLE_STEP, 1))]
 
 	if (atmos_overlay_types)

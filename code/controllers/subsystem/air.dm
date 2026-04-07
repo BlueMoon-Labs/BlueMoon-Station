@@ -40,7 +40,8 @@ SUBSYSTEM_DEF(air)
 	//atmos singletons
 	var/list/gas_reactions = list()
 	var/list/atmos_gen
-	var/list/planetary = list() //auxmos already caches static planetary mixes but could be convenient to do so here too
+	var/list/planetary = list() // cached static gas templates keyed by their original gas string
+	var/list/turf_mix_templates = list() // cached turf gas templates keyed by gas string and initial temperature
 	//Special functions lists
 	var/list/turf/open/high_pressure_delta = list()
 
@@ -411,6 +412,39 @@ SUBSYSTEM_DEF(air)
 		return gas_string
 	var/datum/atmosphere/mix = atmos_gen[gas_string]
 	return mix.gas_string
+
+/datum/controller/subsystem/air/proc/get_static_mix_template(gas_string)
+	if(!istext(gas_string))
+		return
+	var/datum/gas_mixture/template = planetary[gas_string]
+	if(template)
+		return template
+	template = new
+	template.parse_gas_string(gas_string)
+	template.mark_immutable()
+	planetary[gas_string] = template
+	return template
+
+/datum/controller/subsystem/air/proc/get_turf_mix_template(turf/model)
+	if(!istype(model))
+		return
+	var/gas_string = model.initial_gas_mix
+	if(!istext(gas_string))
+		return
+	var/temp_key = "[initial(model.initial_temperature)]"
+	var/list/temp_templates = turf_mix_templates[gas_string]
+	if(!islist(temp_templates))
+		temp_templates = list()
+		turf_mix_templates[gas_string] = temp_templates
+	var/datum/gas_mixture/template = temp_templates[temp_key]
+	if(template)
+		return template
+	template = new
+	template.set_temperature(initial(model.initial_temperature))
+	template.parse_gas_string(gas_string)
+	template.mark_immutable()
+	temp_templates[temp_key] = template
+	return template
 
 /datum/controller/subsystem/air/proc/start_processing_machine(obj/machinery/machine)
 	if(machine.atmos_processing)

@@ -34,8 +34,7 @@
 
 /turf/open/hotspot_expose(exposed_temperature, exposed_volume, soh)
 	//If the air doesn't exist we just return false
-	var/list/air_gases = air?.get_gases()
-	if(!air_gases)
+	if(!air)
 		return
 
 	if (air.get_oxidation_power(exposed_temperature) < 0.5 || air.get_moles(GAS_HYPERNOB) > 5)
@@ -89,20 +88,24 @@
 
 /obj/effect/hotspot/proc/perform_exposure()
 	var/turf/open/location = loc
-	if(!istype(location) || !(location.air))
+	var/datum/gas_mixture/location_air = location?.air
+	if(!istype(location) || !location_air)
 		return
 
 	location.active_hotspot = src
 
-	bypassing = volume > CELL_VOLUME*0.95 || location.air.return_temperature() >= FUSION_TEMPERATURE_THRESHOLD
+	bypassing = volume > CELL_VOLUME*0.95 || location_air.return_temperature() >= FUSION_TEMPERATURE_THRESHOLD
 
 	if(bypassing)
-		if(temperature > location.air.return_temperature())
-			location.air.set_temperature(temperature) //now actually starts fires like intended
-		volume = location.air.reaction_results["fire"]*FIRE_GROWTH_RATE
-		temperature = location.air.return_temperature()
+		if(temperature > location_air.return_temperature())
+			location_air.set_temperature(temperature) //now actually starts fires like intended
+		volume = location_air.reaction_results["fire"]*FIRE_GROWTH_RATE
+		temperature = location_air.return_temperature()
 	else
-		var/datum/gas_mixture/affected = location.air.remove_ratio(volume/location.air.return_volume())
+		var/location_volume = location_air.return_volume()
+		if(location_volume <= 0)
+			return
+		var/datum/gas_mixture/affected = location_air.remove_ratio(volume/location_volume)
 		if(affected) //in case volume is 0
 			if(temperature > affected.return_temperature())
 				affected.set_temperature(temperature) //don't set the temperature lower than what it was
@@ -112,8 +115,7 @@
 			location.assume_air(affected)
 			qdel(affected)
 
-	for(var/A in location)
-		var/atom/AT = A
+	for(var/atom/AT as anything in location)
 		if(!QDELETED(AT) && AT != src) // It's possible that the item is deleted in temperature_expose
 			AT.fire_act(temperature, volume)
 	return
@@ -184,11 +186,12 @@
 		return
 
 	location.eg_reset_cooldowns()
+	var/datum/gas_mixture/location_air = location.air
 
 	if((temperature < FIRE_MINIMUM_TEMPERATURE_TO_EXIST) || (volume <= 1))
 		qdel(src)
 		return
-	if(!location.air || location.air.get_moles(GAS_HYPERNOB) > 5 || location.air.get_oxidation_power() < 0.5 || !turf_has_fire_fuel(location.air, temperature, location.z))
+	if(!location_air || location_air.get_moles(GAS_HYPERNOB) > 5 || location_air.get_oxidation_power() < 0.5 || !turf_has_fire_fuel(location_air, temperature, location.z))
 		qdel(src)
 		return
 
@@ -199,8 +202,8 @@
 		location.burn_tile()
 
 		//Possible spread due to radiated heat
-		if(location.air.return_temperature() > FIRE_MINIMUM_TEMPERATURE_TO_SPREAD)
-			var/radiated_temperature = location.air.return_temperature()*FIRE_SPREAD_RADIOSITY_SCALE
+		if(location_air.return_temperature() > FIRE_MINIMUM_TEMPERATURE_TO_SPREAD)
+			var/radiated_temperature = location_air.return_temperature()*FIRE_SPREAD_RADIOSITY_SCALE
 			for(var/t in location.atmos_adjacent_turfs)
 				var/turf/open/T = t
 				if(!T.active_hotspot)
