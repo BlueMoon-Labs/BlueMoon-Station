@@ -121,15 +121,6 @@
 
 /obj/item/integrated_circuit_printer/attack_self(mob/living/carbon/human/user)
 	var/user_job = user.mind.assigned_role
-	var/ppp = "./data/lang.txt"
-	for(var/sss in subtypesof(/obj/item/integrated_circuit))
-		var/obj/item/integrated_circuit/cir = sss
-		WRITE_LOG_NO_FORMAT(ppp, "Название платы: [cir:name] \n Короткое описание: [cir:desc] \n Полное описание: [cir:extended_desc] \n\n\n")
-
-	for(var/obj/item/electronic_assembly/assss in subtypesof(/obj/item/electronic_assembly))
-		var/obj/item/electronic_assembly/ass = assss
-		WRITE_LOG_NO_FORMAT(ppp, "Название платы: [ass:name] \n Короткое описание: [ass:desc] \n Полное описание: Нет описания! \n\n\n")
-
 	message_admins("INTEGRAL BITCH [user.ckey] взаимодействует с [src].")
 	log_admin("INTEGRAL BITCH [user.ckey] взаимодействует с [src].")
 	if(upgraded)
@@ -161,7 +152,12 @@
 	cashed_icons[to_cashe] = temp
 	return temp
 
+/obj/item/integrated_circuit_printer/var/static/list/super_data_cashe
+
 /obj/item/integrated_circuit_printer/ui_static_data(mob/user)
+	if(super_data_cashe && (length(super_data_cashe) != 0))
+		return super_data_cashe
+
 	var/list/data = list()
 	var/list/categories = list()
 
@@ -207,6 +203,9 @@
 
 	data["categories"] = categories
 	data["clone_config_status"] = CONFIG_GET(flag/ic_printing)
+
+	super_data_cashe = data
+
 	return data
 
 /obj/item/integrated_circuit_printer/ui_data(mob/user)

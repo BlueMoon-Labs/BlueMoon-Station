@@ -1,6 +1,5 @@
 import { BooleanLike } from 'common/react';
 import { createSearch } from 'common/string';
-import { Fragment } from 'inferno';
 
 import { useBackend, useLocalState, useSharedState } from "../backend";
 import { Box, Button, Flex, Icon, Input, NoticeBox, ProgressBar, Section, Stack, Table, Tabs } from "../components";
@@ -77,7 +76,7 @@ const PrinterStatus = (props, context) => {
             <Stack.Item minWidth="70px">Металл:</Stack.Item>
             <Stack.Item grow>
               <ProgressBar
-                value={data.debug_status ? max_metal : metal_amount / max_metal}
+                value={data.debug_status ? 1 : metal_amount / max_metal}
                 ranges={{
                   good: [0.6, Infinity],
                   average: [0.3, 0.6],
@@ -133,26 +132,27 @@ const PrinterStatus = (props, context) => {
                     <Button content={"Загрузить схему"} onClick={() => { act("print", { print: "load" }); }} />
                   </Stack.Item>
                 ) || null}
-            {((data.has_programm && clone_config_status) || (data.has_programm && debug_status)) && (
-              <Stack.Item right>
-                <Button disabled={!data.has_programm || (!CheckPrint(data))} content={"Печать устройства"} onClick={() => { act("print", { print: "print" }); }} />
-              </Stack.Item >
-            ) || null}
-
-                {((data.has_programm && clone_config_status) || (data.has_programm && debug_status)) && (
-                <Stack.Item right>
-                  <Button icon="times" color={"red"} tooltip="Сбрасывает загруженную схему!" onClick={() => { act("print", { print: "cancel" }); }} />
-                </Stack.Item>
-                ) || null}
-                {((data.has_programm && clone_config_status) || (data.has_programm && debug_status)) && (
-                  <Flex grow>
-                    <Flex.Item>
-                      <Box fontSize="10px" color="label">
-                        Стоимость: <b>{data.metal_cost}</b> металла Сложность: <b>{data.complexity}</b> Количество модулей: <b>{data.used_space}</b>
-                      </Box>
-                    </Flex.Item>
-                  </Flex>
-                ) || null}
+				{((data.has_programm && clone_config_status) || (data.has_programm && debug_status)) && (
+					<Stack.Item right>
+						<Button disabled={!data.has_programm || (!CheckPrint(data))} content={"Печать устройства"} onClick={() => { act("print", { print: "print" }); }} />
+					</Stack.Item >
+            	) || null}
+				{((data.has_programm && clone_config_status) || (data.has_programm && debug_status)) && (
+				<Stack.Item right>
+					<Button icon="times" color={"red"} tooltip="Сбрасывает загруженную схему!" onClick={() => { act("print", { print: "cancel" }); }} />
+				</Stack.Item>
+				) || null}
+				{((data.has_programm && clone_config_status) || (data.has_programm && debug_status)) && (
+				<Stack.Item ml={2}> {/* добавлен отступ слева */}
+					<Flex grow>
+					<Flex.Item>
+						<Box fontSize="11px" color="label">
+						Стоимость: <b>{data.metal_cost}</b> металла Сложность: <b>{data.complexity}</b> Количество модулей: <b>{data.used_space}</b>
+						</Box>
+					</Flex.Item>
+					</Flex>
+				</Stack.Item>
+				) || null}
           </Stack>
         </Stack.Item>
       </Stack>
@@ -294,14 +294,12 @@ const CircuitsGrid = (props: { circuits?: CircuitData[], big_desc? : BooleanLike
   );
 };
 
-// Основной компонент просмотра компонентов
 export const ComponentsViewer = (props, context) => {
   const { act, data } = useBackend<IntegratedPrinterData>(context);
   const [searchText, setSearchText] = useSharedState(context, 'searchText', "");
   const [tabID, setTabID] = useSharedState(context, 'tabIndex', 0);
   const [fullComp, setCompMode] = useLocalState<boolean>(context, "setCompMode", false);
 
-  // Определяем, какие схемы показывать
   const searchResults = HardSearch(data.categories, searchText);
   let circuitsToShow: CircuitData[] = [];
   if (searchText && searchResults) {
@@ -373,7 +371,7 @@ export const ComponentsViewer = (props, context) => {
     </>
   );
 };
-// Главное окно
+
 export const CircuitPrinterUI = (props, context) => {
   const { data } = useBackend<IntegratedPrinterData>(context);
   return (
@@ -397,21 +395,19 @@ export const CloneNotice = (props, context) => {
   const { data, act } = useBackend<IntegratedPrinterData>(context);
   const { print_end_time, print_start_time, world_time } = data;
 
-  // Расчёт прогресса (0..1)
+
   let progress = 0;
   let timeLeftSeconds = 0;
 
-  if (print_end_time && print_start_time && print_end_time > print_start_time) {
-    const totalDuration = print_end_time - print_start_time; // в тиках (децисекундах)
+  if (print_end_time && print_start_time && world_time && print_end_time > print_start_time) {
+    const totalDuration = print_end_time - print_start_time;
     const elapsed = world_time - print_start_time;
     progress = Math.min(1, Math.max(0, elapsed / totalDuration));
 
-    // Оставшееся время в секундах (1 тик = 0.1 секунды)
     const remainingTicks = print_end_time - world_time;
     timeLeftSeconds = Math.max(0, remainingTicks / 10);
   }
 
-  // Формируем текст для прогресс-бара
   const percent = Math.round(progress * 100);
   const timeText = timeLeftSeconds > 0
     ? `${percent}% (осталось ${formatTimeLeft(timeLeftSeconds)})`
