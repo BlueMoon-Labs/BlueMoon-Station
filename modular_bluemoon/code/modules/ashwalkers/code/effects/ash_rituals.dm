@@ -265,7 +265,7 @@
 /datum/ash_ritual/ash_slaving/ritual_success(obj/effect/ash_rune/success_rune)
 	. = ..()
 
-	var/mob/living/carbon/human/human_victim = locate() in get_turf(success_rune)
+	var/mob/living/carbon/human/human_victim = locate(/mob/living/carbon/human) in get_turf(success_rune)
 	if(!human_victim)
 		return
 	if(HAS_TRAIT(human_victim, TRAIT_MINDSHIELD) || jobban_isbanned(human_victim, ROLE_LAVALAND))
@@ -314,16 +314,14 @@
 
 /datum/ash_ritual/revival/ritual_success(obj/effect/ash_rune/success_rune)
 	. = ..()
-	var/ashwalker_or_no=FALSE
-	var/mob/living/carbon/human/human_victim = locate() in get_turf(success_rune)
-	if(human_victim.mind?.has_antag_datum(/datum/antagonist/ashwalker))
-		ashwalker_or_no=TRUE
+	var/mob/living/carbon/human/human_victim = locate(/mob/living/carbon/human) in get_turf(success_rune)
+	if(!human_victim)
+		return
+	var/ashwalker_or_no = human_victim.mind?.has_antag_datum(/datum/antagonist/ashwalker)
 	var/obj/item/organ/lungs/lungs_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_LUNGS]
 	var/obj/item/organ/heart/heart_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_HEART]
 	var/obj/item/organ/liver/liver_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_LIVER]
 	var/obj/item/organ/stomach/stomach_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_STOMACH]
-	if(!human_victim)
-		return
 	var/was_dead = isdead(human_victim)
 	human_victim.revive(full_heal = 1)
 	if(iscarbon(human_victim))
