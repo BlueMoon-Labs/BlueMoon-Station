@@ -75,9 +75,9 @@
 	req_access = list()
 	req_one_access = list()
 	hacked = TRUE // Это для лампочки на техфабе, само по себе ничего не делает
+	update_research()
 	if(!emag_only_access)
 		obj_flags |= EMAGGED
-		update_research()
 
 /obj/machinery/rnd/production/proc/update_research()
 	host_research.copy_research_to(stored_research, TRUE)
