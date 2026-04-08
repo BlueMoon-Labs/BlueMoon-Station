@@ -4,7 +4,7 @@
 /obj/item/electronic_assembly
 	name = "electronic assembly"
 	obj_flags = CAN_BE_HIT | UNIQUE_RENAME
-	desc = "It's a case, for building small electronics with."
+	desc = "Это корпус для сборки небольших электронных устройств."
 	w_class = WEIGHT_CLASS_SMALL
 	icon = 'icons/obj/assemblies/electronic_setups.dmi'
 	icon_state = "setup_small"
@@ -72,12 +72,12 @@
 /obj/item/electronic_assembly/examine(mob/user)
 	. = ..()
 	if(can_anchor)
-		. += "<span class='notice'>The anchoring bolts [anchored ? "are" : "can be"] <b>wrenched</b> in place and the maintenance panel [opened ? "can be" : "is"] <b>screwed</b> in place.</span>"
+		. += "<span class='notice'>Крепежные болты [anchored? "": "могут быть"] <b>затянуты</b> на месте, а панель доступа [opened? "может быть": ""] <b>завинчена</b> на месте.</span>"
 	else
-		. += "<span class='notice'>The maintenance panel [opened ? "can be" : "is"] <b>screwed</b> in place.</span>"
+		. += "<span class='notice'>Панель доступа [opened? "может быть": ""] <b>завинчена</b> на месте.</span>"
 
 	if((isobserver(user) && ckeys_allowed_to_scan[user.ckey]) || IsAdminGhost(user))
-		. += "You can <a href='?src=[REF(src)];ghostscan=1'>scan</a> this circuit."
+		. += "Вы можете <a href='?src=[REF(src)];ghostscan=1'>просканировать</a> данную схему."
 
 	for(var/obj/item/integrated_circuit/I in assembly_components)
 		var/examine_data = I.external_examine(user)
@@ -157,13 +157,13 @@
 
 	var/HTML = "<html><head>[UTF8HEADER]<title>[name]</title></head>\
 		<body><table><thead><tr> \
-		<a href='?src=[REF(src)]'>Refresh</a>  |  <a href='?src=[REF(src)];rename=1'>Rename</a><br> \
-		[total_part_size]/[max_components] ([round((total_part_size / max_components) * 100, 0.1)]%) space taken up in the assembly.<br> \
-		[total_complexity]/[max_complexity] ([round((total_complexity / max_complexity) * 100, 0.1)]%) maximum complexity.<br>"
+		<a href='?src=[REF(src)]'>Обновить</a>  |  <a href='?src=[REF(src)];rename=1'>Переименовать</a><br> \
+		[total_part_size]/[max_components] ([round((total_part_size / max_components) * 100, 0.1)]%) занятое место в корпусе.<br> \
+		[total_complexity]/[max_complexity] ([round((total_complexity / max_complexity) * 100, 0.1)]%) сложность.<br>"
 	if(battery)
-		HTML += "[round(battery.charge, 0.1)]/[battery.maxcharge] ([round(battery.percent(), 0.1)]%) cell charge. <a href='?src=[REF(src)];remove_cell=1'>Remove</a>"
+		HTML += "[round(battery.charge, 0.1)]/[battery.maxcharge] ([round(battery.percent(), 0.1)]%) заряд батареи. <a href='?src=[REF(src)];remove_cell=1'>Remove</a>"
 	else
-		HTML += "<span class='danger'>No power cell detected!</span>"
+		HTML += "<span class='danger'>Батарейка не обнаружена!</span>"
 	HTML += "</tr></thead>"
 
 
@@ -197,7 +197,7 @@
 
 	// Put removable circuits (if any) in separate categories from non-removable
 	if(builtin_components)
-		HTML += "<hr> Built in:<br> [builtin_components] <hr> Removable: <br>"
+		HTML += "<hr> Встроенные: <br> [builtin_components] <hr> Съемные: <br>"
 
 	HTML += removables
 
@@ -212,12 +212,12 @@
 	if(circuit_pins)
 		HTML += "<div valign='middle'>[circuit_pins.displayed_name]<br>"
 
-		HTML += "<a href='?src=[REF(src)];component=[REF(circuit_pins)]'>Refresh</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];rename_component=1'>Rename</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];scan=1'>Copy Ref</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];interact=1'>Interact</a>"
+		HTML += "<a href='?src=[REF(src)];component=[REF(circuit_pins)]'>Обновить</a> | \
+		<a href='?src=[REF(src)];component=[REF(circuit_pins)];rename_component=1'>Переименовать</a> | \
+		<a href='?src=[REF(src)];component=[REF(circuit_pins)];scan=1'>Скопировать ссылку</a> | \
+		<a href='?src=[REF(src)];component=[REF(circuit_pins)];interact=1'>Взаимодействовать</a>"
 		if(circuit_pins.removable)
-			HTML += " | <a href='?src=[REF(src)];component=[REF(circuit_pins)];remove=1'>Remove</a>"
+			HTML += " | <a href='?src=[REF(src)];component=[REF(circuit_pins)];remove=1'>Убрать</a>"
 		HTML += "</div><br>"
 
 		var/table_edge_width = "30%"
@@ -295,14 +295,14 @@
 			HTML += "<tr><td colspan='3' align='center'>[words]</td></tr>"
 
 		HTML += "<tr>\
-			<br><font color='FFFFFF' class=lowtext>Complexity: [circuit_pins.complexity]\
-			<br>Cooldown per use: [circuit_pins.cooldown_per_use/10] sec"
+			<br><font color='FFFFFF' class=lowtext>Сложность: [circuit_pins.complexity]\
+			<br>Время перезарядки между использованием: [circuit_pins.cooldown_per_use/10] sec"
 		if(circuit_pins.ext_cooldown)
-			HTML += "<br>External manipulation cooldown: [circuit_pins.ext_cooldown/10] sec"
+			HTML += "<br>Время перезарядки внешнего воздействия: [circuit_pins.ext_cooldown/10] sec"
 		if(circuit_pins.power_draw_idle)
-			HTML += "<br>Power Draw: [circuit_pins.power_draw_idle] W (Idle)"
+			HTML += "<br>Потребляемая мощность: [circuit_pins.power_draw_idle] W (Idle)"
 		if(circuit_pins.power_draw_per_use)
-			HTML += "<br>Power Draw: [circuit_pins.power_draw_per_use] W (Active)" // Borgcode says that powercells' checked_use() takes joules as input.
+			HTML += "<br>Потребляемая мощность: [circuit_pins.power_draw_per_use] W (Active)" // Borgcode says that powercells' checked_use() takes joules as input.
 		HTML += "<br>[circuit_pins.extended_desc]</font></tr></table></div>"
 
 
@@ -318,12 +318,12 @@
 	if(href_list["ghostscan"])
 		if((isobserver(usr) && ckeys_allowed_to_scan[usr.ckey]) || IsAdminGhost(usr))
 			if(assembly_components.len)
-				var/saved = "On circuit printers with cloning enabled, you may use the code below to clone the circuit:<br><br><code>[SScircuit.save_electronic_assembly(src)]</code>"
+				var/saved = "На принтерах схем, на которых включена функция клонирования, вы можете использовать приведенный ниже код для клонирования схемы:<br><br><code>[SScircuit.save_electronic_assembly(src)]</code>"
 				var/datum/browser/popup = new(usr, "circuit_scan", "Circuit Scan", 500, 600)
 				popup.set_content(saved)
 				popup.open()
 			else
-				to_chat(usr, "<span class='warning'>The circuit is empty!</span>")
+				to_chat(usr, "<span class='warning'>Схема пуста!</span>")
 		return
 
 	if(!check_interactivity(usr))
@@ -334,11 +334,11 @@
 
 	if(href_list["remove_cell"])
 		if(!battery)
-			to_chat(usr, "<span class='warning'>There's no power cell to remove from \the [src].</span>")
+			to_chat(usr, "<span class='warning'>Здесь нет батарейки, которую нужно извлечь из [src].</span>")
 		else
 			battery.forceMove(drop_location())
 			playsound(src, 'sound/items/Crowbar.ogg', 50, 1)
-			to_chat(usr, "<span class='notice'>You pull \the [battery] out of \the [src]'s power supplier.</span>")
+			to_chat(usr, "<span class='notice'>Вы извлекаете [battery] из источника питания [src].</span>")
 			battery = null
 			diag_hud_set_circuitstat() //update diagnostic hud
 
@@ -358,9 +358,9 @@
 				if(D.accepting_refs)
 					D.afterattack(component, usr, TRUE)
 				else
-					to_chat(usr, "<span class='warning'>The debugger's 'ref scanner' needs to be on.</span>")
+					to_chat(usr, "<span class='warning'>Сканер ссылок отладчика должен быть включен.</span>")
 			else
-				to_chat(usr, "<span class='warning'>You need a debugger set to 'ref' mode to do that.</span>")
+				to_chat(usr, "<span class='warning'>Для этого вам понадобится отладчик, настроенный в режим ссылок.</span>")
 
 		// Builtin components are not supposed to be removed or rearranged
 		if(!component.removable)
@@ -394,7 +394,7 @@
 
 		// Adjust the position
 		if(href_list["change_pos"])
-			var/new_pos = max(input(usr,"Write the new number","New position") as num,1)
+			var/new_pos = max(input(usr,"Введите новое число","Новая позиция") as num,1)
 
 			if(new_pos > assembly_components.len)
 				new_pos = assembly_components.len
@@ -428,11 +428,11 @@
 	if(!check_interactivity(M))
 		return
 
-	var/input = reject_bad_name(input("What do you want to name this?", "Rename", src.name) as null|text, TRUE)
+	var/input = reject_bad_name(input("WКак вы хотите это назвать?", "Переименовать", src.name) as null|text, TRUE)
 	if(!check_interactivity(M))
 		return
 	if(src && input)
-		to_chat(M, "<span class='notice'>The machine now has a label reading '[input]'.</span>")
+		to_chat(M, "<span class='notice'>На корпусе теперь есть наклейка с надписью '[input]'.</span>")
 		name = input
 
 /obj/item/electronic_assembly/proc/add_allowed_scanner(ckey)
@@ -468,11 +468,11 @@
 // Returns true if the circuit made it inside.
 /obj/item/electronic_assembly/proc/try_add_component(obj/item/integrated_circuit/IC, mob/user)
 	if(!opened)
-		to_chat(user, "<span class='warning'>\The [src]'s hatch is closed, you can't put anything inside.</span>")
+		to_chat(user, "<span class='warning'>Крышка [src] закрыта, внутрь ничего не поместишь.</span>")
 		return FALSE
 
 	if(IC.w_class > w_class)
-		to_chat(user, "<span class='warning'>\The [IC] is way too big to fit into \the [src].</span>")
+		to_chat(user, "<span class='warning'>[IC] слишком велик, чтобы поместиться в [src].</span>")
 		return FALSE
 	if(istype(IC, /obj/item/integrated_circuit/manipulation/interacter) && locate(/obj/item/integrated_circuit/manipulation/interacter) in src.assembly_components)
 		to_chat(user, "<span class='warning'>Вы не можете вставить две этих детали в один корпус.</span>")
@@ -481,19 +481,19 @@
 	var/total_complexity = return_total_complexity()
 
 	if((total_part_size + IC.size) > max_components)
-		to_chat(user, "<span class='warning'>You can't seem to add the '[IC]', as there's insufficient space.</span>")
+		to_chat(user, "<span class='warning'>Похоже, вы не можете добавить '[IC]', так как не хватает места.</span>")
 		return FALSE
 	if((total_complexity + IC.complexity) > max_complexity)
-		to_chat(user, "<span class='warning'>You can't seem to add the '[IC]', since this setup's too complicated for the case.</span>")
+		to_chat(user, "<span class='warning'>Похоже, вы не можете добавить '[IC]', так как эта плата слишком сложна для данного корпуса.</span>")
 		return FALSE
 	if((allowed_circuit_action_flags & IC.action_flags) != IC.action_flags)
-		to_chat(user, "<span class='warning'>You can't seem to add the '[IC]', since the case doesn't support the circuit type.</span>")
+		to_chat(user, "<span class='warning'>Похоже, вы не можете добавить '[IC]', так как данный корпус не подходит под данную плату.</span>")
 		return FALSE
 
 	if(!user.transferItemToLoc(IC, src))
 		return FALSE
 
-	to_chat(user, "<span class='notice'>You slide [IC] inside [src].</span>")
+	to_chat(user, "<span class='notice'>Вы вставляете [IC] внутрь [src].</span>")
 	playsound(src, 'sound/items/Deconstruct.ogg', 50, 1)
 	add_allowed_scanner(user.ckey)
 	investigate_log("had [IC]([IC.type]) inserted by [key_name(user)].", INVESTIGATE_CIRCUIT)
@@ -522,17 +522,17 @@
 /obj/item/electronic_assembly/proc/try_remove_component(obj/item/integrated_circuit/IC, mob/user, silent)
 	if(!opened)
 		if(!silent)
-			to_chat(user, "<span class='warning'>[src]'s hatch is closed, so you can't fiddle with the internal components.</span>")
+			to_chat(user, "<span class='warning'>Крышка [src] закрыта, поэтому вы не можете повозиться с внутренними компонентами.</span>")
 		return FALSE
 
 	if(!IC.removable)
 		if(!silent)
-			to_chat(user, "<span class='warning'>[src] is permanently attached to the case.</span>")
+			to_chat(user, "<span class='warning'>[src] намертво прикреплен к корпусу.</span>")
 		return FALSE
 
 	remove_component(IC)
 	if(!silent)
-		to_chat(user, "<span class='notice'>You pop \the [IC] out of the case, and slide it out.</span>")
+		to_chat(user, "<span class='notice'>Вы достаёте [IC] из корпуса и отсоединяете его.</span>")
 		playsound(src, 'sound/items/crowbar.ogg', 50, 1)
 		user.put_in_hands(IC)
 	add_allowed_scanner(user.ckey)
@@ -563,18 +563,18 @@
 	. = ..()
 	for(var/obj/item/integrated_circuit/input/S in assembly_components)
 		if(S.sense(target,user,proximity))
-			visible_message("<span class='notice'> [user] waves [src] around [target].</span>")
+			visible_message("<span class='notice'> [user] проводит [src] около [target].</span>")
 
 
 /obj/item/electronic_assembly/screwdriver_act(mob/living/user, obj/item/I)
 	if(sealed)
-		to_chat(user,"<span class='notice'>The assembly is sealed. Any attempt to force it open would break it.</span>")
+		to_chat(user,"<span class='notice'>Корпус герметичен. Любая попытка вскрыть его силой приведет к его повреждению.</span>")
 		return FALSE
 	if(..())
 		return TRUE
 	I.play_tool_sound(src)
 	opened = !opened
-	to_chat(user, "<span class='notice'>You [opened ? "open" : "close"] the maintenance hatch of [src].</span>")
+	to_chat(user, "<span class='notice'>Вы [opened ? "открыли" : "закрыли"] крышку [src].</span>")
 	update_icon()
 	return TRUE
 
@@ -582,41 +582,41 @@
 	var/type_to_use
 
 	if(!sealed)
-		type_to_use = input("What would you like to do?","[src] type setting") as null|anything in list("repair", "seal")
+		type_to_use = input("Чтобы вы хотели сделать?","[src] type setting") as null|anything in list("починить", "запечатать")
 	else
-		type_to_use = input("What would you like to do?","[src] type setting") as null|anything in list("repair", "unseal")
+		type_to_use = input("Чтобы вы хотели сделать?","[src] type setting") as null|anything in list("починить", "вскрыть")
 
 	switch(type_to_use)
 		if("repair")
 			if(obj_integrity < max_integrity)
 				obj_integrity = min(obj_integrity + 20,max_integrity)
-				to_chat(user,"<span class='notice'>You fix the dents and scratches of the assembly.</span>")
-				to_chat(user, "<span class='notice'>Integrity: [obj_integrity] / [max_integrity]</span>")
+				to_chat(user,"<span class='notice'>Вы устраняете вмятины и царапины на корпусе.</span>")
+				to_chat(user, "<span class='notice'>Прочность: [obj_integrity] / [max_integrity]</span>")
 				return TRUE
 
 			else
-				to_chat(user,"<span class='notice'>The assembly is already in impeccable condition.</span>")
+				to_chat(user,"<span class='notice'>Корпус уже находится в идеальном состоянии.</span>")
 				return FALSE
 
 		if("seal")
 			if(!opened)
 				sealed = TRUE
 				if(I.use_tool(src, user, 50, volume=100, amount=3))
-					to_chat(user,"<span class='notice'>You seal the assembly, making it impossible to be opened.</span>")
+					to_chat(user,"<span class='notice'>Вы запечатываете корпус, делая её невозможной для вскрытия.</span>")
 					return TRUE
 
 			else
-				to_chat(user,"<span class='notice'>You need to close the assembly first before sealing it indefinitely!</span>")
+				to_chat(user,"<span class='notice'>Прежде чем запечатать корпус, его нужно закрыть!</span>")
 				return FALSE
 
 		if("unseal")
-			to_chat(user,"<span class='notice'>You start unsealing the assembly carefully...</span>")
+			to_chat(user,"<span class='notice'>Вы начинаете осторожно вскрывать корпус...</span>")
 			if(I.use_tool(src, user, 50, volume=250, amount=3))
 				for(var/obj/item/integrated_circuit/IC in assembly_components)
 					if(prob(50))
 						IC.disconnect_all()
 
-				to_chat(user,"<span class='notice'>You unsealed the assembly.</span>")
+				to_chat(user,"<span class='notice'>Вы вскрыли корпус.</span>")
 				sealed = FALSE
 				return TRUE
 
@@ -638,19 +638,19 @@
 			interact(user)
 			return TRUE
 		else
-			to_chat(user, "<span class='warning'>[src]'s hatch is closed, so you can't fiddle with the internal components.</span>")
+			to_chat(user, "<span class='warning'>Крышка [src] закрыта, поэтому вы не можете повозиться с внутренними компонентами.</span>")
 			for(var/obj/item/integrated_circuit/input/S in assembly_components)
 				S.attackby_react(I,user,user.a_intent)
 			return ..()
 
 	else if(istype(I, /obj/item/stock_parts/cell))
 		if(!opened)
-			to_chat(user, "<span class='warning'>[src]'s hatch is closed, so you can't access \the [src]'s power supplier.</span>")
+			to_chat(user, "<span class='warning'>Люк [src] закрыт, поэтому вы не можете получить доступ к источнику питания [src].</span>")
 			for(var/obj/item/integrated_circuit/input/S in assembly_components)
 				S.attackby_react(I,user,user.a_intent)
 			return ..()
 		if(battery)
-			to_chat(user, "<span class='warning'>[src] already has \a [battery] installed. Remove it first if you want to replace it.</span>")
+			to_chat(user, "<span class='warning'>[src] уже имеет установленную [battery]. Сначала извлеките её, если хотите заменить.</span>")
 			for(var/obj/item/integrated_circuit/input/S in assembly_components)
 				S.attackby_react(I,user,user.a_intent)
 			return ..()
@@ -658,7 +658,7 @@
 		battery = I
 		diag_hud_set_circuitstat() //update diagnostic hud
 		playsound(get_turf(src), 'sound/items/Deconstruct.ogg', 50, 1)
-		to_chat(user, "<span class='notice'>You slot the [I] inside \the [src]'s power supplier.</span>")
+		to_chat(user, "<span class='notice'>Вы вставляете [I] в разъем питания [src].</span>")
 		return TRUE
 
 	else if(istype(I, /obj/item/integrated_electronics/detailer))
@@ -690,7 +690,7 @@
 			if(input_selection.len == 1)
 				choice = input_selection[input_selection[1]]
 			else
-				var/selection = input(user, "Where do you want to insert that item?", "Interaction") as null|anything in input_selection
+				var/selection = input(user, "Куда вы хотите вставить этот элемент?", "Взаимодействие") as null|anything in input_selection
 				if(!check_interactivity(user))
 					return ..()
 				if(selection)
@@ -732,7 +732,7 @@
 		if(input_selection.len ==1)
 			choice = input_selection[input_selection[1]]
 		else
-			var/selection = input(user, "What do you want to interact with?", "Interaction") as null|anything in input_selection
+			var/selection = input(user, "С чем вы хотите взаимодействовать?", "Взаимодействие") as null|anything in input_selection
 			if(!check_interactivity(user))
 				return
 			if(selection)
@@ -809,38 +809,38 @@
 /obj/item/electronic_assembly/calc
 	name = "type-b electronic assembly"
 	icon_state = "setup_small_calc"
-	desc = "It's a case, for building small electronics with. This one resembles a pocket calculator."
+	desc = "Это корпус для сборки небольших электронных устройств. Он напоминает карманный калькулятор."
 
 /obj/item/electronic_assembly/clam
 	name = "type-c electronic assembly"
 	icon_state = "setup_small_clam"
-	desc = "It's a case, for building small electronics with. This one has a clamshell design."
+	desc = "Это корпус для сборки небольших электронных устройств. Данная модель имеет конструкцию в виде раскладушки."
 
 /obj/item/electronic_assembly/simple
 	name = "type-d electronic assembly"
 	icon_state = "setup_small_simple"
-	desc = "It's a case, for building small electronics with. This one has a simple design."
+	desc = "Это корпус для сборки небольших электронных устройств. У него простая конструкция."
 
 /obj/item/electronic_assembly/hook
 	name = "type-e electronic assembly"
 	icon_state = "setup_small_hook"
-	desc = "It's a case, for building small electronics with. This one looks like it has a belt clip, but it's purely decorative."
+	desc = "Это чехол для сборки небольших электронных устройств. Похоже, что у него есть зажим для ремня, но он носит чисто декоративный характер."
 
 /obj/item/electronic_assembly/pda
 	name = "type-f electronic assembly"
 	icon_state = "setup_small_pda"
-	desc = "It's a case, for building small electronics with. This one resembles a PDA."
+	desc = "Это корпус для сборки небольших электронных устройств. Он напоминает ПДА."
 	slot_flags = ITEM_SLOT_ID | ITEM_SLOT_BELT
 
 /obj/item/electronic_assembly/dildo
 	name = "type-g electronic assembly"
 	icon_state = "setup_dildo_medium"
-	desc = "It's a case, for building small electronics with. This one has a phallic design."
+	desc = "Это корпус для сборки небольших электронных устройств. У этого корпуса фаллическая форма."
 
 /obj/item/electronic_assembly/small
 	name = "electronic device"
 	icon_state = "setup_device"
-	desc = "It's a case, for building tiny-sized electronics with."
+	desc = "Это корпус для сборки миниатюрных электронных устройств."
 	w_class = WEIGHT_CLASS_TINY
 	max_components = IC_MAX_SIZE_BASE / 2
 	max_complexity = IC_COMPLEXITY_BASE / 2
@@ -851,32 +851,32 @@
 /obj/item/electronic_assembly/small/cylinder
 	name = "type-b electronic device"
 	icon_state = "setup_device_cylinder"
-	desc = "It's a case, for building tiny-sized electronics with. This one has a cylindrical design."
+	desc = "Это корпус для сборки миниатюрных электронных устройств. Данная модель имеет цилиндрическую форму."
 
 /obj/item/electronic_assembly/small/scanner
 	name = "type-c electronic device"
 	icon_state = "setup_device_scanner"
-	desc = "It's a case, for building tiny-sized electronics with. This one has a scanner-like design."
+	desc = "Это корпус для сборки миниатюрных электронных устройств. У него дизайн, напоминающий сканер."
 
 /obj/item/electronic_assembly/small/hook
 	name = "type-d electronic device"
 	icon_state = "setup_device_hook"
-	desc = "It's a case, for building tiny-sized electronics with. This one looks like it has a belt clip, but it's purely decorative."
+	desc = "Это корпус для сборки миниатюрных электронных устройств. Похоже, что у него есть зажим для ремня, но он носит чисто декоративный характер."
 
 /obj/item/electronic_assembly/small/box
 	name = "type-e electronic device"
 	icon_state = "setup_device_box"
-	desc = "It's a case, for building tiny-sized electronics with. This one has a boxy design."
+	desc = "Это корпус для сборки миниатюрных электронных устройств. У него прямоугольная форма."
 
 /obj/item/electronic_assembly/small/dildo
 	name = "type-f electronic device"
 	icon_state = "setup_dildo_small"
-	desc = "It's a case, for building tiny-sized electronics with. This one has a phallic design."
+	desc = "Это корпус для сборки миниатюрных электронных устройств. У этого корпуса фаллическая форма."
 
 /obj/item/electronic_assembly/medium
 	name = "electronic mechanism"
 	icon_state = "setup_medium"
-	desc = "It's a case, for building medium-sized electronics with."
+	desc = "Это корпус для сборки электроники средних размеров."
 	w_class = WEIGHT_CLASS_NORMAL
 	max_components = IC_MAX_SIZE_BASE * 2
 	max_complexity = IC_COMPLEXITY_BASE * 2
@@ -887,23 +887,23 @@
 /obj/item/electronic_assembly/medium/box
 	name = "type-b electronic mechanism"
 	icon_state = "setup_medium_box"
-	desc = "It's a case, for building medium-sized electronics with. This one has a boxy design."
+	desc = "Это корпус для сборки электроники средних размеров. У него прямоугольная форма."
 
 /obj/item/electronic_assembly/medium/clam
 	name = "type-c electronic mechanism"
 	icon_state = "setup_medium_clam"
-	desc = "It's a case, for building medium-sized electronics with. This one has a clamshell design."
+	desc = "Это корпус для сборки электроники средних размеров. Данная модель имеет конструкцию в виде раскладушка."
 
 /obj/item/electronic_assembly/medium/medical
 	name = "type-d electronic mechanism"
 	icon_state = "setup_medium_med"
-	desc = "It's a case, for building medium-sized electronics with. This one resembles some type of medical apparatus."
+	desc = "Это корпусй для сборки электронных устройств средних размеров. Он напоминает какой-то медицинский прибор."
 
 /obj/item/electronic_assembly/medium/gun
 	name = "type-e electronic mechanism"
 	icon_state = "setup_medium_gun"
 	item_state = "circuitgun"
-	desc = "It's a case, for building medium-sized electronics with. This one resembles a gun, or some type of tool, if you're feeling optimistic. It can fire guns and throw items while the user is holding it."
+	desc = "Это корпус для сборки электронных устройств средних размеров. Он напоминает пистолет или, если смотреть на вещи с оптимизмом, какой-то инструмент. Пока пользователь держит его в руках, он может стрелять и бросать предметы."
 	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
 	can_fire_equipped = TRUE
@@ -911,18 +911,18 @@
 /obj/item/electronic_assembly/medium/radio
 	name = "type-f electronic mechanism"
 	icon_state = "setup_medium_radio"
-	desc = "It's a case, for building medium-sized electronics with. This one resembles an old radio."
+	desc = "Это корпус для сборки электроники средних размеров. Он напоминает старое радио."
 
 /obj/item/electronic_assembly/medium/dildo
 	name = "type-g electronic mechanism"
 	icon_state = "setup_dildo_large"
-	desc = "It's a case, for building medium-sized electronics with. This one has a phallic design."
+	desc = "Это корпус для сборки электроники средних размеров. У этого корпуса фаллическая форма."
 
 
 /obj/item/electronic_assembly/large
 	name = "electronic machine"
 	icon_state = "setup_large"
-	desc = "It's a case, for building large electronics with."
+	desc = "Это корпус для сборки крупных электронных устройств."
 	w_class = WEIGHT_CLASS_BULKY
 	max_components = IC_MAX_SIZE_BASE * 4
 	max_complexity = IC_COMPLEXITY_BASE * 4
@@ -933,32 +933,32 @@
 /obj/item/electronic_assembly/large/scope
 	name = "type-b electronic machine"
 	icon_state = "setup_large_scope"
-	desc = "It's a case, for building large electronics with. This one resembles an oscilloscope."
+	desc = "Это корпус для сборки крупных электронных устройств. Он напоминает осциллограф."
 
 /obj/item/electronic_assembly/large/terminal
 	name = "type-c electronic machine"
 	icon_state = "setup_large_terminal"
-	desc = "It's a case, for building large electronics with. This one resembles a computer terminal."
+	desc = "Это корпус для сборки крупных электронных устройств. Он напоминает компьютерный терминал."
 
 /obj/item/electronic_assembly/large/arm
 	name = "type-d electronic machine"
 	icon_state = "setup_large_arm"
-	desc = "It's a case, for building large electronics with. This one resembles a robotic arm."
+	desc = "Это корпус для сборки крупных электронных устройств. Он напоминает манипулятор."
 
 /obj/item/electronic_assembly/large/tall
 	name = "type-e electronic machine"
 	icon_state = "setup_large_tall"
-	desc = "It's a case, for building large electronics with. This one has a tall design."
+	desc = "Это корпус для сборки крупных электронных устройств. У этой модели высокая конструкция."
 
 /obj/item/electronic_assembly/large/industrial
 	name = "type-f electronic machine"
 	icon_state = "setup_large_industrial"
-	desc = "It's a case, for building large electronics with. This one resembles some kind of industrial machinery."
+	desc = "Это корпус для сборки крупных электронных устройств. Он напоминает какое-то промышленное оборудование."
 
 /obj/item/electronic_assembly/drone
 	name = "electronic drone"
 	icon_state = "setup_drone"
-	desc = "It's a case, for building mobile electronics with."
+	desc = "Это корпус для сборки мобильной электроники."
 	w_class = WEIGHT_CLASS_NORMAL
 	max_components = IC_MAX_SIZE_BASE * 3
 	max_complexity = IC_COMPLEXITY_BASE * 3
@@ -974,32 +974,32 @@
 /obj/item/electronic_assembly/drone/arms
 	name = "type-b electronic drone"
 	icon_state = "setup_drone_arms"
-	desc = "It's a case, for building mobile electronics with. This one is armed and dangerous."
+	desc = "Это корпус для сборки мобильной электроники. Этот вооружён и опасен."
 
 /obj/item/electronic_assembly/drone/secbot
 	name = "type-c electronic drone"
 	icon_state = "setup_drone_secbot"
-	desc = "It's a case, for building mobile electronics with. This one resembles a Securitron."
+	desc = "Это корпус для сборки мобильной электроники. Он похож на Бипски."
 
 /obj/item/electronic_assembly/drone/medbot
 	name = "type-d electronic drone"
 	icon_state = "setup_drone_medbot"
-	desc = "It's a case, for building mobile electronics with. This one resembles a Medibot."
+	desc = "Это корпус для сборки мобильной электроники. Он похож на Medibot."
 
 /obj/item/electronic_assembly/drone/genbot
 	name = "type-e electronic drone"
 	icon_state = "setup_drone_genbot"
-	desc = "It's a case, for building mobile electronics with. This one has a generic bot design."
+	desc = "Это корпусдля сборки мобильной электроники. У него универсальный дизайн в виде робота."
 
 /obj/item/electronic_assembly/drone/android
 	name = "type-f electronic drone"
 	icon_state = "setup_drone_android"
-	desc = "It's a case, for building mobile electronics with. This one has a hominoid design."
+	desc = "Это корпус для мобильной электроники. У этого корпуса дизайн в виде гуманоида."
 
 /obj/item/electronic_assembly/wallmount
 	name = "wall-mounted electronic assembly"
 	icon_state = "setup_wallmount_medium"
-	desc = "It's a case, for building medium-sized electronics with. It has a magnetized backing to allow it to stick to walls, but you'll still need to wrench the anchoring bolts in place to keep it on."
+	desc = "Это корпус для сборки электронных устройств средних размеров. Он имеет магнитную заднюю панель, благодаря которой его можно прикрепить к стене, но для надежной фиксации все равно потребуется затянуть крепежные болты."
 	w_class = WEIGHT_CLASS_NORMAL
 	max_components = IC_MAX_SIZE_BASE * 2
 	max_complexity = IC_COMPLEXITY_BASE * 2
@@ -1007,7 +1007,7 @@
 /obj/item/electronic_assembly/wallmount/heavy
 	name = "heavy wall-mounted electronic assembly"
 	icon_state = "setup_wallmount_large"
-	desc = "It's a case, for building large electronics with. It has a magnetized backing to allow it to stick to walls, but you'll still need to wrench the anchoring bolts in place to keep it on."
+	desc = "Это корпус для установки крупных электронных устройств. Он имеет магнитную заднюю панель, благодаря которой его можно прикрепить к стене, но для надежной фиксации все равно потребуется затянуть крепежные болты."
 	w_class = WEIGHT_CLASS_BULKY
 	max_components = IC_MAX_SIZE_BASE * 4
 	max_complexity = IC_COMPLEXITY_BASE * 4
@@ -1015,7 +1015,7 @@
 /obj/item/electronic_assembly/wallmount/light
 	name = "light wall-mounted electronic assembly"
 	icon_state = "setup_wallmount_small"
-	desc = "It's a case, for building small electronics with. It has a magnetized backing to allow it to stick to walls, but you'll still need to wrench the anchoring bolts in place to keep it on."
+	desc = "Это корпус для сборки небольших электронных устройств. Он имеет магнитную заднюю панель, благодаря которой его можно прикрепить к стене, но для надежной фиксации все равно потребуется затянуть крепежные болты."
 	w_class = WEIGHT_CLASS_SMALL
 	max_components = IC_MAX_SIZE_BASE
 	max_complexity = IC_COMPLEXITY_BASE
@@ -1023,7 +1023,7 @@
 /obj/item/electronic_assembly/wallmount/tiny
 	name = "tiny wall-mounted electronic assembly"
 	icon_state = "setup_wallmount_tiny"
-	desc = "It's a case, for building tiny electronics with. It has a magnetized backing to allow it to stick to walls, but you'll still need to wrench the anchoring bolts in place to keep it on."
+	desc = "Это корпус для сборки миниатюрных электронных устройств. Он имеет магнитную заднюю панель, благодаря которой его можно прикрепить к стене, но для надежной фиксации все равно потребуется закрутить крепежные болты."
 	w_class = WEIGHT_CLASS_TINY
 	max_components = IC_MAX_SIZE_BASE / 2
 	max_complexity = IC_COMPLEXITY_BASE / 2
@@ -1036,15 +1036,15 @@
 		return
 	var/turf/T = get_turf(user)
 	if(!isfloorturf(T))
-		to_chat(user, "<span class='warning'>You cannot place [src] on this spot!</span>")
+		to_chat(user, "<span class='warning'>Вы не можете разместить [src] в этом месте!</span>")
 		return
 	if(gotwallitem(T, ndir))
-		to_chat(user, "<span class='warning'>There's already an item on this wall!</span>")
+		to_chat(user, "<span class='warning'>На этой стене уже висит что-то!</span>")
 		return
 	playsound(src.loc, 'sound/machines/click.ogg', 75, 1)
-	user.visible_message("[user.name] attaches [src] to the wall.",
-		"<span class='notice'>You attach [src] to the wall.</span>",
-		"<span class='italics'>You hear clicking.</span>")
+	user.visible_message("[user.name] прикрепляет [src] к стене.",
+		"<span class='notice'>Вы прикрепляете [src] к стене.</span>",
+		"<span class='italics'>Вы слышите щёлчок.</span>")
 	user.dropItemToGround(src)
 	switch(ndir)
 		if(NORTH)

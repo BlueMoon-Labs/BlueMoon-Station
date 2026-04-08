@@ -5,7 +5,7 @@
  */
 /obj/item/circuit_component/pathfind
 	display_name = "Pathfinder"
-	desc = "When triggered, the next step to the target's location as an entity. This can be used with the direction component and the drone shell to make it move on its own. The Id Card input port is for considering ID access when pathing, it does not give the shell actual access."
+	desc = "При срабатывании выполняется следующий шаг к местоположению цели в качестве объекта. Эту функцию можно использовать вместе с компонентом направления и корпусом дрона, чтобы заставить его двигаться самостоятельно. Входной порт «Id Card» предназначен для учета доступа по идентификатору при прокладке маршрута; он не предоставляет корпусу фактического доступа."
 	circuit_flags = CIRCUIT_FLAG_INPUT_SIGNAL|CIRCUIT_FLAG_OUTPUT_SIGNAL
 
 	var/datum/port/input/input_X
@@ -30,7 +30,7 @@
 /obj/item/circuit_component/pathfind/get_ui_notices()
 	. = ..()
 	// Not necessary to show the same path cooldown, since it doesn't change much for the player
-	. += create_ui_notice("Pathfinding Cooldown: [DisplayTimeText(different_path_cooldown)]", "orange", "stopwatch")
+	. += create_ui_notice("Время перезарядки поиска пути: [DisplayTimeText(different_path_cooldown)]", "orange", "stopwatch")
 	. += create_ui_notice("Maximum Range: [max_range] tiles", "orange", "info")
 
 /obj/item/circuit_component/pathfind/Initialize(mapload)

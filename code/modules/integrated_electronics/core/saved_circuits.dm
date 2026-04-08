@@ -54,23 +54,23 @@
 	var/init_name = initial(name)
 	// Validate name
 	if(component_params["name"] && !reject_bad_name(component_params["name"], TRUE))
-		return "Bad component name at [init_name]."
+		return "Неверное имя компонента в [init_name]."
 
 	// Validate input values
 	if(component_params["inputs"])
 		var/list/loaded_inputs = component_params["inputs"]
 		if(!islist(loaded_inputs))
-			return "Malformed input values list at [init_name]."
+			return "Список некорректных входных значений в [init_name]."
 
 		var/inputs_amt = length(inputs)
 
 		// Too many inputs? Inputs for input-less component? This is not good.
 		if(!inputs_amt || inputs_amt < length(loaded_inputs))
-			return "Input values list out of bounds at [init_name]."
+			return "Список входных значений выходит за пределы диапазона в [init_name]."
 
 		for(var/list/input in loaded_inputs)
 			if(input.len != 3)
-				return "Malformed input data at [init_name]."
+				return "Неправильно сформированные входные данные в [init_name]."
 
 			var/input_id = input[1]
 			var/input_type = input[2]
@@ -78,12 +78,12 @@
 
 			// No special type support yet.
 			if(input_type)
-				return "Unidentified input type at [init_name]!"
+				return "Неизвестный тип ввода в [init_name]!"
 			// TODO: support for special input types, such as typepaths and internal refs
 
 			// Input ID is a list index, make sure it's sane.
 			if(!isnum(input_id) || input_id % 1 || input_id > inputs_amt || input_id < 1)
-				return "Invalid input index at [init_name]."
+				return "Недопустимый индекс ввода в [init_name]."
 
 
 // Loads component parameters from a list
@@ -230,9 +230,9 @@
 	try
 		blocks = json_decode(program)
 	catch
-		return "Invalid program format."
+		return "Неверный формат программы."
 	if(!blocks)
-		return "Invalid program format."
+		return "Неверный формат программы."
 
 	var/error
 
@@ -241,13 +241,13 @@
 	var/list/assembly_params = blocks["assembly"]
 
 	if(!islist(assembly_params) || !length(assembly_params))
-		return "Invalid assembly data."	// No assembly, damaged assembly or empty assembly
+		return "Неверные данные сборки."	// No assembly, damaged assembly or empty assembly
 
 	// Validate type, get a temporary component
 	var/assembly_path = all_assemblies[assembly_params["type"]]
 	var/obj/item/electronic_assembly/assembly = cached_assemblies[assembly_path]
 	if(!assembly)
-		return "Invalid assembly type."
+		return "Недопустимый тип сборки."
 
 	// Check assembly save data for errors
 	error = assembly.verify_save(assembly_params)
@@ -306,29 +306,29 @@
 
 	// Check complexity and space limitations
 	if(blocks["used_space"] > blocks["max_space"])
-		return "Used space overflow."
+		return "Переполнение используемого пространства."
 	if(blocks["complexity"] > blocks["max_complexity"])
-		return "Complexity overflow."
+		return "Переполнение сложности."
 
 
 	// Block 3. Wires.
 	if(blocks["wires"])
 		if(!islist(blocks["wires"]))
-			return "Invalid wiring list."	// Damaged wires list
+			return "Неверный список подключений."	// Damaged wires list
 
 		for(var/w in blocks["wires"])
 			var/list/wire = w
 
 			if(!islist(wire) || wire.len != 2)
-				return "Invalid wire data."
+				return "Неверные данные о проводе."
 
 			var/datum/integrated_io/IO = assembly.get_pin_ref_list(wire[1], assembly_components)
 			var/datum/integrated_io/IO2 = assembly.get_pin_ref_list(wire[2], assembly_components)
 			if(!IO || !IO2)
-				return "Invalid wire data."
+				return "Неверные данные о проводе."
 
 			if(initial(IO.io_type) != initial(IO2.io_type))
-				return "Wire type mismatch."
+				return "Несоответствие типов проводов."
 
 	return blocks
 

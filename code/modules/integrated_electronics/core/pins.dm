@@ -170,25 +170,25 @@ D [1]/  ||
 
 
 /datum/integrated_io/proc/ask_for_data_type(mob/user, var/default, var/list/allowed_data_types = list("string","number","null"))
-	var/type_to_use = input("Please choose a type to use.","[src] type setting") as null|anything in allowed_data_types
+	var/type_to_use = input("Пожалуйста, выберите тип для использования.","[src] type setting") as null|anything in allowed_data_types
 	if(!holder.check_interactivity(user))
 		return
 
 	var/new_data = null
 	switch(type_to_use)
 		if("string")
-			new_data = stripped_multiline_input(user, "Now type in a string.","[src] string writing", istext(default) ? default : null, no_trim = TRUE)
+			new_data = stripped_multiline_input(user, "Теперь введите строку.","[src] string writing", istext(default) ? default : null, no_trim = TRUE)
 			if(istext(new_data) && holder.check_interactivity(user) )
-				to_chat(user, "<span class='notice'>You input "+new_data+" into the pin.</span>")
+				to_chat(user, "<span class='notice'>Вы вводите "+new_data+" в пин.</span>")
 				return new_data
 		if("number")
-			new_data = input("Now type in a number.","[src] number writing", isnum(default) ? default : null) as null|num
+			new_data = input("Теперь введите число.","[src] number writing", isnum(default) ? default : null) as null|num
 			if(isnum(new_data) && holder.check_interactivity(user) )
-				to_chat(user, "<span class='notice'>You input [new_data] into the pin.</span>")
+				to_chat(user, "<span class='notice'>Вы вводите [new_data] в пин.</span>")
 				return new_data
 		if("null")
 			if(holder.check_interactivity(user))
-				to_chat(user, "<span class='notice'>You clear the pin's memory.</span>")
+				to_chat(user, "<span class='notice'>Вы очищаете память пина.</span>")
 				return new_data
 
 // Basically a null check
@@ -203,7 +203,7 @@ D [1]/  ||
 /datum/integrated_io/activate/ask_for_pin_data(mob/user) // This just pulses the pin.
 	holder.investigate_log(" was manually pulsed by [key_name(user)].", INVESTIGATE_CIRCUIT)
 	holder.check_then_do_work(ord,ignore_power = TRUE)
-	to_chat(user, "<span class='notice'>You pulse \the [holder]'s [src] pin.</span>")
+	to_chat(user, "<span class='notice'>Вы посылаете импульс в пин \the [holder]'s [src].</span>")
 
 /datum/integrated_io/activate
 	name = "activation pin"

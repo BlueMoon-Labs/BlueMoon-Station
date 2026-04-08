@@ -1,6 +1,6 @@
 /obj/item/integrated_electronics/detailer
 	name = "assembly detailer"
-	desc = "A combination autopainter and flash anodizer designed to give electronic assemblies a colorful, wear-resistant finish."
+	desc = "Комбинированная установка для автоматической окраски и анодирования, предназначенная для придания электронным схемам яркого и износостойкого покрытия."
 	icon = 'icons/obj/assemblies/electronic_tools.dmi'
 	icon_state = "detailer"
 	flags_1 = CONDUCT_1
@@ -10,24 +10,24 @@
 	var/accepting_refs = FALSE
 	var/detail_color = COLOR_ASSEMBLY_WHITE
 	var/list/color_list = list(
-		"black" = COLOR_ASSEMBLY_BLACK,
-		"gray" = COLOR_FLOORTILE_GRAY,
-		"machine gray" = COLOR_ASSEMBLY_BGRAY,
-		"white" = COLOR_ASSEMBLY_WHITE,
-		"red" = COLOR_ASSEMBLY_RED,
-		"orange" = COLOR_ASSEMBLY_ORANGE,
-		"beige" = COLOR_ASSEMBLY_BEIGE,
-		"brown" = COLOR_ASSEMBLY_BROWN,
-		"gold" = COLOR_ASSEMBLY_GOLD,
-		"yellow" = COLOR_ASSEMBLY_YELLOW,
-		"gurkha" = COLOR_ASSEMBLY_GURKHA,
-		"light green" = COLOR_ASSEMBLY_LGREEN,
-		"green" = COLOR_ASSEMBLY_GREEN,
-		"light blue" = COLOR_ASSEMBLY_LBLUE,
-		"blue" = COLOR_ASSEMBLY_BLUE,
-		"purple" = COLOR_ASSEMBLY_PURPLE,
-		"pink" = LIGHT_COLOR_PINK,
-		"custom" = COLOR_ASSEMBLY_WHITE
+		"Чёрный" = COLOR_ASSEMBLY_BLACK,
+		"Серый" = COLOR_FLOORTILE_GRAY,
+		"Машинный серый" = COLOR_ASSEMBLY_BGRAY,
+		"Белый" = COLOR_ASSEMBLY_WHITE,
+		"Красный" = COLOR_ASSEMBLY_RED,
+		"Оранжевый" = COLOR_ASSEMBLY_ORANGE,
+		"Бежевый" = COLOR_ASSEMBLY_BEIGE,
+		"Коричневый" = COLOR_ASSEMBLY_BROWN,
+		"Золотой" = COLOR_ASSEMBLY_GOLD,
+		"Жёлтый" = COLOR_ASSEMBLY_YELLOW,
+		"Гуркха" = COLOR_ASSEMBLY_GURKHA,
+		"Светло-зеленый" = COLOR_ASSEMBLY_LGREEN,
+		"Зеленый" = COLOR_ASSEMBLY_GREEN,
+		"Голубой" = COLOR_ASSEMBLY_LBLUE,
+		"Синий" = COLOR_ASSEMBLY_BLUE,
+		"Фиолетовый" = COLOR_ASSEMBLY_PURPLE,
+		"Розовый" = LIGHT_COLOR_PINK,
+		"Свой цвет" = COLOR_ASSEMBLY_WHITE
 		)
 
 /obj/item/integrated_electronics/detailer/Initialize(mapload)
@@ -41,13 +41,13 @@
 	add_overlay(detail_overlay)
 
 /obj/item/integrated_electronics/detailer/attack_self(mob/user)
-	var/color_choice = input(user, "Select color.", "Assembly Detailer") as null|anything in color_list
+	var/color_choice = input(user, "Выберите цвет.", "Assembly Detailer") as null|anything in color_list
 	if(!color_list[color_choice])
 		return
 	if(!in_range(src, user))
 		return
-	if(color_choice == "custom")
-		detail_color = input(user,"","Choose Color",detail_color) as color|null
+	if(color_choice == "Свой цвет")
+		detail_color = input(user,"","Выберите цвет",detail_color) as color|null
 	else
 		detail_color = color_list[color_choice]
 	update_icon()
