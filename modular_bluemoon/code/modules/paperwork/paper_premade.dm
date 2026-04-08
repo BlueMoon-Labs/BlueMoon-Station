@@ -90,8 +90,6 @@
 	default_raw_text = "<b>Комбинация золотого сейфа запасной карты капитана</b><br><br>Код: <b>%Код%</b><br><br>Сейф расположен на мостике. Используйте код в экстренных случаях для доступа к запасной ID-карте капитана.<br><br>— Central Command"
 
 /obj/item/paper/paperslip/spare_id_safe_code/Initialize(mapload)
-	var/obj/structure/safe/spare_id/safe = locate() in world
-	var/code_string = safe ? jointext(safe.tumblers, "-") : "ERR%@!#$"
+	var/code_string = GLOB.spare_id_safe ? jointext(GLOB.spare_id_safe.tumblers, "-") : "ERR%@!#$"
 	default_raw_text = replacetext(default_raw_text, "%Код%", code_string)
 	return ..()
-	
