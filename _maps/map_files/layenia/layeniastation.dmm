@@ -72110,7 +72110,7 @@
 	},
 /area/hallway/primary/fore)
 "kAg" = (
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/requests_console{
@@ -79608,7 +79608,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
-/obj/machinery/computer/card/minor/qm{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer3{
@@ -96703,7 +96703,7 @@
 	},
 /area/service/bar)
 "oaY" = (
-/obj/machinery/computer/card/minor/hos,
+/obj/machinery/modular_computer/console/preset/id,
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hos)
 "obf" = (
@@ -129970,7 +129970,7 @@
 	},
 /area/commons/dorms)
 "sUS" = (
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/machinery/camera{

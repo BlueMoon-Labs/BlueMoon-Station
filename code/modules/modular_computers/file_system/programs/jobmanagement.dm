@@ -1,5 +1,7 @@
 /// The time since the last job opening was created
-// GLOBAL_VAR_INIT(time_last_changed_position, 0)
+GLOBAL_VAR_INIT(time_last_changed_position, 0)
+
+#define MAX_PRIORITY_JOB 5
 
 /datum/computer_file/program/job_management
 	filename = "plexagoncore"
@@ -31,7 +33,7 @@
 		"Quartermaster")
 
 	//The scaling factor of max total positions in relation to the total amount of people on board the station in %
-	var/max_relative_positions = 30 //30%: Seems reasonable, limit of 6 @ 20 players
+	var/max_relative_positions = 75
 
 	//This is used to keep track of opened positions for jobs to allow instant closing
 	//Assoc array: "JobName" = (int)<Opened Positions>
@@ -108,10 +110,10 @@
 			if(j in SSjob.prioritized_jobs)
 				SSjob.prioritized_jobs -= j
 			else
-				if(length(SSjob.prioritized_jobs) < 5)
+				if(length(SSjob.prioritized_jobs) < MAX_PRIORITY_JOB)
 					SSjob.prioritized_jobs += j
 				else
-					computer.say("Error: CentCom employment protocols restrict prioritising more than 5 jobs.")
+					computer.say("Error: CentCom employment protocols restrict prioritising more than [MAX_PRIORITY_JOB] jobs.")
 			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			return TRUE
 
@@ -150,3 +152,4 @@
 	data["prioritized"] = priority
 	return data
 
+#undef MAX_PRIORITY_JOB

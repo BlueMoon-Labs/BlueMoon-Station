@@ -18,6 +18,7 @@
 	size = 8
 	tgui_id = "NtosCard"
 	program_icon = "id-card"
+	usage_flags = PROGRAM_CONSOLE
 
 	var/is_centcom = FALSE
 	var/minor = FALSE
@@ -60,15 +61,47 @@
 		)
 	)
 
-/datum/computer_file/program/card_mod/proc/authenticate(mob/user, obj/item/card/id/id_card)
+/datum/computer_file/program/card_mod/ui_interact(mob/user, datum/tgui/ui)
+	. = ..()
+	auto_authenticate()
+
+/datum/computer_file/program/card_mod/process_tick(delta_time)
+	. = ..()
+	if(program_state != PROGRAM_STATE_ACTIVE)
+		return
+	auto_authenticate()
+
+/datum/computer_file/program/card_mod/kill_program(forced)
+	. = ..()
+	if(authenticated)
+		authenticated = FALSE
+		playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
+
+/datum/computer_file/program/card_mod/proc/auto_authenticate()
+	// Авто-аутентификация или деавторизация
+	if(!computer)
+		return
+	var/obj/item/computer_hardware/card_slot/card_slot = computer.all_components[MC_CARD]
+	if(!card_slot)
+		return
+	var/obj/item/card/id/user_id_card = card_slot.stored_card
+	if(authenticate(user_id_card))
+		playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
+		return TRUE
+
+/datum/computer_file/program/card_mod/proc/authenticate(obj/item/card/id/id_card)
 	if(!id_card)
+		authenticated = FALSE
+		return
+
+	if(authenticated)
 		return
 
 	region_access = list()
 	if(!target_dept && (ACCESS_CHANGE_IDS in id_card.access))
 		minor = FALSE
 		authenticated = TRUE
-		update_static_data(user)
+		update_static_data_for_all_viewers()
 		return TRUE
 
 	var/list/head_types = list()
@@ -91,10 +124,35 @@
 	if(length(region_access))
 		minor = TRUE
 		authenticated = TRUE
-		update_static_data(user)
+		update_static_data_for_all_viewers()
 		return TRUE
 
 	return FALSE
+
+/datum/computer_file/program/card_mod/proc/set_job(job_name, obj/item/card/id/target_id_card, mob/user)
+	if(!computer || !authenticated || !target_id_card)
+		return
+
+	var/list/new_access = list()
+	if(is_centcom)
+		new_access = get_centcom_access(job_name)
+	else
+		var/datum/job/job = SSjob.name_occupations[job_name]
+		if(!job)
+			if(user)
+				to_chat(user, span_warning("No class exists for this job: [job_name]"))
+			return
+		new_access = job.get_access()
+		//финансовая вставка
+		if(target_id_card?.registered_account)
+			target_id_card.registered_account.account_job = job
+		//конец финансов
+	target_id_card.access -= get_all_centcom_access() + get_all_accesses()
+	target_id_card.access |= new_access
+	target_id_card.assignment = job_name
+	target_id_card.custom_job = ""
+	target_id_card.update_label()
+	return TRUE
 
 /datum/computer_file/program/card_mod/ui_act(action, params)
 	. = ..()
@@ -117,13 +175,6 @@
 	var/obj/item/card/id/target_id_card = card_slot2.stored_card
 
 	switch(action)
-		if("PRG_authenticate")
-			if(!computer || !user_id_card)
-				playsound(computer, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
-				return
-			if(authenticate(user, user_id_card))
-				playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
-				return TRUE
 		if("PRG_logout")
 			authenticated = FALSE
 			playsound(computer, 'sound/machines/terminal_off.ogg', 50, FALSE)
@@ -172,28 +223,69 @@
 					if(!card_slot)
 						return
 					if(user_id_card)
-						return card_slot.try_eject(user)
+						. = card_slot.try_eject(user)
+						if(. && authenticated)
+							authenticated = FALSE
+							playsound(computer, 'sound/machines/terminal_off.ogg', 50, FALSE)
+						return
 					else
 						var/obj/item/card/id/id = user.get_active_held_item()
 						if(istype(id))
-							return card_slot.try_insert(id)
+							. = card_slot.try_insert(id)
+							if(authenticate(id))
+								playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
+							else
+								playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
+							return
 			return FALSE
 		if("PRG_terminate")
-			if(!computer || !authenticated)
+			if(!computer || !authenticated || !target_id_card)
 				return
 			if(minor)
-				var/assign = GetJobName(target_id_card)
-				if(!(assign in head_subordinates) && assign != "Assistant")
+				var/assign = GetJobName(target_id_card.assignment)
+				if(!(assign in head_subordinates))
+					playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
 					return
-
 			target_id_card.access -= get_all_centcom_access() + get_all_accesses()
-			target_id_card.assignment = "Unassigned"
+			target_id_card.assignment = "Terminated"
 			//финансовая вставка
 			if(target_id_card?.registered_account)
 				target_id_card.registered_account.account_job = null
 			//конец финансов
 			target_id_card.update_label()
 			playsound(computer, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+			return TRUE
+		if("PRG_demote")
+			if(!computer || !authenticated || !target_id_card)
+				return
+			if(minor)
+				var/assign = GetJobName(target_id_card.assignment)
+				if(!(assign in head_subordinates))
+					playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
+					return
+			. = set_job("Assistant", target_id_card, user)
+			if(.)
+				playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
+			return
+		if("PRG_reset_access")
+			if(!computer || !authenticated || !target_id_card)
+				return
+			var/target = GetJobName(target_id_card.assignment)
+			if(minor)
+				if(!(target in head_subordinates))
+					playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
+					return
+			if(!target) // На всякий случай
+				playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
+				return
+			var/datum/job/job = SSjob.name_occupations[target]
+			if(!job)
+				to_chat(user, span_warning("No class exists for this job: [target]"))
+				return
+			var/list/new_access = is_centcom ? get_centcom_access(target) : job.get_access()
+			target_id_card.access -= get_all_centcom_access() + get_all_accesses()
+			target_id_card.access |= new_access
+			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			return TRUE
 		if("PRG_edit")
 			if(!computer || !authenticated || !target_id_card)
@@ -220,34 +312,15 @@
 					return
 				target_id_card.custom_job = custom_name
 				target_id_card.update_label()
+				. = TRUE
 			else
-				if(minor && !(target in head_subordinates))
+				if(minor && !(GetJobName(target_id_card.assignment) in head_subordinates) && !(target in head_subordinates))
+					playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
 					return
-				var/list/new_access = list()
-				if(is_centcom)
-					new_access = get_centcom_access(target)
-				else
-					var/datum/job/job
-					for(var/jobtype in subtypesof(/datum/job))
-						var/datum/job/J = new jobtype
-						if(J.title == target)
-							job = J
-							break
-					if(!job)
-						to_chat(user, "<span class='warning'>No class exists for this job: [target]</span>")
-						return
-					new_access = job.get_access()
-					//финансовая вставка
-					if(target_id_card?.registered_account)
-						target_id_card.registered_account.account_job = job
-					//конец финансов
-				target_id_card.access -= get_all_centcom_access() + get_all_accesses()
-				target_id_card.access |= new_access
-				target_id_card.assignment = target
-				target_id_card.custom_job = ""
-			target_id_card.update_label()
-			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
-			return TRUE
+				. = set_job(target, target_id_card, user)
+			if(.)
+				playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
+			return
 		if("PRG_access")
 			if(!computer || !authenticated)
 				return
@@ -327,12 +400,20 @@
 			data["jobs"][department] = department_jobs
 
 	var/list/regions = list()
+	var/static/list/minor_access_not_allowed // Если авторизация от доступа главы, то нельзя выдать доступ этой главы
+	if(!minor_access_not_allowed)
+		minor_access_not_allowed = list()
+		for(var/access_text in sub_managers)
+			minor_access_not_allowed += text2num(access_text)
+
 	for(var/i in 1 to 7)
 		if((minor || target_dept) && !(i in region_access))
 			continue
 
 		var/list/accesses = list()
 		for(var/access in get_region_accesses(i))
+			if((minor || target_dept) && (access in minor_access_not_allowed))
+				continue
 			if (get_access_desc(access))
 				accesses += list(list(
 					"desc" = replacetext(get_access_desc(access), "&nbsp", " "),

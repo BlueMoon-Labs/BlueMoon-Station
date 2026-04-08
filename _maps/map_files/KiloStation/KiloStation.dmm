@@ -7029,7 +7029,7 @@
 /turf/open/floor/carpet,
 /area/command/heads_quarters/hos)
 "amD" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/structure/cable{
@@ -13070,7 +13070,7 @@
 /turf/closed/wall/r_wall,
 /area/engineering/break_room)
 "awO" = (
-/obj/machinery/computer/card/minor/ce,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/computer/security/telescreen/ce{
 	pixel_y = 28
@@ -23620,7 +23620,7 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/medical/storage)
 "aOR" = (
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/effect/turf_decal/bot/yellow,
@@ -33089,7 +33089,7 @@
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/rd)
 "bdw" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/effect/turf_decal/bot/yellow,

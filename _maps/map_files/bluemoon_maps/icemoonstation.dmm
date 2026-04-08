@@ -1036,7 +1036,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/blue,
-/obj/machinery/computer/card/minor/cmo,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/cmo)
@@ -19065,7 +19065,7 @@
 	},
 /area/ruin/icemoon/unpowered/glacier/cafeteria)
 "dtW" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/effect/turf_decal/bot/yellow,
@@ -45861,7 +45861,7 @@
 /turf/open/openspace,
 /area/icemoon/surface/outdoors)
 "ioD" = (
-/obj/machinery/computer/card{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/effect/turf_decal/siding/wood{
@@ -119683,7 +119683,7 @@
 /turf/open/floor/plasteel/smooth/small,
 /area/service/sauna)
 "vGT" = (
-/obj/machinery/computer/card/minor/hos,
+/obj/machinery/modular_computer/console/preset/id,
 /turf/open/floor/carpet/red,
 /area/command/heads_quarters/hos)
 "vGV" = (
@@ -123080,7 +123080,7 @@
 /turf/open/floor/plasteel/textured,
 /area/engineering/storage/tech)
 "wmM" = (
-/obj/machinery/computer/card/minor/ce,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/machinery/requests_console{
 	announcementConsole = 1;
 	department = "Chief Engineer's Desk";
@@ -124938,7 +124938,7 @@
 /turf/open/floor/plating/snowed/smoothed/icemoon,
 /area/icemoon/surface/outdoors)
 "wFy" = (
-/obj/machinery/computer/card/minor/qm,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 5
 	},
