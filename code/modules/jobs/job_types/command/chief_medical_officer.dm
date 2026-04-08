@@ -74,8 +74,8 @@
 
 	id = /obj/item/card/id/silver
 	belt = /obj/item/pda/heads/cmo
-	l_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
-	r_pocket = /obj/item/pinpointer/crew
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
+	l_pocket = /obj/item/pinpointer/crew
 	ears = /obj/item/radio/headset/heads/cmo
 	glasses = /obj/item/clothing/glasses/hud/health/sunglasses
 	uniform = /obj/item/clothing/under/rank/medical/chief_medical_officer

@@ -111,8 +111,8 @@
 	suit = /obj/item/clothing/suit/armor/ntr
 	head = /obj/item/clothing/head/beret/sec/ntr
 	shoes = /obj/item/clothing/shoes/laceup/ntr
-	r_pocket = /obj/item/pen/fourcolor/ntr
-	l_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
+	l_pocket = /obj/item/pen/fourcolor/ntr
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 
 	backpack = /obj/item/storage/backpack/captain/ntr //BLUEMOON add
 	satchel = /obj/item/storage/backpack/satchel/cap/ntr //BLUEMOON add

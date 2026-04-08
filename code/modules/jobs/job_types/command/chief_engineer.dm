@@ -83,8 +83,8 @@
 
 	id = /obj/item/card/id/silver
 	belt = /obj/item/storage/belt/utility/chief/full
-	l_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
-	r_pocket = /obj/item/pda/heads/ce
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
+	l_pocket = /obj/item/pda/heads/ce
 	ears = /obj/item/radio/headset/heads/ce
 	uniform = /obj/item/clothing/under/rank/engineering/chief_engineer
 	shoes = /obj/item/clothing/shoes/sneakers/brown

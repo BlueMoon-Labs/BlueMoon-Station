@@ -93,3 +93,4 @@
 	var/code_string = GLOB.spare_id_safe ? jointext(GLOB.spare_id_safe.tumblers, "-") : "ERR%@!#$"
 	default_raw_text = replacetext(default_raw_text, "%Код%", code_string)
 	return ..()
+

@@ -77,7 +77,7 @@
 	shoes = /obj/item/clothing/shoes/sneakers/brown
 	suit = /obj/item/clothing/suit/toggle/labcoat/rd
 	l_hand = /obj/item/clipboard
-	l_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/laser_pointer)
 	accessory = list(/obj/item/clothing/accessory/permit/special/research_director)
 
