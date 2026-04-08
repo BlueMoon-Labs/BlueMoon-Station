@@ -15,6 +15,7 @@
 	exp_type = EXP_TYPE_COMMAND
 	exp_type_department = EXP_TYPE_COMMAND
 	considered_combat_role = TRUE
+	custom_spawn_text = "не забывайте о том, что ваша запасная карта должна находиться на территории мостика. И <b>прошу</b>, не переименовывайте станцию во что-нибудь похабное..."
 	alt_titles = list(
 		"Admiral",
 		"Cap-Slut",
