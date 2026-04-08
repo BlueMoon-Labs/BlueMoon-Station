@@ -1,6 +1,6 @@
 /obj/item/integrated_circuit
 	name = "integrated circuit"
-	desc = "It's a tiny chip!  This one doesn't seem to do much, however."
+	desc = "Это крошечный чип! Однако, похоже, он не выполняет особых функций."
 	icon = 'icons/obj/assemblies/electronic_components.dmi'
 	icon_state = "template"
 	w_class = WEIGHT_CLASS_TINY
@@ -44,19 +44,19 @@ a creative player the means to solve many problems.  Circuits are held inside an
 
 // This should be used when someone is examining while the case is opened.
 /obj/item/integrated_circuit/proc/internal_examine(mob/user)
-	to_chat(user, "This board has [inputs.len] input pin\s, [outputs.len] output pin\s and [activators.len] activation pin\s.")
+	to_chat(user, "Эта плата имеет [inputs.len] входных пинов\s, [outputs.len] выходных пинов\s и [activators.len] пинов активации\s.")
 	for(var/k in inputs)
 		var/datum/integrated_io/I = k
 		if(I.linked.len)
-			to_chat(user, "The '[I]' is connected to [I.get_linked_to_desc()].")
+			to_chat(user, "'[I]' подключен к [I.get_linked_to_desc()].")
 	for(var/k in outputs)
 		var/datum/integrated_io/O = k
 		if(O.linked.len)
-			to_chat(user, "The '[O]' is connected to [O.get_linked_to_desc()].")
+			to_chat(user, "'[O]' подключен к [O.get_linked_to_desc()].")
 	for(var/k in activators)
 		var/datum/integrated_io/activate/A = k
 		if(A.linked.len)
-			to_chat(user, "The '[A]' is connected to [A.get_linked_to_desc()].")
+			to_chat(user, "'[A]' подключен к [A.get_linked_to_desc()].")
 	any_examine(user)
 	interact(user)
 
@@ -122,11 +122,11 @@ a creative player the means to solve many problems.  Circuits are held inside an
 	if(!check_interactivity(M))
 		return
 
-	var/input = reject_bad_name(stripped_input(M, "What do you want to name this?", "Rename", name), TRUE)
+	var/input = reject_bad_name(stripped_input(M, "Как вы хотите это назвать?", "Переименовать", name), TRUE)
 	if(check_interactivity(M))
 		if(!input)
 			input = name
-		to_chat(M, "<span class='notice'>The circuit '[name]' is now labeled '[input]'.</span>")
+		to_chat(M, "<span class='notice'>Схема '[name]' теперь называется '[input]'.</span>")
 		displayed_name = input
 
 /obj/item/integrated_circuit/interact(mob/user)
@@ -152,11 +152,11 @@ a creative player the means to solve many problems.  Circuits are held inside an
 		<table border='1' style='undefined;table-layout: fixed; width: 80%'>"
 
 	if(assembly)
-		HTML += "<a href='?src=[REF(src)];return=1'>Return to Assembly</a><br>"
+		HTML += "<a href='?src=[REF(src)];return=1'>Вернуться к сборке</a><br>"
 
-	HTML += "<a href='?src=[REF(src)]'>Refresh</a>  |  \
-		<a href='?src=[REF(src)];rename=1'>Rename</a>  |  \
-		<a href='?src=[REF(src)];scan=1'>Copy Ref</a>"
+	HTML += "<a href='?src=[REF(src)]'>Обновить</a>  |  \
+		<a href='?src=[REF(src)];rename=1'>Переименовать</a>  |  \
+		<a href='?src=[REF(src)];scan=1'>Скопировать ссылку</a>"
 
 	if(assembly && removable)
 		HTML += "  |  <a href='?src=[REF(assembly)];component=[REF(src)];remove=1'>Remove</a>"
@@ -276,7 +276,7 @@ a creative player the means to solve many problems.  Circuits are held inside an
 			if(held_item && (istype(held_item, /obj/item/integrated_electronics) || held_item.tool_behaviour == TOOL_MULTITOOL))
 				update_to_assembly = pin.handle_wire(linked, held_item, href_list["act"], usr)
 			else
-				to_chat(usr, "<span class='warning'>You can't do a whole lot without the proper tools.</span>")
+				to_chat(usr, "<span class='warning'>Без нужных инструментов мало что получится.</span>")
 				success = FALSE
 			if(success && assembly)
 				assembly.add_allowed_scanner(usr.ckey)
@@ -287,9 +287,9 @@ a creative player the means to solve many problems.  Circuits are held inside an
 			if(D.accepting_refs)
 				D.afterattack(src, usr, TRUE)
 			else
-				to_chat(usr, "<span class='warning'>The debugger's 'ref scanner' needs to be on.</span>")
+				to_chat(usr, "<span class='warning'>\"Сканер ссылок\" дебаггера должен быть включен</span>")
 		else
-			to_chat(usr, "<span class='warning'>You need a debugger set to 'ref' mode to do that.</span>")
+			to_chat(usr, "<span class='warning'>Вы должны установить на дебаггере режим ссылок</span>")
 
 	if(href_list["return"])
 		update_to_assembly = TRUE

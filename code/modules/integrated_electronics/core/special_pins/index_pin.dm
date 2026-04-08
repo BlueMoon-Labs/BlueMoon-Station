@@ -4,9 +4,9 @@
 	data = 1
 
 /datum/integrated_io/index/ask_for_pin_data(mob/user)
-	var/new_data = input("Please type in an index.","[src] index writing") as num
+	var/new_data = input("Введите индекс.","[src] index writing") as num
 	if(isnum(new_data) && holder.check_interactivity(user))
-		to_chat(user, "<span class='notice'>You input [new_data] into the pin.</span>")
+		to_chat(user, "<span class='notice'>Вы вводите [new_data] в пин.</span>")
 		write_data_to_pin(new_data)
 
 /datum/integrated_io/index/write_data_to_pin(new_data)

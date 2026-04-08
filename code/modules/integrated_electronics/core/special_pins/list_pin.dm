@@ -42,7 +42,7 @@
 /datum/integrated_io/lists/proc/remove_from_list_by_position(mob/user, var/position)
 	var/list/my_list = data
 	if(!my_list.len)
-		to_chat(user, "<span class='warning'>The list is empty, there's nothing to remove.</span>")
+		to_chat(user, "<span class='warning'>Список пуст, удалять нечего.</span>")
 		return
 	if(!position)
 		return
@@ -53,20 +53,20 @@
 /datum/integrated_io/lists/proc/remove_from_list(mob/user, var/target_entry)
 	var/list/my_list = data
 	if(!my_list.len)
-		to_chat(user, "<span class='warning'>The list is empty, there's nothing to remove.</span>")
+		to_chat(user, "<span class='warning'>Список пуст, удалять нечего.</span>")
 		return
 	if(!target_entry)
-		target_entry = input(user, "Which piece of data do you want to remove?", "Remove") as null|anything in my_list
+		target_entry = input(user, "Какие данные вы хотите удалить?", "Удалить") as null|anything in my_list
 	if(holder.check_interactivity(user) && target_entry)
 		my_list.Remove(target_entry)
 
 /datum/integrated_io/lists/proc/edit_in_list(mob/user, var/target_entry)
 	var/list/my_list = data
 	if(!my_list.len)
-		to_chat(user, "<span class='warning'>The list is empty, there's nothing to modify.</span>")
+		to_chat(user, "<span class='warning'>Список пуст, изменять нечего.</span>")
 		return
 	if(!target_entry)
-		target_entry = input(user, "Which piece of data do you want to edit?", "Edit") as null|anything in my_list
+		target_entry = input(user, "Какие данные вы хотите изменить?", "Изменить") as null|anything in my_list
 	if(holder.check_interactivity(user) && target_entry)
 		var/edited_entry = ask_for_data_type(user, target_entry)
 		if(edited_entry)
@@ -75,7 +75,7 @@
 /datum/integrated_io/lists/proc/edit_in_list_by_position(mob/user, var/position)
 	var/list/my_list = data
 	if(!my_list.len)
-		to_chat(user, "<span class='warning'>The list is empty, there's nothing to modify.</span>")
+		to_chat(user, "<span class='warning'>Список пуст, изменять нечего.</span>")
 		return
 	if(!position)
 		return
@@ -88,14 +88,14 @@
 /datum/integrated_io/lists/proc/swap_inside_list(mob/user, var/first_target, var/second_target)
 	var/list/my_list = data
 	if(my_list.len <= 1)
-		to_chat(user, "<span class='warning'>The list is empty, or too small to do any meaningful swapping.</span>")
+		to_chat(user, "<span class='warning'>Список пуст или слишком мал, чтобы производить какую-либо значимую перестановку.</span>")
 		return
 	if(!first_target)
-		first_target = input(user, "Which piece of data do you want to swap? (1)", "Swap") as null|anything in my_list
+		first_target = input(user, "Какие данные вы хотите поменять местами? (1)", "Поменять местами") as null|anything in my_list
 
 	if(holder.check_interactivity(user) && first_target)
 		if(!second_target)
-			second_target = input(user, "Which piece of data do you want to swap? (2)", "Swap") as null|anything in my_list - first_target
+			second_target = input(user, "Какие данные вы хотите поменять местами? (2)", "Поменять местами") as null|anything in my_list - first_target
 
 		if(holder.check_interactivity(user) && second_target)
 			var/first_pos = my_list.Find(first_target)

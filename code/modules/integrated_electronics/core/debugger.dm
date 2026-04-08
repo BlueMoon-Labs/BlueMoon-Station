@@ -1,7 +1,7 @@
 /obj/item/integrated_electronics/debugger
 	name = "circuit debugger"
-	desc = "This small tool allows one working with custom machinery to directly set data to a specific pin, useful for writing \
-	settings to specific circuits, or for debugging purposes.  It can also pulse activation pins."
+	desc = "Этот небольшой инструмент позволяет тем, кто работает с нестандартным оборудованием, напрямую записывать данные в конкретный контакт, что удобно при записи \
+	настроек в определенные цепи или для отладки.  Он также может генерировать импульсы на выводах активации."
 	icon = 'icons/obj/assemblies/electronic_tools.dmi'
 	icon_state = "debugger"
 	flags_1 = CONDUCT_1
@@ -13,7 +13,7 @@
 	var/copy_id = FALSE
 
 /obj/item/integrated_electronics/debugger/attack_self(mob/user)
-	var/type_to_use = input("Please choose a type to use.","[src] type setting") as null|anything in list("string","number","ref","copy","null")
+	var/type_to_use = input("Выберите тип.","[src] type setting") as null|anything in list("string","number","ref","copy","null")
 	if(!user.IsAdvancedToolUser())
 		return
 
@@ -23,41 +23,41 @@
 			accepting_refs = FALSE
 			copy_values = FALSE
 			copy_id = FALSE
-			new_data = stripped_input(user, "Now type in a string.","[src] string writing", no_trim = TRUE)
+			new_data = stripped_input(user, "Теперь введите строку.","[src] string writing", no_trim = TRUE)
 			if(istext(new_data) && user.IsAdvancedToolUser())
 				data_to_write = new_data
-				to_chat(user, "<span class='notice'>You set \the [src]'s memory to \"[new_data]\".</span>")
+				to_chat(user, "<span class='notice'>Вы устанавливаете память \the [src] в \"[new_data]\".</span>")
 		if("number")
 			accepting_refs = FALSE
 			copy_values = FALSE
-			new_data = input(user, "Now type in a number.","[src] number writing") as null|num
+			new_data = input(user, "Теперь введите число.","[src] number writing") as null|num
 			if(isnum(new_data) && user.IsAdvancedToolUser())
 				data_to_write = new_data
-				to_chat(user, "<span class='notice'>You set \the [src]'s memory to [new_data].</span>")
+				to_chat(user, "<span class='notice'>Вы устанавливаете память \the [src] в [new_data].</span>")
 		if("ref")
 			accepting_refs = TRUE
 			copy_values = FALSE
 			copy_id = FALSE
-			to_chat(user, "<span class='notice'>You turn \the [src]'s ref scanner on.  Slide it across \
-			an object for a ref of that object to save it in memory.</span>")
+			to_chat(user, "<span class='notice'>Включите сканер ссылок \the [src]. Проведите им по \
+            объекту, чтобы получить ссылку на этот объект и сохранить её в памяти.</span>")
 		if("copy")
 			accepting_refs = FALSE
 			copy_values = TRUE
 			copy_id = FALSE
-			to_chat(user, "<span class='notice'>You turn \the [src]'s value copier on.  Use it on a pin \
-			to save its current value in memory.</span>")
+			to_chat(user, "<span class='notice'>Вы включаете устройство копирования значений \the [src].  Используйте его на выводе, \
+            чтобы сохранить его текущее значение в памяти.</span>")
 		if("null")
 			data_to_write = null
 			copy_values = FALSE
-			to_chat(user, "<span class='notice'>You set \the [src]'s memory to absolutely nothing.</span>")
+			to_chat(user, "<span class='notice'>Вы сбросили память \the [src] до нуля.</span>")
 
 /obj/item/integrated_electronics/debugger/afterattack(atom/target, mob/living/user, proximity)
 	. = ..()
 	if(accepting_refs && proximity)
 		data_to_write = WEAKREF(target)
-		visible_message("<span class='notice'>[user] slides \a [src]'s over \the [target].</span>")
-		to_chat(user, "<span class='notice'>You set \the [src]'s memory to a reference to [target.name] \[Ref\].  The ref scanner is \
-		now off.</span>")
+		visible_message("<span class='notice'>[user] проводит \a [src] над \the [target].</span>")
+		to_chat(user, "<span class='notice'>Вы установили в память \the [src] ссылку на [target.name] \[Ref\].  Сканер ссылок \
+		теперь выключен.</span>")
 		accepting_refs = FALSE
 
 /obj/item/integrated_electronics/debugger/proc/write_data(var/datum/integrated_io/io, mob/user)
@@ -66,7 +66,7 @@
 		//If the debugger is set to copy, copy the data in the pin onto it
 		if(copy_values)
 			data_to_write = io.data
-			to_chat(user, "<span class='notice'>You let the debugger copy the data.</span>")
+			to_chat(user, "<span class='notice'>Вы разрешили отладчику копировать данные.</span>")
 			copy_values = FALSE
 			return
 
@@ -78,7 +78,7 @@
 			var/datum/weakref/w = data_to_write
 			var/atom/A = w.resolve()
 			data_to_show = A.name
-		to_chat(user, "<span class='notice'>You write '[data_to_write ? data_to_show : "NULL"]' to the '[io]' pin of \the [io.holder].</span>")
+		to_chat(user, "<span class='notice'>Вы вписываете '[data_to_write ? data_to_show : "NULL"]' в пин '[io]', находящийся в \the [io.holder].</span>")
 
 	//If the pin can only be pulsed
 	else if(io.io_type == PULSE_CHANNEL)

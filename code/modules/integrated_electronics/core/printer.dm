@@ -2,7 +2,7 @@
 
 /obj/item/integrated_circuit_printer
 	name = "integrated circuit printer"
-	desc = "A portable(ish) machine made to print tiny modular circuitry out of metal."
+	desc = "Устройство, которое можно назвать \"почти\" портативным, предназначенное для печати крошечных модульных схем из металла."
 	icon = 'icons/obj/assemblies/electronic_tools.dmi'
 	icon_state = "circuit_printer"
 	w_class = WEIGHT_CLASS_BULKY
@@ -39,7 +39,7 @@
 	if(!cloning)
 		return
 
-	visible_message("<span class='notice'>[src] has finished printing its assembly!</span>")
+	visible_message("<span class='notice'>[src] завершил печать корпуса.</span>")
 	playsound(src, 'sound/items/poster_being_created.ogg', 50, TRUE)
 	var/obj/item/electronic_assembly/assembly = SScircuit.load_electronic_assembly(get_turf(src), program)
 	log_admin("INTEGRAL BITCH [user.ckey] завершил печать программы на [src]. Созданная сборка: [assembly], Программа: [program]")
@@ -50,17 +50,17 @@
 /obj/item/integrated_circuit_printer/attackby(obj/item/O, mob/user)
 	if(istype(O, /obj/item/disk/integrated_circuit/upgrade/advanced))
 		if(upgraded)
-			to_chat(user, "<span class='warning'>[src] already has this upgrade. </span>")
+			to_chat(user, "<span class='warning'>[src] уже имеет данное улучшение. </span>")
 			return TRUE
-		to_chat(user, "<span class='notice'>You install [O] into [src]. </span>")
+		to_chat(user, "<span class='notice'>Вы вставляете [O] в [src]. </span>")
 		upgraded = TRUE
 		return TRUE
 
 	if(istype(O, /obj/item/disk/integrated_circuit/upgrade/clone))
 		if(fast_clone)
-			to_chat(user, "<span class='warning'>[src] already has this upgrade. </span>")
+			to_chat(user, "<span class='warning'>[src] уже имеет данное улучшение. </span>")
 			return TRUE
-		to_chat(user, "<span class='notice'>You install [O] into [src]. Circuit cloning will now be instant. </span>")
+		to_chat(user, "<span class='notice'>Вы вставляете [O] в [src]. Теперь клонирование схем будет происходить мгновенно. </span>")
 		fast_clone = TRUE
 		return TRUE
 
@@ -70,17 +70,17 @@
 			if(recycling)
 				return
 			if(!EA.opened)
-				to_chat(user, "<span class='warning'>You can't reach [EA]'s components to remove them!</span>")
+				to_chat(user, "<span class='warning'>Вы не можете достать до компонентов [EA], чтобы достать их!</span>")
 				return
 			if(EA.battery)
-				to_chat(user, "<span class='warning'>Remove [EA]'s power cell first!</span>")
+				to_chat(user, "<span class='warning'>Достаньте батарейку [EA] сначала!</span>")
 				return
 			for(var/V in EA.assembly_components)
 				var/obj/item/integrated_circuit/IC = V
 				if(!IC.removable)
-					to_chat(user, "<span class='warning'>[EA] has irremovable components in the casing, preventing you from emptying it.</span>")
+					to_chat(user, "<span class='warning'>В корпусе [EA] имеются неизвлекаемые компоненты, что не позволяет его опорожнить.</span>")
 					return
-			to_chat(user, "<span class='notice'>You begin recycling [EA]'s components...</span>")
+			to_chat(user, "<span class='notice'>Вы начинаете перерабатывать компоненты [EA]...</span>")
 			playsound(src, 'sound/items/electronic_assembly_emptying.ogg', 50, TRUE)
 			if(!do_after(user, 30, target = src) || recycling) //short channel so you don't accidentally start emptying out a complex assembly
 				return
@@ -89,7 +89,7 @@
 			for(var/V in EA.assembly_components)
 				var/obj/item/integrated_circuit/IC = V
 				if(!mats.has_space(mats.get_item_material_amount(IC)))
-					to_chat(user, "<span class='notice'>[src] can't hold any more materials!</span>")
+					to_chat(user, "<span class='notice'>[src] не может хранить больше материалов!</span>")
 					break
 				if(!do_after(user, 5, target = user))
 					recycling = FALSE
@@ -97,7 +97,7 @@
 				playsound(src, 'sound/items/crowbar.ogg', 50, TRUE)
 				if(EA.try_remove_component(IC, user, TRUE))
 					mats.user_insert(IC, user)
-			to_chat(user, "<span class='notice'>You recycle all the components[EA.assembly_components.len ? " you could " : " "]from [EA]!</span>")
+			to_chat(user, "<span class='notice'>Вы переработали все компоненты[EA.assembly_components.len ? ", которые могли " : " "]из [EA]!</span>")
 			playsound(src, 'sound/items/electronic_assembly_empty.ogg', 50, TRUE)
 			recycling = FALSE
 			return TRUE
@@ -137,32 +137,32 @@
 	//Preparing the browser
 	var/datum/browser/popup = new(user, "printernew", "Integrated Circuit Printer", 800, 630) // Set up the popup browser window
 
-	var/HTML = "<center><h2>Integrated Circuit Printer</h2></center><br>"
+	var/HTML = "<center><h2>Принтер для печати интегральных схем</h2></center><br>"
 	if(debug)
-		HTML += "<center><h3>DEBUG PRINTER -- Infinite materials. Cloning available.</h3></center>"
+		HTML += "<center><h3>DEBUG PRINTER -- Бесконечные материалы. Клонирование доступно.</h3></center>"
 	else
-		HTML += "Metal: [materials.total_amount]/[materials.max_amount].<br><br>"
+		HTML += "Металл: [materials.total_amount]/[materials.max_amount].<br><br>"
 
 	if(CONFIG_GET(flag/ic_printing) || debug)
-		HTML += "Assembly cloning: [can_clone ? (fast_clone ? "Instant" : "Available") : "Unavailable"].<br>"
+		HTML += "Клонирование сборок: [can_clone ? (fast_clone ? "Мгновенно" : "Доступно") : "Недоступно"].<br>"
 
-	HTML += "Circuits available: [upgraded || debug ? "Advanced":"Regular"]."
+	HTML += "Доступные платы: [upgraded || debug ? "Продвинутые":"Обычные"]."
 	if(!upgraded)
-		HTML += "<br>Crossed out circuits mean that the printer is not sufficiently upgraded to create that circuit."
+		HTML += "<br>Зачеркнутые схемы означают, что принтер не имеет достаточных улучшений для создания данной схемы."
 
 	HTML += "<hr>"
 	if((can_clone && CONFIG_GET(flag/ic_printing)) || debug)
-		HTML += "Here you can load script for your assembly.<br>"
+		HTML += "Здесь вы можете загрузить код вашей сборки.<br>"
 		if(!cloning)
-			HTML += " <A href='?src=[REF(src)];print=load'>Load Program</a> "
+			HTML += " <A href='?src=[REF(src)];print=load'>Загрузить программу</a> "
 		else
-			HTML += " Load Program"
+			HTML += "Загрузить программу"
 		if(!program)
-			HTML += " [fast_clone ? "Print" : "Begin Printing"] Assembly"
+			HTML += " [fast_clone ? "Распечатать сборку" : "Начать печать сборки"]"
 		else if(cloning)
-			HTML += " <A href='?src=[REF(src)];print=cancel'>Cancel Print</a>"
+			HTML += " <A href='?src=[REF(src)];print=cancel'>Отменить печать</a>"
 		else
-			HTML += " <A href='?src=[REF(src)];print=print'>[fast_clone ? "Print" : "Begin Printing"] Assembly</a>"
+			HTML += " <A href='?src=[REF(src)];print=print'>[fast_clone ? "Распечатать сборку" : "Начать печать сборки"]</a>"
 
 		HTML += "<br><hr>"
 	HTML += "Categories:"
@@ -218,7 +218,7 @@
 		var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 
 		if(!debug && !materials.use_amount_mat(cost, /datum/material/iron))
-			to_chat(usr, "<span class='warning'>You need [cost] metal to build that!</span>")
+			to_chat(usr, "<span class='warning'>Вам нужно [cost] металла, чтобы создать это!</span>")
 			return TRUE
 
 		var/obj/item/built = new build_type(drop_location())
@@ -236,21 +236,21 @@
 			E.diag_hud_set_circuittracking()
 			E.investigate_log("was printed by [E.creator].", INVESTIGATE_CIRCUIT)
 
-		to_chat(usr, "<span class='notice'>[capitalize(built.name)] printed.</span>")
+		to_chat(usr, "<span class='notice'>[capitalize(built.name)] распечатана.</span>")
 		playsound(src, 'sound/items/jaws_pry.ogg', 50, TRUE)
 
 	if(href_list["print"])
 		if(!CONFIG_GET(flag/ic_printing) && !debug)
-			to_chat(usr, "<span class='warning'>CentCom has disabled printing of custom circuitry due to recent allegations of copyright infringement.</span>")
+			to_chat(usr, "<span class='warning'>Центральное Командование приостановило печать пользовательских схем в связи с недавними обвинениями в нарушении авторских прав.</span>")
 			return
 		if(!can_clone) // Copying and printing ICs is cloning
-			to_chat(usr, "<span class='warning'>This printer does not have the cloning upgrade.</span>")
+			to_chat(usr, "<span class='warning'>В этом принтере отсутствует обновление для клонирования.</span>")
 			return
 		switch(href_list["print"])
 			if("load")
 				if(cloning)
 					return
-				var/input = input("Put your code there:", "loading", null, null) as message | null
+				var/input = input("Вставьте свой код сюда:", "загрузка", null, null) as message | null
 				if(!check_interactivity(usr) || cloning)
 					return
 				if(!input)
@@ -266,17 +266,17 @@
 					return
 				else if(islist(validation))
 					program = validation
-					to_chat(usr, "<span class='notice'>This is a valid program for [program["assembly"]["type"]].</span>")
+					to_chat(usr, "<span class='notice'>Это допустимая программа для [program["assembly"]["type"]].</span>")
 					if(program["requires_upgrades"])
 						if(upgraded)
-							to_chat(usr, "<span class='notice'>It uses advanced component designs.</span>")
+							to_chat(usr, "<span class='notice'>В нём используются продвинутые компоненты.</span>")
 						else
-							to_chat(usr, "<span class='warning'>It uses unknown component designs. Printer upgrade is required to proceed.</span>")
+							to_chat(usr, "<span class='warning'>В нём используются неизвестные компоненты. Для продолжения необходимо улучшить принтер.</span>")
 					if(program["unsupported_circuit"])
-						to_chat(usr, "<span class='warning'>This program uses components not supported by the specified assembly. Please change the assembly type in the save file to a supported one.</span>")
-					to_chat(usr, "<span class='notice'>Used space: [program["used_space"]]/[program["max_space"]].</span>")
-					to_chat(usr, "<span class='notice'>Complexity: [program["complexity"]]/[program["max_complexity"]].</span>")
-					to_chat(usr, "<span class='notice'>Metal cost: [program["metal_cost"]].</span>")
+						to_chat(usr, "<span class='warning'>Эта программа использует компоненты, которые не поддерживаются указанным корпусом. Измените тип корпуса в файле сохранения на поддерживаемый.</span>")
+					to_chat(usr, "<span class='notice'>Использованное местоо: [program["used_space"]]/[program["max_space"]].</span>")
+					to_chat(usr, "<span class='notice'>Сложность: [program["complexity"]]/[program["max_complexity"]].</span>")
+					to_chat(usr, "<span class='notice'>Потраченный металл: [program["metal_cost"]].</span>")
 
 			if("print")
 				if(!program || cloning)
@@ -284,10 +284,10 @@
 				log_admin("INTEGRAL BITCH [usr.ckey] начал печать программы на [src]. Программа: [program]")
 
 				if(program["requires_upgrades"] && !upgraded && !debug)
-					to_chat(usr, "<span class='warning'>This program uses unknown component designs. Printer upgrade is required to proceed.</span>")
+					to_chat(usr, "<span class='warning'>В этой программе используются неизвестные компоненты. Для продолжения необходимо улучшить принтер.</span>")
 					return
 				if(program["unsupported_circuit"] && !debug)
-					to_chat(usr, "<span class='warning'>This program uses components not supported by the specified assembly. Please change the assembly type in the save file to a supported one.</span>")
+					to_chat(usr, "<span class='warning'>Эта программа использует компоненты, которые не поддерживаются указанным корпусом. Измените тип корпуса в файле сохранения на поддерживаемый.</span>")
 					return
 				else if(fast_clone)
 					var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
@@ -295,17 +295,17 @@
 						cloning = TRUE
 						print_program(usr)
 					else
-						to_chat(usr, "<span class='warning'>You need [program["metal_cost"]] metal to build that!</span>")
+						to_chat(usr, "<span class='warning'>Вам нужно [program["metal_cost"]] металла, чтобы создать это!</span>")
 				else
 					var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 					if(!materials.use_amount_mat(program["metal_cost"], /datum/material/iron))
-						to_chat(usr, "<span class='warning'>You need [program["metal_cost"]] metal to build that!</span>")
+						to_chat(usr, "<span class='warning'>Вам нужно [program["metal_cost"]] металла, чтобы создать это!</span>")
 						return
 					var/cloning_time = round(program["metal_cost"] / 15)
 					cloning_time = min(cloning_time, MAX_CIRCUIT_CLONE_TIME)
 					cloning = TRUE
-					to_chat(usr, "<span class='notice'>You begin printing a custom assembly. This will take approximately [DisplayTimeText(cloning_time)]. You can still print \
-					off normal parts during this time.</span>")
+					to_chat(usr, "<span class='notice'>YВы начинаете печать пользовательской сборки. Это займет примерно [DisplayTimeText(cloning_time)]. В это время вы по-прежнему можете распечатывать \
+					обычные детали.</span>")
 					playsound(src, 'sound/items/poster_being_created.ogg', 50, TRUE)
 					addtimer(CALLBACK(src, PROC_REF(print_program), usr), cloning_time)
 
@@ -313,7 +313,7 @@
 				if(!cloning || !program)
 					return
 
-				to_chat(usr, "<span class='notice'>Cloning has been canceled. Metal cost has been refunded.</span>")
+				to_chat(usr, "<span class='notice'>Клонирование отменено. Стоимость металла возвращена.</span>")
 				cloning = FALSE
 				var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 				materials.use_amount_mat(-program["metal_cost"], /datum/material/iron) //use negative amount to regain the cost
@@ -325,7 +325,7 @@
 // FUKKEN UPGRADE DISKS
 /obj/item/disk/integrated_circuit/upgrade
 	name = "integrated circuit printer upgrade disk"
-	desc = "Install this into your integrated circuit printer to enhance it."
+	desc = "Установите это в ваш принтер интегральных схем, чтобы улучшить его работу."
 	icon = 'icons/obj/assemblies/electronic_tools.dmi'
 	icon_state = "upgrade_disk"
 	item_state = "card-id"
@@ -333,9 +333,9 @@
 
 /obj/item/disk/integrated_circuit/upgrade/advanced
 	name = "integrated circuit printer upgrade disk - advanced designs"
-	desc = "Install this into your integrated circuit printer to enhance it.  This one adds new, advanced designs to the printer."
+	desc = "Установите это в свой принтер с интегральной схемой, чтобы улучшить его работу.  Этот диск добавляет в принтер новые усовершенствованные дизайны."
 
 /obj/item/disk/integrated_circuit/upgrade/clone
 	name = "integrated circuit printer upgrade disk - instant cloner"
-	desc = "Install this into your integrated circuit printer to enhance it.  This one allows the printer to duplicate assemblies instantaneously."
+	desc = "Установите это в свой принтер с интегральной схемой, чтобы улучшить его работу.  Этот диск позволяет принтеру мгновенно копировать сборки."
 	icon_state = "upgrade_disk_clone"
