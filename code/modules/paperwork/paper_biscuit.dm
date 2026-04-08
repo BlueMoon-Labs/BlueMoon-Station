@@ -1,5 +1,5 @@
 /obj/item/folder/biscuit
-	name = "biscuit card"
+	name = "Biscuit card"
 	desc = "A biscuit card. On the back, <b>DO NOT DIGEST</b> is printed in large lettering."
 	icon_state = "paperbiscuit"
 	bg_color = "#ffffff"
@@ -25,10 +25,10 @@
 	. = ..()
 	if(cracked)
 		. += span_notice("It's been cracked open.")
+		if(contained_slip)
+			. += span_notice("This one contains [contained_slip.name].")
 	else
 		. += span_notice("You'll need to crack it open to access its contents.")
-		if(contained_slip)
-			. += "This one contains [contained_slip.name]."
 
 /obj/item/folder/biscuit/Destroy()
 	if(isdatum(contained_slip))
@@ -103,7 +103,7 @@
 
 //Corporate "confidential" biscuit cards
 /obj/item/folder/biscuit/confidential
-	name = "confidential biscuit card"
+	name = "Confidential biscuit card"
 	desc = "A confidential biscuit card. The tasteful blue color and NT logo on the front makes it look a little like a chocolate bar. \
 		On the back, <b>DO NOT DIGEST</b> is printed in large lettering."
 	icon_state = "paperbiscuit_secret"
@@ -115,7 +115,7 @@
 
 //Biscuits which start open. Used for crafting, printing, and such
 /obj/item/folder/biscuit/unsealed
-	name = "biscuit card"
+	name = "Biscuit card"
 	desc = "A biscuit card. On the back, <b>DO NOT DIGEST</b> is printed in large lettering."
 	icon_state = "paperbiscuit_cracked"
 	contents_hidden = FALSE
@@ -146,7 +146,7 @@
 	update_appearance()
 
 /obj/item/folder/biscuit/unsealed/confidential
-	name = "confidential biscuit card"
+	name = "Confidential biscuit card"
 	desc = "A confidential biscuit card. The tasteful blue color and NT logo on the front makes it look a little like a chocolate bar. On the back, <b>DO NOT DIGEST</b> is printed in large lettering."
 	icon_state = "paperbiscuit_secret_cracked"
 	bg_color = "#355e9f"
