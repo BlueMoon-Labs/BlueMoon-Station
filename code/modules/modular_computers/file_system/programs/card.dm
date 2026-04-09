@@ -178,9 +178,7 @@
 
 	switch(action)
 		if("PRG_print")
-			if(!computer || !printer)
-				return
-			if(!authenticated)
+			if(!computer || !printer || !target_id_card || !authenticated)
 				return
 			var/contents = {"<h4>Access Report</h4>
 						<u>Prepared By:</u> [user_id_card?.registered_name ? user_id_card.registered_name : "Unknown"]<br>
