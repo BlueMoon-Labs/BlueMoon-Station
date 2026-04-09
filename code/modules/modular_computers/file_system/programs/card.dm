@@ -186,7 +186,7 @@
 						<u>For:</u> [target_id_card.registered_name ? target_id_card.registered_name : "Unregistered"]<br>
 						<hr>
 						<u>Assignment:</u> [target_id_card.get_assignment_name()]<br>
-						<u>Access:</u><br>
+						<b><u>Access:</u></b><br>
 						%ACCESSES%
 						"}
 
@@ -210,15 +210,6 @@
 				compile_accesses += "<b>Other:</b> [jointext(access_desc, ", ")]"
 
 			contents = replacetext(contents, "%ACCESSES%", length(compile_accesses) ? jointext(compile_accesses, "<br>") : "No Accesses detected")
-
-			/*
-			var/known_access_rights = get_all_accesses()
-			var/list/access_desc = list()
-			for(var/A in target_id_card.access)
-				if(A in known_access_rights)
-					access_desc += get_access_desc(A)
-			contents = replacetext(contents, "%ACCESSES%", length(access_desc) ? jointext(access_desc, ", ") : "-")
-			*/
 
 			if(!printer.print_text(contents,"access report"))
 				to_chat(usr, "<span class='notice'>Hardware error: Printer was unable to print the file. It may be out of paper.</span>")
