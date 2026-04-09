@@ -428,7 +428,7 @@
 	if(!check_interactivity(M))
 		return
 
-	var/input = reject_bad_name(input("WКак вы хотите это назвать?", "Переименовать", src.name) as null|text, TRUE)
+	var/input = reject_bad_name(input("Как вы хотите это назвать?", "Переименовать", src.name) as null|text, TRUE)
 	if(!check_interactivity(M))
 		return
 	if(src && input)
@@ -587,7 +587,7 @@
 		type_to_use = input("Чтобы вы хотели сделать?","[src] type setting") as null|anything in list("починить", "вскрыть")
 
 	switch(type_to_use)
-		if("repair")
+		if("починить")
 			if(obj_integrity < max_integrity)
 				obj_integrity = min(obj_integrity + 20,max_integrity)
 				to_chat(user,"<span class='notice'>Вы устраняете вмятины и царапины на корпусе.</span>")
@@ -598,7 +598,7 @@
 				to_chat(user,"<span class='notice'>Корпус уже находится в идеальном состоянии.</span>")
 				return FALSE
 
-		if("seal")
+		if("запечатать")
 			if(!opened)
 				sealed = TRUE
 				if(I.use_tool(src, user, 50, volume=100, amount=3))
@@ -609,7 +609,7 @@
 				to_chat(user,"<span class='notice'>Прежде чем запечатать корпус, его нужно закрыть!</span>")
 				return FALSE
 
-		if("unseal")
+		if("вскрыть")
 			to_chat(user,"<span class='notice'>Вы начинаете осторожно вскрывать корпус...</span>")
 			if(I.use_tool(src, user, 50, volume=250, amount=3))
 				for(var/obj/item/integrated_circuit/IC in assembly_components)
@@ -897,7 +897,7 @@
 /obj/item/electronic_assembly/medium/medical
 	name = "type-d electronic mechanism"
 	icon_state = "setup_medium_med"
-	desc = "Это корпусй для сборки электронных устройств средних размеров. Он напоминает какой-то медицинский прибор."
+	desc = "Это корпус для сборки электронных устройств средних размеров. Он напоминает какой-то медицинский прибор."
 
 /obj/item/electronic_assembly/medium/gun
 	name = "type-e electronic mechanism"
@@ -989,7 +989,7 @@
 /obj/item/electronic_assembly/drone/genbot
 	name = "type-e electronic drone"
 	icon_state = "setup_drone_genbot"
-	desc = "Это корпусдля сборки мобильной электроники. У него универсальный дизайн в виде робота."
+	desc = "Это корпус для сборки мобильной электроники. У него универсальный дизайн в виде робота."
 
 /obj/item/electronic_assembly/drone/android
 	name = "type-f electronic drone"

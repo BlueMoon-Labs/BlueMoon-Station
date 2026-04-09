@@ -16,4 +16,4 @@
 			popup.set_content(saved)
 			popup.open()
 		else
-			to_chat(user, "<span class='warning'>[A] is not complete enough to be encoded!</span>")
+			to_chat(user, "<span class='warning'>[A] недостаточно завершён для кодирования!</span>")
