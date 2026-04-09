@@ -323,6 +323,11 @@ body.style-bluemoon .bm-btn.bm-btn-admin:hover {
   text-shadow:0 0 12px rgba(255,180,0,0.7);
 }
 
+.bm-start-game-wrap {
+  margin-top: auto;
+  border-top: 1px solid rgba(255,150,0,0.15);
+}
+
 /* ===== НИЖНЯЯ ЧАСТЬ (имя, счётчики, аудио) ===== */
 #bm-footer {
   padding: 0.8vmin 1.5vmin 0.5vmin;

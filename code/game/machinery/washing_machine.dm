@@ -331,9 +331,6 @@ GLOBAL_LIST_INIT(dye_registry, list(
 
 		if(ishuman(user) && TryStuck(user))
 			user.visible_message(span_danger("[user] is stuck inside \the [src]!"), span_danger("You were trying to put the item in [src], but ended up being stuck in it somehow..."))
-			if(iscatperson(user))
-				stoplag(1 SECONDS)
-				user.emote(pick("meow", "mew"))
 
 		if(W.dye_color)
 			color_source = W
@@ -381,16 +378,10 @@ GLOBAL_LIST_INIT(dye_registry, list(
 		return
 	if(state_open)
 		if(has_buckled_mobs())
-			if(user == buckled_mobs[1])
-				return
-			else
-				user.visible_message("[user] is trying to help [buckled_mobs[1]]. It might take a while...")
+			if(user != buckled_mobs[1])
 				user_unbuckle_mob(buckled_mobs[1], user)
 		else if(ishuman(user) && TryStuck(user, 10, 5))
 			user.visible_message(span_danger("[user] is stuck inside \the [src]!"), span_danger("You were trying to get items from [src], but ended up being stuck in it somehow..."))
-			if(iscatperson(user))
-				stoplag(1 SECONDS)
-				user.emote(pick("meow", "mew"))
 		else if(!contents.len)
 			to_chat(user, "<span class='notice'>[src] is empty.</span>")
 		else
@@ -443,9 +434,9 @@ GLOBAL_LIST_INIT(dye_registry, list(
 	can_buckle = TRUE
 
 /obj/machinery/washing_machine/can_be_pulled(user, grab_state, force)
-	. = ..()
 	if(has_buckled_mobs() && (buckled_mobs[1] == user))
 		return FALSE
+	. = ..()
 
 /obj/machinery/washing_machine/proc/TryStuck(mob/living/carbon/human/user, unusual_chance = 5, usual_chance = 2)
 	if(user.mob_size > mob_size_limit)
@@ -472,13 +463,11 @@ GLOBAL_LIST_INIT(dye_registry, list(
 	if(!do_after(user, shoving_time, H))
 		return FALSE
 	. = ..()
-	if(iscatperson(H))
-		H.emote(pick("meow", "mew", "nya"))
 
 /obj/machinery/washing_machine/user_unbuckle_mob(mob/living/carbon/human/H, mob/living/user)
 	if(QDELETED(H) || QDELETED(user))
 		return
-	if(INTERACTING_WITH(H, src))
+	if(INTERACTING_WITH(user, src))
 		to_chat(user, "<span class='notice'>You're already trying to unbuckle [H == user ? "yourself" : H]!")
 		return
 	if(!handle_unbuckling(H, user))
@@ -494,6 +483,7 @@ GLOBAL_LIST_INIT(dye_registry, list(
 		H.visible_message(span_danger("[H] is trying to get out of \the [src]..."), span_notice("It might take a while..."))
 		return do_after(user, 1 MINUTES, src)
 	else
+		user.visible_message("[user] is trying to help [H]. It might take a while...")
 		return do_after(user, 10 SECONDS, src)
 
 /obj/machinery/washing_machine/pre_buckle_mob(mob/living/M)
@@ -510,6 +500,8 @@ GLOBAL_LIST_INIT(dye_registry, list(
 	RegisterSignal(M, COMSIG_ATOM_DIR_AFTER_CHANGE, PROC_REF(force_rotate_mob))
 	ADD_TRAIT(M, TRAIT_NO_PIXEL_SHIFT, REF(src))
 	M.unpixel_shift()
+	if(iscatperson(M))
+		M.emote(pick("meow", "mew", "nya"))
 
 /obj/machinery/washing_machine/post_unbuckle_mob(mob/living/M)
 	. = ..()

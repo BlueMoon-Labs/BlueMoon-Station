@@ -12,12 +12,12 @@
 	exp_type = EXP_TYPE_CREW
 	alt_titles = list(
 		"Apprentice Atmospheric Technician", //Стажер выше, для удобства
-		"Syndicate Atmospherics Master", //Синди выше, для удобства
 		"Anal Plumber",
 		"Atmos Plumber",
 		"Atmos-Slut",
 		"Atmospheric Engineer",
 		"Atmospherics Specialist",
+		"Atmospherics Master",
 		"Buttplug",
 		"Disposals Technician",
 		"Emergency Fire Technician",

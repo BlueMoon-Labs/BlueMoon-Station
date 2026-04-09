@@ -67,6 +67,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	///Runechat preference. If true, certain messages will be displayed on the map, not ust on the chat area. Boolean.
 	var/chat_on_map = TRUE
+	///Runechat preference for looc
+	var/chat_on_map_looc = TRUE
 	///Limit preference on the size of the message. Requires chat_on_map to have effect.
 	var/max_chat_length = CHAT_MESSAGE_MAX_LENGTH
 	///Whether non-mob messages will be displayed, such as machine vendor announcements. Requires chat_on_map to have effect. Boolean.
@@ -2540,6 +2542,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/tgui_style_fancy = src.use_modern_translations ? get_modern_text("tgui_style_fancy", src) : "Fancy"
 					var/tgui_style_no_frills = src.use_modern_translations ? get_modern_text("tgui_style_no_frills", src) : "No Frills"
 					var/runechat_bubbles_label = src.use_modern_translations ? get_modern_text("runechat_bubbles", src) : "Show Runechat Chat Bubbles"
+					var/runechat_looc_bubbles_label = src.use_modern_translations ? get_modern_text("runechat_looc_bubbles", src) : "Show Runechat LOOC Chat Bubbles"
 					var/runechat_char_limit_label = src.use_modern_translations ? get_modern_text("runechat_char_limit", src) : "Runechat message char limit"
 					var/runechat_non_mobs_label = src.use_modern_translations ? get_modern_text("runechat_non_mobs", src) : "See Runechat for non-mobs"
 					var/runechat_emotes_label = src.use_modern_translations ? get_modern_text("runechat_emotes", src) : "See Runechat for emotes"
@@ -2586,6 +2589,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>[tgui_monitors_label]:</b> <a href='?_src_=prefs;preference=tgui_lock'>[(tgui_lock) ? tgui_monitor_primary : tgui_monitor_all]</a><br>"
 					dat += "<b>[tgui_style_label]:</b> <a href='?_src_=prefs;preference=tgui_fancy'>[(tgui_fancy) ? tgui_style_fancy : tgui_style_no_frills]</a><br>"
 					dat += "<b>[runechat_bubbles_label]:</b> <a href='?_src_=prefs;preference=chat_on_map'>[chat_on_map ? enabled_label : disabled_label]</a><br>"
+					if(chat_on_map)
+						dat += "<b>[runechat_looc_bubbles_label]:</b> <a href='?_src_=prefs;preference=chat_on_map_looc'>[chat_on_map_looc ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[runechat_char_limit_label]:</b> <a href='?_src_=prefs;preference=max_chat_length;task=input'>[max_chat_length]</a><br>"
 					dat += "<b>[runechat_non_mobs_label]:</b> <a href='?_src_=prefs;preference=see_chat_non_mob'>[see_chat_non_mob ? enabled_label : disabled_label]</a><br>"
 					//SANDSTORM CHANGES BEGIN
@@ -5876,6 +5881,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("chat_on_map")
 					chat_on_map = !chat_on_map
+				if("chat_on_map_looc")
+					chat_on_map_looc = !chat_on_map_looc
 				if("see_chat_non_mob")
 					see_chat_non_mob = !see_chat_non_mob
 				//Sandstorm changes begin

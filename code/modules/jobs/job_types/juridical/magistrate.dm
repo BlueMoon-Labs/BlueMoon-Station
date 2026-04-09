@@ -20,6 +20,7 @@
 		"Syndicate Advisor", //Синди выше, для удобства
 		"Syndicate Representative", //Синди выше, для удобства
 		"Syndicate Whore", //Синди выше, для удобства
+		"Syndicate Slut",
 		"Commissar",
 		"Judge",
 		"Magistrate",
@@ -27,6 +28,7 @@
 		"NanoTrasen Consultant",
 		"NanoTrasen Diplomat",
 		"NanoTrasen Whore",
+		"NanoTrasen Slut",
 		"Netorare",
 		"Political Officer",
 		"Revizor"

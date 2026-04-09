@@ -23,9 +23,6 @@
 		"Para-Slut",
 		"Para-Stud",
 		"Searh and Rescue Technician",
-		"Trauma Team",
-		"Trauma Team",
-		"Trauma Team Responder"
 		)
 
 	outfit = /datum/outfit/job/paramedic

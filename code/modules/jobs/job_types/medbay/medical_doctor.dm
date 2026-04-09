@@ -11,13 +11,14 @@
 	alt_titles = list(
 		"Medical Intern", //Стажер выше, для удобства
 		"Interdyne Specialist", //Триглав выше, для удобства
-		"Syndicate Medical Techinician", //Синди выше, для удобства
 		"Coroner",
 		"Healing Fleshlight",
 		"Medi-Slut",
 		"Medi-Stud",
 		"Medical Examiner",
 		"Medical Secretary",
+		"Medical Resident",
+		"Medical Technician",
 		"Medtech",
 		"Nurse",
 		"Oral Doctor",
@@ -25,9 +26,10 @@
 		"Physician",
 		"Psychiatrist",
 		"Surgeon",
+		"Field Surgeon",
 		"Therapist",
 		"Trophologist",
-		"Xenosurgeon"
+		"Xenosurgeon",
 		)
 
 	outfit = /datum/outfit/job/doctor

@@ -32011,7 +32011,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/xenobiology)
@@ -50168,7 +50167,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/xenobiology)
@@ -57359,7 +57357,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/xenobiology)
@@ -87608,7 +87605,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/xenobiology)

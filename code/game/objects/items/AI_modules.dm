@@ -26,18 +26,33 @@ AI MODULES
 
 /obj/item/ai_module/examine(var/mob/user as mob)
 	. = ..()
-	if(Adjacent(user))
-		show_laws(user)
+	. += get_law_examine_text()
 
 /obj/item/ai_module/attack_self(var/mob/user as mob)
 	..()
 	show_laws(user)
 
+/obj/item/ai_module/proc/get_law_examine_text()
+	. = list()
+	if(!laws.len)
+		return
+
+	. += ""
+	. += "<b>Programmed Law[(laws.len > 1) ? "s" : ""]:</b>"
+	for(var/law in laws)
+		if(law == "")
+			continue
+		. += span_notice("\"[law]\"")
+
 /obj/item/ai_module/proc/show_laws(var/mob/user as mob)
-	if(laws.len)
-		to_chat(user, "<B>Programmed Law[(laws.len > 1) ? "s" : ""]:</B>")
-		for(var/law in laws)
-			to_chat(user, "\"[law]\"")
+	for(var/line in get_law_examine_text())
+		to_chat(user, line)
+
+/obj/item/ai_module/proc/triggers_upload_console_cooldown()
+	return TRUE
+
+/obj/item/ai_module/proc/resets_upload_console_cooldown()
+	return FALSE
 
 //The proc other things should be calling
 /obj/item/ai_module/proc/install(datum/ai_laws/law_datum, mob/user)
@@ -296,6 +311,9 @@ AI MODULES
 	desc = "Удаляет все неосновные законы у ИИ."
 	bypass_law_amt_check = 1
 
+/obj/item/ai_module/reset/resets_upload_console_cooldown()
+	return TRUE
+
 /obj/item/ai_module/reset/transmitInstructions(datum/ai_laws/law_datum, mob/sender, overflow)
 	..()
 	if(law_datum.owner)
@@ -416,6 +434,9 @@ AI MODULES
 
 /obj/item/ai_module/core/full/custom
 	name = "Default Core AI Module"
+
+/obj/item/ai_module/core/full/custom/resets_upload_console_cooldown()
+	return TRUE
 
 /obj/item/ai_module/core/full/custom/Initialize(mapload)
 	. = ..()

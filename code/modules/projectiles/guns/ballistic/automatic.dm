@@ -14,11 +14,14 @@
 	icon_state = "saber"
 	fire_sound = "sound/weapons/gunshot_smg_alt.ogg"
 	mag_type = /obj/item/ammo_box/magazine/smgm9mm
-	pin = null
-	burst_size = 1
-
-/obj/item/gun/ballistic/automatic/proto/unrestricted
 	pin = /obj/item/firing_pin
+	burst_size = 1
+	fire_delay = 1
+
+/obj/item/gun/ballistic/automatic/proto/suppressed/Initialize(mapload)
+	. = ..()
+	var/obj/item/suppressor/S = new(src)
+	install_suppressor(S)
 
 /obj/item/gun/ballistic/automatic/update_overlays()
 	. = ..()
@@ -460,8 +463,7 @@
 	automatic_burst_overlay = FALSE
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
-	fire_delay = 3 // BLUEMOON CHANGE Снижаем скорострельность лазгана в автоматическом режиме
-	can_suppress = FALSE
+	fire_delay = 3
 	burst_size = 1
 	actions_types = list()
 	fire_sound = 'sound/weapons/lasgun.ogg'

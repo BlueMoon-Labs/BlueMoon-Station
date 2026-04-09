@@ -18,9 +18,8 @@
 	considered_combat_role = TRUE
 	alt_titles = list(
 		"Interdyne Lead Specialist", //Триглав выше, для удобства
-		"Syndicate Chief Physician", //Синди выше, для удобства
 		"Chief Heal Stud",
-		"Chief Heal Stut",
+		"Chief Heal Slut",
 		"Chief Physician",
 		"Head of Medical",
 		"Head Physician",
@@ -28,7 +27,7 @@
 		"Healing Fleshlight Mistress",
 		"Healthcare Manager",
 		"Medical Administrator",
-		"Medical Director"
+		"Medical Director",
 		)
 
 	outfit = /datum/outfit/job/cmo

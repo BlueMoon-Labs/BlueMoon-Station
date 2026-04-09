@@ -108,6 +108,8 @@
 	var/datum/ai_announcement/ai_announcement
 	/// Lists possible spoken words for announcements
 	var/datum/announcement_help/announcement_help
+	/// Saved AI eye locations for quick camera recall.
+	var/list/turf/saved_camera_positions = list()
 	///remember AI's last location
 	var/atom/lastloc
 	interaction_range = INFINITY
@@ -534,6 +536,46 @@
 		call_bot(turf_check)
 	else
 		to_chat(src, span_danger("Selected location is not visible."))
+
+/mob/living/silicon/ai/proc/ensure_saved_camera_position_slots()
+	LAZYINITLIST(saved_camera_positions)
+	if(saved_camera_positions.len < 9)
+		saved_camera_positions.len = 9
+
+/mob/living/silicon/ai/proc/save_camera_position(slot)
+	if(!isnum(slot) || slot < 1 || slot > 9)
+		return FALSE
+	ensure_saved_camera_position_slots()
+	if(QDELETED(eyeobj) || !eyeobj)
+		create_eye()
+	if(QDELETED(eyeobj) || !eyeobj)
+		return FALSE
+
+	var/turf/current_turf = get_turf(eyeobj)
+	if(!current_turf)
+		to_chat(src, "<span class='warning'>Failed to save camera position.</span>")
+		return FALSE
+
+	saved_camera_positions[slot] = current_turf
+	to_chat(src, "<span class='notice'>Saved camera position #[slot]: [get_area_name(current_turf, TRUE)].</span>")
+	return TRUE
+
+/mob/living/silicon/ai/proc/restore_camera_position(slot)
+	if(!isnum(slot) || slot < 1 || slot > 9)
+		return FALSE
+	ensure_saved_camera_position_slots()
+	if(QDELETED(eyeobj) || !eyeobj)
+		create_eye()
+	if(QDELETED(eyeobj) || !eyeobj)
+		return FALSE
+
+	var/turf/saved_turf = saved_camera_positions[slot]
+	if(!saved_turf)
+		to_chat(src, "<span class='warning'>No camera position has been saved in slot #[slot] yet.</span>")
+		return FALSE
+
+	eyeobj.setLoc(saved_turf, TRUE)
+	return TRUE
 
 /mob/living/silicon/ai/proc/call_bot(turf/waypoint)
 	var/mob/living/simple_animal/bot/bot = bot_ref.resolve()

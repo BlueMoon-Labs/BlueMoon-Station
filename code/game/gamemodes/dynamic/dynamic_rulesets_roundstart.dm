@@ -1044,38 +1044,37 @@ BLUEMOON REMOVAL END*/
 //////////////////////////////////////////////
 
 /datum/dynamic_ruleset/roundstart/malf
-    name = "Malfunctioning AI"
-    antag_flag = ROLE_MALF
-    antag_datum = /datum/antagonist/traitor
-    minimum_required_age = 0
-    required_candidates = 1
-    exclusive_roles = list("AI")
-    weight = 3
-    cost = 20
-    requirements = list(101,101,101,101,101,101,60,40,30,10)
-    required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD)
-    flags = HIGH_IMPACT_RULESET
-
-/datum/dynamic_ruleset/roundstart/malf/trim_candidates()
-    ..()
-    for(var/mob/living/player in candidates)
-        if(!isAI(player))
-            candidates -= player
+	name = "Malfunctioning AI"
+	antag_flag = ROLE_MALF
+	antag_datum = /datum/antagonist/traitor
+	minimum_required_age = 0
+	required_candidates = 1
+	exclusive_roles = list("AI")
+	weight = 3
+	cost = 20
+	requirements = list(101,101,101,101,101,101,60,40,30,10)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD)
+	flags = HIGH_IMPACT_RULESET
 
 /datum/dynamic_ruleset/roundstart/malf/pre_execute(population)
-    if(candidates.len <= 0)
-        message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
-        return FALSE
+	if(candidates.len <= 0)
+		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		return FALSE
 
-    var/mob/living/silicon/ai/M = pick_n_take(candidates)
-    if(M && M.mind)
-        assigned += M.mind
-        M.mind.special_role = ROLE_MALF
-        return TRUE
-    return FALSE
+	var/mob/dead/new_player/M = pick_n_take(candidates)
+	if(!M?.mind)
+		return FALSE
+
+	if(!SSjob.AssignRole(M, "AI"))
+		message_admins("Рулсет [name] не был активирован по причине невозможности выдать слот AI.")
+		return FALSE
+
+	assigned += M.mind
+	M.mind.special_role = ROLE_MALF
+	return TRUE
 
 /datum/dynamic_ruleset/roundstart/malf/execute()
-    for(var/datum/mind/M in assigned)
-        var/datum/antagonist/traitor/T = new antag_datum()
-        M.add_antag_datum(T)
-    return TRUE
+	for(var/datum/mind/M in assigned)
+		var/datum/antagonist/traitor/T = new antag_datum()
+		M.add_antag_datum(T)
+	return TRUE

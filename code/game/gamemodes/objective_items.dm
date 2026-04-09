@@ -14,6 +14,10 @@
 /datum/objective_item/proc/TargetExists()
 	return TRUE
 
+/// Вызывается непосредственно во время выдачи цели
+/datum/objective_item/proc/ExtraCheck()
+	return TRUE
+
 /datum/objective_item/steal/New()
 	..()
 	if(TargetExists())
@@ -237,6 +241,30 @@
 	if(E.Uses > 0)
 		return TRUE
 	return FALSE
+
+/datum/objective_item/steal/captain_panties
+	name = "ношенные трусы Капитана"
+	targetitem = /obj/item/clothing/underwear/briefs
+	difficulty = 10
+	excludefromjob = list("Captain")
+
+/datum/objective_item/steal/captain_panties/ExtraCheck()
+	. = FALSE
+	var/mob/living/carbon/human/capt
+	for(var/mob/living/carbon/human/H in GLOB.human_list) // только хуманы могут носить трусы. также нам безразлично, чей разум находится в теле капитана.
+		if(H.job == "Captain")
+			capt = H
+			break
+	if(!istype(capt)) // если капитана уже нету в игре еще до выдачи цельки, то искать трусы не особо интересно
+		return FALSE
+	if(capt.get_item_by_slot(ITEM_SLOT_UNDERWEAR))
+		return TRUE
+	for(var/obj/item/clothing/underwear/briefs/B in world)
+		if(B.worn_by_captain)
+			return TRUE
+
+/datum/objective_item/steal/captain_panties/check_special_completion(obj/item/clothing/underwear/briefs/B)
+	return B.worn_by_captain
 
 //Unique Objectives
 /datum/objective_item/unique/docs_red

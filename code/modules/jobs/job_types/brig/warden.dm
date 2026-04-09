@@ -14,8 +14,6 @@
 	exp_type = EXP_TYPE_SECURITY
 	considered_combat_role = TRUE
 	alt_titles = list(
-		"Gorlex Marauders Sergeant", //Триглав выше, для удобства
-		"Syndicate Warden", //Синди выше, для удобства
 		"AC Sergeant",
 		"Armory Manager",
 		"Armory Superintendent",

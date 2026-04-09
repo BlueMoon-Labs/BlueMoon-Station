@@ -51,7 +51,7 @@ GLOBAL_LIST_INIT(egg_skins, list( \
 		"after_inserting" = CALLBACK(src, PROC_REF(item_inserted)),
 	)
 	AddComponent(/datum/component/organ_inflation, 0)
-	AddComponent(/datum/component/genital_equipment, list(ORGAN_SLOT_PENIS, ORGAN_SLOT_WOMB, ORGAN_SLOT_VAGINA, ORGAN_SLOT_TESTICLES, ORGAN_SLOT_BREASTS, ORGAN_SLOT_BELLY, ORGAN_SLOT_BELLY, ORGAN_SLOT_ANUS), procs_list)
+	AddComponent(/datum/component/genital_equipment, list(ORGAN_SLOT_PENIS, ORGAN_SLOT_WOMB, ORGAN_SLOT_VAGINA, ORGAN_SLOT_TESTICLES, ORGAN_SLOT_BREASTS, ORGAN_SLOT_BELLY, ORGAN_SLOT_ANUS), procs_list, hidden_inside = TRUE)
 
 /obj/item/oviposition_egg/obj_break(damage_flag)
 	. = ..()

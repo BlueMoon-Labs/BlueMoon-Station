@@ -1,5 +1,8 @@
 /mob/living/silicon/ai/Login()
 	..()
+	if(client?.prefs)
+		client.prefs.ensure_default_keybindings_present()
+		client.ensure_keys_set(client.prefs)
 	set_eyeobj_visible(TRUE)
 	if(multicam_on)
 		end_multicam()

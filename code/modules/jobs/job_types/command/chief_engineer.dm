@@ -18,13 +18,14 @@
 	considered_combat_role = TRUE
 	alt_titles = list(
 		"Azik Interstellar Lead Specialist", //Триглав выше, для удобства
-		"Syndicate Construction Chief", //Синди выше, для удобства
 		"Big Iron",
 		"Bordel Architect",
 		"Chief Engineer Officer",
+		"Construction Chief",
 		"Construction Coordinator",
 		"Construction Manager",
 		"Engineering Director",
+		"Senior Engineer",
 		"Head Engineer",
 		"Head of Engineering",
 		"Magos",

@@ -2,6 +2,7 @@
 	name = "technology fabricator"
 	desc = "Makes researched and prototype items with materials and energy."
 	layer = BELOW_OBJ_LAYER
+	wires_type = /datum/wires/rnd/production
 	var/consoleless_interface = TRUE			//Whether it can be used without a console.
 	var/print_cost_coeff = 1				//Materials needed * coeff = actual.
 	var/list/categories = list()
@@ -16,7 +17,7 @@
 	var/datum/techweb/host_research
 
 	var/lathe_prod_time = 0.5
-	var/emaggable = FALSE
+	var/emag_only_access = TRUE
 
 	/// What color is this machine's stripe? Leave null to not have a stripe.
 	var/stripe_color = null
@@ -66,15 +67,17 @@
 	. += stripe
 
 /obj/machinery/rnd/production/emag_act()
-	if(!emaggable || obj_flags & EMAGGED)
+	if(obj_flags & EMAGGED || (hacked && emag_only_access))
 		return
 	. = ..()
 	balloon_alert(usr, span_balloon_warning("emagged"))
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
-	obj_flags |= EMAGGED
 	req_access = list()
 	req_one_access = list()
+	hacked = TRUE // Это для лампочки на техфабе, само по себе ничего не делает
 	update_research()
+	if(!emag_only_access)
+		obj_flags |= EMAGGED
 
 /obj/machinery/rnd/production/proc/update_research()
 	host_research.copy_research_to(stored_research, TRUE)

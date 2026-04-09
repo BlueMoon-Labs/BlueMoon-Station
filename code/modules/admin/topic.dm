@@ -2251,161 +2251,18 @@
 			return
 		M.mind_initialize()
 
-	else if(href_list["create_object"])
+	else if(href_list["spawn_panel"])
 		if(!check_rights(R_SPAWN))
 			return
-		return create_object(usr)
-
-	else if(href_list["quick_create_object"])
-		if(!check_rights(R_SPAWN))
-			return
-		return quick_create_object(usr)
-
-	else if(href_list["create_turf"])
-		if(!check_rights(R_SPAWN))
-			return
-		return create_turf(usr)
-
-	else if(href_list["create_mob"])
-		if(!check_rights(R_SPAWN))
-			return
-		return create_mob(usr)
+		if(!spawn_panel_instance)
+			spawn_panel_instance = new /datum/spawnpanel(usr)
+		spawn_panel_instance.ui_interact(usr)
+		return
 
 	else if(href_list["dupe_marked_datum"])
 		if(!check_rights(R_SPAWN))
 			return
 		return DuplicateObject(marked_datum, perfectcopy=1, newloc=get_turf(usr))
-
-	else if(href_list["object_list"])			//this is the laggiest thing ever
-		if(!check_rights(R_SPAWN))
-			return
-
-		var/atom/loc = usr.loc
-
-		var/dirty_paths
-		if (istext(href_list["object_list"]))
-			dirty_paths = list(href_list["object_list"])
-		else if (istype(href_list["object_list"], /list))
-			dirty_paths = href_list["object_list"]
-
-		var/paths = list()
-
-		for(var/dirty_path in dirty_paths)
-			var/path = text2path(dirty_path)
-			if(!path)
-				continue
-			else if(!ispath(path, /obj) && !ispath(path, /turf) && !ispath(path, /mob))
-				continue
-			paths += path
-
-		if(!paths)
-			alert("The path list you sent is empty.")
-			return
-		if(length(paths) > 5)
-			alert("Select fewer object types, (max 5).")
-			return
-
-		var/list/offset = splittext(href_list["offset"],",")
-		var/number = clamp(text2num(href_list["object_count"]), 1, 100)
-		var/X = offset.len > 0 ? text2num(offset[1]) : 0
-		var/Y = offset.len > 1 ? text2num(offset[2]) : 0
-		var/Z = offset.len > 2 ? text2num(offset[3]) : 0
-		var/obj_dir = text2num(href_list["object_dir"])
-		if(obj_dir && !(obj_dir in list(1,2,4,8,5,6,9,10)))
-			obj_dir = null
-		var/obj_name = sanitize(href_list["object_name"])
-
-
-		var/atom/target //Where the object will be spawned
-		var/where = href_list["object_where"]
-		if (!( where in list("onfloor","frompod","fromquantumspread","inhand","inmarked") ))
-			where = "onfloor"
-
-
-		switch(where)
-			if("inhand")
-				if (!iscarbon(usr) && !iscyborg(usr))
-					to_chat(usr, "Can only spawn in hand when you're a carbon mob or cyborg.")
-					where = "onfloor"
-				target = usr
-
-			if("onfloor", "frompod", "fromquantumspread")
-				switch(href_list["offset_type"])
-					if ("absolute")
-						target = locate(0 + X,0 + Y,0 + Z)
-					if ("relative")
-						target = locate(loc.x + X,loc.y + Y,loc.z + Z)
-			if("inmarked")
-				if(!marked_datum)
-					to_chat(usr, "You don't have any object marked. Abandoning spawn.")
-					return
-				else if(!istype(marked_datum, /atom))
-					to_chat(usr, "The object you have marked cannot be used as a target. Target must be of type /atom. Abandoning spawn.")
-					return
-				else
-					target = marked_datum
-
-		var/obj/structure/closet/supplypod/centcompod/pod
-		var/datum/effect_system/spark_spread/quantum/sparks
-		if(target)
-			if(where == "frompod")
-				pod = new
-			if(where == "fromquantumspread")
-				sparks = new
-			for (var/path in paths)
-				for (var/i = 0; i < number; i++)
-					if(path in typesof(/turf))
-						var/turf/O = target
-						var/turf/N = O.ChangeTurf(path)
-						if(N && obj_name)
-							N.name = obj_name
-					else
-						var/atom/O
-						if(where == "frompod")
-							O = new path(pod)
-						else
-							O = new path(target)
-						if(!QDELETED(O))
-							O.flags_1 |= ADMIN_SPAWNED_1
-							if(obj_dir)
-								O.setDir(obj_dir)
-							if(obj_name)
-								O.name = obj_name
-								if(ismob(O))
-									var/mob/M = O
-									M.real_name = obj_name
-							if(where == "inhand" && isliving(usr) && isitem(O))
-								var/mob/living/L = usr
-								var/obj/item/I = O
-								L.put_in_hands(I)
-								if(iscyborg(L))
-									var/mob/living/silicon/robot/R = L
-									if(R.module)
-										R.module.add_module(I, TRUE, TRUE)
-										R.activate_module(I)
-
-		if(pod)
-			new /obj/effect/pod_landingzone(get_turf(target), pod)
-
-		if(sparks)
-			playsound(get_turf(target), 'sound/magic/Repulse.ogg', 100, 1)
-			sparks.set_up(10, 1, get_turf(target))
-			sparks.attach(get_turf(target))
-			sparks.start()
-
-		if (number == 1)
-			log_admin("[key_name(usr)] created a [english_list(paths)]")
-			for(var/path in paths)
-				if(ispath(path, /mob))
-					message_admins("[key_name_admin(usr)] created a [english_list(paths)]")
-					break
-		else
-			log_admin("[key_name(usr)] created [number]ea [english_list(paths)]")
-			for(var/path in paths)
-				if(ispath(path, /mob))
-					message_admins("[key_name_admin(usr)] created [number]ea [english_list(paths)]")
-					break
-		return
 
 	else if(href_list["ac_view_wanted"])            //Admin newscaster Topic() stuff be here
 		if(!check_rights(R_ADMIN))

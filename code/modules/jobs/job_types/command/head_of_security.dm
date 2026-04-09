@@ -17,8 +17,7 @@
 	considered_combat_role = TRUE
 	exp_type_department = EXP_TYPE_SECURITY
 	alt_titles = list(
-		"Gorlex Marauders Commander", //Триглав выше, для удобства
-		"Syndicate Field Commander", //Синди выше, для удобства
+		"Field Commander", //Синди выше, для удобства
 		"AC Special Lieutenant",
 		"Big Boss",
 		"Big Iron",

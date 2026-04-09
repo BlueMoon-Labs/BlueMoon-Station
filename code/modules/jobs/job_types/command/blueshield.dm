@@ -16,8 +16,7 @@
 	exp_type_department = EXP_TYPE_SECURITY
 	custom_spawn_text = "офицер Синего Щита является представителем сторон отдела по защите Главенствующего Персонала в соответствии приоритету - от <b>секретаря мостика</b> до <b>капитана</b>. Офицер Синего Щита подчиняется <b>ВрИО капитана</b>, <b>капитану</b> и Центральному Командованию."
 	alt_titles = list(
-		"Syndicate Combat Maid", //Синди выше, для удобства
-		"Syndicate Prime-Defender", //Синди выше, для удобства
+		"Prime-Defender",
 		"Blueguard",
 		"Blueshit",
 		"Blueslut",

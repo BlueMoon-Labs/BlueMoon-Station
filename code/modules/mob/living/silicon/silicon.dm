@@ -40,6 +40,7 @@
 	var/d_hud = DATA_HUD_DIAGNOSTIC_BASIC //Determines the diag hud to use
 
 	var/law_change_counter = 0
+	var/next_upload_console_law_change = 0
 	var/obj/machinery/camera/builtInCamera = null
 	var/updating = FALSE //portable camera camerachunk update
 

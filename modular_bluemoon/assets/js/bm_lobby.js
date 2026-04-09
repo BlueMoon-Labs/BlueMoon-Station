@@ -96,9 +96,6 @@ function bm_rebuild_menu(state) {
     h.push('<a id="bm-btn-ready" class="bm-btn" href="?src=' + src + ';bm_lobby_action=toggle_ready">'
       + (_bm_ready_state ? '<span class="bm-checked">&#9745;</span>' : '<span class="bm-unchecked">&#9746;</span>')
       + ' \u0413\u041e\u0422\u041e\u0412\u041d\u041e\u0421\u0422\u042c</a>');
-    if (_bm_is_admin) {
-      h.push('<a class="bm-btn bm-btn-admin" href="?src=' + src + ';bm_lobby_action=start_game">&#9889; \u0421\u0422\u0410\u0420\u0422 \u0418\u0413\u0420\u042b</a>');
-    }
   } else {
     h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=late_join">\u0412\u041e\u0419\u0422\u0418 \u0412 \u0418\u0413\u0420\u0423</a>');
     h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=view_manifest">\u0421\u041f\u0418\u0421\u041e\u041a \u042d\u041a\u0418\u041f\u0410\u0416\u0410</a>');
@@ -114,6 +111,9 @@ function bm_rebuild_menu(state) {
   if (_bm_is_registered) {
     h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=changelog">\u041f\u041e\u0421\u041b\u0415\u0414\u041d\u0418\u0415 \u041e\u0411\u041d\u041e\u0412\u041b\u0415\u041d\u0418\u042f</a>');
     h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=polls_menu">\u041e\u041f\u0420\u041e\u0421\u042b \u0421\u0415\u0420\u0412\u0415\u0420\u0410</a>');
+  }
+  if (!ingame && _bm_is_admin) {
+    h.push('<div class="bm-start-game-wrap"><a class="bm-btn bm-btn-admin" href="?src=' + src + ';bm_lobby_action=start_game">&#9889; \u0421\u0422\u0410\u0420\u0422 \u0418\u0413\u0420\u042b</a></div>');
   }
   el.innerHTML = h.join('');
 }
@@ -273,6 +273,7 @@ function bm_set_background(data) {
     // Показываем диалог подтверждения сразу только для админов
     if (_bm_is_admin) _bm_video_confirm_show(function() {
       // «Нет» — откатываем к предыдущему фону
+      location.href = '?src=' + (window._BM_SRC || '') + ';bm_lobby_action=video_reject';
       window.removeEventListener('message', _yt_msg_handler);
       var cur2 = document.getElementById('bm-bg');
       if (cur2) cur2.parentNode.replaceChild(_prev_bg, cur2);

@@ -75,11 +75,11 @@
 /area/awaymission/vr/murderdome)
 "k" = (
 /obj/structure/rack,
-/obj/item/gun/ballistic/automatic/proto/unrestricted,
-/obj/item/gun/ballistic/automatic/proto/unrestricted,
-/obj/item/gun/ballistic/automatic/proto/unrestricted,
-/obj/item/gun/ballistic/automatic/proto/unrestricted,
-/obj/item/gun/ballistic/automatic/proto/unrestricted,
+/obj/item/gun/ballistic/automatic/proto,
+/obj/item/gun/ballistic/automatic/proto,
+/obj/item/gun/ballistic/automatic/proto,
+/obj/item/gun/ballistic/automatic/proto,
+/obj/item/gun/ballistic/automatic/proto,
 /obj/item/gun/ballistic/automatic/c20r/unrestricted,
 /obj/item/gun/ballistic/automatic/c20r/unrestricted,
 /obj/item/gun/ballistic/automatic/c20r/unrestricted,

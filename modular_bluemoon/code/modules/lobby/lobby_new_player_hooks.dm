@@ -20,12 +20,6 @@
 	SStitle_bm?.update_player_counts_all()
 	return ..()
 
-/mob/dead/new_player/reset_menu_hud()
-	set hidden = 1
-	if(!client)
-		return
-	bm_show_lobby()
-
 /client/proc/bm_push_lobby_music()
 	var/mob/dead/new_player/player = mob
 	if(!istype(player))

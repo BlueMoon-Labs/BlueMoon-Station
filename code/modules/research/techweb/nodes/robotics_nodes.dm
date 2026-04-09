@@ -77,7 +77,8 @@
 	description = "AI unit research."
 	prereq_ids = list("robotics", "posibrain")
 	design_ids = list("aifixer", "aicore", "safeguard_module", "onehuman_module", "protectstation_module", "quarantine_module", "oxygen_module", "freeform_module",
-	"reset_module", "purge_module", "remove_module", "freeformcore_module", "asimov_module", "gentleman_module", "nt_safeguard_module", "paladin_module", "tyrant_module", "corporate_module",
+	"reset_module", "purge_module", "remove_module", "freeformcore_module", "asimov_module", "asimovpp_module", "gentleman_module", "maintain_module", "drone_module", "hippocratic_module", "robocop_module",
+	"reporter_module", "liveandletlive_module", "balance_module", "hulkamania_module", "nt_safeguard_module", "paladin_module", "tyrant_module", "corporate_module",
 	"default_module", "borg_ai_control", "mecha_tracking_ai_control", /*"aiupload",*/ "intellicard", "slut_module", "shebang_module", "milker_module", "vore_pred_module")/*BlueMoon edit*/
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 

@@ -80,7 +80,6 @@ SUBSYSTEM_DEF(title_bm)
 	sfw_images            = SStitle_bm.sfw_images
 	nsfw_images           = SStitle_bm.nsfw_images
 	current_notice        = SStitle_bm.current_notice
-	current_video_payload = SStitle_bm.current_video_payload
 	if(fexists(BM_LOBBY_HTML_FILE))
 		lobby_html = _parse_lobby_html(file2text(BM_LOBBY_HTML_FILE))
 	else

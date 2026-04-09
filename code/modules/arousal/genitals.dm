@@ -314,6 +314,19 @@
 /obj/item/organ/genital/proc/get_features(mob/living/carbon/human/H)
 	return
 
+/obj/item/organ/genital/get_examine_string(mob/user, thats)
+	. = desc
+	if(contents.len)
+		var/list/item_names = list()
+		for(var/obj/item/I as anything in contents)
+			if(istype(I))
+				var/datum/component/genital_equipment/GE = I.GetComponent(/datum/component/genital_equipment)
+				if(GE && !GE.hidden_inside_flag)
+					item_names += I.name
+		if(!isemptylist(item_names))
+			var/tooltip_content = "[ru_name_capital] имеет: [item_names.Join(", ")]"
+			. += " <span class='chat-tooltip userlove'>\[+\]<span class='chat-tooltip__content'>[tooltip_content]</span></span>"
+
 /mob/living/carbon/human/proc/update_genitals()
 	if(QDELETED(src))
 		return

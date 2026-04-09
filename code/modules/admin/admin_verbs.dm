@@ -144,7 +144,7 @@ GLOBAL_LIST_INIT(admin_verbs_fun, list(
 	/client/proc/bm_admin_reload_lobby_html,	//BLUEMOON LOBBY
 	))
 GLOBAL_PROTECT(admin_verbs_fun)
-GLOBAL_LIST_INIT(admin_verbs_spawn, list(/datum/admins/proc/spawn_atom, /datum/admins/proc/podspawn_atom, /datum/admins/proc/spawn_cargo, /datum/admins/proc/spawn_objasmob, /client/proc/respawn_character))
+GLOBAL_LIST_INIT(admin_verbs_spawn, list(/datum/admins/proc/spawn_atom, /datum/admins/proc/podspawn_atom, /datum/admins/proc/spawn_cargo, /datum/admins/proc/spawn_objasmob, /client/proc/respawn_character, /client/proc/spawn_panel_verb))
 GLOBAL_PROTECT(admin_verbs_spawn)
 GLOBAL_LIST_INIT(admin_verbs_sensitive, list(
 	/client/proc/investigate_show		/*various admintools for investigation. Such as a singulo grief-log*/
@@ -497,6 +497,16 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 	if(holder)
 		holder.Game()
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Game Panel") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
+/client/proc/spawn_panel_verb()
+	set name = "Spawn Panel"
+	set category = "Admin.Game"
+	if(!check_rights(R_SPAWN))
+		return
+	if(!holder.spawn_panel_instance)
+		holder.spawn_panel_instance = new /datum/spawnpanel(mob)
+	holder.spawn_panel_instance.ui_interact(mob)
+	SSblackbox.record_feedback("tally", "admin_verb", 1, "Spawn Panel")
 
 // /client/proc/poll_panel()
 // 	set name = "Server Poll Management"

@@ -13,7 +13,6 @@
 	exp_type = EXP_TYPE_CREW
 
 	alt_titles = list(
-		"Syndicate Psychiatrist", //Синди выше, для удобства
 		"Counsellor",
 		"Hypnosis Expert",
 		"Hypnotherapist",

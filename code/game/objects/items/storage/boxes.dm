@@ -224,7 +224,7 @@
 	..() // we want the regular stuff too
 	new /obj/item/crowbar/power(src)
 	new /obj/item/melee/classic_baton/telescopic/centcom(src)
-	new /obj/item/radio/off(src)
+	new /obj/item/inducer/syndicate(src)
 	new /obj/item/extinguisher/mini(src)
 	new /obj/item/flashlight/flare(src)
 	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
@@ -304,7 +304,7 @@
 /obj/item/storage/box/ammo
 	name = "box of ammo"
 	desc = "Contains some extra ammo"
-	var/ammo = /obj/item/ammo_box/magazine/smgm9mm/ap
+	var/ammo = /obj/item/ammo_box/magazine/smgm9mm
 
 /obj/item/storage/box/ammo/smgap
 	name = "box of SMG ammo"
@@ -328,7 +328,7 @@
 
 /obj/item/storage/box/ammo/PopulateContents()
 	..()
-	for(var/i in 1 to 5)
+	for(var/i in 1 to 7)
 		new ammo(src)
 
 /obj/item/storage/box/seclooking

@@ -52,6 +52,9 @@
 			B.makeItemInactive()
 			B.maptext = null
 			B.screen_loc = initial(B.screen_loc)
+			B.set_new_hud(null)
+			if(B.holder)
+				B.holder.set_new_hud(null)
 			pooled_volumetric_boxes += B
 			continue
 		if(istype(S, /atom/movable/screen/storage/item_holder))
@@ -59,6 +62,7 @@
 			D.set_item(null)
 			D.maptext = null
 			D.screen_loc = initial(D.screen_loc)
+			D.set_new_hud(null)
 			pooled_item_holders += D
 			continue
 		qdel(S)

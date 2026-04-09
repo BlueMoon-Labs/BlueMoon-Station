@@ -677,7 +677,7 @@
 /datum/gear/donator/bm/dogtag
 	name = "Alta's dogtag"
 	slot = ITEM_SLOT_NECK
-	path = /obj/item/clothing/neck/tie/dogtag
+	path = /obj/item/clothing/accessory/dogtag
 	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "ivanokio", "blatoff")
 
 /datum/gear/donator/bm/hateredsoul_dogtag
@@ -2198,6 +2198,7 @@
 	slot = ITEM_SLOT_OCLOTHING
 	ckeywhitelist = list("kladmenuwu")
 
+
 /datum/gear/donator/bm/nebular_t_kit
 	name = "Nebular-T Kit"
 	slot = ITEM_SLOT_BACKPACK
@@ -2209,3 +2210,62 @@
 	slot = ITEM_SLOT_BELT
 	path = /obj/item/storage/belt/esabre_belt/fluff
 	ckeywhitelist = list("sheya")
+
+/// Личный маяк: призывает kit с owner_ckey; развернуть мультитулом может только владелец. Остальные собирают крафтом (5 коробок + pie cannon).
+/datum/gear/donator/bm/cardboard_tank_summon_beacon
+	name = "Маяк призыва: картонный танк (личный)"
+	description = "Заказной складной танк. Развернуть мультитулом сможете только вы."
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/choice_beacon/bm_cardboard_tank
+	category = LOADOUT_CATEGORY_DONATOR
+	subcategory = LOADOUT_SUBCATEGORIES_DON01
+	donator_group_id = DONATOR_GROUP_TIER_1
+	cost = 2
+
+/datum/gear/donator/bm/sheya_dress
+	name = "Gothic dress"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/sheya
+	ckeywhitelist = list("sheya")
+
+/datum/gear/donator/bm/nul_kit
+	name = "Sword of Nul Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/nul_kit
+	ckeywhitelist = list("lev1932")
+
+/datum/gear/donator/bm/casull_kit
+	name = "Casull Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/casull_kit
+	ckeywhitelist = list("lev1932")
+
+/datum/gear/donator/bm/pulsar_kit
+	name = "Pulsar Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/pulsar_kit
+	ckeywhitelist = list("lapkee")
+
+/datum/gear/donator/bm/supernova_kit
+	name = "Supernova Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/supernova_kit
+	ckeywhitelist = list("lapkee")
+
+/datum/gear/donator/bm/winter_cape
+	name = "Winter Cape"
+	slot = ITEM_SLOT_NECK
+	path = /obj/item/clothing/neck/cloak/wintercape
+	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/bwal_special_kit
+	name = "B-Wal-Special Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/bwal_special_kit
+	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/captain_rifle_kit
+	name = "Antique Laser Rifle Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/captain_rifle_kit
+	ckeywhitelist = list("lindaastereih")
