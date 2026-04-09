@@ -25,14 +25,13 @@
 	var/authenticated = FALSE
 	var/list/region_access
 	var/list/head_subordinates
-	///Which departments this computer has access to. Defined as access regions. null = all departments
-	var/target_dept
 
 	//For some reason everything was exploding if this was static.
 	var/list/sub_managers
 
 /datum/computer_file/program/card_mod/New(obj/item/modular_computer/comp)
 	. = ..()
+	// same logic in /datum/computer_file/program/job_management
 	sub_managers = list(
 		"[ACCESS_HOP]" = list(
 			"department" = list(CARDCON_DEPARTMENT_SERVICE, CARDCON_DEPARTMENT_COMMAND),
@@ -73,32 +72,32 @@
 
 /datum/computer_file/program/card_mod/kill_program(forced)
 	. = ..()
-	if(authenticated)
-		authenticated = FALSE
-		playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
+	authenticated = FALSE
 
 /datum/computer_file/program/card_mod/proc/auto_authenticate()
-	// Авто-аутентификация или деавторизация
+	// Авто-аутентификация или деавторизация. Адекватно перевести бы это на сигналы...
 	if(!computer)
 		return
 	var/obj/item/computer_hardware/card_slot/card_slot = computer.all_components[MC_CARD]
 	if(!card_slot)
 		return
 	var/obj/item/card/id/user_id_card = card_slot.stored_card
-	if(authenticate(user_id_card))
-		playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
-		return TRUE
+	var/old_authenticated = authenticated
+	authenticate(user_id_card)
+	if(authenticated != old_authenticated)
+		if(authenticated)
+			playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
+		else
+			playsound(computer, 'sound/machines/terminal_off.ogg', 50, FALSE)
 
 /datum/computer_file/program/card_mod/proc/authenticate(obj/item/card/id/id_card)
 	if(!id_card)
 		authenticated = FALSE
 		return
 
-	if(authenticated)
-		return
-
 	region_access = list()
-	if(!target_dept && (ACCESS_CHANGE_IDS in id_card.access))
+	head_subordinates = list()
+	if(ACCESS_CHANGE_IDS in id_card.access)
 		minor = FALSE
 		authenticated = TRUE
 		update_static_data_for_all_viewers()
@@ -108,12 +107,11 @@
 	for(var/access_text in sub_managers)
 		var/list/info = sub_managers[access_text]
 		var/access = text2num(access_text)
-		if((access in id_card.access) && ((info["region"] in target_dept) || !length(target_dept)))
+		if((access in id_card.access))
 			region_access += info["region"]
 			//I don't even know what I'm doing anymore
 			head_types += info["head"]
 
-	head_subordinates = list()
 	if(length(head_types))
 		for(var/j in SSjob.occupations)
 			var/datum/job/job = j
@@ -121,13 +119,10 @@
 				if(head in job.department_head)
 					head_subordinates += job.title
 
-	if(length(region_access))
-		minor = TRUE
-		authenticated = TRUE
-		update_static_data_for_all_viewers()
-		return TRUE
-
-	return FALSE
+	authenticated = !!length(region_access)
+	minor = TRUE
+	update_static_data_for_all_viewers()
+	return authenticated
 
 /datum/computer_file/program/card_mod/proc/set_job(job_name, obj/item/card/id/target_id_card, mob/user)
 	if(!computer || !authenticated || !target_id_card)
@@ -369,12 +364,12 @@
 	var/list/data = list()
 	data["station_name"] = station_name()
 	data["centcom_access"] = is_centcom
-	data["minor"] = target_dept || minor ? TRUE : FALSE
+	data["minor"] = minor
 
-	var/list/departments = target_dept
+	var/list/departments
 	if(is_centcom)
 		departments = list("CentCom" = get_all_centcom_jobs())
-	else if(isnull(departments))
+	else
 		departments = list(
 			CARDCON_DEPARTMENT_COMMAND = GLOB.command_positions,//lol
 			CARDCON_DEPARTMENT_ENGINEERING = GLOB.engineering_positions,
@@ -407,12 +402,12 @@
 			minor_access_not_allowed += text2num(access_text)
 
 	for(var/i in 1 to 7)
-		if((minor || target_dept) && !(i in region_access))
+		if(minor && !(i in region_access))
 			continue
 
 		var/list/accesses = list()
 		for(var/access in get_region_accesses(i))
-			if((minor || target_dept) && (access in minor_access_not_allowed))
+			if(minor && (access in minor_access_not_allowed))
 				continue
 			if (get_access_desc(access))
 				accesses += list(list(
