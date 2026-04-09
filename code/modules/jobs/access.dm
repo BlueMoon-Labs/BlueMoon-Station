@@ -160,6 +160,9 @@
 /proc/get_all_inteq_access()
 	return list(ACCESS_INTEQ, ACCESS_INTEQ_LEADER)
 
+/proc/get_heads_access()
+	return list(ACCESS_HOP, ACCESS_HOS, ACCESS_CE, ACCESS_CMO, ACCESS_QM, ACCESS_RD, ACCESS_CAPTAIN)
+
 /proc/get_region_accesses(code)
 	switch(code)
 		if(0)

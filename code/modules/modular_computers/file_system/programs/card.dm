@@ -101,6 +101,7 @@
 /datum/computer_file/program/card_mod/proc/authenticate(obj/item/card/id/id_card)
 	if(!id_card)
 		authenticated = FALSE
+		minor = FALSE
 		return
 
 	region_access = list()
@@ -354,6 +355,7 @@
 				var/list/new_access = list()
 				for(var/region in region_access)
 					new_access += get_region_accesses(region)
+				new_access -= get_heads_access()
 				target_id_card.access |= new_access
 			else
 				target_id_card.access |= (is_centcom ? get_all_centcom_access() : get_all_accesses())
@@ -366,6 +368,7 @@
 				var/list/new_access = list()
 				for(var/region in region_access)
 					new_access += get_region_accesses(region)
+				new_access -= get_heads_access()
 				target_id_card.access -= new_access
 			else
 				target_id_card.access -= get_all_centcom_access() + get_all_accesses()
