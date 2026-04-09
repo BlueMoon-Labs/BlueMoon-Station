@@ -336,7 +336,7 @@
 				playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			return
 		if("PRG_access")
-			if(!computer || !authenticated)
+			if(!computer || !authenticated || !target_id_card)
 				return
 			var/access_type = text2num(params["access_target"])
 			if(access_type in (is_centcom ? get_all_centcom_access() : get_all_accesses()))
@@ -373,7 +373,7 @@
 			playsound(computer, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
 			return TRUE
 		if("PRG_grantregion")
-			if(!computer || !authenticated)
+			if(!computer || !authenticated || !target_id_card)
 				return
 			var/region = text2num(params["region"])
 			if(isnull(region))
@@ -382,7 +382,7 @@
 			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			return TRUE
 		if("PRG_denyregion")
-			if(!computer || !authenticated)
+			if(!computer || !authenticated || !target_id_card)
 				return
 			var/region = text2num(params["region"])
 			if(isnull(region))
