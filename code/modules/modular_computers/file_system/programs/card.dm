@@ -85,6 +85,7 @@
 	var/old_authenticated = authenticated
 	authenticate(user_id_card)
 	if(authenticated != old_authenticated)
+		update_static_data_for_all_viewers()
 		if(authenticated)
 			playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
 		else
@@ -100,7 +101,6 @@
 	if(ACCESS_CHANGE_IDS in id_card.access)
 		minor = FALSE
 		authenticated = TRUE
-		update_static_data_for_all_viewers()
 		return TRUE
 
 	var/list/head_types = list()
@@ -121,7 +121,6 @@
 
 	authenticated = !!length(region_access)
 	minor = TRUE
-	update_static_data_for_all_viewers()
 	return authenticated
 
 /datum/computer_file/program/card_mod/proc/set_job(job_name, obj/item/card/id/target_id_card, mob/user)
@@ -170,10 +169,6 @@
 	var/obj/item/card/id/target_id_card = card_slot2.stored_card
 
 	switch(action)
-		if("PRG_logout")
-			authenticated = FALSE
-			playsound(computer, 'sound/machines/terminal_off.ogg', 50, FALSE)
-			return TRUE
 		if("PRG_print")
 			if(!computer || !printer)
 				return
@@ -184,13 +179,15 @@
 						<u>For:</u> [target_id_card.registered_name ? target_id_card.registered_name : "Unregistered"]<br>
 						<hr>
 						<u>Assignment:</u> [target_id_card.get_assignment_name()]<br>
-						<u>Access:</u><br>
+						<u>Access:</u> %ACCESSES%
 						"}
 
 			var/known_access_rights = get_all_accesses()
+			var/list/access_desc = list()
 			for(var/A in target_id_card.access)
 				if(A in known_access_rights)
-					contents += "  [get_access_desc(A)]"
+					access_desc += get_access_desc(A)
+			contents = replacetext(contents, "%ACCESSES%", length(access_desc) ? jointext(access_desc, ", ") : "-")
 
 			if(!printer.print_text(contents,"access report"))
 				to_chat(usr, "<span class='notice'>Hardware error: Printer was unable to print the file. It may be out of paper.</span>")
@@ -231,6 +228,7 @@
 								playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
 							else
 								playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
+							update_static_data_for_all_viewers()
 							return
 			return FALSE
 		if("PRG_terminate")
@@ -328,15 +326,27 @@
 				playsound(computer, "terminal_type", 50, FALSE)
 				return TRUE
 		if("PRG_grantall")
-			if(!computer || !authenticated || minor)
+			if(!computer || !authenticated)
 				return
-			target_id_card.access |= (is_centcom ? get_all_centcom_access() : get_all_accesses())
+			if(minor)
+				var/list/new_access = list()
+				for(var/region in region_access)
+					new_access += get_region_accesses(region)
+				target_id_card.access |= new_access
+			else
+				target_id_card.access |= (is_centcom ? get_all_centcom_access() : get_all_accesses())
 			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			return TRUE
 		if("PRG_denyall")
-			if(!computer || !authenticated || minor)
+			if(!computer || !authenticated)
 				return
-			target_id_card.access.Cut()
+			if(minor)
+				var/list/new_access = list()
+				for(var/region in region_access)
+					new_access += get_region_accesses(region)
+				target_id_card.access -= new_access
+			else
+				target_id_card.access -= get_all_centcom_access() + get_all_accesses()
 			playsound(computer, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
 			return TRUE
 		if("PRG_grantregion")
