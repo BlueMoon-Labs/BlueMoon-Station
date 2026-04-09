@@ -23,8 +23,8 @@
 	var/is_centcom = FALSE
 	var/minor = FALSE
 	var/authenticated = FALSE
-	var/list/region_access
-	var/list/head_subordinates
+	var/list/region_access = list()
+	var/list/head_subordinates = list()
 
 	//For some reason everything was exploding if this was static.
 	var/list/sub_managers
@@ -186,15 +186,39 @@
 						<u>For:</u> [target_id_card.registered_name ? target_id_card.registered_name : "Unregistered"]<br>
 						<hr>
 						<u>Assignment:</u> [target_id_card.get_assignment_name()]<br>
-						<u>Access:</u> %ACCESSES%
+						<u>Access:</u><br>
+						%ACCESSES%
 						"}
 
+			var/list/compile_accesses = list()
+			var/list/card_accesses = target_id_card.access.Copy()
+			for(var/i in 1 to 7) // Перебираем все станционные доступы
+				var/list/reg_access = list()
+				for(var/access in get_region_accesses(i))
+					if(access in target_id_card.access)
+						reg_access += access
+						card_accesses -= access
+				if(length(reg_access))
+					var/list/access_desc = list()
+					for(var/access in reg_access)
+						access_desc += get_access_desc(access)
+					compile_accesses += "<b>[get_region_accesses_name(i)]:</b> [jointext(access_desc, ", ")]"
+			if(length(card_accesses)) // Если остались доступы, записываем их отдельно
+				var/list/access_desc = list()
+				for(var/access in card_accesses)
+					access_desc += get_access_desc(access)
+				compile_accesses += "<b>Other:</b> [jointext(access_desc, ", ")]"
+
+			contents = replacetext(contents, "%ACCESSES%", length(compile_accesses) ? jointext(compile_accesses, "<br>") : "No Accesses detected")
+
+			/*
 			var/known_access_rights = get_all_accesses()
 			var/list/access_desc = list()
 			for(var/A in target_id_card.access)
 				if(A in known_access_rights)
 					access_desc += get_access_desc(A)
 			contents = replacetext(contents, "%ACCESSES%", length(access_desc) ? jointext(access_desc, ", ") : "-")
+			*/
 
 			if(!printer.print_text(contents,"access report"))
 				to_chat(usr, "<span class='notice'>Hardware error: Printer was unable to print the file. It may be out of paper.</span>")
