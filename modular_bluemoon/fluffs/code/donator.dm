@@ -2203,3 +2203,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/nebular_t_kit
 	ckeywhitelist = list("lapkee")
+
+/datum/gear/donator/bm/esabre
+	name = "Cybersun Sabre"
+	slot = ITEM_SLOT_BELT
+	path = /obj/item/storage/belt/esabre_belt/fluff
+	ckeywhitelist = list("sheya")
