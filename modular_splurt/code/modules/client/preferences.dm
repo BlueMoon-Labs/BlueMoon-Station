@@ -263,7 +263,7 @@
 			dat += 	"[mobsex_pref_label] : <a href='?_src_=prefs;preference=mobsex_pref'>[mobsexpref]</a><br>"
 			dat += 	"[hornyantags_pref_label] : <a href='?_src_=prefs;preference=hornyantags_pref'>[hornyantagspref]</a><br>"
 			//END OF Gardelin0 Addoon
-
+			dat += 	"ERP Позиция : <a href='?_src_=prefs;preference=directory_erptag'>[directory_erptag]</a><br>"
 			dat += "<h2>Records</h2><br>"
 			dat += "<a href='?_src_=prefs;preference=security_records;task=input'><b>Security Records</b></a><br>"
 			if(length_char(security_records) <= 40)

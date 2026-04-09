@@ -34,7 +34,7 @@ export const CreateObject = (props: CreateObjectProps, context: any) => {
       if (atom.type !== activeTab) continue;
       const match = searchByType
         ? typepath.toLowerCase().includes(lower)
-        : atom.name.toLowerCase().includes(lower);
+        : atom.name.toLowerCase().includes(lower) || typepath.toLowerCase().includes(lower);
       if (match) filteredAtoms.push([typepath, atom]);
     }
   }

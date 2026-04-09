@@ -56,11 +56,9 @@ export const CharacterDirectory = (props, context) => {
     personalTag,
     personalErpTag,
     personalNonconTag,
-    personalUnholyTag,
-    personalExtremeTag,
-    personalExtremeHarmTag,
-    personalHornyAntagsTag,
+    personalNonconInherited,
     personalGenderTag,
+    personalGenderAuto,
     prefsOnly,
   } = data;
 
@@ -109,7 +107,7 @@ export const CharacterDirectory = (props, context) => {
                   <LabeledList.Item label="Пол">
                     <Button
                       fluid
-                      content={personalGenderTag}
+                      content={personalGenderTag !== 'Unset' ? personalGenderTag : `↑ ${personalGenderAuto}`}
                       onClick={() => act('setGenderTag', { overwrite_prefs: overwritePrefs })}
                     />
                   </LabeledList.Item>
@@ -129,34 +127,14 @@ export const CharacterDirectory = (props, context) => {
                     />
                   </LabeledList.Item>
                   <LabeledList.Item label="Изнасилование">
-                    <PrefTagButton
-                      value={personalNonconTag}
-                      onClick={() => act('setNonconTag')}
-                    />
-                  </LabeledList.Item>
-                  <LabeledList.Item label="Грязный секс">
-                    <PrefTagButton
-                      value={personalUnholyTag}
-                      onClick={() => act('setUnholyTag')}
-                    />
-                  </LabeledList.Item>
-                  <LabeledList.Item label="Жестокий секс">
-                    <PrefTagButton
-                      value={personalExtremeTag}
-                      onClick={() => act('setExtremeTag')}
-                    />
-                  </LabeledList.Item>
-                  <LabeledList.Item label="Очень жестокий секс">
-                    <PrefTagButton
-                      value={personalExtremeHarmTag}
-                      onClick={() => act('setExtremeHarmTag')}
-                    />
-                  </LabeledList.Item>
-                  <LabeledList.Item label="Хорни антаги">
-                    <PrefTagButton
-                      value={personalHornyAntagsTag}
-                      onClick={() => act('setHornyAntagsTag')}
-                    />
+                    <Tooltip content={personalNonconInherited ? 'Значение из настроек персонажа. Кликните, чтобы задать переопределение для библиотеки.' : 'Переопределено в библиотеке. Кликните, чтобы изменить или сбросить наследование.'}>
+
+                      <PrefTagButton
+                        value={personalNonconTag}
+                        inherited={personalNonconInherited}
+                        onClick={() => act('setNonconTag')}
+                      />
+                    </Tooltip>
                   </LabeledList.Item>
                 </LabeledList>
               </Section>
@@ -170,12 +148,12 @@ export const CharacterDirectory = (props, context) => {
 };
 
 const PrefTagButton = (props) => {
-  const { value, onClick } = props;
+  const { value, inherited, onClick } = props;
   const color = value === 'Yes' ? 'green' : value === 'Ask' ? 'blue' : value === 'No' ? 'red' : 'grey';
   return (
     <Button
       fluid
-      content={value || 'Не задано'}
+      content={inherited ? `↑ ${value || 'Не задано'}` : (value || 'Не задано')}
       color={color}
       onClick={onClick}
     />

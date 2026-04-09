@@ -12,6 +12,7 @@
 
 	var/amount = clamp(spawn_params["amount"] || 1, 1, ADMIN_SPAWN_CAP)
 	var/obj_name = spawn_params["atom_name"] ? sanitize(spawn_params["atom_name"]) : null
+	var/obj_desc = spawn_params["atom_desc"] ? sanitize(spawn_params["atom_desc"]) : null
 	var/obj_dir = text2num(spawn_params["atom_dir"])
 	if(obj_dir && !(obj_dir in list(1, 2, 4, 8, 5, 6, 9, 10)))
 		obj_dir = null
@@ -94,6 +95,14 @@
 		target_mob = hand_target
 		target = get_turf(hand_target)
 
+	else if(where == WHERE_TARGETED_MOB_BAG)
+		var/mob/bag_target = spawn_params["targetMob"]
+		if(!bag_target || !isliving(bag_target))
+			to_chat(user, span_warning("SpawnPanel: No valid targeted mob."))
+			return
+		target_mob = bag_target
+		target = get_turf(bag_target)
+
 	if(!target)
 		target = get_turf(user)
 
@@ -119,14 +128,36 @@
 					if(ismob(O))
 						var/mob/M = O
 						M.real_name = obj_name
+				if(obj_desc)
+					O.desc = obj_desc
 				if(where == WHERE_MOB_HAND && isliving(user) && isitem(O))
 					var/mob/living/L = user
 					var/obj/item/I = O
-					L.put_in_hands(I)
+					var/placed = L.put_in_hands(I, forced = TRUE)
+					if(placed && iscyborg(L))
+						var/mob/living/silicon/robot/R = L
+						if(R.module)
+							R.module.add_module(I, TRUE, TRUE)
+							R.activate_module(I)
 				else if(where == WHERE_TARGETED_MOB_HAND && target_mob && isliving(target_mob) && isitem(O))
 					var/mob/living/LT = target_mob
 					var/obj/item/IT = O
-					LT.put_in_hands(IT)
+					var/placed_t = LT.put_in_hands(IT, forced = TRUE)
+					if(placed_t && iscyborg(LT))
+						var/mob/living/silicon/robot/RT = LT
+						if(RT.module)
+							RT.module.add_module(IT, TRUE, TRUE)
+							RT.activate_module(IT)
+				else if(where == WHERE_TARGETED_MOB_BAG && target_mob && isitem(O))
+					var/obj/item/IB = O
+					var/inserted = FALSE
+					if(ishuman(target_mob))
+						var/mob/living/carbon/human/H = target_mob
+						if(H.back)
+							inserted = SEND_SIGNAL(H.back, COMSIG_TRY_STORAGE_INSERT, IB, null, TRUE, TRUE)
+					if(!inserted)
+						if(!SEND_SIGNAL(target_mob, COMSIG_TRY_STORAGE_INSERT, IB, null, TRUE, TRUE))
+							IB.forceMove(get_turf(target_mob))
 				else if(where == WHERE_TELEPORT_BELOW_MOB)
 					do_teleport(O, get_turf(user), channel = TELEPORT_CHANNEL_FREE, no_effects = TRUE)
 					do_sparks(5, FALSE, get_turf(O))

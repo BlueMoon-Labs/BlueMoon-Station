@@ -8,7 +8,7 @@ import { changeSettingsTab, loadSettings, openChatSettings, toggleSettings, upda
 import { FONTS, SETTINGS_TABS } from './constants';
 
 const initialState = {
-  version: 5,
+  version: 6,
   fontSize: 13,
   fontFamily: FONTS[0],
   lineHeight: 1.2,
@@ -16,6 +16,7 @@ const initialState = {
   adminMusicVolume: 0.5,
   highlightText: '',
   highlightColor: '#ffdd44',
+  highlightSoundEnabled: false,
   matchWord: false,
   matchCase: false,
   chatStyle: 'classic',

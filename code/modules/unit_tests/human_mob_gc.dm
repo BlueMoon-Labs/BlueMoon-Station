@@ -65,7 +65,7 @@
 	allocated -= human
 	qdel(human)
 	human = null
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 
 	// Human with mind — simulates player mob
 	var/mob/living/carbon/human/human_with_mind = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
@@ -76,7 +76,7 @@
 	human_with_mind = null
 	qdel(test_mind)
 	test_mind = null
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 
 	// Dead human with mind — explosion death scenario
 	var/mob/living/carbon/human/dead_human = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
@@ -89,7 +89,7 @@
 	dead_human = null
 	qdel(dead_mind)
 	dead_mind = null
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 
 	// If we got here without runtimes, the Destroy chain is clean
 	// (runtimes during fire cycles would cause test failure)
@@ -118,7 +118,7 @@
 	qdel(human)
 	human = null
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 
 	// Verify the Destroy chain ran without runtimes
 	// (runtimes during fire cycles would cause test failure)

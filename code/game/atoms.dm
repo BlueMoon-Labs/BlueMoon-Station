@@ -315,6 +315,7 @@
 		LAZYREMOVE(M.do_afters, src)
 	targeted_by = null
 
+	GLOB.lighting_deferred_atoms -= src
 	QDEL_NULL(light)
 
 	return ..()

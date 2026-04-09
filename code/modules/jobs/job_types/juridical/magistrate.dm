@@ -111,7 +111,8 @@
 	suit = /obj/item/clothing/suit/armor/ntr
 	head = /obj/item/clothing/head/beret/sec/ntr
 	shoes = /obj/item/clothing/shoes/laceup/ntr
-	r_pocket = /obj/item/pen/fourcolor/ntr
+	l_pocket = /obj/item/pen/fourcolor/ntr
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 
 	backpack = /obj/item/storage/backpack/captain/ntr //BLUEMOON add
 	satchel = /obj/item/storage/backpack/satchel/cap/ntr //BLUEMOON add
@@ -140,7 +141,6 @@
 	suit = /obj/item/clothing/suit/armor/ntr
 	head = /obj/item/clothing/head/beret/sec/ntr
 	shoes = /obj/item/clothing/shoes/laceup/ntr
-	l_pocket = /obj/item/melee/classic_baton/telescopic
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
@@ -149,9 +149,8 @@
 	pda_slot = ITEM_SLOT_BELT
 	accessory = list(/obj/item/clothing/accessory/permit/special/representative)
 
-	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1, /obj/item/syndicate_uplink=1, /obj/item/pen/fourcolor/ntr)
+	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1, /obj/item/pen/fourcolor/ntr, /obj/item/melee/classic_baton/telescopic, /obj/item/syndicate_uplink=1)
 
 /datum/outfit/job/ntr/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()
-
 	H.typing_indicator_state = /obj/effect/overlay/typing_indicator/additional/law

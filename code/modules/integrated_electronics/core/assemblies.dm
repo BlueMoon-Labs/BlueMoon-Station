@@ -35,6 +35,18 @@
 	var/static/next_assembly_id = 0
 	var/sealed = FALSE
 
+	/// TGUI IntegratedCircuit canvas pan
+	var/ie_tgui_screen_x = 0
+	var/ie_tgui_screen_y = 0
+	var/datum/weakref/ie_gui_examined_circuit
+	var/ie_gui_examined_x = 0
+	var/ie_gui_examined_y = 0
+	/// TGUI: подсветка связи при передаче данных по проводу
+	var/ie_tgui_pulse_until = 0
+	var/ie_tgui_pulse_output_ref = null
+	var/ie_tgui_pulse_input_ref = null
+	var/datum/weakref/ie_tgui_pulse_chip_weak
+
 	hud_possible = list(DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_TRACK_HUD, DIAG_CIRCUIT_HUD) //diagnostic hud overlays
 	max_integrity = 50
 	pass_flags = 0
@@ -143,173 +155,10 @@
 				I.power_fail()
 
 /obj/item/electronic_assembly/interact(mob/user, circuit)
-	ui_interact(user, circuit)
-
-/obj/item/electronic_assembly/ui_interact(mob/user, obj/item/integrated_circuit/circuit_pins)
-	. = ..()
-	if(!check_interactivity(user))
+	if(user?.client?.prefs?.ie_classic_circuit_ui)
+		ie_legacy_ui_interact(user, circuit)
 		return
-
-	var/total_part_size = return_total_size()
-	var/total_complexity = return_total_complexity()
-	var/datum/browser/popup = new(user, "scannernew", name, 800, 630) // Set up the popup browser window
-	popup.add_stylesheet("scannernew", 'html/browser/assembly_ui.css')
-
-	var/HTML = "<html><head>[UTF8HEADER]<title>[name]</title></head>\
-		<body><table><thead><tr> \
-		<a href='?src=[REF(src)]'>Refresh</a>  |  <a href='?src=[REF(src)];rename=1'>Rename</a><br> \
-		[total_part_size]/[max_components] ([round((total_part_size / max_components) * 100, 0.1)]%) space taken up in the assembly.<br> \
-		[total_complexity]/[max_complexity] ([round((total_complexity / max_complexity) * 100, 0.1)]%) maximum complexity.<br>"
-	if(battery)
-		HTML += "[round(battery.charge, 0.1)]/[battery.maxcharge] ([round(battery.percent(), 0.1)]%) cell charge. <a href='?src=[REF(src)];remove_cell=1'>Remove</a>"
-	else
-		HTML += "<span class='danger'>No power cell detected!</span>"
-	HTML += "</tr></thead>"
-
-
-	//Getting the newest viewed circuit to compare with new circuit list
-	if(!circuit_pins || !istype(circuit_pins,/obj/item/integrated_circuit) || !(circuit_pins in assembly_components))
-		if(assembly_components.len > 0)
-			circuit_pins = assembly_components[1]
-
-
-	HTML += "<tr><td width=200px><div class=scrollleft>Components:<br><nobr>"
-
-	var/builtin_components = ""
-	var/removables = ""
-	var/remove_num = 1
-
-	for(var/obj/item/integrated_circuit/circuit in assembly_components)
-		if(!circuit.removable)
-			if(circuit == circuit_pins)
-				builtin_components += "[circuit.displayed_name]<br>"
-			else
-				builtin_components += "<a href='?src=[REF(src)]'>[circuit.displayed_name]</a><br>"
-
-		// Non-inbuilt circuits come after inbuilt circuits
-		else
-			removables += "<a href='?src=[REF(src)];component=[REF(circuit)];change_pos=1' style='text-decoration:none;'>[remove_num].</a> | "
-			if(circuit == circuit_pins)
-				removables += "[circuit.displayed_name]<br>"
-			else
-				removables += "<a href='?src=[REF(src)];component=[REF(circuit)]'>[circuit.displayed_name]</a><br>"
-			remove_num++
-
-	// Put removable circuits (if any) in separate categories from non-removable
-	if(builtin_components)
-		HTML += "<hr> Built in:<br> [builtin_components] <hr> Removable: <br>"
-
-	HTML += removables
-
-	HTML += "</nobr></div></td><td valign='top'><div class=scrollright>"
-
-
-	//Getting the newest circuit's pin
-	if(!circuit_pins || !istype(circuit_pins,/obj/item/integrated_circuit))
-		if(assembly_components.len > 0)
-			circuit_pins = assembly_components[1]
-
-	if(circuit_pins)
-		HTML += "<div valign='middle'>[circuit_pins.displayed_name]<br>"
-
-		HTML += "<a href='?src=[REF(src)];component=[REF(circuit_pins)]'>Refresh</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];rename_component=1'>Rename</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];scan=1'>Copy Ref</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];interact=1'>Interact</a>"
-		if(circuit_pins.removable)
-			HTML += " | <a href='?src=[REF(src)];component=[REF(circuit_pins)];remove=1'>Remove</a>"
-		HTML += "</div><br>"
-
-		var/table_edge_width = "30%"
-		var/table_middle_width = "40%"
-
-		HTML += "<table border='1' style='undefined;table-layout: fixed; position: absolute; left: 210; right: 2;'><colgroup>\
-			<col style='width: [table_edge_width]'>\
-			<col style='width: [table_middle_width]'>\
-			<col style='width: [table_edge_width]'>\
-			</colgroup>"
-
-		var/column_width = 3
-		var/row_height = max(circuit_pins.inputs.len, circuit_pins.outputs.len, 1)
-
-		for(var/i = 1 to row_height)
-			HTML += "<tr>"
-			for(var/j = 1 to column_width)
-				var/datum/integrated_io/io = null
-				var/words = ""
-				var/height = 1
-				switch(j)
-					if(1)
-						io = circuit_pins.get_pin_ref(IC_INPUT, i)
-						if(io)
-							words += "<b><a href='?src=[REF(circuit_pins)];act=wire;pin=[REF(io)]'>[io.display_pin_type()] [io.name]</a> \
-							<a href='?src=[REF(circuit_pins)];act=data;pin=[REF(io)]'>[io.display_data(io.data)]</a></b><br>"
-							if(io.linked.len)
-								words += "<ul>"
-								for(var/k in io.linked)
-									var/datum/integrated_io/linked = k
-									words += "<li><a href='?src=[REF(circuit_pins)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-									@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-								words += "</ul>"
-
-							if(circuit_pins.outputs.len > circuit_pins.inputs.len)
-								height = 1
-					if(2)
-						if(i == 1)
-							words += "[circuit_pins.displayed_name]<br>[circuit_pins.name != circuit_pins.displayed_name ? "([circuit_pins.name])":""]<hr>[circuit_pins.desc]"
-							height = row_height
-						else
-							continue
-					if(3)
-						io = circuit_pins.get_pin_ref(IC_OUTPUT, i)
-						if(io)
-							words += "<b><a href='?src=[REF(circuit_pins)];act=wire;pin=[REF(io)]'>[io.display_pin_type()] [io.name]</a> \
-							<a href='?src=[REF(circuit_pins)];act=data;pin=[REF(io)]'>[io.display_data(io.data)]</a></b><br>"
-							if(io.linked.len)
-								words += "<ul>"
-								for(var/k in io.linked)
-									var/datum/integrated_io/linked = k
-									words += "<li><a href='?src=[REF(circuit_pins)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-									@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-								words += "</ul>"
-
-							if(circuit_pins.inputs.len > circuit_pins.outputs.len)
-								height = 1
-				HTML += "<td align='center' rowspan='[height]'>[words]</td>"
-			HTML += "</tr>"
-
-		for(var/activator in circuit_pins.activators)
-			var/datum/integrated_io/io = activator
-			var/words = ""
-
-			words += "<b><a href='?src=[REF(circuit_pins)];act=wire;pin=[REF(io)]'>[io]</a> \
-				<a href='?src=[REF(circuit_pins)];act=data;pin=[REF(io)]'>[io.data?"\<PULSE OUT\>":"\<PULSE IN\>"]</a></b><br>"
-			if(io.linked.len)
-				words += "<ul>"
-				for(var/k in io.linked)
-					var/datum/integrated_io/linked = k
-					words += "<li><a href='?src=[REF(circuit_pins)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-					@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-				words += "</ul>"
-
-			HTML += "<tr><td colspan='3' align='center'>[words]</td></tr>"
-
-		HTML += "<tr>\
-			<br><font color='FFFFFF' class=lowtext>Complexity: [circuit_pins.complexity]\
-			<br>Cooldown per use: [circuit_pins.cooldown_per_use/10] sec"
-		if(circuit_pins.ext_cooldown)
-			HTML += "<br>External manipulation cooldown: [circuit_pins.ext_cooldown/10] sec"
-		if(circuit_pins.power_draw_idle)
-			HTML += "<br>Power Draw: [circuit_pins.power_draw_idle] W (Idle)"
-		if(circuit_pins.power_draw_per_use)
-			HTML += "<br>Power Draw: [circuit_pins.power_draw_per_use] W (Active)" // Borgcode says that powercells' checked_use() takes joules as input.
-		HTML += "<br>[circuit_pins.extended_desc]</font></tr></table></div>"
-
-
-	HTML += "</div></td></tr></table></body></html>"
-
-	popup.set_content(HTML)
-	popup.open()
+	ui_interact(user, circuit)
 
 /obj/item/electronic_assembly/Topic(href, href_list)
 	if(..())
@@ -329,6 +178,13 @@
 	if(!check_interactivity(usr))
 		return
 
+	if(href_list["ie_ui_mode"] == "tgui")
+		if(usr.client?.prefs)
+			usr.client.prefs.ie_classic_circuit_ui = FALSE
+		SStgui.close_uis(src)
+		ui_interact(usr, null)
+		return
+
 	if(href_list["rename"])
 		rename(usr)
 
@@ -341,6 +197,7 @@
 			to_chat(usr, "<span class='notice'>You pull \the [battery] out of \the [src]'s power supplier.</span>")
 			battery = null
 			diag_hud_set_circuitstat() //update diagnostic hud
+			SStgui.update_uis(src)
 
 	var/obj/item/integrated_circuit/component
 
@@ -517,6 +374,7 @@
 	//diagnostic hud update
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
+	SStgui.update_uis(src)
 
 
 /obj/item/electronic_assembly/proc/try_remove_component(obj/item/integrated_circuit/IC, mob/user, silent)
@@ -557,6 +415,7 @@
 	//diagnostic hud update
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
+	SStgui.update_uis(src)
 
 
 /obj/item/electronic_assembly/afterattack(atom/target, mob/user, proximity)
@@ -659,6 +518,8 @@
 		diag_hud_set_circuitstat() //update diagnostic hud
 		playsound(get_turf(src), 'sound/items/Deconstruct.ogg', 50, 1)
 		to_chat(user, "<span class='notice'>You slot the [I] inside \the [src]'s power supplier.</span>")
+		to_chat(user, "<span class='info'>Питание не считается «компонентом» схемы: в окне редактора в счётчике — только напечатанные на интегральном принтере микросхемы.</span>")
+		SStgui.update_uis(src)
 		return TRUE
 
 	else if(istype(I, /obj/item/integrated_electronics/detailer))

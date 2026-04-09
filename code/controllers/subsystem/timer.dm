@@ -423,7 +423,10 @@ SUBSYSTEM_DEF(timer)
 			if (!length(timers))
 				cb_object.active_timers = null
 
-	callBack = null
+	if(callBack)
+		callBack.object = null
+		callBack.arguments = null
+		callBack = null
 
 	if (flags & TIMER_STOPPABLE)
 		SStimer.timer_id_dict -= id

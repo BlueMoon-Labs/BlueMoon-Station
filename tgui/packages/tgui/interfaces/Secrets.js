@@ -366,14 +366,6 @@ const FunTab = (props, context) => {
         <Stack fill>
           <Stack.Item>
             <Button
-              icon="bath"
-              lineHeight={lineHeightNormal}
-              width={buttonWidthNormal}
-              content="Аварийная очистка станции"
-              onClick={() => act("space_cleaner_spill")} />
-          </Stack.Item>
-          <Stack.Item>
-            <Button
               icon="hammer"
               lineHeight={lineHeightNormal}
               width={buttonWidthNormal}
