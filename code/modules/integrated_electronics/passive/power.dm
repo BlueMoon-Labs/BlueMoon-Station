@@ -1,9 +1,9 @@
 
 /obj/item/integrated_circuit/passive/power
 	name = "power thingy"
-	desc = "Does power stuff."
+	desc = "Связано с энергией."
 	complexity = 5
-	category_text = "Power - Passive"
+	category_text = "Энергия - Пассивная"
 
 /obj/item/integrated_circuit/passive/power/proc/make_energy()
 	return
@@ -11,8 +11,8 @@
 // For calculators.
 /obj/item/integrated_circuit/passive/power/solar_cell
 	name = "tiny photovoltaic cell"
-	desc = "It's a very tiny solar cell, generally used in calculators."
-	extended_desc = "This cell generates 1 W of power in optimal lighting conditions. Less light will result in less power being generated."
+	desc = "Это очень маленькая солнечная батарея, которую обычно используют в калькуляторах."
+	extended_desc = "Эта батарея генерирует 1 Вт энергии при оптимальных условиях освещения. При меньшей освещённости количество вырабатываемой энергии уменьшится."
 	icon_state = "solar_cell"
 	complexity = 8
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -29,7 +29,7 @@
 
 /obj/item/integrated_circuit/passive/power/starter
 	name = "starter"
-	desc = "This tiny circuit will send a pulse right after the device is turned on, or when power is restored to it."
+	desc = "Эта миниатюрная схема будет генерировать импульс сразу после включения устройства или при восстановлении питания."
 	icon_state = "led"
 	complexity = 1
 	activators = list("pulse out" = IC_PINTYPE_PULSE_OUT)
@@ -51,10 +51,10 @@
 // For fat machines that need fat power, like drones.
 /obj/item/integrated_circuit/passive/power/relay
 	name = "tesla power relay"
-	desc = "A seemingly enigmatic device which connects to nearby APCs wirelessly and draws power from them."
+	desc = "На первый взгляд загадочное устройство, которое подключается к ближайшим устройствам APC по беспроводной сети и получает от них питание."
 	w_class = WEIGHT_CLASS_SMALL
-	extended_desc = "The siphon drains 50 W of power from an APC in the same room as it as long as it has charge remaining. It will always drain \
-	from the 'equipment' power channel."
+	extended_desc = "Сифон поглощает 50 Вт энергии от блока APC, расположенного в том же помещении, пока в нем остаётся заряд. Он всегда будет потреблять энергию \
+    из канала питания оборудования."
 	icon_state = "power_relay"
 	complexity = 7
 	spawn_flags = IC_SPAWN_RESEARCH
@@ -73,10 +73,10 @@
 // For really fat machines.
 /obj/item/integrated_circuit/passive/power/relay/large
 	name = "large tesla power relay"
-	desc = "A seemingly enigmatic device which connects to nearby APCs wirelessly and draws power from them, now in industrial size!"
+	desc = "На первый взгляд загадочное устройство, которое подключается к ближайшим точкам доступа по беспроводной сети и получает от них питание, теперь доступно в промышленном размере!"
 	w_class = WEIGHT_CLASS_BULKY
-	extended_desc = "The siphon drains 2 kW of power from an APC in the same room as it as long as it has charge remaining. It will always drain \
-	from the 'equipment' power channel."
+	extended_desc = "Сифон поглощает 2 кВт энергии от устройства APC, расположенного в том же помещении, пока в нем остаётся заряд. Он всегда будет потреблять энергию \
+    из канала питания оборудования."
 	icon_state = "power_relay"
 	complexity = 15
 	spawn_flags = IC_SPAWN_RESEARCH
@@ -86,10 +86,10 @@
 //fuel cell
 /obj/item/integrated_circuit/passive/power/chemical_cell
 	name = "fuel cell"
-	desc = "Produces electricity from chemicals."
+	desc = "Производит электроэнергию из химических веществ."
 	icon_state = "chemical_cell"
-	extended_desc = "This is effectively an internal beaker. It will consume and produce power from plasma, slime jelly, welding fuel, carbon,\
-	 ethanol, nutriment, and blood in order of decreasing efficiency. It will consume fuel only if the battery can take more energy. But no fuel can be compared with blood of living human."
+	extended_desc = "По сути, это внутренний реактор. Он потребляет и вырабатывает энергию из плазмы, слизистого желе, сварочного топлива, углерода, \
+    этанола, питательных веществ и крови в порядке убывания эффективности. Топливо потребляется только в том случае, если аккумулятор способен принять дополнительную энергию. Однако ни одно топливо не может сравниться с кровью живого человека."
 	complexity = 4
 	inputs = list()
 	outputs = list("volume used" = IC_PINTYPE_NUMBER, "self reference" = IC_PINTYPE_SELFREF)

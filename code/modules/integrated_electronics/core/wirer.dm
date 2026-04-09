@@ -36,7 +36,7 @@
                 а второй - [io.io_type].</span>")
 				return
 			if(io.holder.assembly && io.holder.assembly != selected_io.holder.assembly)
-				to_chat(user, "<span class='warning'>И \the [io.holder], и \the [selected_io.holder] должны находиться в одном корпусе.</span>")
+				to_chat(user, "<span class='warning'>И [io.holder], и [selected_io.holder] должны находиться в одном корпусе.</span>")
 				return
 			selected_io.connect_pin(io)
 
@@ -59,7 +59,7 @@
 
 		if(UNWIRING)
 			if(io == selected_io)
-				to_chat(user, "<span class='warning'>Невозможно подключить выводы друг к другу, поэтому отключение \[selected_io.holder\] от \
+				to_chat(user, "<span class='warning'>Невозможно подключить выводы друг к другу, поэтому отключение [selected_io.holder] от \
                 того же самого вывода не имеет смысла.</span>")
 				return
 			if(selected_io in io.linked)
