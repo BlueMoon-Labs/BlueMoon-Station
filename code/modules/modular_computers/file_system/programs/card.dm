@@ -88,8 +88,10 @@
 		return
 	var/obj/item/card/id/user_id_card = card_slot.stored_card
 	var/old_authenticated = authenticated
+	var/old_region_access_len = region_access.len
+	var/old_head_subordinates_len = head_subordinates.len
 	authenticate(user_id_card)
-	if(authenticated != old_authenticated)
+	if(authenticated != old_authenticated || region_access.len != old_region_access_len || head_subordinates.len != old_head_subordinates_len)
 		update_static_data_for_all_viewers()
 		if(authenticated)
 			playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
