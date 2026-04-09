@@ -13,7 +13,7 @@
 		)
 	outputs = list("result" = IC_PINTYPE_NUMBER)
 	activators = list("compute" = IC_PINTYPE_PULSE_IN, "on computed" = IC_PINTYPE_PULSE_OUT)
-	category_text = "Arithmetic"
+	category_text = "Арифметика"
 	power_draw_per_use = 5 // Math is pretty cheap.
 
 // +Adding+ //
