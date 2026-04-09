@@ -16,7 +16,7 @@
 	exp_type = EXP_TYPE_CREW
 	exp_type_department = EXP_TYPE_SUPPLY
 	considered_combat_role = TRUE
-	custom_spawn_text = "работайте сообща с другими отделами. Не забывайте проверять состояние вашего шахтёрского корпуса. Вы - пятый в очереди на пост ВрИО капитана</font>"
+	custom_spawn_text = "работайте сообща с другими отделами. Не забывайте проверять состояние вашего шахтёрского корпуса. Вы - пятый в очереди на пост ВрИО капитана."
 	alt_titles = list(
 		"Donk Co. Manager", //Триглав выше, для удобства
 		"Logistics Syndicate Supervisor", //Синди выше, для удобства

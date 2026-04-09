@@ -50,7 +50,7 @@ GLOBAL_LIST_EMPTY(roundstart_prisoners)
 		to_chat(found, "<br><br>")
 		to_chat(found, "<span class='boldnotice'>[policy]</span>")
 	if(!latejoin)
-		GLOB.roundstart_prisoners += H
+		GLOB.roundstart_prisoners += WEAKREF(H)
 
 /datum/outfit/job/prisoner
 	name = "Prisoner"
