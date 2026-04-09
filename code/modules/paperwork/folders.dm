@@ -44,7 +44,7 @@
 		return
 
 	if(user.canUseTopic(src))
-		name = initial(name) + "[" - '[inputvalue]'"]"
+		name = "[initial(name)] - '[inputvalue]'"
 		return TRUE
 
 /obj/item/folder/proc/remove_item(obj/item/Item, mob/user)

@@ -87,10 +87,15 @@
 /obj/item/paper/paperslip/spare_id_safe_code
 	name = "Spare ID safe combination"
 	desc = "Конфиденциальная запись с кодом от золотого сейфа запасной карты капитана."
-	default_raw_text = "<b>Комбинация золотого сейфа запасной карты капитана</b><br><br>Код: <b>%Код%</b><br><br>Сейф расположен на мостике. Используйте код в экстренных случаях для доступа к запасной ID-карте капитана.<br><br>— Central Command"
 
 /obj/item/paper/paperslip/spare_id_safe_code/Initialize(mapload)
-	var/code_string = GLOB.spare_id_safe ? jointext(GLOB.spare_id_safe.tumblers, "-") : "ERR%@!#$"
-	default_raw_text = replacetext(default_raw_text, "%Код%", code_string)
-	return ..()
+	..()
+	return INITIALIZE_HINT_LATELOAD
 
+/obj/item/paper/paperslip/spare_id_safe_code/LateInitialize()
+	. = ..()
+	var/code_text = "<b>Комбинация золотого сейфа запасной карты капитана</b><br><br>Код: <b>%Код%</b><br><br>Сейф расположен на мостике. Используйте код в экстренных случаях для доступа к запасной ID-карте капитана.<br><br>— Central Command"
+	var/code_string = GLOB.spare_id_safe ? jointext(GLOB.spare_id_safe.tumblers, "-") : "ERR%@!#$"
+	code_text = replacetext(code_text, "%Код%", code_string)
+	add_raw_text(code_text)
+	update_appearance()
