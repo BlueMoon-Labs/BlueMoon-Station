@@ -347,7 +347,7 @@
 				playsound(computer, "terminal_type", 50, FALSE)
 				return TRUE
 		if("PRG_grantall")
-			if(!computer || !authenticated)
+			if(!computer || !authenticated || !target_id_card)
 				return
 			if(minor)
 				var/list/new_access = list()
@@ -360,7 +360,7 @@
 			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			return TRUE
 		if("PRG_denyall")
-			if(!computer || !authenticated)
+			if(!computer || !authenticated || !target_id_card)
 				return
 			if(minor)
 				var/list/new_access = list()
