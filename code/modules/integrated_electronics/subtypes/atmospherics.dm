@@ -6,7 +6,7 @@
 
 
 /obj/item/integrated_circuit/atmospherics
-	category_text = "Atmospherics"
+	category_text = "Атмосфера"
 	cooldown_per_use = 2 SECONDS
 	complexity = 10
 	size = 7
@@ -46,7 +46,7 @@
 // - gas pump - // **works**
 /obj/item/integrated_circuit/atmospherics/pump
 	name = "gas pump"
-	desc = "Somehow moves gases between two tanks, canisters, and other gas containers."
+	desc = "Обеспечивает перемещение газов между двумя резервуарами, баллонами и другими емкостями для газа."
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
 			"source" = IC_PINTYPE_REF,
@@ -63,10 +63,10 @@
 
 /obj/item/integrated_circuit/atmospherics/pump/Initialize(mapload)
 	air_contents = new(volume)
-	extended_desc += " Use negative pressure to move air from target to source. \
-					Note that only part of the gas is moved on each transfer, \
-					so multiple activations will be necessary to achieve target pressure. \
-					The pressure limit for circuit pumps is [round(PUMP_MAX_PRESSURE)] kPa."
+	extended_desc += "Используйте отрицательное давление для перемещения воздуха от места назначения к источнику. \
+                    Обратите внимание, что при каждом цикле перемещается лишь часть газа, \
+                    поэтому для достижения заданного давления потребуется несколько циклов. \
+                    Предельное давление для насосов в схемах составляет [round(PUMP_MAX_PRESSURE)] кПа."
 	. = ..()
 
 // This proc gets the direction of the gas flow depending on its value, by calling update target
@@ -144,8 +144,8 @@
 // - volume pump - // **Works**
 /obj/item/integrated_circuit/atmospherics/pump/volume
 	name = "volume pump"
-	desc = "Moves gases between two tanks, canisters, and other gas containers by using their volume, up to 200 L/s."
-	extended_desc = " Use negative volume to move air from target to source. Note that only part of the gas is moved on each transfer. Its maximum pumping volume is capped at 1000kPa."
+	desc = "Перекачивает газы между двумя резервуарами, баллонами и другими газовыми емкостями с использованием их объёма со скоростью до 200 л/с."
+	extended_desc = "Используйте отрицательный объем для перемещения воздуха от места назначения к источнику. Обратите внимание, что при каждом перемещении перемещается лишь часть газа. Максимальный объем перекачки ограничен значением 1000 кПа."
 
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
@@ -195,8 +195,8 @@
 // - gas vent - // **works**
 /obj/item/integrated_circuit/atmospherics/pump/vent
 	name = "gas vent"
-	extended_desc = "Use negative volume to move air from target to environment. Note that only part of the gas is moved on each transfer. Unlike the gas pump, this one keeps pumping even further to pressures of 9000 pKa and it is not advised to use it on tank circuits."
-	desc = "Moves gases between the environment and adjacent gas containers."
+	extended_desc = "Используйте отрицательный объем для перемещения воздуха из целевой зоны в окружающую среду. Обратите внимание, что при каждом перекачивании перемещается лишь часть газа. В отличие от газового насоса, данный насос продолжает перекачивать газ даже при давлении до 9000 кПа, поэтому не рекомендуется использовать его в схемах с баллонами."
+	desc = "Обеспечивает перемещение газов между окружающей средой и соседними газовыми емкостями."
 	inputs = list(
 			"container" = IC_PINTYPE_REF,
 			"target pressure" = IC_PINTYPE_NUMBER
@@ -233,10 +233,10 @@
 // - integrated connector - // Can connect and disconnect properly
 /obj/item/integrated_circuit/atmospherics/connector
 	name = "integrated connector"
-	desc = "Creates an airtight seal with standard connectors found on the floor, \
-		 	allowing the assembly to exchange gases with a pipe network."
-	extended_desc = "This circuit will automatically attempt to locate and connect to ports on the floor beneath it when activated. \
-					You <b>must</b> set a target before connecting."
+	desc = "Обеспечивает герметичное соединение со стандартными портами, установленными на полу, \
+            позволяя корпусу осуществлять газообмен с трубопроводной сетью."
+	extended_desc = "При активации эта схема автоматически попытается обнаружить порты на полу под ней и подключиться к ним. \
+                    Вы <B>должны</B> задать цель перед подключением."
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
 			"target" = IC_PINTYPE_REF
@@ -300,7 +300,7 @@
 // - gas filter - // **works**
 /obj/item/integrated_circuit/atmospherics/pump/filter
 	name = "gas filter"
-	desc = "Filters one gas out of a mixture."
+	desc = "Отделяет один газ из смеси."
 	complexity = 20
 	size = 8
 	spawn_flags = IC_SPAWN_RESEARCH
@@ -407,16 +407,16 @@
 /obj/item/integrated_circuit/atmospherics/pump/filter/Initialize(mapload)
 	air_contents = new(volume)
 	. = ..()
-	extended_desc = "Remember to properly spell and capitalize the filtered gas name. \
-					Note that only part of the gas is moved on each transfer, \
-					so multiple activations will be necessary to achieve target pressure. \
-					The pressure limit for circuit pumps is [round(PUMP_MAX_PRESSURE)] kPa."
+	extended_desc = "Не забудьте правильно написать название фильтрованного газа и соблюсти правила использования заглавных букв. \
+                    Обратите внимание, что при каждой перекачке перемещается только часть газа, \
+                    поэтому для достижения заданного давления потребуется несколько циклов. \
+                    Предельное давление для насосов в схемах составляет [round(PUMP_MAX_PRESSURE)] кПа."
 
 
 // - gas mixer - // **works**
 /obj/item/integrated_circuit/atmospherics/pump/mixer
 	name = "gas mixer"
-	desc = "Mixes 2 different types of gases."
+	desc = "Смешивает 2 различных вида газов."
 	complexity = 20
 	size = 8
 	spawn_flags = IC_SPAWN_RESEARCH
@@ -482,7 +482,7 @@
 // - integrated tank - // **works**
 /obj/item/integrated_circuit/atmospherics/tank
 	name = "integrated tank"
-	desc = "A small tank for the storage of gases."
+	desc = "Небольшой баллон."
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	size = 4
 	activators = list(
@@ -494,7 +494,7 @@
 /obj/item/integrated_circuit/atmospherics/tank/Initialize(mapload)
 	air_contents = new(volume)
 	START_PROCESSING(SSobj, src)
-	extended_desc = "Take care not to pressurize it above [round(TANK_FAILURE_PRESSURE)] kPa, or else it will break."
+	extended_desc = "Следите за тем, чтобы давление не превышало [round(TANK_FAILURE_PRESSURE)] кПа, иначе он сломается."
 	. = ..()
 
 /obj/item/integrated_circuit/atmospherics/tank/Destroy()
@@ -513,7 +513,7 @@
 	//Check if tank broken
 	if(!broken && tank_pressure > TANK_FAILURE_PRESSURE)
 		broken = TRUE
-		to_chat(view(2),"<span class='notice'>The [name] ruptures, releasing its gases!</span>")
+		to_chat(view(2),"<span class='notice'>[name] разрывается, выпуская газы!</span>")
 	if(broken)
 		release()
 
@@ -534,7 +534,7 @@
 // - large integrated tank - // **works**
 /obj/item/integrated_circuit/atmospherics/tank/large
 	name = "large integrated tank"
-	desc = "A less small tank for the storage of gases."
+	desc = "Не такой уж и маленький баллон"
 	volume = 9
 	size = 12
 	spawn_flags = IC_SPAWN_RESEARCH
@@ -543,7 +543,7 @@
 // - freezer tank - // **works**
 /obj/item/integrated_circuit/atmospherics/tank/freezer
 	name = "freezer tank"
-	desc = "Cools the gas it contains to a preset temperature."
+	desc = "Охлаждает содержащийся в нём газ до заданной температуры."
 	volume = 6
 	size = 8
 	inputs = list(
@@ -577,7 +577,7 @@
 // - heater tank - // **works**
 /obj/item/integrated_circuit/atmospherics/tank/freezer/heater
 	name = "heater tank"
-	desc = "Heats the gas it contains to a preset temperature."
+	desc = "Нагревает содержащийся в нём газ до заданной температуры."
 	volume = 6
 	inputs = list(
 		"target temperature" = IC_PINTYPE_NUMBER,
@@ -607,7 +607,7 @@
 // - atmospheric cooler - // **works**
 /obj/item/integrated_circuit/atmospherics/cooler
 	name = "atmospheric cooler circuit"
-	desc = "Cools the air around it."
+	desc = "Охлаждает окружающий воздух."
 	volume = 6
 	size = 13
 	spawn_flags = IC_SPAWN_RESEARCH
@@ -655,7 +655,7 @@
 // - atmospheric heater - // **works**
 /obj/item/integrated_circuit/atmospherics/cooler/heater
 	name = "atmospheric heater circuit"
-	desc = "Heats the air around it."
+	desc = "Нагревает окружающий воздух."
 
 /obj/item/integrated_circuit/atmospherics/cooler/heater/on_data_written()
 	temperature = max(293.15,min(323.15,get_pin_data(IC_INPUT, 1)))
@@ -683,11 +683,11 @@
 
 // - tank slot - // **works**
 /obj/item/integrated_circuit/input/tank_slot
-	category_text = "Atmospherics"
+	category_text = "Атмосфера"
 	cooldown_per_use = 1
 	name = "tank slot"
-	desc = "Lets you add a tank to your assembly and remove it even when the assembly is closed."
-	extended_desc = "It can help you extract gases easier."
+	desc = "Позволяет добавлять и удалять баллон из узла даже после того, как корпус закрыт."
+	extended_desc = "Это поможет вам легче извлекать газы."
 	complexity = 25
 	size = 30
 	inputs = list()
@@ -718,18 +718,18 @@
 /obj/item/integrated_circuit/input/tank_slot/attackby(var/obj/item/tank/internals/I, var/mob/living/user)
 	//Check if it truly is a tank
 	if(!istype(I,/obj/item/tank/internals))
-		to_chat(user,"<span class='warning'>The [I.name] doesn't seem to fit in here.</span>")
+		to_chat(user,"<span class='warning'>Похоже, [I.name] сюда не подходит.</span>")
 		return
 
 	//Check if there is no other tank already inside
 	if(current_tank)
-		to_chat(user,"<span class='warning'>There is already a gas tank inside.</span>")
+		to_chat(user,"<span class='warning'>Внутри уже есть баллон.</span>")
 		return
 
 	//The current tank is the one we just attached, its location is inside the circuit
 	current_tank = I
 	user.transferItemToLoc(I,src)
-	to_chat(user,"<span class='warning'>You put the [I.name] inside the tank slot.</span>")
+	to_chat(user,"<span class='warning'>Поместите [I.name] в слот для баллона.</span>")
 
 	//Set the pin to a weak reference of the current tank
 	push_pressure()
@@ -744,11 +744,11 @@
 /obj/item/integrated_circuit/input/tank_slot/attack_self(mob/user)
 	//Check if no tank attached
 	if(!current_tank)
-		to_chat(user, "<span class='notice'>There is currently no tank attached.</span>")
+		to_chat(user, "<span class='notice'>В настоящее время баллон не установлен.</span>")
 		return
 
 	//Remove tank and put in user's hands/location
-	to_chat(user, "<span class='notice'>You take [current_tank] out of the tank slot.</span>")
+	to_chat(user, "<span class='notice'>Вы извлекаете [current_tank] из слота для баллона.</span>")
 	user.put_in_hands(current_tank)
 	current_tank = null
 

@@ -20,10 +20,10 @@
 
 /obj/item/integrated_circuit/arithmetic/addition
 	name = "addition circuit"
-	desc = "This circuit can add numbers together."
-	extended_desc = "The order that the calculation goes is;<br>\
-	result = ((((A + B) + C) + D) ... ) and so on, until all pins have been added. \
-	Null pins are ignored."
+	desc = "Эта схема может складывать числа."
+	extended_desc = "Порядок вычисления следующий: <br>\
+    result = ((((A + B) + C) + D) ... ) и так далее, пока не будут сложены все пины. \
+    Выводы с нулевым значением игнорируются."
 	icon_state = "addition"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -42,10 +42,10 @@
 
 /obj/item/integrated_circuit/arithmetic/subtraction
 	name = "subtraction circuit"
-	desc = "This circuit can subtract numbers."
-	extended_desc = "The order that the calculation goes is;<br>\
-	result = ((((A - B) - C) - D) ... ) and so on, until all pins have been subtracted. \
-	Null pins are ignored.  Pin A <b>must</b> be a number, or the circuit will not function."
+	desc = "Эта схема может вычитать числа."
+	extended_desc = "Порядок вычислений следующий: <br>\
+    result = ((((A - B) - C) - D) ... ) и так далее, пока не будут вычтены все пины. \
+    Выводы с нулевым значением игнорируются.  Вывод A <b>должен</b> быть числом, иначе схема не будет работать."
 	icon_state = "subtraction"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -68,10 +68,10 @@
 
 /obj/item/integrated_circuit/arithmetic/multiplication
 	name = "multiplication circuit"
-	desc = "This circuit can multiply numbers."
-	extended_desc = "The order that the calculation goes is;<br>\
-	result = ((((A * B) * C) * D) ... ) and so on, until all pins have been multiplied. \
-	Null pins are ignored. Pin A <b>must</b> be a number, or the circuit will not function."
+	desc = "Эта схема может умножать числа."
+	extended_desc = "Порядок вычислений следующий: <br>\
+    result = ((((A * B) * C) * D) ... ) и так далее, пока не будут умножены все пины. \
+    Выводы с нулевым значением игнорируются. Вывод A <b>должен</b> быть числом, иначе схема не будет работать."
 	icon_state = "multiplication"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -94,10 +94,10 @@
 
 /obj/item/integrated_circuit/arithmetic/division
 	name = "division circuit"
-	desc = "This circuit can divide numbers. Don't even think about trying to divide by zero!"
-	extended_desc = "The order that the calculation goes is;<br>\
-	result = ((((A / B) / C) / D) ... ) and so on, until all pins have been divided. \
-	Null pins, and pins containing 0, are ignored. Pin A <b>must</b> be a number or the circuit will not function."
+	desc = "Эта схема умеет делить числа. Даже не думайте пробовать делить на ноль!"
+	extended_desc = "Порядок вычислений следующий: <br>\
+    result = ((((A / B) / C) / D) ... ) и так далее, пока не будут разделены все пины. \
+    Выводы с нулевым значением и выводы, содержащие 0, игнорируются. Вывод A <b>должен</b> быть числом, иначе схема не будет работать."
 	icon_state = "division"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -122,7 +122,7 @@
 
 /obj/item/integrated_circuit/arithmetic/exponent
 	name = "exponent circuit"
-	desc = "Outputs A to the power of B."
+	desc = "Выводит A в степени B."
 	icon_state = "exponent"
 	inputs = list("A" = IC_PINTYPE_NUMBER, "B" = IC_PINTYPE_NUMBER)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -142,8 +142,8 @@
 
 /obj/item/integrated_circuit/arithmetic/sign
 	name = "sign circuit"
-	desc = "This circuit can tell if a number is positive, negative, or zero."
-	extended_desc = "Will output 1, -1, or 0, depending on if A is a positive number, a negative number, or zero, respectively."
+	desc = "Эта схема позволяет определить, является ли число положительным, отрицательным или равным нулю."
+	extended_desc = "Выдаст 1, -1 или 0 в зависимости от того, является ли A положительным числом, отрицательным числом или нулем соответственно."
 	icon_state = "sign"
 	inputs = list("A" = IC_PINTYPE_NUMBER)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -167,8 +167,8 @@
 
 /obj/item/integrated_circuit/arithmetic/round
 	name = "round circuit"
-	desc = "Rounds A to the nearest B multiple of A."
-	extended_desc = "If B is not given a number, it will output the floor of A instead."
+	desc = "Округляет A до ближайшего кратного B числа."
+	extended_desc = "Если для B не указано число, то вместо него будет выведено целое значение A, округленное в меньшую сторону."
 	icon_state = "round"
 	inputs = list("A" = IC_PINTYPE_NUMBER, "B" = IC_PINTYPE_NUMBER)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -191,7 +191,7 @@
 
 /obj/item/integrated_circuit/arithmetic/absolute
 	name = "absolute circuit"
-	desc = "This outputs a non-negative version of the number you put in. This may also be thought of as its distance from zero."
+	desc = "В результате выводится неотрицательная версия введенного числа. Это можно также рассматривать как его расстояние от нуля."
 	icon_state = "absolute"
 	inputs = list("A" = IC_PINTYPE_NUMBER)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -212,8 +212,8 @@
 
 /obj/item/integrated_circuit/arithmetic/average
 	name = "average circuit"
-	desc = "This circuit is of average quality. It will compute the average of the numbers you give it."
-	extended_desc = "Note that null pins are ignored, whereas a pin containing 0 is included in the averaging calculation."
+	desc = "Эта схема среднего качества. Она вычислит среднее значение введенных вами чисел."
+	extended_desc = "Обратите внимание, что нулевые значения пинов игнорируются, тогда как пины со значением 0 учитываются при вычислении среднего значения."
 	icon_state = "average"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -236,14 +236,14 @@
 // Pi, because why the hell not? //
 /obj/item/integrated_circuit/arithmetic/pi
 	name = "pi constant circuit"
-	desc = "Not recommended for cooking. Outputs '3.14159' when it receives a pulse."
+	desc = "Не рекомендуется использовать для приготовления пищи. При получении импульса выдает '3,14159'."
 	icon_state = "pi"
 	inputs = list()
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/arithmetic/pi/Initialize(mapload)
 	. = ..()
-	desc = "Not recommended for cooking. Outputs '[PI]' when it receives a pulse."
+	desc = "Не рекомендуется использовать для приготовления пищи. При получении импульса выдает значение '[PI]'."
 
 /obj/item/integrated_circuit/arithmetic/pi/do_work()
 	set_pin_data(IC_OUTPUT, 1, PI)
@@ -253,9 +253,9 @@
 // Random //
 /obj/item/integrated_circuit/arithmetic/random
 	name = "random number generator circuit"
-	desc = "This gives a random (integer) number between values A and B inclusive."
-	extended_desc = "'Inclusive' means that the upper bound is included in the range of numbers, e.g. L = 1 and H = 3 will allow \
-	for outputs of 1, 2, or 3. H being the higher number is not <i>strictly</i> required."
+	desc = "В результате получается случайное (целое) число в диапазоне от A до B включительно."
+	extended_desc = "'Включая' означает, что верхняя граница входит в диапазон чисел; например, при L = 1 и H = 3 возможны \
+    результаты 1, 2 или 3. То, что H является более большим числом, чем L, не является <i>строго</i> обязательным условием."
 	icon_state = "random"
 	inputs = list("L" = IC_PINTYPE_NUMBER,"H" = IC_PINTYPE_NUMBER)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -276,7 +276,7 @@
 
 /obj/item/integrated_circuit/arithmetic/square_root
 	name = "square root circuit"
-	desc = "This outputs the square root of the number you input."
+	desc = "Эта программа выводит квадратный корень из введенного вами числа."
 	icon_state = "square_root"
 	inputs = list("A" = IC_PINTYPE_NUMBER)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -294,7 +294,7 @@
 
 /obj/item/integrated_circuit/arithmetic/modulo
 	name = "modulo circuit"
-	desc = "Gets the remainder of A / B."
+	desc = "Возвращает остаток от деления A на B."
 	icon_state = "modulo"
 	inputs = list("A" = IC_PINTYPE_NUMBER, "B" = IC_PINTYPE_NUMBER)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -313,8 +313,8 @@
 // -Max- //
 /obj/item/integrated_circuit/arithmetic/max
 	name = "max circuit"
-	desc = "This circuit sends out the highest number."
-	extended_desc = "The highest number is put out. Null is ignored."
+	desc = "Эта схема выдает наибольшее число."
+	extended_desc = "Выводится наибольшее число. Нулевое значение игнорируется."
 	icon_state = "addition"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	var/min_comparision = FALSE
@@ -336,6 +336,6 @@
 // -Min- //
 /obj/item/integrated_circuit/arithmetic/max/min
 	name = "min circuit"
-	desc = "This circuit sends out the smallest number."
-	extended_desc = "The smallest number is put out. Null is ignored. In case no number is found, 0 is given out."
+	desc = "Эта схема выдает наименьшее число."
+	extended_desc = "Выводится наименьшее число. Нулевое значение игнорируется. Если число не найдено, выводится 0."
 	min_comparision = TRUE
