@@ -267,20 +267,20 @@
 
 	// Block 2. Components.
 	if(!islist(blocks["components"]) || !length(blocks["components"]))
-		return "Invalid components list."	// No components or damaged components list
+		return "Неверный список компонентов."	// No components or damaged components list
 
 	var/list/assembly_components = list()
 	for(var/C in blocks["components"])
 		var/list/component_params = C
 
 		if(!islist(component_params) || !length(component_params))
-			return "Invalid component data."
+			return "Неверные данные компонента."
 
 		// Validate type, get a temporary component
 		var/component_path = all_components[component_params["type"]]
 		var/obj/item/integrated_circuit/component = cached_components[component_path]
 		if(!component)
-			return "Invalid component type."
+			return "Недопустимый тип компонента."
 
 		// Add temporary component to assembly_components list, to be used later when verifying the wires
 		assembly_components.Add(component)

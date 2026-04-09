@@ -274,7 +274,7 @@
 							to_chat(usr, "<span class='warning'>В нём используются неизвестные компоненты. Для продолжения необходимо улучшить принтер.</span>")
 					if(program["unsupported_circuit"])
 						to_chat(usr, "<span class='warning'>Эта программа использует компоненты, которые не поддерживаются указанным корпусом. Измените тип корпуса в файле сохранения на поддерживаемый.</span>")
-					to_chat(usr, "<span class='notice'>Использованное местоо: [program["used_space"]]/[program["max_space"]].</span>")
+					to_chat(usr, "<span class='notice'>Использованное место: [program["used_space"]]/[program["max_space"]].</span>")
 					to_chat(usr, "<span class='notice'>Сложность: [program["complexity"]]/[program["max_complexity"]].</span>")
 					to_chat(usr, "<span class='notice'>Потраченный металл: [program["metal_cost"]].</span>")
 
@@ -304,7 +304,7 @@
 					var/cloning_time = round(program["metal_cost"] / 15)
 					cloning_time = min(cloning_time, MAX_CIRCUIT_CLONE_TIME)
 					cloning = TRUE
-					to_chat(usr, "<span class='notice'>YВы начинаете печать пользовательской сборки. Это займет примерно [DisplayTimeText(cloning_time)]. В это время вы по-прежнему можете распечатывать \
+					to_chat(usr, "<span class='notice'>Вы начинаете печать пользовательской сборки. Это займет примерно [DisplayTimeText(cloning_time)]. В это время вы по-прежнему можете распечатывать \
 					обычные детали.</span>")
 					playsound(src, 'sound/items/poster_being_created.ogg', 50, TRUE)
 					addtimer(CALLBACK(src, PROC_REF(print_program), usr), cloning_time)

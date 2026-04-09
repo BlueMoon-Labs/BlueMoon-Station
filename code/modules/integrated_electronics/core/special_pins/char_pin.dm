@@ -5,7 +5,7 @@
 /datum/integrated_io/char/ask_for_pin_data(mob/user)
 	var/new_data = stripped_input(user, "Введите один символ.","[src] char writing", no_trim = TRUE)
 	if(holder.check_interactivity(user) )
-		to_chat(user, "<span class='notice'>Вы вводите [new_data ? "new_data" : "NULL"] в пин.</span>")
+		to_chat(user, "<span class='notice'>Вы вводите [new_data ? new_data : "NULL"] в пин.</span>")
 		write_data_to_pin(new_data)
 
 /datum/integrated_io/char/write_data_to_pin(var/new_data)

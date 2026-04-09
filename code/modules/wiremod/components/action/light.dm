@@ -5,7 +5,7 @@
  */
 /obj/item/circuit_component/light
 	display_name = "Light"
-	desc = "Компонент, излучающий свет определенной яркости и цвета. Требуется корпус."
+	desc = "A component that emits a light of a specific brightness and colour. Requires a shell."
 
 	/// The colours of the light
 	var/datum/port/input/red
@@ -24,7 +24,7 @@
 
 /obj/item/circuit_component/light/get_ui_notices()
 	. = ..()
-	. += create_ui_notice("Максимальная яркость: [max_power]", "orange", "lightbulb")
+	. += create_ui_notice("Maximum Brightness: [max_power]", "orange", "lightbulb")
 
 /obj/item/circuit_component/light/Initialize(mapload)
 	. = ..()
