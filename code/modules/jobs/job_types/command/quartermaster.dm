@@ -74,7 +74,7 @@
 	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	l_hand = /obj/item/clipboard
 	id = /obj/item/card/id/silver
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1)
 	box = /obj/item/storage/box/survival/command
 	chameleon_extras = /obj/item/stamp/qm
 	accessory = list(/obj/item/clothing/accessory/permit/special/quartermaster)
@@ -97,6 +97,6 @@
 	box = /obj/item/storage/box/survival/syndie
 	accessory = list(/obj/item/clothing/accessory/permit/special/quartermaster)
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/melee/classic_baton/telescopic = 1, /obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/syndicate_uplink_high=1)
+	backpack_contents = list(/obj/item/melee/classic_baton/telescopic = 1, /obj/item/modular_computer/tablet/preset/advanced/command = 1, /obj/item/syndicate_uplink_high=1)
 
 	neck = /obj/item/clothing/neck/cloak/syndiecap

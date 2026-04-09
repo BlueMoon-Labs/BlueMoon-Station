@@ -85,7 +85,7 @@
 	uniform = /obj/item/clothing/under/rank/civilian/head_of_personnel
 	shoes = /obj/item/clothing/shoes/sneakers/brown
 	head = /obj/item/clothing/head/hopcap
-	backpack_contents = list(/obj/item/storage/box/ids=1, /obj/item/modular_computer/tablet/preset/advanced = 1)
+	backpack_contents = list(/obj/item/storage/box/ids=1, /obj/item/modular_computer/tablet/preset/advanced/command = 1)
 	box = /obj/item/storage/box/survival/command
 	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_personnel)
@@ -110,7 +110,7 @@
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
 	backpack_contents = list(/obj/item/storage/box/ids=1, /obj/item/syndicate_uplink_high=1,\
-		/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced = 1)
+		/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced/command = 1)
 	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_personnel)
 
 //only pet worth reviving

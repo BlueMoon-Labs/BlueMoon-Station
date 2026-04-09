@@ -63,7 +63,7 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/atmospheric
 	box = /obj/item/storage/box/survival/engineer
 	pda_slot = ITEM_SLOT_LPOCKET
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/engineering=1)
 
 /datum/outfit/job/atmos/syndicate
 	name = "Syndicate  Atmospheric Technician"
@@ -83,7 +83,7 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/atmospheric
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_LPOCKET
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/engineering=1, /obj/item/syndicate_uplink=1)
 
 /datum/outfit/job/atmos/rig
 	name = "Atmospheric Technician (Hardsuit)"

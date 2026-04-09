@@ -82,7 +82,7 @@
 	//suit_store = /obj/item/gun/energy/e_gun
 	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	l_pocket = /obj/item/storage/bag/security
-	backpack_contents = list(/obj/item/storage/box/sec_kit, /obj/item/choice_beacon/hos_new_weapon = 1, /obj/item/modular_computer/tablet/preset/advanced)
+	backpack_contents = list(/obj/item/storage/box/sec_kit, /obj/item/choice_beacon/hos_new_weapon = 1, /obj/item/modular_computer/tablet/preset/advanced/command)
 	box = /obj/item/storage/box/survival/command
 	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_sec, /obj/item/clothing/accessory/badge)
 

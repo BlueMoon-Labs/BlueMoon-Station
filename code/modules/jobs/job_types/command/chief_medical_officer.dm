@@ -84,7 +84,7 @@
 	suit = /obj/item/clothing/suit/toggle/labcoat/cmo
 	l_hand = /obj/item/storage/firstaid/regular
 	suit_store = /obj/item/flashlight/pen/paramedic
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command=1)
 	box = /obj/item/storage/box/survival/command
 	accessory = list(/obj/item/clothing/accessory/permit/special/chief_medic)
 

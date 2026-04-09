@@ -75,7 +75,7 @@
 	shoes = /obj/item/clothing/shoes/laceup
 	l_pocket =  /obj/item/pda/heads
 
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/stamp/command=1, /obj/item/gun/energy/civilian=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1, /obj/item/stamp/command=1, /obj/item/gun/energy/civilian=1)
 	box = /obj/item/storage/box/survival/command
 	accessory = list(/obj/item/clothing/accessory/permit/special/bridge_officer)
 
@@ -98,7 +98,7 @@
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
 	accessory = list(/obj/item/clothing/accessory/permit/special/bridge_officer)
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/gun/energy/e_gun=1, /obj/item/stamp/command=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1, /obj/item/gun/energy/e_gun=1, /obj/item/stamp/command=1, /obj/item/syndicate_uplink=1)
 
 /datum/outfit/plasmaman/bridgeofficer
 	name = "Bridge Officer Plasmaman"
