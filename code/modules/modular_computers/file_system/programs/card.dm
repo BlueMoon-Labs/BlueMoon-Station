@@ -57,6 +57,11 @@
 			"department" = CARDCON_DEPARTMENT_ENGINEERING,
 			"region" = 5,
 			"head" = "Chief Engineer"
+		),
+		"[ACCESS_QM]" = list(
+			"department" = CARDCON_DEPARTMENT_SUPPLY,
+			"region" = 6,
+			"head" = "Quartermaster"
 		)
 	)
 

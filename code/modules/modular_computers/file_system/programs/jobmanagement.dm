@@ -79,6 +79,11 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 			"department" = CARDCON_DEPARTMENT_ENGINEERING,
 			"region" = 5,
 			"head" = "Chief Engineer"
+		),
+		"[ACCESS_QM]" = list(
+			"department" = CARDCON_DEPARTMENT_SUPPLY,
+			"region" = 6,
+			"head" = "Quartermaster"
 		)
 	)
 
@@ -167,26 +172,26 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 
 	var/obj/item/computer_hardware/card_slot/card_slot = computer.all_components[MC_CARD]
 	var/obj/item/card/id/user_id = card_slot?.stored_card
-	if(user_id && (ACCESS_CHANGE_IDS in user_id.access))
-		authed = TRUE
-	else
-		minor = TRUE
-		var/list/head_types = list()
-		for(var/access_text in sub_managers)
-			var/list/info = sub_managers[access_text]
-			var/access = text2num(access_text)
-			if(access in user_id.access)
-				head_types += info["head"]
-
-		if(length(head_types))
-			for(var/j in SSjob.occupations)
-				var/datum/job/job = j
-				for(var/head in head_types)
-					if(head in job.department_head)
-						head_subordinates += job
-		if(length(head_subordinates))
+	if(user_id)
+		if(ACCESS_CHANGE_IDS in user_id.access)
 			authed = TRUE
+		else
+			minor = TRUE
+			var/list/head_types = list()
+			for(var/access_text in sub_managers)
+				var/list/info = sub_managers[access_text]
+				var/access = text2num(access_text)
+				if(access in user_id.access)
+					head_types += info["head"]
 
+			if(length(head_types))
+				for(var/j in SSjob.occupations)
+					var/datum/job/job = j
+					for(var/head in head_types)
+						if(head in job.department_head)
+							head_subordinates += job
+			if(length(head_subordinates))
+				authed = TRUE
 
 	data["authed"] = authed
 	if(!authed)

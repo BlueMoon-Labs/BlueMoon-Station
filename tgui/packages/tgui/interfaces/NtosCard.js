@@ -133,7 +133,7 @@ export const NtosCardContent = (props, context) => {
                 <>
                   <Button.Confirm
                     icon="arrows-rotate"
-                    content="Rest Access"
+                    content="Reset Access"
                     color="blue"
                     onClick={() => act('PRG_reset_access')} />
                   <Button.Confirm
