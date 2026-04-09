@@ -99,5 +99,5 @@ GLOBAL_DATUM_INIT(spare_id_safe, /obj/structure/safe/spare_id, null)
 		update_icon()
 
 /obj/structure/safe/floor/syndi/armory/Destroy()
-	. = ..()
 	UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
+	return ..()
