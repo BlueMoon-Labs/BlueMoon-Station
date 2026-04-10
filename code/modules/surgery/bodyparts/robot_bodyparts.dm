@@ -244,6 +244,18 @@
 		flash2 = null
 	..()
 
+/obj/item/bodypart/chest/robot/ipc
+	name = "IPC torso chassis"
+	desc = "A reinforced synthetic torso frame prepared for IPC assembly."
+	icon = 'icons/mob/augmentation/augments.dmi'
+	icon_state = "borg_chest"
+
+/obj/item/bodypart/head/robot/ipc
+	name = "IPC cranial chassis"
+	desc = "A reinforced synthetic head frame prepared for IPC assembly."
+	icon = 'icons/mob/augmentation/augments.dmi'
+	icon_state = "borg_head"
+
 
 
 // Surplus lims

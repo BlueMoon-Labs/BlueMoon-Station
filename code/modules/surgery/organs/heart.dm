@@ -289,8 +289,8 @@
 	addtimer(VARSET_CALLBACK(src, dose_available, TRUE), 5 MINUTES)
 
 /obj/item/organ/heart/ipc
-	name = "IPC heart"
-	desc = "An electronic pump that regulates hydraulic functions, the electronics have EMP shielding."
+	name = "hydraulic pump"
+	desc = "A shielded electrohydraulic pump that regulates pressure throughout an IPC chassis."
 	icon_state = "heart-c"
 	organ_flags = ORGAN_SYNTHETIC // BLUEMOON ADD - органы синтетиков не должны гнить и должны быть подвержены ЭМИ
 

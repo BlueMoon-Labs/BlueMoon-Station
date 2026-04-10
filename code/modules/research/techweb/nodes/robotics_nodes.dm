@@ -21,7 +21,7 @@
 	display_name = "Cyborg Construction"
 	description = "Sapient robots with preloaded tool modules and programmable laws."
 	design_ids = list(/*"robocontrol", */"sflash", "borg_suit", "borg_head", "borg_chest", "borg_r_arm", "borg_l_arm", "borg_r_leg", "borg_l_leg", /*"borgupload",*/ /*BlueMoon edit*/
-	"cyborgrecharger", "borg_upgrade_restart", "borg_upgrade_rename")
+	"ipc_head_chassis", "ipc_torso_chassis", "cyborgrecharger", "borg_upgrade_restart", "borg_upgrade_rename")
 
 /datum/techweb_node/adv_robotics
 	id = "adv_robotics"
@@ -44,7 +44,7 @@
 	display_name = "Positronic Brain"
 	description = "Applied usage of neural technology allowing for autonomous AI units based on special metallic cubes with conductive and processing circuits."
 	prereq_ids = list("neural_programming")
-	design_ids = list("mmi_posi")
+	design_ids = list("mmi_posi", "ipc_constructor")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/cyborg_upg_util

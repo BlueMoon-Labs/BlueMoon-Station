@@ -26,6 +26,24 @@
 	construction_time = 350
 	category = list("Cyborg")
 
+/datum/design/ipc_torso_chassis
+	name = "IPC Torso Chassis"
+	id = "ipc_torso_chassis"
+	build_type = MECHFAB
+	build_path = /obj/item/bodypart/chest/robot/ipc
+	materials = list(/datum/material/iron=24000, /datum/material/glass=5000, /datum/material/silver=2000)
+	construction_time = 280
+	category = list("IPC Components")
+
+/datum/design/ipc_head_chassis
+	name = "IPC Cranial Chassis"
+	id = "ipc_head_chassis"
+	build_type = MECHFAB
+	build_path = /obj/item/bodypart/head/robot/ipc
+	materials = list(/datum/material/iron=8000, /datum/material/glass=3000, /datum/material/gold=1000)
+	construction_time = 180
+	category = list("IPC Components")
+
 /datum/design/borg_l_arm
 	name = "Cyborg Left Arm"
 	id = "borg_l_arm"

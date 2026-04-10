@@ -49,18 +49,28 @@
 	)
 
 	var/datum/action/innate/monitor_change/screen
+	var/datum/action/innate/ipc_designation/designation
 	languagewhitelist = list("Encoded Audio Language") //Skyrat change - species language whitelist
 
 /datum/species/ipc/on_species_gain(mob/living/carbon/human/C)
-	if(isipcperson(C) && !screen)
-		screen = new
+	if(isipcperson(C))
+		if(!screen)
+			screen = new
 		screen.Grant(C)
+		if(!designation)
+			designation = new
+		designation.Grant(C)
 	..()
 
 /datum/species/ipc/on_species_loss(mob/living/carbon/human/C)
 	if(screen)
 		screen.Remove(C)
+	if(designation)
+		designation.Remove(C)
 	..()
+
+/mob/living/carbon/human
+	var/ipc_name_pending = FALSE
 
 /datum/action/innate/monitor_change
 	name = "Screen Change"
@@ -75,3 +85,32 @@
 		return
 	H.dna.features["ipc_screen"] = new_ipc_screen
 	H.update_body()
+
+/datum/action/innate/ipc_designation
+	name = "Set Designation"
+	check_flags = AB_CHECK_CONSCIOUS
+	icon_icon = 'icons/mob/actions/actions_silicon.dmi'
+	button_icon_state = "drone_vision"
+
+/datum/action/innate/ipc_designation/Activate()
+	var/mob/living/carbon/human/H = owner
+	H.ipc_prompt_designation()
+
+/mob/living/carbon/human/proc/ipc_prompt_designation(force = FALSE)
+	if(!isipcperson(src))
+		return FALSE
+	if(!ipc_name_pending && !force)
+		to_chat(src, "<span class='notice'>Your designation is already set.</span>")
+		return FALSE
+
+	var/default_name = ipc_name_pending ? "" : real_name
+	var/new_name = reject_bad_name(stripped_input(src, "Choose your synthetic designation.", "Synthetic Designation", default_name, MAX_NAME_LEN), TRUE)
+	if(!new_name)
+		return FALSE
+
+	fully_replace_character_name(real_name, new_name)
+	if(dna)
+		dna.real_name = new_name
+	ipc_name_pending = FALSE
+	to_chat(src, "<span class='notice'>Designation set to [new_name].</span>")
+	return TRUE
