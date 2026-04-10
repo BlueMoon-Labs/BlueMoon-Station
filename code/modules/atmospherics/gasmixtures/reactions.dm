@@ -313,6 +313,8 @@
 
 /datum/gas_reaction/genericfire/react(datum/gas_mixture/air, datum/holder)
 	var/temperature = air.return_temperature()
+	if(temperature <= 0)
+		return NO_REACTION
 	var/turf/loc_turf = get_turf(holder)
 	// Mining/lavaland Z: N2 is not fuel here — removes only the generic N2+O2 (air) burn; methane etc. unchanged.
 	var/lavaland_block_n2 = loc_turf && is_mining_level(loc_turf.z)
@@ -366,7 +368,10 @@
 	var/final_energy = air.thermal_energy() + energy_released
 	for(var/result in burn_results)
 		air.adjust_moles(result, burn_results[result])
-	air.set_temperature(final_energy / air.heat_capacity())
+	var/final_heat_capacity = air.heat_capacity()
+	if(final_heat_capacity <= MINIMUM_HEAT_CAPACITY)
+		return NO_REACTION
+	air.set_temperature(final_energy / final_heat_capacity)
 	var/list/cached_results = air.reaction_results
 	cached_results["fire"] = min(total_fuel, oxidation_power) * 2
 	return cached_results["fire"] ? REACTING : NO_REACTION
@@ -736,9 +741,16 @@
 
 /datum/gas_reaction/nitric_oxide/react(datum/gas_mixture/air, datum/holder)
 	var/nitric = air.get_moles(GAS_NITRIC)
+	if(nitric <= 0)
+		return NO_REACTION
 	var/oxygen = air.get_moles(GAS_O2)
 	var/max_amount = max(nitric / 8, MINIMUM_MOLE_COUNT)
-	var/enthalpy = air.return_temperature() * (air.heat_capacity() + R_IDEAL_GAS_EQUATION * air.total_moles())
+	var/temperature = air.return_temperature()
+	var/heat_capacity = air.heat_capacity()
+	var/total_moles = air.total_moles()
+	if(temperature <= 0 || heat_capacity < 0 || total_moles < 0)
+		return NO_REACTION
+	var/enthalpy = temperature * (heat_capacity + R_IDEAL_GAS_EQUATION * total_moles)
 	var/list/enthalpies = GLOB.gas_data.enthalpies
 	if(oxygen > MINIMUM_MOLE_COUNT)
 		var/reaction_amount = min(max_amount, oxygen)/4
@@ -755,7 +767,7 @@
 	var/denom = air.heat_capacity() + R_IDEAL_GAS_EQUATION * air.total_moles()
 	if(denom > MINIMUM_HEAT_CAPACITY)
 		air.set_temperature(enthalpy / denom)
-	return REACTING
+	return (decomp_amount > 0 || oxygen > MINIMUM_MOLE_COUNT) ? REACTING : NO_REACTION
 
 /datum/gas_reaction/hagedorn
 	priority = -INFINITY

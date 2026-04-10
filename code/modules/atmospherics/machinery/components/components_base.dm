@@ -177,17 +177,30 @@
 	if(T)
 		//Remove the gas from airs and assume it
 		var/datum/gas_mixture/environment = T.return_air()
-		var/lost = null
+		var/environment_volume = environment?.return_volume()
+		if(environment_volume <= 0)
+			return
+		var/lost = 0
 		var/times_lost = 0
 		for(var/i in 1 to device_type)
 			var/datum/gas_mixture/air = airs[i]
-			lost += pressures*environment.return_volume()/(air.return_temperature() * R_IDEAL_GAS_EQUATION)
+			if(!air)
+				continue
+			var/air_temperature = air.return_temperature()
+			if(air_temperature <= 0)
+				continue
+			lost += pressures * environment_volume / (air_temperature * R_IDEAL_GAS_EQUATION)
 			times_lost++
+		if(!times_lost)
+			return
 		var/shared_loss = lost/times_lost
+		if(shared_loss <= 0)
+			return
 
 		for(var/i in 1 to device_type)
 			var/datum/gas_mixture/air = airs[i]
-			T.assume_air_moles(air, shared_loss)
+			if(air)
+				T.assume_air_moles(air, shared_loss)
 		air_update_turf(TRUE)
 
 /obj/machinery/atmospherics/components/proc/safe_input(var/title, var/text, var/default_set)

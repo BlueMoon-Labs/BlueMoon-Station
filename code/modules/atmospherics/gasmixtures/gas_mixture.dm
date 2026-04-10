@@ -268,6 +268,38 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 		analyzer_results = new
 	analyzer_results["fusion"] = instability
 
+/// Defensive auxmos wrappers: do not let invalid temperatures or negative values leak into fire/reaction paths.
+/datum/gas_mixture/return_temperature()
+	var/temp = call_ext(AUXMOS, "byond:return_temperature_hook_ffi")(src)
+	if(!isnum(temp) || temp < TCMB)
+		return TCMB
+	return temp
+
+/datum/gas_mixture/set_temperature(arg_temp)
+	if(!isnum(arg_temp))
+		arg_temp = TCMB
+	else
+		arg_temp = max(arg_temp, TCMB)
+	return call_ext(AUXMOS, "byond:set_temperature_hook_ffi")(src, arg_temp)
+
+/datum/gas_mixture/get_moles(gas_id)
+	var/moles = call_ext(AUXMOS, "byond:get_moles_hook_ffi")(src, gas_id)
+	if(!isnum(moles) || moles <= 0)
+		return 0
+	return moles
+
+/datum/gas_mixture/total_moles()
+	var/moles = call_ext(AUXMOS, "byond:total_moles_hook_ffi")(src)
+	if(!isnum(moles) || moles <= 0)
+		return 0
+	return moles
+
+/datum/gas_mixture/heat_capacity()
+	var/capacity = call_ext(AUXMOS, "byond:heat_cap_hook_ffi")(src)
+	if(!isnum(capacity) || capacity <= 0)
+		return 0
+	return capacity
+
 //Mathematical proofs:
 /*
 get_breath_partial_pressure(gas_pp) --> gas_pp/total_moles()*breath_pp = pp

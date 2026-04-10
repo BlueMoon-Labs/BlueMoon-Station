@@ -6,6 +6,10 @@
 /proc/turf_has_fire_fuel(datum/gas_mixture/air, temp, z_level)
 	if(!air)
 		return FALSE
+	if(!isnum(temp) || temp <= 0)
+		temp = air.return_temperature()
+	if(!isnum(temp) || temp <= 0)
+		return FALSE
 	if(air.get_moles(GAS_PLASMA) > 0.5 || air.get_moles(GAS_TRITIUM) > 0.5)
 		return TRUE
 	if(air.get_fuel_amount(temp) < 0.5)
@@ -35,6 +39,10 @@
 /turf/open/hotspot_expose(exposed_temperature, exposed_volume, soh)
 	//If the air doesn't exist we just return false
 	if(!air)
+		return
+	if(!isnum(exposed_temperature) || exposed_temperature <= 0)
+		return
+	if(!isnum(exposed_volume) || exposed_volume <= 0)
 		return
 
 	if (air.get_oxidation_power(exposed_temperature) < 0.5 || air.get_moles(GAS_HYPERNOB) > 5)
@@ -91,6 +99,10 @@
 	var/datum/gas_mixture/location_air = location?.air
 	if(!istype(location) || !location_air)
 		return
+	if(!isnum(temperature) || temperature < TCMB)
+		temperature = max(location_air.return_temperature(), TCMB)
+	if(!isnum(volume) || volume <= 0)
+		return
 
 	location.active_hotspot = src
 
@@ -105,7 +117,10 @@
 		var/location_volume = location_air.return_volume()
 		if(location_volume <= 0)
 			return
-		var/datum/gas_mixture/affected = location_air.remove_ratio(volume/location_volume)
+		var/removal_ratio = volume/location_volume
+		if(removal_ratio <= 0)
+			return
+		var/datum/gas_mixture/affected = location_air.remove_ratio(removal_ratio)
 		if(affected) //in case volume is 0
 			if(temperature > affected.return_temperature())
 				affected.set_temperature(temperature) //don't set the temperature lower than what it was
