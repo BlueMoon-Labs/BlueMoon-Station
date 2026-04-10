@@ -16336,7 +16336,7 @@
 /obj/item/pen,
 /obj/machinery/door/window/northright{
 	name = "Reception Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plating/rust,
@@ -48138,7 +48138,7 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "Reception Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plating/rust,
@@ -52920,7 +52920,7 @@
 /obj/structure/table,
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plating/rust,
@@ -60076,7 +60076,7 @@
 /obj/machinery/door/window/northleft{
 	dir = 8;
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/machinery/light{
@@ -60533,7 +60533,7 @@
 /obj/machinery/door/window/northright{
 	dir = 8;
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/fire,

@@ -56,6 +56,7 @@
 #include "code\__DEFINES\actionspeed_modifiers.dm"
 #include "code\__DEFINES\admin.dm"
 #include "code\__DEFINES\ai.dm"
+#include "code\__DEFINES\airlock.dm"
 #include "code\__DEFINES\alarm.dm"
 #include "code\__DEFINES\anomaly.dm"
 #include "code\__DEFINES\antagonists.dm"

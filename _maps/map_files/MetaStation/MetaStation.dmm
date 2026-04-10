@@ -31055,7 +31055,7 @@
 /obj/structure/closet/crate/freezer/blood,
 /obj/machinery/door/window/northleft{
 	name = "Surgery Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white,
@@ -31068,7 +31068,7 @@
 /obj/item/reagent_containers/glass/beaker/synthflesh,
 /obj/machinery/door/window/northright{
 	name = "Surgery Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/machinery/camera{

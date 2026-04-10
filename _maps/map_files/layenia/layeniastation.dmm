@@ -16771,7 +16771,7 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "Reception Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white{
@@ -18876,7 +18876,7 @@
 	dir = 4;
 	icon_state = "right";
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "40"
 	},
 /obj/structure/window/reinforced,
@@ -44595,7 +44595,7 @@
 	},
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel{
@@ -63814,7 +63814,7 @@
 /obj/machinery/door/window/northright{
 	dir = 4;
 	name = "Engineering Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "10"
 	},
 /obj/machinery/door/firedoor{
@@ -70497,7 +70497,7 @@
 /obj/item/pen,
 /obj/machinery/door/window/northright{
 	name = "Reception Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white{
@@ -119715,7 +119715,7 @@
 /obj/machinery/door/window/northleft{
 	dir = 4;
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "40"
 	},
 /obj/structure/window/reinforced{
@@ -127466,7 +127466,7 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel{
@@ -147627,7 +147627,7 @@
 /obj/machinery/door/window/northleft{
 	dir = 4;
 	name = "Engineering Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "10"
 	},
 /obj/machinery/door/firedoor{
