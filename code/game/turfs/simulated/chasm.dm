@@ -94,6 +94,7 @@
 	icon = 'icons/turf/floors/icechasms.dmi'
 	initial_gas_mix = ICEMOON_DEFAULT_ATMOS
 	planetary_atmos = TRUE
+	flammability = 0
 	baseturfs = /turf/open/chasm/icemoon
 	light_range = 1.9
 	light_power = 0.65

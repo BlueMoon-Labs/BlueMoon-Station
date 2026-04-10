@@ -27,7 +27,16 @@
 
 	var/list/atmos_overlay_types //gas IDs of current active gas overlays
 
+/turf/open/proc/adjust_planetary_atmos_for_area()
+	// IceMoon indoor tiles should not continuously refill outdoor planetary air.
+	if(!planetary_atmos || initial_gas_mix != ICEMOON_DEFAULT_ATMOS)
+		return
+	var/area/current_area = get_area(src)
+	if(current_area && !current_area.outdoors)
+		planetary_atmos = FALSE
+
 /turf/open/Initialize(mapload, inherited_virtual_z)
+	adjust_planetary_atmos_for_area()
 	air = new(2500,src)
 	air.copy_from_turf(src)
 	update_air_ref(planetary_atmos ? AIR_REF_PLANETARY_TURF : AIR_REF_OPEN_TURF)

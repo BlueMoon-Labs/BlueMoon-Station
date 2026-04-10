@@ -199,12 +199,14 @@ GLOBAL_LIST_EMPTY(dug_up_basalt)
 /turf/open/floor/plating/asteroid/snow/icemoon
 	baseturfs = /turf/open/openspace/icemoon
 	initial_gas_mix = ICEMOON_DEFAULT_ATMOS
+	flammability = 0
 	slowdown = 0
 
 /turf/open/lava/plasma/ice_moon
 	initial_gas_mix = ICEMOON_DEFAULT_ATMOS
 	baseturfs = /turf/open/lava/plasma/ice_moon
 	planetary_atmos = TRUE
+	flammability = 0
 
 /turf/open/floor/plating/asteroid/snow/ice
 	name = "icy snow"
@@ -225,6 +227,7 @@ GLOBAL_LIST_EMPTY(dug_up_basalt)
 	baseturfs = /turf/open/floor/plating/asteroid/snow/ice/icemoon
 	initial_gas_mix = ICEMOON_DEFAULT_ATMOS
 	planetary_atmos = TRUE
+	flammability = 0
 	slowdown = 0
 
 /turf/open/floor/plating/asteroid/snow/ice/burn_tile()

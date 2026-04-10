@@ -4,6 +4,7 @@
 
 /turf/open/floor/plating/icemoon
 	initial_gas_mix = ICEMOON_DEFAULT_ATMOS
+	flammability = 0
 
 /turf/open/floor/plating/abductor
 	name = "alien floor"
@@ -240,6 +241,7 @@
 
 /turf/open/floor/plating/ice/icemoon
 	initial_gas_mix = ICEMOON_DEFAULT_ATMOS
+	flammability = 0
 
 /turf/open/floor/plating/snowed
 	name = "snowed-over plating"
@@ -275,4 +277,5 @@
 
 /turf/open/floor/plating/snowed/smoothed/icemoon
 	initial_gas_mix = ICEMOON_DEFAULT_ATMOS
+	flammability = 0
 
