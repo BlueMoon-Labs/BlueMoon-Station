@@ -1044,7 +1044,7 @@
 /obj/item/melee/baton/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
 	. = ..()
 	update_icon_state()
-	// После удара — обновляем иконку и свет по текущему заряду
+	// После удара — обновляем иконку и свет по текущему заряду.
 	if(!turned_on || !cell)
 		set_light(0)
 		return
