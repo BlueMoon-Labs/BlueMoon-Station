@@ -115,14 +115,11 @@
 	var/security_override = FALSE
 	var/last_sec_level = 0
 
-/obj/machinery/door/airlock/Initialize(mapload)
-	. = ..()
-	RegisterSignal(SSdcs, COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE, PROC_REF(force_eng_override))
-
 /obj/machinery/door/airlock/LateInitialize()
 	. = ..()
 	if(is_station_level(z))
 		RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(check_security_level))
+		RegisterSignal(SSdcs, COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE, PROC_REF(force_eng_override))
 		if(GLOB.security_level > SEC_LEVEL_GREEN)
 			check_security_level()
 
