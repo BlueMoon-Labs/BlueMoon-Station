@@ -587,6 +587,32 @@ BLUEMOON REMOVAL END*/
 
 //////////////////////////////////////////////
 //                                          //
+//               EXTENDED                   //
+//                                          //
+//////////////////////////////////////////////
+
+/datum/dynamic_ruleset/roundstart/extended
+	name = "Extended"
+	antag_flag = null
+	antag_datum = null
+	restricted_roles = list()
+	required_candidates = 0
+	weight = 3
+	cost = 0
+	requirements = list(101,101,101,101,101,101,101,101,101,101)
+	flags = LONE_RULESET
+
+/datum/dynamic_ruleset/roundstart/extended/pre_execute()
+	. = ..()
+	message_admins("Starting a round of extended.")
+	log_game("Starting a round of extended.")
+//	mode.spend_roundstart_budget(mode.round_start_budget) //BLUEMOON REMOVAL
+//	mode.spend_midround_budget(mode.mid_round_budget) //BLUEMOON REMOVAL
+	mode.threat_log += "[worldtime2text()]: Extended ruleset set threat to 0."
+	return TRUE
+
+//////////////////////////////////////////////
+//                                          //
 //               CLOWN OPS                  //
 //                                          //
 //////////////////////////////////////////////

@@ -113,7 +113,7 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 	var/atom/uplink = U.parent
 	var/vr_text = is_vr_level(T.z) ? " in VR" : ""
 	log_uplink("[key_name(user)] purchased [A.name] for [cost] telecrystals from [uplink?.name][vr_text]")
-	if(!vr_text && !is_centcom_level(T.z) && GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT)
+	if(!vr_text && !is_centcom_level(T.z) && GLOB.master_mode == ROUNDTYPE_EXTENDED)
 		message_antigrif("[ADMIN_LOOKUPFLW(user)] purchased [A.name] at [ADMIN_VERBOSEJMP(T)].")
 	if(purchase_log_vis && U.purchase_log)
 		U.purchase_log.LogPurchase(A, src, cost)

@@ -11,7 +11,7 @@
 	max_occurrences = 1
 	earliest_start = 60 MINUTES
 	category = EVENT_CATEGORY_SPACE
-	gamemode_blacklist = list(ROUNDTYPE_DYNAMIC_LIGHT)
+	gamemode_blacklist = list(ROUNDTYPE_EXTENDED)
 
 /datum/round_event/meteor_wave
 	start_when		= 6

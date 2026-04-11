@@ -687,7 +687,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark/start/new_player)
 	late_load = TRUE
 
 /obj/effect/landmark/stationroom/space/forgottenship/load()
-	if(GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT)
+	if(GLOB.master_mode == "Extended")
 		template_names = list("SCSBC-13" = 3)
 	else
 		template_names = list("SCSBC-12" = 3)

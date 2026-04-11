@@ -99,7 +99,7 @@ SUBSYSTEM_DEF(vote)
 		var/votes = choices[option]
 		total_votes += votes
 //BLUEMOON ADD START - голоса за некоторые режимы (динамик и тимбаза, лёгкий динамик и экста) должны считаться вместе.
-		if(option == ROUNDTYPE_DYNAMIC_LIGHT)
+		if(option == ROUNDTYPE_EXTENDED || option == ROUNDTYPE_DYNAMIC_LIGHT)
 			extended_votes += votes
 		if(option == ROUNDTYPE_DYNAMIC_TEAMBASED || option == ROUNDTYPE_DYNAMIC)
 			dynamic_votes += votes
@@ -113,7 +113,7 @@ SUBSYSTEM_DEF(vote)
 		for(var/option in choices)
 			var/votes = choices[option]
 			if(extended_votes <= dynamic_votes)
-				if(option == ROUNDTYPE_DYNAMIC_LIGHT) //лёгкий динамик всегда должен быть в конце списка, чтобы это работало
+				if(option == ROUNDTYPE_EXTENDED || option ==  ROUNDTYPE_DYNAMIC_LIGHT) //экста и лёгкий динамик всегда должны быть в конце списка, чтобы это работало
 					continue
 				if(votes > second_round_votes)
 					greatest_votes = votes
@@ -151,7 +151,7 @@ SUBSYSTEM_DEF(vote)
 //экста и лёгкий динамик всегда должны быть в конце списка, чтобы это работало
 			if(mode == "roundtype" || mode == "dynamic")
 				if(extended_votes <= dynamic_votes)
-					if(option == ROUNDTYPE_DYNAMIC_LIGHT) //лёгкий динамик всегда должен быть в конце списка, чтобы это работало
+					if(option == ROUNDTYPE_EXTENDED || option ==  ROUNDTYPE_DYNAMIC_LIGHT) //экста и лёгкий динамик всегда должны быть в конце списка, чтобы это работало
 						continue
 				else
 					if(option == ROUNDTYPE_DYNAMIC || option ==  ROUNDTYPE_DYNAMIC_TEAMBASED) //экста и лёгкий динамик всегда должны быть в конце списка, чтобы это работало
@@ -404,7 +404,7 @@ SUBSYSTEM_DEF(vote)
 			if("roundtype")
 				if(SSticker.current_state > GAME_STATE_PREGAME)
 					return message_admins("A vote has tried to change the gamemode, but the game has already started. Aborting.")
-				if(. != ROUNDTYPE_DYNAMIC_LIGHT)
+				if(. != ROUNDTYPE_EXTENDED)
 					// Если прошлой вариацией была тимбаза или хард, то они не могут выпасть повторно
 					// var/last_dynamic_type = SSpersistence.last_dynamic_gamemode
 					// if(SSpersistence.last_dynamic_gamemode in list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD))
@@ -583,11 +583,11 @@ SUBSYSTEM_DEF(vote)
 				var/combo = check_combo()
 				switch (combo)
 					if ("dynamic")
-						choices.Add(ROUNDTYPE_DYNAMIC_LIGHT)
-					if ("Extended", ROUNDTYPE_DYNAMIC_LIGHT)
+						choices.Add(ROUNDTYPE_EXTENDED)
+					if ("Extended")
 						choices.Add(ROUNDTYPE_DYNAMIC)
 					else
-						choices.Add(ROUNDTYPE_DYNAMIC, ROUNDTYPE_DYNAMIC_LIGHT)
+						choices.Add(ROUNDTYPE_DYNAMIC, ROUNDTYPE_EXTENDED)
 			if("custom")
 				if(!saved_custom || !saved_custom_question || length(saved_custom_options) < 2)
 					return FALSE
@@ -782,6 +782,7 @@ SUBSYSTEM_DEF(vote)
 		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_HARD, "desc" = "90–100 угрозы. Нужен хаос > [CONFIG_GET(number/chaos_for_a_hard_dynamic)]."))
 		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_MEDIUM, "desc" = "50–100 угрозы. Нужен хаос < [CONFIG_GET(number/chaos_for_a_hard_dynamic)]."))
 		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC_LIGHT, "desc" = "30–70 угрозы, без командных антагонистов, < 20 игроков."))
+		roundtype_descs += list(list("name" = ROUNDTYPE_EXTENDED, "desc" = "Угрозы не спавнятся сами — только администрация."))
 		data["roundtype_descs"] = roundtype_descs
 	// Состояние настройки кастомного голосования
 	if(setting_up_custom)
@@ -954,7 +955,7 @@ SUBSYSTEM_DEF(vote)
 
 	var/list/available_hard = list(ROUNDTYPE_DYNAMIC_HARD)
 	var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM)
-	// var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM) - last_dynamic_type
+	// var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) - last_dynamic_type
 
 	var/dynamic_type
 	if(get_total_player_count() >= 30)

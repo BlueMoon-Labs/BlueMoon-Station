@@ -355,6 +355,9 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		if(ROUNDTYPE_DYNAMIC_LIGHT)
 			GLOB.dynamic_type_threat_min = 30
 			GLOB.dynamic_type_threat_max = 70
+		if(ROUNDTYPE_EXTENDED)
+			GLOB.dynamic_type_threat_min = 0
+			GLOB.dynamic_type_threat_max = 0
 		if("dynamic")
 			GLOB.master_mode = ROUNDTYPE_DYNAMIC_MEDIUM
 	// BLUEMOON ADD END
@@ -808,6 +811,8 @@ BLUEMOON REMOVAL END*/
 	return FALSE
 
 /datum/game_mode/dynamic/make_antag_chance(mob/living/carbon/human/newPlayer)
+	if(GLOB.round_type == ROUNDTYPE_EXTENDED) // BLUEMOON CHANGES
+		return
 	if(EMERGENCY_ESCAPED_OR_ENDGAMED) // No more rules after the shuttle has left
 		return
 

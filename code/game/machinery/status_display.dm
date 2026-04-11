@@ -569,7 +569,7 @@
 
 /obj/machinery/status_display/emag_act(mob/user)
 	. = ..()
-	if(GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT)
+	if(GLOB.master_mode == "Extended")
 		if(obj_flags & EMAGGED)
 			to_chat(user, "<span class='warning'>Ничего интересного не произошло!!</span>")
 			return

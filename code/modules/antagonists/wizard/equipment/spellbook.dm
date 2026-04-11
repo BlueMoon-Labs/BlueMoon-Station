@@ -29,7 +29,7 @@
 		var/datum/game_mode/dynamic/mode = SSticker.mode
 		if(dynamic_requirement > 0 && mode.threat_level < dynamic_requirement)
 			return FALSE
-	else if(GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT && dynamic_requirement)
+	else if(istype(SSticker.mode,/datum/game_mode/extended) && dynamic_requirement)
 		return FALSE
 	return TRUE
 

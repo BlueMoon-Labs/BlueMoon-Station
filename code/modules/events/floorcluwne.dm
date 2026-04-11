@@ -5,7 +5,7 @@
 	min_players = 20
 	weight = 10
 	category = EVENT_CATEGORY_ANOMALIES
-	gamemode_blacklist = list(ROUNDTYPE_DYNAMIC_LIGHT)
+	gamemode_blacklist = list(ROUNDTYPE_EXTENDED)
 
 /datum/round_event/floor_cluwne/start()
 	var/list/spawn_locs = list()
