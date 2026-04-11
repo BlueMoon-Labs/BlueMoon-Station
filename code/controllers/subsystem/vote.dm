@@ -406,6 +406,7 @@ SUBSYSTEM_DEF(vote)
 			if("roundtype")
 				if(SSticker.current_state > GAME_STATE_PREGAME)
 					return message_admins("A vote has tried to change the gamemode, but the game has already started. Aborting.")
+				. = normalize_roundtype_vote_result(.)
 				if(. != ROUNDTYPE_EXTENDED && . != ROUNDTYPE_DYNAMIC_LIGHT)
 					// Если прошлой вариацией была тимбаза или хард, то они не могут выпасть повторно
 					// var/last_dynamic_type = SSpersistence.last_dynamic_gamemode
@@ -587,13 +588,14 @@ SUBSYSTEM_DEF(vote)
 				switch(combo)
 					if("dynamic")
 						choices.Add(secondary_roundtype)
-					if(ROUNDTYPE_EXTENDED)
-						if(secondary_roundtype == ROUNDTYPE_EXTENDED)
-							choices.Add(ROUNDTYPE_DYNAMIC)
+						if(ROUNDTYPE_EXTENDED)
+							if(secondary_roundtype == ROUNDTYPE_EXTENDED)
+								choices.Add(ROUNDTYPE_DYNAMIC)
+							else
+								choices.Add(ROUNDTYPE_DYNAMIC, secondary_roundtype)
 						else
 							choices.Add(ROUNDTYPE_DYNAMIC, secondary_roundtype)
-					else
-						choices.Add(ROUNDTYPE_DYNAMIC, secondary_roundtype)
+				sanitize_roundtype_vote_choices()
 			if("custom")
 				if(!saved_custom || !saved_custom_question || length(saved_custom_options) < 2)
 					return FALSE
@@ -677,6 +679,27 @@ SUBSYSTEM_DEF(vote)
 
 /datum/controller/subsystem/vote/proc/get_roundtype_vote_secondary_choice()
 	return use_dynamic_light_roundtype_vote_window() ? ROUNDTYPE_DYNAMIC_LIGHT : ROUNDTYPE_EXTENDED
+
+/datum/controller/subsystem/vote/proc/sanitize_roundtype_vote_choices()
+	if(mode != "roundtype")
+		return
+	var/allowed_secondary_roundtype = get_roundtype_vote_secondary_choice()
+	var/list/sanitized_choices = list()
+	for(var/choice in choices)
+		if(choice == ROUNDTYPE_EXTENDED && allowed_secondary_roundtype != ROUNDTYPE_EXTENDED)
+			continue
+		if(choice == ROUNDTYPE_DYNAMIC_LIGHT && allowed_secondary_roundtype != ROUNDTYPE_DYNAMIC_LIGHT)
+			continue
+		sanitized_choices += choice
+		sanitized_choices[choice] = choices[choice]
+	choices = sanitized_choices
+
+/datum/controller/subsystem/vote/proc/normalize_roundtype_vote_result(roundtype)
+	if(roundtype == ROUNDTYPE_EXTENDED && use_dynamic_light_roundtype_vote_window())
+		return ROUNDTYPE_DYNAMIC_LIGHT
+	if(roundtype == ROUNDTYPE_DYNAMIC_LIGHT && !use_dynamic_light_roundtype_vote_window())
+		return ROUNDTYPE_EXTENDED
+	return roundtype
 
 /datum/controller/subsystem/vote/proc/should_group_roundtype_choices()
 	return mode == "dynamic" || (mode == "roundtype" && !use_dynamic_light_roundtype_vote_window())
