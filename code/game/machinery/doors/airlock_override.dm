@@ -193,10 +193,12 @@
 		update_appearance()
 
 	// Сбросим лишние флаги (отдельно, что бы не вызывать update_appearance() лишний раз)
-	if(medical_override && !GLOB.force_eng_override)
-		engineering_override = FALSE
 	if(security_override)
 		medical_override = FALSE
+		if(!GLOB.force_eng_override)
+			engineering_override = FALSE
+	else if(medical_override && !GLOB.force_eng_override)
+		engineering_override = FALSE
 
 ///Pulse to disable emergency access/code override and flash the red lights.
 /datum/wires/airlock/on_pulse(wire)
