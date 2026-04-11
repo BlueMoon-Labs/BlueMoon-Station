@@ -235,7 +235,7 @@
 			var/message = trim(html_encode(params["message"]), MAX_MESSAGE_LEN)
 
 			var/emagged = obj_flags & EMAGGED
-			if (emagged && GLOB.master_mode == "Extended")
+			if (emagged && GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT)
 				message_syndicate(message, usr)
 				to_chat(usr, span_danger("SYSERR @l(19833)of(transmit.dm): !@$ СООБЩЕНИЕ УСПЕШНО ОТПРАВЛЕНО ПО ПОДПРОСТРАНСТВЕННОЙ СВЯЗИ."))
 			else if (emagged)
@@ -694,7 +694,7 @@
 /obj/machinery/computer/communications/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if (!ui)
-		if ((obj_flags && EMAGGED && GLOB.master_mode == "Extended") || syndicate == TRUE)
+		if ((obj_flags && EMAGGED && GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT) || syndicate == TRUE)
 			ui = new(user, src, "CommunicationsConsole")
 			ui.open()
 		else

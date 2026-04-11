@@ -286,7 +286,7 @@
 			to_chat(user, "<span class='warning'>[target] is not compatible with our biology.</span>")
 		return
 	// BLUEMOON ADD START || ЕРП генки не могут копировать внешность без nonconpref
-	if(src.type == /datum/antagonist/changeling/xenobio && GLOB.master_mode == ROUNDTYPE_EXTENDED && target?.client?.prefs.nonconpref == "No")
+	if(src.type == /datum/antagonist/changeling/xenobio && GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT && target?.client?.prefs.nonconpref == "No")
 		if(verbose)
 			to_chat(user, "<span class='warning'>DNA of [target] resists absorption.</span>")
 		return

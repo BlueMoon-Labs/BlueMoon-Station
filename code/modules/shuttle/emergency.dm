@@ -486,7 +486,7 @@
 				// now move the actual emergency shuttle to centcom
 				// unless the shuttle is "hijacked"
 				var/destination_dock = "emergency_away"
-				if(is_hijacked() && GLOB.master_mode == "Extended")
+				if(is_hijacked() && GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT)
 					destination_dock = "emergency_real_syndicate"
 					minor_announce("Обнаружен взлом в протоколах \
 						автопилота шаттла. Пожалуйста, найдите и поговорите с \

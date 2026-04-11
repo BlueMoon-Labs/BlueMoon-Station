@@ -6,7 +6,7 @@
 
 /obj/effect/spawner/xeno_egg_delivery/Initialize(mapload)
 	. = ..()
-	if(GLOB.master_mode == "Extended")
+	if(GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT)
 		var/turf/T = get_turf(src)
 
 		new /obj/structure/alien/egg(T)

@@ -48,7 +48,7 @@
 			return
 
 		var/mob/living/carbon/alien/humanoid/new_xeno
-		if(GLOB.master_mode == "Extended")
+		if(GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT)
 			alien_caste = alert(L, "Пожалуйста, выберите, к какой касте ксеноморфов вы будете принадлежать.",,"Maid-Drone")
 			switch(alien_caste)
 				if("Maid-Drone")

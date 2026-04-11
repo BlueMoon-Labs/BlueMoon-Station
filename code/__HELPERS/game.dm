@@ -489,7 +489,7 @@
 	var/list/candidates
 	// Если не определили заранее, то выбираем в зависимости от режима
 	if(isnull(priority_check))
-		priority_check = GLOB.master_mode != ROUNDTYPE_EXTENDED
+		priority_check = GLOB.master_mode != ROUNDTYPE_DYNAMIC_LIGHT
 	if(priority_check)
 		var/list/priority_candidates = get_all_ghost_role_eligible(priority_only = TRUE)
 		. = pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category, flashwindow, priority_candidates)

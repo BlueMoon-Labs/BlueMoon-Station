@@ -104,7 +104,7 @@
 						serialized["role"] = A.name
 						ghost_roles += list(serialized)
 						break // Я не верю, что гострольки могут быть антагами. Не хочу верить...
-					else if (user.client?.holder || A?.show_to_ghosts || GLOB.master_mode == ROUNDTYPE_EXTENDED)
+					else if (user.client?.holder || A?.show_to_ghosts || GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT)
 						was_special = TRUE
 						serialized["antag"] = A.name
 						antagonists += list(serialized)

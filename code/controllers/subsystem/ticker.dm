@@ -289,7 +289,7 @@ SUBSYSTEM_DEF(ticker)
 	to_chat(world, "<span class='boldannounce'>Starting game...</span>")
 	var/init_start = world.timeofday
 	if(emergency_swap >= 10)
-		force_gamemode("Extended")	// If everything fails extended does not have hard requirements for starting, could be changed if needed.
+		force_gamemode(ROUNDTYPE_DYNAMIC_LIGHT)	// If everything fails, fall back to dynamic light.
 	mode = config.pick_mode(GLOB.master_mode)
 	if(!mode.can_start())
 		to_chat(world, "<B>Unable to start [mode.name].</B> Not enough players, [mode.required_players] players and [mode.required_enemies] eligible antagonists needed. Reverting to pre-game lobby.")
@@ -378,16 +378,23 @@ SUBSYSTEM_DEF(ticker)
 	if(gamemode)
 		if(!modevoted)
 			modevoted = TRUE
+		var/force_dynamic_light = FALSE
+		if(gamemode == "Extended" || gamemode == "secret_extended" || gamemode == ROUNDTYPE_DYNAMIC_LIGHT)
+			force_dynamic_light = TRUE
+			gamemode = "dynamic"
 		if(gamemode in config.modes)
-			GLOB.master_mode = gamemode
-			SSticker.save_mode(gamemode)
-			message_admins("The gamemode has been set to [gamemode].")
-			to_chat("The gamemode has been set to [gamemode].") //BlueMoon edit !!!
+			GLOB.master_mode = force_dynamic_light ? ROUNDTYPE_DYNAMIC_LIGHT : gamemode
+			if(force_dynamic_light)
+				GLOB.round_type = ROUNDTYPE_DYNAMIC_LIGHT
+			SSticker.save_mode(GLOB.master_mode)
+			message_admins("The gamemode has been set to [GLOB.master_mode].")
+			to_chat("The gamemode has been set to [GLOB.master_mode].") //BlueMoon edit !!!
 		else
-			GLOB.master_mode = "Extended"
-			SSticker.save_mode("Extended")
-			message_admins("force_gamemode proc received an invalid gamemode, defaulting to extended.")
-			to_chat("The gamemode has been set to extended.") //BlueMoon edit !!!
+			GLOB.master_mode = ROUNDTYPE_DYNAMIC_LIGHT
+			GLOB.round_type = ROUNDTYPE_DYNAMIC_LIGHT
+			SSticker.save_mode(GLOB.master_mode)
+			message_admins("force_gamemode proc received an invalid gamemode, defaulting to dynamic light.")
+			to_chat("The gamemode has been set to dynamic light.") //BlueMoon edit !!!
 
 /datum/controller/subsystem/ticker/proc/PostSetup()
 	set waitfor = FALSE
@@ -400,7 +407,7 @@ SUBSYSTEM_DEF(ticker)
 	send2adminchat("Server", "Round [GLOB.round_id ? "#[GLOB.round_id]:" : "of"] [hide_mode ? "secret":"[GLOB.master_mode]"] has started[allmins.len ? ".":" with no active admins online!"]")
 	if(CONFIG_GET(string/new_round_ping))
 		send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/new_round_ping)]> | Новый раунд стартует на [SSmapping.config.map_name]!"), CONFIG_GET(string/chat_announce_new_game))
-		if(GLOB.master_mode == "Extended")
+		if(GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT)
 			send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/passive_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]> | Раунд [GLOB.round_id ? "#[GLOB.round_id]:" : "в режиме"] [hide_mode ? "секретном":"[GLOB.master_mode]"] стартует[allmins.len ? "!":" без администрации!!"]"), CONFIG_GET(string/chat_announce_new_game))
 		else
 			send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/active_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]> | Раунд [GLOB.round_id ? "#[GLOB.round_id]:" : "в режиме"] [hide_mode ? "секретном":"[GLOB.master_mode]"] стартует[allmins.len ? "!":" без администрации!!"]"), CONFIG_GET(string/chat_announce_new_game))

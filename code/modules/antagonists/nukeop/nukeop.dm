@@ -41,7 +41,7 @@
 		return
 	if(!istype(H))
 		return
-	var/is_extended = GLOB.master_mode == "Extended"
+	var/is_extended = GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT
 	if(is_extended)
 		H.equipOutfit(/datum/outfit/syndicate/lone)
 		priority_announce("Приветствую, Станция. Мы отправляем к вам Специалиста по Защите Ядерного Диска ввиду того, что заметили недостаточную его безопасность. Bстречайте.", "Фрегат [title] ССО Синдиката")
@@ -276,7 +276,7 @@
 	syndicate_name = syndicate_name()
 
 /datum/team/nuclear/proc/update_objectives()
-	if(GLOB.master_mode == "Extended")
+	if(GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT)
 		var/datum/objective/O = new revert_objective
 		O.team = src
 		objectives += O
