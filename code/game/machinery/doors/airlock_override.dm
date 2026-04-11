@@ -113,6 +113,7 @@
 	var/engineering_override = FALSE
 	var/medical_override = FALSE
 	var/security_override = FALSE
+	var/last_sec_level = 0
 
 /obj/machinery/door/airlock/Initialize(mapload)
 	. = ..()
@@ -163,27 +164,33 @@
 	if(isnull(level))
 		level = GLOB.security_level
 
-	var/static/was_delta_level = FALSE
-
 	// Аварийный доступ при дельте
 	if(level >= SEC_LEVEL_DELTA)
 		was_delta_level = TRUE
 		emergency = TRUE
 		update_appearance()
+		last_sec_level = level
 		return
-	else if(was_delta_level)
-		was_delta_level = FALSE
+	else if(last_sec_level >= SEC_LEVEL_DELTA)
 		emergency = FALSE
 		update_appearance()
 
 	// Логика override доступов
 	if(level >= SEC_LEVEL_AMBER)
 		security_override = TRUE
+		medical_override = FALSE
+		if(!GLOB.force_eng_override)
+			engineering_override = FALSE
 		update_appearance()
 	else if(level == SEC_LEVEL_VIOLET)
+		security_override = FALSE
 		medical_override = TRUE
+		if(!GLOB.force_eng_override)
+			engineering_override = FALSE
 		update_appearance()
 	else if(level == SEC_LEVEL_ORANGE || GLOB.force_eng_override)
+		security_override = FALSE
+		medical_override = FALSE
 		engineering_override = TRUE
 		update_appearance()
 	else if(security_override || medical_override || engineering_override)
@@ -192,13 +199,7 @@
 		engineering_override = FALSE
 		update_appearance()
 
-	// Сбросим лишние флаги (отдельно, что бы не вызывать update_appearance() лишний раз)
-	if(security_override)
-		medical_override = FALSE
-		if(!GLOB.force_eng_override)
-			engineering_override = FALSE
-	else if(medical_override && !GLOB.force_eng_override)
-		engineering_override = FALSE
+	last_sec_level = level
 
 ///Pulse to disable emergency access/code override and flash the red lights.
 /datum/wires/airlock/on_pulse(wire)
