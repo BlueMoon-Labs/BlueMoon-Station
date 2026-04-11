@@ -581,13 +581,18 @@ SUBSYSTEM_DEF(vote)
 				choices.Add(VOTE_TRANSFER,VOTE_CONTINUE) // austation end
 			if("roundtype")
 				var/combo = check_combo()
+				var/current_hour = text2num(time2text(world.timeofday, "hh"))
+				var/extended_vote_allowed = current_hour < 17
 				switch (combo)
 					if ("dynamic")
-						choices.Add(ROUNDTYPE_EXTENDED)
+						if(extended_vote_allowed)
+							choices.Add(ROUNDTYPE_EXTENDED)
 					if ("Extended")
 						choices.Add(ROUNDTYPE_DYNAMIC)
 					else
-						choices.Add(ROUNDTYPE_DYNAMIC, ROUNDTYPE_EXTENDED)
+						choices.Add(ROUNDTYPE_DYNAMIC)
+						if(extended_vote_allowed)
+							choices.Add(ROUNDTYPE_EXTENDED)
 			if("custom")
 				if(!saved_custom || !saved_custom_question || length(saved_custom_options) < 2)
 					return FALSE
