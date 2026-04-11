@@ -45,7 +45,7 @@
 		antag_type = new /datum/antagonist/nukeop/lone/syndicate
 		antag_type.nukeop_outfit = /datum/outfit/syndicate/lone/extended
 	else if(GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT && !keeper_force)
-		addtimer(CALLBACK(src, PROC_REF(spawn_operative), TRUE, get_turf(spawn_loc)), (rand(150, 210) SECONDS))
+		addtimer(CALLBACK(src, PROC_REF(spawn_operative), TRUE, get_turf(spawn_loc)), 10 SECONDS)
 
 	var/antag_name = initial(antag_type.name)
 	var/datum/mind/Mind = new(selected.key)
