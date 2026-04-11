@@ -1,26 +1,26 @@
 /obj/item/integrated_circuit/text
 	name = "text thingy"
-	desc = "Does text-processing related things."
-	category_text = "Text"
+	desc = "Занимается обработкой текста."
+	category_text = "Текст"
 	complexity = 1
 
 // - Text Replacer - //
 /obj/item/integrated_circuit/text/text_replacer
 	name = "find-replace circuit"
-	desc = "Replaces all of one bit of text with another"
-	extended_desc = "Takes a string(haystack) and puts out the string while having a certain word(needle) replaced with another."
+	desc = "Заменяет весь текст на другой"
+	extended_desc = "Принимает строку (стог сена) и выводит её, заменив одно слово (иголку) другим."
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
-		"haystack" = IC_PINTYPE_STRING,
-		"needle" = IC_PINTYPE_STRING,
-		"replacement" = IC_PINTYPE_STRING
+		"стог сена" = IC_PINTYPE_STRING,
+		"иголка" = IC_PINTYPE_STRING,
+		"замена" = IC_PINTYPE_STRING
 	)
 	activators = list(
-		"replace" = IC_PINTYPE_PULSE_IN,
-		"on replaced" = IC_PINTYPE_PULSE_OUT
+		"заменить" = IC_PINTYPE_PULSE_IN,
+		"при замене" = IC_PINTYPE_PULSE_OUT
 	)
 	outputs = list(
-		"replaced string" = IC_PINTYPE_STRING
+		"заменённая строка" = IC_PINTYPE_STRING
 	)
 
 /obj/item/integrated_circuit/text/text_replacer/do_work()

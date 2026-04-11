@@ -1,16 +1,16 @@
 /obj/item/integrated_circuit/smart
-	category_text = "Smart"
+	category_text = "Умное"
 
 /obj/item/integrated_circuit/smart/basic_pathfinder
 	name = "basic pathfinder"
-	desc = "This complex circuit is able to determine what direction a given target is."
-	extended_desc = "This circuit uses a miniturized integrated camera to determine where the target is. If the machine \
-	cannot see the target, it will not be able to calculate the correct direction."
+	desc = "Эта сложная схема способна определить, в каком направлении находится данная цель."
+	extended_desc = "Эта схема использует миниатюрную встроенную камеру для определения местоположения цели. Если машина \
+	не видит цель, она не сможет рассчитать правильное направление."
 	icon_state = "numberpad"
 	complexity = 5
-	inputs = list("target" = IC_PINTYPE_REF,"ignore obstacles" = IC_PINTYPE_BOOLEAN)
-	outputs = list("dir" = IC_PINTYPE_DIR)
-	activators = list("calculate dir" = IC_PINTYPE_PULSE_IN, "on calculated" = IC_PINTYPE_PULSE_OUT,"not calculated" = IC_PINTYPE_PULSE_OUT)
+	inputs = list("цель" = IC_PINTYPE_REF,"игнорировать преграды?" = IC_PINTYPE_BOOLEAN)
+	outputs = list("направление" = IC_PINTYPE_DIR)
+	activators = list("рассчитать направление" = IC_PINTYPE_PULSE_IN, "при расчёте" = IC_PINTYPE_PULSE_OUT,"если рассчитать не удалось" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 40
 
@@ -38,17 +38,17 @@
 
 /obj/item/integrated_circuit/smart/coord_basic_pathfinder
 	name = "coordinate pathfinder"
-	desc = "This complex circuit is able to determine what direction a given target is."
-	extended_desc = "This circuit uses absolute coordinates to determine where the target is. If the machine \
-	cannot see the target, it will not be able to calculate the correct direction. \
-	This circuit will only work while inside an assembly."
+	desc = "Эта сложная схема способна определять, в каком направлении находится данная цель"
+	extended_desc = "Эта схема использует абсолютные координаты для определения местоположения цели. Если машина \
+	не видит цель, она не сможет рассчитать правильное направление. \
+	Эта схема будет работать только внутри сборки."
 	icon_state = "numberpad"
 	complexity = 5
-	inputs = list("X" = IC_PINTYPE_NUMBER,"Y" = IC_PINTYPE_NUMBER,"ignore obstacles" = IC_PINTYPE_BOOLEAN)
-	outputs = list(	"dir" 					= IC_PINTYPE_DIR,
-					"distance"				= IC_PINTYPE_NUMBER
+	inputs = list("X" = IC_PINTYPE_NUMBER,"Y" = IC_PINTYPE_NUMBER,"игнорировать преграды?" = IC_PINTYPE_BOOLEAN)
+	outputs = list(	"направление" 					= IC_PINTYPE_DIR,
+					"дистанция"				= IC_PINTYPE_NUMBER
 	)
-	activators = list("calculate dir" = IC_PINTYPE_PULSE_IN, "on calculated" = IC_PINTYPE_PULSE_OUT,"not calculated" = IC_PINTYPE_PULSE_OUT)
+	activators = list("рассчитать направление" = IC_PINTYPE_PULSE_IN, "при расчёте" = IC_PINTYPE_PULSE_OUT,"если рассчитать не удалось" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 40
 
@@ -74,15 +74,15 @@
 
 /obj/item/integrated_circuit/smart/advanced_pathfinder
 	name = "advanced pathfinder"
-	desc = "This circuit uses a complex processor for long-range pathfinding."
-	extended_desc = "This circuit uses absolute coordinates to find its target. A path will be generated to the target, taking obstacles into account, \
-	and pathing around any instances of said input. The passkey provided from a card reader is used to calculate a valid path through airlocks."
+	desc = "Эта схема использует сложный процессор для поиска пути на большие расстояния."
+	extended_desc = "Эта схема использует абсолютные координаты для поиска цели. Будет сгенерирован маршрут к цели с учетом препятствий \
+	и обхода всех входных данных. Ключ доступа, полученный с помощью считывателя карт, используется для расчета правильного пути через воздушные шлюзы."
 	icon_state = "numberpad"
 	complexity = 40
 	cooldown_per_use = 50
-	inputs = list("X target" = IC_PINTYPE_NUMBER,"Y target" = IC_PINTYPE_NUMBER,"obstacle" = IC_PINTYPE_REF,"access" = IC_PINTYPE_STRING)
+	inputs = list("X цели" = IC_PINTYPE_NUMBER,"Y цели" = IC_PINTYPE_NUMBER,"преграда" = IC_PINTYPE_REF,"доступ" = IC_PINTYPE_STRING)
 	outputs = list("X" = IC_PINTYPE_LIST,"Y" = IC_PINTYPE_LIST)
-	activators = list("calculate path" = IC_PINTYPE_PULSE_IN, "on calculated" = IC_PINTYPE_PULSE_OUT,"not calculated" = IC_PINTYPE_PULSE_OUT)
+	activators = list("рассчитать путь" = IC_PINTYPE_PULSE_IN, "при расчёте" = IC_PINTYPE_PULSE_OUT,"если рассчитать не удалось" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 80
 	var/obj/item/card/id/idc
@@ -134,25 +134,25 @@
 // - MMI Tank - //
 /obj/item/integrated_circuit/input/mmi_tank
 	name = "man-machine interface tank"
-	desc = "This circuit is just a jar filled with an artificial liquid mimicking the cerebrospinal fluid."
-	extended_desc = "This jar can hold 1 man-machine interface and let it take control of some basic functions of the assembly."
+	desc = "Эта схема представляет собой всего лишь банку, наполненную искусственной жидкостью, имитирующую спинномозговую жидкость."
+	extended_desc = "Этот контейнер может содержать 1 человеко-машинный интерфейс и позволяет ему управлять некоторыми основными функциями сборки."
 	complexity = 60
 	inputs = list("laws" = IC_PINTYPE_LIST)
 	outputs = list(
 		"man-machine interface" = IC_PINTYPE_REF,
-		"direction" = IC_PINTYPE_DIR,
-		"click target" = IC_PINTYPE_REF
+		"направление" = IC_PINTYPE_DIR,
+		"цель нажатия" = IC_PINTYPE_REF
 		)
 	activators = list(
-		"move" = IC_PINTYPE_PULSE_OUT,
-		"left" = IC_PINTYPE_PULSE_OUT,
-		"right" = IC_PINTYPE_PULSE_OUT,
-		"up" = IC_PINTYPE_PULSE_OUT,
-		"down" = IC_PINTYPE_PULSE_OUT,
-		"leftclick" = IC_PINTYPE_PULSE_OUT,
-		"shiftclick" = IC_PINTYPE_PULSE_OUT,
-		"altclick" = IC_PINTYPE_PULSE_OUT,
-		"ctrlclick" = IC_PINTYPE_PULSE_OUT
+		"движение" = IC_PINTYPE_PULSE_OUT,
+		"лево" = IC_PINTYPE_PULSE_OUT,
+		"право" = IC_PINTYPE_PULSE_OUT,
+		"верх" = IC_PINTYPE_PULSE_OUT,
+		"низ" = IC_PINTYPE_PULSE_OUT,
+		"левый клик" = IC_PINTYPE_PULSE_OUT,
+		"шифт клик" = IC_PINTYPE_PULSE_OUT,
+		"альт клик" = IC_PINTYPE_PULSE_OUT,
+		"контрл клик" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 150
@@ -163,16 +163,16 @@
 
 /obj/item/integrated_circuit/input/mmi_tank/attackby(obj/item/mmi/O, mob/user)
 	if(!istype(O, /obj/item/mmi))
-		to_chat(user, span_warning("You can't put that inside."))
+		to_chat(user, span_warning("Вы не можете засунуть это внутрь."))
 		return
 	if(installed_brain)
-		to_chat(user, span_warning("There's already a brain inside."))
+		to_chat(user, span_warning("Внутри уже есть мозг."))
 		return
 	user.transferItemToLoc(O, src)
 	installed_brain = O
 	can_be_asked_input = FALSE
-	to_chat(user, span_notice("You gently place \the man-machine interface inside the tank."))
-	to_chat(O, span_notice("You are slowly being placed inside the man-machine-interface tank."))
+	to_chat(user, span_notice("Вы аккуратно помещаете человеко-машинный интерфейс внутрь резервуара."))
+	to_chat(O, span_notice("Вас медленно помещают в резервуар для взаимодействия человека и машины."))
 	O.brainmob.remote_control = src
 	set_pin_data(IC_OUTPUT, 1, O)
 	push_data()
@@ -180,10 +180,10 @@
 /obj/item/integrated_circuit/input/mmi_tank/attack_self(mob/user)
 	if(installed_brain)
 		RemoveBrain()
-		to_chat(user, span_notice("You slowly lift [installed_brain] out of the MMI tank."))
+		to_chat(user, span_notice("Вы медленно поднимаете [installed_brain] из резервуара для MMI."))
 		playsound(src, 'sound/items/Crowbar.ogg', 50, 1)
 	else
-		to_chat(user, span_notice("You don't see any brain swimming in the tank."))
+		to_chat(user, span_notice("Вы не видите мозга, плавающего в резервуаре."))
 
 /obj/item/integrated_circuit/input/mmi_tank/Destroy()
 	RemoveBrain()
@@ -266,26 +266,26 @@
 // - pAI connector circuit - //
 /obj/item/integrated_circuit/input/pAI_connector
 	name = "pAI connector circuit"
-	desc = "This circuit lets you fit in a personal artificial intelligence to give it some form of control over the bot."
+	desc = "Эта схема позволяет вам подключить персональный искусственный интеллект и дать ему некоторую форму контроля над ботом."
 	extended_desc = "You can wire various functions to it."
 	complexity = 60
 	inputs = list("laws" = IC_PINTYPE_LIST)
 	outputs = list(
-		"personal artificial intelligence" = IC_PINTYPE_REF,
-		"direction" = IC_PINTYPE_DIR,
-		"click target" = IC_PINTYPE_REF
+		"персональный искусственный интеллект" = IC_PINTYPE_REF,
+		"направление" = IC_PINTYPE_DIR,
+		"цель клика" = IC_PINTYPE_REF
 		)
 	activators = list(
-		"move" = IC_PINTYPE_PULSE_OUT,
-		"left" = IC_PINTYPE_PULSE_OUT,
-		"right" = IC_PINTYPE_PULSE_OUT,
-		"up" = IC_PINTYPE_PULSE_OUT,
-		"down" = IC_PINTYPE_PULSE_OUT,
-		"leftclick" = IC_PINTYPE_PULSE_OUT,
-		"shiftclick" = IC_PINTYPE_PULSE_OUT,
-		"altclick" = IC_PINTYPE_PULSE_OUT,
-		"ctrlclick" = IC_PINTYPE_PULSE_OUT,
-		"shiftctrlclick" = IC_PINTYPE_PULSE_OUT
+		"движение" = IC_PINTYPE_PULSE_OUT,
+		"лево" = IC_PINTYPE_PULSE_OUT,
+		"право" = IC_PINTYPE_PULSE_OUT,
+		"верх" = IC_PINTYPE_PULSE_OUT,
+		"низ" = IC_PINTYPE_PULSE_OUT,
+		"левый клик" = IC_PINTYPE_PULSE_OUT,
+		"шифт клик" = IC_PINTYPE_PULSE_OUT,
+		"альт клик" = IC_PINTYPE_PULSE_OUT,
+		"контрл клик" = IC_PINTYPE_PULSE_OUT,
+		"шифтконтрл клик" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 150
@@ -296,16 +296,16 @@
 
 /obj/item/integrated_circuit/input/pAI_connector/attackby(obj/item/paicard/O, mob/user)
 	if(!istype(O, /obj/item/paicard))
-		to_chat(user, span_warning("You can't put that inside."))
+		to_chat(user, span_warning("Вы не можете засунуть это внутрь."))
 		return
 	if(installed_pai)
-		to_chat(user, span_warning("There's already a pAI connected to this."))
+		to_chat(user, span_warning("пИИ уже установлен."))
 		return
 	user.transferItemToLoc(O, src)
 	installed_pai = O
 	can_be_asked_input = FALSE
-	to_chat(user, span_notice("You slowly connect the circuit's pins to the [installed_pai]."))
-	to_chat(O, span_notice("You are slowly being connected to the pAI connector."))
+	to_chat(user, span_notice("Вы медленно подключаете пины платы к [installed_pai]."))
+	to_chat(O, span_notice("Вас медленно подключают к коннектору пИИ"))
 	O.pai.remote_control = src
 	set_pin_data(IC_OUTPUT, 1, O)
 	push_data()
@@ -313,10 +313,10 @@
 /obj/item/integrated_circuit/input/pAI_connector/attack_self(mob/user)
 	if(installed_pai)
 		RemovepAI()
-		to_chat(user, span_notice("You slowly disconnect the circuit's pins from the [installed_pai]."))
+		to_chat(user, span_notice("Вы медленно отключаете пины платы от [installed_pai]."))
 		playsound(src, 'sound/items/Crowbar.ogg', 50, 1)
 	else
-		to_chat(user, span_notice("The connection port is empty."))
+		to_chat(user, span_notice("Порт подключения пуст."))
 
 /obj/item/integrated_circuit/input/pAI_connector/Destroy()
 	RemovepAI()

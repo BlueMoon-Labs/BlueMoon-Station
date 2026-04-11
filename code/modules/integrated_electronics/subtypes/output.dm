@@ -1,14 +1,14 @@
 /obj/item/integrated_circuit/output
-	category_text = "Output"
+	category_text = "Вывод"
 
 /obj/item/integrated_circuit/output/screen
 	name = "screen"
-	extended_desc = " use &lt;br&gt; to start a new line"
-	desc = "Takes any data type as an input, and displays it to the user upon examining."
+	extended_desc = " используйте &lt;br&gt; чтобы начать новую строку"
+	desc = "Принимает в качестве входных данных любой тип данных и отображает их пользователю после проверки."
 	icon_state = "screen"
-	inputs = list("displayed data" = IC_PINTYPE_STRING)
+	inputs = list("отображаемые данные" = IC_PINTYPE_STRING)
 	outputs = list()
-	activators = list("load data" = IC_PINTYPE_PULSE_IN)
+	activators = list("загрузить данные" = IC_PINTYPE_PULSE_IN)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 10
 	var/eol = "&lt;br&gt;"
@@ -27,7 +27,7 @@
 	if(displayed_name && displayed_name != name)
 		shown_label = " labeled '[displayed_name]'"
 
-	return "There is \a [src][shown_label], which displays [stuff_to_display ? "'[stuff_to_display]'" : "nothing"]."
+	return "Здесь находится [src][shown_label], который отображает [stuff_to_display ? "'[stuff_to_display]'" : "ничего"]."
 
 /obj/item/integrated_circuit/output/screen/do_work()
 	var/datum/integrated_io/I = inputs[1]
@@ -40,7 +40,7 @@
 
 /obj/item/integrated_circuit/output/screen/large
 	name = "medium screen"
-	desc = "Takes string data type as an input and displays it to the user upon examining, and to all nearby beings in a small area when pulsed."
+	desc = "Принимает в качестве входных данных строковый тип и отображает его пользователю при просмотре, а при подаче импульса - всем существам, находящимся в непосредственной близости."
 	icon_state = "screen_medium"
 	power_draw_per_use = 20
 
@@ -51,12 +51,12 @@
 	var/list/mobs = list()
 	for(var/mob/M in viewers(2, host.loc))
 		mobs += M
-	to_chat(mobs, "<span class='notice'>[icon2html(host.icon, world, host.icon_state)] flashes a message: [stuff_to_display]</span>")
+	to_chat(mobs, "<span class='notice'>[icon2html(host.icon, world, host.icon_state)] показывает сообщение: [stuff_to_display]</span>")
 	host.investigate_log("displayed \"[html_encode(stuff_to_display)]\" as [type].", INVESTIGATE_CIRCUIT)
 
 /obj/item/integrated_circuit/output/screen/extralarge // the subtype is called "extralarge" because tg brought back medium screens and they named the subtype /screen/large
 	name = "large screen"
-	desc = "Takes string data type as an input and displays it to the user upon examining, and to all nearby beings when pulsed."
+	desc = "Принимает строковый тип данных в качестве входных данных и отображает их пользователю при просмотре, а также всем находящимся поблизости существам при подаче импульса."
 	icon_state = "screen_large"
 	power_draw_per_use = 40
 	cooldown_per_use = 10
@@ -67,17 +67,17 @@
 	var/list/mobs = list()
 	for(var/mob/M in viewers(7, host.loc))
 		mobs += M
-	to_chat(mobs, "<span class='notice'>[icon2html(host.icon, world, host.icon_state)] flashes a message: [stuff_to_display]</span>")
+	to_chat(mobs, "<span class='notice'>[icon2html(host.icon, world, host.icon_state)] показывает сообщение: [stuff_to_display]</span>")
 	host.investigate_log("displayed \"[html_encode(stuff_to_display)]\" as [type].", INVESTIGATE_CIRCUIT)
 
 /obj/item/integrated_circuit/output/light
 	name = "light"
-	desc = "A basic light which can be toggled on/off when pulsed."
+	desc = "Простой индикатор, который включается и выключается при подаче импульсного сигнала."
 	icon_state = "light"
 	complexity = 4
 	inputs = list()
 	outputs = list()
-	activators = list("toggle light" = IC_PINTYPE_PULSE_IN)
+	activators = list("переключить свет" = IC_PINTYPE_PULSE_IN)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	var/light_toggled = 0
 	var/light_brightness = 3
@@ -108,12 +108,12 @@
 
 /obj/item/integrated_circuit/output/light/advanced
 	name = "advanced light"
-	desc = "A light that takes a hexadecimal color value and a brightness value, and can be toggled on/off by pulsing it."
+	desc = "Индикатор, который принимает шестнадцатеричное значение цвета и значение яркости, а также может включаться и выключаться с помощью импульсного сигнала."
 	icon_state = "light_adv"
 	complexity = 8
 	inputs = list(
-		"color" = IC_PINTYPE_COLOR,
-		"brightness" = IC_PINTYPE_NUMBER
+		"цвет" = IC_PINTYPE_COLOR,
+		"яркость" = IC_PINTYPE_NUMBER
 	)
 	outputs = list()
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -134,27 +134,27 @@
 
 /obj/item/integrated_circuit/output/sound
 	name = "speaker circuit"
-	desc = "A miniature speaker is attached to this component."
+	desc = "К этой схеме прикреплен миниатюрный динамик."
 	icon_state = "speaker"
 	complexity = 8
 	cooldown_per_use = 4 SECONDS
 	inputs = list(
-		"sound ID" = IC_PINTYPE_STRING,
-		"volume" = IC_PINTYPE_NUMBER,
-		"frequency" = IC_PINTYPE_BOOLEAN
+		"звуковой идентификатор" = IC_PINTYPE_STRING,
+		"громкость" = IC_PINTYPE_NUMBER,
+		"частота" = IC_PINTYPE_BOOLEAN
 	)
 	outputs = list()
-	activators = list("play sound" = IC_PINTYPE_PULSE_IN)
+	activators = list("проиграть звук" = IC_PINTYPE_PULSE_IN)
 	power_draw_per_use = 10
 	var/list/sounds = list()
 
 /obj/item/integrated_circuit/output/sound/Initialize(mapload)
 	.= ..()
 	extended_desc = list()
-	extended_desc += "The first input pin determines which sound is used. The choices are; "
+	extended_desc += "Первый входной пин определяет, какой звук будет использоваться. Возможные варианты: "
 	extended_desc += jointext(sounds, ", ")
-	extended_desc += ". The second pin determines the volume of sound that is played"
-	extended_desc += ", and the third determines if the frequency of the sound will vary with each activation."
+	extended_desc += ". Второй пин определяет громкость звука."
+	extended_desc += ", а третий определяет, будет ли частота звука меняться при каждом срабатывании."
 	extended_desc = jointext(extended_desc, null)
 
 /obj/item/integrated_circuit/output/sound/do_work()
@@ -175,7 +175,7 @@
 
 /obj/item/integrated_circuit/output/sound/beeper
 	name = "beeper circuit"
-	desc = "Takes a sound name as an input, and will play said sound when pulsed. This circuit has a variety of beeps, boops, and buzzes to choose from."
+	desc = "Принимает в качестве входных данных название звука и воспроизводит его при подаче импульса. В этой схеме доступно множество различных звуковых сигналов, писков и гудков."
 	sounds = list(
 		"beep"			= 'sound/machines/twobeep.ogg',
 		"chime"			= 'sound/machines/chime.ogg',
@@ -190,7 +190,7 @@
 
 /obj/item/integrated_circuit/output/sound/beepsky
 	name = "securitron sound circuit"
-	desc = "Takes a sound name as an input, and will play said sound when pulsed. This circuit is similar to those used in Securitrons."
+	desc = "Принимает в качестве входного сигнала название звука и воспроизводит его при подаче импульса. Эта схема аналогична схемам, используемым в устройствах Securitron."
 	sounds = list(
 		"creep"			= 'sound/voice/beepsky/creep.ogg',
 		"criminal"		= 'sound/voice/beepsky/criminal.ogg',
@@ -205,7 +205,7 @@
 
 /obj/item/integrated_circuit/output/sound/medbot
 	name = "medbot sound circuit"
-	desc = "Takes a sound name as an input, and will play said sound when pulsed. This circuit is often found in medical robots."
+	desc = "Принимает в качестве входного сигнала название звука и воспроизводит его при подаче импульса. Такая схема часто используется в медицинских роботах."
 	sounds = list(
 		"surgeon"		= 'sound/voice/medbot/surgeon.ogg',
 		"radar"			= 'sound/voice/medbot/radar.ogg',
@@ -227,37 +227,37 @@
 
 /obj/item/integrated_circuit/output/sound/vox
 	name = "Female ai vox sound circuit"
-	desc = "Takes a sound name as an input, and will play said sound when pulsed. This circuit is often found in AI announcement systems."
+	desc = "Принимает в качестве входного сигнала название звука и воспроизводит его при подаче импульса. Такая схема часто используется в системах голосовых объявлений с искусственным интеллектом."
 	spawn_flags = IC_SPAWN_RESEARCH
 	var/voice_type = "Female"
 
 /obj/item/integrated_circuit/output/sound/vox/Initialize(mapload)
 	sounds = GLOB.vox_types[voice_type]
 	. = ..()
-	extended_desc = "The first input pin determines which sound is used. It uses the AI Vox Broadcast word list. So either experiment to find words that work, or ask the AI to help in figuring them out. The second pin determines the volume of sound that is played, and the third determines if the frequency of the sound will vary with each activation."
+	extended_desc = "Первый входной пин определяет, какой звук будет использоваться. Он использует словарь AI Vox Broadcast. Поэтому либо попробуйте самостоятельно найти подходящие слова, либо попросите ИИ помочь вам в их подборе. Второй пин регулирует громкость воспроизводимого звука, а третий - определяет, будет ли частота звука меняться при каждой активации."
 
 /obj/item/integrated_circuit/output/sound/vox/male
 	name = "Male ai vox sound circuit"
-	desc = "Takes a sound name as an input, and will play said sound when pulsed. This circuit is often found in AI announcement systems."
+	desc = "Принимает в качестве входного сигнала название звука и воспроизводит его при подаче импульса. Такая схема часто используется в системах голосовых объявлений с искусственным интеллектом."
 	spawn_flags = IC_SPAWN_RESEARCH
 	voice_type = "Male"
 
 /obj/item/integrated_circuit/output/sound/vox/military
 	name = "Military ai vox sound circuit"
-	desc = "Takes a sound name as an input, and will play said sound when pulsed. This circuit is often found in AI announcement systems."
+	desc = "Принимает в качестве входного сигнала название звука и воспроизводит его при подаче импульса. Такая схема часто используется в системах голосовых объявлений с искусственным интеллектом."
 	spawn_flags = IC_SPAWN_RESEARCH
 	voice_type = "Military"
 
 /obj/item/integrated_circuit/output/text_to_speech
 	name = "text-to-speech circuit"
-	desc = "Takes any string as an input and will make the device say the string when pulsed."
-	extended_desc = "This unit is more advanced than the plain speaker circuit, able to transpose any valid text to speech."
+	desc = "Принимает любую строку в качестве входных данных и заставляет устройство произносить эту строку при подаче импульса."
+	extended_desc = "Это устройство более совершенное, чем простая схема динамика, и способно преобразовывать любой допустимый текст в речь."
 	icon_state = "speaker"
 	cooldown_per_use = 10
 	complexity = 12
-	inputs = list("text" = IC_PINTYPE_STRING)
+	inputs = list("текст" = IC_PINTYPE_STRING)
 	outputs = list()
-	activators = list("to speech" = IC_PINTYPE_PULSE_IN)
+	activators = list("в речь" = IC_PINTYPE_PULSE_IN)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 60
 
@@ -274,16 +274,16 @@
 
 /obj/item/integrated_circuit/output/video_camera
 	name = "video camera circuit"
-	desc = "Takes a string as a name and a boolean to determine whether it is on, and uses this to be a camera linked to a list of networks you choose."
-	extended_desc = "The camera is linked to a list of camera networks of your choosing. Common choices are 'rd' for the research network, 'ss13' for the main station network (visible to AI), 'mine' for the mining network, and 'thunder' for the thunderdome network (viewable from bar)."
+	desc = "Принимает строку в качестве имени и логическое значение для определения, включена ли она, и использует эти данные для создания камеры, связанной со списком сетей, выбранных вами."
+	extended_desc = "Камера подключена к выбранной вами сети камер. Чаще всего выбирают 'rd' для исследовательской сети, 'ss13' для сети главной станции (доступной для ИИ), 'mine' для горнодобывающей сети и 'thunder' для сети 'Thunderdome' (доступной из бара)."
 	icon_state = "video_camera"
 	w_class = WEIGHT_CLASS_TINY
 	complexity = 10
 	inputs = list(
-		"camera name" = IC_PINTYPE_STRING,
-		"camera active" = IC_PINTYPE_BOOLEAN,
-		"camera fast mode" = IC_PINTYPE_BOOLEAN,
-		"camera network" = IC_PINTYPE_LIST
+		"имя камеры" = IC_PINTYPE_STRING,
+		"активна ли камера" = IC_PINTYPE_BOOLEAN,
+		"быстрый режим камеры" = IC_PINTYPE_BOOLEAN,
+		"сеть камеры" = IC_PINTYPE_LIST
 		)
 	inputs_default = list("1" = "video camera circuit", "4" = list("rd"))
 	outputs = list()
@@ -355,13 +355,13 @@
 
 /obj/item/integrated_circuit/output/led
 	name = "light-emitting diode"
-	desc = "RGB LED. Takes a boolean value in, and if the boolean value is 'true-equivalent', the LED will be marked as lit on examine."
-	extended_desc = "TRUE-equivalent values are: Non-empty strings, non-zero numbers, and valid refs."
+	desc = "Светодиод RGB. Принимает в качестве аргумента логическое значение, и если оно равно 'true;, то при осмотре светодиод будет отображаться как горящий."
+	extended_desc = "Значениями, эквивалентными TRUE, являются: непустые строки, числа, отличные от нуля, и допустимые ссылки."
 	complexity = 0.1
 	icon_state = "led"
 	inputs = list(
-		"lit" = IC_PINTYPE_BOOLEAN,
-		"color" = IC_PINTYPE_COLOR
+		"горит?" = IC_PINTYPE_BOOLEAN,
+		"цвет" = IC_PINTYPE_COLOR
 	)
 	outputs = list()
 	activators = list()
@@ -384,18 +384,18 @@
 	. = ..()
 
 /obj/item/integrated_circuit/output/led/external_examine(mob/user)
-	. = "There is "
+	. = "Здесь "
 
 	if(name == displayed_name)
-		. += "\an [name]"
+		. += "[name]"
 	else
-		. += "\an ["\improper[name]"] labeled '[displayed_name]'"
-	. += " which is currently [get_pin_data(IC_INPUT, 1) ? "lit <font color=[led_color]>*</font>" : "unlit"]."
+		. += "["\improper[name]"] названное '[displayed_name]'"
+	. += " который на данныый момент [get_pin_data(IC_INPUT, 1) ? "горит <font color=[led_color]>*</font>" : "не горит"]."
 
 /obj/item/integrated_circuit/output/diagnostic_hud
 	name = "AR interface"
-	desc = "Takes an icon name as an input, and will update the status hud when data is written to it."
-	extended_desc = "Takes an icon name as an input, and will update the status hud when data is written to it, this means it can change the icon and have the icon stay that way even if the circuit is removed. The acceptable inputs are 'alert', 'move', 'working', 'patrol', 'called', and 'heart'. Any input other than that will return the icon to its default state."
+	desc = "Принимает в качестве входных данных имя значка и обновляет индикатор состояния при записи данных."
+	extended_desc = "Принимает в качестве входных данных название значка и обновляет индикатор состояния при записи данных. Это означает, что он может изменить значок, и значок останется в таком виде даже после удаления схемы. Допустимые значения: 'alert', 'move', 'working', 'patrol', 'called' и 'heart'. Любое другое значение вернет значок в исходное состояние."
 	var/list/icons = list(
 		"alert" = "hudalert",
 		"move" = "hudmove",
@@ -407,7 +407,7 @@
 	complexity = 1
 	icon_state = "led"
 	inputs = list(
-		"icon" = IC_PINTYPE_STRING
+		"значок" = IC_PINTYPE_STRING
 	)
 	outputs = list()
 	activators = list()

@@ -6,12 +6,12 @@
 	complexity = 4
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	outputs = list(
-		"registered name" = IC_PINTYPE_STRING,
-		"assignment" = IC_PINTYPE_STRING,
+		"зарегистрированное имя" = IC_PINTYPE_STRING,
+		"должность" = IC_PINTYPE_STRING,
 		"passkey" = IC_PINTYPE_STRING
 	)
 	activators = list(
-		"on read" = IC_PINTYPE_PULSE_OUT
+		"при чтении" = IC_PINTYPE_PULSE_OUT
 	)
 
 /obj/item/integrated_circuit/input/card_reader/attackby_react(obj/item/I, mob/living/user, intent)

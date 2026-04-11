@@ -1,7 +1,7 @@
 #define IC_SMOKE_REAGENTS_MINIMUM_UNITS 10
 
 /obj/item/integrated_circuit/reagent
-	category_text = "Reagent"
+	category_text = "Реагенты"
 	resistance_flags = UNACIDABLE | FIRE_PROOF
 	cooldown_per_use = 10
 	var/volume = 0
@@ -42,30 +42,30 @@
 
 /obj/item/integrated_circuit/reagent/injector
 	name = "integrated hypo-injector"
-	desc = "This scary looking thing is able to pump liquids into, or suck liquids out of, whatever it's pointed at."
+	desc = "Эта устрашающе выглядящая штуковина способна закачивать жидкости в любой объект, на который она направлена, или высасывать жидкости из него."
 	icon_state = "injector"
-	extended_desc = "This autoinjector can push up to 30 units of reagents into another container or someone else outside of the machine. The target \
-	must be adjacent to the machine, and if it is a person, they cannot be wearing thick clothing. Negative given amounts makes the injector suck out reagents instead."
+	extended_desc = "Этот автоинжектор может перекачивать до 30 единиц реагентов в другой контейнер или другому объекту, находящемуся за пределами машины. Цель \
+    должна находиться рядом с машиной, а если это человек, он не должен быть одет в толстую одежду. Указание отрицательного количества приводит к тому, что инжектор вместо этого всасывает реагенты."
 
 	volume = 30
 
 	complexity = 20
 	cooldown_per_use = 6 SECONDS
 	inputs = list(
-		"target" = IC_PINTYPE_REF,
-		"injection amount" = IC_PINTYPE_NUMBER
+		"цель" = IC_PINTYPE_REF,
+		"объем инъекции" = IC_PINTYPE_NUMBER
 		)
 	inputs_default = list(
 		"2" = 5
 		)
 	outputs = list(
-		"volume used" = IC_PINTYPE_NUMBER,
-		"self reference" = IC_PINTYPE_SELFREF
+		"объема использовано" = IC_PINTYPE_NUMBER,
+		"самоссылка" = IC_PINTYPE_SELFREF
 		)
 	activators = list(
-		"inject" = IC_PINTYPE_PULSE_IN,
-		"on injected" = IC_PINTYPE_PULSE_OUT,
-		"on fail" = IC_PINTYPE_PULSE_OUT,
+		"ввести" = IC_PINTYPE_PULSE_IN,
+		"при вводе" = IC_PINTYPE_PULSE_OUT,
+		"при неудаче" = IC_PINTYPE_PULSE_OUT,
 		"push ref" = IC_PINTYPE_PULSE_IN
 
 		)
@@ -133,16 +133,16 @@
 			//Always log attemped injections for admins
 			var/contained = reagents.log_list()
 			log_combat(src, L, "attempted to inject", addition="which had [contained]")
-			L.visible_message("<span class='danger'>[acting_object] is trying to inject [L]!</span>", \
-								"<span class='userdanger'>[acting_object] is trying to inject you!</span>")
+			L.visible_message("<span class='danger'>[acting_object] пробует уколоть [L]!</span>", \
+								"<span class='userdanger'>[acting_object] пробует уколоть вас!</span>")
 			busy = TRUE
 			if(do_atom(src, L, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject),null,0)))
 				var/fraction = min(transfer_amount/reagents.total_volume, 1)
 				reagents.reaction(L, INJECT, fraction)
 				reagents.trans_to(L, transfer_amount)
 				log_combat(src, L, "injected", addition="which had [contained]")
-				L.visible_message("<span class='danger'>[acting_object] injects [L] with its needle!</span>", \
-									"<span class='userdanger'>[acting_object] injects you with its needle!</span>")
+				L.visible_message("<span class='danger'>[acting_object] вводит что-то [L] с помощью иглы!</span>", \
+									"<span class='userdanger'>[acting_object] вводит вам что-то с помощью иглы!</span>")
 			else
 				busy = FALSE
 				activate_pin(3)
@@ -154,7 +154,7 @@
 
 	if(direction_mode == SYRINGE_DRAW)
 		if(reagents.total_volume >= reagents.maximum_volume)
-			acting_object.visible_message("[acting_object] tries to draw from [AM], but the injector is full.")
+			acting_object.visible_message("[acting_object] всосать что-то из [AM], но инжектор полон.")
 			activate_pin(3)
 			return
 
@@ -162,16 +162,16 @@
 
 		if(isliving(AM))
 			var/mob/living/L = AM
-			L.visible_message("<span class='danger'>[acting_object] is trying to take a blood sample from [L]!</span>", \
-								"<span class='userdanger'>[acting_object] is trying to take a blood sample from you!</span>")
+			L.visible_message("<span class='danger'>[acting_object] пробует взять образец крови из [L]!</span>", \
+								"<span class='userdanger'>[acting_object] пробует взять образец крови из вас!</span>")
 			busy = TRUE
 			if(do_atom(src, L, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject),null,0)))
 				if(L.transfer_blood_to(src, tramount))
-					L.visible_message("<span class='danger'>[acting_object] takes a blood sample from [L]!</span>", \
-					"<span class='userdanger'>[acting_object] takes a blood sample from you!</span>")
+					L.visible_message("<span class='danger'>[acting_object] берёт образец крови из [L]!</span>", \
+					"<span class='userdanger'>[acting_object] берёт образец крови из вас!</span>")
 				else
-					L.visible_message("<span class='warning'>[acting_object] fails to take a blood sample from [L].</span>", \
-								"<span class='userdanger'>[acting_object] fails to take a blood sample from you!</span>")
+					L.visible_message("<span class='warning'>[acting_object] не может взять образец крови из [L].</span>", \
+								"<span class='userdanger'>[acting_object] не может взять образец крови из вас!</span>")
 					busy = FALSE
 					activate_pin(3)
 					return
@@ -179,7 +179,7 @@
 
 		else
 			if(!AM.reagents.total_volume)
-				acting_object.visible_message("<span class='notice'>[acting_object] tries to draw from [AM], but it is empty!</span>")
+				acting_object.visible_message("<span class='notice'>[acting_object] пытается всосать что-то из [AM], но в нём пусто!</span>")
 				activate_pin(3)
 				return
 
@@ -194,17 +194,17 @@
 
 /obj/item/integrated_circuit/reagent/pump
 	name = "reagent pump"
-	desc = "Moves liquids safely inside a machine, or even nearby it."
+	desc = "Безопасно транспортирует жидкости внутри машины или даже рядом с ней."
 	icon_state = "reagent_pump"
-	extended_desc = "This is a pump which will move liquids from the source ref to the target ref. The third pin determines \
-	how much liquid is moved per pulse, between 0 and 50. The pump can move reagents to any open container inside the machine, or \
-	outside the machine if it is adjacent to the machine."
+	extended_desc = "Это насос, который перекачивает жидкости из исходного резервуара в целевой резервуар. Третий пин определяет, \
+    какой объем жидкости перекачивается за один импульс - от 0 до 50. Насос может перекачивать реагенты в любой открытый контейнер внутри аппарата или \
+    за пределы аппарата, если он находится рядом с ним."
 
 	complexity = 8
-	inputs = list("source" = IC_PINTYPE_REF, "target" = IC_PINTYPE_REF, "injection amount" = IC_PINTYPE_NUMBER)
+	inputs = list("источник" = IC_PINTYPE_REF, "цель" = IC_PINTYPE_REF, "объем инъекции" = IC_PINTYPE_NUMBER)
 	inputs_default = list("3" = 5)
 	outputs = list()
-	activators = list("transfer reagents" = IC_PINTYPE_PULSE_IN, "on transfer" = IC_PINTYPE_PULSE_OUT)
+	activators = list("переместить реагенты" = IC_PINTYPE_PULSE_IN, "при перемещении" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	var/transfer_amount = 10
 	var/direction_mode = SYRINGE_INJECT
@@ -256,17 +256,17 @@
 /obj/item/integrated_circuit/reagent/storage
 	cooldown_per_use = 1
 	name = "reagent storage"
-	desc = "Stores liquid inside the device away from electrical components. It can store up to 60u."
+	desc = "Жидкость хранится внутри устройства вдали от электрических компонентов. Объём хранения составляет до 60 единиц."
 	icon_state = "reagent_storage"
-	extended_desc = "This is effectively an internal beaker."
+	extended_desc = "По сути, это внутренний стакан."
 
 	volume = 60
 
 	complexity = 4
 	inputs = list()
 	outputs = list(
-		"volume used" = IC_PINTYPE_NUMBER,
-		"self reference" = IC_PINTYPE_SELFREF
+		"использовано объема" = IC_PINTYPE_NUMBER,
+		"самоссылка" = IC_PINTYPE_SELFREF
 		)
 	activators = list("push ref" = IC_PINTYPE_PULSE_IN)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -285,7 +285,7 @@
 /obj/item/integrated_circuit/reagent/storage/big
 	name = "big reagent storage"
 	icon_state = "reagent_storage_big"
-	desc = "Stores liquid inside the device away from electrical components. Can store up to 180u."
+	desc = "Жидкость хранится внутри устройства вдали от электрических компонентов. Вместимость до 180 единиц."
 
 	volume = 180
 
@@ -294,9 +294,9 @@
 
 /obj/item/integrated_circuit/reagent/storage/cryo
 	name = "cryo reagent storage"
-	desc = "Stores liquid inside the device away from electrical components. It can store up to 60u. This will also prevent reactions."
+	desc = "Жидкость хранится внутри устройства вдали от электрических компонентов. Емкость резервуара составляет до 60 u. Это также предотвращает возникновение реакций."
 	icon_state = "reagent_storage_cryo"
-	extended_desc = "This is effectively an internal cryo beaker."
+	extended_desc = "По сути, это внутренний криогенный стакан."
 
 	complexity = 8
 	spawn_flags = IC_SPAWN_RESEARCH
@@ -307,20 +307,20 @@
 
 /obj/item/integrated_circuit/reagent/storage/grinder
 	name = "reagent grinder"
-	desc = "This is a reagent grinder. It accepts a ref to something, and refines it into reagents. It can store up to 100u."
+	desc = "Это блендер для реагентов. Она принимает сырье и перерабатывает его в реагенты. Её вместимость составляет до 100 единиц."
 	icon_state = "blender"
 	extended_desc = ""
 	inputs = list(
-		"target" = IC_PINTYPE_REF,
+		"цель" = IC_PINTYPE_REF,
 		)
 	outputs = list(
-		"volume used" = IC_PINTYPE_NUMBER,
-		"self reference" = IC_PINTYPE_SELFREF
+		"использованный объем" = IC_PINTYPE_NUMBER,
+		"самоссылка" = IC_PINTYPE_SELFREF
 		)
 	activators = list(
-		"grind" = IC_PINTYPE_PULSE_IN,
-		"on grind" = IC_PINTYPE_PULSE_OUT,
-		"on fail" = IC_PINTYPE_PULSE_OUT,
+		"измельчить" = IC_PINTYPE_PULSE_IN,
+		"при измельчении" = IC_PINTYPE_PULSE_OUT,
+		"при неудаче" = IC_PINTYPE_PULSE_OUT,
 		"push ref" = IC_PINTYPE_PULSE_IN
 		)
 	volume = 100
@@ -354,20 +354,20 @@
 
 /obj/item/integrated_circuit/reagent/storage/juicer
 	name = "reagent juicer"
-	desc = "This is a reagent juicer. It accepts a ref to something and refines it into reagents. It can store up to 100u."
+	desc = "Это соковыжималка для реагентов. Она принимает референс на какой-либо объект и преобразует его в реагенты. Её вместимость составляет до 100 единиц."
 	icon_state = "blender"
 	extended_desc = ""
 	inputs = list(
-		"target" = IC_PINTYPE_REF,
+		"цель" = IC_PINTYPE_REF,
 		)
 	outputs = list(
-		"volume used" = IC_PINTYPE_NUMBER,
-		"self reference" = IC_PINTYPE_SELFREF
+		"использованный объем" = IC_PINTYPE_NUMBER,
+		"самоссылка" = IC_PINTYPE_SELFREF
 		)
 	activators = list(
-		"juice" = IC_PINTYPE_PULSE_IN,
-		"on juice" = IC_PINTYPE_PULSE_OUT,
-		"on fail" = IC_PINTYPE_PULSE_OUT,
+		"выжать" = IC_PINTYPE_PULSE_IN,
+		"при выжимке" = IC_PINTYPE_PULSE_OUT,
+		"при неудаче" = IC_PINTYPE_PULSE_OUT,
 		"push ref" = IC_PINTYPE_PULSE_IN
 		)
 	volume = 100
@@ -400,18 +400,18 @@
 
 /obj/item/integrated_circuit/reagent/storage/scan
 	name = "reagent scanner"
-	desc = "Stores liquid inside the device away from electrical components. It can store up to 60u. On pulse this beaker will send list of contained reagents."
+	desc = "Внутри устройства хранится жидкость, отдельно от электрических компонентов. Емкость составляет до 60 единиц. При подаче импульса этот пробирка передаст список содержащихся в ней реагентов."
 	icon_state = "reagent_scan"
-	extended_desc = "Mostly useful for filtering reagents."
+	extended_desc = "В основном используется для фильтрации реагентов."
 
 	complexity = 8
 	outputs = list(
-		"volume used" = IC_PINTYPE_NUMBER,
-		"self reference" = IC_PINTYPE_SELFREF,
-		"list of reagents" = IC_PINTYPE_LIST
+		"использованный объем" = IC_PINTYPE_NUMBER,
+		"самоссылка" = IC_PINTYPE_SELFREF,
+		"список реагентов" = IC_PINTYPE_LIST
 		)
 	activators = list(
-		"scan" = IC_PINTYPE_PULSE_IN,
+		"сканировать" = IC_PINTYPE_PULSE_IN,
 		"push ref" = IC_PINTYPE_PULSE_IN
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
@@ -430,27 +430,27 @@
 
 /obj/item/integrated_circuit/reagent/filter
 	name = "reagent filter"
-	desc = "Filters liquids by list of desired or unwanted reagents."
+	desc = "Фильтрует жидкости по списку желаемых или нежелательных реагентов."
 	icon_state = "reagent_filter"
-	extended_desc = "This is a filter which will move liquids from the source to its target. \
-	If the amount in the fourth pin is positive, it will move all reagents except those in the unwanted list. \
-	If the amount in the fourth pin is negative, it will only move the reagents in the wanted list. \
-	The third pin determines how many reagents are moved per pulse, between 0 and 50. Amount is given for each separate reagent."
+	extended_desc = "Это фильтр, который перемещает жидкости из источника в конечный пункт. \
+    Если значение в четвёртом пине положительное, перемещаются все реагенты, кроме тех, что входят в список нежелательных. \
+    Если значение в четвёртом пине отрицательное, перемещаются только реагенты из списка желаемых. \
+    Третий пин определяет количество реагентов, перемещаемых за один импульс, в диапазоне от 0 до 50. Количество указывается для каждого отдельного реагента."
 
 	complexity = 8
 	inputs = list(
-		"source" = IC_PINTYPE_REF,
-		"target" = IC_PINTYPE_REF,
-		"injection amount" = IC_PINTYPE_NUMBER,
-		"list of reagents" = IC_PINTYPE_LIST
+		"источник" = IC_PINTYPE_REF,
+		"цель" = IC_PINTYPE_REF,
+		"объем инъекции" = IC_PINTYPE_NUMBER,
+		"список реагентов" = IC_PINTYPE_LIST
 		)
 	inputs_default = list(
 		"3" = 5
 		)
 	outputs = list()
 	activators = list(
-		"transfer reagents" = IC_PINTYPE_PULSE_IN,
-		"on transfer" = IC_PINTYPE_PULSE_OUT
+		"переместить реагенты" = IC_PINTYPE_PULSE_IN,
+		"при перемещении" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	var/transfer_amount = 10
@@ -499,16 +499,16 @@
 
 /obj/item/integrated_circuit/reagent/storage/heater
 	name = "chemical heater"
-	desc = "Stores liquid inside the device away from electrical components. It can store up to 60u. It will heat or cool the reagents \
-	to the target temperature when turned on."
+	desc = "Внутри устройства предусмотрено отделение для хранения жидкости, расположенное вдали от электрических компонентов. Его объём составляет до 60 единиц. При включении устройство нагревает или охлаждает реагенты \
+    до заданной температуры."
 	icon_state = "heater"
 	complexity = 8
 	inputs = list(
-		"target temperature" = IC_PINTYPE_NUMBER,
-		"on" = IC_PINTYPE_BOOLEAN
+		"целевая температура" = IC_PINTYPE_NUMBER,
+		"включен?" = IC_PINTYPE_BOOLEAN
 		)
 	inputs_default = list("1" = 300)
-	outputs = list("volume used" = IC_PINTYPE_NUMBER,"self reference" = IC_PINTYPE_SELFREF,"temperature" = IC_PINTYPE_NUMBER)
+	outputs = list("использованный объем" = IC_PINTYPE_NUMBER,"самоссылка" = IC_PINTYPE_SELFREF,"температура" = IC_PINTYPE_NUMBER)
 	spawn_flags = IC_SPAWN_RESEARCH
 	var/heater_coefficient = 0.1
 	var/max_temp = 1000
@@ -547,10 +547,10 @@
 
 /obj/item/integrated_circuit/reagent/smoke
 	name = "smoke generator"
-	desc = "Unlike most electronics, creating smoke is completely intentional."
+	desc = "В отличие от большинства электронных устройств, появление дыма в данном случае является полностью преднамеренным."
 	icon_state = "smoke"
-	extended_desc = "This smoke generator creates clouds of smoke on command. It can also hold liquids inside, which will go \
-	into the smoke clouds when activated. The reagents are consumed when the smoke is made. Requires at least 10 units of reagents to generate smoke."
+	extended_desc = "Этот дымогенератор создает облака дыма по команде. Внутри него также можно хранить жидкости, которые при активации \
+    попадают в облака дыма. При образовании дыма реагенты расходуются. Для генерации дыма требуется не менее 10 единиц реагентов."
 	ext_cooldown = 1
 
 	volume = 100
@@ -559,12 +559,12 @@
 	cooldown_per_use = 1 SECONDS
 	inputs = list()
 	outputs = list(
-		"volume used" = IC_PINTYPE_NUMBER,
-		"self reference" = IC_PINTYPE_SELFREF
+		"использованный объем" = IC_PINTYPE_NUMBER,
+		"самоссылка" = IC_PINTYPE_SELFREF
 		)
 	activators = list(
-		"create smoke" = IC_PINTYPE_PULSE_IN,
-		"on smoked" = IC_PINTYPE_PULSE_OUT,
+		"создать дым" = IC_PINTYPE_PULSE_IN,
+		"при создании дыма" = IC_PINTYPE_PULSE_OUT,
 		"push ref" = IC_PINTYPE_PULSE_IN
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
@@ -605,26 +605,26 @@
 // - Integrated extinguisher - //
 /obj/item/integrated_circuit/reagent/extinguisher
 	name = "integrated extinguisher"
-	desc = "This circuit sprays any of its contents out like an extinguisher."
+	desc = "Эта схема распыляет любое содержимое, как огнетушитель."
 	icon_state = "injector"
-	extended_desc = "This circuit can hold up to 30 units of any given chemicals. On each use, it sprays these reagents like a fire extinguisher. Requires at least 10 units of reagents to work."
+	extended_desc = "Эта схема может вместить до 30 единиц любого химического вещества. При каждом запуске она распыляет эти реагенты, как огнетушитель. Для работы требуется не менее 10 единиц реагентов."
 
 	volume = 30
 
 	complexity = 20
 	cooldown_per_use = 6 SECONDS
 	inputs = list(
-		"target X rel" = IC_PINTYPE_NUMBER,
-		"target Y rel" = IC_PINTYPE_NUMBER
+		"относительный X цели" = IC_PINTYPE_NUMBER,
+		"относительный Y цели" = IC_PINTYPE_NUMBER
 		)
 	outputs = list(
-		"volume" = IC_PINTYPE_NUMBER,
-		"self reference" = IC_PINTYPE_SELFREF
+		"объем" = IC_PINTYPE_NUMBER,
+		"самоссылка" = IC_PINTYPE_SELFREF
 		)
 	activators = list(
-		"spray" = IC_PINTYPE_PULSE_IN,
-		"on sprayed" = IC_PINTYPE_PULSE_OUT,
-		"on fail" = IC_PINTYPE_PULSE_OUT
+		"распылить" = IC_PINTYPE_PULSE_IN,
+		"при распылении" = IC_PINTYPE_PULSE_OUT,
+		"при неудаче" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 15
@@ -710,19 +710,19 @@
 	category_text = "Reagent"
 	cooldown_per_use = 1
 	name = "beaker slot"
-	desc = "Lets you add a beaker to your assembly and remove it even when the assembly is closed."
+	desc = "Позволяет добавлять мензурку в корпус и удалять её даже после того, как корпус закрыт."
 	icon_state = "reagent_storage"
-	extended_desc = "It can help you extract reagents easier."
+	extended_desc = "Это поможет вам легче извлекать реагенты."
 	complexity = 4
 
 	inputs = list()
 	outputs = list(
-		"volume used" = IC_PINTYPE_NUMBER,
-		"current beaker" = IC_PINTYPE_REF
+		"использованный объем" = IC_PINTYPE_NUMBER,
+		"текущая ёмкость" = IC_PINTYPE_REF
 		)
 	activators = list(
-		"on insert" = IC_PINTYPE_PULSE_OUT,
-		"on remove" = IC_PINTYPE_PULSE_OUT,
+		"при вставке" = IC_PINTYPE_PULSE_OUT,
+		"при извлечении" = IC_PINTYPE_PULSE_OUT,
 		"push ref" = IC_PINTYPE_PULSE_IN
 		)
 
@@ -742,19 +742,19 @@
 /obj/item/integrated_circuit/input/beaker_connector/attackby(var/obj/item/reagent_containers/I, var/mob/living/user)
 	//Check if it truly is a reagent container
 	if(!istype(I,/obj/item/reagent_containers/glass/beaker))
-		to_chat(user,"<span class='warning'>The [I.name] doesn't seem to fit in here.</span>")
+		to_chat(user,"<span class='warning'>[I.name] не подходит сюда.</span>")
 		return
 
 	//Check if there is no other beaker already inside
 	if(current_beaker)
-		to_chat(user,"<span class='notice'>There is already a reagent container inside.</span>")
+		to_chat(user,"<span class='notice'>Внутри уже находится контейнер для реагентов.</span>")
 		return
 
 	//The current beaker is the one we just attached, its location is inside the circuit
 	current_beaker = I
 	user.transferItemToLoc(I,src)
 
-	to_chat(user,"<span class='warning'>You put the [I.name] inside the beaker connector.</span>")
+	to_chat(user,"<span class='warning'>Вы вставляете [I.name] в соединитель мензурок.</span>")
 
 	//Set the pin to a weak reference of the current beaker
 	push_vol()
@@ -770,11 +770,11 @@
 /obj/item/integrated_circuit/input/beaker_connector/attack_self(mob/user)
 	//Check if no beaker attached
 	if(!current_beaker)
-		to_chat(user, "<span class='notice'>There is currently no beaker attached.</span>")
+		to_chat(user, "<span class='notice'>В данный момент мензурка не установлена.</span>")
 		return
 
 	//Remove beaker and put in user's hands/location
-	to_chat(user, "<span class='notice'>You take [current_beaker] out of the beaker connector.</span>")
+	to_chat(user, "<span class='notice'>Вы извлекаете [current_beaker] из разъема для мензурки.</span>")
 	user.put_in_hands(current_beaker)
 	current_beaker = null
 	//Remove beaker reference

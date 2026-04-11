@@ -2,31 +2,31 @@
 /obj/item/integrated_circuit/lists
 	complexity = 1
 	inputs = list(
-		"input" = IC_PINTYPE_LIST
+		"ввод" = IC_PINTYPE_LIST
 		)
 	outputs = list(
-		"result" = IC_PINTYPE_STRING
+		"результат" = IC_PINTYPE_STRING
 		)
 	activators = list(
-		"compute" = IC_PINTYPE_PULSE_IN,
-		"on computed" = IC_PINTYPE_PULSE_OUT
+		"вычислить" = IC_PINTYPE_PULSE_IN,
+		"при вычислении" = IC_PINTYPE_PULSE_OUT
 		)
-	category_text = "Lists"
+	category_text = "Списки"
 	power_draw_per_use = 20
 	cooldown_per_use = 1
 
 /obj/item/integrated_circuit/lists/pick
 	name = "pick circuit"
-	desc = "This circuit will pick a random element from the input list, and output that element."
+	desc = "Эта схема выберет случайный элемент из входного списка и выведет его."
 	extended_desc = "The input list is not modified."
 	icon_state = "addition"
 	outputs = list(
-		"result" = IC_PINTYPE_ANY
+		"результат" = IC_PINTYPE_ANY
 		)
 	activators = list(
-		"compute" = IC_PINTYPE_PULSE_IN,
-		"on success" = IC_PINTYPE_PULSE_OUT,
-		"on failure" = IC_PINTYPE_PULSE_OUT,
+		"вычислить" = IC_PINTYPE_PULSE_IN,
+		"при успехе" = IC_PINTYPE_PULSE_OUT,
+		"при неудаче" = IC_PINTYPE_PULSE_OUT,
 		)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	cooldown_per_use = 1
@@ -43,14 +43,14 @@
 
 /obj/item/integrated_circuit/lists/append
 	name = "append circuit"
-	desc = "This circuit will add an element to a list."
-	extended_desc = "The new element will always be at the bottom of the list."
+	desc = "Эта схема добавит элемент в список."
+	extended_desc = "Новый элемент всегда будет находиться в конце списка."
 	inputs = list(
-		"list to append" = IC_PINTYPE_LIST,
-		"input" = IC_PINTYPE_ANY
+		"список для добавления" = IC_PINTYPE_LIST,
+		"ввод" = IC_PINTYPE_ANY
 		)
 	outputs = list(
-		"appended list" = IC_PINTYPE_LIST
+		"добавленный список" = IC_PINTYPE_LIST
 		)
 	icon_state = "addition"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -69,19 +69,19 @@
 
 /obj/item/integrated_circuit/lists/search
 	name = "search circuit"
-	desc = "This circuit will get the index location of the desired element in a list."
-	extended_desc = "Search will start at position 1 and will return the first matching position."
+	desc = "Эта схема определяет индекс нужного элемента в списке."
+	extended_desc = "Поиск начнется с позиции 1 и вернет первую найденную позицию."
 	inputs = list(
-		"list" = IC_PINTYPE_LIST,
-		"item" = IC_PINTYPE_ANY
+		"список" = IC_PINTYPE_LIST,
+		"нужный объект" = IC_PINTYPE_ANY
 		)
 	outputs = list(
-		"index" = IC_PINTYPE_NUMBER
+		"индекс" = IC_PINTYPE_NUMBER
 		)
 	activators = list(
-		"compute" = IC_PINTYPE_PULSE_IN,
-		"on success" = IC_PINTYPE_PULSE_OUT,
-		"on failure" = IC_PINTYPE_PULSE_OUT,
+		"вычислить" = IC_PINTYPE_PULSE_IN,
+		"при успехе" = IC_PINTYPE_PULSE_OUT,
+		"при неудаче" = IC_PINTYPE_PULSE_OUT,
 		)
 	icon_state = "addition"
 	complexity = 2
@@ -103,21 +103,21 @@
 
 /obj/item/integrated_circuit/lists/filter
 	name = "filter circuit"
-	desc = "This circuit will search through a list for anything matching the desired element(s) and outputs two lists: \
-	one containing only the matching elements, and one with the matching elements filtered out."
-	extended_desc = "Sample accepts lists. If no match is found, the original list is sent to output 1."
+	desc = "Эта схема просматривает список в поисках элементов, соответствующих заданным критериям, и выводит два списка: \
+    один, содержащий только найденные элементы, и другой, из которого эти элементы были удалены."
+	extended_desc = "Образец принимает списки. Если совпадений не найдено, исходный список выводится на выход 1."
 	inputs = list(
-		"input list" = IC_PINTYPE_LIST,
-		"sample" = IC_PINTYPE_ANY
+		"вводный список" = IC_PINTYPE_LIST,
+		"образец" = IC_PINTYPE_ANY
 		)
 	outputs = list(
-		"list filtered" = IC_PINTYPE_LIST,
-		"list matched" = IC_PINTYPE_LIST
+		"отфильтрованный список" = IC_PINTYPE_LIST,
+		"совпадающий список" = IC_PINTYPE_LIST
 		)
 	activators = list(
-		"compute" = IC_PINTYPE_PULSE_IN,
-		"on match" = IC_PINTYPE_PULSE_OUT,
-		"on no match" = IC_PINTYPE_PULSE_OUT
+		"вычислить" = IC_PINTYPE_PULSE_IN,
+		"при совпадении" = IC_PINTYPE_PULSE_OUT,
+		"при отсутствии совпадений" = IC_PINTYPE_PULSE_OUT
 		)
 	complexity = 6
 	icon_state = "addition"
@@ -167,13 +167,13 @@
 
 /obj/item/integrated_circuit/lists/listset
 	name = "list set circuit"
-	desc = "This circuit will remove any duplicate entries from a list."
-	extended_desc = "If there are no duplicate entries, the output list will be unchanged."
+	desc = "Эта схема удалит из списка все повторяющиеся записи."
+	extended_desc = "Если дубликатов нет, список в выводе останется без изменений."
 	inputs = list(
-		"list" = IC_PINTYPE_LIST
+		"список" = IC_PINTYPE_LIST
 		)
 	outputs = list(
-		"list filtered" = IC_PINTYPE_LIST
+		"отфильтрованный список" = IC_PINTYPE_LIST
 		)
 	icon_state = "addition"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -188,19 +188,19 @@
 
 /obj/item/integrated_circuit/lists/at
 	name = "at circuit"
-	desc = "This circuit will pick an element from a list by the input index."
-	extended_desc = "If there is no element at the given index, the result will be null."
+	desc = "Эта схема выбирает элемент из списка по указанному индексу."
+	extended_desc = "Если по указанному индексу элемент отсутствует, результатом будет null."
 	inputs = list(
-		"list" = IC_PINTYPE_LIST,
-		"index" = IC_PINTYPE_INDEX
+		"список" = IC_PINTYPE_LIST,
+		"индекс" = IC_PINTYPE_INDEX
 		)
 	outputs = list(
-		"item" = IC_PINTYPE_ANY
+		"элемент" = IC_PINTYPE_ANY
 		)
 	activators = list(
-		"compute" = IC_PINTYPE_PULSE_IN,
-		"on success" = IC_PINTYPE_PULSE_OUT,
-		"on failure" = IC_PINTYPE_PULSE_OUT
+		"вычислить" = IC_PINTYPE_PULSE_IN,
+		"при успехе" = IC_PINTYPE_PULSE_OUT,
+		"при неудаче" = IC_PINTYPE_PULSE_OUT
 		)
 	icon_state = "addition"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -223,14 +223,14 @@
 
 /obj/item/integrated_circuit/lists/delete
 	name = "delete circuit"
-	desc = "This circuit will remove an element from a list by the index."
-	extended_desc = "If there is no element at the given index, the result list will be unchanged."
+	desc = "Эта схема удаляет элемент из списка по индексу."
+	extended_desc = "Если по указанному индексу элемента нет, выходной список останется без изменений."
 	inputs = list(
-		"list" = IC_PINTYPE_LIST,
-		"index" = IC_PINTYPE_INDEX
+		"список" = IC_PINTYPE_LIST,
+		"индекс" = IC_PINTYPE_INDEX
 		)
 	outputs = list(
-		"item" = IC_PINTYPE_LIST
+		"выходной список" = IC_PINTYPE_LIST
 		)
 	icon_state = "addition"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -252,20 +252,20 @@
 
 /obj/item/integrated_circuit/lists/write
 	name = "write circuit"
-	desc = "This circuit will write an element to a list at the given index location."
-	extended_desc = "If there is no element at the given index, it will output the same list as before."
+	desc = "Эта схема записывает элемент в список по указанному индексу."
+	extended_desc = "Если по указанному индексу элемента нет, то будет выведен тот же список, что и раньше."
 	inputs = list(
-		"list" = IC_PINTYPE_LIST,
-		"index" = IC_PINTYPE_INDEX,
-		"item" = IC_PINTYPE_ANY
+		"список" = IC_PINTYPE_LIST,
+		"индекс" = IC_PINTYPE_INDEX,
+		"элемент" = IC_PINTYPE_ANY
 		)
 	outputs = list(
-		"redacted list" = IC_PINTYPE_LIST
+		"отредактированный список" = IC_PINTYPE_LIST
 		)
 	activators = list(
-		"compute" = IC_PINTYPE_PULSE_IN,
-		"on success" = IC_PINTYPE_PULSE_OUT,
-		"on failure" = IC_PINTYPE_PULSE_OUT,
+		"вычислить" = IC_PINTYPE_PULSE_IN,
+		"при успехе" = IC_PINTYPE_PULSE_OUT,
+		"при неудаче" = IC_PINTYPE_PULSE_OUT,
 		)
 	icon_state = "addition"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -291,12 +291,12 @@
 
 /obj/item/integrated_circuit/lists/len
 	name = "len circuit"
-	desc = "This circuit will return the length of the list."
+	desc = "Эта схема вернет длину списка."
 	inputs = list(
-		"list" = IC_PINTYPE_LIST,
+		"список" = IC_PINTYPE_LIST,
 		)
 	outputs = list(
-		"item" = IC_PINTYPE_NUMBER
+		"длина списка" = IC_PINTYPE_NUMBER
 		)
 	icon_state = "addition"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -311,21 +311,21 @@
 
 /obj/item/integrated_circuit/lists/jointext
 	name = "join text circuit"
-	desc = "This circuit will combine two lists into one, and output it as a string."
-	extended_desc = "Default settings will encode the entire list into a string."
+	desc = "Эта схема объединит два списка в один и выведет его в виде строки."
+	extended_desc = "По умолчанию весь список будет преобразован в строку."
 	icon_state = "join"
 	inputs = list(
-		"list to join" = IC_PINTYPE_LIST,//
-		"delimiter" = IC_PINTYPE_STRING,
-		"start" = IC_PINTYPE_INDEX,
-		"end" = IC_PINTYPE_NUMBER
+		"список для присоединения" = IC_PINTYPE_LIST,//
+		"разделитель" = IC_PINTYPE_STRING,
+		"начало" = IC_PINTYPE_INDEX,
+		"конец" = IC_PINTYPE_NUMBER
 		)
 	inputs_default = list(
 		"2" = ", ",
 		"4" = 0
 		)
 	outputs = list(
-		"joined text" = IC_PINTYPE_STRING
+		"присоединенный текст" = IC_PINTYPE_STRING
 		)
 	icon_state = "addition"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -349,18 +349,18 @@
 
 /obj/item/integrated_circuit/lists/constructor
 	name = "large list constructor"
-	desc = "This circuit will build a list out of up to sixteen input values."
+	desc = "Эта схема формирует список из не более шестнадцати входных значений."
 	icon_state = "constr8"
 	inputs = list()
 	outputs = list(
-		"result" = IC_PINTYPE_LIST
+		"результат" = IC_PINTYPE_LIST
 		)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	var/number_of_pins = 16
 
 /obj/item/integrated_circuit/lists/constructor/Initialize(mapload)
 	for(var/i = 1 to number_of_pins)
-		inputs["input [i]"] = IC_PINTYPE_ANY // This is just a string since pins don't get built until ..() is called.
+		inputs["ввод [i]"] = IC_PINTYPE_ANY // This is just a string since pins don't get built until ..() is called.
 	complexity = number_of_pins / 2
 	. = ..()
 
@@ -381,24 +381,24 @@
 
 /obj/item/integrated_circuit/lists/constructor/small
 	name = "list constructor"
-	desc = "This circuit will build a list out of up to four input values."
+	desc = "Эта схема сформирует список из не более четырёх входных значений."
 	icon_state = "constr"
 	number_of_pins = 4
 
 /obj/item/integrated_circuit/lists/constructor/medium
 	name = "medium list constructor"
-	desc = "This circuit will build a list out of up to eight input values."
+	desc = "Эта схема сформирует список из не более восьми входных значений."
 	icon_state = "constr8"
 	number_of_pins = 8
 
 
 /obj/item/integrated_circuit/lists/deconstructor
 	name = "large list deconstructor"
-	desc = "This circuit will write the first sixteen entries of its input list, starting with the index, into the output values."
+	desc = "Эта схема запишет первые шестнадцать элементов входного списка, начиная с указанного индекса, в ячейки выходных значений."
 	icon_state = "deconstr8"
 	inputs = list(
-		"input" = IC_PINTYPE_LIST,
-		"index" = IC_PINTYPE_INDEX
+		"входной список" = IC_PINTYPE_LIST,
+		"индекс" = IC_PINTYPE_INDEX
 		)
 	outputs = list()
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -406,7 +406,7 @@
 
 /obj/item/integrated_circuit/lists/deconstructor/Initialize(mapload)
 	for(var/i = 1 to number_of_pins)
-		outputs["output [i]"] = IC_PINTYPE_ANY // This is just a string since pins don't get built until ..() is called.
+		outputs["вывод [i]"] = IC_PINTYPE_ANY // This is just a string since pins don't get built until ..() is called.
 	complexity = number_of_pins / 2
 	. = ..()
 
@@ -426,11 +426,11 @@
 
 /obj/item/integrated_circuit/lists/deconstructor/small
 	name = "list deconstructor"
-	desc = "This circuit will write the first four entries of its input list, starting with the index, into the output values."
+	desc = "Эта схема запишет первые четыре элемента входного списка, начиная с указанного индекса, в ячейки выходных значений."
 	icon_state = "deconstr"
 	number_of_pins = 4
 
 /obj/item/integrated_circuit/lists/deconstructor/medium
 	name = "medium list deconstructor"
-	desc = "This circuit will write the first eight entries of its input list, starting with the index, into the output values."
+	desc = "Эта схема запишет первые восемь элементов входного списка, начиная с указанного индекса, в ячейки выходных значений."
 	number_of_pins = 8

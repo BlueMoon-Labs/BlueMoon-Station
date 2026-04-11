@@ -1,29 +1,29 @@
 /obj/item/integrated_circuit/transfer
-	category_text = "Data Transfer"
+	category_text = "Передача данных"
 	power_draw_per_use = 2
 
 /obj/item/integrated_circuit/transfer/multiplexer
 	name = "two multiplexer"
-	desc = "This is what those in the business tend to refer to as a 'mux', or data selector. It moves data from one of the selected inputs to the output."
-	extended_desc = "The first input pin is used to select which of the other input pins which has its data moved to the output. \
-	If the input selection is outside the valid range then no output is given."
+	desc = "В профессиональной среде это устройство обычно называют 'мультиплексором' или селектором данных. Оно передает данные с одного из выбранных входов на выход."
+	extended_desc = "Первый входной пин используется для выбора того из остальных входных пинов, данные с которого будут переданы на выход. \
+    Если выбранный вход находится за пределами допустимого диапазона, выходные данные не передаются."
 	complexity = 2
 	icon_state = "mux2"
-	inputs = list("input selection" = IC_PINTYPE_NUMBER)
-	outputs = list("output" = IC_PINTYPE_ANY)
-	activators = list("select" = IC_PINTYPE_PULSE_IN, "on select" = IC_PINTYPE_PULSE_OUT)
+	inputs = list("выбор ввода" = IC_PINTYPE_NUMBER)
+	outputs = list("вывод" = IC_PINTYPE_ANY)
+	activators = list("выбрать" = IC_PINTYPE_PULSE_IN, "при выборе" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 4
 	var/number_of_pins = 2
 
 /obj/item/integrated_circuit/transfer/multiplexer/Initialize(mapload)
 	for(var/i = 1 to number_of_pins)
-		inputs["input [i]"] = IC_PINTYPE_ANY // This is just a string since pins don't get built until ..() is called.
+		inputs["ввод [i]"] = IC_PINTYPE_ANY // This is just a string since pins don't get built until ..() is called.
 
 	complexity = number_of_pins
 	. = ..()
-	desc += " It has [number_of_pins] input pins."
-	extended_desc += " This multiplexer has a range from 1 to [inputs.len - 1]."
+	desc += " Он имеет [number_of_pins] входных пинов."
+	extended_desc += " Диапазон этого мультиплексора составляет от 1 до [inputs.len - 1]."
 
 /obj/item/integrated_circuit/transfer/multiplexer/do_work()
 	var/input_index = get_pin_data(IC_INPUT, 1)
@@ -52,26 +52,26 @@
 
 /obj/item/integrated_circuit/transfer/demultiplexer
 	name = "two demultiplexer"
-	desc = "This is what those in the business tend to refer to as a 'demux'. It moves data from the input to one of the selected outputs."
-	extended_desc = "The first input pin is used to select which of the output pins is given the data from the second input pin. \
-	If the output selection is outside the valid range then no output is given."
+	desc = "В профессиональной среде это обычно называют «демультиплексором». Он перенаправляет данные с входа на один из выбранных выходов."
+	extended_desc = "Первый входной пин используется для выбора того, на какой из выходных пинов будут передаваться данные со второго входного пина. \
+    Если выбранный выход находится за пределами допустимого диапазона, выходной сигнал не подается."
 	complexity = 2
 	icon_state = "dmux2"
-	inputs = list("output selection" = IC_PINTYPE_NUMBER, "input" = IC_PINTYPE_ANY)
+	inputs = list("выбор вывода" = IC_PINTYPE_NUMBER, "ввод" = IC_PINTYPE_ANY)
 	outputs = list()
-	activators = list("select" = IC_PINTYPE_PULSE_IN, "on select" = IC_PINTYPE_PULSE_OUT)
+	activators = list("выбрать" = IC_PINTYPE_PULSE_IN, "при выборе" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 4
 	var/number_of_pins = 2
 
 /obj/item/integrated_circuit/transfer/demultiplexer/Initialize(mapload)
 	for(var/i = 1 to number_of_pins)
-		outputs["output [i]"] = IC_PINTYPE_ANY
+		outputs["вывод [i]"] = IC_PINTYPE_ANY
 	complexity = number_of_pins
 
 	. = ..()
-	desc += " It has [number_of_pins] output pins."
-	extended_desc += " This demultiplexer has a range from 1 to [outputs.len]."
+	desc += " Он имеет [number_of_pins] выходных пинов."
+	extended_desc += " Этот демультиплексор имеет диапазон от 1 до [outputs.len]."
 
 /obj/item/integrated_circuit/transfer/demultiplexer/do_work()
 	var/output_index = get_pin_data(IC_INPUT, 1)
@@ -101,26 +101,26 @@
 
 /obj/item/integrated_circuit/transfer/pulsedemultiplexer
 	name = "two pulse demultiplexer"
-	desc = "Selector switch to choose the pin to be activated by number."
-	extended_desc = "The first input pin is used to select which of the pulse out pins will be activated after activation of the circuit. \
-	If the output selection is outside the valid range then no output is given."
+	desc = "Селекторный переключатель для выбора пина, который необходимо активировать по номеру."
+	extended_desc = "Первый входной пин используется для выбора того, какой из выводов импульсного выхода будет активирован после включения схемы. \
+    Если выбранный выход находится за пределами допустимого диапазона, выходной сигнал не подается."
 	complexity = 2
 	icon_state = "dmux2"
-	inputs = list("output selection" = IC_PINTYPE_NUMBER)
+	inputs = list("выбор вывода" = IC_PINTYPE_NUMBER)
 	outputs = list()
-	activators = list("select" = IC_PINTYPE_PULSE_IN)
+	activators = list("выбрать" = IC_PINTYPE_PULSE_IN)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 4
 	var/number_of_pins = 2
 
 /obj/item/integrated_circuit/transfer/pulsedemultiplexer/Initialize(mapload)
 	for(var/i = 1 to number_of_pins)
-		activators["output [i]"] = IC_PINTYPE_PULSE_OUT
+		activators["вывод [i]"] = IC_PINTYPE_PULSE_OUT
 	complexity = number_of_pins
 
 	. = ..()
-	desc += " It has [number_of_pins] output pins."
-	extended_desc += " This pulse demultiplexer has a range from 1 to [activators.len - 1]."
+	desc += " Он имеет [number_of_pins] выходных пинов."
+	extended_desc += " Диапазон этого импульсного демультиплексора составляет от 1 до [activators.len - 1]."
 
 /obj/item/integrated_circuit/transfer/pulsedemultiplexer/do_work()
 	var/output_index = get_pin_data(IC_INPUT, 1)
@@ -147,27 +147,27 @@
 
 /obj/item/integrated_circuit/transfer/pulsemultiplexer
 	name = "two pulse multiplexer"
-	desc = "Pulse in pins to choose the pin value to be sent."
-	extended_desc = "The input pulses are used to select which of the input pins has its data moved to the output."
+	desc = "Пульсируйте пины, чтобы выбрать значение, которое нужно отправить."
+	extended_desc = "Входные импульсы используются для выбора того, данные с какого из входных пинов будут переданы на выход."
 	complexity = 2
 	icon_state = "dmux2"
 	inputs = list()
-	outputs = list("output" = IC_PINTYPE_ANY)
-	activators = list("on selected" = IC_PINTYPE_PULSE_OUT)
+	outputs = list("вывод" = IC_PINTYPE_ANY)
+	activators = list("при выборе" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 4
 	var/number_of_pins = 2
 
 /obj/item/integrated_circuit/transfer/pulsemultiplexer/Initialize(mapload)
 	for(var/i = 1 to number_of_pins)
-		inputs["input [i]"] = IC_PINTYPE_ANY
+		inputs["ввод [i]"] = IC_PINTYPE_ANY
 	for(var/i = 1 to number_of_pins)
-		activators["input [i]"] = IC_PINTYPE_PULSE_IN
+		activators["ввод [i]"] = IC_PINTYPE_PULSE_IN
 	complexity = number_of_pins
 
 	. = ..()
-	desc += " It has [number_of_pins] pulse in pins and [number_of_pins] output pins."
-	extended_desc += " This pulse multiplexer has a range from 1 to [activators.len - 1]."
+	desc += " Он имеет [number_of_pins] импульсных пинов и [number_of_pins] выходных выводов."
+	extended_desc += " Диапазон этого импульсного мультиплексора составляет от 1 до [activators.len - 1]."
 
 /obj/item/integrated_circuit/transfer/pulsemultiplexer/do_work(ord)
 	var/input_index = ord - 2
@@ -196,9 +196,9 @@
 
 /obj/item/integrated_circuit/transfer/wire_node
 	name = "wire node"
-	desc = "Just a wire node to make wiring easier. Transfers the pulse from in to out."
+	desc = "Просто соединительный узел, облегчающий прокладку проводов. Передает импульс с входа на выход."
 	icon_state = "wire_node"
-	activators = list("pulse in" = IC_PINTYPE_PULSE_IN, "pulse out" = IC_PINTYPE_PULSE_OUT)
+	activators = list("вход импульса" = IC_PINTYPE_PULSE_IN, "выход импульса" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 0
 	complexity = 0

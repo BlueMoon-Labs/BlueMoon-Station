@@ -1,18 +1,18 @@
 /obj/item/integrated_circuit/time
 	name = "time circuit"
-	desc = "Now you can build your own clock!"
+	desc = "Теперь вы можете создать свои собственные часы!"
 	complexity = 1
 	inputs = list()
 	outputs = list()
-	category_text = "Time"
+	category_text = "Время"
 
 /obj/item/integrated_circuit/time/delay
 	name = "two-sec delay circuit"
-	desc = "This sends a pulse signal out after a delay, critical for ensuring proper control flow in a complex machine.  \
-	This circuit is set to send a pulse after a delay of two seconds."
+	desc = "Это позволяет посылать импульсный сигнал с некоторой задержкой, что важно для обеспечения надлежащего процесса управления в сложной машине.  \
+	Эта схема настроена на отправку импульса с задержкой в две секунды."
 	icon_state = "delay-20"
 	var/delay = 20
-	activators = list("incoming"= IC_PINTYPE_PULSE_IN,"outgoing" = IC_PINTYPE_PULSE_OUT)
+	activators = list("входящий"= IC_PINTYPE_PULSE_IN,"исходящий" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 2
 
@@ -21,44 +21,44 @@
 
 /obj/item/integrated_circuit/time/delay/five_sec
 	name = "five-sec delay circuit"
-	desc = "This sends a pulse signal out after a delay, critical for ensuring proper control flow in a complex machine.  \
-	This circuit is set to send a pulse after a delay of five seconds."
+	desc = "Это позволяет посылать импульсный сигнал с некоторой задержкой, что важно для обеспечения надлежащего процесса управления в сложной машине.  \
+	Эта схема настроена на отправку импульса с задержкой в пять секунд."
 	icon_state = "delay-50"
 	delay = 50
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/time/delay/one_sec
 	name = "one-sec delay circuit"
-	desc = "This sends a pulse signal out after a delay, critical for ensuring proper control flow in a complex machine.  \
-	This circuit is set to send a pulse after a delay of one second."
+	desc = "Это позволяет посылать импульсный сигнал с некоторой задержкой, что важно для обеспечения надлежащего процесса управления в сложной машине.  \
+	Эта схема настроена на отправку импульса с задержкой в одну секунду."
 	icon_state = "delay-10"
 	delay = 10
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/time/delay/half_sec
 	name = "half-sec delay circuit"
-	desc = "This sends a pulse signal out after a delay, critical for ensuring proper control flow in a complex machine.  \
-	This circuit is set to send a pulse after a delay of half a second."
+	desc = "Это позволяет посылать импульсный сигнал с некоторой задержкой, что важно для обеспечения надлежащего процесса управления в сложной машине.  \
+	Эта схема настроена на отправку импульса с задержкой в половину секунды."
 	icon_state = "delay-5"
 	delay = 5
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/time/delay/tenth_sec
 	name = "tenth-sec delay circuit"
-	desc = "This sends a pulse signal out after a delay, critical for ensuring proper control flow in a complex machine.  \
-	This circuit is set to send a pulse after a delay of 1/10th of a second."
+	desc = "Это позволяет посылать импульсный сигнал с некоторой задержкой, что важно для обеспечения надлежащего процесса управления в сложной машине.  \
+	Эта схема настроена на отправку импульса с задержкой в одну десятую секунды."
 	icon_state = "delay-1"
 	delay = 1
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/time/delay/custom
 	name = "custom delay circuit"
-	desc = "This sends a pulse signal out after a delay defined in tenths of a second, critical for ensuring proper control \
-	flow in a complex machine. This circuit's delay can be customized, between 1/10th of a second to one hour. \
-	The delay is updated upon receiving a pulse."
-	extended_desc = "The delay is defined in tenths of a second. For instance, 4 will be a delay of 0.4 seconds, or 15 for 1.5 seconds."
+	desc = "Это позволяет отправлять импульсный сигнал с задержкой, определяемой десятыми долями секунды, что имеет решающее значение для обеспечения надлежащего управления \
+	в сложной машине. Задержка в этой схеме может быть настроена в диапазоне от 1/10 секунды до одного часа. \
+	Задержка обновляется при получении импульса."
+	extended_desc = "Задержка определяется в десятых долях секунды. Например, 4 будет означать задержку в 0,4 секунды, или 15 - в 1,5 секунды."
 	icon_state = "delay"
-	inputs = list("delay time" = IC_PINTYPE_NUMBER)
+	inputs = list("время задержки" = IC_PINTYPE_NUMBER)
 	spawn_flags = IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/time/delay/custom/do_work()
@@ -71,14 +71,14 @@
 
 /obj/item/integrated_circuit/time/ticker
 	name = "ticker circuit"
-	desc = "This circuit sends an automatic pulse every four seconds."
+	desc = "Эта схема автоматически посылает импульс каждые четыре секунды."
 	icon_state = "tick-m"
 	complexity = 4
 	var/delay = 4 SECONDS
 	var/next_fire = 0
 	var/is_running = FALSE
-	inputs = list("enable ticking" = IC_PINTYPE_BOOLEAN)
-	activators = list("outgoing pulse" = IC_PINTYPE_PULSE_OUT)
+	inputs = list("включить тиканье" = IC_PINTYPE_BOOLEAN)
+	activators = list("выходящий импульс" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 4
 
@@ -106,13 +106,13 @@
 
 /obj/item/integrated_circuit/time/ticker/custom
 	name = "custom ticker"
-	desc = "This advanced circuit sends an automatic pulse every given interval, defined in tenths of a second."
-	extended_desc ="This advanced circuit sends an automatic pulse every given interval, defined in tenths of a second. \
-	For example, setting the time pin to 4 will send a pulse every 0.4 seconds, or 15 for every 1.5 seconds."
+	desc = "Эта усовершенствованная схема автоматически посылает импульс через каждый заданный интервал, измеряемый десятыми долями секунды."
+	extended_desc ="Эта усовершенствованная схема автоматически посылает импульс через каждый заданный интервал, измеряемый десятыми долями секунды. \
+	Например, при установке значения пина времени на 4 импульс будет посылаться каждые 0,4 секунды, или 15 импульсов - каждые 1,5 секунды."
 	icon_state = "tick-f"
 	complexity = 8
 	delay = 2 SECONDS
-	inputs = list("enable ticking" = IC_PINTYPE_BOOLEAN,"delay time" = IC_PINTYPE_NUMBER)
+	inputs = list("включить тиканье" = IC_PINTYPE_BOOLEAN,"время задержки" = IC_PINTYPE_NUMBER)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 8
 
@@ -125,7 +125,7 @@
 
 /obj/item/integrated_circuit/time/ticker/fast
 	name = "fast ticker"
-	desc = "This advanced circuit sends an automatic pulse every two seconds."
+	desc = "Эта усовершенствованная схема автоматически посылает импульс каждые две секунды."
 	icon_state = "tick-f"
 	complexity = 6
 	delay = 2 SECONDS
@@ -134,7 +134,7 @@
 
 /obj/item/integrated_circuit/time/ticker/slow
 	name = "slow ticker"
-	desc = "This simple circuit sends an automatic pulse every six seconds."
+	desc = "Эта простая схема автоматически посылает импульс каждые шесть секунд."
 	icon_state = "tick-s"
 	complexity = 2
 	delay = 6 SECONDS
@@ -143,17 +143,17 @@
 
 /obj/item/integrated_circuit/time/clock
 	name = "integrated clock (NT Common Time)"
-	desc = "Tells you what the time is, in Nanotrasen Common Time."				//round time
+	desc = "Показывает вам, который час в обычном времени Нанотразена."				//round time
 	icon_state = "clock"
 	inputs = list()
 	outputs = list(
-		"time" = IC_PINTYPE_STRING,
-		"hours" = IC_PINTYPE_NUMBER,
-		"minutes" = IC_PINTYPE_NUMBER,
-		"seconds" = IC_PINTYPE_NUMBER,
-		"absolute decisecond elapsed time" = IC_PINTYPE_NUMBER
+		"время" = IC_PINTYPE_STRING,
+		"часы" = IC_PINTYPE_NUMBER,
+		"минуты" = IC_PINTYPE_NUMBER,
+		"секунды" = IC_PINTYPE_NUMBER,
+		"absolute decisecond elapsed time" = IC_PINTYPE_NUMBER // КАКИМ ХУЕМ Я ЭТО ПЕРЕВОДИТЬ ДОЛЖЕН
 		)
-	activators = list("get time" = IC_PINTYPE_PULSE_IN, "on time got" = IC_PINTYPE_PULSE_OUT)
+	activators = list("получить время" = IC_PINTYPE_PULSE_IN, "при получении времени" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 2
 
@@ -172,14 +172,14 @@
 
 /obj/item/integrated_circuit/time/clock/station
 	name = "integrated clock (Station Time)"
-	desc = "Tells you what the time is, in terms and adjusted for your local station or planet"
+	desc = "Сообщает вам текущее время в терминах и с поправкой на вашу местную станцию или планету"
 
 /obj/item/integrated_circuit/time/clock/station/get_time()
 	return STATION_TIME(FALSE, world.time)
 
 /obj/item/integrated_circuit/time/clock/bluespace
 	name = "integrated clock (Bluespace Absolute Time)"
-	desc = "Tells you what the time is, in Bluespace Absolute Time, unaffected by local time dilation or other phenomenon."
+	desc = "Показывает текущее время в абсолютном времени Bluespace, на которое не влияет местное замедление времени или другие явления."
 
 /obj/item/integrated_circuit/time/clock/bluespace/get_time()
 	return REALTIMEOFDAY

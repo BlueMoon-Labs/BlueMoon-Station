@@ -11,8 +11,8 @@
 	complexity = 10
 	size = 7
 	outputs = list(
-		"self reference" = IC_PINTYPE_SELFREF,
-		"pressure" = IC_PINTYPE_NUMBER
+		"самоссылка" = IC_PINTYPE_SELFREF,
+		"давление" = IC_PINTYPE_NUMBER
 			)
 	var/datum/gas_mixture/air_contents
 	var/volume = 2 //Pretty small, I know
@@ -49,13 +49,13 @@
 	desc = "Обеспечивает перемещение газов между двумя резервуарами, баллонами и другими емкостями для газа."
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
-			"source" = IC_PINTYPE_REF,
-			"target" = IC_PINTYPE_REF,
-			"target pressure" = IC_PINTYPE_NUMBER
+			"источник" = IC_PINTYPE_REF,
+			"цель" = IC_PINTYPE_REF,
+			"целевое давление" = IC_PINTYPE_NUMBER
 			)
 	activators = list(
-			"transfer" = IC_PINTYPE_PULSE_IN,
-			"on transfer" = IC_PINTYPE_PULSE_OUT
+			"передать" = IC_PINTYPE_PULSE_IN,
+			"при передаче" = IC_PINTYPE_PULSE_OUT
 			)
 	var/direction = SOURCE_TO_TARGET
 	var/target_pressure = PUMP_MAX_PRESSURE
@@ -63,7 +63,7 @@
 
 /obj/item/integrated_circuit/atmospherics/pump/Initialize(mapload)
 	air_contents = new(volume)
-	extended_desc += "Используйте отрицательное давление для перемещения воздуха от места назначения к источнику. \
+	extended_desc += " Используйте отрицательное давление для перемещения воздуха от места назначения к источнику. \
                     Обратите внимание, что при каждом цикле перемещается лишь часть газа, \
                     поэтому для достижения заданного давления потребуется несколько циклов. \
                     Предельное давление для насосов в схемах составляет [round(PUMP_MAX_PRESSURE)] кПа."
@@ -149,13 +149,13 @@
 
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
-			"source" = IC_PINTYPE_REF,
-			"target" = IC_PINTYPE_REF,
-			"transfer volume" = IC_PINTYPE_NUMBER
+			"источник" = IC_PINTYPE_REF,
+			"цель" = IC_PINTYPE_REF,
+			"перемещаемый объем" = IC_PINTYPE_NUMBER
 			)
 	activators = list(
-			"transfer" = IC_PINTYPE_PULSE_IN,
-			"on transfer" = IC_PINTYPE_PULSE_OUT
+			"передать" = IC_PINTYPE_PULSE_IN,
+			"при передаче" = IC_PINTYPE_PULSE_OUT
 			)
 	direction = SOURCE_TO_TARGET
 	var/transfer_rate = PUMP_MAX_VOLUME
@@ -198,8 +198,8 @@
 	extended_desc = "Используйте отрицательный объем для перемещения воздуха из целевой зоны в окружающую среду. Обратите внимание, что при каждом перекачивании перемещается лишь часть газа. В отличие от газового насоса, данный насос продолжает перекачивать газ даже при давлении до 9000 кПа, поэтому не рекомендуется использовать его в схемах с баллонами."
 	desc = "Обеспечивает перемещение газов между окружающей средой и соседними газовыми емкостями."
 	inputs = list(
-			"container" = IC_PINTYPE_REF,
-			"target pressure" = IC_PINTYPE_NUMBER
+			"контейнер" = IC_PINTYPE_REF,
+			"целевое давление" = IC_PINTYPE_NUMBER
 			)
 
 /obj/item/integrated_circuit/atmospherics/pump/vent/on_data_written()
@@ -239,13 +239,13 @@
                     Вы <B>должны</B> задать цель перед подключением."
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
-			"target" = IC_PINTYPE_REF
+			"цель" = IC_PINTYPE_REF
 			)
 	activators = list(
-			"toggle connection" = IC_PINTYPE_PULSE_IN,
-			"on connected" = IC_PINTYPE_PULSE_OUT,
-			"on connection failed" = IC_PINTYPE_PULSE_OUT,
-			"on disconnected" = IC_PINTYPE_PULSE_OUT
+			"переключить подключение" = IC_PINTYPE_PULSE_IN,
+			"при подключении" = IC_PINTYPE_PULSE_OUT,
+			"если подключение не удалось" = IC_PINTYPE_PULSE_OUT,
+			"при отключении" = IC_PINTYPE_PULSE_OUT
 			)
 
 	var/obj/machinery/atmospherics/components/unary/portables_connector/connector
@@ -305,11 +305,11 @@
 	size = 8
 	spawn_flags = IC_SPAWN_RESEARCH
 	inputs = list(
-			"source" = IC_PINTYPE_REF,
-			"filtered output" = IC_PINTYPE_REF,
-			"contaminants output" = IC_PINTYPE_REF,
-			"wanted gases" = IC_PINTYPE_LIST,
-			"target pressure" = IC_PINTYPE_NUMBER
+			"источник" = IC_PINTYPE_REF,
+			"отфильтрованный выход" = IC_PINTYPE_REF,
+			"хранилище не нужных газов" = IC_PINTYPE_REF,
+			"желанные газы" = IC_PINTYPE_LIST,
+			"целевое давление" = IC_PINTYPE_NUMBER
 			)
 	power_draw_per_use = 30
 
@@ -421,11 +421,11 @@
 	size = 8
 	spawn_flags = IC_SPAWN_RESEARCH
 	inputs = list(
-			"first source" = IC_PINTYPE_REF,
-			"second source" = IC_PINTYPE_REF,
-			"output" = IC_PINTYPE_REF,
-			"first source percentage" = IC_PINTYPE_NUMBER,
-			"target pressure" = IC_PINTYPE_NUMBER
+			"первый источник" = IC_PINTYPE_REF,
+			"второй источник" = IC_PINTYPE_REF,
+			"выход" = IC_PINTYPE_REF,
+			"процент первого выхода" = IC_PINTYPE_NUMBER,
+			"целевое давление" = IC_PINTYPE_NUMBER
 			)
 	power_draw_per_use = 30
 
@@ -547,8 +547,8 @@
 	volume = 6
 	size = 8
 	inputs = list(
-		"target temperature" = IC_PINTYPE_NUMBER,
-		"on" = IC_PINTYPE_BOOLEAN
+		"целевая температура" = IC_PINTYPE_NUMBER,
+		"включен?" = IC_PINTYPE_BOOLEAN
 		)
 	inputs_default = list("1" = 300)
 	spawn_flags = IC_SPAWN_RESEARCH
@@ -580,8 +580,8 @@
 	desc = "Нагревает содержащийся в нём газ до заданной температуры."
 	volume = 6
 	inputs = list(
-		"target temperature" = IC_PINTYPE_NUMBER,
-		"on" = IC_PINTYPE_BOOLEAN
+		"целевая температура" = IC_PINTYPE_NUMBER,
+		"включен?" = IC_PINTYPE_BOOLEAN
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 
@@ -612,8 +612,8 @@
 	size = 13
 	spawn_flags = IC_SPAWN_RESEARCH
 	inputs = list(
-		"target temperature" = IC_PINTYPE_NUMBER,
-		"on" = IC_PINTYPE_BOOLEAN
+		"целевая температура" = IC_PINTYPE_NUMBER,
+		"включен?" = IC_PINTYPE_BOOLEAN
 		)
 	var/temperature = 293.15
 	var/heater_coefficient = 0.1
@@ -686,19 +686,19 @@
 	category_text = "Атмосфера"
 	cooldown_per_use = 1
 	name = "tank slot"
-	desc = "Позволяет добавлять и удалять баллон из узла даже после того, как корпус закрыт."
+	desc = "Позволяет добавлять и удалять баллон из схемы даже после того, как корпус закрыт."
 	extended_desc = "Это поможет вам легче извлекать газы."
 	complexity = 25
 	size = 30
 	inputs = list()
 	outputs = list(
-		"pressure used" = IC_PINTYPE_NUMBER,
-		"current tank" = IC_PINTYPE_REF
+		"давления использовано" = IC_PINTYPE_NUMBER,
+		"текущий баллон" = IC_PINTYPE_REF
 		)
 	activators = list(
 		"push ref" = IC_PINTYPE_PULSE_IN,
-		"on insert" = IC_PINTYPE_PULSE_OUT,
-		"on remove" = IC_PINTYPE_PULSE_OUT
+		"при вставке" = IC_PINTYPE_PULSE_OUT,
+		"при извлечении" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
