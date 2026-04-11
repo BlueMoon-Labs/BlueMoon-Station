@@ -166,7 +166,6 @@
 
 	// Аварийный доступ при дельте
 	if(level >= SEC_LEVEL_DELTA)
-		was_delta_level = TRUE
 		emergency = TRUE
 		update_appearance()
 		last_sec_level = level
