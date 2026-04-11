@@ -30,13 +30,6 @@
 	if(keeper_force && spawn_locs.len > 1 && !QDELETED(last_spawn_loc))
 		spawn_locs -= last_spawn_loc
 
-	// ТЕСТЫ
-	if(!spawn_locs.len)
-		var/mob/M = GLOB.player_list[1]
-		if(M)
-			spawn_locs += get_turf(M)
-	// ТЕСТЫ
-
 	if(!spawn_locs.len)
 		return MAP_ERROR
 
