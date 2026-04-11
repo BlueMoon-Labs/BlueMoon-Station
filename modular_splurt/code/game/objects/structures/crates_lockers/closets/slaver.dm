@@ -25,8 +25,9 @@
 	name = "slave trader standard issue loadout"
 
 /obj/structure/closet/crate/slaver_loadout/Initialize(mapload)
-	..()
-	return INITIALIZE_HINT_LATELOAD
+	. = ..()
+	if(. == INITIALIZE_HINT_NORMAL)
+		. = INITIALIZE_HINT_LATELOAD
 
 /obj/structure/closet/crate/slaver_loadout/PopulateContents()
 	..()
