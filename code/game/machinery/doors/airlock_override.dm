@@ -238,7 +238,6 @@ GLOBAL_VAR_INIT(force_eng_override, FALSE)
 
 	if(!status)
 		engineering_override = FALSE
-		normalspeed = TRUE
 		update_appearance()
 		return
 
@@ -247,7 +246,6 @@ GLOBAL_VAR_INIT(force_eng_override, FALSE)
 	//	return
 
 	engineering_override = TRUE
-	normalspeed = FALSE
 	update_appearance()
 
 /**
