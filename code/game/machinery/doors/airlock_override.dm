@@ -174,7 +174,7 @@
 		update_appearance()
 
 	// Логика override доступов
-	if(level >= SEC_LEVEL_AMBER)
+	if(level >= SEC_LEVEL_RED)
 		security_override = TRUE
 		medical_override = FALSE
 		if(!GLOB.force_eng_override)
