@@ -46,6 +46,7 @@
 	item = /obj/item/disk/surgery/brainwashing
 	restricted_roles = list("Medical Doctor", "Roboticist")
 	cost = 5
+	blocked_in_dynamic_light = TRUE
 
 /datum/uplink_item/role_restricted/clown_bomb
 	name = "Clown Bomb"

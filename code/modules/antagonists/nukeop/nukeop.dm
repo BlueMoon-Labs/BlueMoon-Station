@@ -13,6 +13,7 @@
 	var/send_to_spawnpoint = TRUE //Should the user be moved to default spawnpoint.
 	var/nukeop_outfit = /datum/outfit/inteq
 	var/title
+	var/use_extended_lone_loadout = FALSE
 
 /datum/antagonist/nukeop/proc/update_synd_icons_added(mob/living/M)
 	var/datum/atom_hud/antag/opshud = GLOB.huds[ANTAG_HUD_OPS]
@@ -41,7 +42,7 @@
 		return
 	if(!istype(H))
 		return
-	var/is_extended = GLOB.master_mode == "Extended"
+	var/is_extended = GLOB.master_mode == "Extended" || use_extended_lone_loadout
 	if(is_extended)
 		H.equipOutfit(/datum/outfit/syndicate/lone)
 		priority_announce("Приветствую, Станция. Мы отправляем к вам Специалиста по Защите Ядерного Диска ввиду того, что заметили недостаточную его безопасность. Bстречайте.", "Фрегат [title] ССО Синдиката")
@@ -244,6 +245,28 @@
 	send_to_spawnpoint = FALSE //Handled by event
 	nukeop_outfit = /datum/outfit/inteq/lone/inteq
 
+/datum/antagonist/nukeop/lone/disk_defender
+	name = "Nuclear Disk Defender"
+	use_extended_lone_loadout = TRUE
+
+/datum/antagonist/nukeop/lone/disk_defender/create_team(datum/team/nuclear/new_team)
+	if(!new_team)
+		nuke_team = new /datum/team/nuclear/disk_defender
+		nuke_team.update_objectives()
+		assign_nuke()
+		return
+	if(!istype(new_team, /datum/team/nuclear))
+		stack_trace("Wrong team type passed to [type] initialization.")
+	nuke_team = new_team
+
+/datum/antagonist/nukeop/lone/disk_defender/give_alias()
+	return
+
+/datum/antagonist/nukeop/lone/disk_defender/greet()
+	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ops.ogg',100,0)
+	to_chat(owner, "<span class='notice'>Вы Защитник Ядерного Диска!</span>")
+	owner.announce_objectives()
+
 /datum/antagonist/nukeop/lone/assign_nuke()
 	if(nuke_team && !nuke_team.tracked_nuke)
 		nuke_team.memorized_code = random_nukecode()
@@ -274,6 +297,12 @@
 /datum/team/nuclear/New()
 	..()
 	syndicate_name = syndicate_name()
+
+/datum/team/nuclear/disk_defender/update_objectives()
+	if(revert_objective)
+		var/datum/objective/O = new revert_objective
+		O.team = src
+		objectives += O
 
 /datum/team/nuclear/proc/update_objectives()
 	if(GLOB.master_mode == "Extended")

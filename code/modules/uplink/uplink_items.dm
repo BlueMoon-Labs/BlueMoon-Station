@@ -16,6 +16,8 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 			continue
 		if(length(I.required_round_types) && !(GLOB.round_type in I.required_round_types))
 			continue
+		if(I.blocked_in_dynamic_light && GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)
+			continue
 
 		if(!filtered_uplink_items[I.category])
 			filtered_uplink_items[I.category] = list()
@@ -103,6 +105,8 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 	var/hijack_only = FALSE //can this item be purchased only during hijackings?
 	/// If nonempty, only offered when `GLOB.round_type` is one of these (Bluemoon; e.g. `ROUNDTYPE_DYNAMIC_HARD`).
 	var/list/required_round_types
+	/// If true, this item is hidden from uplinks during Dynamic Light rounds.
+	var/blocked_in_dynamic_light = FALSE
 
 /datum/uplink_item/proc/get_discount()
 	return pick(4;0.75,2;0.5,1;0.25)
