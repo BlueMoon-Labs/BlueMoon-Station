@@ -582,7 +582,7 @@
 	var/type_to_use
 
 	if(!sealed)
-		type_to_use = input("Чтобы вы хотели сделать?","[src] type setting") as null|anything in list("починить", "запечатать")
+		type_to_use = input("Чтобы вы хотели сделать?","[src] type setting") as null|anything in list("починить", "заварить")
 	else
 		type_to_use = input("Чтобы вы хотели сделать?","[src] type setting") as null|anything in list("починить", "вскрыть")
 
@@ -598,15 +598,15 @@
 				to_chat(user,"<span class='notice'>Корпус уже находится в идеальном состоянии.</span>")
 				return FALSE
 
-		if("запечатать")
+		if("заварить")
 			if(!opened)
 				sealed = TRUE
 				if(I.use_tool(src, user, 50, volume=100, amount=3))
-					to_chat(user,"<span class='notice'>Вы запечатываете корпус, делая её невозможной для вскрытия.</span>")
+					to_chat(user,"<span class='notice'>Вы завариваете корпус, делая её невозможной для вскрытия.</span>")
 					return TRUE
 
 			else
-				to_chat(user,"<span class='notice'>Прежде чем запечатать корпус, его нужно закрыть!</span>")
+				to_chat(user,"<span class='notice'>Прежде чем заварить корпус, его нужно закрыть!</span>")
 				return FALSE
 
 		if("вскрыть")
