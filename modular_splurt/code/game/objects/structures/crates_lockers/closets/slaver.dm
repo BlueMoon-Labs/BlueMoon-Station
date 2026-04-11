@@ -24,6 +24,10 @@
 /obj/structure/closet/crate/slaver_loadout
 	name = "slave trader standard issue loadout"
 
+/obj/structure/closet/crate/slaver_loadout/Initialize(mapload)
+	..()
+	return INITIALIZE_HINT_LATELOAD
+
 /obj/structure/closet/crate/slaver_loadout/PopulateContents()
 	..()
 
@@ -40,6 +44,11 @@
 	new /obj/item/reagent_containers/hypospray/medipen/survival(src)
 	new /obj/item/reagent_containers/hypospray/medipen/lewdsleepy(src)
 	new /obj/item/slaver/gizmo(src)
+
+/obj/structure/closet/crate/slaver_loadout/LateInitialize()
+	. = ..()
+	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
+		new /obj/item/clothing/accessory/permit/special/deviant/lust/slavers(src)
 
 /obj/structure/closet/crate/slave_kink
 	name = "Kinkmate Supply"
