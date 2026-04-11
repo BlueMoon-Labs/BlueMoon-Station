@@ -114,9 +114,13 @@
 	var/mob/alert_owner = owner
 	if(alert_owner)
 		if(remove_from_alerts && alert_owner.alerts)
-			for(var/category in alert_owner.alerts.Copy())
+			var/found_category
+			for(var/category in alert_owner.alerts)
 				if(alert_owner.alerts[category] == src)
-					alert_owner.alerts -= category
+					found_category = category
+					break
+			if(found_category)
+				alert_owner.alerts -= found_category
 		if(alert_owner.client)
 			alert_owner.client.screen -= src
 		for(var/mob/dead/observer/observe as anything in alert_owner.observers)
@@ -988,13 +992,10 @@ so as to remain in compliance with the most up-to-date laws."
 	detach_from_owner(TRUE)
 	animate(src)
 	transform = null
-	..()
 	severity = 0
-	master_ref = null
-	master = null
-	owner = null
-	screen_loc = ""
-	return QDEL_HINT_HARDDEL_NOW
+	if(clickable_glow)
+		remove_filter("clickglow")
+	return ..()
 
 /atom/movable/screen/alert/examine(mob/user)
 	return list(

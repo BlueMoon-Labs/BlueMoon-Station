@@ -444,7 +444,12 @@
 		/obj/item/pinpointer/nuke=1,\
 		/obj/item/grenade/plastic/x4=1)
 
-	implants = list(/obj/item/implant/mindshield, /obj/item/implant/deathrattle/centcom, /obj/item/implant/weapons_auth, /obj/item/implant/radio/centcom)
+	implants = list(/obj/item/implant/mindshield,
+			/obj/item/implant/deathrattle/centcom,
+			/obj/item/implant/weapons_auth,
+			/obj/item/implant/radio/centcom,
+			/obj/item/implant/explosive/macro,
+		)
 
 	cybernetic_implants = list(
 		/obj/item/organ/cyberimp/eyes/hud/security,
@@ -453,6 +458,11 @@
 		/obj/item/organ/cyberimp/arm/shield,
 		/obj/item/organ/eyes/robotic/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
+		/obj/item/organ/cyberimp/arm/shield,
+		/obj/item/organ/cyberimp/arm/combat{zone=BODY_ZONE_L_ARM},
+		/obj/item/organ/heart/bioaegis/t3/antag,
+		/obj/item/organ/liver/bioaegis/t3/antag,
+		/obj/item/organ/lungs/bioaegis/t3/antag,
 	)
 
 	give_space_cooler_if_synth = TRUE // BLUEMOON ADD

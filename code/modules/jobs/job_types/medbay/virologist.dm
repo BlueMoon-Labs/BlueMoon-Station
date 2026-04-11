@@ -12,7 +12,7 @@
 	exp_requirements = 60
 	alt_titles = list(
 		"Virologist Intern", //Стажер выше, для удобства
-		"Syndicate Bioweapon Scientist", //Синди выше, для удобства
+		"Bioweapon Scientist",
 		"Biochemist",
 		"Epidemiologist",
 		"Microbiologist",

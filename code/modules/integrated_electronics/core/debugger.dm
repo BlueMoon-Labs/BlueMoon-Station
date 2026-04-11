@@ -47,9 +47,11 @@
 			to_chat(user, "<span class='notice'>Вы включаете устройство копирования значений \the [src].  Используйте его на выводе, \
             чтобы сохранить его текущее значение в памяти.</span>")
 		if("null")
+			accepting_refs = FALSE
 			data_to_write = null
 			copy_values = FALSE
-			to_chat(user, "<span class='notice'>Вы сбросили память \the [src] до нуля.</span>")
+			copy_id = FALSE
+			to_chat(user, "<span class='notice'>Вы сбросили память \the [src] до нуля</span>")
 
 /obj/item/integrated_electronics/debugger/afterattack(atom/target, mob/living/user, proximity)
 	. = ..()

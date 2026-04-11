@@ -17,6 +17,10 @@
 	considered_combat_role = TRUE
 	alt_titles = list(
 		"Bridge Advisor",
+		"Command Secretary",
+		"Command Officer",
+		"Bridge Secretary",
+		"Bridge Intern",
 		"Bridge Bitch",
 		"Bridge Canine",
 		"Bridge Pet",
@@ -25,7 +29,6 @@
 		"Dick Attachment",
 		"Ensign",
 		"Pussy Attachment",
-		"Secretary"
 		)
 
 	outfit = /datum/outfit/job/bridgeofficer

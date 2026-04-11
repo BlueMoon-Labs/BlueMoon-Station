@@ -51,11 +51,22 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 
 	// Preference-based tags (always from prefs)
 	if (user?.client?.prefs)
-		data["personalNonconTag"] = user.client.prefs.nonconpref || "No"
-		data["personalUnholyTag"] = user.client.prefs.unholypref || "No"
-		data["personalExtremeTag"] = user.client.prefs.extremepref || "No"
-		data["personalExtremeHarmTag"] = user.client.prefs.extremeharm || "No"
-		data["personalHornyAntagsTag"] = user.client.prefs.hornyantagspref || "No"
+		var/nc_override = user.client.prefs.directory_noncon
+		data["personalNonconTag"] = nc_override || user.client.prefs.nonconpref || "No"
+		data["personalNonconInherited"] = !nc_override
+
+	// Авто-детект для тега библиотеки персонажей.
+	var/auto_gender = "N/B"
+	if (user?.client?.prefs)
+		var/has_cock_f = user.client.prefs.features["has_cock"]
+		var/has_vag_f = user.client.prefs.features["has_vag"]
+		if(has_cock_f && has_vag_f)
+			auto_gender = "Futa"
+		else if(has_cock_f)
+			auto_gender = "Male"
+		else if(has_vag_f)
+			auto_gender = "Female"
+	data["personalGenderAuto"] = auto_gender
 
 	data["canOrbit"] = isobserver(user)
 
@@ -105,11 +116,23 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			gendertag = C.prefs.directory_gendertag || "Unset"
 			character_ad = C.prefs.directory_ad
 		// Preference-based tags (always from prefs)
-		noncon_tag = C.prefs?.nonconpref || "No"
+		noncon_tag = C.prefs?.directory_noncon || C.prefs?.nonconpref || "No"
 		unholy_tag = C.prefs?.unholypref || "No"
 		extreme_tag = C.prefs?.extremepref || "No"
 		extreme_harm_tag = C.prefs?.extremeharm || "No"
 		hornyantags_tag = C.prefs?.hornyantagspref || "No"
+		// Авто-детект для ансет.
+		if(gendertag == "Unset")
+			var/hc = C.prefs?.features["has_cock"]
+			var/hv = C.prefs?.features["has_vag"]
+			if(hc && hv)
+				gendertag = "Futa"
+			else if(hc)
+				gendertag = "Male"
+			else if(hv)
+				gendertag = "Female"
+			else
+				gendertag = "N/B"
 
 		if(ishuman(C.mob))
 			var/mob/living/carbon/human/H = C.mob
@@ -129,6 +152,8 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			species = "Artificial Intelligence"
 			ooc_notes = A.mind.ooc_notes
 			flavor_text = null // No flavor text for AIs :c
+			if(A.mind?.headshot_links)
+				headshot_links = A.mind.headshot_links.Copy()
 
 		if(iscyborg(C.mob))
 			var/mob/living/silicon/robot/R = C.mob
@@ -138,6 +163,8 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			species = "Cyborg"
 			ooc_notes = R.mind.ooc_notes
 			flavor_text = R.mind.silicon_flavor_text
+			if(R.mind?.headshot_links)
+				headshot_links = R.mind.headshot_links.Copy()
 
 		// It's okay if we fail to find OOC notes and flavor text
 		// But if we can't find the name, they must be using a non-compatible mob type currently.
@@ -194,46 +221,11 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 		if("setNonconTag")
 			if(!usr.client?.prefs)
 				return
-			var/new_val = tgui_input_list(usr, "Выберите настройку Non-Con", "Non-Con", GLOB.lewd_prefs_choices)
+			var/list/noncon_choices = list("Наследовать из настроек") + GLOB.lewd_prefs_choices
+			var/new_val = tgui_input_list(usr, "Выберите настройку Non-Con (или 'Наследовать из настроек' для автоматического отображения из настроек персонажа)", "Non-Con", noncon_choices)
 			if(!new_val)
 				return
-			usr.client.prefs.nonconpref = new_val
-			usr.client.prefs.save_character()
-			return TRUE
-		if("setUnholyTag")
-			if(!usr.client?.prefs)
-				return
-			var/new_val = tgui_input_list(usr, "Выберите настройку Unholy", "Unholy", GLOB.lewd_prefs_choices)
-			if(!new_val)
-				return
-			usr.client.prefs.unholypref = new_val
-			usr.client.prefs.save_character()
-			return TRUE
-		if("setExtremeTag")
-			if(!usr.client?.prefs)
-				return
-			var/new_val = tgui_input_list(usr, "Выберите настройку Extreme", "Extreme", GLOB.lewd_prefs_choices)
-			if(!new_val)
-				return
-			usr.client.prefs.extremepref = new_val
-			usr.client.prefs.save_character()
-			return TRUE
-		if("setExtremeHarmTag")
-			if(!usr.client?.prefs)
-				return
-			var/new_val = tgui_input_list(usr, "Выберите настройку Extreme Harm", "Extreme Harm", GLOB.lewd_prefs_choices)
-			if(!new_val)
-				return
-			usr.client.prefs.extremeharm = new_val
-			usr.client.prefs.save_character()
-			return TRUE
-		if("setHornyAntagsTag")
-			if(!usr.client?.prefs)
-				return
-			var/new_val = tgui_input_list(usr, "Выберите настройку Horny Antags", "Horny Antags", GLOB.lewd_prefs_choices)
-			if(!new_val)
-				return
-			usr.client.prefs.hornyantagspref = new_val
+			usr.client.prefs.directory_noncon = (new_val == "Наследовать из настроек") ? null : new_val
 			usr.client.prefs.save_character()
 			return TRUE
 		if("editNote")
@@ -278,9 +270,12 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 				return
 			return set_for_mind_or_prefs(user, action, new_erptag, can_set_prefs, can_set_mind)
 		if ("setGenderTag")
-			var/list/new_gendertag = tgui_input_list(usr, "Pick a gender tag for the character directory", "Gender Tag", GLOB.char_directory_gendertags)
+			var/list/gender_choices = list("Авто (по анатомии)") + GLOB.char_directory_gendertags
+			var/new_gendertag = tgui_input_list(usr, "Выберите тег пола (\"\u0410вто\" = автоопределение по анатомии)", "Тег пола", gender_choices)
 			if(!new_gendertag)
 				return
+			if(new_gendertag == "Авто (по анатомии)")
+				new_gendertag = "Unset"
 			return set_for_mind_or_prefs(user, action, new_gendertag, can_set_prefs, can_set_mind)
 		if ("setVisible")
 			var/visible = TRUE

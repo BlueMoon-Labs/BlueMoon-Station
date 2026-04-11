@@ -9,7 +9,7 @@
 
 /obj/item/circuitboard/machine/gas_miner
 	name = "Gas Miner (Machine Board)"
-	desc = "You can use a multitool to change between possible gasses to mine."
+	desc = "Плата газодобытчика, использующего газовый гигант и туманности неподалёку от станции для получения ценных газов."
 	icon_state = "engineering"
 	build_path = /obj/machinery/atmospherics/miner/nitrogen
 	req_components = list(
@@ -25,6 +25,10 @@
 	if (build_path)
 		build_path = PATH_NITROMINER
 
+/obj/item/circuitboard/machine/gas_miner/examine(mob/user)
+	. = ..()
+	. += span_notice("При помощи мультитула можно изменить вводные добычи определённых газов.")
+
 /obj/item/circuitboard/machine/gas_miner/attackby(obj/item/I, mob/user, params)
 	if (istype(I, /obj/item/multitool))
 		var/obj/item/circuitboard/new_type
@@ -32,20 +36,20 @@
 		switch(build_path)
 			if (PATH_NITROMINER)
 				new_type = /obj/item/circuitboard/machine/gas_miner/oxygen
-				new_setting = "Oxygen"
+				new_setting = "кислорода"
 			if (PATH_OXYMINER)
 				new_type = /obj/item/circuitboard/machine/gas_miner/toxin
-				new_setting = "Plasma"
+				new_setting = "плазмы"
 			if (PATH_PLASMAMINER)
 				new_type = /obj/item/circuitboard/machine/gas_miner/carbon_dioxide
-				new_setting = "Carbon Dioxide"
+				new_setting = "углекислого газа"
 			if (PATH_DIOMINER)
 				new_type = /obj/item/circuitboard/machine/gas_miner/nitrogen
-				new_setting = "Nitrogen"
+				new_setting = "азота"
 		name = initial(new_type.name)
 		build_path = initial(new_type.build_path)
 		I.play_tool_sound(src)
-		to_chat(user, "<span class='notice'>You tune the miner's scanners to find [new_setting].")
+		to_chat(user, span_notice("Вы настроили сканнеры газодобытчика на поиск [new_setting]."))
 	else
 		return ..()
 

@@ -109,7 +109,7 @@
 	required_candidates = 1
 	weight = 8 //BLUEMOON CHANGES
 	cost = 15 //BLUEMOON CHANGES
-	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	scaling_cost = 10
 	requirements = list(101,101,60,50,40,30,20,15,10,10) //BLUEMOON CHANGES
 	antag_cap = 1 //BLUEMOON CHANGES
@@ -1053,7 +1053,7 @@ BLUEMOON REMOVAL END*/
 	weight = 3
 	cost = 20
 	requirements = list(101,101,101,101,101,101,60,40,30,10)
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	flags = HIGH_IMPACT_RULESET
 
 /datum/dynamic_ruleset/roundstart/malf/pre_execute(population)

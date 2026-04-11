@@ -35,6 +35,18 @@
 	var/static/next_assembly_id = 0
 	var/sealed = FALSE
 
+	/// TGUI IntegratedCircuit canvas pan
+	var/ie_tgui_screen_x = 0
+	var/ie_tgui_screen_y = 0
+	var/datum/weakref/ie_gui_examined_circuit
+	var/ie_gui_examined_x = 0
+	var/ie_gui_examined_y = 0
+	/// TGUI: подсветка связи при передаче данных по проводу
+	var/ie_tgui_pulse_until = 0
+	var/ie_tgui_pulse_output_ref = null
+	var/ie_tgui_pulse_input_ref = null
+	var/datum/weakref/ie_tgui_pulse_chip_weak
+
 	hud_possible = list(DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_TRACK_HUD, DIAG_CIRCUIT_HUD) //diagnostic hud overlays
 	max_integrity = 50
 	pass_flags = 0
@@ -143,11 +155,8 @@
 				I.power_fail()
 
 /obj/item/electronic_assembly/interact(mob/user, circuit)
-	ui_interact(user, circuit)
-
-/obj/item/electronic_assembly/ui_interact(mob/user, obj/item/integrated_circuit/circuit_pins)
-	. = ..()
-	if(!check_interactivity(user))
+	if(user?.client?.prefs?.ie_classic_circuit_ui)
+		ie_legacy_ui_interact(user, circuit)
 		return
 
 	var/total_part_size = return_total_size()
@@ -310,6 +319,7 @@
 
 	popup.set_content(HTML)
 	popup.open()
+	ui_interact(user, circuit)
 
 /obj/item/electronic_assembly/Topic(href, href_list)
 	if(..())
@@ -329,6 +339,13 @@
 	if(!check_interactivity(usr))
 		return
 
+	if(href_list["ie_ui_mode"] == "tgui")
+		if(usr.client?.prefs)
+			usr.client.prefs.ie_classic_circuit_ui = FALSE
+		SStgui.close_uis(src)
+		ui_interact(usr, null)
+		return
+
 	if(href_list["rename"])
 		rename(usr)
 
@@ -341,6 +358,7 @@
 			to_chat(usr, "<span class='notice'>Вы извлекаете [battery] из источника питания [src].</span>")
 			battery = null
 			diag_hud_set_circuitstat() //update diagnostic hud
+			SStgui.update_uis(src)
 
 	var/obj/item/integrated_circuit/component
 
@@ -517,6 +535,7 @@
 	//diagnostic hud update
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
+	SStgui.update_uis(src)
 
 
 /obj/item/electronic_assembly/proc/try_remove_component(obj/item/integrated_circuit/IC, mob/user, silent)
@@ -557,6 +576,7 @@
 	//diagnostic hud update
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
+	SStgui.update_uis(src)
 
 
 /obj/item/electronic_assembly/afterattack(atom/target, mob/user, proximity)
@@ -659,6 +679,8 @@
 		diag_hud_set_circuitstat() //update diagnostic hud
 		playsound(get_turf(src), 'sound/items/Deconstruct.ogg', 50, 1)
 		to_chat(user, "<span class='notice'>Вы вставляете [I] в разъем питания [src].</span>")
+		to_chat(user, "<span class='info'>Питание не считается 'компонентом' схемы: в окне редактора в счётчике — только напечатанные на интегральном принтере микросхемы.</span>")
+		SStgui.update_uis(src)
 		return TRUE
 
 	else if(istype(I, /obj/item/integrated_electronics/detailer))

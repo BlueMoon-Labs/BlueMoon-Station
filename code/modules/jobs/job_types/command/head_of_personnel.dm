@@ -18,7 +18,6 @@
 	considered_combat_role = TRUE
 	alt_titles = list(
 		"Personnel Manager of Syndicate", //Синди выше, для удобства
-		"Syndicate Administrator", //Синди выше, для удобства
 		"Assistant Site Director",
 		"Captain Attachment",
 		"Chief of Staff",
@@ -87,6 +86,7 @@
 	head = /obj/item/clothing/head/hopcap
 	backpack_contents = list(/obj/item/storage/box/ids=1, /obj/item/modular_computer/tablet/preset/advanced = 1)
 	box = /obj/item/storage/box/survival/command
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_personnel)
 
 	chameleon_extras = list(/obj/item/gun/energy/e_gun, /obj/item/stamp/hop)

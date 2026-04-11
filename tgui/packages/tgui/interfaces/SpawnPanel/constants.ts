@@ -8,6 +8,7 @@
   'Таргетная локация',
   'Таргетная локация дроп-подом',
   'В руках/лапах выбранного существа',
+  'В сумке выбранного существа',
 ] as const;
 
 export const SPAWN_LOCATION_ICONS: Record<string, string> = {
@@ -20,6 +21,7 @@ export const SPAWN_LOCATION_ICONS: Record<string, string> = {
   'Таргетная локация': 'crosshairs',
   'Таргетная локация дроп-подом': 'satellite',
   'В руках/лапах выбранного существа': 'user',
+  'В сумке выбранного существа': 'backpack',
 };
 
 export const TAB_TYPES = ['Objects', 'Turfs', 'Mobs'] as const;
@@ -70,6 +72,7 @@ export const LOCATIONS_NEEDING_CLICK = [
   'Таргетная локация',
   'Таргетная локация дроп-подом',
   'В руках/лапах выбранного существа',
+  'В сумке выбранного существа',
 ];
 
 export const MAX_ATOM_DISPLAY = 200;

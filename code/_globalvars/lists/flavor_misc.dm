@@ -196,19 +196,31 @@ GLOBAL_LIST_INIT(ai_core_display_screens, list(
 	"Hippy"
 	))
 
-/proc/resolve_ai_icon(input, radial_preview = FALSE)
-	if(!input || !(input in GLOB.ai_core_display_screens))
-		return "ai"
-	if(radial_preview)
-		return "ai-[lowertext(input)]"
+/proc/resolve_ai_icon(input, radial_preview = FALSE, client/C, dead = FALSE)
+    if(!input)
+        return "ai"
 
-	if(input == "Random")
-		input = pick(GLOB.ai_core_display_screens - "Random")
-	if(input == "Portrait")
-		var/datum/portrait_picker/tgui = new(usr)//create the datum
-		tgui.ui_interact(usr)//datum has a tgui component, here we open the window
-		return "ai-portrait" //just take this until they decide
-	return "ai-[lowertext(input)]"
+    if(C)
+        for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+            if(donor_screen.name == input && (C.ckey in donor_screen.ckey_whitelist))
+                if(dead && donor_screen.icon_state_dead)
+                    return donor_screen.icon_state_dead
+                return donor_screen.icon_state
+
+    if(!(input in GLOB.ai_core_display_screens))
+        return "ai"
+
+    if(radial_preview)
+        return "ai-[lowertext(input)]"
+
+    if(input == "Random")
+        input = pick(GLOB.ai_core_display_screens - "Random")
+    if(input == "Portrait")
+        var/datum/portrait_picker/tgui = new(usr)
+        tgui.ui_interact(usr)
+        return "ai-portrait"
+
+    return "ai-[lowertext(input)]"
 
 GLOBAL_LIST_INIT(security_depts_prefs, list(SEC_DEPT_RANDOM, SEC_DEPT_NONE, SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, SEC_DEPT_SCIENCE, SEC_DEPT_SUPPLY))
 

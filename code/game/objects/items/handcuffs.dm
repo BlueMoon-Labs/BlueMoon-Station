@@ -195,7 +195,7 @@
 			to_chat(user, "<span class='notice'>Вы обернули стяжки вокруг верхушки прута.</span>")
 			qdel(src)
 		else
-			to_chat(user, "<span class='warning'>Вам нужна один прут, чтобы обернуть вокруг него кабель!</span>")
+			to_chat(user, "<span class='warning'>Вам нужен один прут, чтобы обернуть вокруг него кабель!</span>")
 			return
 	else if(istype(I, /obj/item/stack/sheet/metal))
 		var/obj/item/stack/sheet/metal/M = I

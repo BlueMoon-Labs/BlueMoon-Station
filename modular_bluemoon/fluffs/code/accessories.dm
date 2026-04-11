@@ -443,18 +443,21 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/accessories.dmi'
 	icon_state = "banner-irellia"
 	desc = "Banner of the Irellia"
+	inspiration_available = FALSE
 
 /obj/item/banner/rohai
 	name = "Banner of the Rohai empire"
 	icon = 'modular_bluemoon/fluffs/icons/obj/accessories.dmi'
 	icon_state = "banner-rohai"
 	desc = "Banner of the Rohai empire"
+	inspiration_available = FALSE
 
 /obj/item/banner/norn
 	name = "Banner of kingdom Norn"
 	icon = 'modular_bluemoon/fluffs/icons/obj/accessories.dmi'
 	icon_state = "banner-norn"
 	desc = "Banner of kingdom Norn"
+	inspiration_available = FALSE
 
 //////////////////////// БАНЕРЫ
 

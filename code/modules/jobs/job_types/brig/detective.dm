@@ -13,7 +13,6 @@
 	exp_requirements = 3000
 	exp_type = EXP_TYPE_CREW
 	alt_titles = list(
-		"Syndicate Survey Specialist", //Синди выше, для удобства
 		"AC Recon Agent",
 		"Cinder Dick",
 		"Cooperate Auditor",
@@ -25,6 +24,7 @@
 		"Private Investigator",
 		"Prosecutor",
 		"SAARE Inspector",
+		"Survey Specialist",
 		"Safeguard Investigator",
 		"Slutective",
 		"Stalker",

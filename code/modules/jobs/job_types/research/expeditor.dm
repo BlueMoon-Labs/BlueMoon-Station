@@ -29,7 +29,7 @@
 		"Space Expeditor",
 		"Sexplorer",
 		"Sexpeditor",
-		"Gateway Expeditor",
+		"Gateway Explorer",
 		"Exploration Operative",
 		"Exploration Mercenary",
 		"Exploration Field Medic",

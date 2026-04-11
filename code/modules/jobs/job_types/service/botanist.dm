@@ -9,7 +9,7 @@
 	supervisors = "the head of personnel"
 	selection_color = "#bbe291"
 	alt_titles = list(
-		"Assistant Botanist", //Стажер выше, для удобства
+		"Junior Botanist", //Стажер выше, для удобства
 		"Apiarist",
 		"Apiculturist",
 		"Beekeeper",

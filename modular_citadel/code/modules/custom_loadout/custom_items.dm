@@ -683,6 +683,31 @@
 	icon = 'icons/obj/clothing/hats.dmi'
 	mob_overlay_icon = 'icons/mob/clothing/head.dmi'
 	mutantrace_variation = STYLE_MUZZLE
-	flags_inv = HIDEEARS | HIDESNOUT | HIDEHAIR
+	actions_types = list(/datum/action/item_action/toggle)
+	can_toggle = TRUE
+	mutantrace_variation = STYLE_MUZZLE
+	flags_inv = HIDEEARS | HIDEHAIR | HIDEHAIR
+	flags_cover = NONE
+	visor_flags_inv = NONE
+	visor_flags_cover = NONE
+
+/obj/item/clothing/head/assu_helmet/bp_helmet/attack_self(mob/user)
+	if(can_toggle && !user.incapacitated())
+		if(world.time > cooldown + toggle_cooldown)
+			cooldown = world.time
+			up = !up
+			flags_inv ^= visor_flags_inv
+			flags_cover ^= visor_flags_cover
+			icon_state = "[replacetext("[icon_state]", "_up", "")][up ? "_up" : ""]"
+			to_chat(user, "[up ? alt_toggle_message : toggle_message] \the [src]")
+
+			user.update_inv_head()
+			if(iscarbon(user))
+				var/mob/living/carbon/C = user
+				C.head_update(src, forced = 1)
+
+			if(active_sound)
+				if(up)
+					playsound(src.loc, "[active_sound]", 100, 0, 4)
 
 //Bluemood End

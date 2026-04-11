@@ -24,8 +24,8 @@
 /obj/machinery/computer/slot_machine
 	name = "slot machine"
 	desc = "Gambling for the antisocial."
-	icon = 'icons/obj/economy.dmi'
-	icon_state = "slots1"
+	icon = 'icons/obj/kazino.dmi'
+	icon_state = "mahins"
 	icon_keyboard = null
 	density = TRUE
 	use_power = IDLE_POWER_USE
@@ -78,6 +78,10 @@
 	var/free_spins_remaining = 0
 	/// Consecutive losses counter (for excitement mechanic)
 	var/loss_streak = 0
+	/// How many reels have stopped during current/last spin (for polosa overlays)
+	var/stopped_reels = 0
+	/// Whether to show the Win overlay (blinks on win)
+	var/show_win_overlay = FALSE
 
 /obj/machinery/computer/slot_machine/Initialize(mapload)
 	. = ..()
@@ -105,17 +109,25 @@
 	money += round(delta_time / 2) //SPESSH MAJICKS
 
 /obj/machinery/computer/slot_machine/update_icon_state()
-	if(machine_stat & NOPOWER)
-		icon_state = "slots0"
-
-	else if(machine_stat & BROKEN)
-		icon_state = "slotsb"
-
-	else if(working)
-		icon_state = "slots2"
-
+	if(machine_stat & BROKEN)
+		icon_state = "mahinsb"
 	else
-		icon_state = "slots1"
+		icon_state = "mahins"
+
+/obj/machinery/computer/slot_machine/update_overlays()
+	. = ..()
+	if(machine_stat & (NOPOWER|BROKEN))
+		return
+	. += mutable_appearance('icons/obj/kazino.dmi', "pole")
+	if(working)
+		. += mutable_appearance('icons/obj/kazino.dmi', "knopka_start_on")
+		. += mutable_appearance('icons/obj/kazino.dmi', "prokrut")
+	else
+		. += mutable_appearance('icons/obj/kazino.dmi', "knopka_start")
+	for(var/i = 1, i <= min(stopped_reels, 5), i++)
+		. += mutable_appearance('icons/obj/kazino.dmi', "[i]_polosa")
+	if(show_win_overlay)
+		. += mutable_appearance('icons/obj/kazino.dmi', "Win")
 
 /obj/machinery/computer/slot_machine/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/coin))
@@ -391,9 +403,23 @@
 	return TRUE
 
 /obj/machinery/computer/slot_machine/proc/toggle_reel_spin(value, delay = 0) //value is 1 or 0 aka on or off
+	if(value)
+		stopped_reels = 0
 	for(var/list/reel in reels)
 		reels[reel] = value
+		if(!value)
+			stopped_reels++
+			update_appearance(UPDATE_OVERLAYS)
 		sleep(delay)
+
+/obj/machinery/computer/slot_machine/proc/do_win_blink()
+	for(var/i = 0, i < 3, i++)
+		show_win_overlay = TRUE
+		update_appearance(UPDATE_OVERLAYS)
+		sleep(4)
+		show_win_overlay = FALSE
+		update_appearance(UPDATE_OVERLAYS)
+		sleep(4)
 
 /obj/machinery/computer/slot_machine/proc/randomize_reels()
 
@@ -573,6 +599,8 @@
 	spin_history += list(history_entry)
 	if(spin_history.len > MAX_HISTORY)
 		spin_history.Cut(1, 2)
+	if(result_type != "lose")
+		INVOKE_ASYNC(src, PROC_REF(do_win_blink))
 
 /obj/machinery/computer/slot_machine/proc/check_pairs()
 	var/list/counts = list()

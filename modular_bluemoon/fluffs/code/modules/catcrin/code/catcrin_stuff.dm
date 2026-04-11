@@ -732,6 +732,7 @@
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/mob/icons/accessories.dmi'
 	icon_state = "banner_catcrin"
 	desc = "Banner of Catcrin Empire"
+	inspiration_available = FALSE
 
 /obj/item/sign/flag/catcrin
 	name = "folded flag of the Catcrin Empire"

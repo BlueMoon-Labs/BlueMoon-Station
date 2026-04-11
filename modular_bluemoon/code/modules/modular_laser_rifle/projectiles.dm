@@ -24,7 +24,7 @@
 
 /obj/item/projectile/beam/cybersun_laser/marksman
 	icon_state = "sniper"
-	damage = 80
+	damage = 100
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/green_laser
 	pixels_per_second = TILES_TO_PIXELS(30)
 	light_range = 2
@@ -99,11 +99,11 @@
 	shrapnel_type = /obj/item/projectile/beam/cybersun_laser/granata_shrapnel
 	shrapnel_radius = 3
 
-// Shotgun casing for the big gun (20 shots from 10k cell)
+// Shotgun casing for the big gun (10 shots from 10k cell)
 
 /obj/item/ammo_casing/energy/cybersun_big_shotgun
 	projectile_type = /obj/item/projectile/beam/cybersun_laser/granata_shrapnel/shotgun_pellet
-	e_cost = 500
+	e_cost = 1000
 	pellets = 7
 	variance = 30
 	select_name = "Shotgun"
@@ -111,7 +111,9 @@
 
 /obj/item/projectile/beam/cybersun_laser/granata_shrapnel/shotgun_pellet
 	icon_state = "because_it_doesnt_miss"
-	damage = 12
+	damage = 10
+	wound_bonus = 5
+	bare_wound_bonus = 5
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/purple_laser
 	pixels_per_second = TILES_TO_PIXELS(15)
 	light_color = COLOR_PINK

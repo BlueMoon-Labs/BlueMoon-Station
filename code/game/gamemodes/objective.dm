@@ -670,6 +670,8 @@ GLOBAL_LIST_EMPTY(possible_items)
 			for(var/datum/mind/M in owners)
 				if(M.current.mind.assigned_role in possible_item.excludefromjob)
 					continue check_items
+			if(!possible_item.ExtraCheck())
+				continue
 			approved_targets += possible_item
 	return set_target(safepick(approved_targets))
 

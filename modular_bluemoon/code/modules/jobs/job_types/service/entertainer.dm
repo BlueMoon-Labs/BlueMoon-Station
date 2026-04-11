@@ -33,6 +33,7 @@
 		"Belly Massager",
 		"Cosmetologist",
 		"Cosplayer",
+		"Guide",
 		"Dancer",
 		"Entertainment Organizer",
 		"Escort",
@@ -49,9 +50,11 @@
 		"Perfomer",
 		"Performer",
 		"Personal Physician",
+		"Sex Educator",
+		"Scene Performer",
 		"Stripper",
 		"Stylist",
-		"Waiter"
+		"Waiter",
 		)
 
 	family_heirlooms = list(

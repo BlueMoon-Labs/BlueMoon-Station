@@ -27,6 +27,20 @@
 	var/demands_object_input = FALSE
 	var/can_input_object_when_closed = FALSE
 
+	/// TGUI (IntegratedCircuit): node position when shown in assembly / solo UI
+	var/ie_ui_rel_x = 0
+	var/ie_ui_rel_y = 0
+	/// TGUI: canvas pan when viewing a loose chip (no assembly)
+	var/ie_tgui_screen_x = 0
+	var/ie_tgui_screen_y = 0
+	var/datum/weakref/ie_gui_examined_circuit
+	var/ie_gui_examined_x = 0
+	var/ie_gui_examined_y = 0
+	/// TGUI: одиночный чип без сборки — подсветка импульса по связи
+	var/ie_tgui_solo_pulse_until = 0
+	var/ie_tgui_solo_pulse_out_ref = null
+	var/ie_tgui_solo_pulse_in_ref = null
+
 
 /*
 	Integrated circuits are essentially modular machines.  Each circuit has a specific function, and combining them inside Electronic Assemblies allows
@@ -130,13 +144,18 @@ a creative player the means to solve many problems.  Circuits are held inside an
 		displayed_name = input
 
 /obj/item/integrated_circuit/interact(mob/user)
+	if(user?.client?.prefs?.ie_classic_circuit_ui)
+		if(assembly)
+			assembly.ie_legacy_ui_interact(user, src)
+		else
+			ie_legacy_ui_interact_chip(user)
+		return
 	ui_interact(user)
 
-/obj/item/integrated_circuit/ui_interact(mob/user)
+/obj/item/integrated_circuit/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	if(!check_interactivity(user))
 		return
-
 	if(assembly)
 		assembly.ui_interact(user, src)
 		return
@@ -240,20 +259,35 @@ a creative player the means to solve many problems.  Circuits are held inside an
 	if(ext_cooldown)
 		HTML += "<br>External manipulation cooldown: [ext_cooldown/10] sec"
 	if(power_draw_idle)
-		HTML += "<br>Power Draw: [power_draw_idle] W (Idle)"
+		HTML += "<br>Трата энергии: [power_draw_idle] W (Idle)"
 	if(power_draw_per_use)
-		HTML += "<br>Power Draw: [power_draw_per_use] W (Active)" // Borgcode says that powercells' checked_use() takes joules as input.
+		HTML += "<br>Трата энергии: [power_draw_per_use] W (Active)" // Borgcode says that powercells' checked_use() takes joules as input.
 
 	HTML += "<br>[extended_desc]</body></html>"
 
 	popup.set_content(HTML)
 	popup.open()
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "IntegratedCircuit", "[displayed_name || name]")
+		ui.open()
+	ui.set_autoupdate(TRUE)
 
 /obj/item/integrated_circuit/Topic(href, href_list)
 	if(!check_interactivity(usr))
 		return
 	if(..())
 		return TRUE
+
+	if(href_list["ie_ui_mode"] == "tgui")
+		if(usr.client?.prefs)
+			usr.client.prefs.ie_classic_circuit_ui = FALSE
+		if(assembly)
+			SStgui.close_uis(assembly)
+		else
+			SStgui.close_uis(src)
+		ui_interact(usr)
+		return
 
 	var/update = TRUE
 	var/update_to_assembly = FALSE

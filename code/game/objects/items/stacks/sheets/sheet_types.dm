@@ -552,6 +552,7 @@ GLOBAL_LIST_INIT(cardboard_recipes, list ( \
 	new/datum/stack_recipe("cardboard cutout", /obj/item/cardboard_cutout, 5),					\
 	new/datum/stack_recipe("pizza box", /obj/item/pizzabox),									\
 	new/datum/stack_recipe("folder", /obj/item/folder),											\
+	new/datum/stack_recipe("biscuit card", /obj/item/folder/biscuit/unsealed),											\
 	new/datum/stack_recipe("cardboard card", /obj/item/cardboard_card, 1),						\
 	// holy fuck why are there so many boxes
 	new/datum/stack_recipe_list("fancy boxes", list ( \
