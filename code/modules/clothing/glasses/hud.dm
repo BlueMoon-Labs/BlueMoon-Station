@@ -246,9 +246,9 @@
 
 /obj/item/clothing/glasses/hud/security/securitygoggles/dropped(mob/living/carbon/human/user)
 	. = ..()
+	hud_type = null
 	if(hud_granted)
 		hud_granted = FALSE
-		hud_type = null
 		var/datum/atom_hud/HUD = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
 		HUD.remove_hud_from(user)
 
