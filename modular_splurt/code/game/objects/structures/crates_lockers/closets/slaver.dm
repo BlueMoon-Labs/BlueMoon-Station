@@ -26,8 +26,7 @@
 
 /obj/structure/closet/crate/slaver_loadout/Initialize(mapload)
 	. = ..()
-	if(. == INITIALIZE_HINT_NORMAL)
-		. = INITIALIZE_HINT_LATELOAD
+	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(PopulateAfterRoundStart))
 
 /obj/structure/closet/crate/slaver_loadout/PopulateContents()
 	..()
@@ -46,8 +45,8 @@
 	new /obj/item/reagent_containers/hypospray/medipen/lewdsleepy(src)
 	new /obj/item/slaver/gizmo(src)
 
-/obj/structure/closet/crate/slaver_loadout/LateInitialize()
-	. = ..()
+/obj/structure/closet/crate/slaver_loadout/proc/PopulateAfterRoundStart()
+	SIGNAL_HANDLER
 	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
 		new /obj/item/clothing/accessory/permit/special/deviant/lust/slavers(src)
 
