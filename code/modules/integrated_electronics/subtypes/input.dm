@@ -1,6 +1,6 @@
 /obj/item/integrated_circuit/input
 	var/can_be_asked_input = 0
-	category_text = "Input"
+	category_text = "Ввод"
 	power_draw_per_use = 5
 
 /obj/item/integrated_circuit/input/proc/ask_for_input(mob/user)
@@ -8,50 +8,50 @@
 
 /obj/item/integrated_circuit/input/button
 	name = "button"
-	desc = "This tiny button must do something, right?"
+	desc = "Эта крошечная кнопка наверняка для чего-то нужна, правда?"
 	icon_state = "button"
 	complexity = 1
 	can_be_asked_input = 1
 	inputs = list()
 	outputs = list()
-	activators = list("on pressed" = IC_PINTYPE_PULSE_OUT)
+	activators = list("при нажатии" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/input/button/ask_for_input(mob/user) //Bit misleading name for this specific use.
-	to_chat(user, "<span class='notice'>You press the button labeled '[displayed_name]'.</span>")
+	to_chat(user, "<span class='notice'>Вы нажали кнопку, названную '[displayed_name]'.</span>")
 	activate_pin(1)
 
 /obj/item/integrated_circuit/input/toggle_button
 	name = "toggle button"
-	desc = "It toggles on, off, on, off..."
+	desc = "Она включается, выключается, включается, выключается..."
 	icon_state = "toggle_button"
 	complexity = 1
 	can_be_asked_input = 1
 	inputs = list()
-	outputs = list("on" = IC_PINTYPE_BOOLEAN)
-	activators = list("on toggle" = IC_PINTYPE_PULSE_OUT)
+	outputs = list("включено?" = IC_PINTYPE_BOOLEAN)
+	activators = list("при переключении" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/input/toggle_button/ask_for_input(mob/user) // Ditto.
 	set_pin_data(IC_OUTPUT, 1, !get_pin_data(IC_OUTPUT, 1))
 	push_data()
 	activate_pin(1)
-	to_chat(user, "<span class='notice'>You toggle the button labeled '[displayed_name]' [get_pin_data(IC_OUTPUT, 1) ? "on" : "off"].</span>")
+	to_chat(user, "<span class='notice'>Вы переключаете кнопку, названную '[displayed_name]' в [get_pin_data(IC_OUTPUT, 1) ? "включенный" : "выключенный"] режим.</span>")
 
 /obj/item/integrated_circuit/input/numberpad
 	name = "number pad"
-	desc = "This small number pad allows someone to input a number into the system."
+	desc = "Эта небольшая цифровая клавиатура позволяет вводить цифры в систему."
 	icon_state = "numberpad"
 	complexity = 2
 	can_be_asked_input = 1
 	inputs = list()
-	outputs = list("number entered" = IC_PINTYPE_NUMBER)
-	activators = list("on entered" = IC_PINTYPE_PULSE_OUT)
+	outputs = list("введённое число" = IC_PINTYPE_NUMBER)
+	activators = list("при вводе" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 4
 
 /obj/item/integrated_circuit/input/numberpad/ask_for_input(mob/user)
-	var/new_input = input(user, "Enter a number, please.",displayed_name) as null|num
+	var/new_input = input(user, "Введите число, пожалуйста",displayed_name) as null|num
 	if(isnum(new_input) && user.IsAdvancedToolUser())
 		set_pin_data(IC_OUTPUT, 1, new_input)
 		push_data()
@@ -59,18 +59,18 @@
 
 /obj/item/integrated_circuit/input/textpad
 	name = "text pad"
-	desc = "This small text pad allows someone to input a string into the system."
+	desc = "Этот небольшой текстовый блок позволяет пользователю вводить строку в систему."
 	icon_state = "textpad"
 	complexity = 2
 	can_be_asked_input = 1
 	inputs = list()
-	outputs = list("string entered" = IC_PINTYPE_STRING)
-	activators = list("on entered" = IC_PINTYPE_PULSE_OUT)
+	outputs = list("введённая строка" = IC_PINTYPE_STRING)
+	activators = list("при вводе" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 4
 
 /obj/item/integrated_circuit/input/textpad/ask_for_input(mob/user)
-	var/new_input = stripped_multiline_input(user, "Enter some words, please.",displayed_name)
+	var/new_input = stripped_multiline_input(user, "Введите несколько слов, пожалуйста",displayed_name)
 	if(istext(new_input) && user.IsAdvancedToolUser())
 		set_pin_data(IC_OUTPUT, 1, new_input)
 		push_data()
@@ -78,18 +78,18 @@
 
 /obj/item/integrated_circuit/input/colorpad
 	name = "color pad"
-	desc = "This small color pad allows someone to input a hexadecimal color into the system."
+	desc = "Этот небольшой цветовой блок позволяет вводить шестнадцатеричные коды цветов в систему."
 	icon_state = "colorpad"
 	complexity = 2
 	can_be_asked_input = 1
 	inputs = list()
-	outputs = list("color entered" = IC_PINTYPE_STRING)
-	activators = list("on entered" = IC_PINTYPE_PULSE_OUT)
+	outputs = list("введённый цвеет" = IC_PINTYPE_STRING)
+	activators = list("при вводе" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 4
 
 /obj/item/integrated_circuit/input/colorpad/ask_for_input(mob/user)
-	var/new_color = input(user, "Enter a color, please.", "Color", "#ffffff") as color|null
+	var/new_color = input(user, "Введите цвет, пожалуйста", "Color", "#ffffff") as color|null
 	if(new_color && user.IsAdvancedToolUser())
 		set_pin_data(IC_OUTPUT, 1, new_color)
 		push_data()
@@ -97,15 +97,15 @@
 
 /obj/item/integrated_circuit/input/med_scanner
 	name = "integrated medical analyser"
-	desc = "A very small version of the common medical analyser. This allows the machine to know how healthy someone is."
+	desc = "Очень миниатюрная версия обычного медицинского анализатора. С его помощью аппарат может определить, насколько человек здоров."
 	icon_state = "medscan"
 	complexity = 4
-	inputs = list("target" = IC_PINTYPE_REF)
+	inputs = list("цель" = IC_PINTYPE_REF)
 	outputs = list(
-		"total health %" = IC_PINTYPE_NUMBER,
-		"total missing health" = IC_PINTYPE_NUMBER
+		"процент общего здоровья" = IC_PINTYPE_NUMBER,
+		"общее потерянное здоровье" = IC_PINTYPE_NUMBER
 		)
-	activators = list("scan" = IC_PINTYPE_PULSE_IN, "on scanned" = IC_PINTYPE_PULSE_OUT)
+	activators = list("сканировать" = IC_PINTYPE_PULSE_IN, "при сканировании" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 40
 
@@ -125,21 +125,21 @@
 
 /obj/item/integrated_circuit/input/adv_med_scanner
 	name = "integrated adv. medical analyser"
-	desc = "A very small version of the medbot's medical analyser. This allows the machine to know how healthy someone is. \
-	This type is much more precise, allowing the machine to know much more about the target than a normal analyzer."
+	desc = "Очень миниатюрная версия медицинского анализатора медбота. Благодаря ей аппарат может определить, насколько человек здоров. \
+    Этот тип анализатора гораздо точнее, что позволяет аппарату получить гораздо больше информации о целевом объекте, чем обычный анализатор."
 	icon_state = "medscan_adv"
 	complexity = 12
 	inputs = list("target" = IC_PINTYPE_REF)
 	outputs = list(
-		"total health %"		= IC_PINTYPE_NUMBER,
-		"total missing health"	= IC_PINTYPE_NUMBER,
-		"brute damage"			= IC_PINTYPE_NUMBER,
-		"burn damage"			= IC_PINTYPE_NUMBER,
-		"tox damage"			= IC_PINTYPE_NUMBER,
-		"oxy damage"			= IC_PINTYPE_NUMBER,
-		"clone damage"			= IC_PINTYPE_NUMBER
+		"процент общего здоровья"		= IC_PINTYPE_NUMBER,
+		"общее потерянное здоровье"	= IC_PINTYPE_NUMBER,
+		"ушибы" = IC_PINTYPE_NUMBER,
+		"ожоги" = IC_PINTYPE_NUMBER,
+		"токсины" = IC_PINTYPE_NUMBER,
+		"удушение" = IC_PINTYPE_NUMBER,
+		"клеточный урон" = IC_PINTYPE_NUMBER
 	)
-	activators = list("scan" = IC_PINTYPE_PULSE_IN, "on scanned" = IC_PINTYPE_PULSE_OUT)
+	activators = list("сканировать" = IC_PINTYPE_PULSE_IN, "при сканировании" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 80
 
@@ -164,22 +164,22 @@
 
 /obj/item/integrated_circuit/input/slime_scanner
 	name = "slime_scanner"
-	desc = "A very small version of the xenobio analyser. This allows the machine to know every needed properties of slime. Output mutation list is non-associative."
+	desc = "Очень компактная версия анализатора ксенобио. Это позволяет устройству определять все необходимые свойства слизи. Выводимый список мутаций не является ассоциативным."
 	icon_state = "medscan_adv"
 	complexity = 12
 	inputs = list("target" = IC_PINTYPE_REF)
 	outputs = list(
-		"colour"				= IC_PINTYPE_STRING,
-		"adult"					= IC_PINTYPE_BOOLEAN,
-		"nutrition"				= IC_PINTYPE_NUMBER,
-		"charge"				= IC_PINTYPE_NUMBER,
-		"health"				= IC_PINTYPE_NUMBER,
-		"possible mutation"		= IC_PINTYPE_LIST,
-		"genetic destability"	= IC_PINTYPE_NUMBER,
-		"slime core amount"		= IC_PINTYPE_NUMBER,
-		"Growth progress"		= IC_PINTYPE_NUMBER,
+		"цвет" = IC_PINTYPE_STRING,
+		"взрослый?" = IC_PINTYPE_BOOLEAN,
+		"насыщение"	= IC_PINTYPE_NUMBER,
+		"заряд" = IC_PINTYPE_NUMBER,
+		"здоровье" = IC_PINTYPE_NUMBER,
+		"возможные мутации" = IC_PINTYPE_LIST,
+		"генетическая нестабильность" = IC_PINTYPE_NUMBER,
+		"количество ядер" = IC_PINTYPE_NUMBER,
+		"Процесс роста" = IC_PINTYPE_NUMBER,
 	)
-	activators = list("scan" = IC_PINTYPE_PULSE_IN, "on scanned" = IC_PINTYPE_PULSE_OUT)
+	activators = list("сканировать" = IC_PINTYPE_PULSE_IN, "при сканировании" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 80
 
@@ -207,35 +207,35 @@
 
 /obj/item/integrated_circuit/input/plant_scanner
 	name = "integrated plant analyzer"
-	desc = "A very small version of the plant analyser. This allows the machine to know all valuable parameters of plants in trays. \
-			It can only scan plants, not seeds or fruits."
+	desc = "Очень компактная версия анализатора растений. Это позволяет устройству определять все важные параметры растений, выращенных в лотках. \
+            Оно может сканировать только растения, но не семена или плоды."
 	icon_state = "medscan_adv"
 	complexity = 12
-	inputs = list("target" = IC_PINTYPE_REF)
+	inputs = list("цель" = IC_PINTYPE_REF)
 	outputs = list(
-		"plant type"		= IC_PINTYPE_STRING,
-		"age"		= IC_PINTYPE_NUMBER,
-		"potency"	= IC_PINTYPE_NUMBER,
-		"yield"			= IC_PINTYPE_NUMBER,
-		"Maturation speed"			= IC_PINTYPE_NUMBER,
-		"Production speed"			= IC_PINTYPE_NUMBER,
-		"Endurance"			= IC_PINTYPE_NUMBER,
-		"Lifespan"			= IC_PINTYPE_NUMBER,
-		"Weed Growth Rate"		= IC_PINTYPE_NUMBER,
-		"Weed Vulnerability"	= IC_PINTYPE_NUMBER,
-		"Weed level"			= IC_PINTYPE_NUMBER,
-		"Pest level"			= IC_PINTYPE_NUMBER,
-		"Toxicity level"			= IC_PINTYPE_NUMBER,
-		"Water level"			= IC_PINTYPE_NUMBER,
-		"Nutrition level"			= IC_PINTYPE_NUMBER,
-		"harvest"			= IC_PINTYPE_NUMBER,
-		"dead"			= IC_PINTYPE_NUMBER,
-		"plant health"			= IC_PINTYPE_NUMBER,
-		"self sustaining"		= IC_PINTYPE_NUMBER,
-		"using irrigation" 		= IC_PINTYPE_NUMBER,
-		"connected trays"		= IC_PINTYPE_LIST
+		"тип растения" = IC_PINTYPE_STRING,
+		"возраст" = IC_PINTYPE_NUMBER,
+		"потенция" = IC_PINTYPE_NUMBER,
+		"урожайность"			= IC_PINTYPE_NUMBER,
+		"Скорость созревания"			= IC_PINTYPE_NUMBER,
+		"Скорость производства"			= IC_PINTYPE_NUMBER,
+		"Стойкость"			= IC_PINTYPE_NUMBER,
+		"Продолжительность жизни"			= IC_PINTYPE_NUMBER,
+		"Скорость роста сорняков"		= IC_PINTYPE_NUMBER,
+		"Уязвимость к сорнякам"	= IC_PINTYPE_NUMBER,
+		"Уровень сорняков"			= IC_PINTYPE_NUMBER,
+		"Уровень пестицидов" = IC_PINTYPE_NUMBER,
+		"Уровень токсичности"			= IC_PINTYPE_NUMBER,
+		"Уровень воды"			= IC_PINTYPE_NUMBER,
+		"Уровень питания"			= IC_PINTYPE_NUMBER,
+		"урожай"			= IC_PINTYPE_NUMBER,
+		"мертвый"			= IC_PINTYPE_NUMBER,
+		"здоровье растения"			= IC_PINTYPE_NUMBER,
+		"самоподдерживающийся"		= IC_PINTYPE_NUMBER,
+		"с использованием орошения" 		= IC_PINTYPE_NUMBER,
+		"соединенные лотки"		= IC_PINTYPE_LIST
 	)
-	activators = list("scan" = IC_PINTYPE_PULSE_IN, "on scanned" = IC_PINTYPE_PULSE_OUT)
+	activators = list("сканировать" = IC_PINTYPE_PULSE_IN, "при сканировании" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 10
 
@@ -271,17 +271,17 @@
 
 /obj/item/integrated_circuit/input/gene_scanner
 	name = "gene scanner"
-	desc = "This circuit will scan the target plant for traits and reagent genes. Output is non-associative."
-	extended_desc = "This allows the machine to scan plants in trays for reagent and trait genes. \
-			It can only scan plants, not seeds or fruits."
+	desc = "Эта схема будет сканировать исследуемое растение на наличие признаков и генов-реагентов. Результат не является ассоциативным."
+	extended_desc = "Это позволяет аппарату сканировать растения в лотках на наличие генов-реагентов и признаков. \
+            Он может сканировать только растения, но не семена или плоды."
 	inputs = list(
-		"target" = IC_PINTYPE_REF
+		"цель" = IC_PINTYPE_REF
 	)
 	outputs = list(
-		"traits" = IC_PINTYPE_LIST,
-		"reagents" = IC_PINTYPE_LIST
+		"признаки" = IC_PINTYPE_LIST,
+		"реагенты" = IC_PINTYPE_LIST
 	)
-	activators = list("scan" = IC_PINTYPE_PULSE_IN, "on scanned" = IC_PINTYPE_PULSE_OUT)
+	activators = list("сканировать" = IC_PINTYPE_PULSE_IN, "при сканировании" = IC_PINTYPE_PULSE_OUT)
 	icon_state = "medscan_adv"
 	spawn_flags = IC_SPAWN_RESEARCH
 
@@ -309,29 +309,29 @@
 
 /obj/item/integrated_circuit/input/examiner
 	name = "examiner"
-	desc = "It's a little machine vision system. It can return the name, description, distance, \
-	relative coordinates, total amount of reagents, maximum amount of reagents, density, and opacity of the referenced object."
+	desc = "Это небольшая система машинного зрения. Она может выдать название, описание, расстояние, \
+    относительные координаты, общее количество реагентов, максимальное количество реагентов, плотность и непрозрачность объекта, на который указывает."
 	icon_state = "video_camera"
 	complexity = 6
 	inputs = list(
-		"target" = IC_PINTYPE_REF
+		"цель" = IC_PINTYPE_REF
 		)
 	outputs = list(
-		"name"				 	= IC_PINTYPE_STRING,
-		"description"			= IC_PINTYPE_STRING,
+		"имя"				 	= IC_PINTYPE_STRING,
+		"описание"			= IC_PINTYPE_STRING,
 		"X"						= IC_PINTYPE_NUMBER,
 		"Y"						= IC_PINTYPE_NUMBER,
-		"distance"				= IC_PINTYPE_NUMBER,
-		"max reagents"			= IC_PINTYPE_NUMBER,
-		"amount of reagents"	= IC_PINTYPE_NUMBER,
-		"density"				= IC_PINTYPE_BOOLEAN,
-		"opacity"				= IC_PINTYPE_BOOLEAN,
-		"occupied turf"			= IC_PINTYPE_REF
+		"дистанция"				= IC_PINTYPE_NUMBER,
+		"максимальное количество реагентов"			= IC_PINTYPE_NUMBER,
+		"количество реагентов"	= IC_PINTYPE_NUMBER,
+		"плотность"				= IC_PINTYPE_BOOLEAN,
+		"непрозрачность"				= IC_PINTYPE_BOOLEAN,
+		"занятая территория"			= IC_PINTYPE_REF
 		)
 	activators = list(
-		"scan" = IC_PINTYPE_PULSE_IN,
-		"on scanned" = IC_PINTYPE_PULSE_OUT,
-		"not scanned" = IC_PINTYPE_PULSE_OUT
+		"сканировать" = IC_PINTYPE_PULSE_IN,
+		"при сканировании" = IC_PINTYPE_PULSE_OUT,
+		"если сканирование не удалось" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 80
@@ -371,14 +371,14 @@
 
 /obj/item/integrated_circuit/input/turfpoint
 	name = "Tile pointer"
-	desc = "This circuit will get a tile ref with the provided absolute coordinates."
-	extended_desc = "If the machine	cannot see the target, it will not be able to calculate the correct direction.\
-	This circuit only works while inside an assembly."
+	desc = "Эта схема вернет ссылку на плитку с указанными абсолютными координатами."
+	extended_desc = "Если робот не видит цель, он не сможет рассчитать правильное направление.\
+	Эта схема работает только внутри корпуса."
 	icon_state = "numberpad"
 	complexity = 5
 	inputs = list("X" = IC_PINTYPE_NUMBER,"Y" = IC_PINTYPE_NUMBER)
-	outputs = list("tile" = IC_PINTYPE_REF)
-	activators = list("calculate dir" = IC_PINTYPE_PULSE_IN, "on calculated" = IC_PINTYPE_PULSE_OUT,"not calculated" = IC_PINTYPE_PULSE_OUT)
+	outputs = list("плитка" = IC_PINTYPE_REF)
+	activators = list("вычислить направление" = IC_PINTYPE_PULSE_IN, "при вычислении" = IC_PINTYPE_PULSE_OUT,"если вычисление не удалось" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 40
 
@@ -401,21 +401,21 @@
 
 /obj/item/integrated_circuit/input/turfscan
 	name = "tile analyzer"
-	desc = "This circuit can analyze the contents of the scanned turf, and can read letters on the turf."
+	desc = "Эта схема способна анализировать содержимое отсканированного изображения и распознавать буквы на нем."
 	icon_state = "video_camera"
 	complexity = 5
 	inputs = list(
-		"target" = IC_PINTYPE_REF
+		"цель" = IC_PINTYPE_REF
 		)
 	outputs = list(
-		"located ref" 		= IC_PINTYPE_LIST,
-		"Written letters" 	= IC_PINTYPE_STRING,
-		"area"				= IC_PINTYPE_STRING
+		"найденные ссылки" 		= IC_PINTYPE_LIST,
+		"написанные символы" 	= IC_PINTYPE_STRING,
+		"зона"				= IC_PINTYPE_STRING
 		)
 	activators = list(
-		"scan" = IC_PINTYPE_PULSE_IN,
-		"on scanned" = IC_PINTYPE_PULSE_OUT,
-		"not scanned" = IC_PINTYPE_PULSE_OUT
+		"сканировать" = IC_PINTYPE_PULSE_IN,
+		"при сканировании" = IC_PINTYPE_PULSE_OUT,
+		"если сканирование не удалось" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 40
@@ -449,14 +449,14 @@
 
 /obj/item/integrated_circuit/input/local_locator
 	name = "local locator"
-	desc = "This is needed for certain devices that demand a reference for a target to act upon. This type only locates something \
-	that is holding the machine containing it."
+	desc = "Это необходимо для некоторых устройств, которым требуется ссылка на объект, с которым они должны взаимодействовать. Данный тип определяет только то, \
+    что содержит устройство, в котором оно находится."
 	inputs = list()
-	outputs = list("located ref"		= IC_PINTYPE_REF,
-					"is ground"			= IC_PINTYPE_BOOLEAN,
-					"is creature"		= IC_PINTYPE_BOOLEAN)
-	activators = list("locate" = IC_PINTYPE_PULSE_IN,
-		"on scanned" = IC_PINTYPE_PULSE_OUT
+	outputs = list("найденная ссылка"		= IC_PINTYPE_REF,
+					"это поверхность?"			= IC_PINTYPE_BOOLEAN,
+					"это существо?"		= IC_PINTYPE_BOOLEAN)
+	activators = list("найти" = IC_PINTYPE_PULSE_IN,
+		"при сканировании" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 20
@@ -473,15 +473,15 @@
 
 /obj/item/integrated_circuit/input/adjacent_locator
 	name = "adjacent locator"
-	desc = "This is needed for certain devices that demand a reference for a target to act upon. This type only locates something \
-	that is standing up to a meter away from the machine."
-	extended_desc = "The first pin requires a ref to the kind of object that you want the locator to acquire. This means that it will \
-	give refs to nearby objects that are similar. If more than one valid object is found nearby, it will choose one of them at \
-	random."
-	inputs = list("desired type ref" = IC_PINTYPE_REF)
-	outputs = list("located ref" = IC_PINTYPE_REF)
-	activators = list("locate" = IC_PINTYPE_PULSE_IN,"found" = IC_PINTYPE_PULSE_OUT,
-		"not found" = IC_PINTYPE_PULSE_OUT)
+	desc = "Это необходимо для некоторых устройств, которым требуется ориентир, по отношению к которому они могут действовать. Данный тип определяет только объекты, \
+    находящиеся на расстоянии до одного метра от устройства."
+	extended_desc = "Первый пин требует ссылки на тип объекта, который должен найти локатор. Это означает, что он будет \
+    выдавать указатели на похожие объекты, находящиеся поблизости. Если поблизости найдется более одного подходящего объекта, он выберет один из них \
+    случайным образом."
+	inputs = list("ссылка желаемого типа" = IC_PINTYPE_REF)
+	outputs = list("найденная ссылка" = IC_PINTYPE_REF)
+	activators = list("найти" = IC_PINTYPE_PULSE_IN,"найдено" = IC_PINTYPE_PULSE_OUT,
+		"не найдено" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 30
 
@@ -513,14 +513,14 @@
 /obj/item/integrated_circuit/input/advanced_locator_list
 	complexity = 6
 	name = "list advanced locator"
-	desc = "This is needed for certain devices that demand list of names for a target to act upon. This type locates something \
-	that is standing in given radius of up to 8 meters. Output is non-associative. Input will only consider keys if associative."
-	extended_desc = "The first pin requires a list of the kinds of objects that you want the locator to acquire. It will locate nearby objects by name and description, \
-	and will then provide a list of all found objects which are similar. \
-	The second pin is a radius."
-	inputs = list("desired type ref" = IC_PINTYPE_LIST, "radius" = IC_PINTYPE_NUMBER)
-	outputs = list("located ref" = IC_PINTYPE_LIST)
-	activators = list("locate" = IC_PINTYPE_PULSE_IN,"found" = IC_PINTYPE_PULSE_OUT,"not found" = IC_PINTYPE_PULSE_OUT)
+	desc = "Это необходимо для некоторых устройств, которым требуется список имен объектов, с которыми нужно взаимодействовать. Данный тип позволяет обнаружить объекты, \
+    находящиеся в заданном радиусе до 8 метров. Вывод является неассоциативным. При вводе будут учитываться только ассоциативные ключи."
+	extended_desc = "Первый пин требует указания списка типов объектов, которые должен найти локатор. Он найдет ближайшие объекты по имени и описанию, \
+    а затем предоставит список всех найденных объектов, которые соответствуют заданным критериям. \
+    Второй пин это радиус."
+	inputs = list("список ссылок желаемого типа" = IC_PINTYPE_LIST, "радиус" = IC_PINTYPE_NUMBER)
+	outputs = list("найденная ссылка" = IC_PINTYPE_LIST)
+	activators = list("найти" = IC_PINTYPE_PULSE_IN,"найдено" = IC_PINTYPE_PULSE_OUT,"не найдено" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 30
 	var/radius = 1
@@ -576,15 +576,15 @@
 /obj/item/integrated_circuit/input/advanced_locator
 	complexity = 6
 	name = "advanced locator"
-	desc = "This is needed for certain devices that demand a reference for a target to act upon. This type locates something \
-	that is standing in given radius of up to 8 meters"
-	extended_desc = "The first pin requires a ref to the kind of object that you want the locator to acquire. This means that it will \
-	give refs to nearby objects which are similar. If this pin is a string, the locator will search for an \
-	item matching the desired text in its name and description. If more than one valid object is found nearby, it will choose one of them at \
-	random. The second pin is a radius."
-	inputs = list("desired type" = IC_PINTYPE_ANY, "radius" = IC_PINTYPE_NUMBER)
-	outputs = list("located ref" = IC_PINTYPE_REF)
-	activators = list("locate" = IC_PINTYPE_PULSE_IN,"found" = IC_PINTYPE_PULSE_OUT,"not found" = IC_PINTYPE_PULSE_OUT)
+	desc = "Это необходимо для некоторых устройств, которым требуется ссылка на объект, по отношению к которому они могут действовать. Данный тип определяет местонахождение объекта, \
+    находящегося в заданном радиусе до 8 метров"
+	extended_desc = "Первый пин требует ссылку на тип объекта, который локатор должен обнаружить. Это означает, что он будет \
+	выдавать ссылки на ближайшие объекты того же типа. Если в этот пин передана строка, локатор будет искать \
+	предмет, в названии или описании которого содержится указанный текст. Если поблизости найдено несколько \
+	подходящих объектов, один из них будет выбран случайным образом. Второй пин это радиус."
+	inputs = list("желаемый тип" = IC_PINTYPE_ANY, "радиус" = IC_PINTYPE_NUMBER)
+	outputs = list("найденная ссылка" = IC_PINTYPE_REF)
+	activators = list("найти" = IC_PINTYPE_PULSE_IN,"найдено" = IC_PINTYPE_PULSE_OUT,"не найдено" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 30
 	var/radius = 1
@@ -634,18 +634,18 @@
 
 /obj/item/integrated_circuit/input/signaler
 	name = "integrated signaler"
-	desc = "Signals from a signaler can be received with this, allowing for remote control. It can also send signals."
-	extended_desc = "When a signal is received from another signaler, the 'on signal received' activator pin will be pulsed. \
-	The two input pins are to configure the integrated signaler's settings. Note that the frequency should not have a decimal in it, \
-	meaning the default frequency is expressed as 1457, not 145.7. To send a signal, pulse the 'send signal' activator pin."
+	desc = "С его помощью можно принимать сигналы от сигнализатора, что позволяет осуществлять дистанционное управление. Он также может отправлять сигналы."
+	extended_desc = "При получении сигнала от другого сигнализатора на выводе активатора 'получение сигнала' появится импульс. \
+    Два входных пина служат для настройки параметров встроенного сигнализатора. Обратите внимание, что в значении частоты не должно быть десятичной дроби, \
+    то есть частота по умолчанию указывается как 1457, а не 145,7. Для отправки сигнала подайте импульс на пин активатора 'отправка сигнала'."
 	icon_state = "signal"
 	complexity = 4
-	inputs = list("frequency" = IC_PINTYPE_NUMBER,"code" = IC_PINTYPE_NUMBER)
+	inputs = list("частота" = IC_PINTYPE_NUMBER,"код" = IC_PINTYPE_NUMBER)
 	outputs = list()
 	activators = list(
-		"send signal" = IC_PINTYPE_PULSE_IN,
-		"on signal sent" = IC_PINTYPE_PULSE_OUT,
-		"on signal received" = IC_PINTYPE_PULSE_OUT)
+		"отправить сигнал" = IC_PINTYPE_PULSE_IN,
+		"при отправке сигнала" = IC_PINTYPE_PULSE_OUT,
+		"при приёме сигнала" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_LONG_RANGE
 	power_draw_idle = 5
@@ -717,28 +717,28 @@
 
 /obj/item/integrated_circuit/input/ntnet_packet
 	name = "NTNet networking circuit"
-	desc = "Enables the sending and receiving of messages over NTNet via packet data protocol."
-	extended_desc = "Data can be sent or received using the second pin on each side, \
-	with additonal data reserved for the third pin. When a message is received, the second activation pin \
-	will pulse whatever is connected to it. Pulsing the first activation pin will send a message. Messages \
-	can be sent to multiple recepients. Addresses must be separated with a semicolon, like this: Address1;Address2;Etc."
+	desc = "Включает отправку и получение сообщений через NTNet с помощью протокола пакетной передачи данных."
+	extended_desc = "Данные можно отправлять или принимать с помощью второго пина с каждой стороны, \
+    а третий пин зарезервирован для дополнительных данных. При получении сообщения второй пин активации \
+    подаст импульс на подключенное к нему устройство. Импульс на первом пине активации приведет к отправке сообщения. Сообщения \
+    можно отправлять нескольким адресатам. Адреса необходимо разделять точкой с запятой, например: Адрес1;Адрес2;и т. д."
 	icon_state = "signal"
 	complexity = 2
 	cooldown_per_use = 1
 	inputs = list(
-		"target NTNet addresses"= IC_PINTYPE_STRING,
-		"data to send"			= IC_PINTYPE_STRING,
-		"secondary text"		= IC_PINTYPE_STRING,
+		"целевые адреса NTNet"= IC_PINTYPE_STRING,
+		"данные для отправки"			= IC_PINTYPE_STRING,
+		"второстепенный текст"		= IC_PINTYPE_STRING,
 		"passkey"				= IC_PINTYPE_STRING
 		)
 	outputs = list(
-		"address received"			= IC_PINTYPE_STRING,
-		"data received"				= IC_PINTYPE_STRING,
-		"secondary text received"	= IC_PINTYPE_STRING,
-		"passkey received"			= IC_PINTYPE_STRING,
+		"полученный адрес"			= IC_PINTYPE_STRING,
+		"полученные данные"				= IC_PINTYPE_STRING,
+		"полученный второстепенный текст"	= IC_PINTYPE_STRING,
+		"полученная passkey"			= IC_PINTYPE_STRING,
 		"is_broadcast"				= IC_PINTYPE_BOOLEAN
 		)
-	activators = list("send data" = IC_PINTYPE_PULSE_IN, "on data received" = IC_PINTYPE_PULSE_OUT)
+	activators = list("отправить данные" = IC_PINTYPE_PULSE_IN, "при получении данных" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_LONG_RANGE
 	power_draw_per_use = 50
@@ -749,7 +749,7 @@
 	var/datum/component/ntnet_interface/net = LoadComponent(/datum/component/ntnet_interface)
 	address = net.hardware_id
 	net.differentiate_broadcast = FALSE
-	desc += "<br>This circuit's NTNet hardware address is: [address]"
+	desc += "<br>Аппаратный адрес NTNet этой схемы: [address]"
 
 /obj/item/integrated_circuit/input/ntnet_packet/do_work()
 	var/target_address = get_pin_data(IC_INPUT, 1)
@@ -774,21 +774,21 @@
 
 /obj/item/integrated_circuit/input/ntnet_advanced
 	name = "Low level NTNet transreceiver"
-	desc = "Enables the sending and receiving of messages over NTNet via packet data protocol. Allows advanced control of message contents and signalling. Must use associative lists. Outputs associative list. Has a slower transmission rate than normal NTNet circuits, due to increased data processing complexity."
-	extended_desc = "Data can be sent or received using the second pin on each side, \
-	When a message is received, the second activation pin will pulse whatever is connected to it. \
-	Pulsing the first activation pin will send a message. Messages can be sent to multiple recepients. \
-	Addresses must be separated with a semicolon, like this: Address1;Address2;Etc."
+	desc = "Обеспечивает отправку и получение сообщений по NTNet с помощью протокола пакетной передачи данных. Обеспечивает расширенное управление содержанием сообщений и сигнализацией. Требует использования ассоциативных списков. Выводит ассоциативный список. Имеет более низкую скорость передачи данных по сравнению с обычными схемами NTNet из-за повышенной сложности обработки данных."
+	extended_desc = "Данные можно отправлять или принимать с помощью второго пина с каждой стороны. \
+    При получении сообщения второй пин подает импульс на подключенное к нему устройство. \
+    Импульс на первом пине инициирует отправку сообщения. Сообщения можно отправлять нескольким адресатам. \
+    Адреса необходимо разделять точкой с запятой, например: Адрес1;Адрес2;и т. д."
 	icon_state = "signal"
 	complexity = 4
 	cooldown_per_use = 10
 	inputs = list(
-		"target NTNet addresses"= IC_PINTYPE_STRING,
-		"data"					= IC_PINTYPE_LIST,
+		"целевые адреса NTNet"= IC_PINTYPE_STRING,
+		"данные"					= IC_PINTYPE_LIST,
 		"passkey"				= IC_PINTYPE_STRING,
 		)
-	outputs = list("received data" = IC_PINTYPE_LIST, "is_broadcast" = IC_PINTYPE_BOOLEAN, "received passkey" = IC_PINTYPE_STRING)
-	activators = list("send data" = IC_PINTYPE_PULSE_IN, "on data received" = IC_PINTYPE_PULSE_OUT)
+	outputs = list("полученные данные" = IC_PINTYPE_LIST, "is_broadcast" = IC_PINTYPE_BOOLEAN, "полученная passkey" = IC_PINTYPE_STRING)
+	activators = list("отправить данные" = IC_PINTYPE_PULSE_IN, "при получении данных" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_LONG_RANGE
 	power_draw_per_use = 50
@@ -799,7 +799,7 @@
 	var/datum/component/ntnet_interface/net = LoadComponent(/datum/component/ntnet_interface)
 	address = net.hardware_id
 	net.differentiate_broadcast = FALSE
-	desc += "<br>This circuit's NTNet hardware address is: [address]"
+	desc += "<br>Аппаратный адрес NTNet этой схемы: [address]"
 
 /obj/item/integrated_circuit/input/ntnet_advanced/do_work()
 	var/target_address = get_pin_data(IC_INPUT, 1)
@@ -823,13 +823,13 @@
 //This circuit gives information on where the machine is.
 /obj/item/integrated_circuit/input/gps
 	name = "global positioning system"
-	desc = "This allows you to easily know the position of a machine containing this device."
-	extended_desc = "The coordinates that the GPS outputs are absolute, not relative. The full coords output has the coords separated by commas and is in string format."
+	desc = "Это позволяет легко определить местонахождение машины, на которой установлено данное устройство."
+	extended_desc = "Координаты, выдаваемые GPS, являются абсолютными, а не относительными. В полном наборе координат они разделены запятыми и представлены в виде строки."
 	icon_state = "gps"
 	complexity = 4
 	inputs = list()
-	outputs = list("X"= IC_PINTYPE_NUMBER, "Y" = IC_PINTYPE_NUMBER, "Z" = IC_PINTYPE_NUMBER, "full coords" = IC_PINTYPE_STRING)
-	activators = list("get coordinates" = IC_PINTYPE_PULSE_IN, "on get coordinates" = IC_PINTYPE_PULSE_OUT)
+	outputs = list("X"= IC_PINTYPE_NUMBER, "Y" = IC_PINTYPE_NUMBER, "Z" = IC_PINTYPE_NUMBER, "полные координаты" = IC_PINTYPE_STRING)
+	activators = list("получить координаты" = IC_PINTYPE_PULSE_IN, "при получении координат" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 30
 
@@ -852,19 +852,19 @@
 
 /obj/item/integrated_circuit/input/microphone
 	name = "microphone"
-	desc = "Useful for spying on people, or for voice-activated machines."
-	extended_desc = "This will automatically translate most languages it hears to Galactic Common. \
-	The first activation pin is always pulsed when the circuit hears someone talk, while the second one \
-	is only triggered if it hears someone speaking a language other than Galactic Common."
+	desc = "Полезно для слежки за людьми или для устройств с голосовым управлением."
+	extended_desc = "Это устройство автоматически переводит большинство услышанных языков на галактический общий язык. \
+    Первый пин всегда подает сигнал, когда схема улавливает речь человека, а второй \
+    срабатывает только в том случае, если улавливается речь на языке, отличном от галактического общего языка."
 	icon_state = "recorder"
 	complexity = 4 //cuts complexity in half, you'll need to use a ref to string for the name
 	inputs = list()
 	flags_1 = CONDUCT_1 | HEAR_1
 	outputs = list(
-	"speaker" = IC_PINTYPE_REF,
-	"message" = IC_PINTYPE_STRING
+	"говорящий" = IC_PINTYPE_REF,
+	"сообщение" = IC_PINTYPE_STRING
 	)
-	activators = list("on message received" = IC_PINTYPE_PULSE_OUT, "on translation" = IC_PINTYPE_PULSE_OUT)
+	activators = list("при получении сообщения" = IC_PINTYPE_PULSE_OUT, "при переводе" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 5
 
@@ -885,13 +885,13 @@
 
 /obj/item/integrated_circuit/input/sensor
 	name = "sensor"
-	desc = "Scans and obtains a reference for any objects or persons near you. All you need to do is shove the machine in their face."
-	extended_desc = "If the 'ignore storage' pin is set to true, the sensor will disregard scanning various storage containers such as backpacks."
+	desc = "Сканирует и выдает информацию о любых объектах или людях, находящихся рядом с вами. Достаточно просто поднести устройство к их лицу."
+	extended_desc = "Если для параметра 'игнорировать хранилища?' установлено значение true, датчик не будет сканировать различные емкости для хранения, такие как рюкзаки."
 	icon_state = "recorder"
 	complexity = 12
-	inputs = list("ignore storage" = IC_PINTYPE_BOOLEAN)
-	outputs = list("scanned" = IC_PINTYPE_REF)
-	activators = list("on scanned" = IC_PINTYPE_PULSE_OUT)
+	inputs = list("игнорировать хранилища?" = IC_PINTYPE_BOOLEAN)
+	outputs = list("просканированный объект" = IC_PINTYPE_REF)
+	activators = list("при сканировании" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 120
 
@@ -907,19 +907,19 @@
 			return FALSE
 	set_pin_data(IC_OUTPUT, 1, WEAKREF(A))
 	push_data()
-	to_chat(user, "<span class='notice'>You scan [A] with [assembly].</span>")
+	to_chat(user, "<span class='notice'>Вы сканируете [A] с помощью [assembly].</span>")
 	activate_pin(1)
 	return TRUE
 
 /obj/item/integrated_circuit/input/sensor/ranged
 	name = "ranged sensor"
-	desc = "Scans and obtains a reference for any objects or persons in range. All you need to do is point the machine towards the target."
-	extended_desc = "If the 'ignore storage' pin is set to true, the sensor will disregard scanning various storage containers such as backpacks."
+	desc = "Сканирует и определяет координаты всех объектов или людей, находящихся в зоне действия. Достаточно просто направить устройство на цель."
+	extended_desc = "Если для параметра 'игнорировать хранилища?' установлено значение true, датчик не будет сканировать различные емкости для хранения, такие как рюкзаки."
 	icon_state = "recorder"
 	complexity = 36
-	inputs = list("ignore storage" = IC_PINTYPE_BOOLEAN)
-	outputs = list("scanned" = IC_PINTYPE_REF)
-	activators = list("on scanned" = IC_PINTYPE_PULSE_OUT)
+	inputs = list("игнорировать хранилища?" = IC_PINTYPE_BOOLEAN)
+	outputs = list("просканированный объект" = IC_PINTYPE_REF)
+	activators = list("при сканировании" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 120
 
@@ -940,20 +940,20 @@
 			return FALSE
 	set_pin_data(IC_OUTPUT, 1, WEAKREF(A))
 	push_data()
-	to_chat(user, "<span class='notice'>You scan [A] with [assembly].</span>")
+	to_chat(user, "<span class='notice'>Вы сканируете [A] с помощью [assembly].</span>")
 	activate_pin(1)
 	return TRUE
 
 /obj/item/integrated_circuit/input/obj_scanner
 	name = "scanner"
-	desc = "Scans and obtains a reference for any objects you use on the assembly."
-	extended_desc = "If the 'put down' pin is set to true, the assembly will take the scanned object from your hands to its location. \
-	Useful for interaction with the grabber. The scanner only works using the help intent."
+	desc = "Проводит сканирование и получает ссылки на все объекты, используемые в корпусе."
+	extended_desc = "Если пин 'положить' установлен в значение true, корпус перенесет отсканированный объект из ваших рук в указанное место. \
+    Полезно для взаимодействия с захватом. Сканер работает только при использовании команды «help»."
 	icon_state = "recorder"
 	complexity = 4
-	inputs = list("put down" = IC_PINTYPE_BOOLEAN)
-	outputs = list("scanned" = IC_PINTYPE_REF)
-	activators = list("on scanned" = IC_PINTYPE_PULSE_OUT)
+	inputs = list("положить" = IC_PINTYPE_BOOLEAN)
+	outputs = list("просканированный объект" = IC_PINTYPE_REF)
+	activators = list("при сканировании" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 20
 
@@ -967,26 +967,26 @@
 		user.transferItemToLoc(A,drop_location())
 	set_pin_data(IC_OUTPUT, 1, WEAKREF(A))
 	push_data()
-	to_chat(user, "<span class='notice'>You let [assembly] scan [A].</span>")
+	to_chat(user, "<span class='notice'>Вы позволяете [assembly] просканировать [A].</span>")
 	activate_pin(1)
 	return TRUE
 
 /obj/item/integrated_circuit/input/internalbm
 	name = "internal battery monitor"
-	desc = "This monitors the charge level of an internal battery."
+	desc = "Это устройство отслеживает уровень заряда встроенного аккумулятора."
 	icon_state = "internalbm"
-	extended_desc = "This circuit will give you the values of charge, max charge, and the current percentage of the internal battery on demand."
+	extended_desc = "Эта схема по запросу предоставит вам данные о заряде, максимальном заряде и текущем проценте заряда встроенного аккумулятора."
 	w_class = WEIGHT_CLASS_TINY
 	complexity = 1
 	inputs = list()
 	outputs = list(
-		"cell charge" = IC_PINTYPE_NUMBER,
-		"max charge" = IC_PINTYPE_NUMBER,
-		"percentage" = IC_PINTYPE_NUMBER,
-		"refference to assembly" = IC_PINTYPE_REF,
-		"refference to cell" = IC_PINTYPE_REF
+		"заряд батареи" = IC_PINTYPE_NUMBER,
+		"максимальный заряд" = IC_PINTYPE_NUMBER,
+		"процент" = IC_PINTYPE_NUMBER,
+		"ссылка на корпус" = IC_PINTYPE_REF,
+		"ссылка на батарею" = IC_PINTYPE_REF
 		)
-	activators = list("read" = IC_PINTYPE_PULSE_IN, "on read" = IC_PINTYPE_PULSE_OUT)
+	activators = list("прочесть" = IC_PINTYPE_PULSE_IN, "при прочтении" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 1
 
@@ -1008,18 +1008,18 @@
 
 /obj/item/integrated_circuit/input/externalbm
 	name = "external battery monitor"
-	desc = "This can read the battery state of any device in view."
+	desc = "Эта схема позволяет считывать состояние аккумулятора любого устройства, находящегося в поле зрения."
 	icon_state = "externalbm"
-	extended_desc = "This circuit will give you the charge, max charge, and the current percentage values of any device or battery in view."
+	extended_desc = "Эта схема отобразит заряд, максимальный заряд и текущий процент заряда любого устройства или аккумулятора, находящегося в поле зрения."
 	w_class = WEIGHT_CLASS_TINY
 	complexity = 2
 	inputs = list("target" = IC_PINTYPE_REF)
 	outputs = list(
-		"cell charge" = IC_PINTYPE_NUMBER,
-		"max charge" = IC_PINTYPE_NUMBER,
-		"percentage" = IC_PINTYPE_NUMBER
+		"заряд батареи" = IC_PINTYPE_NUMBER,
+		"максимальный заряд" = IC_PINTYPE_NUMBER,
+		"процент" = IC_PINTYPE_NUMBER
 		)
-	activators = list("read" = IC_PINTYPE_PULSE_IN, "on read" = IC_PINTYPE_PULSE_OUT)
+	activators = list("прочесть" = IC_PINTYPE_PULSE_IN, "при прочтении" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 1
 
@@ -1043,15 +1043,15 @@
 
 /obj/item/integrated_circuit/input/ntnetsc
 	name = "NTNet scanner"
-	desc = "This can return the NTNet IDs of a component inside the given object, if there are any."
+	desc = "Эта схема может вернуть идентификаторы NTNet компонентов, содержащихся в указанном объекте, если таковые имеются."
 	icon_state = "signalsc"
 	w_class = WEIGHT_CLASS_TINY
 	complexity = 2
-	inputs = list("target" = IC_PINTYPE_REF)
+	inputs = list("цель" = IC_PINTYPE_REF)
 	outputs = list(
 		"id" = IC_PINTYPE_STRING
 		)
-	activators = list("read" = IC_PINTYPE_PULSE_IN, "found" = IC_PINTYPE_PULSE_OUT,"not found" = IC_PINTYPE_PULSE_OUT)
+	activators = list("прочесть" = IC_PINTYPE_PULSE_IN, "найдено" = IC_PINTYPE_PULSE_OUT,"не найдено" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 1
 
@@ -1080,31 +1080,31 @@
 
 /obj/item/integrated_circuit/input/matscan
 	name = "material scanner"
-	desc = "This special module is designed to get information about material containers of different machinery, \
-			like ORM, lathes, etc."
+	desc = "Этот специальный модуль предназначен для сбора информации о контейнерах для материалов, используемых на различных станках, \
+            таких как ORM, протолаты и т. д."
 	icon_state = "video_camera"
 	complexity = 6
 	inputs = list(
-		"target" = IC_PINTYPE_REF
+		"цель" = IC_PINTYPE_REF
 		)
 	outputs = list(
-		"Metal"				 	= IC_PINTYPE_NUMBER,
-		"Glass"					= IC_PINTYPE_NUMBER,
-		"Silver"				= IC_PINTYPE_NUMBER,
-		"Gold"					= IC_PINTYPE_NUMBER,
-		"Diamond"				= IC_PINTYPE_NUMBER,
-		"Solid Plasma"			= IC_PINTYPE_NUMBER,
-		"Uranium"				= IC_PINTYPE_NUMBER,
-		"Bananium"				= IC_PINTYPE_NUMBER,
-		"Titanium"		= IC_PINTYPE_NUMBER,
-		"Bluespace Mesh"		= IC_PINTYPE_NUMBER,
-		"Biomass"				= IC_PINTYPE_NUMBER,
-		"Plastic"				= IC_PINTYPE_NUMBER
+		"Металл"				 	= IC_PINTYPE_NUMBER,
+		"Стекло"					= IC_PINTYPE_NUMBER,
+		"Серебро"				= IC_PINTYPE_NUMBER,
+		"Золото"					= IC_PINTYPE_NUMBER,
+		"Алмазы"				= IC_PINTYPE_NUMBER,
+		"Твёрдая плазма"			= IC_PINTYPE_NUMBER,
+		"Уран"				= IC_PINTYPE_NUMBER,
+		"Бананиум"				= IC_PINTYPE_NUMBER,
+		"Титан"		= IC_PINTYPE_NUMBER,
+		"Блюспейс кристаллы"		= IC_PINTYPE_NUMBER,
+		"Биомасса"				= IC_PINTYPE_NUMBER,
+		"Пластик"				= IC_PINTYPE_NUMBER
 		)
 	activators = list(
-		"scan" = IC_PINTYPE_PULSE_IN,
-		"on scanned" = IC_PINTYPE_PULSE_OUT,
-		"not scanned" = IC_PINTYPE_PULSE_OUT
+		"сканировать" = IC_PINTYPE_PULSE_IN,
+		"при сканировании" = IC_PINTYPE_PULSE_OUT,
+		"сканирование не удалось" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 40
@@ -1130,28 +1130,28 @@
 
 /obj/item/integrated_circuit/input/atmospheric_analyzer
 	name = "atmospheric analyzer"
-	desc = "A miniaturized analyzer which can scan anything that contains gases. Leave target as NULL to scan the air around the assembly."
-	extended_desc = "The nth element of gas amounts is the number of moles of the \
-					nth gas in gas list. \
-					Pressure is in kPa, temperature is in Kelvin. \
-					Due to programming limitations, scanning an object that does \
-					not contain a gas will return the air around it instead."
+	desc = "Миниатюрный анализатор, способный сканировать любые объекты, содержащие газы. Оставьте поле 'цель' пустым, чтобы сканировать воздух вокруг корпуса."
+	extended_desc = "n-й элемент списка газов представляет собой количество молей \
+                    n-го газа в списке. \
+                    Давление указано в кПа, температура - в кельвинах. \
+                    В связи с ограничениями программирования при сканировании объекта, \
+                    не содержащего газа, вместо него будет возвращаться окружающий воздух."
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
-			"target" = IC_PINTYPE_REF
+			"цель" = IC_PINTYPE_REF
 			)
 	outputs = list(
-			"gas list" = IC_PINTYPE_LIST,
-			"gas amounts" = IC_PINTYPE_LIST,
-			"total moles" = IC_PINTYPE_NUMBER,
-			"pressure" = IC_PINTYPE_NUMBER,
-			"temperature" = IC_PINTYPE_NUMBER,
-			"volume" = IC_PINTYPE_NUMBER
+			"список газов" = IC_PINTYPE_LIST,
+			"количество газов" = IC_PINTYPE_LIST,
+			"общее количество молей" = IC_PINTYPE_NUMBER,
+			"давление" = IC_PINTYPE_NUMBER,
+			"температура" = IC_PINTYPE_NUMBER,
+			"объем" = IC_PINTYPE_NUMBER
 			)
 	activators = list(
-			"scan" = IC_PINTYPE_PULSE_IN,
-			"on success" = IC_PINTYPE_PULSE_OUT,
-			"on failure" = IC_PINTYPE_PULSE_OUT
+			"сканировать" = IC_PINTYPE_PULSE_IN,
+			"при успехе" = IC_PINTYPE_PULSE_OUT,
+			"при неудаче" = IC_PINTYPE_PULSE_OUT
 			)
 	power_draw_per_use = 5
 
@@ -1189,25 +1189,25 @@
 
 /obj/item/integrated_circuit/input/data_card_reader
 	name = "data card reader"
-	desc = "A circuit that can read from and write to data cards."
-	extended_desc = "Setting the \"write mode\" boolean to true will cause any data cards that are used on the assembly to replace\
- their existing function and data strings with the given strings, if it is set to false then using a data card on the assembly will cause\
- the function and data strings stored on the card to be written to the output pins."
+	desc = "Схема, способная считывать и записывать данные на карты памяти."
+	extended_desc = "Если для логического параметра 'режим записи' задать значение true, то при использовании любой карты данных в корпусе \
+	существующие строки функций и данных будут заменены указанными строками; если же для него задать значение false, то при использовании карты данных в корпусе \
+	строки функций и данных, хранящиеся на карте, будут выведены на выводные пины."
 	icon_state = "card_reader"
 	complexity = 4
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
-		"function" = IC_PINTYPE_STRING,
-		"data to store" = IC_PINTYPE_STRING,
-		"write mode" = IC_PINTYPE_BOOLEAN
+		"функция" = IC_PINTYPE_STRING,
+		"данные для хранения" = IC_PINTYPE_STRING,
+		"режим записи" = IC_PINTYPE_BOOLEAN
 	)
 	outputs = list(
-		"function" = IC_PINTYPE_STRING,
-		"stored data" = IC_PINTYPE_STRING
+		"функция" = IC_PINTYPE_STRING,
+		"сохраненные данные" = IC_PINTYPE_STRING
 	)
 	activators = list(
-		"on write" = IC_PINTYPE_PULSE_OUT,
-		"on read" = IC_PINTYPE_PULSE_OUT
+		"при записи" = IC_PINTYPE_PULSE_OUT,
+		"при чтении" = IC_PINTYPE_PULSE_OUT
 	)
 
 /obj/item/integrated_circuit/input/data_card_reader/attackby_react(obj/item/I, mob/living/user, intent)
@@ -1245,8 +1245,8 @@
 // -Inputlist- //
 /obj/item/integrated_circuit/input/selection
 	name = "selection circuit"
-	desc = "This circuit lets you choose between different strings from a selection."
-	extended_desc = "This circuit lets you choose between up to 4 different values from selection of up to 8 strings that you can set. Null values are ignored and the chosen value is put out in selected."
+	desc = "Эта схема позволяет выбирать между различными строками из предложенного списка."
+	extended_desc = "Эта схема позволяет выбирать до 4 различных значений из набора, состоящего из 8 строк, которые вы можете задать. Нулевые значения игнорируются, а выбранное значение выводится в поле 'selected'."
 	icon_state = "addition"
 	can_be_asked_input = 1
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -1261,10 +1261,10 @@
 		"H" = IC_PINTYPE_STRING
 	)
 	outputs = list(
-		"selected" = IC_PINTYPE_STRING
+		"выбранное" = IC_PINTYPE_STRING
 	)
 	activators = list(
-		"on selected" = IC_PINTYPE_PULSE_OUT
+		"при выборе" = IC_PINTYPE_PULSE_OUT
 	)
 
 /obj/item/integrated_circuit/input/selection/ask_for_input(mob/user)
@@ -1284,22 +1284,22 @@
 // -storage examiner- // **works**
 /obj/item/integrated_circuit/input/storage_examiner
 	name = "storage examiner circuit"
-	desc = "This circuit lets you scan a storage's content. (backpacks, toolboxes etc.)"
-	extended_desc = "The items are put out as reference, which makes it possible to interact with them. Additionally also gives the amount of items."
+	desc = "Эта схема позволяет сканировать содержимое контейнера (рюкзаков, ящиков для инструментов и т. п.)."
+	extended_desc = "Элементы отображаются в качестве ссылок, что позволяет взаимодействовать с ними. Кроме того, указывается количество элементов."
 	icon_state = "grabber"
 	can_be_asked_input = 1
 	complexity = 6
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
-		"storage" = IC_PINTYPE_REF
+		"хранилище" = IC_PINTYPE_REF
 	)
 	outputs = list(
-		"item amount" = IC_PINTYPE_NUMBER,
-		"item list" = IC_PINTYPE_LIST
+		"количество предметов" = IC_PINTYPE_NUMBER,
+		"список предметов" = IC_PINTYPE_LIST
 	)
 	activators = list(
-		"examine" = IC_PINTYPE_PULSE_IN,
-		"on examined" = IC_PINTYPE_PULSE_OUT
+		"осмотр" = IC_PINTYPE_PULSE_IN,
+		"при осмотре" = IC_PINTYPE_PULSE_OUT
 	)
 	power_draw_per_use = 85
 
@@ -1321,14 +1321,14 @@
 
 /obj/item/integrated_circuit/input/anomaly_scanner
 	name = "anomaly scanner"
-	desc = "A small anomaly analyzer, it is accurate enough to give the frequency, but it may make a mistake with the code. It will be equal to a random number within a radius of 10 numbers from the desired number."
+	desc = "Это небольшой анализатор аномалий, который достаточно точно определяет частоту, но может ошибаться при определении кода. Результат будет равен случайному числу, находящемуся в пределах 10 цифр от искомого числа."
 	complexity = 12
-	inputs = list("target" = IC_PINTYPE_REF)
+	inputs = list("цель" = IC_PINTYPE_REF)
 	outputs = list(
-		"freq"				= IC_PINTYPE_NUMBER,
-		"code"				= IC_PINTYPE_NUMBER,
+		"частота"				= IC_PINTYPE_NUMBER,
+		"код"				= IC_PINTYPE_NUMBER,
 	)
-	activators = list("scan" = IC_PINTYPE_PULSE_IN, "on scann" = IC_PINTYPE_PULSE_OUT, "not scanned" = IC_PINTYPE_PULSE_OUT)
+	activators = list("сканировать" = IC_PINTYPE_PULSE_IN, "при сканировании" = IC_PINTYPE_PULSE_OUT, "при неудаче сканирования" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 80
 

@@ -11,8 +11,8 @@
 		"G" = IC_PINTYPE_NUMBER,
 		"H" = IC_PINTYPE_NUMBER
 		)
-	outputs = list("result" = IC_PINTYPE_NUMBER)
-	activators = list("compute" = IC_PINTYPE_PULSE_IN, "on computed" = IC_PINTYPE_PULSE_OUT)
+	outputs = list("результат" = IC_PINTYPE_NUMBER)
+	activators = list("вычислить" = IC_PINTYPE_PULSE_IN, "при вычислении" = IC_PINTYPE_PULSE_OUT)
 	category_text = "Арифметика"
 	power_draw_per_use = 5 // Math is pretty cheap.
 

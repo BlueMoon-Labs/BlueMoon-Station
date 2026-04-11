@@ -3,19 +3,19 @@
 
 /obj/item/integrated_circuit/weaponized/weapon_firing
 	name = "weapon firing mechanism"
-	desc = "This somewhat complicated system allows one to slot in a gun, direct it towards a position, and remotely fire it."
-	extended_desc = "The firing mechanism can slot in any energy weapon. \
-	The first and second inputs need to be numbers which correspond to coordinates for the gun to fire at relative to the machine itself. \
-	The 'fire' activator will cause the mechanism to attempt to fire the weapon at the coordinates, if possible. Mode will switch between \
-	lethal (TRUE) or stun (FALSE) modes. It uses the internal battery of the weapon itself, not the assembly. If you wish to fire the gun while the circuit is in \
-	hand, you will need to use an assembly that is a gun."
+	desc = "Эта несколько сложная система позволяет установить оружие в прорезь, направить его на определенную позицию и дистанционно выстрелить."
+	extended_desc = "Ударно-спусковой механизм может быть встроен в любое энергетическое оружие. \
+	Первым и вторым входными данными должны быть цифры, соответствующие координатам, по которым оружие будет стрелять, относительно самой машины. \
+	Активатор 'огонь' заставит механизм попытаться выстрелить из оружия по координатам, если это возможно. Режим будет переключаться между \
+	смертельный (TRUE) или оглушающий (FALSE) режимы. Он использует внутреннюю батарею самого оружия, а не его сборку. Если вы хотите выстрелить из пистолета, пока цепь включена \
+	вручную вам нужно будет использовать устройство, представляющее собой пистолет."
 	complexity = 20
 	w_class = WEIGHT_CLASS_SMALL
 	size = 3
 	inputs = list(
-		"target X rel" = IC_PINTYPE_NUMBER,
-		"target Y rel" = IC_PINTYPE_NUMBER,
-		"mode"         = IC_PINTYPE_BOOLEAN
+		"относительный X цели" = IC_PINTYPE_NUMBER,
+		"относительный Y цели" = IC_PINTYPE_NUMBER,
+		"режим"         = IC_PINTYPE_BOOLEAN
 		)
 	outputs = list("reference to gun" = IC_PINTYPE_REF)
 	activators = list(
@@ -46,15 +46,15 @@
 	if(istype(O, /obj/item/gun/energy))
 		var/obj/item/gun/gun = O
 		if(!gun.can_circuit)
-			to_chat(user, "<span class='warning'>[gun] does not fit into circuits.</span>")
+			to_chat(user, "<span class='warning'>[gun] не подходит в схему.</span>")
 			return
 		if(installed_gun)
-			to_chat(user, "<span class='warning'>There's already a weapon installed.</span>")
+			to_chat(user, "<span class='warning'>Здесь уже установлено оружие.</span>")
 			return
 		user.transferItemToLoc(gun,src)
 		installed_gun = gun
 		var/list/gun_properties = gun.get_turret_properties()
-		to_chat(user, "<span class='notice'>You slide \the [gun] into the firing mechanism.</span>")
+		to_chat(user, "<span class='notice'>Вы вставляете [gun] в механизм огня.</span>")
 		playsound(src, 'sound/items/Crowbar.ogg', 50, 1)
 		stun_projectile = gun_properties["stun_projectile"]
 		stun_projectile_sound = gun_properties["stun_projectile_sound"]
@@ -74,14 +74,14 @@
 /obj/item/integrated_circuit/weaponized/weapon_firing/attack_self(var/mob/user)
 	if(installed_gun)
 		installed_gun.forceMove(drop_location())
-		to_chat(user, "<span class='notice'>You slide \the [installed_gun] out of the firing mechanism.</span>")
+		to_chat(user, "<span class='notice'>Вы достаёте [installed_gun] из механизма огня.</span>")
 		size = initial(size)
 		playsound(src, 'sound/items/Crowbar.ogg', 50, 1)
 		installed_gun = null
 		set_pin_data(IC_OUTPUT, 1, WEAKREF(null))
 		push_data()
 	else
-		to_chat(user, "<span class='notice'>There's no weapon to remove from the mechanism.</span>")
+		to_chat(user, "<span class='notice'>Нет никакого оружия, которое можно было бы извлечь из механизма.</span>")
 
 /obj/item/integrated_circuit/weaponized/weapon_firing/do_work()
 	if(!assembly || !installed_gun || !installed_gun.can_shoot())
@@ -108,7 +108,7 @@
 	var/target_x = clamp(T.x + xo.data, 0, world.maxx)
 	var/target_y = clamp(T.y + yo.data, 0, world.maxy)
 
-	assembly.visible_message("<span class='danger'>[assembly] fires [installed_gun]!</span>")
+	assembly.visible_message("<span class='danger'>[assembly] стреляет из [installed_gun]!</span>")
 	shootAt(locate(target_x, target_y, T.z))
 
 /obj/item/integrated_circuit/weaponized/weapon_firing/proc/shootAt(turf/target)
@@ -150,16 +150,16 @@
 
 /obj/item/integrated_circuit/weaponized/grenade
 	name = "grenade primer"
-	desc = "This circuit comes with the ability to attach most types of grenades and prime them at will."
-	extended_desc = "The time between priming and detonation is limited to between 1 to 12 seconds, but is optional. \
-					If the input is not set, not a number, or a number less than 1, the grenade's built-in timing will be used. \
-					Beware: Once primed, there is no aborting the process!"
+	desc = "Эта схема позволяет подключать большинство типов гранат и заряжать их по желанию."
+	extended_desc = "Время между воспламенением и детонацией ограничено и составляет от 1 до 12 секунд, но это необязательно. \
+					Если заданное значение не задано, не является числом или число меньше 1, то будет использоваться встроенный таймер срабатывания гранаты. \
+					Будьте осторожны: после запуска процесс невозможно прервать!"
 	icon_state = "grenade"
 	complexity = 30
 	cooldown_per_use = 10
-	inputs = list("detonation time" = IC_PINTYPE_NUMBER)
+	inputs = list("время детонации" = IC_PINTYPE_NUMBER)
 	outputs = list()
-	activators = list("prime grenade" = IC_PINTYPE_PULSE_IN)
+	activators = list("подрыв гранаты" = IC_PINTYPE_PULSE_IN)
 	spawn_flags = IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_COMBAT
 	var/obj/item/grenade/attached_grenade
@@ -181,9 +181,9 @@
 /obj/item/integrated_circuit/weaponized/grenade/attackby(var/obj/item/grenade/G, var/mob/user)
 	if(istype(G))
 		if(attached_grenade)
-			to_chat(user, "<span class='warning'>There is already a grenade attached!</span>")
+			to_chat(user, "<span class='warning'>Здесь уже есть граната!</span>")
 		else if(user.transferItemToLoc(G,src))
-			user.visible_message("<span class='warning'>\The [user] attaches \a [G] to \the [src]!</span>", "<span class='notice'>You attach \the [G] to \the [src].</span>")
+			user.visible_message("<span class='warning'>[user] прикрепяет [G] к [src]!</span>", "<span class='notice'>Вы прикрепляете [G] к [src].</span>")
 			attach_grenade(G)
 			G.forceMove(src)
 	else
@@ -191,7 +191,7 @@
 
 /obj/item/integrated_circuit/weaponized/grenade/attack_self(var/mob/user)
 	if(attached_grenade)
-		user.visible_message("<span class='warning'>\The [user] removes \an [attached_grenade] from \the [src]!</span>", "<span class='notice'>You remove \the [attached_grenade] from \the [src].</span>")
+		user.visible_message("<span class='warning'>[user] отсоединяет [attached_grenade] от [src]!</span>", "<span class='notice'>Вы отсоединяете [attached_grenade] от  [src].</span>")
 		user.put_in_hands(attached_grenade)
 		detach_grenade()
 	else
@@ -224,25 +224,25 @@
 
 /obj/item/integrated_circuit/weaponized/air_cannon
 	name = "pneumatic cannon"
-	desc = "A compact pneumatic cannon to throw things from inside or nearby tiles at a high enough velocity to cause damage. Requires air from a canister to fire."
-	extended_desc = "The first and second inputs need to be numbers which correspond to the coordinates to throw objects at relative to the machine itself. \
-	The 'fire' activator will cause the mechanism to attempt to launch objects at the coordinates, if possible. Note that the \
-	projectile needs to be inside the machine, or on an adjacent tile, and must be medium sized or smaller. The assembly \
-	must also be a gun if you wish to launch something while the assembly is in hand."
+	desc = "Компактная пневматическая пушка для метания предметов изнутри или с близлежащих плиток с достаточной скоростью, чтобы нанести урон. Для стрельбы требуется воздух из баллона."
+	extended_desc = "Первым и вторым входными данными должны быть числа, соответствующие координатам, по которым нужно бросать предметы, относительно самой машины. \
+	Активатор 'огонь' заставит механизм попытаться запустить предметы по координатам, если это возможно. Обратите внимание, что \
+	снаряд должен находиться внутри машины или на соседней плитке и должен быть среднего размера или меньше. Сборка \
+	также должна быть пистолетом, если вы хотите запустить что-то, пока сборка находится в руках."
 	complexity = 50
 	w_class = WEIGHT_CLASS_SMALL
 	size = 4
 	cooldown_per_use = 30
 	ext_cooldown = 15
 	inputs = list(
-		"target X rel" = IC_PINTYPE_NUMBER,
-		"target Y rel" = IC_PINTYPE_NUMBER,
-		"projectile" = IC_PINTYPE_REF,
-		"canister" = IC_PINTYPE_REF
+		"относительный X цели" = IC_PINTYPE_NUMBER,
+		"относительный Y цели" = IC_PINTYPE_NUMBER,
+		"снаряд" = IC_PINTYPE_REF,
+		"баллон" = IC_PINTYPE_REF
 		)
 	outputs = list()
 	activators = list(
-		"fire" = IC_PINTYPE_PULSE_IN
+		"огонь" = IC_PINTYPE_PULSE_IN
 	)
 	spawn_flags = IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_COMBAT
@@ -269,7 +269,7 @@
 		if(!I.can_trigger_gun(L)) //includes hulk and other chunky fingers checks.
 			return
 		if(HAS_TRAIT(L, TRAIT_PACIFISM) && A.throwforce)
-			to_chat(L, "<span class='notice'> [I] is lethally chambered! You don't want to risk harming anyone...</span>")
+			to_chat(L, "<span class='notice'> [I] заряжен летально! Вы не хотите навредить кому-то...</span>")
 			return
 	else if(T != I.loc)
 		return
@@ -305,7 +305,7 @@
 	var/y_abs = clamp(T.y + target_y_rel, 0, world.maxy)
 	var/range = round(clamp(sqrt(target_x_rel*target_x_rel+target_y_rel*target_y_rel),0,8),1)
 	playsound(src, 'sound/weapons/sonic_jackhammer.ogg', 50, 1)
-	assembly.visible_message("<span class='danger'>\The [assembly] has thrown [A]!</span>")
+	assembly.visible_message("<span class='danger'>[assembly] кидает [A]!</span>")
 	log_attack("[assembly] [REF(assembly)] has thrown [A] with lethal force.")
 	A.forceMove(drop_location())
 	A.throw_at(locate(x_abs, y_abs, T.z), range, 3)

@@ -1,20 +1,20 @@
 /obj/item/integrated_circuit/manipulation
-	category_text = "Manipulation"
+	category_text = "Манипуляция"
 
 /obj/item/integrated_circuit/manipulation/locomotion
 	name = "locomotion circuit"
-	desc = "This allows a machine to move in a given direction."
+	desc = "Это позволяет машине двигаться в заданном направлении."
 	icon_state = "locomotion"
-	extended_desc = "The circuit accepts a 'dir' number as a direction to move towards.<br>\
-	Pulsing the 'step towards dir' activator pin will cause the machine to move one step in that direction, assuming it is not \
-	being held, or anchored in some way. It should be noted that the ability to move is dependant on the type of assembly that this circuit inhabits; only drone assemblies can move."
+	extended_desc = "Схема принимает число направления в качестве направления движения.<br>\
+    Импульс на пине активатора 'шаг в сторону направления' заставит машину сделать один шаг в этом направлении, при условии, что она не \
+    удерживается или не закреплена каким-либо образом. Следует отметить, что способность к перемещению зависит от типа корпуса, в котором находится данная схема; перемещаться могут только корпуса-дроны."
 	w_class = WEIGHT_CLASS_SMALL
 	complexity = 10
 	cooldown_per_use = 1
 	ext_cooldown = 4
-	inputs = list("direction" = IC_PINTYPE_DIR)
-	outputs = list("obstacle" = IC_PINTYPE_REF)
-	activators = list("step towards dir" = IC_PINTYPE_PULSE_IN,"on step"=IC_PINTYPE_PULSE_OUT,"blocked"=IC_PINTYPE_PULSE_OUT)
+	inputs = list("направление" = IC_PINTYPE_DIR)
+	outputs = list("препятствие" = IC_PINTYPE_REF)
+	activators = list("шаг в сторону направления" = IC_PINTYPE_PULSE_IN,"при шаге"=IC_PINTYPE_PULSE_OUT,"при преграде"=IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_MOVEMENT
 	power_draw_per_use = 100
@@ -40,15 +40,15 @@
 
 /obj/item/integrated_circuit/manipulation/plant_module
 	name = "plant manipulation module"
-	desc = "Used to uproot weeds and harvest/plant trays."
+	desc = "Используется для удаления сорняков, а также для уборки урожая и высадки рассады."
 	icon_state = "plant_m"
-	extended_desc = "The circuit accepts a reference to a hydroponic tray or an item on an adjacent tile. \
-	Mode input (0-harvest, 1-uproot weeds, 2-uproot plant, 3-plant seed) determines action. \
-	Harvesting outputs a list of the harvested plants."
+	extended_desc = "Схема принимает ссылку на гидропонный лоток или объект на соседней клетке. \
+    Ввод режима (0 - сбор урожая, 1 - вырывание сорняков, 2 - вырывание растения, 3 - посадка семян) определяет действие. \
+    При сборе урожая выводится список собранных растений."
 	w_class = WEIGHT_CLASS_TINY
 	complexity = 10
-	inputs = list("tray" = IC_PINTYPE_REF,"mode" = IC_PINTYPE_NUMBER,"item" = IC_PINTYPE_REF)
-	outputs = list("result" = IC_PINTYPE_LIST)
+	inputs = list("лоток" = IC_PINTYPE_REF,"режим" = IC_PINTYPE_NUMBER,"объект" = IC_PINTYPE_REF)
+	outputs = list("результат" = IC_PINTYPE_LIST)
 	activators = list("pulse in" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 50
@@ -104,7 +104,7 @@
 					if(!TR.myseed)
 						if(istype(O, /obj/item/seeds/kudzu))
 							investigate_log("had Kudzu planted in it by [acting_object] at [AREACOORD(src)]","kudzu")
-						acting_object.visible_message("<span class='notice'>[acting_object] plants [O].</span>")
+						acting_object.visible_message("<span class='notice'>[acting_object] сажает [O].</span>")
 						TR.dead = 0
 						TR.myseed = O
 						TR.age = 1
@@ -123,12 +123,12 @@
 
 /obj/item/integrated_circuit/manipulation/seed_extractor
 	name = "seed extractor module"
-	desc = "Used to extract seeds from grown produce."
+	desc = "Используется для извлечения семян из созревших плодов."
 	icon_state = "plant_m"
-	extended_desc = "The circuit accepts a reference to a plant item and extracts seeds from it, outputting the results to a list."
+	extended_desc = "Эта схема принимает ссылку на элемент растения, извлекает из него семена и выводит результаты в список."
 	complexity = 8
-	inputs = list("target" = IC_PINTYPE_REF)
-	outputs = list("result" = IC_PINTYPE_LIST)
+	inputs = list("цель" = IC_PINTYPE_REF)
+	outputs = list("результат" = IC_PINTYPE_LIST)
 	activators = list("pulse in" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 50
@@ -152,15 +152,15 @@
 
 /obj/item/integrated_circuit/manipulation/grabber
 	name = "grabber"
-	desc = "A circuit with its own inventory for items. Used to grab and store things."
+	desc = "Схема с собственным хранилищем предметов. Используется для захвата и хранения предметов."
 	icon_state = "grabber"
-	extended_desc = "This circuit accepts a reference to an object to be grabbed, and can store up to 10 objects. Modes: 1 to grab, 0 to eject the first object, -1 to eject all objects, and -2 to eject the target. If you throw something from a grabber's inventory with a thrower, the grabber will update its outputs accordingly."
+	extended_desc = "Эта схема принимает ссылку на объект, который необходимо захватить, и может хранить до 10 объектов. Режимы: 1 - захват, 0 - выброс первого объекта, -1 - выброс всех объектов и -2 - выброс целевого объекта. Если вы бросите что-либо из инвентаря захватчика с помощью метателя, захватчик соответствующим образом обновит свои выходы."
 	w_class = WEIGHT_CLASS_SMALL
 	size = 3
 	cooldown_per_use = 5
 	complexity = 10
-	inputs = list("target" = IC_PINTYPE_REF,"mode" = IC_PINTYPE_NUMBER)
-	outputs = list("first" = IC_PINTYPE_REF, "last" = IC_PINTYPE_REF, "amount" = IC_PINTYPE_NUMBER,"contents" = IC_PINTYPE_LIST)
+	inputs = list("цель" = IC_PINTYPE_REF,"режим" = IC_PINTYPE_NUMBER)
+	outputs = list("первый предмет" = IC_PINTYPE_REF, "последний предмет" = IC_PINTYPE_REF, "количество предметов" = IC_PINTYPE_NUMBER,"содержимое" = IC_PINTYPE_LIST)
 	activators = list("pulse in" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_COMBAT
@@ -224,15 +224,15 @@
 
 /obj/item/integrated_circuit/manipulation/claw
 	name = "pulling claw"
-	desc = "Circuit which can pull things.."
+	desc = "Схема, способная тянуть предметы."
 	icon_state = "pull_claw"
-	extended_desc = "This circuit accepts a reference to a thing to be pulled. Modes: 0 for release. 1 for pull."
+	extended_desc = "Эта схема принимает ссылку на объект, который необходимо перетащить. Режимы: 0 - отпустить, 1 - перетащить."
 	w_class = WEIGHT_CLASS_SMALL
 	size = 3
 	cooldown_per_use = 5
 	complexity = 10
-	inputs = list("target" = IC_PINTYPE_REF,"mode" = IC_PINTYPE_INDEX,"dir" = IC_PINTYPE_DIR)
-	outputs = list("is pulling" = IC_PINTYPE_BOOLEAN)
+	inputs = list("цель" = IC_PINTYPE_REF,"режим" = IC_PINTYPE_INDEX,"направление" = IC_PINTYPE_DIR)
+	outputs = list("тянет?" = IC_PINTYPE_BOOLEAN)
 	activators = list("pulse in" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT,"released" = IC_PINTYPE_PULSE_OUT,"pull to dir" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 50
@@ -280,24 +280,24 @@
 
 /obj/item/integrated_circuit/manipulation/thrower
 	name = "thrower"
-	desc = "A compact launcher to throw things from inside or nearby tiles at a low enough velocity not to harm someone."
-	extended_desc = "The first and second inputs need to be numbers which correspond to the coordinates to throw objects at relative to the machine itself. \
-	The 'fire' activator will cause the mechanism to attempt to throw objects at the coordinates, if possible. Note that the \
-	projectile needs to be inside the machine, or on an adjacent tile, and must be medium sized or smaller. The assembly \
-	must also be a gun if you wish to throw something while the assembly is in hand."
+	desc = "Компактная пусковая установка, позволяющая бросать предметы изнутри или с соседних клеток со скоростью, недостаточной для нанесения вреда."
+	extended_desc = "Первый и второй входные параметры должны быть числами, соответствующими координатам, по которым необходимо бросить объекты относительно самой машины. \
+    Активатор 'огонь' заставит механизм попытаться бросить объекты в указанные координаты, если это возможно. Обратите внимание, что \
+    снаряд должен находиться внутри машины или на соседней клетке и быть среднего размера или меньше. Корпус \
+    также должен быть оружием, если вы хотите бросить что-либо, когда корпус находится в руке."
 	complexity = 25
 	w_class = WEIGHT_CLASS_SMALL
 	size = 2
 	cooldown_per_use = 10
 	ext_cooldown = 1
 	inputs = list(
-		"target X rel" = IC_PINTYPE_NUMBER,
-		"target Y rel" = IC_PINTYPE_NUMBER,
-		"projectile" = IC_PINTYPE_REF
+		"относительный X цели" = IC_PINTYPE_NUMBER,
+		"относительный Y цели" = IC_PINTYPE_NUMBER,
+		"снаряд" = IC_PINTYPE_REF
 		)
 	outputs = list()
 	activators = list(
-		"fire" = IC_PINTYPE_PULSE_IN
+		"огонь" = IC_PINTYPE_PULSE_IN
 	)
 	spawn_flags = IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_COMBAT
@@ -345,7 +345,7 @@
 	A.throwforce = 0
 	A.embedding = list("embed_chance" = 0)
 	//throw it
-	assembly.visible_message("<span class='danger'>[assembly] has thrown [A]!</span>")
+	assembly.visible_message("<span class='danger'>[assembly] бросает [A]!</span>")
 	log_attack("[assembly] [REF(assembly)] has thrown [A] with non-lethal force.")
 	A.forceMove(drop_location())
 	A.throw_at(locate(x_abs, y_abs, T.z), range, 3, null, null, null, CALLBACK(src, PROC_REF(post_throw), A))
@@ -361,49 +361,49 @@
 
 /obj/item/integrated_circuit/manipulation/matman
 	name = "material manager"
-	desc = "This circuit is designed for automatic storage and distribution of materials."
-	extended_desc = "The first input takes a ref of a machine with a material container. \
-					Second input is used for inserting material stacks into the internal material storage. \
-					Inputs 3-13 are used to transfer materials between target machine and circuit storage. \
-					Positive values will take that number of materials from another machine. \
-					Negative values will fill another machine from internal storage. Outputs show current stored amounts of mats."
+	desc = "Эта схема предназначена для автоматического складирования и распределения материалов."
+	extended_desc = "Первый вход принимает ссылку на машину с контейнером для материала. \
+					Второй вход используется для вставки стопок материалов во внутреннее хранилище материалов. \
+                    Входы 3–13 используются для перемещения материалов между целевой машиной и хранилищем схемы. \
+                    Положительные значения означают, что это количество материалов будет взято из другой машины. \
+                    Отрицательные значения означают, что другая машина будет заполнена из внутреннего хранилища. Выходы показывают текущие запасы материалов."
 	icon_state = "grabber"
 	complexity = 16
 	inputs = list(
-		"target" 				= IC_PINTYPE_REF,
-		"sheets to insert"	 	= IC_PINTYPE_NUMBER,
-		"Metal"				 	= IC_PINTYPE_NUMBER,
-		"Glass"					= IC_PINTYPE_NUMBER,
-		"Silver"				= IC_PINTYPE_NUMBER,
-		"Gold"					= IC_PINTYPE_NUMBER,
-		"Diamond"				= IC_PINTYPE_NUMBER,
-		"Uranium"				= IC_PINTYPE_NUMBER,
-		"Solid Plasma"			= IC_PINTYPE_NUMBER,
-		"Bluespace Mesh"		= IC_PINTYPE_NUMBER,
-		"Bananium"				= IC_PINTYPE_NUMBER,
-		"Titanium"				= IC_PINTYPE_NUMBER,
-		"Plastic"				= IC_PINTYPE_NUMBER
+		"цель" 				= IC_PINTYPE_REF,
+		"количество листов для вставки"	 	= IC_PINTYPE_NUMBER,
+		"Металл"				 	= IC_PINTYPE_NUMBER,
+		"Стекло"					= IC_PINTYPE_NUMBER,
+		"Серебро"				= IC_PINTYPE_NUMBER,
+		"Золото"					= IC_PINTYPE_NUMBER,
+		"Алмазы"				= IC_PINTYPE_NUMBER,
+		"Уран"				= IC_PINTYPE_NUMBER,
+		"Твёрдая плазма"			= IC_PINTYPE_NUMBER,
+		"Блюспейс кристаллы"		= IC_PINTYPE_NUMBER,
+		"Бананиум"				= IC_PINTYPE_NUMBER,
+		"Титан"				= IC_PINTYPE_NUMBER,
+		"Пластик"				= IC_PINTYPE_NUMBER
 		)
 	outputs = list(
-		"self ref" 				= IC_PINTYPE_REF,
-		"Total amount"		 	= IC_PINTYPE_NUMBER,
-		"Metal"				 	= IC_PINTYPE_NUMBER,
-		"Glass"					= IC_PINTYPE_NUMBER,
-		"Silver"				= IC_PINTYPE_NUMBER,
-		"Gold"					= IC_PINTYPE_NUMBER,
-		"Diamond"				= IC_PINTYPE_NUMBER,
-		"Uranium"				= IC_PINTYPE_NUMBER,
-		"Solid Plasma"			= IC_PINTYPE_NUMBER,
-		"Bluespace Mesh"		= IC_PINTYPE_NUMBER,
-		"Bananium"				= IC_PINTYPE_NUMBER,
-		"Titanium"				= IC_PINTYPE_NUMBER,
-		"Plastic"				= IC_PINTYPE_NUMBER
+		"Самоссылка" 				= IC_PINTYPE_REF,
+		"Общее количество"		 	= IC_PINTYPE_NUMBER,
+		"Металл"				 	= IC_PINTYPE_NUMBER,
+		"Стекло"					= IC_PINTYPE_NUMBER,
+		"Серебро"				= IC_PINTYPE_NUMBER,
+		"Золото"					= IC_PINTYPE_NUMBER,
+		"Алмазы"				= IC_PINTYPE_NUMBER,
+		"Уран"				= IC_PINTYPE_NUMBER,
+		"Твёрдая плазма"			= IC_PINTYPE_NUMBER,
+		"Блюспейс кристаллы"		= IC_PINTYPE_NUMBER,
+		"Бананиум"				= IC_PINTYPE_NUMBER,
+		"Титан"				= IC_PINTYPE_NUMBER,
+		"Пластик"				= IC_PINTYPE_NUMBER
 		)
 	activators = list(
-		"insert sheet" = IC_PINTYPE_PULSE_IN,
-		"transfer mats" = IC_PINTYPE_PULSE_IN,
-		"on success" = IC_PINTYPE_PULSE_OUT,
-		"on failure" = IC_PINTYPE_PULSE_OUT,
+		"вставить листы" = IC_PINTYPE_PULSE_IN,
+		"переместить материалы" = IC_PINTYPE_PULSE_IN,
+		"при успехе" = IC_PINTYPE_PULSE_OUT,
+		"при неудаче" = IC_PINTYPE_PULSE_OUT,
 		"push ref" = IC_PINTYPE_PULSE_IN,
 		"on push ref" = IC_PINTYPE_PULSE_IN
 		)
@@ -498,14 +498,14 @@
 // - inserter circuit - //
 /obj/item/integrated_circuit/manipulation/inserter
 	name = "inserter"
-	desc = "A nimble circuit that puts stuff inside a storage like a backpack and can take it out aswell."
+	desc = "Простая схема, которая позволяет помещать предметы в хранилище, подобное рюкзаку, и извлекать их оттуда."
 	icon_state = "grabber"
-	extended_desc = "This circuit accepts a reference to an object to be inserted or extracted depending on mode. If a storage is given for extraction, the extracted item will be put in the new storage. Modes: 1 insert, 0 to extract."
+	extended_desc = "Эта схема принимает ссылку на объект, который будет вставлен или извлечен в зависимости от режима. Если для извлечения указано хранилище, извлеченный элемент будет помещен в новое хранилище. Режимы: 1 - вставка, 0 - извлечение."
 	w_class = WEIGHT_CLASS_SMALL
 	size = 3
 	cooldown_per_use = 5
 	complexity = 10
-	inputs = list("target object" = IC_PINTYPE_REF, "target container" = IC_PINTYPE_REF,"mode" = IC_PINTYPE_NUMBER)
+	inputs = list("целевой объект" = IC_PINTYPE_REF, "целевое хранилище" = IC_PINTYPE_REF,"режим" = IC_PINTYPE_NUMBER)
 	activators = list("pulse in" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_COMBAT
@@ -550,12 +550,12 @@
 // Renamer circuit. Renames the assembly it is in. Useful in cooperation with telecomms-based circuits.
 /obj/item/integrated_circuit/manipulation/renamer
 	name = "renamer"
-	desc = "A small circuit that renames the assembly it is in. Useful paired with speech-based circuits."
+	desc = "Небольшая схема, которая переименовывает корпус, в котором она находится. Полезна в сочетании со схемами, основанными на речевом управлении."
 	icon_state = "internalbm"
-	extended_desc = "This circuit accepts a string as input, and can be pulsed to rewrite the current assembly's name with said string. On success, it pulses the default pulse-out wire."
-	inputs = list("name" = IC_PINTYPE_STRING)
-	outputs = list("current name" = IC_PINTYPE_STRING)
-	activators = list("rename" = IC_PINTYPE_PULSE_IN,"get name" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
+	extended_desc = "Эта схема принимает строку в качестве входных данных и может генерировать импульс для перезаписи имени текущего корпуса указанной строкой. В случае успешного выполнения она подает импульс на выходной провод по умолчанию."
+	inputs = list("имя" = IC_PINTYPE_STRING)
+	outputs = list("текущее имя" = IC_PINTYPE_STRING)
+	activators = list("переименовать" = IC_PINTYPE_PULSE_IN,"получить имя" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
 	power_draw_per_use = 1
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -579,14 +579,14 @@
 // - redescribing circuit - //
 /obj/item/integrated_circuit/manipulation/redescribe
 	name = "redescriber"
-	desc = "Takes any string as an input and will set it as the assembly's description."
-	extended_desc = "Strings should can be of any length."
+	desc = "Принимает любую строку в качестве входных данных и устанавливает её в качестве описания корпуса."
+	extended_desc = "Строки могут быть любой длины."
 	icon_state = "speaker"
 	cooldown_per_use = 10
 	complexity = 3
-	inputs = list("text" = IC_PINTYPE_STRING)
-	outputs = list("description" = IC_PINTYPE_STRING)
-	activators = list("redescribe" = IC_PINTYPE_PULSE_IN,"get description" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
+	inputs = list("текст" = IC_PINTYPE_STRING)
+	outputs = list("описание" = IC_PINTYPE_STRING)
+	activators = list("переописать" = IC_PINTYPE_PULSE_IN,"получить описание" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/manipulation/redescribe/do_work(var/n)
@@ -606,13 +606,13 @@
 // - repainting circuit - //
 /obj/item/integrated_circuit/manipulation/repaint
 	name = "auto-repainter"
-	desc = "There's an oddly high amount of spraying cans fitted right inside this circuit."
-	extended_desc = "Takes a value in hexadecimal and uses it to repaint the assembly it is in."
+	desc = "В этой схеме установлено необычно много распылительных баллончиков."
+	extended_desc = "Принимает значение в шестнадцатеричном формате и использует его для перекраски того корпуса, в котором оно находится."
 	cooldown_per_use = 10
 	complexity = 3
-	inputs = list("color" = IC_PINTYPE_COLOR)
-	outputs = list("current color" = IC_PINTYPE_COLOR)
-	activators = list("repaint" = IC_PINTYPE_PULSE_IN,"get color" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
+	inputs = list("цвет" = IC_PINTYPE_COLOR)
+	outputs = list("текущий цвет" = IC_PINTYPE_COLOR)
+	activators = list("перекрасить" = IC_PINTYPE_PULSE_IN,"получить цвет" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/manipulation/repaint/do_work(var/n)

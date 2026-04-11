@@ -1,20 +1,20 @@
 /obj/item/integrated_circuit/memory
 	name = "memory chip"
-	desc = "This tiny chip can store one piece of data."
+	desc = "Этот крошечный чип может хранить один элемент данных."
 	icon_state = "memory"
 	complexity = 1
 	inputs = list()
 	outputs = list()
-	activators = list("set" = IC_PINTYPE_PULSE_IN, "on set" = IC_PINTYPE_PULSE_OUT)
-	category_text = "Memory"
+	activators = list("установить" = IC_PINTYPE_PULSE_IN, "при установке" = IC_PINTYPE_PULSE_OUT)
+	category_text = "Память"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 1
 	var/number_of_pins = 1
 
 /obj/item/integrated_circuit/memory/Initialize(mapload)
 	for(var/i = 1 to number_of_pins)
-		inputs["input [i]"] = IC_PINTYPE_ANY // This is just a string since pins don't get built until ..() is called.
-		outputs["output [i]"] = IC_PINTYPE_ANY
+		inputs["ввод [i]"] = IC_PINTYPE_ANY // This is just a string since pins don't get built until ..() is called.
+		outputs["вывод [i]"] = IC_PINTYPE_ANY
 	complexity = number_of_pins
 	. = ..()
 
@@ -30,7 +30,7 @@
 				data = "[d]"
 		else if(!isnull(O.data))
 			data = O.data
-		. += "\The [src] has [data] saved to address [i]."
+		. += "В [src] данные [data] сохранены по адресу [i]."
 
 /obj/item/integrated_circuit/memory/do_work()
 	for(var/i = 1 to inputs.len)
@@ -42,28 +42,28 @@
 
 /obj/item/integrated_circuit/memory/tiny
 	name = "small memory circuit"
-	desc = "This circuit can store two pieces of data."
+	desc = "Эта схема может хранить два элемента данных."
 	icon_state = "memory4"
 	power_draw_per_use = 2
 	number_of_pins = 2
 
 /obj/item/integrated_circuit/memory/medium
 	name = "medium memory circuit"
-	desc = "This circuit can store four pieces of data."
+	desc = "Эта схема может хранить четыре элемента данных."
 	icon_state = "memory4"
 	power_draw_per_use = 2
 	number_of_pins = 4
 
 /obj/item/integrated_circuit/memory/large
 	name = "large memory circuit"
-	desc = "This big circuit can store eight pieces of data."
+	desc = "Эта большая схема может хранить восемь элементов данных."
 	icon_state = "memory8"
 	power_draw_per_use = 4
 	number_of_pins = 8
 
 /obj/item/integrated_circuit/memory/huge
 	name = "large memory stick"
-	desc = "This stick of memory can store up up to sixteen pieces of data."
+	desc = "На этой схеме можно сохранить до шестнадцати записей."
 	icon_state = "memory16"
 	w_class = WEIGHT_CLASS_SMALL
 	spawn_flags = IC_SPAWN_RESEARCH
@@ -72,7 +72,7 @@
 
 /obj/item/integrated_circuit/memory/constant
 	name = "constant chip"
-	desc = "This tiny chip can store one piece of data, which cannot be overwritten without disassembly."
+	desc = "Этот крошечный чип может хранить один фрагмент данных, который невозможно перезаписать без его отсоединения."
 	icon_state = "memory"
 	inputs = list()
 	outputs = list("output pin" = IC_PINTYPE_ANY)
@@ -104,36 +104,36 @@
 	var/datum/integrated_io/O = outputs[1]
 	if(!user.IsAdvancedToolUser())
 		return
-	var/type_to_use = input("Please choose a type to use.","[src] type setting") as null|anything in list("string","number","ref", "null")
+	var/type_to_use = input("Пожалуйста, выберите тип.","[src] type setting") as null|anything in list("строка","число","ссылка", "null")
 
 	var/new_data = null
 	switch(type_to_use)
 		if("string")
 			accepting_refs = FALSE
-			new_data = input("Now type in a string.","[src] string writing") as null|text
+			new_data = input("Теперь введите строку.","[src] string writing") as null|text
 			if(istext(new_data) && user.IsAdvancedToolUser())
 				O.data = new_data
-				to_chat(user, "<span class='notice'>You set \the [src]'s memory to [O.display_data(O.data)].</span>")
+				to_chat(user, "<span class='notice'>Вы устанавливаете в память [src] [O.display_data(O.data)].</span>")
 		if("number")
 			accepting_refs = FALSE
-			new_data = input("Now type in a number.","[src] number writing") as null|num
+			new_data = input("Теперь введите число.","[src] number writing") as null|num
 			if(isnum(new_data) && user.IsAdvancedToolUser())
 				O.data = new_data
-				to_chat(user, "<span class='notice'>You set \the [src]'s memory to [O.display_data(O.data)].</span>")
+				to_chat(user, "<span class='notice'>Вы устанавливаете в память [src] [O.display_data(O.data)].</span>")
 		if("ref")
 			accepting_refs = TRUE
-			to_chat(user, "<span class='notice'>You turn \the [src]'s ref scanner on.  Slide it across \
-			an object for a ref of that object to save it in memory.</span>")
+			to_chat(user, "<span class='notice'>Вы включаете сканер ссылок [src].  Проведите им по \
+            объекту, чтобы получить ссылку на этот объект и сохранить её в памяти.</span>")
 		if("null")
 			O.data = null
-			to_chat(user, "<span class='notice'>You set \the [src]'s memory to absolutely nothing.</span>")
+			to_chat(user, "<span class='notice'>Вы сбросили содержимое [src] до нуля.</span>")
 
 /obj/item/integrated_circuit/memory/constant/afterattack(atom/target, mob/living/user, proximity)
 	. = ..()
 	if(accepting_refs && proximity)
 		var/datum/integrated_io/O = outputs[1]
 		O.data = WEAKREF(target)
-		visible_message("<span class='notice'>[user] slides \a [src]'s over \the [target].</span>")
-		to_chat(user, "<span class='notice'>You set \the [src]'s memory to a reference to [O.display_data(O.data)].  The ref scanner is \
-		now off.</span>")
+		visible_message("<span class='notice'>[user] проводит [src] над [target].</span>")
+		to_chat(user, "<span class='notice'>Вы установили в память [src] ссылку на [O.display_data(O.data)]. Сканер ссылок \
+        теперь отключен.</span>")
 		accepting_refs = FALSE

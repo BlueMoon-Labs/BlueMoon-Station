@@ -1,11 +1,11 @@
 /obj/item/integrated_circuit/logic
 	name = "logic gate"
-	desc = "This tiny chip will decide for you!"
-	extended_desc = "Logic circuits will treat a null, 0, and a \"\" string value as FALSE and anything else as TRUE."
+	desc = "Этот крошечный чип решит за вас!"
+	extended_desc = "Логические схемы будут рассматривать значение null, 0 и строку \"\" как FALSE, а все остальное как TRUE."
 	complexity = 1
-	outputs = list("result" = IC_PINTYPE_BOOLEAN)
-	activators = list("compare" = IC_PINTYPE_PULSE_IN)
-	category_text = "Logic"
+	outputs = list("результат" = IC_PINTYPE_BOOLEAN)
+	activators = list("сравнить" = IC_PINTYPE_PULSE_IN)
+	category_text = "Логика"
 	power_draw_per_use = 1
 
 /obj/item/integrated_circuit/logic/do_work()
@@ -13,7 +13,7 @@
 
 /obj/item/integrated_circuit/logic/binary
 	inputs = list("A" = IC_PINTYPE_ANY,"B" = IC_PINTYPE_ANY)
-	activators = list("compare" = IC_PINTYPE_PULSE_IN, "on true result" = IC_PINTYPE_PULSE_OUT, "on false result" = IC_PINTYPE_PULSE_OUT)
+	activators = list("сравнить" = IC_PINTYPE_PULSE_IN, "при TRUE" = IC_PINTYPE_PULSE_OUT, "при FALSE" = IC_PINTYPE_PULSE_OUT)
 
 /obj/item/integrated_circuit/logic/binary/do_work()
 	var/datum/integrated_io/A = inputs[1]
@@ -35,7 +35,7 @@
 
 /obj/item/integrated_circuit/logic/unary
 	inputs = list("A" = IC_PINTYPE_ANY)
-	activators = list("compare" = IC_PINTYPE_PULSE_IN, "on compare" = IC_PINTYPE_PULSE_OUT)
+	activators = list("сравнить" = IC_PINTYPE_PULSE_IN, "при сравнении" = IC_PINTYPE_PULSE_OUT)
 
 /obj/item/integrated_circuit/logic/unary/do_work()
 	var/datum/integrated_io/A = inputs[1]
@@ -49,7 +49,7 @@
 
 /obj/item/integrated_circuit/logic/binary/equals
 	name = "equal gate"
-	desc = "This gate compares two values, and outputs TRUE if both are the same."
+	desc = "Эта схема сравнивает два значения и выдает сигнал TRUE, если они совпадают."
 	icon_state = "equal"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -58,7 +58,7 @@
 
 /obj/item/integrated_circuit/logic/binary/jklatch
 	name = "JK latch"
-	desc = "This gate is a synchronized JK latch."
+	desc = "Эта схема представляет собой синхронизированный триггер JK."
 	icon_state = "jklatch"
 	inputs = list("J" = IC_PINTYPE_ANY,"K" = IC_PINTYPE_ANY)
 	outputs = list("Q" = IC_PINTYPE_BOOLEAN,"!Q" = IC_PINTYPE_BOOLEAN)
@@ -89,7 +89,7 @@
 
 /obj/item/integrated_circuit/logic/binary/rslatch
 	name = "RS latch"
-	desc = "This gate is a synchronized RS latch. If both R and S are true, its state will not change."
+	desc = "Этот элемент представляет собой синхронизированный триггер RS. Если и R, и S имеют значение true, его состояние не изменится."
 	icon_state = "sr_nor"
 	inputs = list("S" = IC_PINTYPE_ANY,"R" = IC_PINTYPE_ANY)
 	outputs = list("Q" = IC_PINTYPE_BOOLEAN,"!Q" = IC_PINTYPE_BOOLEAN)
@@ -118,7 +118,7 @@
 
 /obj/item/integrated_circuit/logic/binary/gdlatch
 	name = "gated D latch"
-	desc = "This gate is a synchronized gated D latch."
+	desc = "Эта схема представляет собой синхронизированный D-триггер."
 	icon_state = "gated_d"
 	inputs = list("D" = IC_PINTYPE_ANY,"E" = IC_PINTYPE_ANY)
 	outputs = list("Q" = IC_PINTYPE_BOOLEAN,"!Q" = IC_PINTYPE_BOOLEAN)
@@ -147,7 +147,7 @@
 
 /obj/item/integrated_circuit/logic/binary/not_equals
 	name = "not equal gate"
-	desc = "This gate compares two values, and outputs TRUE if both are different."
+	desc = "Эта схема сравнивает два значения и выдает сигнал TRUE, если они не совпадают."
 	icon_state = "not_equal"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -156,7 +156,7 @@
 
 /obj/item/integrated_circuit/logic/binary/and
 	name = "and gate"
-	desc = "This gate will output TRUE if both inputs evaluate to true."
+	desc = "Эта схема выдаст сигнал TRUE, если оба входа принимают значение true."
 	icon_state = "and"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -165,7 +165,7 @@
 
 /obj/item/integrated_circuit/logic/binary/or
 	name = "or gate"
-	desc = "This gate will output TRUE if one of the inputs evaluate to true."
+	desc = "Эта схема выдаст сигнал TRUE, если хотя бы один из входов принимает значение «истина»."
 	icon_state = "or"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -174,7 +174,7 @@
 
 /obj/item/integrated_circuit/logic/binary/xor
 	name = "xor gate"
-	desc = "This gate will output TRUE if only one of the inputs evaluate to true."
+	desc = "Эта схема выдаст сигнал TRUE, если только один из входов принимает значение true."
 	icon_state = "xor"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -183,7 +183,7 @@
 
 /obj/item/integrated_circuit/logic/binary/less_than
 	name = "less than gate"
-	desc = "This will output TRUE if the first input is less than the second input."
+	desc = "Эта схема вернет значение TRUE, если первое входное значение меньше второго."
 	icon_state = "less_than"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -193,7 +193,7 @@
 
 /obj/item/integrated_circuit/logic/binary/less_than_or_equal
 	name = "less than or equal gate"
-	desc = "This will output TRUE if the first input is less than, or equal to the second input."
+	desc = "Эта схема вернет значение TRUE, если первое входное значение меньше или равно второму."
 	icon_state = "less_than_or_equal"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -203,7 +203,7 @@
 
 /obj/item/integrated_circuit/logic/binary/greater_than
 	name = "greater than gate"
-	desc = "This will output TRUE if the first input is greater than the second input."
+	desc = "Эта схема вернет значение TRUE, если первое входное значение больше второго."
 	icon_state = "greater_than"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -213,7 +213,7 @@
 
 /obj/item/integrated_circuit/logic/binary/greater_than_or_equal
 	name = "greater than or equal gate"
-	desc = "This will output TRUE if the first input is greater than, or equal to the second input."
+	desc = "Эта функция вернет значение TRUE, если первое входное значение больше или равно второму."
 	icon_state = "greater_than_or_equal"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -223,7 +223,7 @@
 
 /obj/item/integrated_circuit/logic/unary/not
 	name = "not gate"
-	desc = "This gate inverts what's fed into it."
+	desc = "Эта схема инвертирует поступающий на него сигнал."
 	icon_state = "not"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	activators = list("invert" = IC_PINTYPE_PULSE_IN, "on inverted" = IC_PINTYPE_PULSE_OUT)
