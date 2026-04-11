@@ -164,6 +164,8 @@
 	// Аварийный доступ при дельте
 	if(level >= SEC_LEVEL_DELTA)
 		emergency = TRUE
+		if(locked)
+			toggle_bolt()
 		update_appearance()
 		last_sec_level = level
 		return
