@@ -119,12 +119,10 @@
 	. = ..()
 	if(is_station_level(z))
 		RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(check_security_level))
-		RegisterSignal(SSdcs, COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE, PROC_REF(force_eng_override))
 		if(GLOB.security_level > SEC_LEVEL_GREEN)
 			check_security_level()
 
 /obj/machinery/door/airlock/Destroy()
-	UnregisterSignal(SSdcs, COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE)
 	UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
 	return ..()
 
@@ -177,16 +175,16 @@
 	if(level >= SEC_LEVEL_RED)
 		security_override = TRUE
 		medical_override = FALSE
-		if(!GLOB.force_eng_override)
-			engineering_override = FALSE
+		//if(!GLOB.force_eng_override)
+		engineering_override = FALSE
 		update_appearance()
 	else if(level == SEC_LEVEL_VIOLET)
 		security_override = FALSE
 		medical_override = TRUE
-		if(!GLOB.force_eng_override)
-			engineering_override = FALSE
+		//if(!GLOB.force_eng_override)
+		engineering_override = FALSE
 		update_appearance()
-	else if(level == SEC_LEVEL_ORANGE || GLOB.force_eng_override)
+	else if(level == SEC_LEVEL_ORANGE) //|| GLOB.force_eng_override)
 		security_override = FALSE
 		medical_override = FALSE
 		engineering_override = TRUE
@@ -217,6 +215,7 @@
 					airlock.security_override = FALSE
 				airlock.update_appearance()
 
+/*
 ///Manual override for when it's not orange alert.
 GLOBAL_VAR_INIT(force_eng_override, FALSE)
 
@@ -249,6 +248,7 @@ GLOBAL_VAR_INIT(force_eng_override, FALSE)
 
 	engineering_override = TRUE
 	update_appearance()
+*/
 
 /**
  * Make the airlock unrestricted as a temporary emergency exit.

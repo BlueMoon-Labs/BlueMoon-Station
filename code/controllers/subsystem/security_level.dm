@@ -216,14 +216,10 @@ SUBSYSTEM_DEF(security_level)
  * Arguments determine if engineering override or maint access is granted.
  * Arguments: min_level: number, eng_access: boolean, maint_access: boolean
 */
-/datum/controller/subsystem/security_level/proc/minimum_security_level(min_level = SEC_LEVEL_ORANGE, eng_access = TRUE, maint_access = FALSE)
+/datum/controller/subsystem/security_level/proc/minimum_security_level(min_level = SEC_LEVEL_ORANGE, maint_access = FALSE)
 	var/current_level = isnum(GLOB.security_level) ? GLOB.security_level : SECLEVEL2NUM(GLOB.security_level)
 	if(current_level < min_level)
 		set_level(min_level)
-
-	if(eng_access)
-		GLOB.force_eng_override = TRUE
-		SEND_GLOBAL_SIGNAL(COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE, TRUE)
 
 	if(maint_access)
 		make_maint_all_access()
