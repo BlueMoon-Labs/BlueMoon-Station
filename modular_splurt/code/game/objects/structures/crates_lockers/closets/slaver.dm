@@ -47,6 +47,7 @@
 
 /obj/structure/closet/crate/slaver_loadout/proc/PopulateAfterRoundStart()
 	SIGNAL_HANDLER
+	UnregisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING)
 	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
 		new /obj/item/clothing/accessory/permit/special/deviant/lust/slavers(src)
 
