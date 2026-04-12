@@ -33,7 +33,7 @@
 	build_path = /obj/item/bodypart/chest/robot/ipc
 	materials = list(/datum/material/iron=24000, /datum/material/glass=5000, /datum/material/silver=2000)
 	construction_time = 280
-	category = list("IPC Components")
+	category = list("Cybernetics")
 
 /datum/design/ipc_head_chassis
 	name = "IPC Cranial Chassis"
@@ -42,7 +42,7 @@
 	build_path = /obj/item/bodypart/head/robot/ipc
 	materials = list(/datum/material/iron=8000, /datum/material/glass=3000, /datum/material/gold=1000)
 	construction_time = 180
-	category = list("IPC Components")
+	category = list("Cybernetics")
 
 /datum/design/borg_l_arm
 	name = "Cyborg Left Arm"
