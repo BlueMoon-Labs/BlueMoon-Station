@@ -15,12 +15,12 @@
 //						/obj/item/analyzer/ranged)
 // 	BLUEMOON ADD START
 	contents = newlist(/obj/item/screwdriver/advanced,
-						/obj/item/wrench/advanced,
-						/obj/item/weldingtool/advanced,
 						/obj/item/crowbar/advanced,
+						/obj/item/wrench/advanced,
 						/obj/item/wirecutters/advanced,
-						/obj/item/multitool/advanced,
-						/obj/item/analyzer/ranged)
+						/obj/item/weldingtool/advanced,
+						/obj/item/analyzer/ranged,
+						/obj/item/multitool/advanced)
 // 	BLUEMOON ADD END
 
 /obj/item/organ/cyberimp/arm/toolset/advanced/emag_act()
