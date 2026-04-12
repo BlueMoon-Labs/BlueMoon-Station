@@ -156,6 +156,8 @@
 	if(QDELETED(H) || !H.client || H.stat == DEAD)
 		return
 	if(tgui_alert(H, "Из вас вырвали скелет, оставили без рук и ног. Некромантия искушает вас уйти за грань. Желаете поддаться ей?", "Жить или умереть?", list("Жить", "Умереть"), 15 SECONDS) == "Умереть")
+		if(QDELETED(H))
+			return
 		// Убиваем носителя, но добавляем презервагид от гниения (Некромантия, все дела)
 		H.reagents.add_reagent(/datum/reagent/preservahyde, 5)
 		H.death(FALSE)
