@@ -165,8 +165,20 @@
 		return FALSE
 	if(!IS_DYNAMIC_LIGHTING(T) || !IS_DYNAMIC_LIGHTING(turf_area))
 		return FALSE
+	// Exclude space/ruins areas and space-baseturf overlays: random-ruin or
+	// prefab overlays placed on top of space coords do not survive
+	// reload_station_map (it restores the station DMM's golden copy, which has
+	// /turf/open/space at those coords). Runtime area can look like a normal
+	// station area after overlay, so also reject any floor whose baseturfs end
+	// in /turf/open/space — that's the tell-tale sign of a space overlay.
+	if(istype(turf_area, /area/space))
+		return FALSE
 	if(istype(turf_area, /area/shuttle))
 		return FALSE
+	var/list/baseturfs = islist(T.baseturfs) ? T.baseturfs : list(T.baseturfs)
+	for(var/base_path in baseturfs)
+		if(ispath(base_path, /turf/open/space))
+			return FALSE
 	for(var/atom/movable/A as anything in T)
 		if(ismob(A) || A.density)
 			return FALSE
