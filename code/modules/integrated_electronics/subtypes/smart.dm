@@ -179,8 +179,8 @@
 
 /obj/item/integrated_circuit/input/mmi_tank/attack_self(mob/user)
 	if(installed_brain)
-		RemoveBrain()
 		to_chat(user, span_notice("Вы медленно поднимаете [installed_brain] из резервуара для MMI."))
+		RemoveBrain()
 		playsound(src, 'sound/items/Crowbar.ogg', 50, 1)
 	else
 		to_chat(user, span_notice("Вы не видите мозга, плавающего в резервуаре."))
@@ -312,8 +312,8 @@
 
 /obj/item/integrated_circuit/input/pAI_connector/attack_self(mob/user)
 	if(installed_pai)
-		RemovepAI()
 		to_chat(user, span_notice("Вы медленно отключаете пины платы от [installed_pai]."))
+		RemovepAI()
 		playsound(src, 'sound/items/Crowbar.ogg', 50, 1)
 	else
 		to_chat(user, span_notice("Порт подключения пуст."))
