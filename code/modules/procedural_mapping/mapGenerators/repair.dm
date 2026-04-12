@@ -18,54 +18,9 @@
 
 /datum/mapGeneratorModule/reload_station_map/generate()
 	if(!istype(mother, /datum/mapGenerator/repair/reload_station_map))
-		return
-	var/datum/mapGenerator/repair/reload_station_map/mother1 = mother
-	GLOB.reloading_map = TRUE
-	// This is kind of finicky on multi-Z maps but the reader would need to be
-	// changed to allow Z cropping and that's a mess
-	var/z_offset = SSmapping.station_start
-	var/list/bounds
-	for (var/path in SSmapping.config.GetFullMapPaths())
-		var/datum/parsed_map/parsed = load_map(file(path), 1, 1, z_offset, orientation = SSmapping.config.orientation, cropMap = TRUE, x_lower = mother1.x_low, y_lower = mother1.y_low, x_upper = mother1.x_high, y_upper = mother1.y_high)
-		bounds = parsed.bounds
-		z_offset += bounds[MAP_MAXZ] - bounds[MAP_MINZ] + 1
-
-	var/list/obj/machinery/atmospherics/atmos_machines = list()
-	var/list/obj/structure/cable/cables = list()
-	var/list/atom/atoms = list()
-
-	repopulate_sorted_areas()
-
-	for(var/L in block(locate(bounds[MAP_MINX], bounds[MAP_MINY], SSmapping.station_start),
-						locate(bounds[MAP_MAXX], bounds[MAP_MAXY], z_offset - 1)))
-		set waitfor = FALSE
-		var/turf/B = L
-		atoms += B
-		B.assemble_baseturfs(B.type)
-		for(var/A in B)
-			atoms += A
-			if(istype(A,/obj/structure/cable))
-				cables += A
-				continue
-			if(istype(A,/obj/machinery/atmospherics))
-				atmos_machines += A
-
-	SSatoms.InitializeAtoms(atoms)
-	SSmachines.setup_template_powernets(cables)
-	SSair.setup_template_machinery(atmos_machines)
-
-	// Rebuild lighting for reloaded region — mass delete + reload leaves
-	// has_opaque_atom, shadow_weight_sum, and area blend profiles stale
-	for(var/turf/T in atoms)
-		T.recalc_atom_opacity()
-		T.reconsider_lights()
-		if(T.lighting_object)
-			GLOB.lighting_update_blends |= T.lighting_object
-			if(!T.lighting_object.needs_update)
-				T.lighting_object.needs_update = TRUE
-				GLOB.lighting_update_objects += T.lighting_object
-
-	GLOB.reloading_map = FALSE
+		return FALSE
+	var/datum/mapGenerator/repair/reload_station_map/reload_generator = mother
+	return reload_generator.run_reload_phase()
 
 /datum/mapGenerator/repair
 	modules = list(/datum/mapGeneratorModule/bottomLayer/repairFloorPlasteel,
@@ -112,13 +67,83 @@
 	y_high = max(start.y, end.y)
 	z = SSmapping.station_start
 
+/datum/mapGenerator/repair/reload_station_map/proc/run_delete_phase(run_clean = cleanload)
+	if(!run_clean)
+		return TRUE
+	for(var/datum/mapGeneratorModule/module as anything in modules)
+		if(QDELETED(module))
+			continue
+		module.sync(src)
+		module.generate()
+	return TRUE
+
+/datum/mapGenerator/repair/reload_station_map/proc/run_reload_phase()
+	// This is kind of finicky on multi-Z maps but the reader would need to be
+	// changed to allow Z cropping and that's a mess
+	var/z_offset = SSmapping.station_start
+	var/list/bounds
+	for(var/path in SSmapping.config.GetFullMapPaths())
+		var/datum/parsed_map/parsed = load_map(file(path), 1, 1, z_offset, orientation = SSmapping.config.orientation, cropMap = TRUE, x_lower = x_low, y_lower = y_low, x_upper = x_high, y_upper = y_high)
+		if(!parsed?.bounds)
+			return FALSE
+		bounds = parsed.bounds
+		z_offset += bounds[MAP_MAXZ] - bounds[MAP_MINZ] + 1
+
+	var/list/obj/machinery/atmospherics/atmos_machines = list()
+	var/list/obj/structure/cable/cables = list()
+	var/list/atom/atoms = list()
+	var/list/reloaded_turfs = list()
+
+	repopulate_sorted_areas()
+
+	var/turf/bottom_left = locate(bounds[MAP_MINX], bounds[MAP_MINY], SSmapping.station_start)
+	var/turf/top_right = locate(bounds[MAP_MAXX], bounds[MAP_MAXY], z_offset - 1)
+	if(!bottom_left || !top_right)
+		return FALSE
+
+	for(var/turf/B as anything in block(bottom_left, top_right))
+		reloaded_turfs += B
+		atoms += B
+		B.assemble_baseturfs(B.type)
+		for(var/atom/A as anything in B)
+			atoms += A
+			if(istype(A, /obj/structure/cable))
+				cables += A
+				continue
+			if(istype(A, /obj/machinery/atmospherics))
+				atmos_machines += A
+
+	SSatoms.InitializeAtoms(atoms)
+	SSmachines.setup_template_powernets(cables)
+	SSair.setup_template_machinery(atmos_machines)
+	for(var/turf/T as anything in reloaded_turfs)
+		T.recalc_atom_opacity()
+		T.reconsider_lights()
+		if(T.lighting_object)
+			GLOB.lighting_update_blends |= T.lighting_object
+			if(!T.lighting_object.needs_update)
+				T.lighting_object.needs_update = TRUE
+				GLOB.lighting_update_objects += T.lighting_object
+	return TRUE
+
 GLOBAL_VAR_INIT(reloading_map, FALSE)
 
 /datum/mapGenerator/repair/reload_station_map/generate(clean = cleanload)
 	if(!loader)
 		loader = new
-	if(cleanload)
-		..()			//Trigger mass deletion.
-	modules |= loader
 	syncModules()
-	loader.generate()
+	loader.sync(src)
+	if(GLOB.reloading_map || !map.len)
+		return FALSE
+	GLOB.reloading_map = TRUE
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/datum/mapGenerator/repair/reload_station_map, run_repair_reload), clean)
+	return TRUE
+
+/datum/mapGenerator/repair/reload_station_map/proc/run_repair_reload(run_clean = cleanload)
+	if(loader)
+		loader.sync(src)
+	syncModules()
+	if(run_delete_phase(run_clean))
+		if(loader)
+			loader.generate()
+	GLOB.reloading_map = FALSE
