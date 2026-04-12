@@ -30,7 +30,7 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s integrated dagger!</span>")
-	items_list += new /obj/item/pen/edagger(src)
+	add_item(new /obj/item/pen/edagger)
 	return TRUE
 
 /obj/item/organ/cyberimp/arm/surgery/advanced
@@ -52,5 +52,5 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s integrated dagger!</span>")
-	items_list += new /obj/item/pen/edagger(src)
+	add_item(/obj/item/pen/edagger)
 	return TRUE

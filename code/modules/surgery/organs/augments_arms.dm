@@ -207,7 +207,7 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s integrated knife!</span>")
-	items_list += new /obj/item/kitchen/knife/combat/cyborg(src)
+	add_item(new /obj/item/kitchen/knife/combat/cyborg)
 	return TRUE
 
 /obj/item/organ/cyberimp/arm/surgery
@@ -222,7 +222,7 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s integrated knife!</span>")
-	items_list += new /obj/item/kitchen/knife/combat/cyborg(src)
+	add_item(new /obj/item/kitchen/knife/combat/cyborg)
 	return TRUE
 
 /obj/item/organ/cyberimp/arm/janitor
@@ -237,8 +237,8 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s integrated deluxe cleaning supplies!</span>")
-	items_list += new /obj/item/soap/syndie(src) //We add not replace.
-	items_list += new /obj/item/reagent_containers/spray/cyborg_lube(src)
+	add_item(new /obj/item/soap/syndie) //We add not replace.
+	add_item(new /obj/item/reagent_containers/spray/cyborg_lube)
 	return TRUE
 
 /obj/item/organ/cyberimp/arm/service
@@ -253,7 +253,7 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s integrated real knife!</span>")
-	items_list += new /obj/item/kitchen/knife/combat/cyborg(src)
+	add_item(new /obj/item/kitchen/knife/combat/cyborg)
 	return TRUE
 
 ///////////////
@@ -339,8 +339,8 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s high-power flash!</span>")
-	var/obj/item/assembly/flash/armimplant/F = new(src)
-	items_list += F
+	var/obj/item/assembly/flash/armimplant/F = new
+	add_item(F)
 	F.I = src
 
 /////////////////
