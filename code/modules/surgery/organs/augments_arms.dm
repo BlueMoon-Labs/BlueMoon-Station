@@ -49,10 +49,12 @@
 	if(I in items_list)
 		if(I in contents)		//already in us somehow? i probably shouldn't catch this so it's easier to spot bugs but eh..
 			return
-		I.visible_message("<span class='notice'>[I] snaps back into [src]!</span>")
-		I.forceMove(src)
+		I.visible_message(span_notice("[I] snaps back into [src]!"))
 		if(I == holder)
-			holder = null
+			Retract()
+		else
+			I.forceMove(src)
+			RetractPLaySound()
 
 /obj/item/organ/cyberimp/arm/proc/SetSlotFromZone()
 	switch(zone)
@@ -107,6 +109,7 @@
 	holder = null
 	if(!silent)
 		RetractPLaySound()
+	return TRUE
 
 // If it is necessary to process sounds in a special way
 /obj/item/organ/cyberimp/arm/proc/RetractPLaySound()
@@ -190,6 +193,12 @@
 						/obj/item/wirecutters/cyborg,
 						/obj/item/weldingtool/largetank/cyborg,
 						/obj/item/multitool/cyborg)
+
+/obj/item/organ/cyberimp/arm/toolset/Retract(silent)
+	var/obj/item/weldingtool/weldingtool = holder
+	. = ..()
+	if(. && istype(weldingtool) && weldingtool.welding)
+		weldingtool.switched_off(owner)
 
 /obj/item/organ/cyberimp/arm/toolset/emag_act()
 	. = ..()
