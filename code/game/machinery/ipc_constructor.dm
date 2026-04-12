@@ -189,7 +189,7 @@
 	var/style = null
 	var/style_changeable = FALSE
 	var/list/style_options = null
-	if(istype(item, /obj/item/bodypart/l_arm/robot) || istype(item, /obj/item/bodypart/r_arm/robot) || istype(item, /obj/item/bodypart/l_leg/robot) || istype(item, /obj/item/bodypart/r_leg/robot))
+	if(istype(item, /obj/item/bodypart/head/robot/ipc) || istype(item, /obj/item/bodypart/chest/robot/ipc) || istype(item, /obj/item/bodypart/l_arm/robot) || istype(item, /obj/item/bodypart/r_arm/robot) || istype(item, /obj/item/bodypart/l_leg/robot) || istype(item, /obj/item/bodypart/r_leg/robot))
 		style = get_bodypart_style(item)
 		style_changeable = TRUE
 		style_options = get_bodypart_style_options(slot_id)
@@ -347,22 +347,36 @@
 	return ..()
 
 /obj/machinery/ipc_constructor/RefreshParts()
-	var/scan_rating_total = 0
-	var/scan_parts = 0
+	var/matter_bin_rating_total = 0
+	var/matter_bin_parts = 0
+	var/capacitor_rating_total = 0
+	var/capacitor_parts = 0
 	var/manip_rating_total = 0
 	var/manip_parts = 0
+	var/laser_rating_total = 0
+	var/laser_parts = 0
 
-	for(var/obj/item/stock_parts/scanning_module/scanner in component_parts)
-		scan_rating_total += scanner.rating
-		scan_parts++
+	for(var/obj/item/stock_parts/matter_bin/matter_bin in component_parts)
+		matter_bin_rating_total += matter_bin.rating
+		matter_bin_parts++
+
+	for(var/obj/item/stock_parts/capacitor/capacitor in component_parts)
+		capacitor_rating_total += capacitor.rating
+		capacitor_parts++
 
 	for(var/obj/item/stock_parts/manipulator/manipulator in component_parts)
 		manip_rating_total += manipulator.rating
 		manip_parts++
 
-	var/scan_rating = scan_parts ? (scan_rating_total / scan_parts) : 1
+	for(var/obj/item/stock_parts/micro_laser/laser in component_parts)
+		laser_rating_total += laser.rating
+		laser_parts++
+
+	var/matter_bin_rating = matter_bin_parts ? (matter_bin_rating_total / matter_bin_parts) : 1
+	var/capacitor_rating = capacitor_parts ? (capacitor_rating_total / capacitor_parts) : 1
 	var/manip_rating = manip_parts ? (manip_rating_total / manip_parts) : 1
-	assembly_part_tier = clamp((scan_rating + manip_rating) * 0.5, 1, 5)
+	var/laser_rating = laser_parts ? (laser_rating_total / laser_parts) : 1
+	assembly_part_tier = clamp((matter_bin_rating + capacitor_rating + manip_rating + laser_rating) * 0.25, 1, 5)
 
 /obj/machinery/ipc_constructor/proc/load_material(obj/item/user_item, mob/living/user)
 	if(istype(user_item, /obj/item/stack/sheet/metal))
@@ -1129,10 +1143,16 @@
 		. += style_name
 
 /obj/machinery/ipc_constructor/proc/style_supports_slot(style_name, slot_id)
-	if(slot_id == "head" || slot_id == "chest")
-		return FALSE
 	var/icon_file = limb_style_icons[style_name]
-	return !!icon_file
+	if(!icon_file)
+		return FALSE
+	if(slot_id == "head")
+		var/list/head_states = icon_states(icon_file)
+		return ("robotic_head" in head_states) || (("head_f" in head_states) && ("head_m" in head_states))
+	if(slot_id == "chest")
+		var/list/chest_states = icon_states(icon_file)
+		return ("robotic_chest" in chest_states) || (("chest_f" in chest_states) && ("chest_m" in chest_states))
+	return TRUE
 
 /obj/machinery/ipc_constructor/proc/get_bodypart_style_options(slot_id)
 	. = list()
@@ -1150,6 +1170,10 @@
 
 /obj/machinery/ipc_constructor/proc/get_styleable_bodypart(slot_id)
 	switch(slot_id)
+		if("head")
+			return head_part
+		if("chest")
+			return chest_part
 		if("l_arm")
 			return l_arm_part
 		if("r_arm")

@@ -931,8 +931,10 @@
 	icon_state = "medical"
 	build_path = /obj/machinery/ipc_constructor
 	req_components = list(
-		/obj/item/stock_parts/scanning_module = 2,
+		/obj/item/stock_parts/matter_bin = 5,
+		/obj/item/stock_parts/capacitor = 2,
 		/obj/item/stock_parts/manipulator = 2,
+		/obj/item/stock_parts/micro_laser = 2,
 		/obj/item/stack/cable_coil = 2,
 		/obj/item/stack/sheet/glass = 2)
 

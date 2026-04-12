@@ -206,7 +206,7 @@
 	materials = list(/datum/material/iron = 1000, /datum/material/glass = 300, /datum/material/silver = 500, /datum/material/gold = 400)
 	build_path = /obj/item/organ/stomach/ipc
 	category = list("Cybernetics")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/ipc_heart
 	name = "IPC hydraulic pump"
@@ -217,7 +217,7 @@
 	materials = list(/datum/material/iron = 900, /datum/material/glass = 300, /datum/material/silver = 300)
 	build_path = /obj/item/organ/heart/ipc
 	category = list("Cybernetics")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/ipc_lungs
 	name = "IPC cooling system"
@@ -228,7 +228,7 @@
 	materials = list(/datum/material/iron = 900, /datum/material/glass = 500, /datum/material/silver = 250)
 	build_path = /obj/item/organ/lungs/ipc
 	category = list("Cybernetics")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/ipc_liver
 	name = "IPC reagent processor"
@@ -239,7 +239,7 @@
 	materials = list(/datum/material/iron = 800, /datum/material/glass = 300, /datum/material/gold = 200)
 	build_path = /obj/item/organ/liver/ipc
 	category = list("Cybernetics")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/ipc_eyes
 	name = "IPC optical sensor array"
@@ -250,7 +250,7 @@
 	materials = list(/datum/material/iron = 500, /datum/material/glass = 1200, /datum/material/gold = 300)
 	build_path = /obj/item/organ/eyes/ipc
 	category = list("Cybernetics")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/ipc_ears
 	name = "IPC audio sensor array"
@@ -261,7 +261,7 @@
 	materials = list(/datum/material/iron = 400, /datum/material/glass = 700, /datum/material/silver = 200)
 	build_path = /obj/item/organ/ears/ipc
 	category = list("Cybernetics")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/ipc_tongue
 	name = "IPC voice synthesizer"
@@ -272,7 +272,7 @@
 	materials = list(/datum/material/iron = 400, /datum/material/glass = 400, /datum/material/gold = 200)
 	build_path = /obj/item/organ/tongue/robot/ipc
 	category = list("Cybernetics")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
 /////////////////////////////////////////
 ////////////Medical Prosthetics//////////

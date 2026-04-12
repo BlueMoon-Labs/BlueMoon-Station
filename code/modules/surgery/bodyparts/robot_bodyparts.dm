@@ -250,11 +250,19 @@
 	icon = 'icons/mob/augmentation/augments.dmi'
 	icon_state = "borg_chest"
 
+/obj/item/bodypart/chest/robot/ipc/Initialize(mapload)
+	. = ..()
+	update_icon_dropped()
+
 /obj/item/bodypart/head/robot/ipc
 	name = "IPC cranial chassis"
 	desc = "A reinforced synthetic head frame prepared for IPC assembly."
 	icon = 'icons/mob/augmentation/augments.dmi'
 	icon_state = "borg_head"
+
+/obj/item/bodypart/head/robot/ipc/Initialize(mapload)
+	. = ..()
+	update_icon_dropped()
 
 
 
