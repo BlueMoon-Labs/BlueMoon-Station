@@ -18,20 +18,20 @@
 	size = 8
 	tgui_id = "NtosCard"
 	program_icon = "id-card"
+	usage_flags = PROGRAM_CONSOLE
 
 	var/is_centcom = FALSE
 	var/minor = FALSE
 	var/authenticated = FALSE
-	var/list/region_access
-	var/list/head_subordinates
-	///Which departments this computer has access to. Defined as access regions. null = all departments
-	var/target_dept
+	var/list/region_access = list()
+	var/list/head_subordinates = list()
 
 	//For some reason everything was exploding if this was static.
 	var/list/sub_managers
 
 /datum/computer_file/program/card_mod/New(obj/item/modular_computer/comp)
 	. = ..()
+	// same logic in /datum/computer_file/program/job_management
 	sub_managers = list(
 		"[ACCESS_HOP]" = list(
 			"department" = list(CARDCON_DEPARTMENT_SERVICE, CARDCON_DEPARTMENT_COMMAND),
@@ -57,30 +57,69 @@
 			"department" = CARDCON_DEPARTMENT_ENGINEERING,
 			"region" = 5,
 			"head" = "Chief Engineer"
+		),
+		"[ACCESS_QM]" = list(
+			"department" = CARDCON_DEPARTMENT_SUPPLY,
+			"region" = 6,
+			"head" = "Quartermaster"
 		)
 	)
 
-/datum/computer_file/program/card_mod/proc/authenticate(mob/user, obj/item/card/id/id_card)
+/datum/computer_file/program/card_mod/ui_interact(mob/user, datum/tgui/ui)
+	. = ..()
+	auto_authenticate()
+
+/datum/computer_file/program/card_mod/process_tick(delta_time)
+	. = ..()
+	if(program_state != PROGRAM_STATE_ACTIVE)
+		return
+	auto_authenticate()
+
+/datum/computer_file/program/card_mod/kill_program(forced)
+	. = ..()
+	authenticated = FALSE
+
+/datum/computer_file/program/card_mod/proc/auto_authenticate()
+	// Авто-аутентификация или деавторизация. Адекватно перевести бы это на сигналы...
+	if(!computer)
+		return
+	var/obj/item/computer_hardware/card_slot/card_slot = computer.all_components[MC_CARD]
+	if(!card_slot)
+		return
+	var/obj/item/card/id/user_id_card = card_slot.stored_card
+	var/old_authenticated = authenticated
+	var/old_region_access_len = region_access.len
+	var/old_head_subordinates_len = head_subordinates.len
+	authenticate(user_id_card)
+	if(authenticated != old_authenticated || region_access.len != old_region_access_len || head_subordinates.len != old_head_subordinates_len)
+		update_static_data_for_all_viewers()
+		if(authenticated)
+			playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
+		else
+			playsound(computer, 'sound/machines/terminal_off.ogg', 50, FALSE)
+
+/datum/computer_file/program/card_mod/proc/authenticate(obj/item/card/id/id_card)
 	if(!id_card)
+		authenticated = FALSE
+		minor = FALSE
 		return
 
 	region_access = list()
-	if(!target_dept && (ACCESS_CHANGE_IDS in id_card.access))
+	head_subordinates = list()
+	if(ACCESS_CHANGE_IDS in id_card.access)
 		minor = FALSE
 		authenticated = TRUE
-		update_static_data(user)
 		return TRUE
 
 	var/list/head_types = list()
 	for(var/access_text in sub_managers)
 		var/list/info = sub_managers[access_text]
 		var/access = text2num(access_text)
-		if((access in id_card.access) && ((info["region"] in target_dept) || !length(target_dept)))
+		if((access in id_card.access))
 			region_access += info["region"]
 			//I don't even know what I'm doing anymore
 			head_types += info["head"]
 
-	head_subordinates = list()
 	if(length(head_types))
 		for(var/j in SSjob.occupations)
 			var/datum/job/job = j
@@ -88,13 +127,34 @@
 				if(head in job.department_head)
 					head_subordinates += job.title
 
-	if(length(region_access))
-		minor = TRUE
-		authenticated = TRUE
-		update_static_data(user)
-		return TRUE
+	authenticated = !!length(region_access)
+	minor = TRUE
+	return authenticated
 
-	return FALSE
+/datum/computer_file/program/card_mod/proc/set_job(job_name, obj/item/card/id/target_id_card, mob/user)
+	if(!computer || !authenticated || !target_id_card)
+		return
+
+	var/list/new_access = list()
+	if(is_centcom)
+		new_access = get_centcom_access(job_name)
+	else
+		var/datum/job/job = SSjob.name_occupations[job_name]
+		if(!job)
+			if(user)
+				to_chat(user, span_warning("No class exists for this job: [job_name]"))
+			return
+		new_access = job.get_access()
+		//финансовая вставка
+		if(target_id_card?.registered_account)
+			target_id_card.registered_account.account_job = job
+		//конец финансов
+	target_id_card.access -= get_all_centcom_access() + get_all_accesses()
+	target_id_card.access |= new_access
+	target_id_card.assignment = job_name
+	target_id_card.custom_job = ""
+	target_id_card.update_label()
+	return TRUE
 
 /datum/computer_file/program/card_mod/ui_act(action, params)
 	. = ..()
@@ -117,34 +177,38 @@
 	var/obj/item/card/id/target_id_card = card_slot2.stored_card
 
 	switch(action)
-		if("PRG_authenticate")
-			if(!computer || !user_id_card)
-				playsound(computer, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
-				return
-			if(authenticate(user, user_id_card))
-				playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
-				return TRUE
-		if("PRG_logout")
-			authenticated = FALSE
-			playsound(computer, 'sound/machines/terminal_off.ogg', 50, FALSE)
-			return TRUE
 		if("PRG_print")
-			if(!computer || !printer)
-				return
-			if(!authenticated)
+			if(!computer || !printer || !target_id_card || !authenticated)
 				return
 			var/contents = {"<h4>Access Report</h4>
 						<u>Prepared By:</u> [user_id_card?.registered_name ? user_id_card.registered_name : "Unknown"]<br>
 						<u>For:</u> [target_id_card.registered_name ? target_id_card.registered_name : "Unregistered"]<br>
 						<hr>
 						<u>Assignment:</u> [target_id_card.get_assignment_name()]<br>
-						<u>Access:</u><br>
+						<b><u>Access:</u></b><br>
+						%ACCESSES%
 						"}
 
-			var/known_access_rights = get_all_accesses()
-			for(var/A in target_id_card.access)
-				if(A in known_access_rights)
-					contents += "  [get_access_desc(A)]"
+			var/list/compile_accesses = list()
+			var/list/card_accesses = target_id_card.access.Copy()
+			for(var/i in 1 to 7) // Перебираем все станционные доступы
+				var/list/reg_access = list()
+				for(var/access in get_region_accesses(i))
+					if(access in target_id_card.access)
+						reg_access += access
+						card_accesses -= access
+				if(length(reg_access))
+					var/list/access_desc = list()
+					for(var/access in reg_access)
+						access_desc += get_access_desc(access)
+					compile_accesses += "<b>[get_region_accesses_name(i)]:</b> [jointext(access_desc, ", ")]"
+			if(length(card_accesses)) // Если остались доступы, записываем их отдельно
+				var/list/access_desc = list()
+				for(var/access in card_accesses)
+					access_desc += get_access_desc(access)
+				compile_accesses += "<b>Other:</b> [jointext(access_desc, ", ")]"
+
+			contents = replacetext(contents, "%ACCESSES%", length(compile_accesses) ? jointext(compile_accesses, "<br>") : "No Accesses detected")
 
 			if(!printer.print_text(contents,"access report"))
 				to_chat(usr, "<span class='notice'>Hardware error: Printer was unable to print the file. It may be out of paper.</span>")
@@ -172,28 +236,70 @@
 					if(!card_slot)
 						return
 					if(user_id_card)
-						return card_slot.try_eject(user)
+						. = card_slot.try_eject(user)
+						if(. && authenticated)
+							authenticated = FALSE
+							playsound(computer, 'sound/machines/terminal_off.ogg', 50, FALSE)
+						return
 					else
 						var/obj/item/card/id/id = user.get_active_held_item()
 						if(istype(id))
-							return card_slot.try_insert(id)
+							. = card_slot.try_insert(id)
+							if(authenticate(id))
+								playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
+							else
+								playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
+							update_static_data_for_all_viewers()
+							return
 			return FALSE
 		if("PRG_terminate")
-			if(!computer || !authenticated)
+			if(!computer || !authenticated || !target_id_card)
 				return
 			if(minor)
-				var/assign = GetJobName(target_id_card)
-				if(!(assign in head_subordinates) && assign != "Assistant")
+				var/assign = GetJobName(target_id_card.assignment)
+				if(!(assign in head_subordinates))
+					playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
 					return
-
 			target_id_card.access -= get_all_centcom_access() + get_all_accesses()
-			target_id_card.assignment = "Unassigned"
+			target_id_card.assignment = "Terminated"
 			//финансовая вставка
 			if(target_id_card?.registered_account)
 				target_id_card.registered_account.account_job = null
 			//конец финансов
 			target_id_card.update_label()
 			playsound(computer, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+			return TRUE
+		if("PRG_demote")
+			if(!computer || !authenticated || !target_id_card)
+				return
+			if(minor)
+				var/assign = GetJobName(target_id_card.assignment)
+				if(!(assign in head_subordinates))
+					playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
+					return
+			. = set_job("Assistant", target_id_card, user)
+			if(.)
+				playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
+			return
+		if("PRG_reset_access")
+			if(!computer || !authenticated || !target_id_card)
+				return
+			var/target = GetJobName(target_id_card.assignment)
+			if(minor)
+				if(!(target in head_subordinates))
+					playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
+					return
+			if(!target) // На всякий случай
+				playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
+				return
+			var/datum/job/job = SSjob.name_occupations[target]
+			if(!job)
+				to_chat(user, span_warning("No class exists for this job: [target]"))
+				return
+			var/list/new_access = is_centcom ? get_centcom_access(target) : job.get_access()
+			target_id_card.access -= get_all_centcom_access() + get_all_accesses()
+			target_id_card.access |= new_access
+			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			return TRUE
 		if("PRG_edit")
 			if(!computer || !authenticated || !target_id_card)
@@ -220,36 +326,17 @@
 					return
 				target_id_card.custom_job = custom_name
 				target_id_card.update_label()
+				. = TRUE
 			else
-				if(minor && !(target in head_subordinates))
+				if(minor && !(GetJobName(target_id_card.assignment) in head_subordinates) && !(target in head_subordinates))
+					playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
 					return
-				var/list/new_access = list()
-				if(is_centcom)
-					new_access = get_centcom_access(target)
-				else
-					var/datum/job/job
-					for(var/jobtype in subtypesof(/datum/job))
-						var/datum/job/J = new jobtype
-						if(J.title == target)
-							job = J
-							break
-					if(!job)
-						to_chat(user, "<span class='warning'>No class exists for this job: [target]</span>")
-						return
-					new_access = job.get_access()
-					//финансовая вставка
-					if(target_id_card?.registered_account)
-						target_id_card.registered_account.account_job = job
-					//конец финансов
-				target_id_card.access -= get_all_centcom_access() + get_all_accesses()
-				target_id_card.access |= new_access
-				target_id_card.assignment = target
-				target_id_card.custom_job = ""
-			target_id_card.update_label()
-			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
-			return TRUE
+				. = set_job(target, target_id_card, user)
+			if(.)
+				playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
+			return
 		if("PRG_access")
-			if(!computer || !authenticated)
+			if(!computer || !authenticated || !target_id_card)
 				return
 			var/access_type = text2num(params["access_target"])
 			if(access_type in (is_centcom ? get_all_centcom_access() : get_all_accesses()))
@@ -260,19 +347,33 @@
 				playsound(computer, "terminal_type", 50, FALSE)
 				return TRUE
 		if("PRG_grantall")
-			if(!computer || !authenticated || minor)
+			if(!computer || !authenticated || !target_id_card)
 				return
-			target_id_card.access |= (is_centcom ? get_all_centcom_access() : get_all_accesses())
+			if(minor)
+				var/list/new_access = list()
+				for(var/region in region_access)
+					new_access += get_region_accesses(region)
+				new_access -= get_heads_access()
+				target_id_card.access |= new_access
+			else
+				target_id_card.access |= (is_centcom ? get_all_centcom_access() : get_all_accesses())
 			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			return TRUE
 		if("PRG_denyall")
-			if(!computer || !authenticated || minor)
+			if(!computer || !authenticated || !target_id_card)
 				return
-			target_id_card.access.Cut()
+			if(minor)
+				var/list/new_access = list()
+				for(var/region in region_access)
+					new_access += get_region_accesses(region)
+				new_access -= get_heads_access()
+				target_id_card.access -= new_access
+			else
+				target_id_card.access -= get_all_centcom_access() + get_all_accesses()
 			playsound(computer, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
 			return TRUE
 		if("PRG_grantregion")
-			if(!computer || !authenticated)
+			if(!computer || !authenticated || !target_id_card)
 				return
 			var/region = text2num(params["region"])
 			if(isnull(region))
@@ -281,7 +382,7 @@
 			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			return TRUE
 		if("PRG_denyregion")
-			if(!computer || !authenticated)
+			if(!computer || !authenticated || !target_id_card)
 				return
 			var/region = text2num(params["region"])
 			if(isnull(region))
@@ -296,12 +397,12 @@
 	var/list/data = list()
 	data["station_name"] = station_name()
 	data["centcom_access"] = is_centcom
-	data["minor"] = target_dept || minor ? TRUE : FALSE
+	data["minor"] = minor
 
-	var/list/departments = target_dept
+	var/list/departments
 	if(is_centcom)
 		departments = list("CentCom" = get_all_centcom_jobs())
-	else if(isnull(departments))
+	else
 		departments = list(
 			CARDCON_DEPARTMENT_COMMAND = GLOB.command_positions,//lol
 			CARDCON_DEPARTMENT_ENGINEERING = GLOB.engineering_positions,
@@ -327,12 +428,20 @@
 			data["jobs"][department] = department_jobs
 
 	var/list/regions = list()
+	var/static/list/minor_access_not_allowed // Если авторизация от доступа главы, то нельзя выдать доступ этой главы
+	if(!minor_access_not_allowed)
+		minor_access_not_allowed = list()
+		for(var/access_text in sub_managers)
+			minor_access_not_allowed += text2num(access_text)
+
 	for(var/i in 1 to 7)
-		if((minor || target_dept) && !(i in region_access))
+		if(minor && !(i in region_access))
 			continue
 
 		var/list/accesses = list()
 		for(var/access in get_region_accesses(i))
+			if(minor && (access in minor_access_not_allowed))
+				continue
 			if (get_access_desc(access))
 				accesses += list(list(
 					"desc" = replacetext(get_access_desc(access), "&nbsp", " "),

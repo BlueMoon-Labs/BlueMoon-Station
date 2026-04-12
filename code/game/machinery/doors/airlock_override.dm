@@ -1,3 +1,5 @@
+// Мы используем другие зоны, пока кто-то не переделает, нет смысла смотреть на них
+/*
 /**
  * This module sets airlocks in certain areas to be able to have an Engineer Override on orange alert.
  * Crew with ID cards with the engineering flag will be able to access these areas during those times.
@@ -105,17 +107,28 @@
 	engineering_override_eligible = TRUE
 	medical_override_eligible = TRUE
 	security_override_eligible = TRUE
+*/
 
 /obj/machinery/door/airlock
 	var/engineering_override = FALSE
 	var/medical_override = FALSE
 	var/security_override = FALSE
+	var/last_sec_level = 0
 
-/obj/machinery/door/airlock/Initialize(mapload)
+/obj/machinery/door/airlock/LateInitialize()
 	. = ..()
-	RegisterSignal(SSdcs, COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE, PROC_REF(force_eng_override))
+	if(is_station_level(z))
+		RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(check_security_level))
+		RegisterSignal(SSdcs, COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE, PROC_REF(force_eng_override))
+		if(GLOB.security_level > SEC_LEVEL_GREEN)
+			check_security_level()
 
-///Check for the three states of open access. Emergency, Unrestricted, and Engineering Override
+/obj/machinery/door/airlock/Destroy()
+	UnregisterSignal(SSdcs, COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE)
+	UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
+	return ..()
+
+///Check for the three states of open access. Emergency, Unrestricted, and Code Override
 /obj/machinery/door/airlock/allowed(mob/user)
 	if(emergency)
 		return TRUE
@@ -123,31 +136,20 @@
 	if(unrestricted_side(user))
 		return TRUE
 
-	if(engineering_override)
+	if(engineering_override || medical_override || security_override)
 		var/mob/living/carbon/human/interacting_human = user
 		if(!istype(interacting_human))
 			return ..()
 
 		var/obj/item/card/id/card = interacting_human.get_idcard(TRUE)
-		if(ACCESS_ENGINE in card?.access)
-			return TRUE
-
-	if(medical_override)
-		var/mob/living/carbon/human/interacting_human = user
-		if(!istype(interacting_human))
-			return ..()
-
-		var/obj/item/card/id/card = interacting_human.get_idcard(TRUE)
-		if(ACCESS_MEDICAL in card?.access)
-			return TRUE
-
-	if(security_override)
-		var/mob/living/carbon/human/interacting_human = user
-		if(!istype(interacting_human))
-			return ..()
-
-		var/obj/item/card/id/card = interacting_human.get_idcard(TRUE)
-		if(ACCESS_SECURITY in card?.access)
+		var/req_access
+		if(security_override)
+			req_access = ACCESS_SEC_DOORS
+		else if(medical_override)
+			req_access = ACCESS_MEDICAL
+		else if(engineering_override)
+			req_access = ACCESS_ENGINE
+		if(req_access in card?.access)
 			return TRUE
 
 	return ..()
@@ -155,55 +157,49 @@
 ///When the signal is received of a changed security level, check if it's orange.
 /obj/machinery/door/airlock/check_security_level(datum/source, level)
 	. = ..()
-	var/area/source_area = get_area(src)
-	if(!source_area.engineering_override_eligible)
-		return
+	// Подразумевается, что прок будет вызываться только у станционных дверей, поэтому тут нет проверок на станцию
+	if(isnull(level))
+		level = GLOB.security_level
 
-	if(!source_area.medical_override_eligible)
-		return
-
-	if(!source_area.security_override_eligible)
-		return
-
-	if(level != SEC_LEVEL_ORANGE && GLOB.force_eng_override)
-		return
-
-	if(level == SEC_LEVEL_ORANGE)
-		engineering_override = TRUE
-		normalspeed = FALSE
+	// Аварийный доступ при дельте
+	if(level >= SEC_LEVEL_DELTA)
+		emergency = TRUE
+		if(locked)
+			toggle_bolt()
 		update_appearance()
+		last_sec_level = level
 		return
+	else if(last_sec_level >= SEC_LEVEL_DELTA)
+		emergency = FALSE
+		update_appearance()
 
-	if(level == SEC_LEVEL_VIOLET)
+	// Логика override доступов
+	if(level >= SEC_LEVEL_RED)
+		security_override = TRUE
+		medical_override = FALSE
+		if(!GLOB.force_eng_override)
+			engineering_override = FALSE
+		update_appearance()
+	else if(level == SEC_LEVEL_VIOLET)
+		security_override = FALSE
 		medical_override = TRUE
-		normalspeed = FALSE
+		if(!GLOB.force_eng_override)
+			engineering_override = FALSE
 		update_appearance()
-		return
-
-	if(level == SEC_LEVEL_LAMBDA)
-		security_override = TRUE
-		normalspeed = FALSE
+	else if(level == SEC_LEVEL_ORANGE || GLOB.force_eng_override)
+		security_override = FALSE
+		medical_override = FALSE
+		engineering_override = TRUE
 		update_appearance()
-		return
-
-	if(level == SEC_LEVEL_GAMMA)
-		security_override = TRUE
-		normalspeed = FALSE
+	else if(security_override || medical_override || engineering_override)
+		security_override = FALSE
+		medical_override = FALSE
+		engineering_override = FALSE
 		update_appearance()
-		return
 
-	if(level == SEC_LEVEL_DELTA)
-		security_override = TRUE
-		normalspeed = FALSE
-		update_appearance()
-		return
+	last_sec_level = level
 
-	engineering_override = FALSE
-	normalspeed = TRUE
-	update_appearance()
-	return
-
-///Pulse to disable emergency access/engineering override and flash the red lights.
+///Pulse to disable emergency access/code override and flash the red lights.
 /datum/wires/airlock/on_pulse(wire)
 	. = ..()
 	var/obj/machinery/door/airlock/airlock = holder
@@ -213,10 +209,13 @@
 				airlock.do_animate("deny")
 				if(airlock.emergency)
 					airlock.emergency = FALSE
-					airlock.update_appearance()
 				if(airlock.engineering_override)
 					airlock.engineering_override = FALSE
-					airlock.update_appearance()
+				if(airlock.medical_override)
+					airlock.medical_override = FALSE
+				if(airlock.security_override)
+					airlock.security_override = FALSE
+				airlock.update_appearance()
 
 ///Manual override for when it's not orange alert.
 GLOBAL_VAR_INIT(force_eng_override, FALSE)
@@ -241,16 +240,14 @@ GLOBAL_VAR_INIT(force_eng_override, FALSE)
 
 	if(!status)
 		engineering_override = FALSE
-		normalspeed = TRUE
 		update_appearance()
 		return
 
-	var/area/source_area = get_area(src)
-	if(!source_area.engineering_override_eligible)
-		return
+	//var/area/source_area = get_area(src)
+	//if(!source_area.engineering_override_eligible)
+	//	return
 
 	engineering_override = TRUE
-	normalspeed = FALSE
 	update_appearance()
 
 /**
@@ -260,6 +257,9 @@ GLOBAL_VAR_INIT(force_eng_override, FALSE)
  * * duration - How long the door will operate as an emergency exit before reverting to normal operation
  *
 */
+
+// Не используется
+/*
 /obj/machinery/door/airlock/proc/temp_emergency_exit(duration)
 	if(!emergency)
 		set_emergency_exit(TRUE)
@@ -269,3 +269,4 @@ GLOBAL_VAR_INIT(force_eng_override, FALSE)
 /obj/machinery/door/airlock/proc/set_emergency_exit(active)
 	emergency = active
 	update_appearance()
+*/

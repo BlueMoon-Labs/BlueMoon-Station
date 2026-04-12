@@ -18110,7 +18110,7 @@
 	pixel_y = -24
 	},
 /obj/machinery/light,
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /turf/open/floor/plasteel/cafeteria,
@@ -27911,7 +27911,7 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/main)
 "cjg" = (
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/requests_console{
@@ -40192,7 +40192,7 @@
 /turf/open/floor/plasteel/textured/half,
 /area/cargo/storage)
 "fhk" = (
-/obj/machinery/computer/card/minor/qm{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/requests_console{
@@ -40982,7 +40982,7 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/effect/turf_decal/tile/blue/full,
@@ -42146,7 +42146,7 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "fSS" = (
-/obj/machinery/computer/card/minor/hos,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
@@ -59036,7 +59036,7 @@
 	},
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/effect/turf_decal/tile/blue/full,
@@ -61464,7 +61464,7 @@
 /turf/open/floor/plasteel/textured/half,
 /area/hallway/primary/starboard)
 "nLt" = (
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/machinery/light{

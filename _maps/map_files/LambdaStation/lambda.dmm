@@ -33143,7 +33143,7 @@
 /obj/effect/turf_decal/tile{
 	dir = 1
 	},
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/machinery/requests_console{
@@ -56656,7 +56656,7 @@
 /turf/open/floor/plasteel,
 /area/security/brig)
 "cAp" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/red,
@@ -74192,7 +74192,7 @@
 /area/engineering/storage_shared)
 "jZG" = (
 /obj/machinery/airalarm/directional/west,
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile{
