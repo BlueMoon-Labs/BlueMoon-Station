@@ -552,24 +552,29 @@
 /mob/living/carbon/MouseWheelOn(atom/A, delta_x, delta_y, params)
 	. = ..()
 	var/obj/item/I = get_active_held_item()
-	if(!I)
-		return
 	var/obj/item/organ/cyberimp/arm/implant = getorganslot((active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
-	if(!implant)
+	// Смена инструментов импланта
+	if(I && implant && length(implant.items_list) > 1 && implant.items_list.Find(I))
+		if(!implant.is_operational(FALSE))
+			return
+		var/list/implants_list = implant.items_list
+		var/to_index = delta_y < 0 ? implants_list.Find(next_list_item(I, implants_list)) : implants_list.Find(previous_list_item(I, implants_list))
+		if(!to_index)
+			return
+		implant.Retract(TRUE)
+		implant.Extend(implants_list[to_index])
 		return
-	if(length(implant.items_list) < 2)
+
+	// Смена выбранной зоны
+	if(!client.check_has_body_select())
 		return
-	var/indx = implant.items_list.Find(I)
-	if(!indx)
-		return
-	if(!implant.is_operational(FALSE))
-		return
-	var/list/implants_list = implant.items_list
-	var/to_index = delta_y < 0 ? implants_list.Find(next_list_item(I, implants_list)) : implants_list.Find(previous_list_item(I, implants_list))
+	var/static/list/b_zones = BODY_ZONE_LIST_ALL
+	var/to_index = delta_y < 0 ? b_zones.Find(next_list_item(zone_selected, b_zones)) : b_zones.Find(previous_list_item(zone_selected, b_zones))
 	if(!to_index)
 		return
-	implant.Retract(TRUE)
-	implant.Extend(implants_list[to_index])
+
+	var/atom/movable/screen/zone_sel/selector = hud_used?.zone_select
+	selector?.set_selected_zone(b_zones[to_index], src)
 
 /mob/dead/observer/MouseWheelOn(atom/A, delta_x, delta_y, params)
 	var/list/modifier = params2list(params)
