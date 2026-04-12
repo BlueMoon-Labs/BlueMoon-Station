@@ -60,7 +60,9 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 	if (user?.client?.prefs)
 		var/has_cock_f = user.client.prefs.features["has_cock"]
 		var/has_vag_f = user.client.prefs.features["has_vag"]
-		if(has_cock_f && has_vag_f)
+		var/has_breasts_f = user.client.prefs.features["has_breasts"]
+		var/is_female_f = user.client.prefs.gender == "female"
+		if((has_cock_f && has_vag_f) || (has_cock_f && has_breasts_f && is_female_f))
 			auto_gender = "Futa"
 		else if(has_cock_f)
 			auto_gender = "Male"
