@@ -114,6 +114,10 @@
 			if(istype(A, /obj/machinery/atmospherics))
 				atmos_machines += A
 
+	log_world("REPAIR_RELOAD_DEBUG: run_reload_phase bounds=([bounds[MAP_MINX]],[bounds[MAP_MINY]],[bounds[MAP_MINZ]])-([bounds[MAP_MAXX]],[bounds[MAP_MAXY]],[bounds[MAP_MAXZ]]) block_tl=([bottom_left?.x],[bottom_left?.y],[bottom_left?.z]) block_br=([top_right?.x],[top_right?.y],[top_right?.z]) reloaded_turfs_len=[length(reloaded_turfs)] atoms_len=[length(atoms)]")
+	for(var/turf/T as anything in reloaded_turfs)
+		var/area/pre_area = T.loc
+		log_world("REPAIR_RELOAD_DEBUG:   pre-init turf=[T] type=[T.type] coord=([T.x],[T.y],[T.z]) has_lo=[T.lighting_object ? "yes" : "no"] area=[pre_area?.type] area_dyn=[pre_area ? pre_area.dynamic_lighting : "?"]")
 	SSatoms.InitializeAtoms(atoms)
 	SSmachines.setup_template_powernets(cables)
 	SSair.setup_template_machinery(atmos_machines)
@@ -123,6 +127,8 @@
 	var/list/live_reloaded_turfs = list()
 	for(var/turf/T as anything in reloaded_turfs)
 		var/turf/current = locate(T.x, T.y, T.z)
+		var/area/current_area = current ? current.loc : null
+		log_world("REPAIR_RELOAD_DEBUG:   post-init turf ref=[T] destroyed=[QDELETED(T)] current_at_coord=[current] same_ref=[T == current ? "yes" : "no"] current_has_lo=[current?.lighting_object ? "yes" : "no"] current_area=[current_area?.type] current_area_dyn=[current_area ? current_area.dynamic_lighting : "?"]")
 		if(current)
 			live_reloaded_turfs += current
 	for(var/turf/T as anything in live_reloaded_turfs)
@@ -131,7 +137,10 @@
 		// load_map/ChangeTurf usually transfers the existing overlay, but some
 		// real map layouts can still leave a dynamic-lighting turf without one.
 		if(!T.lighting_object)
+			var/area/build_area = T.loc
+			log_world("REPAIR_RELOAD_DEBUG:   building overlay for [T] at ([T.x],[T.y],[T.z]) area=[build_area?.type] dyn=[build_area ? build_area.dynamic_lighting : "?"] light_sources_len=[length(T.light_sources)]")
 			T.lighting_build_overlay()
+			log_world("REPAIR_RELOAD_DEBUG:     after build_overlay has_lo=[T.lighting_object ? "yes" : "no"]")
 		if(T.lighting_object)
 			GLOB.lighting_update_blends |= T.lighting_object
 			if(!T.lighting_object.needs_update)

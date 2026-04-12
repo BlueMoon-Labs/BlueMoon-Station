@@ -311,6 +311,8 @@
 	drain_nightshift_lighting_work()
 
 	target_turf = locate(target_x, target_y, target_z)
+	var/area/post_area = target_turf ? target_turf.loc : null
+	log_world("REPAIR_RELOAD_DEBUG: post-reload at ([target_x],[target_y],[target_z]) turf=[target_turf] type=[target_turf?.type] dynamic_lighting=[target_turf ? target_turf.dynamic_lighting : "?"] has_lo=[target_turf?.lighting_object ? "yes" : "no"] lo_destroyed=[target_turf?.lighting_object ? QDELETED(target_turf.lighting_object) : "n/a"] area=[post_area?.type] area_dyn=[post_area ? post_area.dynamic_lighting : "?"] last_reload_succeeded=[reload_generator.last_reload_succeeded] reloading_map=[GLOB.reloading_map]")
 	TEST_ASSERT(target_turf?.lighting_object, "Target turf lost its lighting object after repair reload.")
 
 	var/lit_after = target_turf.get_lumcount()
