@@ -173,7 +173,7 @@
 		[total_part_size]/[max_components] ([round((total_part_size / max_components) * 100, 0.1)]%) занятое место в корпусе.<br> \
 		[total_complexity]/[max_complexity] ([round((total_complexity / max_complexity) * 100, 0.1)]%) сложность.<br>"
 	if(battery)
-		HTML += "[round(battery.charge, 0.1)]/[battery.maxcharge] ([round(battery.percent(), 0.1)]%) заряд батареи. <a href='?src=[REF(src)];remove_cell=1'>Remove</a>"
+		HTML += "[round(battery.charge, 0.1)]/[battery.maxcharge] ([round(battery.percent(), 0.1)]%) заряд батареи. <a href='?src=[REF(src)];remove_cell=1'>Извлечь</a>"
 	else
 		HTML += "<span class='danger'>Батарейка не обнаружена!</span>"
 	HTML += "</tr></thead>"
@@ -185,7 +185,7 @@
 			circuit_pins = assembly_components[1]
 
 
-	HTML += "<tr><td width=200px><div class=scrollleft>Components:<br><nobr>"
+	HTML += "<tr><td width=200px><div class=scrollleft>Компоненты:<br><nobr>"
 
 	var/builtin_components = ""
 	var/removables = ""
@@ -308,13 +308,13 @@
 
 		HTML += "<tr>\
 			<br><font color='FFFFFF' class=lowtext>Сложность: [circuit_pins.complexity]\
-			<br>Время перезарядки между использованием: [circuit_pins.cooldown_per_use/10] sec"
+			<br>Время перезарядки между использованием: [circuit_pins.cooldown_per_use/10] секунд"
 		if(circuit_pins.ext_cooldown)
-			HTML += "<br>Время перезарядки внешнего воздействия: [circuit_pins.ext_cooldown/10] sec"
+			HTML += "<br>Время перезарядки внешнего воздействия: [circuit_pins.ext_cooldown/10] секунд"
 		if(circuit_pins.power_draw_idle)
-			HTML += "<br>Потребляемая мощность: [circuit_pins.power_draw_idle] W (Idle)"
+			HTML += "<br>Потребляемая мощность: [circuit_pins.power_draw_idle] W (При простое)"
 		if(circuit_pins.power_draw_per_use)
-			HTML += "<br>Потребляемая мощность: [circuit_pins.power_draw_per_use] W (Active)" // Borgcode says that powercells' checked_use() takes joules as input.
+			HTML += "<br>Потребляемая мощность: [circuit_pins.power_draw_per_use] W (Активное)" // Borgcode says that powercells' checked_use() takes joules as input.
 		HTML += "<br>[circuit_pins.extended_desc]</font></tr></table></div>"
 
 

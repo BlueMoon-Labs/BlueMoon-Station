@@ -7,8 +7,8 @@
 // - Text Replacer - //
 /obj/item/integrated_circuit/text/text_replacer
 	name = "find-replace circuit"
-	desc = "Заменяет весь текст на другой"
-	extended_desc = "Принимает строку (стог сена) и выводит её, заменив одно слово (иголку) другим."
+	desc = "Заменяет в тексте совпадающие фрагменты на другой текст."
+	extended_desc = "Принимает строку (стог сена) и возвращает её, заменяя все вхождения подстроки (иголки) на замену."
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
 		"стог сена" = IC_PINTYPE_STRING,

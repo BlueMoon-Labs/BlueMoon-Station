@@ -89,7 +89,7 @@
 	power_draw_per_use = 4
 
 /obj/item/integrated_circuit/input/colorpad/ask_for_input(mob/user)
-	var/new_color = input(user, "Введите цвет, пожалуйста", "Color", "#ffffff") as color|null
+	var/new_color = input(user, "Введите цвет, пожалуйста", "Цвет", "#ffffff") as color|null
 	if(new_color && user.IsAdvancedToolUser())
 		set_pin_data(IC_OUTPUT, 1, new_color)
 		push_data()
@@ -372,7 +372,7 @@
 /obj/item/integrated_circuit/input/turfpoint
 	name = "Tile pointer"
 	desc = "Эта схема вернет ссылку на плитку с указанными абсолютными координатами."
-	extended_desc = "Если робот не видит цель, он не сможет рассчитать правильное направление.\
+	extended_desc = "Если робот не видит цель, он не сможет рассчитать правильную ссылку.\
 	Эта схема работает только внутри корпуса."
 	icon_state = "numberpad"
 	complexity = 5

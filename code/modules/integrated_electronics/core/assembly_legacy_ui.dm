@@ -9,13 +9,13 @@
 
 	var/HTML = "<html><head>[UTF8HEADER]<title>[name]</title></head>\
 		<body><table><thead><tr> \
-		<a href='?src=[REF(src)]'>Refresh</a>  |  <a href='?src=[REF(src)];rename=1'>Rename</a>  |  <a href='?src=[REF(src)];ie_ui_mode=tgui'>TGUI interface</a><br> \
-		[total_part_size]/[max_components] ([round((total_part_size / max_components) * 100, 0.1)]%) space taken up in the assembly.<br> \
-		[total_complexity]/[max_complexity] ([round((total_complexity / max_complexity) * 100, 0.1)]%) maximum complexity.<br>"
+		<a href='?src=[REF(src)]'>Обновить</a>  |  <a href='?src=[REF(src)];rename=1'>Переименовать</a>  |  <a href='?src=[REF(src)];ie_ui_mode=tgui'>Интерфейс TGUI</a><br> \
+		[total_part_size]/[max_components] ([round((total_part_size / max_components) * 100, 0.1)]%) занято места в корпусе.<br> \
+		[total_complexity]/[max_complexity] ([round((total_complexity / max_complexity) * 100, 0.1)]%) максимальная сложность.<br>"
 	if(battery)
-		HTML += "[round(battery.charge, 0.1)]/[battery.maxcharge] ([round(battery.percent(), 0.1)]%) cell charge. <a href='?src=[REF(src)];remove_cell=1'>Remove</a>"
+		HTML += "[round(battery.charge, 0.1)]/[battery.maxcharge] ([round(battery.percent(), 0.1)]%) заряда. <a href='?src=[REF(src)];remove_cell=1'>Извлечь</a>"
 	else
-		HTML += "<span class='danger'>No power cell detected!</span>"
+		HTML += "<span class='danger'>Аккумулятор не обнаружен</span>"
 	HTML += "</tr></thead>"
 
 	if(!circuit_pins || !istype(circuit_pins, /obj/item/integrated_circuit) || !(circuit_pins in assembly_components))
@@ -43,7 +43,7 @@
 			remove_num++
 
 	if(builtin_components)
-		HTML += "<hr> Built in:<br> [builtin_components] <hr> Removable: <br>"
+		HTML += "<hr> Built in:<br> [builtin_components] <hr> Отделяемые: <br>"
 
 	HTML += removables
 
@@ -56,12 +56,12 @@
 	if(circuit_pins)
 		HTML += "<div valign='middle'>[circuit_pins.displayed_name]<br>"
 
-		HTML += "<a href='?src=[REF(src)];component=[REF(circuit_pins)]'>Refresh</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];rename_component=1'>Rename</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];scan=1'>Copy Ref</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];interact=1'>Interact</a>"
+		HTML += "<a href='?src=[REF(src)];component=[REF(circuit_pins)]'>Обновить</a> | \
+		<a href='?src=[REF(src)];component=[REF(circuit_pins)];rename_component=1'>Переименовать</a> | \
+		<a href='?src=[REF(src)];component=[REF(circuit_pins)];scan=1'>Копировать ссылку</a> | \
+		<a href='?src=[REF(src)];component=[REF(circuit_pins)];interact=1'>Взаимодействовать</a>"
 		if(circuit_pins.removable)
-			HTML += " | <a href='?src=[REF(src)];component=[REF(circuit_pins)];remove=1'>Remove</a>"
+			HTML += " | <a href='?src=[REF(src)];component=[REF(circuit_pins)];remove=1'>Извлечь</a>"
 		HTML += "</div><br>"
 
 		var/table_edge_width = "30%"
@@ -138,14 +138,14 @@
 			HTML += "<tr><td colspan='3' align='center'>[words]</td></tr>"
 
 		HTML += "<tr>\
-			<br><font color='FFFFFF' class=lowtext>Complexity: [circuit_pins.complexity]\
-			<br>Cooldown per use: [circuit_pins.cooldown_per_use/10] sec"
+			<br><font color='FFFFFF' class=lowtext>Сложность: [circuit_pins.complexity]\
+			<br>Время перезарядки между использованием: [circuit_pins.cooldown_per_use/10] секунд"
 		if(circuit_pins.ext_cooldown)
-			HTML += "<br>External manipulation cooldown: [circuit_pins.ext_cooldown/10] sec"
+			HTML += "<br>Перезарядка внешнего воздействия: [circuit_pins.ext_cooldown/10] секунд"
 		if(circuit_pins.power_draw_idle)
-			HTML += "<br>Power Draw: [circuit_pins.power_draw_idle] W (Idle)"
+			HTML += "<br>Трата энергии: [circuit_pins.power_draw_idle] W (При простое)"
 		if(circuit_pins.power_draw_per_use)
-			HTML += "<br>Power Draw: [circuit_pins.power_draw_per_use] W (Active)"
+			HTML += "<br>Трата энергии: [circuit_pins.power_draw_per_use] W (Активное)"
 		HTML += "<br>[circuit_pins.extended_desc]</font></tr></table></div>"
 
 	HTML += "</div></td></tr></table></body></html>"
@@ -167,10 +167,10 @@
 		<div align='center'> \
 		<table border='1' style='undefined;table-layout: fixed; width: 80%'>"
 
-	HTML += "<a href='?src=[REF(src)]'>Refresh</a>  |  \
-		<a href='?src=[REF(src)];rename=1'>Rename</a>  |  \
-		<a href='?src=[REF(src)];scan=1'>Copy Ref</a>  |  \
-		<a href='?src=[REF(src)];ie_ui_mode=tgui'>TGUI interface</a>"
+	HTML += "<a href='?src=[REF(src)]'>Обновить</a>  |  \
+		<a href='?src=[REF(src)];rename=1'>Переименовать</a>  |  \
+		<a href='?src=[REF(src)];scan=1'>Копировать ссылку</a>  |  \
+		<a href='?src=[REF(src)];ie_ui_mode=tgui'>Интерфейс TGUI</a>"
 
 	HTML += "<br><colgroup> \
 		<col style='width: [table_edge_width]'> \
@@ -244,15 +244,15 @@
 		HTML += "<tr><td colspan='3' align='center'>[words]</td></tr>"
 
 	HTML += "</table></div> \
-		<br>Complexity: [complexity] \
-		<br>Cooldown per use: [cooldown_per_use/10] sec"
+		<br>Сложность: [complexity] \
+		<br>Перезарядка внешнего воздействия: [cooldown_per_use/10] секунд"
 
 	if(ext_cooldown)
-		HTML += "<br>External manipulation cooldown: [ext_cooldown/10] sec"
+		HTML += "<br>Перезарядка внешнего воздействия: [ext_cooldown/10] секунд"
 	if(power_draw_idle)
-		HTML += "<br>Power Draw: [power_draw_idle] W (Idle)"
+		HTML += "<br>Трата энергии: [power_draw_idle] W (При простое)"
 	if(power_draw_per_use)
-		HTML += "<br>Power Draw: [power_draw_per_use] W (Active)"
+		HTML += "<br>Трата энергии: [power_draw_per_use] W (Активное)"
 
 	HTML += "<br>[extended_desc]</body></html>"
 

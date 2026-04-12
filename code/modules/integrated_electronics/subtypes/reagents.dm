@@ -718,7 +718,7 @@
 	inputs = list()
 	outputs = list(
 		"использованный объем" = IC_PINTYPE_NUMBER,
-		"текущая ёмкость" = IC_PINTYPE_REF
+		"текущее хранилище" = IC_PINTYPE_REF
 		)
 	activators = list(
 		"при вставке" = IC_PINTYPE_PULSE_OUT,

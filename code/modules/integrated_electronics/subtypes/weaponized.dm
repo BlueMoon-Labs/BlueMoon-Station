@@ -183,7 +183,7 @@
 		if(attached_grenade)
 			to_chat(user, "<span class='warning'>Здесь уже есть граната!</span>")
 		else if(user.transferItemToLoc(G,src))
-			user.visible_message("<span class='warning'>[user] прикрепяет [G] к [src]!</span>", "<span class='notice'>Вы прикрепляете [G] к [src].</span>")
+			user.visible_message("<span class='warning'>[user] прикрепляет [G] к [src]!</span>", "<span class='notice'>Вы прикрепляете [G] к [src].</span>")
 			attach_grenade(G)
 			G.forceMove(src)
 	else

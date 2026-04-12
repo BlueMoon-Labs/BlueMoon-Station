@@ -151,7 +151,7 @@
 		"часы" = IC_PINTYPE_NUMBER,
 		"минуты" = IC_PINTYPE_NUMBER,
 		"секунды" = IC_PINTYPE_NUMBER,
-		"absolute decisecond elapsed time" = IC_PINTYPE_NUMBER // КАКИМ ХУЕМ Я ЭТО ПЕРЕВОДИТЬ ДОЛЖЕН
+		"абсолютное прошедшее время (децисекунды)" = IC_PINTYPE_NUMBER
 		)
 	activators = list("получить время" = IC_PINTYPE_PULSE_IN, "при получении времени" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH

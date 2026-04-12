@@ -253,15 +253,15 @@ a creative player the means to solve many problems.  Circuits are held inside an
 		HTML += "<tr><td colspan='3' align='center'>[words]</td></tr>"
 
 	HTML += "</table></div> \
-		<br>Complexity: [complexity] \
-		<br>Cooldown per use: [cooldown_per_use/10] sec"
+		<br>Сложность: [complexity] \
+		<br>Перезарядка за использование: [cooldown_per_use/10] секунд"
 
 	if(ext_cooldown)
-		HTML += "<br>External manipulation cooldown: [ext_cooldown/10] sec"
+		HTML += "<br>Перезарядка внешнего воздействия: [ext_cooldown/10] секунд"
 	if(power_draw_idle)
-		HTML += "<br>Трата энергии: [power_draw_idle] W (Idle)"
+		HTML += "<br>Трата энергии: [power_draw_idle] W (При простое)"
 	if(power_draw_per_use)
-		HTML += "<br>Трата энергии: [power_draw_per_use] W (Active)" // Borgcode says that powercells' checked_use() takes joules as input.
+		HTML += "<br>Трата энергии: [power_draw_per_use] W (Активное)" // Borgcode says that powercells' checked_use() takes joules as input.
 
 	HTML += "<br>[extended_desc]</body></html>"
 

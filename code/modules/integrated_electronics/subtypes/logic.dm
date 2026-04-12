@@ -62,7 +62,7 @@
 	icon_state = "jklatch"
 	inputs = list("J" = IC_PINTYPE_ANY,"K" = IC_PINTYPE_ANY)
 	outputs = list("Q" = IC_PINTYPE_BOOLEAN,"!Q" = IC_PINTYPE_BOOLEAN)
-	activators = list("pulse in C" = IC_PINTYPE_PULSE_IN, "pulse out Q" = IC_PINTYPE_PULSE_OUT, "pulse out !Q" = IC_PINTYPE_PULSE_OUT)
+	activators = list("входящий импульс C" = IC_PINTYPE_PULSE_IN, "исходящий импульс Q" = IC_PINTYPE_PULSE_OUT, "исходящий импульс !Q" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	var/lstate=FALSE
 
@@ -89,11 +89,11 @@
 
 /obj/item/integrated_circuit/logic/binary/rslatch
 	name = "RS latch"
-	desc = "Этот элемент представляет собой синхронизированный триггер RS. Если и R, и S имеют значение true, его состояние не изменится."
+	desc = "Этот элемент представляет собой синхронизированный триггер RS. Если и R, и S имеют значение TRUE, его состояние не изменится."
 	icon_state = "sr_nor"
 	inputs = list("S" = IC_PINTYPE_ANY,"R" = IC_PINTYPE_ANY)
 	outputs = list("Q" = IC_PINTYPE_BOOLEAN,"!Q" = IC_PINTYPE_BOOLEAN)
-	activators = list("pulse in C" = IC_PINTYPE_PULSE_IN, "pulse out Q" = IC_PINTYPE_PULSE_OUT, "pulse out !Q" = IC_PINTYPE_PULSE_OUT)
+	activators = list("входящий импульс C" = IC_PINTYPE_PULSE_IN, "исходящий импульс Q" = IC_PINTYPE_PULSE_OUT, "исходящий импульс !Q" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	var/lstate=FALSE
 
@@ -122,7 +122,7 @@
 	icon_state = "gated_d"
 	inputs = list("D" = IC_PINTYPE_ANY,"E" = IC_PINTYPE_ANY)
 	outputs = list("Q" = IC_PINTYPE_BOOLEAN,"!Q" = IC_PINTYPE_BOOLEAN)
-	activators = list("pulse in C" = IC_PINTYPE_PULSE_IN, "pulse out Q" = IC_PINTYPE_PULSE_OUT, "pulse out !Q" = IC_PINTYPE_PULSE_OUT)
+	activators = list("входящий импульс C" = IC_PINTYPE_PULSE_IN, "исходящий импульс Q" = IC_PINTYPE_PULSE_OUT, "исходящий импульс !Q" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	var/lstate=FALSE
 
@@ -156,7 +156,7 @@
 
 /obj/item/integrated_circuit/logic/binary/and
 	name = "and gate"
-	desc = "Эта схема выдаст сигнал TRUE, если оба входа принимают значение true."
+	desc = "Эта схема выдаст сигнал TRUE, если оба входа принимают значение TRUE."
 	icon_state = "and"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -165,7 +165,7 @@
 
 /obj/item/integrated_circuit/logic/binary/or
 	name = "or gate"
-	desc = "Эта схема выдаст сигнал TRUE, если хотя бы один из входов принимает значение «истина»."
+	desc = "Эта схема выдаст сигнал TRUE, если хотя бы один из входов принимает значение 'TRUE'."
 	icon_state = "or"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -174,7 +174,7 @@
 
 /obj/item/integrated_circuit/logic/binary/xor
 	name = "xor gate"
-	desc = "Эта схема выдаст сигнал TRUE, если только один из входов принимает значение true."
+	desc = "Эта схема выдаст сигнал TRUE, если только один из входов принимает значение TRUE."
 	icon_state = "xor"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -213,7 +213,7 @@
 
 /obj/item/integrated_circuit/logic/binary/greater_than_or_equal
 	name = "greater than or equal gate"
-	desc = "Эта функция вернет значение TRUE, если первое входное значение больше или равно второму."
+	desc = "Эта схема вернет значение TRUE, если первое входное значение больше или равно второму."
 	icon_state = "greater_than_or_equal"
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 

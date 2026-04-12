@@ -108,19 +108,19 @@
 
 	var/new_data = null
 	switch(type_to_use)
-		if("string")
+		if("строка")
 			accepting_refs = FALSE
 			new_data = input("Теперь введите строку.","[src] string writing") as null|text
 			if(istext(new_data) && user.IsAdvancedToolUser())
 				O.data = new_data
 				to_chat(user, "<span class='notice'>Вы устанавливаете в память [src] [O.display_data(O.data)].</span>")
-		if("number")
+		if("число")
 			accepting_refs = FALSE
 			new_data = input("Теперь введите число.","[src] number writing") as null|num
 			if(isnum(new_data) && user.IsAdvancedToolUser())
 				O.data = new_data
 				to_chat(user, "<span class='notice'>Вы устанавливаете в память [src] [O.display_data(O.data)].</span>")
-		if("ref")
+		if("ссылка")
 			accepting_refs = TRUE
 			to_chat(user, "<span class='notice'>Вы включаете сканер ссылок [src].  Проведите им по \
             объекту, чтобы получить ссылку на этот объект и сохранить её в памяти.</span>")

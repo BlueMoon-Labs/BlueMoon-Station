@@ -49,7 +49,7 @@
 	complexity = 10
 	inputs = list("лоток" = IC_PINTYPE_REF,"режим" = IC_PINTYPE_NUMBER,"объект" = IC_PINTYPE_REF)
 	outputs = list("результат" = IC_PINTYPE_LIST)
-	activators = list("pulse in" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
+	activators = list("входящий импульс" = IC_PINTYPE_PULSE_IN,"исходящий импульс" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 50
 
@@ -129,7 +129,7 @@
 	complexity = 8
 	inputs = list("цель" = IC_PINTYPE_REF)
 	outputs = list("результат" = IC_PINTYPE_LIST)
-	activators = list("pulse in" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
+	activators = list("входящий импульс" = IC_PINTYPE_PULSE_IN,"исходящий импульс" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 50
 
@@ -161,7 +161,7 @@
 	complexity = 10
 	inputs = list("цель" = IC_PINTYPE_REF,"режим" = IC_PINTYPE_NUMBER)
 	outputs = list("первый предмет" = IC_PINTYPE_REF, "последний предмет" = IC_PINTYPE_REF, "количество предметов" = IC_PINTYPE_NUMBER,"содержимое" = IC_PINTYPE_LIST)
-	activators = list("pulse in" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
+	activators = list("входящий импульс" = IC_PINTYPE_PULSE_IN,"исходящий импульс" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_COMBAT
 	power_draw_per_use = 50
@@ -233,7 +233,7 @@
 	complexity = 10
 	inputs = list("цель" = IC_PINTYPE_REF,"режим" = IC_PINTYPE_INDEX,"направление" = IC_PINTYPE_DIR)
 	outputs = list("тянет?" = IC_PINTYPE_BOOLEAN)
-	activators = list("pulse in" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT,"released" = IC_PINTYPE_PULSE_OUT,"pull to dir" = IC_PINTYPE_PULSE_OUT)
+	activators = list("входящий импульс" = IC_PINTYPE_PULSE_IN,"исходящий импульс" = IC_PINTYPE_PULSE_OUT,"released" = IC_PINTYPE_PULSE_OUT,"pull to dir" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 50
 	ext_cooldown = 1
@@ -506,7 +506,7 @@
 	cooldown_per_use = 5
 	complexity = 10
 	inputs = list("целевой объект" = IC_PINTYPE_REF, "целевое хранилище" = IC_PINTYPE_REF,"режим" = IC_PINTYPE_NUMBER)
-	activators = list("pulse in" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
+	activators = list("входящий импульс" = IC_PINTYPE_PULSE_IN,"исходящий импульс" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_COMBAT
 	power_draw_per_use = 20
@@ -555,7 +555,7 @@
 	extended_desc = "Эта схема принимает строку в качестве входных данных и может генерировать импульс для перезаписи имени текущего корпуса указанной строкой. В случае успешного выполнения она подает импульс на выходной провод по умолчанию."
 	inputs = list("имя" = IC_PINTYPE_STRING)
 	outputs = list("текущее имя" = IC_PINTYPE_STRING)
-	activators = list("переименовать" = IC_PINTYPE_PULSE_IN,"получить имя" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
+	activators = list("переименовать" = IC_PINTYPE_PULSE_IN,"получить имя" = IC_PINTYPE_PULSE_IN,"исходящий импульс" = IC_PINTYPE_PULSE_OUT)
 	power_draw_per_use = 1
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
@@ -586,7 +586,7 @@
 	complexity = 3
 	inputs = list("текст" = IC_PINTYPE_STRING)
 	outputs = list("описание" = IC_PINTYPE_STRING)
-	activators = list("переописать" = IC_PINTYPE_PULSE_IN,"получить описание" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
+	activators = list("переописать" = IC_PINTYPE_PULSE_IN,"получить описание" = IC_PINTYPE_PULSE_IN,"исходящий импульс" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/manipulation/redescribe/do_work(var/n)
@@ -612,7 +612,7 @@
 	complexity = 3
 	inputs = list("цвет" = IC_PINTYPE_COLOR)
 	outputs = list("текущий цвет" = IC_PINTYPE_COLOR)
-	activators = list("перекрасить" = IC_PINTYPE_PULSE_IN,"получить цвет" = IC_PINTYPE_PULSE_IN,"pulse out" = IC_PINTYPE_PULSE_OUT)
+	activators = list("перекрасить" = IC_PINTYPE_PULSE_IN,"получить цвет" = IC_PINTYPE_PULSE_IN,"исходящий импульс" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/manipulation/repaint/do_work(var/n)

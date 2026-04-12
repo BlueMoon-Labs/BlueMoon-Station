@@ -166,7 +166,7 @@
 	complexity = number_of_pins
 
 	. = ..()
-	desc += " Он имеет [number_of_pins] импульсных пинов и [number_of_pins] выходных выводов."
+	desc += " Он имеет [number_of_pins] импульсных пинов и [number_of_pins] входных пинов."
 	extended_desc += " Диапазон этого импульсного мультиплексора составляет от 1 до [activators.len - 1]."
 
 /obj/item/integrated_circuit/transfer/pulsemultiplexer/do_work(ord)
