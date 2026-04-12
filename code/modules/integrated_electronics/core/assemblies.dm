@@ -35,6 +35,18 @@
 	var/static/next_assembly_id = 0
 	var/sealed = FALSE
 
+	/// TGUI IntegratedCircuit canvas pan
+	var/ie_tgui_screen_x = 0
+	var/ie_tgui_screen_y = 0
+	var/datum/weakref/ie_gui_examined_circuit
+	var/ie_gui_examined_x = 0
+	var/ie_gui_examined_y = 0
+	/// TGUI: подсветка связи при передаче данных по проводу
+	var/ie_tgui_pulse_until = 0
+	var/ie_tgui_pulse_output_ref = null
+	var/ie_tgui_pulse_input_ref = null
+	var/datum/weakref/ie_tgui_pulse_chip_weak
+
 	hud_possible = list(DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_TRACK_HUD, DIAG_CIRCUIT_HUD) //diagnostic hud overlays
 	max_integrity = 50
 	pass_flags = 0
