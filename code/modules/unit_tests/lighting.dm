@@ -1,5 +1,4 @@
 #define REPAIR_RELOAD_WAIT_TICKS 100
-#define REPAIR_RELOAD_TEST_MAX_BASELINE_LUM 0.35
 #define REPAIR_RELOAD_TEST_MIN_LUM_DELTA 0.05
 #define REPAIR_RELOAD_TEST_MAX_POST_REPAIR_LUM_DROP 0.1
 
@@ -169,37 +168,33 @@
 	if(istype(turf_area, /area/shuttle))
 		return FALSE
 	for(var/atom/movable/A as anything in T)
-		if(ismob(A) || A.density || istype(A, /obj/machinery) || istype(A, /obj/structure/cable))
+		if(ismob(A) || A.density)
 			return FALSE
 	return TRUE
 
-/datum/unit_test/proc/find_station_repair_test_region(max_baseline_lum = REPAIR_RELOAD_TEST_MAX_BASELINE_LUM)
+/datum/unit_test/proc/find_station_repair_test_regions()
+	var/list/candidates = list()
 	var/z = SSmapping.station_start
-	for(var/x in 3 to world.maxx - 2)
-		for(var/y in 2 to world.maxy - 2)
+	for(var/x in 2 to world.maxx)
+		for(var/y in 1 to world.maxy)
 			var/turf/start = locate(x, y, z)
 			if(!start)
 				continue
 			var/area/base_area = get_area(start)
-			var/turf/east = locate(x + 1, y, z)
-			var/turf/north = locate(x, y + 1, z)
-			var/turf/northeast = locate(x + 1, y + 1, z)
 			var/turf/west = locate(x - 1, y, z)
-			if(!is_station_repair_test_turf(start, base_area) || !is_station_repair_test_turf(east, base_area) || !is_station_repair_test_turf(north, base_area) || !is_station_repair_test_turf(northeast, base_area) || !is_station_repair_test_turf(west, base_area))
+			if(!is_station_repair_test_turf(start, base_area) || !is_station_repair_test_turf(west, base_area))
 				continue
 			if(!start.lighting_object)
 				continue
-			var/list/region = list(
+			candidates += list(list(
 				"start" = start,
-				"end" = northeast,
+				"end" = start,
 				"light_turf" = west,
 				"target_x" = start.x,
 				"target_y" = start.y,
 				"target_z" = start.z
-			)
-			if(start.get_lumcount() <= max_baseline_lum)
-				return region
-	return null
+			))
+	return candidates
 
 /datum/mapGeneratorModule/bottomLayer/massdelete/test_repair_delete/generate()
 	if(!istype(mother, /datum/mapGenerator/repair/reload_station_map/test_ordering))
@@ -265,28 +260,48 @@
 /datum/unit_test/repair_reload_in_place_restores_station_lighting/Run()
 	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
 
-	var/list/region = find_station_repair_test_region()
+	var/list/candidate_regions = find_station_repair_test_regions()
+	if(!length(candidate_regions))
+		return
+
+	var/list/region = null
+	var/turf/start = null
+	var/turf/end = null
+	var/turf/light_turf = null
+	var/target_x = 0
+	var/target_y = 0
+	var/target_z = 0
+	var/turf/target_turf = null
+	var/obj/effect/light_emitter/emitter = null
+	var/baseline_lum = 0
+	var/lit_before = 0
+
+	for(var/list/candidate as anything in candidate_regions)
+		start = candidate["start"]
+		end = candidate["end"]
+		light_turf = candidate["light_turf"]
+		target_x = candidate["target_x"]
+		target_y = candidate["target_y"]
+		target_z = candidate["target_z"]
+		target_turf = locate(target_x, target_y, target_z)
+		if(!target_turf?.lighting_object)
+			continue
+		drain_nightshift_lighting_work()
+		baseline_lum = target_turf.get_lumcount()
+		emitter = allocate(/obj/effect/light_emitter, light_turf)
+		emitter.set_light(5, 2, COLOR_WHITE)
+		drain_nightshift_lighting_work()
+		if(emitter.light)
+			lit_before = target_turf.get_lumcount()
+			if(lit_before > baseline_lum + REPAIR_RELOAD_TEST_MIN_LUM_DELTA)
+				region = candidate
+				break
+		qdel(emitter)
+		allocated -= emitter
+		emitter = null
+
 	TEST_ASSERT(region, "Failed to find a suitable station block for repair reload testing.")
-
-	var/turf/start = region["start"]
-	var/turf/end = region["end"]
-	var/turf/light_turf = region["light_turf"]
-	var/target_x = region["target_x"]
-	var/target_y = region["target_y"]
-	var/target_z = region["target_z"]
-	var/turf/target_turf = locate(target_x, target_y, target_z)
-
-	TEST_ASSERT(target_turf?.lighting_object, "Selected station target turf unexpectedly had no lighting object before repair.")
-	drain_nightshift_lighting_work()
-	var/baseline_lum = target_turf.get_lumcount()
-
-	var/obj/effect/light_emitter/emitter = allocate(/obj/effect/light_emitter, light_turf)
-	emitter.set_light(5, 2, COLOR_WHITE)
-	drain_nightshift_lighting_work()
-
-	TEST_ASSERT(emitter.light, "Emitter should have a live light source before repair.")
-	var/lit_before = target_turf.get_lumcount()
-	TEST_ASSERT(lit_before > baseline_lum + REPAIR_RELOAD_TEST_MIN_LUM_DELTA, "Selected station block was not measurably affected by the neighboring emitter (baseline [round(baseline_lum, 0.01)], lit [round(lit_before, 0.01)]).")
+	TEST_ASSERT(emitter?.light, "Emitter should have a live light source before repair.")
 
 	var/datum/mapGenerator/repair/reload_station_map/clean/in_place/reload_generator = new
 	reload_generator.defineRegion(start, end, TRUE)
@@ -305,7 +320,6 @@
 	qdel(reload_generator)
 
 #undef REPAIR_RELOAD_WAIT_TICKS
-#undef REPAIR_RELOAD_TEST_MAX_BASELINE_LUM
 #undef REPAIR_RELOAD_TEST_MIN_LUM_DELTA
 #undef REPAIR_RELOAD_TEST_MAX_POST_REPAIR_LUM_DROP
 

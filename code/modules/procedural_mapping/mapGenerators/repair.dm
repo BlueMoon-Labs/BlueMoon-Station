@@ -120,6 +120,10 @@
 	for(var/turf/T as anything in reloaded_turfs)
 		T.recalc_atom_opacity()
 		T.reconsider_lights()
+		// load_map/ChangeTurf usually transfers the existing overlay, but some
+		// real map layouts can still leave a dynamic-lighting turf without one.
+		if(!T.lighting_object)
+			T.lighting_build_overlay()
 		if(T.lighting_object)
 			GLOB.lighting_update_blends |= T.lighting_object
 			if(!T.lighting_object.needs_update)
