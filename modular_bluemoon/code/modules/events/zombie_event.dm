@@ -37,7 +37,7 @@
 			notify_ghosts("[iterating_human] has been infected by the ROMEROL pathogen!", source = iterating_human)
 
 /datum/round_event/zombie_infestation/announce(fake)
-	priority_announce("Автоматизированные системы фильтрации воздуха выявили грибковый патоген 'РОМЕРОЛ' в вентиляционных системах станции, введён карантин.", "ВНИМАНИЕ: БИОЛОГИЧЕСКАЯ ОПАСНОСТЬ", ANNOUNCER_MUTANTS, has_important_message = TRUE)
+	priority_announce("Автоматизированные системы фильтрации воздуха выявили грибковый патоген 'РОМЕРОЛ' в вентиляционных системах станции, введён карантин.", "ВНИМАНИЕ: БИОЛОГИЧЕСКАЯ ОПАСНОСТЬ", 'sound/announcer/medibot/hazdet.ogg', has_important_message = TRUE)
 
 /proc/try_to_zombie_infect_event(mob/living/carbon/human/target)
 	CHECK_DNA_AND_SPECIES(target)
