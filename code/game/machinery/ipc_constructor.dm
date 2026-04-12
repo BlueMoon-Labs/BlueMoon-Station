@@ -846,7 +846,7 @@
 			"label" = "Размер груди",
 			"type" = "list",
 			"value" = genital_breasts_size,
-			"options" = CONFIG_GET(keyed_list/breasts_cups_prefs),
+			"options" = sort_list(assoc_to_keys(CONFIG_GET(keyed_list/breasts_cups_prefs))),
 			"enabled" = genital_has_breasts,
 		),
 		list(
