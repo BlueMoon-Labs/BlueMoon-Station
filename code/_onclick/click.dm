@@ -156,7 +156,7 @@
 
 	var/list/closed = list()
 	var/list/checking = list(ultimate_target)
-	
+
 	while(checking.len && depth)
 		var/list/next = list()
 		--depth
@@ -568,7 +568,7 @@
 	var/to_index = delta_y < 0 ? implants_list.Find(next_list_item(I, implants_list)) : implants_list.Find(previous_list_item(I, implants_list))
 	if(!to_index)
 		return
-	implant.Retract()
+	implant.Retract(TRUE)
 	implant.Extend(implants_list[to_index])
 
 /mob/dead/observer/MouseWheelOn(atom/A, delta_x, delta_y, params)

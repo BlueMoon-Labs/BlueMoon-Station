@@ -99,13 +99,14 @@
 		// give the owner an idea about why his implant is glitching
 		Retract()
 
-/obj/item/organ/cyberimp/arm/proc/Retract()
+/obj/item/organ/cyberimp/arm/proc/Retract(silent = FALSE)
 	if(!holder || (holder in src))
 		return
 
 	owner.transferItemToLoc(holder, src, TRUE)
 	holder = null
-	RetractPLaySound()
+	if(!silent)
+		RetractPLaySound()
 
 // If it is necessary to process sounds in a special way
 /obj/item/organ/cyberimp/arm/proc/RetractPLaySound()
