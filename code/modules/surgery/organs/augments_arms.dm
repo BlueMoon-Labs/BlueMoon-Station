@@ -103,17 +103,13 @@
 	if(!holder || (holder in src))
 		return
 
-	owner.visible_message("<span class='notice'>[owner] retracts [holder] back into [owner.ru_ego()] [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>",
-		"<span class='notice'>[holder] snaps back into your [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>",
-		"<span class='italics'>You hear a short mechanical noise.</span>")
-
 	owner.transferItemToLoc(holder, src, TRUE)
 	holder = null
 	RetractPLaySound()
 
 // If it is necessary to process sounds in a special way
 /obj/item/organ/cyberimp/arm/proc/RetractPLaySound()
-	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 50, 1)
+	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 30, 1)
 
 /obj/item/organ/cyberimp/arm/proc/Extend(obj/item/item)
 	if(!(item in src))
@@ -142,19 +138,15 @@
 	// Activate the hand that now holds our item.
 	owner.swap_hand(result)//... or the 1st hand if the index gets lost somehow
 
-	owner.visible_message(span_notice("[owner] extends [holder] from [owner.ru_ego()] [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm."),
-		span_notice("You extend [holder] from your [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm."),
-		span_notice("You hear a short mechanical noise."))
 	ExtendPlaySound(item)
 	return TRUE
 
 // If it is necessary to process sounds in a special way
 /obj/item/organ/cyberimp/arm/proc/ExtendPlaySound(obj/item/I)
-	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 50, 1)
+	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 30, 1)
 
 /obj/item/organ/cyberimp/arm/ui_action_click(mob/user, actiontype)
-	if(crit_fail || (organ_flags & ORGAN_FAILING) || (!holder && !contents.len))
-		to_chat(owner, "<span class='warning'>The implant doesn't respond. It seems to be broken...</span>")
+	if(!is_operational(FALSE))
 		return
 
 	if(!holder || (holder in src))
@@ -171,6 +163,13 @@
 				Extend(choice)
 	else
 		Retract()
+
+/obj/item/organ/cyberimp/arm/proc/is_operational(silent = TRUE)
+	if(crit_fail || (organ_flags & ORGAN_FAILING) || (!holder && !contents.len))
+		if(!silent)
+			to_chat(owner, span_warning("The implant doesn't respond. It seems to be broken..."))
+		return FALSE
+	return TRUE
 
 /obj/item/organ/cyberimp/arm/medibeam
 	name = "integrated medical beamgun"

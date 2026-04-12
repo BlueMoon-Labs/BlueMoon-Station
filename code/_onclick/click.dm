@@ -549,6 +549,28 @@
 /mob/proc/MouseWheelOn(atom/A, delta_x, delta_y, params)
 	return
 
+/mob/living/carbon/MouseWheelOn(atom/A, delta_x, delta_y, params)
+	. = ..()
+	var/obj/item/I = get_active_held_item()
+	if(!I)
+		return
+	var/obj/item/organ/cyberimp/arm/implant = getorganslot((active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
+	if(!implant)
+		return
+	if(length(implant.items_list) < 2)
+		return
+	var/indx = implant.items_list.Find(I)
+	if(!indx)
+		return
+	if(!implant.is_operational(FALSE))
+		return
+	var/list/implants_list = implant.items_list
+	var/to_index = delta_y < 0 ? implants_list.Find(next_list_item(I, implants_list)) : implants_list.Find(previous_list_item(I, implants_list))
+	if(!to_index)
+		return
+	implant.Retract()
+	implant.Extend(implants_list[to_index])
+
 /mob/dead/observer/MouseWheelOn(atom/A, delta_x, delta_y, params)
 	var/list/modifier = params2list(params)
 	if(modifier["shift"])
