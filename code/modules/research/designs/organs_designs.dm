@@ -205,7 +205,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 1000, /datum/material/glass = 300, /datum/material/silver = 500, /datum/material/gold = 400)
 	build_path = /obj/item/organ/stomach/ipc
-	category = list("Cybernetics", "Organs")
+	category = list("Cybernetics")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/ipc_heart
@@ -216,7 +216,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 900, /datum/material/glass = 300, /datum/material/silver = 300)
 	build_path = /obj/item/organ/heart/ipc
-	category = list("Cybernetics", "Organs")
+	category = list("Cybernetics")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/ipc_lungs
@@ -227,7 +227,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 900, /datum/material/glass = 500, /datum/material/silver = 250)
 	build_path = /obj/item/organ/lungs/ipc
-	category = list("Cybernetics", "Organs")
+	category = list("Cybernetics")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/ipc_liver
@@ -238,7 +238,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 800, /datum/material/glass = 300, /datum/material/gold = 200)
 	build_path = /obj/item/organ/liver/ipc
-	category = list("Cybernetics", "Organs")
+	category = list("Cybernetics")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/ipc_eyes
@@ -249,7 +249,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 500, /datum/material/glass = 1200, /datum/material/gold = 300)
 	build_path = /obj/item/organ/eyes/ipc
-	category = list("Cybernetics", "Organs")
+	category = list("Cybernetics")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/ipc_ears
@@ -260,7 +260,7 @@
 	construction_time = 30
 	materials = list(/datum/material/iron = 400, /datum/material/glass = 700, /datum/material/silver = 200)
 	build_path = /obj/item/organ/ears/ipc
-	category = list("Cybernetics", "Organs")
+	category = list("Cybernetics")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/ipc_tongue
@@ -271,7 +271,7 @@
 	construction_time = 30
 	materials = list(/datum/material/iron = 400, /datum/material/glass = 400, /datum/material/gold = 200)
 	build_path = /obj/item/organ/tongue/robot/ipc
-	category = list("Cybernetics", "Organs")
+	category = list("Cybernetics")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /////////////////////////////////////////

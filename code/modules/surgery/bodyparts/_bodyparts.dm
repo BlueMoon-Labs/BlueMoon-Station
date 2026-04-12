@@ -727,7 +727,7 @@
 			should_draw_gender = FALSE
 		else
 			should_draw_gender = S.sexes
-		if(S.id == SPECIES_IPC && (body_zone == BODY_ZONE_HEAD || body_zone == BODY_ZONE_CHEST))
+		if(S.id == SPECIES_IPC && is_robotic_limb(FALSE) && (body_zone == BODY_ZONE_HEAD || body_zone == BODY_ZONE_CHEST))
 			should_draw_gender = TRUE
 			var/list/current_states = icon_states(icon)
 			if(body_zone == BODY_ZONE_HEAD && !(("head_f" in current_states) && ("head_m" in current_states)))

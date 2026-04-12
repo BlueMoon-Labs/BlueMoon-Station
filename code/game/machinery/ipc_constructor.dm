@@ -189,7 +189,7 @@
 	var/style = null
 	var/style_changeable = FALSE
 	var/list/style_options = null
-	if(istype(item, /obj/item/bodypart/head/robot) || istype(item, /obj/item/bodypart/chest/robot) || istype(item, /obj/item/bodypart/l_arm/robot) || istype(item, /obj/item/bodypart/r_arm/robot) || istype(item, /obj/item/bodypart/l_leg/robot) || istype(item, /obj/item/bodypart/r_leg/robot))
+	if(istype(item, /obj/item/bodypart/l_arm/robot) || istype(item, /obj/item/bodypart/r_arm/robot) || istype(item, /obj/item/bodypart/l_leg/robot) || istype(item, /obj/item/bodypart/r_leg/robot))
 		style = get_bodypart_style(item)
 		style_changeable = TRUE
 		style_options = get_bodypart_style_options(slot_id)
@@ -1129,6 +1129,8 @@
 		. += style_name
 
 /obj/machinery/ipc_constructor/proc/style_supports_slot(style_name, slot_id)
+	if(slot_id == "head" || slot_id == "chest")
+		return FALSE
 	var/icon_file = limb_style_icons[style_name]
 	return !!icon_file
 
@@ -1148,10 +1150,6 @@
 
 /obj/machinery/ipc_constructor/proc/get_styleable_bodypart(slot_id)
 	switch(slot_id)
-		if("head")
-			return head_part
-		if("chest")
-			return chest_part
 		if("l_arm")
 			return l_arm_part
 		if("r_arm")
