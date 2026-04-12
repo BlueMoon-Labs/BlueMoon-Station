@@ -47,6 +47,7 @@
 	var/z = 0
 	var/cleanload = FALSE
 	var/datum/mapGeneratorModule/reload_station_map/loader
+	var/tmp/last_reload_succeeded = null
 	buildmode_name = "Repair: Reload Block \[DO NOT USE\]"
 
 /datum/mapGenerator/repair/reload_station_map/clean
@@ -135,15 +136,21 @@ GLOBAL_VAR_INIT(reloading_map, FALSE)
 	loader.sync(src)
 	if(GLOB.reloading_map || !map.len)
 		return FALSE
+	last_reload_succeeded = null
 	GLOB.reloading_map = TRUE
 	INVOKE_ASYNC(src, TYPE_PROC_REF(/datum/mapGenerator/repair/reload_station_map, run_repair_reload), clean)
 	return TRUE
 
 /datum/mapGenerator/repair/reload_station_map/proc/run_repair_reload(run_clean = cleanload)
+	var/succeeded = FALSE
 	if(loader)
 		loader.sync(src)
 	syncModules()
 	if(run_delete_phase(run_clean))
 		if(loader)
-			loader.generate()
+			succeeded = loader.generate()
+	last_reload_succeeded = succeeded
+	if(!succeeded)
+		log_game("Repair reload failed for [type] at ([x_low], [y_low], [z]) to ([x_high], [y_high], [z])")
 	GLOB.reloading_map = FALSE
+	return succeeded

@@ -1,3 +1,8 @@
+#define REPAIR_RELOAD_WAIT_TICKS 100
+#define REPAIR_RELOAD_TEST_MAX_BASELINE_LUM 0.35
+#define REPAIR_RELOAD_TEST_MIN_LUM_DELTA 0.05
+#define REPAIR_RELOAD_TEST_MAX_POST_REPAIR_LUM_DROP 0.1
+
 /datum/unit_test/lighting_object_destroy_clears_blend_queue/Run()
 	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
 
@@ -142,9 +147,11 @@
 	var/atom/movable/lighting_object/lo = allocate(/atom/movable/lighting_object, T)
 	return lo
 
-/datum/unit_test/proc/wait_for_repair_reload(max_ticks = 100)
+/datum/unit_test/proc/wait_for_repair_reload(datum/mapGenerator/repair/reload_station_map/reload_generator = null, max_ticks = REPAIR_RELOAD_WAIT_TICKS)
 	for(var/i in 1 to max_ticks)
 		if(!GLOB.reloading_map)
+			if(reload_generator)
+				return reload_generator.last_reload_succeeded
 			return TRUE
 		sleep(world.tick_lag)
 	return FALSE
@@ -166,8 +173,7 @@
 			return FALSE
 	return TRUE
 
-/datum/unit_test/proc/find_station_repair_test_region(max_baseline_lum = 0.35)
-	var/list/fallback_region = null
+/datum/unit_test/proc/find_station_repair_test_region(max_baseline_lum = REPAIR_RELOAD_TEST_MAX_BASELINE_LUM)
 	var/z = SSmapping.station_start
 	for(var/x in 3 to world.maxx - 2)
 		for(var/y in 2 to world.maxy - 2)
@@ -191,11 +197,9 @@
 				"target_y" = start.y,
 				"target_z" = start.z
 			)
-			if(isnull(fallback_region))
-				fallback_region = region
 			if(start.get_lumcount() <= max_baseline_lum)
 				return region
-	return fallback_region
+	return null
 
 /datum/mapGeneratorModule/bottomLayer/massdelete/test_repair_delete/generate()
 	if(!istype(mother, /datum/mapGenerator/repair/reload_station_map/test_ordering))
@@ -220,6 +224,9 @@
 	phase_events += "reload:end"
 	return TRUE
 
+/datum/mapGenerator/repair/reload_station_map/test_failure_signal/run_reload_phase()
+	return FALSE
+
 /datum/unit_test/repair_reload_serializes_delete_before_reload/Run()
 	var/datum/mapGenerator/repair/reload_station_map/test_ordering/test_generator = new
 	var/turf/test_turf = run_loc_floor_bottom_left
@@ -231,10 +238,27 @@
 	test_generator.z = test_turf.z
 
 	TEST_ASSERT(test_generator.generate(), "Test repair generator failed to start.")
-	TEST_ASSERT(wait_for_repair_reload(), "Timed out waiting for test repair generator to finish.")
+	TEST_ASSERT(wait_for_repair_reload(test_generator), "Timed out waiting for test repair generator to finish.")
 	TEST_ASSERT(!test_generator.loader_started_before_delete_complete, "Reload phase started before delete phase completed.")
 	var/joined_events = test_generator.phase_events.Join(">")
 	TEST_ASSERT_EQUAL(joined_events, "delete:start>delete:end>reload:start>reload:end", "Repair reload phases executed out of order: [joined_events].")
+
+	qdel(test_generator)
+
+/datum/unit_test/repair_reload_failure_is_observable/Run()
+	var/datum/mapGenerator/repair/reload_station_map/test_failure_signal/test_generator = new
+	var/turf/test_turf = run_loc_floor_bottom_left
+	test_generator.map = list(test_turf)
+	test_generator.x_low = test_turf.x
+	test_generator.y_low = test_turf.y
+	test_generator.x_high = test_turf.x
+	test_generator.y_high = test_turf.y
+	test_generator.z = test_turf.z
+
+	TEST_ASSERT(test_generator.generate(), "Failure-signalling repair generator failed to start.")
+	TEST_ASSERT(!wait_for_repair_reload(test_generator), "Repair reload failure should be observable to the waiting helper.")
+	TEST_ASSERT(!GLOB.reloading_map, "Repair reload failure should still release the global reload guard.")
+	TEST_ASSERT_EQUAL(test_generator.last_reload_succeeded, FALSE, "Failed repair reload should publish a FALSE completion state.")
 
 	qdel(test_generator)
 
@@ -262,23 +286,28 @@
 
 	TEST_ASSERT(emitter.light, "Emitter should have a live light source before repair.")
 	var/lit_before = target_turf.get_lumcount()
-	TEST_ASSERT(lit_before > baseline_lum + 0.05, "Selected station block was not measurably affected by the neighboring emitter (baseline [round(baseline_lum, 0.01)], lit [round(lit_before, 0.01)]).")
+	TEST_ASSERT(lit_before > baseline_lum + REPAIR_RELOAD_TEST_MIN_LUM_DELTA, "Selected station block was not measurably affected by the neighboring emitter (baseline [round(baseline_lum, 0.01)], lit [round(lit_before, 0.01)]).")
 
 	var/datum/mapGenerator/repair/reload_station_map/clean/in_place/reload_generator = new
 	reload_generator.defineRegion(start, end, TRUE)
 
 	TEST_ASSERT(reload_generator.generate(), "Repair reload generator failed to start.")
-	TEST_ASSERT(wait_for_repair_reload(), "Timed out waiting for station repair reload to finish.")
+	TEST_ASSERT(wait_for_repair_reload(reload_generator), "Timed out waiting for station repair reload to finish.")
 	drain_nightshift_lighting_work()
 
 	target_turf = locate(target_x, target_y, target_z)
 	TEST_ASSERT(target_turf?.lighting_object, "Target turf lost its lighting object after repair reload.")
 
 	var/lit_after = target_turf.get_lumcount()
-	TEST_ASSERT(lit_after > baseline_lum + 0.05, "Target turf no longer receives neighboring light after repair reload (baseline [round(baseline_lum, 0.01)], after [round(lit_after, 0.01)]).")
-	TEST_ASSERT(lit_after >= lit_before - 0.1, "Repair reload caused a large lighting regression on the restored turf (before [round(lit_before, 0.01)], after [round(lit_after, 0.01)]).")
+	TEST_ASSERT(lit_after > baseline_lum + REPAIR_RELOAD_TEST_MIN_LUM_DELTA, "Target turf no longer receives neighboring light after repair reload (baseline [round(baseline_lum, 0.01)], after [round(lit_after, 0.01)]).")
+	TEST_ASSERT(lit_after >= lit_before - REPAIR_RELOAD_TEST_MAX_POST_REPAIR_LUM_DROP, "Repair reload caused a large lighting regression on the restored turf (before [round(lit_before, 0.01)], after [round(lit_after, 0.01)]).")
 
 	qdel(reload_generator)
+
+#undef REPAIR_RELOAD_WAIT_TICKS
+#undef REPAIR_RELOAD_TEST_MAX_BASELINE_LUM
+#undef REPAIR_RELOAD_TEST_MIN_LUM_DELTA
+#undef REPAIR_RELOAD_TEST_MAX_POST_REPAIR_LUM_DROP
 
 /// Simulates the full mass-delete + reload cycle and verifies light is restored.
 /// This reproduces the bug where Build Mode > Map Gen > Repair: Reload Block
