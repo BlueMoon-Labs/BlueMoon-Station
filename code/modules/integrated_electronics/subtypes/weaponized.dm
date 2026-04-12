@@ -1,5 +1,5 @@
 /obj/item/integrated_circuit/weaponized
-	category_text = "Weaponized"
+	category_text = "Вооружение"
 
 /obj/item/integrated_circuit/weaponized/weapon_firing
 	name = "weapon firing mechanism"

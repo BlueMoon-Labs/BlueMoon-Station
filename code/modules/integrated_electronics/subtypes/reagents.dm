@@ -707,7 +707,7 @@
 
 // - Beaker Connector - //
 /obj/item/integrated_circuit/input/beaker_connector
-	category_text = "Reagent"
+	category_text = "Реагенты"
 	cooldown_per_use = 1
 	name = "beaker slot"
 	desc = "Позволяет добавлять мензурку в корпус и удалять её даже после того, как корпус закрыт."
