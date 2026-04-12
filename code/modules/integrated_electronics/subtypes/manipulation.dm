@@ -233,7 +233,7 @@
 	complexity = 10
 	inputs = list("цель" = IC_PINTYPE_REF,"режим" = IC_PINTYPE_INDEX,"направление" = IC_PINTYPE_DIR)
 	outputs = list("тянет?" = IC_PINTYPE_BOOLEAN)
-	activators = list("входящий импульс" = IC_PINTYPE_PULSE_IN,"исходящий импульс" = IC_PINTYPE_PULSE_OUT,"released" = IC_PINTYPE_PULSE_OUT,"pull to dir" = IC_PINTYPE_PULSE_OUT)
+	activators = list("входящий импульс" = IC_PINTYPE_PULSE_IN,"исходящий импульс" = IC_PINTYPE_PULSE_OUT,"при отпускании" = IC_PINTYPE_PULSE_OUT,"тянуть по направлению" = IC_PINTYPE_PULSE_IN)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 50
 	ext_cooldown = 1
@@ -404,8 +404,8 @@
 		"переместить материалы" = IC_PINTYPE_PULSE_IN,
 		"при успехе" = IC_PINTYPE_PULSE_OUT,
 		"при неудаче" = IC_PINTYPE_PULSE_OUT,
-		"push ref" = IC_PINTYPE_PULSE_IN,
-		"on push ref" = IC_PINTYPE_PULSE_IN
+		"выдать ссылку" = IC_PINTYPE_PULSE_IN,
+		"при выдаче ссылки" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 40

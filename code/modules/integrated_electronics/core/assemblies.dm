@@ -612,9 +612,9 @@
 
 		if("заварить")
 			if(!opened)
-				sealed = TRUE
 				if(I.use_tool(src, user, 50, volume=100, amount=3))
 					to_chat(user,"<span class='notice'>Вы завариваете корпус, делая её невозможной для вскрытия.</span>")
+					sealed = TRUE
 					return TRUE
 
 			else

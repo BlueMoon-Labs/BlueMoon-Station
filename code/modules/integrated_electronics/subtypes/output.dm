@@ -390,7 +390,7 @@
 		. += "[name]"
 	else
 		. += "["\improper[name]"] названное '[displayed_name]'"
-	. += " который на данныый момент [get_pin_data(IC_INPUT, 1) ? "горит <font color=[led_color]>*</font>" : "не горит"]."
+	. += " который на данный момент [get_pin_data(IC_INPUT, 1) ? "горит <font color=[led_color]>*</font>" : "не горит"]."
 
 /obj/item/integrated_circuit/output/diagnostic_hud
 	name = "AR interface"
