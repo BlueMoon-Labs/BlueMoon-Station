@@ -14025,7 +14025,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white/textured/edge{
@@ -53412,7 +53412,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white/textured/edge{

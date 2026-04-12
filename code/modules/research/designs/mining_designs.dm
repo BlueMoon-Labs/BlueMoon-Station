@@ -27,7 +27,7 @@
 	desc = "Yours is the drill that will pierce through the rock walls."
 	id = "drill"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 6000, /datum/material/glass = 1000) //expensive, but no need for miners.
+	materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000) //expensive, but no need for miners.
 	build_path = /obj/item/pickaxe/drill
 	category = list("Mining Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO
@@ -47,7 +47,7 @@
 	desc = "You could use it to cut limbs off of xenos! Or, you know, mine stuff."
 	id = "plasmacutter"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 1500, /datum/material/glass = 500, /datum/material/plasma = 400)
+	materials = list(/datum/material/iron = 1500, /datum/material/glass = 500, /datum/material/plasma = 400, /datum/material/gold = 500)
 	build_path = /obj/item/gun/energy/plasmacutter
 	category = list("Mining Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO
@@ -57,7 +57,7 @@
 	desc = "It's an advanced plasma cutter, oh my god."
 	id = "plasmacutter_adv"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000, /datum/material/plasma = 2000, /datum/material/gold = 500)
+	materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000, /datum/material/plasma = 2000, /datum/material/gold = 750, /datum/material/diamond = 500)
 	build_path = /obj/item/gun/energy/plasmacutter/adv
 	category = list("Mining Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO
