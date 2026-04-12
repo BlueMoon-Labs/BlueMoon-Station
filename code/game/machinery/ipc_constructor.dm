@@ -1,13 +1,14 @@
 /obj/machinery/ipc_constructor
 	name = "synthetic constructor"
 	desc = "A robotics assembly cradle for constructing IPC chassis around an active positronic intelligence."
-	icon = 'icons/obj/machines/limbgrower.dmi'
-	icon_state = "limbgrower_idleoff"
+	icon = 'icons/mecha/mech_fab.dmi'
+	icon_state = "fabricator"
 	density = TRUE
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 15
 	active_power_usage = 1500
 	circuit = /obj/item/circuitboard/machine/ipc_constructor
+	pixel_x = 16
 
 	var/busy = FALSE
 	var/selected_body_size = RESIZE_DEFAULT_SIZE
@@ -16,9 +17,9 @@
 	var/stored_glass = 0
 	var/stored_plastic = 0
 	var/material_capacity = 100
-	var/base_metal_cost = 10
-	var/base_glass_cost = 5
-	var/base_plastic_cost = 4
+	var/base_metal_cost = 70
+	var/base_glass_cost = 30
+	var/base_plastic_cost = 15
 	var/base_assembly_time_seconds = 70
 	var/assembly_part_tier = 1
 	var/static/no_screen_option = "None"
@@ -91,9 +92,17 @@
 	var/genital_butt_color = "FFFFFF"
 	var/genital_belly_color = "FFFFFF"
 	var/genital_anus_color = "FFFFFF"
+	var/list/obj/structure/filler/ipc_constructor/fillers = list()
 
 /obj/machinery/ipc_constructor/Initialize(mapload)
 	selected_screen = get_default_screen()
+	. = ..()
+	create_fillers()
+	update_icon()
+	return .
+
+/obj/machinery/ipc_constructor/Destroy()
+	clear_fillers()
 	return ..()
 
 /obj/machinery/ipc_constructor/ui_interact(mob/user, datum/tgui/ui)
@@ -102,6 +111,16 @@
 	if(!ui)
 		ui = new(user, src, "IPCConstructor", src)
 		ui.open()
+
+/obj/machinery/ipc_constructor/update_icon_state()
+	. = ..()
+	if(busy)
+		icon_state = "fabricator_ani"
+		return
+	if(panel_open)
+		icon_state = "fabricator_load"
+		return
+	icon_state = "fabricator"
 
 /obj/machinery/ipc_constructor/ui_static_data(mob/user)
 	var/list/data = list()
@@ -139,6 +158,7 @@
 	data["genital_options"] = get_genital_data()
 	data["genital_size_options"] = get_genital_size_data()
 	data["genital_color_options"] = get_genital_color_data()
+	data["missing_optional_parts"] = get_missing_optional_parts()
 	data["bodyparts"] = list(
 		get_slot_data("head", "Голова", head_part),
 		get_slot_data("chest", "Торс", chest_part),
@@ -157,7 +177,7 @@
 		get_slot_data("ears", "Аудиосенсорный блок", ears_part),
 		get_slot_data("tongue", "Голосовой синтезатор", tongue_part),
 	)
-	var/list/problems = get_assembly_problems()
+	var/list/problems = get_required_assembly_problems()
 	data["issues"] = problems
 	data["can_assemble"] = !LAZYLEN(problems)
 	return data
@@ -188,12 +208,28 @@
 	. = ..()
 	. += "<span class='notice'>Stored steel: [stored_metal]/[material_capacity]. Stored glass: [stored_glass]/[material_capacity]. Stored plastic: [stored_plastic]/[material_capacity].</span>"
 
+/obj/machinery/ipc_constructor/proc/create_fillers()
+	clear_fillers()
+	var/turf/secondary_turf = get_step(src, EAST)
+	if(!secondary_turf)
+		return
+	var/obj/structure/filler/ipc_constructor/filler = new(secondary_turf)
+	filler.parent = src
+	fillers += filler
+
+/obj/machinery/ipc_constructor/proc/clear_fillers()
+	for(var/obj/structure/filler/ipc_constructor/filler in fillers)
+		filler.parent = null
+		qdel(filler)
+	fillers.Cut()
+
 /obj/machinery/ipc_constructor/attackby(obj/item/user_item, mob/living/user, params)
 	if(busy)
 		to_chat(user, "<span class='warning'>[src] is already assembling a synthetic.</span>")
 		return TRUE
 
-	if(default_deconstruction_screwdriver(user, "limbgrower_panelopen", "limbgrower_idleoff", user_item))
+	if(default_deconstruction_screwdriver(user, "fabricator_load", "fabricator", user_item))
+		update_icon()
 		ui_close(user)
 		return TRUE
 
@@ -1184,11 +1220,15 @@
 	return FALSE
 
 /obj/machinery/ipc_constructor/proc/get_required_materials(body_size = selected_body_size)
+	var/material_multiplier = get_material_efficiency_multiplier()
 	return list(
-		"metal" = max(1, round(base_metal_cost * body_size)),
-		"glass" = max(1, round(base_glass_cost * body_size)),
-		"plastic" = add_genitals ? max(1, round(base_plastic_cost * body_size)) : 0,
+		"metal" = max(1, round(base_metal_cost * body_size * material_multiplier)),
+		"glass" = max(1, round(base_glass_cost * body_size * material_multiplier)),
+		"plastic" = add_genitals ? max(1, round(base_plastic_cost * body_size * material_multiplier)) : 0,
 	)
+
+/obj/machinery/ipc_constructor/proc/get_material_efficiency_multiplier()
+	return clamp(1 - ((assembly_part_tier - 1) * 0.1), 0.6, 1)
 
 /obj/machinery/ipc_constructor/proc/get_assembly_time_seconds()
 	var/size_extra = max(0, round((selected_body_size - RESIZE_DEFAULT_SIZE) * 40))
@@ -1341,8 +1381,65 @@
 	else if(istype(cognitive_core_part, /obj/item/mmi) && !istype(cognitive_core_part, /obj/item/mmi/posibrain) && !core_has_resident_intelligence(cognitive_core_part))
 		. += "В загруженном ММИ нет сознания."
 
+/obj/machinery/ipc_constructor/proc/get_required_assembly_problems()
+	. = list()
+	var/list/required_materials = get_required_materials()
+	if(!head_part)
+		. += "Отсутствует головной модуль IPC."
+	else if(locate(/obj/item/organ) in head_part.contents)
+		. += "Головной модуль IPC должен быть пустым."
+	if(!chest_part)
+		. += "Отсутствует торсовый модуль IPC."
+	else if(locate(/obj/item/organ) in chest_part.contents)
+		. += "Торсовый модуль IPC должен быть пустым."
+	if(!heart_part)
+		. += "Отсутствует гидравлический насос."
+	if(!lungs_part)
+		. += "Отсутствует система охлаждения."
+	if(!liver_part)
+		. += "Отсутствует реагентный процессор."
+	if(!stomach_part)
+		. += "Отсутствует энергоячейка IPC."
+	if(!eyes_part)
+		. += "Отсутствует оптический сенсорный блок."
+	if(!ears_part)
+		. += "Отсутствует аудиосенсорный блок."
+	if(!tongue_part)
+		. += "Отсутствует голосовой синтезатор IPC."
+	if(stored_metal < required_materials["metal"])
+		. += "Недостаточно стали для выбранного размера шасси."
+	if(stored_glass < required_materials["glass"])
+		. += "Недостаточно стекла для выбранного размера шасси."
+	if(stored_plastic < required_materials["plastic"])
+		. += "Недостаточно пластика для модуля половых систем."
+	if(!cognitive_core_part)
+		. += "Отсутствует когнитивное ядро в груди. Установите позитронный мозг или ММИ."
+	else if(!cognitive_core_can_be_assembled(cognitive_core_part))
+		. += "Загруженное когнитивное ядро не может инициализировать IPC."
+	else if(istype(cognitive_core_part, /obj/item/mmi) && !istype(cognitive_core_part, /obj/item/mmi/posibrain) && !core_has_resident_intelligence(cognitive_core_part))
+		. += "В загруженном ММИ нет сознания."
+
+/obj/machinery/ipc_constructor/proc/get_missing_optional_parts()
+	. = list()
+	if(!l_arm_part)
+		. += "левая рука"
+	if(!r_arm_part)
+		. += "правая рука"
+	if(!l_leg_part)
+		. += "левая нога"
+	if(!r_leg_part)
+		. += "правая нога"
+
+/obj/machinery/ipc_constructor/proc/get_optional_assembly_problem_text()
+	return list(
+		"Отсутствует левая рука.",
+		"Отсутствует правая рука.",
+		"Отсутствует левая нога.",
+		"Отсутствует правая нога.",
+	)
+
 /obj/machinery/ipc_constructor/proc/start_assembly(mob/user, designation, selected_screen)
-	var/list/problems = get_assembly_problems()
+	var/list/problems = get_required_assembly_problems()
 	if(LAZYLEN(problems))
 		to_chat(user, "<span class='warning'>[problems[1]]</span>")
 		return
@@ -1352,7 +1449,7 @@
 	assembly_started_at = world.time
 	assembly_finish_at = world.time + (assembly_time * 10)
 	use_power(active_power_usage)
-	icon_state = "limbgrower_idleon"
+	update_icon()
 	visible_message("<span class='notice'>[src] locks down and begins synthetic assembly. Estimated completion time: [assembly_time] seconds.</span>")
 	addtimer(CALLBACK(src, PROC_REF(finish_assembly), designation, selected_screen), assembly_time * 10)
 
@@ -1360,12 +1457,9 @@
 	busy = FALSE
 	assembly_started_at = 0
 	assembly_finish_at = 0
-	if(panel_open)
-		icon_state = "limbgrower_panelopen"
-	else
-		icon_state = "limbgrower_idleoff"
+	update_icon()
 
-	var/list/problems = get_assembly_problems()
+	var/list/problems = get_required_assembly_problems()
 	if(LAZYLEN(problems))
 		audible_message("<span class='warning'>[src] aborts assembly: [problems[1]]</span>")
 		return
@@ -1448,6 +1542,8 @@
 	visible_message("<span class='notice'>[src] finishes construction and releases [assembled].</span>")
 
 /obj/machinery/ipc_constructor/proc/install_bodypart(mob/living/carbon/human/assembled, obj/item/bodypart/new_part)
+	if(!new_part)
+		return
 	var/obj/item/bodypart/old_part = assembled.get_bodypart(new_part.body_zone)
 	new_part.replace_limb(assembled, TRUE)
 	if(old_part)
@@ -1615,6 +1711,28 @@
 	QDEL_NULL(loaded_core.brainmob)
 	QDEL_NULL(loaded_core.brain)
 	qdel(loaded_core)
+
+/obj/structure/filler/ipc_constructor
+	name = "synthetic constructor frame"
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "nothing"
+	invisibility = 0
+	mouse_opacity = MOUSE_OPACITY_OPAQUE
+
+/obj/structure/filler/ipc_constructor/attack_hand(mob/user, act_intent = user?.a_intent, attackchain_flags)
+	if(parent)
+		return parent.attack_hand(user, act_intent, attackchain_flags)
+	return ..()
+
+/obj/structure/filler/ipc_constructor/attackby(obj/item/user_item, mob/living/user, params)
+	if(parent)
+		return parent.attackby(user_item, user, params)
+	return ..()
+
+/obj/structure/filler/ipc_constructor/examine(mob/user)
+	if(parent)
+		return parent.examine(user)
+	return ..()
 
 /obj/effect/mob_spawn/human/ipc_shell
 	name = "inactive IPC shell"

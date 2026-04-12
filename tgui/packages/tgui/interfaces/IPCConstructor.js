@@ -192,6 +192,19 @@ const ConstructorTab = (props, context) => {
   } = data;
 
   const [designation, setDesignation] = useSharedState(context, 'designation', '');
+  const optionalPartLabels = {
+    l_arm: 'левая рука',
+    r_arm: 'правая рука',
+    l_leg: 'левая нога',
+    r_leg: 'правая нога',
+  };
+  const missing_optional_parts = bodyparts
+    .filter(slot => optionalPartLabels[slot.id] && !slot.occupied)
+    .map(slot => optionalPartLabels[slot.id]);
+  const assembledName = designation || 'этого синтетика';
+  const assembleConfirmText = missing_optional_parts.length
+    ? `Создать ${assembledName}? Отсутствуют части: ${missing_optional_parts.join(', ')}`
+    : 'Подтвердить сборку?';
 
   return (
     <>
@@ -306,11 +319,20 @@ const ConstructorTab = (props, context) => {
                       </Box>
                     </Stack.Item>
                     <Stack.Item>
-                      <Button
-                        icon="cogs"
-                        content="Собрать IPC"
-                        disabled={busy || !can_assemble}
-                        onClick={() => act('assemble', { designation })} />
+                      {missing_optional_parts.length ? (
+                        <Button.Confirm
+                          icon="cogs"
+                          content="Собрать IPC"
+                          confirmContent={assembleConfirmText}
+                          disabled={busy || !can_assemble}
+                          onClick={() => act('assemble', { designation })} />
+                      ) : (
+                        <Button
+                          icon="cogs"
+                          content="Собрать IPC"
+                          disabled={busy || !can_assemble}
+                          onClick={() => act('assemble', { designation })} />
+                      )}
                     </Stack.Item>
                   </Stack>
                 </Stack.Item>
