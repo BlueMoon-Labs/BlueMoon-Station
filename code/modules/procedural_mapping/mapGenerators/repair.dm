@@ -58,7 +58,7 @@
 	modules = list(/datum/mapGeneratorModule/bottomLayer/massdelete/regeneration_delete)
 	buildmode_name = "Repair: Reload Block - Mass Delete - In Place"
 
-/datum/mapGenerator/repair/reload_station_map/defineRegion(turf/start, turf/end)
+/datum/mapGenerator/repair/reload_station_map/defineRegion(turf/start, turf/end, replace = 0)
 	. = ..()
 	if(!is_station_level(start.z) || !is_station_level(end.z))
 		return
@@ -117,7 +117,15 @@
 	SSatoms.InitializeAtoms(atoms)
 	SSmachines.setup_template_powernets(cables)
 	SSair.setup_template_machinery(atmos_machines)
+	// Atom init above can ChangeTurf (late-load overlays, wall-on-plating, atmos turf
+	// swaps, etc.), which replaces the turf datum at that coord. Re-resolve via
+	// locate() so the lighting rebuild runs on the live turf, not a gc'd ref.
+	var/list/live_reloaded_turfs = list()
 	for(var/turf/T as anything in reloaded_turfs)
+		var/turf/current = locate(T.x, T.y, T.z)
+		if(current)
+			live_reloaded_turfs += current
+	for(var/turf/T as anything in live_reloaded_turfs)
 		T.recalc_atom_opacity()
 		T.reconsider_lights()
 		// load_map/ChangeTurf usually transfers the existing overlay, but some
