@@ -36,7 +36,7 @@
 
 	// Убираем возможность класть предметы на стол и в инвентарь
 	I.item_flags |= ABSTRACT
-	w_class = WEIGHT_CLASS_HUGE
+	I.w_class = WEIGHT_CLASS_HUGE
 
 	items_list += I
 	// ayy only dropped signal for performance, we can't possibly have shitcode that doesn't call it when removing items from a mob, right?
