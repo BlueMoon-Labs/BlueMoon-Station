@@ -35,8 +35,8 @@
 		"Doorwoman",
 		"Hired Muscle",
 		"Public Defender",
-		"Sevice Guard",
-		"Slapper"
+		"Service Guard",
+		"Slapper",
 		)
 
 /////////////////////////////

@@ -158,6 +158,13 @@
 
 	var/mob/living/carbon/human/master_commander = null //holding var for determining who own/controls a sentient simple animal (for sentience potions).
 
+	/// If TRUE, observers may click this mob to take control when it has no client and is alive.
+	var/playable_by_ghost = FALSE
+	/// Optional [tgui_alert] title when offering ghost control; defaults to capitalized [name].
+	var/ghost_possess_title = null
+	/// Optional question text; defaults to a generic possess prompt with [name].
+	var/ghost_possess_question = null
+
 /mob/living/simple_animal/Initialize(mapload)
 	. = ..()
 	GLOB.simple_animals[AIStatus] += src
@@ -719,6 +726,34 @@
 	. = ..()
 	if(. && length(src.damaged_sound))
 		playsound(src, pick(src.damaged_sound), 40, 1)
+
+/mob/living/simple_animal/attack_ghost(mob/user)
+	. = ..()
+	if(.)
+		return
+	if(!playable_by_ghost)
+		return
+	ghost_possess_animal(user)
+
+/// Lets a ghost take this mob if it is still free (same idea as gondola / venus trap).
+/mob/living/simple_animal/proc/ghost_possess_animal(mob/user)
+	if(key || stat || QDELETED(src) || !playable_by_ghost)
+		return
+	if(isobserver(user))
+		var/mob/dead/observer/O = user
+		if(!O.can_reenter_round())
+			to_chat(user, span_warning("Вы не можете войти в эту роль."))
+			return
+	var/title = ghost_possess_title || capitalize(name)
+	var/question = ghost_possess_question || "Вселиться в [name]?"
+	var/ghost_ask = tgui_alert(user, question, title, list("Да", "Нет"))
+	if(ghost_ask != "Да" || QDELETED(src))
+		return
+	if(key || stat)
+		to_chat(user, span_warning("Кто-то уже занял это существо!"))
+		return
+	user.transfer_ckey(src, FALSE)
+	log_game("[key_name(src)] took control of [name] ([type]).")
 
 /mob/living/simple_animal/examine(mob/user)
 	var/list/dat = ..()

@@ -1006,10 +1006,10 @@
 /obj/item/modkit/katana_kit
 	name = "Stun-Katana Kit"
 	desc = "A modkit for making a stunsword into a Stun-Katana."
-	product = /obj/item/melee/baton/stunsword/stunkatana
-	fromitem = list(/obj/item/melee/baton/stunsword)
+	product = /obj/item/melee/baton/stunkatana
+	fromitem = list(/obj/item/melee/baton)
 
-/obj/item/melee/baton/stunsword/stunkatana
+/obj/item/melee/baton/stunkatana
 	name = "\improper Stun-Katana"
 	desc = "Оружие специальных подразделений ЧВК \"Конкорд\", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
@@ -1017,13 +1017,13 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "stunkatana"
 	item_state = "stunkatana"
-/obj/item/melee/baton/stunsword/stunkatana/proc/switch_light()
+/obj/item/melee/baton/stunkatana/proc/switch_light()
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent > 0.5)
 		set_light(3, 0.9, "#B6EEE9")
 	else
 		set_light(3, 0.9, "#D9CD8E")
-/obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status = FALSE, silent = FALSE)
+/obj/item/melee/baton/stunkatana/switch_status(new_status = FALSE, silent = FALSE)
 	if(turned_on != new_status)
 		turned_on = new_status
 		if(!silent)
@@ -1041,10 +1041,10 @@
 			set_light(0)
 	update_icon_state()
 
-/obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
+/obj/item/melee/baton/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
 	. = ..()
 	update_icon_state()
-	// После удара — обновляем иконку и свет по текущему заряду
+	// После удара — обновляем иконку и свет по текущему заряду.
 	if(!turned_on || !cell)
 		set_light(0)
 		return
@@ -1052,7 +1052,7 @@
 		set_light(3, 0.9, "#ff0000")
 		return
 	switch_light()
-/obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
+/obj/item/melee/baton/stunkatana/update_icon_state()
 	if(!cell)
 		icon_state = "No-cell"
 		item_state = "stunkatana"

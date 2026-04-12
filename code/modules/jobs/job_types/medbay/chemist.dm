@@ -17,10 +17,11 @@
 		"Chemi-Slut",
 		"Chemical Specialist",
 		"Chemical Technician",
+		"Chemical Plumber",
 		"Hexocrocin Therapist",
 		"Organomegaly Healer",
 		"Pharmacist",
-		"Pharmacologist"
+		"Pharmacologist",
 		)
 
 	outfit = /datum/outfit/job/chemist

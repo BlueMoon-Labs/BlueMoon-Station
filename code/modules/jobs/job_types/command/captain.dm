@@ -16,7 +16,7 @@
 	exp_type_department = EXP_TYPE_COMMAND
 	considered_combat_role = TRUE
 	alt_titles = list(
-		"Syndicate Admiral", //Синди выше, для удобства
+		"Admiral",
 		"Cap-Slut",
 		"Catpain",
 		"Chief Command",

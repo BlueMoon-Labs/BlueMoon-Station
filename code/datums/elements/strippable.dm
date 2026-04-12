@@ -376,6 +376,7 @@
 		result["icon"] = icon2base64(icon(item.icon, item.icon_state, SOUTH, 1))
 		result["name"] = item.name
 		result["alternate"] = item_data.get_alternate_action(owner, user)
+		result["interactable"] = item.interactable_in_strip_menu
 
 		items[strippable_key] = result
 

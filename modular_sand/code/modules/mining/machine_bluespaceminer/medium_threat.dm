@@ -10,8 +10,6 @@ GLOBAL_LIST_INIT(bsm_medium_threat_pool, list(
 
 /datum/bsm_instability_effect/medium
 
-/datum/bsm_instability_effect/medium/plasma_burp
-
 /datum/bsm_instability_effect/medium/plasma_burp/trigger(obj/machinery/mineral/bluespace_miner/machine)
 	var/turf/center = get_turf(machine)
 	if(!center)
@@ -23,8 +21,6 @@ GLOBAL_LIST_INIT(bsm_medium_threat_pool, list(
 	if(istype(plasma_turf) && plasma_turf.air)
 		plasma_turf.air.adjust_moles(GAS_PLASMA, rand(15, 35))
 		plasma_turf.air_update_turf()
-
-/datum/bsm_instability_effect/medium/nitrogen_burp
 
 /datum/bsm_instability_effect/medium/nitrogen_burp/trigger(obj/machinery/mineral/bluespace_miner/machine)
 	var/turf/center = get_turf(machine)
@@ -38,8 +34,6 @@ GLOBAL_LIST_INIT(bsm_medium_threat_pool, list(
 		n2_turf.air.adjust_moles(GAS_N2, rand(45, 85))
 		n2_turf.air_update_turf()
 
-/datum/bsm_instability_effect/medium/co2_vent
-
 /datum/bsm_instability_effect/medium/co2_vent/trigger(obj/machinery/mineral/bluespace_miner/machine)
 	var/turf/center = get_turf(machine)
 	if(!center)
@@ -52,8 +46,6 @@ GLOBAL_LIST_INIT(bsm_medium_threat_pool, list(
 		co2_turf.air.adjust_moles(GAS_CO2, rand(20, 45))
 		co2_turf.air_update_turf()
 
-/datum/bsm_instability_effect/medium/water_vapor_gust
-
 /datum/bsm_instability_effect/medium/water_vapor_gust/trigger(obj/machinery/mineral/bluespace_miner/machine)
 	var/turf/center = get_turf(machine)
 	if(!center)
@@ -65,8 +57,6 @@ GLOBAL_LIST_INIT(bsm_medium_threat_pool, list(
 	if(istype(steam_turf) && steam_turf.air)
 		steam_turf.air.adjust_moles(GAS_H2O, rand(25, 55))
 		steam_turf.air_update_turf()
-
-/datum/bsm_instability_effect/medium/cold_snap
 
 /datum/bsm_instability_effect/medium/cold_snap/trigger(obj/machinery/mineral/bluespace_miner/machine)
 	var/turf/center = get_turf(machine)
@@ -81,8 +71,6 @@ GLOBAL_LIST_INIT(bsm_medium_threat_pool, list(
 		cold_turf.air.set_temperature(new_temp)
 		cold_turf.air_update_turf()
 
-/datum/bsm_instability_effect/medium/nitrous_whiff
-
 /datum/bsm_instability_effect/medium/nitrous_whiff/trigger(obj/machinery/mineral/bluespace_miner/machine)
 	var/turf/center = get_turf(machine)
 	if(!center)
@@ -94,8 +82,6 @@ GLOBAL_LIST_INIT(bsm_medium_threat_pool, list(
 	if(istype(n2o_turf) && n2o_turf.air)
 		n2o_turf.air.adjust_moles(GAS_NITROUS, rand(8, 18))
 		n2o_turf.air_update_turf()
-
-/datum/bsm_instability_effect/medium/pressure_ping
 
 /datum/bsm_instability_effect/medium/pressure_ping/trigger(obj/machinery/mineral/bluespace_miner/machine)
 	var/turf/center = get_turf(machine)
@@ -109,3 +95,13 @@ GLOBAL_LIST_INIT(bsm_medium_threat_pool, list(
 	var/obj/item/grenade/flashbang/simulated = new(center)
 	simulated.flashbang_mobs(center, 7)
 	qdel(simulated)
+
+/datum/bsm_instability_effect/medium/floor_cluwne/trigger(obj/machinery/mineral/bluespace_miner/machine)
+	var/turf/center = get_turf(machine)
+	if(!center)
+		return
+	var/mob/living/simple_animal/hostile/floor_cluwne/spawned_cluwne = new /mob/living/simple_animal/hostile/floor_cluwne(center)
+	play_bluespace_sparks(machine)
+	machine.balloon_alert_to_viewers("подплиточная клоуняра!")
+	machine.visible_message(span_notice("Из разлома выходит подплиточный клоуняра и резко падает под плитку."))
+	notify_ghosts("Появилась подплиточная клоуняра из блюспейс-разлома в [get_area_name(center)]!", source = spawned_cluwne, action = NOTIFY_ATTACK, flashwindow = FALSE, ignore_dnr_observers = TRUE, header = "Подплиточная Клоуняра")

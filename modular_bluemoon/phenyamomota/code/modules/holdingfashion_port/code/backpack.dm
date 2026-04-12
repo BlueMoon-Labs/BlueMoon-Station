@@ -1,19 +1,38 @@
 /obj/item/BoH_inert
 	name = "inert bag of nothing"
-	desc = "What is currently a just an unwieldly block of metal with without slot ready to accept a bluespace anomaly core."
+	desc = "В нынешнем состоянии – габаритный кусок металла со слотом, готовым принять ядро блюспейс-аномалии."
 	icon = 'modular_bluemoon/phenyamomota/code/modules/holdingfashion_port/icons/items.dmi'
 	icon_state = "bag-inert"
+	var/backpack_type = /obj/item/storage/backpack/holding
+
+/obj/item/BoH_inert/attackby(obj/item/I, mob/living/user, params)
+	. = ..()
+	if(I.type == /obj/item/assembly/signaler/anomaly && !(user.a_intent == INTENT_HARM))
+		if(INTERACTING_WITH(user, src))
+			return
+		to_chat(user, span_notice("Вы начинаете вставлять [I] в [src]."))
+		if(do_after(user, 30, src))
+			var/created_boh = new backpack_type(loc)
+			qdel(I)
+			if(loc == user)
+				user.put_in_hands(created_boh)
+			qdel(src)
 
 /obj/item/BoH_inert/bag
 	name = "inert bag of holding"
+	backpack_type = /obj/item/storage/backpack/holding
 
 /obj/item/BoH_inert/satchel
 	name = "inert satchel of holding"
 	icon_state = "satchel-inert"
+	backpack_type = /obj/item/storage/backpack/holding/satchel
 
 /obj/item/BoH_inert/duffel
 	name = "inert duffel bag of holding"
 	icon_state = "duff-inert"
+	backpack_type = /obj/item/storage/backpack/holding/duffel
+
+////////////////////////////////////////////////////////////////
 
 /obj/item/storage/backpack/holding
 	var/second_chance = TRUE
@@ -21,12 +40,12 @@
 
 /obj/item/storage/backpack/holding/Initialize(mapload)
 	. = ..()
-	desc += "<br>Can be recalibrated on solid surface with anomaly neutralizer."
+	desc += span_info("<br>Можно рекалибровать на твёрдой поверхности нейтрализатором аномалий.")
 
 /obj/item/storage/backpack/holding/examine()
 	. = ..()
 	var/stability = round(obj_integrity/max_integrity, 0.01) * 100
-	. += "<br>Core [stability]% stable."
+	. += span_info("<br>Стабильность ядра: [stability]%.")
 
 /obj/item/storage/backpack/holding/proc/teleport_damage(tele_damage, force_destruction = FALSE)
 	obj_integrity = max(0, obj_integrity - tele_damage)
@@ -52,10 +71,12 @@
 			say("Cтабильность конструкции изменена и составляет [stability]%.")
 
 /obj/item/storage/backpack/holding/attackby(obj/item/I, mob/living/user, params)
-	if(istype(I, /obj/item/anomaly_neutralizer) && !(user.a_intent == INTENT_HELP) && loc != user)
-		to_chat(user, "<span class='notice'>You starts recalibrate [src] using [I].</span>")
+	if(istype(I, /obj/item/anomaly_neutralizer) && loc != user && !(user.a_intent == INTENT_HELP))
+		if(INTERACTING_WITH(user, src))
+			return
+		to_chat(user, span_notice("Вы начинаете рекалибровку [src] при помощи [I]."))
 		if(do_after(user, 20 SECONDS, src))
-			to_chat(user, "<span class='notice'>The circuitry of [I] fries from the strain of recalibrating [src]!</span>")
+			to_chat(user, span_notice("Электроника [I] сгорает после процесса рекалибрации [src]!"))
 			obj_integrity = max_integrity
 			say("Рекалибровка конструкции завершена. Целостность составляет 100%.")
 			qdel(I)

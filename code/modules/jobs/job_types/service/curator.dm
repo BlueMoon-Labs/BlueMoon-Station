@@ -17,7 +17,6 @@
 		"Conservator",
 		"Correspondent",
 		"Game Master",
-		"Guide",
 		"Hentai Artist",
 		"Historian",
 		"Journalist",

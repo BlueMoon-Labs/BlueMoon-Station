@@ -302,8 +302,8 @@
 		minor_announce("БЛЮСПЕЙС-АРТИЛЛЕРИЯ НЕИСПРАВНА!", "ВНИМАНИЕ: Блюспейс-Артиллерия", TRUE)
 
 /obj/machinery/bsa/full/proc/create_calculated_explosion(atom/target)
-	var/calculated_explosion_power = capacitor_power / 10000000
-	explosion(target, calculated_explosion_power, calculated_explosion_power * 2, calculated_explosion_power * 4, ignorecap = TRUE)
+	var/calculated_explosion_power = capacitor_power / 20000000
+	explosion(target, calculated_explosion_power, calculated_explosion_power * 1.5, calculated_explosion_power * 2, ignorecap = TRUE)
 
 /obj/machinery/bsa/full/proc/reload()
 	system_state = BSA_SYSTEM_RELOADING

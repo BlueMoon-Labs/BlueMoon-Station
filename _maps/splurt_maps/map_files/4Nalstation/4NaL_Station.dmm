@@ -13045,7 +13045,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/tcommsat/server)
@@ -62343,7 +62342,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/tcommsat/computer)

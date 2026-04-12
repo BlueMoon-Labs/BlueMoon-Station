@@ -934,3 +934,6 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 
 /// A simple helper for checking traits in a mob's mind
 #define HAS_MIND_TRAIT(target, trait) (HAS_TRAIT(target, trait) || (target.mind ? HAS_TRAIT(target.mind, trait) : FALSE))
+
+/// Трейт для персонажа. Дает +2 к муду.
+#define TRAIT_BIRTHDAY_BOY "birthday_boy"

@@ -16,7 +16,7 @@
 	allowed_buildtypes = BIOAEGIS
 	console_link = FALSE
 	requires_console = FALSE
-	emaggable = TRUE
+	emag_only_access = FALSE
 
 /obj/item/circuitboard/machine/protolathe/bioaegis //Very experimental piece of tech, with heavy reliance on cutting-edge parts.
 	name = "Bio-organical Printer (Machine Board)"

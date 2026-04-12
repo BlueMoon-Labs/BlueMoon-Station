@@ -9,6 +9,9 @@ module.exports = {
   transform: {
     '^.+\\.(js|cjs|ts|tsx)$': require.resolve('babel-jest'),
   },
+  moduleNameMapper: {
+    '\\.(svg|png|jpg|jpeg|gif|ogg|wav|mp3)$': '<rootDir>/scripts/jest/fileMock.js',
+  },
   moduleFileExtensions: ['js', 'cjs', 'ts', 'tsx', 'json'],
   resetMocks: true,
 };

@@ -171,3 +171,26 @@
 	else
 		icon_state = "[initial(icon_state)]"
 		item_state = "[initial(item_state)]"
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff
+	desc = "An elegant weapon, its concentrated beam of energy capable of cutting through armor and flesh alike. This one seems to be souvenir version without combat properties."
+	force = 0
+	throwforce = 0
+	throw_range = 7
+	sharpness = SHARP_NONE
+	embedding = null
+	armour_penetration = 0
+	item_flags = null
+	custom_materials = null
+	total_mass = 0.4
+	total_mass_on = TOTAL_MASS_TOY_SWORD
+	block_parry_data = null
+	throwforce_on = 0
+	force_on = 0
+	clumsy_check = FALSE
+	block_chance = 0
+	wound_bonus = 0
+	bare_wound_bonus = 0
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/Initialize(mapload)
+	. = ..()

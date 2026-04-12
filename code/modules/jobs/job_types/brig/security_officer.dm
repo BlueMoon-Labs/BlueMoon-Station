@@ -14,8 +14,8 @@
 	exp_type = EXP_TYPE_CREW
 	considered_combat_role = TRUE
 	alt_titles = list(
-		"Gorlex Marauders Soldier", //Триглав выше, для удобства // Кадеты - Миротворцы
-		"Syndicate Combatant", //Синди выше, для удобства
+		"Gorlex Marauders Trainee", //Триглав выше, для удобства
+		"Combatant", //Синди выше, для удобства
 		"AC Specialist",
 		"Cerberus",
 		"Civil Protection",
@@ -31,6 +31,7 @@
 		"Security Agent",
 		"Security Guard",
 		"Security Technician",
+		"K-9 Handler",
 		"Service Pet Handler",
 		"Slutcurity Officer",
 		"Studcurity Officer",

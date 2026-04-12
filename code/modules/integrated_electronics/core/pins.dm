@@ -137,6 +137,13 @@ D [1]/  ||
 /datum/integrated_io/proc/push_data()
 	for(var/k in 1 to linked.len)
 		var/datum/integrated_io/io = linked[k]
+		var/obj/item/integrated_circuit/chip = holder
+		if(istype(chip))
+			var/obj/item/electronic_assembly/ea = chip.assembly
+			if(ea)
+				ea.ie_tgui_register_data_pulse(src, io)
+			else
+				chip.ie_tgui_register_solo_data_pulse(src, io)
 		io.write_data_to_pin(data)
 
 /datum/integrated_io/activate/push_data()

@@ -18,13 +18,14 @@
 	considered_combat_role = TRUE
 	alt_titles = list(
 		"Azik Interstellar Lead Specialist", //Триглав выше, для удобства
-		"Syndicate Construction Chief", //Синди выше, для удобства
 		"Big Iron",
 		"Bordel Architect",
 		"Chief Engineer Officer",
+		"Construction Chief",
 		"Construction Coordinator",
 		"Construction Manager",
 		"Engineering Director",
+		"Senior Engineer",
 		"Head Engineer",
 		"Head of Engineering",
 		"Magos",
@@ -82,6 +83,7 @@
 
 	id = /obj/item/card/id/silver
 	belt = /obj/item/storage/belt/utility/chief/full
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	l_pocket = /obj/item/pda/heads/ce
 	ears = /obj/item/radio/headset/heads/ce
 	uniform = /obj/item/clothing/under/rank/engineering/chief_engineer
@@ -101,8 +103,6 @@
 /datum/outfit/job/ce/syndicate
 	name = "Syndicate Chief Engineer"
 	jobtype = /datum/job/chief_engineer
-
-	//l_pocket = /obj/item/pda/syndicate/no_deto
 
 	belt = /obj/item/storage/belt/utility/chief/full
 	ears = /obj/item/radio/headset/heads/ce

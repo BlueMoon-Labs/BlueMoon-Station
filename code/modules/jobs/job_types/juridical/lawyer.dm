@@ -13,7 +13,6 @@
 	exp_type = EXP_TYPE_SECURITY
 	alt_titles = list(
 		"MI13 Agent", //Триглав выше, для удобства
-		"Syndicate Legal Expert", //Синди выше, для удобства
 		"Attorney",
 		"Barrister",
 		"Defese Attorney",
@@ -21,7 +20,8 @@
 		"Jurist",
 		"Law-Slut",
 		"Legal Agent",
-		"Legal Clerk"
+		"Legal Clerk",
+		"Legal Expert",
 		)
 
 	outfit = /datum/outfit/job/lawyer

@@ -70,6 +70,7 @@
 	uniform = /obj/item/clothing/under/rank/cargo/qm
 	shoes = /obj/item/clothing/shoes/sneakers/brown
 	glasses = /obj/item/clothing/glasses/sunglasses
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	l_hand = /obj/item/clipboard
 	id = /obj/item/card/id/silver
 	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1)

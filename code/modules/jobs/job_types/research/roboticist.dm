@@ -13,7 +13,6 @@
 	alt_titles = list(
 		"Junior Roboticist", //Стажер выше, для удобства
 		"Cybersun Specialist", //Триглав выше, для удобства
-		"Syndicate Roboticist", //Синди выше, для удобства
 		"Biomechanical Engineer",
 		"Borgs Raper",
 		"Borgs Slut",

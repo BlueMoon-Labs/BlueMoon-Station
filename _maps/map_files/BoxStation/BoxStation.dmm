@@ -36637,12 +36637,9 @@
 	spawnwithmagazine = 0;
 	pin = /obj/item/firing_pin/implant/mindshield
 	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
 /obj/item/storage/firstaid,
 /obj/item/storage/firstaid/brute,
 /obj/item/storage/firstaid/toxin,

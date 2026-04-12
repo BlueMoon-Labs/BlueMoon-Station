@@ -11,7 +11,6 @@
 	alt_titles = list(
 		"Trainee Cargo Technician", //Стажер выше, для удобства
 		"Donk Co. Specialist", //Триглав выше, для удобства
-		"Syndicate Smuggler", //Синди выше, для удобства
 		"Cock Packager",
 		"Commodities Trader",
 		"Cryptocurrency Technician",
@@ -23,7 +22,8 @@
 		"Inventory Associate",
 		"Logistics Technician",
 		"Mail Carrier",
-		"Mailman",
+		"Mail Man",
+		"Mail Woman",
 		"Mailroom Technician",
 		"Merchant",
 		"Package Handler",
