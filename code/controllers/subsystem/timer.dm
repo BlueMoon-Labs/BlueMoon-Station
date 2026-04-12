@@ -332,10 +332,20 @@ SUBSYSTEM_DEF(timer)
 
 
 /datum/controller/subsystem/timer/Recover()
-	second_queue |= SStimer.second_queue
-	hashes |= SStimer.hashes
-	timer_id_dict |= SStimer.timer_id_dict
-	bucket_list |= SStimer.bucket_list
+	var/datum/controller/subsystem/timer/timerSS
+	for (var/global_var in global.vars)
+		if (istype(global.vars[global_var], src.type))
+			timerSS = global.vars[global_var]
+	if (!istype(timerSS))
+		return
+
+	hashes = timerSS.hashes
+	timer_id_dict = timerSS.timer_id_dict
+	bucket_list = timerSS.bucket_list
+	second_queue = timerSS.second_queue
+	clienttime_timers = timerSS.clienttime_timers
+
+	reset_buckets()
 
 /**
  * # Timed Event
