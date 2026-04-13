@@ -176,6 +176,20 @@
 		return FALSE
 	if(istype(turf_area, /area/shuttle))
 		return FALSE
+	// Non-station surface and dungeon areas: random cave/ruin generators place
+	// dynamic-lit floors on top of closed mineral or sand; reload_station_map
+	// correctly restores the DMM's non-floor turf at those coords, tripping
+	// either the has_lo assertion or the lit_after regression guard.
+	if(istype(turf_area, /area/asteroid))
+		return FALSE
+	if(istype(turf_area, /area/icemoon))
+		return FALSE
+	if(istype(turf_area, /area/mine))
+		return FALSE
+	if(istype(turf_area, /area/lavaland))
+		return FALSE
+	if(istype(turf_area, /area/edina))
+		return FALSE
 	var/list/baseturfs = islist(T.baseturfs) ? T.baseturfs : list(T.baseturfs)
 	for(var/base_path in baseturfs)
 		if(ispath(base_path, /turf/open/space) || ispath(base_path, /turf/closed))
