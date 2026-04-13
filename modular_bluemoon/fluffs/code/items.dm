@@ -130,14 +130,14 @@
 
 /obj/item/modkit/esabre_belt
 	name = "Cybersun Sabre Sheath Kit"
-	desc = "A modkit for making a sheaths into a cybersun sheath."
+	desc = "A modkit for making a sheath into a cybersun sheath."
 	icon_state = "syn_helmet_kit"
 	product = /obj/item/storage/belt/esabre_belt/fluff/real
 	fromitem = list(/obj/item/storage/belt/esabre_belt, /obj/item/storage/belt/sabre)
 
 /obj/item/modkit/energy_sabre/captain
 	name = "Captain Cybersun Sabre kit"
-	desc = "A modkit for making a caprain's sabre into cybersun energy sabre."
+	desc = "A modkit for making a captain's sabre into cybersun energy sabre."
 	icon_state = "syn_helmet_kit"
 	product = /obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain
 	fromitem = list(/obj/item/melee/sabre)

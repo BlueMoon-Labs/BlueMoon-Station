@@ -258,7 +258,7 @@
 	embedding = null
 	block_chance = 50
 	armour_penetration = 75
-	sharpness = WOUND_SLASH
+	sharpness = SHARP_EDGED
 	attack_verb_on = list("slashed", "cut")
 	custom_materials = list(/datum/material/iron = 1000)
 	total_mass = 3.4
