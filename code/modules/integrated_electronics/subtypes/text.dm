@@ -11,8 +11,8 @@
 	extended_desc = "Принимает строку (стог сена) и возвращает её, заменяя все вхождения подстроки (иголки) на замену."
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	inputs = list(
-		"стог сена" = IC_PINTYPE_STRING,
-		"иголка" = IC_PINTYPE_STRING,
+		"строка" = IC_PINTYPE_STRING,
+		"подстрока" = IC_PINTYPE_STRING,
 		"замена" = IC_PINTYPE_STRING
 	)
 	activators = list(
