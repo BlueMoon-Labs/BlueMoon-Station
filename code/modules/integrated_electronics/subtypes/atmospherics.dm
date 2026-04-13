@@ -486,7 +486,7 @@
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	size = 4
 	activators = list(
-			"push ref" = IC_PINTYPE_PULSE_IN
+			"выдать ссылку" = IC_PINTYPE_PULSE_IN
 			)
 	volume = 3 //emergency tank sized
 	var/broken = FALSE
@@ -696,7 +696,7 @@
 		"текущий баллон" = IC_PINTYPE_REF
 		)
 	activators = list(
-		"push ref" = IC_PINTYPE_PULSE_IN,
+		"выдать ссылку" = IC_PINTYPE_PULSE_IN,
 		"при вставке" = IC_PINTYPE_PULSE_OUT,
 		"при извлечении" = IC_PINTYPE_PULSE_OUT
 		)

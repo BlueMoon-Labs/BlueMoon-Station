@@ -66,7 +66,7 @@
 		"ввести" = IC_PINTYPE_PULSE_IN,
 		"при вводе" = IC_PINTYPE_PULSE_OUT,
 		"при неудаче" = IC_PINTYPE_PULSE_OUT,
-		"push ref" = IC_PINTYPE_PULSE_IN
+		"выдать ссылку" = IC_PINTYPE_PULSE_IN
 
 		)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -268,7 +268,7 @@
 		"использовано объема" = IC_PINTYPE_NUMBER,
 		"самоссылка" = IC_PINTYPE_SELFREF
 		)
-	activators = list("push ref" = IC_PINTYPE_PULSE_IN)
+	activators = list("выдать ссылку" = IC_PINTYPE_PULSE_IN)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
 /obj/item/integrated_circuit/reagent/storage/Initialize(mapload)
@@ -321,7 +321,7 @@
 		"измельчить" = IC_PINTYPE_PULSE_IN,
 		"при измельчении" = IC_PINTYPE_PULSE_OUT,
 		"при неудаче" = IC_PINTYPE_PULSE_OUT,
-		"push ref" = IC_PINTYPE_PULSE_IN
+		"выдать ссылку" = IC_PINTYPE_PULSE_IN
 		)
 	volume = 100
 	power_draw_per_use = 150
@@ -368,7 +368,7 @@
 		"выжать" = IC_PINTYPE_PULSE_IN,
 		"при выжимке" = IC_PINTYPE_PULSE_OUT,
 		"при неудаче" = IC_PINTYPE_PULSE_OUT,
-		"push ref" = IC_PINTYPE_PULSE_IN
+		"выдать ссылку" = IC_PINTYPE_PULSE_IN
 		)
 	volume = 100
 	power_draw_per_use = 150
@@ -412,7 +412,7 @@
 		)
 	activators = list(
 		"сканировать" = IC_PINTYPE_PULSE_IN,
-		"push ref" = IC_PINTYPE_PULSE_IN
+		"выдать ссылку" = IC_PINTYPE_PULSE_IN
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 
@@ -565,7 +565,7 @@
 	activators = list(
 		"создать дым" = IC_PINTYPE_PULSE_IN,
 		"при создании дыма" = IC_PINTYPE_PULSE_OUT,
-		"push ref" = IC_PINTYPE_PULSE_IN
+		"выдать ссылку" = IC_PINTYPE_PULSE_IN
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 20
@@ -723,7 +723,7 @@
 	activators = list(
 		"при вставке" = IC_PINTYPE_PULSE_OUT,
 		"при извлечении" = IC_PINTYPE_PULSE_OUT,
-		"push ref" = IC_PINTYPE_PULSE_IN
+		"выдать ссылку" = IC_PINTYPE_PULSE_IN
 		)
 
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH

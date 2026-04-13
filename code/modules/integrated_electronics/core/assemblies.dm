@@ -904,7 +904,7 @@
 /obj/item/electronic_assembly/medium/clam
 	name = "type-c electronic mechanism"
 	icon_state = "setup_medium_clam"
-	desc = "Это корпус для сборки электроники средних размеров. Данная модель имеет конструкцию в виде раскладушка."
+	desc = "Это корпус для сборки электроники средних размеров. Данная модель имеет конструкцию в виде раскладушки."
 
 /obj/item/electronic_assembly/medium/medical
 	name = "type-d electronic mechanism"
@@ -986,7 +986,7 @@
 /obj/item/electronic_assembly/drone/arms
 	name = "type-b electronic drone"
 	icon_state = "setup_drone_arms"
-	desc = "Это корпус для сборки мобильной электроники. Этот вооружён и опасен."
+	desc = "Это корпус для сборки мобильной электроники. Этот корпус вооружён и опасен."
 
 /obj/item/electronic_assembly/drone/secbot
 	name = "type-c electronic drone"
