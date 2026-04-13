@@ -7,6 +7,9 @@
 	burst_size = 3
 	fire_delay = 2
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT, SELECT_FULLY_AUTOMATIC)
+	SFX_GUN_INSERT_FULL_MAGAZINE = 'sound/weapons/autoguninsert.ogg'
+	SFX_GUN_INSERT_EMPTY_MAGAZINE = 'sound/weapons/autoguninsert.ogg'
+	SFX_GUN_BOLT_LOCK = null
 
 /obj/item/gun/ballistic/automatic/proto
 	name = "\improper Nanotrasen Saber SMG"
@@ -51,7 +54,7 @@
 				else
 					to_chat(user, "<span class='notice'>You insert the magazine into \the [src].</span>")
 
-				playsound(user, 'sound/weapons/autoguninsert.ogg', 60, 1)
+				playsound(user, SFX_GUN_INSERT_FULL_MAGAZINE, 60, 1)
 				chamber_round()
 				A.update_icon()
 				update_icon()

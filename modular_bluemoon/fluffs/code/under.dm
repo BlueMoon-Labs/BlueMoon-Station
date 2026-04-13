@@ -754,3 +754,16 @@
 	icon_state = "sheya_dress"
 	item_state = "sheya_dress"
 	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/blood_suit
+	name = "crimson aristocracy suit"
+	desc = "A sophisticated suit, dyed in deep red tones. The jacket is complemented by gold thread and a loose white shirt."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+	icon_state = "blood_suit"
+	item_state = "blood_suit"
+	can_adjust = FALSE

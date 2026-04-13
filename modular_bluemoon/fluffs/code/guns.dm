@@ -1197,9 +1197,10 @@
 	icon_state = "bwal_spec"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/bwalshot.ogg'
 	unique_reskin = null
+	obj_flags = NONE
 
 /obj/item/modkit/captain_rifle_kit
-	name = "Antique Laser Rifle"
+	name = "Antique Laser Rifle kit"
 	desc = "A modkit for making an antique laser gun into a antique laser rifle."
 	product = /obj/item/gun/energy/laser/captain/rifle
 	fromitem = list(/obj/item/gun/energy/laser/captain)
@@ -1213,8 +1214,74 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "captain_rifle"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/LaserOni.ogg'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
 	unique_reskin = null
+	alternate_worn_layer = SUIT_STORE_LAYER
+
 
 /obj/item/gun/energy/laser/captain/rifle/get_examine_name(mob/user)
 	. = ..()
 	. += "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>["This is captain's antique laser gun. Highrisk item!"]</span></span>"
+
+/obj/item/gun/ballistic/automatic/pistol/g22/anomalist
+	name = "\improper Gelriter-22 M-1"
+	desc = "Prototype submachine gun of the Catcrin army. Looks like it just came from the factory, not a single scratch. Despite its dimensions, it is lightweight due to the epoxy body combined with metal elements. Equipped with additional grips and holographic sights. On the right side, the image: a hand reaches from the darkness toward the light."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_Shot.ogg'
+	pickup_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_draw.ogg'
+	alternate_worn_layer = SUIT_STORE_LAYER
+	icon_state = "SAR-Bolt"
+	item_state = "SAR-Bolt"
+	SFX_GUN_INSERT_FULL_MAGAZINE = 'modular_bluemoon/fluffs/sound/weapon/SAR_reload.ogg'
+	SFX_GUN_INSERT_EMPTY_MAGAZINE = 'modular_bluemoon/fluffs/sound/weapon/SAR_reload.ogg'
+	SFX_GUN_BOLT_LOCK = 'modular_bluemoon/fluffs/sound/weapon/SAR_Bolt.ogg'
+	SFX_GUN_REMOVE_MAGAZINE = 'modular_bluemoon/fluffs/sound/weapon/SAR_unload.ogg'
+	SFX_GUN_REMOVE_EMPTY_MAGAZIN = 'modular_bluemoon/fluffs/sound/weapon/SAR_unload.ogg'
+	SFX_GUN_BOLT_UNLOCK = 'modular_bluemoon/fluffs/sound/weapon/SAR_Bolt_unlock.ogg'
+	flight_x_offset = 32
+	flight_y_offset = 14
+
+/obj/item/gun/ballistic/automatic/pistol/g22/anomalist/update_icon_state()
+	icon_state = "[initial(icon_state)][chambered ? "" : "-a"]"
+
+/obj/item/gun/ballistic/automatic/pistol/g22/anomalist/update_overlays()
+	. = ..()
+	if(magazine)
+		. += "SAR-Mag"
+
+/obj/item/gun/ballistic/automatic/pistol/g22/anomalist/get_examine_name(mob/user)
+	. = ..()
+	. += "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>["This is Head of Security G-22 M.1. Highrisk item!"]</span></span>"
+
+/obj/item/modkit/Gelriter_22
+	name = "Gelriter-22 kit"
+	desc = "A modkit for making an G-22 M.1 into a Gelriter-22 M-1."
+	product = /obj/item/gun/ballistic/automatic/pistol/g22/anomalist
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/g22)
+
+/obj/item/gun/energy/laser/captain/rifle/amogus
+	name = "Fancy Laser Rifle"
+	desc = "Expensive-looking, custom-made laser. To the touch: expensive polymers, combined with wood, coated in lacquer on the grip."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "captain_rifle_s"
+
+/obj/item/gun/energy/laser/captain/rifle/amogus/update_overlays()
+	. = ..()
+	if(!automatic_charge_overlays)
+		return
+	var/ratio = get_charge_ratio()
+	var/state = "captain_rifle"
+	if(ratio == 0)
+		state += "_empty"
+	else
+		state += "_charge[ratio]"
+	. += mutable_appearance(icon, state)
+
+/obj/item/modkit/fancy_rifle_kit
+	name = "Fancy Laser Rifle kit"
+	desc = "A modkit for making an antique laser gun into a fancy laser rifle."
+	product = /obj/item/gun/energy/laser/captain/rifle/amogus
+	fromitem = list(/obj/item/gun/energy/laser/captain)
