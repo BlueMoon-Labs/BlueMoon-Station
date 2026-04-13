@@ -761,3 +761,10 @@
 	icon_state = "2dc12f"
 	squeak_override = list('modular_bluemoon/sound/plush/rizz.ogg' = 1, 'modular_bluemoon/sound/plush/splort.ogg' = 1)
 	can_you_fuck_plush = TRUE //Я ещё пожалею об этом..
+
+/obj/item/toy/plush/bm/reijo
+	name = "Reijo plushie"
+	desc = "Плюшевая игрушка рыжего лиса с белым подбородком. Прическа достаточно пушистая и неряшливая, особенно выделяются большие ушки с розовыми внутренностями. Чуть ниже расположены глазки с гетерохромией, а сама плюшка одета в серую водолазку с джинсами. Сзади имеется подвижный хвостик с белым кончиком."
+	icon_state = "reijo"
+	can_you_fuck_plush = TRUE //Ебите как хотите...
+	squeak_override = list('sound/fox/Voice/fox_bark_1.ogg' = 1, 'sound/fox/Voice/fox_aaugh.ogg' = 1, 'sound/fox/Voice/fox_scream.ogg' = 1, 'sound/fox/Voice/fox_trill.ogg' = 1, 'sound/fox/Voice/fox_trill_2.ogg' = 1)

@@ -1007,7 +1007,7 @@
 	name = "Stun-Katana Kit"
 	desc = "A modkit for making a stunsword into a Stun-Katana."
 	product = /obj/item/melee/baton/stunkatana
-	fromitem = list(/obj/item/melee/baton)
+	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
 
 /obj/item/melee/baton/stunkatana
 	name = "\improper Stun-Katana"
