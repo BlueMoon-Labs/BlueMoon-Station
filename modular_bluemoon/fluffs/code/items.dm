@@ -131,7 +131,7 @@
 /obj/item/modkit/esabre_belt
 	name = "Cybersun Sabre Sheath Kit"
 	desc = "A modkit for making a sheaths into a cybersun sheath."
-	icon_state = "blueshield_helmet_kit"
+	icon_state = "syn_helmet_kit"
 	product = /obj/item/storage/belt/esabre_belt/fluff/real
 	fromitem = list(/obj/item/storage/belt/esabre_belt, /obj/item/storage/belt/sabre)
 
