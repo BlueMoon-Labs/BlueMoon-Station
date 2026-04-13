@@ -202,7 +202,7 @@
 	name = "Cybersun Sabre Sheath"
 	desc = "An ornate sheath designed to hold an Cybersun Officer's Blade. This one seems to be souvenir version."
 	fitting_swords = list(/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/toy)
-	starting_sword = /obj/item/melee/transforming/energy/sword/energy_sabre/fluff
+	starting_sword = /obj/item/melee/transforming/energy/sword/energy_sabre/fluff/toy
 
 /obj/item/storage/belt/esabre_belt/fluff/real
 	name = "Cybersun Sabre Sheath"
