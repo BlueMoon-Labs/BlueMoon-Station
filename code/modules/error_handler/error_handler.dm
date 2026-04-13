@@ -8,7 +8,7 @@ GLOBAL_VAR_INIT(total_runtimes_skipped, 0)
 	GLOB.total_runtimes++
 
 	if(!istype(E)) //Something threw an unusual exception
-		log_world("uncaught runtime error: [E]")
+		log_world("uncaught runtime error: [E] | isnull=[isnull(E)] istext=[istext(E)] isnum=[isnum(E)] islist=[islist(E)] e_src=[e_src] e_src_type=[e_src ? e_src.type : "null"]")
 		return ..()
 
 	//this is snowflake because of a byond bug (ID:2306577), do not attempt to call non-builtin procs in this if
