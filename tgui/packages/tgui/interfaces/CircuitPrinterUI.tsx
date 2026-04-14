@@ -296,8 +296,8 @@ const CircuitsGrid = (props: { circuits?: CircuitData[], big_desc? : BooleanLike
 
 export const ComponentsViewer = (props, context) => {
   const { act, data } = useBackend<IntegratedPrinterData>(context);
-  const [searchText, setSearchText] = useSharedState(context, 'searchText', "");
-  const [tabID, setTabID] = useSharedState(context, 'tabIndex', 0);
+  const [searchText, setSearchText] = useSharedState(context, 'searchPrinterText', "");
+  const [tabID, setTabID] = useSharedState(context, 'tabPrinterIndex', 0);
   const [fullComp, setCompMode] = useSharedState<boolean>(context, "setCompMode", false);
 
   const searchResults = HardSearch(data.categories, searchText);
