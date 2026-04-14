@@ -118,7 +118,7 @@
 	text = ""
 	for(var/item in items)
 		for (var/code in random_codes)
-			var/choosen = random_choose(code)
+			var/choosen = random_choose(code, choose_list)
 			choose_list.Add(choosen)
 			item = replacetextEx_char(item, "[code]\]", choosen)
 		text += item
@@ -127,11 +127,21 @@
 
 //выдача рандома, проверка на повторы
 /datum/ambition_objective/proc/random_choose(list_for_pick, list/choose_list)
-	if (list_for_pick == "random_crew")
-		if (GLOB.joined_player_list.len)
-			return get_mob_by_ckey(pick(GLOB.joined_player_list))
-		// Мы либо на локалке, либо этот игрок оказался единственным в раунде на момент ролла амбиции
-		return pick("Gandalf the Grey",
+	if(list_for_pick == "random_crew")
+		var/list/candidates = list()
+		for(var/mob/M in GLOB.player_list)
+			if(!M?.mind || QDELETED(M))
+				continue
+			if(isnewplayer(M))
+				continue
+			if(M.mind == owner)
+				continue
+			var/crew_name = M.real_name
+			if(!crew_name)
+				continue
+			candidates |= crew_name
+		if(!length(candidates))
+			return pick("Gandalf the Grey",
 		"Gandalf the White",
 		"Monty Python and the Holy Grail's Black Knight",
 		"Benito Mussolini",
@@ -151,15 +161,21 @@
 		"The Rock",
 		"Doc Ock",
 		"Hulk Hogan")
+		var/chosen = pick(candidates)
+		var/failsafe = 0
+		while(choose_list && (chosen in choose_list) && length(candidates) > 1 && failsafe < 20)
+			chosen = pick(candidates)
+			failsafe++
+		return chosen
 
 	var/picked = pick_list("ambitions/randoms.json", list_for_pick)
 
 	//избавляемся от повтора
 	var/failsafe = 0
-	while(picked in choose_list)
+	while(choose_list && (picked in choose_list))
 		picked = pick_list("ambitions/randoms.json", list_for_pick)
-		if (failsafe > 10)
-			break;
+		if(failsafe > 10)
+			break
 		failsafe++
 
 	return picked

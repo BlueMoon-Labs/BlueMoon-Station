@@ -3746,7 +3746,7 @@
 /turf/open/floor/plasteel,
 /area/centcom/supply)
 "arA" = (
-/obj/structure/table/reinforced,
+/obj/machinery/portable_atmospherics/canister/nitrogen,
 /turf/open/floor/plasteel/dark,
 /area/centcom/ferry)
 "arW" = (
@@ -7728,9 +7728,6 @@
 /obj/item/clothing/glasses/sunglasses/blindfold{
 	pixel_y = 4
 	},
-/obj/item/clothing/accessory/permit/special/deviant/lust/slavers,
-/obj/item/clothing/accessory/permit/special/deviant/lust/slavers,
-/obj/item/clothing/accessory/permit/special/deviant/lust/slavers,
 /turf/open/floor/plasteel/dark,
 /area/slavers)
 "aRi" = (
@@ -16823,9 +16820,6 @@
 /turf/open/floor/plasteel/dark,
 /area/centcom/supply)
 "iuv" = (
-/obj/vehicle/sealed/mecha/medical/odysseus/loaded{
-	req_access_txt = "109"
-	},
 /obj/effect/turf_decal/tile/dark_green/anticorner,
 /obj/machinery/light{
 	dir = 4;
@@ -16834,6 +16828,9 @@
 /obj/effect/turf_decal/bot/white,
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 1
+	},
+/obj/vehicle/sealed/mecha/combat/gygax/loaded{
+	req_access_txt = "109"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
@@ -20216,10 +20213,7 @@
 	},
 /area/centcom/holding)
 "lVB" = (
-/obj/effect/turf_decal/bot/yellow,
-/obj/machinery/cryopod{
-	dir = 8
-	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
 /turf/open/floor/plasteel/dark,
 /area/centcom/ferry)
 "lVP" = (
@@ -20454,7 +20448,10 @@
 /turf/open/floor/carpet/blackred/airless,
 /area/centcom/control)
 "mfZ" = (
-/obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares,
+/obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares{
+	internals_req_access = list();
+	operation_req_access = list()
+	},
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
@@ -21696,9 +21693,7 @@
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 1
 	},
-/obj/vehicle/sealed/mecha/combat/marauder/loaded{
-	req_access_txt = "109"
-	},
+/obj/vehicle/sealed/mecha/combat/marauder/seraph,
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
 "nGO" = (
@@ -21717,6 +21712,7 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
+/obj/effect/landmark/ert_spawn,
 /turf/open/floor/plasteel/dark,
 /area/centcom/ferry)
 "nId" = (
@@ -22490,9 +22486,6 @@
 /area/syndicate_mothership)
 "oCA" = (
 /obj/structure/table/reinforced,
-/obj/item/storage/firstaid/tactical/ert_first,
-/obj/item/storage/firstaid/tactical/ert_first,
-/obj/item/storage/firstaid/tactical/ert_first,
 /obj/item/storage/firstaid/tactical/ert_first,
 /obj/item/storage/firstaid/tactical/ert_first,
 /turf/open/floor/plasteel/dark,
@@ -25300,9 +25293,6 @@
 /turf/open/floor/wood/wood_parquet,
 /area/syndicate_mothership/control)
 "rnI" = (
-/obj/vehicle/sealed/mecha/combat/gygax/loaded{
-	req_access_txt = "109"
-	},
 /obj/effect/turf_decal/tile/dark_blue/anticorner{
 	dir = 2
 	},
@@ -25313,6 +25303,9 @@
 /obj/effect/turf_decal/bot/blue,
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 1
+	},
+/obj/vehicle/sealed/mecha/combat/durand/loaded{
+	req_access_txt = "109"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
@@ -26139,6 +26132,14 @@
 /obj/machinery/light/warm/directional/east,
 /turf/open/floor/plasteel/white,
 /area/centcom/holding)
+"rZF" = (
+/obj/machinery/light{
+	dir = 4;
+	light_color = "#c1caff"
+	},
+/obj/effect/landmark/ert_spawn,
+/turf/open/floor/plasteel/dark,
+/area/centcom/ferry)
 "rZO" = (
 /obj/machinery/autolathe/hacked,
 /obj/effect/turf_decal/box/white,
@@ -26189,9 +26190,6 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
 "sei" = (
-/obj/vehicle/sealed/mecha/combat/durand/loaded{
-	req_access_txt = "109"
-	},
 /obj/effect/turf_decal/tile/brown/anticorner,
 /obj/machinery/light{
 	dir = 4;
@@ -26200,6 +26198,9 @@
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 1
+	},
+/obj/vehicle/sealed/mecha/combat/marauder/loaded{
+	req_access_txt = "109"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
@@ -28778,9 +28779,6 @@
 /area/centcom/control)
 "uHF" = (
 /obj/structure/table/reinforced,
-/obj/item/storage/firstaid/tactical/ert_second,
-/obj/item/storage/firstaid/tactical/ert_second,
-/obj/item/storage/firstaid/tactical/ert_second,
 /obj/item/storage/firstaid/tactical/ert_second,
 /obj/item/storage/firstaid/tactical/ert_second,
 /turf/open/floor/plasteel/dark,
@@ -71157,7 +71155,7 @@ aql
 aql
 aql
 aql
-xMn
+anU
 oCA
 nuf
 alI
@@ -71667,12 +71665,12 @@ bID
 xMn
 xMn
 xMn
-anU
-anU
-anU
-anU
 xMn
-arA
+xMn
+xMn
+xMn
+xMn
+lVB
 nuf
 alI
 aaa
@@ -71922,13 +71920,13 @@ lMO
 nuf
 ePn
 sZJ
+anU
 xMn
+anU
 xMn
-lVB
-lVB
-lVB
-lVB
-azF
+anU
+xMn
+rZF
 arA
 nuf
 alI

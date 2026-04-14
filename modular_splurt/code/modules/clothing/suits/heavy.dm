@@ -85,6 +85,11 @@
 	max_heat_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
 	cold_protection = CHEST|GROIN|LEGS|ARMS
 	min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
+	unique_reskin = list(
+		"Monolith" = list("icon_state" = "moppsuitaltm"),
+		"Duty" = list("icon_state" = "moppsuitaltd"),
+		"Volya" = list("icon_state" = "moppsuitaltv")
+	)
 
 /obj/item/clothing/suit/cbrn/mopp/advance
 	name = "advance MOPP suit"

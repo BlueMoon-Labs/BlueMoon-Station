@@ -163,3 +163,85 @@
 	build_path = /obj/item/ai_module/core/full/gentleman
 	category = list("AI Modules")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/maintain_module
+	name = "Core Module Design (Maintain)"
+	desc = "Allows for the construction of a Station Efficiency AI Core Module."
+	id = "maintain_module"
+	materials = list(/datum/material/glass = 1000, /datum/material/diamond = 2000)
+	build_path = /obj/item/ai_module/core/full/maintain
+	category = list("AI Modules")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/asimovpp_module
+	name = "Core Module Design (Asimov++)"
+	desc = "Allows for the construction of an Asimov++ AI Core Module."
+	id = "asimovpp_module"
+	materials = list(/datum/material/glass = 1000, /datum/material/diamond = 2000)
+	build_path = /obj/item/ai_module/core/full/asimovpp
+	category = list("AI Modules")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/robocop_module
+	name = "Core Module Design (Robocop)"
+	desc = "Allows for the construction of a Robocop AI Core Module."
+	id = "robocop_module"
+	materials = list(/datum/material/glass = 1000, /datum/material/diamond = 2000)
+	build_path = /obj/item/ai_module/core/full/robocop
+	min_security_level = SEC_LEVEL_AMBER
+	category = list("AI Modules")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/drone_module
+	name = "Core Module Design (Mother Drone)"
+	desc = "Allows for the construction of a Mother Drone AI Core Module."
+	id = "drone_module"
+	materials = list(/datum/material/glass = 1000, /datum/material/diamond = 2000)
+	build_path = /obj/item/ai_module/core/full/drone
+	category = list("AI Modules")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/hippocratic_module
+	name = "Core Module Design (Hippocrates)"
+	desc = "Allows for the construction of a Hippocratic AI Core Module."
+	id = "hippocratic_module"
+	materials = list(/datum/material/glass = 1000, /datum/material/diamond = 2000)
+	build_path = /obj/item/ai_module/core/full/hippocratic
+	category = list("AI Modules")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/reporter_module
+	name = "Core Module Design (CCTV Reporter)"
+	desc = "Allows for the construction of a CCTV Reporter AI Core Module."
+	id = "reporter_module"
+	materials = list(/datum/material/glass = 1000, /datum/material/diamond = 2000)
+	build_path = /obj/item/ai_module/core/full/reporter
+	category = list("AI Modules")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/liveandletlive_module
+	name = "Core Module Design (Live and Let Live)"
+	desc = "Allows for the construction of a Live and Let Live AI Core Module."
+	id = "liveandletlive_module"
+	materials = list(/datum/material/glass = 1000, /datum/material/diamond = 2000)
+	build_path = /obj/item/ai_module/core/full/liveandletlive
+	category = list("AI Modules")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/balance_module
+	name = "Core Module Design (Guardian of Balance)"
+	desc = "Allows for the construction of a Guardian of Balance AI Core Module."
+	id = "balance_module"
+	materials = list(/datum/material/glass = 1000, /datum/material/diamond = 2000)
+	build_path = /obj/item/ai_module/core/full/balance
+	category = list("AI Modules")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/hulkamania_module
+	name = "Core Module Design (H.O.G.A.N.)"
+	desc = "Allows for the construction of a H.O.G.A.N. AI Core Module."
+	id = "hulkamania_module"
+	materials = list(/datum/material/glass = 1000, /datum/material/diamond = 2000)
+	build_path = /obj/item/ai_module/core/full/hulkamania
+	category = list("AI Modules")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE

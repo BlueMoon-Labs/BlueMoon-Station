@@ -84,6 +84,7 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/toggle_AI_interact, /*toggle admin ability to interact with machines as an AI*/
 	/datum/admins/proc/open_shuttlepanel, /* Opens shuttle manipulator UI */
 	/datum/admins/proc/station_traits_panel, /* Opens station traits UI */
+	/client/proc/cmd_admin_set_birthday_person, /* Set birthday person for the birthday station trait */
 	/client/proc/deadchat,
 	/client/proc/toggleprayers,
 	// /client/proc/toggle_prayer_sound,
@@ -144,7 +145,7 @@ GLOBAL_LIST_INIT(admin_verbs_fun, list(
 	/client/proc/bm_admin_reload_lobby_html,	//BLUEMOON LOBBY
 	))
 GLOBAL_PROTECT(admin_verbs_fun)
-GLOBAL_LIST_INIT(admin_verbs_spawn, list(/datum/admins/proc/spawn_atom, /datum/admins/proc/podspawn_atom, /datum/admins/proc/spawn_cargo, /datum/admins/proc/spawn_objasmob, /client/proc/respawn_character))
+GLOBAL_LIST_INIT(admin_verbs_spawn, list(/datum/admins/proc/spawn_atom, /datum/admins/proc/podspawn_atom, /datum/admins/proc/spawn_cargo, /datum/admins/proc/spawn_objasmob, /client/proc/respawn_character, /client/proc/spawn_panel_verb))
 GLOBAL_PROTECT(admin_verbs_spawn)
 GLOBAL_LIST_INIT(admin_verbs_sensitive, list(
 	/client/proc/investigate_show		/*various admintools for investigation. Such as a singulo grief-log*/
@@ -456,9 +457,15 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 	if(holder && mob)
 		if(mob.invisibility == INVISIBILITY_OBSERVER)
 			mob.invisibility = initial(mob.invisibility)
+			if(isliving(mob))
+				var/mob/living/L = mob
+				L.update_invisimin_data_huds(FALSE)
 			to_chat(mob, "<span class='boldannounce'>Invisimin off. Invisibility reset.</span>", confidential = TRUE)
 		else
 			mob.invisibility = INVISIBILITY_OBSERVER
+			if(isliving(mob))
+				var/mob/living/L = mob
+				L.update_invisimin_data_huds(TRUE)
 			to_chat(mob, "<span class='adminnotice'><b>Invisimin on. You are now as invisible as a ghost.</b></span>", confidential = TRUE)
 
 /client/proc/check_antagonists()
@@ -497,6 +504,16 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 	if(holder)
 		holder.Game()
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Game Panel") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
+/client/proc/spawn_panel_verb()
+	set name = "Spawn Panel"
+	set category = "Admin.Game"
+	if(!check_rights(R_SPAWN))
+		return
+	if(!holder.spawn_panel_instance)
+		holder.spawn_panel_instance = new /datum/spawnpanel(mob)
+	holder.spawn_panel_instance.ui_interact(mob)
+	SSblackbox.record_feedback("tally", "admin_verb", 1, "Spawn Panel")
 
 // /client/proc/poll_panel()
 // 	set name = "Server Poll Management"

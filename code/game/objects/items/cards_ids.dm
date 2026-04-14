@@ -252,6 +252,13 @@
 		card_sticker.wrap(src, user)
 		return
 	//BLUEMOON ADD END
+	//BLUEMOON ADD метадоллары → лобби-счёт (не станционный банк)
+	if(istype(W, /obj/item/stack/metadollar))
+		var/obj/item/stack/metadollar/M = W
+		if(M.deposit_to_lobby_prefs(user, src))
+			playsound(src, 'sound/machines/terminal_success.ogg', 15, 1)
+		return
+	//BLUEMOON ADD END
 
 	if(!bank_support)
 		return ..()

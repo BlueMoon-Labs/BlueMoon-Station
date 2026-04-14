@@ -6240,7 +6240,7 @@
 /turf/open/floor/carpet,
 /area/security/detectives_office)
 "apg" = (
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/requests_console{
@@ -7928,7 +7928,7 @@
 /turf/open/floor/plasteel/white,
 /area/security/brig)
 "asW" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /turf/open/floor/carpet,
@@ -19719,7 +19719,7 @@
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/rd)
 "aWg" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/purple{
@@ -29859,7 +29859,7 @@
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/rd)
 "bvY" = (
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/machinery/light{
@@ -36005,7 +36005,7 @@
 	pixel_x = -6;
 	pixel_y = 24
 	},
-/obj/machinery/computer/card/minor/qm,
+/obj/machinery/modular_computer/console/preset/id,
 /turf/open/floor/wood,
 /area/cargo/qm)
 "bJe" = (

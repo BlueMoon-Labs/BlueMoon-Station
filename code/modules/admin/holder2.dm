@@ -33,6 +33,9 @@ GLOBAL_PROTECT(href_token)
 	/// A lazylist of tagged datums, for quick reference with the View Tags verb
 	var/list/tagged_datums
 
+	/// Cached spawn panel datum; created on first use
+	var/datum/spawnpanel/spawn_panel_instance
+
 /datum/admins/CanProcCall(procname)
 	. = ..()
 	if(!check_rights(R_SENSITIVE))
@@ -72,6 +75,7 @@ GLOBAL_PROTECT(href_token)
 	if(IsAdminAdvancedProcCall())
 		alert_to_permissions_elevation_attempt(usr)
 		return QDEL_HINT_LETMELIVE
+	QDEL_NULL(spawn_panel_instance)
 	. = ..()
 
 /datum/admins/proc/activate()

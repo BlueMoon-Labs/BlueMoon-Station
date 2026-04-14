@@ -2185,15 +2185,16 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	if(!totitemdamage)
 		return FALSE //item force is zero
 
+	// Humans use species_attacked_by instead of /carbon/attacked_by — still need TG-style spray/trails from attack_effects.
+	if(I.damtype == BRUTE && I.force)
+		H.attack_effects(totitemdamage * weakness, def_zone, I, user)
+
 	var/bloody = 0
 	if(((I.damtype == BRUTE) && I.force && prob(25 + (I.force * 2))))
 		if(affecting.is_organic_limb(FALSE))
 			I.add_mob_blood(H)	//Make the weapon bloody, not the person.
 			if(prob(I.force * 2))	//blood spatter!
 				bloody = 1
-				var/turf/location = H.loc
-				if(istype(location))
-					H.add_splatter_floor(location)
 				if(get_dist(user, H) <= 1)	//people with TK won't get smeared with blood
 					user.add_mob_blood(H)
 

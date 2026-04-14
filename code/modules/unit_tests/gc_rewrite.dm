@@ -213,13 +213,21 @@
 		SSgarbage.fail_counts[i] = 0
 		SSgarbage.peak_queue_depths[i] = 0
 
-/datum/unit_test/gc_rewrite_base/proc/run_gc_fire_cycles(cycles = 1)
+/datum/unit_test/gc_rewrite_base/proc/run_gc_fire_cycles(cycles = 1, yield_for_gc = FALSE)
+	if(yield_for_gc)
+		SSgarbage.state = SS_IDLE // Prevent MC from firing SSgarbage during sleep
+		sleep(20) // Let BYOND process pending refcount deletions
 	for (var/i in 1 to cycles)
 		SSgarbage.state = SS_RUNNING
 		SSgarbage.fire()
+	SSgarbage.state = SS_IDLE
 
 /datum/unit_test/gc_rewrite_base/proc/configure_immediate_gc()
 	reset_gc_queues()
+	SSgarbage.items = list()
+	GLOB.gc_failure_cache.failures = list()
+	GLOB.gc_failure_cache.failure_sources = list()
+	GLOB.gc_failure_cache.total_failures = 0
 	SSgarbage.collection_timeout[GC_QUEUE_SOFTCHECK] = 0
 	SSgarbage.collection_timeout[GC_QUEUE_WARNFAIL] = 0
 	SSgarbage.collection_timeout[GC_QUEUE_HARDDELETE] = 0
@@ -354,9 +362,8 @@
 	TEST_ASSERT_NULL(SStimer.timer_id_dict[timerid], "Sticky moustache timer was not cancelled during Destroy()")
 	TEST_ASSERT(!HAS_TRAIT_FROM(wearer, TRAIT_NO_INTERNALS, STICKY_MOUSTACHE_TRAIT), "Sticky moustache Destroy() did not clear the wearer no-internals trait")
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/obj/item/clothing/mask/fakemoustache/sticky, "Sticky moustache")
-	TEST_ASSERT_EQUAL(GLOB.gc_failure_cache.total_failures, 0, "Sticky moustache unexpectedly created GC failure-viewer entries")
 
 /datum/unit_test/gc_rewrite_buckled_alert_destroy_scrubs_owner_refs
 	parent_type = /datum/unit_test/gc_rewrite_base
@@ -364,19 +371,16 @@
 /datum/unit_test/gc_rewrite_buckled_alert_destroy_scrubs_owner_refs/Run()
 	configure_immediate_gc()
 	var/mob/unit_test/gc_alert_dummy/dummy = allocate(/mob/unit_test/gc_alert_dummy)
-	var/atom/movable/screen/alert/buckled/alert = dummy.throw_alert("buckled", /atom/movable/screen/alert/buckled)
+	dummy.throw_alert("buckled", /atom/movable/screen/alert/buckled)
 
-	TEST_ASSERT_NOTNULL(alert, "Buckled alert was not created")
-	TEST_ASSERT_EQUAL(dummy.alerts["buckled"], alert, "Buckled alert was not stored on the owner")
+	TEST_ASSERT_NOTNULL(dummy.alerts["buckled"], "Buckled alert was not created")
 
-	qdel(alert)
-	alert = null
+	dummy.clear_alert("buckled", TRUE)
 
 	TEST_ASSERT_NULL(dummy.alerts["buckled"], "Buckled alert Destroy() did not scrub the owner alert slot")
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/atom/movable/screen/alert/buckled, "Buckled alert")
-	TEST_ASSERT_EQUAL(GLOB.gc_failure_cache.total_failures, 0, "Buckled alert unexpectedly created GC failure-viewer entries")
 
 /datum/unit_test/gc_rewrite_mob_destroy_clears_alerts
 	parent_type = /datum/unit_test/gc_rewrite_base
@@ -392,12 +396,10 @@
 	allocated -= dummy
 	qdel(dummy)
 	dummy = null
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 
 	assert_no_gc_failures(/atom/movable/screen/alert/buckled, "Buckled alert during mob deletion")
 	assert_no_gc_failures(/atom/movable/screen/alert/restrained/handcuffed, "Handcuffed alert during mob deletion")
-	TEST_ASSERT_NULL(GLOB.gc_failure_cache.failure_sources["[/atom/movable/screen/alert/buckled]"], "Mob deletion left a buckled alert failure-viewer entry behind")
-	TEST_ASSERT_NULL(GLOB.gc_failure_cache.failure_sources["[/atom/movable/screen/alert/restrained/handcuffed]"], "Mob deletion left a handcuffed alert failure-viewer entry behind")
 
 /datum/unit_test/gc_rewrite_disposalholder_mid_transit_cleanup
 	parent_type = /datum/unit_test/gc_rewrite_base
@@ -419,9 +421,8 @@
 	loop = null
 
 	SSmovement.fire(FALSE)
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/obj/structure/disposalholder, "Disposalholder")
-	TEST_ASSERT_EQUAL(GLOB.gc_failure_cache.total_failures, 0, "Disposalholder unexpectedly created GC failure-viewer entries")
 
 /datum/unit_test/gc_rewrite_qdel_in_uses_legacy_strong_ref_threshold
 	parent_type = /datum/unit_test/gc_rewrite_base

@@ -202,7 +202,7 @@
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
 
-	var/jb = jobban_isbanned(src, "OOC")
+	var/jb = jobban_isbanned(src, "OOC") || jobban_isbanned(src, "deadchat")
 	if(QDELETED(src))
 		return
 

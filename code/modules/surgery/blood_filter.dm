@@ -51,7 +51,7 @@
 		return TRUE
 
 	for(var/datum/reagent/chem in target.reagents.reagent_list)
-		if(chem.type in bloodfilter.whitelist)
+		if(!(chem.type in bloodfilter.whitelist))
 			return TRUE
 
 	return FALSE
@@ -60,15 +60,23 @@
 	name = "Фильтруйте кровь"
 	implements = list(TOOL_BLOODFILTER = 95)
 	repeatable = TRUE
-	time = 2.5 SECONDS
+	time = 1.5 SECONDS
 	success_sound = 'sound/machines/card_slide.ogg'
+	var/filter_amount = 15
+	var/tox_heal_amount = 5
+	var/missingtoxbonus = 15
 
 /datum/surgery_step/filter_blood/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery, default_display_results = FALSE)
 	var/obj/item/blood_filter/bloodfilter = tool
+	var/actual_filter = filter_amount
+	if(missingtoxbonus && iscarbon(target))
+		actual_filter += round(target.getToxLoss() / missingtoxbonus, 0.1)
 	if(target.reagents?.total_volume)
 		for(var/datum/reagent/chem in target.reagents.reagent_list)
 			if(!length(bloodfilter.whitelist) || !(chem.type in bloodfilter.whitelist))
-				target.reagents.remove_reagent(chem.type, 10, TRUE)
+				target.reagents.remove_reagent(chem.type, actual_filter, TRUE)
+	if(tox_heal_amount)
+		target.adjustToxLoss(-tox_heal_amount)
 	display_results(
 		user,
 		target,
@@ -76,7 +84,8 @@
 		span_notice("\The [tool] шумит пока фильрует кровь [target]."),
 		span_notice("Из [tool] слышен звук работающей помпы."),
 	)
-
+	if(iscarbon(target))
+		user.balloon_alert(user, "<span style='color:#44ff44'>[round(target.getToxLoss())]</span>")
 	if(locate(/obj/item/healthanalyzer) in user.held_items)
 		chemscan(user, target)
 

@@ -108,6 +108,8 @@
 	var/datum/ai_announcement/ai_announcement
 	/// Lists possible spoken words for announcements
 	var/datum/announcement_help/announcement_help
+	/// Saved AI eye locations for quick camera recall.
+	var/list/turf/saved_camera_positions = list()
 	///remember AI's last location
 	var/atom/lastloc
 	interaction_range = INFINITY
@@ -237,36 +239,73 @@
 	fire_stacks = 0
 	. = ..()
 
+// MARK: Core Display Icon
+// (C)Pe4henika | Встроена возможность выбора донатных/приватных дисплейчиков
 /mob/living/silicon/ai/proc/set_core_display_icon(input, client/C)
-	set waitfor = FALSE
-	if(client && !C)
-		C = client
-	if(!input && !C?.prefs?.preferred_ai_core_display)
-		icon_state = initial(icon_state)
-	else
-		var/preferred_icon = input ? input : C.prefs.preferred_ai_core_display
-		icon_state = resolve_ai_icon(preferred_icon)
+    set waitfor = FALSE
+    if(client && !C)
+        C = client
+    if(!input && !C?.prefs?.preferred_ai_core_display)
+        icon_state = initial(icon_state)
+        icon = initial(icon)
+    else
+        var/preferred_icon = input ? input : C.prefs.preferred_ai_core_display
 
+        var/donor_found = FALSE
+        if(C)
+            for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+                if(donor_screen.name == preferred_icon && (C.ckey in donor_screen.ckey_whitelist))
+                    icon = donor_screen.icon
+                    icon_state = (src.stat == DEAD) ? donor_screen.icon_state_dead : donor_screen.icon_state
+                    donor_found = TRUE
+                    break
+
+        if(!donor_found)
+            icon = initial(icon)
+            icon_state = resolve_ai_icon(preferred_icon, C = C, dead = (src.stat == DEAD))
 /mob/living/silicon/ai/verb/pick_icon()
-	set category = "AI Commands"
-	set name = "Set AI Core Display"
-	if(incapacitated())
-		return
-	var/list/iconstates = GLOB.ai_core_display_screens
-	for(var/option in iconstates)
-		if(option == "Random")
-			iconstates[option] = image(icon = src.icon, icon_state = "ai-random")
-			continue
-		iconstates[option] = image(icon = src.icon, icon_state = resolve_ai_icon(option, radial_preview = TRUE))
+    set category = "AI Commands"
+    set name = "Set AI Core Display"
+    if(incapacitated())
+        return
 
-	view_core()
-	var/ai_core_icon = show_radial_menu(src, src , iconstates, radius = 42)
+    var/list/iconstates = GLOB.ai_core_display_screens.Copy()
 
-	if(!ai_core_icon || incapacitated())
-		return
+    var/client/C = client
+    if(C)
+        for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+            if(C.ckey in donor_screen.ckey_whitelist)
+                iconstates += donor_screen.name
 
-	display_icon_override = ai_core_icon
-	set_core_display_icon(ai_core_icon)
+    var/list/icon_images = list()
+    for(var/option in iconstates)
+        if(option == "Random")
+            icon_images[option] = image(icon = src.icon, icon_state = "ai-random")
+            continue
+
+        var/donor_icon = null
+        var/donor_icon_state = null
+        if(C)
+            for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+                if(donor_screen.name == option && (C.ckey in donor_screen.ckey_whitelist))
+                    donor_icon = donor_screen.icon
+                    donor_icon_state = donor_screen.icon_state
+                    break
+
+        if(donor_icon)
+            icon_images[option] = image(icon = donor_icon, icon_state = donor_icon_state)
+        else
+            icon_images[option] = image(icon = src.icon, icon_state = resolve_ai_icon(option, radial_preview = TRUE))
+
+    view_core()
+    var/ai_core_icon = show_radial_menu(src, src, icon_images, radius = 42)
+
+    if(!ai_core_icon || incapacitated())
+        return
+
+    display_icon_override = ai_core_icon
+    set_core_display_icon(ai_core_icon)
+// --
 
 // (ADD) Pe4henika Bluemonn -- start
 // MARK: Status Tab
@@ -534,6 +573,46 @@
 		call_bot(turf_check)
 	else
 		to_chat(src, span_danger("Selected location is not visible."))
+
+/mob/living/silicon/ai/proc/ensure_saved_camera_position_slots()
+	LAZYINITLIST(saved_camera_positions)
+	if(saved_camera_positions.len < 9)
+		saved_camera_positions.len = 9
+
+/mob/living/silicon/ai/proc/save_camera_position(slot)
+	if(!isnum(slot) || slot < 1 || slot > 9)
+		return FALSE
+	ensure_saved_camera_position_slots()
+	if(QDELETED(eyeobj) || !eyeobj)
+		create_eye()
+	if(QDELETED(eyeobj) || !eyeobj)
+		return FALSE
+
+	var/turf/current_turf = get_turf(eyeobj)
+	if(!current_turf)
+		to_chat(src, "<span class='warning'>Failed to save camera position.</span>")
+		return FALSE
+
+	saved_camera_positions[slot] = current_turf
+	to_chat(src, "<span class='notice'>Saved camera position #[slot]: [get_area_name(current_turf, TRUE)].</span>")
+	return TRUE
+
+/mob/living/silicon/ai/proc/restore_camera_position(slot)
+	if(!isnum(slot) || slot < 1 || slot > 9)
+		return FALSE
+	ensure_saved_camera_position_slots()
+	if(QDELETED(eyeobj) || !eyeobj)
+		create_eye()
+	if(QDELETED(eyeobj) || !eyeobj)
+		return FALSE
+
+	var/turf/saved_turf = saved_camera_positions[slot]
+	if(!saved_turf)
+		to_chat(src, "<span class='warning'>No camera position has been saved in slot #[slot] yet.</span>")
+		return FALSE
+
+	eyeobj.setLoc(saved_turf, TRUE)
+	return TRUE
 
 /mob/living/silicon/ai/proc/call_bot(turf/waypoint)
 	var/mob/living/simple_animal/bot/bot = bot_ref.resolve()
@@ -936,6 +1015,23 @@
 		create_chat_message(speaker, message_language, raw_message, spans, message_mode)
 	show_message(rendered, MSG_AUDIBLE)
 
+// MARK: Relay_emote
+// (C) Pe4henika | Возможность видеть эмоуты через камеры для ИИ
+/mob/living/silicon/ai/proc/relay_emote(mob/living/speaker, emote_message)
+    if(!client)
+        return
+    var/namepart = "[speaker.GetVoice()][speaker.get_alt_name()]"
+    var/hrefpart = "<a href='?src=[REF(src)];track=[html_encode(namepart)]'>"
+    var/jobpart = "Unknown"
+
+    if(iscarbon(speaker))
+        var/mob/living/carbon/S = speaker
+        if(S.job)
+            jobpart = "[S.job]"
+
+    var/rendered = "<i><span class='game say'>Relayed Emote: <span class='name'>[hrefpart][namepart] ([jobpart])</a> </span><span class='message'>[emote_message]</span></span></i>"
+    show_message(rendered, MSG_VISUAL)
+// --
 /mob/living/silicon/ai/fully_replace_character_name(oldname,newname)
 	..()
 	if(oldname != real_name)

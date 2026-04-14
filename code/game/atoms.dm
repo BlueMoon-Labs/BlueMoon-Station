@@ -315,6 +315,7 @@
 		LAZYREMOVE(M.do_afters, src)
 	targeted_by = null
 
+	GLOB.lighting_deferred_atoms -= src
 	QDEL_NULL(light)
 
 	return ..()
@@ -597,7 +598,6 @@
 	if(desc)
 		. += desc
 
-	. += "<hr>"
 	if(custom_materials)
 		var/list/materials_list = list()
 		for(var/i in custom_materials)
@@ -605,8 +605,8 @@
 			materials_list += material_to_ru_genitive(M.name)
 		. += "<u>Сделано из [english_list(materials_list)]</u>."
 	if(reagents)
-		. += "<hr>"
 		if(reagents.reagents_holder_flags & TRANSPARENT)
+			. += "<hr>"
 			. += "<b>Внутри находится:</b>"
 			if(length(reagents.reagent_list))
 				if(user.can_see_reagents()) //Show each individual reagent
@@ -633,7 +633,7 @@
 				. += "[R.volume] u [R.name]"
 			. += span_engradio("Температура: [round(reagents.chem_temp, 1)] K ([round(reagents.chem_temp-T0C, 1)] &deg;C)")
 			. += span_radio("pH: [round(reagents.pH, 0.01)]")
-			. += "<hr>"
+		. += "<hr>"
 
 	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, .)
 

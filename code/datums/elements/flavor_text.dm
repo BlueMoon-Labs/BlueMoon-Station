@@ -161,10 +161,56 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 	else if(issilicon(src))
 		if(!src.mind)
 			return
+		changeable_texts.Add("Хедшоты")
 		changeable_texts.Add("Синтетический флавор")
 
 	var/chosen = tgui_input_list(src, "Выберите параметр, который должен быть изменён. Изменения действуют только в течении раунда и не затрагивают сами преференсы. Если вам нужно ввести многострочный текст с ENTER-ами, то лучше введите его вне игры и скопируйте сюда.", "Управление флавор-текстами", changeable_texts, changeable_texts[1])
 	if(!chosen)
+		return
+	if(issilicon(src) && chosen == "Хедшоты")
+		var/mob/living/silicon/our_borgy = src
+		var/list/headshots = our_borgy.mind?.headshot_links
+		if(!headshots)
+			return
+		var/chosen_headshot_id = tgui_input_list(our_borgy, "Выберите номер хедшота, который хотите изменить.", "Управление флавор-текстами", list("1", "2", "3"), "1")
+		if(!chosen_headshot_id || !isnum(text2num(chosen_headshot_id)))
+			return
+		chosen_headshot_id = text2num(chosen_headshot_id)
+		var/has_headshot_id = chosen_headshot_id <= headshots.len
+		var/usr_input = tgui_input_text(our_borgy, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg')", "Headshot Image", has_headshot_id ? headshots[chosen_headshot_id] : "", 100, FALSE, FALSE)
+		if(isnull(usr_input))
+			return
+
+		if(!usr_input && has_headshot_id)
+			headshots[chosen_headshot_id] = null
+			listclearnulls(headshots)
+			our_borgy.mind.headshot_links = headshots.Copy()
+			return
+
+		var/static/link_regex = regex("^(https://i\\.gyazo\\.com|https://static1\\.e621\\.net|https://i\\.ibb\\.co/)")
+		var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg)$")
+
+		if(!findtext(usr_input, link_regex))
+			to_chat(our_borgy, span_warning("The link needs to be an unshortened Gyazo, iBB, E621 link!"))
+			return
+
+		if(!findtext(usr_input, end_regex))
+			to_chat(our_borgy, span_warning("You need either \".png\", \".jpg\", or \".jpeg\" in the end of the link!"))
+			return
+
+		var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")
+		var/new_link = sanitize(usr_input, repl_chars)
+		if(has_headshot_id && headshots[chosen_headshot_id] == new_link)
+			return
+
+		to_chat(our_borgy, span_notice("Если картинка не отображается в игре должным образом, убедитесь, что это прямая ссылка на изображение, которая правильно открывается в обычном браузере."))
+		to_chat(our_borgy, span_notice("Имейте в виду, что размер фотографии будет уменьшен до 256x256 пикселей, поэтому чем квадратнее фотография, тем лучше она будет выглядеть."))
+
+		if(has_headshot_id)
+			headshots[chosen_headshot_id] = new_link
+		else
+			LAZYADD(headshots, new_link)
+		our_borgy.mind.headshot_links = headshots.Copy()
 		return
 	switch(chosen)
 		if("Флавор")
@@ -201,6 +247,7 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 				return
 			chosen_headshot_id = text2num(chosen_headshot_id)
 			var/list/headshots = chosen == "Хедшоты без одежды" ? our_mob.dna.headshot_naked_links : our_mob.dna.headshot_links
+			var/is_naked_headshot = chosen == "Хедшоты без одежды"
 			var/has_headshot_id = chosen_headshot_id <= headshots.len
 			var/usr_input = tgui_input_text(our_mob, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg')", "Headshot Image", has_headshot_id ? headshots[chosen_headshot_id] : "", 100, FALSE, FALSE)
 			if(isnull(usr_input))
@@ -209,6 +256,11 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 			if(!usr_input && has_headshot_id)
 				headshots[chosen_headshot_id] = null
 				listclearnulls(headshots)
+				if(our_mob.mind)
+					if(is_naked_headshot)
+						our_mob.mind.headshot_naked_links = headshots.Copy()
+					else
+						our_mob.mind.headshot_links = headshots.Copy()
 				return
 
 			var/static/link_regex = regex("^(https://i\\.gyazo\\.com|https://static1\\.e621\\.net|https://i\\.ibb\\.co/)")
@@ -234,6 +286,11 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 				headshots[chosen_headshot_id] = new_link
 			else
 				LAZYADD(headshots, new_link)
+			if(our_mob.mind)
+				if(is_naked_headshot)
+					our_mob.mind.headshot_naked_links = headshots.Copy()
+				else
+					our_mob.mind.headshot_links = headshots.Copy()
 		if("Временный Флавор (Поза)")
 			var/mob/living/our_mob = src
 			var/new_text = tgui_input_text(our_mob, "Введите новую позу своего персонажа (максимум 1024 символа).", "Новая поза", our_mob.tempflavor, 1024, TRUE, TRUE)

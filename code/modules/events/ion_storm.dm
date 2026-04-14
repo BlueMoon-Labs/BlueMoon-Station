@@ -3,8 +3,8 @@
 /datum/round_event_control/ion_storm
 	name = "Ion Storm"
 	typepath = /datum/round_event/ion_storm
-	weight = 65
-	min_players = 2
+	weight = 25
+	min_players = 15
 	category = EVENT_CATEGORY_AI
 	description = "Gives the AI a new, randomized law."
 

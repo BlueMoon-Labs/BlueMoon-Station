@@ -596,12 +596,37 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	//chosen_icon = 'icons/mob/clothing/back.dmi'
 	icon_state = "KS-23M"
-	can_suppress = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/shoot.ogg'
 
 /obj/item/gun/ballistic/shotgun/riot/ks_22/update_icon_state()
 	. = ..()
 	icon_state = "KS-23M[chambered ? "" : "-e"]"
+
+/obj/item/modkit/mossberg_kit
+	name = "Mossberg-590A Shotgun Kit"
+	desc = "A modkit for making a Shotgun into a Mossberg-590A."
+	product = /obj/item/gun/ballistic/shotgun/riot/mossberg
+	fromitem = list(/obj/item/gun/ballistic/shotgun, /obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/shotgun/riot/syndicate)
+
+/obj/item/gun/ballistic/shotgun/riot/mossberg
+	name = "\improper Mossberg-590A"
+	desc = "Карабин Моссберг-590А - ружьё с нарезным стволом. Имеет умную РГБ подсветку, дабы каждый враг понимал, какая участь его сейчас настигнет."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	icon_state = "mossberg_n"
+	item_state = "mossberg_n"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/pf940_shoot.ogg'
+
+/obj/item/gun/ballistic/shotgun/riot/mossberg/update_icon_state()
+	var/state = "mossberg_l"
+	if(chambered)
+		if(istype(chambered, /obj/item/ammo_casing/shotgun/rubbershot) || istype(chambered, /obj/item/ammo_casing/shotgun/beanbag))
+			state = "mossberg_n"
+		else if(istype(chambered, /obj/item/ammo_casing/shotgun/incendiary))
+			state = "mossberg_i"
+	icon_state = state
+	item_state = state
 
 /obj/item/modkit/g36_kit
 	name = "G36 Kit"
@@ -1006,10 +1031,10 @@
 /obj/item/modkit/katana_kit
 	name = "Stun-Katana Kit"
 	desc = "A modkit for making a stunsword into a Stun-Katana."
-	product = /obj/item/melee/baton/stunsword/stunkatana
-	fromitem = list(/obj/item/melee/baton/stunsword)
+	product = /obj/item/melee/baton/stunkatana
+	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
 
-/obj/item/melee/baton/stunsword/stunkatana
+/obj/item/melee/baton/stunkatana
 	name = "\improper Stun-Katana"
 	desc = "Оружие специальных подразделений ЧВК \"Конкорд\", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
@@ -1017,13 +1042,13 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "stunkatana"
 	item_state = "stunkatana"
-/obj/item/melee/baton/stunsword/stunkatana/proc/switch_light()
+/obj/item/melee/baton/stunkatana/proc/switch_light()
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent > 0.5)
 		set_light(3, 0.9, "#B6EEE9")
 	else
 		set_light(3, 0.9, "#D9CD8E")
-/obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status = FALSE, silent = FALSE)
+/obj/item/melee/baton/stunkatana/switch_status(new_status = FALSE, silent = FALSE)
 	if(turned_on != new_status)
 		turned_on = new_status
 		if(!silent)
@@ -1041,10 +1066,10 @@
 			set_light(0)
 	update_icon_state()
 
-/obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
+/obj/item/melee/baton/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
 	. = ..()
 	update_icon_state()
-	// После удара — обновляем иконку и свет по текущему заряду
+	// После удара — обновляем иконку и свет по текущему заряду.
 	if(!turned_on || !cell)
 		set_light(0)
 		return
@@ -1052,7 +1077,7 @@
 		set_light(3, 0.9, "#ff0000")
 		return
 	switch_light()
-/obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
+/obj/item/melee/baton/stunkatana/update_icon_state()
 	if(!cell)
 		icon_state = "No-cell"
 		item_state = "stunkatana"
@@ -1181,3 +1206,40 @@
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/casull/update_icon_state()
 	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"
+
+///////////////////////////////////////////////
+
+/obj/item/modkit/bwal_special_kit
+	name = "B-Wal-Special"
+	desc = "A modkit for making an B-Wal-2572 into a B-Wal-Special."
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal_special
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold, /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal2572)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/bwal_special
+	name = "\improper B-Wal-Special"
+	desc = "A unique example of an improved pistol used by the regular Catcrin Army. The personal number AV-000492 is engraved in gold on the barrel. Judging by its appearance, it belongs to someone of high rank."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "bwal_spec"
+	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/bwalshot.ogg'
+	unique_reskin = null
+
+/obj/item/modkit/captain_rifle_kit
+	name = "Antique Laser Rifle"
+	desc = "A modkit for making an antique laser gun into a antique laser rifle."
+	product = /obj/item/gun/energy/laser/captain/rifle
+	fromitem = list(/obj/item/gun/energy/laser/captain)
+
+/obj/item/gun/energy/laser/captain/rifle
+	name = "Antique Laser Rifle"
+	desc = "A unique, custom-made Captain's Laser. It's made of titanium and gold alloy with a nickel finish. The rifle is engraved with the serial number AV-000492 in gold. The grip is made of hard carbon fiber, treated with a layer of Kevlar. The top layer of the grip is covered in Trixan ebony, which makes it feel even more premium. It feels incredibly expensive."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "captain_rifle"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "captain_rifle"
+	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/LaserOni.ogg'
+	unique_reskin = null
+
+/obj/item/gun/energy/laser/captain/rifle/get_examine_name(mob/user)
+	. = ..()
+	. += "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>["This is captain's antique laser gun. Highrisk item!"]</span></span>"

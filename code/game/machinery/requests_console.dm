@@ -335,7 +335,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 			var/mob/living/L = usr
 			message = L.treat_message(message)
 		//minor_announce(message, "[ru_department] объявляет:")
-		priority_announce(message, "[ru_department] Объявляет (— [usr.name])", 'sound/announcer/tonelow.ogg', "Priority", has_important_message = TRUE)
+		priority_announce(message, "[ru_department] Объявляет (— [usr.name])", 'sound/announcer/tonelow.ogg', "RequestsConsole", has_important_message = TRUE)
 		GLOB.news_network.SubmitArticle(message, department, "Станционные Объявления", null)
 		usr.log_talk(message, LOG_SAY, tag = "station announcement from [src]")
 		message_admins("[ADMIN_LOOKUPFLW(usr)] has made a station announcement from [src] at [AREACOORD(usr)].")

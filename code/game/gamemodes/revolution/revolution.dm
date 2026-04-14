@@ -176,6 +176,9 @@
 				return FALSE
 	return TRUE
 
+/datum/game_mode/revolution/proc/living_revolutionary_on_emergency_shuttle()
+	return revolution?.living_revolutionary_on_emergency_shuttle()
+
 
 /datum/game_mode/revolution/set_round_result()
 	..()

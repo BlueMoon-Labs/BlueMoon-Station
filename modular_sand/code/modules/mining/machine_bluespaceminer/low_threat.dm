@@ -14,16 +14,6 @@ GLOBAL_LIST_INIT(bsm_low_threat_pool, list(
 
 /datum/bsm_instability_effect/low
 
-/datum/bsm_instability_effect/low/proc/play_bluespace_sparks(obj/machinery/mineral/bluespace_miner/machine)
-	var/turf/T = get_turf(machine)
-	if(!T)
-		return
-	playsound(T, 'sound/effects/sparks4.ogg', 100, 1)
-	var/datum/effect_system/spark_spread/quantum/sparks = new
-	sparks.set_up(10, 1, T)
-	sparks.attach(T)
-	sparks.start()
-
 /datum/bsm_instability_effect/low/plush_delight
 
 /datum/bsm_instability_effect/low/plush_delight/trigger(obj/machinery/mineral/bluespace_miner/machine)

@@ -237,14 +237,19 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 		parts += {"<a id='bm-btn-ready' class='bm-btn' href='?src=[R];bm_lobby_action=toggle_ready'>"}
 		parts += ready ? {"<span class='bm-checked'>☑</span> ГОТОВНОСТЬ"} : {"<span class='bm-unchecked'>☒</span> ГОТОВНОСТЬ"}
 		parts += "</a>"
-		if(check_rights_for(client, R_SERVER))
-			parts += {"<a class='bm-btn bm-btn-admin' href='?src=[R];bm_lobby_action=start_game'>⚡ СТАРТ ИГРЫ</a>"}
 	else
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=late_join'>ВОЙТИ В ИГРУ</a>"}
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=view_manifest'>СПИСОК ЭКИПАЖА</a>"}
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=character_directory'>БИБЛИОТЕКА ПЕРСОНАЖЕЙ</a>"}
 
 	parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=observe'>БЫТЬ НАБЛЮДАТЕЛЕМ</a>"}
+	parts += {"<div class='bm-metashop-slot'>"}
+	parts += {"<div class='bm-metashop-nullspace' aria-hidden='true'></div>"}
+	var/metashop_rainbow = (BM_METASHOP_RAINBOW_P >= 100) ? TRUE : prob(BM_METASHOP_RAINBOW_P)
+	var/metashop_ms = metashop_rainbow ? " bm-ms-rainbow" : ""
+	parts += {"<a class='bm-btn bm-metashop[metashop_ms]' href='?src=[R];bm_lobby_action=metashop'>МАГАЗИН</a>"}
+	parts += {"<div class='bm-metashop-nullspace' aria-hidden='true'></div>"}
+	parts += {"</div>"}
 
 	parts += "<div class='bm-divider'></div>"
 
@@ -259,6 +264,9 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	if(!is_guest_key(src.key) && client?.prefs)
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=changelog'>ПОСЛЕДНИЕ ОБНОВЛЕНИЯ</a>"}
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=polls_menu'>ОПРОСЫ СЕРВЕРА</a>"}
+
+	if((!SSticker || SSticker.current_state <= GAME_STATE_PREGAME) && check_rights_for(client, R_SERVER))
+		parts += {"<div class='bm-start-game-wrap'><a class='bm-btn bm-btn-admin' href='?src=[R];bm_lobby_action=start_game'>&#9889; СТАРТ ИГРЫ</a></div>"}
 
 	return parts.Join("")
 
@@ -340,6 +348,15 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 				bm_push_background()
 			return
 
+		if("metashop")
+			_bm_play_click_sound()
+			if(!client?.prefs)
+				client << output("Нужна сохранённая учётная запись (не гость).", "bm_lobby_browser:bm_show_notice")
+				return
+			var/datum/metadollar_shop/shop = new /datum/metadollar_shop(client)
+			shop.ui_interact(src)
+			return
+
 		if("observe")
 			_bm_play_click_sound()
 			var/prev_ready = ready
@@ -400,9 +417,25 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			if(!SSticker || SSticker.current_state != GAME_STATE_PREGAME)
 				return
 			_bm_play_click_sound()
+			if(tgui_alert(src, "Вы действительно хотите начать игру?", "Старт раунда", list("Да", "Нет")) != "Да")
+				return
+			if(QDELETED(src) || !client)
+				return
+			if(!SSticker || SSticker.current_state != GAME_STATE_PREGAME)
+				return
 			SSticker.start_immediately = TRUE
 			log_admin("[key_name(src)] запустил раунд через HTML-лобби.")
 			message_admins("[key_name_admin(src)] запустил раунд через HTML-лобби.")
+			return
+
+		if("video_reject")
+			if(!check_rights_for(client, R_FUN))
+				return
+			if(!SStitle_bm?.current_video_payload)
+				return
+			log_admin("[key_name(src)] убрал видео с лобби (подтверждение не прошло).")
+			message_admins("[key_name_admin(src)] убрал видео с лобби (видео работало некорректно).")
+			SStitle_bm.change_image(null)
 			return
 
 	return ..()

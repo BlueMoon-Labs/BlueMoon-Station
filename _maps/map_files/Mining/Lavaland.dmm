@@ -7740,21 +7740,21 @@
 "gsD" = (
 /obj/structure/stone_tile/slab,
 /obj/structure/table/reinforced/brass,
-/obj/item/organ/regenerative_core/legion{
-	pixel_x = 9;
-	pixel_y = -10
-	},
-/obj/item/organ/regenerative_core/legion{
-	pixel_x = 9;
-	pixel_y = 4
-	},
 /obj/item/hivelordstabilizer{
 	pixel_x = -8;
 	pixel_y = 10
 	},
 /obj/item/hivelordstabilizer{
-	pixel_x = -7;
-	pixel_y = -9
+	pixel_x = -8;
+	pixel_y = -8
+	},
+/obj/item/hivelordstabilizer{
+	pixel_x = 8;
+	pixel_y = 10
+	},
+/obj/item/hivelordstabilizer{
+	pixel_x = 8;
+	pixel_y = -8
 	},
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
@@ -8081,6 +8081,7 @@
 "gGB" = (
 /obj/structure/stone_tile/slab,
 /obj/structure/closet/crate/wooden/shadow,
+/obj/item/clothing/under/costume/loincloth,
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "gGE" = (
@@ -11942,7 +11943,6 @@
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "jRv" = (
 /obj/structure/table/wood/shadow,
-/obj/item/clothing/under/costume/loincloth,
 /obj/structure/stone_tile/slab,
 /obj/item/flashlight/lantern{
 	pixel_x = -10;
@@ -17651,7 +17651,7 @@
 	dir = 4;
 	max_integrity = 180
 	},
-/obj/structure/closet/crate/necropolis/tendril,
+/obj/item/fakeartefact,
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "nWS" = (
@@ -21620,7 +21620,7 @@
 /obj/structure/window/reinforced/clockwork{
 	max_integrity = 180
 	},
-/obj/structure/closet/crate/necropolis/tendril,
+/obj/item/bikehorn/rubberducky/captain,
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "rdr" = (
@@ -28312,7 +28312,7 @@
 	dir = 1;
 	max_integrity = 180
 	},
-/obj/structure/closet/crate/necropolis/tendril,
+/obj/item/fakeartefact,
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "wJm" = (

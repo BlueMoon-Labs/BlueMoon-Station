@@ -73,14 +73,16 @@
 	var/datum/atom_hud/secsensor = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
 	secsensor.add_hud_to(src)
 
+/// Base bot uses [initial(icon_state)][on] ("ed2090" -> ed20900/ed20901). ED-209 sprites are [lasercolor]ed2090 / ed2091.
+/mob/living/simple_animal/bot/ed209/update_icon_state()
+	icon_state = "[lasercolor]ed209[on]"
+
 /mob/living/simple_animal/bot/ed209/turn_on()
 	. = ..()
-	icon_state = "[lasercolor]ed209[on]"
 	mode = BOT_IDLE
 
 /mob/living/simple_animal/bot/ed209/turn_off()
 	..()
-	icon_state = "[lasercolor]ed209[on]"
 
 /mob/living/simple_animal/bot/ed209/bot_reset()
 	..()
@@ -181,7 +183,7 @@
 			oldtarget_name = user.name
 		audible_message("<span class='danger'>[src] buzzes oddly!</span>")
 		declare_arrests = FALSE
-		icon_state = "[lasercolor]ed209[on]"
+		update_icon()
 		set_weapon()
 
 /mob/living/simple_animal/bot/ed209/bullet_act(obj/item/projectile/Proj)
@@ -490,7 +492,7 @@
 
 /mob/living/simple_animal/bot/ed209/proc/recover_lasertag()
 	disabled = 0
-	icon_state = "[lasercolor]ed2091"
+	update_icon()
 
 /mob/living/simple_animal/bot/ed209/bluetag
 	lasercolor = "b"

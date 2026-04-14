@@ -46,7 +46,7 @@
 		data["personal_best"] = user.client.get_award_status(/datum/award/score/highscore/tetris) || 0
 	else
 		data["personal_best"] = 0
-	// Передаём глобальную таблицу лидеров (топ-50)
+	// Передаём глобальную таблицу лидеров (топ-10)
 	var/datum/award/score/highscore/tetris/S = SSachievements.scores[/datum/award/score/highscore/tetris]
 	var/list/leaderboard = list()
 	if(S && S.high_scores.len)
@@ -64,6 +64,8 @@
 		var/rank = 0
 		for(var/list/entry in entries)
 			rank++
+			if(rank > 10)
+				break
 			leaderboard += list(list("rank" = rank, "ckey" = entry["ckey"], "score" = entry["score"]))
 	data["leaderboard"] = leaderboard
 	data["is_admin"] = check_rights_for(user?.client, R_ADMIN)

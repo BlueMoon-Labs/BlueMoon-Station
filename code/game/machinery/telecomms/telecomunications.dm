@@ -14,6 +14,10 @@
 
 GLOBAL_LIST_EMPTY(telecomms_list)
 
+/// Prevents runaway recursion when telecomms links form a cycle or the VM mishandles depth (stack overflow → "illegal operation" in libbyond).
+#define TELECOMMS_RELAY_MAX_DEPTH 48
+#define TELECOMMS_RELAY_DEPTH_KEY "_telecomms_relay_depth"
+
 /obj/machinery/telecomms
 	icon = 'icons/obj/machines/telecomms.dmi'
 	critical_machine = TRUE
@@ -37,6 +41,15 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 
 	if(!on)
 		return
+	if(!istype(signal) || !signal.data)
+		return 0
+	var/stored = signal.data[TELECOMMS_RELAY_DEPTH_KEY]
+	var/depth = isnum(stored) ? stored : 0
+	if(depth >= TELECOMMS_RELAY_MAX_DEPTH)
+		stack_trace("telecomms relay_information: max relay depth ([TELECOMMS_RELAY_MAX_DEPTH]) exceeded (possible circular links). filter=[filter]")
+		return 0
+	signal.data[TELECOMMS_RELAY_DEPTH_KEY] = depth + 1
+
 	var/send_count = 0
 
 	// Loop through all linked machines and send the signal or copy.
@@ -62,6 +75,7 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 	if(send_count > 0 && is_freq_listening(signal))
 		traffic++
 
+	signal.data[TELECOMMS_RELAY_DEPTH_KEY] = depth
 	return send_count
 
 /obj/machinery/telecomms/proc/relay_direct_information(datum/signal/signal, obj/machinery/telecomms/machine)

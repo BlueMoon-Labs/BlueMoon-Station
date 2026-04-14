@@ -60,7 +60,7 @@
 		/obj/item/storage/box/handcuffs=1,
 		/obj/item/storage/firstaid/regular=1,
 		/obj/item/gun/energy/e_gun/dragnet=1,
-		/obj/item/gun/ballistic/automatic/proto/unrestricted,
+		/obj/item/gun/ballistic/automatic/proto,
 		/obj/item/storage/box/ammo/smgap=1,
 		)
 	l_pocket = /obj/item/gun/energy/e_gun/nuclear/ert

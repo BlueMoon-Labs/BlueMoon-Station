@@ -88,6 +88,8 @@ GLOBAL_LIST_INIT(jobban_panel_data, list(
 		"appearance",
 		"emote",
 		"OOC",
+		"ahelp",
+		"deadchat",
 		ROLE_RESPAWN
 		)
 	)

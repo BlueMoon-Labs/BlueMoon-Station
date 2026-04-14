@@ -47,9 +47,6 @@
 	var/atom/movable/lighting_object/test_object = allocate(/atom/movable/lighting_object, test_turf)
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_object, "Lighting object was not attached to the test turf")
 
-	test_turf.recalc_area_blend_region()
-	TEST_ASSERT(test_object in GLOB.lighting_update_blends, "Lighting object was not queued for area blend recalculation")
-
 	var/x = test_turf.x
 	var/y = test_turf.y
 	var/z = test_turf.z

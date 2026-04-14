@@ -268,6 +268,7 @@
 		HandleRandomHardcoreScore(C)
 
 	var/popcount = gather_roundend_feedback()
+	SSmetadollars?.apply_round_end_rewards()
 	display_report(popcount)
 
 	CHECK_TICK
@@ -526,6 +527,7 @@
 	parts += "<br>"
 	parts += GLOB.survivor_report
 	parts += "</div>"
+	parts += SSmetadollars?.personal_roundend_html(C) || ""
 
 	return parts.Join()
 

@@ -527,8 +527,6 @@ SUBSYSTEM_DEF(job)
 		job.after_spawn(H, M.client, joined_late) // note: this happens before the mob has a key! M will always have a client, H might not.
 		post_equip_loadout(N, H)//CIT CHANGE - makes players spawn with in-backpack loadout items properly. A little hacky but it works
 		// BLUEMOON ADDITION
-		if(joined_late && ishuman(H))
-			give_spare_id_safe_paper(H)
 		switch(rank)
 			if("Head of Security") // Секция добавления штук для ГСБ
 				var/station_armory = GLOB.areas_by_type[/area/ai_monitored/security/armory]
@@ -540,6 +538,8 @@ SUBSYSTEM_DEF(job)
 						H.mind.memory += ("Код сейфа оружейной: [code_text].\n") // Нет, add_memory не работает, этот брутфорс был нужен.
 		// BLUEMOON EDIT END
 		handle_roundstart_items(H, M.ckey, H.mind.assigned_role, H.mind.special_role)
+		if(ishuman(H))
+			bm_deliver_metadollar_purchases(H, M.client)
 	to_chat(M, examine_block(flavor_display_text))
 
 	var/list/tcg_cards

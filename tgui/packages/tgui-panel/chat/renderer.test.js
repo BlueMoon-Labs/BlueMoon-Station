@@ -282,6 +282,26 @@ describe('ChatRenderer', () => {
       expect(renderer.messages[0].type).toBe('radio');
     });
 
+    test('detects radio from .priority_announcement CSS class', () => {
+      const renderer = createReadyRenderer();
+
+      renderer.processBatch([{
+        html: '<span class="priority_announcement">Central command notice</span>',
+      }]);
+
+      expect(renderer.messages[0].type).toBe('radio');
+    });
+
+    test('detects radio from .system_notice CSS class', () => {
+      const renderer = createReadyRenderer();
+
+      renderer.processBatch([{
+        html: '<span class="system_notice">Security level changed</span>',
+      }]);
+
+      expect(renderer.messages[0].type).toBe('radio');
+    });
+
     test('detects system from .boldannounce CSS class', () => {
       const renderer = createReadyRenderer();
 
@@ -550,6 +570,87 @@ describe('ChatRenderer', () => {
       expect(
         renderer.visibleMessages[0].node.className,
       ).toContain('ChatMessage--highlighted');
+    });
+  });
+
+  describe('highlight sound', () => {
+    test('plays sound for newly highlighted messages when enabled', () => {
+      const renderer = createReadyRenderer();
+      const playSpy = jest.spyOn(renderer, 'playHighlightSound')
+        .mockImplementation(() => {});
+
+      renderer.setHighlight('important', '#ff0000');
+      renderer.setHighlightSound(true);
+      renderer.processBatch([{
+        html: '<span class="say">important notice</span>',
+      }]);
+
+      expect(playSpy).toHaveBeenCalledTimes(1);
+    });
+
+    test('does not play sound when highlight sound is disabled', () => {
+      const renderer = createReadyRenderer();
+      const playSpy = jest.spyOn(renderer, 'playHighlightSound')
+        .mockImplementation(() => {});
+
+      renderer.setHighlight('important', '#ff0000');
+      renderer.setHighlightSound(false);
+      renderer.processBatch([{
+        html: '<span class="say">important notice</span>',
+      }]);
+
+      expect(playSpy).not.toHaveBeenCalled();
+    });
+
+    test('does not play sound for prepended messages', () => {
+      const renderer = createReadyRenderer();
+      const playSpy = jest.spyOn(renderer, 'playHighlightSound')
+        .mockImplementation(() => {});
+
+      renderer.setHighlight('important', '#ff0000');
+      renderer.setHighlightSound(true);
+      renderer.processBatch([{
+        html: '<span class="say">important notice</span>',
+      }], {
+        prepend: true,
+      });
+
+      expect(playSpy).not.toHaveBeenCalled();
+    });
+
+    test('does not play sound while rebuilding chat', () => {
+      const renderer = createReadyRenderer();
+      const playSpy = jest.spyOn(renderer, 'playHighlightSound')
+        .mockImplementation(() => {});
+
+      renderer.setHighlight('important', '#ff0000');
+      renderer.setHighlightSound(true);
+      renderer.processBatch([{
+        html: '<span class="say">important notice</span>',
+      }]);
+      playSpy.mockClear();
+
+      renderer.rebuildChat();
+
+      expect(playSpy).not.toHaveBeenCalled();
+    });
+
+    test('plays sound for combined highlighted messages', () => {
+      const renderer = createReadyRenderer();
+      const playSpy = jest.spyOn(renderer, 'playHighlightSound')
+        .mockImplementation(() => {});
+      const now = 1000000;
+
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+      renderer.setHighlight('hello', '#ff0000');
+      renderer.setHighlightSound(true);
+
+      renderer.processBatch([{ text: 'hello' }]);
+      playSpy.mockClear();
+      renderer.processBatch([{ text: 'hello' }]);
+
+      expect(playSpy).toHaveBeenCalledTimes(1);
+      expect(renderer.visibleMessages[0].times).toBe(2);
     });
   });
 

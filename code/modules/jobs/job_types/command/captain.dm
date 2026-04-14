@@ -15,8 +15,9 @@
 	exp_type = EXP_TYPE_COMMAND
 	exp_type_department = EXP_TYPE_COMMAND
 	considered_combat_role = TRUE
+	custom_spawn_text = "не забывайте о том, что ваша запасная карта должна находиться на территории мостика. И <b>прошу</b>, не переименовывайте станцию во что-нибудь похабное..."
 	alt_titles = list(
-		"Syndicate Admiral", //Синди выше, для удобства
+		"Admiral",
 		"Cap-Slut",
 		"Catpain",
 		"Chief Command",
@@ -80,7 +81,7 @@
 	var/displayed_rank = H.client?.prefs?.alt_titles_preferences[title]
 	if(!displayed_rank)	//Default to Captain
 		displayed_rank = "Капитан"
-	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(minor_announce), "[displayed_rank] [H.nameless ? "" : "[H.real_name] "] прибывает на [station_name()]!"))
+	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(announce_captain_arrival), displayed_rank, H.nameless ? null : H.real_name))
 
 /datum/outfit/job/captain
 	name = "Captain"
@@ -96,7 +97,7 @@
 	shoes = /obj/item/clothing/shoes/laceup
 	head = /obj/item/clothing/head/caphat
 
-	backpack_contents = list( /obj/item/station_charter=1, /obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/stamp/command=1)
+	backpack_contents = list( /obj/item/station_charter=1, /obj/item/modular_computer/tablet/preset/advanced/command=1, /obj/item/stamp/command=1)
 	box = /obj/item/storage/box/survival/command
 
 	backpack = /obj/item/storage/backpack/captain

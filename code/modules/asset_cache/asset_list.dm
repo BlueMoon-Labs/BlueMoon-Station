@@ -1,11 +1,5 @@
-
-//These datums are used to populate the asset cache, the proc "register()" does this.
-//Place any asset datums you create in asset_list_items.dm
-
-//all of our asset datums, used for referring to these later
 GLOBAL_LIST_EMPTY(asset_datums)
 
-//get an assetdatum or make a new one
 /proc/get_asset_datum(type)
 	return GLOB.asset_datums[type] || new type()
 
@@ -20,7 +14,6 @@ GLOBAL_LIST_EMPTY(asset_datums)
 /datum/asset/proc/get_url_mappings()
 	return list()
 
-/// Returns a cached tgui message of URL mappings
 /datum/asset/proc/get_serialized_url_mappings()
 	if (isnull(cached_url_mappings))
 		cached_url_mappings = TGUI_CREATE_MESSAGE("asset/mappings", get_url_mappings())
@@ -33,18 +26,10 @@ GLOBAL_LIST_EMPTY(asset_datums)
 /datum/asset/proc/send(client)
 	return
 
-
-/// If you don't need anything complicated.
 /datum/asset/simple
 	_abstract = /datum/asset/simple
-	/// list of assets for this datum in the form of:
-	/// asset_filename = asset_file. At runtime the asset_file will be
-	/// converted into a asset_cache datum.
 	var/assets = list()
-	/// Set to true to have this asset also be sent via the legacy browse_rsc
-	/// system when cdn transports are enabled?
 	var/legacy = FALSE
-	/// TRUE for keeping local asset names when browse_rsc backend is used
 	var/keep_local_name = FALSE
 
 /datum/asset/simple/register()
@@ -67,8 +52,6 @@ GLOBAL_LIST_EMPTY(asset_datums)
 	for (var/asset_name in assets)
 		.[asset_name] = SSassets.transport.get_asset_url(asset_name, assets[asset_name])
 
-
-// For registering or sending multiple others at once
 /datum/asset/group
 	_abstract = /datum/asset/group
 	var/list/children
@@ -88,9 +71,7 @@ GLOBAL_LIST_EMPTY(asset_datums)
 		var/datum/asset/A = get_asset_datum(type)
 		. += A.get_url_mappings()
 
-// spritesheet implementation - coalesces various icons into a single .png file
-// and uses CSS to select icons out of that file - saves on transferring some
-// 1400-odd individual PNG files
+// Spritesheet asset
 #define SPR_SIZE 1
 #define SPR_IDX 2
 #define SPRSZ_COUNT 1
@@ -132,7 +113,29 @@ GLOBAL_LIST_EMPTY(asset_datums)
 	for(var/size_id in sizes)
 		.["[name]_[size_id].png"] = SSassets.transport.get_asset_url("[name]_[size_id].png")
 
+/datum/asset/json
+	_abstract = /datum/asset/json
+	/// Filename (without .json extension) used to register and serve the asset
+	var/name
 
+/datum/asset/json/register()
+	if(!name)
+		CRASH("datum/asset/json [type] cannot register without a name")
+	var/list/data = generate()
+	var/fname = "data/asset_cache/[name].json"
+	fdel(fname)
+	text2file(json_encode(data), fname)
+	SSassets.transport.register_asset("[name].json", fcopy_rsc(fname))
+	fdel(fname)
+
+/datum/asset/json/proc/generate()
+	CRASH("datum/asset/json [type] did not implement generate()")
+
+/datum/asset/json/send(client/C)
+	return SSassets.transport.send_assets(C, list("[name].json"))
+
+/datum/asset/json/get_url_mappings()
+	return list("[name].json" = SSassets.transport.get_asset_url("[name].json"))
 
 /datum/asset/spritesheet/proc/ensure_stripped(sizes_to_strip = sizes)
 	for(var/size_id in sizes_to_strip)

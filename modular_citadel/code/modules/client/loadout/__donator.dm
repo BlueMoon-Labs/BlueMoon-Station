@@ -129,7 +129,7 @@
 /datum/gear/donator/rationpack
 	name = "Ration Pack"
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/storage/box/mre/menu1/safe
+	path = /obj/item/storage/box/mre/random_safe
 	ckeywhitelist = list()
 	donator_group_id = DONATOR_GROUP_TIER_1
 
@@ -167,13 +167,6 @@
 	name = "Pseudo-Euclidean Interdimensional Tennis Sphere"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/toy/fluff/tennis_poly/tri/squeak/rainbow
-	ckeywhitelist = list()
-	donator_group_id = DONATOR_GROUP_TIER_1
-
-/datum/gear/donator/agent_card
-	name = "Syndicate Employee Card sticker" //BLUEMOON CHANGES
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/card_sticker/syndicate/loadout //BLUEMOON CHANGES
 	ckeywhitelist = list()
 	donator_group_id = DONATOR_GROUP_TIER_1
 

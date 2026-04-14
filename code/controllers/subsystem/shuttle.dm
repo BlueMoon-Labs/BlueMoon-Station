@@ -403,11 +403,27 @@ SUBSYSTEM_DEF(shuttle)
 		supply.mode = SHUTTLE_DOCKED
 		//Make all cargo consoles speak up
 
+/// Returns TRUE if this registered hostile environment should block the emergency shuttle from leaving right now.
+/proc/hostile_environment_blocks_shuttle_escape(datum/hostile)
+	if(!hostile || QDELETED(hostile))
+		return FALSE
+	if(istype(hostile, /datum/team/revolution))
+		var/datum/team/revolution/R = hostile
+		return R.living_revolutionary_on_emergency_shuttle()
+	if(istype(hostile, /datum/game_mode/revolution))
+		var/datum/game_mode/revolution/M = hostile
+		return M.living_revolutionary_on_emergency_shuttle()
+	return TRUE
+
 /datum/controller/subsystem/shuttle/proc/checkHostileEnvironment()
 	for(var/datum/d in hostileEnvironments)
 		if(!istype(d) || QDELETED(d))
 			hostileEnvironments -= d
-	emergencyNoEscape = hostileEnvironments.len
+	emergencyNoEscape = FALSE
+	for(var/datum/d in hostileEnvironments)
+		if(hostile_environment_blocks_shuttle_escape(d))
+			emergencyNoEscape = TRUE
+			break
 
 #ifndef ABSOLUTE_MINIMUM_MODE // Nah we didn't need it anyway
 	if(emergencyNoEscape && (emergency.mode == SHUTTLE_IGNITING))

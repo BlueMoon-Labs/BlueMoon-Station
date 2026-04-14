@@ -720,7 +720,8 @@
 	desc = "Enables the sending and receiving of messages over NTNet via packet data protocol."
 	extended_desc = "Data can be sent or received using the second pin on each side, \
 	with additonal data reserved for the third pin. When a message is received, the second activation pin \
-	will pulse whatever is connected to it. Pulsing the first activation pin will send a message. Messages \
+	will pulse whatever is connected to it. Pulsing the first activation pin will send a message; when the send \
+	succeeds, the third activation pin pulses. Messages \
 	can be sent to multiple recepients. Addresses must be separated with a semicolon, like this: Address1;Address2;Etc."
 	icon_state = "signal"
 	complexity = 2
@@ -738,7 +739,11 @@
 		"passkey received"			= IC_PINTYPE_STRING,
 		"is_broadcast"				= IC_PINTYPE_BOOLEAN
 		)
-	activators = list("send data" = IC_PINTYPE_PULSE_IN, "on data received" = IC_PINTYPE_PULSE_OUT)
+	activators = list(
+		"send data" = IC_PINTYPE_PULSE_IN,
+		"on data received" = IC_PINTYPE_PULSE_OUT,
+		"on data send" = IC_PINTYPE_PULSE_OUT,
+	)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_LONG_RANGE
 	power_draw_per_use = 50
@@ -760,7 +765,8 @@
 	var/datum/netdata/data = new
 	data.recipient_ids = splittext(target_address, ";")
 	data.standard_format_data(message, text, passkey)
-	ntnet_send(data)
+	if(ntnet_send(data))
+		activate_pin(3)
 
 /obj/item/integrated_circuit/input/ntnet_receive(datum/netdata/data)
 	set_pin_data(IC_OUTPUT, 1, data.sender_id)
@@ -777,7 +783,8 @@
 	desc = "Enables the sending and receiving of messages over NTNet via packet data protocol. Allows advanced control of message contents and signalling. Must use associative lists. Outputs associative list. Has a slower transmission rate than normal NTNet circuits, due to increased data processing complexity."
 	extended_desc = "Data can be sent or received using the second pin on each side, \
 	When a message is received, the second activation pin will pulse whatever is connected to it. \
-	Pulsing the first activation pin will send a message. Messages can be sent to multiple recepients. \
+	Pulsing the first activation pin will send a message; when the send succeeds, the third activation pin pulses. \
+	Messages can be sent to multiple recepients. \
 	Addresses must be separated with a semicolon, like this: Address1;Address2;Etc."
 	icon_state = "signal"
 	complexity = 4
@@ -788,7 +795,11 @@
 		"passkey"				= IC_PINTYPE_STRING,
 		)
 	outputs = list("received data" = IC_PINTYPE_LIST, "is_broadcast" = IC_PINTYPE_BOOLEAN, "received passkey" = IC_PINTYPE_STRING)
-	activators = list("send data" = IC_PINTYPE_PULSE_IN, "on data received" = IC_PINTYPE_PULSE_OUT)
+	activators = list(
+		"send data" = IC_PINTYPE_PULSE_IN,
+		"on data received" = IC_PINTYPE_PULSE_OUT,
+		"on data send" = IC_PINTYPE_PULSE_OUT,
+	)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_LONG_RANGE
 	power_draw_per_use = 50
@@ -811,7 +822,8 @@
 	data.recipient_ids = splittext(target_address, ";")
 	data.data = message
 	data.passkey = passkey
-	ntnet_send(data)
+	if(ntnet_send(data))
+		activate_pin(3)
 
 /obj/item/integrated_circuit/input/ntnet_advanced/ntnet_receive(datum/netdata/data)
 	set_pin_data(IC_OUTPUT, 1, data.data)

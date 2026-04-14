@@ -118,7 +118,7 @@
 
 /obj/item/gun/energy/plasmacutter
 	name = "plasma cutter"
-	desc = "A mining tool capable of expelling concentrated plasma bursts. You could use it to cut limbs off xenos! Or, you know, mine stuff."
+	desc = "Шахтёрский инструмент, выстреливающий сгустки концентрированной плазмы. Может быть использован для отсечения конечностей ксеносам! Ну или, знаете, копать там."
 	icon_state = "plasmacutter"
 	item_state = "plasmacutter"
 	ammo_type = list(/obj/item/ammo_casing/energy/plasma)
@@ -142,17 +142,32 @@
 /obj/item/gun/energy/plasmacutter/examine(mob/user)
 	. = ..()
 	if(cell)
-		. += "<span class='notice'>[src] is [round(cell.percent())]% charged.</span>"
+		. += span_notice("Текущий заряд – [round(cell.percent())]%.")
 
 /obj/item/gun/energy/plasmacutter/attackby(obj/item/I, mob/user)
 	if(istype(I, /obj/item/stack/sheet/mineral/plasma))
-		I.use(1)
-		cell.give(1000)
-		to_chat(user, "<span class='notice'>You insert [I] in [src], recharging it.</span>")
+		if(cell.charge >= cell.maxcharge)
+			to_chat(user, span_warning("Ваш [src] уже полностью заряжен!"))
+			return
+		if(do_after(user, 1 SECONDS, src))
+			if(INTERACTING_WITH(user, src) || QDELETED(I) || QDELETED(cell))
+				return
+			if(!I.use(1))
+				return
+			cell.give(1000)
+			to_chat(user, span_notice("Вы вставили [I] в [src], добавляя заряд."))
 	else if(istype(I, /obj/item/stack/ore/plasma))
-		I.use(1)
-		cell.give(500)
-		to_chat(user, "<span class='notice'>You insert [I] in [src], recharging it.</span>")
+		if(cell.charge >= cell.maxcharge)
+			to_chat(user, span_warning("Ваш [src] уже полностью заряжен!"))
+			return
+		if(do_after(user, 1.2 SECONDS, src))
+			if(INTERACTING_WITH(user, src) || QDELETED(I) || QDELETED(cell))
+				return
+			if(!I.use(1))
+				return
+			I.use(1)
+			cell.give(500)
+			to_chat(user, span_notice("Вы вдавили [I] в [src] с щебнем, добавляя заряд."))
 	else
 		..()
 
@@ -161,7 +176,7 @@
 	if(!QDELETED(cell) && (cell.charge >= amount * 100))
 		return TRUE
 
-	to_chat(user, "<span class='warning'>You need more charge to complete this task!</span>")
+	to_chat(user, span_warning("Вам нужно больше заряда для этой задачи!"))
 	return FALSE
 
 /obj/item/gun/energy/plasmacutter/use(amount)
@@ -194,7 +209,7 @@
 
 /obj/item/gun/energy/gravity_gun/attackby(obj/item/C, mob/user)
 	if(istype(C, /obj/item/assembly/signaler/anomaly))
-		to_chat(user, "<span class='notice'>You insert [C] into the gravitational manipulator and the weapon gently hums to life.</span>")
+		to_chat(user, span_notice("Вы вставляете [C] в гравитационный манипулятор, и оружие тихо оживает."))
 		firing_core = TRUE
 		playsound(src.loc, 'sound/machines/click.ogg', 50, TRUE)
 		qdel(C)
@@ -222,7 +237,7 @@
 
 /obj/item/gun/energy/wormhole_projector/attackby(obj/item/C, mob/user)
 	if(istype(C, /obj/item/assembly/signaler/anomaly))
-		to_chat(user, "<span class='notice'>You insert [C] into the wormhole projector and the weapon gently hums to life.</span>")
+		to_chat(user, span_notice("Вы вставляете [C] в проектор червоточин, и оружие тихо оживает."))
 		firing_core = TRUE
 		playsound(src.loc, 'sound/machines/click.ogg', 50, TRUE)
 		qdel(C)

@@ -4,6 +4,7 @@
 	icon_state = "cap"
 /obj/structure/closet/secure_closet/captains/PopulateContents() //Excess clothing and such can be found in the Captain's Wardrobe. You can also find this file in code/modules/vending/wardrobes.
 	..()
+	new /obj/item/folder/biscuit/confidential/spare_id_safe_code(src) // Для антагов или непредвиденных ситуаций
 	new /obj/item/clothing/neck/petcollar(src) //I considered removing the pet stuff too but eh, who knows. We might get Renault back. Plus I guess you could use that collar for... other means. Aren't you supposed to be guarding the disk?
 	new /obj/item/pet_carrier(src)
 	new /obj/item/cartridge/captain(src)

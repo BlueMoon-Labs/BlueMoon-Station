@@ -2,6 +2,7 @@
 	name = "cobblestone"
 	icon = 'modular_citadel/code/modules/festive/cobblestone.dmi'
 	icon_state = "unsmooth"
+	base_icon_state = "unsmooth"
 	smooth = SMOOTH_MORE | SMOOTH_BORDER
 	canSmoothWith = list(/turf/open/floor/plating/cobblestone)
 
@@ -19,6 +20,7 @@
 	gender = PLURAL
 	name = "iron sand"
 	icon_state = "ironsand1"
+	base_icon_state = "ironsand1"
 	desc = "Like sand, but even more <i>metal</i>."
 	baseturfs = /turf/open/indestructible/ironsand
 	footstep = FOOTSTEP_SAND

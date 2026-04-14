@@ -612,8 +612,7 @@
     short_circuit_risk = max(0, short_circuit_risk - 0.5)
 
 /datum/wound/burn/treat(obj/item/I, mob/user)
-	if(!victim.can_inject())
-		to_chat(user, span_danger("Одежда на теле [victim] не позволяет применить [I]!</span>"))
+	if(!check_armor_for_treatment(I, user))
 		return
 
 	// BLUEMOON ADD START - лечение синтетических конечностей
@@ -630,9 +629,6 @@
 
 // BLUEMOON ADD START - обработка лечения для синтетических конечностей (ПРОВОДКА + НАНОГЕЛЬ)
 /datum/wound/burn/proc/treat_synthetic(obj/item/I, mob/user)
-	if(!victim.can_inject())
-		to_chat(user, span_danger("Доступ к повреждённым компонентам [victim] закрыт!</span>"))
-		return
 
 	// Основной метод: кабели для внешней проводки
 	if(istype(I, /obj/item/stack/cable_coil))

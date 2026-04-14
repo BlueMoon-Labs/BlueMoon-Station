@@ -27,14 +27,15 @@
 	ammo_x_offset = 0
 	selfcharge = 1
 	charge_delay = 1
+	selfcharge_amount = 200
 	shaded_charge = TRUE
 	slot_flags = ITEM_SLOT_BACK
 	obj_flags = UNIQUE_RENAME
 	SET_BASE_PIXEL(-8, 0)
 	w_class = WEIGHT_CLASS_BULKY
-	weapon_weight = WEAPON_HEAVY
+	weapon_weight = WEAPON_MEDIUM
 	actions_types = list(/datum/action/item_action/toggle_personality)
-	recoil = 0.25 // This isn't enough to mean ANYTHING aside from it jolting your screen the tiniest amount
+	recoil = 0.25
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT, SELECT_FULLY_AUTOMATIC)
 	zoomable = TRUE
 	zoom_amt = 8 //Long range, enough to see in front of you, but no tiles behind you.
@@ -326,7 +327,7 @@
 	slot_flags = ITEM_SLOT_BACK | ITEM_SLOT_BELT
 	SET_BASE_PIXEL(0, 0)
 	w_class = WEIGHT_CLASS_NORMAL
-	weapon_weight = WEAPON_MEDIUM
+	weapon_weight = WEAPON_LIGHT
 	weapon_mode_options = list(
 		/datum/laser_weapon_mode/hellfire,
 		/datum/laser_weapon_mode/sword,

@@ -33,6 +33,12 @@
 	leader_role = /datum/antagonist/ert/commander/green
 	roles = list(/datum/antagonist/ert/security/green, /datum/antagonist/ert/medic/green, /datum/antagonist/ert/engineer/green)
 
+/datum/ert/mopp
+	opendoors = FALSE
+	code = "MOPP"
+	leader_role = /datum/antagonist/ert/commander/mopp
+	roles = list(/datum/antagonist/ert/security/mopp, /datum/antagonist/ert/medic/mopp, /datum/antagonist/ert/engineer/mopp)
+
 /datum/ert/blue
 	opendoors = FALSE
 	code = "Blue"

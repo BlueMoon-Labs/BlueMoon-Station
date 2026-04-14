@@ -11,6 +11,9 @@
 		else
 			return ckey(id)
 
+/// Макс. глубина для `ConvertpHToCol` + `get_reagent_category` (общий счётчик).
+#define CHEM_DISP_PH_CAT_GUARD_MAX 48
+
 /obj/machinery/chem_dispenser
 	name = "Chem Dispenser"
 	desc = "Создаёт и выдаёт препараты."
@@ -114,6 +117,9 @@
 	var/dispenser_type = DISPENSER_TYPE_CHEM
 	/// Cooldown for recipe-dispense actions.
 	COOLDOWN_DECLARE(dispense_cooldown)
+	/// Общий счётчик входа для `ConvertpHToCol` / `get_reagent_category` (отдельный `static` в каждом проке не блокирует взаимные вызовы → переполнение стека / illegal op в `send_message` на 516).
+	var/static/chem_disp_ph_cat_guard = 0
+	var/static/list/chem_disp_category_cache = list()
 
 	/// Shared cache: reagent hash -> computed dispenser recipe data.
 	var/static/list/shared_dispenser_recipe_caches
@@ -1816,14 +1822,12 @@
 		return TRUE
 
 /obj/machinery/chem_dispenser/proc/ConvertpHToCol(pH)
-	// Recursion guard: prevents stack overflow when TGUI serializes large payloads (BYOND bug workaround)
-	var/static/recursion_depth = 0
-	if(recursion_depth > 0)
+	if(chem_disp_ph_cat_guard >= CHEM_DISP_PH_CAT_GUARD_MAX)
 		return "average"
-	recursion_depth++
+	chem_disp_ph_cat_guard++
 	. = "average"
 	if(!isnum(pH) || (pH != pH)) // null or NaN
-		recursion_depth--
+		chem_disp_ph_cat_guard--
 		return
 	switch(pH)
 		if(-INFINITY to 1)
@@ -1850,20 +1854,17 @@
 			. = "purple"
 		else
 			. = "average"
-	recursion_depth--
+	chem_disp_ph_cat_guard--
 
 /obj/machinery/chem_dispenser/proc/get_reagent_category(reagent_type)
-	// Recursion guard: prevents stack overflow when TGUI serializes large payloads (BYOND bug workaround)
-	var/static/recursion_depth = 0
-	var/static/list/category_cache = list()
-	if(recursion_depth > 0)
+	if(reagent_type && chem_disp_category_cache[reagent_type])
+		return chem_disp_category_cache[reagent_type]
+	if(chem_disp_ph_cat_guard >= CHEM_DISP_PH_CAT_GUARD_MAX)
 		return "other"
-	if(reagent_type && category_cache[reagent_type])
-		return category_cache[reagent_type]
-	recursion_depth++
+	chem_disp_ph_cat_guard++
 	var/result = "other"
 	if(!reagent_type)
-		recursion_depth--
+		chem_disp_ph_cat_guard--
 		return result
 	if(ispath(reagent_type, /datum/reagent/medicine))
 		result = "medicine"
@@ -1893,8 +1894,8 @@
 	else if(ispath(reagent_type, /datum/reagent))
 		result = "elements"
 	if(reagent_type)
-		category_cache[reagent_type] = result
-	recursion_depth--
+		chem_disp_category_cache[reagent_type] = result
+	chem_disp_ph_cat_guard--
 	return result
 
 
