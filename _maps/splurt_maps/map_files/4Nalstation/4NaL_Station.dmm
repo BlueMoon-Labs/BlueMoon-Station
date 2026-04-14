@@ -19185,7 +19185,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
-/obj/item/coin/green,
+/obj/item/coin/pokerchip/green,
 /turf/open/floor/plasteel/grimy,
 /area/maintenance/central/brothel)
 "fZz" = (
@@ -24624,7 +24624,7 @@
 	pixel_x = 6;
 	pixel_y = 11
 	},
-/obj/item/coin/black,
+/obj/item/coin/pokerchip/black,
 /turf/open/floor/plasteel/grimy,
 /area/maintenance/central/brothel)
 "hIW" = (
@@ -52417,7 +52417,7 @@
 	pixel_x = 4;
 	pixel_y = 5
 	},
-/obj/item/coin/blue,
+/obj/item/coin/pokerchip/blue,
 /turf/open/floor/plasteel/grimy,
 /area/maintenance/central/brothel)
 "qwU" = (

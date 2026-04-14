@@ -3650,15 +3650,16 @@
 /turf/open/floor/catwalk_floor/iron,
 /area/tcommsat/computer)
 "aLa" = (
-/obj/effect/mob_spawn/human/lavaland_syndicate{
-	dir = 8;
-	faction = list("Syndicate")
-	},
 /obj/machinery/button/door/directional/south{
 	name = "privacy shutters";
 	id = "glacierdorm3"
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/effect/mob_spawn/human/lavaland_syndicate/shaft{
+	dir = 8;
+	mob_name = "a Syndicate 'Glacier' Combatant";
+	short_desc = "Вы Специалист по обеспечению безопасности Синдиката, работающий на Аванпосту Айсмуна и изучающий аномальное поле Системы Синих Лун. Вы второй по главенству оперативник после Специалиста Прослушки на Глейсире."
+	},
 /turf/open/floor/plasteel/grimy,
 /area/ruin/icemoon/unpowered/glacier/dormitories)
 "aLc" = (
@@ -14025,7 +14026,6 @@
 /obj/effect/turf_decal/trimline/blue/filled/line,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white/textured/edge{
@@ -48771,15 +48771,17 @@
 /turf/open/floor/plasteel/smooth/edge,
 /area/hallway/primary/fore)
 "iPj" = (
-/obj/effect/mob_spawn/human/lavaland_syndicate{
-	dir = 8;
-	faction = list("Syndicate")
-	},
 /obj/machinery/button/door/directional/south{
 	name = "privacy shutters";
 	id = "glacierdorm1"
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/effect/mob_spawn/human/lavaland_syndicate{
+	dir = 8;
+	mob_name = "a Syndicate 'Glacier' Researcher";
+	name = "DS-1 Glacier Specialist";
+	short_desc = "Вы Научный Специалист Синдиката, работающий на Аванпосту Айсмуна и изучающий аномальное поле Системы Синих Лун."
+	},
 /turf/open/floor/plasteel/grimy,
 /area/ruin/icemoon/unpowered/glacier/dormitories)
 "iPk" = (
@@ -53412,7 +53414,6 @@
 /obj/effect/turf_decal/trimline/blue/filled/line,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white/textured/edge{
@@ -66443,8 +66444,10 @@
 /area/commons/fitness/pool)
 "lUN" = (
 /obj/effect/turf_decal/bot/yellow,
-/obj/effect/mob_spawn/human/lavaland_syndicate/comms{
-	dir = 4
+/obj/effect/mob_spawn/human/lavaland_syndicate/offcomm{
+	dir = 4;
+	mob_name = "a Syndicate 'Glacier' Leader";
+	short_desc = "Вы Офицер Коммуникаций, работающий на Аванпосту Айсмуна и руководящий объектом. Обеспечьте функционирование вверенного вам аванпоста. Проводите отчётную деятельность."
 	},
 /turf/open/floor/plasteel/grimy,
 /area/ruin/icemoon/unpowered/glacier/dormitories)
@@ -81555,7 +81558,8 @@
 	},
 /obj/machinery/firealarm/directional/north,
 /mob/living/simple_animal/pet/cat/kitten{
-	faction = list("neutral", "Syndicate")
+	faction = list("neutral", "Syndicate");
+	name = "Murder Mittens"
 	},
 /turf/open/floor/wood/wood_large,
 /area/ruin/icemoon/unpowered/glacier/dormitories)
@@ -102746,14 +102750,17 @@
 /turf/open/floor/plating,
 /area/tcommsat/lounge)
 "sFQ" = (
-/obj/effect/mob_spawn/human/lavaland_syndicate{
-	dir = 4
-	},
 /obj/machinery/button/door/directional/south{
 	name = "privacy shutters";
 	id = "glacierdorm2"
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/effect/mob_spawn/human/lavaland_syndicate{
+	dir = 4;
+	mob_name = "a Syndicate 'Glacier' Researcher";
+	name = "DS-1 Glacier Specialist";
+	short_desc = "Вы Научный Специалист Синдиката, работающий на Аванпосту Айсмуна и изучающий аномальное поле Системы Синих Лун."
+	},
 /turf/open/floor/plasteel/grimy,
 /area/ruin/icemoon/unpowered/glacier/dormitories)
 "sFW" = (
@@ -123700,7 +123707,8 @@
 	dir = 4
 	},
 /mob/living/simple_animal/pet/cat/kitten{
-	faction = list("neutral", "Syndicate")
+	faction = list("neutral", "Syndicate");
+	name = "Bayonet"
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/icemoon/unpowered/glacier/cafeteria)

@@ -214,7 +214,7 @@
 				continue
 			if(U.telecrystals < I.cost)
 				continue
-			if(I.limited_stock == 0)
+			if(!U.is_uplink_item_visible_to_user(user, I))
 				continue
 			possible_items += I
 

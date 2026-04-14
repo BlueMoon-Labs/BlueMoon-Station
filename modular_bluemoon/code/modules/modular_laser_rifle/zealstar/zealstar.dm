@@ -36,6 +36,26 @@
 /obj/item/gun/energy/modular_laser_rifle/zealstar/Initialize(mapload)
 	. = ..()
 
+/obj/item/gun/energy/modular_laser_rifle/zealstar/equipped(mob/user, slot, initial)
+	. = ..()
+	if(slot != ITEM_SLOT_HANDS || !isliving(user))
+		return
+	if(HAS_TRAIT(user, TRAIT_MINDSHIELD))
+		return
+	to_chat(user, span_userdanger("<b>«Хранитель»:</b> Несанкционированный носитель. Имплант защиты разума не обнаружен. <b>ИНИЦИАЦИЯ КОЛЛАПСА ЯДРА.</b>"))
+	playsound(src, 'sound/machines/nuke/confirm_beep.ogg', 65, TRUE)
+	addtimer(CALLBACK(src, PROC_REF(zealstar_unauthorized_detonate)), 3 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE)
+
+/obj/item/gun/energy/modular_laser_rifle/zealstar/proc/zealstar_unauthorized_detonate()
+	if(QDELETED(src))
+		return
+	var/turf/T = get_turf(src)
+	message_admins("Zealstar core collapse at [ADMIN_VERBOSEJMP(T)] (wielder without mindshield).")
+	log_game("Zealstar self-destruct at [loc_name(T)] ([AREACOORD(T)]).")
+	do_sparks(8, 1, src)
+	explosion(T, 4, 5, 6, 7, adminlog = TRUE, ignorecap = FALSE, flame_range = 6)
+	qdel(src)
+
 /// SPEAR - ПАРАЛИЗАТОР (100 выстрелов из 10k ячейки) ///
 
 /obj/item/ammo_casing/energy/cybersun_small_disabler/zealstar

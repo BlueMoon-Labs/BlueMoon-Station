@@ -463,22 +463,37 @@ GLOBAL_LIST_INIT(sand_recipes, list(\
 	to_chat(user, "<span class='notice'>You detach the string from the coin.</span>")
 	return TRUE
 
+/// Plays the flip animation; override on subtypes that use a non-economy icon sheet (e.g. poker chips).
+/obj/item/coin/proc/play_coin_flip_animation()
+	flick("coin_[coinflip]_flip", src)
+
+/// Sets icon after the flip; default is economy.dmi coin faces.
+/obj/item/coin/proc/apply_coin_flip_icon_state()
+	icon_state = "coin_[coinflip]"
+
+/obj/item/coin/proc/coin_flip_hear_message()
+	return "<span class='hear'>You hear the clattering of loose change.</span>"
+
+/obj/item/coin/proc/after_coin_flip_success(mob/user)
+	return
+
 /obj/item/coin/attack_self(mob/user)
 	if(cooldown < world.time)
 		if(string_attached) //does the coin have a wire attached
 			to_chat(user, "<span class='warning'>The coin won't flip very well with something attached!</span>" )
 			return FALSE//do not flip the coin
 		cooldown = world.time + 15
-		flick("coin_[coinflip]_flip", src)
+		play_coin_flip_animation()
 		coinflip = pick(sideslist)
-		icon_state = "coin_[coinflip]"
+		apply_coin_flip_icon_state()
 		playsound(user.loc, 'sound/items/coinflip.ogg', 50, TRUE)
 		var/oldloc = loc
 		sleep(15)
 		if(loc == oldloc && user && !user.incapacitated())
 			user.visible_message("<span class='notice'>[user] flips [src]. It lands on [coinflip].</span>", \
 				"<span class='notice'>You flip [src]. It lands on [coinflip].</span>", \
-				"<span class='hear'>You hear the clattering of loose change.</span>")
+				coin_flip_hear_message())
+			after_coin_flip_success(user)
 	return TRUE//did the coin flip? useful for suicide_act
 
 /obj/item/coin/gold
@@ -538,25 +553,8 @@ GLOBAL_LIST_INIT(sand_recipes, list(\
 	custom_materials = list(/datum/material/gold = 400)
 	desc = "If you got this somehow, be aware that it will dust you. Almost certainly."
 
-/obj/item/coin/gold/debug/attack_self(mob/user)
-	if(cooldown < world.time)
-		if(string_attached) //does the coin have a wire attached
-			to_chat(user, "<span class='warning'>The coin won't flip very well with something attached!</span>" )
-			return FALSE//do not flip the coin
-		cooldown = world.time + 15
-		flick("coin_[coinflip]_flip", src)
-		coinflip = pick(sideslist)
-		icon_state = "coin_[coinflip]"
-		playsound(user.loc, 'sound/items/coinflip.ogg', 50, TRUE)
-		var/oldloc = loc
-		sleep(15)
-		if(loc == oldloc && user && !user.incapacitated())
-			user.visible_message("<span class='notice'>[user] flips [src]. It lands on [coinflip].</span>", \
-				"<span class='notice'>You flip [src]. It lands on [coinflip].</span>", \
-				"<span class='hear'>You hear the clattering of loose change.</span>")
-		SSeconomy.fire()
-		// to_chat(user,"<span class='bounty'>[SSeconomy.inflation_value()] is the inflation value.</span>")
-		to_chat(user, "<span class='bounty'>Luckily, economical inflation is not yet included. So no, you cannot predict the market with this.</span>")
-	return TRUE//did the coin flip? useful for suicide_act
+/obj/item/coin/gold/debug/after_coin_flip_success(mob/user)
+	SSeconomy.fire()
+	to_chat(user, "<span class='bounty'>Luckily, economical inflation is not yet included. So no, you cannot predict the market with this.</span>")
 
 #undef ORESTACK_OVERLAYS_MAX

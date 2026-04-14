@@ -121,6 +121,7 @@
 				O = new path(target)
 			if(!QDELETED(O))
 				O.flags_1 |= ADMIN_SPAWNED_1
+				bm_set_admin_spawner_if_metadollar(O, user)
 				if(obj_dir)
 					O.setDir(obj_dir)
 				if(obj_name)

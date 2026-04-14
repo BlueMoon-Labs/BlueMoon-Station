@@ -1,7 +1,7 @@
 /datum/round_event_control/vox_scavengers
 	name = "Vox Scavengers"
 	typepath = /datum/round_event/vox_scavengers
-	weight = 16
+	weight = 0
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 15 MINUTES
@@ -55,6 +55,7 @@
 	antag_flag = "Vox Scavengers"
 	required_type = /mob/dead/observer
 	enemy_roles = list("Security Officer", "Detective", "Head of Security","Bridge Officer", "Captain")
+	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT)
 	required_enemies = list(0,0,0,0,0,0,0,0,0,0)
 	required_candidates = 0
 	weight = 3

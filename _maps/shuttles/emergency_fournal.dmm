@@ -538,7 +538,7 @@
 /area/shuttle/escape)
 "BQ" = (
 /obj/structure/table/glass,
-/obj/item/coin/red,
+/obj/item/coin/pokerchip/red,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/escape)
 "CZ" = (

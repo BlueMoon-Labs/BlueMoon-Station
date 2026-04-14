@@ -768,3 +768,4 @@
 	icon_state = "reijo"
 	can_you_fuck_plush = TRUE //Ебите как хотите...
 	squeak_override = list('sound/fox/Voice/fox_bark_1.ogg' = 1, 'sound/fox/Voice/fox_aaugh.ogg' = 1, 'sound/fox/Voice/fox_scream.ogg' = 1, 'sound/fox/Voice/fox_trill.ogg' = 1, 'sound/fox/Voice/fox_trill_2.ogg' = 1)
+	item_state = "reijo"

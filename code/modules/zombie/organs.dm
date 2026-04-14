@@ -31,14 +31,16 @@
 	START_PROCESSING(SSobj, src)
 
 /obj/item/organ/zombie_infection/Remove(special = FALSE)
+	// Parent nulls owner before returning; keep a ref for post-removal cure.
+	var/mob/living/carbon/removed_from = owner
 	. = ..()
-	if(owner)
-		UnregisterSignal(owner, COMSIG_LIVING_DEATH)
+	if(removed_from)
+		UnregisterSignal(removed_from, COMSIG_LIVING_DEATH)
 	STOP_PROCESSING(SSobj, src)
-	if(!QDELETED(owner) && iszombie(owner) && old_species && !special)
-		owner.set_species(old_species)
 	if(timer_id)
 		deltimer(timer_id)
+	if(!QDELETED(removed_from) && iszombie(removed_from) && old_species && !special)
+		removed_from.set_species(old_species)
 
 /obj/item/organ/zombie_infection/proc/organ_owner_died(mob/living/carbon/source, gibbed)
 	SIGNAL_HANDLER
@@ -54,7 +56,7 @@
 	if(!owner)
 		return
 	if(!(src in owner.internal_organs))
-		INVOKE_ASYNC(src, PROC_REF(Remove), owner)
+		INVOKE_ASYNC(src, PROC_REF(Remove), FALSE)
 	if(owner.mob_biotypes & MOB_MINERAL)//does not process in inorganic things
 		return
 	if (causes_damage && !iszombie(owner) && owner.stat != DEAD)

@@ -93,6 +93,21 @@ GLOBAL_LIST_INIT(mutant_transform_list, list("wingsopen" = "wings",
 	"waggingspines" = "spines",
 	"mam_waggingtail" = "mam_tail"))
 
+GLOBAL_LIST_INIT(head_mutant_parts_for_severed_head, list(
+	"snout",
+	"mam_snouts",
+	"frills",
+	"horns",
+	"ears",
+	"mam_ears",
+	"caps",
+	"ipc_screen",
+	"ipc_antenna",
+	"xenohead",
+	"arachnid_mandibles",
+	"insect_fluff",
+))
+
 GLOBAL_LIST_INIT(ghost_forms_with_directions_list, list(
 	"ghost",
 	"ghostian",

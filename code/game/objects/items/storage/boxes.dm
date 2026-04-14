@@ -1602,6 +1602,27 @@
 	new /obj/item/reagent_containers/food/snacks/cracker(src)
 	new /obj/item/tank/internals/emergency_oxygen/engi(src)
 
+/obj/item/storage/box/mre/random_safe
+	name = "\improper Nanotrasen MRE Ration Kit"
+	desc = "Упаковка с едой в блюспейс-кармане. При выдаче подбирается случайное меню из линейки NT (1–4)."
+	icon_state = "mre"
+	illustration = null
+	can_expire = FALSE
+
+/obj/item/storage/box/mre/random_safe/Initialize(mapload)
+	. = ..()
+	var/static/list/ration_types = list(
+		/obj/item/storage/box/mre/menu1/safe,
+		/obj/item/storage/box/mre/menu2/safe,
+		/obj/item/storage/box/mre/menu3,
+		/obj/item/storage/box/mre/menu4/safe,
+	)
+	var/picked = pick(ration_types)
+	var/obj/item/storage/box/mre/actual = new picked(loc)
+	transfer_fingerprints_to(actual)
+	qdel(src)
+	return INITIALIZE_HINT_QDEL
+
 //Where do I put this?
 /obj/item/secbat
 	name = "Secbat box"

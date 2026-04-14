@@ -129,7 +129,7 @@
 /datum/gear/donator/rationpack
 	name = "Ration Pack"
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/storage/box/mre/menu1/safe
+	path = /obj/item/storage/box/mre/random_safe
 	ckeywhitelist = list()
 	donator_group_id = DONATOR_GROUP_TIER_1
 
