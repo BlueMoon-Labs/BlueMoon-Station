@@ -289,29 +289,35 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	// Calculate desired pixel width using window size and aspect ratio
 	var/list/sizes = params2list(winget(src, "mainwindow.split;mapwindow", "size"))
 
-	// Client closed the window? Some other error? This is unexpected behaviour, let's
-	// CRASH with some info.
 	if(!sizes["mapwindow.size"])
-		CRASH("sizes does not contain mapwindow.size key. This means a winget failed to return what we wanted. --- sizes var: [sizes] --- sizes length: [length(sizes)]")
+		return
 
 	var/list/map_size = splittext(sizes["mapwindow.size"], "x")
 
-	// Looks like we expect mapwindow.size to be "ixj" where i and j are numbers.
-	// If we don't get our expected 2 outputs, let's give some useful error info.
 	if(length(map_size) != 2)
-		CRASH("map_size of incorrect length --- map_size var: [map_size] --- map_size length: [length(map_size)]")
+		return
 
 	var/height = text2num(map_size[2])
+	if(height <= 0)
+		return
 	var/desired_width = round(height * aspect_ratio)
 	if (text2num(map_size[1]) == desired_width)
 		// Nothing to do
 		return
 
+	if(!sizes["mainwindow.split.size"])
+		return
 	var/split_size = splittext(sizes["mainwindow.split.size"], "x")
+	if(length(split_size) != 2)
+		return
 	var/split_width = text2num(split_size[1])
+	if(split_width <= 300)
+		return
 
 	// Avoid auto-resizing the statpanel and chat into nothing.
 	desired_width = min(desired_width, split_width - 300)
+	if(desired_width <= 0)
+		return
 
 	// Calculate and apply a best estimate
 	// +4 pixels are for the width of the splitter's handle
@@ -323,6 +329,8 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	for(var/safety in 1 to 10)
 		var/after_size = winget(src, "mapwindow", "size")
 		map_size = splittext(after_size, "x")
+		if(length(map_size) != 2)
+			return
 		var/got_width = text2num(map_size[1])
 
 		if (got_width == desired_width)

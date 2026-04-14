@@ -151,6 +151,7 @@
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "screen_gc.dm"
+#include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
 #include "tattoo_system.dm"
 

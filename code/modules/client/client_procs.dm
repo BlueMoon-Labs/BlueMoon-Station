@@ -110,6 +110,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		nuke_chat()
 	if(href_list["reload_statbrowser"])
 		statbrowser_ready = FALSE
+		reset_listed_turf_icon_cache()
 		src << browse(file('html/statbrowser.html'), "window=statbrowser")
 		addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	// Log all hrefs
@@ -182,6 +183,10 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	var/atom/target = locate(href_list["statpanel_item_target"])
 	if(!target)
 		return
+	var/turf/listed = mob?.listed_turf
+	var/refresh_listed_turf = listed && get_turf(target) == listed
+	if(refresh_listed_turf)
+		mark_listed_turf_dirty(force_icon_refresh = TRUE)
 	var/button = "left=1"
 	switch(href_list["statpanel_item_click"])
 		if("middle")
@@ -191,6 +196,79 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		else
 			button = "left=1"
 	Click(target, target.loc, null, "[button];[href_list["statpanel_item_shiftclick"]?"shift=1;":null][href_list["statpanel_item_ctrlclick"]?"ctrl=1;":null]&alt=[href_list["statpanel_item_altclick"]?"alt=1;":null]", FALSE, "statpanel")
+	if(refresh_listed_turf)
+		mark_listed_turf_dirty(force_icon_refresh = TRUE)
+
+/client/proc/mark_listed_turf_dirty(force_icon_refresh = FALSE)
+	if(mob?.listed_turf)
+		listed_turf_dirty = TRUE
+		if(force_icon_refresh)
+			listed_turf_icon_refresh_pending = TRUE
+
+/client/proc/mark_listed_turf_dirty_from_signal(datum/source)
+	SIGNAL_HANDLER
+	mark_listed_turf_dirty()
+
+/client/proc/update_listed_turf_watch(turf/T)
+	if(listed_turf_watched == T)
+		return
+	if(listed_turf_watched)
+		UnregisterSignal(listed_turf_watched, list(COMSIG_ATOM_ENTERED, COMSIG_ATOM_EXITED, COMSIG_ATOM_CONTENTS_DEL, COMSIG_TURF_CHANGE))
+	listed_turf_watched = T
+	if(T)
+		RegisterSignal(T, list(COMSIG_ATOM_ENTERED, COMSIG_ATOM_EXITED, COMSIG_ATOM_CONTENTS_DEL, COMSIG_TURF_CHANGE), PROC_REF(mark_listed_turf_dirty_from_signal))
+
+/client/proc/reset_listed_turf_icon_cache()
+	statpanel_sent_icons.Cut()
+	listed_turf_last_icon_refresh = 0
+	listed_turf_icon_refresh_pending = FALSE
+	SSstatpanels.icon_queue -= src
+
+/client/proc/set_listed_turf(turf/T)
+	if(!mob)
+		return
+	var/turf/old_listed = mob.listed_turf
+	if(old_listed == T)
+		update_listed_turf_watch(T)
+		mark_listed_turf_dirty()
+		return
+	if(old_listed)
+		panel_tabs -= old_listed.name
+	mob.listed_turf = T
+	update_listed_turf_watch(T)
+	reset_listed_turf_icon_cache()
+	cached_turf_ref = null
+	cached_turf_encoded = null
+	listed_turf_last_refresh = 0
+	listed_turf_eye_ref = null
+	listed_turf_dirty = !!T
+	listed_turf_icon_refresh_pending = FALSE
+
+/client/proc/open_listed_turf(turf/T)
+	if(!mob || !T)
+		return
+	set_listed_turf(T)
+	if(!statbrowser_ready)
+		return
+	src << output("[url_encode(json_encode(T.name))];", "statbrowser:create_listedturf")
+	SSstatpanels.refresh_listed_turf(src, force_send = TRUE)
+
+/client/proc/clear_listed_turf(send_output = TRUE)
+	var/turf/old_listed = mob?.listed_turf
+	if(old_listed)
+		panel_tabs -= old_listed.name
+	if(mob)
+		mob.listed_turf = null
+	update_listed_turf_watch(null)
+	reset_listed_turf_icon_cache()
+	cached_turf_ref = null
+	cached_turf_encoded = null
+	listed_turf_last_refresh = 0
+	listed_turf_eye_ref = null
+	listed_turf_dirty = FALSE
+	listed_turf_icon_refresh_pending = FALSE
+	if(send_output && statbrowser_ready)
+		src << output("", "statbrowser:remove_listedturf")
 
 /client/proc/is_content_unlocked()
 	if(!prefs.unlock_content && !IS_CKEY_DONATOR_GROUP(key, DONATOR_GROUP_TIER_1))
@@ -416,6 +494,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 
 	// Initialize tgui panel
 	statbrowser_ready = FALSE
+	reset_listed_turf_icon_cache()
 	src << browse(file('html/statbrowser.html'), "window=statbrowser")
 	addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	tgui_panel.initialize()
@@ -1492,6 +1571,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	// Fallback for clients where Panel-Ready bridge callback is delayed/missing.
 	statbrowser_ready = TRUE
 	init_verbs()
+	if(mob?.listed_turf)
+		open_listed_turf(mob.listed_turf)
 
 //increment progress for an unlockable loadout item
 /client/proc/increment_progress(key, amount)

@@ -1,3 +1,6 @@
+#define LISTED_TURF_LIST_REFRESH_INTERVAL (2 SECONDS)
+#define LISTED_TURF_ICON_REFRESH_INTERVAL (10 SECONDS)
+
 SUBSYSTEM_DEF(statpanels)
 	name = "Stat Panels"
 	wait = 3
@@ -41,10 +44,6 @@ SUBSYSTEM_DEF(statpanels)
 			full_cycle_counter = 0
 		if(is_slow_cycle)
 			slow_data_counter = 0
-			for(var/client/C as anything in GLOB.clients)
-				if(C?.statpanel_sent_icons)
-					C.statpanel_sent_icons.Cut()
-			icon_queue.Cut()
 
 		var/list/tidi_data = list(
 			round(SStime_track.time_dilation_current, 0.1),
@@ -258,58 +257,10 @@ SUBSYSTEM_DEF(statpanels)
 				return
 			if(M?.listed_turf)
 				var/mob/target_mob = M
-				if(!target_mob.TurfAdjacent(target_mob.listed_turf))
-					target << output("", "statbrowser:remove_listedturf")
-					target_mob.listed_turf = null
-					target.cached_turf_ref = null
-					target.cached_turf_encoded = null
-					target.statpanel_sent_icons.Cut()
-					icon_queue -= target
+				if(QDELETED(target_mob.listed_turf) || !target_mob.TurfAdjacent(target_mob.listed_turf))
+					target.clear_listed_turf()
 				else if(target.stat_tab == M?.listed_turf.name || !(M?.listed_turf.name in target.panel_tabs))
-					var/turf_ref = REF(target_mob.listed_turf)
-					// If turf changed, clear per-client icon cache
-					if(turf_ref != target.cached_turf_ref)
-						target.statpanel_sent_icons.Cut()
-						icon_queue -= target
-					var/list/overrides = list()
-					var/list/turfitems = list()
-					var/list/needs_icons = list()
-					for(var/img in target.images)
-						var/image/target_image = img
-						if(!target_image.loc || target_image.loc.loc != target_mob.listed_turf || !target_image.override)
-							continue
-						overrides += target_image.loc
-					// Phase 1: Send list immediately - no icon generation
-					var/turf/listed = target_mob.listed_turf
-					var/listed_ref = REF(listed)
-					turfitems[++turfitems.len] = list("[listed]", listed_ref)
-					if(!target.statpanel_sent_icons[listed_ref])
-						needs_icons += listed
-					for(var/tc in listed)
-						var/atom/movable/turf_content = tc
-						if(turf_content.mouse_opacity == MOUSE_OPACITY_TRANSPARENT)
-							continue
-						if(turf_content.invisibility > target_mob.see_invisible)
-							continue
-						if(turf_content in overrides)
-							continue
-						if(turf_content.IsObscured())
-							continue
-						var/ref = REF(turf_content)
-						turfitems[++turfitems.len] = list("[turf_content.name]", ref)
-						if(!target.statpanel_sent_icons[ref])
-							needs_icons += turf_content
-					var/encoded = url_encode(json_encode(turfitems))
-					target.cached_turf_ref = turf_ref
-					target.cached_turf_encoded = encoded
-					target << output("[encoded];", "statbrowser:update_listedturf")
-					// Phase 2: Queue icon generation for progressive delivery
-					if(length(needs_icons))
-						var/list/existing = icon_queue[target]
-						if(existing)
-							existing += needs_icons
-						else
-							icon_queue[target] = needs_icons
+					refresh_listed_turf(target)
 		if(MC_TICK_CHECK)
 			return
 
@@ -351,6 +302,111 @@ SUBSYSTEM_DEF(statpanels)
 			icon_queue -= C
 		if(MC_TICK_CHECK)
 			return
+
+/datum/controller/subsystem/statpanels/proc/get_listedturf_overrides(client/target, turf/listed)
+	if(!target || !listed || !length(target.images))
+		return null
+	var/list/overrides = list()
+	for(var/img in target.images)
+		var/image/target_image = img
+		if(!target_image.loc || target_image.loc.loc != listed || !target_image.override)
+			continue
+		overrides += target_image.loc
+	return overrides
+
+/datum/controller/subsystem/statpanels/proc/build_listedturf_snapshot(turf/listed, see_invisible, list/overrides = null, list/sent_icons = null)
+	if(!listed || QDELETED(listed))
+		return null
+	var/list/turfitems = list()
+	var/list/needs_icons = list()
+	var/listed_ref = REF(listed)
+	turfitems[++turfitems.len] = list("[listed]", listed_ref)
+	if(!sent_icons || !sent_icons[listed_ref])
+		needs_icons += listed
+	for(var/tc in listed)
+		var/atom/movable/turf_content = tc
+		if(QDELETED(turf_content))
+			continue
+		if(turf_content.mouse_opacity == MOUSE_OPACITY_TRANSPARENT)
+			continue
+		if(turf_content.invisibility > see_invisible)
+			continue
+		if(overrides && (turf_content in overrides))
+			continue
+		if(turf_content.IsObscured())
+			continue
+		var/ref = REF(turf_content)
+		turfitems[++turfitems.len] = list("[turf_content.name]", ref)
+		if(!sent_icons || !sent_icons[ref])
+			needs_icons += turf_content
+	return list(
+		"entries" = turfitems,
+		"encoded" = url_encode(json_encode(turfitems)),
+		"needs_icons" = needs_icons,
+	)
+
+/datum/controller/subsystem/statpanels/proc/get_listedturf_refresh_actions(force_send = FALSE, force_icon_refresh = FALSE, turf_changed = FALSE, listed_turf_dirty = FALSE, listed_turf_icon_refresh_pending = FALSE, eye_changed = FALSE, last_refresh = 0, last_icon_refresh = 0, current_time = world.time)
+	var/list_refresh_due = force_send || turf_changed || listed_turf_dirty || eye_changed || (current_time - last_refresh >= LISTED_TURF_LIST_REFRESH_INTERVAL)
+	var/icon_refresh_due = force_icon_refresh || listed_turf_icon_refresh_pending || turf_changed || !last_icon_refresh || (current_time - last_icon_refresh >= LISTED_TURF_ICON_REFRESH_INTERVAL)
+	return list(
+		"list_refresh_due" = list_refresh_due,
+		"icon_refresh_due" = icon_refresh_due,
+	)
+
+/datum/controller/subsystem/statpanels/proc/merge_listedturf_icon_queue(list/existing, list/needs_icons)
+	if(!length(needs_icons))
+		return existing
+	if(!existing)
+		return needs_icons.Copy()
+	for(var/atom/A as anything in needs_icons)
+		if(!(A in existing))
+			existing += A
+	return existing
+
+/datum/controller/subsystem/statpanels/proc/queue_listedturf_icons(client/target, list/needs_icons)
+	if(!target || !length(needs_icons))
+		return
+	icon_queue[target] = merge_listedturf_icon_queue(icon_queue[target], needs_icons)
+
+/datum/controller/subsystem/statpanels/proc/refresh_listed_turf(client/target, force_send = FALSE, force_icon_refresh = FALSE)
+	if(!target?.statbrowser_ready)
+		return
+	var/mob/target_mob = target.mob
+	var/turf/listed = target_mob?.listed_turf
+	if(!target_mob || !listed || QDELETED(listed) || !target_mob.TurfAdjacent(listed))
+		target?.clear_listed_turf()
+		return
+	var/turf_ref = REF(listed)
+	var/turf_changed = turf_ref != target.cached_turf_ref
+	var/turf/eye_turf = get_turf(target.eye)
+	var/eye_turf_ref = eye_turf ? REF(eye_turf) : null
+	var/eye_changed = eye_turf_ref != target.listed_turf_eye_ref
+	var/list/refresh_actions = get_listedturf_refresh_actions(force_send, force_icon_refresh, turf_changed, target.listed_turf_dirty, target.listed_turf_icon_refresh_pending, eye_changed, target.listed_turf_last_refresh, target.listed_turf_last_icon_refresh)
+	var/list_refresh_due = refresh_actions["list_refresh_due"]
+	var/icon_refresh_due = refresh_actions["icon_refresh_due"]
+	if(!list_refresh_due && !icon_refresh_due)
+		return
+	if(icon_refresh_due)
+		target.reset_listed_turf_icon_cache()
+	var/list/overrides = get_listedturf_overrides(target, listed)
+	var/list/snapshot = build_listedturf_snapshot(listed, target_mob.see_invisible, overrides, target.statpanel_sent_icons)
+	if(!snapshot)
+		target.clear_listed_turf()
+		return
+	var/encoded = snapshot["encoded"]
+	if(force_send || encoded != target.cached_turf_encoded)
+		target << output("[encoded];", "statbrowser:update_listedturf")
+		target.cached_turf_encoded = encoded
+		target.listed_turf_last_refresh = world.time
+	else if(list_refresh_due)
+		target.listed_turf_last_refresh = world.time
+	target.cached_turf_ref = turf_ref
+	target.listed_turf_eye_ref = eye_turf_ref
+	target.listed_turf_dirty = FALSE
+	target.listed_turf_icon_refresh_pending = FALSE
+	if(icon_refresh_due)
+		target.listed_turf_last_icon_refresh = world.time
+	queue_listedturf_icons(target, snapshot["needs_icons"])
 
 
 /datum/controller/subsystem/statpanels/proc/generate_mc_data()
@@ -611,3 +667,8 @@ SUBSYSTEM_DEF(statpanels)
 		round(SStime_track.time_dilation_avg, 0.1),
 		round(SStime_track.time_dilation_avg_slow, 0.1))
 	src << output("[ping_str];[url_encode(json_encode(tidi))]", "statbrowser:update_ping")
+	if(mob?.listed_turf)
+		open_listed_turf(mob.listed_turf)
+
+#undef LISTED_TURF_LIST_REFRESH_INTERVAL
+#undef LISTED_TURF_ICON_REFRESH_INTERVAL

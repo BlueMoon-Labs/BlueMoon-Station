@@ -175,6 +175,18 @@
 	/// whether remove_admin_tabs has been sent (avoids redundant output() every cycle)
 	var/admin_tabs_cleared = FALSE
 
+	/// turf currently watched for listed turf dirtiness signals
+	var/turf/listed_turf_watched
+	/// whether the listed turf needs a new visibility snapshot
+	var/listed_turf_dirty = FALSE
+	/// whether the listed turf should force-refresh icons on the next snapshot
+	var/listed_turf_icon_refresh_pending = FALSE
+	/// world.time when the listed turf list was last refreshed
+	var/listed_turf_last_refresh = 0
+	/// world.time when the listed turf icons were last refreshed
+	var/listed_turf_last_icon_refresh = 0
+	/// last eye turf ref used to build the listed turf snapshot
+	var/listed_turf_eye_ref
 	/// cached turf REF for statpanel — skip re-rendering if same turf
 	var/cached_turf_ref
 	/// cached encoded turf data for statpanel
