@@ -249,6 +249,7 @@
 	desc = "A reinforced synthetic torso frame prepared for IPC assembly."
 	icon = 'icons/mob/augmentation/augments.dmi'
 	icon_state = "borg_chest"
+	should_draw_gender = TRUE
 
 /obj/item/bodypart/chest/robot/ipc/Initialize(mapload)
 	. = ..()
@@ -259,6 +260,7 @@
 	desc = "A reinforced synthetic head frame prepared for IPC assembly."
 	icon = 'icons/mob/augmentation/augments.dmi'
 	icon_state = "borg_head"
+	should_draw_gender = TRUE
 
 /obj/item/bodypart/head/robot/ipc/Initialize(mapload)
 	. = ..()
