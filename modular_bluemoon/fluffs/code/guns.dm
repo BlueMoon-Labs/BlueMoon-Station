@@ -1239,7 +1239,7 @@
 	SFX_GUN_INSERT_EMPTY_MAGAZINE = 'modular_bluemoon/fluffs/sound/weapon/SAR_reload.ogg'
 	SFX_GUN_BOLT_LOCK = 'modular_bluemoon/fluffs/sound/weapon/SAR_Bolt.ogg'
 	SFX_GUN_REMOVE_MAGAZINE = 'modular_bluemoon/fluffs/sound/weapon/SAR_unload.ogg'
-	SFX_GUN_REMOVE_EMPTY_MAGAZIN = 'modular_bluemoon/fluffs/sound/weapon/SAR_unload.ogg'
+	SFX_GUN_REMOVE_EMPTY_MAGAZINE = 'modular_bluemoon/fluffs/sound/weapon/SAR_unload.ogg'
 	SFX_GUN_BOLT_UNLOCK = 'modular_bluemoon/fluffs/sound/weapon/SAR_Bolt_unlock.ogg'
 	flight_x_offset = 32
 	flight_y_offset = 14

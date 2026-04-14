@@ -2274,25 +2274,25 @@
 	name = "Gelriter-22 kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/Gelriter_22
-	ckeywhitelist = list("TblKBA","lindaastereih")
+	ckeywhitelist = list("tblkba","lindaastereih")
 
 /datum/gear/donator/bm/fancy_laser_kit
 	name = "Fancy Laser Rifle Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/fancy_rifle_kit
-	ckeywhitelist = list("TblKBA")
+	ckeywhitelist = list("tblkba")
 
 /datum/gear/donator/bm/blood_suit
 	name = "crimson aristocracy suit"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/blood_suit
-	ckeywhitelist = list("TblKBA")
+	ckeywhitelist = list("tblkba")
 
 /datum/gear/donator/bm/blood_shinel
 	name = "crimson aristocracy shinel"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/toggle/captains_parade/blood_shinel
-	ckeywhitelist = list("TblKBA")
+	ckeywhitelist = list("tblkba")
 	restricted_desc = "Captain."
 	restricted_roles = list("Captain")
 
@@ -2300,4 +2300,4 @@
 	name = "crimson aristocracy boots"
 	slot = ITEM_SLOT_FEET
 	path = /obj/item/clothing/shoes/blood_boots
-	ckeywhitelist = list("TblKBA")
+	ckeywhitelist = list("tblkba")

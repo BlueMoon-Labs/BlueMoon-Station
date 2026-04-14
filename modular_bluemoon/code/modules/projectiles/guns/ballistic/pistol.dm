@@ -41,8 +41,8 @@
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
 	burst_size = 1
 	automatic_burst_overlay = FALSE
-	load_sound = "gun_insert_full_magazine"
-	load_empty_sound = "gun_insert_empty_magazine"
+	SFX_GUN_INSERT_FULL_MAGAZINE = "gun_insert_full_magazine"
+	SFX_GUN_INSERT_EMPTY_MAGAZINE = "gun_insert_empty_magazine"
 
 /obj/item/gun/ballistic/automatic/mk60/update_icon_state()
 	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"

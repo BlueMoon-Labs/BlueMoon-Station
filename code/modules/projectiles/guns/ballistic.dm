@@ -128,9 +128,9 @@
 		user.put_in_hands(magazine)
 		magazine.update_icon()
 		if(magazine.ammo_count())
-			playsound(src, eject_sound, 70, 1)
+			playsound(src, SFX_GUN_REMOVE_MAGAZINE, 70, 1)
 		else
-			playsound(src, eject_empty_sound, 70, 1)
+			playsound(src, SFX_GUN_REMOVE_EMPTY_MAGAZINE, 70, 1)
 		magazine = null
 		to_chat(user, "<span class='notice'>You pull the magazine out of \the [src].</span>")
 	else if(chambered)
@@ -138,7 +138,7 @@
 		AC.bounce_away()
 		chambered = null
 		to_chat(user, "<span class='notice'>You unload the round from \the [src]'s chamber.</span>")
-		playsound(src, unlock_sound, 70, 1)
+		playsound(src, SFX_GUN_BOLT_UNLOCK, 70, 1)
 	else
 		to_chat(user, "<span class='notice'>There's no magazine in \the [src].</span>")
 	update_icon()
