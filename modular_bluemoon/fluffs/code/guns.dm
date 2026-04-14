@@ -1235,12 +1235,12 @@
 	alternate_worn_layer = SUIT_STORE_LAYER
 	icon_state = "SAR-Bolt"
 	item_state = "SAR-Bolt"
-	SFX_GUN_INSERT_FULL_MAGAZINE = 'modular_bluemoon/fluffs/sound/weapon/SAR_reload.ogg'
-	SFX_GUN_INSERT_EMPTY_MAGAZINE = 'modular_bluemoon/fluffs/sound/weapon/SAR_reload.ogg'
-	SFX_GUN_BOLT_LOCK = 'modular_bluemoon/fluffs/sound/weapon/SAR_Bolt.ogg'
-	SFX_GUN_REMOVE_MAGAZINE = 'modular_bluemoon/fluffs/sound/weapon/SAR_unload.ogg'
-	SFX_GUN_REMOVE_EMPTY_MAGAZINE = 'modular_bluemoon/fluffs/sound/weapon/SAR_unload.ogg'
-	SFX_GUN_BOLT_UNLOCK = 'modular_bluemoon/fluffs/sound/weapon/SAR_Bolt_unlock.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_reload.ogg'
+	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_reload.ogg'
+	lock_back_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_Bolt.ogg'
+	eject_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_unload.ogg'
+	eject_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_unload.ogg'
+	unlock_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_Bolt_unlock.ogg'
 	flight_x_offset = 32
 	flight_y_offset = 14
 
