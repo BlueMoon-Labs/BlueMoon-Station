@@ -8,7 +8,7 @@
 	idle_power_usage = 15
 	active_power_usage = 1500
 	circuit = /obj/item/circuitboard/machine/ipc_constructor
-	pixel_x = 16
+	// pixel_x = 16
 
 	var/busy = FALSE
 	var/selected_body_size = RESIZE_DEFAULT_SIZE

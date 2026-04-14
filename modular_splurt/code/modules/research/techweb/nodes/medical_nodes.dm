@@ -1,13 +1,12 @@
 /datum/techweb_node/basic_cyber_organs/New()
 	var/list/extra_designs = list(
+		"ipc_stomach",
 		"ipc_heart",
 		"ipc_lungs",
 		"ipc_liver",
-		"ipc_stomach",
 		"ipc_eyes",
 		"ipc_ears",
 		"ipc_tongue",
-		"ipc_brain",
 		"ci-power-cord"
 	)
 	LAZYADD(design_ids, extra_designs)
