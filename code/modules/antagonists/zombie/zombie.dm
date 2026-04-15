@@ -25,6 +25,8 @@
 /datum/antagonist/zombie/apply_innate_effects(mob/living/mob_override)
 	var/mob/living/carbon/C = mob_override || owner.current
 	add_antag_hud(antag_hud_type, antag_hud_name, C)
+	if(!istype(C))
+		return
 	var/obj/item/organ/zombie_infection/ZI = C.getorganslot(ORGAN_SLOT_ZOMBIE)
 	if(!ZI)
 		ZI = new zombie_organ_type
