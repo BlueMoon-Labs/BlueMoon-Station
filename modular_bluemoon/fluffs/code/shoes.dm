@@ -69,3 +69,13 @@
 	. = ..()
 	AddComponent(/datum/component/squeak, list('sound/effects/footstep/exo_footstep-1.ogg' = 1,'sound/effects/footstep/exo_footstep-2.ogg' = 1), 100)
 	AddElement(/datum/element/polychromic, poly_colors, 1)
+
+/obj/item/clothing/shoes/blood_boots
+	name = "crimson aristocracy boots"
+	desc = "Leather boots of burgundy shades, stitched with blood-red thread."
+	icon_state = "blood_boots"
+	item_state = "blood_boots"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
