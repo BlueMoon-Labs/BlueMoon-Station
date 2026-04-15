@@ -40,8 +40,8 @@
 						/obj/item/scalpel/alien,
 						/obj/item/hemostat/alien,
 						/obj/item/retractor/alien,
-						/obj/item/cautery/alien,
 						/obj/item/circular_saw/alien,
+						/obj/item/cautery/alien,
 						/obj/item/blood_filter/augment,
 						/obj/item/surgicaldrill/alien)
 
