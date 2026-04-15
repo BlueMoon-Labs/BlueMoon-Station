@@ -165,7 +165,6 @@
 				return
 			if(!I.use(1))
 				return
-			I.use(1)
 			cell.give(500)
 			to_chat(user, span_notice("Вы вдавили [I] в [src] с щебнем, добавляя заряд."))
 	else

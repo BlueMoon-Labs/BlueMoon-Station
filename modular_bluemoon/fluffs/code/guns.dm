@@ -596,12 +596,37 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	//chosen_icon = 'icons/mob/clothing/back.dmi'
 	icon_state = "KS-23M"
-	can_suppress = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/shoot.ogg'
 
 /obj/item/gun/ballistic/shotgun/riot/ks_22/update_icon_state()
 	. = ..()
 	icon_state = "KS-23M[chambered ? "" : "-e"]"
+
+/obj/item/modkit/mossberg_kit
+	name = "Mossberg-590A Shotgun Kit"
+	desc = "A modkit for making a Shotgun into a Mossberg-590A."
+	product = /obj/item/gun/ballistic/shotgun/riot/mossberg
+	fromitem = list(/obj/item/gun/ballistic/shotgun, /obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/shotgun/riot/syndicate)
+
+/obj/item/gun/ballistic/shotgun/riot/mossberg
+	name = "\improper Mossberg-590A"
+	desc = "Карабин Моссберг-590А - ружьё с нарезным стволом. Имеет умную РГБ подсветку, дабы каждый враг понимал, какая участь его сейчас настигнет."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	icon_state = "mossberg_n"
+	item_state = "mossberg_n"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/pf940_shoot.ogg'
+
+/obj/item/gun/ballistic/shotgun/riot/mossberg/update_icon_state()
+	var/state = "mossberg_l"
+	if(chambered)
+		if(istype(chambered, /obj/item/ammo_casing/shotgun/rubbershot) || istype(chambered, /obj/item/ammo_casing/shotgun/beanbag))
+			state = "mossberg_n"
+		else if(istype(chambered, /obj/item/ammo_casing/shotgun/incendiary))
+			state = "mossberg_i"
+	icon_state = state
+	item_state = state
 
 /obj/item/modkit/g36_kit
 	name = "G36 Kit"

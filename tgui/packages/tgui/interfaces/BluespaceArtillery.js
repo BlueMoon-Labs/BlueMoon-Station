@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Box, Button, LabeledList, NoticeBox, ProgressBar, Section, Slider } from '../components';
+import { Box, Button, LabeledList, NoticeBox, Section, Slider } from '../components';
 import { Window } from '../layouts';
 
 const formatPower = (x) => {
@@ -24,6 +24,12 @@ export const BluespaceArtillery = (props, context) => {
     powernet_power,
     power_suck_cap,
   } = data;
+
+  const maxCap = Math.max(1, Number(max_capacitor_charge) || 0);
+  const targetCap = Math.min(maxCap, Math.max(0, Number(target_capacitor_charge) || 0));
+  const capCharge = Math.max(0, Number(capacitor_charge) || 0);
+  const powerStep = 1e6;
+
   const canFire = connected && unlocked && target && status === 'SYSTEM READY';
   return (
     <Window
@@ -79,25 +85,29 @@ export const BluespaceArtillery = (props, context) => {
             >
               <LabeledList>
                 <LabeledList.Item label="Capacitor Charge">
-                  {formatPower(capacitor_charge)}
+                  {formatPower(capCharge)}
                 </LabeledList.Item>
                 <LabeledList.Item label="Powernet">
-                  {formatPower(powernet_power)} (suck cap: {formatPower(power_suck_cap)})
+                  {formatPower(powernet_power != null ? Number(powernet_power) : null)}
+                  {' '}(suck cap:{' '}
+                  {formatPower(power_suck_cap != null ? Number(power_suck_cap) : null)})
                 </LabeledList.Item>
-                <LabeledList.Item label="Target charge (MW)">
+                <LabeledList.Item label="Target charge">
                   <Slider
-                    value={target_capacitor_charge}
-                    fillValue={capacitor_charge}
+                    value={targetCap}
+                    fillValue={Math.min(capCharge, maxCap)}
                     minValue={0}
-                    maxValue={max_capacitor_charge}
-                    step={1e6}
+                    maxValue={maxCap}
+                    step={powerStep}
                     stepPixelSize={2}
+                    suppressFlicker={500}
                     format={(value) => formatPower(value)}
-                    onChange={(e, value) =>
+                    onChange={(e, value) => {
+                      const v = Math.round(Number(value) / powerStep) * powerStep;
                       act('capacitor_target_change', {
-                        capacitor_target: value,
-                      })
-                    }
+                        capacitor_target: Math.min(maxCap, Math.max(0, v)),
+                      });
+                    }}
                   />
                 </LabeledList.Item>
               </LabeledList>

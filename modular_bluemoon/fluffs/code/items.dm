@@ -114,3 +114,44 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/items.dmi'
 	icon_state = "odnorazka"
 	item_state = "odnorazka"
+
+/obj/item/storage/box/cybersun_kit
+	name = "Cybersun kit"
+	desc = "Military box that contains a full kit of Cybersun equipment."
+	icon = 'modular_bluemoon/krashly/icons/obj/box.dmi'
+	icon_state = "syndiebox"
+
+/obj/item/storage/box/cybersun_kit/PopulateContents()
+	new /obj/item/storage/belt/esabre_belt/fluff(src)
+	new /obj/item/modkit/esabre_belt(src)
+	new /obj/item/modkit/energy_sabre/captain(src)
+	new /obj/item/modkit/energy_sabre/syndicate(src)
+	new /obj/item/modkit/energy_sabre/inteq(src)
+
+/obj/item/modkit/esabre_belt
+	name = "Cybersun Sabre Sheath Kit"
+	desc = "A modkit for making most types of sheath into a cybersun sheath."
+	icon_state = "syn_helmet_kit"
+	product = /obj/item/storage/belt/esabre_belt/fluff/real
+	fromitem = list(/obj/item/storage/belt/esabre_belt, /obj/item/storage/belt/sabre, /obj/item/storage/belt/sabre/rapier)
+
+/obj/item/modkit/energy_sabre/captain
+	name = "Captain Cybersun Sabre kit"
+	desc = "A modkit for making a captain's sabre into cybersun energy sabre."
+	icon_state = "syn_helmet_kit"
+	product = /obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain
+	fromitem = list(/obj/item/melee/sabre)
+
+/obj/item/modkit/energy_sabre/syndicate
+	name = "Syndicate Cybersun Sabre kit"
+	desc = "A modkit for making a syndicate sabre into cybersun energy sabre."
+	icon_state = "syn_helmet_kit"
+	product = /obj/item/melee/transforming/energy/sword/energy_sabre/fluff/syndicate
+	fromitem = list(/obj/item/melee/rapier)
+
+/obj/item/modkit/energy_sabre/inteq
+	name = "Cybersun Sabre kit"
+	desc = "A modkit for making an energy sabre into cybersun energy sabre."
+	icon_state = "syn_helmet_kit"
+	product = /obj/item/melee/transforming/energy/sword/energy_sabre/fluff
+	fromitem = list(/obj/item/melee/transforming/energy/sword/energy_sabre)

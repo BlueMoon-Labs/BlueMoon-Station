@@ -10,6 +10,14 @@ VOTE_DELAY 6000
 ## time period (deciseconds) which voting session will last (default 1 minute)
 VOTE_PERIOD 600
 
+## Server hour when roundtype voting starts offering Dynamic Light instead of Extended.
+## Uses server local time in 24-hour format. 18 means Dynamic Light window starts at 18:00.
+DYNAMIC_LIGHT_ROUNDTYPE_VOTE_START_HOUR 18
+
+## Server hour when roundtype voting stops offering Dynamic Light instead of Extended.
+## Uses server local time in 24-hour format. 0 means Dynamic Light window ends at 00:00.
+DYNAMIC_LIGHT_ROUNDTYPE_VOTE_END_HOUR 0
+
 ## autovote initial delay (deciseconds) before first automatic transfer vote call (default 120 minutes)
 ## Set to 0 to disable the subsystem altogether.
 VOTE_AUTOTRANSFER_INITIAL 108000

@@ -348,7 +348,10 @@
 
 		if(istype(H, /mob/living))
 			var/mob/living/carbon/human/D = generate_or_wait_for_human_dummy(DUMMY_HUMAN_SLOT_EXAMINER)
+			D.forceMove(src)
 			var/msg = H.examine(D)
+			if(islist(msg))
+				msg = jointext(msg, " ")
 			if(msg)
 				set_pin_data(IC_OUTPUT, 2, msg)
 			unset_busy_human_dummy(DUMMY_HUMAN_SLOT_EXAMINER)
@@ -1092,14 +1095,15 @@
 
 /obj/item/integrated_circuit/input/matscan
 	name = "material scanner"
-	desc = "This special module is designed to get information about material containers of different machinery, \
-			like ORM, lathes, etc."
+	desc = "Специальная маширения получающая содержание материалов в машинерии или предметах."
 	icon_state = "video_camera"
 	complexity = 6
 	inputs = list(
 		"target" = IC_PINTYPE_REF
 		)
 	outputs = list(
+		"Is material container"	= IC_PINTYPE_BOOLEAN,
+		"Total amount"			= IC_PINTYPE_NUMBER,
 		"Metal"				 	= IC_PINTYPE_NUMBER,
 		"Glass"					= IC_PINTYPE_NUMBER,
 		"Silver"				= IC_PINTYPE_NUMBER,
@@ -1120,25 +1124,37 @@
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 40
-	var/list/mtypes = list(/datum/material/iron, /datum/material/glass, /datum/material/silver, /datum/material/gold, /datum/material/diamond, /datum/material/plasma, /datum/material/uranium, /datum/material/bananium, /datum/material/titanium, /datum/material/bluespace, /datum/material/biomass, /datum/material/plastic)
+	var/static/list/mtypes = list(/datum/material/iron, /datum/material/glass, /datum/material/silver, /datum/material/gold, /datum/material/diamond, /datum/material/plasma, /datum/material/uranium, /datum/material/bananium, /datum/material/titanium, /datum/material/bluespace, /datum/material/biomass, /datum/material/plastic)
 
 
 /obj/item/integrated_circuit/input/matscan/do_work()
 	var/atom/movable/H = get_pin_data_as_type(IC_INPUT, 1, /atom/movable)
-	var/turf/T = get_turf(src)
-	var/datum/component/material_container/mt = H.GetComponent(/datum/component/material_container)
-	if(!mt) //Invalid input
+	if(!H)
 		return
-	if(H in view(T)) // This is a camera. It can't examine thngs,that it can't see.
-		for(var/I in mtypes)
-			if(I in mt.materials)
-				set_pin_data(IC_OUTPUT, I, mt.materials[I])
-			else
-				set_pin_data(IC_OUTPUT, I, null)
-		push_data()
-		activate_pin(2)
+	var/turf/T = get_turf(src)
+	var/datum/component/material_container/mt = (H.GetComponent(/datum/component/remote_materials)?.mat_container || H.GetComponent(/datum/component/material_container))
+	var/total_amount = 0
+
+	if(!mt && (H in view(T)))
+		set_pin_data(IC_OUTPUT, 1, FALSE)
+		for(var/I in 1 to length(mtypes))
+			var/amount = H?.custom_materials?[SSmaterials.GetMaterialRef(mtypes[I])] || 0
+			set_pin_data(IC_OUTPUT, 2 + I, amount)
+			total_amount += amount
+
+	else if(H in view(T))
+		set_pin_data(IC_OUTPUT, 1, TRUE)
+		for(var/I in 1 to length(mtypes))
+			var/amount = mt.materials?[SSmaterials.GetMaterialRef(mtypes[I])] || 0
+			set_pin_data(IC_OUTPUT, 2 + I, amount)
+			total_amount += amount
 	else
 		activate_pin(3)
+		return
+
+	set_pin_data(IC_OUTPUT, 2, total_amount)
+	push_data()
+	activate_pin(2)
 
 /obj/item/integrated_circuit/input/atmospheric_analyzer
 	name = "atmospheric analyzer"

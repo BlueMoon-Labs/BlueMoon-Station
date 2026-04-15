@@ -227,28 +227,33 @@ export class InfinitePlane extends Component {
           },
         })}
       >
+        {/* absolute (not fixed): must stay inside the plane host; fixed used viewport and broke layout at HiDPI / non-1:1 scale */}
         <div
           onMouseDown={this.handleMouseDown}
           onMouseMove={this.handleMouseMove}
           style={{
-            "position": "fixed",
-            "height": "100%",
-            "width": "100%",
-            "background-image": `url("${backgroundImage}")`,
-            "background-position": `${finalLeft}px ${finalTop}px`,
-            "background-repeat": "repeat",
-            "background-size": `${zoom*imageWidth}px`,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: `url("${backgroundImage}")`,
+            backgroundPosition: `${finalLeft}px ${finalTop}px`,
+            backgroundRepeat: 'repeat',
+            backgroundSize: `${zoom * imageWidth}px`,
           }}
         />
         <div
           onMouseDown={this.handleMouseDown}
           onMouseMove={this.handleMouseMove}
           style={{
-            "position": "fixed",
-            "transform": `translate(${finalLeft}px, ${finalTop}px) scale(${zoom})`,
-            "transform-origin": "top left",
-            "height": "100%",
-            "width": "100%",
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            transform: `translate(${finalLeft}px, ${finalTop}px) scale(${zoom})`,
+            transformOrigin: 'top left',
           }}
         >
           {children}

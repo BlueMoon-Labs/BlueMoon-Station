@@ -169,7 +169,6 @@
 			icon_state = "cannon_east"
 	add_overlay(top_layer)
 	reload()
-	START_PROCESSING(SSobj, src)
 
 /obj/machinery/bsa/full/Destroy()
 	control_computer = null
@@ -202,13 +201,42 @@
 			return locate(world.maxx,y,z)
 	return get_turf(src)
 
+/// Pull from APC cell into capacitor; amount_watts is in powernet watts (same as powersink/add_delayedload).
+/obj/machinery/bsa/full/proc/draw_from_apc_cell(obj/machinery/power/apc/apc, amount_watts)
+	if(!apc?.cell || amount_watts <= 0)
+		return 0
+	if(!apc.operating)
+		return 0
+	var/cell_take = min(apc.cell.charge, amount_watts JOULES)
+	if(cell_take <= 0)
+		return 0
+	if(!apc.cell.use(cell_take))
+		return 0
+	if(apc.charging == 2) // was APC_FULLY_CHARGED; define is file-local to apc.dm
+		apc.charging = 1 // APC_CHARGING
+	return cell_take WATTS
+
+/obj/machinery/bsa/full/proc/draw_from_smes(obj/machinery/power/smes/smes, amount_watts)
+	if(!smes || amount_watts <= 0 || (smes.machine_stat & BROKEN))
+		return 0
+	if(smes.charge <= 0)
+		return 0
+	var/max_watts = round(smes.charge / 0.05)
+	var/take_w = min(amount_watts, max_watts)
+	if(take_w <= 0)
+		return 0
+	smes.charge -= take_w * 0.05
+	return take_w
+
 /obj/machinery/bsa/full/proc/charge_capacitors()
 	if(capacitor_power >= target_power)
 		if(capacitor_power < BSA_FIRE_POWER_THRESHOLD)
 			system_state = BSA_SYSTEM_LOW_POWER
 		else
 			system_state = BSA_SYSTEM_READY
+		STOP_PROCESSING(SSobj, src)
 		return
+
 	var/area/our_area = get_area(src)
 	if(!our_area)
 		return
@@ -216,39 +244,83 @@
 	if(!our_apc)
 		return
 	var/obj/machinery/power/terminal/our_terminal = our_apc.terminal
-	if(!our_terminal)
+	if(!our_terminal?.powernet)
 		return
+
 	var/datum/powernet/our_powernet = our_terminal.powernet
-	if(!our_powernet)
+	var/needed = min(power_suck_cap, max_charge - capacitor_power)
+	if(needed <= 0)
 		return
-	var/charge_to_pull = power_suck_cap
-	var/charge_to_full = max_charge - capacitor_power
-	if(charge_to_full < power_suck_cap)
-		charge_to_pull = charge_to_full
-	var/max_power_draw = charge_to_pull > our_powernet.avail ? our_powernet.avail : charge_to_pull
-	our_powernet.avail -= max_power_draw
-	capacitor_power += max_power_draw
+
+	var/drawn_total = 0
+	var/drawn = 0
+
+	// 1) Local APC cell first (area buffer)
+	drawn = draw_from_apc_cell(our_apc, needed)
+	drawn_total += drawn
+	needed -= drawn
+
+	// 2) SMES units in the same area (local storage)
+	if(needed > 0)
+		for(var/obj/machinery/power/smes/smes_unit in our_area)
+			if(needed <= 0)
+				break
+			drawn = draw_from_smes(smes_unit, needed)
+			drawn_total += drawn
+			needed -= drawn
+
+	// 3) Powernet via delayed load (same mechanism as /obj/item/powersink — actually drains the grid)
+	if(needed > 0)
+		drawn = min(needed, our_terminal.delayed_surplus())
+		if(drawn > 0)
+			our_terminal.add_delayedload(drawn)
+			drawn_total += drawn
+			needed -= drawn
+
+	// 4) Other APC cells on this powernet (powersink spillover when the net is thin)
+	if(needed > 0)
+		for(var/obj/machinery/power/terminal/remote_term as anything in our_powernet.nodes)
+			if(needed <= 0)
+				break
+			if(!istype(remote_term.master, /obj/machinery/power/apc))
+				continue
+			var/obj/machinery/power/apc/remote_apc = remote_term.master
+			if(remote_apc == our_apc)
+				continue
+			drawn = draw_from_apc_cell(remote_apc, needed)
+			drawn_total += drawn
+			needed -= drawn
+
+	capacitor_power += drawn_total
 
 /obj/machinery/bsa/full/proc/get_available_powercap()
 	var/area/our_area = get_area(src)
 	if(!our_area)
-		return
+		return 0
 	var/obj/machinery/power/apc/our_apc = our_area.get_apc()
 	if(!our_apc)
-		return
+		return 0
 	var/obj/machinery/power/terminal/our_terminal = our_apc.terminal
-	if(!our_terminal)
-		return
-	var/datum/powernet/our_powernet = our_terminal.powernet
-	if(!our_powernet)
-		return
-	return our_powernet.avail
+	if(!our_terminal?.powernet)
+		return 0
+	var/total = our_terminal.delayed_surplus()
+	if(our_apc.cell && our_apc.operating)
+		total += min(our_apc.cell.charge, our_apc.cell.maxcharge) WATTS
+	for(var/obj/machinery/power/smes/smes_unit in our_area)
+		if(!(smes_unit.machine_stat & BROKEN))
+			total += round(smes_unit.charge / 0.05)
+	for(var/obj/machinery/power/terminal/remote_term as anything in our_terminal.powernet.nodes)
+		if(!istype(remote_term.master, /obj/machinery/power/apc))
+			continue
+		var/obj/machinery/power/apc/remote_apc = remote_term.master
+		if(remote_apc == our_apc || !remote_apc.operating || !remote_apc.cell)
+			continue
+		total += min(remote_apc.cell.charge, remote_apc.cell.maxcharge) WATTS
+	return total
 
 /obj/machinery/bsa/full/process()
 	if(system_state == BSA_SYSTEM_CHARGE_CAPACITORS)
 		charge_capacitors()
-		if(capacitor_power >= target_power)
-			return
 
 /obj/machinery/bsa/full/proc/pre_fire(mob/user, turf/bullseye)
 	if(system_state != BSA_SYSTEM_READY)
@@ -392,7 +464,10 @@
 	var/obj/machinery/bsa/full/cannon = connected_cannon?.resolve()
 	if(!cannon)
 		return
-	cannon.target_power = clamp(text2num(new_target), 0, cannon.max_charge)
+	var/num = isnum(new_target) ? new_target : text2num("[new_target]")
+	if(!isnum(num))
+		return
+	cannon.target_power = clamp(num, 0, cannon.max_charge)
 
 /obj/machinery/computer/bsa_control/proc/charge()
 	var/obj/machinery/bsa/full/cannon = connected_cannon?.resolve()

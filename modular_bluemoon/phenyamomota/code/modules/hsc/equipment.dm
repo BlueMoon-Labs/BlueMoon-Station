@@ -18,6 +18,7 @@
 	item_state = "hsc_suit"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/hsc
 	mutantrace_variation = STYLE_DIGITIGRADE
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/hsc/medical
 	name = "HSC medical unit helmet"

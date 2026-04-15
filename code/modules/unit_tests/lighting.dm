@@ -1,3 +1,7 @@
+#define REPAIR_RELOAD_WAIT_TICKS 600
+#define REPAIR_RELOAD_TEST_MIN_LUM_DELTA 0.05
+#define REPAIR_RELOAD_TEST_MAX_POST_REPAIR_LUM_DROP 0.1
+
 /datum/unit_test/lighting_object_destroy_clears_blend_queue/Run()
 	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
 
@@ -141,6 +145,226 @@
 		return T.lighting_object
 	var/atom/movable/lighting_object/lo = allocate(/atom/movable/lighting_object, T)
 	return lo
+
+/datum/unit_test/proc/wait_for_repair_reload(datum/mapGenerator/repair/reload_station_map/reload_generator = null, max_ticks = REPAIR_RELOAD_WAIT_TICKS)
+	for(var/i in 1 to max_ticks)
+		if(!GLOB.reloading_map)
+			if(reload_generator)
+				return reload_generator.last_reload_succeeded
+			return TRUE
+		sleep(world.tick_lag)
+	return FALSE
+
+/datum/unit_test/proc/is_station_repair_test_turf(turf/T, area/expected_area = null)
+	if(!istype(T, /turf/open/floor))
+		return FALSE
+	if(T.z != SSmapping.station_start || !is_station_level(T.z))
+		return FALSE
+	var/area/turf_area = get_area(T)
+	if(expected_area && turf_area != expected_area)
+		return FALSE
+	if(!IS_DYNAMIC_LIGHTING(T) || !IS_DYNAMIC_LIGHTING(turf_area))
+		return FALSE
+	// Exclude space/ruins areas and overlay-on-non-floor coords: random-ruin or
+	// prefab overlays placed on top of space / closed-mineral coords do not
+	// survive reload_station_map (it restores the station DMM's golden copy,
+	// which has the original /turf/open/space or /turf/closed/mineral at those
+	// coords). Runtime area can look like a normal station area after overlay,
+	// so also reject any floor whose baseturfs chain contains a non-floor
+	// ancestor — that's the tell-tale sign of an overlay.
+	if(istype(turf_area, /area/space))
+		return FALSE
+	if(istype(turf_area, /area/shuttle))
+		return FALSE
+	// Non-station surface and dungeon areas: random cave/ruin generators place
+	// dynamic-lit floors on top of closed mineral or sand; reload_station_map
+	// correctly restores the DMM's non-floor turf at those coords, tripping
+	// either the has_lo assertion or the lit_after regression guard.
+	if(istype(turf_area, /area/asteroid))
+		return FALSE
+	if(istype(turf_area, /area/icemoon))
+		return FALSE
+	if(istype(turf_area, /area/mine))
+		return FALSE
+	if(istype(turf_area, /area/lavaland))
+		return FALSE
+	if(istype(turf_area, /area/edina))
+		return FALSE
+	var/list/baseturfs = islist(T.baseturfs) ? T.baseturfs : list(T.baseturfs)
+	for(var/base_path in baseturfs)
+		if(ispath(base_path, /turf/open/space) || ispath(base_path, /turf/closed))
+			return FALSE
+	// Reject turfs that carry infrastructure whose reload_station_map 1x1 crop
+	// cannot reconstruct cleanly. Partial reloads of a single tile containing
+	// a vent/pump or cable leave the atmos/power pipeline unconnected and
+	// setup_template_machinery runtimes when re-initializing the lone machine.
+	for(var/atom/movable/A as anything in T)
+		if(ismob(A) || A.density)
+			return FALSE
+		if(istype(A, /obj/machinery/atmospherics))
+			return FALSE
+		if(istype(A, /obj/structure/cable))
+			return FALSE
+		if(istype(A, /obj/structure/disposalpipe))
+			return FALSE
+	return TRUE
+
+/datum/unit_test/proc/find_station_repair_test_regions()
+	var/list/candidates = list()
+	var/z = SSmapping.station_start
+	for(var/x in 2 to world.maxx)
+		for(var/y in 1 to world.maxy)
+			var/turf/start = locate(x, y, z)
+			if(!start)
+				continue
+			var/area/base_area = get_area(start)
+			var/turf/west = locate(x - 1, y, z)
+			if(!is_station_repair_test_turf(start, base_area) || !is_station_repair_test_turf(west, base_area))
+				continue
+			if(!start.lighting_object)
+				continue
+			candidates += list(list(
+				"start" = start,
+				"end" = start,
+				"light_turf" = west,
+				"target_x" = start.x,
+				"target_y" = start.y,
+				"target_z" = start.z
+			))
+	return candidates
+
+/datum/mapGeneratorModule/bottomLayer/massdelete/test_repair_delete/generate()
+	if(!istype(mother, /datum/mapGenerator/repair/reload_station_map/test_ordering))
+		return
+	var/datum/mapGenerator/repair/reload_station_map/test_ordering/test_generator = mother
+	test_generator.phase_events += "delete:start"
+	sleep(world.tick_lag)
+	test_generator.delete_complete = TRUE
+	test_generator.phase_events += "delete:end"
+
+/datum/mapGenerator/repair/reload_station_map/test_ordering
+	modules = list(/datum/mapGeneratorModule/bottomLayer/massdelete/test_repair_delete)
+	cleanload = TRUE
+	var/list/phase_events = list()
+	var/delete_complete = FALSE
+	var/loader_started_before_delete_complete = FALSE
+
+/datum/mapGenerator/repair/reload_station_map/test_ordering/run_reload_phase()
+	phase_events += "reload:start"
+	if(!delete_complete)
+		loader_started_before_delete_complete = TRUE
+	phase_events += "reload:end"
+	return TRUE
+
+/datum/mapGenerator/repair/reload_station_map/test_failure_signal/run_reload_phase()
+	return FALSE
+
+/datum/unit_test/repair_reload_serializes_delete_before_reload/Run()
+	var/datum/mapGenerator/repair/reload_station_map/test_ordering/test_generator = new
+	var/turf/test_turf = run_loc_floor_bottom_left
+	test_generator.map = list(test_turf)
+	test_generator.x_low = test_turf.x
+	test_generator.y_low = test_turf.y
+	test_generator.x_high = test_turf.x
+	test_generator.y_high = test_turf.y
+	test_generator.z = test_turf.z
+
+	TEST_ASSERT(test_generator.generate(), "Test repair generator failed to start.")
+	TEST_ASSERT(wait_for_repair_reload(test_generator), "Timed out waiting for test repair generator to finish.")
+	TEST_ASSERT(!test_generator.loader_started_before_delete_complete, "Reload phase started before delete phase completed.")
+	var/joined_events = test_generator.phase_events.Join(">")
+	TEST_ASSERT_EQUAL(joined_events, "delete:start>delete:end>reload:start>reload:end", "Repair reload phases executed out of order: [joined_events].")
+
+	qdel(test_generator)
+
+/datum/unit_test/repair_reload_failure_is_observable/Run()
+	var/datum/mapGenerator/repair/reload_station_map/test_failure_signal/test_generator = new
+	var/turf/test_turf = run_loc_floor_bottom_left
+	test_generator.map = list(test_turf)
+	test_generator.x_low = test_turf.x
+	test_generator.y_low = test_turf.y
+	test_generator.x_high = test_turf.x
+	test_generator.y_high = test_turf.y
+	test_generator.z = test_turf.z
+
+	TEST_ASSERT(test_generator.generate(), "Failure-signalling repair generator failed to start.")
+	TEST_ASSERT(!wait_for_repair_reload(test_generator), "Repair reload failure should be observable to the waiting helper.")
+	TEST_ASSERT(!GLOB.reloading_map, "Repair reload failure should still release the global reload guard.")
+	TEST_ASSERT_EQUAL(test_generator.last_reload_succeeded, FALSE, "Failed repair reload should publish a FALSE completion state.")
+
+	qdel(test_generator)
+
+/datum/unit_test/repair_reload_in_place_restores_station_lighting/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
+
+	var/list/candidate_regions = find_station_repair_test_regions()
+	if(!length(candidate_regions))
+		return
+
+	var/list/region = null
+	var/turf/start = null
+	var/turf/end = null
+	var/turf/light_turf = null
+	var/target_x = 0
+	var/target_y = 0
+	var/target_z = 0
+	var/turf/target_turf = null
+	var/obj/effect/light_emitter/emitter = null
+	var/baseline_lum = 0
+	var/lit_before = 0
+
+	for(var/list/candidate as anything in candidate_regions)
+		start = candidate["start"]
+		end = candidate["end"]
+		light_turf = candidate["light_turf"]
+		target_x = candidate["target_x"]
+		target_y = candidate["target_y"]
+		target_z = candidate["target_z"]
+		target_turf = locate(target_x, target_y, target_z)
+		if(!target_turf?.lighting_object)
+			continue
+		drain_nightshift_lighting_work()
+		baseline_lum = target_turf.get_lumcount()
+		emitter = allocate(/obj/effect/light_emitter, light_turf)
+		emitter.set_light(5, 2, COLOR_WHITE)
+		drain_nightshift_lighting_work()
+		if(emitter.light)
+			lit_before = target_turf.get_lumcount()
+			if(lit_before > baseline_lum + REPAIR_RELOAD_TEST_MIN_LUM_DELTA)
+				region = candidate
+				break
+		qdel(emitter)
+		allocated -= emitter
+		emitter = null
+
+	// If no candidate region could be lit by a neighbouring emitter, there is
+	// nothing meaningful to test on this map (happens on ultra-minimal maps
+	// like runtimestation_minimal that have no station interior at all). Skip
+	// rather than assert — the reload invariant is only meaningful on maps
+	// that actually expose a reload-safe station interior.
+	if(!region)
+		return
+	TEST_ASSERT(emitter?.light, "Emitter should have a live light source before repair.")
+
+	var/datum/mapGenerator/repair/reload_station_map/clean/in_place/reload_generator = new
+	reload_generator.defineRegion(start, end, TRUE)
+
+	TEST_ASSERT(reload_generator.generate(), "Repair reload generator failed to start.")
+	TEST_ASSERT(wait_for_repair_reload(reload_generator), "Timed out waiting for station repair reload to finish.")
+	drain_nightshift_lighting_work()
+
+	target_turf = locate(target_x, target_y, target_z)
+	TEST_ASSERT(target_turf?.lighting_object, "Target turf lost its lighting object after repair reload.")
+
+	var/lit_after = target_turf.get_lumcount()
+	TEST_ASSERT(lit_after > baseline_lum + REPAIR_RELOAD_TEST_MIN_LUM_DELTA, "Target turf no longer receives neighboring light after repair reload (baseline [round(baseline_lum, 0.01)], after [round(lit_after, 0.01)]).")
+	TEST_ASSERT(lit_after >= lit_before - REPAIR_RELOAD_TEST_MAX_POST_REPAIR_LUM_DROP, "Repair reload caused a large lighting regression on the restored turf (before [round(lit_before, 0.01)], after [round(lit_after, 0.01)]).")
+
+	qdel(reload_generator)
+
+#undef REPAIR_RELOAD_WAIT_TICKS
+#undef REPAIR_RELOAD_TEST_MIN_LUM_DELTA
+#undef REPAIR_RELOAD_TEST_MAX_POST_REPAIR_LUM_DROP
 
 /// Simulates the full mass-delete + reload cycle and verifies light is restored.
 /// This reproduces the bug where Build Mode > Map Gen > Repair: Reload Block

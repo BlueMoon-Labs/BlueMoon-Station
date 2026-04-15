@@ -405,6 +405,12 @@
 	slowdown = 0.5
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
 
+/obj/item/clothing/suit/armor/riot/knight/Initialize(mapload)
+	allowed = GLOB.security_vest_allowed.Copy()
+	for(var/type in typecacheof(list(/obj/item/claymore, /obj/item/nullrod/claymore)))
+		allowed[type] = TRUE
+	. = ..()
+
 /obj/item/clothing/suit/armor/riot/knight/yellow
 	icon_state = "knight_yellow"
 	item_state = "knight_yellow"

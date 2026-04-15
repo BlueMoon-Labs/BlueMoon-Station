@@ -173,6 +173,13 @@
 		item_state = "[initial(item_state)]"
 
 /obj/item/melee/transforming/energy/sword/energy_sabre/fluff
+	name = "Cybersun Energy Sabre"
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/sword_point)
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/toy
 	desc = "An elegant weapon, its concentrated beam of energy capable of cutting through armor and flesh alike. This one seems to be souvenir version without combat properties."
 	force = 0
 	throwforce = 0
@@ -192,5 +199,99 @@
 	wound_bonus = 0
 	bare_wound_bonus = 0
 
-/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/Initialize(mapload)
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/toy/Initialize(mapload)
 	. = ..()
+	AddElement(/datum/element/sword_point)
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/syndicate
+	desc = "An elegant weapon, its concentrated beam of energy capable of cutting through armor and flesh alike. This one seems to be more thin and poisoned with unknown substance"
+	force = 10
+	throwforce = 15
+	throw_speed = 2
+	throw_range = 7
+	sharpness = SHARP_POINTY
+	embedding = null
+	custom_materials = null
+	armour_penetration = 200
+	flags_1 = CONDUCT_1
+	attack_verb_on = list("stabs", "punctures", "pierces", "pokes")
+	total_mass = 0.4
+	total_mass_on = 0.4
+	block_parry_data = /datum/block_parry_data/traitor_rapier
+	force_on = 15
+	throwforce_on = 25
+	wound_bonus = 4
+	bare_wound_bonus = 0
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/syndicate/active_parry_reflex_counter(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, list/return_list, parry_efficiency, list/effect_text)
+	. = ..()
+	if((attack_type & ATTACK_TYPE_PROJECTILE) && (parry_efficiency >= 100))
+		. |= BLOCK_SHOULD_REDIRECT
+		return_list[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_DEFLECT
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/syndicate/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/butchering, 20, 65, 0)
+	AddElement(/datum/element/sword_point)
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/syndicate/attack(mob/living/target, mob/living/user)
+	. = ..()
+	if(iscarbon(target))
+		if(HAS_TRAIT(user, TRAIT_PACIFISM))
+			visible_message("<span class='warning'>[user] gently taps [target] with [src].</span>",null,null,COMBAT_MESSAGE_RANGE)
+		log_combat(user, target, "slept", src)
+		var/mob/living/carbon/H = target
+		H.Dizzy(10)
+		H.adjustStaminaLoss(30)
+		if(CHECK_STAMCRIT(H) != NOT_STAMCRIT)
+			H.Sleeping(180)
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain
+	desc = "An elegant weapon, its concentrated beam of energy capable of cutting through armor and flesh alike. This one seems to be made for station captains"
+	flags_1 = CONDUCT_1
+	force = 10
+	throwforce = 10
+	force_on = 18
+	throwforce_on = 15
+	throw_speed = 2
+	throw_range = 7
+	embedding = null
+	block_chance = 50
+	armour_penetration = 75
+	sharpness = SHARP_EDGED
+	attack_verb_on = list("slashed", "cut")
+	custom_materials = list(/datum/material/iron = 1000)
+	total_mass = 3.4
+	total_mass_on = 3.4
+	block_parry_data = /datum/block_parry_data/captain_saber
+	wound_bonus = 4
+	bare_wound_bonus = 0
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain/directional_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return, override_direction)
+	if((attack_type & ATTACK_TYPE_PROJECTILE) && is_bullet_reflectable_projectile(object))
+		var/reflect_chance = HAS_TRAIT(owner, TRAIT_FENCER) ? 60 : 20 // Определение шанса на рефлект.
+		if(prob(reflect_chance))
+			block_return[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_RETURN_TO_SENDER
+			return BLOCK_SUCCESS | BLOCK_REDIRECTED | BLOCK_SHOULD_REDIRECT
+	return ..()
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain/on_active_parry(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, list/block_return, parry_efficiency, parry_time)
+	. = ..()
+	if(parry_efficiency >= 90)		// perfect parry
+		block_return[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_DEFLECT
+		. |= BLOCK_SHOULD_REDIRECT
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
+	if(is_bullet_reflectable_projectile(object) && (attack_type & ATTACK_TYPE_PROJECTILE))
+		var/reflect_chance = HAS_TRAIT(owner, TRAIT_FENCER) ? 60 : 20 // Определение шанса на рефлект.
+		if(prob(reflect_chance))
+			block_return[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_RETURN_TO_SENDER			//no you
+			owner.visible_message("<span class='danger'>[owner] redirected the sent projectile with his [src]!</span>")
+			playsound(src, pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, 1)
+			return BLOCK_SHOULD_REDIRECT | BLOCK_SUCCESS | BLOCK_REDIRECTED
+	return ..()
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/butchering, 30, 95, 5) //fast and effective, but as a sword, it might damage the results.
+	AddElement(/datum/element/sword_point)
