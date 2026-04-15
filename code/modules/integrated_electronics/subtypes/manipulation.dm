@@ -408,8 +408,7 @@
 		"on success" = IC_PINTYPE_PULSE_OUT,
 		"on failure" = IC_PINTYPE_PULSE_OUT,
 		"push ref" = IC_PINTYPE_PULSE_IN,
-		"on push ref" = IC_PINTYPE_PULSE_OUT,
-		"retrieve sheets" = IC_PINTYPE_PULSE_IN
+		"on push ref" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 40
@@ -439,7 +438,7 @@
 
 /obj/item/integrated_circuit/manipulation/matman/do_work(ord)
 	var/atom/movable/H = get_pin_data_as_type(IC_INPUT, 1, /atom/movable)
-	if(!check_target(H))
+	if((get_dist(src, H) > 2) && ord != 5)
 		activate_pin(4)
 		return
 
@@ -494,21 +493,64 @@
 			set_pin_data(IC_OUTPUT, 1, WEAKREF(src))
 			AfterMaterialInsert()
 			activate_pin(6)
-		if(6)
-			var/suc = FALSE
-			for(var/I in 1 to length(mtypes))
-				if(materials.retrieve_sheets(get_pin_data(IC_INPUT, I+2) || 0, SSmaterials.GetMaterialRef(mtypes[I])))
-					suc = TRUE
 
-			if(suc)
-				activate_pin(3)
-			else
-				activate_pin(4)
 
 /obj/item/integrated_circuit/manipulation/matman/Destroy()
-	var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 	materials.retrieve_all()
 	.=..()
+
+/obj/item/integrated_circuit/manipulation/matdropper
+	name = "material dropper"
+	desc = "Выводит материалы на чистую воду!"
+	extended_desc = "Принимает ссылку на объект, остальные аргументы - это сколько листов материала необходимо изъять."
+	icon_state = "grabber"
+	complexity = 2
+	inputs = list(
+		"target" 				= IC_PINTYPE_REF,
+		"Metal sheets"				 	= IC_PINTYPE_NUMBER,
+		"Glass sheets"					= IC_PINTYPE_NUMBER,
+		"Silver sheets"				= IC_PINTYPE_NUMBER,
+		"Gold sheets"					= IC_PINTYPE_NUMBER,
+		"Diamond sheets"				= IC_PINTYPE_NUMBER,
+		"Uranium sheets"				= IC_PINTYPE_NUMBER,
+		"Solid Plasma sheets"			= IC_PINTYPE_NUMBER,
+		"Bluespace Mesh sheets"		= IC_PINTYPE_NUMBER,
+		"Bananium sheets"				= IC_PINTYPE_NUMBER,
+		"Titanium sheets"				= IC_PINTYPE_NUMBER,
+		"Plastic sheets"				= IC_PINTYPE_NUMBER
+		)
+
+	activators = list(
+		"drop"= IC_PINTYPE_PULSE_IN,
+		"on success" = IC_PINTYPE_PULSE_OUT,
+		"on failure" = IC_PINTYPE_PULSE_OUT
+		)
+	spawn_flags = IC_SPAWN_RESEARCH
+	power_draw_per_use = 40
+
+	var/static/list/mtypes = DEFAULT_REMOTE_MATERIALS
+
+/obj/item/integrated_circuit/manipulation/matdropper/do_work(ord)
+	var/atom/H = get_pin_data_as_type(IC_INPUT, 1, /atom)
+
+	if(get_dist(src, H) > 2)
+		activate_pin(3)
+		return
+
+	var/datum/component/material_container/mt = (H.GetComponent(/datum/component/remote_materials)?.mat_container || H.GetComponent(/datum/component/material_container))
+
+	if(!mt)
+		activate_pin(3)
+	
+	var/suc = FALSE
+	for(var/I in 1 to length(mtypes))
+		if(mt.retrieve_sheets(get_pin_data(IC_INPUT, 1 + I) || 0, SSmaterials.GetMaterialRef(mtypes[I]), get_turf(H)))
+			suc = TRUE
+
+	if(suc)
+		activate_pin(2)
+	else
+		activate_pin(3)
 
 #undef MATMAN_MAX_MAT_AMOUNT
 //Hippie Ported Code--------------------------------------------------------------------------------------------------------
