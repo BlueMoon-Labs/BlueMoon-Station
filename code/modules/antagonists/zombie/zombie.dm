@@ -3,7 +3,6 @@
 	antagpanel_category = "Zombie"
 	antag_hud_name = "zombie"
 	antag_hud_type = ANTAG_HUD_ZOMBIE
-	job_rank = ROLE_MINOR_ANTAG
 	show_to_ghosts = TRUE
 	var/converts_living = FALSE
 	var/obj/item/organ/zombie_infection/zombie_organ
@@ -32,9 +31,8 @@
 		if(converts_living)
 			ZI.converts_living = TRUE
 		ZI.Insert(C)
+		ZI.zombify()
 	zombie_organ = ZI
-	if(!iszombie(C))
-		zombie_organ.zombify()
 
 /datum/antagonist/zombie/admin_remove(mob/user)
 	if(!user)
@@ -47,4 +45,3 @@
 /datum/antagonist/zombie/remove_innate_effects(mob/living/mob_override)
 	var/mob/living/carbon/C = mob_override || owner.current
 	remove_antag_hud(antag_hud_type, C)
-
