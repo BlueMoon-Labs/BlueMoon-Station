@@ -1247,7 +1247,6 @@
 	. = ..()
 	. += "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>["This is captain's antique laser gun. Highrisk item!"]</span></span>"
 
-
 /obj/item/gun/ballistic/automatic/pistol/g22/anomalist
 	name = "\improper Gelriter-22 M-1"
 	desc = "Prototype submachine gun of the Catcrin army. Looks like it just came from the factory, not a single scratch. Despite its dimensions, it is lightweight due to the epoxy body combined with metal elements. Equipped with additional grips and holographic sights. On the right side, the image: a hand reaches from the darkness toward the light."
