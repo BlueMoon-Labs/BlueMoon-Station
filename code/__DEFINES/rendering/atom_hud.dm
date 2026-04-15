@@ -66,6 +66,7 @@
 #define ANTAG_HUD_SPACECOP		27
 #define ANTAG_HUD_GANGSTER		28
 #define ANTAG_HUD_SLAVER		29
+#define ANTAG_HUD_ZOMBIE		30
 
 // Which players consent via their game settings to be a target for antagonists
 #define DATA_HUD_ANTAGTARGET	30

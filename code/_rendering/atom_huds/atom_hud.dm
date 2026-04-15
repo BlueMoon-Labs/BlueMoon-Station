@@ -34,6 +34,7 @@ GLOBAL_LIST_INIT(huds, alist(
 	ANTAG_HUD_GANGSTER = new/datum/atom_hud/antag/hidden(),
 	ANTAG_HUD_SLAVER = new/datum/atom_hud/antag(),
 	DATA_HUD_ANTAGTARGET = new/datum/atom_hud/data/human/antagtarget(),
+	ANTAG_HUD_ZOMBIE = new/datum/atom_hud/antag(),
 	))
 
 /datum/atom_hud
