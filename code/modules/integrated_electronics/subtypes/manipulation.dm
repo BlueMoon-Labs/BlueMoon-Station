@@ -426,11 +426,9 @@
 
 /obj/item/integrated_circuit/manipulation/matman/proc/AfterMaterialInsert(type_inserted, id_inserted, amount_inserted)
 	set_pin_data(IC_OUTPUT, 2, materials.total_amount)
-	var/I = 1
-	for(var/key in materials.materials)
-		var/amount = materials?.materials[key] ? materials?.materials[key] : 0
+	for(var/I in 1 to length(mtypes))
+		var/amount = materials?.materials[SSmaterials.GetMaterialRef(mtypes[I])] ? materials?.materials[SSmaterials.GetMaterialRef(mtypes[I])] : 0
 		set_pin_data(IC_OUTPUT, I+2, amount)
-		I++
 	push_data()
 
 /obj/item/integrated_circuit/manipulation/matman/proc/is_insertion_ready(mob/user)
@@ -445,16 +443,17 @@
 	switch(ord)
 		if(1)
 			var/obj/item/I = H
-			var/amount = get_pin_data(IC_INPUT, 2) || 0
-			if(!amount)
-				AfterMaterialInsert()
-				return
-
 			var/successful = FALSE
 			if(!I || QDELETED(I))
+				AfterMaterialInsert()
 				activate_pin(4)
 				return
 			if(isstack(I))
+				var/amount = get_pin_data(IC_INPUT, 2) || 0
+				if(!amount)
+					activate_pin(4)
+					return
+
 				successful = materials.insert_stack(I, amount)
 			else
 				successful = materials.insert_item(I)
@@ -479,7 +478,7 @@
 					var/U = clamp(get_pin_data(IC_INPUT, I+2) || 0,-MATMAN_MAX_MAT_AMOUNT, MATMAN_MAX_MAT_AMOUNT)
 					if(!U)
 						AfterMaterialInsert()
-						return
+						continue
 					if(mt.transer_amt_to(materials, U, SSmaterials.GetMaterialRef(mtypes[I])))
 						suc = TRUE
 
@@ -541,7 +540,8 @@
 
 	if(!mt)
 		activate_pin(3)
-	
+		return
+
 	var/suc = FALSE
 	for(var/I in 1 to length(mtypes))
 		if(mt.retrieve_sheets(get_pin_data(IC_INPUT, 1 + I) || 0, SSmaterials.GetMaterialRef(mtypes[I]), get_turf(H)))

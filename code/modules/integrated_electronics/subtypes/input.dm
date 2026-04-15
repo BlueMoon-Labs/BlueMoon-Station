@@ -1148,13 +1148,12 @@
 			var/amount = mt.materials?[SSmaterials.GetMaterialRef(mtypes[I])] || 0
 			set_pin_data(IC_OUTPUT, 2 + I, amount)
 			total_amount += amount
-
-		push_data()
 	else
 		activate_pin(3)
 		return
 
 	set_pin_data(IC_OUTPUT, 2, total_amount)
+	push_data()
 	activate_pin(2)
 
 /obj/item/integrated_circuit/input/atmospheric_analyzer

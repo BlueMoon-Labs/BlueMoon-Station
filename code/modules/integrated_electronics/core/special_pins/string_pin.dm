@@ -10,8 +10,7 @@
 
 /datum/integrated_io/string/write_data_to_pin(var/new_data)
 	if(isnull(new_data) || istext(new_data))
-		var/static/regex/r = regex(@"<[^>]*>", "g") //Не лучшее решение, но я не хочу засирать текст
-		data = r.Replace(new_data, "<br>") //для дисплеев, чтоб не ломало
+		data = new_data
 		holder.on_data_written()
 
 // This makes the text go "from this" to "#G&*!HD$%L"
