@@ -134,6 +134,7 @@ GLOBAL_LIST_INIT(bsm_low_threat_pool, list(
 	if(!drop)
 		return
 	var/mob/living/simple_animal/pet/gondola/spawned_gondola = new /mob/living/simple_animal/pet/gondola(drop)
+	spawned_gondola.playable_by_ghost = TRUE
 	play_bluespace_sparks(machine)
 	machine.balloon_alert_to_viewers("гондола...")
 	machine.visible_message(span_notice("Из разлома выходит гондола и молча принимает мир таким, какой он есть."))

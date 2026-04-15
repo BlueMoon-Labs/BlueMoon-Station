@@ -31,7 +31,7 @@
 	maxHealth = 200
 	health = 200
 	del_on_death = TRUE
-	playable_by_ghost = TRUE
+	playable_by_ghost = FALSE
 	ghost_possess_title = "Гондола"
 	ghost_possess_question = "Стать гондолой?"
 
