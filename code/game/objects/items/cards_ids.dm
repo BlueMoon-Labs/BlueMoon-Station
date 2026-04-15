@@ -783,7 +783,6 @@
 
 /obj/item/card/id/ert/hsc/Initialize(mapload)
 	. = ..()
-	access = get_all_accesses()+get_ert_access("sec")-ACCESS_CHANGE_IDS
 	update_icon()
 
 /obj/item/card/id/ert/hsc/update_overlays()
