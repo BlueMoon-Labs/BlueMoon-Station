@@ -25,20 +25,15 @@
 
 /obj/item/organ/zombie_infection/Insert(mob/living/carbon/organ_owner, special, drop_if_replaced)
 	. = ..()
-
-	if(organ_owner)
-		RegisterSignal(organ_owner, COMSIG_LIVING_DEATH, PROC_REF(organ_owner_died))
+	RegisterSignal(organ_owner, COMSIG_LIVING_DEATH, PROC_REF(organ_owner_died))
 	START_PROCESSING(SSobj, src)
 
 /obj/item/organ/zombie_infection/Remove(special = FALSE)
-	// Parent nulls owner before returning; keep a ref for post-removal cure.
-	var/mob/living/carbon/removed_from = owner
 	. = ..()
-	if(removed_from)
-		UnregisterSignal(removed_from, COMSIG_LIVING_DEATH)
+	var/mob/living/carbon/removed_from = .
+	UnregisterSignal(removed_from, COMSIG_LIVING_DEATH)
 	STOP_PROCESSING(SSobj, src)
-	if(timer_id)
-		deltimer(timer_id)
+	deltimer(timer_id)
 	if(!QDELETED(removed_from) && iszombie(removed_from) && old_species && !special)
 		removed_from.set_species(old_species)
 
@@ -54,6 +49,7 @@
 
 /obj/item/organ/zombie_infection/process(seconds_per_tick, times_fired)
 	if(!owner)
+		STOP_PROCESSING(SSobj, src)
 		return
 	if(!(src in owner.internal_organs))
 		INVOKE_ASYNC(src, PROC_REF(Remove), FALSE)
