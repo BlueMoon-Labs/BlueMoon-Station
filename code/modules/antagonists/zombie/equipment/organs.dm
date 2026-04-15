@@ -25,22 +25,19 @@
 
 /obj/item/organ/zombie_infection/Insert(mob/living/carbon/organ_owner, special, drop_if_replaced)
 	. = ..()
-
-	if(organ_owner)
-		RegisterSignal(organ_owner, COMSIG_LIVING_DEATH, PROC_REF(organ_owner_died))
+	RegisterSignal(organ_owner, COMSIG_LIVING_DEATH, PROC_REF(organ_owner_died))
 	START_PROCESSING(SSobj, src)
 
-/obj/item/organ/zombie_infection/Remove(special = FALSE)
-	// Parent nulls owner before returning; keep a ref for post-removal cure.
-	var/mob/living/carbon/removed_from = owner
+/obj/item/organ/zombie_infection/Remove(special)
 	. = ..()
-	if(removed_from)
-		UnregisterSignal(removed_from, COMSIG_LIVING_DEATH)
+	var/mob/living/carbon/removed_from = .
+	UnregisterSignal(removed_from, COMSIG_LIVING_DEATH)
 	STOP_PROCESSING(SSobj, src)
-	if(timer_id)
-		deltimer(timer_id)
-	if(!QDELETED(removed_from) && iszombie(removed_from) && old_species && !special)
-		removed_from.set_species(old_species)
+	deltimer(timer_id)
+	if(!QDELETED(removed_from))
+		removed_from.mind?.remove_antag_datum(/datum/antagonist/zombie)
+		if(iszombie(removed_from) && old_species)
+			removed_from.set_species(old_species)
 
 /obj/item/organ/zombie_infection/proc/organ_owner_died(mob/living/carbon/source, gibbed)
 	SIGNAL_HANDLER
@@ -54,6 +51,7 @@
 
 /obj/item/organ/zombie_infection/process(seconds_per_tick, times_fired)
 	if(!owner)
+		STOP_PROCESSING(SSobj, src)
 		return
 	if(!(src in owner.internal_organs))
 		INVOKE_ASYNC(src, PROC_REF(Remove), FALSE)
@@ -74,9 +72,9 @@
 		Ничего, даже смерть, не сможет убить вас!</span>")
 	var/revive_time = rand(revive_time_min, revive_time_max)
 	var/flags = TIMER_STOPPABLE
-	timer_id = addtimer(CALLBACK(src, PROC_REF(zombify), owner), revive_time, flags)
+	timer_id = addtimer(CALLBACK(src, PROC_REF(zombify)), revive_time, flags)
 
-/obj/item/organ/zombie_infection/proc/zombify(mob/living/carbon/target)
+/obj/item/organ/zombie_infection/proc/zombify()
 	timer_id = null
 
 	if(!converts_living && owner.stat != DEAD)
@@ -84,9 +82,10 @@
 
 	if(!iszombie(owner))
 		old_species = owner.dna.species.type
-		target.set_species(/datum/species/zombie/infectious)
+		owner.set_species(/datum/species/zombie/infectious)
+		owner.mind?.add_antag_datum(/datum/antagonist/zombie)
 
-	var/stand_up = (target.stat == DEAD) || (target.stat == UNCONSCIOUS)
+	var/stand_up = (owner.stat == DEAD) || (owner.stat == UNCONSCIOUS)
 
 	//Fully heal the zombie's damage the first time they rise
 	owner.setToxLoss(0, 0)
@@ -98,11 +97,9 @@
 
 	owner.visible_message("<span class='danger'>[owner] suddenly convulses, as [owner.p_they()][stand_up ? " stagger to [owner.p_their()] feet and" : ""] gain a ravenous hunger in [owner.p_their()] eyes!</span>", "<span class='alien'>You HUNGER!</span>")
 
-	to_chat(target, span_alien("You HUNGER!"))
-	to_chat(target, span_alertalien("You are now a zombie! Do not seek to be cured, do not help any non-zombies in any way, do not harm your zombie brethren and spread the disease by killing others. You are a creature of hunger and violence."))
-	playsound(target, 'sound/hallucinations/far_noise.ogg', 50, 1)
-	target.do_jitter_animation(living_transformation_time)
-	target.Stun(living_transformation_time)
+	playsound(owner, 'sound/hallucinations/far_noise.ogg', 50, 1)
+	owner.do_jitter_animation(living_transformation_time)
+	owner.Stun(living_transformation_time)
 
 /obj/item/organ/zombie_infection/nodamage
 	causes_damage = FALSE

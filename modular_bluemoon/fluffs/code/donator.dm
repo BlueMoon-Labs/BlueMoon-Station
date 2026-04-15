@@ -624,7 +624,7 @@
 	name = "Shotgun into Mossberg-590A Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/mossberg_kit
-	ckeywhitelist = list("shizalrp", "krasler101")
+	ckeywhitelist = list("shizalrp", "krasler101", "kingdeaths")
 
 /datum/gear/donator/bm/g36_kit
 	name = "AK-12 into G36 Kit"
@@ -2180,10 +2180,10 @@
 	path = /obj/item/modkit/nebular_t_kit
 	ckeywhitelist = list("lapkee")
 
-/datum/gear/donator/bm/esabre
-	name = "Cybersun Sabre"
-	slot = ITEM_SLOT_BELT
-	path = /obj/item/storage/belt/esabre_belt/fluff
+/datum/gear/donator/bm/cybersun_kit
+	name = "Cybersun kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/cybersun_kit
 	ckeywhitelist = list("sheya")
 
 /// Личный маяк: призывает kit с owner_ckey; развернуть мультитулом может только владелец. Остальные собирают крафтом (5 коробок + pie cannon).
