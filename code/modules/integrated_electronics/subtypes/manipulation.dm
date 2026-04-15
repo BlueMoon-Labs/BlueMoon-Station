@@ -436,7 +436,7 @@
 
 /obj/item/integrated_circuit/manipulation/matman/do_work(ord)
 	var/atom/movable/H = get_pin_data_as_type(IC_INPUT, 1, /atom/movable)
-	if((get_dist(src, H) > 2) && ord != 5)
+	if(!H || ((get_dist(src, H) > 2) && ord != 5))
 		activate_pin(4)
 		return
 
@@ -532,7 +532,7 @@
 /obj/item/integrated_circuit/manipulation/matdropper/do_work(ord)
 	var/atom/H = get_pin_data_as_type(IC_INPUT, 1, /atom)
 
-	if(get_dist(src, H) > 2)
+	if(!H || (get_dist(src, H) > 2))
 		activate_pin(3)
 		return
 
