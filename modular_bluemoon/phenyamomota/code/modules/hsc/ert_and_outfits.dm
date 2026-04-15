@@ -52,7 +52,7 @@
 	ears = /obj/item/radio/headset/headset_cent/alt
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	belt = /obj/item/storage/belt/military/ert_min
-	id = /obj/item/card/id/hsc
+	id = /obj/item/card/id/ert/hsc
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/hsc
 	glasses = /obj/item/clothing/glasses/hud/health/night/syndicate
 	mask = /obj/item/clothing/mask/gas/sechailer/hsc
@@ -84,7 +84,7 @@
 	name = "HSC Medic"
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
 	belt = /obj/item/defibrillator/compact/loaded_ert
-	id = /obj/item/card/id/hsc/medic
+	id = /obj/item/card/id/ert/hsc/medic
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/hsc/medical
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/firstaid/tactical/ert_first = 1,
@@ -106,7 +106,7 @@
 	ears = /obj/item/radio/headset/headset_cent/alt
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
 	belt = /obj/item/defibrillator/compact/loaded_ert
-	id = /obj/item/card/id/hsc/assistant
+	id = /obj/item/card/id/ert/hsc/assistant
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/hsc/assistant
 	backpack_contents = list(
 		/obj/item/storage/box/survival/centcom=1,\
@@ -125,9 +125,9 @@
 		/obj/item/organ/cyberimp/arm/surgery,
 	)
 /datum/outfit/hsc/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-	ADD_TRAIT(H, TRAIT_SURGEON, TRAIT_GENERIC)
 	if(visualsOnly)
 		return
+	ADD_TRAIT(H, TRAIT_SURGEON, TRAIT_GENERIC)
 
 	var/obj/item/implant/mindshield/L = new
 	L.implant(H, null, 1)
@@ -140,38 +140,3 @@
 	if(W)
 		W.registered_name = H.real_name
 		W.update_label()
-
-/obj/item/card/id/hsc
-	name = "\improper HSC Security ID"
-	desc = "Health Safety Control ID card."
-	icon = 'modular_bluemoon/phenyamomota/icon/obj/card.dmi'
-	icon_state = "hsc"
-	registered_name = "Health Safety Control Security"
-	assignment = "Health Safety Control Security"
-	special_assignment = "centcom"
-	var/overlay_state = "idsec"
-
-/obj/item/card/id/hsc/Initialize(mapload)
-	access = get_all_accesses()+get_ert_access("commander")-ACCESS_CHANGE_IDS
-	. = ..()
-	update_icon()
-
-/obj/item/card/id/hsc/update_overlays()
-	. = ..()
-	. += mutable_appearance(icon, overlay_state)
-
-/obj/item/card/id/hsc/medic
-	name = "\improper HSC Medical ID"
-	desc = "Health Safety Control ID card."
-	icon_state = "hsc"
-	registered_name = "Health Safety Control Medic"
-	assignment = "Health Safety Control Medic"
-	overlay_state = "idmed"
-
-/obj/item/card/id/hsc/assistant
-	name = "\improper HSC Assistant ID"
-	desc = "Health Safety Control ID card."
-	icon_state = "hsc"
-	registered_name = "Health Safety Control Assistant"
-	assignment = "Health Safety Control Assistant"
-	overlay_state = "idas"
