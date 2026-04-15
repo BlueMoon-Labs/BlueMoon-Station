@@ -7,12 +7,15 @@
 	var/converts_living = FALSE
 	var/obj/item/organ/zombie_infection/zombie_organ
 	var/zombie_organ_type = /obj/item/organ/zombie_infection
-	var/const/intro_text = "Теперь вы зомби! Не стремитесь вылечиться, никоим образом не помогайте людям, не являющимся зомби, не причиняйте вреда своим собратьям-зомби и распространяйте болезнь, убивая других. Вы - порождение голода и насилия!"
+	var/const/intro_text = "Теперь вы зомби!\n\
+		Не стремитесь вылечиться, никоим образом не помогайте людям, не являющимся зомби, не причиняйте вреда своим собратьям-зомби и распространяйте болезнь, убивая других.\n\
+		Вы - порождение голода и насилия!"
 
 /datum/antagonist/zombie/greet()
 	. = ..()
-	to_chat(owner, span_alien("ВЫ ГОЛОДНЫ!"))
-	to_chat(owner, span_alertalien(intro_text))
+	var/msg = span_userdanger("ВЫ ГОЛОДНЫ!")
+	msg += span_redtext("\n"+intro_text)
+	to_chat(owner, examine_block(msg))
 
 /datum/antagonist/zombie/farewell()
 	. = ..()
@@ -42,8 +45,8 @@
 	if(zombie_organ)
 		zombie_organ.Remove()
 		QDEL_NULL(zombie_organ)
-	. = ..()
-	
+	return ..()
+
 /datum/antagonist/zombie/remove_innate_effects(mob/living/mob_override)
 	var/mob/living/carbon/C = mob_override || owner.current
 	remove_antag_hud(antag_hud_type, C)
