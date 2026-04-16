@@ -876,7 +876,7 @@ SUBSYSTEM_DEF(vote)
 			return TRUE
 		// === УПРАВЛЕНИЕ ===
 		if("cancel")
-			if(!C.holder)
+			if(!C.holder || !mode)
 				return
 			message_admins("Голосование отменено [ADMIN_LOOKUP(user)]")
 			log_admin("Голосование отменено [C.key]")
@@ -900,21 +900,21 @@ SUBSYSTEM_DEF(vote)
 			return TRUE
 		if("restart")
 			if(CONFIG_GET(flag/allow_vote_restart) || C.holder)
-				message_admins("[ADMIN_LOOKUP(user)] Начал голосование за рестарт")
-				log_admin("[C.key] Начал голосование за рестарт")
-				initiate_vote("restart", C.key)
+				if(initiate_vote("restart", C.key))
+					message_admins("[ADMIN_LOOKUP(user)] Начал голосование за рестарт")
+					log_admin("[C.key] Начал голосование за рестарт")
 			return TRUE
 		if("gamemode")
 			if(CONFIG_GET(flag/allow_vote_mode) || C.holder)
-				message_admins("[ADMIN_LOOKUP(user)] Начал голосование за изменение режима")
-				log_admin("[C.key] Начал голосование за изменение режима")
-				initiate_vote("roundtype", C.key)
+				if(initiate_vote("roundtype", C.key))
+					message_admins("[ADMIN_LOOKUP(user)] Начал голосование за изменение режима")
+					log_admin("[C.key] Начал голосование за изменение режима")
 			return TRUE
 		if("map")
 			if(C.holder)
-				message_admins("[ADMIN_LOOKUP(user)] Начал голосование за смену карты")
-				log_admin("[C.key] Начал голосование за смену карты")
-				initiate_vote("map", C.key, display = SHOW_RESULTS, forced = FALSE)
+				if(initiate_vote("map", C.key, display = SHOW_RESULTS, forced = FALSE))
+					message_admins("[ADMIN_LOOKUP(user)] Начал голосование за смену карты")
+					log_admin("[C.key] Начал голосование за смену карты")
 			return TRUE
 		// === КАСТОМНОЕ - ФОРМА ===
 		if("custom")
