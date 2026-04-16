@@ -110,6 +110,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		nuke_chat()
 	if(href_list["reload_statbrowser"])
 		statbrowser_ready = FALSE
+		statpanel_protocol_acked = FALSE
+		statpanel_last_sent.Cut()
+		statpanel_last_mc_iter = -1
 		reset_listed_turf_icon_cache()
 		src << browse(file('html/statbrowser.html'), "window=statbrowser")
 		addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
@@ -202,12 +205,47 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 /client/proc/mark_listed_turf_dirty(force_icon_refresh = FALSE)
 	if(mob?.listed_turf)
 		listed_turf_dirty = TRUE
+		listed_turf_dirty_at = world.time
 		if(force_icon_refresh)
 			listed_turf_icon_refresh_pending = TRUE
 
 /client/proc/mark_listed_turf_dirty_from_signal(datum/source)
 	SIGNAL_HANDLER
 	mark_listed_turf_dirty()
+
+/// Handler for COMSIG_TURF_CHANGE — fires on the OLD turf datum just before it is qdel'd
+/// and replaced by a new turf at the same coords. Without this, listed_turf_watched would
+/// dangle to a dead datum (UnregisterSignal would no-op or runtime). We capture the coords
+/// and rebind on the next tick, when the replacement turf exists.
+/client/proc/listed_turf_changed_signal(datum/source)
+	SIGNAL_HANDLER
+	if(!source)
+		return
+	var/turf/old_turf = source
+	var/x = old_turf.x
+	var/y = old_turf.y
+	var/z = old_turf.z
+	// Source is being qdel'd; null the watched ref so we don't UnregisterSignal a dead datum later.
+	listed_turf_watched = null
+	if(mob?.listed_turf == old_turf)
+		mob.listed_turf = null
+	cached_turf_ref = null
+	cached_turf_encoded = null
+	addtimer(CALLBACK(src, PROC_REF(rebind_listed_turf_at_coords), x, y, z), 0, TIMER_UNIQUE | TIMER_OVERRIDE)
+
+/client/proc/rebind_listed_turf_at_coords(x, y, z)
+	if(!mob)
+		return
+	var/turf/replacement = locate(x, y, z)
+	if(!replacement || QDELETED(replacement))
+		clear_listed_turf()
+		return
+	if(!mob.TurfAdjacent(replacement))
+		clear_listed_turf()
+		return
+	set_listed_turf(replacement)
+	if(statbrowser_ready)
+		mark_listed_turf_dirty(force_icon_refresh = TRUE)
 
 /client/proc/update_listed_turf_watch(turf/T)
 	if(listed_turf_watched == T)
@@ -216,7 +254,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		UnregisterSignal(listed_turf_watched, list(COMSIG_ATOM_ENTERED, COMSIG_ATOM_EXITED, COMSIG_ATOM_CONTENTS_DEL, COMSIG_TURF_CHANGE))
 	listed_turf_watched = T
 	if(T)
-		RegisterSignal(T, list(COMSIG_ATOM_ENTERED, COMSIG_ATOM_EXITED, COMSIG_ATOM_CONTENTS_DEL, COMSIG_TURF_CHANGE), PROC_REF(mark_listed_turf_dirty_from_signal))
+		RegisterSignal(T, list(COMSIG_ATOM_ENTERED, COMSIG_ATOM_EXITED, COMSIG_ATOM_CONTENTS_DEL), PROC_REF(mark_listed_turf_dirty_from_signal))
+		RegisterSignal(T, COMSIG_TURF_CHANGE, PROC_REF(listed_turf_changed_signal))
 
 /client/proc/reset_listed_turf_icon_cache()
 	statpanel_sent_icons.Cut()
@@ -266,6 +305,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	listed_turf_last_refresh = 0
 	listed_turf_eye_ref = null
 	listed_turf_dirty = FALSE
+	listed_turf_dirty_at = 0
 	listed_turf_icon_refresh_pending = FALSE
 	if(send_output && statbrowser_ready)
 		src << output("", "statbrowser:remove_listedturf")
@@ -924,6 +964,14 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	GLOB.clients -= src
 	GLOB.directory -= ckey
 	log_access("Logout: [key_name(src)]")
+	// Tear down listed-turf signals and any queued icon work so we don't leak refs through the signal subsystem.
+	if(listed_turf_watched || mob?.listed_turf)
+		clear_listed_turf(send_output = FALSE)
+	if(SSstatpanels)
+		SSstatpanels.icon_queue -= src
+		SSstatpanels.icon_run -= src
+		SSstatpanels.ping_run -= src
+		SSstatpanels.currentrun -= src
 	if(GLOB.ahelp_tickets)
 		GLOB.ahelp_tickets.ClientLogout(src)
 

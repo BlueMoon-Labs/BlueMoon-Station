@@ -71,6 +71,26 @@ a:hover { text-decoration: underline; }
 
 img { image-rendering: pixelated; }
 
+/* Focus rings — keyboard-only via :focus-visible so mouse interactions stay clean.
+   Player session can be 4+ hours; without this, keyboard users have zero feedback.
+   The inner rule uses `outline-color` only so per-component CSS can still tweak the look. */
+:focus { outline: none; }
+*:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+}
+
+/* Respect prefers-reduced-motion — disable shuttle pulse and slow transitions for users
+   who've asked the OS to ease up on motion (vestibular triggers, low-power modes). */
+@media (prefers-reduced-motion: reduce) {
+	* {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
 /* ===== Tab Bar ===== */
 #tab-bar {
 	display: flex;
@@ -569,6 +589,78 @@ body.verb-style-links .verb-grid {
 	flex-shrink: 0;
 }
 .ticket-closed { opacity: 0.5; }
+.ticket-header-row {
+	display: flex;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 4px 8px;
+	font-size: 12px;
+	font-weight: bold;
+	color: var(--text-secondary);
+	border-bottom: 1px dashed var(--border);
+}
+.ticket-header-link, .ticket-header-link:visited { color: var(--accent); text-decoration: none; }
+.ticket-header-link:hover { text-decoration: underline; }
+.ticket-left {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+	flex: 1;
+}
+.ticket-right {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-shrink: 0;
+	font-size: 11px;
+}
+.ticket-id {
+	color: var(--text-muted);
+	font-family: var(--font-mono, monospace);
+	font-size: 11px;
+}
+.ticket-label {
+	color: var(--text-primary);
+	text-decoration: none;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.ticket-label:hover { text-decoration: underline; color: var(--accent); }
+.ticket-handler { color: var(--health-warn); font-weight: bold; }
+.ticket-age { font-family: var(--font-mono, monospace); }
+.ticket-state-text { color: var(--text-muted); }
+.ticket-actions {
+	display: flex;
+	gap: 2px;
+	flex-shrink: 0;
+}
+.ticket-action-btn {
+	background: transparent;
+	border: 1px solid var(--border);
+	color: var(--text-secondary);
+	padding: 1px 5px;
+	font-size: 10px;
+	font-family: inherit;
+	border-radius: var(--border-radius, 2px);
+	cursor: pointer;
+	min-height: 18px;
+}
+.ticket-action-btn:hover { background: var(--bg-hover, var(--border)); color: var(--text-primary); }
+.ticket-action-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ticket-act-good:hover { color: var(--health-good); border-color: var(--health-good); }
+.ticket-act-warn:hover { color: var(--health-warn); border-color: var(--health-warn); }
+.ticket-act-bad:hover { color: var(--health-bad); border-color: var(--health-bad); }
+.ticket-closed-toggle {
+	padding: 4px 8px;
+	color: var(--text-muted);
+	font-size: 11px;
+	cursor: pointer;
+	user-select: none;
+	border-bottom: 1px solid var(--border);
+}
+.ticket-closed-toggle:hover { color: var(--text-primary); background: var(--bg-hover, var(--border)); }
 
 /* ===== SDQL2 ===== */
 .sdql-card {
@@ -792,6 +884,17 @@ body.turf-hide-icons .turf-item { gap: 0; }
 	background: var(--bg-secondary);
 	cursor: pointer;
 }
+.settings-contrast-badge {
+	font-family: var(--font-mono, monospace);
+	font-size: 10px;
+	padding: 2px 5px;
+	border-radius: 3px;
+	background: var(--bg-secondary);
+	border: 1px solid var(--border);
+	min-width: 78px;
+	text-align: center;
+	cursor: help;
+}
 .settings-slider {
 	width: 120px;
 	accent-color: var(--accent);
@@ -934,18 +1037,24 @@ body.turf-hide-icons .turf-item { gap: 0; }
 <div id="ping-bar-global" class="ping-bar"></div>
 <div id="statcontent"></div>
 <div id="global-search-overlay">
-	<input id="global-search-box" type="text" placeholder="Поиск по всем командам..." autocomplete="off" />
+	<input id="global-search-box" type="text" placeholder="Поиск по всем командам... (Ctrl+F или /)" autocomplete="off" />
 	<div id="global-search-results"></div>
 </div>
 <div id="zoom-indicator"></div>
 
 <script>
+// === src/constants.js ===
 var SS_NAME = 0, SS_STATE = 1, SS_COST = 2, SS_TICK = 3, SS_OVERRUN = 4,
 	SS_TICKS = 5, SS_FIRED = 6, SS_CAN_FIRE = 7, SS_IS_BG = 8, SS_REF = 9, SS_EXTRA = 10;
 var STATE_LETTERS = ["  ", "Q", "R", "P", "S", "P"];
 var MC_KEY_SUBSYSTEMS = ["Atmospherics", "Garbage", "Machines", "Lighting", "Clients", "Mobs", "Timer", "Objects"];
 var SEARCH_ICON_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6.5" cy="6.5" r="5"/><line x1="10" y1="10" x2="15" y2="15"/></svg>';
+// Bridge protocol: must match STATBROWSER_PROTOCOL_VERSION in code/controllers/subsystem/statpanel.dm.
+// Bumped when the DM->JS payload shape changes incompatibly. Mismatch logs a warning and asks DM to reload.
+var EXPECTED_PROTOCOL_VERSION = 2;
 
+;
+// === src/bridge.js ===
 var connected = false;
 var commandQueue = [];
 
@@ -1006,6 +1115,8 @@ function connected_to_server() {
 	commandQueue = [];
 }
 
+;
+// === src/state.js ===
 var State = {
 	currentTab: null,
 	verbTabs: [],
@@ -1015,6 +1126,9 @@ var State = {
 	spells: [],
 	splitAdminTabs: false,
 	hrefToken: null,
+	// Bridge protocol — null until DM's set_protocol_version handshake arrives
+	protocolVersion: null,
+	protocolMismatchReported: false,
 	// Status tab
 	globalFast: null,
 	globalSlow: null,
@@ -1025,9 +1139,9 @@ var State = {
 	// MC tab
 	mcServerData: {},
 	mcSSData: [],
+	mcIteration: -1,
 	mcSortCol: SS_COST,
 	mcSortAsc: false,
-	mcSortDirty: true,
 	mcFilterText: "",
 	mcSections: { server: true, ping: false, key: true, subsystems: true },
 	// Tickets
@@ -1047,6 +1161,8 @@ var State = {
 	imageRetryLimit: 10
 };
 
+;
+// === src/dom-helpers.js ===
 var tabBar = document.getElementById("tab-bar");
 var spacer = document.getElementById("spacer");
 var statcontent = document.getElementById("statcontent");
@@ -1091,6 +1207,8 @@ var g_ping = {};
 	pingBarGlobal.style.display = "none";
 })();
 
+;
+// === src/tab-manager.js ===
 function getTabOrder(name) {
 	if (name === "Status") return 1;
 	if (name === "MC") return 2;
@@ -1168,9 +1286,17 @@ function checkStatusTab() {
 	}
 }
 
+// Per-tab scroll memory. Players spend 4+ hour sessions in this panel; resetting scroll on
+// every data tick or tab switch is the single most disruptive UX issue. We snapshot scrollTop
+// before the switch and restore it after the new render flushes.
+var _tabScrollPositions = {};
+
 function tab_change(tab) {
 	_settingsActive = false;
 	if (tab === State.currentTab) return;
+	if (State.currentTab && statcontent) {
+		_tabScrollPositions[State.currentTab] = statcontent.scrollTop;
+	}
 	var oldBtn = document.getElementById("tab-" + State.currentTab);
 	if (oldBtn) oldBtn.classList.remove("active");
 	State.currentTab = tab;
@@ -1181,6 +1307,11 @@ function tab_change(tab) {
 	invalidateRenderers();
 	renderCurrentTab();
 	byond_winset({ "statbrowser.is-visible": "true" });
+	// Restore scroll after the renderer has populated the DOM.
+	var restored = _tabScrollPositions[tab];
+	if (restored != null && statcontent) {
+		statcontent.scrollTop = restored;
+	}
 }
 
 function set_byond_tab(tab) {
@@ -1200,16 +1331,20 @@ function TakeTabFromByond(tab) {
 	send_byond_command("Remove-Tabs " + tab);
 }
 
-window.onresize = function() {
-	spacer.style.height = tabBar.offsetHeight + "px";
-};
+// Use addEventListener so we don't clobber any other handler attached via window.onresize
+// elsewhere (zoom.js, future modules). ResizeObserver is preferred on browsers that have it.
+window.addEventListener("resize", function() {
+	if (typeof spacer !== "undefined" && tabBar) spacer.style.height = tabBar.offsetHeight + "px";
+});
 
 if (window.ResizeObserver) {
 	new ResizeObserver(function() {
-		spacer.style.height = tabBar.offsetHeight + "px";
+		if (typeof spacer !== "undefined" && tabBar) spacer.style.height = tabBar.offsetHeight + "px";
 	}).observe(tabBar);
 }
 
+;
+// === src/verb-manager.js ===
 function sortVerbs() {
 	State.verbs.sort(function(a, b) {
 		var sel = a[0] === b[0] ? 1 : 0;
@@ -1329,6 +1464,8 @@ function updateFavoritesTab() {
 	}
 }
 
+;
+// === src/theme-manager.js ===
 var GEAR_ICON_SVG = '<svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M7.07 0l-.59 2.25a5.55 5.55 0 00-1.3.54L3.11 1.68 1.68 3.11l1.11 2.07c-.23.41-.4.85-.54 1.3L0 7.07v2.02l2.25.59c.14.45.31.89.54 1.3L1.68 13.05l1.43 1.43 2.07-1.11c.41.23.85.4 1.3.54L7.07 16.16h2.02l.59-2.25c.45-.14.89-.31 1.3-.54l2.07 1.11 1.43-1.43-1.11-2.07c.23-.41.4-.85.54-1.3l2.25-.59V7.07l-2.25-.59a5.55 5.55 0 00-.54-1.3l1.11-2.07-1.43-1.43-2.07 1.11c-.41-.23-.85-.4-1.3-.54L9.09 0H7.07zm1.01 4.5a3.58 3.58 0 110 7.16 3.58 3.58 0 010-7.16z"/></svg>';
 
 var THEME_STORAGE_KEY = "statbrowser_theme";
@@ -1720,6 +1857,48 @@ function normalizeToHex(color) {
 	return "#000000";
 }
 
+// WCAG 2.1 relative-luminance + contrast-ratio helpers. Used by the settings panel to flag
+// custom color pairs that would render text invisibly against their background.
+function _hexToRgb(hex) {
+	if (!hex || hex.charAt(0) !== "#") return null;
+	if (hex.length === 4) {
+		hex = "#" + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
+	}
+	if (hex.length !== 7) return null;
+	return [parseInt(hex.substr(1, 2), 16), parseInt(hex.substr(3, 2), 16), parseInt(hex.substr(5, 2), 16)];
+}
+
+function _luminance(rgb) {
+	if (!rgb) return 0;
+	var a = rgb.map(function(v) {
+		v /= 255;
+		return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+	});
+	return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+}
+
+function contrastRatio(hexFg, hexBg) {
+	var fg = _hexToRgb(normalizeToHex(hexFg));
+	var bg = _hexToRgb(normalizeToHex(hexBg));
+	if (!fg || !bg) return 0;
+	var l1 = _luminance(fg);
+	var l2 = _luminance(bg);
+	var lighter = Math.max(l1, l2);
+	var darker = Math.min(l1, l2);
+	return (lighter + 0.05) / (darker + 0.05);
+}
+
+// Returns an object describing the WCAG verdict at the given size.
+// Thresholds: AA-large 3.0, AA 4.5, AAA 7.0.
+function contrastVerdict(ratio) {
+	if (ratio >= 7) return { level: "AAA", className: "val-good", text: "AAA" };
+	if (ratio >= 4.5) return { level: "AA", className: "val-good", text: "AA" };
+	if (ratio >= 3) return { level: "AA Large", className: "val-warn", text: "AA крупн." };
+	return { level: "fail", className: "val-bad", text: "Низкий" };
+}
+
+;
+// === src/renderers.js ===
 var skeletons = {};
 
 function invalidateRenderers() {
@@ -1843,17 +2022,22 @@ function makeSectionHeader(key, label, sections) {
 	var div = el("div", "section-header");
 	var arrow = el("span", "section-arrow", sections[key] ? "▼" : "▶");
 	div.appendChild(arrow);
-	div.appendChild(document.createTextNode(" " + label));
+	// Keep the label in a TextNode reference so renderers can mutate it cheaply (e.g. update counts).
+	var labelText = document.createTextNode(" " + label);
+	div.appendChild(labelText);
 	div.onclick = function() {
 		sections[key] = !sections[key];
 		arrow.textContent = sections[key] ? "▼" : "▶";
 		div._toggle(key);
 	};
 	div._arrow = arrow;
+	div._countText = labelText;
 	div._toggle = function() {};
 	return div;
 }
 
+;
+// === src/sparkline.js ===
 function buildSparkline(data, minVal, maxVal, colorClass) {
 	var W = 80, H = 24;
 	var ns = "http://www.w3.org/2000/svg";
@@ -1897,6 +2081,8 @@ function buildSparkline(data, minVal, maxVal, colorClass) {
 	return svg;
 }
 
+;
+// === src/renderers/status.js ===
 var st_sections = { round: true, time: true, character: true };
 var st_skeleton = null;
 var st_els = {};
@@ -2118,6 +2304,8 @@ function draw_status() {
 	}
 }
 
+;
+// === src/renderers/mc.js ===
 var mc_skeleton = null;
 var mc_els = {};
 var mc_ss_rows = {};
@@ -2269,9 +2457,9 @@ function mc_updatePingSection() {
 	if (!mc_els.pingTable) return;
 	if (!State.mcSections.ping) { mc_els.pingTable.textContent = ""; return; }
 	var d = State.mcServerData;
-	var pingHash = d.ping_samples + "," + d.ping_rtt_avg + "," + d.ping_rtt_max + "," + d.ping_rtt_avg_avg + "," + d.ping_tick_avg + "," + d.ping_tick_max + "," + d.ping_server_avg + "," + d.ping_server_max + "," + d.raw_mult + "," + d.jitter_last + "," + d.jitter_avg + "," + d.jitter_max_wnd + "," + d.glide_mult;
-	if (mc_els.pingTable._lastHash === pingHash) return;
-	mc_els.pingTable._lastHash = pingHash;
+	// MC iteration advances once per Master tick; same iteration means identical ping data.
+	if (mc_els.pingTable._lastIter === State.mcIteration) return;
+	mc_els.pingTable._lastIter = State.mcIteration;
 	mc_els.pingTable.textContent = "";
 	mc_els.pingTable.appendChild(mc_makeRow("RTT",
 		"Сэмпл:" + d.ping_samples +
@@ -2405,28 +2593,23 @@ function mc_updateSSRows() {
 	}
 	for (var n in mc_ss_rows) {
 		if (!seen[n]) {
-			mc_els.ssTbody.removeChild(mc_ss_rows[n]);
+			if (mc_ss_rows[n].parentNode === mc_els.ssTbody) {
+				mc_els.ssTbody.removeChild(mc_ss_rows[n]);
+			}
 			delete mc_ss_rows[n];
 		}
 	}
 	mc_sortAndReorder();
-	State.mcSortDirty = false;
 }
 
 function mc_updateKeySection() {
 	if (!mc_els.keySection) return;
 	if (!State.mcSections.key) { mc_els.keySection.textContent = ""; return; }
 	var key_data = State.mcServerData.key_ss || {};
-	var keyHashParts = [JSON.stringify(key_data)];
-	for (var ki = 0; ki < State.mcSSData.length; ki++) {
-		var kr = State.mcSSData[ki];
-		if (MC_KEY_SUBSYSTEMS.indexOf(kr[SS_NAME]) !== -1) {
-			keyHashParts.push(kr[SS_NAME] + ":" + kr[SS_COST] + ":" + kr[SS_TICK] + ":" + kr[SS_STATE] + ":" + kr[SS_CAN_FIRE]);
-		}
-	}
-	var keyHash = keyHashParts.join("|");
-	if (mc_els.keySection._lastHash === keyHash) return;
-	mc_els.keySection._lastHash = keyHash;
+	// Iteration-based dedup — DM bumps mcIteration once per Master tick. JSON.stringify on the
+	// nested key_data structure was the heaviest per-update operation; this drops it entirely.
+	if (mc_els.keySection._lastIter === State.mcIteration) return;
+	mc_els.keySection._lastIter = State.mcIteration;
 	mc_els.keySection.textContent = "";
 	var rendered = {};
 
@@ -2493,11 +2676,16 @@ function mc_appendKeyDetails(card, details) {
 function draw_mc() {
 	mc_ensureSkeleton();
 
+	// Cheap dirty-check on the header (arrow + count). Both states matter, so derive a single key.
 	if (mc_els.ssHeader) {
 		var arrow = State.mcSections.subsystems ? "▼" : "▶";
-		var newText = arrow + " Подсистемы (" + State.mcSSData.length + ")";
-		if (mc_els.ssHeader.textContent !== newText) {
-			mc_els.ssHeader._arrow.textContent = State.mcSections.subsystems ? "▼" : "▶";
+		var headerKey = arrow + ":" + State.mcSSData.length;
+		if (mc_els.ssHeader._lastKey !== headerKey) {
+			mc_els.ssHeader._lastKey = headerKey;
+			if (mc_els.ssHeader._arrow) mc_els.ssHeader._arrow.textContent = arrow;
+			if (mc_els.ssHeader._countText) {
+				mc_els.ssHeader._countText.textContent = " Подсистемы (" + State.mcSSData.length + ")";
+			}
 		}
 	}
 
@@ -2507,7 +2695,11 @@ function draw_mc() {
 	mc_updateSSRows();
 }
 
+;
+// === src/renderers/verbs.js ===
 var verbSearchTimers = {};
+// Per-tab last query, so re-render after data change can repopulate without losing user's filter.
+var verbLastQuery = {};
 
 function draw_verbs(cat) {
 	statcontent.textContent = "";
@@ -2516,16 +2708,24 @@ function draw_verbs(cat) {
 	searchInput.type = "text";
 	searchInput.placeholder = "Поиск команд...";
 	searchInput.autocomplete = "off";
+	if (verbLastQuery[cat]) searchInput.value = verbLastQuery[cat];
 	statcontent.appendChild(searchInput);
 
 	var container = el("div");
 	statcontent.appendChild(container);
 	sortVerbs();
 
-	function renderVerbsFiltered(query) {
+	// Map of pill -> the query strings it matches. Built once per draw, then filtered by toggling
+	// display:none. This avoids thrashing the entire DOM on every keystroke for admins with 200+
+	// verbs, and preserves focus/selection in the search input.
+	var pillIndex = [];
+
+	function buildVerbDOM() {
 		container.textContent = "";
+		pillIndex = [];
 		var grid = el("div", "verb-grid");
 		var additions = {};
+		var subHeaders = {};
 
 		var resolvedCat = cat;
 		if (State.splitAdminTabs && cat.lastIndexOf(".") !== -1) {
@@ -2546,8 +2746,6 @@ function draw_verbs(cat) {
 			if (verbCat.lastIndexOf(resolvedCat, 0) !== 0) continue;
 			if (verbCat.length !== resolvedCat.length && verbCat.charAt(resolvedCat.length) !== ".") continue;
 
-			if (query && command.toLowerCase().indexOf(query) === -1) continue;
-
 			var subCat = verbCat.lastIndexOf(".") !== -1 ? verbCat.split(".")[1] : null;
 			if (subCat && !additions[subCat]) {
 				additions[subCat] = el("div", "verb-grid");
@@ -2565,6 +2763,7 @@ function draw_verbs(cat) {
 				};
 			})(part[0], command);
 
+			pillIndex.push({ el: pill, sub: subCat, search: command.toLowerCase() });
 			(subCat ? additions[subCat] : grid).appendChild(pill);
 		}
 
@@ -2572,21 +2771,43 @@ function draw_verbs(cat) {
 
 		for (var subKey in additions) {
 			if (additions.hasOwnProperty(subKey)) {
-				container.appendChild(el("div", "verb-sub-header", subKey));
+				var hdr = el("div", "verb-sub-header", subKey);
+				container.appendChild(hdr);
 				container.appendChild(additions[subKey]);
+				subHeaders[subKey] = { hdr: hdr, grid: additions[subKey] };
 			}
 		}
-
+		return subHeaders;
 	}
 
-	renderVerbsFiltered("");
+	var subHeaders = buildVerbDOM();
+
+	function applyFilter(query) {
+		// Toggle visibility instead of re-rendering. Hide whole sub-header sections when empty.
+		var subVisibleCount = {};
+		for (var i = 0; i < pillIndex.length; i++) {
+			var entry = pillIndex[i];
+			var matches = !query || entry.search.indexOf(query) !== -1;
+			entry.el.style.display = matches ? "" : "none";
+			if (entry.sub && matches) {
+				subVisibleCount[entry.sub] = (subVisibleCount[entry.sub] | 0) + 1;
+			}
+		}
+		for (var subKey in subHeaders) {
+			if (!subHeaders.hasOwnProperty(subKey)) continue;
+			var visible = subVisibleCount[subKey] || 0;
+			subHeaders[subKey].hdr.style.display = visible ? "" : "none";
+			subHeaders[subKey].grid.style.display = visible ? "" : "none";
+		}
+	}
+
+	if (verbLastQuery[cat]) applyFilter(verbLastQuery[cat]);
 
 	searchInput.oninput = function() {
 		var val = this.value.toLowerCase();
+		verbLastQuery[cat] = val;
 		clearTimeout(verbSearchTimers[cat]);
-		verbSearchTimers[cat] = setTimeout(function() {
-			renderVerbsFiltered(val);
-		}, 150);
+		verbSearchTimers[cat] = setTimeout(function() { applyFilter(val); }, 60);
 	};
 }
 
@@ -2599,6 +2820,8 @@ function makeVerbOnclick(command) {
 	};
 }
 
+;
+// === src/renderers/favorites.js ===
 function favoriteCategoryLabel(cat) {
 	var dot = cat.indexOf(".");
 	if (dot === -1) return cat;
@@ -2649,6 +2872,8 @@ function draw_favorites() {
 	}
 }
 
+;
+// === src/renderers/spells.js ===
 function draw_spells(cat) {
 	statcontent.textContent = "";
 	for (var i = 0; i < State.spells.length; i++) {
@@ -2676,17 +2901,82 @@ function draw_spells(cat) {
 	}
 }
 
+;
+// === src/renderers/tickets.js ===
+// AHELP_* enum constants must match code/__DEFINES/admin.dm
+var AHELP_ACTIVE = 1, AHELP_CLOSED = 2, AHELP_RESOLVED = 3;
+
+function ticketAgeText(seconds) {
+	if (seconds == null || seconds < 0) return "";
+	if (seconds < 60) return seconds + "с";
+	var m = Math.floor(seconds / 60);
+	var s = seconds % 60;
+	if (m < 60) return m + "м " + s + "с";
+	var h = Math.floor(m / 60);
+	m = m % 60;
+	return h + "ч " + m + "м";
+}
+
+function ticketAgeClass(seconds) {
+	if (seconds == null) return "";
+	if (seconds >= 600) return "val-bad";   // 10+ min — really stale
+	if (seconds >= 180) return "val-warn";  // 3+ min — getting stale
+	return "val-good";
+}
+
+function ticketStateInfo(meta) {
+	var state = meta && meta.state;
+	if (state === AHELP_ACTIVE) return { text: meta && meta.handler ? "В работе" : "Открыт", color: meta && meta.handler ? "var(--health-warn)" : "var(--health-good)", isClosed: false };
+	if (state === AHELP_CLOSED) return { text: "Закрыт", color: "var(--text-muted)", isClosed: true };
+	if (state === AHELP_RESOLVED) return { text: "Решён", color: "var(--text-muted)", isClosed: true };
+	return { text: "", color: "var(--text-muted)", isClosed: false };
+}
+
+// Inline action descriptors mirror /datum/admin_help/proc/ClosureLinks in adminhelp.dm.
+// Server-side hrefs accept the standard ahelp_action protocol; surfacing them here saves
+// admins a round-trip into the chat window for the most common triage actions.
+var TICKET_ACTIONS = [
+	{ key: "reply",        label: "OTBET",  title: "Reply",   className: "" },
+	{ key: "handle_issue", label: "HANDLE", title: "Handle",  className: "" },
+	{ key: "close",        label: "CLOSE",  title: "Close",   className: "ticket-act-warn" },
+	{ key: "resolve",      label: "RSLVE",  title: "Resolve", className: "ticket-act-good" },
+	{ key: "reject",       label: "REJT",   title: "Reject",  className: "ticket-act-bad" }
+];
+
+// Render closed/resolved tickets behind a single collapsible row to keep the active list scannable.
+var _ticketClosedExpanded = false;
+
 function draw_tickets() {
 	statcontent.textContent = "";
 	if (!State.tickets || !State.tickets.length) return;
 
 	var open = 0, inProgress = 0, closed = 0;
+	var activeRows = [];
+	var closedRows = [];
+	var headerRows = [];
 	for (var i = 0; i < State.tickets.length; i++) {
 		var t = State.tickets[i];
-		var label = ("" + (t[0] || "")).toLowerCase();
-		if (label.indexOf("open") !== -1 || label.indexOf("откр") !== -1) open++;
-		else if (label.indexOf("progress") !== -1 || label.indexOf("в работе") !== -1) inProgress++;
-		else if (label.indexOf("close") !== -1 || label.indexOf("resolve") !== -1 || label.indexOf("закр") !== -1) closed++;
+		var meta = t[3];
+		if (meta && meta.state != null) {
+			if (meta.state === AHELP_ACTIVE) {
+				if (meta.handler) inProgress++; else open++;
+				activeRows.push(t);
+			} else {
+				closed++;
+				closedRows.push(t);
+			}
+			continue;
+		}
+		// Header rows or legacy entries without metadata — preserve original behavior.
+		var labelText = ("" + (t[0] || "")).toLowerCase();
+		if (labelText.indexOf("ticket") !== -1 || labelText.indexOf("communications") !== -1 || labelText.indexOf("disconnected") !== -1) {
+			headerRows.push(t);
+		} else if (labelText.indexOf("close") !== -1 || labelText.indexOf("resolve") !== -1 || labelText.indexOf("закр") !== -1) {
+			closed++;
+			closedRows.push(t);
+		} else {
+			activeRows.push(t);
+		}
 	}
 
 	var summary = el("div", "ticket-summary");
@@ -2695,55 +2985,25 @@ function draw_tickets() {
 	summary.appendChild(el("span", "ticket-summary-item", "Закрыто: " + closed));
 	statcontent.appendChild(summary);
 
-	for (var i = 0; i < State.tickets.length; i++) {
-		var part = State.tickets[i];
-		var card = el("div", "ticket-card");
-		var labelText = "" + (part[0] || "");
-		var isClosed = labelText.toLowerCase().indexOf("close") !== -1 || labelText.toLowerCase().indexOf("resolve") !== -1 || labelText.toLowerCase().indexOf("закр") !== -1;
-		if (isClosed) card.classList.add("ticket-closed");
-
-		var indicator = el("span", "ticket-indicator");
-		if (labelText.toLowerCase().indexOf("open") !== -1 || labelText.toLowerCase().indexOf("откр") !== -1) {
-			indicator.style.backgroundColor = "var(--health-good)";
-		} else if (labelText.toLowerCase().indexOf("progress") !== -1) {
-			indicator.style.backgroundColor = "var(--health-warn)";
-		} else {
-			indicator.style.backgroundColor = "var(--text-muted)";
+	for (var hi = 0; hi < headerRows.length; hi++) {
+		statcontent.appendChild(_makeTicketHeaderRow(headerRows[hi]));
+	}
+	for (var ai = 0; ai < activeRows.length; ai++) {
+		statcontent.appendChild(_makeTicketCard(activeRows[ai], false));
+	}
+	if (closedRows.length) {
+		var toggle = el("div", "ticket-closed-toggle");
+		toggle.textContent = (_ticketClosedExpanded ? "▼ Скрыть" : "▶ Показать") + " закрытые (" + closedRows.length + ")";
+		toggle.onclick = function() {
+			_ticketClosedExpanded = !_ticketClosedExpanded;
+			draw_tickets();
+		};
+		statcontent.appendChild(toggle);
+		if (_ticketClosedExpanded) {
+			for (var ci = 0; ci < closedRows.length; ci++) {
+				statcontent.appendChild(_makeTicketCard(closedRows[ci], true));
+			}
 		}
-		card.appendChild(indicator);
-
-		var statusSpan = el("span", null, labelText);
-		card.appendChild(statusSpan);
-
-		var td2 = el("span");
-		td2.style.flex = "1";
-		if (part[2]) {
-			var a = el("a");
-			a.href = "#";
-			a.onclick = (function(ref) {
-				return function(e) {
-					e.preventDefault();
-					byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp=" + ref + ";ahelp_action=ticket");
-				};
-			})(part[2]);
-			a.textContent = part[1];
-			td2.appendChild(a);
-		} else if (part[3]) {
-			var a2 = el("a");
-			a2.href = "#";
-			a2.onclick = (function(ref) {
-				return function(e) {
-					e.preventDefault();
-					byond_topic("?src=_statpanel_;statpanel_item_target=" + ref + ";statpanel_item_click=left");
-				};
-			})(part[3]);
-			a2.textContent = part[1];
-			td2.appendChild(a2);
-		} else {
-			td2.textContent = part[1];
-		}
-		card.appendChild(td2);
-		statcontent.appendChild(card);
 	}
 
 	if (State.interviewManager && State.interviewManager.interviews && State.interviewManager.interviews.length > 0) {
@@ -2751,6 +3011,96 @@ function draw_tickets() {
 	}
 }
 
+function _makeTicketHeaderRow(part) {
+	var card = el("div", "ticket-header-row");
+	var labelText = "" + (part[0] || "");
+	card.appendChild(el("span", "ticket-header-label", labelText));
+	if (part[3] && typeof part[3] === "string") {
+		var a = el("a", "ticket-header-link");
+		a.href = "#";
+		a.textContent = part[1];
+		a.onclick = (function(ref) {
+			return function(e) {
+				e.preventDefault();
+				byond_topic("?src=_statpanel_;statpanel_item_target=" + ref + ";statpanel_item_click=left");
+			};
+		})(part[3]);
+		card.appendChild(a);
+	} else {
+		card.appendChild(el("span", "ticket-header-value", part[1] || ""));
+	}
+	return card;
+}
+
+function _makeTicketCard(part, isClosed) {
+	var meta = part[3];
+	var card = el("div", "ticket-card");
+	if (isClosed) card.classList.add("ticket-closed");
+
+	var stateInfo = ticketStateInfo(meta);
+	var indicator = el("span", "ticket-indicator");
+	indicator.style.backgroundColor = stateInfo.color;
+	indicator.title = stateInfo.text;
+	card.appendChild(indicator);
+
+	var leftCol = el("div", "ticket-left");
+	if (meta && meta.id != null) {
+		leftCol.appendChild(el("span", "ticket-id", "#" + meta.id));
+	}
+	var labelLink = el("a", "ticket-label");
+	labelLink.href = "#";
+	labelLink.textContent = part[0] || "";
+	if (part[2]) {
+		labelLink.onclick = (function(ref) {
+			return function(e) {
+				e.preventDefault();
+				byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp=" + ref + ";ahelp_action=ticket");
+			};
+		})(part[2]);
+	}
+	leftCol.appendChild(labelLink);
+	card.appendChild(leftCol);
+
+	var rightCol = el("div", "ticket-right");
+	if (meta && meta.handler) {
+		var handler = el("span", "ticket-handler", meta.handler);
+		handler.title = "Взял в работу: " + meta.handler;
+		rightCol.appendChild(handler);
+	}
+	if (meta && meta.age != null) {
+		var ageEl = el("span", "ticket-age " + ticketAgeClass(meta.age), ticketAgeText(meta.age));
+		ageEl.title = meta.age + " секунд с момента открытия";
+		rightCol.appendChild(ageEl);
+	}
+	if (part[1]) {
+		var stateText = el("span", "ticket-state-text", part[1]);
+		rightCol.appendChild(stateText);
+	}
+	card.appendChild(rightCol);
+
+	// Inline actions only on active tickets and only when DM gave us an admin href + ticket REF.
+	if (!isClosed && part[2] && State.hrefToken && meta && meta.state === AHELP_ACTIVE) {
+		var actions = el("div", "ticket-actions");
+		for (var ai = 0; ai < TICKET_ACTIONS.length; ai++) {
+			var spec = TICKET_ACTIONS[ai];
+			var btn = el("button", "ticket-action-btn " + spec.className, spec.label);
+			btn.title = spec.title;
+			btn.onclick = (function(ref, action) {
+				return function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp=" + ref + ";ahelp_action=" + action);
+				};
+			})(part[2], spec.key);
+			actions.appendChild(btn);
+		}
+		card.appendChild(actions);
+	}
+	return card;
+}
+
+;
+// === src/renderers/sdql2.js ===
 function draw_sdql2() {
 	statcontent.textContent = "";
 	for (var i = 0; i < State.sdql2.length; i++) {
@@ -2783,6 +3133,8 @@ function draw_sdql2() {
 	}
 }
 
+;
+// === src/renderers/debug.js ===
 function draw_debug() {
 	statcontent.textContent = "";
 
@@ -2840,6 +3192,8 @@ function draw_debug() {
 	statcontent.appendChild(ptSection);
 }
 
+;
+// === src/renderers/turf.js ===
 var turfTable = null;
 var turfItemNodes = {};
 
@@ -2930,6 +3284,8 @@ function draw_listedturf() {
 	}
 }
 
+;
+// === src/zoom.js ===
 var pixelRatio = window.devicePixelRatio || 1;
 var statbrowserBaseZoom = pixelRatio !== 1 ? (100 / pixelRatio) : 100;
 var statbrowserUserZoom = 1;
@@ -2988,17 +3344,39 @@ window.addEventListener("wheel", function(event) {
 applyZoom();
 
 
+;
+// === src/bridge-functions.js ===
 function safeParse(str, fallback) {
 	try { return JSON.parse(str); }
 	catch (e) { return fallback !== undefined ? fallback : null; }
 }
 
+// DM sends this once per session to assert which payload shape it speaks.
+// On mismatch we log a single warning to the console and ask BYOND to reload the cached HTML.
+// (The cached HTML is the most common cause of mismatch — WebView2 holds an old build.)
+function set_protocol_version(ver_str) {
+	var ver = parseInt(ver_str, 10);
+	if (!ver) return;
+	State.protocolVersion = ver;
+	if (ver === EXPECTED_PROTOCOL_VERSION) return;
+	if (State.protocolMismatchReported) return;
+	State.protocolMismatchReported = true;
+	try {
+		console.warn("[statbrowser] Protocol mismatch: client expects " + EXPECTED_PROTOCOL_VERSION + ", server speaks " + ver + ". Asking BYOND to reload the panel.");
+	} catch (e) {}
+	// Best-effort: ask DM to re-browse the file. Hosts that don't expose this href harmlessly drop it.
+	byond_topic("?reload_statbrowser=1");
+}
+
 function update_ping(ping_str, tidi_str) {
 	var pingData = safeParse(ping_str);
-	var tidiData = safeParse(tidi_str);
 	if (!Array.isArray(pingData)) return;
 	State.pingData = pingData;
-	State.tidiData = tidiData;
+	// Tidi is now sent on a slower cadence; preserve last value when omitted instead of clearing.
+	if (tidi_str && tidi_str !== "") {
+		var tidiData = safeParse(tidi_str);
+		if (tidiData) State.tidiData = tidiData;
+	}
 
 	pingBarGlobal.style.display = "";
 	var ping = State.pingData[0];
@@ -3039,12 +3417,17 @@ function update(global_fast_str, global_slow_str, other_str) {
 		State.tidiData = parsedFast.tidi;
 	}
 
-	var parsedMob = safeParse(other_str);
-	State.mobItems = [];
-	if (parsedMob) {
-		for (var i = 0; i < parsedMob.length; i++) {
-			if (parsedMob[i] != null) State.mobItems.push(parsedMob[i]);
+	// DM omits other_str when its content hash didn't change since last send.
+	// Preserve the previous mobItems instead of clearing — saves redundant DOM rewrites.
+	if (other_str && other_str !== "") {
+		var parsedMob = safeParse(other_str);
+		var newItems = [];
+		if (parsedMob) {
+			for (var i = 0; i < parsedMob.length; i++) {
+				if (parsedMob[i] != null) newItems.push(parsedMob[i]);
+			}
 		}
+		State.mobItems = newItems;
 	}
 
 	if (!_settingsActive) {
@@ -3063,15 +3446,34 @@ function update_voting(vote_data) {
 	if (!_settingsActive && State.currentTab === "Status") draw_status();
 }
 
-function update_mc(server_data_encoded, ss_data_encoded, coords_entry) {
-	var serverData = safeParse(server_data_encoded);
-	var ssData = safeParse(ss_data_encoded);
-	if (!serverData || !ssData) return;
-	State.mcServerData = serverData;
-	State.mcSSData = ssData;
-	State.mcServerData.coords = coords_entry;
+function update_mc(server_data_encoded, ss_data_encoded, coords_entry, iteration_str) {
+	// DM ships an iteration counter (Master.iteration) so JS can dedupe identical full payloads
+	// without JSON.stringify-hashing every update. When iteration is unchanged, DM omits the heavy
+	// payload and only ships fresh coords. We update only what changed and skip the redraw call
+	// in the coords-only case unless the eye position string actually moved.
+	var iter = iteration_str != null && iteration_str !== "" ? parseInt(iteration_str, 10) : NaN;
+	var hasFullPayload = !!(server_data_encoded && ss_data_encoded);
+	if (hasFullPayload) {
+		var serverData = safeParse(server_data_encoded);
+		var ssData = safeParse(ss_data_encoded);
+		if (!serverData || !ssData) return;
+		State.mcServerData = serverData;
+		State.mcSSData = ssData;
+		// Track iteration if DM provided it; else bump locally so renderer dirty checks still trigger
+		// (covers older DM payloads or any path that doesn't include the counter).
+		if (!isNaN(iter)) State.mcIteration = iter;
+		else State.mcIteration = (State.mcIteration | 0) + 1;
+	}
+	var prevCoords = State.mcServerData.coords;
+	if (coords_entry != null && coords_entry !== "") {
+		State.mcServerData.coords = coords_entry;
+	}
 	addPermanentTab("MC");
-	if (!_settingsActive && State.currentTab === "MC") draw_mc();
+	if (_settingsActive || State.currentTab !== "MC") return;
+	// Skip the full draw call in the coords-only case unless coords actually changed.
+	// All other sections are dirty-checked via mcIteration so they'd be no-ops anyway.
+	if (!hasFullPayload && coords_entry === prevCoords) return;
+	draw_mc();
 }
 
 function remove_mc() {
@@ -3344,6 +3746,8 @@ function reapply_storage() {
 	loadFavorites();
 }
 
+;
+// === src/search.js ===
 var globalSearchTimer = null;
 
 function openGlobalSearch() {
@@ -3408,12 +3812,100 @@ globalSearchOverlay.onclick = function(e) {
 	if (e.target === globalSearchOverlay) closeGlobalSearch();
 };
 
+// Returns true if the user is currently typing into something (we should NOT hijack their key).
+function _shortcutInTextInput() {
+	var ae = document.activeElement;
+	if (!ae) return false;
+	var tag = ae.tagName;
+	if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+	if (ae.isContentEditable) return true;
+	return false;
+}
+
+// Tab list excluding chrome (search button, settings gear) — index by visible order.
+function _orderedTabButtons() {
+	var btns = [];
+	var children = tabBar.children;
+	for (var i = 0; i < children.length; i++) {
+		var c = children[i];
+		if (!c.classList || !c.classList.contains("tab-btn")) continue;
+		btns.push(c);
+	}
+	btns.sort(function(a, b) {
+		return (parseInt(a.style.order, 10) || 0) - (parseInt(b.style.order, 10) || 0);
+	});
+	return btns;
+}
+
 document.addEventListener("keydown", function(e) {
-	if (e.key === "Escape" && globalSearchOverlay.classList.contains("visible")) {
-		closeGlobalSearch();
+	if (e.key === "Escape") {
+		if (globalSearchOverlay.classList.contains("visible")) {
+			closeGlobalSearch();
+			e.preventDefault();
+			return;
+		}
+		if (_settingsActive) {
+			_settingsActive = false;
+			renderCurrentTab();
+			e.preventDefault();
+			return;
+		}
+	}
+	// "/" or Ctrl+F opens global search — only when not typing into an input.
+	if ((e.key === "/" || (e.key.toLowerCase() === "f" && (e.ctrlKey || e.metaKey))) && !_shortcutInTextInput()) {
+		e.preventDefault();
+		if (!globalSearchOverlay.classList.contains("visible")) openGlobalSearch();
+		return;
+	}
+	// Ctrl+1..9 jumps to the Nth tab in display order.
+	if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && /^[1-9]$/.test(e.key) && !_shortcutInTextInput()) {
+		var idx = parseInt(e.key, 10) - 1;
+		var btns = _orderedTabButtons();
+		if (idx < btns.length) {
+			e.preventDefault();
+			var label = btns[idx].id.replace(/^tab-/, "");
+			tab_change(label);
+		}
+		return;
 	}
 });
 
+// Ctrl+Click on any link copies its DM ref/href to the clipboard. Useful for admin workflows
+// (paste into chat, share with another admin, feed into a SDQL2 query) without round-tripping
+// through the BYOND verb panel.
+document.addEventListener("click", function(e) {
+	if (!(e.ctrlKey || e.metaKey)) return;
+	var a = e.target;
+	while (a && a !== document.body) {
+		if (a.tagName === "A" && a.href) break;
+		a = a.parentNode;
+	}
+	if (!a || !a.href) return;
+	// Extract a meaningful identifier — REF or full href
+	var match = /\[?(0x[0-9a-fA-F]+)\]?|(\?[^"'\s]+)/.exec(a.href);
+	var payload = match ? (match[1] || match[2] || a.href) : a.href;
+	try {
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(payload);
+		} else {
+			// Fallback for environments without async clipboard
+			var ta = document.createElement("textarea");
+			ta.value = payload;
+			document.body.appendChild(ta);
+			ta.select();
+			try { document.execCommand("copy"); } catch (err) {}
+			document.body.removeChild(ta);
+		}
+		e.preventDefault();
+		// Visual flash on the link to confirm the copy
+		var prev = a.style.backgroundColor;
+		a.style.backgroundColor = "var(--accent, #4a9eff)";
+		setTimeout(function() { a.style.backgroundColor = prev; }, 200);
+	} catch (err) {}
+}, true);
+
+;
+// === src/settings-panel.js ===
 var _settingsActive = false;
 var _fontApplyTimer = null;
 
@@ -3464,11 +3956,20 @@ function draw_settings() {
 
 	var colorSection = el("div", "settings-section");
 	colorSection.appendChild(el("div", "settings-section-title", "Цвета"));
+	// Color pairs flagged for contrast: foreground vs background. WCAG ratio rendered next to
+	// the foreground swatch so a player picking unreadable combinations sees the warning live.
+	var COLOR_CONTRAST_PAIRS = {
+		"--text-primary": "--bg-primary",
+		"--text-secondary": "--bg-primary",
+		"--text-muted": "--bg-primary",
+		"--accent": "--bg-primary"
+	};
 	var colorVars = [
 		["--bg-primary", "Фон"],
 		["--bg-secondary", "Фон панели вкладок"],
 		["--text-primary", "Текст"],
 		["--text-secondary", "Второстепенный текст"],
+		["--text-muted", "Приглушённый текст"],
 		["--accent", "Акцент"],
 		["--border", "Граница"],
 		["--health-good", "Здоровье (норма)"],
@@ -3476,6 +3977,23 @@ function draw_settings() {
 		["--health-bad", "Здоровье (критическое)"]
 	];
 	var effective = getCurrentVarValues(themeState);
+	// Refs we update synchronously so the contrast badge stays in sync with picker drags
+	// without rebuilding the whole panel.
+	var contrastBadges = {};
+
+	function _refreshContrastBadges() {
+		var live = getCurrentVarValues(themeState);
+		for (var fg in COLOR_CONTRAST_PAIRS) {
+			if (!contrastBadges[fg]) continue;
+			var bg = COLOR_CONTRAST_PAIRS[fg];
+			var ratio = contrastRatio(live[fg], live[bg]);
+			var verdict = contrastVerdict(ratio);
+			contrastBadges[fg].textContent = ratio.toFixed(1) + ":1 " + verdict.text;
+			contrastBadges[fg].className = "settings-contrast-badge " + verdict.className;
+			contrastBadges[fg].title = "Контраст с " + bg + ": " + ratio.toFixed(2) + ":1 (WCAG " + verdict.level + ")";
+		}
+	}
+
 	for (var i = 0; i < colorVars.length; i++) {
 		(function(varName, label) {
 			var row = el("div", "settings-row");
@@ -3490,12 +4008,19 @@ function draw_settings() {
 				markCustomIfModified(themeState);
 				saveTheme(themeState);
 				applyTheme(themeState);
+				_refreshContrastBadges();
 				if (themeState.preset !== wasPre) draw_settings();
 			};
 			row.appendChild(input);
+			if (varName in COLOR_CONTRAST_PAIRS) {
+				var badge = el("span", "settings-contrast-badge", "");
+				row.appendChild(badge);
+				contrastBadges[varName] = badge;
+			}
 			colorSection.appendChild(row);
 		})(colorVars[i][0], colorVars[i][1]);
 	}
+	_refreshContrastBadges();
 	panel.appendChild(colorSection);
 
 	var typoSection = el("div", "settings-section");
@@ -3926,6 +4451,8 @@ function draw_settings() {
 	statcontent.appendChild(panel);
 }
 
+;
+// === src/init.js ===
 var tabBarSpacer = document.createElement("div");
 tabBarSpacer.id = "tab-bar-spacer";
 tabBar.appendChild(tabBarSpacer);
@@ -3933,7 +4460,7 @@ tabBar.appendChild(tabBarSpacer);
 var searchBtn = document.createElement("button");
 searchBtn.id = "tab-search-btn";
 searchBtn.innerHTML = SEARCH_ICON_SVG;
-searchBtn.title = "Поиск команд";
+searchBtn.title = "Поиск команд (Ctrl+F или /)";
 searchBtn.onclick = function() {
 	if (globalSearchOverlay.classList.contains("visible")) {
 		closeGlobalSearch();

@@ -149,9 +149,9 @@ function mc_updatePingSection() {
 	if (!mc_els.pingTable) return;
 	if (!State.mcSections.ping) { mc_els.pingTable.textContent = ""; return; }
 	var d = State.mcServerData;
-	var pingHash = d.ping_samples + "," + d.ping_rtt_avg + "," + d.ping_rtt_max + "," + d.ping_rtt_avg_avg + "," + d.ping_tick_avg + "," + d.ping_tick_max + "," + d.ping_server_avg + "," + d.ping_server_max + "," + d.raw_mult + "," + d.jitter_last + "," + d.jitter_avg + "," + d.jitter_max_wnd + "," + d.glide_mult;
-	if (mc_els.pingTable._lastHash === pingHash) return;
-	mc_els.pingTable._lastHash = pingHash;
+	// MC iteration advances once per Master tick; same iteration means identical ping data.
+	if (mc_els.pingTable._lastIter === State.mcIteration) return;
+	mc_els.pingTable._lastIter = State.mcIteration;
 	mc_els.pingTable.textContent = "";
 	mc_els.pingTable.appendChild(mc_makeRow("RTT",
 		"Сэмпл:" + d.ping_samples +
@@ -285,28 +285,23 @@ function mc_updateSSRows() {
 	}
 	for (var n in mc_ss_rows) {
 		if (!seen[n]) {
-			mc_els.ssTbody.removeChild(mc_ss_rows[n]);
+			if (mc_ss_rows[n].parentNode === mc_els.ssTbody) {
+				mc_els.ssTbody.removeChild(mc_ss_rows[n]);
+			}
 			delete mc_ss_rows[n];
 		}
 	}
 	mc_sortAndReorder();
-	State.mcSortDirty = false;
 }
 
 function mc_updateKeySection() {
 	if (!mc_els.keySection) return;
 	if (!State.mcSections.key) { mc_els.keySection.textContent = ""; return; }
 	var key_data = State.mcServerData.key_ss || {};
-	var keyHashParts = [JSON.stringify(key_data)];
-	for (var ki = 0; ki < State.mcSSData.length; ki++) {
-		var kr = State.mcSSData[ki];
-		if (MC_KEY_SUBSYSTEMS.indexOf(kr[SS_NAME]) !== -1) {
-			keyHashParts.push(kr[SS_NAME] + ":" + kr[SS_COST] + ":" + kr[SS_TICK] + ":" + kr[SS_STATE] + ":" + kr[SS_CAN_FIRE]);
-		}
-	}
-	var keyHash = keyHashParts.join("|");
-	if (mc_els.keySection._lastHash === keyHash) return;
-	mc_els.keySection._lastHash = keyHash;
+	// Iteration-based dedup — DM bumps mcIteration once per Master tick. JSON.stringify on the
+	// nested key_data structure was the heaviest per-update operation; this drops it entirely.
+	if (mc_els.keySection._lastIter === State.mcIteration) return;
+	mc_els.keySection._lastIter = State.mcIteration;
 	mc_els.keySection.textContent = "";
 	var rendered = {};
 
@@ -373,11 +368,16 @@ function mc_appendKeyDetails(card, details) {
 function draw_mc() {
 	mc_ensureSkeleton();
 
+	// Cheap dirty-check on the header (arrow + count). Both states matter, so derive a single key.
 	if (mc_els.ssHeader) {
 		var arrow = State.mcSections.subsystems ? "▼" : "▶";
-		var newText = arrow + " Подсистемы (" + State.mcSSData.length + ")";
-		if (mc_els.ssHeader.textContent !== newText) {
-			mc_els.ssHeader._arrow.textContent = State.mcSections.subsystems ? "▼" : "▶";
+		var headerKey = arrow + ":" + State.mcSSData.length;
+		if (mc_els.ssHeader._lastKey !== headerKey) {
+			mc_els.ssHeader._lastKey = headerKey;
+			if (mc_els.ssHeader._arrow) mc_els.ssHeader._arrow.textContent = arrow;
+			if (mc_els.ssHeader._countText) {
+				mc_els.ssHeader._countText.textContent = " Подсистемы (" + State.mcSSData.length + ")";
+			}
 		}
 	}
 

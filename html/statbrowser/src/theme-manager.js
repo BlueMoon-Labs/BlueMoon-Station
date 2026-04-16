@@ -388,3 +388,43 @@ function normalizeToHex(color) {
 	}
 	return "#000000";
 }
+
+// WCAG 2.1 relative-luminance + contrast-ratio helpers. Used by the settings panel to flag
+// custom color pairs that would render text invisibly against their background.
+function _hexToRgb(hex) {
+	if (!hex || hex.charAt(0) !== "#") return null;
+	if (hex.length === 4) {
+		hex = "#" + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
+	}
+	if (hex.length !== 7) return null;
+	return [parseInt(hex.substr(1, 2), 16), parseInt(hex.substr(3, 2), 16), parseInt(hex.substr(5, 2), 16)];
+}
+
+function _luminance(rgb) {
+	if (!rgb) return 0;
+	var a = rgb.map(function(v) {
+		v /= 255;
+		return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+	});
+	return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+}
+
+function contrastRatio(hexFg, hexBg) {
+	var fg = _hexToRgb(normalizeToHex(hexFg));
+	var bg = _hexToRgb(normalizeToHex(hexBg));
+	if (!fg || !bg) return 0;
+	var l1 = _luminance(fg);
+	var l2 = _luminance(bg);
+	var lighter = Math.max(l1, l2);
+	var darker = Math.min(l1, l2);
+	return (lighter + 0.05) / (darker + 0.05);
+}
+
+// Returns an object describing the WCAG verdict at the given size.
+// Thresholds: AA-large 3.0, AA 4.5, AAA 7.0.
+function contrastVerdict(ratio) {
+	if (ratio >= 7) return { level: "AAA", className: "val-good", text: "AAA" };
+	if (ratio >= 4.5) return { level: "AA", className: "val-good", text: "AA" };
+	if (ratio >= 3) return { level: "AA Large", className: "val-warn", text: "AA крупн." };
+	return { level: "fail", className: "val-bad", text: "Низкий" };
+}

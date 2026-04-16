@@ -5,7 +5,7 @@ tabBar.appendChild(tabBarSpacer);
 var searchBtn = document.createElement("button");
 searchBtn.id = "tab-search-btn";
 searchBtn.innerHTML = SEARCH_ICON_SVG;
-searchBtn.title = "Поиск команд";
+searchBtn.title = "Поиск команд (Ctrl+F или /)";
 searchBtn.onclick = function() {
 	if (globalSearchOverlay.classList.contains("visible")) {
 		closeGlobalSearch();

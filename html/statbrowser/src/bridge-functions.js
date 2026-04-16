@@ -3,12 +3,32 @@ function safeParse(str, fallback) {
 	catch (e) { return fallback !== undefined ? fallback : null; }
 }
 
+// DM sends this once per session to assert which payload shape it speaks.
+// On mismatch we log a single warning to the console and ask BYOND to reload the cached HTML.
+// (The cached HTML is the most common cause of mismatch — WebView2 holds an old build.)
+function set_protocol_version(ver_str) {
+	var ver = parseInt(ver_str, 10);
+	if (!ver) return;
+	State.protocolVersion = ver;
+	if (ver === EXPECTED_PROTOCOL_VERSION) return;
+	if (State.protocolMismatchReported) return;
+	State.protocolMismatchReported = true;
+	try {
+		console.warn("[statbrowser] Protocol mismatch: client expects " + EXPECTED_PROTOCOL_VERSION + ", server speaks " + ver + ". Asking BYOND to reload the panel.");
+	} catch (e) {}
+	// Best-effort: ask DM to re-browse the file. Hosts that don't expose this href harmlessly drop it.
+	byond_topic("?reload_statbrowser=1");
+}
+
 function update_ping(ping_str, tidi_str) {
 	var pingData = safeParse(ping_str);
-	var tidiData = safeParse(tidi_str);
 	if (!Array.isArray(pingData)) return;
 	State.pingData = pingData;
-	State.tidiData = tidiData;
+	// Tidi is now sent on a slower cadence; preserve last value when omitted instead of clearing.
+	if (tidi_str && tidi_str !== "") {
+		var tidiData = safeParse(tidi_str);
+		if (tidiData) State.tidiData = tidiData;
+	}
 
 	pingBarGlobal.style.display = "";
 	var ping = State.pingData[0];
@@ -49,12 +69,17 @@ function update(global_fast_str, global_slow_str, other_str) {
 		State.tidiData = parsedFast.tidi;
 	}
 
-	var parsedMob = safeParse(other_str);
-	State.mobItems = [];
-	if (parsedMob) {
-		for (var i = 0; i < parsedMob.length; i++) {
-			if (parsedMob[i] != null) State.mobItems.push(parsedMob[i]);
+	// DM omits other_str when its content hash didn't change since last send.
+	// Preserve the previous mobItems instead of clearing — saves redundant DOM rewrites.
+	if (other_str && other_str !== "") {
+		var parsedMob = safeParse(other_str);
+		var newItems = [];
+		if (parsedMob) {
+			for (var i = 0; i < parsedMob.length; i++) {
+				if (parsedMob[i] != null) newItems.push(parsedMob[i]);
+			}
 		}
+		State.mobItems = newItems;
 	}
 
 	if (!_settingsActive) {
@@ -73,15 +98,34 @@ function update_voting(vote_data) {
 	if (!_settingsActive && State.currentTab === "Status") draw_status();
 }
 
-function update_mc(server_data_encoded, ss_data_encoded, coords_entry) {
-	var serverData = safeParse(server_data_encoded);
-	var ssData = safeParse(ss_data_encoded);
-	if (!serverData || !ssData) return;
-	State.mcServerData = serverData;
-	State.mcSSData = ssData;
-	State.mcServerData.coords = coords_entry;
+function update_mc(server_data_encoded, ss_data_encoded, coords_entry, iteration_str) {
+	// DM ships an iteration counter (Master.iteration) so JS can dedupe identical full payloads
+	// without JSON.stringify-hashing every update. When iteration is unchanged, DM omits the heavy
+	// payload and only ships fresh coords. We update only what changed and skip the redraw call
+	// in the coords-only case unless the eye position string actually moved.
+	var iter = iteration_str != null && iteration_str !== "" ? parseInt(iteration_str, 10) : NaN;
+	var hasFullPayload = !!(server_data_encoded && ss_data_encoded);
+	if (hasFullPayload) {
+		var serverData = safeParse(server_data_encoded);
+		var ssData = safeParse(ss_data_encoded);
+		if (!serverData || !ssData) return;
+		State.mcServerData = serverData;
+		State.mcSSData = ssData;
+		// Track iteration if DM provided it; else bump locally so renderer dirty checks still trigger
+		// (covers older DM payloads or any path that doesn't include the counter).
+		if (!isNaN(iter)) State.mcIteration = iter;
+		else State.mcIteration = (State.mcIteration | 0) + 1;
+	}
+	var prevCoords = State.mcServerData.coords;
+	if (coords_entry != null && coords_entry !== "") {
+		State.mcServerData.coords = coords_entry;
+	}
 	addPermanentTab("MC");
-	if (!_settingsActive && State.currentTab === "MC") draw_mc();
+	if (_settingsActive || State.currentTab !== "MC") return;
+	// Skip the full draw call in the coords-only case unless coords actually changed.
+	// All other sections are dirty-checked via mcIteration so they'd be no-ops anyway.
+	if (!hasFullPayload && coords_entry === prevCoords) return;
+	draw_mc();
 }
 
 function remove_mc() {

@@ -179,6 +179,8 @@
 	var/turf/listed_turf_watched
 	/// whether the listed turf needs a new visibility snapshot
 	var/listed_turf_dirty = FALSE
+	/// world.time when the listed turf was last marked dirty by a signal — debounces churn on busy turfs
+	var/listed_turf_dirty_at = 0
 	/// whether the listed turf should force-refresh icons on the next snapshot
 	var/listed_turf_icon_refresh_pending = FALSE
 	/// world.time when the listed turf list was last refreshed
@@ -193,6 +195,13 @@
 	var/cached_turf_encoded
 	/// tracks which icon REFs have been sent to this client's statbrowser (REF -> icon_url)
 	var/list/statpanel_sent_icons = list()
+	/// per-section dirty cache: last-sent encoded payload by channel name (status/spells/voting/tickets/listedturf)
+	/// Suppresses identical re-sends without re-running expensive renderers — DM-side dirty checking.
+	var/list/statpanel_last_sent = list()
+	/// cached MC iteration counter last sent to this client (suppresses stringify-hash work on JS side)
+	var/statpanel_last_mc_iter = -1
+	/// JSON-encoded global server payload version (echoed in update_ping handshake) — bumps when DM payload shape changes
+	var/statpanel_protocol_acked = FALSE
 
 	/// list of all tabs
 	var/list/panel_tabs = list()

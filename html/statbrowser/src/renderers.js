@@ -121,13 +121,16 @@ function makeSectionHeader(key, label, sections) {
 	var div = el("div", "section-header");
 	var arrow = el("span", "section-arrow", sections[key] ? "▼" : "▶");
 	div.appendChild(arrow);
-	div.appendChild(document.createTextNode(" " + label));
+	// Keep the label in a TextNode reference so renderers can mutate it cheaply (e.g. update counts).
+	var labelText = document.createTextNode(" " + label);
+	div.appendChild(labelText);
 	div.onclick = function() {
 		sections[key] = !sections[key];
 		arrow.textContent = sections[key] ? "▼" : "▶";
 		div._toggle(key);
 	};
 	div._arrow = arrow;
+	div._countText = labelText;
 	div._toggle = function() {};
 	return div;
 }

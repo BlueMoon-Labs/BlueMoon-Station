@@ -379,6 +379,78 @@ body.verb-style-links .verb-grid {
 	flex-shrink: 0;
 }
 .ticket-closed { opacity: 0.5; }
+.ticket-header-row {
+	display: flex;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 4px 8px;
+	font-size: 12px;
+	font-weight: bold;
+	color: var(--text-secondary);
+	border-bottom: 1px dashed var(--border);
+}
+.ticket-header-link, .ticket-header-link:visited { color: var(--accent); text-decoration: none; }
+.ticket-header-link:hover { text-decoration: underline; }
+.ticket-left {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+	flex: 1;
+}
+.ticket-right {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-shrink: 0;
+	font-size: 11px;
+}
+.ticket-id {
+	color: var(--text-muted);
+	font-family: var(--font-mono, monospace);
+	font-size: 11px;
+}
+.ticket-label {
+	color: var(--text-primary);
+	text-decoration: none;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.ticket-label:hover { text-decoration: underline; color: var(--accent); }
+.ticket-handler { color: var(--health-warn); font-weight: bold; }
+.ticket-age { font-family: var(--font-mono, monospace); }
+.ticket-state-text { color: var(--text-muted); }
+.ticket-actions {
+	display: flex;
+	gap: 2px;
+	flex-shrink: 0;
+}
+.ticket-action-btn {
+	background: transparent;
+	border: 1px solid var(--border);
+	color: var(--text-secondary);
+	padding: 1px 5px;
+	font-size: 10px;
+	font-family: inherit;
+	border-radius: var(--border-radius, 2px);
+	cursor: pointer;
+	min-height: 18px;
+}
+.ticket-action-btn:hover { background: var(--bg-hover, var(--border)); color: var(--text-primary); }
+.ticket-action-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ticket-act-good:hover { color: var(--health-good); border-color: var(--health-good); }
+.ticket-act-warn:hover { color: var(--health-warn); border-color: var(--health-warn); }
+.ticket-act-bad:hover { color: var(--health-bad); border-color: var(--health-bad); }
+.ticket-closed-toggle {
+	padding: 4px 8px;
+	color: var(--text-muted);
+	font-size: 11px;
+	cursor: pointer;
+	user-select: none;
+	border-bottom: 1px solid var(--border);
+}
+.ticket-closed-toggle:hover { color: var(--text-primary); background: var(--bg-hover, var(--border)); }
 
 /* ===== SDQL2 ===== */
 .sdql-card {

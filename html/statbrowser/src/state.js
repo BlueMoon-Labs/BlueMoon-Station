@@ -7,6 +7,9 @@ var State = {
 	spells: [],
 	splitAdminTabs: false,
 	hrefToken: null,
+	// Bridge protocol — null until DM's set_protocol_version handshake arrives
+	protocolVersion: null,
+	protocolMismatchReported: false,
 	// Status tab
 	globalFast: null,
 	globalSlow: null,
@@ -17,9 +20,9 @@ var State = {
 	// MC tab
 	mcServerData: {},
 	mcSSData: [],
+	mcIteration: -1,
 	mcSortCol: SS_COST,
 	mcSortAsc: false,
-	mcSortDirty: true,
 	mcFilterText: "",
 	mcSections: { server: true, ping: false, key: true, subsystems: true },
 	// Tickets

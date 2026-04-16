@@ -95,12 +95,23 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	SHOULD_NOT_SLEEP(TRUE)
 	var/list/L = list()
 	var/num_disconnected = 0
+	// Tuple shape:
+	// [label, statclick_text, ref, meta_assoc]
+	// meta_assoc carries structured per-ticket data (id/age/handler/state/answered) so the
+	// browser-side renderer can show ticket # / age / claimer without re-parsing the label.
 	L[++L.len] = list("Active Tickets:", "[astatclick.update("[active_tickets.len]")]", null, REF(astatclick))
 	astatclick.update("[active_tickets.len]")
 	for(var/I in active_tickets)
 		var/datum/admin_help/AH = I
 		if(AH.initiator)
-			L[++L.len] = list("#[AH.id]. [AH.initiator_key_name]:", "[AH.statclick.update()]", REF(AH))
+			var/list/meta = list(
+				"id" = AH.id,
+				"age" = round((world.time - AH.opened_at) / 10),
+				"handler" = AH.handler ? AH.handler : "",
+				"state" = AH.state,
+				"answered" = AH.answered,
+			)
+			L[++L.len] = list("#[AH.id]. [AH.initiator_key_name]:", "[AH.statclick.update()]", REF(AH), meta)
 		else
 			++num_disconnected
 	if(num_disconnected)

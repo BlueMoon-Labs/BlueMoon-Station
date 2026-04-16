@@ -75,9 +75,17 @@ function checkStatusTab() {
 	}
 }
 
+// Per-tab scroll memory. Players spend 4+ hour sessions in this panel; resetting scroll on
+// every data tick or tab switch is the single most disruptive UX issue. We snapshot scrollTop
+// before the switch and restore it after the new render flushes.
+var _tabScrollPositions = {};
+
 function tab_change(tab) {
 	_settingsActive = false;
 	if (tab === State.currentTab) return;
+	if (State.currentTab && statcontent) {
+		_tabScrollPositions[State.currentTab] = statcontent.scrollTop;
+	}
 	var oldBtn = document.getElementById("tab-" + State.currentTab);
 	if (oldBtn) oldBtn.classList.remove("active");
 	State.currentTab = tab;
@@ -88,6 +96,11 @@ function tab_change(tab) {
 	invalidateRenderers();
 	renderCurrentTab();
 	byond_winset({ "statbrowser.is-visible": "true" });
+	// Restore scroll after the renderer has populated the DOM.
+	var restored = _tabScrollPositions[tab];
+	if (restored != null && statcontent) {
+		statcontent.scrollTop = restored;
+	}
 }
 
 function set_byond_tab(tab) {
@@ -107,12 +120,14 @@ function TakeTabFromByond(tab) {
 	send_byond_command("Remove-Tabs " + tab);
 }
 
-window.onresize = function() {
-	spacer.style.height = tabBar.offsetHeight + "px";
-};
+// Use addEventListener so we don't clobber any other handler attached via window.onresize
+// elsewhere (zoom.js, future modules). ResizeObserver is preferred on browsers that have it.
+window.addEventListener("resize", function() {
+	if (typeof spacer !== "undefined" && tabBar) spacer.style.height = tabBar.offsetHeight + "px";
+});
 
 if (window.ResizeObserver) {
 	new ResizeObserver(function() {
-		spacer.style.height = tabBar.offsetHeight + "px";
+		if (typeof spacer !== "undefined" && tabBar) spacer.style.height = tabBar.offsetHeight + "px";
 	}).observe(tabBar);
 }

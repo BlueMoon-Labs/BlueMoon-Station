@@ -54,3 +54,23 @@ a { color: var(--accent); text-decoration: none; cursor: pointer; }
 a:hover { text-decoration: underline; }
 
 img { image-rendering: pixelated; }
+
+/* Focus rings — keyboard-only via :focus-visible so mouse interactions stay clean.
+   Player session can be 4+ hours; without this, keyboard users have zero feedback.
+   The inner rule uses `outline-color` only so per-component CSS can still tweak the look. */
+:focus { outline: none; }
+*:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+}
+
+/* Respect prefers-reduced-motion — disable shuttle pulse and slow transitions for users
+   who've asked the OS to ease up on motion (vestibular triggers, low-power modes). */
+@media (prefers-reduced-motion: reduce) {
+	* {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

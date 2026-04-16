@@ -186,6 +186,26 @@
 	)
 	TEST_ASSERT(initial_icon_refresh["icon_refresh_due"], "Initial listed turf display should request icons immediately")
 
+	// Debounce: a dirty flag set just now should NOT immediately retrigger when last_refresh is current
+	var/list/dirty_debounced = SSstatpanels.get_listedturf_refresh_actions(
+		listed_turf_dirty = TRUE,
+		listed_turf_dirty_at = current_time,
+		last_refresh = current_time,
+		last_icon_refresh = current_time,
+		current_time = current_time,
+	)
+	TEST_ASSERT(!dirty_debounced["list_refresh_due"], "Recently-dirty listed turf should be debounced when last_refresh is current")
+
+	// Debounce: a dirty flag set on the previous tick should retrigger if min interval has passed
+	var/list/dirty_after_debounce = SSstatpanels.get_listedturf_refresh_actions(
+		listed_turf_dirty = TRUE,
+		listed_turf_dirty_at = current_time - 5,
+		last_refresh = current_time - 5,
+		last_icon_refresh = current_time,
+		current_time = current_time,
+	)
+	TEST_ASSERT(dirty_after_debounce["list_refresh_due"], "Dirty listed turf older than the debounce window should refresh")
+
 /datum/unit_test/statpanel_listedturf_icon_queue_merge/Run()
 	var/obj/item/first_item = allocate(/obj/item, run_loc_floor_bottom_left)
 	var/obj/item/second_item = allocate(/obj/item, run_loc_floor_bottom_left)

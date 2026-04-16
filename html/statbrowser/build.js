@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 /**
- * Statbrowser build script
- * Concatenates CSS and JS modules into a single html/statbrowser.html
+ * Statbrowser build script.
+ *
+ * Concatenates CSS and JS modules into a single html/statbrowser.html via
+ * template.html. Each JS chunk is wrapped with a `// === src/foo.js ===`
+ * banner and joined with `\n;\n` so accidental ASI hazards or trailing
+ * line-comments in one source file cannot corrupt the next chunk.
+ *
+ * Pass --watch to rebuild on source changes.
  */
 
 const fs = require('fs');
@@ -11,7 +17,7 @@ const ROOT = __dirname;
 const OUTPUT = path.join(ROOT, '..', 'statbrowser.html');
 const TEMPLATE = path.join(ROOT, 'template.html');
 
-// CSS files in order
+// CSS files in load order
 const CSS_FILES = [
 	'styles/base.css',
 	'styles/tabs.css',
@@ -56,23 +62,67 @@ function readFile(relPath) {
 	return fs.readFileSync(fullPath, 'utf8');
 }
 
+function buildJsBundle() {
+	const chunks = [];
+	for (const relPath of JS_FILES) {
+		const body = readFile(relPath);
+		if (!body) continue;
+		chunks.push(`// === ${relPath.replace(/\\/g, '/')} ===\n${body}`);
+	}
+	// `\n;\n` defends against ASI quirks at chunk boundaries (an IIFE
+	// after an expression-statement, an unterminated `// comment`, etc).
+	return chunks.join('\n;\n');
+}
+
+function buildCssBundle() {
+	return CSS_FILES.map(readFile).filter(Boolean).join('\n');
+}
+
 function build() {
-	let template = fs.readFileSync(TEMPLATE, 'utf8');
-
-	// Concatenate CSS
-	const css = CSS_FILES.map(f => readFile(f)).filter(Boolean).join('\n');
-
-	// Concatenate JS
-	const js = JS_FILES.map(f => readFile(f)).filter(Boolean).join('\n');
-
-	// Replace placeholders
-	template = template.replace('/* __CSS_PLACEHOLDER__ */', css);
-	template = template.replace('/* __JS_PLACEHOLDER__ */', js);
-
-	fs.writeFileSync(OUTPUT, template, 'utf8');
-
-	const lines = template.split('\n').length;
+	const template = fs.readFileSync(TEMPLATE, 'utf8');
+	const css = buildCssBundle();
+	const js = buildJsBundle();
+	// Use function-form replace so `$&`, `$1`, `$$` in CSS/JS are not
+	// reinterpreted by String.prototype.replace pattern semantics.
+	let output = template.replace('/* __CSS_PLACEHOLDER__ */', () => css);
+	output = output.replace('/* __JS_PLACEHOLDER__ */', () => js);
+	fs.writeFileSync(OUTPUT, output, 'utf8');
+	const lines = output.split('\n').length;
 	console.log(`Built ${OUTPUT} (${lines} lines)`);
 }
 
-build();
+function watch() {
+	build();
+	const dirs = ['src', 'styles', '.'];
+	const seen = new Set();
+	let pending = null;
+	const schedule = () => {
+		if (pending) clearTimeout(pending);
+		pending = setTimeout(() => {
+			pending = null;
+			try { build(); }
+			catch (err) { console.error('[watch] build failed:', err.message); }
+		}, 100);
+	};
+	for (const dir of dirs) {
+		const full = path.join(ROOT, dir);
+		if (!fs.existsSync(full)) continue;
+		const watcher = fs.watch(full, { recursive: true }, (_event, filename) => {
+			if (!filename) return;
+			if (filename.endsWith('.html') && filename !== 'template.html') return;
+			const key = path.join(dir, filename);
+			if (seen.has(key)) return;
+			seen.add(key);
+			setTimeout(() => seen.delete(key), 50);
+			schedule();
+		});
+		watcher.on('error', (err) => console.error('[watch]', err.message));
+	}
+	console.log('[watch] watching for changes (Ctrl+C to stop)');
+}
+
+if (process.argv.includes('--watch')) {
+	watch();
+} else {
+	build();
+}

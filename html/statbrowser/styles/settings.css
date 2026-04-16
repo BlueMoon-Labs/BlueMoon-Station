@@ -57,6 +57,17 @@
 	background: var(--bg-secondary);
 	cursor: pointer;
 }
+.settings-contrast-badge {
+	font-family: var(--font-mono, monospace);
+	font-size: 10px;
+	padding: 2px 5px;
+	border-radius: 3px;
+	background: var(--bg-secondary);
+	border: 1px solid var(--border);
+	min-width: 78px;
+	text-align: center;
+	cursor: help;
+}
 .settings-slider {
 	width: 120px;
 	accent-color: var(--accent);

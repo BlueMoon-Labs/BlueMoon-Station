@@ -1,5 +1,30 @@
 #define LISTED_TURF_LIST_REFRESH_INTERVAL (2 SECONDS)
 #define LISTED_TURF_ICON_REFRESH_INTERVAL (10 SECONDS)
+/// Minimum gap between signal-driven listed-turf refreshes — coalesces churn on busy turfs (lockers, brigs, fights).
+#define LISTED_TURF_DIRTY_MIN_INTERVAL (3) // 0.3 seconds
+/// Inactivity threshold (deciseconds) after which heavy per-client work is skipped.
+#define STATPANEL_AFK_INACTIVITY (5 MINUTES)
+/// MC subsystem rows: each fire reuses cached payload until this many fires have elapsed.
+#define MC_DATA_REFRESH_FIRES 6
+/// Full-cycle gate for slow global data (vote, server section).
+#define STATPANEL_FULL_CYCLE_FIRES 3
+/// Refresh slow server section every Nth full cycle.
+#define STATPANEL_SLOW_CYCLE_FULLS 9
+/// Number of stagger groups across clients — each client receives a heavy update every (group * wait) deciseconds.
+#define STATPANEL_STAGGER_GROUPS 3
+/// LRU cap for per-client statpanel_sent_icons; older entries are evicted as new ones arrive.
+#define STATPANEL_ICON_CACHE_CAP 256
+/// Send tidi only every Nth ping fire — non-Status-tab clients still see fresh ping every fire.
+#define STATPANEL_TIDI_INTERVAL 10
+/// Bridge protocol version. Bump whenever the DM->JS payload shape changes incompatibly.
+#define STATBROWSER_PROTOCOL_VERSION 2
+/// Channel keys for client.statpanel_last_sent dirty cache. String constants kept in one place
+/// so DM-side dirty checks and any future invalidation paths can share them.
+#define STATPANEL_CHANNEL_STATUS "status"
+#define STATPANEL_CHANNEL_VOTING "voting"
+#define STATPANEL_CHANNEL_SPELLS "spells"
+#define STATPANEL_CHANNEL_TICKETS "tickets"
+#define STATPANEL_CHANNEL_SDQL2 "sdql2"
 
 SUBSYSTEM_DEF(statpanels)
 	name = "Stat Panels"
@@ -12,6 +37,7 @@ SUBSYSTEM_DEF(statpanels)
 	var/encoded_global_slow
 	var/mc_data_encoded
 	var/mc_ss_data_encoded
+	var/mc_iteration_sent = 0
 	var/list/icon_queue = list()
 	var/icon_budget_per_tick = 5
 	var/mc_data_refresh_counter = 0
@@ -24,9 +50,10 @@ SUBSYSTEM_DEF(statpanels)
 	var/list/perf_history_tidi = list()
 	var/list/perf_history_ping = list()
 	var/encoded_tidi
+	var/tidi_counter = 0
 	var/is_full_cycle = FALSE
 	var/prev_player_count = 0
-	var/client_stagger_groups = 3
+	var/client_stagger_groups = STATPANEL_STAGGER_GROUPS
 	var/client_stagger_index = 0
 	var/cached_tickets_encoded
 	var/list/cached_client_stats
@@ -34,23 +61,53 @@ SUBSYSTEM_DEF(statpanels)
 	var/list/ping_run = list()
 	var/list/icon_run = list()
 
+/datum/controller/subsystem/statpanels/Initialize(start_timeofday)
+	build_global_slow_payload()
+	..()
+
+/// Builds the slow-changing server section once. Used for eager init so the first ~27 seconds of a round
+/// don't ship an empty server section to every Status-tab client.
+/datum/controller/subsystem/statpanels/proc/build_global_slow_payload()
+	var/datum/map_config/cached = SSmapping?.next_map_config
+	var/list/server_section = list(
+		list("Карта", SSmapping?.config?.map_name || "Loading..."))
+	if(cached)
+		server_section += list(list("Следующая карта", cached.map_name))
+	var/current_players = length(GLOB.clients)
+	var/player_delta = current_players - prev_player_count
+	var/player_trend = "[current_players]"
+	if(prev_player_count && player_delta != 0)
+		player_trend = "[current_players] ([player_delta > 0 ? "+" : ""][player_delta])"
+	prev_player_count = current_players
+	server_section += list(
+		list("ID раунда", GLOB.round_id ? GLOB.round_id : "NULL"),
+		list("Игровой Режим", GLOB.master_mode),
+		list("Подключено Игроков", player_trend),
+		list("Предыдущие Режимы", SSpersistence ? jointext(SSpersistence.saved_modes, ", ") : ""))
+	encoded_global_slow = url_encode(json_encode(server_section))
+
 /datum/controller/subsystem/statpanels/fire(resumed = FALSE)
 	if (!resumed)
 		full_cycle_counter++
 		slow_data_counter++
-		is_full_cycle = (full_cycle_counter >= 3)
-		var/is_slow_cycle = (slow_data_counter >= 9)
+		tidi_counter++
+		is_full_cycle = (full_cycle_counter >= STATPANEL_FULL_CYCLE_FIRES)
+		var/is_slow_cycle = (slow_data_counter >= STATPANEL_SLOW_CYCLE_FULLS)
 		if(is_full_cycle)
 			full_cycle_counter = 0
 		if(is_slow_cycle)
 			slow_data_counter = 0
+		var/include_tidi_in_ping = (tidi_counter >= STATPANEL_TIDI_INTERVAL)
+		if(include_tidi_in_ping)
+			tidi_counter = 0
 
 		var/list/tidi_data = list(
 			round(SStime_track.time_dilation_current, 0.1),
 			round(SStime_track.time_dilation_avg_fast, 0.1),
 			round(SStime_track.time_dilation_avg, 0.1),
 			round(SStime_track.time_dilation_avg_slow, 0.1))
-		encoded_tidi = url_encode(json_encode(tidi_data))
+		// Only encode the tidi payload on the rare ping fires that ship it; saves work otherwise.
+		encoded_tidi = include_tidi_in_ping ? url_encode(json_encode(tidi_data)) : ""
 
 		// Compute fast global data every fire — cheap, and stagger groups need fresh data each fire
 		var/round_time = world.time - SSticker.round_start_time
@@ -74,26 +131,10 @@ SUBSYSTEM_DEF(statpanels)
 		encoded_global_fast = url_encode(json_encode(fast_data))
 
 		// is_full_cycle gates slow-updating global data and vote cache only;
-		// per-client throttling is handled by stagger groups (each client visited every 3rd fire)
+		// per-client throttling is handled by stagger groups (each client visited every Nth fire)
 		if(is_full_cycle)
 			if(is_slow_cycle)
-				var/datum/map_config/cached = SSmapping.next_map_config
-				var/list/server_section = list(
-					list("Карта", SSmapping.config?.map_name || "Loading..."))
-				if(cached)
-					server_section += list(list("Следующая карта", cached.map_name))
-				var/current_players = GLOB.clients.len
-				var/player_delta = current_players - prev_player_count
-				var/player_trend = "[current_players]"
-				if(prev_player_count && player_delta != 0)
-					player_trend = "[current_players] ([player_delta > 0 ? "+" : ""][player_delta])"
-				prev_player_count = current_players
-				server_section += list(
-					list("ID раунда", GLOB.round_id ? GLOB.round_id : "NULL"),
-					list("Игровой Режим", GLOB.master_mode),
-					list("Подключено Игроков", player_trend),
-					list("Предыдущие Режимы", jointext(SSpersistence.saved_modes, ", ")))
-				encoded_global_slow = url_encode(json_encode(server_section))
+				build_global_slow_payload()
 
 			cached_vote_base = null
 			cached_vote_encoded = null
@@ -113,7 +154,7 @@ SUBSYSTEM_DEF(statpanels)
 				cached_vote_base = vote_base
 
 		mc_data_refresh_counter++
-		if(mc_data_refresh_counter >= 6)
+		if(mc_data_refresh_counter >= MC_DATA_REFRESH_FIRES)
 			mc_data_encoded = null
 			mc_ss_data_encoded = null
 			mc_data_refresh_counter = 0
@@ -134,8 +175,9 @@ SUBSYSTEM_DEF(statpanels)
 			icon_budget_per_tick = 8
 
 		// Build staggered client list — each fire processes 1/N of all clients
-		// Each client gets a full update every (stagger_groups * wait) deciseconds
-		var/list/all_clients = GLOB.clients
+		// Each client gets a full update every (stagger_groups * wait) deciseconds.
+		// Copy() so a disconnect mid-cycle that mutates GLOB.clients can't desync our snapshot.
+		var/list/all_clients = GLOB.clients.Copy()
 		var/list/run_list = list()
 		for(var/i in (client_stagger_index + 1) to length(all_clients) step client_stagger_groups)
 			run_list += all_clients[i]
@@ -144,7 +186,7 @@ SUBSYSTEM_DEF(statpanels)
 		src.currentrun = run_list
 
 		// Ping forwarding — ALL clients every fire, independent of stagger.
-		src.ping_run = GLOB.clients.Copy()
+		src.ping_run = all_clients
 
 		// Snapshot icon queue clients for resumable processing
 		src.icon_run = list()
@@ -155,9 +197,10 @@ SUBSYSTEM_DEF(statpanels)
 	while(length(ping_run))
 		var/client/ping_target = ping_run[length(ping_run)]
 		ping_run.len--
-		if(!ping_target?.statbrowser_ready || !ping_target.ping_updated || ping_target.inactivity >= 3000)
+		if(!ping_target?.statbrowser_ready || !ping_target.ping_updated || ping_target.inactivity >= STATPANEL_AFK_INACTIVITY)
 			continue
 		ping_target.ping_updated = FALSE
+		// Tidi is only included every Nth fire; saves repeated identical bytes across the client list otherwise.
 		ping_target << output("%5B[round(ping_target.lastping, 1)]%2C[round(ping_target.avgping, 1)]%2C[round(ping_target.avgping_jitter, 1)]%5D;[encoded_tidi]", "statbrowser:update_ping")
 		if(MC_TICK_CHECK)
 			return
@@ -169,9 +212,14 @@ SUBSYSTEM_DEF(statpanels)
 		if(!target?.statbrowser_ready)
 			continue
 
+		// Ack protocol version once per session so JS can detect a stale cached HTML mismatch.
+		if(!target.statpanel_protocol_acked)
+			target << output("[STATBROWSER_PROTOCOL_VERSION]", "statbrowser:set_protocol_version")
+			target.statpanel_protocol_acked = TRUE
+
 		// Skip heavy work for AFK clients (5 min inactivity)
 		// Admin clients are also skipped; they self-recover on the first active fire
-		if(target.inactivity >= 3000)
+		if(target.inactivity >= STATPANEL_AFK_INACTIVITY)
 			if(!target.holder && !target.admin_tabs_cleared)
 				target << output("", "statbrowser:remove_admin_tabs")
 				target.admin_tabs_cleared = TRUE
@@ -180,9 +228,19 @@ SUBSYSTEM_DEF(statpanels)
 			continue
 
 		if(target.stat_tab == "Status")
-			var/other_str = url_encode(json_encode(target.mob?.get_status_tab_items()))
+			var/raw_status = json_encode(target.mob?.get_status_tab_items())
+			// Per-client dirty check: only re-encode + ship if the mob's status payload actually changed.
+			var/last_status = target.statpanel_last_sent[STATPANEL_CHANNEL_STATUS]
+			var/status_changed = (raw_status != last_status)
+			var/other_str = status_changed ? url_encode(raw_status) : null
 			var/slow_str = encoded_global_slow ? encoded_global_slow : ""
-			target << output("[encoded_global_fast];[slow_str];[other_str]", "statbrowser:update")
+			// Always send the fast/slow payload (timer/round-time tick every second). Mob other_str is
+			// suppressed when unchanged; JS retains its last decoded value.
+			if(status_changed)
+				target << output("[encoded_global_fast];[slow_str];[other_str]", "statbrowser:update")
+				target.statpanel_last_sent[STATPANEL_CHANNEL_STATUS] = raw_status
+			else
+				target << output("[encoded_global_fast];[slow_str];", "statbrowser:update")
 
 			if(SSvote.mode && cached_vote_base)
 				var/list/vote_arry = cached_vote_base.Copy()
@@ -204,12 +262,15 @@ SUBSYSTEM_DEF(statpanels)
 									if(vote)
 										vote_position = vote.Find(text2num(choice_id))
 									vote_arry[++vote_arry.len] += list("\[[vote_position]\]", choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
-				var/vote_str = url_encode(json_encode(vote_arry))
-				target << output("[vote_str]", "statbrowser:update_voting")
+				var/raw_vote = json_encode(vote_arry)
+				if(target.statpanel_last_sent[STATPANEL_CHANNEL_VOTING] != raw_vote)
+					target << output("[url_encode(raw_vote)]", "statbrowser:update_voting")
+					target.statpanel_last_sent[STATPANEL_CHANNEL_VOTING] = raw_vote
 				target.stat_vote_sent_null = FALSE
 			else if(!target.stat_vote_sent_null)
 				target << output("[null_bullet_encoded]", "statbrowser:update_voting")
 				target.stat_vote_sent_null = TRUE
+				target.statpanel_last_sent -= STATPANEL_CHANNEL_VOTING
 
 		if(!target.holder)
 			if(!target.admin_tabs_cleared)
@@ -224,13 +285,23 @@ SUBSYSTEM_DEF(statpanels)
 				var/coord_entry = url_encode(COORD(eye_turf))
 				if(!mc_data_encoded)
 					generate_mc_data()
-				target << output("[mc_data_encoded];[mc_ss_data_encoded];[coord_entry]", "statbrowser:update_mc")
+					mc_iteration_sent = Master.iteration
+				// Send mc_iteration alongside payload so JS can dedupe without JSON.stringify-hashing each update.
+				if(target.statpanel_last_mc_iter != mc_iteration_sent)
+					target << output("[mc_data_encoded];[mc_ss_data_encoded];[coord_entry];[mc_iteration_sent]", "statbrowser:update_mc")
+					target.statpanel_last_mc_iter = mc_iteration_sent
+				else
+					// Iteration unchanged — only ship coords (cheap, eye position changes per move).
+					target << output(";;[coord_entry];[mc_iteration_sent]", "statbrowser:update_mc")
 			if(target.stat_tab == "Tickets")
 				if(!cached_tickets_encoded)
 					cached_tickets_encoded = url_encode(json_encode(GLOB.ahelp_tickets.stat_entry()))
-				target << output("[cached_tickets_encoded];", "statbrowser:update_tickets")
+				if(target.statpanel_last_sent[STATPANEL_CHANNEL_TICKETS] != cached_tickets_encoded)
+					target << output("[cached_tickets_encoded];", "statbrowser:update_tickets")
+					target.statpanel_last_sent[STATPANEL_CHANNEL_TICKETS] = cached_tickets_encoded
 			if(!length(GLOB.sdql2_queries) && ("SDQL2" in target.panel_tabs))
 				target << output("", "statbrowser:remove_sdql2")
+				target.statpanel_last_sent -= STATPANEL_CHANNEL_SDQL2
 			else if(length(GLOB.sdql2_queries) && (target.stat_tab == "SDQL2" || !("SDQL2" in target.panel_tabs)))
 				var/list/sdql2A = list()
 				sdql2A[++sdql2A.len] = list("", "Access Global SDQL2 List", REF(GLOB.sdql2_vv_statobj))
@@ -239,10 +310,21 @@ SUBSYSTEM_DEF(statpanels)
 					var/datum/SDQL2_query/Q = i
 					sdql2B = Q.generate_stat()
 				sdql2A += sdql2B
-				target << output(url_encode(json_encode(sdql2A)), "statbrowser:update_sdql2")
+				var/raw_sdql = json_encode(sdql2A)
+				if(target.statpanel_last_sent[STATPANEL_CHANNEL_SDQL2] != raw_sdql)
+					target << output(url_encode(raw_sdql), "statbrowser:update_sdql2")
+					target.statpanel_last_sent[STATPANEL_CHANNEL_SDQL2] = raw_sdql
 
 		if(target.mob)
 			var/mob/M = target.mob
+			// Process listed-turf BEFORE the spell tick check, so the listed-turf path is not starved
+			// when a slow fire yields halfway through this client's per-tick work.
+			if(M?.listed_turf)
+				var/mob/target_mob = M
+				if(QDELETED(target_mob.listed_turf) || !target_mob.TurfAdjacent(target_mob.listed_turf))
+					target.clear_listed_turf()
+				else if(target.stat_tab == M?.listed_turf.name || !(M?.listed_turf.name in target.panel_tabs))
+					refresh_listed_turf(target)
 			if((target.stat_tab in target.spell_tabs) || !length(target.spell_tabs) && (length(M.mob_spell_list) || length(M.mind?.spell_list)))
 				var/list/proc_holders = M.get_proc_holders()
 				target.spell_tabs.Cut()
@@ -252,15 +334,10 @@ SUBSYSTEM_DEF(statpanels)
 				var/proc_holders_encoded = ""
 				if(length(proc_holders))
 					proc_holders_encoded = url_encode(json_encode(proc_holders))
-				target << output("[url_encode(json_encode(target.spell_tabs))];[proc_holders_encoded]", "statbrowser:update_spells")
-			if(MC_TICK_CHECK)
-				return
-			if(M?.listed_turf)
-				var/mob/target_mob = M
-				if(QDELETED(target_mob.listed_turf) || !target_mob.TurfAdjacent(target_mob.listed_turf))
-					target.clear_listed_turf()
-				else if(target.stat_tab == M?.listed_turf.name || !(M?.listed_turf.name in target.panel_tabs))
-					refresh_listed_turf(target)
+				var/raw_spells = "[json_encode(target.spell_tabs)];[proc_holders_encoded]"
+				if(target.statpanel_last_sent[STATPANEL_CHANNEL_SPELLS] != raw_spells)
+					target << output("[url_encode(json_encode(target.spell_tabs))];[proc_holders_encoded]", "statbrowser:update_spells")
+					target.statpanel_last_sent[STATPANEL_CHANNEL_SPELLS] = raw_spells
 		if(MC_TICK_CHECK)
 			return
 
@@ -293,7 +370,7 @@ SUBSYSTEM_DEF(statpanels)
 			else
 				icon_url = icon2html(A, C, sourceonly=TRUE)
 			if(icon_url)
-				C.statpanel_sent_icons[ref] = icon_url
+				cache_sent_icon(C, ref, icon_url)
 				batch[++batch.len] = list(ref, icon_url)
 			icons_done++
 		if(length(batch))
@@ -302,6 +379,20 @@ SUBSYSTEM_DEF(statpanels)
 			icon_queue -= C
 		if(MC_TICK_CHECK)
 			return
+
+/// Cache an icon REF→URL on the client with a soft LRU bound. When the cap is hit, the oldest
+/// entries are evicted (BYOND assoc lists preserve insertion order). Prevents 4-hour sessions
+/// from accumulating multi-MB caches and avoids serving stale icons across REF recycling.
+/datum/controller/subsystem/statpanels/proc/cache_sent_icon(client/C, ref, icon_url)
+	if(!C || !ref || !icon_url)
+		return
+	if(C.statpanel_sent_icons[ref])
+		C.statpanel_sent_icons[ref] = icon_url
+		return
+	C.statpanel_sent_icons[ref] = icon_url
+	var/overflow = length(C.statpanel_sent_icons) - STATPANEL_ICON_CACHE_CAP
+	if(overflow > 0)
+		C.statpanel_sent_icons.Cut(1, overflow + 1)
 
 /datum/controller/subsystem/statpanels/proc/get_listedturf_overrides(client/target, turf/listed)
 	if(!target || !listed || !length(target.images))
@@ -345,8 +436,11 @@ SUBSYSTEM_DEF(statpanels)
 		"needs_icons" = needs_icons,
 	)
 
-/datum/controller/subsystem/statpanels/proc/get_listedturf_refresh_actions(force_send = FALSE, force_icon_refresh = FALSE, turf_changed = FALSE, listed_turf_dirty = FALSE, listed_turf_icon_refresh_pending = FALSE, eye_changed = FALSE, last_refresh = 0, last_icon_refresh = 0, current_time = world.time)
-	var/list_refresh_due = force_send || turf_changed || listed_turf_dirty || eye_changed || (current_time - last_refresh >= LISTED_TURF_LIST_REFRESH_INTERVAL)
+/datum/controller/subsystem/statpanels/proc/get_listedturf_refresh_actions(force_send = FALSE, force_icon_refresh = FALSE, turf_changed = FALSE, listed_turf_dirty = FALSE, listed_turf_dirty_at = 0, listed_turf_icon_refresh_pending = FALSE, eye_changed = FALSE, last_refresh = 0, last_icon_refresh = 0, current_time = world.time)
+	// Dirty signals coalesce: a busy turf that fires entered/exited every tick is rate-limited so
+	// we don't rebuild the snapshot at full subsystem fire rate. Force/turf/eye changes still bypass.
+	var/dirty_due = listed_turf_dirty && (!listed_turf_dirty_at || (current_time - last_refresh) >= LISTED_TURF_DIRTY_MIN_INTERVAL)
+	var/list_refresh_due = force_send || turf_changed || eye_changed || dirty_due || (current_time - last_refresh >= LISTED_TURF_LIST_REFRESH_INTERVAL)
 	var/icon_refresh_due = force_icon_refresh || listed_turf_icon_refresh_pending || turf_changed || !last_icon_refresh || (current_time - last_icon_refresh >= LISTED_TURF_ICON_REFRESH_INTERVAL)
 	return list(
 		"list_refresh_due" = list_refresh_due,
@@ -381,7 +475,7 @@ SUBSYSTEM_DEF(statpanels)
 	var/turf/eye_turf = get_turf(target.eye)
 	var/eye_turf_ref = eye_turf ? REF(eye_turf) : null
 	var/eye_changed = eye_turf_ref != target.listed_turf_eye_ref
-	var/list/refresh_actions = get_listedturf_refresh_actions(force_send, force_icon_refresh, turf_changed, target.listed_turf_dirty, target.listed_turf_icon_refresh_pending, eye_changed, target.listed_turf_last_refresh, target.listed_turf_last_icon_refresh)
+	var/list/refresh_actions = get_listedturf_refresh_actions(force_send, force_icon_refresh, turf_changed, target.listed_turf_dirty, target.listed_turf_dirty_at, target.listed_turf_icon_refresh_pending, eye_changed, target.listed_turf_last_refresh, target.listed_turf_last_icon_refresh)
 	var/list_refresh_due = refresh_actions["list_refresh_due"]
 	var/icon_refresh_due = refresh_actions["icon_refresh_due"]
 	if(!list_refresh_due && !icon_refresh_due)
@@ -403,6 +497,7 @@ SUBSYSTEM_DEF(statpanels)
 	target.cached_turf_ref = turf_ref
 	target.listed_turf_eye_ref = eye_turf_ref
 	target.listed_turf_dirty = FALSE
+	target.listed_turf_dirty_at = 0
 	target.listed_turf_icon_refresh_pending = FALSE
 	if(icon_refresh_due)
 		target.listed_turf_last_icon_refresh = world.time
@@ -419,7 +514,8 @@ SUBSYSTEM_DEF(statpanels)
 	server_info["tick_drift"] = round(Master.tickdrift, 0.1)
 	server_info["tick_drift_pct"] = round((Master.tickdrift / max(world.time / world.tick_lag, 1)) * 100, 0.1)
 	server_info["internal_tick_usage"] = round(MAPTICK_LAST_INTERNAL_TICK_USAGE, 0.1)
-	// MC state
+	// MC state — iteration is the natural per-tick counter; JS uses it to dedupe identical payloads.
+	server_info["iteration"] = Master.iteration
 	server_info["mc_tick_rate"] = Master.processing
 	server_info["mc_iteration"] = Master.iteration
 	server_info["mc_tick_limit"] = round(Master.current_ticklimit, 0.1)
@@ -656,6 +752,10 @@ SUBSYSTEM_DEF(statpanels)
 	set hidden = TRUE
 
 	statbrowser_ready = TRUE
+	// Re-acknowledge protocol on each ready event so JS can detect a stale cached HTML.
+	statpanel_protocol_acked = FALSE
+	statpanel_last_sent.Cut()
+	statpanel_last_mc_iter = -1
 	init_verbs()
 	// Re-apply theme and favorites after byondStorage is guaranteed available
 	src << output("1", "statbrowser:reapply_storage")
@@ -672,3 +772,17 @@ SUBSYSTEM_DEF(statpanels)
 
 #undef LISTED_TURF_LIST_REFRESH_INTERVAL
 #undef LISTED_TURF_ICON_REFRESH_INTERVAL
+#undef LISTED_TURF_DIRTY_MIN_INTERVAL
+#undef STATPANEL_AFK_INACTIVITY
+#undef MC_DATA_REFRESH_FIRES
+#undef STATPANEL_FULL_CYCLE_FIRES
+#undef STATPANEL_SLOW_CYCLE_FULLS
+#undef STATPANEL_STAGGER_GROUPS
+#undef STATPANEL_ICON_CACHE_CAP
+#undef STATPANEL_TIDI_INTERVAL
+#undef STATBROWSER_PROTOCOL_VERSION
+#undef STATPANEL_CHANNEL_STATUS
+#undef STATPANEL_CHANNEL_VOTING
+#undef STATPANEL_CHANNEL_SPELLS
+#undef STATPANEL_CHANNEL_TICKETS
+#undef STATPANEL_CHANNEL_SDQL2

@@ -48,11 +48,20 @@ function draw_settings() {
 
 	var colorSection = el("div", "settings-section");
 	colorSection.appendChild(el("div", "settings-section-title", "Цвета"));
+	// Color pairs flagged for contrast: foreground vs background. WCAG ratio rendered next to
+	// the foreground swatch so a player picking unreadable combinations sees the warning live.
+	var COLOR_CONTRAST_PAIRS = {
+		"--text-primary": "--bg-primary",
+		"--text-secondary": "--bg-primary",
+		"--text-muted": "--bg-primary",
+		"--accent": "--bg-primary"
+	};
 	var colorVars = [
 		["--bg-primary", "Фон"],
 		["--bg-secondary", "Фон панели вкладок"],
 		["--text-primary", "Текст"],
 		["--text-secondary", "Второстепенный текст"],
+		["--text-muted", "Приглушённый текст"],
 		["--accent", "Акцент"],
 		["--border", "Граница"],
 		["--health-good", "Здоровье (норма)"],
@@ -60,6 +69,23 @@ function draw_settings() {
 		["--health-bad", "Здоровье (критическое)"]
 	];
 	var effective = getCurrentVarValues(themeState);
+	// Refs we update synchronously so the contrast badge stays in sync with picker drags
+	// without rebuilding the whole panel.
+	var contrastBadges = {};
+
+	function _refreshContrastBadges() {
+		var live = getCurrentVarValues(themeState);
+		for (var fg in COLOR_CONTRAST_PAIRS) {
+			if (!contrastBadges[fg]) continue;
+			var bg = COLOR_CONTRAST_PAIRS[fg];
+			var ratio = contrastRatio(live[fg], live[bg]);
+			var verdict = contrastVerdict(ratio);
+			contrastBadges[fg].textContent = ratio.toFixed(1) + ":1 " + verdict.text;
+			contrastBadges[fg].className = "settings-contrast-badge " + verdict.className;
+			contrastBadges[fg].title = "Контраст с " + bg + ": " + ratio.toFixed(2) + ":1 (WCAG " + verdict.level + ")";
+		}
+	}
+
 	for (var i = 0; i < colorVars.length; i++) {
 		(function(varName, label) {
 			var row = el("div", "settings-row");
@@ -74,12 +100,19 @@ function draw_settings() {
 				markCustomIfModified(themeState);
 				saveTheme(themeState);
 				applyTheme(themeState);
+				_refreshContrastBadges();
 				if (themeState.preset !== wasPre) draw_settings();
 			};
 			row.appendChild(input);
+			if (varName in COLOR_CONTRAST_PAIRS) {
+				var badge = el("span", "settings-contrast-badge", "");
+				row.appendChild(badge);
+				contrastBadges[varName] = badge;
+			}
 			colorSection.appendChild(row);
 		})(colorVars[i][0], colorVars[i][1]);
 	}
+	_refreshContrastBadges();
 	panel.appendChild(colorSection);
 
 	var typoSection = el("div", "settings-section");

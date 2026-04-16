@@ -1,4 +1,6 @@
 var verbSearchTimers = {};
+// Per-tab last query, so re-render after data change can repopulate without losing user's filter.
+var verbLastQuery = {};
 
 function draw_verbs(cat) {
 	statcontent.textContent = "";
@@ -7,16 +9,24 @@ function draw_verbs(cat) {
 	searchInput.type = "text";
 	searchInput.placeholder = "Поиск команд...";
 	searchInput.autocomplete = "off";
+	if (verbLastQuery[cat]) searchInput.value = verbLastQuery[cat];
 	statcontent.appendChild(searchInput);
 
 	var container = el("div");
 	statcontent.appendChild(container);
 	sortVerbs();
 
-	function renderVerbsFiltered(query) {
+	// Map of pill -> the query strings it matches. Built once per draw, then filtered by toggling
+	// display:none. This avoids thrashing the entire DOM on every keystroke for admins with 200+
+	// verbs, and preserves focus/selection in the search input.
+	var pillIndex = [];
+
+	function buildVerbDOM() {
 		container.textContent = "";
+		pillIndex = [];
 		var grid = el("div", "verb-grid");
 		var additions = {};
+		var subHeaders = {};
 
 		var resolvedCat = cat;
 		if (State.splitAdminTabs && cat.lastIndexOf(".") !== -1) {
@@ -37,8 +47,6 @@ function draw_verbs(cat) {
 			if (verbCat.lastIndexOf(resolvedCat, 0) !== 0) continue;
 			if (verbCat.length !== resolvedCat.length && verbCat.charAt(resolvedCat.length) !== ".") continue;
 
-			if (query && command.toLowerCase().indexOf(query) === -1) continue;
-
 			var subCat = verbCat.lastIndexOf(".") !== -1 ? verbCat.split(".")[1] : null;
 			if (subCat && !additions[subCat]) {
 				additions[subCat] = el("div", "verb-grid");
@@ -56,6 +64,7 @@ function draw_verbs(cat) {
 				};
 			})(part[0], command);
 
+			pillIndex.push({ el: pill, sub: subCat, search: command.toLowerCase() });
 			(subCat ? additions[subCat] : grid).appendChild(pill);
 		}
 
@@ -63,21 +72,43 @@ function draw_verbs(cat) {
 
 		for (var subKey in additions) {
 			if (additions.hasOwnProperty(subKey)) {
-				container.appendChild(el("div", "verb-sub-header", subKey));
+				var hdr = el("div", "verb-sub-header", subKey);
+				container.appendChild(hdr);
 				container.appendChild(additions[subKey]);
+				subHeaders[subKey] = { hdr: hdr, grid: additions[subKey] };
 			}
 		}
-
+		return subHeaders;
 	}
 
-	renderVerbsFiltered("");
+	var subHeaders = buildVerbDOM();
+
+	function applyFilter(query) {
+		// Toggle visibility instead of re-rendering. Hide whole sub-header sections when empty.
+		var subVisibleCount = {};
+		for (var i = 0; i < pillIndex.length; i++) {
+			var entry = pillIndex[i];
+			var matches = !query || entry.search.indexOf(query) !== -1;
+			entry.el.style.display = matches ? "" : "none";
+			if (entry.sub && matches) {
+				subVisibleCount[entry.sub] = (subVisibleCount[entry.sub] | 0) + 1;
+			}
+		}
+		for (var subKey in subHeaders) {
+			if (!subHeaders.hasOwnProperty(subKey)) continue;
+			var visible = subVisibleCount[subKey] || 0;
+			subHeaders[subKey].hdr.style.display = visible ? "" : "none";
+			subHeaders[subKey].grid.style.display = visible ? "" : "none";
+		}
+	}
+
+	if (verbLastQuery[cat]) applyFilter(verbLastQuery[cat]);
 
 	searchInput.oninput = function() {
 		var val = this.value.toLowerCase();
+		verbLastQuery[cat] = val;
 		clearTimeout(verbSearchTimers[cat]);
-		verbSearchTimers[cat] = setTimeout(function() {
-			renderVerbsFiltered(val);
-		}, 150);
+		verbSearchTimers[cat] = setTimeout(function() { applyFilter(val); }, 60);
 	};
 }
 
