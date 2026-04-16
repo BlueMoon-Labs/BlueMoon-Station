@@ -848,7 +848,8 @@ SUBSYSTEM_DEF(vote)
 	. = ..()
 	if(.)
 		return
-	var/client/C = ui.user?.client
+	var/mob/user = ui.user
+	var/client/C = user?.client
 	if(!C)
 		return
 	switch(action)
@@ -860,7 +861,7 @@ SUBSYSTEM_DEF(vote)
 				submit_vote(text2num(params["index"]))
 			return TRUE
 		if("vote_reset")
-			var/ckey = ui.user.ckey
+			var/ckey = user.ckey
 			if(ckey in voted)
 				switch(vote_system)
 					if(PLURALITY_VOTING)
@@ -877,6 +878,8 @@ SUBSYSTEM_DEF(vote)
 		if("cancel")
 			if(!C.holder)
 				return
+			message_admins("Голосование отменено [ADMIN_LOOKUP(user)]")
+			log_admin("Голосование отменено [C.key]")
 			if(SSticker.mapvote_restarter_in_progress)
 				SSticker.mapvote_restarter_in_progress = FALSE
 				SSpersistence.RecordGracefulEnding()
@@ -897,14 +900,20 @@ SUBSYSTEM_DEF(vote)
 			return TRUE
 		if("restart")
 			if(CONFIG_GET(flag/allow_vote_restart) || C.holder)
+				message_admins("[ADMIN_LOOKUP(user)] Начал голосование за рестарт")
+				log_admin("[C.key] Начал голосование за рестарт")
 				initiate_vote("restart", C.key)
 			return TRUE
 		if("gamemode")
 			if(CONFIG_GET(flag/allow_vote_mode) || C.holder)
+				message_admins("[ADMIN_LOOKUP(user)] Начал голосование за изменение режима")
+				log_admin("[C.key] Начал голосование за изменение режима")
 				initiate_vote("roundtype", C.key)
 			return TRUE
 		if("map")
 			if(C.holder)
+				message_admins("[ADMIN_LOOKUP(user)] Начал голосование за смену карты")
+				log_admin("[C.key] Начал голосование за смену карты")
 				initiate_vote("map", C.key, display = SHOW_RESULTS, forced = FALSE)
 			return TRUE
 		// === КАСТОМНОЕ - ФОРМА ===
@@ -958,6 +967,8 @@ SUBSYSTEM_DEF(vote)
 		if("custom_confirm")
 			if(!C.holder || !setting_up_custom || !custom_question || length(custom_options) < 2)
 				return
+			message_admins("[ADMIN_LOOKUP(user)] Начал кастомное голосование")
+			log_admin("[C.key] Начал кастомное голосование")
 			initiate_vote("custom", C.key)
 			return TRUE
 
