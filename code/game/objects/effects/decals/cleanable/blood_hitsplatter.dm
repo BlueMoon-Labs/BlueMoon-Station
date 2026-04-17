@@ -43,7 +43,8 @@
 /obj/effect/decal/cleanable/blood/hitsplatter/proc/detach_blood_move_loop()
 	if(!blood_move_loop)
 		return
-	UnregisterSignal(blood_move_loop, list(COMSIG_MOVELOOP_PREPROCESS_CHECK, COMSIG_MOVELOOP_POSTPROCESS, COMSIG_PARENT_QDELETING))
+	if(!QDELETED(blood_move_loop))
+		UnregisterSignal(blood_move_loop, list(COMSIG_MOVELOOP_PREPROCESS_CHECK, COMSIG_MOVELOOP_POSTPROCESS, COMSIG_PARENT_QDELETING))
 	blood_move_loop = null
 
 /obj/effect/decal/cleanable/blood/hitsplatter/proc/finish_flight_splat()
@@ -56,8 +57,9 @@
 /obj/effect/decal/cleanable/blood/hitsplatter/proc/expire()
 	if(QDELETED(src))
 		return
-	SSmove_manager.stop_looping(src)
+	// Сначала снимаем сигналы с живого move_loop; stop_looping делает qdel(цикл) — иначе blood_move_loop указывает на освобождённый датум и UnregisterSignal рантаймит.
 	detach_blood_move_loop()
+	SSmove_manager.stop_looping(src)
 	finish_flight_splat()
 	qdel(src)
 

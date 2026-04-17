@@ -137,7 +137,7 @@ GLOBAL_LIST_INIT(bsm_low_threat_pool, list(
 	play_bluespace_sparks(machine)
 	machine.balloon_alert_to_viewers("гондола...")
 	machine.visible_message(span_notice("Из разлома выходит гондола и молча принимает мир таким, какой он есть."))
-	notify_ghosts("Появилась гондола из блюспейс-разлома в [get_area_name(drop)]! Нажмите на уведомление или кликните по ней как призрак, чтобы войти.", source = spawned_gondola, action = NOTIFY_ATTACK, flashwindow = FALSE, ignore_dnr_observers = TRUE, header = "Гондола")
+	notify_ghosts("Появилась гондола из блюспейс-разлома в [get_area_name(drop)]! Нажмите на уведомление: перенос к гондоле и предложение вселиться.", source = spawned_gondola, action = NOTIFY_POSSESS, flashwindow = FALSE, ignore_dnr_observers = TRUE, header = "Гондола")
 
 #define BSM_LOW_EFFECT_DURATION 20 SECONDS
 #define BSM_VOIDS_HEART_PULSES 40

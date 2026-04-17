@@ -88,9 +88,9 @@ export const BluespaceArtillery = (props, context) => {
                   {formatPower(capCharge)}
                 </LabeledList.Item>
                 <LabeledList.Item label="Powernet">
-                  {formatPower(powernet_power != null ? Number(powernet_power) : null)}
+                  {formatPower(powernet_power !== null ? Number(powernet_power) : null)}
                   {' '}(suck cap:{' '}
-                  {formatPower(power_suck_cap != null ? Number(power_suck_cap) : null)})
+                  {formatPower(power_suck_cap !== null ? Number(power_suck_cap) : null)})
                 </LabeledList.Item>
                 <LabeledList.Item label="Target charge">
                   <Slider

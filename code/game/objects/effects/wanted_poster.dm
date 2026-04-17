@@ -19,6 +19,10 @@
 /obj/structure/sign/poster/wanted
 	var/wanted_name
 	poster_item_type = /obj/item/poster/wanted
+	/// Один раз за «жизнь» плаката: повторное размещение после снятия не даёт кредиты.
+	var/brig_hang_reward_claimed = FALSE
+	/// Один раз: повторное снятие кусачками того же плаката не платит (анти-фарм с консолью).
+	var/brig_remove_reward_claimed = FALSE
 
 /obj/structure/sign/poster/wanted/Initialize(mapload, icon/person_icon, person_name, description)
 	. = ..()
@@ -51,13 +55,17 @@
 				remove_tasks -= poster_id
 				if(remove_tasks.len == 0)
 					GLOB.brig_assistant_remove_tasks -= ckey
-				var/mob/living/living_user = user
-				var/datum/bank_account/account = living_user.get_bank_account()
-				if(account)
-					var/reward = rand(75, 100)
-					account.adjust_money(reward, "Brig: Remove wanted poster task")
-					playsound(user, 'modular_bluemoon/sound/machines/slot-machine/money.ogg', 50, TRUE)
-					to_chat(user, span_green("За снятие плаката начислено [reward] кредитов."))
+				if(!brig_remove_reward_claimed)
+					brig_remove_reward_claimed = TRUE
+					var/mob/living/living_user = user
+					var/datum/bank_account/account = living_user.get_bank_account()
+					if(account)
+						var/reward = rand(75, 100)
+						account.adjust_money(reward, "Brig: Remove wanted poster task")
+						playsound(user, 'modular_bluemoon/sound/machines/slot-machine/money.ogg', 50, TRUE)
+						to_chat(user, span_green("За снятие плаката начислено [reward] кредитов."))
+				else
+					to_chat(user, span_notice("За этот плакат награда за снятие уже выплачивалась."))
 	. = ..()
 
 /obj/structure/sign/poster/wanted/roll_and_drop(turf/location)
