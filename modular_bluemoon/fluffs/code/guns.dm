@@ -1312,3 +1312,27 @@
 	icon_state = initial(icon_state)
 	if(!stored_ammo.len)
 		icon_state += "-empty"
+
+///////////////////////////////////////////////
+/obj/item/modkit/lcr29_kit
+	name = "LCR-29 Kit"
+	desc = "A modkit for making an Laser Gun into a Laser Combat Rifle."
+	product = /obj/item/gun/energy/laser/lcr_29
+	fromitem = list(/obj/item/gun/energy/laser)
+
+/obj/item/gun/energy/laser/lcr_29
+	name = "LCR-29"
+	desc = "Laser Combat Rifle with a non-removable battery and a single lethal mode, which can only be charged from an external source through the charging port."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "lcr_29"
+	item_state = null
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	base_pixel_x = -8
+	charge_sections = 2
+	shaded_charge = TRUE
+	modifystate = FALSE
+
+/obj/item/gun/energy/laser/lcr_29/get_examine_name(mob/user)
+	. = ..()
+	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/energy/laser::name]</span></span>"
