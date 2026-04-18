@@ -295,12 +295,7 @@
 			return
 		if(lying)
 			if(buckled)
-				// BLUEMOON ADD START
-				if(istype(buckled, /obj/structure/table/optable) || istype(buckled, /obj/machinery/stasis))
-					buckled.user_unbuckle_mob(src, M)
-				else
-				// BLUEMOON ADD END
-					to_chat(M, "<span class='warning'>Для этого вам для начала нужно отстегнуть <b>[src]</b>!")
+				to_chat(M, "<span class='warning'>Для этого вам для начала нужно отстегнуть <b>[src]</b>!")
 				return
 			// BLUEMON ADD START - проверка для сверхтяжёлых персонажей
 			if(src.mob_weight > MOB_WEIGHT_HEAVY)

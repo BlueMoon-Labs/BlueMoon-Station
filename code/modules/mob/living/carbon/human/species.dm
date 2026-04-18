@@ -1778,6 +1778,11 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	return
 
 /datum/species/proc/help(mob/living/carbon/human/user, mob/living/carbon/human/target, datum/martial_art/attacker_style)
+	// BLUEMOON ADD START
+	if(target.buckled && (istype(target.buckled, /obj/structure/table/optable) || istype(target.buckled, /obj/machinery/stasis)))
+		target.buckled.user_unbuckle_mob(target, user)
+		return TRUE
+	// BLUEMOON ADD END
 	if(target.health >= 0 && !HAS_TRAIT(target, TRAIT_FAKEDEATH) || iszombie(target) && !target.lying)
 		target.help_shake_act(user)
 		if(target != user)
