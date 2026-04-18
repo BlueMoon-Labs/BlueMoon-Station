@@ -15,6 +15,7 @@
 	requires_bodypart_type = 0
 	icon_state = "toxin"
 	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EXTRA
+	ignore_clothes = TRUE
 
 /datum/surgery_step/toxichealing
 	name = "Изъять Токсичную Субстанцию и Плоть"
