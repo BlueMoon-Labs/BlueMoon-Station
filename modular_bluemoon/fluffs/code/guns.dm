@@ -1243,3 +1243,72 @@
 /obj/item/gun/energy/laser/captain/rifle/get_examine_name(mob/user)
 	. = ..()
 	. += "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>["This is captain's antique laser gun. Highrisk item!"]</span></span>"
+
+///////////////////////////////////////////////
+
+/obj/item/modkit/mpl21_kit
+	name = "MPL-21 Kit"
+	desc = "A modkit for making an Thilium Lascarbine into a Modural Personal Laser."
+	product = /obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21
+	fromitem = list(/obj/item/gun/ballistic/automatic/laser/lasgun)
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21
+	name = "MPL-21"
+	desc = "Modural Personal Laser its a ergonomic direct heating system that uses flat box magazines with pre-charged energy cartridges."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "mpl_21"
+	item_state = "mpl_21"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	base_pixel_x = -8
+	var/const/custom_mag_type = /obj/item/ammo_box/magazine/recharge/lasgun/mpl_21
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/Initialize(mapload)
+	. = ..()
+	if(replace_mag_to_custom())
+		update_icon()
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/get_examine_name(mob/user)
+	. = ..()
+	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/ballistic/automatic/laser/lasgun::name]</span></span>"
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/update_icon_state()
+	icon_state = initial(icon_state)
+	item_state = initial(item_state)
+	if(chambered || magazine)
+		item_state += "-mag"
+		if(!chambered)
+			item_state += "-empty"
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/update_overlays()
+	. = ..()
+	if(magazine)
+		. += "[initial(icon_state)]-mag"
+	if(chambered)
+		. += "[initial(icon_state)]-charge"
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/insert_mag(obj/item/ammo_box/magazine/AM, mob/user)
+	. = ..()
+	replace_mag_to_custom()
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/proc/replace_mag_to_custom()
+	if(magazine && !(istype(magazine, custom_mag_type)))
+		var/obj/item/ammo_box/magazine/oldmag = magazine
+		magazine = new custom_mag_type(src)
+		QDEL_LIST(magazine.stored_ammo)
+		magazine.stored_ammo = oldmag.stored_ammo
+		for(var/atom/movable/A in oldmag.stored_ammo)
+			A.forceMove(magazine)
+		oldmag.stored_ammo = list()
+		qdel(oldmag)
+		magazine.update_icon()
+		return TRUE
+
+/obj/item/ammo_box/magazine/recharge/lasgun/mpl_21
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "mpl_21_mag"
+
+/obj/item/ammo_box/magazine/recharge/lasgun/mpl_21/update_icon_state()
+	icon_state = initial(icon_state)
+	if(!stored_ammo.len)
+		icon_state += "-empty"
