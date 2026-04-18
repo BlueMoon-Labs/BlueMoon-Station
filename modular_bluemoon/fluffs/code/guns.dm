@@ -1314,6 +1314,7 @@
 		icon_state += "-empty"
 
 ///////////////////////////////////////////////
+
 /obj/item/modkit/lcr29_kit
 	name = "LCR-29 Kit"
 	desc = "A modkit for making an Laser Gun into a Laser Combat Rifle."
@@ -1336,3 +1337,27 @@
 /obj/item/gun/energy/laser/lcr_29/get_examine_name(mob/user)
 	. = ..()
 	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/energy/laser::name]</span></span>"
+
+///////////////////////////////////////////////
+
+/obj/item/modkit/m3predator_kit
+	name = "M-3 Predator Kit"
+	desc = "A modkit for making an Laser Gun into a Laser Combat Rifle."
+	product = /obj/item/gun/energy/e_gun/advtaser/m3_predator
+	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
+
+/obj/item/gun/energy/e_gun/advtaser/m3_predator
+	name = "M-3 Predator"
+	desc = "Reliable, accurate, and easy to handle. The \"Predator\" is marketed by Elanus Risk Control Services as an effective and relatively inexpensive weapon from another galaxy. Although it is rarely purchased by the military due to its limited effectiveness against kinetic barriers."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "m3_predator"
+	item_state = null
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	charge_sections = 2
+	shaded_charge = TRUE
+	modifystate = FALSE
+
+/obj/item/gun/energy/e_gun/advtaser/m3_predator/get_examine_name(mob/user)
+	. = ..()
+	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/energy/e_gun/advtaser::name]</span></span>"
