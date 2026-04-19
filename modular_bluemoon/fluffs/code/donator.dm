@@ -2290,3 +2290,28 @@
 	subcategory = LOADOUT_SUBCATEGORIES_DON01
 	donator_group_id = DONATOR_GROUP_TIER_1
 	cost = 2
+
+/datum/gear/donator/bm/mpl21_kit
+	name = "MPL-21 Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/mpl21
+	ckeywhitelist = list("xaeshkavd", "sosnovskii", "hellsingcs")
+
+/datum/gear/donator/bm/lcr29_kit
+	name = "LCR-29 Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/lcr29
+	ckeywhitelist = list("xaeshkavd", "sosnovskii", "hellsingcs")
+
+/datum/gear/donator/bm/m3predator_kit
+	name = "M-3 Predator Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/m3predator
+	ckeywhitelist = list("xaeshkavd", "sosnovskii", "hellsingcs")
+
+/datum/gear/donator/bm/armolex_box
+	name = "Armolex Box"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/armolex_box
+	ckeywhitelist = list("xaeshkavd", "sosnovskii", "hellsingcs")
+	cost = 5

@@ -986,6 +986,8 @@
 /obj/item/modkit/rsh_future
 	name = "Special .38 Mars Kit"
 	desc = "A modkit for making a .38 Mars Special into a RSH-Future."
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
 	product = /obj/item/gun/ballistic/revolver/detective/rsh_future
 	fromitem = list (/obj/item/gun/ballistic/revolver/detective)
 
@@ -1252,9 +1254,11 @@
 
 ///////////////////////////////////////////////
 
-/obj/item/modkit/mpl21_kit
+/obj/item/modkit/mpl21
 	name = "MPL-21 Kit"
 	desc = "A modkit for making an Thilium Lascarbine into a Modural Personal Laser."
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
 	product = /obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21
 	fromitem = list(/obj/item/gun/ballistic/automatic/laser/lasgun)
 
@@ -1321,9 +1325,11 @@
 
 ///////////////////////////////////////////////
 
-/obj/item/modkit/lcr29_kit
+/obj/item/modkit/lcr29
 	name = "LCR-29 Kit"
 	desc = "A modkit for making an Laser Gun into a Laser Combat Rifle."
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
 	product = /obj/item/gun/energy/laser/lcr_29
 	fromitem = list(/obj/item/gun/energy/laser)
 
@@ -1346,9 +1352,11 @@
 
 ///////////////////////////////////////////////
 
-/obj/item/modkit/m3predator_kit
+/obj/item/modkit/m3predator
 	name = "M-3 Predator Kit"
 	desc = "A modkit for making an Laser Gun into a Laser Combat Rifle."
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
 	product = /obj/item/gun/energy/e_gun/advtaser/m3_predator
 	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
 
