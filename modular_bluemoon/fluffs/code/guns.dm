@@ -9,18 +9,24 @@
 	var/product //what it makes
 	var/list/fromitem = list() //what it needs
 
-/obj/item/modkit/afterattack(obj/O, mob/user as mob)
-	if(istype(O, product))
-		to_chat(user,"<span class='warning'>[O] is already modified!")
+/obj/item/modkit/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	if(istype(target, product))
+		to_chat(user,"<span class='warning'>[target] is already modified!")
 		return
-	if(O.type in fromitem) //makes sure O is the right thing
-		var/result = new product(usr.loc) //spawns the product
-		user.visible_message("<span class='warning'>[user] modifies [O]!","<span class='warning'>You modify the [O]!")
-		on_item_replace(O, result)
-		qdel(O) //Gets rid of the baton
+	if(target.type in fromitem) //makes sure target is the right thing
+		var/loc_to_spawn = target.loc || get_turf(target)
+		var/atom/movable/result = new product //spawns the product
+		user.visible_message("<span class='warning'>[user] modifies [target]!","<span class='warning'>You modify the [target]!")
+		on_item_replace(target, result)
+		qdel(target) //Gets rid of the baton
 		qdel(src) //gets rid of the kit
+		if(ismob(loc_to_spawn))
+			var/mob/M = loc_to_spawn
+			M.put_in_hands(result)
+		else
+			result.forceMove(loc_to_spawn)
 	else
-		to_chat(user, "<span class='warning'> You can't modify [O] with this kit!</span>")
+		to_chat(user, "<span class='warning'> You can't modify [target] with this kit!</span>")
 
 // may be useful for gun/stunbaton/etc modkits
 /obj/item/modkit/proc/on_item_replace(obj/old_item, obj/modified_item)
