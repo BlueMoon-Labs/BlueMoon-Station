@@ -187,11 +187,11 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 			our_borgy.mind.headshot_links = headshots.Copy()
 			return
 
-		var/static/link_regex = regex("^(https://i\\.gyazo\\.com|https://static1\\.e621\\.net|https://i\\.ibb\\.co/|https://i\\.imgur\\.com/|https://files\\.catbox\\.moe/)")
+		var/static/link_regex = regex("^(https://i\\.gyazo\\.com|https://static1\\.e621\\.net|https://i\\.ibb\\.co/|https://i\\.imgur\\.com/|https://files\\.catbox\\.moe/|https://media\\.tenor\\.com/|https://media\\.giphy\\.com/)")
 		var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg|\\.gif|\\.webm)$")
 
 		if(!findtext(usr_input, link_regex))
-			to_chat(our_borgy, span_warning("The link needs to be an unshortened Gyazo, iBB, E621, Imgur, or Catbox link!"))
+			to_chat(our_borgy, span_warning("The link needs to be an unshortened Gyazo, iBB, E621, Imgur, Catbox, Tenor, or Giphy link!"))
 			return
 
 		if(!findtext(usr_input, end_regex))
@@ -263,11 +263,11 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 						our_mob.mind.headshot_links = headshots.Copy()
 				return
 
-			var/static/link_regex = regex("^(https://i\\.gyazo\\.com|https://static1\\.e621\\.net|https://i\\.ibb\\.co/|https://i\\.imgur\\.com/|https://files\\.catbox\\.moe/)")
+			var/static/link_regex = regex("^(https://i\\.gyazo\\.com|https://static1\\.e621\\.net|https://i\\.ibb\\.co/|https://i\\.imgur\\.com/|https://files\\.catbox\\.moe/|https://media\\.tenor\\.com/|https://media\\.giphy\\.com/)")
 			var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg|\\.gif|\\.webm)$")
 
 			if(!findtext(usr_input, link_regex))
-				to_chat(our_mob, span_warning("The link needs to be an unshortened Gyazo, iBB, E621, Imgur, or Catbox link!"))
+				to_chat(our_mob, span_warning("The link needs to be an unshortened Gyazo, iBB, E621, Imgur, Catbox, Tenor, or Giphy link!"))
 				return
 
 			if(!findtext(usr_input, end_regex))
