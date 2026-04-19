@@ -59,26 +59,26 @@
 
 
 /datum/preferences/proc/get_headshot_link(mob/user, old_link)
-	var/usr_input = input(user, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg')", "Headshot Image", old_link) as text|null
+	var/usr_input = input(user, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg/.gif/.webm')", "Headshot Image", old_link) as text|null
 	if(isnull(usr_input))
 		return ACTION_HEADSHOT_LINK_NOOP
 
 	if(!usr_input)
 		return ACTION_HEADSHOT_LINK_REMOVE
 
-	var/static/link_regex = regex("^(https://i\\.gyazo\\.com|https://static1\\.e621\\.net|https://i\\.ibb\\.co/)")
-	var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg)$")
+	var/static/link_regex = regex("^(https://i\\.gyazo\\.com|https://static1\\.e621\\.net|https://i\\.ibb\\.co/|https://i\\.imgur\\.com/|https://files\\.catbox\\.moe/)")
+	var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg|\\.gif|\\.webm)$")
 
 	if (length(usr_input) > HEADSHOT_LINK_MAX_LENGTH)
 		to_chat(user, span_warning("The link is too long! Max length: [HEADSHOT_LINK_MAX_LENGTH] characters!"))
 		return ACTION_HEADSHOT_LINK_NOOP
 
 	if(!findtext(usr_input, link_regex))
-		to_chat(user, span_warning("The link needs to be an unshortened Gyazo, iBB, E621 link!"))
+		to_chat(user, span_warning("The link needs to be an unshortened Gyazo, iBB, E621, Imgur, or Catbox link!"))
 		return ACTION_HEADSHOT_LINK_NOOP
 
 	if(!findtext(usr_input, end_regex))
-		to_chat(user, span_warning("You need either \".png\", \".jpg\", or \".jpeg\" in the end of the link!"))
+		to_chat(user, span_warning("You need either \".png\", \".jpg\", \".jpeg\", \".gif\", or \".webm\" in the end of the link!"))
 		return ACTION_HEADSHOT_LINK_NOOP
 
 	var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")
