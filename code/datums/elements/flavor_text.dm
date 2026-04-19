@@ -146,6 +146,8 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 	set desc = "Used to manage your various flavor."
 	set category = "IC"
 
+	var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)$", "i")
+
 	if(!isliving(src))
 		return
 	var/list/changeable_texts = list(
@@ -187,10 +189,8 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 			our_borgy.mind.headshot_links = headshots.Copy()
 			return
 
-		var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg|\\.gif|\\.webm|\\.mp4)$")
-
-		if(!findtext(usr_input, end_regex))
-			to_chat(our_borgy, span_warning("The link must be a direct image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
+		if(!findtext(usr_input, link_regex))
+			to_chat(our_borgy, span_warning("The link must be a direct http(s):// image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
 			return
 
 		var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")
@@ -258,10 +258,8 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 						our_mob.mind.headshot_links = headshots.Copy()
 				return
 
-			var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg|\\.gif|\\.webm|\\.mp4)$")
-
-			if(!findtext(usr_input, end_regex))
-				to_chat(our_mob, span_warning("The link must be a direct image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
+			if(!findtext(usr_input, link_regex))
+				to_chat(our_mob, span_warning("The link must be a direct http(s):// image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
 				return
 
 			var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")

@@ -66,14 +66,14 @@
 	if(!usr_input)
 		return ACTION_HEADSHOT_LINK_REMOVE
 
-	var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg|\\.gif|\\.webm|\\.mp4)$")
+	var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)$", "i")
 
 	if (length(usr_input) > HEADSHOT_LINK_MAX_LENGTH)
 		to_chat(user, span_warning("The link is too long! Max length: [HEADSHOT_LINK_MAX_LENGTH] characters!"))
 		return ACTION_HEADSHOT_LINK_NOOP
 
-	if(!findtext(usr_input, end_regex))
-		to_chat(user, span_warning("The link must be a direct image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
+	if(!findtext(usr_input, link_regex))
+		to_chat(user, span_warning("The link must be a direct http(s):// image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
 		return ACTION_HEADSHOT_LINK_NOOP
 
 	var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")
@@ -85,13 +85,14 @@
 #undef ACTION_HEADSHOT_LINK_NOOP
 #undef ACTION_HEADSHOT_LINK_REMOVE
 
+/// Renders a headshot preview tag. `link` must be pre-sanitized (it is interpolated directly into an HTML attribute).
 /proc/headshot_preview_html(link, width = 140, height = 140)
 	if(!link)
 		return ""
 	var/static/video_regex = regex("\\.(webm|mp4)$", "i")
 	if(findtext(link, video_regex))
 		return "<video src='[link]' autoplay loop muted playsinline style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'></video>"
-	return "<img src='[link]' style='border: 1px solid black' width='[width]px' height='[height]px'>"
+	return "<img src='[link]' style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'>"
 
 /datum/preferences/proc/mob_size_name_to_num(body_weight_name)
 	switch(body_weight_name)
