@@ -142,7 +142,7 @@
 	icon_state = "pawpack"
 	item_state = "pawpack"
 
-/obj/item/storage/backpack/satchel/rawk_sat
+/obj/item/storage/backpack/satchel/rawk
 	name = "Rawk Satchel"
 	desc = "Tactical military satchel for a special forces group."
 	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'

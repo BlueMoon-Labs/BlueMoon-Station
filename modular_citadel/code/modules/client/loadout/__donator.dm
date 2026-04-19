@@ -133,6 +133,12 @@
 	ckeywhitelist = list()
 	donator_group_id = DONATOR_GROUP_TIER_1
 
+/datum/gear/donator/rawk_satchel
+	name = "Rawk Satchel"
+	slot = ITEM_SLOT_BACK
+	path = /obj/item/storage/backpack/satchel/rawk
+	donator_group_id = DONATOR_GROUP_TIER_1
+
 /datum/gear/donator/gasmask_syndicate
 	name = "The Syndicate Mask"
 	slot = ITEM_SLOT_MASK

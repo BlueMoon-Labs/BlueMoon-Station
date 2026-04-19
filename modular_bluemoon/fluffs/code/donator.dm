@@ -1073,12 +1073,6 @@
 	path = /obj/item/modkit/rsh_future
 	ckeywhitelist = list("xaeshkavd", "sosnovskii","hellsinggc")
 
-/datum/gear/donator/bm/rawk_sat
-	name = "Rawk Satchel"
-	slot = ITEM_SLOT_BACK
-	path = /obj/item/storage/backpack/satchel/rawk_sat
-	ckeywhitelist = list("xaeshkavd","silverfoxpaws", "heathkit1", "sosnovskii")
-
 /datum/gear/donator/bm/echoes_jacket
 	name = "Technical Jacket"
 	slot = ITEM_SLOT_BACKPACK
