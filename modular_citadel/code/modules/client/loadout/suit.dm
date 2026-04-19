@@ -10,13 +10,13 @@
 /datum/gear/suit/aged_robe
 	name = "Aged Robe"
 	path = /obj/item/clothing/suit/donator/bm/cultist_poly
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A","#A52F29")
 
 /datum/gear/suit/empire_suit
 	name = "Katzen Suit"
 	path = /obj/item/clothing/suit/empire_suit
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A","#e42929", "#e0bf28")
 
 /datum/gear/suit/ponchogreen
@@ -26,25 +26,25 @@
 /datum/gear/suit/poly_armored_poncho
 	name = "Poly Nanotech Poncho"
 	path = /obj/item/clothing/suit/poly_armored_poncho
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A","#e42929")
 
 /datum/gear/suit/poly_poncho
 	name = "Poly Poncho"
 	path = /obj/item/clothing/suit/poly_poncho
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A")
 
 /datum/gear/suit/officerian_coat
 	name = "Poly Coat"
 	path = /obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A","#1f1f1f")
 
 /datum/gear/suit/officerian_coat_oversized
 	name = "Poly Coat Oversized"
 	path = /obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat_oversized
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A","#1a1a1a")
 
 /datum/gear/suit/ponchored
@@ -175,60 +175,50 @@
 /datum/gear/suit/whitehoodie
 	name = "Soft hoodie"
 	path = /obj/item/clothing/suit/toggle/jacket/whitehoodie
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 
 /datum/gear/suit/jacketbluehoodie
 	name = "Blue hoodie"
 	path = /obj/item/clothing/suit/jacket/bluehoodie
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 /datum/gear/suit/jacketpurplehoodie
 	name = "Purple hoodie"
 	path = /obj/item/clothing/suit/jacket/purplehoodie
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 
 /datum/gear/suit/jacketheartcoat
 	name = "Heart coat"
 	path = /obj/item/clothing/suit/jacket/heartcoat
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 
 /datum/gear/suit/jacketgothiccoat
 	name = "Long black coat with cuffs"
 	path = /obj/item/clothing/suit/jacket/gothiccoat
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 
 /datum/gear/suit/jacketgothshirt
 	name = "Black shirt with cuffs"
 	path = /obj/item/clothing/suit/jacket/gothicshirt
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_GENERAL
 
 /datum/gear/suit/jacketgothshirtcross
 	name = "Black shirt with cross"
 	path = /obj/item/clothing/suit/jacket/gothicshirtcross
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_GENERAL
 
 /datum/gear/suit/gentlecoat
 	name = "Grey coat"
 	path = /obj/item/clothing/suit/jacket/gentlecoat
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_COATS
 
 /datum/gear/suit/greenjacket
 	name = "Green outdoorsman jacket"
 	path = /obj/item/clothing/suit/toggle/jacket/greenjacket
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 
 /datum/gear/suit/fancytrench
 	name = "Grey trenchcoat"
 	path = /obj/item/clothing/suit/toggle/jacket/fancytrench
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_COATS
 
 
@@ -236,14 +226,14 @@
 	name = "Polychromic winter coat"
 	path = /obj/item/clothing/suit/hooded/wintercoat/polychromic
 	cost = 2 //too many people with neon green coats is hard on the eyes // it's probably fine now
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#6A6964", "#C4B8A6", "#0000FF")
 
 /datum/gear/suit/coat/wbreakpoly
 	name = "Polychromic windbreaker"
 	path = /obj/item/clothing/suit/toggle/wbreakpoly/polychromic
 	cost = 2
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#464F65", "#916035", "#474747")
 
 /datum/gear/suit/coat/med
@@ -305,7 +295,7 @@
 	name = "Urban Jacket"
 	path = /obj/item/clothing/suit/jacket/urbanjacket/polychromic
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#3B4B2E", "#CBBDAF", "#444444")
 
 /datum/gear/suit/ianshirt
@@ -436,10 +426,8 @@
 /datum/gear/suit/cropped_jacket_main
 	name = "Cropped jacket"
 	path = /obj/item/clothing/suit/toggle/cropped_jacket_main
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 
 /datum/gear/suit/shoulder_sweater
 	name = "Off shoulder sweater"
 	path = /obj/item/clothing/suit/shoulder_sweater
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION

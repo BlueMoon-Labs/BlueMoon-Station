@@ -232,3 +232,19 @@
 	for(var/X in actions)
 		var/datum/action/A = X
 		A.UpdateButtons()
+
+// Принадлежит xaeshkavd
+/obj/item/storage/box/donator/bm/armolex_box
+	name = "Armolex Box"
+	desc = "Military box that contains some weapons kits. Hello From XVD."
+	icon_state = "armolex_box"
+
+/obj/item/storage/box/donator/bm/armolex_box/PopulateContents()
+	var/static/list_of_items = list(
+		/obj/item/modkit/rsh_future,
+		/obj/item/modkit/razorsong_kit,
+		/obj/item/modkit/mpl21,
+		/obj/item/modkit/lcr29,
+		/obj/item/modkit/m3predator,
+	)
+	generate_items_inside(list_of_items, src)
