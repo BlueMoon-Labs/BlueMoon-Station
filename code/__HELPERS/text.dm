@@ -120,7 +120,10 @@
 	return readd_quotes(html_encode(t))
 
 /// Shared finalizer for stripped_* input procs: sanitize then bound to max_length.
+/// Returns null on null input so callers can distinguish Cancel from empty text.
 /proc/finalize_stripped_input(name, max_length, no_trim)
+	if(isnull(name))
+		return null
 	name = html_encode_readable(name)
 	//trim is "outside" because html_encode can expand single symbols into multiple symbols (such as turning < into &lt;)
 	return no_trim ? copytext(name, 1, max_length) : trim(name, max_length)

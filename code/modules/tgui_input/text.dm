@@ -141,7 +141,8 @@
 			// BLUEMOON EDIT - исправление счета по байтам, а не по символам Юникода
 			if(length_char(params["entry"]) > max_length)
 				return
-			if(encode && (length_char(html_encode(params["entry"])) > max_length))
+			// Должно совпадать с кодировщиком set_entry (html_encode_readable), иначе получим ложное "clipped" на одних только кавычках
+			if(encode && (length_char(html_encode_readable(params["entry"])) > max_length))
 				to_chat(usr, span_notice("Your message was clipped due to special character usage."))
 			set_entry(params["entry"])
 			closed = TRUE
