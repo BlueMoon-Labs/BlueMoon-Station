@@ -104,7 +104,7 @@ SUBSYSTEM_DEF(runechat)
 			// Transfer the message into the bucket, performing necessary circular doubly-linked list operations
 			bucket_count++
 			var/bucket_pos = max(1, BUCKET_POS(cm.scheduled_destruction))
-			var/datum/timedevent/head = bucket_list[bucket_pos]
+			var/datum/chatmessage/head = bucket_list[bucket_pos]
 			if (!head)
 				bucket_list[bucket_pos] = cm
 				cm.in_runechat_queue = TRUE

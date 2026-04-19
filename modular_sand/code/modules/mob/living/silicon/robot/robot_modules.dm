@@ -51,7 +51,7 @@
 		/obj/item/scalpel/advanced,
 		/obj/item/gun/medbeam,
 		/obj/item/reagent_containers/borghypo/syndicate,
-		/obj/item/stack/medical/bone_gel,
+		/obj/item/stack/medical/bone_gel/cyborg,
 		/obj/item/bonesetter,
 		/obj/item/blood_filter,
 		/obj/item/organ_storage,

@@ -282,6 +282,8 @@
 		for(var/obj/machinery/power/terminal/remote_term as anything in our_powernet.nodes)
 			if(needed <= 0)
 				break
+			if(!istype(remote_term, /obj/machinery/power/terminal))
+				continue
 			if(!istype(remote_term.master, /obj/machinery/power/apc))
 				continue
 			var/obj/machinery/power/apc/remote_apc = remote_term.master
@@ -310,6 +312,8 @@
 		if(!(smes_unit.machine_stat & BROKEN))
 			total += round(smes_unit.charge / 0.05)
 	for(var/obj/machinery/power/terminal/remote_term as anything in our_terminal.powernet.nodes)
+		if(!istype(remote_term, /obj/machinery/power/terminal))
+			continue
 		if(!istype(remote_term.master, /obj/machinery/power/apc))
 			continue
 		var/obj/machinery/power/apc/remote_apc = remote_term.master

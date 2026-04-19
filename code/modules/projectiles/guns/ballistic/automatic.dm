@@ -8,6 +8,8 @@
 	fire_delay = 2
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT, SELECT_FULLY_AUTOMATIC)
 	tactical_reload = TRUE
+	load_sound = 'sound/weapons/autoguninsert.ogg'
+	lock_back_sound = null
 
 /obj/item/gun/ballistic/automatic/proto
 	name = "\improper Nanotrasen Saber SMG"

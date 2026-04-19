@@ -556,6 +556,8 @@
 /datum/component/riding/cyborg/force_dismount(mob/living/M, from_mob = FALSE)
 	. = ..()
 	var/atom/movable/AM = parent
+	if(!M || QDELETED(M) || !AM || QDELETED(AM))
+		return
 	var/turf/target = get_edge_target_turf(AM, AM.dir)
 	var/turf/targetm = get_step(get_turf(AM), AM.dir)
 	M.Move(targetm)

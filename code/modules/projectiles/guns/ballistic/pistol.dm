@@ -11,6 +11,9 @@
 	automatic_burst_overlay = FALSE
 	reskin_binding = COMSIG_CLICK_ALT
 	fire_sound = 'sound/weapons/gun/pistol/shot.ogg'
+	load_sound = SFX_GUN_INSERT_FULL_MAGAZINE
+	load_empty_sound = SFX_GUN_INSERT_EMPTY_MAGAZINE
+	lock_back_sound ='sound/weapons/gun_chamber_round.ogg'
 
 /obj/item/gun/ballistic/automatic/pistol/no_mag
 	spawnwithmagazine = FALSE
