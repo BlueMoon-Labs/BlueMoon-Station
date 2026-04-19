@@ -177,7 +177,7 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 			return
 		chosen_headshot_id = text2num(chosen_headshot_id)
 		var/has_headshot_id = chosen_headshot_id <= headshots.len
-		var/usr_input = tgui_input_text(our_borgy, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg/.gif/.webm')", "Headshot Image", has_headshot_id ? headshots[chosen_headshot_id] : "", 100, FALSE, FALSE)
+		var/usr_input = tgui_input_text(our_borgy, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg/.gif/.webm/.mp4')", "Headshot Image", has_headshot_id ? headshots[chosen_headshot_id] : "", 100, FALSE, FALSE)
 		if(isnull(usr_input))
 			return
 
@@ -188,14 +188,14 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 			return
 
 		var/static/link_regex = regex("^(https://i\\.gyazo\\.com|https://static1\\.e621\\.net|https://i\\.ibb\\.co/|https://i\\.imgur\\.com/|https://files\\.catbox\\.moe/|https://media\\.tenor\\.com/|https://media\\.giphy\\.com/)")
-		var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg|\\.gif|\\.webm)$")
+		var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg|\\.gif|\\.webm|\\.mp4)$")
 
 		if(!findtext(usr_input, link_regex))
 			to_chat(our_borgy, span_warning("The link needs to be an unshortened Gyazo, iBB, E621, Imgur, Catbox, Tenor, or Giphy link!"))
 			return
 
 		if(!findtext(usr_input, end_regex))
-			to_chat(our_borgy, span_warning("You need either \".png\", \".jpg\", \".jpeg\", \".gif\", or \".webm\" in the end of the link!"))
+			to_chat(our_borgy, span_warning("You need either \".png\", \".jpg\", \".jpeg\", \".gif\", \".webm\", or \".mp4\" in the end of the link!"))
 			return
 
 		var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")
@@ -249,7 +249,7 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 			var/list/headshots = chosen == "Хедшоты без одежды" ? our_mob.dna.headshot_naked_links : our_mob.dna.headshot_links
 			var/is_naked_headshot = chosen == "Хедшоты без одежды"
 			var/has_headshot_id = chosen_headshot_id <= headshots.len
-			var/usr_input = tgui_input_text(our_mob, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg/.gif/.webm')", "Headshot Image", has_headshot_id ? headshots[chosen_headshot_id] : "", 100, FALSE, FALSE)
+			var/usr_input = tgui_input_text(our_mob, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg/.gif/.webm/.mp4')", "Headshot Image", has_headshot_id ? headshots[chosen_headshot_id] : "", 100, FALSE, FALSE)
 			if(isnull(usr_input))
 				return
 
@@ -264,14 +264,14 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 				return
 
 			var/static/link_regex = regex("^(https://i\\.gyazo\\.com|https://static1\\.e621\\.net|https://i\\.ibb\\.co/|https://i\\.imgur\\.com/|https://files\\.catbox\\.moe/|https://media\\.tenor\\.com/|https://media\\.giphy\\.com/)")
-			var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg|\\.gif|\\.webm)$")
+			var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg|\\.gif|\\.webm|\\.mp4)$")
 
 			if(!findtext(usr_input, link_regex))
 				to_chat(our_mob, span_warning("The link needs to be an unshortened Gyazo, iBB, E621, Imgur, Catbox, Tenor, or Giphy link!"))
 				return
 
 			if(!findtext(usr_input, end_regex))
-				to_chat(our_mob, span_warning("You need either \".png\", \".jpg\", \".jpeg\", \".gif\", or \".webm\" in the end of the link!"))
+				to_chat(our_mob, span_warning("You need either \".png\", \".jpg\", \".jpeg\", \".gif\", \".webm\", or \".mp4\" in the end of the link!"))
 				return
 
 			var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")

@@ -179,7 +179,7 @@ const ViewCharacter = (props, context) => {
   const [selectedHeadshot, setSelectedHeadshot] = useLocalState(context, 'viewHeadshot', 0);
   const safeIdx = headshots.length > 0 ? selectedHeadshot % headshots.length : 0;
   const currentLink = headshots[safeIdx];
-  const isVideo = typeof currentLink === 'string' && /\.webm$/i.test(currentLink);
+  const isVideo = typeof currentLink === 'string' && /\.(webm|mp4)$/i.test(currentLink);
   const mediaStyle = {
     'max-width': '256px',
     'max-height': '256px',

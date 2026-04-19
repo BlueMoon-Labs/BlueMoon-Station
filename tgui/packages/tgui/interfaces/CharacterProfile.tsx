@@ -155,7 +155,7 @@ const CharacterProfileImageElement = (props, context) => {
   );
 
   const currentLink = headshot_links[safeSelectedHeadshot];
-  const isVideo = typeof currentLink === 'string' && /\.webm$/i.test(currentLink);
+  const isVideo = typeof currentLink === 'string' && /\.(webm|mp4)$/i.test(currentLink);
   const mediaStyle = {
     width: '256px',
     height: '256px',
