@@ -37,6 +37,7 @@
 	actions_types = list(/datum/action/item_action/toggle_personality)
 	recoil = 0.25
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT, SELECT_FULLY_AUTOMATIC)
+	burst_size = 3
 	zoomable = TRUE
 	zoom_amt = 8 //Long range, enough to see in front of you, but no tiles behind you.
 	zoom_out_amt = 5
@@ -312,7 +313,6 @@
 /datum/action/item_action/toggle_personality
 	name = "Toggle Weapon Personality"
 	desc = "Toggles the weapon's personality core. Studies find that turning them off makes them quite sad, however."
-	background_icon_state = "bg_mod"
 
 //Short version of the above modular rifle, has less charge and different modes
 /obj/item/gun/energy/modular_laser_rifle/carbine

@@ -757,8 +757,8 @@
 						dat += "<span style='border: 1px solid #161616; background-color: #[features["butt_color"]];'><font color='[color_hex2num(features["butt_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["butt_color"]]</font></span> <a href='?_src_=prefs;preference=butt_color;task=input'>Change</a><br>"
 					var/butt_size_value = features["butt_size"]
 					var/butt_visibility_value = features["butt_visibility"]
-					dat += "<b>" + butt_size_label + ":</b><a style='display:block;width:50px' href='?_src_=prefs;preference=butt_size;task=input'>" + butt_size_value + "</a>"
-					dat += "<b>" + butt_visibility_label + ":</b><a style='display:block;width:100px' href='?_src_=prefs;preference=butt_visibility;task=input'>" + butt_visibility_value + "</a>"
+					dat += "<b>[butt_size_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=butt_size;task=input'>[butt_size_value]</a>"
+					dat += "<b>[butt_visibility_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=butt_visibility;task=input'>[butt_visibility_value]</a>"
 					var/butt_stuffing_text = features["butt_stuffing"] == TRUE ? "Yes" : "No"
 					dat += "<b>[butt_stuffing_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=butt_stuffing'>[butt_stuffing_text]</a>"
 					var/has_anus_text = features["has_anus"] == TRUE ? "Yes" : "No"

@@ -1,0 +1,5 @@
+#define POLL_RESPONSE_SIGNUP "signup"
+#define POLL_RESPONSE_ALREADY_SIGNED "already_signed"
+#define POLL_RESPONSE_NOT_SIGNED "not_signed"
+#define POLL_RESPONSE_TOO_LATE_TO_UNREGISTER "failed_unregister"
+#define POLL_RESPONSE_UNREGISTERED "unregistered"

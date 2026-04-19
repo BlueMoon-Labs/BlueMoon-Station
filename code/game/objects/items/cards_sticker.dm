@@ -84,6 +84,8 @@
 
 /obj/item/card_sticker/proc/wrap(obj/item/card/id/card, mob/user, silent = FALSE, force = FALSE)
 	. = FALSE
+	if(!istype(card, /obj/item/card/id))
+		return
 	if(card.sticker || (user && INTERACTING_WITH(user, card)))
 		return
 	if(!silent)

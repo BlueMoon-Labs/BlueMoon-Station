@@ -78,10 +78,13 @@
 			changeling.purchase_power(sting_name)
 
 /datum/cellular_emporium/proc/gamemode_restricted(datum/action/changeling/ability)
-	if(ANTAG_EXTENDED & initial(ability.gamemode_restriction_type) && SSticker.mode.config_tag == "Extended")
-		. = TRUE
-	if(ANTAG_DYNAMIC & initial(ability.gamemode_restriction_type) && SSticker.mode.config_tag == "dynamic")
-		. = TRUE
+	var/restriction = initial(ability.gamemode_restriction_type)
+	var/extended_like = (GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT) \
+		|| (GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)) \
+		|| (SSticker.mode && (SSticker.mode.config_tag in list("Extended", "secret_extended")))
+	if(extended_like)
+		return !!(restriction & ANTAG_EXTENDED)
+	return !!(restriction & ANTAG_DYNAMIC)
 
 /datum/action/innate/cellular_emporium
 	name = "Cellular Emporium"

@@ -2109,7 +2109,7 @@
 	name = "Desert Nanosuit"
 	slot = ITEM_SLOT_UNDERWEAR
 	path = /obj/item/clothing/underwear/briefs/nano_suit
-	ckeywhitelist = list("lindaastereih", "kingdeaths", "heathkit1", "dimofon")
+	ckeywhitelist = list("lindaastereih", "kingdeaths", "heathkit1", "dimofon", "tblkba")
 
 /datum/gear/donator/bm/bear_patch
 	name = "BEAR Patch"
@@ -2141,6 +2141,11 @@
 	path = /obj/item/modkit/nebular_kit
 	ckeywhitelist = list("lapkee")
 
+/datum/gear/donator/bm/p226_syndicate
+	name = "P226 'Syndicate' Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/p226_syndicate
+	ckeywhitelist = list("vladtv05")
 
 /datum/gear/donator/bm/toy_plasma_scythe
 	name = "Toy Plasma Scythe"
@@ -2281,3 +2286,44 @@
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/tie/eclipse_cape
 	ckeywhitelist = list("shizalrp", "krasler101")
+
+/datum/gear/donator/bm/Gelriter_kit
+	name = "Gelriter-22 kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/Gelriter_22
+	ckeywhitelist = list("tblkba","lindaastereih")
+
+/datum/gear/donator/bm/fancy_laser_kit
+	name = "Fancy Laser Rifle Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/fancy_rifle_kit
+	ckeywhitelist = list("tblkba")
+
+/datum/gear/donator/bm/blood_suit
+	name = "crimson aristocracy suit"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/blood_suit
+	ckeywhitelist = list("tblkba")
+
+/datum/gear/donator/bm/blood_shinel
+	name = "crimson aristocracy shinel"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/toggle/captains_parade/blood_shinel
+	ckeywhitelist = list("tblkba")
+	restricted_desc = "Captain."
+	restricted_roles = list("Captain")
+
+/datum/gear/donator/bm/blood_boots
+	name = "crimson aristocracy boots"
+	slot = ITEM_SLOT_FEET
+	path = /obj/item/clothing/shoes/blood_boots
+	ckeywhitelist = list("tblkba")
+
+/datum/gear/donator/bm/justice
+	name = "Backpack of justice"
+	slot = ITEM_SLOT_BACK
+	path = /obj/item/storage/backpack/satchel/justice
+	category = LOADOUT_CATEGORY_DONATOR
+	subcategory = LOADOUT_SUBCATEGORIES_DON01
+	donator_group_id = DONATOR_GROUP_TIER_1
+	cost = 2

@@ -338,6 +338,7 @@ GLOBAL_LIST_INIT(borgmodule_ru_adjective, list(
 	"standard" = "универсальный",
     "medical" = "медицинский",
     "engineering" = "инженерный",
+	"engineer" = "инженерный",
     "security" = "охранный",
 	"peacekeeper" = "миротворческий",
 	"clown" = "клоунский",

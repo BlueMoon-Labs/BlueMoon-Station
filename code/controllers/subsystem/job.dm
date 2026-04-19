@@ -109,6 +109,8 @@ SUBSYSTEM_DEF(job)
 			return FALSE
 		if(job.is_species_blacklisted(player.client)) //BLUEMOON ADDITION - XENO SUPREMACY
 			return FALSE //BLUEMOON ADDITION - XENO SUPREMACY
+		if(!player.client.prefs.pref_species.qualifies_for_rank(rank, player.client.prefs.features))
+			return FALSE
 		var/position_limit = job.total_positions
 		if(!latejoin)
 			position_limit = job.spawn_positions

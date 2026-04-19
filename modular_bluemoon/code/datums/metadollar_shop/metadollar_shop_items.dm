@@ -49,21 +49,21 @@
 /datum/metadollar_shop_item/item/insulated_gloves
 	name = "Изолированные перчатки"
 	desc = "Стандартные жёлтые перчатки для работы с электрикой."
-	cost = 25
+	cost = 10
 	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/clothing/gloves/color/yellow
 
 /datum/metadollar_shop_item/item/sunglasses
 	name = "Солнцезащитные очки"
 	desc = "Классические тёмные стёкла защищают от вспышек."
-	cost = 25
+	cost = 10
 	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/clothing/glasses/sunglasses
 
 /datum/metadollar_shop_item/item/gift_anything_lootbox
 	name = "Коробка-сюрприз"
 	desc = "Внутри вас ждёт случайный предмет."
-	cost = 10
+	cost = 25
 	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/a_gift/anything
 

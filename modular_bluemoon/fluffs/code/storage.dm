@@ -209,3 +209,26 @@
 	desc = "An ornate sheath designed to hold an Cybersun Officer's Blade."
 	fitting_swords = list(/obj/item/melee/transforming/energy/sword/energy_sabre/fluff)
 	starting_sword = null
+
+/obj/item/storage/backpack/satchel/justice
+	name = "Backpack of justice"
+	desc = "Крепкий рюкзак выданный специально для крепких офицеров."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/storage.dmi'
+	icon_state = "backpack_justice0"
+	item_state = "backpack_justice0"
+	actions_types = list(/datum/action/item_action/toggle)
+	var/pidor_back = FALSE
+
+/obj/item/storage/backpack/satchel/justice/ui_action_click(mob/user)
+	if(!istype(user) || user.incapacitated() || !user.get_item_by_slot(ITEM_SLOT_BACK))
+		return
+	pidor_back = !pidor_back
+	if(pidor_back)
+		playsound(usr.loc, 'sound/machines/click.ogg', 50, TRUE)
+	icon_state = pidor_back ? "backpack_justice1" : "backpack_justice0"
+	item_state = pidor_back ? "backpack_justice1" : "backpack_justice0"
+	user.update_inv_back()
+	for(var/X in actions)
+		var/datum/action/A = X
+		A.UpdateButtons()

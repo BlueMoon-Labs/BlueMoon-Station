@@ -295,12 +295,7 @@
 			return
 		if(lying)
 			if(buckled)
-				// BLUEMOON ADD START
-				if(istype(buckled, /obj/structure/table/optable) || istype(buckled, /obj/machinery/stasis))
-					buckled.user_unbuckle_mob(src, M)
-				else
-				// BLUEMOON ADD END
-					to_chat(M, "<span class='warning'>Для этого вам для начала нужно отстегнуть <b>[src]</b>!")
+				to_chat(M, "<span class='warning'>Для этого вам для начала нужно отстегнуть <b>[src]</b>!")
 				return
 			// BLUEMON ADD START - проверка для сверхтяжёлых персонажей
 			if(src.mob_weight > MOB_WEIGHT_HEAVY)
@@ -715,7 +710,7 @@
 		return
 
 	var/extra_wound_details = ""
-	if(I.damtype == BRUTE && hit_bodypart.can_dismember())
+	if(I.damtype == BRUTE && istype(hit_bodypart, /obj/item/bodypart) && hit_bodypart.can_dismember())
 		var/mangled_state = hit_bodypart.get_mangled_state()
 		var/bio_state = get_biological_state()
 		if(mangled_state == BODYPART_MANGLED_BOTH)

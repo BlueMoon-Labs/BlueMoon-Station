@@ -369,13 +369,13 @@
 		verb_say = pick(speak_emote)
 	. = ..()
 
-/mob/living/simple_animal/emote(act, m_type=1, message = null, intentional = FALSE)
+/mob/living/simple_animal/emote(act, m_type=1, message = null, intentional = FALSE, message_override = null)
 	if(stat)
 		return
 	if(act == "scream")
 		message = "makes a loud and pained whimper." //ugly hack to stop animals screaming when crushed :P
 		act = "me"
-	..(act, m_type, message)
+	..(act, m_type, message, intentional, message_override)
 
 /mob/living/simple_animal/proc/set_varspeed(var_value)
 	speed = var_value

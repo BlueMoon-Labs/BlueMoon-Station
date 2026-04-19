@@ -84,9 +84,15 @@
 /datum/round_event/stray_cargo/zombie
 	possible_pack_types = list(/datum/supply_pack/misc/zombie)
 
+/datum/round_event/stray_cargo/zombie/make_pod()
+	var/area/pod_storage_area = locate(/area/centcom/supplypod/podStorage) in GLOB.sortedAreas
+	var/obj/structure/closet/supplypod/S = new(pick(get_area_turfs(pod_storage_area))) //Lets not runtime
+	S.setStyle(STYLE_SYNDICATE)
+	return S
+
 /obj/structure/closet/crate/zombie
 	name = "biohazard crate"
-	desc = "Пломбированный контейнер высокой биологической опасности. На боку — предупреждающий знак и штрихкод NT-CZV-1."
+	desc = "Пломбированный контейнер высокой биологической опасности. На боку - предупреждающий знак и штрихкод PACT-BT-7."
 	icon_state = "chemcrate"
 	var/virus_released = FALSE
 
@@ -98,7 +104,7 @@
 	playsound(src, 'sound/effects/smoke.ogg', 50, TRUE, -3)
 	var/datum/reagents/zombie_holder = new/datum/reagents(100)
 	zombie_holder.my_atom = src
-	zombie_holder.add_reagent(/datum/reagent/romerol, 30)
+	zombie_holder.add_reagent(/datum/reagent/romerol/lethal, 30)
 	var/datum/effect_system/smoke_spread/chem/smoke = new()
 	smoke.set_up(zombie_holder, 6, get_turf(src), silent = TRUE)
 	smoke.attach(src)
@@ -110,11 +116,11 @@
 	new /obj/item/reagent_containers/glass/bottle/romerol_interdyne/empty(src)
 
 /obj/item/reagent_containers/glass/bottle/romerol_interdyne
-	name = "INT-ROM Vial"
-	desc = "Небольшая ампула патогена INT-ROM. Производство Interdyne."
+	name = "INT-RMRL Vial"
+	desc = "Небольшая ампула патогена INT-RMRL. Производство Interdyne."
 	list_reagents = list(/datum/reagent/romerol = 30)
 
 /obj/item/reagent_containers/glass/bottle/romerol_interdyne/empty
-	name = "INT-ROM Vial"
-	desc = "Пустая ампула INT-ROM. На этикетке предупреждение о разбитии при ударе — явно не пустой пиар."
+	name = "INT-RMRL Vial"
+	desc = "Пустая ампула INT-RMRL. На этикетке предупреждение о хрупкости, явно не попытка пиара."
 	list_reagents = list()

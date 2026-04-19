@@ -41,6 +41,7 @@
 	player_minimum = 50
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 	restricted = TRUE
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/bundles_tc/northstar_bundle
 	name = "Northstar Bundle"

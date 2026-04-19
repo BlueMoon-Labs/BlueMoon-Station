@@ -2,8 +2,15 @@
 /datum/antagonist/ghost_role/inteq
 	name = "InteQ Ship Crew"
 
+/datum/antagonist/ghost_role/inteq/is_banned(mob/M)
+	. = ..()
+	if(.)
+		return TRUE
+	return jobban_isbanned(M, ROLE_INTEQ)
+
 /datum/antagonist/ghost_role/ghost_cafe
 	name = "Ghost Cafe"
+	show_in_check_antagonists = FALSE
 	var/area/adittonal_allowed_area
 
 /datum/antagonist/ghost_role/tarkov

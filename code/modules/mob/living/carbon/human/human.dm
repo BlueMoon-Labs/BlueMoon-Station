@@ -1402,7 +1402,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 				to_chat(src, span_warning("\The [S] pulls \the [hand] from your grip!"))
 
 ///Sets up the jump component for the mob. Proc args can be altered so different mobs have different 'default' jump settings
-/mob/living/proc/set_jump_component(duration = 0.5 SECONDS, cooldown = 1 SECONDS, cost = 64, height = 16, sound = null, flags = JUMP_SHADOW, flags_pass = PASSTABLE)
+/mob/living/proc/set_jump_component(duration = 0.5 SECONDS, cooldown = 1 SECONDS, cost = 48, height = 16, sound = null, flags = JUMP_SHADOW, flags_pass = PASSTABLE)
 	if(HAS_TRAIT(src, TRAIT_FREERUNNING))
 		AddComponent(/datum/component/jump, _jump_duration = duration, _jump_cooldown = cooldown, _stamina_cost = 32, _jump_height = height, _jump_sound = sound, _jump_flags = flags, _jumper_allow_pass_flags = flags_pass)
 	else

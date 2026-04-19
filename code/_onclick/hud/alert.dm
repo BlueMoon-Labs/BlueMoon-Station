@@ -11,7 +11,7 @@
  Clicks are forwarded to master
  Override makes it so the alert is not replaced until cleared by a clear_alert with clear_override, and it's used for hallucinations.
  */
-/mob/proc/throw_alert(category, type, severity, atom/new_master, override = FALSE)
+/mob/proc/throw_alert(category, type, severity, atom/new_master, override = FALSE, duration_ds, no_anim = FALSE)
 
 	if(!category || QDELETED(src))
 		return
@@ -41,6 +41,8 @@
 		thealert.override_alerts = override
 		if(override)
 			thealert.timeout = null
+	if(isnum(duration_ds) && duration_ds > 0)
+		thealert.timeout = duration_ds
 	thealert.owner = src
 
 	if(new_master)
@@ -60,8 +62,11 @@
 	alerts[category] = thealert
 	if(client && hud_used)
 		hud_used.reorganize_alerts()
-	thealert.transform = matrix(32, 6, MATRIX_TRANSLATE)
-	animate(thealert, transform = matrix(), time = 2.5, easing = BACK_EASING)
+	if(no_anim)
+		thealert.transform = matrix()
+	else
+		thealert.transform = matrix(32, 6, MATRIX_TRANSLATE)
+		animate(thealert, transform = matrix(), time = 2.5, easing = BACK_EASING)
 
 	if(thealert.timeout)
 		if(thealert.timeout_id)
@@ -825,6 +830,7 @@ so as to remain in compliance with the most up-to-date laws."
 	icon_state = "template"
 	timeout = 30 SECONDS
 	clickable_glow = TRUE
+	click_master = FALSE
 	var/atom/target = null
 	var/action = NOTIFY_JUMP
 
@@ -851,6 +857,175 @@ so as to remain in compliance with the most up-to-date laws."
 				G.forceMove(T)
 		if(NOTIFY_ORBIT)
 			G.ManualFollow(target)
+		if(NOTIFY_POSSESS)
+			var/turf/go_turf = get_turf(target)
+			if(go_turf && isturf(go_turf))
+				G.forceMove(go_turf)
+			if(!QDELETED(target))
+				target.attack_ghost(G)
+
+/atom/movable/screen/alert/poll_alert
+	name = "Looking for candidates"
+	icon_state = "template"
+	timeout = 30 SECONDS
+	clickable_glow = TRUE
+	click_master = FALSE
+	var/show_time_left = FALSE
+	var/mutable_appearance/time_left_overlay
+	var/mutable_appearance/stacks_overlay
+	var/mutable_appearance/candidates_num_overlay
+	var/mutable_appearance/role_overlay
+	var/datum/candidate_poll/poll
+
+/atom/movable/screen/alert/poll_alert/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	register_context()
+
+/atom/movable/screen/alert/poll_alert/proc/set_role_overlay()
+	cut_overlay(role_overlay)
+	role_overlay = null
+	if(!poll?.show_role_on_hud)
+		return
+	var/role_or_only_question = poll?.role || "?"
+	role_overlay = new
+	role_overlay.screen_loc = screen_loc
+	role_overlay.maptext = MAPTEXT(" [capitalize(role_or_only_question)] ")
+	role_overlay.maptext_width = 128
+	role_overlay.transform = role_overlay.transform.Translate(-128, 0)
+	add_overlay(role_overlay)
+
+/atom/movable/screen/alert/poll_alert/Destroy()
+	STOP_PROCESSING(SSprocessing, src)
+	cut_overlay(role_overlay)
+	role_overlay = null
+	cut_overlay(time_left_overlay)
+	time_left_overlay = null
+	cut_overlay(stacks_overlay)
+	stacks_overlay = null
+	cut_overlay(candidates_num_overlay)
+	candidates_num_overlay = null
+	if(poll)
+		poll.alert_buttons -= src
+		poll = null
+	return ..()
+
+/atom/movable/screen/alert/poll_alert/add_context(atom/source, list/context, obj/item/held_item, mob/user)
+	. = ..()
+	if(!poll)
+		return CONTEXTUAL_SCREENTIP_SET
+	var/left_click_text
+	if(owner in poll.signed_up)
+		left_click_text = "Leave"
+	else
+		left_click_text = "Enter"
+	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "[left_click_text] poll")
+	if(poll.ignoring_category)
+		var/selected_never = FALSE
+		if(GLOB.poll_ignore[poll.ignoring_category] && (owner.ckey in GLOB.poll_ignore[poll.ignoring_category]))
+			selected_never = TRUE
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "[selected_never ? "Cancel " : ""]Never for this round")
+	if(poll.jump_to_me && isobserver(owner))
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Jump to")
+	return CONTEXTUAL_SCREENTIP_SET
+
+/atom/movable/screen/alert/poll_alert/process()
+	if(!show_time_left)
+		return PROCESS_KILL
+	var/timeleft = timeout - world.time
+	if(timeleft <= 0)
+		return PROCESS_KILL
+	cut_overlay(time_left_overlay)
+	time_left_overlay = new
+	time_left_overlay.maptext = MAPTEXT(" [CEILING(timeleft / (1 SECONDS), 1)] ")
+	time_left_overlay.transform = time_left_overlay.transform.Translate(10, -8)
+	add_overlay(time_left_overlay)
+
+/atom/movable/screen/alert/poll_alert/Click(location, control, params)
+	. = ..()
+	if(!. || isnull(poll))
+		return
+	var/list/modifiers = params2list(params)
+	if(LAZYACCESS(modifiers, ALT_CLICK) && poll.ignoring_category)
+		set_never_round()
+		return
+	if(LAZYACCESS(modifiers, CTRL_CLICK) && poll.jump_to_me)
+		jump_to_jump_target()
+		return
+	handle_sign_up()
+
+/atom/movable/screen/alert/poll_alert/proc/handle_sign_up()
+	if(!poll)
+		return
+	if(owner in poll.signed_up)
+		poll.remove_candidate(owner)
+	else if(!poll.ignoring_category || !(owner.ckey in GLOB.poll_ignore[poll.ignoring_category]))
+		poll.sign_up(owner)
+	update_signed_up_overlay()
+
+/atom/movable/screen/alert/poll_alert/proc/set_never_round()
+	if(!poll?.ignoring_category)
+		return
+	if(!(owner.ckey in GLOB.poll_ignore[poll.ignoring_category]))
+		poll.do_never_for_this_round(owner)
+		color = "red"
+		update_signed_up_overlay()
+		return
+	poll.undo_never_for_this_round(owner)
+	color = initial(color)
+	update_signed_up_overlay()
+
+/atom/movable/screen/alert/poll_alert/proc/jump_to_jump_target()
+	if(!poll?.jump_to_me || !isobserver(owner))
+		return
+	var/turf/target_turf = get_turf(poll.jump_to_me)
+	if(target_turf && isturf(target_turf))
+		owner.abstract_move(target_turf)
+
+/atom/movable/screen/alert/poll_alert/Topic(href, href_list)
+	if(href_list["never"])
+		set_never_round()
+		return
+	if(href_list["signup"])
+		handle_sign_up()
+	if(href_list["jump"])
+		jump_to_jump_target()
+
+/atom/movable/screen/alert/poll_alert/proc/update_signed_up_overlay()
+	remove_filter("clickglow")
+	remove_filter("poll_signed")
+	if(!poll)
+		return
+	if(owner in poll.signed_up)
+		add_filter("poll_signed", 3, outline_filter(color = COLOR_RED, size = 2))
+	else
+		add_filter("clickglow", 2, outline_filter(color = COLOR_GOLD, size = 1))
+
+/atom/movable/screen/alert/poll_alert/proc/update_candidates_number_overlay()
+	cut_overlay(candidates_num_overlay)
+	candidates_num_overlay = null
+	if(!poll || !length(poll.signed_up))
+		return
+	candidates_num_overlay = new
+	candidates_num_overlay.maptext = MAPTEXT(" [length(poll.signed_up)] ")
+	candidates_num_overlay.transform = candidates_num_overlay.transform.Translate(-4, 2)
+	add_overlay(candidates_num_overlay)
+
+/atom/movable/screen/alert/poll_alert/proc/update_stacks_overlay()
+	cut_overlay(stacks_overlay)
+	stacks_overlay = null
+	if(!poll)
+		return
+	var/stack_number = 1
+	for(var/datum/candidate_poll/other_poll as anything in SSpolling.currently_polling)
+		if(other_poll != poll && other_poll.poll_key == poll.poll_key && !other_poll.finished)
+			stack_number++
+	if(stack_number <= 1)
+		return
+	stacks_overlay = new
+	stacks_overlay.maptext = MAPTEXT(" [stack_number]x ")
+	stacks_overlay.transform = stacks_overlay.transform.Translate(3, 2)
+	stacks_overlay.layer = layer
+	add_overlay(stacks_overlay)
 
 //OBJECT-BASED
 

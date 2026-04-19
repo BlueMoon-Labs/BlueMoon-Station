@@ -85,6 +85,7 @@
 						FP.entered_dirs |= dir
 						FP.bloodiness = S.bloody_shoes[S.blood_state]
 						if(S.last_bloodtype)
+							LAZYINITLIST(FP.blood_DNA)
 							FP.blood_DNA[S.last_blood_DNA] = S.last_bloodtype
 							if(!FP.blood_DNA["color"])
 								FP.blood_DNA["color"] = S.last_blood_color

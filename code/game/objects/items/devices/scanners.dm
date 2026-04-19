@@ -1107,10 +1107,10 @@ GENETICS SCANNER
 	var/text = "<span class='notice'>Subject [C.name]'s DNA sequence has been saved to buffer.</span>"
 	if(LAZYLEN(buffer))
 		text += "<hr>"
+		var/list/lines = list()
 		for(var/A in buffer)
-			text += "<span class='notice'>[get_display_name(A)]</span>"
-			if(A != buffer[length(A)])
-				text += "\n"
+			lines += "<span class='notice'>[get_display_name(A)]</span>"
+		text += lines.Join("\n")
 	to_chat(user, examine_block(text))
 
 
