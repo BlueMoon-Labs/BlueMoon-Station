@@ -31,9 +31,10 @@
 		return
 	display_typing_indicator(isSay = TRUE)
 
+	// say() вызывает sanitize() сам, поэтому на вход отдаём сырой текст, чтобы не получить двойное экранирование (&amp;&amp;, &lt;, и т.д.)
 	var/message = ""
 	if(client?.prefs.tgui_input_verbs)
-		message = tgui_input_text(src, "", "Say (Indicator)", null, MAX_MESSAGE_LEN, encode = TRUE)
+		message = tgui_input_text(src, "", "Say (Indicator)", null, MAX_MESSAGE_LEN, encode = FALSE)
 	else
 		message = input(src, "", "Say (Indicator)") as text|null
 
@@ -53,9 +54,9 @@
 
 	var/message = ""
 	if(client?.prefs.tgui_input_verbs)
-		message = tgui_input_text(usr, "", "Say", null, MAX_MESSAGE_LEN, encode = TRUE)
+		message = tgui_input_text(usr, "", "Say", null, MAX_MESSAGE_LEN, encode = FALSE)
 	else
-		message = stripped_input(usr, "", "Say")
+		message = input(usr, "", "Say") as text|null
 
 	clear_typing_indicator()		// clear it immediately!
 	if(!length(message))
@@ -180,11 +181,12 @@
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
 
+	// whisper() уходит в say(), который санитизит сам — отдаём сырой текст
 	var/message = ""
 	if(client?.prefs.tgui_input_verbs)
-		message = tgui_input_text(usr, "", "Whisper", null, MAX_MESSAGE_LEN, encode = TRUE)
+		message = tgui_input_text(usr, "", "Whisper", null, MAX_MESSAGE_LEN, encode = FALSE)
 	else
-		message = stripped_input(usr, "", "Whisper")
+		message = input(usr, "", "Whisper") as text|null
 
 	if(!length(message))
 		return
