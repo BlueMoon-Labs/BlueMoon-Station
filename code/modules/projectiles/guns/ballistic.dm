@@ -98,7 +98,8 @@
 				playsound(src, load_sound, 70, 1)
 				if(!chambered)
 					chamber_round()
-					addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, lock_back_sound, 100, 1), 3)
+					if(lock_back_sound)
+						addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, lock_back_sound, 100, 1), 3)
 			else
 				playsound(src, load_empty_sound, 70, 1)
 			magazine.update_icon()

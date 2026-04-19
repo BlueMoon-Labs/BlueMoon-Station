@@ -10,6 +10,8 @@
 	var/list/fromitem = list() //what it needs
 
 /obj/item/modkit/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	if(!proximity_flag)
+		return
 	if(istype(target, product))
 		to_chat(user,"<span class='warning'>[target] is already modified!")
 		return
@@ -1357,7 +1359,7 @@
 
 /obj/item/modkit/m3predator
 	name = "M-3 Predator Kit"
-	desc = "A modkit for making an Laser Gun into a Laser Combat Rifle."
+	desc = "A modkit for making an Hybrid Taser a M-3 Predator."
 	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
 	icon_state = "kitsuitcase"
 	product = /obj/item/gun/energy/e_gun/advtaser/m3_predator
