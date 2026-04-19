@@ -153,10 +153,10 @@
 			return TRUE
 
 /datum/tgui_input_text/proc/set_entry(entry)
-	if(!isnull(entry))
-		var/converted_entry = encode ? html_encode(entry) : entry
-		//converted_entry = readd_quotes(converted_entry)
-		src.entry = trim(converted_entry, max_length)
+	if(isnull(entry))
+		return
+	var/converted_entry = encode ? html_encode_readable(entry) : entry
+	src.entry = trim(converted_entry, max_length)
 
 /**
  * Creates an asynchronous TGUI input text window with an associated callback.
