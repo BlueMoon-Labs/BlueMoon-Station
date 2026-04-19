@@ -1508,7 +1508,7 @@
 	path = /obj/item/storage/backpack/coffin/w2
 	ckeywhitelist = list("hateredsoul", "ggishka")
 
-/datum/gear/donator/bm/bishop_mitre
+/datum/gear/donator/bm/steal_book
 	name = "Book of stealing"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/book_of_stealing
