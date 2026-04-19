@@ -1377,7 +1377,7 @@
 
 /obj/item/modkit/m3predator
 	name = "M-3 Predator Kit"
-	desc = "A modkit for making a Hybrid Taser into an M-3 Predator
+	desc = "A modkit for making a Hybrid Taser into an M-3 Predator"
 	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
 	icon_state = "kitsuitcase"
 	product = /obj/item/gun/energy/e_gun/advtaser/m3_predator
