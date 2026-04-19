@@ -2083,6 +2083,11 @@
 	path = /obj/item/modkit/nebular_kit
 	ckeywhitelist = list("lapkee")
 
+/datum/gear/donator/bm/p226_syndicate
+	name = "P226 'Syndicate' Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/p226_syndicate
+	ckeywhitelist = list("vladtv05")
 
 /datum/gear/donator/bm/toy_plasma_scythe
 	name = "Toy Plasma Scythe"
