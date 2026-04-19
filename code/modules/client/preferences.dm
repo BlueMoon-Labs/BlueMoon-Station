@@ -1468,35 +1468,29 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<h2>[headshots_label]</h2>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot'><b>[set_headshot_1_label]</b></a><br>"
-					if(features["headshot_link"])
-						dat += "<img src='[features["headshot_link"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_link"])
 					dat += "<br><br>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot1'><b>[set_headshot_2_label]</b></a><br>"
-					if(features["headshot_link1"])
-						dat += "<img src='[features["headshot_link1"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_link1"])
 					dat += "<br><br>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot2'><b>[set_headshot_3_label]</b></a><br>"
-					if(features["headshot_link2"])
-						dat += "<img src='[features["headshot_link2"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_link2"])
 					//dat += "<br><br>"
 
 					dat += "<h2>[naked_headshots_label]</h2>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot_naked'><b>[set_naked_headshot_1_label]</b></a><br>"
-					if(features["headshot_naked_link"])
-						dat += "<img src='[features["headshot_naked_link"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_naked_link"])
 					dat += "<br><br>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot_naked1'><b>[set_naked_headshot_2_label]</b></a><br>"
-					if(features["headshot_naked_link1"])
-						dat += "<img src='[features["headshot_naked_link1"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_naked_link1"])
 					dat += "<br><br>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot_naked2'><b>[set_naked_headshot_3_label]</b></a><br>"
-					if(features["headshot_naked_link2"])
-						dat += "<img src='[features["headshot_naked_link2"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_naked_link2"])
 					dat += "<br><br>"
 					// BLUEMOON ADD END
 					dat += "</td></tr></table>"

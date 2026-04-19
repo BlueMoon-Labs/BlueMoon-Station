@@ -90,6 +90,14 @@
 #undef ACTION_HEADSHOT_LINK_NOOP
 #undef ACTION_HEADSHOT_LINK_REMOVE
 
+/proc/headshot_preview_html(link, width = 140, height = 140)
+	if(!link)
+		return ""
+	var/static/video_regex = regex("\\.(webm|mp4)$", "i")
+	if(findtext(link, video_regex))
+		return "<video src='[link]' autoplay loop muted playsinline style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'></video>"
+	return "<img src='[link]' style='border: 1px solid black' width='[width]px' height='[height]px'>"
+
 /datum/preferences/proc/mob_size_name_to_num(body_weight_name)
 	switch(body_weight_name)
 		if(NAME_WEIGHT_LIGHT)
