@@ -692,11 +692,6 @@
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/mantle/cowboy
 
-/datum/gear/donator/old_wrappings
-	name = "Old Wrappings"
-	slot = ITEM_SLOT_NECK
-	path = /obj/item/clothing/neck/mantle/cowboy
-
 /datum/gear/donator/book_alch
 	name = "Alchemist's Book"
 	slot = ITEM_SLOT_BACKPACK
