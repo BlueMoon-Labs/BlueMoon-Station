@@ -107,4 +107,4 @@ TETRIS_TIME_COOLDOWN 600
 
 ## Should production machinery be available in code red and above?
 ## Uncomment this to enable
-PROTOLOCK_DURING_CODERED
+#PROTOLOCK_DURING_CODERED
