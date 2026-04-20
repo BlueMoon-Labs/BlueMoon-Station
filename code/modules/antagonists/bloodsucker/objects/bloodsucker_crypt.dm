@@ -124,7 +124,9 @@
 		. += {"<span class='cult'>Убедитесь, что жертва закована, иначе она может просто убежать или оказать сопротивление, поскольку этот процесс не мгновенный.</span>"}
 		. += {"<span class='cult'>Чтобы обратить жертву в слугу, просто нажмите на саму стойку вассала. Острое оружие срабатывает быстрее, чем другие инструменты.</span>"}
 		if(B) // BLUEMOON ADD - иначе рантайм при экзейме гостом
-			. += {"<span class='cult'> Вы имеете силу только для [B.bloodsucker_level - B.count_vassals(user.mind)] вассал[B.bloodsucker_level - B.count_vassals(user.mind) % 10 == 1 && B.bloodsucker_level - B.count_vassals(user.mind) % 100 != 11 ? "" : (B.bloodsucker_level - B.count_vassals(user.mind) % 10 >= 2 && B.bloodsucker_level - B.count_vassals(user.mind) % 10 <= 4 && (B.bloodsucker_level - B.count_vassals(user.mind) % 100 < 10 || B.bloodsucker_level - B.count_vassals(user.mind) % 100 >= 20) ? "а" : "ов")]"</span>"}
+			var/vassals_left = B.bloodsucker_level - B.count_vassals(user.mind)
+			var/vassals_suffix = (vassals_left % 10 == 1 && vassals_left % 100 != 11) ? "" : ((vassals_left % 10 >= 2 && vassals_left % 10 <= 4 && (vassals_left % 100 < 10 || vassals_left % 100 >= 20)) ? "а" : "ов")
+			. += {"<span class='cult'> Вы имеете силу только для [vassals_left] вассал[vassals_suffix]"</span>"}
 /*	if(user.mind.has_antag_datum(ANTAG_DATUM_VASSAL)
 	. += {"<span class='cult'>This is the vassal rack, which allows your master to thrall crewmembers into his minions.\n
 	Aid your master in bringing their victims here and keeping them secure.\n

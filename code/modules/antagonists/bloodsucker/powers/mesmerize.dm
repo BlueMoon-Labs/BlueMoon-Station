@@ -132,8 +132,7 @@
 	spawn(power_time)
 	if(istype(target) && success)
 		if(istype(L) && target.stat == CONSCIOUS && (target in L.fov_view(10))) // They Woke Up! (Notice if within view)
-			to_chat(L, "<span class='warning'>[target] выш[target.ru_who() == "ел"? "" : "ла"] из транса.</span>")
-
+			to_chat(L, "<span class='warning'>[target] выш[target.ru_who() == "он"? "ел" : "ла"] из транса.</span>")
 
 /datum/action/cooldown/bloodsucker/targeted/mesmerize/ContinueActive(mob/living/user, mob/living/target)
 	return ..() && CheckCanUse() && CheckCanTarget(target)

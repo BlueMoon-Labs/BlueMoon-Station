@@ -231,7 +231,7 @@
 				break
 
 			if(amSilent)
-				to_chat(user, "<span class='warning'>Ваше питание было прервано... но [target.ru_who()] ничего не заметил[target.ru_who()=="он" ? "":"а"].<span>")
+				to_chat(user, "<span class='warning'>Ваше питание было прервано... но [target.ru_who()] ничего не заметил[target.ru_who()=="он" ? "":"а"].</span>")
 			else
 				to_chat(user, "<span class='warning'>Ваше питание было прервано!</span>")
 				user.visible_message("<span class='danger'>[user] вырывают из глотки [target]. [target.ru_ego(TRUE)] кровь разбрызгивается повсюду!</span>", \
@@ -308,7 +308,7 @@
 	// DONE!
 	//DeactivatePower(user,target)
 	if(amSilent)
-		to_chat(user, "<span class='notice'>Вы медленно отпускаете запястье [target]." + (target.stat == 0 ? " [target.ru_ego(TRUE)] на лице отсутствует выражение, как будто о вас уже забыли.</span>" : ""))
+		to_chat(user, "<span class='notice'>Вы медленно отпускаете запястье [target]." + (target.stat == CONSCIOUS ? " [target.ru_ego(TRUE)] на лице отсутствует выражение, как будто о вас уже забыли.</span>" : "</span>"))
 	else
 		user.visible_message("<span class='warning'>[user] разжимает зубы, отпуская шею [target].</span>", \
 							 "<span class='warning'>Вы втягиваете свои клыки и отпускаете [target] от своего укуса.</span>")

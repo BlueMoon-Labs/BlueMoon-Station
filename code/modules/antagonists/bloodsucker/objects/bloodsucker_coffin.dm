@@ -192,11 +192,11 @@
 	if (user == resident)
 		if (!broken)
 			locked = inLocked
-			to_chat(user, "<span class='notice'>Вы поворачиваете секретную защелку и  [locked?"":"раз"]блокируете себя внутри [src].</span>")
+			to_chat(user, "<span class='notice'>Вы поворачиваете секретную защелку и [locked?"":"раз"]блокируете себя внутри [src].</span>")
 		else
-			to_chat(resident, "<span class='notice'>Секретная защелка, чтобы заблокировать [src] изнутри сломалалсь. Вы возвращаете её на место...</span>")
+			to_chat(resident, "<span class='notice'>Секретная защелка, чтобы заблокировать [src] изнутри сломалась. Вы возвращаете её на место...</span>")
 			if (do_mob(resident, src, 50))//sleep(10)
 				if (broken) // Spam Safety
-					to_chat(resident, "<span class='notice'>Вы чините механизм и блоокируете его.</span>")
+					to_chat(resident, "<span class='notice'>Вы чините механизм и блокируете его.</span>")
 					broken = FALSE
 					locked = TRUE

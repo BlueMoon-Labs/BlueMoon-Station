@@ -85,7 +85,7 @@
 		return
 	// Drop & Embed Stake
 	user.visible_message("<span class='danger'>[user.name] втыкает [src] в грудь [target]!</span>", \
-			 "<span class='danger'Вы втыкаете [src] в грудь [target]!</span>")
+			 "<span class='danger'>Вы втыкаете [src] в грудь [target]!</span>")
 	playsound(get_turf(target), 'sound/effects/splat.ogg', 40, 1)
 	user.dropItemToGround(src, TRUE) //user.drop_item() // "drop item" doesn't seem to exist anymore. New proc is user.dropItemToGround() but it doesn't seem like it's needed now?
 	var/obj/item/bodypart/B = C.get_bodypart("chest")  // This was all taken from hitby() in human_defense.dm

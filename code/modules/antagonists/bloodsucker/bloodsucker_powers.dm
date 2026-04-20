@@ -101,7 +101,7 @@
 		return FALSE
 	if(istype(owner.get_item_by_slot(ITEM_SLOT_NECK), /obj/item/clothing/neck/garlic_necklace))
 		if(display_error)
-			to_chat(owner, "<span class='warning'Ожерелье на вашей шее мешает вашим способностям!</span>")
+			to_chat(owner, "<span class='warning'>Ожерелье на вашей шее мешает вашим способностям!</span>")
 		return FALSE
 	if(owner.reagents?.has_reagent(/datum/reagent/consumable/garlic))
 		if(display_error)
