@@ -176,7 +176,7 @@
 			return
 		bust_open()
 		user.visible_message("<span class='notice'>[user] резко открывает крышку [src] .</span>", \
-							  "<span class='notice'>Крышка [src] резко от.</span>")
+							  "<span class='notice'>Крышка [src] резко открывается.</span>")
 		return
 	..()
 
