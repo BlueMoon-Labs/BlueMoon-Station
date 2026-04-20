@@ -2356,3 +2356,10 @@
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/russian_balaclava
 	ckeywhitelist = list("dragoncora")
+
+/datum/gear/donator/bm/anti_armor
+	name = "Armor Softening Nanites Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/invis_belt
+	ckeywhitelist = list("angrylaska")
+	cost = 0
