@@ -174,7 +174,6 @@
 	if(istype(cl, /obj/item/clothing/under))
 		var/obj/item/clothing/under/u = cl
 		u.can_adjust = FALSE
-	cl.can_adjust = FALSE
 	cl.armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
 	cl.body_parts_covered = NONE
 	user.visible_message(span_warning("[user] modifies [cl], now it not have armor and not covering anything!"),span_warning("You modify the [cl], now it not have armor and not covering anything!"))
