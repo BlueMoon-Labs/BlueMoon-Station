@@ -51,6 +51,8 @@
 			continue
 		if(!H.client)
 			continue
+		if(iszombie_infectious(H))
+			continue
 		applicants += H
 		var/species = "[H.dna.species]"
 		if(H.dna && H.dna.custom_species)
