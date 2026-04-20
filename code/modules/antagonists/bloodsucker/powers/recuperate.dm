@@ -1,6 +1,6 @@
 /datum/action/cooldown/bloodsucker/vassal/recuperate
 	name = "Sanguine Recuperation"
-	desc = "Медленно залечивайте физический урон, пока способность активирована. Этот процесс утомителен и требует немного вашей крови."
+	desc = "Медленно залечивайте физический урон, пока способность активирована. Этот процесс утомителен и требует немного крови вашего хозяина."
 	button_icon_state = "power_recup"
 	amToggle = TRUE
 	bloodcost = 15
@@ -15,7 +15,7 @@
 	return TRUE
 
 /datum/action/cooldown/bloodsucker/vassal/recuperate/ActivatePower()
-	to_chat(owner, "<span class='notice'>Your muscles clench and your skin crawls as your master's immortal blood knits your wounds and gives you stamina.</span>")
+	to_chat(owner, "<span class='notice'>Твои мышцы сжимаются, а по коже бегут мурашки, когда бессмертная кровь твоего хозяина затягивает твои раны и придает тебе выносливости.</span>")
 	var/mob/living/carbon/C = owner
 	var/mob/living/carbon/human/H
 	if(ishuman(owner))
