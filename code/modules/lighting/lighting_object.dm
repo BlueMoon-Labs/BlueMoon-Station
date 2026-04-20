@@ -69,8 +69,11 @@
 /atom/movable/lighting_object/Destroy(force)
 	if (!force)
 		return QDEL_HINT_LETMELIVE
-	// Cancel any in-progress animation to release BYOND's internal reference that prevents GC
-	animate(src, flags = ANIMATION_END_NOW)
+	// Cancel any in-progress animation to release BYOND's internal reference that prevents GC.
+	// ANIMATION_END_NOW alone is a no-op — BYOND only runs the "end current" path when there is a
+	// real animate() call to queue. time=0 immediately completes the stub animation so the last
+	// internal ref BYOND holds on the atom is released.
+	animate(src, color = color, time = 0, flags = ANIMATION_END_NOW)
 	needs_update = FALSE
 	GLOB.lighting_update_objects -= src
 	GLOB.lighting_update_blends -= src
