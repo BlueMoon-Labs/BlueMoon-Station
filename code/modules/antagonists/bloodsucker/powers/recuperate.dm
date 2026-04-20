@@ -1,6 +1,6 @@
 /datum/action/cooldown/bloodsucker/vassal/recuperate
 	name = "Sanguine Recuperation"
-	desc = "Slowly heal brute damage while active. This process is exhausting, and requires some of your tainted blood."
+	desc = "Медленно залечивайте физический урон, пока способность активирована. Этот процесс утомителен и требует немного вашей крови."
 	button_icon_state = "power_recup"
 	amToggle = TRUE
 	bloodcost = 15
