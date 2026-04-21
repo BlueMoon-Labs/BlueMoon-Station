@@ -393,6 +393,8 @@
 	else
 		for(var/i in eye_lighting)
 			var/obj/effect/abstract/eye_lighting/L = i
+			if(!L)
+				continue
 			L.forceMove(src)
 		if(!QDELETED(on_mob))
 			on_mob.forceMove(src)
