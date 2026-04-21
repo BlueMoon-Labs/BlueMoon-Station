@@ -377,7 +377,10 @@ GLOBAL_LIST_EMPTY(readrgb_cache)
 	var/list/result = list(r, g, b)
 	if(usealpha)
 		result += alpha
-	GLOB.readrgb_cache[rgb] = result
+	var/list/cache = GLOB.readrgb_cache
+	cache[rgb] = result
+	if(length(cache) > 512)
+		cache.Cut(1, 129) // Evict oldest 25%
 	return result.Copy()
 
 /proc/ReadHSV(hsv)
