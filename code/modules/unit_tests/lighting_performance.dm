@@ -945,9 +945,11 @@
 	var/datum/qdel_item/item = SSgarbage.GetOrCreateItem(/atom/movable/lighting_object)
 	TEST_ASSERT_EQUAL(item.hard_deletes, 0, "FORCEOP ChangeTurf leaked [item.hard_deletes] hard delete(s)")
 
-/// Realistic production scenario: lighting_objects with ACTIVE light sources, after SSlighting fire() processed them.
-/// This exercises the path where the object has been animated via update() path (with shared_color_buffer)
-/// rather than directly via test animate(). Then qdel while light source still active.
+/// Realistic production scenario: lighting_objects driven through the full source/corner/object
+/// pipeline (light_emitter + drain_nightshift_lighting_work()), then the light source is turned
+/// off and drained again before the objects are qdel'd. Exercises the path where update() was
+/// called on them — including the shared_color_buffer assignment — rather than an isolated
+/// test-only animate() call. Verifies no hard_deletes after the full cycle.
 /datum/unit_test/lighting_object_with_light_source_hard_del
 	parent_type = /datum/unit_test/gc_rewrite_base
 
