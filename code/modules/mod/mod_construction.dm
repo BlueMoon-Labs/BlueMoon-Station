@@ -54,7 +54,10 @@
 	. = ..()
 	if(!tool.use_tool(src, user, 5 SECONDS, volume = 30))
 		return
-	new /obj/item/mod/construction/core(drop_location())
+	user.temporarilyRemoveItemFromInventory(src)
+	var/created_core = new /obj/item/mod/construction/core(loc)
+	if(loc == user)
+		user.put_in_hands(created_core)
 	qdel(src)
 
 /obj/item/mod/construction/armor

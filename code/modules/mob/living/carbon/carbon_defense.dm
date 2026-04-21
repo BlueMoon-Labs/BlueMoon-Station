@@ -88,26 +88,8 @@
 	I.do_stagger_action(src, user, totitemdamage)
 	if(I.force)
 		apply_damage(totitemdamage, I.damtype, affecting, wound_bonus = I.wound_bonus, bare_wound_bonus = I.bare_wound_bonus, sharpness = I.get_sharpness()) //CIT CHANGE - replaces I.force with totitemdamage
-		if(I.damtype == BRUTE && affecting.is_organic_limb(FALSE))
-			var/basebloodychance = affecting.brute_dam + totitemdamage
-			if(prob(basebloodychance))
-				I.add_mob_blood(src)
-				var/turf/location = get_turf(src)
-				add_splatter_floor(location)
-				if(totitemdamage >= 10 && get_dist(user, src) <= 1)	//people with TK won't get smeared with blood
-					user.add_mob_blood(src)
-
-				if(affecting.body_zone == BODY_ZONE_HEAD)
-					if(wear_mask && prob(basebloodychance))
-						wear_mask.add_mob_blood(src)
-						update_inv_wear_mask()
-					if(wear_neck && prob(basebloodychance))
-						wear_neck.add_mob_blood(src)
-						update_inv_neck()
-					if(head && prob(basebloodychance))
-						head.add_mob_blood(src)
-						update_inv_head()
-
+		if(I.damtype == BRUTE)
+			attack_effects(totitemdamage, impacting_zone, I, user)
 		return TRUE //successful attack
 
 /mob/living/carbon/attack_drone(mob/living/simple_animal/drone/user)
@@ -313,12 +295,7 @@
 			return
 		if(lying)
 			if(buckled)
-				// BLUEMOON ADD START
-				if(istype(buckled, /obj/structure/table/optable) || istype(buckled, /obj/machinery/stasis))
-					buckled.user_unbuckle_mob(src, M)
-				else
-				// BLUEMOON ADD END
-					to_chat(M, "<span class='warning'>Для этого вам для начала нужно отстегнуть <b>[src]</b>!")
+				to_chat(M, "<span class='warning'>Для этого вам для начала нужно отстегнуть <b>[src]</b>!")
 				return
 			// BLUEMON ADD START - проверка для сверхтяжёлых персонажей
 			if(src.mob_weight > MOB_WEIGHT_HEAVY)
@@ -733,7 +710,7 @@
 		return
 
 	var/extra_wound_details = ""
-	if(I.damtype == BRUTE && hit_bodypart.can_dismember())
+	if(I.damtype == BRUTE && istype(hit_bodypart, /obj/item/bodypart) && hit_bodypart.can_dismember())
 		var/mangled_state = hit_bodypart.get_mangled_state()
 		var/bio_state = get_biological_state()
 		if(mangled_state == BODYPART_MANGLED_BOTH)

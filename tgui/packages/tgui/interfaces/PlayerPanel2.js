@@ -70,7 +70,7 @@ export const PlayerPanel2 = (props, context) => {
   const PageComponent = PAGES[pageIndex].component();
 
   const { mob_name, mob_type, client_ckey, client_rank, playtimes_enabled,
-    playtime } = data;
+    playtime, has_live_client } = data;
 
   return (
     <Window
@@ -85,7 +85,7 @@ export const PlayerPanel2 = (props, context) => {
             <Flex.Item grow={1}>
               <Input width="100%" value={mob_name} onChange={(e, value) => act("set_name", { name: value })} />
             </Flex.Item>
-            {!!client_ckey && (
+            {!!client_ckey && !!client_rank && (
               <Flex.Item>
                 <Box inline ml=".75rem" mr=".5rem" color="label">Rank:</Box>
                 <Flex.Item inline>
@@ -133,12 +133,14 @@ export const PlayerPanel2 = (props, context) => {
                   minWidth="11rem" textAlign="center"
                   mx=".5rem"
                   icon="comment-dots"
+                  disabled={!has_live_client}
                   onClick={() => act("private_message")}
                   content="Private Message"
                 />
                 <Button
                   minWidth="11rem" textAlign="center"
                   icon="phone-alt"
+                  disabled={!has_live_client}
                   onClick={() => act("subtle_message")}
                   content="Subtle Message"
                 />
@@ -950,7 +952,7 @@ const PunishmentActions = (props, context) => {
   const { client_ckey, mob_type, is_frozen, is_slept, glob_mute_bits,
     client_muted, data_related_cid, data_related_ip, data_byond_version,
     data_player_join_date, data_account_join_date, active_role_ban_count,
-    current_time } = data;
+    current_time, has_live_client } = data;
   return (
     <Section>
       <Flex>
@@ -1012,7 +1014,7 @@ const PunishmentActions = (props, context) => {
             icon="ban"
             color="red"
             content="Kick"
-            disabled={!client_ckey}
+            disabled={!has_live_client}
             onClick={() => act("kick")}
           />
           <Button
@@ -1041,14 +1043,14 @@ const PunishmentActions = (props, context) => {
             icon="lock-open"
             color="green"
             content="Unmute All"
-            disabled={!client_ckey}
+            disabled={!has_live_client || !client_ckey}
             onClick={() => act("unmute_all")}
           />
           <Button
             icon="lock"
             color="red"
             content="Mute All"
-            disabled={!client_ckey}
+            disabled={!has_live_client || !client_ckey}
             onClick={() => act("mute_all")}
           />
         </Fragment>
@@ -1064,7 +1066,7 @@ const PunishmentActions = (props, context) => {
                 icon={isMuted ? 'check-square-o' : 'square-o'}
                 color={isMuted? "bad" : ""}
                 content={bit.name}
-                disabled={!client_ckey}
+                disabled={!has_live_client || !client_ckey}
                 onClick={() => act("mute", { "mute_flag": !isMuted? client_muted | bit.bitflag : client_muted & ~bit.bitflag })}
               />
             );

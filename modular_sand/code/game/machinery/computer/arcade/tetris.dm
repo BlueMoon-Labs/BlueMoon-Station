@@ -106,6 +106,8 @@
 		var/rank = 0
 		for(var/list/entry in entries)
 			rank++
+			if(rank > 10)
+				break
 			leaderboard += list(list("rank" = rank, "ckey" = entry["ckey"], "score" = entry["score"]))
 	data["leaderboard"] = leaderboard
 	data["is_admin"] = check_rights_for(user?.client, R_ADMIN)

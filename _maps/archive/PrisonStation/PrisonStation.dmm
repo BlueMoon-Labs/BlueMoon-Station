@@ -16336,7 +16336,7 @@
 /obj/item/pen,
 /obj/machinery/door/window/northright{
 	name = "Reception Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plating/rust,
@@ -22128,7 +22128,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
 	},
-/obj/machinery/computer/card/minor/qm,
+/obj/machinery/modular_computer/console/preset/id,
 /turf/open/floor/plasteel,
 /area/cargo/qm)
 "hWD" = (
@@ -48138,7 +48138,7 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "Reception Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plating/rust,
@@ -50562,7 +50562,7 @@
 	pixel_x = 26;
 	pixel_y = -4
 	},
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/carpet/royalblue,
@@ -52920,7 +52920,7 @@
 /obj/structure/table,
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plating/rust,
@@ -60076,7 +60076,7 @@
 /obj/machinery/door/window/northleft{
 	dir = 8;
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/machinery/light{
@@ -60533,7 +60533,7 @@
 /obj/machinery/door/window/northright{
 	dir = 8;
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/fire,
@@ -61073,7 +61073,7 @@
 /turf/open/floor/engine/air,
 /area/engineering/atmos)
 "vWe" = (
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/camera{
@@ -64750,7 +64750,7 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/powered)
 "xnC" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/carpet/red,

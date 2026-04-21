@@ -2,6 +2,17 @@
 	var/body_weight = NAME_WEIGHT_NORMAL
 	var/normalized_size = RESIZE_NORMAL
 	var/custom_laugh = "Default"
+	var/metadollars = 0
+	var/metadollar_minute_pool = 0
+	var/list/metadollar_pending_items = list()
+
+/datum/preferences/vv_edit_var(var_name, var_value, massedit)
+	if(var_name == NAMEOF(src, metadollars) || var_name == NAMEOF(src, metadollar_minute_pool) || var_name == NAMEOF(src, metadollar_pending_items))
+		if(usr)
+			to_chat(usr, span_warning("Метадоллары нельзя менять через VV. Используйте команду TGS <b>metadollars</b> (add / remove / set)."))
+		log_admin("Metadollars: VV edit of [var_name] blocked for prefs [path || "no path"] by [key_name(usr)].")
+		return FALSE
+	return ..()
 
 #define ACTION_HEADSHOT_LINK_NOOP 0
 #define ACTION_HEADSHOT_LINK_REMOVE -1

@@ -16,6 +16,7 @@
 	exp_type = EXP_TYPE_CREW
 	exp_type_department = EXP_TYPE_MEDICAL
 	considered_combat_role = TRUE
+	custom_spawn_text = "стремитесь поддерживать чистоту в отделе. Следите за наличием лекарств в холодильниках. Оповещайте о угрозе вируса и принимайте соответствующие решения. Вы - четвёртый в очереди на пост ВрИО капитана."
 	alt_titles = list(
 		"Interdyne Lead Specialist", //Триглав выше, для удобства
 		"Chief Heal Stud",
@@ -36,10 +37,10 @@
 
 	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_HEADS, ACCESS_MINERAL_STOREROOM,
 			ACCESS_CHEMISTRY, ACCESS_VIROLOGY, ACCESS_CMO, ACCESS_SURGERY, ACCESS_RC_ANNOUNCE,
-			ACCESS_KEYCARD_AUTH, ACCESS_SEC_DOORS, ACCESS_MAINT_TUNNELS)
+			ACCESS_KEYCARD_AUTH, ACCESS_SEC_DOORS, ACCESS_PSYCH, ACCESS_MAINT_TUNNELS, ACCESS_PRODUCTION_MEDICAL)
 	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_HEADS, ACCESS_MINERAL_STOREROOM,
 			ACCESS_CHEMISTRY, ACCESS_VIROLOGY, ACCESS_CMO, ACCESS_SURGERY, ACCESS_RC_ANNOUNCE,
-			ACCESS_KEYCARD_AUTH, ACCESS_SEC_DOORS, ACCESS_MAINT_TUNNELS)
+			ACCESS_KEYCARD_AUTH, ACCESS_SEC_DOORS, ACCESS_PSYCH, ACCESS_MAINT_TUNNELS, ACCESS_PRODUCTION_MEDICAL)
 	paycheck = PAYCHECK_COMMAND
 	paycheck_department = ACCOUNT_MED
 	bounty_types = CIV_JOB_CMO
@@ -83,7 +84,7 @@
 	suit = /obj/item/clothing/suit/toggle/labcoat/cmo
 	l_hand = /obj/item/storage/firstaid/regular
 	suit_store = /obj/item/flashlight/pen/paramedic
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command=1)
 	box = /obj/item/storage/box/survival/command
 	accessory = list(/obj/item/clothing/accessory/permit/special/chief_medic)
 

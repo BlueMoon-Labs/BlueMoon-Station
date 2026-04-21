@@ -78,7 +78,7 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 	var/atom/path //item-to-spawn path // BLUEMOON EDIT - превращено в атом чтобы адекватнее работать с иконками
 	var/cost = 1 //normally, each loadout costs a single point.
 	var/geargroupID //defines the ID that the gear inherits from the config
-	var/loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
+	var/loadout_flags = LOADOUT_CAN_NAME_DESC
 	var/list/loadout_initial_colors = list()
 	var/handle_post_equip = FALSE
 
@@ -134,6 +134,8 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
 //ckey only check
 /datum/gear/proc/donator_ckey_check(key)
-	if(ckeywhitelist && ckeywhitelist.Find(key))
-		return TRUE
-	return IS_CKEY_DONATOR_GROUP(key, donator_group_id)
+	. = TRUE
+	if(donator_group_id)
+		. = IS_CKEY_DONATOR_GROUP(key, donator_group_id)
+	if(LAZYLEN(ckeywhitelist))
+		. = . && !!ckeywhitelist.Find(key)

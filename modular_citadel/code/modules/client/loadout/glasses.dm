@@ -33,7 +33,7 @@
 /datum/gear/glasses/veil
 	name = "Veil"
 	path = /obj/item/clothing/glasses/veil
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF")
 
 /datum/gear/glasses/heat

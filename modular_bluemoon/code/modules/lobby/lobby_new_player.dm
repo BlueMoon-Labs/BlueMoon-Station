@@ -243,6 +243,13 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=character_directory'>БИБЛИОТЕКА ПЕРСОНАЖЕЙ</a>"}
 
 	parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=observe'>БЫТЬ НАБЛЮДАТЕЛЕМ</a>"}
+	parts += {"<div class='bm-metashop-slot'>"}
+	parts += {"<div class='bm-metashop-nullspace' aria-hidden='true'></div>"}
+	var/metashop_rainbow = (BM_METASHOP_RAINBOW_P >= 100) ? TRUE : prob(BM_METASHOP_RAINBOW_P)
+	var/metashop_ms = metashop_rainbow ? " bm-ms-rainbow" : ""
+	parts += {"<a class='bm-btn bm-metashop[metashop_ms]' href='?src=[R];bm_lobby_action=metashop'>МАГАЗИН</a>"}
+	parts += {"<div class='bm-metashop-nullspace' aria-hidden='true'></div>"}
+	parts += {"</div>"}
 
 	parts += "<div class='bm-divider'></div>"
 
@@ -339,6 +346,15 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 				client.prefs.save_preferences()
 				client << output(client.prefs.bm_lobby_show_admin_bg, "bm_lobby_browser:bm_update_admin_bg_indicator")
 				bm_push_background()
+			return
+
+		if("metashop")
+			_bm_play_click_sound()
+			if(!client?.prefs)
+				client << output("Нужна сохранённая учётная запись (не гость).", "bm_lobby_browser:bm_show_notice")
+				return
+			var/datum/metadollar_shop/shop = new /datum/metadollar_shop(client)
+			shop.ui_interact(src)
 			return
 
 		if("observe")

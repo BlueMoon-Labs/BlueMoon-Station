@@ -109,3 +109,6 @@
 /// R&D Machinery ///
 // Should production machinery be restricted for skeleton crews?
 /datum/config_entry/flag/protolock_during_lowpop
+
+// Should production machinery be available in code red and above?
+/datum/config_entry/flag/protolock_during_codered

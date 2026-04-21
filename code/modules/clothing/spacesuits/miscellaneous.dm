@@ -63,6 +63,42 @@ Contains:
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	mutantrace_variation = STYLE_DIGITIGRADE
 
+//Commander
+/obj/item/clothing/suit/space/swat/command
+	name = "Emergency Response Team commander Armor"
+	desc = "A set of armor worn by the commander of a Nanotrasen Emergency Response Team. Has blue highlights."
+	icon_state = "ertarmor_cmd"
+	item_state = "armor"
+	slowdown = 0
+
+//Security
+/obj/item/clothing/suit/space/swat/security
+	name = "Emergency Response Team security Armor"
+	desc = "A set of armor worn by security members of the Nanotrasen Emergency Response Team. Has red highlights."
+	icon_state = "ertarmor_sec"
+	slowdown = 0
+
+//Engineer
+/obj/item/clothing/suit/space/swat/engineer
+	name = "Emergency Response Team engineer Armor"
+	desc = "A set of armor worn by engineering members of the Nanotrasen Emergency Response Team. Has orange highlights."
+	icon_state = "ertarmor_eng"
+	slowdown = 0
+
+//Medical
+/obj/item/clothing/suit/space/swat/medical
+	name = "Emergency Response Team medical Armor"
+	desc = "A set of armor worn by medical members of the Nanotrasen Emergency Response Team. Has red and white highlights."
+	icon_state = "ertarmor_med"
+	slowdown = 0
+
+//Janitorial
+/obj/item/clothing/suit/space/swat/janitor
+	name = "Emergency Response Team janitor Armor"
+	desc = "A set of armor worn by janitorial members of the Nanotrasen Emergency Response Team. Has red and white highlights."
+	icon_state = "ertarmor_jan"
+	slowdown = 0
+
 /obj/item/clothing/head/helmet/space/beret
 	name = "officer's beret"
 	desc = "An armored beret commonly used by special operations officers. Uses advanced force field technology to protect the head from space."

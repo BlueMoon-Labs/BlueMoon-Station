@@ -164,7 +164,7 @@
 	cost = 8
 	purchasable_from = UPLINK_SYNDICATE
 
-/datum/uplink_item/dangerous/sword ///Bluemoon add
+/datum/uplink_item/dangerous/plasma_sword ///Bluemoon add
 	name = "Plasma Sword"
 	desc = "Смертоностное оружие как для врага, так и для владельца. Лезвие из раскалённой плазмы с лёгкостью\
 			прорезает броню и плоть, а достаточно ловкие оперативники могут сжечь им пулю на лету."

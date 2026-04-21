@@ -427,7 +427,7 @@
 	var/obj/machinery/piratepad/pad = pad_ref?.resolve()
 	if(!pad)
 		status_report = "No pad detected. Build or link a pad."
-		pad.audible_message(span_notice("[pad] beeps."))
+		audible_message(span_notice("[src] beeps."))
 		return
 	if(pad?.panel_open)
 		status_report = "Please screwdrive pad closed to send. "

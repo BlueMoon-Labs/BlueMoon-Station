@@ -108,13 +108,13 @@
 	src.frequency = frequency
 	src.language = language
 	virt = speaker
-	var/datum/language/lang_instance = GLOB.language_datum_instances[language]
+	var/datum/language/lang_instance = language ? GLOB.language_datum_instances[language] : null
 	data = list(
-		"name" = speaker.name,
-		"job" = speaker.job,
+		"name" = speaker?.name,
+		"job" = speaker?.job,
 		"message" = message,
 		"compression" = rand(35, 65),
-		"language" = lang_instance.name,
+		"language" = lang_instance?.name,
 		"spans" = spans
 	)
 	var/turf/T = get_turf(source)

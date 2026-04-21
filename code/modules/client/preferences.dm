@@ -5463,7 +5463,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(index && marking_type && features[marking_type])
 						// because linters are just absolutely awful:
 						var/list/L = features[marking_type]
-						L.Cut(index, index + 1)
+						if(index <= length(L))
+							L.Cut(index, index + 1)
 
 				if("marking_add")
 					// add a marking

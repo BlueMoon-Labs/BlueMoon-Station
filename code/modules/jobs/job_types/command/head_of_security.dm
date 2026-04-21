@@ -16,6 +16,7 @@
 	exp_type = EXP_TYPE_CREW
 	considered_combat_role = TRUE
 	exp_type_department = EXP_TYPE_SECURITY
+	custom_spawn_text = "пресекайте любые попытки злоупотребления положением среди подчинённых. Не забывайте о необходимости составления ордеров для приведения приказов в исполнение. Вы - седьмой и последний в очереди на пост ВрИО капитана."
 	alt_titles = list(
 		"Field Commander", //Синди выше, для удобства
 		"AC Special Lieutenant",
@@ -47,11 +48,11 @@
 	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_ARMORY, ACCESS_COURT, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP,
 						ACCESS_FORENSICS_LOCKERS, ACCESS_MORGUE, ACCESS_MAINT_TUNNELS, ACCESS_ALL_PERSONAL_LOCKERS,
 						ACCESS_RESEARCH, ACCESS_ENGINE, ACCESS_MINING, ACCESS_MEDICAL, ACCESS_CONSTRUCTION, ACCESS_MAILSORTING,
-						ACCESS_HEADS, ACCESS_HOS, ACCESS_RC_ANNOUNCE, ACCESS_KEYCARD_AUTH, ACCESS_GATEWAY, ACCESS_MAINT_TUNNELS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC)
+						ACCESS_HEADS, ACCESS_HOS, ACCESS_RC_ANNOUNCE, ACCESS_KEYCARD_AUTH, ACCESS_GATEWAY, ACCESS_MAINT_TUNNELS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC, ACCESS_PRODUCTION_SECURITY)
 	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_ARMORY, ACCESS_COURT, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP,
 						ACCESS_FORENSICS_LOCKERS, ACCESS_MORGUE, ACCESS_MAINT_TUNNELS, ACCESS_ALL_PERSONAL_LOCKERS,
 						ACCESS_RESEARCH, ACCESS_ENGINE, ACCESS_MINING, ACCESS_MEDICAL, ACCESS_CONSTRUCTION, ACCESS_MAILSORTING,
-						ACCESS_HEADS, ACCESS_HOS, ACCESS_RC_ANNOUNCE, ACCESS_KEYCARD_AUTH, ACCESS_GATEWAY, ACCESS_MAINT_TUNNELS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC)
+						ACCESS_HEADS, ACCESS_HOS, ACCESS_RC_ANNOUNCE, ACCESS_KEYCARD_AUTH, ACCESS_GATEWAY, ACCESS_MAINT_TUNNELS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC, ACCESS_PRODUCTION_SECURITY)
 	paycheck = PAYCHECK_COMMAND
 	paycheck_department = ACCOUNT_SEC
 	bounty_types = CIV_JOB_SEC
@@ -81,7 +82,7 @@
 	//suit_store = /obj/item/gun/energy/e_gun
 	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	l_pocket = /obj/item/storage/bag/security
-	backpack_contents = list(/obj/item/storage/box/sec_kit, /obj/item/choice_beacon/hos_new_weapon = 1, /obj/item/modular_computer/tablet/preset/advanced)
+	backpack_contents = list(/obj/item/storage/box/sec_kit, /obj/item/choice_beacon/hos_new_weapon = 1, /obj/item/modular_computer/tablet/preset/advanced/command)
 	box = /obj/item/storage/box/survival/command
 	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_sec, /obj/item/clothing/accessory/badge)
 

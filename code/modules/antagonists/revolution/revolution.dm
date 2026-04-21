@@ -341,6 +341,22 @@
 		if(M.has_antag_datum(/datum/antagonist/rev/head))
 			. += M
 
+/// Живой революционер стоит на эвакуационном шаттле — ЦК задерживает отлёт только в этом случае.
+/datum/team/revolution/proc/living_revolutionary_on_emergency_shuttle()
+	var/obj/docking_port/mobile/emergency/evac = SSshuttle.emergency
+	if(!evac?.shuttle_areas)
+		return FALSE
+	for(var/datum/mind/M in members)
+		if(!M?.current)
+			continue
+		if(!M.has_antag_datum(/datum/antagonist/rev))
+			continue
+		if(!isliving(M.current) || M.current.stat == DEAD)
+			continue
+		if(evac.shuttle_areas[get_area(M.current)])
+			return TRUE
+	return FALSE
+
 /datum/team/revolution/proc/update_heads()
 	if(SSticker.HasRoundStarted())
 		var/list/datum/mind/head_revolutionaries = head_revolutionaries()

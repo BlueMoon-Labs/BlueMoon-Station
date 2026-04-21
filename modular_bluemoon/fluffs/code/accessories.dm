@@ -342,6 +342,16 @@
 	icon_state = "hahun_cape"
 	item_state = "hahun_cape"
 
+/obj/item/clothing/neck/tie/eclipse_cape
+	name = "Eclipse cape"
+	desc = "Дорогой с виду плащ с меховым воротником. На Внутренней стороне можно заметить бирку с золотыми нитями: 'В Награду за борьбу с бандами Габегаторов и налетчиков'."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/accessories_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/accessories_right.dmi'
+	icon_state = "Eclipse"
+	item_state = "hahun_cape"
+
 /obj/item/clothing/gloves/color/latex/nitrile/hahun_eidolon
 	name = "Eidolon's gloves"
 	desc = "Medical gloves with Eidolon Corporation markings, have a built-in computer with information, that tied with medical scan and huds. Have distinctive red-green coloring."

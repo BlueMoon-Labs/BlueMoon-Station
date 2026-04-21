@@ -10,7 +10,7 @@
 /obj/item/summon_chalk/afterattack(atom/target, mob/user as mob, proximity)
 	if(!proximity || !istype(target, /turf/open/floor))
 		return
-	if(GLOB.master_mode != "Extended")
+	if(!(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)))
 		to_chat(user, "<span class='warning'>Unfortunately, magic does not work.</span>") //*boowomp
 		return
 
@@ -50,6 +50,8 @@
 		if(!HAS_TRAIT(H, TRAIT_LEWD_SUMMON) || HAS_TRAIT(H, TRAIT_LEWD_SUMMONED))
 			continue
 		if(!H.client)
+			continue
+		if(iszombie_infectious(H))
 			continue
 		applicants += H
 		var/species = "[H.dna.species]"

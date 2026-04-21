@@ -91,7 +91,7 @@
 		if(T) //make sure we're not in null or something
 			T.visible_message("<span class='warning'>[src] [pick("cracks in two and fades away", "snaps in two and dematerializes")]!</span>")
 			new /obj/effect/temp_visual/ratvar/spearbreak(T)
-		action.weapon_reset(RATVARIAN_WEAPON_COOLDOWN)
+		action?.weapon_reset(RATVARIAN_WEAPON_COOLDOWN)
 
 //A very short, very effective parry that counts on you predicting when the enemy will attack.
 /datum/block_parry_data/ratvarian_spear

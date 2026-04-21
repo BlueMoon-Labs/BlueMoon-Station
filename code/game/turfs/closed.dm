@@ -142,6 +142,8 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	name = "window"
 	icon_state = "fake_window"
 	opacity = 0
+	/// Lets lasers with PASSGLASS pass like normal windows; still blocks mobs (they do not use PASSGLASS for movement).
+	pass_flags_self = PASSCLOSEDTURF | PASSGLASS
 	smooth = SMOOTH_TRUE
 	icon = 'icons/obj/smooth_structures/reinforced_window.dmi'
 

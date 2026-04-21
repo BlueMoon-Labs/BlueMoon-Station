@@ -237,8 +237,8 @@
 	name = "ERT Armor Crate | MedSec"
 	desc = "Содержит два полных комплекта прочных костюмов, разработанных совместными усилиями Дочерних Компаний Синдиката и Nanotrasen. Каждый комплект содержит костюм, шлем, маску, боевой пояс, боевой нож и боевые перчатки. Для открытия требуется доступ к оружейной."
 	cost = 6000
-	contains = list(/obj/item/clothing/suit/armor/hos/security,
-					/obj/item/clothing/suit/armor/hos/medical,
+	contains = list(/obj/item/clothing/suit/space/swat/security,
+					/obj/item/clothing/suit/space/swat/medical,
 					/obj/item/clothing/head/helmet/swat/security,
 					/obj/item/clothing/head/helmet/swat/medical,
 					/obj/item/clothing/mask/gas/sechailer/swat,
@@ -255,8 +255,8 @@
 	name = "ERT Armor Crate | JanEng"
 	desc = "Содержит два полных комплекта прочных костюмов, разработанных совместными усилиями Дочерних Компаний Синдиката и Nanotrasen. Каждый комплект содержит костюм, шлем, маску, боевой пояс, боевой нож и боевые перчатки. Для открытия требуется доступ к оружейной."
 	cost = 6000
-	contains = list(/obj/item/clothing/suit/armor/hos/engineer,
-					/obj/item/clothing/suit/armor/hos/janitor,
+	contains = list(/obj/item/clothing/suit/space/swat/engineer,
+					/obj/item/clothing/suit/space/swat/janitor,
 					/obj/item/clothing/head/helmet/swat/engineer,
 					/obj/item/clothing/head/helmet/swat/janitor,
 					/obj/item/clothing/mask/gas/sechailer/swat,
@@ -273,8 +273,8 @@
 	name = "ERT Armor Crate | Command"
 	desc = "Содержит два полных комплекта прочных костюмов, разработанных совместными усилиями Дочерних Компаний Синдиката и Nanotrasen. Каждый комплект содержит костюм, шлем, маску, боевой пояс, боевой нож и боевые перчатки. Для открытия требуется доступ к оружейной."
 	cost = 6000
-	contains = list(/obj/item/clothing/suit/armor/hos/command,
-					/obj/item/clothing/suit/armor/hos/command,
+	contains = list(/obj/item/clothing/suit/space/swat/command,
+					/obj/item/clothing/suit/space/swat/command,
 					/obj/item/clothing/head/helmet/swat/command,
 					/obj/item/clothing/head/helmet/swat/command,
 					/obj/item/clothing/mask/gas/sechailer/swat,

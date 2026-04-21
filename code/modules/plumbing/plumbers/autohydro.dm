@@ -27,7 +27,7 @@
 		myseed.harvest_userless()
 		harvest = 0
 		lastproduce = age
-		if(!myseed.get_gene(/datum/plant_gene/trait/repeated_harvest))
+		if(myseed && !myseed.get_gene(/datum/plant_gene/trait/repeated_harvest))
 			qdel(myseed)
 			myseed = null
 			dead = 0

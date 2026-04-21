@@ -1602,6 +1602,30 @@
 	new /obj/item/reagent_containers/food/snacks/cracker(src)
 	new /obj/item/tank/internals/emergency_oxygen/engi(src)
 
+/obj/item/storage/box/mre/random_safe
+	name = "\improper Nanotrasen MRE Ration Kit"
+	desc = "Упаковка с едой в блюспейс-кармане. При выдаче подбирается случайное меню из линейки NT (1–4)."
+	icon_state = "mre"
+	illustration = null
+	can_expire = FALSE
+
+/// Не заменяем себя через qdel — иначе лодаут/спавн через `new path` без loc даёт QDELETED и предмет пропадает.
+/obj/item/storage/box/mre/random_safe/PopulateContents()
+	var/static/list/ration_types = list(
+		/obj/item/storage/box/mre/menu1/safe,
+		/obj/item/storage/box/mre/menu2/safe,
+		/obj/item/storage/box/mre/menu3,
+		/obj/item/storage/box/mre/menu4/safe,
+	)
+	var/picked = pick(ration_types)
+	var/obj/item/storage/box/mre/phantom = new picked(null)
+	name = phantom.name
+	desc = phantom.desc
+	icon_state = phantom.icon_state
+	for(var/obj/item/I in phantom.contents)
+		I.forceMove(src)
+	qdel(phantom)
+
 //Where do I put this?
 /obj/item/secbat
 	name = "Secbat box"
@@ -1679,7 +1703,7 @@
 	var/static/list/items_inside = list(
 		/obj/item/flashlight/emp/debug=1,\
 		/obj/item/pda=1,\
-		/obj/item/modular_computer/tablet/preset/advanced=1,\
+		/obj/item/modular_computer/tablet/preset/advanced/command=1,\
 		/obj/item/geiger_counter=1,\
 		/obj/item/construction/rcd/combat/admin=1,\
 		/obj/item/pipe_dispenser/bluespace =1,\

@@ -139,6 +139,9 @@
 	if(!is_robot)
 		H.pain_emote(PAIN_FULL, realagony = TRUE)
 
+	// Позволим игроку умереть и полетать в гостах
+	INVOKE_ASYNC(src, PROC_REF(death_call), H)
+
 	// Создаем скелета
 	var/mob/living/simple_animal/hostile/skeleton/alive_bones/skelet = new(T)
 	skelet.name += " of [H.real_name]"
@@ -148,6 +151,16 @@
 		skelet.name = "metal " + skelet.name
 
 	return ..()
+
+/obj/item/melee/touch_attack/alive_bones/proc/death_call(mob/living/carbon/human/H)
+	if(QDELETED(H) || !H.client || H.stat == DEAD)
+		return
+	if(tgui_alert(H, "Из вас вырвали скелет, оставили без рук и ног. Некромантия искушает вас уйти за грань. Желаете поддаться ей?", "Жить или умереть?", list("Жить", "Умереть"), 15 SECONDS) == "Умереть")
+		if(QDELETED(H))
+			return
+		// Убиваем носителя, но добавляем презервагид от гниения (Некромантия, все дела)
+		H.reagents.add_reagent(/datum/reagent/preservahyde, 5)
+		H.death(FALSE)
 
 /obj/item/melee/touch_attack/fleshtostone
 	name = "\improper petrifying touch"

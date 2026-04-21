@@ -51,14 +51,16 @@
 	. = ..()
 */
 
+/obj/item/clothing/neck/cloak/binary/alt
+	icon_state = "binarycloak_alt"
+	item_state = "trayson-meson"
+
 // Standard Cloaks
 /obj/item/clothing/neck/cloak/teshari
 	name = "black cloak"
 	desc = "It drapes over a Teshari's shoulders and closes at the neck with pockets convienently placed inside."
 	icon = 'modular_splurt/icons/mob/clothing/species/teshari/tesh_items.dmi'
 	icon_state = "tesh_cloak_bn"
-
-
 
 /obj/item/clothing/neck/cloak/teshari/standard/black_red
 	name = "black and red cloak"

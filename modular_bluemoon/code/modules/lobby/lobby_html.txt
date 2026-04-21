@@ -251,6 +251,26 @@ html, body {
 .bm-btn:hover::before { content:'\25BA'; opacity:1; }
 .bm-btn:active { color:#ff8; transform:translateX(2px); }
 
+/* Metashop: радуга — BM_METASHOP_RAINBOW_P в __lobby_defines.dm и bm_lobby.js (100 = всегда) */
+.bm-metashop { font-weight: 700; }
+@keyframes bm-ms-rainbow {
+  0% { filter: hue-rotate(0deg); color: #8cf; }
+  100% { filter: hue-rotate(360deg); color: #fc8; }
+}
+.bm-ms-rainbow { animation: bm-ms-rainbow 5s linear infinite; }
+.bm-metashop-slot {
+  display: flex; flex-direction: column; width: 100%;
+  margin: 0.55vmin 0; padding: 0;
+  border-top: 1px solid rgba(60,90,160,0.2);
+  border-bottom: 1px solid rgba(60,90,160,0.2);
+  background: rgba(0,6,22,0.48);
+}
+.bm-metashop-nullspace {
+  height: clamp(5px, 1vmin, 12px); min-height: 5px; width: 100%;
+  pointer-events: none; flex-shrink: 0; display: block;
+  font-size: 0; line-height: 0; overflow: hidden;
+}
+
 /* ===== КНОПКИ — СТИЛЬ BLUEMOON (неон) ===== */
 body.style-bluemoon #bm-sidebar {
   background: linear-gradient(
