@@ -17,7 +17,7 @@
 #define ACTION_HEADSHOT_LINK_NOOP 0
 #define ACTION_HEADSHOT_LINK_REMOVE -1
 
-#define HEADSHOT_LINK_MAX_LENGTH 100
+#define HEADSHOT_LINK_MAX_LENGTH 400
 
 
 /datum/preferences/process_link(mob/user, list/href_list)
@@ -66,7 +66,7 @@
 	if(!usr_input)
 		return ACTION_HEADSHOT_LINK_REMOVE
 
-	var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)$", "i")
+	var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)(\[?#].*)?$", "i")
 
 	if (length(usr_input) > HEADSHOT_LINK_MAX_LENGTH)
 		to_chat(user, span_warning("The link is too long! Max length: [HEADSHOT_LINK_MAX_LENGTH] characters!"))
@@ -89,7 +89,7 @@
 /proc/headshot_preview_html(link, width = 140, height = 140)
 	if(!link)
 		return ""
-	var/static/video_regex = regex("\\.(webm|mp4)$", "i")
+	var/static/video_regex = regex("\\.(webm|mp4)(\[?#]|$)", "i")
 	if(findtext(link, video_regex))
 		return "<video src='[link]' autoplay loop muted playsinline style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'></video>"
 	return "<img src='[link]' style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'>"
