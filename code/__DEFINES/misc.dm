@@ -626,6 +626,8 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define NOTIFY_JUMP "jump"
 #define NOTIFY_ATTACK "attack"
 #define NOTIFY_ORBIT "orbit"
+/// Ghost alert: jump to target turf then try attack_ghost (possess / interact)
+#define NOTIFY_POSSESS "possess"
 
 GLOBAL_LIST_INIT(month_names, list("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
 GLOBAL_LIST_INIT(day_names, list("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))

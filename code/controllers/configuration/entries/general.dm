@@ -428,8 +428,9 @@
 /datum/config_entry/flag/popup_admin_pm
 
 /**
- * Tgui ui_act payloads larger than 2kb are split into chunks a maximum of 1kb in size.
- * This flag represents the maximum chunk count the server is willing to receive.
+ * Tgui ui_act payloads larger than 2kb are split into chunks (~512 url-encoded bytes each).
+ * This flag is the maximum chunk count the server accepts per payload (e.g. multiline text
+ * with JSON pasted into TextInputModal). Default 64 was too low for large circuit saves.
  */
 /datum/config_entry/number/tgui_max_chunk_count
-	default = 64
+	default = 2048

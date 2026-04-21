@@ -1259,7 +1259,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 			if(!in_range(src, target)) //Proximity is probably old news by now, do a new check.
 				return //If they moved away, you can't eat them.
 			to_chat(R, "<span class='notice'>You finish licking off \the [target.name].</span>")
-			if(target?.reagents) // BlueMoon Feature: consuming licked fluids
+			if(target?.reagents && target.reagents.total_volume > 0)
 				target.reagents.reaction(R, INGEST, min(5/target.reagents.total_volume, 1))
 				target.reagents.trans_to(R, target.reagents.total_volume, log = TRUE)
 			qdel(target)

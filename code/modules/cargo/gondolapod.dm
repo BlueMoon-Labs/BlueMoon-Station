@@ -24,7 +24,7 @@
 	maxHealth = 200
 	health = 200
 	del_on_death = TRUE
-	playable_gondola = FALSE
+	playable_by_ghost = FALSE
 	var/opened = FALSE
 	var/obj/structure/closet/supplypod/centcompod/linked_pod
 

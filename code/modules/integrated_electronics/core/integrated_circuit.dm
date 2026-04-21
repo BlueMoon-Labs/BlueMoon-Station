@@ -27,6 +27,20 @@
 	var/demands_object_input = FALSE
 	var/can_input_object_when_closed = FALSE
 
+	/// TGUI (IntegratedCircuit): node position when shown in assembly / solo UI
+	var/ie_ui_rel_x = 0
+	var/ie_ui_rel_y = 0
+	/// TGUI: canvas pan when viewing a loose chip (no assembly)
+	var/ie_tgui_screen_x = 0
+	var/ie_tgui_screen_y = 0
+	var/datum/weakref/ie_gui_examined_circuit
+	var/ie_gui_examined_x = 0
+	var/ie_gui_examined_y = 0
+	/// TGUI: одиночный чип без сборки — подсветка импульса по связи
+	var/ie_tgui_solo_pulse_until = 0
+	var/ie_tgui_solo_pulse_out_ref = null
+	var/ie_tgui_solo_pulse_in_ref = null
+
 
 /*
 	Integrated circuits are essentially modular machines.  Each circuit has a specific function, and combining them inside Electronic Assemblies allows
@@ -130,130 +144,42 @@ a creative player the means to solve many problems.  Circuits are held inside an
 		displayed_name = input
 
 /obj/item/integrated_circuit/interact(mob/user)
+	if(user?.client?.prefs?.ie_classic_circuit_ui)
+		if(assembly)
+			assembly.ie_legacy_ui_interact(user, src)
+		else
+			ie_legacy_ui_interact_chip(user)
+		return
 	ui_interact(user)
 
-/obj/item/integrated_circuit/ui_interact(mob/user)
+/obj/item/integrated_circuit/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	if(!check_interactivity(user))
 		return
-
 	if(assembly)
 		assembly.ui_interact(user, src)
 		return
-
-	var/table_edge_width = "30%"
-	var/table_middle_width = "40%"
-
-	var/datum/browser/popup = new(user, "scannernew", name, 800, 630) // Set up the popup browser window
-	popup.add_stylesheet("scannernew", 'html/browser/assembly_ui.css')
-
-	var/HTML = "<html><head>[UTF8HEADER]<title>[src.displayed_name]</title></head><body> \
-		<div align='center'> \
-		<table border='1' style='undefined;table-layout: fixed; width: 80%'>"
-
-	if(assembly)
-		HTML += "<a href='?src=[REF(src)];return=1'>Return to Assembly</a><br>"
-
-	HTML += "<a href='?src=[REF(src)]'>Refresh</a>  |  \
-		<a href='?src=[REF(src)];rename=1'>Rename</a>  |  \
-		<a href='?src=[REF(src)];scan=1'>Copy Ref</a>"
-
-	if(assembly && removable)
-		HTML += "  |  <a href='?src=[REF(assembly)];component=[REF(src)];remove=1'>Remove</a>"
-
-	HTML += "<br><colgroup> \
-		<col style='width: [table_edge_width]'> \
-		<col style='width: [table_middle_width]'> \
-		<col style='width: [table_edge_width]'> \
-		</colgroup>"
-
-	var/column_width = 3
-	var/row_height = max(inputs.len, outputs.len, 1)
-
-	for(var/i = 1 to row_height)
-		HTML += "<tr>"
-		for(var/j = 1 to column_width)
-			var/datum/integrated_io/io = null
-			var/words
-			var/height = 1
-			switch(j)
-				if(1)
-					io = get_pin_ref(IC_INPUT, i)
-					if(io)
-						words += "<b><a href='?src=[REF(src)];act=wire;pin=[REF(io)]'>[io.display_pin_type()] [io.name]</a> \
-							<a href='?src=[REF(src)];act=data;pin=[REF(io)]'>[io.display_data(io.data)]</a></b><br>"
-						if(io.linked.len)
-							words += "<ul>"
-							for(var/k in io.linked)
-								var/datum/integrated_io/linked = k
-								words += "<li><a href='?src=[REF(src)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-									@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-							words += "</ul>"
-
-						if(outputs.len > inputs.len)
-							height = 1
-				if(2)
-					if(i == 1)
-						words += "[displayed_name]<br>[name != displayed_name ? "([name])":""]<hr>[desc]"
-						height = row_height
-					else
-						continue
-				if(3)
-					io = get_pin_ref(IC_OUTPUT, i)
-					if(io)
-						words += "<b><a href='?src=[REF(src)];act=wire;pin=[REF(io)]'>[io.display_pin_type()] [io.name]</a> \
-							<a href='?src=[REF(src)];act=data;pin=[REF(io)]'>[io.display_data(io.data)]</a></b><br>"
-						if(io.linked.len)
-							words += "<ul>"
-							for(var/k in io.linked)
-								var/datum/integrated_io/linked = k
-								words += "<li><a href='?src=[REF(src)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-									@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-							words += "</ul>"
-
-						if(inputs.len > outputs.len)
-							height = 1
-			HTML += "<td align='center' rowspan='[height]'>[words]</td>"
-		HTML += "</tr>"
-
-	for(var/activator in activators)
-		var/datum/integrated_io/io = activator
-		var/words
-
-		words += "<b><a href='?src=[REF(src)];act=wire;pin=[REF(io)]'>[io]</a> \
-			<a href='?src=[REF(src)];act=data;pin=[REF(io)]'>[io.data?"\<PULSE OUT\>":"\<PULSE IN\>"]</a></b><br>"
-
-		if(io.linked.len)
-			words += "<ul>"
-			for(var/k in io.linked)
-				var/datum/integrated_io/linked = k
-				words += "<li><a href='?src=[REF(src)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-					@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-			words += "<ul>"
-
-		HTML += "<tr><td colspan='3' align='center'>[words]</td></tr>"
-
-	HTML += "</table></div> \
-		<br>Complexity: [complexity] \
-		<br>Cooldown per use: [cooldown_per_use/10] sec"
-
-	if(ext_cooldown)
-		HTML += "<br>External manipulation cooldown: [ext_cooldown/10] sec"
-	if(power_draw_idle)
-		HTML += "<br>Power Draw: [power_draw_idle] W (Idle)"
-	if(power_draw_per_use)
-		HTML += "<br>Power Draw: [power_draw_per_use] W (Active)" // Borgcode says that powercells' checked_use() takes joules as input.
-
-	HTML += "<br>[extended_desc]</body></html>"
-
-	popup.set_content(HTML)
-	popup.open()
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "IntegratedCircuit", "[displayed_name || name]")
+		ui.open()
+	ui.set_autoupdate(TRUE)
 
 /obj/item/integrated_circuit/Topic(href, href_list)
 	if(!check_interactivity(usr))
 		return
 	if(..())
 		return TRUE
+
+	if(href_list["ie_ui_mode"] == "tgui")
+		if(usr.client?.prefs)
+			usr.client.prefs.ie_classic_circuit_ui = FALSE
+		if(assembly)
+			SStgui.close_uis(assembly)
+		else
+			SStgui.close_uis(src)
+		ui_interact(usr)
+		return
 
 	var/update = TRUE
 	var/update_to_assembly = FALSE

@@ -13,12 +13,15 @@
 	var/code
 	var/mission = "защитите станцию любой ценой и докажите свою состоятельность!"
 	var/teamsize = 5
+	var/maxteamsize = 5
 	var/polldesc
 	var/ertphrase = 'modular_bluemoon/sound/ert/ert_yes.ogg'
 
 /datum/ert/New()
 	if (!polldesc)
 		polldesc = "a Code [code] Nanotrasen Emergency Response Team"
+	if(maxteamsize < teamsize)
+		maxteamsize = teamsize
 
 /datum/ert/janitor
 	opendoors = FALSE
@@ -87,6 +90,7 @@
 /datum/ert/centcom_official
 	code = "Official"
 	teamsize = 3
+	maxteamsize = 3
 	opendoors = FALSE
 	leader_role = /datum/antagonist/official
 	roles = list(/datum/antagonist/ert/security, /datum/antagonist/ert/medic)

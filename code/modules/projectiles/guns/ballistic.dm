@@ -11,6 +11,14 @@
 	var/casing_ejector = TRUE //whether the gun ejects the chambered casing
 	var/magazine_wording = "magazine"
 	var/sawn_item_state = "gun"
+	/// Можно ли сменить магазин, пока внутри есть другой
+	var/tactical_reload = FALSE
+	var/load_sound = SFX_GUN_INSERT_FULL_MAGAZINE
+	var/load_empty_sound = SFX_GUN_INSERT_EMPTY_MAGAZINE
+	var/unlock_sound = SFX_GUN_SLIDE_LOCK
+	var/eject_sound = 'sound/weapons/gun_magazine_remove_full.ogg'
+	var/eject_empty_sound = SFX_GUN_REMOVE_EMPTY_MAGAZINE
+	var/lock_back_sound ='sound/weapons/gun_chamber_round.ogg'
 
 /obj/item/gun/ballistic/Initialize(mapload)
 	. = ..()
@@ -54,27 +62,8 @@
 
 /obj/item/gun/ballistic/attackby(obj/item/A, mob/user, params)
 	..()
-	if (istype(A, /obj/item/ammo_box/magazine))
-		var/obj/item/ammo_box/magazine/AM = A
-		if (!magazine && istype(AM, mag_type))
-			if(user.transferItemToLoc(AM, src))
-				magazine = AM
-				to_chat(user, "<span class='notice'>You load a new [magazine_wording] into \the [src].</span>")
-				if(magazine.ammo_count())
-					playsound(src, "gun_insert_full_magazine", 70, 1)
-					if(!chambered)
-						chamber_round()
-						addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'sound/weapons/gun_chamber_round.ogg', 100, 1), 3)
-				else
-					playsound(src, "gun_insert_empty_magazine", 70, 1)
-				A.update_icon()
-				update_icon()
-				return TRUE
-			else
-				to_chat(user, "<span class='warning'>You cannot seem to get \the [src] out of your hands!</span>")
-				return
-		else if (magazine)
-			to_chat(user, "<span class='notice'>There's already a [magazine_wording] in \the [src].</span>")
+	if(istype(A, /obj/item/ammo_box/magazine))
+		return insert_mag(A, user)
 	if(istype(A, /obj/item/suppressor))
 		var/obj/item/suppressor/S = A
 		if(!can_suppress)
@@ -91,6 +80,38 @@
 			install_suppressor(A)
 			return
 	return FALSE
+
+/obj/item/gun/ballistic/proc/insert_mag(obj/item/ammo_box/magazine/AM, mob/user)
+	if(!istype(AM, mag_type))
+		return
+	if(!magazine || tactical_reload)
+		var/obj/item/ammo_box/magazine/oldmag = magazine
+		if(user.transferItemToLoc(AM, src))
+			magazine = AM
+			if(oldmag)
+				to_chat(user, span_notice("You perform a tactical reload on \the [src], replacing the [magazine_wording]."))
+				user.put_in_hands(oldmag)
+				oldmag.update_icon()
+			else
+				to_chat(user, span_notice("You load a new [magazine_wording] into \the [src]."))
+			if(magazine.ammo_count())
+				playsound(src, load_sound, 70, 1)
+				if(!chambered)
+					chamber_round()
+					if(lock_back_sound)
+						addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, lock_back_sound, 100, 1), 3)
+			else
+				playsound(src, load_empty_sound, 70, 1)
+			magazine.update_icon()
+			update_icon()
+			if(user.is_holding(src))
+				user.update_inv_hands()
+			return TRUE
+		else
+			to_chat(user, span_warning("You cannot seem to get \the [src] out of your hands!"))
+			return
+	else
+		to_chat(user, span_notice("There's already a [magazine_wording] in \the [src]."))
 
 /obj/item/gun/ballistic/proc/install_suppressor(obj/item/suppressor/S)
 	// this proc assumes that the suppressor is already inside src
@@ -122,9 +143,9 @@
 		user.put_in_hands(magazine)
 		magazine.update_icon()
 		if(magazine.ammo_count())
-			playsound(src, 'sound/weapons/gun_magazine_remove_full.ogg', 70, 1)
+			playsound(src, eject_sound, 70, 1)
 		else
-			playsound(src, "gun_remove_empty_magazine", 70, 1)
+			playsound(src, eject_empty_sound, 70, 1)
 		magazine = null
 		to_chat(user, "<span class='notice'>You pull the magazine out of \the [src].</span>")
 	else if(chambered)
@@ -132,7 +153,7 @@
 		AC.bounce_away()
 		chambered = null
 		to_chat(user, "<span class='notice'>You unload the round from \the [src]'s chamber.</span>")
-		playsound(src, "gun_slide_lock", 70, 1)
+		playsound(src, unlock_sound, 70, 1)
 	else
 		to_chat(user, "<span class='notice'>There's no magazine in \the [src].</span>")
 	update_icon()

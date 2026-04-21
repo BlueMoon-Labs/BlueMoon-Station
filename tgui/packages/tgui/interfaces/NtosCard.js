@@ -34,6 +34,7 @@ export const NtosCardContent = (props, context) => {
     have_printer,
     have_id_slot,
     id_name,
+    minor,
   } = data;
   const [
     selectedDepartment,
@@ -76,13 +77,11 @@ export const NtosCardContent = (props, context) => {
               disabled={!have_printer || !has_id}
               onClick={() => act('PRG_print')} />
             <Button
-              icon={authenticated ? "sign-out-alt" : "sign-in-alt"}
-              disabled={!has_main_id && !authenticated}
-              content={authenticated ? "Log Out" : "Log In"}
-              color={authenticated ? "bad" : "good"}
-              onClick={() => {
-                act(authenticated ? 'PRG_logout' : 'PRG_authenticate');
-              }} />
+              icon={authenticated ? "angles-right" : "exclamation-triangle"}
+              disabled={!has_main_id}
+              content={authenticated ? "Authorized" : "No Access"}
+              color={authenticated ? "good" : "bad"}
+               />
             <Button
               icon="eject"
               tooltip={has_main_id ? "Eject ID" : "Insert ID"}
@@ -130,13 +129,27 @@ export const NtosCardContent = (props, context) => {
           {tab === 2 && (
             <Section
               title={id_rank}
-              buttons={(
-                <Button.Confirm
-                  icon="exclamation-triangle"
-                  content="Terminate"
-                  color="bad"
-                  onClick={() => act('PRG_terminate')} />
-              )}>
+              buttons={
+                <>
+                  <Button.Confirm
+                    icon="arrows-rotate"
+                    content="Reset Access"
+                    color="blue"
+                    onClick={() => act('PRG_reset_access')} />
+                  <Button.Confirm
+                    icon="person-circle-minus"
+                    content="Demote"
+                    color="orange"
+                    onClick={() => act('PRG_demote')} />
+                  {!minor && (
+                    <Button.Confirm
+                      icon="exclamation-triangle"
+                      content="Terminate"
+                      color="bad"
+                      onClick={() => act('PRG_terminate')} />
+                  )}
+                </>}
+            >
               {/* <Button.Input
                 fluid
                 content="Custom..."

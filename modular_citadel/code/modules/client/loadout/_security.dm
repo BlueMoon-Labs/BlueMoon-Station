@@ -26,7 +26,7 @@
 	name = "Katzen Steel Helmet"
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
 	path = /obj/item/clothing/head/helmet/sec/empire_head
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A","#e4b829")
 	restricted_roles = list("Security Officer", "Head of Security", "Warden")
 

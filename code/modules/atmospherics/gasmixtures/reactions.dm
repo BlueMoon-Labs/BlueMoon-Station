@@ -744,20 +744,21 @@
 	if(nitric <= 0)
 		return NO_REACTION
 	var/oxygen = air.get_moles(GAS_O2)
-	var/max_amount = max(nitric / 8, MINIMUM_MOLE_COUNT)
-	var/temperature = air.return_temperature()
-	var/heat_capacity = air.heat_capacity()
-	var/total_moles = air.total_moles()
-	if(temperature <= 0 || heat_capacity < 0 || total_moles < 0)
-		return NO_REACTION
-	var/enthalpy = temperature * (heat_capacity + R_IDEAL_GAS_EQUATION * total_moles)
+	// Must never exceed current nitric: max(nitric/8, MINIMUM_MOLE_COUNT) alone can be > nitric (float / edge cases),
+	// which would drive moles negative and crash auxmos (native illegal op).
+	var/max_amount = min(nitric, max(nitric / 8, MINIMUM_MOLE_COUNT))
+	var/enthalpy = air.return_temperature() * (air.heat_capacity() + R_IDEAL_GAS_EQUATION * air.total_moles())
 	var/list/enthalpies = GLOB.gas_data.enthalpies
 	if(oxygen > MINIMUM_MOLE_COUNT)
-		var/reaction_amount = min(max_amount, oxygen)/4
-		air.adjust_moles(GAS_NITRIC, -reaction_amount*2)
-		air.adjust_moles(GAS_O2, -reaction_amount)
-		air.adjust_moles(GAS_NITRYL, reaction_amount*2)
-		enthalpy += (reaction_amount * -(enthalpies[GAS_NITRIC] - enthalpies[GAS_NITRYL]))
+		var/reaction_amount = min(max_amount, oxygen) / 4
+		// Second guard: do not remove more nitric than present (ordering vs other reactions).
+		var/nitric_take = min(reaction_amount * 2, air.get_moles(GAS_NITRIC))
+		reaction_amount = nitric_take * 0.5
+		if(reaction_amount > 0)
+			air.adjust_moles(GAS_NITRIC, -reaction_amount * 2)
+			air.adjust_moles(GAS_O2, -reaction_amount)
+			air.adjust_moles(GAS_NITRYL, reaction_amount * 2)
+			enthalpy += (reaction_amount * -(enthalpies[GAS_NITRIC] - enthalpies[GAS_NITRYL]))
 	var/decomp_amount = min(max_amount, air.get_moles(GAS_NITRIC))
 	if(decomp_amount > 0)
 		air.adjust_moles(GAS_NITRIC, -decomp_amount)
@@ -766,8 +767,15 @@
 		enthalpy += decomp_amount * -enthalpies[GAS_NITRIC]
 	var/denom = air.heat_capacity() + R_IDEAL_GAS_EQUATION * air.total_moles()
 	if(denom > MINIMUM_HEAT_CAPACITY)
+<<<<<<< HEAD
 		air.set_temperature(enthalpy / denom)
 	return (decomp_amount > 0 || oxygen > MINIMUM_MOLE_COUNT) ? REACTING : NO_REACTION
+=======
+		var/new_temp = enthalpy / denom
+		if(isnum(new_temp) && new_temp > TCMB)
+			air.set_temperature(new_temp)
+	return REACTING
+>>>>>>> e31b7b5148ac8c6fd6051000f1031e587ab9404a
 
 /datum/gas_reaction/hagedorn
 	priority = -INFINITY

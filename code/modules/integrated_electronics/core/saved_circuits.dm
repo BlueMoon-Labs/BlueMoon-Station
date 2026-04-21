@@ -43,6 +43,10 @@
 	if(!isnull(special))
 		component_params["special"] = special
 
+	/// TGUI canvas (always written so new saves skip legacy auto-layout).
+	component_params["ui_x"] = ie_ui_rel_x
+	component_params["ui_y"] = ie_ui_rel_y
+
 	return component_params
 
 /obj/item/integrated_circuit/proc/save_special()
@@ -85,6 +89,15 @@
 			if(!isnum(input_id) || input_id % 1 || input_id > inputs_amt || input_id < 1)
 				return "Invalid input index at [init_name]."
 
+	if(("ui_x" in component_params) && !isnum(component_params["ui_x"]))
+		return "Invalid ui_x at [init_name]."
+	if(("ui_y" in component_params) && !isnum(component_params["ui_y"]))
+		return "Invalid ui_y at [init_name]."
+	if(isnum(component_params["ui_x"]) && (component_params["ui_x"] > IE_TGUI_COMPONENT_COORD_LIMIT || component_params["ui_x"] < -IE_TGUI_COMPONENT_COORD_LIMIT))
+		return "ui_x out of bounds at [init_name]."
+	if(isnum(component_params["ui_y"]) && (component_params["ui_y"] > IE_TGUI_COMPONENT_COORD_LIMIT || component_params["ui_y"] < -IE_TGUI_COMPONENT_COORD_LIMIT))
+		return "ui_y out of bounds at [init_name]."
+
 
 // Loads component parameters from a list
 // Doesn't verify any of the parameters it loads, this is the job of verify_save()
@@ -109,6 +122,11 @@
 
 	if(!isnull(component_params["special"]))
 		load_special(component_params["special"])
+
+	if(isnum(component_params["ui_x"]))
+		ie_ui_rel_x = clamp(component_params["ui_x"], -IE_TGUI_COMPONENT_COORD_LIMIT, IE_TGUI_COMPONENT_COORD_LIMIT)
+	if(isnum(component_params["ui_y"]))
+		ie_ui_rel_y = clamp(component_params["ui_y"], -IE_TGUI_COMPONENT_COORD_LIMIT, IE_TGUI_COMPONENT_COORD_LIMIT)
 
 /obj/item/integrated_circuit/proc/load_special(special_data)
 	return
@@ -334,6 +352,25 @@
 
 
 // Loads assembly (in form of list) into an object and returns it.
+/// Старые JSON без ui_x/ui_y — выставить ноды в ряд, чтобы TGUI не был пустым.
+/proc/ie_tgui_apply_legacy_row_layout(obj/item/electronic_assembly/assembly, list/blocks)
+	if(!assembly || !blocks)
+		return
+	var/list/comp_blocks = blocks["components"]
+	if(!length(comp_blocks))
+		return
+	var/spacing = 200
+	var/i = 0
+	for(var/list/cp as anything in comp_blocks)
+		i++
+		if(i > length(assembly.assembly_components))
+			break
+		if(("ui_x" in cp) || ("ui_y" in cp))
+			continue
+		var/obj/item/integrated_circuit/chip = assembly.assembly_components[i]
+		chip.ie_ui_rel_x = clamp((i - 1) * spacing, -IE_TGUI_COMPONENT_COORD_LIMIT, IE_TGUI_COMPONENT_COORD_LIMIT)
+		chip.ie_ui_rel_y = 0
+
 // No sanity checks are performed, save file is expected to be validated by validate_electronic_assembly
 /datum/controller/subsystem/processing/circuit/proc/load_electronic_assembly(loc, list/blocks)
 
@@ -352,6 +389,7 @@
 		assembly.add_component(component)
 		component.load(component_params)
 
+	ie_tgui_apply_legacy_row_layout(assembly, blocks)
 
 	// Block 3. Wires.
 	if(blocks["wires"])

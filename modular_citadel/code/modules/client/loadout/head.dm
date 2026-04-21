@@ -14,13 +14,13 @@
 /datum/gear/head/empire_head
 	name = "Katzen Helmet"
 	path = /obj/item/clothing/head/empire_head
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A","#e4b829")
 
 /datum/gear/head/officerian_cap
 	name = "Officerian_cap"
 	path = /obj/item/clothing/head/officerian_cap
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A","#303030","#575757","#d4d4d4")
 
 /datum/gear/head/beret
@@ -78,7 +78,7 @@
 /datum/gear/head/maidband/poly
 	name = "Polychromic maid headband"
 	path= /obj/item/clothing/head/maid/polychromic
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#333333", "#FFFFFF")
 	item_icon_state = "maid" // BLUEMOON EDIT - багованная иконка
 
@@ -223,7 +223,7 @@
 /datum/gear/head/cowboyhat/polychromic
 	name = "Cowboy Hat, Polychromic"
 	path = /obj/item/clothing/head/cowboyhat/polychromic
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#5F5F5F", "#DDDDDD")
 	item_icon_state = "cowboyhat" // BLUEMOON EDIT - багованная иконка
 

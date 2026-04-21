@@ -59,6 +59,13 @@
 			if(!(HAS_ANTAG_PREF(M.client, antag_flag)))
 				trimmed_list.Remove(M)
 				continue
+		var/role_to_bancheck_mr = antag_flag_override ? antag_flag_override : antag_flag
+		if(role_to_bancheck_mr && (jobban_isbanned(M, role_to_bancheck_mr) || QDELETED(M)))
+			trimmed_list.Remove(M)
+			continue
+		if(jobban_isbanned(M, ROLE_INTEQ) || QDELETED(M))
+			trimmed_list.Remove(M)
+			continue
 		if (M.mind)
 			if (restrict_ghost_roles && (M.mind.assigned_role in GLOB.exp_specialmap[EXP_TYPE_SPECIAL])) // Are they playing a ghost role?
 				trimmed_list.Remove(M)
@@ -117,7 +124,7 @@
 	message_admins("Polling [possible_volunteers.len] players to apply for the [name] ruleset.")
 	log_game("DYNAMIC: Polling [possible_volunteers.len] players to apply for the [name] ruleset.")
 	var/flag = antag_flag_override ? antag_flag_override : antag_flag
-	candidates = pollGhostCandidates("The mode is looking for volunteers to become [antag_flag] for [name]", flag, be_special_flag = flag, ignore_category = antag_flag, poll_time = 300)
+	candidates = pollGhostCandidates("The mode is looking for volunteers to become [antag_flag] for [name]", flag, be_special_flag = flag, ignore_category = antag_flag, poll_time = 300, poll_header = "[name] ([antag_flag])", poll_alert_pic = /obj/item/card/id/syndicate)
 
 	if(!length(candidates))
 		mode.dynamic_log("The ruleset [name] received no applications.")
@@ -495,7 +502,7 @@
 	cost = 30 //BLUEMOON CHANGES
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,101,60,40,30,10) //BLUEMOON CHANGES
-	var/list/operative_cap = list(3,3,3,3,4,5,5,5,5,5)
+	var/list/operative_cap = list(5,5,5,5,5,5,5,5,5,5)
 	var/datum/team/nuclear/nuke_team
 	flags = HIGH_IMPACT_RULESET
 
@@ -504,6 +511,7 @@
 		return FALSE // Unavailable if nuke ops were already sent at roundstart
 	indice_pop = min(operative_cap.len, round(living_players.len/5)+1)
 	required_candidates = operative_cap[indice_pop]
+	required_applicants = required_candidates
 	return ..()
 
 /datum/dynamic_ruleset/midround/from_ghosts/nuclear/ready(forced = FALSE)
@@ -937,7 +945,7 @@
 	required_candidates = 1
 	weight = 6
 	cost = 10
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // not extended
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	requirements = list(101,101,101,50,30,25,20,10,10,10)
 	repeatable = TRUE
 
@@ -1125,7 +1133,7 @@
 	required_candidates = 1
 	weight = 3 //BLUEMOON CHANGES
 	cost = 10
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // not extended
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // not extended
 	requirements = list(101,101,101,50,30,25,20,10,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
 	var/dead_mobs_required = 10
@@ -1171,7 +1179,7 @@
 	required_candidates = 1
 	weight = 6 //BLUEMOON CHANGES
 	cost = 10
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,50,30,25,20,10,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
 
@@ -1253,9 +1261,9 @@
 	protected_roles = list("Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain")
 	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
-	required_enemies = 3
+	required_enemies = list(3,3,3,3,3,3,3,3,3,3)
 	required_candidates = 1
-	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	weight = 6
 	cost = 5
 	scaling_cost = 10

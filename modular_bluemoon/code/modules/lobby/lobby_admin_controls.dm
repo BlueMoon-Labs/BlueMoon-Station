@@ -174,7 +174,7 @@
 // 5. ПЕРЕЗАГРУЗКА HTML/CSS ЛОББИ (администратор)
 /client/proc/bm_admin_reload_lobby_html()
 	set name = "Лобби: Перезагрузить HTML/CSS"
-	set desc = "НЕ ИСПОЛЬЗОВАТЬ БЕЗ НУЖДЫ. Перечитать lobby_html.txt с диска и обновить стили для всех игроков в лобби."
+	set desc = "НЕ ИСПОЛЬЗОВАТЬ БЕЗ НУЖДЫ. Перечитать lobby_html (modular_bluemoon/.../lobby_html.txt) и обновить стили для всех в лобби."
 	set category = "Admin.Fun"
 	if(!check_rights(R_ADMIN))
 		return

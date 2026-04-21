@@ -362,16 +362,6 @@
 						SSevents.toggleWizardmode()
 						SSevents.resetFrequency()
 						SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Summon Events", "Disable"))
-		if("space_cleaner_spill")
-			if(!is_funmin)
-				return
-			var/event_type = text2path("/datum/round_event_control/space_cleaner_spill")
-			var/datum/round_event_control/EC = locate(event_type) in SSevents.control
-			if(EC)
-				EC.runEvent(announce_chance_override = 100, admin_forced = TRUE)
-				message_admins("[key_name_admin(holder)] запустил ивент: Аварийная очистка космической станции.")
-				log_admin("[key_name(holder)] запустил ивент: Аварийная очистка космической станции.")
-			SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Аварийная очистка станции"))
 		if("eagles")
 			if(!is_funmin)
 				return

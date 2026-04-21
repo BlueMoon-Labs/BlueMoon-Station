@@ -182,7 +182,7 @@
 	tint = 1
 	glass_colour_type = /datum/client_colour/glass_colour/darkred
 
-/obj/item/clothing/glasses/hud/securitygoggles
+/obj/item/clothing/glasses/hud/security/securitygoggles
 	name = "security HUD Goggles"
 	desc = "Be on style! Who needs sunglasses when you have this!?"
 	icon_state = "secgoggles-g"
@@ -199,7 +199,7 @@
 
 	hud_type = null
 
-/obj/item/clothing/glasses/hud/securitygoggles/proc/update_visuals(mob/user)
+/obj/item/clothing/glasses/hud/security/securitygoggles/proc/update_visuals(mob/user)
 	if(!ishuman(user))
 		return
 
@@ -214,7 +214,7 @@
 
 	H.update_inv_glasses()
 
-/obj/item/clothing/glasses/hud/securitygoggles/proc/update_hud(mob/user)
+/obj/item/clothing/glasses/hud/security/securitygoggles/proc/update_hud(mob/user)
 	if(!ishuman(user))
 		return
 
@@ -225,25 +225,28 @@
 	var/datum/atom_hud/HUD = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
 
 	if(flags_cover & GLASSESCOVERSEYES)
+		hud_type = DATA_HUD_SECURITY_ADVANCED
 		HUD.add_hud_to(H)
 		hud_granted = TRUE
 	else
+		hud_type = null
 		if(hud_granted)
 			hud_granted = FALSE
 			HUD.remove_hud_from(H)
 
-/obj/item/clothing/glasses/hud/securitygoggles/equipped(mob/living/carbon/human/user, slot)
+/obj/item/clothing/glasses/hud/security/securitygoggles/equipped(mob/living/carbon/human/user, slot)
 	. = ..()
 	if(slot == ITEM_SLOT_EYES)
 		update_hud(user)
 
-/obj/item/clothing/glasses/hud/securitygoggles/attack_self(mob/user)
+/obj/item/clothing/glasses/hud/security/securitygoggles/attack_self(mob/user)
 	weldingvisortoggle(user)
 	update_hud(user)
 	update_visuals(user)
 
-/obj/item/clothing/glasses/hud/securitygoggles/dropped(mob/living/carbon/human/user)
+/obj/item/clothing/glasses/hud/security/securitygoggles/dropped(mob/living/carbon/human/user)
 	. = ..()
+	hud_type = null
 	if(hud_granted)
 		hud_granted = FALSE
 		var/datum/atom_hud/HUD = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]

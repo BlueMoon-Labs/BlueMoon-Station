@@ -732,6 +732,7 @@
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/mob/icons/accessories.dmi'
 	icon_state = "banner_catcrin"
 	desc = "Banner of Catcrin Empire"
+	inspiration_available = FALSE
 
 /obj/item/sign/flag/catcrin
 	name = "folded flag of the Catcrin Empire"
@@ -823,7 +824,6 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/head/helmet/sec/mark45_ce
 	ckeywhitelist = list("silverfoxpaws")
-	subcategory = LOADOUT_SUBCATEGORIES_DON03
 	restricted_desc = "Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
 	restricted_roles = list("Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
 
@@ -832,7 +832,6 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/suit/armor/mark45_armor_ce
 	ckeywhitelist = list("silverfoxpaws")
-	subcategory = LOADOUT_SUBCATEGORIES_DON03
 	restricted_desc = "Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
 	restricted_roles = list("Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
 

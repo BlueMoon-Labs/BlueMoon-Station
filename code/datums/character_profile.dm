@@ -217,9 +217,10 @@ GLOBAL_LIST_EMPTY(cached_previews)
 
 
 /datum/description_profile/robot/ui_interact(mob/user, datum/tgui/ui)
+	var/mob/living/M = host.resolve()
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, "CyborgProfile", "Профиль юнита [src]")
+		ui = new(user, src, "CyborgProfile", "Профиль юнита [M || "неизвестный юнит"]")
 		ui.open()
 
 /datum/description_profile/robot/ui_static_data(mob/user, datum/tgui/ui, datum/ui_state/state)
@@ -230,6 +231,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	if(M.mind)
 		data["silicon_flavor_text"] = M.mind.silicon_flavor_text || ""
 		data["oocnotes"] = M.mind.ooc_notes || ""
+		data["headshot_links"] = M.mind.headshot_links.Copy() || list()
 	if(M.client?.prefs)
 		var/datum/preferences/prefs = M.client.prefs
 		data["vore_tag"] = prefs.vorepref

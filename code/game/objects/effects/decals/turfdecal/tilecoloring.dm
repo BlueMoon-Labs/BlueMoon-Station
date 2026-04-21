@@ -9,14 +9,17 @@
 		if (SSevents.holidays[APRIL_FOOLS])
 			color = "#[random_short_color()]"
 		else
-			for(var/H in SSevents.holidays)
-				if(istype(H,/datum/holiday/lgbt))
-					var/datum/holiday/lgbt/L = H
-					color = L.get_floor_tile_color(src)
+			// Ассоциативный список: в цикле — ключи (имена), датум — holidays[key].
+			for(var/holiday_key in SSevents.holidays)
+				var/datum/holiday/active_holiday = SSevents.holidays[holiday_key]
+				if(!istype(active_holiday, /datum/holiday/lgbt))
+					continue
+				var/datum/holiday/lgbt/L = active_holiday
+				color = L.get_floor_tile_color(src)
 
-					// It looks garish at different alphas, and it's not possible to get a
-					// consistent color palette without this.
-					alpha = 60	//LGBT_ALPHA
+				// It looks garish at different alphas, and it's not possible to get a
+				// consistent color palette without this.
+				alpha = 60	//LGBT_ALPHA
 	return ..()
 
 /obj/effect/turf_decal/tile/random/Initialize(mapload)

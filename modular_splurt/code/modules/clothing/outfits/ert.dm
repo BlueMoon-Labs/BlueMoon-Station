@@ -6,12 +6,12 @@
 	shoes = /obj/item/clothing/shoes/jackboots/cbrn/mopp/advance
 	gloves = /obj/item/clothing/gloves/cbrn/mopp/advance
 	suit_store = /obj/item/tank/internals/doubleoxygen
+	belt = /obj/item/gun/ballistic/automatic/proto/suppressed
 	head = /obj/item/clothing/head/helmet/cbrn/mopp/advance
 	backpack_contents = list(/obj/item/storage/box/survival/centcom,
 		/obj/item/storage/firstaid/tactical/ert_first,
 		/obj/item/storage/firstaid/tactical/ert_second,
 		/obj/item/gun/energy/modular_laser_rifle/carbine,
-		/obj/item/gun/ballistic/automatic/proto/suppressed,
 		/obj/item/storage/box/ammo/smgap)
 
 /datum/outfit/ert/security/mopp
@@ -22,12 +22,12 @@
 	shoes = /obj/item/clothing/shoes/jackboots/cbrn/mopp/advance
 	gloves = /obj/item/clothing/gloves/cbrn/mopp/advance
 	suit_store = /obj/item/tank/internals/doubleoxygen
+	belt = /obj/item/gun/ballistic/automatic/proto/suppressed
 	head = /obj/item/clothing/head/helmet/cbrn/mopp/advance
 	backpack_contents = list(/obj/item/storage/box/survival/centcom,
 		/obj/item/storage/firstaid/tactical/ert_first,
 		/obj/item/storage/firstaid/tactical/ert_second,
 		/obj/item/gun/energy/modular_laser_rifle/carbine,
-		/obj/item/gun/ballistic/automatic/proto/suppressed,
 		/obj/item/storage/box/ammo/smgap)
 
 /datum/outfit/ert/medic/mopp
@@ -38,12 +38,12 @@
 	shoes = /obj/item/clothing/shoes/jackboots/cbrn/mopp/advance
 	gloves = /obj/item/clothing/gloves/cbrn/mopp/advance
 	suit_store = /obj/item/tank/internals/doubleoxygen
+	belt = /obj/item/gun/ballistic/automatic/proto/suppressed
 	head = /obj/item/clothing/head/helmet/cbrn/mopp/advance
 	backpack_contents = list(/obj/item/storage/box/survival/centcom,
 		/obj/item/storage/firstaid/tactical/ert_first,
 		/obj/item/storage/firstaid/tactical/ert_second,
 		/obj/item/gun/energy/modular_laser_rifle/carbine,
-		/obj/item/gun/ballistic/automatic/proto/suppressed,
 		/obj/item/storage/box/ammo/smgap)
 
 /datum/outfit/ert/engineer/mopp
@@ -54,10 +54,10 @@
 	shoes = /obj/item/clothing/shoes/jackboots/cbrn/mopp/advance
 	gloves = /obj/item/clothing/gloves/cbrn/mopp/advance
 	suit_store = /obj/item/tank/internals/doubleoxygen
+	belt = /obj/item/gun/ballistic/automatic/proto/suppressed
 	head = /obj/item/clothing/head/helmet/cbrn/mopp/advance
 	backpack_contents = list(/obj/item/storage/box/survival/centcom,
 		/obj/item/storage/firstaid/tactical/ert_first,
 		/obj/item/storage/firstaid/tactical/ert_second,
 		/obj/item/gun/energy/modular_laser_rifle/carbine,
-		/obj/item/gun/ballistic/automatic/proto/suppressed,
 		/obj/item/storage/box/ammo/smgap)

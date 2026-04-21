@@ -52,7 +52,7 @@
 	if(our_loop)
 		var/our_id = our_loop.timerid || timerid
 		if(our_id)
-			time_remaining = timeleft(our_id, SSsound_loops) || 0
+			time_remaining = timeleft(our_id) || 0
 			//Time left will sometimes return negative values, just ignore them and start a new sound loop now
 			time_remaining = max(time_remaining, 0)
 		QDEL_NULL(our_loop)
@@ -66,7 +66,7 @@
 
 	//If we're still playing, wait a bit before changing the sound so we don't double up
 	if(time_remaining)
-		timerid = addtimer(CALLBACK(src, PROC_REF(start_looping_sound)), time_remaining, TIMER_UNIQUE | TIMER_CLIENT_TIME | TIMER_STOPPABLE | TIMER_NO_HASH_WAIT | TIMER_DELETE_ME, SSsound_loops)
+		timerid = addtimer(CALLBACK(src, PROC_REF(start_looping_sound)), time_remaining, TIMER_UNIQUE | TIMER_CLIENT_TIME | TIMER_STOPPABLE | TIMER_NO_HASH_WAIT | TIMER_DELETE_ME)
 		return
 	timerid = null
 	our_loop.start()

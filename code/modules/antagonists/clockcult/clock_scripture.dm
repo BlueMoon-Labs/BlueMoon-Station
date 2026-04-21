@@ -240,6 +240,11 @@ Judgement 80k power or nine converts
 	if(!space_allowed && isspaceturf(T))
 		to_chat(invoker, "<span class='warning'>You need solid ground to place this object!</span>")
 		return FALSE
+	var/spawn_path = get_spawn_path(invoker)
+	if(ispath(spawn_path, /obj/structure/destructible/clockwork))
+		for(var/obj/structure/destructible/clockwork/existing in T)
+			to_chat(invoker, "<span class='warning'>There is already a clockwork structure here!</span>")
+			return FALSE
 	if(one_per_tile && (locate(prevent_path) in T))
 		to_chat(invoker, "<span class='warning'>You can only place one of this object on each tile!</span>")
 		return FALSE

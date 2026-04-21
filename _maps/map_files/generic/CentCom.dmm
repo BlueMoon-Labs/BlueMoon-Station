@@ -7728,9 +7728,6 @@
 /obj/item/clothing/glasses/sunglasses/blindfold{
 	pixel_y = 4
 	},
-/obj/item/clothing/accessory/permit/special/deviant/lust/slavers,
-/obj/item/clothing/accessory/permit/special/deviant/lust/slavers,
-/obj/item/clothing/accessory/permit/special/deviant/lust/slavers,
 /turf/open/floor/plasteel/dark,
 /area/slavers)
 "aRi" = (

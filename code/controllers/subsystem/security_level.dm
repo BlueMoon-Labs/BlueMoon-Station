@@ -199,11 +199,6 @@ SUBSYSTEM_DEF(security_level)
 				addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(delta_process)), 10 SECONDS)
 				SSblackbox.record_feedback("tally", "security_level_changes", 1, NUM2SECLEVEL(GLOB.security_level))
 
-		if(new_level >= SEC_LEVEL_RED)
-			for(var/obj/machinery/door/D in GLOB.machines)
-				if(D.red_alert_access)
-					D.visible_message("<span class='notice'>[D] whirrs as it automatically lifts access requirements!</span>")
-					playsound(D, 'sound/machines/boltsup.ogg', 50, TRUE)
 		SEND_SIGNAL(src, COMSIG_SECURITY_LEVEL_CHANGED, new_level)
 		SSblackbox.record_feedback("tally", "security_level_changes", 1, NUM2SECLEVEL(GLOB.security_level))
 		SSnightshift.check_nightshift()
@@ -221,14 +216,10 @@ SUBSYSTEM_DEF(security_level)
  * Arguments determine if engineering override or maint access is granted.
  * Arguments: min_level: number, eng_access: boolean, maint_access: boolean
 */
-/datum/controller/subsystem/security_level/proc/minimum_security_level(min_level = SEC_LEVEL_ORANGE, eng_access = TRUE, maint_access = FALSE)
+/datum/controller/subsystem/security_level/proc/minimum_security_level(min_level = SEC_LEVEL_ORANGE, maint_access = FALSE)
 	var/current_level = isnum(GLOB.security_level) ? GLOB.security_level : SECLEVEL2NUM(GLOB.security_level)
 	if(current_level < min_level)
 		set_level(min_level)
-
-	if(eng_access)
-		GLOB.force_eng_override = TRUE
-		SEND_GLOBAL_SIGNAL(COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE, TRUE)
 
 	if(maint_access)
 		make_maint_all_access()

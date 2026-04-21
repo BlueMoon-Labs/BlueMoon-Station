@@ -110,6 +110,29 @@ GLOBAL_LIST_EMPTY(uplinks)
 		return TRUE
 	return FALSE
 
+/// Те же условия, что и для строки в каталоге (hijack_only, blocked_round_types, роль, вид). Нужен для Random Item и защиты покупки.
+/datum/component/uplink/proc/is_uplink_item_visible_to_user(mob/user, datum/uplink_item/I)
+	if(!I || I.limited_stock == 0)
+		return FALSE
+	if(I.hijack_only && !can_access_hijack_uplink_items(user))
+		return FALSE
+	if(LAZYLEN(I.blocked_round_types) && (GLOB.round_type in I.blocked_round_types))
+		return FALSE
+	if(length(I.restricted_roles))
+		if(!debug && user?.mind && !(user.mind.assigned_role in I.restricted_roles))
+			return FALSE
+	if(I.restricted_species)
+		if(ishuman(user))
+			var/is_inaccessible = TRUE
+			var/mob/living/carbon/human/H = user
+			for(var/F in I.restricted_species)
+				if(F == H.dna.species.id || debug)
+					is_inaccessible = FALSE
+					break
+			if(is_inaccessible)
+				return FALSE
+	return TRUE
+
 /datum/component/uplink/proc/LoadTC(mob/user, obj/item/stack/telecrystal/TC, silent = FALSE)
 	if(!silent)
 		to_chat(user, span_notice("You slot [TC] into [parent] and charge its internal uplink."))
@@ -186,41 +209,30 @@ GLOBAL_LIST_EMPTY(uplinks)
 	data["telecrystals"] = telecrystals
 	data["lockable"] = lockable
 	data["compactMode"] = compact_mode
+	data["categories"] = build_uplink_shop_categories(user)
 	return data
 
-/datum/component/uplink/ui_static_data(mob/user)
-	var/list/data = list()
-	data["categories"] = list()
+/// Список категорий для TGUI: без позиций, недоступных из‑за hijack_only, blocked_round_types, роли и вида.
+/datum/component/uplink/proc/build_uplink_shop_categories(mob/user)
+	var/list/out = list()
 	for(var/category in uplink_items)
 		var/list/cat = list(
 			"name" = category,
 			"items" = (category == selected_cat ? list() : null))
 		for(var/item in uplink_items[category])
 			var/datum/uplink_item/I = uplink_items[category][item]
-			if(I.limited_stock == 0)
+			if(!is_uplink_item_visible_to_user(user, I))
 				continue
-			if(I.hijack_only && !can_access_hijack_uplink_items(user))
-				continue
-			if(length(I.restricted_roles))
-				if(!debug && !(user.mind.assigned_role in I.restricted_roles))
-					continue
-			if(I.restricted_species)
-				if(ishuman(user))
-					var/is_inaccessible = TRUE
-					var/mob/living/carbon/human/H = user
-					for(var/F in I.restricted_species)
-						if(F == H.dna.species.id || debug)
-							is_inaccessible = FALSE
-							break
-					if(is_inaccessible)
-						continue
 			cat["items"] += list(list(
 				"name" = I.name,
 				"cost" = I.cost,
 				"desc" = I.desc,
 			))
-		data["categories"] += list(cat)
-	return data
+		out += list(cat)
+	return out
+
+/datum/component/uplink/ui_static_data(mob/user)
+	return list()
 
 /datum/component/uplink/ui_act(action, params)
 	. = ..()
@@ -256,8 +268,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 		return
 	if (!user || user.incapacitated())
 		return
-	if(U.hijack_only && !can_access_hijack_uplink_items(user))
-		to_chat(user, "<span class='warning'>InteQ выдает этот чрезвычайно опасный предмет только агентам, получившим особо сложное задание.</span>")
+	if(!is_uplink_item_visible_to_user(user, U))
 		return
 
 	if(telecrystals < U.cost || U.limited_stock == 0)

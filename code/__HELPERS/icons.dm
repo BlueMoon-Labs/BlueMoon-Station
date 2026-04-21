@@ -604,6 +604,8 @@ world
 /proc/BlendRGB(rgb1, rgb2, amount)
 	var/list/RGB1 = ReadRGB(rgb1)
 	var/list/RGB2 = ReadRGB(rgb2)
+	if(!RGB1 || !RGB2)
+		return RGB1 ? rgb(RGB1[1], RGB1[2], RGB1[3]) : (RGB2 ? rgb(RGB2[1], RGB2[2], RGB2[3]) : "#000000")
 
 	// add missing alpha if needed
 	if(RGB1.len < RGB2.len)

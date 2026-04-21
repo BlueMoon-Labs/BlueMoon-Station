@@ -10,6 +10,16 @@
 	default = 600
 	min_val = 0
 
+/datum/config_entry/number/dynamic_light_roundtype_vote_start_hour // server hour when roundtype voting starts offering Dynamic Light instead of Extended
+	default = 18
+	min_val = 0
+	max_val = 24
+
+/datum/config_entry/number/dynamic_light_roundtype_vote_end_hour // server hour when roundtype voting stops offering Dynamic Light instead of Extended
+	default = 0
+	min_val = 0
+	max_val = 24
+
 /// Length of time before the first autotransfer vote is called (deciseconds, default 2 hours)
 /// Set to 0 to disable the subsystem altogether.
 /datum/config_entry/number/vote_autotransfer_initial

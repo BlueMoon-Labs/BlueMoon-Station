@@ -63,10 +63,14 @@
 		if(isliving(cult_mind.current))
 			var/mob/living/L = cult_mind.current
 			INVOKE_ASYNC(L, TYPE_PROC_REF(/atom, narsie_act))
-	for(var/mob/living/player in GLOB.player_list)
+	var/total_crew = 0
+	for(var/mob/living/carbon/crew in GLOB.player_list)
+		if(crew.stat != DEAD && crew.loc && is_station_level(crew.loc.z))
+			total_crew++
+	for(var/mob/living/carbon/player in GLOB.player_list)
 		if(player.stat != DEAD && player.loc && is_station_level(player.loc.z) && !iscultist(player) && !isanimal(player))
 			souls_needed[player] = TRUE
-	soul_goal = round(1 + LAZYLEN(souls_needed) * 0.25)
+	soul_goal = round(1 + total_crew * 0.50)
 	INVOKE_ASYNC(src, PROC_REF(begin_the_end))
 
 /obj/singularity/narsie/large/cult/proc/begin_the_end()

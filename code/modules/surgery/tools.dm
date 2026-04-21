@@ -413,7 +413,7 @@
 	var/mob/living/M = user
 	if(M.client?.prefs)
 		M.client.prefs.surgical_disable_radial = !M.client.prefs.surgical_disable_radial
-		M.balloon_alert("Now use [M.client.prefs.surgical_disable_radial ? "list" : "radial"] menu")
+		M.balloon_alert(M, "Now use [M.client.prefs.surgical_disable_radial ? "list" : "radial"] menu")
 		to_chat(M, span_notice("You will now use [M.client.prefs.surgical_disable_radial ? "list" : "radial"] menu."))
 		return TRUE
 
