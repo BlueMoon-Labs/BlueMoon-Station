@@ -309,9 +309,14 @@ world
 		Higher value means brighter color
  */
 
+GLOBAL_LIST_EMPTY(readrgb_cache)
+
 /proc/ReadRGB(rgb)
 	if(!rgb)
 		return
+	var/list/cached = GLOB.readrgb_cache[rgb]
+	if(cached)
+		return cached.Copy()
 
 	// interpret the HSV or HSVA value
 	var/i=1,start=1
@@ -369,9 +374,11 @@ world
 				if(single)
 					alpha |= alpha << 4
 
-	. = list(r, g, b)
+	var/list/result = list(r, g, b)
 	if(usealpha)
-		. += alpha
+		result += alpha
+	GLOB.readrgb_cache[rgb] = result
+	return result.Copy()
 
 /proc/ReadHSV(hsv)
 	if(!hsv)
