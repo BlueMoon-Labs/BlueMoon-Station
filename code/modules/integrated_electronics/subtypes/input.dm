@@ -1102,6 +1102,8 @@
 		"цель" = IC_PINTYPE_REF
 		)
 	outputs = list(
+		"Контейнер для материалов?"	= IC_PINTYPE_BOOLEAN,
+		"Общее количество материалов"			= IC_PINTYPE_NUMBER,
 		"Металл"				 	= IC_PINTYPE_NUMBER,
 		"Стекло"					= IC_PINTYPE_NUMBER,
 		"Серебро"				= IC_PINTYPE_NUMBER,
