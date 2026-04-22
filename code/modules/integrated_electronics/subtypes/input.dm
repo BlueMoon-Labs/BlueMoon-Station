@@ -741,7 +741,9 @@
 		"полученная passkey"			= IC_PINTYPE_STRING,
 		"is_broadcast"				= IC_PINTYPE_BOOLEAN
 		)
-	activators = list("отправить данные" = IC_PINTYPE_PULSE_IN, "при получении данных" = IC_PINTYPE_PULSE_OUT)
+	activators = list("отправить данные" = IC_PINTYPE_PULSE_IN,
+		"при получении данных" = IC_PINTYPE_PULSE_OUT,
+		"при отправке данных" = IC_PINTYPE_PULSE_OUT)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_LONG_RANGE
 	power_draw_per_use = 50
@@ -763,7 +765,8 @@
 	var/datum/netdata/data = new
 	data.recipient_ids = splittext(target_address, ";")
 	data.standard_format_data(message, text, passkey)
-	ntnet_send(data)
+	if(ntnet_send(data))
+		activate_pin(3)
 
 /obj/item/integrated_circuit/input/ntnet_receive(datum/netdata/data)
 	set_pin_data(IC_OUTPUT, 1, data.sender_id)

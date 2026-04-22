@@ -13,42 +13,44 @@
 	var/copy_id = FALSE
 
 /obj/item/integrated_electronics/debugger/attack_self(mob/user)
-	var/type_to_use = input("Выберите тип.","[src] type setting") as null|anything in list("string","number","ref","copy","null")
+	var/type_to_use = input("Выберите тип.","[src] type setting") as null|anything in list("строка","число","ссылка","копирование","null")
 	if(!user.IsAdvancedToolUser())
 		return
 
 	var/new_data = null
 	switch(type_to_use)
-		if("string")
+		if("строка")
 			accepting_refs = FALSE
 			copy_values = FALSE
 			copy_id = FALSE
 			new_data = stripped_input(user, "Теперь введите строку.","[src] string writing", no_trim = TRUE)
 			if(istext(new_data) && user.IsAdvancedToolUser())
 				data_to_write = new_data
-				to_chat(user, "<span class='notice'>Вы устанавливаете память \the [src] в \"[new_data]\".</span>")
-		if("number")
+				to_chat(user, "<span class='notice'>Вы устанавливаете память [src] в \"[new_data]\".</span>")
+		if("число")
 			accepting_refs = FALSE
 			copy_values = FALSE
 			new_data = input(user, "Теперь введите число.","[src] number writing") as null|num
 			if(isnum(new_data) && user.IsAdvancedToolUser())
 				data_to_write = new_data
-				to_chat(user, "<span class='notice'>Вы устанавливаете память \the [src] в [new_data].</span>")
-		if("ref")
+				to_chat(user, "<span class='notice'>Вы устанавливаете память [src] в [new_data].</span>")
+		if("ссылка")
 			accepting_refs = TRUE
 			copy_values = FALSE
 			copy_id = FALSE
-			to_chat(user, "<span class='notice'>Включите сканер ссылок \the [src]. Проведите им по \
+			to_chat(user, "<span class='notice'>Вы включаете сканер ссылок [src]. Проведите им по \
             объекту, чтобы получить ссылку на этот объект и сохранить её в памяти.</span>")
-		if("copy")
+		if("копирование")
 			accepting_refs = FALSE
 			copy_values = TRUE
 			copy_id = FALSE
-			to_chat(user, "<span class='notice'>Вы включаете устройство копирования значений \the [src].  Используйте его на выводе, \
+			to_chat(user, "<span class='notice'>Вы включаете устройство копирования значений [src]. Используйте его на выводе, \
             чтобы сохранить его текущее значение в памяти.</span>")
 		if("null")
+			accepting_refs = FALSE
 			data_to_write = null
 			copy_values = FALSE
+			copy_id = FALSE
 			to_chat(user, "<span class='notice'>Вы сбросили память \the [src] до нуля.</span>")
 
 /obj/item/integrated_electronics/debugger/afterattack(atom/target, mob/living/user, proximity)
