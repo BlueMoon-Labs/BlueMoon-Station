@@ -1293,6 +1293,7 @@
 	item_state = "mpl_21"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/mpl21_shot.ogg'
 	base_pixel_x = -8
 	var/const/custom_mag_type = /obj/item/ammo_box/magazine/recharge/lasgun/mpl_21
 
@@ -1364,6 +1365,7 @@
 	item_state = null
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	ammo_type = list(/obj/item/ammo_casing/energy/lasergun/lcr_29)
 	base_pixel_x = -8
 	charge_sections = 2
 	shaded_charge = TRUE
@@ -1372,6 +1374,9 @@
 /obj/item/gun/energy/laser/lcr_29/get_examine_name(mob/user)
 	. = ..()
 	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/energy/laser::name]</span></span>"
+
+/obj/item/ammo_casing/energy/lasergun/lcr_29
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/lcr29_shot.ogg'
 
 ///////////////////////////////////////////////
 
@@ -1394,10 +1399,17 @@
 	charge_sections = 2
 	shaded_charge = TRUE
 	modifystate = FALSE
+	ammo_type = list(/obj/item/ammo_casing/energy/disabler/m3_predator, /obj/item/ammo_casing/energy/electrode/security/m3_predator = FALSE)
 
 /obj/item/gun/energy/e_gun/advtaser/m3_predator/get_examine_name(mob/user)
 	. = ..()
 	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/energy/e_gun/advtaser::name]</span></span>"
+
+/obj/item/ammo_casing/energy/disabler/m3_predator
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/m3_predator_disabler.ogg'
+
+/obj/item/ammo_casing/energy/electrode/security/m3_predator
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/m3_predator_taser.ogg'
 
 ///////////////////////////////////////////////
 
