@@ -197,6 +197,7 @@
 			to_chat(usr, "<span class='notice'>Вы извлекаете [battery] из источника питания [src].</span>")
 			battery = null
 			diag_hud_set_circuitstat() //update diagnostic hud
+			SStgui.update_uis(src)
 
 	var/obj/item/integrated_circuit/component
 
@@ -375,6 +376,7 @@
 	diag_hud_set_circuittracking()
 	SStgui.update_uis(src)
 
+
 /obj/item/electronic_assembly/proc/try_remove_component(obj/item/integrated_circuit/IC, mob/user, silent)
 	if(!opened)
 		if(!silent)
@@ -414,6 +416,7 @@
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
 	SStgui.update_uis(src)
+
 
 /obj/item/electronic_assembly/afterattack(atom/target, mob/user, proximity)
 	. = ..()
