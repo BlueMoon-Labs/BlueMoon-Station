@@ -786,7 +786,8 @@
 	desc = "Обеспечивает отправку и получение сообщений по NTNet с помощью протокола пакетной передачи данных. Обеспечивает расширенное управление содержанием сообщений и сигнализацией. Требует использования ассоциативных списков. Выводит ассоциативный список. Имеет более низкую скорость передачи данных по сравнению с обычными схемами NTNet из-за повышенной сложности обработки данных."
 	extended_desc = "Данные можно отправлять или принимать с помощью второго пина с каждой стороны. \
     При получении сообщения второй пин подает импульс на подключенное к нему устройство. \
-    Импульс на первом пине инициирует отправку сообщения. Сообщения можно отправлять нескольким адресатам. \
+    Импульс на первом пине инициирует отправку сообщения. Когда отправка успешна, третий пин активации подаст импульс. \
+	Сообщения можно отправлять нескольким адресатам. \
     Адреса необходимо разделять точкой с запятой, например: Адрес1;Адрес2;и т. д."
 	icon_state = "signal"
 	complexity = 4
@@ -797,7 +798,11 @@
 		"passkey"				= IC_PINTYPE_STRING,
 		)
 	outputs = list("полученные данные" = IC_PINTYPE_LIST, "is_broadcast" = IC_PINTYPE_BOOLEAN, "полученная passkey" = IC_PINTYPE_STRING)
-	activators = list("отправить данные" = IC_PINTYPE_PULSE_IN, "при получении данных" = IC_PINTYPE_PULSE_OUT)
+	activators = list(
+		"отправить данные" = IC_PINTYPE_PULSE_IN,
+		"при получении данных" = IC_PINTYPE_PULSE_OUT,
+		"при отправке данных" = IC_PINTYPE_PULSE_OUT
+	)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_LONG_RANGE
 	power_draw_per_use = 50
@@ -820,7 +825,8 @@
 	data.recipient_ids = splittext(target_address, ";")
 	data.data = message
 	data.passkey = passkey
-	ntnet_send(data)
+	if(ntnet_send(data))
+		activate_pin(3)
 
 /obj/item/integrated_circuit/input/ntnet_advanced/ntnet_receive(datum/netdata/data)
 	set_pin_data(IC_OUTPUT, 1, data.data)
