@@ -64,10 +64,10 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 		if(D.copy_values)
 			D.data_to_write = io.data
 			D.copy_values = FALSE
-			to_chat(M, span_notice("Debugger copied the pin's current value into memory. Use upload on another pin to paste, or set string/number/ref on the debugger."))
+			to_chat(M, span_notice("Отладчик скопировал текущее значение пина в память. Используйте его на другом пине для вставки, или установите строку/число/ссылку на отладчике."))
 			return
 		if(D.accepting_refs)
-			to_chat(M, span_warning("Finish ref scan on the debugger first (click a target in the world), or switch mode."))
+			to_chat(M, span_warning("Сначала завершите сканирование ссылки на отладчике (нажмите на цель в мире), или переключите режим."))
 			return
 		// Вставка памяти — только во входы; с выходов можно только скопировать (режим Copy выше).
 		if(ie_ic_is_output_side_pin(io))
@@ -78,7 +78,7 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 				if(isnull(D.data_to_write) || isweakref(D.data_to_write))
 					io.write_data_to_pin(D.data_to_write)
 				else
-					to_chat(M, span_warning("The debugger memory is not a reference. Use ref or null on the debugger, then upload again."))
+					to_chat(M, span_warning("Память отладчика не является ссылкой. Используйте ref или null на отладчике, затем повторите загрузку."))
 			if("number", "index", "dir")
 				if(isnull(D.data_to_write))
 					io.write_data_to_pin(null)
@@ -87,7 +87,7 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 				else if(istext(D.data_to_write))
 					io.write_data_to_pin(text2num(D.data_to_write))
 				else
-					to_chat(M, span_warning("Debugger memory must be a number or null for this pin."))
+					to_chat(M, span_warning("Память отладчика должна быть числом или null для этого пина."))
 			if("boolean")
 				if(isnull(D.data_to_write))
 					io.write_data_to_pin(null)
@@ -99,17 +99,17 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 					var/nt = lowertext(D.data_to_write)
 					io.write_data_to_pin(nt == "true" || nt == "1" || nt == "yes")
 				else
-					to_chat(M, span_warning("Debugger memory must be boolean-like or null."))
+					to_chat(M, span_warning("Память отладчика должна быть булевой или null."))
 			if("char", "string", "color")
 				if(isnull(D.data_to_write) || istext(D.data_to_write))
 					io.write_data_to_pin(D.data_to_write)
 				else
-					to_chat(M, span_warning("Debugger memory must be text or null for this pin."))
+					to_chat(M, span_warning("Память отладчика должна быть текстом или null для этого пина."))
 			if("list")
 				if(isnull(D.data_to_write) || islist(D.data_to_write))
 					io.write_data_to_pin(D.data_to_write)
 				else
-					to_chat(M, span_warning("Debugger memory must be a list or null."))
+					to_chat(M, span_warning("Память отладчика должна быть списком или null."))
 			if("any")
 				io.write_data_to_pin(D.data_to_write)
 			else
@@ -120,7 +120,7 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 		if(ftype_mark == "entity" || ftype_mark == "any")
 			io.write_data_to_pin(WEAKREF(held))
 		else
-			to_chat(M, span_warning("Put a circuit debugger in hand to paste memory, or use this only on ref/any pins with an item in active hand."))
+			to_chat(M, span_warning("Возьмите отладчик схем в руку для вставки памяти, или используйте это только на пинах ref/any с предметом в активной руке."))
 		return
 
 	var/client/C = M.client
