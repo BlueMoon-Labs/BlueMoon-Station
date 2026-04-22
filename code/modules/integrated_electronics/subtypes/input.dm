@@ -129,7 +129,7 @@
     Этот тип анализатора гораздо точнее, что позволяет аппарату получить гораздо больше информации о целевом объекте, чем обычный анализатор."
 	icon_state = "medscan_adv"
 	complexity = 12
-	inputs = list("target" = IC_PINTYPE_REF)
+	inputs = list("цель" = IC_PINTYPE_REF)
 	outputs = list(
 		"процент общего здоровья"		= IC_PINTYPE_NUMBER,
 		"общее потерянное здоровье"	= IC_PINTYPE_NUMBER,

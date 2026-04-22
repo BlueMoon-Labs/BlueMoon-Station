@@ -155,6 +155,9 @@
 				I.power_fail()
 
 /obj/item/electronic_assembly/interact(mob/user, circuit)
+	if(user?.client?.prefs?.ie_classic_circuit_ui)
+		ie_legacy_ui_interact(user, circuit)
+		return
 	ui_interact(user, circuit)
 
 /obj/item/electronic_assembly/ui_interact(mob/user, obj/item/integrated_circuit/circuit_pins)
@@ -308,11 +311,11 @@
 
 		HTML += "<tr>\
 			<br><font color='FFFFFF' class=lowtext>Сложность: [circuit_pins.complexity]\
-			<br>Время перезарядки между использованием: [circuit_pins.cooldown_per_use/10] секунд"
+			<br>Время перезарядки между использованиями: [circuit_pins.cooldown_per_use/10] секунд"
 		if(circuit_pins.ext_cooldown)
 			HTML += "<br>Время перезарядки внешнего воздействия: [circuit_pins.ext_cooldown/10] секунд"
 		if(circuit_pins.power_draw_idle)
-			HTML += "<br>Потребляемая мощность: [circuit_pins.power_draw_idle] W (При простое)"
+			HTML += "<br>Потребляемая мощность: [circuit_pins.power_draw_idle] W (В простое)"
 		if(circuit_pins.power_draw_per_use)
 			HTML += "<br>Потребляемая мощность: [circuit_pins.power_draw_per_use] W (Активное)" // Borgcode says that powercells' checked_use() takes joules as input.
 		HTML += "<br>[circuit_pins.extended_desc]</font></tr></table></div>"

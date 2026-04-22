@@ -154,7 +154,7 @@
 
 	if(direction_mode == SYRINGE_DRAW)
 		if(reagents.total_volume >= reagents.maximum_volume)
-			acting_object.visible_message("[acting_object] всосать что-то из [AM], но инжектор полон.")
+			acting_object.visible_message("[acting_object] пытается всосать что-то из [AM], но инжектор полон.")
 			activate_pin(3)
 			return
 
@@ -307,7 +307,7 @@
 
 /obj/item/integrated_circuit/reagent/storage/grinder
 	name = "reagent grinder"
-	desc = "Это блендер для реагентов. Она принимает сырье и перерабатывает его в реагенты. Её вместимость составляет до 100 единиц."
+	desc = "Это блендер для реагентов. Он принимает сырье и перерабатывает его в реагенты. Его вместимость составляет до 100 единиц."
 	icon_state = "blender"
 	extended_desc = ""
 	inputs = list(
@@ -400,7 +400,7 @@
 
 /obj/item/integrated_circuit/reagent/storage/scan
 	name = "reagent scanner"
-	desc = "Внутри устройства хранится жидкость, отдельно от электрических компонентов. Емкость составляет до 60 единиц. При подаче импульса этот пробирка передаст список содержащихся в ней реагентов."
+	desc = "Внутри устройства хранится жидкость, отдельно от электрических компонентов. Емкость составляет до 60 единиц. При подаче импульса эта пробирка передаст список содержащихся в ней реагентов."
 	icon_state = "reagent_scan"
 	extended_desc = "В основном используется для фильтрации реагентов."
 
