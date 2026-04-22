@@ -127,6 +127,10 @@
 		if(PROTOLOCK_ACCESS_NORMAL)
 			return TRUE
 
+		// Type: Code red unlock
+		if(PROTOLOCK_ACCESS_CODERED)
+			return TRUE
+
 		// Type: Captain
 		if(PROTOLOCK_ACCESS_CAPTAIN)
 			return TRUE
