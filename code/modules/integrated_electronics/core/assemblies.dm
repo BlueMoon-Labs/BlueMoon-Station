@@ -413,7 +413,7 @@
 	//diagnostic hud update
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
-
+	SStgui.update_uis(src)
 
 /obj/item/electronic_assembly/afterattack(atom/target, mob/user, proximity)
 	. = ..()
