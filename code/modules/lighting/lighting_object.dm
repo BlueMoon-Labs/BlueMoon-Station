@@ -85,9 +85,10 @@
 	// ANIMATION_END_NOW alone is a no-op — BYOND only runs the "end current" path when there is a
 	// real animate() call to queue. time=0 immediately completes the stub animation so the last
 	// internal ref BYOND holds on the atom is released.
-	// Use a FRESH matrix (not src.color) — otherwise shared_color_buffer / cached ambient matrices
-	// can appear as "target == current" and let BYOND short-circuit the frame without running END_NOW.
-	animate(src, color = LIGHTING_DARK_MATRIX, time = 0, flags = ANIMATION_END_NOW)
+	// Animate a var that NO other animate() on this atom ever touches (alpha) — update() only
+	// animates color, so the "new target == current target" short-circuit BYOND uses for fresh
+	// LIGHTING_DARK_MATRIX vs in-flight-to-LIGHTING_DARK_MATRIX cannot apply here.
+	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
 	return ..()
 
 /// Computes blended area lighting profile by averaging this turf's area with 4 cardinal neighbors.
