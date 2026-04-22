@@ -61,6 +61,8 @@
 /datum/component/ash_cursed/proc/do_move()
 	SIGNAL_HANDLER
 	var/turf/human_turf = get_turf(human_target)
+	if(!human_turf)
+		return
 	if(!is_mining_level(human_turf.z))
 		Destroy()
 		for(var/mob/select_mob in GLOB.player_list)
