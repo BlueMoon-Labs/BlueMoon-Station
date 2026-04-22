@@ -515,6 +515,8 @@
 		diag_hud_set_circuitstat() //update diagnostic hud
 		playsound(get_turf(src), 'sound/items/Deconstruct.ogg', 50, 1)
 		to_chat(user, "<span class='notice'>Вы вставляете [I] в разъем питания [src].</span>")
+		to_chat(user, "<span class='info'>Питание не считается «компонентом» схемы: в окне редактора в счётчике — только напечатанные на интегральном принтере микросхемы.</span>")
+		SStgui.update_uis(src)
 		return TRUE
 
 	else if(istype(I, /obj/item/integrated_electronics/detailer))
