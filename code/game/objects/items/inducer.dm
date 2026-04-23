@@ -56,6 +56,8 @@
 
 
 /obj/item/inducer/proc/recharge(atom/movable/A, mob/user)
+	if(!istype(A))	// Проверка на принадлежность к типу atom/movable, чтобы игра не искала батарейки в стенах
+		return FALSE
 	if(!isturf(A) && user.loc == A)
 		return FALSE
 	if(istype(A, /obj/item/gun/energy) && gun_charger != TRUE)
@@ -65,7 +67,7 @@
 		return TRUE
 	else
 		recharging = TRUE
-	var/obj/item/stock_parts/cell/C = A.get_cell()
+	var/obj/item/stock_parts/cell/C = A?.get_cell()
 	var/obj/O
 	var/coefficient = 1
 	if(istype(A, /obj))
