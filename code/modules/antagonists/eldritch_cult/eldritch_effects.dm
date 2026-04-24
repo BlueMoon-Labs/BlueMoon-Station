@@ -178,8 +178,7 @@
 			continue
 		if(fake_count)
 			var/obj/effect/broken_illusion/illusion = new /obj/effect/broken_illusion(chosen_location)
-			RandomRiftName(illusion)
-			illusion.name = pick(RIFT_AFTERUSE_NAMES) + " " + illusion.name
+			RandomRiftName(illusion, use_afteruse = TRUE)
 		else
 			new /obj/effect/reality_smash(chosen_location)
 	ReworkNetwork()
@@ -228,11 +227,12 @@
 		reality_smash.RemoveMind(e_cultists)
 
 ///Generates random name
-/datum/reality_smash_tracker/proc/RandomRiftName(obj/rift)
+/datum/reality_smash_tracker/proc/RandomRiftName(obj/rift, set_name = "", use_afteruse = FALSE)
 	var/static/list/prefix = list("Всевидящий","Громовой","Просветляющий","Навязчивый","Отвратительный","Распыленный","Тонкий","Восходящий","Низший","Мимолетный","Пернатый","Возвышающийся","Чашуйчатый","Блаженный","Высокомерный","Угрожающий","Пушистый","Миролюбивый","Агрессивный")
 	var/static/list/postfix = list("Недостаток","Присутствие","Трещина","Тепло","Холод","Память","Напоминание","Ветерок","Хватка","Взгляд","Шепот","Поток","Прикосновение","Вуаль","Мысль","Несовершенство","Пятно","Румянец")
 
-	rift.name = "\improper" + pick(prefix) + " " + pick(postfix)
+	var/base = set_name || "[pick(prefix)] [pick(postfix)]"
+	rift.name = use_afteruse ? "\improper[pick(RIFT_AFTERUSE_NAMES)] [base]" : "\improper[base]"
 
 /obj/effect/broken_illusion
 	name = "Разлом в реальности"
@@ -341,7 +341,7 @@
 		minds -= e_cultie
 	img = null
 	var/obj/effect/broken_illusion/illusion = new /obj/effect/broken_illusion(drop_location())
-	illusion.name = pick(RIFT_AFTERUSE_NAMES) + " " + name
+	GLOB.reality_smash_track.RandomRiftName(illusion, name, use_afteruse = TRUE)
 
 ///Makes the mind able to see this effect
 /obj/effect/reality_smash/proc/AddMind(datum/mind/e_cultie)

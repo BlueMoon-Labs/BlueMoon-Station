@@ -119,6 +119,9 @@
 	if(I)
 		if(summon_item(I, user))
 			heretic.summon_items -= I
+		else
+			to_chat(user, span_warning("Не удалось призвать предмет!"))
+			revert_cast()
 		return
 
 	I = locate(summon_type) in user.loc
@@ -146,7 +149,12 @@
 	if(hide_sound)
 		playsound(M, hide_sound, 60, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*3, falloff_distance = 0)
 	var/obj/old_loc = I.loc
-	I.moveToNullspace() // Да, это магия, клей тут не поможет
+	// Да, это магия, клей тут не поможет
+	if(ismob(I.loc))
+		var/mob/living/Mob = I.loc
+		Mob.transferItemToLoc(I, null, TRUE)
+	else
+		I.moveToNullspace()
 	heretic.summon_items += I
 	if(istype(old_loc) && old_loc.GetComponent(/datum/component/storage) && (!ismob(old_loc.loc) || (old_loc in M?.GetAllContents())))
 		SEND_SIGNAL(old_loc, COMSIG_TRY_STORAGE_SHOW, M)
@@ -168,6 +176,8 @@
 	var/where = user.equip_in_one_of_slots(I, slots, qdel_on_fail = FALSE, critical = TRUE)
 	if(where == "backpack")
 		SEND_SIGNAL(user.back, COMSIG_TRY_STORAGE_SHOW, user)
+	if(!where)
+		I.moveToNullspace()
 	return where
 
 /obj/effect/proc_holder/spell/aoe_turf/rust_conversion
