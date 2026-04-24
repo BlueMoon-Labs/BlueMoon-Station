@@ -285,20 +285,34 @@
 
 // (ADD) Pe4henika bluemoon -- start
 /datum/station_trait/constant_ion_storms
-    name = "Зона повышенных ионных штормов"
-    trait_type = STATION_TRAIT_NEGATIVE
-    weight = 5
-    show_in_report = TRUE
-    report_message = "Станция вошла в область аномальной ионной активности. Ожидаются регулярные сбои в работе электроники."
+	name = "Зона повышенных ионных штормов"
+	trait_type = STATION_TRAIT_NEGATIVE
+	weight = 5
+	show_in_report = TRUE
+	report_message = "Станция вошла в область аномальной ионной активности. Ожидаются регулярные сбои в работе электроники."
 
 /datum/station_trait/constant_ion_storms/on_round_start()
-    . = ..()
-    addtimer(CALLBACK(src, PROC_REF(ion_storm_cycle)), 5 MINUTES)
+	. = ..()
+	addtimer(CALLBACK(src, PROC_REF(ion_storm_cycle)), 5 MINUTES)
 
 /datum/station_trait/constant_ion_storms/proc/ion_storm_cycle()
-    if(prob(60))
-        var/datum/round_event_control/E = locate(/datum/round_event_control/ion_storm) in SSevents.control
-        if(E)
-            E.runEvent()
-    addtimer(CALLBACK(src, PROC_REF(ion_storm_cycle)), 5 MINUTES)
+	if(prob(60))
+		var/datum/round_event_control/E = locate(/datum/round_event_control/ion_storm) in SSevents.control
+		if(E)
+			E.runEvent()
+	addtimer(CALLBACK(src, PROC_REF(ion_storm_cycle)), 5 MINUTES)
 // (ADD) Pe4henika bluemoon - end
+
+/datum/station_trait/heretic_rifts
+	name = "Зона оккультных ритуалов"
+	trait_type = STATION_TRAIT_NEUTRAL
+	weight = 6
+	show_in_report = FALSE // Без анонса
+
+/datum/station_trait/heretic_rifts/on_round_start()
+	. = ..()
+	addtimer(CALLBACK(src, PROC_REF(generate_fake_rift)), (rand(5, 15) MINUTES))
+
+/datum/station_trait/heretic_rifts/proc/generate_fake_rift()
+	GLOB.reality_smash_track.Generate(fake_count = 1)
+	addtimer(CALLBACK(src, PROC_REF(generate_fake_rift)), (rand(5, 15) MINUTES))
