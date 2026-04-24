@@ -132,7 +132,7 @@
 			if(I)
 				hide_item(I, heretic)
 				return
-	
+
 	var/list/temp = user.GetAllContents(summon_type)
 	if(LAZYLEN(temp))
 		hide_item(temp[1], heretic)
@@ -144,7 +144,7 @@
 /obj/effect/proc_holder/spell/self/heretic_summon/proc/hide_item(obj/item/I, datum/antagonist/heretic/heretic)
 	var/mob/living/M = heretic.owner.current
 	if(hide_sound)
-		playsound(M, hide_sound, 80, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*3.5, falloff_distance = 0)
+		playsound(M, hide_sound, 60, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*3, falloff_distance = 0)
 	var/obj/old_loc = I.loc
 	I.moveToNullspace() // Да, это магия, клей тут не поможет
 	heretic.summon_items += I
@@ -155,7 +155,7 @@
 	if(!istype(user))
 		return
 	if(summon_sound)
-		playsound(user, summon_sound, 80, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*3.5, falloff_distance = 0)
+		playsound(user, summon_sound, 60, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*3, falloff_distance = 0)
 	if(user.put_in_hands(I))
 		return TRUE
 
@@ -169,7 +169,7 @@
 	if(where == "backpack")
 		SEND_SIGNAL(user.back, COMSIG_TRY_STORAGE_SHOW, user)
 	return where
-		
+
 /obj/effect/proc_holder/spell/aoe_turf/rust_conversion
 	name = "Aggressive Spread"
 	desc = "Spreads rust onto nearby surfaces."
