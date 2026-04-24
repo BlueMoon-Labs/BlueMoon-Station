@@ -147,7 +147,7 @@
 /obj/effect/proc_holder/spell/self/heretic_summon/proc/hide_item(obj/item/I, datum/antagonist/heretic/heretic)
 	var/mob/living/M = heretic.owner.current
 	if(hide_sound)
-		playsound(M, hide_sound, 60, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*3, falloff_distance = 0)
+		playsound(M, hide_sound, 60, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*4, falloff_distance = 0)
 	var/obj/old_loc = I.loc
 	// Да, это магия, клей тут не поможет
 	if(ismob(I.loc))
@@ -163,7 +163,7 @@
 	if(!istype(user))
 		return
 	if(summon_sound)
-		playsound(user, summon_sound, 60, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*3, falloff_distance = 0)
+		playsound(user, summon_sound, 60, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*4, falloff_distance = 0)
 	if(user.put_in_hands(I))
 		return TRUE
 
