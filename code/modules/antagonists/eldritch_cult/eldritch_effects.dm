@@ -168,7 +168,7 @@
 		var/smash_len = length(smashes)
 		number = max(targ_len * (6-(targ_len-1)) - smash_len,1)
 
-	for(var/i in 0 to number)
+	for(var/i=0,i<number,i++)
 		var/turf/chosen_location = get_safe_random_station_turf()
 
 		//we also dont want them close to each other, at least 1 tile of seperation
