@@ -178,6 +178,7 @@
 			continue
 		if(fake_count)
 			var/obj/effect/broken_illusion/illusion = new /obj/effect/broken_illusion(chosen_location)
+			illusion.fake = TRUE
 			RandomRiftName(illusion, use_afteruse = TRUE)
 		else
 			new /obj/effect/reality_smash(chosen_location)
@@ -241,6 +242,7 @@
 	anchored = TRUE
 	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	alpha = 0
+	var/fake = FALSE
 
 /obj/effect/broken_illusion/Initialize(mapload)
 	. = ..()
@@ -252,7 +254,8 @@
 	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/silicons, "pierced_reality", I)
 
 /obj/effect/broken_illusion/Destroy()
-	GLOB.reality_smash_track.RandomSpawnSmash()
+	if(!fake)
+		GLOB.reality_smash_track.RandomSpawnSmash()
 	return ..()
 
 ///Makes this obj appear out of nothing
