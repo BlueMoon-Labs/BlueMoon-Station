@@ -354,5 +354,5 @@
 	minds -= e_cultie
 	if(e_cultie.current.client)
 		e_cultie.current.client.images -= img
-		
+
 #undef RIFT_AFTERUSE_NAMES
