@@ -20,7 +20,8 @@
 											"Xion" = 'icons/mob/augmentation/cosmetic_prosthetic/xion.dmi',
 											"Grayson" = 'icons/mob/augmentation/cosmetic_prosthetic/grayson.dmi',
 											"Cybersolutions" = 'icons/mob/augmentation/cosmetic_prosthetic/cybersolutions.dmi',
-											"Ward" = 'icons/mob/augmentation/cosmetic_prosthetic/ward.dmi'
+											"Ward" = 'icons/mob/augmentation/cosmetic_prosthetic/ward.dmi',
+											"Morpheus" = 'icons/mob/augmentation/cosmetic_prosthetic/morpheus.dmi'
 											)
 
 /obj/machinery/aug_manipulator/examine(mob/user)
