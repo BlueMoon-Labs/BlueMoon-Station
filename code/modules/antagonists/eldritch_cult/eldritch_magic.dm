@@ -106,7 +106,8 @@
 	if(!.)
 		return
 	if(user.incapacitated())
-		to_chat(user, span_warning("Вы не можете этого сделать в нынешнем состоянии!"))
+		if(!silent)
+			to_chat(user, span_warning("Вы не можете этого сделать в нынешнем состоянии!"))
 		return FALSE
 
 /obj/effect/proc_holder/spell/self/heretic_summon/cast(list/targets, mob/user)
@@ -121,7 +122,7 @@
 			heretic.summon_items -= I
 		else
 			to_chat(user, span_warning("Не удалось призвать предмет!"))
-			revert_cast()
+			revert_cast(user)
 		return
 
 	I = locate(summon_type) in user.loc
