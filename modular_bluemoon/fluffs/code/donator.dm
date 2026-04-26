@@ -2255,7 +2255,7 @@
 	name = "Armolex Box"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/donator/bm/armolex_box
-	ckeywhitelist = list("xaeshkavd", "sosnovskii", "hellsinggc", "ty4kahahebe")
+	ckeywhitelist = list("xaeshkavd", "sosnovskii", "hellsinggc", "ty4kahahebe", "herobrine998")
 
 /datum/gear/donator/bm/jason_mask
 	name = "Jason Mask"
