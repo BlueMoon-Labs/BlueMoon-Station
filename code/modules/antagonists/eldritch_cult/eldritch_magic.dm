@@ -84,22 +84,22 @@
 	charge_max = 100
 	clothes_req = FALSE
 	var/obj/item/summon_type // istype
-	var/summon_sound = 'sound/magic/enter_blood.ogg'
-	var/hide_sound = 'sound/magic/Demon_consume.ogg'
+	var/summon_sound = 'sound/magic/Smoke.ogg'
+	var/hide_sound = 'sound/magic/Repulse.ogg'
 
 /obj/effect/proc_holder/spell/self/heretic_summon/heart
 	name = "Summon Living Heart"
 	desc = "Позволяет призывать и прятать живое сердце в пучине безумия. Остальные услышат очень тихий звук призыва, только вплотную к вам."
 	action_icon_state = "living_heart"
 	summon_type = /obj/item/living_heart
+	summon_sound = 'sound/magic/enter_blood.ogg'
+	hide_sound = 'sound/magic/Demon_consume.ogg'
 
 /obj/effect/proc_holder/spell/self/heretic_summon/book
 	name = "Summon Codex"
 	desc = "Позволяет призывать и прятать кодекс в тайных глубинах. Остальные услышат очень тихий звук призыва, только вплотную к вам."
 	action_icon_state = "codex"
 	summon_type = /obj/item/forbidden_book
-	hide_sound = 'sound/magic/Repulse.ogg'
-	summon_sound = 'sound/magic/Smoke.ogg'
 
 /obj/effect/proc_holder/spell/self/heretic_summon/can_cast(mob/user, skipcharge, silent)
 	. = ..()
