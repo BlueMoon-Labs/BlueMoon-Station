@@ -944,7 +944,7 @@
 	name = "P320 kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/p320_kit
-	ckeywhitelist = list("pingvas", "ty4kahahebe")
+	ckeywhitelist = list("ty4kahahebe", "pingvas", "xaeshkavd")
 
 /datum/gear/donator/bm/M9_tempest_kit
 	name = "M-9 Tempest kit"
@@ -2255,7 +2255,7 @@
 	name = "Armolex Box"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/donator/bm/armolex_box
-	ckeywhitelist = list("xaeshkavd", "sosnovskii", "hellsinggc")
+	ckeywhitelist = list("xaeshkavd", "sosnovskii", "hellsinggc", "ty4kahahebe")
 
 /datum/gear/donator/bm/jason_mask
 	name = "Jason Mask"
