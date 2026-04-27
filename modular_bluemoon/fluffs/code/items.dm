@@ -164,6 +164,11 @@
 	icon_state = "blueshield_helmet_kit"
 	product = null
 	fromitem = list(/obj/item/clothing)
+	var/uses = 5
+
+/obj/item/modkit/anti_armor/examine(mob/user)
+	. = ..()
+	. += span_notice("Осталось [uses] использований.")
 
 /obj/item/modkit/anti_armor/afterattack(obj/item/O, mob/user, proximity_flag, click_parameters)
 	if(!proximity_flag || !istype(O, /obj/item/clothing))
@@ -177,6 +182,8 @@
 	cl.armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
 	cl.body_parts_covered = NONE
 	user.visible_message(span_warning("[user] modifies [cl], now it not have armor and not covering anything!"),span_warning("You modify the [cl], now it not have armor and not covering anything!"))
-	qdel(src)
+	uses--
+	if(uses <= 0)
+		qdel(src)
 
 ////////////////////////
