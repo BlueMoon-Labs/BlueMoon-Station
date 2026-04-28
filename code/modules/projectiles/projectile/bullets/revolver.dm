@@ -154,6 +154,11 @@
 	wound_falloff_tile = -1
 	embed_falloff_tile = -5
 
+/obj/item/projectile/bullet/a357/requiem
+	name = "12.7x55mm bullet"
+	wound_bonus = 100
+	bare_wound_bonus = 100
+
 //.45-70 GOVT (Gunslinger's Derringer)
 //0bserver here. For all that is holy, do me a flavor, and do NOT allow people easy access to this ammo. This is meant for extremely lucky traitors, and nuclear operatives.
 

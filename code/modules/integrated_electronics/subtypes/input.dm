@@ -348,7 +348,10 @@
 
 		if(istype(H, /mob/living))
 			var/mob/living/carbon/human/D = generate_or_wait_for_human_dummy(DUMMY_HUMAN_SLOT_EXAMINER)
+			D.forceMove(src)
 			var/msg = H.examine(D)
+			if(islist(msg))
+				msg = jointext(msg, " ")
 			if(msg)
 				set_pin_data(IC_OUTPUT, 2, msg)
 			unset_busy_human_dummy(DUMMY_HUMAN_SLOT_EXAMINER)
@@ -661,8 +664,10 @@
 	addtimer(CALLBACK(src, PROC_REF(init_frequency)), 4 SECONDS)
 
 /obj/item/integrated_circuit/input/signaler/Destroy()
-	SSradio.remove_object(src,frequency)
+	if(frequency)
+		SSradio.remove_object(src, frequency)
 	frequency = 0
+	radio_connection = null
 	return ..()
 
 /obj/item/integrated_circuit/input/signaler/proc/init_frequency()
@@ -720,7 +725,8 @@
 	desc = "Enables the sending and receiving of messages over NTNet via packet data protocol."
 	extended_desc = "Data can be sent or received using the second pin on each side, \
 	with additonal data reserved for the third pin. When a message is received, the second activation pin \
-	will pulse whatever is connected to it. Pulsing the first activation pin will send a message. Messages \
+	will pulse whatever is connected to it. Pulsing the first activation pin will send a message; when the send \
+	succeeds, the third activation pin pulses. Messages \
 	can be sent to multiple recepients. Addresses must be separated with a semicolon, like this: Address1;Address2;Etc."
 	icon_state = "signal"
 	complexity = 2
@@ -738,7 +744,11 @@
 		"passkey received"			= IC_PINTYPE_STRING,
 		"is_broadcast"				= IC_PINTYPE_BOOLEAN
 		)
-	activators = list("send data" = IC_PINTYPE_PULSE_IN, "on data received" = IC_PINTYPE_PULSE_OUT)
+	activators = list(
+		"send data" = IC_PINTYPE_PULSE_IN,
+		"on data received" = IC_PINTYPE_PULSE_OUT,
+		"on data send" = IC_PINTYPE_PULSE_OUT,
+	)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_LONG_RANGE
 	power_draw_per_use = 50
@@ -760,7 +770,8 @@
 	var/datum/netdata/data = new
 	data.recipient_ids = splittext(target_address, ";")
 	data.standard_format_data(message, text, passkey)
-	ntnet_send(data)
+	if(ntnet_send(data))
+		activate_pin(3)
 
 /obj/item/integrated_circuit/input/ntnet_receive(datum/netdata/data)
 	set_pin_data(IC_OUTPUT, 1, data.sender_id)
@@ -777,7 +788,8 @@
 	desc = "Enables the sending and receiving of messages over NTNet via packet data protocol. Allows advanced control of message contents and signalling. Must use associative lists. Outputs associative list. Has a slower transmission rate than normal NTNet circuits, due to increased data processing complexity."
 	extended_desc = "Data can be sent or received using the second pin on each side, \
 	When a message is received, the second activation pin will pulse whatever is connected to it. \
-	Pulsing the first activation pin will send a message. Messages can be sent to multiple recepients. \
+	Pulsing the first activation pin will send a message; when the send succeeds, the third activation pin pulses. \
+	Messages can be sent to multiple recepients. \
 	Addresses must be separated with a semicolon, like this: Address1;Address2;Etc."
 	icon_state = "signal"
 	complexity = 4
@@ -788,7 +800,11 @@
 		"passkey"				= IC_PINTYPE_STRING,
 		)
 	outputs = list("received data" = IC_PINTYPE_LIST, "is_broadcast" = IC_PINTYPE_BOOLEAN, "received passkey" = IC_PINTYPE_STRING)
-	activators = list("send data" = IC_PINTYPE_PULSE_IN, "on data received" = IC_PINTYPE_PULSE_OUT)
+	activators = list(
+		"send data" = IC_PINTYPE_PULSE_IN,
+		"on data received" = IC_PINTYPE_PULSE_OUT,
+		"on data send" = IC_PINTYPE_PULSE_OUT,
+	)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_LONG_RANGE
 	power_draw_per_use = 50
@@ -811,7 +827,8 @@
 	data.recipient_ids = splittext(target_address, ";")
 	data.data = message
 	data.passkey = passkey
-	ntnet_send(data)
+	if(ntnet_send(data))
+		activate_pin(3)
 
 /obj/item/integrated_circuit/input/ntnet_advanced/ntnet_receive(datum/netdata/data)
 	set_pin_data(IC_OUTPUT, 1, data.data)
@@ -1080,14 +1097,15 @@
 
 /obj/item/integrated_circuit/input/matscan
 	name = "material scanner"
-	desc = "This special module is designed to get information about material containers of different machinery, \
-			like ORM, lathes, etc."
+	desc = "Специальная маширения получающая содержание материалов в машинерии или предметах."
 	icon_state = "video_camera"
 	complexity = 6
 	inputs = list(
 		"target" = IC_PINTYPE_REF
 		)
 	outputs = list(
+		"Is material container"	= IC_PINTYPE_BOOLEAN,
+		"Total amount"			= IC_PINTYPE_NUMBER,
 		"Metal"				 	= IC_PINTYPE_NUMBER,
 		"Glass"					= IC_PINTYPE_NUMBER,
 		"Silver"				= IC_PINTYPE_NUMBER,
@@ -1108,25 +1126,37 @@
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 40
-	var/list/mtypes = list(/datum/material/iron, /datum/material/glass, /datum/material/silver, /datum/material/gold, /datum/material/diamond, /datum/material/plasma, /datum/material/uranium, /datum/material/bananium, /datum/material/titanium, /datum/material/bluespace, /datum/material/biomass, /datum/material/plastic)
+	var/static/list/mtypes = list(/datum/material/iron, /datum/material/glass, /datum/material/silver, /datum/material/gold, /datum/material/diamond, /datum/material/plasma, /datum/material/uranium, /datum/material/bananium, /datum/material/titanium, /datum/material/bluespace, /datum/material/biomass, /datum/material/plastic)
 
 
 /obj/item/integrated_circuit/input/matscan/do_work()
 	var/atom/movable/H = get_pin_data_as_type(IC_INPUT, 1, /atom/movable)
-	var/turf/T = get_turf(src)
-	var/datum/component/material_container/mt = H.GetComponent(/datum/component/material_container)
-	if(!mt) //Invalid input
+	if(!H)
 		return
-	if(H in view(T)) // This is a camera. It can't examine thngs,that it can't see.
-		for(var/I in mtypes)
-			if(I in mt.materials)
-				set_pin_data(IC_OUTPUT, I, mt.materials[I])
-			else
-				set_pin_data(IC_OUTPUT, I, null)
-		push_data()
-		activate_pin(2)
+	var/turf/T = get_turf(src)
+	var/datum/component/material_container/mt = (H.GetComponent(/datum/component/remote_materials)?.mat_container || H.GetComponent(/datum/component/material_container))
+	var/total_amount = 0
+
+	if(!mt && (H in view(T)))
+		set_pin_data(IC_OUTPUT, 1, FALSE)
+		for(var/I in 1 to length(mtypes))
+			var/amount = H?.custom_materials?[SSmaterials.GetMaterialRef(mtypes[I])] || 0
+			set_pin_data(IC_OUTPUT, 2 + I, amount)
+			total_amount += amount
+
+	else if(H in view(T))
+		set_pin_data(IC_OUTPUT, 1, TRUE)
+		for(var/I in 1 to length(mtypes))
+			var/amount = mt.materials?[SSmaterials.GetMaterialRef(mtypes[I])] || 0
+			set_pin_data(IC_OUTPUT, 2 + I, amount)
+			total_amount += amount
 	else
 		activate_pin(3)
+		return
+
+	set_pin_data(IC_OUTPUT, 2, total_amount)
+	push_data()
+	activate_pin(2)
 
 /obj/item/integrated_circuit/input/atmospheric_analyzer
 	name = "atmospheric analyzer"

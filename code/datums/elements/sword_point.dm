@@ -7,7 +7,7 @@
 		return
 	if(!istype(target))
 		return ELEMENT_INCOMPATIBLE
-	RegisterSignal(target, COMSIG_ITEM_ALT_AFTERATTACK, PROC_REF(point))
+	RegisterSignal(target, COMSIG_ITEM_ALT_AFTERATTACK, PROC_REF(point), override = TRUE)
 
 /datum/element/sword_point/Detach(datum/source)
 	. = ..()

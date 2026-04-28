@@ -37,7 +37,7 @@
 /datum/gear/shoes/poly
 	name = "Polychromic shoes"
 	path = /obj/item/clothing/shoes/sneakers/poly/polychromic
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#1D1D1D")
 
 /datum/gear/shoes/gildedcuffs

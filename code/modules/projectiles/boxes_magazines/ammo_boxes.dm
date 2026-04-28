@@ -23,6 +23,13 @@
 	desc = "Designed to quickly reload revolvers. Usage of these rounds will constitute a war crime in your area."
 	ammo_type = /obj/item/ammo_casing/a357/dumdum
 
+/obj/item/ammo_box/a357/requiem
+	name = "speed loader (12.7x55mm)"
+	desc = "Designed to quickly reload revolvers. These rounds are manufactured within extremely tight tolerances, making them easy to show off trickshots with."
+	icon_state = "rsh-12"
+	max_ammo = 5
+	ammo_type = /obj/item/ammo_casing/a357/requiem
+
 /obj/item/ammo_box/c38
 	name = "speed loader (.38 rubber)"
 	desc = "Designed to quickly reload revolvers."

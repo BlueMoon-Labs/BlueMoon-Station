@@ -32,7 +32,7 @@
 	current_pipe = null
 	QDEL_NULL(move_packet)
 	..()
-	return QDEL_HINT_HARDDEL_NOW
+	return QDEL_HINT_QUEUE
 
 // initialize a holder from the contents of a disposal unit
 /obj/structure/disposalholder/proc/init(obj/machinery/disposal/D)

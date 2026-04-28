@@ -325,6 +325,9 @@
 	icon = 'icons/mob/animal.dmi'
 	name = "clown goblin"
 	desc = "A tiny walking mask and clown shoes. You want to honk his nose!"
+	playable_by_ghost = TRUE
+	ghost_possess_title = "Клоун-гоблин"
+	ghost_possess_question = "Стать клоун-гоблином?"
 	icon_state = "clowngoblin"
 	icon_living = "clowngoblin"
 	icon_dead = null

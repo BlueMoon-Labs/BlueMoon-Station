@@ -21,6 +21,12 @@
 	desc = "A .357 bullet casing. Usage of this ammunition will constitute a war crime in your area."
 	projectile_type = /obj/item/projectile/bullet/a357/dumdum
 
+/obj/item/ammo_casing/a357/requiem
+	name = "12.7x55mm bullet casing"
+	desc = "A 12.7x55mm bullet casing."
+	caliber = "12.7x55mm"
+	projectile_type = /obj/item/projectile/bullet/a357/requiem
+
 // 7.62x38mmR (Nagant Revolver)
 
 /obj/item/ammo_casing/n762

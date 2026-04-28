@@ -1,0 +1,124 @@
+/* Job role checkboxes (Banning Panel, WhiteMoon-style) */
+.ban-role-toolbar {
+  margin: 12px 0 8px 0;
+  text-align: left;
+}
+
+.ban-panel-hint {
+  color: #98b0c3;
+  font-size: 11px;
+}
+
+.ban-btn {
+  background: #40628a;
+  color: #fff;
+  border: 1px solid #5a7aad;
+  border-radius: 3px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.ban-btn:hover {
+  background: #4d7399;
+}
+
+.ban-btn.ban-btn-unban {
+  background: #2d5a40;
+  border-color: #3d7a55;
+}
+
+.ban-btn.ban-btn-unban:hover {
+  background: #36734a;
+}
+
+.ban-role-toolbar .ban-btn + .ban-btn {
+  margin-left: 8px;
+}
+
+.ban-role-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start;
+  margin: 10px 0 16px 0;
+}
+
+.banrole-column {
+  flex: 1 1 200px;
+  max-width: 280px;
+  min-width: 180px;
+}
+
+.ban-cat-other {
+  opacity: 0.95;
+}
+
+.rolegroup {
+  padding: 6px 8px;
+  border-radius: 4px;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.rolegroup .cat-head {
+  display: block;
+  margin-bottom: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.rolegroup .content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 11px;
+}
+
+.jr_label {
+  display: block;
+  cursor: pointer;
+  color: #e8ecf0;
+}
+
+/* Active job ban for this key — highlight row (Banning & Unbanning panel) */
+.jr_label.jr_label_banned {
+  background: rgba(140, 35, 35, 0.55);
+  border: 1px solid rgba(220, 90, 90, 0.55);
+  border-radius: 3px;
+  padding: 3px 5px;
+  margin: 0 -2px;
+  color: #ffd0d0;
+}
+
+.jr_label.jr_label_banned:hover {
+  background: rgba(160, 45, 45, 0.65);
+}
+
+.jr_label input {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.command { background-color: rgba(148, 143, 2, 0.35); }
+.security { background-color: rgba(163, 0, 0, 0.35); }
+.engineering { background-color: rgba(251, 86, 19, 0.35); }
+.medical { background-color: rgba(51, 114, 150, 0.35); }
+.science { background-color: rgba(153, 51, 153, 0.35); }
+.supply { background-color: rgba(168, 115, 43, 0.35); }
+.service { background-color: rgba(110, 170, 44, 0.35); }
+.law { background-color: rgba(128, 0, 128, 0.35); }
+.silicon { background-color: rgba(180, 0, 180, 0.25); }
+.ghostroles { background-color: rgba(92, 0, 230, 0.3); }
+.antagonists { background-color: rgba(109, 63, 64, 0.45); }
+.other { background-color: rgba(120, 40, 40, 0.4); }
+
+.reason {
+  resize: vertical;
+  min-height: 64px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}

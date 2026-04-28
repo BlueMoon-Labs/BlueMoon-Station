@@ -62,10 +62,16 @@
 	// Joe (Status) FLW PM TP
 	//Disk:
 	// Deep Space FLW
+	var/list/visible_antags = list()
+	for(var/datum/antagonist/A in get_team_antags())
+		if(A.show_in_check_antagonists)
+			visible_antags += A
+	if(!length(visible_antags))
+		return ""
 	var/list/parts = list()
 	parts += "<b>[antag_listing_name()]</b><br>"
 	parts += "<table cellspacing=5>"
-	for(var/datum/antagonist/A in get_team_antags())
+	for(var/datum/antagonist/A in visible_antags)
 		parts += A.antag_listing_entry()
 	parts += "</table>"
 	parts += antag_listing_footer()
@@ -94,6 +100,8 @@
 	for(var/datum/antagonist/A in GLOB.antagonists)
 		if(!A.owner)
 			continue
+		if(!A.show_in_check_antagonists)
+			continue
 		all_teams |= A.get_team()
 		all_antagonists += A
 
@@ -101,10 +109,13 @@
 		for(var/datum/antagonist/X in all_antagonists)
 			if(X.get_team() == T)
 				all_antagonists -= X
+		var/team_section = T.antag_listing_entry()
+		if(!length(team_section))
+			continue
 		if(T.is_gamemode_hero())
-			priority_sections += T.antag_listing_entry()
+			priority_sections += team_section
 		else
-			sections += T.antag_listing_entry()
+			sections += team_section
 
 	sortTim(all_antagonists, GLOBAL_PROC_REF(cmp_antag_category))
 

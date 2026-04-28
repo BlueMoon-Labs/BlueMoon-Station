@@ -127,6 +127,16 @@
 					else if(isAI(M))
 						assignment = "ai"
 
+				else if(isbrain(M))
+					var/mob/living/brain/brain_mob = M
+					var/obj/item/brain_item = brain_mob.container
+					if(istype(brain_item, /obj/item/mmi/posibrain))
+						assignment = "posibrain"
+					else if(istype(brain_item, /obj/item/mmi))
+						assignment = "mmibrain"
+					else
+						assignment = "brain"
+
 				else if(isalien(M))
 					assignment = "alien"
 

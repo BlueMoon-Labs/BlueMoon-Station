@@ -68,6 +68,10 @@
 
 	switch(action)
 		if("move")
+			if(istype(src, /obj/machinery/computer/shuttle/pod))
+				if(GLOB.security_level < SEC_LEVEL_RED && !(obj_flags & EMAGGED))
+					to_chat(usr, "<span class='warning'>Escape pods will only launch during \"Code Red\" security alert.</span>")
+					return
 			var/obj/docking_port/mobile/M = SSshuttle.getShuttle(shuttleId)
 			if(M.launch_status == ENDGAME_LAUNCHED)
 				to_chat(usr, "<span class='warning'>You've already escaped. Never going back to that place again!</span>")
@@ -100,9 +104,7 @@
 				return TRUE
 		if("request")
 			if(istype(src, /obj/machinery/computer/shuttle/pod))
-				if(GLOB.security_level < SEC_LEVEL_RED && !(obj_flags & EMAGGED))
-					to_chat(usr, "<span class='warning'>Escape pods will only launch during \"Code Red\" security alert.</span>")
-					return
+				return
 			var/list/options = params2list(possible_destinations)
 			var/list/valid_destinations = list()
 			for(var/dest in options)

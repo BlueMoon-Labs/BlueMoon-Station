@@ -1,5 +1,5 @@
 /// Engineering Override Access manual toggle
-#define COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE "force_airlock_override"
+//#define COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE "force_airlock_override"
 
 //Security levels
 #define SEC_LEVEL_GREEN	1

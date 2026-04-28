@@ -357,17 +357,21 @@
 	remove_mob_overlay()
 
 /obj/item/organ/eyes/robotic/glow/proc/update_visuals(datum/source, olddir, newdir)
-	if((LAZYLEN(eye_lighting) < light_beam_distance) || !on_mob)
+	if(QDELETED(owner))
+		return
+	if((LAZYLEN(eye_lighting) < light_beam_distance) || QDELETED(on_mob))
 		regenerate_light_effects()
 	var/turf/scanfrom = get_turf(owner)
+	if(!istype(scanfrom))
+		clear_visuals()
+		return
 	var/scandir = owner.dir
 	if (newdir && scandir != newdir) // COMSIG_ATOM_DIR_CHANGE happens before the dir change, but with a reference to the new direction.
 		scandir = newdir
-	if(!istype(scanfrom))
-		clear_visuals()
 	var/turf/scanning = scanfrom
 	var/stop = FALSE
-	on_mob.forceMove(scanning)
+	if(on_mob)
+		on_mob.forceMove(scanning)
 	for(var/i in 1 to light_beam_distance)
 		scanning = get_step(scanning, scandir)
 		if(!scanning)
@@ -375,6 +379,8 @@
 		if(scanning.opacity || scanning.has_opaque_atom)
 			stop = TRUE
 		var/obj/effect/abstract/eye_lighting/L = LAZYACCESS(eye_lighting, i)
+		if(!L)
+			continue
 		if(stop)
 			L.forceMove(src)
 		else
@@ -387,6 +393,8 @@
 	else
 		for(var/i in eye_lighting)
 			var/obj/effect/abstract/eye_lighting/L = i
+			if(!L)
+				continue
 			L.forceMove(src)
 		if(!QDELETED(on_mob))
 			on_mob.forceMove(src)

@@ -21,7 +21,7 @@
 /datum/gear/gloves/maidpoly // WHAT DO YOU EVEN CALL THEM
 	name = "Polychromic maid gloves"
 	path = /obj/item/clothing/gloves/polymaid
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#333333", "#FFFFFF")
 
 /datum/gear/gloves/north_star

@@ -106,7 +106,7 @@
 				for(var/J in 1 to components_of_type.len)
 					var/datum/component/C = components_of_type[J]
 					if(C.type != our_type) //but not over other exact matches
-						components_of_type.Insert(J, I)
+						components_of_type.Insert(J, src)
 						inserted = TRUE
 						break
 				if(!inserted)
@@ -128,7 +128,9 @@
 		var/list/components_of_type = dc[I]
 		if(length(components_of_type))	//
 			var/list/subtracted = components_of_type - src
-			if(subtracted.len == 1)	//only 1 guy left
+			if(!subtracted.len)
+				dc -= I
+			else if(subtracted.len == 1)	//only 1 guy left
 				dc[I] = subtracted[1]	//make him special
 			else
 				dc[I] = subtracted

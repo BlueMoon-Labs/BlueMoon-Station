@@ -112,6 +112,8 @@
 	/// directional recoil multiplier
 	var/dir_recoil_amp = 10
 
+	var/can_shoot_yourself = TRUE
+
 /obj/item/gun/ui_action_click(mob/user, action)
 	if(istype(action, /datum/action/item_action/toggle_firemode))
 		fire_select()
@@ -368,8 +370,11 @@
 			return
 		if(!ismob(target) || user.a_intent == INTENT_HARM) //melee attack
 			return
-		if(target == user && (user.a_intent != INTENT_DISARM) && !(user.zone_selected == BODY_ZONE_PRECISE_MOUTH || (user.zone_selected == BODY_ZONE_PRECISE_GROIN && user.a_intent != INTENT_HELP))) //so we can't shoot ourselves (unless mouth selected or disarm intent) // BLUEMOON EDIT add BODY_ZONE_PRECISE_GROIN
-			return
+		if(target == user)
+			if(!can_shoot_yourself)
+				return
+			if((user.a_intent != INTENT_DISARM) && !(user.zone_selected == BODY_ZONE_PRECISE_MOUTH || (user.zone_selected == BODY_ZONE_PRECISE_GROIN && user.a_intent != INTENT_HELP))) //so we can't shoot ourselves (unless mouth selected or disarm intent) // BLUEMOON EDIT add BODY_ZONE_PRECISE_GROIN
+				return
 		if(iscarbon(target))
 			var/mob/living/carbon/C = target
 			for(var/i in C.all_wounds)

@@ -9,7 +9,7 @@
 	supervisors = "the head of personnel"
 	selection_color = "#bbe291"
 	alt_titles = list(
-		"Assistant Botanist", //Стажер выше, для удобства
+		"Junior Botanist", //Стажер выше, для удобства
 		"Apiarist",
 		"Apiculturist",
 		"Beekeeper",
@@ -30,8 +30,8 @@
 	outfit = /datum/outfit/job/botanist
 	plasma_outfit = /datum/outfit/plasmaman/botany
 
-	access = list(ACCESS_HYDROPONICS, ACCESS_BAR, ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_HYDROPONICS, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM)
+	access = list(ACCESS_HYDROPONICS, ACCESS_BAR, ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+	minimal_access = list(ACCESS_HYDROPONICS, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
 	paycheck = PAYCHECK_EASY
 	paycheck_department = ACCOUNT_SRV
 	bounty_types = CIV_JOB_GROW

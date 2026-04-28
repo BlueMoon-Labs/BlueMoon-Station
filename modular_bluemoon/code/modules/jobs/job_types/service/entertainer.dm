@@ -21,6 +21,9 @@
 	departments = DEPARTMENT_BITFLAG_SERVICE
 	threat = 0.5
 
+	access = list(ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+	minimal_access = list(ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+
 	custom_spawn_text = "вы — сотрудник сервисного отдела. У вас нет своего отдела или прямого начальника помимо Главы Персонала. \
 	Коммуницируйте с остальным обслуживающим персоналом для достижения наилучшего эффекта. В конце концов, развлекайте туристов и тех, \
 	кто обещает хорошие чаевые за ваш труд!"
@@ -33,6 +36,7 @@
 		"Belly Massager",
 		"Cosmetologist",
 		"Cosplayer",
+		"Guide",
 		"Dancer",
 		"Entertainment Organizer",
 		"Escort",
@@ -49,9 +53,11 @@
 		"Perfomer",
 		"Performer",
 		"Personal Physician",
+		"Sex Educator",
+		"Scene Performer",
 		"Stripper",
 		"Stylist",
-		"Waiter"
+		"Waiter",
 		)
 
 	family_heirlooms = list(

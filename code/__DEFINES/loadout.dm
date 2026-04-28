@@ -93,6 +93,9 @@
 #define LOADOUT_CAN_DESCRIPTION				(1<<1) //adding a custom description to items
 #define LOADOUT_CAN_COLOR_POLYCHROMIC		(1<<2)
 
+#define LOADOUT_CAN_NAME_DESC LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
+#define LOADOUT_CAN_NAME_DESC_POLY LOADOUT_CAN_NAME_DESC | LOADOUT_CAN_COLOR_POLYCHROMIC
+
 //the names of the customization tabs
 #define SETTINGS_TAB			0
 #define PREFERENCES_TAB			1

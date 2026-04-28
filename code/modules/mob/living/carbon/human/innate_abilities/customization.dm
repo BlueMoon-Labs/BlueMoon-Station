@@ -8,6 +8,10 @@
 	var/body_size_min
 
 /datum/action/innate/ability/humanoid_customization/Activate()
+	if(iszombie_infectious(owner))
+		to_chat(owner, span_warning("You zombie and can't do this!"))
+		return
+
 	if(owner.get_ability_property(INNATE_ABILITY_HUMANOID_CUSTOMIZATION, PROPERTY_CUSTOMIZATION_SILENT))
 		owner.visible_message("<span class='notice'>[owner] gains a look of \
 		concentration while standing perfectly still.\

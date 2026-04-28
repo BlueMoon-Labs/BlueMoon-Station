@@ -242,8 +242,7 @@
 			//SPLURT EDIT
 			dat += "<h2>Headshot Image</h2>"
 			dat += "<a href='?_src_=prefs;preference=headshot'><b>Set Headshot Image</b></a><br>"
-			if(features["headshot_link"])
-				dat += "<img src='[features["headshot_link"]]' width='160px' height='120px'>"
+			dat += headshot_preview_html(features["headshot_link"], 160, 120)
 			dat += "<br><br>"
 			//SPLURT EDIT END
 			//SKYRAT EDIT
@@ -263,7 +262,7 @@
 			dat += 	"[mobsex_pref_label] : <a href='?_src_=prefs;preference=mobsex_pref'>[mobsexpref]</a><br>"
 			dat += 	"[hornyantags_pref_label] : <a href='?_src_=prefs;preference=hornyantags_pref'>[hornyantagspref]</a><br>"
 			//END OF Gardelin0 Addoon
-
+			dat += 	"ERP Позиция : <a href='?_src_=prefs;preference=directory_erptag'>[directory_erptag]</a><br>"
 			dat += "<h2>Records</h2><br>"
 			dat += "<a href='?_src_=prefs;preference=security_records;task=input'><b>Security Records</b></a><br>"
 			if(length_char(security_records) <= 40)
@@ -757,8 +756,8 @@
 						dat += "<span style='border: 1px solid #161616; background-color: #[features["butt_color"]];'><font color='[color_hex2num(features["butt_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["butt_color"]]</font></span> <a href='?_src_=prefs;preference=butt_color;task=input'>Change</a><br>"
 					var/butt_size_value = features["butt_size"]
 					var/butt_visibility_value = features["butt_visibility"]
-					dat += "<b>" + butt_size_label + ":</b><a style='display:block;width:50px' href='?_src_=prefs;preference=butt_size;task=input'>" + butt_size_value + "</a>"
-					dat += "<b>" + butt_visibility_label + ":</b><a style='display:block;width:100px' href='?_src_=prefs;preference=butt_visibility;task=input'>" + butt_visibility_value + "</a>"
+					dat += "<b>[butt_size_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=butt_size;task=input'>[butt_size_value]</a>"
+					dat += "<b>[butt_visibility_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=butt_visibility;task=input'>[butt_visibility_value]</a>"
 					var/butt_stuffing_text = features["butt_stuffing"] == TRUE ? "Yes" : "No"
 					dat += "<b>[butt_stuffing_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=butt_stuffing'>[butt_stuffing_text]</a>"
 					var/has_anus_text = features["has_anus"] == TRUE ? "Yes" : "No"
@@ -862,6 +861,8 @@
 			dat += "<b>tgui Button Size:</b> <a href='?_src_=prefs;preference=tgui_large_buttons'>[(tgui_large_buttons) ? "Large" : "Small"]</a><br>"
 			dat += "<b>tgui Buttons Swapped:</b> <a href='?_src_=prefs;preference=tgui_swapped_buttons'>[(tgui_swapped_buttons) ? "Yes" : "No"]</a><br>"
 			dat += "<b>Show Runechat Chat Bubbles:</b> <a href='?_src_=prefs;preference=chat_on_map'>[chat_on_map ? "Enabled" : "Disabled"]</a><br>"
+			if(chat_on_map)
+				dat += "<b>Show Runechat LOOC Chat Bubbles:</b> <a href='?_src_=prefs;preference=chat_on_map_looc'>[chat_on_map_looc ? "Enabled" : "Disabled"]</a><br>"
 			dat += "<b>Runechat message char limit:</b> <a href='?_src_=prefs;preference=max_chat_length;task=input'>[max_chat_length]</a><br>"
 			dat += "<b>See Runechat for non-mobs:</b> <a href='?_src_=prefs;preference=see_chat_non_mob'>[see_chat_non_mob ? "Enabled" : "Disabled"]</a><br>"
 			//SKYRAT CHANGES BEGIN

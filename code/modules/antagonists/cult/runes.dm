@@ -249,6 +249,11 @@ structure_check() searches for nearby cultist structures required for the invoca
 			to_chat(M, "<span class='warning'>Something is shielding [convertee]'s mind!</span>")
 		log_game("Offer rune failed - convertee had anti-magic")
 		return FALSE
+	if(!SSticker.mode.add_cultist(convertee.mind, 1))
+		for(var/M in invokers)
+			to_chat(M, "<span class='cult italic'>[convertee] cannot be bound to the cult — something rejects the Geometer's claim!</span>")
+		log_game("Offer rune failed - add_cultist failed (convertee: [key_name(convertee)])")
+		return FALSE
 	var/brutedamage = convertee.getBruteLoss()
 	var/burndamage = convertee.getFireLoss()
 	if(brutedamage || burndamage)
@@ -257,7 +262,6 @@ structure_check() searches for nearby cultist structures required for the invoca
 	convertee.visible_message("<span class='warning'>[convertee] writhes in pain \
 	[brutedamage || burndamage ? "even as [convertee.ru_ego()] wounds heal and close" : "as the markings below [convertee.ru_na()] glow a bloody red"]!</span>", \
 	"<span class='cultlarge'><i>AAAAAAAAAAAAAA-</i></span>")
-	SSticker.mode.add_cultist(convertee.mind, 1)
 	new /obj/item/melee/cultblade/dagger(get_turf(src))
 	convertee.mind.special_role = ROLE_CULTIST
 	to_chat(convertee, "<span class='cult italic'><b>Your blood pulses. Your head throbs. The world goes red. All at once you are aware of a horrible, horrible, truth. The veil of reality has been ripped away \
@@ -865,16 +869,29 @@ structure_check() searches for nearby cultist structures required for the invoca
 			log_game("Manifest rune failed - too many summoned ghosts")
 			return list()
 		notify_ghosts("Manifest rune invoked in [get_area(src)].", 'sound/effects/ghost2.ogg', source = src, ignore_dnr_observers = TRUE)
+		var/list/ghosts_unbanned = list()
 		var/list/ghosts_on_rune = list()
 		for(var/mob/dead/observer/O in T)
-			if(!QDELETED(O) && O.client && !jobban_isbanned(O, ROLE_CULTIST) && !QDELETED(src) && O.can_reenter_round())
-				ghosts_on_rune += O
-		if(!ghosts_on_rune.len)
+			if(QDELETED(O) || !O.client || QDELETED(src) || !O.can_reenter_round())
+				continue
+			ghosts_on_rune += O
+			if(!jobban_isbanned(O, ROLE_CULTIST) && !jobban_isbanned(O, ROLE_INTEQ))
+				ghosts_unbanned += O
+
+		var/mob/dead/observer/ghost_to_spawn
+		var/need_cult_bypass = FALSE
+		if(ghosts_unbanned.len)
+			ghost_to_spawn = pick(ghosts_unbanned)
+		else if(ghosts_on_rune.len)
+			for(var/mob/dead/observer/banned_spirit in ghosts_on_rune)
+				to_chat(banned_spirit, "<span class='cult large'>The Geometer's pull finds no purchase — you are barred from this form. Another soul will be called in your stead.</span>")
+			ghost_to_spawn = pick(ghosts_on_rune)
+			need_cult_bypass = TRUE
+		else
 			to_chat(user, "<span class='cultitalic'>There are no spirits near [src]!</span>")
 			fail_invoke()
 			log_game("Manifest rune failed - no nearby ghosts")
 			return list()
-		var/mob/dead/observer/ghost_to_spawn = pick(ghosts_on_rune)
 		var/mob/living/carbon/human/cult_ghost/new_human = new(T)
 		new_human.real_name = ghost_to_spawn.real_name
 		new_human.alpha = 150 //Makes them translucent
@@ -887,8 +904,21 @@ structure_check() searches for nearby cultist structures required for the invoca
 		to_chat(user, "<span class='cultitalic'>Your blood begins flowing into [src]. You must remain in place and conscious to maintain the forms of those summoned. This will hurt you slowly but surely...</span>")
 		var/obj/structure/emergency_shield/invoker/N = new(T)
 		ghost_to_spawn.transfer_ckey(new_human, FALSE)
-		SSticker.mode.add_cultist(new_human.mind, 0)
-		to_chat(new_human, "<span class='cultitalic'><b>You are a servant of the Geometer. You have been made semi-corporeal by the cult of Nar'Sie, and you are to serve them at all costs.</b></span>")
+		if(need_cult_bypass)
+			var/datum/antagonist/cult/manifest_summon/summon = new
+			summon.linked_rune = src
+			summon.summon_invoker = user
+			if(!new_human.mind.add_antag_datum(summon))
+				log_game("Manifest rune failed - add_antag_datum(manifest_summon) rejected")
+				ghosts--
+				qdel(new_human)
+				qdel(N)
+				fail_invoke()
+				return list()
+		else
+			SSticker.mode.add_cultist(new_human.mind, 0)
+		if(!QDELETED(new_human))
+			to_chat(new_human, "<span class='cultitalic'><b>You are a servant of the Geometer. You have been made semi-corporeal by the cult of Nar'Sie, and you are to serve them at all costs.</b></span>")
 
 		while(!QDELETED(src) && !QDELETED(user) && !QDELETED(new_human) && (user in T))
 			if(user.stat || new_human.InCritical())

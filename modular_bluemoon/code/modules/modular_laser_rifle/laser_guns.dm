@@ -27,15 +27,17 @@
 	ammo_x_offset = 0
 	selfcharge = 1
 	charge_delay = 1
+	selfcharge_amount = 200
 	shaded_charge = TRUE
 	slot_flags = ITEM_SLOT_BACK
 	obj_flags = UNIQUE_RENAME
 	SET_BASE_PIXEL(-8, 0)
 	w_class = WEIGHT_CLASS_BULKY
-	weapon_weight = WEAPON_HEAVY
+	weapon_weight = WEAPON_MEDIUM
 	actions_types = list(/datum/action/item_action/toggle_personality)
-	recoil = 0.25 // This isn't enough to mean ANYTHING aside from it jolting your screen the tiniest amount
+	recoil = 0.25
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT, SELECT_FULLY_AUTOMATIC)
+	burst_size = 3
 	zoomable = TRUE
 	zoom_amt = 8 //Long range, enough to see in front of you, but no tiles behind you.
 	zoom_out_amt = 5
@@ -311,7 +313,6 @@
 /datum/action/item_action/toggle_personality
 	name = "Toggle Weapon Personality"
 	desc = "Toggles the weapon's personality core. Studies find that turning them off makes them quite sad, however."
-	background_icon_state = "bg_mod"
 
 //Short version of the above modular rifle, has less charge and different modes
 /obj/item/gun/energy/modular_laser_rifle/carbine
@@ -326,7 +327,7 @@
 	slot_flags = ITEM_SLOT_BACK | ITEM_SLOT_BELT
 	SET_BASE_PIXEL(0, 0)
 	w_class = WEIGHT_CLASS_NORMAL
-	weapon_weight = WEAPON_MEDIUM
+	weapon_weight = WEAPON_LIGHT
 	weapon_mode_options = list(
 		/datum/laser_weapon_mode/hellfire,
 		/datum/laser_weapon_mode/sword,

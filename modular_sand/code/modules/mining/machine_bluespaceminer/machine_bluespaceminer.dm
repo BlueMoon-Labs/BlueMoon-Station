@@ -91,7 +91,7 @@ GLOBAL_VAR_INIT(bsminers_lock, FALSE)
 	var/last_core_radio_warning_50 = 0
 	var/last_core_radio_warning_10 = 0
 	var/static/list/instability_settings = list(
-		INSTABILITY_LIST_ADD(100, 10, "inst1", "#c5641e"),
+		INSTABILITY_LIST_ADD(99, 10, "inst1", "#c5641e"),
 		INSTABILITY_LIST_ADD(50, 20, "inst2", "#c51e1e"),
 		INSTABILITY_LIST_ADD(10, 50, "inst3", "#c51e1e"),
 	)

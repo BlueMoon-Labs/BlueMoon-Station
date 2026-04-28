@@ -9,18 +9,26 @@
 	var/product //what it makes
 	var/list/fromitem = list() //what it needs
 
-/obj/item/modkit/afterattack(obj/O, mob/user as mob)
-	if(istype(O, product))
-		to_chat(user,"<span class='warning'>[O] is already modified!")
+/obj/item/modkit/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	if(!proximity_flag)
 		return
-	if(O.type in fromitem) //makes sure O is the right thing
-		var/result = new product(usr.loc) //spawns the product
-		user.visible_message("<span class='warning'>[user] modifies [O]!","<span class='warning'>You modify the [O]!")
-		on_item_replace(O, result)
-		qdel(O) //Gets rid of the baton
+	if(istype(target, product))
+		to_chat(user,"<span class='warning'>[target] is already modified!")
+		return
+	if(target.type in fromitem) //makes sure target is the right thing
+		var/loc_to_spawn = target.loc || get_turf(target)
+		var/atom/movable/result = new product //spawns the product
+		user.visible_message("<span class='warning'>[user] modifies [target]!","<span class='warning'>You modify the [target]!")
+		on_item_replace(target, result)
+		qdel(target) //Gets rid of the baton
 		qdel(src) //gets rid of the kit
+		if(ismob(loc_to_spawn))
+			var/mob/M = loc_to_spawn
+			M.put_in_hands(result)
+		else
+			result.forceMove(loc_to_spawn)
 	else
-		to_chat(user, "<span class='warning'> You can't modify [O] with this kit!</span>")
+		to_chat(user, "<span class='warning'> You can't modify [target] with this kit!</span>")
 
 // may be useful for gun/stunbaton/etc modkits
 /obj/item/modkit/proc/on_item_replace(obj/old_item, obj/modified_item)
@@ -596,12 +604,37 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	//chosen_icon = 'icons/mob/clothing/back.dmi'
 	icon_state = "KS-23M"
-	can_suppress = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/shoot.ogg'
 
 /obj/item/gun/ballistic/shotgun/riot/ks_22/update_icon_state()
 	. = ..()
 	icon_state = "KS-23M[chambered ? "" : "-e"]"
+
+/obj/item/modkit/mossberg_kit
+	name = "Mossberg-590A Shotgun Kit"
+	desc = "A modkit for making a Shotgun into a Mossberg-590A."
+	product = /obj/item/gun/ballistic/shotgun/riot/mossberg
+	fromitem = list(/obj/item/gun/ballistic/shotgun, /obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/shotgun/riot/syndicate)
+
+/obj/item/gun/ballistic/shotgun/riot/mossberg
+	name = "\improper Mossberg-590A"
+	desc = "Карабин Моссберг-590А - ружьё с нарезным стволом. Имеет умную РГБ подсветку, дабы каждый враг понимал, какая участь его сейчас настигнет."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	icon_state = "mossberg_n"
+	item_state = "mossberg_n"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/pf940_shoot.ogg'
+
+/obj/item/gun/ballistic/shotgun/riot/mossberg/update_icon_state()
+	var/state = "mossberg_l"
+	if(chambered)
+		if(istype(chambered, /obj/item/ammo_casing/shotgun/rubbershot) || istype(chambered, /obj/item/ammo_casing/shotgun/beanbag))
+			state = "mossberg_n"
+		else if(istype(chambered, /obj/item/ammo_casing/shotgun/incendiary))
+			state = "mossberg_i"
+	icon_state = state
+	item_state = state
 
 /obj/item/modkit/g36_kit
 	name = "G36 Kit"
@@ -955,6 +988,8 @@
 /obj/item/modkit/rsh_future
 	name = "Special .38 Mars Kit"
 	desc = "A modkit for making a .38 Mars Special into a RSH-Future."
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
 	product = /obj/item/gun/ballistic/revolver/detective/rsh_future
 	fromitem = list (/obj/item/gun/ballistic/revolver/detective)
 
@@ -993,7 +1028,6 @@
 	desc = "Трофей. 45 калибр. Унифицированное оружие самозащиты, выдаваемое каждому без исключения жителю-Касари флота-государства Небулы по окончании ими первой стадии жизни. Крайне редок, в сравнении с иным огнестрельным оружием галактики - штучный товар, использующий замысловатую систему заряжания и некоторые технически трудно реализуемые решения, крайне мешающие реверс-инженерингу и стороннему производству. Благодаря нему каждый житель Небулы может дать отпор неприятелю извне, коих у них полно. Не только эффективно, но и со стилем."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "Nebular-9"
-	can_suppress = TRUE
 	unique_reskin = null
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
@@ -1003,13 +1037,32 @@
 /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular/get_worn_belt_overlay(icon_file)
 	return null
 
+/obj/item/modkit/p226_syndicate
+	name = "P226 'Syndicate' Kit"
+	desc = "A modkit for making a Enforcer Gun into a P226 'Syndicate'."
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/p226_syndicate
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/p226_syndicate
+	name = "\improper P226 'Syndicate'"
+	desc = "Наградной пистолет модели P226 красного цвета. На верхней части рукоятки присутствует выбитый символ Триглава Синдиката с черной 'S' на кроваво-красном фоне. Кожух ствола переливается кроваво-медным отблеском на свете. Бок рукоятки украшен золотистыми буквами 'ЗА ОТЛИЧНУЮ СЛУЖБУ'."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "p_226_syndicate"
+	item_state = "p_226_syndicate"
+	unique_reskin = null
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/p226_syndicate/get_worn_belt_overlay(icon_file)
+	return null
+
 /obj/item/modkit/katana_kit
 	name = "Stun-Katana Kit"
 	desc = "A modkit for making a stunsword into a Stun-Katana."
-	product = /obj/item/melee/baton/stunsword/stunkatana
-	fromitem = list(/obj/item/melee/baton/stunsword)
+	product = /obj/item/melee/baton/stunkatana
+	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
 
-/obj/item/melee/baton/stunsword/stunkatana
+/obj/item/melee/baton/stunkatana
 	name = "\improper Stun-Katana"
 	desc = "Оружие специальных подразделений ЧВК \"Конкорд\", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
@@ -1017,13 +1070,13 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "stunkatana"
 	item_state = "stunkatana"
-/obj/item/melee/baton/stunsword/stunkatana/proc/switch_light()
+/obj/item/melee/baton/stunkatana/proc/switch_light()
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent > 0.5)
 		set_light(3, 0.9, "#B6EEE9")
 	else
 		set_light(3, 0.9, "#D9CD8E")
-/obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status = FALSE, silent = FALSE)
+/obj/item/melee/baton/stunkatana/switch_status(new_status = FALSE, silent = FALSE)
 	if(turned_on != new_status)
 		turned_on = new_status
 		if(!silent)
@@ -1041,10 +1094,10 @@
 			set_light(0)
 	update_icon_state()
 
-/obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
+/obj/item/melee/baton/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
 	. = ..()
 	update_icon_state()
-	// После удара — обновляем иконку и свет по текущему заряду
+	// После удара — обновляем иконку и свет по текущему заряду.
 	if(!turned_on || !cell)
 		set_light(0)
 		return
@@ -1052,7 +1105,7 @@
 		set_light(3, 0.9, "#ff0000")
 		return
 	switch_light()
-/obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
+/obj/item/melee/baton/stunkatana/update_icon_state()
 	if(!cell)
 		icon_state = "No-cell"
 		item_state = "stunkatana"
@@ -1185,7 +1238,7 @@
 ///////////////////////////////////////////////
 
 /obj/item/modkit/bwal_special_kit
-	name = "B-Wal-Special"
+	name = "B-Wal-Special kit"
 	desc = "A modkit for making an B-Wal-2572 into a B-Wal-Special."
 	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal_special
 	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold, /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal2572)
@@ -1197,9 +1250,10 @@
 	icon_state = "bwal_spec"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/bwalshot.ogg'
 	unique_reskin = null
+	obj_flags = NONE
 
 /obj/item/modkit/captain_rifle_kit
-	name = "Antique Laser Rifle"
+	name = "Antique Laser Rifle kit"
 	desc = "A modkit for making an antique laser gun into a antique laser rifle."
 	product = /obj/item/gun/energy/laser/captain/rifle
 	fromitem = list(/obj/item/gun/energy/laser/captain)
@@ -1214,7 +1268,210 @@
 	item_state = "captain_rifle"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/LaserOni.ogg'
 	unique_reskin = null
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
+	alternate_worn_layer = SUIT_STORE_LAYER
 
 /obj/item/gun/energy/laser/captain/rifle/get_examine_name(mob/user)
 	. = ..()
 	. += "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>["This is captain's antique laser gun. Highrisk item!"]</span></span>"
+
+///////////////////////////////////////////////
+
+/obj/item/modkit/mpl21
+	name = "MPL-21 Kit"
+	desc = "A modkit for making an Thilium Lascarbine into a Modural Personal Laser."
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
+	product = /obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21
+	fromitem = list(/obj/item/gun/ballistic/automatic/laser/lasgun)
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21
+	name = "MPL-21"
+	desc = "Modural Personal Laser its a ergonomic direct heating system that uses flat box magazines with pre-charged energy cartridges."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "mpl_21"
+	item_state = "mpl_21"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/mpl21_shot.ogg'
+	base_pixel_x = -8
+	var/const/custom_mag_type = /obj/item/ammo_box/magazine/recharge/lasgun/mpl_21
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/Initialize(mapload)
+	. = ..()
+	if(replace_mag_to_custom())
+		update_icon()
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/get_examine_name(mob/user)
+	. = ..()
+	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/ballistic/automatic/laser/lasgun::name]</span></span>"
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/update_icon_state()
+	icon_state = initial(icon_state)
+	item_state = initial(item_state)
+	if(chambered || magazine)
+		item_state += "-mag"
+		if(!chambered)
+			item_state += "-empty"
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/update_overlays()
+	. = ..()
+	if(magazine)
+		. += "[initial(icon_state)]-mag"
+	if(chambered)
+		. += "[initial(icon_state)]-charge"
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/insert_mag(obj/item/ammo_box/magazine/AM, mob/user)
+	. = ..()
+	replace_mag_to_custom()
+
+/obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/proc/replace_mag_to_custom()
+	if(magazine && !(istype(magazine, custom_mag_type)))
+		var/obj/item/ammo_box/magazine/oldmag = magazine
+		magazine = new custom_mag_type(src)
+		QDEL_LIST(magazine.stored_ammo)
+		magazine.stored_ammo = oldmag.stored_ammo
+		for(var/atom/movable/A in oldmag.stored_ammo)
+			A.forceMove(magazine)
+		oldmag.stored_ammo = list()
+		qdel(oldmag)
+		magazine.update_icon()
+		return TRUE
+
+/obj/item/ammo_box/magazine/recharge/lasgun/mpl_21
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "mpl_21_mag"
+
+/obj/item/ammo_box/magazine/recharge/lasgun/mpl_21/update_icon_state()
+	icon_state = initial(icon_state)
+	if(!stored_ammo.len)
+		icon_state += "-empty"
+
+///////////////////////////////////////////////
+
+/obj/item/modkit/lcr29
+	name = "LCR-29 Kit"
+	desc = "A modkit for making an Laser Gun into a Laser Combat Rifle."
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
+	product = /obj/item/gun/energy/laser/lcr_29
+	fromitem = list(/obj/item/gun/energy/laser)
+
+/obj/item/gun/energy/laser/lcr_29
+	name = "LCR-29"
+	desc = "Laser Combat Rifle with a non-removable battery and a single lethal mode, which can only be charged from an external source through the charging port."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "lcr_29"
+	item_state = null
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	ammo_type = list(/obj/item/ammo_casing/energy/lasergun/lcr_29)
+	base_pixel_x = -8
+	charge_sections = 2
+	shaded_charge = TRUE
+	modifystate = FALSE
+
+/obj/item/gun/energy/laser/lcr_29/get_examine_name(mob/user)
+	. = ..()
+	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/energy/laser::name]</span></span>"
+
+/obj/item/ammo_casing/energy/lasergun/lcr_29
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/lcr29_shot.ogg'
+
+///////////////////////////////////////////////
+
+/obj/item/modkit/m3predator
+	name = "M-3 Predator Kit"
+	desc = "A modkit for making a Hybrid Taser into an M-3 Predator"
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
+	product = /obj/item/gun/energy/e_gun/advtaser/m3_predator
+	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
+
+/obj/item/gun/energy/e_gun/advtaser/m3_predator
+	name = "M-3 Predator"
+	desc = "Reliable, accurate, and easy to handle. The \"Predator\" is marketed by Elanus Risk Control Services as an effective and relatively inexpensive weapon from another galaxy. Although it is rarely purchased by the military due to its limited effectiveness against kinetic barriers."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "m3_predator"
+	item_state = null
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	charge_sections = 2
+	shaded_charge = TRUE
+	modifystate = FALSE
+	ammo_type = list(/obj/item/ammo_casing/energy/disabler/m3_predator, /obj/item/ammo_casing/energy/electrode/security/m3_predator = FALSE)
+
+/obj/item/gun/energy/e_gun/advtaser/m3_predator/get_examine_name(mob/user)
+	. = ..()
+	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/energy/e_gun/advtaser::name]</span></span>"
+
+/obj/item/ammo_casing/energy/disabler/m3_predator
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/m3_predator_disabler.ogg'
+
+/obj/item/ammo_casing/energy/electrode/security/m3_predator
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/m3_predator_taser.ogg'
+
+///////////////////////////////////////////////
+
+/obj/item/gun/ballistic/automatic/pistol/g22/anomalist
+	name = "\improper Gelriter-22 M-1"
+	desc = "Prototype submachine gun of the Catcrin army. Looks like it just came from the factory, not a single scratch. Despite its dimensions, it is lightweight due to the epoxy body combined with metal elements. Equipped with additional grips and holographic sights. On the right side, the image: a hand reaches from the darkness toward the light."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_Shot.ogg'
+	pickup_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_draw.ogg'
+	alternate_worn_layer = SUIT_STORE_LAYER
+	icon_state = "SAR-Bolt"
+	item_state = "SAR-Bolt"
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_reload.ogg'
+	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_reload.ogg'
+	lock_back_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_Bolt.ogg'
+	eject_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_unload.ogg'
+	eject_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_unload.ogg'
+	unlock_sound = 'modular_bluemoon/fluffs/sound/weapon/SAR_Bolt_unlock.ogg'
+	flight_x_offset = 32
+	flight_y_offset = 14
+
+/obj/item/gun/ballistic/automatic/pistol/g22/anomalist/update_icon_state()
+	icon_state = "[initial(icon_state)][chambered ? "" : "-a"]"
+
+/obj/item/gun/ballistic/automatic/pistol/g22/anomalist/update_overlays()
+	. = ..()
+	if(magazine)
+		. += "SAR-Mag"
+
+/obj/item/gun/ballistic/automatic/pistol/g22/anomalist/get_examine_name(mob/user)
+	. = ..()
+	. += "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>["This is Head of Security G-22 M.1. Highrisk item!"]</span></span>"
+
+/obj/item/modkit/Gelriter_22
+	name = "Gelriter-22 kit"
+	desc = "A modkit for making an G-22 M.1 into a Gelriter-22 M-1."
+	product = /obj/item/gun/ballistic/automatic/pistol/g22/anomalist
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/g22)
+
+/obj/item/gun/energy/laser/captain/rifle/amogus
+	name = "Fancy Laser Rifle"
+	desc = "Expensive-looking, custom-made laser. To the touch: expensive polymers, combined with wood, coated in lacquer on the grip."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "captain_rifle_s"
+
+/obj/item/gun/energy/laser/captain/rifle/amogus/update_overlays()
+	. = ..()
+	if(!automatic_charge_overlays)
+		return
+	var/ratio = get_charge_ratio()
+	var/state = "captain_rifle"
+	if(ratio == 0)
+		state += "_empty"
+	else
+		state += "_charge[ratio]"
+	. += mutable_appearance(icon, state)
+
+/obj/item/modkit/fancy_rifle_kit
+	name = "Fancy Laser Rifle kit"
+	desc = "A modkit for making an antique laser gun into a fancy laser rifle."
+	product = /obj/item/gun/energy/laser/captain/rifle/amogus
+	fromitem = list(/obj/item/gun/energy/laser/captain)

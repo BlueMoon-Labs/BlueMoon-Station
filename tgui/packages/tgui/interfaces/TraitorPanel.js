@@ -232,13 +232,92 @@ const AddAntagPanel = (props, context) => {
   const { available_categories } = data;
   const [antagSearch, setAntagSearch] = useLocalState(context, 'antagSearch', '');
 
-  const filteredCategories = (available_categories || []).map(cat => {
-    const filteredAntags = cat.antags.filter(a =>
-      a.name.toLowerCase().includes(antagSearch.toLowerCase())
-      || cat.category.toLowerCase().includes(antagSearch.toLowerCase())
+  const filteredCategories = (available_categories || [])
+    .map(cat => {
+      const filteredAntags = cat.antags.filter(a =>
+        a.name.toLowerCase().includes(antagSearch.toLowerCase()) ||
+        cat.category.toLowerCase().includes(antagSearch.toLowerCase())
+      );
+      return { ...cat, antags: filteredAntags };
+    })
+    .filter(cat => cat.antags.length > 0)
+    .sort((a, b) => {
+      const aSingle = a.antags.length === 1;
+      const bSingle = b.antags.length === 1;
+
+      // single вверх, multi вниз
+      if (aSingle && !bSingle) return -1;
+      if (!aSingle && bSingle) return 1;
+      return 0;
+    });
+
+  const renderAntagButton = (antag) => {
+    if (antag.is_active) {
+      return (
+        <Button
+          width="100%"
+          icon="skull-crossbones"
+          color="red"
+          bold
+          content={antag.name + " ✓"}
+          tooltip="Already active"
+          disabled
+        />
+      );
+    }
+
+    return (
+      <Button
+        width="100%"
+        icon={antag.can_add ? "plus" : "ban"}
+        color={
+          antag.can_add
+            ? (antag.pref_enabled ? "green" : "yellow")
+            : "transparent"
+        }
+        content={antag.name}
+        tooltip={
+          !antag.can_add
+            ? "Cannot be added (blacklisted or duplicate)"
+            : (!antag.pref_enabled
+              ? "Disabled in player preferences"
+              : "Click to add")
+        }
+        disabled={!antag.can_add}
+        onClick={() => act("add_antag", { antag_type: antag.type_path })}
+      />
     );
-    return { ...cat, antags: filteredAntags };
-  }).filter(cat => cat.antags.length > 0);
+  };
+
+  const renderCategory = (cat) => {
+    // если один элемент - сразу кнопка
+    if (cat.antags.length === 1) {
+      const antag = cat.antags[0];
+
+      return (
+        <Flex.Item key={antag.type_path} width="100%" mb=".25rem">
+          {renderAntagButton(antag)}
+        </Flex.Item>
+      );
+    }
+
+    // если несколько - collapsible
+    return (
+      <Collapsible
+        key={cat.category}
+        title={`${cat.category} (${cat.antags.length})`}
+        open={cat.antags.some(a => a.is_active)}
+      >
+        <Flex wrap="wrap" justify="space-between">
+          {cat.antags.map((antag) => (
+            <Flex.Item key={antag.type_path} width="49%" mb=".25rem">
+              {renderAntagButton(antag)}
+            </Flex.Item>
+          ))}
+        </Flex>
+      </Collapsible>
+    );
+  };
 
   return (
     <Section>
@@ -249,45 +328,8 @@ const AddAntagPanel = (props, context) => {
         mb={1}
         onInput={(e, value) => setAntagSearch(value)}
       />
-      {filteredCategories.map((cat) => (
-        <Collapsible
-          key={cat.category}
-          title={cat.category + " (" + cat.antags.length + ")"}
-          open={cat.antags.some(a => a.is_active)}
-        >
-          <Flex wrap="wrap" justify="space-between">
-            {cat.antags.map((antag) => (
-              <Flex.Item key={antag.type_path} width="49%" mb=".25rem">
-                {antag.is_active ? (
-                  <Button
-                    width="100%"
-                    icon="skull-crossbones"
-                    color="red"
-                    bold
-                    content={antag.name + " ✓"}
-                    tooltip="Already active"
-                    disabled
-                  />
-                ) : (
-                  <Button
-                    width="100%"
-                    icon={antag.can_add ? "plus" : "ban"}
-                    color={antag.can_add ? (antag.pref_enabled ? "green" : "yellow") : "transparent"}
-                    content={antag.name}
-                    tooltip={
-                      !antag.can_add
-                        ? "Cannot be added (blacklisted or duplicate)"
-                        : (!antag.pref_enabled ? "Disabled in player preferences" : "Click to add")
-                    }
-                    disabled={!antag.can_add}
-                    onClick={() => act("add_antag", { antag_type: antag.type_path })}
-                  />
-                )}
-              </Flex.Item>
-            ))}
-          </Flex>
-        </Collapsible>
-      ))}
+
+      {filteredCategories.map(renderCategory)}
     </Section>
   );
 };

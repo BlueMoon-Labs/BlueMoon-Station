@@ -2,6 +2,7 @@
 #define JOB_MINIMAL_ACCESS CONFIG_GET(flag/jobs_have_minimal_access)
 #define PROTOLOCK_DURING_LOWPOP CONFIG_GET(flag/protolock_during_lowpop)
 #define PROTOLOCK_ALL_ACCESS CONFIG_GET(flag/protolock_all_access)
+#define PROTOLOCK_DURING_CODERED CONFIG_GET(flag/protolock_during_codered)
 
 // Only Clients should have a panel for them, okay?
 /mob/Login()
@@ -35,6 +36,10 @@
 	//Makes the protolocks able to be disabled
 	if(PROTOLOCK_ALL_ACCESS)
 		return PROTOLOCK_ACCESS_NORMAL
+
+	// RedCode and above
+	if(PROTOLOCK_DURING_CODERED && GLOB.security_level >= SEC_LEVEL_RED && is_station_level(machine_target.z))
+		return PROTOLOCK_ACCESS_CODERED
 
 	// Check if server is NOT using minimal access
 	// This is intended for low populations
@@ -82,6 +87,10 @@
 		if(PROTOLOCK_ACCESS_LOWPOP)
 			return TRUE
 
+		// Type: Code red unlock
+		if(PROTOLOCK_ACCESS_CODERED)
+			return TRUE
+
 		// Type: Standard
 		if(PROTOLOCK_ACCESS_NORMAL)
 			return TRUE
@@ -118,6 +127,10 @@
 		if(PROTOLOCK_ACCESS_NORMAL)
 			return TRUE
 
+		// Type: Code red unlock
+		if(PROTOLOCK_ACCESS_CODERED)
+			return TRUE
+
 		// Type: Captain
 		if(PROTOLOCK_ACCESS_CAPTAIN)
 			return TRUE
@@ -139,3 +152,4 @@
 #undef JOB_MINIMAL_ACCESS
 #undef PROTOLOCK_DURING_LOWPOP
 #undef PROTOLOCK_ALL_ACCESS
+#undef PROTOLOCK_DURING_CODERED

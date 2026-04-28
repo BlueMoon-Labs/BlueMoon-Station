@@ -14,16 +14,6 @@ GLOBAL_LIST_INIT(bsm_low_threat_pool, list(
 
 /datum/bsm_instability_effect/low
 
-/datum/bsm_instability_effect/low/proc/play_bluespace_sparks(obj/machinery/mineral/bluespace_miner/machine)
-	var/turf/T = get_turf(machine)
-	if(!T)
-		return
-	playsound(T, 'sound/effects/sparks4.ogg', 100, 1)
-	var/datum/effect_system/spark_spread/quantum/sparks = new
-	sparks.set_up(10, 1, T)
-	sparks.attach(T)
-	sparks.start()
-
 /datum/bsm_instability_effect/low/plush_delight
 
 /datum/bsm_instability_effect/low/plush_delight/trigger(obj/machinery/mineral/bluespace_miner/machine)
@@ -147,7 +137,7 @@ GLOBAL_LIST_INIT(bsm_low_threat_pool, list(
 	play_bluespace_sparks(machine)
 	machine.balloon_alert_to_viewers("гондола...")
 	machine.visible_message(span_notice("Из разлома выходит гондола и молча принимает мир таким, какой он есть."))
-	notify_ghosts("Появилась гондола из блюспейс-разлома в [get_area_name(drop)]! Нажмите на уведомление или кликните по ней как призрак, чтобы войти.", source = spawned_gondola, action = NOTIFY_ATTACK, flashwindow = FALSE, ignore_dnr_observers = TRUE, header = "Гондола")
+	notify_ghosts("Появилась гондола из блюспейс-разлома в [get_area_name(drop)]! Нажмите на уведомление: перенос к гондоле и предложение вселиться.", source = spawned_gondola, action = NOTIFY_POSSESS, flashwindow = FALSE, ignore_dnr_observers = TRUE, header = "Гондола")
 
 #define BSM_LOW_EFFECT_DURATION 20 SECONDS
 #define BSM_VOIDS_HEART_PULSES 40

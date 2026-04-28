@@ -205,9 +205,9 @@
 #define ui_ghost_reenter_corpse "SOUTH:6,CENTER-1:24"
 #define ui_ghost_teleport "SOUTH:6,CENTER:24"
 #define ui_ghost_pai "SOUTH: 6, CENTER+1:24"
-#define ui_ghost_mafia "SOUTH: 6, CENTER+2:24"
+#define ui_ghost_mafia "SOUTH: 6, CENTER+3:24"
 #define ui_ghost_spawners "SOUTH: 6, CENTER+1:24" // LEGACY. SAME LOC AS PAI
-
+#define ui_ghost_floor_changer "SOUTH:6,CENTER+2:24" // Z
 //UI position overrides for 1:1 screen layout. (default is 7:5)
 #define ui_overridden_resist "EAST-3:24,SOUTH+1:7"
 #define ui_clickdelay "CENTER,SOUTH+1:-31"

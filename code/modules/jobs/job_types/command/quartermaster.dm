@@ -16,6 +16,7 @@
 	exp_type = EXP_TYPE_CREW
 	exp_type_department = EXP_TYPE_SUPPLY
 	considered_combat_role = TRUE
+	custom_spawn_text = "работайте сообща с другими отделами. Не забывайте проверять состояние вашего шахтёрского корпуса. Вы - пятый в очереди на пост ВрИО капитана."
 	alt_titles = list(
 		"Donk Co. Manager", //Триглав выше, для удобства
 		"Logistics Syndicate Supervisor", //Синди выше, для удобства
@@ -39,10 +40,10 @@
 
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_MAILSORTING, ACCESS_CARGO, ACCESS_CARGO_BOT, ACCESS_QM, ACCESS_MINING,
 					ACCESS_MINING_STATION, ACCESS_MINERAL_STOREROOM, ACCESS_KEYCARD_AUTH, ACCESS_RC_ANNOUNCE,
-					ACCESS_SEC_DOORS, ACCESS_HEADS)
+					ACCESS_SEC_DOORS, ACCESS_HEADS, ACCESS_PRODUCTION_CARGO)
 	minimal_access = list(ACCESS_MAINT_TUNNELS, ACCESS_MAILSORTING, ACCESS_CARGO, ACCESS_CARGO_BOT, ACCESS_QM, ACCESS_MINING,
 					ACCESS_MINING_STATION, ACCESS_MINERAL_STOREROOM, ACCESS_KEYCARD_AUTH, ACCESS_RC_ANNOUNCE,
-					ACCESS_SEC_DOORS, ACCESS_HEADS)
+					ACCESS_SEC_DOORS, ACCESS_HEADS, ACCESS_PRODUCTION_CARGO)
 	paycheck = PAYCHECK_HARD //They can already buy stuff using cargo budget, don't give em a command-level paycheck.	//alright i'll agree to that -qweq
 	paycheck_department = ACCOUNT_CAR
 	bounty_types = CIV_JOB_RANDOM
@@ -70,9 +71,10 @@
 	uniform = /obj/item/clothing/under/rank/cargo/qm
 	shoes = /obj/item/clothing/shoes/sneakers/brown
 	glasses = /obj/item/clothing/glasses/sunglasses
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	l_hand = /obj/item/clipboard
 	id = /obj/item/card/id/silver
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1)
 	box = /obj/item/storage/box/survival/command
 	chameleon_extras = /obj/item/stamp/qm
 	accessory = list(/obj/item/clothing/accessory/permit/special/quartermaster)
@@ -95,6 +97,6 @@
 	box = /obj/item/storage/box/survival/syndie
 	accessory = list(/obj/item/clothing/accessory/permit/special/quartermaster)
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/melee/classic_baton/telescopic = 1, /obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/syndicate_uplink_high=1)
+	backpack_contents = list(/obj/item/melee/classic_baton/telescopic = 1, /obj/item/modular_computer/tablet/preset/advanced/command = 1, /obj/item/syndicate_uplink_high=1)
 
 	neck = /obj/item/clothing/neck/cloak/syndiecap

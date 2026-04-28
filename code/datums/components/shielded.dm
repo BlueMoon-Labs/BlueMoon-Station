@@ -45,6 +45,7 @@
 	else //it's a mob
 		var/mob/living/L = parent
 		RegisterSignal(L, COMSIG_LIVING_RUN_BLOCK, PROC_REF(living_block))
+		RegisterSignal(L, COMSIG_ATOM_UPDATED_ICON, PROC_REF(on_holder_updated_icon))
 		holder = L
 		var/to_add = charges >= 1 ? shield_state : broken_state
 		if(to_add)
@@ -56,7 +57,7 @@
 	if(parent != holder) //not a mob, thus an item.
 		UnregisterSignal(parent, list(COMSIG_ITEM_RUN_BLOCK,COMSIG_ITEM_CHECK_BLOCK,COMSIG_ITEM_EQUIPPED,COMSIG_ITEM_DROPPED))
 	if(holder)
-		UnregisterSignal(holder, list(COMSIG_LIVING_RUN_BLOCK, COMSIG_LIVING_GET_BLOCKING_ITEMS))
+		UnregisterSignal(holder, list(COMSIG_LIVING_RUN_BLOCK, COMSIG_LIVING_GET_BLOCKING_ITEMS, COMSIG_ATOM_UPDATED_ICON))
 		if(cached_vis_overlay)
 			SSvis_overlays.remove_vis_overlay(holder, list(cached_vis_overlay))
 			cached_vis_overlay = null
@@ -107,17 +108,27 @@
 		var/layer = (holder.layer > MOB_LAYER ? holder.layer : MOB_LAYER) + 0.01
 		cached_vis_overlay = SSvis_overlays.add_vis_overlay(holder, 'icons/effects/effects.dmi', to_add, layer, GAME_PLANE, holder.dir)
 
+/datum/component/shielded/proc/on_holder_updated_icon(atom/source, updates, return_value)
+	SIGNAL_HANDLER
+	if(!istype(source, /mob/living) || source != holder)
+		return
+	cached_vis_overlay = null
+	update_shield_overlay(charges < 1)
+
 /datum/component/shielded/proc/on_equip(obj/item/source, mob/living/equipper, slot)
 	if(!(accepted_slots & slot))
 		return
-	// Clear overlay from previous holder if different (handles transfer edge cases)
-	if(holder && holder != equipper && !QDELETED(holder) && cached_vis_overlay)
-		SSvis_overlays.remove_vis_overlay(holder, list(cached_vis_overlay))
-		cached_vis_overlay = null
+	// Clear overlay and signals from previous holder if different (handles transfer edge cases)
+	if(holder && holder != equipper && !QDELETED(holder))
+		UnregisterSignal(holder, list(COMSIG_LIVING_GET_BLOCKING_ITEMS, COMSIG_ATOM_UPDATED_ICON))
+		if(cached_vis_overlay)
+			SSvis_overlays.remove_vis_overlay(holder, list(cached_vis_overlay))
+			cached_vis_overlay = null
 	holder = equipper
 	RegisterSignal(parent, COMSIG_ITEM_RUN_BLOCK, PROC_REF(on_run_block))
 	RegisterSignal(parent, COMSIG_ITEM_CHECK_BLOCK, PROC_REF(on_check_block))
 	RegisterSignal(equipper, COMSIG_LIVING_GET_BLOCKING_ITEMS, PROC_REF(include_shield))
+	RegisterSignal(equipper, COMSIG_ATOM_UPDATED_ICON, PROC_REF(on_holder_updated_icon))
 	var/to_add = charges >= 1 ? shield_state : broken_state
 	if(to_add)
 		var/layer = (holder.layer > MOB_LAYER ? holder.layer : MOB_LAYER) + 0.01
@@ -125,7 +136,7 @@
 
 /datum/component/shielded/proc/on_drop(obj/item/source, mob/dropper)
 	if(holder == dropper)
-		UnregisterSignal(holder, COMSIG_LIVING_GET_BLOCKING_ITEMS)
+		UnregisterSignal(holder, list(COMSIG_LIVING_GET_BLOCKING_ITEMS, COMSIG_ATOM_UPDATED_ICON))
 		UnregisterSignal(parent, list(COMSIG_ITEM_RUN_BLOCK, COMSIG_ITEM_CHECK_BLOCK))
 		if(cached_vis_overlay)
 			SSvis_overlays.remove_vis_overlay(holder, list(cached_vis_overlay))

@@ -611,6 +611,9 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	if(prefs.muted & MUTE_ADMINHELP)
 		to_chat(src, "<span class='danger'>Ошибка: Admin-PM: Вы не можете отправлять админхелпы (Мут).</span>")
 		return
+	if(!holder && jobban_isbanned(src.mob, "ahelp"))
+		to_chat(src, "<span class='danger'>Вам запрещено использовать ахелп.</span>")
+		return
 
 	var/message = ""
 	if(prefs.tgui_input_verbs)

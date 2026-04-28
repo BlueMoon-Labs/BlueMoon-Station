@@ -278,6 +278,8 @@
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,
 		/obj/item/storage/box/ert_commander=1,
 		/obj/item/melee/classic_baton/telescopic/centcom/plus = 1,
+		/obj/item/gun/ballistic/revolver/requiem=1,
+		/obj/item/ammo_box/a357=2,
 		)
 
 	implants = list(
@@ -438,13 +440,18 @@
 	ears = /obj/item/radio/headset/headset_cent/alt
 
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
-		/obj/item/storage/box/syndie_kit/revolver=1,\
+		/obj/item/storage/box/syndie_kit/revolver/requiem=1,\
 		/obj/item/storage/firstaid/tactical/slaver=1,\
 		/obj/item/storage/box/flashbangs/super=1,\
 		/obj/item/pinpointer/nuke=1,\
 		/obj/item/grenade/plastic/x4=1)
 
-	implants = list(/obj/item/implant/mindshield, /obj/item/implant/deathrattle/centcom, /obj/item/implant/weapons_auth, /obj/item/implant/radio/centcom)
+	implants = list(/obj/item/implant/mindshield,
+			/obj/item/implant/deathrattle/centcom,
+			/obj/item/implant/weapons_auth,
+			/obj/item/implant/radio/centcom,
+			/obj/item/implant/explosive/macro,
+		)
 
 	cybernetic_implants = list(
 		/obj/item/organ/cyberimp/eyes/hud/security,
@@ -453,6 +460,11 @@
 		/obj/item/organ/cyberimp/arm/shield,
 		/obj/item/organ/eyes/robotic/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
+		/obj/item/organ/cyberimp/arm/shield,
+		/obj/item/organ/cyberimp/arm/combat{zone=BODY_ZONE_L_ARM},
+		/obj/item/organ/heart/bioaegis/t3/antag,
+		/obj/item/organ/liver/bioaegis/t3/antag,
+		/obj/item/organ/lungs/bioaegis/t3/antag,
 	)
 
 	give_space_cooler_if_synth = TRUE // BLUEMOON ADD

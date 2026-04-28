@@ -76,13 +76,13 @@
 	contains = list(/obj/item/storage/box/exileimp)
 	crate_name = "exile implant crate"
 
-/datum/supply_pack/security/armory/lasercarbine
-	name = "Modular Laser Rifle Carbine Crate"
-	desc = "Содержит один модульный лазерный карабин. Данный карабин обладает возможностью самозарядки, а также обладает 5 видами стрельбы. Для открытия требуется доступ к оружейной."
-	cost = 5000
-	contains = list(/obj/item/gun/energy/modular_laser_rifle/carbine)
-	crate_name = "modular laser rifle carbine crate"
-	crate_type = /obj/structure/closet/crate/secure/plasma
+// /datum/supply_pack/security/armory/lasercarbine
+// 	name = "Modular Laser Rifle Carbine Crate"
+// 	desc = "Содержит один модульный лазерный карабин. Данный карабин обладает возможностью самозарядки, а также обладает 5 видами стрельбы. Для открытия требуется доступ к оружейной."
+// 	cost = 15000
+// 	contains = list(/obj/item/gun/energy/modular_laser_rifle/carbine)
+// 	crate_name = "modular laser rifle carbine crate"
+// 	crate_type = /obj/structure/closet/crate/secure/plasma
 
 /datum/supply_pack/security/armory/mindshield
 	name = "Mindshield Implants Crate"
@@ -237,8 +237,8 @@
 	name = "ERT Armor Crate | MedSec"
 	desc = "Содержит два полных комплекта прочных костюмов, разработанных совместными усилиями Дочерних Компаний Синдиката и Nanotrasen. Каждый комплект содержит костюм, шлем, маску, боевой пояс, боевой нож и боевые перчатки. Для открытия требуется доступ к оружейной."
 	cost = 6000
-	contains = list(/obj/item/clothing/suit/armor/hos/security,
-					/obj/item/clothing/suit/armor/hos/medical,
+	contains = list(/obj/item/clothing/suit/space/swat/security,
+					/obj/item/clothing/suit/space/swat/medical,
 					/obj/item/clothing/head/helmet/swat/security,
 					/obj/item/clothing/head/helmet/swat/medical,
 					/obj/item/clothing/mask/gas/sechailer/swat,
@@ -255,8 +255,8 @@
 	name = "ERT Armor Crate | JanEng"
 	desc = "Содержит два полных комплекта прочных костюмов, разработанных совместными усилиями Дочерних Компаний Синдиката и Nanotrasen. Каждый комплект содержит костюм, шлем, маску, боевой пояс, боевой нож и боевые перчатки. Для открытия требуется доступ к оружейной."
 	cost = 6000
-	contains = list(/obj/item/clothing/suit/armor/hos/engineer,
-					/obj/item/clothing/suit/armor/hos/janitor,
+	contains = list(/obj/item/clothing/suit/space/swat/engineer,
+					/obj/item/clothing/suit/space/swat/janitor,
 					/obj/item/clothing/head/helmet/swat/engineer,
 					/obj/item/clothing/head/helmet/swat/janitor,
 					/obj/item/clothing/mask/gas/sechailer/swat,
@@ -273,8 +273,8 @@
 	name = "ERT Armor Crate | Command"
 	desc = "Содержит два полных комплекта прочных костюмов, разработанных совместными усилиями Дочерних Компаний Синдиката и Nanotrasen. Каждый комплект содержит костюм, шлем, маску, боевой пояс, боевой нож и боевые перчатки. Для открытия требуется доступ к оружейной."
 	cost = 6000
-	contains = list(/obj/item/clothing/suit/armor/hos/command,
-					/obj/item/clothing/suit/armor/hos/command,
+	contains = list(/obj/item/clothing/suit/space/swat/command,
+					/obj/item/clothing/suit/space/swat/command,
 					/obj/item/clothing/head/helmet/swat/command,
 					/obj/item/clothing/head/helmet/swat/command,
 					/obj/item/clothing/mask/gas/sechailer/swat,

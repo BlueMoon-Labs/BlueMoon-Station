@@ -1,7 +1,7 @@
 import { map } from 'common/collections';
 
 import { useBackend, useLocalState } from '../backend';
-import { Button, Flex, LabeledList, Section, Table, Tabs } from '../components';
+import { Box, Button, Dropdown, Flex, LabeledList, Section, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
 export const ShuttleManipulator = (props, context) => {
@@ -28,6 +28,11 @@ export const ShuttleManipulator = (props, context) => {
             onClick={() => setTab(3)}>
             Modification
           </Tabs.Tab>
+          <Tabs.Tab
+            selected={tab === 4}
+            onClick={() => setTab(4)}>
+            Гиперпространство
+          </Tabs.Tab>
         </Tabs>
         {tab === 1 && (
           <ShuttleManipulatorStatus />
@@ -37,6 +42,9 @@ export const ShuttleManipulator = (props, context) => {
         )}
         {tab === 3 && (
           <ShuttleManipulatorModification />
+        )}
+        {tab === 4 && (
+          <ShuttleManipulatorHyperspace />
         )}
       </Window.Content>
     </Window>
@@ -93,9 +101,111 @@ export const ShuttleManipulatorStatus = (props, context) => {
                 </>
               )}
             </Table.Cell>
+            <Table.Cell>
+              <Box color="label" title="Очередь и форс — вкладка «Гиперпространство»">
+                {shuttle.can_queue_hyperspace_event ? 'см. вкладку' : '—'}
+              </Box>
+            </Table.Cell>
           </Table.Row>
         ))}
       </Table>
+    </Section>
+  );
+};
+
+export const ShuttleManipulatorHyperspace = (props, context) => {
+  const { act, data } = useBackend(context);
+  const shuttles = (data.shuttles || []).filter(
+    s => s.can_queue_hyperspace_event,
+  );
+  return (
+    <Section
+      title="Ивенты гиперпространства (эвакуационный шаттл)"
+      buttons={(
+        <Box color="label" fontSize="0.9rem">
+          Очередь срабатывает при уходе шаттла в транзит. Форс — только пока в транзите.
+        </Box>
+      )}>
+      {!shuttles.length ? (
+        <Box color="label">Нет эвакуационного шаттла в манипуляторе.</Box>
+      ) : (
+        shuttles.map(shuttle => {
+          const opts = shuttle.hyperspace_event_options || [];
+          return (
+            <Section
+              key={shuttle.shuttle_id}
+              level={2}
+              title={shuttle.name + ' (' + shuttle.shuttle_id + ')'}>
+              <LabeledList>
+                <LabeledList.Item label="В очереди на полёт">
+                  {shuttle.queued_event_name || '—'}
+                </LabeledList.Item>
+                <LabeledList.Item label="Поставить в очередь">
+                  <Flex align="center" wrap>
+                    <Flex.Item>
+                      <Dropdown
+                        width="20rem"
+                        noscroll
+                        displayText="Выберите тип…"
+                        options={opts.map(o => o.label)}
+                        onSelected={label => {
+                          const opt = opts.find(o => o.label === label);
+                          if (opt?.path) {
+                            act('queue_hyperspace_event', {
+                              shuttle_id: shuttle.shuttle_id,
+                              event_path: opt.path,
+                            });
+                          }
+                        }}
+                      />
+                    </Flex.Item>
+                    <Flex.Item ml={1}>
+                      <Button
+                        icon="trash"
+                        color="bad"
+                        content="Сбросить"
+                        onClick={() => act('clear_queued_hyperspace_event', {
+                          shuttle_id: shuttle.shuttle_id,
+                        })} />
+                    </Flex.Item>
+                  </Flex>
+                </LabeledList.Item>
+                <LabeledList.Item
+                  label="Форс сейчас"
+                  color={shuttle.can_force_hyperspace_event ? 'normal' : 'label'}>
+                  {shuttle.can_force_hyperspace_event ? (
+                    <Dropdown
+                      width="20rem"
+                      noscroll
+                      displayText="Ивент в текущем транзите…"
+                      options={opts.map(o => o.label)}
+                      onSelected={label => {
+                        const opt = opts.find(o => o.label === label);
+                        if (opt?.path) {
+                          act('force_hyperspace_event', {
+                            shuttle_id: shuttle.shuttle_id,
+                            event_path: opt.path,
+                          });
+                        }
+                      }}
+                    />
+                  ) : (
+                    'Только вне станции, в тайле-транзите.'
+                  )}
+                </LabeledList.Item>
+                <LabeledList.Item>
+                  <Button
+                    content="JMP"
+                    onClick={() => act('jump_to', {
+                      type: 'mobile',
+                      shuttle_id: shuttle.shuttle_id,
+                    })} />
+                </LabeledList.Item>
+              </LabeledList>
+            </Section>
+          );
+        })
+      )}
     </Section>
   );
 };

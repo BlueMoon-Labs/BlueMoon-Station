@@ -11,7 +11,6 @@
 	alt_titles = list(
 		"Trainee Cargo Technician", //Стажер выше, для удобства
 		"Donk Co. Specialist", //Триглав выше, для удобства
-		"Syndicate Smuggler", //Синди выше, для удобства
 		"Cock Packager",
 		"Commodities Trader",
 		"Cryptocurrency Technician",
@@ -23,7 +22,8 @@
 		"Inventory Associate",
 		"Logistics Technician",
 		"Mail Carrier",
-		"Mailman",
+		"Mail Man",
+		"Mail Woman",
 		"Mailroom Technician",
 		"Merchant",
 		"Package Handler",
@@ -43,8 +43,8 @@
 	plasma_outfit = /datum/outfit/plasmaman/cargo
 
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_MAILSORTING, ACCESS_CARGO, ACCESS_CARGO_BOT, ACCESS_MINING,
-				ACCESS_MINING_STATION, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_MAINT_TUNNELS, ACCESS_CARGO, ACCESS_MAILSORTING, ACCESS_MINERAL_STOREROOM)
+				ACCESS_MINING_STATION, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_CARGO)
+	minimal_access = list(ACCESS_MAINT_TUNNELS, ACCESS_CARGO, ACCESS_MAILSORTING, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_CARGO)
 	paycheck = PAYCHECK_EASY
 	paycheck_department = ACCOUNT_CAR
 

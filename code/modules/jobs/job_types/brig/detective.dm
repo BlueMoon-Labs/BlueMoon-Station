@@ -13,7 +13,6 @@
 	exp_requirements = 3000
 	exp_type = EXP_TYPE_CREW
 	alt_titles = list(
-		"Syndicate Survey Specialist", //Синди выше, для удобства
 		"AC Recon Agent",
 		"Cinder Dick",
 		"Cooperate Auditor",
@@ -25,6 +24,7 @@
 		"Private Investigator",
 		"Prosecutor",
 		"SAARE Inspector",
+		"Survey Specialist",
 		"Safeguard Investigator",
 		"Slutective",
 		"Stalker",
@@ -36,8 +36,8 @@
 	plasma_outfit = /datum/outfit/plasmaman/detective
 	considered_combat_role = TRUE
 
-	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_FORENSICS_LOCKERS, ACCESS_MORGUE, ACCESS_MAINT_TUNNELS, ACCESS_COURT, ACCESS_BRIG, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_FORENSICS_LOCKERS, ACCESS_MORGUE, ACCESS_MAINT_TUNNELS, ACCESS_COURT, ACCESS_BRIG, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM)
+	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_FORENSICS_LOCKERS, ACCESS_MORGUE, ACCESS_MAINT_TUNNELS, ACCESS_COURT, ACCESS_BRIG, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SECURITY)
+	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_FORENSICS_LOCKERS, ACCESS_MORGUE, ACCESS_MAINT_TUNNELS, ACCESS_COURT, ACCESS_BRIG, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SECURITY)
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_SEC
 
