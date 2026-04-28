@@ -826,7 +826,7 @@
 
 /datum/interaction/lewd/fuck_thighs/display_interaction(mob/living/user, mob/living/target)
 	var/is_hidden = ..()
-	user.do_thighfuck(target, is_hidden)
+	user.do_thighfuck(target, spillage = TRUE, is_hidden)
 
 	if(!isclownjob(user))
 		return
