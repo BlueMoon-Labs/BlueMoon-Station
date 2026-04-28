@@ -95,11 +95,11 @@
 		if(milkers && milktype)
 			if(milkers.climaxable(target, TRUE))
 				liquid_container.reagents.add_reagent(milktype, rand(1,3 * milkers.get_lactation_amount_modifier()))
-				user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> выдавливает содержимое груди <b>[target]</b> в [liquid_container]."), ignored_mobs = user.get_unconsenting())
+				user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> выдавливает содержимое груди <b>[target]</b> в [liquid_container]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 				target.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
 				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, -1)
 			else
-				user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>[user]</b> пытается выдоить содержимое груди <b>[target]</b> в [liquid_container], но ничего не выходит...."), ignored_mobs = user.get_unconsenting())
+				user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>[user]</b> пытается выдоить содержимое груди <b>[target]</b> в [liquid_container], но ничего не выходит...."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 				target.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
 				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, -1)
 
