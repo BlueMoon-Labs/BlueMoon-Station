@@ -126,6 +126,10 @@ SUBSYSTEM_DEF(shuttle)
 			continue
 		var/obj/docking_port/mobile/P = thing
 		P.check()
+		if(length(P.event_list))
+			var/obj/docking_port/stationary/docked_now = P.get_docked()
+			if(istype(docked_now, /obj/docking_port/stationary/transit))
+				P.process_events()
 	for(var/thing in transit)
 		var/obj/docking_port/stationary/transit/T = thing
 		if(!T.owner)
@@ -864,7 +868,7 @@ SUBSYSTEM_DEF(shuttle)
 
 /datum/controller/subsystem/shuttle/ui_data(mob/user)
 	var/list/data = list()
-	data["tabs"] = list("Status", "Templates", "Modification")
+	data["tabs"] = list("Status", "Templates", "Modification", "Hyperspace")
 
 	// Templates panel
 	data["templates"] = list()
@@ -913,6 +917,28 @@ SUBSYSTEM_DEF(shuttle)
 		L["can_fly"] = TRUE
 		if(istype(M, /obj/docking_port/mobile/emergency))
 			L["can_fly"] = FALSE
+			var/obj/docking_port/mobile/emergency/eshut = M
+			var/obj/docking_port/stationary/emergency_docked = M.get_docked()
+			L["can_queue_hyperspace_event"] = TRUE
+			var/list/event_opts = list()
+			var/opt_idx = 0
+			for(var/datum/shuttle_event/event_type as anything in GLOB.admin_forceable_hyperspace_events)
+				opt_idx++
+				UNTYPED_LIST_ADD(event_opts, list(
+					"name" = initial(event_type.name),
+					"path" = "[event_type]",
+					"label" = "[opt_idx]. [initial(event_type.name)]",
+				))
+			L["hyperspace_event_options"] = event_opts
+			if(ispath(eshut.queued_admin_hyperspace_event, /datum/shuttle_event))
+				var/datum/shuttle_event/queued_type = eshut.queued_admin_hyperspace_event
+				L["queued_event_name"] = initial(queued_type.name)
+			else
+				L["queued_event_name"] = null
+			if(istype(emergency_docked, /obj/docking_port/stationary/transit))
+				L["can_force_hyperspace_event"] = TRUE
+			else
+				L["can_force_hyperspace_event"] = FALSE
 		else if(!M.destination)
 			L["can_fast_travel"] = FALSE
 		if (M.mode != SHUTTLE_IDLE)
@@ -1016,3 +1042,76 @@ SUBSYSTEM_DEF(shuttle)
 					var/set_purchase = alert(usr, "Do you want to also disable shuttle purchases/random events that would change the shuttle?", "Butthurt Admin Prevention", "Yes, disable purchases/events", "No, I want to possibly get owned")
 					if(set_purchase == "Yes, disable purchases/events")
 						SSshuttle.shuttle_purchased = SHUTTLEPURCHASE_FORCED
+
+		if("force_hyperspace_event")
+			var/event_path_text = params["event_path"]
+			if(!shuttle_id || !event_path_text)
+				return
+			var/event_type = text2path(event_path_text)
+			if(!ispath(event_type, /datum/shuttle_event))
+				return
+			if(!(event_type in GLOB.admin_forceable_hyperspace_events))
+				return
+			for(var/mob_idx in mobile)
+				var/obj/docking_port/mobile/M = mob_idx
+				if(M.shuttle_id != shuttle_id)
+					continue
+				if(!istype(M, /obj/docking_port/mobile/emergency))
+					to_chat(user, span_warning("Шаттл с указанным id не является эвакуационным — ивент гиперпространства только для эвакуационного шаттла."))
+					return
+				var/obj/docking_port/stationary/docked = M.get_docked()
+				if(!istype(docked, /obj/docking_port/stationary/transit))
+					to_chat(user, span_warning("Эвакуационный шаттл не в транзите (гиперпространство)."))
+					return
+				var/obj/docking_port/mobile/emergency/eshut = M
+				var/evac_duration = emergencyEscapeTime * eshut.engine_coeff
+				var/datum/shuttle_event/new_event = eshut.add_shuttle_event(event_type)
+				new_event?.start_up_event(evac_duration)
+				message_admins("[key_name_admin(usr)] forced hyperspace event [event_type] on the evacuation shuttle.")
+				log_admin("[key_name(usr)] forced hyperspace event [event_type] on the evacuation shuttle.")
+				SSblackbox.record_feedback("text", "shuttle_manipulator", 1, "force_hyperspace:[event_type]")
+				. = TRUE
+				break
+
+		if("queue_hyperspace_event")
+			var/event_path_text = params["event_path"]
+			if(!shuttle_id || !event_path_text)
+				return
+			var/event_type = text2path(event_path_text)
+			if(!ispath(event_type, /datum/shuttle_event))
+				return
+			if(!(event_type in GLOB.admin_forceable_hyperspace_events))
+				return
+			for(var/mob_idx in mobile)
+				var/obj/docking_port/mobile/M = mob_idx
+				if(M.shuttle_id != shuttle_id)
+					continue
+				if(!istype(M, /obj/docking_port/mobile/emergency))
+					to_chat(user, span_warning("Только эвакуационный шаттл может иметь очередь ивента гиперпространства."))
+					return
+				var/obj/docking_port/mobile/emergency/eshut = M
+				eshut.queued_admin_hyperspace_event = event_type
+				var/datum/shuttle_event/qtype = event_type
+				to_chat(user, span_notice("Ивент «[initial(qtype.name)]» поставлен в очередь на следующий уход в гиперпространство."))
+				log_admin("[key_name(usr)] queued hyperspace event [event_type] on the evacuation shuttle.")
+				message_admins("[key_name_admin(usr)] queued hyperspace event [event_type] for the next transit leg.")
+				SSblackbox.record_feedback("text", "shuttle_manipulator", 1, "queue_hyperspace:[event_type]")
+				. = TRUE
+				break
+
+		if("clear_queued_hyperspace_event")
+			if(!shuttle_id)
+				return
+			for(var/mob_idx in mobile)
+				var/obj/docking_port/mobile/M = mob_idx
+				if(M.shuttle_id != shuttle_id)
+					continue
+				if(!istype(M, /obj/docking_port/mobile/emergency))
+					to_chat(user, span_warning("Только эвакуационный шаттл может иметь очередь ивента гиперпространства."))
+					return
+				var/obj/docking_port/mobile/emergency/eshut = M
+				eshut.queued_admin_hyperspace_event = null
+				to_chat(user, span_notice("Очередь ивента гиперпространства сброшена."))
+				log_admin("[key_name(usr)] cleared queued hyperspace event on the evacuation shuttle.")
+				. = TRUE
+				break

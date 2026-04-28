@@ -2,6 +2,7 @@
 	id = "mecha_savannah_ivanov"
 	display_name = "EXOSUIT: Savannah-Ivanov"
 	description = "Savannah-Ivanov exosuit designs"
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_mecha", "weaponry", "exp_tools")
 	design_ids = list(
 		"savannah_ivanov_chassis",

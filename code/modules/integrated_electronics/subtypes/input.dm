@@ -664,8 +664,10 @@
 	addtimer(CALLBACK(src, PROC_REF(init_frequency)), 4 SECONDS)
 
 /obj/item/integrated_circuit/input/signaler/Destroy()
-	SSradio.remove_object(src,frequency)
+	if(frequency)
+		SSradio.remove_object(src, frequency)
 	frequency = 0
+	radio_connection = null
 	return ..()
 
 /obj/item/integrated_circuit/input/signaler/proc/init_frequency()

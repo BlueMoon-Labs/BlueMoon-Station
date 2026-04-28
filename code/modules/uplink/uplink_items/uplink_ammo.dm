@@ -27,6 +27,19 @@
 	item = /obj/item/ammo_box/c10mm
 	illegal_tech = FALSE
 
+/datum/uplink_item/ammo/pistolzzz
+	name = "10mm Soporific Magazine"
+	desc = "Дополнительный магазин на 8 усыпляющих патронов 10mm для пистолета Стечкин. Вырубают цель в сон. \
+			ВНИМАНИЕ: усыпляющий эффект не мгновенный из-за ограничений калибра. Обычно нужно три попадания."
+	item = /obj/item/ammo_box/magazine/m10mm/soporific
+	cost = 1
+
+/datum/uplink_item/ammo/pistolzzz/box
+	name = "Ammo Box - 10mm Soporific"
+	desc = "Дополнительная коробка усыпляющих патронов 10mm. В коробке 20 штук, магазин не прилагается."
+	item = /obj/item/ammo_box/c10mm/soporific
+	illegal_tech = FALSE
+
 /datum/uplink_item/ammo/pistolap
 	name = "10mm Armour Piercing Magazine"
 	desc = "Дополнительный магазин на 8 бронебойных патронов 10mm для пистолета Стечкин. Хуже ранят, зато пробивают защиту."
@@ -64,19 +77,6 @@
 	name = "Ammo Box - 10mm Incendiary"
 	desc = "Дополнительная коробка зажигательных патронов 10mm. В коробке 20 штук, магазин не прилагается."
 	item = /obj/item/ammo_box/magazine/m10mm/fire
-	illegal_tech = FALSE
-
-/datum/uplink_item/ammo/pistolzzz
-	name = "10mm Soporific Magazine"
-	desc = "Дополнительный магазин на 8 усыпляющих патронов 10mm для пистолета Стечкин. Вырубают цель в сон. \
-			ВНИМАНИЕ: усыпляющий эффект не мгновенный из-за ограничений калибра. Обычно нужно три попадания."
-	item = /obj/item/ammo_box/magazine/m10mm/soporific
-	cost = 2
-
-/datum/uplink_item/ammo/pistolzzz/box
-	name = "Ammo Box - 10mm Soporific"
-	desc = "Дополнительная коробка усыпляющих патронов 10mm. В коробке 20 штук, магазин не прилагается."
-	item = /obj/item/ammo_box/c10mm/soporific
 	illegal_tech = FALSE
 
 /datum/uplink_item/ammo/shotgun

@@ -117,7 +117,7 @@
 			Закажите СЕЙЧАС - и товарищ Борис подкинет дополнительный спортивный костюм."
 	item = /obj/item/storage/backpack/duffelbag/syndie/firestarter
 	cost = 30
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	purchasable_from = (UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/bundle
 	name = "Operative Bundle"

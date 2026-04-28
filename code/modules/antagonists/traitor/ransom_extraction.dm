@@ -119,7 +119,7 @@
 	if(ishuman(entered))
 		var/mob/living/carbon/human/targ = entered
 		targ.dna?.species.give_important_for_life(targ)
-	aftermath_capture(entered, sc, contractor_success)
+	INVOKE_ASYNC(src, PROC_REF(aftermath_capture), entered, sc, contractor_success)
 
 /datum/ransom_extraction/proc/aftermath_capture(mob/living/mob_captured, datum/syndicate_contract/contract, contractor_success)
 	addtimer(CALLBACK(src, PROC_REF(return_ransom_victim), mob_captured), 4 MINUTES)

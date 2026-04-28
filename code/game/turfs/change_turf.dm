@@ -168,16 +168,21 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if ((flags & CHANGETURF_INHERIT_AIR) && ispath(path, /turf/open))
 		var/datum/gas_mixture/stashed_air = new()
 		stashed_air.copy_from(air)
+		var/obj/effect/abstract/turf_fire/stashed_turf_fire = turf_fire
+		if(stashed_turf_fire)
+			stashed_turf_fire.UnregisterSignal(src, COMSIG_ATOM_ENTERED)
 		. = ..()
 		if (!.) // changeturf failed or didn't do anything
 			QDEL_NULL(stashed_air)
 			return
 		var/turf/open/newTurf = .
-		if(turf_fire)
+		if(stashed_turf_fire && !QDELETED(stashed_turf_fire))
 			if(isgroundlessturf(newTurf))
-				qdel(turf_fire)
+				qdel(stashed_turf_fire)
 			else
-				newTurf.turf_fire = turf_fire
+				stashed_turf_fire.open_turf = newTurf
+				newTurf.turf_fire = stashed_turf_fire
+				stashed_turf_fire.RegisterSignal(newTurf, COMSIG_ATOM_ENTERED, TYPE_PROC_REF(/obj/effect/abstract/turf_fire, on_entered))
 		newTurf.air.copy_from(stashed_air)
 		newTurf.update_air_ref(planetary_atmos ? 1 : 2)
 		QDEL_NULL(stashed_air)
@@ -186,21 +191,13 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		if(turf_fire)
 			qdel(turf_fire)
 		if(ispath(path,/turf/closed))
-			. = ..()
-			// BLUEMOON EDIT START: Invalid Space Turfs
-			if (!.)
-				return
-			var/turf/open/newTurf = .
-			if (newTurf)
-				newTurf.update_air_ref(-1)
-		else
-			. = ..()
-			if (!.)
-				return
-			var/turf/open/newTurf = .
-			if (newTurf)
-				newTurf.Initalize_Atmos(0)
-			// BLUEMOON EDIT END: Invalid Space Turfs
+			return ..()
+		. = ..()
+		if (!.)
+			return
+		var/turf/open/newTurf = .
+		if (newTurf)
+			newTurf.Initalize_Atmos(0)
 	else
 		. = ..()
 

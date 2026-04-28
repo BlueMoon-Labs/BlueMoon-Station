@@ -3,6 +3,7 @@
 	starting_node = TRUE
 	display_name = "Basic Modular Suits"
 	description = "Specialized back mounted power suits with various different modules."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	design_ids = list(
 		"mod_shell",
 		"mod_helmet",
@@ -21,6 +22,7 @@
 	id = "mod_advanced"
 	display_name = "Advanced Modular Suits"
 	description = "More advanced modules, to improve modular suits."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod", "robotics")
 	design_ids = list(
 		"mod_plating_mining",
@@ -37,6 +39,7 @@
 	id = "mod_engineering"
 	display_name = "Engineering Modular Suits"
 	description = "Engineering suits, for powered engineers."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_advanced", "engineering")
 	design_ids = list(
 		"mod_plating_engineering",
@@ -53,6 +56,7 @@
 	id = "mod_advanced_engineering"
 	display_name = "Advanced Engineering Modular Suits"
 	description = "Advanced Engineering suits, for advanced powered engineers."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_engineering", "adv_engi")
 	design_ids = list(
 		"mod_plating_atmospheric",
@@ -66,6 +70,7 @@
 	id = "mod_medical"
 	display_name = "Medical Modular Suits"
 	description = "Medical suits for quick rescue purposes."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_advanced", "biotech")
 	design_ids = list(
 		"mod_plating_medical",
@@ -80,6 +85,7 @@
 	id = "mod_advanced_medical"
 	display_name = "Advanced Medical Modular Suits"
 	description = "Advanced medical suits for quicker rescue purposes."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_medical", "adv_biotech")
 	design_ids = list(
 		"mod_defib",
@@ -91,6 +97,7 @@
 	id = "mod_security"
 	display_name = "Security Modular Suits"
 	description = "Security suits for space crime handling."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_advanced", "sec_basic")
 	design_ids = list(
 		"mod_plating_security",
@@ -105,6 +112,7 @@
 	id = "mod_entertainment"
 	display_name = "Entertainment Modular Suits"
 	description = "Powered suits for protection against low-humor environments."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_advanced", "clown")
 	design_ids = list(
 		"mod_plating_cosmohonk",
@@ -117,6 +125,7 @@
 	id = "mod_anomaly"
 	display_name = "Anomalock Modular Suits"
 	description = "Modules for modular suits that require anomaly cores to function."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_advanced", "anomaly_research")
 	design_ids = list(
 		"mod_antigrav",
@@ -129,6 +138,7 @@
 	id = "mod_superior"
 	display_name = "Superior Modular Suits"
 	description = "Constructively upgraded versions of old modules which can greately enhance modular suit usefulness."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("mod_anomaly")
 	design_ids = list(
 		"mod_springlock_advanced",

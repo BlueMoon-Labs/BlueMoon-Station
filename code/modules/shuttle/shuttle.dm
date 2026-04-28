@@ -385,6 +385,8 @@
 
 	/// parallax speed in seconds per loop
 	var/parallax_speed = 25
+	/// In-flight hyperspace events (tg-style; processed while docked to a transit Z-level)
+	var/list/datum/shuttle_event/event_list = list()
 
 /obj/docking_port/mobile/register(replace = FALSE)
 	. = ..()
@@ -420,6 +422,9 @@
 		QDEL_NULL(assigned_transit) //don't need it where we're goin'!
 		shuttle_areas = null
 		remove_ripples()
+		for(var/datum/shuttle_event/E in event_list)
+			qdel(E)
+		event_list.Cut()
 	. = ..()
 
 /obj/docking_port/mobile/Initialize(mapload)
@@ -749,6 +754,23 @@
 		shuttle_area.parallax_moving = FALSE
 		shuttle_area.parallax_move_speed = 0
 		shuttle_area.parallax_move_angle = 0
+
+/obj/docking_port/mobile/proc/process_events()
+	var/list/removees = list()
+	for(var/datum/shuttle_event/event as anything in event_list)
+		if(event.event_process() == SHUTTLE_EVENT_CLEAR)
+			removees += event
+		CHECK_TICK
+	for(var/datum/shuttle_event/E in removees)
+		event_list -= E
+		qdel(E)
+
+/obj/docking_port/mobile/proc/add_shuttle_event(event_type)
+	if(!ispath(event_type, /datum/shuttle_event))
+		return null
+	var/datum/shuttle_event/event = new event_type(src)
+	event_list += event
+	return event
 
 /obj/docking_port/mobile/proc/check_transit_zone()
 	if(assigned_transit)
