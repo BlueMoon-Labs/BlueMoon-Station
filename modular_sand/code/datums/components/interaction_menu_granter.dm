@@ -456,6 +456,8 @@
 			genital_entry["arousal_state"] = genital.aroused_state
 			genital_entry["always_accessible"] = genital.always_accessible
 			genitals += list(genital_entry)
+		.["genitals"] = genitals
+
 		if(!get_genitals.getorganslot(ORGAN_SLOT_ANUS)) //SPLURT Edit
 			var/simulated_ass = list()
 			simulated_ass["name"] = "Анус"
