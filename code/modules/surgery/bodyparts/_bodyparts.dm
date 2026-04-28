@@ -946,6 +946,25 @@
 		limb.icon = icon
 		if(should_draw_gender)
 			limb.icon_state = "[body_zone]_[icon_gender]"
+		// BLUEMOON ADD START
+		// prosthetic limbs with digitigrade support
+		// it should be datums, but it's kinda useless because there's only 1 sprite with digi support (morpheus)
+		else if(use_digitigrade)
+			var/cache_key = "digi_[body_zone]_front" // cursed af, these prosthetic limbs should be datums
+			var/list/static/prosthetic_digi_limbs_cache = list() // icon_states is too slow
+			if(!(cache_key in prosthetic_digi_limbs_cache))
+				prosthetic_digi_limbs_cache[cache_key] = (cache_key in icon_states(limb.icon))
+			if(prosthetic_digi_limbs_cache[cache_key])
+				limb.icon_state = "digi_[body_zone]"
+				if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
+					second_limb = image(layer = -BODYPARTS_LAYER-0.1, dir = image_dir)
+					second_limb.icon = limb.icon
+					var/original_state = limb.icon_state
+					limb.icon_state = "[original_state]_front"
+					second_limb.icon_state = "[original_state]_behind"
+					second_limb.color = limb.color
+					. += second_limb
+		// BLUEMOON ADD END
 		else
 			limb.icon_state = "[body_zone]"
 
