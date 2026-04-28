@@ -13,7 +13,7 @@
 		distance = 1
 		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
-	user.visible_message("[is_hidden ? (picked_hidden) : null] <span class='lewd'><b>[user]</b> вылизывает попку <b>[partner]</b>.</span>", ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message("<span class='lewd'>[is_hidden ? (picked_hidden) : null] <b>[user]</b> вылизывает попку <b>[partner]</b>.</span>", ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, -1)
 	partner.handle_post_sex(NORMAL_LUST, null, user, "anus") //SPLURT edit
 

@@ -71,7 +71,7 @@
 			else
 				user.visible_message(
 					pick(span_lewd("[is_hidden ? (picked_hidden) : null] <b>[partner]</b> извивается в руках <b>[user]</b>, с трудом сдерживая стон."),
-						span_lewd("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> ерзает под <b>[user]</b>, не сдерживая себя.")), vision_distance = distance)
+						span_lewd("[is_hidden ? (picked_hidden) : null] <b>[partner]</b> ерзает под <b>[user]</b>, не сдерживая себя.")), vision_distance = distance)
 
 /datum/interaction/lewd/fuck/anal
 	description = "Член. Проникнуть в задницу."
@@ -90,7 +90,13 @@
 	var/has_balls = user.has_balls()
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
 	//BLUEMOON ADD END
-
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_ANUS))
 	//BLUEMOON EDIT START
 		message = pick(
@@ -108,8 +114,8 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS) //SPLURT edit
 		try_apply_knot(user, partner, CUM_TARGET_ANUS) // Проверка на узлирование.
@@ -118,18 +124,18 @@
 		switch(partner.a_intent)
 			if(INTENT_HELP)
 				user.visible_message(
-					pick(span_lewd("<b>[partner]</b> подрагивает от удовольствия."),
-						span_lewd("<b>[partner]</b> стонет, выгибаясь навстречу."),
-						span_lewd("<b>[partner]</b> слабо постанывает, чувствуя каждый толчок.")))
+					pick(span_lewd("[is_hidden ? (picked_hidden) : null] <b>[partner]</b> подрагивает от удовольствия."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] <b>[partner]</b> стонет, выгибаясь навстречу."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] <b>[partner]</b> слабо постанывает, чувствуя каждый толчок.")), vision_distance = distance)
 			if(INTENT_HARM)
 				user.visible_message(
-					pick(span_lewd("<b>[partner]</b> резко пихает <b>[user]</b>, с гневом на лице."),
-						span_lewd("<b>[partner]</b> кусает <b>[user]</b> за плечо."),
-						span_lewd("<b>[partner]</b> злится, пытаясь прекратить происходящее.")))
+					pick(span_lewd("[is_hidden ? (picked_hidden) : null] <b>[partner]</b> резко пихает <b>[user]</b>, с гневом на лице."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] <b>[partner]</b> кусает <b>[user]</b> за плечо."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] <b>[partner]</b> злится, пытаясь прекратить происходящее.")), vision_distance = distance)
 			else
 				user.visible_message(
-					pick(span_lewd("<b>[partner]</b> извивается в руках <b>[user]</b>, с трудом сдерживая стон."),
-						span_lewd("<b>[partner]</b> ерзает под <b>[user]</b>, не сдерживая себя.")))
+					pick(span_lewd("[is_hidden ? (picked_hidden) : null] <b>[partner]</b> извивается в руках <b>[user]</b>, с трудом сдерживая стон."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] <b>[partner]</b> ерзает под <b>[user]</b>, не сдерживая себя.")), vision_distance = distance)
 
 	// BLUEMOON EDIT START
 	if(user.has_strapon())
