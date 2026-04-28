@@ -14,7 +14,6 @@
 	)
 
 /datum/interaction/lewd/jack/display_interaction(mob/living/user)
-	. = ..()
 	var/message
 	//var/t_His = user.ru_ego()
 	//var/genital_name = user.get_penetrating_genital_name()

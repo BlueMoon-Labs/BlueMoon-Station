@@ -1020,7 +1020,6 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null] \The <b>[src]</b> [pick(hell)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
-	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/assbrap1.ogg',
 						'modular_bluemoon/sound/interactions/assbrap2.ogg',
 						'modular_bluemoon/sound/interactions/assbrap3.ogg'),
@@ -1170,7 +1169,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		set_is_fucking(target, CUM_TARGET_ANUS, getorganslot(ORGAN_SLOT_PENIS))
 
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null] \The <b>[src]</b> [pick(hell)]</span>"
-	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
+	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
 	playlewdinteractionsound(target.loc, pick('modular_bluemoon/sound/interactions/asscrap1.ogg',
 						'modular_bluemoon/sound/interactions/asscrap2.ogg',
 						'modular_bluemoon/sound/interactions/asscrap3.ogg'),

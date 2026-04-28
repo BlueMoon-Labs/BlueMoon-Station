@@ -10,7 +10,10 @@
 
 /datum/interaction/tailhug/display_interaction(mob/living/user, mob/living/target)
 	..()
-
+	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
+		new /obj/effect/temp_visual/heart(user.loc)
+	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
+		new /obj/effect/temp_visual/heart(target.loc)
 
 /datum/interaction/tailweave
 	description = "Сплестись хвостами."
