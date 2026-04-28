@@ -2362,5 +2362,5 @@
 /datum/gear/donator/bm/anti_armor
 	name = "Armor Softening Nanites Kit"
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/invis_belt
+	path = /obj/item/modkit/anti_armor
 	ckeywhitelist = list("angrylaska")

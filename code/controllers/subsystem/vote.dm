@@ -24,6 +24,8 @@ SUBSYSTEM_DEF(vote)
 	var/list/voting = list()
 	var/list/saved = list()
 	var/list/generated_actions = list()
+	var/roundtype_prime_runoff_ballot = FALSE
+	var/vote_chained_from_roundtype = FALSE
 
 	var/setting_up_custom = FALSE
 	var/custom_question = ""
@@ -53,7 +55,8 @@ SUBSYSTEM_DEF(vote)
 //BLUEMOON ADD START
 		if(mode == "roundtype" && SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY <= 0)
 			result()
-			reset()
+			if(!vote_chained_from_roundtype)
+				reset()
 //BLUEMOON ADD END
 		else if(end_time < world.time) //BLUEMOON CHANGES
 			result()
@@ -62,6 +65,7 @@ SUBSYSTEM_DEF(vote)
 				reset()
 
 /datum/controller/subsystem/vote/proc/reset()
+	roundtype_prime_runoff_ballot = FALSE
 	initiator = null
 	end_time = 0
 	mode = null
@@ -399,6 +403,7 @@ SUBSYSTEM_DEF(vote)
 	return .
 
 /datum/controller/subsystem/vote/proc/result()
+	vote_chained_from_roundtype = FALSE
 	. = announce_result()
 	var/restart = 0
 	if(.)
@@ -406,6 +411,12 @@ SUBSYSTEM_DEF(vote)
 			if("roundtype")
 				if(SSticker.current_state > GAME_STATE_PREGAME)
 					return message_admins("A vote has tried to change the gamemode, but the game has already started. Aborting.")
+				if(use_dynamic_light_roundtype_vote_window() && !roundtype_prime_runoff_ballot && . == ROUNDTYPE_EXTENDED)
+					vote_chained_from_roundtype = TRUE
+					var/runoff_vote_ds = prepare_prime_roundtype_runoff_lobby_time()
+					initiate_vote("roundtype", initiator ? initiator : "server", display = NONE, votesystem = PLURALITY_VOTING, forced = TRUE, \
+						vote_time = runoff_vote_ds, roundtype_runoff_second_ballot = TRUE)
+					return .
 				. = normalize_roundtype_vote_result(.)
 				if(. != ROUNDTYPE_EXTENDED && . != ROUNDTYPE_DYNAMIC_LIGHT)
 					// Если прошлой вариацией была тимбаза или хард, то они не могут выпасть повторно
@@ -421,6 +432,7 @@ SUBSYSTEM_DEF(vote)
 					SSpersistence.RecordDynamicType(.)
 					GLOB.round_type = .
 					GLOB.master_mode = .
+				roundtype_prime_runoff_ballot = FALSE
 
 			if("restart")
 				if(. == "Restart Round")
@@ -529,7 +541,7 @@ SUBSYSTEM_DEF(vote)
 					saved -= usr.ckey
 	return FALSE
 
-/datum/controller/subsystem/vote/proc/initiate_vote(vote_type, initiator_key, display = display_votes, votesystem = PLURALITY_VOTING, forced = FALSE,vote_time = -1)//CIT CHANGE - adds display argument to votes to allow for obfuscated votes
+/datum/controller/subsystem/vote/proc/initiate_vote(vote_type, initiator_key, display = display_votes, votesystem = PLURALITY_VOTING, forced = FALSE,vote_time = -1, roundtype_runoff_second_ballot = FALSE)//CIT CHANGE - adds display argument to votes to allow for obfuscated votes
 	vote_system = votesystem
 	if(!mode)
 		if(started_time)
@@ -554,6 +566,7 @@ SUBSYSTEM_DEF(vote)
 		var/saved_custom_display_flags = custom_display_flags
 		SEND_SOUND(world, sound('sound/misc/notice2.ogg'))
 		reset()
+		roundtype_prime_runoff_ballot = roundtype_runoff_second_ballot
 		switch(vote_type)
 			if("restart")
 				choices.Add("Restart Round","Continue Playing")
@@ -584,13 +597,24 @@ SUBSYSTEM_DEF(vote)
 				choices.Add(VOTE_TRANSFER,VOTE_CONTINUE) // austation end
 			if("roundtype")
 				var/combo = check_combo()
-				var/secondary_roundtype = get_roundtype_vote_secondary_choice()
-				var/list/roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
-				if(combo == "dynamic")
-					roundtype_choices = list(secondary_roundtype)
-				else if(combo == ROUNDTYPE_EXTENDED && secondary_roundtype == ROUNDTYPE_EXTENDED)
-					roundtype_choices = list(ROUNDTYPE_DYNAMIC)
-				choices |= roundtype_choices
+				if(roundtype_prime_runoff_ballot)
+					choices |= list(ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_EXTENDED)
+				else if(use_dynamic_light_roundtype_vote_window())
+					var/secondary_roundtype = ROUNDTYPE_EXTENDED
+					var/list/roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
+					if(combo == "dynamic")
+						roundtype_choices = list(secondary_roundtype)
+					else if(combo == ROUNDTYPE_EXTENDED && secondary_roundtype == ROUNDTYPE_EXTENDED)
+						roundtype_choices = list(ROUNDTYPE_DYNAMIC)
+					choices |= roundtype_choices
+				else
+					var/secondary_roundtype = get_roundtype_vote_secondary_choice()
+					var/list/roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
+					if(combo == "dynamic")
+						roundtype_choices = list(secondary_roundtype)
+					else if(combo == ROUNDTYPE_EXTENDED && secondary_roundtype == ROUNDTYPE_EXTENDED)
+						roundtype_choices = list(ROUNDTYPE_DYNAMIC)
+					choices |= roundtype_choices
 				sanitize_roundtype_vote_choices()
 			if("custom")
 				if(!saved_custom || !saved_custom_question || length(saved_custom_options) < 2)
@@ -676,8 +700,21 @@ SUBSYSTEM_DEF(vote)
 /datum/controller/subsystem/vote/proc/get_roundtype_vote_secondary_choice()
 	return use_dynamic_light_roundtype_vote_window() ? ROUNDTYPE_DYNAMIC_LIGHT : ROUNDTYPE_EXTENDED
 
+/datum/controller/subsystem/vote/proc/prepare_prime_roundtype_runoff_lobby_time()
+	var/remaining = SSticker.GetTimeLeft() - ROUNDTYPE_VOTE_END_PENALTY
+	var/min_runoff = CONFIG_GET(number/vote_period)
+	var/runoff_ds = max(remaining, min_runoff)
+	var/min_timeleft = runoff_ds + ROUNDTYPE_VOTE_END_PENALTY
+	if(SSticker.timeLeft < min_timeleft)
+		SSticker.SetTimeLeft(min_timeleft)
+	return runoff_ds
+
 /datum/controller/subsystem/vote/proc/sanitize_roundtype_vote_choices()
 	if(mode != "roundtype")
+		return
+	if(roundtype_prime_runoff_ballot)
+		return
+	if(use_dynamic_light_roundtype_vote_window())
 		return
 	var/allowed_secondary_roundtype = get_roundtype_vote_secondary_choice()
 	var/list/sanitized_choices = list()
@@ -691,7 +728,7 @@ SUBSYSTEM_DEF(vote)
 	choices = sanitized_choices
 
 /datum/controller/subsystem/vote/proc/normalize_roundtype_vote_result(roundtype)
-	if(roundtype == ROUNDTYPE_EXTENDED && use_dynamic_light_roundtype_vote_window())
+	if(roundtype == ROUNDTYPE_EXTENDED && use_dynamic_light_roundtype_vote_window() && !roundtype_prime_runoff_ballot)
 		return ROUNDTYPE_DYNAMIC_LIGHT
 	if(roundtype == ROUNDTYPE_DYNAMIC_LIGHT && !use_dynamic_light_roundtype_vote_window())
 		return ROUNDTYPE_EXTENDED

@@ -8,6 +8,7 @@
 VOTE_DELAY 6000
 
 ## time period (deciseconds) which voting session will last (default 1 minute)
+## Also the minimum length of the prime-time roundtype runoff vote (Extended vs Dynamic Light); lobby time is extended if needed.
 VOTE_PERIOD 600
 
 ## Server hour when roundtype voting starts offering Dynamic Light instead of Extended.

@@ -44,60 +44,42 @@
 /turf/open/space/transit/centcom
 	dir = SOUTH
 
-/turf/open/space/transit/centcom/Entered(atom/movable/AM, atom/OldLoc)
-	..()
-	if(!locate(/obj/structure/lattice) in src)
-		throw_atom(AM)
-
-/turf/open/space/transit/border/Entered(atom/movable/AM, atom/OldLoc)
-	..()
-	if(!locate(/obj/structure/lattice) in src)
-		throw_atom(AM)
-
-/turf/open/space/transit/proc/throw_atom(atom/movable/AM)
-	set waitfor = FALSE
-	if(!AM || istype(AM, /obj/docking_port))
+/// Start tg-style hyperspace drift for movables entering a transit tile (flow direction follows turf dir).
+/// If [ignore_shuttle_interior] is TRUE, drift is applied even when inside a mobile dock's bbox (shuttle event spawns often sit there but are still open transit).
+/proc/init_shuttle_cling(atom/movable/M, ignore_shuttle_interior = FALSE)
+	if(!M || M.anchored || istype(M, /obj/docking_port))
 		return
-	if(AM.loc != src) // Multi-tile objects are "in" multiple locs but its loc is it's true placement.
-		return // Don't move multi tile objects if their origin isn't in transit
-	var/max = world.maxx-TRANSITIONEDGE
-	var/min = 1+TRANSITIONEDGE
+	if(M.GetComponent(/datum/component/shuttle_cling))
+		return
+	if(HAS_TRAIT(M, TRAIT_FREE_HYPERSPACE_MOVEMENT) || HAS_TRAIT(M, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT))
+		return
+	// Transit floor inside a moving shuttle should not add extra drift (items get flung into open hyperspace).
+	if(!ignore_shuttle_interior && SSshuttle.is_in_shuttle_bounds(M))
+		return
+	var/turf/open/space/transit/T = get_turf(M)
+	if(!istype(T))
+		return
+	M.inertia_dir = 0
+	M.AddComponent(/datum/component/shuttle_cling, REVERSE_DIR(T.dir))
 
-	var/list/possible_transtitons = list()
-	for(var/A in SSmapping.z_list)
-		var/datum/space_level/D = A
-		if (D.linkage == CROSSLINKED)
-			possible_transtitons += D.z_value
-	if(!length(possible_transtitons)) //No space to throw them to - try throwing them onto mining
-		possible_transtitons = SSmapping.levels_by_trait(ZTRAIT_MINING)
-		if(!length(possible_transtitons)) //Just throw them back on station, if not just runtime.
-			possible_transtitons = SSmapping.levels_by_trait(ZTRAIT_STATION)
-	var/_z = pick(possible_transtitons)
+/// Next tick — avoids running AddComponent(shuttle_cling) synchronously inside shuttle event spawn (same MC tick as SSshuttle.fire).
+/proc/deferred_init_shuttle_cling_for_event(datum/weakref/wref)
+	var/atom/movable/M = wref?.resolve()
+	if(QDELETED(M) || !ismovable(M) || M.anchored)
+		return
+	if(istype(get_turf(M), /turf/open/space/transit))
+		init_shuttle_cling(M, TRUE)
 
-	//now select coordinates for a border turf
-	var/_x
-	var/_y
-	switch(dir)
-		if(SOUTH)
-			_x = rand(min,max)
-			_y = max
-		if(WEST)
-			_x = max
-			_y = rand(min,max)
-		if(EAST)
-			_x = min
-			_y = rand(min,max)
-		else
-			_x = rand(min,max)
-			_y = min
+/turf/open/space/transit/Entered(atom/movable/AM, atom/OldLoc)
+	. = ..()
+	init_shuttle_cling(AM)
 
-	var/turf/T = locate(_x, _y, _z)
-
-	if(!QDELETED(AM))
-		AM.forceMove(T)
-		var/turf/throwturf = get_ranged_target_turf(T, dir, 1)
-		AM.safe_throw_at(throwturf, 1, 4, null, FALSE)
-
+/turf/open/space/transit/Exited(atom/movable/gone, direction)
+	. = ..()
+	if(!istype(gone.loc, /turf/open/space/transit))
+		var/datum/component/shuttle_cling/cling = gone.GetComponent(/datum/component/shuttle_cling)
+		if(cling)
+			qdel(cling)
 
 /turf/open/space/transit/CanBuildHere()
 	return SSshuttle.is_in_shuttle_bounds(src)
@@ -107,7 +89,7 @@
 	. = ..()
 	update_icon()
 	for(var/atom/movable/AM in src)
-		throw_atom(AM)
+		init_shuttle_cling(AM)
 
 /turf/open/space/transit/update_icon()
 	. = ..()
