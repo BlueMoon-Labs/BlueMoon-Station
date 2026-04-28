@@ -128,7 +128,7 @@ export const InteractionsTab = (props, context) => {
                 <Stack.Item>
                   <Button
                     icon={hidden_keys.includes(interaction.key) ? "low-vision" : "eye"}
-                    tooltip={`${hidden_keys.includes(interaction.key) ? "Show" : "Hide"} this interaction`}
+                    tooltip={`${hidden_keys.includes(interaction.key) ? "Показать" : "Скрыть"} this interaction`}
                     onClick={() => act('toggle_hidden_interaction', {
                       interaction: interaction.key,
                     })}
