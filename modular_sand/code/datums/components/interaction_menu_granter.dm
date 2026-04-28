@@ -38,7 +38,11 @@
 	if(world.time <= next_interaction_time)
 		return
 	next_interaction_time = world.time + auto_interaction_pace
-	if(!currently_active_interaction.do_action(parent, auto_interaction_target, apply_cooldown = FALSE))
+	var/interaction_key = "[currently_active_interaction.type]"
+	var/check_hidden = hidden_interactions && (interaction_key in hidden_interactions) \
+		? !!hidden_interactions[interaction_key] \
+		: FALSE
+	if(!currently_active_interaction.do_action(parent, auto_interaction_target, apply_cooldown = FALSE, is_hidden = check_hidden))
 		auto_interaction_target = null
 		currently_active_interaction = null
 		return PROCESS_KILL

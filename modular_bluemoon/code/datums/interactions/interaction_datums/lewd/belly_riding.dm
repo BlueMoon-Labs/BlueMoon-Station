@@ -105,7 +105,7 @@
 			"USER мощным толчком погружает свой [shape_desc] внутрь киски TARGET")
 
 /datum/interaction/lewd/belly_riding/anal
-	description = "Член. Проникнуть в задницу."
+	description = "Belly riding. Проникнуть в задницу."
 	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_exposed = INTERACTION_REQUIRE_ANUS
 	interaction_sound = list(
