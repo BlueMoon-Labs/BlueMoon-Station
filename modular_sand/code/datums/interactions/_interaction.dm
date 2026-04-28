@@ -154,9 +154,9 @@
 		var/use_message = replacetext(simple_message, "USER", big_user_target_text ? "<b>\the [user]</b>" : "\the [user]") // BLUEMOON ADD большой текст
 		use_message = replacetext(use_message, "TARGET", big_user_target_text ? "<b>\the [target]</b>" : "\the [target]") // BLUEMOON ADD большой текст
 		if(message_by_user)
-			user.visible_message("<span class='[simple_style]'>[hidden_message] [capitalize(use_message)]</span>", , null, null, vision_distance)
+			user.visible_message("<span class='[simple_style]'>[hidden_message] [capitalize(use_message)]</span>" , null, null, vision_distance)
 		else
-			target.visible_message("<span class='[simple_style]'>[hidden_message] [capitalize(use_message)]</span>")
+			target.visible_message("<span class='[simple_style]'>[hidden_message] [capitalize(use_message)]</span>" , null, null, vision_distance)
 
 /// After the interaction, the base only plays the sound and only if it has one
 /datum/interaction/proc/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE, is_hidden = FALSE)
