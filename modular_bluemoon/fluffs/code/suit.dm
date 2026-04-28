@@ -770,10 +770,3 @@
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 	icon_state = "blood_shinel"
 	item_state = "blood_shinel"
-
-/obj/item/clothing/suit/donator/bm/concord
-	name = "Modiffied Concord Uniform"
-	desc = "Упрощённый вариант формы за авторством ЧВК \"Конкорд\", представляет из себя лёгкую дышащую синт-ткань, в несколько слоёв переплетённую с терморегуляционными трубками и мягкими подкладками. В боевой версии в ней в том числе присутствуют защитные элементы, но эта - лишь лёгкая униформа, что бы попа не потела."
-	mutantrace_variation = STYLE_DIGITIGRADE
-	icon_state = "concord"
-	item_state = "concord"
