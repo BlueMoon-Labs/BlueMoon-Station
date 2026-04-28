@@ -454,10 +454,10 @@
 /obj/item/modkit/hwal2572
 	name = " H-Wal-2572 Kit"
 	desc = "A modkit for making a hybrid taser into a H-Wal-2572."
-	product = /obj/item/gun/energy/laser/hwal2572
+	product = /obj/item/gun/energy/e_gun/advtaser/hwal2572
 	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
 
-/obj/item/gun/energy/laser/hwal2572
+/obj/item/gun/energy/e_gun/advtaser/hwal2572
 	name = "\improper H-Wal-2572"
 	desc = "A hybrid taser made by Catcrin's waffenschmied that combines electric and energy shots. There is a small circle on the handle showing the charging level."
 	icon_state = "hwal"
@@ -465,25 +465,11 @@
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/hwal.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
-	ammo_x_offset = 0
-	ammo_type = list(/obj/item/ammo_casing/energy/disabler/hwal2572, /obj/item/ammo_casing/energy/electrode/security/hwal2572 = FALSE)
 	pickup_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/H-Wal-2572/DisablerGrab.ogg'
-	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
-	burst_size = 1
-	var/last_altfire = 0
-	var/altfire_delay = CLICK_CD_RANGE
+	ammo_x_offset = 0
+	shaded_charge = 1
 	shot_type_overlay = FALSE
-	can_flashlight = 1
-
-/obj/item/gun/energy/laser/hwal2572/altafterattack(atom/target, mob/user, proximity_flag, params)
-	. = TRUE
-	if(last_altfire + altfire_delay > world.time)
-		return
-	var/current_index = current_firemode_index
-	set_firemode_to_type(/obj/item/ammo_casing/energy/electrode/security/hwal2572)
-	process_afterattack(target, user, proximity_flag, params)
-	set_firemode_index(current_index)
-	last_altfire = world.time
+	ammo_type = list(/obj/item/ammo_casing/energy/disabler/hwal2572, /obj/item/ammo_casing/energy/electrode/security/hwal2572 = FALSE)
 
 /obj/item/ammo_casing/energy/disabler/hwal2572
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/H-Wal-2572/DisablerOni.ogg'
@@ -824,7 +810,6 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/head/helmet/sec/mark45_ce
 	ckeywhitelist = list("silverfoxpaws")
-	subcategory = LOADOUT_SUBCATEGORIES_DON03
 	restricted_desc = "Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
 	restricted_roles = list("Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
 
@@ -833,7 +818,6 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/suit/armor/mark45_armor_ce
 	ckeywhitelist = list("silverfoxpaws")
-	subcategory = LOADOUT_SUBCATEGORIES_DON03
 	restricted_desc = "Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
 	restricted_roles = list("Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
 

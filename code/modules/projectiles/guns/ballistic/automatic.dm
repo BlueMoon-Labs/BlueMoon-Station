@@ -7,6 +7,7 @@
 	burst_size = 3
 	fire_delay = 2
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT, SELECT_FULLY_AUTOMATIC)
+	tactical_reload = TRUE
 	load_sound = 'sound/weapons/autoguninsert.ogg'
 	lock_back_sound = null
 
@@ -35,31 +36,6 @@
 
 /obj/item/gun/ballistic/automatic/update_icon_state()
 	icon_state = "[initial(icon_state)][magazine ? "-[magazine.max_ammo]" : ""][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""]"
-
-/obj/item/gun/ballistic/automatic/attackby(obj/item/A, mob/user, params)
-	. = ..()
-	if(.)
-		return
-	if(istype(A, /obj/item/ammo_box/magazine))
-		var/obj/item/ammo_box/magazine/AM = A
-		if(istype(AM, mag_type))
-			var/obj/item/ammo_box/magazine/oldmag = magazine
-			if(user.transferItemToLoc(AM, src))
-				magazine = AM
-				if(oldmag)
-					to_chat(user, "<span class='notice'>You perform a tactical reload on \the [src], replacing the magazine.</span>")
-					oldmag.forceMove(get_turf(src.loc))
-					oldmag.update_icon()
-				else
-					to_chat(user, "<span class='notice'>You insert the magazine into \the [src].</span>")
-
-				playsound(user, load_sound, 60, 1)
-				chamber_round()
-				A.update_icon()
-				update_icon()
-				return TRUE
-			else
-				to_chat(user, "<span class='warning'>You cannot seem to get \the [src] out of your hands!</span>")
 
 /obj/item/gun/ballistic/automatic/can_shoot()
 	return get_ammo()
@@ -453,7 +429,7 @@
 	casing_ejector = FALSE
 
 /obj/item/gun/ballistic/automatic/laser/update_icon_state()
-	icon_state = "oldrifle[magazine ? "-[CEILING(get_ammo(0)/4, 1)*4]" : ""]"
+	icon_state = "[initial(icon_state)][magazine ? "-[CEILING(get_ammo(0)/4, 1)*4]" : ""]"
 
 /obj/item/gun/ballistic/automatic/laser/lasgun
 	name = "Thilium Boarding Lascarbine"
@@ -472,4 +448,4 @@
 	casing_ejector = FALSE
 
 /obj/item/gun/ballistic/automatic/laser/lasgun/update_icon_state()
-	icon_state = "boarding"
+	icon_state = initial(icon_state)

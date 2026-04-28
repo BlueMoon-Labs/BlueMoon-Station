@@ -11,12 +11,14 @@
 		if(INTERACTING_WITH(user, src))
 			return
 		to_chat(user, span_notice("Вы начинаете вставлять [I] в [src]."))
-		if(do_after(user, 30, src))
-			var/created_boh = new backpack_type(loc)
-			qdel(I)
-			if(loc == user)
-				user.put_in_hands(created_boh)
-			qdel(src)
+		if(!do_after(user, 30, src))
+			return
+		user.temporarilyRemoveItemFromInventory(src)
+		var/created_boh = new backpack_type(loc)
+		if(loc == user)
+			user.put_in_hands(created_boh)
+		qdel(I)
+		qdel(src)
 
 /obj/item/BoH_inert/bag
 	name = "inert bag of holding"

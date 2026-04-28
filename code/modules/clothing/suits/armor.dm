@@ -142,37 +142,6 @@
 	var/datum/component/storage/concrete/storage = AddComponent(/datum/component/storage/concrete)
 	storage.max_items = 5
 
-//Commander
-/obj/item/clothing/suit/armor/hos/command
-	name = "Emergency Response Team commander Armor"
-	desc = "A set of armor worn by the commander of a Nanotrasen Emergency Response Team. Has blue highlights."
-	icon_state = "ertarmor_cmd"
-	item_state = "armor"
-
-//Security
-/obj/item/clothing/suit/armor/hos/security
-	name = "Emergency Response Team security Armor"
-	desc = "A set of armor worn by security members of the Nanotrasen Emergency Response Team. Has red highlights."
-	icon_state = "ertarmor_sec"
-
-//Engineer
-/obj/item/clothing/suit/armor/hos/engineer
-	name = "Emergency Response Team engineer Armor"
-	desc = "A set of armor worn by engineering members of the Nanotrasen Emergency Response Team. Has orange highlights."
-	icon_state = "ertarmor_eng"
-
-//Medical
-/obj/item/clothing/suit/armor/hos/medical
-	name = "Emergency Response Team medical Armor"
-	desc = "A set of armor worn by medical members of the Nanotrasen Emergency Response Team. Has red and white highlights."
-	icon_state = "ertarmor_med"
-
-//Janitorial
-/obj/item/clothing/suit/armor/hos/janitor
-	name = "Emergency Response Team janitor Armor"
-	desc = "A set of armor worn by janitorial members of the Nanotrasen Emergency Response Team. Has red and white highlights."
-	icon_state = "ertarmor_jan"
-
 /obj/item/clothing/suit/armor/vest/warden
 	name = "Warden's Jacket"
 	desc = "A navy-blue armored jacket with blue shoulder designations and '/Warden/' stitched into one of the chest pockets."

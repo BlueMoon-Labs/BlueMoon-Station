@@ -4,3 +4,4 @@
 	item = /obj/item/gun/ballistic/shotgun/KS23
 	cost = 9
 	purchasable_from = ~(UPLINK_SYNDICATE)
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)

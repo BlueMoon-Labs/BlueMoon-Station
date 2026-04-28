@@ -2,6 +2,7 @@
 	id = "ultispray"
 	display_name = "Alien Janitoring"
 	description = "Clean messes like Abductors clean up witnesses"
+	informing_radio_channels = list(RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("alien_stockparts", "bspspray")
 	design_ids = list("ultimatespray")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1500)

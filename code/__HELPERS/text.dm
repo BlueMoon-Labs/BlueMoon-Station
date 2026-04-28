@@ -113,24 +113,32 @@
 	if(non_whitespace)
 		return text		//only accepts the text if it has some non-spaces
 
+/// html_encode that keeps " and ' as raw readable characters (safe in HTML
+/// text contexts). Dangerous chars (<, >, &) remain encoded. Use for free-form
+/// user-entered text displayed in chat, names, flavor descriptions, etc.
+/proc/html_encode_readable(t)
+	return readd_quotes(html_encode(t))
+
+/// Shared finalizer for stripped_* input procs: sanitize then bound to max_length.
+/// Returns null on null input so callers can distinguish Cancel from empty text.
+/proc/finalize_stripped_input(name, max_length, no_trim)
+	if(isnull(name))
+		return null
+	name = html_encode_readable(name)
+	//trim is "outside" because html_encode can expand single symbols into multiple symbols (such as turning < into &lt;)
+	return no_trim ? copytext(name, 1, max_length) : trim(name, max_length)
+
 // Used to get a properly sanitized input, of max_length
 // no_trim is self explanatory but it prevents the input from being trimed if you intend to parse newlines or whitespace.
 /proc/stripped_input(mob/user, message = "", title = "", default = "", max_length=MAX_MESSAGE_LEN, no_trim=FALSE)
-	var/name = input(user, message, title, default) as text|null
-	if(no_trim)
-		return copytext(html_encode(name), 1, max_length)
-	else
-		return trim(html_encode(name), max_length) //trim is "outside" because html_encode can expand single symbols into multiple symbols (such as turning < into &lt;)
+	return finalize_stripped_input(input(user, message, title, default) as text|null, max_length, no_trim)
 
 // Used to get a properly sanitized multiline input, of max_length
 /proc/stripped_multiline_input(mob/user, message = "", title = "", default = "", max_length=MAX_MESSAGE_LEN, no_trim=FALSE)
 	var/name = input(user, message, title, default) as message|null
 	if(isnull(name)) // Return null if canceled.
 		return null
-	if(no_trim)
-		return copytext(html_encode(name), 1, max_length)
-	else
-		return trim(html_encode(name), max_length)
+	return finalize_stripped_input(name, max_length, no_trim)
 
 /**
   * stripped_multiline_input but reflects to the user instead if it's too big and returns null.
@@ -143,10 +151,7 @@
 		to_chat(user, name)
 		to_chat(user, "<span class='danger'>^^^----- The preceeding message has been DISCARDED for being over the maximum length of [max_length]. It has NOT been sent! -----^^^</span>")
 		return null
-	if(no_trim)
-		return copytext(html_encode(name), 1, max_length)
-	else
-		return trim(html_encode(name), max_length)
+	return finalize_stripped_input(name, max_length, no_trim)
 
 #define NO_CHARS_DETECTED 0
 #define SPACES_DETECTED 1
@@ -889,224 +894,143 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 	var/static/regex/regex = new(@"[^a-zA-Z0-9]","g")
 	return replacetext(name, regex, "")
 
-/proc/parse_zone(zone)	//Original
-	if(zone == BODY_ZONE_PRECISE_R_HAND)
-		return "right hand"
-	else if (zone == BODY_ZONE_PRECISE_L_HAND)
-		return "left hand"
-	else if (zone == BODY_ZONE_L_ARM)
-		return "left arm"
-	else if (zone == BODY_ZONE_R_ARM)
-		return "right arm"
-	else if (zone == BODY_ZONE_L_LEG)
-		return "left leg"
-	else if (zone == BODY_ZONE_R_LEG)
-		return "right leg"
-	else if (zone == BODY_ZONE_PRECISE_L_FOOT)
-		return "left foot"
-	else if (zone == BODY_ZONE_PRECISE_R_FOOT)
-		return "right foot"
-	else
-		return zone
+/proc/parse_zone(zone)
+	var/static/list/zone_names = list(
+		BODY_ZONE_PRECISE_R_HAND = "right hand",
+		BODY_ZONE_PRECISE_L_HAND = "left hand",
+		BODY_ZONE_L_ARM = "left arm",
+		BODY_ZONE_R_ARM = "right arm",
+		BODY_ZONE_L_LEG = "left leg",
+		BODY_ZONE_R_LEG = "right leg",
+		BODY_ZONE_PRECISE_L_FOOT = "left foot",
+		BODY_ZONE_PRECISE_R_FOOT = "right foot",
+	)
+	return zone_names[zone] || zone
 
 /proc/ru_parse_zone(zone)	// Именительный
-	if(zone == BODY_ZONE_PRECISE_R_HAND)
-		return "правая кисть"
-	else if (zone == BODY_ZONE_PRECISE_L_HAND)
-		return "левая кисть"
-	else if (zone == BODY_ZONE_L_ARM)
-		return "левая рука"
-	else if (zone == BODY_ZONE_R_ARM)
-		return "правая рука"
-	else if (zone == BODY_ZONE_L_LEG)
-		return "левая нога"
-	else if (zone == BODY_ZONE_R_LEG)
-		return "правая нога"
-	else if (zone == BODY_ZONE_PRECISE_L_FOOT)
-		return "левая ступня"
-	else if (zone == BODY_ZONE_PRECISE_R_FOOT)
-		return "правая ступня"
-	else if (zone == "chest")
-		return "грудь"
-	else if (zone == "mouth")
-		return "рот"
-	else if (zone == "groin")
-		return "пах"
-	else if (zone == "head")
-		return "голова"
-	else if (zone == "eyes")
-		return "глаза"
-	else
-		return zone
+	var/static/list/zone_names = list(
+		BODY_ZONE_PRECISE_R_HAND = "правая кисть",
+		BODY_ZONE_PRECISE_L_HAND = "левая кисть",
+		BODY_ZONE_L_ARM = "левая рука",
+		BODY_ZONE_R_ARM = "правая рука",
+		BODY_ZONE_L_LEG = "левая нога",
+		BODY_ZONE_R_LEG = "правая нога",
+		BODY_ZONE_PRECISE_L_FOOT = "левая ступня",
+		BODY_ZONE_PRECISE_R_FOOT = "правая ступня",
+		"chest" = "грудь",
+		"mouth" = "рот",
+		"groin" = "пах",
+		"head" = "голова",
+		"eyes" = "глаза",
+	)
+	return zone_names[zone] || zone
 
 /proc/ru_kogo_zone(zone)	// Винительный
-	if(zone == BODY_ZONE_PRECISE_R_HAND)
-		return "правую кисть"
-	else if (zone == BODY_ZONE_PRECISE_L_HAND)
-		return "левую кисть"
-	else if (zone == BODY_ZONE_L_ARM)
-		return "левую руку"
-	else if (zone == BODY_ZONE_R_ARM)
-		return "правую руку"
-	else if (zone == BODY_ZONE_L_LEG)
-		return "левую ногу"
-	else if (zone == BODY_ZONE_R_LEG)
-		return "правую ногу"
-	else if (zone == BODY_ZONE_PRECISE_L_FOOT)
-		return "левую ступню"
-	else if (zone == BODY_ZONE_PRECISE_R_FOOT)
-		return "правую ступню"
-	else if (zone == "chest")
-		return "грудь"
-	else if (zone == "mouth")
-		return "рот"
-	else if (zone == "groin")
-		return "пах"
-	else if (zone == "head")
-		return "голову"
-	else
-		return zone
+	var/static/list/zone_names = list(
+		BODY_ZONE_PRECISE_R_HAND = "правую кисть",
+		BODY_ZONE_PRECISE_L_HAND = "левую кисть",
+		BODY_ZONE_L_ARM = "левую руку",
+		BODY_ZONE_R_ARM = "правую руку",
+		BODY_ZONE_L_LEG = "левую ногу",
+		BODY_ZONE_R_LEG = "правую ногу",
+		BODY_ZONE_PRECISE_L_FOOT = "левую ступню",
+		BODY_ZONE_PRECISE_R_FOOT = "правую ступню",
+		"chest" = "грудь",
+		"mouth" = "рот",
+		"groin" = "пах",
+		"head" = "голову",
+	)
+	return zone_names[zone] || zone
 
 /proc/ru_gde_zone(zone)	// Дательный // Я поменял значения как у ru_parse_zone(), чтобы можно было использовать в коде.
-	if(zone == BODY_ZONE_PRECISE_R_HAND)
-		return "правой кисти"
-	else if  (zone == BODY_ZONE_PRECISE_L_HAND)
-		return "левой кисти"
-	else if (zone == BODY_ZONE_L_ARM)
-		return "левой руке"
-	else if (zone == BODY_ZONE_R_ARM)
-		return "правой руке"
-	else if (zone == BODY_ZONE_L_LEG)
-		return "левой ноге"
-	else if (zone == BODY_ZONE_R_LEG)
-		return "правой ноге"
-	else if (zone == BODY_ZONE_PRECISE_L_FOOT)
-		return "левой ступне"
-	else if (zone == BODY_ZONE_PRECISE_R_FOOT)
-		return "правой ступне"
-	else if (zone == "chest")
-		return "груди"
-	else if (zone == "mouth")
-		return "ротовой полости"
-	else if (zone == "groin")
-		return "паховой области"
-	else if (zone == "head")
-		return "голове"
-	else
-		return zone
+	var/static/list/zone_names = list(
+		BODY_ZONE_PRECISE_R_HAND = "правой кисти",
+		BODY_ZONE_PRECISE_L_HAND = "левой кисти",
+		BODY_ZONE_L_ARM = "левой руке",
+		BODY_ZONE_R_ARM = "правой руке",
+		BODY_ZONE_L_LEG = "левой ноге",
+		BODY_ZONE_R_LEG = "правой ноге",
+		BODY_ZONE_PRECISE_L_FOOT = "левой ступне",
+		BODY_ZONE_PRECISE_R_FOOT = "правой ступне",
+		"chest" = "груди",
+		"mouth" = "ротовой полости",
+		"groin" = "паховой области",
+		"head" = "голове",
+	)
+	return zone_names[zone] || zone
 
 /proc/ru_otkuda_zone(zone)	// Родительный
-	if(zone == "правая кисть")
-		return "правой кисти"
-	else if (zone == "левая кисть")
-		return "левой кисти"
-	else if (zone == "левая рука")
-		return "левой руки"
-	else if (zone == "правая рука")
-		return "правой руки"
-	else if (zone == "левая нога")
-		return "левой ноги"
-	else if (zone == "правая нога")
-		return "правой ноги"
-	else if (zone == "левая ступня")
-		return "левой ступни"
-	else if (zone == "правая ступня")
-		return "правой ступни"
-	else if (zone == "грудь")
-		return "груди"
-	else if (zone == "рот")
-		return "ротовой полости"
-	else if (zone == "пах")
-		return "паховой области"
-	else if (zone == "голова")
-		return "головы"
-	else
-		return zone
+	var/static/list/zone_names = list(
+		"правая кисть" = "правой кисти",
+		"левая кисть" = "левой кисти",
+		"левая рука" = "левой руки",
+		"правая рука" = "правой руки",
+		"левая нога" = "левой ноги",
+		"правая нога" = "правой ноги",
+		"левая ступня" = "левой ступни",
+		"правая ступня" = "правой ступни",
+		"грудь" = "груди",
+		"рот" = "ротовой полости",
+		"пах" = "паховой области",
+		"голова" = "головы",
+	)
+	return zone_names[zone] || zone
 
 /proc/ru_chem_zone(zone)	// Творительный
-	if(zone == "правая кисть")
-		return "правой кистью"
-	else if (zone == "левая кисть")
-		return "левой кистью"
-	else if (zone == "левая рука")
-		return "левой рукой"
-	else if (zone == "правая рука")
-		return "правой рукой"
-	else if (zone == "левая нога")
-		return "левой ногой"
-	else if (zone == "правая нога")
-		return "правой ногой"
-	else if (zone == "левая ступня")
-		return "левой ступней"
-	else if (zone == "правая ступня")
-		return "правой ступней"
-	else if (zone == "грудь")
-		return "грудью"
-	else if (zone == "рот")
-		return "ртом"
-	else if (zone == "пах")
-		return "пахом"
-	else if (zone == "голова")
-		return "головой"
-	else
-		return zone
+	var/static/list/zone_names = list(
+		"правая кисть" = "правой кистью",
+		"левая кисть" = "левой кистью",
+		"левая рука" = "левой рукой",
+		"правая рука" = "правой рукой",
+		"левая нога" = "левой ногой",
+		"правая нога" = "правой ногой",
+		"левая ступня" = "левой ступней",
+		"правая ступня" = "правой ступней",
+		"грудь" = "грудью",
+		"рот" = "ртом",
+		"пах" = "пахом",
+		"голова" = "головой",
+	)
+	return zone_names[zone] || zone
 
 /proc/ru_exam_parse_zone(zone)
-	if (zone == "chest")
-		return "грудь"
-	else if (zone == "mouth")
-		return "рот"
-	else if (zone == "groin")
-		return "пах"
-	else if (zone == "head")
-		return "голова"
-	else
-		return zone
+	var/static/list/zone_names = list(
+		"chest" = "грудь",
+		"mouth" = "рот",
+		"groin" = "пах",
+		"head" = "голова",
+	)
+	return zone_names[zone] || zone
 
 /proc/ru_intent(intent)
-	switch(intent)
-		if (INTENT_HELP)
-			return "помогать"
-		if (INTENT_GRAB)
-			return "хватать"
-		if (INTENT_DISARM)
-			return "толкать"
-		if (INTENT_HARM)
-			return "вредить"
-		else
-			return intent
+	var/static/list/intent_names = list(
+		INTENT_HELP = "помогать",
+		INTENT_GRAB = "хватать",
+		INTENT_DISARM = "толкать",
+		INTENT_HARM = "вредить",
+	)
+	return intent_names[intent] || intent
 
 /proc/uplink_to_ru_conversion(uplink)
-	switch(uplink)
-		if("PDA")
-			return "ПДА"
-		if("Radio")
-			return "Наушник"
-		if("Pen")
-			return "Ручка"
-		if("Implant")
-			return "Имплант"
-		else
-			return uplink
+	var/static/list/uplink_names = list(
+		"PDA" = "ПДА",
+		"Radio" = "Наушник",
+		"Pen" = "Ручка",
+		"Implant" = "Имплант",
+	)
+	return uplink_names[uplink] || uplink
 
 /proc/backpack_to_ru_conversion(backpack)
-	switch(backpack)
-		if("Grey Backpack")
-			return "Серый рюкзак"
-		if("Grey Satchel")
-			return "Серая сумка"
-		if("Grey Duffel Bag")
-			return "Серый вещмешок"
-		if("Leather Satchel")
-			return "Кожаная сумка"
-		if("Department Backpack")
-			return "Рюкзак отдела"
-		if("Department Satchel")
-			return "Сумка отдела"
-		if("Department Duffel Bag")
-			return "Вещмешок отдела"
-		else
-			return backpack
+	var/static/list/backpack_names = list(
+		"Grey Backpack" = "Серый рюкзак",
+		"Grey Satchel" = "Серая сумка",
+		"Grey Duffel Bag" = "Серый вещмешок",
+		"Leather Satchel" = "Кожаная сумка",
+		"Department Backpack" = "Рюкзак отдела",
+		"Department Satchel" = "Сумка отдела",
+		"Department Duffel Bag" = "Вещмешок отдела",
+	)
+	return backpack_names[backpack] || backpack
 
 ///Returns a string based on the weight class define used as argument
 /proc/weight_class_to_text(w_class)
@@ -1127,38 +1051,24 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 			. = ""
 
 /proc/ru_comms(freq)
-	if(freq == "Common")
-		return "Основной"
-	else if (freq == "Security")
-		return "Безопасность"
-	else if (freq == "Engineering")
-		return "Инженерия"
-	else if (freq == "Command")
-		return "Командование"
-	else if (freq == "Science")
-		return "Научный"
-	else if (freq == "Medical")
-		return "Медбей"
-	else if (freq == "Supply")
-		return "Снабжение"
-	else if (freq == "Service")
-		return "Обслуживание"
-	else if (freq == "Exploration")
-		return "Рейнджеры"
-	else if (freq == "AI Private")
-		return "Приватный ИИ"
-	else if (freq == "Syndicate")
-		return "Синдикат"
-	else if (freq == "CentCom")
-		return "ЦентКом"
-	else if (freq == "Red Team")
-		return "Красные"
-	else if (freq == "Blue Team")
-		return "Синие"
-	else if (freq == "Tarkov")
-		return "Тарков"
-	else
-		return freq
+	var/static/list/comms_names = list(
+		"Common" = "Основной",
+		"Security" = "Безопасность",
+		"Engineering" = "Инженерия",
+		"Command" = "Командование",
+		"Science" = "Научный",
+		"Medical" = "Медбей",
+		"Supply" = "Снабжение",
+		"Service" = "Обслуживание",
+		"Exploration" = "Рейнджеры",
+		"AI Private" = "Приватный ИИ",
+		"Syndicate" = "Синдикат",
+		"CentCom" = "ЦентКом",
+		"Red Team" = "Красные",
+		"Blue Team" = "Синие",
+		"Tarkov" = "Тарков",
+	)
+	return comms_names[freq] || freq
 
 /proc/r_json_decode(text) //now I'm stupid
 	for(var/s in GLOB.rus_unicode_conversion_hex)

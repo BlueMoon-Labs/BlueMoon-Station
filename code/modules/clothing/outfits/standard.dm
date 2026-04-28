@@ -278,6 +278,8 @@
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,
 		/obj/item/storage/box/ert_commander=1,
 		/obj/item/melee/classic_baton/telescopic/centcom/plus = 1,
+		/obj/item/gun/ballistic/revolver/requiem=1,
+		/obj/item/ammo_box/a357=2,
 		)
 
 	implants = list(
@@ -438,7 +440,7 @@
 	ears = /obj/item/radio/headset/headset_cent/alt
 
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
-		/obj/item/storage/box/syndie_kit/revolver=1,\
+		/obj/item/storage/box/syndie_kit/revolver/requiem=1,\
 		/obj/item/storage/firstaid/tactical/slaver=1,\
 		/obj/item/storage/box/flashbangs/super=1,\
 		/obj/item/pinpointer/nuke=1,\

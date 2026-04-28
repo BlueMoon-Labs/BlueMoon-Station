@@ -116,7 +116,7 @@
 	item_state = "drill"
 	lefthand_file = 'modular_sand/icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'modular_sand/icons/mob/inhands/equipment/tools_righthand.dmi'
-	usesound = 'sound/items/drill_use.ogg'
+	usesound = list('sound/items/drill1.ogg', 'sound/items/drill2.ogg', 'sound/items/drill3.ogg', 'sound/items/drill4.ogg', 'sound/items/drill5.ogg')
 	custom_materials = list(/datum/material/iron=150,/datum/material/silver=50,/datum/material/titanium=25)
  //done for balance reasons, making them high value for research, but harder to get
 	force = 8 //might or might not be too high, subject to change

@@ -29,6 +29,7 @@
 	player_minimum = 15
 	surplus = 50
 	purchasable_from = UPLINK_SYNDICATE
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/dangerous/revolver_inteq
 	name = "InteQ Revolver Kit"
@@ -38,6 +39,7 @@
 	player_minimum = 15
 	surplus = 50
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/dangerous/rawketlawnchair
 	name = "84mm Rocket Propelled Grenade Launcher"
@@ -52,8 +54,8 @@
 	name = "Anti Tank Pistol"
 	desc = "По сути снайперская винтовка без приклада и ствола (и нарезки, если на то пошло). \
 			Этот крайне сомнительный пистолет гарантированно вывихнет вам запястья и попадёт в стену амбара! \
-	 		Использует снайперные боеприпасы. \
-	 		Пули имеют тенденцию лететь мимо. Мы не несём ответственности за непреднамеренный ущерб из-за неточности."
+			Использует снайперные боеприпасы. \
+			Пули имеют тенденцию лететь мимо. Мы не несём ответственности за непреднамеренный ущерб из-за неточности."
 	item = /obj/item/gun/ballistic/automatic/pistol/antitank/syndicate
 	cost = 14
 	surplus = 25
@@ -129,6 +131,7 @@
 	player_minimum = 25
 	cost = 16
 	purchasable_from = UPLINK_SYNDICATE
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/dangerous/doublesword/get_discount()
 	return pick(4;0.8,2;0.65,1;0.5)
@@ -140,6 +143,7 @@
 	player_minimum = 25
 	cost = 16
 	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_CLOWN_OPS)
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/dangerous/plasmascythe/get_discount()
 	return pick(4;0.8,2;0.65,1;0.4)
@@ -152,6 +156,7 @@
 	player_minimum = 25
 	cost = 16
 	purchasable_from = UPLINK_SYNDICATE
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/dangerous/hyperblade/get_discount()
 	return pick(4;0.8,2;0.65,1;0.5)

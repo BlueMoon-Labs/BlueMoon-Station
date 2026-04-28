@@ -1,6 +1,6 @@
 /datum/action/cooldown/bloodsucker
 	name = "Vampiric Gift"
-	desc = "A vampiric gift."
+	desc = "Вампирский дар."
 	button_icon = 'icons/mob/actions/bloodsucker.dmi'	//This is the file for the BACKGROUND icon
 	background_icon_state = "vamp_power_off"		//And this is the state for the background icon
 	icon_icon = 'icons/mob/actions/bloodsucker.dmi'		//This is the file for the ACTION icon
@@ -38,11 +38,11 @@
 
 /datum/action/cooldown/bloodsucker/New()
 	if(bloodcost > 0)
-		desc += "<br><br><b>COST:</b> [bloodcost] Blood"	// Modify description to add cost.
+		desc += "<br><br><b>ЦЕНА:</b> [bloodcost] крови"	// Modify description to add cost.
 	if(warn_constant_cost)
-		desc += "<br><br><i>Your over-time blood consumption increases while [name] is active.</i>"
+		desc += "<br><br><i>Потребление крови со временем увеличивается, пока [name] активен.</i>"
 	if(amSingleUse)
-		desc += "<br><br><i>Useable once per night.</i>"
+		desc += "<br><br><i>Можно использовать один раз за ночь.</i>"
 	..()
 
 //							NOTES
@@ -101,11 +101,11 @@
 		return FALSE
 	if(istype(owner.get_item_by_slot(ITEM_SLOT_NECK), /obj/item/clothing/neck/garlic_necklace))
 		if(display_error)
-			to_chat(owner, "<span class='warning'Ожерелье на вашей шее мешает ваши способностям!</span>")
+			to_chat(owner, "<span class='warning'>Ожерелье на вашей шее мешает вашим способностям!</span>")
 		return FALSE
 	if(owner.reagents?.has_reagent(/datum/reagent/consumable/garlic))
 		if(display_error)
-			to_chat(owner, "<span class='warning'>Чеснок в вашей крови не даёт использовать способностям!</span>")
+			to_chat(owner, "<span class='warning'>Чеснок в вашей крови не даёт использовать способности!</span>")
 		return FALSE
 	if(must_be_concious)
 		if(owner.stat != CONSCIOUS)
@@ -167,14 +167,14 @@
 /datum/action/cooldown/bloodsucker/targeted
 	// NOTE: All Targeted spells are Toggles! We just don't bother checking here.
 	var/target_range = 99
-	var/message_Trigger = "Select a target."
+	var/message_Trigger = "Выберите цель."
 	var/obj/effect/proc_holder/bloodsucker/bs_proc_holder
 	var/power_activates_immediately = TRUE	// Most powers happen the moment you click. Some, like Mesmerize, require time and shouldn't cost you if they fail.
 
 	var/power_in_use = FALSE // Is this power LOCKED due to being used?
 
 /datum/action/cooldown/bloodsucker/targeted/New(Target)
-	desc += "<br>\[<i>Targeted Power</i>\]"	// Modify description to add notice that this is aimed.
+	desc += "<br>\[<i>Направленная сила</i>\]"	// Modify description to add notice that this is aimed.
 	..()
 	// Create Proc Holder for intercepting clicks
 	bs_proc_holder = new ()

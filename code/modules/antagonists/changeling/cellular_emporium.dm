@@ -77,12 +77,21 @@
 			var/sting_name = params["name"]
 			changeling.purchase_power(sting_name)
 
+/// Bluemoon: if TRUE, list ANTAG_EXTENDED-only powers in the shop (ERP stings, etc.), not only ANTAG_DYNAMIC.
+/datum/cellular_emporium/proc/extended_powers_shop_context()
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT || GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT)
+		return TRUE
+	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
+		return TRUE
+	if(SSticker?.mode && (SSticker.mode.config_tag in list("Extended", "secret_extended")))
+		return TRUE
+	if(istype(SSticker?.mode, /datum/game_mode/dynamic) && GLOB.dynamic_type_threat_max <= 70)
+		return TRUE
+	return FALSE
+
 /datum/cellular_emporium/proc/gamemode_restricted(datum/action/changeling/ability)
 	var/restriction = initial(ability.gamemode_restriction_type)
-	var/extended_like = (GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT) \
-		|| (GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)) \
-		|| (SSticker.mode && (SSticker.mode.config_tag in list("Extended", "secret_extended")))
-	if(extended_like)
+	if(extended_powers_shop_context())
 		return !!(restriction & ANTAG_EXTENDED)
 	return !!(restriction & ANTAG_DYNAMIC)
 

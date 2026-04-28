@@ -297,7 +297,7 @@ effective or pretty fucking useless.
     if(I.tool_behaviour == TOOL_WRENCH && user.a_intent == INTENT_HARM)
         user.visible_message("<span class='danger'>[user] бьёт [src] усилием [I]!</span>", \
             "<span class='danger'>Вы бьёте [src] усилием [I]!</span>", null, COMBAT_MESSAGE_RANGE)
-        playsound(src, "sound/items/drill_use.ogg", 80, TRUE, -1)
+        playsound(src, pick('sound/items/drill1.ogg', 'sound/items/drill2.ogg', 'sound/items/drill3.ogg', 'sound/items/drill4.ogg', 'sound/items/drill5.ogg'), 80, TRUE, -1)
         var/obj/machinery/porta_turret/syndicate/pod/toolbox/turret = new(get_turf(loc))
         turret.faction = list("[REF(user)]")
         qdel(src)

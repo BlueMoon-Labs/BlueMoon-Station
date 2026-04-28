@@ -142,7 +142,7 @@
 	icon_state = "pawpack"
 	item_state = "pawpack"
 
-/obj/item/storage/backpack/satchel/rawk_sat
+/obj/item/storage/backpack/satchel/rawk
 	name = "Rawk Satchel"
 	desc = "Tactical military satchel for a special forces group."
 	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
@@ -232,3 +232,20 @@
 	for(var/X in actions)
 		var/datum/action/A = X
 		A.UpdateButtons()
+
+// Принадлежит xaeshkavd
+/obj/item/storage/box/donator/bm/armolex_box
+	name = "Armolex Box"
+	desc = "Military box that contains some weapons kits. Hello From XVD."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "armolex_box"
+
+/obj/item/storage/box/donator/bm/armolex_box/PopulateContents()
+	var/static/items_inside = list(
+		/obj/item/modkit/rsh_future,
+		/obj/item/modkit/razorsong_kit,
+		/obj/item/modkit/mpl21,
+		/obj/item/modkit/lcr29,
+		/obj/item/modkit/m3predator,
+	)
+	generate_items_inside(items_inside, src)

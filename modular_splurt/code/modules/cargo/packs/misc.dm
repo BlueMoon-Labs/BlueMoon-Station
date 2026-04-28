@@ -319,9 +319,6 @@
 		var/item = pick(contains)
 		new item(scrate1)
 
-/obj/item/stack/ore/diamond/fifty
-	amount = 50
-
 /datum/supply_pack/misc/random10k
 	name = "50k Surplus Crate"
 	desc = "Hello, thank you for taking this random surplus off our hands. We have no idea whats in it just know its worth about 50000 Credits. At least we think so."
@@ -341,7 +338,7 @@
 					/obj/item/storage/belt/military,
 					/obj/item/pickaxe/drill,
 					/obj/item/crowbar/large,
-					/obj/item/stack/ore/diamond/fifty,
+					/obj/item/stack/ore/diamond,
 					/obj/item/clothing/gloves/tackler/combat/insulated,
 					/obj/item/export/bottle/rum,
 					/obj/item/export/bottle/gin,

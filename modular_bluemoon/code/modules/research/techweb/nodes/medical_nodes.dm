@@ -2,6 +2,7 @@
 	id = "syndicate_augments"
 	display_name = "Syndicate-grade Augmentations"
 	description = "Experimental schemes of syndicate augmentations reverse-engineered by NT RnD department."
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY, RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("syndicate_basic")
 	design_ids = list("ci-mantis", "ci-scanner", "ci-pumpextreme", "ci-binolenses")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
@@ -10,6 +11,7 @@
 	id = "syndicate_augments_healing"
 	display_name = "Revitilizer-line Augmentations"
 	description = "Brand-new healing augmentations, developed earlier by Syndicate RnD department."
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY, RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("syndicate_augments")
 	design_ids = list("ci-healerext", "ci-healerint","ci-cortex")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
@@ -18,6 +20,7 @@
 	id = "cyberneticbrainbanks"
 	display_name = "Cybernetic Data Chips"
 	description = "Additional memory banks for humanoid creatures to enforce additional learning capabilities."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("adv_cyber_implants")
 	design_ids = list("chip-medical", "chip-robotic","chip-engi")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
@@ -26,6 +29,7 @@
 	id = "basicxenoorgans"
 	display_name = "Basic Xenochimeric Fleshcrafting"
 	description = "Experimental xenochimeric designs for organs."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("exp_surgery")
 	design_ids = list("alientongue", "neurotoxin", "plasmavessel", "alientongue_alt", "neurotoxin_alt", "plasmavessel_alt")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 20000)
@@ -34,6 +38,7 @@
 	id = "advxenoorgans"
 	display_name = "Advanced Xenochimeric Fleshcrafting"
 	description = "Advanced xenochimeric designs for organs."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("basicxenoorgans")
 	design_ids = list("hivenode", "eggsac", "acidgland", "resinspinner", "hivenode_alt", "eggsac_alt", "acidgland_alt", "resinspinner_alt")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 25000) //This one allows you to make your own hives. So yes, expect this to happen only in Extended.
@@ -44,6 +49,7 @@
 	id = "bioaegis1"
 	display_name = "Bio-Organic Theory"
 	description = "It was known that with certain technology it was possible to replicate flesh, or even improve it - but as NanoTrasen department declared, it was barely legal."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_biotech")
 	design_ids = list("bioaegisboard", "hearttier1", "livertier1", "lungstier1")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 12500) //Шо то на зарубежном было. Убрал этот ваш гейтвей для реализации механа НЕ ТОЛЬКО в режим экстендет
@@ -52,6 +58,7 @@
 	id = "bioaegis2"
 	display_name = "Advanced Organic Designs"
 	description = "Research regarding printing of organs was somewhat improved, and it allows us to utilize more-or-less certain future about fleshcrafting."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("bioaegis1")
 	design_ids = list("hearttier2", "livertier2", "lungstier2")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
@@ -60,6 +67,7 @@
 	id = "bioaegis3"
 	display_name = "Superior Organic Designs"
 	description = "After extensive research, it is possible to create the most perfect of organic designs to ever exist. Science department is yet so close to perfection."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("bioaegis2")
 	design_ids = list("hearttier3", "livertier3", "lungstier3")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 15000)
@@ -68,6 +76,7 @@
 	id = "bioaegis_special"
 	display_name = "Specialized Organic Designs"
 	description = "During research it was known that we can alter some capabilities of certain species to improve their ability to survive in hostile environment."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("bioaegis2")
 	design_ids = list("adaptiveeyes", "thermalaegiseyes", "darkveilorgan", "optisiaorgan", "babyloncords")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
@@ -76,6 +85,7 @@ datum/techweb_node/bioaegis_danger //Dangerous ones, that might kill you.
 	id = "bioaegis_danger"
 	display_name = "Experimental Organic Designs"
 	description = "Some evil scientist decided to fuck around and did find out."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("bioaegis3")
 	design_ids = list("neuralderanger", "bodyoverload")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
@@ -85,6 +95,7 @@ datum/techweb_node/bioaegis_danger //Dangerous ones, that might kill you.
 	id = "upgraded_surgerytools"
 	display_name = "Upgraded Surgery Tools"
 	description = "Улучшенные базовые инструменты, использующие вибрационные и плазменные технологии."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("basic_tools", "adv_biotech")
 	design_ids = list("scalpel_upgraded", "circularsaw_upgraded", "retractor_upgraded", "hemostat_upgraded", "cautery_upgraded", "surgical_tape")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1250)

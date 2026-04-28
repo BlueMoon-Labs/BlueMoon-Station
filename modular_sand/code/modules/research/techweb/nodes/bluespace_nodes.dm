@@ -2,6 +2,7 @@
 	id = "cryptominer"
 	display_name = "Cryptocurrency Mining"
 	description = "Harness the power of cryptocurrency to make credits for Cargo-- slowly."
+	informing_radio_channels = list(RADIO_CHANNEL_SUPPLY)
 	prereq_ids = list("bluespace_mining")
 	design_ids = list("cryptominer")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
@@ -10,6 +11,7 @@
 	id = "cryptominersyndie"
 	display_name = "Illegal Cryptocurrency Mining"
 	description = "Harness the power of bluespace to make credits for Cargo-- slowly."
+	informing_radio_channels = list(RADIO_CHANNEL_SUPPLY)
 	prereq_ids = list("cryptominer","syndicate_basic")
 	design_ids = list("cryptominersyndie")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
@@ -18,6 +20,7 @@
 	id = "computermath"
 	display_name = "Problem Computer"
 	description = "Solve problems for either cargo credits or research points."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_SUPPLY)
 	prereq_ids = list("base")
 	design_ids = list("computermath")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
@@ -26,6 +29,7 @@
 	id = "bluespace_mining"
 	display_name = "Bluespace Mining Technology"
 	description = "Harness the power of bluespace to make materials out of nothing, slowly. Requires a bluespace core to function."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("practical_bluespace", "adv_mining", "anomaly_research")
 	design_ids = list("bluespace_miner")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)

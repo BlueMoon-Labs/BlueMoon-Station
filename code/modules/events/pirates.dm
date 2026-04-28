@@ -388,9 +388,22 @@
 	var/datum/export_report/ex = new
 	var/obj/machinery/piratepad/pad = pad_ref?.resolve()
 
+	var/queued_pirate_ransom = 0
+	var/static/datum/export/pirate/ransom/pirate_ransom_datum
+	if(!pirate_ransom_datum)
+		pirate_ransom_datum = new
 	for(var/atom/movable/AM in get_turf(pad))
 		if(AM == pad)
 			continue
+		if(ishuman(AM))
+			var/mob/living/carbon/human/held = AM
+			var/earn = pirate_ransom_datum.get_cost(held)
+			if(earn)
+				// Same pipeline as /datum/syndicate_contract (extraction pod, station ransom, return) — not cargo qdel.
+				var/datum/ransom_extraction/sequence = new
+				sequence.start_for_pirate(held, get_turf(pad), 100 * rand(18, 45), earn, src)
+				queued_pirate_ransom += earn
+				continue
 		export_item_and_contents(AM, EXPORT_PIRATE | EXPORT_CARGO | EXPORT_CONTRABAND | EXPORT_EMAG, apply_elastic = FALSE, delete_unsold = FALSE, external_report = ex)
 
 	status_report = "Sold: "
@@ -404,6 +417,10 @@
 		status_report += " "
 		value += ex.total_value[E]
 
+	if(queued_pirate_ransom)
+		value += queued_pirate_ransom
+		status_report += " +[queued_pirate_ransom] credits: hostage (extraction) "
+
 	if(!total_report)
 		total_report = ex
 	else
@@ -413,7 +430,10 @@
 			total_report.total_value[E] += ex.total_value[E]
 		// playsound(loc, 'sound/machines/wewewew.ogg', 70, TRUE)
 
+	/// Ransom cr for pirates is applied in /datum/ransom_extraction/aftermath_capture; only ex items here.
 	points += value
+	if(queued_pirate_ransom)
+		points -= queued_pirate_ransom
 
 	if(!value)
 		status_report += "Nothing"

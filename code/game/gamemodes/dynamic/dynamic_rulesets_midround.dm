@@ -1263,7 +1263,7 @@
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
 	required_enemies = list(3,3,3,3,3,3,3,3,3,3)
 	required_candidates = 1
-	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	weight = 6
 	cost = 5
 	scaling_cost = 10

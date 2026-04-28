@@ -35,6 +35,13 @@ SUBSYSTEM_DEF(spacedrift)
 				return
 			continue
 
+		if (HAS_TRAIT(AM, TRAIT_HYPERSPACED))
+			AM.inertia_dir = 0
+			processing -= AM
+			if (MC_TICK_CHECK)
+				return
+			continue
+
 		if (!AM.loc || AM.loc != AM.inertia_last_loc || AM.Process_Spacemove(0))
 			AM.inertia_dir = 0
 

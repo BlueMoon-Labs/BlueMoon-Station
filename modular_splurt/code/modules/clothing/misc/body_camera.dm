@@ -111,7 +111,7 @@
 		else
 			item.forceMove(source)
 			bodycamera_installed = item
-			playsound(source, 'sound/items/drill_use.ogg', item.get_clamped_volume(), TRUE, -1)
+			playsound(source, 'sound/items/drill3.ogg', item.get_clamped_volume(), TRUE, -1)
 		return
 
 	if(!bodycamera_installed)
@@ -139,7 +139,7 @@
 		return
 	if(bodycamera_installed.is_on())
 		turn_camera_off(user)
-	playsound(source, 'sound/items/drill_use.ogg', tool.get_clamped_volume(), TRUE, -1)
+	playsound(source, 'sound/items/drill3.ogg', tool.get_clamped_volume(), TRUE, -1)
 	bodycamera_installed.forceMove(user.loc)
 	INVOKE_ASYNC(user, TYPE_PROC_REF(/mob, put_in_hands), bodycamera_installed)
 	bodycamera_installed = null

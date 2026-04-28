@@ -178,6 +178,13 @@ const ViewCharacter = (props, context) => {
   const headshots = (overlay.headshot_links || []).filter(link => link && link.length);
   const [selectedHeadshot, setSelectedHeadshot] = useLocalState(context, 'viewHeadshot', 0);
   const safeIdx = headshots.length > 0 ? selectedHeadshot % headshots.length : 0;
+  const currentLink = headshots[safeIdx];
+  const isVideo = typeof currentLink === 'string' && /\.(webm|mp4)$/i.test(currentLink);
+  const mediaStyle = {
+    'max-width': '256px',
+    'max-height': '256px',
+    'object-fit': 'contain',
+  };
 
   return (
     <Section
@@ -186,14 +193,21 @@ const ViewCharacter = (props, context) => {
       {headshots.length > 0 && (
         <Section level={2} title="Арт" textAlign="center">
           <Box mb={1}>
-            <img
-              src={headshots[safeIdx]}
-              style={{
-                'max-width': '256px',
-                'max-height': '256px',
-                'object-fit': 'contain',
-              }}
-            />
+            {isVideo ? (
+              <video
+                src={currentLink}
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={mediaStyle}
+              />
+            ) : (
+              <img
+                src={currentLink}
+                style={mediaStyle}
+              />
+            )}
           </Box>
           {headshots.length > 1 && (
             <Box>

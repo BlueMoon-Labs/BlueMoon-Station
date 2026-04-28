@@ -33,6 +33,7 @@
 	icon = 'modular_bluemoon/icons/turf/walls/soulbreaker_fakewindow_wall.dmi'
 	icon_state = "window"
 	opacity = 0
+	pass_flags_self = PASSCLOSEDTURF | PASSGLASS
 
 /turf/closed/indestructible/fakeglass/Initialize(mapload)
 	. = ..()
