@@ -8,7 +8,6 @@
 		new /obj/effect/temp_visual/heart(user.loc)
 	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB) && !is_hidden)
 		new /obj/effect/temp_visual/heart(target.loc)
-	to_chat(user, "ВЫЗВАЛАСЬ ХУЙНЯ")
 
 	if(is_hidden)
 		return TRUE
