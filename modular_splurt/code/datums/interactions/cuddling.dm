@@ -30,10 +30,11 @@
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
 	user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
 	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
 		new /obj/effect/temp_visual/heart(target.loc)
+	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
+		new /obj/effect/temp_visual/heart(user.loc)
+
 // BlueMoon Add
 /datum/interaction/scratch
 	description = "Почесать спину"
@@ -65,10 +66,7 @@
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
 	user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
+
 
 /datum/interaction/neckscratch
 	description = "Почесать шею"
@@ -101,10 +99,7 @@
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
 	user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
+
 
 /datum/interaction/earscratch
 	description = "Почесать за ухом"
@@ -137,7 +132,4 @@
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
 	user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
+

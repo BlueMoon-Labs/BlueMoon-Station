@@ -13,7 +13,13 @@
 	var/message
 	//var/u_His = user.ru_ego()
 	var/genital_name = partner.get_penetrating_genital_name()
-
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	if(partner.is_fucking(user, CUM_TARGET_VAGINA))
 		message = "[pick("использует [genital_name] <b>[partner]</b> по прямому назначению и тихо стонет.",
 			"с силой загоняет [genital_name] <b>[partner]</b> в свою собственную киску и довольно облизывается.")]"
@@ -23,8 +29,8 @@
 		try_apply_knot(partner, user, CUM_TARGET_VAGINA) // Проверка на узлирование (mount)
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, user, ORGAN_SLOT_PENIS) //SPLURT edit
 	// BLUEMOON EDIT START
@@ -47,7 +53,13 @@
 	var/message
 	//.var/u_His = user.ru_ego()
 	var/genital_name = partner.get_penetrating_genital_name()
-
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	if(partner.is_fucking(user, CUM_TARGET_ANUS))
 		message = "[pick("использует [genital_name] <b>[partner]</b> по прямому назначению и тихо стонет.",
 			"с силой загоняет [genital_name] <b>[partner]</b> в своё анальное колечко и довольно облизывается.")]"
@@ -57,8 +69,8 @@
 		try_apply_knot(partner, user, CUM_TARGET_ANUS) // Проверка на узлирование (mountass)
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, user, ORGAN_SLOT_PENIS) //SPLURT edit
 	// BLUEMOON EDIT START
@@ -80,7 +92,13 @@
 
 /datum/interaction/lewd/mountface/display_interaction(mob/living/user, mob/living/partner)
 	var/message
-
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	//var/u_His = user.ru_ego()
 
 	if(user.is_fucking(partner, GRINDING_FACE_WITH_ANUS))
@@ -94,8 +112,8 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/squelch1.ogg',
 						'modular_sand/sound/interactions/squelch2.ogg',
-						'modular_sand/sound/interactions/squelch3.ogg'), 70, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/squelch3.ogg'), volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	user.handle_post_sex(LOW_LUST, null, partner)
 
 /datum/interaction/lewd/thighs
@@ -125,6 +143,13 @@
 	//var/t_His = partner.ru_ego()
 	//var/t_Him = partner.ru_na()
 	//var/t_Hes = partner.ru_who()
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 
 	if(user.is_fucking(partner, THIGH_SMOTHERING) || user.is_fucking(partner, CUM_TARGET_MOUTH))
 		var/improv = FALSE
@@ -180,11 +205,11 @@
 					'modular_sand/sound/interactions/bj3.ogg',
 					'modular_sand/sound/interactions/foot_wet1.ogg',
 					'modular_sand/sound/interactions/foot_dry3.ogg')
-	playlewdinteractionsound(get_turf(user), file, 70, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+	playlewdinteractionsound(get_turf(user), file, volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	// BLUEMOON EDIT START
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
+						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, -1)
 	if(fucktarget == "penis")
 		if(user.has_strapon())
 			var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
@@ -195,7 +220,3 @@
 	else
 		user.handle_post_sex(NORMAL_LUST, THIGH_SMOTHERING, partner, genital) //SPLURT edit
 	// BLUEMOON EDIT END
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)

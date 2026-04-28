@@ -11,6 +11,7 @@
 	p13target_strength = PLUG13_STRENGTH_NORMAL
 
 /datum/interaction/lewd/fingerass_self/display_interaction(mob/living/user)
+	. = ..()
 
 	user.visible_message(span_lewd("<b>\The [user]</b> [pick(
 		"погружает палец в свой сфинктер.",
@@ -35,7 +36,7 @@
 	)
 
 /datum/interaction/lewd/finger_self/display_interaction(mob/living/user)
-
+	. = ..()
 	var/obj/item/reagent_containers/liquid_container
 
 	var/obj/item/cached_item = user.get_active_held_item()

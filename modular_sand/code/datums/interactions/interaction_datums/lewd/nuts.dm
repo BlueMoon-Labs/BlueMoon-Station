@@ -14,7 +14,13 @@
 	var/message
 
 	//var/lust_increase = 1 // BLUEMOON EDIT commented
-
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, NUTS_TO_FACE))
 		message = pick(list(
 			"хватается за затылок <b>[partner]</b> и с силой тянет к своей промежности.",
@@ -29,8 +35,8 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg',), 70, 1, -1) //These files don't even exist but nobody noticed because double-quotes were used instead of single.
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/oral2.ogg',), volume, 1, -1) //These files don't even exist but nobody noticed because double-quotes were used instead of single.
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	// BLUEMOON EDIT START
 	user.handle_post_sex(HAS_TRAIT(user, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST, NUTS_TO_FACE, partner, ORGAN_SLOT_PENIS)
 	if(HAS_TRAIT(partner, TRAIT_NYMPHO))

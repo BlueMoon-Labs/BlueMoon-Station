@@ -17,6 +17,7 @@
 	p13user_strength = PLUG13_STRENGTH_NORMAL
 
 /datum/interaction/lewd/titgrope_self/display_interaction(mob/living/user)
+	. = ..()
 	var/message
 
 	var/obj/item/reagent_containers/liquid_container
@@ -84,6 +85,7 @@
 	)
 
 /datum/interaction/lewd/self_nipsuck/display_interaction(mob/living/user, mob/living/target)
+	. = ..()
 	var/message
 	var/obj/item/organ/genital/breasts/milkers = user.getorganslot(ORGAN_SLOT_BREASTS)
 	var/milktype = milkers?.fluid_id

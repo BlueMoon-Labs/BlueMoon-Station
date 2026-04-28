@@ -9,13 +9,18 @@
 	p13user_emote = PLUG13_EMOTE_PENIS
 
 /datum/interaction/lewd/frotting/display_interaction(mob/living/user, mob/living/partner)
+	var/is_hidden = ..()
+	var/distance = 7
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 	var/message
 	//var/t_His = user.ru_ego()
 	var/genital_name = user.get_penetrating_genital_name()
 
 	message = "потирает свой [genital_name] о [genital_name] <b>[partner]</b>."
 	user.set_is_fucking(partner, CUM_TARGET_PENIS, user.getorganslot(ORGAN_SLOT_PENIS))
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner, ORGAN_SLOT_PENIS) //SPLURT edit
 	if(partner.can_penetrating_genital_cum())
@@ -30,6 +35,13 @@
 	p13user_emote = PLUG13_EMOTE_VAGINA
 
 /datum/interaction/lewd/tribadism/display_interaction(mob/living/user, mob/living/partner)
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	var/message
 
 	//var/u_His = user.ru_ego()
@@ -44,11 +56,7 @@
 		partner.set_is_fucking(user, CUM_TARGET_VAGINA, partner.getorganslot(ORGAN_SLOT_VAGINA))
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/squelch1.ogg',
 						'modular_sand/sound/interactions/squelch2.ogg',
-						'modular_sand/sound/interactions/squelch3.ogg'), 70, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/squelch3.ogg'), volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, user, ORGAN_SLOT_VAGINA) //SPLURT edit
 	user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner, ORGAN_SLOT_VAGINA) //SPLURT edit
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)

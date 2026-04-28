@@ -43,10 +43,7 @@
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
+	return ..()
 
 /datum/interaction/lewd/tentacle/female_double
 	required_from_user_exposed = INTERACTION_REQUIRE_VAGINA | INTERACTION_REQUIRE_ANUS
@@ -80,10 +77,7 @@
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
+	return ..()
 
 /datum/interaction/lewd/tentacle/male
 	required_from_user_exposed = INTERACTION_REQUIRE_ANUS
@@ -114,10 +108,7 @@
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
+	return ..()
 
 /datum/interaction/lewd/tentacle/male_double
 	required_from_user_exposed = INTERACTION_REQUIRE_ANUS | INTERACTION_REQUIRE_PENIS
@@ -152,10 +143,7 @@
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
+	return ..()
 
 /datum/interaction/lewd/tentacle/anus
 	required_from_user_exposed = INTERACTION_REQUIRE_ANUS
@@ -197,7 +185,4 @@
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
+	return ..()

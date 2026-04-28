@@ -4,7 +4,14 @@
 	///
 	/// Set it to `null` to disable.
 	var/p13user_emote = null
-
+	var/list/hidden_additional = list(
+		"Незаметно для остальных,",
+		"Аккуратными движениями,",
+		"Осторожно затаившись,",
+		"Аккуратно, без шума,",
+	)
+	var/sound_quiet_volume = 10
+	var/emote_range = 1
 	/// Interaction strength for Plug13: `PLUG13_STRENGTH_` type or number `1-100`.
 	/// This one is for the doer/fucker/attacker.
 	var/p13user_strength = PLUG13_STRENGTH_DEFAULT

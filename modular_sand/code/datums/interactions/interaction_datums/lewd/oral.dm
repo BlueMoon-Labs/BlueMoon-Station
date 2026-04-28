@@ -24,7 +24,13 @@
 	var/obj/item/organ/genital/genital = null
 	var/lust_increase = NORMAL_LUST
 	var/has_penis = partner.has_penis() // BLUEMOON ADD
-
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	if(partner.is_fucking(user, CUM_TARGET_MOUTH))
 		if(prob(partner.get_sexual_potency()))
 			user.adjustOxyLoss(1)
@@ -134,8 +140,8 @@
 									'modular_sand/sound/interactions/bj8.ogg',
 									'modular_sand/sound/interactions/bj9.ogg',
 									'modular_sand/sound/interactions/bj10.ogg',
-									'modular_sand/sound/interactions/bj11.ogg'), 50, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+									'modular_sand/sound/interactions/bj11.ogg'), volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 //BLUEMOON EDIT START
 //SPLURT EDIT START
 	if(fucktarget == "penis" && partner.can_penetrating_genital_cum())
