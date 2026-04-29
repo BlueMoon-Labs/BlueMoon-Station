@@ -134,8 +134,12 @@
 			var/list/res = list("<b><font color='blue'>Already researched:</font></b>")
 			var/list/boosted = list("<b><font color='red'>Already boosted:</font></b>")
 			for(var/node_id in listin)
+				if(!node_id)
+					continue
 				var/datum/techweb_node/N = SSresearch.techweb_node_by_id(node_id)
-				var/str = "<b>[N.display_name]</b>: [listin[N]] points.</b>"
+				if(!N)
+					continue
+				var/str = "<b>[N.display_name]</b>: [listin[node_id]] points.</b>"
 				if(SSresearch.science_tech.researched_nodes[N.id])
 					res += str
 				else if(SSresearch.science_tech.boosted_nodes[N.id])
@@ -193,9 +197,11 @@
 			use_power(750)
 			if(dotype != FAIL)
 				var/list/nodes = techweb_item_boost_check(process)
-				var/picked = pickweight(nodes)		//This should work.
-				if(linked_console)
-					linked_console.stored_research.boost_with_path(SSresearch.techweb_node_by_id(picked), process.type)
+				var/picked = length(nodes) ? pickweight(nodes) : null
+				if(picked && linked_console)
+					var/datum/techweb_node/boost_node = SSresearch.techweb_node_by_id(picked)
+					if(boost_node)
+						linked_console.stored_research.boost_with_path(boost_node, process.type)
 	updateUsrDialog()
 
 /obj/machinery/rnd/experimentor/proc/matchReaction(matching,reaction)

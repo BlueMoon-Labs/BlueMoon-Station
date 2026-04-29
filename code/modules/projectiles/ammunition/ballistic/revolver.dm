@@ -21,9 +21,10 @@
 	desc = "A .357 bullet casing. Usage of this ammunition will constitute a war crime in your area."
 	projectile_type = /obj/item/projectile/bullet/a357/dumdum
 
+/// 12.7x55mm (The Central Requiem) — отдельный калибр, не .357
 /obj/item/ammo_casing/a357/requiem
 	name = "12.7x55mm bullet casing"
-	desc = "A 12.7x55mm bullet casing."
+	desc = "A 12.7x55mm heavy revolver cartridge casing, issued for the Requiem."
 	caliber = "12.7x55mm"
 	projectile_type = /obj/item/projectile/bullet/a357/requiem
 

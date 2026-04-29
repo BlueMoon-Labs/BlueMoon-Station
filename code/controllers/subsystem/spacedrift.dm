@@ -29,6 +29,12 @@ SUBSYSTEM_DEF(spacedrift)
 			if (MC_TICK_CHECK)
 				return
 			continue
+		// Drift 2.0: handled by /datum/drift_handler + smooth_move
+		if (AM.drift_handler)
+			processing -= AM
+			if (MC_TICK_CHECK)
+				return
+			continue
 
 		if (AM.inertia_next_move > cached_time)
 			if (MC_TICK_CHECK)
@@ -42,7 +48,7 @@ SUBSYSTEM_DEF(spacedrift)
 				return
 			continue
 
-		if (!AM.loc || AM.loc != AM.inertia_last_loc || AM.Process_Spacemove(0))
+		if (!AM.loc || AM.loc != AM.inertia_last_loc || AM.Process_Spacemove(0, FALSE))
 			AM.inertia_dir = 0
 
 		if (!AM.inertia_dir)

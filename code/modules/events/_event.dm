@@ -131,6 +131,7 @@ Runs the event
 */
 /datum/round_event_control/proc/runEvent(random = FALSE, announce_chance_override = null, admin_forced = FALSE, increase_occurrences = TRUE)
 	var/datum/round_event/E = new typepath()
+	E.triggered_randomly = random
 	if(admin_forced && length(admin_setup))
 		//not part of the signal because it's conditional and relies on usr heavily
 		for(var/datum/event_admin_setup/admin_setup_datum in admin_setup)
@@ -157,6 +158,8 @@ Runs the event
 
 /datum/round_event	//NOTE: Times are measured in master controller ticks!
 	var/processing = TRUE
+	/// Set from runEvent(): true if the event was rolled by the random event system (not from admin/item).
+	var/triggered_randomly = FALSE
 	var/datum/round_event_control/control
 
 	/// When in the lifetime to call start().

@@ -53,7 +53,10 @@ SUBSYSTEM_DEF(vote)
 /datum/controller/subsystem/vote/fire()	//called by master_controller
 	if(mode)
 //BLUEMOON ADD START
-		if(mode == "roundtype" && SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY <= 0)
+		// Prime-time Extended → Dynamic (Light) runoff must not hit this branch: while timeLeft is in the
+		// penalty window, result() would run every SS tick, often with no winner, then reset() wipes the
+		// runoff and players get a fresh Dynamic (Random) vs Extended vote (looks like recursion).
+		if(mode == "roundtype" && !roundtype_prime_runoff_ballot && SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY <= 0)
 			result()
 			if(!vote_chained_from_roundtype)
 				reset()
@@ -414,8 +417,13 @@ SUBSYSTEM_DEF(vote)
 				if(use_dynamic_light_roundtype_vote_window() && !roundtype_prime_runoff_ballot && . == ROUNDTYPE_EXTENDED)
 					vote_chained_from_roundtype = TRUE
 					var/runoff_vote_ds = prepare_prime_roundtype_runoff_lobby_time()
-					initiate_vote("roundtype", initiator ? initiator : "server", display = NONE, votesystem = PLURALITY_VOTING, forced = TRUE, \
-						vote_time = runoff_vote_ds, roundtype_runoff_second_ballot = TRUE)
+					// Must clear an active roundtype vote or initiate_vote() hits `if(!mode)` and returns FALSE, never
+					// building the runoff (Dynamic (Light) vs Extended). First vote outcome is not applied to GLOB until runoff finishes.
+					var/prior_initiator = initiator
+					reset()
+					if(!initiate_vote("roundtype", prior_initiator ? prior_initiator : "server", display = NONE, votesystem = PLURALITY_VOTING, forced = TRUE, \
+						vote_time = runoff_vote_ds, roundtype_runoff_second_ballot = TRUE))
+						vote_chained_from_roundtype = FALSE
 					return .
 				. = normalize_roundtype_vote_result(.)
 				if(. != ROUNDTYPE_EXTENDED && . != ROUNDTYPE_DYNAMIC_LIGHT)

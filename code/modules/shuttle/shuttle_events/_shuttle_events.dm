@@ -1,8 +1,7 @@
 /// An event that runs while the emergency shuttle is on the reserved transit Z-level (hyperspace).
 /datum/shuttle_event
 	var/name = "shuttle event"
-	/// Probability weight when rolling events (higher = more common)
-	var/event_probability = 0
+	var/event_probability = 5
 	var/active = FALSE
 	/// Fraction of total flight duration before this activates (0 = start of flight)
 	var/activation_fraction = 0
@@ -131,6 +130,8 @@
 	return pick(pool)
 
 /datum/shuttle_event/simple_spawner/proc/spawn_movable(spawn_type)
+	if(!ispath(spawn_type))
+		return FALSE
 	var/turf/spawn_point = get_spawn_turf()
 	if(!spawn_point)
 		return FALSE

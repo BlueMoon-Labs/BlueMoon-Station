@@ -7,7 +7,7 @@
 	/datum/surgery_step/prepare_electronics,
 	/datum/surgery_step/cut_wires,
 	/datum/surgery_step/detach_limb)
-	requires_bodypart_type = BODYPART_HYBRID
+	requires_bodypart_type = BODYPART_ROBOTIC
 	special_surgery_traits = list() // Не требуется анестезия
 	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_ADDITIONAL
 

@@ -1,5 +1,6 @@
 /// Fires projectiles along the hyperspace flow toward the shuttle.
 /datum/shuttle_event/simple_spawner/projectile
+	event_probability = 0
 	var/angle_spread = 0
 
 /datum/shuttle_event/simple_spawner/projectile/post_spawn(atom/movable/spawnee)
@@ -11,6 +12,7 @@
 
 /datum/shuttle_event/simple_spawner/projectile/fireball
 	name = "Залп огненных шаров"
+	event_probability = 2
 	activation_fraction = 0.5
 	spawning_list = list(/obj/item/projectile/magic/aoe/fireball = 1)
 	angle_spread = 10

@@ -44,6 +44,22 @@ GLOBAL_VAR_INIT(glide_size_multiplier, 1.0)
 #define MOVEMENT_LOOP_IGNORE_PRIORITY (1<<1)
 ///Should we override the loop's glide?
 #define MOVEMENT_LOOP_IGNORE_GLIDE (1<<2)
+/// Don't change facing on each move (used by smooth space drift)
+#define MOVEMENT_LOOP_NO_DIR_UPDATE (1<<3)
+/// External movement (no footstep etc.); also used for space drift priority
+#define MOVEMENT_LOOP_OUTSIDE_CONTROL (1<<4)
+
+/// Return from [/datum/move_loop/proc/move] when the step did not succeed
+#define MOVELOOP_FAILURE FALSE
+/// Return from [/datum/move_loop/proc/move] when the step succeeded
+#define MOVELOOP_SUCCESS TRUE
+
+// Space drift / newtonian tuning (WhiteMoon-style)
+#define DEFAULT_INERTIA_SPEED 4
+#define INERTIA_SPEED_COEF 0.4
+#define INERTIA_FORCE_CAP 15
+#define INERTIA_FORCE_SPACEMOVE_GRAB 0.4
+#define INERTIA_FORCE_SPACEMOVE_REDUCTION 0.2
 
 //Index defines for movement bucket data packets
 #define MOVEMENT_BUCKET_TIME 1

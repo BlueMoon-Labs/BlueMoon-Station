@@ -127,9 +127,13 @@
 
 /obj/effect/decal/cleanable/blood/hitsplatter/proc/loop_done(datum/move_loop/source)
 	SIGNAL_HANDLER
-	blood_move_loop = null
-	if(!QDELETED(src))
-		expire()
+	if(blood_move_loop != source && blood_move_loop)
+		return
+	detach_blood_move_loop()
+	if(QDELETED(src))
+		return
+	finish_flight_splat()
+	qdel(src)
 
 /obj/effect/decal/cleanable/blood/hitsplatter/Bump(atom/bumped_atom)
 	if(!iswallturf(bumped_atom) && !istype(bumped_atom, /obj/structure/window))

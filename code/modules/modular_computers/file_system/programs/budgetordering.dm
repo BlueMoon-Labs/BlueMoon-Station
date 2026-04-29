@@ -79,7 +79,9 @@
 	if(id_card?.registered_account)
 		if((ACCESS_HEADS in id_card.access) || (ACCESS_QM in id_card.access))
 			requestonly = FALSE
-			buyer = SSeconomy.get_dep_account(id_card.registered_account.account_job.paycheck_department)
+			var/datum/job/pay_job = id_card.registered_account.account_job
+			if(pay_job)
+				buyer = SSeconomy.get_dep_account(pay_job.paycheck_department)
 			can_approve_requests = TRUE
 		else
 			requestonly = TRUE
@@ -237,7 +239,9 @@
 
 			if(!self_paid && ishuman(usr) && !account)
 				var/obj/item/card/id/id_card = card_slot?.GetID()
-				account = SSeconomy.get_dep_account(id_card?.registered_account?.account_job.paycheck_department)
+				var/datum/job/order_job = id_card?.registered_account?.account_job
+				if(order_job)
+					account = SSeconomy.get_dep_account(order_job.paycheck_department)
 
 			var/turf/T = get_turf(src)
 			var/datum/supply_order/SO = new(pack, name, rank, ckey, reason, account)
