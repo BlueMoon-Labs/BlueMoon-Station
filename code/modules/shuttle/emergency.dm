@@ -293,8 +293,8 @@
 	port_direction = WEST
 	var/sound_played = 0 //If the launch sound has been sent to all players on the shuttle itself
 	var/hijack_status = NOT_BEGUN
-	/// Тип /datum/shuttle_event из GLOB.admin_forceable_hyperspace_events: гарантированно добавится в prepare_hyperspace_events() при уходе в транзит.
-	var/queued_admin_hyperspace_event
+	/// Очередь путей /datum/shuttle_event из GLOB.admin_forceable_hyperspace_events — по порядку при уходе в транзит.
+	var/list/queued_admin_hyperspace_events = list()
 
 /obj/docking_port/mobile/emergency/canDock(obj/docking_port/stationary/S)
 	return SHUTTLE_CAN_DOCK //If the emergency shuttle can't move, the whole game breaks, so it will force itself to land even if it has to crush a few departments in the process
@@ -374,16 +374,26 @@
 
 /// Paths admins may inject via Shuttle Manipulator while the evacuation shuttle is in transit (whitelist; keep aligned with random rolls + admin-only types).
 GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list(
+	/datum/shuttle_event/hyperspace_nothing,
 	/datum/shuttle_event/turbulence,
 	/datum/shuttle_event/simple_spawner/carp/friendly,
+	/datum/shuttle_event/simple_spawner/carp/friendly/personal_space_invader,
 	/datum/shuttle_event/simple_spawner/carp,
+	/datum/shuttle_event/simple_spawner/carp/magic,
 	/datum/shuttle_event/simple_spawner/maintenance,
+	/datum/shuttle_event/simple_spawner/italian,
+	/datum/shuttle_event/simple_spawner/pizza_bombardment,
 	/datum/shuttle_event/simple_spawner/meteor/dust,
 	/datum/shuttle_event/simple_spawner/meteor/safe,
 	/datum/shuttle_event/simple_spawner/meteor/dust/meaty,
 	/datum/shuttle_event/simple_spawner/projectile/fireball,
 	/datum/shuttle_event/simple_spawner/human_shuttle/greytide,
+	/datum/shuttle_event/simple_spawner/human_shuttle/ert_mopp,
+	/datum/shuttle_event/simple_spawner/donk_swarm,
+	/datum/shuttle_event/simple_spawner/soft_drink_spray,
+	/datum/shuttle_event/simple_spawner/corgi_parade,
 	/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker,
+	/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq,
 	/datum/shuttle_event/simple_spawner/player_controlled/carp,
 	/datum/shuttle_event/simple_spawner/player_controlled/alien_queen,
 	/datum/shuttle_event/simple_spawner/black_hole,
@@ -398,21 +408,34 @@ GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list(
 
 	var/evac_duration = SSshuttle.emergencyEscapeTime * engine_coeff
 	var/used_admin_queue = FALSE
-	if(queued_admin_hyperspace_event && (queued_admin_hyperspace_event in GLOB.admin_forceable_hyperspace_events))
-		var/datum/shuttle_event/queued_first = add_shuttle_event(queued_admin_hyperspace_event)
-		queued_first?.start_up_event(evac_duration)
-		queued_admin_hyperspace_event = null
+	if(length(queued_admin_hyperspace_events))
+		for(var/event_type in queued_admin_hyperspace_events)
+			if(!ispath(event_type, /datum/shuttle_event) || !(event_type in GLOB.admin_forceable_hyperspace_events))
+				continue
+			var/datum/shuttle_event/queued_ev = add_shuttle_event(event_type)
+			queued_ev?.start_up_event(evac_duration)
 		used_admin_queue = TRUE
+		queued_admin_hyperspace_events.Cut()
+	/// Веса pickweight (частота). Не равны event_probability на типе: там — шкала угрозы 1 (макс) … 9+ (безопасно).
 	var/list/weighted = list(
+		/datum/shuttle_event/hyperspace_nothing = 10,
 		/datum/shuttle_event/turbulence = 5,
 		/datum/shuttle_event/simple_spawner/carp/friendly = 3,
+		/datum/shuttle_event/simple_spawner/carp/friendly/personal_space_invader = 2,
 		/datum/shuttle_event/simple_spawner/carp = 4,
+		/datum/shuttle_event/simple_spawner/carp/magic = 2,
 		/datum/shuttle_event/simple_spawner/maintenance = 3,
+		/datum/shuttle_event/simple_spawner/italian = 2,
+		/datum/shuttle_event/simple_spawner/pizza_bombardment = 2,
+		/datum/shuttle_event/simple_spawner/donk_swarm = 2,
+		/datum/shuttle_event/simple_spawner/soft_drink_spray = 2,
+		/datum/shuttle_event/simple_spawner/corgi_parade = 2,
 		/datum/shuttle_event/simple_spawner/meteor/dust = 2,
 		/datum/shuttle_event/simple_spawner/meteor/safe = 3,
 		/datum/shuttle_event/simple_spawner/meteor/dust/meaty = 1,
 		/datum/shuttle_event/simple_spawner/projectile/fireball = 1,
 		/datum/shuttle_event/simple_spawner/human_shuttle/greytide = 2,
+		/datum/shuttle_event/simple_spawner/human_shuttle/ert_mopp = 1,
 		/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker = 2,
 		/datum/shuttle_event/simple_spawner/player_controlled/carp = 2,
 		/datum/shuttle_event/simple_spawner/player_controlled/alien_queen = 1,
@@ -591,7 +614,6 @@ GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list(
 
 /obj/machinery/computer/shuttle/pod
 	name = "pod control computer"
-	admin_controlled = FALSE
 	possible_destinations = "pod_asteroid"
 	icon = 'icons/obj/terminals.dmi'
 	icon_state = "dorm_available"

@@ -323,6 +323,24 @@
 /datum/eldritch_knowledge/spell/basic/cleanup_atoms(list/atoms)
 	return
 
+/datum/eldritch_knowledge/spell/summon
+	next_knowledge = list()
+	cost = 0
+	required_atoms = list()
+	route = "Start"
+
+/datum/eldritch_knowledge/spell/summon/heart
+	name = "Зов к сердцу"
+	desc = "Позволяет призывать и прятать живое сердце в пучине безумия. Остальные услышат очень тихий звук призыва, только вплотную к вам."
+	gain_text = "Что-то живое и теплое откликается на мой зов."
+	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_summon/heart
+
+/datum/eldritch_knowledge/spell/summon/book
+	name = "Зов к кодексу"
+	desc = "Позволяет призывать и прятать кодекс в тайных глубинах. Остальные услышат очень тихий звук призыва, только вплотную к вам."
+	gain_text = "Я могу дотянуться до своего кодекса сквозь пространство."
+	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_summon/book
+
 /datum/eldritch_knowledge/living_heart
 	name = "Живое сердце"
 	desc = "Позволяет создавать дополнительные живые сердца, используя обычное сердце, лужицу крови и мак. Живые сердца, используемые на руне трансмутации, выбирают вам человека, на которого можно охотиться и приносить в жертву с помощью этой руны. Каждая жертва дает вам дополнительный знания в книге."

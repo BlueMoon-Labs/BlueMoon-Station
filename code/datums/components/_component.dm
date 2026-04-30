@@ -318,6 +318,9 @@
 		if(!src_procs)
 			return NONE
 		var/proctype = src_procs[sigtype]
+		if(!proctype)
+			stack_trace("Signal [sigtype] has null proc registered on [C.type] (listener). Emitter=[src.type].")
+			return NONE
 		return NONE | CallAsync(C, proctype, arguments)
 	. = NONE
 	for(var/I in target)
@@ -328,6 +331,9 @@
 		if(!src_procs)
 			continue
 		var/proctype = src_procs[sigtype]
+		if(!proctype)
+			stack_trace("Signal [sigtype] has null proc registered on [C.type] (listener). Emitter=[src.type].")
+			continue
 		. |= CallAsync(C, proctype, arguments)
 
 // The type arg is casted so initial works, you shouldn't be passing a real instance into this

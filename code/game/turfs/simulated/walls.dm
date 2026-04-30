@@ -363,6 +363,7 @@
 /turf/closed/wall/rust_heretic_act()
 	if(prob(70))
 		new /obj/effect/temp_visual/glowing_rune(src)
-	ChangeTurf(/turf/closed/wall/rust)
+	var/turf/after = ChangeTurf(/turf/closed/wall/rust)
+	after?.AddElement(/datum/element/heretic_rust)
 
 #undef MAX_DENT_DECALS

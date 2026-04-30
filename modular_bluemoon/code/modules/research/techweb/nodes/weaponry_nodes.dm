@@ -92,3 +92,9 @@
 	design_ids = list("mws01_battery_ion", "mws01_battery_xray")
 	prereq_ids = list("mws01_basic", "radioactive_weapons", "electronic_weapons")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
+
+/// 12.7x55mm (The Central Requiem) — печать на взломанном севлате; техфаб после "Ballistic Weaponry"
+/datum/techweb_node/ballistic_weapons/New()
+	LAZYADD(design_ids, "a127x55")
+	LAZYADD(design_ids, "a127x55_speedloader")
+	. = ..()

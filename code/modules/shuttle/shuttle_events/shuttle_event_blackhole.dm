@@ -14,7 +14,7 @@
 /// Sensors indicate a black hole's gravitational field — tg-style (normally admin-only roll).
 /datum/shuttle_event/simple_spawner/black_hole
 	name = "Чёрная дыра"
-	event_probability = 0
+	event_probability = 2
 	spawn_probability_per_process = 10
 	activation_fraction = 0.35
 	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE
@@ -24,6 +24,7 @@
 
 /datum/shuttle_event/simple_spawner/black_hole/adminbus
 	name = "Чёрные дыры (много)"
+	event_probability = 1
 	spawn_probability_per_process = 50
 	activation_fraction = 0.2
 	spawning_list = list(/obj/singularity/gravitational/shuttle_event = 10)

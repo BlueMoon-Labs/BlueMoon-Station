@@ -74,6 +74,10 @@
 	switch(state)
 		if(SHUTTLE_CLING_SUPER_LOST)
 			launch_very_hard(parent)
+			if(!hyperloop)
+				start_or_refresh_loop()
+			if(!hyperloop)
+				return
 			hyperloop.set_delay(not_clinging_move_delay)
 			hyperloop.direction = direction
 		if(SHUTTLE_CLING_NOT_HOLDING)
@@ -93,14 +97,13 @@
 		return SHUTTLE_CLING_ALL_GOOD
 
 	if(!isliving(movee))
-		/// Декоративные сингулярности ивента: иначе открытый космос = SUPER_LOST → `launch_very_hard` к краю Z-левела (копна у границы, не поток с шаттлом).
 		if(istype(movee, /obj/singularity/gravitational/shuttle_event))
 			if(is_tile_solid(get_step(movee, direction)))
 				return SHUTTLE_CLING_CLINGING
 			return SHUTTLE_CLING_NOT_HOLDING
 		if(is_tile_solid(get_step(movee, direction)))
 			return SHUTTLE_CLING_CLINGING
-		return SHUTTLE_CLING_SUPER_LOST
+		return SHUTTLE_CLING_NOT_HOLDING
 
 	var/mob/living/living = movee
 	if(living.buckled)

@@ -34,6 +34,8 @@
 	. = ..()
 	if(.)
 		update_hair()
+	if(source == CHANGELING_DRAIN)
+		try_changeling_zombie_infection(src)
 
 /mob/living/carbon/human/set_drugginess(amount)
 	..()

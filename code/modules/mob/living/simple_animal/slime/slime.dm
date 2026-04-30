@@ -217,7 +217,7 @@
 						Atkcool = 1
 					addtimer(CALLBACK(src, PROC_REF(reset_atkcool)), 45, TIMER_DELETE_ME)
 
-/mob/living/simple_animal/slime/Process_Spacemove(movement_dir = 0)
+/mob/living/simple_animal/slime/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	return 2
 
 /mob/living/simple_animal/slime/get_status_tab_items()
