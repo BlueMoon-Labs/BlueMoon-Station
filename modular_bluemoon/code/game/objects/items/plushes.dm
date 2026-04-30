@@ -922,7 +922,7 @@
 	var/obj/item/toy/plush/bm/reijo/love_target
 	var/last_love_interaction = 0
 
-/obj/item/toy/plush/bm/araminta/Moved()
+/obj/item/toy/plush/bm/mickie/Moved()
 	. = ..()
 
 	// Ограничение по процессу и времени на срабатывания
