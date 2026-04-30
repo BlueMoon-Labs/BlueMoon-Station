@@ -16,7 +16,7 @@
 	name = "Speed Loader (.38)"
 	id = "sec_38lethal"
 	build_path = /obj/item/ammo_box/c38/lethal
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/c38_trac
 	name = "Speed Loader (.38 TRAC)"
