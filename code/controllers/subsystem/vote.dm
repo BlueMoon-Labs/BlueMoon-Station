@@ -417,21 +417,28 @@ SUBSYSTEM_DEF(vote)
 				if(use_dynamic_light_roundtype_vote_window() && !roundtype_prime_runoff_ballot && . == ROUNDTYPE_EXTENDED)
 					vote_chained_from_roundtype = TRUE
 					var/runoff_vote_ds = prepare_prime_roundtype_runoff_lobby_time()
-					// Must clear an active roundtype vote or initiate_vote() hits `if(!mode)` and returns FALSE, never
-					// building the runoff (Dynamic (Light) vs Extended). First vote outcome is not applied to GLOB until runoff finishes.
 					var/prior_initiator = initiator
-					reset()
-					if(!initiate_vote("roundtype", prior_initiator ? prior_initiator : "server", display = NONE, votesystem = PLURALITY_VOTING, forced = TRUE, \
-						vote_time = runoff_vote_ds, roundtype_runoff_second_ballot = TRUE))
-						vote_chained_from_roundtype = FALSE
+
+					var/old_mode = mode
+					mode = null
+
+					if(initiate_vote("roundtype", prior_initiator ? prior_initiator : "server", \
+							display = NONE, votesystem = PLURALITY_VOTING, forced = TRUE, \
+							vote_time = runoff_vote_ds, roundtype_runoff_second_ballot = TRUE))
+						return .
+
+					mode = old_mode
+					vote_chained_from_roundtype = FALSE
+					. = ROUNDTYPE_EXTENDED
+
+					SSpersistence.RecordDynamicType(.)
+					GLOB.round_type = .
+					GLOB.master_mode = .
+					roundtype_prime_runoff_ballot = FALSE
 					return .
+
 				. = normalize_roundtype_vote_result(.)
 				if(. != ROUNDTYPE_EXTENDED && . != ROUNDTYPE_DYNAMIC_LIGHT)
-					// Если прошлой вариацией была тимбаза или хард, то они не могут выпасть повторно
-					// var/last_dynamic_type = SSpersistence.last_dynamic_gamemode
-					// if(SSpersistence.last_dynamic_gamemode in list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD))
-					// 	last_dynamic_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD)
-
 					. = pick_dynamic_type_by_chaos(GLOB.player_list, allow_light = !use_dynamic_light_roundtype_vote_window())
 					SSpersistence.RecordDynamicType(.)
 					GLOB.round_type = .
