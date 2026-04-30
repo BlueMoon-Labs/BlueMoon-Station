@@ -2073,12 +2073,6 @@
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version/winter_mask
 	ckeywhitelist = list("lindaastereih")
 
-/datum/gear/donator/bm/nebular_kit
-	name = "Nebular-9 Kit"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/nebular_kit
-	ckeywhitelist = list("lapkee")
-
 /datum/gear/donator/bm/p226_syndicate
 	name = "P226 'Syndicate' Kit"
 	slot = ITEM_SLOT_BACKPACK
@@ -2105,23 +2099,11 @@
 	restricted_roles = list("Head of Security", "Warden", "Blueshield")
 	ckeywhitelist = list("lapkee")
 
-/datum/gear/donator/bm/katana_kit
-	name = "Stun-Katana Kit"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/katana_kit
-	ckeywhitelist = list("lapkee")
 /datum/gear/donator/bm/kladmenuwu_sweater
 	name = "Worm Sweater"
 	path = /obj/item/clothing/suit/donator/bm/kladmenuwu_sweater
 	slot = ITEM_SLOT_OCLOTHING
 	ckeywhitelist = list("kladmenuwu")
-
-
-/datum/gear/donator/bm/nebular_t_kit
-	name = "Nebular-T Kit"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/nebular_t_kit
-	ckeywhitelist = list("lapkee")
 
 /datum/gear/donator/bm/cybersun_kit
 	name = "Cybersun kit"
@@ -2146,18 +2128,6 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/casull_kit
 	ckeywhitelist = list("lev1932")
-
-/datum/gear/donator/bm/pulsar_kit
-	name = "Pulsar Kit"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/pulsar_kit
-	ckeywhitelist = list("lapkee")
-
-/datum/gear/donator/bm/supernova_kit
-	name = "Supernova Kit"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/supernova_kit
-	ckeywhitelist = list("lapkee")
 
 /datum/gear/donator/bm/bwal_special_kit
 	name = "B-Wal-Special Kit"
@@ -2364,3 +2334,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/anti_armor
 	ckeywhitelist = list("angrylaska")
+
+/datum/gear/donator/bm/lapkee_kit
+	name = "Nebula Box"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/lapkee_kit
+	ckeywhitelist = list("lapkee")

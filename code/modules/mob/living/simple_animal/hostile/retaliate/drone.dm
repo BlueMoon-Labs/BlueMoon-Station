@@ -35,7 +35,7 @@
 	. = ..()
 	update_icons()
 
-/mob/living/simple_animal/hostile/malf_drone/Process_Spacemove(check_drift = 0)
+/mob/living/simple_animal/hostile/malf_drone/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	return 1
 
 /mob/living/simple_animal/hostile/malf_drone/AttackingTarget()

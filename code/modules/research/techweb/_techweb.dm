@@ -167,7 +167,9 @@
 			CHECK_TICK
 			if(available_nodes[i] || researched_nodes[i] || visible_nodes[i])
 				receiver.hidden_nodes -= i		//We can see it so let them see it too.
-				receiver.update_node_status(SSresearch.techweb_node_by_id(i), autoupdate_consoles=FALSE)
+				var/datum/techweb_node/unhide_node = SSresearch.techweb_node_by_id(i)
+				if(istype(unhide_node))
+					receiver.update_node_status(unhide_node, autoupdate_consoles=FALSE)
 	for(var/i in researched_nodes)
 		CHECK_TICK
 		receiver.research_node_id(i, TRUE, FALSE)
@@ -269,7 +271,9 @@
 	researched_nodes[node.id] = TRUE				//Add to our researched list
 	for(var/id in node.unlock_ids)
 		visible_nodes[id] = TRUE
-		update_node_status(SSresearch.techweb_node_by_id(id))
+		var/datum/techweb_node/unlocked_node = SSresearch.techweb_node_by_id(id)
+		if(istype(unlocked_node))
+			update_node_status(unlocked_node)
 	for(var/id in node.design_ids)
 		add_design_by_id(id)
 	update_node_status(node)
@@ -318,6 +322,8 @@
 		current = next
 
 /datum/techweb/proc/update_node_status(datum/techweb_node/node, autoupdate_consoles = TRUE)
+	if(!istype(node))
+		return
 	var/researched = FALSE
 	var/available = FALSE
 	var/visible = FALSE

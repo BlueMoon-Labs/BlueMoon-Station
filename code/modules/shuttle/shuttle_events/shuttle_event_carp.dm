@@ -1,7 +1,7 @@
 /// Carp pass by or through the shuttle during hyperspace (tg-style CARPTIDE)
 /datum/shuttle_event/simple_spawner/carp
 	name = "Косяк карпов (опасно!)"
-	event_probability = 4
+	event_probability = 3
 	activation_fraction = 0.2
 	spawning_list = list(/mob/living/simple_animal/hostile/carp = 12, /mob/living/simple_animal/hostile/carp/megacarp = 3)
 	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE | SHUTTLE_EVENT_MISS_SHUTTLE
@@ -11,7 +11,7 @@
 
 /datum/shuttle_event/simple_spawner/carp/friendly
 	name = "Косяк карпов (безобидно)"
-	event_probability = 3
+	event_probability = 7
 	activation_fraction = 0.1
 	spawning_list = list(/mob/living/simple_animal/hostile/carp/shuttle_passive = 1)
 	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE | SHUTTLE_EVENT_MISS_SHUTTLE
@@ -50,3 +50,22 @@
 	if(!length(L))
 		return null
 	return pick(L)
+
+/datum/shuttle_event/simple_spawner/carp/friendly/personal_space_invader
+	name = "Косяк карпов (толкаются в шаттле)"
+	event_probability = 6
+	activation_fraction = 0.45
+	hit_the_shuttle_chance = 100
+
+/datum/shuttle_event/simple_spawner/carp/magic
+	name = "Волшебные карпы (опасно!)"
+	event_probability = 2
+	activation_fraction = 0.2
+	spawning_list = list(
+		/mob/living/simple_animal/hostile/carp/ranged = 10,
+		/mob/living/simple_animal/hostile/carp/ranged/chaos = 4,
+	)
+	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE | SHUTTLE_EVENT_MISS_SHUTTLE
+	spawn_probability_per_process = 18
+	remove_from_list_when_spawned = TRUE
+	self_destruct_when_empty = TRUE

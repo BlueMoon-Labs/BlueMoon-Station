@@ -25,7 +25,7 @@
 
 	// Empathy abilities escape clause
 	// Please change this when adding new quirk detection
-	if(!(HAS_TRAIT(usr, TRAIT_EMPATH) || HAS_TRAIT(usr, TRAIT_FRIENDLY) || src == usr))
+	if(!usr || !(HAS_TRAIT(usr, TRAIT_EMPATH) || HAS_TRAIT(usr, TRAIT_FRIENDLY) || src == usr))
 		return
 
 	// Check for Distant (no touch head!)

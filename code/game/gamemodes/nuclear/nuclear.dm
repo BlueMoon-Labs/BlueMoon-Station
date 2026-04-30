@@ -157,19 +157,29 @@
 
 /datum/outfit/inteq/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	var/obj/item/radio/R = H.ears
-	R.set_frequency(FREQ_INTEQ)
-	R.freqlock = TRUE
-	if(command_radio)
-		R.command = TRUE
+	if(R)
+		R.set_frequency(FREQ_INTEQ)
+		R.freqlock = TRUE
+		if(command_radio)
+			R.command = TRUE
 
-	if(tc)
-		var/obj/item/U = new uplink_type(H, H.key, tc)
-		H.equip_to_slot_or_del(U, ITEM_SLOT_BACKPACK)
+	if(!visualsOnly)
+		if(tc)
+			var/already_uplink = FALSE
+			for(var/obj/item/I in H.GetAllContents())
+				if(istype(I, uplink_type))
+					already_uplink = TRUE
+					break
+			if(!already_uplink)
+				var/obj/item/U = new uplink_type(H, H.key, tc)
+				H.equip_to_slot_or_del(U, ITEM_SLOT_BACKPACK)
 
-	var/obj/item/implant/weapons_auth/W = new
-	W.implant(H)
-	var/obj/item/implant/explosive/E = new
-	E.implant(H)
+		if(!LAZYLEN(H.implants) || !(locate(/obj/item/implant/weapons_auth) in H.implants))
+			var/obj/item/implant/weapons_auth/W = new
+			W.implant(H)
+		if(!LAZYLEN(H.implants) || !(locate(/obj/item/implant/explosive) in H.implants))
+			var/obj/item/implant/explosive/E = new
+			E.implant(H)
 
 	H.faction |= ROLE_INTEQ
 	H.update_icons()
@@ -189,9 +199,37 @@
 		/obj/item/gun/ballistic/automatic/pistol=1,\
 		/obj/item/kitchen/knife/combat/survival)
 
+/// Silent holder for martyr objective on inteq/full when the mob is not a nuke operative (ghost hitchhikers). Do not use datum/antagonist/traitor — it rolls random classes and corrupts minds.
+/datum/antagonist/inteq_martyr_objective_holder
+	name = "InteQ operative directive"
+	soft_antag = TRUE
+	silent = TRUE
+	show_in_roundend = FALSE
+	show_in_antagpanel = FALSE
+	show_in_check_antagonists = FALSE
+	show_to_ghosts = FALSE
+	can_coexist_with_others = TRUE
+	replace_banned = FALSE
+
 /datum/outfit/inteq/full/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	. = ..()
-	H.mind.make_Traitor()
+	for(var/datum/objective/obj in H.mind.get_all_objectives())
+		if(istype(obj, /datum/objective/martyr))
+			return
+	var/datum/objective/martyr/martyr_obj = new
+	martyr_obj.owner = H.mind
+	var/datum/antagonist/nukeop/nuke_datum = H.mind.has_antag_datum(/datum/antagonist/nukeop)
+	if(nuke_datum)
+		nuke_datum.objectives += martyr_obj
+	else
+		var/datum/antagonist/inteq_martyr_objective_holder/holder = H.mind.has_antag_datum(/datum/antagonist/inteq_martyr_objective_holder)
+		if(!holder)
+			holder = H.mind.add_antag_datum(/datum/antagonist/inteq_martyr_objective_holder)
+			if(!holder)
+				qdel(martyr_obj)
+				return
+		holder.objectives += martyr_obj
+	H.mind.announce_objectives()
 
 /datum/outfit/inteq/lone/inteq
 	name = "InteQ Lone Operative"
@@ -212,4 +250,4 @@
 	/obj/item/kitchen/knife/combat/survival)
 
 	uplink_type = /obj/item/inteq/uplink/radio/nuclear
-	tc = 60
+	tc = 90

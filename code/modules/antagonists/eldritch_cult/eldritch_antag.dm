@@ -14,6 +14,7 @@
 	var/list/actually_sacced = list()	//Which targets did they actually sac?
 	var/ascended = FALSE
 	var/datum/mind/yandere
+	var/list/summon_items = list()
 
 	reminded_times_left = 2 // BLUEMOON ADD
 
@@ -40,6 +41,8 @@
 	if(ishuman(current))
 		forge_primary_objectives()
 		gain_knowledge(/datum/eldritch_knowledge/spell/basic)
+		gain_knowledge(/datum/eldritch_knowledge/spell/summon/heart)
+		gain_knowledge(/datum/eldritch_knowledge/spell/summon/book)
 		gain_knowledge(/datum/eldritch_knowledge/living_heart)
 		gain_knowledge(/datum/eldritch_knowledge/codex_cicatrix)
 	current.log_message("has been converted to the cult of the forgotten ones!", LOG_ATTACK, color="#960000")
@@ -50,10 +53,11 @@
 	return ..()
 
 /datum/antagonist/heretic/on_removal()
-
 	for(var/X in researched_knowledge)
 		var/datum/eldritch_knowledge/EK = researched_knowledge[X]
 		EK.on_lose(owner.current)
+	for(var/obj/item/I in summon_items)
+		qdel(I)
 	owner.special_role = null
 	if(!silent)
 		to_chat(owner.current, "<span class='userdanger'>Your mind begins to flare as the otherwordly knowledge escapes your grasp!</span>")
@@ -64,16 +68,23 @@
 
 	return ..()
 
-
 /datum/antagonist/heretic/proc/equip_cultist()
 	var/mob/living/carbon/H = owner.current
 	if(!istype(H))
 		return
-	. += ecult_give_item(/obj/item/forbidden_book, H)
-	. += ecult_give_item(/obj/item/living_heart, H)
+	
+	var/static/list/sm_items = list(
+		/obj/item/living_heart,
+		/obj/item/forbidden_book,
+	)
+
+	// Да, спавн в null, ничего не перепутано
+	for(var/path in sm_items)
+		var/atom/movable/AM = new path(null)
+		summon_items += AM
 
 /datum/antagonist/heretic/proc/ecult_give_item(obj/item/item_path, mob/living/carbon/human/H)
-	var/list/slots = list(
+	var/static/list/slots = list(
 		"backpack" = ITEM_SLOT_BACKPACK,
 		"left pocket" = ITEM_SLOT_LPOCKET,
 		"right pocket" = ITEM_SLOT_RPOCKET
@@ -81,15 +92,15 @@
 
 	var/T = new item_path(H)
 	var/item_name = initial(item_path.name)
-	var/where = H.equip_in_one_of_slots(T, slots, critical = TRUE)
+	var/where = H.equip_in_one_of_slots(T, slots, qdel_on_fail = TRUE, critical = TRUE)
 	if(!where)
 		to_chat(H, "<span class='userdanger'>К сожалению, тебе не удалось получить [item_name]. Это очень плохо и тебе нужно срочно попросить помощи у администратора (press F1).</span>")
-		return FALSE
+		return null
 	else
 		to_chat(H, "<span class='danger'>Я получил [item_name] в мой [where].</span>")
 		if(where == "backpack")
 			SEND_SIGNAL(H.back, COMSIG_TRY_STORAGE_SHOW, H)
-		return TRUE
+		return T
 
 /datum/antagonist/heretic/process()
 	if(!owner?.current || owner.current.stat == DEAD)
@@ -246,7 +257,6 @@
 
 	return (parts.Join("<br>") + "<br>")
 
-
 ////////////////
 // Objectives //
 ////////////////
@@ -266,3 +276,14 @@
 	if(!cultie)
 		return FALSE
 	return cultie.total_sacrifices >= target_amount
+
+/datum/objective/sacrifice_ecult/get_crewmember_minds()
+	. = ..()
+	if(!LAZYLEN(.))
+		return
+	var/list/result = list()
+	for(var/datum/mind/M in .)
+		if(ishuman(M.current) && HAS_TRAIT(M.current, TRAIT_ONELIFE))
+			continue
+		result += M
+	return result

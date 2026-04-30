@@ -78,9 +78,9 @@
 		return
 	UnregisterSignal(source, COMSIG_ATOM_ENTERED)
 	if(linked_contract)
-		linked_contract.delegate_ransom_pod_entry(entered, source, src)
+		INVOKE_ASYNC(linked_contract, TYPE_PROC_REF(/datum/syndicate_contract, delegate_ransom_pod_entry), entered, source, src)
 	else
-		finalize_captured(entered, source)
+		INVOKE_ASYNC(src, PROC_REF(finalize_captured), entered, source)
 
 /datum/syndicate_contract/proc/delegate_ransom_pod_entry(mob/living/mob_entry, obj/structure/closet/supplypod/extractionpod/extraction_pod, datum/ransom_extraction/pipeline)
 	if(!pipeline)

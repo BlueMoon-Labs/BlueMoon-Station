@@ -138,7 +138,9 @@ export const ShuttleManipulatorHyperspace = (props, context) => {
               title={shuttle.name + ' (' + shuttle.shuttle_id + ')'}>
               <LabeledList>
                 <LabeledList.Item label="В очереди на полёт">
-                  {shuttle.queued_event_name || '—'}
+                  {(shuttle.queued_event_names && shuttle.queued_event_names.length)
+                    ? shuttle.queued_event_names.join(' → ')
+                    : '—'}
                 </LabeledList.Item>
                 <LabeledList.Item label="Поставить в очередь">
                   <Flex align="center" wrap>

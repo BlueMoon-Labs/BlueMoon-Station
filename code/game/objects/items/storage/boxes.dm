@@ -322,6 +322,10 @@
 	name = "box of WT ammo"
 	ammo = /obj/item/ammo_box/magazine/wt550m9
 
+/obj/item/storage/box/ammo/m10mm
+	name = "box of M10mm ammo"
+	ammo = /obj/item/ammo_box/magazine/m10mm
+
 /obj/item/storage/box/ammo/holy
 	name = "box of holy water"
 	ammo = /obj/item/reagent_containers/food/drinks/bottle/holywater

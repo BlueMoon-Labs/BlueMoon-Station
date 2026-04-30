@@ -101,21 +101,23 @@ GLOBAL_VAR(changeling_team_objective_type) //If this is not null, we hand our th
 
 	//vars hackery. not pretty, but better than the alternative.
 	for(var/slot in GLOB.slots)
-		if(istype(user.vars[slot], GLOB.slot2type[slot]) && !(chosen_prof.exists_list[slot])) //remove unnecessary flesh items
+		var/changeling_flesh_type = GLOB.slot2type[slot]
+		if(!changeling_flesh_type)
+			continue // Sandstorm: underwear etc. expanded GLOB.slots without matching flesh types — skip to avoid runtime
+		if(istype(user.vars[slot], changeling_flesh_type) && !(chosen_prof.exists_list[slot])) //remove unnecessary flesh items
 			qdel(user.vars[slot])
 			continue
 
-		if((user.vars[slot] && !istype(user.vars[slot], GLOB.slot2type[slot])) || !(chosen_prof.exists_list[slot]))
+		if((user.vars[slot] && !istype(user.vars[slot], changeling_flesh_type)) || !(chosen_prof.exists_list[slot]))
 			continue
 
 		var/obj/item/C
 		var/equip = 0
 		if(!user.vars[slot])
-			var/thetype = GLOB.slot2type[slot]
 			equip = 1
-			C = new thetype(user)
+			C = new changeling_flesh_type(user)
 
-		else if(istype(user.vars[slot], GLOB.slot2type[slot]))
+		else if(istype(user.vars[slot], changeling_flesh_type))
 			C = user.vars[slot]
 
 		C.appearance = chosen_prof.appearance_list[slot]

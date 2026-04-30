@@ -24,8 +24,12 @@
 		var/mob/chosen = pick(winners)
 		if(chosen && isobserver(chosen))
 			new_mob.ckey = chosen.ckey
+			post_player_assigned(new_mob)
 	else if(!spawn_anyway_if_no_player)
 		qdel(new_mob)
+
+/datum/shuttle_event/simple_spawner/player_controlled/proc/post_player_assigned(mob/living/mob)
+	return
 
 /// Alien queen — single ghost role.
 /datum/shuttle_event/simple_spawner/player_controlled/alien_queen
@@ -62,7 +66,7 @@
 	remove_from_list_when_spawned = TRUE
 	self_destruct_when_empty = TRUE
 	role_type = ROLE_SENTIENCE
-	var/max_carp_spawns = 3
+	var/max_carp_spawns = 9
 
 /datum/shuttle_event/simple_spawner/player_controlled/carp/New(obj/docking_port/mobile/port)
 	var/list/template = list(

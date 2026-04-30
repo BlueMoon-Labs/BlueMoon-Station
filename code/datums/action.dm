@@ -307,8 +307,9 @@
 
 /datum/action/item_action/Destroy()
 	var/obj/item/I = target
-	I.actions -= src
-	UNSETEMPTY(I.actions)
+	if(I?.actions)
+		I.actions -= src
+		UNSETEMPTY(I.actions)
 	return ..()
 
 /datum/action/item_action/Trigger(trigger_flags)
