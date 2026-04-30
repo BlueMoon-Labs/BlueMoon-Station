@@ -774,7 +774,7 @@
 
 	// Ограничение по процессу и времени на срабатывания
 	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
-		var/obj/item/toy/plush/bm/mickie/P = locate() in range(1, src)
+		var/obj/item/toy/plush/bm/mickie/P = locate() in range(3, src)
 		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 			spawn(1) // Что-то меняет пиксельную позицую после и так решаем приколы с бросками
 				if(istype(src.loc, /turf/open) && istype(P.loc, /turf/open)) // Изъятие из контейнера изначально считается как на открытом турфе, поэтому перепроверяем еще раз
@@ -787,6 +787,9 @@
 	if(!start || !end) // На всякий случай
 		return
 
+	var/dist = get_dist(src, partner)
+	var/same_tile = (dist == 0)
+
 	love_target = partner
 	partner.love_target = src
 
@@ -798,119 +801,104 @@
 		// Сохраняем оригинальные позиции
 		original_pixel_offsets[plushe] = list(
 			"pixel_x" = plushe.pixel_x,
-			"pixel_y" = plushe.pixel_y
-		)
+			"pixel_y" = plushe.pixel_y)
 		// Останавливаем бросок и таскание
 		plushe.forceMove(get_turf(plushe))
 		qdel(plushe.throwing)
+	if(!same_tile)
+		src.say(pick(
+			"Я останусь с тобой~",
+			"Никуда от меня не денешься~",
+			"Я найду тебя везде!",
+			"Иду к тебе~",
+			"Не убегай от меня~"))
 
-	// Проверяем: на одном ли тайле находятся игрушки
-	var/same_tile = get_turf(src) == get_turf(partner)
-
-	// Получаем координаты с учётом тайла и pixel-смещения
-	var/x1 = same_tile ? src.pixel_x : src.x * 32 + src.pixel_x
-	var/y1 = same_tile ? src.pixel_y : src.y * 32 + src.pixel_y
-	var/x2 = same_tile ? partner.pixel_x : partner.x * 32 + partner.pixel_x
-	var/y2 = same_tile ? partner.pixel_y : partner.y * 32 + partner.pixel_y
-
-	var/dx = x2 - x1
-	var/dy = y2 - y1
-
-	var/distance = sqrt(dx * dx + dy * dy)
-
-	// Целевое расстояние между игрушками
-	var/const/target_distance = 16
-	var/const/tolerance = 5
-
-	// Нужно ли анимировать
-	var/need_animate = abs(distance - target_distance) > tolerance
-
-	if(need_animate)
-		var/delta = (target_distance - distance) / 2.0
-
-		var/norm_x = dx / max(distance, 1)
-		var/norm_y = dy / max(distance, 1)
-
-		var/shift_x = round(norm_x * delta)
-		var/shift_y = round(norm_y * delta)
-
-		if(same_tile)
-			// Просто двигаем pixel_x / pixel_y
-			animate(src, pixel_x = src.pixel_x - shift_x, pixel_y = src.pixel_y - shift_y, time = 6)
-			animate(partner, pixel_x = partner.pixel_x + shift_x, pixel_y = partner.pixel_y + shift_y, time = 6)
-		else
-			// Смещаем абсолютные координаты, потом пересчитываем обратно
-			var/final_x1 = x1 - shift_x
-			var/final_y1 = y1 - shift_y
-			var/final_x2 = x2 + shift_x
-			var/final_y2 = y2 + shift_y
-
-			animate(src, pixel_x = final_x1 - (src.x * 32), pixel_y = final_y1 - (src.y * 32), time = 6)
-			animate(partner, pixel_x = final_x2 - (partner.x * 32), pixel_y = final_y2 - (partner.y * 32), time = 6)
-
-	// Диалог
-	src.say(pick(
-		"Привет, любимка~",
-		"Милота!",
-		"Зацелую~",
-		"Обожаю тебя!",
-		"Я скучал!",
-		"Тяфкалка моя~",
-		"Мик~",
-		"Мой фенёк~"))
-
-	partner.say(pick(
-        "Привет, милый~",
-        "Кусь!~",
-        "Иди сюда, мой хороший~",
-        "Моя золотая вульпа~",
-        "Заобнимаю~",
-        "Рей~",
-        "ТЯФ~"))
+		// Slide-анимация: физически перемещаем src на тайл партнёра,
+		// задаём pixel-смещение "откуда прилетел" и анимируем к нулю
+		var/offset_x = (start.x - end.x) * 32 + src.pixel_x
+		var/offset_y = (start.y - end.y) * 32 + src.pixel_y
+		src.forceMove(end)
+		src.pixel_x = offset_x
+		src.pixel_y = offset_y
+		animate(src, pixel_x = 0, pixel_y = 0, time = 8)
+		sleep(10)
+		start = get_turf(src)
+	animate(src, pixel_x = -8, pixel_y = 0, time = 6)
+	animate(partner, pixel_x = 8, pixel_y = 0, time = 6)
+	sleep(6)
+	if(same_tile)
+		src.say(pick(
+			"Никуда тебя не отпущу~",
+			"Милота!",
+			"Зацелую~",
+			"Обожаю тебя!",
+			"Тепло~",
+			"Тяфкалка моя~",
+			"Мик~",
+			"Мой фенёк~"))
+		partner.say(pick(
+			"Привет, милый~",
+			"Кусь!~",
+			"Иди сюда, мой хороший~",
+			"Моя золотая вульпа~",
+			"Заобнимаю~",
+			"Рей~",
+			"ТЯФ~"))
+	else
+		src.say(pick(
+			"Наконец-то рядом~",
+			"Я же говорил, что найду тебя~",
+			"Больше не потеряемся~",
+			"Мик~ Наконец-то~"))
+		partner.say(pick(
+			"Ты прилетел ко мне~",
+			"Так и знала, что ты придёшь~",
+			"Больше не отпущу тебя~",
+			"Рей~ Ты нашёл меня~"))
 
 	var/heart_broken = FALSE // Если игрушки разняли, что бы не играть анимацию
-
+	var/current_src_turf = get_turf(src)
+	var/current_partner_turf = get_turf(partner)
+	var/list/hug_emotes_src = list(
+		"[src] тихонько урчит, прижавшись к [partner]~",
+		"[src] прячет нос в меху [partner]~",
+		"[src] крепче обхватывает [partner] лапками~",
+		"[src] тихо вздыхает рядом с [partner]~"
+	)
+	var/list/hug_emotes_partner = list(
+		"[partner] щекочет ухо [src] носиком~",
+		"[partner] прижимается к [src] поплотнее~",
+		"[partner] довольно тяфкает, уткнувшись в [src]~",
+		"[partner] обнимает [src] хвостом~"
+	)
 	for(var/i = 1, i <= 4, i++)
-		if(src.loc != start || partner.loc != end) // Если игрушки передвинули в процессе
+		if(get_turf(src) != current_src_turf || get_turf(partner) != current_partner_turf) // Если игрушки передвинули в процессе
 			var/static/list/heart_broken_say_rey = list(
-				"Не-ет!",
+				"Это нечестно...",
 				"Не разлучай нас!",
-				"Верни меня!",
-				"Почему ты вмешался?!",
-				"Не забирай её у меня!",
-				"Это жестоко!",
-				"Я просто хотел быть с ней!"
+				"Эй!! Отдай её немедленно!",
+				"Я всё равно вернусь к ней.",
+				"Пусти! Мне надо к ней!",
+				"Не смей трогать её!!"
 			)
 			var/static/list/heart_broken_say_mick = list(
-				"Не-ет!",
-				"Не разлучай нас!",
-				"Верни меня!",
-				"Почему ты вмешался?!",
-				"Не забирай его у меня!",
-				"Это жестоко!",
-				"Я просто хотела быть с ним!",
+				"Рей... Жди меня.",
+				"Я найду его, что бы ни случилось.",
+				"Отпусти меня!! Мне надо к нему!",
+				"Зачем ты нас разлучил?!",
 				"Отдай!"
 			)
 			src.say(pick(heart_broken_say_rey))
 			partner.say(pick(heart_broken_say_mick))
 			heart_broken = TRUE
 			break
-		new /obj/effect/temp_visual/heart(get_turf(src))
-		new /obj/effect/temp_visual/heart(get_turf(partner))
 		if(i % 2 == 0)
-			playsound(partner.loc, pick(GLOB.lewd_kiss_sounds), 90, TRUE, -1)
+			src.visible_message(span_notice(pick(hug_emotes_src)))
+			playsound(partner.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
 		else
-			playsound(src.loc, pick(GLOB.lewd_kiss_sounds), 90, TRUE, -1)
+			partner.visible_message(span_notice(pick(hug_emotes_partner)))
+			playsound(src.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
 		sleep(8)
-
-	if(need_animate)
-		for(var/obj/item/toy/plush/plushe in list(src, partner))
-			var/list/offsets = original_pixel_offsets[plushe]
-			if(heart_broken)
-				plushe.pixel_x = offsets["pixel_x"]
-				plushe.pixel_y = offsets["pixel_y"]
-			else
-				animate(plushe, pixel_x = offsets["pixel_x"], pixel_y = offsets["pixel_y"], time = 6)
 	love_target = null
 	partner.love_target = null
 
@@ -927,7 +915,7 @@
 
 	// Ограничение по процессу и времени на срабатывания
 	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
-		var/obj/item/toy/plush/bm/reijo/P = locate() in range(1, src)
+		var/obj/item/toy/plush/bm/reijo/P = locate() in range(3, src)
 		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 			spawn(1) // Что-то меняет пиксельную позицую после и так решаем приколы с бросками
 				if(istype(src.loc, /turf/open) && istype(P.loc, /turf/open)) // Изъятие из контейнера изначально считается как на открытом турфе, поэтому перепроверяем еще раз
