@@ -883,11 +883,11 @@
 				partner.visible_message(span_notice(pick(hug_emotes_partner)))
 				playsound(partner.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
 			sleep(8)
-	if(same_tile)
+	else
 		var/static/list/word_rey = list(
 					"Никуда тебя не отпущу~",
 					"Милота!",
-					"Зацелую~",
+					"Заглажу~",
 					"Обожаю тебя!",
 					"Тепло~",
 					"Тяфкалка моя~",
@@ -905,10 +905,8 @@
 		var/say_mick = pick(word_mick)
 		src.say(say_rey)
 		partner.say(say_mick)
-		if(say_rey == "Никуда тебя не отпущу~" || say_rey == "Тепло~")
+		if(say_rey == "Никуда тебя не отпущу~" || say_rey == "Тепло~" || say_rey == "Заглажу~")
 			playsound(src.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
-		else if(say_rey == "Зацелую~")
-			playsound(src.loc, pick(GLOB.lewd_kiss_sounds), 90, TRUE, -1)
 		if(say_mick == "Кусь!~")
 			playsound(partner.loc, 'modular_sand/sound/interactions/squelch1.ogg', 90, TRUE, -1)
 		else if(say_mick == "Иди сюда, мой хороший~" || say_mick == "Заобнимаю~")
