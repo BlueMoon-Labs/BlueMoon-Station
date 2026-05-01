@@ -793,6 +793,19 @@
 	love_target = partner
 	partner.love_target = src
 
+	var/heart_broken = FALSE // Если игрушки разняли, что бы не играть анимацию
+	var/list/hug_emotes_src = list(
+		"[src] тихонько урчит, прижавшись к [partner]~",
+		"[src] прячет нос в меху [partner]~",
+		"[src] крепче обхватывает [partner] лапками~",
+		"[src] тихо вздыхает рядом с [partner]~"
+	)
+	var/list/hug_emotes_partner = list(
+		"[partner] щекочет ухо [src] носиком~",
+		"[partner] прижимается к [src] поплотнее~",
+		"[partner] довольно тяфкает, уткнувшись в [src]~",
+		"[partner] обнимает [src] хвостом~"
+	)
 	last_love_interaction = world.time
 	partner.last_love_interaction = world.time
 
@@ -822,29 +835,11 @@
 		src.pixel_y = offset_y
 		animate(src, pixel_x = 0, pixel_y = 0, time = 8)
 		sleep(10)
+
 		start = get_turf(src)
-	animate(src, pixel_x = -8, pixel_y = 0, time = 6)
-	animate(partner, pixel_x = 8, pixel_y = 0, time = 6)
-	sleep(6)
-	if(same_tile)
-		src.say(pick(
-			"Никуда тебя не отпущу~",
-			"Милота!",
-			"Зацелую~",
-			"Обожаю тебя!",
-			"Тепло~",
-			"Тяфкалка моя~",
-			"Мик~",
-			"Мой фенёк~"))
-		partner.say(pick(
-			"Привет, милый~",
-			"Кусь!~",
-			"Иди сюда, мой хороший~",
-			"Моя золотая вульпа~",
-			"Заобнимаю~",
-			"Рей~",
-			"ТЯФ~"))
-	else
+		animate(src, pixel_x = -8, pixel_y = 0, time = 6)
+		animate(partner, pixel_x = 8, pixel_y = 0, time = 6)
+		sleep(6)
 		src.say(pick(
 			"Наконец-то рядом~",
 			"Я же говорил, что найду тебя~",
@@ -855,50 +850,71 @@
 			"Так и знала, что ты придёшь~",
 			"Больше не отпущу тебя~",
 			"Рей~ Ты нашёл меня~"))
-
-	var/heart_broken = FALSE // Если игрушки разняли, что бы не играть анимацию
-	var/current_src_turf = get_turf(src)
-	var/current_partner_turf = get_turf(partner)
-	var/list/hug_emotes_src = list(
-		"[src] тихонько урчит, прижавшись к [partner]~",
-		"[src] прячет нос в меху [partner]~",
-		"[src] крепче обхватывает [partner] лапками~",
-		"[src] тихо вздыхает рядом с [partner]~"
-	)
-	var/list/hug_emotes_partner = list(
-		"[partner] щекочет ухо [src] носиком~",
-		"[partner] прижимается к [src] поплотнее~",
-		"[partner] довольно тяфкает, уткнувшись в [src]~",
-		"[partner] обнимает [src] хвостом~"
-	)
-	for(var/i = 1, i <= 4, i++)
-		if(get_turf(src) != current_src_turf || get_turf(partner) != current_partner_turf) // Если игрушки передвинули в процессе
-			var/static/list/heart_broken_say_rey = list(
-				"Это нечестно...",
-				"Не разлучай нас!",
-				"Эй!! Отдай её немедленно!",
-				"Я всё равно вернусь к ней.",
-				"Пусти! Мне надо к ней!",
-				"Не смей трогать её!!"
-			)
-			var/static/list/heart_broken_say_mick = list(
-				"Рей... Жди меня.",
-				"Я найду его, что бы ни случилось.",
-				"Отпусти меня!! Мне надо к нему!",
-				"Зачем ты нас разлучил?!",
-				"Отдай!"
-			)
-			src.say(pick(heart_broken_say_rey))
-			partner.say(pick(heart_broken_say_mick))
-			heart_broken = TRUE
-			break
-		if(i % 2 == 0)
-			src.visible_message(span_notice(pick(hug_emotes_src)))
-			playsound(partner.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
-		else
-			partner.visible_message(span_notice(pick(hug_emotes_partner)))
+		var/current_src_turf = get_turf(src)
+		var/current_partner_turf = get_turf(partner)
+		for(var/i = 1, i <= 4, i++)
+			if(get_turf(src) != current_src_turf || get_turf(partner) != current_partner_turf) // Если игрушки передвинули в процессе
+				var/static/list/heart_broken_say_rey = list(
+					"Это нечестно...",
+					"Эй!! Отдай её немедленно!",
+					"Я всё равно вернусь к ней.",
+					"Пусти! Мне надо к ней!",
+					"Не смей трогать её!!")
+				var/static/list/heart_broken_say_mick = list(
+					"Рей... Жди меня.",
+					"Я найду его, что бы ни случилось.",
+					"Отпусти меня!! Мне надо к нему!",
+					"Зачем ты нас разлучил?!",
+					"Отдай!")
+				var/say_heart_rey = pick(heart_broken_say_rey)
+				var/say_heart_mick = pick(heart_broken_say_mick)
+				src.say(say_heart_rey)
+				partner.say(say_heart_mick)
+				if(say_heart_rey == "Эй!! Отдай её немедленно!" || say_heart_rey == "Не смей трогать её!!")
+					playsound(src.loc, 'sound/fox/Voice/fox_growl.ogg', 90, TRUE, -1)
+				if(say_heart_mick == "Отпусти меня!! Мне надо к нему!" || say_heart_mick == "Отдай!" || say_heart_mick == "Зачем ты нас разлучил?!")
+					playsound(src.loc, 'sound/voice/growl.ogg', 90, TRUE, -1)
+				heart_broken = TRUE
+				break
+			if(i % 2 == 0)
+				src.visible_message(span_notice(pick(hug_emotes_src)))
+				playsound(src.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
+			else
+				partner.visible_message(span_notice(pick(hug_emotes_partner)))
+				playsound(partner.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
+			sleep(8)
+	if(same_tile)
+		var/static/list/word_rey = list(
+					"Никуда тебя не отпущу~",
+					"Милота!",
+					"Зацелую~",
+					"Обожаю тебя!",
+					"Тепло~",
+					"Тяфкалка моя~",
+					"Мик~",
+					"Мой фенёк~")
+		var/static/list/word_mick = list(
+					"Привет, милый~",
+					"Кусь!~",
+					"Иди сюда, мой хороший~",
+					"Моя золотая вульпа~",
+					"Заобнимаю~",
+					"Рей~",
+					"ТЯФ~")
+		var/say_rey = pick(word_rey)
+		var/say_mick = pick(word_mick)
+		src.say(say_rey)
+		partner.say(say_mick)
+		if(say_rey == "Никуда тебя не отпущу~" || say_rey == "Тепло~")
 			playsound(src.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
-		sleep(8)
+		else if(say_rey == "Зацелую~")
+			playsound(src.loc, pick(GLOB.lewd_kiss_sounds), 90, TRUE, -1)
+		if(say_mick == "Кусь!~")
+			playsound(partner.loc, 'modular_sand/sound/interactions/squelch1.ogg', 90, TRUE, -1)
+		else if(say_mick == "Иди сюда, мой хороший~" || say_mick == "Заобнимаю~")
+			playsound(src.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
+		else if(say_mick == "ТЯФ~")
+			playsound(src.loc, 'sound/fox/Voice/fox_bark_1.ogg', 90, TRUE, -1)
 	love_target = null
 	partner.love_target = null
 
