@@ -358,3 +358,20 @@
   - bugfix: фиксы и правки реквиема
   SmiLeYre:
   - rscadd: Перенёс "SSpacemove" с НовоТГ.
+2026-04-30:
+  DuLL-FoX:
+  - bugfix: подсветка текста в чате теперь сохраняется на каждое нажатие клавиши,
+      а не только когда уводишь фокус с поля - больше не слетает (в теории) после
+      Fix Chat и реконнекта
+  - code_imp: оптимизирован /mob/Process_Spacemove - газовая проверка для квирка "Парение"
+      больше не выполняется для мобов без этого трейта
+  - refactor: sortTim/sortInsert получили inline fast-path для cmp_numeric_asc/dsc
+      и cmp_text_asc/dsc во всех горячих процедурах (binarySort, gallop, mergeLo/Hi,
+      countRun, mergeAt2) - на типичных сортировках −25-28% времени, на already-sorted
+      до −50%.
+  - bugfix: sortMerge больше не падает с list index out of bounds на втором вызове
+      после sortTim (не сбрасывал внутренний run-stack)
+  - code_imp: добавлены юнит-тесты sort_tim для всех путей сортировки и отдельный
+      sort_tim_benchmark с замерами в tests.log
+  Herobrine998:
+  - rscadd: Добавлены сумки Hipbag, как возможные, стартовые для персонажа
