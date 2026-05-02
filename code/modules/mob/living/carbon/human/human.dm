@@ -991,17 +991,22 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		else
 			to_chat(src, span_notice("Вам не удалось поднять [src]."))
 
+#define PIGGYBACK_DELAY_BASE 3.5 SECONDS
+#define PIGGYBACK_DELAYADD_HEAVY 1 SECONDS
+#define PIGGYBACK_DELAYADD_HEAVY_SUPER 3.5 SECONDS
+
 /mob/living/carbon/human/proc/piggyback(mob/living/carbon/target)
 	if(can_piggyback(target))
 		visible_message(span_notice("[target] начинает забираться на [src]..."))
 
 		// BLUEMOON ADDITION START - тяжёлые персонажи дольше забираются на спину
-		var/climb_on_time = 6 SECONDS
-		switch(target.mob_weight)
-			if(MOB_WEIGHT_HEAVY_SUPER)
-				climb_on_time = 9 SECONDS
-			if(MOB_WEIGHT_HEAVY)
-				climb_on_time = 7.5 SECONDS
+		var/climb_on_time = PIGGYBACK_DELAY_BASE
+		if(mob_weight < target.mob_weight)
+			switch(target.mob_weight)
+				if(MOB_WEIGHT_HEAVY_SUPER)
+					climb_on_time += PIGGYBACK_DELAYADD_HEAVY_SUPER
+				if(MOB_WEIGHT_HEAVY)
+					climb_on_time += PIGGYBACK_DELAYADD_HEAVY
 		// BLUEMOON ADDITION END
 
 		if(do_after(target, climb_on_time, src, IGNORE_INCAPACITATED, extra_checks = CALLBACK(src, PROC_REF(can_piggyback), target)))
@@ -1010,7 +1015,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 					target.visible_message(span_warning("[target] не может уцепиться за [src]!"))
 					return
 				// BLUEMOON ADDITION START
-				if(target.mob_weight > MOB_WEIGHT_NORMAL)
+				if(mob_weight < target.mob_weight && target.mob_weight > MOB_WEIGHT_NORMAL)
 					target.visible_message(span_warning("[target] слишком много весит для [src]!"))
 					var/obj/item/bodypart/affecting = get_bodypart(BODY_ZONE_CHEST)
 					var/wound_bon = 100
@@ -1038,6 +1043,10 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 			visible_message(span_warning("[target] не удаётся забраться на [src]!"))
 	else
 		to_chat(target, span_warning("Ты не можешь прокатиться на спине [src] прямо сейчас!"))
+
+#undef PIGGYBACK_DELAY_BASE
+#undef PIGGYBACK_DELAYADD_HEAVY
+#undef PIGGYBACK_DELAYADD_HEAVY_SUPER
 
 /mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, buckle_type = RIDING_PIGGYBACK, auto_by_type = FALSE)
 	if(!force)//humans are only meant to be ridden through piggybacking and special cases
