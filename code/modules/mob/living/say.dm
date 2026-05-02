@@ -288,7 +288,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		src.log_talk(message, LOG_SAY, forced_by=forced)
 
 	if(length(message) && message[1] != "!")
-		message = treat_message(message) // unfortunately we still need this
+		message = treat_message(message, language) // unfortunately we still need this
 	var/sigreturn = SEND_SIGNAL(src, COMSIG_MOB_SAY, args)
 	if (sigreturn & COMPONENT_UPPERCASE_SPEECH)
 		message = uppertext(message)
@@ -575,7 +575,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 				return LD
 	return null
 
-/mob/living/proc/treat_message(message)
+/mob/living/proc/treat_message(message, datum/language/speaking = null)
 
 	if(HAS_TRAIT(src, TRAIT_UNINTELLIGIBLE_SPEECH))
 		message = unintelligize(message)
@@ -589,6 +589,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	if(HAS_TRAIT(src, TRAIT_KARTAVII))
 		message = kartavo(message)
 
+	var/skip_vocal_stutter = speaking && initial(speaking.visual_language)
+
 	// BLUEMOON EDIT START - теперь синтетики заикаются более с%инт$тич!ески
 	if(derpspeech)
 		if (isrobotic(src))
@@ -596,7 +598,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		else
 			message = derpspeech(message, stuttering)
 
-	if(stuttering)
+	if(!skip_vocal_stutter && stuttering)
 		if (isrobotic(src))
 			message = machine_slur(message, FALSE, 30)
 		else
