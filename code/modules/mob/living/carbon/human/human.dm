@@ -1036,7 +1036,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 					Knockdown(3 SECONDS) // Knocking down the unlucky guy
 					target.Knockdown(1) // simply make the oversized one fall
 					if(get_turf(target) != get_turf(src))
-						target.throw_at(get_turf(src), 1, 1, FALSE, FALSE)
+						target.throw_at(get_turf(src), 1, 1, src, FALSE, FALSE)
 					// BLUEMOON ADDITION END
 				buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_PIGGYBACK, auto_by_type = TRUE)
 		else
