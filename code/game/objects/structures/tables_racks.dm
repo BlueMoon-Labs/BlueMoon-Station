@@ -699,7 +699,6 @@
 	icon_state = "rglass_table"
 	buildstack = /obj/item/stack/sheet/rglass
 	canSmoothWith = null
-	max_integrity = 150
 
 /obj/structure/table/reinforced/plasmarglass
 	name = "reinforced plasma glass table"
@@ -708,6 +707,7 @@
 	icon_state = "rplasmaglass_table"
 	buildstack = /obj/item/stack/sheet/plasmarglass
 	canSmoothWith = null
+	max_integrity = 400
 
 /obj/structure/table/reinforced/titaniumglass
 	name = "titanium glass table"
@@ -716,7 +716,7 @@
 	icon_state = "titaniumglass_table"
 	buildstack = /obj/item/stack/sheet/titaniumglass
 	canSmoothWith = null
-	max_integrity = 250
+	max_integrity = 350
 
 /obj/structure/table/reinforced/plastitaniumglass
 	name = "Plastitanium Glass Table"
@@ -725,7 +725,7 @@
 	icon_state = "plastitaniumglass_table"
 	buildstack = /obj/item/stack/sheet/plastitaniumglass
 	canSmoothWith = null
-	max_integrity = 300
+	max_integrity = 450
 
 /obj/structure/table/reinforced/brass
 	name = "brass table"
