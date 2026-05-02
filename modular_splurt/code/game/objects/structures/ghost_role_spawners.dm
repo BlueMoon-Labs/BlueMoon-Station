@@ -271,6 +271,7 @@
 
 	var/obj/item/implant/anchor/ghost_anchor = new
 	ghost_anchor.implant(new_spawn, null, TRUE)
+	GLOB.inteq_pact_siege.register_defender(new_spawn)
 
 /obj/effect/mob_spawn/human/inteqspace/hostage
 	name = "InteQ Hostage"
