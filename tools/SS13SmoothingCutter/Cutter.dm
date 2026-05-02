@@ -40,9 +40,13 @@
 	var/filename = "[copytext("[dmifile]", 1, -4)]-smooth.dmi"
 	fdel(filename) //force refresh
 
+	var/list/orig_states = list()
+
 	for(var/state in states)
 		var/statename = lowertext(state)
 		outputIcon = icon(filename) //open the icon again each iteration, to work around byond memory limits
+
+		orig_states[statename] = icon(sourceIcon, state) // save orig states
 
 		switch(statename)
 			if("box")
@@ -271,8 +275,13 @@
 				outputIcon.Insert(diagnw1, "d-nw-0")
 
 				world << "Diag_Corner_B: \icon[diag_corner_b] -> \icon[diagse1] \icon[diagsw1] \icon[diagne1] \icon[diagnw1]"
-
-
+			else
+				orig_states -= statename
 
 		fcopy(outputIcon, filename)	//Update output icon each iteration
+
+	for(var/statename in orig_states)
+		outputIcon.Insert(orig_states[statename], statename)
+		fcopy(outputIcon, filename)
+
 	world << "Finished [filename]!"
