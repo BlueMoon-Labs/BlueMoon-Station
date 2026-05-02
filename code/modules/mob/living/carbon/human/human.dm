@@ -969,8 +969,8 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 	else if(HAS_TRAIT(src, TRAIT_QUICK_CARRY) || target.mob_weight < MOB_WEIGHT_NORMAL)
 		carrydelay = 27.5 // BLUEMOON EDIT making this a little bit useful
 		skills_space = "быстро "
-	// BLUEMOON ADDITION AHEAD - тяжёлых и сверхтяжёлых персонажей нельзя нести на плече
-	if(target.mob_weight > MOB_WEIGHT_NORMAL)
+	// BLUEMOON ADDITION AHEAD - тяжёлых и сверхтяжёлых персонажей нельзя нести на плече, если вы не такой-же
+	if(max(mob_weight, MOB_WEIGHT_NORMAL) < target.mob_weight)
 		to_chat(src, span_warning("Вы пытаетесь поднять [target], но [target.ru_who()] слишком тяжелая!"))
 		return
 	// BLUEMOON ADDITION END
@@ -1015,7 +1015,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 					target.visible_message(span_warning("[target] не может уцепиться за [src]!"))
 					return
 				// BLUEMOON ADDITION START
-				if(mob_weight < target.mob_weight && target.mob_weight > MOB_WEIGHT_NORMAL)
+				if(target.mob_weight > max(mob_weight, MOB_WEIGHT_NORMAL))
 					target.visible_message(span_warning("[target] слишком много весит для [src]!"))
 					var/obj/item/bodypart/affecting = get_bodypart(BODY_ZONE_CHEST)
 					var/wound_bon = 100
