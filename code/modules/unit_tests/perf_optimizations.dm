@@ -130,3 +130,205 @@
 	TEST_ASSERT_NULL(get_mob_by_ckey("perftestmissing"), "Unknown ckey should return null")
 	TEST_ASSERT_NULL(get_mob_by_ckey(""), "Empty ckey should short-circuit to null without scanning")
 	TEST_ASSERT_NULL(get_mob_by_ckey(null), "Null ckey should short-circuit to null without scanning")
+
+
+// ===== Fix E: /datum/pipeline/proc/build_pipeline scales linearly =====
+//
+// Profile snapshot: 15 calls / 4.228s total CPU / 3.432s overtime — dominant
+// hot proc in the pipenet rebuild path. Two quadratic loops drove the cost:
+//   1. members.Find(item) — O(M) membership probe, called once per discovered
+//      pipe → O(N²) total on a chain of N pipes.
+//   2. possible_expansions -= borderline — O(P) list removal each step. Less
+//      pathological than (1) on a pure chain but quadratic on dense topology.
+//
+// The rewrite replaces the membership probe with a local seen-set assoc list
+// and walks `possible_expansions` via an index cursor (no -= per step). All
+// observable outputs (members, other_atmosmch, other_airs, volume, merged
+// air_temporary) must stay identical.
+//
+// These tests:
+//   * build_pipeline_collects_chain — small chain, asserts every pipe enrolled
+//     with correct parent and the pipeline volume is the sum of pipe volumes;
+//     verifies air_temporary on a member gets merged into pipeline air.
+//   * build_pipeline_handles_cycles — diamond topology proves dedup still
+//     works (no duplicate enrolment, no infinite loop).
+//   * build_pipeline_attaches_components — non-pipe atmos machinery in the
+//     expansion must land in other_atmosmch (not members) exactly once and
+//     get its parents slot wired through setPipenet.
+//   * build_pipeline_scales_linearly — 3000-pipe chain must complete in well
+//     under the budget that an O(N²) algorithm would burn (the pre-fix code
+//     spends >1s here on this size; the optimized code finishes near-instant).
+
+/// Synthetic pipe used to drive build_pipeline through arbitrary topologies
+/// without going through SSair atmosinit / can_be_node / piping_layer rules.
+/// pipeline_expansion returns whatever neighbors we wire up by hand.
+/obj/machinery/atmospherics/pipe/build_pipeline_test_node
+	name = "build_pipeline_test_node"
+	device_type = 1
+	volume = 100
+	var/list/test_neighbors
+
+/obj/machinery/atmospherics/pipe/build_pipeline_test_node/New(loc, process = TRUE, setdir)
+	// Skip SSair processing registration — we drive build_pipeline manually.
+	..(loc, FALSE, setdir)
+	// /obj/machinery/atmospherics/pipe/New rewrites volume = 35 * device_type;
+	// pin a deterministic value so the volume-sum assertions are exact.
+	volume = 100
+
+/obj/machinery/atmospherics/pipe/build_pipeline_test_node/atmosinit(list/node_connects)
+	return
+
+/obj/machinery/atmospherics/pipe/build_pipeline_test_node/pipeline_expansion()
+	return test_neighbors || list()
+
+/// Synthetic atmos component used to exercise the non-pipe branch of
+/// build_pipeline. Inherits the parents/airs setup from
+/// /obj/machinery/atmospherics/components/New so addMachineryMember and
+/// setPipenet can run unmodified.
+/obj/machinery/atmospherics/components/build_pipeline_test_component
+	name = "build_pipeline_test_component"
+	device_type = 1
+
+/obj/machinery/atmospherics/components/build_pipeline_test_component/New(loc, process = TRUE, setdir)
+	..(loc, FALSE, setdir)
+
+/obj/machinery/atmospherics/components/build_pipeline_test_component/atmosinit(list/node_connects)
+	return
+
+
+/datum/unit_test/build_pipeline_collects_chain/Run()
+	var/list/pipes = list()
+	for(var/i in 1 to 4)
+		pipes += allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	pipes[1].test_neighbors = list(pipes[2])
+	pipes[2].test_neighbors = list(pipes[1], pipes[3])
+	pipes[3].test_neighbors = list(pipes[2], pipes[4])
+	pipes[4].test_neighbors = list(pipes[3])
+
+	// Stash a temporary air parcel on pipes[3] to verify air_temporary merging.
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/seeded = pipes[3]
+	seeded.air_temporary = new /datum/gas_mixture()
+	seeded.air_temporary.set_volume(100)
+	seeded.air_temporary.set_temperature(T20C)
+	seeded.air_temporary.set_moles(GAS_O2, 5)
+
+	var/datum/pipeline/P = new()
+	allocated += P
+	// Real callers (/obj/machinery/atmospherics/pipe/build_network) set
+	// base.parent = pipeline before invoking build_pipeline; the proc itself
+	// only assigns .parent on *discovered* members. Mirror that contract here
+	// so the post-condition assertion is meaningful for every pipe.
+	pipes[1].parent = P
+	P.build_pipeline(pipes[1])
+
+	TEST_ASSERT_EQUAL(length(P.members), 4, "All four pipes must be collected into members (got [length(P.members)])")
+	for(var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p as anything in pipes)
+		TEST_ASSERT(p in P.members, "[p] must appear in members")
+		TEST_ASSERT_EQUAL(p.parent, P, "[p].parent must be set to the pipeline")
+	TEST_ASSERT_EQUAL(P.air.return_volume(), 4 * 100, "Pipeline volume must equal the sum of pipe volumes")
+	TEST_ASSERT(P.air.get_moles(GAS_O2) >= 5 - 0.01, "air_temporary moles must be merged into pipeline air (got [P.air.get_moles(GAS_O2)])")
+	TEST_ASSERT_NULL(seeded.air_temporary, "air_temporary must be cleared after merging")
+
+
+/datum/unit_test/build_pipeline_handles_cycles/Run()
+	// Diamond:    1
+	//            / \
+	//           2   3
+	//            \ /
+	//             4
+	var/list/pipes = list()
+	for(var/i in 1 to 4)
+		pipes += allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	pipes[1].test_neighbors = list(pipes[2], pipes[3])
+	pipes[2].test_neighbors = list(pipes[1], pipes[4])
+	pipes[3].test_neighbors = list(pipes[1], pipes[4])
+	pipes[4].test_neighbors = list(pipes[2], pipes[3])
+
+	var/datum/pipeline/P = new()
+	allocated += P
+	P.build_pipeline(pipes[1])
+
+	TEST_ASSERT_EQUAL(length(P.members), 4, "Diamond topology must collect each pipe exactly once (got [length(P.members)])")
+	TEST_ASSERT_EQUAL(P.air.return_volume(), 4 * 100, "Volume must sum each pipe exactly once (got [P.air.return_volume()])")
+
+
+/// Regression coverage: pipeline_expansion may return list entries that are
+/// null (e.g. /obj/machinery/atmospherics/components/pipeline_expansion does
+/// `list(nodes[parents.Find(reference)])`, and that nodes slot is null on
+/// disconnected components). build_pipeline must skip those entries quietly
+/// — reaching setPipenet on null crashes SSair during pipenet setup.
+/datum/unit_test/build_pipeline_skips_null_neighbors/Run()
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p1 = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p2 = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	p1.test_neighbors = list(null, p2, null)
+	p2.test_neighbors = list(p1, null)
+
+	var/datum/pipeline/P = new()
+	allocated += P
+	// Snapshot the global runtime counter — DM keeps executing past null-deref
+	// runtimes inside the proc body, so member-count assertions alone wouldn't
+	// catch a regression that reaches setPipenet(null, …). The counter does.
+	var/runtimes_before = GLOB.total_runtimes
+	P.build_pipeline(p1)
+	var/runtimes_added = GLOB.total_runtimes - runtimes_before
+
+	TEST_ASSERT_EQUAL(runtimes_added, 0, "build_pipeline must not raise runtimes on null neighbors (got [runtimes_added])")
+	TEST_ASSERT_EQUAL(length(P.members), 2, "Both real pipes must be collected; null entries skipped (got [length(P.members)])")
+	TEST_ASSERT(p1 in P.members, "p1 must be in members")
+	TEST_ASSERT(p2 in P.members, "p2 must be in members")
+	TEST_ASSERT_EQUAL(P.air.return_volume(), 2 * 100, "Volume must equal 2 * pipe volume")
+
+
+/datum/unit_test/build_pipeline_attaches_components/Run()
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p1 = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p2 = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	var/obj/machinery/atmospherics/components/build_pipeline_test_component/comp = allocate(/obj/machinery/atmospherics/components/build_pipeline_test_component)
+	// setPipenet(reference, A) does parents[nodes.Find(A)] = reference, so the
+	// component must already know p1 as one of its connector nodes.
+	comp.nodes[1] = p1
+
+	p1.test_neighbors = list(p2, comp)
+	p2.test_neighbors = list(p1)
+
+	var/datum/pipeline/P = new()
+	allocated += P
+	P.build_pipeline(p1)
+
+	TEST_ASSERT_EQUAL(length(P.members), 2, "Both pipes must be in members (component goes to other_atmosmch)")
+	TEST_ASSERT_EQUAL(length(P.other_atmosmch), 1, "Component must be added to other_atmosmch exactly once (got [length(P.other_atmosmch)])")
+	TEST_ASSERT(comp in P.other_atmosmch, "Component must appear in other_atmosmch")
+	TEST_ASSERT_EQUAL(comp.parents[1], P, "Component's parents slot for p1 must be wired to the pipeline")
+	TEST_ASSERT(comp.airs[1] in P.other_airs, "Component's gas_mixture must be merged into other_airs")
+
+
+#define BUILD_PIPELINE_PERF_N 3000
+/// Synthetic chain of [BUILD_PIPELINE_PERF_N] pipes. The pre-fix
+/// build_pipeline does ~N²/2 list scans through `members` (one per discovered
+/// pipe), which on N=3000 is ~4.5M comparisons → easily over 1s on CI. The
+/// optimized algorithm is O(N) and finishes in single-digit ms. The 5
+/// decisecond budget below sits firmly between those regimes.
+/datum/unit_test/build_pipeline_scales_linearly/Run()
+	var/list/pipes = new(BUILD_PIPELINE_PERF_N)
+	for(var/i in 1 to BUILD_PIPELINE_PERF_N)
+		var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p = new(run_loc_floor_bottom_left)
+		pipes[i] = p
+		allocated += p
+	for(var/i in 1 to BUILD_PIPELINE_PERF_N)
+		var/list/neighbors = list()
+		if(i > 1)
+			neighbors += pipes[i - 1]
+		if(i < BUILD_PIPELINE_PERF_N)
+			neighbors += pipes[i + 1]
+		var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p = pipes[i]
+		p.test_neighbors = neighbors
+
+	var/datum/pipeline/P = new()
+	allocated += P
+
+	var/start = REALTIMEOFDAY
+	P.build_pipeline(pipes[1])
+	var/elapsed_ds = REALTIMEOFDAY - start
+
+	TEST_ASSERT_EQUAL(length(P.members), BUILD_PIPELINE_PERF_N, "All [BUILD_PIPELINE_PERF_N] pipes must be collected (got [length(P.members)])")
+	TEST_ASSERT(elapsed_ds < 5, "build_pipeline on [BUILD_PIPELINE_PERF_N]-pipe chain must run in linear time (took [elapsed_ds] ds)")
+#undef BUILD_PIPELINE_PERF_N
