@@ -787,3 +787,31 @@
 /datum/gear/uniform/maid_revealing
 	name = "Revealing Tactical Maid Outfit"
 	path = /obj/item/clothing/under/syndicate/maid_revealing
+
+/datum/gear/uniform/poly_work_pants
+	name = "Poly Work Pants"
+	path = /obj/item/clothing/under/poly_work_pants
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#FFFFFF")
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_PANTS
+
+/datum/gear/uniform/poly_work_shorts
+	name = "Poly Work Shorts"
+	path = /obj/item/clothing/under/poly_work_shorts
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#FFFFFF")
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_PANTS
+
+/datum/gear/uniform/hosfancy
+	name = "Head of Security's Battledress"
+	path = /obj/item/clothing/under/rank/security/head_of_security/battledress
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	restricted_desc = "Head Of Security"
+	restricted_roles = list("Head Of Security")
+
+/datum/gear/uniform/secfancy
+	name = "Security Battledress"
+	path = /obj/item/clothing/under/rank/security/officer/battledress
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	restricted_desc = "Security"
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security")

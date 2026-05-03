@@ -91,7 +91,8 @@
 		/obj/item/clothing/head/utilcover = 5,
 		/obj/item/clothing/under/bm/utility = 5,
 		/obj/item/clothing/under/bm/utility/navy = 5,
-		/obj/item/clothing/under/bm/utility/tan = 5
+		/obj/item/clothing/under/bm/utility/tan = 5,
+		/obj/item/clothing/under/rank/security/officer/battledress = 5
 	)
 	contraband = list(
 		/obj/item/clothing/under/rank/security/stripper = 5,
@@ -1092,6 +1093,7 @@
 		/obj/item/clothing/neck/tie/dread_neck = 1, //BlueMoon Add
 		/obj/item/clothing/suit/armor/hos/dread_armor = 1, //BlueMoon Add
 		/obj/item/clothing/head/HoS/dread_helmet = 1,	//BlueMoon Add
+		/obj/item/clothing/under/rank/security/head_of_security/battledress = 1,	//BlueMoon Add
 	)
 	refill_canister = /obj/item/vending_refill/wardrobe/sec_wardrobe
 	payment_department = ACCOUNT_SEC
