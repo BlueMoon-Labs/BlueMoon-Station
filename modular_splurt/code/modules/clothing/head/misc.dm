@@ -160,7 +160,7 @@
 /datum/design/cbrn/cbrnhood/serv
 	name = "CBRN Hood Service"
 	desc = "A CBRN hood."
-	id = "cbrn_hood"
+	id = "cbrn_hood_serv"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/plastic = 200, /datum/material/uranium = 50, /datum/material/iron = 200)
 	build_path = /obj/item/clothing/head/helmet/cbrn/serv
