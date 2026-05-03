@@ -699,6 +699,7 @@
 	icon_state = "rglass_table"
 	buildstack = /obj/item/stack/sheet/rglass
 	canSmoothWith = null
+	max_integrity = 150
 
 /obj/structure/table/reinforced/plasmarglass
 	name = "reinforced plasma glass table"
