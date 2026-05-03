@@ -847,4 +847,4 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE
 	can_adjust = TRUE
-	unique_reskin = NULL
+	unique_reskin = null
