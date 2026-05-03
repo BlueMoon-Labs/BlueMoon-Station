@@ -1,13 +1,28 @@
+/// Resolves ckey for bans/jobbans when there is no active client (uses mind.key).
+/proc/resolve_mob_ban_ckey(mob/M)
+	if(!M)
+		return null
+	if(M.client)
+		return M.client.ckey
+	if(M.ckey)
+		return M.ckey
+	if(M.mind?.key)
+		return ckey(M.mind.key)
+	return null
+
 //returns a reason if M is banned from rank, returns FALSE otherwise
 /proc/jobban_isbanned(mob/M, rank)
-	if(!M || !istype(M) || !M.ckey)
+	if(!M || !istype(M) || !rank)
+		return FALSE
+	var/player_ckey = resolve_mob_ban_ckey(M)
+	if(!player_ckey)
 		return FALSE
 
 	if(!M.client) //no cache. fallback to a datum/db_query
 		var/datum/db_query/query_jobban_check_ban = SSdbcore.NewQuery({"
 			SELECT reason FROM [format_table_name("ban")]
 			WHERE ckey = :ckey AND (bantype = 'JOB_PERMABAN' OR (bantype = 'JOB_TEMPBAN' AND expiration_time > Now())) AND isnull(unbanned) AND job = :rank
-			"}, list("ckey" = M.ckey, "rank" = rank))
+			"}, list("ckey" = player_ckey, "rank" = rank))
 		if(!query_jobban_check_ban) //BLUEMOON ADD лишние проверки не помешают
 			return
 		if(!query_jobban_check_ban.warn_execute())

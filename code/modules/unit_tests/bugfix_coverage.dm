@@ -1,4 +1,4 @@
-/// Tests for bugfixes: offering list iteration, inteq poster null guard, pregnancy signal registration
+/// Tests for bugfixes: offering list iteration, inteq poster null guard, pregnancy signal registration, glow eyes null guards
 
 // Test subtype that bypasses throw_alert (requires client) so we can test check_owner_in_range
 /datum/status_effect/offering/unit_test
@@ -86,3 +86,26 @@
 	// Before the fix, handle_damage was incorrectly registered on COMSIG_MOB_DEATH (duplicate)
 	TEST_ASSERT_NOTNULL(carrier.comp_lookup, "Carrier has no signal registrations")
 	TEST_ASSERT_NOTNULL(carrier.comp_lookup[COMSIG_MOB_APPLY_DAMAGE], "handle_damage should be registered on COMSIG_MOB_APPLY_DAMAGE")
+
+// Test: update_visuals on High Luminosity Eyes tolerates a null entry in eye_lighting
+// without runtiming at L.forceMove() — the reported runtime scenario.
+/datum/unit_test/glow_eyes_update_visuals_null_safety/Run()
+	var/mob/living/carbon/human/test_mob = allocate(/mob/living/carbon/human)
+	var/obj/item/organ/eyes/robotic/glow/eyes = allocate(/obj/item/organ/eyes/robotic/glow)
+	eyes.Insert(test_mob, TRUE)
+	eyes.activate(silent = TRUE)
+
+	TEST_ASSERT_NOTNULL(eyes.eye_lighting, "eye_lighting should exist after activation")
+	TEST_ASSERT(LAZYLEN(eyes.eye_lighting) >= 2, "eye_lighting should have multiple entries after regenerate_light_effects")
+
+	// Inject a null into eye_lighting to simulate a soft-deleted entry
+	// (the scenario behind the reported runtime at L.forceMove())
+	eyes.eye_lighting[2] = null
+
+	// Without the null guard, this would runtime: "Cannot execute null.forceMove()"
+	eyes.update_visuals(test_mob, test_mob.dir, EAST)
+
+	// Valid entries should still be accessible
+	TEST_ASSERT_NOTNULL(LAZYACCESS(eyes.eye_lighting, 1), "First entry should still be valid after update_visuals")
+
+	eyes.deactivate(silent = TRUE)

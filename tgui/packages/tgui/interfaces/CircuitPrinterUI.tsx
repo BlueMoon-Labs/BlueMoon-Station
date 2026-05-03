@@ -1,7 +1,7 @@
 import { BooleanLike } from 'common/react';
 import { createSearch } from 'common/string';
 
-import { useBackend, useLocalState, useSharedState } from "../backend";
+import { useBackend, useSharedState } from "../backend";
 import { Box, Button, Flex, Icon, Input, NoticeBox, ProgressBar, Section, Stack, Table, Tabs } from "../components";
 import { Window } from "../layouts";
 
@@ -202,13 +202,13 @@ const CircuitsGrid = (props: { circuits?: CircuitData[], big_desc? : BooleanLike
                 >
                   <Box
                     backgroundColor={
-                      canAfford ? "rgba(0, 0, 0, 0.3)" : "rgba(79, 74, 74, 0.5)"
+                      canAfford ? "rgba(0, 0, 0, 0.24)" : "rgba(79, 74, 74, 0.5)"
                     }
                     p={1}
                     style={{
                       borderRadius: "4px",
                       border: canAfford
-                        ? "1px solid rgba(255, 255, 255, 0.1)"
+                        ? "1px solid rgba(255, 255, 255, 0.14)"
                         : "1px solid rgba(252, 56, 56, 0.64)",
                       transition: "all 0.1s",
                     }}
@@ -296,9 +296,9 @@ const CircuitsGrid = (props: { circuits?: CircuitData[], big_desc? : BooleanLike
 
 export const ComponentsViewer = (props, context) => {
   const { act, data } = useBackend<IntegratedPrinterData>(context);
-  const [searchText, setSearchText] = useSharedState(context, 'searchText', "");
-  const [tabID, setTabID] = useSharedState(context, 'tabIndex', 0);
-  const [fullComp, setCompMode] = useLocalState<boolean>(context, "setCompMode", false);
+  const [searchText, setSearchText] = useSharedState(context, 'searchPrinterText', "");
+  const [tabID, setTabID] = useSharedState(context, 'tabPrinterIndex', 0);
+  const [fullComp, setCompMode] = useSharedState<boolean>(context, "setCompMode", false);
 
   const searchResults = HardSearch(data.categories, searchText);
   let circuitsToShow: CircuitData[] = [];

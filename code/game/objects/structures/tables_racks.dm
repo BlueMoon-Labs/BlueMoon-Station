@@ -789,6 +789,7 @@
 	smooth = SMOOTH_FALSE
 	can_buckle = 1
 	buckle_lying = 90
+	pseudo_z_axis = 0
 	var/mob/living/carbon/human/patient = null
 	var/obj/machinery/computer/operating/computer = null
 // BLUEMOON ADD START
@@ -898,6 +899,7 @@
 /obj/structure/table/optable/post_buckle_mob(mob/living/M)
 	. = ..()
 	check_patient()
+	M.pixel_y = M.get_standard_pixel_y_offset()
 
 /obj/structure/table/optable/process()
 	if(mask?.loc != patient || tank?.loc != src || patient?.loc != loc)

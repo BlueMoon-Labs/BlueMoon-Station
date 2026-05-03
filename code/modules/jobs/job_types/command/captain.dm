@@ -15,6 +15,7 @@
 	exp_type = EXP_TYPE_COMMAND
 	exp_type_department = EXP_TYPE_COMMAND
 	considered_combat_role = TRUE
+	custom_spawn_text = "не забывайте о том, что ваша запасная карта должна находиться на территории мостика. И <b>прошу</b>, не переименовывайте станцию во что-нибудь похабное..."
 	alt_titles = list(
 		"Admiral",
 		"Cap-Slut",
@@ -96,7 +97,7 @@
 	shoes = /obj/item/clothing/shoes/laceup
 	head = /obj/item/clothing/head/caphat
 
-	backpack_contents = list( /obj/item/station_charter=1, /obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/stamp/command=1)
+	backpack_contents = list( /obj/item/station_charter=1, /obj/item/modular_computer/tablet/preset/advanced/command=1, /obj/item/stamp/command=1)
 	box = /obj/item/storage/box/survival/command
 
 	backpack = /obj/item/storage/backpack/captain

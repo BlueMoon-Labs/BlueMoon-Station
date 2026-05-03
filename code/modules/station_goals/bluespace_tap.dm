@@ -73,7 +73,6 @@
 			/obj/item/clothing/head/collectable/swat,
 			/obj/item/clothing/head/collectable/slime,
 			/obj/item/clothing/head/collectable/police,
-			/obj/item/clothing/head/collectable/slime,
 			/obj/item/clothing/head/collectable/xenom,
 			/obj/item/clothing/head/collectable/petehat
 	)
@@ -195,6 +194,7 @@
   * A machine that takes power each tick, generates points based on it
   * and lets you spend those points on rewards. A certain amount of points
   * has to be generated for the station goal to count as completed.
+  * Nether spawner breaches only happen when the machine is emagged (chance scales with input level).
   */
 /obj/machinery/power/bluespace_tap
 	name = "Bluespace harvester"
@@ -240,9 +240,9 @@
 
 	/// Max power input level, I don't expect this to be ever reached
 	var/max_level = 20
-	/// Amount of points to give per mining level
-	var/base_points = 4
-	/// How high the machine can be run before it starts having a chance for dimension breaches.
+	/// Amount of points to give per mining level (tuned for station goal pacing)
+	var/base_points = 16
+	/// Above this input level, the UI warns about high power draw. Nether breaches only occur if emagged.
 	var/safe_levels = 15
 
 
@@ -331,18 +331,21 @@
 		return	// and no mining gets done
 	if(actual_power_usage)
 		add_load(actual_power_usage)
-		var/points_to_add = (input_level + EMAGGED) * base_points
-		points += points_to_add	//point generation, emagging gets you 'free' points at the cost of higher anomaly chance
+		// +1 effective level only when actually emagged (do not use EMAGGED define here — it is always 1 as a bitmask bit)
+		var/points_to_add = (input_level + !!(obj_flags & EMAGGED)) * base_points
+		points += points_to_add
 		total_points += points_to_add
 	// actual input level changes slowly
 	if(input_level < desired_level && (surplus() >= get_power_use(input_level + 1)))
 		input_level++
 	else if(input_level > desired_level)
 		input_level--
-	if(prob(input_level - safe_levels + (EMAGGED * 5)))	//at dangerous levels, start doing freaky shit. prob with values less than 0 treat it as 0
-		priority_announce("Непредвиденный скачок напряжения во время работы Блюспейс-Сборщика. Внимание, обнаружены появления внепространственных объектов. Возможная локация: [get_area(src)]. [obj_flags == EMAGGED ? "ВНИМАНИЕ: Ошибка аварийного отключения! Пожалуйста, перейдите к ручной остановке." : "Запущено Аварийное Отключение."]", "ВНИМАНИЕ: Сбой Блюспейс-Сборщика.")
-		if(!(obj_flags & EMAGGED))
-			input_level = 0	//emergency shutdown unless we're sabotaged
+	// Nether portals only when safety is disabled (emagged); chance scales up with input level (capped)
+	if((obj_flags & EMAGGED) && input_level && prob(min(40, round(input_level * 1.5))))
+		var/auto_shutdown = prob(10)
+		priority_announce("Непредвиденный скачок напряжения во время работы Блюспейс-Сборщика. Внимание, обнаружены появления внепространственных объектов. Возможная локация: [get_area(src)]. [auto_shutdown ? "Запущено Аварийное Отключение." : "ВНИМАНИЕ: Ошибка аварийного отключения! Пожалуйста, перейдите к ручной остановке."]", "ВНИМАНИЕ: Сбой Блюспейс-Сборщика.")
+		if(auto_shutdown)
+			input_level = 0
 			desired_level = 0
 		for(var/i in 1 to rand(1, 3))
 			var/turf/location = locate(x + rand(-5, 5), y + rand(-5, 5), z)
@@ -426,11 +429,11 @@
 		ui = new(user, src, "BluespaceTap", name)
 		ui.open()
 
-//emaging provides slightly more points but at much greater risk
+// Emagging grants a small points bonus and enables nether breach events (scales with input level)
 /obj/machinery/power/bluespace_tap/emag_act(mob/living/user as mob)
 	if(obj_flags & EMAGGED)
 		return
-	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
+	log_admin("[key_name(user || usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	do_sparks(5, FALSE, src)
 	if(user)

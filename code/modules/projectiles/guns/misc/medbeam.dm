@@ -148,9 +148,9 @@
 	target.AdjustUnconscious(main_heal, FALSE)
 	target.AdjustAllImmobility(main_heal, FALSE)
 	target.adjustStaminaLoss(main_heal, FALSE)
-	target.adjustBruteLoss(main_heal)
-	target.adjustFireLoss(main_heal)
-	target.heal_overall_damage(2,2)
+	target.adjustBruteLoss(main_heal, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
+	target.adjustFireLoss(main_heal, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
+	target.heal_overall_damage(2, 2, 0, only_robotic = FALSE, only_organic = FALSE, updating_health = TRUE)
 	target.adjustToxLoss(second_heal, forced = TRUE)
 	target.adjustOxyLoss(second_heal)
 	target.adjust_disgust(second_heal)
@@ -173,13 +173,13 @@
 	if(target.health != target.maxHealth)
 		new /obj/effect/temp_visual/heal(get_turf(target), "#80F5FF")
 	if(target.health < 50)
-		target.adjustBruteLoss(main_heal/2)
-		target.adjustFireLoss(main_heal/2)
+		target.adjustBruteLoss(main_heal/2, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
+		target.adjustFireLoss(main_heal/2, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
 		target.adjustOxyLoss(second_heal/2)
 		target.adjustToxLoss(second_heal/2, forced=TRUE)
 	else
-		target.adjustBruteLoss(main_heal/4)
-		target.adjustFireLoss(main_heal/4)
+		target.adjustBruteLoss(main_heal/4, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
+		target.adjustFireLoss(main_heal/4, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
 	return
 
 //////////////////////////////Mech Version///////////////////////////////

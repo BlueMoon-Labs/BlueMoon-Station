@@ -108,6 +108,10 @@
 		qdel(src)
 		return
 
+	if(!controller || QDELETED(moving) || !moving)
+		qdel(src)
+		return
+
 	var/visual_delay = controller.visual_delay
 	var/success = move()
 
@@ -815,3 +819,82 @@
 		return FALSE
 	holder.current_pipe = next_pipe
 	return old_loc != moving?.loc
+
+// ============ Smooth polar drift (space / newtonian) — port from WhiteMoon =============
+
+/**
+ * Sub-tile accrual, then a single Move; diagonal moves cost 1.4x delay. Angle is degrees, 0 = north, clockwise.
+ */
+/datum/controller/subsystem/move_manager/proc/smooth_move(moving, angle, delay, timeout, subsystem, priority, flags, datum/extra_info)
+	return add_to_loop(moving, subsystem, /datum/move_loop/smooth_move, priority, flags, extra_info, delay, timeout, angle)
+
+/datum/move_loop/smooth_move
+	/// Facing in degrees; see [/proc/dir2angle]
+	var/angle = 0
+	var/x_ticker = 0
+	var/y_ticker = 0
+	var/x_rate = 0
+	var/y_rate = 1
+	var/x_sign = 1
+	var/y_sign = 1
+	/// Delay before diagonal multiplier (smooth_move can raise delay)
+	var/saved_delay
+
+/datum/move_loop/smooth_move/setup(delay, timeout, angle)
+	. = ..()
+	if(!.)
+		return FALSE
+	set_angle(angle)
+	saved_delay = delay
+
+/datum/move_loop/smooth_move/set_delay(new_delay)
+	new_delay = round(new_delay, world.tick_lag)
+	. = ..()
+	saved_delay = delay
+
+/datum/move_loop/smooth_move/compare_loops(datum/move_loop/loop_type, priority, flags, extra_info, delay, timeout, new_angle)
+	SHOULD_CALL_PARENT(FALSE)
+	if(loop_type == type && priority == src.priority && flags == src.flags && delay == src.delay && timeout == lifetime && new_angle == src.angle)
+		return TRUE
+	return FALSE
+
+/datum/move_loop/smooth_move/move()
+	var/atom/old_loc = moving.loc
+	var/x_to_move = x_rate > 0 ? (1 - x_ticker) / x_rate : 2
+	var/y_to_move = y_rate > 0 ? (1 - y_ticker) / y_rate : 2
+	var/move_dist = min(x_to_move, y_to_move)
+	x_ticker += x_rate * move_dist
+	y_ticker += y_rate * move_dist
+
+	var/move_x = (x_ticker + x_rate * 0.5) > 1
+	var/move_y = (y_ticker + y_rate * 0.5) > 1
+	if(move_x)
+		x_ticker = 0
+	if(move_y)
+		y_ticker = 0
+
+	var/turf/next_turf = locate(
+		moving.x + (move_x ? x_sign : 0),
+		moving.y + (move_y ? y_sign : 0),
+		moving.z,
+	)
+	if(!next_turf)
+		return MOVELOOP_FAILURE
+	moving.Move(get_turf(next_turf), get_dir(moving, next_turf), FALSE)
+	if(old_loc == moving?.loc)
+		return MOVELOOP_FAILURE
+	delay = saved_delay
+	if(move_x && move_y)
+		delay *= 1.4
+	return MOVELOOP_SUCCESS
+
+/datum/move_loop/smooth_move/proc/set_angle(new_angle)
+	angle = new_angle
+	x_rate = sin(angle)
+	y_rate = cos(angle)
+	x_sign = SIGN(x_rate)
+	y_sign = SIGN(y_rate)
+	x_rate = abs(x_rate)
+	y_rate = abs(y_rate)
+	x_ticker = 0
+	y_ticker = 0

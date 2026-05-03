@@ -1367,19 +1367,35 @@
 	if(program)
 		program.force_full_update()
 
-/mob/living/silicon/robot/get_tooltip_data()
-	var/t_He = ru_who(TRUE)
-	var/t_is = p_are()
-	. = list()
-	var/borg_type = module ? module : "Default"
-//This isn't even used normally, but if that ever changes, just uncomment this
-/*	var/obj/item/borg_chameleon/chameleon = locate() in src
+/// Проверка на инженерную маскировку
+/mob/living/silicon/robot/proc/chameleon_module()
+	var/obj/item/borg_chameleon/chameleon = locate() in src
 	if(!chameleon)
 		chameleon = locate() in src.module
 	if(chameleon?.active)
-		borg_type = "Engineering"
-*/
-	. += "[t_He] [t_is] a [borg_type] unit"
+		return TRUE
+	else
+		return FALSE
+
+/// Проверка на модуль антагролей
+/mob/living/silicon/robot/proc/check_allegiance()
+	if(chameleon_module())
+		return
+
+	if(module.type in GLOB.syndicate_cyborg_modules)
+		return " синдикатовского производства"
+	if(module.type in GLOB.inteq_cyborg_modules)
+		return " принадлежности InteQ"
+	if(module.type in GLOB.spider_cyborg_modules)
+		return " Паучьего Клана"
+
+/mob/living/silicon/robot/get_tooltip_data()
+	. = list()
+	var/borg_type = module ? module.name : "стандартный"
+	if(chameleon_module())
+		borg_type = "инженерный"
+
+	. += "Это [module_to_ru_adjective(borg_type)] киборг[check_allegiance()]"
 	if(activity)
 		. += activity
 	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, usr, .)

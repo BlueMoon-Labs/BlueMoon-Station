@@ -223,6 +223,14 @@
 				candidates.Remove(candidate_player)
 				continue
 
+		var/role_to_bancheck = antag_flag_override ? antag_flag_override : antag_flag
+		if(role_to_bancheck && (jobban_isbanned(candidate_player, role_to_bancheck) || QDELETED(candidate_player)))
+			candidates.Remove(candidate_player)
+			continue
+		if(jobban_isbanned(candidate_player, ROLE_INTEQ) || QDELETED(candidate_player))
+			candidates.Remove(candidate_player)
+			continue
+
 		// If this ruleset has exclusive_roles set, we want to only consider players who have those
 		// job prefs enabled and are eligible to play that job. Otherwise, continue as before.
 		if(length(exclusive_roles))

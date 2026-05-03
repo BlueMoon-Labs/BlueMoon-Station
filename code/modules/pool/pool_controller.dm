@@ -1,4 +1,5 @@
 #define POOL_NO_OVERDOSE_MEDICINE_MAX 5		//max units of no-overdose medicine to allow mobs to have through duplication
+#define POOL_CONTROLLER_LINK_RANGE 25
 
 //Originally stolen from paradise. Credits to tigercat2000.
 //Modified a lot by Kokojo and Tortellini Tony for hippiestation.
@@ -84,18 +85,52 @@
 	return ..()
 
 /obj/machinery/pool/controller/proc/scan_things()
-	var/list/cached = range(scan_range, src)
-	for(var/turf/open/pool/W in cached)
-		linked_turfs += W
-		W.controller = src
-	for(var/obj/machinery/pool/drain/pooldrain in cached)
+	// Drop old links (large pools can extend beyond the initial scan radius).
+	for(var/turf/open/pool/T as anything in linked_turfs)
+		if(T.controller == src)
+			T.controller = null
+	linked_turfs.Cut()
+
+	var/machinery_range = max(scan_range, POOL_CONTROLLER_LINK_RANGE)
+	var/list/machine_scan = range(machinery_range, src)
+	for(var/obj/machinery/pool/drain/pooldrain in machine_scan)
 		linked_drain = pooldrain
 		linked_drain.controller = src
 		break
-	for(var/obj/machinery/pool/filter/F in cached)
+	for(var/obj/machinery/pool/filter/F in machine_scan)
 		linked_filter = F
 		linked_filter.controller = src
 		break
+
+	// Seed tiles: any pool turf near the controller, plus the drain's tile (always part of the pool).
+	var/list/candidate_seeds = list()
+	for(var/turf/open/pool/W in machine_scan)
+		candidate_seeds |= W
+	if(linked_drain && istype(linked_drain.loc, /turf/open/pool))
+		candidate_seeds |= linked_drain.loc
+	if(!length(candidate_seeds))
+		return
+
+	// Flood-fill all orthogonally connected /turf/open/pool — covers any shape and size.
+	var/list/visited = list()
+	var/list/queue = list()
+	for(var/turf/open/pool/seed as anything in candidate_seeds)
+		if(visited[seed])
+			continue
+		queue.Cut()
+		queue += seed
+		while(length(queue))
+			var/turf/open/pool/T = queue[1]
+			queue.Cut(1, 2)
+			if(visited[T])
+				continue
+			visited[T] = TRUE
+			linked_turfs += T
+			T.controller = src
+			for(var/direction in GLOB.cardinals)
+				var/turf/open/pool/N = get_step(T, direction)
+				if(istype(N) && !visited[N])
+					queue += N
 
 /obj/machinery/pool/controller/emag_act(mob/user)
 	. = ..()
@@ -359,7 +394,7 @@
 			message_admins(msg)
 			interact_delay = world.time + 15
 	if(href_list["Activate Drain"])
-		if((drainable || issilicon(usr) || IsAdminGhost(usr)) && !linked_drain.active)
+		if((drainable || issilicon(usr) || IsAdminGhost(usr)) && linked_drain && !linked_drain.active)
 			var/msg = "POOL: [key_name(usr)] activated [src]'s pool drain in [linked_drain.filling? "FILLING" : "DRAINING"] mode at [COORD(src)]"
 			log_game(msg)
 			message_admins(msg)
@@ -422,7 +457,7 @@
 		dat += "<span class='good'>Full</span><BR>"
 	else
 		dat += "<span class='bad'>Drained</span><BR>"
-	if((issilicon(user) || IsAdminGhost(user) || drainable) && !linked_drain.active)
+	if((issilicon(user) || IsAdminGhost(user) || drainable) && linked_drain && !linked_drain.active)
 		dat += "<a href='?src=\ref[src];Activate Drain=1'>[drained ? "Fill" : "Drain"] Pool</a><br>"
 	popup.set_content(dat)
 	popup.open()

@@ -17,7 +17,7 @@
 	 *  */
 	var/list/users_vote_power = list()
 
-/datum/controller/subsystem/vote/initiate_vote(vote_type, initiator_key, display, votesystem, forced, vote_time, UseVotePower = FALSE)
+/datum/controller/subsystem/vote/initiate_vote(vote_type, initiator_key, display, votesystem, forced, vote_time, UseVotePower = FALSE, roundtype_runoff_second_ballot = FALSE)
 	use_vote_power = UseVotePower
 	. = ..()
 

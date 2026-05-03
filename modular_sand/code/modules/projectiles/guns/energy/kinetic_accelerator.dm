@@ -281,6 +281,8 @@
 /obj/item/borg/upgrade/modkit/knockback/projectile_strike(obj/item/projectile/kinetic/K, turf/target_turf, atom/target, obj/item/gun/energy/kinetic_accelerator/KA)
 	..()
 	var/mob/living/simple_animal/T = target
+	if(!istype(T))
+		return
 	if(T.stat != DEAD)
 		playsound(T, 'sound/magic/fireball.ogg', 20, 1)
 		new /obj/effect/temp_visual/fire(T.loc)

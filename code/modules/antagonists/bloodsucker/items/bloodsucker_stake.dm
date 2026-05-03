@@ -18,7 +18,7 @@
 
 /obj/item/stake
 	name = "wooden stake"
-	desc = "A simple wooden stake carved to a sharp point."
+	desc = "Простой деревянный кол с заостренным концом."
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "wood" // Inventory Icon
 	item_state = "wood" // In-hand Icon
@@ -50,9 +50,9 @@
 		//amWelded = TRUE
 		// Weld it
 		if(W.use(0))//remove_fuel(0,user))
-			user.visible_message("[user.name] scorched the pointy end of [src] with the welding tool.", \
-						 "<span class='notice'>You scorch the pointy end of [src] with the welding tool.</span>", \
-						 "<span class='italics'>You hear welding.</span>")
+			user.visible_message("[user.name] опаляет заостренный конец [src] сварочным инструментом.", \
+						 "<span class='notice'>Вы опаляете заостренный конец [src] сварочным инструментом.</span>", \
+						 "<span class='italics'>Вы слышите сварку.</span>")
 		// 8 Second Timer
 		if(!do_mob(user, src, 80))
 			return
@@ -72,20 +72,20 @@
 	var/mob/living/carbon/C = target
 	// Needs to be Down/Slipped in some way to Stake.
 	if(!C.can_be_staked() || target == user)
-		to_chat(user, "<span class='danger'>You can't stake [target] when they are moving about! They have to be laying down or grabbed by the neck!</span>")
+		to_chat(user, "<span class='danger'>Вы не можете проткнуть [target], когда она движется! Она должна лежать или быть схвачена за шею!</span>")
 		return
 			// Oops! Can't.
 	if(HAS_TRAIT(C, TRAIT_PIERCEIMMUNE))
-		to_chat(user, "<span class='danger'>[target]'s chest resists the stake. It won't go in.</span>")
+		to_chat(user, "<span class='danger'>Грудь [target] сопротивляется колу. Он не входит во внутрь.</span>")
 		return
 	// Make Attempt...
-	to_chat(user, "<span class='notice'>You put all your weight into embedding the stake into [target]'s chest...</span>")
+	to_chat(user, "<span class='notice'>Вы вкладываете весь свой вес в то, чтобы вонзить кол в грудь [target]...</span>")
 	playsound(user, 'sound/magic/Demon_consume.ogg', 50, 1)
 	if(!do_mob(user, C, staketime, NONE, extra_checks=CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, can_be_staked)))) // user / target / time / uninterruptable / show progress bar / extra checks
 		return
 	// Drop & Embed Stake
-	user.visible_message("<span class='danger'>[user.name] drives the [src] into [target]'s chest!</span>", \
-			 "<span class='danger'>You drive the [src] into [target]'s chest!</span>")
+	user.visible_message("<span class='danger'>[user.name] втыкает [src] в грудь [target]!</span>", \
+			 "<span class='danger'>Вы втыкаете [src] в грудь [target]!</span>")
 	playsound(get_turf(target), 'sound/effects/splat.ogg', 40, 1)
 	user.dropItemToGround(src, TRUE) //user.drop_item() // "drop item" doesn't seem to exist anymore. New proc is user.dropItemToGround() but it doesn't seem like it's needed now?
 	var/obj/item/bodypart/B = C.get_bodypart("chest")  // This was all taken from hitby() in human_defense.dm
@@ -102,8 +102,8 @@
 				bloodsucker.FinalDeath()
 				return
 			else
-				to_chat(target, "<span class='userdanger'>You have been staked! Your powers are useless, your death forever, while it remains in place.</span>")
-				to_chat(user, "<span class='warning'>You missed [C.ru_ego(TRUE)]'s heart! It would be easier if [C.ru_who(TRUE)] weren't struggling so much.</span>")
+				to_chat(target, "<span class='userdanger'>Вас проткнули колом! Ваши силы бесполезны, ваша смерть вечна, пока он остается на месте.</span>")
+				to_chat(user, "<span class='warning'>Вы не попали [C.ru_ego(TRUE)] сердце! Это было бы легче, если бы [C.ru_who(TRUE)] не сопротивлялся так сильно.</span>")
 
 // Can this target be staked? If someone stands up before this is complete, it fails. Best used on someone stationary.
 /mob/living/carbon/proc/can_be_staked()
@@ -113,7 +113,7 @@
 /obj/item/stake/hardened
 	// Created by welding and acid-treating a simple stake.
 	name = "hardened stake"
-	desc = "A hardened wooden stake carved to a sharp point and scorched at the end."
+	desc = "Закаленный деревянный кол, заостренный и опаленный на конце."
 	icon_state = "hardened" // Inventory Icon
 	force = 8
 	throwforce = 12
@@ -126,7 +126,7 @@
 
 /obj/item/stake/hardened/silver
 	name = "silver stake"
-	desc = "Polished and sharp at the end. For when some mofo is always trying to iceskate uphill."
+	desc = "Отполированный и острый на конце. Для тех случаев, когда кто-то из сильных мира сего постоянно пытается подняться на коньках в гору."
 	icon_state = "silver" // Inventory Icon
 	item_state = "silver" // In-hand Icon
 	siemens_coefficient = 1 //flags = CONDUCT // var/siemens_coefficient = 1 // for electrical admittance/conductance (electrocution checks and shit)
@@ -149,7 +149,7 @@
 				if(S.amount >= S.max_amount)
 					continue
 				S.attackby(newsheet, user)
-			to_chat(user, "<span class='notice'>You melt down the stake and add it to the stack. It now contains [newsheet.amount] sheet\s.</span>")
+			to_chat(user, "<span class='notice'>Вы расплавляете кол и добавляете в стопку. Теперь она содержит [newsheet.amount] лист[newsheet.amount % 10 == 1 && newsheet.amount % 100 != 11 ? "" : (newsheet.amount % 10 >= 2 && newsheet.amount % 10 <= 4 && (newsheet.amount % 100 < 10 || newsheet.amount % 100 >= 20) ? "а" : "ов")].</span>")
 			qdel(src)
 	else
 		return ..()

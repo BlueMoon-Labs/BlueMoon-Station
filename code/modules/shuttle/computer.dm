@@ -9,8 +9,6 @@
 	var/shuttleId
 	/// Possible destinations of the attached shuttle
 	var/possible_destinations = ""
-	/// Variable dictating if the attached shuttle requires authorization from the admin staff to move
-	var/admin_controlled = FALSE
 	/// Variable dictating if the attached shuttle is forbidden to change destinations mid-flight
 	var/no_destination_swap = FALSE
 	/// ID of the currently selected destination of the attached shuttle
@@ -29,16 +27,12 @@
 	data["docked_location"] = M ? M.get_status_text_tgui() : "Unknown"
 	data["locations"] = list()
 	data["locked"] = FALSE
-	data["authorization_required"] = admin_controlled
 	data["timer_str"] = M ? M.getTimerStr() : "00:00"
 	data["destination"] = destination
 	if(!M)
 		data["status"] = "Missing"
 		return data
-	if(admin_controlled)
-		data["status"] = "Unauthorized Access"
-	else
-		data["status"] = M.mode == SHUTTLE_IGNITING ? "Igniting" : M.mode != SHUTTLE_IDLE ? "In Transit" : "Idle"
+	data["status"] = M.mode == SHUTTLE_IGNITING ? "Igniting" : M.mode != SHUTTLE_IDLE ? "In Transit" : "Idle"
 	for(var/obj/docking_port/stationary/S in SSshuttle.stationary)
 		if(!options.Find(S.shuttle_id))
 			continue
@@ -68,6 +62,10 @@
 
 	switch(action)
 		if("move")
+			if(istype(src, /obj/machinery/computer/shuttle/pod))
+				if(GLOB.security_level < SEC_LEVEL_RED && !(obj_flags & EMAGGED))
+					to_chat(usr, "<span class='warning'>Escape pods will only launch during \"Code Red\" security alert.</span>")
+					return
 			var/obj/docking_port/mobile/M = SSshuttle.getShuttle(shuttleId)
 			if(M.launch_status == ENDGAME_LAUNCHED)
 				to_chat(usr, "<span class='warning'>You've already escaped. Never going back to that place again!</span>")
@@ -98,25 +96,6 @@
 			if(target_destination)
 				destination = target_destination
 				return TRUE
-		if("request")
-			if(istype(src, /obj/machinery/computer/shuttle/pod))
-				if(GLOB.security_level < SEC_LEVEL_RED && !(obj_flags & EMAGGED))
-					to_chat(usr, "<span class='warning'>Escape pods will only launch during \"Code Red\" security alert.</span>")
-					return
-			var/list/options = params2list(possible_destinations)
-			var/list/valid_destinations = list()
-			for(var/dest in options)
-				if(SSshuttle.getDock(dest))
-					valid_destinations += dest
-			if(!destination || !(destination in valid_destinations))
-				destination = length(valid_destinations) ? pick(valid_destinations) : null
-			if(!destination)
-				to_chat(usr, "<span class='warning'>Нет доступного пункта назначения.</span>")
-				return
-			var/delay = rand(5, 20) SECONDS
-			to_chat(usr, "<span class='notice'>Запрос принят. Отправка через [delay / 10] секунд.</span>")
-			addtimer(CALLBACK(SSshuttle, TYPE_PROC_REF(/datum/controller/subsystem/shuttle, moveShuttle), shuttleId, destination, 1), delay)
-			return TRUE
 
 /obj/machinery/computer/shuttle/emag_act(mob/user)
 	. = ..()

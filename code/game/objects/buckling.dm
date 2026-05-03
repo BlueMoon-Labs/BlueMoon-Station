@@ -128,7 +128,9 @@
 	if(!isliving(buckled_mob))
 		CRASH("Non-living [buckled_mob] thing called unbuckle_mob() for source.")
 	if(buckled_mob.buckled != src)
-		CRASH("[buckled_mob] called unbuckle_mob() for source while having buckled as [buckled_mob.buckled].")
+		if(buckled_mob in buckled_mobs)
+			buckled_mobs -= buckled_mob
+		return
 	if(!force && !buckled_mob.can_unbuckle())
 		return
 	. = buckled_mob
@@ -206,7 +208,7 @@
 				"<span class='notice'>Вы поднимаетесь с <b>[src]</b>.</span>",\
 				"<span class='italics'>Вы слышите металлический лязг.</span>")
 		add_fingerprint(user)
-	if(isliving(M.pulledby))
+	if(M && isliving(M.pulledby))
 		var/mob/living/L = M.pulledby
 		L.set_pull_offsets(M, L.grab_state)
 	return M

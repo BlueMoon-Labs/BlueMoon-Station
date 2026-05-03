@@ -41,6 +41,7 @@
 	player_minimum = 50
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 	restricted = TRUE
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/bundles_tc/northstar_bundle
 	name = "Northstar Bundle"
@@ -116,7 +117,7 @@
 			Закажите СЕЙЧАС - и товарищ Борис подкинет дополнительный спортивный костюм."
 	item = /obj/item/storage/backpack/duffelbag/syndie/firestarter
 	cost = 30
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	purchasable_from = (UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/bundle
 	name = "Operative Bundle"
@@ -214,7 +215,7 @@
 				continue
 			if(U.telecrystals < I.cost)
 				continue
-			if(I.limited_stock == 0)
+			if(!U.is_uplink_item_visible_to_user(user, I))
 				continue
 			possible_items += I
 

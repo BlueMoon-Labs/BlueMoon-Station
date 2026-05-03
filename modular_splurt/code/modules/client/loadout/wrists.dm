@@ -17,13 +17,13 @@
 /datum/gear/wrists/armwarmer_striped
 	name = "Striped Arm Warmers"
 	path = /obj/item/clothing/wrists/armwarmer_striped
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#FFFFFF")
 
 /datum/gear/wrists/armwarmer_striped/long
 	name = "Long Striped Arm Warmers"
 	path = /obj/item/clothing/wrists/armwarmer_striped/long
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#FFFFFF")
 
 /datum/gear/wrists/talk_need_bracelet

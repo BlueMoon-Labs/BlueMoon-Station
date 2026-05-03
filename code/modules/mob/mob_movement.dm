@@ -214,44 +214,80 @@
 
 ///Process_Spacemove
 ///Called by /client/Move()
-///For moving in space
-///return TRUE for movement 0 for none
-/mob/Process_Spacemove(movement_dir = 0)
-	if(HAS_TRAIT(src, TRAIT_SPACEWALK) || spacewalk || ..())
+///For moving in space.
+/// return TRUE to allow voluntary movement / bracing; FALSE when nothing to push off and you should keep drifting
+/mob/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
+	. = ..(movement_dir, continuous_move)
+	if(. || HAS_TRAIT(src, TRAIT_SPACEWALK) || spacewalk)
 		return TRUE
-	var/atom/movable/backup = get_spacemove_backup()
-	if(backup)
-		if(istype(backup) && movement_dir && !backup.anchored)
-			if(backup.newtonian_move(turn(movement_dir, 180))) //You're pushing off something movable, so it moves
-				to_chat(src, "<span class='info'>You push off of [backup] to propel yourself.</span>")
+	if(buckled)
 		return TRUE
-	return FALSE
+	if((movement_type & FLYING) || HAS_TRAIT(src, TRAIT_FREE_FLOAT_MOVEMENT))
+		return TRUE
+	var/atom/movable/backup = get_spacemove_backup(movement_dir, continuous_move)
+	if(!backup)
+		return FALSE
+	if(drift_handler?.attempt_halt(movement_dir, continuous_move, backup))
+		return FALSE
+	if(continuous_move || !ismovable(backup) || !movement_dir || backup.anchored)
+		return TRUE
+	last_pushoff = world.time
+	if(backup.newtonian_move(REVERSE_DIR(movement_dir), instant = TRUE))
+		backup.last_pushoff = world.time
+		to_chat(src, "<span class='info'>You push off of [backup] to propel yourself.</span>")
+	return TRUE
 
-/mob/get_spacemove_backup()
-	for(var/A in orange(1, get_turf(src)))
-		if(isarea(A))
+/// Finds mass to push off within range 1 (floor, wall, anchored or dense movables)
+/mob/get_spacemove_backup(moving_direction, continuous_move, include_floors = FALSE)
+	var/atom/secondary_backup
+	var/list/priority_dirs = (moving_direction in GLOB.cardinals) ? GLOB.cardinals : GLOB.diagonals
+	for(var/atom/pushover as anything in range(1, get_turf(src)))
+		if(pushover == src)
 			continue
-		else if(isturf(A))
-			var/turf/turf = A
+		if(isarea(pushover))
+			continue
+		var/is_priority = pushover.loc == loc || (get_dir(src, pushover) in priority_dirs)
+		if(isturf(pushover))
+			var/turf/turf = pushover
 			if(isspaceturf(turf))
 				continue
 			if(!turf.density && !mob_negates_gravity())
-				continue
-			return A
-		else
-			var/atom/movable/AM = A
-			if(AM == buckled)
-				continue
-			if(ismob(AM))
-				var/mob/M = AM
-				if(M.buckled)
+				if(!include_floors || !has_gravity(turf))
 					continue
-			if(!AM.CanPass(src) || AM.density)
-				if(AM.anchored)
-					return AM
-				if(pulling == AM)
-					continue
-				. = AM
+			if(is_priority)
+				return pushover
+			secondary_backup = pushover
+			continue
+		var/atom/movable/rebound = pushover
+		if(rebound == buckled)
+			continue
+		if(ismob(rebound))
+			var/mob/lover = rebound
+			if(lover.buckled)
+				continue
+		var/pass_allowed = rebound.CanPass(src, get_turf(src))
+		if(!rebound.density && pass_allowed && !istype(rebound, /obj/structure/lattice))
+			continue
+		if(rebound.last_pushoff == world.time)
+			continue
+		if(continuous_move && !pass_allowed)
+			var/datum/move_loop/smooth_move/rebound_engine = SSmove_manager.processing_on(rebound, SSnewtonian_movement)
+			if(moving_direction == get_dir(src, pushover) && rebound_engine && moving_direction == angle2dir(rebound_engine.angle))
+				continue
+		else if(!pass_allowed)
+			if(moving_direction == get_dir(src, pushover))
+				continue
+		if(rebound.anchored)
+			if(is_priority)
+				return rebound
+			secondary_backup = rebound
+			continue
+		if(pulling == rebound)
+			continue
+		if(is_priority)
+			return rebound
+		secondary_backup = rebound
+	return secondary_backup
 
 /mob/proc/mob_has_gravity()
 	return has_gravity()

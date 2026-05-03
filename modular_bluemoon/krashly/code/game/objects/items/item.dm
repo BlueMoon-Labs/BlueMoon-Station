@@ -65,13 +65,6 @@
 	can_lock_coffin = TRUE
 	sign_path = /obj/structure/sign/flag/skull
 
-/datum/gear/donator/bm/skull_flag
-	name = "PMC Skull flag"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/sign/flag/skull
-	ckeywhitelist = list("krashly", "stgs", "hazzi", "dolbajob", "vulpshiro", "sodastrike", "lonofera", "mihana964", "hellsinggc")
-	subcategory = LOADOUT_SUBCATEGORIES_DON01
-
 //InteQ
 
 /obj/structure/sign/flag/fake_inteq
@@ -224,7 +217,6 @@
 /datum/gear/accessory/hand_mirror
 	name = "A hand mirror"
 	path = /obj/item/hand_mirror
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 
 /////// Заказ Алхимика. ///////
 // Рескин шмоток:
@@ -262,42 +254,3 @@
 	desc = "Этот кот просит денег."
 	icon = 'modular_bluemoon/krashly/icons/obj/alchemist.dmi'
 	icon_state = "wallet"
-
-// Шмотки в конкретный лодаут по Кею.
-
-/datum/gear/donator/bm/vape
-	name = "Vape"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/clothing/mask/vape
-	ckeywhitelist = list("trollandrew")
-	subcategory = LOADOUT_SUBCATEGORIES_DON03
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
-
-/datum/gear/donator/bm/electropack
-	name = "Electropack"
-	slot = ITEM_SLOT_HANDS
-	path = /obj/item/electropack
-	ckeywhitelist = list("trollandrew")
-	subcategory = LOADOUT_SUBCATEGORIES_DON03
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
-
-/datum/gear/donator/bm/straight_jacket
-	name = "Straight Jacket"
-	slot = ITEM_SLOT_OCLOTHING
-	path = /obj/item/clothing/suit/straight_jacket
-	ckeywhitelist = list("trollandrew")
-	subcategory = LOADOUT_SUBCATEGORIES_DON03
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
-
-/datum/gear/donator/bm/boxing
-	name = "Boxing Gloves"
-	slot = ITEM_SLOT_GLOVES
-	path = /obj/item/clothing/gloves/boxing
-	ckeywhitelist = list("trollandrew")
-	subcategory = LOADOUT_SUBCATEGORIES_DON03
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
-
-/datum/gear/donator/bm/coconut_bong
-	name = "Coconut Bong"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/bong/coconut

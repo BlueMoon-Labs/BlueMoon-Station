@@ -244,8 +244,6 @@
 			var/obj/item/electronic_assembly/holdingassembly=A
 			check_bot_self=TRUE
 
-			if(holdingassembly.opened)
-				holdingassembly.ui_interact(src)
 			holdingassembly.attack_self(src)
 			check_bot_self=FALSE
 			return
@@ -380,8 +378,6 @@
 			var/obj/item/electronic_assembly/holdingassembly=A
 			check_bot_self=TRUE
 
-			if(holdingassembly.opened)
-				holdingassembly.ui_interact(src)
 			holdingassembly.attack_self(src)
 			check_bot_self=FALSE
 			return

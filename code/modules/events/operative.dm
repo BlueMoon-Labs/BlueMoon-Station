@@ -12,6 +12,9 @@
 	fakeable = FALSE
 
 /datum/round_event/ghost_role/operative/spawn_role()
+	return spawn_operative()
+
+/datum/round_event/ghost_role/operative/proc/spawn_operative(keeper_force = FALSE, turf/last_spawn_loc)
 	var/list/candidates = get_candidates(ROLE_OPERATIVE, null, ROLE_OPERATIVE)
 	if(!candidates.len)
 		return NOT_ENOUGH_PLAYERS
@@ -23,21 +26,37 @@
 		spawn_locs += L.loc
 	for(var/obj/effect/landmark/loneopspawn/L in GLOB.landmarks_list)
 		spawn_locs += L.loc
+
+	if(keeper_force && spawn_locs.len > 1 && !QDELETED(last_spawn_loc))
+		spawn_locs -= last_spawn_loc
+
 	if(!spawn_locs.len)
 		return MAP_ERROR
 
-	var/mob/living/carbon/human/operative = new(pick(spawn_locs))
+	var/spawn_loc = pick(spawn_locs)
+
+	var/mob/living/carbon/human/operative = new(spawn_loc)
 	var/datum/preferences/A = new
 	A.copy_to(operative)
 	operative.dna.update_dna_identity()
-	var/datum/mind/Mind = new /datum/mind(selected.key)
-	Mind.assigned_role = "Lone Operative"
-	Mind.special_role = "Lone Operative"
+
+	var/datum/antagonist/nukeop/lone/antag_type = keeper_force ? /datum/antagonist/nukeop/lone/syndicate : /datum/antagonist/nukeop/lone
+	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
+		antag_type = new /datum/antagonist/nukeop/lone/syndicate
+		antag_type.nukeop_outfit = /datum/outfit/syndicate/lone/extended
+	else if(GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT && !keeper_force)
+		addtimer(CALLBACK(src, PROC_REF(spawn_operative), TRUE, get_turf(spawn_loc)), 10 SECONDS)
+
+	var/antag_name = initial(antag_type.name)
+	var/datum/mind/Mind = new(selected.key)
+	Mind.assigned_role = antag_name
+	Mind.special_role = antag_name
 	Mind.active = 1
 	Mind.transfer_to(operative)
-	Mind.add_antag_datum(/datum/antagonist/nukeop/lone)
 
-	message_admins("[ADMIN_LOOKUPFLW(operative)] has been made into lone operative by an event.")
-	log_game("[key_name(operative)] was spawned as a lone operative by an event.")
+	Mind.add_antag_datum(antag_type)
+
+	message_admins("[ADMIN_LOOKUPFLW(operative)] has been made into [antag_name] by an event.")
+	log_game("[key_name(operative)] was spawned as a [antag_name] by an event.")
 	spawned_mobs += operative
 	return SUCCESSFUL_SPAWN

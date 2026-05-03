@@ -29,7 +29,7 @@
 	var/operating = FALSE
 	var/glass = FALSE
 	var/welded = FALSE
-	var/normalspeed = 1
+	var/normalspeed = TRUE
 	var/heat_proof = FALSE // For rglass-windowed airlocks and firedoors
 	var/emergency = FALSE // Emergency access override
 	var/sub_door = FALSE // true if it's meant to go under another door.
@@ -41,7 +41,6 @@
 	var/datum/effect_system/spark_spread/spark_system
 
 	var/real_explosion_block	//ignore this, just use explosion_block
-	var/red_alert_access = FALSE //if TRUE, this door will always open on red alert
 	var/poddoor = FALSE
 	var/unres_sides = 0 //Unrestricted sides. A bitflag for which direction (if any) can open the door with no access
 	/// Whether or not the door can be opened by hand (used for blast doors and shutters)
@@ -49,11 +48,6 @@
 
 /obj/machinery/door/examine(mob/user)
 	. = ..()
-	if(red_alert_access)
-		if(GLOB.security_level >= SEC_LEVEL_RED)
-			. += "<span class='notice'>Due to a security threat, its access requirements have been lifted!</span>"
-		else
-			. += "<span class='notice'>In the event of a red alert, its access requirements will automatically lift.</span>"
 	if(!poddoor)
 		. += "<span class='notice'>Its maintenance panel is <b>screwed</b> in place.</span>"
 
@@ -69,11 +63,6 @@
 	if(isnull(held_item) && Adjacent(user))
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (density ? "Open" : "Close"))
 		return CONTEXTUAL_SCREENTIP_SET
-
-/obj/machinery/door/check_access_list(list/access_list)
-	if(red_alert_access && GLOB.security_level >= SEC_LEVEL_RED)
-		return TRUE
-	return ..()
 
 /obj/machinery/door/Initialize(mapload)
 	. = ..()
@@ -450,10 +439,4 @@
  */
 /obj/machinery/door/proc/check_security_level(datum/source, new_level)
 	SIGNAL_HANDLER
-
-	if(new_level <= SEC_LEVEL_BLUE)
-		return
-	if(!red_alert_access)
-		return
-	audible_message(span_notice("[src] whirr[p_s()] as [p_they()] automatically lift[p_s()] access requirements!"))
-	playsound(src, 'sound/machines/boltsup.ogg', 50, TRUE)
+	return

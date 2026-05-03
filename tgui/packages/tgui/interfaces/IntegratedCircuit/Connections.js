@@ -31,8 +31,8 @@ export function wireConnectionKey(conn, index) {
 }
 
 /**
- * Два SVG: нижний — линии под нодами (ref для координат); верхний — широкий hit-test и подсветка hover/pulse.
- * children — ноды между слоями.
+ * Два SVG: base — линии; overlay — широкий hit-test для hover по проводам (только там, где нет ноды сверху).
+ * children (ноды z-index:1) идут в DOM между SVG — overlay был z-index:2 и перехватывал клики по пинам; держим overlay на z-index:0.
  */
 export class Connections extends Component {
   constructor(props) {
@@ -126,7 +126,7 @@ export class Connections extends Component {
             position: 'absolute',
             top: 0,
             left: 0,
-            'z-index': 2,
+            'z-index': 0,
             overflow: 'visible',
             'pointer-events': 'none',
           }}

@@ -4,6 +4,7 @@
 	id = "light_apps"
 	display_name = "Illumination Applications"
 	description = "Applications of lighting and vision technology not originally thought to be commercially viable."
+	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING, RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("base")
 	design_ids = list("bright_helmet", "rld_mini")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
@@ -14,6 +15,7 @@
 	id = "aus_security"
 	display_name = "Australicus Security Protocols"
 	description = "It is said that security in the Australicus sector is tight, so we took some pointers from their equipment. Thankfully, our sector lacks any signs of these, 'dropbears'."
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("base")
 	design_ids = list("pin_explorer", "stun_boomerang")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
@@ -24,6 +26,7 @@
 	id = "spec_eng"
 	display_name = "Specialized Engineering"
 	description = "Conventional wisdom has deemed these engineering products 'technically' safe, but far too dangerous to traditionally condone."
+	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("base")
 	design_ids = list("lava_rods", "eng_gloves")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
@@ -34,6 +37,7 @@
 	id = "bepis_miscellaneous"
 	display_name = "Miscellaneous B.E.P.I.S. Technology"
 	description = "A bunch of abandoned technology that might have never seen the light of day."
+	informing_radio_channels = list(RADIO_CHANNEL_SERVICE, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("base")
 	design_ids = list("rolling_table","mauna_mug")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
@@ -44,6 +48,7 @@
 	id = "nanite_replication_protocols"
 	display_name = "Nanite Replication Protocols"
 	description = "Advanced behaviours that allow nanites to exploit certain circumstances to replicate faster."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("nanite_smart")
 	design_ids = list("kickstart_nanites","factory_nanites","offline_nanites","synergy_nanites")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
@@ -54,6 +59,7 @@
 	id = "nanite_storage_protocols"
 	display_name = "Nanite Storage Protocols"
 	description = "Advanced behaviours that allow nanites to increase their maximum volume at variable cost."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("nanite_smart")
 	design_ids = list("hive_nanites", "zip_nanites", "free_range_nanites", "unsafe_storage_nanites")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
@@ -65,6 +71,7 @@
 	display_name = "Enhanced Interrogation Technology"
 	description = "By cross-referencing several declassified documents from past dictatorial regimes, we were able to develop an incredibly effective interrogation device. \
 	Ethical concerns about loss of free will may still apply, according to galactic law."
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("base")
 	design_ids = list("hypnochair")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)
@@ -76,6 +83,7 @@
 	display_name = "Advanced Grapple Technology"
 	description = "Nanotrasen would like to remind its researching staff that it is never acceptable to \"glomp\" your coworkers, and further \"scientific trials\" on the subject \
 	will no longer be accepted in its academic journals."
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("tackle_dolphin", "tackle_rocket")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 	hidden = TRUE
@@ -85,6 +93,7 @@
 	id = "sticky_advanced"
 	display_name = "Advanced Sticky Technology"
 	description = "Taking a good joke too far? Nonsense!"
+	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING)
 	design_ids = list("super_sticky_tape", "pointy_tape")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 	hidden = TRUE

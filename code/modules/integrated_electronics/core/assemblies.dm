@@ -46,6 +46,10 @@
 	var/ie_tgui_pulse_output_ref = null
 	var/ie_tgui_pulse_input_ref = null
 	var/datum/weakref/ie_tgui_pulse_chip_weak
+	/// Last coarse diagnostic HUD state from compute_diagnostic_hud_process_key; skips redundant health/cell updates in process().
+	var/last_diag_process_key = ""
+	/// Cached "[icon]-[icon_state]-[dir]" so sync_diagnostic_hud_offsets avoids allocating /icon every diag call.
+	var/diag_hud_offset_key = ""
 
 	hud_possible = list(DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_TRACK_HUD, DIAG_CIRCUIT_HUD) //diagnostic hud overlays
 	max_integrity = 50
@@ -124,6 +128,7 @@
 	diag_hud_set_circuitcell()
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
+	last_diag_process_key = compute_diagnostic_hud_process_key()
 
 	access_card = new /obj/item/card/id(src)
 
@@ -131,6 +136,12 @@
 	STOP_PROCESSING(SScircuit, src)
 	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.remove_from_hud(src)
+	// Kill light datum/lighting work before qdel'ing many contents; clear wiring from chips first pass.
+	set_light(0)
+	for(var/obj/item/integrated_circuit/ic as anything in assembly_components.Copy())
+		qdel(ic)
+	assembly_components.Cut()
+	QDEL_NULL(battery)
 	QDEL_NULL(access_card)
 	return ..()
 
@@ -138,9 +149,40 @@
 	handle_idle_power()
 	check_pulling()
 
-	//updates diagnostic hud
-	diag_hud_set_circuithealth()
-	diag_hud_set_circuitcell()
+	// Diagnostic HUD: only when turf visibility or coarse health/battery buckets change (see compute_diagnostic_hud_process_key).
+	var/next_diag_key = compute_diagnostic_hud_process_key()
+	if(next_diag_key != last_diag_process_key)
+		last_diag_process_key = next_diag_key
+		diag_hud_set_circuithealth()
+		diag_hud_set_circuitcell()
+
+/// Coarse key for whether health/cell diagnostic overlays need a refresh this SS tick.
+/obj/item/electronic_assembly/proc/compute_diagnostic_hud_process_key()
+	if(!isturf(loc))
+		return "off"
+	var/mh = max(max_integrity, 1)
+	var/h = RoundDiagBar(obj_integrity / mh)
+	if(!battery)
+		return "[h]-nobatt"
+	var/mc = max(battery.maxcharge, 1)
+	return "[h]-[RoundDiagBar(battery.charge / mc)]"
+
+/// Sets pixel_y on diagnostic HUD holders when assembly icon appearance changes; avoids per-call /icon allocations in diag_hud_set_circuit* procs.
+/obj/item/electronic_assembly/proc/sync_diagnostic_hud_offsets()
+	if(!hud_list)
+		return
+	var/key = "[icon]-[icon_state]-[dir]"
+	if(key == diag_hud_offset_key)
+		return
+	diag_hud_offset_key = key
+	if(!icon)
+		return
+	var/icon/I = icon(icon, icon_state, dir)
+	var/offset = I.Height() - world.icon_size
+	for(var/hud_id in list(DIAG_CIRCUIT_HUD, DIAG_BATT_HUD, DIAG_STAT_HUD, DIAG_TRACK_HUD))
+		var/image/holder = hud_list[hud_id]
+		if(istype(holder))
+			holder.pixel_y = offset
 
 /obj/item/electronic_assembly/proc/handle_idle_power()
 
@@ -271,6 +313,7 @@
 	diag_hud_set_circuitcell(TRUE)
 	diag_hud_set_circuitstat(TRUE)
 	diag_hud_set_circuittracking(TRUE)
+	last_diag_process_key = compute_diagnostic_hud_process_key()
 
 /obj/item/electronic_assembly/dropped(mob/user)
 	. = ..()
@@ -279,6 +322,7 @@
 	diag_hud_set_circuitcell()
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
+	last_diag_process_key = compute_diagnostic_hud_process_key()
 
 /obj/item/electronic_assembly/proc/rename()
 	var/mob/M = usr
@@ -303,6 +347,7 @@
 		icon_state = initial(icon_state) + "-open"
 	else
 		icon_state = initial(icon_state)
+	diag_hud_offset_key = ""
 	cut_overlays()
 	if(detail_color == COLOR_ASSEMBLY_BLACK) //Black colored overlay looks almost but not exactly like the base sprite, so just cut the overlay and avoid it looking kinda off.
 		return

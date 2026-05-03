@@ -69,3 +69,21 @@
 	materials = list(/datum/material/iron = 4000)
 	build_path = /obj/item/ammo_casing/n762
 	category = list("hacked", "Security")
+
+/datum/design/a127x55
+	name = "Heavy revolver round (12.7x55mm)"
+	id = "a127x55"
+	build_type = AUTOLATHE | NO_PUBLIC_LATHE | PROTOLATHE
+	materials = list(/datum/material/iron = 4500)
+	build_path = /obj/item/ammo_casing/a357/requiem
+	category = list("hacked", "Security")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/a127x55_speedloader
+	name = "Speed loader (12.7x55mm)"
+	id = "a127x55_speedloader"
+	build_type = AUTOLATHE | NO_PUBLIC_LATHE | PROTOLATHE
+	materials = list(/datum/material/iron = 26000)
+	build_path = /obj/item/ammo_box/a357/requiem
+	category = list("hacked", "Security")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY

@@ -9,12 +9,12 @@
 /obj/item/projectile/beam/cybersun_laser
 	icon = 'modular_bluemoon/code/modules/modular_laser_rifle/icons/projectiles.dmi'
 	icon_state = "kill_large"
-	damage = 25
+	damage = 50
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/red_laser
 	light_color = COLOR_SOFT_RED
 	wound_falloff_tile = -1
 
-// Speedy sniper lasers for the big gun (15 shots from 10k cell)
+// Speedy sniper lasers for the big gun (10 shots from 10k cell)
 
 /obj/item/ammo_casing/energy/cybersun_big_sniper
 	projectile_type = /obj/item/projectile/beam/cybersun_laser/marksman
@@ -32,18 +32,18 @@
 	wound_falloff_tile = -0.1
 	armour_penetration = 15
 
-// Disabler machinegun for the big gun (50 shots from 10k cell)
+// Disabler machinegun for the big gun (40 shots from 10k cell)
 
 /obj/item/ammo_casing/energy/cybersun_big_disabler
 	projectile_type = /obj/item/projectile/beam/cybersun_laser/disable
-	e_cost = 200
+	e_cost = 250
 	select_name = "Disable"
 	harmful = FALSE
 
 /obj/item/projectile/beam/cybersun_laser/disable
 	icon_state = "disable_large"
 	damage = 0
-	stamina = 20
+	stamina = 25
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/blue_laser
 	light_color = COLOR_BRIGHT_BLUE
 
@@ -57,7 +57,7 @@
 /obj/item/projectile/beam/cybersun_laser/granata
 	name = "plasma grenade"
 	icon_state = "grenade"
-	damage = 75
+	damage = 100
 	pixels_per_second = TILES_TO_PIXELS(10)
 	range = 6
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/green_laser
@@ -85,7 +85,7 @@
 /obj/item/projectile/beam/cybersun_laser/granata_shrapnel
 	name = "plasma globule"
 	icon_state = "flare"
-	damage = 10
+	damage = 20
 	pixels_per_second = TILES_TO_PIXELS(10)
 	wound_bonus = -50
 	bare_wound_bonus = 55
@@ -104,8 +104,8 @@
 /obj/item/ammo_casing/energy/cybersun_big_shotgun
 	projectile_type = /obj/item/projectile/beam/cybersun_laser/granata_shrapnel/shotgun_pellet
 	e_cost = 1000
-	pellets = 7
-	variance = 30
+	pellets = 10
+	variance = 40
 	select_name = "Shotgun"
 	fire_sound = 'modular_bluemoon/code/modules/modular_laser_rifle/sounds/melt.ogg'
 
@@ -119,6 +119,7 @@
 	light_color = COLOR_PINK
 	range = 9
 	wound_falloff_tile = -3
+
 // Hellfire lasers for the little guy / carbine (10 shots from 10k cell)
 
 /obj/item/ammo_casing/energy/cybersun_small_hellfire
@@ -129,7 +130,7 @@
 
 /obj/item/projectile/beam/cybersun_laser/hellfire
 	icon_state = "hellfire"
-	damage = 20
+	damage = 50
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/red_laser
 	pixels_per_second = TILES_TO_PIXELS(20)
 	wound_bonus = 0
@@ -146,7 +147,7 @@
 /obj/item/projectile/beam/cybersun_laser/disable_bounce
 	icon_state = "disable_bounce"
 	damage = 0
-	stamina = 30
+	stamina = 25
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/blue_laser
 	light_color = COLOR_BRIGHT_BLUE
 	ricochet_auto_aim_angle = 30
@@ -171,7 +172,7 @@
 /obj/item/projectile/beam/cybersun_laser/flare
 	name = "plasma flare"
 	icon_state = "flare"
-	damage = 30
+	damage = 50
 	pixels_per_second = TILES_TO_PIXELS(10)
 	range = 6
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/green_laser
@@ -207,12 +208,19 @@
 
 /obj/item/flashlight/flare/plasma_projectile/Initialize(mapload)
 	. = ..()
-	fuel = rand(3 MINUTES, 5 MINUTES)
+	fuel = 99999
 	on = TRUE
 	force = on_damage
 	damtype = "fire"
 	START_PROCESSING(SSobj, src)
 	update_brightness(null)
+	addtimer(CALLBACK(src, PROC_REF(fade_plasma_flare)), rand(2.5 MINUTES, 4 MINUTES))
+
+/obj/item/flashlight/flare/plasma_projectile/process()
+	open_flame(heat)
+
+/obj/item/flashlight/flare/plasma_projectile/proc/fade_plasma_flare()
+	qdel(src)
 
 /obj/item/flashlight/flare/plasma_projectile/turn_off()
 	. = ..()

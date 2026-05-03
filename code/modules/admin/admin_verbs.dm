@@ -480,6 +480,7 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 
 /client/proc/unban_panel()
 	set name = "Unbanning Panel"
+	set desc = "При SQL открывает ту же панель, что и Banning & Unbanning. При ban_legacy_system — старый файл банов."
 	set category = "Admin"
 	if(!check_rights(R_BAN))
 		return

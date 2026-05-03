@@ -1,7 +1,7 @@
 
 /datum/action/cooldown/bloodsucker/veil
 	name = "Veil of Many Faces"
-	desc = "Disguise yourself in the illusion of another identity."
+	desc = "Замаскируйтесь под иллюзию другой личности."
 	button_icon_state = "power_veil"
 	bloodcost = 35
 	cooldown_time = 150
@@ -61,7 +61,7 @@
 	H.name_override = H.dna.species.random_name(H.gender)
 	H.name = H.name_override
 	H.SetSpecialVoice(H.name_override)
-	to_chat(owner, "<span class='warning'>You mystify the air around your person. Your identity is now altered.</span>")
+	to_chat(owner, "<span class='warning'>Вы искажаете воздух вокруг себя. Ваша личность теперь изменена.</span>")
 
 	// Store Prev Appearance
 	prev_gender = H.gender

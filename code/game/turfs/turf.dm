@@ -137,7 +137,15 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	if(force)
 		..()
 		//this will completely wipe turf state
-		var/turf/B = new world.turf(src)
+		// Use /turf/open/space, not world.turf (/turf/open/space/basic): /basic
+		// has an empty New() without ..() that deliberately skips Initialize for
+		// map loader performance, which leaves the replacement turf with null
+		// air and unregistered from auxmos. The preceding /turf/open/Destroy
+		// already deregistered us from auxmos via update_air_ref(-1), so without
+		// a proper Initialize on the replacement, adjacent turfs end up with
+		// stale adjacency and auxmos can panic on the orphaned slot (surfacing
+		// as an empty "uncaught runtime error:" via /world/Error with null E).
+		var/turf/B = new /turf/open/space(src)
 		for(var/A in B.contents)
 			qdel(A)
 		return

@@ -3,6 +3,7 @@
 	id = "syndicate_basic"
 	display_name = "Illegal Technology"
 	description = "Dangerous research used to create dangerous objects."
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("adv_engi", "adv_weaponry", "explosive_weapons")
 	design_ids = list("decloner", "borg_syndicate_module", "suppressor", "largecrossbow", "donksofttoyvendor", "donksoft_refill", "syndiesleeper", "inducer_syn") // - ci-xray
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
@@ -21,6 +22,7 @@
 	id = "advanced_illegal_ballistics"
 	display_name = "Advanced Non-Standard Ballistics"
 	description = "Ballistic ammunition for non-standard firearms. Usually the ones you don't have nor want to be involved with."
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("10mm","10mmap","10mminc","10mmhp", /*"sl357","sl357ap", "sl357dumdum",*/ "m45","bolt_clip","m10apbox","m10firebox","m10hpbox", "10mm_large", "10mm_large_soporific", "combatinducer")
 	prereq_ids = list("ballistic_weapons","syndicate_basic","explosive_weapons")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 25000) //This gives sec lethal mags/clips for guns from traitors, space, or anything in between.

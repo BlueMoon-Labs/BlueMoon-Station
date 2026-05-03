@@ -414,10 +414,17 @@
 	ADD_TRAIT(L, TRAIT_HOLY, type)
 
 	if(is_servant_of_ratvar(L))
-		to_chat(L, "<span class='userdanger'>Священный Туман распространяется по вашему сознанию, ослабляя связь с Жёлтым Измерением и очищая вас от влияния Юстициара Ратвара!</span>")
+		to_chat(L, span_userdanger("Священный Туман распространяется по вашему сознанию, ослабляя связь с Жёлтым Измерением и очищая вас от влияния Юстициара Ратвара!"))
 		return
 	if(iscultist(L))
-		to_chat(L, "<span class='userdanger'>Священный Туман распространяется по вашему сознанию, ослабляя связь с Красным Измерением и очищая вас от влияния Нар-Си</span>")
+		to_chat(L, span_userdanger("Священный Туман распространяется по вашему сознанию, ослабляя связь с Красным Измерением и очищая вас от влияния Нар-Си!"))
+		return
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(L)
+	if(heretic)
+		if(LAZYLEN(heretic.summon_items))
+			to_chat(L, span_userdanger("Священный Туман распространяется по вашему сознанию, проникая в самые глубины, скрытые от глаз вещи скоро вырвуться из вас!"))
+		else
+			to_chat(L, span_warning("Священный Туман распространяется по вашему сознанию, проникая в самые глубины, но у вас нет скрытых вещей и ничего не происходит."))
 		return
 	if(HAS_TRAIT(L,TRAIT_RUSSIAN))
 		// Alert user of holy water effect.
@@ -453,7 +460,8 @@
 	if(!data)
 		data = list("misc" = 1)
 	data["misc"]++
-	if(!iscultist(M, FALSE, TRUE) && !is_servant_of_ratvar(M) && (HAS_TRAIT(M, TRAIT_HALLOWED) || M.mind?.isholy))
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(M)
+	if(!iscultist(M, FALSE, TRUE) && !is_servant_of_ratvar(M) && !heretic && (HAS_TRAIT(M, TRAIT_HALLOWED) || M.mind?.isholy))
 		return ..()
 	if(iscultist(M, FALSE, TRUE))
 		for(var/datum/action/innate/cult/blood_magic/BM in M.actions)
@@ -483,11 +491,26 @@
 					"You can't save him. Nothing can save him now", "It seems that Nar'Sie will triumph after all")].</span>")
 				if("emote")
 					M.visible_message("<span class='warning'>[M] [pick("whimpers quietly", "shivers as though cold", "glances around in paranoia")].</span>")
+		else if(LAZYLEN(heretic?.summon_items) && prob(6))
+			to_chat(M, span_boldwarning("Вас начинает мутить, вы чувствуете, что скрытые вещи [pick("желают вырваться из вас", "бьются внутри вас", "скоро исторгнуться из вас")]."))
 	if(data["misc"] >= 60)	// 30 units, 135 seconds
 		if(iscultist(M))
 			SSticker.mode.remove_cultist(M.mind, FALSE, TRUE)
 		if(is_servant_of_ratvar(M))
 			remove_servant_of_ratvar(M)
+		if(LAZYLEN(heretic?.summon_items))
+			to_chat(M, span_userdanger("Скрытые вещи вырываются из вас, вытесненные святой водой!"))
+			playsound(M, 'sound/magic/Mutate.ogg', 75, FALSE)
+			M.vomit(5, FALSE, TRUE, force = TRUE)
+			M.blur_eyes(5)
+			M.Dizzy(5)
+			var/turf/turf_target = get_turf(M)
+			for(var/obj/item/I in heretic.summon_items)
+				I.forceMove(turf_target)
+				if(!(I.item_flags & NO_PIXEL_RANDOM_DROP))
+					I.pixel_x = I.base_pixel_x + rand(-6, 6)
+					I.pixel_y = I.base_pixel_y + rand(-6, 6)
+			heretic.summon_items.Cut()
 		M.jitteriness = 0
 		M.stuttering = 0
 		holder.del_reagent(type)	// maybe this is a little too perfect and a max() cap on the statuses would be better??
@@ -2242,11 +2265,16 @@
 	taste_description = "brains"
 	pH = 0.5
 	value = REAGENT_VALUE_GLORIOUS
+	/// Which infection organ to implant; default is dormant (no ongoing damage).
+	var/organ_type = /obj/item/organ/zombie_infection/nodamage
+
+/datum/reagent/romerol/lethal
+	organ_type = /obj/item/organ/zombie_infection
 
 /datum/reagent/romerol/reaction_mob(mob/living/carbon/human/H, method=TOUCH, reac_volume, affected_bodypart)
 	// Silently add the zombie infection organ to be activated upon death
 	if(!H.getorganslot(ORGAN_SLOT_ZOMBIE) && !HAS_TRAIT(H, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - добавлена проверка для роботов
-		var/obj/item/organ/zombie_infection/nodamage/ZI = new()
+		var/obj/item/organ/zombie_infection/ZI = new organ_type()
 		ZI.Insert(H)
 	..()
 

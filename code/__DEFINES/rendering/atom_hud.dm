@@ -66,9 +66,10 @@
 #define ANTAG_HUD_SPACECOP		27
 #define ANTAG_HUD_GANGSTER		28
 #define ANTAG_HUD_SLAVER		29
-
 // Which players consent via their game settings to be a target for antagonists
 #define DATA_HUD_ANTAGTARGET	30
+
+#define ANTAG_HUD_ZOMBIE		31
 
 #define ADD_HUD_TO_COOLDOWN 20 //cooldown for being shown the images for any particular data hud
 

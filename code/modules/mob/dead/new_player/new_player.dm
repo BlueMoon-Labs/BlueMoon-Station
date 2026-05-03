@@ -266,7 +266,12 @@
 				to_chat(usr, "<span class='warning'>Server is full.</span>")
 				return
 
-		var/obj/effect/mob_spawn/MS = pick(GLOB.mob_spawners[href_list["JoinAsGhostRole"]])
+		var/list/spawner_list = GLOB.mob_spawners[href_list["JoinAsGhostRole"]]
+		if(!length(spawner_list))
+			return
+		var/obj/effect/mob_spawn/MS = pick(spawner_list)
+		if(!MS || !istype(MS, /obj/effect/mob_spawn))
+			return
 		if(MS.attack_ghost(src, latejoinercalling = TRUE))
 			SSticker.queued_players -= src
 			SSticker.queue_delay = 4

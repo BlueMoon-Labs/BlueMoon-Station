@@ -29,6 +29,16 @@
 	var/inertia_moving = 0
 	var/inertia_next_move = 0
 	var/inertia_move_delay = 5
+	/// Set while Space Drift 2.0 (smooth newtonian loop) is active
+	var/datum/drift_handler/drift_handler
+	/// Last time we used this atom as a push-off point (anti double-count same tick)
+	var/last_pushoff = 0
+	/// Last time drift actually moved this atom — prevents spamming inputs to bypass move delay (see /datum/drift_handler)
+	var/last_drift_time = 0
+	/// Scalar for impulse math (higher = harder to nudge)
+	var/inertia_force_weight = 1
+	/// Species / vehicle modifiers
+	var/inertia_move_multiplier = 1
 	/// Things we can pass through while moving. If any of this matches the thing we're trying to pass's [pass_flags_self], then we can pass through.
 	var/pass_flags = NONE
 	/// If false makes CanPass call CanPassThrough on this type instead of using default behaviour
@@ -124,6 +134,7 @@
 
 	invisibility = INVISIBILITY_ABSTRACT
 
+	QDEL_NULL(drift_handler)
 	if(inertia_dir)
 		inertia_dir = 0
 		inertia_last_loc = null
@@ -340,7 +351,7 @@
 	if(A == loc && pulling.density)
 		return FALSE
 	var/move_dir = get_dir(pulling.loc, A)
-	if(!Process_Spacemove(move_dir))
+	if(!Process_Spacemove(move_dir, FALSE))
 		return FALSE
 	pulling.Move(get_step(pulling.loc, move_dir), move_dir, glide_size)
 	return TRUE
@@ -538,7 +549,7 @@
 /atom/movable/proc/on_enter_storage(datum/component/storage/concrete/S)
 	// SEND_SIGNAL(src, COMSIG_STORAGE_ENTERED, master_storage)
 
-/atom/movable/proc/get_spacemove_backup()
+/atom/movable/proc/get_spacemove_backup(moving_direction = 0, continuous_move = FALSE, include_floors = FALSE)
 	var/atom/movable/dense_object_backup
 	for(var/A in orange(1, get_turf(src)))
 		if(isarea(A))
@@ -700,7 +711,11 @@
 
 /// Removes a single language.
 /atom/movable/proc/remove_language(language, language_flags = ALL, source = LANGUAGE_ALL)
-	return get_language_holder().remove_language(language, language_flags, source)
+	if(QDELING(src))
+		return
+	if(!language_holder)
+		return
+	return language_holder.remove_language(language, language_flags, source)
 
 /// Removes every language and sets omnitongue false.
 /atom/movable/proc/remove_all_languages(source = LANGUAGE_ALL, remove_omnitongue = FALSE)

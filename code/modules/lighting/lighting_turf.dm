@@ -204,6 +204,15 @@
 /turf/proc/generate_missing_corners()
 	if (!IS_DYNAMIC_LIGHTING(src) && !light_sources)
 		return
+	// Corners must never be qdel'd; if a ref is stale, allow recreation (avoids bad state during moves)
+	if(lc_topright && QDELETED(lc_topright))
+		lc_topright = null
+	if(lc_bottomright && QDELETED(lc_bottomright))
+		lc_bottomright = null
+	if(lc_bottomleft && QDELETED(lc_bottomleft))
+		lc_bottomleft = null
+	if(lc_topleft && QDELETED(lc_topleft))
+		lc_topleft = null
 	lighting_corners_initialised = TRUE
 	// counterclockwise from 0 to 360.
 	if(!lc_topright)

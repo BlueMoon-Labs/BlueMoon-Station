@@ -31055,7 +31055,7 @@
 /obj/structure/closet/crate/freezer/blood,
 /obj/machinery/door/window/northleft{
 	name = "Surgery Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white,
@@ -31068,7 +31068,7 @@
 /obj/item/reagent_containers/glass/beaker/synthflesh,
 /obj/machinery/door/window/northright{
 	name = "Surgery Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/machinery/camera{
@@ -48408,7 +48408,7 @@
 	name = "Station Intercom (General)";
 	pixel_y = -29
 	},
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/blue{
@@ -49210,7 +49210,7 @@
 /turf/open/floor/wood,
 /area/service/bar)
 "ely" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /turf/open/floor/plasteel/cafeteria{
@@ -57795,7 +57795,7 @@
 /turf/open/floor/plasteel/white,
 /area/command/gateway)
 "imk" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/structure/disposalpipe/segment{
@@ -66236,7 +66236,7 @@
 	departmentType = 2;
 	pixel_x = 32
 	},
-/obj/machinery/computer/card/minor/qm{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/plasteel,
@@ -67287,7 +67287,7 @@
 	name = "Chief Engineer RC";
 	pixel_y = 32
 	},
-/obj/machinery/computer/card/minor/ce,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},

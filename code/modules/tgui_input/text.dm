@@ -141,7 +141,8 @@
 			// BLUEMOON EDIT - исправление счета по байтам, а не по символам Юникода
 			if(length_char(params["entry"]) > max_length)
 				return
-			if(encode && (length_char(html_encode(params["entry"])) > max_length))
+			// Должно совпадать с кодировщиком set_entry (html_encode_readable), иначе получим ложное "clipped" на одних только кавычках
+			if(encode && (length_char(html_encode_readable(params["entry"])) > max_length))
 				to_chat(usr, span_notice("Your message was clipped due to special character usage."))
 			set_entry(params["entry"])
 			closed = TRUE
@@ -153,10 +154,10 @@
 			return TRUE
 
 /datum/tgui_input_text/proc/set_entry(entry)
-	if(!isnull(entry))
-		var/converted_entry = encode ? html_encode(entry) : entry
-		//converted_entry = readd_quotes(converted_entry)
-		src.entry = trim(converted_entry, max_length)
+	if(isnull(entry))
+		return
+	var/converted_entry = encode ? html_encode_readable(entry) : entry
+	src.entry = trim(converted_entry, max_length)
 
 /**
  * Creates an asynchronous TGUI input text window with an associated callback.

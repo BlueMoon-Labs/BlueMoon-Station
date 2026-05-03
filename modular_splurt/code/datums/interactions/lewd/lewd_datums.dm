@@ -1,17 +1,18 @@
 //Sandstorm edits
 
-/datum/interaction/lewd/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
+/datum/interaction/lewd/display_interaction(mob/living/user, mob/living/target, var/is_hidden)
 	. = ..()
+	//переменные ниже используются в последующих проках после вызова родителя
+
+	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB) && !is_hidden)
+		new /obj/effect/temp_visual/heart(user.loc)
+	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB) && !is_hidden)
+		new /obj/effect/temp_visual/heart(target.loc)
+
+	if(is_hidden)
+		return TRUE
 
 /datum/interaction/lewd/titgrope/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(target))
 		return
@@ -26,10 +27,6 @@
 	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/oral/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(target))
 		return
@@ -40,10 +37,6 @@
 	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/oral/blowjob/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(target))
 		return
@@ -55,10 +48,6 @@
 	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/fuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
@@ -69,10 +58,6 @@
 	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/fuck/anal/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
@@ -83,10 +68,6 @@
 	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/finger/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(target))
 		return
@@ -97,10 +78,6 @@
 	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/fingerass/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(target))
 		return
@@ -111,10 +88,6 @@
 	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/facefuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(user))
 		return
@@ -126,10 +99,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/throatfuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(istype(target, /mob/living) && user.is_fucking(target, CUM_TARGET_THROAT))
 		var/stat_before = target.stat
@@ -146,10 +115,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/handjob/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(target))
 		return
@@ -161,10 +126,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/breastfuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
@@ -177,10 +138,6 @@
 						'modular_bluemoon/sound/interactions/fuckClown1.ogg'), 70, 1, -1)
 
 /datum/interaction/lewd/mount/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
@@ -191,10 +148,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/mountass/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
@@ -205,10 +158,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/mountface/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(user))
 		return
@@ -219,10 +168,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/footfuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(user))
 		return
@@ -234,10 +179,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/footfuck/double/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(user))
 		return
@@ -249,10 +190,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/footjob/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(target))
 		return
@@ -264,10 +201,6 @@
 	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/footjob/double/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(target))
 		return
@@ -279,10 +212,6 @@
 	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/nuts/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(user))
 		return
@@ -293,10 +222,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/nut_smack/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!(isclownjob(target) && type == /datum/interaction/lewd/nut_smack))
 		return
@@ -307,10 +232,6 @@
 	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/earfuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(user))
 		return
@@ -322,10 +243,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/bite/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	if (istype(user.wear_mask, /obj/item/clothing/mask/muzzle/mouthring))
 		to_chat(user, "<span class='warning'> Вы безуспешно пытаетесь сомкнуть свои челюсти. </span>")
 		return
@@ -344,10 +261,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/eyefuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!isclownjob(user))
 		return
@@ -359,10 +272,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/frotting/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	. = ..()
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
@@ -370,10 +279,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/do_breastfeed/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	var/obj/item/organ/genital/breasts/milkers = user.getorganslot(ORGAN_SLOT_BREASTS)
 	var/blacklist = target.client?.prefs.gfluid_blacklist
 	var/cached_fluid
@@ -395,8 +300,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/jack/display_interaction(mob/living/carbon/human/user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
 	. = ..()
 	if(!isclownjob(user))
 		return
@@ -408,8 +311,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/fingerass_self/display_interaction(mob/living/carbon/human/user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
 	. = ..()
 	if(!isclownjob(user))
 		return
@@ -420,8 +321,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/finger_self/display_interaction(mob/living/carbon/human/user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
 	. = ..()
 	if(!isclownjob(user))
 		return
@@ -432,8 +331,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/titgrope_self/display_interaction(mob/living/carbon/human/user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
 	. = ..()
 	if(!isclownjob(user))
 		return
@@ -449,10 +346,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/self_nipsuck/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	var/obj/item/organ/genital/breasts/milkers = user.getorganslot(ORGAN_SLOT_BREASTS)
 	var/blacklist = target.client?.prefs.gfluid_blacklist
 	var/cached_fluid
@@ -479,10 +372,6 @@
 	playlewdinteractionsound(user, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/nipsuck/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
 	var/obj/item/organ/genital/breasts/milkers = target.getorganslot(ORGAN_SLOT_BREASTS)
 	var/blacklist = user.client?.prefs.gfluid_blacklist
 	var/cached_fluid
@@ -524,12 +413,11 @@
 	//SPLURT EDIT END
 
 /datum/interaction/lewd/kiss/display_interaction(mob/living/user, mob/living/partner)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
-	. = ..()
-	playlewdinteractionsound(user.loc, pick(GLOB.lewd_kiss_sounds), 90, 1, -1)
+	var/is_hidden = ..()
+	var/volume = 50
+	if(is_hidden)
+		volume = sound_quiet_volume
+	playlewdinteractionsound(user.loc, pick(GLOB.lewd_kiss_sounds), volume, 1, -1)
 
 //Own stuff
 /datum/interaction/lewd/oral/selfsuck
@@ -548,9 +436,8 @@
 	p13target_emote = PLUG13_EMOTE_PENIS
 
 /datum/interaction/lewd/oral/selfsuck/display_interaction(mob/living/carbon/human/user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	user.do_oral_self(user, "penis")
+	var/is_hidden = ..()
+	user.do_oral_self(user, "penis", is_hidden)
 	if(!isclownjob(user))
 		return
 
@@ -576,10 +463,8 @@
 	p13target_emote = PLUG13_EMOTE_VAGINA
 
 /datum/interaction/lewd/oral/suckvagself/display_interaction(mob/living/carbon/human/user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-
-	user.do_oral_self(user, "vagina")
+	var/is_hidden = ..()
+	user.do_oral_self(user, "vagina", is_hidden)
 
 /datum/interaction/lewd/breastfuckself
 	description = "Грудь. Трахнуть свои сиськи."
@@ -596,9 +481,8 @@
 	p13target_emote = PLUG13_EMOTE_VAGINA
 
 /datum/interaction/lewd/breastfuckself/display_interaction(mob/living/carbon/human/user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	user.do_breastfuck_self(user)
+	var/is_hidden = ..()
+	user.do_breastfuck_self(user, is_hidden)
 	if(!isclownjob(user))
 		return
 
@@ -619,11 +503,8 @@
 	p13target_emote = PLUG13_EMOTE_CHEST
 
 /datum/interaction/lewd/fuck/belly/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.do_bellyfuck(target)
+	var/is_hidden = ..()
+	user.do_bellyfuck(target, is_hidden)
 
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
@@ -713,11 +594,8 @@
 	write_log_user = "прижался носом к животу"
 
 /datum/interaction/lewd/nuzzle_belly/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.nuzzle_belly(target)
+	var/is_hidden = ..()
+	user.nuzzle_belly(target, is_hidden)
 
 /datum/interaction/lewd/do_breastsmother
 	description = "Грудь. Придушить партнёра."
@@ -731,11 +609,8 @@
 	write_log_user = "придушил(а) грудью"
 
 /datum/interaction/lewd/do_breastsmother/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.do_breastsmother(target)
+	var/is_hidden = ..()
+	user.do_breastsmother(target, is_hidden)
 
 	if(!isclownjob(user))
 		return
@@ -757,11 +632,8 @@
 	write_log_user = "слизывал(а) пот"
 
 /datum/interaction/lewd/lick_sweat/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.lick_sweat(target)
+	var/is_hidden = ..()
+	user.lick_sweat(target, is_hidden)
 
 /datum/interaction/lewd/smother_armpit
 	description = "Подмышки. Зажать лицо партнёра."
@@ -771,11 +643,8 @@
 	write_log_user = "Зажал(а) своей подмышкой лицо"
 
 /datum/interaction/lewd/smother_armpit/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.smother_armpit(target)
+	var/is_hidden = ..()
+	user.smother_armpit(target, is_hidden)
 
 /datum/interaction/lewd/lick_armpit
 	description = "Подмышки. Вылизать подмышку."
@@ -789,11 +658,8 @@
 	write_log_user = "вылизал(а) подмышку"
 
 /datum/interaction/lewd/lick_armpit/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.lick_armpit(target)
+	var/is_hidden = ..()
+	user.lick_armpit(target, is_hidden)
 
 /datum/interaction/lewd/fuck_armpit
 	description = "Подмышки. Трахнуть в подмышку."
@@ -810,11 +676,8 @@
 	p13target_strength = PLUG13_STRENGTH_LOW
 
 /datum/interaction/lewd/fuck_armpit/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.fuck_armpit(target)
+	var/is_hidden = ..()
+	user.fuck_armpit(target, is_hidden)
 
 	if(!isclownjob(user))
 		return
@@ -840,12 +703,8 @@
 	p13target_strength = PLUG13_STRENGTH_NORMAL
 
 /datum/interaction/lewd/do_pitjob/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-
-	user.do_pitjob(target)
+	var/is_hidden = ..()
+	user.do_pitjob(target, is_hidden)
 
 	if(!isclownjob(target))
 		return
@@ -871,12 +730,8 @@
 	p13target_emote = PLUG13_EMOTE_PENIS
 
 /datum/interaction/lewd/do_boobjob/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-
-	user.do_boobjob(target)
+	var/is_hidden = ..()
+	user.do_boobjob(target, is_hidden)
 
 	if(!isclownjob(user))
 		return
@@ -902,11 +757,8 @@
 	p13target_strength = PLUG13_STRENGTH_NORMAL
 
 /datum/interaction/lewd/lick_nuts/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.lick_nuts(target)
+	var/is_hidden = ..()
+	user.lick_nuts(target, is_hidden)
 
 /datum/interaction/lewd/fuck_cock
 	description = "Член. Трахнуть в уретру."
@@ -922,11 +774,8 @@
 	p13target_emote = PLUG13_EMOTE_PENIS
 
 /datum/interaction/lewd/fuck_cock/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.do_cockfuck(target)
+	var/is_hidden = ..()
+	user.do_cockfuck(target, is_hidden)
 
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
@@ -948,11 +797,8 @@
 	p13target_emote = PLUG13_EMOTE_CHEST
 
 /datum/interaction/lewd/nipple_fuck/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.do_nipfuck(target)
+	var/is_hidden = ..()
+	user.do_nipfuck(target, is_hidden)
 
 	if(!isclownjob(target) || isclownjob(user))
 		return
@@ -979,12 +825,8 @@
 	p13target_strength = PLUG13_STRENGTH_LOW
 
 /datum/interaction/lewd/fuck_thighs/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-
-	user.do_thighfuck(target)
+	var/is_hidden = ..()
+	user.do_thighfuck(target, spillage = TRUE, is_hidden = is_hidden)
 
 	if(!isclownjob(user))
 		return
@@ -1012,11 +854,8 @@
 	p13target_emote = PLUG13_EMOTE_PENIS
 
 /datum/interaction/lewd/do_thighjob/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.do_thighjob(target)
+	var/is_hidden = ..()
+	user.do_thighjob(target, is_hidden)
 
 	if(!isclownjob(target))
 		return
@@ -1063,11 +902,8 @@
 	write_log_user = "перданул на лицо"
 
 /datum/interaction/lewd/unholy/do_facefart/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.do_facefart(target)
+	var/is_hidden = ..()
+	user.do_facefart(target, is_hidden)
 
 /datum/interaction/lewd/unholy/do_crotchfart
 	description = "Напердеть на промежность."
@@ -1081,11 +917,8 @@
 	write_log_user = "перданул на промежность"
 
 /datum/interaction/lewd/unholy/do_crotchfart/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.do_crotchfart(target)
+	var/is_hidden = ..()
+	user.do_crotchfart(target, is_hidden)
 
 /datum/interaction/lewd/unholy/do_fartfuck
 	description = "Трахнуть в задницу с пердежом."
@@ -1099,11 +932,8 @@
 	write_log_user = "трахнул(а) в задницу с пердежом"
 
 /datum/interaction/lewd/unholy/do_fartfuck/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.do_fartfuck(target)
+	var/is_hidden = ..()
+	user.do_fartfuck(target, is_hidden)
 
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
@@ -1125,11 +955,8 @@
 	write_log_user = "высосал газы из задницы"
 
 /datum/interaction/lewd/unholy/suck_fart/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.suck_fart(target)
+	var/is_hidden = ..()
+	user.suck_fart(target, is_hidden)
 
 /datum/interaction/lewd/unholy/do_faceshit
 	description = "Насрать на лицо."
@@ -1143,11 +970,8 @@
 	write_log_user = "насрал на лицо"
 
 /datum/interaction/lewd/unholy/do_faceshit/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.do_faceshit(target)
+	var/is_hidden = ..()
+	user.do_faceshit(target, is_hidden)
 
 /datum/interaction/lewd/unholy/do_crotchshit/
 	description = "Насрать на промежность."
@@ -1161,11 +985,8 @@
 	write_log_user = "насрал на промежность"
 
 /datum/interaction/lewd/unholy/do_crotchshit/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.do_crotchshit(target)
+	var/is_hidden = ..()
+	user.do_crotchshit(target, is_hidden)
 
 /datum/interaction/lewd/unholy/do_shitfuck
 	description = "Трахнуть в задницу с говнецом."
@@ -1179,11 +1000,8 @@
 	write_log_user = "трахнул в задницу с говнецом"
 
 /datum/interaction/lewd/unholy/do_shitfuck/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.do_shitfuck(target)
+	var/is_hidden = ..()
+	user.do_shitfuck(target, is_hidden)
 
 	if(!(isclownjob(target) || isclownjob(user)))
 		return
@@ -1205,11 +1023,8 @@
 	write_log_user = "высосал говно из задницы"
 
 /datum/interaction/lewd/unholy/suck_shit/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.suck_shit(target)
+	var/is_hidden = ..()
+	user.suck_shit(target, is_hidden)
 
 /datum/interaction/lewd/unholy/piss_over
 	description = "Обоссать с ног до головы."
@@ -1224,11 +1039,8 @@
 	write_log_user = "нассал на"
 
 /datum/interaction/lewd/unholy/piss_over/display_interaction(mob/living/user, mob/living/target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	user.piss_over(target)
+	var/is_hidden = ..()
+	user.piss_over(target, is_hidden)
 
 /datum/interaction/lewd/unholy/piss_mouth
 	description = "Нассать в рот."
@@ -1246,8 +1058,6 @@
 	if(!istype(user))
 		to_chat(user, span_warning("You're not a carbon entity."))
 		return
-	user.piss_mouth(target)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
+	var/is_hidden = ..()
+	user.piss_mouth(target, is_hidden)
+

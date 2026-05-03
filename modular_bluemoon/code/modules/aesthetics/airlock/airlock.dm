@@ -1,12 +1,5 @@
 #define AIRLOCK_LIGHT_POWER 1
 #define AIRLOCK_LIGHT_RANGE 2
-#define AIRLOCK_LIGHT_ENGINEERING "engineering"
-#define AIRLOCK_POWERON_LIGHT_COLOR "#3aa7c2"
-#define AIRLOCK_BOLTS_LIGHT_COLOR "#c22323"
-#define AIRLOCK_ACCESS_LIGHT_COLOR "#57e69c"
-#define AIRLOCK_EMERGENCY_LIGHT_COLOR "#d1d11d"
-#define AIRLOCK_ENGINEERING_LIGHT_COLOR "#fd8719"
-#define AIRLOCK_DENY_LIGHT_COLOR "#c22323"
 
 #define AIRLOCK_CLOSED	1
 #define AIRLOCK_CLOSING	2
@@ -33,11 +26,7 @@
 	var/greyscale_accent_color = null
 
 	var/has_environment_lights = TRUE //Does this airlock emit a light?
-	var/light_color_poweron = AIRLOCK_POWERON_LIGHT_COLOR
-	var/light_color_bolts = AIRLOCK_BOLTS_LIGHT_COLOR
-	var/light_color_access = AIRLOCK_ACCESS_LIGHT_COLOR
-	var/light_color_emergency = AIRLOCK_EMERGENCY_LIGHT_COLOR
-	var/light_color_engineering = AIRLOCK_ENGINEERING_LIGHT_COLOR
+
 	var/light_color_deny = AIRLOCK_DENY_LIGHT_COLOR
 	var/door_light_range = AIRLOCK_LIGHT_RANGE
 	var/door_light_power = AIRLOCK_LIGHT_POWER
@@ -54,6 +43,8 @@
 	..()
 	update_icon()
 
+/// Этот прок не используется, смотри update_icon() и set_airlock_overlays()
+/*
 /obj/machinery/door/airlock/update_overlays()
 	. = ..()
 	var/pre_light_range = 0
@@ -63,20 +54,36 @@
 
 	var/frame_state
 	var/light_state
+	var/lights_overlay_color
 	switch(airlock_state)
 		if(AIRLOCK_CLOSED)
 			frame_state = AIRLOCK_FRAME_CLOSED
 			if(locked)
 				light_state = AIRLOCK_LIGHT_BOLTS
 				lights_overlay = "lights_bolts"
-				pre_light_color = light_color_bolts
+				pre_light_color = AIRLOCK_BOLTS_LIGHT_COLOR
 			else if(emergency)
 				light_state = AIRLOCK_LIGHT_EMERGENCY
 				lights_overlay = "lights_emergency"
-				pre_light_color = light_color_emergency
+				pre_light_color = AIRLOCK_EMERGENCY_LIGHT_COLOR
+			else if(security_override)
+				light_state = AIRLOCK_LIGHT_CODE_OVERRIDE
+				lights_overlay = "lights_code_override"
+				pre_light_color = AIRLOCK_SECURITY_LIGHT_COLOR
+				lights_overlay_color = AIRLOCK_SECURITY_LIGHT_COLOR
+			else if(medical_override)
+				light_state = AIRLOCK_LIGHT_CODE_OVERRIDE
+				lights_overlay = "lights_code_override"
+				pre_light_color = AIRLOCK_MEDICAL_LIGHT_COLOR
+				lights_overlay_color = AIRLOCK_MEDICAL_LIGHT_COLOR
+			else if(engineering_override)
+				light_state = AIRLOCK_LIGHT_CODE_OVERRIDE
+				lights_overlay = "lights_code_override"
+				pre_light_color = AIRLOCK_ENGINEERING_LIGHT_COLOR
+				lights_overlay_color = AIRLOCK_ENGINEERING_LIGHT_COLOR
 			else
 				lights_overlay = "lights_poweron"
-				pre_light_color = light_color_poweron
+				pre_light_color = AIRLOCK_POWERON_LIGHT_COLOR
 		if(AIRLOCK_DENY)
 			frame_state = AIRLOCK_FRAME_CLOSED
 			light_state = AIRLOCK_LIGHT_DENIED
@@ -88,23 +95,23 @@
 			frame_state = AIRLOCK_FRAME_CLOSING
 			light_state = AIRLOCK_LIGHT_CLOSING
 			lights_overlay = "lights_closing"
-			pre_light_color = light_color_access
+			pre_light_color = AIRLOCK_ACCESS_LIGHT_COLOR
 		if(AIRLOCK_OPEN)
 			frame_state = AIRLOCK_FRAME_OPEN
 			if(locked)
 				lights_overlay = "lights_bolts_open"
-				pre_light_color = light_color_bolts
+				pre_light_color = AIRLOCK_BOLTS_LIGHT_COLOR
 			else if(emergency)
 				lights_overlay = "lights_emergency_open"
-				pre_light_color = light_color_emergency
+				pre_light_color = AIRLOCK_EMERGENCY_LIGHT_COLOR
 			else
 				lights_overlay = "lights_poweron_open"
-				pre_light_color = light_color_poweron
+				pre_light_color = AIRLOCK_POWERON_LIGHT_COLOR
 		if(AIRLOCK_OPENING)
 			frame_state = AIRLOCK_FRAME_OPENING
 			light_state = AIRLOCK_LIGHT_OPENING
 			lights_overlay = "lights_opening"
-			pre_light_color = light_color_access
+			pre_light_color = AIRLOCK_ACCESS_LIGHT_COLOR
 
 	. += get_airlock_overlay(frame_state, icon, targetlayer = FLOAT_LAYER, targetplane = FLOAT_PLANE)
 	if(airlock_material)
@@ -125,10 +132,12 @@
 	else
 		lights_overlay = ""
 
-	var/mutable_appearance/lights_appearance = mutable_appearance(overlays_file, lights_overlay, FLOAT_LAYER, src, ABOVE_LIGHTING_PLANE)
+	var/mutable_appearance/lights_appearance = mutable_appearance(overlays_file, lights_overlay, FLOAT_LAYER, ABOVE_LIGHTING_PLANE)
 
 	if(greyscale_lights_color && !light_state)
 		lights_appearance.color = greyscale_lights_color
+	else if(lights_overlay_color)
+		lights_appearance.color = lights_overlay_color
 
 	if(filler)
 		lights_appearance.dir = dir
@@ -160,7 +169,7 @@
 		for(var/heading in list(NORTH,SOUTH,EAST,WEST))
 			if(!(unres_sides & heading))
 				continue
-			var/mutable_appearance/floorlight = mutable_appearance('icons/obj/doors/airlocks/station/overlays.dmi', "unres_[heading]", FLOAT_LAYER, src, ABOVE_LIGHTING_PLANE)
+			var/mutable_appearance/floorlight = mutable_appearance(overlays_file, "unres_[heading]", FLOAT_LAYER, src, ABOVE_LIGHTING_PLANE)
 			switch (heading)
 				if (NORTH)
 					floorlight.pixel_x = 0
@@ -175,6 +184,7 @@
 					floorlight.pixel_x = -32
 					floorlight.pixel_y = 0
 			. += floorlight
+*/
 
 //STATION AIRLOCKS
 /obj/machinery/door/airlock
@@ -568,12 +578,6 @@
 
 #undef AIRLOCK_LIGHT_POWER
 #undef AIRLOCK_LIGHT_RANGE
-
-#undef AIRLOCK_POWERON_LIGHT_COLOR
-#undef AIRLOCK_BOLTS_LIGHT_COLOR
-#undef AIRLOCK_ACCESS_LIGHT_COLOR
-#undef AIRLOCK_EMERGENCY_LIGHT_COLOR
-#undef AIRLOCK_DENY_LIGHT_COLOR
 
 #undef AIRLOCK_CLOSED
 #undef AIRLOCK_CLOSING

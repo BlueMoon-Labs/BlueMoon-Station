@@ -1206,6 +1206,10 @@ GLOBAL_LIST_INIT(pda_ringtone_list, list(
 			return	//Return in case of failed check or when successful.
 		updateSelfDialog()//For the non-input related code.
 	// BLUEMOON ADD START
+	else if(istype(C, /obj/item/stack/metadollar))
+		var/obj/item/stack/metadollar/M = C
+		if(M.deposit_to_lobby_prefs(user, src) && !silent)
+			playsound(src, 'sound/machines/terminal_success.ogg', 15, 1)
 	else if(id && (istype(C, /obj/item/holochip) || istype(C, /obj/item/stack/spacecash) || istype(C, /obj/item/coin)))
 		id.insert_money(C, user)
 	// BLUEMOON ADD END

@@ -70,11 +70,14 @@
 	var/atom/movable/AM = parent
 	if(isnull(dir))
 		dir = AM.dir
+	var/sprite_dir = move_dir_for_riding_sprite(dir)
+	if(!sprite_dir)
+		sprite_dir = AM.dir
 	AM.set_glide_size(DELAY_TO_GLIDE_SIZE(vehicle_move_delay), FALSE)
 	for(var/i in AM.buckled_mobs)
 		ride_check(i)
-	handle_vehicle_offsets(dir)
-	handle_vehicle_layer(dir)
+	handle_vehicle_offsets(sprite_dir)
+	handle_vehicle_layer(sprite_dir)
 
 /datum/component/riding/proc/ride_check(mob/living/M)
 	var/atom/movable/AM = parent
@@ -189,6 +192,27 @@
 		return (allow_one_away_from_valid_turf && !forbid_turf_typecache[current.type])
 	return TRUE
 
+/// Drops mutually opposite cardinal inputs that leak through as nonsense dirs / inertia fights (bad bitmask edge cases).
+/datum/component/riding/proc/clamp_riding_move_direction(direction)
+	var/dir = direction
+	if((dir & NORTH) && (dir & SOUTH))
+		dir &= ~(NORTH|SOUTH)
+	if((dir & EAST) && (dir & WEST))
+		dir &= ~(EAST|WEST)
+	return dir
+
+/// Riding offset/layer tables only define TEXT_* cardinals; map diagonal moves to a cardinal so sprites/z-order stay stable.
+/datum/component/riding/proc/move_dir_for_riding_sprite(direction)
+	if(!direction || !(direction & (direction - 1)))
+		return direction
+	if(direction & NORTH)
+		return NORTH
+	if(direction & SOUTH)
+		return SOUTH
+	if(direction & EAST)
+		return EAST
+	return WEST
+
 /datum/component/riding/proc/handle_ride(mob/user, direction)
 	var/atom/movable/AM = parent
 	if(user && user.incapacitated())
@@ -199,6 +223,9 @@
 	last_vehicle_move = world.time
 
 	if(keycheck(user))
+		direction = clamp_riding_move_direction(direction)
+		if(!direction)
+			return
 		var/turf/next = get_step(AM, direction)
 		var/turf/current = get_turf(AM)
 		if(!istype(next) || !istype(current))
@@ -206,7 +233,7 @@
 		if(!turf_check(next, current))
 			to_chat(user, "Your \the [AM] can not go onto [next]!")
 			return
-		if(!Process_Spacemove(direction) || !isturf(AM.loc))
+		if(!Process_Spacemove(direction, FALSE) || !isturf(AM.loc))
 			return
 		step(AM, direction)
 
@@ -215,15 +242,16 @@
 		else
 			last_move_diagonal = FALSE
 
-		handle_vehicle_offsets(direction)
-		handle_vehicle_layer(direction)
+		var/sprite_dir = move_dir_for_riding_sprite(direction)
+		handle_vehicle_offsets(sprite_dir)
+		handle_vehicle_layer(sprite_dir)
 	else
 		to_chat(user, "<span class='notice'>You'll need the keys in one of your hands to [drive_verb] [AM].</span>")
 
 /datum/component/riding/proc/Unbuckle(atom/movable/M)
 	addtimer(CALLBACK(parent, TYPE_PROC_REF(/atom/movable, unbuckle_mob), M), 0, TIMER_UNIQUE)
 
-/datum/component/riding/proc/Process_Spacemove(direction)
+/datum/component/riding/proc/Process_Spacemove(direction, continuous_move = FALSE)
 	var/atom/movable/AM = parent
 	return override_allow_spacemove || AM.has_gravity()
 
@@ -556,6 +584,8 @@
 /datum/component/riding/cyborg/force_dismount(mob/living/M, from_mob = FALSE)
 	. = ..()
 	var/atom/movable/AM = parent
+	if(!M || QDELETED(M) || !AM || QDELETED(AM))
+		return
 	var/turf/target = get_edge_target_turf(AM, AM.dir)
 	var/turf/targetm = get_step(get_turf(AM), AM.dir)
 	M.Move(targetm)

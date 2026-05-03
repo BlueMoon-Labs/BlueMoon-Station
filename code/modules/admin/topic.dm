@@ -217,7 +217,41 @@
 		DB_ban_edit(banid, banedit)
 		return
 
-	else if(href_list["dbbanaddtype"])
+	else if(href_list["submit_job_unban_sync"])
+		if(!check_rights(R_BAN))
+			return
+		if(!SSdbcore.Connect())
+			to_chat(usr, "<span class='danger'>Failed to establish database connection.</span>")
+			return
+		var/bankey = href_list["dbbanaddkey"]
+		if(!bankey)
+			to_chat(usr, "<span class='warning'>Укажите Key (игрока).</span>")
+			return
+		var/banckey = ckey(bankey)
+		var/list/flat_roles = get_jobban_flat_roles()
+		var/jr_max = text2num(href_list["jr_max"]) || length(flat_roles)
+		var/any_unban = FALSE
+		for(var/i = 1; i <= jr_max; i++)
+			var/was = href_list["was_jr_[i]"]
+			var/now_checked = (href_list["jr_[i]"] == "[i]")
+			if(was && !now_checked)
+				if(i <= length(flat_roles))
+					var/role = flat_roles[i]
+					DB_ban_unban(banckey, BANTYPE_ANY_JOB, role)
+					any_unban = TRUE
+		var/client/C = GLOB.directory[banckey]
+		if(C)
+			jobban_buildcache(C)
+		if(any_unban)
+			message_admins("[key_name_admin(usr)] removed one or more job bans via SQL panel for [bankey].")
+			to_chat(usr, "<span class='adminnotice'>Снятие джоббанов отправлено в БД (см. сообщения об ошибках, если дубликаты записей).</span>")
+		else
+			to_chat(usr, "<span class='notice'>Нет снятых джоббанов: галочки должны быть сняты с ролей, по которым есть активный джоббан (они подгружаются по Key).</span>")
+		var/panel_ckey = href_list["dbsearchckey"] || href_list["dbbanaddkey"]
+		DB_ban_panel(panel_ckey, href_list["dbsearchadmin"], href_list["dbsearchip"], href_list["dbsearchcid"], href_list["dbsearchpage"])
+		return
+
+	else if(href_list["dbbanaddtype"] && !href_list["submit_job_unban_sync"])
 		if(!check_rights(R_BAN))
 			return
 		var/bantype = text2num(href_list["dbbanaddtype"])
@@ -229,6 +263,14 @@
 		var/banjob = href_list["dbbanaddjob"]
 		var/banreason = href_list["dbbanreason"]
 		var/banseverity = href_list["dbbanaddseverity"]
+
+		var/list/jobban_picks = list()
+		var/list/flat_roles = get_jobban_flat_roles()
+		var/jr_max = text2num(href_list["jr_max"]) || length(flat_roles)
+		for(var/i = 1; i <= jr_max; i++)
+			if(href_list["jr_[i]"] == "[i]")
+				if(i <= length(flat_roles))
+					jobban_picks += flat_roles[i]
 
 		var/bantitle = " "
 		switch(bantype)
@@ -247,14 +289,20 @@
 				banjob = null
 			if(BANTYPE_JOB_PERMA)
 				bantitle = "Пермаментная Блокировка Роли"
-				if(!banckey || !banreason || !banjob || !banseverity)
-					to_chat(usr, "Not enough parameters (Requires ckey, severity, reason and job).")
+				if(!banckey || !banreason || !banseverity)
+					to_chat(usr, "Not enough parameters (Requires ckey, severity, and reason).")
+					return
+				if(!length(jobban_picks) && !banjob)
+					to_chat(usr, "Not enough parameters (Requires job from the list or at least one role checkbox).")
 					return
 				banduration = null
 			if(BANTYPE_JOB_TEMP)
 				bantitle = "Блокировка Роли"
-				if(!banckey || !banreason || !banjob || !banduration || !banseverity)
-					to_chat(usr, "Not enough parameters (Requires ckey, severity, reason and job).")
+				if(!banckey || !banreason || !banduration || !banseverity)
+					to_chat(usr, "Not enough parameters (Requires ckey, reason, severity and duration).")
+					return
+				if(!length(jobban_picks) && !banjob)
+					to_chat(usr, "Not enough parameters (Requires job from the list or at least one role checkbox).")
 					return
 			if(BANTYPE_ADMIN_PERMA)
 				bantitle = "Пермаментная Блокировка"
@@ -292,6 +340,32 @@
 				banreason = "[banreason] (CUSTOM CID)"
 		else
 			message_admins("Ban process: A mob matching [playermob.key] was found at location [playermob.x], [playermob.y], [playermob.z]. Custom ip and computer id fields replaced with the ip and computer id from the located mob.")
+
+		if(length(jobban_picks) && (bantype == BANTYPE_JOB_PERMA || bantype == BANTYPE_JOB_TEMP))
+			var/failed = FALSE
+			for(var/job in jobban_picks)
+				if(DB_ban_record(bantype, playermob, banduration, banreason, job, bankey, banip, bancid, suppress_feedback = TRUE) != TRUE)
+					failed = TRUE
+			if(failed)
+				to_chat(usr, "<span class='danger'>[length(jobban_picks) > 1 ? "One or more job bans failed to apply." : "Failed to apply ban."]</span>")
+				return
+			var/jobs_joined = jointext(jobban_picks, ", ")
+			to_chat(usr, "<span class='adminnotice'>Ban saved to database.</span>")
+			message_admins("[key_name_admin(usr)] has added job ban(s) for [bankey] ([jobs_joined]) with the reason: \"[banreason]\" to the ban database.", 1)
+			admin_ticket_log(banckey, "[key_name_admin(usr)] has added job ban(s) for [bankey] ([jobs_joined]) with the reason: \"[banreason]\" to the ban database.")
+			create_message("note", bankey, null, "[banreason] (Jobs: [jobs_joined])", null, null, 0, 0, null, 0, banseverity, dont_announce_to_events = TRUE)
+			GLOB.bot_event_sending_que += list(list(
+				"type" = "ban_a",
+				"title" = bantitle,
+				"player" = bankey,
+				"admin" = usr.key,
+				"reason" = banreason,
+				"banduration" = banduration,
+				"bantimestamp" = SQLtime(),
+				"round" = GLOB.round_id,
+				"additional_info" = list("ban_type" = bantype, "ban_job" = jobs_joined)
+			))
+			return
 
 		if(DB_ban_record(bantype, playermob, banduration, banreason, banjob, bankey, banip, bancid) != TRUE)
 			to_chat(usr, "<span class='danger'>Failed to apply ban.</span>")

@@ -78,6 +78,11 @@
 		max_create_amount_multiplier *= multiplier
 	// BLUEMOON ADD END
 
+/obj/machinery/chem_master/examine(mob/user)
+	. = ..()
+	. += span_notice("Статус-дисплей сообщает: \n\
+		- Множитель выдачи лекарств: <b>х[max_create_amount_multiplier]</b>.")
+
 /obj/machinery/chem_master/ex_act(severity, target, origin)
 	if(severity < 3)
 		..()

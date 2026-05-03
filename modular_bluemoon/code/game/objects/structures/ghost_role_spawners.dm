@@ -2,8 +2,15 @@
 /datum/antagonist/ghost_role/inteq
 	name = "InteQ Ship Crew"
 
+/datum/antagonist/ghost_role/inteq/is_banned(mob/M)
+	. = ..()
+	if(.)
+		return TRUE
+	return jobban_isbanned(M, ROLE_INTEQ)
+
 /datum/antagonist/ghost_role/ghost_cafe
 	name = "Ghost Cafe"
+	show_in_check_antagonists = FALSE
 	var/area/adittonal_allowed_area
 
 /datum/antagonist/ghost_role/tarkov
@@ -84,10 +91,10 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 			D.Remove(src)
 
 /obj/effect/mob_spawn/qareen/attack_ghost(mob/user, latejoinercalling)
-	if(GLOB.master_mode == "Extended")
+	if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
 		return . = ..()
 	else
-		return to_chat(user, "<span class='warning'>Игра за ЕРП-антагонистов допускается лишь в Режим Extended!</span>")
+		return to_chat(user, span_warning("Игра за ЕРП-антагонистов допускается лишь в режимах Extended или Dynamic Light!"))
 
 /obj/effect/mob_spawn/qareen //not grief antag u little shits
 	name = "Qareen - The Horny Spirit"
@@ -167,7 +174,7 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		/obj/item/implant/radio/centcom,
 		)
 
-/obj/effect/mob_spawn/human/changeling_extended //not grief antag u little shits
+/obj/effect/mob_spawn/human/changeling_extended
 	name = "Changeling - The Horny Creature"
 	desc = "An ancient tomb designed for long-term stasis. This one has the word HORNY scratched all over the surface!"
 	short_desc = "Вы таинственное нечто и абсолютно идеальный организм, который питается возбуждением своих жертв!"
@@ -187,10 +194,10 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	category = "special"
 
 /obj/effect/mob_spawn/human/changeling_extended/attack_ghost(mob/user, latejoinercalling)
-	if(GLOB.master_mode == "Extended")
+	if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
 		return . = ..()
 	else
-		return to_chat(user, "<span class='warning'>Игра за ЕРП-антагонистов допускается лишь в режим Extended!</span>")
+		return to_chat(user, span_warning("Игра за ЕРП-антагонистов допускается лишь в режимах Extended или Dynamic Light!"))
 
 /obj/effect/mob_spawn/human/changeling_extended/special(mob/living/new_spawn)
 	. = ..()

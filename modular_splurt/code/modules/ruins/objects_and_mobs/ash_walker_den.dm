@@ -1,7 +1,11 @@
-/obj/structure/lavaland/ash_walker/remake_walker(datum/mind/oldmind, oldname, oldgender)
+/obj/structure/lavaland/ash_walker/remake_walker(mob/living/carbon/oldmob)
+	var/datum/mind/player_mind = oldmob?.mind
+	var/gender_saved = oldmob.gender
 	. = ..()
-	var/mob/living/carbon/human/M = oldmind.current
-	M.gender = oldgender
+	var/mob/living/carbon/human/M = player_mind?.current
+	if(!istype(M, /mob/living/carbon/human))
+		return
+	M.gender = gender_saved
 	M.set_species(species)
 
 /obj/structure/lavaland/ash_walker/spawn_mob() //Rewrite of the one in code\modules\ruins\objects_and_mobs\ash_walker_den.dm

@@ -856,3 +856,7 @@
 // interaction signals
 #define COMSIG_INTERACTION_ADJACENT "interaction_adjacent"
 #define COMSIG_INTERACTION_KISS		"interaction_kiss"
+
+// Research signals
+#define COMSIG_GLOB_RESEARCH_NODE_UNLOCKED "global_research_node_unlocked"	// Изучение любого научного узла, сигнализирующее о необходимости синхронизации
+#define COMSIG_GLOB_RESEARCH_BATCH_COMPLETE	"global_research_batch_complete"	// Успешная упаковка и отправка пакета научных нод рецепиентам

@@ -73,6 +73,13 @@
 #define ACCESS_PSYCH 76
 #define ACCESS_PEACEKEEPER 77
 //SPLURT EDIT END
+#define ACCESS_PRODUCTION_MEDICAL 78
+#define ACCESS_PRODUCTION_SCIENCE 79
+#define ACCESS_PRODUCTION_SECURITY 80
+#define ACCESS_PRODUCTION_SERVICE 81
+#define ACCESS_PRODUCTION_CARGO 82
+#define ACCESS_PRODUCTION_ENGINEERING 83
+
 	//BEGIN CENTCOM ACCESS
 	/*Should leave plenty of room if we need to add more access levels.
 	Mostly for admin fun times.*/
