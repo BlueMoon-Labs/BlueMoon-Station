@@ -1,53 +1,13 @@
 import { useBackend } from '../backend';
-import { Box, Button, Dropdown, Flex, Icon, LabeledList, Modal, Section } from '../components';
+import { Box, Button, Dropdown, LabeledList, Section } from '../components';
 import { Window } from '../layouts';
 
 export const ShuttleConsole = (props, context) => {
-  const { act, data } = useBackend(context);
-  const {
-    type = "shuttle",
-    blind_drop,
-  } = props;
-  const {
-    authorization_required,
-  } = data;
+  const { type = "shuttle", blind_drop } = props;
   return (
     <Window
       width={350}
       height={230}>
-      {!!authorization_required && (
-        <Modal
-          ml={1}
-          mt={1}
-          width={26}
-          height={12}
-          fontSize="28px"
-          fontFamily="monospace"
-          textAlign="center">
-          <Flex>
-            <Flex.Item mt={2}>
-              <Icon
-                name="minus-circle" />
-            </Flex.Item>
-            <Flex.Item
-              mt={2}
-              ml={2}
-              color="bad">
-              {type === "shuttle" ? 'SHUTTLE LOCKED' : "BASE LOCKED"}
-            </Flex.Item>
-          </Flex>
-          <Box
-            fontSize="18px"
-            mt={4}>
-            <Button
-              lineHeight="40px"
-              icon="arrow-circle-right"
-              content="Request Authorization"
-              color="bad"
-              onClick={() => act('request')} />
-          </Box>
-        </Modal>
-      )}
       <Window.Content>
         <ShuttleConsoleContent
           type={type}
@@ -71,7 +31,6 @@ const STATUS_COLOR_KEYS = {
   "Igniting": "average",
   "Recharging": "average",
   "Missing": "bad",
-  "Unauthorized Access": "bad",
   "Locked": "bad",
 };
 
@@ -81,11 +40,11 @@ export const ShuttleConsoleContent = (props, context) => {
   const {
     status,
     locked,
-    authorization_required,
     destination,
     docked_location,
     timer_str,
     locations = [],
+    pod_depart_locked,
   } = data;
   return (
     <Section>
@@ -126,7 +85,7 @@ export const ShuttleConsoleContent = (props, context) => {
                 <Button
                   color="bad"
                   icon="exclamation-triangle"
-                  disabled={authorization_required || !blind_drop}
+                  disabled={!blind_drop}
                   content={"Blind Drop"}
                   onClick={() => act('random')} />
               ))} >
@@ -148,18 +107,23 @@ export const ShuttleConsoleContent = (props, context) => {
                 over
                 width="240px"
                 options={locations.map(location => location.name)}
-                disabled={locked || authorization_required}
+                disabled={locked}
                 selected={getLocationNameById(locations, destination) || "Select a Destination"}
                 onSelected={value => act('set_destination', {
                   destination: getLocationIdByName(locations, value),
                 })} />)}
           </LabeledList.Item>
         </LabeledList>
+        {!!pod_depart_locked && (
+          <Box color="bad" mb={1} textAlign="center" fontSize="12px">
+            Security lock: Code Red alert required.
+          </Box>
+        )}
         <Button
           fluid
           content="Depart"
           disabled={!getLocationNameById(locations, destination)
-            || locked || authorization_required}
+            || locked || !!pod_depart_locked}
           icon="arrow-up"
           textAlign="center"
           onClick={() => act('move', {

@@ -458,6 +458,15 @@
 	new /obj/item/ammo_box/a357/ap(src)
 	new /obj/item/ammo_box/a357/dumdum(src)
 
+/obj/item/storage/box/syndie_kit/revolver/requiem
+	name = "box folder (Requiem)"
+
+/obj/item/storage/box/syndie_kit/revolver/requiem/PopulateContents()
+	new /obj/item/gun/ballistic/revolver/requiem(src)
+	new /obj/item/disk/design_disk/adv/ammo/requiem(src)
+	new /obj/item/ammo_box/a357/requiem(src)
+	new /obj/item/ammo_box/a357/requiem(src)
+
 /obj/item/storage/box/syndie_kit/pistol
 
 /obj/item/storage/box/syndie_kit/pistol/PopulateContents()

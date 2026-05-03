@@ -283,6 +283,7 @@
 			lungs_slot.Remove(human_victim)
 		var/obj/item/organ/lungs/ashwalker/ash_lungs = new
 		human_victim.grant_language(/datum/language/draconic, source = LANGUAGE_ASHSLAVE)
+		human_victim.set_active_language(/datum/language/draconic, LANGUAGE_ASHSLAVE)
 		ash_lungs.Insert(human_victim)
 		var/const/hypnotic_phrase="Вы раб или рабыня Пепельных Ящеров с Лаваленда. Вам всё нравится. Выполняйте ЛЮБЫЕ требования Эшей. Желание сбежать на станцию должно быть минимальным"
 		message_admins("[ADMIN_LOOKUPFLW(human_victim)] was slaved by ashwalkers with the phrase '[hypnotic_phrase]'.")

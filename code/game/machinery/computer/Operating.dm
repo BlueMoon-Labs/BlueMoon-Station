@@ -113,6 +113,11 @@
 		data["patient"]["fireLoss"] = patient.getFireLoss()
 		data["patient"]["toxLoss"] = patient.getToxLoss()
 		data["patient"]["oxyLoss"] = patient.getOxyLoss()
+		data["patient"]["special_condition"] += HAS_TRAIT(patient, TRAIT_NOBREATH) ? "Апноэ (отсутсвие дыхания) \n" : null
+		data["patient"]["special_condition"] += HAS_TRAIT(patient, TRAIT_BLUEMOON_FEAR_OF_SURGEONS) ? "Ятрофобия (страх операций) \n" : null
+		data["patient"]["special_condition"] += HAS_TRAIT(patient, TRAIT_BLUEMOON_HIGH_PAIN_THRESHOLD) ? "Высокий болевой порог \n" : null
+		data["patient"]["special_condition"] += HAS_TRAIT(patient, TRAIT_ONELIFE) ? "Невозможность реанимации при смерти \n" : null
+		data["patient"]["special_condition"] += HAS_TRAIT(patient, TRAIT_BLUEMOON_COMPLEX_MAINTENANCE) ? "Сложные технические модули (требуется консультация роботехнического персонала) \n" : null
 		data["patient"]["is_robotic_organism"] = HAS_TRAIT(patient, TRAIT_ROBOTIC_ORGANISM)
 		data["procedures"] = list()
 		if(patient.surgeries.len)

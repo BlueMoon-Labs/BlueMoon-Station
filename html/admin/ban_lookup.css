@@ -1,0 +1,212 @@
+/* Ban Lookup / Custom ban page (NeoTG-style shell) */
+.ban-lookup-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8px 10px 20px;
+  text-align: left;
+  color: #e8ecf0;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.ban-lookup-title {
+  font-size: 1.35rem;
+  font-weight: normal;
+  color: #98b0c3;
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  text-align: center;
+  border-bottom: 1px solid #40628a;
+}
+
+/* Used inside DB_ban_panel (.ban-panel-main from banlookup.css) */
+.ban-panel-main .ban-lookup-title {
+  margin-top: 0;
+}
+
+.ban-search-form {
+  background: #1a2332;
+  border: 1px solid #40628a;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.ban-search-form .ban-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: flex-end;
+}
+
+.ban-search-form label {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: #98b0c3;
+  font-weight: bold;
+}
+
+.ban-search-form input[type='text'] {
+  min-width: 140px;
+}
+
+.ban-search-submit {
+  background: #40628a;
+  color: #fff;
+  border: 1px solid #5a7aad;
+  border-radius: 4px;
+  padding: 7px 16px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.ban-search-submit:hover {
+  background: #4d7399;
+}
+
+.ban-custom-ban-card {
+  background: #252b2d;
+  border: 1px solid #40628a;
+  border-radius: 6px;
+  padding: 14px 16px 18px;
+  margin-bottom: 14px;
+}
+
+.ban-custom-ban-card h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.ban-custom-ban-hint {
+  margin: 0 0 14px;
+  font-size: 11px;
+  color: #98b0c3;
+  line-height: 1.45;
+}
+
+.ban-form-grid {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 4px;
+}
+
+.ban-form-grid td {
+  padding: 6px 10px 8px 0;
+  width: 50%;
+  vertical-align: top;
+}
+
+.ban-form-grid td:last-child {
+  padding-right: 0;
+}
+
+.ban-form-grid label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: #98b0c3;
+  font-weight: bold;
+}
+
+.ban-lookup-page input[type='text'],
+.ban-lookup-page select,
+.ban-lookup-page textarea {
+  background-color: #1e1e1e;
+  color: #fff;
+  border: 1px solid #40628a;
+  border-radius: 3px;
+  padding: 6px 8px;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.ban-lookup-page select {
+  min-width: 180px;
+  max-width: 100%;
+}
+
+.ban-form-grid .ban-job-fallback select {
+  width: 100%;
+  max-width: 100%;
+}
+
+.ban-reason-label {
+  display: block;
+  margin: 10px 0 6px;
+  font-size: 11px;
+  color: #98b0c3;
+  font-weight: bold;
+}
+
+.ban-custom-ban-card .reason {
+  width: 100%;
+  max-width: 100%;
+  min-height: 88px;
+  resize: vertical;
+}
+
+.ban-form-submit {
+  margin-top: 12px;
+}
+
+.ban-form-submit input[type='submit'] {
+  background: #40628a;
+  color: #fff;
+  border: 1px solid #5a7aad;
+  padding: 8px 22px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.ban-form-submit input[type='submit']:hover {
+  background: #4d7399;
+}
+
+.ban-note-round {
+  font-size: 11px;
+  color: #98b0c3;
+  margin: 0 0 16px;
+  line-height: 1.4;
+}
+
+.ban-results-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.ban-results-table {
+  width: 100%;
+  background: #383838;
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+
+.ban-results-table th {
+  color: #98b0c3;
+  padding: 8px 6px;
+  background: #2a3035;
+  border: 1px solid #404850;
+  font-size: 11px;
+}
+
+.ban-results-table td {
+  padding: 8px 6px;
+  border: 1px solid #333;
+  font-size: 11px;
+}
+
+.ban-results-pager {
+  margin: 10px 0;
+  font-size: 12px;
+}
+
+.ban-results-pager a {
+  color: #8cb3d9;
+}

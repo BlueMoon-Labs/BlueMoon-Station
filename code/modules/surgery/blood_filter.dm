@@ -76,7 +76,7 @@
 			if(!length(bloodfilter.whitelist) || !(chem.type in bloodfilter.whitelist))
 				target.reagents.remove_reagent(chem.type, actual_filter, TRUE)
 	if(tox_heal_amount)
-		target.adjustToxLoss(-tox_heal_amount)
+		target.adjustToxLoss(-tox_heal_amount, forced = TRUE)
 	display_results(
 		user,
 		target,

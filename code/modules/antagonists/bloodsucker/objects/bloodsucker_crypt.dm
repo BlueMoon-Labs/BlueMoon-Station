@@ -95,7 +95,7 @@
 
 /obj/structure/bloodsucker/vassalrack
 	name = "persuasion rack"
-	desc = "If this wasn't meant for torture, then someone has some fairly horrifying hobbies."
+	desc = "Если это не было задумано как пытка, значит, у кого-то есть довольно ужасные хобби."
 	icon = 'icons/obj/vamp_obj.dmi'
 	icon_state = "vassalrack"
 	buckle_lying = FALSE
@@ -118,13 +118,15 @@
 	var/datum/antagonist/bloodsucker/B = user.mind?.has_antag_datum(ANTAG_DATUM_BLOODSUCKER) // BLUEMOON EDIT - иначе рантайм при экзейме гостом
 	. = ..()
 	if(B || isobserver(user))
-		. += {"<span class='cult'>This is the vassal rack, which allows you to thrall crewmembers into loyal minions in your service.</span>"}
-		. += {"<span class='cult'>You need to first secure the vassal rack by clicking on it while it is in your lair.</span>"}
-		. += {"<span class='cult'>Simply click and hold on a victim, and then drag their sprite on the vassal rack. Alt click on the vassal rack to unbuckle them.</span>"}
-		. += {"<span class='cult'>Make sure that the victim is handcuffed, or else they can simply run away or resist, as the process is not instant.</span>"}
-		. += {"<span class='cult'>To convert the victim, simply click on the vassal rack itself. Sharp weapons work faster than other tools.</span>"}
+		. += {"<span class='cult'>Это стойка вассала, которая позволяет вам превращать членов экипажа в преданных слуг на вашей службе.</span>"}
+		. += {"<span class='cult'>Сначала вам нужно закрепить стойку вассала, нажав на нее, пока она находится в вашем логове.</span>"}
+		. += {"<span class='cult'>Просто нажмите и удерживайте жертву, а затем перетащите ее спрайт на стойку для вассалов. Альт-клик на стойке для вассалов, чтобы отстегнуть их.</span>"}
+		. += {"<span class='cult'>Убедитесь, что жертва закована, иначе она может просто убежать или оказать сопротивление, поскольку этот процесс не мгновенный.</span>"}
+		. += {"<span class='cult'>Чтобы обратить жертву в слугу, просто нажмите на саму стойку вассала. Острое оружие срабатывает быстрее, чем другие инструменты.</span>"}
 		if(B) // BLUEMOON ADD - иначе рантайм при экзейме гостом
-			. += {"<span class='cult'> You have only the power for [B.bloodsucker_level - B.count_vassals(user.mind)] vassals</span>"}
+			var/vassals_left = B.bloodsucker_level - B.count_vassals(user.mind)
+			var/vassals_suffix = (vassals_left % 10 == 1 && vassals_left % 100 != 11) ? "" : ((vassals_left % 10 >= 2 && vassals_left % 10 <= 4 && (vassals_left % 100 < 10 || vassals_left % 100 >= 20)) ? "а" : "ов")
+			. += {"<span class='cult'> Вы имеете силу только для [vassals_left] вассал[vassals_suffix]"</span>"}
 /*	if(user.mind.has_antag_datum(ANTAG_DATUM_VASSAL)
 	. += {"<span class='cult'>This is the vassal rack, which allows your master to thrall crewmembers into his minions.\n
 	Aid your master in bringing their victims here and keeping them secure.\n
@@ -134,7 +136,7 @@
 	if(!O.Adjacent(src) || O == user || !isliving(O) || !isliving(user) || useLock || has_buckled_mobs() || user.incapacitated())
 		return
 	if(!anchored && AmBloodsucker(user))
-		to_chat(user, "<span class='danger'>Until this rack is secured in place, it cannot serve its purpose.</span>")
+		to_chat(user, "<span class='danger'>Пока эта стойка не будет закреплена на месте, она не сможет выполнять свои функции.</span>")
 		return
 	// PULL TARGET: Remember if I was pullin this guy, so we can restore this
 	var/waspulling = (O == owner.pulling)
@@ -168,8 +170,8 @@
 		return
 	remove_disguise() // BLUEMOON ADD - маскировка пропадает при размещении жертвы
 	// Attempt Buckle
-	user.visible_message("<span class='notice'>[user] straps [M] into the rack, immobilizing them.</span>", \
-			  		 "<span class='boldnotice'>You secure [M] tightly in place. They won't escape you now.</span>")
+	user.visible_message("<span class='notice'>[user] закрепляет [M] ремнями на стойке, обездвиживая [M.ru_ego()].</span>", \
+			  		 "<span class='boldnotice'>Вы надежно закрепляете [M] на месте. Теперь [M.ru_who()] не сбежит от вас.</span>")
 
 	playsound(src.loc, 'sound/effects/pop_expl.ogg', 25, 1)
 	//M.forceMove(drop_location()) <--- CANT DO! This cancels the buckle_mob() we JUST did (even if we foced the move)
@@ -189,11 +191,11 @@
 	// Attempt Unbuckle
 	if(!AmBloodsucker(user))
 		if(M == user)
-			M.visible_message("<span class='danger'>[user] tries to release themself from the rack!</span>",\
-							"<span class='danger'>You attempt to release yourself from the rack!</span>") //  For sound if not seen -->  "<span class='italics'>You hear a squishy wet noise.</span>")
+			M.visible_message("<span class='danger'>[user] пытается освободить себя со стойки!</span>",\
+							"<span class='danger'>Вы пытаетесь освободить себя со стойки!</span>") //  For sound if not seen -->  "<span class='italics'>You hear a squishy wet noise.</span>")
 		else
-			M.visible_message("<span class='danger'>[user] tries to pull [M] rack!</span>",\
-							"<span class='danger'>[user] attempts to release you from the rack!</span>") //  For sound if not seen -->  "<span class='italics'>You hear a squishy wet noise.</span>")
+			M.visible_message("<span class='danger'>[user] пытается стащить [M] со стойки!</span>",\
+							"<span class='danger'>[user] пытается освободить вас со стойки!</span>") //  For sound if not seen -->  "<span class='italics'>You hear a squishy wet noise.</span>")
 		if(!do_mob(user, M, 200))
 			return
 		unbuckle_mob(M)
@@ -207,7 +209,7 @@
 	m180.Turn(180)//-90)//180
 	animate(buckled_mob, transform = m180, time = 2)
 	buckled_mob.pixel_y = buckled_mob.get_standard_pixel_y_offset(180)
-	src.visible_message(text("<span class='danger'>[buckled_mob][buckled_mob.stat==DEAD?"'s corpse":""] slides off of the rack.</span>"))
+	src.visible_message(text("<span class='danger'>[buckled_mob.stat==DEAD?"Труп ":""][buckled_mob] соскальзывает со стойки.</span>"))
 	density = FALSE
 	buckled_mob.DefaultCombatKnockdown(30)
 	update_icon()
@@ -230,12 +232,12 @@
 	// CHECK ONE: Am I claiming this? Is it in the right place?
 	if(istype(B) && !owner)
 		if(!B.lair)
-			to_chat(user, "<span class='danger'>You don't have a lair. Claim a coffin to make that location your lair.</span>")
+			to_chat(user, "<span class='danger'>У вас нет логова. Займите гроб, чтобы сделать это место своим логовом.</span>")
 		if(B.lair != get_area(src))
-			to_chat(user, "<span class='danger'>You may only activate this structure in your lair: [B.lair].</span>")
+			to_chat(user, "<span class='danger'>Вы можете активировать эту структуру только в вашем логове: [B.lair].</span>")
 			return
-		switch(alert(user,"Do you wish to afix this structure here? Be aware you wont be able to unsecure it anymore", "Secure [src]", "Yes", "No"))
-			if("Yes")
+		switch(alert(user,"Вы уверены, что хотите закрепить эту структуру здесь? Имейте ввиду, что вы не сможете её открепить.", "Закрепить [src]", "Да", "Нет"))
+			if("Да")
 				owner = user
 				density = FALSE
 				anchored = TRUE
@@ -265,10 +267,10 @@
 	var/datum/antagonist/bloodsucker/B = user.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
 	// Check Bloodmob/living/M, force = FALSE, check_loc = TRUE
 	if(user.blood_volume < CONVERT_COST + 5)
-		to_chat(user, "<span class='notice'>You don't have enough blood to initiate the Dark Communion with [target].</span>")
+		to_chat(user, "<span class='notice'>У вас недостаточно крови, чтобы инициировать тёмную связь с [target].</span>")
 		return
 	if(B.count_vassals(user.mind) + 1 > B.bloodsucker_level) // BLUEMOON EDIT - добавлено +1, т.к. ранее можно было иметь на 1 вассала больше, чем уровень вампира
-		to_chat(user, "<span class='notice'>Your power is yet too weak to bring more vassals under your control....</span>")
+		to_chat(user, "<span class='notice'>Ваша сила ещё слишком слаба, чтобы взять больше вассалов под контроль....</span>")
 		return
 	// Prep...
 	useLock = TRUE
@@ -277,50 +279,50 @@
 	// Step Three:	Blood Ritual
 	// Conversion Process
 	if(convert_progress > 0)
-		to_chat(user, "<span class='notice'>You prepare to initiate [target] into your service.</span>")
+		to_chat(user, "<span class='notice'>Вы готовитесь к тому, чтобы привлечь [target] к службе вам.</span>")
 		if(!do_torture(user,target))
-			to_chat(user, "<span class='danger'><i>The ritual has been interrupted!</i></span>")
+			to_chat(user, "<span class='danger'><i>Ритуал был прерван!</i></span>")
 		else
 			convert_progress -- // Ouch. Stop. Don't.
 			// All done!
 			if(convert_progress <= 0)
 				// FAIL: Can't be Vassal
 				if(!SSticker.mode.can_make_vassal(target, user, display_warning = FALSE) || HAS_TRAIT(target, TRAIT_MINDSHIELD)) // If I'm an unconvertable Antag ONLY
-					to_chat(user, "<span class='danger'>[target] doesn't respond to your persuasion. It doesn't appear they can be converted to follow you, they either have a mindshield or their external loyalties are too difficult for you to break.<i>\[ALT+click to release\]</span>")
+					to_chat(user, "<span class='danger'>не поддается на ваши уговоры. Не похоже, что их можно заставить следовать за вами, либо у них есть mindshield, либо вам слишком сложно нарушить их внешнюю лояльность.<i>\[ALT+click to release\]</span>")
 					convert_progress ++ // Pop it back up some. Avoids wasting Blood on a lost cause.
 				// SUCCESS: All done!
 				else
 					if(RequireDisloyalty(target))
-						to_chat(user, "<span class='boldwarning'>[target] has external loyalties! [target.ru_who(TRUE)] will require more <i>persuasion</i> to break [target.ru_na()] to your will!</span>")
+						to_chat(user, "<span class='boldwarning'>[target] имеет внешние приверженности! [target.ru_who(TRUE)] потребует <i>убеждения</i>, чтобы сломить [target.ru_who()] волю!</span>")
 					else
-						to_chat(user, "<span class='notice'>[target] looks ready for the <b>Dark Communion</b>.</span>")
+						to_chat(user, "<span class='notice'>[target] выглядит готовым для <b>тёмной связи</b>.</span>")
 			// Still Need More Persuasion...
 			else
-				to_chat(user, "<span class='notice'>[target] could use [convert_progress == 1?"a little":"some"] more <i>persuasion</i>.</span>")
+				to_chat(user, "<span class='notice'>[target] нужно [convert_progress == 1?"немного":"чуть"] больше <i>убеждения</i>.</span>")
 		useLock = FALSE
 		return
 	// Check: Mindshield & Antag
 	if(!disloyalty_confirm && RequireDisloyalty(target))
 		if(!do_disloyalty(user,target))
-			to_chat(user, "<span class='danger'><i>The ritual has been interrupted!</i></span>")
+			to_chat(user, "<span class='danger'><i>Ритуал был прерван!!</i></span>")
 		else if (!disloyalty_confirm)
-			to_chat(user, "<span class='danger'>[target] refuses to give into your persuasion. Perhaps a little more?</span>")
+			to_chat(user, "<span class='danger'>[target] отказывается поддаваться на ваши уговоры. Может быть, еще немного?</span>")
 		else
-			to_chat(user, "<span class='notice'>[target] looks ready for the <b>Dark Communion</b>.</span>")
+			to_chat(user, "<span class='notice'>[target] выглядит готовым для <b>тёмной связи</b>.</span>")
 		useLock = FALSE
 		return
 	// Check: Blood
 	if(user.blood_volume < CONVERT_COST)
-		to_chat(user, "<span class='notice'>You don't have enough blood to initiate the Dark Communion with [target], you need [CONVERT_COST - user.blood_volume] units more!</span>")
+		to_chat(user, "<span class='notice'>У вас недостаточно крови, чтобы инициировать тёмную связь с [target], вам нужно ещё [CONVERT_COST - user.blood_volume] юнитов крови!</span>")
 		useLock = FALSE
 		return
 	B.AddBloodVolume(-CONVERT_COST)
-	target.add_mob_blood(user, "<span class='danger'>Youve used [CONVERT_COST] amount of blood to gain a new vassal!</span>")
+	target.add_mob_blood(user, "<span class='danger'>Вы использовали [CONVERT_COST] крови, чтобы получить нового вассала!</span>")
 	to_chat(user, )
-	user.visible_message("<span class='notice'>[user] marks a bloody smear on [target]'s forehead and puts a wrist up to [target.ru_ego()] mouth!</span>", \
-				  	  "<span class='notice'>You paint a bloody marking across [target]'s forehead, place your wrist to [target.ru_ego()] mouth, and subject [target.ru_na()] to the Dark Communion.</span>")
+	user.visible_message("<span class='notice'>[user] оставляет кровавую метку на лбу [target] и подносит запястье ко [target.ru_ego()] рту!</span>", \
+				  	  "<span class='notice'>Вы рисуете кровавую метку на лбу [target], подносите запястье к [target.ru_ego()] рту, и подвергаете [target.ru_ego()] к тёмной связи.</span>")
 	if(!do_mob(user, src, 50))
-		to_chat(user, "<span class='danger'><i>The ritual has been interrupted!</i></span>")
+		to_chat(user, "<span class='danger'><i>Ритуал был прерван!</i></span>")
 		useLock = FALSE
 		return
 	// Convert to Vassal!
@@ -356,8 +358,8 @@
 	if(!istype(I))
 		I = user.get_inactive_held_item()
 	// Create Strings
-	var/method_string =  I?.attack_verb?.len ? pick(I.attack_verb) : pick("harmed","tortured","wrenched","twisted","scoured","beaten","lashed","scathed")
-	var/weapon_string = I ? I.name : pick("bare hands","hands","fingers","fists")
+	var/method_string =  I?.attack_verb?.len ? pick(I.attack_verb) : pick("вредит","пытает","выворачивает","выкручивает","избивает","ранит")
+	var/weapon_string = I ? I.name : pick("голыми руками","руками","пальцами","кулаками")
 	// Weapon Bonus + SFX
 	if(I)
 		torture_time -= I.force / 4
@@ -381,8 +383,8 @@
 	if(I)
 		playsound(loc, I.hitsound, 30, 1, -1)
 		I.play_tool_sound(target)
-	target.visible_message("<span class='danger'>[user] has [method_string] [target]'s [target_string] with [user.ru_ego()] [weapon_string]!</span>", \
-						   "<span class='userdanger'>[user] has [method_string] your [target_string] with [user.ru_ego()] [weapon_string]!</span>")
+	target.visible_message("<span class='danger'>[user] [method_string] [target_string] [target] [weapon_string]!</span>", \
+						   "<span class='userdanger'>[user] [method_string] твою [target_string] [weapon_string]!</span>")
 	if(!target.is_muzzled())
 		if(!HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
 			target.emote("scream")
@@ -395,14 +397,14 @@
 	// OFFER YES/NO NOW!
 	spawn(10)
 		if(useLock && target && target.client) // Are we still torturing? Did we cancel? Are they still here?
-			to_chat(user, "<span class='notice'>[target] has been given the opportunity for servitude. You await their decision...</span>")
-			var/alert_text = "You are being tortured! Do you want to give in and pledge your undying loyalty to [user]?"
+			to_chat(user, "<span class='notice'>[target] была предоставлена возможность обратиться в рабство. Вы ждете их решения...</span>")
+			var/alert_text = "Вас пытают! Хотите ли вы сдаться и поклясться в вечной верности [user]?"
 		/*	if(HAS_TRAIT(target, TRAIT_MINDSHIELD))
 				alert_text += "\n\nYou will no longer be loyal to the station!"
 			if(SSticker.mode.AmValidAntag(target.mind))  */
-			alert_text += "\n\nYou will not lose your current objectives, but they come second to the will of your new master!"
-			switch(alert(target, alert_text,"THE HORRIBLE PAIN! WHEN WILL IT END?!","Yes, Master!", "NEVER!"))
-				if("Yes, Master!")
+			alert_text += "\n\nВы не потеряете своих текущих целей, но они отойдут на второй план по сравнению с волей вашего нового хозяина!"
+			switch(alert(target, alert_text,"АДСКАЯ БОЛЬ! КОГДА ЖЕ ЭТО ЗАКОНЧИТСЯ?!","Да, Господин!", "НИКОГДА!"))
+				if("Да, Господин!")
 					disloyalty_accept(target)
 				else
 					disloyalty_refuse(target)
@@ -431,7 +433,7 @@
 	// Failsafe: You already said YES.
 	if(disloyalty_confirm)
 		return
-	to_chat(target, "<span class='notice'>You refuse to give in! You <i>will not</i> break!</span>")
+	to_chat(target, "<span class='notice'>Ты отказываешься сдаваться! Ты не сломаешься!</span>")
 
 
 /obj/structure/bloodsucker/vassalrack/proc/remove_loyalties(mob/living/target)
@@ -445,7 +447,7 @@
 
 /obj/structure/bloodsucker/candelabrum
 	name = "candelabrum"
-	desc = "It burns slowly, but doesn't radiate any heat."
+	desc = "Он горит медленно, но не выделяет никакого тепла."
 	icon = 'icons/obj/vamp_obj.dmi'
 	icon_state = "candelabrum"
 	light_color = "#66FFFF"//LIGHT_COLOR_BLUEGREEN // lighting.dm
@@ -467,8 +469,8 @@
 /obj/structure/bloodsucker/candelabrum/examine(mob/user)
 	. = ..()
 	if((AmBloodsucker(user)) || isobserver(user))
-		. += {"<span class='cult'>This is a magical candle which drains at the sanity of mortals who are not under your command while it is active.</span>"}
-		. += {"<span class='cult'>You can alt click on it from any range to turn it on remotely, or simply be next to it and click on it to turn it on and off normally.</span>"}
+		. += {"<span class='cult'>Это волшебная свеча, которая, пока она активна, лишает рассудка смертных, которые не находятся под вашим командованием.</span>"}
+		. += {"<span class='cult'>Вы можете нажать на него альт-кликом с любого расстояния, чтобы включить удаленно, или просто находиться рядом с ним и нажимать на него, чтобы включать и выключать его в обычном режиме.</span>"}
 /*	if(user.mind.has_antag_datum(ANTAG_DATUM_VASSAL)
 		. += {"<span class='cult'>This is a magical candle which drains at the sanity of the fools who havent yet accepted your master, as long as it is active.\n
 		You can turn it on and off by clicking on it while you are next to it</span>"} */

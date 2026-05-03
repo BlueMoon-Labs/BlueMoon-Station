@@ -19342,7 +19342,7 @@
 /turf/open/floor/wood,
 /area/security/checkpoint/customs)
 "baD" = (
-/obj/machinery/computer/card{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/wood,
@@ -23220,7 +23220,7 @@
 /turf/open/floor/plasteel,
 /area/security/office)
 "bmb" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/structure/cable{
@@ -26225,7 +26225,7 @@
 	alpha = 170;
 	color = "#CD2929"
 	},
-/obj/machinery/computer/card{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/machinery/camera{
@@ -33492,7 +33492,7 @@
 /turf/open/floor/carpet/purple,
 /area/science/research)
 "bTt" = (
-/obj/machinery/computer/card/minor/qm{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/machinery/requests_console{
@@ -41743,7 +41743,7 @@
 /turf/open/floor/carpet/orange,
 /area/command/heads_quarters/ce)
 "ctp" = (
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /turf/open/floor/carpet/orange,
@@ -53899,7 +53899,7 @@
 /turf/open/floor/engine,
 /area/science/explab)
 "ejQ" = (
-/obj/machinery/computer/card{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/structure/railing{
@@ -57184,7 +57184,7 @@
 /turf/open/floor/plasteel,
 /area/commons/locker)
 "fzR" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/machinery/requests_console{
@@ -85706,7 +85706,7 @@
 /turf/open/floor/wood/wood_diagonal,
 /area/security/prison/rec)
 "pIS" = (
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/machinery/keycard_auth{
@@ -95023,7 +95023,7 @@
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "tiF" = (
-/obj/machinery/computer/card{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/structure/cable{

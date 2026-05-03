@@ -786,7 +786,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/computer/security/telescreen/cmo{
@@ -802,7 +802,7 @@
 /obj/structure/table/reinforced,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/regular,
@@ -3215,7 +3215,7 @@
 /obj/structure/table/reinforced,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/regular,
@@ -20143,7 +20143,7 @@
 /obj/machinery/firealarm{
 	pixel_y = 29
 	},
-/obj/machinery/computer/card/minor/qm,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
@@ -28284,7 +28284,7 @@
 /obj/structure/cable{
 	icon_state = "0-4"
 	},
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/requests_console{
@@ -42989,7 +42989,7 @@
 /turf/open/floor/engine,
 /area/engineering/atmospherics_engine)
 "ram" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/machinery/camera{
@@ -58527,7 +58527,7 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "xJn" = (
-/obj/machinery/computer/card/minor/ce,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/machinery/computer/security/telescreen/ce{
 	pixel_y = 24
 	},

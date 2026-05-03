@@ -30,6 +30,21 @@ export class ObjectComponent extends Component {
     this.handleStartDrag = this.handleStartDrag.bind(this);
     this.handleStopDrag = this.handleStopDrag.bind(this);
     this.handleDrag = this.handleDrag.bind(this);
+    this.commitNodeTitleEdit = this.commitNodeTitleEdit.bind(this);
+  }
+
+  commitNodeTitleEdit() {
+    const { act } = useBackend(this.context);
+    const { name, index } = this.props;
+    const { nodeTitleDraft } = this.state;
+    const trimmed = (nodeTitleDraft ?? '').trim();
+    this.setState({ editingNodeTitle: false });
+    if (trimmed && trimmed !== name) {
+      act('set_component_display_name', {
+        component_id: index,
+        display_name: trimmed,
+      });
+    }
   }
 
   handleStartDrag(e) {
@@ -243,17 +258,7 @@ export class ObjectComponent extends Component {
                   onMouseDown={(e) => e.stopPropagation()}
                   onInput={(e, val) =>
                     this.setState({ nodeTitleDraft: val })}
-                  onBlur={() => {
-                    const { nodeTitleDraft } = this.state;
-                    const trimmed = (nodeTitleDraft ?? '').trim();
-                    this.setState({ editingNodeTitle: false });
-                    if (trimmed && trimmed !== name) {
-                      act('set_component_display_name', {
-                        component_id: index,
-                        display_name: trimmed,
-                      });
-                    }
-                  }}
+                  onBlur={() => this.commitNodeTitleEdit()}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.currentTarget.blur();
@@ -269,7 +274,7 @@ export class ObjectComponent extends Component {
               ) : (
                 <Box
                   className="ObjectComponent__titleText"
-                  title="Двойной клик или карандаш — переименовать ноду"
+                  title="Двойной клик или карандаш — переименовать; второй клик по карандашу — подтвердить"
                   onMouseDown={(e) => e.stopPropagation()}
                   onDblClick={(e) => {
                     e.stopPropagation();
@@ -285,20 +290,33 @@ export class ObjectComponent extends Component {
                 </Box>
               )}
             </Stack.Item>
-            {!!showIeNodeStats && !this.state.editingNodeTitle && (
+            {!!showIeNodeStats && (
               <Stack.Item>
                 <Button
                   color="transparent"
                   icon="pen"
                   compact
-                  tooltip="Переименовать ноду"
-                  onMouseDown={(e) => e.stopPropagation()}
+                  tooltip={
+                    this.state.editingNodeTitle
+                      ? 'Подтвердить имя'
+                      : 'Переименовать ноду'
+                  }
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    if (this.state.editingNodeTitle) {
+                      e.preventDefault();
+                    }
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    this.setState({
-                      editingNodeTitle: true,
-                      nodeTitleDraft: name,
-                    });
+                    if (this.state.editingNodeTitle) {
+                      this.commitNodeTitleEdit();
+                    } else {
+                      this.setState({
+                        editingNodeTitle: true,
+                        nodeTitleDraft: name,
+                      });
+                    }
                   }}
                 />
               </Stack.Item>

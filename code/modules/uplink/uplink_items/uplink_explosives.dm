@@ -156,6 +156,7 @@
 	item = /obj/item/grenade/syndieminibomb
 	cost = 6
 	purchasable_from = ~UPLINK_CLOWN_OPS
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/explosives/syndicate_minibombs
 	name = "Syndicate Minibomb Clusterbang"

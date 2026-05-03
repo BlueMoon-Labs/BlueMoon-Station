@@ -32,6 +32,7 @@
 	id = "alien_cyber_organs"
 	display_name = "Alien Cybernetic Organs"
 	description = "Morally dubious experimental parts."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("cyber_organs", "alien_surgery")
 	design_ids = list("ci-hypnoeyes")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)

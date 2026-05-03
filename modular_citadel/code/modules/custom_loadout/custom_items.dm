@@ -629,33 +629,51 @@
 	mob_overlay_icon = 'icons/mob/clothing/custom_w.dmi'
 	mutantrace_variation = NONE
 
-/obj/item/coin/red
+// Poker chips: /obj/item/coin/Initialize overwrites icon_state to economy.dmi sprites; restore custom art after ..()
+/obj/item/coin/pokerchip
+	name = "poker chip"
+	desc = "A poker chip."
+	icon = 'icons/obj/custom.dmi'
+	custom_materials = list()
+	material_flags = NONE
+	value = 0
+	var/chip_icon = "c_red"
+
+/obj/item/coin/pokerchip/Initialize(mapload)
+	. = ..()
+	icon = 'icons/obj/custom.dmi'
+	icon_state = chip_icon
+	item_state = chip_icon
+
+/obj/item/coin/pokerchip/play_coin_flip_animation()
+	return
+
+/obj/item/coin/pokerchip/apply_coin_flip_icon_state()
+	icon_state = chip_icon
+	item_state = chip_icon
+
+/obj/item/coin/pokerchip/coin_flip_hear_message()
+	return "<span class='hear'>You hear plastic clattering.</span>"
+
+/obj/item/coin/pokerchip/red
 	name = "red pokerchip"
 	desc = "A red pokerchip."
-	icon_state = "c_red"
-	item_state = "c_red"
-	icon = 'icons/obj/custom.dmi'
+	chip_icon = "c_red"
 
-/obj/item/coin/blue
+/obj/item/coin/pokerchip/blue
 	name = "blue pokerchip"
 	desc = "A blue pokerchip."
-	icon_state = "c_nlue"
-	item_state = "c_blue"
-	icon = 'icons/obj/custom.dmi'
+	chip_icon = "c_blue"
 
-/obj/item/coin/green
+/obj/item/coin/pokerchip/green
 	name = "green pokerchip"
 	desc = "A green pokerchip."
-	icon_state = "c_green"
-	item_state = "c_green"
-	icon = 'icons/obj/custom.dmi'
+	chip_icon = "c_green"
 
-/obj/item/coin/black
+/obj/item/coin/pokerchip/black
 	name = "black pokerchip"
 	desc = "A black pokerchip."
-	icon_state = "c_black"
-	item_state = "c_black"
-	icon = 'icons/obj/custom.dmi'
+	chip_icon = "c_black"
 
 /obj/item/storage/box/pockerchips
 	name = "tray of pocker chips"
@@ -664,15 +682,22 @@
 	icon = 'icons/obj/custom.dmi'
 	illustration=null
 
-/obj/item/storage/box/pokerchips/PopulateContents()
+/obj/item/storage/box/pockerchips/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 50
+	STR.max_combined_w_class = WEIGHT_CLASS_TINY * 50
+	STR.can_hold = typecacheof(/obj/item/coin/pokerchip)
+
+/obj/item/storage/box/pockerchips/PopulateContents()
 	for(var/i in 1 to 5)
-		new /obj/item/coin/red(src)
+		new /obj/item/coin/pokerchip/red(src)
 	for(var/i in 1 to 10)
-		new /obj/item/coin/blue(src)
+		new /obj/item/coin/pokerchip/blue(src)
 	for(var/i in 1 to 15)
-		new /obj/item/coin/black(src)
+		new /obj/item/coin/pokerchip/black(src)
 	for(var/i in 1 to 20)
-		new /obj/item/coin/green(src)
+		new /obj/item/coin/pokerchip/green(src)
 
 //Bluemood ADD
 

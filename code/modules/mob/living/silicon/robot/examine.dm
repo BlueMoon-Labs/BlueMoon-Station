@@ -1,5 +1,5 @@
 /mob/living/silicon/robot/examine(mob/user)
-	. = list("<span class='info'>Это [icon2html(src, user)] \a <EM>[src]</EM>, [src.module.name] юнит!")
+	. = list("<span class='info'>Это [icon2html(src, user)] \a <EM>[src]</EM>, [chameleon_module() ? "инженерный" : module_to_ru_adjective(src.module.name)] юнит!")
 	if(desc)
 		. += "[desc]"
 

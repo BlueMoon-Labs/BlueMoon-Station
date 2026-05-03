@@ -21,7 +21,7 @@
 		to_chat(user, "<span class='notice'>No target found in range.</span>")
 		return
 	var/mob/living/carbon/target = targets[1]
-	if(!(target.type in compatible_mobs))
+	if(!(target.type in compatible_mobs) || target.anti_magic_check())
 		to_chat(user, "<span class='notice'>You are unable to curse [target]!</span>")
 		return
 	if(!(target in oview(range)))

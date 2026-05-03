@@ -101,7 +101,15 @@ function bm_rebuild_menu(state) {
     h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=view_manifest">\u0421\u041f\u0418\u0421\u041e\u041a \u042d\u041a\u0418\u041f\u0410\u0416\u0410</a>');
     h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=character_directory">\u0411\u0418\u0411\u041b\u0418\u041e\u0422\u0415\u041a\u0410 \u041f\u0415\u0420\u0421\u041e\u041d\u0410\u0416\u0415\u0419</a>');
   }
-  h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=observe">\u0411\u042b\u0422\u042c \u041d\u0410\u0411\u041b\u042e\u0414\u0410\u0422\u0415\u041b\u0415\u041c</a>');
+   h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=observe">\u0411\u042b\u0422\u042c \u041d\u0410\u0411\u041b\u042e\u0414\u0410\u0422\u0415\u041b\u0415\u041c</a>');
+  // BM_METASHOP_RAINBOW_P (0–100): 100 = всегда радуга — см. modular_bluemoon/code/modules/lobby/__lobby_defines.dm
+  var BM_METASHOP_RAINBOW_P = 100;
+  var _msRain = BM_METASHOP_RAINBOW_P >= 100 || Math.random() * 100 < BM_METASHOP_RAINBOW_P;
+  h.push('<div class="bm-metashop-slot">');
+  h.push('<div class="bm-metashop-nullspace" aria-hidden="true"></div>');
+  h.push('<a class="bm-btn bm-metashop' + (_msRain ? ' bm-ms-rainbow' : '') + '" href="?src=' + src + ';bm_lobby_action=metashop">\u041c\u0410\u0413\u0410\u0417\u0418\u041d</a>');
+  h.push('<div class="bm-metashop-nullspace" aria-hidden="true"></div>');
+  h.push('</div>');
   h.push('<div class="bm-divider"></div>');
   h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=character_setup">\u041d\u0410\u0421\u0422\u0420\u041e\u0419\u041a\u0410 \u041f\u0415\u0420\u0421\u041e\u041d\u0410\u0416\u0410</a>');
   h.push('<a class="bm-btn" href="?src=' + src + ';bm_lobby_action=game_options">\u041f\u0410\u0420\u0410\u041c\u0415\u0422\u0420\u042b \u0418\u0413\u0420\u042b</a>');

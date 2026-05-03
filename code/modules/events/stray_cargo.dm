@@ -7,10 +7,13 @@
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_BUREAUCRATIC
 	description = "A pod containing a random supply crate lands on the station."
+	admin_setup = list(/datum/event_admin_setup/set_location/stray_cargo)
 
 ///Spawns a cargo pod containing a random cargo supply pack on a random area of the station
 /datum/round_event/stray_cargo
 	var/area/impact_area ///Randomly picked area
+	var/datum/anomaly_placer/placer = new()
+	var/turf/spawn_location
 	var/list/possible_pack_types = list() ///List of possible supply packs dropped in the pod, if empty picks from the cargo list
 	var/static/list/stray_spawnable_supply_packs = list() ///List of default spawnable supply packs, filtered from the cargo list
 
@@ -39,13 +42,22 @@
 
 ///Spawns a random supply pack, puts it in a pod, and spawns it on a random tile of the selected area
 /datum/round_event/stray_cargo/start()
-	var/list/turf/valid_turfs = get_area_turfs(impact_area)
-	//Only target non-dense turfs to prevent wall-embedded pods
-	for(var/i in valid_turfs)
-		var/turf/T = i
-		if(T.density)
-			valid_turfs -= T
-	var/turf/LZ = pick(valid_turfs)
+	var/list/turf/valid_turfs
+	var/turf/LZ
+	if(spawn_location)
+		impact_area = get_area(spawn_location)
+		valid_turfs = list(spawn_location)
+		LZ = spawn_location
+	else
+		valid_turfs = get_area_turfs(impact_area)
+		//Only target non-dense turfs to prevent wall-embedded pods
+		for(var/i in valid_turfs)
+			var/turf/T = i
+			if(T.density)
+				valid_turfs -= T
+		if(!LAZYLEN(valid_turfs))
+			return
+		LZ = pick(valid_turfs)
 	var/pack_type
 	if(possible_pack_types.len)
 		pack_type = pick(possible_pack_types)
@@ -101,3 +113,11 @@
 	var/obj/structure/closet/supplypod/S = new(pick(get_area_turfs(pod_storage_area))) //Lets not runtime
 	S.setStyle(STYLE_SYNDICATE)
 	return S
+
+/datum/event_admin_setup/set_location/stray_cargo
+	input_text = "Сбросить капсулу сюда?"
+
+/datum/event_admin_setup/set_location/stray_cargo/apply_to_event(datum/round_event/stray_cargo/event)
+	event.spawn_location = isturf(chosen_turf) ? chosen_turf : get_turf(chosen_turf)
+	if(event.spawn_location)
+		event.impact_area = get_area(event.spawn_location)

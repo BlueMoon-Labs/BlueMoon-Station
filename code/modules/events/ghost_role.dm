@@ -66,7 +66,7 @@
 	var/list/regular_candidates
 	// don't get their hopes up
 	if(priority_candidates.len < minimum_required)
-		regular_candidates = pollGhostCandidates("Хотите ли вы занять роль '[role_name]'?", jobban, gametypecheck, be_special, minimum_required = minimum_required)
+		regular_candidates = pollGhostCandidates("Хотите ли вы занять роль '[role_name]'?", jobban, gametypecheck, be_special, poll_time = 30 SECONDS, minimum_required = minimum_required)
 	else
 		regular_candidates = list()
 

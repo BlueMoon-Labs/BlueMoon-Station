@@ -180,17 +180,21 @@
 
 		if(iswallturf(src) && user && user.loc == temp_loc)	//Let's check if everything is still there
 			to_chat(user, "<span class='notice'>You place the poster!</span>")
-			// BLUEMOON ADD - награда за развешивание плаката с разыскиваемым
+			// BLUEMOON ADD - награда за развешивание плаката с разыскиваемым (один раз на экземпляр плаката)
 			if(istype(D, /obj/structure/sign/poster/wanted))
 				var/obj/structure/sign/poster/wanted/W = D
 				if(W.poster_id && isliving(user))
-					var/mob/living/living_user = user
-					var/datum/bank_account/account = living_user.get_bank_account()
-					if(account)
-						var/reward = rand(75, 100)
-						account.adjust_money(reward, "Brig: Wanted poster task")
-						playsound(user, 'modular_bluemoon/sound/machines/slot-machine/money.ogg', 50, TRUE)
-						to_chat(user, span_green("За выполнение задания начислено [reward] кредитов."))
+					if(!W.brig_hang_reward_claimed)
+						W.brig_hang_reward_claimed = TRUE
+						var/mob/living/living_user = user
+						var/datum/bank_account/account = living_user.get_bank_account()
+						if(account)
+							var/reward = rand(75, 100)
+							account.adjust_money(reward, "Brig: Wanted poster task")
+							playsound(user, 'modular_bluemoon/sound/machines/slot-machine/money.ogg', 50, TRUE)
+							to_chat(user, span_green("За выполнение задания начислено [reward] кредитов."))
+					else
+						to_chat(user, span_notice("За размещение этого плаката награда уже выплачивалась."))
 			return
 
 	to_chat(user, "<span class='notice'>The poster falls down!</span>")

@@ -262,4 +262,4 @@
 
 	B.turret_stock--
 	to_chat(owner, "<span class='notice'>Turret installation complete!</span>")
-	playsound(turret_turf, 'sound/items/drill_use.ogg', 65, 1)
+	playsound(turret_turf, pick('sound/items/drill1.ogg', 'sound/items/drill2.ogg', 'sound/items/drill3.ogg', 'sound/items/drill4.ogg', 'sound/items/drill5.ogg'), 65, 1)

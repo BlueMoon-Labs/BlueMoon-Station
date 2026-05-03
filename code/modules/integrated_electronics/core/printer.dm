@@ -274,6 +274,7 @@
 				E.diag_hud_set_circuitcell()
 				E.diag_hud_set_circuitstat()
 				E.diag_hud_set_circuittracking()
+				E.last_diag_process_key = E.compute_diagnostic_hud_process_key()
 				E.investigate_log("was printed by [E.creator].", INVESTIGATE_CIRCUIT)
 
 			to_chat(usr, "<span class='notice'>[capitalize(built.name)] printed.</span>")

@@ -421,6 +421,8 @@
 			// GUARD CHECK - Is scramble DNA actually ready?
 			if(!can_modify_occupant() || !(scrambleready < world.time))
 				return
+			if(!scanner_occupant)
+				return
 
 			scanner_occupant.dna.remove_all_mutations(list(MUT_NORMAL, MUT_EXTRA))
 			scanner_occupant.dna.generate_dna_blocks()

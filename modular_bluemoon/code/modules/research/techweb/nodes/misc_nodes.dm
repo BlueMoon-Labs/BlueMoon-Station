@@ -4,6 +4,7 @@
 	id = "joule_was_wrong"
 	display_name = "Infinite Power Theory"
 	description = "Seems like Dr. Prescott Joule was wrong. We got energy-replenishment data after researching into slime power cells. It does have a lot of potential, but more to do."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("datatheory")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
 	hidden = TRUE
@@ -16,6 +17,7 @@
 	id = "vortex_cell"
 	display_name = "Vortex Power Cell"
 	description = "The pinacle of power storage science. The One cell that can hold and replenish from nothing, for true... And without drawbacks."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("bluespace_power_reactor", "alien_stockparts")
 	design_ids = list("vortex_cell")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)

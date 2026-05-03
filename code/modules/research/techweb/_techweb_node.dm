@@ -16,6 +16,7 @@
 	var/autounlock_by_boost = TRUE			//boosting this will autounlock this node.
 	var/list/research_costs = list()		//Point cost to research. type = amount
 	var/category = "Misc"				//Category
+	var/list/informing_radio_channels = list() //Список отделов, затрагиваемых технологией
 
 /datum/techweb_node/error_node
 	id = "ERROR"

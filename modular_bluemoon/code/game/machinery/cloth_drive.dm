@@ -21,10 +21,6 @@
 	. = ..()
 	RegisterSignal(src, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(collect_items))
 
-/datum/move_loop/has_target/move_towards/Destroy()
-	UnregisterSignal(src, COMSIG_MOVABLE_Z_CHANGED)
-	return ..()
-
 /obj/structure/cloth_drive/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(!contents.len)
 		to_chat(user, "<span class='warning'>There's nothing in [src]!</span>")

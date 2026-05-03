@@ -21,9 +21,9 @@
 	// ALREADY CLAIMED
 	if(claimed.resident)
 		if(claimed.resident == owner.current)
-			to_chat(owner, "This is your [src].")
+			to_chat(owner, "Это ваш [src].")
 		else
-			to_chat(owner, "This [src] has already been claimed by another.")
+			to_chat(owner, "[src] уже занят кем-то другим.")
 		return FALSE
 	// Bloodsucker Learns new Recipes!
 	owner.teach_crafting_recipe(/datum/crafting_recipe/bloodsucker/vassalrack)
@@ -32,9 +32,9 @@
 	coffin = claimed
 	lair = get_area(claimed)
 	// DONE
-	to_chat(owner, "<span class='userdanger'>You have claimed the [claimed] as your place of immortal rest! Your lair is now [lair].</span>")
-	to_chat(owner, "<span class='danger'>You have learned new construction recipes to improve your lair.</span>")
-	to_chat(owner, "<span class='announce'>Bloodsucker Tip: Find new lair recipes in the misc tab of the <i>Crafting Menu</i> at the bottom of the screen, including the <i>Persuasion Rack</i> for converting crew into Vassals.</span><br><br>")
+	to_chat(owner, "<span class='userdanger'>Вы заняли [claimed] как место для вашего бессмертного отдыха! Ваше логово теперь [lair].</span>")
+	to_chat(owner, "<span class='danger'>Вы выучили новые рецепты построек, чтобы улучшить своё логово.</span>")
+	to_chat(owner, "<span class='announce'>Совет вампира: Найдите новые рецепты для логова во вкладке \"Misc\" в <i>Crafting Menu</i> снизу вашего экрана, включая <i>Persuasion Rack</i> для превращения экипажа в Вассалов.</span><br><br>")
 	RunLair() // Start
 	return TRUE
 
@@ -44,7 +44,7 @@
 
 /obj/structure/closet/crate/coffin/blackcoffin
 	name = "black coffin"
-	desc = "For those departed who are not so dear."
+	desc = "Для тех ушедших, кто не так дорог."
 	icon_state = "coffin"
 	icon = 'icons/obj/vamp_obj.dmi'
 	open_sound = 'sound/bloodsucker/coffin_open.ogg'
@@ -58,7 +58,7 @@
 
 /obj/structure/closet/crate/coffin/meatcoffin
 	name = "meat coffin"
-	desc = "When you're ready to meat your maker, the steaks can never be too high."
+	desc = "Когда вы будете готовы к приготовлению мяса, стейки никогда не получатся слишком жирными."
 	icon_state = "meatcoffin"
 	icon = 'icons/obj/vamp_obj.dmi'
 	open_sound = 'sound/effects/footstep/slime1.ogg'
@@ -73,7 +73,7 @@
 
 /obj/structure/closet/crate/coffin/metalcoffin
 	name = "metal coffin"
-	desc = "A big metal sardine can inside of another big metal sardine can, in space."
+	desc = "Большая металлическая банка из-под сардин внутри другой большой металлической банки из-под сардин в космосе."
 	icon_state = "metalcoffin"
 	icon = 'icons/obj/vamp_obj.dmi'
 	resistance_flags = FIRE_PROOF | LAVA_PROOF
@@ -110,7 +110,7 @@
 			if (bloodsuckerdatum && bloodsuckerdatum.coffin == src)
 				bloodsuckerdatum.coffin = null
 				bloodsuckerdatum.lair = null
-			to_chat(resident, "<span class='danger'><span class='italics'>You sense that the link with your coffin, your sacred place of rest, has been broken! You will need to seek another.</span></span>")
+			to_chat(resident, "<span class='danger'><span class='italics'>Вы чувствуете, что связь с вашим гробом, вашим священным местом отдыха, оборвалась! Вам нужно будет поискать другой.</span></span>")
 		resident = null // Remove resident. Because this object isnt removed from the game immediately (GC?) we need to give them a way to see they don't have a home anymore.
 
 /obj/structure/closet/crate/coffin/can_open(mob/living/user)
@@ -125,7 +125,7 @@
 			return TRUE
 		else
 			playsound(get_turf(src), 'sound/machines/door_locked.ogg', 20, 1)
-			to_chat(user, "<span class='notice'>[src] is locked tight from the inside.</span>")
+			to_chat(user, "<span class='notice'>[src] плотно заперт изнутри.</span>")
 	return ..()
 
 /obj/structure/closet/crate/coffin/close(mob/living/user)
@@ -143,15 +143,15 @@
 			A = get_area(src)
 			// Claim?
 			if(!bloodsuckerdatum.coffin && !resident && (is_station_level(Turf.z) || !A.map_name == "Space"))
-				switch(alert(user,"Do you wish to claim this as your coffin? [get_area(src)] will be your lair.","Claim Lair","Yes", "No"))
-					if("Yes")
+				switch(alert(user,"Вы хотите занять данный гроб? [get_area(src)] станет вашим логовом.","Занять логово","Да", "Нет"))
+					if("Да")
 						ClaimCoffin(user)
 			if (user.AmStaked()) // Stake? No Heal!
-				to_chat(bloodsuckerdatum.owner.current, "<span class='userdanger'>You are staked! Remove the offending weapon from your heart before sleeping.</span>")
+				to_chat(bloodsuckerdatum.owner.current, "<span class='userdanger'>Вы проткнуты колом! Уберите это опасное оружие от своего сердца перед сном.</span>")
 				return
 			// Heal
 			if(bloodsuckerdatum.HandleHealing(0)) // Healing Mult 0 <--- We only want to check if healing is valid!
-				to_chat(bloodsuckerdatum.owner.current, "<span class='notice'>You enter the horrible slumber of deathless Torpor. You will heal until you are renewed.</span>")
+				to_chat(bloodsuckerdatum.owner.current, "<span class='notice'>Вы погружаетесь в ужасный сон бессмертного Торпора. Вы будете лечится, пока не восстановитесь.</span>")
 				bloodsuckerdatum.Torpor_Begin()
 			// Level Up?
 			bloodsuckerdatum.SpendRank() // Auto-Fails if not appropriate
@@ -162,21 +162,21 @@
 	if (resident != null && user != resident) // Owner can destroy their own coffin.
 		if(opened)
 			if(istype(W, cutting_tool))
-				to_chat(user, "<span class='notice'>This is a much more complex mechanical structure than you thought. You don't know where to begin cutting [src].</span>")
+				to_chat(user, "<span class='notice'>Это гораздо более сложная механическая конструкция, чем вы думали. Вы не знаете, где начать резать [src].</span>")
 				return
 		else if(anchored && W.tool_behaviour == TOOL_WRENCH) // Can't unanchor unless owner.
-			to_chat(user, "<span class='danger'>The coffin won't come unanchored from the floor.</span>")
+			to_chat(user, "<span class='danger'>Гроб не получается оторвать от пола.</span>")
 			return
 
 	if(locked && W.tool_behaviour == TOOL_CROWBAR)
 		var/pry_time = pryLidTimer * W.toolspeed // Pry speed must be affected by the speed of the tool.
-		user.visible_message("<span class='notice'>[user] tries to pry the lid off of [src] with [W].</span>", \
-							  "<span class='notice'>You begin prying the lid off of [src] with [W]. This should take about [DisplayTimeText(pry_time)].</span>")
+		user.visible_message("<span class='notice'>[user] пытается снять крышку с [src] с помощью [W].</span>", \
+							  "<span class='notice'>Вы начинаете снимать крышку с [src] с помощью [W]. Это займёт примерно [DisplayTimeText(pry_time)].</span>")
 		if (!do_mob(user,src,pry_time))
 			return
 		bust_open()
-		user.visible_message("<span class='notice'>[user] snaps the door of [src] wide open.</span>", \
-							  "<span class='notice'>The door of [src] snaps open.</span>")
+		user.visible_message("<span class='notice'>[user] резко открывает крышку [src] .</span>", \
+							  "<span class='notice'>Крышка [src] резко открывается.</span>")
 		return
 	..()
 
@@ -192,11 +192,11 @@
 	if (user == resident)
 		if (!broken)
 			locked = inLocked
-			to_chat(user, "<span class='notice'>You flip a secret latch and [locked?"":"un"]lock yourself inside [src].</span>")
+			to_chat(user, "<span class='notice'>Вы поворачиваете секретную защелку и [locked?"":"раз"]блокируете себя внутри [src].</span>")
 		else
-			to_chat(resident, "<span class='notice'>The secret latch to lock [src] from the inside is broken. You set it back into place...</span>")
+			to_chat(resident, "<span class='notice'>Секретная защелка, чтобы заблокировать [src] изнутри сломалась. Вы возвращаете её на место...</span>")
 			if (do_mob(resident, src, 50))//sleep(10)
 				if (broken) // Spam Safety
-					to_chat(resident, "<span class='notice'>You fix the mechanism and lock it.</span>")
+					to_chat(resident, "<span class='notice'>Вы чините механизм и блокируете его.</span>")
 					broken = FALSE
 					locked = TRUE

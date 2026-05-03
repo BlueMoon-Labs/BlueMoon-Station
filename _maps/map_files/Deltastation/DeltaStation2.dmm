@@ -33730,7 +33730,7 @@
 	},
 /obj/machinery/door/window/westleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/effect/turf_decal/tile/neutral{
@@ -64251,7 +64251,7 @@
 /turf/open/floor/plasteel,
 /area/command/teleporter)
 "fxx" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/structure/cable/white{
@@ -81676,7 +81676,7 @@
 /turf/open/floor/plating,
 /area/cargo/warehouse)
 "khn" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/machinery/status_display/ai{
@@ -95058,7 +95058,7 @@
 /obj/structure/table/glass,
 /obj/machinery/door/window/eastleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5";
 	dir = 2
 	},
@@ -108811,7 +108811,7 @@
 /turf/open/floor/plasteel/white,
 /area/medical/surgery)
 "rMZ" = (
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/status_display/evac{
@@ -120520,7 +120520,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 8
 	},
-/obj/machinery/computer/card/minor/qm{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/plasteel,
@@ -130019,7 +130019,7 @@
 /turf/open/floor/plasteel,
 /area/commons/storage/primary)
 "xPd" = (
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/machinery/status_display/ai{

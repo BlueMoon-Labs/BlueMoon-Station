@@ -765,7 +765,7 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "akN" = (
-/obj/machinery/computer/card{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/structure/cable{
@@ -4074,7 +4074,7 @@
 	},
 /area/security/execution/education)
 "bsD" = (
-/obj/machinery/computer/card,
+/obj/machinery/modular_computer/console/preset/id,
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain)
 "bsF" = (
@@ -8592,7 +8592,7 @@
 /obj/structure/cable{
 	icon_state = "0-4"
 	},
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/requests_console{
@@ -9689,7 +9689,6 @@
 /obj/structure/table/reinforced,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/regular,
@@ -12130,7 +12129,6 @@
 /obj/structure/table/reinforced,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/regular,
@@ -13388,7 +13386,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/command/nuke_storage)
 "erK" = (
-/obj/machinery/computer/card/minor/ce,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/machinery/computer/security/telescreen/ce{
 	pixel_y = 24
 	},
@@ -19953,7 +19951,7 @@
 	dir = 6;
 	name = "customs camera"
 	},
-/obj/machinery/computer/card,
+/obj/machinery/modular_computer/console/preset/id,
 /turf/open/floor/plasteel,
 /area/security/checkpoint/customs)
 "gMu" = (
@@ -52217,7 +52215,7 @@
 /turf/open/floor/plating,
 /area/maintenance/department/security)
 "rGh" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/machinery/camera{
@@ -60072,7 +60070,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/computer/security/telescreen/cmo{
@@ -62303,7 +62301,7 @@
 /obj/machinery/firealarm{
 	pixel_y = 29
 	},
-/obj/machinery/computer/card/minor/qm,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},

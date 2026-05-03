@@ -161,3 +161,25 @@ GLOBAL_LIST_INIT(blood_reagent_types, list(
 		/datum/reagent/blood,
 		/datum/reagent/blood/jellyblood
 		))
+
+
+/// Модули киборгов по антаг-принадлежности
+GLOBAL_LIST_INIT(syndicate_cyborg_modules, list(
+	/obj/item/robot_module/syndicate,
+	/obj/item/robot_module/syndicate_medical,
+	/obj/item/robot_module/saboteur,
+	/obj/item/robot_module/syndicatejack
+))
+
+GLOBAL_LIST_INIT(inteq_cyborg_modules, list(
+	/obj/item/robot_module/syndicate/inteq,
+	/obj/item/robot_module/syndicate_medical/inteq,
+	/obj/item/robot_module/saboteur/inteq,
+	/obj/item/robot_module/inteq_builder
+))
+
+GLOBAL_LIST_INIT(spider_cyborg_modules, list(
+	/obj/item/robot_module/syndicate/spider,
+	/obj/item/robot_module/syndicate_medical/spider,
+	/obj/item/robot_module/saboteur/spider
+))

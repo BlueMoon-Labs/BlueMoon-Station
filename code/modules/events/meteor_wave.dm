@@ -65,7 +65,7 @@
 /datum/round_event/meteor_wave/announce(fake)
 	priority_announce(generateMeteorString(start_when,TRUE,direction), "BНИМАНИЕ: МЕТЕОРЫ", "meteors", has_important_message = TRUE)
 	if(wave_name == "threatening" || wave_name == "catastrophic")
-		INVOKE_ASYNC(SSsecurity_level, TYPE_PROC_REF(/datum/controller/subsystem/security_level, minimum_security_level), SEC_LEVEL_ORANGE, TRUE, FALSE)
+		INVOKE_ASYNC(SSsecurity_level, TYPE_PROC_REF(/datum/controller/subsystem/security_level, minimum_security_level), SEC_LEVEL_ORANGE, FALSE)
 
 /proc/generateMeteorString(start_when,syndiealert,direction)
 	var/directionstring

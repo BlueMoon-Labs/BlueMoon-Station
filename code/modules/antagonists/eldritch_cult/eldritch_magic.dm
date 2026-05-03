@@ -78,6 +78,109 @@
 	if(use_charge)
 		return ..()
 
+/obj/effect/proc_holder/spell/self/heretic_summon
+	action_icon = 'icons/obj/eldritch.dmi'
+	action_background_icon_state = "bg_ecult"
+	charge_max = 100
+	clothes_req = FALSE
+	var/obj/item/summon_type // istype
+	var/summon_sound = 'sound/magic/Smoke.ogg'
+	var/hide_sound = 'sound/magic/Repulse.ogg'
+
+/obj/effect/proc_holder/spell/self/heretic_summon/heart
+	name = "Summon Living Heart"
+	desc = "Позволяет призывать и прятать живое сердце в пучине безумия. Остальные услышат очень тихий звук призыва, только вплотную к вам."
+	action_icon_state = "living_heart"
+	summon_type = /obj/item/living_heart
+	summon_sound = 'sound/magic/enter_blood.ogg'
+	hide_sound = 'sound/magic/Demon_consume.ogg'
+
+/obj/effect/proc_holder/spell/self/heretic_summon/book
+	name = "Summon Codex"
+	desc = "Позволяет призывать и прятать кодекс в тайных глубинах. Остальные услышат очень тихий звук призыва, только вплотную к вам."
+	action_icon_state = "codex"
+	summon_type = /obj/item/forbidden_book
+
+/obj/effect/proc_holder/spell/self/heretic_summon/can_cast(mob/user, skipcharge, silent)
+	. = ..()
+	if(!.)
+		return
+	if(user.incapacitated())
+		if(!silent)
+			to_chat(user, span_warning("Вы не можете этого сделать в нынешнем состоянии!"))
+		return FALSE
+
+/obj/effect/proc_holder/spell/self/heretic_summon/cast(list/targets, mob/user)
+	. = ..()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic) // Такого быть не должно, но вдруг
+		revert_cast(user)
+		return
+	var/obj/item/I = locate(summon_type) in heretic.summon_items
+	if(I)
+		if(summon_item(I, user))
+			heretic.summon_items -= I
+		else
+			to_chat(user, span_warning("Не удалось призвать предмет!"))
+			revert_cast(user)
+		return
+
+	I = locate(summon_type) in user.loc
+	if(I)
+		hide_item(I, heretic)
+		return
+	else
+		var/turf/turf = get_turf(user)
+		if(turf != user.loc)
+			I = locate(summon_type) in turf
+			if(I)
+				hide_item(I, heretic)
+				return
+
+	var/list/temp = user.GetAllContents(summon_type)
+	if(LAZYLEN(temp))
+		hide_item(temp[1], heretic)
+		return
+
+	to_chat(user, span_warning("Я не ощущаю [initial(summon_type.name)] поблизости и в потаённых глубинах."))
+	revert_cast(user)
+
+/obj/effect/proc_holder/spell/self/heretic_summon/proc/hide_item(obj/item/I, datum/antagonist/heretic/heretic)
+	var/mob/living/M = heretic.owner.current
+	if(hide_sound)
+		playsound(M, hide_sound, 60, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*4, falloff_distance = 0)
+	var/obj/old_loc = I.loc
+	// Да, это магия, клей тут не поможет
+	if(ismob(I.loc))
+		var/mob/living/Mob = I.loc
+		Mob.transferItemToLoc(I, null, TRUE)
+	else
+		I.moveToNullspace()
+	heretic.summon_items += I
+	if(istype(old_loc) && old_loc.GetComponent(/datum/component/storage) && (!ismob(old_loc.loc) || (old_loc in M?.GetAllContents())))
+		SEND_SIGNAL(old_loc, COMSIG_TRY_STORAGE_SHOW, M)
+
+/obj/effect/proc_holder/spell/self/heretic_summon/proc/summon_item(obj/item/I, mob/living/carbon/human/user)
+	if(!istype(user))
+		return
+	if(summon_sound)
+		playsound(user, summon_sound, 60, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*4, falloff_distance = 0)
+	if(user.put_in_hands(I))
+		return TRUE
+
+	var/static/list/slots = list(
+		"left pocket" = ITEM_SLOT_LPOCKET,
+		"right pocket" = ITEM_SLOT_RPOCKET,
+		"backpack" = ITEM_SLOT_BACKPACK
+	)
+
+	var/where = user.equip_in_one_of_slots(I, slots, qdel_on_fail = FALSE, critical = TRUE)
+	if(where == "backpack")
+		SEND_SIGNAL(user.back, COMSIG_TRY_STORAGE_SHOW, user)
+	if(!where)
+		I.moveToNullspace()
+	return where
+
 /obj/effect/proc_holder/spell/aoe_turf/rust_conversion
 	name = "Aggressive Spread"
 	desc = "Spreads rust onto nearby surfaces."

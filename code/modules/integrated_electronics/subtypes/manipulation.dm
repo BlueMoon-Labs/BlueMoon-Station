@@ -359,6 +359,9 @@
 	A.throwforce = initial(A.throwforce)
 	A.embedding = initial(A.embedding)
 
+
+#define MATMAN_MAX_MAT_AMOUNT 100000
+
 /obj/item/integrated_circuit/manipulation/matman
 	name = "material manager"
 	desc = "This circuit is designed for automatic storage and distribution of materials."
@@ -368,7 +371,7 @@
 					Positive values will take that number of materials from another machine. \
 					Negative values will fill another machine from internal storage. Outputs show current stored amounts of mats."
 	icon_state = "grabber"
-	complexity = 16
+	complexity = 10
 	inputs = list(
 		"target" 				= IC_PINTYPE_REF,
 		"sheets to insert"	 	= IC_PINTYPE_NUMBER,
@@ -405,94 +408,151 @@
 		"on success" = IC_PINTYPE_PULSE_OUT,
 		"on failure" = IC_PINTYPE_PULSE_OUT,
 		"push ref" = IC_PINTYPE_PULSE_IN,
-		"on push ref" = IC_PINTYPE_PULSE_IN
+		"on push ref" = IC_PINTYPE_PULSE_OUT
 		)
 	spawn_flags = IC_SPAWN_RESEARCH
 	power_draw_per_use = 40
 	ext_cooldown = 1
 	cooldown_per_use = 10
-	var/static/list/mtypes = list(
-		/datum/material/iron,
-		/datum/material/glass,
-		/datum/material/silver,
-		/datum/material/gold,
-		/datum/material/diamond,
-		/datum/material/uranium,
-		/datum/material/plasma,
-		/datum/material/bluespace,
-		/datum/material/bananium,
-		/datum/material/titanium,
-		/datum/material/plastic
-		)
+
+	var/datum/component/material_container/materials
+	var/static/list/mtypes = DEFAULT_REMOTE_MATERIALS
+
 
 /obj/item/integrated_circuit/manipulation/matman/ComponentInitialize()
-	var/datum/component/material_container/materials = AddComponent(/datum/component/material_container, mtypes, 100000, FALSE, /obj/item/stack, CALLBACK(src, PROC_REF(is_insertion_ready)), CALLBACK(src, PROC_REF(AfterMaterialInsert)))
+	materials = AddComponent(/datum/component/material_container, DEFAULT_REMOTE_MATERIALS, MATMAN_MAX_MAT_AMOUNT, FALSE, /obj/item/stack, CALLBACK(src, PROC_REF(is_insertion_ready)), CALLBACK(src, PROC_REF(AfterMaterialInsert)))
 	materials.precise_insertion = TRUE
 	.=..()
 
 /obj/item/integrated_circuit/manipulation/matman/proc/AfterMaterialInsert(type_inserted, id_inserted, amount_inserted)
-	var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 	set_pin_data(IC_OUTPUT, 2, materials.total_amount)
-	for(var/I in 1 to mtypes.len)
-		var/datum/material/M = materials.materials[SSmaterials.GetMaterialRef(I)]
-		var/amount = materials.materials[M]
-		if(M)
-			set_pin_data(IC_OUTPUT, I+2, amount)
+	for(var/I in 1 to length(mtypes))
+		var/amount = materials?.materials[SSmaterials.GetMaterialRef(mtypes[I])] ? materials?.materials[SSmaterials.GetMaterialRef(mtypes[I])] : 0
+		set_pin_data(IC_OUTPUT, I+2, amount)
 	push_data()
 
 /obj/item/integrated_circuit/manipulation/matman/proc/is_insertion_ready(mob/user)
 	return TRUE
 
 /obj/item/integrated_circuit/manipulation/matman/do_work(ord)
-	var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 	var/atom/movable/H = get_pin_data_as_type(IC_INPUT, 1, /atom/movable)
-	if(!check_target(H))
+	if(!H || ((get_dist(src, H) > 2) && ord != 5))
 		activate_pin(4)
 		return
-	var/turf/T = get_turf(H)
+
 	switch(ord)
 		if(1)
-			var/obj/item/stack/sheet/S = H
-			if(!S)
+			var/obj/item/I = H
+			var/successful = FALSE
+			if(!I || QDELETED(I))
+				AfterMaterialInsert()
 				activate_pin(4)
 				return
-			if(materials.insert_item(S, clamp(get_pin_data(IC_INPUT, 2),0,100), multiplier = 1) )
-				AfterMaterialInsert()
+			if(isstack(I))
+				var/amount = get_pin_data(IC_INPUT, 2) || 0
+				if(!amount)
+					activate_pin(4)
+					return
+
+				successful = materials.insert_stack(I, amount)
+			else
+				successful = materials.insert_item(I)
+				if(successful) qdel(I)
+
+			if(successful)
 				activate_pin(3)
 			else
 				activate_pin(4)
+
+			AfterMaterialInsert()
 		if(2)
-			var/datum/component/material_container/mt = H.GetComponent(/datum/component/material_container)
+			var/datum/component/material_container/mt = (H.GetComponent(/datum/component/remote_materials)?.mat_container || H.GetComponent(/datum/component/material_container))
+			if(!mt)
+				activate_pin(4)
+				return
+
 			var/suc
-			for(var/I in 1 to mtypes.len)
-				var/datum/material/M = materials.materials[mtypes[I]]
+			for(var/I in 1 to length(mtypes))
+				var/datum/material/M = SSmaterials.GetMaterialRef(mtypes[I])
 				if(M)
-					var/U = clamp(get_pin_data(IC_INPUT, I+2),-100000,100000)
+					var/U = clamp(get_pin_data(IC_INPUT, I+2) || 0,-MATMAN_MAX_MAT_AMOUNT, MATMAN_MAX_MAT_AMOUNT)
 					if(!U)
+						AfterMaterialInsert()
 						continue
-					if(!mt) //Invalid input
-						if(U>0)
-							if(materials.retrieve_sheets(U, SSmaterials.GetMaterialRef(mtypes[I]), T))
-								suc = TRUE
-					else
-						if(mt.transer_amt_to(materials, U, mtypes[I]))
-							suc = TRUE
+					if(mt.transer_amt_to(materials, U, SSmaterials.GetMaterialRef(mtypes[I])))
+						suc = TRUE
+
 			if(suc)
-				AfterMaterialInsert()
 				activate_pin(3)
 			else
 				activate_pin(4)
+
+			AfterMaterialInsert()
 		if(5)
 			set_pin_data(IC_OUTPUT, 1, WEAKREF(src))
 			AfterMaterialInsert()
 			activate_pin(6)
 
+
 /obj/item/integrated_circuit/manipulation/matman/Destroy()
-	var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 	materials.retrieve_all()
 	.=..()
 
+/obj/item/integrated_circuit/manipulation/matdropper
+	name = "material dropper"
+	desc = "Выводит материалы на чистую воду!"
+	extended_desc = "Принимает ссылку на объект, остальные аргументы - это сколько листов материала необходимо изъять."
+	icon_state = "grabber"
+	complexity = 2
+	inputs = list(
+		"target" 				= IC_PINTYPE_REF,
+		"Metal sheets"				 	= IC_PINTYPE_NUMBER,
+		"Glass sheets"					= IC_PINTYPE_NUMBER,
+		"Silver sheets"				= IC_PINTYPE_NUMBER,
+		"Gold sheets"					= IC_PINTYPE_NUMBER,
+		"Diamond sheets"				= IC_PINTYPE_NUMBER,
+		"Uranium sheets"				= IC_PINTYPE_NUMBER,
+		"Solid Plasma sheets"			= IC_PINTYPE_NUMBER,
+		"Bluespace Mesh sheets"		= IC_PINTYPE_NUMBER,
+		"Bananium sheets"				= IC_PINTYPE_NUMBER,
+		"Titanium sheets"				= IC_PINTYPE_NUMBER,
+		"Plastic sheets"				= IC_PINTYPE_NUMBER
+		)
 
+	activators = list(
+		"drop"= IC_PINTYPE_PULSE_IN,
+		"on success" = IC_PINTYPE_PULSE_OUT,
+		"on failure" = IC_PINTYPE_PULSE_OUT
+		)
+	spawn_flags = IC_SPAWN_RESEARCH
+	power_draw_per_use = 40
+
+	var/static/list/mtypes = DEFAULT_REMOTE_MATERIALS
+
+/obj/item/integrated_circuit/manipulation/matdropper/do_work(ord)
+	var/atom/H = get_pin_data_as_type(IC_INPUT, 1, /atom)
+
+	if(!H || (get_dist(src, H) > 2))
+		activate_pin(3)
+		return
+
+	var/datum/component/material_container/mt = (H.GetComponent(/datum/component/remote_materials)?.mat_container || H.GetComponent(/datum/component/material_container))
+
+	if(!mt)
+		activate_pin(3)
+		return
+
+	var/suc = FALSE
+	for(var/I in 1 to length(mtypes))
+		if(mt.retrieve_sheets(get_pin_data(IC_INPUT, 1 + I) || 0, SSmaterials.GetMaterialRef(mtypes[I]), get_turf(H)))
+			suc = TRUE
+
+	if(suc)
+		activate_pin(2)
+	else
+		activate_pin(3)
+
+#undef MATMAN_MAX_MAT_AMOUNT
 //Hippie Ported Code--------------------------------------------------------------------------------------------------------
 
 // - inserter circuit - //

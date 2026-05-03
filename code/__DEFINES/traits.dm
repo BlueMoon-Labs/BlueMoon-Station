@@ -925,6 +925,12 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 
 ///Deletes the object upon being dumped into space, usually from exiting hyperspace. Useful if you're spawning in a lot of stuff for hyperspace events that dont need to flood the entire game
 #define TRAIT_DEL_ON_SPACE_DUMP "del_on_hyperspace_leave"
+/// Lets movables cross transit cordon turfs without being thrown to random space (shuttle in-flight spawns)
+#define TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT "free_hyperspace_softcordon_movement"
+/// Full freedom in hyperspace (no [/datum/component/shuttle_cling]) — e.g. carp spawns
+#define TRAIT_FREE_HYPERSPACE_MOVEMENT "free_hyperspace_movement"
+/// Currently affected by hyperspace drift; suppresses conflicting [/atom/movable/proc/newtonian_move] from normal space inertia
+#define TRAIT_HYPERSPACED "hyperspaced"
 
 // determines whether or not objects are haunted and teleport/attack randomly
 #define TRAIT_HAUNTED "haunted"

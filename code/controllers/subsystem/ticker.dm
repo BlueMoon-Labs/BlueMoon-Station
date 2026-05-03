@@ -801,5 +801,8 @@ SUBSYSTEM_DEF(ticker)
 		'sound/roundend/approachingbaystation.ogg'\
 		)
 
+	if(SSmetadollars?.metadollar_burn_round_notice)
+		to_chat(world, span_boldannounce("[SSmetadollars.metadollar_burn_round_notice]"))
+
 	SEND_SOUND(world, sound(round_end_sound))
 	text2file(login_music, "data/last_round_lobby_music.txt")

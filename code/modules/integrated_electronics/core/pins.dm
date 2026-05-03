@@ -168,7 +168,9 @@ D [1]/  ||
 
 // Iterates over every linked pin and disconnects them.
 /datum/integrated_io/proc/disconnect_all()
-	for(var/pin in linked)
+	if(!length(linked))
+		return
+	for(var/datum/integrated_io/pin as anything in linked.Copy())
 		disconnect_pin(pin)
 
 /datum/integrated_io/proc/disconnect_pin(datum/integrated_io/pin)

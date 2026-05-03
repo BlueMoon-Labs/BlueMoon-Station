@@ -23,6 +23,19 @@
 	desc = "Designed to quickly reload revolvers. Usage of these rounds will constitute a war crime in your area."
 	ammo_type = /obj/item/ammo_casing/a357/dumdum
 
+/obj/item/ammo_box/a357/requiem
+	name = "speed loader (12.7x55mm)"
+	desc = "A five-round speedloader for the Requiem. Each cartridge is a massive low-velocity heavy slug: extreme tissue damage, brutal recoil, no mixing with .357."
+	icon = 'icons/obj/ammo.dmi'
+	icon_state = "rsh-12"
+	caliber = "12.7x55mm"
+	ammo_type = /obj/item/ammo_casing/a357/requiem
+	max_ammo = 5
+	multiple_sprites = 1
+	speedloader = TRUE
+	w_class = WEIGHT_CLASS_TINY
+	custom_materials = list(/datum/material/iron = 40000)
+
 /obj/item/ammo_box/c38
 	name = "speed loader (.38 rubber)"
 	desc = "Designed to quickly reload revolvers."

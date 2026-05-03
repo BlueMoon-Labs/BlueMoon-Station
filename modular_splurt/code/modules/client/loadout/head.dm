@@ -33,14 +33,14 @@
 	name = "polychromic trencher helmet"
 	cost = 2
 	path = /obj/item/clothing/head/helmet/goner/fake/poly
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#D9D9D9")
 
 /datum/gear/head/goneroffcap
 	name = "polychromic trencher officer cap"
 	cost = 2
 	path = /obj/item/clothing/head/helmet/goner/officer/fake/poly
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#F2F2F2")
 
 /datum/gear/head/goneroffcap/classic
@@ -52,14 +52,12 @@
 	name = "Bowler-hat"
 	cost = 1
 	path = /obj/item/clothing/head/bowler
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 
 //Adds medical beret
 /datum/gear/head/medberet
 	name = "Medical officer's beret"
 	cost = 1
 	path = /obj/item/clothing/head/beret/med
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	restricted_roles = list("Chief Medical Officer", "Medical Doctor", "Chemist", "Virologist", "Paramedic", "Geneticist", "Brig Physician")
 	subcategory = LOADOUT_SUBCATEGORY_HEAD_JOBS
 
@@ -68,32 +66,27 @@
 	name = "Poppy"
 	cost = 2
 	path = /obj/item/reagent_containers/food/snacks/grown/poppy
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 
 /datum/gear/head/lily
 	name = "Lily"
 	cost = 2
 	path = /obj/item/reagent_containers/food/snacks/grown/poppy/lily
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 
 /datum/gear/head/geranium
 	name = "Geranium"
 	cost = 2
 	path = /obj/item/reagent_containers/food/snacks/grown/poppy/geranium
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 
 /datum/gear/head/deckers
 	name = "Decker Headphones"
 	description = "A sweet pair of headphones."
 	cost = 2
 	path = /obj/item/clothing/head/deckers
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 
 /datum/gear/head/invisihat
 	name = "invisifiber hat"
 	description = "A hat made of transparent fibers, often used with reinforcement kits."
 	path = /obj/item/clothing/head/invisihat
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 
 /datum/gear/head/clussy_wig
 	name = "Clussy wig"

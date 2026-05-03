@@ -21,6 +21,8 @@
 	var/firing_effect_type = /obj/effect/temp_visual/dir_setting/firing_effect	//the visual effect appearing when the ammo is fired.
 	var/heavy_metal = TRUE
 	var/harmful = TRUE //pacifism check for boolet, set to FALSE if bullet is non-lethal
+	/// Zero-G recoil strength (added to existing drift via newtonian_impulse)
+	var/newtonian_force = 1
 
 /obj/item/ammo_casing/spent
 	name = "spent bullet casing"

@@ -4749,6 +4749,7 @@
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_bar)
 "zc" = (
 /obj/machinery/light/floor,
+/obj/machinery/syndicatebomb/self_destruct,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_bridge)
 "zf" = (

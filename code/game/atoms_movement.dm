@@ -172,7 +172,7 @@
 /atom/movable/proc/Moved(atom/OldLoc, Dir, Forced = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
-	if (!inertia_moving)
+	if (!inertia_moving && !HAS_TRAIT(src, TRAIT_HYPERSPACED))
 		inertia_next_move = world.time + inertia_move_delay
 		newtonian_move(Dir)
 	return TRUE
@@ -300,8 +300,9 @@
  *
  * Arguments:
  * * movement_dir - 0 when stopping or any dir when trying to move
+ * * continuous_move - TRUE when checking from the newtonian drift loop (not client step intent)
  */
-/atom/movable/proc/Process_Spacemove(movement_dir = 0)
+/atom/movable/proc/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	if(has_gravity(src))
 		return TRUE
 
@@ -324,15 +325,54 @@
 
 	return FALSE
 
-/// Only moves the object if it's under no gravity
-/atom/movable/proc/newtonian_move(direction)
-	if(!isturf(loc) || Process_Spacemove(0))
-		inertia_dir = 0
+/// Subtype hook (e.g. lattice); [Process_Spacemove] already handles lattice on /atom/movable — mobs override and use backups
+/atom/movable/proc/handle_spacemove_grabbing()
+	return FALSE
+
+/// Only moves the object if it's under no gravity. Uses smooth drift when possible. [inertia_dir] is a BYOND dir flag.
+/atom/movable/proc/newtonian_move(
+	inertia_dir,
+	instant = FALSE,
+	start_delay = 0,
+	drift_force = 1,
+	controlled_cap = null,
+	force_loop = TRUE,
+)
+	if(!isturf(loc))
+		src.inertia_dir = 0
+		if(drift_handler)
+			QDEL_IN(drift_handler, 0)
 		return FALSE
 
-	inertia_dir = direction
-	if(!direction)
+	if(!inertia_dir)
+		src.inertia_dir = 0
+		if(drift_handler)
+			QDEL_IN(drift_handler, 0)
 		return TRUE
-	inertia_last_loc = loc
-	SSspacedrift.processing[src] = src
+
+	if(Process_Spacemove(inertia_dir, TRUE))
+		src.inertia_dir = 0
+		if(drift_handler)
+			QDEL_IN(drift_handler, 0)
+		return FALSE
+
+	SSspacedrift.processing -= src
+	src.inertia_dir = inertia_dir
+	var/inertia_angle = dir2angle(inertia_dir)
+	var/capped = isnull(controlled_cap) ? drift_force : min(drift_force, controlled_cap)
+
+	if(!isnull(drift_handler) && !QDELETED(drift_handler))
+		if(drift_handler.newtonian_impulse(inertia_angle, start_delay, capped, controlled_cap, force_loop))
+			return TRUE
+		if(QDELETED(src))
+			return FALSE
+
+	// Defer: Destroy() must not clear a replacement drift_handler (see /datum/drift_handler/Destroy)
+	if(drift_handler)
+		var/datum/drift_handler/old_drift = drift_handler
+		QDEL_IN(old_drift, 0)
+	new /datum/drift_handler(src, inertia_angle, instant, start_delay, capped)
+	if(QDELETED(drift_handler))
+		src.inertia_dir = 0
+		return FALSE
 	return TRUE

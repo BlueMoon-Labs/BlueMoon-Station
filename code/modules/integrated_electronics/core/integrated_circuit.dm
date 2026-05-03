@@ -110,10 +110,14 @@ a creative player the means to solve many problems.  Circuits are held inside an
 	return
 
 /obj/item/integrated_circuit/Destroy()
+	disconnect_all()
+	if(assembly)
+		assembly.assembly_components -= src
+		assembly = null
 	QDEL_LIST(inputs)
 	QDEL_LIST(outputs)
 	QDEL_LIST(activators)
-	. = ..()
+	return ..()
 
 /obj/item/integrated_circuit/emp_act(severity)
 	for(var/k in inputs)

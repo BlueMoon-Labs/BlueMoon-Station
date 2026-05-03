@@ -4,6 +4,7 @@
 	possible_locs = list(BODY_ZONE_R_ARM,BODY_ZONE_L_ARM,BODY_ZONE_R_LEG,BODY_ZONE_L_LEG,BODY_ZONE_CHEST,BODY_ZONE_HEAD)
 	icon_state = "embeddedobject"
 	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EMERGENCY
+	ignore_clothes = TRUE
 
 /datum/surgery/embedded_removal/robot
 	requires_bodypart_type = BODYPART_ROBOTIC

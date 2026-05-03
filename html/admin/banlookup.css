@@ -1,0 +1,202 @@
+/* Banning / ban lookup panel (paired with unbanpanel.css searchbar + banbox) */
+.ban-panel-wrap {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 12px;
+  color: #e0e0e0;
+  background: #1a1a1a;
+  min-height: 100%;
+}
+
+.ban-panel-main {
+  padding: 48px 12px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.ban-panel-add-card {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid #2a3f5a;
+  border-radius: 4px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.ban-panel-add-card h2 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #98b0c3;
+  font-weight: bold;
+}
+
+.ban-panel-add-card table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ban-panel-add-card td {
+  padding: 4px 8px 4px 0;
+  vertical-align: middle;
+}
+
+.ban-panel-add-card input,
+.ban-panel-add-card select,
+.ban-panel-add-card textarea {
+  background-color: #1e1e1e;
+  color: #ffffff;
+  border: 1px solid #40628a;
+  border-radius: 2px;
+  padding: 4px 6px;
+}
+
+.ban-panel-add-card textarea {
+  width: 100%;
+  min-height: 64px;
+  box-sizing: border-box;
+}
+
+.ban-panel-search-card {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.ban-panel-search-card b {
+  color: #98b0c3;
+}
+
+.ban-panel-search-card input[type="text"] {
+  background-color: #1e1e1e;
+  color: #ffffff;
+  border: 1px solid #40628a;
+  border-radius: 2px;
+  padding: 4px 6px;
+  margin: 2px 4px 2px 0;
+}
+
+.ban-panel-search-card input[type="submit"] {
+  background: #40628a;
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  padding: 6px 14px;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+.ban-panel-hint {
+  color: #8899aa;
+  font-size: 11px;
+  margin-top: 8px;
+}
+
+.ban-panel-pagination {
+  margin: 10px 0 14px 0;
+  text-align: center;
+}
+
+.ban-panel-pagination a {
+  color: #8cbff5;
+  text-decoration: none;
+  margin: 0 2px;
+}
+
+.ban-panel-pagination a:hover {
+  text-decoration: underline;
+}
+
+.banbox .meta {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #c8d0dc;
+}
+
+.banbox .meta b {
+  color: #eaeff5;
+}
+
+.banbox .reason-row {
+  padding: 8px 10px 10px;
+  text-align: left;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.banbox cite {
+  color: #aab6c4;
+  font-style: normal;
+}
+
+.banbox .actions {
+  margin-top: 6px;
+}
+
+.banbox .actions a {
+  color: #7ab8ff;
+  margin-right: 10px;
+}
+
+/* Legacy savefile unban list (unbanpanel verb when ban_legacy_system) */
+.legacy-unban-main {
+  padding-top: 16px;
+}
+
+.legacy-ban-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-top: 8px;
+}
+
+.legacy-ban-table th {
+  background: rgba(30, 40, 55, 0.95);
+  color: #98b0c3;
+  padding: 8px 6px;
+  text-align: left;
+  border: 1px solid #2a3f5a;
+}
+
+.legacy-ban-table td {
+  padding: 8px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  vertical-align: top;
+  color: #d8dde4;
+}
+
+.legacy-ban-table tr:nth-child(even) td {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.legacy-ban-table a {
+  color: #8cbff5;
+  font-weight: bold;
+  margin-right: 0.6rem;
+}
+
+.legacy-unban-empty {
+  text-align: center;
+  color: #8899aa;
+  padding: 2rem 1rem !important;
+  font-style: italic;
+}
+
+.db-offline-notice {
+  background: rgba(80, 40, 20, 0.35);
+  border: 1px solid #8b4513;
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.db-offline-notice h2 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  color: #ffb366;
+}

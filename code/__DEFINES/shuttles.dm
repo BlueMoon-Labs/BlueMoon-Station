@@ -79,6 +79,11 @@
 #define SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT 2
 #define SHUTTLE_DOCKER_BLOCKED 3
 
+// Shuttle hyperspace / in-flight events (tg-style)
+#define SHUTTLE_EVENT_CLEAR "shuttle_event_clear"
+#define SHUTTLE_EVENT_HIT_SHUTTLE (1<<0)
+#define SHUTTLE_EVENT_MISS_SHUTTLE (1<<1)
+
 //Shuttle defaults
 #define SHUTTLE_DEFAULT_SHUTTLE_AREA_TYPE /area/shuttle
 #define SHUTTLE_DEFAULT_UNDERLYING_AREA /area/space

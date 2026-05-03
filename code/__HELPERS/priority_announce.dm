@@ -273,7 +273,7 @@
 		displayed_rank = "Капитан"
 
 	var/focus = captain_name ? ">> [displayed_rank] [captain_name] <<" : ">> [displayed_rank] <<"
-	var/html = build_system_notice("ПРИБЫТИЕ КОМАНДОВАНИЯ", "Прибытие на [station_name()] подтверждено. Мостик ожидает принятия командования.", "captain-arrival", "COMMAND", focus)
+	var/html = build_system_notice("ПРИБЫТИЕ КОМАНДОВАНИЯ", "Прибытие на '[station_name()]' подтверждено. Мостик ожидает принятия командования.", "captain-arrival", "COMMAND", focus)
 
 	for(var/mob/M in GLOB.player_list)
 		if(!isnewplayer(M) && M.can_hear())

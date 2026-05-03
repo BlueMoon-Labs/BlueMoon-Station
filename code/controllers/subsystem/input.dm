@@ -97,7 +97,8 @@ SUBSYSTEM_DEF(input)
 	var/list/clients = GLOB.clients.Copy() // Let's sing the list cache song
 	for(var/i in 1 to clients.len)
 		var/client/C = clients[i]
-		C.keyLoop()
+		if(C)
+			C.keyLoop()
 
 #define NONSENSICAL_VERB "NONSENSICAL_VERB_THAT_DOES_NOTHING"
 /// *sigh

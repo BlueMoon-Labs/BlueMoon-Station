@@ -1,6 +1,6 @@
 /obj/item/clothing/suit/toggle/labcoat
 	name = "labcoat"
-	desc = "A suit that protects against minor chemical spills."
+	desc = "Халат, защищающий от небольших химических утечек и пролитых веществ."
 	icon_state = "labcoat"
 	item_state = "labcoat"
 	blood_overlay_type = "coat"
@@ -34,39 +34,39 @@
 
 /obj/item/clothing/suit/toggle/labcoat/cmo
 	name = "chief medical officer's labcoat"
-	desc = "Bluer than the standard model."
+	desc = "Голубее чем стандартная модель."
 	icon_state = "labcoat_cmo"
 	item_state = "labcoat_cmo"
 
 /obj/item/clothing/suit/toggle/labcoat/mad
 	name = "\proper The Mad's labcoat"
-	desc = "It makes you look capable of konking someone on the noggin and shooting them into space."
+	desc = "С ним вы выглядите как кто-то способный стукнуть кому-то по кумполу и запустить его прямиком в космос."
 	icon_state = "labgreen"
 	item_state = "labgreen"
 
 /obj/item/clothing/suit/toggle/labcoat/genetics
 	name = "geneticist labcoat"
-	desc = "A suit that protects against minor chemical spills. Has a blue stripe on the shoulder."
+	desc = "Халат, защищающий от небольших химических утечек и пролитых веществ. С синей полосой на плечах."
 	icon_state = "labcoat_gen"
 
 /obj/item/clothing/suit/toggle/labcoat/chemist
 	name = "chemist labcoat"
-	desc = "A suit that protects against minor chemical spills. Has an orange stripe on the shoulder."
+	desc = "Халат, защищающий от небольших химических утечек и пролитых веществ. С оранжевой полосой на плечах."
 	icon_state = "labcoat_chem"
 
 /obj/item/clothing/suit/toggle/labcoat/virologist
 	name = "virologist labcoat"
-	desc = "A suit that protects against minor chemical spills. Has a green stripe on the shoulder."
+	desc = "Халат, защищающий от небольших химических утечек и пролитых веществ. С зелёной полосой на плечах."
 	icon_state = "labcoat_vir"
 
 /obj/item/clothing/suit/toggle/labcoat/science
 	name = "scientist labcoat"
-	desc = "A suit that protects against minor chemical spills. Has a purple stripe on the shoulder."
+	desc = "Халат, защищающий от небольших химических утечек и пролитых веществ. С фиолетовой полосой на плечах."
 	icon_state = "labcoat_tox"
 
 /obj/item/clothing/suit/toggle/labcoat/roboticist
 	name = "roboticist labcoat"
-	desc = "More like an eccentric coat than a labcoat. Helps pass off bloodstains as part of the aesthetic. Comes with red shoulder pads."
+	desc = "Скорее эксцентричная роба, нежели лабораторный халат. Помогает выдать пятна крови за часть эстетики. Прилагаются красные подплечники."
 	icon_state = "labcoat_robo"
 
 // Departmental Jackets
@@ -75,7 +75,7 @@
 
 /obj/item/clothing/suit/toggle/labcoat/depjacket/sci
 	name = "science jacket"
-	desc = "A comfortable jacket in science purple."
+	desc = "Комфортная научно-фиолетовая куртка."
 	icon_state = "sci_dep_jacket"
 	item_state = "sci_dep_jacket"
 	allowed = list(/obj/item/analyzer, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman)
@@ -83,7 +83,7 @@
 
 /obj/item/clothing/suit/toggle/labcoat/depjacket/med
 	name = "medical jacket"
-	desc = "A comfortable jacket in medical blue."
+	desc = "Комфортная медицинско-синяя куртка."
 	icon_state = "med_dep_jacket"
 	item_state = "med_dep_jacket"
 	allowed = list(/obj/item/analyzer, /obj/item/sensor_device, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman)
@@ -91,7 +91,7 @@
 
 /obj/item/clothing/suit/toggle/labcoat/depjacket/sec
 	name = "Security Jacket"
-	desc = "A comfortable jacket in security red."
+	desc = "Комфортная охранно-красная куртка."
 	icon_state = "sec_dep_jacket"
 	item_state = "sec_dep_jacket"
 	armor = list(MELEE = 25, BULLET = 15, LASER = 30, ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 0, ACID = 45)
@@ -99,25 +99,42 @@
 
 /obj/item/clothing/suit/toggle/labcoat/depjacket/sup
 	name = "supply jacket"
-	desc = "A comfortable jacket in supply brown."
+	desc = "Комфортная погрузочно-коринчевая куртка."
 	icon_state = "supply_dep_jacket"
 	item_state = "supply_dep_jacket"
 
 /obj/item/clothing/suit/toggle/labcoat/depjacket/sup/qm
 	name = "quartermaster's jacket"
-	desc = "A loose covering often warn by station quartermasters."
+	desc = "Свободная накидка. Часто встречается на станционных завхозах."
 	icon_state = "qmjacket"
 	item_state = "qmjacket"
 
 /obj/item/clothing/suit/toggle/labcoat/depjacket/eng
 	name = "engineering jacket"
-	desc = "A comfortable jacket in engineering yellow."
+	desc = "Комфортная инженерно-жёлтая куртка."
 	icon_state = "engi_dep_jacket"
 	item_state = "engi_dep_jacket"
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 20, FIRE = 30, ACID = 45)
-	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/t_scanner, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter)
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman,
+		/obj/item/t_scanner, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/toy,
+		/obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/device/cooler
+	)
+
+/obj/item/clothing/suit/toggle/labcoat/depjacket/eng/chief_engineer
+	name = "chief engineer's jacket"
+	desc = "Комфортная серебряно-белая куртка. На бирке надпись: \"Не проводить стирку урановым порошком\"."
+	icon = 'modular_bluemoon/icons/obj/clothing/suits.dmi'
+	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/mob/clothing/suit.dmi'
+	icon_state = "chiefengi_dep_jacket"
+	item_state = "labcoat"
+	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 40, FIRE = 60, ACID = 65)
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+
+/obj/item/clothing/suit/toggle/labcoat/depjacket/eng/chief_engineer/Initialize(mapload)
+	. = ..()
+	allowed += list(/obj/item/melee/classic_baton/telescopic, /obj/item/areaeditor/blueprints)
 
 /obj/item/clothing/suit/toggle/labcoat/syndicate
 	name = "DS Labcoat"
-	desc = "More like an eccentric coat than a labcoat. Helps pass off bloodstains as part of the aesthetic. Comes with red shoulder pads."
+	desc = "Скорее эксцентричная роба, нежели лабораторный халат. Помогает выдать пятна крови за часть эстетики. Прилагаются красные подплечники."
 	icon_state = "labcoat_robo"

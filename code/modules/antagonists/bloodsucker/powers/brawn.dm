@@ -2,7 +2,7 @@
 
 /datum/action/cooldown/bloodsucker/targeted/brawn
 	name = "Brawn"
-	desc = "Snap restraints with ease, or deal terrible damage with your bare hands."
+	desc = "С лёгкостью ломайте ограничители или наносите ужасающий урон голыми руками."
 	button_icon_state = "power_strength"
 	bloodcost = 25
 	cooldown_time = 180
@@ -70,8 +70,8 @@
 		// Knockdown!
 		var/powerlevel = min(5, 1 + level_current)
 		if(rand(5 + powerlevel) >= 5)
-			target.visible_message("<span class='danger'>[user] lands a vicious punch, sending [target] away!</span>", \
-							  "<span class='userdanger'>[user] has landed a horrifying punch on you, sending you flying!!</span>", null, COMBAT_MESSAGE_RANGE)
+			target.visible_message("<span class='danger'>[user] наносит сильный удар, отправляя [target] куда подальше!</span>", \
+							  "<span class='userdanger'>[user] нанёс вам ужасающий удар, отправляя вас в полёт!!</span>", null, COMBAT_MESSAGE_RANGE)
 			target.DefaultCombatKnockdown(min(5, rand(10, 10 * powerlevel)) )
 		// Attack!
 		playsound(get_turf(target), 'sound/weapons/punch4.ogg', 60, 1, -1)
@@ -87,10 +87,10 @@
 	else if(istype(target, /obj/machinery/door))
 		var/obj/machinery/door/D = target
 		playsound(get_turf(usr), 'sound/machines/airlock_alien_prying.ogg', 40, 1, -1)
-		to_chat(user, "<span class='notice'>You prepare to tear open [D].</span>")
+		to_chat(user, "<span class='notice'>Вы готовитесь разорвать [D].</span>")
 		if(do_mob(usr,target,25))
 			if (D.Adjacent(user))
-				to_chat(user, "<span class='notice'>You tear open the [D].</span>")
+				to_chat(user, "<span class='notice'>Вы разрываете [D], открывая шлюз.</span>")
 				user.Stun(10)
 				user.do_attack_animation(D, ATTACK_EFFECT_SMASH)
 				playsound(get_turf(D), 'sound/effects/bang.ogg', 30, 1, -1)
@@ -148,8 +148,8 @@
 	M.throw_at(T, pull_power, TRUE, owner, FALSE) // Throw distance based on grab state! Harder grabs punished more aggressively.
 	// /proc/log_combat(atom/user, atom/target, what_done, atom/object=null, addition=null)
 	log_combat(owner, M, "used Brawn power")
-	owner.visible_message("<span class='warning'>[owner] tears free of [M]'s grasp!</span>", \
-			 			"<span class='warning'>You shrug off [M]'s grasp!</span>")
+	owner.visible_message("<span class='warning'>[owner] вырывается из хватки [M]!</span>", \
+			 			"<span class='warning'>Вы вырываетесь из хватки [M]!</span>")
 	owner.pulledby = null // It's already done, but JUST IN CASE.
 	return TRUE
 /* Doesnt work

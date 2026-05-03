@@ -16,7 +16,7 @@
 /datum/bloodsucker_clan/gangrel/handle_clan_life(datum/antagonist/bloodsucker/source)
 	. = ..()
 	var/area/current_area = get_area(bloodsuckerdatum.owner.current)
-	if(istype(current_area, /area/station/service/chapel))
+	if(istype(current_area, /area/service/chapel))
 		to_chat(bloodsuckerdatum.owner.current, span_warning("You don't belong in holy areas! The Faith burns you to a crisp!"))
 		bloodsuckerdatum.owner.current.adjustFireLoss(20)
 		bloodsuckerdatum.owner.current.adjust_fire_stacks(2)

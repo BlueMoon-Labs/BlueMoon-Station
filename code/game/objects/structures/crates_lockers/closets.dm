@@ -225,12 +225,13 @@
 				to_chat(user, span_danger("Что-то слишком большое внутри [src] мешает закрыть шкафчик."))
 			return FALSE
 	// BLUEMOON ADD START - крутое ЕРТ кропило против сатанистов
-	for(var/obj/item/aspergillum/ert/holy_thing)
-		if(iscultist(user) || is_servant_of_ratvar(user) || isclockmob(user) || isconstruct(user) || isvampire(user))
+	if(user && (iscultist(user) || is_servant_of_ratvar(user) || isclockmob(user) || isconstruct(user) || isvampire(user)))
+		var/obj/item/aspergillum/ert/holy_thing = locate() in T
+		if(!holy_thing)
+			holy_thing = locate() in src
+		if(holy_thing)
 			to_chat(user, span_cultbold("Священная энергия [holy_thing] не позволяет [src] закрыться!"))
 			return FALSE
-		else
-			break
 	// BLUEMOON ADD END
 	return TRUE
 

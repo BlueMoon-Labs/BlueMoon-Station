@@ -69,6 +69,14 @@
 	if(regen_amount && regen_cooldown < world.time)
 		heal_overall_damage(regen_amount)
 
+/// Hostile AI uses walk_to(); that fights [/datum/component/shuttle_cling] drift on transit and leaves carps stuck in a line.
+/mob/living/simple_animal/hostile/carp/MoveToTarget(list/possible_targets)
+	stop_automated_movement = TRUE
+	if(istype(loc, /turf/open/space/transit))
+		walk(src, 0)
+		return TRUE
+	return ..()
+
 /mob/living/simple_animal/hostile/carp/AttackingTarget()
 	if(istype(target, /obj/machinery/portable_atmospherics/canister) || istype(target, /obj/machinery/atmospherics/pipe))
 		if(prob(99))
@@ -117,6 +125,14 @@
 	melee_damage_upper += rand(10,20)
 	maxHealth += rand(40,60)
 	move_to_delay = rand(3,7)
+
+/// For [/datum/shuttle_event/simple_spawner/carp/friendly] — drifts with hyperspace, does not hunt the crew.
+/mob/living/simple_animal/hostile/carp/shuttle_passive
+	name = "peaceful space carp"
+	desc = "Плывёт в гиперпространственном потоке рядом с шаттлом и не проявляет к экипажу агрессии."
+	AIStatus = AI_OFF
+	gold_core_spawnable = NO_SPAWN
+	environment_smash = ENVIRONMENT_SMASH_NONE
 
 /mob/living/simple_animal/hostile/carp/cayenne
 	name = "Cayenne"

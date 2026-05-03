@@ -163,6 +163,8 @@ SLEEPER CODE IS IN game/objects/items/devices/dogborg_sleeper.dm !
 	item_flags |= NOBLUDGEON //No more attack messages
 
 /obj/item/soap/tongue/attack_self(mob/user)
+	if(!istype(user, /mob/living/silicon/robot))
+		return
 	var/mob/living/silicon/robot/R = user
 	if(R.cell && R.cell.charge > 100)
 		if(R.emagged && status == 0)

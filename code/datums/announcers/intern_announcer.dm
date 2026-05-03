@@ -42,6 +42,7 @@
 		ANNOUNCER_SHUTTLECALLED = 'sound/announcer/intern/shuttlecalled.ogg',
 		ANNOUNCER_SHUTTLEDOCK = 'sound/announcer/intern/shuttledock.ogg',
 		ANNOUNCER_SHUTTLERECALLED = 'sound/announcer/intern/shuttlerecalled.ogg',
+		ANNOUNCER_MUTANTS = 'sound/announcer/medibot/hazdet.ogg',
 		ANNOUNCER_SPANOMALIES = 'sound/announcer/intern/spanomalies.ogg')
 
 	custom_alert_message = "<br><span class='alert'>Пожалуйста, будьте готовы к важному сообщению от нашего нового стажера.</span><br>"

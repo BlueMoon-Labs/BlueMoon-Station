@@ -309,9 +309,14 @@ world
 		Higher value means brighter color
  */
 
+GLOBAL_LIST_EMPTY(readrgb_cache)
+
 /proc/ReadRGB(rgb)
 	if(!rgb)
 		return
+	var/list/cached = GLOB.readrgb_cache[rgb]
+	if(cached)
+		return cached.Copy()
 
 	// interpret the HSV or HSVA value
 	var/i=1,start=1
@@ -369,9 +374,14 @@ world
 				if(single)
 					alpha |= alpha << 4
 
-	. = list(r, g, b)
+	var/list/result = list(r, g, b)
 	if(usealpha)
-		. += alpha
+		result += alpha
+	var/list/cache = GLOB.readrgb_cache
+	cache[rgb] = result
+	if(length(cache) > 512)
+		cache.Cut(1, 129) // Evict oldest 25%
+	return result.Copy()
 
 /proc/ReadHSV(hsv)
 	if(!hsv)
@@ -604,6 +614,8 @@ world
 /proc/BlendRGB(rgb1, rgb2, amount)
 	var/list/RGB1 = ReadRGB(rgb1)
 	var/list/RGB2 = ReadRGB(rgb2)
+	if(!RGB1 || !RGB2)
+		return RGB1 ? rgb(RGB1[1], RGB1[2], RGB1[3]) : (RGB2 ? rgb(RGB2[1], RGB2[2], RGB2[3]) : "#000000")
 
 	// add missing alpha if needed
 	if(RGB1.len < RGB2.len)
@@ -1194,6 +1206,7 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 		targets = target
 		if (!targets.len)
 			return
+	var/is_human = FALSE
 	if (!isicon(I))
 		if (isfile(thing)) //special snowflake
 			var/name = sanitize_filename("[generate_asset_name(thing)].png")
@@ -1217,10 +1230,11 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 		if (isnull(dir))
 			dir = A.dir
 
-		if (ishuman(thing)) // Shitty workaround for a BYOND issue.
-			var/icon/temp = I
-			I = icon()
-			I.Insert(temp, dir = SOUTH)
+		// Human workaround (see below) forces dir=SOUTH; record that now so the
+		// cache key matches the post-workaround slice without yet running the
+		// expensive icon()/Insert() pair.
+		is_human = ishuman(thing)
+		if (is_human)
 			dir = SOUTH
 	else
 		if (isnull(dir))
@@ -1229,9 +1243,11 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 			icon_state = ""
 
 	// Result-level cache: skip icon() constructor + asset registration on repeat calls.
-	// Only cacheable when I is a file reference (e.g. 'icons/obj/food.dmi') — these
-	// stringify to a unique file path. /icon datums all stringify to "/icon", causing
-	// massive key collisions where different icons return the same cached result.
+	// Cacheable when the SOURCE icon (A.icon, before any workaround) is a file ref —
+	// file refs stringify to a unique path; /icon datums all stringify to "/icon",
+	// causing massive key collisions. The is_human flag in the key keeps post-
+	// workaround entries from sharing keys with non-human callers that happened to
+	// pass the same (file, state, SOUTH) combo.
 	// Note: isicon() returns TRUE for both /icon datums AND .dmi file references,
 	// so we use isfile() which is TRUE only for file references.
 	var/can_cache = isfile(I)
@@ -1239,7 +1255,7 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 	var/static/list/icon2html_cache = list()
 
 	if(can_cache)
-		cache_key = "[I]:[icon_state]:[dir]:[frame]:[moving]"
+		cache_key = "[I]:[icon_state]:[dir]:[frame]:[moving]:[is_human]"
 		var/list/cached = icon2html_cache[cache_key]
 		if(cached)
 			for(var/thing2 in targets)
@@ -1247,6 +1263,11 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 			if(sourceonly)
 				return cached[3]
 			return cached[2]
+
+	if (is_human) // Shitty workaround for a BYOND issue.
+		var/icon/temp = I
+		I = icon()
+		I.Insert(temp, dir = SOUTH)
 
 	I = icon(I, icon_state, dir, frame, moving)
 

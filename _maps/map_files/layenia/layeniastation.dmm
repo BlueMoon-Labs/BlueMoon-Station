@@ -16771,7 +16771,7 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "Reception Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white{
@@ -18876,7 +18876,7 @@
 	dir = 4;
 	icon_state = "right";
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "40"
 	},
 /obj/structure/window/reinforced,
@@ -44595,7 +44595,7 @@
 	},
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel{
@@ -63814,7 +63814,7 @@
 /obj/machinery/door/window/northright{
 	dir = 4;
 	name = "Engineering Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "10"
 	},
 /obj/machinery/door/firedoor{
@@ -70497,7 +70497,7 @@
 /obj/item/pen,
 /obj/machinery/door/window/northright{
 	name = "Reception Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white{
@@ -72110,7 +72110,7 @@
 	},
 /area/hallway/primary/fore)
 "kAg" = (
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/requests_console{
@@ -79608,7 +79608,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
-/obj/machinery/computer/card/minor/qm{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer3{
@@ -96703,7 +96703,7 @@
 	},
 /area/service/bar)
 "oaY" = (
-/obj/machinery/computer/card/minor/hos,
+/obj/machinery/modular_computer/console/preset/id,
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hos)
 "obf" = (
@@ -119715,7 +119715,7 @@
 /obj/machinery/door/window/northleft{
 	dir = 4;
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "40"
 	},
 /obj/structure/window/reinforced{
@@ -127466,7 +127466,7 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel{
@@ -129970,7 +129970,7 @@
 	},
 /area/commons/dorms)
 "sUS" = (
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/machinery/camera{
@@ -147627,7 +147627,7 @@
 /obj/machinery/door/window/northleft{
 	dir = 4;
 	name = "Engineering Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "10"
 	},
 /obj/machinery/door/firedoor{

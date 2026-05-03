@@ -178,31 +178,11 @@ h1.alert, h2.alert		{color: #000000;}
 .singing				{font-family: "Trebuchet MS", cursive, sans-serif; font-style: italic;}
 .his_grace				{color: #15D512;	font-family: "Courier New", cursive, sans-serif;	font-style: italic;}
 .spooky					{color: #FF9100;}
-.velvet					{color: #660015; 	font-weight: bold; animation: velvet 5000ms infinite;}
-@keyframes velvet {
-	0% { color: #400020; }
-	40% { color: #FF0000; }
-	50% { color: #FF8888; }
-	60% { color: #FF0000; }
-	100% { color: #400020; }
-}
+.velvet					{color: #660015; 	font-weight: bold; animation: velvet 5000\\6d s infinite;}
 
-.hypnophrase			{color: #3bb5d3;	font-weight: bold;	animation: hypnocolor 1500ms infinite; animation-direction: alternate;}
-	@keyframes hypnocolor {
-		0%		{color: #0d0d0d;}
-		25%		{color: #410194;}
-		50%		{color: #7f17d8;}
-		75%		{color: #410194;}
-		100%	{color: #3bb5d3;}
-}
+.hypnophrase			{color: #3bb5d3;	font-weight: bold;	animation: hypnocolor 1500\\6d s infinite; animation-direction: alternate;}
 
-
-.phobia			{color: #dd0000;	font-weight: bold;	animation: phobia 750ms infinite;}
-	@keyframes phobia {
-		0%		{color: #0d0d0d;}
-		50%		{color: #dd0000;}
-		100%	{color: #0d0d0d;}
-}
+.phobia			{color: #dd0000;	font-weight: bold;	animation: phobia 750\\6d s infinite;}
 
 .icon					{height: 1em;	width: auto;}
 
@@ -219,4 +199,5 @@ h1.alert, h2.alert		{color: #000000;}
 .monkeyhive				{color: #774704;}
 .monkeylead				{color: #774704;	font-size: 2;}
 .pnarrate				{color: #009AB2;}
-</style>"}
+</style>
+<script>(function(){var s=document.createElement('style');s.textContent='@keyframes velvet{0%{color:#400020}40%{color:#FF0000}50%{color:#FF8888}60%{color:#FF0000}100%{color:#400020}}@keyframes hypnocolor{0%{color:#0d0d0d}25%{color:#410194}50%{color:#7f17d8}75%{color:#410194}100%{color:#3bb5d3}}@keyframes phobia{0%{color:#0d0d0d}50%{color:#dd0000}100%{color:#0d0d0d}}';document.head.appendChild(s);})();</script>"}

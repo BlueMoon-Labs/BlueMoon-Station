@@ -1,37 +1,88 @@
+/// Returns mobs whose real_name / mind name matches words in text (same rules as adminhelp keyword scan, without HTML).
+/proc/heart_nominee_lookup(text)
+	var/list/adminhelp_ignored_words = list("unknown", "the", "a", "an", "of", "monkey", "alien", "as", "i")
+	var/list/msglist = splittext(text, " ")
+	var/list/surnames = list()
+	var/list/forenames = list()
+	var/list/ckeys = list()
+	for(var/mob/M in GLOB.mob_list)
+		var/list/indexing = list(M.real_name, M.name)
+		if(M.mind)
+			indexing += M.mind.name
+		for(var/string in indexing)
+			var/list/L = splittext(string, " ")
+			var/surname_found = 0
+			for(var/i = L.len, i >= 1, i--)
+				var/word = ckey(L[i])
+				if(word)
+					surnames[word] = M
+					surname_found = i
+					break
+			for(var/i = 1, i < surname_found, i++)
+				var/word = ckey(L[i])
+				if(word)
+					forenames[word] = M
+		if(M.ckey)
+			ckeys[M.ckey] = M
+	var/ai_found = 0
+	var/list/mobs_found = list()
+	for(var/original_word in msglist)
+		var/word = ckey(original_word)
+		if(!word || (word in adminhelp_ignored_words))
+			continue
+		if(word == "ai")
+			ai_found = 1
+			continue
+		var/mob/found = ckeys[word]
+		if(!found)
+			found = surnames[word]
+		if(!found)
+			found = forenames[word]
+		if(!found)
+			continue
+		if(found in mobs_found)
+			continue
+		mobs_found += found
+		if(!ai_found && isAI(found))
+			ai_found = 1
+	return mobs_found
 
 /// Called when the shuttle starts launching back to centcom, polls a few random players who joined the round for commendations
 /datum/controller/subsystem/ticker/proc/poll_hearts()
 	if(!CONFIG_GET(number/commendation_percent_poll))
 		return
 
-	var/number_to_ask = round(LAZYLEN(GLOB.joined_player_list) * CONFIG_GET(number/commendation_percent_poll)) + rand(0,1)
-	if(number_to_ask == 0)
-		message_admins("Not enough eligible players to poll for commendations.")
-		return
-	message_admins("Polling [number_to_ask] players for commendations.")
-
-	for(var/i in GLOB.joined_player_list)
-		var/mob/check_mob = get_mob_by_ckey(i)
+	var/number_to_ask = round(LAZYLEN(GLOB.joined_player_list) * CONFIG_GET(number/commendation_percent_poll)) + rand(0, 1)
+	var/list/eligible = list()
+	for(var/player_ckey in GLOB.joined_player_list)
+		var/mob/check_mob = get_mob_by_ckey(player_ckey)
 		if(!check_mob?.mind || !check_mob.client)
 			continue
-		// maybe some other filters like bans or whatever
+		eligible += check_mob
+	if(!length(eligible) || number_to_ask <= 0)
+		message_admins("Not enough eligible players to poll for commendations.")
+		return
+	shuffle_inplace(eligible)
+	number_to_ask = min(number_to_ask, length(eligible))
+	message_admins("Polling [number_to_ask] players for commendations.")
+	for(var/i in 1 to number_to_ask)
+		var/mob/check_mob = eligible[i]
 		INVOKE_ASYNC(check_mob, TYPE_PROC_REF(/mob, query_heart), 1)
-		number_to_ask--
-		if(number_to_ask <= 0)
-			break
 
 /// Once the round is actually over, cycle through the commendations in the hearts list and give them the hearted status
 /datum/controller/subsystem/ticker/proc/handle_hearts()
-	var/list/message = list("The following players were commended this round: ")
-	var/i = 0
+	if(!LAZYLEN(hearts))
+		return
+	var/list/commended = list()
 	for(var/hearted_ckey in hearts)
-		i++
 		var/mob/hearted_mob = get_mob_by_ckey(hearted_ckey)
 		if(!hearted_mob?.client)
 			continue
 		hearted_mob.client.adjust_heart()
-		message += "[hearted_ckey][i==hearts.len ? "" : ", "]"
-	message_admins(message.Join())
+		commended += hearted_ckey
+	if(length(commended))
+		message_admins("The following players were commended this round: [commended.Join(", ")]")
+	LAZYCLEARLIST(hearts)
 
 ///Gives someone hearted status for OOC, from behavior commendations
 /client/proc/adjust_heart(duration = 24 HOURS)
@@ -63,8 +114,8 @@
 		return
 
 	heart_nominee = lowertext(heart_nominee)
-	var/list/name_checks = keywords_lookup(heart_nominee)
-	if(!name_checks || name_checks.len == 0)
+	var/list/name_checks = heart_nominee_lookup(heart_nominee)
+	if(!length(name_checks))
 		query_heart(attempt + 1)
 		return
 	name_checks = shuffle(name_checks)
@@ -105,4 +156,6 @@
 	if(instant || SSticker.current_state == GAME_STATE_FINISHED)
 		client.adjust_heart(duration)
 	else
-		LAZYADD(SSticker.hearts, ckey)
+		var/recipient_ckey = client.ckey
+		if(recipient_ckey && (!SSticker.hearts || !(recipient_ckey in SSticker.hearts)))
+			LAZYADD(SSticker.hearts, recipient_ckey)

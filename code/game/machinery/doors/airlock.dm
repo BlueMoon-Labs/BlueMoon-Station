@@ -31,6 +31,7 @@
 
 #define AIRLOCK_LIGHT_BOLTS "bolts"
 #define AIRLOCK_LIGHT_EMERGENCY "emergency"
+#define AIRLOCK_LIGHT_CODE_OVERRIDE "code_override"
 #define AIRLOCK_LIGHT_DENIED "denied"
 #define AIRLOCK_LIGHT_CLOSING "closing"
 #define AIRLOCK_LIGHT_OPENING "opening"
@@ -460,6 +461,7 @@
 	var/mutable_appearance/damag_overlay
 	var/mutable_appearance/sparks_overlay
 	var/mutable_appearance/note_overlay
+	var/mutable_appearance/code_override_overlay
 	var/notetype = note_type()
 
 	switch(state)
@@ -489,6 +491,14 @@
 				else
 					lights_overlay = get_airlock_overlay("lights_poweron", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
 					light_color = LIGHT_COLOR_BLUE
+					if(engineering_override || medical_override || security_override)
+						code_override_overlay = get_airlock_overlay("lights_code_override", overlays_file)
+						if(security_override)
+							code_override_overlay.color = AIRLOCK_SECURITY_LIGHT_COLOR
+						else if(medical_override)
+							code_override_overlay.color = AIRLOCK_MEDICAL_LIGHT_COLOR
+						else if(engineering_override)
+							code_override_overlay.color = AIRLOCK_ENGINEERING_LIGHT_COLOR
 			if(note)
 				note_overlay = get_airlock_overlay(notetype, note_overlay_file)
 
@@ -558,6 +568,22 @@
 				filling_overlay = get_airlock_overlay("[airlock_material]_open", overlays_file)
 			else
 				filling_overlay = get_airlock_overlay("fill_open", icon)
+			if(lights && hasPower())
+				if(locked)
+					lights_overlay = get_airlock_overlay("lights_bolts_open", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				else if(emergency)
+					lights_overlay = get_airlock_overlay("lights_emergency_open", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				else
+					lights_overlay = get_airlock_overlay("lights_poweron_open", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+					light_color = LIGHT_COLOR_BLUE
+					if(engineering_override || medical_override || security_override)
+						code_override_overlay = get_airlock_overlay("lights_code_override_open", overlays_file)
+						if(security_override)
+							code_override_overlay.color = AIRLOCK_SECURITY_LIGHT_COLOR
+						else if(medical_override)
+							code_override_overlay.color = AIRLOCK_MEDICAL_LIGHT_COLOR
+						else if(engineering_override)
+							code_override_overlay.color = AIRLOCK_ENGINEERING_LIGHT_COLOR
 			if(panel_open)
 				if(security_level)
 					panel_overlay = get_airlock_overlay("panel_open_protected", overlays_file)
@@ -589,8 +615,10 @@
 	add_overlay(filling_overlay)
 	if(lights_overlay)
 		add_overlay(lights_overlay)
-		var/mutable_appearance/lights_vis = mutable_appearance(lights_overlay.icon, lights_overlay.icon_state)
+		var/mutable_appearance/lights_vis = mutable_appearance(lights_overlay.icon, lights_overlay.icon_state, color = lights_overlay.color)
 		add_overlay(lights_vis)
+		if(code_override_overlay)
+			add_overlay(code_override_overlay)
 	add_overlay(panel_overlay)
 	add_overlay(weld_overlay)
 	add_overlay(sparks_overlay)
@@ -612,22 +640,22 @@
 /obj/machinery/door/airlock/proc/check_unres() //unrestricted sides. This overlay indicates which directions the player can access even without an ID
 	if(hasPower() && unres_sides)
 		if(unres_sides & NORTH)
-			var/image/I = image(icon='icons/obj/doors/airlocks/station/overlays.dmi', icon_state="unres_n") //layer=src.layer+1
+			var/image/I = image(icon=overlays_file, icon_state="unres_n") //layer=src.layer+1
 			I.pixel_y = 32
 			set_light(l_range = 2, l_power = 1)
 			add_overlay(I)
 		if(unres_sides & SOUTH)
-			var/image/I = image(icon='icons/obj/doors/airlocks/station/overlays.dmi', icon_state="unres_s") //layer=src.layer+1
+			var/image/I = image(icon=overlays_file, icon_state="unres_s") //layer=src.layer+1
 			I.pixel_y = -32
 			set_light(l_range = 2, l_power = 1)
 			add_overlay(I)
 		if(unres_sides & EAST)
-			var/image/I = image(icon='icons/obj/doors/airlocks/station/overlays.dmi', icon_state="unres_e") //layer=src.layer+1
+			var/image/I = image(icon=overlays_file, icon_state="unres_e") //layer=src.layer+1
 			I.pixel_x = 32
 			set_light(l_range = 2, l_power = 1)
 			add_overlay(I)
 		if(unres_sides & WEST)
-			var/image/I = image(icon='icons/obj/doors/airlocks/station/overlays.dmi', icon_state="unres_w") //layer=src.layer+1
+			var/image/I = image(icon=overlays_file, icon_state="unres_w") //layer=src.layer+1
 			I.pixel_x = -32
 			set_light(l_range = 2, l_power = 1)
 			add_overlay(I)
@@ -636,7 +664,7 @@
 			if(locked)
 				set_light(1, 0.1, "#0000FF")
 			else if(emergency)
-				set_light(1, 0.1, "#FFFF00")
+				set_light(1, 0.1, AIRLOCK_EMERGENCY_LIGHT_COLOR)
 			else
 				set_light(0)
 		else

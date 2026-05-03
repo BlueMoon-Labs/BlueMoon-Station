@@ -2,7 +2,7 @@
 
 /datum/action/cooldown/bloodsucker/feed
 	name = "Feed"
-	desc = "Draw the heartsblood of living victims in your grasp.<br><b>None/Passive:</b> Feed silently and unnoticed by your victim.<br><b>Aggressive: </b>Subdue your target quickly."
+	desc = "Высоси кровь жертв из своей хватки.<br><b>Никакой/Пассивный:</b> Питайтесь тихо и незаметно для своей жертвы.<br><b>Агрессивный: </b>Быстро высосите свою цель."
 	button_icon_state = "power_feed"
 
 	bloodcost = 0
@@ -24,7 +24,7 @@
 	var/mob/living/L = owner
 	if(L.is_mouth_covered())
 		if(display_error)
-			to_chat(owner, "<span class='warning'>You cannot feed with your mouth covered! Remove your mask.</span>")
+			to_chat(owner, "<span class='warning'>Вы не можете есть с закрытым ртом! Снимите маску.</span>")
 		return FALSE
 	// Find my Target!
 	if(!FindMyTarget(display_error)) // Sets feed_target within after Validating
@@ -40,7 +40,7 @@
 		// Animals:
 		if(isliving(target) && !iscarbon(target))
 			if(display_error)
-				to_chat(owner, "<span class='warning'>Lesser beings require a tighter grip.</span>")
+				to_chat(owner, "<span class='warning'>Низшие существа нуждаются в более крепкой хватке.</span>")
 			return FALSE
 		// Bloodsuckers:
 		else if(ishuman(target))
@@ -49,28 +49,28 @@
 				return FALSE
 			if(target.mind && target.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER))
 				if(display_error)
-					to_chat(owner, "<span class='warning'>Other Bloodsuckers will not fall for your subtle approach.</span>")
+					to_chat(owner, "<span class='warning'>Другие кровососы не поддадутся на ваш тонкий подход.</span>")
 				return FALSE
 	// Must have Target
 	if(!target)	 //  || !ismob(target)
 		if(display_error)
-			to_chat(owner, "<span class='warning'>You must be next to or grabbing a victim to feed from them.</span>")
+			to_chat(owner, "<span class='warning'>Вы должны быть рядом с жертвой или схватить ее, чтобы питаться от нее.</span>")
 		return FALSE
 	// Not even living!
 	if(!isliving(target) || issilicon(target))
 		if(display_error)
-			to_chat(owner, "<span class='warning'>You may only feed from living beings.</span>")
+			to_chat(owner, "<span class='warning'>Вы можете питаться только живыми существами.</span>")
 		return FALSE
 	if(target.blood_volume <= 0)
 		if(display_error)
-			to_chat(owner, "<span class='warning'>Your victim has no blood to take.</span>")
+			to_chat(owner, "<span class='warning'>У вашей жертвы нет крови, чтобы выпить её.</span>")
 		return FALSE
 	// BLUEMOON ADD START - вампиры, чтобы не быть перебафанными, не могут питаться персонажами, которыми не управляли игроки
 	if(iscarbon(target))
 		var/mob/living/carbon/C = target
 		if(!C.last_mind)
 			if(display_error)
-				to_chat(owner, "<span class='warning'>Your victim's blood is too thin and won't sate your hunger. (You must hunt for characters of other players)</span>")
+				to_chat(owner, "<span class='warning'>Кровь вашей жертвы слишком жидкая и не утолит ваш голод. (Вы должны охотиться на персонажей других игроков.)</span>")
 			return FALSE
 	// BLUEMOON ADD END
 	if(ishuman(target))
@@ -79,7 +79,7 @@
 			return FALSE
 		if(NOBLOOD in H.dna.species.species_traits)// || owner.get_blood_id() != target.get_blood_id())
 			if(display_error)
-				to_chat(owner, "<span class='warning'>Your victim's blood is not suitable for you to take.</span>")
+				to_chat(owner, "<span class='warning'>Кровь вашей жертвы не подходит для питания.</span>")
 			return FALSE
 	return TRUE
 
@@ -105,7 +105,7 @@
 	// None Seen!
 	if(seen_mobs.len == 0)
 		if(display_error)
-			to_chat(owner, "<span class='warning'>You must be next to or grabbing a victim to feed from them.</span>")
+			to_chat(owner, "<span class='warning'>Вы должны быть рядом с жертвой или схватить ее, чтобы питаться от нее.</span>")
 		return FALSE
 	// Check Valids...
 	var/list/targets_valid = list()
@@ -126,7 +126,7 @@
 		// Did I see targets? Then display at least one error
 		if(seen_mobs.len > 1)
 			if (display_error)
-				to_chat(owner, "<span class='warning'>None of these are valid targets to feed from subtly.</span>")
+				to_chat(owner, "<span class='warning'>Ни одна из этих целей не является приемлемой для скрытого питания.</span>")
 		else
 			ValidateTarget(seen_mobs[1], display_error)
 		return FALSE
@@ -151,11 +151,11 @@
 	var/feed_time = (amSilent ? 45 : 25) - (2.5 * level_current)
 	feed_time = max(15, feed_time)
 	if(amSilent)
-		to_chat(user, "<span class='notice'>You lean quietly toward [target] and secretly draw out your fangs...</span>")
+		to_chat(user, "<span class='notice'>Вы тихо наклоняетесь к [target] и скрытно обнажаете клыки...</span>")
 	else
-		to_chat(user, "<span class='warning'>You pull [target] close to you and draw out your fangs...</span>")
+		to_chat(user, "<span class='warning'>Вы притягиваете [target] ближе к себе и обнажаете клыки...</span>")
 	if(!do_mob(user, target, feed_time, NONE, extra_checks = CALLBACK(src, PROC_REF(ContinueActive), user, target)))//sleep(10)
-		to_chat(user, "<span class='warning'>Your feeding was interrupted.</span>")
+		to_chat(user, "<span class='warning'>Ваше питание было прервано.</span>")
 		//DeactivatePower(user,target)
 		return
 	// Put target to Sleep (Bloodsuckers are immune to their own bite's sleep effect)
@@ -177,9 +177,9 @@
 		//					 	 "<span class='notice'>You secretly slip your fangs into [target]'s flesh.</span>",
 		//					 	 vision_distance = 2, ignored_mobs=target) // Only people who AREN'T the target will notice this action.
 		//else
-		var/deadmessage = target.stat == DEAD ? "" : " <i>[target.ru_who(TRUE)] looks dazed, and will not remember this.</i>"
-		user.visible_message("<span class='notice'>[user] puts [target]'s wrist up to [user.ru_ego()] mouth.</span>", \
-						 	 "<span class='notice'>You secretly slip your fangs into [target]'s wrist.[deadmessage]</span>", \
+		var/deadmessage = target.stat == DEAD ? "" : " <i>[target.ru_who(TRUE)] выглядит ошеломленн[target.ru_who()=="он" ? "ым" : "ой"] и не помнит этого.</i>"
+		user.visible_message("<span class='notice'>[user] подносит запястье [target] к [user.ru_ego()] рту.</span>", \
+						 	 "<span class='notice'>Ты тайком запускаешь свои клыки в запястье [target].[deadmessage]</span>", \
 						 	 vision_distance = notice_range, ignored_mobs = target) // Only people who AREN'T the target will notice this action.
 		// Warn Feeder about Witnesses...
 		var/was_unnoticed = TRUE
@@ -188,13 +188,13 @@
 				was_unnoticed = FALSE
 				break
 		if(was_unnoticed)
-			to_chat(user, "<span class='notice'>You think no one saw you...</span>")
+			to_chat(user, "<span class='notice'>Вы думаете, что никто не заметил этого...</span>")
 		else
-			to_chat(user, "<span class='warning'>Someone may have noticed...</span>")
+			to_chat(user, "<span class='warning'>Возможно, кто-то заметил...</span>")
 
 	else						 // /atom/proc/visible_message(message, self_message, blind_message, vision_distance, ignored_mobs)
-		user.visible_message("<span class='warning'>[user] closes [user.ru_ego()] mouth around [target]'s neck!</span>", \
-						 "<span class='warning'>You sink your fangs into [target]'s neck.</span>")
+		user.visible_message("<span class='warning'>[user] закрывает [user.ru_ego()] рот у шеи [target], кусая её!</span>", \
+						 "<span class='warning'>Вы вонзаете клыки в шею [target].</span>")
 		tgui_alert_async(target, "Ты не сможешь детально вспомнить обстоятельства, которые привели происходящему, как и саму ситуацию... Тем не менее, в шее ощущается приятное покалывание, а ощущения сравнимы с соитием.", "Что произошло?") // BLUEMOON ADD
 
 	// My mouth is full!
@@ -231,11 +231,11 @@
 				break
 
 			if(amSilent)
-				to_chat(user, "<span class='warning'>Your feeding has been interrupted...but [target.ru_who()] didn't seem to notice you.<span>")
+				to_chat(user, "<span class='warning'>Ваше питание было прервано... но [target.ru_who()] ничего не заметил[target.ru_who()=="он" ? "":"а"].</span>")
 			else
-				to_chat(user, "<span class='warning'>Your feeding has been interrupted!</span>")
-				user.visible_message("<span class='danger'>[user] is ripped from [target]'s throat. [target.ru_ego(TRUE)] blood sprays everywhere!</span>", \
-						 			 "<span class='userdanger'>Your teeth are ripped from [target]'s throat. [target.ru_ego(TRUE)] blood sprays everywhere!</span>")
+				to_chat(user, "<span class='warning'>Ваше питание было прервано!</span>")
+				user.visible_message("<span class='danger'>[user] вырывают из глотки [target]. [target.ru_ego(TRUE)] кровь разбрызгивается повсюду!</span>", \
+						 			 "<span class='userdanger'>Ваши зубы вырваны из глотки [target]. [target.ru_ego(TRUE)] кровь разбрызгивается повсюду!</span>")
 
 				// Deal Damage to Target (should have been more careful!)
 				if(iscarbon(target))
@@ -274,31 +274,31 @@
 		if(!ishuman(target))
 			SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "drankblood", /datum/mood_event/drankblood_bad) // BAD // in bloodsucker_life.dm
 			if(!warning_target_inhuman)
-				to_chat(user, "<span class='notice'>You recoil at the taste of a lesser lifeform.</span>")
+				to_chat(user, "<span class='notice'>Вы отшатываетесь от вкуса низшей формы жизни.</span>")
 				warning_target_inhuman = TRUE
 		// Dead Blood?
 		if(target.stat >= DEAD)
 			if(ishuman(target))
 				SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "drankblood", /datum/mood_event/drankblood_dead) // BAD // in bloodsucker_life.dm
 			if(!warning_target_dead)
-				to_chat(user, "<span class='notice'>Your victim is dead. [target.ru_ego(TRUE)] blood barely nourishes you.</span>")
+				to_chat(user, "<span class='notice'>Ваша жертва мертва. [target.ru_ego(TRUE)] кровь едва ли питательна.</span>")
 				warning_target_dead = TRUE
 		// Full?
 		if(!warning_full && user.blood_volume >= bloodsuckerdatum.max_blood_volume)
-			to_chat(user, "<span class='notice'>You are full. Further blood will be wasted.</span>")
+			to_chat(user, "<span class='notice'>Вы сыты. Дальнейшая кровь будет потрачена впустую.</span>")
 			warning_full = TRUE
 		// Blood Remaining? (Carbons/Humans only)
 		if(iscarbon(target) && !AmBloodsucker(target, TRUE))
 			if(target.blood_volume <= BLOOD_VOLUME_BAD && warning_target_bloodvol > BLOOD_VOLUME_BAD)
-				to_chat(user, "<span class='warning'>Your victim's blood volume is fatally low!</span>")
+				to_chat(user, "<span class='warning'>Объем крови вашей жертвы смертельно мал!</span>")
 			else if(target.blood_volume <= BLOOD_VOLUME_OKAY && warning_target_bloodvol > BLOOD_VOLUME_OKAY)
-				to_chat(user, "<span class='warning'>Your victim's blood volume is dangerously low.</span>")
+				to_chat(user, "<span class='warning'>Объем крови вашей жертвы опасно мал.</span>")
 			else if(target.blood_volume <= BLOOD_VOLUME_SAFE && warning_target_bloodvol > BLOOD_VOLUME_SAFE)
-				to_chat(user, "<span class='notice'>Your victim's blood is at an unsafe level.</span>")
+				to_chat(user, "<span class='notice'>Объем крови вашей жертвы стал небезопасным.</span>")
 			warning_target_bloodvol = target.blood_volume // If we had a warning to give, it's been given by now.
 		// Done?
 		if(target.blood_volume <= 0)
-			to_chat(user, "<span class='notice'>You have bled your victim dry.</span>")
+			to_chat(user, "<span class='notice'>Вы высосали кровь жертвы досуха.</span>")
 			break
 
 		// Blood Gulp Sound
@@ -308,10 +308,10 @@
 	// DONE!
 	//DeactivatePower(user,target)
 	if(amSilent)
-		to_chat(user, "<span class='notice'>You slowly release [target]'s wrist." + (target.stat == 0 ? " [target.ru_ego(TRUE)] face lacks expression, like you've already been forgotten.</span>" : ""))
+		to_chat(user, "<span class='notice'>Вы медленно отпускаете запястье [target]." + (target.stat == CONSCIOUS ? " [target.ru_ego(TRUE)] на лице отсутствует выражение, как будто о вас уже забыли.</span>" : "</span>"))
 	else
-		user.visible_message("<span class='warning'>[user] unclenches their teeth from [target]'s neck.</span>", \
-							 "<span class='warning'>You retract your fangs and release [target] from your bite.</span>")
+		user.visible_message("<span class='warning'>[user] разжимает зубы, отпуская шею [target].</span>", \
+							 "<span class='warning'>Вы втягиваете свои клыки и отпускаете [target] от своего укуса.</span>")
 
 	// /proc/log_combat(atom/user, atom/target, what_done, atom/object=null, addition=null)
 	log_combat(owner, target, "fed on blood", addition="(and took [amount_taken] blood)")

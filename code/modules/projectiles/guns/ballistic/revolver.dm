@@ -59,6 +59,7 @@
 		to_chat(user, "<span class='notice'>You unload [num_unloaded] shell\s from [src].</span>")
 	else
 		to_chat(user, "<span class='warning'>[src] is empty!</span>")
+	update_icon()
 
 /obj/item/gun/ballistic/revolver/verb/spin()
 	set name = "Spin Chamber"
@@ -170,6 +171,39 @@
 			to_chat(user, "<span class='notice'>You remove the modifications on [src]. Now it will fire .38 rounds.</span>")
 	return TRUE
 
+
+/obj/item/gun/ballistic/revolver/requiem
+	name = "\improper Requiem"
+	desc = "A massive Nanotrasen heavy assault revolver chambered in 12.7x55mm. Issued in tiny numbers to Central Command and asset-protection details. The cylinder only accepts 12.7x55mm cartridges — not .357."
+	icon = 'modular_bluemoon/icons/obj/guns/requiem_revolver.dmi'
+	icon_state = "revolver"
+	item_state = "revolver"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/requiem127
+	w_class = WEIGHT_CLASS_NORMAL
+	weapon_weight = WEAPON_HEAVY
+	fire_sound = 'modular_bluemoon/sound/weapons/re9_requiem_fire.ogg'
+	recoil = 6
+	dir_recoil_amp = 7
+	slowdown = 0.15
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
+
+/obj/item/gun/ballistic/revolver/requiem/update_icon_state()
+	. = ..()
+	icon = 'modular_bluemoon/icons/obj/guns/requiem_revolver.dmi'
+	if(suppressed || sawn_off)
+		return
+	if(!get_ammo(0, 0))
+		icon_state = "revolver_open"
+	else
+		icon_state = "revolver"
+	item_state = icon_state
+
+/obj/item/gun/ballistic/revolver/requiem/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
+	. = ..()
+	if(user?.client)
+		shake_camera(user, 2, 2)
 
 /obj/item/gun/ballistic/revolver/mateba
 	name = "\improper Unica 6 auto-revolver"

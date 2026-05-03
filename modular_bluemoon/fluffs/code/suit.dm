@@ -760,3 +760,13 @@
 /obj/item/clothing/suit/donator/bm/kladmenuwu_sweater/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#FFDDD5","#FFDDD5"), 2)
+
+/obj/item/clothing/suit/toggle/captains_parade/blood_shinel
+	name = "crimson aristocracy shinel"
+	desc = "Dear, resembling a military overcoat, made in burgundy colors, stitched with golden threads, complemented by the same amber buttons."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	body_parts_covered = CHEST|GROIN|ARMS
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "blood_shinel"
+	item_state = "blood_shinel"

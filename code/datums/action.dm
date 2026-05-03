@@ -113,7 +113,7 @@
 	))
 
 	if(target == owner)
-		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(clear_ref))
+		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(clear_ref), override = TRUE)
 	UnregisterSignal(remove_from, COMSIG_MOB_KEYDOWN)
 	if(owner == remove_from)
 		owner = null
@@ -307,8 +307,9 @@
 
 /datum/action/item_action/Destroy()
 	var/obj/item/I = target
-	I.actions -= src
-	UNSETEMPTY(I.actions)
+	if(I?.actions)
+		I.actions -= src
+		UNSETEMPTY(I.actions)
 	return ..()
 
 /datum/action/item_action/Trigger(trigger_flags)

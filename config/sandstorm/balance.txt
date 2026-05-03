@@ -104,3 +104,7 @@ TETRIS_TIME_COOLDOWN 600
 ## Should production machinery be restricted for skeleton crews?
 ## Uncomment this to enable
 #PROTOLOCK_DURING_LOWPOP
+
+## Should production machinery be available in code red and above?
+## Uncomment this to enable
+#PROTOLOCK_DURING_CODERED
