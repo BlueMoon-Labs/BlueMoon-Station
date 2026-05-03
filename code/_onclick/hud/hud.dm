@@ -200,6 +200,8 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	mymob = null
 
 	QDEL_NULL(screentip_text)
+	last_screentip_atom = null
+	last_screentip_held = null
 
 	return ..()
 
