@@ -78,8 +78,16 @@
 
 /// Keyup's all keys held down, including modifier keys.
 /client/proc/ForceAllKeysUp()
-	for(var/key in keys_held)
+	for(var/key in keys_held.Copy())
 		keyUp("[key]")
+
+/client/verb/force_release_all_keys()
+	SHOULD_NOT_SLEEP(TRUE)
+	set name = ".force_release_all_keys"
+	set instant = TRUE
+	set hidden = TRUE
+
+	ForceAllKeysUp()
 
 /client/verb/keyUp(_key as text)
 	SHOULD_NOT_SLEEP(TRUE)
