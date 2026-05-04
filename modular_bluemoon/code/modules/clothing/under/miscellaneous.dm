@@ -539,3 +539,60 @@
 	can_adjust = FALSE
 	unique_reskin = list("Parade" = list(RESKIN_ICON_STATE = "aristocratic_uniform_parade"),
 						"Base" = list(RESKIN_ICON_STATE = "aristocratic_uniform"))
+
+/obj/item/clothing/under/poly_work_pants
+	name = "Poly Work Pants"
+	desc = "Some combat trousers. Probably should pair it with a vest for safety."
+	icon_state = "workpants_poly"
+	item_state = "workpants_poly"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+	can_adjust = FALSE
+	var/poly_states = 1
+	var/poly_colors = list("#FFFFFF")
+
+/obj/item/clothing/under/poly_work_pants/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, poly_colors, poly_states)
+
+/obj/item/clothing/under/poly_work_shorts
+	name = "Poly Work Shorts"
+	desc = "Some combat shorts. Definitely should pair it with a vest for safety."
+	icon_state = "workshorts_poly"
+	item_state = "workshorts_poly"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+	can_adjust = FALSE
+	var/poly_states = 1
+	var/poly_colors = list("#FFFFFF")
+
+/obj/item/clothing/under/poly_work_shorts/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, poly_colors, poly_states)
+
+/obj/item/clothing/under/rank/security/head_of_security/battledress
+	name = "Head of Security's Battledress"
+	desc = "An asymmetrical, unisex uniform with the legs replaced by a utility skirt. This version is specifically designed for the head of the security department!"
+	icon_state = "security_skirt_hos"
+	item_state = "security_skirt_hos"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+	can_adjust = TRUE
+
+/obj/item/clothing/under/rank/security/officer/battledress
+	name = "Security Battledress"
+	desc = "An asymmetrical, unisex uniform with the legs replaced by a utility skirt. Only in classic security red!"
+	icon_state = "security_skirt"
+	item_state = "security_skirt"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+	can_adjust = TRUE
+	unique_reskin = null
