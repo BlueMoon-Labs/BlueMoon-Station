@@ -36,7 +36,7 @@
 	flags_cover = MASKCOVERSEYES | MASKCOVERSMOUTH
 	resistance_flags = ACID_PROOF | FIRE_PROOF
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
-	clothing_flags = THICKMATERIAL | BLOCK_GAS_SMOKE_EFFECT
+	clothing_flags = THICKMATERIAL | BLOCK_GAS_SMOKE_EFFECT | ALLOWINTERNALS
 	mutantrace_variation = STYLE_MUZZLE
 	visor_flags_inv = 0
 	flavor_adjust = FALSE
