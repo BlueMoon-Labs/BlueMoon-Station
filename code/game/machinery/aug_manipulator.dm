@@ -17,7 +17,7 @@
 											"Veymed" = 'icons/mob/augmentation/cosmetic_prosthetic/veymed.dmi', //i don't know if i can module this either
 											"Grayson" = 'icons/mob/augmentation/cosmetic_prosthetic/grayson.dmi',
 											"Cybersolutions" = 'icons/mob/augmentation/cosmetic_prosthetic/cybersolutions.dmi',
-											"Morpheus" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/morpheus.dmi',
+											"Morpheus" = 'icons/mob/augmentation/cosmetic_prosthetic/morpheus.dmi', // cuz digi sprites yeahhhh
 											"Bishop" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/bishop_ipc.dmi',
 											"Bishop 2.0" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/bishop2_ipc.dmi',
 											"Hephaestus" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/hephaestus_ipc.dmi',

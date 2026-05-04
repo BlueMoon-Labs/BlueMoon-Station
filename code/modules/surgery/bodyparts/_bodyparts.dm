@@ -974,7 +974,7 @@
 	else
 		limb.icon = icon
 		if(should_draw_gender)
-			limb.icon_state = "[body_zone]_[icon_gender]"
+			limb.icon_state = resolve_robotic_icon_state(limb.icon, "[body_zone]_[icon_gender]")
 		// BLUEMOON ADD START
 		// prosthetic limbs with digitigrade support
 		// it should be datums, but it's kinda useless because there's only 1 sprite with digi support (morpheus)
