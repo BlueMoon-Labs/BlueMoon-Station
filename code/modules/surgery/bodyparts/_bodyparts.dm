@@ -975,10 +975,12 @@
 		limb.icon = icon
 		if(should_draw_gender)
 			limb.icon_state = resolve_robotic_icon_state(limb.icon, "[body_zone]_[icon_gender]")
+		else
+			limb.icon_state = resolve_robotic_icon_state(limb.icon, "[body_zone]")
 		// BLUEMOON ADD START
 		// prosthetic limbs with digitigrade support
 		// it should be datums, but it's kinda useless because there's only 1 sprite with digi support (morpheus)
-		else if(use_digitigrade)
+		if(use_digitigrade)
 			var/cache_key = "digi_[body_zone]_front" // cursed af, these prosthetic limbs should be datums
 			var/list/static/prosthetic_digi_limbs_cache = list()
 			var/cache_id = "[limb.icon]-[cache_key]"
@@ -995,9 +997,6 @@
 					second_limb.color = limb.color
 					. += second_limb
 		// BLUEMOON ADD END
-		else
-			limb.icon_state = resolve_robotic_icon_state(limb.icon, "[body_zone]")
-
 		if(aux_icons)
 			for(var/I in aux_icons)
 				var/aux_layer = aux_icons[I]
