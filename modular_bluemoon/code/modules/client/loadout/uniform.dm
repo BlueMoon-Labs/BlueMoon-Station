@@ -265,8 +265,8 @@
 	name = "Head of Security's Battledress"
 	path = /obj/item/clothing/under/rank/security/head_of_security/battledress
 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
-	restricted_desc = "Head Of Security"
-	restricted_roles = list("Head Of Security")
+	restricted_desc = "Head of Security"
+	restricted_roles = list("Head of Security")
 
 /datum/gear/uniform/secfancy
 	name = "Security Battledress"
