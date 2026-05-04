@@ -197,20 +197,23 @@
 
 
 /datum/unit_test/build_pipeline_collects_chain/Run()
-	var/list/pipes = list()
+	var/list/obj/machinery/atmospherics/pipe/build_pipeline_test_node/pipes = list()
 	for(var/i in 1 to 4)
 		pipes += allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
-	pipes[1].test_neighbors = list(pipes[2])
-	pipes[2].test_neighbors = list(pipes[1], pipes[3])
-	pipes[3].test_neighbors = list(pipes[2], pipes[4])
-	pipes[4].test_neighbors = list(pipes[3])
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p1 = pipes[1]
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p2 = pipes[2]
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p3 = pipes[3]
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p4 = pipes[4]
+	p1.test_neighbors = list(p2)
+	p2.test_neighbors = list(p1, p3)
+	p3.test_neighbors = list(p2, p4)
+	p4.test_neighbors = list(p3)
 
 	// Stash a temporary air parcel on pipes[3] to verify air_temporary merging.
-	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/seeded = pipes[3]
-	seeded.air_temporary = new /datum/gas_mixture()
-	seeded.air_temporary.set_volume(100)
-	seeded.air_temporary.set_temperature(T20C)
-	seeded.air_temporary.set_moles(GAS_O2, 5)
+	p3.air_temporary = new /datum/gas_mixture()
+	p3.air_temporary.set_volume(100)
+	p3.air_temporary.set_temperature(T20C)
+	p3.air_temporary.set_moles(GAS_O2, 5)
 
 	var/datum/pipeline/P = new()
 	allocated += P
@@ -218,8 +221,8 @@
 	// base.parent = pipeline before invoking build_pipeline; the proc itself
 	// only assigns .parent on *discovered* members. Mirror that contract here
 	// so the post-condition assertion is meaningful for every pipe.
-	pipes[1].parent = P
-	P.build_pipeline(pipes[1])
+	p1.parent = P
+	P.build_pipeline(p1)
 
 	TEST_ASSERT_EQUAL(length(P.members), 4, "All four pipes must be collected into members (got [length(P.members)])")
 	for(var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p as anything in pipes)
@@ -227,26 +230,26 @@
 		TEST_ASSERT_EQUAL(p.parent, P, "[p].parent must be set to the pipeline")
 	TEST_ASSERT_EQUAL(P.air.return_volume(), 4 * 100, "Pipeline volume must equal the sum of pipe volumes")
 	TEST_ASSERT(P.air.get_moles(GAS_O2) >= 5 - 0.01, "air_temporary moles must be merged into pipeline air (got [P.air.get_moles(GAS_O2)])")
-	TEST_ASSERT_NULL(seeded.air_temporary, "air_temporary must be cleared after merging")
+	TEST_ASSERT_NULL(p3.air_temporary, "air_temporary must be cleared after merging")
 
 
 /datum/unit_test/build_pipeline_handles_cycles/Run()
-	// Diamond:    1
-	//            / \
-	//           2   3
-	//            \ /
-	//             4
-	var/list/pipes = list()
+	// Diamond topology: 1 connects to 2 and 3; both 2 and 3 connect down to 4.
+	var/list/obj/machinery/atmospherics/pipe/build_pipeline_test_node/pipes = list()
 	for(var/i in 1 to 4)
 		pipes += allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
-	pipes[1].test_neighbors = list(pipes[2], pipes[3])
-	pipes[2].test_neighbors = list(pipes[1], pipes[4])
-	pipes[3].test_neighbors = list(pipes[1], pipes[4])
-	pipes[4].test_neighbors = list(pipes[2], pipes[3])
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p1 = pipes[1]
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p2 = pipes[2]
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p3 = pipes[3]
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p4 = pipes[4]
+	p1.test_neighbors = list(p2, p3)
+	p2.test_neighbors = list(p1, p4)
+	p3.test_neighbors = list(p1, p4)
+	p4.test_neighbors = list(p2, p3)
 
 	var/datum/pipeline/P = new()
 	allocated += P
-	P.build_pipeline(pipes[1])
+	P.build_pipeline(p1)
 
 	TEST_ASSERT_EQUAL(length(P.members), 4, "Diamond topology must collect each pipe exactly once (got [length(P.members)])")
 	TEST_ASSERT_EQUAL(P.air.return_volume(), 4 * 100, "Volume must sum each pipe exactly once (got [P.air.return_volume()])")
