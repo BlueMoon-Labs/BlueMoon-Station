@@ -71,7 +71,7 @@
 
 /obj/item/clothing/underwear/socks/thigh/oldwraps
 	name = "Old Wrappings"
-	desc = "Some olf wrapping..."
+	desc = "Some old wrapping..."
 	icon_state = "oldwraps"
 	item_state = "oldwraps"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
