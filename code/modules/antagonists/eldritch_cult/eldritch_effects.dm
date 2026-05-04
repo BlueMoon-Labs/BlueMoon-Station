@@ -1,3 +1,5 @@
+#define RIFT_AFTERUSE_NAMES list("Исследовано","Высосано","Проанализировано","Осушено","Высвобождено")
+
 /obj/effect/eldritch
 	name = "Руна"
 	desc = "На полу выгравирован плавный круг фигур и рун, наполненный густой черной смолистой жидкостью."
@@ -155,14 +157,18 @@
  *
  * Automatically creates more reality smashes
  */
-/datum/reality_smash_tracker/proc/Generate(mob/caller)
-	if(istype(caller))
-		targets += caller
-	var/targ_len = length(targets)
-	var/smash_len = length(smashes)
-	var/number = max(targ_len * (6-(targ_len-1)) - smash_len,1)
+/datum/reality_smash_tracker/proc/Generate(mob/caller, fake_count = 0)
+	var/number = 0
+	if(fake_count)
+		number = fake_count
+	else
+		if(istype(caller))
+			targets += caller
+		var/targ_len = length(targets)
+		var/smash_len = length(smashes)
+		number = max(targ_len * (6-(targ_len-1)) - smash_len,1)
 
-	for(var/i in 0 to number)
+	for(var/i=0,i<number,i++)
 		var/turf/chosen_location = get_safe_random_station_turf()
 
 		//we also dont want them close to each other, at least 1 tile of seperation
@@ -170,7 +176,12 @@
 		var/obj/effect/broken_illusion/what_if_i_had_one_but_got_used = locate() in range(1, chosen_location)
 		if(what_if_i_have_one || what_if_i_had_one_but_got_used) //we dont want to spawn
 			continue
-		new /obj/effect/reality_smash(chosen_location)
+		if(fake_count)
+			var/obj/effect/broken_illusion/illusion = new /obj/effect/broken_illusion(chosen_location)
+			illusion.fake = TRUE
+			RandomRiftName(illusion, use_afteruse = TRUE)
+		else
+			new /obj/effect/reality_smash(chosen_location)
 	ReworkNetwork()
 
 /**
@@ -216,6 +227,14 @@
 	for(var/obj/effect/reality_smash/reality_smash in smashes)
 		reality_smash.RemoveMind(e_cultists)
 
+///Generates random name
+/datum/reality_smash_tracker/proc/RandomRiftName(obj/rift, set_name = "", use_afteruse = FALSE)
+	var/static/list/prefix = list("Всевидящий","Громовой","Просветляющий","Навязчивый","Отвратительный","Распыленный","Тонкий","Восходящий","Низший","Мимолетный","Пернатый","Возвышающийся","Чашуйчатый","Блаженный","Высокомерный","Угрожающий","Пушистый","Миролюбивый","Агрессивный")
+	var/static/list/postfix = list("Недостаток","Присутствие","Трещина","Тепло","Холод","Память","Напоминание","Ветерок","Хватка","Взгляд","Шепот","Поток","Прикосновение","Вуаль","Мысль","Несовершенство","Пятно","Румянец")
+
+	var/base = set_name || "[pick(prefix)] [pick(postfix)]"
+	rift.name = use_afteruse ? "\improper[pick(RIFT_AFTERUSE_NAMES)] [base]" : "\improper[base]"
+
 /obj/effect/broken_illusion
 	name = "Разлом в реальности"
 	icon = 'icons/effects/eldritch.dmi'
@@ -223,6 +242,7 @@
 	anchored = TRUE
 	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	alpha = 0
+	var/fake = FALSE
 
 /obj/effect/broken_illusion/Initialize(mapload)
 	. = ..()
@@ -234,7 +254,8 @@
 	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/silicons, "pierced_reality", I)
 
 /obj/effect/broken_illusion/Destroy()
-	GLOB.reality_smash_track.RandomSpawnSmash()
+	if(!fake)
+		GLOB.reality_smash_track.RandomSpawnSmash()
 	return ..()
 
 ///Makes this obj appear out of nothing
@@ -307,7 +328,7 @@
 	. = ..()
 	GLOB.reality_smash_track.smashes += src
 	img = image(icon, src, image_state, OBJ_LAYER)
-	generate_name()
+	GLOB.reality_smash_track.RandomRiftName(src)
 
 /obj/effect/reality_smash/Destroy()
 	GLOB.reality_smash_track.smashes -= src
@@ -323,7 +344,7 @@
 		minds -= e_cultie
 	img = null
 	var/obj/effect/broken_illusion/illusion = new /obj/effect/broken_illusion(drop_location())
-	illusion.name = pick("Исследовано","Высосано","Проанализировано","Осушено","Высвобождено") + " " + name
+	GLOB.reality_smash_track.RandomRiftName(illusion, name, use_afteruse = TRUE)
 
 ///Makes the mind able to see this effect
 /obj/effect/reality_smash/proc/AddMind(datum/mind/e_cultie)
@@ -337,9 +358,4 @@
 	if(e_cultie.current.client)
 		e_cultie.current.client.images -= img
 
-///Generates random name
-/obj/effect/reality_smash/proc/generate_name()
-	var/static/list/prefix = list("Всевидящий","Громовой","Просветляющий","Навязчивый","Отвратительный","Распыленный","Тонкий","Восходящий","Низший","Мимолетный","Пернатый","Возвышающийся","Чашуйчатый","Блаженный","Высокомерный","Угрожающий","Пушистый","Миролюбивый","Агрессивный")
-	var/static/list/postfix = list("Недостаток","Присутствие","Трещина","Тепло","Холод","Память","Напоминание","Ветерок","Хватка","Взгляд","Шепот","Поток","Прикосновение","Вуаль","Мысль","Несовершенство","Пятно","Румянец")
-
-	name = "\improper" + pick(prefix) + " " + pick(postfix)
+#undef RIFT_AFTERUSE_NAMES

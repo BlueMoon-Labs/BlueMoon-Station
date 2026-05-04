@@ -12,7 +12,6 @@
 	req_access = list( )
 	var/shuttleId
 	var/possible_destinations = "whiteship_home"
-	var/admin_controlled
 	var/no_destination_swap = 0
 	var/calculated_mass = 0
 	var/calculated_dforce = 0

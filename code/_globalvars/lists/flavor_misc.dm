@@ -244,15 +244,19 @@ GLOBAL_LIST_INIT(security_depts_prefs, list(SEC_DEPT_RANDOM, SEC_DEPT_NONE, SEC_
 #define DSATCHEL "Department Satchel"
 #define DDUFFELBAG "Department Duffel Bag"
 GLOBAL_LIST_INIT(backbaglist, list(DBACKPACK, DSATCHEL, DDUFFELBAG, //everything after this point is a non-department backpack
-	"Grey Backpack" = /obj/item/storage/backpack,
-	"Grey Satchel" = /obj/item/storage/backpack/satchel,
-	"Grey Duffel Bag" = /obj/item/storage/backpack/duffelbag,
-	"Leather Satchel" = /obj/item/storage/backpack/satchel/leather,
-	"Black Pocketbook" = /obj/item/storage/backpack/pocketbook, //A new fancy bag - Gardelin0 adoon
-	"Brown Pocketbook" = /obj/item/storage/backpack/pocketbook/brown,
-	"Auburn Pocketbook" = /obj/item/storage/backpack/pocketbook/reddish,
-	"Snail Shell" = /obj/item/storage/backpack/snail,
-	"Sloog Shell" = /obj/item/storage/backpack/sloogshell))
+		"Grey Backpack" = 		/obj/item/storage/backpack,
+		"Grey Satchel" = 		/obj/item/storage/backpack/satchel,
+		"Grey Duffel Bag" = 	/obj/item/storage/backpack/duffelbag,
+		"Leather Satchel" = 	/obj/item/storage/backpack/satchel/leather,
+		"Black Pocketbook" = 	/obj/item/storage/backpack/pocketbook, //A new fancy bag - Gardelin0 adoon
+		"Brown Pocketbook" = 	/obj/item/storage/backpack/pocketbook/brown,
+		"Auburn Pocketbook" = 	/obj/item/storage/backpack/pocketbook/reddish,
+		"Snail Shell" = 		/obj/item/storage/backpack/snail,
+		"Sloog Shell" = 		/obj/item/storage/backpack/sloogshell,
+		"Hipbag" = 				/obj/item/storage/backpack/hipbag,
+		"Tan Hipbag" = 			/obj/item/storage/backpack/hipbag/tan,
+		"Green Hipbag" = 		/obj/item/storage/backpack/hipbag/green,
+	))
 
 //Suit/Skirt
 #define PREF_SUIT "Jumpsuit"

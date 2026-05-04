@@ -165,7 +165,12 @@
 	parents[nodes.Find(A)] = reference
 
 /obj/machinery/atmospherics/components/returnPipenet(obj/machinery/atmospherics/A = nodes[1]) //returns parents[1] if called without argument
-	return parents[nodes.Find(A)]
+	if(!parents?.len || !nodes?.len)
+		return null
+	var/index = nodes.Find(A)
+	if(!index || index > parents.len)
+		return null
+	return parents[index]
 
 /obj/machinery/atmospherics/components/replacePipenet(datum/pipeline/Old, datum/pipeline/New)
 	parents[parents.Find(Old)] = New

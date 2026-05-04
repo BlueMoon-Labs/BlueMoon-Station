@@ -186,11 +186,21 @@
 	lose_text = "<span class='danger'>Высокомощные лазеры из глаз? О чем вы только думали...</span>"
 
 /datum/quirk/trandening/on_spawn()
-	// Get targets
-	var/obj/item/organ/eyes/old_eyes = quirk_holder.getorganslot(ORGAN_SLOT_EYES)
-	var/obj/item/organ/eyes/robotic/glow/new_eyes = new
+	var/mob/living/carbon/human/H = quirk_holder
+	if(!ishuman(H))
+		return
+	var/datum/species/species = H.dna?.species
+	// Species-native night vision eyes (xeno hybrid, xenochimera, lizards, etc.) — keep them; implant would strip NV and flash quirks tied to those organs.
+	if(species?.mutanteyes && ispath(species.mutanteyes, /obj/item/organ/eyes/night_vision))
+		return
 
-	// Replace eyes
+	var/obj/item/organ/eyes/old_eyes = H.getorganslot(ORGAN_SLOT_EYES)
+	var/obj/item/organ/eyes/robotic/glow/new_eyes = new
+	// Glow eyes default to "000"; Insert() would overwrite prefs — preserve character colors.
+	new_eyes.left_eye_color = H.left_eye_color
+	new_eyes.right_eye_color = H.right_eye_color
+	new_eyes.current_color_string = "#[H.left_eye_color]"
+
 	qdel(old_eyes)
 	new_eyes.Insert(quirk_holder)
 

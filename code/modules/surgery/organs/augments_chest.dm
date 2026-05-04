@@ -335,7 +335,7 @@
 /obj/item/organ/cyberimp/chest/chem_implant/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, "ChemImplantSec", "Chemical Implant Interface", 500, 250)
+		ui = new(user, src, "ChemImplantSec", "Chemical Implant Interface")
 		ui.open()
 
 /obj/item/organ/cyberimp/chest/chem_implant/ui_data(mob/user)

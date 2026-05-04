@@ -7,6 +7,14 @@
 	var/datum/component/riding/D = LoadComponent(/datum/component/riding)
 	D.override_allow_spacemove = TRUE
 
+/obj/vehicle/ridden/space/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
+	. = ..()
+	if(.)
+		return TRUE
+	if(has_buckled_mobs())
+		return TRUE
+	return FALSE
+
 /obj/vehicle/ridden/space/speedbike
 	name = "Speedbike"
 	icon = 'icons/obj/bike.dmi'
@@ -26,7 +34,7 @@
 	D.set_vehicle_dir_offsets(SOUTH, -16, -16)
 	D.set_vehicle_dir_offsets(EAST, -18, 0)
 	D.set_vehicle_dir_offsets(WEST, -18, 0)
-	D.set_vehicle_dir_layer(SOUTH, ABOVE_MOB_LAYER)
+	D.set_vehicle_dir_layer(SOUTH, OBJ_LAYER)
 	D.set_vehicle_dir_layer(NORTH, OBJ_LAYER)
 	D.set_vehicle_dir_layer(EAST, OBJ_LAYER)
 	D.set_vehicle_dir_layer(WEST, OBJ_LAYER)

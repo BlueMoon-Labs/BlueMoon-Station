@@ -10,7 +10,12 @@
 
 /datum/sprite_accessory/screen/is_not_visible(var/mob/living/carbon/human/H, var/tauric)
 	var/obj/item/bodypart/head/HD = H.get_bodypart(BODY_ZONE_HEAD)
-	return (HD == null) // it's not visible if head is null
+	return (HD == null || H.dna.features["ipc_screen"] == "None") // it's not visible if head is null or the screen is disabled
+
+/datum/sprite_accessory/screen/none
+	name = "None"
+	icon_state = "none"
+	relevant_layers = null
 
 /datum/sprite_accessory/screen/blank
 	name = "Blank"

@@ -283,8 +283,6 @@ SUBSYSTEM_DEF(security_level)
 	for(var/obj/machinery/firealarm/FA in GLOB.machines)
 		if(is_station_level(FA.z))
 			FA.update_icon()
-	for(var/obj/machinery/computer/shuttle/pod/pod in GLOB.machines)
-		pod.admin_controlled = FALSE
 	var/obj/docking_port/mobile/emergency/emergency_shuttle = SSsecurity_level.get_called_emergency_shuttle()
 	if(emergency_shuttle)
 		if(GLOB.security_level < SEC_LEVEL_BLUE)
@@ -306,8 +304,6 @@ SUBSYSTEM_DEF(security_level)
 	for(var/obj/machinery/firealarm/FA in GLOB.machines)
 		if(is_station_level(FA.z))
 			FA.update_icon()
-	for(var/obj/machinery/computer/shuttle/pod/pod in GLOB.machines)
-		pod.admin_controlled = FALSE
 	var/obj/docking_port/mobile/emergency/emergency_shuttle = SSsecurity_level.get_called_emergency_shuttle()
 	if(emergency_shuttle)
 		if(GLOB.security_level < SEC_LEVEL_BLUE)
@@ -357,5 +353,3 @@ SUBSYSTEM_DEF(security_level)
 			emergency_shuttle.modTimer(0.416)
 		else
 			emergency_shuttle.modTimer(0.625)
-	for(var/obj/machinery/computer/shuttle/pod/pod in GLOB.machines)
-		pod.admin_controlled = FALSE

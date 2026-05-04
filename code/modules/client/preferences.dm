@@ -3116,6 +3116,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 /datum/preferences/proc/SetChoices(mob/user, limit = 17, list/splitJobs = list("Research Director", "Head of Personnel"), widthPerColumn = 295, height = 620) // BLUEMOON CHANGES - splitjob
 	if(!SSjob)
 		return
+	if(!ismob(user) || !user.client?.prefs)
+		return
 
 	//limit - The amount of jobs allowed per column. Defaults to 17 to make it look nice.
 	//splitJobs - Allows you split the table by job. You can make different tables for each department by including their heads. Defaults to CE to make it look nice.
@@ -5505,6 +5507,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								var/list/L = features[marking_type]
 								for(var/i = length(L), i >= 1, i--)
 									var/list/entry = L[i]
+									if(!islist(entry))
+										continue
 									if(entry[1] == limb_value)
 										L.Cut(i, i + 1)
 

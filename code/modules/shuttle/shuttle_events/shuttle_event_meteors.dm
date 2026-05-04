@@ -1,4 +1,5 @@
 /datum/shuttle_event/simple_spawner/meteor
+	event_probability = 3
 	spawning_list = list(/obj/effect/meteor/dust = 1)
 
 /datum/shuttle_event/simple_spawner/meteor/post_spawn(atom/movable/spawnee)
@@ -19,7 +20,7 @@
 /// Weak meteors — mostly miss the shuttle hull.
 /datum/shuttle_event/simple_spawner/meteor/dust
 	name = "Космическая пыль (почти безопасно)"
-	event_probability = 2
+	event_probability = 3
 	activation_fraction = 0.1
 	spawn_probability_per_process = 100
 	spawns_per_spawn = 5
@@ -38,7 +39,7 @@
 /// Heavier meteors, only beside the shuttle (miss band).
 /datum/shuttle_event/simple_spawner/meteor/safe
 	name = "Метеорный поток (мимо шаттла)"
-	event_probability = 5
+	event_probability = 6
 	activation_fraction = 0.1
 	spawn_probability_per_process = 100
 	spawns_per_spawn = 6

@@ -306,3 +306,18 @@
 	category = list("Weapons")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_AMBER
+
+//////////////////
+// Requiem 12.7x55 (syndicate kit disk) //
+//////////////////
+
+/obj/item/disk/design_disk/adv/ammo/requiem
+	name = "Requiem ammo design disk"
+	desc = "Вставьте в автолат, чтобы печатать тяжёлые патроны 12.7x55мм и спидлоадеры для Requiem."
+
+/obj/item/disk/design_disk/adv/ammo/requiem/Initialize(mapload)
+	. = ..()
+	var/datum/design/a127x55/D = new
+	var/datum/design/a127x55_speedloader/S = new
+	blueprints[1] = D
+	blueprints[2] = S

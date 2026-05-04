@@ -163,6 +163,12 @@
 		STOP_PROCESSING(SSobj, src)
 		new /obj/effect/temp_visual/yellowsparkles(src)
 		qdel(src)
+		return
+
+	if(QDELETED(returner) || !returner.loc)
+		STOP_PROCESSING(SSobj, src)
+		qdel(src)
+		return
 
 	var/xdiff=abs(returner.x-src.x)
 	var/ydiff=abs(returner.y-src.y)

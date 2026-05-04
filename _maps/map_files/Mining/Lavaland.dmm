@@ -14462,7 +14462,8 @@
 	},
 /obj/structure/rack/shelf,
 /obj/item/mmi/posibrain/syndie{
-	pixel_x = 0
+	pixel_x = 0;
+	antagonist_datum = /datum/antagonist/ghost_role/lavaland_syndicate
 	},
 /obj/item/borg/upgrade/transform/syndicatejack,
 /turf/open/floor/plasteel/dark,

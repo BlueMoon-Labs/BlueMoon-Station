@@ -930,11 +930,13 @@ SUBSYSTEM_DEF(shuttle)
 					"label" = "[opt_idx]. [initial(event_type.name)]",
 				))
 			L["hyperspace_event_options"] = event_opts
-			if(ispath(eshut.queued_admin_hyperspace_event, /datum/shuttle_event))
-				var/datum/shuttle_event/queued_type = eshut.queued_admin_hyperspace_event
-				L["queued_event_name"] = initial(queued_type.name)
-			else
-				L["queued_event_name"] = null
+			var/list/qnames = list()
+			for(var/qt in eshut.queued_admin_hyperspace_events)
+				if(!ispath(qt, /datum/shuttle_event))
+					continue
+				var/datum/shuttle_event/queued_type = qt
+				qnames += initial(queued_type.name)
+			L["queued_event_names"] = qnames
 			if(istype(emergency_docked, /obj/docking_port/stationary/transit))
 				L["can_force_hyperspace_event"] = TRUE
 			else
@@ -1090,9 +1092,9 @@ SUBSYSTEM_DEF(shuttle)
 					to_chat(user, span_warning("Только эвакуационный шаттл может иметь очередь ивента гиперпространства."))
 					return
 				var/obj/docking_port/mobile/emergency/eshut = M
-				eshut.queued_admin_hyperspace_event = event_type
+				eshut.queued_admin_hyperspace_events += event_type
 				var/datum/shuttle_event/qtype = event_type
-				to_chat(user, span_notice("Ивент «[initial(qtype.name)]» поставлен в очередь на следующий уход в гиперпространство."))
+				to_chat(user, span_notice("Ивент «[initial(qtype.name)]» добавлен в очередь ([eshut.queued_admin_hyperspace_events.len] шт.)."))
 				log_admin("[key_name(usr)] queued hyperspace event [event_type] on the evacuation shuttle.")
 				message_admins("[key_name_admin(usr)] queued hyperspace event [event_type] for the next transit leg.")
 				SSblackbox.record_feedback("text", "shuttle_manipulator", 1, "queue_hyperspace:[event_type]")
@@ -1110,8 +1112,8 @@ SUBSYSTEM_DEF(shuttle)
 					to_chat(user, span_warning("Только эвакуационный шаттл может иметь очередь ивента гиперпространства."))
 					return
 				var/obj/docking_port/mobile/emergency/eshut = M
-				eshut.queued_admin_hyperspace_event = null
-				to_chat(user, span_notice("Очередь ивента гиперпространства сброшена."))
+				eshut.queued_admin_hyperspace_events.Cut()
+				to_chat(user, span_notice("Очередь ивентов гиперпространства сброшена."))
 				log_admin("[key_name(usr)] cleared queued hyperspace event on the evacuation shuttle.")
 				. = TRUE
 				break

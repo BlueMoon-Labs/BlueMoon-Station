@@ -26,6 +26,13 @@
 
 /datum/interaction/lewd/tentacle/female/display_interaction(mob/living/user, mob/living/partner)
 	var/message
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = "[pick(
 			"долбятся в дырочку <b>[partner]</b>.",
@@ -38,15 +45,11 @@
 		message = "вводят свои тентакли в промежность <b>[partner]</b>."
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
 
 /datum/interaction/lewd/tentacle/female_double
 	required_from_user_exposed = INTERACTION_REQUIRE_VAGINA | INTERACTION_REQUIRE_ANUS
@@ -63,6 +66,13 @@
 
 /datum/interaction/lewd/tentacle/female_double/display_interaction(mob/living/user, mob/living/partner)
 	var/message
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = "[pick(
 			"долбятся в дырочки <b>[partner]</b>.",
@@ -75,15 +85,11 @@
 		message = "вводят свои тентакли в отверстия <b>[partner]</b>."
 		user.set_is_fucking(partner, CUM_TARGET_VAGINA, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_VAGINA, partner)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
 
 /datum/interaction/lewd/tentacle/male
 	required_from_user_exposed = INTERACTION_REQUIRE_ANUS
@@ -96,6 +102,13 @@
 
 /datum/interaction/lewd/tentacle/male/display_interaction(mob/living/user, mob/living/partner)
 	var/message
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_PENIS))
 		message = "[pick(
 			"потирают член <b>[partner]</b>.",
@@ -109,15 +122,11 @@
 			"сильно извиваются вокруг \the <b>[partner]</b>, стимулируя член.")]"
 		user.set_is_fucking(partner, CUM_TARGET_PENIS, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
 
 /datum/interaction/lewd/tentacle/male_double
 	required_from_user_exposed = INTERACTION_REQUIRE_ANUS | INTERACTION_REQUIRE_PENIS
@@ -134,6 +143,13 @@
 
 /datum/interaction/lewd/tentacle/male_double/display_interaction(mob/living/user, mob/living/partner)
 	var/message
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_PENIS))
 		message = "[pick(
 			"долбятся в задницу и потирает член <b>[partner]</b>.",
@@ -147,15 +163,11 @@
 			"сильно извиваются и погружаются внутрь сфинктера \the <b>[partner]</b>, стимулируя член.")]"
 		user.set_is_fucking(partner, CUM_TARGET_PENIS, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, partner)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
 
 /datum/interaction/lewd/tentacle/anus
 	required_from_user_exposed = INTERACTION_REQUIRE_ANUS
@@ -168,6 +180,13 @@
 
 /datum/interaction/lewd/tentacle/anus/display_interaction(mob/living/user, mob/living/partner)
 	var/message
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_ANUS))
 		message = "[pick(
 			"долбятся в задницу <b>[partner]</b>.",
@@ -192,12 +211,9 @@
 // ⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⡄⢻⣿⣿⣿⠄⣿⣿⡀⣾⣿⣿⣿⣿⣛⠛⠁⠄⠄
 // ⠄⠄⠄⠄⠈⠛⢿⣿⣿⣿⠁⠞⢿⣿⣿⡄⢿⣿⡇⣸⣿⣿⠿⠛⠁⠄⠄
 
-	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 70, 1, -1)
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+	playlewdinteractionsound(get_turf(user), "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
+

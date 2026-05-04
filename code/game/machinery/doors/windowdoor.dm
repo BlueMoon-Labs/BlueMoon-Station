@@ -156,6 +156,8 @@
 	return TRUE
 
 /obj/machinery/door/window/open(forced=0)
+	if(QDELETED(src))
+		return FALSE
 	if (src.operating == 1) //doors can still open when emag-disabled
 		return FALSE
 	if(!forced)
@@ -169,10 +171,12 @@
 	do_animate("opening")
 	playsound(src.loc, 'sound/machines/windowdoor.ogg', 100, 1)
 	src.icon_state ="[src.base_state]open"
-	addtimer(CALLBACK(src, PROC_REF(finish_opening)), 10)
+	addtimer(CALLBACK(src, PROC_REF(finish_opening)), 10, TIMER_DELETE_ME)
 	return TRUE
 
 /obj/machinery/door/window/proc/finish_opening()
+	if(QDELETED(src))
+		return
 	operating = FALSE
 	density = FALSE
 	if(visible)
@@ -183,6 +187,8 @@
 		operating = FALSE
 
 /obj/machinery/door/window/close(forced=0)
+	if(QDELETED(src))
+		return FALSE
 	if (src.operating)
 		return FALSE
 	if(!forced)
@@ -199,10 +205,12 @@
 	density = TRUE
 	air_update_turf(TRUE)
 	update_freelook_sight()
-	addtimer(CALLBACK(src, PROC_REF(finish_closing)), 10)
+	addtimer(CALLBACK(src, PROC_REF(finish_closing)), 10, TIMER_DELETE_ME)
 	return TRUE
 
 /obj/machinery/door/window/proc/finish_closing()
+	if(QDELETED(src))
+		return
 	if(visible)
 		set_opacity(TRUE)
 	operating = FALSE
@@ -245,10 +253,12 @@
 	flick("[src.base_state]spark", src)
 	playsound(src, "sparks", 75, 1)
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
-	addtimer(CALLBACK(src, PROC_REF(open_windows_me)), 6)
+	addtimer(CALLBACK(src, PROC_REF(open_windows_me)), 6, TIMER_DELETE_ME)
 	return TRUE
 
 /obj/machinery/door/window/proc/open_windows_me()
+	if(QDELETED(src))
+		return
 	operating = FALSE
 	desc += "<BR><span class='warning'>Its access panel is smoking slightly.</span>"
 	open(2)
