@@ -50,7 +50,7 @@
 	description = "Applied usage of neural technology allowing for autonomous AI units based on special metallic cubes with conductive and processing circuits."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("neural_programming")
-	design_ids = list("mmi_posi")
+	design_ids = list("mmi_posi", "ipc_constructor", "ipc_head_chassis", "ipc_torso_chassis")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/cyborg_upg_util

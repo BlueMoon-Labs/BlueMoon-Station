@@ -306,9 +306,9 @@
 		if (isarea(myarea))
 			LAZYREMOVE(myarea.cameras, src)
 	GLOB.cameranet.updateChunk(x, y, z)
-	var/change_msg = "deactivates"
+	var/change_msg = "отключает"
 	if(status)
-		change_msg = "reactivates"
+		change_msg = "подключает"
 		triggerCameraAlarm()
 		if(!QDELETED(src)) //We'll be doing it anyway in destroy
 			addtimer(CALLBACK(src, PROC_REF(cancelCameraAlarm)), 100)

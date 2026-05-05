@@ -1183,8 +1183,16 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 
 	var/icon/to_encode = icon
 	if (isnum(scale) && scale > 1)
-		to_encode = new(icon)
-		to_encode.Scale(round(icon.Width() * scale), round(icon.Height() * scale))
+		try
+			var/width = icon.Width()
+			var/height = icon.Height()
+			if(!isnum(width) || !isnum(height) || width <= 0 || height <= 0)
+				return icon2base64(icon)
+			to_encode = new(icon)
+			to_encode.Scale(round(width * scale), round(height * scale))
+		catch(var/exception/e)
+			stack_trace("icon2base64_scaled(): failed to scale icon ([e]); falling back to unscaled encoding.")
+			return icon2base64(icon)
 
 	return icon2base64(to_encode)
 

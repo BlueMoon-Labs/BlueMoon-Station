@@ -1160,6 +1160,7 @@
 #include "code\game\machinery\iv_drip.dm"
 #include "code\game\machinery\launch_pad.dm"
 #include "code\game\machinery\lightswitch.dm"
+#include "code\game\machinery\ipc_constructor.dm"
 #include "code\game\machinery\limbgrower.dm"
 #include "code\game\machinery\machine_warp_beacon.dm"
 #include "code\game\machinery\magnet.dm"
