@@ -695,7 +695,7 @@
 
 /obj/structure/table/reinforced/rglass
 	name = "reinforced glass table"
-	desc = "A reinforced version of the glass table."
+	desc = "Усиленная версия стеклянного стола."
 	icon = 'icons/obj/smooth_structures/rglass_table.dmi'
 	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/rglass
@@ -703,7 +703,7 @@
 
 /obj/structure/table/reinforced/plasmarglass
 	name = "reinforced plasma glass table"
-	desc = "A reinforced version of the plasma glass table."
+	desc = "Усиленная версия плазмо-стеклянного стола."
 	icon = 'icons/obj/smooth_structures/rplasmaglass_table.dmi'
 	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/plasmarglass
@@ -711,7 +711,7 @@
 
 /obj/structure/table/reinforced/titaniumglass
 	name = "titanium glass table"
-	desc = "A titanium reinforced glass table, with a fresh coat of NT white paint."
+	desc = "Стол из армированного титаном стекла, покрытый свежим слоем краски 'NT white'."
 	icon = 'icons/obj/smooth_structures/titaniumglass_table.dmi'
 	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/titaniumglass
