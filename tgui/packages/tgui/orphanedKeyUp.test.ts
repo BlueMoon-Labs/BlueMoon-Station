@@ -1,7 +1,4 @@
-import {
-  FORCE_RELEASE_ALL_KEYS_COMMAND,
-  setupOrphanedKeyUpForwarding,
-} from './orphanedKeyUp';
+import { setupOrphanedKeyUpForwarding } from './orphanedKeyUp';
 
 const keyEvent = (type: 'keydown' | 'keyup', key: string, code: string) => (
   new KeyboardEvent(type, { key, code, bubbles: true })
@@ -95,16 +92,15 @@ describe('setupOrphanedKeyUpForwarding', () => {
     expect(command).toHaveBeenNthCalledWith(2, 'KeyUp "W"');
   });
 
-  test('force-releases all server keys when the browser window regains focus', () => {
+  test('does not force-release server keys when the browser window gains focus', () => {
     setup();
 
     window.dispatchEvent(new Event('focus'));
 
-    expect(command).toHaveBeenCalledTimes(1);
-    expect(command).toHaveBeenCalledWith(FORCE_RELEASE_ALL_KEYS_COMMAND);
+    expect(command).not.toHaveBeenCalled();
   });
 
-  test('force-releases all server keys when the document becomes visible again', () => {
+  test('does not force-release server keys when the document becomes visible again', () => {
     setup();
     Object.defineProperty(document, 'visibilityState', {
       value: 'hidden',
@@ -120,7 +116,6 @@ describe('setupOrphanedKeyUpForwarding', () => {
     });
     document.dispatchEvent(new Event('visibilitychange'));
 
-    expect(command).toHaveBeenCalledTimes(1);
-    expect(command).toHaveBeenCalledWith(FORCE_RELEASE_ALL_KEYS_COMMAND);
+    expect(command).not.toHaveBeenCalled();
   });
 });
