@@ -1424,7 +1424,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 					some_input = tgui_input_text(user, "Укажите имя", "Имя", name, 20)
 					if(!some_input)
 						return
-					name = capitalize()
+					name = capitalize(some_input)
 				if("Описание")
 					some_input = tgui_input_text(user, "Укажите описание", "Описание", desc, 60, TRUE, TRUE)
 					if(!some_input)
