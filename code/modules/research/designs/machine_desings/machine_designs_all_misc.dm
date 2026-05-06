@@ -59,7 +59,7 @@
 	id = "vendor"
 	build_type = PROTOLATHE | AUTOLATHE
 	build_path = /obj/item/circuitboard/machine/vendor
-	category = list ("Cargo Machinery")
+	category = list ("initial", "Electronics", "Misc. Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/board/donksofttoyvendor
