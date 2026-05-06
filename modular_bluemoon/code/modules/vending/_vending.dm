@@ -624,11 +624,12 @@ GLOBAL_LIST_EMPTY(vending_products)
 					to_chat(user, span_warning("Нечего пополнять!"))
 			return
 	if(compartmentLoadAccessCheck(user) && !SEND_SIGNAL(user, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
-		if(!is_operational() )
+		if(!is_operational())
 			return
 		if(!panel_open && canLoadItem(I))
 			loadingAttempt(I,user)
 
+		// На всякий случай тут нет проверки на panel_open
 		if(istype(I, /obj/item/storage/bag)) //trays USUALLY
 			var/obj/item/storage/T = I
 			var/loaded = 0
@@ -645,7 +646,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 			if(denied_items)
 				to_chat(user, span_warning("[src] отклонил некоторые вещи!"))
 			if(loaded)
-				to_chat(user, span_notice("ВЫ ВСТАВИЛИ [loaded] шт. посуды внутрь [src]."))
+				to_chat(user, span_notice("ВЫ ВСТАВИЛИ [loaded] шт. предметов внутрь [src]."))
 	else
 		. = ..()
 		if(tiltable && !tilted && I.force)
@@ -1415,13 +1416,20 @@ GLOBAL_LIST_EMPTY(vending_products)
 		if(istype(I, /obj/item/pen))
 			var/static/list/options = list("Имя", "Описание", "Слоганы")
 			var/choice = tgui_input_list(user, "Что требуется изменить?", "Изменение маркетинга", options)
+			var/some_input
 			if(QDELETED(user) || !Adjacent(user))
 				return
 			switch(choice)
 				if("Имя")
-					name = capitalize(tgui_input_text(user, "Укажите имя", "Имя", name, 20))
+					some_input = tgui_input_text(user, "Укажите имя", "Имя", name, 20)
+					if(!some_input)
+						return
+					name = capitalize()
 				if("Описание")
-					desc = capitalize(tgui_input_text(user, "Укажите описание", "Описание", desc, 60, TRUE, TRUE))
+					some_input = tgui_input_text(user, "Укажите описание", "Описание", desc, 60, TRUE, TRUE)
+					if(!some_input)
+						return
+					desc = capitalize(some_input)
 				if("Слоганы")
 					var/static/list/slogan_options = list("Добавить", "Удалить", "Очистить все")
 					while(choice && choice != "Очистить все" && !QDELETED(user) && Adjacent(user))
@@ -1430,10 +1438,10 @@ GLOBAL_LIST_EMPTY(vending_products)
 							return
 						switch(choice)
 							if("Добавить")
-								var/slogan = tgui_input_text(user, "Укажите слоган", "Новый слоган", max_length = 60)
-								if(!slogan)
+								some_input = tgui_input_text(user, "Укажите слоган", "Новый слоган", max_length = 60)
+								if(!some_input)
 									continue
-								slogan_list += capitalize(slogan)
+								slogan_list += capitalize(some_input)
 							if("Удалить")
 								if(!LAZYLEN(slogan_list))
 									to_chat(user, span_warning("Нет слоганов для удаления"))
@@ -1454,7 +1462,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 /obj/machinery/vending/custom/crowbar_act(mob/living/user, obj/item/I)
 	if(linked_account) // Можно разобрать, но только если это владелец или нет аккаунта
 		var/obj/item/card/id/C = user.get_idcard(FALSE)
-		if(C.registered_account != linked_account)
+		if(!istype(C) || C.registered_account != linked_account)
 			return
 	return ..()
 
