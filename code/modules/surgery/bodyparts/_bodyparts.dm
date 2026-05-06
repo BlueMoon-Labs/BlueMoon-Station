@@ -727,6 +727,13 @@
 			should_draw_gender = FALSE
 		else
 			should_draw_gender = S.sexes
+		if(S.id == SPECIES_IPC && is_robotic_limb(FALSE) && (body_zone == BODY_ZONE_HEAD || body_zone == BODY_ZONE_CHEST))
+			should_draw_gender = TRUE
+			var/list/current_states = icon_states(icon)
+			if(body_zone == BODY_ZONE_HEAD && !(("robotic_head" in current_states) || (("head_f" in current_states) && ("head_m" in current_states))))
+				icon = 'icons/mob/augmentation/augments.dmi'
+			else if(body_zone == BODY_ZONE_CHEST && !(("robotic_chest" in current_states) || (("chest_f" in current_states) && ("chest_m" in current_states))))
+				icon = 'icons/mob/augmentation/augments.dmi'
 
 		var/mut_colors = (MUTCOLORS in S.species_traits)
 		if(mut_colors)
@@ -823,6 +830,28 @@
 		I.pixel_x = px_x
 		I.pixel_y = px_y
 	add_overlay(standing)
+
+/obj/item/bodypart/proc/resolve_robotic_icon_state(icon_file, state_name)
+	if(!icon_file || !state_name)
+		return state_name
+
+	var/list/available_states = icon_states(icon_file)
+	if(state_name in available_states)
+		return state_name
+
+	var/robotic_state
+	switch(state_name)
+		if("head_f", "head_m")
+			robotic_state = "robotic_head"
+		if("chest_f", "chest_m")
+			robotic_state = "robotic_chest"
+		else
+			robotic_state = "robotic_[state_name]"
+
+	if(robotic_state in available_states)
+		return robotic_state
+
+	return state_name
 
 //Gives you a proper icon appearance for the dismembered limb
 /obj/item/bodypart/proc/get_limb_icon(dropped)
@@ -945,14 +974,14 @@
 	else
 		limb.icon = icon
 		if(should_draw_gender)
-			limb.icon_state = "[body_zone]_[icon_gender]"
+			limb.icon_state = resolve_robotic_icon_state(limb.icon, "[body_zone]_[icon_gender]")
 		else
-			limb.icon_state = "[body_zone]"
+			limb.icon_state = resolve_robotic_icon_state(limb.icon, "[body_zone]")
 
 		if(aux_icons)
 			for(var/I in aux_icons)
 				var/aux_layer = aux_icons[I]
-				var/image/aux_img = image(limb.icon, "[I]", -aux_layer, image_dir)
+				var/image/aux_img = image(limb.icon, resolve_robotic_icon_state(limb.icon, "[I]"), -aux_layer, image_dir)
 				if(species_id == "husk")
 					var/image/husk_aux_mark = image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[I]", -aux_layer, image_dir)
 					husk_aux_mark.appearance_flags = RESET_COLOR

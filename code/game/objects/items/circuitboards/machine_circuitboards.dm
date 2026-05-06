@@ -926,6 +926,18 @@
 		/obj/item/reagent_containers/glass/beaker = 2,
 		/obj/item/stack/sheet/glass = 1)
 
+/obj/item/circuitboard/machine/ipc_constructor
+	name = "Synthetic Constructor (Machine Board)"
+	icon_state = "medical"
+	build_path = /obj/machinery/ipc_constructor
+	req_components = list(
+		/obj/item/stock_parts/matter_bin = 5,
+		/obj/item/stock_parts/capacitor = 2,
+		/obj/item/stock_parts/manipulator = 2,
+		/obj/item/stock_parts/micro_laser = 2,
+		/obj/item/stack/cable_coil = 2,
+		/obj/item/stack/sheet/glass = 2)
+
 /obj/item/circuitboard/machine/protolathe/department/medical
 	name = "Departmental Protolathe (Machine Board) - Medical"
 	icon_state = "medical"

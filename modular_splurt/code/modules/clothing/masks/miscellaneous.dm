@@ -36,13 +36,12 @@
 	flags_cover = MASKCOVERSEYES | MASKCOVERSMOUTH
 	resistance_flags = ACID_PROOF | FIRE_PROOF
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
+	clothing_flags = THICKMATERIAL | BLOCK_GAS_SMOKE_EFFECT | ALLOWINTERNALS
 	mutantrace_variation = STYLE_MUZZLE
 	visor_flags_inv = 0
 	flavor_adjust = FALSE
 	armor = list("melee" = 5, "bullet" = 0, "laser" = 5,"energy" = 5, "bomb" = 0, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	is_edible = 0
-	equip_delay_self = 30
-	unequip_delay_self = 15
 
 /obj/item/clothing/mask/gas/sechailer/mopp
 	name = "MOPP gas mask"
