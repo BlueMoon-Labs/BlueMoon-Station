@@ -1433,6 +1433,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 				if("Слоганы")
 					var/static/list/slogan_options = list("Добавить", "Удалить", "Очистить все")
 					while(choice && choice != "Очистить все" && !QDELETED(user) && Adjacent(user))
+						some_input = null
 						choice = tgui_input_list(user, "Что требуется изменить?", "Изменение слоганов", slogan_options)
 						if(QDELETED(user) || !Adjacent(user))
 							return
