@@ -437,16 +437,6 @@
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
-/datum/design/spraybottle
-	name = "Spray Bottle"
-	desc = "A spray bottle, with an unscrewable top."
-	id = "spraybottle"
-	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 3000, /datum/material/glass = 200)
-	build_path = /obj/item/reagent_containers/spray
-	category = list("Equipment")
-	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
-
 /datum/design/beartrap
 	name = "Bear Trap"
 	desc = "A trap used to catch space bears and other legged creatures."
