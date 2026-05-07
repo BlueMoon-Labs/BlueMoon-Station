@@ -36,7 +36,7 @@
 	max_integrity = 100
 	integrity_failure = 0.33
 	smooth = SMOOTH_TRUE
-	canSmoothWith = list(/obj/structure/table, /obj/structure/table/reinforced, /obj/structure/table/greyscale)
+	canSmoothWith = list(/obj/structure/table, /obj/structure/table/greyscale)
 
 /obj/structure/table/Initialize(mapload)
 	. = ..()
@@ -485,7 +485,7 @@
 	name = "plasmaglass table"
 	desc = "Стеклянный стол, но розовый и куда более прочный. Что ещё Nanotrasen спроектирует на плазме?"
 	icon = 'icons/obj/smooth_structures/plasmaglass_table.dmi'
-	icon_state = "plasmaglass_table"
+	icon_state = "box"
 	climbable = TRUE
 	buildstack = /obj/item/stack/sheet/plasmaglass
 	canSmoothWith = null
@@ -662,12 +662,13 @@
 	name = "reinforced table"
 	desc = "Усиленная версия четырёхножного стола."
 	icon = 'icons/obj/smooth_structures/reinforced_table.dmi'
-	icon_state = "r_table"
+	icon_state = "box"
 	deconstruction_ready = 0
 	buildstack = /obj/item/stack/sheet/plasteel
 	max_integrity = 200
 	integrity_failure = 0.25
 	armor = list(MELEE = 10, BULLET = 30, LASER = 30, ENERGY = 100, BOMB = 20, BIO = 0, RAD = 0, FIRE = 80, ACID = 70)
+	canSmoothWith = list(/obj/structure/table/reinforced, /obj/structure/table/reinforced/rglass, /obj/structure/table/reinforced/plasmarglass)
 
 /obj/structure/table/reinforced/deconstruction_hints(mob/user)
 	if(deconstruction_ready)
@@ -694,38 +695,46 @@
 
 /obj/structure/table/reinforced/rglass
 	name = "reinforced glass table"
-	desc = "A reinforced version of the glass table."
+	desc = "Усиленная версия стеклянного стола."
 	icon = 'icons/obj/smooth_structures/rglass_table.dmi'
-	icon_state = "rglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/rglass
-	canSmoothWith = null
 	max_integrity = 150
 
 /obj/structure/table/reinforced/plasmarglass
 	name = "reinforced plasma glass table"
-	desc = "A reinforced version of the plasma glass table."
+	desc = "Усиленная версия плазмо-стеклянного стола."
 	icon = 'icons/obj/smooth_structures/rplasmaglass_table.dmi'
-	icon_state = "rplasmaglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/plasmarglass
-	canSmoothWith = null
+	max_integrity = 400
 
 /obj/structure/table/reinforced/titaniumglass
 	name = "titanium glass table"
-	desc = "A titanium reinforced glass table, with a fresh coat of NT white paint."
+	desc = "Стол из армированного титаном стекла, покрытый свежим слоем краски 'NT white'."
 	icon = 'icons/obj/smooth_structures/titaniumglass_table.dmi'
-	icon_state = "titaniumglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/titaniumglass
 	canSmoothWith = null
-	max_integrity = 250
+	max_integrity = 350
+
+/obj/structure/table/reinforced/plastitanium
+	name = "Plastitanium Table"
+	desc = "Стол из плазменного композита с титановым усилением. Прочно так же, как и звучит."
+	icon = 'icons/obj/smooth_structures/plastitanium_table.dmi'
+	icon_state = "box"
+	buildstack = /obj/item/stack/sheet/mineral/plastitanium
+	canSmoothWith = list(/obj/structure/table/reinforced/plastitanium, /obj/structure/table/reinforced/plastitaniumglass)
+	max_integrity = 500
 
 /obj/structure/table/reinforced/plastitaniumglass
 	name = "Plastitanium Glass Table"
 	desc = "Стол из силикат-плазменного композита с титановым усилением. Прочно так же, как и звучит."
 	icon = 'icons/obj/smooth_structures/plastitaniumglass_table.dmi'
-	icon_state = "plastitaniumglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/plastitaniumglass
-	canSmoothWith = null
-	max_integrity = 300
+	canSmoothWith = list(/obj/structure/table/reinforced/plastitanium, /obj/structure/table/reinforced/plastitaniumglass)
+	max_integrity = 450
 
 /obj/structure/table/reinforced/brass
 	name = "brass table"

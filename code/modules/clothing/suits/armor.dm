@@ -448,7 +448,7 @@
 	//armor = list(MELEE = 55, BULLET = 65, LASER = 65, ENERGY = 65, BOMB = 40, BIO = 50, RAD = 100, FIRE = 40, ACID = 50,  WOUND = 40)
 
 /obj/item/clothing/suit/armor/vest/russian_coat/liquidator
-	name = "Костюм Ликвидатора"
+	name = "Liquidator Suit"
 	desc = "Костюм, используемый для борьбы со всяким дерьмом."
 	icon_state = "sov_offcoat"
 	item_state = "sov_offcoat"
