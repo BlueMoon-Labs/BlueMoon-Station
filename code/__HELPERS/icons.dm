@@ -1123,21 +1123,63 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 /// The same asset will always lead to the same asset name
 /// (Generated names do not include file extention.)
 /proc/generate_asset_name(file)
-	var/static/list/asset_name_cache = list()
-	// /icon datums have unstable refs — BYOND reuses refs after GC,
-	// so a new icon can get the same ref as a deleted one, returning stale md5.
-	// Only skip cache for /icon datums. File references (including .dmi) have
-	// stable identity and are safe to cache. Note: isicon() is too broad here —
-	// it returns TRUE for both /icon datums AND file references to .dmi files.
-	if(!istype(file, /icon))
-		var/ref_key = "\ref[file]"
-		. = asset_name_cache[ref_key]
-		if(.)
-			return
-		. = "asset.[md5(fcopy_rsc(file))]"
-		asset_name_cache[ref_key] = .
-		return
-	. = "asset.[md5(fcopy_rsc(file))]"
+	return "asset.[md5(fcopy_rsc(file))]"
+
+/// Like generate_asset_name(), but also returns the rsc reference and the rsc file hash so
+/// that callers don't have to hash the file twice (once here for the name, once again inside
+/// asset_cache_item). Pass the result of get_icon_dmi_path() in dmi_file_path to use the
+/// cheap md5(rsc_ref) path; otherwise we fall back to md5asfile() for icons that may have
+/// been modified after compile time and need the http://www.byond.com/forum/post/2611357 workaround.
+/proc/generate_and_hash_rsc_file(file, dmi_file_path)
+	var/rsc_ref = fcopy_rsc(file)
+	var/hash
+	if(dmi_file_path)
+		hash = md5(rsc_ref)
+	else
+		hash = md5asfile(rsc_ref)
+	return list(rsc_ref, hash, "asset.[hash]")
+
+/// Returns TRUE if the given text looks like a path to a compiled .dmi file under icons/.
+/proc/is_valid_dmi_file(icon_path)
+	if(!istext(icon_path) || !length(icon_path))
+		return FALSE
+	return findtextEx(icon_path, "icons/") && findtextEx(icon_path, ".dmi")
+
+/// Given an icon object, dmi file path, atom, image, or mutable_appearance,
+/// attempts to find an associated dmi file path (e.g. "icons/path/to/file.dmi").
+/// /icon objects represent both compile-time icons in the rsc and dynamic ones generated at runtime.
+/// Stringifying an rsc reference returns the dmi path ONLY if the icon is an unchanged compile-time dmi.
+/// Returns the path string on success, FALSE otherwise.
+/proc/get_icon_dmi_path(icon/icon)
+	var/icon_path = ""
+
+	if(isatom(icon) || istype(icon, /image) || istype(icon, /mutable_appearance))
+		var/atom/atom_icon = icon
+		icon = atom_icon.icon
+
+	if(isicon(icon) && isfile(icon))
+		// Compile-time dmi icons pass both isicon() and isfile().
+		// Stringifying their text_ref locate gives back the source path directly.
+		var/icon_ref = text_ref(icon)
+		icon_path = "[locate(icon_ref)]"
+
+	else if(isicon(icon) && "[icon]" == "/icon")
+		// Runtime /icon datums aren't files themselves but they reference one.
+		// If the underlying file is a compile-time dmi, fcopy_rsc → text_ref → locate
+		// resolves back to "icons/path/to/file.dmi".
+		var/rsc_ref = fcopy_rsc(icon)
+		var/icon_ref = text_ref(rsc_ref)
+		icon_path = "[locate(icon_ref)]"
+
+	else if(istext(icon))
+		var/rsc_ref = fcopy_rsc(icon)
+		var/rsc_ref_ref = text_ref(rsc_ref)
+		icon_path = "[locate(rsc_ref_ref)]"
+
+	if(is_valid_dmi_file(icon_path))
+		return icon_path
+
+	return FALSE
 
 /**
   * Converts an icon to base64. Operates by putting the icon in the iconCache savefile,
@@ -1196,11 +1238,22 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 
 	return icon2base64(to_encode)
 
-/proc/icon2html(thing, target, icon_state, dir = SOUTH, frame = 1, moving = FALSE, sourceonly = FALSE)
+/**
+ * Generate an asset for the given icon (or the icon of the given appearance for `thing`)
+ * and send it to any clients in `target`.
+ *
+ * Arguments:
+ * * thing - either an /icon, or an object with an appearance (atom, image, mutable_appearance).
+ * * target - either a /client, a mob with a client, or a list of those. world means GLOB.clients.
+ * * icon_state - force a particular icon_state for the icon to be used.
+ * * dir - force a particular dir.
+ * * frame - which frame of the icon_state's animation to use.
+ * * moving - whether to use a moving state for the given icon.
+ * * sourceonly - if TRUE, only generate the asset and return its url instead of an <img> tag.
+ */
+/proc/icon2html(atom/thing, client/target, icon_state, dir = SOUTH, frame = 1, moving = FALSE, sourceonly = FALSE)
 	if (!thing)
 		return
-
-	var/icon/I = thing
 
 	if (!target)
 		return
@@ -1212,10 +1265,16 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 		targets = list(target)
 	else
 		targets = target
-		if (!targets.len)
-			return
-	var/is_human = FALSE
-	if (!isicon(I))
+	if (!length(targets))
+		return
+
+	var/icon/icon2collapse = thing
+
+	// If the source icon resolves to an unchanged compile-time dmi we can later use the
+	// cheap md5(rsc_ref) hash path inside asset_cache_item instead of md5asfile().
+	var/icon_path = get_icon_dmi_path(thing)
+
+	if (!isicon(icon2collapse))
 		if (isfile(thing)) //special snowflake
 			var/name = sanitize_filename("[generate_asset_name(thing)].png")
 			if (!SSassets.cache[name])
@@ -1225,12 +1284,12 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 			if(sourceonly)
 				return SSassets.transport.get_asset_url(name)
 			return "<img class='icon icon-misc' src='[SSassets.transport.get_asset_url(name)]'>"
-		var/atom/A = thing
 
-		I = A.icon
+		var/atom/A = thing
+		icon2collapse = A.icon
 		if (isnull(icon_state))
 			icon_state = A.icon_state
-			if (!(icon_state in icon_states(I, 1)))
+			if (!(icon_state in icon_states(icon2collapse, 1)))
 				icon_state = initial(A.icon_state)
 				if (isnull(dir))
 					dir = initial(A.dir)
@@ -1238,64 +1297,38 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 		if (isnull(dir))
 			dir = A.dir
 
-		// Human workaround (see below) forces dir=SOUTH; record that now so the
-		// cache key matches the post-workaround slice without yet running the
-		// expensive icon()/Insert() pair.
-		is_human = ishuman(thing)
-		if (is_human)
+		if (ishuman(thing)) // Shitty workaround for a BYOND issue.
+			var/icon/temp = icon2collapse
+			icon2collapse = icon()
+			icon2collapse.Insert(temp, dir = SOUTH)
 			dir = SOUTH
+			// Insert() rewrites the icon's pixels — the result is no longer associated
+			// with the original compile-time DMI in any reliable way, so the cheap
+			// md5(rsc_ref) path can't be trusted here. Force the md5asfile() fallback.
+			icon_path = null
 	else
 		if (isnull(dir))
 			dir = SOUTH
 		if (isnull(icon_state))
 			icon_state = ""
 
-	// Result-level cache: skip icon() constructor + asset registration on repeat calls.
-	// Cacheable when the SOURCE icon (A.icon, before any workaround) is a file ref —
-	// file refs stringify to a unique path; /icon datums all stringify to "/icon",
-	// causing massive key collisions. The is_human flag in the key keeps post-
-	// workaround entries from sharing keys with non-human callers that happened to
-	// pass the same (file, state, SOUTH) combo.
-	// Note: isicon() returns TRUE for both /icon datums AND .dmi file references,
-	// so we use isfile() which is TRUE only for file references.
-	var/can_cache = isfile(I)
-	var/cache_key
-	var/static/list/icon2html_cache = list()
+	icon2collapse = icon(icon2collapse, icon_state, dir, frame, moving)
 
-	if(can_cache)
-		cache_key = "[I]:[icon_state]:[dir]:[frame]:[moving]:[is_human]"
-		var/list/cached = icon2html_cache[cache_key]
-		if(cached)
-			for(var/thing2 in targets)
-				SSassets.transport.send_assets(thing2, cached[1])
-			if(sourceonly)
-				return cached[3]
-			return cached[2]
+	// Hash the rsc file once and reuse the hash inside register_asset to skip the second
+	// md5 pass. dmi_file_path != FALSE selects the cheap md5(rsc_ref) path.
+	var/list/name_and_ref = generate_and_hash_rsc_file(icon2collapse, icon_path)
+	var/rsc_ref = name_and_ref[1]
+	var/file_hash = name_and_ref[2]
+	var/key = "[name_and_ref[3]].png"
 
-	if (is_human) // Shitty workaround for a BYOND issue.
-		var/icon/temp = I
-		I = icon()
-		I.Insert(temp, dir = SOUTH)
-
-	I = icon(I, icon_state, dir, frame, moving)
-
-	var/key = "[generate_asset_name(I)].png"
 	if(!SSassets.cache[key])
-		SSassets.transport.register_asset(key, I)
-	for (var/thing2 in targets)
-		SSassets.transport.send_assets(thing2, key)
-
-	var/url = SSassets.transport.get_asset_url(key)
-	var/html = "<img class='icon icon-[icon_state]' src='[url]'>"
-
-	if(can_cache)
-		icon2html_cache[cache_key] = list(key, html, url)
-		if(length(icon2html_cache) > 2048)
-			icon2html_cache.Cut(1, 513) // Evict oldest 25%
+		SSassets.transport.register_asset(key, rsc_ref, file_hash, icon_path)
+	for (var/client_target in targets)
+		SSassets.transport.send_assets(client_target, key)
 
 	if(sourceonly)
-		return url
-	return html
+		return SSassets.transport.get_asset_url(key)
+	return "<img class='icon icon-[icon_state]' src='[SSassets.transport.get_asset_url(key)]'>"
 
 /proc/icon2base64html(thing)
 	if (!thing)
