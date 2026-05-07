@@ -55,39 +55,58 @@
 		addMachineryMember(base)
 	if(!air)
 		air = new
+
+	// O(1) membership probe replacing the O(M) members.Find call that made the
+	// BFS quadratic on large pipenets. Seed it with whatever is already in
+	// `members` (the base pipe, when it is one) so it is found as a neighbor.
+	var/list/seen_members = list()
+	for(var/obj/machinery/atmospherics/pipe/already as anything in members)
+		seen_members[already] = TRUE
+
+	// Index-cursor BFS instead of `for(... in list); list -= current`. The old
+	// pattern was O(P) per removal × P removals = quadratic; this is O(1) per
+	// step and visits the same set of nodes (BFS reachability doesn't depend
+	// on snapshot semantics for a connected graph).
 	var/list/possible_expansions = list(base)
-	while(possible_expansions.len>0)
-		for(var/obj/machinery/atmospherics/borderline in possible_expansions)
+	var/cursor = 1
+	while(cursor <= length(possible_expansions))
+		var/obj/machinery/atmospherics/borderline = possible_expansions[cursor++]
 
-			var/list/result = borderline.pipeline_expansion(src)
+		var/list/result = borderline.pipeline_expansion(src)
+		if(!length(result))
+			continue
 
-			if(result.len>0)
-				for(var/obj/machinery/atmospherics/P in result)
-					if(istype(P, /obj/machinery/atmospherics/pipe))
-						var/obj/machinery/atmospherics/pipe/item = P
-						if(!members.Find(item))
+		// Implicit-typed `for X in list` filters nulls AND non-atmos entries —
+		// /obj/machinery/atmospherics/components/pipeline_expansion returns
+		// `list(nodes[…])` and that slot is null on disconnected components.
+		// Skipping the filter (e.g. via `as anything`) reaches setPipenet on
+		// null and crashes during SSair pipenet setup.
+		for(var/obj/machinery/atmospherics/P in result)
+			if(istype(P, /obj/machinery/atmospherics/pipe))
+				var/obj/machinery/atmospherics/pipe/item = P
+				if(seen_members[item])
+					continue
+				seen_members[item] = TRUE
 
-							if(item.parent)
-								var/static/pipenetwarnings = 10
-								if(pipenetwarnings > 0)
-									log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: ([item.x], [item.y], [item.z]).")
-									pipenetwarnings -= 1
-									if(pipenetwarnings == 0)
-										log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
-							members += item
-							possible_expansions += item
+				if(item.parent)
+					var/static/pipenetwarnings = 10
+					if(pipenetwarnings > 0)
+						log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: ([item.x], [item.y], [item.z]).")
+						pipenetwarnings -= 1
+						if(pipenetwarnings == 0)
+							log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
+				members += item
+				possible_expansions += item
 
-							volume += item.volume
-							item.parent = src
+				volume += item.volume
+				item.parent = src
 
-							if(item.air_temporary)
-								air.merge(item.air_temporary)
-								QDEL_NULL(item.air_temporary)
-					else
-						P.setPipenet(src, borderline)
-						addMachineryMember(P)
-
-			possible_expansions -= borderline
+				if(item.air_temporary)
+					air.merge(item.air_temporary)
+					QDEL_NULL(item.air_temporary)
+			else
+				P.setPipenet(src, borderline)
+				addMachineryMember(P)
 
 	air.set_volume(volume)
 

@@ -122,11 +122,21 @@ GLOBAL_LIST_INIT(huds, alist(
 	return TRUE
 
 /datum/atom_hud/proc/add_to_single_hud(mob/M, atom/A) //unsafe, no sanity apart from client
-	if(!M || !M.client || !A)
+	if(!M || !A)
 		return
+	var/client/their_client = M.client
+	if(!their_client)
+		return
+	var/list/atom_hud_list = A.hud_list
+	if(!atom_hud_list)
+		return
+	var/list/to_add
 	for(var/i in hud_icons)
-		if(A.hud_list[i])
-			M.client.images |= A.hud_list[i]
+		var/image/img = atom_hud_list[i]
+		if(img)
+			LAZYADD(to_add, img)
+	if(to_add)
+		their_client.images |= to_add
 
 //MOB PROCS
 /mob/proc/reload_huds()
