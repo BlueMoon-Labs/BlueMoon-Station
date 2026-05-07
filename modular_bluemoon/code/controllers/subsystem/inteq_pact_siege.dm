@@ -109,7 +109,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	priority_announce(
 		"Внимание, обнаружена активность в области объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: уничтожить выживших. Всем подразделениям ПАКТ в системе [station_name()] приготовиться к зачистке. Станционные Врата откалиброваны на вражеский объект.",
 		"Центральное Командование",
-		'sound/misc/announce1.ogg',
+		'sound/misc/announce_dig.ogg',
 		null,
 		null,
 		TRUE,
@@ -133,7 +133,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/inteq_pact_siege/proc/recall_attackers()
 	var/turf/dest = get_station_gateway_arrival()
 	if(!dest)
-		priority_announce("Блюспейс-отзыв с зоны осады недоступен: станционный шлюз не отвечает. ПАКТу эвакуироваться самостоятельно.", "Центральное Командование", 'sound/misc/announce1.ogg', null, null, TRUE)
+		priority_announce("Блюспейс-отзыв с зоны осады недоступен: станционный шлюз не отвечает. ПАКТу эвакуироваться самостоятельно.", "Центральное Командование", 'sound/misc/announce_dig.ogg', null, null, TRUE)
 		return
 	for(var/mob/living/L in GLOB.player_list)
 		if(QDELETED(L) || !HAS_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER))
@@ -160,7 +160,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		return
 	active = FALSE
 
-	priority_announce("Протокол осады InteQ/ПАКТ завершён: [reason]", "Центральное Командование", 'sound/misc/announce1.ogg', null, null, TRUE)
+	priority_announce("Протокол осады InteQ/ПАКТ завершён: [reason]", "Центральное Командование", 'sound/misc/announce_dig.ogg', null, null, TRUE)
 
 	if(side == PACT_SIEGE_SIDE_PACT)
 		for(var/datum/weakref/W as anything in attackers)
