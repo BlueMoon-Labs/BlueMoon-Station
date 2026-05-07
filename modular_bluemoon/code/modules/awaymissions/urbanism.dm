@@ -79,6 +79,30 @@
 	reagent_id = /datum/reagent/fuel
 	tank_volume = 300
 
+/obj/structure/reagent_dispensers/urbanismbarrel/radium
+	name = "Radium barrel"
+	desc = "Barrel filled with radium. Very dangerous."
+	icon_state = "radiumbarrel"
+	reagent_id = /datum/reagent/radium
+	tank_volume = 300
+	/// world.time when the next pulse is allowed (deciseconds)
+	var/next_radiation_pulse = 0
+
+/obj/structure/reagent_dispensers/urbanismbarrel/radium/Initialize(mapload)
+	. = ..()
+	next_radiation_pulse = world.time + 6 SECONDS
+	START_PROCESSING(SSobj, src)
+
+/obj/structure/reagent_dispensers/urbanismbarrel/radium/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	return ..()
+
+/obj/structure/reagent_dispensers/urbanismbarrel/radium/process()
+	if(world.time < next_radiation_pulse)
+		return
+	next_radiation_pulse = world.time + 6 SECONDS
+	radiation_pulse(src, 400, 2)
+
 /obj/structure/barricade/urbanism
 	name = "Barricade"
 	desc = "Basic barricade meant to protect idiots like you from danger."

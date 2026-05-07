@@ -68,3 +68,11 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
 	body_parts_covered = CHEST | GROIN
+
+/obj/item/clothing/underwear/socks/thigh/oldwraps
+	name = "Old Wrappings"
+	desc = "Some old wrapping..."
+	icon_state = "oldwraps"
+	item_state = "oldwraps"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'

@@ -11,7 +11,7 @@
 		/obj/item/surgicaldrill/advanced/cyborg
 	)
 	/// Базовые инструменты, что мы заменяем или возвращаем
-	var/list/basic_tools = list(/obj/item/retractor, /obj/item/hemostat, /obj/item/cautery, /obj/item/surgicaldrill, /obj/item/scalpel, /obj/item/circular_saw)
+	var/list/basic_tools = list(/obj/item/retractor/upgraded_t2/cyborg, /obj/item/hemostat/upgraded_t2/cyborg, /obj/item/cautery/upgraded_t2/cyborg, /obj/item/surgicaldrill, /obj/item/scalpel/upgraded_t2/cyborg, /obj/item/circular_saw/upgraded_t2/cyborg)
 
 /obj/item/borg/upgrade/advmed_tools/action(mob/living/silicon/robot/R, user = usr)
 	. = ..()

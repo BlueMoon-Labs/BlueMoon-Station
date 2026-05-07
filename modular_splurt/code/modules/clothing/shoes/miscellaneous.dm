@@ -78,7 +78,9 @@
 	icon_state = "cbrnboots"
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/shoes.dmi'
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/shoes_digi.dmi'
-	resistance_flags = ACID_PROOF
+	body_parts_covered = FEET
+	clothing_flags = THICKMATERIAL
+	resistance_flags = ACID_PROOF | FIRE_PROOF
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 	armor = list("melee" = 5, "bullet" = 0, "laser" = 5,"energy" = 5, "bomb" = 0, "bio" = 100, "rad" = 100, "fire" = 40, "acid" = 100)
 	is_edible = 0
@@ -86,7 +88,7 @@
 /obj/item/clothing/shoes/jackboots/cbrn/mopp
 	name = "MOPP boots"
 	desc = "Mission Oriented Protective Posture. Thick black boots design for working in hazardous combat environments."
-	armor = list("melee" = 10, "bullet" = 0, "laser" = 10,"energy" = 10, "bomb" = 10, "bio" = 100, "rad" = 75, "fire" = 40, "acid" = 100)
+	armor = list("melee" = 10, "bullet" = 0, "laser" = 10,"energy" = 10, "bomb" = 10, "bio" = 100, "rad" = 100, "fire" = 40, "acid" = 100)
 	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL
 	max_heat_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
 	cold_protection = FEET

@@ -2340,3 +2340,15 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/lapkee_kit
 	ckeywhitelist = list("lapkee")
+
+/datum/gear/donator/bm/oldtunic
+	name = "Old Tunic"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/oldtunic
+	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/oldwraps
+	name = "Old Wrappings"
+	slot = ITEM_SLOT_SOCKS
+	path = /obj/item/clothing/underwear/socks/thigh/oldwraps
+	ckeywhitelist = list("lindaastereih")

@@ -178,7 +178,7 @@
 	construction_time = 40
 	materials = list(/datum/material/iron = 500, /datum/material/glass = 400, /datum/material/silver = 350, /datum/material/gold = 1000, /datum/material/diamond = 100)
 	build_path = /obj/item/organ/cyberimp/brain/robot_radshielding
-	category = list("IPC Organs", "Implants")
+	category = list("Cybernetics", "Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/cyberimp_nutriment
@@ -442,5 +442,5 @@
 	construction_time = 75
 	materials = list(/datum/material/iron = 4000, /datum/material/glass = 1500, /datum/material/silver = 1200, /datum/material/gold = 1600, /datum/material/plasma = 1000)
 	build_path = /obj/item/organ/cyberimp/arm/power_cord
-	category = list("IPC Organs", "Implants")
+	category = list("Cybernetics", "Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL

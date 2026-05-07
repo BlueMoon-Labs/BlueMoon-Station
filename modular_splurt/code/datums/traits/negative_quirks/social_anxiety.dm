@@ -75,6 +75,12 @@
 	if(HAS_TRAIT(quirk_holder, TRAIT_FEARLESS))
 		return
 
+	var/datum/language/speaking = quirk_holder.get_message_language(speech_args[SPEECH_MESSAGE])
+	if(!speaking)
+		speaking = quirk_holder.get_selected_language()
+	if(speaking && initial(speaking.visual_language))
+		return
+
 	var/datum/component/mood/mood = quirk_holder.GetComponent(/datum/component/mood)
 	var/moodmod
 	if(mood)

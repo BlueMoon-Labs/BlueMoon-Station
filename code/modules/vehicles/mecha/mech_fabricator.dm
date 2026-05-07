@@ -64,7 +64,6 @@
 								"Implants",
 								"Control Interfaces",
 								"Misc",
-								"IPC Organs",
 								"Prosthetics",
 								"Savannah-Ivanov"
 								)

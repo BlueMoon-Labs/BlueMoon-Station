@@ -26,6 +26,101 @@
 	construction_time = 350
 	category = list("Cyborg")
 
+/datum/design/ipc_torso_chassis
+	name = "IPC Torso Chassis"
+	id = "ipc_torso_chassis"
+	build_type = MECHFAB
+	build_path = /obj/item/bodypart/chest/robot/ipc
+	materials = list(/datum/material/iron=24000, /datum/material/glass=5000, /datum/material/silver=2000)
+	construction_time = 280
+	category = list("Cybernetics")
+
+/datum/design/ipc_head_chassis
+	name = "IPC Cranial Chassis"
+	id = "ipc_head_chassis"
+	build_type = MECHFAB
+	build_path = /obj/item/bodypart/head/robot/ipc
+	materials = list(/datum/material/iron=8000, /datum/material/glass=3000, /datum/material/gold=1000)
+	construction_time = 180
+	category = list("Cybernetics")
+
+/datum/design/ipc_stomach
+	name = "IPC power cell"
+	desc = "A modular power cell assembly built for IPC chassis."
+	id = "ipc_stomach"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 1000, /datum/material/glass = 300, /datum/material/silver = 500, /datum/material/gold = 400)
+	build_path = /obj/item/organ/stomach/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_heart
+	name = "IPC hydraulic pump"
+	desc = "A shielded hydraulic pump that maintains pressure across an IPC chassis."
+	id = "ipc_heart"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 900, /datum/material/glass = 300, /datum/material/silver = 300)
+	build_path = /obj/item/organ/heart/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_lungs
+	name = "IPC cooling system"
+	desc = "A thermal regulation assembly used to keep an IPC chassis within safe limits."
+	id = "ipc_lungs"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 900, /datum/material/glass = 500, /datum/material/silver = 250)
+	build_path = /obj/item/organ/lungs/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_liver
+	name = "IPC reagent processor"
+	desc = "A filtration and reagent processing assembly for IPC chassis."
+	id = "ipc_liver"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 800, /datum/material/glass = 300, /datum/material/gold = 200)
+	build_path = /obj/item/organ/liver/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_eyes
+	name = "IPC optical sensor array"
+	desc = "A paired optical package for an IPC chassis."
+	id = "ipc_eyes"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 500, /datum/material/glass = 1200, /datum/material/gold = 300)
+	build_path = /obj/item/organ/eyes/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_ears
+	name = "IPC audio sensor array"
+	desc = "A calibrated audio receiver set for an IPC chassis."
+	id = "ipc_ears"
+	build_type = MECHFAB
+	construction_time = 30
+	materials = list(/datum/material/iron = 400, /datum/material/glass = 700, /datum/material/silver = 200)
+	build_path = /obj/item/organ/ears/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_tongue
+	name = "IPC voice synthesizer"
+	desc = "A robotic vocalizer and encoded-audio emitter for IPC bodies."
+	id = "ipc_tongue"
+	build_type = MECHFAB
+	construction_time = 30
+	materials = list(/datum/material/iron = 400, /datum/material/glass = 400, /datum/material/gold = 200)
+	build_path = /obj/item/organ/tongue/robot/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
 /datum/design/borg_l_arm
 	name = "Cyborg Left Arm"
 	id = "borg_l_arm"

@@ -36,7 +36,7 @@
 /obj/item/clothing/suit/cbrn/security
 	name = "security CBRN suit"
 	desc = "Chemical, Biological, Radiological and Nuclear. A suit design for harsh environmental conditions short of no atmosphere. This one has security colors and protects a little bit better."
-	armor = list("melee" = 10, "bullet" = 10, "laser" = 10, "energy" = 30, "bomb" = 0, "bio" = 100, "rad" = 100, "fire" = 40, "acid" = 100)
+	armor = list("melee" = 25, "bullet" = 25, "laser" = 25, "energy" = 30, "bomb" = 0, "bio" = 100, "rad" = 100, "fire" = 40, "acid" = 100)
 	icon_state = "cbrnsuitsec"
 	item_state = "cbrnsuitsec"
 	slowdown = 0.3
@@ -50,9 +50,10 @@
 
 /obj/item/clothing/suit/cbrn/cargo
 	name = "cargo CBRN suit"
-	desc = "Chemical, Biological, Radiological and Nuclear. A suit design for harsh environmental conditions short of no atmosphere. This one has cargo colors and slows the wearer less."
+	desc = "Chemical, Biological, Radiological and Nuclear. A suit design for harsh environmental conditions short of no atmosphere. This one has cargo colors and slows the wearer less and defend a bit."
 	icon_state = "cbrnsuitcargo"
 	item_state = "cbrnsuitcargo"
+	armor = list("melee" = 5, "bullet" = 5, "laser" = 5,"energy" = 5, "bomb" = 10, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	slowdown = 0.3
 
 /obj/item/clothing/suit/cbrn/science
@@ -79,7 +80,7 @@
 	item_state = "moppsuit"
 	allowed = list(/obj/item/flashlight, /obj/item/gun/ballistic/revolver, /obj/item/gun/ballistic/automatic, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/energy, /obj/item/gun/ballistic/shotgun,  /obj/item/tank/internals/doubleoxygen, /obj/item/tank/internals/oxygen, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/geiger_counter)
 	slowdown = 0.2
-	armor = list("melee" = 35, "bullet" = 35, "laser" = 35,"energy" = 40, "bomb" = 25, "bio" = 100, "rad" = 75, "fire" = 40, "acid" = 100) //I can tell I will have to fucking balance this... several times it feels like -Radar
+	armor = list("melee" = 35, "bullet" = 35, "laser" = 35,"energy" = 40, "bomb" = 25, "bio" = 100, "rad" = 100, "fire" = 40, "acid" = 100)
 	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL
 	heat_protection = CHEST|GROIN|LEGS|ARMS
 	max_heat_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
@@ -290,7 +291,7 @@
 	display_name = "CBRN gear"
 	description = "Chemical, Biological, Radiological and Nuclear protective gear"
 	prereq_ids = list("engineering")
-	design_ids = list("cbrn_civi", "cbrn_sec", "cbrn_engi", "cbrn_serv", "cbrn_cargo", "cbrn_sci", "cbrn_med", "cbrn_mask", "cbrn_boots", "cbrn_gloves", "cbrn_glovesengi", "cbrn_glovesmed", "cbrn_hood", "cbrn_oxy", "cbrn_plasma","cbrn_nitrogen") // BLUEMOON ADD cbrn_glovesmed
+	design_ids = list("cbrn_civi", "cbrn_sec", "cbrn_engi", "cbrn_serv", "cbrn_cargo", "cbrn_sci", "cbrn_med", "cbrn_mask", "cbrn_boots", "cbrn_gloves", "cbrn_glovesengi", "cbrn_glovesmed", "cbrn_hood", "cbrn_hood_eng", "cbrn_hood_cargo","cbrn_hood_sec","cbrn_hood_sci", "cbrn_hood_med", "cbrn_hood_serv", "cbrn_oxy", "cbrn_plasma","cbrn_nitrogen") // BLUEMOON ADD cbrn_glovesmed
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2000)
 
 /datum/techweb_node/mopp

@@ -2676,20 +2676,20 @@
 "jJ" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/line,
 /obj/structure/table,
-/obj/item/robot_module/syndicate_medical{
-	pixel_x = -7;
-	pixel_y = 0
-	},
-/obj/item/robot_module/saboteur{
-	pixel_y = 9;
-	pixel_x = 6
-	},
-/obj/item/robot_module/syndicate{
-	pixel_y = 9;
-	pixel_x = -6
-	},
 /obj/structure/transmitter/mounted/syndicate{
 	pixel_y = 25
+	},
+/obj/item/borg/upgrade/transform/syndicatejack/syndie_assault{
+	pixel_y = 9;
+	pixel_x = -5
+	},
+/obj/item/borg/upgrade/transform/syndicatejack/syndie_medical{
+	pixel_y = 2;
+	pixel_x = -5
+	},
+/obj/item/borg/upgrade/transform/syndicatejack/syndie_saboteur{
+	pixel_y = -5;
+	pixel_x = -5
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
