@@ -1407,9 +1407,12 @@ GLOBAL_LIST_EMPTY(vending_products)
 			linked_account = C.registered_account
 			say("\The [src] был подключён к [C].")
 
-	if(linked_account && isidcard(I))
+	if(!linked_account)
+		say("Автомат не настроен, пожалуйста привяжите аккаунт.")
+
+	if(isidcard(I))
 		var/obj/item/card/id/C = I
-		if(C.registered_account == linked_account) // Не нужно продавать карту владельца
+		if(C.registered_account) // Не нужно продавать карты с аккаунтами
 			return
 
 	if(compartmentLoadAccessCheck(user))
