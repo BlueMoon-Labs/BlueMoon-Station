@@ -87,7 +87,7 @@ GLOBAL_LIST_EMPTY(asset_datums)
 /// Bump when generate_css output format, ensure_stripped pipeline, or sprites dict layout
 /// changes in a way that makes the previous round's cache files invalid. This makes rounds
 /// after the bump regenerate even if input_signature happens to match.
-#define SPRITESHEET_CACHE_VERSION 1
+#define SPRITESHEET_CACHE_VERSION 2
 
 /datum/asset/spritesheet/register()
 	if (!name)
@@ -133,36 +133,57 @@ GLOBAL_LIST_EMPTY(asset_datums)
 	)))
 
 	var/cache_valid = FALSE
+	var/list/cached_png_hashes
 	if(fexists(cache_meta_path) && fexists(css_path))
 		var/list/cached_meta = safe_json_decode(file2text(cache_meta_path))
 		if(islist(cached_meta) && cached_meta["signature"] == input_signature)
-			cache_valid = TRUE
-			for(var/size_id in sizes)
-				if(!fexists("data/spritesheets/[name]_[size_id].png"))
-					cache_valid = FALSE
-					break
+			cached_png_hashes = cached_meta["png_hashes"]
+			if(islist(cached_png_hashes))
+				cache_valid = TRUE
+				for(var/size_id in sizes)
+					if(!fexists("data/spritesheets/[name]_[size_id].png") || !cached_png_hashes["[size_id]"])
+						cache_valid = FALSE
+						break
+			else
+				cache_valid = FALSE
 
 	if(cache_valid)
 		for(var/size_id in sizes)
 			var/png_path = "data/spritesheets/[name]_[size_id].png"
-			SSassets.transport.register_asset("[name]_[size_id].png", file(png_path))
+			SSassets.transport.register_asset("[name]_[size_id].png", file(png_path), cached_png_hashes["[size_id]"], null)
 		SSassets.transport.register_asset("spritesheet_[name].css", file(css_path))
 		return
 
 	// Cache miss: full regeneration. ensure_stripped(keep_file=TRUE) leaves the PNG on
 	// disk so the next round can cache-hit; we register from the file directly instead
 	// of from the loaded /icon datum so asset_cache_item hashes match across rounds.
+	var/list/current_png_files = list()
+	for(var/size_id in sizes)
+		current_png_files["[name]_[size_id].png"] = TRUE
+
+	for(var/existing_png in flist("data/spritesheets/"))
+		if(findtextEx(existing_png, "[name]_") != 1 || copytext(existing_png, -4) != ".png")
+			continue
+		if(existing_png in current_png_files)
+			continue
+		fdel("data/spritesheets/[existing_png]")
+
 	ensure_stripped(keep_file = TRUE)
+	var/list/png_hashes = list()
 	for(var/size_id in sizes)
 		var/png_path = "data/spritesheets/[name]_[size_id].png"
-		SSassets.transport.register_asset("[name]_[size_id].png", file(png_path))
+		var/datum/asset_cache_item/ACI = SSassets.transport.register_asset("[name]_[size_id].png", file(png_path))
+		png_hashes["[size_id]"] = ACI.hash
 
 	fdel(css_path)
 	text2file(generate_css(), css_path)
 	SSassets.transport.register_asset("spritesheet_[name].css", file(css_path))
 
 	fdel(cache_meta_path)
-	text2file(json_encode(list("signature" = input_signature)), cache_meta_path)
+	text2file(json_encode(list(
+		"signature" = input_signature,
+		"png_hashes" = png_hashes,
+	)), cache_meta_path)
 
 #undef SPRITESHEET_CACHE_VERSION
 

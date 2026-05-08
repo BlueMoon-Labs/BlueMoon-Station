@@ -1175,15 +1175,15 @@ GLOBAL_VAR(dummy_save_path)
 /proc/is_valid_dmi_file(icon_path)
 	if(!istext(icon_path) || !length(icon_path))
 		return FALSE
-	return findtextEx(icon_path, "icons/") && findtextEx(icon_path, ".dmi")
+	return findtextEx(icon_path, "icons/") && copytext(icon_path, -4) == ".dmi"
 
 /// Given an icon object, dmi file path, atom, image, or mutable_appearance,
 /// attempts to find an associated dmi file path (e.g. "icons/path/to/file.dmi").
 /// /icon objects represent both compile-time icons in the rsc and dynamic ones generated at runtime.
 /// Stringifying an rsc reference returns the dmi path ONLY if the icon is an unchanged compile-time dmi.
-/// Returns the path string on success, FALSE otherwise.
+/// Returns the path string on success, null otherwise.
 /proc/get_icon_dmi_path(icon/icon)
-	var/icon_path = ""
+	var/icon_path = null
 
 	if(isatom(icon) || istype(icon, /image) || istype(icon, /mutable_appearance))
 		var/atom/atom_icon = icon
@@ -1211,7 +1211,7 @@ GLOBAL_VAR(dummy_save_path)
 	if(is_valid_dmi_file(icon_path))
 		return icon_path
 
-	return FALSE
+	return null
 
 /**
   * Converts an icon to base64. Operates by putting the icon in the iconCache savefile,
@@ -1311,9 +1311,12 @@ GLOBAL_VAR(dummy_save_path)
 
 	if (!isicon(icon2collapse))
 		if (isfile(thing)) //special snowflake
-			var/name = sanitize_filename("[generate_asset_name(thing)].png")
+			var/list/name_and_ref = generate_and_hash_rsc_file(thing, icon_path)
+			var/rsc_ref = name_and_ref[1]
+			var/file_hash = name_and_ref[2]
+			var/name = sanitize_filename("[name_and_ref[3]].png")
 			if (!SSassets.cache[name])
-				SSassets.transport.register_asset(name, thing)
+				SSassets.transport.register_asset(name, rsc_ref, file_hash, icon_path)
 			for (var/thing2 in targets)
 				SSassets.transport.send_assets(thing2, name)
 			if(sourceonly)
@@ -1350,7 +1353,7 @@ GLOBAL_VAR(dummy_save_path)
 	icon2collapse = icon(icon2collapse, icon_state, dir, frame, moving)
 
 	// Hash the rsc file once and reuse the hash inside register_asset to skip the second
-	// md5 pass. dmi_file_path != FALSE selects the cheap md5(rsc_ref) path.
+	// md5 pass. A non-null dmi_file_path selects the cheap md5(rsc_ref) path.
 	var/list/name_and_ref = generate_and_hash_rsc_file(icon2collapse, icon_path)
 	var/rsc_ref = name_and_ref[1]
 	var/file_hash = name_and_ref[2]
@@ -1420,9 +1423,12 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 	if(!cached)
 		var/icon/I = getFlatIcon(thing)
 		I = icon(I, "", SOUTH, 1, FALSE)
-		var/asset_key = "[generate_asset_name(I)].png"
+		var/list/name_and_ref = generate_and_hash_rsc_file(I, null)
+		var/rsc_ref = name_and_ref[1]
+		var/file_hash = name_and_ref[2]
+		var/asset_key = "[name_and_ref[3]].png"
 		if(!SSassets.cache[asset_key])
-			SSassets.transport.register_asset(asset_key, I)
+			SSassets.transport.register_asset(asset_key, rsc_ref, file_hash, null)
 		var/url = SSassets.transport.get_asset_url(asset_key)
 		var/html = "<img class='icon icon-' src='[url]'>"
 		cached = list(asset_key, html, url)

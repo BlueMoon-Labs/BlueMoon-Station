@@ -62,8 +62,7 @@
 
 /// Immediately removes an asset from the asset cache.
 /datum/asset_transport/proc/unregister_asset(asset_name)
-	SSassets.cache[asset_name] = null
-	SSassets.cache.Remove(null)
+	SSassets.cache.Remove(asset_name)
 
 /// Returns a url for a given asset.
 /// asset_name - Name of the asset.
