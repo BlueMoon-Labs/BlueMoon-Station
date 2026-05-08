@@ -35,24 +35,10 @@
 	for(var/obj/effect/landmark/event_spawn/mark as anything in event_spawns)
 		if(QDELETED(mark))
 			continue
-		if(!is_station_level(mark.z))
-			continue
 		var/turf/spawn_turf = get_rad_spawn_turf(mark)
 		if(!spawn_turf)
 			continue
-		switch(placed % 4)
-			if(0)
-				var/obj/structure/reagent_dispensers/urbanismbarrel/radium/brl = new(spawn_turf)
-				contamination_atoms += brl
-			if(1)
-				var/obj/effect/landmark/nuclear_waste_spawner/spawner = new(spawn_turf)
-				spawner.fire()
-			if(2)
-				var/obj/item/nuke_core/core = new(spawn_turf)
-				contamination_atoms += core
-			if(3)
-				var/obj/item/stock_parts/cell/bluespacereactor/cell = new(spawn_turf)
-				contamination_atoms += cell
+		spawn_contamination_payload(spawn_turf, placed)
 		placed++
 
 	var/fallback_spawns_wanted = 128
@@ -63,40 +49,30 @@
 		var/turf/picked_drop = pick_radioactive_drop_turf()
 		if(!picked_drop)
 			continue
-		switch(fallback_spawned % 4)
-			if(0)
-				var/obj/structure/reagent_dispensers/urbanismbarrel/radium/brl = new(picked_drop)
-				contamination_atoms += brl
-			if(1)
-				var/obj/effect/landmark/nuclear_waste_spawner/spawner = new(picked_drop)
-				spawner.fire()
-			if(2)
-				var/obj/item/nuke_core/core = new(picked_drop)
-				contamination_atoms += core
-			if(3)
-				var/obj/item/stock_parts/cell/bluespacereactor/cell = new(picked_drop)
-				contamination_atoms += cell
+		spawn_contamination_payload(picked_drop, fallback_spawned)
 		fallback_spawned++
 
-/datum/station_trait/radiation_contamination/proc/get_rad_spawn_turf(obj/effect/landmark/event_spawn/mark)
+/datum/station_trait/radiation_contamination/proc/get_rad_spawn_turf(obj/effect/landmark/event_spawn/mark, allow_offstation = FALSE)
 	var/turf/origin = get_turf(mark)
 	var/list/options = list()
-	if(is_valid_rad_spawn_turf(origin))
+	if(is_valid_rad_spawn_turf(origin, allow_offstation))
 		options += origin
 	for(var/direction in GLOB.cardinals)
 		var/turf/near = get_step(origin, direction)
-		if(is_valid_rad_spawn_turf(near))
+		if(is_valid_rad_spawn_turf(near, allow_offstation))
 			options += near
-	for(var/turf/check in orange(4, origin))
-		if(!(check in options) && is_valid_rad_spawn_turf(check))
+	for(var/turf/check in orange(7, origin))
+		if(!(check in options) && is_valid_rad_spawn_turf(check, allow_offstation))
 			options += check
+	if(!length(options) && istype(origin, /turf/open) && !isspaceturf(origin) && !origin.density)
+		// Last-resort for dense/busy arena landmarks: still place the payload at the marker turf.
+		options += origin
 	return length(options) ? pick(options) : null
 
-/// Турф, куда имеет смысл класть источники радиации.
-/datum/station_trait/radiation_contamination/proc/is_valid_rad_spawn_turf(turf/T)
+/datum/station_trait/radiation_contamination/proc/is_valid_rad_spawn_turf(turf/T, allow_offstation = FALSE)
 	if(!T || !istype(T, /turf/open))
 		return FALSE
-	if(!is_station_level(T.z))
+	if(!allow_offstation && !is_station_level(T.z))
 		return FALSE
 	if(isspaceturf(T))
 		return FALSE
@@ -106,7 +82,6 @@
 		return FALSE
 	return TRUE
 
-/// Сначала «безопасные» локации ивента, затем широкий random по станционным зонам.
 /datum/station_trait/radiation_contamination/proc/pick_radioactive_drop_turf()
 	for(var/i in 1 to 48)
 		var/turf/candidate = get_safe_random_station_turf()
@@ -118,6 +93,24 @@
 			if(is_valid_rad_spawn_turf(wide_pick))
 				return wide_pick
 	return null
+
+/datum/station_trait/radiation_contamination/proc/spawn_contamination_payload(turf/spawn_turf, spawn_index)
+	switch(spawn_index % 4)
+		if(0)
+			var/obj/structure/reagent_dispensers/urbanismbarrel/radium/brl = new(spawn_turf)
+			contamination_atoms += brl
+		if(1)
+			var/obj/effect/landmark/nuclear_waste_spawner/spawner = new(spawn_turf)
+			spawner.fire()
+		if(2)
+			var/obj/item/nuke_core/core = new(spawn_turf)
+			// Theft core only pulses on SSobj ticks; forcing one immediate pulse avoids "silent until touched" behavior.
+			core.cooldown = world.time - 61
+			core.process()
+			contamination_atoms += core
+		if(3)
+			var/obj/item/stock_parts/cell/bluespacereactor/cell = new(spawn_turf)
+			contamination_atoms += cell
 
 /datum/station_trait/radiation_contamination/proc/on_job_roundstart_spawn(datum/source, datum/job/job, mob/living/spawned, client/player_client)
 	SIGNAL_HANDLER
@@ -214,6 +207,7 @@
 	if(job.departments & DEPARTMENT_BITFLAG_SECURITY)
 		suit_type = /obj/item/clothing/suit/cbrn/security
 		hood_type = /obj/item/clothing/head/helmet/cbrn/sec
+		gloves_type = /obj/item/clothing/gloves/cbrn/mopp
 	else if(job.departments & DEPARTMENT_BITFLAG_ENGINEERING)
 		suit_type = /obj/item/clothing/suit/cbrn/engineering
 		hood_type = /obj/item/clothing/head/helmet/cbrn/eng
@@ -221,6 +215,7 @@
 	else if(job.departments & DEPARTMENT_BITFLAG_MEDICAL)
 		suit_type = /obj/item/clothing/suit/cbrn/medical
 		hood_type = /obj/item/clothing/head/helmet/cbrn/med
+		gloves_type = /obj/item/clothing/gloves/cbrn/medical
 	else if(job.departments & DEPARTMENT_BITFLAG_SCIENCE)
 		suit_type = /obj/item/clothing/suit/cbrn/science
 		hood_type = /obj/item/clothing/head/helmet/cbrn/sci

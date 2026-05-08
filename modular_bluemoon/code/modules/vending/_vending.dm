@@ -822,7 +822,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 	to_chat(user, span_notice("Вы вставили [I] внутрь приёмного слота [src]."))
 
 	for(var/datum/data/vending_product/product_datum in product_records + coin_records + hidden_records)
-		if(ispath(I.type, product_datum.product_path))
+		if(I.type == product_datum.product_path)
 			product_datum.amount++
 			LAZYADD(product_datum.returned_products, I)
 			return
@@ -1407,9 +1407,12 @@ GLOBAL_LIST_EMPTY(vending_products)
 			linked_account = C.registered_account
 			say("\The [src] был подключён к [C].")
 
-	if(linked_account && isidcard(I))
+	if(!linked_account)
+		say("Автомат не имеет владельца, пожалуйста привяжите аккаунт.")
+
+	if(isidcard(I))
 		var/obj/item/card/id/C = I
-		if(C.registered_account == linked_account) // Не нужно продавать карту владельца
+		if(C.registered_account) // Не нужно продавать карты с аккаунтами
 			return
 
 	if(compartmentLoadAccessCheck(user))
