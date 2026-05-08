@@ -33,7 +33,7 @@
 	description = "Clean things better, faster, stronger, and harder!"
 	informing_radio_channels = list(RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("basic_tools", "adv_engi") // BLUEMOON ADD basic_tools for order consistency
-	design_ids = list("advmop", "advbroom", "buffer", "vacuum", "light_replacer", "spraybottle", "beartrap", "ci-janitor", "paint_remover", "adv_mop_charge", "adv_mop_light", "adv_mop_capacity")
+	design_ids = list("advmop", "advbroom", "buffer", "vacuum", "light_replacer", "beartrap", "ci-janitor", "paint_remover", "adv_mop_charge", "adv_mop_light", "adv_mop_capacity")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1750) // No longer has its bag
 
 /datum/techweb_node/botany

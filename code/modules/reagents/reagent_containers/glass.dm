@@ -409,6 +409,7 @@
 	list_reagents = list()
 
 /obj/item/reagent_containers/glass/beaker/waterbottle/large
+	name = "large bottle of water"
 	desc = "Новенькая бутылка воды потребительских размеров."
 	icon_state = "largebottle"
 	custom_materials = list(/datum/material/glass=0)

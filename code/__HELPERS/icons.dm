@@ -852,6 +852,8 @@ GLOBAL_LIST_EMPTY(readrgb_cache)
 		// Dimensions of overlay being added
 		var/list/add_size[4]
 
+		var/list/rc_overlays = null // flat list
+
 		for(var/V in layers)
 			var/image/I = V
 			if(I.alpha == 0)
@@ -883,7 +885,15 @@ GLOBAL_LIST_EMPTY(readrgb_cache)
 				flat_size = add_size.Copy()
 
 			// Blend the overlay into the flattened icon
-			flat.Blend(add, blendMode2iconMode(curblend), I.pixel_x + 2 - flatX1, I.pixel_y + 2 - flatY1)
+			if(I != copy && (I.appearance_flags & RESET_COLOR))
+				if(!rc_overlays)
+					rc_overlays = list()
+				rc_overlays += add
+				rc_overlays += blendMode2iconMode(curblend)
+				rc_overlays += I.pixel_x
+				rc_overlays += I.pixel_y
+			else
+				flat.Blend(add, blendMode2iconMode(curblend), I.pixel_x + 2 - flatX1, I.pixel_y + 2 - flatY1)
 
 		if(A.color)
 			if(islist(A.color))
@@ -893,6 +903,11 @@ GLOBAL_LIST_EMPTY(readrgb_cache)
 
 		if(A.alpha < 255)
 			flat.Blend(rgb(255, 255, 255, A.alpha), ICON_MULTIPLY)
+
+		// Применение RESET_COLOR overlays ПОСЛЕ parent color/alpha
+		if(rc_overlays)
+			for(var/rc_i = 1, rc_i <= rc_overlays.len, rc_i += 4)
+				flat.Blend(rc_overlays[rc_i], rc_overlays[rc_i+1], rc_overlays[rc_i+2] + 2 - flatX1, rc_overlays[rc_i+3] + 2 - flatY1)
 
 		if(no_anim)
 			//Clean up repeated frames
@@ -1064,10 +1079,17 @@ GLOBAL_LIST_EMPTY(friendly_animal_types)
 		return J
 	return FALSE
 
+/// Bounded cache for /proc/get_flat_human_icon — was unbounded var/static, leaked
+/// for the whole round when many distinct outfits/keys were rendered. Trim 25%
+/// (oldest entries) when over the cap.
+GLOBAL_LIST_EMPTY(humanoid_icon_cache)
+/// Soft cap on humanoid_icon_cache size. Each entry holds a multi-dir flat icon,
+/// so the per-entry footprint is non-trivial — keep this modest.
+#define HUMANOID_ICON_CACHE_MAX 256
+
 //For creating consistent icons for human looking simple animals
 /proc/get_flat_human_icon(icon_id, datum/job/J, datum/preferences/prefs, dummy_key, showDirs = GLOB.cardinals, outfit_override = null, no_anim = FALSE)
-	var/static/list/humanoid_icon_cache = list()
-	if(!icon_id || !humanoid_icon_cache[icon_id])
+	if(!icon_id || !GLOB.humanoid_icon_cache[icon_id])
 		var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key)
 
 		if(prefs)
@@ -1083,11 +1105,13 @@ GLOBAL_LIST_EMPTY(friendly_animal_types)
 			var/icon/partial = getFlatIcon(body, defdir = D, no_anim = no_anim)
 			out_icon.Insert(partial,dir=D)
 
-		humanoid_icon_cache[icon_id] = out_icon
+		GLOB.humanoid_icon_cache[icon_id] = out_icon
+		if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)
+			GLOB.humanoid_icon_cache.Cut(1, (HUMANOID_ICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
 		dummy_key? unset_busy_human_dummy(dummy_key) : qdel(body)
 		return out_icon
 	else
-		return humanoid_icon_cache[icon_id]
+		return GLOB.humanoid_icon_cache[icon_id]
 
 //Hook, override to run code on- wait this is images
 //Images have dir without being an atom, so they get their own definition.
@@ -1115,8 +1139,16 @@ GLOBAL_LIST_INIT(freon_color_matrix, list("#2E5E69", "#60A2A8", "#A1AFB1", rgb(0
 		alpha += 25
 		obj_flags &= ~FROZEN
 
-/// Save file used in icon2base64. Used for converting icons to base64.
-GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of icons for the browser output
+/// Save file used in icon2base64. Lazy-initialized on first use rather than at
+/// world-load time so we can pick a unique per-instance path: Windows holds file
+/// locks on `tmp/dummySave.sav` for a brief window after a DD process exits, and
+/// a back-to-back restart (e.g. CI dm-test reruns) would inherit the locked file
+/// and stale `.lk`, causing every icon2base64 call to runtime out for the round.
+/// The unique suffix per instance sidesteps the contention entirely.
+GLOBAL_DATUM(dummySave, /savefile)
+/// Path that GLOB.dummySave currently points at. Tracked so the fallback in
+/// icon2base64 can swap to a fresh path on write failures.
+GLOBAL_VAR(dummy_save_path)
 
 
 /// Generate a filename for this asset
@@ -1148,25 +1180,28 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 	if (!isicon(icon))
 		return FALSE
 
-	var/dummy_save_path = "tmp/dummySave.sav"
-	var/dummy_save_lock_path = "[dummy_save_path].lk"
+	if(!GLOB.dummySave)
+		GLOB.dummy_save_path = "tmp/dummySave_[rand(1, 99999999)].sav"
+		GLOB.dummySave = new /savefile(GLOB.dummy_save_path)
+
 	var/iconData
 
 	try
 		WRITE_FILE(GLOB.dummySave["dummy"], icon)
 		iconData = GLOB.dummySave.ExportText("dummy")
 	catch(var/exception/e)
-		stack_trace("icon2base64(): dummy savefile cache failed ([e]). Rebuilding [dummy_save_path].")
-		if(fexists(dummy_save_lock_path))
-			fdel(dummy_save_lock_path)
-		if(fexists(dummy_save_path))
-			fdel(dummy_save_path)
+		// Mid-round failure on a path we picked at random. Pick another and retry
+		// once — if that also fails the savefile subsystem is genuinely broken and
+		// we surface a runtime so it's noticed.
+		var/fallback_path = "tmp/dummySave_[rand(1, 99999999)].sav"
+		stack_trace("icon2base64(): dummy savefile cache failed ([e]). Switching to [fallback_path].")
 		try
-			GLOB.dummySave = new /savefile(dummy_save_path)
+			GLOB.dummySave = new /savefile(fallback_path)
+			GLOB.dummy_save_path = fallback_path
 			WRITE_FILE(GLOB.dummySave["dummy"], icon)
 			iconData = GLOB.dummySave.ExportText("dummy")
 		catch(var/exception/retry_error)
-			stack_trace("icon2base64(): dummy savefile cache rebuild failed ([retry_error])")
+			stack_trace("icon2base64(): dummy savefile fallback also failed ([retry_error])")
 			return FALSE
 
 	if(!istext(iconData))
@@ -1297,10 +1332,16 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 		return url
 	return html
 
+/// Bounded cache for /proc/icon2base64html — was unbounded var/static, accreted
+/// every distinct (icon, icon_state) pair seen this round. Trim 25% over cap.
+GLOBAL_LIST_EMPTY(bicon_cache)
+/// Soft cap on bicon_cache entries. Entries are short base64 strings so this can
+/// be larger than HUMANOID_ICON_CACHE_MAX.
+#define BICON_CACHE_MAX 2048
+
 /proc/icon2base64html(thing)
 	if (!thing)
 		return
-	var/static/list/bicon_cache = list()
 	if (isicon(thing))
 		// /icon datums have unstable refs due to GC reuse — skip cache, always encode
 		var/icon_base64 = icon2base64(thing)
@@ -1312,15 +1353,17 @@ GLOBAL_DATUM_INIT(dummySave, /savefile, new("tmp/dummySave.sav")) //Cache of ico
 	var/atom/A = thing
 	var/key = "[istype(A.icon, /icon) ? "[REF(A.icon)]" : A.icon]:[A.icon_state]"
 
-	if (!bicon_cache[key]) // Doesn't exist, make it.
+	if (!GLOB.bicon_cache[key]) // Doesn't exist, make it.
 		var/icon/I = icon(A.icon, A.icon_state, SOUTH, 1)
 		if (ishuman(thing)) // Shitty workaround for a BYOND issue.
 			var/icon/temp = I
 			I = icon()
 			I.Insert(temp, dir = SOUTH)
-		bicon_cache[key] = icon2base64(I)
+		GLOB.bicon_cache[key] = icon2base64(I)
+		if(length(GLOB.bicon_cache) > BICON_CACHE_MAX)
+			GLOB.bicon_cache.Cut(1, (BICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
 
-	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[bicon_cache[key]]'>"
+	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[GLOB.bicon_cache[key]]'>"
 
 //Costlier version of icon2html() that uses getFlatIcon() to account for overlays, underlays, etc. Use with extreme moderation, ESPECIALLY on mobs.
 /proc/costly_icon2html(thing, target, sourceonly = FALSE)

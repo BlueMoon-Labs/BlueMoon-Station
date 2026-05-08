@@ -452,6 +452,8 @@
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	slot_flags = NONE
+	custom_price = PRICE_EXPENSIVE
+	custom_premium_price = PRICE_EXPENSIVE*2
 
 /obj/item/storage/backpack/duffelbag/med/surgery/ComponentInitialize()
 	. = ..()
