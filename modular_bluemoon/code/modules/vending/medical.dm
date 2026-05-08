@@ -31,7 +31,6 @@
 		/obj/item/storage/hypospraykit/brute = 3,
 		/obj/item/storage/hypospraykit/enlarge = 2,
 		/obj/item/reagent_containers/glass/bottle/vial/small = 5,
-		/obj/item/storage/briefcase/medical = 2,
 		/obj/item/stack/sticky_tape/surgical = 3,
 		/obj/item/healthanalyzer/wound = 4,
 		/obj/item/reagent_containers/hypospray/medipen = 6,
@@ -57,8 +56,10 @@
 		/obj/item/wrench/medical = 1,
 		/obj/item/storage/belt/medolier/full = 2,
 		/obj/item/gun/syringe/dart = 2,
-		/obj/item/storage/briefcase/medical = 2,
-		/obj/item/plunger/reinforced = 2
+		/obj/item/storage/backpack/duffelbag/med/surgery = 2,
+		/obj/item/plunger/reinforced = 2,
+		/obj/item/construction/plumbing = 1,
+
 	)
 	refill_canister = /obj/item/vending_refill/medical
 	default_price = PRICE_ALMOST_CHEAP
