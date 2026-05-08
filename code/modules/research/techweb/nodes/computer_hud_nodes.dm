@@ -26,7 +26,7 @@
 	description = "Organized record databases and how they're used."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("comptech")
-	design_ids = list("secdata", "med_data", "prisonmanage", "vendor", "custom_vendor_refill", "automated_announcement", "pdapainter")
+	design_ids = list("secdata", "med_data", "prisonmanage", "automated_announcement", "pdapainter")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1250)
 
 /datum/techweb_node/telecomms

@@ -487,7 +487,7 @@ SUBSYSTEM_DEF(vote)
 					var/obj/machinery/computer/communications/C = locate() in GLOB.machines
 					if(C)
 						C.post_status("shuttle") // austation end
-	// BLUEMOON ADD START - воут на карту провалился из-за отсутствия голосов
+	// BLUEMOON ADD START - воут на карту без голосов; roundtype без голосов (иначе SSvote/fire зацикливает result)
 	else if (mode == "map")
 		message_admins("Голосование за карту провалилось из-за отсутствия голосов.")
 		log_admin("Голосование за карту провалилось из-за отсутствия голосов.")
@@ -497,6 +497,18 @@ SUBSYSTEM_DEF(vote)
 			SSpersistence.RecordGracefulEnding()
 			SSticker.start_immediately = FALSE
 			SSticker.SetTimeLeft(2400)
+	else if(mode == "roundtype")
+		// SSvote/fire repeatedly calls result() while timeLeft <= ROUNDTYPE_VOTE_END_PENALTY; without a winner, we never reset and spam announce_result().
+		if(SSticker.current_state > GAME_STATE_PREGAME)
+			reset()
+			return .
+		var/fallback = pick_dynamic_type_by_chaos(GLOB.player_list, allow_light = !use_dynamic_light_roundtype_vote_window())
+		SSpersistence.RecordDynamicType(fallback)
+		GLOB.round_type = fallback
+		GLOB.master_mode = fallback
+		log_vote("Голосование за режим игры без голосов: назначен запасной режим [fallback].")
+		message_admins("Roundtype vote had no valid votes; fallback mode: [fallback]")
+		reset()
 	// BLUEMOON ADD END
 	if(restart)
 		var/active_admins = 0

@@ -85,23 +85,14 @@
 	icon_state = "radiumbarrel"
 	reagent_id = /datum/reagent/radium
 	tank_volume = 300
-	/// world.time when the next pulse is allowed (deciseconds)
-	var/next_radiation_pulse = 0
+	var/rad_strength = 1000
 
 /obj/structure/reagent_dispensers/urbanismbarrel/radium/Initialize(mapload)
 	. = ..()
-	next_radiation_pulse = world.time + 6 SECONDS
-	START_PROCESSING(SSobj, src)
-
-/obj/structure/reagent_dispensers/urbanismbarrel/radium/Destroy()
-	STOP_PROCESSING(SSobj, src)
-	return ..()
-
-/obj/structure/reagent_dispensers/urbanismbarrel/radium/process()
-	if(world.time < next_radiation_pulse)
-		return
-	next_radiation_pulse = world.time + 6 SECONDS
-	radiation_pulse(src, 400, 2)
+	var/datum/component/radioactive/Comp
+	AddComponent(/datum/component/radioactive, 0, src, 0, TRUE)
+	Comp = GetComponent(/datum/component/radioactive)
+	Comp.set_strength(rad_strength)
 
 /obj/structure/barricade/urbanism
 	name = "Barricade"

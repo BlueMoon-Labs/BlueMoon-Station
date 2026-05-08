@@ -876,6 +876,8 @@ RLD
 	has_ammobar = FALSE
 	matter = 200
 	max_matter = 200
+	custom_price = PRICE_ABOVE_EXPENSIVE*1.5
+	custom_premium_price = PRICE_ABOVE_EXPENSIVE*3
 
 	///type of the plumbing machine
 	var/blueprint = null
