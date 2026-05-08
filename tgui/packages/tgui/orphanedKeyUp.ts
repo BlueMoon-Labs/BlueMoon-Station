@@ -33,7 +33,10 @@ export const setupOrphanedKeyUpForwarding = (
 
   const handleKeyDown = (event: KeyboardEvent) => {
     const byondKey = keyToByond(new KeyEvent(event, 'keydown', false));
-    if (byondKey) {
+    // If focus moved into this browser while a map-side key was already held,
+    // the first keydown we see can be an OS auto-repeat. That key did not
+    // originate here, so its eventual keyup still needs to be forwarded.
+    if (byondKey && !event.repeat) {
       pressedInBrowser[byondKey] = true;
     }
   };

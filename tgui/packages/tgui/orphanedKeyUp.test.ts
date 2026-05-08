@@ -1,7 +1,12 @@
 import { setupOrphanedKeyUpForwarding } from './orphanedKeyUp';
 
-const keyEvent = (type: 'keydown' | 'keyup', key: string, code: string) => (
-  new KeyboardEvent(type, { key, code, bubbles: true })
+const keyEvent = (
+  type: 'keydown' | 'keyup',
+  key: string,
+  code: string,
+  repeat = false
+) => (
+  new KeyboardEvent(type, { key, code, repeat, bubbles: true })
 );
 
 describe('setupOrphanedKeyUpForwarding', () => {
@@ -90,6 +95,16 @@ describe('setupOrphanedKeyUpForwarding', () => {
     expect(command).toHaveBeenCalledTimes(2);
     expect(command).toHaveBeenNthCalledWith(1, 'KeyUp "W"');
     expect(command).toHaveBeenNthCalledWith(2, 'KeyUp "W"');
+  });
+
+  test('forwards keyup after only seeing an auto-repeat keydown', () => {
+    setup();
+
+    document.dispatchEvent(keyEvent('keydown', 'w', 'KeyW', true));
+    document.dispatchEvent(keyEvent('keyup', 'w', 'KeyW'));
+
+    expect(command).toHaveBeenCalledTimes(1);
+    expect(command).toHaveBeenCalledWith('KeyUp "W"');
   });
 
   test('does not force-release server keys when the browser window gains focus', () => {

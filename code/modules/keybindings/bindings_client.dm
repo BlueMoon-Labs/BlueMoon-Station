@@ -42,10 +42,10 @@
 		ForceAllKeysUp()		//groan, more hacky kevcode
 		return
 
-	if(length(keys_held) > MAX_HELD_KEYS)
-		keys_held.Cut(1,2)
+	if(length(keys_held) >= MAX_HELD_KEYS && !keys_held[_key])
+		keyUp(keys_held[1])
 	var/was_held = keys_held[_key]
-	keys_held[_key] = TRUE
+	keys_held[_key] = world.time
 	var/movement = movement_keys[_key]
 	if(movement && !was_held && !(next_move_dir_sub & movement) && !keys_held["Ctrl"])
 		next_move_dir_add |= movement
@@ -89,6 +89,8 @@
 
 	// TGUI/WebView can duplicate orphaned KeyUp events when focus changes; only real releases should touch the movement buffer.
 	var/was_held = keys_held[_key]
+	if(!was_held)
+		return
 	keys_held -= _key
 	last_activity = world.time
 	var/movement = movement_keys[_key]
