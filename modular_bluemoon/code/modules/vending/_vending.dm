@@ -1408,7 +1408,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 			say("\The [src] был подключён к [C].")
 
 	if(!linked_account)
-		say("Автомат не настроен, пожалуйста привяжите аккаунт.")
+		say("Автомат не имеет владельца, пожалуйста привяжите аккаунт.")
 
 	if(isidcard(I))
 		var/obj/item/card/id/C = I
