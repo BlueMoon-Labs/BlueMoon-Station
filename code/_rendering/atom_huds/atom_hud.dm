@@ -130,13 +130,29 @@ GLOBAL_LIST_INIT(huds, alist(
 	var/list/atom_hud_list = A.hud_list
 	if(!atom_hud_list)
 		return
+	var/list/local_hud_icons = hud_icons
+	if(length(local_hud_icons) == 1)
+		var/hud_image = atom_hud_list[local_hud_icons[1]]
+		if(hud_image)
+			their_client.images |= hud_image
+		return
+	var/first_hud_image
 	var/list/to_add
-	for(var/i in hud_icons)
-		var/image/img = atom_hud_list[i]
-		if(img)
-			LAZYADD(to_add, img)
+	for(var/i in local_hud_icons)
+		var/hud_image = atom_hud_list[i]
+		if(!hud_image)
+			continue
+		if(!first_hud_image)
+			first_hud_image = hud_image
+			continue
+		if(!to_add)
+			to_add = list()
+			to_add += first_hud_image
+		to_add += hud_image
 	if(to_add)
 		their_client.images |= to_add
+	else if(first_hud_image)
+		their_client.images |= first_hud_image
 
 //MOB PROCS
 /mob/proc/reload_huds()
