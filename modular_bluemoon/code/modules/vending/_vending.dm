@@ -822,7 +822,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 	to_chat(user, span_notice("Вы вставили [I] внутрь приёмного слота [src]."))
 
 	for(var/datum/data/vending_product/product_datum in product_records + coin_records + hidden_records)
-		if(ispath(I.type, product_datum.product_path))
+		if(I.type == product_datum.product_path)
 			product_datum.amount++
 			LAZYADD(product_datum.returned_products, I)
 			return
