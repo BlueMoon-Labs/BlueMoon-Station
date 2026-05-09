@@ -84,7 +84,7 @@
 		return
 	if(target.anchored)
 		if(!silent)
-			to_chat(user, span_warning("[user.name] is anchored and can not be put into your [src.name]."))
+			to_chat(user, span_warning("[target.name] is anchored and can not be put into your [src.name]."))
 		return
 	if(patient)
 		if(!silent)
@@ -94,11 +94,11 @@
 		var/mob/living/M = target
 		if(M.buckled)
 			if(!silent)
-				to_chat(user, span_warning("[user.name] is buckled and can not be put into your [src.name]."))
+				to_chat(user, span_warning("[target.name] is buckled and can not be put into your [src.name]."))
 			return
 		if(M.client && !CHECK_BITFIELD(M.vore_flags, DEVOURABLE))
 			if(!silent)
-				to_chat(user, "The target registers an error code. Unable to insert into [src.name].")
+				to_chat(user, span_warning("The target registers an error code. Unable to insert into [src.name]."))
 				playsound(user, 'sound/machines/buzz-sigh.ogg', 30, FALSE)
 			return
 
@@ -184,6 +184,7 @@
 				span_notice("You successfully break out of [hound.name]!"))
 			go_out(user, hound)
 	else
+		escape_pending = FALSE
 		user.visible_message(span_notice("You see [voracious ? "[user] struggling against the expanded material of [hound]'s gut!" : "and hear [user] pounding against something inside of [hound]'s [src.name]!"]"), \
 			span_notice("[voracious ? "You start struggling inside of [src.name]'s tight, flexible confines," : "You start pounding against the metallic walls of [src.name],"] trying to find the trigger the release..."), \
 			span_italics("You hear a [voracious ? "couple of thumps" : "loud banging noise"] coming from within [hound]."))
