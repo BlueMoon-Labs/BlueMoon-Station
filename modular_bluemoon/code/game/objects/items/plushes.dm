@@ -798,7 +798,6 @@ GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
 	love_target = partner
 	partner.love_target = src
 
-	var/heart_broken = FALSE // Если игрушки разняли, что бы не играть анимацию
 	var/list/hug_emotes_src = list(
 		"[src] тихонько урчит, прижавшись к [partner]~",
 		"[src] прячет нос в меху [partner]~",
