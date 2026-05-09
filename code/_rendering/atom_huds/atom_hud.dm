@@ -96,8 +96,7 @@ GLOBAL_LIST_INIT(huds, alist(
 				queued_to_see[M] = TRUE
 		else
 			next_time_allowed[M] = world.time + ADD_HUD_TO_COOLDOWN
-			for(var/atom/A in hudatoms)
-				add_to_single_hud(M, A)
+			push_all_atoms_to_user(M)
 	else
 		hudusers[M]++
 
@@ -109,8 +108,7 @@ GLOBAL_LIST_INIT(huds, alist(
 	if(queued_to_see[M])
 		queued_to_see -= M
 		next_time_allowed[M] = world.time + ADD_HUD_TO_COOLDOWN
-		for(var/atom/A in hudatoms)
-			add_to_single_hud(M, A)
+		push_all_atoms_to_user(M)
 
 /datum/atom_hud/proc/add_to_hud(atom/A)
 	if(!A)
@@ -121,11 +119,19 @@ GLOBAL_LIST_INIT(huds, alist(
 			add_to_single_hud(M, A)
 	return TRUE
 
+/// Override to gate which atoms of this hud are visible to which mobs.
+/// Returning FALSE skips the atom in BOTH the per-call add_to_single_hud
+/// path and the batched collect_hud_images_for path. Default: always show.
+/datum/atom_hud/proc/should_show_to(mob/M, atom/A)
+	return TRUE
+
 /datum/atom_hud/proc/add_to_single_hud(mob/M, atom/A) //unsafe, no sanity apart from client
 	if(!M || !A)
 		return
 	var/client/their_client = M.client
 	if(!their_client)
+		return
+	if(!should_show_to(M, A))
 		return
 	var/list/atom_hud_list = A.hud_list
 	if(!atom_hud_list)
@@ -154,12 +160,64 @@ GLOBAL_LIST_INIT(huds, alist(
 	else if(first_hud_image)
 		their_client.images |= first_hud_image
 
+/// Append every image visible to M from this hud's hudatoms into `out`.
+/// Used by batched bulk-add paths so we end up with ONE
+/// `client.images |= big_list` per client instead of N individual unions.
+/// Duplicates inside `out` are tolerated — the trailing |= dedups them.
+/// M may be null; `should_show_to(M, A)` is responsible for any gating
+/// that depends on the mob.
+/datum/atom_hud/proc/collect_hud_images_for(mob/M, list/out)
+	if(!islist(out))
+		return
+	var/list/local_hud_icons = hud_icons
+	if(!length(local_hud_icons))
+		return
+	for(var/atom/A as anything in hudatoms)
+		if(!should_show_to(M, A))
+			continue
+		var/list/atom_hud_list = A.hud_list
+		if(!atom_hud_list)
+			continue
+		for(var/i in local_hud_icons)
+			var/hud_image = atom_hud_list[i]
+			if(hud_image)
+				out += hud_image
+
+/// Build the entire list of images this hud wants to push to M and union it
+/// into M.client.images in a single |= call. Replaces the per-atom
+/// add_to_single_hud loop that used to live in add_hud_to /
+/// show_hud_images_after_cooldown. One batched union avoids paying the
+/// list-membership cost of |= per atom.
+/datum/atom_hud/proc/push_all_atoms_to_user(mob/M)
+	if(!M)
+		return
+	var/client/their_client = M.client
+	if(!their_client)
+		return
+	var/list/collected = list()
+	collect_hud_images_for(M, collected)
+	if(length(collected))
+		their_client.images |= collected
+
 //MOB PROCS
 /mob/proc/reload_huds()
-	for(var/datum/atom_hud/hud in GLOB.all_huds)
-		if(hud && hud.hudusers[src])
-			for(var/atom/A in hud.hudatoms)
-				hud.add_to_single_hud(src, A)
+	if(!client)
+		return
+	var/list/all_hud_images = list()
+	for(var/datum/atom_hud/hud as anything in GLOB.all_huds)
+		if(!hud || !hud.hudusers[src])
+			continue
+		hud.collect_hud_images_for(src, all_hud_images)
+		// reload_huds is invoked from /mob/Login which already runs in its
+		// own tick; yielding here is safe because nothing else in the login
+		// chain expects synchronous HUD readiness, and per-hud collection
+		// completes within microseconds — CHECK_TICK only sleeps if the
+		// surrounding tick is already over budget.
+		CHECK_TICK
+	if(!client)
+		return
+	if(length(all_hud_images))
+		client.images |= all_hud_images
 
 /mob/dead/new_player/reload_huds()
 	return

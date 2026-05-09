@@ -145,6 +145,8 @@
 #endif
 
 /// BLUEMOON TESTS
+#include "atom_hud_perf.dm"
+
 #include "auto_cryo.dm"
 #include "bad_defines_defined.dm"
 #include "bugfix_coverage.dm"

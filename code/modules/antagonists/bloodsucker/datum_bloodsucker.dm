@@ -659,10 +659,9 @@
 
 /datum/atom_hud/antag/bloodsucker  // from hud.dm in /datums/   Also see data_huds.dm + antag_hud.dm
 
-/datum/atom_hud/antag/bloodsucker/add_to_single_hud(mob/M, atom/A)
-	if (!check_valid_hud_user(M,A)) 	// FULP: This checks if the Mob is a Vassal, and if the Atom is his master OR on his team.
-		return
-	..()
+/datum/atom_hud/antag/bloodsucker/should_show_to(mob/M, atom/A)
+	// FULP: This checks if the Mob is a Vassal, and if the Atom is his master OR on his team.
+	return check_valid_hud_user(M, A)
 
 /datum/atom_hud/antag/bloodsucker/proc/check_valid_hud_user(mob/M, atom/A) // Remember: A is being added to M's hud. Because M's hud is a /antag/vassal hud, this means M is the vassal here.
 	// Ghost Admins always see Bloodsuckers/Vassals
