@@ -205,7 +205,7 @@
 	required_candidates = 1
 	weight = 6 //BLUEMOON CHANGES
 	cost = 20
-	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD) // BLUEMOON ADD
 	requirements = list(101,101,101,60,40,20,20,20,10,10)  //BLUEMOON CHANGES
 	var/list/roundstart_wizards = list()
 

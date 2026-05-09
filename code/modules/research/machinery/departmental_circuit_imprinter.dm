@@ -20,6 +20,7 @@
 	req_one_access = list(ACCESS_PRODUCTION_SCIENCE, ACCESS_AWAY_GENERAL, ACCESS_SYNDICATE)
 	department_tag = "Science"
 	categories = list(
+				"Research Machinery",
 				"AI Modules",
 				"Exosuit Modules",
 					)

@@ -64,6 +64,12 @@
 	var/xcomp = FLOOR(psize_x / 2, 1) - 15
 	var/ycomp = FLOOR(psize_y / 2, 1) - 15
 
+	// Per-capture flat-icon dedup. A photo with N atoms often has only K<<N unique
+	// appearances (walls, floors, identical items), so cache by appearance ref to
+	// skip the recursive getFlatIcon for repeats. Local list — no cross-call state,
+	// no GC concerns.
+	var/list/flat_icon_cache = list()
+
 	for(var/atom/A in sorted)
 		var/xo = (A.x - center.x) * world.icon_size + A.pixel_x + xcomp
 		var/yo = (A.y - center.y) * world.icon_size + A.pixel_y + ycomp
@@ -71,7 +77,12 @@
 			var/atom/movable/AM = A
 			xo += AM.step_x
 			yo += AM.step_y
-		var/icon/img = getFlatIcon(A)
+		var/appearance_key = "\ref[A.appearance]"
+		var/icon/img = flat_icon_cache[appearance_key]
+		if(!img)
+			img = getFlatIcon(A)
+			if(img)
+				flat_icon_cache[appearance_key] = img
 		if(img)
 			res.Blend(img, blendMode2iconMode(A.blend_mode), xo, yo)
 		CHECK_TICK

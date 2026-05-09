@@ -207,7 +207,7 @@
 	name = "Visitation Shutters"
 	},
 /obj/machinery/door/window/southright,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/neutral,
 /obj/effect/turf_decal/tile/neutral{
@@ -333,7 +333,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/recharger{
 	pixel_x = -6;
 	pixel_y = -6
@@ -1177,7 +1177,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison)
 "aeh" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/grenade/barrier{
 	pixel_x = 4
 	},
@@ -1254,7 +1254,7 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/storage/lockbox/loyalty,
 /obj/item/storage/box/trackimp{
 	pixel_x = -3
@@ -2867,7 +2867,7 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/neutral,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/recharger{
 	pixel_x = -5
 	},
@@ -3527,7 +3527,7 @@
 /turf/open/floor/plating,
 /area/maintenance/fore)
 "ajz" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/window/brigdoor{
 	dir = 1;
 	name = "Reception Desk";
@@ -5010,7 +5010,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/processing)
 "amN" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/paper_bin{
 	pixel_x = -3;
 	pixel_y = 7
@@ -6116,7 +6116,7 @@
 /turf/open/floor/plating,
 /area/maintenance/fore/secondary)
 "apv" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/recharger{
 	pixel_x = -6;
 	pixel_y = 3
@@ -6484,7 +6484,7 @@
 /turf/open/floor/plating,
 /area/maintenance/fore/secondary)
 "aqr" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/window/brigdoor{
 	dir = 1;
 	name = "Reception Desk";
@@ -11064,7 +11064,7 @@
 /area/security/checkpoint/auxiliary)
 "aHa" = (
 /obj/machinery/door/firedoor,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/paper,
 /obj/machinery/door/window/westright{
 	dir = 1;
@@ -12444,7 +12444,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "aMx" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
@@ -14204,7 +14204,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/service/kitchen)
 "aSL" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "kitchen";
 	name = "kitchen shutters"
@@ -14213,7 +14213,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/service/kitchen)
 "aSM" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "kitchen";
 	name = "kitchen shutters"
@@ -14232,7 +14232,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/service/kitchen)
 "aSO" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "kitchen";
 	name = "kitchen shutters"
@@ -18150,7 +18150,7 @@
 	dir = 8;
 	pixel_x = 24
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/stack/wrapping_paper{
 	pixel_x = 3;
 	pixel_y = 4
@@ -18412,7 +18412,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/commons/dorms)
 "bfR" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/hand_labeler{
 	pixel_y = 8
 	},
@@ -18995,7 +18995,7 @@
 /turf/open/floor/plating,
 /area/science/robotics/lab)
 "bhz" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/window/eastright{
 	base_state = "left";
 	dir = 2;
@@ -19038,7 +19038,7 @@
 /turf/open/floor/plating,
 /area/science/research)
 "bhD" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/window/southright{
 	name = "Research and Development Desk";
 	req_one_access_txt = "7;29"
@@ -19323,7 +19323,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/cargo/storage)
 "bir" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/firedoor,
 /obj/item/folder/white,
 /obj/item/pen,
@@ -20347,7 +20347,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "blj" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/paper_bin{
 	pixel_x = 1;
 	pixel_y = 9
@@ -20935,7 +20935,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "bmK" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "bmL" = (
@@ -21246,7 +21246,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/cargo/office)
 "bnC" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/firedoor,
 /obj/item/folder/white,
 /obj/item/pen,
@@ -21729,7 +21729,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/cargo/office)
 "boS" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/firedoor,
 /obj/machinery/door/window/westleft{
 	name = "Cargo Desk";
@@ -21762,7 +21762,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/primary/central)
 "boX" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/reagentgrinder{
 	desc = "Used to grind things up into raw materials and liquids.";
 	pixel_y = 5
@@ -21784,7 +21784,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/primary/central)
 "boZ" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/window/northleft{
 	dir = 8;
 	name = "Reception Window"
@@ -22214,7 +22214,7 @@
 	dir = 1;
 	layer = 2.9
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/dest_tagger,
 /obj/item/dest_tagger,
 /obj/effect/turf_decal/tile/brown{
@@ -22588,7 +22588,7 @@
 /turf/open/floor/plating,
 /area/science/explab)
 "brs" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/window/eastright{
 	base_state = "left";
 	dir = 8;
@@ -27971,7 +27971,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 10
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/power/apc{
 	areastring = "/area/medical/paramedic";
 	name = "Paramedic dispatch APC";
@@ -28299,7 +28299,7 @@
 /obj/item/assembly/prox_sensor{
 	pixel_y = 2
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/science/mixing)
 "bGn" = (
@@ -28398,7 +28398,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/storage/tech)
 "bGz" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/wrench,
 /obj/item/screwdriver{
 	pixel_y = 10
@@ -29762,7 +29762,7 @@
 	pixel_y = -30;
 	receive_ore_updates = 1
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/science/mixing)
 "bJX" = (
@@ -29781,7 +29781,7 @@
 	pixel_x = -2;
 	pixel_y = -2
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/science/mixing)
 "bJY" = (
@@ -29802,7 +29802,7 @@
 	pixel_y = -4
 	},
 /obj/item/assembly/timer,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
 /area/science/mixing)
@@ -30105,7 +30105,7 @@
 	req_access_txt = "50"
 	},
 /obj/effect/turf_decal/bot/yellow,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/cargo/sorting)
 "bKQ" = (
@@ -30515,7 +30515,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/science/misc_lab)
 "bMh" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/button/door{
 	id = "misclab";
 	name = "Test Chamber Blast Doors";
@@ -31071,7 +31071,7 @@
 /turf/open/floor/plating,
 /area/science/test_area)
 "bNH" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/radio/intercom{
 	pixel_y = -26
 	},
@@ -31768,7 +31768,7 @@
 /obj/item/clothing/mask/gas,
 /obj/item/clothing/mask/gas,
 /obj/item/clothing/mask/gas,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/science/xenobiology)
 "bPG" = (
@@ -31794,7 +31794,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/slime_scanner,
 /obj/item/clothing/gloves/color/latex,
 /obj/item/clothing/glasses/science,
@@ -32375,7 +32375,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "bRs" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/firedoor/heavy,
 /obj/machinery/door/window/northleft{
 	dir = 4;
@@ -32619,7 +32619,7 @@
 /area/science/xenobiology)
 "bRY" = (
 /obj/structure/window/reinforced,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -33225,7 +33225,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/tcommsat/computer)
 "bUd" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/button/door{
 	id = "xenobio3";
 	name = "Containment Blast Doors";
@@ -34030,7 +34030,7 @@
 /area/science/xenobiology)
 "bWm" = (
 /obj/structure/window/reinforced,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -34785,7 +34785,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/medical/virology)
 "bYf" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/button/door{
 	id = "xenobio2";
 	name = "Containment Blast Doors";
@@ -35437,7 +35437,7 @@
 /area/science/xenobiology)
 "bZW" = (
 /obj/structure/window/reinforced,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/button/door{
 	id = "xenobio6";
 	name = "Containment Blast Doors";
@@ -35854,7 +35854,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/science/misc_lab)
 "cbe" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/integrated_electronics/analyzer,
 /obj/item/integrated_electronics/debugger,
 /obj/item/integrated_electronics/wirer,
@@ -36160,7 +36160,7 @@
 /turf/open/floor/plating,
 /area/maintenance/aft)
 "cbR" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/button/door{
 	id = "xenobio1";
 	name = "Containment Blast Doors";
@@ -36219,7 +36219,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/science/misc_lab)
 "cbY" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/multitool,
 /obj/item/screwdriver,
 /obj/machinery/requests_console{
@@ -36232,7 +36232,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/science/circuit)
 "cbZ" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/integrated_circuit_printer,
 /obj/item/stock_parts/cell/high,
 /obj/item/stock_parts/cell/high,
@@ -36702,7 +36702,7 @@
 /turf/open/floor/grass/grass0,
 /area/service/chapel/main)
 "cdm" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/clipboard,
 /obj/item/paper/monitorkey,
 /obj/structure/disposalpipe/segment,
@@ -38486,7 +38486,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/ce)
 "cio" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/folder/yellow,
 /obj/item/stamp/ce,
 /obj/structure/disposalpipe/segment,
@@ -39156,7 +39156,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/ce)
 "cjY" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/cartridge/engineering{
 	pixel_x = 4;
 	pixel_y = 5
@@ -42924,7 +42924,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/paper_bin{
 	pixel_x = -3;
 	pixel_y = 7
@@ -42959,7 +42959,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/turret_protected/ai)
 "cwm" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/folder/white,
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/turret_protected/ai)
@@ -44817,7 +44817,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
 "cKW" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/storage/toolbox/electrical,
 /turf/open/floor/mineral/plastitanium,
 /area/science/circuit)
@@ -46960,7 +46960,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/gravity_generator)
 "dYs" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "dYZ" = (
@@ -47000,7 +47000,7 @@
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
 "eaI" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/radio/intercom{
 	pixel_x = -30
 	},
@@ -48280,7 +48280,7 @@
 /area/service/park)
 "fft" = (
 /obj/effect/decal/cleanable/blood/splatter/xeno,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/paper_bin{
 	pixel_y = 4
 	},
@@ -50825,7 +50825,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 9
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/structure/disposalpipe/segment,
 /obj/item/stack/medical/gauze{
 	pixel_y = 6
@@ -52401,7 +52401,7 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/stack/sheet/glass/fifty{
 	pixel_y = 5
 	},
@@ -52452,7 +52452,7 @@
 /turf/open/floor/plating,
 /area/maintenance/fore)
 "hSz" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/effect/spawner/lootdrop/maintenance,
 /turf/open/floor/mineral/plastitanium,
 /area/maintenance/port/aft)
@@ -52686,7 +52686,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/cells)
 "icc" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
 "icW" = (
@@ -52778,7 +52778,7 @@
 /turf/open/floor/plasteel/grimy,
 /area/maintenance/starboard/aft)
 "ihn" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/clothing/glasses/science{
 	pixel_x = -3
 	},
@@ -54120,7 +54120,7 @@
 /area/command/blueshieldoffice)
 "jjp" = (
 /obj/effect/turf_decal/bot/yellow,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/storage/toolbox/drone{
 	pixel_y = -2
 	},
@@ -56181,7 +56181,7 @@
 /area/maintenance/port/aft)
 "kLo" = (
 /obj/machinery/atmospherics/pipe/simple/general/visible,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/reagent_containers/glass/beaker/cryoxadone{
 	pixel_x = 7;
 	pixel_y = 11
@@ -57505,7 +57505,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/execution/transfer)
 "lDf" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/paper_bin{
 	pixel_x = -3
 	},
@@ -57652,7 +57652,7 @@
 	name = "Visitation Shutters"
 	},
 /obj/machinery/door/window/southleft,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/effect/turf_decal/tile/neutral,
 /obj/effect/turf_decal/tile/neutral{
@@ -57772,7 +57772,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 4
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/integrated_electronics/wirer,
 /turf/open/floor/mineral/plastitanium,
 /area/science/circuit)
@@ -58552,7 +58552,7 @@
 /turf/open/floor/plating,
 /area/maintenance/starboard/aft)
 "mqe" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/storage/box/syringes{
 	pixel_y = 5
 	},
@@ -58587,7 +58587,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "mqH" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/poddoor/shutters{
 	id = "commissaryshutters";
 	name = "Vacant Commissary Shutters"
@@ -58651,7 +58651,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/commons/locker)
 "msp" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/structure/reagent_dispensers/servingdish,
 /obj/machinery/light{
 	dir = 4
@@ -59278,7 +59278,7 @@
 	dir = 4;
 	pixel_x = -31
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/multitool,
 /obj/item/screwdriver,
 /obj/machinery/computer/security/telescreen/circuitry{
@@ -59388,14 +59388,14 @@
 /obj/machinery/light_switch{
 	pixel_x = -20
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/integrated_circuit_printer,
 /obj/item/stock_parts/cell/high,
 /obj/item/stock_parts/cell/high,
 /turf/open/floor/mineral/plastitanium,
 /area/science/circuit)
 "mRA" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/storage/box/monkeycubes,
 /obj/item/storage/box/monkeycubes,
 /obj/effect/spawner/lootdrop/maintenance,
@@ -59644,7 +59644,7 @@
 	name = "Visitation Shutters"
 	},
 /obj/structure/window/reinforced,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/effect/turf_decal/tile/neutral,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
@@ -60714,7 +60714,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/secondary/entry)
 "nNM" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/reagent_containers/food/snacks/pie/cream,
 /obj/machinery/door/window/southright{
 	dir = 4;
@@ -61358,7 +61358,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/commons/storage/primary)
 "olr" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/stack/sheet/glass/fifty,
 /obj/item/stack/sheet/metal/ten,
 /turf/open/floor/mineral/plastitanium,
@@ -61754,7 +61754,7 @@
 /turf/open/floor/engine,
 /area/science/misc_lab)
 "oAM" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -62296,7 +62296,7 @@
 	name = "Visitation Shutters"
 	},
 /obj/structure/window/reinforced,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/effect/turf_decal/tile/neutral,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
@@ -65118,7 +65118,7 @@
 /turf/open/floor/grass,
 /area/service/park)
 "rfx" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/structure/reagent_dispensers/servingdish,
 /obj/machinery/light{
 	dir = 8
@@ -65795,7 +65795,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/brig)
 "rCA" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/structure/window/reinforced/tinted,
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -66373,7 +66373,7 @@
 /obj/effect/turf_decal/tile/red/anticorner/contrasted{
 	dir = 1
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/secondary/exit)
 "sen" = (
@@ -66878,7 +66878,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/cells)
 "ssB" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/window/westright{
 	dir = 1;
 	name = "Hydroponics Desk";
@@ -67297,7 +67297,7 @@
 	},
 /area/security/brig/brig_medical)
 "sKE" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/cell_charger,
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
@@ -68365,7 +68365,7 @@
 /turf/open/floor/plating,
 /area/maintenance/aft)
 "tCd" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/folder/white,
 /obj/item/pen,
 /obj/item/reagent_containers/glass/bottle/epinephrine,
@@ -69079,7 +69079,7 @@
 /turf/open/floor/grass,
 /area/service/park)
 "udD" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -69674,7 +69674,7 @@
 /turf/open/floor/plating,
 /area/maintenance/port)
 "uCn" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/paper_bin,
 /obj/item/pen,
 /obj/machinery/light{
@@ -69723,7 +69723,7 @@
 "uCZ" = (
 /obj/machinery/airalarm/directional/west,
 /obj/machinery/atmospherics/pipe/simple/general/visible,
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/wrench/medical,
 /obj/machinery/camera{
 	c_tag = "Medbay Cryo";
@@ -69838,7 +69838,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "uHH" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/storage/bag/tray/cafeteria,
 /obj/item/storage/bag/tray/cafeteria,
 /obj/item/storage/bag/tray/cafeteria,
@@ -70257,7 +70257,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/cells)
 "uUx" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
@@ -70567,7 +70567,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "vfR" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/clothing/head/collectable/tophat,
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
@@ -71857,7 +71857,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/break_room)
 "wbE" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/reagent_containers/food/drinks/britcup{
 	desc = "Kingston's personal cup."
 	},
@@ -72507,7 +72507,7 @@
 /turf/open/floor/carpet,
 /area/commons/vacant_room/office)
 "wvX" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/light,
 /obj/item/stack/sheet/metal/ten,
 /obj/item/stack/sheet/glass/fifty,
@@ -73570,7 +73570,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/commons/dorms)
 "xlX" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/door/poddoor/shutters{
 	id = "commissaryshutters";
 	name = "Vacant Commissary Shutters"
@@ -74223,7 +74223,7 @@
 /obj/structure/reagent_dispensers/peppertank{
 	pixel_y = 32
 	},
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/machinery/recharger{
 	pixel_x = -5
 	},
@@ -74369,7 +74369,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "xSH" = (
-/obj/structure/table/reinforced,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/slime_scanner,
 /obj/item/slime_scanner{
 	pixel_x = 8

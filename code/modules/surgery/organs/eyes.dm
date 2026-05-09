@@ -441,7 +441,8 @@
 	flash_protect = -1
 
 /obj/item/organ/eyes/ipc
-	name = "ipc eyes"
+	name = "optical sensor array"
+	desc = "A paired optical sensor package built for IPC chassis."
 	icon_state = "cybernetic_eyeballs"
 	organ_flags = ORGAN_SYNTHETIC // BLUEMOON ADD - органы синтетиков не должны гнить и должны быть подвержены ЭМИ
 

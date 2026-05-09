@@ -28,7 +28,13 @@
 		cached_item = user.pulling
 		if(istype(cached_item, /obj/item/reagent_containers))
 			liquid_container = cached_item
-
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(user, CUM_TARGET_HAND, user.getorganslot(ORGAN_SLOT_PENIS)))
 		//BLUEMOON EDIT START
 		message = pick("хватается за свой [has_penis ? "член" : "дилдо"] и начинает его наяривать",
@@ -47,7 +53,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), 70, 1, -1)
-	user.visible_message(span_lewd("<b>[user]</b> [message]."), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>[user]</b> [message]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, liquid_container ? liquid_container : user, ORGAN_SLOT_PENIS) //SPLURT edit

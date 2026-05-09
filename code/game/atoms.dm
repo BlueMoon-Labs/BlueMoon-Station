@@ -1586,7 +1586,18 @@
 	var/screentips_enabled = user.client.prefs.screentip_pref
 	if(screentips_enabled == SCREENTIP_PREFERENCE_DISABLED || (flags_1 & NO_SCREENTIPS_1))
 		active_hud.screentip_text.maptext = ""
+		active_hud.last_screentip_atom = null
+		active_hud.last_screentip_held = null
 		return
+
+	// Dedup repeat hovers — same atom with same held item produces an identical
+	// maptext, so skip the 8 build_context calls and signal sends. Held item
+	// transitions and atom changes both invalidate the cache.
+	var/obj/item/held_item = user.get_active_held_item()
+	if(active_hud.last_screentip_atom == src && active_hud.last_screentip_held == held_item)
+		return
+	active_hud.last_screentip_atom = src
+	active_hud.last_screentip_held = held_item
 
 	active_hud.screentip_text.maptext_y = 10 // 10px lines us up with the action buttons top left corner
 	var/lmb_rmb_line = ""
@@ -1605,8 +1616,6 @@
 				auxiliary_name = "\[[collar.tagname]\]"
 
 	if ((isliving(user) || isovermind(user) || isaicamera(user)) && (user.client.prefs.screentip_pref != SCREENTIP_PREFERENCE_NO_CONTEXT))
-		var/obj/item/held_item = user.get_active_held_item()
-
 		if (flags_1 & HAS_CONTEXTUAL_SCREENTIPS_1 || held_item?.item_flags & ITEM_HAS_CONTEXTUAL_SCREENTIPS)
 			var/list/context = list()
 

@@ -9,6 +9,7 @@ import { Box } from '../../../components';
 type ContentInfo = {
   interactions: InteractionData[];
   favorite_interactions: string[];
+  hidden_interactions_keys: string[];
   user_is_blacklisted: boolean;
   target: string;
   target_is_blacklisted: boolean;
@@ -22,6 +23,7 @@ type InteractionData = {
   desc: string;
   type: number;
   additionalDetails: additionalDetailsContent[];
+  hidden?: boolean;
 }
 
 type additionalDetailsContent = {
@@ -59,6 +61,7 @@ export const InteractionsTab = (props, context) => {
     || [];
 
   const favorite_interactions = data.favorite_interactions || [];
+  const hidden_keys = data.hidden_interactions_keys || [];
   const [inFavorites, setInFavorites] = useLocalState(context, 'inFavorites', false);
   const valid_favorites = interactions.filter(interaction => favorite_interactions.includes(interaction.key));
   const interactions_to_display = inFavorites
@@ -120,6 +123,16 @@ export const InteractionsTab = (props, context) => {
                       interaction: interaction.key,
                     })}
                     selected={favorite_interactions.includes(interaction.key)}
+                  />
+                </Stack.Item>
+                <Stack.Item>
+                  <Button
+                    icon={hidden_keys.includes(interaction.key) ? "low-vision" : "eye"}
+                    tooltip={`${hidden_keys.includes(interaction.key) ? "Показать" : "Скрыть"} this interaction`}
+                    onClick={() => act('toggle_hidden_interaction', {
+                      interaction: interaction.key,
+                    })}
+                    selected={hidden_keys.includes(interaction.key)}
                   />
                 </Stack.Item>
               </Stack>

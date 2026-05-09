@@ -26,13 +26,17 @@
 		return FALSE
 
 /datum/interaction/lewd/belly_riding/display_interaction(mob/living/user, mob/living/partner)
+	var/is_hidden = ..()
+	var/distance = 7
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 	var/is_fucking = user.is_fucking(partner, target_organ)
-	var/message = pick_message(user, partner, is_fucking)
-	var/const/message_distance = 4
+	var/message = "[is_hidden ? (picked_hidden) : null]" +  pick_message(user, partner, is_fucking)
 	if(!is_fucking)
 		user.set_is_fucking(partner, target_organ, user.getorganslot(ORGAN_SLOT_PENIS))
 
-	user.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = message_distance)
+	user.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, target_organ, partner, ORGAN_SLOT_PENIS)
 
@@ -66,7 +70,7 @@
 	message = pick(reactions)
 
 
-	partner.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = message_distance)
+	partner.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 
 
 /datum/interaction/lewd/belly_riding/vagina
@@ -101,7 +105,7 @@
 			"USER мощным толчком погружает свой [shape_desc] внутрь киски TARGET")
 
 /datum/interaction/lewd/belly_riding/anal
-	description = "Член. Проникнуть в задницу."
+	description = "Belly riding. Проникнуть в задницу."
 	required_from_user_exposed = INTERACTION_REQUIRE_PENIS
 	required_from_target_exposed = INTERACTION_REQUIRE_ANUS
 	interaction_sound = list(

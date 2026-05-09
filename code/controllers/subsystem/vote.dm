@@ -25,7 +25,6 @@ SUBSYSTEM_DEF(vote)
 	var/list/saved = list()
 	var/list/generated_actions = list()
 	var/roundtype_prime_runoff_ballot = FALSE
-	var/vote_chained_from_roundtype = FALSE
 
 	var/setting_up_custom = FALSE
 	var/custom_question = ""
@@ -58,7 +57,7 @@ SUBSYSTEM_DEF(vote)
 		// runoff and players get a fresh Dynamic (Random) vs Extended vote (looks like recursion).
 		if(mode == "roundtype" && !roundtype_prime_runoff_ballot && SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY <= 0)
 			result()
-			if(!vote_chained_from_roundtype)
+			if(!mode)
 				reset()
 //BLUEMOON ADD END
 		else if(end_time < world.time) //BLUEMOON CHANGES
@@ -68,7 +67,6 @@ SUBSYSTEM_DEF(vote)
 				reset()
 
 /datum/controller/subsystem/vote/proc/reset()
-	roundtype_prime_runoff_ballot = FALSE
 	initiator = null
 	end_time = 0
 	mode = null
@@ -82,6 +80,7 @@ SUBSYSTEM_DEF(vote)
 	display_votes = initial(display_votes) //CIT CHANGE - obfuscated votes
 	_clear_custom_setup()
 	remove_action_buttons()
+	roundtype_prime_runoff_ballot = FALSE
 
 /datum/controller/subsystem/vote/proc/_clear_custom_setup()
 	setting_up_custom = FALSE
@@ -406,7 +405,6 @@ SUBSYSTEM_DEF(vote)
 	return .
 
 /datum/controller/subsystem/vote/proc/result()
-	vote_chained_from_roundtype = FALSE
 	. = announce_result()
 	var/restart = 0
 	if(.)
@@ -414,27 +412,36 @@ SUBSYSTEM_DEF(vote)
 			if("roundtype")
 				if(SSticker.current_state > GAME_STATE_PREGAME)
 					return message_admins("A vote has tried to change the gamemode, but the game has already started. Aborting.")
-				if(use_dynamic_light_roundtype_vote_window() && !roundtype_prime_runoff_ballot && . == ROUNDTYPE_EXTENDED)
-					vote_chained_from_roundtype = TRUE
+
+				if(roundtype_prime_runoff_ballot)
+					var/winner_pick = .
+					roundtype_prime_runoff_ballot = FALSE
+					if(winner_pick != ROUNDTYPE_EXTENDED && winner_pick != ROUNDTYPE_DYNAMIC_LIGHT)
+						winner_pick = pick_dynamic_type_by_chaos(GLOB.player_list, allow_light = TRUE)
+						SSpersistence.RecordDynamicType(winner_pick)
+						GLOB.round_type = winner_pick
+						GLOB.master_mode = winner_pick
+					else
+						SSpersistence.RecordDynamicType(winner_pick)
+						GLOB.round_type = winner_pick
+						GLOB.master_mode = winner_pick
+					reset()
+					return .
+
+				if(use_dynamic_light_roundtype_vote_window() && . == ROUNDTYPE_EXTENDED)
 					var/runoff_vote_ds = prepare_prime_roundtype_runoff_lobby_time()
 					var/prior_initiator = initiator
-
-					var/old_mode = mode
-					mode = null
-
+					log_vote("Prime-time roundtype runoff: второй тур Extended vs Dynamic (Light). До конца — [DisplayTimeText(runoff_vote_ds)].")
 					if(initiate_vote("roundtype", prior_initiator ? prior_initiator : "server", \
 							display = NONE, votesystem = PLURALITY_VOTING, forced = TRUE, \
-							vote_time = runoff_vote_ds, roundtype_runoff_second_ballot = TRUE))
+							vote_time = runoff_vote_ds, roundtype_runoff_second_ballot = TRUE, replacing_active_vote = TRUE))
 						return .
-
-					mode = old_mode
-					vote_chained_from_roundtype = FALSE
+					message_admins("Roundtype runoff (Extended vs Dynamic Light) failed to start (cooldown or guard); finalizing Extended for this round.")
 					. = ROUNDTYPE_EXTENDED
-
 					SSpersistence.RecordDynamicType(.)
 					GLOB.round_type = .
 					GLOB.master_mode = .
-					roundtype_prime_runoff_ballot = FALSE
+					reset()
 					return .
 
 				. = normalize_roundtype_vote_result(.)
@@ -447,7 +454,7 @@ SUBSYSTEM_DEF(vote)
 					SSpersistence.RecordDynamicType(.)
 					GLOB.round_type = .
 					GLOB.master_mode = .
-				roundtype_prime_runoff_ballot = FALSE
+				reset()
 
 			if("restart")
 				if(. == "Restart Round")
@@ -480,7 +487,7 @@ SUBSYSTEM_DEF(vote)
 					var/obj/machinery/computer/communications/C = locate() in GLOB.machines
 					if(C)
 						C.post_status("shuttle") // austation end
-	// BLUEMOON ADD START - воут на карту провалился из-за отсутствия голосов
+	// BLUEMOON ADD START - воут на карту без голосов; roundtype без голосов (иначе SSvote/fire зацикливает result)
 	else if (mode == "map")
 		message_admins("Голосование за карту провалилось из-за отсутствия голосов.")
 		log_admin("Голосование за карту провалилось из-за отсутствия голосов.")
@@ -490,6 +497,18 @@ SUBSYSTEM_DEF(vote)
 			SSpersistence.RecordGracefulEnding()
 			SSticker.start_immediately = FALSE
 			SSticker.SetTimeLeft(2400)
+	else if(mode == "roundtype")
+		// SSvote/fire repeatedly calls result() while timeLeft <= ROUNDTYPE_VOTE_END_PENALTY; without a winner, we never reset and spam announce_result().
+		if(SSticker.current_state > GAME_STATE_PREGAME)
+			reset()
+			return .
+		var/fallback = pick_dynamic_type_by_chaos(GLOB.player_list, allow_light = !use_dynamic_light_roundtype_vote_window())
+		SSpersistence.RecordDynamicType(fallback)
+		GLOB.round_type = fallback
+		GLOB.master_mode = fallback
+		log_vote("Голосование за режим игры без голосов: назначен запасной режим [fallback].")
+		message_admins("Roundtype vote had no valid votes; fallback mode: [fallback]")
+		reset()
 	// BLUEMOON ADD END
 	if(restart)
 		var/active_admins = 0
@@ -556,14 +575,13 @@ SUBSYSTEM_DEF(vote)
 					saved -= usr.ckey
 	return FALSE
 
-/datum/controller/subsystem/vote/proc/initiate_vote(vote_type, initiator_key, display = display_votes, votesystem = PLURALITY_VOTING, forced = FALSE,vote_time = -1, roundtype_runoff_second_ballot = FALSE)//CIT CHANGE - adds display argument to votes to allow for obfuscated votes
+/datum/controller/subsystem/vote/proc/initiate_vote(vote_type, initiator_key, display = display_votes, votesystem = PLURALITY_VOTING, forced = FALSE,vote_time = -1, roundtype_runoff_second_ballot = FALSE, replacing_active_vote = FALSE)//CIT CHANGE - adds display argument to votes to allow for obfuscated votes
 	vote_system = votesystem
-	if(!mode)
+	if(mode && !replacing_active_vote)
+		return FALSE
+	if(!mode || replacing_active_vote)
 		if(started_time)
 			var/next_allowed_time = (started_time + CONFIG_GET(number/vote_delay))
-			if(mode)
-				to_chat(usr, "<span class='warning'>There is already a vote in progress! please wait for it to finish.</span>")
-				return FALSE
 
 			var/admin = FALSE
 			var/ckey = ckey(initiator_key)
@@ -579,8 +597,12 @@ SUBSYSTEM_DEF(vote)
 		var/saved_custom_vote_type = custom_vote_type
 		var/list/saved_custom_options = custom_options.Copy()
 		var/saved_custom_display_flags = custom_display_flags
+		if(vote_type == "custom")
+			if(!saved_custom || !saved_custom_question || length(saved_custom_options) < 2)
+				return FALSE
 		SEND_SOUND(world, sound('sound/misc/notice2.ogg'))
 		reset()
+		display_votes = display
 		roundtype_prime_runoff_ballot = roundtype_runoff_second_ballot
 		switch(vote_type)
 			if("restart")
@@ -611,20 +633,18 @@ SUBSYSTEM_DEF(vote)
 			if("transfer") // austation begin -- Crew autotranfer vote
 				choices.Add(VOTE_TRANSFER,VOTE_CONTINUE) // austation end
 			if("roundtype")
-				var/combo = check_combo()
 				if(roundtype_prime_runoff_ballot)
 					choices |= list(ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_EXTENDED)
-				else if(use_dynamic_light_roundtype_vote_window())
-					var/secondary_roundtype = ROUNDTYPE_EXTENDED
-					var/list/roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
-					if(combo == "dynamic")
-						roundtype_choices = list(secondary_roundtype)
-					else if(combo == ROUNDTYPE_EXTENDED && secondary_roundtype == ROUNDTYPE_EXTENDED)
-						roundtype_choices = list(ROUNDTYPE_DYNAMIC)
-					choices |= roundtype_choices
 				else
-					var/secondary_roundtype = get_roundtype_vote_secondary_choice()
-					var/list/roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
+					var/combo = check_combo()
+					var/secondary_roundtype
+					var/list/roundtype_choices
+					if(use_dynamic_light_roundtype_vote_window())
+						secondary_roundtype = ROUNDTYPE_EXTENDED
+						roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
+					else
+						secondary_roundtype = get_roundtype_vote_secondary_choice()
+						roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
 					if(combo == "dynamic")
 						roundtype_choices = list(secondary_roundtype)
 					else if(combo == ROUNDTYPE_EXTENDED && secondary_roundtype == ROUNDTYPE_EXTENDED)
@@ -632,8 +652,6 @@ SUBSYSTEM_DEF(vote)
 					choices |= roundtype_choices
 				sanitize_roundtype_vote_choices()
 			if("custom")
-				if(!saved_custom || !saved_custom_question || length(saved_custom_options) < 2)
-					return FALSE
 				question = saved_custom_question
 				vote_system = saved_custom_vote_type
 				display_votes = saved_custom_display_flags
@@ -725,8 +743,6 @@ SUBSYSTEM_DEF(vote)
 	return runoff_ds
 
 /datum/controller/subsystem/vote/proc/sanitize_roundtype_vote_choices()
-	if(mode != "roundtype")
-		return
 	if(roundtype_prime_runoff_ballot)
 		return
 	if(use_dynamic_light_roundtype_vote_window())

@@ -215,7 +215,7 @@ export const SettingsGeneral = (props, context) => {
         <TextArea
           height="3em"
           value={highlightText}
-          onChange={(e, value) => dispatch(updateSettings({
+          onInput={(e, value) => dispatch(updateSettings({
             highlightText: value,
           }))} />
         <Button.Checkbox
