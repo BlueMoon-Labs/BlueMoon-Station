@@ -252,8 +252,8 @@
 // -----------------------------------------------------------------------------
 // Bench E: Batched-vs-serial RAW. Adds the same N images to a target either
 // as N individual `target |= image` calls or as one `target |= big_list`. The
-// batched shape is what reload_huds now uses; this bench is the ceiling we
-// hope to capture.
+// batched shape is what each reload_huds HUD flush now uses; this bench is the
+// ceiling we hope to capture.
 // -----------------------------------------------------------------------------
 
 #define ATOM_HUD_PERF_BATCH_N 10000
@@ -331,9 +331,9 @@
 // so we can call the actual production procs — not mirrors. The HUD subtype
 // /datum/atom_hud/test_real overrides should_show_to and provides a synthetic
 // `test_target` list that stands in for `client.images` (the production
-// procs we test directly never touch client.images on this subtype, so we
-// invoke the inner collect_hud_images_for proc and union the result into
-// test_target ourselves to exercise the same shape).
+// procs we test directly either accept test_target explicitly, or we invoke
+// the inner collect_hud_images_for proc and union the result into test_target
+// ourselves to exercise the same shape).
 // =============================================================================
 
 /// Real /atom subtype so it can sit in /datum/atom_hud.hudatoms (which is
@@ -372,6 +372,12 @@
 /datum/atom_hud/test_real/proc/seed_hudatoms(list/atoms)
 	for(var/atom/A as anything in atoms)
 		hudatoms += A
+
+/datum/atom_hud/test_real/proc/remove_from_test_target(atom/A)
+	if(!A || !A.hud_list)
+		return
+	for(var/i in hud_icons)
+		test_target -= A.hud_list[i]
 
 /// Subtype with a should_show_to that filters out atoms whose
 /// visible_for_gated is FALSE. Used by the gating tests.
@@ -478,6 +484,42 @@
 		TEST_ASSERT(visible_imgs[I], "Collected image came from an atom that should have been gated out")
 
 #undef ATOM_HUD_PERF_GATING_ATOMS
+
+// -----------------------------------------------------------------------------
+// Regression: reload_huds must not carry collected images across CHECK_TICK.
+// The fixed shape flushes one HUD batch before any possible yield, so a normal
+// remove path that runs during the yield can subtract images that already exist
+// in the target. The old delayed-final-flush shape would re-add them later.
+// -----------------------------------------------------------------------------
+
+/datum/unit_test/atom_hud_reload_flush_before_yield_handles_removal
+	priority = TEST_LONGER
+
+/datum/unit_test/atom_hud_reload_flush_before_yield_handles_removal/Run()
+	var/datum/atom_hud/test_real/hud = new(num_icons = 3)
+	var/obj/effect/perf_hud_test_atom/A = allocate(/obj/effect/perf_hud_test_atom, run_loc_floor_bottom_left, 3)
+	hud.seed_hudatoms(list(A))
+
+	// Current reload_huds shape: flush this HUD batch before CHECK_TICK.
+	hud.push_all_atoms_to_image_list(null, hud.test_target)
+	TEST_ASSERT_EQUAL(length(hud.test_target), 3, "Per-HUD flush should add every image before the simulated yield")
+
+	// Simulate remove_from_single_hud running during the CHECK_TICK yield.
+	hud.remove_from_test_target(A)
+	for(var/i in hud.hud_icons)
+		var/image/I = A.hud_list[i]
+		TEST_ASSERT(!(I in hud.test_target), "Image [i] should stay removed after a post-flush HUD removal")
+
+	// Control: the old all_hud_images accumulator failed this exact interleave.
+	var/list/delayed_target = list()
+	var/list/delayed_accumulated = list()
+	hud.collect_hud_images_for(null, delayed_accumulated)
+	for(var/i in hud.hud_icons)
+		delayed_target -= A.hud_list[i]
+	delayed_target |= delayed_accumulated
+	for(var/i in hud.hud_icons)
+		var/image/I = A.hud_list[i]
+		TEST_ASSERT(I in delayed_target, "Control should reproduce the stale image that delayed final flush would re-add")
 
 // -----------------------------------------------------------------------------
 // Bench I: production-path serial vs batched comparison. Both paths see the
