@@ -878,7 +878,6 @@ GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
 					playsound(src.loc, 'sound/fox/Voice/fox_growl.ogg', 90, TRUE, -1)
 				if(say_heart_mick == "Отпусти меня!! Мне надо к нему!" || say_heart_mick == "Отдай!" || say_heart_mick == "Зачем ты нас разлучил?!")
 					playsound(src.loc, 'sound/voice/growl.ogg', 90, TRUE, -1)
-				heart_broken = TRUE
 				break
 			if(i % 2 == 0)
 				src.visible_message(span_notice(pick(hug_emotes_src)))
