@@ -5210,7 +5210,6 @@
 #include "modular_sand\code\game\objects\items\plushes.dm"
 #include "modular_sand\code\game\objects\items\circuitboards\computer_circuitboards.dm"
 #include "modular_sand\code\game\objects\items\circuitboards\machine_circuitboards.dm"
-#include "modular_sand\code\game\objects\items\devices\dogborg_sleeper.dm"
 #include "modular_sand\code\game\objects\items\devices\extra_arm.dm"
 #include "modular_sand\code\game\objects\items\devices\PDA\PDA.dm"
 #include "modular_sand\code\game\objects\items\devices\radio\headset.dm"
