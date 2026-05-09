@@ -761,6 +761,8 @@
 	icon_state = "2dc12f"
 	squeak_override = list('modular_bluemoon/sound/plush/rizz.ogg' = 1, 'modular_bluemoon/sound/plush/splort.ogg' = 1)
 #define LOVE_INTERACTION_COOLDOWN 5 SECONDS
+#define MAX_REIJO_MICKIE_INTERACTIONS 4
+var/global/plush_reijo_mickie_active = 0
 /obj/item/toy/plush/bm/reijo
 	name = "Reijo plushie"
 	desc = "Плюшевая игрушка рыжего лиса с белым подбородком. Прическа достаточно пушистая и неряшливая, особенно выделяются большие ушки с розовыми внутренностями. Чуть ниже расположены глазки с гетерохромией, а сама плюшка одета в серую водолазку с джинсами. Сзади имеется подвижный хвостик с белым кончиком."
@@ -771,7 +773,8 @@
 
 /obj/item/toy/plush/bm/reijo/Moved()
 	. = ..()
-
+	if(plush_reijo_mickie_active >= MAX_REIJO_MICKIE_INTERACTIONS)
+		return
 	// Ограничение по процессу и времени на срабатывания
 	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 		var/obj/item/toy/plush/bm/mickie/P = locate() in range(3, src)
@@ -781,10 +784,12 @@
 					loving_interaction(P)
 
 /obj/item/toy/plush/bm/reijo/proc/loving_interaction(obj/item/toy/plush/bm/mickie/partner)
+	plush_reijo_mickie_active++
 	var/turf/start = get_turf(src)
 	var/turf/end = get_turf(partner)
 
 	if(!start || !end) // На всякий случай
+		plush_reijo_mickie_active--
 		return
 
 	var/dist = get_dist(src, partner)
@@ -915,6 +920,7 @@
 			playsound(src.loc, 'sound/fox/Voice/fox_bark_1.ogg', 90, TRUE, -1)
 	love_target = null
 	partner.love_target = null
+	plush_reijo_mickie_active--
 
 /obj/item/toy/plush/bm/mickie
 	name = "Mickie plushie"
@@ -926,7 +932,8 @@
 
 /obj/item/toy/plush/bm/mickie/Moved()
 	. = ..()
-
+	if(plush_reijo_mickie_active >= MAX_REIJO_MICKIE_INTERACTIONS)
+		return
 	// Ограничение по процессу и времени на срабатывания
 	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
 		var/obj/item/toy/plush/bm/reijo/P = locate() in range(3, src)
