@@ -573,7 +573,7 @@
 
 /obj/item/dogborg/sleeper/compactor/before_insert_visual_effects(atom/movable/target, mob/living/silicon/robot/user, voracious)
 	user.visible_message(span_warning("[user.name] is ingesting [target] into their [src]."), span_notice("You start ingesting [target] into your [src.name]..."))
-	if(ishuman(target))
+	if(ismob(target))
 		playsound(user, voracious ? 'sound/vore/prey/stomachmove.ogg' : 'sound/effects/bin_open.ogg', 100, TRUE)
 
 /obj/item/dogborg/sleeper/compactor/after_insert_visual_effects(atom/movable/target, mob/living/silicon/robot/user, voracious)
