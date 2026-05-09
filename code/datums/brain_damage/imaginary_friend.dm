@@ -186,7 +186,7 @@
 	for(var/mob/M in GLOB.dead_mob_list)
 		if(!M.client)
 			continue
-		if(get_dist(M, owner) > 7 || M.z != z)
+		if(get_dist(M, owner) > 7 || M.z != owner.z)
 			if(!(M.client.prefs.chat_toggles & CHAT_GHOSTEARS)) //they're talking normally and we have hearing at any range off
 				continue
 		var/link = FOLLOW_LINK(M, owner)
