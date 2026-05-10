@@ -25,9 +25,10 @@
 		to_chat(user, "<span class='[boldnotice]'>You transmit to [M]:</span> <span class='[notice]'>[msg]</span>")
 		if(!M.anti_magic_check(magic_check, holy_check, tinfoil_check, 0)) //hear no evil
 			to_chat(M, "<span class='[boldnotice]'>You hear something behind you talking...</span> <span class='[notice]'>[msg]</span>")
-		for(var/ded in GLOB.dead_mob_list)
-			if(!isobserver(ded))
+		for(var/mob/observer in GLOB.dead_mob_list)
+			if(!observer.client || !isobserver(observer))
 				continue
-			var/follow_rev = FOLLOW_LINK(ded, user)
-			var/follow_whispee = FOLLOW_LINK(ded, M)
-			to_chat(ded, "[follow_rev] <span class='[boldnotice]'>[user] [name]:</span> <span class='[notice]'>\"[msg]\" to</span> [follow_whispee] <span class='name'>[M]</span>")
+			if(get_dist(observer, user) > 7 || observer.z != user.z)
+				if(!(observer.client.prefs.chat_toggles & CHAT_GHOSTEARS)) //they're talking normally and we have hearing at any range off
+					continue
+			to_chat(observer, "[FOLLOW_LINK(observer, user)] <span class='[boldnotice]'>[user] [name]:</span> <span class='[notice]'>\"[msg]\" to</span> [FOLLOW_LINK(observer, M)] <span class='name'>[M]</span>")
