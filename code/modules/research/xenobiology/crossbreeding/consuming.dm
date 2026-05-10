@@ -21,7 +21,7 @@ Consuming extracts:
 	return ..()
 
 /obj/item/slimecross/consuming/proc/do_after_checks(mob/user, obj/item/storage/bag/tray/tray)
-	return !QDELETED(tray) && in_range(src, user)
+	return !QDELETED(tray) && in_range(tray, user) && in_range(src, user)
 
 /obj/item/slimecross/consuming/proc/try_eat(obj/item/O, mob/user)
 	. = FALSE
