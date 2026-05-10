@@ -941,7 +941,7 @@ GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
 					P.loving_interaction(src)
 
 #undef LOVE_INTERACTION_COOLDOWN
-
+#undef MAX_REIJO_MICKIE_INTERACTIONS
 
 /obj/item/toy/plush/bm/voronka
 	name = "Voronka plushie"
