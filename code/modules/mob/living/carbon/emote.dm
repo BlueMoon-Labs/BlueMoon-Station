@@ -190,10 +190,10 @@
 	name = "Рычать как зомби"
 	key = "zombie"
 	key_third_person = "zombies"
-	message = "Рычит как зомби."
+	message = "рычит как зомби."
 	sound = 'sound/voice/zombie.ogg'
 
 /datum/emote/sound/human/zombie/select_message_type(mob/user)
 	. = ..()
 	if(. == message && iszombie(user)) // Родитель написан по дебильному, поэтому пока так
-		return "Рычит."
+		return "рычит."
