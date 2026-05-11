@@ -229,12 +229,18 @@ function getDefaultThemeState() {
 		turfIconSize: 32,
 		turfLayout: "list",
 		turfHideIcons: false,
-		turfFontSize: 12
+		turfFontSize: 12,
+		verbGridColumns: "auto",
+		verbGridMinWidth: 135,
+		turfGridColumns: "auto",
+		mcGridColumns: "auto",
+		mcGridMinWidth: 200
 	};
 }
 
 var _SETTINGS_KEYS = ["verbLayout", "verbStyle", "hideVerbSearch", "verbPadding", "tabPadding", "compactMode",
 	"turfLayout", "turfIconSize", "turfHideIcons", "turfFontSize",
+	"verbGridColumns", "verbGridMinWidth", "turfGridColumns", "mcGridColumns", "mcGridMinWidth",
 	"fontFamily", "fontSize", "borderRadius", "customCSS"];
 
 function getPresetDefaults(presetKey) {
@@ -300,6 +306,23 @@ function _resolvePreset(themeState) {
 	return THEME_PRESETS[key] || THEME_PRESETS["chat"];
 }
 
+// Applies one grid surface's density settings: a fixed column count (body class + --<prefix>-grid-cols)
+// or, when "auto", a responsive minimum cell width (--<prefix>-grid-min). Pass minDefault === null to
+// skip the min-width var entirely (the turf grid uses its icon-size slider instead).
+function applyGridLayout(prefix, columnsVal, minVal, minDefault) {
+	var root = document.documentElement;
+	var fixed = columnsVal && columnsVal !== "auto";
+	document.body.classList.toggle(prefix + "-grid-fixed", !!fixed);
+	if (fixed) {
+		root.style.setProperty("--" + prefix + "-grid-cols", parseInt(columnsVal) || 2); // fallback: 2 cols on garbage input
+	} else {
+		root.style.removeProperty("--" + prefix + "-grid-cols");
+	}
+	if (minDefault != null) {
+		root.style.setProperty("--" + prefix + "-grid-min", (minVal != null ? minVal : minDefault) + "px");
+	}
+}
+
 function applyTheme(themeState) {
 	var root = document.documentElement;
 	var preset = _resolvePreset(themeState);
@@ -334,6 +357,9 @@ function applyTheme(themeState) {
 	document.body.classList.toggle("turf-layout-grid", themeState.turfLayout === "grid");
 	document.body.classList.toggle("turf-layout-compact", themeState.turfLayout === "compact");
 	document.body.classList.toggle("turf-hide-icons", !!themeState.turfHideIcons);
+	applyGridLayout("verb", themeState.verbGridColumns, themeState.verbGridMinWidth, 135);
+	applyGridLayout("turf", themeState.turfGridColumns, null, null); // no min-width var for turf — icon-size slider controls density
+	applyGridLayout("mc", themeState.mcGridColumns, themeState.mcGridMinWidth, 200);
 	if (!_customStyleEl) {
 		_customStyleEl = document.createElement("style");
 		_customStyleEl.id = "custom-theme-css";
@@ -364,6 +390,10 @@ function importTheme(jsonStr) {
 	try {
 		var parsed = JSON.parse(jsonStr);
 		if (parsed && typeof parsed === "object" && parsed.preset) {
+			var defaults = getDefaultThemeState();
+			for (var k in defaults) {
+				if (!(k in parsed)) parsed[k] = defaults[k];
+			}
 			return parsed;
 		}
 	} catch (e) {}

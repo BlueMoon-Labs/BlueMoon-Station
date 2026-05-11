@@ -1,6 +1,73 @@
 var _settingsActive = false;
 var _fontApplyTimer = null;
 
+// Renders a "columns: Авто / 1..6" select row and (optionally) a "min cell width" slider row
+// for one grid surface. opts: { colLabel, colKey } [ + minLabel, minKey, minDefault, minMin, minMax, minStep ].
+// The min-width slider is greyed out when a fixed column count is chosen (it only affects "Авто" mode).
+// Changing the column select rebuilds the panel only if it flipped the preset to "custom"
+// (matches the existing font-select / slider behavior).
+function addGridRow(parent, themeState, opts) {
+	var colRow = el("div", "settings-row");
+	colRow.appendChild(el("span", "settings-label", opts.colLabel));
+	var sel = document.createElement("select");
+	sel.className = "settings-select";
+	var COL_OPTS = [["auto", "Авто"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"]];
+	for (var i = 0; i < COL_OPTS.length; i++) {
+		var o = document.createElement("option");
+		o.value = COL_OPTS[i][0];
+		o.textContent = COL_OPTS[i][1];
+		sel.appendChild(o);
+	}
+	sel.value = themeState[opts.colKey] || "auto";
+	colRow.appendChild(sel);
+	parent.appendChild(colRow);
+
+	var minRow = null;
+	var slider = null;
+	if (opts.minKey) {
+		minRow = el("div", "settings-row");
+		minRow.appendChild(el("span", "settings-label", opts.minLabel));
+		slider = document.createElement("input");
+		slider.type = "range";
+		slider.className = "settings-slider";
+		slider.min = "" + opts.minMin;
+		slider.max = "" + opts.minMax;
+		slider.step = "" + (opts.minStep || 5);
+		slider.value = themeState[opts.minKey] != null ? themeState[opts.minKey] : opts.minDefault;
+		var valSpan = el("span", "settings-slider-value", slider.value + "px");
+		slider.oninput = function() {
+			themeState[opts.minKey] = parseInt(slider.value);
+			valSpan.textContent = slider.value + "px";
+			var wasPre = themeState.preset;
+			markCustomIfModified(themeState);
+			saveTheme(themeState);
+			applyTheme(themeState);
+			if (themeState.preset !== wasPre) draw_settings();
+		};
+		minRow.appendChild(slider);
+		minRow.appendChild(valSpan);
+		parent.appendChild(minRow);
+	}
+
+	function syncMinState() {
+		if (!slider) return;
+		var auto = (themeState[opts.colKey] || "auto") === "auto";
+		slider.disabled = !auto;
+		minRow.style.opacity = auto ? "" : "0.4";
+	}
+	syncMinState();
+
+	sel.onchange = function() {
+		themeState[opts.colKey] = sel.value;
+		syncMinState();
+		var wasPre = themeState.preset;
+		markCustomIfModified(themeState);
+		saveTheme(themeState);
+		applyTheme(themeState);
+		if (themeState.preset !== wasPre) draw_settings();
+	};
+}
+
 function draw_settings() {
 	_settingsActive = true;
 	clearTimeout(_fontApplyTimer);
@@ -243,6 +310,16 @@ function draw_settings() {
 	verbLayoutRow.appendChild(verbLayoutGroup);
 	layoutSection.appendChild(verbLayoutRow);
 
+	if (themeState.verbLayout === "grid") {
+		addGridRow(layoutSection, themeState, {
+			colLabel: "Колонок в сетке команд",
+			colKey: "verbGridColumns",
+			minLabel: "Мин. ширина кнопки",
+			minKey: "verbGridMinWidth",
+			minDefault: 135, minMin: 70, minMax: 220, minStep: 5
+		});
+	}
+
 	var verbStyleRow = el("div", "settings-row");
 	verbStyleRow.appendChild(el("span", "settings-label", "Стиль команд"));
 	var verbStyleGroup = el("div", "settings-btn-group");
@@ -380,6 +457,13 @@ function draw_settings() {
 	turfLayoutRow.appendChild(turfLayoutGroup);
 	turfSection.appendChild(turfLayoutRow);
 
+	if (themeState.turfLayout === "grid") {
+		addGridRow(turfSection, themeState, {
+			colLabel: "Колонок в сетке",
+			colKey: "turfGridColumns"
+		});
+	}
+
 	var turfIconRow = el("div", "settings-row");
 	turfIconRow.appendChild(el("span", "settings-label", "Размер иконок"));
 	var turfIconSlider = document.createElement("input");
@@ -444,6 +528,18 @@ function draw_settings() {
 	turfSection.appendChild(turfFontRow);
 
 	panel.appendChild(turfSection);
+
+	// ===== MC tab section (admin-only tab; the controls are shown to everyone but only affect MC) =====
+	var mcSection = el("div", "settings-section");
+	mcSection.appendChild(el("div", "settings-section-title", "MC-вкладка (админ)"));
+	addGridRow(mcSection, themeState, {
+		colLabel: "Колонок в сетке",
+		colKey: "mcGridColumns",
+		minLabel: "Мин. ширина карточки",
+		minKey: "mcGridMinWidth",
+		minDefault: 200, minMin: 120, minMax: 360, minStep: 10
+	});
+	panel.appendChild(mcSection);
 
 	var advSection = el("div", "settings-section");
 	advSection.appendChild(el("div", "settings-section-title", "Дополнительно"));

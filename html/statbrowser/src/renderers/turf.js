@@ -17,7 +17,7 @@ function iconError() {
 function draw_listedturf() {
 	if (!turfTable || !turfTable.parentNode) {
 		statcontent.textContent = "";
-		turfTable = el("div");
+		turfTable = el("div", "turf-grid-wrap");
 		turfItemNodes = {};
 		statcontent.appendChild(turfTable);
 	}

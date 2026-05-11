@@ -251,8 +251,11 @@ body.verb-style-links .verb-grid {
 
 .mc-key-section {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(var(--mc-grid-min, 200px), 1fr));
 	gap: 0;
+}
+body.mc-grid-fixed .mc-key-section {
+	grid-template-columns: repeat(var(--mc-grid-cols, 2), 1fr);
 }
 .mc-key-card {
 	padding: 4px 8px;
@@ -531,27 +534,24 @@ body.verb-style-links .verb-grid {
 .val-bad { color: var(--health-bad); font-weight: bold; }
 
 /* ===== Verb Grid Layout Mode ===== */
+/* "Авто": pack as many columns as fit at >= --verb-grid-min wide.
+   Fixed N (body.verb-grid-fixed): exactly N equal columns regardless of width. */
 body.verb-layout-grid .verb-grid {
-	display: block;
-	padding: 4px 4px;
+	display: grid;
+	gap: 4px;
+	padding: 4px;
+	grid-template-columns: repeat(auto-fill, minmax(var(--verb-grid-min, 135px), 1fr));
+}
+body.verb-layout-grid.verb-grid-fixed .verb-grid {
+	grid-template-columns: repeat(var(--verb-grid-cols, 2), 1fr);
 }
 body.verb-layout-grid .verb-pill {
-	display: inline-block;
-	width: calc(50% - 6px);
+	width: auto;
+	margin: 0;
 	box-sizing: border-box;
 	text-align: center;
-	margin: 2px;
 	overflow: hidden;
 	text-overflow: ellipsis;
-}
-@media (min-width: 500px) {
-	body.verb-layout-grid .verb-pill { width: calc(33.333% - 6px); }
-}
-@media (min-width: 700px) {
-	body.verb-layout-grid .verb-pill { width: calc(25% - 6px); }
-}
-@media (min-width: 900px) {
-	body.verb-layout-grid .verb-pill { width: calc(20% - 6px); }
 }
 
 /* ===== Hide Verb Search ===== */
@@ -583,6 +583,16 @@ body.turf-layout-grid .turf-item {
 	gap: 0;
 }
 body.turf-layout-grid .turf-item-name { display: none; }
+body.turf-layout-grid.turf-grid-fixed .turf-grid-wrap {
+	display: grid;
+	grid-template-columns: repeat(var(--turf-grid-cols, 4), minmax(calc(var(--turf-icon-size, 32px) + 8px), 1fr));
+}
+body.turf-layout-grid.turf-grid-fixed .turf-item {
+	width: auto;
+	height: auto;
+	min-height: calc(var(--turf-icon-size, 32px) + 16px);
+	box-sizing: border-box;
+}
 
 /* ===== Turf Compact Layout ===== */
 body.turf-layout-compact .turf-item {
