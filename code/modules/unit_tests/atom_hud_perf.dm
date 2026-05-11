@@ -486,10 +486,9 @@
 #undef ATOM_HUD_PERF_GATING_ATOMS
 
 // -----------------------------------------------------------------------------
-// Regression: reload_huds must not carry collected images across CHECK_TICK.
-// The fixed shape flushes one HUD batch before any possible yield, so a normal
-// remove path that runs during the yield can subtract images that already exist
-// in the target. The old delayed-final-flush shape would re-add them later.
+// Regression: reload_huds flushes one HUD batch at a time (per-hud union), so a
+// later remove path that subtracts an already-pushed image leaves it removed.
+// The old single delayed-final-flush accumulator would re-add it afterwards.
 // -----------------------------------------------------------------------------
 
 /datum/unit_test/atom_hud_reload_flush_before_yield_handles_removal
@@ -500,11 +499,11 @@
 	var/obj/effect/perf_hud_test_atom/A = allocate(/obj/effect/perf_hud_test_atom, run_loc_floor_bottom_left, 3)
 	hud.seed_hudatoms(list(A))
 
-	// Current reload_huds shape: flush this HUD batch before CHECK_TICK.
+	// Current reload_huds shape: flush this HUD batch immediately.
 	hud.push_all_atoms_to_image_list(null, hud.test_target)
-	TEST_ASSERT_EQUAL(length(hud.test_target), 3, "Per-HUD flush should add every image before the simulated yield")
+	TEST_ASSERT_EQUAL(length(hud.test_target), 3, "Per-HUD flush should add every image up front")
 
-	// Simulate remove_from_single_hud running during the CHECK_TICK yield.
+	// A later remove_from_single_hud must stay removed.
 	hud.remove_from_test_target(A)
 	for(var/i in hud.hud_icons)
 		var/image/I = A.hud_list[i]
@@ -620,6 +619,52 @@
 	log_world("[type]: BATCHED BURST [ATOM_HUD_PERF_BURST_ATOMS] atoms × [ATOM_HUD_PERF_BURST_ICONS_PER_HUD] icons = [elapsed_ds]ds (~[per_atom_us]us/atom), final=[length(hud.test_target)]")
 
 	TEST_ASSERT_EQUAL(length(hud.test_target), ATOM_HUD_PERF_BURST_ATOMS * ATOM_HUD_PERF_BURST_ICONS_PER_HUD, "Batched burst should populate every image exactly once")
+
+// -----------------------------------------------------------------------------
+// Regression: /mob/proc/reload_huds_into() — the per-hud-batched loop that runs
+// inside /mob/Login() — must (a) push every visible HUD image into the target
+// list and (b) NOT sleep.
+//
+// reload_huds() used to carry a CHECK_TICK between huds. /mob/Login() is assumed
+// by its callers to run synchronously: most importantly the ghost-role spawner
+// path /obj/effect/mob_spawn/proc/create() does `mob.ckey = ckey` and then
+// immediately reads `src.mind` (Login() only creates the mind later, via
+// sync_mind(), AFTER reload_huds()). A yield there left freshly-spawned ghost-role
+// bodies with a random appearance, no "Ghost Role" assignment (so they counted as
+// living station crew) and the spawner never decremented its uses / qdel'd itself.
+// SHOULD_NOT_SLEEP on reload_huds_into() is the compile-time guard; this is the
+// runtime behaviour check.
+// -----------------------------------------------------------------------------
+
+/datum/unit_test/reload_huds_into_batches_without_yield
+
+/datum/unit_test/reload_huds_into_batches_without_yield/Run()
+	// A real /datum/atom_hud (so it lands in GLOB.all_huds and reload_huds_into iterates it).
+	var/datum/atom_hud/test_hud = allocate(/datum/atom_hud)
+	test_hud.hud_icons = list("reload_into_test_a", "reload_into_test_b")
+
+	// A clientless mob to reload HUDs onto, registered as a huduser of our test hud.
+	var/mob/living/carbon/human/dummy/spectator = allocate(/mob/living/carbon/human/dummy)
+	test_hud.hudusers[spectator] = 1
+
+	// A fake hudatom carrying one image per key our hud looks for.
+	var/obj/effect/perf_hud_test_atom/hud_atom = allocate(/obj/effect/perf_hud_test_atom, run_loc_floor_bottom_left, 1)
+	hud_atom.hud_list = list()
+	var/list/expected_images = list()
+	for(var/key in test_hud.hud_icons)
+		var/image/I = image('icons/mob/hud.dmi', null, "")
+		hud_atom.hud_list[key] = I
+		expected_images += I
+	test_hud.hudatoms += hud_atom
+
+	var/list/target_images = list()
+	var/time_before = world.time
+	spectator.reload_huds_into(target_images)
+	TEST_ASSERT_EQUAL(world.time, time_before, "reload_huds_into() must not sleep — it runs inside /mob/Login()")
+
+	for(var/image/I as anything in expected_images)
+		TEST_ASSERT(I in target_images, "reload_huds_into() should have pushed every visible hud image into the target")
+	TEST_ASSERT_EQUAL(length(target_images), length(expected_images), "reload_huds_into() pushed unexpected images (got [length(target_images)], expected [length(expected_images)])")
 
 #undef ATOM_HUD_PERF_ICON_KEY_PREFIX
 #undef ATOM_HUD_PERF_BURST_ATOMS

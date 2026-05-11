@@ -210,21 +210,27 @@ GLOBAL_LIST_INIT(huds, alist(
 /mob/proc/reload_huds()
 	if(!client)
 		return
+	reload_huds_into(client.images)
+
+/// Re-adds every HUD image visible to this mob into `target_images`, one batched
+/// `|=` per hud (collect_hud_images_for → single union, instead of N unions).
+///
+/// MUST NOT SLEEP. This runs as part of /mob/Login(), and several callers attach a
+/// client and then keep working synchronously on the assumption that Login() has
+/// already finished — most importantly the ghost-role spawner path
+/// /obj/effect/mob_spawn/proc/create(), which does `mob.ckey = ckey` and then
+/// immediately reads `src.mind` (only created later in Login() via sync_mind()).
+/// A yield in here used to leave freshly-spawned ghost-role bodies with no mind,
+/// no "Ghost Role" assignment (so they counted as station crew) and a random
+/// appearance, while the spawner never decremented its uses / qdel'd itself.
+/mob/proc/reload_huds_into(list/target_images)
+	SHOULD_NOT_SLEEP(TRUE)
+	if(!islist(target_images))
+		return
 	for(var/datum/atom_hud/hud as anything in GLOB.all_huds)
 		if(!hud || !hud.hudusers[src])
 			continue
-		var/client/their_client = client
-		if(!their_client)
-			return
-		hud.push_all_atoms_to_image_list(src, their_client.images)
-		// reload_huds is invoked from /mob/Login which already runs in its
-		// own tick; yielding here is safe because nothing else in the login
-		// chain expects synchronous HUD readiness, and per-hud collection
-		// completes within microseconds — CHECK_TICK only sleeps if the
-		// surrounding tick is already over budget.
-		CHECK_TICK
-		if(!client)
-			return
+		hud.push_all_atoms_to_image_list(src, target_images)
 
 /mob/dead/new_player/reload_huds()
 	return
