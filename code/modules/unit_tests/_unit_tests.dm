@@ -98,6 +98,7 @@
 #include "lighting.dm"
 #include "lighting_performance.dm"
 #include "machine_disassembly.dm"
+#include "machinery_optimization.dm"
 #include "mapload_space_verification.dm"	// BLUEMOON EDIT: Invalid Space Turfs
 #include "mapping.dm"						// BLUEMOON EDIT: Invalid Space Turfs
 #include "medical_wounds.dm"

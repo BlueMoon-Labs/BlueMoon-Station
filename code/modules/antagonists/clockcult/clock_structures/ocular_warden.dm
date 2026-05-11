@@ -1,4 +1,10 @@
 //Ocular warden: Low-damage, low-range turret. Deals constant damage to whoever it makes eye contact with.
+
+/// How often (in game time) the ocular warden re-scans for nearby targets. Between scans it
+/// keeps damaging its current target and reuses the cached target list. Lives in SSfastprocess
+/// (0.2s ticks), so this is ~5 ticks between viewers() scans instead of one every tick.
+#define OCULAR_WARDEN_SCAN_INTERVAL (1 SECONDS)
+
 /obj/structure/destructible/clockwork/ocular_warden
 	name = "ocular warden"
 	desc = "A large brass eye with tendrils trailing below it and a wide red iris."
@@ -14,6 +20,9 @@
 	var/damage_per_tick = 3
 	var/sight_range = 3
 	var/atom/movable/target
+	/// Cached result of the last acquire_nearby_targets() call, reused on non-scan ticks.
+	var/list/cached_targets
+	COOLDOWN_DECLARE(target_scan_cooldown)
 	var/list/idle_messages = list(" sulkily glares around.", " lazily drifts from side to side.", " looks around for something to burn.", " slowly turns in circles.")
 
 /obj/structure/destructible/clockwork/ocular_warden/Initialize(mapload)
@@ -53,9 +62,15 @@
 	if(!anchored)
 		lose_target()
 		return
-	var/list/validtargets = acquire_nearby_targets()
+	var/list/validtargets = cached_targets
+	if(COOLDOWN_FINISHED(src, target_scan_cooldown))
+		validtargets = acquire_nearby_targets()
+		cached_targets = validtargets
+		COOLDOWN_START(src, target_scan_cooldown, OCULAR_WARDEN_SCAN_INTERVAL)
+	if(!islist(validtargets))
+		validtargets = list()
 	if(target)
-		if(!(target in validtargets))
+		if(QDELETED(target) || !(target in validtargets))
 			lose_target()
 		else
 			if(isliving(target))
@@ -164,3 +179,5 @@
 					break
 		. -= (get_dist(src, target) * 0.05)
 		. = max(., 0.1) //The lowest damage a warden can do is 10% of its normal amount (0.25 by default)
+
+#undef OCULAR_WARDEN_SCAN_INTERVAL
