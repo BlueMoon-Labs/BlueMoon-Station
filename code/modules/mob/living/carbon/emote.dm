@@ -185,3 +185,15 @@
 	key_third_person = "protects"
 	message = "складывает руки на груди, образуя аквилу."
 	sound = 'sound/voice/emperorprotects.ogg'
+
+/datum/emote/sound/human/zombie
+	name = "Рычать как зомби"
+	key = "zombie"
+	key_third_person = "zombies"
+	message = "Рычит как зомби."
+	sound = 'sound/voice/zombie.ogg'
+
+/datum/emote/sound/human/zombie/select_message_type(mob/user)
+	. = ..()
+	if(. == message && iszombie(user)) // Родитель написан по дебильному, поэтому пока так
+		return "Рычит."
