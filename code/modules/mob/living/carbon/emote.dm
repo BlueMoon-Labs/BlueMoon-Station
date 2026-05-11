@@ -192,6 +192,7 @@
 	key_third_person = "zombies"
 	message = "рычит как зомби."
 	sound = 'sound/voice/zombie.ogg'
+	emote_cooldown = 3 SECONDS
 
 /datum/emote/sound/human/zombie/select_message_type(mob/user)
 	. = ..()
