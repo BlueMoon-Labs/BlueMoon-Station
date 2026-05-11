@@ -97,7 +97,7 @@
 	return FALSE
 
 /obj/machinery/computer/process(delta_time)
-	. = is_operational()
+	. = is_operational
 
 	check_typing()
 	if(typing)

@@ -214,7 +214,7 @@ Class Procs:
 		return
 	. = machine_stat
 	machine_stat = new_value
-	on_stat_update(machine_stat)
+	on_stat_update(.)
 
 ///Called when the value of `stat` changes, so we can react to it.
 /obj/machinery/proc/on_stat_update(old_value)
@@ -287,12 +287,13 @@ Class Procs:
 	occupant = new_occupant
 
 /obj/machinery/proc/auto_use_power()
-	if(!powered(power_channel))
+	var/area/our_area = get_area(src)
+	if(!our_area?.powered(power_channel))
 		return FALSE
-	if(use_power == 1)
-		use_power(idle_power_usage,power_channel)
-	else if(use_power >= 2)
-		use_power(active_power_usage,power_channel)
+	if(use_power == IDLE_POWER_USE)
+		our_area.use_power(idle_power_usage, power_channel)
+	else if(use_power >= ACTIVE_POWER_USE)
+		our_area.use_power(active_power_usage, power_channel)
 	return TRUE
 
 /**
