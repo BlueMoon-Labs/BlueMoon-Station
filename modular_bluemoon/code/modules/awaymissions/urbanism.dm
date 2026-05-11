@@ -79,6 +79,21 @@
 	reagent_id = /datum/reagent/fuel
 	tank_volume = 300
 
+/obj/structure/reagent_dispensers/urbanismbarrel/radium
+	name = "Radium barrel"
+	desc = "Barrel filled with radium. Very dangerous."
+	icon_state = "radiumbarrel"
+	reagent_id = /datum/reagent/radium
+	tank_volume = 300
+	var/rad_strength = 1000
+
+/obj/structure/reagent_dispensers/urbanismbarrel/radium/Initialize(mapload)
+	. = ..()
+	var/datum/component/radioactive/Comp
+	AddComponent(/datum/component/radioactive, 0, src, 0, TRUE)
+	Comp = GetComponent(/datum/component/radioactive)
+	Comp.set_strength(rad_strength)
+
 /obj/structure/barricade/urbanism
 	name = "Barricade"
 	desc = "Basic barricade meant to protect idiots like you from danger."

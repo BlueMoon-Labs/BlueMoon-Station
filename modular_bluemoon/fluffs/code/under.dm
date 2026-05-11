@@ -780,3 +780,25 @@
 	icon_state = "blood_suit"
 	item_state = "blood_suit"
 	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/concord
+	name = "Modified Concord Uniform"
+	desc = "Упрощённый вариант формы за авторством ЧВК \"Конкорд\", представляет из себя лёгкую дышащую синт-ткань, в несколько слоёв переплетённую с терморегуляционными трубками и мягкими подкладками. В боевой версии в ней в том числе присутствуют защитные элементы, но эта - лишь лёгкая униформа, что бы попа не потела."
+	mutantrace_variation = STYLE_DIGITIGRADE
+	icon_state = "concord"
+	item_state = "concord"
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	can_adjust = TRUE
+
+/obj/item/clothing/under/donator/bm/oldtunic
+	name = "Old Tunic"
+	desc = "Apparently, this is a fairly old tunic, made of quality materials but worn over time. It's unclear why it hasn't been thrown out yet."
+	icon_state = "oldtunic"
+	item_state = "oldtunic"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	fitted = NO_FEMALE_UNIFORM
+	body_parts_covered = CHEST|ARMS|GROIN

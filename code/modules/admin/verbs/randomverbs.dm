@@ -790,7 +790,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Change View Range", "[view]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/admin_call_shuttle()
-	set category = "Admin.Events"
+	set category = "Admin.Shuttles"
 	set name = "Call Shuttle"
 
 	if(EMERGENCY_AT_LEAST_DOCKED)
@@ -810,7 +810,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	return
 
 /client/proc/admin_cancel_shuttle()
-	set category = "Admin.Events"
+	set category = "Admin.Shuttles"
 	set name = "Cancel Shuttle"
 	if(!check_rights(0))
 		return
@@ -963,7 +963,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Set Security Level [capitalize(level)]") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/admin_hostile_environment()
-	set category = "Admin.Events"
+	set category = "Admin.Shuttles"
 	set name = "Hostile Environment"
 
 	if(!check_rights(R_ADMIN))
@@ -1341,7 +1341,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 
 /client/proc/modify_goals()
 	set name = "Station Goals"
-	set category = "Debug.6) Tweak"
+	set category = "Admin.Shuttles"
 
 	if(!check_rights(R_ADMIN))
 		return

@@ -7261,7 +7261,7 @@
 "Mc" = (
 /obj/machinery/light,
 /obj/machinery/computer/mech_bay_power_console{
-	dir = 8
+	dir = 1
 	},
 /turf/open/floor/circuit/green,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_rnd)
@@ -8078,6 +8078,17 @@
 /obj/machinery/light{
 	dir = 4;
 	light_color = "#c1caff"
+	},
+/obj/structure/rack,
+/obj/effect/turf_decal/delivery,
+/obj/item/borg/upgrade/transform/syndicatejack/inteq_assault{
+	pixel_y = 7
+	},
+/obj/item/borg/upgrade/transform/syndicatejack/inteq_medical{
+	pixel_y = 1
+	},
+/obj/item/borg/upgrade/transform/syndicatejack/inteq_saboteur{
+	pixel_y = -5
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_rnd)

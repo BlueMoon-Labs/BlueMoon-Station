@@ -216,6 +216,10 @@
 		patient.client.prefs.save_character()
 		log_admin("All quirks for [key_name(patient)] were reset due to quirk selection blacklist (via Self-Actualization Device).")
 
+	// BLUEMOON EDIT: copy_to leaves old /datum/quirk instances on the mob; /datum/quirk/New aborts if has_quirk(type), so on_spawn never reruns and organ quirks (e.g. glow eyes) desync from the body.
+	for(var/datum/quirk/Q as anything in patient.roundstart_quirks.Copy())
+		patient.remove_quirk(Q.type)
+
 	SSquirks.AssignQuirks(patient, patient.client, TRUE, TRUE, null, FALSE, patient)
 	SSlanguage.AssignLanguage(patient, patient.client)
 	if(iscuratorjob(patient))

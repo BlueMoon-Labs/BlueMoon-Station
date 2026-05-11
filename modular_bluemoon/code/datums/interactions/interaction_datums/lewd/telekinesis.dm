@@ -6,7 +6,7 @@
 	required_from_user = INTERACTION_REQUIRE_TK
 	interaction_flags = NONE
 	max_distance = TK_MAXRANGE
-	massage_by_user = FALSE
+	message_by_user = FALSE
 	write_log_user = "TKhug"
 	write_log_target = "TKhuged by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
@@ -18,7 +18,7 @@
 	required_from_user = INTERACTION_REQUIRE_TK
 	interaction_flags = NONE
 	max_distance = TK_MAXRANGE
-	massage_by_user = FALSE
+	message_by_user = FALSE
 	write_log_user = "TKheadpat"
 	write_log_target = "TKheadpatted by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
@@ -31,7 +31,7 @@
 	required_from_target = INTERACTION_REQUIRE_TAIL
 	interaction_flags = NONE
 	max_distance = TK_MAXRANGE
-	massage_by_user = FALSE
+	message_by_user = FALSE
 	write_log_user = "TKtailpull"
 	write_log_target = "TKtailpulled by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
@@ -48,7 +48,7 @@
 	simple_message = "по заду TARGET что-то приходится шлепком!"
 	big_user_target_text = TRUE
 	max_distance = TK_MAXRANGE
-	massage_by_user = FALSE
+	message_by_user = FALSE
 	interaction_flags = INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_RANGED_CONSENT
 	required_from_user = INTERACTION_REQUIRE_TK
 	write_log_user = "TK-ass-slapped"
@@ -61,7 +61,7 @@
 /datum/interaction/lewd/simplified_interaction/TK_interaction
 	required_from_user = INTERACTION_REQUIRE_TK
 	max_distance = TK_MAXRANGE
-	massage_by_user = FALSE
+	message_by_user = FALSE
 	p13target_strength = PLUG13_STRENGTH_NORMAL
 	interaction_flags = INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_RANGED_CONSENT
 	lewd_sounds = 'sound/weapons/thudswoosh.ogg'

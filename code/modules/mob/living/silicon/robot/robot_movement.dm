@@ -1,7 +1,7 @@
-/mob/living/silicon/robot/Process_Spacemove(movement_dir = 0)
+/mob/living/silicon/robot/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	if(ionpulse())
 		return TRUE
-	return ..()
+	return ..(movement_dir, continuous_move)
 
 /mob/living/silicon/robot/mob_negates_gravity()
 	return magpulse

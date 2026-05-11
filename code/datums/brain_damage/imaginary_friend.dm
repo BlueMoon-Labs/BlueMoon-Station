@@ -184,8 +184,12 @@
 		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(flick_overlay), MA, list(owner.client), 30)
 
 	for(var/mob/M in GLOB.dead_mob_list)
-		var/link = FOLLOW_LINK(M, owner)
-		to_chat(M, "[link] [dead_rendered]")
+		if(!M.client || !isobserver(M))
+			continue
+		if(get_dist(M, owner) > 7 || M.z != owner.z)
+			if(!(M.client.prefs.chat_toggles & CHAT_GHOSTEARS)) //they're talking normally and we have hearing at any range off
+				continue
+		to_chat(M, "[FOLLOW_LINK(M, owner)] [dead_rendered]")
 
 /mob/camera/imaginary_friend/Move(NewLoc, Dir = 0)
 	if(world.time < move_delay)

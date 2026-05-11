@@ -249,3 +249,18 @@
 		/obj/item/modkit/m3predator,
 	)
 	generate_items_inside(items_inside, src)
+
+/obj/item/storage/box/lapkee_kit
+	name = "Nebula Box"
+	desc = "Прочный кейс для всякой всячины, включает в себя снаряжение всё снаряжение расы Касари, которое только можно добыть окольными путями - через чёрный рынок и непотребства в высоких кабинетах."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "nebula_box"
+
+/obj/item/storage/box/lapkee_kit/PopulateContents()
+	new /obj/item/modkit/star_dust_kit(src)
+	new /obj/item/modkit/nebular_kit(src)
+	new /obj/item/modkit/katana_kit(src)
+	new /obj/item/modkit/nebular_t_kit(src)
+	new /obj/item/modkit/supernova_kit(src)
+	new /obj/item/modkit/pulsar_kit(src)
+	new /obj/item/clothing/under/donator/bm/concord(src)

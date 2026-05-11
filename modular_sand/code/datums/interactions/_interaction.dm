@@ -48,7 +48,7 @@
 	var/required_from_target_unexposed = NONE
 
 	var/big_user_target_text = FALSE // BLUEMOON ADD большой текстик для TARGET И USER если TRUE
-	var/massage_by_user = TRUE /// BLUEMOON ADD Сообщение и звук происходит от user-а? Если нет, то от цели
+	var/message_by_user = TRUE /// BLUEMOON ADD Сообщение и звук происходит от user-а? Если нет, то от цели
 	/// Additional details to be shown in the interaction menu, accepts more than one entry
 	var/list/additional_details
 
@@ -113,7 +113,7 @@
 	return TRUE
 
 /// Actually doing the action, has a few checks to see if it's valid, usually overwritten to be make things actually happen and what-not
-/datum/interaction/proc/do_action(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+/datum/interaction/proc/do_action(mob/living/user, mob/living/target, apply_cooldown = TRUE , is_hidden = FALSE)
 	if(!(interaction_flags & INTERACTION_FLAG_USER_IS_TARGET))
 		if(user == target) //tactical href fix
 			to_chat(user, span_warning("Ты не можешь нацелиться на себя."))
@@ -138,23 +138,28 @@
 		user.log_message("[write_log_user] [target]", LOG_ATTACK)
 	if(write_log_target)
 		target.log_message("[write_log_target] [user]", LOG_VICTIM, log_globally = FALSE)
-
-	display_interaction(user, target)
-	post_interaction(user, target, apply_cooldown)
+	display_interaction(user, target, is_hidden)
+	post_interaction(user, target, apply_cooldown, is_hidden)
 	return TRUE
 
 /// Display the message
-/datum/interaction/proc/display_interaction(mob/living/user, mob/living/target)
+/datum/interaction/proc/display_interaction(mob/living/user, mob/living/target, var/is_hidden)
+	var/vision_distance = 7
+	var/hidden_message
+	if(is_hidden)
+		vision_distance = 1
+		hidden_message = pick(hidden_additional)
+
 	if(simple_message)
 		var/use_message = replacetext(simple_message, "USER", big_user_target_text ? "<b>\the [user]</b>" : "\the [user]") // BLUEMOON ADD большой текст
 		use_message = replacetext(use_message, "TARGET", big_user_target_text ? "<b>\the [target]</b>" : "\the [target]") // BLUEMOON ADD большой текст
-		if(massage_by_user)
-			user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
+		if(message_by_user)
+			user.visible_message("<span class='[simple_style]'>[hidden_message] [capitalize(use_message)]</span>" , null, null, vision_distance)
 		else
-			target.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
+			target.visible_message("<span class='[simple_style]'>[hidden_message] [capitalize(use_message)]</span>" , null, null, vision_distance)
 
 /// After the interaction, the base only plays the sound and only if it has one
-/datum/interaction/proc/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+/datum/interaction/proc/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE, is_hidden = FALSE)
 	if(apply_cooldown)
 		COOLDOWN_START(user, last_interaction_time, 0.5 SECONDS)
 	if(interaction_sound)
@@ -164,14 +169,19 @@
 		// more times. This does NOT mean you are forced to
 		// use the system. If you do not make the list
 		// associative, all options will have the same chances!
+		interaction_sound_volume = 50
+
+		if(is_hidden)
+			interaction_sound_volume = 10
+
 		if(islist(interaction_sound))
 			soundfile_to_play = pickweight(interaction_sound)
 		else
 			soundfile_to_play = interaction_sound
 		if(interaction_flags & INTERACTION_FLAG_OOC_CONSENT)
-			playlewdinteractionsound(get_turf(massage_by_user ? user : target), soundfile_to_play, interaction_sound_volume, 1, -1)
+			playlewdinteractionsound(get_turf(message_by_user ? user : target), soundfile_to_play, interaction_sound_volume, 1, -1)
 		else
-			playsound(get_turf(massage_by_user ? user : target), soundfile_to_play, interaction_sound_volume, 1, -1)
+			playsound(get_turf(message_by_user ? user : target), soundfile_to_play, interaction_sound_volume, 1, -1)
 	return
 
 /datum/interaction/cheer/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)

@@ -25,10 +25,16 @@
 
 /obj/item/ammo_box/a357/requiem
 	name = "speed loader (12.7x55mm)"
-	desc = "Designed to quickly reload revolvers. These rounds are manufactured within extremely tight tolerances, making them easy to show off trickshots with."
+	desc = "A five-round speedloader for the Requiem. Each cartridge is a massive low-velocity heavy slug: extreme tissue damage, brutal recoil, no mixing with .357."
+	icon = 'icons/obj/ammo.dmi'
 	icon_state = "rsh-12"
-	max_ammo = 5
+	caliber = "12.7x55mm"
 	ammo_type = /obj/item/ammo_casing/a357/requiem
+	max_ammo = 5
+	multiple_sprites = 1
+	speedloader = TRUE
+	w_class = WEIGHT_CLASS_TINY
+	custom_materials = list(/datum/material/iron = 40000)
 
 /obj/item/ammo_box/c38
 	name = "speed loader (.38 rubber)"

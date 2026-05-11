@@ -302,6 +302,12 @@
 	use_static = FALSE
 	var/list/image/placement_images = list()
 	var/list/image/placed_images = list()
+	/// Last turf checkLandingSpot was run for. Used to skip the ~1k-turf rescan
+	/// when relaymove tick fires but the eye didn't actually move (perf log: ~2.6k
+	/// calls per session, 25s self-CPU, 0.46s overtime).
+	var/turf/last_checked_turf
+	/// Last dir checkLandingSpot was run for; rotation invalidates the dedup.
+	var/last_checked_dir = 0
 
 /mob/camera/aiEye/remote/shuttle_docker/Initialize(mapload, obj/machinery/computer/camera_advanced/origin)
 	src.origin = origin
@@ -310,6 +316,11 @@
 /mob/camera/aiEye/remote/shuttle_docker/setLoc(turf/destination, force_update = FALSE)
 	. = ..()
 	var/obj/machinery/computer/camera_advanced/shuttle_docker/console = origin
+	var/turf/current = get_turf(src)
+	if(!force_update && current == last_checked_turf && dir == last_checked_dir)
+		return
+	last_checked_turf = current
+	last_checked_dir = dir
 	console.checkLandingSpot()
 
 /mob/camera/aiEye/remote/shuttle_docker/update_remote_sight(mob/living/user)

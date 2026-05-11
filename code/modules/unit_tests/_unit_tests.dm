@@ -120,6 +120,7 @@
 // #include "security_officer_distribution.dm"
 // #include "serving_tray.dm"
 // #include "siunit.dm"
+#include "sort_tim.dm"
 #include "spawn_humans.dm"
 #include "spawn_mobs.dm"
 // #include "species_whitelists.dm"
@@ -144,12 +145,15 @@
 #endif
 
 /// BLUEMOON TESTS
+#include "atom_hud_perf.dm"
+
 #include "auto_cryo.dm"
 #include "bad_defines_defined.dm"
 #include "bugfix_coverage.dm"
 #include "disposal_holder.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
+#include "perf_optimizations.dm"
 #include "screen_gc.dm"
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"

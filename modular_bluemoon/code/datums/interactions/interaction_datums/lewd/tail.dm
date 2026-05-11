@@ -32,10 +32,7 @@
 		target.emote("blush")
 	if(HAS_TRAIT(user, TRAIT_SHY) && prob(10))
 		user.emote("blush")
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
+
 
 /datum/interaction/selfhugtail
 	description = "Обнять свой хвост."
@@ -362,6 +359,13 @@
 	var/lust_amount = LOW_LUST //если наша цель довести до пика, то не стоит это закрывать за попытками увести в крит от удушья
 	if(partner.getOxyLoss() > 40) //задушить и руками можно, это чисто ЕРП эмоут
 		oxy_damage = 0
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	var/picked_hidden = pick(hidden_additional)
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
 	if(user.a_intent == INTENT_HARM)
 		message = list(
 			"грубо обхватывает своим хвостом шею <b>\the [partner]</b>, стараясь перекрыть доступ к воздуху.",
@@ -394,6 +398,6 @@
 	if(HAS_TRAIT(partner, TRAIT_CHOKE_SLUT))
 		lust_amount = NORMAL_LUST
 	partner.set_is_fucking(user, CUM_TARGET_TAIL)
-	user.visible_message(span_danger("<b>\The [user]</b> [(islist(message) ? pick(message) : message)]."), ignored_mobs = user.get_unconsenting())
-	playlewdinteractionsound(get_turf(user), 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
+	user.visible_message(span_danger("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [(islist(message) ? pick(message) : message)]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), 'sound/weapons/thudswoosh.ogg', volume, 1, -1)
 	partner.handle_post_sex(lust_amount, CUM_TARGET_HAND, user)

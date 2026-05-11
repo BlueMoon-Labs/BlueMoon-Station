@@ -169,11 +169,11 @@
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/resume_automated_movement()
 	stop_automated_movement = 0
 
-/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/adjustBruteLoss(amount, updating_health = TRUE, forced, only_organic)
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/adjustBruteLoss(amount, updating_health = TRUE, forced, only_robotic, only_organic)
 	. = ..()
 	Retaliate()
 
-/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/adjustFireLoss(amount, updating_health, forced, only_organic)
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/adjustFireLoss(amount, updating_health, forced, only_robotic, only_organic)
 	. = ..()
 	Retaliate()
 

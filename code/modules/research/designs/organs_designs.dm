@@ -197,17 +197,6 @@
 /////Synth Organs////
 /////////////////////
 
-/datum/design/ipc_stomach
-	name = "IPC cell"
-	desc = "Effectively the robot equivalent of a stomach, handling power storage."
-	id = "ipc_stomach"
-	build_type = PROTOLATHE | MECHFAB
-	construction_time = 40
-	materials = list(/datum/material/iron = 1000, /datum/material/glass = 300, /datum/material/silver = 500, /datum/material/gold = 400)
-	build_path = /obj/item/organ/stomach/ipc
-	category = list("Misc", "Organs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
-
 /////////////////////////////////////////
 ////////////Medical Prosthetics//////////
 /////////////////////////////////////////

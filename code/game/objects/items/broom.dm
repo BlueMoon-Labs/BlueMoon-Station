@@ -156,7 +156,7 @@
 	return FALSE
 
 /obj/item/broom/liquidator
-	name = "Грабли Ликвидатора"
+	name = "Liquidator's Rake"
 	desc = "Грабли, используемые для борьбы со всяким дерьмом."
 	icon = 'icons/obj/wizard.dmi'
 	icon_state = "rake"

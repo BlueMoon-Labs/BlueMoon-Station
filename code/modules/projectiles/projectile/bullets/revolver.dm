@@ -154,10 +154,15 @@
 	wound_falloff_tile = -1
 	embed_falloff_tile = -5
 
+/// 12.7x55mm — The Central Requiem: тяжёлый урон, тупой удар (blunt) с сильным бонусом к ранам
 /obj/item/projectile/bullet/a357/requiem
 	name = "12.7x55mm bullet"
-	wound_bonus = 100
-	bare_wound_bonus = 100
+	damage = 80
+	armour_penetration = 20
+	sharpness = SHARP_NONE
+	wound_bonus = 70
+	bare_wound_bonus = 80
+	wound_falloff_tile = -0.5
 
 //.45-70 GOVT (Gunslinger's Derringer)
 //0bserver here. For all that is holy, do me a flavor, and do NOT allow people easy access to this ammo. This is meant for extremely lucky traitors, and nuclear operatives.

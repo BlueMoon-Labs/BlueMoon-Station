@@ -269,7 +269,8 @@
 		return
 	if(prob(70))
 		new /obj/effect/temp_visual/glowing_rune(src)
-	ChangeTurf(/turf/closed/wall/r_wall/rust)
+	var/turf/after = ChangeTurf(/turf/closed/wall/r_wall/rust)
+	after?.AddElement(/datum/element/heretic_rust)
 
 /turf/closed/wall/r_wall/syndicate
 	name = "hull"
