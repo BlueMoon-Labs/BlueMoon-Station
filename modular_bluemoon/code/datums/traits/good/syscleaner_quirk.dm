@@ -23,6 +23,15 @@
 			qdel(Q)
 		qdel(src)
 
+/datum/quirk/syscleaner/proc/stop_cleaning()
+	var/mob/living/carbon/human/H = quirk_holder
+	if(!syscleaning_in_progress)
+		return
+	REMOVE_TRAIT(H, TRAIT_SYSCLEANER_IN_PROGRESS, QUIRK_TRAIT)
+	if(H.physiology)
+		H.physiology.hunger_mod /= 1.6
+	syscleaning_in_progress = FALSE
+
 /datum/quirk/syscleaner/on_process()
 	. = ..()
 	var/mob/living/carbon/human/H = quirk_holder
@@ -32,17 +41,19 @@
 	if(H.bodytemperature > BODYTEMP_HEAT_DAMAGE_LIMIT && !HAS_TRAIT(H, TRAIT_RESISTHEAT))
 		cooldown_until = world.time + 1 MINUTES
 		if(warn_state != 1)
-			if(warn_state == 2) // кулдаун ещё шёл, но снова перегрелся
+			if(warn_state == 2)
 				to_chat(H, span_warning("ПРЕДУПРЕЖДЕНИЕ: Повторный перегрев до завершения восстановления. Блокировка запуска."))
 			else
 				to_chat(H, span_warning("ПРЕДУПРЕЖДЕНИЕ: Критический перегрев процессора. Система резервного копирования прошивки аварийно отключена для снижения тепловыделения."))
 			warn_state = 1
+		stop_cleaning() // гасим активную очистку
 		return
 
 	if(world.time < cooldown_until)
 		if(warn_state != 2)
 			warn_state = 2
-			to_chat(H, span_warning("УВЕДОМЛЕНИЕ: Температура нормализована, однако система резервного копирования ещё восстанавливается после перегрева. Ожидайте. Приблизительное время... Минута"))
+			to_chat(H, span_warning("УВЕДОМЛЕНИЕ: Температура нормализована, однако система резервного копирования ещё восстанавливается после перегрева. Ожидайте, приблизительное время... Минута."))
+		stop_cleaning() // на случай если очистка была активна до кулдауна
 		return
 
 	if(warn_state != 0)
@@ -74,8 +85,7 @@
 
 /datum/quirk/syscleaner/remove()
 	var/mob/living/carbon/human/H = quirk_holder
-	if (!istype(H) || !syscleaning_in_progress)
+	if (!istype(H))
 		return
-	if(H.physiology)
-		H.physiology.hunger_mod /= 1.6
+	stop_cleaning()
 	REMOVE_TRAIT(quirk_holder, TRAIT_SYSCLEANER_IN_PROGRESS, QUIRK_TRAIT)
