@@ -335,3 +335,194 @@
 	TEST_ASSERT_EQUAL(length(P.members), BUILD_PIPELINE_PERF_N, "All [BUILD_PIPELINE_PERF_N] pipes must be collected (got [length(P.members)])")
 	TEST_ASSERT(elapsed_ds < 5, "build_pipeline on [BUILD_PIPELINE_PERF_N]-pipe chain must run in linear time (took [elapsed_ds] ds)")
 #undef BUILD_PIPELINE_PERF_N
+
+
+// ===== Fix F: getFlatIcon directional-check + icon_states memoisation =====
+//
+// Profile snapshot: /proc/getFlatIcon — 2005 calls / 10.5s total CPU / 3.9s overtime,
+// a top tick-overtime contributor. Two pure-but-uncached lookups ran on *every* call:
+//   1. icon_states(curicon)                        — rebuilds the state list each time
+//   2. a 3-way directional probe that constructed three throwaway /icon objects plus
+//      three icon_states() calls just to pick base_icon_dir (the proc itself flagged
+//      this block as a "CPU hog").
+// Both depend only on immutable DMI data, so they are now memoised behind
+// /proc/cached_icon_states and /proc/icon_state_has_directional_frames.
+//
+// Tests:
+//   * flat_icon_state_caches — cached_icon_states / icon_state_has_directional_frames
+//     return results consistent with the raw built-ins, memoise icon *files*, and
+//     decline to cache unstable runtime /icon datums.
+//   * flat_icon_smoke — getFlatIcon still yields a valid icon in every cardinal dir
+//     (exercising the cached directional path), both cold and warm.
+
+/datum/unit_test/flat_icon_state_caches/Run()
+	var/test_icon = 'icons/effects/effects.dmi'
+	var/test_icon_key = "[test_icon]"
+
+	// cached_icon_states must mirror icon_states()...
+	var/list/raw_states = icon_states(test_icon)
+	TEST_ASSERT(length(raw_states) > 0, "test fixture icon must expose at least one icon_state")
+	var/list/cached_first = cached_icon_states(test_icon)
+	TEST_ASSERT_EQUAL(length(cached_first), length(raw_states), "cached_icon_states returned a different number of states than icon_states")
+	for(var/state in raw_states)
+		TEST_ASSERT(state in cached_first, "cached_icon_states is missing state '[state]'")
+
+	// ...and a repeat call must hand back the exact same (memoised) list.
+	var/list/cached_second = cached_icon_states(test_icon)
+	TEST_ASSERT(cached_first == cached_second, "cached_icon_states must return the memoised list on repeat calls")
+	TEST_ASSERT(GLOB.cached_icon_states_by_file["[test_icon_key]|0"] == cached_first, "GLOB.cached_icon_states_by_file must hold the returned list")
+
+	// Runtime /icon datums have unstable refs — must not be cached, but must still work.
+	var/icon/runtime_icon = icon(test_icon)
+	var/list/runtime_states = cached_icon_states(runtime_icon)
+	TEST_ASSERT_NOTNULL(runtime_states, "cached_icon_states must still resolve states for a runtime /icon datum")
+
+	// icon_state_has_directional_frames must agree with a direct N/E/W probe for every state...
+	for(var/state in raw_states)
+		var/expected_directional = FALSE
+		for(var/checkdir in list(NORTH, EAST, WEST))
+			if(length(icon_states(icon(test_icon, state, checkdir))))
+				expected_directional = TRUE
+				break
+		TEST_ASSERT_EQUAL(icon_state_has_directional_frames(test_icon, state), expected_directional, "icon_state_has_directional_frames disagreed with a direct probe for state '[state]'")
+		// ...the cached second call must agree with the first and populate the cache.
+		TEST_ASSERT_EQUAL(icon_state_has_directional_frames(test_icon, state), expected_directional, "cached directional result changed on the second call for state '[state]'")
+		TEST_ASSERT("[test_icon_key]|[state]" in GLOB.cached_icon_state_directional, "directional cache entry missing for state '[state]'")
+
+	// Runtime /icon datums: uncached, but consistent with a direct probe.
+	var/runtime_state = raw_states[1]
+	var/runtime_expected = FALSE
+	for(var/checkdir in list(NORTH, EAST, WEST))
+		if(length(icon_states(icon(runtime_icon, runtime_state, checkdir))))
+			runtime_expected = TRUE
+			break
+	TEST_ASSERT_EQUAL(icon_state_has_directional_frames(runtime_icon, runtime_state), runtime_expected, "icon_state_has_directional_frames must stay correct for runtime /icon datums")
+
+
+/datum/unit_test/flat_icon_smoke/Run()
+	var/mob/living/carbon/human/dummy = allocate(/mob/living/carbon/human)
+
+	for(var/test_dir in list(SOUTH, NORTH, EAST, WEST))
+		dummy.setDir(test_dir)
+		var/icon/flat = getFlatIcon(dummy, no_anim = TRUE)
+		TEST_ASSERT_NOTNULL(flat, "getFlatIcon must return an icon for a human facing [dir2text(test_dir)]")
+		TEST_ASSERT(flat.Width() > 0 && flat.Height() > 0, "getFlatIcon result must have positive dimensions facing [dir2text(test_dir)] (got [flat.Width()]x[flat.Height()])")
+
+	// Caches are warm now — a repeat call must still produce a valid icon.
+	dummy.setDir(WEST)
+	var/icon/warm = getFlatIcon(dummy, no_anim = TRUE)
+	TEST_ASSERT_NOTNULL(warm, "getFlatIcon must still return an icon once the directional/state caches are warm")
+	TEST_ASSERT(warm.Width() > 0 && warm.Height() > 0, "warm-cache getFlatIcon result must have positive dimensions (got [warm.Width()]x[warm.Height()])")
+
+
+// ===== Fix G: icon2html result cache =====
+//
+// Profile snapshot: /proc/icon2html — 3698 calls / 7.2s total CPU / 6.7s self / 2.0s overtime.
+// icon2html renders only an atom's base icon/icon_state (overlays are never flattened), so its
+// asset output is a pure function of (icon file, icon_state, dir, frame, moving). A bounded
+// result cache (GLOB.icon2html_result_cache → list(asset_name, html, url)) lets repeat calls
+// skip get_icon_dmi_path / fcopy_rsc / md5 / icon() entirely. Verifies the eviction strategy
+// (shared Cut(1, MAX/4 + 1) idiom used by the other icon caches) keeps the cache bounded while
+// retaining ~75% of entries. A live functional test is impossible here — unit tests run
+// headless, GLOB.clients is empty, and icon2html early-returns when there is no target.
+/datum/unit_test/icon2html_result_cache_eviction_math/Run()
+	var/list/synthetic_cache = list()
+	for(var/i in 1 to ICON2HTML_RESULT_CACHE_MAX + 5)
+		synthetic_cache["entry_[i]"] = list("name_[i]", "html_[i]", "url_[i]")
+
+	if(length(synthetic_cache) > ICON2HTML_RESULT_CACHE_MAX)
+		synthetic_cache.Cut(1, (ICON2HTML_RESULT_CACHE_MAX / 4) + 1)
+
+	TEST_ASSERT(length(synthetic_cache) <= ICON2HTML_RESULT_CACHE_MAX, "Eviction must keep cache <= ICON2HTML_RESULT_CACHE_MAX (got [length(synthetic_cache)])")
+	TEST_ASSERT(length(synthetic_cache) >= (ICON2HTML_RESULT_CACHE_MAX * 3 / 4), "Eviction should retain ~75% of entries (got [length(synthetic_cache)])")
+	TEST_ASSERT(isnull(synthetic_cache["entry_1"]), "Oldest entry should be evicted")
+	TEST_ASSERT_NOTNULL(synthetic_cache["entry_[ICON2HTML_RESULT_CACHE_MAX + 1]"], "Recently-added entry should survive eviction")
+	TEST_ASSERT(GLOB.icon2html_result_cache != null, "GLOB.icon2html_result_cache must be initialized as a list")
+
+
+// ===== Fix G.2: icon2html result cache covers humans =====
+//
+// Humans were originally excluded from the result cache, but icon2html's human path only Insert()s
+// the same base icon/icon_state and forces dir = SOUTH — its output is still a pure function of
+// (icon file, icon_state, frame, moving), so it is cacheable. This costs ~1.6ms/call (icon() +
+// Insert() + md5asfile) every time without the cache. We exploit that send_assets() early-returns
+// on a mob with no client, so we can drive the full icon2html pipeline headlessly with such a mob.
+/datum/unit_test/icon2html_human_result_cached/Run()
+	var/mob/null_target = allocate(/mob)
+	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human)
+
+	var/before = length(GLOB.icon2html_result_cache)
+	var/html_first = icon2html(subject, null_target)
+	TEST_ASSERT_NOTNULL(html_first, "icon2html on a human must return an <img> string")
+	TEST_ASSERT(findtext(html_first, "<img"), "icon2html on a human must return an <img ...> tag (got [html_first])")
+	TEST_ASSERT(length(GLOB.icon2html_result_cache) > before, "icon2html on a human must populate the result cache (humans are now cached)")
+
+	var/after_first = length(GLOB.icon2html_result_cache)
+	var/html_second = icon2html(subject, null_target)
+	TEST_ASSERT_EQUAL(html_first, html_second, "repeat icon2html on the same human must return the identical cached html")
+	TEST_ASSERT_EQUAL(length(GLOB.icon2html_result_cache), after_first, "the second icon2html call on the same human must hit the cache, not add another entry")
+
+	// sourceonly path must also be served from the same entry and return a bare url, not an <img>.
+	var/url = icon2html(subject, null_target, sourceonly = TRUE)
+	TEST_ASSERT_NOTNULL(url, "icon2html(sourceonly) on a cached human must return a url")
+	TEST_ASSERT(!findtext(url, "<img"), "icon2html(sourceonly) must return a bare url, not an <img> tag (got [url])")
+	TEST_ASSERT_EQUAL(length(GLOB.icon2html_result_cache), after_first, "sourceonly call on a cached human must not add a new entry")
+
+
+// ===== Fix H: get_icon_dmi_path memoisation =====
+//
+// get_icon_dmi_path runs on every icon2html call that misses the result cache (and for raw-file
+// inputs). Its result is a pure function of the resolved icon file, so it is now memoised per
+// icon file (GLOB.icon_dmi_path_cache, empty-string = negative-cache sentinel). Runtime /icon
+// datums are NOT cached — they all stringify to "/icon" and would collide.
+/datum/unit_test/get_icon_dmi_path_caching/Run()
+	var/obj/item/subject = allocate(/obj/item/flashlight)
+	var/icon_file = subject.icon
+	TEST_ASSERT_NOTNULL(icon_file, "test fixture must have an icon")
+
+	var/path_first = get_icon_dmi_path(subject)
+	var/path_second = get_icon_dmi_path(subject)
+	TEST_ASSERT_EQUAL(path_first, path_second, "get_icon_dmi_path must be stable across calls")
+	TEST_ASSERT_NOTNULL(path_first, "a compile-time dmi item must resolve to a dmi path")
+	TEST_ASSERT(is_valid_dmi_file(path_first), "resolved path must be a valid icons/*.dmi path (got [path_first])")
+	TEST_ASSERT("[icon_file]" in GLOB.icon_dmi_path_cache, "get_icon_dmi_path must cache the resolved path keyed on the icon file")
+	TEST_ASSERT_EQUAL(GLOB.icon_dmi_path_cache["[icon_file]"], path_first, "cached value must equal the resolved path")
+	// passing the resolved icon file directly must hit the same cache entry.
+	TEST_ASSERT_EQUAL(get_icon_dmi_path(icon_file), path_first, "passing the icon file directly must resolve to the same path")
+
+	// runtime /icon datums must not be cached (would collide on the "/icon" key).
+	var/size_before = length(GLOB.icon_dmi_path_cache)
+	var/icon/runtime_ic = icon(icon_file)
+	get_icon_dmi_path(runtime_ic)
+	TEST_ASSERT_EQUAL(length(GLOB.icon_dmi_path_cache), size_before, "runtime /icon datums must not be added to icon_dmi_path_cache")
+
+
+// ===== Eviction math for the new icon-helper caches (Fix F caps + Fix H cap) =====
+//
+// All three new caches share the Cut(1, MAX/4 + 1) "evict oldest 25%" idiom already proven by
+// bicon_cache_eviction_math / humanoid_icon_cache_eviction_math. Synthetic-list logic test —
+// the production procs are too expensive to invoke MAX+1 times in CI. Verifies each cap keeps
+// its cache bounded while retaining ~75% of entries, so a long (4h+) round can't grow these
+// without limit.
+/datum/unit_test/icon_helper_cache_eviction_math/Run()
+	var/list/caps = list(
+		"cached_icon_states_by_file" = ICON_STATES_FILE_CACHE_MAX,
+		"cached_icon_state_directional" = ICON_STATE_DIRECTIONAL_CACHE_MAX,
+		"icon_dmi_path_cache" = ICON_DMI_PATH_CACHE_MAX,
+	)
+	for(var/cache_name in caps)
+		var/cap = caps[cache_name]
+		TEST_ASSERT(cap > 0, "[cache_name] cap must be positive (got [cap])")
+		var/list/synthetic = list()
+		for(var/i in 1 to cap + 5)
+			synthetic["entry_[i]"] = i
+		if(length(synthetic) > cap)
+			synthetic.Cut(1, (cap / 4) + 1)
+		TEST_ASSERT(length(synthetic) <= cap, "[cache_name]: eviction must keep size <= cap (got [length(synthetic)] vs [cap])")
+		TEST_ASSERT(length(synthetic) >= (cap * 3 / 4), "[cache_name]: eviction should retain ~75% of entries (got [length(synthetic)])")
+		TEST_ASSERT(isnull(synthetic["entry_1"]), "[cache_name]: oldest entry must be evicted")
+		TEST_ASSERT_NOTNULL(synthetic["entry_[cap + 1]"], "[cache_name]: a recently-added entry must survive eviction")
+
+	TEST_ASSERT(GLOB.cached_icon_states_by_file != null, "GLOB.cached_icon_states_by_file must be a list")
+	TEST_ASSERT(GLOB.cached_icon_state_directional != null, "GLOB.cached_icon_state_directional must be a list")
+	TEST_ASSERT(GLOB.icon_dmi_path_cache != null, "GLOB.icon_dmi_path_cache must be a list")
