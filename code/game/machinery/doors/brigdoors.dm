@@ -151,7 +151,7 @@
 				targets += T
 
 		if(targets.len==0)
-			machine_stat |= BROKEN
+			set_machine_stat(machine_stat | BROKEN)
 		update_icon()
 
 /obj/machinery/door_timer/Destroy()

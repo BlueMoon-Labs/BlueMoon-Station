@@ -54,6 +54,6 @@
 			P.shock(usr, 50)
 		if(WIRE_SHOCK)
 			if(mend)
-				P.machine_stat &= ~NOPOWER
+				P.set_machine_stat(P.machine_stat & ~NOPOWER)
 			else
-				P.machine_stat |= NOPOWER
+				P.set_machine_stat(P.machine_stat | NOPOWER)

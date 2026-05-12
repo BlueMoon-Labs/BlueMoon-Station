@@ -72,10 +72,15 @@
 	TEST_ASSERT_EQUAL(machine.is_operational, machine.is_operational(), "var/proc must agree with all flags")
 
 	machine.set_machine_stat(0)
+	machine.obj_break()
+	TEST_ASSERT_EQUAL(machine.is_operational, machine.is_operational(), "var/proc must agree after obj_break")
+	TEST_ASSERT(!machine.is_operational, "obj_break should make the machine not operational")
+
+	machine.set_machine_stat(0)
 	TEST_ASSERT_EQUAL(machine.is_operational, machine.is_operational(), "var/proc must agree after clearing flags")
 	TEST_ASSERT(machine.is_operational, "machine should be operational again after clearing flags")
 
-/// A2: the four machines that DO override is_operational() must keep returning their custom
+/// A2: the three machines that DO override is_operational() must keep returning their custom
 /// value (we deliberately do NOT swap their call sites).
 /datum/unit_test/machinery_is_operational_overrides/Run()
 	var/obj/machinery/bloodbankgen/bbg = allocate(/obj/machinery/bloodbankgen)
@@ -86,6 +91,10 @@
 	relay.set_machine_stat(0)
 	relay.enabled = FALSE
 	TEST_ASSERT(!relay.is_operational(), "ntnet_relay with !enabled reports not operational even with no stat flags")
+
+	var/obj/machinery/computer/camera_advanced/shuttle_creator/shuttle_creator = allocate(/obj/machinery/computer/camera_advanced/shuttle_creator)
+	shuttle_creator.set_machine_stat(BROKEN | NOPOWER | MAINT)
+	TEST_ASSERT(shuttle_creator.is_operational(), "shuttle_creator reports operational even with stat flags")
 
 /// Counts how many times the miner rebuilds its overlays.
 /obj/machinery/mineral/bluespace_miner/unit_test_icon_counter

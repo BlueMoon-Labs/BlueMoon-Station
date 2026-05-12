@@ -181,7 +181,7 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 // make the conveyor broken
 // also propagate inoperability to any connected conveyor with the same ID
 /obj/machinery/conveyor/proc/broken()
-	machine_stat |= BROKEN
+	set_machine_stat(machine_stat | BROKEN)
 	update()
 
 	var/obj/machinery/conveyor/C = locate() in get_step(src, dir)

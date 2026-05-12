@@ -175,7 +175,7 @@
 		return
 	. = ..()
 	if(. && !(machine_stat & BROKEN))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		typing = FALSE
 		playsound(loc, 'sound/effects/glassbr3.ogg', 100, TRUE)
 		set_light(0)

@@ -807,10 +807,10 @@
 /obj/machinery/treadmill_monitor/emp_act(severity)
 	..()
 	if(!(machine_stat & BROKEN))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		update_icon()
 		spawn(100)
-			machine_stat &= ~BROKEN
+			set_machine_stat(machine_stat & ~BROKEN)
 			update_icon()
 
 #undef CHARS_PER_LINE
