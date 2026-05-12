@@ -1,4 +1,5 @@
 /datum/quirk/syscleaner
+
 	name = BLUEMOON_TRAIT_NAME_SYSCLEANER
 	desc = "ТОЛЬКО ДЛЯ СИНТЕТИКОВ! У вас установлена очень параноидальная система, которая постоянно проверяет целостность прошивки и восстанавливает её из бэкапов при малейших отклонениях. Это позволяет восстанавливать повреждения ПО (aka \"токсины\"), однако процесс увеличивает потребление энергии и мешает эффективной работе систем защиты от ЭМИ."
 	gain_text = span_warning("Резервное копирование завершено. Рекомендация: удаление директории furryporn может ускорить процесс примерно на 400%.")
@@ -8,6 +9,9 @@
 	on_spawn_immediate = FALSE // иначе on_spawn из-за потенциального удаления квирка ломается
 	processing_quirk = TRUE
 	var/syscleaning_in_progress = FALSE
+	var/cooldown_until = 0
+	var/warned = FALSE // вместо трейта
+	var/warn_state = 0 // 0 = норма, 1 = перегрев, 2 = кулдаун
 
 /datum/quirk/syscleaner/on_spawn()
 	. = ..()
@@ -24,6 +28,26 @@
 	var/mob/living/carbon/human/H = quirk_holder
 	if (!istype(H))
 		return
+
+	if(H.bodytemperature > BODYTEMP_HEAT_DAMAGE_LIMIT && !HAS_TRAIT(H, TRAIT_RESISTHEAT))
+		cooldown_until = world.time + 1 MINUTES
+		if(warn_state != 1)
+			if(warn_state == 2) // кулдаун ещё шёл, но снова перегрелся
+				to_chat(H, span_warning("ПРЕДУПРЕЖДЕНИЕ: Повторный перегрев до завершения восстановления. Блокировка запуска."))
+			else
+				to_chat(H, span_warning("ПРЕДУПРЕЖДЕНИЕ: Критический перегрев процессора. Система резервного копирования прошивки аварийно отключена для снижения тепловыделения."))
+			warn_state = 1
+		return
+
+	if(world.time < cooldown_until)
+		if(warn_state != 2)
+			warn_state = 2
+			to_chat(H, span_warning("УВЕДОМЛЕНИЕ: Температура нормализована, однако система резервного копирования ещё восстанавливается после перегрева. Ожидайте. Приблизительное время... Минута"))
+		return
+
+	if(warn_state != 0)
+		warn_state = 0
+		to_chat(H, span_notice("УВЕДОМЛЕНИЕ: Система резервного копирования прошивки возобновляет работу."))
 
 	var/consumed_damage = H.getToxLoss(TOX_SYSCORRUPT)
 	if (!consumed_damage)
