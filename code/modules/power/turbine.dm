@@ -195,7 +195,7 @@
 /obj/machinery/power/turbine/process()
 
 	if(!compressor)
-		set_machine_stat(BROKEN)
+		set_machine_stat(machine_stat | BROKEN)
 
 	if((machine_stat & BROKEN) || panel_open)
 		return

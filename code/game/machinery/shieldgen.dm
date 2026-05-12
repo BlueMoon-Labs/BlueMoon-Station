@@ -114,7 +114,7 @@
 
 /obj/machinery/shieldgen/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
-		if(!(machine_stat && BROKEN))
+		if(!(machine_stat & BROKEN))
 			set_machine_stat(machine_stat | BROKEN)
 			locked = pick(0,1)
 			update_icon()
