@@ -34,6 +34,7 @@
 	var/sawn_desc = null				//description change if weapon is sawn-off
 	var/sawn_off = FALSE
 	var/firing_burst = 0 //Prevent the weapon from firing again while already firing
+	var/ignore_twohand_requirement = FALSE //Игнрирует ли оружие проверку на наличие двух рук если HEAVY и выше. (Сделано для shotgun.dm, но var универсальный) - RaizlenW
 
 	/// can we be put into a turret
 	var/can_turret = TRUE
@@ -411,9 +412,8 @@
 				process_fire(user, user, FALSE, params, shot_leg)
 				user.dropItemToGround(src, TRUE)
 				return
-
 	if (!(HAS_TRAIT(user, TRAIT_AKIMBO)))
-		if(weapon_weight == WEAPON_HEAVY && user.get_inactive_held_item())
+		if(weapon_weight == WEAPON_HEAVY && user.get_inactive_held_item() && !ignore_twohand_requirement)
 			to_chat(user, "<span class='userdanger'>Вам нужно обе руки для стрельбы из [src]!</span>")
 			return
 

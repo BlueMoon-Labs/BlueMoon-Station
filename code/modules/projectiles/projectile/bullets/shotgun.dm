@@ -152,3 +152,20 @@
 	name = "incapacitating pellet"
 	damage = 1
 	stamina = 6
+
+/obj/item/projectile/bullet/breach_slug
+	name = "12g shotgun slug"
+	damage = 240
+	sharpness = SHARP_POINTY // SHARP_POINTY
+	range = 4
+	armour_penetration = -100
+/obj/item/projectile/bullet/breach_slug/on_hit(atom/target, blocked = FALSE)
+	. = ..()
+	if(!ismob(target))
+		do_sparks(1, TRUE, src)
+	if(istype(target, /obj/machinery/door/airlock))
+		return ..()
+	if(istype(target, /obj/structure/window))
+		return ..()
+	if(istype(target, /obj/structure/grille))
+		return ..()

@@ -224,6 +224,25 @@
 	bare_wound_bonus = 11
 	bayonet = TRUE
 
+/obj/item/kitchen/knife/combat/laser_bayonet
+	name = "Laser Bayonet"
+	icon_state = "survivalknife"
+	item_state = "knife"
+	desc = "Лазерный штык-нож, который пришёл на замену своим металлическим предкам. Лезвие всего идеально острое и не требует заточки, удобно! У этого образца кнопка включения была выломана, но ядерная батарейка всё ещё цела."
+	attack_verb = list("cleaved", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
+	sharpness = SHARP_EDGED
+	embedding = list("pain_mult" = 5, "embed_chance" = 75, "fall_chance" = 15, "ignore_throwspeed_threshold" = TRUE)
+	hitsound = 'sound/weapons/blade1.ogg'
+	armour_penetration = 35
+	block_chance = 50
+	item_flags = NEEDS_PERMIT | ITEM_CAN_PARRY
+	block_parry_data = /datum/block_parry_data/energy_sword
+	force = 17
+	throwforce = 15
+	wound_bonus = 11
+	bare_wound_bonus = 15
+	bayonet = TRUE
+
 /obj/item/kitchen/knife/combat/survival/knuckledagger
 	name = "survival dagger"
 	icon_state = "glaive-dagger"
