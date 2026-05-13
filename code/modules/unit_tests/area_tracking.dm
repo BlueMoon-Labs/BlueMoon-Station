@@ -173,6 +173,8 @@
 	for(var/iter in 1 to iterations)
 		var/list/areas = list()
 		for(var/area/maintenance/A as anything in GLOB.all_areas)
+			if(!istype(A))
+				continue
 			areas += A
 	var/glob_total_ms = TICK_USAGE_TO_MS(t_glob)
 
