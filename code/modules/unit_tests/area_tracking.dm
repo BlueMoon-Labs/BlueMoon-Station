@@ -18,7 +18,7 @@
 	TEST_ASSERT(GLOB.all_areas.len > 0, "GLOB.all_areas must contain the map's areas after world init (got [GLOB.all_areas.len])")
 
 	// Every entry must be a live (non-deleted) area.
-	for(var/entry in GLOB.all_areas)
+	for(var/datum/entry as anything in GLOB.all_areas)
 		TEST_ASSERT(isarea(entry), "GLOB.all_areas must only contain /area instances (found [entry] [entry?.type])")
 		var/area/A = entry
 		TEST_ASSERT(!QDELETED(A), "GLOB.all_areas must not contain deleted areas ([A.type])")
