@@ -257,7 +257,10 @@ function _makeTicketCard(part, isClosed) {
 					return function(e) {
 						e.preventDefault();
 						e.stopPropagation();
-						byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp=" + ref + ";ahelp_action=" + action);
+						// ahelp_silent=1 tells DM not to pop the full ticket window after closure-type
+						// actions — the whole point of these buttons is one-click triage from the
+						// stat panel. Reply/handle_issue ignore the flag server-side.
+						byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp=" + ref + ";ahelp_action=" + action + ";ahelp_silent=1");
 					};
 				})(part[2], spec.key);
 				actions.appendChild(btn);
