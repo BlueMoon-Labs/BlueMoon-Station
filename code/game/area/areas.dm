@@ -203,6 +203,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	if (area_flags & UNIQUE_AREA)
 		GLOB.areas_by_type[type] = src
 	GLOB.all_areas += src
+	if(istype(src, /area/maintenance))
+		GLOB.maintenance_areas += src
 
 	alarm_manager = new(src) // just in case
 
@@ -343,6 +345,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	if(GLOB.areas_by_type[type] == src)
 		GLOB.areas_by_type[type] = null
 	GLOB.all_areas -= src
+	if(istype(src, /area/maintenance))
+		GLOB.maintenance_areas -= src
 	power_apc = null
 	if(base_area)
 		LAZYREMOVE(base_area, src)
