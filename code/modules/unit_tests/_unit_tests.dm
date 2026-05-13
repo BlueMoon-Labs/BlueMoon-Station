@@ -154,6 +154,8 @@
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "perf_optimizations.dm"
+#include "preload_size_budgets.dm"
+#include "image_leak_audit.dm"
 #include "screen_gc.dm"
 #include "ssmobs_optimization.dm"
 #include "tattoo_system.dm"
