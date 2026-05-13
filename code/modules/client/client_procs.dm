@@ -1038,6 +1038,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			CRASH("Age check regex failed for [src.ckey]")
 
 /client/proc/validate_key_in_db()
+	// Slow path does world.Export("http://byond.com/members/...") — must not block /client/New().
+	// Return value is unused at the only callsite (client_procs.dm), so fire-and-forget is safe.
+	set waitfor = FALSE
 	var/sql_key
 	var/datum/db_query/query_check_byond_key = SSdbcore.NewQuery(
 		"SELECT byond_key FROM [format_table_name("player")] WHERE ckey = :ckey",

@@ -202,6 +202,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	// rather than waiting for atoms to initialize.
 	if (area_flags & UNIQUE_AREA)
 		GLOB.areas_by_type[type] = src
+	GLOB.all_areas += src
 
 	alarm_manager = new(src) // just in case
 
@@ -341,6 +342,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 /area/Destroy()
 	if(GLOB.areas_by_type[type] == src)
 		GLOB.areas_by_type[type] = null
+	GLOB.all_areas -= src
 	power_apc = null
 	if(base_area)
 		LAZYREMOVE(base_area, src)

@@ -96,6 +96,9 @@
 // #include "keybinding_init.dm"
 // #include "language_transfer.dm"
 #include "lighting.dm"
+#include "area_tracking.dm"
+#include "cleanable_decals_tracking.dm"
+#include "login_path_async_audit.dm"
 #include "lighting_performance.dm"
 #include "machine_disassembly.dm"
 #include "mapload_space_verification.dm"	// BLUEMOON EDIT: Invalid Space Turfs
