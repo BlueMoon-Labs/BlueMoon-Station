@@ -41,17 +41,55 @@ var TICKET_ACTIONS = [
 // Render closed/resolved tickets behind a single collapsible row to keep the active list scannable.
 var _ticketClosedExpanded = false;
 
+// Per-ticket expand state, keyed by stable identifier (id/ref). Survives redraws so admins
+// don't lose their place when DM pushes a tickets update. Stale keys are pruned on each draw.
+var _ticketExpanded = {};
+
+function _ticketKey(part) {
+	var meta = part[3];
+	if (meta && meta.id != null) return "id:" + meta.id;
+	if (part[2]) return "ref:" + part[2];
+	return null;
+}
+
+function _isTicketExpanded(part, isClosed) {
+	var key = _ticketKey(part);
+	if (key != null && Object.prototype.hasOwnProperty.call(_ticketExpanded, key)) {
+		return _ticketExpanded[key];
+	}
+	// Default: active tickets are expanded (admins need to act on them), closed ones are collapsed.
+	return !isClosed;
+}
+
+function _pruneExpandedState(seenKeys) {
+	for (var k in _ticketExpanded) {
+		if (Object.prototype.hasOwnProperty.call(_ticketExpanded, k) && !seenKeys[k]) {
+			delete _ticketExpanded[k];
+		}
+	}
+}
+
 function draw_tickets() {
+	// Preserve scroll position across redraws (toggle clicks, DM pushes).
+	// Scroll happens on body/documentElement in this iframe, not on #statcontent.
+	var scroller = document.scrollingElement || document.documentElement || document.body;
+	var savedScroll = scroller ? scroller.scrollTop : 0;
 	statcontent.textContent = "";
-	if (!State.tickets || !State.tickets.length) return;
+	if (!State.tickets || !State.tickets.length) {
+		if (scroller) scroller.scrollTop = savedScroll;
+		return;
+	}
 
 	var open = 0, inProgress = 0, closed = 0;
 	var activeRows = [];
 	var closedRows = [];
 	var headerRows = [];
+	var seenKeys = {};
 	for (var i = 0; i < State.tickets.length; i++) {
 		var t = State.tickets[i];
 		var meta = t[3];
+		var key = _ticketKey(t);
+		if (key) seenKeys[key] = true;
 		if (meta && meta.state != null) {
 			if (meta.state === AHELP_ACTIVE) {
 				if (meta.handler) inProgress++; else open++;
@@ -73,6 +111,7 @@ function draw_tickets() {
 			activeRows.push(t);
 		}
 	}
+	_pruneExpandedState(seenKeys);
 
 	var summary = el("div", "ticket-summary");
 	summary.appendChild(el("span", "ticket-summary-item val-good", "Открыто: " + open));
@@ -104,6 +143,8 @@ function draw_tickets() {
 	if (State.interviewManager && State.interviewManager.interviews && State.interviewManager.interviews.length > 0) {
 		draw_interviews();
 	}
+
+	if (scroller) scroller.scrollTop = savedScroll;
 }
 
 function _makeTicketHeaderRow(part) {
@@ -129,67 +170,105 @@ function _makeTicketHeaderRow(part) {
 
 function _makeTicketCard(part, isClosed) {
 	var meta = part[3];
-	var card = el("div", "ticket-card");
+	var expanded = _isTicketExpanded(part, isClosed);
+	var canToggle = _ticketKey(part) != null;
+
+	var card = el("div", "ticket-card" + (expanded ? " ticket-card--expanded" : ""));
 	if (isClosed) card.classList.add("ticket-closed");
+
+	// Header row — always visible, click toggles expand.
+	var header = el("div", "ticket-card-header");
+
+	var caret = el("span", "ticket-caret", canToggle ? (expanded ? "▼" : "▶") : "·");
+	header.appendChild(caret);
 
 	var stateInfo = ticketStateInfo(meta);
 	var indicator = el("span", "ticket-indicator");
 	indicator.style.backgroundColor = stateInfo.color;
 	indicator.title = stateInfo.text;
-	card.appendChild(indicator);
+	header.appendChild(indicator);
 
-	var leftCol = el("div", "ticket-left");
 	if (meta && meta.id != null) {
-		leftCol.appendChild(el("span", "ticket-id", "#" + meta.id));
+		header.appendChild(el("span", "ticket-id", "#" + meta.id));
 	}
+
 	var labelLink = el("a", "ticket-label");
 	labelLink.href = "#";
 	labelLink.textContent = part[0] || "";
 	if (part[2]) {
+		labelLink.title = "Открыть тикет в окне админки";
 		labelLink.onclick = (function(ref) {
 			return function(e) {
 				e.preventDefault();
+				e.stopPropagation();
 				byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp=" + ref + ";ahelp_action=ticket");
 			};
 		})(part[2]);
 	}
-	leftCol.appendChild(labelLink);
-	card.appendChild(leftCol);
+	header.appendChild(labelLink);
 
-	var rightCol = el("div", "ticket-right");
+	var meta_box = el("div", "ticket-meta");
 	if (meta && meta.handler) {
 		var handler = el("span", "ticket-handler", meta.handler);
 		handler.title = "Взял в работу: " + meta.handler;
-		rightCol.appendChild(handler);
+		meta_box.appendChild(handler);
 	}
 	if (meta && meta.age != null) {
 		var ageEl = el("span", "ticket-age " + ticketAgeClass(meta.age), ticketAgeText(meta.age));
 		ageEl.title = meta.age + " секунд с момента открытия";
-		rightCol.appendChild(ageEl);
+		meta_box.appendChild(ageEl);
 	}
-	if (part[1]) {
-		var stateText = el("span", "ticket-state-text", part[1]);
-		rightCol.appendChild(stateText);
-	}
-	card.appendChild(rightCol);
+	header.appendChild(meta_box);
 
-	// Inline actions only on active tickets and only when DM gave us an admin href + ticket REF.
-	if (!isClosed && part[2] && State.hrefToken && meta && meta.state === AHELP_ACTIVE) {
-		var actions = el("div", "ticket-actions");
-		for (var ai = 0; ai < TICKET_ACTIONS.length; ai++) {
-			var spec = TICKET_ACTIONS[ai];
-			var btn = el("button", "ticket-action-btn " + spec.className, spec.label);
-			btn.title = spec.title;
-			btn.onclick = (function(ref, action) {
-				return function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp=" + ref + ";ahelp_action=" + action);
-				};
-			})(part[2], spec.key);
-			actions.appendChild(btn);
-		}
-		card.appendChild(actions);
+	if (canToggle) {
+		header.classList.add("ticket-card-header--clickable");
+		header.onclick = function(e) {
+			// Don't toggle when the user actually clicked the label link, an action button,
+			// or any nested interactive element — those handlers do their own thing.
+			var node = e.target;
+			while (node && node !== header) {
+				var tag = node.tagName;
+				if (tag === "A" || tag === "BUTTON") return;
+				node = node.parentNode;
+			}
+			var key = _ticketKey(part);
+			_ticketExpanded[key] = !_isTicketExpanded(part, isClosed);
+			draw_tickets();
+		};
 	}
+
+	card.appendChild(header);
+
+	if (expanded) {
+		// Body — full message text with proper wrapping.
+		if (part[1]) {
+			var body = el("div", "ticket-body");
+			body.textContent = "" + part[1];
+			card.appendChild(body);
+		}
+		// Action buttons only on active tickets, when DM gave us admin href + ticket REF.
+		if (!isClosed && part[2] && State.hrefToken && meta && meta.state === AHELP_ACTIVE) {
+			var actions = el("div", "ticket-actions");
+			for (var aIdx = 0; aIdx < TICKET_ACTIONS.length; aIdx++) {
+				var spec = TICKET_ACTIONS[aIdx];
+				var btn = el("button", "ticket-action-btn " + spec.className, spec.label);
+				btn.title = spec.title;
+				btn.onclick = (function(ref, action) {
+					return function(e) {
+						e.preventDefault();
+						e.stopPropagation();
+						byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp=" + ref + ";ahelp_action=" + action);
+					};
+				})(part[2], spec.key);
+				actions.appendChild(btn);
+			}
+			card.appendChild(actions);
+		}
+	} else if (part[1]) {
+		// Compact one-line preview of the message, so collapsed cards aren't blank.
+		var preview = el("div", "ticket-preview", "" + part[1]);
+		card.appendChild(preview);
+	}
+
 	return card;
 }

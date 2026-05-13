@@ -361,19 +361,38 @@ body.mc-grid-fixed .mc-key-section {
 /* ===== Tickets ===== */
 .ticket-summary {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 12px;
 	padding: 6px 8px;
 	border-bottom: 1px solid var(--border);
 	font-size: 12px;
+	background: var(--bg-primary);
 }
 .ticket-summary-item { font-weight: bold; }
 .ticket-card {
 	display: flex;
-	align-items: center;
-	gap: 8px;
+	flex-direction: column;
+	gap: 4px;
 	padding: 4px 8px;
 	border-bottom: 1px solid var(--border);
 	font-size: 12px;
+	min-width: 0;
+}
+.ticket-card-header {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+.ticket-card-header--clickable { cursor: pointer; }
+.ticket-card-header--clickable:hover .ticket-caret { color: var(--text-primary); }
+.ticket-caret {
+	color: var(--text-muted);
+	font-size: 9px;
+	width: 10px;
+	flex-shrink: 0;
+	text-align: center;
+	user-select: none;
 }
 .ticket-indicator {
 	width: 6px;
@@ -381,7 +400,7 @@ body.mc-grid-fixed .mc-key-section {
 	border-radius: 50%;
 	flex-shrink: 0;
 }
-.ticket-closed { opacity: 0.5; }
+.ticket-closed { opacity: 0.6; }
 .ticket-header-row {
 	display: flex;
 	justify-content: space-between;
@@ -394,24 +413,11 @@ body.mc-grid-fixed .mc-key-section {
 }
 .ticket-header-link, .ticket-header-link:visited { color: var(--accent); text-decoration: none; }
 .ticket-header-link:hover { text-decoration: underline; }
-.ticket-left {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	min-width: 0;
-	flex: 1;
-}
-.ticket-right {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	flex-shrink: 0;
-	font-size: 11px;
-}
 .ticket-id {
 	color: var(--text-muted);
 	font-family: var(--font-mono, monospace);
 	font-size: 11px;
+	flex-shrink: 0;
 }
 .ticket-label {
 	color: var(--text-primary);
@@ -419,26 +425,66 @@ body.mc-grid-fixed .mc-key-section {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	flex: 1 1 auto;
+	min-width: 40px;
 }
 .ticket-label:hover { text-decoration: underline; color: var(--accent); }
-.ticket-handler { color: var(--health-warn); font-weight: bold; }
+.ticket-meta {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+	font-size: 11px;
+	margin-left: auto;
+}
+.ticket-handler {
+	color: var(--health-warn);
+	font-weight: bold;
+	max-width: 96px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
 .ticket-age { font-family: var(--font-mono, monospace); }
-.ticket-state-text { color: var(--text-muted); }
+.ticket-preview {
+	color: var(--text-muted);
+	font-size: 11px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding-left: 18px;
+	cursor: pointer;
+}
+.ticket-body {
+	color: var(--text-secondary);
+	font-size: 12px;
+	padding: 4px 6px;
+	margin-left: 18px;
+	border-left: 2px solid var(--border);
+	background: var(--bg-secondary);
+	word-break: break-word;
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
+	max-height: 240px;
+	overflow-y: auto;
+}
 .ticket-actions {
 	display: flex;
-	gap: 2px;
-	flex-shrink: 0;
+	flex-wrap: wrap;
+	gap: 3px;
+	padding-left: 18px;
 }
 .ticket-action-btn {
 	background: transparent;
 	border: 1px solid var(--border);
 	color: var(--text-secondary);
-	padding: 1px 5px;
+	padding: 2px 6px;
 	font-size: 10px;
 	font-family: inherit;
 	border-radius: var(--border-radius, 2px);
 	cursor: pointer;
 	min-height: 18px;
+	flex: 0 0 auto;
 }
 .ticket-action-btn:hover { background: var(--bg-hover, var(--border)); color: var(--text-primary); }
 .ticket-action-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -452,6 +498,7 @@ body.mc-grid-fixed .mc-key-section {
 	cursor: pointer;
 	user-select: none;
 	border-bottom: 1px solid var(--border);
+	border-top: 1px dashed var(--border);
 }
 .ticket-closed-toggle:hover { color: var(--text-primary); background: var(--bg-hover, var(--border)); }
 
@@ -565,7 +612,9 @@ body.compact-mode .metric-value { font-size: 12px; }
 body.compact-mode .section-header { padding: 4px 8px; font-size: 10px; }
 body.compact-mode .data-table td { padding: 1px 4px; }
 body.compact-mode .spell-card { padding: 2px 6px; gap: 6px; }
-body.compact-mode .ticket-card { padding: 2px 6px; gap: 6px; }
+body.compact-mode .ticket-card { padding: 2px 6px; gap: 3px; }
+body.compact-mode .ticket-body { padding: 2px 4px; font-size: 11px; }
+body.compact-mode .ticket-action-btn { padding: 1px 4px; }
 body.compact-mode .ping-bar { padding: 3px 8px; font-size: 11px; }
 body.compact-mode .shuttle-bar { padding: 4px 8px; font-size: 12px; }
 
