@@ -1,6 +1,6 @@
 #define MINING_MESSAGE_COOLDOWN 20
 
-/**********************Mineral deposits**************************/
+/**********************Mineral deposits*************************/
 
 /turf/closed/mineral //wall piece
 	name = "rock"
