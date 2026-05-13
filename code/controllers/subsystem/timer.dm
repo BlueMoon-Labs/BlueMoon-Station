@@ -494,6 +494,9 @@ SUBSYSTEM_DEF(timer)
 		bucket_list[bucketpos] = next
 		removed_from_bucket = TRUE
 	else if(prev || next)
+		var/actual_bucketpos = bucket_list.Find(src)
+		if(actual_bucketpos)
+			bucket_list[actual_bucketpos] = next
 		removed_from_bucket = TRUE
 	else
 		// Timers near bucket boundaries can be qdel'd before firing after the bucket
