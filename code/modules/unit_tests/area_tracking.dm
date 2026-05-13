@@ -196,8 +196,8 @@
 /// Wormholes round event used to scan every floor turf in the world without a
 /// CHECK_TICK, which freezes a tick on real stations. Verify the loop yields.
 /datum/unit_test/wormholes_start_yields_tick/Run()
-	var/source = file2text("code/modules/events/wormholes.dm")
-	TEST_ASSERT(length(source) > 200, "wormholes.dm must be readable from the test working directory")
+	var/source = read_source_file("code/modules/events/wormholes.dm")
+	TEST_ASSERT(length(source) > 200, "wormholes.dm must be readable from the test working directory or parent checkout")
 
 	// Locate the start() proc body — find header, copy until the next /datum/round_event/wormholes/ method.
 	var/start = findtext(source, "/datum/round_event/wormholes/start()")

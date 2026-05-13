@@ -22,8 +22,8 @@
 	return copytext(source, start, end)
 
 /datum/unit_test/login_validate_key_in_db_is_async/Run()
-	var/source = file2text("code/modules/client/client_procs.dm")
-	TEST_ASSERT(length(source) > 1000, "client_procs.dm must be readable from the test working directory (got [length(source)] chars)")
+	var/source = read_source_file("code/modules/client/client_procs.dm")
+	TEST_ASSERT(length(source) > 1000, "client_procs.dm must be readable from the test working directory or parent checkout (got [length(source)] chars)")
 
 	var/body = _extract_client_proc_body(source, "/client/proc/validate_key_in_db()")
 	TEST_ASSERT_NOTNULL(body, "/client/proc/validate_key_in_db() must exist in client_procs.dm")
