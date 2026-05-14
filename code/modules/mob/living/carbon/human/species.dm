@@ -2554,7 +2554,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 	var/turf/ambient_turf = get_turf(H)
 	if(istype(ambient_turf))
-		for(var/obj/machinery/shower/shower as anything in ambient_turf.contents)
+		for(var/obj/machinery/shower/shower in ambient_turf.contents)
 			if(!shower.on)
 				continue
 			switch(shower.watertemp)
