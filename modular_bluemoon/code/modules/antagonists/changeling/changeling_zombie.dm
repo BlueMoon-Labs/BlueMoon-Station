@@ -71,7 +71,7 @@
 		REMOVE_TRAITS_IN(host, TRAIT_CHANGELING_ZOMBIE)
 		host.mind?.remove_antag_datum(/datum/antagonist/changeling_zombie)
 		if(zombified)
-			UnregisterSignal(host, COMSIG_LIVING_DEATH)
+			UnregisterSignal(host, COMSIG_MOB_DEATH)
 			UnregisterSignal(host, COMSIG_CARBON_REMOVE_LIMB)
 			UnregisterSignal(host, COMSIG_CARBON_ATTACH_LIMB)
 			UnregisterSignal(host, COMSIG_MOB_SAY)
@@ -159,7 +159,7 @@
 	host.set_resting(FALSE)
 	host.reagents.add_reagent(/datum/reagent/medicine/changelingadrenaline, 4)
 	host.reagents.add_reagent(/datum/reagent/medicine/changelinghaste, 3)
-	RegisterSignal(host, COMSIG_LIVING_DEATH, PROC_REF(on_owner_died))
+	RegisterSignal(host, COMSIG_MOB_DEATH, PROC_REF(on_owner_died))
 	RegisterSignal(host, COMSIG_CARBON_REMOVE_LIMB, PROC_REF(on_remove_limb))
 	RegisterSignal(host, COMSIG_CARBON_ATTACH_LIMB, PROC_REF(on_gain_limb))
 	RegisterSignal(host, COMSIG_MOB_SAY, PROC_REF(handle_speech))
@@ -179,7 +179,8 @@
 	host.put_in_hand(arm_blade, hand_index, forced = TRUE)
 	arm_blades += arm_blade
 
-/datum/component/changeling_zombie_infection/proc/on_owner_died(datum/source)
+/// COMSIG_LIVING_DEATH не шлётся в текущем коде — смерть живого идёт через /mob/living/death() → COMSIG_MOB_DEATH.
+/datum/component/changeling_zombie_infection/proc/on_owner_died(datum/source, gibbed)
 	SIGNAL_HANDLER
 	if(zombified)
 		qdel(src)
