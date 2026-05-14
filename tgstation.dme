@@ -4516,6 +4516,7 @@
 #include "modular_bluemoon\code\modules\antagonists\bloodsucker\bloodsucker_flaws.dm"
 #include "modular_bluemoon\code\modules\antagonists\bloodsucker\bloodsucker_objectives.dm"
 #include "modular_bluemoon\code\modules\antagonists\bloodsucker\datum_bloodsucker.dm"
+#include "modular_bluemoon\code\datums\diseases\changeling_virus.dm"
 #include "modular_bluemoon\code\modules\antagonists\changeling\changeling_zombie.dm"
 #include "modular_bluemoon\code\modules\antagonists\changeling\powers\hive_head.dm"
 #include "modular_bluemoon\code\modules\antagonists\changeling\powers\horny_prick.dm"
