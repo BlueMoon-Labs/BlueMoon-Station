@@ -81,3 +81,15 @@
 	item_state = "wintercape"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/neck.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
+
+/obj/item/clothing/neck/cloak/ranger_poncho
+	name = "ranger poncho"
+	desc = "Aim for the Heart, Ramon."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/neck.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
+	icon_state = "ranger_poncho"
+	item_state = "ranger_poncho"
+
+/obj/item/clothing/neck/cloak/ranger_poncho/primitive_catgirl_leather
+	icon_state = "primitive_catgirl_leather"
+	item_state = "primitive_catgirl_leather"

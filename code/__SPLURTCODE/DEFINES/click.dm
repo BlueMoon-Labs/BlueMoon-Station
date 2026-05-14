@@ -37,7 +37,13 @@
 	var/turf/T = get_turf(A)
 	if(T == A.loc || T == A)
 		if(T == listed_turf)
-			listed_turf = null
+			if(client)
+				client.clear_listed_turf()
+			else
+				listed_turf = null
 		else if(TurfAdjacent(T))
-			listed_turf = T
-			client.statpanel = T.name
+			if(client)
+				client.open_listed_turf(T)
+				client.statpanel = T.name
+			else
+				listed_turf = T

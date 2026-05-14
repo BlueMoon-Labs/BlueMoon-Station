@@ -39,7 +39,8 @@
 	var/can_cure = FALSE
 	var/was_changeling_husked = FALSE
 	var/list/obj/item/melee/arm_blade/changeling_zombie/arm_blades = list()
-	var/obj/item/clothing/suit/armor/changeling/prototype/armor
+	var/obj/item/clothing/suit/armor/changeling/armor
+	var/obj/item/clothing/head/helmet/changeling/armor_head
 	var/list/bodypart_zones_to_regenerate = list()
 	COOLDOWN_DECLARE(limb_regen_cooldown)
 	COOLDOWN_DECLARE(transformation_grace_period)
@@ -64,6 +65,7 @@
 /datum/component/changeling_zombie_infection/Destroy(force, silent)
 	QDEL_LIST(arm_blades)
 	QDEL_NULL(armor)
+	QDEL_NULL(armor_head)
 	if(parent)
 		var/mob/living/carbon/human/host = parent
 		REMOVE_TRAITS_IN(host, TRAIT_CHANGELING_ZOMBIE)
@@ -147,8 +149,11 @@
 	if(host.wear_suit)
 		host.temporarilyRemoveItemFromInventory(host.wear_suit, TRUE)
 	armor = new(host.loc)
+	armor_head = new(host.loc)
 	ADD_TRAIT(armor, TRAIT_NODROP, TRAIT_CHANGELING_ZOMBIE)
+	ADD_TRAIT(armor_head, TRAIT_NODROP, TRAIT_CHANGELING_ZOMBIE)
 	host.equip_to_slot_if_possible(armor, ITEM_SLOT_OCLOTHING, TRUE, TRUE, TRUE)
+	host.equip_to_slot_if_possible(armor_head, ITEM_SLOT_HEAD, TRUE, TRUE, TRUE)
 	host.SetKnockdown(0)
 	host.setStaminaLoss(0)
 	host.set_resting(FALSE)
@@ -230,8 +235,3 @@
 	var/datum/component/changeling_zombie_infection/us = user.GetComponent(/datum/component/changeling_zombie_infection)
 	if(us?.infect_objective)
 		us.infect_objective.total_infections += 1
-
-/obj/item/clothing/suit/armor/changeling/prototype
-	name = "warped chitin"
-	desc = "Half-formed plating twitching on its own."
-	armor = list(MELEE = 15, BULLET = 15, LASER = 15, ENERGY = 25, BOMB = 5, BIO = 5, RAD = 0, FIRE = 0, ACID = 75)

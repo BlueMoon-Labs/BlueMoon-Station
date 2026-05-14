@@ -7,10 +7,10 @@
 	name = "Horror Form"
 	desc = "We tear apart our disguise, revealing a monstrous shell."
 	helptext = "Massive melee strength and regeneration; limited ranged options. You may revert after several minutes. Costs heavy chemicals."
-	button_icon_state = "transform_human"
+	button_icon_state = "horror_form"
 	chemical_cost = 50
 	dna_cost = 4
-	req_dna = 10
+	req_dna = 5
 	req_absorbs = 1
 	req_human = TRUE
 	loudness = 3
@@ -46,19 +46,19 @@
 	real_name = "true changeling"
 	desc = "An avalanche of teeth, sinew, and wrong angles."
 	icon = 'icons/mob/alien.dmi'
-	icon_state = "alienq"
-	icon_living = "alienq"
-	icon_dead = "alienq_dead"
+	icon_state = "horror"
+	icon_living = "horror"
+	icon_dead = "horror_dead"
 	mob_biotypes = MOB_ORGANIC
-	maxHealth = 700
-	health = 500
+	maxHealth = 1500
+	health = 1000
 	melee_damage_lower = 35
 	melee_damage_upper = 45
 	attack_verb_continuous = "rends"
 	attack_verb_simple = "rend"
 	attack_sound = 'sound/effects/blobattack.ogg'
 	move_to_delay = 5
-	speed = -1
+	speed = 0
 	environment_smash = ENVIRONMENT_SMASH_STRUCTURES
 	gold_core_spawnable = FALSE
 	var/mob/living/carbon/human/stored_changeling
@@ -117,6 +117,7 @@
 /datum/action/innate/true_changeling_revert
 	name = "Re-form Shell"
 	desc = "Compress ourselves back into our original human disguise."
+	button_icon_state = "change_to_human"
 
 /datum/action/innate/true_changeling_revert/Trigger()
 	if(!IsAvailable())
@@ -145,6 +146,7 @@
 /datum/action/innate/true_changeling_devour
 	name = "Devour"
 	desc = "Rip flesh from an adjacent human."
+	button_icon_state = "devour"
 
 /datum/action/innate/true_changeling_devour/Trigger()
 	if(!IsAvailable())

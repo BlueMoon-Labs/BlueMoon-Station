@@ -200,7 +200,7 @@
 
 /// Manually clears any held keys, in case due to lag or other undefined behavior a key gets stuck.
 /client/proc/reset_held_keys()
-	for(var/key in keys_held)
+	for(var/key in keys_held.Copy())
 		keyUp(key)
 
 	// //In case one got stuck and the previous loop didn't clean it, somehow.

@@ -56,6 +56,7 @@
 
 /mob/living/death(gibbed)
 	SEND_SIGNAL(src, COMSIG_LIVING_PREDEATH, gibbed)
+	SEND_SIGNAL(src, COMSIG_LIVING_DEATH, gibbed)
 
 	set_stat(DEAD)
 	unset_machine()

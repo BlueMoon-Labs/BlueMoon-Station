@@ -1721,7 +1721,7 @@
 	name = "Player Zippo"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/lighter/plighter
-	ckeywhitelist = list("stasdvrz", "dimofon")
+	ckeywhitelist = list("stasdvrz", "dimofon", "devildeadspace")
 
 /datum/gear/donator/bm/horror_mask
 	name = "Horror_mask"
@@ -2352,3 +2352,27 @@
 	slot = ITEM_SLOT_SOCKS
 	path = /obj/item/clothing/underwear/socks/thigh/oldwraps
 	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/occult_outfit
+	name = "occult collector's outfit"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/occult
+	ckeywhitelist = list("pingvas", "dimofon", "devildeadspace")
+
+/datum/gear/donator/bm/occult_coat
+	name = "occult collector's coat"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/hooded/bm/donator/occult
+	ckeywhitelist = list("pingvas", "dimofon", "devildeadspace")
+
+/datum/gear/donator/bm/ranger_poncho
+	name = "ranger poncho"
+	slot = ITEM_SLOT_NECK
+	path = /obj/item/clothing/neck/cloak/ranger_poncho
+	ckeywhitelist = list("pingvas", "dimofon", "devildeadspace")
+
+/datum/gear/donator/bm/primitive_catgirl_leather_poncho
+	name = "primitive catgirl leather poncho"
+	slot = ITEM_SLOT_NECK
+	path = /obj/item/clothing/neck/cloak/ranger_poncho/primitive_catgirl_leather
+	ckeywhitelist = list("pingvas", "dimofon", "devildeadspace")

@@ -402,7 +402,7 @@
 	))
 
 /client/proc/DB_ban_panel()
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 	set name = "Banning & Unbanning"
 	set desc = "SQL ban lookup, custom ban, job role grid (WhiteMoon-style)"
 

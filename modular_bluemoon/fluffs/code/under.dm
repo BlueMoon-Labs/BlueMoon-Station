@@ -802,3 +802,11 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = NO_FEMALE_UNIFORM
 	body_parts_covered = CHEST|ARMS|GROIN
+
+/obj/item/clothing/under/donator/bm/occult
+	name = "occult collector's outfit"
+	desc = "A set of clothes fit for someone dapper that isn't afraid of getting dirty."
+	icon_state = "occultoutfit"
+	body_parts_covered = CHEST|GROIN|ARMS
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE

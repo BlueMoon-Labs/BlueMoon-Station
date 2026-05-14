@@ -95,12 +95,23 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	SHOULD_NOT_SLEEP(TRUE)
 	var/list/L = list()
 	var/num_disconnected = 0
+	// Tuple shape:
+	// [label, statclick_text, ref, meta_assoc]
+	// meta_assoc carries structured per-ticket data (id/age/handler/state/answered) so the
+	// browser-side renderer can show ticket # / age / claimer without re-parsing the label.
 	L[++L.len] = list("Active Tickets:", "[astatclick.update("[active_tickets.len]")]", null, REF(astatclick))
 	astatclick.update("[active_tickets.len]")
 	for(var/I in active_tickets)
 		var/datum/admin_help/AH = I
 		if(AH.initiator)
-			L[++L.len] = list("#[AH.id]. [AH.initiator_key_name]:", "[AH.statclick.update()]", REF(AH))
+			var/list/meta = list(
+				"id" = AH.id,
+				"age" = round((world.time - AH.opened_at) / 10),
+				"handler" = AH.handler ? AH.handler : "",
+				"state" = AH.state,
+				"answered" = AH.answered,
+			)
+			L[++L.len] = list("#[AH.id]. [AH.initiator_key_name]:", "[AH.statclick.update()]", REF(AH), meta)
 		else
 			++num_disconnected
 	if(num_disconnected)
@@ -363,7 +374,9 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	SEND_SIGNAL(src, COMSIG_ADMIN_HELP_MADE_INACTIVE)
 
 //Mark open ticket as closed/meme
-/datum/admin_help/proc/Close(key_name = key_name_admin(usr), silent = FALSE)
+//silent_panel: skip auto-opening TicketPanel after the action — used when the action came from
+//a quick button (stat panel) where popping a popup over an already-closed ticket is just noise.
+/datum/admin_help/proc/Close(key_name = key_name_admin(usr), silent = FALSE, silent_panel = FALSE)
 	if(state != AHELP_ACTIVE)
 		return
 	RemoveActive()
@@ -377,10 +390,11 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		message_admins(msg, islog = FALSE, prefix = "AHELP")
 		SSblackbox.LogAhelp(id, "Closed", "Closed by [usr.key]", null, usr.ckey) //BLUEMOON EDIT, enable ticket logging
 		log_admin_private(msg)
-	TicketPanel()
+	if(!silent_panel)
+		TicketPanel()
 
 //Mark open ticket as resolved/legitimate, returns ahelp verb
-/datum/admin_help/proc/Resolve(key_name = key_name_admin(usr), silent = FALSE)
+/datum/admin_help/proc/Resolve(key_name = key_name_admin(usr), silent = FALSE, silent_panel = FALSE)
 	if(state != AHELP_ACTIVE)
 		return
 	RemoveActive()
@@ -397,10 +411,11 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		message_admins(msg, islog = FALSE, prefix = "AHELP")
 		SSblackbox.LogAhelp(id, "Resolved", "Resolved by [usr.key]", null, usr.ckey) //BLUEMOON EDIT, enable ticket logging
 		log_admin_private(msg)
-	TicketPanel()
+	if(!silent_panel)
+		TicketPanel()
 
 //Close and return ahelp verb, use if ticket is incoherent
-/datum/admin_help/proc/Reject(key_name = key_name_admin(usr))
+/datum/admin_help/proc/Reject(key_name = key_name_admin(usr), silent_panel = FALSE)
 	if(state != AHELP_ACTIVE)
 		return
 
@@ -421,11 +436,12 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	log_admin_private(msg)
 	AddInteraction("<u>Отклонено админом</u> [key_name].")
 	SSblackbox.LogAhelp(id, "Rejected", "Rejected by [usr.key]", null, usr.ckey) //BLUEMOON EDIT, enable ticket logging
-	Close(silent = TRUE)
-	TicketPanel()
+	Close(silent = TRUE, silent_panel = TRUE)
+	if(!silent_panel)
+		TicketPanel()
 
 //Resolve ticket with IC Issue message
-/datum/admin_help/proc/ICIssue(key_name = key_name_admin(usr))
+/datum/admin_help/proc/ICIssue(key_name = key_name_admin(usr), silent_panel = FALSE)
 	if(state != AHELP_ACTIVE)
 		return
 
@@ -442,11 +458,12 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	log_admin_private(msg)
 	AddInteraction("<u>Помечено как IC issue админом</u> [key_name]")
 	SSblackbox.LogAhelp(id, "IC Issue", "Marked as IC issue by [usr.key]", null,  usr.ckey) //BLUEMOON EDIT, enable ticket logging
-	Resolve(silent = TRUE)
-	TicketPanel()
+	Resolve(silent = TRUE, silent_panel = TRUE)
+	if(!silent_panel)
+		TicketPanel()
 
 //Resolve ticket with Skill Issue message
-/datum/admin_help/proc/SkillIssue(key_name = key_name_admin(usr))
+/datum/admin_help/proc/SkillIssue(key_name = key_name_admin(usr), silent_panel = FALSE)
 	if(state != AHELP_ACTIVE)
 		return
 
@@ -462,8 +479,9 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
 	AddInteraction("<u>Помечено как Skill issue админом</u> [key_name]")
-	Resolve(silent = TRUE)
-	TicketPanel()
+	Resolve(silent = TRUE, silent_panel = TRUE)
+	if(!silent_panel)
+		TicketPanel()
 
 //Let the initiator know their ahelp is being handled
 /datum/admin_help/proc/handle_issue(key_name = key_name_admin(usr))
@@ -539,7 +557,10 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	TicketPanel()	//we have to be here to do this
 
 //Forwarded action from admin/Topic
-/datum/admin_help/proc/Action(action)
+//silent_panel: caller (e.g. statbrowser quick-action) does not want the TicketPanel popup to open
+//after closure-type actions. Reply/handle_issue/ticket/retitle/reopen are unaffected since they
+//either show their own UI or are explicit "give me the panel" requests.
+/datum/admin_help/proc/Action(action, silent_panel = FALSE)
 	testing("Ahelp action: [action]")
 	switch(action)
 		if("ticket")
@@ -547,17 +568,17 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		if("retitle")
 			Retitle()
 		if("reject")
-			Reject()
+			Reject(silent_panel = silent_panel)
 		if("reply")
 			usr.client.cmd_ahelp_reply(initiator)
 		if("icissue")
-			ICIssue()
+			ICIssue(silent_panel = silent_panel)
 		if("skillissue")
-			SkillIssue()
+			SkillIssue(silent_panel = silent_panel)
 		if("close")
-			Close()
+			Close(silent_panel = silent_panel)
 		if("resolve")
-			Resolve()
+			Resolve(silent_panel = silent_panel)
 		if("handle_issue")
 			handle_issue()
 		if("reopen")

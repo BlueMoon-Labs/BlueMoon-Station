@@ -94,6 +94,7 @@
 // #include "holidays.dm"
 // #include "hydroponics_harvest.dm"
 // #include "keybinding_init.dm"
+#include "keybindings_stuck_keys.dm"
 // #include "language_transfer.dm"
 #include "lighting.dm"
 #include "area_tracking.dm"
@@ -160,6 +161,7 @@
 #include "preload_size_budgets.dm"
 #include "image_leak_audit.dm"
 #include "screen_gc.dm"
+#include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
 #include "tattoo_system.dm"
 

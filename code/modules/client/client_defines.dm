@@ -98,23 +98,18 @@
 
 	var/lastping = 0
 	var/avgping = 0
-	/// Last ping measured from realtime clock (RTT in ms).
 	var/lastping_rtt = 0
-	/// Smoothed RTT in ms.
-	var/avgping_rtt = 0
-	/// Last raw RTT sample in ms before jitter filtering.
+	var/avgping_rtt
 	var/lastping_rtt_raw = 0
-	/// Smoothed raw RTT in ms before jitter filtering.
-	var/avgping_rtt_raw = 0
-	/// Last ping measured from server tickstamp clock (includes tick-phase jitter) in ms.
+	var/avgping_rtt_raw
 	var/lastping_tick = 0
-	/// Smoothed tickstamp ping in ms.
-	var/avgping_tick = 0
-	/// Last server-delay component in ms (tick ping - RTT).
+	var/avgping_tick
 	var/lastping_server = 0
-	/// Smoothed server-delay component in ms.
-	var/avgping_server = 0
-	/// Sliding window of recent raw RTT samples used to produce a stable user-facing ping.
+	var/avgping_server
+	var/lastping_rtt_max = 0
+	var/lastping_jitter = 0
+	var/avgping_jitter
+	var/ping_updated = FALSE
 	var/list/ping_rtt_window = list()
 	var/connection_time //world.time they connected
 	var/connection_realtime //world.realtime they connected
@@ -180,6 +175,34 @@
 	/// whether remove_admin_tabs has been sent (avoids redundant output() every cycle)
 	var/admin_tabs_cleared = FALSE
 
+	/// turf currently watched for listed turf dirtiness signals
+	var/turf/listed_turf_watched
+	/// whether the listed turf needs a new visibility snapshot
+	var/listed_turf_dirty = FALSE
+	/// world.time when the listed turf was last marked dirty by a signal — debounces churn on busy turfs
+	var/listed_turf_dirty_at = 0
+	/// whether the listed turf should force-refresh icons on the next snapshot
+	var/listed_turf_icon_refresh_pending = FALSE
+	/// world.time when the listed turf list was last refreshed
+	var/listed_turf_last_refresh = 0
+	/// world.time when the listed turf icons were last refreshed
+	var/listed_turf_last_icon_refresh = 0
+	/// last eye turf ref used to build the listed turf snapshot
+	var/listed_turf_eye_ref
+	/// cached turf REF for statpanel — skip re-rendering if same turf
+	var/cached_turf_ref
+	/// cached encoded turf data for statpanel
+	var/cached_turf_encoded
+	/// tracks which icon REFs have been sent to this client's statbrowser (REF -> icon_url)
+	var/list/statpanel_sent_icons = list()
+	/// per-section dirty cache: last-sent encoded payload by channel name (status/spells/voting/tickets/listedturf)
+	/// Suppresses identical re-sends without re-running expensive renderers — DM-side dirty checking.
+	var/list/statpanel_last_sent = list()
+	/// cached MC iteration counter last sent to this client (suppresses stringify-hash work on JS side)
+	var/statpanel_last_mc_iter = -1
+	/// JSON-encoded global server payload version (echoed in update_ping handshake) — bumps when DM payload shape changes
+	var/statpanel_protocol_acked = FALSE
+
 	/// list of all tabs
 	var/list/panel_tabs = list()
 
@@ -187,6 +210,8 @@
 	var/list/spell_tabs = list()
 	/// list of tabs containing verbs
 	var/list/verb_tabs = list()
+
+	var/stat_vote_sent_null = FALSE
 	///A lazy list of atoms we've examined in the last EXAMINE_MORE_TIME (default 1.5) seconds, so that we will call [atom/proc/examine_more()] instead of [atom/proc/examine()] on them when examining
 	var/list/recent_examines
 	///When was the last time we warned them about not cryoing without an ahelp, set to -5 minutes so that rounstart cryo still warns

@@ -34,7 +34,9 @@
 		var/ahelp_ref = href_list["ahelp"]
 		var/datum/admin_help/AH = locate(ahelp_ref)
 		if(AH)
-			AH.Action(href_list["ahelp_action"])
+			// ahelp_silent=1 means "this came from a quick action button (statbrowser ticket card),
+			// don't pop the full ticket window over it" — see /datum/admin_help/proc/Action.
+			AH.Action(href_list["ahelp_action"], silent_panel = !!href_list["ahelp_silent"])
 		else
 			to_chat(usr, "Ticket [ahelp_ref] has been deleted!")
 
