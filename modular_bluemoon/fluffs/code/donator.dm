@@ -267,7 +267,7 @@
 	name = "Monolith Patch"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/accessory/monolith_patch
-	ckeywhitelist = list("irfish", "devildeadspace", "mikolaostavkin", "allazarius", "definitelynotnesuby", "hazzi", "dimofon")
+	ckeywhitelist = list("irfish", "devildeadspace", "mikolaostavkin", "allazarius", "definitelynotnesuby", "hazzi", "dimofon", "mihana964")
 
 /datum/gear/donator/bm/tratch_patch
 	name = "Tratch Patch"
@@ -535,22 +535,22 @@
 	ckeywhitelist = list("n1ght1ngale")
 
 /datum/gear/donator/bm/monolith_gloves
-	name = "Monolith Gloves"
+	name = "Granite M1 Gloves"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/gloves/fingerless/monolith_gloves
-	ckeywhitelist = list("irfish", "devildeadspace", "mikolaostavkin", "allazarius", "definitelynotnesuby", "hazzi", "dimofon")
+	ckeywhitelist = list("irfish", "devildeadspace", "mikolaostavkin", "allazarius", "definitelynotnesuby", "hazzi", "dimofon", "mihana964")
 
 /datum/gear/donator/bm/monolith_armor
 	name = "Granite M1 Vest"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/bm/monolith_armor
-	ckeywhitelist = list("irfish", "devildeadspace", "mikolaostavkin", "allazarius", "definitelynotnesuby", "hazzi", "dimofon")
+	ckeywhitelist = list("irfish", "devildeadspace", "mikolaostavkin", "allazarius", "definitelynotnesuby", "hazzi", "dimofon", "mihana964")
 
 /datum/gear/donator/bm/monolith_uniform
 	name = " Granite M1 ''Monolith'' Uniform"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/monolith_uniform
-	ckeywhitelist = list("irfish", "devildeadspace", "mikolaostavkin", "allazarius", "definitelynotnesuby", "hazzi", "dimofon")
+	ckeywhitelist = list("irfish", "devildeadspace", "mikolaostavkin", "allazarius", "definitelynotnesuby", "hazzi", "dimofon", "mihana964")
 
 /datum/gear/donator/bm/commissar_hat
 	name = "Commissar Hat"
@@ -682,7 +682,7 @@
 	name = "PAWS Patch"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/accessory/paws_patch
-	ckeywhitelist = list("devildeadspace", "mikolaostavkin", "cupteazee", "dimofon", "dimakr", "definitelynotnesuby", "scramblescream", "tblkba", "hellsinggc", "aurses")
+	ckeywhitelist = list("devildeadspace", "mikolaostavkin", "cupteazee", "dimofon", "dimakr", "definitelynotnesuby", "scramblescream", "tblkba", "hellsinggc", "aurses", "mihana964")
 
 /datum/gear/donator/bm/h_soul_coat
 	name = "Black coat"
@@ -1715,7 +1715,7 @@
 	name = "Ranger Coat"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/fall_out_kit
-	ckeywhitelist = list("dimofon", "devildeadspace")
+	ckeywhitelist = list("dimofon", "devildeadspace", "mihana964")
 
 /datum/gear/donator/bm/player_zippo
 	name = "Player Zippo"
