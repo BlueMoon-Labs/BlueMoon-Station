@@ -1475,3 +1475,37 @@
 	desc = "A modkit for making an antique laser gun into a fancy laser rifle."
 	product = /obj/item/gun/energy/laser/captain/rifle/amogus
 	fromitem = list(/obj/item/gun/energy/laser/captain)
+
+/obj/item/modkit/cz_75
+	name = "CZ-75 kit"
+	desc = "A modkit for making an Mk. 58 Enforcer into a CZ-75 pistol."
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75
+	name = "\improper CZ-75"
+	desc = "The model most commonly used in stealth assassinations is made of lightweight alloy. Due to frequent use, the grip is scratched, and the letter 'S' is visible under the trigger."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "cz_75"
+	item_state = "cz_75"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/cz_75_shoot.ogg'
+	base_pixel_y = -4
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75/get_examine_name(mob/user)
+	. = ..()
+	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/ballistic/automatic/pistol/enforcer::name]</span></span>"
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75/get_gunlight_overlay()
+	if(!gun_light)
+		return
+	var/mutable_appearance/flashlight_overlay = mutable_appearance(icon, "[initial(icon_state)]-flashlight[gun_light.on ? "-on" : ""]")
+	if(!chambered)
+		flashlight_overlay.pixel_x += 1
+	return flashlight_overlay
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75/update_icon_state() // -expended вырезан, спрайтов не завезли
+	icon_state = "[current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"

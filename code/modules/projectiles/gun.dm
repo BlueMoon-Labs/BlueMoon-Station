@@ -758,17 +758,24 @@
 		var/datum/action/A = X
 		A.UpdateButtons()
 
+/obj/item/gun/proc/get_gunlight_overlay()
+	if(!gun_light)
+		return
+	var/mutable_appearance/flashlight_overlay
+	var/state = "[gunlight_state][gun_light.on? "_on":""]"	//Generic state.
+	if(gun_light.icon_state in icon_states('icons/obj/guns/flashlights.dmi'))	//Snowflake state?
+		state = gun_light.icon_state
+	flashlight_overlay = mutable_appearance('icons/obj/guns/flashlights.dmi', state)
+	flashlight_overlay.pixel_x = flight_x_offset
+	flashlight_overlay.pixel_y = flight_y_offset
+	return flashlight_overlay
+
 /obj/item/gun/update_overlays()
 	. = ..()
 	if(gun_light)
-		var/mutable_appearance/flashlight_overlay
-		var/state = "[gunlight_state][gun_light.on? "_on":""]"	//Generic state.
-		if(gun_light.icon_state in icon_states('icons/obj/guns/flashlights.dmi'))	//Snowflake state?
-			state = gun_light.icon_state
-		flashlight_overlay = mutable_appearance('icons/obj/guns/flashlights.dmi', state)
-		flashlight_overlay.pixel_x = flight_x_offset
-		flashlight_overlay.pixel_y = flight_y_offset
-		. += flashlight_overlay
+		var/mutable_appearance/flashlight_overlay = get_gunlight_overlay()
+		if(istype(flashlight_overlay))
+			. += flashlight_overlay
 
 	if(bayonet)
 		var/mutable_appearance/knife_overlay

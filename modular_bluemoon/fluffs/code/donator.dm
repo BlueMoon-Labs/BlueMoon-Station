@@ -2376,3 +2376,9 @@
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/cloak/ranger_poncho/primitive_catgirl_leather
 	ckeywhitelist = list("pingvas", "dimofon", "devildeadspace")
+
+/datum/gear/donator/bm/cz_75_kit
+	name = "CZ-75 kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/cz_75
+	ckeywhitelist = list("shizalrp", "krasler101", "kingdeaths", "vlonger")
