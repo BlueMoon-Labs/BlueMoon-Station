@@ -6,7 +6,7 @@
 "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", \
 "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", \
 "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "angelnedemon", "fryktik", "ivanokio", \
-"blatoff", \
+"blatoff", "regiska" \
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Слот головы.
