@@ -2182,7 +2182,13 @@ GLOBAL_LIST_INIT(psychosis_fake_pda_lines, list(
 		return
 	var/mob/living/carbon/human/sender = pick(humans)
 	var/sender_name = sender.real_name || "Unknown"
-	var/job = sender.mind?.assigned_role || "Crew"
+	var/assigned_role = sender.mind?.assigned_role
+	var/job = "Crew"
+	if(istype(assigned_role, /datum/job))
+		var/datum/job/assigned_job = assigned_role
+		job = assigned_job.title || "Crew"
+	else if(assigned_role)
+		job = "[assigned_role]"
 	var/line = pick(GLOB.psychosis_fake_pda_lines)
 	feedback_details += "Fake PDA from [sender_name] ([job]): [line]"
 	var/pda_icon = icon2html('icons/obj/pda_alt.dmi', target.client, "pda")
