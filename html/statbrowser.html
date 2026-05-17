@@ -2995,6 +2995,10 @@ function draw_spells(cat) {
 // AHELP_* enum constants must match code/__DEFINES/admin.dm
 var AHELP_ACTIVE = 1, AHELP_CLOSED = 2, AHELP_RESOLVED = 3;
 
+function ticketMakeTopic(ref, action) {
+	return "?_src_=holder;admin_token=" + State.hrefToken + ";ahelp=" + encodeURIComponent(ref) + ";ahelp_action=" + action;
+}
+
 function ticketAgeText(seconds) {
 	if (seconds == null || seconds < 0) return "";
 	if (seconds < 60) return seconds + "с";
@@ -3069,52 +3073,63 @@ function draw_tickets() {
 	var scroller = document.scrollingElement || document.documentElement || document.body;
 	var savedScroll = scroller ? scroller.scrollTop : 0;
 	statcontent.textContent = "";
-	if (!State.tickets || !State.tickets.length) {
-		if (scroller) scroller.scrollTop = savedScroll;
-		return;
-	}
 
 	var open = 0, inProgress = 0, closed = 0;
 	var activeRows = [];
 	var closedRows = [];
 	var headerRows = [];
 	var seenKeys = {};
-	for (var i = 0; i < State.tickets.length; i++) {
-		var t = State.tickets[i];
-		var meta = t[3];
-		var key = _ticketKey(t);
-		if (key) seenKeys[key] = true;
-		if (meta && meta.state != null) {
-			if (meta.state === AHELP_ACTIVE) {
-				if (meta.handler) inProgress++; else open++;
-				activeRows.push(t);
-			} else {
+	if (State.tickets && State.tickets.length) {
+		for (var i = 0; i < State.tickets.length; i++) {
+			var t = State.tickets[i];
+			var meta = t[3];
+			var key = _ticketKey(t);
+			if (key) seenKeys[key] = true;
+			if (meta && meta.state != null) {
+				if (meta.state === AHELP_ACTIVE) {
+					if (meta.handler) inProgress++; else open++;
+					activeRows.push(t);
+				} else {
+					closed++;
+					closedRows.push(t);
+				}
+				continue;
+			}
+			// Header rows or legacy entries without metadata — preserve original behavior.
+			var labelText = ("" + (t[0] || "")).toLowerCase();
+			if (labelText.indexOf("ticket") !== -1 || labelText.indexOf("communications") !== -1 || labelText.indexOf("disconnected") !== -1) {
+				headerRows.push(t);
+			} else if (labelText.indexOf("close") !== -1 || labelText.indexOf("resolve") !== -1 || labelText.indexOf("закр") !== -1) {
 				closed++;
 				closedRows.push(t);
+			} else {
+				activeRows.push(t);
 			}
-			continue;
-		}
-		// Header rows or legacy entries without metadata — preserve original behavior.
-		var labelText = ("" + (t[0] || "")).toLowerCase();
-		if (labelText.indexOf("ticket") !== -1 || labelText.indexOf("communications") !== -1 || labelText.indexOf("disconnected") !== -1) {
-			headerRows.push(t);
-		} else if (labelText.indexOf("close") !== -1 || labelText.indexOf("resolve") !== -1 || labelText.indexOf("закр") !== -1) {
-			closed++;
-			closedRows.push(t);
-		} else {
-			activeRows.push(t);
 		}
 	}
 	_pruneExpandedState(seenKeys);
 
 	var summary = el("div", "ticket-summary");
-	summary.appendChild(el("span", "ticket-summary-item val-good", "Открыто: " + open));
-	summary.appendChild(el("span", "ticket-summary-item val-warn", "В работе: " + inProgress));
-	summary.appendChild(el("span", "ticket-summary-item", "Закрыто: " + closed));
+	var summaryOpen = el("a", "ticket-summary-item val-good");
+	summaryOpen.href = "#";
+	summaryOpen.textContent = "Открыто: " + open;
+	summaryOpen.onclick = function(e) { e.preventDefault(); byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp_tickets=1"); return false; };
+	summary.appendChild(summaryOpen);
+	var summaryProgress = el("a", "ticket-summary-item val-warn");
+	summaryProgress.href = "#";
+	summaryProgress.textContent = "В работе: " + inProgress;
+	summaryProgress.onclick = function(e) { e.preventDefault(); byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp_tickets=1"); return false; };
+	summary.appendChild(summaryProgress);
+	var summaryClosed = el("a", "ticket-summary-item");
+	summaryClosed.href = "#";
+	summaryClosed.textContent = "Закрыто: " + closed;
+	summaryClosed.onclick = function(e) { e.preventDefault(); byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp_tickets=2"); return false; };
+	summary.appendChild(summaryClosed);
 	statcontent.appendChild(summary);
 
-	for (var hi = 0; hi < headerRows.length; hi++) {
-		statcontent.appendChild(_makeTicketHeaderRow(headerRows[hi]));
+	if (!State.tickets || !State.tickets.length) {
+		if (scroller) scroller.scrollTop = savedScroll;
+		return;
 	}
 	for (var ai = 0; ai < activeRows.length; ai++) {
 		statcontent.appendChild(_makeTicketCard(activeRows[ai], false));
@@ -3195,7 +3210,8 @@ function _makeTicketCard(part, isClosed) {
 			return function(e) {
 				e.preventDefault();
 				e.stopPropagation();
-				byond_topic("?_src_=holder;admin_token=" + State.hrefToken + ";ahelp=" + ref + ";ahelp_action=ticket");
+				byond_topic(ticketMakeTopic(ref, "ticket"));
+				return false;
 			};
 		})(part[2]);
 	}
@@ -3237,7 +3253,22 @@ function _makeTicketCard(part, isClosed) {
 		// Body — full message text with proper wrapping.
 		if (part[1]) {
 			var body = el("div", "ticket-body");
-			body.textContent = "" + part[1];
+			if (part[2]) {
+				var bodyLink = el("a");
+				bodyLink.href = "#";
+				bodyLink.textContent = "" + part[1];
+				bodyLink.onclick = (function(ref) {
+					return function(e) {
+						e.preventDefault();
+						e.stopPropagation();
+						byond_topic(ticketMakeTopic(ref, "ticket"));
+						return false;
+					};
+				})(part[2]);
+				body.appendChild(bodyLink);
+			} else {
+				body.textContent = "" + part[1];
+			}
 			card.appendChild(body);
 		}
 		// Action buttons only on active tickets, when DM gave us admin href + ticket REF.
@@ -3787,9 +3818,10 @@ function remove_admin_tabs() {
 }
 
 function add_admin_tabs(ht) {
-	State.hrefToken = ht;
+	State.hrefToken = decodeURIComponent(ht);
 	addPermanentTab("MC");
 	addPermanentTab("Tickets");
+	if (!_settingsActive && State.currentTab === "Tickets") draw_tickets();
 }
 
 function create_listedturf(TN) {

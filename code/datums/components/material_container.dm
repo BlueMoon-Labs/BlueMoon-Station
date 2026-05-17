@@ -83,7 +83,7 @@
 			var/datum/material/M = I
 			var/amt = materials[I]
 			if(amt)
-				entries += "[amt] см³ [lowertext(material_to_ru_genitive(M.name))]"
+				entries += "[amt] см³ [lowertext(vocabulary_to_ru(GLOB.mat_ru_genitive, M.name))]"
 
 		if(length(entries))
 			examine_list += "<span class='notice'>Внутри хранится [english_list(entries)].</span>"

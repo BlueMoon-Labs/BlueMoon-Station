@@ -87,6 +87,13 @@ GLOBAL_VAR_INIT(bsminers_lock, FALSE)
 
 	COOLDOWN_DECLARE(instability_cooldown)
 	var/bsm_rainbow_until = 0
+	/// Cached snapshot of the inputs that drive our appearance, so process() doesn't
+	/// rebuild the icon every tick. -1 means "never computed".
+	var/last_icon_operational = -1
+	var/last_icon_instability = -1
+	var/last_icon_panel_open = -1
+	var/last_icon_has_core = -1
+	var/last_icon_rainbow = -1
 	/// `REALTIMEOFDAY` последнего оповещения по порогу 50% / 10%; сброс в 0 при целостности выше порога (как `lastwarning` у СМ).
 	var/last_core_radio_warning_50 = 0
 	var/last_core_radio_warning_10 = 0
@@ -244,6 +251,25 @@ GLOBAL_VAR_INIT(bsminers_lock, FALSE)
 			prism.blend_mode = BLEND_ADD
 			. += prism
 
+/// Rebuilds the miner's icon only when one of the inputs that affects its appearance changed.
+/obj/machinery/mineral/bluespace_miner/proc/update_miner_icon_if_changed()
+	var/operational = is_operational()
+	var/instability = get_instability_level()
+	var/has_core = bs_core ? TRUE : FALSE
+	var/rainbow = (world.time < bsm_rainbow_until) ? TRUE : FALSE
+	if(operational == last_icon_operational \
+		&& instability == last_icon_instability \
+		&& panel_open == last_icon_panel_open \
+		&& has_core == last_icon_has_core \
+		&& rainbow == last_icon_rainbow)
+		return
+	last_icon_operational = operational
+	last_icon_instability = instability
+	last_icon_panel_open = panel_open
+	last_icon_has_core = has_core
+	last_icon_rainbow = rainbow
+	MINER_UPDATE_ICON
+
 /obj/machinery/mineral/bluespace_miner/attackby(obj/item/I, mob/living/user, params)
 	if(bs_core || !istype(I, ANOMALY_CORE_BLUESPACE))
 		return ..()
@@ -260,7 +286,7 @@ GLOBAL_VAR_INIT(bsminers_lock, FALSE)
 		CORE_INSERT_REG_SIGNAL
 
 /obj/machinery/mineral/bluespace_miner/process(delta_time)
-	MINER_UPDATE_ICON
+	update_miner_icon_if_changed()
 	core_damage_updt(delta_time)
 	var/operational = is_operational()
 	zlevel_reg(!operational)

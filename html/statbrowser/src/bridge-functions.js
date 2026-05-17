@@ -268,9 +268,10 @@ function remove_admin_tabs() {
 }
 
 function add_admin_tabs(ht) {
-	State.hrefToken = ht;
+	State.hrefToken = decodeURIComponent(ht);
 	addPermanentTab("MC");
 	addPermanentTab("Tickets");
+	if (!_settingsActive && State.currentTab === "Tickets") draw_tickets();
 }
 
 function create_listedturf(TN) {

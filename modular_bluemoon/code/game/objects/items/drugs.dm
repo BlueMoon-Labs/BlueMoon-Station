@@ -40,11 +40,15 @@
 
 	if(prob(65))
 		var/image/trip_img = image('modular_bluemoon/icons/effects/stars.dmi', get_turf(pick(view(7, M))), pick("star1","star2"), CURSE_LAYER)
-		if(M.client)
-			M.client.images += trip_img
+		// BLUEMOON FIX: cache the client receiving the image. The spawn() body fires 3-5s
+		// later; if M.client changed (logout / transfer) in that window, reading M.client
+		// again would clean up the wrong client and orphan trip_img on the previous one.
+		var/client/saved_client = M.client
+		if(saved_client)
+			saved_client.images += trip_img
 		spawn(rand(30,50))
-			if(M.client)
-				M.client.images -= trip_img
+			if(saved_client)
+				saved_client.images -= trip_img
 			QDEL_NULL(trip_img)
 	..()
 
@@ -142,11 +146,13 @@
 
 	if(prob(65))
 		var/image/trip_img = image('modular_bluemoon/icons/effects/stars.dmi', get_turf(pick(view(7, M))), pick("star1", "star3"), CURSE_LAYER)
-		if(M.client)
-			M.client.images += trip_img
+		// BLUEMOON FIX: cache the client receiving the image — see zvezdochka above for rationale.
+		var/client/saved_client = M.client
+		if(saved_client)
+			saved_client.images += trip_img
 		spawn(rand(30,50))
-			if(M.client)
-				M.client.images -= trip_img
+			if(saved_client)
+				saved_client.images -= trip_img
 			QDEL_NULL(trip_img)
 	..()
 

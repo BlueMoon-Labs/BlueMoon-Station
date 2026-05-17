@@ -110,6 +110,21 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	allocated += instance
 	return instance
 
+/// Reads repository source files for structural audit tests.
+/// Integration CI runs DreamDaemon from `ci_test/`, while source stays in the parent checkout.
+/datum/unit_test/proc/read_source_file(source_path)
+	var/source = file2text(source_path)
+	if(length(source))
+		return source
+
+#ifdef CIBUILDING
+	source = file2text("../[source_path]")
+	if(length(source))
+		return source
+#endif
+
+	return source
+
 /*
 /datum/unit_test/proc/test_screenshot(name, icon/icon)
 	if (!istype(icon))

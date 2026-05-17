@@ -102,7 +102,7 @@
 			var/list/previous_network = network
 			network = list()
 			GLOB.cameranet.removeCamera(src)
-			machine_stat |= EMPED
+			set_machine_stat(machine_stat | EMPED)
 			set_light(0)
 			emped = emped+1  //Increase the number of consecutive EMP's
 			update_icon()
@@ -112,7 +112,7 @@
 					triggerCameraAlarm() //camera alarm triggers even if multiple EMPs are in effect.
 					if(emped == thisemp) //Only fix it if the camera hasn't been EMP'd again
 						network = previous_network
-						machine_stat &= ~EMPED
+						set_machine_stat(machine_stat & ~EMPED)
 						update_icon()
 						if(can_use())
 							GLOB.cameranet.addCamera(src)
@@ -289,7 +289,7 @@
 	else if (machine_stat & EMPED)
 		icon_state = "[initial(icon_state)]emp"
 	else
-		icon_state = "[initial(icon_state)][in_use_lights ? "_in_use" : ""]"
+		icon_state = "[initial(icon_state)][in_use_lights > 0 ? "_in_use" : ""]"
 
 /obj/machinery/camera/proc/toggle_cam(mob/user, displaymessage = 1)
 	status = !status
@@ -402,13 +402,3 @@
 		user.sight = 0
 		user.see_in_dark = 2
 	return TRUE
-
-// (ADD) Pe4henika bluemoon -- start
-/obj/machinery/camera/update_icon_state()
-    if(!status)
-        icon_state = "[initial(icon_state)]1"
-    else if (machine_stat & EMPED)
-        icon_state = "[initial(icon_state)]emp"
-    else
-        icon_state = "[initial(icon_state)][in_use_lights > 0 ? "_in_use" : ""]"
-// (ADD) Pe4henika bluemoon -- end

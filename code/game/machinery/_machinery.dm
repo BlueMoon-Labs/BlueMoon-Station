@@ -159,6 +159,7 @@ Class Procs:
 	if(!armor)
 		armor = list(MELEE = 25, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 70)
 	. = ..()
+	set_is_operational(!(machine_stat & (NOPOWER|BROKEN|MAINT)))
 	SSmachines.register_machine(src)
 	GLOB.machines += src
 
@@ -214,17 +215,11 @@ Class Procs:
 		return
 	. = machine_stat
 	machine_stat = new_value
-	on_stat_update(machine_stat)
+	on_stat_update(.)
 
 ///Called when the value of `stat` changes, so we can react to it.
 /obj/machinery/proc/on_stat_update(old_value)
-	//From off to on.
-	if((old_value & (NOPOWER|BROKEN|MAINT)) && !(machine_stat & (NOPOWER|BROKEN|MAINT)))
-		set_is_operational(TRUE)
-		return
-	//From on to off.
-	if(machine_stat & (NOPOWER|BROKEN|MAINT))
-		set_is_operational(FALSE)
+	set_is_operational(!(machine_stat & (NOPOWER|BROKEN|MAINT)))
 
 /obj/machinery/emp_act(severity)
 	. = ..()
@@ -287,12 +282,13 @@ Class Procs:
 	occupant = new_occupant
 
 /obj/machinery/proc/auto_use_power()
-	if(!powered(power_channel))
+	var/area/our_area = get_area(src)
+	if(!our_area?.powered(power_channel))
 		return FALSE
-	if(use_power == 1)
-		use_power(idle_power_usage,power_channel)
-	else if(use_power >= 2)
-		use_power(active_power_usage,power_channel)
+	if(use_power == IDLE_POWER_USE)
+		our_area.use_power(idle_power_usage, power_channel)
+	else if(use_power >= ACTIVE_POWER_USE)
+		our_area.use_power(active_power_usage, power_channel)
 	return TRUE
 
 /**
@@ -547,7 +543,7 @@ Class Procs:
 /obj/machinery/obj_break(damage_flag)
 	. = ..()
 	if(!(machine_stat & BROKEN) && !(flags_1 & NODECONSTRUCT_1))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		SEND_SIGNAL(src, COMSIG_MACHINERY_BROKEN, damage_flag)
 		update_appearance()
 		return TRUE

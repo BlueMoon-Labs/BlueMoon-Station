@@ -97,8 +97,12 @@
 #include "keybindings_stuck_keys.dm"
 // #include "language_transfer.dm"
 #include "lighting.dm"
+#include "area_tracking.dm"
+#include "cleanable_decals_tracking.dm"
+#include "login_path_async_audit.dm"
 #include "lighting_performance.dm"
 #include "machine_disassembly.dm"
+#include "machinery_optimization.dm"
 #include "mapload_space_verification.dm"	// BLUEMOON EDIT: Invalid Space Turfs
 #include "mapping.dm"						// BLUEMOON EDIT: Invalid Space Turfs
 #include "medical_wounds.dm"
@@ -156,6 +160,8 @@
 #include "human_mob_gc.dm"
 #include "perf_optimizations.dm"
 #include "psychosis_pools.dm"
+#include "preload_size_budgets.dm"
+#include "image_leak_audit.dm"
 #include "screen_gc.dm"
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"

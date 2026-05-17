@@ -85,7 +85,7 @@
 		var/datum/material/M = mat_id
 		var/mineral_count = materials.materials[mat_id]
 		var/list/material_data = list(
-			name = material_to_ru_nominative(M.name),
+			name = vocabulary_to_ru(GLOB.mat_ru_nominative, M.name),
 			mineral_amount = mineral_count,
 			matcolour = M.color,
 		)
@@ -395,7 +395,7 @@
 			dat += "[D.materials[i] * coeff] [i]"
 		else
 			var/datum/material/M = i
-			dat += "[D.materials[i] * coeff] [material_to_ru_genitive(M.name)] "
+			dat += "[D.materials[i] * coeff] [vocabulary_to_ru(GLOB.mat_ru_genitive, M.name)] "
 	return dat
 
 /obj/machinery/autolathe/proc/reset(wire)

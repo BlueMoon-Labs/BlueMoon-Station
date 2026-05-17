@@ -44,26 +44,29 @@ Nothing else in the console has ID requirements.
 	if (istype(ID, /datum/material))
 		var/datum/material/material = ID
 		return material.name
-	else if(GLOB.chemical_reagents_list[ID])
-		var/datum/reagent/reagent = GLOB.chemical_reagents_list[ID]
+	var/reagent_from_list = GLOB.chemical_reagents_list[ID]
+	if(reagent_from_list)
+		var/datum/reagent/reagent = reagent_from_list
 		return reagent.name
 	return ID
 
 /proc/CallMaterialName_RuNominative(ID)
 	if (istype(ID, /datum/material))
 		var/datum/material/material = ID
-		return material_to_ru_nominative(material.name)
-	else if(GLOB.chemical_reagents_list[ID])
-		var/datum/reagent/reagent = GLOB.chemical_reagents_list[ID]
+		return vocabulary_to_ru(GLOB.mat_ru_nominative, material.name)
+	var/chemical_from_list = GLOB.chemical_reagents_list[ID]
+	if(chemical_from_list)
+		var/datum/reagent/reagent = chemical_from_list
 		return reagent.name
 	return ID
 
 /proc/CallMaterialName_RuGenitive(ID)
 	if (istype(ID, /datum/material))
 		var/datum/material/material = ID
-		return material_to_ru_genitive(material.name)
-	else if(GLOB.chemical_reagents_list[ID])
-		var/datum/reagent/reagent = GLOB.chemical_reagents_list[ID]
+		return vocabulary_to_ru(GLOB.mat_ru_genitive, material.name)
+	var/chemical_from_list = GLOB.chemical_reagents_list[ID]
+	if(chemical_from_list)
+		var/datum/reagent/reagent = chemical_from_list
 		return reagent.name
 	return ID
 

@@ -25,7 +25,9 @@
 	var/removable = TRUE 			// Determines if a circuit is removable from the assembly.
 	var/displayed_name = ""
 	var/demands_object_input = FALSE
+	var/expected_object_type = null	// If set, only items of this type will be offered to the circuit upon inserting them into the assembly. Doesn't affect actual circuit's attackby(). Keep null to accept anything, read can_accept_item() proc.
 	var/can_input_object_when_closed = FALSE
+	var/limit_per_assembly = null	// If set to an integer > 0, limits amount of such circuits in one assembly on both printing and istalling manually.
 
 	/// TGUI (IntegratedCircuit): node position when shown in assembly / solo UI
 	var/ie_ui_rel_x = 0
@@ -55,6 +57,23 @@ a creative player the means to solve many problems.  Circuits are held inside an
 // Can be called via electronic_assembly/attackby()
 /obj/item/integrated_circuit/proc/additem(var/obj/item/I, var/mob/living/user)
 	attackby(I, user)
+
+// This proc determines whether this circuit will appear in the choice menu upon inserting an item in an assembly with this circuit installed
+// Override it inside the circuit if you'll need it to support a list of item types. You'll have to keep the expected_object_type null (do not change it in your circuit)
+// For example:
+
+//	/obj/item/integrated_circuit/.../proc/can_accept_item(obj/Item/I)
+//		if(!demands_object_input)
+//			return FALSE
+//		return istype(I, /obj/item/wrench) || istype(I, /obj/item/screwdriver) || istype(I, /obj/item/crowbar)
+
+//	Note that you still have to override circuit's own attackby() proc, it's still called by additem.
+/obj/item/integrated_circuit/proc/can_accept_item(obj/item/I)
+	if(!demands_object_input)
+		return FALSE
+	if(isnull(expected_object_type))
+		return TRUE
+	return istype(I, expected_object_type)
 
 // This should be used when someone is examining while the case is opened.
 /obj/item/integrated_circuit/proc/internal_examine(mob/user)
@@ -146,6 +165,10 @@ a creative player the means to solve many problems.  Circuits are held inside an
 			input = name
 		to_chat(M, "<span class='notice'>The circuit '[name]' is now labeled '[input]'.</span>")
 		displayed_name = input
+		on_rename()
+
+/obj/item/integrated_circuit/proc/on_rename()	// Triggered on circuit name change from both UI types. Override for if you need to react to that.
+	return
 
 /obj/item/integrated_circuit/interact(mob/user)
 	if(user?.client?.prefs?.ie_classic_circuit_ui)

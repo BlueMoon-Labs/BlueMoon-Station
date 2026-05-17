@@ -17,7 +17,7 @@
 											"Veymed" = 'icons/mob/augmentation/cosmetic_prosthetic/veymed.dmi', //i don't know if i can module this either
 											"Grayson" = 'icons/mob/augmentation/cosmetic_prosthetic/grayson.dmi',
 											"Cybersolutions" = 'icons/mob/augmentation/cosmetic_prosthetic/cybersolutions.dmi',
-											"Morpheus" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/morpheus.dmi',
+											"Morpheus" = 'icons/mob/augmentation/cosmetic_prosthetic/morpheus.dmi', // cuz digi sprites yeahhhh
 											"Bishop" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/bishop_ipc.dmi',
 											"Bishop 2.0" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/bishop2_ipc.dmi',
 											"Hephaestus" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/hephaestus_ipc.dmi',
@@ -106,7 +106,7 @@
 				if(!(machine_stat & BROKEN))
 					return
 				to_chat(user, "<span class='notice'>Вы починили [src].</span>")
-				machine_stat &= ~BROKEN
+				set_machine_stat(machine_stat & ~BROKEN)
 				obj_integrity = max(obj_integrity, max_integrity)
 				update_icon()
 		else
@@ -117,7 +117,7 @@
 /obj/machinery/aug_manipulator/obj_break(damage_flag)
 	if(!(flags_1 & NODECONSTRUCT_1))
 		if(!(machine_stat & BROKEN))
-			machine_stat |= BROKEN
+			set_machine_stat(machine_stat | BROKEN)
 			update_icon()
 
 /obj/machinery/aug_manipulator/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)

@@ -100,6 +100,10 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	var/image/current_image = null
 	var/image_layer = MOB_LAYER
 	var/active = TRUE //qdelery
+	/// BLUEMOON FIX: cached client that received current_image. Reading target.client live
+	/// in Destroy/Show is unsafe: if target logged out / cryo'd / body-transferred, the
+	/// image stays orphaned in the *previous* client.images forever.
+	var/client/owner_client
 
 /obj/effect/hallucination/singularity_pull()
 	return
@@ -115,7 +119,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	target = T
 	current_image = GetImage()
 	if(target.client)
-		target.client.images |= current_image
+		owner_client = target.client
+		owner_client.images |= current_image
 
 /obj/effect/hallucination/simple/proc/GetImage()
 	var/image/I = image(image_icon,src,image_state,image_layer,dir=src.dir)
@@ -127,12 +132,17 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 
 /obj/effect/hallucination/simple/proc/Show(update=1)
 	if(active)
-		if(target.client)
-			target.client.images.Remove(current_image)
+		// Remove the existing image from whichever client originally received it.
+		if(owner_client)
+			owner_client.images.Remove(current_image)
 		if(update)
 			current_image = GetImage()
-		if(target.client)
-			target.client.images |= current_image
+		// Re-attach to target's live client, refreshing the cache.
+		if(target?.client)
+			owner_client = target.client
+			owner_client.images |= current_image
+		else
+			owner_client = null
 
 /obj/effect/hallucination/simple/update_icon(updates, new_state,new_icon,new_px=0,new_py=0)
 	image_state = new_state
@@ -149,8 +159,11 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	Show()
 
 /obj/effect/hallucination/simple/Destroy()
-	if(target?.client)
-		target.client.images.Remove(current_image)
+	// BLUEMOON FIX: use cached owner_client (set at Initialize / refreshed in Show) so we
+	// clean up the previous client.images even if target.client is now null or different.
+	if(owner_client)
+		owner_client.images.Remove(current_image)
+		owner_client = null
 	current_image = null
 	active = FALSE
 	target = null
@@ -168,6 +181,10 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	var/image_state = "plasma"
 	var/radius = 0
 	var/next_expand = 0
+	/// BLUEMOON FIX: cached client receiving flood_images. Without this, Destroy reads
+	/// target.client live — and if the target logged out before we tear down, the entire
+	/// flood (dozens to hundreds of images) stays orphaned in the previous client.images.
+	var/client/owner_client
 
 /datum/hallucination/fake_flood/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
@@ -183,7 +200,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	flood_images += image(image_icon,center,image_state,MOB_LAYER)
 	flood_turfs += center
 	if(target.client)
-		target.client.images |= flood_images
+		owner_client = target.client
+		owner_client.images |= flood_images
 	next_expand = world.time + FAKE_FLOOD_EXPAND_TIME
 	START_PROCESSING(SSobj, src)
 
@@ -206,15 +224,22 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 				continue
 			flood_images += image(image_icon,T,image_state,MOB_LAYER)
 			flood_turfs += T
-	if(target.client)
-		target.client.images |= flood_images
+	// BLUEMOON FIX: prefer cached owner_client; only update if target's live client changed.
+	if(owner_client)
+		owner_client.images |= flood_images
+	else if(target?.client)
+		owner_client = target.client
+		owner_client.images |= flood_images
 
 /datum/hallucination/fake_flood/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	qdel(flood_turfs)
 	flood_turfs = list()
-	if(target.client)
-		target.client.images.Remove(flood_images)
+	// BLUEMOON FIX: use cached owner_client so the previous client.images is cleaned up
+	// even if target.client became null/different. fake_flood can hold 100+ images at once.
+	if(owner_client)
+		owner_client.images.Remove(flood_images)
+		owner_client = null
 	qdel(flood_images)
 	flood_images = list()
 	return ..()

@@ -35,6 +35,9 @@
 	var/lethal_projectile_sound
 
 	demands_object_input = TRUE		// You can put stuff in once the circuit is in assembly,passed down from additem and handled by attackby()
+	expected_object_type = /obj/item/gun/energy
+
+	limit_per_assembly = 2
 
 
 
@@ -120,31 +123,38 @@
 		return
 	if(!installed_gun.cell.charge)
 		return
+
 	var/obj/item/ammo_casing/energy/shot
 	if(length(installed_gun.ammo_type) > 1)
-		shot = installed_gun.ammo_type[mode?2:1]
+		shot = installed_gun.ammo_type[mode ? 2 : 1]
 	else
 		shot = installed_gun.ammo_type[1]
 	if(installed_gun.cell.charge < shot.e_cost)
 		return
 	if(!shot)
 		return
+
+	var/atom/actual_target = locate(/mob/living) in target.contents	// Attempt to set /mob as a target
+	actual_target ||= locate(/obj) in target.contents	// No mob on target turf, attempt to set /obj as a target
+	actual_target ||= target	// No mob or object located, use turf as a target
+
 	update_icon()
 	var/obj/item/projectile/A
 	if(!mode)
 		A = new stun_projectile(T)
-		playsound(loc, stun_projectile_sound, 75, 1)
+		playsound(loc, stun_projectile_sound, 75, TRUE)
 	else
 		A = new lethal_projectile(T)
-		playsound(loc, lethal_projectile_sound, 75, 1)
+		playsound(loc, lethal_projectile_sound, 75, TRUE)
 	installed_gun.cell.use(shot.e_cost)
-	//Shooting Code:
-	A.preparePixelProjectile(target, src)
+
+	// Shooting Code – shoot into located target
+	A.preparePixelProjectile(actual_target, src)
 	A.fire()
+
 	if(ismob(loc.loc))
 		installed_gun.shoot_live_shot(loc.loc)
-	else
-		installed_gun.shoot_live_shot() //Shitcode, but we don't have much of a choice
+
 	log_attack("[assembly] [REF(assembly)] has fired [installed_gun].")
 	return A
 
@@ -164,7 +174,8 @@
 	action_flags = IC_ACTION_COMBAT
 	var/obj/item/grenade/attached_grenade
 	var/pre_attached_grenade_type
-	demands_object_input = TRUE	// You can put stuff in once the circuit is in assembly,passed down from additem and handled by attackby()
+	demands_object_input = TRUE	// You can put stuff in once the circuit is in assembly, passed down from additem and handled by attackby()
+	expected_object_type = /obj/item/grenade
 
 /obj/item/integrated_circuit/weaponized/grenade/Initialize(mapload)
 	. = ..()

@@ -7,7 +7,8 @@
 	icon_state = "locomotion"
 	extended_desc = "The circuit accepts a 'dir' number as a direction to move towards.<br>\
 	Pulsing the 'step towards dir' activator pin will cause the machine to move one step in that direction, assuming it is not \
-	being held, or anchored in some way. It should be noted that the ability to move is dependant on the type of assembly that this circuit inhabits; only drone assemblies can move."
+	being held, or anchored in some way. Requires gravitation to work. \
+	It should be noted that the ability to move is dependant on the type of assembly that this circuit inhabits; only drone assemblies can move."
 	w_class = WEIGHT_CLASS_SMALL
 	complexity = 10
 	cooldown_per_use = 1
@@ -18,12 +19,14 @@
 	spawn_flags = IC_SPAWN_RESEARCH
 	action_flags = IC_ACTION_MOVEMENT
 	power_draw_per_use = 100
+	limit_per_assembly = 1
 
 /obj/item/integrated_circuit/manipulation/locomotion/do_work()
 	..()
 	var/turf/T = get_turf(src)
 	if(T && assembly)
-		if(assembly.anchored || !assembly.can_move())
+		if(assembly.anchored || !assembly.can_move() || !has_gravity(assembly))
+			activate_pin(3)
 			return
 		if(assembly.loc == T) // Check if we're held by someone.  If the loc is the floor, we're not held.
 			var/datum/integrated_io/wanted_dir = inputs[1]

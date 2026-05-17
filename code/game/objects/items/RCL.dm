@@ -1,9 +1,9 @@
 /obj/item/rcl
 	name = "rapid cable layer"
-	desc = "A device used to rapidly deploy cables. It has screws on the side which can be removed to slide off the cables. Do not use without insulation!"
+	desc = "Устройство для скоростной укладки кабелей. Имеет боковые винты, которые можно убрать, чтобы стянуть провода с катушки. На этикетке возле винтов пишется: \"Не использовать без изоляции\"!"
 	icon = 'modular_bluemoon/icons/obj/rcl.dmi'
-	icon_state = "rcl-0"
-	item_state = "rcl-0"
+	icon_state = "rcl"
+	item_state = "rcl"
 	var/obj/structure/cable/last
 	var/obj/item/stack/cable_coil/loaded
 	opacity = FALSE
@@ -48,7 +48,7 @@
 
 		if(!loaded)
 			if(!user.transferItemToLoc(W, src))
-				to_chat(user, "<span class='warning'>[src] is stuck to your hand!</span>")
+				to_chat(user, span_warning("[src] прилип к вашей руке!"))
 				return
 			else
 				loaded = W //W.loc is src at this point.
@@ -62,24 +62,28 @@
 		else
 			return
 		update_icon()
-		to_chat(user, "<span class='notice'>You add the cables to [src]. It now contains [loaded.amount].</span>")
+		to_chat(user, span_notice("Вы добавили кабель в [src]. Теперь внутри [loaded.amount] м. провода."))
 	else if(W.tool_behaviour == TOOL_SCREWDRIVER)
 		if(!loaded)
 			return
 		if(ghetto && prob(10)) //Is it a ghetto RCL? If so, give it a 10% chance to fall apart
-			to_chat(user, "<span class='warning'>You attempt to loosen the securing screws on the side, but it falls apart!</span>")
+			var/drop_loc = get_turf(src)
 			while(loaded.amount > 30) //There are only two kinds of situations: "nodiff" (60,90), or "diff" (31-59, 61-89)
 				var/diff = loaded.amount % 30
 				if(diff)
 					loaded.use(diff)
-					new /obj/item/stack/cable_coil(get_turf(user), diff)
+					new /obj/item/stack/cable_coil(drop_loc, diff)
 				else
 					loaded.use(30)
-					new /obj/item/stack/cable_coil(get_turf(user), 30)
+					new /obj/item/stack/cable_coil(drop_loc, 30)
+			new /obj/item/stack/sheet/metal(drop_loc, rand(3, 7))
+			new /obj/item/stack/rods(drop_loc, rand(2, 8))
+			to_chat(user, span_userdanger("Вы попытались ослабить защитные винты, но всё развалилось!"))
+			playsound(drop_loc, 'sound/effects/clang2.ogg', 120, 1)
 			qdel(src)
 			return
 
-		to_chat(user, "<span class='notice'>You loosen the securing screws on the side, allowing you to lower the guiding edge and retrieve the wires.</span>")
+		to_chat(user, span_notice("Вы ослабляете боковые винты, позволяя опустить направляющую кромку и извлечь провода."))
 		while(loaded.amount > 30) //There are only two kinds of situations: "nodiff" (60,90), or "diff" (31-59, 61-89)
 			var/diff = loaded.amount % 30
 			if(diff)
@@ -100,7 +104,7 @@
 /obj/item/rcl/examine(mob/user)
 	. = ..()
 	if(loaded)
-		. += "<span class='info'>It contains [loaded.amount]/[max_amount] cables.</span>"
+		. += span_info("Внутри осталось [loaded.amount]/[max_amount] м. кабеля.")
 
 /obj/item/rcl/Destroy()
 	QDEL_NULL(loaded)
@@ -109,15 +113,11 @@
 	QDEL_NULL(wiring_gui_menu)
 	return ..()
 
-/obj/item/rcl/update_icon_state()
-	icon_state = "rcl-0"
-	item_state = "rcl-0"
-
 /obj/item/rcl/update_overlays()
 	. = ..()
 	if(!loaded || !loaded.amount)
 		return
-	var/mutable_appearance/cable_overlay = mutable_appearance(icon, "rcl-[10 * CEILING(loaded.amount/(max_amount/3), 1)]")
+	var/mutable_appearance/cable_overlay = mutable_appearance(icon, "[icon_state]-[10 * CEILING(loaded.amount/(max_amount/3), 1)]")
 	cable_overlay.color = GLOB.cable_colors[colors[current_color_index]]
 	. += cable_overlay
 
@@ -126,7 +126,7 @@
 	if(!isinhands || !(loaded?.amount))
 		return
 	// Use "rcl" sprite when loaded - rcl-10/20/30 don't exist in in-hand DMIs (tgstation uses same approach)
-	var/mutable_appearance/cable_overlay = mutable_appearance(icon_file, "rcl")
+	var/mutable_appearance/cable_overlay = mutable_appearance(icon_file, "rcl-[10 * CEILING(loaded.amount/(max_amount/3), 1)]")
 	cable_overlay.color = GLOB.cable_colors[colors[current_color_index]]
 	. += cable_overlay
 
@@ -134,7 +134,7 @@
 	update_icon()
 	if(!loaded || !loaded.amount)
 		if(loud)
-			to_chat(user, "<span class='notice'>The last of the cables unreel from [src].</span>")
+			to_chat(user, span_notice("Последний метр кабеля размотался из [src]."))
 		if(loaded)
 			QDEL_NULL(loaded)
 			loaded = null
@@ -184,11 +184,11 @@
 	if(!isturf(user.loc))
 		return
 	if(is_empty(user, 0))
-		to_chat(user, "<span class='warning'>\The [src] is empty!</span>")
+		to_chat(user, span_warning("\The [src] пуст!"))
 		return
 
 	if(prob(2) && ghetto) //Give ghetto RCLs a 2% chance to jam, requiring it to be reactviated manually.
-		to_chat(user, "<span class='warning'>[src]'s wires jam!</span>")
+		to_chat(user, span_warning("Провода [src] заедают!"))
 		active = FALSE
 		return
 	else
@@ -273,7 +273,7 @@
 	if(!isturf(user.loc))
 		return
 	if(is_empty(user, 0))
-		to_chat(user, "<span class='warning'>\The [src] is empty!</span>")
+		to_chat(user, span_warning("\The [src] пуст!"))
 		return
 
 	var/turf/T = get_turf(user)
@@ -299,8 +299,8 @@
 		current_color_index++;
 		if (current_color_index > colors.len)
 			current_color_index = 1
-		var/cwname = colors[current_color_index]
-		to_chat(user, "Color changed to [cwname]!")
+		var/cwname = vocabulary_to_ru(GLOB.colors_ru, colors[current_color_index])
+		to_chat(user, "Цвет проводов изменён на [cwname]!")
 		if(loaded)
 			loaded.color = colors[current_color_index]
 			update_icon()
@@ -323,18 +323,6 @@
 	actions_types = list()
 	max_amount = 30
 	name = "makeshift rapid cable layer"
+	icon_state = "rclg"
 	ghetto = TRUE
 	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 15)
-
-/obj/item/rcl/ghetto/update_icon_state()
-	if(!loaded)
-		icon_state = "rclg-0"
-		item_state = "rcl-0"
-		return
-	switch(loaded.amount)
-		if(1 to INFINITY)
-			icon_state = "rclg-1"
-			item_state = "rcl"
-		else
-			icon_state = "rclg-0"
-			item_state = "rcl-0"

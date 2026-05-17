@@ -7,11 +7,17 @@ GLOBAL_LIST_INIT(typecache_powerfailure_safe_areas, typecacheof(/area/engineerin
 
 //Repopulates sortedAreas list
 /proc/repopulate_sorted_areas()
-	GLOB.sortedAreas = list()
-
-	for(var/area/A in world)
-		GLOB.sortedAreas.Add(A)
-
+	// BYOND instantiates `world.area` (the default `/area`) before DM globals exist, so its
+	// New() runs against a null GLOB.all_areas and the area never enrols. The first time this
+	// proc runs, sync any such pre-init areas from world into the GLOB list once — after that
+	// `/area/New()` keeps the list current and we never need to walk world again.
+	var/static/synced = FALSE
+	if(!synced)
+		for(var/area/A in world)
+			if(!(A in GLOB.all_areas))
+				GLOB.all_areas += A
+		synced = TRUE
+	GLOB.sortedAreas = GLOB.all_areas.Copy()
 	sortTim(GLOB.sortedAreas, GLOBAL_PROC_REF(cmp_name_asc))
 
 /area/proc/addSorted()

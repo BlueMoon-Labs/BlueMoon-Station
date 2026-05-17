@@ -6650,11 +6650,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	else
 		pref_species.species_traits -= DIGITIGRADE
 
-	if(DIGITIGRADE in pref_species.species_traits)
-		character.Digitigrade_Leg_Swap(FALSE)
-	else
-		character.Digitigrade_Leg_Swap(TRUE)
-
 	character.dna.features["lust_tolerance"] = lust_tolerance
 	character.dna.features["sexual_potency"] = sexual_potency
 
@@ -6709,6 +6704,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					new_limb.icon = file("icons/mob/augmentation/cosmetic_prosthetic/[prosthetic_type].dmi")
 				new_limb.replace_limb(character)
 			qdel(old_part)
+
+	if(DIGITIGRADE in pref_species.species_traits)
+		character.Digitigrade_Leg_Swap(FALSE)
+	else
+		character.Digitigrade_Leg_Swap(TRUE)
 
 	SEND_SIGNAL(character, COMSIG_HUMAN_PREFS_COPIED_TO, src, icon_updates, roundstart_checks)
 

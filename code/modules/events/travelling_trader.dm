@@ -59,7 +59,7 @@
 	mob_size = MOB_SIZE_LARGE
 	alpha = 200
 
-/mob/living/carbon/human/dummy/travelling_trader/examine(mob/user)
+/mob/living/carbon/human/dummy/travelling_trader/examine(mob/user, silent = FALSE)
 	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, examine_text)
 	return examine_text
 

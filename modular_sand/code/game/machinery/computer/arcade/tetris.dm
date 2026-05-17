@@ -20,6 +20,8 @@
 	/// Все еще защита от дурочков с href, разделяем состояние игры.
 	var/game_active = FALSE
 	var/mob/active_game_player = null
+	/// Время старта игры
+	var/game_start_time = 0
 
 /obj/machinery/computer/arcade/tetris/ui_interact(mob/user, datum/tgui/ui)
 	if(!isliving(user))
@@ -129,6 +131,7 @@
 				return FALSE
 			game_active = TRUE
 			active_game_player = usr
+			game_start_time = world.time
 			start_tetris_music(usr)
 			return TRUE
 		if("music_stop")
@@ -142,6 +145,14 @@
 			// Sanitize score as an integer
 			// Restricts maximum score to (default) 100,000
 			var/temp_score = sanitize_num_clamp(text2num(params["score"]), max=TETRIS_SCORE_MAX)
+			var/game_duration = max(0, world.time - game_start_time)
+			game_start_time = 0
+
+			// Простая антифиддер защита. Пидорки что лезят в код чтобы накрутить счет - сосите хуй
+			if(game_duration < 1 MINUTES && temp_score > 30000)
+				log_admin("[key_name(usr)] отправил подозрительный счёт [temp_score] в аркадном тетрисе за [game_duration/10]с — отклонено.")
+				message_admins("[ADMIN_LOOKUPFLW(usr)] пытался накрутить счёт в аркадном тетрисе: [temp_score] очков за [game_duration/10]с.")
+				return FALSE
 
 			if(usr?.client && SSachievements.achievements_enabled)
 				usr.client.give_award(/datum/award/score/highscore/tetris, usr, temp_score)
@@ -201,6 +212,16 @@
 			if(!del_score)
 				return FALSE
 			return del_score.admin_delete_record(usr, ckey(params["ckey"]))
+		if("forceReset")
+			if(!check_rights_for(usr?.client, R_ADMIN))
+				return FALSE
+			if(SStetris_weekly_rewards.processing_rewards)
+				to_chat(usr, span_warning("Сброс уже выполняется, подождите."))
+				return FALSE
+			log_admin("[key_name(usr)] принудительно запустил недельный сброс рейтинга тетриса.")
+			message_admins("[key_name_admin(usr)] принудительно запустил недельный сброс рейтинга тетриса.")
+			SStetris_weekly_rewards.begin_reward_cycle()
+			return TRUE
 
 	add_fingerprint(usr)
 	. = TRUE

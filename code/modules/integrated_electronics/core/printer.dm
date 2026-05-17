@@ -117,6 +117,19 @@
 			recycling = FALSE
 			return TRUE
 
+	// material_container way of handling material insertion fucking sucks, but my balls aren't huge enough to mess with such important components. No solution is more permanent than a temporary one, i guess.
+	if(istype(O, /obj/item/stack/sheet/metal))
+		var/obj/item/stack/S = O
+		var/datum/component/material_container/mats = GetComponent(/datum/component/material_container)
+		if(mats)
+			var/inserted_amt = mats.insert_stack(S, S.amount)	// clamp to what we can fit
+			if(inserted_amt)
+				var/sheets_inserted = round(inserted_amt / MINERAL_MATERIAL_AMOUNT)
+				to_chat(user, "<span class='notice'>You insert [sheets_inserted] sheet\s of metal into [src]. It now holds [mats.total_amount]/[mats.max_amount] metal units.</span>")
+				return TRUE
+			else
+				to_chat(user, "<span class='warning'>[src] is already full of metal!</span>")
+				return TRUE
 	return ..()
 
 /obj/item/integrated_circuit_printer/attack_self(mob/living/carbon/human/user)

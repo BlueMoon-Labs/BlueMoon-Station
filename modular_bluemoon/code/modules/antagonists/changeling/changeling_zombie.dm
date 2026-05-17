@@ -56,6 +56,9 @@
 	if(HAS_TRAIT_FROM(parent, TRAIT_HUSK, CHANGELING_DRAIN))
 		COOLDOWN_START(src, transformation_grace_period, 30 SECONDS)
 		was_changeling_husked = TRUE
+	if(ishuman(parent))
+		var/mob/living/carbon/human/host = parent
+		host.ForceContractDisease(new /datum/disease/changeling_virus)
 	START_PROCESSING(SSobj, src)
 
 /datum/component/changeling_zombie_infection/UnregisterFromParent()
@@ -63,18 +66,21 @@
 	return ..()
 
 /datum/component/changeling_zombie_infection/Destroy(force, silent)
+	if(parent)
+		var/mob/living/carbon/human/host = parent
+		if(istype(host))
+			for(var/datum/disease/changeling_virus/virus_entry in host.diseases)
+				virus_entry.cure(FALSE)
+			REMOVE_TRAITS_IN(host, TRAIT_CHANGELING_ZOMBIE)
+			host.mind?.remove_antag_datum(/datum/antagonist/changeling_zombie)
+			if(zombified)
+				UnregisterSignal(host, COMSIG_MOB_DEATH)
+				UnregisterSignal(host, COMSIG_CARBON_REMOVE_LIMB)
+				UnregisterSignal(host, COMSIG_CARBON_ATTACH_LIMB)
+				UnregisterSignal(host, COMSIG_MOB_SAY)
 	QDEL_LIST(arm_blades)
 	QDEL_NULL(armor)
 	QDEL_NULL(armor_head)
-	if(parent)
-		var/mob/living/carbon/human/host = parent
-		REMOVE_TRAITS_IN(host, TRAIT_CHANGELING_ZOMBIE)
-		host.mind?.remove_antag_datum(/datum/antagonist/changeling_zombie)
-		if(zombified)
-			UnregisterSignal(host, COMSIG_LIVING_DEATH)
-			UnregisterSignal(host, COMSIG_CARBON_REMOVE_LIMB)
-			UnregisterSignal(host, COMSIG_CARBON_ATTACH_LIMB)
-			UnregisterSignal(host, COMSIG_MOB_SAY)
 	zombified = FALSE
 	return ..()
 
@@ -159,7 +165,7 @@
 	host.set_resting(FALSE)
 	host.reagents.add_reagent(/datum/reagent/medicine/changelingadrenaline, 4)
 	host.reagents.add_reagent(/datum/reagent/medicine/changelinghaste, 3)
-	RegisterSignal(host, COMSIG_LIVING_DEATH, PROC_REF(on_owner_died))
+	RegisterSignal(host, COMSIG_MOB_DEATH, PROC_REF(on_owner_died))
 	RegisterSignal(host, COMSIG_CARBON_REMOVE_LIMB, PROC_REF(on_remove_limb))
 	RegisterSignal(host, COMSIG_CARBON_ATTACH_LIMB, PROC_REF(on_gain_limb))
 	RegisterSignal(host, COMSIG_MOB_SAY, PROC_REF(handle_speech))
@@ -179,7 +185,7 @@
 	host.put_in_hand(arm_blade, hand_index, forced = TRUE)
 	arm_blades += arm_blade
 
-/datum/component/changeling_zombie_infection/proc/on_owner_died(datum/source)
+/datum/component/changeling_zombie_infection/proc/on_owner_died(datum/source, gibbed)
 	SIGNAL_HANDLER
 	if(zombified)
 		qdel(src)

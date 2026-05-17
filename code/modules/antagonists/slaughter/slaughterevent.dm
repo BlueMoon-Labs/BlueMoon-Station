@@ -13,7 +13,7 @@
 	var/list/allowed_z_cache = list()
 	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
 		allowed_z_cache[num2text(z)] = TRUE
-	for(var/obj/effect/decal/cleanable/C in world)
+	for(var/obj/effect/decal/cleanable/C as anything in GLOB.cleanable_decals)
 		if(!C.loc || QDELETED(C))
 			continue
 		if(!C.can_bloodcrawl_in())
