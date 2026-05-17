@@ -37,6 +37,7 @@
 #include "code\__BLUEMOONCODE\_DEFINES\mobs.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\nanosuit.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\portal_toys.dm"
+#include "code\__BLUEMOONCODE\_DEFINES\psychosis.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\preferences.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\say.dm"
 #include "code\__BLUEMOONCODE\_DEFINES\slimes.dm"

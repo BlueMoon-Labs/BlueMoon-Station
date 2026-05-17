@@ -155,6 +155,7 @@
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "perf_optimizations.dm"
+#include "psychosis_pools.dm"
 #include "screen_gc.dm"
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"

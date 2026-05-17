@@ -119,6 +119,8 @@
 
 /datum/round_event/psi_wave/proc/fire_wave(hit_chance, duration_min, duration_max, hit_sound, ambient_sound, shake_strength = 2, shake_duration = 1)
 	wave_count++
+	// Каждая волна имеет общую тему - связный нарратив для всей пострадавшей группы.
+	var/picked_theme = pick(GLOB.psychosis_themes)
 	var/affected = 0
 	var/affected_shielded = 0
 	for(var/mob/living/carbon/victim in shuffle(GLOB.alive_mob_list))
@@ -144,7 +146,7 @@
 		else
 			duration = rand(duration_min, duration_max)
 			affected++
-		victim.apply_psychosis(duration)
+		victim.apply_psychosis(duration, picked_theme)
 		if(hit_sound)
 			victim.playsound_local(victim, hit_sound, 35, FALSE)
 		if(ambient_sound)
@@ -152,6 +154,6 @@
 		shake_camera(victim, shake_strength, shake_duration)
 	total_affected += affected
 	total_shielded += affected_shielded
-	log_game("Psi Wave #[wave_count]: hit_chance=[hit_chance], affected=[affected] (+[affected_shielded] mindshielded), duration=[duration_min/10]-[duration_max/10]s.")
+	log_game("Psi Wave #[wave_count]: hit_chance=[hit_chance], affected=[affected] (+[affected_shielded] mindshielded), theme=[picked_theme], duration=[duration_min/10]-[duration_max/10]s.")
 
 #undef PSI_WAVE_SHIELDED_DURATION
