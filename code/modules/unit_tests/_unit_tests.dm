@@ -156,6 +156,7 @@
 #include "bad_defines_defined.dm"
 #include "bugfix_coverage.dm"
 #include "disposal_holder.dm"
+#include "hallucination_stationmessage.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "perf_optimizations.dm"
