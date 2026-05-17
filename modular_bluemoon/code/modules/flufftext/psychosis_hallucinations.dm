@@ -96,7 +96,7 @@ GLOBAL_LIST_INIT(psychosis_themes, list(
 		return random_far_turf()
 	return pick(candidates)
 
-GLOBAL_LIST_EMPTY(psychosis_pool_by_tier)
+GLOBAL_LIST_EMPTY_TYPED(psychosis_pool_by_tier, /list)
 
 /// Один раз за раунд раскладывает GLOB.psychosis_hallucination_list по трём
 /// tier-пулам. Lazy-build вызывается из status_effect/psychosis.
@@ -2356,4 +2356,5 @@ GLOBAL_LIST_INIT(psychosis_distortion_dict, list(
 /// или кириллическая буква и не цифра. Конструируется на каждый вызов, потому
 /// что регексы в DM stateful и кеширование требует ручного сброса next.
 /proc/psychosis_word_regex(key)
+	RETURN_TYPE(/regex)
 	return regex("(^|\[^a-zа-яё0-9\])[key](\[^a-zа-яё0-9\]|$)", "i")
