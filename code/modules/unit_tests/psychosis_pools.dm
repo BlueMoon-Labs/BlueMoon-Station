@@ -69,6 +69,33 @@
 			break
 	TEST_ASSERT(changed, "distort_message не заменила 'Hello' за 50 попыток (case-sensitivity регрессия)")
 
+/// distort_message не должна подменять ключи внутри более длинных слов
+/// (регрессия: findtext ловил "ok" в "broken", "да" в "дать", "yes" в "yesterday").
+/datum/unit_test/psychosis_distort_word_boundary/Run()
+	var/list/should_not_match = list(
+		"broken token okay",         // "ok" как подстрока broken/okay
+		"yesterday was eyes",        // "yes" внутри yesterday/eyes
+		"эта дача дать удар",        // "да" внутри дача/дать/удар
+		"привета не было",           // "привет" с суффиксом "а"
+	)
+	for(var/sample in should_not_match)
+		for(var/i in 1 to 30)
+			var/result = distort_message(sample)
+			TEST_ASSERT_EQUAL(result, sample, "distort_message подменила что-то в '[sample]' (получено '[result]') - сработал substring match вместо token")
+
+/// apply_psychosis(-1) должен ставить бесконечную длительность, а не дефолтные
+/// 5 минут (регрессия: on_creation отфильтровывал -1 проверкой set_duration > 0).
+/datum/unit_test/psychosis_apply_infinite_duration/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	H.apply_psychosis(-1)
+	var/datum/status_effect/psychosis/eff = H.has_status_effect(/datum/status_effect/psychosis)
+	TEST_ASSERT_NOTNULL(eff, "apply_psychosis(-1) не применил эффект")
+	TEST_ASSERT_EQUAL(eff.duration, -1, "apply_psychosis(-1) дал duration=[eff.duration], ожидался -1 (бесконечная)")
+	// Refresh с -1 на уже существующем эффекте тоже должен дать -1.
+	H.apply_psychosis(-1)
+	var/datum/status_effect/psychosis/refreshed = H.has_status_effect(/datum/status_effect/psychosis)
+	TEST_ASSERT_EQUAL(refreshed.duration, -1, "refresh(-1) дал duration=[refreshed.duration], ожидался -1")
+
 /// apply_psychosis на уже активном эффекте должен обновить duration/theme
 /// (раньше базовый refresh() игнорировал аргументы и сбрасывал длительность
 /// на initial(duration) = 5 минут, теряя данные повторной psi-волны).

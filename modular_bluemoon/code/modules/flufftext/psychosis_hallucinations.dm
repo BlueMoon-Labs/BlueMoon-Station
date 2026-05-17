@@ -2,7 +2,6 @@
 // /datum/hallucination/psychosis с подтипами. Все эффекты видит/слышит
 // только сам target - стандартный шаблон через target.client.images,
 // playsound_local, to_chat.
-
 // PSYCHOSIS_THEME_* и прочие defines объявлены в
 // code/__BLUEMOONCODE/_DEFINES/psychosis.dm (включается до unit_tests).
 
@@ -2325,14 +2324,14 @@ GLOBAL_LIST_INIT(psychosis_distortion_dict, list(
 ))
 
 /// Подменяет 1-2 совпадения из словаря в исходной строке. Если совпадений нет -
-/// возвращает оригинал без изменений. Поиск регистронезависимый.
+/// возвращает оригинал без изменений. Поиск регистронезависимый и токеновый:
+/// "ok" не сработает внутри "broken", "да" - внутри "дать".
 /proc/distort_message(text)
 	if(!istext(text) || !length(text))
 		return text
-	var/lowered = lowertext(text)
 	var/list/hits = list()
 	for(var/key in GLOB.psychosis_distortion_dict)
-		if(findtext(lowered, key))
+		if(psychosis_word_regex(key).Find(text))
 			hits += key
 	if(!length(hits))
 		return text
@@ -2343,8 +2342,12 @@ GLOBAL_LIST_INIT(psychosis_distortion_dict, list(
 		hits -= key
 		var/list/options = GLOB.psychosis_distortion_dict[key]
 		var/replacement = pick(options)
-		// Ключи в словаре lowercase, hits найдены через lowertext + findtext
-		// (case-insensitive). Для замены в исходной строке тоже нужен
-		// case-insensitive replacetext, иначе "Привет" не совпадёт с "привет".
-		result = replacetext(result, key, replacement)
+		// $1/$2 - захваченные граничные символы (или пустые в начале/конце строки).
+		result = psychosis_word_regex(key).Replace(result, "$1[replacement]$2")
 	return result
+
+/// Регекс с word-boundary для distort_message. Граница - всё, что не латинская
+/// или кириллическая буква и не цифра. Конструируется на каждый вызов, потому
+/// что регексы в DM stateful и кеширование требует ручного сброса next.
+/proc/psychosis_word_regex(key)
+	return regex("(^|\[^a-zа-яё0-9\])[key](\[^a-zа-яё0-9\]|$)", "i")

@@ -1,7 +1,7 @@
 /datum/round_event_control/psi_wave
 	name = "Psionic Wave"
 	typepath = /datum/round_event/psi_wave
-	weight = 20
+	weight = 10
 	min_players = 8
 	max_occurrences = 3
 	earliest_start = 20 MINUTES
@@ -151,7 +151,7 @@
 			victim.playsound_local(victim, hit_sound, 35, FALSE)
 		if(ambient_sound)
 			victim.playsound_local(victim, ambient_sound, 22, FALSE)
-		shake_camera(victim, shake_strength, shake_duration)
+		shake_camera(victim, shake_duration, shake_strength)
 	total_affected += affected
 	total_shielded += affected_shielded
 	log_game("Psi Wave #[wave_count]: hit_chance=[hit_chance], affected=[affected] (+[affected_shielded] mindshielded), theme=[picked_theme], duration=[duration_min/10]-[duration_max/10]s.")

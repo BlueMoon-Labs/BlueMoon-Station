@@ -38,7 +38,9 @@
 	examine_text = "<span class='warning'>SUBJECTPRONOUN бормочет себе под нос и затравленно озирается.</span>"
 
 /datum/status_effect/psychosis/on_creation(mob/living/new_owner, set_duration, set_theme)
-	if(isnum(set_duration) && set_duration > 0)
+	// -1 = бесконечная длительность (админы/события). Базовый on_creation
+	// сам распознаёт -1 и не превращает его в world.time + duration.
+	if(isnum(set_duration) && (set_duration > 0 || set_duration == -1))
 		duration = set_duration
 	if(set_theme)
 		current_theme = set_theme
@@ -75,6 +77,9 @@
 	unregister_passive_listeners()
 	if(isnum(set_duration) && set_duration > 0)
 		duration = world.time + set_duration
+	else if(isnum(set_duration) && set_duration == -1)
+		// Явный запрос на бесконечную длительность (админ/событие).
+		duration = -1
 	else
 		// Базовый refresh() игнорирует -1 (бесконечная длительность от админов).
 		if(duration != -1)
