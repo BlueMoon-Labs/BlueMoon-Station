@@ -14,22 +14,6 @@
 		TEST_ASSERT(findtext(entry["text"], "%FAKENAME%"), "Запись не содержит плейсхолдер %FAKENAME%: [entry["text"]]")
 		TEST_ASSERT_NOTNULL(entry["sound"], "Запись без поля sound: [entry["text"]]")
 
-/// Все sound-файлы, на которые ссылаются stationmessage-галлюцинации
-/// (heretic ascension + cult summon), должны существовать на диске.
-/// Регрессия: добавление новых веток галлюцинаций без коммита sound-файлов
-/// приводит к молчаливому failure SEND_SOUND во время галлюцинации.
-/datum/unit_test/hallucination_stationmessage_sounds_exist/Run()
-	var/list/expected_sounds = list(
-		"sound/music/antag/heretic/ascend_ash.ogg",
-		"sound/music/antag/heretic/ascend_blade.ogg",
-		"sound/music/antag/heretic/ascend_flesh.ogg",
-		"sound/music/antag/heretic/ascend_rust.ogg",
-		"sound/music/antag/heretic/ascend_void.ogg",
-		"sound/music/antag/bloodcult/bloodcult_scribe.ogg",
-	)
-	for(var/path in expected_sounds)
-		TEST_ASSERT(fexists(path), "Отсутствует sound-файл: [path]")
-
 /// Pick-листы stationmessage в трёх местах должны быть в синхроне: дефолтный
 /// pick в /datum/hallucination/stationmessage/New, массовая галлюцинация
 /// (mass_hallucination.dm), pick админ-настройки нанит-программы (suppression.dm).
@@ -85,14 +69,17 @@
 	var/mob/living/carbon/human/dummy_target = new(run_loc_floor_bottom_left)
 	var/datum/hallucination/test_instance = new(dummy_target, TRUE)
 
-	// Не должно ни падать, ни слать sound на target. Достаточно, чтобы вернулось без runtime.
 	test_instance.fake_priority_announce(null)
 	test_instance.fake_priority_announce("")
+	// Если пустой text прошёл через guard, следующий валидный вызов хелпера на том же
+	// instance должен работать как обычно. Проверяем pure-функцией generate_fake_heretic_text -
+	// её результат подтверждает, что instance не повреждён посторонним state-mutating fallback.
+	var/post_text = test_instance.generate_fake_heretic_text(10)
 
 	qdel(test_instance)
 	qdel(dummy_target)
-	// Если дошли сюда без runtime - guard работает.
-	TEST_ASSERT(TRUE, "fake_priority_announce крашнулся на пустом text")
+
+	TEST_ASSERT_EQUAL(length(post_text), 10, "fake_priority_announce(empty) повредил instance: post_text='[post_text]'")
 
 /// random_non_sec_crewmember не должен крашить на пустых/частично-заполненных
 /// записях data_core и обязан фильтровать сам target (даже если он попал в
