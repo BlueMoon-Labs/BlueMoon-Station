@@ -517,3 +517,15 @@
 	item_state = "officer_hat"
 	flags_inv = HIDEEARS //перезапись, чтобы берет не скрывал волосы
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+///////////////////////////////////////////////
+
+obj/item/clothing/head/donator/bm/odinsh_killa
+	name = "Mask-1SH 'Killa edition'"
+	desc = "Разукрашенный в чёрный, с белыми полосами шлем Маска-1Щ. Вдоль всего забрала и шлема идут 3 белых полосы. На вид он выглядит довольно прочным и странно знакомым."
+	icon_state = "odinsh_killa"
+	item_state = "odinsh_killa"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
