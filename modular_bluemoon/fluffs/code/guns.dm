@@ -275,23 +275,18 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	ammo_type = list(/obj/item/ammo_casing/energy/disabler/old, /obj/item/ammo_casing/energy/electrode/old = FALSE)
+	ammo_type = list(/obj/item/ammo_casing/energy/disabler/luftkuss, /obj/item/ammo_casing/energy/electrode/security/luftkuss = FALSE)
 	ammo_x_offset = 0
 
 /obj/item/gun/energy/e_gun/advtaser/luftkuss/get_examine_name(mob/user)
 	. = ..()
 	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/energy/e_gun/advtaser)
 
-/obj/item/ammo_casing/energy/disabler/old
-	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/disabler.ogg'
+/obj/item/ammo_casing/energy/disabler/luftkuss
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/luftkuss_disabler.ogg'
 
-/obj/item/ammo_casing/energy/electrode/old
-	projectile_type = /obj/item/projectile/energy/electrode
-	select_name = "stun"
-	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/taser.ogg'
-	e_cost = 200
-	harmful = FALSE
-
+/obj/item/ammo_casing/energy/electrode/security/luftkuss
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/luftkuss_taser.ogg'
 
 ////////////
 
@@ -368,6 +363,7 @@
 	desc = "An Araki Arms magazine. Can be loaded with .45 ammo."
 
 /obj/item/storage/box/malorian_mag
+	name = "Araki Arms magazine box"
 
 /obj/item/storage/box/malorian_mag/PopulateContents()
 	new /obj/item/modkit/malorian_mag_kit(src)
@@ -401,24 +397,17 @@
 
 //////////////////// AM4 уже есть в лодауте донатеров. Это лишь его рескин.
 
-/obj/item/gun/ballistic/automatic/AM4B_pchelik
+/obj/item/gun/ballistic/automatic/AM4B/pchelik
 	name = "GFYS"
 	desc = "На донк-софт оружии видна гравировка: 'Coopie'. Предназначено для нетравмирующего выкидывания существ из бара и самозащиты от приставал."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "coopie"
 	item_state = "arifle-wielded"
-	mag_type = /obj/item/ammo_box/magazine/toy/AM4B
-	can_suppress = 0
-	casing_ejector = 0
-	spread = 30		//Assault Rifleeeeeee
-	w_class = WEIGHT_CLASS_NORMAL
-	burst_size = 1	//Shh.
-	fire_delay = 15
-	automatic_burst_overlay = FALSE
+	body_state = ""
 
-/obj/item/gun/ballistic/automatic/AM4B_pchelik/get_examine_name(mob/user)
+/obj/item/gun/ballistic/automatic/AM4B/pchelik/get_examine_name(mob/user)
 	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic)
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/AM4B)
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -436,31 +425,18 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
 
-/obj/item/melee/baton/stunblade/switch_status(new_status = FALSE, silent = FALSE)
-	if(turned_on != new_status)
-		turned_on = new_status
-		if(!silent)
-			playsound(loc, 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg', 75, 1, -1)
-		if(turned_on)
-			START_PROCESSING(SSobj, src)
-		else
-			STOP_PROCESSING(SSobj, src)
-	update_icon()
+/obj/item/melee/baton/stunblade/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/baton)
 
 /obj/item/melee/baton/stunblade/update_icon_state()
-	if(turned_on)
-		icon_state = "stunblade_active"
-		item_state = "stunblade_active"
-	else if(!cell)
-		icon_state = "stunblade_nocell"
-		item_state = "stunblade"
-	else
-		icon_state = "stunblade"
-		item_state = "stunblade"
+	. = ..()
+	item_state = "[initial(item_state)][turned_on ? "_active" : ""]"
 
 /obj/item/melee/baton/stunblade/get_worn_belt_overlay(icon_file)
-	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "-stunblade")
+	return mutable_appearance(icon_file, "-[initial(icon_state)]")
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -478,28 +454,15 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/razorsong.ogg'
 
-/obj/item/melee/baton/razorsong/switch_status(new_status = FALSE, silent = FALSE)
-	if(turned_on != new_status)
-		turned_on = new_status
-		if(!silent)
-			playsound(loc, 'modular_bluemoon/fluffs/sound/weapon/razorsong.ogg', 75, 1, -1)
-		if(turned_on)
-			START_PROCESSING(SSobj, src)
-		else
-			STOP_PROCESSING(SSobj, src)
-	update_icon()
+/obj/item/melee/baton/razorsong/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/baton)
 
 /obj/item/melee/baton/razorsong/update_icon_state()
-	if(turned_on)
-		icon_state = "razorsong_active"
-		item_state = "razorsong_active"
-	else if(!cell)
-		icon_state = "razorsong_nocell"
-		item_state = "razorsong"
-	else
-		icon_state = "razorsong"
-		item_state = "razorsong"
+	. = ..()
+	item_state = "[initial(item_state)][turned_on ? "_active" : ""]"
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -517,28 +480,15 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	turn_on_sound = "sparks"
 
-/obj/item/melee/baton/stunadler/switch_status(new_status = FALSE, silent = FALSE)
-	if(turned_on != new_status)
-		turned_on = new_status
-		if(!silent)
-			playsound(loc, "sparks", 75, 1, -1)
-		if(turned_on)
-			START_PROCESSING(SSobj, src)
-		else
-			STOP_PROCESSING(SSobj, src)
-	update_icon()
+/obj/item/melee/baton/stunadler/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/baton)
 
 /obj/item/melee/baton/stunadler/update_icon_state()
-	if(turned_on)
-		icon_state = "stunadler_active"
-		item_state = "stunadler_active"
-	else if(!cell)
-		icon_state = "stunadler_nocell"
-		item_state = "stunadler"
-	else
-		icon_state = "stunadler"
-		item_state = "stunadler"
+	. = ..()
+	item_state = "[initial(item_state)][turned_on ? "_active" : ""]"
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -556,31 +506,18 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/acrador_guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/tonfa.ogg'
 
-/obj/item/melee/baton/tonfa/switch_status(new_status = FALSE, silent = FALSE)
-	if(turned_on != new_status)
-		turned_on = new_status
-		if(!silent)
-			playsound(loc, 'modular_bluemoon/fluffs/sound/weapon/tonfa.ogg', 75, 1, -1)
-		if(turned_on)
-			START_PROCESSING(SSobj, src)
-		else
-			STOP_PROCESSING(SSobj, src)
-	update_icon()
+/obj/item/melee/baton/tonfa/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/baton)
 
 /obj/item/melee/baton/tonfa/update_icon_state()
-	if(turned_on)
-		icon_state = "tonfa_active"
-		item_state = "tonfa_active"
-	else if(!cell)
-		icon_state = "tonfa_nocell"
-		item_state = "tonfa"
-	else
-		icon_state = "tonfa"
-		item_state = "tonfa"
+	. = ..()
+	item_state = "[initial(item_state)][turned_on ? "_active" : ""]"
 
 /obj/item/melee/baton/tonfa/get_worn_belt_overlay(icon_file)
-	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "-tonfa")
+	return mutable_appearance(icon_file, "-[initial(icon_state)]")
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -598,31 +535,18 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
 
-/obj/item/melee/baton/stunntcane/switch_status(new_status = FALSE, silent = FALSE)
-	if(turned_on != new_status)
-		turned_on = new_status
-		if(!silent)
-			playsound(loc, 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg', 75, 1, -1)
-		if(turned_on)
-			START_PROCESSING(SSobj, src)
-		else
-			STOP_PROCESSING(SSobj, src)
-	update_icon()
+/obj/item/melee/baton/stunntcane/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/baton)
 
 /obj/item/melee/baton/stunntcane/update_icon_state()
-	if(turned_on)
-		icon_state = "cane_nt_active"
-		item_state = "cane_nt_active"
-	else if(!cell)
-		icon_state = "cane_nt_nocell"
-		item_state = "cane_nt"
-	else
-		icon_state = "cane_nt"
-		item_state = "cane_nt"
+	. = ..()
+	item_state = "[initial(item_state)][turned_on ? "_active" : ""]"
 
 /obj/item/melee/baton/stunntcane/get_worn_belt_overlay(icon_file)
-	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "cane_nt")
+	return mutable_appearance(icon_file, initial(icon_state))
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -725,24 +649,16 @@
 /obj/item/gun/ballistic/automatic/ak12/g36
 	name = "\improper G-36"
 	desc = "Heckler & Koch Gewehr 36, G36 - семейство стрелкового оружия, разработанное в начале 1990-х немецкой компанией Heckler & Koch, под внутрифирменным обозначением HK 50, для замены хорошо известной автоматической винтовки HK G3."
+	icon_state = "G36"
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	mag_type = /obj/item/ammo_box/magazine/ak12/r
 	//chosen_icon = 'icons/mob/clothing/back.dmi'
-	icon_state = "G36"
 
 /obj/item/gun/ballistic/automatic/ak12/g36/get_examine_name(mob/user)
 	. = ..()
 	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/ak12)
-
-/obj/item/gun/ballistic/automatic/ak12/g36/update_icon_state()
-	if(magazine)
-		icon_state = "G36"
-		item_state = "G36"
-	else
-		icon_state = "G36_e"
-		item_state = "G36_e"
 
 /obj/item/modkit/legax
 	name = "Legax Gravpulser Kit"
@@ -863,7 +779,6 @@
 	icon_state = "institute"
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler/institute, /obj/item/ammo_casing/energy/laser/institute)
 	ammo_x_offset = 1
-	charge_sections = 4
 
 /obj/item/gun/energy/e_gun/institute/get_examine_name(mob/user)
 	. = ..()
@@ -885,26 +800,26 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-/obj/item/gun/energy/laser/carbine/old
+/obj/item/gun/energy/laser/carbine/aer9
 	name = "\improper Лазер AER9"
 	desc = "В AER9 не использовались передовые довоенные технологии, что значительно повысило её надежность. Эта модель представляет собой обычный твердотельный импульсный лазер, активная среда которого (кристалл), заключена в титановый корпус, что позволяет выдерживать годы воздействия окружающей среды без потери технических характеристик. На данный момент такая модель считается устаревшей, Механизмы батареи на ядерной энергии заменены на внутренние, однако она всё еще достойно работает и по сей день."
-	ammo_type = list(/obj/item/ammo_casing/energy/laser/old)
+	ammo_type = list(/obj/item/ammo_casing/energy/laser/aer9)
 	icon_state = "lasernew_alt"
 	item_state = "laser_old-wielded"
 
-/obj/item/gun/energy/laser/carbine/old/get_examine_name(mob/user)
+/obj/item/gun/energy/laser/carbine/aer9/get_examine_name(mob/user)
 	. = ..()
 	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/energy/laser/carbine)
 
-/obj/item/ammo_casing/energy/laser/old
-	fire_sound = 'sound/weapons/riflelaserold.ogg'
+/obj/item/ammo_casing/energy/laser/aer9
+	fire_sound = 'sound/weapons/aer9_riflelaser.ogg'
 
-/obj/item/modkit/old_laser_kit
+/obj/item/modkit/aer9
 	name = "Лазер AER9 Kit"
 	desc = "A modkit for making a laser carbine into Лазер AER9."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "modkit"
-	product = /obj/item/gun/energy/laser/carbine/old
+	product = /obj/item/gun/energy/laser/carbine/aer9
 	fromitem = list(/obj/item/gun/energy/laser/carbine/nopin, /obj/item/gun/energy/laser/carbine)
 ////////////////////////////////////////////////////////////////////////////////////////
 /obj/item/storage/box/old_world_kit
@@ -913,7 +828,7 @@
 	icon_state = "ammobox"
 
 /obj/item/storage/box/old_world_kit/PopulateContents()
-	new /obj/item/modkit/old_laser_kit(src)
+	new /obj/item/modkit/aer9(src)
 	new /obj/item/modkit/institute_kit(src)
 	new /obj/item/modkit/t51armor_kit(src)
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1038,8 +953,6 @@
 	desc = "This is an expensive, modern recreation of an antique laser gun. This gun has several unique firemodes, but lacks the ability to recharge over time in exchange for inbuilt advanced firearm EMP shielding. <span class='boldnotice'>Right click in combat mode to fire a taser shot with a cooldown.</span>"
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "Anabel"
-	cell_type = /obj/item/stock_parts/cell{charge = 1500; maxcharge = 1500}
-	ammo_type = list(/obj/item/ammo_casing/energy/disabler, /obj/item/ammo_casing/energy/laser/lightliz)
 	ammo_x_offset = 0
 
 /obj/item/gun/energy/e_gun/hos/Anabel/get_examine_name(mob/user)
@@ -1163,72 +1076,74 @@
 	product = /obj/item/melee/baton/stunkatana
 	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
 
+#define STUNKATANA_BASE_STATE "stunkatana"
+
 /obj/item/melee/baton/stunkatana
 	name = "\improper Stun-Katana"
 	desc = "Оружие специальных подразделений ЧВК \"Конкорд\", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	icon_state = "stunkatana"
-	item_state = "stunkatana"
-/obj/item/melee/baton/stunkatana/proc/switch_light()
-	var/charge_percent = cell.charge / cell.maxcharge
-	if(charge_percent > 0.5)
-		set_light(3, 0.9, "#B6EEE9")
-	else
-		set_light(3, 0.9, "#D9CD8E")
-/obj/item/melee/baton/stunkatana/switch_status(new_status = FALSE, silent = FALSE)
+	icon_state = STUNKATANA_BASE_STATE
+	item_state = STUNKATANA_BASE_STATE
+	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
+
+/obj/item/melee/baton/stunkatana/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/baton)
+
+/obj/item/melee/baton/stunkatana/switch_status(new_status, silent)
+	. = ..()
 	if(turned_on != new_status)
-		turned_on = new_status
-		if(!silent)
-			playsound(loc, 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg', 75, 1, -1)
-		if(turned_on)
-			START_PROCESSING(SSobj, src)
-			if(!cell)
-				set_light(0)
-			else if(cell.charge <= 0)
-				set_light(3, 0.9, "#ff0000")
-			else
-				switch_light()
-		else
-			STOP_PROCESSING(SSobj, src)
-			set_light(0)
-	update_icon_state()
+		switch_light()
 
 /obj/item/melee/baton/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
 	. = ..()
-	update_icon_state()
 	// После удара — обновляем иконку и свет по текущему заряду.
-	if(!turned_on || !cell)
-		set_light(0)
-		return
-	if(cell.charge <= 0)
-		set_light(3, 0.9, "#ff0000")
-		return
+	update_icon_state()
 	switch_light()
+
 /obj/item/melee/baton/stunkatana/update_icon_state()
 	if(!cell)
-		icon_state = "No-cell"
-		item_state = "stunkatana"
+		icon_state = "[STUNKATANA_BASE_STATE]-nocell"
+		item_state = STUNKATANA_BASE_STATE
 		return
+
 	if(cell.charge <= 0)
-		icon_state = "No-charge"
-		item_state = "stunkatana"
+		icon_state = "[STUNKATANA_BASE_STATE]-nocharge"
+		item_state = STUNKATANA_BASE_STATE
 		return
+
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(turned_on)
 		if(charge_percent > 0.5)
-			icon_state = "Charged-on"
-			item_state = "stunkatana_active"
+			icon_state = "[STUNKATANA_BASE_STATE]-on"
+			item_state = "[STUNKATANA_BASE_STATE]_active"
 		else
-			icon_state = "Half-charged-on"
-			item_state = "stunkatana_half"
+			icon_state = "[STUNKATANA_BASE_STATE]-on-half"
+			item_state = "[STUNKATANA_BASE_STATE]_half"
 	else
-		if(charge_percent > 0.5)
-			icon_state = "Charged-off"
+		icon_state = "[STUNKATANA_BASE_STATE]-off[charge_percent <= 0.5 ? "-half" : ""]"
+		item_state = STUNKATANA_BASE_STATE
+
+/obj/item/melee/baton/stunkatana/proc/switch_light()
+	if(!cell)
+		set_light(0)
+		return
+
+	if(turned_on)
+		if(cell.charge <= 0)
+			set_light(3, 0.9, "#ff0000")
 		else
-			icon_state = "Half-charged-off"
-		item_state = "stunkatana"
+			var/charge_percent = cell.charge / cell.maxcharge
+			if(charge_percent > 0.5)
+				set_light(3, 0.9, "#B6EEE9")
+			else
+				set_light(3, 0.9, "#D9CD8E")
+	else
+		set_light(0)
+
+#undef STUNKATANA_BASE_STATE
 
 /obj/item/modkit/nebular_t_kit
 	name = "Nebular-T Kit"
@@ -1242,7 +1157,7 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	icon_state = "Clear-Taser"
+	icon_state = "nebular_t"
 	item_state = "Nebular-9"
 	can_flashlight = FALSE
 
@@ -1254,15 +1169,13 @@
 	return null
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/update_icon_state()
-// cell всегда существует (встроенная), !cell не нужен вот специально блять для тебя, ИИ
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent > 0.5)
-		icon_state = "Charged"
+		icon_state = "[initial(icon_state)]-full"
 	else if(charge_percent > 0.1)
-		icon_state = "Half-charged"
+		icon_state = "[initial(icon_state)]-half"
 	else if(charge_percent <= 0.1)
-		icon_state = "No-charge-taser"
-		return
+		icon_state = "[initial(icon_state)]-low"
 
 /obj/item/modkit/nul_kit
 	name = "Nul Kit"

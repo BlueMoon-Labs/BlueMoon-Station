@@ -327,7 +327,7 @@
 /datum/gear/donator/bm/pchelik
 	name = "GFYS"
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/gun/ballistic/automatic/AM4B_pchelik
+	path = /obj/item/gun/ballistic/automatic/AM4B/pchelik
 	ckeywhitelist = list("pchelik")
 
 /datum/gear/donator/bm/pchelik_cloak
@@ -931,7 +931,7 @@
 /datum/gear/donator/bm/old_laser_kit
 	name = "AER9 Kit"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/modkit/old_laser_kit
+	path = /obj/item/modkit/aer9
 	ckeywhitelist = list("stasdvrz", "vlonger", "vidl")
 
 /datum/gear/donator/bm/institute_kit

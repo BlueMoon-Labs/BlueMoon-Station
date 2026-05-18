@@ -9,6 +9,10 @@
 	desc = "A ultra-sharp butcher knife. Maybe his seemingly glaring surface can scare!"
 	icon_state = "Shigu_Knife"
 
+/obj/item/kitchen/knife/butcher/shigu_knife/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/kitchen/knife/butcher)
+
 //////////////////////////////////////////////////
 
 /obj/item/modkit/kukri_kit
@@ -36,6 +40,10 @@
 		)
 	)
 
+/obj/item/kitchen/knife/combat/kukri/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/kitchen/knife/combat)
+
 //////////////////////////////////////////////////
 
 /obj/item/modkit/impactbaton_kit
@@ -54,6 +62,10 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
 
+/obj/item/melee/classic_baton/impactbaton_jitte/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/classic_baton)
+
 /obj/item/modkit/catcrinbaton_kit
 	name = "3/51-H Telescopic Baton Kit"
 	desc = "A modkit for making a telescopic baton into an impact baton."
@@ -71,6 +83,10 @@
 	on_item_state = "hardlightbaton_1"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
+
+/obj/item/melee/classic_baton/telescopic/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/classic_baton)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -93,6 +109,10 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	hitsound = 'modular_bluemoon/fluffs/sound/weapon/Abomination.ogg'
 
+/obj/item/melee/classic_baton/telescopic/portal_abomination/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/classic_baton/telescopic)
+
 /obj/item/modkit/dark_sabre_kit
 	name = "Dark Omen Sword Kit"
 	desc = "A modkit for making a energy/plasma sword into an Dark Omen Sword."
@@ -114,6 +134,10 @@
 	possible_colors = null
 	unique_reskin = null
 	var/image/transform_overlay
+
+/obj/item/melee/transforming/energy/sword/saber/dark_sabre/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/transforming/energy/sword/saber)
 
 /obj/item/melee/transforming/energy/sword/saber/dark_sabre/transform_weapon(mob/living/user, supress_message_text)
 	. = ..()
@@ -161,19 +185,20 @@
 	turn_on_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_on.ogg'
 	hit_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_hit.ogg'
 
+/obj/item/melee/baton/twilight_spike/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/baton)
+
 /obj/item/melee/baton/twilight_spike/update_icon_state()
-	if(turned_on)
-		icon_state = "[initial(icon_state)]_active"
-		item_state = "[initial(item_state)]_active"
-	else if(!cell)
-		icon_state = "[initial(icon_state)]_nocell"
-		item_state = "[initial(item_state)]"
-	else
-		icon_state = "[initial(icon_state)]"
-		item_state = "[initial(item_state)]"
+	. = ..()
+	item_state = "[initial(item_state)][turned_on ? "_active" : ""]"
 
 /obj/item/melee/transforming/energy/sword/energy_sabre/fluff
 	name = "Cybersun Energy Sabre"
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/transforming/energy/sword/energy_sabre)
 
 /obj/item/melee/transforming/energy/sword/energy_sabre/fluff/Initialize(mapload)
 	. = ..()

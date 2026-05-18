@@ -198,7 +198,6 @@
 	icon_state = "ak12"
 	lefthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/lefthand.dmi'
 	righthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/righthand.dmi'
-	item_state = "ak12"
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACK
 	w_class = WEIGHT_CLASS_BULKY
 	mag_type = /obj/item/ammo_box/magazine/ak12
@@ -209,12 +208,7 @@
 	fire_sound = 'modular_bluemoon/krashly/sound/ak12_fire.ogg'
 
 /obj/item/gun/ballistic/automatic/ak12/update_icon_state()
-	if(magazine)
-		icon_state = "ak12"
-		item_state = "ak12"
-	else
-		icon_state = "ak12_e"
-		item_state = "ak12_e"
+	icon_state = "[initial(icon_state)][!magazine ? "_e" : ""]"
 
 /obj/item/ammo_box/magazine/ak12
 	name = "\improper AK-12 magazine"

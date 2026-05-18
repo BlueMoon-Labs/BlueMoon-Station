@@ -389,7 +389,7 @@
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/frontline/update_icon_state()
 	icon_state = "csfrontline[stock ? "" : "c"]-[get_ammo(FALSE)]"
-	item_state = "csfrontline[stock ? "" : "c"]-[get_ammo(FALSE)]"
+	item_state = icon_state
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -492,31 +492,18 @@
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/stunspear.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
+	turn_on_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/stunspear.ogg'
 
-/obj/item/melee/baton/stunspear/switch_status(new_status = FALSE, silent = FALSE)
-	if(turned_on != new_status)
-		turned_on = new_status
-		if(!silent)
-			playsound(loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/stunspear.ogg', 75, 1, -1)
-		if(turned_on)
-			START_PROCESSING(SSobj, src)
-		else
-			STOP_PROCESSING(SSobj, src)
-	update_icon()
+/obj/item/melee/baton/stunspear/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/baton)
 
 /obj/item/melee/baton/stunspear/update_icon_state()
-	if(turned_on)
-		icon_state = "stunspear_active"
-		item_state = "stunspear_active"
-	else if(!cell)
-		icon_state = "stunspear_nocell"
-		item_state = "stunspear"
-	else
-		icon_state = "stunspear"
-		item_state = "stunspear"
+	. = ..()
+	item_state = "[initial(icon_state)][turned_on ? "_active" : ""]"
 
 /obj/item/melee/baton/stunspear/get_worn_belt_overlay(icon_file)
-	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "-stunspear")
+	return mutable_appearance(icon_file, "-stunspear")
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -535,6 +522,10 @@
 	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
 	extend_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/ffshield.ogg'
+
+/obj/item/shield/riot/tele/ffshield/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/shield/riot/tele)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
