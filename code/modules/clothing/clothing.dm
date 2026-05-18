@@ -258,7 +258,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 		var/how_cool_are_your_threads = "Открывается [pockets.attack_hand_interact ? "кликом" : "при перетягивании на себя"] и может хранить до \
 									[pockets.max_items] шт. предметов [weight_class_to_text(pockets.max_w_class)] размера или меньше.\
 									[pockets.silent ? " Взятие или добавление предметов бесшумно" : ""]"
-		var/tooltip_to_show = "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[how_cool_are_your_threads]</span></span>"
+		var/tooltip_to_show = span_tooltip_fast(how_cool_are_your_threads)
 		. += span_notice("[gender == PLURAL ? "Могут" : "Может"] хранить предметы [tooltip_to_show]. [pockets.quickdraw ? "Вы можете быстро извлечь предмет с помощью Alt-Click." : ""]")
 
 	if(armor)

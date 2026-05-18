@@ -4306,6 +4306,7 @@
 #include "interface\fonts\vcr_osd_mono.dm"
 #include "modular_bluemoon\code\_DEFINES\ashwalkers.dm"
 #include "modular_bluemoon\code\_DEFINES\changeling_zombie.dm"
+#include "modular_bluemoon\code\_DEFINES\donate.dm"
 #include "modular_bluemoon\code\_DEFINES\mobs.dm"
 #include "modular_bluemoon\code\_globalvars\list\objects.dm"
 #include "modular_bluemoon\code\_HELPERS\_bm_helpers.dm"

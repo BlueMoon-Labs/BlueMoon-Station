@@ -493,7 +493,7 @@
 	if(uses_overlays)
 		var/job_tooltip = ""
 		if(assignment && get_assignment_name() != assignment)
-			job_tooltip = " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[html_encode(assignment)]</span></span>"
+			job_tooltip = " [span_tooltip_fast(html_encode(assignment))]"
 		return "[icon2html(get_cached_flat_icon(), user)] [thats? "That's ":""][get_examine_name(user)][job_tooltip]" //displays all overlays in chat
 	return ..()
 

@@ -582,7 +582,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 				if(R)
 					var/rank_tooltip = ""
 					if(R.fields["real_rank"] && R.fields["rank"] != R.fields["real_rank"])
-						rank_tooltip = " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[html_encode(R.fields["real_rank"])]</span></span>"
+						rank_tooltip = " [span_tooltip_fast(html_encode(R.fields["real_rank"]))]"
 					. += "<span class='deptradio'>Профессия:</span> [R.fields["rank"]][rank_tooltip]\n<a href='?src=[REF(src)];hud=1;photo_front=1'>\[Front photo\]</a><a href='?src=[REF(src)];hud=1;photo_side=1'>\[Side photo\]</a>"
 				if(istype(H.glasses, /obj/item/clothing/glasses/hud/health) || istype(CIH, /obj/item/organ/cyberimp/eyes/hud/medical))
 					var/cyberimp_detect

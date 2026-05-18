@@ -1273,7 +1273,7 @@
 
 /obj/item/gun/energy/laser/captain/rifle/get_examine_name(mob/user)
 	. = ..()
-	. += "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>["This is captain's antique laser gun. Highrisk item!"]</span></span>"
+	. += DONATE_ITEM_TOOLTIP_HIGHRISK(/obj/item/gun/energy/laser/captain)
 
 ///////////////////////////////////////////////
 
@@ -1304,7 +1304,7 @@
 
 /obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/get_examine_name(mob/user)
 	. = ..()
-	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/ballistic/automatic/laser/lasgun::name]</span></span>"
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/laser/lasgun)
 
 /obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/update_icon_state()
 	icon_state = initial(icon_state)
@@ -1373,7 +1373,7 @@
 
 /obj/item/gun/energy/laser/lcr_29/get_examine_name(mob/user)
 	. = ..()
-	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/energy/laser::name]</span></span>"
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/energy/laser)
 
 /obj/item/ammo_casing/energy/lasergun/lcr_29
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/lcr29_shot.ogg'
@@ -1403,7 +1403,7 @@
 
 /obj/item/gun/energy/e_gun/advtaser/m3_predator/get_examine_name(mob/user)
 	. = ..()
-	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/energy/e_gun/advtaser::name]</span></span>"
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/energy/e_gun/advtaser)
 
 /obj/item/ammo_casing/energy/disabler/m3_predator
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/m3_predator_disabler.ogg'
@@ -1444,7 +1444,7 @@
 
 /obj/item/gun/ballistic/automatic/pistol/g22/anomalist/get_examine_name(mob/user)
 	. = ..()
-	. += "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>["This is Head of Security G-22 M.1. Highrisk item!"]</span></span>"
+	. += DONATE_ITEM_TOOLTIP_HIGHRISK(/obj/item/gun/ballistic/automatic/pistol/g22)
 
 /obj/item/modkit/Gelriter_22
 	name = "Gelriter-22 kit"
@@ -1497,7 +1497,7 @@
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75/get_examine_name(mob/user)
 	. = ..()
-	. += " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>This is [/obj/item/gun/ballistic/automatic/pistol/enforcer::name]</span></span>"
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75/get_gunlight_overlay()
 	if(!gun_light)
@@ -1509,3 +1509,4 @@
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75/update_icon_state() // -expended вырезан, спрайтов не завезли
 	icon_state = "[current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"
+

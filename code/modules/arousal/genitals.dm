@@ -325,7 +325,7 @@
 					item_names += I.name
 		if(!isemptylist(item_names))
 			var/tooltip_content = "[ru_name_capital] имеет: [item_names.Join(", ")]"
-			. += " <span class='chat-tooltip userlove'>\[+\]<span class='chat-tooltip__content'>[tooltip_content]</span></span>"
+			. += " [span_tooltip(tooltip_content, "\[+\]", "", "userlove", "")]"
 
 /mob/living/carbon/human/proc/update_genitals()
 	if(QDELETED(src))
