@@ -2358,3 +2358,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/cz_75
 	ckeywhitelist = list("shizalrp", "krasler101", "kingdeaths", "vlonger")
+
+/datum/gear/donator/bm/kila_mask
+	name = "Mask-1Щ 'Killa edition'"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/kila_mask
+	ckeywhitelist = list("vlonger")

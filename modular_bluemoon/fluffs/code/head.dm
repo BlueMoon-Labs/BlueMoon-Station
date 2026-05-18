@@ -517,3 +517,14 @@
 	item_state = "officer_hat"
 	flags_inv = HIDEEARS //перезапись, чтобы берет не скрывал волосы
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/donator/bm/kila_mask
+	name = "Mask-1Щ 'Killa edition'"
+	desc = "It's a strange helmet, doesn't protect you from anything."
+	icon_state = "killa_mask"
+	item_state = "killa_mask"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR
