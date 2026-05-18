@@ -6397,6 +6397,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					to_chat(user, "<span class='danger'>To use this item, you need to meet the defined requirements!</span>")
 					return
 				if(gear_points >= initial(G.cost))
+					if(G.path == /obj/item/lipstick/loadout)
+						lipstick_color_window(user, G)
+						return
 					var/list/new_loadout_data = list(LOADOUT_ITEM = "[G.type]")
 					if(length(G.loadout_initial_colors))
 						new_loadout_data[LOADOUT_COLOR] = G.loadout_initial_colors
@@ -6406,6 +6409,40 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						loadout_data["SAVE_[loadout_slot]"] += list(new_loadout_data) //double packed because it does the union of the CONTENTS of the lists
 					else
 						loadout_data["SAVE_[loadout_slot]"] = list(new_loadout_data) //double packed because you somehow had no save slot in your loadout?
+		if(href_list["lipstick_color_chosen"])
+			var/color = url_decode(href_list["lipstick_color_chosen"])
+			var/gear_name = url_decode(href_list["lipstick_gear_name"])
+			var/cat = url_decode(href_list["lipstick_gear_category"])
+			var/subcat = url_decode(href_list["lipstick_gear_subcategory"])
+			if(!GLOB.loadout_items[cat] || !GLOB.loadout_items[cat][subcat])
+				return
+			var/datum/gear/G2 = GLOB.loadout_items[cat][subcat][gear_name]
+			if(!G2 || G2.path != /obj/item/lipstick/loadout)
+				return
+			var/existing = has_loadout_gear(loadout_slot, "[G2.type]")
+			if(existing)
+				existing[LOADOUT_COLOR] = list(sanitize_hexcolor(color, 6, TRUE, "#FF0000"))
+				ShowChoices(user)
+				return
+			if(!is_loadout_slot_available(G2.category))
+				to_chat(user, "<span class='danger'>You cannot take this loadout, as you've already chosen too many of the same category!</span>")
+				return
+			if(G2.donoritem && !G2.donator_ckey_check(user.ckey))
+				to_chat(user, "<span class='danger'>This is an item intended for donator use only. You are not authorized to use this item.</span>")
+				return
+			if(istype(G2, /datum/gear/unlockable) && !can_use_unlockable(G2))
+				to_chat(user, "<span class='danger'>To use this item, you need to meet the defined requirements!</span>")
+				return
+			if(gear_points < initial(G2.cost))
+				return
+			var/list/new_loadout_data = list(LOADOUT_ITEM = "[G2.type]", LOADOUT_COLOR = list(sanitize_hexcolor(color, 6, TRUE, "#FF0000")))
+			if(loadout_data["SAVE_[loadout_slot]"])
+				loadout_data["SAVE_[loadout_slot]"] += list(new_loadout_data)
+			else
+				loadout_data["SAVE_[loadout_slot]"] = list(new_loadout_data)
+			ShowChoices(user)
+			return
+
 		if(href_list["clear_invalid_gear"])
 			var/thing_to_remove = url_decode(href_list["clear_invalid_gear"])
 			if(!thing_to_remove)
@@ -6835,3 +6872,55 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		return FALSE
 
 	return prefs_holder?.prefs.chat_toggles
+
+/datum/preferences/proc/lipstick_color_window(mob/user, datum/gear/G)
+	var/list/colors = list(
+		"#FF0000" = "Red",
+		"#800080" = "Purple",
+		"#00FF00" = "Jade",
+		"#000000" = "Black",
+		"#FFFF00" = "Yellow",
+		"#0000FF" = "Blue",
+		"#008080" = "Teal",
+		"#FF00FF" = "Fuchsia",
+		"#000080" = "Navy",
+		"#00FFFF" = "Cyan",
+		"#FFFFFF" = "White",
+	)
+
+	var/dat = {"
+		<html>
+		<head>
+		<style>
+			body { background: #1a1a1a; color: #ffffff; font-family: sans-serif; text-align: center; }
+			h3 { margin: 10px 0; }
+			.color-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 10px; }
+			.color-swatch { width: 48px; height: 48px; border: 2px solid #444; border-radius: 6px; cursor: pointer; }
+			.color-swatch:hover { border-color: #fff; transform: scale(1.1); }
+			.color-label { font-size: 10px; margin-top: 2px; }
+			.color-item { display: flex; flex-direction: column; align-items: center; }
+		</style>
+		</head>
+		<body>
+		<h3>Choose Lipstick Color</h3>
+		<div class='color-grid'>
+	"}
+
+	for(var/hex in colors)
+		var/name = colors[hex]
+		dat += {"
+			<div class='color-item'>
+				<a href='?_src_=prefs;preference=gear;lipstick_color_chosen=[url_encode(hex)];lipstick_gear_name=[url_encode(G.name)];lipstick_gear_category=[url_encode(gear_category)];lipstick_gear_subcategory=[url_encode(gear_subcategory)]'>
+					<div class='color-swatch' style='background-color: [hex];'></div>
+				</a>
+				<div class='color-label'>[name]</div>
+			</div>
+		"}
+
+	dat += {"
+		</div>
+		</body>
+		</html>
+	"}
+
+	user << browse(dat, "window=lipstick_color;size=420x280;can_close=1;can_resize=0")

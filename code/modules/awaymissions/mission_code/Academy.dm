@@ -274,10 +274,9 @@
 			var/mob/living/carbon/human/H = new(drop_location())
 			H.equipOutfit(/datum/outfit/butler)
 			var/datum/mind/servant_mind = new /datum/mind()
-			var/datum/antagonist/magic_servant/A = new
-			servant_mind.add_antag_datum(A)
-			A.setup_master(user)
 			servant_mind.transfer_to(H)
+			var/datum/antagonist/magic_servant/A = servant_mind.add_antag_datum(/datum/antagonist/magic_servant)
+			A?.setup_master(user)
 
 			var/list/mob/candidates = pollCandidatesForMob("Do you want to play as [user.real_name] Servant?", ROLE_WIZARD, null, ROLE_WIZARD, 20 SECONDS, H, priority_check = FALSE)
 			if(LAZYLEN(candidates))

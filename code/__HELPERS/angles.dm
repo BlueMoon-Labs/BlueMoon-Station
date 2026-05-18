@@ -1,4 +1,12 @@
+/// Returns a finite angle in degrees. matrix.Turn() and trig on NaN/inf can hard-crash BYOND.
+/proc/sanitize_angle(angle, fallback = 0)
+	if(!isfinite(angle))
+		return SIMPLIFY_DEGREES(fallback)
+	return SIMPLIFY_DEGREES(angle)
+
 /proc/get_projectile_angle(atom/source, atom/target)
+	if(!source || !target)
+		return 0
 	var/sx = source.x * world.icon_size
 	var/sy = source.y * world.icon_size
 	var/tx = target.x * world.icon_size
@@ -12,7 +20,11 @@
 		AM = target
 		tx += AM.step_x
 		ty += AM.step_y
-	return SIMPLIFY_DEGREES(arctan(ty - sy, tx - sx))
+	var/dx = tx - sx
+	var/dy = ty - sy
+	if(!dx && !dy)
+		return 0
+	return sanitize_angle(arctan(dy, dx))
 
 /proc/Get_Angle(atom/movable/start,atom/movable/end)//For beams.
 	if(!start || !end)

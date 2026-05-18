@@ -12,6 +12,13 @@
 	)
 
 /datum/interaction/lewd/fuck/display_interaction(mob/living/user, mob/living/partner)
+	var/distance = 7
+	var/volume = 50
+	var/is_hidden = ..()
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
 	var/message
 	//var/u_His = user.ru_ego()
 	//var/genital_name = user.get_penetrating_genital_name() - Стал не нужным.
@@ -20,13 +27,6 @@
 	var/has_balls = user.has_balls()
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
 //BLUEMOON ADD END
-	var/is_hidden = ..()
-	var/distance = 7
-	var/volume = 50
-	if(is_hidden)
-		distance = 1
-		volume = sound_quiet_volume
-	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = pick(
 			"долбится в киску <b>[partner]</b>, пуская в ход свой [shape_desc].",
@@ -81,6 +81,11 @@
 	additional_details = null // no pregnancy
 
 /datum/interaction/lewd/fuck/anal/display_interaction(mob/living/user, mob/living/partner)
+	var/datum/interaction/lewd/parent_interaction = new /datum/interaction/lewd
+
+	var/is_hidden = parent_interaction.display_interaction(user, partner) // я хз как иначе обойти вызов родителя /datum/interaction/lewd/fuck, дабы получить is_hidden из базового /datum/interaction/lewd
+	qdel(parent_interaction)
+
 	var/message
 	//var/u_His = user.ru_ego()
 	//var/t_His = partner.ru_ego()
@@ -90,7 +95,6 @@
 	var/has_balls = user.has_balls()
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
 	//BLUEMOON ADD END
-	var/is_hidden = ..()
 	var/distance = 7
 	var/volume = 50
 	if(is_hidden)
@@ -156,6 +160,7 @@
 	p13target_strength = PLUG13_STRENGTH_NORMAL
 
 /datum/interaction/lewd/breastfuck/display_interaction(mob/living/user, mob/living/partner) // BLUEMOON EDIT
+	var/is_hidden = ..()
 	var/message
 	var/genital_name = user.get_penetrating_genital_name()
 	//BLUEMOON ADD START
@@ -163,7 +168,6 @@
 	var/has_balls = user.has_balls()
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
 	//BLUEMOON ADD END
-	var/is_hidden = ..()
 	var/distance = 7
 	var/volume = 50
 	if(is_hidden)
@@ -205,12 +209,12 @@
 	p13user_strength = PLUG13_STRENGTH_NORMAL
 
 /datum/interaction/lewd/footfuck/display_interaction(mob/living/user, mob/living/partner)
+	var/is_hidden = ..()
 	var/picked_hidden = pick(hidden_additional)
 	var/message
 	//var/genital_name = user.get_penetrating_genital_name() - Стал не нужным.
 	var/has_penis = user.has_penis() // BLUEMOON ADD
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
-	var/is_hidden = ..()
 	var/distance = 7
 	var/volume = 50
 	if(is_hidden)
@@ -241,6 +245,7 @@
 	require_target_num_feet = 2
 
 /datum/interaction/lewd/footfuck/double/display_interaction(mob/living/user, mob/living/partner)
+	var/is_hidden = ..()
 	var/message
 	//var/u_His = user.ru_ego()
 	//var/genital_name = user.get_penetrating_genital_name() - Стал не нужным.
@@ -248,7 +253,6 @@
 	var/shape_desc = get_penis_shape_desc(user) // BlueMoon Add
 
 	var/shoes = partner.get_shoes()
-	var/is_hidden = ..()
 	var/distance = 7
 	var/volume = 50
 	if(is_hidden)
@@ -285,8 +289,8 @@
 	p13user_emote = PLUG13_EMOTE_VAGINA
 
 /datum/interaction/lewd/footfuck/vag/display_interaction(mob/living/user, mob/living/partner)
-	var/message
 	var/is_hidden = ..()
+	var/message
 	var/distance = 7
 	var/volume = 50
 	if(is_hidden)
@@ -323,9 +327,9 @@
 	interaction_sound = null
 
 /datum/interaction/lewd/double_penetration/display_interaction(mob/living/user, mob/living/partner)
+	var/is_hidden = ..()
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
-	var/is_hidden = ..()
 	var/distance = 7
 	var/volume = 50
 	if(is_hidden)
@@ -382,9 +386,9 @@
 	interaction_sound = null
 
 /datum/interaction/lewd/double_vaginal/display_interaction(mob/living/user, mob/living/partner)
+	var/is_hidden = ..()
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
-	var/is_hidden = ..()
 	var/distance = 7
 	var/volume = 50
 	if(is_hidden)
@@ -433,9 +437,9 @@
 	interaction_sound = null
 
 /datum/interaction/lewd/double_anal/display_interaction(mob/living/user, mob/living/partner)
+	var/is_hidden = ..()
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
-	var/is_hidden = ..()
 	var/distance = 7
 	var/volume = 50
 	if(is_hidden)
@@ -485,9 +489,9 @@
 	additional_details = list(INTERACTION_MAY_CAUSE_PREGNANCY)
 
 /datum/interaction/lewd/knot_fuck/display_interaction(mob/living/user, mob/living/partner)
+	var/is_hidden = ..()
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
-	var/is_hidden = ..()
 	var/distance = 7
 	var/volume = 50
 	if(is_hidden)
@@ -530,9 +534,9 @@
 	interaction_sound = null
 
 /datum/interaction/lewd/knot_anal_fuck/display_interaction(mob/living/user, mob/living/partner)
+	var/is_hidden = ..()
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
-	var/is_hidden = ..()
 	var/distance = 7
 	var/volume = 50
 	if(is_hidden)

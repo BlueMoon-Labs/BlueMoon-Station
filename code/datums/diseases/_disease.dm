@@ -67,6 +67,9 @@
 	return "[src.name] : [src.type]"
 
 /datum/disease/proc/stage_act()
+	if(!affected_mob || QDELETED(affected_mob))
+		return
+
 	var/cure = has_cure()
 
 	if(carrier && !cure)

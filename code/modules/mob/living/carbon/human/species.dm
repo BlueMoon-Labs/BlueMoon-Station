@@ -2551,6 +2551,17 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 	var/loc_temp = H.get_temperature(environment)
 
+	var/turf/ambient_turf = get_turf(H)
+	if(istype(ambient_turf))
+		for(var/obj/machinery/shower/shower in ambient_turf.contents)
+			if(!shower.on)
+				continue
+			switch(shower.watertemp)
+				if("freezing")
+					loc_temp = min(loc_temp, SHOWER_FREEZING_LOCAL_TEMP)
+				if("boiling")
+					loc_temp = max(loc_temp, SHOWER_BOILING_LOCAL_TEMP)
+
 	//Body temperature is adjusted in two parts: first there your body tries to naturally preserve homeostasis (shivering/sweating), then it reacts to the surrounding environment
 	//Thermal protection (insulation) has mixed benefits in two situations (hot in hot places, cold in hot places)
 	if(!H.on_fire) //If you're on fire, you do not heat up or cool down based on surrounding gases

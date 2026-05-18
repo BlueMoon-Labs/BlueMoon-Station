@@ -447,14 +447,18 @@
 	else
 		anchored = !anchored
 
+/// Returns syndicate nuke pinpointers to disk tracking — used after disarm/detonation paths where Destroy skips set_safety().
+/proc/revert_syndicate_nuke_pinpointers_disk()
+	for(var/obj/item/pinpointer/nuke/syndicate/S in GLOB.pinpointer_list)
+		S.switch_mode_to(initial(S.mode))
+		S.alert = FALSE
+
 /obj/machinery/nuclearbomb/proc/set_safety()
 	safety = !safety
 	if(safety)
 		if(timing)
 			set_security_level(previous_level)
-			for(var/obj/item/pinpointer/nuke/syndicate/S in GLOB.pinpointer_list)
-				S.switch_mode_to(initial(S.mode))
-				S.alert = FALSE
+			revert_syndicate_nuke_pinpointers_disk()
 		timing = FALSE
 		detonation_timer = null
 		countdown.stop()
@@ -475,9 +479,7 @@
 	else
 		detonation_timer = null
 		set_security_level(previous_level)
-		for(var/obj/item/pinpointer/nuke/syndicate/S in GLOB.pinpointer_list)
-			S.switch_mode_to(initial(S.mode))
-			S.alert = FALSE
+		revert_syndicate_nuke_pinpointers_disk()
 		countdown.stop()
 	update_icon()
 
@@ -516,6 +518,7 @@
 	if(!core)
 		Cinematic(CINEMATIC_NUKE_NO_CORE,world)
 		SSticker.roundend_check_paused = FALSE
+		revert_syndicate_nuke_pinpointers_disk()
 		return
 
 	GLOB.enter_allowed = FALSE
@@ -542,6 +545,7 @@
 	SSticker.mode.OnNukeExplosion(off_station)
 	really_actually_explode(off_station)
 	SSticker.roundend_check_paused = FALSE
+	revert_syndicate_nuke_pinpointers_disk()
 
 /obj/machinery/nuclearbomb/proc/really_actually_explode(off_station)
 	Cinematic(get_cinematic_type(off_station),world,CALLBACK(SSticker, TYPE_PROC_REF(/datum/controller/subsystem/ticker, station_explosion_detonation),src))
@@ -601,9 +605,7 @@
 	exploding = FALSE
 	exploded = TRUE
 	set_security_level(previous_level)
-	for(var/obj/item/pinpointer/nuke/syndicate/S in GLOB.pinpointer_list)
-		S.switch_mode_to(initial(S.mode))
-		S.alert = FALSE
+	revert_syndicate_nuke_pinpointers_disk()
 	countdown.stop()
 	update_icon()
 

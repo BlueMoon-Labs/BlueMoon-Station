@@ -47,6 +47,7 @@
 		/obj/item/storage/pill_bottle/happinesspsych = 3,
 		/obj/item/storage/pill_bottle/paxpsych = 3,
 		/obj/item/reagent_containers/hypospray/medipen/bimbo = 3,
+		/obj/item/lipstick/space_drugs = 3,
 	)
 	premium = list(
 		/obj/item/reagent_containers/medspray/synthflesh = 2,

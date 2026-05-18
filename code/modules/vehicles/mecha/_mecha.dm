@@ -642,7 +642,7 @@
 	var/atom/movable/backup = get_spacemove_backup()
 	if(backup)
 		if(istype(backup) && movement_dir && !backup.anchored)
-			if(backup.newtonian_move(turn(movement_dir, 180)))
+			if(backup.newtonian_move(REVERSE_DIR(movement_dir), instant = TRUE))
 				step_silent = TRUE
 				if(return_drivers())
 					to_chat(occupants, "[icon2html(src, occupants)]<span class='info'>The [src] push off [backup] to propel yourself.</span>")

@@ -84,6 +84,8 @@
 	lose_text = "<span class='notice'>The pressure inside your head starts fading.</span>"
 
 /datum/brain_trauma/mild/concussion/on_life()
+	if(!owner || QDELETED(owner))
+		return
 	if(prob(5))
 		switch(rand(1,11))
 			if(1)
