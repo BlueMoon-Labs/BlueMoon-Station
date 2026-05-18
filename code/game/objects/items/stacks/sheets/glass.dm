@@ -402,9 +402,9 @@ GLOBAL_LIST_INIT(plastitaniumglass_recipes, list(
 	var/mob/living/carbon/C = user
 	if(!C.hands_unprotected_for_shard_pickup_damage())
 		return
-	var/hit_hand = ((user.active_hand_index % 2 == 0) ? "r_" : "l_") + "arm"
+	var/hit_hand = ((C.active_hand_index % 2 == 0) ? "r_" : "l_") + "arm"
 	to_chat(user, span_warning("[src] cuts into your hand!"))
-	user.apply_damage(force * 0.5, BRUTE, hit_hand)
+	C.apply_damage(force * 0.5, BRUTE, hit_hand)
 
 
 /obj/item/shard/attackby(obj/item/item, mob/user, params)
