@@ -1485,12 +1485,16 @@
 /obj/item/clothing/head/hooded/occult
 	name = "Occult hood"
 	desc = "Certainly makes you look more ominous."
-	body_parts_covered = CHEST|GROIN|ARMS
-	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 	icon_state = "occulthood"
+	body_parts_covered = HEAD
+	flags_inv = HIDEHAIR|HIDEEARS
+	rad_flags = RAD_NO_CONTAMINATE
 
 /obj/item/clothing/suit/hooded/occult
 	name = "Occult collector's coat"
 	desc = "A big, heavy coat lined with leather and ivory cloth, adorned with a hood. It looks dusty."
 	icon_state = "occultcoat"
 	hoodtype = /obj/item/clothing/head/hooded/occult
+	body_parts_covered = CHEST|GROIN|ARMS
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	no_t = TRUE
