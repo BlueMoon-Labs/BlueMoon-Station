@@ -22,6 +22,9 @@
 	var/rods = 2
 	var/cable = 1
 	var/list/debris = list()
+	/// Smart glass tint linkage (matches /obj/structure/window electrochromatics)
+	var/electrochromatic_status = NOT_ELECTROCHROMATIC
+	var/electrochromatic_id
 
 /obj/machinery/door/window/Initialize(mapload, set_dir)
 	. = ..()
@@ -48,8 +51,16 @@
 		playsound(src, "shatter", 70, 1)
 	if(electronics && !QDELETED(electronics))
 		log_qdel("Windowdoor [type] at [COORD(src)] destroyed with non-null electronics [electronics.type]")
+	if(electrochromatic_status != NOT_ELECTROCHROMATIC)
+		new /obj/item/electronics/electrochromatic_kit(drop_location())
+	remove_electrochromatic()
 	electronics = null
 	return ..()
+
+/obj/machinery/door/window/examine(mob/user)
+	. = ..()
+	if(electrochromatic_status != NOT_ELECTROCHROMATIC)
+		. += span_notice("[src] has electrochromatic tinting circuitry.")
 
 /obj/machinery/door/window/update_icon_state()
 	if(density)
@@ -59,13 +70,57 @@
 
 /obj/machinery/door/window/update_atom_colour()
 	. = ..()
-	if((color && (color_hex2num(color) < 255)))
+	var/dimmed = electrochromatic_status == ELECTROCHROMATIC_DIMMED
+	var/dark_color = (color && (color_hex2num(color) < 255))
+	if(dimmed || dark_color)
 		visible = TRUE
-		if(density)
-			set_opacity(TRUE)
 	else
 		visible = FALSE
 	set_opacity(density && visible)
+
+/obj/machinery/door/window/proc/electrochromatic_dim()
+	if(electrochromatic_status == ELECTROCHROMATIC_DIMMED)
+		return
+	electrochromatic_status = ELECTROCHROMATIC_DIMMED
+	var/current = color
+	add_atom_colour("#222222", FIXED_COLOUR_PRIORITY)
+	var/newcolor = color
+	if(color != current)
+		color = current
+		animate(src, color = newcolor, time = 2)
+	update_atom_colour()
+
+/obj/machinery/door/window/proc/electrochromatic_off()
+	if(electrochromatic_status == ELECTROCHROMATIC_OFF)
+		return
+	electrochromatic_status = ELECTROCHROMATIC_OFF
+	var/current = color
+	remove_atom_colour(FIXED_COLOUR_PRIORITY, "#222222")
+	var/newcolor = color
+	if(color != current)
+		color = current
+		animate(src, color = newcolor, time = 2)
+	update_atom_colour()
+
+/obj/machinery/door/window/proc/remove_electrochromatic()
+	electrochromatic_off()
+	electrochromatic_status = NOT_ELECTROCHROMATIC
+	if(!electrochromatic_id)
+		return
+	var/list/L = GLOB.electrochromatic_window_lookup["[electrochromatic_id]"]
+	if(L)
+		L -= src
+	electrochromatic_id = null
+
+/obj/machinery/door/window/proc/make_electrochromatic(new_id = electrochromatic_id)
+	remove_electrochromatic()
+	if(!new_id)
+		CRASH("Attempted to make electrochromatic with null ID.")
+	electrochromatic_id = new_id
+	electrochromatic_status = ELECTROCHROMATIC_OFF
+	LAZYINITLIST(GLOB.electrochromatic_window_lookup["[electrochromatic_id]"])
+	GLOB.electrochromatic_window_lookup[electrochromatic_id] |= src
+	update_atom_colour()
 
 /obj/machinery/door/window/proc/open_and_close()
 	open()
@@ -269,6 +324,21 @@
 		return
 
 	add_fingerprint(user)
+	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent == INTENT_HELP)
+		var/obj/item/electronics/electrochromatic_kit/K = I
+		if(electrochromatic_status != NOT_ELECTROCHROMATIC)
+			to_chat(user, span_warning("[src] is already electrochromatic!"))
+			return
+		if(!K.id)
+			to_chat(user, span_warning("[K] has no ID set!"))
+			return
+		if(!user.temporarilyRemoveItemFromInventory(K))
+			to_chat(user, span_warning("[K] is stuck to your hand!"))
+			return
+		user.visible_message(span_notice("[user] upgrades [src] with [K]."), span_notice("You upgrade [src] with [K]."))
+		make_electrochromatic(K.id)
+		qdel(K)
+		return
 	if(!(flags_1&NODECONSTRUCT_1))
 		if(I.tool_behaviour == TOOL_SCREWDRIVER)
 			if(density || operating)

@@ -1,13 +1,14 @@
-GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
-
 /proc/do_electrochromatic_toggle(new_status, id)
-	var/list/windows = GLOB.electrochromatic_window_lookup["[id]"]
-	if(!windows)
+	var/list/linked = GLOB.electrochromatic_window_lookup["[id]"]
+	if(!linked)
 		return
-	var/obj/structure/window/W		//define outside for performance because obviously this matters.
-	for(var/i in windows)
-		W = i
-		new_status? W.electrochromatic_dim() : W.electrochromatic_off()
+	for(var/obj/structure/window/window_trim in linked)
+		new_status ? window_trim.electrochromatic_dim() : window_trim.electrochromatic_off()
+	for(var/obj/machinery/door/window/interior_trim in linked)
+		new_status ? interior_trim.electrochromatic_dim() : interior_trim.electrochromatic_off()
+	for(var/obj/machinery/door/airlock/gl_airlock in linked)
+		if(gl_airlock.glass)
+			new_status ? gl_airlock.electrochromatic_dim() : gl_airlock.electrochromatic_off()
 
 /obj/structure/window
 	name = "window"

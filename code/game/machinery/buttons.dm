@@ -305,8 +305,8 @@
 	id = 1
 
 /obj/machinery/button/electrochromatic
-	name = "window dim control"
-	desc = "Controls linked electrochromatic windows"
+	name = "smart glass control"
+	desc = "Controls linked electrochromatic windows, windoors, and glass-paneled airlocks."
 	device_type = /obj/item/assembly/control/electrochromatic
 
 /obj/item/wallframe/button
