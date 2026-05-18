@@ -1,4 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#define TRANSFER_VAR(SOURCE, TARGET, VAR) \
+	qdel(TARGET.VAR); \
+	if(SOURCE.VAR) { \
+		TARGET.VAR = SOURCE.VAR; \
+		SOURCE.VAR = null; \
+		TARGET.VAR.forceMove(TARGET); \
+	}
 
 /obj/item/modkit
 	name = "modkit"
@@ -13,12 +20,13 @@
 	if(!proximity_flag)
 		return
 	if(istype(target, product))
-		to_chat(user,"<span class='warning'>[target] is already modified!")
+		to_chat(user,span_warning("[target] is already modified!"))
 		return
 	if(target.type in fromitem) //makes sure target is the right thing
 		var/loc_to_spawn = target.loc || get_turf(target)
 		var/atom/movable/result = new product //spawns the product
-		user.visible_message("<span class='warning'>[user] modifies [target]!","<span class='warning'>You modify the [target]!")
+		user.visible_message(span_warning("[user] modifies [target]!"),span_warning("You modify the [target]!"))
+		gun_to_gun_replace(target, result)
 		on_item_replace(target, result)
 		qdel(target) //Gets rid of the baton
 		qdel(src) //gets rid of the kit
@@ -28,12 +36,28 @@
 		else
 			result.forceMove(loc_to_spawn)
 	else
-		to_chat(user, "<span class='warning'> You can't modify [target] with this kit!</span>")
+		to_chat(user, span_warning(" You can't modify [target] with this kit!"))
 
 // may be useful for gun/stunbaton/etc modkits
 /obj/item/modkit/proc/on_item_replace(obj/old_item, obj/modified_item)
 	return
 
+// Прок для корректной замены деталей у оружия, не перезаписывайте его
+/obj/item/modkit/proc/gun_to_gun_replace(obj/item/gun/target, obj/item/gun/result)
+	if(!istype(target) || !istype(result))
+		return
+
+	TRANSFER_VAR(target, result, pin)
+	if(istype(target, /obj/item/gun/ballistic) && istype(result, /obj/item/gun/ballistic))
+		var/obj/item/gun/ballistic/target_b = target
+		var/obj/item/gun/ballistic/result_b = result
+
+		TRANSFER_VAR(target_b, result_b, chambered)
+		TRANSFER_VAR(target_b, result_b, magazine)
+		
+	result.update_appearance()
+
+#undef TRANSFER_VAR
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/modkit/Kovac_Kit
@@ -1436,6 +1460,13 @@
 	icon_state = "kitsuitcase"
 	product = /obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21
 	fromitem = list(/obj/item/gun/ballistic/automatic/laser/lasgun)
+
+/obj/item/modkit/mpl21/gun_to_gun_replace(obj/item/gun/ballistic/automatic/laser/lasgun/target, obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/result)
+	. = ..()
+	if(!istype(result))
+		return
+	if(result.replace_mag_to_custom())
+		result.update_icon()
 
 /obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21
 	name = "MPL-21"
