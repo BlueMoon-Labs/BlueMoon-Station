@@ -113,8 +113,14 @@
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#333333", "#FFFFFF")
 
-/datum/gear/backpack/shockcollar
-	name = "Shock Collar Kit"
-	path = /obj/item/storage/box/shockcollar
-	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_TOYS
-	cost = 2
+/datum/gear/neck/ranger_poncho
+	name = "Polychromatic Ranger Poncho"
+	path = /obj/item/clothing/neck/cloak/ranger_poncho
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#877251")
+
+/datum/gear/neck/ranger_cape
+	name = "Polychromatic Ranger Cape"
+	path = /obj/item/clothing/neck/cloak/ranger_cape
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#543C2F")

@@ -2353,18 +2353,6 @@
 	path = /obj/item/clothing/underwear/socks/thigh/oldwraps
 	ckeywhitelist = list("lindaastereih")
 
-/datum/gear/donator/bm/ranger_poncho
-	name = "ranger poncho"
-	slot = ITEM_SLOT_NECK
-	path = /obj/item/clothing/neck/cloak/ranger_poncho
-	ckeywhitelist = list("pingvas", "dimofon", "devildeadspace")
-
-/datum/gear/donator/bm/primitive_catgirl_leather_poncho
-	name = "primitive catgirl leather poncho"
-	slot = ITEM_SLOT_NECK
-	path = /obj/item/clothing/neck/cloak/ranger_poncho/primitive_catgirl_leather
-	ckeywhitelist = list("pingvas", "dimofon", "devildeadspace")
-
 /datum/gear/donator/bm/cz_75_kit
 	name = "CZ-75 kit"
 	slot = ITEM_SLOT_BACKPACK
