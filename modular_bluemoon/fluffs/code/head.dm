@@ -520,7 +520,7 @@
 
 ///////////////////////////////////////////////
 
-obj/item/clothing/head/donator/bm/odinsh_killa
+/obj/item/clothing/head/donator/bm/odinsh_killa
 	name = "Mask-1SH 'Killa edition'"
 	desc = "Разукрашенный в чёрный, с белыми полосами шлем Маска-1Щ. Вдоль всего забрала и шлема идут 3 белых полосы. На вид он выглядит довольно прочным и странно знакомым."
 	icon_state = "odinsh_killa"
