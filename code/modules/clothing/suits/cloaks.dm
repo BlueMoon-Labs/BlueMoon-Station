@@ -247,7 +247,7 @@
 
 /obj/item/clothing/neck/cloak/ranger_poncho/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/polychromic, "#877251", 1)
+	AddElement(/datum/element/polychromic, list("#877251"), 1)
 
 /obj/item/clothing/neck/cloak/ranger_cape
 	name = "Polychromatic Ranger Cape"
@@ -257,4 +257,4 @@
 
 /obj/item/clothing/neck/cloak/ranger_cape/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/polychromic, "#543C2F", 1)
+	AddElement(/datum/element/polychromic, list("#543C2F"), 1)

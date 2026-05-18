@@ -993,9 +993,9 @@
 	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
 
 /obj/item/melee/baton/stunkatana/switch_status(new_status, silent)
-	. = ..()
 	if(turned_on != new_status)
 		switch_light()
+	return ..()
 
 /obj/item/melee/baton/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
 	. = ..()

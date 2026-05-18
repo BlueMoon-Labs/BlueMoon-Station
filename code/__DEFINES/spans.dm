@@ -132,6 +132,6 @@
 #define span_balloon_warning(str) ("<span style='color:#c51e1e'>" + str + "</span>")
 
 // Tooltips
-#define span_tooltip(str, tipstr, tipstyle, additional_classes, style) ("<span class='chat-tooltip[tipstyle == "" ? "" : " chat-tooltip--[tipstyle]"][additional_classes == "" ? "" : " [additional_classes]"]'[style == "" ? "" : "style='[style]'"]>[tipstr]<span class='chat-tooltip__content'>[str]</span></span>")
+#define span_tooltip(str, tipstr, tipstyle, additional_classes, style) ("<span class='chat-tooltip[tipstyle == "" ? "" : " chat-tooltip--[tipstyle]"][additional_classes == "" ? "" : " [additional_classes]"]'[style == "" ? "" : " style='[style]'"]>[tipstr]<span class='chat-tooltip__content'>[str]</span></span>")
 #define span_tooltip_warning(str, tipstr) span_tooltip(str, tipstr, "warning", "", "")
 #define span_tooltip_fast(str) span_tooltip_warning(str, "\[?\]")
