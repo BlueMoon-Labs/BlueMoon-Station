@@ -5,13 +5,10 @@
 	fromitem = list(/obj/item/kitchen/knife/butcher)
 
 /obj/item/kitchen/knife/butcher/shigu_knife
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Shigu Butcher Knife"
 	desc = "A ultra-sharp butcher knife. Maybe his seemingly glaring surface can scare!"
 	icon_state = "Shigu_Knife"
-
-/obj/item/kitchen/knife/butcher/shigu_knife/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/kitchen/knife/butcher)
 
 //////////////////////////////////////////////////
 
@@ -22,6 +19,7 @@
 	fromitem = list(/obj/item/kitchen/knife/combat)
 
 /obj/item/kitchen/knife/combat/kukri
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Кукри-мачете"
 	desc = "Традиционное кукри, с разительным отличием, что делает его похожим на мачете, благодаря своему изогнутому клинку и функционалу как режущего инструмента и оружия. Из-за той же формы лещвия с изгибом центр тяжести смещён к острию, что делает его более эффективным для рубки. На рукояти изображён логотип, напоминающий чёрную розу и круговая надпись Black Rose atelier"
 	item_state = "kukri"
@@ -40,10 +38,6 @@
 		)
 	)
 
-/obj/item/kitchen/knife/combat/kukri/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/kitchen/knife/combat)
-
 //////////////////////////////////////////////////
 
 /obj/item/modkit/impactbaton_kit
@@ -53,6 +47,7 @@
 	fromitem = list(/obj/item/melee/classic_baton)
 
 /obj/item/melee/classic_baton/impactbaton_jitte
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Impact Baton 1/62-H"
 	desc = "Impact Baton model 1, year 62th \"Hardlight\". Standard carbon fiber baton of Yernela catcrin law enforcements with hardlight technology sword-cutter."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -62,10 +57,6 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
 
-/obj/item/melee/classic_baton/impactbaton_jitte/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/classic_baton)
-
 /obj/item/modkit/catcrinbaton_kit
 	name = "3/51-H Telescopic Baton Kit"
 	desc = "A modkit for making a telescopic baton into an impact baton."
@@ -73,6 +64,7 @@
 	fromitem = list(/obj/item/melee/classic_baton/telescopic)
 
 /obj/item/melee/classic_baton/telescopic/catcrin
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Impact Baton 3/51-H"
 	desc = "Impact Baton model 3, year 51th \"Hardlight\". Easy conсealable telescopic baton of hight-position catcrins with paralitic hardlight elements on the tip and as handguard."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -84,10 +76,6 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
 
-/obj/item/melee/classic_baton/telescopic/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/classic_baton)
-
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/modkit/portalabomination_kit
@@ -97,6 +85,7 @@
 	fromitem = list(/obj/item/melee/classic_baton/telescopic)
 
 /obj/item/melee/classic_baton/telescopic/portal_abomination
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Otherworld Portal Weapon"
 	desc = "A portal tool, revealing some part of otherworld undescribable abomination. Use it carefully or it will use you. Who openned the gates to this thing?!"
 	icon_state = "portalabomination"
@@ -109,10 +98,6 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	hitsound = 'modular_bluemoon/fluffs/sound/weapon/Abomination.ogg'
 
-/obj/item/melee/classic_baton/telescopic/portal_abomination/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/classic_baton/telescopic)
-
 /obj/item/modkit/dark_sabre_kit
 	name = "Dark Omen Sword Kit"
 	desc = "A modkit for making a energy/plasma sword into an Dark Omen Sword."
@@ -120,6 +105,7 @@
 	fromitem = list(/obj/item/melee/transforming/plasmasword, /obj/item/melee/transforming/energy/sword/saber, /obj/item/melee/transforming/energy/sword/saber/red)
 
 /obj/item/melee/transforming/energy/sword/saber/dark_sabre
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Dark Omen Sword"
 	desc = "Необычная рукоять из тяжёлого неизвестного материала. На ней выгравирована мелким шрифтом странная фраза: \n<span class='danger'>«ТАМ, ГДЕ БЫЛ СТРАХ, ОСТАНУСЬ ТОЛЬКО Я»</span>\nПри включении, появляется леденящий душу чёрный клинок. От него исходит низкий, резонирующий гул. Последнее, что слышали многие жертвы этого орудия."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -134,10 +120,6 @@
 	possible_colors = null
 	unique_reskin = null
 	var/image/transform_overlay
-
-/obj/item/melee/transforming/energy/sword/saber/dark_sabre/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/transforming/energy/sword/saber)
 
 /obj/item/melee/transforming/energy/sword/saber/dark_sabre/transform_weapon(mob/living/user, supress_message_text)
 	. = ..()
@@ -174,6 +156,7 @@
 	update_icon_state()
 
 /obj/item/melee/baton/twilight_spike
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Twilight Spike"
 	desc = "Тонкий, стремительный клинок, напоминающий заострённый шип. Его лезвие будто накапливает энергию, а при ударе высвобождает краткий парализующий импульс. \
 	Лёгкий и отлично сбалансированный, он создан для тех, кто предпочитает скорость и точность грубой силе."
@@ -185,20 +168,13 @@
 	turn_on_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_on.ogg'
 	hit_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_hit.ogg'
 
-/obj/item/melee/baton/twilight_spike/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/baton)
-
 /obj/item/melee/baton/twilight_spike/update_icon_state()
 	. = ..()
 	item_state = "[initial(item_state)][turned_on ? "_active" : ""]"
 
 /obj/item/melee/transforming/energy/sword/energy_sabre/fluff
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Cybersun Energy Sabre"
-
-/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/transforming/energy/sword/energy_sabre)
 
 /obj/item/melee/transforming/energy/sword/energy_sabre/fluff/Initialize(mapload)
 	. = ..()

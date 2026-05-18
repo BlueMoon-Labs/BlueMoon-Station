@@ -328,6 +328,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Длинноствол.
 
 /obj/item/gun/energy/e_gun/hos/karabiner_m13
+	DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
 	name = "\improper Karabiner-M13"
 	desc = "The development of the Catcrin army. It is used extremely rarely and only by the highest ranks. It has several different shooting modes."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/aa_multiphasecarabinb.dmi'
@@ -339,10 +340,6 @@
 	pickup_sound = "modular_bluemoon/flaffs/sound/weapon/Karabiner-M13/GrabCarabine.ogg"
 	flight_x_offset = 25
 	flight_y_offset = 5
-
-/obj/item/gun/energy/e_gun/hos/karabiner_m13/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP_HIGHRISK(/obj/item/gun/energy/e_gun/hos)
 
 /obj/item/ammo_casing/energy/disabler/karabiner_m13
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/DisablerOni.ogg'
@@ -371,6 +368,7 @@
 	fromitem = list(/obj/item/gun/ballistic/shotgun/automatic/combat)
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/frontline
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "CS-Frontline-2534"
 	desc = "A standard assault automatic shotgun with a 7-shot magazine used by the Catcrin Empire army"
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/csfrontline.dmi'
@@ -382,10 +380,6 @@
 	stock = FALSE
 	extend_sound = 'sound/weapons/batonextend.ogg'
 	unique_reskin = null
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/frontline/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/shotgun/automatic/combat)
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/frontline/update_icon_state()
 	icon_state = "csfrontline[stock ? "" : "c"]-[get_ammo(FALSE)]"
@@ -400,6 +394,7 @@
 	fromitem = list(/obj/item/gun/ballistic/shotgun/riot)
 
 /obj/item/gun/ballistic/shotgun/riot/yernela
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "PS-Yernela-2525"
 	desc = "A standard assault pump-action shotgun with a 7-shot magazine used by the Catcrin Empire army, was developed on planet Yernela."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/yernela.dmi'
@@ -410,10 +405,6 @@
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/yernelashot.ogg'
 	unique_reskin = null
 
-/obj/item/gun/ballistic/shotgun/riot/yernela/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/shotgun/riot)
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/modkit/gewehr550
@@ -423,6 +414,7 @@
 	fromitem = list(/obj/item/gun/ballistic/automatic/wt550)
 
 /obj/item/gun/ballistic/automatic/wt550/gewehr550
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper Gewehr-550"
 	desc = "A regular shortened assault rifle made in the Catcrin Empire for fighting in narrow spaces in the likeness of stations and shuttles."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/aa_gewehr550.dmi'
@@ -437,10 +429,6 @@
 	knife_x_offset = 30
 	knife_y_offset = 10
 
-/obj/item/gun/ballistic/automatic/wt550/gewehr550/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/wt550)
-
 /obj/item/gun/ballistic/automatic/wt550/gewehr550/update_icon_state()
 	icon_state = "gewehr550[magazine ? "-[CEILING(get_ammo(0)/7, 1)*4]" : ""][chambered ? "" : "-e"]"
 
@@ -453,6 +441,7 @@
 	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
 
 /obj/item/gun/energy/e_gun/advtaser/hwal2572
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper H-Wal-2572"
 	desc = "A hybrid taser made by Catcrin's waffenschmied that combines electric and energy shots. There is a small circle on the handle showing the charging level."
 	icon_state = "hwal"
@@ -465,10 +454,6 @@
 	shaded_charge = 1
 	shot_type_overlay = FALSE
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler/hwal2572, /obj/item/ammo_casing/energy/electrode/security/hwal2572 = FALSE)
-
-/obj/item/gun/energy/e_gun/advtaser/hwal2572/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/energy/e_gun/advtaser)
 
 /obj/item/ammo_casing/energy/disabler/hwal2572
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/H-Wal-2572/DisablerOni.ogg'
@@ -485,6 +470,7 @@
 	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
 
 /obj/item/melee/baton/stunspear
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "One-handed stun spear"
 	desc = "A standard non-lethal spear used by Catcrin's law enforcement agencies."
 	item_state = "stunspear"
@@ -493,10 +479,6 @@
 	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
 	turn_on_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/stunspear.ogg'
-
-/obj/item/melee/baton/stunspear/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/melee/baton)
 
 /obj/item/melee/baton/stunspear/update_icon_state()
 	. = ..()
@@ -514,6 +496,7 @@
 	fromitem = list(/obj/item/shield/riot/tele)
 
 /obj/item/shield/riot/tele/ffshield
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Force-field riot shield"
 	desc = "A small special shield developed in the Catcrin Empire that uses a force field charge to block physical influences."
 	icon_state = "ffshield0"
@@ -522,10 +505,6 @@
 	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
 	extend_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/ffshield.ogg'
-
-/obj/item/shield/riot/tele/ffshield/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/shield/riot/tele)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -536,16 +515,13 @@
 	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal2572
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper B-Wal-2572"
 	desc = "A one-handed pistol used in the regular Catcrin Army."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/bwal.dmi'
 	icon_state = "bwal"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/bwalshot.ogg'
 	unique_reskin = null
-
-/obj/item/gun/ballistic/automatic/pistol/enforcer/bwal2572/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -556,6 +532,7 @@
 	fromitem = list(/obj/item/gun/ballistic/automatic/magrifle/nopin) //Иначе не выйдет к сожалению.
 
 /obj/item/gun/ballistic/automatic/magrifle/magrrinei
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "MAG-R-Rinei"
 	desc = "An assault rifle developed on a planet belonging to the Catcrins : - Lar'rinei, the principle of operation is similar to the Gauss system, ammunition and battery charging are needed."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/magweapon.dmi'
@@ -564,10 +541,6 @@
 	icon_state = "rinei"
 	item_state = "rinei"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/magshot.ogg'
-
-/obj/item/gun/ballistic/automatic/magrifle/magrrinei/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/magrifle)
 
 /obj/item/gun/ballistic/automatic/magrifle/magrrinei/update_icon_state()
 	icon_state = "rinei[magazine ? "-[CEILING(get_ammo(0)/7, 1)*4]" : ""][chambered ? "" : "-e"]"
@@ -581,6 +554,7 @@
 	fromitem = list(/obj/item/gun/ballistic/automatic/magrifle/pistol/nopin) //Иначе не выйдет к сожалению.
 
 /obj/item/gun/ballistic/automatic/magrifle/pistol/magplar
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "MAG-P-Lar"
 	desc = "A one-handed submachine gun with a slow-motion firing mode made specifically on the basis of Gauss rifle. Due to the reduced appearance, the rate of fire and the magazine suffered, but it is popular among Catcrins due to its compactness and ease of use in the caves of the planet Lar'rinei."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/magweapon.dmi'
@@ -589,10 +563,6 @@
 	icon_state = "lar"
 	item_state = "lar"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/magshot.ogg'
-
-/obj/item/gun/ballistic/automatic/magrifle/pistol/magplar/get_examine_name(mob/user)
-	. = ..()
-	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/magrifle/pistol)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
