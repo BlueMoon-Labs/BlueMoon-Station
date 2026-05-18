@@ -791,52 +791,17 @@
 /obj/item/modkit/rshield_kit
 	name = "Telescopic riot shield Kit"
 	desc = "A modkit for making an telescopic riot shield into a Acrador telescopic riot shield."
-	product = /obj/item/shield/riot/rshield
+	product = /obj/item/shield/riot/tele/rshield
 	fromitem = list(/obj/item/shield/riot/tele)
 
-/obj/item/shield/riot/rshield
+/obj/item/shield/riot/tele/rshield
 	name = "Telescopic riot shield"
 	desc = "A shield used to quell civil unrest in the cities of Irelia. It is easy to use and can be folded into a more compact form for carrying."
 	icon_state = "rshield0"
+	base_icon_state = "rshield"
 	icon = 'modular_bluemoon/fluffs/icons/obj/acrador_guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	slot_flags = null
-	force = 3
-	throwforce = 3
-	throw_speed = 3
-	throw_range = 4
-	w_class = WEIGHT_CLASS_NORMAL
-	var/active = FALSE
-
-/obj/item/shield/riot/rshield/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
-	if(!active)
-		return BLOCK_NONE
-	return ..()
-
-/obj/item/shield/riot/rshield/can_active_block()
-	return ..() && active
-
-/obj/item/shield/riot/rshield/attack_self(mob/living/user)
-	active = !active
-	icon_state = "rshield[active]"
-	playsound(src.loc, 'sound/weapons/batonextend.ogg', 50, TRUE)
-
-	if(active)
-		force = 8
-		throwforce = 5
-		throw_speed = 2
-		w_class = WEIGHT_CLASS_BULKY
-		slot_flags = ITEM_SLOT_BACK
-		to_chat(user, "<span class='notice'>You extend \the [src].</span>")
-	else
-		force = 3
-		throwforce = 3
-		throw_speed = 3
-		w_class = WEIGHT_CLASS_NORMAL
-		slot_flags = null
-		to_chat(user, "<span class='notice'>[src] can now be concealed.</span>")
-	add_fingerprint(user)
 
 /obj/item/modkit/anstrum_kit
 	name = "SP 488 Anstrum Kit"

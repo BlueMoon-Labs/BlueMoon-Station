@@ -523,52 +523,18 @@
 /obj/item/modkit/ffshield
 	name = "Force-field riot shield Kit"
 	desc = "A modkit for making an telescopic riot shield into a Catcrin force-field riot shield."
-	product = /obj/item/shield/riot/ffshield
+	product = /obj/item/shield/riot/tele/ffshield
 	fromitem = list(/obj/item/shield/riot/tele)
 
-/obj/item/shield/riot/ffshield
+/obj/item/shield/riot/tele/ffshield
 	name = "Force-field riot shield"
 	desc = "A small special shield developed in the Catcrin Empire that uses a force field charge to block physical influences."
 	icon_state = "ffshield0"
+	base_icon_state = "ffshield"
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/ffshield.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
-	slot_flags = null
-	force = 3
-	throwforce = 3
-	throw_speed = 3
-	throw_range = 4
-	w_class = WEIGHT_CLASS_NORMAL
-	var/active = FALSE
-
-/obj/item/shield/riot/ffshield/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
-	if(!active)
-		return BLOCK_NONE
-	return ..()
-
-/obj/item/shield/riot/ffshield/can_active_block()
-	return ..() && active
-
-/obj/item/shield/riot/ffshield/attack_self(mob/living/user)
-	active = !active
-	icon_state = "ffshield[active]"
-	playsound(src.loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/ffshield.ogg', 50, TRUE)
-
-	if(active)
-		force = 8
-		throwforce = 5
-		throw_speed = 2
-		w_class = WEIGHT_CLASS_BULKY
-		slot_flags = ITEM_SLOT_BACK
-		to_chat(user, "<span class='notice'>You extend \the [src].</span>")
-	else
-		force = 3
-		throwforce = 3
-		throw_speed = 3
-		w_class = WEIGHT_CLASS_NORMAL
-		slot_flags = null
-		to_chat(user, "<span class='notice'>[src] can now be concealed.</span>")
-	add_fingerprint(user)
+	extend_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/ffshield.ogg'
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
