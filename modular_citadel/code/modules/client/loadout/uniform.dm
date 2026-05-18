@@ -787,3 +787,7 @@
 /datum/gear/uniform/maid_revealing
 	name = "Revealing Tactical Maid Outfit"
 	path = /obj/item/clothing/under/syndicate/maid_revealing
+
+/datum/gear/uniform/occult
+	name = "Occult collector's outfit"
+	path = /obj/item/clothing/under/occult

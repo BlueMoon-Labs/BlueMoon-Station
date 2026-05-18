@@ -2353,12 +2353,6 @@
 	path = /obj/item/clothing/underwear/socks/thigh/oldwraps
 	ckeywhitelist = list("lindaastereih")
 
-/datum/gear/donator/bm/occult_outfit
-	name = "occult collector's outfit"
-	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/under/donator/bm/occult
-	ckeywhitelist = list("pingvas", "dimofon", "devildeadspace")
-
 /datum/gear/donator/bm/ranger_poncho
 	name = "ranger poncho"
 	slot = ITEM_SLOT_NECK

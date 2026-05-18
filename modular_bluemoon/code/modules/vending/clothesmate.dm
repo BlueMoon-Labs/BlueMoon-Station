@@ -324,6 +324,7 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 				/obj/item/clothing/under/sweater/green = 3,
 				/obj/item/clothing/under/sweater/purple = 3,
 				/obj/item/clothing/under/sweater/red = 3,
+				/datum/gear/uniform/occult = 5,
 			),
 		),
 
