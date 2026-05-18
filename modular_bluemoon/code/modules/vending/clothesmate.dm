@@ -393,6 +393,7 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 				/obj/item/clothing/suit/toggle/tunnelfox = 3,
 				/obj/item/clothing/suit/yakuza = 7,
 				/obj/item/clothing/suit/yuri = 5,
+				/obj/item/clothing/suit/hooded/occult = 5,
 			),
 		),
 

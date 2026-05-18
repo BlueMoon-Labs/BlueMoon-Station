@@ -770,16 +770,3 @@
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 	icon_state = "blood_shinel"
 	item_state = "blood_shinel"
-
-/obj/item/clothing/head/hooded/bm/donator/occult
-	name = "Occult hood"
-	desc = "Certainly makes you look more ominous."
-	body_parts_covered = CHEST|GROIN|ARMS
-	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-	icon_state = "occulthood"
-
-/obj/item/clothing/suit/hooded/bm/donator/occult
-	name = "Occult collector's coat"
-	desc = "A big, heavy coat lined with leather and ivory cloth, adorned with a hood. It looks dusty."
-	icon_state = "occultcoat"
-	hoodtype = /obj/item/clothing/head/hooded/bm/donator/occult
