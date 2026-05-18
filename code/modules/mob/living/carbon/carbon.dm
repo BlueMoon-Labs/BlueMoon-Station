@@ -43,10 +43,12 @@
 		return FALSE
 	if(gloves)
 		return FALSE
-	if(wear_suit && (wear_suit.body_parts_covered & HANDS))
-		return FALSE
-	if(w_uniform && (w_uniform.body_parts_covered & HANDS))
-		return FALSE
+	if(ishuman(src))
+		var/mob/living/carbon/human/H = src
+		if(H.wear_suit && (H.wear_suit.body_parts_covered & HANDS))
+			return FALSE
+		if(H.w_uniform && (H.w_uniform.body_parts_covered & HANDS))
+			return FALSE
 	return TRUE
 
 /mob/living/carbon/relaymove(mob/user, direction)
