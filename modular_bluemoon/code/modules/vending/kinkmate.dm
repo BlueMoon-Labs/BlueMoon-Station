@@ -30,6 +30,7 @@
 				/obj/item/clothing/under/bunnysuit/white = 3,
 				/obj/item/clothing/under/domina = 5,
 				/obj/item/clothing/under/performer = 3,
+				/obj/item/clothing/under/performer/polychromic = 3,
 				/obj/item/clothing/under/misc/gear_harness = 10,
 				/obj/item/clothing/shoes/invisiboots = 10, // Added here to go with the Gear Harness
 				/obj/item/clothing/under/shorts/polychromic/pantsu = 3,
