@@ -51,6 +51,10 @@
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/steyr_shoot.ogg'
 	pin = /obj/item/firing_pin/alert_level/blue
 
+/obj/item/gun/ballistic/automatic/pistol/enforcer/steyr/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
+
 /obj/item/modkit/auto9_kit
 	name = "Auto 9 Kit"
 	desc = "A modkit for making a WT-550 Gun into a Auto 9 Gun."
@@ -68,6 +72,10 @@
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/auto9_shoot.ogg'
 	can_suppress = FALSE
 	can_bayonet = FALSE
+
+/obj/item/gun/ballistic/automatic/wt550/auto9/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/wt550)
 
 /obj/item/gun/ballistic/automatic/wt550/auto9/update_icon_state()
 	if(magazine)
@@ -93,6 +101,10 @@
 	can_suppress = FALSE
 	can_bayonet = TRUE
 
+/obj/item/gun/ballistic/automatic/wt550/at41/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/wt550)
+
 /obj/item/gun/ballistic/automatic/wt550/at41/update_icon_state()
 	icon_state = "at41[magazine ? "-[CEILING(get_ammo(0)/7, 1)*4]" : ""][chambered ? "" : "-e"]"
 
@@ -115,6 +127,10 @@
 	can_bayonet = TRUE
 	knife_x_offset = 25
 	knife_y_offset = 7
+
+/obj/item/gun/ballistic/automatic/wt550/wtadler/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/wt550)
 
 /obj/item/gun/ballistic/automatic/wt550/wtadler/update_icon_state()
 	icon_state = "wtadler[magazine ? "-[CEILING(get_ammo(0)/7, 1)*4]" : ""][chambered ? "" : "-e"]"
@@ -140,6 +156,10 @@
 	knife_x_offset = 42
 	knife_y_offset = 12
 
+/obj/item/gun/ballistic/automatic/wt550/a46/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/wt550)
+
 /obj/item/gun/ballistic/automatic/wt550/a46/update_icon_state()
 	icon_state = "a46[magazine ? "-[CEILING(get_ammo(0)/7, 1)*4]" : ""][chambered ? "" : "-e"]"
 
@@ -164,6 +184,10 @@
 	knife_x_offset = 40
 	knife_y_offset = 17
 
+/obj/item/gun/ballistic/automatic/wt550/ots18/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/wt550)
+
 /obj/item/gun/ballistic/automatic/wt550/ots18/update_icon_state()
 	icon_state = "groza[magazine ? "-[CEILING(get_ammo(0)/7, 1)*4]" : ""][chambered ? "" : "-e"]"
 
@@ -186,6 +210,10 @@
 	can_bayonet = TRUE
 	knife_x_offset = 40
 	knife_y_offset = 10
+
+/obj/item/gun/ballistic/automatic/wt550/rs9/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/wt550)
 
 /obj/item/gun/ballistic/automatic/wt550/rs9/update_icon_state()
 	icon_state = "rs9[magazine ? "-[CEILING(get_ammo(0)/7, 1)*4]" : ""][chambered ? "" : "-e"]"
@@ -212,10 +240,10 @@
 /obj/item/modkit/old_kit
 	name = "H&K Luftkuss Kit"
 	desc = "A modkit for making a hybrid taser into a H&K Luftkuss."
-	product = /obj/item/gun/energy/e_gun/advtaser_old
+	product = /obj/item/gun/energy/e_gun/advtaser/luftkuss
 	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
 
-/obj/item/gun/energy/e_gun/advtaser_old
+/obj/item/gun/energy/e_gun/advtaser/luftkuss
 	name = "H&K Luftkuss"
 	desc = "An upgraded hybrid taser gun with several stripes, manufactured by the SolFed H&K arms company."
 	icon_state = "old"
@@ -225,18 +253,10 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler/old, /obj/item/ammo_casing/energy/electrode/old = FALSE)
 	ammo_x_offset = 0
-	var/last_altfire = 0
-	var/altfire_delay = CLICK_CD_RANGE
 
-/obj/item/gun/energy/e_gun/advtaser_old/altafterattack(atom/target, mob/user, proximity_flag, params)
-	. = TRUE
-	if(last_altfire + altfire_delay > world.time)
-		return
-	var/current_index = current_firemode_index
-	set_firemode_to_type(/obj/item/ammo_casing/energy/electrode/old)
-	process_afterattack(target, user, proximity_flag, params)
-	set_firemode_index(current_index)
-	last_altfire = world.time
+/obj/item/gun/energy/e_gun/advtaser/luftkuss/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/energy/e_gun/advtaser)
 
 /obj/item/ammo_casing/energy/disabler/old
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/disabler.ogg'
@@ -266,6 +286,10 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	ammo_x_offset = 0
 
+/obj/item/gun/energy/e_gun/advtaser/dominator/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/energy/e_gun/advtaser)
+
 /////////////////
 
 /obj/item/modkit/nue_kit
@@ -281,6 +305,10 @@
 	icon_state = "nue"
 	can_suppress = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/nue_shoot.ogg'
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/nue/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -304,6 +332,10 @@
 	can_suppress = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/nue_shoot.ogg'
 	mag_type = /obj/item/ammo_box/magazine/e45/malorian
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/malorian/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
 
 /obj/item/ammo_box/magazine/e45/malorian
 	name = "Araki Arms magazine"
@@ -333,6 +365,10 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 
+/obj/item/gun/ballistic/revolver/r45l/rt46/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/revolver/r45l)
+
 /obj/item/modkit/rt46
 	name = "RT-46 The Tempest Kit"
 	desc = "A modkit for making a Revolver into a RT-46."
@@ -355,6 +391,10 @@
 	burst_size = 1	//Shh.
 	fire_delay = 15
 	automatic_burst_overlay = FALSE
+
+/obj/item/gun/ballistic/automatic/AM4B_pchelik/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic)
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -582,6 +622,10 @@
 	can_suppress = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/pf940_shoot.ogg'
 
+/obj/item/gun/ballistic/automatic/pistol/enforcer/pf940/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
+
 /obj/item/gun/ballistic/automatic/pistol/g22/pf940
 	name = "\improper PF940"
 	desc = "A heavily modified Glock 21 pistol with some ergonomic parts and a caliber converted to .45, making it easy to find ammo at Edem stations. Your team is down, you're the only fella left. You- You'll just have to figure it out."
@@ -589,6 +633,10 @@
 	icon_state = "pf940"
 	can_suppress = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/pf940_shoot.ogg'
+
+/obj/item/gun/ballistic/automatic/pistol/g22/pf940/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/g22)
 
 /obj/item/modkit/ks22_kit
 	name = "KS-22 Shotgun Kit"
@@ -605,6 +653,10 @@
 	//chosen_icon = 'icons/mob/clothing/back.dmi'
 	icon_state = "KS-23M"
 	fire_sound = 'modular_bluemoon/fluffs/sound/shoot.ogg'
+
+/obj/item/gun/ballistic/shotgun/riot/ks_22/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/shotgun/riot)
 
 /obj/item/gun/ballistic/shotgun/riot/ks_22/update_icon_state()
 	. = ..()
@@ -625,6 +677,10 @@
 	icon_state = "mossberg_n"
 	item_state = "mossberg_n"
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/pf940_shoot.ogg'
+
+/obj/item/gun/ballistic/shotgun/riot/mossberg/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/shotgun/riot)
 
 /obj/item/gun/ballistic/shotgun/riot/mossberg/update_icon_state()
 	var/state = "mossberg_l"
@@ -651,6 +707,10 @@
 	mag_type = /obj/item/ammo_box/magazine/ak12/r
 	//chosen_icon = 'icons/mob/clothing/back.dmi'
 	icon_state = "G36"
+
+/obj/item/gun/ballistic/automatic/ak12/g36/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/ak12)
 
 /obj/item/gun/ballistic/automatic/ak12/g36/update_icon_state()
 	if(magazine)
@@ -699,6 +759,10 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/rs14shot.ogg'
+
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/rs14/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/shotgun/automatic/rsh12)
 
 /obj/item/modkit/rshield_kit
 	name = "Telescopic riot shield Kit"
@@ -764,6 +828,10 @@
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/anstrumshot.ogg'
 	pin = /obj/item/firing_pin/alert_level/blue
 
+/obj/item/gun/ballistic/automatic/pistol/enforcer/anstrum/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3
@@ -777,6 +845,10 @@
 	charge_sections = 3
 	flight_x_offset = 21
 	flight_y_offset = 14
+
+/obj/item/gun/energy/e_gun/hos/dreadmk3/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP_HIGHRISK(/obj/item/gun/energy/e_gun/hos)
 
 /obj/item/ammo_casing/energy/disabler/dreadmk3
 
@@ -804,6 +876,10 @@
 	ammo_x_offset = 1
 	charge_sections = 4
 
+/obj/item/gun/energy/e_gun/institute/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP_HIGHRISK(/obj/item/gun/energy/e_gun)
+
 /obj/item/ammo_casing/energy/disabler/institute
 	fire_sound = 'sound/weapons/laserinstitute.ogg'
 
@@ -826,6 +902,10 @@
 	ammo_type = list(/obj/item/ammo_casing/energy/laser/old)
 	icon_state = "lasernew_alt"
 	item_state = "laser_old-wielded"
+
+/obj/item/gun/energy/laser/carbine/old/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/energy/laser/carbine)
 
 /obj/item/ammo_casing/energy/laser/old
 	fire_sound = 'sound/weapons/riflelaserold.ogg'
@@ -895,6 +975,10 @@
 		)
 	)
 
+/obj/item/gun/ballistic/automatic/pistol/enforcer/p320/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
+
 /obj/item/modkit/M9tempest_kit
 	name = "M-9 Tempest Kit"
 	desc = "A modkit for making a hybrid taser into a M-9 Tempest."
@@ -909,6 +993,10 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	ammo_x_offset = 0
+
+/obj/item/gun/energy/e_gun/advtaser/M9tempest/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/energy/e_gun/advtaser)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -927,6 +1015,10 @@
 	icon_state = "dedication"
 	item_state = "dedication"
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/adlershot.ogg'
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/dedication/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -961,6 +1053,10 @@
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler, /obj/item/ammo_casing/energy/laser/lightliz)
 	ammo_x_offset = 0
 
+/obj/item/gun/energy/e_gun/hos/Anabel/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP_HIGHRISK(/obj/item/gun/energy/e_gun/hos)
+
 /obj/item/ammo_casing/energy/laser/lightliz
 	projectile_type = /obj/item/projectile/beam/laser/heavylaser
 	e_cost = 300
@@ -985,6 +1081,10 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/rshfuture_shot.ogg'
 
+/obj/item/gun/ballistic/revolver/detective/rsh_future/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/revolver/detective)
+
 /obj/item/modkit/rsh_future
 	name = "Special .38 Mars Kit"
 	desc = "A modkit for making a .38 Mars Special into a RSH-Future."
@@ -1005,6 +1105,10 @@
 	item_state = "stg56"
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/stg56_shoot.ogg'
 	can_bayonet = FALSE
+
+/obj/item/gun/ballistic/automatic/wt550/stg56/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/wt550)
 
 /obj/item/gun/ballistic/automatic/wt550/stg56/update_icon_state()
 	icon_state = "stg56[magazine ? "" : "-e"]"
@@ -1034,6 +1138,10 @@
 	item_state = "Nebular-9"
 	gunlight_state = "nebular-light"
 
+/obj/item/gun/ballistic/automatic/pistol/enforcer/nebular/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
+
 /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular/get_worn_belt_overlay(icon_file)
 	return null
 
@@ -1052,6 +1160,10 @@
 	unique_reskin = null
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/p226_syndicate/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/p226_syndicate/get_worn_belt_overlay(icon_file)
 	return null
@@ -1145,6 +1257,10 @@
 	item_state = "Nebular-9"
 	can_flashlight = FALSE
 
+/obj/item/gun/energy/e_gun/advtaser/nebular_t/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/energy/e_gun/advtaser)
+
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/get_worn_belt_overlay(icon_file)
 	return null
 
@@ -1194,6 +1310,10 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "supernova-notcharged"
 
+/obj/item/gun/ballistic/shotgun/automatic/combat/supernova/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/shotgun/automatic/combat)
+
 /obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_icon_state()
 	var/ammo = magazine ? magazine.ammo_count() : 0
 	var/chamber = (chambered && chambered.BB) ? "charged" : "notcharged"
@@ -1232,6 +1352,10 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "casul"
 
+/obj/item/gun/ballistic/automatic/pistol/enforcer/casull/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
+
 /obj/item/gun/ballistic/automatic/pistol/enforcer/casull/update_icon_state()
 	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""]"
 
@@ -1251,6 +1375,10 @@
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/bwalshot.ogg'
 	unique_reskin = null
 	obj_flags = NONE
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/bwal_special/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
 
 /obj/item/modkit/captain_rifle_kit
 	name = "Antique Laser Rifle kit"
@@ -1274,6 +1402,30 @@
 /obj/item/gun/energy/laser/captain/rifle/get_examine_name(mob/user)
 	. = ..()
 	. += DONATE_ITEM_TOOLTIP_HIGHRISK(/obj/item/gun/energy/laser/captain)
+
+/obj/item/gun/energy/laser/captain/rifle/amogus
+	name = "Fancy Laser Rifle"
+	desc = "Expensive-looking, custom-made laser. To the touch: expensive polymers, combined with wood, coated in lacquer on the grip."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "captain_rifle_s"
+
+/obj/item/gun/energy/laser/captain/rifle/amogus/update_overlays()
+	. = ..()
+	if(!automatic_charge_overlays)
+		return
+	var/ratio = get_charge_ratio()
+	var/state = "captain_rifle"
+	if(ratio == 0)
+		state += "_empty"
+	else
+		state += "_charge[ratio]"
+	. += mutable_appearance(icon, state)
+
+/obj/item/modkit/fancy_rifle_kit
+	name = "Fancy Laser Rifle kit"
+	desc = "A modkit for making an antique laser gun into a fancy laser rifle."
+	product = /obj/item/gun/energy/laser/captain/rifle/amogus
+	fromitem = list(/obj/item/gun/energy/laser/captain)
 
 ///////////////////////////////////////////////
 
@@ -1451,30 +1603,6 @@
 	desc = "A modkit for making an G-22 M.1 into a Gelriter-22 M-1."
 	product = /obj/item/gun/ballistic/automatic/pistol/g22/anomalist
 	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/g22)
-
-/obj/item/gun/energy/laser/captain/rifle/amogus
-	name = "Fancy Laser Rifle"
-	desc = "Expensive-looking, custom-made laser. To the touch: expensive polymers, combined with wood, coated in lacquer on the grip."
-	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
-	icon_state = "captain_rifle_s"
-
-/obj/item/gun/energy/laser/captain/rifle/amogus/update_overlays()
-	. = ..()
-	if(!automatic_charge_overlays)
-		return
-	var/ratio = get_charge_ratio()
-	var/state = "captain_rifle"
-	if(ratio == 0)
-		state += "_empty"
-	else
-		state += "_charge[ratio]"
-	. += mutable_appearance(icon, state)
-
-/obj/item/modkit/fancy_rifle_kit
-	name = "Fancy Laser Rifle kit"
-	desc = "A modkit for making an antique laser gun into a fancy laser rifle."
-	product = /obj/item/gun/energy/laser/captain/rifle/amogus
-	fromitem = list(/obj/item/gun/energy/laser/captain)
 
 /obj/item/modkit/cz_75
 	name = "CZ-75 kit"

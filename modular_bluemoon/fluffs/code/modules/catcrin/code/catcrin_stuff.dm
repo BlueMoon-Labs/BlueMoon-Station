@@ -340,6 +340,10 @@
 	flight_x_offset = 25
 	flight_y_offset = 5
 
+/obj/item/gun/energy/e_gun/hos/karabiner_m13/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP_HIGHRISK(/obj/item/gun/energy/e_gun/hos)
+
 /obj/item/ammo_casing/energy/disabler/karabiner_m13
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/DisablerOni.ogg'
 
@@ -374,33 +378,16 @@
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
 	icon_state = "csfrontline"
 	item_state = "csfrontline"
-	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/frontlineshot.ogg'
-	unique_reskin = null
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/frontline/update_overlays()
-	. = ..()
-	icon_state = "csfrontline[stock ? "" : "c"]"
-	item_state = "csfrontline[stock ? "" : "c"]"
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/frontline
-	name = "CS-Frontline-2534"
-	desc = "A standard assault automatic shotgun with a 7-shot magazine used by the Catcrin Empire army"
-	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/csfrontline.dmi'
-	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
-	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
-	icon_state = "csfrontline"
-	item_state = "csfrontline"
 	fire_sound = "modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/frontlineshot.ogg"
 	stock = FALSE
 	extend_sound = 'sound/weapons/batonextend.ogg'
 	unique_reskin = null
 
-/obj/item/gun/ballistic/shotgun/automatic/combat/frontline/update_icon_state()
-	icon_state = "csfrontline[stock ? "" : "c"]-[get_ammo(FALSE)]"
-	item_state = "csfrontline[stock ? "" : "c"]-[get_ammo(FALSE)]"
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/frontline/update_overlays()
+/obj/item/gun/ballistic/shotgun/automatic/combat/frontline/get_examine_name(mob/user)
 	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/shotgun/automatic/combat)
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/frontline/update_icon_state()
 	icon_state = "csfrontline[stock ? "" : "c"]-[get_ammo(FALSE)]"
 	item_state = "csfrontline[stock ? "" : "c"]-[get_ammo(FALSE)]"
 
@@ -422,6 +409,10 @@
 	item_state = "yernela"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/yernelashot.ogg'
 	unique_reskin = null
+
+/obj/item/gun/ballistic/shotgun/riot/yernela/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/shotgun/riot)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -445,6 +436,10 @@
 	can_bayonet = TRUE
 	knife_x_offset = 30
 	knife_y_offset = 10
+
+/obj/item/gun/ballistic/automatic/wt550/gewehr550/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/wt550)
 
 /obj/item/gun/ballistic/automatic/wt550/gewehr550/update_icon_state()
 	icon_state = "gewehr550[magazine ? "-[CEILING(get_ammo(0)/7, 1)*4]" : ""][chambered ? "" : "-e"]"
@@ -470,6 +465,10 @@
 	shaded_charge = 1
 	shot_type_overlay = FALSE
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler/hwal2572, /obj/item/ammo_casing/energy/electrode/security/hwal2572 = FALSE)
+
+/obj/item/gun/energy/e_gun/advtaser/hwal2572/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/energy/e_gun/advtaser)
 
 /obj/item/ammo_casing/energy/disabler/hwal2572
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/H-Wal-2572/DisablerOni.ogg'
@@ -587,6 +586,10 @@
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/bwalshot.ogg'
 	unique_reskin = null
 
+/obj/item/gun/ballistic/automatic/pistol/enforcer/bwal2572/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/pistol/enforcer)
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/modkit/magrrinei_kit
@@ -604,6 +607,10 @@
 	icon_state = "rinei"
 	item_state = "rinei"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/magshot.ogg'
+
+/obj/item/gun/ballistic/automatic/magrifle/magrrinei/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/magrifle)
 
 /obj/item/gun/ballistic/automatic/magrifle/magrrinei/update_icon_state()
 	icon_state = "rinei[magazine ? "-[CEILING(get_ammo(0)/7, 1)*4]" : ""][chambered ? "" : "-e"]"
@@ -625,6 +632,10 @@
 	icon_state = "lar"
 	item_state = "lar"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/magshot.ogg'
+
+/obj/item/gun/ballistic/automatic/magrifle/pistol/magplar/get_examine_name(mob/user)
+	. = ..()
+	. += DONATE_ITEM_TOOLTIP(/obj/item/gun/ballistic/automatic/magrifle/pistol)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
