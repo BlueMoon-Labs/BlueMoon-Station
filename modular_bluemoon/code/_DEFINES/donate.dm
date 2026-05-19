@@ -7,8 +7,8 @@
 #define _DONATE_ITEM_TOOLTIP_PARENT(highrisk) \
 	get_examine_name(mob/user) { \
 		. = ..(); \
-		var/obj/path = parent_type; \
-		. += _DONATE_ITEM_TOOLTIP(initial(path.name), highrisk); \
+		var/obj/tooltip_path = parent_type; \
+		. += _DONATE_ITEM_TOOLTIP(initial(tooltip_path.name), highrisk); \
 	} ;
 
 #define DONATE_ITEM_TOOLTIP_PARENT _DONATE_ITEM_TOOLTIP_PARENT(FALSE)
