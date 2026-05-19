@@ -243,7 +243,7 @@
 	name = "M240 Flamethrower"
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "m240"
-	item_state = "m240_0"
+	item_state = "m240"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	create_with_tank = TRUE
@@ -991,9 +991,10 @@
 	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
 
 /obj/item/melee/baton/stunkatana/switch_status(new_status, silent)
-	if(turned_on != new_status)
+	var/old_status = turned_on
+	. = ..()
+	if(turned_on != old_status)
 		switch_light()
-	return ..()
 
 /obj/item/melee/baton/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
 	. = ..()
