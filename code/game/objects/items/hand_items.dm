@@ -250,6 +250,9 @@
 	. = ..()
 	AddComponent(/datum/component/two_handed, require_twohands=TRUE)
 
+/obj/item/hand_item/kisser/can_give()
+	return FALSE
+
 /obj/item/hand_item/kisser/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
 	// . |= AFTERATTACK_PROCESSED_ITEM
@@ -279,6 +282,48 @@
 	desc = "If looks could kill, they'd be this."
 	color = COLOR_BLACK
 	kiss_type = /obj/item/projectile/kiss/death
+
+/obj/item/hand_item/kisser/crocin
+	name = "passionate kiss"
+	desc = "Поцелуй, пылающий желанием."
+	color = "#FF69B4"
+	kiss_type = /obj/item/projectile/kiss/crocin
+
+/obj/item/hand_item/kisser/space_drugs
+	name = "trippy kiss"
+	desc = "Поцелуй, который унесет тебя к звездам."
+	color = "#00BFFF"
+	kiss_type = /obj/item/projectile/kiss/space_drugs
+
+/obj/item/hand_item/kisser/honk
+	name = "honking kiss"
+	desc = "HONK!"
+	color = "#FFFF00"
+	kiss_type = /obj/item/projectile/kiss/honk
+
+/obj/item/hand_item/kisser/bloodsucker
+	name = "vampiric kiss"
+	desc = "Поцелуй, вызывающий жажду."
+	color = "#800000"
+	kiss_type = /obj/item/projectile/kiss/bloodsucker
+
+/obj/item/hand_item/kisser/mime
+	name = "silent kiss"
+	desc = "..."
+	color = "#808080"
+	kiss_type = /obj/item/projectile/kiss/mime
+
+/obj/item/hand_item/kisser/dragqueen
+	name = "fabulous kiss"
+	desc = "Поцелуй, окутанный случайностью."
+	color = "#4B0082"
+	kiss_type = /obj/item/projectile/kiss/dragqueen
+
+/obj/item/hand_item/kisser/heartboom
+	name = "heartboom kiss"
+	desc = "Поцелуй, заставляющий сердце трепетать."
+	color = "#9400D3"
+	kiss_type = /obj/item/projectile/kiss/heartboom
 
 /obj/item/projectile/kiss
 	name = "kiss"
@@ -314,7 +359,8 @@
 /obj/item/projectile/kiss/proc/harmless_on_hit(mob/living/living_target)
 	playsound(get_turf(living_target), hitsound, 100, TRUE)
 	if(!suppressed)  // direct
-		living_target.visible_message(span_danger("[living_target] is hit by \a [src]."), span_userdanger("You're hit by \a [src]!"), vision_distance=COMBAT_MESSAGE_RANGE)
+		var/msg = get_random_kiss_message(firer, living_target)
+		living_target.visible_message(span_love("[living_target] [msg]."), span_love("Ты [msg]."), vision_distance=COMBAT_MESSAGE_RANGE)
 
 	/*
 	living_target.add_mob_memory(/datum/memory/kissed, deuteragonist = firer)
@@ -324,6 +370,17 @@
 		kisser.add_mob_memory(/datum/memory/kissed, protagonist = living_target, deuteragonist = firer) */
 
 	try_fluster(living_target)
+
+/proc/get_random_kiss_message(mob/firer, mob/target)
+	var/gender_suffix = (target?.gender == FEMALE) ? "а" : ""
+	var/list/messages = list(
+		"поймал[gender_suffix] воздушный поцелуй от [firer]",
+		"поражён[gender_suffix == "а" ? "а" : ""] воздушным поцелуем от [firer]",
+		"настигнут[gender_suffix] воздушным поцелуем от [firer]",
+		"получил[gender_suffix] воздушный поцелуй от [firer]",
+		"сражён[gender_suffix == "а" ? "а" : ""] воздушным поцелуем от [firer]"
+	)
+	return pick(messages)
 
 /obj/item/projectile/kiss/proc/try_fluster(mob/living/living_target)
 	// people with the social anxiety quirk can get flustered when hit by a kiss
@@ -369,3 +426,145 @@
 	var/mob/living/carbon/heartbreakee = target
 	var/obj/item/organ/heart/dont_go_breakin_my_heart = heartbreakee.getorganslot(ORGAN_SLOT_HEART)
 	dont_go_breakin_my_heart.applyOrganDamage(15)
+	if(!suppressed)
+		to_chat(heartbreakee, span_danger("Утомительно..."))
+		animate(heartbreakee, pixel_y = 6, time = 0.3, easing = BOUNCE_EASING)
+		animate(pixel_y = 0, time = 0.3, easing = BOUNCE_EASING)
+
+/obj/item/projectile/kiss/crocin
+	name = "passionate kiss"
+	color = "#FF69B4"
+
+/obj/item/projectile/kiss/crocin/harmless_on_hit(mob/living/living_target)
+	. = ..()
+	if(iscarbon(living_target))
+		var/mob/living/carbon/C = living_target
+		C.reagents.add_reagent(/datum/reagent/drug/aphrodisiac, rand(1, 5))
+	if(!suppressed)
+		var/list/crocin_msgs = list("Ух~", "Миленько~", "Горячо~")
+		var/special = pick(crocin_msgs)
+		to_chat(living_target, span_reallybig(pink_shimmer_span(special)))
+		animate(living_target, pixel_y = 4, time = 0.2, easing = SINE_EASING)
+		animate(pixel_y = 0, time = 0.2, easing = SINE_EASING)
+
+/obj/item/projectile/kiss/space_drugs
+	name = "trippy kiss"
+	color = "#00BFFF"
+
+/obj/item/projectile/kiss/space_drugs/harmless_on_hit(mob/living/living_target)
+	. = ..()
+	if(iscarbon(living_target))
+		var/mob/living/carbon/C = living_target
+		C.reagents.add_reagent(/datum/reagent/drug/space_drugs, rand(1, 3))
+	if(!suppressed)
+		to_chat(living_target, rainbow_span("Опьяняюще..."))
+		animate(living_target, pixel_x = rand(-3, 3), pixel_y = rand(-3, 3), time = 0.15, easing = SINE_EASING)
+		animate(pixel_x = 0, pixel_y = 0, time = 0.15, easing = SINE_EASING)
+
+/obj/item/projectile/kiss/honk
+	name = "honking kiss"
+	color = "#FFFF00"
+
+/obj/item/projectile/kiss/honk/harmless_on_hit(mob/living/living_target)
+	. = ..()
+	living_target.emote("flip")
+	playsound(living_target, 'sound/items/bikehorn.ogg', 50, TRUE)
+	if(!suppressed)
+		to_chat(living_target, span_clown("Honk!"))
+
+/obj/item/projectile/kiss/bloodsucker
+	name = "vampiric kiss"
+	color = "#800000"
+
+/obj/item/projectile/kiss/bloodsucker/harmless_on_hit(mob/living/living_target)
+	. = ..()
+	if(iscarbon(living_target))
+		var/mob/living/carbon/C = living_target
+		C.emote("scream")
+		if(prob(50))
+			C.spray_blood(firer ? get_dir(firer, C) : C.dir, rand(1, 2))
+		if(C.blood_volume > 0)
+			C.blood_volume = max(C.blood_volume - 7, 0)
+	if(!suppressed)
+		to_chat(living_target, span_bolddanger("Что-то воротит..."))
+		animate(living_target, pixel_x = 2, time = 0.1, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
+		animate(pixel_x = -2, time = 0.1, easing = SINE_EASING)
+		animate(pixel_x = 0, time = 0.1, easing = SINE_EASING)
+
+/obj/item/projectile/kiss/mime
+	name = "silent kiss"
+	color = "#808080"
+	hitsound = null
+	hitsound_wall = null
+
+/obj/item/projectile/kiss/mime/harmless_on_hit(mob/living/living_target)
+	. = ..()
+	if(iscarbon(living_target))
+		var/mob/living/carbon/C = living_target
+		C.reagents.add_reagent(/datum/reagent/toxin/mutetoxin, 1)
+	if(!suppressed)
+		to_chat(living_target, span_notice("..."))
+		animate(living_target, alpha = 150, time = 0.3, easing = SINE_EASING)
+		animate(alpha = 255, time = 0.3, easing = SINE_EASING)
+
+/obj/item/projectile/kiss/dragqueen
+	name = "fabulous kiss"
+	color = "#4B0082"
+
+/obj/item/projectile/kiss/dragqueen/Initialize(mapload)
+	. = ..()
+	color = pick("#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FFA500", "#800080", "#4B0082", "#FF69B4")
+
+/obj/item/projectile/kiss/dragqueen/harmless_on_hit(mob/living/living_target)
+	. = ..()
+	if(iscarbon(living_target))
+		var/mob/living/carbon/C = living_target
+		var/list/drugs = list(
+			/datum/reagent/drug/space_drugs,
+			/datum/reagent/toxin/mindbreaker,
+			/datum/reagent/drug/mdma,
+			/datum/reagent/drug/zvezdochka,
+			/datum/reagent/drug/pendosovka
+		)
+		C.reagents.add_reagent(pick(drugs), 1)
+	if(!suppressed)
+		var/list/dq_msgs = list("Что это?..", "Голова кружится...")
+		to_chat(living_target, rainbow_span(pick(dq_msgs)))
+		animate(living_target, pixel_y = 5, time = 0.25, easing = SINE_EASING)
+		animate(pixel_y = -3, time = 0.25, easing = SINE_EASING)
+		animate(pixel_y = 0, time = 0.2, easing = SINE_EASING)
+
+/obj/item/projectile/kiss/heartboom
+	name = "heartboom kiss"
+	color = "#9400D3"
+	hitsound = 'modular_bluemoon/fluffs/sound/Pow.ogg'
+
+/obj/item/projectile/kiss/heartboom/harmless_on_hit(mob/living/living_target)
+	. = ..()
+	if(!suppressed)
+		var/list/heartboom_msgs = list("Сердце сейчас выпрыгнет!", "Что за чувства?..", "Так волнующе...")
+		var/special = pick(heartboom_msgs)
+		to_chat(living_target, span_reallybig(pink_shimmer_span(special)))
+		new /obj/effect/temp_visual/heart(get_turf(living_target))
+		var/obj/effect/particle_effect/smoke/cigsmoke/puff = new(get_turf(living_target))
+		puff.color = "#9400D3"
+		puff.alpha = 64
+		puff.lifetime = 1
+		animate(living_target, pixel_y = 4, time = 0.2, easing = SINE_EASING)
+		animate(pixel_y = 0, time = 0.2, easing = SINE_EASING)
+		var/static/list/heartboom_emotes = list(
+			list("gasp", "Ты чувствуешь как леденеют твои вены и сердце на секунду замирает..."),
+			list("sneeze", "Ты чихаешь от попавших тебе в нос блёсток..."),
+			list("dance", "Жизнь прекрасна! Твои ноги пускаются в пляс!"),
+			list("blush", "Внутри так... тепло..."),
+			list("moan", "Мне так... хорошо..."),
+			list("collapse", "В груди так пусто... что-то исчезло..."),
+			list("realagony", "БОЖЕ! ВНУТРИ ВСЁ ПЫЛАЕТ! ОСТАНОВИТЕ ЭТО!"),
+			list("laugh", "Что-то щекочет тебя"),
+			list("laugh", "Ты не можешь перестать смеяться")
+		)
+		var/list/chosen = pick(heartboom_emotes)
+		var/emote_key = chosen[1]
+		var/emote_msg = chosen[2]
+		to_chat(living_target, span_love("[emote_msg]"))
+		living_target.emote(emote_key)

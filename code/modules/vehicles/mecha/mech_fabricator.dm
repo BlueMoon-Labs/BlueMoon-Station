@@ -119,10 +119,11 @@
 	// Adjust the build time of any item currently being built.
 	if(being_built)
 		var/last_const_time = build_finish - build_start
-		var/new_const_time = get_construction_time_w_coeff(initial(being_built.construction_time))
-		var/const_time_left = build_finish - world.time
-		var/new_build_time = (new_const_time / last_const_time) * const_time_left
-		build_finish = world.time + new_build_time
+		if(last_const_time > 0)
+			var/new_const_time = get_construction_time_w_coeff(initial(being_built.construction_time))
+			var/const_time_left = build_finish - world.time
+			var/new_build_time = (new_const_time / last_const_time) * const_time_left
+			build_finish = world.time + new_build_time
 
 	update_static_data(usr)
 

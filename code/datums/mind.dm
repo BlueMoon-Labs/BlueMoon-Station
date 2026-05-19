@@ -255,7 +255,7 @@
 /datum/mind/proc/do_add_antag_datum(instanced_datum)
 	. = LAZYLEN(antag_datums)
 	LAZYADD(antag_datums, instanced_datum)
-	if(!.)
+	if(!. && current)
 		add_verb(current, /mob/proc/edit_objectives_and_ambitions)
 //ambition end
 

@@ -50,11 +50,14 @@
 							observers, and can only be performed once every five seconds. While morphed, you move faster, but do \
 							less damage. In addition, anyone within three tiles will note an uncanny wrongness if examining you. \
 							You can attack any item or dead creature to consume it - creatures will fully restore your health. \
+							Swallowed <b>items</b> (not living prey) can be brought back up from the toolbar action <b>Сплюнуть предмет</b>. \
 							Finally, you can restore yourself to your original form while morphed by shift-clicking yourself.</b>"
 
 /mob/living/simple_animal/hostile/morph/Initialize(mapload)
 	. = ..()
 	src.AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
+	var/datum/action/morph_swallow_inventory/spitter = new(src)
+	spitter.Grant(src)
 
 /mob/living/simple_animal/hostile/morph/examine(mob/user)
 	if(morphed)
@@ -81,6 +84,13 @@
 /mob/living/simple_animal/hostile/morph/proc/allowed(atom/movable/A) // make it into property/proc ? not sure if worth it
 	return !is_type_in_typecache(A, blacklist_typecache) && (isobj(A) || ismob(A))
 
+/// How much swallowed matter boosts stats / heals for one eat (mirror in regurgitate)
+/mob/living/simple_animal/hostile/morph/proc/swallow_bonus_for(atom/movable/A)
+	var/bonus = 1
+	if(istype(A, /mob/living/carbon))
+		bonus = 10
+	return bonus
+
 /mob/living/simple_animal/hostile/morph/proc/eat(atom/movable/A)
 	if(morphed && !eat_while_disguised)
 		to_chat(src, "<span class='warning'>You can not eat anything while you are disguised!</span>")
@@ -88,16 +98,128 @@
 	if(A && A.loc != src)
 		visible_message("<span class='warning'>[src] swallows [A] whole!</span>")
 		A.forceMove(src)
-		var/eat_bonus = 1
-		if(istype(A, /mob/living/carbon))
-			eat_bonus = 10
+		var/eat_bonus = swallow_bonus_for(A)
 		eaten_count += eat_bonus
 		melee_damage_lower += 0.1 * eat_bonus
 		melee_damage_upper += 0.1 * eat_bonus
 		maxHealth += eat_bonus
 		adjustHealth(-eat_bonus)
+		// With autoupdate off, datum/ui_update() does nothing useful; refresh open stomach UIs now.
+		SStgui.update_uis(src)
 		return TRUE
 	return FALSE
+
+/// Matches combat / health scaling from swallowed matter when eaten_count changes.
+/mob/living/simple_animal/hostile/morph/proc/recalc_swallow_derived_stats()
+	maxHealth = initial(maxHealth) + eaten_count
+	health = min(health, maxHealth)
+	if(!morphed)
+		melee_damage_lower = initial(melee_damage_lower) + eaten_count * 0.1
+		melee_damage_upper = initial(melee_damage_upper) + eaten_count * 0.1
+	med_hud_set_health()
+
+/// Returns one swallowed item matching display name at a time for the vending UI logic.
+/mob/living/simple_animal/hostile/morph/proc/regurgitate_item_by_name(atom/destination, desired_name)
+	if(!desired_name || stat == DEAD)
+		return FALSE
+	for(var/obj/item/I in contents)
+		if(I.name == desired_name)
+			var/expel_bonus = swallow_bonus_for(I)
+			I.forceMove(destination)
+			if(isliving(src) && stat != DEAD && prob(40))
+				step(I, pick(GLOB.cardinals))
+			to_chat(src, "<span class='notice'>You expel [I]!</span>")
+			visible_message("<span class='warning'>[src] disgorges [I]!</span>", ignored_mobs = list(src))
+			log_game("[key_name(src)] морф выплюнул [I] ([I.type]).")
+			eaten_count = max(eaten_count - expel_bonus, 0)
+			recalc_swallow_derived_stats()
+			adjustHealth(expel_bonus)
+			return TRUE
+	return FALSE
+
+/mob/living/simple_animal/hostile/morph/ui_state(mob/user)
+	return GLOB.self_state
+
+/mob/living/simple_animal/hostile/morph/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "SmartVend", "Желудок морфа")
+		ui.set_autoupdate(FALSE)
+		ui.open()
+
+/mob/living/simple_animal/hostile/morph/ui_data(mob/user)
+	. = list()
+	var/list/listofitems = list()
+	for(var/obj/item/O in contents)
+		if(QDELETED(O))
+			continue
+		var/md5name = md5(O.name)
+		if(listofitems[md5name])
+			listofitems[md5name]["amount"]++
+		else
+			listofitems[md5name] = list(
+				"name" = O.name,
+				"type" = "[O.type]",
+				"amount" = 1
+			)
+	sort_list(listofitems)
+	.["contents"] = listofitems
+	.["name"] = "[name]"
+	.["verb"] = "Выплюнуть"
+	.["searchable"] = TRUE
+	.["isdryer"] = FALSE
+
+/mob/living/simple_animal/hostile/morph/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(.)
+		return
+	switch(action)
+		if("Release")
+			if(src != usr)
+				return
+			var/turf/dropspot = drop_location()
+			if(!dropspot || QDELETED(usr))
+				return
+
+			var/desired = params["amount"] ? floor(text2num(params["amount"])) : null
+
+			if(isnull(desired))
+				desired = input(usr, "Сколько одноимённых предметов выплюнуть?", "Желудок морфа", 1) as num|null
+
+			if(isnull(desired))
+				return TRUE
+
+			desired = floor(desired)
+			if(desired < 1)
+				return TRUE
+
+			var/param_name = params["name"]
+
+			while(desired > 0)
+				if(QDELETED(src) || stat == DEAD)
+					break
+				if(!regurgitate_item_by_name(dropspot, param_name))
+					break
+				desired--
+			return TRUE
+	return FALSE
+
+/// Opens searchable list of swallowed /obj/item (living prey must still come out via death/other means).
+/datum/action/morph_swallow_inventory
+	name = "Сплюнуть предмет"
+	desc = "Список поглощённых предметов с поиском. Сплюнуть предмет под вас на пол."
+	icon_icon = 'icons/mob/animal.dmi'
+	button_icon_state = "morph"
+	check_flags = AB_CHECK_ALIVE | AB_CHECK_CONSCIOUS
+
+/datum/action/morph_swallow_inventory/Trigger()
+	if(!..())
+		return FALSE
+	var/mob/living/simple_animal/hostile/morph/body = owner
+	if(!istype(body))
+		return FALSE
+	body.ui_interact(owner)
+	return TRUE
 
 /mob/living/simple_animal/hostile/morph/ShiftClickOn(atom/movable/A)
 	if(morph_time <= world.time && !stat)

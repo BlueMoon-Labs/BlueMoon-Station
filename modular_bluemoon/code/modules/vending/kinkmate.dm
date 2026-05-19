@@ -157,6 +157,7 @@
 				/obj/item/storage/pill_bottle/butt_enlargement = 10,
 				/obj/item/reagent_containers/glass/bottle/crocin = 10,
 				/obj/item/reagent_containers/glass/bottle/camphor = 5,
+				/obj/item/lipstick/crocin = 5,
 				/obj/item/storage/pill_bottle/belly_inflation = 10,
 				/obj/item/storage/fancy/jellybean_pack = 5,
 				/obj/item/autosurgeon/penis = 3,

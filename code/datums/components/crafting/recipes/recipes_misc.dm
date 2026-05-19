@@ -685,3 +685,21 @@
 				/obj/item/clothing/under/rank/security/officer = 1)
 	subcategory = CAT_FURNITURE
 	category = CAT_MISCELLANEOUS
+
+/datum/crafting_recipe/lipstick_space_drugs
+	name = "Space Drugs Lipstick"
+	result = /obj/item/lipstick/space_drugs
+	time = 30
+	reqs = list(/obj/item/lipstick = 1,
+				/datum/reagent/drug/space_drugs = 30)
+	subcategory = CAT_MISCELLANEOUS
+	category = CAT_MISCELLANEOUS
+
+/datum/crafting_recipe/lipstick_bloodsucker
+	name = "Bloodsucker Lipstick"
+	result = /obj/item/lipstick/bloodsucker
+	time = 30
+	reqs = list(/obj/item/lipstick = 1,
+				/datum/reagent/blood = 30)
+	subcategory = CAT_MISCELLANEOUS
+	category = CAT_MISCELLANEOUS

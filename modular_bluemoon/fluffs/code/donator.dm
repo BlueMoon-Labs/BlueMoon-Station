@@ -2377,6 +2377,11 @@
 	path = /obj/item/clothing/neck/cloak/ranger_poncho/primitive_catgirl_leather
 	ckeywhitelist = list("pingvas", "dimofon", "devildeadspace")
 
+/datum/gear/donator/backpack/lipstick/heartboom
+	name = "Heartboom Lipstick"
+	path = /obj/item/lipstick/heartboom
+	ckeywhitelist = list("liesbee")
+  
 /datum/gear/donator/bm/cz_75_kit
 	name = "CZ-75 kit"
 	slot = ITEM_SLOT_BACKPACK

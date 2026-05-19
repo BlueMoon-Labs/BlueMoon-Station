@@ -15,47 +15,26 @@
 //Lipstick
 /datum/gear/backpack/lipstick
 	name = "Lipstick"
-	path = /obj/item/lipstick
+	path = /obj/item/lipstick/loadout
+	loadout_initial_colors = list("#FF0000")
 
-/datum/gear/backpack/lipstick/jade
-	name = "Jade Lipstick"
-	path = /obj/item/lipstick/jade
+/datum/gear/backpack/lipstick/crocin
+	name = "Crocin Lipstick"
+	path = /obj/item/lipstick/crocin
 
-/datum/gear/backpack/lipstick/purple
-	name = "Purple Lipstick"
-	path = /obj/item/lipstick/purple
+/datum/gear/backpack/lipstick/honk
+	name = "Honk Lipstick"
+	path = /obj/item/lipstick/honk
+	restricted_roles = list("Clown")
 
-/datum/gear/backpack/lipstick/black
-	name = "Black Lipstick"
-	path = /obj/item/lipstick/black
+/datum/gear/backpack/lipstick/mime
+	name = "Mime Lipstick"
+	path = /obj/item/lipstick/mime
+	restricted_roles = list("Mime")
 
-/datum/gear/backpack/lipstick/yellow
-	name = "Yellow Lipstick"
-	path = /obj/item/lipstick/yellow
-
-/datum/gear/backpack/lipstick/blue
-	name = "Blue Lipstick"
-	path = /obj/item/lipstick/blue
-
-/datum/gear/backpack/lipstick/teal
-	name = "Teal Lipstick"
-	path = /obj/item/lipstick/teal
-
-/datum/gear/backpack/lipstick/fuchsia
-	name = "Fuchsia Lipstick"
-	path = /obj/item/lipstick/fuchsia
-
-/datum/gear/backpack/lipstick/navy
-	name = "Navy Blue Lipstick"
-	path = /obj/item/lipstick/navy
-
-/datum/gear/backpack/lipstick/aqua
-	name = "Cyan Lipstick"
-	path = /obj/item/lipstick/aqua
-
-/datum/gear/backpack/lipstick/white
-	name = "White Lipstick"
-	path = /obj/item/lipstick/white
+/datum/gear/donator/backpack/lipstick/dragqueen
+	name = "Drag Queen Lipstick"
+	path = /obj/item/lipstick/dragqueen
 
 //Nail polish
 /datum/gear/backpack/nailpolish_red
