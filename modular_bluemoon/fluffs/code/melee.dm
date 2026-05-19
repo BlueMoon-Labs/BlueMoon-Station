@@ -1,7 +1,9 @@
 /*
 /////////////////////////	ИНФОРМАЦИЯ: /////////////////////////
 
-При добавлении рескина на оружие (или любого предмета, что влияет на геймплей) впишите DONATE_ITEM_TOOLTIP_PARENT сразу после пути, пример:
+При добавлении рескина на оружие (или любого предмета, что влияет на геймплей) впишите DONATE_ITEM_TOOLTIP_PARENT сразу после пути
+Пример:
+
 /obj/item/gun/ballistic/automatic/pistol/enforcer/my_reskin
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "My personal enforcer"
