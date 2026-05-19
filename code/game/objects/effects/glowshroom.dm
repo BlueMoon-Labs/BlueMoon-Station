@@ -166,6 +166,8 @@
 				continue
 
 			Decay(TRUE, 2) // Decay before spawning new mushrooms to reduce their endurance
+			if(QDELETED(src) || !myseed) // Decay may have killed us when endurance dropped below 1
+				return
 			var/obj/structure/glowshroom/child = new type(newLoc, myseed, TRUE, TRUE)
 			child.generation = generation + 1
 			shrooms_planted++
