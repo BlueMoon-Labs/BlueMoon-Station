@@ -1223,12 +1223,11 @@
 	product = /obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21
 	fromitem = list(/obj/item/gun/ballistic/automatic/laser/lasgun)
 
-/obj/item/modkit/mpl21/gun_to_gun_replace(obj/item/gun/ballistic/automatic/laser/lasgun/target, obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/result)
-	. = ..()
-	if(!istype(result))
+/obj/item/modkit/mpl21/on_item_replace(obj/old_item, obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21/modified_item)
+	if(!istype(modified_item))
 		return
-	if(result.replace_mag_to_custom())
-		result.update_icon()
+	if(modified_item.replace_mag_to_custom())
+		modified_item.update_icon()
 
 /obj/item/gun/ballistic/automatic/laser/lasgun/mpl_21
 	DONATE_ITEM_TOOLTIP_PARENT
