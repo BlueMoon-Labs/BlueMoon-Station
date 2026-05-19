@@ -15,6 +15,8 @@
 	caliber = "shotgun"
 	projectile_type = /obj/item/projectile/bullet/breach_slug
 	custom_materials = list(/datum/material/iron=4000)
+	pellets = 2
+	variance = 1
 
 /obj/item/ammo_casing/shotgun/executioner
 	name = "executioner slug"

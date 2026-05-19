@@ -33,7 +33,7 @@
 		return
 	var/num_loaded = magazine.attackby(A, user, params, 1)
 	if(num_loaded)
-		to_chat(user, "<span class='notice'>You load [num_loaded] shell\s into \the [src]!</span>")
+		to_chat(user, "<span class='notice'>Вы заряжаете [num_loaded] в [src]!</span>")
 		playsound(user, loadshell_sound, 60, 1)
 		A.update_icon()
 		update_icon()
@@ -49,6 +49,7 @@
         return
 
     if(jam_stress <= 0)
+        last_stress_decay = world.time
         return
 
     var/time_passed = world.time - last_stress_decay
@@ -83,9 +84,30 @@
     if(jam_stress >= 100)
         jammed = TRUE
 
+/obj/item/gun/ballistic/shotgun/proc/refresh_stress_effects()
+    update_jam_stress()
+    update_stress_effects()
+
+/obj/item/gun/ballistic/shotgun/proc/get_stressed_shot_spread(bonus_spread = 0)
+    var/randomized_gun_spread = 0
+    if(spread)
+        randomized_gun_spread = rand(0, spread)
+    var/randomized_bonus_spread = rand(0, bonus_spread + stress_spread_mult)
+    return round((rand() - 0.5) * 1.4 * (randomized_gun_spread + randomized_bonus_spread))
+
+/obj/item/gun/ballistic/shotgun/proc/apply_stressed_shot_stamina(mob/living/user, stam_cost = 0)
+    if(!user)
+        return
+    stam_cost += stress_stam_cost
+    if(stam_cost <= 0)
+        return
+    var/safe_cost = clamp(stam_cost, 0, user.stamina_buffer)
+    user.UseStaminaBuffer(safe_cost)
+
 /obj/item/gun/ballistic/shotgun/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 
     if(uses_jam)
+        refresh_stress_effects()
         if(!can_fire_check(user))
             return
 
@@ -98,7 +120,7 @@
     if(result)
         last_fire_time = world.time
         jam_stress += round(20 * jam_multiplier)
-        update_jam_stress()
+        update_stress_effects()
     return result
 
 /obj/item/gun/ballistic/shotgun/chamber_round()
@@ -138,12 +160,12 @@
 
     return FALSE
 
-/obj/item/gun/ballistic/shotgun/proc/clear_jam(mob/living/user)
+/obj/item/gun/ballistic/shotgun/proc/clear_jam(mob/living/user, visible = TRUE, play_sound = TRUE)
 	if(!jammed)
 		return FALSE
-
-	to_chat(user, "<span class='notice'>Ты устраняешь осечку. Оружие готово к использованию!</span>")
-	balloon_alert(user, "С заметным усилием взводит оружие!")
+	if(visible)
+		user.visible_message("<span class='warning'>[user] с заметным усилием взводит [src]!</span>", "<span class='notice'>Вы устраняете осечку. Оружие готово к использованию!</span>")
+		balloon_alert(user, "С заметным усилием взводит оружие!")
 	playsound(user, pumpsound, 60, TRUE)
 	jam_stress = max(0, jam_stress - 40)
 	// используем существующую механику
@@ -163,8 +185,9 @@
 /obj/item/gun/ballistic/shotgun/attack_self(mob/living/user)
     if(recentpump > world.time)
         return
+    refresh_stress_effects()
     if(IS_STAMCRIT(user))
-        to_chat(user, "<span class='warning'>Ты слишком устал чтобы это сделать.</span>")
+        to_chat(user, "<span class='warning'>Вы слишком устали чтобы это сделать.</span>")
         return
     if(jammed)
         if(clear_jam(user))
@@ -175,10 +198,10 @@
     else if(!user.UseStaminaBuffer(2, warn = TRUE))
         return
     recentpump = world.time + 4 + stress_pump_delay
-    update_jam_stress()
+    update_stress_effects()
 /obj/item/gun/ballistic/shotgun/proc/pump(mob/M, visible = TRUE, play_sound = TRUE)
 	if(visible)
-		M.visible_message("<span class='warning'>[M] racks [src].</span>", "<span class='warning'>You rack [src].</span>")
+		M.visible_message("<span class='warning'>[M] взводит [src]!</span>", "<span class='warning'>Вы взводите [src]!</span>")
 
 	if(play_sound)
 		playsound(M, pumpsound, 60, 1)
@@ -225,7 +248,7 @@
 
 /obj/item/gun/ballistic/shotgun/riot //for spawn in the armory
 	name = "Riot Shotgun"
-	desc = "A sturdy shotgun with a longer magazine and a fixed tactical stock designed for non-lethal riot control."
+	desc = "Надежный дробовик с удлиненным магазином и фиксированным тактическим прикладом, предназначенный для применения в целях нелетального подавления массовых беспорядков."
 	icon_state = "riotshotgun"
 	item_state = "gun_wielded"
 	pumpsound = "sound/weapons/Shotguns_reheated/Riot/Riotchamber.ogg"
@@ -253,7 +276,7 @@
 
 /obj/item/gun/ballistic/shotgun/riot/syndicate
 	name = "\improper Peacebreaker shotgun"
-	desc = "A Scarborough riot control shotgun fitted with a crimson furnishing and a wooden tactical stock. You swear you've seen this model elsewhere before..."
+	desc = "Дробовик компании Scarborough для борьбы с массовыми беспорядками, оснащенный алой отделкой и деревянным тактическим прикладом. Можно поклясться, что эту модель уже вы где-то видели..."
 	icon = 'icons/obj/guns/projectile.dmi'
 	icon_state = "riotshotgun_syndie"
 	item_state = "riot_shotgun_syndie"
@@ -264,8 +287,8 @@
 //Dual Feed Shotgun
 
 /obj/item/gun/ballistic/shotgun/dual_tube
-	name = "Cycler Shotgun"
-	desc = "An advanced shotgun with two separate magazine tubes, allowing you to quickly toggle between ammo types."
+	name = "CS-9 'Bastion'"
+	desc = "Современный дробовик с двумя отдельными трубчатыми магазинами, позволяющий быстро переключаться между типами патронов."
 	icon_state = "cycler"
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/tube
 	w_class = WEIGHT_CLASS_HUGE
@@ -286,15 +309,15 @@
 /obj/item/gun/ballistic/shotgun/dual_tube/attack_self(mob/living/user)
 	return ..()
 
-/obj/item/gun/ballistic/shotgun/dual_tube/proc/toggle_tube(mob/living/user)
+/obj/item/gun/ballistic/shotgun/dual_tube/proc/toggle_tube(mob/living/user, visible = TRUE, play_sound = TRUE)
 	var/old = magazine
 	magazine = alternate_magazine
 	alternate_magazine = old
 
 	toggled = !toggled
-
-	to_chat(user, "Вы переключаете магазины. Метка на селекторе горит [toggled ? "<span style='color: #25b334'>зелёным</span>" : "<span style='color: #ff0000'>красным</span>"]!")
-	balloon_alert(user, "Вскидывает пушку и переключает подачу!")
+	if(visible)
+		user.visible_message("[user] переворачивает оружие и переключает подачу [src]</span>", "Вы переключаете магазины. Метка на селекторе горит [toggled ? "<span style='color: #25b334'>зелёным</span>" : "<span style='color: #ff0000'>красным</span>"]!")
+		balloon_alert(user, "Вскидывает пушку и переключает подачу!")
 	playsound(user, 'sound/weapons/Shotguns_reheated/shared/Cyclerswap.ogg', 60, 1)
 
 /obj/item/gun/ballistic/shotgun/dual_tube/AltClick(mob/living/user)
@@ -305,8 +328,8 @@
 	return TRUE
 /// Я в рот ебал кодить эту пушку, но она очень крутая. Обожаю ультранасилие(Над своей жопой) - RzW
 /obj/item/gun/ballistic/shotgun/dp12
-    name = "Recycler-12"
-    desc = "Два дробовика в одной цельнометалической оболочке. Чертёж был импортирован извне, от этой адской машины несёт Марсианским духом за километр. Сборка оставляет желать лучшего, от того это и опытный образец."
+    name = "Aegis-12 'Teta'"
+    desc = "Два дробовика в одной цельнометалической оболочке. Чертёж был импортирован извне, от этой адской машины несёт Марсианским духом за километр. Сборка оставляет желать лучшего, но оружие справляется с прямой функцией."
     icon_state = "cycler"
 
     mag_type = /obj/item/ammo_box/magazine/internal/shot/tube
@@ -335,31 +358,35 @@
 
     // Хук осечек
     if(uses_jam)
+        refresh_stress_effects()
         if(!can_fire_check(user))
             return
         if(try_jam(user))
             return
 
     var/fired = FALSE
+    var/shot_spread = get_stressed_shot_spread(bonus_spread)
 
     // Сначала первый, потом второй ствол.
     if(chambered && chambered.BB)
-        chambered.fire_casing(target, user)
+        chambered.fire_casing(target, user, params, , suppressed, zone_override, shot_spread, src)
         fired = TRUE
        	shake_camera(user, 2, 2)
     else if(secondary_chambered && secondary_chambered.BB)
-        secondary_chambered.fire_casing(target, user)
+        secondary_chambered.fire_casing(target, user, params, , suppressed, zone_override, shot_spread, src)
         fired = TRUE
        	shake_camera(user, 3, 3)
 
     if(!fired)
         return ..() // защита от пустого клика
 
+    apply_stressed_shot_stamina(user, stam_cost)
     playsound(user, fire_sound, 50, TRUE)
     user.do_attack_animation(src)
 
     last_fire_time = world.time
     jam_stress += round(15 * jam_multiplier)
+    update_stress_effects()
 
     update_icon()
     return TRUE
@@ -371,7 +398,7 @@
         return TRUE
 
     if(visible)
-        M.visible_message("[M] racks [src].", "You rack [src].")
+        M.visible_message("[M] взводит [src].", "Вы взводите [src].")
 
     if(play_sound)
         playsound(M, pumpsound, 60, TRUE)
@@ -406,12 +433,13 @@
         if(!secondary_chambered)
             secondary_chambered = alternate_magazine.get_round()
 
-/obj/item/gun/ballistic/shotgun/dp12/proc/clear_jam_dp12(mob/living/user)
+/obj/item/gun/ballistic/shotgun/dp12/proc/clear_jam_dp12(mob/living/user, visible = TRUE, play_sound = TRUE)
 
     if(!jammed)
         return FALSE
-
-    to_chat(user, "<span class='notice'>Ты устраняешь осечку. Оружие готово к использованию!</span>")
+    if(visible)
+        user.visible_message("<span class='warning'>[user] с заметным усилием взводит [src]</span>", "<span class='notice'>Вы устраняете осечку. Оружие готово к использованию!</span>")
+        balloon_alert(user, "С заметным усилием взводит оружие!")
     playsound(user, pumpsound, 60, TRUE)
 
     pump_unload_dual(user)
@@ -446,7 +474,7 @@
     if(loaded)
         load_toggle = !load_toggle
 
-        to_chat(user, "<span class='notice'>You load a shell into [src].</span>")
+        to_chat(user, "<span class='notice'>Вы заряжаете патрон в [src].</span>")
         playsound(user, loadshell_sound, 60, TRUE)
 
         A.update_icon()
@@ -465,7 +493,7 @@
         . += "Secondary barrel: [secondary_chambered.BB ? "live" : "spent"]"
 
 /obj/item/gun/ballistic/shotgun/dp12/traitor
-    name = "Human Recycler"
+    name = "HCA-00 'Invictus'"
     desc = "Особая версия двуствольного дробовика сделанная под заказ неким Хейлом. Все детали были подогнанны идеально, а конструкция внушает доверие. Гравировка на корпусе гласит: 'Шок и трепет - лучшее лекарство. Рви и кромсай пока не иссякнут!'"
     icon_state = "cycler"
     mag_type = /obj/item/ammo_box/magazine/internal/shot/tube
@@ -498,9 +526,11 @@
         return
     if(!user.UseStaminaBuffer(sync_stamina_cost, warn = TRUE))
         return
-    chambered.fire_casing(target, user)
+    var/shot_spread = get_stressed_shot_spread(bonus_spread)
+    chambered.fire_casing(target, user, params, , suppressed, zone_override, shot_spread, src)
     shake_camera(user, 6, 4)
-    secondary_chambered.fire_casing(target, user)
+    secondary_chambered.fire_casing(target, user, params, , suppressed, zone_override, shot_spread, src)
+    apply_stressed_shot_stamina(user, stam_cost)
     playsound(user, fire_sound, 75, TRUE)
 // Sleep отвечает за задержу между выстрелами в синхронном режиме
     sleep(1.2)
@@ -524,7 +554,7 @@
 /// SLAMFIRE ДРОБОВИКИ
 
 /obj/item/gun/ballistic/shotgun/slamfire
-    name = "Slamfire shotgun"
+    name = "Model 156-C"
     desc = "A reproduction of an old police shotgun with an unrestricted slamfire mechanism."
     icon_state = "riotshotgun"
     item_state = "gun_wielded"
@@ -610,12 +640,15 @@
     cleanup_holder_state(user)
 
 /obj/item/gun/ballistic/shotgun/slamfire/proc/on_wield(obj/item/source, mob/living/user)
-    update_stance_state(user)
-    to_chat(user, span_notice("You brace [src] against your shoulder."))
+    SIGNAL_HANDLER
+    cleanup_holder_state(user)
+    user.add_movespeed_modifier(/datum/movespeed_modifier/slamfire)
+    to_chat(user, span_notice("Вы вжимаетесь в [src]."))
 
 /obj/item/gun/ballistic/shotgun/slamfire/proc/on_unwield(obj/item/source, mob/living/user)
-    update_stance_state(user)
-    to_chat(user, span_warning("You relax your stance."))
+    SIGNAL_HANDLER
+    cleanup_holder_state(user)
+    to_chat(user, span_warning("Вы выходите из стойки."))
 
 /obj/item/gun/ballistic/shotgun/slamfire/AltClick(mob/living/user)
 
@@ -711,6 +744,8 @@
     var/frenzy_reset_time = 1200
     var/last_decay_tick = 0
     var/last_damage_time = 0
+    var/current_speed_stage = -1
+    var/last_jitter = 0
 
     var/list/stage_up_bank = list(
         'sound/weapons/Shotguns_reheated/slamfire/VO/whisper1.ogg',
@@ -726,32 +761,33 @@
 
     var/list/frenzy_emote_bank = list(
         "laugh",
-        "heavybreath",
-        "twitch",
+        "psychoticshort",
+        "psychotic",
+		"cry",
         "gasp"
     )
 
     var/list/stage_up_text_bank = list(
-        "KILL.",
-        "MORE.",
-        "FASTER.",
-        "THEY ARE WEAK.",
-        "DON'T STOP."
+        "УБЕЙ ИХ.",
+        "ЕЩЁ, ЕЩЁ!",
+        "БЫТСТРЕЕ!",
+        "ОНИ СЛАБАКИ.",
+        "ПУТИ НАЗАД НЕТ."
     )
 
     var/list/stage_down_text_bank = list(
-        "It's fading...",
-        "Your pulse slows.",
-        "You feel hollow.",
-        "Synchronization weakening.",
-        "The noise disappears."
+        "Лихорадка окончилась...",
+        "Ваш пульс замедляется.",
+        "Вы чуствуете себя опустошённым.",
+        "Синхронизация убывает.",
+        "Шум утихает..."
     )
 
     var/last_stage_sound = 0
     var/stage_sound_cooldown = 50
     var/processing_active = FALSE
     var/last_emote = 0
-    var/emote_cooldown = 80
+    var/emote_cooldown = 60
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/Initialize(mapload)
     . = ..()
@@ -785,30 +821,37 @@
     return ..()
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/on_wield(obj/item/source, mob/living/user)
-    ..()
-    update_combat_state(user)
+    SIGNAL_HANDLER
+    cleanup_holder_state(user)
 
     if(!bound_user)
         bound_user = user
+        RegisterSignal(bound_user, COMSIG_MOB_DEATH, PROC_REF(on_bound_user_death))
+        RegisterSignal(bound_user, COMSIG_PARENT_QDELETING, PROC_REF(on_bound_user_death))
         user.apply_damage(10, BRUTE, BODY_ZONE_L_ARM)
         user.apply_damage(10, BRUTE, BODY_ZONE_R_ARM)
-        playsound(user, 'sound/weapons/Shotguns_reheated/slamfire/VO/initialization.ogg', 70, TRUE)
-        to_chat(user, span_userdanger("The wire bites into your flesh."))
-        return
+        playsound(user, 'sound/weapons/Shotguns_reheated/slamfire/VO/initialization.ogg', 70, FALSE)
+        to_chat(user, span_userdanger("Что-то впивается в руки."))
 
-    if(bound_user != user)
-        to_chat(user, span_userdanger("[src] rejects your grip."))
+    else if(bound_user != user)
+        to_chat(user, span_userdanger("[src] отвергает твою хватку."))
         playsound(user, 'sound/weapons/Shotguns_reheated/shared/jam_warning.ogg', 70, TRUE)
         var/datum/component/two_handed/TH = get_twohanded()
         TH?.unwield(user)
         addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, dropItemToGround), src, TRUE), 1)
         return
+    update_combat_state(user)
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/on_unwield(obj/item/source, mob/living/user)
     ..()
+    cleanup_holder_state(user)
     cleanup_combat_state(user)
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/proc/clear_bond()
+    UnregisterSignal(bound_user, list(
+        COMSIG_MOB_DEATH,
+        COMSIG_PARENT_QDELETING
+    ))
     bound_user = null
     overload_active = FALSE
     frenzy = 0
@@ -831,14 +874,14 @@
         playsound(user, pick(stage_up_bank), 60, TRUE)
         var/msg = pick(stage_up_text_bank)
         user.visible_message(
-            span_warning("[user]'s breathing becomes more erratic."),
+            span_warning("Дыхание [user] становится более неровным."),
             span_userdanger(msg)
 )
     else
         playsound(user, pick(stage_down_bank), 60, TRUE)
         var/msg = pick(stage_down_text_bank)
         user.visible_message(
-            span_notice("[user] seems to calm down slightly."),
+            span_notice("Похоже что [user] немного успокаивается."),
         span_warning(msg)
 )
 
@@ -856,7 +899,10 @@
 
     if(!user)
         return
-    cleanup_combat_state(user)
+
+    user.remove_movespeed_modifier(/datum/movespeed_modifier/slamfire)
+    user.remove_movespeed_modifier(/datum/movespeed_modifier/slamfire_mid)
+    user.remove_movespeed_modifier(/datum/movespeed_modifier/slamfire_frenzy)
 
     if(is_in_stance())
         switch(frenzy_stage)
@@ -866,10 +912,7 @@
                 user.add_movespeed_modifier(/datum/movespeed_modifier/slamfire_mid)
             if(5)
                 user.add_movespeed_modifier(/datum/movespeed_modifier/slamfire_frenzy)
-    if(frenzy_stage >= 3)
-        ADD_TRAIT(user, TRAIT_IGNOREDAMAGESLOWDOWN, "slamfire_frenzy")
-    if(frenzy_stage >= 5)
-        ADD_TRAIT(user, TRAIT_NOSOFTCRIT, "slamfire_frenzy")
+    current_speed_stage = frenzy_stage
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/proc/cleanup_combat_state(mob/living/user)
 
@@ -880,6 +923,13 @@
     user.remove_movespeed_modifier(/datum/movespeed_modifier/slamfire_frenzy)
     REMOVE_TRAIT(user, TRAIT_IGNOREDAMAGESLOWDOWN, "slamfire_frenzy")
     REMOVE_TRAIT(user, TRAIT_NOSOFTCRIT, "slamfire_frenzy")
+
+/obj/item/gun/ballistic/shotgun/slamfire/traitor/proc/on_bound_user_death()
+    SIGNAL_HANDLER
+
+    reset_frenzy(bound_user)
+    cleanup_combat_state(bound_user)
+    clear_bond()
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/proc/get_frenzy_jam_multiplier()
 
@@ -945,9 +995,9 @@
 
     overload_active = TRUE
     overload_end_time = world.time + frenzy_reset_time
-    to_chat(user, span_boldwarning("FULL SYNCHRONIZATION ACHIEVED."))
-    playsound(user, 'sound/weapons/Shotguns_reheated/slamfire/VO/overload.ogg', 80, TRUE)
-    playsound(user, 'sound/health/fastbeat.ogg', 80, TRUE)
+    to_chat(user, span_boldwarning("ДОСТИГНУТА ПОЛНАЯ СИНХРОНИЗАЦИЯ."))
+    user.emote("overload")
+    user.playsound_local(src, 'sound/health/fastbeat.ogg', 80, TRUE)
     user.heal_overall_damage(20, 20)
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/proc/reset_frenzy(mob/living/user)
@@ -964,8 +1014,8 @@
 
     if(user)
         user.adjustStaminaLoss(40)
-        to_chat(user, span_warning("Your body violently crashes out of synchronization."))
-    playsound(src, 'sound/health/slowbeat.ogg', 70, TRUE)
+        to_chat(user, span_warning("Ваше тело резко выходит из синхронизации."))
+        user.playsound_local(src, 'sound/health/slowbeat.ogg', 70, TRUE)
     stop_frenzy_processing()
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/process()
@@ -983,6 +1033,9 @@
         cleanup_combat_state(bound_user)
         clear_bond()
         stop_frenzy_processing()
+        return
+    if(QDELETED(bound_user))
+        clear_bond()
         return
 
     if(overload_active)
@@ -1002,6 +1055,30 @@
         frenzy = max(0, frenzy - 2)
         last_decay_tick = world.time
         recalculate_frenzy(user)
+
+    if(world.time >= last_decay_tick + frenzy_decay_delay)
+        frenzy = max(0, frenzy - 2)
+        last_decay_tick = world.time
+        recalculate_frenzy(user)
+
+    update_frenzy_jitter(user)
+
+/obj/item/gun/ballistic/shotgun/slamfire/traitor/proc/update_frenzy_jitter(mob/living/user)
+
+    if(!user)
+        return
+    if(world.time < last_jitter + 8)
+        return
+    last_jitter = world.time
+    switch(frenzy_stage)
+        if(0 to 2)
+            user.Jitter(3)
+        if(3)
+            user.Jitter(4)
+        if(4)
+            user.Jitter(8)
+        if(5)
+            user.Jitter(12)
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = TRUE, stam_cost = 0)
     . = ..()
@@ -1046,7 +1123,7 @@
     user.adjustStaminaLoss(-8)
     jam_stress = max(0, jam_stress - 10)
     feed_frenzy(user, 18)
-    to_chat(user, span_danger("The weapon feeds on violence."))
+    to_chat(user, span_danger("Оружие питается их страданиями."))
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/examine(mob/user)
     . = ..()

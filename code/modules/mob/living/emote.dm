@@ -714,7 +714,7 @@
 			custom_emote = tgui_input_text(user, "Choose an emote to display.", "Custom Emote", null, MAX_MESSAGE_LEN, TRUE, TRUE)
 		else
 			custom_emote = stripped_multiline_input_or_reflect(user, "Choose an emote to display.", "Custom Emote")
-			
+
 		if(custom_emote && !check_invalid(user, custom_emote))
 			message = custom_emote
 	else
@@ -870,3 +870,56 @@
 	sound = pick('sound/voice/blubbr1.ogg', 'sound/voice/blubbr2.ogg', 'sound/voice/blubbr3.ogg')
 	. = ..()
 
+/datum/emote/sound/human/frenzy/overload
+	name = "Крик от перегрузки"
+	key = "overload"
+	key_third_person = "overloads"
+	message = "издаёт боевой клич на последнем издыхании!"
+	message_mime = "открывает рот, как будто кричит!"
+	emote_type = EMOTE_AUDIBLE
+	stat_allowed = SOFT_CRIT // BLUEMOON EDIT - некоторые эмоуты можно использовать в софткрите
+
+/datum/emote/sound/human/frenzy/overload/run_emote(mob/user, params)
+	. = ..()
+	var/mob/living/carbon/C = user
+	if(. && iscarbon(user))
+		if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
+			playsound(C, pick('sound/voice/frenzy/overload/female1.ogg', 'sound/voice/frenzy/overload/female2.ogg', 'sound/voice/frenzy/overload/female3.ogg', 'sound/voice/frenzy/overload/female4.ogg'), 70, FALSE)
+		else
+			playsound(C, pick('sound/voice/frenzy/overload/male1.ogg', 'sound/voice/frenzy/overload/male2.ogg', 'sound/voice/frenzy/overload/male3.ogg', 'sound/voice/frenzy/overload/male4.ogg'), 70, FALSE)
+
+/datum/emote/sound/human/frenzy/psychotic
+	name = "Нервный смех"
+	key = "psychotic"
+	key_third_person = "psychotics"
+	message = "Нервно смеется, будто вот-вот слетит с катушек!"
+	message_mime = "открывает рот, как будто смеется!"
+	emote_type = EMOTE_AUDIBLE
+	stat_allowed = SOFT_CRIT // BLUEMOON EDIT - некоторые эмоуты можно использовать в софткрите
+
+/datum/emote/sound/human/frenzy/psychotic/run_emote(mob/user, params)
+	. = ..()
+	var/mob/living/carbon/C = user
+	if(. && iscarbon(user))
+		if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
+			playsound(C, pick('sound/voice/frenzy/psychotic/femalepsychotic.ogg', 'sound/voice/frenzy/psychotic/femalepsychotic2.ogg'), 70, FALSE)
+		else
+			playsound(C, pick('sound/voice/frenzy/psychotic/malepsychotic.ogg', 'sound/voice/frenzy/psychotic/malepsychotic2.ogg'), 70, FALSE)
+
+/datum/emote/sound/human/frenzy/psychoticshort
+	name = "Нервный смех"
+	key = "psychoticshort"
+	key_third_person = "psychotics"
+	message = "Нервно посмеивается, пока руки начинают дрожать!"
+	message_mime = "открывает рот, будто нервно посмеивается!"
+	emote_type = EMOTE_AUDIBLE
+	stat_allowed = SOFT_CRIT // BLUEMOON EDIT - некоторые эмоуты можно использовать в софткрите
+
+/datum/emote/sound/human/frenzy/psychoticshort/run_emote(mob/user, params)
+	. = ..()
+	var/mob/living/carbon/C = user
+	if(. && iscarbon(user))
+		if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
+			playsound(C, pick('sound/voice/frenzy/psychotic/femalepsychoticshort.ogg', 'sound/voice/frenzy/psychotic/femalepsychoticshort2.ogg'), 70, FALSE)
+		else
+			playsound(C, pick('sound/voice/frenzy/psychotic/malepsychoticshort.ogg', 'sound/voice/frenzy/psychotic/malepsychoticshort2.ogg'), 70, FALSE)
