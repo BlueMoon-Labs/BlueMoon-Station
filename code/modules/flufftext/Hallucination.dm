@@ -86,6 +86,41 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	var/turf/T = locate(target_T.x + x_off, target_T.y + y_off, target_T.z)
 	return T
 
+/datum/hallucination/proc/random_non_sec_crewmember()
+	var/list/possible_fakes = list()
+	for(var/V in GLOB.data_core.locked)
+		var/datum/data/record/R = V
+		var/datum/mind/possible_fake = R.fields["mindref"]
+		if(!possible_fake)
+			continue
+
+		var/datum/job/assigned_job = SSjob.GetJob(possible_fake.assigned_role)
+		if(assigned_job?.departments & DEPARTMENT_BITFLAG_SECURITY)
+			continue
+
+		var/mob/living/carbon/human/fake_body = possible_fake.current
+		if(!istype(fake_body) || fake_body == target || fake_body.stat == DEAD)
+			continue
+		if(get_dist(fake_body, target) < 8)
+			continue
+
+		possible_fakes += fake_body
+
+	return length(possible_fakes) ? pick(possible_fakes) : null
+
+/datum/hallucination/proc/generate_fake_heretic_text(length = 25)
+	. = ""
+	for(var/i in 1 to length)
+		. += pick("!", "$", "^", "@", "&", "#", "*", "(", ")", "?")
+
+/datum/hallucination/proc/fake_priority_announce(text, title = "", sound, type, sender_override, has_important_message = TRUE)
+	if(!text)
+		return
+
+	to_chat(target, build_priority_announcement(text, title, type, sender_override, has_important_message))
+	if(sound)
+		SEND_SOUND(target, sound)
+
 /obj/effect/hallucination
 	invisibility = INVISIBILITY_OBSERVER
 	anchored = TRUE
@@ -916,12 +951,34 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	qdel(src)
 
 /datum/hallucination/stationmessage
+	var/static/list/heretic_ascension_bodies = list(
+		list(
+			"text" = "Бойтесь огня! Князь пепла, %FAKENAME% вознёсся! Языки пламени поглотят всё!",
+			"sound" = 'sound/music/antag/heretic/ascend_ash.ogg',
+		),
+		list(
+			"text" = "Мастер клинков, ученик Рваного Чемпиона, %FAKENAME% вознёсся! Их сталь разрежет реальность серебряным ураганом!",
+			"sound" = 'sound/music/antag/heretic/ascend_blade.ogg',
+		),
+		list(
+			"text" = "Вихрь крутится в вечном танце. Реальность выворачивается наизнанку. Повелитель, %FAKENAME% вознёсся! Бойтесь длани господней!",
+			"sound" = 'sound/music/antag/heretic/ascend_flesh.ogg',
+		),
+		list(
+			"text" = "Бойтесь разложения, что несёт Ржавый Всадник, %FAKENAME%, возносясь над вами! Никто не избежит коррозии!",
+			"sound" = 'sound/music/antag/heretic/ascend_rust.ogg',
+		),
+		list(
+			"text" = "Дворянин пустоты, %FAKENAME%, прибыл к вам, кружась в вальсе кончины миров!",
+			"sound" = 'sound/music/antag/heretic/ascend_void.ogg',
+		),
+	)
 
 /datum/hallucination/stationmessage/New(mob/living/carbon/C, forced = TRUE, message)
 	set waitfor = FALSE
 	..()
 	if(!message)
-		message = pick("ratvar","shuttle dock","blob alert","malf ai","meteors","supermatter")
+		message = pick("ratvar","shuttle dock","blob alert","malf ai","heretic","cult summon","meteors","supermatter")
 	feedback_details += "Type: [message]"
 	switch(message)
 		if("blob alert")
@@ -941,6 +998,38 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 			to_chat(target, "<h1 class='alert'>ВНИМАНИЕ: АНОМАЛИЯ</h1>")
 			to_chat(target, "<br><br><span class='alert'>Все станционные системы подверглись воздействию вредоносного ПО. Немедленно отключите искусственный интеллект станции, во избежание её уничтожения.</span><br><br>")
 			SEND_SOUND(target, SSstation.announcer.event_sounds[ANNOUNCER_AIMALF])
+		if("heretic")
+			var/mob/living/carbon/human/totally_real_heretic = random_non_sec_crewmember()
+			if(!totally_real_heretic)
+				return
+
+			var/list/fake_ascension = pick(heretic_ascension_bodies)
+			var/announcement_text = replacetext(fake_ascension["text"], "%FAKENAME%", totally_real_heretic.real_name)
+			var/garbled_title = generate_fake_heretic_text()
+			fake_priority_announce(
+				text = "[garbled_title] [announcement_text] [generate_fake_heretic_text()]",
+				title = garbled_title,
+				sound = fake_ascension["sound"],
+			)
+		if("cult summon")
+			var/mob/living/carbon/human/totally_real_cult_leader = random_non_sec_crewmember()
+			if(!totally_real_cult_leader)
+				return
+
+			var/area/fake_summon_area
+			var/area/hallucinator_area = get_area(target)
+			var/list/possible_areas = GLOB.the_station_areas.Copy()
+			if(hallucinator_area)
+				possible_areas -= hallucinator_area.type
+			if(length(possible_areas))
+				fake_summon_area = GLOB.areas_by_type[pick(possible_areas)]
+			var/fake_area_name = fake_summon_area ? fake_summon_area.name : "неизвестном секторе"
+
+			fake_priority_announce(
+				text = "Зафиксирован ритуал призыва Нар'Си в [fake_area_name]. Главный участник: [totally_real_cult_leader.real_name]. Прервите ритуал любой ценой!",
+				title = "[command_name()], Отдел Высших Измерений",
+				sound = 'sound/music/antag/bloodcult/bloodcult_scribe.ogg',
+			)
 		if("meteors") //Meteors inbound!
 			to_chat(target, "<h1 class='alert'>BНИМАНИЕ: МЕТЕОРЫ</h1>")
 			to_chat(target, "<br><br><span class='alert'>[generateMeteorString(rand(60, 90),FALSE,pick(GLOB.cardinals))]</span><br><br>")

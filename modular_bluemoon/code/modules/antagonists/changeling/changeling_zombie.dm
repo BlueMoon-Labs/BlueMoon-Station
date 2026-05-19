@@ -39,8 +39,8 @@
 	var/can_cure = FALSE
 	var/was_changeling_husked = FALSE
 	var/list/obj/item/melee/arm_blade/changeling_zombie/arm_blades = list()
-	var/obj/item/clothing/suit/armor/changeling/armor
-	var/obj/item/clothing/head/helmet/changeling/armor_head
+	var/obj/item/clothing/suit/armor/changeling/weak/armor
+	var/obj/item/clothing/head/helmet/changeling/weak/armor_head
 	var/list/bodypart_zones_to_regenerate = list()
 	COOLDOWN_DECLARE(limb_regen_cooldown)
 	COOLDOWN_DECLARE(transformation_grace_period)
@@ -144,7 +144,7 @@
 	ADD_TRAIT(host, TRAIT_NOHUNGER, TRAIT_CHANGELING_ZOMBIE)
 	ADD_TRAIT(host, TRAIT_NOBREATH, TRAIT_CHANGELING_ZOMBIE)
 	ADD_TRAIT(host, TRAIT_THERMAL_VISION, TRAIT_CHANGELING_ZOMBIE)
-	ADD_TRAIT(host, TRAIT_EASYDISMEMBER, TRAIT_CHANGELING_ZOMBIE)
+	ADD_TRAIT(host, TRAIT_NODISMEMBER, TRAIT_CHANGELING_ZOMBIE)
 	ADD_TRAIT(host, TRAIT_FAKEDEATH, TRAIT_CHANGELING_ZOMBIE)
 	host.cure_all_traumas(TRAUMA_RESILIENCE_MAGIC)
 	host.revive(TRUE, TRUE)
@@ -163,8 +163,6 @@
 	host.SetKnockdown(0)
 	host.setStaminaLoss(0)
 	host.set_resting(FALSE)
-	host.reagents.add_reagent(/datum/reagent/medicine/changelingadrenaline, 4)
-	host.reagents.add_reagent(/datum/reagent/medicine/changelinghaste, 3)
 	RegisterSignal(host, COMSIG_MOB_DEATH, PROC_REF(on_owner_died))
 	RegisterSignal(host, COMSIG_CARBON_REMOVE_LIMB, PROC_REF(on_remove_limb))
 	RegisterSignal(host, COMSIG_CARBON_ATTACH_LIMB, PROC_REF(on_gain_limb))
@@ -241,3 +239,9 @@
 	var/datum/component/changeling_zombie_infection/us = user.GetComponent(/datum/component/changeling_zombie_infection)
 	if(us?.infect_objective)
 		us.infect_objective.total_infections += 1
+
+/obj/item/clothing/suit/armor/changeling/weak
+	armor = list(MELEE = 35, BULLET = 30, LASER = 15, ENERGY = 20, BOMB = 5, BIO = 4, RAD = 0, FIRE = 100, ACID = 100)
+
+/obj/item/clothing/head/helmet/changeling/weak
+	armor = list(MELEE = 35, BULLET = 30, LASER = 15, ENERGY = 20, BOMB = 5, BIO = 4, RAD = 0, FIRE = 100, ACID = 100)
