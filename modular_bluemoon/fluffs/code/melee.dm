@@ -1,3 +1,15 @@
+/*
+/////////////////////////	ИНФОРМАЦИЯ: /////////////////////////
+
+При добавлении рескина на оружие (или любого предмета, что влияет на геймплей) впишите DONATE_ITEM_TOOLTIP_PARENT сразу после пути, пример:
+/obj/item/gun/ballistic/automatic/pistol/enforcer/my_reskin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "My personal enforcer"
+
+Если предмет из категории HIGHRISK, например мультифазка или антикварка,
+	вместо DONATE_ITEM_TOOLTIP_PARENT используйте DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
+*/
+
 /obj/item/modkit/shigu_kit
 	name = "Butcher Knife Kit"
 	desc = "A modkit for making a Butcher Knife into a Shigu Knife."

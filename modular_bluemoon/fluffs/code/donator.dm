@@ -928,7 +928,7 @@
 	path = /obj/item/modkit/dreadmk3_kit
 	ckeywhitelist = list("stasdvrz", "mrsko", "akinight", "vovakr", "roninqwerty","pingvas","lev1932","dragon9090","cnaperdodo")
 
-/datum/gear/donator/bm/old_laser_kit
+/datum/gear/donator/bm/aer9
 	name = "AER9 Kit"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/modkit/aer9

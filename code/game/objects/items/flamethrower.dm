@@ -54,7 +54,7 @@
 		igniter.flamethrower_process(location)
 
 /obj/item/flamethrower/update_icon_state()
-	item_state = "flamethrower_[lit]"
+	item_state = "[initial(icon_state)]_[lit]"
 
 /obj/item/flamethrower/update_overlays()
 	. = ..()

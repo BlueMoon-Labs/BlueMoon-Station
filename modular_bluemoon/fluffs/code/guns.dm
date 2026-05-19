@@ -6,8 +6,8 @@
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "My personal enforcer"
 
-Если предмет из категории HIGHRISK, например мультифазка или антикварка, вместо DONATE_ITEM_TOOLTIP_PARENT используйте DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
-
+Если предмет из категории HIGHRISK, например мультифазка или антикварка,
+	вместо DONATE_ITEM_TOOLTIP_PARENT используйте DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define TRANSFER_VAR(SOURCE, TARGET, VAR) \
@@ -239,6 +239,7 @@
 	fromitem = list(/obj/item/flamethrower, /obj/item/flamethrower/full, /obj/item/flamethrower/full/tank)
 
 /obj/item/flamethrower/full/tank/m240
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "M240 Flamethrower"
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "m240"
@@ -247,9 +248,6 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	create_with_tank = TRUE
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/flamethrower.ogg'
-
-/obj/item/flamethrower/update_icon_state()
-	item_state = "m240_[lit]"
 
 /obj/item/modkit/old_kit
 	name = "H&K Luftkuss Kit"
