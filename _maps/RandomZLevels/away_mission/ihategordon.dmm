@@ -25462,7 +25462,7 @@
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
 "iyu" = (
-/obj/item/canvas_bug,
+/obj/item/camera_bug,
 /turf/open/water/jungle,
 /area/awaymission/ihategordon/outsideofmesa)
 "iyG" = (
@@ -46404,7 +46404,7 @@
 /obj/structure/noticeboard{
 	pixel_y = 32
 	},
-/obj/item/canvas,
+/obj/item/camera,
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 1
 	},
@@ -48136,7 +48136,7 @@
 /obj/item/ammo_box/magazine/pistolm9mm,
 /obj/item/ammo_box/magazine/mp5,
 /obj/item/mod/module/emp_shield/advanced,
-/obj/item/canvas_bug,
+/obj/item/camera_bug,
 /turf/open/floor/plasteel,
 /area/awaymission/ihategordon/secret_rooms)
 "pYx" = (
@@ -66419,11 +66419,11 @@
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/opposing/comlpex)
 "vZW" = (
-/obj/item/canvas{
+/obj/item/camera{
 	pixel_x = 0;
 	pixel_y = -5
 	},
-/obj/item/canvas{
+/obj/item/camera{
 	pixel_x = 1;
 	pixel_y = 11
 	},

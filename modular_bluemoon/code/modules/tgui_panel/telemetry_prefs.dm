@@ -13,9 +13,9 @@ SUBSYSTEM_DEF(connection_telemetry)
 	init_order = INIT_ORDER_DBCORE - 1
 	var/save_queued = FALSE
 
-/datum/controller/subsystem/connection_telemetry/Initialize()
+/datum/controller/subsystem/connection_telemetry/Initialize(start_timeofday)
 	load_connection_telemetry_cache()
-	return SS_INIT_SUCCESS
+	return ..()
 
 /datum/controller/subsystem/connection_telemetry/Shutdown()
 	save_connection_telemetry_cache()

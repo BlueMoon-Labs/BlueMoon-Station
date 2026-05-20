@@ -293,8 +293,10 @@
  */
 /atom/Destroy()
 	if(alternate_appearances)
-		for(var/K in alternate_appearances)
-			var/datum/atom_hud/alternate_appearance/AA = alternate_appearances[K]
+		var/list/aa_snapshot = alternate_appearances
+		alternate_appearances = null
+		for(var/K in aa_snapshot)
+			var/datum/atom_hud/alternate_appearance/AA = aa_snapshot[K]
 			AA.remove_from_hud(src)
 
 	if(reagents)
