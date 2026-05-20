@@ -44,9 +44,9 @@
 /obj/item/door_remote/afterattack(atom/A, mob/user)
 	. = ..()
 	var/obj/machinery/door/airlock/door = A
-	if(!(door.check_access(src) || door.allowed(user)))
-		return
 	if(!istype(door) || !door.hasPower() || !door.canAIControl())
+		return
+	if(!(door.check_access(src) || door.allowed(user)))
 		return
 
 	switch(mode)
