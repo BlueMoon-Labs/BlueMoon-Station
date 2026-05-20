@@ -38,11 +38,10 @@
 
 /obj/item/door_remote/afterattack(atom/A, mob/user)
 	. = ..()
+	if(!check_access(src))
+		return
 	var/obj/machinery/door/airlock/door = A
 	if(!istype(door) || !door.hasPower() || !door.canAIControl())
-		return
-	if(!door.check_access(src))
-		to_chat(user, span_warning("Доступ запрещён."))
 		return
 
 	switch(mode)
