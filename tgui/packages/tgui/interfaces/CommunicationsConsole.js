@@ -694,7 +694,7 @@ const PageMain = (props, context) => {
                   content="Отменить"
                   color="bad"
                   fontSize="16px"
-                  onClick={() => setShowAlertLevelConfirm(false)}
+                  onClick={() => setShowAlertLevelConfirm([null, null])}
                 />
               </Flex.Item>
             </Flex>

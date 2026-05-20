@@ -49,5 +49,8 @@
 	bm_lobby_show_admin_bg = !!bm_lobby_show_admin_bg
 	var/telemetry_history_json
 	.["connection_telemetry_history"] >> telemetry_history_json
-	connection_telemetry_history = sanitize_connection_telemetry_history(json_decode(telemetry_history_json))
+	var/list/telemetry_history
+	if(istext(telemetry_history_json) && length(telemetry_history_json))
+		telemetry_history = json_decode(telemetry_history_json)
+	connection_telemetry_history = sanitize_connection_telemetry_history(telemetry_history)
 	return .
