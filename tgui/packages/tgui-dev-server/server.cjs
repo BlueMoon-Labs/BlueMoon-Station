@@ -16,7 +16,12 @@ const DEV_SERVER_PORT = 3000;
 
 // Резолвит запрошенный URL в путь внутри root; null если выходит за пределы root.
 const resolveSafePath = (root, requestUrl) => {
-  const decoded = decodeURIComponent((requestUrl || '/').split('?')[0]);
+  let decoded;
+  try {
+    decoded = decodeURIComponent((requestUrl || '/').split('?')[0]);
+  } catch (err) {
+    return null; // невалидное percent-кодирование — считаем запрос недопустимым
+  }
   const filePath = path.join(root, path.normalize(decoded));
   if (filePath !== root && !filePath.startsWith(root + path.sep)) {
     return null;
@@ -114,7 +119,19 @@ const createDevServer = ({ port = DEV_SERVER_PORT, publicDir }) => {
   };
 
   const listen = () =>
-    new Promise((resolve) => server.listen(port, '127.0.0.1', resolve));
+    new Promise((resolve, reject) => {
+      const onError = (err) => {
+        server.removeListener('listening', onListening);
+        reject(err);
+      };
+      const onListening = () => {
+        server.removeListener('error', onError);
+        resolve();
+      };
+      server.once('error', onError);
+      server.once('listening', onListening);
+      server.listen(port, '127.0.0.1');
+    });
 
   return { server, broadcast, listen, sockets };
 };

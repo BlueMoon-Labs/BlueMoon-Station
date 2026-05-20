@@ -85,6 +85,7 @@ describe('createDevServer static serving', () => {
       res.on('end', () => {
         expect(res.statusCode).toBe(200);
         expect(res.headers['access-control-allow-origin']).toBe('*');
+        expect(res.headers['cache-control']).toBe('no-store');
         expect(body).toBe('console.log(1)');
         done();
       });
