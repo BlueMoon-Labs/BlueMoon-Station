@@ -178,6 +178,8 @@
 		if("follow")
 			if(!selected_ticket || !selected_ticket.initiator || !selected_ticket.initiator.mob)
 				return TRUE
+			if(!usr.client)
+				return TRUE
 			if(!isobserver(usr) && !usr.client.admin_ghost())
 				return TRUE
 			var/mob/dead/observer/observer = usr.client.mob

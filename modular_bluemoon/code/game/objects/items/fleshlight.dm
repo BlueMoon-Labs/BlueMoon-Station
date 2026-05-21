@@ -329,6 +329,8 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	else if(user.client && user.client.prefs.muted & MUTE_IC)
 		to_chat(user, "Вы не можете отправлять IC сообщения (заглушены).")
 		return FALSE
+	if(!ishuman(user))
+		return FALSE
 	var/mob/living/carbon/human/H_user = user
 
 	var/list/select = list()

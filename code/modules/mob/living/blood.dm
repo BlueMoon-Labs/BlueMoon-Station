@@ -237,10 +237,10 @@
 
 	if(!suiciding)
 		blood_data["cloneable"] = 1
-	blood_data["blood_type"] = dna.blood_type
+	blood_data["blood_type"] = dna?.blood_type //runtime guard для мобов без dna (например, ксеносов)
 	blood_data["gender"] = gender
 	blood_data["real_name"] = real_name
-	blood_data["features"] = dna.features
+	blood_data["features"] = dna?.features //runtime guard для мобов без dna
 	blood_data["factions"] = faction
 	blood_data["quirks"] = list()
 	for(var/V in roundstart_quirks)

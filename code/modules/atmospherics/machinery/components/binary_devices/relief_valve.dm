@@ -41,7 +41,8 @@
 	update_icon_nopipes()
 	update_parents()
 	var/datum/pipeline/parent1 = parents[1]
-	parent1.reconcile_air()
+	if(parent1)
+		parent1.reconcile_air()
 
 /obj/machinery/atmospherics/components/binary/relief_valve/proc/close()
 	opened = FALSE
