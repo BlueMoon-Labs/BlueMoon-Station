@@ -35,6 +35,7 @@
 
 /datum/brain_trauma/special/imaginary_friend/on_lose()
 	..()
+	QDEL_NULL(friend_spawner) // спавнер держит ссылки на trauma/friend, чистим его первым, иначе они не соберутся
 	QDEL_NULL(friend)
 
 //If the friend goes afk, make a brand new friend. Plenty of fish in the sea of imagination.
@@ -50,6 +51,7 @@
 /datum/brain_trauma/special/imaginary_friend/proc/make_friend_spawner()
 	if(!friend)
 		make_friend()
+	QDEL_NULL(friend_spawner) // не плодим спавнеры при рероле
 	friend_spawner = new(friend, src)
 // BLUEMOON ADD END
 

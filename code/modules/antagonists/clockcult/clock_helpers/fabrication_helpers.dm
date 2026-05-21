@@ -55,7 +55,7 @@
 	if(locate(/obj/structure/falsewall) in contents)
 		to_chat(user, "<span class='warning'>There is a false wall in the way, preventing you from fabricating a clockwork wall on [src].</span>")
 		return
-	if(is_blocked_turf(src, TRUE))
+	if(src.is_blocked_turf(exclude_mobs = TRUE))
 		to_chat(user, "<span class='warning'>Something is in the way, preventing you from fabricating a clockwork wall on [src].</span>")
 		return TRUE
 	var/operation_time = 100

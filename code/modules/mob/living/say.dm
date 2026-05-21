@@ -559,11 +559,15 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	return TRUE
 
 /mob/living/proc/get_key(message)
+	if(!length(message))
+		return
 	var/key = message[1]
 	if((key in GLOB.department_radio_prefixes) && length(message) > length(key))
 		return lowertext(message[1 + length(key)])
 
 /mob/living/proc/get_message_language(message)
+	if(!length(message))
+		return null
 	if(message[1] == ",")
 		var/comma_len = length(message[1])
 		if(length(message) <= comma_len)

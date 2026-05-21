@@ -315,7 +315,8 @@ Judgement 80k power or nine converts
 	var/datum/progressbar/progbar
 
 /datum/clockwork_scripture/ranged_ability/Destroy()
-	progbar.end_progress()
+	if(progbar)
+		progbar.end_progress()
 	return ..()
 
 /datum/clockwork_scripture/ranged_ability/scripture_effects()
