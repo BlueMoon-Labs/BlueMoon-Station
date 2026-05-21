@@ -26,6 +26,8 @@
 	. = ..()
 	if(.)
 		return
+	if(!magazine) // нечего заряжать без барабана/магазина (напр. он извлечён через Alt-click или оружие создано без него)
+		return
 	var/num_loaded = 0
 	if(istype(A, /obj/item/ammo_box)) //проверка что контейнер с боеприпасами и приведение к типу
 		var/obj/item/ammo_box/AM = A

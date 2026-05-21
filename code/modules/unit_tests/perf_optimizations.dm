@@ -337,6 +337,64 @@
 #undef BUILD_PIPELINE_PERF_N
 
 
+/// Regression coverage for the reported pipeline teardown runtimes
+/// ("Cannot modify null.parent" in Destroy, "Cannot modify null.air_temporary"
+/// in temporarily_store_air). BYOND leaves a null slot in a list when a
+/// referenced object is hard-deleted, so a member pipe deleted elsewhere leaves
+/// `members` holding a null. The teardown loops must skip those quietly; an
+/// `as anything` iteration dereferences the null and crashes. The runtime
+/// counter catches it because DM keeps executing past a null-deref runtime.
+/datum/unit_test/pipeline_teardown_skips_null_members/Run()
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p1 = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+
+	var/datum/pipeline/P = new()
+	allocated += P // double-qdel is safe; this just guarantees cleanup on early assert failure
+	P.members += p1
+	P.members += null // simulate a member pipe hard-deleted elsewhere
+	p1.parent = P
+	// air must have volume so Destroy takes the temporarily_store_air() branch.
+	P.air = new /datum/gas_mixture()
+	P.air.set_volume(100)
+	P.air.set_temperature(T20C)
+
+	var/runtimes_before = GLOB.total_runtimes
+	P.temporarily_store_air()
+	qdel(P) // Destroy() iterates members again ("P.parent = null")
+	var/runtimes_added = GLOB.total_runtimes - runtimes_before
+
+	TEST_ASSERT_EQUAL(runtimes_added, 0, "pipeline teardown must not raise runtimes on a null member (got [runtimes_added])")
+	TEST_ASSERT_NOTNULL(p1.air_temporary, "the real member must still get its air_temporary parcel")
+
+
+/// merge() walks the absorbed pipeline's members/other_atmosmch to re-parent
+/// them. If that pipeline holds a stale null (same hard-delete cause as above),
+/// the re-parent loop must skip it rather than deref null.parent / null methods.
+/datum/unit_test/pipeline_merge_skips_null_members/Run()
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p1 = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p2 = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+
+	var/datum/pipeline/keeper = new()
+	allocated += keeper
+	keeper.air = new /datum/gas_mixture()
+	keeper.air.set_volume(100)
+	keeper.members += p1
+	p1.parent = keeper
+
+	var/datum/pipeline/absorbed = new()
+	absorbed.air = new /datum/gas_mixture()
+	absorbed.air.set_volume(100)
+	absorbed.members += p2
+	absorbed.members += null // stale null in the pipeline being merged in
+	p2.parent = absorbed
+
+	var/runtimes_before = GLOB.total_runtimes
+	keeper.merge(absorbed) // merge() qdels absorbed for us
+	var/runtimes_added = GLOB.total_runtimes - runtimes_before
+
+	TEST_ASSERT_EQUAL(runtimes_added, 0, "merge() must not raise runtimes on a null member (got [runtimes_added])")
+	TEST_ASSERT_EQUAL(p2.parent, keeper, "the real absorbed member must be re-parented to the keeper")
+
+
 // ===== Fix F: getFlatIcon directional-check + icon_states memoisation =====
 //
 // Profile snapshot: /proc/getFlatIcon — 2005 calls / 10.5s total CPU / 3.9s overtime,
