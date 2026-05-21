@@ -29,9 +29,12 @@
 			"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahanclown")
 			)
 		stand_icons = sort_list(stand_icons)
-	var/stand_borg_icon = show_radial_menu(R, R , stand_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	var/list/selectable_stand_icons = get_selectable_borg_icons(stand_icons, R.client)
+	var/stand_borg_icon = show_radial_menu(R, R , selectable_stand_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
 	if(!stand_borg_icon)
 		return
+	if(apply_donator_borg_icon(stand_borg_icon, R.client))
+		return ..()
 	switch(stand_borg_icon)
 		if("Standard")
 			cyborg_base_icon = "robot"
