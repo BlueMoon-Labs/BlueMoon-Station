@@ -137,10 +137,12 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	if(upgrade_prefix)
 		name = upgrade_prefix + " " + initial(name)
 
-	if(reinforced && reinforcement_path)
+	if(reinforced && ispath(reinforcement_path, /obj/item/clothing))
 		slot_flags = initial(reinforcement_path.slot_flags)
 		body_parts_covered = initial(reinforcement_path.body_parts_covered)
 	else
+		reinforced = FALSE
+		reinforcement_path = null
 		slot_flags = initial(slot_flags)
 		body_parts_covered = initial(body_parts_covered)
 
@@ -582,7 +584,9 @@ BLIND     // can't see anything
 /obj/item/clothing/proc/attach_accessory(obj/item/I, mob/user, notifyAttach = TRUE)
 	return
 
-/obj/item/clothing/proc/on_reinforcement(kit_flag, reinforced_to, prefix)
+/obj/item/clothing/proc/on_reinforcement(kit_flag, reinforced_to)
+	if(!ispath(reinforced_to, /obj/item/clothing))
+		return FALSE
 	if(ishuman(src.loc))
 		var/mob/living/carbon/human/H = src.loc
 		if(!(src.current_equipped_slot & kit_flag))
@@ -590,4 +594,5 @@ BLIND     // can't see anything
 	src.slot_flags = kit_flag	// Locks reinforced item to specified kit's slot
 	reinforced = TRUE	// Prevents procedures that change slot_flags from working on reinforced item
 	reinforcement_path = reinforced_to
+	return TRUE
 
