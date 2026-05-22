@@ -132,9 +132,5 @@
 // 	hat_offset = 3
 
 GLOBAL_LIST_INIT_TYPED(borg_donator_skins, /datum/borg_donator_skin, list(
-	new /datum/borg_donator_skin/medical/alina,
-	new /datum/borg_donator_skin/engineering/alina,
-	new /datum/borg_donator_skin/security/alina,
-	new /datum/borg_donator_skin/butler/alina,
-	new /datum/borg_donator_skin/standard/pe4henika_debug
+	// new /datum/borg_donator_skin/standard/pe4henika_debug
 ))
