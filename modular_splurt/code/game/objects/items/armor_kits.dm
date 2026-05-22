@@ -3,7 +3,7 @@
 	desc = "A nanotrasen armoring kit with armored plates and some nanoglue, for reinforcing outerwear."
 	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
 	icon_state = "blueshield_armor_kit" // I'm so sorry I butchered the sprite, Toriate.
-	parent_armor_type = /obj/item/clothing/suit/armor/vest/bluesheid
+	parent_armor_type = /obj/item/clothing/suit/armor/vest/blueshield
 	kit_slot_flag = ITEM_SLOT_OCLOTHING
 	kit_prefix = "aegis"
 
@@ -40,7 +40,7 @@
 	desc = "Набор гибких армированных пластин которые будут совершенно незаметно сидеть под твоей толстовкой, с которой ты так не захотел расставаться, хиккан."
 	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
 	icon_state = "syn_armor_kit"
-	parent_armor_type = /obj/item/clothing/suit/armor/vest/bluesheid
+	parent_armor_type = /obj/item/clothing/suit/armor/vest/blueshield
 	kit_slot_flag = ITEM_SLOT_OCLOTHING
 	kit_prefix = "rogue"
 

@@ -59,7 +59,7 @@
 	head = /obj/item/clothing/head/helmet/sec/blueshield
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	glasses = /obj/item/clothing/glasses/hud/blueshield
-	suit = /obj/item/clothing/suit/armor/vest/bluesheid
+	suit = /obj/item/clothing/suit/armor/vest/blueshield
 	shoes = /obj/item/clothing/shoes/jackboots
 	suit_store = /obj/item/kitchen/knife/combat
 	r_pocket = /obj/item/sensor_device_command
@@ -85,7 +85,7 @@
 	head = /obj/item/clothing/head/helmet/sec/blueshield
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	glasses = /obj/item/clothing/glasses/hud/blueshield
-	suit = /obj/item/clothing/suit/armor/vest/bluesheid
+	suit = /obj/item/clothing/suit/armor/vest/blueshield
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	suit_store = /obj/item/kitchen/knife/combat
 	l_pocket = /obj/item/sensor_device_command

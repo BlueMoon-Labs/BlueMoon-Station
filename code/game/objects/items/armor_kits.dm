@@ -20,7 +20,7 @@
 	if(!(C.slot_flags & kit_slot_flag))
 		to_chat(user, span_danger("You cannot modify [C] with this reinforcement kit."))
 		return
-	if(C.type in typesof(/obj/item/clothing/suit/toggle/captains_parade, /obj/item/clothing/suit/space, /obj/item/clothing/suit/armor))
+	if(istype(C, /obj/item/clothing/suit/space) || istype(C, /obj/item/clothing/suit/armor) || istype(C, /obj/item/clothing/suit/toggle/captains_parade))
 		to_chat(user, span_danger("You cannot modify [C], as it already has armor or is a part of special equipment."))
 		return
 
@@ -31,7 +31,7 @@
 		if(J.damaged_clothes)
 			to_chat(user,"<span class='warning'>You should repair the damage done to [C] first.</span>")
 			return
-		if(J.attached_accessories.len)
+		if(LAZYLEN(J.attached_accessories))
 			to_chat(user,"<span class='warning'>Kind of hard to sew around [J.attached_accessories.Join(", ")].</span>")
 			return
 

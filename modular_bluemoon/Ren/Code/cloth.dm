@@ -350,7 +350,7 @@
 	desc = "Набор гибких армированных пластин которые будут совершенно незаметно сидеть под твоей толстовкой, с которой ты так не захотел расставаться даже на миссии, хиккан."
 	icon_state = "inteq_armor_kit"
 	icon = 'modular_bluemoon/Ren/Icons/Obj/misc.dmi'
-	parent_armor_type = /obj/item/clothing/suit/armor/vest/bluesheid
+	parent_armor_type = /obj/item/clothing/suit/armor/vest/blueshield
 	kit_slot_flag = ITEM_SLOT_OCLOTHING
 	kit_prefix = "quiet"
 

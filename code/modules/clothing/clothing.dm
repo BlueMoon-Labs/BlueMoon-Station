@@ -135,7 +135,8 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	if(upgrade_prefix)
 		name = upgrade_prefix + " " + initial(name)
 	body_parts_covered = initial(body_parts_covered)
-	slot_flags = initial(slot_flags)
+	if(!reinforced)
+		slot_flags = initial(slot_flags)
 	damage_by_parts = null
 	if(user)
 		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
