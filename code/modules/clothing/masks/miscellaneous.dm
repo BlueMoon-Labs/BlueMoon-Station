@@ -361,6 +361,9 @@
 
 /obj/item/clothing/mask/bandana/AltClick(mob/user)
 	. = ..()
+	if(src.reinforced)
+		to_chat(user, "<span class='warning'>Armor kit made [src] too stiff to adjust it in any way.</span>")
+		return FALSE
 	if(iscarbon(user))
 		var/mob/living/carbon/C = user
 		if((C.get_item_by_slot(ITEM_SLOT_HEAD == src)) || (C.get_item_by_slot(ITEM_SLOT_MASK) == src))

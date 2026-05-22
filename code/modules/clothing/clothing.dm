@@ -63,6 +63,8 @@
 	var/list/armor_list = list()
 	///These are armor values that protect the clothing, taken from its armor datum. List updates on examine because it's currently only used to print armor ratings to chat in Topic().
 	var/list/durability_list = list()
+	// This variable tells if this item has been reinforced with an armor kit. Stops procs that affect slot_flags from working.
+	var/reinforced = FALSE
 
 /obj/item/clothing/Initialize(mapload)
 	. = ..()
@@ -571,3 +573,12 @@ BLIND     // can't see anything
 
 /obj/item/clothing/proc/attach_accessory(obj/item/I, mob/user, notifyAttach = TRUE)
 	return
+
+/obj/item/clothing/proc/on_reinforcement(kit_flag)
+	if(ishuman(src.loc))
+		var/mob/living/carbon/human/H = src.loc
+		if(!(src.current_equipped_slot & kit_flag))
+			H.dropItemToGround(src, force=TRUE)	// Armorkit's afterattack proc handles this scenario, but i'll add a second line of defence just in case
+	src.slot_flags = kit_flag	// Locks reinforced item to specified kit's slot
+	reinforced = TRUE	// Prevents procedures that change slot_flags from working on reinforced item
+
