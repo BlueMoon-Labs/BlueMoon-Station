@@ -54,7 +54,7 @@
 	if(user && user.incapacitated())
 		return FALSE
 	if(src.reinforced)
-		to_chat(user, "<span class='warning'>Armor kit made [src] too stiff to adjust it in any way.</span>")
+		to_chat(user, "<span class='warning'>Набор бронепластин сделал [src] слишком плотным, чтобы изменить его стиль ношения.</span>")
 		return FALSE
 	mask_adjusted = !mask_adjusted
 	if(!mask_adjusted)

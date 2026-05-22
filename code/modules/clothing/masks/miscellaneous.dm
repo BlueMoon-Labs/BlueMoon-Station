@@ -362,7 +362,7 @@
 /obj/item/clothing/mask/bandana/AltClick(mob/user)
 	. = ..()
 	if(src.reinforced)
-		to_chat(user, "<span class='warning'>Armor kit made [src] too stiff to adjust it in any way.</span>")
+		to_chat(user, "<span class='warning'>Набор бронепластин сделал [src] слишком жёстким, чтобы изменить его стиль ношения.</span>")
 		return FALSE
 	if(iscarbon(user))
 		var/mob/living/carbon/C = user

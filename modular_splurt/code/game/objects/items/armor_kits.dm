@@ -1,6 +1,6 @@
 /obj/item/armorkit/blueshield
 	name = "aegis armor kit"
-	desc = "A nanotrasen armoring kit with armored plates and some nanoglue, for reinforcing outerwear."
+	desc = "Сделанный по технологиям НаноТрейзен набор гибких армированных пластин, и немного нано-клея. Всё, что нужно для укрепления верхней одежды."
 	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
 	icon_state = "blueshield_armor_kit" // I'm so sorry I butchered the sprite, Toriate.
 	parent_armor_type = /obj/item/clothing/suit/armor/vest/blueshield
@@ -10,7 +10,7 @@
 
 /obj/item/armorkit/blueshield/helmet
 	name = "aegis headgear kit"
-	desc = "A nanotrasen armoring kit with armored plates and some nanoglue, for reinforcing hats or other headgear."
+	desc = "Сделанный по технологиям НаноТрейзен набор гибких армированных пластин, и немного нано-клея. Всё, что нужно для укрепления головных уборов."
 	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
 	icon_state = "blueshield_helmet_kit" // I'm so sorry I butchered the sprite, Toriate. (x2)
 	parent_armor_type = /obj/item/clothing/head/helmet/sec/blueshield
@@ -19,7 +19,7 @@
 
 /obj/item/armorkit/security
 	name = "rampart armor kit"
-	desc = "A security armoring kit with flexible armored sheets and some nanoglue, for reinforcing outerwear."
+	desc = "Стандартизированный службой безопасности набор гибких бронепластин и тюбиков нано-клея. Данная вариация предназначена для укрепления верхней одежды."
 	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
 	icon_state = "sec_armor_kit" // I'm so sorry I butchered the sprite, Toriate. (x3)
 	parent_armor_type = /obj/item/clothing/suit/armor/vest
@@ -28,7 +28,7 @@
 
 /obj/item/armorkit/security/helmet
 	name = "rampart headgear kit"
-	desc = "A security armoring kit with flexible armored sheets and some nanoglue, for reinforcing hats or other headgear."
+	desc = "Стандартизированный службой безопасности набор гибких бронепластин и тюбиков нано-клея. Данная вариация предназначена для укрепления головных уборов."
 	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
 	icon_state = "sec_helmet_kit" // I'm so sorry I butchered the sprite, Toriate. (x4)
 	parent_armor_type = /obj/item/clothing/head/helmet/sec
