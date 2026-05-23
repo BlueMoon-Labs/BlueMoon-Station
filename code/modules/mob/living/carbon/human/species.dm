@@ -1883,7 +1883,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		user.dna.species.spec_unarmedattacked(user, target)
 
 		// BLUEMOON ADD START - если урона ниже минимального наносимого для расы, то он не наносится
-		if(minimal_damage_threshold && damage <= minimal_damage_threshold)
+		var/min_damage_threshold = minimal_damage_threshold
+		if(HAS_TRAIT(target, TRAIT_TOUGHT)) // проверка на трейт стойкости
+			min_damage_threshold = max(min_damage_threshold, TRAIT_TOUGHT_DAMAGE)
+		if(min_damage_threshold && damage <= min_damage_threshold)
 			damage = 0
 			if(HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
 				target.visible_message(span_warning("Корпус [target] слишком прочный, удар не повредил его!"), span_notice("Корпус нивелирует наносимые повреждения."))
@@ -2160,7 +2163,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 	// BLUEMOON ADD START - если урона ниже минимального наносимого для расы, то он не наносится
 	var/armor_block = 0
-	if(minimal_damage_threshold && totitemdamage <= minimal_damage_threshold)
+	var/min_damage_threshold = minimal_damage_threshold
+	if(HAS_TRAIT(H, TRAIT_TOUGHT)) // проверка на трейт стойкости
+		min_damage_threshold = max(min_damage_threshold, TRAIT_TOUGHT_DAMAGE)
+	if(min_damage_threshold && totitemdamage <= min_damage_threshold)
 		totitemdamage = 0
 		if(HAS_TRAIT(H, TRAIT_ROBOTIC_ORGANISM))
 			H.visible_message(span_warning("Корпус [H] слишком прочный, удар не повредил его!"), span_notice("Корпус нивелирует наносимые повреждения."))
@@ -2460,19 +2466,12 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			var/damage_amount = forced ? damage : damage * hit_percent * brutemod * H.physiology.brute_mod
 			// Да, проверка специально написана, до проверки на прочную кожу
 			if(HAS_TRAIT(H, TRAIT_MASO))
-				if(!(H.IsSleeping() || H.stat >= 2 || H.IsUnconscious())) // BLUEMOON ADD - персонаж не спит, не без сознания и не мертв
+				if(!(H.IsSleeping() || H.stat >= UNCONSCIOUS || H.IsUnconscious())) // BLUEMOON ADD - персонаж не спит, не без сознания и не мертв
 					H.handle_post_sex(min(damage_amount, HIGH_LUST), null, null)
 			// BLUEMOON EDIT END
-			if (HAS_TRAIT(H, TRAIT_TOUGHT) && !forced) // проверка на трейт стойкости
-				if (damage < 10) //если урон до применения модификаторов не привышает 10, то он не учитывается
-					if(HAS_TRAIT(H, TRAIT_ROBOTIC_ORGANISM))
-						H.visible_message(span_warning("Корпус [H] слишком прочный, удар не повредил его!"), span_notice("Корпус нивелирует наносимые повреждения."))
-					else
-						H.visible_message("Кожа [H] слишком прочная, удар не повредил её!", span_notice("Кожа даже не повреждается от наносимых повреждений."))
-					return apply_damage(damage, damagetype = STAMINA)
-				damage_amount = damage * hit_percent * brutemod * H.physiology.brute_mod
-			else
-				damage_amount = forced ? damage : damage * hit_percent * brutemod * H.physiology.brute_mod
+			if(!forced && damage > 0 && HAS_TRAIT(H, TRAIT_TOUGHT) && damage <= TRAIT_TOUGHT_DAMAGE) // проверка на трейт стойкости
+				apply_damage(damage, damagetype = STAMINA)
+				return			
 			if(BP)
 				if(BP.receive_damage(damage_amount, 0, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness))
 					H.update_damage_overlays()
@@ -2551,6 +2550,17 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		return
 
 	var/loc_temp = H.get_temperature(environment)
+
+	var/turf/ambient_turf = get_turf(H)
+	if(istype(ambient_turf))
+		for(var/obj/machinery/shower/shower in ambient_turf.contents)
+			if(!shower.on)
+				continue
+			switch(shower.watertemp)
+				if("freezing")
+					loc_temp = min(loc_temp, SHOWER_FREEZING_LOCAL_TEMP)
+				if("boiling")
+					loc_temp = max(loc_temp, SHOWER_BOILING_LOCAL_TEMP)
 
 	//Body temperature is adjusted in two parts: first there your body tries to naturally preserve homeostasis (shivering/sweating), then it reacts to the surrounding environment
 	//Thermal protection (insulation) has mixed benefits in two situations (hot in hot places, cold in hot places)

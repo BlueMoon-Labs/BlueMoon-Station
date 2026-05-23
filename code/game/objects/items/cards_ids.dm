@@ -122,7 +122,7 @@
 		if(registered_account.account_job)
 			var/datum/bank_account/D = SSeconomy.get_dep_account(registered_account.account_job.paycheck_department)
 			if(D)
-				. += "На балансе [budget_to_ru_genitive(D.account_holder)] находится [D.account_balance] кр."
+				. += "На балансе [vocabulary_to_ru(GLOB.budget_ru_genitive, D.account_holder)] находится [D.account_balance] кр."
 		. += "<span class='info'>Alt-Click по ID, чтобы достать деньги из аккаунта в форме голочипов.</span>"
 		. += "<span class='info'>Вы может добавить кредиты на аккаунт, прижимая голочипы, наличные или монеты к ID.</span>"
 		if(registered_account.account_holder == user.real_name)
@@ -446,7 +446,7 @@
 		if(registered_account.account_job)
 			var/datum/bank_account/D = SSeconomy.get_dep_account(registered_account.account_job.paycheck_department)
 			if(D)
-				. += "На балансе [budget_to_ru_genitive(D.account_holder)] находится [D.account_balance] кр."
+				. += "На балансе [vocabulary_to_ru(GLOB.budget_ru_genitive, D.account_holder)] находится [D.account_balance] кр."
 		. += "<span class='info'>Alt-Click по ID-карте, чтобы снять деньги с аккаунта в форме голочипов.</span>"
 		. += "<span class='info'>Вы можете внести кредиты на аккаунт, приложив голочипы, наличные или монеты к ID-карте.</span>"
 		if(registered_account.civilian_bounty)
@@ -493,7 +493,7 @@
 	if(uses_overlays)
 		var/job_tooltip = ""
 		if(assignment && get_assignment_name() != assignment)
-			job_tooltip = " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[html_encode(assignment)]</span></span>"
+			job_tooltip = " [span_tooltip_fast(html_encode(assignment))]"
 		return "[icon2html(get_cached_flat_icon(), user)] [thats? "That's ":""][get_examine_name(user)][job_tooltip]" //displays all overlays in chat
 	return ..()
 
@@ -983,7 +983,7 @@
 		if(!B.bank_cards.Find(src))
 			B.bank_cards += src
 		name = "departmental card ([department_name])"
-		desc = "К этой карте привязан [lowertext(budget_to_ru_nominative(department_name))]."
+		desc = "К этой карте привязан [lowertext(vocabulary_to_ru(GLOB.budget_ru_nominative, department_name))]."
 		icon_state = "[lowertext(department_ID)]_budget"
 	SSeconomy.dep_cards += src
 

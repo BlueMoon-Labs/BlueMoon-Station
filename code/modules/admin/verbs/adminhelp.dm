@@ -65,29 +65,11 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 //opens the ticket listings for one of the 3 states
 /datum/admin_help_tickets/proc/BrowseTickets(state)
-	var/list/l2b
-	var/title
-	switch(state)
-		if(AHELP_ACTIVE)
-			l2b = active_tickets
-			title = "Active Tickets"
-		if(AHELP_CLOSED)
-			l2b = closed_tickets
-			title = "Closed Tickets"
-		if(AHELP_RESOLVED)
-			l2b = resolved_tickets
-			title = "Resolved Tickets"
-	if(!l2b)
+	if(!check_rights(R_ADMIN))
 		return
-	var/list/dat = list()
-	dat += "<A href='?_src_=holder;[HrefToken()];ahelp_tickets=[state]'>Refresh</A><br><br>"
-	for(var/I in l2b)
-		var/datum/admin_help/AH = I
-		dat += "<span class='adminnotice'><span class='adminhelp'>Ticket #[AH.id]</span>: <A href='?_src_=holder;[HrefToken()];ahelp=[REF(AH)];ahelp_action=ticket'>[AH.initiator_key_name]: [AH.name]</A></span><br>"
-
-	var/datum/browser/popup = new(usr, "ahelp_list[state]", title, 600, 480)
-	popup.set_content(dat.Join())
-	popup.open(FALSE)
+	var/datum/admin_ticket_panel/panel = new()
+	panel.selected_state = state
+	panel.ui_interact(usr)
 
 //Tickets statpanel
 /datum/admin_help_tickets/proc/stat_entry()
@@ -100,7 +82,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	for(var/I in active_tickets)
 		var/datum/admin_help/AH = I
 		if(AH.initiator)
-			L[++L.len] = list("#[AH.id]. [AH.initiator_key_name]:", "[AH.statclick.update()]", REF(AH))
+			L[++L.len] = list("#[AH.id]. [AH.initiator_key_name]:", "[AH.statclick.update()]", REF(AH), list("id" = AH.id, "state" = AH.state, "handler" = AH.handler))
 		else
 			++num_disconnected
 	if(num_disconnected)
@@ -171,6 +153,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	var/opened_at
 	var/closed_at
+	var/close_reason
 
 	var/client/initiator	//semi-misnomer, it's the person who ahelped/was bwoinked
 	var/initiator_ckey
@@ -190,6 +173,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	var/ticket_ping = FALSE
 	/// Who is handling this admin help?
 	var/handler
+	var/suppress_ticket_panel = FALSE
 
 //call this on its own to create a ticket, don't manually assign current_ticket
 //msg is the title of the ticket: usually the ahelp text
@@ -204,7 +188,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	id = ++ticket_counter
 	opened_at = world.time
 
-	name = msg
+	name = length_char(msg) > 27 ? copytext_char(msg, 1, 28) + "..." : msg
 
 	initiator = C
 	initiator_ckey = initiator.ckey
@@ -339,6 +323,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 			SSblackbox.record_feedback("tally", "ahelp_stats", -1, "resolved")
 	state = AHELP_ACTIVE
 	closed_at = null
+	close_reason = null
 	if(initiator)
 		initiator.current_ticket = src
 
@@ -368,6 +353,8 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		return
 	RemoveActive()
 	state = AHELP_CLOSED
+	if(!close_reason)
+		close_reason = "Закрыто"
 	GLOB.ahelp_tickets.ListInsert(src)
 	to_chat(initiator, examine_block("<center><span class='adminhelp'>Ваш тикет был закрыт со стороны [usr?.client?.holder?.fakekey? usr.client.holder.fakekey : "администратора"].</span></center>"))
 	AddInteraction("<font color='#f87171'><u>Закрыто админом</u> [key_name].</font>")
@@ -385,6 +372,8 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		return
 	RemoveActive()
 	state = AHELP_RESOLVED
+	if(!close_reason)
+		close_reason = "Решено"
 	GLOB.ahelp_tickets.ListInsert(src)
 
 	addtimer(CALLBACK(initiator, TYPE_PROC_REF(/client, giveadminhelpverb)), 50)
@@ -403,6 +392,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 /datum/admin_help/proc/Reject(key_name = key_name_admin(usr))
 	if(state != AHELP_ACTIVE)
 		return
+	var/was_suppressing_ticket_panel = suppress_ticket_panel
 
 	if(initiator)
 		initiator.giveadminhelpverb()
@@ -416,18 +406,24 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		to_chat(initiator, examine_block(rejecttext))
 
 	SSblackbox.record_feedback("tally", "ahelp_stats", 1, "rejected")
+	close_reason = "Отклонено"
 	var/msg = "Тикет [TicketHref("#[id]")] отклонён админом [key_name]"
 	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
 	AddInteraction("<u>Отклонено админом</u> [key_name].")
 	SSblackbox.LogAhelp(id, "Rejected", "Rejected by [usr.key]", null, usr.ckey) //BLUEMOON EDIT, enable ticket logging
+	if(was_suppressing_ticket_panel)
+		suppress_ticket_panel = TRUE
 	Close(silent = TRUE)
+	if(was_suppressing_ticket_panel)
+		suppress_ticket_panel = TRUE
 	TicketPanel()
 
 //Resolve ticket with IC Issue message
 /datum/admin_help/proc/ICIssue(key_name = key_name_admin(usr))
 	if(state != AHELP_ACTIVE)
 		return
+	var/was_suppressing_ticket_panel = suppress_ticket_panel
 
 	var/msg = "<center><font color='red' size='4'><b>AdminHelp помечен как IC issue со стороны [usr?.client?.holder?.fakekey? usr.client.holder.fakekey : "администратора"]!</b></font></center><br>"
 	msg += "<center><font color='red'>Ваш ahelp не может быть разобран ввиду происходящих в раунде событий. Ваша ситуация, скорее всего, имеет IC причину, что значит, вам следует разбираться с ней IC (In character)!</center></font>"
@@ -437,18 +433,24 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	SEND_SOUND(initiator, sound('modular_bluemoon/kovac_shitcode/sound/misc/ic_issue.ogg'))
 
 	SSblackbox.record_feedback("tally", "ahelp_stats", 1, "IC")
+	close_reason = "IC Issue"
 	msg = "Тикет [TicketHref("#[id]")] отмечен как IC админом [key_name]"
 	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
 	AddInteraction("<u>Помечено как IC issue админом</u> [key_name]")
 	SSblackbox.LogAhelp(id, "IC Issue", "Marked as IC issue by [usr.key]", null,  usr.ckey) //BLUEMOON EDIT, enable ticket logging
+	if(was_suppressing_ticket_panel)
+		suppress_ticket_panel = TRUE
 	Resolve(silent = TRUE)
+	if(was_suppressing_ticket_panel)
+		suppress_ticket_panel = TRUE
 	TicketPanel()
 
 //Resolve ticket with Skill Issue message
 /datum/admin_help/proc/SkillIssue(key_name = key_name_admin(usr))
 	if(state != AHELP_ACTIVE)
 		return
+	var/was_suppressing_ticket_panel = suppress_ticket_panel
 
 	var/msg = "<center><font color='red' size='4'><b>AdminHelp помечен как Skill Issue со стороны [usr?.client?.holder?.fakekey? usr.client.holder.fakekey : "администратора"]!</b></font></center><br>"
 	msg += "<center><font color='red'>Ваш ahelp не может быть разобран ввиду проблемы навыка с вашей стороны. Вам следует приложить больше усилий!</font></center>"
@@ -458,11 +460,16 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	SEND_SOUND(initiator, sound('modular_bluemoon/kovac_shitcode/sound/misc/skill_issue.ogg'))
 
 	SSblackbox.record_feedback("tally", "ahelp_stats", 1, "SI")
+	close_reason = "Skill Issue"
 	msg = "Тикет [TicketHref("#[id]")] был отмечен как Skill Issue админом [key_name]"
 	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
 	AddInteraction("<u>Помечено как Skill issue админом</u> [key_name]")
+	if(was_suppressing_ticket_panel)
+		suppress_ticket_panel = TRUE
 	Resolve(silent = TRUE)
+	if(was_suppressing_ticket_panel)
+		suppress_ticket_panel = TRUE
 	TicketPanel()
 
 //Let the initiator know their ahelp is being handled
@@ -487,46 +494,22 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	msg = "Тикет [TicketHref("#[id]")] был взят админом [key_name]"
 	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
-	AddInteraction("<u>Было взято админом</u> [key_name]", "<u>Было взято админом</u> [key_name_admin(usr, FALSE)]")
+	AddInteraction("<u>Было взято админом</u> [key_name]")
 
 	handler = "[usr.ckey]"
 	return TRUE
 
 //Show the ticket panel
 /datum/admin_help/proc/TicketPanel()
-	var/list/dat = list()
-	var/ref_src = "[REF(src)]"
-	dat += "<h4>Admin Help Тикет #[id]: [LinkedReplyName(ref_src)]</h4>"
-	dat += "<b>Статус: "
-	switch(state)
-		if(AHELP_ACTIVE)
-			dat += "<font color='#f87171'>ОТКРЫТ</font>"
-		if(AHELP_RESOLVED)
-			dat += "<font color='#4ade80'>РЕШЁН</font>"
-		if(AHELP_CLOSED)
-			dat += "ЗАКРЫТ"
-		else
-			dat += "НЕИЗВЕСТНО"
-	dat += "</b>[FOURSPACES][TicketHref("Обновить", ref_src)][FOURSPACES][TicketHref("Переименовать", ref_src, "retitle")]"
-	if(state != AHELP_ACTIVE)
-		dat += "[FOURSPACES][TicketHref("Переоткрыть", ref_src, "reopen")]"
-	dat += "<br><br>Открыто в: [GAMETIMESTAMP("hh:mm:ss", closed_at)] (Приблиз. [DisplayTimeText(world.time - opened_at)] назад)"
-	if(closed_at)
-		dat += "<br>Закрыто в: [GAMETIMESTAMP("hh:mm:ss", closed_at)] (Приблиз. [DisplayTimeText(world.time - closed_at)] назад)"
-	dat += "<br><br>"
-	if(initiator)
-		dat += "<b>Игрок:</b> [FullMonty(ref_src)]<br>"
-		dat += "<b>Тикет:</b> [TicketVerbs(ref_src)]<br>"
-	else
-		dat += "<b>ОТКЛЮЧЕНО</b>[FOURSPACES][ClosureLinks(ref_src)]<br>"
-	dat += "<br><hr>"
-	dat += "<b>Чат-лог:</b><br><br>"
-	for(var/I in _interactions)
-		dat += "[I]<br>"
-
-	var/datum/browser/popup = new(usr, "ahelp[id]", "Ticket #[id]", 620, 480)
-	popup.set_content(dat.Join())
-	popup.open(FALSE)
+	if(suppress_ticket_panel)
+		suppress_ticket_panel = FALSE
+		return
+	if(!check_rights(R_ADMIN))
+		return
+	var/datum/admin_ticket_panel/panel = new()
+	panel.selected_ticket = src
+	panel.selected_state = state
+	panel.ui_interact(usr)
 
 /datum/admin_help/proc/Retitle()
 	var/new_title = input(usr, "Введите новое имя тикета", "Переименование тикета", name) as text|null
@@ -539,8 +522,10 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	TicketPanel()	//we have to be here to do this
 
 //Forwarded action from admin/Topic
-/datum/admin_help/proc/Action(action)
+/datum/admin_help/proc/Action(action, silent_panel = FALSE)
 	testing("Ahelp action: [action]")
+	if(silent_panel)
+		suppress_ticket_panel = TRUE
 	switch(action)
 		if("ticket")
 			TicketPanel()
@@ -581,7 +566,10 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	. = ..()
 
 /obj/effect/statclick/ahelp/update()
-	return ..(ahelp_datum.name)
+	var/display_name = ahelp_datum.name
+	if(length_char(display_name) > 30)
+		display_name = copytext_char(display_name, 1, 28) + ".."
+	return ..(display_name)
 
 /obj/effect/statclick/ahelp/Click()
 	ahelp_datum.TicketPanel()

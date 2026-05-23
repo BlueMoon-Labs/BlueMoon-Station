@@ -158,6 +158,7 @@
 	power_draw_per_use = 150
 	can_be_asked_input = TRUE
 	demands_object_input = TRUE
+	expected_object_type = /obj/item/mmi
 
 	var/obj/item/mmi/installed_brain
 
@@ -289,6 +290,7 @@
 	power_draw_per_use = 150
 	can_be_asked_input = TRUE
 	demands_object_input = TRUE
+	expected_object_type = /obj/item/paicard
 
 	var/obj/item/paicard/installed_pai
 

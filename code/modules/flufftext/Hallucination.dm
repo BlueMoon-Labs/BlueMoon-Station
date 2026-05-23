@@ -86,6 +86,41 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	var/turf/T = locate(target_T.x + x_off, target_T.y + y_off, target_T.z)
 	return T
 
+/datum/hallucination/proc/random_non_sec_crewmember()
+	var/list/possible_fakes = list()
+	for(var/V in GLOB.data_core.locked)
+		var/datum/data/record/R = V
+		var/datum/mind/possible_fake = R.fields["mindref"]
+		if(!possible_fake)
+			continue
+
+		var/datum/job/assigned_job = SSjob.GetJob(possible_fake.assigned_role)
+		if(assigned_job?.departments & DEPARTMENT_BITFLAG_SECURITY)
+			continue
+
+		var/mob/living/carbon/human/fake_body = possible_fake.current
+		if(!istype(fake_body) || fake_body == target || fake_body.stat == DEAD)
+			continue
+		if(get_dist(fake_body, target) < 8)
+			continue
+
+		possible_fakes += fake_body
+
+	return length(possible_fakes) ? pick(possible_fakes) : null
+
+/datum/hallucination/proc/generate_fake_heretic_text(length = 25)
+	. = ""
+	for(var/i in 1 to length)
+		. += pick("!", "$", "^", "@", "&", "#", "*", "(", ")", "?")
+
+/datum/hallucination/proc/fake_priority_announce(text, title = "", sound, type, sender_override, has_important_message = TRUE)
+	if(!text)
+		return
+
+	to_chat(target, build_priority_announcement(text, title, type, sender_override, has_important_message))
+	if(sound)
+		SEND_SOUND(target, sound)
+
 /obj/effect/hallucination
 	invisibility = INVISIBILITY_OBSERVER
 	anchored = TRUE
@@ -100,6 +135,10 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	var/image/current_image = null
 	var/image_layer = MOB_LAYER
 	var/active = TRUE //qdelery
+	/// BLUEMOON FIX: cached client that received current_image. Reading target.client live
+	/// in Destroy/Show is unsafe: if target logged out / cryo'd / body-transferred, the
+	/// image stays orphaned in the *previous* client.images forever.
+	var/client/owner_client
 
 /obj/effect/hallucination/singularity_pull()
 	return
@@ -115,7 +154,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	target = T
 	current_image = GetImage()
 	if(target.client)
-		target.client.images |= current_image
+		owner_client = target.client
+		owner_client.images |= current_image
 
 /obj/effect/hallucination/simple/proc/GetImage()
 	var/image/I = image(image_icon,src,image_state,image_layer,dir=src.dir)
@@ -127,12 +167,17 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 
 /obj/effect/hallucination/simple/proc/Show(update=1)
 	if(active)
-		if(target.client)
-			target.client.images.Remove(current_image)
+		// Remove the existing image from whichever client originally received it.
+		if(owner_client)
+			owner_client.images.Remove(current_image)
 		if(update)
 			current_image = GetImage()
-		if(target.client)
-			target.client.images |= current_image
+		// Re-attach to target's live client, refreshing the cache.
+		if(target?.client)
+			owner_client = target.client
+			owner_client.images |= current_image
+		else
+			owner_client = null
 
 /obj/effect/hallucination/simple/update_icon(updates, new_state,new_icon,new_px=0,new_py=0)
 	image_state = new_state
@@ -149,8 +194,11 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	Show()
 
 /obj/effect/hallucination/simple/Destroy()
-	if(target?.client)
-		target.client.images.Remove(current_image)
+	// BLUEMOON FIX: use cached owner_client (set at Initialize / refreshed in Show) so we
+	// clean up the previous client.images even if target.client is now null or different.
+	if(owner_client)
+		owner_client.images.Remove(current_image)
+		owner_client = null
 	current_image = null
 	active = FALSE
 	target = null
@@ -168,6 +216,10 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	var/image_state = "plasma"
 	var/radius = 0
 	var/next_expand = 0
+	/// BLUEMOON FIX: cached client receiving flood_images. Without this, Destroy reads
+	/// target.client live — and if the target logged out before we tear down, the entire
+	/// flood (dozens to hundreds of images) stays orphaned in the previous client.images.
+	var/client/owner_client
 
 /datum/hallucination/fake_flood/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
@@ -183,7 +235,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	flood_images += image(image_icon,center,image_state,MOB_LAYER)
 	flood_turfs += center
 	if(target.client)
-		target.client.images |= flood_images
+		owner_client = target.client
+		owner_client.images |= flood_images
 	next_expand = world.time + FAKE_FLOOD_EXPAND_TIME
 	START_PROCESSING(SSobj, src)
 
@@ -206,15 +259,22 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 				continue
 			flood_images += image(image_icon,T,image_state,MOB_LAYER)
 			flood_turfs += T
-	if(target.client)
-		target.client.images |= flood_images
+	// BLUEMOON FIX: prefer cached owner_client; only update if target's live client changed.
+	if(owner_client)
+		owner_client.images |= flood_images
+	else if(target?.client)
+		owner_client = target.client
+		owner_client.images |= flood_images
 
 /datum/hallucination/fake_flood/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	qdel(flood_turfs)
 	flood_turfs = list()
-	if(target.client)
-		target.client.images.Remove(flood_images)
+	// BLUEMOON FIX: use cached owner_client so the previous client.images is cleaned up
+	// even if target.client became null/different. fake_flood can hold 100+ images at once.
+	if(owner_client)
+		owner_client.images.Remove(flood_images)
+		owner_client = null
 	qdel(flood_images)
 	flood_images = list()
 	return ..()
@@ -891,12 +951,34 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	qdel(src)
 
 /datum/hallucination/stationmessage
+	var/static/list/heretic_ascension_bodies = list(
+		list(
+			"text" = "Бойтесь огня! Князь пепла, %FAKENAME% вознёсся! Языки пламени поглотят всё!",
+			"sound" = 'sound/music/antag/heretic/ascend_ash.ogg',
+		),
+		list(
+			"text" = "Мастер клинков, ученик Рваного Чемпиона, %FAKENAME% вознёсся! Их сталь разрежет реальность серебряным ураганом!",
+			"sound" = 'sound/music/antag/heretic/ascend_blade.ogg',
+		),
+		list(
+			"text" = "Вихрь крутится в вечном танце. Реальность выворачивается наизнанку. Повелитель, %FAKENAME% вознёсся! Бойтесь длани господней!",
+			"sound" = 'sound/music/antag/heretic/ascend_flesh.ogg',
+		),
+		list(
+			"text" = "Бойтесь разложения, что несёт Ржавый Всадник, %FAKENAME%, возносясь над вами! Никто не избежит коррозии!",
+			"sound" = 'sound/music/antag/heretic/ascend_rust.ogg',
+		),
+		list(
+			"text" = "Дворянин пустоты, %FAKENAME%, прибыл к вам, кружась в вальсе кончины миров!",
+			"sound" = 'sound/music/antag/heretic/ascend_void.ogg',
+		),
+	)
 
 /datum/hallucination/stationmessage/New(mob/living/carbon/C, forced = TRUE, message)
 	set waitfor = FALSE
 	..()
 	if(!message)
-		message = pick("ratvar","shuttle dock","blob alert","malf ai","meteors","supermatter")
+		message = pick("ratvar","shuttle dock","blob alert","malf ai","heretic","cult summon","meteors","supermatter")
 	feedback_details += "Type: [message]"
 	switch(message)
 		if("blob alert")
@@ -916,6 +998,38 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 			to_chat(target, "<h1 class='alert'>ВНИМАНИЕ: АНОМАЛИЯ</h1>")
 			to_chat(target, "<br><br><span class='alert'>Все станционные системы подверглись воздействию вредоносного ПО. Немедленно отключите искусственный интеллект станции, во избежание её уничтожения.</span><br><br>")
 			SEND_SOUND(target, SSstation.announcer.event_sounds[ANNOUNCER_AIMALF])
+		if("heretic")
+			var/mob/living/carbon/human/totally_real_heretic = random_non_sec_crewmember()
+			if(!totally_real_heretic)
+				return
+
+			var/list/fake_ascension = pick(heretic_ascension_bodies)
+			var/announcement_text = replacetext(fake_ascension["text"], "%FAKENAME%", totally_real_heretic.real_name)
+			var/garbled_title = generate_fake_heretic_text()
+			fake_priority_announce(
+				text = "[garbled_title] [announcement_text] [generate_fake_heretic_text()]",
+				title = garbled_title,
+				sound = fake_ascension["sound"],
+			)
+		if("cult summon")
+			var/mob/living/carbon/human/totally_real_cult_leader = random_non_sec_crewmember()
+			if(!totally_real_cult_leader)
+				return
+
+			var/area/fake_summon_area
+			var/area/hallucinator_area = get_area(target)
+			var/list/possible_areas = GLOB.the_station_areas.Copy()
+			if(hallucinator_area)
+				possible_areas -= hallucinator_area.type
+			if(length(possible_areas))
+				fake_summon_area = GLOB.areas_by_type[pick(possible_areas)]
+			var/fake_area_name = fake_summon_area ? fake_summon_area.name : "неизвестном секторе"
+
+			fake_priority_announce(
+				text = "Зафиксирован ритуал призыва Нар'Си в [fake_area_name]. Главный участник: [totally_real_cult_leader.real_name]. Прервите ритуал любой ценой!",
+				title = "[command_name()], Отдел Высших Измерений",
+				sound = 'sound/music/antag/bloodcult/bloodcult_scribe.ogg',
+			)
 		if("meteors") //Meteors inbound!
 			to_chat(target, "<h1 class='alert'>BНИМАНИЕ: МЕТЕОРЫ</h1>")
 			to_chat(target, "<br><br><span class='alert'>[generateMeteorString(rand(60, 90),FALSE,pick(GLOB.cardinals))]</span><br><br>")

@@ -1,4 +1,6 @@
 //Code for the interceptor circuit
+
+/*
 /obj/machinery/telecomms/receiver/Options_Menu()
 	var/dat = "<br>Remote control: <a href='?src=[REF(src)];toggle_remote_control=1'>[GLOB.remote_control ? "<font color='green'><b>ENABLED</b></font>" : "<font color='red'><b>DISABLED</b></font>"]</a>"
 	dat += "<br>Broadcasting signals: "
@@ -29,6 +31,7 @@
 					signal.data["reject"] = TRUE
 					break
 	..()
+*/
 
 //makeshift receiver used for the circuit, so that we don't
 //have to edit radio.dm and other shit
@@ -40,7 +43,9 @@
 	holder = null
 	. = ..()
 
-/obj/machinery/telecomms/receiver/circuit/receive_signal(datum/signal/signal)
+/obj/machinery/telecomms/receiver/circuit/receive_signal(datum/signal/subspace/signal)
+	if(QDELETED(holder))
+		return
 	if(!holder.get_pin_data(IC_INPUT, 1))
 		return
 	if(!signal)

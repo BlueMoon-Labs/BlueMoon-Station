@@ -1417,7 +1417,7 @@
 	if(chameleon_module())
 		borg_type = "инженерный"
 
-	. += "Это [module_to_ru_adjective(borg_type)] киборг[check_allegiance()]"
+	. += "Это [vocabulary_to_ru(GLOB.borgmodule_ru_adjective, borg_type)] киборг[check_allegiance()]"
 	if(activity)
 		. += activity
 	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, usr, .)

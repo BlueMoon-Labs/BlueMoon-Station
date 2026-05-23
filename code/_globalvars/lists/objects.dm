@@ -53,3 +53,8 @@ GLOBAL_LIST_EMPTY(mob_spawners) 		    // All mob_spawn objects
 GLOBAL_LIST_EMPTY(alert_consoles)			// Station alert consoles, /obj/machinery/computer/station_alert
 
 GLOBAL_LIST_EMPTY(rockpaperscissors_players) // List of everyone playing rock paper scissors
+
+GLOBAL_LIST_EMPTY(cleanable_decals) // List of every /obj/effect/decal/cleanable, so persistence/event scans do not walk the entire world.
+
+GLOBAL_LIST_EMPTY(all_areas) // List of every live /area, regardless of UNIQUE_AREA flag, so consumers do not walk every atom in world to find areas.
+GLOBAL_LIST_EMPTY(maintenance_areas) // List of every live /area/maintenance, so maint access toggles do not filter all areas.

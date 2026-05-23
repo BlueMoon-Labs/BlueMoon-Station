@@ -1,5 +1,5 @@
 /client/proc/outfit_manager()
-	set category = "Debug"
+	set category = "Debug.6) Tweak"
 	set name = "Outfit Manager"
 
 	if(!check_rights(R_DEBUG))

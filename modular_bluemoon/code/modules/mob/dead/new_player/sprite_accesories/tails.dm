@@ -64,6 +64,16 @@
 	icon_state = "fox3"
 	matrixed_sections = MATRIX_ALL
 
+/datum/sprite_accessory/tails/mam_tails/bm_tails/foxsofttip
+	name = "Fox SoftTip"
+	icon_state = "foxsofttip"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/foxsofttip
+	name = "Fox SoftTip"
+	icon_state = "foxsofttip"
+	matrixed_sections = MATRIX_ALL
+
 /datum/sprite_accessory/tails/mam_tails/bm_tails/shark_tipped
 	name = "Shark tipped"
 	icon_state = "shark_tipped"

@@ -68,7 +68,7 @@
 			return TRUE
 		if(prob(50))
 			to_chat(mover, "<span class='danger'>You get stuck in \the [src] for a moment.</span>")
-			H.Confused(10 SECONDS)
+			H.AdjustConfused(10 SECONDS)
 			return FALSE
 		return TRUE
 	else if(istype(mover, /obj/item/projectile))

@@ -127,10 +127,10 @@
 
 /obj/machinery/door/firedoor/power_change()
 	if(powered(power_channel))
-		machine_stat &= ~NOPOWER
+		set_machine_stat(machine_stat & ~NOPOWER)
 		INVOKE_ASYNC(src, PROC_REF(latetoggle))
 	else
-		machine_stat |= NOPOWER
+		set_machine_stat(machine_stat | NOPOWER)
 
 /obj/machinery/door/firedoor/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(operating || !density)

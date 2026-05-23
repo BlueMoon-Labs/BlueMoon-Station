@@ -181,6 +181,10 @@
 	if(plush_icon != NONE)
 		playsound(user, 'sound/items/squeaktoy.ogg', 30, 1)
 
+	if(!portal_target)
+		to_chat(user, span_warning("[src] is not linked to anyone wearing the paired underwear."))
+		return
+
 	// BLUEMOON EDIT START
 	var/genital_data = list(
 		"M_has_penis" = M.has_penis(),

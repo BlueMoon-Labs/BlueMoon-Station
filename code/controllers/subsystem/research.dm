@@ -585,7 +585,7 @@ SUBSYSTEM_DEF(research)
 				techweb_boost_items[path] = list(node.id = node.boost_item_paths[path])
 		CHECK_TICK
 
-// Начало упаковки ID-шек, вызывается процедурой /datum/techweb_node/proc/succesful_research
+// Начало упаковки ID-шек, вызывается rdconsole.dm
 /datum/controller/subsystem/research/proc/on_node_researched(node_id)
 	if(!(node_id in pending_research_node_ids))
 		pending_research_node_ids += node_id

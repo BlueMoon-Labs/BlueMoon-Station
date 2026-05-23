@@ -340,6 +340,8 @@
 
 /obj/item/organ/cyberimp/chest/chem_implant/ui_data(mob/user)
 	var/list/data = list()
+	if(!owner)
+		return data
 	data["dead"] = (owner.stat > UNCONSCIOUS)
 	data["health"] = owner.health
 	data["current_chemicals"] = charge

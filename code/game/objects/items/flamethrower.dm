@@ -3,7 +3,7 @@
 	desc = "You are a firestarter!"
 	icon = 'icons/obj/flamethrower.dmi'
 	icon_state = "flamethrowerbase"
-	item_state = "flamethrower_0"
+	item_state = "flamethrower"
 	lefthand_file = 'icons/mob/inhands/weapons/flamethrower_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/flamethrower_righthand.dmi'
 	flags_1 = CONDUCT_1
@@ -54,7 +54,7 @@
 		igniter.flamethrower_process(location)
 
 /obj/item/flamethrower/update_icon_state()
-	item_state = "flamethrower_[lit]"
+	item_state = "[initial(item_state)]_[lit]"
 
 /obj/item/flamethrower/update_overlays()
 	. = ..()

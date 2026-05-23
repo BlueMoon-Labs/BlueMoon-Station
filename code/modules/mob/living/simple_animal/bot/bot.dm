@@ -101,8 +101,11 @@
 	var/commissioned = FALSE // Will other (noncommissioned) bots salute this bot?
 	var/can_salute = TRUE
 	var/salute_delay = 60 SECONDS
-	var/patrol_emote = "Включение режима патруля."
+	var/patrol_emote = "Вход в режим патруля."
 	var/patrol_fail_emote = "Невозможно начать патруль."
+
+	/// ЗАТЫЧКА пока не будут сделаны overlay версии лампочек ON/OFF для всех ботов. На момент комментария сделано для флурботов
+	var/overlay_system = FALSE
 
 /mob/living/simple_animal/bot/proc/set_commissioned(new_value)
 	if(commissioned == new_value)
@@ -895,7 +898,8 @@ Pass a positive integer as an argument to override a bot's default speed.
 	return
 
 /mob/living/simple_animal/bot/update_icon_state()
-	icon_state = "[initial(icon_state)][on]"
+	if(!overlay_system)
+		icon_state = "[initial(icon_state)][on]"
 
 // Machinery to simplify topic and access calls
 /obj/machinery/bot_core

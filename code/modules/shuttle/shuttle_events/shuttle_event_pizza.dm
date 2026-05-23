@@ -1,6 +1,6 @@
 /datum/shuttle_event/simple_spawner/pizza_bombardment
 	name = "Пиццедождь (доставка CentCom)"
-	event_probability = 4
+	event_probability = 40
 	activation_fraction = 0.18
 	spawning_list = list(/obj/item/pizzabox/margherita = 1) // плейсхолдер; реальная доставка в spawn_movable
 	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE

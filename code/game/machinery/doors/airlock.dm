@@ -1104,7 +1104,7 @@
 								"<span class='italics'>You hear welding.</span>")
 				if(W.use_tool(src, user, 40, volume=50, extra_checks = CALLBACK(src, PROC_REF(weld_checks), W, user)))
 					obj_integrity = max_integrity
-					machine_stat &= ~BROKEN
+					set_machine_stat(machine_stat & ~BROKEN)
 					user.visible_message("[user.name] has repaired [src].", \
 										"<span class='notice'>You finish repairing the airlock.</span>")
 					update_icon()
@@ -1437,7 +1437,7 @@
 
 /obj/machinery/door/airlock/obj_break(damage_flag)
 	if(!(flags_1 & BROKEN) && !(flags_1 & NODECONSTRUCT_1))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		if(!panel_open)
 			panel_open = TRUE
 		wires.cut_all()

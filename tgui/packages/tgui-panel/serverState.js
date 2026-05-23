@@ -8,6 +8,8 @@
  * @license MIT
  */
 
+import { backendCreatePayloadQueue, sendMessage } from 'tgui/backend';
+
 import { selectChat } from './chat/selectors';
 import { selectSettings } from './settings/selectors';
 
@@ -15,6 +17,69 @@ let saveTimer = null;
 let saveCounter = 0;
 let lastStore = null;
 const DEBOUNCE_MS = 3000;
+const DIRECT_TOPIC_URL_LIMIT = 2048;
+const CHUNK_ENCODED_SIZE = 512;
+
+const splitIntoChunks = (str) => {
+  const charSeq = Array.from(str);
+  const chunks = [];
+  let chunk = '';
+  let encodedLength = 0;
+
+  for (const char of charSeq) {
+    const charEncodedLength = encodeURIComponent(char).length;
+    if (chunk && encodedLength + charEncodedLength > CHUNK_ENCODED_SIZE) {
+      chunks.push(chunk);
+      chunk = '';
+      encodedLength = 0;
+    }
+    chunk += char;
+    encodedLength += charEncodedLength;
+  }
+  if (chunk) {
+    chunks.push(chunk);
+  }
+  return chunks;
+};
+
+const getTopicUrlLength = params => Object.entries(params).reduce(
+  (url, [key, value], i) => {
+    const encodedValue = value === null || value === undefined ? '' : value;
+    return url
+      + `${i > 0 ? '&' : '?'}${encodeURIComponent(key)}=`
+      + encodeURIComponent(encodedValue);
+  },
+  '',
+).length;
+
+const sendStateDirectly = (stateJson) => {
+  Byond.topic({
+    tgui: 1,
+    window_id: window.__windowId__,
+    type: 'panel/state_set',
+    panel_state: stateJson,
+  });
+};
+
+const sendStateInChunks = (store, stateJson) => {
+  const payload = JSON.stringify({
+    state: stateJson,
+  });
+  const chunks = splitIntoChunks(payload);
+  const id = `panel-state-${Date.now()}-${saveCounter}`;
+  store.dispatch(backendCreatePayloadQueue({
+    id,
+    chunks,
+  }));
+  sendMessage({
+    type: 'oversizedPayloadRequest',
+    payload: {
+      type: 'panel/state_set',
+      id,
+      chunkCount: chunks.length,
+    },
+  });
+};
 
 /**
  * Returns the current save counter value.
@@ -85,13 +150,20 @@ const doSaveToServer = (store) => {
     // Send state as a direct href parameter to avoid double-JSON-encoding.
     // Previously: payload=JSON.stringify({state: stateJson}) caused the inner
     // JSON to be escaped (" → \") then URL-encoded (\→%5C, "→%22), tripling
-    // the URL size and exceeding BYOND's topic URL limit.
-    Byond.topic({
+    // the URL size and exceeding BYOND's topic URL limit. If the direct topic
+    // is still too large (e.g. long Cyrillic highlight lists), use tgui's
+    // existing chunked payload transport to keep every outbound URL under 2KB.
+    const directParams = {
       tgui: 1,
       window_id: window.__windowId__,
       type: 'panel/state_set',
       panel_state: stateJson,
-    });
+    };
+    if (getTopicUrlLength(directParams) < DIRECT_TOPIC_URL_LIMIT) {
+      sendStateDirectly(stateJson);
+    } else {
+      sendStateInChunks(store, stateJson);
+    }
   }
   catch (err) {
     // eslint-disable-next-line no-console

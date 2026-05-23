@@ -20,7 +20,7 @@
 
 /datum/job/cyborg/equip(mob/living/carbon/human/H, visualsOnly = FALSE, announce = TRUE, latejoin = FALSE, datum/outfit/outfit_override = null, client/preference_source = null)
 	if(visualsOnly)
-		CRASH("dynamic preview is unsupported")
+		return
 	return H.Robotize(FALSE, latejoin)
 
 /datum/job/cyborg/after_spawn(mob/living/silicon/robot/R, client/player_client)

@@ -57,6 +57,11 @@
 
 #define AALARM_REPORT_TIMEOUT 100
 
+/// Adaptive process() backoff cap: once danger_level has been stable, the air alarm reads
+/// the turf air at most every this-many SSmachines fires (2 s each). The instant danger_level
+/// changes it snaps back to reading every fire. (Not #undef'd — read by the regression test.)
+#define AALARM_MAX_PROCESS_INTERVAL 2
+
 #define AALARM_OVERLAY_OFF		"alarm_off"
 #define AALARM_OVERLAY_GREEN	"alarm_green"
 #define AALARM_OVERLAY_WARN		"alarm_amber"
@@ -82,6 +87,13 @@
 
 	var/danger_level = 0
 	var/mode = AALARM_MODE_SCRUBBING
+
+	/// Adaptive process() throttle: how many SSmachines fires between full turf air reads.
+	/// 1 = every fire. Grows toward AALARM_MAX_PROCESS_INTERVAL while danger_level is stable;
+	/// resets to 1 the instant danger_level changes.
+	var/process_interval = 1
+	/// Fires left to skip (cheap early-out) before the next full air read.
+	var/process_skips_left = 0
 
 	var/locked = TRUE
 	var/aidisabled = 0
@@ -738,6 +750,12 @@
 	if((machine_stat & (NOPOWER|BROKEN)) || shorted)
 		return
 
+	// While danger_level has been stable, skip the (relatively expensive) turf air read on
+	// most fires. Snaps back to reading every fire the moment danger_level changes (below).
+	if(process_skips_left > 0)
+		process_skips_left--
+		return
+
 	var/turf/location = get_turf(src)
 	if(!location)
 		return
@@ -766,6 +784,15 @@
 
 	if(old_danger_level != danger_level)
 		apply_danger_level()
+
+	// Adaptive backoff: read every fire while danger_level is moving (or we're mid-air-replacement
+	// and watching for the pressure cutoff); coast at AALARM_MAX_PROCESS_INTERVAL once it settles.
+	if(old_danger_level != danger_level || mode == AALARM_MODE_REPLACEMENT)
+		process_interval = 1
+	else
+		process_interval = min(process_interval + 1, AALARM_MAX_PROCESS_INTERVAL)
+	process_skips_left = process_interval - 1
+
 	if(mode == AALARM_MODE_REPLACEMENT && environment_pressure < ONE_ATMOSPHERE * 0.05)
 		mode = AALARM_MODE_SCRUBBING
 		apply_mode()
@@ -956,7 +983,7 @@
 	qdel(src)
 
 /obj/machinery/airalarm/proc/handle_decomp_alarm()
-	if(!is_operational() || !COOLDOWN_FINISHED(src, decomp_alarm))
+	if(!is_operational || !COOLDOWN_FINISHED(src, decomp_alarm))
 		return
 	var/area/A = get_base_area(src)
 	A.firealert(src)

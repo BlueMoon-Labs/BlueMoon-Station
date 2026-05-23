@@ -11,7 +11,7 @@
 	volume = 15
 	var/mode = SYRINGE_DRAW
 	var/busy = FALSE		// needed for delayed drawing of blood
-	var/proj_piercing = 0 //does it pierce through thick clothes when shot with syringe gun
+	var/proj_piercing = SYRINGE_PIERCE_NONE // Syringe gun piercing level; see SYRINGE_PIERCE_* defines
 	var/show_filling = TRUE
 	custom_materials = list(/datum/material/iron=10, /datum/material/glass=20)
 	reagent_flags = TRANSPARENT
@@ -71,7 +71,7 @@
 	var/mob/living/L
 	if(isliving(target))
 		L = target
-		if(!L.can_inject(user, 1))
+		if(!L.can_inject(user, 1, user?.zone_selected, proj_piercing))
 			return
 
 	// chance of monkey retaliation
@@ -93,7 +93,7 @@
 					target.visible_message("<span class='danger'>[user] пытается взять образец крови у [target]!</span>", \
 									"<span class='userdanger'>[user] пытается взять образец крови у [target]!</span>")
 					busy = TRUE
-					if(!do_mob(user, target, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject),user,1)))
+					if(!do_mob(user, target, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject), user, 1, user.zone_selected, proj_piercing)))
 						busy = FALSE
 						return
 					if(reagents.total_volume >= reagents.maximum_volume)
@@ -138,12 +138,12 @@
 				return
 
 			if(L) //living mob
-				if(!L.can_inject(user, TRUE))
+				if(!L.can_inject(user, TRUE, user.zone_selected, proj_piercing))
 					return
 				if(L != user)
 					L.visible_message("<span class='danger'>[user] пытается сделать инъекцию [L]!</span>", \
 											"<span class='userdanger'>[user] пытается сделать инъекцию [L]!</span>")
-					if(!do_mob(user, L, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject),user,1)))
+					if(!do_mob(user, L, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject), user, 1, user.zone_selected, proj_piercing)))
 						return
 					if(!reagents.total_volume)
 						return
@@ -314,11 +314,17 @@
 	volume = 20
 	reagent_flags = TRANSPARENT | NO_REACT
 
-/obj/item/reagent_containers/syringe/piercing
+/obj/item/reagent_containers/syringe/piercing/weak
 	name = "piercing syringe"
-	desc = "Шприц с алмазным накончеником, способный пробить слои брони, если летит на высокой скорости. Может вмещать до 10 u."
+	desc = "Шприц с усиленным наконечником, пробивающий обычную одежду при выстреле из шприцемёта. Может вмещать до 10 u."
 	volume = 10
-	proj_piercing = 1
+	proj_piercing = SYRINGE_PIERCE_THICK
+
+/obj/item/reagent_containers/syringe/piercing
+	name = "diamond-tipped piercing syringe"
+	desc = "Шприц с алмазным наконечником, способный пробить любые слои брони. Может вмещать до 10 u."
+	volume = 10
+	proj_piercing = SYRINGE_PIERCE_ALL
 
 /obj/item/reagent_containers/syringe/get_belt_overlay()
 	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "pouch")

@@ -88,7 +88,7 @@
 	turbine = locate() in get_step(src, get_dir(inturf, src))
 	if(turbine)
 		turbine.locate_machinery()
-		machine_stat &= ~BROKEN
+		set_machine_stat(machine_stat & ~BROKEN)
 
 /obj/machinery/power/compressor/RefreshParts()
 	var/E = 0
@@ -111,7 +111,7 @@
 		locate_machinery()
 		if(turbine)
 			to_chat(user, "<span class='notice'>Turbine connected.</span>")
-			machine_stat &= ~BROKEN
+			set_machine_stat(machine_stat & ~BROKEN)
 		else
 			to_chat(user, "<span class='alert'>Turbine not connected.</span>")
 			obj_break()
@@ -190,12 +190,12 @@
 	compressor = locate() in get_step(src, get_dir(outturf, src))
 	if(compressor)
 		compressor.locate_machinery()
-		machine_stat &= ~BROKEN
+		set_machine_stat(machine_stat & ~BROKEN)
 
 /obj/machinery/power/turbine/process()
 
 	if(!compressor)
-		machine_stat = BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 
 	if((machine_stat & BROKEN) || panel_open)
 		return
@@ -238,7 +238,7 @@
 		locate_machinery()
 		if(compressor)
 			to_chat(user, "<span class='notice'>Compressor connected.</span>")
-			machine_stat &= ~BROKEN
+			set_machine_stat(machine_stat & ~BROKEN)
 		else
 			to_chat(user, "<span class='alert'>Compressor not connected.</span>")
 			obj_break()

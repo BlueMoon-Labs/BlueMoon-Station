@@ -103,6 +103,8 @@ GLOBAL_LIST_INIT(autodrobe_entretainers_items, list(
 	/obj/item/clothing/under/costume/singer/yellow = 1,
 	/obj/item/clothing/shoes/singerb = 1,
 	/obj/item/clothing/under/costume/singer/blue = 1,
+	/obj/item/lipstick/honk = 3,
+	/obj/item/lipstick/mime = 3,
 ))
 
 GLOBAL_LIST_INIT(autodrobe_fancy_items, list(

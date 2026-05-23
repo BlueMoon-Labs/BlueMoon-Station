@@ -81,3 +81,4 @@
 	item_state = "wintercape"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/neck.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
+

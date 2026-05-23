@@ -123,8 +123,13 @@
 			if(moving_diagonally == SECOND_DIAG_STEP)
 				if(!.)
 					setDir(first_step_dir)
+					// Half-finished diagonal: one cardinal step succeeded — match old inertia (Moved skipped newtonian during split).
+					if(!inertia_moving && first_step_dir)
+						inertia_next_move = world.time + inertia_move_delay
+						newtonian_move(first_step_dir)
 				else if (!inertia_moving)
 					inertia_next_move = world.time + inertia_move_delay
+					// Single combined impulse — do not stack with per-cardinal Moved() calls during this diagonal.
 					newtonian_move(direct)
 			moving_diagonally = 0
 			return
@@ -172,7 +177,8 @@
 /atom/movable/proc/Moved(atom/OldLoc, Dir, Forced = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
-	if (!inertia_moving && !HAS_TRAIT(src, TRAIT_HYPERSPACED))
+	// Diagonal intents are split into two cardinals inside Move(); defer newtonian to one call at split end (see above).
+	if (!inertia_moving && !HAS_TRAIT(src, TRAIT_HYPERSPACED) && !moving_diagonally)
 		inertia_next_move = world.time + inertia_move_delay
 		newtonian_move(Dir)
 	return TRUE

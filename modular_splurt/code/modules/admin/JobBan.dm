@@ -201,17 +201,7 @@ GLOBAL_LIST_INIT(jobban_panel_data, list(
 				to_chat(M, "<span class='boldannounce'>The reason is: [reason]</span>")
 				to_chat(M, "<span class='danger'>This jobban will be lifted in [mins] minutes.</span>")
 
-			GLOB.bot_event_sending_que += list(list(
-				"type" = "ban_a",
-				"title" = "Блокировка",
-				"player" = target_key,
-				"admin" = usr.key,
-				"reason" = reason,
-				"banduration" = mins,
-				"bantimestamp" = SQLtime(),
-				"additional_info" = list("ban_job" = msg),
-				"round" = GLOB.round_id
-			))
+			queue_jobban_bot_event("Блокировка", target_key, usr.key, reason, mins, msg)
 
 		if("Permanent")
 			reason = input(usr,"Please State Reason For Banning [target_key].","Reason") as message|null
@@ -241,17 +231,7 @@ GLOBAL_LIST_INIT(jobban_panel_data, list(
 				to_chat(M, "<span class='boldannounce'>The reason is: [reason]</span>")
 				to_chat(M, "<span class='danger'>This jobban can be lifted only upon request.</span>")
 
-			GLOB.bot_event_sending_que += list(list(
-				"type" = "ban_a",
-				"title" = "Пермаментная Блокировка",
-				"player" = target_key,
-				"admin" = usr.key,
-				"reason" = reason,
-				"banduration" = null,
-				"bantimestamp" = SQLtime(),
-				"additional_info" = list("ban_job" = msg),
-				"round" = GLOB.round_id
-			))
+			queue_jobban_bot_event("Пермаментная Блокировка", target_key, usr.key, reason, null, msg)
 
 // notbannedlist is just a list of strings of the job titles you want to unban.
 /datum/admins/proc/UnJobban(mob/M, list/bannedlist)
@@ -290,3 +270,40 @@ GLOBAL_LIST_INIT(jobban_panel_data, list(
 			"additional_info" = list("ban_job" = msg),
 			"round" = GLOB.round_id
 		))
+
+/proc/queue_jobban_bot_event(title, target_key, admin_key, reason, mins, msg)
+	var/batch_key = "[admin_key]:[target_key]"
+	var/list/batch = GLOB.jobban_bot_batch_global[batch_key]
+	if(!batch)
+		batch = list()
+		batch["title"] = title
+		batch["target_key"] = target_key
+		batch["admin_key"] = admin_key
+		batch["reason"] = reason
+		batch["mins"] = mins
+		batch["jobs"] = list(msg)
+		GLOB.jobban_bot_batch_global[batch_key] = batch
+	else
+		batch["jobs"] += msg
+
+	if(batch["timer_id"])
+		deltimer(batch["timer_id"])
+	batch["timer_id"] = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(flush_jobban_bot_batch), batch_key), 30 SECONDS, TIMER_STOPPABLE)
+
+/proc/flush_jobban_bot_batch(batch_key)
+	var/list/batch = GLOB.jobban_bot_batch_global[batch_key]
+	if(!batch)
+		return
+	GLOB.jobban_bot_batch_global -= batch_key
+	var/combined_jobs = jointext(batch["jobs"], ", ")
+	GLOB.bot_event_sending_que += list(list(
+		"type" = "ban_a",
+		"title" = batch["title"],
+		"player" = batch["target_key"],
+		"admin" = batch["admin_key"],
+		"reason" = batch["reason"],
+		"banduration" = batch["mins"],
+		"bantimestamp" = SQLtime(),
+		"additional_info" = list("ban_job" = combined_jobs),
+		"round" = GLOB.round_id
+	))

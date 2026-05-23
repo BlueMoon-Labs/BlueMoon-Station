@@ -91,6 +91,11 @@
 	if(charges <= 0)
 		to_chat(U, "<span class='notice'>Out of charges.</span>")
 		return
+
+	if(target.z != U.z)
+		to_chat(U, "<span class='danger'>Цель в другом секторе!</span>") //Препядствует фарму бесконечных бесплатных ТК в виаре и перессылки их через вирус на станционный ПДА(за такое банят)
+		return
+
 	if(!isnull(target) && !target.toff)
 		charges--
 		var/lock_code = "[rand(100,999)] [pick(GLOB.phonetic_alphabet)]"

@@ -1,7 +1,7 @@
 /// Buckle up or get knocked down — runs during emergency shuttle hyperspace flight
 /datum/shuttle_event/turbulence
 	name = "Turbulence"
-	event_probability = 5
+	event_probability = 50
 	activation_fraction = 0.1
 	var/minimum_interval = 20 SECONDS
 	var/maximum_interval = 50 SECONDS

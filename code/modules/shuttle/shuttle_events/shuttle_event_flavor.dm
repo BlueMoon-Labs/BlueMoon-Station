@@ -1,6 +1,6 @@
 /datum/shuttle_event/simple_spawner/donk_swarm
 	name = "Донк-флот (гипердоставка)"
-	event_probability = 6
+	event_probability = 60
 	activation_fraction = 0.15
 	spawns_per_spawn = 2
 	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE | SHUTTLE_EVENT_MISS_SHUTTLE
@@ -11,7 +11,7 @@
 
 /datum/shuttle_event/simple_spawner/soft_drink_spray
 	name = "Газировка в потоке"
-	event_probability = 7
+	event_probability = 70
 	activation_fraction = 0.1
 	spawns_per_spawn = 3
 	spawning_flags = SHUTTLE_EVENT_MISS_SHUTTLE | SHUTTLE_EVENT_HIT_SHUTTLE
@@ -28,7 +28,7 @@
 
 /datum/shuttle_event/simple_spawner/corgi_parade
 	name = "Коргигидон"
-	event_probability = 7
+	event_probability = 70
 	activation_fraction = 0.12
 	spawns_per_spawn = 1
 	spawning_flags = SHUTTLE_EVENT_MISS_SHUTTLE | SHUTTLE_EVENT_HIT_SHUTTLE

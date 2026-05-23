@@ -243,6 +243,7 @@
 		CL.mob_overlay_icon = PCL.mob_overlay_icon
 		qdel(PCL)
 	chameleon_item.icon = initial(picked_item.icon)
+	chameleon_item.update_icon()
 	on_change?.Invoke(picked_item)
 
 /datum/action/item_action/chameleon/change/pda/update_item(obj/item/pda/picked_item)

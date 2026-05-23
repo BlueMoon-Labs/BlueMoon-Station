@@ -802,3 +802,4 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = NO_FEMALE_UNIFORM
 	body_parts_covered = CHEST|ARMS|GROIN
+

@@ -429,3 +429,11 @@
 	item_state = "raccveralls_alt"
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
+
+/obj/item/clothing/under/occult
+	name = "Occult collector's outfit"
+	desc = "A set of clothes fit for someone dapper that isn't afraid of getting dirty."
+	icon_state = "occultoutfit"
+	body_parts_covered = CHEST|GROIN|ARMS
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE

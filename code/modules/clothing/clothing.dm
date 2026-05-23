@@ -63,6 +63,10 @@
 	var/list/armor_list = list()
 	///These are armor values that protect the clothing, taken from its armor datum. List updates on examine because it's currently only used to print armor ratings to chat in Topic().
 	var/list/durability_list = list()
+	// This variable tells if this item has been reinforced with an armor kit. Stops procs that affect slot_flags from working.
+	var/reinforced = FALSE
+	// These variables store info about armor piece this item has been reinforced to. Required for proper repair() handling.
+	var/obj/item/clothing/reinforcement_path
 
 /obj/item/clothing/Initialize(mapload)
 	. = ..()
@@ -132,8 +136,16 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	name = initial(name) // remove "tattered" or "shredded" if there's a prefix
 	if(upgrade_prefix)
 		name = upgrade_prefix + " " + initial(name)
-	body_parts_covered = initial(body_parts_covered)
-	slot_flags = initial(slot_flags)
+
+	if(reinforced && ispath(reinforcement_path, /obj/item/clothing))
+		slot_flags = initial(reinforcement_path.slot_flags)
+		body_parts_covered = initial(reinforcement_path.body_parts_covered)
+	else
+		reinforced = FALSE
+		reinforcement_path = null
+		slot_flags = initial(slot_flags)
+		body_parts_covered = initial(body_parts_covered)
+
 	damage_by_parts = null
 	if(user)
 		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
@@ -258,7 +270,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 		var/how_cool_are_your_threads = "Открывается [pockets.attack_hand_interact ? "кликом" : "при перетягивании на себя"] и может хранить до \
 									[pockets.max_items] шт. предметов [weight_class_to_text(pockets.max_w_class)] размера или меньше.\
 									[pockets.silent ? " Взятие или добавление предметов бесшумно" : ""]"
-		var/tooltip_to_show = "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[how_cool_are_your_threads]</span></span>"
+		var/tooltip_to_show = span_tooltip_fast(how_cool_are_your_threads)
 		. += span_notice("[gender == PLURAL ? "Могут" : "Может"] хранить предметы [tooltip_to_show]. [pockets.quickdraw ? "Вы можете быстро извлечь предмет с помощью Alt-Click." : ""]")
 
 	if(armor)
@@ -571,3 +583,16 @@ BLIND     // can't see anything
 
 /obj/item/clothing/proc/attach_accessory(obj/item/I, mob/user, notifyAttach = TRUE)
 	return
+
+/obj/item/clothing/proc/on_reinforcement(kit_flag, reinforced_to)
+	if(!ispath(reinforced_to, /obj/item/clothing))
+		return FALSE
+	if(ishuman(src.loc))
+		var/mob/living/carbon/human/H = src.loc
+		if(!(src.current_equipped_slot & kit_flag))
+			H.dropItemToGround(src, force=TRUE)	// Armorkit's afterattack proc handles this scenario, but i'll add a second line of defence just in case
+	src.slot_flags = kit_flag	// Locks reinforced item to specified kit's slot
+	reinforced = TRUE	// Prevents procedures that change slot_flags from working on reinforced item
+	reinforcement_path = reinforced_to
+	return TRUE
+

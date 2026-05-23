@@ -490,6 +490,10 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define SYRINGE_DRAW 0
 #define SYRINGE_INJECT 1
 
+#define SYRINGE_PIERCE_NONE 0 // Blocked by any clothing covering the hit zone
+#define SYRINGE_PIERCE_THICK 1 // Pierces normal clothing, blocked by THICKMATERIAL
+#define SYRINGE_PIERCE_ALL 2 // Pierces all clothing including THICKMATERIAL
+
 //gold slime core spawning
 #define NO_SPAWN 0
 #define HOSTILE_SPAWN 1

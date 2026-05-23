@@ -2,7 +2,7 @@
 	name = "dart"
 	icon_state = "cbbolt"
 	damage = 6
-	var/piercing = FALSE
+	var/piercing = SYRINGE_PIERCE_NONE
 
 /obj/item/projectile/bullet/dart/Initialize(mapload)
 	. = ..()
@@ -30,7 +30,7 @@
 	return BULLET_ACT_HIT
 
 /obj/item/projectile/bullet/dart/piercing
-	piercing = TRUE
+	piercing = SYRINGE_PIERCE_ALL
 
 /obj/item/projectile/bullet/dart/metalfoam/Initialize(mapload)
 	. = ..()

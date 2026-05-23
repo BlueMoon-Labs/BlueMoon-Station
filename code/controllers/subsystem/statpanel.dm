@@ -1,89 +1,250 @@
+#define LISTED_TURF_LIST_REFRESH_INTERVAL (2 SECONDS)
+#define LISTED_TURF_ICON_REFRESH_INTERVAL (10 SECONDS)
+/// Minimum gap between signal-driven listed-turf refreshes — coalesces churn on busy turfs (lockers, brigs, fights).
+#define LISTED_TURF_DIRTY_MIN_INTERVAL (3) // 0.3 seconds
+/// Inactivity threshold (deciseconds) after which heavy per-client work is skipped.
+#define STATPANEL_AFK_INACTIVITY (5 MINUTES)
+/// MC subsystem rows: each fire reuses cached payload until this many fires have elapsed.
+#define MC_DATA_REFRESH_FIRES 6
+/// Full-cycle gate for slow global data (vote, server section).
+#define STATPANEL_FULL_CYCLE_FIRES 3
+/// Refresh slow server section every Nth full cycle.
+#define STATPANEL_SLOW_CYCLE_FULLS 9
+/// Number of stagger groups across clients — each client receives a heavy update every (group * wait) deciseconds.
+#define STATPANEL_STAGGER_GROUPS 3
+/// LRU cap for per-client statpanel_sent_icons; older entries are evicted as new ones arrive.
+#define STATPANEL_ICON_CACHE_CAP 256
+/// Send tidi only every Nth ping fire — non-Status-tab clients still see fresh ping every fire.
+#define STATPANEL_TIDI_INTERVAL 10
+/// Bridge protocol version. Bump whenever the DM->JS payload shape changes incompatibly.
+#define STATBROWSER_PROTOCOL_VERSION 2
+/// Channel keys for client.statpanel_last_sent dirty cache. String constants kept in one place
+/// so DM-side dirty checks and any future invalidation paths can share them.
+#define STATPANEL_CHANNEL_STATUS "status"
+#define STATPANEL_CHANNEL_VOTING "voting"
+#define STATPANEL_CHANNEL_SPELLS "spells"
+#define STATPANEL_CHANNEL_TICKETS "tickets"
+#define STATPANEL_CHANNEL_SDQL2 "sdql2"
+
 SUBSYSTEM_DEF(statpanels)
 	name = "Stat Panels"
-	wait = 6
+	wait = 3
 	init_order = INIT_ORDER_STATPANELS
 	priority = FIRE_PRIORITY_STATPANEL
 	runlevels = RUNLEVELS_DEFAULT | RUNLEVEL_LOBBY
 	var/list/currentrun = list()
-	var/encoded_global_data
+	var/encoded_global_fast
+	var/encoded_global_slow
 	var/mc_data_encoded
 	var/mc_ss_data_encoded
-	var/list/cached_images = list()
+	var/mc_iteration_sent = 0
+	var/list/icon_queue = list()
+	var/icon_budget_per_tick = 5
 	var/mc_data_refresh_counter = 0
 	var/static/null_bullet_encoded
+	var/full_cycle_counter = 0
+	var/slow_data_counter = 0
+	var/list/cached_vote_base
+	var/cached_vote_encoded
+	var/list/perf_history_cpu = list()
+	var/list/perf_history_tidi = list()
+	var/list/perf_history_ping = list()
+	var/encoded_tidi
+	var/tidi_counter = 0
+	var/is_full_cycle = FALSE
+	var/prev_player_count = 0
+	var/client_stagger_groups = STATPANEL_STAGGER_GROUPS
+	var/client_stagger_index = 0
+	var/cached_tickets_encoded
+	var/list/cached_client_stats
+	var/client_stats_refresh_counter = 0
+	var/list/ping_run = list()
+	var/list/icon_run = list()
+
+/datum/controller/subsystem/statpanels/Initialize(start_timeofday)
+	build_global_slow_payload()
+	..()
+
+/// Builds the slow-changing server section once. Used for eager init so the first ~27 seconds of a round
+/// don't ship an empty server section to every Status-tab client.
+/datum/controller/subsystem/statpanels/proc/build_global_slow_payload()
+	var/datum/map_config/cached = SSmapping?.next_map_config
+	var/list/server_section = list(
+		list("Карта", SSmapping?.config?.map_name || "Loading..."))
+	if(cached)
+		server_section += list(list("Следующая карта", cached.map_name))
+	var/current_players = length(GLOB.clients)
+	var/player_delta = current_players - prev_player_count
+	var/player_trend = "[current_players]"
+	if(prev_player_count && player_delta != 0)
+		player_trend = "[current_players] ([player_delta > 0 ? "+" : ""][player_delta])"
+	prev_player_count = current_players
+	server_section += list(
+		list("ID раунда", GLOB.round_id ? GLOB.round_id : "NULL"),
+		list("Игровой Режим", GLOB.master_mode),
+		list("Подключено Игроков", player_trend),
+		list("Предыдущие Режимы", SSpersistence ? jointext(SSpersistence.saved_modes, ", ") : ""))
+	encoded_global_slow = url_encode(json_encode(server_section))
 
 /datum/controller/subsystem/statpanels/fire(resumed = FALSE)
 	if (!resumed)
-		var/datum/map_config/cached = SSmapping.next_map_config
-		var/round_time = world.time - SSticker.round_start_time
-		var/real_round_time = world.timeofday - SSticker.real_round_start_time
-		// Structured status data
-		var/list/global_data = list()
-		// Server section
-		var/list/server_section = list(
-			list("\u041A\u0430\u0440\u0442\u0430", SSmapping.config?.map_name || "Loading..."))
-		if(cached)
-			server_section += list(list("\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0430\u044F \u043A\u0430\u0440\u0442\u0430", cached.map_name))
-		server_section += list(
-			list("ID \u0440\u0430\u0443\u043D\u0434\u0430", GLOB.round_id ? GLOB.round_id : "NULL"),
-			list("\u0418\u0433\u0440\u043E\u0432\u043E\u0439 \u0420\u0435\u0436\u0438\u043C", GLOB.master_mode),
-			list("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u0418\u0433\u0440\u043E\u043A\u043E\u0432", GLOB.clients.len),
-			list("\u041F\u0440\u0435\u0434\u044B\u0434\u0443\u0449\u0438\u0435 \u0420\u0435\u0436\u0438\u043C\u044B", jointext(SSpersistence.saved_modes, ", ")))
-		global_data["server"] = server_section
-		// Time section
-		global_data["time"] = list(
-			list("\u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(round_time, "hh:mm:ss", 0)),
-			list("\u041D\u0430\u0441\u0442. \u0412\u0440\u0435\u043C\u044F \u0420\u0430\u0443\u043D\u0434\u0430", time2text(real_round_time, "hh:mm:ss", 0)),
-			list("\u0414\u0430\u0442\u0430", "[time2text(world.realtime, "MMM DD")] [GLOB.year_integer]"),
-			list("\u0412\u0440\u0435\u043C\u044F \u0421\u0442\u0430\u043D\u0446\u0438\u0438", STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)),
-			list("\u0412\u0440\u0435\u043C\u044F \u0432 \u0421\u043E\u043B\u043D\u0435\u0447\u043D\u043E\u0439", SOLAR_TIME_TIMESTAMP("hh:mm:ss", world.time)),
-			list("\u0412\u0440\u0435\u043C\u044F \u0421\u0435\u0440\u0432\u0435\u0440\u0430", time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")))
-		// Time dilation as numbers for color coding on client
-		global_data["tidi"] = list(
+		full_cycle_counter++
+		slow_data_counter++
+		tidi_counter++
+		is_full_cycle = (full_cycle_counter >= STATPANEL_FULL_CYCLE_FIRES)
+		var/is_slow_cycle = (slow_data_counter >= STATPANEL_SLOW_CYCLE_FULLS)
+		if(is_full_cycle)
+			full_cycle_counter = 0
+		if(is_slow_cycle)
+			slow_data_counter = 0
+		var/include_tidi_in_ping = (tidi_counter >= STATPANEL_TIDI_INTERVAL)
+		if(include_tidi_in_ping)
+			tidi_counter = 0
+
+		var/list/tidi_data = list(
 			round(SStime_track.time_dilation_current, 0.1),
 			round(SStime_track.time_dilation_avg_fast, 0.1),
 			round(SStime_track.time_dilation_avg, 0.1),
 			round(SStime_track.time_dilation_avg_slow, 0.1))
-		// Shuttle section (only when active)
+		// Only encode the tidi payload on the rare ping fires that ship it; saves work otherwise.
+		encoded_tidi = include_tidi_in_ping ? url_encode(json_encode(tidi_data)) : ""
+
+		// Compute fast global data every fire — cheap, and stagger groups need fresh data each fire
+		var/round_time = world.time - SSticker.round_start_time
+		var/real_round_time = world.timeofday - SSticker.real_round_start_time
+		var/list/fast_data = list()
+		fast_data["time"] = list(
+			list("Время Раунда", time2text(round_time, "hh:mm:ss", 0)),
+			list("Наст. Время Раунда", time2text(real_round_time, "hh:mm:ss", 0)),
+			list("Дата", "[time2text(world.realtime, "MMM DD")] [GLOB.year_integer]"),
+			list("Время Станции", STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)),
+			list("Время в Солнечной", SOLAR_TIME_TIMESTAMP("hh:mm:ss", world.time)),
+			list("Время Сервера", time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")))
+		fast_data["tidi"] = tidi_data
 		if(SSshuttle.emergency)
 			var/ETA = SSshuttle.emergency.getModeStr()
 			if(ETA)
-				global_data["shuttle"] = list(ETA, SSshuttle.emergency.getTimerStr())
+				var/timer_total = 0
+				if(SSshuttle.emergency.last_timer_length)
+					timer_total = round(SSshuttle.emergency.last_timer_length / 10, 1)
+				fast_data["shuttle"] = list(ETA, SSshuttle.emergency.getTimerStr(), SSshuttle.emergency.mode, timer_total)
+		encoded_global_fast = url_encode(json_encode(fast_data))
 
-		encoded_global_data = url_encode(json_encode(global_data))
-		src.currentrun = GLOB.clients.Copy()
+		// is_full_cycle gates slow-updating global data and vote cache only;
+		// per-client throttling is handled by stagger groups (each client visited every Nth fire)
+		if(is_full_cycle)
+			if(is_slow_cycle)
+				build_global_slow_payload()
+
+			cached_vote_base = null
+			cached_vote_encoded = null
+			if(SSvote.mode)
+				var/list/vote_base = list(
+					list("Vote active!", "There is currently a vote running. Question: [SSvote.question]"))
+				if(!(SSvote.vote_system in list(PLURALITY_VOTING, APPROVAL_VOTING, SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)))
+					vote_base[++vote_base.len] += list("STATPANEL VOTING DISABLED!", "The current vote system is not supported by statpanel rendering. Please vote manually by opening the vote popup using the action button or chat link.", "disabled")
+				else
+ //BLUEMOON ADDITION START
+					var/time_left = SSticker.timeLeft
+					if(SSvote.mode == "roundtype")
+						time_left = max(time_left - ROUNDTYPE_VOTE_END_PENALTY, 0)
+ //BLUEMOON ADDITION END
+					vote_base[++vote_base.len] += list("Time Left:", " [DisplayTimeText(time_left)]")
+					vote_base[++vote_base.len] += list("Choices:", "")
+				cached_vote_base = vote_base
+
 		mc_data_refresh_counter++
-		if(mc_data_refresh_counter >= 3)
+		if(mc_data_refresh_counter >= MC_DATA_REFRESH_FIRES)
 			mc_data_encoded = null
 			mc_ss_data_encoded = null
 			mc_data_refresh_counter = 0
+
 		if(!null_bullet_encoded)
 			null_bullet_encoded = url_encode(json_encode(list(list(null))))
+
+		// Adaptive wait and icon budget based on server load
+		var/client_count = length(GLOB.clients)
+		if(client_count > 60 || SStime_track.time_dilation_current > 20)
+			wait = 5
+			icon_budget_per_tick = 2
+		else if(client_count > 40 || SStime_track.time_dilation_current > 10)
+			wait = 4
+			icon_budget_per_tick = 5
+		else
+			wait = 3
+			icon_budget_per_tick = 8
+
+		// Build staggered client list — each fire processes 1/N of all clients
+		// Each client gets a full update every (stagger_groups * wait) deciseconds.
+		// Copy() so a disconnect mid-cycle that mutates GLOB.clients can't desync our snapshot.
+		var/list/all_clients = GLOB.clients.Copy()
+		var/list/run_list = list()
+		for(var/i in (client_stagger_index + 1) to length(all_clients) step client_stagger_groups)
+			run_list += all_clients[i]
+		client_stagger_index = (client_stagger_index + 1) % client_stagger_groups
+		cached_tickets_encoded = null
+		src.currentrun = run_list
+
+		// Ping forwarding — ALL clients every fire, independent of stagger.
+		src.ping_run = all_clients
+
+		// Snapshot icon queue clients for resumable processing
+		src.icon_run = list()
+		for(var/client/C as anything in icon_queue)
+			src.icon_run += C
+
+	// Process ping queue (resumable)
+	while(length(ping_run))
+		var/client/ping_target = ping_run[length(ping_run)]
+		ping_run.len--
+		if(!ping_target?.statbrowser_ready || !ping_target.ping_updated || ping_target.inactivity >= STATPANEL_AFK_INACTIVITY)
+			continue
+		ping_target.ping_updated = FALSE
+		// Tidi is only included every Nth fire; saves repeated identical bytes across the client list otherwise.
+		ping_target << output("%5B[round(ping_target.lastping, 1)]%2C[round(ping_target.avgping, 1)]%2C[round(ping_target.avgping_jitter, 1)]%5D;[encoded_tidi]", "statbrowser:update_ping")
+		if(MC_TICK_CHECK)
+			return
+
 	var/list/currentrun = src.currentrun
 	while(length(currentrun))
 		var/client/target = currentrun[length(currentrun)]
 		currentrun.len--
 		if(!target?.statbrowser_ready)
 			continue
+
+		// Ack protocol version once per session so JS can detect a stale cached HTML mismatch.
+		if(!target.statpanel_protocol_acked)
+			target << output("[STATBROWSER_PROTOCOL_VERSION]", "statbrowser:set_protocol_version")
+			target.statpanel_protocol_acked = TRUE
+
+		// Skip heavy work for AFK clients (5 min inactivity)
+		// Admin clients are also skipped; they self-recover on the first active fire
+		if(target.inactivity >= STATPANEL_AFK_INACTIVITY)
+			if(!target.holder && !target.admin_tabs_cleared)
+				target << output("", "statbrowser:remove_admin_tabs")
+				target.admin_tabs_cleared = TRUE
+			if(MC_TICK_CHECK)
+				return
+			continue
+
 		if(target.stat_tab == "Status")
-			var/ping_str = "%5B[round(target.lastping, 1)]%2C[round(target.avgping, 1)]%5D"
-			var/other_str = url_encode(json_encode(target.mob.get_status_tab_items()))
-			target << output("[encoded_global_data];[ping_str];[other_str]", "statbrowser:update")
-			if(SSvote.mode)
-				var/list/vote_arry = list(
-					list("Vote active!", "There is currently a vote running. Question: [SSvote.question]")
-					) //see the MC on how this works.
-				if(!(SSvote.vote_system in list(PLURALITY_VOTING, APPROVAL_VOTING, SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)))
-					vote_arry[++vote_arry.len] += list("STATPANEL VOTING DISABLED!", "The current vote system is not supported by statpanel rendering. Please vote manually by opening the vote popup using the action button or chat link.", "disabled")
-					//does not return.
-				else
- //BLUEMOON ADDITION START
-					if(SSvote.mode == "roundtype")
-						vote_arry[++vote_arry.len] += list("Time Left:", " [DisplayTimeText(SSticker.timeLeft - ROUNDTYPE_VOTE_END_PENALTY)] seconds")
-					else
- //BLUEMOON ADDITION END
-						vote_arry[++vote_arry.len] += list("Time Left:", " [DisplayTimeText(SSticker.timeLeft)] seconds")
-					vote_arry[++vote_arry.len] += list("Choices:", "")
+			var/raw_status = json_encode(target.mob?.get_status_tab_items())
+			// Per-client dirty check: only re-encode + ship if the mob's status payload actually changed.
+			var/last_status = target.statpanel_last_sent[STATPANEL_CHANNEL_STATUS]
+			var/status_changed = (raw_status != last_status)
+			var/other_str = status_changed ? url_encode(raw_status) : null
+			var/slow_str = encoded_global_slow ? encoded_global_slow : ""
+			// Always send the fast/slow payload (timer/round-time tick every second). Mob other_str is
+			// suppressed when unchanged; JS retains its last decoded value.
+			if(status_changed)
+				target << output("[encoded_global_fast];[slow_str];[other_str]", "statbrowser:update")
+				target.statpanel_last_sent[STATPANEL_CHANNEL_STATUS] = raw_status
+			else
+				target << output("[encoded_global_fast];[slow_str];", "statbrowser:update")
+
+			if(SSvote.mode && cached_vote_base)
+				var/list/vote_arry = cached_vote_base.Copy()
+				if(SSvote.vote_system in list(PLURALITY_VOTING, APPROVAL_VOTING, SCHULZE_VOTING, INSTANT_RUNOFF_VOTING))
 					for(var/choice in SSvote.choice_statclicks)
 						var/choice_id = SSvote.choice_statclicks[choice]
 						if(target.ckey)
@@ -101,10 +262,16 @@ SUBSYSTEM_DEF(statpanels)
 									if(vote)
 										vote_position = vote.Find(text2num(choice_id))
 									vote_arry[++vote_arry.len] += list("\[[vote_position]\]", choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
-				var/vote_str = url_encode(json_encode(vote_arry))
-				target << output("[vote_str]", "statbrowser:update_voting")
-			else
+				var/raw_vote = json_encode(vote_arry)
+				if(target.statpanel_last_sent[STATPANEL_CHANNEL_VOTING] != raw_vote)
+					target << output("[url_encode(raw_vote)]", "statbrowser:update_voting")
+					target.statpanel_last_sent[STATPANEL_CHANNEL_VOTING] = raw_vote
+				target.stat_vote_sent_null = FALSE
+			else if(!target.stat_vote_sent_null)
 				target << output("[null_bullet_encoded]", "statbrowser:update_voting")
+				target.stat_vote_sent_null = TRUE
+				target.statpanel_last_sent -= STATPANEL_CHANNEL_VOTING
+
 		if(!target.holder)
 			if(!target.admin_tabs_cleared)
 				target << output("", "statbrowser:remove_admin_tabs")
@@ -118,12 +285,23 @@ SUBSYSTEM_DEF(statpanels)
 				var/coord_entry = url_encode(COORD(eye_turf))
 				if(!mc_data_encoded)
 					generate_mc_data()
-				target << output("[mc_data_encoded];[mc_ss_data_encoded];[coord_entry]", "statbrowser:update_mc")
+					mc_iteration_sent = Master.iteration
+				// Send mc_iteration alongside payload so JS can dedupe without JSON.stringify-hashing each update.
+				if(target.statpanel_last_mc_iter != mc_iteration_sent)
+					target << output("[mc_data_encoded];[mc_ss_data_encoded];[coord_entry];[mc_iteration_sent]", "statbrowser:update_mc")
+					target.statpanel_last_mc_iter = mc_iteration_sent
+				else
+					// Iteration unchanged — only ship coords (cheap, eye position changes per move).
+					target << output(";;[coord_entry];[mc_iteration_sent]", "statbrowser:update_mc")
 			if(target.stat_tab == "Tickets")
-				var/list/ahelp_tickets = GLOB.ahelp_tickets.stat_entry()
-				target << output("[url_encode(json_encode(ahelp_tickets))];", "statbrowser:update_tickets")
+				if(!cached_tickets_encoded)
+					cached_tickets_encoded = url_encode(json_encode(GLOB.ahelp_tickets.stat_entry()))
+				if(target.statpanel_last_sent[STATPANEL_CHANNEL_TICKETS] != cached_tickets_encoded)
+					target << output("[cached_tickets_encoded];", "statbrowser:update_tickets")
+					target.statpanel_last_sent[STATPANEL_CHANNEL_TICKETS] = cached_tickets_encoded
 			if(!length(GLOB.sdql2_queries) && ("SDQL2" in target.panel_tabs))
 				target << output("", "statbrowser:remove_sdql2")
+				target.statpanel_last_sent -= STATPANEL_CHANNEL_SDQL2
 			else if(length(GLOB.sdql2_queries) && (target.stat_tab == "SDQL2" || !("SDQL2" in target.panel_tabs)))
 				var/list/sdql2A = list()
 				sdql2A[++sdql2A.len] = list("", "Access Global SDQL2 List", REF(GLOB.sdql2_vv_statobj))
@@ -132,9 +310,21 @@ SUBSYSTEM_DEF(statpanels)
 					var/datum/SDQL2_query/Q = i
 					sdql2B = Q.generate_stat()
 				sdql2A += sdql2B
-				target << output(url_encode(json_encode(sdql2A)), "statbrowser:update_sdql2")
+				var/raw_sdql = json_encode(sdql2A)
+				if(target.statpanel_last_sent[STATPANEL_CHANNEL_SDQL2] != raw_sdql)
+					target << output(url_encode(raw_sdql), "statbrowser:update_sdql2")
+					target.statpanel_last_sent[STATPANEL_CHANNEL_SDQL2] = raw_sdql
+
 		if(target.mob)
 			var/mob/M = target.mob
+			// Process listed-turf BEFORE the spell tick check, so the listed-turf path is not starved
+			// when a slow fire yields halfway through this client's per-tick work.
+			if(M?.listed_turf)
+				var/mob/target_mob = M
+				if(QDELETED(target_mob.listed_turf) || !target_mob.TurfAdjacent(target_mob.listed_turf))
+					target.clear_listed_turf()
+				else if(target.stat_tab == M?.listed_turf.name || !(M?.listed_turf.name in target.panel_tabs))
+					refresh_listed_turf(target)
 			if((target.stat_tab in target.spell_tabs) || !length(target.spell_tabs) && (length(M.mob_spell_list) || length(M.mind?.spell_list)))
 				var/list/proc_holders = M.get_proc_holders()
 				target.spell_tabs.Cut()
@@ -144,51 +334,177 @@ SUBSYSTEM_DEF(statpanels)
 				var/proc_holders_encoded = ""
 				if(length(proc_holders))
 					proc_holders_encoded = url_encode(json_encode(proc_holders))
-				target << output("[url_encode(json_encode(target.spell_tabs))];[proc_holders_encoded]", "statbrowser:update_spells")
-			if(M?.listed_turf)
-				var/mob/target_mob = M
-				if(!target_mob.TurfAdjacent(target_mob.listed_turf))
-					target << output("", "statbrowser:remove_listedturf")
-					target_mob.listed_turf = null
-				else if(target.stat_tab == M?.listed_turf.name || !(M?.listed_turf.name in target.panel_tabs))
-					var/list/overrides = list()
-					var/list/turfitems = list()
-					for(var/img in target.images)
-						var/image/target_image = img
-						if(!target_image.loc || target_image.loc.loc != target_mob.listed_turf || !target_image.override)
-							continue
-						overrides += target_image.loc
-					turfitems[++turfitems.len] = list("[target_mob.listed_turf]", REF(target_mob.listed_turf), icon2html(target_mob.listed_turf, target, sourceonly=TRUE))
-					for(var/tc in target_mob.listed_turf)
-						var/atom/movable/turf_content = tc
-						if(turf_content.mouse_opacity == MOUSE_OPACITY_TRANSPARENT)
-							continue
-						if(turf_content.invisibility > target_mob.see_invisible)
-							continue
-						if(turf_content in overrides)
-							continue
-						if(turf_content.IsObscured())
-							continue
-						if(length(turfitems) < 30) // only create images for the first 30 items on the turf, for performance reasons
-							if(!(REF(turf_content) in cached_images))
-								cached_images += REF(turf_content)
-								turf_content.RegisterSignal(turf_content, COMSIG_PARENT_QDELETING, TYPE_PROC_REF(/atom, remove_from_cache), override = TRUE) // we reset cache if anything in it gets deleted
-								if(ismob(turf_content) || length(turf_content.overlays) > 2)
-									turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content), costly_icon2html(turf_content, target, sourceonly=TRUE))
-								else
-									turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content), icon2html(turf_content, target, sourceonly=TRUE))
-							else
-								turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content))
-						else
-							turfitems[++turfitems.len] = list("[turf_content.name]", REF(turf_content))
-					turfitems = url_encode(json_encode(turfitems))
-					target << output("[turfitems];", "statbrowser:update_listedturf")
+				var/raw_spells = "[json_encode(target.spell_tabs)];[proc_holders_encoded]"
+				if(target.statpanel_last_sent[STATPANEL_CHANNEL_SPELLS] != raw_spells)
+					target << output("[url_encode(json_encode(target.spell_tabs))];[proc_holders_encoded]", "statbrowser:update_spells")
+					target.statpanel_last_sent[STATPANEL_CHANNEL_SPELLS] = raw_spells
 		if(MC_TICK_CHECK)
 			return
 
+	// --- Progressive icon generation (resumable via icon_run) ---
+	var/queued_clients = length(icon_run)
+	var/per_client_budget = queued_clients ? max(round(icon_budget_per_tick / queued_clients), 1) : icon_budget_per_tick
+	while(length(icon_run))
+		var/client/C = icon_run[length(icon_run)]
+		icon_run.len--
+		if(!C?.statbrowser_ready || !C.mob?.listed_turf)
+			icon_queue -= C
+			continue
+		var/list/pending = icon_queue[C]
+		if(!length(pending))
+			icon_queue -= C
+			continue
+		var/list/batch = list()
+		var/icons_done = 0
+		while(length(pending) && icons_done < per_client_budget)
+			var/atom/A = pending[length(pending)]
+			pending.len--
+			if(QDELETED(A))
+				continue
+			var/ref = REF(A)
+			if(C.statpanel_sent_icons[ref])
+				continue
+			var/icon_url
+			if(ismob(A) || length(A.overlays) > 4)
+				icon_url = costly_icon2html(A, C, sourceonly=TRUE)
+			else
+				icon_url = icon2html(A, C, sourceonly=TRUE)
+			if(icon_url)
+				cache_sent_icon(C, ref, icon_url)
+				batch[++batch.len] = list(ref, icon_url)
+			icons_done++
+		if(length(batch))
+			C << output("[url_encode(json_encode(batch))];", "statbrowser:update_turf_icons")
+		if(!length(pending))
+			icon_queue -= C
+		if(MC_TICK_CHECK)
+			return
+
+/// Cache an icon REF→URL on the client with a soft LRU bound. When the cap is hit, the oldest
+/// entries are evicted (BYOND assoc lists preserve insertion order). Prevents 4-hour sessions
+/// from accumulating multi-MB caches and avoids serving stale icons across REF recycling.
+/datum/controller/subsystem/statpanels/proc/cache_sent_icon(client/C, ref, icon_url)
+	if(!C || !ref || !icon_url)
+		return
+	if(C.statpanel_sent_icons[ref])
+		C.statpanel_sent_icons[ref] = icon_url
+		return
+	C.statpanel_sent_icons[ref] = icon_url
+	var/overflow = length(C.statpanel_sent_icons) - STATPANEL_ICON_CACHE_CAP
+	if(overflow > 0)
+		C.statpanel_sent_icons.Cut(1, overflow + 1)
+
+/datum/controller/subsystem/statpanels/proc/get_listedturf_overrides(client/target, turf/listed)
+	if(!target || !listed || !length(target.images))
+		return null
+	var/list/overrides = list()
+	for(var/img in target.images)
+		var/image/target_image = img
+		if(!target_image.loc || target_image.loc.loc != listed || !target_image.override)
+			continue
+		overrides += target_image.loc
+	return overrides
+
+/datum/controller/subsystem/statpanels/proc/build_listedturf_snapshot(turf/listed, see_invisible, list/overrides = null, list/sent_icons = null)
+	if(!listed || QDELETED(listed))
+		return null
+	var/list/turfitems = list()
+	var/list/needs_icons = list()
+	var/listed_ref = REF(listed)
+	turfitems[++turfitems.len] = list("[listed]", listed_ref)
+	if(!sent_icons || !sent_icons[listed_ref])
+		needs_icons += listed
+	for(var/tc in listed)
+		var/atom/movable/turf_content = tc
+		if(QDELETED(turf_content))
+			continue
+		if(turf_content.mouse_opacity == MOUSE_OPACITY_TRANSPARENT)
+			continue
+		if(turf_content.invisibility > see_invisible)
+			continue
+		if(overrides && (turf_content in overrides))
+			continue
+		if(turf_content.IsObscured())
+			continue
+		var/ref = REF(turf_content)
+		turfitems[++turfitems.len] = list("[turf_content.name]", ref)
+		if(!sent_icons || !sent_icons[ref])
+			needs_icons += turf_content
+	return list(
+		"entries" = turfitems,
+		"encoded" = url_encode(json_encode(turfitems)),
+		"needs_icons" = needs_icons,
+	)
+
+/datum/controller/subsystem/statpanels/proc/get_listedturf_refresh_actions(force_send = FALSE, force_icon_refresh = FALSE, turf_changed = FALSE, listed_turf_dirty = FALSE, listed_turf_dirty_at = 0, listed_turf_icon_refresh_pending = FALSE, eye_changed = FALSE, last_refresh = 0, last_icon_refresh = 0, current_time = world.time)
+	// Dirty signals coalesce: a busy turf that fires entered/exited every tick is rate-limited so
+	// we don't rebuild the snapshot at full subsystem fire rate. Force/turf/eye changes still bypass.
+	var/dirty_due = listed_turf_dirty && (!listed_turf_dirty_at || (current_time - last_refresh) >= LISTED_TURF_DIRTY_MIN_INTERVAL)
+	var/list_refresh_due = force_send || turf_changed || eye_changed || dirty_due || (current_time - last_refresh >= LISTED_TURF_LIST_REFRESH_INTERVAL)
+	var/icon_refresh_due = force_icon_refresh || listed_turf_icon_refresh_pending || turf_changed || !last_icon_refresh || (current_time - last_icon_refresh >= LISTED_TURF_ICON_REFRESH_INTERVAL)
+	return list(
+		"list_refresh_due" = list_refresh_due,
+		"icon_refresh_due" = icon_refresh_due,
+	)
+
+/datum/controller/subsystem/statpanels/proc/merge_listedturf_icon_queue(list/existing, list/needs_icons)
+	if(!length(needs_icons))
+		return existing
+	if(!existing)
+		return needs_icons.Copy()
+	for(var/atom/A as anything in needs_icons)
+		if(!(A in existing))
+			existing += A
+	return existing
+
+/datum/controller/subsystem/statpanels/proc/queue_listedturf_icons(client/target, list/needs_icons)
+	if(!target || !length(needs_icons))
+		return
+	icon_queue[target] = merge_listedturf_icon_queue(icon_queue[target], needs_icons)
+
+/datum/controller/subsystem/statpanels/proc/refresh_listed_turf(client/target, force_send = FALSE, force_icon_refresh = FALSE)
+	if(!target?.statbrowser_ready)
+		return
+	var/mob/target_mob = target.mob
+	var/turf/listed = target_mob?.listed_turf
+	if(!target_mob || !listed || QDELETED(listed) || !target_mob.TurfAdjacent(listed))
+		target?.clear_listed_turf()
+		return
+	var/turf_ref = REF(listed)
+	var/turf_changed = turf_ref != target.cached_turf_ref
+	var/turf/eye_turf = get_turf(target.eye)
+	var/eye_turf_ref = eye_turf ? REF(eye_turf) : null
+	var/eye_changed = eye_turf_ref != target.listed_turf_eye_ref
+	var/list/refresh_actions = get_listedturf_refresh_actions(force_send, force_icon_refresh, turf_changed, target.listed_turf_dirty, target.listed_turf_dirty_at, target.listed_turf_icon_refresh_pending, eye_changed, target.listed_turf_last_refresh, target.listed_turf_last_icon_refresh)
+	var/list_refresh_due = refresh_actions["list_refresh_due"]
+	var/icon_refresh_due = refresh_actions["icon_refresh_due"]
+	if(!list_refresh_due && !icon_refresh_due)
+		return
+	if(icon_refresh_due)
+		target.reset_listed_turf_icon_cache()
+	var/list/overrides = get_listedturf_overrides(target, listed)
+	var/list/snapshot = build_listedturf_snapshot(listed, target_mob.see_invisible, overrides, target.statpanel_sent_icons)
+	if(!snapshot)
+		target.clear_listed_turf()
+		return
+	var/encoded = snapshot["encoded"]
+	if(force_send || encoded != target.cached_turf_encoded)
+		target << output("[encoded];", "statbrowser:update_listedturf")
+		target.cached_turf_encoded = encoded
+		target.listed_turf_last_refresh = world.time
+	else if(list_refresh_due)
+		target.listed_turf_last_refresh = world.time
+	target.cached_turf_ref = turf_ref
+	target.listed_turf_eye_ref = eye_turf_ref
+	target.listed_turf_dirty = FALSE
+	target.listed_turf_dirty_at = 0
+	target.listed_turf_icon_refresh_pending = FALSE
+	if(icon_refresh_due)
+		target.listed_turf_last_icon_refresh = world.time
+	queue_listedturf_icons(target, snapshot["needs_icons"])
+
 
 /datum/controller/subsystem/statpanels/proc/generate_mc_data()
-	// Server/MC metrics as structured data
 	var/list/server_info = list()
 	server_info["cpu"] = world.cpu
 	server_info["instances"] = world.contents.len
@@ -198,7 +514,8 @@ SUBSYSTEM_DEF(statpanels)
 	server_info["tick_drift"] = round(Master.tickdrift, 0.1)
 	server_info["tick_drift_pct"] = round((Master.tickdrift / max(world.time / world.tick_lag, 1)) * 100, 0.1)
 	server_info["internal_tick_usage"] = round(MAPTICK_LAST_INTERNAL_TICK_USAGE, 0.1)
-	// MC state
+	// MC state — iteration is the natural per-tick counter; JS uses it to dedupe identical payloads.
+	server_info["iteration"] = Master.iteration
 	server_info["mc_tick_rate"] = Master.processing
 	server_info["mc_iteration"] = Master.iteration
 	server_info["mc_tick_limit"] = round(Master.current_ticklimit, 0.1)
@@ -239,21 +556,35 @@ SUBSYSTEM_DEF(statpanels)
 	server_info["camera_count"] = GLOB.cameranet.cameras.len
 	server_info["camera_chunks"] = GLOB.cameranet.chunks.len
 
-	// Key subsystem structured data
+	perf_history_cpu += world.cpu
+	if(length(perf_history_cpu) > 30)
+		perf_history_cpu.Cut(1, length(perf_history_cpu) - 29)
+	perf_history_tidi += round(SStime_track.time_dilation_current, 0.1)
+	if(length(perf_history_tidi) > 30)
+		perf_history_tidi.Cut(1, length(perf_history_tidi) - 29)
+	perf_history_ping += round(SStime_track.ping_rtt_last_avg, 1)
+	if(length(perf_history_ping) > 30)
+		perf_history_ping.Cut(1, length(perf_history_ping) - 29)
+	server_info["history"] = list(
+		"cpu" = perf_history_cpu.Copy(),
+		"tidi" = perf_history_tidi.Copy(),
+		"ping" = perf_history_ping.Copy()
+	)
+
 	var/list/key_ss = list()
 	// Atmospherics
 	key_ss["Atmospherics"] = list(
-		list("\u0412\u044B\u0441\u043E\u043A\u043E\u0435 \u0434\u0430\u0432\u043B\u0435\u043D\u0438\u0435", round(SSair.cost_highpressure, 0.1)),
-		list("\u0413\u043E\u0440\u0435\u043D\u0438\u0435", round(SSair.cost_hotspots, 0.1)),
-		list("\u0421\u0432\u0435\u0440\u0445\u043F\u0440\u043E\u0432\u043E\u0434\u0438\u043C\u043E\u0441\u0442\u044C", round(SSair.cost_superconductivity, 0.1)),
-		list("\u0422\u0440\u0443\u0431\u043E\u043F\u0440\u043E\u0432\u043E\u0434\u044B", round(SSair.cost_pipenets, 0.1)),
-		list("\u0410\u0442\u043C\u043E\u0441. \u043C\u0430\u0448\u0438\u043D\u044B", round(SSair.cost_atmos_machinery, 0.1)),
-		list("\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u0442\u0430\u0439\u043B\u044B", round(SSair.cost_turfs, 0.1)),
-		list("\u041E\u0447\u0430\u0433\u0438", SSair.hotspots.len),
-		list("\u0421\u0435\u0442\u0438", SSair.networks.len),
-		list("\u0412\u044B\u0441 \u0434\u0430\u0432\u043B. \u0442\u0430\u0439\u043B\u044B", SSair.high_pressure_turfs),
-		list("\u041D\u0438\u0437\u043A \u0434\u0430\u0432\u043B. \u0442\u0430\u0439\u043B\u044B", SSair.low_pressure_turfs),
-		list("\u0413\u0430\u0437\u043E\u0432\u044B\u0435 \u0441\u043C\u0435\u0441\u0438", SSair.gas_mixes_count)
+		list("Высокое давление", round(SSair.cost_highpressure, 0.1)),
+		list("Горение", round(SSair.cost_hotspots, 0.1)),
+		list("Сверхпроводимость", round(SSair.cost_superconductivity, 0.1)),
+		list("Трубопроводы", round(SSair.cost_pipenets, 0.1)),
+		list("Атмос. машины", round(SSair.cost_atmos_machinery, 0.1)),
+		list("Активные тайлы", round(SSair.cost_turfs, 0.1)),
+		list("Очаги", SSair.hotspots.len),
+		list("Сети", SSair.networks.len),
+		list("Выс давл. тайлы", SSair.high_pressure_turfs),
+		list("Низк давл. тайлы", SSair.low_pressure_turfs),
+		list("Газовые смеси", SSair.gas_mixes_count)
 	)
 	// Garbage Collector
 	var/gc_ratio = (SSgarbage.totaldels + SSgarbage.totalgcs) ? "[round((SSgarbage.totalgcs / (SSgarbage.totaldels + SSgarbage.totalgcs)) * 100, 0.1)]%" : "n/a"
@@ -261,35 +592,35 @@ SUBSYSTEM_DEF(statpanels)
 	for (var/i in 1 to GC_QUEUE_COUNT)
 		gc_queue_counts += SSgarbage.GetQueueDepth(i)
 	key_ss["Garbage"] = list(
-		list("\u041E\u0447\u0435\u0440\u0435\u0434\u0438", gc_queue_counts.Join(", ")),
-		list("Del/\u0442\u0438\u043A", SSgarbage.delslasttick),
-		list("GC/\u0442\u0438\u043A", SSgarbage.gcedlasttick),
-		list("\u0412\u0441\u0435\u0433\u043E Del", SSgarbage.totaldels),
-		list("\u0412\u0441\u0435\u0433\u043E GC", SSgarbage.totalgcs),
+		list("Очереди", gc_queue_counts.Join(", ")),
+		list("Del/тик", SSgarbage.delslasttick),
+		list("GC/тик", SSgarbage.gcedlasttick),
+		list("Всего Del", SSgarbage.totaldels),
+		list("Всего GC", SSgarbage.totalgcs),
 		list("GC %", gc_ratio)
 	)
 	// Machines
 	key_ss["Machines"] = list(
-		list("\u0412\u0441\u0435\u0433\u043E \u043C\u0430\u0448\u0438\u043D", SSmachines.get_machine_count()),
-		list("\u0422\u0438\u043F\u043E\u0432", SSmachines.get_machine_type_count()),
-		list("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430", length(SSmachines.processing)),
-		list("\u042D\u043D\u0435\u0440\u0433\u043E\u0441\u0435\u0442\u0438", length(SSmachines.powernets))
+		list("Всего машин", SSmachines.get_machine_count()),
+		list("Типов", SSmachines.get_machine_type_count()),
+		list("Обработка", length(SSmachines.processing)),
+		list("Энергосети", length(SSmachines.powernets))
 	)
 	// Mobs
 	key_ss["Mobs"] = list(
-		list("\u0416\u0438\u0432\u044B\u0445 \u043C\u043E\u0431\u043E\u0432", length(GLOB.mob_living_list))
+		list("Живых мобов", length(GLOB.mob_living_list))
 	)
 	// Timer
 	key_ss["Timer"] = list(
-		list("\u0411\u0430\u043A\u0435\u0442\u044B", SStimer.bucket_count),
-		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C", length(SStimer.second_queue)),
-		list("\u0425\u044D\u0448\u0438", length(SStimer.hashes)),
-		list("\u041A\u043B\u0438\u0435\u043D\u0442 \u0442\u0430\u0439\u043C\u0435\u0440\u044B", length(SStimer.clienttime_timers)),
-		list("\u0412\u0441\u0435\u0433\u043E ID", length(SStimer.timer_id_dict))
+		list("Бакеты", SStimer.bucket_count),
+		list("Очередь", length(SStimer.second_queue)),
+		list("Хэши", length(SStimer.hashes)),
+		list("Клиент таймеры", length(SStimer.clienttime_timers)),
+		list("Всего ID", length(SStimer.timer_id_dict))
 	)
 	// Objects (processing subsystem)
 	key_ss["Objects"] = list(
-		list("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430", length(SSobj.processing))
+		list("Обработка", length(SSobj.processing))
 	)
 	// Lighting
 	var/light_total = SSlighting.cost_sources + SSlighting.cost_corners + SSlighting.cost_objects
@@ -298,64 +629,70 @@ SUBSYSTEM_DEF(statpanels)
 	var/light_pct_o = light_total > 0 ? round(SSlighting.cost_objects / light_total * 100) : 0
 	var/light_avg = SSlighting.avg_sources_processed >= 0.5 ? round(SSlighting.cost_sources / SSlighting.avg_sources_processed, 0.01) : 0
 	key_ss["Lighting"] = list(
-		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C \u0438\u0441\u0442\u043E\u0447.", length(GLOB.lighting_update_lights)),
-		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C \u0443\u0433\u043B\u043E\u0432", length(GLOB.lighting_update_corners)),
-		list("\u041E\u0447\u0435\u0440\u0435\u0434\u044C \u043E\u0431\u044A\u0435\u043A\u0442.", length(GLOB.lighting_update_objects)),
-		list("\u041A\u044D\u043F \u0438\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u043E\u0432", SSlighting.sources_cap),
-		list("\u0424\u0430\u0437\u0430: \u0418\u0441\u0442\u043E\u0447\u043D\u0438\u043A\u0438", "[round(SSlighting.cost_sources, 0.1)]ms ([light_pct_s]%)"),
-		list("\u0424\u0430\u0437\u0430: \u0423\u0433\u043B\u044B", "[round(SSlighting.cost_corners, 0.1)]ms ([light_pct_c]%)"),
-		list("\u0424\u0430\u0437\u0430: \u041E\u0431\u044A\u0435\u043A\u0442\u044B", "[round(SSlighting.cost_objects, 0.1)]ms ([light_pct_o]%)"),
-		list("\u0421\u0440\u0435\u0434\u043D\u0435\u0435/\u0438\u0441\u0442\u043E\u0447\u043D\u0438\u043A", "[light_avg]ms ([round(SSlighting.avg_sources_processed)] \u0448\u0442)"),
-		list("\u041F\u0438\u043A: \u0418\u0441\u0442./\u0423\u0433\u043B./\u041E\u0431\u044A.", "[SSlighting.peak_sources]/[SSlighting.peak_corners]/[SSlighting.peak_objects]"),
-		list("\u0425\u0443\u0434\u0448\u0438\u0439 fire", "[round(SSlighting.worst_fire_cost, 0.1)]ms"),
-		list("\u041A\u044D\u0448 \u0442\u0430\u0431\u043B\u0438\u0446", length(GLOB.lighting_sheets)),
-		list("\u0417\u0432\u0451\u0437\u0434\u043D\u044B\u0435 \u0442\u0430\u0439\u043B\u044B", length(GLOB.starlight))
+		list("Очередь источ.", length(GLOB.lighting_update_lights)),
+		list("Очередь углов", length(GLOB.lighting_update_corners)),
+		list("Очередь объект.", length(GLOB.lighting_update_objects)),
+		list("Кэп источников", SSlighting.sources_cap),
+		list("Фаза: Источники", "[round(SSlighting.cost_sources, 0.1)]ms ([light_pct_s]%)"),
+		list("Фаза: Углы", "[round(SSlighting.cost_corners, 0.1)]ms ([light_pct_c]%)"),
+		list("Фаза: Объекты", "[round(SSlighting.cost_objects, 0.1)]ms ([light_pct_o]%)"),
+		list("Среднее/источник", "[light_avg]ms ([round(SSlighting.avg_sources_processed)] шт)"),
+		list("Пик: Ист./Угл./Объ.", "[SSlighting.peak_sources]/[SSlighting.peak_corners]/[SSlighting.peak_objects]"),
+		list("Худший fire", "[round(SSlighting.worst_fire_cost, 0.1)]ms"),
+		list("Кэш таблиц", length(GLOB.lighting_sheets)),
+		list("Звёздные тайлы", length(GLOB.starlight))
 	)
-	// Clients performance aggregate
-	var/total_clients = length(GLOB.clients)
-	if(total_clients)
-		var/sum_ping = 0
-		var/min_ping = INFINITY
-		var/max_ping = 0
-		var/sum_server_delay = 0
-		var/list/fps_counts = list() // "fps_value" = count
-		var/list/version_counts = list() // "version" = count
-		for(var/client/C as anything in GLOB.clients)
-			var/p = C.avgping_rtt || C.avgping
-			if(!p)
-				total_clients--
-				continue
-			sum_ping += p
-			if(p < min_ping) min_ping = p
-			if(p > max_ping) max_ping = p
-			sum_server_delay += (C.avgping_server || 0)
-			var/fps_key = "[C.fps || world.fps]"
-			fps_counts[fps_key] = (fps_counts[fps_key] || 0) + 1
-			var/ver_key = "[C.byond_version].[C.byond_build]"
-			version_counts[ver_key] = (version_counts[ver_key] || 0) + 1
-		// Build FPS distribution string
-		var/list/fps_parts = list()
-		for(var/fps_val in fps_counts)
-			fps_parts += "[fps_val]: [fps_counts[fps_val]]"
-		// Build top versions string (top 3)
-		var/list/ver_parts = list()
-		var/ver_shown = 0
-		for(var/ver in version_counts)
-			if(ver_shown >= 3)
-				break
-			ver_parts += "[ver] ([version_counts[ver]])"
-			ver_shown++
-		var/avg_ping = total_clients ? round(sum_ping / total_clients, 1) : 0
-		var/avg_delay = total_clients ? round(sum_server_delay / total_clients, 1) : 0
-		var/ping_minmax = total_clients ? "[round(min_ping, 1)]/[round(max_ping, 1)]ms" : "n/a"
-		key_ss["Clients"] = list(
-			list("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E", length(GLOB.clients)),
-			list("Ping \u0441\u0440\u0435\u0434\u043D\u0438\u0439", "[avg_ping]ms"),
-			list("Ping \u043C\u0438\u043D/\u043C\u0430\u043A\u0441", ping_minmax),
-			list("\u0417\u0430\u0434\u0435\u0440\u0436\u043A\u0430 \u0441\u0435\u0440\u0432\u0435\u0440\u0430", "[avg_delay]ms"),
-			list("FPS \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438", jointext(fps_parts, ", ")),
-			list("BYOND \u0432\u0435\u0440\u0441\u0438\u0438", jointext(ver_parts, ", "))
-		)
+	// Clients performance aggregate — cached separately, refreshed every 3rd MC data call
+	client_stats_refresh_counter++
+	if(client_stats_refresh_counter >= 3 || !cached_client_stats)
+		client_stats_refresh_counter = 0
+		var/total_clients = length(GLOB.clients)
+		if(total_clients)
+			var/sum_ping = 0
+			var/min_ping = INFINITY
+			var/max_ping = 0
+			var/sum_server_delay = 0
+			var/list/fps_counts = list()
+			var/list/version_counts = list()
+			var/valid_clients = total_clients
+			for(var/client/C as anything in GLOB.clients)
+				var/p = C.avgping_rtt || C.avgping
+				if(!p)
+					valid_clients--
+					continue
+				sum_ping += p
+				if(p < min_ping) min_ping = p
+				if(p > max_ping) max_ping = p
+				sum_server_delay += (C.avgping_server || 0)
+				var/fps_key = "[C.fps || world.fps]"
+				fps_counts[fps_key] = (fps_counts[fps_key] || 0) + 1
+				var/ver_key = "[C.byond_version].[C.byond_build]"
+				version_counts[ver_key] = (version_counts[ver_key] || 0) + 1
+			var/list/fps_parts = list()
+			for(var/fps_val in fps_counts)
+				fps_parts += "[fps_val]: [fps_counts[fps_val]]"
+			var/list/ver_parts = list()
+			var/ver_shown = 0
+			for(var/ver in version_counts)
+				if(ver_shown >= 3)
+					break
+				ver_parts += "[ver] ([version_counts[ver]])"
+				ver_shown++
+			var/avg_ping = valid_clients ? round(sum_ping / valid_clients, 1) : 0
+			var/avg_delay = valid_clients ? round(sum_server_delay / valid_clients, 1) : 0
+			var/ping_minmax = valid_clients ? "[round(min_ping, 1)]/[round(max_ping, 1)]ms" : "n/a"
+			cached_client_stats = list(
+				list("Подключено", length(GLOB.clients)),
+				list("Ping средний", "[avg_ping]ms"),
+				list("Ping мин/макс", ping_minmax),
+				list("Задержка сервера", "[avg_delay]ms"),
+				list("FPS настройки", jointext(fps_parts, ", ")),
+				list("BYOND версии", jointext(ver_parts, ", "))
+			)
+		else
+			cached_client_stats = null
+	if(cached_client_stats)
+		key_ss["Clients"] = cached_client_stats
 	server_info["key_ss"] = key_ss
 
 	mc_data_encoded = url_encode(json_encode(server_info))
@@ -384,9 +721,6 @@ SUBSYSTEM_DEF(statpanels)
 			stat_extra
 		)
 	mc_ss_data_encoded = url_encode(json_encode(ss_data))
-
-/atom/proc/remove_from_cache()
-	SSstatpanels.cached_images -= REF(src)
 
 /// verbs that send information from the browser UI
 /client/verb/set_tab(tab as text|null)
@@ -418,4 +752,37 @@ SUBSYSTEM_DEF(statpanels)
 	set hidden = TRUE
 
 	statbrowser_ready = TRUE
+	// Re-acknowledge protocol on each ready event so JS can detect a stale cached HTML.
+	statpanel_protocol_acked = FALSE
+	statpanel_last_sent.Cut()
+	statpanel_last_mc_iter = -1
 	init_verbs()
+	// Re-apply theme and favorites after byondStorage is guaranteed available
+	src << output("1", "statbrowser:reapply_storage")
+	// Send current ping immediately so the ping bar appears without waiting for stagger cycle
+	var/ping_str = "%5B[round(lastping, 1)]%2C[round(avgping, 1)]%2C[round(avgping_jitter, 1)]%5D"
+	var/list/tidi = list(
+		round(SStime_track.time_dilation_current, 0.1),
+		round(SStime_track.time_dilation_avg_fast, 0.1),
+		round(SStime_track.time_dilation_avg, 0.1),
+		round(SStime_track.time_dilation_avg_slow, 0.1))
+	src << output("[ping_str];[url_encode(json_encode(tidi))]", "statbrowser:update_ping")
+	if(mob?.listed_turf)
+		open_listed_turf(mob.listed_turf)
+
+#undef LISTED_TURF_LIST_REFRESH_INTERVAL
+#undef LISTED_TURF_ICON_REFRESH_INTERVAL
+#undef LISTED_TURF_DIRTY_MIN_INTERVAL
+#undef STATPANEL_AFK_INACTIVITY
+#undef MC_DATA_REFRESH_FIRES
+#undef STATPANEL_FULL_CYCLE_FIRES
+#undef STATPANEL_SLOW_CYCLE_FULLS
+#undef STATPANEL_STAGGER_GROUPS
+#undef STATPANEL_ICON_CACHE_CAP
+#undef STATPANEL_TIDI_INTERVAL
+#undef STATBROWSER_PROTOCOL_VERSION
+#undef STATPANEL_CHANNEL_STATUS
+#undef STATPANEL_CHANNEL_VOTING
+#undef STATPANEL_CHANNEL_SPELLS
+#undef STATPANEL_CHANNEL_TICKETS
+#undef STATPANEL_CHANNEL_SDQL2

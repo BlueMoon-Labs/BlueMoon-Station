@@ -18,7 +18,6 @@ import { selectChat } from './chat/selectors';
 import { EmotePanel, useEmotes } from './emotes';
 import { useGame } from './game';
 import { Notifications } from './Notifications';
-import { PingIndicator } from './ping';
 import { SettingsPanel, useSettings } from './settings';
 
 export const Panel = (props, context) => {
@@ -48,9 +47,6 @@ export const Panel = (props, context) => {
                 overflowX="auto"
                 style={{ 'min-width': 0 }}>
                 <ChatTabs />
-              </Stack.Item>
-              <Stack.Item shrink={0}>
-                <PingIndicator />
               </Stack.Item>
               <Stack.Item shrink={0}>
                 <Button

@@ -360,7 +360,7 @@
 
 	setPersonality(new_pai)
 
-	SSticker.mode.update_cult_icons_removed(pai.mind)
+	SSticker.mode?.update_cult_icons_removed(pai.mind)
 
 /obj/item/paicard/emag_act(mob/user) // Emag to wipe the master DNA and supplemental directive
 	. = ..()

@@ -155,7 +155,7 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 		return
 	if(prob(severity))
 		if(!(machine_stat & EMPED))
-			machine_stat |= EMPED
+			set_machine_stat(machine_stat | EMPED)
 			var/duration = severity * 35
 			spawn(rand(duration - 20, duration + 20)) // Takes a long time for the machines to reboot.
-				machine_stat &= ~(EMPED)
+				set_machine_stat(machine_stat & ~(EMPED))

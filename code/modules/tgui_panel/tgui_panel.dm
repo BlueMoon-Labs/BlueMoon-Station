@@ -48,8 +48,7 @@
 	window.send_asset(get_asset_datum(/datum/asset/simple/namespaced/fontawesome))
 	window.send_asset(get_asset_datum(/datum/asset/simple/namespaced/tgfont))
 	window.send_asset(get_asset_datum(/datum/asset/spritesheet/chat))
-	// Other setup
-	request_telemetry()
+	// BLUEMOON: request_telemetry() runs from on_panel_ready() after the panel loads.
 	addtimer(CALLBACK(src, PROC_REF(on_initialize_timed_out)), 5 SECONDS)
 
 /**

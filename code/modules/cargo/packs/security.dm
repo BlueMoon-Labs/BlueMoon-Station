@@ -284,3 +284,12 @@
 	cost = 1400
 	contains = list(/obj/item/grenade/stingbang)
 
+/datum/supply_pack/security/mars_single
+
+	name = "Colt Detective Special Single-Pack"
+	desc = "Ваш босс забрал у тебя пистолет и значок? Нет проблем! Просто заплатите абсурдный налоговый сбор, и вы тоже сможете вновь ощутить смертоносную мощь пистолета 38-го калибра!"
+	cost = 3000
+	access = FALSE
+	access_any = list(ACCESS_SECURITY, ACCESS_FORENSICS_LOCKERS)
+	contains = list(/obj/item/gun/ballistic/revolver/detective)
+	crate_name = "Colt Detective Special Single-Pack"

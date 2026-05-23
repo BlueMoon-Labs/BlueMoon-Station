@@ -10,7 +10,7 @@
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
 	icon = 'icons/obj/device.dmi'
 	name = "control wand"
-	desc = "Удаленно управляет шлюзами."
+	desc = "Удаленно управляет шлюзами. Совместим с ID картами."
 	w_class = WEIGHT_CLASS_TINY
 	var/mode = WAND_OPEN
 	var/region_access = 1 //See access.dm
@@ -23,6 +23,11 @@
 
 /obj/item/door_remote/GetAccess()
 	return access_list
+
+/obj/item/door_remote/examine(mob/user)
+	. = ..()
+	if(obj_flags & EMAGGED)
+		. += span_warning("Индикатор доступа неисправен и моргает разными цветами.")
 
 /obj/item/door_remote/attack_self(mob/user)
 	switch(mode)
@@ -38,10 +43,10 @@
 
 /obj/item/door_remote/afterattack(atom/A, mob/user)
 	. = ..()
-	if(!check_access(src))
-		return
 	var/obj/machinery/door/airlock/door = A
 	if(!istype(door) || !door.hasPower() || !door.canAIControl())
+		return
+	if(!(door.check_access(src) || door.allowed(user)))
 		return
 
 	switch(mode)
@@ -83,9 +88,17 @@
 	ntnet_send(data)
 	*/
 
+/obj/item/door_remote/emag_act()
+	if(obj_flags & EMAGGED)
+		return
+	. = ..()
+	obj_flags |= EMAGGED
+	region_access = 0
+	access_list = get_region_accesses(region_access)
+	playsound(src, 'sound/effects/light_flicker.ogg', 80, 1)
+
 /obj/item/door_remote/omni
 	name = "omni door remote"
-	desc = "This control wand can access any door on the station."
 	icon_state = "gangtool-yellow"
 	region_access = 0
 
@@ -101,7 +114,6 @@
 
 /obj/item/door_remote/quartermaster
 	name = "supply door remote"
-	desc = "Remotely controls airlocks. This remote has additional Vault access."
 	icon_state = "gangtool-green"
 	region_access = 6
 
