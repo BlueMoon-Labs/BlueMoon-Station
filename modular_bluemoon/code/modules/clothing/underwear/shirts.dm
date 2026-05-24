@@ -90,7 +90,7 @@
 	var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
 	if(B?.is_exposed() || H.is_chest_exposed())
 		H.update_inv_w_shirt()
-	else if(!HAS_TRAIT(H, TRAIT_HUMAN_NO_RENDER))
+	else if(HAS_TRAIT(H, TRAIT_HUMAN_NO_RENDER))
 		H.remove_overlay(SHIRT_LAYER)
 
 /obj/item/clothing/underwear/shirt/bra/bra_adjustable/update_icon_state()
