@@ -643,7 +643,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/yellow/full,
 /obj/machinery/door/airlock/medical{
-	name = "Chemistry Lab";
+	name = "Chemistry Factory";
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
@@ -40982,7 +40982,6 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /obj/effect/turf_decal/tile/blue/full,
@@ -59036,7 +59035,6 @@
 	},
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /obj/effect/turf_decal/tile/blue/full,
