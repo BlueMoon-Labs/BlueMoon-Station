@@ -42249,7 +42249,7 @@
 /obj/machinery/door/airlock/medical/glass{
 	id_tag = "cloningfoyer";
 	name = "Chemistry Factory";
-	req_access_txt = "5"
+	req_one_access_txt = "5; 9"
 	},
 /obj/effect/mapping_helpers/airlock/unres{
 	dir = 8
@@ -42811,7 +42811,7 @@
 /obj/machinery/door/airlock/medical/glass{
 	id_tag = "cloningfoyer";
 	name = "Chemistry Factory";
-	req_access_txt = "5"
+	req_one_access_txt = "5; 9"
 	},
 /obj/effect/mapping_helpers/airlock/unres{
 	dir = 8
@@ -46629,14 +46629,14 @@
 /area/medical/morgue)
 "dCA" = (
 /obj/structure/sign/warning/nosmoking,
-/turf/closed/wall,
+/turf/closed/wall/r_wall,
 /area/medical/morgue)
 "dCB" = (
 /turf/closed/wall/r_wall,
 /area/medical/morgue)
 "dCC" = (
 /turf/closed/wall/r_wall,
-/area/maintenance/department/medical/morgue)
+/area/medical/paramedic)
 "dCE" = (
 /obj/machinery/door/firedoor,
 /obj/structure/cable/white{
@@ -170648,13 +170648,13 @@ qTe
 jxQ
 qTe
 ujn
-ujn
-dvc
+dCC
+dtC
 dwG
 dvc
 din
 dgR
-dCy
+dCB
 dCy
 dCy
 dGg
@@ -170905,13 +170905,13 @@ gpo
 iau
 ubt
 fpT
-ujn
+dCC
 dvd
 dwH
 dvc
 dzN
 dAQ
-dCy
+dCB
 dDI
 dER
 dGh
@@ -171162,13 +171162,13 @@ jLK
 mCY
 lBg
 une
-ujn
+dCC
 dve
 dwI
 dyi
 dzO
 dAR
-dCy
+dCB
 dDJ
 dES
 dGi
@@ -171419,7 +171419,7 @@ bGj
 gmR
 hdn
 mNA
-ujn
+dCC
 dvf
 dwJ
 dyj
@@ -171676,13 +171676,13 @@ lHA
 cqb
 cqb
 ugX
-ujn
+dCC
 dvg
 dwK
 dyk
 dzQ
 dAT
-dCy
+dCB
 dDL
 dEU
 dGk
@@ -171933,7 +171933,7 @@ mch
 qNF
 kWa
 xZd
-ujn
+dCC
 dvl
 sbT
 dyl
@@ -172453,7 +172453,7 @@ dwN
 dyn
 dpm
 dAW
-dCB
+dCy
 dDN
 dEW
 dGl
@@ -172710,7 +172710,7 @@ dpo
 dyo
 dpo
 dAX
-dCB
+dCy
 dDO
 dEW
 dGn
@@ -172967,7 +172967,7 @@ dnq
 dyp
 dzV
 dAY
-dCB
+dCy
 dDO
 dEW
 dGl
@@ -173224,7 +173224,7 @@ dnq
 dyo
 dzW
 dAZ
-dCB
+dCy
 dDP
 dEX
 dGo
@@ -173481,7 +173481,7 @@ dwR
 dyr
 dpo
 dBa
-dCB
+dCy
 dDQ
 dEY
 dGp
@@ -173738,7 +173738,7 @@ dpo
 dys
 dpo
 dBb
-dCB
+dCy
 dCy
 dCy
 dGq
@@ -173995,7 +173995,7 @@ dzZ
 dzZ
 dzZ
 dBc
-dCC
+dCF
 dDR
 dEZ
 dGr
@@ -174246,13 +174246,13 @@ dvp
 dps
 drg
 dvp
-dwP
+dzX
 dvq
 dwU
 dyu
 dwU
 dBd
-dCC
+dCF
 dDS
 dFa
 dGs
