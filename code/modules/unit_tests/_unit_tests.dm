@@ -155,6 +155,7 @@
 #include "auto_cryo.dm"
 #include "bad_defines_defined.dm"
 #include "bugfix_coverage.dm"
+#include "can_inject_clothing.dm"
 #include "disposal_holder.dm"
 #include "ghost_role_limbs.dm"
 #include "hallucination_stationmessage.dm"
