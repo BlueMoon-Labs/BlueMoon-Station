@@ -302,6 +302,7 @@
 
 /obj/item/dnainjector/lasereyesmut
 	name = "\improper DNA injector (Laser Eyes)"
+	desc = "Стандарт InteQ для активатора мутации «Laser Eyes». Станционная генетика не включает её в свой «план» мутаций (locked); обычно достаётся только с чёрным рынка."
 	add_mutations = list(LASEREYES)
 
 /obj/item/dnainjector/antilasereyes

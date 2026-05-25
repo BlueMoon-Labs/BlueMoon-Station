@@ -444,9 +444,7 @@
 		return
 	DelayNextAction()
 
-	var/obj/item/projectile/beam/LE = new /obj/item/projectile/beam(loc)
-	LE.icon = 'icons/effects/genetics.dmi'
-	LE.icon_state = "eyelasers"
+	var/obj/item/projectile/beam/laser/mutation/LE = new /obj/item/projectile/beam/laser/mutation(loc)
 	playsound(usr.loc, 'sound/weapons/taser2.ogg', 75, 1)
 
 	LE.firer = src

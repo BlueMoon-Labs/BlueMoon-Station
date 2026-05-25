@@ -33,7 +33,7 @@
 
 /obj/effect/proc_holder/spell/targeted/genetic/mutate
 	name = "Mutate"
-	desc = "This spell causes you to turn into a hulk and gain laser vision for a short while."
+	desc = "This spell causes you to turn into a hulk for a short while."
 
 	school = "transmutation"
 	charge_max = 400
@@ -42,7 +42,7 @@
 	range = -1
 	include_user = 1
 
-	mutations = list(LASEREYES, HULK)
+	mutations = list(HULK)
 	duration = 300
 	cooldown_min = 300 //25 deciseconds reduction per rank
 
