@@ -37185,6 +37185,9 @@
 	dir = 4
 	},
 /obj/structure/disposalpipe/segment,
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "ddj" = (
@@ -43834,6 +43837,9 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/neutral/opposingcorners,
+/obj/structure/cable/white{
+	icon_state = "1-8"
+	},
 /turf/open/floor/plasteel,
 /area/medical/medbay/zone2)
 "dvi" = (
@@ -43850,6 +43856,9 @@
 /obj/effect/turf_decal/tile/red/opposingcorners,
 /obj/effect/turf_decal/tile/blue/opposingcorners{
 	dir = 1
+	},
+/obj/structure/cable/white{
+	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel,
 /area/medical/medbay/zone2)
@@ -46557,6 +46566,9 @@
 /obj/machinery/door/airlock/medical{
 	name = "Break Room";
 	req_access_txt = "5"
+	},
+/obj/structure/cable/white{
+	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel,
 /area/medical/medbay/zone2)
@@ -87702,6 +87714,13 @@
 /obj/structure/cable/white,
 /turf/open/floor/plating,
 /area/security/brig_cells)
+"mfW" = (
+/obj/effect/turf_decal/tile/neutral/opposingcorners,
+/obj/structure/cable/white{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel,
+/area/medical/medbay/zone2)
 "mgg" = (
 /obj/machinery/door/window/northleft{
 	name = "Mass Driver"
@@ -123615,6 +123634,9 @@
 	pixel_x = -3;
 	pixel_y = 2
 	},
+/obj/structure/cable/white{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plasteel,
 /area/medical/medbay/zone2)
 "whu" = (
@@ -125034,6 +125056,31 @@
 /obj/structure/sign/nanotrasen,
 /turf/closed/wall/r_wall,
 /area/science/circuit)
+"wAO" = (
+/obj/structure/cable/white{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+	dir = 8
+	},
+/obj/structure/cable/white{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel,
+/area/medical/medbay/central)
 "wBb" = (
 /obj/structure/table/wood,
 /obj/structure/sign/barsign{
@@ -177209,7 +177256,7 @@ dxg
 kVY
 dbs
 tEJ
-dkz
+wAO
 dpz
 dbs
 dGA
@@ -178236,7 +178283,7 @@ iOv
 wuh
 dma
 whs
-dtF
+mfW
 dvh
 drc
 iLg
