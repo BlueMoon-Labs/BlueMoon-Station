@@ -1088,12 +1088,22 @@ BLUEMOON REMOVAL END*/
 	if(length(candidates) < required_candidates)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
-	var/mob/scientist_mob = pick_n_take(candidates)
-	var/mob/agent_mob = pick_n_take(candidates)
+	var/list/human_pool = list()
+	for(var/mob/M in candidates)
+		if(ishuman(M))
+			human_pool += M
+	if(length(human_pool) < required_candidates)
+		return FALSE
+	var/mob/scientist_mob = pick_n_take(human_pool)
+	var/mob/agent_mob = pick_n_take(human_pool)
+	candidates -= scientist_mob
+	candidates -= agent_mob
 	if(!scientist_mob?.mind || !agent_mob?.mind)
 		return FALSE
 	assigned += scientist_mob.mind
 	assigned += agent_mob.mind
+	scientist_mob.mind.special_role = ROLE_ABDUCTOR
+	agent_mob.mind.special_role = ROLE_ABDUCTOR
 	scientist_mob.mind.restricted_roles = restricted_roles
 	agent_mob.mind.restricted_roles = restricted_roles
 	message_admins("[ADMIN_LOOKUPFLW(scientist_mob)] и [ADMIN_LOOKUPFLW(agent_mob)] выбраны раундстартовым правилом [name] (учёный и агент).")
@@ -1110,11 +1120,10 @@ BLUEMOON REMOVAL END*/
 		return FALSE
 	if(!ishuman(sci_mind.current) || !ishuman(agent_mind.current))
 		return FALSE
-	var/datum/team/abductor_team/new_team = new
-	if(new_team.team_number > ABDUCTOR_MAX_TEAMS_DYNAMIC_RS)
-		qdel(new_team)
+	if(/datum/team/abductor_team::team_count > ABDUCTOR_MAX_TEAMS_DYNAMIC_RS)
 		stack_trace("Roundstart abductors could not spawn: abductor team limit exceeded.")
 		return FALSE
+	var/datum/team/abductor_team/new_team = new
 	sci_mind.add_antag_datum(/datum/antagonist/abductor/scientist, new_team)
 	agent_mind.add_antag_datum(/datum/antagonist/abductor/agent, new_team)
 	return TRUE
