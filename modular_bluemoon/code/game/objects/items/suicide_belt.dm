@@ -1,4 +1,18 @@
 #define TRAIT_SOURCE_SUICIDE_BELT "suicide_belt_charge"
+/*
+ * /proc/explosion() tuning for the martyr belt — see code/datums/explosion.dm.
+ * Radius values are tiles from epicenter unless noted; raise/lower together for weaker/stronger blasts.
+ */
+/// Epicenter tier: devastation_range (max hull/item damage tier).
+#define SUICIDE_BELT_EX_DEVASTATION_RANGE 2
+/// Next ring: heavy_impact_range (strong ex_act tier).
+#define SUICIDE_BELT_EX_HEAVY_RANGE 8
+/// Outer pressure wave: light_impact_range (weaker structural damage tier).
+#define SUICIDE_BELT_EX_LIGHT_RANGE 16
+/// Flash bang propagation: flash_range (mobs/screens).
+#define SUICIDE_BELT_EX_FLASH_RANGE 14
+/// Fire halo: flame_range named argument (tiles igniting / plasma fire spread input to explosion datum).
+#define SUICIDE_BELT_EX_FLAME_RANGE 14
 
 /datum/action/item_action/suicide_belt_trigger
 	name = "Activate suicide belt"
@@ -75,6 +89,6 @@
 		return
 
 	var/turf/T = get_turf(H)
-	explosion(T, 2, 8, 16, 14, flame_range = 14)
+	explosion(T, SUICIDE_BELT_EX_DEVASTATION_RANGE, SUICIDE_BELT_EX_HEAVY_RANGE, SUICIDE_BELT_EX_LIGHT_RANGE, SUICIDE_BELT_EX_FLASH_RANGE, flame_range = SUICIDE_BELT_EX_FLAME_RANGE)
 	H.gib(TRUE, TRUE)
 	qdel(src)
