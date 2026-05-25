@@ -13005,8 +13005,7 @@
 /area/maintenance/port/fore)
 "bjt" = (
 /obj/effect/spawner/structure/window/reinforced/tinted/electrochromatic{
-	electrochromatic_id = "operating_room3";
-	electrochromatic = 0
+	electrochromatic_id = "operating_room3"
 	},
 /turf/open/floor/plating,
 /area/medical/surgery)
@@ -121926,8 +121925,7 @@
 /area/commons/locker)
 "vGm" = (
 /obj/effect/spawner/structure/window/reinforced/tinted/electrochromatic{
-	electrochromatic_id = "operating_room2";
-	electrochromatic = 0
+	electrochromatic_id = "operating_room2"
 	},
 /turf/open/floor/plating,
 /area/medical/surgery)
@@ -121989,8 +121987,7 @@
 /area/commons/fitness/pool)
 "vHA" = (
 /obj/effect/spawner/structure/window/reinforced/tinted/electrochromatic{
-	electrochromatic_id = "operating_room";
-	electrochromatic = 0
+	electrochromatic_id = "operating_room"
 	},
 /turf/open/floor/plating,
 /area/medical/surgery)
