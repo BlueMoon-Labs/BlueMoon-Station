@@ -35482,13 +35482,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/engine/vacuum,
 /area/science/research)
-"cZf" = (
-/obj/structure/cable/white{
-	icon_state = "0-4"
-	},
-/obj/effect/spawner/structure/window/reinforced,
-/turf/open/floor/plating,
-/area/medical/medbay/factory)
 "cZg" = (
 /obj/structure/sign/nanotrasen{
 	pixel_x = 32
@@ -36092,13 +36085,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
-"daF" = (
-/obj/machinery/door/airlock/medical/glass{
-	name = "Medbay Desk";
-	req_access_txt = "5"
-	},
-/turf/open/floor/plasteel/white,
-/area/medical/medbay/factory)
 "daG" = (
 /obj/effect/turf_decal/tile/purple{
 	dir = 1
@@ -36109,15 +36095,15 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
 /turf/open/floor/plasteel/white,
 /area/science/research)
-"daH" = (
-/obj/machinery/door/airlock/medical/glass{
-	id_tag = "cloningfoyer";
-	name = "Chemistry Factory";
-	req_one_access_txt = "5; 9"
+"daI" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
 	},
-/obj/effect/mapping_helpers/airlock/unres,
+/obj/structure/extinguisher_cabinet{
+	pixel_x = -27
+	},
 /turf/open/floor/plasteel/white,
-/area/medical/medbay/factory)
+/area/science/research)
 "daJ" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/engine/vacuum,
@@ -37526,15 +37512,12 @@
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "ddW" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
-	dir = 4
+/obj/structure/cable/white{
+	icon_state = "0-4"
 	},
-/obj/effect/turf_decal/tile/purple{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
-/turf/open/floor/plasteel/white,
-/area/science/research)
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/medical/medbay/factory)
 "ddX" = (
 /turf/open/floor/engine/vacuum,
 /area/science/research)
@@ -41439,12 +41422,13 @@
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
 "dnn" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
+	},
 /obj/effect/turf_decal/tile/purple{
-	dir = 1
+	dir = 4
 	},
-/obj/structure/extinguisher_cabinet{
-	pixel_x = -27
-	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/white,
 /area/science/research)
 "dno" = (
@@ -66685,20 +66669,12 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "gpo" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/rack,
-/obj/item/wrench,
-/obj/item/roller,
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
+/obj/machinery/door/airlock/medical/glass{
+	name = "Medbay Desk";
+	req_access_txt = "5"
 	},
-/obj/machinery/iv_drip,
-/obj/item/roller,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/turf/open/floor/plasteel/dark,
-/area/medical/paramedic)
+/turf/open/floor/plasteel/white,
+/area/medical/medbay/factory)
 "gpz" = (
 /obj/structure/table,
 /obj/item/storage/secure/briefcase,
@@ -85585,11 +85561,14 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "lBg" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/vomit/old,
-/obj/structure/table/glass,
-/turf/open/floor/plasteel/dark,
-/area/medical/paramedic)
+/obj/machinery/door/airlock/medical/glass{
+	id_tag = "cloningfoyer";
+	name = "Chemistry Factory";
+	req_one_access_txt = "5; 9"
+	},
+/obj/effect/mapping_helpers/airlock/unres,
+/turf/open/floor/plasteel/white,
+/area/medical/medbay/factory)
 "lBl" = (
 /obj/effect/landmark/event_spawn,
 /obj/effect/turf_decal/tile/neutral{
@@ -164110,7 +164089,7 @@ dgv
 cZc
 cSi
 dgv
-dnn
+daI
 cNt
 dgw
 dhY
@@ -165140,7 +165119,7 @@ ddX
 dcv
 cZe
 dfj
-ddW
+dnn
 dic
 jdO
 lva
@@ -170798,7 +170777,7 @@ dgU
 dip
 dba
 ujn
-gpo
+jLK
 iau
 ubt
 fpT
@@ -171057,7 +171036,7 @@ dkg
 ujn
 jLK
 mCY
-lBg
+ubt
 une
 dCC
 dve
@@ -172084,7 +172063,7 @@ dcS
 dkk
 dzX
 dzX
-daF
+gpo
 dzX
 dzX
 dwP
@@ -172853,7 +172832,7 @@ cRc
 dhc
 div
 dkn
-daH
+lBg
 dnq
 dpo
 drb
@@ -174139,7 +174118,7 @@ cPo
 diA
 dkq
 dlX
-cZf
+ddW
 dps
 drg
 dvp
