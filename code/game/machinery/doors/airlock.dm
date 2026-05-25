@@ -1278,12 +1278,11 @@
 	update_icon(ALL, AIRLOCK_OPENING, 1)
 	sleep(1)
 	set_opacity(0)
-	refresh_electrochromatic_opacity()
-	update_freelook_sight()
-	sleep(4)
 	density = FALSE
 	air_update_turf(TRUE)
-	sleep(1)
+	refresh_electrochromatic_opacity()
+	update_freelook_sight()
+	sleep(5)
 	layer = OPEN_DOOR_LAYER
 	update_icon(ALL, AIRLOCK_OPEN, 1)
 	operating = FALSE
