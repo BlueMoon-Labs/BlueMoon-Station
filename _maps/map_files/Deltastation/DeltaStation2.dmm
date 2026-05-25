@@ -18344,15 +18344,13 @@
 	id = "operating_room";
 	pixel_x = -6;
 	pixel_y = -1;
-	name = "Window from the operating";
-	electrochromatic_id = "operating_room"
+	name = "Window from the operating"
 	},
 /obj/machinery/button/electrochromatic{
 	id = "operating_room3";
 	pixel_x = 5;
 	pixel_y = -1;
-	name = "Surgery Window";
-	electrochromatic_id = "operating_room3"
+	name = "Surgery Window"
 	},
 /obj/item/storage/backpack/duffelbag/med/surgery{
 	pixel_y = 8
@@ -35485,11 +35483,11 @@
 /turf/open/floor/engine/vacuum,
 /area/science/research)
 "cZf" = (
-/obj/machinery/door/airlock/medical/glass{
-	name = "Medbay Desk";
-	req_access_txt = "5"
+/obj/structure/cable/white{
+	icon_state = "0-4"
 	},
-/turf/open/floor/plasteel/white,
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
 /area/medical/medbay/factory)
 "cZg" = (
 /obj/structure/sign/nanotrasen{
@@ -36095,22 +36093,13 @@
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "daF" = (
-/obj/structure/cable/white{
-	icon_state = "0-4"
-	},
-/obj/effect/spawner/structure/window/reinforced,
-/turf/open/floor/plating,
-/area/medical/medbay/factory)
-"daG" = (
 /obj/machinery/door/airlock/medical/glass{
-	id_tag = "cloningfoyer";
-	name = "Chemistry Factory";
-	req_one_access_txt = "5; 9"
+	name = "Medbay Desk";
+	req_access_txt = "5"
 	},
-/obj/effect/mapping_helpers/airlock/unres,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
-"daH" = (
+"daG" = (
 /obj/effect/turf_decal/tile/purple{
 	dir = 1
 	},
@@ -36120,6 +36109,15 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
 /turf/open/floor/plasteel/white,
 /area/science/research)
+"daH" = (
+/obj/machinery/door/airlock/medical/glass{
+	id_tag = "cloningfoyer";
+	name = "Chemistry Factory";
+	req_one_access_txt = "5; 9"
+	},
+/obj/effect/mapping_helpers/airlock/unres,
+/turf/open/floor/plasteel/white,
+/area/medical/medbay/factory)
 "daJ" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/engine/vacuum,
@@ -37528,12 +37526,13 @@
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "ddW" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
+	},
 /obj/effect/turf_decal/tile/purple{
-	dir = 1
+	dir = 4
 	},
-/obj/structure/extinguisher_cabinet{
-	pixel_x = -27
-	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/white,
 /area/science/research)
 "ddX" = (
@@ -41440,13 +41439,12 @@
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
 "dnn" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
-	dir = 4
-	},
 /obj/effect/turf_decal/tile/purple{
-	dir = 4
+	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
+/obj/structure/extinguisher_cabinet{
+	pixel_x = -27
+	},
 /turf/open/floor/plasteel/white,
 /area/science/research)
 "dno" = (
@@ -91490,15 +91488,13 @@
 	id = "operating_room3";
 	pixel_x = 5;
 	pixel_y = 11;
-	name = "Surgery Window";
-	electrochromatic_id = "operating_room3"
+	name = "Surgery Window"
 	},
 /obj/machinery/button/electrochromatic{
 	id = "operating_room2";
 	pixel_x = -6;
 	pixel_y = 11;
-	name = "Window from the operating";
-	electrochromatic_id = "operating_room2"
+	name = "Window from the operating"
 	},
 /turf/open/floor/plasteel,
 /area/medical/surgery)
@@ -164114,7 +164110,7 @@ dgv
 cZc
 cSi
 dgv
-ddW
+dnn
 cNt
 dgw
 dhY
@@ -165144,7 +165140,7 @@ ddX
 dcv
 cZe
 dfj
-dnn
+ddW
 dic
 jdO
 lva
@@ -165658,7 +165654,7 @@ ddX
 dcx
 daJ
 dfl
-daH
+daG
 cQM
 cUe
 uON
@@ -172088,7 +172084,7 @@ dcS
 dkk
 dzX
 dzX
-cZf
+daF
 dzX
 dzX
 dwP
@@ -172857,7 +172853,7 @@ cRc
 dhc
 div
 dkn
-daG
+daH
 dnq
 dpo
 drb
@@ -174143,7 +174139,7 @@ cPo
 diA
 dkq
 dlX
-daF
+cZf
 dps
 drg
 dvp
