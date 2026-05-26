@@ -285,10 +285,10 @@
 
 /obj/item/clothing/under/dress/skirt/maidsexy/toggle_jumpsuit_adjust()
 	if(!body_parts_covered)
-		to_chat(usr, "<span class='notice'>[src] is now covering chest and groin.</span>")
+		to_chat(usr, "<span class='notice'>[src] теперь закрывает грудь и пах.</span>")
 		body_parts_covered = CHEST|GROIN
 	else
-		to_chat(usr, "<span class='notice'>[src] is no longer covering anything.</span>")
+		to_chat(usr, "<span class='notice'>[src] больше не закрывает гениталии.</span>")
 		body_parts_covered = NONE
 	return TRUE
 
