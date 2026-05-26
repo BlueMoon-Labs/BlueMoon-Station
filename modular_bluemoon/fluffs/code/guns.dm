@@ -61,7 +61,8 @@
 		return
 
 	TRANSFER_VAR(target, result, pin)
-	result.pin.gun = result
+	if(result.pin)
+		result.pin.gun = result
 	if(istype(target, /obj/item/gun/ballistic) && istype(result, /obj/item/gun/ballistic))
 		var/obj/item/gun/ballistic/target_b = target
 		var/obj/item/gun/ballistic/result_b = result
