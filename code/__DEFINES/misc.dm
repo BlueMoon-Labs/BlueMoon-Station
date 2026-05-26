@@ -46,16 +46,16 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 #define BODY_LAYER				35		//Eyes, lips(makeup)
 #define BODY_ADJ_UPPER_LAYER	34
 #define FRONT_MUTATIONS_LAYER	33		//mutations that should appear above body, body_adj and bodyparts layer (e.g. laser eyes)
-#define DAMAGE_LAYER			32		//damage indicators (cuts and burns)
-#define UNDERWEAR_LAYER			31
-#define SOCKS_LAYER				30
-#define SHIRT_LAYER				29
-#define UNIFORM_LAYER			28
-#define SHOES_LAYER				27
-#define DRESS_LAYER				26
-#define ID_LAYER				25
-#define GENITALS_EXPOSED_LAYER	24
-#define HANDS_PART_LAYER		23
+#define UNDERWEAR_LAYER			32
+#define SOCKS_LAYER				31
+#define SHIRT_LAYER				30
+#define UNIFORM_LAYER			29
+#define SHOES_LAYER				28
+#define DRESS_LAYER				27
+#define ID_LAYER				26
+#define GENITALS_EXPOSED_LAYER	25
+#define HANDS_PART_LAYER		24
+#define DAMAGE_LAYER			23		//damage indicators (cuts and burns)
 #define LOWER_MEDICINE_LAYER	22		//Medicine, like gauze and tourniquets
 #define MEDICINE_LAYER			21		//Medicine, like gauze and tourniquets
 #define GLOVES_LAYER			20
