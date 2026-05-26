@@ -91,6 +91,7 @@
 	name = "denim skirt"
 	desc = "These are really just a jean leg hole cut from a pair"
 	icon_state = "denim_skirt"
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/pants/chaps
 	name = "black chaps"

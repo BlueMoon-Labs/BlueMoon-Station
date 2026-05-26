@@ -136,6 +136,7 @@
 	dying_key = DYE_REGISTRY_JUMPSKIRT
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/head/maid/syndicate
 	name = "Tactical Maid Headband"
@@ -156,6 +157,7 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	dying_key = DYE_REGISTRY_JUMPSKIRT
 	can_adjust = FALSE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/syndicate/maid/Initialize(mapload)
 	. = ..()
@@ -173,6 +175,7 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	dying_key = DYE_REGISTRY_JUMPSKIRT
 	can_adjust = FALSE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/accessory/maidcorset/syndicate
 	name = "Syndicate Maid Apron"

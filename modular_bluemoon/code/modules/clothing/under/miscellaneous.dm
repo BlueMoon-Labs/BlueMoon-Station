@@ -20,6 +20,7 @@
 	body_parts_covered = CHEST|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 30, WOUND = 10)
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/bm/utility
 	name = "green utility uniform"
@@ -79,7 +80,6 @@
 	fitted = NO_FEMALE_UNIFORM
 	can_adjust = FALSE
 	flags_inv = HIDESHOES
-	alternate_worn_layer = ABOVE_SHOES_LAYER
 
 /obj/item/clothing/under/dress/longdress
 	name = "maxi dress"
@@ -92,7 +92,6 @@
 	fitted = NO_FEMALE_UNIFORM
 	can_adjust = FALSE
 	flags_inv = HIDESHOES
-	alternate_worn_layer = ABOVE_SHOES_LAYER
 
 /obj/item/clothing/under/dress/skirt/nightie
 	name = "transparent nightie"
@@ -174,7 +173,6 @@
 	fitted = NO_FEMALE_UNIFORM
 	can_adjust = FALSE
 	flags_inv = HIDESHOES
-	alternate_worn_layer = ABOVE_SHOES_LAYER
 
 /obj/item/clothing/under/dress/skirt/pleatedmedium
 	name = "pleated skirt"
@@ -505,6 +503,7 @@
 	icon_state = "stylish_dress"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/bm/sergal_brown_bib
 	name = "Sergal brown bib"

@@ -443,7 +443,7 @@
 
 			genital_overlay.icon_state = "[G.slot]_[S.icon_state]_[size][(dna.species.use_skintones && !dna.skin_tone_override) ? "_s" : ""]_[aroused_state]_[layertext]"
 
-			if(layers_num[layer] == GENITALS_FRONT_LAYER && G.genital_flags & GENITAL_THROUGH_CLOTHES)
+			if(layers_num[layer] == GENITALS_FRONT_LAYER && (G.genital_flags & GENITAL_THROUGH_CLOTHES || G.is_exposed()))
 				genital_overlay.layer = -GENITALS_EXPOSED_LAYER
 				LAZYADD(fully_exposed, genital_overlay)
 			else

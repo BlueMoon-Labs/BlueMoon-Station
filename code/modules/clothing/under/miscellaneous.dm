@@ -384,6 +384,7 @@
 	item_state = "littleblackdress_s"
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/pinktutu
 	name = "pink tutu"
@@ -392,6 +393,7 @@
 	item_state = "pinktutu_s"
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/bathrobe
 	name = "bathrobe"
@@ -400,6 +402,7 @@
 	item_state = "bathrobe"
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/mechsuitred
 	name = "red mech suit"
