@@ -5936,12 +5936,12 @@
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/awaymission/beach)
 "NN" = (
-/obj/item/gun/ballistic/shotgun/lethal{
+/obj/item/gun/ballistic/shotgun/slamfire/lethal{
 	pixel_x = 1;
 	pixel_y = 6
 	},
 /obj/structure/table/wood,
-/obj/item/gun/ballistic/shotgun/lethal{
+/obj/item/gun/ballistic/shotgun/slamfire/lethal{
 	pixel_x = 3;
 	pixel_y = -2
 	},

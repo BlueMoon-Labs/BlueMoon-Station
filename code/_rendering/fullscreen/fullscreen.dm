@@ -260,3 +260,20 @@
 	layer = FLASH_LAYER
 	plane = FULLSCREEN_PLANE
 	blend_mode = 3
+
+/atom/movable/screen/fullscreen/tiled/slamfire_frenzy
+    icon = 'icons/mob/screen_gen.dmi'
+    screen_loc = "WEST,SOUTH to EAST,NORTH"
+    icon_state = "flash"
+    color = "#700606"
+    alpha = 0
+    layer = FLASH_LAYER
+    plane = FULLSCREEN_PLANE
+    blend_mode = BLEND_ADD
+    severity_min = 1
+    severity_max = 5
+
+/atom/movable/screen/fullscreen/tiled/slamfire_frenzy/SetSeverity(severity)
+    src.severity = clamp(severity, severity_min, severity_max)
+    icon_state = initial(icon_state)
+    animate(src, alpha = 25 + (src.severity * 25), time = 3)

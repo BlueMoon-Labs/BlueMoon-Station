@@ -65,6 +65,10 @@
 	mood_change = 12
 	hidden = TRUE
 
+/datum/mood_event/slamfire_overload
+	description = "<span class='inteqradio'>Оружие и тело двигаются как единый механизм! В бой!</span>\n"
+	mood_change = 50 //А кто сказал что странный психостимулятор не меняет восприятие мира?
+
 /datum/mood_event/revolution
 	description = "<span class='nicegreen'>НАШЕ ДЕЛО ПРАВОЕ! ПОБЕДА БУДЕТ ЗА РЕВОЛЮЦИЕЙ!</span>\n"
 	mood_change = 3

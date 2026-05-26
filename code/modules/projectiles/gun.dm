@@ -24,6 +24,8 @@
 
 	var/gun_flags = NONE
 	var/fire_sound = "gunshot"
+	var/default_fire_sound //Кэширование для глушителя - RaizlenW
+	var/suppressed_fire_sound = 'sound/weapons/gunshot_silenced.ogg' //Выстрел с глушителем - RaizlenW
 	var/suppressed = null					//whether or not a message is displayed when fired
 	var/can_suppress = FALSE
 	var/can_unsuppress = TRUE
@@ -75,6 +77,7 @@
 	var/obj/item/kitchen/knife/bayonet
 	var/mutable_appearance/knife_overlay
 	var/can_bayonet = FALSE
+	var/can_mount_both = FALSE //Может ли глушитель и штык-нож быть установлены одновременно? -RaizlenW
 	//SPLURT EDIT ADD
 	var/bayonet_diagonal = FALSE
 	//SPKURT EDIT ADD END
@@ -291,6 +294,25 @@
 				user.visible_message("<span class='danger'>[user] стреляет из [src] в упор по [pbtarget]!</span>", null, null, COMBAT_MESSAGE_RANGE)
 			else
 				user.visible_message("<span class='danger'>[user] стреляет из [src]!</span>", null, null, COMBAT_MESSAGE_RANGE)
+
+/obj/item/gun/proc/can_attach_suppressor(obj/item/suppressor/S, mob/user)
+	if(!can_suppress)
+		return FALSE
+	if(suppressed)
+		return FALSE
+	if(bayonet && !can_mount_both)
+		return FALSE
+	return TRUE
+
+/obj/item/gun/proc/can_attach_bayonet(obj/item/kitchen/knife/K, mob/user)
+	if(!can_bayonet)
+		return FALSE
+	if(bayonet)
+		return FALSE
+	if(suppressed && !can_mount_both)
+		return FALSE
+
+	return TRUE
 
 /obj/item/gun/emp_act(severity)
 	. = ..()
@@ -602,15 +624,21 @@
 				alight.Grant(user)
 	else if(istype(I, /obj/item/kitchen/knife))
 		var/obj/item/kitchen/knife/K = I
-		if(!can_bayonet || !K.bayonet || bayonet) //ensure the gun has an attachment point available, and that the knife is compatible with it.
+		if(!K.bayonet)
 			return ..()
+		if(!can_attach_bayonet(K, user))
+		{
+			if(bayonet)
+				to_chat(user, span_warning("[src] уже имеет штык-нож!"))
+			else if(suppressed && !can_mount_both)
+				to_chat(user, span_warning("Вы не можете установить штык-нож одновременно с глушителем на [src]!"))
+			return ..()
+		}
 		if(!user.transferItemToLoc(I, src))
 			return
-		to_chat(user, "<span class='notice'>Вы примкнули [K] на штыковой наконечник [src].</span>")
+		to_chat(user, span_notice("Вы примкнули [K] на штыковой наконечник [src]."))
 		bayonet = K
 		update_icon()
-	else
-		return ..()
 
 /obj/item/gun/screwdriver_act(mob/living/user, obj/item/I)
 	. = ..()

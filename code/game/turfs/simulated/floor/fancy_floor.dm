@@ -105,7 +105,7 @@
 	floor_tile = /obj/item/stack/tile/grass
 	broken_states = list("sand")
 	flags_1 = NONE
-	bullet_bounce_sound = null
+	override_shell_bounce_sound = null
 	footstep = FOOTSTEP_GRASS
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS
@@ -250,7 +250,7 @@
 	smooth = SMOOTH_TRUE
 	canSmoothWith = list(/turf/open/floor/carpet, /turf/open/floor/carpet/airless)
 	flags_1 = NONE
-	bullet_bounce_sound = null
+	override_shell_bounce_sound = null
 	footstep = FOOTSTEP_CARPET
 	barefootstep = FOOTSTEP_CARPET_BAREFOOT
 	clawfootstep = FOOTSTEP_CARPET_BAREFOOT

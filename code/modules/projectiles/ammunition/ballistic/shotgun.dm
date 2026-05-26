@@ -1,12 +1,20 @@
 // Shotgun
 
 /obj/item/ammo_casing/shotgun
+	caliber = "shotgun"
+	shell_bounce_sounds = list(
+		'sound/weapons/Shotguns_reheated/shared/casings/12g_fall1.wav',
+		'sound/weapons/Shotguns_reheated/shared/casings/12g_fall2.wav',
+		'sound/weapons/Shotguns_reheated/shared/casings/12g_fall3.ogg',
+		'sound/weapons/Shotguns_reheated/shared/casings/12g_fall4.ogg'
+	)
+
+/obj/item/ammo_casing/shotgun/slug
 	name = "shotgun slug"
 	desc = "A 12 gauge lead slug."
 	icon_state = "blshell"
-	caliber = "shotgun"
 	projectile_type = /obj/item/projectile/bullet/shotgun_slug
-	custom_materials = list(/datum/material/iron=4000)
+	custom_materials = list(/datum/material/iron = 4000)
 
 /obj/item/ammo_casing/shotgun_breacher
 	name = "breacher slug"

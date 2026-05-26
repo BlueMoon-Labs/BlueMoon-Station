@@ -16,6 +16,8 @@
 	var/variance = 0							//Variance for inaccuracy fundamental to the casing
 	var/randomspread = 0						//Randomspread for automatics
 	var/delay = 0								//Delay for energy weapons
+	var/shell_bounce_sound = 'sound/weapons/bulletremove.ogg'
+	var/list/shell_bounce_sounds = null
 	/// Override this to make the gun check for a different cooldown rather than CLICK_CD_RANGE, which is 4 deciseconds.
 	var/click_cooldown_override
 	var/firing_effect_type = /obj/effect/temp_visual/dir_setting/firing_effect	//the visual effect appearing when the ammo is fired.
@@ -77,16 +79,37 @@
 		bounce_away(FALSE, NONE)
 	. = ..()
 
+/obj/item/ammo_casing/proc/get_shell_bounce_sound()
+	if(length(shell_bounce_sounds))
+		return pick(shell_bounce_sounds)
+
+	return shell_bounce_sound
+
 /obj/item/ammo_casing/proc/bounce_away(still_warm = FALSE, bounce_delay = 3)
 	update_icon()
 	SpinAnimation(10, 1)
+
 	var/matrix/M = matrix(transform)
 	M.Turn(rand(-170,170))
 	transform = M
+
 	pixel_x = rand(-12, 12)
 	pixel_y = rand(-12, 12)
+
 	var/turf/T = get_turf(src)
+
 	if(still_warm && T && T.bullet_sizzle)
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'sound/items/welder.ogg', 20, 1), bounce_delay) //If the turf is made of water and the shell casing is still hot, make a sizzling sound when it's ejected.
-	else if(T && T.bullet_bounce_sound)
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, T.bullet_bounce_sound, 60, 1), bounce_delay) //Soft / non-solid turfs that shouldn't make a sound when a shell casing is ejected over them.
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'sound/items/welder.ogg', 20, 1), bounce_delay)
+		return
+
+	var/final_sound = get_shell_bounce_sound()
+
+	if(T)
+		if(T.override_shell_bounce_sound == FALSE)
+			return
+
+		if(istext(T.override_shell_bounce_sound))
+			final_sound = T.override_shell_bounce_sound
+
+	if(final_sound)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, final_sound, 60, 1), bounce_delay)

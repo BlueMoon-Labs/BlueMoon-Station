@@ -28,7 +28,7 @@
 	gender = PLURAL
 	name = "lush grass"
 	icon_state = "grass"
-	bullet_bounce_sound = null
+	override_shell_bounce_sound = null
 	tiled_dirt = FALSE
 
 /turf/open/floor/holofloor/beach
@@ -36,7 +36,7 @@
 	name = "sand"
 	icon = 'modular_bluemoon/icons/turf/floors/sand.dmi'
 	icon_state = "sand"
-	bullet_bounce_sound = null
+	override_shell_bounce_sound = null
 	tiled_dirt = FALSE
 
 /turf/open/floor/holofloor/beach/coast_t
@@ -91,7 +91,7 @@
 	name = "\proper hyperspace"
 	icon = 'icons/turf/space.dmi'
 	icon_state = "speedspace_ns_1"
-	bullet_bounce_sound = null
+	override_shell_bounce_sound = null
 	tiled_dirt = FALSE
 
 /turf/open/floor/holofloor/hyperspace/Initialize(mapload)
@@ -110,7 +110,7 @@
 	floor_tile = /obj/item/stack/tile/carpet
 	smooth = SMOOTH_TRUE
 	canSmoothWith = null
-	bullet_bounce_sound = null
+	override_shell_bounce_sound = null
 	tiled_dirt = FALSE
 
 /turf/open/floor/holofloor/carpet/Initialize(mapload)
@@ -134,7 +134,7 @@
 	icon_state = "snow"
 	slowdown = 2
 	bullet_sizzle = TRUE
-	bullet_bounce_sound = null
+	override_shell_bounce_sound = null
 	tiled_dirt = FALSE
 	baseturfs = /turf/open/floor/holofloor/snow
 

@@ -181,7 +181,7 @@ GLOBAL_LIST_EMPTY(dug_up_basalt)
 	planetary_atmos = TRUE
 	burnt_states = list("snow_dug")
 	bullet_sizzle = TRUE
-	bullet_bounce_sound = null
+	override_shell_bounce_sound = null
 	dig_result = /obj/item/stack/sheet/mineral/snow
 
 // /turf/open/floor/plating/asteroid/snow/setup_broken_states()

@@ -51,6 +51,17 @@
 					/obj/item/storage/box/lethalslugs)
 	crate_name = "combat shotguns crate"
 
+/datum/supply_pack/security/armory/bastion
+	name = "Bastion Shotguns Crate"
+	desc = "В моменты, когда надо чередовать свинец и резину. Содержит три помповых дробовика с двойной системой подачи патронов. Бандольеры не идут в комплекте, а боеприпасы - да. Для открытия требуется доступ к оружейной."
+	cost = 5600
+	contains = list(/obj/item/gun/ballistic/shotgun/dual_tube,
+					/obj/item/gun/ballistic/shotgun/dual_tube,
+					/obj/item/gun/ballistic/shotgun/dual_tube,
+					/obj/item/storage/box/lethalshot,
+					/obj/item/storage/box/lethalslugs)
+	crate_name = "bastion shotguns crate"
+
 /datum/supply_pack/security/armory/dragnetgun
 	name = "DRAGnet gun Crate"
 	desc = "Содержит два пулемета DRAGnet. Динамичное быстрое задержание виновных - это революция в правоохранительных технологиях, которую ВЫ хотите! Для открытия требуется доступ к оружейной."

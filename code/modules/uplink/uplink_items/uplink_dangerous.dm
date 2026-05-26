@@ -101,7 +101,7 @@
 /datum/uplink_item/dangerous/throwingweapons
 	name = "Box of Throwing Weapons"
 	desc = "Коробка сюрикенов и усиленных бола из древних земных боевых искусств. Крайне эффективное \
-			 метательное оружие. Бола сбивают цель с ног, а сюрикены застревают в конечностях."
+			метательное оружие. Бола сбивают цель с ног, а сюрикены застревают в конечностях."
 	item = /obj/item/storage/box/syndie_kit/throwing_weapons
 	cost = 3
 
@@ -113,6 +113,39 @@
 	cost = 8
 	surplus = 40
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+
+/datum/uplink_item/dangerous/hellstitch
+    name = "M-156 'Hell-Stitch'"
+    desc = "Экспериментальный дробовик с встроенной подачей боевого стимулятора. Совмещает всё лучшее для ближнего боя."
+    item = /obj/item/gun/ballistic/shotgun/slamfire/traitor
+    cost = 25
+    surplus = 2
+    purchasable_from = (UPLINK_NUKE_OPS)
+
+/datum/uplink_item/dangerous/invictus
+    name = "HCA-00 'Invictus'"
+    desc = "Убойный двустольный помповый дробовик 12 калибра. Имеет особый режим стрельбы из двух стволов сразу. \
+            Не даёт осечек."
+    item = /obj/item/gun/ballistic/shotgun/dp12/traitor
+    cost = 10
+    surplus = 5
+    purchasable_from = (UPLINK_NUKE_OPS)
+
+/datum/uplink_item/dangerous/jackhammer
+    name = "CS-11 'JackHammer'"
+    desc = "Компактный короткоствольный дробовик, созданный для вскрытия дверей и как оружие последнего шанса."
+    item = /obj/item/gun/ballistic/shotgun/traitor
+    cost = 3
+    surplus = 10
+    purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+
+/datum/uplink_item/dangerous/aspis
+    name = "HC-X 'Aspis'"
+    desc = "Дешёвый полуавтоматический дробовик. Без патронов."
+    item = /obj/item/gun/ballistic/shotgun/automatic/traitor
+    cost = 6
+    surplus = 3
+    purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/dangerous/smg
 	name = "C-20r Submachine Gun"

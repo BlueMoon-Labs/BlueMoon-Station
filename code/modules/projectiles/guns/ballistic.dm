@@ -19,16 +19,21 @@
 	var/eject_sound = 'sound/weapons/gun_magazine_remove_full.ogg'
 	var/eject_empty_sound = SFX_GUN_REMOVE_EMPTY_MAGAZINE
 	var/lock_back_sound ='sound/weapons/gun_chamber_round.ogg'
+	var/base_w_class = null //Защита от того, что если другая система заменит вес предмета, то игра будет знать оригинальный. Это универсальный скрипт -RaizlenW
 
 /obj/item/gun/ballistic/Initialize(mapload)
-	. = ..()
-	if(!spawnwithmagazine)
-		update_icon()
-		return
-	if (!magazine)
-		magazine = new mag_type(src)
-	chamber_round()
-	update_icon()
+    . = ..()
+    if(!default_fire_sound)
+        default_fire_sound = fire_sound
+    if(isnull(base_w_class))
+        base_w_class = w_class
+    if(!spawnwithmagazine)
+        update_icon()
+        return
+    if(!magazine)
+        magazine = new mag_type(src)
+    chamber_round()
+    update_icon()
 
 /obj/item/gun/ballistic/update_icon_state()
 	if(current_skin)
@@ -62,23 +67,26 @@
 
 /obj/item/gun/ballistic/attackby(obj/item/A, mob/user, params)
 	..()
+
 	if(istype(A, /obj/item/ammo_box/magazine))
 		return insert_mag(A, user)
 	if(istype(A, /obj/item/suppressor))
 		var/obj/item/suppressor/S = A
-		if(!can_suppress)
-			to_chat(user, "<span class='warning'>You can't seem to figure out how to fit [S] on [src]!</span>")
+		if(!can_attach_suppressor(S, user))
+			if(suppressed)
+				to_chat(user, span_warning("[src] уже имеет установленный глушитель!"))
+			else if(bayonet && !can_mount_both)
+				to_chat(user, span_warning("Вы не можете установить штык-нож одновременно с глушителем на [src]!"))
+			else
+				to_chat(user, span_warning("Вы не можете разобраться как установить [S] на [src]!"))
 			return
 		if(!user.is_holding(src))
-			to_chat(user, "<span class='notice'>You need be holding [src] to fit [S] to it!</span>")
-			return
-		if(suppressed)
-			to_chat(user, "<span class='warning'>[src] already has a suppressor!</span>")
+			to_chat(user, span_notice("Нужно держать [src] в руках, чтобы установить [S]!"))
 			return
 		if(user.transferItemToLoc(A, src))
-			to_chat(user, "<span class='notice'>You screw [S] onto [src].</span>")
-			install_suppressor(A)
-			return
+			to_chat(user, span_notice("Вы накручиваете глушитель [S] на [src]."))
+			install_suppressor(S)
+			return TRUE
 	return FALSE
 
 /obj/item/gun/ballistic/proc/insert_mag(obj/item/ammo_box/magazine/AM, mob/user)
@@ -113,28 +121,34 @@
 	else
 		to_chat(user, span_notice("There's already a [magazine_wording] in \the [src]."))
 
+/obj/item/gun/ballistic/proc/on_suppressor_installed(obj/item/suppressor/S)
+    w_class = base_w_class + S.w_class
+
+/obj/item/gun/ballistic/proc/on_suppressor_removed(obj/item/suppressor/S)
+    w_class = base_w_class
+
 /obj/item/gun/ballistic/proc/install_suppressor(obj/item/suppressor/S)
 	// this proc assumes that the suppressor is already inside src
-	suppressed = S
-	S.oldsound = fire_sound
-	fire_sound = 'sound/weapons/gunshot_silenced.ogg'
-	w_class += S.w_class //so pistols do not fit in pockets when suppressed
-	update_icon()
+    suppressed = S
+    fire_sound = suppressed_fire_sound
+    on_suppressor_installed(S)
+    update_icon()
 
 /obj/item/gun/ballistic/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
-	if(loc == user)
-		if(suppressed && can_unsuppress)
-			var/obj/item/suppressor/S = suppressed
-			if(!user.is_holding(src))
-				return ..()
-			to_chat(user, "<span class='notice'>You unscrew [suppressed] from [src].</span>")
-			user.put_in_hands(suppressed)
-			fire_sound = S.oldsound
-			w_class -= S.w_class
-			suppressed = null
-			update_icon()
-			return
-	return ..()
+    if(loc == user)
+        if(suppressed && can_unsuppress)
+            var/obj/item/suppressor/S = suppressed
+            if(!user.is_holding(src))
+                return ..()
+            to_chat(user, "<span class='notice'>Вы откручиваете [suppressed] от [src].</span>")
+            user.put_in_hands(suppressed)
+            fire_sound = default_fire_sound //Кэширование оригинального звука выстрела для исключения багов в будущем -RaizlenW
+            on_suppressor_removed(S)
+            suppressed = null
+            update_icon()
+            return
+
+    return ..()
 
 /obj/item/gun/ballistic/attack_self(mob/living/user)
 	var/obj/item/ammo_casing/AC = chambered //Find chambered round
@@ -163,6 +177,12 @@
 /obj/item/gun/ballistic/examine(mob/user)
 	. = ..()
 	. += "It has [get_ammo()] round\s remaining."
+	if(suppressed)
+		. += "[suppressed] [can_suppress ? "" : "намертво"] примкнут."
+		if(can_suppress) //if it has a bayonet and this is false, the bayonet is permanent.
+			. += "<span class='info'>Похоже, что [suppressed] можно <b>открутить голыми руками</b> от [src].</span>"
+	else if(can_suppress)
+		. += "Видно крепление для <b>глушителя</b>."
 
 /obj/item/gun/ballistic/proc/get_ammo(countchambered = 1)
 	var/boolets = 0 //mature var names for mature people
@@ -248,7 +268,6 @@
 	icon = 'icons/obj/guns/projectile.dmi'
 	icon_state = "suppressor"
 	w_class = WEIGHT_CLASS_TINY
-	var/oldsound = null
 
 
 /obj/item/suppressor/specialoffer

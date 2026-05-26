@@ -5,7 +5,7 @@
 	icon_state = "grass"
 	base_icon_state = "grass"
 	flags_1 = NONE
-	bullet_bounce_sound = null
+	override_shell_bounce_sound = null
 	footstep = FOOTSTEP_GRASS
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS

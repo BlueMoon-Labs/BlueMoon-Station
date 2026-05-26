@@ -326,6 +326,23 @@
 /obj/item/storage/lockbox/weapon/nuclear_gun/PopulateContents()
 	new /obj/item/gun/energy/e_gun/nuclear(src)
 
+/datum/design/dp12
+	name = "Aegis-12 'Teta'"
+	desc = "Двуствольный помповый дробовик. На чертеже даже остались инициалы создателя - Hale."
+	id = "dp12"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 10000, /datum/material/glass = 2000, /datum/material/uranium = 3000, /datum/material/titanium = 1000)
+	build_path = /obj/item/storage/lockbox/weapon/dp12
+	category = list("Weapons")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
+
+/obj/item/storage/lockbox/weapon/dp12
+	name = "Контейнер с Aegis-12 'Teta'."
+
+/obj/item/storage/lockbox/weapon/dp12/PopulateContents()
+	new /obj/item/gun/ballistic/shotgun/dp12(src)
+
 /datum/design/beamrifle
 	name = "Beam Marksman Rifle"
 	desc = "A powerful long ranged anti-material rifle that fires charged particle beams to obliterate targets."

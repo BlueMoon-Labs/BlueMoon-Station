@@ -13,7 +13,7 @@
 	planetary_atmos = TRUE
 	burnt_states = null
 	bullet_sizzle = TRUE
-	bullet_bounce_sound = null
+	override_shell_bounce_sound = null
 	dig_result = /obj/item/stack/ore/glass/basalt
 	floor_variance = 50 //This means 50% chance of variating from the default tile.
 	//light_range = 2

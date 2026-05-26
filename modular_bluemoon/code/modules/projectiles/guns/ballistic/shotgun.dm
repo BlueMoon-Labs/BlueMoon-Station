@@ -67,10 +67,13 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/back.dmi'
-	fire_sound = 'modular_bluemoon/sound/weapons/fire_KS23.ogg'
+	fire_sound = 'sound/weapons/Shotguns_reheated/KS-23/Ks-23shot.ogg'
+	pumpsound = 'sound/weapons/Shotguns_reheated/KS-23/Ks-23Pumpaction.ogg'
+	loadshell_sound = 'sound/weapons/Shotguns_reheated/Shared/Shellinstertplastic.wav'
 	icon_state = "KS-23"
 	item_state = "KS-23"
-	fire_delay = 7
+	force = 15 //Дробовик тяжёлый, следовательно...
+	fire_delay = 6
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/KS23
 
 /obj/item/gun/ballistic/shotgun/KS23/pump_unload(mob/M)
@@ -78,7 +81,6 @@
 		chambered.forceMove(drop_location())//Eject casing
 		chambered.bounce_away()
 		chambered = null
-		playsound(src, 'modular_bluemoon/sound/weapons/shell_fall_KS23.ogg', 45, 1)
 
 /obj/item/gun/ballistic/shotgun/KS23/Inquisitor
 	name = "Righteous Wrath of the Faithful"

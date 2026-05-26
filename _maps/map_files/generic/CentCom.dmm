@@ -24227,7 +24227,7 @@
 /obj/item/gun/energy/laser/LaserAK{
 	pixel_y = 8
 	},
-/obj/item/gun/ballistic/automatic/shotgun/aa12{
+/obj/item/gun/ballistic/shotgun/dp12/traitor{
 	pixel_y = -2
 	},
 /obj/item/gun/ballistic/automatic/pistol/deagle/gold{

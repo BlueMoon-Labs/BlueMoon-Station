@@ -237,7 +237,7 @@
 	block_chance = 50
 	item_flags = NEEDS_PERMIT | ITEM_CAN_PARRY
 	block_parry_data = /datum/block_parry_data/energy_sword
-	force = 17
+	force = 23
 	throwforce = 15
 	wound_bonus = 11
 	bare_wound_bonus = 15

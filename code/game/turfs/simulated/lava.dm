@@ -11,7 +11,7 @@
 	light_range = 2
 	light_power = 0.75
 	light_color = LIGHT_COLOR_LAVA
-	bullet_bounce_sound = 'sound/items/welder2.ogg'
+	override_shell_bounce_sound = 'sound/items/welder2.ogg'
 
 	footstep = FOOTSTEP_LAVA
 	barefootstep = FOOTSTEP_LAVA

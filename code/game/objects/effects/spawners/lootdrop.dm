@@ -112,6 +112,7 @@
 	loot = list(
 				/obj/item/gun/ballistic/automatic/pistol = 8,
 				/obj/item/gun/ballistic/shotgun/automatic/combat = 5,
+				/obj/item/gun/ballistic/shotgun/dp12 = 4,
 				/obj/item/kitchen/knife/combat = 5,
 				/obj/item/clothing/gloves/tackler/combat/insulated = 3,
 				/obj/item/storage/box/syndie_kit/throwing_weapons = 3)
@@ -119,6 +120,7 @@
 /obj/effect/spawner/lootdrop/armory_contraband/metastation
 	loot = list(/obj/item/gun/ballistic/automatic/pistol = 8,
 				/obj/item/gun/ballistic/shotgun/automatic/combat = 5,
+				/obj/item/gun/ballistic/shotgun/dp12 = 4,
 				/obj/item/kitchen/knife/combat = 5,
 				/obj/item/clothing/gloves/tackler/combat/insulated = 3,
 				/obj/item/storage/box/syndie_kit/throwing_weapons = 3)
@@ -1025,8 +1027,13 @@
 		/obj/item/ammo_box/shotgun/loaded/incendiary = 5,
 		/obj/item/ammo_casing/shotgun/buckshot = 8,
 		/obj/item/ammo_casing/shotgun/rubbershot = 9,
-		/obj/item/ammo_casing/shotgun = 8,
+		/obj/item/ammo_casing/shotgun/improvised = 8,
 		/obj/item/ammo_casing/shotgun/incendiary = 10,
+		/obj/item/ammo_casing/shotgun/slug = 8,
+		/obj/item/ammo_casing/shotgun/stunslug = 8,
+		/obj/item/ammo_casing/shotgun/pulseslug = 1,
+		/obj/item/ammo_casing/shotgun/laserslug = 1,
+		/obj/item/ammo_casing/shotgun/ion = 1,
 		)
 
 /obj/effect/spawner/lootdrop/melee

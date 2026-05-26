@@ -1330,7 +1330,7 @@
 	},
 /area/awaymission/wildwest/vault)
 "eq" = (
-/obj/item/gun/ballistic/shotgun,
+/obj/item/gun/ballistic/shotgun/slamfire,
 /obj/structure/closet/crate/large,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
@@ -1887,7 +1887,7 @@
 /area/awaymission/wildwest/mines)
 "fS" = (
 /obj/structure/table/wood,
-/obj/item/gun/ballistic/shotgun,
+/obj/item/gun/ballistic/shotgun/slamfire,
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/wildwest/mines)
 "fT" = (
@@ -2061,7 +2061,7 @@
 /turf/open/floor/engine,
 /area/awaymission/wildwest/vault)
 "gx" = (
-/obj/item/gun/ballistic/shotgun,
+/obj/item/gun/ballistic/shotgun/lethal,
 /turf/open/floor/plating/ironsand{
 	icon_state = "ironsand1"
 	},
@@ -9417,7 +9417,7 @@
 /area/awaymission/wildwest/refine)
 "JW" = (
 /obj/structure/closet/cabinet,
-/obj/item/gun/ballistic/shotgun,
+/obj/item/gun/ballistic/shotgun/slamfire/lethal,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "JY" = (

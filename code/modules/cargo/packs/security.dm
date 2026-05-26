@@ -1,4 +1,3 @@
-
 //Reminders-
 // If you add something to this list, please group it by type and sort it alphabetically instead of just jamming it in like an animal
 // cost = 700- Minimum cost, or infinite points are possible.
@@ -136,6 +135,27 @@
 	else
 		new /obj/effect/spawner/bundle/crate/surplusrifle(C)
 
+/datum/supply_pack/security/randomshells
+	name = "Emergency shotgunner surplus box"
+	desc = "Набор случайных списанных боеприпасов 12 калибра. Никаких возвратов!!"
+	cost = 3000
+	contains = list(
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+		/obj/effect/spawner/lootdrop/ammo/shotgun,
+	)
+	crate_name = "Emergency shotgunner surplus crate"
 /datum/supply_pack/security/sechardsuit
 	name = "Sec Hardsuits crate"
 	desc = "Три защитных костюма для ловли негодяев в открытом космосе! В комплекте поставляется балон и маска."

@@ -31521,7 +31521,7 @@
 	pixel_x = 1;
 	pixel_y = 6
 	},
-/obj/item/gun/ballistic/shotgun/hunting{
+/obj/item/gun/ballistic/shotgun/slamfire{
 	pixel_x = -10;
 	pixel_y = 13
 	},

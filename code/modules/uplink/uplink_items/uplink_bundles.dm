@@ -52,6 +52,14 @@
 	cost = 20
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
+/datum/uplink_item/dangerous/aspisbundle
+    name = "HC-X 'Aspis'"
+    desc = "Дешёвый полуавтоматический дробовик, созданный для дерзких убийств. Идёт в комплекте с глушителем и патронами."
+    item = /obj/item/storage/briefcase/aspisbundle
+    cost = 15
+    surplus = 3
+    purchasable_from = (UPLINK_SYNDICATE)
+
 /datum/uplink_item/bundles_tc/scarp_bundle
 	name = "Sleeping Carp Bundle"
 	desc = "Станьте едины со своим внутренним карпом! Древние рыбные мастера завещают вам своё учение, священную форму и посох. \

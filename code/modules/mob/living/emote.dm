@@ -892,7 +892,7 @@
 	name = "Нервный смех"
 	key = "psychotic"
 	key_third_person = "psychotics"
-	message = "Нервно смеется, будто вот-вот слетит с катушек!"
+	message = "Нервно смеется!"
 	message_mime = "открывает рот, как будто смеется!"
 	emote_type = EMOTE_AUDIBLE
 	stat_allowed = SOFT_CRIT // BLUEMOON EDIT - некоторые эмоуты можно использовать в софткрите
@@ -910,7 +910,7 @@
 	name = "Нервный смех"
 	key = "psychoticshort"
 	key_third_person = "psychotics"
-	message = "Нервно посмеивается, пока руки начинают дрожать!"
+	message = "Нервно посмеивается!"
 	message_mime = "открывает рот, будто нервно посмеивается!"
 	emote_type = EMOTE_AUDIBLE
 	stat_allowed = SOFT_CRIT // BLUEMOON EDIT - некоторые эмоуты можно использовать в софткрите

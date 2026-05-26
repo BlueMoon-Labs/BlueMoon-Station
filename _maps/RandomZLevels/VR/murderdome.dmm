@@ -155,10 +155,10 @@
 /area/awaymission/vr/murderdome)
 "r" = (
 /obj/structure/rack,
-/obj/item/gun/ballistic/shotgun/boltaction,
-/obj/item/gun/ballistic/shotgun/boltaction,
-/obj/item/gun/ballistic/shotgun/boltaction,
-/obj/item/gun/ballistic/shotgun/boltaction,
+/obj/item/gun/ballistic/shotgun/dp12,
+/obj/item/gun/ballistic/shotgun/dp12,
+/obj/item/gun/ballistic/shotgun/dp12,
+/obj/item/gun/ballistic/shotgun/dp12,
 /turf/open/indestructible,
 /area/awaymission/vr/murderdome)
 "s" = (
