@@ -278,10 +278,19 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniform.dmi'
 	icon_state = "sexymaid"
 	item_state = "sexymaid"
-	body_parts_covered = NONE
+	body_parts_covered = CHEST|GROIN
 	fitted = NO_FEMALE_UNIFORM
-	can_adjust = FALSE
+	can_adjust = TRUE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/under/dress/skirt/maidsexy/toggle_jumpsuit_adjust()
+	if(!body_parts_covered)
+		to_chat(usr, "<span class='notice'>[src] is now covering chest and groin.</span>")
+		body_parts_covered = CHEST|GROIN
+	else
+		to_chat(usr, "<span class='notice'>[src] is no longer covering anything.</span>")
+		body_parts_covered = NONE
+	return TRUE
 
 /obj/item/clothing/under/dress/turtledress
 	name = "Turtleneck dress"
