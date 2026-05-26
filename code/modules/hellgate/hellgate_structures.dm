@@ -22,6 +22,15 @@
 /obj/structure/hellgate_dropship/sad
 	icon_state = "sad"
 
+// aircraft_prop.dmi: evac_usaf (256×256)
+/obj/structure/hellgate_aircraft_prop
+	name = "повреждённый летательный аппарат"
+	desc = "Обломок авиации. Чисто декоративное габаритное сооружение."
+	icon = 'icons/obj/hellgate/aircraft_prop.dmi'
+	icon_state = "evac_usaf"
+	anchored = TRUE
+	density = TRUE
+
 // campaign_big.dmi: mlrs, mlrs_broken, tank, tank_broken
 /obj/structure/hellgate_campaign
 	name = "кампанийский объект"
