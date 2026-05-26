@@ -22,7 +22,7 @@
 	icon_state = "centcom_skirt"
 	item_state = "centcom_skirt"
 	can_adjust = TRUE
-	alternate_appearances = DRESS_LAYER
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/centcom/officer
 	name = "centcom officer jumpsuit"
@@ -101,4 +101,4 @@
 	desc = "An elegant uniform worn by CentCom's station officials, comfortable skirt and silver marking denoting the rank of \"Representative\"."
 	icon_state = "rep_skirt"
 	item_state = "rep_skirt"
-	alternate_appearances = DRESS_LAYER
+	alternate_worn_layer = DRESS_LAYER
