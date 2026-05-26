@@ -1,0 +1,4244 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aE" = (
+/obj/machinery/light,
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/item/paper/fluff/ruins/forgottenship/missionobj,
+/obj/structure/sign/flag/inteq{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"aN" = (
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"bn" = (
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/effect/turf_decal/stripes,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/poddoor{
+	id = "colossus_starboard"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"bu" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/closet/crate/large,
+/obj/item/stack/ore/iron,
+/obj/item/stack/sheet/mineral/gold,
+/obj/item/stack/ore/titanium,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"bE" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/structure/table/reinforced,
+/obj/item/storage/bag/tray,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"bF" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/closet/crate/large,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/silver,
+/obj/item/stack/ore/gold,
+/obj/item/stack/ore/gold,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"cc" = (
+/obj/structure/closet/cabinet,
+/obj/item/clothing/neck/cloak/cybersun,
+/obj/item/storage/belt/esabre_belt,
+/obj/item/inteq/uplink/radio,
+/obj/item/paper/fluff/ruins/forgottenship/missionobj,
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"cf" = (
+/obj/machinery/atmospherics/components/unary/vent_pump{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"ck" = (
+/obj/machinery/porta_turret/inteq/energy{
+	name = "InteQ Ship Turret";
+	dir = 1
+	},
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/awaymission/PactDaivers)
+"cE" = (
+/obj/machinery/porta_turret/inteq/energy/heavy,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/awaymission/PactDaivers)
+"cG" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"df" = (
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/red/filled/corner{
+	color = "#9FED58";
+	dir = 4
+	},
+/obj/structure/window/reinforced/spawner/west,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"dz" = (
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"dZ" = (
+/obj/structure/window/reinforced/spawner/west,
+/obj/machinery/door/window{
+	name = "InteQ interior door";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"en" = (
+/obj/structure/dresser,
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"eK" = (
+/obj/structure/window/reinforced/spawner/west,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8;
+	icon_state = "siding_line"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/awaymission/PactDaivers)
+"eQ" = (
+/obj/machinery/light,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"fb" = (
+/obj/machinery/door/window{
+	name = "InteQ interior door";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 10
+	},
+/obj/structure/window/reinforced/spawner/west,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"fm" = (
+/obj/structure/closet/crate/secure/gear{
+	req_one_access_txt = "152"
+	},
+/obj/item/stack/ore/diamond{
+	amount = 3
+	},
+/obj/item/storage/belt/utility,
+/obj/item/storage/belt/utility,
+/obj/item/storage/belt/utility,
+/obj/item/storage/belt/utility,
+/obj/item/multitool/tricorder,
+/obj/machinery/light/small,
+/obj/item/crowbar/power/inteq,
+/obj/item/screwdriver/power/inteq,
+/obj/item/weldingtool/experimental/inteq,
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"fB" = (
+/obj/structure/window/reinforced/spawner,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 6
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"fH" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/machinery/door/poddoor{
+	id = "fscaproom";
+	name = "Captain's blast door";
+	state_open = 1
+	},
+/obj/machinery/door/airlock/grunge{
+	name = "Captain's room";
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/awaymission/PactDaivers)
+"fN" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 10
+	},
+/obj/structure/table/reinforced,
+/obj/structure/sink/kitchen{
+	dir = 4;
+	pixel_x = -12
+	},
+/obj/item/storage/box/donkpockets,
+/obj/item/kitchen/rollingpin,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"fV" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 9
+	},
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/obj/structure/sign/poster/contraband/vulp7{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"ge" = (
+/obj/structure/window/reinforced/spawner,
+/obj/machinery/hydroponics/constructable,
+/obj/effect/turf_decal/trimline/green/filled/line,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"gn" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"gI" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 4
+	},
+/obj/machinery/seed_extractor,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"hg" = (
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 9
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/microwave,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"ht" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/closet/crate/large,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"hw" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 10
+	},
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"hx" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/suit_storage_unit/syndicate/inteq,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"hy" = (
+/obj/effect/decal/cleanable/robot_debris/limb,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"hz" = (
+/obj/machinery/light,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"ih" = (
+/obj/structure/closet/secure_closet/freezer/kitchen{
+	req_access = list(150)
+	},
+/obj/item/reagent_containers/food/condiment/soymilk,
+/obj/item/reagent_containers/food/condiment/soymilk,
+/obj/item/reagent_containers/food/condiment/milk,
+/obj/item/reagent_containers/food/condiment/milk,
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"iI" = (
+/obj/machinery/door/window{
+	name = "InteQ interior door";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"iY" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 9
+	},
+/obj/machinery/computer/camera_advanced/shuttle_docker/inteq_collosus{
+	name = "KK-28 Navigation Computer"
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/awaymission/PactDaivers)
+"jl" = (
+/obj/machinery/biogenerator,
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"jC" = (
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 9
+	},
+/obj/machinery/mech_bay_recharge_port,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"jN" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	icon_state = "siding_line"
+	},
+/obj/machinery/door/airlock/grunge{
+	name = "Dorms";
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/awaymission/PactDaivers)
+"jT" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"ko" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_one_access_txt = "152";
+	secure = 1
+	},
+/obj/item/coin/antagtoken,
+/obj/item/encryptionkey/inteq,
+/obj/item/encryptionkey/inteq,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/encryptionkey/inteq,
+/obj/item/encryptionkey/inteq,
+/obj/item/encryptionkey/inteq,
+/obj/item/encryptionkey/inteq,
+/obj/item/mod/control/pre_equipped/syndicate_empty/elite,
+/obj/item/encryptionkey/inteq,
+/obj/item/encryptionkey/inteq,
+/turf/open/floor/wood/wood_large,
+/area/awaymission/PactDaivers)
+"kq" = (
+/obj/structure/lattice/catwalk,
+/obj/effect/turf_decal/weather/sand/plating,
+/mob/living/simple_animal/hostile/syndicate/civilian,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"kw" = (
+/obj/machinery/cryopod{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"kH" = (
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 9
+	},
+/obj/structure/sink/kitchen{
+	dir = 4;
+	pixel_x = -12
+	},
+/obj/structure/window/reinforced/spawner/west,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"kI" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"kQ" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"kV" = (
+/obj/machinery/camera/xray{
+	c_tag = "Conference room";
+	dir = 8;
+	network = list("fsc");
+	screen_loc = ""
+	},
+/obj/structure/closet/crate/secure/gear{
+	req_one_access_txt = "152"
+	},
+/obj/item/storage/box/stockparts/deluxe,
+/obj/item/storage/box/stockparts/deluxe,
+/obj/item/stack/sheet/glass{
+	amount = 10
+	},
+/obj/item/stack/cable_coil,
+/obj/item/storage/box/beakers/bluespace,
+/obj/item/circuitboard/machine/autolathe,
+/obj/item/storage/box/rndboards,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"kX" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/clothing/under/inteq/eng_skirt,
+/obj/item/clothing/under/inteq/maid,
+/obj/item/clothing/under/inteq/med_skirt,
+/obj/item/clothing/under/inteq/skirt,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"kZ" = (
+/obj/machinery/atmospherics/components/unary/vent_pump{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"lj" = (
+/obj/structure/reagent_dispensers/peppertank,
+/turf/closed/wall/r_wall/syndicate,
+/area/awaymission/PactDaivers)
+"lm" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 9
+	},
+/obj/machinery/vending/inteq_vendomat,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"lp" = (
+/obj/machinery/porta_turret/inteq/energy{
+	name = "InteQ Ship Turret";
+	dir = 4
+	},
+/turf/closed/wall/r_wall/syndicate,
+/area/awaymission/PactDaivers)
+"mb" = (
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/oil,
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"mc" = (
+/obj/machinery/smartfridge/chemistry/preloaded,
+/turf/open/floor/mineral/plastitanium,
+/area/awaymission/PactDaivers)
+"md" = (
+/obj/machinery/door/airlock/external{
+	name = "InteQ ship airlock";
+	req_one_access_txt = "152"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"mf" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"mh" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"mo" = (
+/obj/machinery/computer/operating,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"mp" = (
+/obj/structure/window/reinforced/spawner,
+/obj/machinery/hydroponics/constructable,
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 6
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"my" = (
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"mM" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 6
+	},
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"mZ" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/obj/machinery/cryopod{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"nc" = (
+/obj/machinery/porta_turret/inteq/energy{
+	name = "InteQ Ship Turret"
+	},
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/awaymission/PactDaivers)
+"ng" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"nm" = (
+/obj/structure/sign/flag/inteq,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/awaymission/PactDaivers)
+"nB" = (
+/obj/structure/sign/flag/inteq{
+	pixel_y = -32
+	},
+/obj/effect/mob_spawn/human/inteqspace/PactDaivers,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"nC" = (
+/obj/structure/sign/flag/inteq{
+	pixel_y = 32
+	},
+/obj/effect/mob_spawn/human/inteqspace/PactDaivers,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"nF" = (
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/effect/turf_decal/stripes,
+/obj/machinery/door/poddoor{
+	id = "colossus_starboard"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"pd" = (
+/obj/machinery/porta_turret/inteq/energy/heavy{
+	name = "InteQ Ship Turret";
+	dir = 10
+	},
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/awaymission/PactDaivers)
+"pl" = (
+/obj/machinery/vending/hydronutrients,
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"pu" = (
+/obj/structure/closet/crate/large,
+/obj/structure/lattice/catwalk,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"pA" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/machinery/light{
+	dir = 8;
+	light_color = "#e8eaff"
+	},
+/obj/machinery/suit_storage_unit/inteq_spacesuit,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"pO" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_one_access_txt = "152";
+	secure = 1
+	},
+/obj/item/crowbar/red,
+/obj/item/flashlight/seclite,
+/obj/item/paper/fluff/ruins/forgottenship/missionobj,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/ammo_box/magazine/pistolm9mm,
+/obj/item/ammo_box/magazine/pistolm9mm,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"qF" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/awaymission/PactDaivers)
+"qK" = (
+/obj/structure/closet/crate/secure/gear{
+	req_one_access_txt = "152"
+	},
+/obj/item/stack/ore/plasma{
+	amount = 19
+	},
+/obj/machinery/airalarm/inteq{
+	pixel_x = 30;
+	pixel_y = 1
+	},
+/obj/item/stack/sheet/plastic/five,
+/obj/item/pipe_dispenser,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"qN" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Maintence";
+	req_one_access_txt = "152"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"qR" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Syndciate Dorm 4";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"qZ" = (
+/obj/structure/closet/crate/large,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/plasma,
+/obj/item/stack/ore/plasma,
+/obj/item/stack/ore/gold,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"rd" = (
+/obj/machinery/door/window{
+	dir = 1;
+	name = "InteQ interior door";
+	req_one_access_txt = "152"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"rl" = (
+/obj/structure/window/reinforced/spawner,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 6
+	},
+/obj/structure/frame/machine{
+	anchored = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"rH" = (
+/obj/machinery/door/poddoor{
+	id = "fslockdown";
+	name = "Ship blast door";
+	state_open = 1
+	},
+/obj/effect/spawner/structure/window/plastitanium,
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"rP" = (
+/obj/structure/table/reinforced,
+/obj/machinery/computer/security/telescreen/interrogation{
+	desc = "A telescreen that connects to the the syndicate camera network.";
+	name = "Cameras monitor";
+	network = list("fsci");
+	req_one_access_txt = "152";
+	screen_loc = ""
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/awaymission/PactDaivers)
+"sc" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"sh" = (
+/obj/structure/table/reinforced,
+/obj/machinery/smartfridge/disks{
+	pixel_y = 3
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"sl" = (
+/obj/structure/window/reinforced/spawner,
+/obj/effect/turf_decal/trimline/blue/filled/line,
+/obj/structure/closet/crate/bin,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"sm" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/closed/wall/r_wall/syndicate,
+/area/awaymission/PactDaivers)
+"sq" = (
+/obj/machinery/camera/xray{
+	c_tag = "Medbay";
+	dir = 9;
+	network = list("fsci");
+	screen_loc = ""
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"sz" = (
+/obj/structure/table/reinforced,
+/obj/item/clothing/glasses/thermal/eyepatch,
+/obj/item/toy/figure/inteq,
+/turf/open/floor/wood/wood_parquet,
+/area/awaymission/PactDaivers)
+"tc" = (
+/obj/effect/turf_decal/trimline/yellow/filled/corner,
+/obj/effect/turf_decal/trimline/yellow/filled/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"tg" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"tl" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Armory Locker";
+	req_one_access_txt = "152";
+	secure = 1
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/end{
+	dir = 4
+	},
+/obj/item/gun/ballistic/automatic/ak12/pindicate,
+/obj/item/gun/ballistic/automatic/ak12/pindicate{
+	pixel_x = 1;
+	pixel_y = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"to" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"tA" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"tF" = (
+/obj/effect/turf_decal/trimline/yellow/filled/corner,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"tT" = (
+/obj/structure/shuttle/engine/propulsion{
+	dir = 8
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"tZ" = (
+/obj/effect/decal/cleanable/blood/footprints{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"ug" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/obj/machinery/suit_storage_unit/inteq_spacesuit,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"um" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/obj/machinery/deepfryer,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"uz" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/machinery/sleeper/syndie/fullupgrade{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"uA" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/obj/machinery/door/airlock/grunge{
+	name = "Armory";
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"uC" = (
+/obj/effect/turf_decal/trimline/red/filled/corner{
+	color = "#9FED58";
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"uG" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"vc" = (
+/obj/structure/filingcabinet,
+/obj/machinery/door/window{
+	dir = 8;
+	name = "InteQ interior door";
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/wood/wood_large,
+/area/awaymission/PactDaivers)
+"ve" = (
+/obj/machinery/vending/medical/syndicate_access/cybersun,
+/turf/open/floor/mineral/plastitanium,
+/area/awaymission/PactDaivers)
+"vh" = (
+/obj/machinery/button/crematorium{
+	id = "crematoriumChapel";
+	pixel_x = 18;
+	pixel_y = 3
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/awaymission/PactDaivers)
+"vi" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 6
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"vp" = (
+/obj/item/stack/ore/glass,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"vy" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"vK" = (
+/obj/machinery/door/window{
+	dir = 1;
+	name = "InteQ interior door";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"vN" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Weapon Systems";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/awaymission/PactDaivers)
+"vS" = (
+/obj/machinery/computer/crew/syndie{
+	dir = 8
+	},
+/obj/structure/window/reinforced/spawner,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"vY" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 5
+	},
+/obj/structure/table/glass,
+/obj/item/storage/box/beakers{
+	pixel_y = 7
+	},
+/obj/item/reagent_containers/syringe,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"wg" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"wq" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"ws" = (
+/obj/machinery/computer/camera_advanced{
+	dir = 8
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"wD" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/machinery/suit_storage_unit/inteq_spacesuit,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"wE" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_one_access_txt = "152";
+	secure = 1
+	},
+/obj/item/clothing/gloves/botanic_leather,
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 5
+	},
+/obj/item/storage/bag/plants,
+/obj/item/storage/box/disks_plantgene,
+/obj/structure/window/reinforced/spawner/west,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"wO" = (
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/plantgenes{
+	pixel_y = 7
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"wQ" = (
+/obj/structure/table/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"wY" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/corner,
+/obj/effect/turf_decal/trimline/yellow/filled/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/awaymission/PactDaivers)
+"xk" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Crematorium";
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/awaymission/PactDaivers)
+"xq" = (
+/obj/machinery/door/window{
+	dir = 1;
+	name = "InteQ interior door";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"xZ" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Syndciate Dorm 1";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"yr" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"yw" = (
+/obj/structure/window/reinforced/spawner,
+/obj/effect/turf_decal/trimline/blue/filled/line,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"yx" = (
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"yy" = (
+/obj/structure/sign/poster/contraband/inteq/inteq_vulp,
+/turf/closed/wall/r_wall/syndicate,
+/area/awaymission/PactDaivers)
+"yR" = (
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"yT" = (
+/mob/living/simple_animal/hostile/syndicate/ranged,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"yV" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"yW" = (
+/obj/machinery/porta_turret/inteq/energy{
+	name = "InteQ Ship Turret";
+	dir = 8
+	},
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/awaymission/PactDaivers)
+"zb" = (
+/obj/structure/rack,
+/obj/item/storage/toolbox/syndicate,
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/item/gun/ballistic/automatic/ak12/r,
+/obj/item/binoculars,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"zu" = (
+/obj/structure/closet/crate/secure/gear{
+	req_one_access_txt = "152"
+	},
+/obj/item/stack/ore/plasma{
+	amount = 19
+	},
+/obj/machinery/airalarm/inteq{
+	pixel_y = 24
+	},
+/obj/item/stack/sheet/plastic/five,
+/obj/item/pipe_dispenser,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"zD" = (
+/obj/effect/turf_decal/siding/wood,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"Aa" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/bodycontainer/crematorium{
+	id = "crematoriumChapel"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/awaymission/PactDaivers)
+"Ab" = (
+/obj/structure/fans/tiny,
+/obj/machinery/door/airlock/external{
+	name = "InteQ ship airlock";
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"Ae" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Aq" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"As" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Az" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/item/wrench,
+/obj/structure/sign/poster/contraband/inteq/inteq_sign{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"AB" = (
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"AI" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Emergency Engine";
+	req_one_access_txt = "152"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"AK" = (
+/obj/structure/lattice/catwalk,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"AU" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/structure/table/optable,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Bf" = (
+/obj/effect/turf_decal/trimline/blue/filled/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Bp" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Bv" = (
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"BQ" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/obj/machinery/button/door{
+	dir = 8;
+	id = "colossus_starboard";
+	name = "Starboard Cargo Door Control";
+	pixel_x = 23;
+	pixel_y = -2
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"BR" = (
+/obj/structure/table/reinforced,
+/obj/machinery/button/door{
+	id = "fscaproom";
+	name = "Room shutters control";
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/awaymission/PactDaivers)
+"BV" = (
+/obj/item/paper/fluff/ruins/forgottenship/powerissues,
+/obj/machinery/portable_atmospherics/pump,
+/obj/effect/turf_decal/stripes{
+	dir = 1;
+	icon_state = "delivery_red"
+	},
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"BY" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"Cj" = (
+/obj/machinery/vending/hydroseeds,
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ck" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Cp" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Vault";
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Cz" = (
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"De" = (
+/obj/structure/displaycase{
+	req_one_access_txt = "152";
+	start_showpiece_type = /obj/item/gun/ballistic/automatic/pistol/deagle/camo
+	},
+/turf/open/floor/wood/wood_large,
+/area/awaymission/PactDaivers)
+"DB" = (
+/obj/structure/window/reinforced/spawner,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 6
+	},
+/obj/machinery/cryopod{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"DF" = (
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 6
+	},
+/obj/effect/turf_decal/stripes,
+/obj/machinery/door/poddoor{
+	id = "colossus_starboard"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"DJ" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/food/condiment/saltshaker{
+	pixel_x = -8;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/condiment/peppermill{
+	pixel_x = -8
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"DL" = (
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"Eh" = (
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/awaymission/PactDaivers)
+"Ek" = (
+/turf/closed/wall/r_wall/syndicate,
+/area/awaymission/PactDaivers)
+"Em" = (
+/obj/machinery/power/floodlight/lamppost/four,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"En" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Bridge";
+	req_one_access_txt = "152"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/obj/machinery/turretid{
+	control_area = "/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship";
+	icon_state = "control_kill";
+	lethal = 1;
+	name = "Ship turret control panel";
+	pixel_y = 32;
+	req_access = null;
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Eq" = (
+/obj/machinery/power/smes{
+	charge = 5000;
+	input_level = 20000
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"Ev" = (
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 8
+	},
+/obj/structure/window/reinforced/spawner/west,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ez" = (
+/obj/machinery/atmospherics/components/unary/tank/air{
+	dir = 8;
+	layer = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"EX" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Fd" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/awaymission/PactDaivers)
+"Fr" = (
+/obj/machinery/portable_atmospherics/scrubber{
+	anchored = 1
+	},
+/obj/machinery/atmospherics/components/unary/portables_connector/layer3,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ft" = (
+/obj/effect/turf_decal/trimline/red/filled/corner,
+/obj/effect/turf_decal/trimline/red/filled/corner{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Fx" = (
+/obj/effect/mob_spawn/human/inteqspace/captain/PactDaivers,
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"Fz" = (
+/mob/living/simple_animal/hostile/syndicate/civilian,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"FD" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 6
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"FK" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/machinery/turretid{
+	control_area = "/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship";
+	icon_state = "control_kill";
+	lethal = 1;
+	name = "Ship turret control panel";
+	pixel_y = 32;
+	req_access = null;
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"FR" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"FZ" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 6
+	},
+/obj/machinery/light{
+	dir = 4;
+	light_color = "#c1caff"
+	},
+/obj/machinery/suit_storage_unit/inteq_spacesuit,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Gc" = (
+/obj/structure/fence{
+	dir = 1
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"Gk" = (
+/obj/machinery/computer/med_data/syndie{
+	dir = 8;
+	req_one_access = null
+	},
+/obj/item/paper/fluff/ruins/forgottenship/error,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"Gr" = (
+/obj/structure/fence{
+	dir = 4
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"Gy" = (
+/obj/structure/table/reinforced,
+/obj/item/healthanalyzer/advanced{
+	pixel_y = 9
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 5
+	},
+/obj/item/storage/backpack/duffelbag/syndie/inteq/surgery_adv,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"GC" = (
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 10
+	},
+/obj/effect/turf_decal/stripes,
+/obj/machinery/door/poddoor{
+	id = "colossus_starboard"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Hh" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"Hz" = (
+/obj/machinery/door/window{
+	name = "InteQ interior door";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"HQ" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/obj/machinery/computer/cryopod{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"HW" = (
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 8
+	},
+/obj/structure/window/reinforced/spawner/west,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ib" = (
+/obj/machinery/vending/cigarette/syndicate,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ic" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Io" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/structure/frame/machine{
+	anchored = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"JB" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/obj/item/kitchen/knife{
+	pixel_x = 11
+	},
+/obj/item/reagent_containers/food/condiment/enzyme{
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"JN" = (
+/obj/machinery/door/poddoor{
+	id = "fscaproom";
+	name = "Captain's blast door";
+	state_open = 1
+	},
+/obj/effect/spawner/structure/window/plastitanium,
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"JS" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Kb" = (
+/obj/structure/window/reinforced/spawner/east,
+/obj/structure/window/reinforced/spawner/west,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ke" = (
+/obj/structure/closet/crate/secure/gear{
+	req_one_access_txt = "152"
+	},
+/obj/item/stack/ore/diamond{
+	amount = 3
+	},
+/obj/item/storage/belt/utility,
+/obj/item/storage/belt/utility,
+/obj/item/storage/belt/utility,
+/obj/item/storage/belt/utility,
+/obj/item/multitool/tricorder,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/item/crowbar/power/inteq,
+/obj/item/screwdriver/power/inteq,
+/obj/item/weldingtool/experimental/inteq,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"KI" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"KP" = (
+/obj/machinery/vending/clothing,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Lf" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/recharger{
+	pixel_y = 4
+	},
+/obj/item/grenade/frag/mega{
+	pixel_x = 12;
+	pixel_y = 12
+	},
+/obj/item/grenade/frag/mega{
+	pixel_x = 12;
+	pixel_y = 6
+	},
+/obj/item/grenade/frag/mega{
+	pixel_x = 12
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Lq" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_one_access_txt = "152";
+	secure = 1
+	},
+/obj/item/storage/box/firingpins/syndicate,
+/obj/structure/window/reinforced/spawner,
+/obj/effect/turf_decal/siding/wood,
+/obj/item/ammo_box/c9mm,
+/obj/item/flashlight/seclite,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"Ls" = (
+/obj/structure/table/reinforced,
+/obj/item/toy/plush/nukeplushie,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ly" = (
+/obj/machinery/computer/security{
+	desc = "Used to access interrogation room camera.";
+	dir = 8;
+	name = "Ship cameras console";
+	network = list("fsc","fsci");
+	screen_loc = ""
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/end{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/awaymission/PactDaivers)
+"LE" = (
+/turf/open/floor/wood/wood_large,
+/area/awaymission/PactDaivers)
+"LK" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Syndciate Dorm 2";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"LL" = (
+/obj/machinery/porta_turret/inteq/energy/heavy{
+	name = "InteQ Ship Turret";
+	dir = 8
+	},
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/awaymission/PactDaivers)
+"LO" = (
+/obj/structure/window/reinforced/spawner,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Mb" = (
+/obj/effect/turf_decal/trimline/red/filled/corner{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump,
+/obj/effect/turf_decal/trimline/red/filled/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Mw" = (
+/obj/machinery/porta_turret/inteq/energy{
+	name = "InteQ Ship Turret";
+	dir = 4
+	},
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/awaymission/PactDaivers)
+"MH" = (
+/obj/structure/window/reinforced/spawner,
+/obj/machinery/hydroponics/constructable,
+/obj/effect/turf_decal/trimline/green/filled/line,
+/obj/effect/decal/cleanable/blood/splatter,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"MR" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"MT" = (
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/obj/structure/closet/crate/bin,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Na" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 6
+	},
+/obj/machinery/processor,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ng" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Syndciate Dorm 3";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"Nu" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"NK" = (
+/obj/structure/chair/comfy/black,
+/turf/open/floor/wood/wood_parquet,
+/area/awaymission/PactDaivers)
+"NO" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"NX" = (
+/obj/effect/decal/cleanable/blood/footprints{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"NY" = (
+/obj/item/soap/syndie,
+/obj/item/reagent_containers/spray/cleaner,
+/obj/item/mop,
+/obj/item/reagent_containers/glass/bucket,
+/obj/structure/closet/crate/trashcart,
+/obj/machinery/power/apc/inteq{
+	dir = 4;
+	name = "InteQ Forgotten Ship APC";
+	pixel_x = 24;
+	start_charge = 35
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ob" = (
+/obj/machinery/porta_turret/inteq/energy/heavy{
+	name = "InteQ Ship Turret";
+	dir = 5
+	},
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/awaymission/PactDaivers)
+"On" = (
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"OV" = (
+/obj/machinery/light,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ph" = (
+/obj/structure/shuttle/engine/huge{
+	dir = 8
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"Pq" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"PP" = (
+/obj/structure/table/reinforced,
+/obj/structure/window/reinforced/spawner/east,
+/obj/machinery/door/window{
+	name = "InteQ interior door";
+	req_one_access_txt = "152"
+	},
+/obj/item/ai_module/core/full/inteq,
+/obj/item/borg/upgrade/transform/syndicatejack,
+/obj/item/robot_module/syndicate_medical/inteq,
+/obj/item/robot_module/syndicate/inteq,
+/obj/item/robot_module/saboteur/inteq,
+/obj/item/disk/tech_disk/illegal,
+/turf/open/floor/wood/wood_large,
+/area/awaymission/PactDaivers)
+"PQ" = (
+/obj/structure/table/glass,
+/obj/item/stack/medical/bruise_pack{
+	amount = 12
+	},
+/obj/item/stack/medical/ointment{
+	amount = 12
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 10
+	},
+/obj/structure/window/reinforced/spawner,
+/obj/item/clothing/neck/stethoscope,
+/obj/item/storage/firstaid/tactical{
+	pixel_x = 3;
+	pixel_y = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Qd" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"QB" = (
+/obj/structure/tank_dispenser/oxygen,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"QR" = (
+/obj/item/soap/syndie,
+/obj/item/reagent_containers/spray/cleaner,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/obj/item/mop,
+/obj/item/reagent_containers/glass/bucket,
+/obj/structure/closet/crate/trashcart,
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"QS" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/closet/crate/large,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/uranium,
+/obj/item/stack/ore/plasma,
+/obj/item/stack/ore/plasma,
+/obj/item/stack/ore/gold,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"QY" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Rg" = (
+/obj/machinery/light,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Rp" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator{
+	name = "Pilot"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Rq" = (
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Rs" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"RG" = (
+/obj/machinery/door/airlock/grunge{
+	name = "InteQ Ship Airlock";
+	req_one_access_txt = "152"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Sa" = (
+/obj/effect/turf_decal/trimline/blue/filled/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Sf" = (
+/obj/structure/shuttle/engine/propulsion{
+	dir = 8
+	},
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"Si" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"SS" = (
+/obj/structure/window/reinforced/spawner,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 10
+	},
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Tq" = (
+/obj/machinery/suit_storage_unit/open,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Tt" = (
+/obj/effect/spawner/lootdrop/costume,
+/obj/structure/rack,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 9
+	},
+/obj/effect/spawner/lootdrop/healing_kits,
+/obj/machinery/turretid{
+	control_area = "/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship";
+	icon_state = "control_kill";
+	lethal = 1;
+	name = "Ship turret control panel";
+	pixel_y = 32;
+	req_access = null;
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Tv" = (
+/obj/structure/fence/door,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"TY" = (
+/obj/structure/table/reinforced,
+/obj/machinery/button/door{
+	id = "fslockdown";
+	name = "Window shutters";
+	req_one_access_txt = "152"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ue" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/closet/crate/large,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"Uk" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light,
+/obj/item/paper_bin,
+/obj/item/pen/fountain/captain,
+/turf/open/floor/wood/wood_parquet,
+/area/awaymission/PactDaivers)
+"UA" = (
+/obj/effect/turf_decal/trimline/blue/filled/line,
+/obj/structure/window/reinforced/spawner,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"UM" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/structure/table/reinforced,
+/obj/item/toy/cards/deck/syndicate,
+/obj/machinery/light,
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/structure/sign/poster/contraband/inteq/inteq_recruitment{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"UW" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 9
+	},
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Armory Locker";
+	req_one_access_txt = "152";
+	secure = 1
+	},
+/obj/item/ammo_box/magazine/ak12,
+/obj/item/ammo_box/magazine/ak12,
+/obj/item/ammo_box/magazine/ak12,
+/obj/item/ammo_box/magazine/ak12,
+/obj/item/ammo_box/magazine/ak12,
+/obj/item/ammo_box/magazine/ak12,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Vj" = (
+/obj/machinery/power/port_gen/pacman/super{
+	anchored = 1
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 1;
+	icon_state = "delivery_red"
+	},
+/obj/item/stack/sheet/mineral/uranium{
+	amount = 15
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"Vm" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_one_access_txt = "152";
+	secure = 1
+	},
+/obj/item/crowbar/red,
+/obj/item/ammo_box/c10mm,
+/obj/item/flashlight/seclite,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/ammo_box/magazine/pistolm9mm,
+/obj/item/ammo_box/magazine/pistolm9mm,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"Vs" = (
+/obj/machinery/light,
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_one_access_txt = "152";
+	secure = 1
+	},
+/obj/item/crowbar/red,
+/obj/item/flashlight/seclite,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/ammo_box/magazine/pistolm9mm,
+/obj/item/ammo_box/magazine/pistolm9mm,
+/turf/open/floor/wood,
+/area/awaymission/PactDaivers)
+"Vu" = (
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/obj/vehicle/sealed/mecha/working/ripley/deathripley/real,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"VC" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"VG" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/awaymission/PactDaivers)
+"VS" = (
+/obj/structure/rack,
+/obj/item/clothing/gloves/combat,
+/obj/item/clothing/gloves/combat,
+/obj/item/clothing/gloves/combat,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"VU" = (
+/obj/machinery/smartfridge/organ,
+/turf/closed/wall/r_wall/syndicate,
+/area/awaymission/PactDaivers)
+"VY" = (
+/obj/machinery/door/window{
+	name = "InteQ interior door";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Wf" = (
+/obj/machinery/light,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/door/window{
+	dir = 8;
+	name = "InteQ interior door";
+	req_one_access_txt = "152"
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8;
+	icon_state = "siding_line"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/awaymission/PactDaivers)
+"Wp" = (
+/obj/structure/closet/crate/large,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"WJ" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"WM" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"WP" = (
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/obj/machinery/mech_bay_recharge_port{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Xg" = (
+/turf/open/floor/wood/wood_parquet,
+/area/awaymission/PactDaivers)
+"Xq" = (
+/obj/structure/window/reinforced/spawner,
+/obj/machinery/suit_storage_unit/open,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"XN" = (
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 1;
+	icon_state = "delivery_red"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"XQ" = (
+/obj/structure/table/glass,
+/obj/item/disk/surgery/forgottenship,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Yj" = (
+/obj/machinery/light,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 6
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Yx" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/obj/structure/rack,
+/obj/structure/rack,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/clothing/under/inteq,
+/obj/item/clothing/under/inteq/eng,
+/obj/item/clothing/under/inteq/honorable_vanguard,
+/obj/item/clothing/under/inteq/med,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Yz" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer3{
+	dir = 8;
+	volume_rate = 200
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"YS" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 6
+	},
+/mob/living/simple_animal/hostile/syndicate/ranged,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"YX" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/recharger{
+	pixel_y = 4
+	},
+/obj/item/grenade/frag/mega{
+	pixel_x = 12;
+	pixel_y = 12
+	},
+/obj/item/grenade/frag/mega{
+	pixel_x = 12;
+	pixel_y = 6
+	},
+/obj/item/grenade/frag/mega{
+	pixel_x = 12
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Zf" = (
+/obj/structure/fence/door{
+	dir = 4
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"Zg" = (
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"ZE" = (
+/obj/structure/closet/crate/large,
+/obj/item/stack/ore/iron,
+/obj/item/stack/sheet/mineral/gold,
+/obj/item/stack/ore/titanium,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+
+(1,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Qd
+yx
+yx
+yx
+Qd
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(2,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Qd
+yx
+Qd
+yx
+yx
+Qd
+yx
+yx
+yx
+yx
+yx
+Qd
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(3,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Qd
+Qd
+yx
+yx
+yx
+yx
+yx
+yx
+Qd
+yx
+yx
+yx
+yx
+Qd
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(4,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Qd
+yx
+yx
+yx
+kQ
+yx
+Qd
+yx
+yx
+yx
+Qd
+Qd
+yx
+Qd
+Qd
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Fz
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(5,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+Fz
+yx
+yx
+yx
+yx
+Qd
+yx
+Qd
+yx
+Qd
+yx
+yx
+yx
+yx
+Qd
+yx
+kQ
+Qd
+yx
+yx
+yx
+yx
+Fz
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(6,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Qd
+yx
+Ph
+yx
+yx
+Qd
+yx
+Ph
+yx
+yx
+yx
+yx
+Ph
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(7,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Qd
+yx
+Qd
+yx
+yx
+yx
+Qd
+Qd
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(8,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+tT
+yx
+yx
+yx
+tT
+tT
+yx
+yx
+yx
+Sf
+tT
+yx
+yx
+yx
+tT
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(9,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Fz
+yx
+yx
+yx
+yx
+yx
+"}
+(10,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+pd
+Eh
+hx
+Lq
+Fx
+en
+Ek
+Eq
+mb
+Vj
+Ek
+Eh
+nC
+Ek
+nB
+Eh
+LL
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(11,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+JN
+zb
+DL
+zD
+dz
+dz
+Ek
+XN
+wq
+BV
+Ek
+pO
+eQ
+Ek
+BY
+Vm
+Ek
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(12,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+JN
+kI
+MR
+Aq
+yV
+Hh
+Ek
+Ek
+AI
+Ek
+Ek
+Ek
+xZ
+Ek
+Ng
+Ek
+Ek
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(13,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+JN
+ws
+Gk
+vS
+cc
+gn
+Ek
+Rq
+WM
+Rq
+Ek
+Tt
+KI
+KI
+KI
+KP
+Ek
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(14,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+Ek
+Ek
+Eh
+eK
+Wf
+Ek
+Bp
+WM
+Rg
+Ek
+Ib
+Rq
+Rq
+Rq
+aE
+Ek
+yx
+yx
+yx
+yx
+yx
+yx
+Fz
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(15,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+PP
+LE
+Cp
+Xg
+qF
+fH
+EX
+YS
+wg
+jN
+yr
+QY
+QY
+QY
+vi
+md
+yx
+Em
+Bv
+Bv
+Bv
+Bv
+Bv
+Bv
+Bv
+Em
+yx
+yx
+yx
+yx
+"}
+(16,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+ko
+LE
+Ek
+Xg
+sz
+Ek
+Rq
+mh
+Rq
+Eh
+Ek
+LK
+Ek
+qR
+Ek
+Ek
+yx
+Bv
+VG
+Gc
+Gc
+Zf
+Gc
+Gc
+VG
+ht
+yx
+Fz
+yx
+yx
+"}
+(17,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+De
+LE
+Ek
+NK
+Uk
+Ek
+Az
+vy
+OV
+Ek
+pO
+eQ
+Ek
+BY
+Vs
+Ek
+yx
+Bv
+Gr
+AK
+AK
+kq
+AK
+AK
+Gr
+pu
+yx
+yx
+yx
+yx
+"}
+(18,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+ck
+Eh
+vc
+Ek
+BR
+rP
+Ek
+Fr
+tA
+Ez
+Ek
+Eh
+nC
+Ek
+nB
+Eh
+nc
+yx
+Bv
+Gr
+AK
+Qd
+Qd
+Qd
+kq
+Gr
+Ue
+vp
+yx
+yx
+yx
+"}
+(19,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+RG
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+yx
+yx
+Bv
+Tv
+AK
+Qd
+Qd
+Qd
+AK
+Tv
+Bv
+yx
+yx
+yx
+yx
+"}
+(20,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+mo
+uz
+aN
+XQ
+PQ
+ve
+mh
+Rq
+Ek
+QR
+Cz
+Cz
+Pq
+Ek
+yx
+yx
+Bv
+Gr
+AK
+Qd
+Qd
+Qd
+AK
+Gr
+bF
+yx
+yx
+yx
+yx
+"}
+(21,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+AU
+Rq
+Rq
+Rq
+UA
+mc
+mh
+hz
+Ek
+zu
+Cz
+Cz
+fm
+Ek
+yx
+yx
+Bv
+Gr
+kq
+AK
+AK
+AK
+AK
+Gr
+QS
+yx
+yx
+yx
+yx
+"}
+(22,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+Gy
+sq
+Bf
+Rq
+Sa
+dZ
+Ae
+As
+qN
+NO
+Cz
+Cz
+ih
+Ek
+yx
+yx
+Bv
+VG
+Gc
+Gc
+Zf
+Gc
+Gc
+VG
+bu
+yx
+yx
+yx
+yx
+"}
+(23,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+ck
+Eh
+VU
+Eh
+FK
+yT
+Rq
+sl
+mh
+yT
+nm
+Ek
+Ek
+Ek
+Ek
+Eh
+lp
+Qd
+Em
+QS
+pu
+QS
+ng
+bF
+pu
+QS
+Em
+yx
+yx
+yx
+yx
+"}
+(24,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+Aa
+vh
+xk
+Nu
+Rq
+Rq
+yw
+mh
+Rq
+jC
+uG
+Ke
+wD
+pA
+QB
+GC
+yx
+Qd
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(25,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+Ek
+Ek
+Eh
+vY
+Io
+Io
+rl
+mh
+Rq
+Zg
+qZ
+qZ
+Wp
+Rq
+kZ
+nF
+yx
+yx
+yx
+Qd
+yx
+Qd
+yx
+yx
+yx
+Qd
+yx
+yx
+yx
+yx
+"}
+(26,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ab
+Ck
+FD
+iI
+kH
+HW
+HW
+fb
+Ic
+to
+rd
+JS
+to
+to
+to
+mf
+bn
+yx
+Qd
+yx
+Qd
+yx
+Qd
+yx
+Qd
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(27,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+jT
+Tq
+Xq
+wO
+sh
+Rq
+MH
+NX
+cf
+my
+WM
+Rq
+ZE
+Rq
+FR
+nF
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(28,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+wE
+df
+Ev
+uC
+Rq
+hy
+ge
+tZ
+Rq
+Vu
+WM
+Rq
+Rq
+tF
+BQ
+DF
+yx
+Qd
+yx
+Qd
+yx
+Qd
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(29,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+ck
+Eh
+Cj
+pl
+jl
+gI
+AB
+mp
+mh
+kV
+WP
+NY
+qK
+ug
+FZ
+Eh
+yW
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(30,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+sm
+Ek
+Ek
+Ek
+Ek
+Ek
+En
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+Ek
+yx
+yx
+yx
+yx
+Fz
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(31,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Yz
+Ek
+fV
+WJ
+SS
+Rq
+mh
+Rq
+hg
+JB
+fN
+Ek
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(32,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+Ek
+Ek
+Ek
+HQ
+Rq
+Hz
+Rq
+mh
+Rq
+xq
+Rq
+bE
+Ek
+Ek
+Ek
+Ek
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Fz
+yx
+yx
+yx
+yx
+yx
+"}
+(33,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+iY
+Fd
+Ek
+kw
+mZ
+DB
+Rq
+mh
+Rq
+MT
+um
+Na
+lj
+UW
+Lf
+Ek
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(34,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yy
+YX
+wY
+vN
+Kb
+Kb
+Kb
+Mb
+sc
+Ft
+Kb
+Kb
+Kb
+uA
+tc
+Yj
+Ek
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(35,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ob
+Eh
+Ly
+Ek
+lm
+VS
+LO
+Rq
+WM
+Rq
+yR
+VC
+hw
+Ek
+tl
+Eh
+cE
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(36,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Ek
+Ek
+Ek
+cG
+Rs
+VY
+Rs
+Rp
+tg
+vK
+DJ
+UM
+Ek
+Ek
+Ek
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Fz
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(37,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+Mw
+Ek
+Yx
+kX
+fB
+Ls
+TY
+wQ
+On
+Si
+mM
+Ek
+Eh
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(38,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+Fz
+yx
+yx
+yx
+yx
+yx
+Eh
+rH
+rH
+rH
+rH
+rH
+rH
+rH
+rH
+rH
+Mw
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(39,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}
+(40,1,1) = {"
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+yx
+"}

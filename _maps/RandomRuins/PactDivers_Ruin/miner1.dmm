@@ -1,0 +1,647 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"b" = (
+/obj/machinery/power/floodlight/lamppost/four,
+/obj/structure/lattice,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"e" = (
+/obj/machinery/power/floodlight/lamppost/four,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"f" = (
+/mob/living/simple_animal/hostile/syndicate/ranged,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"i" = (
+/obj/structure/lattice/catwalk,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"j" = (
+/obj/structure/fence{
+	dir = 4
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"m" = (
+/mob/living/simple_animal/hostile/syndicate/ranged,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"p" = (
+/obj/structure/fence{
+	dir = 1
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"s" = (
+/obj/structure/fence{
+	dir = 4
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"t" = (
+/obj/structure/lattice/catwalk,
+/obj/machinery/computer,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"u" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/rack,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/silver,
+/obj/structure/lattice,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"v" = (
+/mob/living/simple_animal/hostile/syndicate/ranged/shotgun,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"w" = (
+/obj/structure/lattice/catwalk,
+/obj/machinery/suit_storage_unit/open,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"y" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/rack/shelf,
+/obj/item/raw_anomaly_core,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"A" = (
+/obj/structure/fence/door,
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"C" = (
+/obj/effect/decal/cleanable/blood/gibs/body{
+	icon_state = "gibup1"
+	},
+/obj/structure/closet/crate/large,
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"H" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/rack,
+/obj/item/stack/ore/silver{
+	amount = 2
+	},
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/silver,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"J" = (
+/obj/structure/closet/crate/large,
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"K" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/gold,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/titanium,
+/obj/item/stack/ore/iron,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"M" = (
+/obj/structure/lattice/catwalk,
+/obj/effect/turf_decal/weather/sand/plating,
+/mob/living/simple_animal/hostile/syndicate/civilian,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"N" = (
+/obj/structure/closet/crate/large,
+/obj/item/ammo_box/c10mm,
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"O" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/awaymission/PactDaivers)
+"P" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/rack,
+/obj/item/raw_anomaly_core,
+/obj/structure/lattice,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"T" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/rack,
+/obj/item/raw_anomaly_core,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"U" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/rack,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/glass,
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/silver,
+/turf/open/floor/plating/ironsand{
+	icon_state = "ironsand1"
+	},
+/area/awaymission/PactDaivers)
+"V" = (
+/obj/structure/fence/door{
+	dir = 4
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"X" = (
+/obj/bfl_crack,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"Y" = (
+/obj/structure/fence/door,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"Z" = (
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+
+(1,1,1) = {"
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+"}
+(2,1,1) = {"
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+"}
+(3,1,1) = {"
+a
+a
+b
+Z
+Z
+Z
+Z
+m
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+e
+a
+a
+"}
+(4,1,1) = {"
+a
+a
+Z
+Z
+Z
+a
+a
+a
+a
+a
+a
+C
+a
+a
+a
+Z
+Z
+Z
+a
+a
+"}
+(5,1,1) = {"
+a
+a
+Z
+y
+P
+Z
+a
+a
+a
+a
+a
+N
+a
+f
+Z
+Z
+a
+Z
+a
+a
+"}
+(6,1,1) = {"
+a
+a
+Z
+T
+y
+Z
+Z
+a
+a
+a
+a
+a
+a
+Z
+Z
+a
+v
+Z
+a
+a
+"}
+(7,1,1) = {"
+a
+a
+Z
+a
+a
+a
+O
+p
+p
+V
+p
+p
+O
+Z
+a
+a
+a
+Z
+a
+a
+"}
+(8,1,1) = {"
+a
+a
+Z
+a
+a
+a
+j
+i
+i
+M
+i
+i
+s
+N
+J
+a
+a
+a
+a
+a
+"}
+(9,1,1) = {"
+a
+a
+Z
+a
+a
+a
+j
+i
+a
+a
+a
+M
+s
+a
+a
+a
+a
+Z
+a
+a
+"}
+(10,1,1) = {"
+a
+f
+Z
+a
+a
+a
+A
+i
+a
+X
+a
+i
+Y
+a
+a
+a
+a
+Z
+a
+a
+"}
+(11,1,1) = {"
+a
+a
+Z
+a
+a
+a
+j
+i
+a
+a
+a
+i
+s
+t
+a
+a
+a
+Z
+a
+a
+"}
+(12,1,1) = {"
+a
+a
+Z
+a
+a
+a
+j
+M
+i
+i
+i
+i
+s
+w
+a
+a
+a
+Z
+a
+a
+"}
+(13,1,1) = {"
+a
+a
+Z
+a
+a
+a
+O
+p
+p
+V
+p
+p
+O
+w
+a
+a
+a
+Z
+a
+a
+"}
+(14,1,1) = {"
+a
+a
+Z
+a
+a
+a
+u
+H
+K
+a
+U
+H
+K
+Z
+a
+a
+a
+Z
+a
+a
+"}
+(15,1,1) = {"
+a
+a
+Z
+a
+Z
+Z
+a
+a
+a
+a
+a
+a
+a
+Z
+Z
+a
+f
+Z
+a
+a
+"}
+(16,1,1) = {"
+a
+a
+Z
+v
+Z
+a
+a
+a
+a
+a
+a
+a
+a
+a
+Z
+Z
+a
+Z
+a
+a
+"}
+(17,1,1) = {"
+a
+a
+Z
+Z
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+Z
+Z
+Z
+a
+a
+"}
+(18,1,1) = {"
+a
+a
+e
+Z
+Z
+Z
+Z
+m
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+e
+a
+a
+"}
+(19,1,1) = {"
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+"}
+(20,1,1) = {"
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+"}

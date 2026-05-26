@@ -925,7 +925,6 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "bbE" = (
-/obj/item/inteq/uplink/radio/nuclear,
 /obj/structure/safe,
 /turf/open/floor/plasteel/dark/smooth/half{
 	dir = 1
@@ -23830,14 +23829,6 @@
 /obj/structure/lattice,
 /turf/closed/mineral/random/labormineral/jungle,
 /area/awaymission/InteQ/lvl2)
-"yag" = (
-/obj/item/paper{
-	layer = 1;
-	default_raw_text = "Оу,вы прошли всю тестовую версию созданную dodo.Когда у создателя будет время,он добавит дополнительный контент.А пока-Держите медальку!";
-	name = "Silly paper"
-	},
-/turf/open/floor/catwalk_floor,
-/area/awaymission/InteQ/lvl2)
 "ybh" = (
 /obj/structure/alien/egg/burst,
 /turf/open/floor/plasteel/dark/smooth/half{
@@ -26868,7 +26859,7 @@ bRO
 uOi
 uOi
 tWo
-yag
+uOi
 uOi
 uOi
 uOi

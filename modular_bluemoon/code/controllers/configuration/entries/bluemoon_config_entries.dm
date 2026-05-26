@@ -27,3 +27,11 @@
 	default = 100
 	integer = TRUE
 	min_val = 0
+
+/// Спавн локаций как в инженерке. Формат: DEPARTMENT_SPAWN_LOCATIONS "Имя шаблона",вес
+/// Имена должны совпадать с name в datum/map_template/ruin/station
+/datum/config_entry/keyed_list/department_spawn_locations
+	key_mode = KEY_MODE_TEXT
+	value_mode = VALUE_MODE_NUM
+	lowercase_key = FALSE
+	splitter = ","
