@@ -36870,11 +36870,7 @@
 /turf/open/floor/engine/vacuum,
 /area/science/research)
 "dcx" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
-	external_pressure_bound = 140;
-	name = "server vent";
-	pressure_checks = 0
-	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
 /turf/open/floor/engine/vacuum,
 /area/science/research)
 "dcy" = (
