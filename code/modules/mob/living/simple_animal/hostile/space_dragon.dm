@@ -202,8 +202,8 @@
 
 /mob/living/simple_animal/hostile/space_dragon/death(gibbed)
 	empty_contents()
-	if(!objective_complete)
-		destroy_rifts()
+	// Разломы должны исчезать при смерти дракона всегда (в т.ч. после победы — иначе жёлтые INDESTRUCTIBLE порталы бесконечно спавнят карпов).
+	destroy_rifts()
 	..()
 	add_dragon_overlay()
 
@@ -437,9 +437,12 @@
 	playsound(src, 'sound/vehicles/rocketlaunch.ogg', 100, TRUE)
 	for(var/obj/structure/carp_rift/rift in rift_list)
 		rift.dragon = null
+		rift.charge_state = CHARGE_ONGOING
+		STOP_PROCESSING(SSobj, rift)
 		rift_list -= rift
 		if(!QDELETED(rift))
 			QDEL_NULL(rift)
+	rift_list.Cut()
 
 /**
   * Handles wing gust from the windup all the way to the endlag at the end.
