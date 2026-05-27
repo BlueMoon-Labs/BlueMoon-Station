@@ -3138,11 +3138,11 @@
 /turf/open/floor/plasteel,
 /area/maintenance/starboard/fore)
 "akG" = (
-/obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "psych_shutters";
 	name = "psychology office shutters"
 	},
+/obj/effect/spawner/structure/window,
 /turf/open/floor/plating,
 /area/medical/psychology)
 "akH" = (
@@ -13426,7 +13426,7 @@
 /turf/open/floor/plasteel,
 /area/service/hydroponics)
 "bnn" = (
-/obj/effect/spawner/structure/window/reinforced,
+/obj/effect/spawner/structure/window,
 /turf/open/floor/plating,
 /area/hallway/secondary/service)
 "bno" = (
@@ -13446,7 +13446,7 @@
 /area/hallway/secondary/service)
 "bnp" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
-/obj/effect/spawner/structure/window/reinforced,
+/obj/effect/spawner/structure/window,
 /turf/open/floor/plating,
 /area/hallway/secondary/service)
 "bns" = (
@@ -67562,7 +67562,7 @@
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "gEA" = (
-/obj/effect/spawner/structure/window/reinforced/tinted,
+/obj/effect/spawner/structure/window,
 /turf/open/floor/plating,
 /area/commons/locker)
 "gEE" = (
@@ -68083,6 +68083,10 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel,
 /area/cargo/warehouse)
+"gKP" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating,
+/area/science/research)
 "gLa" = (
 /obj/effect/turf_decal/tile/blue/opposingcorners{
 	dir = 1
@@ -78178,6 +78182,7 @@
 	pixel_y = 32
 	},
 /obj/item/storage/box/beanbag,
+/obj/item/gun/ballistic/revolver/doublebarrel,
 /obj/item/gun/ballistic/revolver/doublebarrel,
 /turf/open/floor/plasteel/dark,
 /area/service/bar)
@@ -90137,6 +90142,11 @@
 	icon_state = "wood-broken3"
 	},
 /area/service/abandoned_gambling_den)
+"mMp" = (
+/obj/structure/disposalpipe/segment,
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating,
+/area/science/research)
 "mMv" = (
 /obj/structure/closet/firecloset,
 /obj/machinery/light/small{
@@ -99027,11 +99037,11 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "pkO" = (
-/obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor/preopen{
 	id = "kitchenwindows";
 	name = "Kitchen Privacy Shutters"
 	},
+/obj/effect/spawner/structure/window,
 /turf/open/floor/plating,
 /area/service/kitchen)
 "pkQ" = (
@@ -123975,7 +123985,7 @@
 /turf/open/floor/plasteel,
 /area/engineering/break_room)
 "wlK" = (
-/obj/effect/spawner/structure/window/reinforced/tinted,
+/obj/effect/spawner/structure/window,
 /turf/open/floor/plating,
 /area/commons/dorms)
 "wlP" = (
@@ -166175,7 +166185,7 @@ yjh
 cIB
 bqU
 bsO
-cNp
+gKP
 cOW
 cQH
 cSp
@@ -166432,7 +166442,7 @@ yjh
 boT
 bqU
 cLS
-cNq
+mMp
 cOX
 cQI
 cQJ
@@ -167203,7 +167213,7 @@ lYv
 cIE
 bqU
 bsO
-cNp
+gKP
 cOZ
 cQL
 cSs
@@ -167460,7 +167470,7 @@ mHY
 cIF
 bqY
 bsO
-cNp
+gKP
 cPa
 cQM
 cSs
@@ -167974,7 +167984,7 @@ yjh
 cIH
 bqU
 bsO
-cNp
+gKP
 cPc
 cQO
 cSu
@@ -168231,7 +168241,7 @@ yjh
 cII
 bqU
 bsO
-cNp
+gKP
 cPd
 cQP
 cSs
@@ -169002,7 +169012,7 @@ tor
 boT
 cKv
 bsO
-cNp
+gKP
 cPg
 cQQ
 cSw
@@ -169259,7 +169269,7 @@ wQj
 cIJ
 cKw
 bsP
-cNp
+gKP
 cPh
 cQR
 cSx
@@ -169518,10 +169528,10 @@ cKx
 cLV
 cNu
 cPi
-cNp
+gKP
 cSy
 cUn
-cNp
+gKP
 cPi
 cZq
 cZo
@@ -170546,10 +170556,10 @@ cKB
 cLZ
 cNy
 cND
-cNz
+qCN
 cSC
 cUr
-cNz
+qCN
 cND
 cPy
 dba
@@ -170801,7 +170811,7 @@ njZ
 cIP
 cKC
 cMa
-cNz
+qCN
 cPm
 cQS
 cSD
@@ -171058,7 +171068,7 @@ tor
 boH
 bvj
 hIm
-cNz
+qCN
 cPn
 cQT
 eJP
@@ -171829,7 +171839,7 @@ ncg
 boH
 bqU
 jGN
-cNz
+qCN
 cPp
 cQV
 bNL
@@ -172086,7 +172096,7 @@ ncg
 cIR
 bqU
 cMa
-cNz
+qCN
 cPq
 cQT
 cDE
@@ -172600,7 +172610,7 @@ ncg
 vGs
 eEH
 jGN
-cNz
+qCN
 cPs
 cQT
 cDE
@@ -172857,7 +172867,7 @@ ncg
 boH
 bqY
 jGN
-cNz
+qCN
 cPt
 cQU
 cDE
@@ -173628,7 +173638,7 @@ oGl
 cIE
 bqU
 jGN
-cNz
+qCN
 cPw
 cQT
 eJP
@@ -173885,7 +173895,7 @@ meg
 cIE
 bqU
 jGN
-cNz
+qCN
 cPx
 cPv
 cSI
