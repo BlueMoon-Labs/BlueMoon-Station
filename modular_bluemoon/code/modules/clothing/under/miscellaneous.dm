@@ -280,17 +280,24 @@
 	item_state = "sexymaid"
 	body_parts_covered = CHEST|GROIN
 	fitted = NO_FEMALE_UNIFORM
-	can_adjust = TRUE
+	can_adjust = FALSE	// Yeah, this flag isn't exactly working properly here. I'll still use toggle_jumpsuit_adjust() override for clarity though
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/under/dress/skirt/maidsexy/toggle_jumpsuit_adjust()
 	if(!body_parts_covered)
-		to_chat(usr, "<span class='notice'>[src] теперь закрывает грудь и пах.</span>")
+		to_chat(usr, "<span class='notice'>Вы поправили [src], теперь она полностью закрывает ваше тело.</span>")
 		body_parts_covered = CHEST|GROIN
 	else
-		to_chat(usr, "<span class='notice'>[src] больше не закрывает гениталии.</span>")
+		to_chat(usr, "<span class='notice'>Вы приспустили [src], частично оголив ваши формы.</span>")
 		body_parts_covered = NONE
 	return TRUE
+
+/obj/item/clothing/under/dress/skirt/maidsexy/examine(mob/user)
+	. = ..()
+	if(!body_parts_covered)
+		. += "Alt-click для нормального стиля ношения."
+	else
+		. += "Alt-click для повседневного стиля ношения."
 
 /obj/item/clothing/under/dress/turtledress
 	name = "Turtleneck dress"

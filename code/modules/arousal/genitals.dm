@@ -443,7 +443,10 @@
 
 			genital_overlay.icon_state = "[G.slot]_[S.icon_state]_[size][(dna.species.use_skintones && !dna.skin_tone_override) ? "_s" : ""]_[aroused_state]_[layertext]"
 
-			if(layers_num[layer] == GENITALS_FRONT_LAYER && (G.genital_flags & GENITAL_THROUGH_CLOTHES || G.is_exposed()))
+			// GENITALS_EXPOSED_LAYER is assigned only if such option is checked in the panel, AND/OR
+			// genital is exposed and no inner clothing is worn at the moment. Gear harness is excluded from the uniform check.
+			// Someone someday needs to make a proper check instead of this istype bullshit. I don't have time for that, sadly. As long as it works, i guess.
+			if(layers_num[layer] == GENITALS_FRONT_LAYER && (G.genital_flags & GENITAL_THROUGH_CLOTHES || (G.is_exposed() && (!w_uniform || istype(w_uniform, /obj/item/clothing/under/misc/gear_harness)))))
 				genital_overlay.layer = -GENITALS_EXPOSED_LAYER
 				LAZYADD(fully_exposed, genital_overlay)
 			else
