@@ -10,6 +10,42 @@
 	var/obj/item/clothing/parent_armor_type = /obj/item/clothing/under/misc/durathread	// Path of the parent armor we're copiyng stats from
 	var/kit_prefix = "armored"	// Used for prefix and name changing. For "aegis armor kit" it should be "aegis"
 
+/// Собирает новый /datum/armor: по каждому типу урона не ниже, чем было на вещи или в шаблоне набора (укрепление не должно ослаблять броню, в т.ч. после пластин голиафа и т.п.).
+/obj/item/armorkit/proc/build_merged_armor_for_reinforcement(obj/item/clothing/wearer_piece, obj/item/clothing/template_piece)
+	var/datum/armor/current = wearer_piece.get_armor()
+	var/datum/armor/templ = template_piece.get_armor()
+	var/list/best_ratings = list()
+	for(var/armor_key in ARMOR_LIST_ALL())
+		best_ratings[armor_key] = max(current.get_rating(armor_key), templ.get_rating(armor_key))
+	return current.generate_new_with_specific(best_ratings)
+
+/// Объединяет защитные поля одежды с шаблоном набора без ухудшения: маски покрытия и температуры — «лучшее из двух».
+/obj/item/armorkit/proc/merge_reinforcement_protection_fields(obj/item/clothing/wearer_piece, obj/item/clothing/template_piece)
+	wearer_piece.body_parts_covered |= template_piece.body_parts_covered
+	wearer_piece.cold_protection |= template_piece.cold_protection
+	wearer_piece.heat_protection |= template_piece.heat_protection
+
+	if(!isnull(template_piece.min_cold_protection_temperature))
+		if(isnull(wearer_piece.min_cold_protection_temperature))
+			wearer_piece.min_cold_protection_temperature = template_piece.min_cold_protection_temperature
+		else
+			wearer_piece.min_cold_protection_temperature = min(wearer_piece.min_cold_protection_temperature, template_piece.min_cold_protection_temperature)
+
+	if(!isnull(template_piece.max_heat_protection_temperature))
+		if(isnull(wearer_piece.max_heat_protection_temperature))
+			wearer_piece.max_heat_protection_temperature = template_piece.max_heat_protection_temperature
+		else
+			wearer_piece.max_heat_protection_temperature = max(wearer_piece.max_heat_protection_temperature, template_piece.max_heat_protection_temperature)
+
+	wearer_piece.resistance_flags |= template_piece.resistance_flags
+	wearer_piece.clothing_flags |= (template_piece.clothing_flags || NONE)
+
+	if(LAZYLEN(template_piece.allowed))
+		LAZYINITLIST(wearer_piece.allowed)
+		for(var/allowed_path in template_piece.allowed)
+			if(!(allowed_path in wearer_piece.allowed))
+				wearer_piece.allowed += allowed_path
+
 // This is an amalgamation of newer BlueMoon armor kit's, and older durathread kit's afterattack procedures
 // It should be universal for all armor kits, replacing cursed copy-pasted overrides
 /obj/item/armorkit/afterattack(obj/item/target, mob/user, proximity_flag, click_parameters)
@@ -45,18 +81,11 @@
 			return	// Prevents people from bypassing clothing slot lock by equipping it in advance.
 
 	var/obj/item/clothing/P = new parent_armor_type(src)
-	C.set_armor(P.armor)
-	C.body_parts_covered = P.body_parts_covered
-	C.cold_protection = P.cold_protection
-	C.heat_protection = P.heat_protection
-	C.resistance_flags = P.resistance_flags
-	C.clothing_flags = P.clothing_flags
-	C.min_cold_protection_temperature = P.min_cold_protection_temperature
-	C.max_heat_protection_temperature = P.max_heat_protection_temperature
-	C.allowed = P.allowed
+	C.set_armor(build_merged_armor_for_reinforcement(C, P))
+	merge_reinforcement_protection_fields(C, P)
 
 	user.visible_message("<span class = 'notice'>[user] укрепляет [C] с помощью [src].</span>", \
-	"<span class = 'notice'>Вы усиливаете [C] с помощью [src], делая его уровень защиты идентичным [P.name].</span>")
+	"<span class = 'notice'>Вы усиливаете [C] с помощью [src], не ослабляя уже имеющуюся защиту и добавляя слой от [P.name].</span>")
 	qdel(P)
 	C.name = "[kit_prefix] [C.name]"
 	C.upgrade_prefix = "[kit_prefix]"
