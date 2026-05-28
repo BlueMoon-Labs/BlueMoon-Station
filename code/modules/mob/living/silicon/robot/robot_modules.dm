@@ -419,12 +419,11 @@
 			wide_b.pixel_x = -16
 			med_icons[b] = wide_b
 		// BLUEMOON ADD END
-		if(R.client && R.client.ckey == "nezuli")
-			var/image/bad_snowflake = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = "alina-med")
-			bad_snowflake.pixel_x = -16
-			med_icons["Alina"] = bad_snowflake
 		med_icons = sort_list(med_icons)
-	var/med_borg_icon = show_radial_menu(R, R , med_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	var/list/selectable_med_icons = get_selectable_borg_icons(med_icons, R.client)
+	var/med_borg_icon = show_radial_menu(R, R , selectable_med_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	if(apply_donator_borg_icon(med_borg_icon, R.client))
+		return ..()
 	switch(med_borg_icon)
 		if("Default")
 			cyborg_base_icon = "medical"
@@ -522,14 +521,6 @@
 			moduleselect_alternate_icon = 'modular_citadel/icons/ui/screen_cyborg.dmi'
 			hat_offset = VALE_HAT_OFFSET
 			hasrest = TRUE
-			dogborg = TRUE
-		if("Alina")
-			cyborg_base_icon = "alina-med"
-			cyborg_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-			special_light_key = "alina-med"
-			sleeper_overlay = "valemedsleeper"
-			moduleselect_icon = "medihound"
-			moduleselect_alternate_icon = 'modular_citadel/icons/ui/screen_cyborg.dmi'
 			dogborg = TRUE
 		if("Borgi") // SPLURT Addon (Skyrat Port)
 			cyborg_base_icon = "borgi-medi"
@@ -771,12 +762,11 @@
 			var/image/wide = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = L[a])
 			wide.pixel_x = -16
 			engi_icons[a] = wide
-		if(R.client && R.client.ckey == "nezuli")
-			var/image/bad_snowflake = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = "alina-eng")
-			bad_snowflake.pixel_x = -16
-			engi_icons["Alina"] = bad_snowflake
 		engi_icons = sort_list(engi_icons)
-	var/engi_borg_icon = show_radial_menu(R, R , engi_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	var/list/selectable_engi_icons = get_selectable_borg_icons(engi_icons, R.client)
+	var/engi_borg_icon = show_radial_menu(R, R , selectable_engi_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	if(apply_donator_borg_icon(engi_borg_icon, R.client))
+		return ..()
 	switch(engi_borg_icon)
 		if("Default")
 			cyborg_base_icon = "engineer"
@@ -860,12 +850,6 @@
 			sleeper_overlay = "valeengsleeper"
 			hasrest = TRUE
 			hat_offset = VALE_HAT_OFFSET
-			dogborg = TRUE
-		if("Alina")
-			cyborg_base_icon = "alina-eng"
-			special_light_key = "alina-eng"
-			cyborg_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-			sleeper_overlay = "valeengsleeper"
 			dogborg = TRUE
 		if("Borgi") // SPLURT Addon (Skyrat Port)
 			cyborg_base_icon = "borgi-eng"
@@ -1072,12 +1056,11 @@
 			var/image/wide = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = L[a])
 			wide.pixel_x = -16
 			sec_icons[a] = wide
-		if(R.client && R.client.ckey == "nezuli")
-			var/image/bad_snowflake = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = "alina-sec")
-			bad_snowflake.pixel_x = -16
-			sec_icons["Alina"] = bad_snowflake
 		sec_icons = sort_list(sec_icons)
-	var/sec_borg_icon = show_radial_menu(R, R , sec_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	var/list/selectable_sec_icons = get_selectable_borg_icons(sec_icons, R.client)
+	var/sec_borg_icon = show_radial_menu(R, R , selectable_sec_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	if(apply_donator_borg_icon(sec_borg_icon, R.client))
+		return ..()
 	switch(sec_borg_icon)
 		if("Default")
 			cyborg_base_icon = "sec"
@@ -1155,14 +1138,6 @@
 		if("K9")
 			cyborg_base_icon = "k9"
 			sleeper_overlay = "ksleeper"
-			cyborg_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-			hat_offset = HOUND_HAT_OFFSET
-			hasrest = TRUE
-			dogborg = TRUE
-		if("Alina")
-			cyborg_base_icon = "alina-sec"
-			special_light_key = "alina-sec"
-			sleeper_overlay = "valesecsleeper"
 			cyborg_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
 			hat_offset = HOUND_HAT_OFFSET
 			hasrest = TRUE
@@ -1369,7 +1344,10 @@
 		"Kittyborg" = image(icon = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_sci.dmi', icon_state = "sci"),
 		"Dragon" = image(icon = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_peacekeeper.dmi', icon_state = "dragon-pk")
 	))
-	var/peace_borg_icon = show_radial_menu(R, R , peace_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	var/list/selectable_peace_icons = get_selectable_borg_icons(peace_icons, R.client)
+	var/peace_borg_icon = show_radial_menu(R, R , selectable_peace_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	if(apply_donator_borg_icon(peace_borg_icon, R.client))
+		return ..()
 	switch(peace_borg_icon)
 		if("Default")
 			cyborg_base_icon = "peace"
@@ -1688,12 +1666,11 @@
 			var/image/wide = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = L[a])
 			wide.pixel_x = -16
 			service_icons[a] = wide
-		if(R.client && R.client.ckey == "nezuli")
-			var/image/bad_snowflake = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = "alina-sec")
-			bad_snowflake.pixel_x = -16
-			service_icons["Alina"] = bad_snowflake
 		service_icons = sort_list(service_icons)
-	var/service_robot_icon = show_radial_menu(R, R , service_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	var/list/selectable_service_icons = get_selectable_borg_icons(service_icons, R.client)
+	var/service_robot_icon = show_radial_menu(R, R , selectable_service_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	if(apply_donator_borg_icon(service_robot_icon, R.client))
+		return ..()
 	switch(service_robot_icon)
 		if("(Service) Waitress")
 			cyborg_base_icon = "service_f"
@@ -2150,7 +2127,10 @@
 			wide.pixel_x = -16
 			mining_icons[a] = wide
 		mining_icons = sort_list(mining_icons)
-	var/mining_borg_icon = show_radial_menu(R, R , mining_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	var/list/selectable_mining_icons = get_selectable_borg_icons(mining_icons, R.client)
+	var/mining_borg_icon = show_radial_menu(R, R , selectable_mining_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	if(apply_donator_borg_icon(mining_borg_icon, R.client))
+		return ..()
 	switch(mining_borg_icon)
 		if("Lavaland")
 			cyborg_base_icon = "miner"

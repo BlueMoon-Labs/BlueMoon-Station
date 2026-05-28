@@ -293,8 +293,10 @@
  */
 /atom/Destroy()
 	if(alternate_appearances)
-		for(var/K in alternate_appearances)
-			var/datum/atom_hud/alternate_appearance/AA = alternate_appearances[K]
+		var/list/aa_snapshot = alternate_appearances
+		alternate_appearances = null
+		for(var/K in aa_snapshot)
+			var/datum/atom_hud/alternate_appearance/AA = aa_snapshot[K]
 			AA.remove_from_hud(src)
 
 	if(reagents)
@@ -592,7 +594,7 @@
 /atom/proc/get_examine_string(mob/user, thats = FALSE)
 	return "[icon2html(src, user)] [thats? "That's ":""][get_examine_name(user)]"
 
-/atom/proc/examine(mob/user)
+/atom/proc/examine(mob/user, silent = FALSE)
 	. = list("[get_examine_string(user, TRUE)].[desc ? "<hr>" : null]")
 
 	if(desc)
@@ -602,7 +604,7 @@
 		var/list/materials_list = list()
 		for(var/i in custom_materials)
 			var/datum/material/M = i
-			materials_list += material_to_ru_genitive(M.name)
+			materials_list += vocabulary_to_ru(GLOB.mat_ru_genitive, M.name)
 		. += "<u>Сделано из [english_list(materials_list)]</u>."
 	if(reagents)
 		if(reagents.reagents_holder_flags & TRANSPARENT)

@@ -42,7 +42,7 @@
 			for(var/mob/living/carbon/C in GLOB.alive_mob_list)
 				new /datum/hallucination/weird_sounds(C, TRUE, weirdsound)
 		if(3)
-			var/stationmessage = pick("ratvar","shuttle_dock","blob_alert","malf_ai","meteors","supermatter")
+			var/stationmessage = pick("ratvar","shuttle dock","blob alert","malf ai","heretic","cult summon","meteors","supermatter")
 			for(var/mob/living/carbon/C in GLOB.alive_mob_list)
 				new /datum/hallucination/stationmessage(C, TRUE, stationmessage)
 		if(4 to 6)

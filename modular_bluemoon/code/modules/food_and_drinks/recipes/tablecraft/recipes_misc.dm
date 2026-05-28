@@ -8,4 +8,4 @@
 		/obj/item/reagent_containers/food/condiment = 1,
 	)
 	result = /obj/item/reagent_containers/food/condiment/red_bay
-	category = CAT_MISCFOOD
+	subcategory = CAT_MISCFOOD

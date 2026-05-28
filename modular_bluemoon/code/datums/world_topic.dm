@@ -514,6 +514,7 @@
 GLOBAL_LIST_EMPTY(bot_event_sending_que)
 GLOBAL_LIST_EMPTY(bot_ooc_sending_que)
 GLOBAL_LIST_EMPTY(bot_asay_sending_que)
+GLOBAL_LIST_EMPTY(jobban_bot_batch_global)
 
 /datum/world_topic/receive_info
 	key = "receive_info"

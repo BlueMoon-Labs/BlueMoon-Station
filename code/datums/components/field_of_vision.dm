@@ -184,6 +184,15 @@
 								COMSIG_LIVING_REVIVE, COMSIG_ROBOT_UPDATE_ICONS))
 	if(length(nested_locs))
 		UNREGISTER_NESTED_LOCS(nested_locs, COMSIG_MOVABLE_MOVED, 1)
+	// BLUEMOON FIX: remove the 4 FoV images from the client that's logging out.
+	// Without this, every logout / mob-switch leaves 4 orphaned images on the stale
+	// client (the parameter `client` here is the one actually being detached),
+	// piling up across re-logins until BYOND OOMs the player.
+	if(client)
+		client.images -= shadow_mask
+		client.images -= visual_shadow
+		client.images -= owner_mask
+		client.images -= adj_mask
 
 /datum/component/field_of_vision/proc/on_dir_change(mob/source, old_dir, new_dir)
 	fov.dir = new_dir

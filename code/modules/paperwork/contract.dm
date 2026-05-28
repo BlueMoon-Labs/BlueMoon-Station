@@ -335,8 +335,8 @@
 		id.assignment = "Captain"
 		id.update_label()
 		if(worn)
-			if(istype(worn, /obj/item/pda))
-				var/obj/item/pda/PDA = worn
+			if(istype(worn, /obj/item/modular_computer/pda))
+				var/obj/item/modular_computer/pda/PDA = worn
 				PDA.id = id
 				id.forceMove(worn)
 			else if(istype(worn, /obj/item/storage/wallet))

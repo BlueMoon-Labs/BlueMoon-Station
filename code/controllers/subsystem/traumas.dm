@@ -76,7 +76,7 @@ SUBSYSTEM_DEF(traumas)
 
 					"clowns" = typecacheof(list(/obj/item/clothing/under/rank/civilian/clown, /obj/item/clothing/shoes/clown_shoes,
 												 /obj/item/clothing/mask/gas/clown_hat, /obj/item/instrument/bikehorn,
-												 /obj/item/pda/clown, /obj/item/grown/bananapeel)),
+												 /obj/item/modular_computer/pda/clown, /obj/item/grown/bananapeel)),
 
 					"greytide"  = typecacheof(list(/obj/item/clothing/under/color/grey, /obj/item/melee/baton/cattleprod,
 												 /obj/item/spear, /obj/item/clothing/mask/gas)),
@@ -155,7 +155,7 @@ SUBSYSTEM_DEF(traumas)
 						/obj/item/energy_naginata, /obj/item/clothing/suit/space/space_ninja/ronin, /obj/item/clothing/suit/space/space_ninja/wisdom,
 						/obj/item/nullrod/scythe/vibro, /obj/item/energy_katana, /obj/item/toy/katana, /obj/item/nullrod/claymore/katana, /obj/structure/window/paperframe, /obj/structure/mineral_door/paperframe)),
 
-					"mimes" = typecacheof(list(/obj/item/pda/mime, /obj/item/clothing/under/rank/civilian/mime, /obj/item/clothing/mask/gas/mime,
+					"mimes" = typecacheof(list(/obj/item/modular_computer/pda/mime, /obj/item/clothing/under/rank/civilian/mime, /obj/item/clothing/mask/gas/mime,
 						/obj/item/clothing/head/frenchberet, /obj/item/clothing/suit/suspenders, /obj/item/reagent_containers/food/drinks/bottle/bottleofnothing,
 						/obj/item/storage/backpack/mime, /obj/item/reagent_containers/food/snacks/grown/banana/mime,
 						/obj/item/grown/bananapeel/mimanapeel, /obj/item/cartridge/virus/mime, /obj/item/clothing/shoes/sneakers/mime,
@@ -170,12 +170,12 @@ SUBSYSTEM_DEF(traumas)
 						/obj/structure/fluff/empty_sleeper/syndicate, /obj/item/implant/radio/syndicate, /obj/item/clothing/head/helmet/space/syndicate, /obj/machinery/nuclearbomb/syndicate, /obj/item/grenade/syndieminibomb, /obj/item/storage/backpack/duffelbag/syndie, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/ballistic/revolver,
 						/obj/item/gun/ballistic/automatic/shotgun/bulldog, /obj/item/gun/ballistic/automatic/c20r, /obj/item/gun/ballistic/automatic/m90, /obj/item/gun/ballistic/automatic/l6_saw, /obj/item/storage/belt/grenade/full, /obj/item/gun/ballistic/automatic/sniper_rifle/syndicate, /obj/item/gun/energy/kinetic_accelerator/crossbow,
 						/obj/item/melee/transforming/energy/sword/saber, /obj/item/dualsaber, /obj/item/melee/powerfist, /obj/item/storage/box/syndie_kit, /obj/item/grenade/spawnergrenade/manhacks, /obj/item/grenade/chem_grenade/bioterrorfoam, /obj/item/reagent_containers/spray/chemsprayer/bioterror, /obj/item/ammo_box/magazine/m10mm,
-						/obj/item/ammo_box/magazine/pistolm9mm, /obj/item/ammo_box/a357, /obj/item/ammo_box/magazine/m12g, /obj/item/ammo_box/magazine/mm712x82, /obj/item/antag_spawner/nuke_ops, /obj/vehicle/sealed/mecha/combat/gygax/dark, /obj/vehicle/sealed/mecha/combat/marauder/mauler, /obj/item/soap/syndie, /obj/item/gun/syringe/syndicate, /obj/item/cartridge/virus/syndicate,
+						/obj/item/ammo_box/magazine/pistolm9mm, /obj/item/ammo_box/a357, /obj/item/ammo_box/magazine/m12g, /obj/item/ammo_box/magazine/mm712x82, /obj/item/antag_spawner/nuke_ops, /obj/vehicle/sealed/mecha/combat/gygax/dark, /obj/vehicle/sealed/mecha/combat/marauder/mauler, /obj/item/soap/syndie, /obj/item/gun/syringe/syndicate, /obj/item/cartridge/virus/detomatix,
 						/obj/item/cartridge/virus/frame, /obj/item/chameleon, /obj/item/storage/box/syndie_kit/cutouts, /obj/item/clothing/suit/space/hardsuit/syndi, /obj/item/card/emag, /obj/item/storage/toolbox/syndicate, /obj/item/storage/book/bible/syndicate, /obj/item/encryptionkey/binary, /obj/item/encryptionkey/syndicate, /obj/item/ai_module/syndicate,
 						/obj/item/clothing/shoes/magboots/syndie, /obj/item/powersink, /obj/item/sbeacondrop, /obj/item/sbeacondrop/bomb, /obj/item/syndicatedetonator, /obj/item/shield/energy, /obj/item/assault_pod, /obj/item/slimepotion/slime/sentience/nuclear, /obj/item/stack/telecrystal, /obj/item/jammer, /obj/item/codespeak_manual/unlimited,
 						/obj/item/toy/cards/deck/syndicate, /obj/item/storage/secure/briefcase/syndie, /obj/item/storage/fancy/cigarettes/cigpack_syndicate, /obj/item/toy/syndicateballoon, /obj/item/clothing/gloves/fingerless/pugilist/rapid, /obj/item/paper/fluff/ruins/thederelict/syndie_mission, /obj/item/organ/cyberimp/eyes/hud/security/syndicate, /obj/item/clothing/head/HoS/syndicate,
 						/obj/machinery/computer/pod/old/syndicate, /obj/machinery/vending/medical/syndicate_access, /obj/item/mmi/syndie, /obj/item/target/syndicate, /obj/machinery/vending/cigarette/syndicate, /obj/item/robot_module/syndicate, /obj/item/clothing/mask/gas/syndicate, /obj/machinery/power/singularity_beacon/syndicate, /obj/item/clothing/head/syndicatefake,
-						/obj/item/radio/headset/syndicate, /obj/item/gun/ballistic/automatic/pistol/antitank/syndicate, /obj/item/pda/syndicate, /obj/item/clothing/suit/toggle/captains_parade/syndicate, /obj/item/gun/ballistic/automatic/flechette, /obj/item/ammo_box/magazine/flechette, /obj/item/clothing/suit/toggle/lawyer/black/syndie, /obj/item/melee/transforming/energy/sword/cx/traitor,
+						/obj/item/radio/headset/syndicate, /obj/item/gun/ballistic/automatic/pistol/antitank/syndicate, /obj/item/modular_computer/pda/syndicate, /obj/item/clothing/suit/toggle/captains_parade/syndicate, /obj/item/gun/ballistic/automatic/flechette, /obj/item/ammo_box/magazine/flechette, /obj/item/clothing/suit/toggle/lawyer/black/syndie, /obj/item/melee/transforming/energy/sword/cx/traitor,
 						/obj/structure/sign/poster/contraband/syndicate_pistol, /obj/structure/sign/poster/contraband/syndicate_recruitment, /obj/item/bedsheet/syndie, /obj/item/borg/upgrade/syndicate, /obj/item/tank/jetpack/oxygen/harness, /obj/item/firing_pin/implant/pindicate, /obj/item/reagent_containers/glass/bottle/traitor, /obj/item/storage/belt/military,
 						/obj/item/shockpaddles/syndicate, /obj/item/clothing/mask/cigarette/syndicate, /obj/item/toy/plush/nukeplushie)),
 

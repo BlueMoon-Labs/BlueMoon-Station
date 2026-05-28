@@ -138,7 +138,7 @@
 	save_position()
 
 /atom/movable/screen/movable/action_button/proc/save_position()
-	var/mob/user = our_hud.mymob
+	var/mob/user = our_hud?.mymob
 	if(!user?.client)
 		return
 	var/position_info = ""
@@ -154,14 +154,14 @@
 	user.client.prefs.queue_save_pref(1 SECONDS, TRUE)
 
 /atom/movable/screen/movable/action_button/proc/load_position()
-	var/mob/user = our_hud.mymob
+	var/mob/user = our_hud?.mymob
 	if(!user)
 		return
 	var/position_info = user.client?.prefs?.action_buttons_screen_locs["[name]_[id]"] || SCRN_OBJ_DEFAULT
 	user.hud_used.position_action(src, position_info)
 
 /atom/movable/screen/movable/action_button/proc/dump_save()
-	var/mob/user = our_hud.mymob
+	var/mob/user = our_hud?.mymob
 	if(!user?.client)
 		return
 	user.client.prefs.action_buttons_screen_locs -= "[name]_[id]"
@@ -181,6 +181,8 @@
 //see human and alien hud for specific implementations.
 
 /mob/proc/update_action_buttons_icon(status_only = FALSE)
+	if(QDELETED(src))
+		return
 	for(var/X in actions)
 		var/datum/action/A = X
 		A.UpdateButtons(status_only)
@@ -194,6 +196,8 @@
  * * update_flags - reload_screen - bool, if TRUE, this proc will add the button to the screen of the passed mob as well
  */
 /mob/proc/update_action_buttons(reload_screen = FALSE)
+	if(QDELETED(src))
+		return
 	if(!hud_used || !client)
 		return
 

@@ -95,6 +95,8 @@
 
 /// Called when the module is selected from the TGUI
 /obj/item/mod/module/proc/on_select()
+	if(!mod?.wearer) //the control's TGUI is reachable on an unworn suit; every module action below needs a wearer
+		return
 	if(((!mod.active || mod.activating) && !allowed_inactive) || module_type == MODULE_PASSIVE)
 		if(mod.wearer)
 			balloon_alert(mod.wearer, "not active!")

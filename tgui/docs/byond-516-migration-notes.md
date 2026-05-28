@@ -20,8 +20,8 @@ frontend runtime and build toolchain.
   Window, Button, Knob, Slider, RoundGauge, ByondUi, and related SCSS
 - Trident-specific `<meta>` tags from `tgui.html`
 - ES5 shims (`Function.bind`, `Array.forEach`, `Array.includes`)
-- `tgui-dev-server` package (replaced by `scripts/vite-dev.cjs` Vite
-  watch mode)
+- `tgui-dev-server` package (server-side later rebuilt on top of Vite watch
+  as a dependency-free HTTP+WS dev-server; see README "Hot reload (dev)")
 
 ## Modernized APIs
 

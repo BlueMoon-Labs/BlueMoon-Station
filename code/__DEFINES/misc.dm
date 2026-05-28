@@ -269,11 +269,11 @@ GLOBAL_LIST_INIT(pda_styles, list(MONO, VT, ORBITRON, SHARE))
 #define PDA_SKIN_MINIMAL "Minimal"
 
 GLOBAL_LIST_INIT(pda_reskins, list(
-	PDA_SKIN_CLASSIC = list("icon" = 'icons/obj/pda.dmi'),
-	PDA_SKIN_ALT = list("icon" = 'icons/obj/pda_alt.dmi'),
-	PDA_SKIN_RUGGED = list("icon" = 'icons/obj/pda_rugged.dmi'),
-	PDA_SKIN_MODERN = list("icon" = 'icons/obj/pda_modern.dmi'),
-	PDA_SKIN_MINIMAL = list("icon" = 'icons/obj/pda_minimal.dmi')
+	PDA_SKIN_CLASSIC = list("icon" = 'icons/obj/pda.dmi', "icon_state_menu" = null),
+	PDA_SKIN_ALT = list("icon" = 'icons/obj/pda_alt.dmi', "icon_state_menu" = "screen_default"),
+	PDA_SKIN_RUGGED = list("icon" = 'icons/obj/pda_rugged.dmi', "icon_state_menu" = null),
+	PDA_SKIN_MODERN = list("icon" = 'icons/obj/pda_modern.dmi', "icon_state_menu" = null),
+	PDA_SKIN_MINIMAL = list("icon" = 'icons/obj/pda_minimal.dmi', "icon_state_menu" = null)
 	))
 
 //Payed ERT calls
@@ -489,6 +489,10 @@ GLOBAL_LIST_INIT(payed_ert, list(
 
 #define SYRINGE_DRAW 0
 #define SYRINGE_INJECT 1
+
+#define SYRINGE_PIERCE_NONE 0 // Blocked by any clothing covering the hit zone
+#define SYRINGE_PIERCE_THICK 1 // Pierces normal clothing, blocked by THICKMATERIAL
+#define SYRINGE_PIERCE_ALL 2 // Pierces all clothing including THICKMATERIAL
 
 //gold slime core spawning
 #define NO_SPAWN 0

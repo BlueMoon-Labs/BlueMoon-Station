@@ -213,7 +213,7 @@
 	extended_desc = "This program allows for tracking of crew members via their suit sensors."
 	requires_ntnet = TRUE
 	transfer_access = ACCESS_MEDICAL
-	available_on_ntnet = TRUE
+	available_on_ntnet = FALSE
 	program_icon = "heartbeat"
 
 /datum/computer_file/program/radar/lifeline/find_atom()
@@ -261,7 +261,7 @@
 	filedesc = "Fission360"
 	category = PROGRAM_CATEGORY_MISC
 	program_icon_state = "radarsyndicate"
-	extended_desc = "This program allows for tracking of nuclear authorization disks and warheads."
+	extended_desc = "This program allows for tracking of nuclear authorization disks and warheads. Requires SyndiNet access (emagged device)."
 	requires_ntnet = FALSE
 	transfer_access = null
 	available_on_ntnet = FALSE

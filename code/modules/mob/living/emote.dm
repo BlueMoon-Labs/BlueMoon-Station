@@ -323,6 +323,32 @@
 
 	if(HAS_TRAIT(user, TRAIT_KISS_OF_DEATH))
 		kiss_type = /obj/item/hand_item/kisser/death
+	else if(HAS_TRAIT(user, TRAIT_KISS_CROCIN))
+		kiss_type = /obj/item/hand_item/kisser/crocin
+	else if(HAS_TRAIT(user, TRAIT_KISS_SPACE_DRUGS))
+		kiss_type = /obj/item/hand_item/kisser/space_drugs
+		user.nextsoundemote = world.time + 3 SECONDS
+		if(ishuman(user))
+			var/mob/living/carbon/human/H = user
+			H.use_kiss()
+	else if(HAS_TRAIT(user, TRAIT_KISS_HONK))
+		kiss_type = /obj/item/hand_item/kisser/honk
+	else if(HAS_TRAIT(user, TRAIT_KISS_BLOODSUCKER))
+		kiss_type = /obj/item/hand_item/kisser/bloodsucker
+		user.nextsoundemote = world.time + 3 SECONDS
+		if(ishuman(user))
+			var/mob/living/carbon/human/H = user
+			H.use_kiss()
+	else if(HAS_TRAIT(user, TRAIT_KISS_MIME))
+		kiss_type = /obj/item/hand_item/kisser/mime
+	else if(HAS_TRAIT(user, TRAIT_KISS_DRAGQUEEN))
+		kiss_type = /obj/item/hand_item/kisser/dragqueen
+		user.nextsoundemote = world.time + 3 SECONDS
+		if(ishuman(user))
+			var/mob/living/carbon/human/H = user
+			H.use_kiss()
+	else if(HAS_TRAIT(user, TRAIT_KISS_HEARTBOOM))
+		kiss_type = /obj/item/hand_item/kisser/heartboom
 
 	var/obj/item/kiss_blower = new kiss_type(user)
 	if(user.put_in_hands(kiss_blower))

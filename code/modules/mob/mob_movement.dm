@@ -88,13 +88,14 @@
 		move_delay = world.time
 	var/oldloc = mob.loc
 
-	if(L.confused)
+	var/confusion_level = L.get_confusion_movement_level()
+	if(confusion_level)
 		var/newdir = NONE
-		if((L.confused > 50) && prob(min(L.confused * 0.5, 50)))
+		if((confusion_level > 50) && prob(min(confusion_level * 0.5, 50)))
 			newdir = pick(GLOB.alldirs)
-		else if(prob(L.confused))
+		else if(prob(confusion_level))
 			newdir = angle2dir(dir2angle(direction) + pick(90, -90))
-		else if(prob(L.confused * 2))
+		else if(prob(confusion_level * 2))
 			newdir = angle2dir(dir2angle(direction) + pick(45, -45))
 		if(newdir)
 			direction = newdir

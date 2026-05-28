@@ -98,8 +98,18 @@
 	category = list("Medical Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
-/datum/design/piercesyringe
+/datum/design/piercesyringe_weak
 	name = "Piercing Syringe"
+	desc = "A reinforced syringe tip capable of piercing normal clothing when launched at high velocity, but not thick armor. It can hold up to 10 units."
+	id = "piercesyringe_weak"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/glass = 2000, /datum/material/iron = 500)
+	build_path = /obj/item/reagent_containers/syringe/piercing/weak
+	category = list("Medical Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
+/datum/design/piercesyringe
+	name = "Diamond-Tipped Piercing Syringe"
 	desc = "A diamond-tipped syringe that pierces armor when launched at high velocity. It can hold up to 10 units."
 	id = "piercesyringe"
 	build_type = PROTOLATHE

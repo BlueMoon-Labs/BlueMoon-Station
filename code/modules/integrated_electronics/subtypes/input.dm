@@ -348,8 +348,14 @@
 
 		if(istype(H, /mob/living))
 			var/mob/living/carbon/human/D = generate_or_wait_for_human_dummy(DUMMY_HUMAN_SLOT_EXAMINER)
-			D.forceMove(src)
-			var/msg = H.examine(D)
+			// D.forceMove(src)
+			// Why do i even try?
+			var/msg = ""
+			if(ishuman(H))	// Everything to please my compiling overlords
+				var/mob/living/carbon/human/human_target = H
+				msg = human_target.examine(D, silent = TRUE)
+			else
+				msg = H.examine(D)
 			if(islist(msg))
 				msg = jointext(msg, " ")
 			if(msg)

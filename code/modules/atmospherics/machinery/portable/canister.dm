@@ -282,7 +282,7 @@
 /obj/machinery/portable_atmospherics/canister/obj_break(damage_flag)
 	if((machine_stat & BROKEN) || (flags_1 & NODECONSTRUCT_1))
 		return
-	machine_stat |= BROKEN
+	set_machine_stat(machine_stat | BROKEN)
 	canister_break()
 
 /obj/machinery/portable_atmospherics/canister/proc/canister_break()

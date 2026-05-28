@@ -56,7 +56,7 @@
 	name = "Janitor"
 	jobtype = /datum/job/janitor
 
-	belt = /obj/item/pda/janitor
+	belt = /obj/item/modular_computer/pda/janitor
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/janitor
 	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/access_key)
@@ -65,7 +65,7 @@
 	name = "Syndicate Janitor"
 	jobtype = /datum/job/janitor
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	ears = /obj/item/radio/headset/headset_srv

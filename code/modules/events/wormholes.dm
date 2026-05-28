@@ -21,6 +21,7 @@
 
 /datum/round_event/wormholes/start()
 	for(var/turf/open/floor/T in world)
+		CHECK_TICK
 		if(is_station_level(T.z))
 			var/area/A = get_area(T)
 			if(A.outdoors)

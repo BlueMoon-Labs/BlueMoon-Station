@@ -138,8 +138,27 @@ const sendLogEntry = (level, ns, ...args) => {
   }
 };
 
+const createReloadHandler = reload => msg => {
+  if (msg && msg.type === 'hotUpdate') {
+    reload();
+  }
+};
+
+const setupHotReloading = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return;
+  }
+  if (!process.env.DEV_SERVER_IP || !window.WebSocket) {
+    return;
+  }
+  ensureConnection();
+  subscribe(createReloadHandler(() => window.location.reload()));
+};
+
 module.exports = {
   subscribe,
   sendMessage,
   sendLogEntry,
+  createReloadHandler,
+  setupHotReloading,
 };

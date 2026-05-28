@@ -15,10 +15,12 @@
 	activators = list("broadcast" = IC_PINTYPE_PULSE_IN)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	power_draw_per_use = 100
-	cooldown_per_use = 0.1
+	cooldown_per_use = 10
 	var/list/whitelisted_freqs = list() // special freqs can be used by inserting encryption keys
 	var/list/encryption_keys = list()
 	var/obj/item/radio/headset/integrated/radio
+	demands_object_input = TRUE
+	expected_object_type = /obj/item/encryptionkey
 
 /obj/item/integrated_circuit/output/text_to_radio/Initialize(mapload)
 	. = ..()
@@ -57,15 +59,19 @@
 
 /obj/item/integrated_circuit/output/text_to_radio/proc/recalculate_channels()
 	whitelisted_freqs.Cut()
-	set_pin_data(IC_INPUT, 2, 1459)
-	radio.set_frequency(FREQ_COMMON) //reset it
+//	encryption keys should be installed into the assembly now, we don't need to change IC shit when it happens
+//	set_pin_data(IC_INPUT, 2, 1459)
+//	radio.set_frequency(FREQ_COMMON) //reset it
 	var/list/weakreffd_ekeys = list()
 	for(var/o in encryption_keys)
 		var/obj/item/encryptionkey/K = o
 		weakreffd_ekeys += WEAKREF(K)
 		for(var/i in K.channels)
 			whitelisted_freqs |= GLOB.radiochannels[i]
+	if(!(radio.frequency in whitelisted_freqs))
+		on_data_written()
 	set_pin_data(IC_OUTPUT, 1, weakreffd_ekeys)
+	push_data()
 
 
 /obj/item/integrated_circuit/output/text_to_radio/attack_self(mob/user)

@@ -121,7 +121,7 @@
 				if(prob(80))
 					iphonemaxpro.visible_message(span_warning("[iphonemaxpro] сильно искрит, когда [iphonemaxpro.ru_ego()] схемы замыкает попавшая влага!"), span_boldwarning("Влага замыкает ваши схемы!"))
 					do_sparks(2, TRUE, iphonemaxpro)
-					iphonemaxpro.Confused(15)
+					iphonemaxpro.AdjustConfused(30 SECONDS)
 					iphonemaxpro.Jitter(15)
 					iphonemaxpro.apply_damage(15, BURN)
 				else

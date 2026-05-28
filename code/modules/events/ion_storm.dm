@@ -105,7 +105,7 @@
 			H.apply_damage(20, BURN)
 			H.adjustToxLoss(20, toxins_type = TOX_SYSCORRUPT)
 			H.Jitter(20)
-			H.Confused(20)
+			H.AdjustConfused(40 SECONDS)
 			H.Stun(5)
 			H.Dizzy(15)
 

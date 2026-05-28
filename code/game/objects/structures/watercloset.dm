@@ -450,7 +450,7 @@
 					if(prob(80))
 						H.visible_message(span_warning("[H] искрит, когда [H.ru_ego()] схемы замыкает попавшая влага!"), span_boldwarning("Влага замыкает ваши схемы!"))
 						do_sparks(2, TRUE, H)
-						H.Confused(15)
+						H.AdjustConfused(30 SECONDS)
 						H.Jitter(20)
 						H.apply_damage(10, BURN)
 					else
@@ -460,7 +460,7 @@
 						playsound(H, 'modular_splurt/sound/misc/connection_terminated.ogg', 40, FALSE)
 						H.apply_damage(25, BURN)
 						H.AdjustUnconscious(20)
-						H.Confused(20)
+						H.AdjustConfused(40 SECONDS)
 						H.Jitter(30)
 
 			if(H.wear_suit)
@@ -548,7 +548,7 @@
 
 /obj/machinery/shower/proc/check_heat(mob/living/carbon/C)
 	if(watertemp == "freezing")
-		C.adjust_bodytemperature(-80, 80)
+		C.adjust_bodytemperature(-100, T0C - 20)
 		to_chat(C, "<span class='warning'>The water is freezing!</span>")
 	else if(watertemp == "boiling")
 		C.adjust_bodytemperature(35, 0, 500)

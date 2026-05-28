@@ -28918,6 +28918,7 @@
 /area/centcom/vip)
 "uQc" = (
 /obj/machinery/vending/sexmachine,
+/obj/structure/fans/tiny/invisible,
 /turf/open/indestructible/hotelwood,
 /area/centcom/holding)
 "uRd" = (

@@ -6,13 +6,14 @@
 	category = PROGRAM_CATEGORY_MISC
 	ui_header = "borg_mon.gif"
 	program_icon_state = "generic"
-	extended_desc = "This program allows access to standard security camera networks."
+	extended_desc = "Предоставляет доступ к стандартным сетям охранных камер станции."
 	requires_ntnet = TRUE
 	transfer_access = ACCESS_SECURITY
-	usage_flags = PROGRAM_CONSOLE | PROGRAM_LAPTOP
+	usage_flags = PROGRAM_CONSOLE | PROGRAM_LAPTOP | PROGRAM_PDA
 	size = 5
 	tgui_id = "NtosSecurEye"
 	program_icon = "eye"
+	available_on_ntnet = FALSE
 
 	var/list/network = list("ss13")
 	var/obj/machinery/camera/active_camera

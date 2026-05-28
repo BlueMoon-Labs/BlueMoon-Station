@@ -349,7 +349,7 @@
 	fail_message = "<span class='warning'>НЕКОРРЕКТНЫЙ УРОВЕНЬ ТРЕВОГИ!</span>"
 
 /obj/item/firing_pin/alert_level/pin_auth(mob/living/user)
-	if(gun.chambered?.harmful == FALSE)
+	if(!gun || gun.chambered?.harmful == FALSE)
 		return TRUE
 	return (isnum(GLOB.security_level) && GLOB.security_level >= desired_minimium_alert)
 

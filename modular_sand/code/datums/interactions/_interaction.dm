@@ -114,6 +114,8 @@
 
 /// Actually doing the action, has a few checks to see if it's valid, usually overwritten to be make things actually happen and what-not
 /datum/interaction/proc/do_action(mob/living/user, mob/living/target, apply_cooldown = TRUE , is_hidden = FALSE)
+	if(QDELETED(user) || QDELETED(target))
+		return FALSE
 	if(!(interaction_flags & INTERACTION_FLAG_USER_IS_TARGET))
 		if(user == target) //tactical href fix
 			to_chat(user, span_warning("Ты не можешь нацелиться на себя."))
@@ -134,6 +136,9 @@
 		return
 	// BLUEMOON ADD END
 
+	if(QDELETED(user) || QDELETED(target))
+		return FALSE
+
 	if(write_log_user)
 		user.log_message("[write_log_user] [target]", LOG_ATTACK)
 	if(write_log_target)
@@ -144,6 +149,8 @@
 
 /// Display the message
 /datum/interaction/proc/display_interaction(mob/living/user, mob/living/target, var/is_hidden)
+	if(QDELETED(user) || QDELETED(target))
+		return
 	var/vision_distance = 7
 	var/hidden_message
 	if(is_hidden)
@@ -160,6 +167,8 @@
 
 /// After the interaction, the base only plays the sound and only if it has one
 /datum/interaction/proc/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE, is_hidden = FALSE)
+	if(QDELETED(user) || QDELETED(target))
+		return
 	if(apply_cooldown)
 		COOLDOWN_START(user, last_interaction_time, 0.5 SECONDS)
 	if(interaction_sound)
@@ -178,10 +187,13 @@
 			soundfile_to_play = pickweight(interaction_sound)
 		else
 			soundfile_to_play = interaction_sound
+		var/turf/sound_turf = get_turf(message_by_user ? user : target)
+		if(!sound_turf)
+			return
 		if(interaction_flags & INTERACTION_FLAG_OOC_CONSENT)
-			playlewdinteractionsound(get_turf(message_by_user ? user : target), soundfile_to_play, interaction_sound_volume, 1, -1)
+			playlewdinteractionsound(sound_turf, soundfile_to_play, interaction_sound_volume, 1, -1)
 		else
-			playsound(get_turf(message_by_user ? user : target), soundfile_to_play, interaction_sound_volume, 1, -1)
+			playsound(sound_turf, soundfile_to_play, interaction_sound_volume, 1, -1)
 	return
 
 /datum/interaction/cheer/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)

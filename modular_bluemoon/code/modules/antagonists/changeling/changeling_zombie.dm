@@ -39,7 +39,8 @@
 	var/can_cure = FALSE
 	var/was_changeling_husked = FALSE
 	var/list/obj/item/melee/arm_blade/changeling_zombie/arm_blades = list()
-	var/obj/item/clothing/suit/armor/changeling/prototype/armor
+	var/obj/item/clothing/suit/armor/changeling/weak/armor
+	var/obj/item/clothing/head/helmet/changeling/weak/armor_head
 	var/list/bodypart_zones_to_regenerate = list()
 	COOLDOWN_DECLARE(limb_regen_cooldown)
 	COOLDOWN_DECLARE(transformation_grace_period)
@@ -55,6 +56,9 @@
 	if(HAS_TRAIT_FROM(parent, TRAIT_HUSK, CHANGELING_DRAIN))
 		COOLDOWN_START(src, transformation_grace_period, 30 SECONDS)
 		was_changeling_husked = TRUE
+	if(ishuman(parent))
+		var/mob/living/carbon/human/host = parent
+		host.ForceContractDisease(new /datum/disease/changeling_virus)
 	START_PROCESSING(SSobj, src)
 
 /datum/component/changeling_zombie_infection/UnregisterFromParent()
@@ -62,17 +66,21 @@
 	return ..()
 
 /datum/component/changeling_zombie_infection/Destroy(force, silent)
-	QDEL_LIST(arm_blades)
-	QDEL_NULL(armor)
 	if(parent)
 		var/mob/living/carbon/human/host = parent
-		REMOVE_TRAITS_IN(host, TRAIT_CHANGELING_ZOMBIE)
-		host.mind?.remove_antag_datum(/datum/antagonist/changeling_zombie)
-		if(zombified)
-			UnregisterSignal(host, COMSIG_LIVING_DEATH)
-			UnregisterSignal(host, COMSIG_CARBON_REMOVE_LIMB)
-			UnregisterSignal(host, COMSIG_CARBON_ATTACH_LIMB)
-			UnregisterSignal(host, COMSIG_MOB_SAY)
+		if(istype(host))
+			for(var/datum/disease/changeling_virus/virus_entry in host.diseases)
+				virus_entry.cure(FALSE)
+			REMOVE_TRAITS_IN(host, TRAIT_CHANGELING_ZOMBIE)
+			host.mind?.remove_antag_datum(/datum/antagonist/changeling_zombie)
+			if(zombified)
+				UnregisterSignal(host, COMSIG_MOB_DEATH)
+				UnregisterSignal(host, COMSIG_CARBON_REMOVE_LIMB)
+				UnregisterSignal(host, COMSIG_CARBON_ATTACH_LIMB)
+				UnregisterSignal(host, COMSIG_MOB_SAY)
+	QDEL_LIST(arm_blades)
+	QDEL_NULL(armor)
+	QDEL_NULL(armor_head)
 	zombified = FALSE
 	return ..()
 
@@ -136,7 +144,7 @@
 	ADD_TRAIT(host, TRAIT_NOHUNGER, TRAIT_CHANGELING_ZOMBIE)
 	ADD_TRAIT(host, TRAIT_NOBREATH, TRAIT_CHANGELING_ZOMBIE)
 	ADD_TRAIT(host, TRAIT_THERMAL_VISION, TRAIT_CHANGELING_ZOMBIE)
-	ADD_TRAIT(host, TRAIT_EASYDISMEMBER, TRAIT_CHANGELING_ZOMBIE)
+	ADD_TRAIT(host, TRAIT_NODISMEMBER, TRAIT_CHANGELING_ZOMBIE)
 	ADD_TRAIT(host, TRAIT_FAKEDEATH, TRAIT_CHANGELING_ZOMBIE)
 	host.cure_all_traumas(TRAUMA_RESILIENCE_MAGIC)
 	host.revive(TRUE, TRUE)
@@ -147,14 +155,15 @@
 	if(host.wear_suit)
 		host.temporarilyRemoveItemFromInventory(host.wear_suit, TRUE)
 	armor = new(host.loc)
+	armor_head = new(host.loc)
 	ADD_TRAIT(armor, TRAIT_NODROP, TRAIT_CHANGELING_ZOMBIE)
+	ADD_TRAIT(armor_head, TRAIT_NODROP, TRAIT_CHANGELING_ZOMBIE)
 	host.equip_to_slot_if_possible(armor, ITEM_SLOT_OCLOTHING, TRUE, TRUE, TRUE)
+	host.equip_to_slot_if_possible(armor_head, ITEM_SLOT_HEAD, TRUE, TRUE, TRUE)
 	host.SetKnockdown(0)
 	host.setStaminaLoss(0)
 	host.set_resting(FALSE)
-	host.reagents.add_reagent(/datum/reagent/medicine/changelingadrenaline, 4)
-	host.reagents.add_reagent(/datum/reagent/medicine/changelinghaste, 3)
-	RegisterSignal(host, COMSIG_LIVING_DEATH, PROC_REF(on_owner_died))
+	RegisterSignal(host, COMSIG_MOB_DEATH, PROC_REF(on_owner_died))
 	RegisterSignal(host, COMSIG_CARBON_REMOVE_LIMB, PROC_REF(on_remove_limb))
 	RegisterSignal(host, COMSIG_CARBON_ATTACH_LIMB, PROC_REF(on_gain_limb))
 	RegisterSignal(host, COMSIG_MOB_SAY, PROC_REF(handle_speech))
@@ -174,7 +183,7 @@
 	host.put_in_hand(arm_blade, hand_index, forced = TRUE)
 	arm_blades += arm_blade
 
-/datum/component/changeling_zombie_infection/proc/on_owner_died(datum/source)
+/datum/component/changeling_zombie_infection/proc/on_owner_died(datum/source, gibbed)
 	SIGNAL_HANDLER
 	if(zombified)
 		qdel(src)
@@ -231,7 +240,8 @@
 	if(us?.infect_objective)
 		us.infect_objective.total_infections += 1
 
-/obj/item/clothing/suit/armor/changeling/prototype
-	name = "warped chitin"
-	desc = "Half-formed plating twitching on its own."
-	armor = list(MELEE = 15, BULLET = 15, LASER = 15, ENERGY = 25, BOMB = 5, BIO = 5, RAD = 0, FIRE = 0, ACID = 75)
+/obj/item/clothing/suit/armor/changeling/weak
+	armor = list(MELEE = 35, BULLET = 30, LASER = 15, ENERGY = 20, BOMB = 5, BIO = 4, RAD = 0, FIRE = 100, ACID = 100)
+
+/obj/item/clothing/head/helmet/changeling/weak
+	armor = list(MELEE = 35, BULLET = 30, LASER = 15, ENERGY = 20, BOMB = 5, BIO = 4, RAD = 0, FIRE = 100, ACID = 100)

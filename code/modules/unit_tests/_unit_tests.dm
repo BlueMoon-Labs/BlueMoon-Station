@@ -94,10 +94,15 @@
 // #include "holidays.dm"
 // #include "hydroponics_harvest.dm"
 // #include "keybinding_init.dm"
+#include "keybindings_stuck_keys.dm"
 // #include "language_transfer.dm"
 #include "lighting.dm"
+#include "area_tracking.dm"
+#include "cleanable_decals_tracking.dm"
+#include "login_path_async_audit.dm"
 #include "lighting_performance.dm"
 #include "machine_disassembly.dm"
+#include "machinery_optimization.dm"
 #include "mapload_space_verification.dm"	// BLUEMOON EDIT: Invalid Space Turfs
 #include "mapping.dm"						// BLUEMOON EDIT: Invalid Space Turfs
 #include "medical_wounds.dm"
@@ -130,6 +135,7 @@
 #include "surgeries.dm"
 #include "teleporters.dm"
 #include "tgui_create_message.dm"
+#include "tgui_dev_asset_url.dm"
 #include "timer_sanity.dm"
 #include "unit_test.dm"
 // #include "wizard.dm"
@@ -145,14 +151,23 @@
 #endif
 
 /// BLUEMOON TESTS
+#include "atom_hud_perf.dm"
+
 #include "auto_cryo.dm"
 #include "bad_defines_defined.dm"
 #include "bugfix_coverage.dm"
+#include "can_inject_clothing.dm"
 #include "disposal_holder.dm"
+#include "ghost_role_limbs.dm"
+#include "hallucination_stationmessage.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "perf_optimizations.dm"
+#include "psychosis_pools.dm"
+#include "preload_size_budgets.dm"
+#include "image_leak_audit.dm"
 #include "screen_gc.dm"
+#include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
 #include "tattoo_system.dm"
 

@@ -10,59 +10,59 @@ export const NtosShipping = (props, context) => {
       height={350}>
       <NtosWindow.Content overflow="auto">
         <Section
-          title="NTOS Shipping Hub."
+          title="Центр доставки NTOS."
           buttons={(
             <Button
               icon="eject"
-              content="Eject Id"
+              content="Извлечь ID"
               onClick={() => act('ejectid')} />
           )}>
           <LabeledList>
-            <LabeledList.Item label="Current User">
+            <LabeledList.Item label="Текущий пользователь">
               {data.current_user || "N/A"}
             </LabeledList.Item>
-            <LabeledList.Item label="Inserted Card">
+            <LabeledList.Item label="Вставленная карта">
               {data.card_owner || "N/A"}
             </LabeledList.Item>
-            <LabeledList.Item label="Available Paper">
+            <LabeledList.Item label="Доступная бумага">
               {data.has_printer ? data.paperamt : "N/A"}
             </LabeledList.Item>
-            <LabeledList.Item label="Profit on Sale">
+            <LabeledList.Item label="Прибыль от продажи">
               {data.barcode_split}%
             </LabeledList.Item>
           </LabeledList>
         </Section>
-        <Section title="Shipping Options">
+        <Section title="Настройки доставки">
           <Box>
             <Button
               icon="id-card"
-              tooltip="The currently ID card will become the current user."
+              tooltip="Текущая ID-карта станет текущим пользователем."
               tooltipPosition="right"
               disabled={!data.has_id_slot}
               onClick={() => act('selectid')}
-              content="Set Current ID" />
+              content="Установить текущий ID" />
           </Box>
           <Box>
             <Button
               icon="print"
-              tooltip="Print a barcode to use on a wrapped package."
+              tooltip="Напечатать штрих-код для упакованного товара."
               tooltipPosition="right"
               disabled={!data.has_printer || !data.current_user}
               onClick={() => act('print')}
-              content="Print Barcode" />
+              content="Напечатать штрих-код" />
           </Box>
           <Box>
             <Button
               icon="tags"
-              tooltip="Set how much profit you'd like on your package."
+              tooltip="Установить желаемую прибыль с посылки."
               tooltipPosition="right"
               onClick={() => act('setsplit')}
-              content="Set Profit Margin" />
+              content="Установить маржу прибыли" />
           </Box>
           <Box>
             <Button
               icon="sync-alt"
-              content="Reset ID"
+              content="Сбросить ID"
               onClick={() => act('resetid')} />
           </Box>
         </Section>

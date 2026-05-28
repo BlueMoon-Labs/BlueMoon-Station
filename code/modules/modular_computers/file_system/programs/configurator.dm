@@ -20,8 +20,6 @@
 
 /datum/computer_file/program/computerconfig/ui_data(mob/user)
 	movable = computer
-	var/obj/item/computer_hardware/hard_drive/hard_drive = movable.all_components[MC_HDD]
-	var/obj/item/computer_hardware/battery/battery_module = movable.all_components[MC_CELL]
 	if(!istype(movable))
 		movable = null
 
@@ -31,16 +29,26 @@
 
 	var/list/data = get_header_data()
 
-	data["disk_size"] = hard_drive.max_capacity
-	data["disk_used"] = hard_drive.used_capacity
-	data["power_usage"] = movable.last_power_usage
-	data["battery_exists"] = battery_module ? 1 : 0
-	if(battery_module?.battery)
-		data["battery_rating"] = battery_module.battery.maxcharge
-		data["battery_percent"] = round(battery_module.battery.percent())
+	var/obj/item/computer_hardware/hard_drive/hard_drive = movable.all_components[MC_HDD]
+	if(hard_drive)
+		data["disk_size"] = hard_drive.max_capacity
+		data["disk_used"] = hard_drive.used_capacity
+	else
+		data["disk_size"] = movable.max_capacity
+		data["disk_used"] = 0
+		for(var/datum/computer_file/F in movable.stored_files)
+			data["disk_used"] += F.size
 
-	if(battery_module?.battery)
-		data["battery"] = list("max" = battery_module.battery.maxcharge, "charge" = round(battery_module.battery.charge))
+	data["power_usage"] = movable.last_power_usage
+
+	var/battery_percent = movable.get_battery_percent()
+	data["battery_exists"] = !isnull(battery_percent)
+	if(!isnull(battery_percent))
+		data["battery_percent"] = round(battery_percent)
+		var/obj/item/stock_parts/cell/cell = movable.get_cell()
+		if(cell)
+			data["battery_rating"] = cell.maxcharge
+			data["battery"] = list("max" = cell.maxcharge, "charge" = round(cell.charge))
 
 	var/list/all_entries[0]
 	for(var/I in movable.all_components)

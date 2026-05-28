@@ -1,3 +1,17 @@
+/*
+/////////////////////////	ИНФОРМАЦИЯ: /////////////////////////
+
+При добавлении рескина на оружие (или любого предмета, что влияет на геймплей) впишите DONATE_ITEM_TOOLTIP_PARENT сразу после пути
+Пример:
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/my_reskin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "My personal enforcer"
+
+Если предмет из категории HIGHRISK, например мультифазка или антикварка,
+	вместо DONATE_ITEM_TOOLTIP_PARENT используйте DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
+*/
+
 /obj/item/modkit/shigu_kit
 	name = "Butcher Knife Kit"
 	desc = "A modkit for making a Butcher Knife into a Shigu Knife."
@@ -5,6 +19,7 @@
 	fromitem = list(/obj/item/kitchen/knife/butcher)
 
 /obj/item/kitchen/knife/butcher/shigu_knife
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Shigu Butcher Knife"
 	desc = "A ultra-sharp butcher knife. Maybe his seemingly glaring surface can scare!"
 	icon_state = "Shigu_Knife"
@@ -18,6 +33,7 @@
 	fromitem = list(/obj/item/kitchen/knife/combat)
 
 /obj/item/kitchen/knife/combat/kukri
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Кукри-мачете"
 	desc = "Традиционное кукри, с разительным отличием, что делает его похожим на мачете, благодаря своему изогнутому клинку и функционалу как режущего инструмента и оружия. Из-за той же формы лещвия с изгибом центр тяжести смещён к острию, что делает его более эффективным для рубки. На рукояти изображён логотип, напоминающий чёрную розу и круговая надпись Black Rose atelier"
 	item_state = "kukri"
@@ -45,6 +61,7 @@
 	fromitem = list(/obj/item/melee/classic_baton)
 
 /obj/item/melee/classic_baton/impactbaton_jitte
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Impact Baton 1/62-H"
 	desc = "Impact Baton model 1, year 62th \"Hardlight\". Standard carbon fiber baton of Yernela catcrin law enforcements with hardlight technology sword-cutter."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -61,6 +78,7 @@
 	fromitem = list(/obj/item/melee/classic_baton/telescopic)
 
 /obj/item/melee/classic_baton/telescopic/catcrin
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Impact Baton 3/51-H"
 	desc = "Impact Baton model 3, year 51th \"Hardlight\". Easy conсealable telescopic baton of hight-position catcrins with paralitic hardlight elements on the tip and as handguard."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -81,6 +99,7 @@
 	fromitem = list(/obj/item/melee/classic_baton/telescopic)
 
 /obj/item/melee/classic_baton/telescopic/portal_abomination
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Otherworld Portal Weapon"
 	desc = "A portal tool, revealing some part of otherworld undescribable abomination. Use it carefully or it will use you. Who openned the gates to this thing?!"
 	icon_state = "portalabomination"
@@ -100,6 +119,7 @@
 	fromitem = list(/obj/item/melee/transforming/plasmasword, /obj/item/melee/transforming/energy/sword/saber, /obj/item/melee/transforming/energy/sword/saber/red)
 
 /obj/item/melee/transforming/energy/sword/saber/dark_sabre
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Dark Omen Sword"
 	desc = "Необычная рукоять из тяжёлого неизвестного материала. На ней выгравирована мелким шрифтом странная фраза: \n<span class='danger'>«ТАМ, ГДЕ БЫЛ СТРАХ, ОСТАНУСЬ ТОЛЬКО Я»</span>\nПри включении, появляется леденящий душу чёрный клинок. От него исходит низкий, резонирующий гул. Последнее, что слышали многие жертвы этого орудия."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -150,6 +170,7 @@
 	update_icon_state()
 
 /obj/item/melee/baton/twilight_spike
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Twilight Spike"
 	desc = "Тонкий, стремительный клинок, напоминающий заострённый шип. Его лезвие будто накапливает энергию, а при ударе высвобождает краткий парализующий импульс. \
 	Лёгкий и отлично сбалансированный, он создан для тех, кто предпочитает скорость и точность грубой силе."
@@ -162,17 +183,11 @@
 	hit_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_hit.ogg'
 
 /obj/item/melee/baton/twilight_spike/update_icon_state()
-	if(turned_on)
-		icon_state = "[initial(icon_state)]_active"
-		item_state = "[initial(item_state)]_active"
-	else if(!cell)
-		icon_state = "[initial(icon_state)]_nocell"
-		item_state = "[initial(item_state)]"
-	else
-		icon_state = "[initial(icon_state)]"
-		item_state = "[initial(item_state)]"
+	. = ..()
+	item_state = "[initial(item_state)][turned_on ? "_active" : ""]"
 
 /obj/item/melee/transforming/energy/sword/energy_sabre/fluff
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Cybersun Energy Sabre"
 
 /obj/item/melee/transforming/energy/sword/energy_sabre/fluff/Initialize(mapload)

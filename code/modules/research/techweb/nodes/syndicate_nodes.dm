@@ -5,18 +5,27 @@
 	description = "Dangerous research used to create dangerous objects."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("adv_engi", "adv_weaponry", "explosive_weapons")
-	design_ids = list("decloner", "borg_syndicate_module", "suppressor", "largecrossbow", "donksofttoyvendor", "donksoft_refill", "syndiesleeper", "inducer_syn") // - ci-xray
+	design_ids = list("decloner", "borg_syndicate_module", "suppressor", "largecrossbow", "donksofttoyvendor", "donksoft_refill", "syndiesleeper", "inducer_syn", "piercesyringe") // - ci-xray
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
 	hidden = TRUE
-
-/datum/techweb_node/syndicate_basic/New()		//Crappy way of making syndicate gear decon supported until there's another way.
-	. = ..()
-	boost_item_paths = list()
-	for(var/path in GLOB.uplink_items)
-		var/datum/uplink_item/UI = new path
-		if(!UI.item || !UI.illegal_tech)
-			continue
-		boost_item_paths |= UI.item	//allows deconning to unlock.
+	boost_item_paths = list(
+		/obj/item/card/emag = null,
+		/obj/item/card/id/inteq = null,
+		/obj/item/melee/transforming/plasmasword = null,
+		/obj/item/plasmascythe = null,
+		/obj/item/melee/transforming/energy/sword/saber = null,
+		/obj/item/dualsaber = null,
+		/obj/item/dualsaber/hypereutactic = null,
+		/obj/item/shield/energy = null,
+		/obj/item/shield/inteq_energy = null,
+		/obj/item/clothing/suit/space/hardsuit/syndi = null,
+		/obj/item/clothing/suit/space/hardsuit/syndi/elite = null,
+		/obj/item/clothing/suit/space/hardsuit/shielded/syndi = null,
+		/obj/item/clothing/suit/space/hardsuit/contractor = null,
+		/obj/item/modular_computer/tablet/syndicate_contract_uplink = null,
+		/obj/item/modular_computer/tablet/syndicate_contract_uplink/preset/uplink = null,
+		/obj/item/melee/classic_baton/telescopic/contractor_baton = null,
+	)
 
 /datum/techweb_node/advanced_illegal_ballistics
 	id = "advanced_illegal_ballistics"

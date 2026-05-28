@@ -278,6 +278,20 @@
 #define LIPSTICK_TRAIT		"lipstick_trait"
 /// Blowing kisses that actually do damage to the victim
 #define TRAIT_KISS_OF_DEATH		"kiss_of_death"
+/// Crocin lipstick
+#define TRAIT_KISS_CROCIN		"kiss_crocin"
+/// Space drugs lipstick
+#define TRAIT_KISS_SPACE_DRUGS	"kiss_space_drugs"
+/// Honk lipstick
+#define TRAIT_KISS_HONK			"kiss_honk"
+/// Bloodsucker lipstick
+#define TRAIT_KISS_BLOODSUCKER	"kiss_bloodsucker"
+/// Mime lipstick
+#define TRAIT_KISS_MIME			"kiss_mime"
+/// Drag queen lipstick
+#define TRAIT_KISS_DRAGQUEEN	"kiss_dragqueen"
+/// Heartboom lipstick
+#define TRAIT_KISS_HEARTBOOM	"kiss_heartboom"
 /// forces update_density to make us not dense
 #define TRAIT_LIVING_NO_DENSITY			"living_no_density"
 /// forces us to not render our overlays

@@ -24,7 +24,7 @@ from pathlib import Path
 from ruamel import yaml
 from github import Github, InputGitAuthor
 
-CL_BODY = re.compile(r":cl:(.+)?\r\n((.|\n|\r)+?)\r\n\/:cl:", re.MULTILINE)
+CL_BODY = re.compile(r":cl:(.+)?\r?\n((.|\n|\r)+?)\r?\n\/:cl:", re.MULTILINE)
 CL_SPLIT = re.compile(r"(^\w+):\s+(\w.+)", re.MULTILINE)
 
 git_email = os.getenv("GIT_EMAIL")

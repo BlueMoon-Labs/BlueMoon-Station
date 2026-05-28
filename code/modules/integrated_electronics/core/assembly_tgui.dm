@@ -496,6 +496,7 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 			if(!chip || !(chip in assembly_components))
 				return
 			chip.displayed_name = reject_bad_name(strip_html(nn), TRUE) || chip.displayed_name
+			chip.on_rename()
 			add_allowed_scanner(usr.ckey)
 			. = TRUE
 		if("add_connection")
@@ -756,6 +757,7 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 			if(isnull(nn))
 				return TRUE
 			displayed_name = reject_bad_name(strip_html(nn), TRUE) || displayed_name
+			on_rename()
 			. = TRUE
 		if("add_connection")
 			var/ocid = text2num(params["output_component_id"])

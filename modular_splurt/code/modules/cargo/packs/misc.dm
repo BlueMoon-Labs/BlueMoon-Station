@@ -274,7 +274,7 @@
 					/obj/item/storage/toolbox/emergency/old,
 					/obj/item/clothing/head/flight,
 					/obj/item/storage/toolbox/mechanical/old,
-					/obj/item/pda,
+					/obj/item/modular_computer/pda,
 					/obj/item/clothing/gloves/color/yellow,
 					/obj/item/export/bottle/whiskey,
 					/obj/item/export/bottle/wine,

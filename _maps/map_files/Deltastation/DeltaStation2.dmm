@@ -94857,9 +94857,6 @@
 /obj/item/cartridge/medical{
 	pixel_x = 3
 	},
-/obj/item/cartridge/chemistry{
-	pixel_y = 6
-	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},

@@ -577,7 +577,7 @@
 /turf/open/floor/plating/snowed/smoothed/icemoon,
 /area/icemoon/surface/outdoors)
 "bI" = (
-/obj/item/pda/clear{
+/obj/item/modular_computer/pda/clear{
 	note = "Chief's asked me to check on the machinery inside PDA. He's also worried about Build, but i'm sure Harry'll handle the construction. I just need to work on Internals. Fuck i'm hungry"
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{

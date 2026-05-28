@@ -51,6 +51,7 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 		operating = FALSE
 	else
 		operating = TRUE
+		START_PROCESSING(SSfastprocess, src)
 	icon_state = "conveyor[operating * verted]"
 
 // create a conveyor
@@ -127,9 +128,9 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 	// move items to the target location
 /obj/machinery/conveyor/process()
 	if(machine_stat & (BROKEN | NOPOWER))
-		return
+		return PROCESS_KILL
 	if(!operating)
-		return
+		return PROCESS_KILL
 	use_power(6)
 	affecting = loc.contents - src		// moved items will be all in loc
 	addtimer(CALLBACK(src, PROC_REF(convey), affecting), 1)
@@ -180,7 +181,7 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 // make the conveyor broken
 // also propagate inoperability to any connected conveyor with the same ID
 /obj/machinery/conveyor/proc/broken()
-	machine_stat |= BROKEN
+	set_machine_stat(machine_stat | BROKEN)
 	update()
 
 	var/obj/machinery/conveyor/C = locate() in get_step(src, dir)
@@ -273,6 +274,8 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 	for(var/obj/machinery/conveyor/C in GLOB.conveyors_by_id[id])
 		C.operating = position
 		C.update_move_direction()
+		if(position)
+			START_PROCESSING(SSfastprocess, C)
 		CHECK_TICK
 
 /obj/machinery/conveyor_switch/process()

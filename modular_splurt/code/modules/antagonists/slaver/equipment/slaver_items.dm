@@ -1,11 +1,14 @@
+#define TELEPORT_TIME 15 SECONDS
+#define TELEPORT_TIME_SELF 90 SECONDS
+
 /obj/item/slaver
 	icon = 'icons/obj/abductor.dmi'
 	lefthand_file = 'icons/mob/inhands/antag/abductor_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/antag/abductor_righthand.dmi'
 
 /obj/item/slaver/gizmo
-	name = "\improper collection tool"
-	desc = "A short-range teleportation device. Use on another creature to instantly beam them to your ship."
+	name = "\improper Collection Tool"
+	desc = "Устройство для телепортации на короткие расстояния. Используйте его на другом существе, чтобы мгновенно переправить его на свой корабль."
 	icon_state = "silencer"
 	item_state = "gizmo"
 	w_class = WEIGHT_CLASS_SMALL
@@ -17,15 +20,13 @@
 
 	var/datum/antagonist/slaver/S = locate() in user.mind.antag_datums
 	if(!S) // Is not a slaver antag.
-		to_chat(user, "<span class='warning'>You aren't sure how to use this tech!</span>")
+		to_chat(user, span_warning("Ты не уверен, как этим пользоваться."))
 		return
-
-	if(user == M)
-		to_chat(user, "<span class='warning'>You can't teleport yourself!</span>")
-		return
+	var/self_teleportation = user == M
+	var/teleport_time = self_teleportation ? TELEPORT_TIME_SELF : TELEPORT_TIME
 
 	// Проверка префов
-	if(M?.client?.prefs.nonconpref == "No" || M?.client?.prefs.erppref == "No")
+	if(!self_teleportation && (M?.client?.prefs.nonconpref == "No" || M?.client?.prefs.erppref == "No"))
 		src.say("Операция отклонена. Цель помечена как неприкосновенная.")
 		playsound(src, 'sound/machines/buzz-sigh.ogg', 80, TRUE)
 		return
@@ -35,26 +36,38 @@
 	for(var/turf/T in get_area_turfs(/area/shuttle/slaveship/brig))
 		L+=T
 	if(!L || !L.len)
-		to_chat(user, "Error: No slaveship detected (Tell a coder!).")
+		to_chat(user, "ERROR: Корабль не обнаружен (Сообщите в поддержку).")
 		return
 	var/turf/teleportDestination = pick(L)
 	var/turf/mobLocation = get_turf(M)
 
 	// Check we are in range of the destination
 	if(!mobLocation || mobLocation.z != teleportDestination.z)
-		to_chat(user, "<span class='warning'>The mothership is out of range, you need to be on the same z-level!</span>")
+		to_chat(user, span_warning("Корабль находится вне зоны досягаемости, вы должны быть на том же z-уровне!"))
 		return
 
-	user.visible_message("<span class='notice'>[user] begins scanning [M] with [src].</span>", "<span class='notice'>You begin scanning [M] with [src].</span>")
-	if(do_mob(user, M, 15 SECONDS))
+	if(self_teleportation)
+		user.visible_message(span_warning("[user] начинает телепортацию [M] с помощью [src]."), span_notice("Ты начинаешь телепортацию на корабль."))
+	else
+		user.visible_message(span_warning("[user] начинает телепортацию [M] с помощью [src]."), span_notice("Ты начинаешь телепортацию [M] с помощью [src]."),
+								target = M, target_message = span_userdanger("[user] пытается телепортировать тебя с помощью [src]!"))
+	var/old_alpha = M.alpha
+	animate(M, teleport_time, alpha = 50, easing = QUAD_EASING | EASE_OUT)
+	var/datum/effect_system/spark_spread/effect = new
+	effect.set_up(3, 0, M.loc)
+	effect.start()
+	if(do_mob(user, M, teleport_time))
 		// Teleport!
 		playsound(get_turf(M.loc), 'sound/magic/blink.ogg', 50, 1)
-		M.visible_message("<span class='notice'>[M] vanishes from sight!</span>", \
-					"<span class='notice'>You feel a rush of energy as you are beamed to the slaver mothership!</span>")
+		M.visible_message(span_warning("[M] исчезает!"), span_warning("Ты чувствуешь поток энергии, проходящий через тебя при телепортации!"))
 		new /obj/effect/temp_visual/dir_setting/ninja(get_turf(M), M.dir)
 		M.forceMove(teleportDestination)
 	else
-		to_chat(user, "<span class='warning'>You need to stand still and uninterrupted for 15 seconds!</span>")
+		animate(M, flags = ANIMATION_END_NOW)
+	M.alpha = old_alpha
+
+#undef TELEPORT_TIME
+#undef TELEPORT_TIME_SELF
 
 // Buyable gear kits at the slaver console
 /obj/item/storage/box/slaver_teleport

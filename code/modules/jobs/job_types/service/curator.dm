@@ -56,7 +56,7 @@
 	jobtype = /datum/job/curator
 
 	shoes = /obj/item/clothing/shoes/laceup
-	belt = /obj/item/pda/curator
+	belt = /obj/item/modular_computer/pda/curator
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/curator
 	l_hand = /obj/item/storage/bag/books
@@ -73,7 +73,7 @@
 	name = "Syndicate Curator"
 	jobtype = /datum/job/curator
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	ears = /obj/item/radio/headset/headset_srv

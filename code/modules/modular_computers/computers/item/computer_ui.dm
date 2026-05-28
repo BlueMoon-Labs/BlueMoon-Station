@@ -13,6 +13,13 @@
 			ui.close()
 		return
 
+	if(honkvirus_amount > 0)
+		honkvirus_amount--
+		playsound(src, 'sound/items/bikehorn.ogg', 30, TRUE)
+
+	// if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
+	// 	to_chat(user, span_warning("Your fingers are too big to use this right now!"))
+	// 	return
 	if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
 		to_chat(user, span_warning("Кнопки слишком маленькие для твоих пальцев!"))
 		return
@@ -32,10 +39,10 @@
 
 	// We are still here, that means there is no program loaded. Load the BIOS/ROM/OS/whatever you want to call it.
 	// This screen simply lists available programs and user may select them.
-	var/obj/item/computer_hardware/hard_drive/hard_drive = all_components[MC_HDD]
-	if(!hard_drive || !hard_drive.stored_files || !hard_drive.stored_files.len)
+	var/list/files = get_all_files()
+	if(!length(files))
 		to_chat(user, span_danger("\The [src] beeps three times, it's screen displaying a \"DISK ERROR\" warning."))
-		return // No HDD, No HDD files list or no stored files. Something is very broken.
+		return // No HDD/stored files. Something is very broken.
 
 	ui = SStgui.try_update_ui(user, src, ui)
 	if (!ui)
@@ -66,6 +73,21 @@
 				IDName = stored_name,
 				IDJob = stored_title,
 			)
+	// PDA stores ID directly, not via card_slot hardware
+	if(istype(src, /obj/item/modular_computer/pda))
+		var/obj/item/modular_computer/pda/pda = src
+		if(pda.stored_id)
+			var/stored_name = pda.stored_id.registered_name
+			var/stored_title = pda.stored_id.get_assignment_name()
+			if(!stored_name)
+				stored_name = "Unknown"
+			if(!stored_title)
+				stored_title = "Unknown"
+			data["login"] = list(
+				IDName = stored_name,
+				IDJob = stored_title,
+			)
+			data["cardholder"] = TRUE
 
 	data["removable_media"] = list()
 	if(all_components[MC_SDD])
@@ -78,8 +100,8 @@
 		data["removable_media"] += "secondary RFID card"
 
 	data["programs"] = list()
-	var/obj/item/computer_hardware/hard_drive/hard_drive = all_components[MC_HDD]
-	for(var/datum/computer_file/program/P in hard_drive.stored_files)
+	var/list/all_files = get_all_files()
+	for(var/datum/computer_file/program/P in all_files)
 		var/running = FALSE
 		if(P in idle_threads)
 			running = TRUE
@@ -89,6 +111,21 @@
 	data["has_light"] = has_light
 	data["light_on"] = light_on
 	data["comp_light_color"] = comp_light_color
+	if(isnull(pda_color) && istype(user?.client?.prefs))
+		pda_color = user.client.prefs.pda_color
+	data["pda_color"] = pda_color
+	data["pda_style"] = user?.client?.prefs?.pda_style || "Monospaced"
+	data["battery_percent"] = get_battery_percent()
+	data["available_themes"] = list()
+	for(var/theme_name in GLOB.pda_name_to_theme)
+		data["available_themes"] += list(list("name" = theme_name, "id" = GLOB.pda_name_to_theme[theme_name]))
+
+	data["security_level"] = NUM2SECLEVEL(GLOB.security_level)
+	data["security_level_color"] = get_security_level_color()
+
+	if(istype(inserted_disk, /obj/item/cartridge))
+		data["cartridge_name"] = inserted_disk.name
+		data["has_cartridge"] = TRUE
 	return data
 
 
@@ -98,9 +135,9 @@
 	if(.)
 		return
 
-	var/obj/item/computer_hardware/hard_drive/hard_drive = all_components[MC_HDD]
 	switch(action)
 		if("PC_exit")
+			playsound(src, 'sound/machines/terminal_eject_disc.ogg', 25, TRUE)
 			kill_program()
 			return TRUE
 		if("PC_shutdown")
@@ -108,7 +145,7 @@
 			return TRUE
 		if("PC_minimize")
 			var/mob/user = usr
-			if(!active_program || !all_components[MC_CPU])
+			if(!active_program)
 				return
 
 			idle_threads.Add(active_program)
@@ -121,23 +158,20 @@
 
 		if("PC_killprogram")
 			var/prog = params["name"]
-			var/datum/computer_file/program/P = null
+			var/datum/computer_file/program/P = find_file_by_name(prog)
 			var/mob/user = usr
-			if(hard_drive)
-				P = hard_drive.find_file_by_name(prog)
 
 			if(!istype(P) || P.program_state == PROGRAM_STATE_KILLED)
 				return
 
 			P.kill_program(forced = TRUE)
+			playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 25, FALSE)
 			to_chat(user, span_notice("Program [P.filename].[P.filetype] with PID [rand(100,999)] has been killed."))
 
 		if("PC_runprogram")
 			var/prog = params["name"]
-			var/datum/computer_file/program/P = null
+			var/datum/computer_file/program/P = find_file_by_name(prog)
 			var/mob/user = usr
-			if(hard_drive)
-				P = hard_drive.find_file_by_name(prog)
 
 			if(!P || !istype(P)) // Program not found or it's not executable program.
 				to_chat(user, span_danger("\The [src]'s screen shows \"I/O ERROR - Unable to run program\" warning."))
@@ -155,11 +189,13 @@
 				P.alert_pending = FALSE
 				idle_threads.Remove(P)
 				update_appearance()
+				playsound(src, 'sound/machines/terminal_select.ogg', 25, FALSE)
 				return
 
 			var/obj/item/computer_hardware/processor_unit/PU = all_components[MC_CPU]
+			var/max_idle = PU ? PU.max_idle_programs : max_idle_programs
 
-			if(idle_threads.len > PU.max_idle_programs)
+			if(idle_threads.len > max_idle)
 				to_chat(user, span_danger("\The [src] displays a \"Maximal CPU load reached. Unable to run another program.\" error."))
 				return
 
@@ -170,10 +206,28 @@
 				active_program = P
 				P.alert_pending = FALSE
 				update_appearance()
+				playsound(src, 'sound/machines/terminal_select.ogg', 25, FALSE)
+			return TRUE
+
+		if("PDA_ejectDisk")
+			var/obj/item/ejected_disk = inserted_disk
+			if(!ejected_disk)
+				return FALSE
+			if(istype(ejected_disk, /obj/item/cartridge))
+				var/obj/item/modular_computer/pda/pda = src
+				if(istype(pda))
+					pda.uninstall_cartridge_programs()
+			inserted_disk = null
+			usr.put_in_hands(ejected_disk)
+			to_chat(usr, span_notice("Вы извлекли [ejected_disk] из [src]."))
+			playsound(src, 'sound/machines/terminal_eject_disc.ogg', 50, TRUE)
 			return TRUE
 
 		if("PC_toggle_light")
-			return toggle_flashlight()
+			. = toggle_flashlight()
+			if(.)
+				playsound(src, 'sound/machines/terminal_button01.ogg', 25, TRUE)
+			return .
 
 		if("PC_light_color")
 			var/mob/user = usr
@@ -214,6 +268,27 @@
 					if(!cardholder)
 						return
 					cardholder.try_eject(user)
+		if("set_theme")
+			var/mob/user = usr
+			var/new_theme = params["theme"]
+			if(!new_theme || !user?.client?.prefs)
+				return
+			device_theme = new_theme
+			user.client.prefs.pda_theme = new_theme
+			user.client.prefs.save_character()
+			playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 25, FALSE)
+			return TRUE
+
+		if("set_pda_color")
+			var/mob/user = usr
+			var/new_color = params["color"]
+			if(!new_color || !user?.client?.prefs)
+				return
+			user.client.prefs.pda_color = new_color
+			user.client.prefs.save_character()
+			pda_color = new_color
+			return TRUE
+
 		else
 			return
 
@@ -221,3 +296,28 @@
 	if(physical)
 		return physical
 	return src
+
+/// Returns a hex color string for the current station security level.
+/obj/item/modular_computer/proc/get_security_level_color()
+	switch(GLOB.security_level)
+		if(SEC_LEVEL_GREEN)
+			return "#b2ff59"
+		if(SEC_LEVEL_BLUE)
+			return "#99ccff"
+		if(SEC_LEVEL_ORANGE)
+			return "#fc7d15"
+		if(SEC_LEVEL_VIOLET)
+			return "#a059fe"
+		if(SEC_LEVEL_AMBER)
+			return "#ffae42"
+		if(SEC_LEVEL_RED)
+			return "#ff3f34"
+		if(SEC_LEVEL_LAMBDA)
+			return "#ffae42"
+		if(SEC_LEVEL_GAMMA)
+			return "#7f7f7f"
+		if(SEC_LEVEL_EPSILON)
+			return "#ffffff"
+		if(SEC_LEVEL_DELTA)
+			return "#aa00ff"
+	return "#ffffff"

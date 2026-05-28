@@ -20,6 +20,9 @@
 	else
 		number += E.flash_protect
 
+	if(HAS_TRAIT(src, TRAIT_NOFLASH))
+		number = max(number, 1)
+
 	return number
 
 /mob/living/carbon/get_ear_protection()
@@ -659,6 +662,7 @@
 			else if(ears.damage >= 5)
 				to_chat(src, "<span class='warning'>В ушах начинает звенеть!</span>")
 			SEND_SOUND(src, sound('sound/weapons/flash_ring.ogg',0,1,0,250))
+			AdjustConfused(max(10 SECONDS * effect_amount, 4 SECONDS), 0, 30 SECONDS)
 		return effect_amount //how soundbanged we are
 
 

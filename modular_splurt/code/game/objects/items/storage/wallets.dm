@@ -38,6 +38,8 @@
 	/obj/item/restraints/handcuffs,
 	/obj/item/assembly/flash,
 	/obj/item/laser_pointer,
+	/obj/item/modular_computer/pda,
+	/obj/item/paicard,
 	/obj/item/storage/fancy/cigarettes,
 	/obj/item/clothing/accessory/necklace,
 	/obj/item/clothing/accessory/medal,

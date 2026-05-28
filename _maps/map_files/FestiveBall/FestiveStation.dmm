@@ -28087,9 +28087,6 @@
 /obj/item/cartridge/medical{
 	pixel_x = 3
 	},
-/obj/item/cartridge/chemistry{
-	pixel_y = 6
-	},
 /obj/item/radio/intercom{
 	pixel_y = 26
 	},

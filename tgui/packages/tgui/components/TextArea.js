@@ -122,6 +122,12 @@ export class TextArea extends Component {
         onInput(e, ta.value);
       }
     };
+    this.handleCompositionEnd = e => {
+      const { onInput } = this.props;
+      if (onInput) {
+        onInput(e, e.target.value);
+      }
+    };
     this.handleBlur = e => {
       const { editing } = this.state;
       const { onChange } = this.props;
@@ -206,6 +212,7 @@ export class TextArea extends Component {
           onKeyDown={this.handleKeyDown}
           onKeyPress={this.handleKeyPress}
           onInput={this.handleOnInput}
+          onCompositionEnd={this.handleCompositionEnd}
           onPaste={this.handleOnPaste}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}

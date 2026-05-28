@@ -14,10 +14,12 @@
 	var/pulse = 0
 	var/cooldown = 0
 	var/pulseicon = "plutonium_core_pulse"
+	var/rad_strength = 1200
 
 /obj/item/nuke_core/Initialize(mapload)
 	. = ..()
 	START_PROCESSING(SSobj, src)
+	process()
 
 /obj/item/nuke_core/Destroy()
 	STOP_PROCESSING(SSobj, src)
@@ -30,13 +32,16 @@
 		return ..()
 
 /obj/item/nuke_core/process()
+	var/datum/component/radioactive/Comp
+	AddComponent(/datum/component/radioactive, 0, src, 0, TRUE)
+	Comp = GetComponent(/datum/component/radioactive)
+	Comp.set_strength(rad_strength)
 	if(cooldown < world.time - 60)
 		cooldown = world.time
 		flick(pulseicon, src)
-		radiation_pulse(src, 400, 2)
 
 /obj/item/nuke_core/suicide_act(mob/user)
-	user.visible_message("<span class='suicide'>[user] is rubbing [src] against себя! It looks like [user.p_theyre()] trying to commit suicide!</span>")
+	user.visible_message("<span class='suicide'>[user] потирает [src] об себя! Это выглядит как самоубийство!</span>")
 	return (TOXLOSS)
 
 //nuke core box, for carrying the core
@@ -71,6 +76,9 @@
 /obj/item/nuke_core_container/proc/seal()
 	if(istype(core))
 		STOP_PROCESSING(SSobj, core)
+		var/datum/component/radioactive/contamination = core.GetComponent(/datum/component/radioactive)
+		if(contamination)
+			contamination.set_strength(0)
 		playsound(src, 'sound/items/deconstruct.ogg', 60, 1)
 		if(ismob(loc))
 			to_chat(loc, "<span class='warning'>[src] is permanently sealed, [core]'s radiation is contained.</span>")

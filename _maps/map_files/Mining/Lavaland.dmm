@@ -115,7 +115,7 @@
 /obj/machinery/camera/xray{
 	c_tag = "Xenobio East";
 	dir = 4;
-	network = list("fsci")
+	network = list("ds1xenobio")
 	},
 /turf/open/floor/circuit/telecomms,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
@@ -126,7 +126,7 @@
 /obj/machinery/camera/xray{
 	c_tag = "Xenobio West";
 	dir = 8;
-	network = list("fsci")
+	network = list("ds1xenobio")
 	},
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
@@ -644,7 +644,8 @@
 /obj/effect/turf_decal/siding/dark,
 /obj/machinery/computer/camera_advanced/xenobio{
 	dir = 1;
-	name = "xenobiology management console"
+	name = "xenobiology management console";
+	networks = 4
 	},
 /obj/structure/window/reinforced/survival_pod,
 /turf/open/floor/plasteel/dark/side,
@@ -7777,7 +7778,7 @@
 /obj/machinery/camera/xray{
 	c_tag = "Xenobio West";
 	dir = 4;
-	network = list("fsci")
+	network = list("ds1xenobio")
 	},
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
@@ -8859,7 +8860,7 @@
 /obj/machinery/camera/xray{
 	c_tag = "Xenobio West";
 	dir = 5;
-	network = list("fsci")
+	network = list("ds1xenobio")
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
@@ -13744,7 +13745,7 @@
 /obj/effect/turf_decal/siding/dark,
 /obj/machinery/computer/security{
 	dir = 1;
-	network = list("ds2")
+	network = list("ds2","ds1xenobio")
 	},
 /obj/structure/window/reinforced/survival_pod,
 /turf/open/floor/mineral/plastitanium/red,
@@ -14992,7 +14993,8 @@
 /obj/structure/window/reinforced/survival_pod,
 /obj/machinery/computer/camera_advanced/xenobio{
 	dir = 1;
-	name = "xenobiology management console"
+	name = "xenobiology management console";
+	networks = list("ds1xenobio")
 	},
 /turf/open/floor/plasteel/dark/side,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
@@ -20421,7 +20423,7 @@
 /obj/machinery/camera/xray{
 	c_tag = "Xenobio West";
 	dir = 10;
-	network = list("fsci")
+	network = list("ds1xenobio")
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1

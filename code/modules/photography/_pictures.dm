@@ -19,9 +19,9 @@
 		picture_image = image
 	if(!isnull(icon))
 		picture_icon = icon
-	if(!isnull(psize_x))
+	if(!isnull(size_x))
 		psize_x = size_x
-	if(!isnull(psize_y))
+	if(!isnull(size_y))
 		psize_y = size_y
 	if(!isnull(bp))
 		has_blueprints = bp

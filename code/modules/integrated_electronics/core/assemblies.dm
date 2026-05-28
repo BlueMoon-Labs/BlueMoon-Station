@@ -376,9 +376,14 @@
 	if(IC.w_class > w_class)
 		to_chat(user, "<span class='warning'>\The [IC] is way too big to fit into \the [src].</span>")
 		return FALSE
-	if(istype(IC, /obj/item/integrated_circuit/manipulation/interacter) && locate(/obj/item/integrated_circuit/manipulation/interacter) in src.assembly_components)
-		to_chat(user, "<span class='warning'>Вы не можете вставить две этих детали в один корпус.</span>")
-		return FALSE
+	if(IC.limit_per_assembly > 0)	// limit_per_assembly is not null and > 0
+		var/already = 0
+		for(var/obj/item/integrated_circuit/C in assembly_components)	// checking all circuits already present
+			if(C.type == IC.type)
+				already++
+				if(already >= IC.limit_per_assembly)
+					to_chat(user, "<span class='warning'>Вы не можете вставить больше [IC.limit_per_assembly] таких плат в один корпус.</span>")
+					return FALSE
 	var/total_part_size = return_total_size()
 	var/total_complexity = return_total_complexity()
 
@@ -577,22 +582,24 @@
 			return ..()
 		var/list/input_selection = list()
 		//Check all the components asking for an input
-		for(var/obj/item/integrated_circuit/input in assembly_components)
-			if((input.demands_object_input && opened) || (input.demands_object_input && input.can_input_object_when_closed))
+		for(var/obj/item/integrated_circuit/C in assembly_components)
+			if((C.demands_object_input && opened) || (C.demands_object_input && C.can_input_object_when_closed))
+				if(!C.can_accept_item(I))
+					continue
 				var/i = 0
 				//Check if there is another component with the same name and append a number for identification
 				for(var/s in input_selection)
 					var/obj/item/integrated_circuit/s_circuit = input_selection[s] //The for-loop iterates the keys of the associative list.
-					if(s_circuit.name == input.name && s_circuit.displayed_name == input.displayed_name && s_circuit != input)
+					if(s_circuit.name == C.name && s_circuit.displayed_name == C.displayed_name && s_circuit != C)
 						i++
-				var/disp_name= "[input.displayed_name] \[[input]\]"
+				var/disp_name= "[C.displayed_name] \[[C]\]"
 				if(i)
 					disp_name += " ([i+1])"
 				//Associative lists prevent me from needing another list and using a Find proc
-				input_selection[disp_name] = input
+				input_selection[disp_name] = C
 
 		var/obj/item/integrated_circuit/choice
-		if(input_selection)
+		if(length(input_selection))
 			if(input_selection.len == 1)
 				choice = input_selection[input_selection[1]]
 			else
@@ -605,6 +612,11 @@
 				choice.additem(I, user)
 		for(var/obj/item/integrated_circuit/input/S in assembly_components)
 			S.attackby_react(I,user,user.a_intent)
+		//	Easiest way to check if item "I" was consumed, or otherwise taken by one of the circuits.
+		//	If a circuit with demand_object_input == TRUE, or something like a scanner takes the items, prevents user from hitting assembly with it.
+		//	I could code something less hacky, but i'm pretty tired of IC logic at this point, and i want it to be as failproof as possible.
+		if(!user.is_holding(I))
+			return TRUE
 		return ..()
 
 
@@ -634,7 +646,7 @@
 	var/obj/item/integrated_circuit/input/choice
 
 
-	if(input_selection)
+	if(length(input_selection))
 		if(input_selection.len ==1)
 			choice = input_selection[input_selection[1]]
 		else

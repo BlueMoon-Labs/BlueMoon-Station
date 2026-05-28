@@ -86,7 +86,7 @@
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
 		return
-	machine_stat |= EMPED
+	set_machine_stat(machine_stat | EMPED)
 	addtimer(CALLBACK(src, PROC_REF(unemp)), severity*9)
 	refresh_working()
 
@@ -102,7 +102,7 @@
 	return TRUE
 
 /obj/machinery/rnd/server/proc/unemp()
-	machine_stat &= ~EMPED
+	set_machine_stat(machine_stat & ~EMPED)
 	refresh_working()
 
 /obj/machinery/rnd/server/proc/mine()

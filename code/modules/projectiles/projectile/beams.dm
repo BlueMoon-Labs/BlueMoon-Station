@@ -30,6 +30,12 @@
 	damage = 12.5
 	armour_penetration = 10
 
+/obj/item/projectile/beam/laser/mutation
+	name = "ocular laser"
+	desc = "Focused burn from mutated eye tissue — mirrors real laser projectile rules so reflective plating can send it back."
+	icon = 'icons/effects/genetics.dmi'
+	icon_state = "eyelasers"
+
 //overclocked laser, does a bit more damage but has much higher wound power (-0 vs -20)
 /obj/item/projectile/beam/laser/hellfire
 	name = "hellfire laser"

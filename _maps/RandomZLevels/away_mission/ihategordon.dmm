@@ -38323,7 +38323,7 @@
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/opposing/comlpex)
 "mKk" = (
-/obj/item/pda/neko,
+/obj/item/modular_computer/pda/neko,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/space)
 "mKp" = (
