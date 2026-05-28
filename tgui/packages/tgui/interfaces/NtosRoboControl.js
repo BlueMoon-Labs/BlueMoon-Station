@@ -18,19 +18,19 @@ export const NtosRoboControl = (props, context) => {
       width={550}
       height={550}>
       <NtosWindow.Content overflow="auto">
-        <Section title="Robot Control Console">
+        <Section title="Консоль управления роботами">
           <LabeledList>
-            <LabeledList.Item label="Id Card">
+            <LabeledList.Item label="ID-карта">
               {id_owner}
               {!!has_id && (
                 <Button
                   ml={2}
                   icon="eject"
-                  content="Eject"
+                  content="Извлечь"
                   onClick={() => act('ejectcard')} />
               )}
             </LabeledList.Item>
-            <LabeledList.Item label="Bots in range">
+            <LabeledList.Item label="Ботов в радиусе">
               {data.botcount}
             </LabeledList.Item>
           </LabeledList>
@@ -66,19 +66,19 @@ const RobotInfo = (props, context) => {
         <>
           <Button
             icon="play"
-            tooltip="Go to Destination."
+            tooltip="Идти к пункту назначения."
             onClick={() => act('go', {
               robot: mule.mule_ref,
             })} />
           <Button
             icon="pause"
-            tooltip="Stop Moving."
+            tooltip="Остановить."
             onClick={() => act('stop', {
               robot: mule.mule_ref,
             })} />
           <Button
             icon="home"
-            tooltip="Travel Home."
+            tooltip="Вернуться домой."
             tooltipPosition="bottom-start"
             onClick={() => act('home', {
               robot: mule.mule_ref,
@@ -88,27 +88,27 @@ const RobotInfo = (props, context) => {
       <Stack>
         <Stack.Item grow={1} basis={0}>
           <LabeledList>
-            <LabeledList.Item label="Model">
+            <LabeledList.Item label="Модель">
               {robot.model}
             </LabeledList.Item>
-            <LabeledList.Item label="Location">
+            <LabeledList.Item label="Местоположение">
               {robot.locat}
             </LabeledList.Item>
-            <LabeledList.Item label="Status">
+            <LabeledList.Item label="Статус">
               {robot.mode}
             </LabeledList.Item>
             {mule && (
               <>
-                <LabeledList.Item label="Loaded Cargo">
+                <LabeledList.Item label="Груз">
                   {data.load || "N/A"}
                 </LabeledList.Item>
-                <LabeledList.Item label="Home">
+                <LabeledList.Item label="Дом">
                   {mule.home}
                 </LabeledList.Item>
-                <LabeledList.Item label="Destination">
+                <LabeledList.Item label="Пункт назначения">
                   {mule.dest || "N/A"}
                 </LabeledList.Item>
-                <LabeledList.Item label="Power">
+                <LabeledList.Item label="Заряд">
                   <ProgressBar
                     value={mule.power}
                     minValue={0}
@@ -128,45 +128,45 @@ const RobotInfo = (props, context) => {
             <>
               <Button
                 fluid
-                content="Set Destination"
+                content="Задать пункт назначения"
                 onClick={() => act('destination', {
                   robot: mule.mule_ref,
                 })} />
               <Button
                 fluid
-                content="Set ID"
+                content="Задать ID"
                 onClick={() => act('setid', {
                   robot: mule.mule_ref,
                 })} />
               <Button
                 fluid
-                content="Set Home"
+                content="Задать дом"
                 onClick={() => act('sethome', {
                   robot: mule.mule_ref,
                 })} />
               <Button
                 fluid
-                content="Unload Cargo"
+                content="Выгрузить груз"
                 onClick={() => act('unload', {
                   robot: mule.mule_ref,
                 })} />
               <Button.Checkbox
                 fluid
-                content="Auto Return"
+                content="Автовозврат"
                 checked={mule.autoReturn}
                 onClick={() => act('autoret', {
                   robot: mule.mule_ref,
                 })} />
               <Button.Checkbox
                 fluid
-                content="Auto Pickup"
+                content="Автоподбор"
                 checked={mule.autoPickup}
                 onClick={() => act('autopick', {
                   robot: mule.mule_ref,
                 })} />
               <Button.Checkbox
                 fluid
-                content="Delivery Report"
+                content="Отчёт о доставке"
                 checked={mule.reportDelivery}
                 onClick={() => act('report', {
                   robot: mule.mule_ref,
@@ -177,25 +177,25 @@ const RobotInfo = (props, context) => {
             <>
               <Button
                 fluid
-                content="Stop Patrol"
+                content="Остановить патруль"
                 onClick={() => act('patroloff', {
                   robot: robot.bot_ref,
                 })} />
               <Button
                 fluid
-                content="Start Patrol"
+                content="Начать патруль"
                 onClick={() => act('patrolon', {
                   robot: robot.bot_ref,
                 })} />
               <Button
                 fluid
-                content="Summon"
+                content="Вызвать"
                 onClick={() => act('summon', {
                   robot: robot.bot_ref,
                 })} />
               <Button
                 fluid
-                content="Eject PAi"
+                content="Извлечь ПИИ"
                 onClick={() => act('ejectpai', {
                   robot: robot.bot_ref,
                 })} />

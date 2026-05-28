@@ -27,6 +27,10 @@
 	var/auto_interaction_pace = 1 SECONDS
 
 /datum/component/interaction_menu_granter/process(delta_time)
+	if(QDELETED(parent) || !isliving(parent))
+		auto_interaction_target = null
+		currently_active_interaction = null
+		return PROCESS_KILL
 	if(!currently_active_interaction)
 		auto_interaction_target = null
 		currently_active_interaction = null
@@ -42,7 +46,12 @@
 	var/check_hidden = hidden_interactions && (interaction_key in hidden_interactions) \
 		? !!hidden_interactions[interaction_key] \
 		: FALSE
-	if(!currently_active_interaction.do_action(parent, auto_interaction_target, apply_cooldown = FALSE, is_hidden = check_hidden))
+	var/mob/living/granter = parent
+	if(QDELETED(granter) || QDELETED(auto_interaction_target))
+		auto_interaction_target = null
+		currently_active_interaction = null
+		return PROCESS_KILL
+	if(!currently_active_interaction.do_action(granter, auto_interaction_target, apply_cooldown = FALSE, is_hidden = check_hidden))
 		auto_interaction_target = null
 		currently_active_interaction = null
 		return PROCESS_KILL

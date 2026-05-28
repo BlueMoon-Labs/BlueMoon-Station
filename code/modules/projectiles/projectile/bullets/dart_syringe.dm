@@ -12,7 +12,7 @@
 	if(iscarbon(target))
 		var/mob/living/carbon/M = target
 		if(blocked != 100) // not completely blocked
-			if(M.can_inject(null, FALSE, def_zone, piercing)) // Pass the hit zone to see if it can inject by whether it hit the head or the body.
+			if(M.can_inject_syringe(null, FALSE, def_zone, piercing)) // Pass the hit zone to see if it can inject by whether it hit the head or the body.
 				..()
 				if(skip == TRUE)
 					return BULLET_ACT_HIT
@@ -57,7 +57,7 @@
 	if(iscarbon(target))
 		var/mob/living/carbon/M = target
 		if(blocked != 100)
-			if(M.can_inject(null, FALSE, def_zone, piercing)) // Pass the hit zone to see if it can inject by whether it hit the head or the body.
+			if(M.can_inject_syringe(null, FALSE, def_zone, piercing)) // Pass the hit zone to see if it can inject by whether it hit the head or the body.
 				..(target, blocked, TRUE)
 				for(var/datum/reagent/medicine/R in reagents.reagent_list) //OD prevention time!
 					if(R.type in GLOB.blacklisted_medchems)

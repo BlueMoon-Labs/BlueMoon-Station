@@ -176,7 +176,7 @@
 	name = "Chaplain"
 	jobtype = /datum/job/chaplain
 
-	belt = /obj/item/pda/chaplain
+	belt = /obj/item/modular_computer/pda/chaplain
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/chaplain
 	backpack_contents = list(/obj/item/storage/briefcase/crafted/chap_stuff = 1,
@@ -190,7 +190,7 @@
 	name = "Syndicate Chaplain"
 	jobtype = /datum/job/chaplain
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/util

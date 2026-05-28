@@ -10,6 +10,7 @@
 	size = 12
 	tgui_id = "NtosRoboControl"
 	program_icon = "robot"
+	available_on_ntnet = FALSE
 	///Number of simple robots on-station.
 	var/botcount = 0
 	///Used to find the location of the user for the purposes of summoning robots.
@@ -27,7 +28,7 @@
 	var/obj/item/computer_hardware/card_slot/card_slot = computer ? computer.all_components[MC_CARD] : null
 	data["have_id_slot"] = !!card_slot
 	if(computer)
-		var/obj/item/card/id/id_card = card_slot ? card_slot.stored_card : null
+		var/obj/item/card/id/id_card = computer.GetID()
 		data["has_id"] = !!id_card
 		data["id_owner"] = id_card ? id_card.registered_name : "No Card Inserted."
 		data["access_on_card"] = id_card ? id_card.access : null
@@ -40,7 +41,7 @@
 		if(!Bot.on || Bot.z != zlevel || Bot.remote_disabled) //Only non-emagged bots on the same Z-level are detected!
 			continue
 		else if(computer) //Also, the inserted ID must have access to the bot type
-			var/obj/item/card/id/id_card = card_slot ? card_slot.stored_card : null
+			var/obj/item/card/id/id_card = computer.GetID()
 			if(!id_card && !Bot.bot_core.allowed(current_user))
 				continue
 			else if(id_card && !Bot.bot_core.check_access(id_card))
@@ -67,26 +68,44 @@
 	var/obj/item/computer_hardware/card_slot/card_slot
 	var/obj/item/card/id/id_card
 	if(computer)
-		card_slot = computer.all_components[MC_CARD]
-		if(card_slot)
-			id_card = card_slot.stored_card
+		id_card = computer.GetID()
+		if(id_card)
+			current_access = id_card.access
+		else
+			current_access = list()
+
+	var/mob/living/simple_animal/bot/Bot = locate(params["robot"]) in GLOB.bots_list
+	if(!istype(Bot))
+		return
+
+	if(computer)
+		if(!id_card && !Bot.bot_core.allowed(current_user))
+			playsound(get_turf(ui_host()), 'sound/machines/terminal_prompt_deny.ogg', 25, FALSE)
+			return
+		else if(id_card && !Bot.bot_core.check_access(id_card))
+			playsound(get_turf(ui_host()), 'sound/machines/terminal_prompt_deny.ogg', 25, FALSE)
+			return
 
 	var/list/standard_actions = list("patroloff", "patrolon", "ejectpai")
 	var/list/MULE_actions = list("stop", "go", "home", "destination", "setid", "sethome", "unload", "autoret", "autopick", "report", "ejectpai")
-	var/mob/living/simple_animal/bot/Bot = locate(params["robot"]) in GLOB.bots_list
+
 	if (action in standard_actions)
 		Bot.bot_control(action, current_user, current_access)
+		playsound(get_turf(ui_host()), 'sound/machines/terminal_button01.ogg', 25, FALSE)
 	if (action in MULE_actions)
 		Bot.bot_control(action, current_user, current_access, TRUE)
+		playsound(get_turf(ui_host()), 'sound/machines/terminal_button01.ogg', 25, FALSE)
 	switch(action)
 		if("summon")
 			Bot.bot_control(action, current_user, id_card ? id_card.access : current_access)
+			playsound(get_turf(ui_host()), 'sound/machines/twobeep.ogg', 25, FALSE)
 		if("ejectcard")
 			if(!computer || !card_slot)
 				return
 			if(id_card)
 				id_card.update_manifest()
 				card_slot.try_eject(current_user)
+				playsound(get_turf(ui_host()), 'sound/machines/card_slide.ogg', 50)
 			else
-				playsound(get_turf(ui_host()) , 'sound/machines/buzz-sigh.ogg', 25, FALSE)
+				playsound(get_turf(ui_host()), 'sound/machines/buzz-sigh.ogg', 25, FALSE)
 	return

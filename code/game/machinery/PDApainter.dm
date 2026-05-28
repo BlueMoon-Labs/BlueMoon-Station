@@ -5,7 +5,7 @@
 	icon_state = "pdapainter"
 	density = TRUE
 	max_integrity = 200
-	var/obj/item/pda/storedpda = null
+	var/obj/item/modular_computer/pda/storedpda = null
 	var/list/colorlist = list()
 
 
@@ -34,20 +34,22 @@
 /obj/machinery/pdapainter/Initialize(mapload)
 	. = ..()
 	var/list/blocked = list(
-		/obj/item/pda/ai/pai,
-		/obj/item/pda/ai,
-		/obj/item/pda/heads,
-		/obj/item/pda/clear,
-		/obj/item/pda/syndicate,
-		/obj/item/pda/chameleon,
-		/obj/item/pda/chameleon/broken,
-		/obj/item/pda/lieutenant)
+		/obj/item/modular_computer/pda/silicon/pai,
+		/obj/item/modular_computer/pda/silicon,
+		/obj/item/modular_computer/pda/heads,
+		/obj/item/modular_computer/pda/clear,
+		/obj/item/modular_computer/pda/syndicate,
+		/obj/item/modular_computer/pda/chameleon,
+		/obj/item/modular_computer/pda/chameleon/broken,
+		/obj/item/modular_computer/pda/lieutenant)
 
-	for(var/A in typesof(/obj/item/pda) - blocked)
-		var/obj/item/pda/P = A
+	for(var/A in typesof(/obj/item/modular_computer/pda) - blocked)
+		var/obj/item/modular_computer/pda/P = A
 		var/PDA_name = initial(P.name)
+		if(colorlist[PDA_name])
+			continue
 		colorlist += PDA_name
-		colorlist[PDA_name] = list(initial(P.icon_state), initial(P.desc), initial(P.overlays_offsets), initial(P.overlays_icons))
+		colorlist[PDA_name] = list(initial(P.icon_state), initial(P.icon_state_menu), initial(P.desc), initial(P.icon), initial(P.overlays_icon))
 
 /obj/machinery/pdapainter/Destroy()
 	QDEL_NULL(storedpda)
@@ -72,7 +74,7 @@
 		power_change()
 		return
 
-	else if(istype(O, /obj/item/pda))
+	else if(istype(O, /obj/item/modular_computer/pda))
 		if(storedpda)
 			to_chat(user, "<span class='warning'>There is already a PDA inside!</span>")
 			return
@@ -119,10 +121,12 @@
 		return
 	var/list/P = colorlist[choice]
 	storedpda.icon_state = P[1]
-	storedpda.desc = P[2]
-	storedpda.overlays_offsets = P[3]
-	storedpda.overlays_icons = P[4]
-	storedpda.set_new_overlays()
+	storedpda.base_icon_state = P[1]
+	storedpda.icon_state_menu = P[2]
+	storedpda.desc = P[3]
+	if(length(P) >= 5)
+		storedpda.icon = P[4]
+		storedpda.overlays_icon = P[5]
 	storedpda.update_icon()
 	ejectpda()
 

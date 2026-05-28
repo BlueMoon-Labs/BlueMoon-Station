@@ -58,7 +58,7 @@
 	name = "Botanist"
 	jobtype = /datum/job/hydro
 
-	belt = /obj/item/pda/botanist
+	belt = /obj/item/modular_computer/pda/botanist
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/hydroponics
 	suit = /obj/item/clothing/suit/apron
@@ -72,7 +72,7 @@
 	name = "Syndicate Botanist"
 	jobtype = /datum/job/hydro
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/util

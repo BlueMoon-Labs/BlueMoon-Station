@@ -80,7 +80,7 @@
 	jobtype = /datum/job/hop
 	glasses = /obj/item/clothing/glasses/hud/skills
 	id = /obj/item/card/id/silver
-	belt = /obj/item/pda/heads/hop
+	belt = /obj/item/modular_computer/pda/heads/hop
 	ears = /obj/item/radio/headset/heads/hop
 	uniform = /obj/item/clothing/under/rank/civilian/head_of_personnel
 	shoes = /obj/item/clothing/shoes/sneakers/brown
@@ -96,7 +96,7 @@
 	name = "Syndicate Head of Personnel"
 	jobtype = /datum/job/hop
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	neck = /obj/item/clothing/neck/cloak/syndiecap
 	ears = /obj/item/radio/headset/heads/hop

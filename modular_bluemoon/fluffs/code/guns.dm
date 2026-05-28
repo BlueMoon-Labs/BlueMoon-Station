@@ -61,6 +61,8 @@
 		return
 
 	TRANSFER_VAR(target, result, pin)
+	if(result.pin)
+		result.pin.gun = result
 	if(istype(target, /obj/item/gun/ballistic) && istype(result, /obj/item/gun/ballistic))
 		var/obj/item/gun/ballistic/target_b = target
 		var/obj/item/gun/ballistic/result_b = result
@@ -943,7 +945,7 @@
 	name = "\improper Nebular-9"
 	desc = "Трофей. 45 калибр. Унифицированное оружие самозащиты, выдаваемое каждому без исключения жителю-Касари флота-государства Небулы по окончании ими первой стадии жизни. Крайне редок, в сравнении с иным огнестрельным оружием галактики - штучный товар, использующий замысловатую систему заряжания и некоторые технически трудно реализуемые решения, крайне мешающие реверс-инженерингу и стороннему производству. Благодаря нему каждый житель Небулы может дать отпор неприятелю извне, коих у них полно. Не только эффективно, но и со стилем."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
-	icon_state = "Nebular-9"
+	icon_state = "nebular-9"
 	unique_reskin = null
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
@@ -952,6 +954,18 @@
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular/get_worn_belt_overlay(icon_file)
 	return null
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/nebular/update_overlays()
+	. = ..()
+	. += "Nebular-9-ammo-base"
+
+	if(!magazine || !magazine.max_ammo)
+		. += "Nebular-9-ammo-0"
+		return
+
+	var/fill_level = round(magazine.stored_ammo.len / magazine.max_ammo * 7)
+	if(fill_level!=7)
+		. += "Nebular-9-ammo-[fill_level]"
 
 /obj/item/modkit/p226_syndicate
 	name = "P226 'Syndicate' Kit"

@@ -4,7 +4,7 @@
 	icon = 'icons/mob/robots.dmi'
 	icon_state = "robot"
 	bubble_icon = "robot"
-	var/obj/item/pda/ai/aiPDA
+	var/obj/item/modular_computer/pda/silicon/aiPDA
 	var/flash_protect = FALSE
 
 /mob/living/silicon/robot/get_cell()
@@ -32,10 +32,8 @@
 	ident = rand(1, 999)
 
 	if(!shell)
-		aiPDA = new/obj/item/pda/ai(src)
-		aiPDA.owner = real_name
-		aiPDA.ownjob = "Cyborg"
-		aiPDA.name = real_name + " ([aiPDA.ownjob])"
+		aiPDA = new/obj/item/modular_computer/pda/silicon(src)
+		aiPDA.imprint_id(real_name, "Cyborg")
 
 	previous_health = health
 
@@ -192,6 +190,8 @@
 	name = real_name
 	if(!QDELETED(builtInCamera))
 		builtInCamera.c_tag = real_name	//update the camera name too
+	if(aiPDA && !shell)
+		aiPDA.imprint_id(real_name, aiPDA.saved_job)
 
 /mob/living/silicon/robot/proc/get_standard_name()
 	return "[(designation ? "[designation] " : "")][mmi.braintype]-[ident]"
@@ -952,8 +952,7 @@
 	if(!QDELETED(builtInCamera))
 		builtInCamera.c_tag = real_name
 	if(aiPDA && !shell)
-		aiPDA.owner = newname
-		aiPDA.name = newname + " (" + aiPDA.ownjob + ")"
+		aiPDA.imprint_id(newname, aiPDA.saved_job)
 	custom_name = newname
 
 

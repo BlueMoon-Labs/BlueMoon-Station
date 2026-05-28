@@ -116,6 +116,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/pda_color = "#808000"
 	var/pda_skin = PDA_SKIN_ALT
 	var/pda_ringtone = "beep"
+	var/pda_theme = PDA_THEME_NTOS
 	var/list/alt_titles_preferences = list()
 
 	// Modern UI translations
@@ -1283,6 +1284,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>[pda_style_label]:</b> <a href='?_src_=prefs;task=input;preference=pda_style'>[pda_style]</a><br>"
 					dat += "<b>[pda_reskin_label]:</b> <a href='?_src_=prefs;task=input;preference=pda_skin'>[pda_skin]</a><br>"
 					dat += "<b>[pda_ringtone_label]:</b> <a href='?_src_=prefs;task=input;preference=pda_ringtone'>[pda_ringtone]</a><br>"
+					var/pda_theme_display_name = "Unknown"
+					for(var/theme_name in GLOB.pda_name_to_theme)
+						if(GLOB.pda_name_to_theme[theme_name] == pda_theme)
+							pda_theme_display_name = theme_name
+							break
+					dat += "<b>PDA Theme:</b> <a href='?_src_=prefs;task=input;preference=pda_theme'>[pda_theme_display_name]</a><br>"
 
 					dat += "<h2>[silicon_preferences_label]</h2>"
 					if(!CONFIG_GET(flag/allow_silicon_choosing_laws))
@@ -5269,6 +5276,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/pickedPDARingtone = reject_bad_name(input(user, "Выбирайте рингтон своего КПК.", "Character Preference", pda_ringtone) as null|text, TRUE)
 					if(pickedPDARingtone)
 						pda_ringtone = pickedPDARingtone
+				if("pda_theme")
+					var/pickedPDATheme = tgui_input_list(user, "Выбирайте тему своего КПК.", "Character Preference", GLOB.pda_name_to_theme, pda_theme)
+					if(pickedPDATheme)
+						pda_theme = GLOB.pda_name_to_theme[pickedPDATheme]
 				if("silicon_lawset")
 					var/picked_lawset = tgui_input_list(user, "Выбирайте предпочитаемый список законов", "Silicon preference", list("None") + CONFIG_GET(keyed_list/choosable_laws), silicon_lawset)
 					if(picked_lawset)

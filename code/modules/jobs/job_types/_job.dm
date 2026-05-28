@@ -264,7 +264,7 @@
 	uniform = /obj/item/clothing/under/color/grey
 	id = /obj/item/card/id
 	ears = /obj/item/radio/headset
-	belt = /obj/item/pda
+	belt = /obj/item/modular_computer/pda
 	back = /obj/item/storage/backpack
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	box = /obj/item/storage/box/survival
@@ -339,16 +339,16 @@
 					break
 		H.sec_hud_set_ID()
 
-	var/obj/item/pda/PDA = H.get_item_by_slot(pda_slot)
+	var/obj/item/modular_computer/pda/PDA = H.get_item_by_slot(pda_slot)
 	if(istype(PDA))
-		PDA.owner = H.real_name
+		var/new_job = null
 		if(J)
 			if(preference_source && preference_source.prefs && preference_source.prefs.alt_titles_preferences[J.title])
-				PDA.ownjob = preference_source.prefs.alt_titles_preferences[J.title]
+				new_job = preference_source.prefs.alt_titles_preferences[J.title]
 			else
-				PDA.ownjob = J.title
-		PDA.update_label()
-		if(preference_source && !PDA.equipped) //PDA's screen color, font style and look depend on client preferences.
+				new_job = J.title
+		PDA.update_label(H.real_name, new_job)
+		if(preference_source)
 			PDA.update_style(preference_source)
 
 /datum/outfit/job/get_chameleon_disguise_info()

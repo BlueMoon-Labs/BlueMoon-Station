@@ -23740,10 +23740,6 @@
 /obj/item/cartridge/medical{
 	pixel_x = 4
 	},
-/obj/item/cartridge/chemistry{
-	pixel_x = -6;
-	pixel_y = 8
-	},
 /obj/item/clothing/neck/stethoscope{
 	pixel_y = 5
 	},

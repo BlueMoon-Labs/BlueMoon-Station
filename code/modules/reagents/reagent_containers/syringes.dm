@@ -71,7 +71,7 @@
 	var/mob/living/L
 	if(isliving(target))
 		L = target
-		if(!L.can_inject(user, 1, user?.zone_selected, proj_piercing))
+		if(!L.can_inject_syringe(user, 1, user?.zone_selected, proj_piercing))
 			return
 
 	// chance of monkey retaliation
@@ -93,7 +93,7 @@
 					target.visible_message("<span class='danger'>[user] пытается взять образец крови у [target]!</span>", \
 									"<span class='userdanger'>[user] пытается взять образец крови у [target]!</span>")
 					busy = TRUE
-					if(!do_mob(user, target, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject), user, 1, user.zone_selected, proj_piercing)))
+					if(!do_mob(user, target, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject_syringe), user, 1, user.zone_selected, proj_piercing)))
 						busy = FALSE
 						return
 					if(reagents.total_volume >= reagents.maximum_volume)
@@ -138,12 +138,12 @@
 				return
 
 			if(L) //living mob
-				if(!L.can_inject(user, TRUE, user.zone_selected, proj_piercing))
+				if(!L.can_inject_syringe(user, TRUE, user.zone_selected, proj_piercing))
 					return
 				if(L != user)
 					L.visible_message("<span class='danger'>[user] пытается сделать инъекцию [L]!</span>", \
 											"<span class='userdanger'>[user] пытается сделать инъекцию [L]!</span>")
-					if(!do_mob(user, L, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject), user, 1, user.zone_selected, proj_piercing)))
+					if(!do_mob(user, L, extra_checks=CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject_syringe), user, 1, user.zone_selected, proj_piercing)))
 						return
 					if(!reagents.total_volume)
 						return

@@ -3,20 +3,17 @@
 	filedesc = "Plexagon Crew List"
 	category = PROGRAM_CATEGORY_CREW
 	program_icon_state = "id"
-	extended_desc = "Program for viewing and printing the current crew manifest"
+	extended_desc = "Программа для просмотра и печати текущего списка экипажа станции."
 	//transfer_access = ACCESS_HEADS // BLUEMOON EDIT commented
 	requires_ntnet = TRUE
 	size = 4
 	tgui_id = "NtosCrewManifest"
 	program_icon = "clipboard-list"
 
-/datum/computer_file/program/crew_manifest/ui_static_data(mob/user)
-	var/list/data = list()
-	data["manifest"] = GLOB.data_core.get_manifest()
-	return data
-
 /datum/computer_file/program/crew_manifest/ui_data(mob/user)
 	var/list/data = get_header_data()
+
+	data["manifest"] = GLOB.data_core.get_manifest()
 
 	var/obj/item/computer_hardware/printer/printer
 	if(computer)

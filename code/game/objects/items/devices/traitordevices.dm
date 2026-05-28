@@ -281,6 +281,13 @@ effective or pretty fucking useless.
 		GLOB.active_jammers -= src
 	update_icon()
 
+/// Checks if a given atom is in range of a radio jammer, returns TRUE if it is.
+/proc/is_within_radio_jammer_range(atom/source)
+	for(var/obj/item/jammer/jammer as anything in GLOB.active_jammers)
+		if(get_dist(source, jammer) <= jammer.range)
+			return TRUE
+	return FALSE
+
 /*portable turret*/
 /obj/item/storage/toolbox/emergency/turret
 	desc = "You feel a strange urge to hit this with a wrench."

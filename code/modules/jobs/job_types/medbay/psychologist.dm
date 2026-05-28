@@ -56,7 +56,7 @@
 	name = "Syndicate Psychologist"
 	jobtype = /datum/job/psychologist
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_med
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc

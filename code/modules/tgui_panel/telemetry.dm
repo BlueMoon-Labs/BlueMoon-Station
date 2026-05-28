@@ -12,7 +12,7 @@
 /**
  * Maximum time allocated for sending a telemetry packet.
  */
-#define TGUI_TELEMETRY_RESPONSE_WINDOW 90 SECONDS
+#define TGUI_TELEMETRY_RESPONSE_WINDOW 30 SECONDS
 
 /// Time of telemetry request
 /datum/tgui_panel/var/telemetry_requested_at
@@ -73,4 +73,12 @@
 			found = row
 			break
 		CHECK_TICK
-	// BLUEMOON: /datum/tgui_panel/analyze_telemetry() overridden in modular_bluemoon.
+	// This fucker has a history of playing on a banned account.
+	// BLUEMOON EDIT START: Telemetry
+	if(found)
+		if(!client?.holder?.check_for_rights(R_PERMISSIONS))
+			var/msg = "[key_name(client)] has a banned account in connection history! https://iphub.info/?ip=[client.address] (Actual: [client.ckey], [client.address], [client.computer_id] ) (Matched: [found["ckey"]], [found["address"]], [found["computer_id"]])"
+			suspect_message_to_admin_chat(msg)
+			log_admin_private(msg)
+			log_suspicious_login(msg, access_log_mirror = FALSE)
+	// BLUEMOON EDIT END: Telemetry

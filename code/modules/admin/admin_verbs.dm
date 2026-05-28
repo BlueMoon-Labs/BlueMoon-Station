@@ -57,15 +57,11 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/centcom_podlauncher,/*Open a window to launch a Supplypod and configure it or it's contents*/
 	/client/proc/check_antagonists,		/*shows all antags*/
 	/datum/admins/proc/access_news_network,	/*allows access of newscasters*/
-	/client/proc/jumptocoord,			/*we ghost and jump to a coordinate*/
+	/client/proc/admin_jump_to,			/*jump to interface*/
 	/client/proc/Getmob,				/*teleports a mob to our location*/
 	/client/proc/Getkey,				/*teleports a mob with a certain ckey to our location*/
 	/client/proc/fax_panel, /*send a paper to fax*/
 //	/client/proc/sendmob,				/*sends a mob somewhere*/ -Removed due to it needing two sorting procs to work, which were executed every time an admin right-clicked. ~Errorage
-	/client/proc/jumptoarea,
-	/client/proc/jumptokey,				/*allows us to jump to the location of a mob with a certain ckey*/
-	/client/proc/jumptomob,				/*allows us to jump to a specific mob*/
-	/client/proc/jumptoturf,			/*allows us to jump to a specific turf*/
 	/client/proc/admin_end_shift,		/*allows us to end the shift properly, also logs it*/
 	/client/proc/admin_call_shuttle,	/*allows us to call the emergency shuttle*/
 	/client/proc/admin_cancel_shuttle,	/*allows us to cancel the emergency shuttle, sending it back to centcom*/
@@ -182,6 +178,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/restart_controller,
 	/client/proc/cmd_admin_list_open_jobs,
 	/client/proc/Debug2,
+	/client/proc/toggle_ntnet_debug,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/cmd_debug_mob_lists,
 	/client/proc/cmd_admin_delete,
@@ -297,6 +294,7 @@ GLOBAL_LIST_INIT(admin_verbs_hideable, list(
 	/client/proc/callproc,
 	/client/proc/callproc_datum,
 	/client/proc/Debug2,
+	/client/proc/toggle_ntnet_debug,
 	/client/proc/reload_admins,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/startSinglo, // tg removed this

@@ -15,6 +15,19 @@
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Toggle Debug Two") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
+/client/proc/toggle_ntnet_debug()
+	set category = "Debug.7) Testing"
+	set name = "Toggle NTNet Global Signal"
+	if(!check_rights(R_DEBUG))
+		return
+
+	SSnetworks.ntnet_debug_global_signal = !SSnetworks.ntnet_debug_global_signal
+	var/state = SSnetworks.ntnet_debug_global_signal ? "ON" : "OFF"
+	message_admins("[key_name(src)] toggled NTNet global debug signal [state].")
+	log_admin("[key_name(src)] toggled NTNet global debug signal [state].")
+	to_chat(src, span_notice("NTNet global debug signal: [state]."))
+	SSblackbox.record_feedback("tally", "admin_verb", 1, "Toggle NTNet Global Signal")
+
 /client/proc/allow_browser_inspect()
 	set category = "Debug.2) Info"
 	set name = "Allow Browser Inspect"
@@ -206,8 +219,8 @@
 			id.update_label()
 
 			if(worn)
-				if(istype(worn, /obj/item/pda))
-					var/obj/item/pda/PDA = worn
+				if(istype(worn, /obj/item/modular_computer/pda))
+					var/obj/item/modular_computer/pda/PDA = worn
 					PDA.id = id
 					id.forceMove(PDA)
 				else if(istype(worn, /obj/item/storage/wallet))

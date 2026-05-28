@@ -219,10 +219,10 @@
 			return
 
 	// OTHER
-	if((istype(I, /obj/item/paper) || istype(I, /obj/item/pda)) && isliving(user))
+	if((istype(I, /obj/item/paper) || istype(I, /obj/item/modular_computer/pda)) && isliving(user))
 		var/mob/living/U = user
 		var/obj/item/paper/X = null
-		var/obj/item/pda/P = null
+		var/obj/item/modular_computer/pda/P = null
 
 		var/itemname = ""
 		var/info = ""

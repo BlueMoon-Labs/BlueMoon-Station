@@ -123,7 +123,24 @@
 
 /obj/machinery/telecomms/message_server/receive_information(datum/signal/subspace/pda/signal, obj/machinery/telecomms/machine_from)
 	// can't log non-PDA signals
-	if(!istype(signal) || !signal.data["message"] || !toggled)
+	if(!toggled)
+		return
+	// Handle new modular computer tablet messages
+	if(istype(signal, /datum/signal/subspace/messaging/tablet_message))
+		var/datum/signal/subspace/messaging/tablet_message/tablet_signal = signal
+		if(!tablet_signal.data["message"] && !tablet_signal.data["photo"])
+			return
+		var/datum/data_pda_msg/M = new(tablet_signal.format_target(), tablet_signal.format_sender(), tablet_signal.format_message())
+		pda_msgs += M
+		trim_pda_msgs()
+		tablet_signal.data["reject"] = FALSE
+		// pass along
+		if(!relay_information(tablet_signal, /obj/machinery/telecomms/hub))
+			relay_information(tablet_signal, /obj/machinery/telecomms/broadcaster)
+		return
+
+	// Handle legacy PDA signals
+	if(!istype(signal) || !signal.data["message"])
 		return
 
 	// log the signal
@@ -131,15 +148,18 @@
 	pda_msgs += M
 	signal.logged = M
 
-	// Prevent unbounded memory growth
-	if(length(pda_msgs) > 500)
-		var/trim_count = length(pda_msgs) - 400
-		pda_msgs.Cut(1, trim_count + 1)
-		pda_msgs_trimmed += trim_count
+	trim_pda_msgs()
 
 	// pass it along to either the hub or the broadcaster
 	if(!relay_information(signal, /obj/machinery/telecomms/hub))
 		relay_information(signal, /obj/machinery/telecomms/broadcaster)
+
+/// Trims pda_msgs list to prevent unbounded memory growth
+/obj/machinery/telecomms/message_server/proc/trim_pda_msgs()
+	if(length(pda_msgs) > 500)
+		var/trim_count = length(pda_msgs) - 400
+		pda_msgs.Cut(1, trim_count + 1)
+		pda_msgs_trimmed += trim_count
 
 /obj/machinery/telecomms/message_server/update_icon_state()
 	if((machine_stat & (BROKEN|NOPOWER)))
@@ -181,9 +201,53 @@
 /datum/signal/subspace/pda/broadcast()
 	if (!logged)  // Can only go through if a message server logs it
 		return
-	for (var/obj/item/pda/P in GLOB.PDAs)
+	for (var/obj/item/modular_computer/pda/P in GLOB.PDAs)
 		if ("[P.owner] ([P.ownjob])" in data["targets"])
 			P.receive_message(src)
+
+// New modular computer messaging signal system
+
+/// Root messaging signal datum (for modular computer PDAs and request consoles)
+/datum/signal/subspace/messaging
+	frequency = FREQ_COMMON
+	server_type = /obj/machinery/telecomms/message_server
+
+/datum/signal/subspace/messaging/New(init_source, init_data)
+	source = init_source
+	data = init_data
+	var/turf/origin_turf = get_turf(source)
+	if(origin_turf)
+		levels = list(origin_turf.z)
+	if(!("reject" in data))
+		data["reject"] = TRUE
+
+/datum/signal/subspace/messaging/copy()
+	var/datum/signal/subspace/messaging/copy = new type(source, data.Copy())
+	copy.original = src
+	copy.levels = levels
+	return copy
+
+/// Tablet message signal — delivers to target messenger programs
+/datum/signal/subspace/messaging/tablet_message
+
+/datum/signal/subspace/messaging/tablet_message/proc/format_target()
+	if(data["everyone"])
+		return "Everyone"
+	var/datum/computer_file/program/messenger/target_app = data["targets"][1]
+	var/obj/item/modular_computer/target = target_app.computer
+	return STRINGIFY_PDA_TARGET(target.saved_identification, target.saved_job)
+
+/datum/signal/subspace/messaging/tablet_message/proc/format_sender()
+	var/display_name = get_messenger_name(locate(data["ref"]))
+	return display_name ? display_name : STRINGIFY_PDA_TARGET(data["fakename"], data["fakejob"])
+
+/datum/signal/subspace/messaging/tablet_message/proc/format_message()
+	return data["message"]
+
+/datum/signal/subspace/messaging/tablet_message/broadcast()
+	for(var/datum/computer_file/program/messenger/app in data["targets"])
+		if(!QDELETED(app))
+			app.receive_message(src)
 
 
 // Log datums stored by the message server.

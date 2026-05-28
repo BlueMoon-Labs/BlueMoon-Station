@@ -4,7 +4,7 @@
 	category = PROGRAM_CATEGORY_ROBO
 	ui_header = "borg_mon.gif"
 	program_icon_state = "generic"
-	extended_desc = "This program allows for remote monitoring of station cyborgs."
+	extended_desc = "Позволяет удалённо отслеживать состояние киборгов станции."
 	requires_ntnet = TRUE
 	transfer_access = ACCESS_ROBOTICS
 	size = 5

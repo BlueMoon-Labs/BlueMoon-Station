@@ -649,7 +649,7 @@
 	back = /obj/item/storage/backpack/ert_commander/ert_security
 	belt = /obj/item/storage/belt/military/ert_min
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
-		/obj/item/pda/heads=1,
+		/obj/item/modular_computer/pda/heads=1,
 		/obj/item/stamp/law=1,
 		/obj/item/storage/firstaid/regular=1,)
 	accessory = list(/obj/item/clothing/accessory/lawyers_badge)

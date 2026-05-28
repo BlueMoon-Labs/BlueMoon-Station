@@ -21,13 +21,13 @@
 			var/old_name = human_target.real_name
 			GLOB.dna_for_copying.transfer_identity(human_target, TRUE)
 			human_target.real_name = human_target.dna.real_name
-			var/obj/item/pda/worn = human_target.wear_id
+			var/obj/item/modular_computer/pda/worn = human_target.wear_id
 			var/obj/item/card/id/W = human_target.wear_id?.GetID()
 			if(W)
 				W.registered_name = human_target.real_name
 				W.update_label()
 				if(worn)
-					if(istype(worn, /obj/item/pda))
+					if(istype(worn, /obj/item/modular_computer/pda))
 						worn.owner = W.registered_name
 						worn.update_label()
 			human_target.updateappearance(mutcolor_update=1)

@@ -1,6 +1,6 @@
 /obj/item/electronics/electrochromatic_kit
 	name = "electrochromatic kit"
-	desc = "A kit for upgrading a window into an electrochromatic one."
+	desc = "Retrofits electrochromatic smart-tint onto unanchored windows, interior windoors, or glass-paneled airlocks. Use in hand to set its ID to match an electrochromatic button channel."
 	/// Electrochromatic ID
 	var/id
 

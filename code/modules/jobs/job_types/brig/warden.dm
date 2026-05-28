@@ -77,7 +77,7 @@
 	name = "Warden"
 	jobtype = /datum/job/warden
 
-	belt = /obj/item/pda/warden
+	belt = /obj/item/modular_computer/pda/warden
 	ears = /obj/item/radio/headset/headset_sec/alt
 	uniform = /obj/item/clothing/under/rank/security/warden
 	shoes = /obj/item/clothing/shoes/jackboots/sec
@@ -104,7 +104,7 @@
 	name = "Syndicate Warden"
 	jobtype = /datum/job/warden
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_sec/alt
 	uniform = /obj/item/clothing/under/rank/security/officer/util

@@ -13,6 +13,11 @@ import './styles/themes/hackerman.scss';
 import './styles/themes/malfunction.scss';
 import './styles/themes/neutral.scss';
 import './styles/themes/ntos.scss';
+import './styles/themes/ntos_darkmode.scss';
+import './styles/themes/ntos_synth.scss';
+import './styles/themes/ntos_terminal.scss';
+import './styles/themes/ntos_cat.scss';
+import './styles/themes/ntos_lightmode.scss';
 import './styles/themes/paper.scss';
 import './styles/themes/retro.scss';
 import './styles/themes/syndicate.scss';
@@ -21,6 +26,7 @@ import './styles/themes/clockcult.scss';
 import './styles/themes/inteq.scss';
 
 import { perf } from 'common/perf';
+import { setupHotReloading } from 'tgui-dev-server/link/client.cjs';
 
 import { FindBar } from './components/FindBar';
 import { isDragOrResizeActive } from './drag';
@@ -90,6 +96,10 @@ const setupApp = () => {
   setupGlobalEvents();
   setupHotKeys();
   captureExternalLinks();
+
+  if (process.env.NODE_ENV !== 'production') {
+    setupHotReloading();
+  }
 
   // Subscribe for state updates
   store.subscribe(renderAppIfIdle);

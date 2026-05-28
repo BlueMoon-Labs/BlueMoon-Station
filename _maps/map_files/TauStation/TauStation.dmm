@@ -40649,9 +40649,6 @@
 	pixel_y = 3
 	},
 /obj/item/cartridge/medical,
-/obj/item/cartridge/chemistry{
-	pixel_y = 2
-	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},

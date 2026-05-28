@@ -187,7 +187,7 @@
 				if(istype(W, /obj/item/card/id))
 					id_card = W
 				else
-					var/obj/item/pda/pda = W
+					var/obj/item/modular_computer/pda/pda = W
 					id_card = pda.id
 				output_maintenance_dialog(id_card, user)
 				return

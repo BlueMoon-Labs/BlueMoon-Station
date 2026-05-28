@@ -39,7 +39,7 @@
 		/obj/item/valentine,
 		/obj/item/stamp,
 		/obj/item/key,
-		/obj/item/pda,
+		/obj/item/modular_computer/pda,
 		/obj/item/paicard,
 		/obj/item/cartridge,
 		/obj/item/camera_film,
@@ -80,8 +80,8 @@
 	for(var/obj/item/I in contents)
 		if(!I.GetID())
 			continue
-		if(istype(I, /obj/item/pda))
-			var/obj/item/pda/PDA = I
+		if(istype(I, /obj/item/modular_computer/pda))
+			var/obj/item/modular_computer/pda/PDA = I
 			var/obj/item/card/id/taken_id = PDA.RemoveID()
 			if(taken_id)
 				user.put_in_hands(taken_id)
@@ -98,7 +98,7 @@
 	// front_id is valid if it's in contents or inside a PDA in contents
 	var/keep_front_id = (front_id in src)
 	if(!keep_front_id && front_id)
-		for(var/obj/item/pda/PDA in contents)
+		for(var/obj/item/modular_computer/pda/PDA in contents)
 			if(PDA.GetID() == front_id)
 				keep_front_id = TRUE
 				break
@@ -110,7 +110,7 @@
 		LAZYINITLIST(combined_access)
 		combined_access |= I.access
 	// BLUEMOON ADD START
-	for(var/obj/item/pda/PDA in contents)
+	for(var/obj/item/modular_computer/pda/PDA in contents)
 		var/obj/item/card/id/I = PDA.GetID()
 		if(!istype(I))
 			continue
@@ -146,7 +146,7 @@
 	if(front_id in src)
 		front_id.forceMove(get_turf(src))
 	else
-		for(var/obj/item/pda/PDA in contents)
+		for(var/obj/item/modular_computer/pda/PDA in contents)
 			if(PDA.GetID() == front_id)
 				. = PDA.RemoveID()
 				refreshID()

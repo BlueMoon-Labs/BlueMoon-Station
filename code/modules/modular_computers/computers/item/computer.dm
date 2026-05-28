@@ -37,6 +37,8 @@
 	var/icon_state_powered = null // Icon state when the computer is turned on.
 	var/icon_state_menu = "menu" // Icon state overlay when the computer is turned on, but no program is loaded that would override the screen.
 	var/display_overlays = TRUE // If FALSE, don't draw overlays on this device at all
+	/// If TRUE, draw active program's program_icon_state as screen overlay. PDAs disable this.
+	var/show_program_icon = TRUE
 	var/max_hardware_size = 0 // Maximal hardware w_class. Tablets/PDAs have 1, laptops 2, consoles 4.
 	var/steel_sheet_cost = 5 // Amount of steel sheets refunded when disassembling an empty frame of this computer.
 
@@ -53,6 +55,46 @@
 	var/comp_light_luminosity = 3 //The brightness of that light
 	var/comp_light_color //The color of that light
 
+	// === PDA/Direct storage support ===
+	// These vars allow PDA-type devices to store files directly on the computer
+	// without requiring hardware components (hard_drive, processor, etc.)
+
+	/// Direct file storage for PDA-type devices. Tablets use hard_drive hardware instead.
+	var/list/datum/computer_file/stored_files = list()
+	/// Maximum file storage capacity (used by PDAs)
+	var/max_capacity = 128
+	/// Maximum number of idle background programs
+	var/max_idle_programs = 2
+	/// Programs to install on Initialize (subtype-specific)
+	var/list/datum/computer_file/starting_programs = list()
+	/// Default programs installed on all devices of this type
+	var/static/list/datum/computer_file/default_programs = list(
+		/datum/computer_file/program/computerconfig,
+		/datum/computer_file/program/ntnetdownload,
+		/datum/computer_file/program/filemanager,
+	)
+
+	/// The icon file used for PDA overlays (id_overlay, light_overlay, etc.)
+	var/overlays_icon
+	/// Owner's displayed name (set when ID is inserted or by outfit code)
+	var/saved_identification
+	/// Owner's displayed job title
+	var/saved_job
+	/// The ID card stored directly in the computer (used by PDAs instead of card_slot hardware)
+	var/obj/item/card/id/stored_id
+	/// Inserted computer disk or cartridge (virus carts, etc.)
+	var/obj/item/inserted_disk
+	/// Inserted pAI card
+	var/obj/item/paicard/inserted_pai
+	/// Whether this device has extended signal range
+	var/long_ranged = FALSE
+	/// Amount of paper stored in the device
+	var/stored_paper = 10
+	/// Remaining honk virus ticks
+	var/honkvirus_amount = 0
+	/// User's preferred PDA color (from preferences), passed to TGUI
+	var/pda_color
+
 
 /obj/item/modular_computer/Initialize(mapload)
 	. = ..()
@@ -63,6 +105,7 @@
 	idle_threads = list()
 	if(looping_sound)
 		soundloop = new(src, enabled)
+	install_default_programs()
 	update_appearance()
 
 /obj/item/modular_computer/Destroy()
@@ -168,6 +211,13 @@
 	. = ..()
 	if(.)
 		return
+	if(!IsAdminGhost(user))
+		if(istype(src, /obj/item/modular_computer/pda))
+			var/obj/item/modular_computer/pda/pda = src
+			if(pda.owner != user.real_name)
+				return
+		else
+			return
 	if(enabled)
 		ui_interact(user)
 	else if(IsAdminGhost(user))
@@ -181,8 +231,8 @@
 		return FALSE
 	obj_flags |= EMAGGED //Mostly for consistancy purposes; the programs will do their own emag handling
 	var/newemag = FALSE
-	var/obj/item/computer_hardware/hard_drive/drive = all_components[MC_HDD]
-	for(var/datum/computer_file/program/app in drive.stored_files)
+	var/list/all_files = get_all_files()
+	for(var/datum/computer_file/program/app in all_files)
 		if(!istype(app))
 			continue
 		if(app.run_emag())
@@ -204,7 +254,10 @@
 	. += get_modular_computer_parts_examine(user)
 
 /obj/item/modular_computer/update_icon_state()
-	icon_state = enabled ? icon_state_powered : icon_state_unpowered
+	if(enabled && icon_state_powered)
+		icon_state = icon_state_powered
+	else if(!enabled && icon_state_unpowered)
+		icon_state = icon_state_unpowered
 	return ..()
 
 /obj/item/modular_computer/update_overlays()
@@ -213,7 +266,12 @@
 		return
 
 	if(enabled)
-		. += active_program?.program_icon_state || icon_state_menu
+		var/screen_state = (show_program_icon && active_program?.program_icon_state) || icon_state_menu
+		if(screen_state)
+			var/mutable_appearance/screen_overlay = mutable_appearance(icon, screen_state)
+			if(pda_color)
+				screen_overlay.color = pda_color
+			. += screen_overlay
 	if(obj_integrity <= integrity_failure * max_integrity)
 		. += "bsod"
 		. += "broken"
@@ -240,7 +298,7 @@
 	if(recharger)
 		recharger.enabled = 1
 
-	if(all_components[MC_CPU] && use_power()) // use_power() checks if the PC is powered
+	if((all_components[MC_CPU] || all_components[MC_HDD] || length(stored_files)) && use_power()) // use_power() checks if the PC is powered. PDAs with HDD/stored_files don't need a CPU.
 		if(issynth)
 			to_chat(user, span_notice("You send an activation signal to \the [src], turning it on."))
 		else
@@ -325,26 +383,17 @@
 	var/obj/item/computer_hardware/battery/battery_module = all_components[MC_CELL]
 	var/obj/item/computer_hardware/recharger/recharger = all_components[MC_CHARGE]
 
-	if(battery_module && battery_module.battery)
-		switch(battery_module.battery.percent())
-			if(80 to 200) // 100 should be maximal but just in case..
-				data["PC_batteryicon"] = "batt_100.gif"
-			if(60 to 80)
-				data["PC_batteryicon"] = "batt_80.gif"
-			if(40 to 60)
-				data["PC_batteryicon"] = "batt_60.gif"
-			if(20 to 40)
-				data["PC_batteryicon"] = "batt_40.gif"
-			if(5 to 20)
-				data["PC_batteryicon"] = "batt_20.gif"
-			else
-				data["PC_batteryicon"] = "batt_5.gif"
-		data["PC_batterypercent"] = "[round(battery_module.battery.percent())]%"
+	var/battery_percent = get_battery_percent()
+	if(!isnull(battery_percent))
+		data["PC_batterypercent"] = "[round(battery_percent)]%"
+		data["PC_showbatteryicon"] = 1
+		data["PC_batteryicon"] = "batt_100.gif" // Legacy, replaced by TGUI bars
+	else if(battery_module)
+		data["PC_batterypercent"] = "N/C"
 		data["PC_showbatteryicon"] = 1
 	else
-		data["PC_batteryicon"] = "batt_5.gif"
 		data["PC_batterypercent"] = "N/C"
-		data["PC_showbatteryicon"] = battery_module ? 1 : 0
+		data["PC_showbatteryicon"] = 0
 
 	if(recharger && recharger.enabled && recharger.check_functionality() && recharger.use_power(0))
 		data["PC_apclinkicon"] = "charging.gif"
@@ -520,6 +569,89 @@
 		id.attackby(W, user) // If we do, try and put that attacking object in
 		return
 	..()
+
+// =====================
+// Direct storage procs (used by PDA-type devices that don't use hard_drive hardware)
+// =====================
+
+/// Stores a file directly on the computer (bypasses hard_drive). Used by PDAs.
+/obj/item/modular_computer/proc/store_file(datum/computer_file/file_storing)
+	if(!file_storing)
+		return FALSE
+	stored_files += file_storing
+	if(istype(file_storing, /datum/computer_file/program))
+		var/datum/computer_file/program/prog = file_storing
+		prog.computer = src
+		prog.on_install()
+	SEND_SIGNAL(src, COMSIG_MODULAR_COMPUTER_FILE_STORE, file_storing)
+	SEND_SIGNAL(file_storing, COMSIG_COMPUTER_FILE_STORE, src)
+	return TRUE
+
+/// Removes a file from direct storage.
+/obj/item/modular_computer/proc/remove_file(datum/computer_file/file_removing)
+	if(!file_removing)
+		return FALSE
+	stored_files -= file_removing
+	SEND_SIGNAL(src, COMSIG_MODULAR_COMPUTER_FILE_DELETE, file_removing)
+	SEND_SIGNAL(file_removing, COMSIG_COMPUTER_FILE_DELETE)
+	return TRUE
+
+/// Installs default programs. Override in subtypes (e.g. PDA) for custom behavior.
+/obj/item/modular_computer/proc/install_default_programs()
+	return
+
+/// Returns the list of all program files on this computer (checks hard_drive first, then direct storage).
+/obj/item/modular_computer/proc/get_all_files()
+	var/obj/item/computer_hardware/hard_drive/hard_drive = all_components[MC_HDD]
+	if(hard_drive)
+		return hard_drive.stored_files
+	if(length(stored_files))
+		return stored_files
+	return list()
+
+/// Finds a file by name across all storage.
+/obj/item/modular_computer/proc/find_file_by_name(filename)
+	for(var/datum/computer_file/file in get_all_files())
+		if(file.filename == filename)
+			return file
+	return null
+
+/// Finds a file by UID across all storage.
+/obj/item/modular_computer/proc/find_file_by_uid(uid)
+	for(var/datum/computer_file/file in get_all_files())
+		if(file.uid == uid)
+			return file
+	return null
+
+/// Plays a ringtone sound and shows balloon alerts.
+/obj/item/modular_computer/proc/ring(ringtone, list/balloon_alertees)
+	if(!ringtone)
+		return
+	var/sound_file = GLOB.pda_ringtones[ringtone] || 'sound/machines/twobeep_high.ogg'
+	playsound(src, sound_file, 50, TRUE)
+	for(var/mob/target as anything in balloon_alertees)
+		if(target)
+			target.balloon_alert(target, ringtone)
+
+/// Plays a sound to indicate a message was sent.
+/obj/item/modular_computer/proc/send_sound()
+	playsound(src, 'sound/machines/twobeep_high.ogg', 50, TRUE)
+
+/// Sets identification and job on this device (used when ID is scanned).
+/obj/item/modular_computer/proc/update_id_imprint(new_name, new_job)
+	saved_identification = new_name
+	saved_job = new_job
+	if(new_name || new_job)
+		SEND_SIGNAL(src, COMSIG_MODULAR_PDA_IMPRINT_UPDATED, new_name, new_job)
+	else
+		SEND_SIGNAL(src, COMSIG_MODULAR_PDA_IMPRINT_RESET)
+
+/// Returns battery charge percentage (0-100), or null if no battery.
+/obj/item/modular_computer/proc/get_battery_percent()
+	var/obj/item/computer_hardware/battery/battery_module = all_components[MC_CELL]
+	if(battery_module?.battery)
+		return battery_module.battery.percent()
+	return null
 
 // Used by processor to relay qdel() to machinery type.
 /obj/item/modular_computer/proc/relay_qdel()
