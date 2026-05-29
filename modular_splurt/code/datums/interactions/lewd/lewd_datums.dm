@@ -573,10 +573,7 @@
 
 /datum/interaction/lewd/deflate_belly
 	description = "Живот. Уменьшить свой живот."
-	required_from_target_exposed = NONE
-	required_from_target_unexposed = NONE
-	required_from_user_exposed = INTERACTION_REQUIRE_BELLY
-	required_from_user_unexposed = NONE
+	required_from_user = INTERACTION_REQUIRE_BELLY
 	interaction_sound = null
 	max_distance = 0
 	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_USER_IS_TARGET
@@ -590,10 +587,7 @@
 
 /datum/interaction/lewd/inflate_belly
 	description = "Живот. Надуть свой живот."
-	required_from_target_exposed = NONE
-	required_from_target_unexposed = NONE
-	required_from_user_exposed = INTERACTION_REQUIRE_BELLY
-	required_from_user_unexposed = NONE
+	required_from_user = INTERACTION_REQUIRE_BELLY
 	interaction_sound = null
 	max_distance = 0
 	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_USER_IS_TARGET
@@ -607,10 +601,7 @@
 
 /datum/interaction/lewd/deflate_breasts
 	description = "Грудь. Уменьшить свою грудь."
-	required_from_target_exposed = NONE
-	required_from_target_unexposed = NONE
-	required_from_user_exposed = INTERACTION_REQUIRE_BREASTS
-	required_from_user_unexposed = NONE
+	required_from_user = INTERACTION_REQUIRE_BREASTS
 	interaction_sound = null
 	max_distance = 0
 	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_USER_IS_TARGET
@@ -624,10 +615,7 @@
 
 /datum/interaction/lewd/inflate_breasts
 	description = "Грудь. Надуть свою грудь."
-	required_from_target_exposed = NONE
-	required_from_target_unexposed = NONE
-	required_from_user_exposed = INTERACTION_REQUIRE_BREASTS
-	required_from_user_unexposed = NONE
+	required_from_user = INTERACTION_REQUIRE_BREASTS
 	interaction_sound = null
 	max_distance = 0
 	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_USER_IS_TARGET
