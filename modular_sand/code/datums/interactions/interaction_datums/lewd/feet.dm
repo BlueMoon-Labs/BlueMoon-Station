@@ -181,13 +181,13 @@
 	var/picked_hidden = pick(hidden_additional)
 
 	if(partner.is_fucking(user, CUM_TARGET_FEET))
-		message = "[pick("дрочит <b>[partner]</b> своими [shoes ? shoes : pick("ножками", "ступнями")].",
-			"ласкает своими [shoes ? shoes : pick("ножками", "ступнями")] промежность <b>[partner]</b>.",
-			"ласкает [shoes ? "своими [shoes]" : "всей своей ножкой"] <b>[partner]</b>'s [genital_name].",
-			"работает [shoes ? shoes : pick("ножками", "ступнями")] вверх-вниз по <b>[partner]</b>'s [genital_name].")]"
+		message = "[pick("дрочит <b>[partner]</b> своей [shoes ? shoes : pick("ножкой", "ступней")].",
+			"ласкает своей [shoes ? shoes : pick("ножкой", "ступней")] промежность <b>[partner]</b>.",
+			"ласкает [shoes ? "своей [shoes]" : "всей своей ножкой"] <b>[partner]</b>'s [genital_name].",
+			"работает [shoes ? shoes : pick("ножкой", "ступней")] вверх-вниз по <b>[partner]</b>'s [genital_name].")]"
 	else
-		message = "[pick("[shoes ? "окутывает своими [shoes]" : "окутывает своими [pick("ножками", "ступнями")]"] <b>[partner]</b>'s [genital_name].",
-			"начинает играться с <b>[partner]</b>'s [genital_name], своими [shoes ? shoes :"ногами"].")]"
+		message = "[pick("[shoes ? "окутывает своей [shoes]" : "окутывает своей [pick("ножкой", "ступней")]"] <b>[partner]</b>'s [genital_name].",
+			"начинает играться с <b>[partner]</b>'s [genital_name], своей [shoes ? shoes :"ножкой"].")]"
 		partner.set_is_fucking(user, CUM_TARGET_FEET, partner.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
